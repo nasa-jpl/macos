@@ -1,0 +1,3 @@
+#/bin
+ifort -c macos_fitswrite.f90
+ar -r libfits.a macos_fitswrite.o cookbook_sub.o fitsfort.o fitsf90.o fitsio.o 
