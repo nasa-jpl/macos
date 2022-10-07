@@ -1,0 +1,69 @@
+export
+
+NPDIR = $(PWD)
+
+OS   = $(shell uname -s)
+
+ifeq ($(OS),Darwin)
+    ARCH := $(shell uname -p)
+else
+    ARCH := $(shell uname -i)
+endif
+
+# Autodetect 32-bit v. 64-bit
+ifeq ($(OS),Linux)
+	ifeq ($(ARCH),x86_64)
+		FC = ifort
+		FFLAGS = -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -O2 ##-xHOST
+#		##      Gnu g77 compiler
+#		FC         = gfortran
+#		FFLAGS_O  +=  -O2
+	else
+		FC = lf95
+		FFLAGS = -O -fPIC
+#		##      Gnu g77 compiler
+#		FC         = gfortran
+#		FFLAGS_O  +=  -O2
+	endif
+endif
+
+ifeq ($(OS),Darwin)
+  FC     = gfortran
+  FFLAGS = -O2
+endif
+
+OSDIR  = $(NPDIR)/$(OS)-$(ARCH)
+
+OBJ= \
+blaso.o \
+chsubs.o \
+cmsubs.o \
+lssubs.o \
+mcsubs.o \
+npsubs.o \
+opsubs.o \
+srsubs.o
+
+#lsmain.o
+
+$(OSDIR)/npsol.o: $(OBJ) $(OSDIR)
+	ld -r -o $@ $(OBJ)
+	mv *.mod *.f90 *.o $(OSDIR)
+
+$(OSDIR):
+	mkdir -p $@
+
+clean:
+	rm -f *.o
+
+# begin fortran depends
+blaso.o: blaso.f
+chsubs.o: chsubs.f
+cmsubs.o: cmsubs.f
+#lsmain.o: lsmain.f
+lssubs.o: lssubs.f
+mcsubs.o: mcsubs.f
+npsubs.o: npsubs.f
+opsubs.o: opsubs.f
+srsubs.o: srsubs.f
+# end fortran depends

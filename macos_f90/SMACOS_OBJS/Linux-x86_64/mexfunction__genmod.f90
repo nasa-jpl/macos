@@ -1,0 +1,11 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Sep 27 11:07:58 2022
+        MODULE MEXFUNCTION__genmod
+          INTERFACE 
+            SUBROUTINE MEXFUNCTION(NLHS,PLHS,NRHS,PRHS)
+              INTEGER(KIND=4) :: NLHS
+              INTEGER(KIND=8) :: PLHS(*)
+              INTEGER(KIND=4) :: NRHS
+              INTEGER(KIND=8) :: PRHS(*)
+            END SUBROUTINE MEXFUNCTION
+          END INTERFACE 
+        END MODULE MEXFUNCTION__genmod

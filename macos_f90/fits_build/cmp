@@ -1,0 +1,4 @@
+#/bin
+/bin/rm -rf *.o
+ifort -fpp -c fitswrite.f90 cookbook_sub.f90 fitsfort.f90 fitsf90.f90 fitsio.f90 
+#ifort -fpp -c fitTest fitswrite.f90 cookbook_sub.f90 fitsfort.f90 fitsf90.f90 fitsio.f90 

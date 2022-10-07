@@ -1,0 +1,16 @@
+   ddot
+   dswap
+   dtrmv
+   dtrsv
+   dscal
+   daxpy
+   dgemv
+   dnrm2
+   dcopy
+   idamax
+   dger
+   dsyr
+   xerbla
+   dgemm
+   lsame
+   dtrmm

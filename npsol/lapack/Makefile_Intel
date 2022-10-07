@@ -1,0 +1,102 @@
+OS   = $(shell uname -s)
+
+ifeq ($(OS),Darwin)
+    ARCH := $(shell uname -p)
+else
+    ARCH := $(shell uname -i)
+endif
+
+ifeq ($(OS),Linux)
+  # Autodetect 32-bit v. 64-bit
+  ifeq ($(ARCH),x86_64)
+    FC=ifort
+    FFLAGS = -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -O2 ##-xHOST 
+#    FC=lf95
+#    FFLAGS = -O -fs -w -Kfast -Kpic -tpp --verbose --ap --wide --fast --wo 
+  else
+    FC=lf95
+    FFLAGS = -O -fs -w -Kfast -tpp -fPIC
+  endif
+endif
+
+ifeq ($(OS),Darwin)
+  FC     = gfortran
+  FFLAGS = -O2
+endif
+
+OBJ= \
+dbdsqr.o \
+dgebrd.o \
+dgelqf.o \
+dgeqrf.o \
+dgesvd.o \
+dlacpy.o \
+dlamch.o \
+dlange.o \
+dlascl.o \
+dlaset.o \
+dorgbr.o \
+dorglq.o \
+dorgqr.o \
+dormbr.o \
+ilaenv.o \
+   dlassq.o \
+   dlarfb.o \
+   dlarft.o \
+   dorgl2.o \
+   dorg2r.o \
+   dormlq.o \
+   dormqr.o \
+   dlas2.o \
+   dlasr.o \
+   dlasv2.o \
+   dlartg.o \
+   dgebd2.o \
+   dlabrd.o \
+   dgelq2.o \
+   dgeqr2.o   dlarf.o dorml2.o dorm2r.o dlarfg.o   dlapy2.o
+
+lapack.o: $(OBJ)
+	ld -r -o $@ $(OBJ)
+
+clean:
+	rm -f *.o
+
+
+# begin fortran depends
+dbdsqr.o: dbdsqr.f
+dgebd2.o: dgebd2.f
+dgebrd.o: dgebrd.f
+dgelq2.o: dgelq2.f
+dgelqf.o: dgelqf.f
+dgeqr2.o: dgeqr2.f
+dgeqrf.o: dgeqrf.f
+dgesvd.o: dgesvd.f
+dlabrd.o: dlabrd.f
+dlacpy.o: dlacpy.f
+dlamch.o: dlamch.f
+dlange.o: dlange.f
+dlapy2.o: dlapy2.f
+dlarf.o: dlarf.f
+dlarfb.o: dlarfb.f
+dlarfg.o: dlarfg.f
+dlarft.o: dlarft.f
+dlartg.o: dlartg.f
+dlas2.o: dlas2.f
+dlascl.o: dlascl.f
+dlaset.o: dlaset.f
+dlasr.o: dlasr.f
+dlassq.o: dlassq.f
+dlasv2.o: dlasv2.f
+dorg2r.o: dorg2r.f
+dorgbr.o: dorgbr.f
+dorgl2.o: dorgl2.f
+dorglq.o: dorglq.f
+dorgqr.o: dorgqr.f
+dorm2r.o: dorm2r.f
+dormbr.o: dormbr.f
+dorml2.o: dorml2.f
+dormlq.o: dormlq.f
+dormqr.o: dormqr.f
+ilaenv.o: ilaenv.f
+# end fortran depends
