@@ -38,10 +38,6 @@ C-----------------------------------------------------------------------
       INTRINSIC ABS, COS, LEN, MIN, SIN
       CHARACTER DEVTYP*14, STEMP*258
       LOGICAL DEVINT, VTEXT
-      Integer, save :: entry_count=0
-
-      entry_count=entry_count+1
-
 C
 C Check that there is something to be plotted.
 C
@@ -98,21 +94,12 @@ C
       IFNTLV = 0
       DX = 0.0
       DY = 0.0
-
-      ! STRING still GOOD up to this point
-      !print*,'** B4 GRSYDS: STRING =',STRING(1:LEN(STRING)) 
-
 C
 C Convert the string to a list of symbol numbers; to prevent overflow
 C of array LIST, the length of STRING is limited to 256 characters.
 C
       CALL GRSYDS(LIST,NLIST,STRING(1:MIN(256,LEN(STRING))),
      1             GRCFNT(GRCIDE))
-
-      ! LIST still GOOD up to this point
-      !print*,'** After GRSYDS: NLIST =',NLIST
-      !print*,'** After GRSYDS: LIST =',LIST  
-
 C
 C Plot the string of characters
 C
@@ -135,21 +122,7 @@ C                 ! backspace
               END IF
               GOTO 380
           END IF
-
-	  ! This is THE problematic routine, returned XYGRID
-	  ! is WRONG ... 
           CALL GRSYXD(LIST(I),XYGRID,UNUSED)
-
-	  !print*,'XYGRID =', XYGRID
-	  if (entry_count==1) then
-	    if (.false.) then
-	     XYGRID=0
-	     XYGRID(1:41)=(/-16,-9,12,-10,10,-1,12,-4,11,-6,8,-7,3,-7,0,
-     &                      -6,-5,-4,-8,-1,-9,1,-9, 4,-8,6,-5,7,0,7, 
-     &	 	            3,6,8,4,11,1,12,-1,12,-64,-64/)
-            endif
-	  end if
-
           VISBLE = .FALSE.
           LX = XYGRID(5)-XYGRID(4)
           DX = COSA*LX*RATIO

@@ -35,9 +35,7 @@ C-----------------------------------------------------------------------
 C
       INTEGER   INDEX(MAXCHR)
       INTEGER*2 BUFFER(MAXBUF)
-      !INTEGER  BUFFER(MAXBUF)
       INTEGER   I, LENGTH, LOC, NC, NC1, NC2, NCHAR, XYGRID(400)
-
 C-----------------------------------------------------------------------
  1000 FORMAT (7(2X,2I4))
  2000 FORMAT (' Characters defined: ', I5/
@@ -77,28 +75,13 @@ C         -- store in index and buffer
    15     CONTINUE
       GOTO 10
    20 CONTINUE
-
 C
 C Write output file.
 C
-
+      OPEN (UNIT=2, STATUS='NEW', FORM='UNFORMATTED', FILE='grfont.dat')
       NC1 = 1
       NC2 = 3000
-
-      OPEN (UNIT=2, STATUS='NEW', FORM='UNFORMATTED', FILE='grfont.dat')
       WRITE (2) NC1,NC2,LOC,INDEX,BUFFER
- 
-#if 0
-#ifdef LNX32
-      OPEN (UNIT=2, STATUS='NEW', FORM='UNFORMATTED', FILE='grfont.dat')
-      WRITE (2) NC1,NC2,LOC,INDEX,BUFFER
-#endif
-#ifdef LNX64
-      OPEN (UNIT=2, STATUS='Replace', FILE='grfont.dat')
-      WRITE (2,*) NC1,NC2,LOC,INDEX,BUFFER
-#endif
-#endif
-
       CLOSE (UNIT=2)
 C
 C Write summary.

@@ -35,7 +35,6 @@ C  7-Mar-1983.
 C 15-Dec-1988 - standardize.
 C-----------------------------------------------------------------------
       INTEGER*2    BUFFER(27000)
-      !INTEGER       BUFFER(27000)
       INTEGER      INDEX(3000), IX, IY, K, L, LOCBUF
       INTEGER      NC1, NC2
       COMMON       /GRSYMB/ NC1, NC2, INDEX, BUFFER

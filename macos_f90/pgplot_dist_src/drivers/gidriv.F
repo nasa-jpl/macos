@@ -78,12 +78,7 @@ C
 C Note: for 64-bit operating systems, change the following 
 C declaration to INTEGER*8:
 C
-#ifdef LNX64
-      INTEGER*8 PIXMAP, WORK
-#else
       INTEGER PIXMAP, WORK
-#endif
-
 C
       SAVE UNIT, IC, CTABLE, NPICT, MAXIDX, BX, BY, PIXMAP, FILENM
       SAVE CDEFLT, STATE
@@ -464,7 +459,7 @@ C-----------------------------------------------------------------------
 *  PIXMAP   (input/output): The image data buffer.
 *-----------------------------------------------------------------------
       INTEGER IX, IY
-      BYTE VAL  ! nonstandard, equivalent to signed char in C
+      BYTE VAL
 C
       IF (ICOL.GT.127) THEN
          VAL = ICOL-256

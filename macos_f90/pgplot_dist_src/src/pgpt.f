@@ -38,9 +38,6 @@ C 17-Dec-1990 - add polygons [PAH].
 C 14-Mar-1997 - optimization: use GRDOT1 [TJP].
 C-----------------------------------------------------------------------
       LOGICAL PGNOTO
-
-      !print*,'*** B4 GRMKER: SYMBOL =',SYMBOL,', N =',N
-      !print*,'** XPTS =', XPTS(1:N)
 C
       IF (N.LT.1) RETURN
       IF (PGNOTO('PGPT')) RETURN

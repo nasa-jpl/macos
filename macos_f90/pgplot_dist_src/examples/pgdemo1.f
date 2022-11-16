@@ -294,7 +294,6 @@ C Draw a fit to the spectrum (don't ask how this was chosen). This
 C curve is drawn before the data points, so that the data will write 
 C over the curve, rather than vice versa.
 C
-      
       DO 10 I=1,100
           X = 1.3 + I*0.03
           XP(I) = X-3.0

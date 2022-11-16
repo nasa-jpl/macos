@@ -25,25 +25,13 @@ C  NAME (output) : receives the file name.
 C--
 C  2-Dec-1994 - new routine [TJP].
 C-----------------------------------------------------------------------
-      !CHARACTER*(*) DEFDIR, DEFFNT, DEFRGB
-      CHARACTER*255 DEFDIR, DEFFNT, DEFRGB
-      !PARAMETER  (DEFDIR='/usr/local/pgplot/')
-
-!#ifdef LNX32
-!     PARAMETER (DEFDIR='/proj/jwst/pgplot/lnx/32/')
-!#endif
-
-!#ifdef LNX64
-!     PARAMETER 
-!    &(DEFDIR='/proj/jwst/jzlou/tst_malfoy/MACOS_BUILD/pgplot_lnx64/')
-!#endif
-
-      PARAMETER (DEFFNT='grfont.dat') 
-!    &(DEFFNT='/mnt/BATBRAIN/USERS/jzlou/MACOS/pgplot_lnx64/grfont.dat')
+      CHARACTER*(*) DEFDIR, DEFFNT, DEFRGB
+      PARAMETER  (DEFDIR='/usr/local/pgplot/')
+      PARAMETER  (DEFFNT='grfont.dat')
       PARAMETER  (DEFRGB='rgb.txt')
       CHARACTER*255 FF
       CHARACTER*16 DEFLT
-      INTEGER I, L, LD, PGSTRLEN
+      INTEGER I, L, LD
       LOGICAL TEST, DEBUG
 C
 C Is debug output requested?
@@ -82,12 +70,9 @@ C
                L = L+1+LD
             END IF
          ELSE IF (I.EQ.4) THEN
-	    LD = PGSTRLEN(DEFLT,16)
-	    L = PGSTRLEN(DEFDIR,255)
-            FF = DEFDIR(1:L)//DEFLT
-            L = L+LD
+            FF = DEFDIR//DEFLT
+            L = LEN(DEFDIR)+LD
          END IF
-
          IF (L.GT.0) THEN
             IF (DEBUG) THEN
                CALL GRWARN('Looking for '//FF(:L))
@@ -101,31 +86,9 @@ C
             END IF
          END IF
  10   CONTINUE
-
-      
-      print*, '***grgfil: FF =',FF(1:L)
-      print*, '***grgfil: NAME =',NAME
 C
 C Failed to find the file.
 C
       NAME = DEFLT
 C-----------------------------------------------------------------------
       END
-
-C-----------------------------------------------------------------------
-
-      FUNCTION PGSTRLEN(STR,N)
-      Integer CLEN,PGSTRLEN,I
-      Character(Len=*) :: STR
-
-      CLEN=0
-      DO I=1,N
-	If (STR(I:I) /= ' ') THEN
-          CLEN=CLEN+1
-	Else
-	  PGSTRLEN=CLEN
-	  RETURN
-	End If 
-      END DO
-      END FUNCTION PGSTRLEN 
-
