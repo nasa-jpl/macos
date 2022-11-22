@@ -1,7 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:01 2022
-        MODULE MCHPAR__genmod
-          INTERFACE 
-            SUBROUTINE MCHPAR
-            END SUBROUTINE MCHPAR
-          END INTERFACE 
-        END MODULE MCHPAR__genmod

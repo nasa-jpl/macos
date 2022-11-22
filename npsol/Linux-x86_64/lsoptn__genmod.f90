@@ -1,8 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:01 2022
-        MODULE LSOPTN__genmod
-          INTERFACE 
-            SUBROUTINE LSOPTN(STRING)
-              CHARACTER(*) :: STRING
-            END SUBROUTINE LSOPTN
-          END INTERFACE 
-        END MODULE LSOPTN__genmod

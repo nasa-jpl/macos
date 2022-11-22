@@ -1,9 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:03 2022
-        MODULE OPNUMB__genmod
-          INTERFACE 
-            FUNCTION OPNUMB(STRING)
-              CHARACTER(*) :: STRING
-              LOGICAL(KIND=4) :: OPNUMB
-            END FUNCTION OPNUMB
-          END INTERFACE 
-        END MODULE OPNUMB__genmod

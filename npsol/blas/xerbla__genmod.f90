@@ -1,9 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:40:08 2022
-        MODULE XERBLA__genmod
-          INTERFACE 
-            SUBROUTINE XERBLA(SRNAME,INFO)
-              CHARACTER(LEN=6) :: SRNAME
-              INTEGER(KIND=4) :: INFO
-            END SUBROUTINE XERBLA
-          END INTERFACE 
-        END MODULE XERBLA__genmod

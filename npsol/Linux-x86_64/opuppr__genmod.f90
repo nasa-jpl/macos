@@ -1,8 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:03 2022
-        MODULE OPUPPR__genmod
-          INTERFACE 
-            SUBROUTINE OPUPPR(STRING)
-              CHARACTER(*) :: STRING
-            END SUBROUTINE OPUPPR
-          END INTERFACE 
-        END MODULE OPUPPR__genmod
