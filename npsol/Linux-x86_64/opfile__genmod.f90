@@ -1,0 +1,11 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:03 2022
+        MODULE OPFILE__genmod
+          INTERFACE 
+            SUBROUTINE OPFILE(IOPTNS,NOUT,INFORM,OPKEY)
+              INTEGER(KIND=4) :: IOPTNS
+              INTEGER(KIND=4) :: NOUT
+              INTEGER(KIND=4) :: INFORM
+              EXTERNAL OPKEY
+            END SUBROUTINE OPFILE
+          END INTERFACE 
+        END MODULE OPFILE__genmod

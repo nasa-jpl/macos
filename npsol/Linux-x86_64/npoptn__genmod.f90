@@ -1,0 +1,8 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:02 2022
+        MODULE NPOPTN__genmod
+          INTERFACE 
+            SUBROUTINE NPOPTN(STRING)
+              CHARACTER(*) :: STRING
+            END SUBROUTINE NPOPTN
+          END INTERFACE 
+        END MODULE NPOPTN__genmod

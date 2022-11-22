@@ -1,0 +1,9 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:02 2022
+        MODULE NPFILE__genmod
+          INTERFACE 
+            SUBROUTINE NPFILE(IOPTNS,INFORM)
+              INTEGER(KIND=4) :: IOPTNS
+              INTEGER(KIND=4) :: INFORM
+            END SUBROUTINE NPFILE
+          END INTERFACE 
+        END MODULE NPFILE__genmod

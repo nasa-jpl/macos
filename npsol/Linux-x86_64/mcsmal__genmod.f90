@@ -1,0 +1,8 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:02 2022
+        MODULE MCSMAL__genmod
+          INTERFACE 
+            FUNCTION MCSMAL
+              REAL(KIND=8) :: MCSMAL
+            END FUNCTION MCSMAL
+          END INTERFACE 
+        END MODULE MCSMAL__genmod

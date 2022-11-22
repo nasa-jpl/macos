@@ -1,0 +1,11 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Mon Nov 21 18:43:03 2022
+        MODULE OPSCAN__genmod
+          INTERFACE 
+            SUBROUTINE OPSCAN(STRING,FIRST,LAST,MARK)
+              CHARACTER(*) :: STRING
+              INTEGER(KIND=4) :: FIRST
+              INTEGER(KIND=4) :: LAST
+              INTEGER(KIND=4) :: MARK
+            END SUBROUTINE OPSCAN
+          END INTERFACE 
+        END MODULE OPSCAN__genmod
