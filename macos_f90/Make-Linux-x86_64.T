@@ -17,14 +17,13 @@ LOCAL_FFLAGS = -g
 # Readline Library Defines
 USE_READLINE = 1
 ifeq ($(USE_READLINE),1)
-  RL_LIBRARY_VERSION = 5.2
-  RL_ROOT = /proj/jwst/jzlou/tst_malfoy/MACOS_BUILD/readline-5.2
-  #RL_ROOT = /proj/jwst/readline
-  RL_INC = $(RL_ROOT)/include
+  RL_LIBRARY_VERSION = 8.2
+  RL_ROOT = /home/lmarchen/MACOS/work/test_gitrepos11042022/macos/readline-8.2
+  RL_INC = $(RL_ROOT)
   DEFS = -DHAVE_CONFIG_H
   LOCAL_FFLAGS += -DREADLINE_LIBRARY
   LOCAL_CFLAGS += -I$(RL_INC) $(DEFS) -DREADLINE_LIBRARY -DRL_LIBRARY_VERSION='"$(RL_LIBRARY_VERSION)"'
-  READLINE_LIB = $(RL_ROOT)/libreadline64.a
+  READLINE_LIB = $(RL_ROOT)/libreadline.a
   #HISTORY_LIB = $(RL_ROOT)/lnx_libs/64/libhistory.a
   RL_LIBS = $(READLINE_LIB) -ltermcap
 endif
@@ -39,18 +38,19 @@ LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
 
 ################################################################################
 # Libraries for MACOS:
-LOCAL_MACOS_BUILD = /proj/jwst/jzlou/tst_millipede/MACOS_BUILD/tstCmp_macos_on_millipede_v2/MACOS2LM_082022
+#LOCAL_MACOS_BUILD = /home/lmarchen/MACOS/work/test_gitrepos11042022/macos/macos_f90 #temporary commented out by Luis
+
 MLIBS = /opt/intel-$(intel_version)/lib/intel64/libimf.a \
         /opt/intel-$(intel_version)/lib/intel64/libifport.a \
         /opt/intel-$(intel_version)/lib/intel64/libifcore.a \
         -L/usr/lib64 -lX11 \
-        -L$(LOCAL_MACOS_BUILD)/pgplot_lnx64 -lpgplot \
-        -L$(LOCAL_MACOS_BUILD)/fits_build -lfits \
+        -L$(SRC_DIR)/pgplot -lpgplot \
+        -L$(SRC_DIR)/fits_build -lfits \
         $(RL_LIBS) 
 
-NPSOL_ROOT=/proj/jwst/jzlou/tst_malfoy/MACOS_BUILD/npsol_lib/64
+NPSOL_ROOT=/home/lmarchen/MACOS/work/test_gitrepos11042022/macos/npsol
 NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
-            $(NPSOL_ROOT)/npsol.o
+            $(NPSOL_ROOT)/Linux-x86_64/npsol.o
 ###############################################################################
 
 # MACOS executable
