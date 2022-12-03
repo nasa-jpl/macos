@@ -59,12 +59,11 @@ cd ../
 #--------------------------------------------------------------------------
 # Compile macos and smacos
 #--------------------------------------------------------------------------
-make clean-macos
-make macos
+#make clean-macos
+#make macos
 
 #make clean-smacos
-browse confirm wa
-make smacos
+#make smacos
 
 
 
