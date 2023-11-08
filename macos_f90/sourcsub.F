@@ -506,16 +506,11 @@ C  Uniform or Dipole beam...
 	    S=SQRT(Flux/DBLE(nRay-1))
 	    SEx0=S*Ex0
 	    SEy0=S*Ey0
-
-           !print*,'** sourcsub: SEx0 =',SEx0
-           !print*,'** sourcsub: SEy0 =',SEy0
-           !STOP
-
 	    SC=DCMPLX(S,0D0)
 	    IF (ifPol) THEN
 	      DO 36 k=1,3
 	        RayE(k,1)=SEx0*DCMPLX(xGrid(k),0d0)+
-     &	           SEy0*DCMPLX(yGrid(k),0d0)
+     &	        SEy0*DCMPLX(yGrid(k),0d0)
    36	      CONTINUE
 	    END IF
 	    DO 25 j=1,mdttl
@@ -1039,10 +1034,6 @@ C  Uniform beam...
 	    SEx0=S*Ex0
 	    SEy0=S*Ey0
 	    SC=DCMPLX(S,0D0)
-
-           !print*,'**sourcsub, Ex0,Ey0 =',Ex0,Ey0
-           !STOP
-
 	    IF (ifPol) THEN
 	      DO 36 k=1,3
 	        RayE(k,1)=SEx0*DCMPLX(xGrid(k),0d0)+
@@ -1063,8 +1054,7 @@ C  Uniform beam...
 	            CALL DXPROD(xray,yray,zray)
 	            DO 33 k=1,3
 	              RayE(k,irayid)=SEx0*DCMPLX(xray(k),0d0)+
-     &	                             SEy0*DCMPLX(yray(k),0d0)
-                     !print*,'** iray,RayE =',irayid,RayE(k,irayid)
+     &	              SEy0*DCMPLX(yray(k),0d0)
 	              S1=RayE(k,irayid)
    33	            CONTINUE
 	          END IF
@@ -1168,7 +1158,6 @@ C  ***  end rotate segemnt frame of reference
 C***********************************************************************
 
 	FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
-        use src_mod, only : FSEG_CCAT_Flg
 	IMPLICIT NONE
 
 C In the flower pattern, prescription is defined by:
@@ -1181,8 +1170,6 @@ C   2. First petal in SegXgrid coords (rays occupy wedge with
 C      theta between 0 and 2*pi/nPetal)
 C   3. Next petal.
 C   4-nPetals. Etc.
-
-C S(1) = ring ID, S(2) = petal id on that ring
 
 C  radCtr = radius of the center segment. Actual segment boundaries
 C           are curcumscribed polygon tangent to circle at outer
@@ -1217,7 +1204,7 @@ C  ***  end rotate segment frame of reference
 	    cth=xt/r; sth=yt/r
 	    th=DATAN2(sth,cth)
 	    IF (th.LT.0d0) th=th+twopi
-	    ith=th/Q+1d0  ! in 'ith' petal
+	    ith=th/Q+1d0
 	    thc=(DBLE(ith)-0.5d0)*Q
 	    rv=xt*COS(thc)+yt*SIN(thc)
 	    !IF (rv.LE.(radCtr-gap/2d0)) THEN
@@ -1238,29 +1225,19 @@ C  ***  end rotate segment frame of reference
 	  sth=yt/r
 	  th=DATAN2(sth,cth)
 	  IF (th.LT.0d0) th=th+twopi
-	  ith=th/Q+1d0  ! in 'ith' petal
-          if (th>(twopi-0.5*Q)) th=th-twopi  ! now 'th' for CCAT case only
+	  ith=th/Q+1d0
+          if (th>(twopi-0.5*Q)) th=th-twopi 
           dth=th/Q
-          S2=S(2)-1d0
-C This section was updated by jzlou to accommodate both CCAT and non-CCAT
-C cases of FSEG segmentation, 08/2020      
-          thc = -1d18
-	  IF (.not.FSEG_CCAT_Flg .AND.
-     &        ith.EQ.S(2)) THEN
-!    &        (dth.GE.(S2) .AND. dth.LE.(S2+1))) THEN 
-            thc=(DBLE(ith)-0.5d0)*Q
-          END IF
-          IF (FSEG_CCAT_Flg .AND. 
-     &        (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5))) THEN
-            thc=S2*Q
-          END IF
-          !
-          IF (thc > -1d10) THEN
+          S2=S(2)-1d0;
+	  !IF (ith.EQ.S(2)) THEN
+	  IF (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5)) THEN
+	    !thc=(DBLE(ith)-0.5d0)*Q
+	    thc=S2*Q
 	    rv=xt*COS(thc)+yt*SIN(thc)
 	    !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
- 	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
+	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
               hspan=rv*DTAN(0.5*Q)
-	      dd=DSQRT(abs(r*r-rv*rv))  ! rr^2 = rv^2 + dd^2, I think
+	      dd=DSQRT(r*r-rv*rv)
 	      IF (dd.LE.(hspan-gap/2d0)) THEN  
 	        FSEG=.TRUE.
 	      ELSE

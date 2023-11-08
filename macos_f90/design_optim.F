@@ -194,8 +194,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End If  ! first_entry
 
 	!opd_size = mRay; !opd_size = mdttl*mdttl;
-        !opd_size = mpts*mpts
-	 opd_size = nGridPts*nGridPts
+	!opd_size = nGridPts*nGridPts
+        opd_size = mpts*mpts
 	!print*,' ** mpts,nGridPts =',mpts,nGridPts
 
 	If (opt_tgt_m==WFE_TARGET) Then
@@ -217,18 +217,15 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	!print*,' **tot_objfun_size =',tot_objfun_size
 
 	! Allocate local dynamic arrays
-        If (.not. allocated(objfun_nom)) Then
-  	  allocate(objfun_nom(tot_objfun_size),
+	allocate(objfun_nom(tot_objfun_size),
      &           elt_arr_m(size(elts)),dof_arr_m(size(dof_arr)),
      &		 OPDm(opd_size),ZCoefm(n_wf_zern),PIXm(mPix*mPix),
      &           SPOTm(2,mRay),OPDMat_m(mpts,mpts),
 !    &           SPOTm(2,mRay),OPDMat_m(nGridPts,nGridPts),
      &           stat=m_err_rtn)
-	  if (m_err_rtn /= 0)
+	if (m_err_rtn /= 0)
      &      call macos_memory_failure
      &             ('nls_optim_dvr(1): allocate failed!')
-        End If
-
         n_elts = n_varElt; elt_arr_m = elts; dof_arr_m = dof_arr
 
 	allocate(n_optZern_m(n_elts))
@@ -309,7 +306,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End Do
 	!
 	if (allocated(aparams_nls_m)) deallocate(aparams_nls_m)
-        allocate(aparams(len_a),da(len_a),maska(len_a),
+	allocate(aparams(len_a),da(len_a),maska(len_a),
      &           sig(tot_objfun_size),covar(len_a,len_a),
      &		 alpha(len_a,len_a),aparams_nls_m(len_a),
      &           stat=m_err_rtn)
@@ -372,10 +369,6 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      rtn_flg=1
               go to 100 
 	    end if
-
-           !print*,'** design_optim.F: opd_size =',opd_size 
-           !print*,'** design_optim.F: nGridPts =',nGridPts
- 
 	    Do ifov=1,nfov
 	      Do j=1,nGridPts
  	        READ(tgt_wf_funit)
@@ -385,7 +378,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    End Do
 	  Else
 	    ! ascii format
-	    WRITE(*,*)' **Open txt target WF file: ',tgt_wf_filename
+	    !WRITE(*,*)' **Open txt target WF file: ',tgt_wf_filename
 	    Open(Unit=tgt_wf_funit,
      & 	 	 File=tgt_wf_filename,form='formatted',
      &           status='OLD',iostat=ios)
@@ -395,13 +388,6 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
               rtn_flg=1
               go to 100
             end if
-
-           !print*,'** B4 reading tgt_wf'
-           !print*,'**  tgt_wf_filename =', tgt_wf_filename
-           !print*,'**  nfov, nGridPts,opd_size =', 
-!    &             nfov,nGridPts,opd_size
-           !stop 
-
 	    Do ifov=1,nfov
 	      Do j=1,nGridPts
  	        READ(tgt_wf_funit,*)
@@ -489,13 +475,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End Do
 
 	If (opt_tgt_m==WFE_ZMode_TARGET) Then
-	  WRITE(*,*)'Initial Zernike modes, ',
-     &    'wf_zern_mode =', wf_zern_mode  
+	  WRITE(*,*)'Initial Zernike modes:'
 	  Call zern_modes_coef(OPDMat_m,wf_zern_mode(1:n_wf_zern),
      &                         ZCoefm,4)
-	  WRITE(*,*)'Fitted Zernike coeffs =', 
-     &      ZCoefm(1:n_wf_zern)  ! seems correct for tt4z.in zmodes = 3,4,5
-	  !Stop
 	End If
 
 	status_flag = 0 ! for svdls_itr() only
@@ -507,11 +489,11 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &                 alpha,chisq,funcs_app,alamda,lmlsq_success)
 	    if (.not. lmlsq_success) then
-             WRITE(*,*) ' ** Optimization (lmlsq) failed!'
-             WRITE(*,*) ' ** Possible reasons: '
-             WRITE(*,*) ' **  Incorrect setup for optimizer'
-             WRITE(*,*) ' **  Var DOFs for optimization are correlated'
-	      !stop
+	      WRITE(*,*) ' ** Optimization (lmlsq) failed!'
+	      WRITE(*,*) ' ** Possible reasons: '
+	      WRITE(*,*) ' **   Incorrect setup for optimizer'
+	      WRITE(*,*) ' **   DOFs for optimization are correlated'
+	      stop
 	      rtn_flg=1; go to 110
 	    end if
 	    chisq_arr(itr) = chisq
@@ -558,7 +540,6 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
 	  if (.not. lmlsq_success) then
-            Write(*,*) ' ** Last run of lmlsq() failed'
             rtn_flg=1; return 
 	  end if
 	  chisq_arr(tot_itrs_done+1) = chisq
@@ -588,11 +569,10 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End Do
 
 	If (opt_tgt_m==WFE_ZMode_TARGET) Then
+	  WRITE(*,*)' '
+          WRITE(*,*)'Final Zernike modes:'
           Call zern_modes_coef(OPDMat_m,wf_zern_mode(1:n_wf_zern),
      &                         ZCoefm,4)
-	  WRITE(*,*)' '
-          WRITE(*,*)'Final Zernike modes: ',
-     &      ZCoefm(1:n_wf_zern)
         End If
 	aparams_nls_m=aparams ! for external output 
 	
@@ -935,11 +915,7 @@ C
 	    Call funcs_app(params,y0,dy0da)
 
 	    ! Calc pseudo inverse of dy0da
-            print*,'** B4 pinv ...'
-            print*,'** size(objfunNom) =',size(objfunNom)
-            print*,'** size(params) =',size(params)
 	    Call pinv(dy0da,dady0,SvdSvCut)
-            print*,'** Aft pinv ...'
 	    !
             If (save_pinv) Then
          If (LCMP(PinvFile(ICLEN(PinvFile)-2:ICLEN(PinvFile)),'bin',3))

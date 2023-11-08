@@ -53,7 +53,7 @@ C
         Real*8 :: Aperture_nom
         Integer :: m_err_setbeam
 
-        If (first_entry .and. (.not.m_vars_set)) Then
+        if (first_entry .and. (.not.m_vars_set)) then
           ! Allocate module array variables, and initialize all module
           ! variables
           allocate(ifRegrid_m(mElt),ifIntSrfSet_m(mElt),L1_m(mRay),
@@ -84,15 +84,15 @@ C
 
           m_vars_set=.true.
           first_entry=.false.
-        End If ! first_entry
+        end if ! first_entry
 
-	If (ifCurBeamSize) Then
+	if (ifCurBeamSize) then
           Call GetBeamSize(iEndElt_m,target_beam)
           init_beamsize=target_beam
           return
-        Else
+        else
           target_beam_m=target_beam
-        End If
+        end if
 
         ! ************************************************
         ! Set up a test problem here: Rx=n18sd.in, SM = 23

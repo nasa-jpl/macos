@@ -1270,7 +1270,7 @@ cscale	    z1z2=dxElt(nEstart)/dxElt(iElt)
 cscale	                  WFElt(i,j,k)=-z1z2*RayE(k,iRay)
      	                END DO
 	              ELSE
-	                ! Non-polarization case:
+	                ! Polarization case:
 	                ! Here a complex optical field is formed in 
 			! WFElt(*,*,iWF) array, with its phase equal
 		        ! to OPD and its amplitude equal to the 2-norm
@@ -1492,7 +1492,7 @@ C					Far-field sphere-to-plane
      &	          dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
 	      ELSE
                 print*,
-     &  '==> 2: Far-field (scalar) sphere-to-plane diffraction ...'
+     &     '===> 2: Far-field sphere-to-plane diffraction ...'
 	        If (ifFnCalc)
      &            Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
 

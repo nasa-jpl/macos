@@ -24,8 +24,6 @@ C***********************************************************************
 	
 	module elemsub_mod
 	use math_mod
-        use elt_mod, only : UseRptForApe_Flg
-        use traceutil_mod, only : crnt_Elt 
 
 	Implicit none
 
@@ -57,7 +55,7 @@ C***********************************************************************
 
 !  pin = RayPos(1,iRay)
 !  ihat = RayDir(1,iRay) 
-!  Evec = RayE(1,iRay),
+!  prot = RayE(1,iRay),
 
 	use macos_debug
 	use traceutil_mod
@@ -154,6 +152,8 @@ cides
      &	         prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 	  !print*,'In Reflector(), Aft ToricSrf, LROK=',LROK
         ELSE IF (SrfType.EQ.11) THEN
+          !print*,'***** In Reflector, B4 CALL AsphGridSrf'
+	  !STOP
           CALL AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,
      &      psi,pv,prot,pin,
      &      ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef,
@@ -192,7 +192,7 @@ C  Compute reflected ray
 C  Polarization calcs
 
         ! Propagation through isotropic medium to a surface,
-	! applicable to non-coated such as air-substrate surfaces
+	! applicable to both non-coated and coated surfaces
 	If (ifPol) Then
           cone=1d0
           S1=-TwoPi*L/lambda
@@ -203,8 +203,7 @@ C  Polarization calcs
 	                         ! and Evec is "input" E field.
                                  ! -jzlou	  
 
-	  !print*,'** ifPol sect: E at surface: Esrf=',Esrf(1:3)
-          !STOP
+	  !print*,'** E at surface: Esrf=',Esrf(1:3)
 
 	  ! svec = incident S pol vector, normal to plane of incident ray
           ! and surf normal. -jzlou
@@ -234,28 +233,17 @@ C  Polarization calcs
           CALL DXPROD(pihat,shat,ihat) ! incident P pol vector, -jzlou
           CALL DXPROD(prhat,shat,rhat) ! reflected P pol vector, -jzlou
 
-          ! Project E field vector Esrf(1:3) onto P polarization direction -jzlou
 	  Epi=DCMPLX(pihat(1))*Esrf(1)+DCMPLX(pihat(2))*Esrf(2)+
      &        DCMPLX(pihat(3))*Esrf(3) ! Incident E field at surface in P direction,-jzlou
-          ! Project E field vector Esrf(1:3) onto S polarization direction -jzlou
           Esi=DCMPLX(shat(1))*Esrf(1)+DCMPLX(shat(2))*Esrf(2)+
      &        DCMPLX(shat(3))*Esrf(3) ! Incident E field at surface in S direction,-jzlou
 	End if
 
-	! Applicable to non-coated/substrate surface only
+	! Applicable to non-coated surface only
 	IF (ifPol .and. nCoat==0) THEN
-	  NaCmplx=DCMPLX(na,(-kxa)) ! complex index of refraction (first medium) = na-j*extinc, -jzlou
-	  NbCmplx=DCMPLX(nb,(-kxb)) ! complex index of refraction (second medium)
+	  NaCmplx=DCMPLX(na,(-kxa)) ! complex index of refraction = na-j*extinc, -jzlou
+	  NbCmplx=DCMPLX(nb,(-kxb)) ! extinc = kxa
 	  cmu=NaCmplx/NbCmplx
-
-#if 0
-          print*,'** Reflector, ifPol: crnt_Elt,na,kxa =',
-     &           crnt_Elt,na,kxa
-          print*,'** Reflector, ifPol: crnt_Elt,nb,kxb =',
-     &           crnt_Elt,nb,kxb
-          print*,'** Reflector, ifPol: NaCmplx,NbCmplx =',
-     &           NaCmplx,NbCmplx
-#endif
 
 	  ! Compute refracted ray cosine
 	  cNdi=ihat(1)*Nhat(1)+ihat(2)*Nhat(2)+ihat(3)*Nhat(3)
@@ -265,19 +253,14 @@ C  Polarization calcs
 	  ! cosine of incidence ray with surface normal -jzlou 
 	  ccfa=ABS(cNdi) ! = cos(theta1), -jzlou
 
-
 	  ! RP=Reflectance in P pol, RS=Reflectance in S pol, -jzlou
-         !RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
+	  !RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
 	  RP=(NaCmplx*ccfb-NbCmplx*ccfa)/(NbCmplx*ccfa+NaCmplx*ccfb) ! fixed by jzlou
 	  RS=(NaCmplx*ccfa-NbCmplx*ccfb)/(NaCmplx*ccfa+NbCmplx*ccfb)
-
-          !print*,'** In Reflector,ifPol: ccfa,ccfb =',ccfa,ccfb
-          !print*,'** In Reflector,ifPol: RP,RS =',RP,RS
 	END IF ! ifPol & nCoat=0
 
 
-	! Applicable to surface with thin-film coating layer on
-	! substrate
+	! Applicable to surface with thin-film coating layers
 	IF (ifPol .and. nCoat/=0) THEN
 
 	  ! First calc refraction angles for each layer, from outmost inward
@@ -375,23 +358,17 @@ C       print*,'layer RP1 = ', RP1
 	END IF ! ifPol & nCoat/=0
 
 	! Check result
-	if (ifPol .AND. .false.) then
+	if (.false. .and. ifPol) then
 	  print*,'*** In Reflector: RP = ', RP
 	  print*,'*** In Reflector: RS = ', RS
-	  print*,'*** In Reflector: Epi = ', Epi
-	  print*,'*** In Reflector: Esi = ', Esi
-          STOP
+	  !print*,'*** In Reflector: Epi = ', Epi
+	  !print*,'*** In Reflector: Esi = ', Esi
 	end if
 
 	IF (ifPol) THEN
 	  Epr=RP*Epi
 	  Esr=RS*Esi
 	  ! Note that Eout, the E field, is a 3D vector field.
-          ! prhat is a unit vector in reflected P-polarization direction 
-          ! srhat is a unit vector in reflected S-polarization direction 
-          ! The vector addition: 
-          ! Eout(1:3) = prhat*Epr + shat*Esr
-          ! which generates the output electrical field 'Eout' -jzlou
 	  Eout(1)=DCMPLX(prhat(1))*Epr+DCMPLX(shat(1))*Esr
 	  Eout(2)=DCMPLX(prhat(2))*Epr+DCMPLX(shat(2))*Esr
 	  Eout(3)=DCMPLX(prhat(3))*Epr+DCMPLX(shat(3))*Esr
@@ -502,13 +479,9 @@ C	END IF
 
 C  Check if ray is obscured
 	IF (ifObs) THEN 
-          If (UseRptForApe_Flg(crnt_Elt)) Then
-	    ! Use Rpt as center of aperture -03/2020, -jzlou
-            rho(1:3)=pin(1:3)-prot(1:3)+L*ihat(1:3)
-          Else
-            ! Default to using VptElt as center of aperture
-            rho(1:3)=pin(1:3)-pv(1:3)+L*ihat(1:3)
-          End If
+	  DO i=1,3
+	    rho(i)=pin(i)-pv(i)+L*ihat(i)
+	  END DO
 
  	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &	        psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -2662,7 +2635,7 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	!LOGICAL ChkRayTrans,ChkLineSide
-	LOGICAL ChkRayTrans, ChkRayTransObs(nObs)
+	LOGICAL ChkRayTrans
 	INTEGER ApType,nObs,ObsType(nObs),iObs
 	LOGICAL ifBuild,ifPol,ifHitsPosObs,ifHitsNegObs,ifLNsrf,LCMP
 
@@ -2689,7 +2662,7 @@ C***********************************************************************
 #endif
 
 	ifHitsPosObs=.FALSE.
-	ifHitsNegObs=.FALSE.  ! default
+	ifHitsNegObs=.FALSE.
 
 C  Compute aperture and obscurations
 
@@ -3106,27 +3079,11 @@ C  Check if ray hits an obscuration
                exit
              end if
            End Do
-#if 0
            IF (ObsType(iObs).GT.0 .and. inPoly) THEN
 	     ifHitsPosObs=.TRUE.
            ELSE
              ifHitsNegObs=.TRUE.
            END IF
-#endif
-           IF (ObsType(iObs).GE.0) Then
-              if (inPoly) then
-                ifHitsPosObs = .TRUE.
-              else
-                ifHitsPosObs = .FALSE.
-              end if
-            END IF
-            IF (ObsType(iObs).LT.0) Then
-              if (inPoly) then
-                ifHitsNegObs = .TRUE.
-              else
-                ifHitsNegObs = .FALSE.
-              end if
-            END IF
 	   
 	  ELSE IF (ABS(ObsType(iObs)).EQ.9) THEN
 	    ! RotRectangle or RotNegRectangle
@@ -3168,33 +3125,14 @@ C  Check if ray hits an obscuration
               END IF
             END IF
 	  END IF
-
-          ! Check if ray is obscured by iObs, or passed by negative iObs
-
-          If (ObsType(iObs).LT.0 .AND. ifHitsNegObs) Then
-            ! ray hits a negative iObs, so it passes
-            ChkRayTrans = .TRUE.
-            GO TO 95
-          End If
-
-          IF ((ObsType(iObs).GE.0 .AND. ifHitsPosObs) .OR.
-     &     (ObsType(iObs).LT.0 .AND. .NOT.ifHitsNegObs)) THEN
-            ChkRayTransObs(iObs) = .FALSE. ! blocked
-          ELSE
-            ChkRayTransObs(iObs) = .TRUE.  ! not blocked
-          END IF
-  10	CONTINUE  ! iObs loop
+  10	CONTINUE
 
 C  Check if ray is obscured
-	ChkRayTrans = .TRUE. ! default to ray pass
-        ! Ray passes if not obscured by any of iObs
-        Do iObs=1,nObs
-          If (.NOT.ChkRayTransObs(iObs)) Then
-            ChkRayTrans = .FALSE.
-          End If
-        End Do
-
-  95    CONTINUE
+	IF (ifHitsPosObs .AND. .NOT.ifHitsNegObs) THEN
+	  ChkRayTrans=.FALSE.
+	ELSE
+	  ChkRayTrans=.TRUE.
+	END IF
 
 #if 1
         ! Ray amplitude adjustment if needed, currently use a table

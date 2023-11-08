@@ -26,8 +26,8 @@ C***********************************************************************
 
 	CHARACTER(len=MacosCharLen) :: ANS
 
-	INTEGER :: i,j,k,iElt
-	LOGICAL :: LLocCoord,LCMP
+	INTEGER i,j,iElt, k
+	LOGICAL LLocCoord,LCMP
 
 	REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),DDEF(7),PV(6)
 
@@ -51,7 +51,7 @@ c	  WRITE(*,400)
             ! Source local frames defined, so convert source perturbations 
             ! from local frames to global frames
             If (CalcSrcZFrame_FLG) Then
-              ! Compute zFrame only when it's not defined in Rx
+              ! Compute zFrame only when the user did not define it in Rx
               Call DXPROD(TElt(1:3,3,0),TElt(1:3,1,0),TElt(1:3,2,0))
               Call DUNITIZE(TElt(1:3,3,0))
               Call DXPROD(TElt(1:3,2,0),TElt(1:3,3,0),TElt(1:3,1,0))
@@ -85,11 +85,11 @@ c	  WRITE(*,400)
 	  CALL DADD(D1,ChfRayPos,D2,3)
 	  CALL DADD(ChfRayPos,D1,del,3)
 
-	  If (SegXgrid_FLG) Then
+	  if (SegXgrid_FLG) then
             CALL DMPROD(D1,Q,SegXGrid,3,3,1)
             CALL DEQUATE(SegXGrid,D1,3)
             CALL DUNITIZE(SegXGrid)
-          End If
+          end if
 
 C  2. Compute perturbed element data
 
@@ -217,8 +217,7 @@ C fixed by Gopal Vasudevan:
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF (((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9))
-     &        .OR. SrfType(iElt).EQ.11) THEN  ! added type 11 for AsGrData, 07/2019
+	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -882,7 +881,7 @@ C***********************************************************************
 	CHARACTER(len=MacosCharLen) :: ANS
         REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &            DDEF(7),PV(6),RptVec(3)
-        INTEGER :: i,j,k,iElt
+        INTEGER :: i,j,iElt,k
         LOGICAL :: LLocCoord, LCMP
 
         CALL DZERO(DDEF,7)
@@ -894,7 +893,7 @@ C***********************************************************************
 
         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
           ! element coord system
-          k=nECoord(iElt)
+          k= nECoord(iElt)
           IF (k .EQ. 0) THEN
              ! k = 0, no dof
              WRITE (*,*) 'No local DOF available!'
@@ -922,16 +921,8 @@ C***********************************************************************
           ! Perturbations entered in global coords are used as they are. -jzlou
         END IF
 
-!       print*,'* CPERTURB_GRP_DVR: iElt =',iElt
-!       print*,'* CPERTURB_GRP_DVR: EltGrp(0,iElt) =',EltGrp(0,iElt)
-!       print*,'* CPERTURB_GRP_DVR: EltGrp(1:EltGrp(0,iElt),iElt) =',
-!    &              EltGrp(1:EltGrp(0,iElt),iElt)
-!       STOP
-
 	RptVec(1:3)=RptElt(1:3,iElt)
         Do i=1,EltGrp(0,iElt)
-!         print*,'****B4 CPERTURB_GRP: EltGrp(i,iElt) =',
-!    &           EltGrp(i,iElt)  
           Call CPERTURB_GRP(RptVec,EltGrp(i,iElt),th,del,Q,dQ,D1,D2,PV,
      &                      LLocCoord)
         End Do

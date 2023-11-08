@@ -14,7 +14,7 @@ C***********************************************************************
 	Implicit none
 	Save
 
-	Logical :: UDBeam_FLG, DrawMode, FSEG_CCAT_Flg
+	Logical :: UDBeam_FLG, DrawMode
 	Logical, dimension(:), allocatable :: ObsType_FLG,
      &		 ObsVec_FLG
 

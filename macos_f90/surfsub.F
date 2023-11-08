@@ -1152,8 +1152,7 @@ C	Use L as a starting point, find incidence pt on full surface
         END IF
 
 	CALL AZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
-	!tol=1d-14  ! original
-        tol=1d-16   ! modified at suggestion of DCR, 05/31/2016
+	tol=1d-14
 	L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
 	L=L3
 
@@ -1279,56 +1278,60 @@ C	Here if ray misses surface
 	END SUBROUTINE AsphSrf
 
 C***********************************************************************
-! Added 05/05/2016 -jzlou
 
         SUBROUTINE AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
      &                 prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef,
      &                 nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &                 xhat,yhat,zhat)
+	use elt_mod, only : iEltToGridSrf,ifGridDataDefined
+        use traceutil_mod, only : crnt_Elt 
         use math_mod
-        use elt_mod, only : iEltToGridSrf   ! for debug
-        use traceutil_mod, only : crnt_Elt  ! for debug
 
         IMPLICIT NONE
 
-        REAL*8 :: pv(3),prot(3),pin(3),ihat(3),psi(3),Kc,Kr,
-     &            pr(3),L,Nvec(3),Nmag,Nhat(3),dNdp(3,3),
-     &            Nvec_Asph(3),coef(nAsphCoef),dNdp_asph(3,3),
-     &            dNdp2(3,3),L_conic,L_asph 
+        REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),Kc,Kr,
+     &         pr(3),L,Nvec(3),Nmag,Nhat(3),dNdp(3,3),
+     &         Nvec_Asph(3),coef(nAsphCoef),dNdp_asph(3,3),
+     &         dNdp2(3,3),L_conic,L_asph 
         Integer :: nAsphCoef
 
-        REAL*8 :: prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
+        REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
      &    k2,itpsi,psitprel,L1,L2,L3,AZPSolve,tol,
      &    z,rho2,h2,h4,h6,h8,h10,zc(3),dFdrho(3),
      &    d2Fdrho2_asph(3,3),d2Fdrho2_grid(3,3),
      &    rho(3),psitzc,psitrho,fh,Ppsi(3,3),ImpsidF(3,3),
      &    dNvecdp(3,3),hh1,hh2,zc_asph(3),rhoc(3),zmtzc,psitzm,
      &    psitzc_asph,dzcdrho(3,3),grdm_rms2
-        REAL*8 :: D1(9),D2(9),S1,S2,S1_asph,S2_asph,GSZPSolve
+        REAL*8 D1(9),D2(9),S1,S2,S1_asph,S2_asph,GSZPSolve
         Real*8, save :: sc(9,2)
 
-        INTEGER :: i,j
-        LOGICAL :: LROK,ifBuild,ifLNsrf
+        INTEGER i,j
+        LOGICAL LROK,ifBuild,ifLNsrf
         Logical, save :: first_entry=.true.
 
         INTEGER :: nGridMat,mGridMat
         REAL*8 :: GridMat(mGridMat,mGridMat),GridSrfdx,pmon(3),
      &            xhat(3),yhat(3),zhat(3)
 
-        if (.false.) then
-         ! Debug:
-         print*,'** In AsphGridSrf, crnt_Elt =',crnt_Elt
-         print*,'   iEltToGridSrf(crnt_Elt) =',
-     &              iEltToGridSrf(crnt_Elt)
-         print*,'   GridSrfdx =', GridSrfdx
-         print*,'   nGridMat,mGridMat =',nGridMat,mGridMat
-         Open(unit=12,file='AsGridFile.txt',status='replace')
-         Do i=1,nGridMat
-           write(12,*) GridMat(1:nGridMat,i)
-         End Do
-         Close(12)
-         STOP
-        end if
+
+!	 CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+!    &            prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
+!        return
+
+
+#if 0
+	 If (.not. ifGridDataDefined(iEltToGridSrf(crnt_Elt))) Then
+           ! if grid data are not initialized/provided for this element, just
+ 	   ! call subroutine AsphSrf() and return 
+	   CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+     &            prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
+	   !print*,'iElt =',crnt_Elt,', GridMat NOT initialized!'
+           return
+	 Else
+           !print*,'iElt =',crnt_Elt,', GridMat initialized!'
+         End If
+#endif
+
 
         If (first_entry) Then
           sc(1,1)=4
@@ -1416,8 +1419,7 @@ C       Use L as a starting point, find incidence pt on full (aspherical) surfac
         END IF
 
         CALL AZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
-        !tol=1d-14  ! original
-        tol=1d-16   ! modified at suggestion of DCR, 05/31/2016
+        tol=1d-14
         L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
         L=L3
         L_asph=L  ! L_asph is L on top of aspherical surface (conic+pure_aspherical)
@@ -1607,7 +1609,7 @@ C      Compute partials of the normal
         IF (ifBuild) THEN
           ! Since local surface normal Nvec = Nvec_pure_asph + Nvec_conic + Nvec_grid,
           ! we have
-          ! dNdp = dNdp_pure_asph + dNdp_conic + dNdp_grid
+          ! dNdp = dNdp_pure_asph + dNdp_conic + dNdp+grid
           ! -jzlou
 
           IF (ABS(Kr).LT.1d10) THEN
@@ -1754,8 +1756,7 @@ C***********************************************************************
       REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L,
      &       SAsphere,AZPSolve
       Integer :: nAsphCoef
-      !PARAMETER (ITMAX=400,EPS=1d-14) ! original
-      PARAMETER (ITMAX=400,EPS=1d-16)  ! modified since 'TOL' arg was changed to 1d-16
+      PARAMETER (ITMAX=400,EPS=1d-14)
       A=X1
       B=X2
       FA=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,A,nAsphCoef)
@@ -2240,22 +2241,6 @@ C***********************************************************************
 
 	LOGICAL LROK,ifBuild,ifLNsrf
 
-#if 0
- 	print*,'** In MonSrf: coef =',
-     &    coef(4),coef(6),coef(8),coef(10),
-     &    coef(11),coef(13),coef(15)
-        print*,'Kr =', Kr
-        print*,'Kc =', Kc
-        print*,'psi =', psi 
-        print*,'pv =', pv
-        print*,'pmon =', pmon
-        print*,'xhat =', xhat
-        print*,'yhat =', yhat
-        print*,'zhat =', zhat
-        print*,'rad =', rad
-        STOP
-#endif
-
 C	Compute incidence point of ray on the surface
 
 	DO 1 i=1,3
@@ -2343,12 +2328,8 @@ C	Compute normal vector
 	  rho(i)=prel(i)+L*ihat(i)
 	  rhom(i)=rho(i)-rhoc(i)
   2	CONTINUE
-
-        x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-        y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
-
-       !x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/603d0
-       !y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/329d0
+	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
 	k=1
 	S1=0d0
@@ -2528,12 +2509,8 @@ C	Compute normalized point-of-incidence coordinates
 	  rho(i)=prel(i)+L*ihat(i)
 	  rhom(i)=rho(i)-rhoc(i)
   1	CONTINUE
-
-        x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-        y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
-       
-       !x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/603.0
-       !y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/329.0
+	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
 	IF (y.EQ.0d0) THEN
 	  k=0
@@ -2993,7 +2970,7 @@ C   If no file, zero matrix and return
         END IF
 
 C   Check file existence
-	!print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))
+	print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))
 
 	INQUIRE (FILE=GridFile,EXIST=exist)
 	IF (exist) THEN
@@ -3016,8 +2993,7 @@ C   Check file existence
 C  Read input data
 	WRITE(*,*)' Reading surface grid data file ',
      &            GridFile(1:ICLEN(GridFile))
-	WRITE(*,*)'  mGridMat,nGridMatS =', mGridMat,nGridMatS
-        WRITE(*,*)'  jGridSrf =',jGridSrf
+	WRITE(*,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
         iDat=0
 	!DO j=1,mGridMat
 	DO j=1,nGridMatS
@@ -3038,15 +3014,7 @@ C  Read input data
 	ifGridInit=.TRUE.
 	WRITE(*,103) nGridMatS,iDat
 	CLOSE(94)
-
-#if 0
-        Open(unit=12,file='AsGridFile_readin.txt',status='replace')
-        Do i=1,nGridMatS
-          write(12,*) GridMat(1:nGridMatS,i,jGridSrf)
-        End Do
-        Close(12)
-#endif
-
+	!print*,'**** GridMat=',GridMat(1:96,1:96,jGridSrf)
 	RETURN
 
   2	CONTINUE

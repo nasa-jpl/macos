@@ -21,11 +21,12 @@ C***********************************************************************
      &                        mES=10  ! max edge-sensors per element
 	Integer, parameter :: mAsphCoef=9,  ! max terms = 9, up to term h^20
      &                        mSrfType=11   ! number of surface types as defined in prop_defs.inc 
-	Integer, parameter :: mMetSrf=150,  ! max surfaces with metrology
-     &                        mMetBeam=24,  ! max met beams on each met srf. 
+	Integer, parameter :: mMetSrf=20,  ! max surfaces with metrology
+     &                        mMetBeam=48, ! max met beams on each met srf. 
      &                        mMetPos=mMetBeam,  ! max metrology points on each met srf.
-     &                        mSysMetBeam=mMetSrf*mMetBeam,   ! max total system met measurements
+     &                        mSysMetBeam=128,    ! max total system met measurements
      &                        mRefRay=5,   ! max # reference rays, chief + 4 marginal
+     &                        mPupRay=9,   ! max # pupil rays, chief + 8 marginal
      &                        mIndRef=5,   ! 
      & 			      mDOE=6       ! max # DOE elements 
         Integer :: maxAsphCoef=4  ! default to 4 terms
@@ -36,7 +37,7 @@ C***********************************************************************
      &                  LEltOK,LRayPass,LEltObs,ifComputeDZ,LGlass,
      &                  LTaperedElt,LApTypeDefined,LApVecDefined,
      &	                LEltMRP_FLG,LUpdateTElt_FLG,LxObsDef,
-     &                  ifAmplSrf,ifOPDModGrid,UseRptForApe_Flg
+     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
 	Logical, dimension(:,:), allocatable :: LRayToElt
 
         Character*32 :: EltTypeName(20), SrfTypeName(20),
@@ -123,10 +124,10 @@ C***********************************************************************
      &             m_iPM,m_iSM,m_iTM,m_iFSM,m_iPickoff, 
      &             m_iFM(2),m_iExitPupil,m_iFocalPlane, 
      &             m_nLensGrp,m_LensGrp(2,maxLensGrp), 
-     &             m_LensGrpElts(maxLensGrp),refRay(mRefRay),
+     &             m_LensGrpElts(maxLensGrp),refRay(mPupRay),
      &             m_err_elt
 	
-	Integer, parameter :: mPolySide=64  ! changed to 64 from 32, 02/04/2015
+	Integer, parameter :: mPolySide=64  ! changed to 64 from 32 02/04/2015
 
 	Integer, parameter :: ReflectorElt=1, FocalPlaneElt=2,
      &           ReferenceElt=3, HOEElt=4, GratingElt=5,
@@ -163,7 +164,8 @@ C***********************************************************************
         If (allocated(LRayToElt)) Then
           deallocate(LRayToElt,LRayOK,LEltOK,LRayPass,LEltObs,
      &               ifComputeDZ,LGlass,LTaperedElt,LFastRayTrace,
-     &               LApTypeDefined,LApVecDefined,stat=m_err_elt)
+     &               LApTypeDefined,LApVecDefined,
+     &               ifGridDataDefined,stat=m_err_elt)
           if (m_err_elt /= 0)
      &      call macos_memory_failure
      &               ('elt_mod_init(logical): deallocate failed!')
@@ -179,7 +181,7 @@ C***********************************************************************
      &               PropType,ApType,nObs,iEltToiWF,SrfType,
      &		     LUpdateTElt_FLG,nObsRx,ObsTypeRx,ifAmplSrf,
      &               ifOPDModGrid,passRayIds,metBeamFlg,
-     &               UseRptForApe_Flg,stat=m_err_elt)
+     &               stat=m_err_elt)
 	  if (m_err_elt /= 0)
      &      call macos_memory_failure
      &               ('elt_mod_init(int): deallocate failed!')
@@ -253,7 +255,7 @@ C***********************************************************************
      &           LGlass(mElt),LTaperedElt(mElt),LEltMRP_FLG(0:mElt), 
      &           LApTypeDefined(mElt),LApVecDefined(mElt),
      &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay), 
-     &           UseRptForApe_Flg(mElt),stat=m_err_elt)
+     &           ifGridDataDefined(mGridSrf),stat=m_err_elt)
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init: allocate(logical) failed!')
@@ -261,7 +263,7 @@ C***********************************************************************
 	LRayPass = .false.; LEltObs = .false.; ifComputeDZ = .false.
 	LGlass = .false.; LTaperedElt=.false.
         LApTypeDefined=.false.; LApVecDefined=.false. 
-        LFastRayTrace=.false.; UseRptForApe_Flg=.false.
+        LFastRayTrace=.false.; ifGridDataDefined=.false.
 
         ! Character arrays
         allocate(EltName(0:mElt), GlassElt(mElt), GlassName(mGlass),

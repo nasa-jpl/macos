@@ -16,7 +16,6 @@
 #include <unistd.h> 
 #include <errno.h>
 #include <string.h>
-#include <stdlib.h>
 
 #ifdef SUNOS
 /* sws for solaris */

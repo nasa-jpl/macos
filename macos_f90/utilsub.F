@@ -225,7 +225,6 @@ C***********************************************************************
 	      END IF
   	    End Do
   	  End Do
-          print*,'*** Ca2Int,ifVecDif3=true: power =',power
 	ELSE
 	  Do j=1,mdttl
 	    Do i=1,mdttl
@@ -815,25 +814,24 @@ C***********************************************************************
         CALL DXPROD(xObs_loc,yObs_loc,zObs_loc)
         CALL DUNITIZE(xObs_loc)
 
-	nVertex = ApVec(1,thisElt); ApVec(1:3,thisElt) = 0d0
+	nVertex=ApVec(1,thisElt); ApVec(1:3,thisElt)=0d0
 	Do j=1,nVertex
-	  ApVec(1:3,thisElt) = ApVec(1:3,thisElt)+Vtx3D(1:3,j)
+	  ApVec(1:3,thisElt)=ApVec(1:3,thisElt)+Vtx3D(1:3,j)
 	End Do
-        ! Calc PolyAp geometric center (3D)
-	ApVec(1:3,thisElt) = ApVec(1:3,thisElt)/nVertex
+	ApVec(1:3,thisElt)=ApVec(1:3,thisElt)/nVertex
 
         !nVertex=ApVec(4,thisElt)
-        off = ApVec(1:3,thisElt)-VptElt(1:3,thisElt) ! off = vector from VptElt to PolyAp geometric center 
-        ApVec(1,thisElt) = DDOTC(off,xObs_loc) ! 'off' projected to xObs and yObs axes
-        ApVec(2,thisElt) = DDOTC(off,yObs_loc)
-        ApVec(3,thisElt) = nVertex
+        off=ApVec(1:3,thisElt)-VptElt(1:3,thisElt)
+        ApVec(1,thisElt)=DDOTC(off,xObs_loc)
+        ApVec(2,thisElt)=DDOTC(off,yObs_loc)
+        ApVec(3,thisElt)=nVertex
         !
         Do j=1,nVertex
-          off(1:3) = Vtx3D(1:3,j)-VptElt(1:3,thisElt)
-          PolyApVtx(1,j,thisElt) = DDOTC(off,xObs_loc)
-          PolyApVtx(2,j,thisElt) = DDOTC(off,yObs_loc)
-          PolyApVtx(1,j,thisElt)=PolyApVtx(1,j,thisElt)-ApVec(1,thisElt) ! dx from PolyAp geom ctr to Vtx3D
-          PolyApVtx(2,j,thisElt)=PolyApVtx(2,j,thisElt)-ApVec(2,thisElt) ! dy from PolyAp geom ctr to Vtx3D
+          off(1:3)=Vtx3D(1:3,j)-VptElt(1:3,thisElt)
+          PolyApVtx(1,j,thisElt)=DDOTC(off,xObs_loc)
+          PolyApVtx(2,j,thisElt)=DDOTC(off,yObs_loc)
+          PolyApVtx(1,j,thisElt)=PolyApVtx(1,j,thisElt)-ApVec(1,thisElt)
+          PolyApVtx(2,j,thisElt)=PolyApVtx(2,j,thisElt)-ApVec(2,thisElt)
         End Do
         End Subroutine SetCvxPolyApVtx
 
@@ -2016,7 +2014,6 @@ C***********************************************************************
         NSCnt(thsElt)=NSCnt(dupElt)
         KrElt(thsElt)=KrElt(dupElt)
         KcElt(thsElt)=KcElt(dupElt)
-        AsphCoef(1:mAsphCoef,thsElt) = AsphCoef(1:mAsphCoef,dupElt)
         fElt(thsElt)=fElt(dupElt); eElt(thsElt)=eElt(dupElt)
           if (.false.) then
            print*,'dupElt, fElt(dupElt) =',dupElt,fElt(dupElt)
@@ -2091,6 +2088,16 @@ C***********************************************************************
 #endif
         End Subroutine MakeDupElt
 
+#if 0
+! Dump fits write routine
+	Subroutine fitswrite(FitsFn,OPD,nsz)
+	Character(len=80) :: FitsFn
+	Real*8, dimension(:,:) :: OPD
+	Integer :: nsz
+	! ...
+	End Subroutine  fitswrite
+#endif
+
 C***********************************************************************
 
 #if 0
@@ -2100,22 +2107,6 @@ C***********************************************************************
  	Integer :: iElt
 	! ... 	
  	End Subroutine dOPL
-#endif
-
-#ifdef CMACOS 
-        Subroutine InitRefOPD(RefOPDfile,nOpdDim)
-        use macos_mod, only : RefOPD 
-        CHARACTER(len=*) :: RefOPDfile
-        Integer :: nOpdDim,j
-       !Open(Unit=12,File='tb_dat2d_mode20.txt')
-        Open(Unit=12,File=RefOPDfile)
-       !print*,'** RefOPDfile =',RefOPDfile
-       !print*,'** nOPdDim =',nOpdDim
-        Do j=1,nOpdDim
-          Read(12,*) RefOPD(1:nOpdDim,j)
-        End Do  
-        Close(12) 
-        End Subroutine InitRefOPD 
 #endif
 
 C***********************************************************************

@@ -142,7 +142,7 @@ C***********************************************************************
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
 cstartscottfix
-	IF (LRayOK(1) .and. (.not. OPDRefRayLen_FLG)) THEN
+	IF (LRayOK(1)) THEN
 	   RefCumRayL=CumRayL(1)
 	ELSE IF (OPDRefRayLen_FLG) THEN
            RefCumRayL=OPDRefRayLen
@@ -316,9 +316,6 @@ C         ***Find exit pupil (with option to minimize tilt)***
      &		ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &		StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 
-
-        !print*,'***** In FEX: StopPos =',StopPos
-
 	CALL DEQUATE(cr1dir,RayDir(1,1),3)
 	CALL DEQUATE(cr1pos,RayPos(1,1),3)
         !print*,' ** FEX at focal-return: cr1pos =', cr1pos
@@ -436,10 +433,6 @@ C  Centroid or chief ray option tested
 	END IF
 	END SUBROUTINE FEX
 
-C***********************************************************************
-
-! FPP subroutine -- Find pupil location near a surface
-#include "fpp.inc" 
 
 C***********************************************************************
 
@@ -645,7 +638,7 @@ C***********************************************************************
 
 C***********************************************************************
 
-! The 'STOP' subroutine centers beam at a specified point on a specified
+! The 'STOP' subroutine centers beam at a specifed point on a specified
 ! surface, by repositioning the source in XY plane. Source is NOT rotated
 ! in this beam center operation, as evidenced in the routine where only
 ! sensitivity wrt ChfRayPos in X and Y are computed. -jzlou
@@ -1324,8 +1317,7 @@ C Fringe's
 	  ELSE
 	    LEltObs(iElt)=.FALSE.
 	  END IF
-	  IF (SrfType(iElt).EQ.9 .OR.
-     &        SrfType(iElt).EQ.11) THEN
+	  IF (SrfType(iElt).EQ.9) THEN
 	    jGridSrf(iElt)=iEltToGridSrf(iElt)
 	  ELSE
 	    jGridSrf(iElt)=1
@@ -2306,8 +2298,6 @@ C  End of element section
 
 	    If (ifSRT) Then
               ! save ray state at this element
-!             print*,'**** ifSRT, crnt_traced_ray,iElt =',
-!    &          crnt_traced_ray,iElt   
               thisRay%InciPos(1:3,iElt)=RayPos(1:3,crnt_traced_ray)
               thisRay%InciDir(1:3,iElt)=RayDir(1:3,crnt_traced_ray)
               thisRay%InciSrfN(1:3,iElt)=Nsrfm(1:3)
