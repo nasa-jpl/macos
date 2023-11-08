@@ -13,10 +13,7 @@ C***********************************************************************
 
 	Implicit none
 
-	Logical :: RxStopSet,EltStopSet,PrtPrinRots,RxNoStopSet_Flg,
-     &             RefOPD_Flg,RefOPD_Rx_Flg
-        CHARACTER(len=MacosCharLen) :: RefOpdFn
-        
+	Logical :: RxStopSet,EltStopSet,PrtPrinRots,RxNoStopSet_Flg
 	REAL*8 :: StopOffset(2)
 
 	Interface
@@ -39,9 +36,7 @@ C***********************************************************************
         use cfiles_mod
         use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                       cUnit,ifRegrid,ifPGColor,ifPol,ifPropagate,
-     &                       ifVecDif3
-        use macos_vars_mod, only : DV1,DV2 
+     &                       cUnit,ifRegrid,ifPGColor
 	use lohpars_mod, only : cmdArg,RX_Flg
 	use traceutil_mod
 	use loh_I1
@@ -226,9 +221,6 @@ C	Get file name
 	EltName(0)='InputRay'
 	PropType(0)=1
 	zElt(0)=1d19
-
-        RefOPD_Flg = .FALSE.  ! whether a RefOPD file is read in
-        RefOPD_Rx_Flg = .FALSE.  ! whether a RefOPD file is specified in Rx
 
 C
 C	Read existing input file
@@ -716,7 +708,7 @@ C  Get Obscuration Parameters
 	          INQUIRE (FILE=GridFile(iElt),EXIST=EXIST)
 	          CALL GridInit(GridFile(iElt),
      &                   jGridSrf,nGridMat(iElt),ifGridInit,.FALSE.)
-
+	          ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
 	        END IF
  20	      CONTINUE
 	    END IF

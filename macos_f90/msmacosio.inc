@@ -30,13 +30,13 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'xFrame',6)) THEN
             READ(VALUE,*) TElt(1:3,1,0)
             SrcLF_FLG=.TRUE.; 
-	    Write(*,*)' **** msmacosio: src xFrame read'
+	    print*,' **** msmacosio: src xFrame read'
             GO TO 50
 
           ELSE IF (LCMP(VAR_NAM,'yFrame',6)) THEN
             READ(VALUE,*) TElt(1:3,2,0)
             SrcLF_FLG=.TRUE. 
-	    Write(*,*)' **** msmacosio: src yFrame read'
+	    print*,' **** msmacosio: src yFrame read'
             GO TO 50 
 
 	  ELSE IF (LCMP(VAR_NAM,'zFrame',6)) THEN
@@ -48,8 +48,6 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'OPDRefRayLen',12)) THEN
             READ(VALUE,*) OPDRefRayLen
             OPDRefRayLen_FLG=.TRUE.
-            print*,'** OPDRefRayLen =',OPDRefRayLen
-            !stop 
             GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'FEXCentroid',11)) THEN
@@ -85,6 +83,11 @@ C       Set entrance condition flags to .FALSE.
             End If
             GO TO 50
 
+	  ELSE IF (LCMP(VAR_NAM,'RayTgtElt',9)) THEN
+	    LRayTgtElt=.TRUE.
+            READ(VALUE,*) RayTgtElt
+            GO TO 50
+
 	  ELSE IF (LCMP(VAR_NAM,'Save3DApVec',9)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
               ifSave3dApVec=.TRUE.
@@ -97,12 +100,6 @@ C       Set entrance condition flags to .FALSE.
             END IF
             GO TO 50
 
-          ELSE IF (LCMP(VAR_NAM,'SaveSPOTMap',10)) THEN
-            IF (LCMP(VALUE,'Y',1)) THEN
-              saveSPOT_Flg=.TRUE.
-            END IF
-            GO TO 50
-
 	  ELSE IF (LCMP(VAR_NAM,'SaveRayPosH',11)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
     	      SaveRayPosHist_Flg=.TRUE. 
@@ -110,40 +107,18 @@ C       Set entrance condition flags to .FALSE.
 	    END IF
  	    GO TO 50
 
+	  ELSE IF (LCMP(VAR_NAM,'DumpRayPosH',11)) THEN
+            IF (LCMP(VALUE,'Y',1)) THEN
+              DumpRayPosHist_Flg=.TRUE.
+              print*,'** msmacosio: DumpRayPosHist is true ...'
+            END IF
+            GO TO 50
+
 	  ELSE IF (LCMP(VAR_NAM,'CalBWK',6)) THEN
 	    IF (LCMP(VALUE,'Y',1)) THEN
 	      BWK_FLG=.TRUE.
 	    END IF
 	    GO TO 50
-
-          ELSE IF (LCMP(VAR_NAM,'PolBeam',7).OR.
-     &             LCMP(VAR_NAM,'PolSrc',6)) THEN
-            IF (LCMP(VALUE,'Y',1)) THEN
-              ! Turn on polarized ray-traceing
-              ! Stmts below copied from 'POLARIZATION' cmd
-              ! in macos_cmd_loop.inc, jzlou, 01/2019  
-              ifPol=.TRUE.
-              ifPropagate=.FALSE.
-              WRITE(*,*)' PolSrc: Polarization turned on'
-              IF (mWF.GE.3) THEN
-                WRITE(*,*)' Vector diffraction enabled'
-                ifVecDif3=.TRUE.
-              ELSE
-                ifVecDif3=.FALSE.
-              END IF
-              ! Default values for Ex0 and Ey0
-              DV1(1)=1d0; DV1(2)=0d0
-              DV2 = DV1
-              !CALL DACCEPT(DV2,DV1,2,'Enter Ex0 (real,imag):')
-              Ex0=DCMPLX(DV2(1),DV2(2))
-              !CALL DACCEPT(DV2,DV1,2,'Enter Ey0 (real,imag):')
-              Ey0=DCMPLX(DV2(1),DV2(2))
-            END IF
-            GO TO 50
-
-          ELSE IF (LCMP(VAR_NAM,'Ex0Ey0',6)) THEN
-
-            GO TO 50   
 
 #ifdef CMACOS
 	  ELSE IF (LCMP(VAR_NAM,'PrtEltRots',6)) THEN
@@ -265,7 +240,7 @@ C       Set entrance condition flags to .FALSE.
 	    If (LCMP(tgtWF_fn(ICLEN(VALUE):ICLEN(VALUE)),
      &          'T',1)) Then
 	      tgtWF_fmt(1:1)='T'
-	    Else 
+	   Else 
 	      tgtWF_fmt(1:1)='B'
 	    End If
             tgtWF_flg=.true.
@@ -475,21 +450,6 @@ C       Set entrance condition flags to .FALSE.
             npts=nGridpts-1
             nGridpts_FLG=.TRUE.
             GO TO 50
-
-#ifdef CMACOS
-	  ELSE IF (LCMP(VAR_NAM,'RefOPDfile',7)) THEN
-            RefOPD_Rx_Flg = .TRUE.
-           !print*,'msmacosio: Value =',Value
-            RefOpdFn = Value 
-           !print*,'msmacosio: ReOpdFn =',RefOpdFn
-            If (nGridpts_FLG) Then
-              Call InitRefOPD(RefOpdFn,nGridpts)
-              RefOPD_Flg = .TRUE.
- 	      WRITE(*,*) '1=> msmacosio: RefOPD read in'
-	    End If
-            GO TO 50
-#endif
-
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
             IF (DMAG(xGrid(1),3) .EQ. 0.0D0) THEN
@@ -572,11 +532,6 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*) RingRads(1:nRings)
 	    RingRads(0)=1d0
             RingRad_FLG=.TRUE.
-            GO TO 50
-          ELSE IF (LCMP(VAR_NAM,'FlowerSegSrc',11)) THEN
-            IF (LCMP(VALUE,'CCAT',4)) THEN
-              FSEG_CCAT_Flg=.TRUE.
-            END IF
             GO TO 50
 	  ELSE IF (LCMP(VAR_NAM,'SegCoord',8)) THEN
             IF (GridType .NE. 5) THEN
@@ -769,12 +724,7 @@ C  Check to make sure no Element/Surface incompatability exists
                 Do i=eltGrpStrt,eltGrpEnd
                   EltGrp(k,iElt)=i; k=k+1
                 End Do
-              End If
-!	      print*,'**msmacosio: eltGrpStrt,eltGrpEnd =',
-!    &          eltGrpStrt,eltGrpEnd  
-!	      print*,'**msmacosio: EltGrp(1:eltGrpEnd,iElt) =',
-!    &          EltGrp(1:eltGrpEnd,iElt)
-!	      STOP
+              end if
               GO TO 61	     
 	    
             ELSE IF (LCMP(VAR_NAM,'MrEltGrp',8)) THEN
@@ -895,9 +845,8 @@ C  Check to make sure no Element/Surface incompatability exists
               EltType_FLG=.TRUE.
 
               CALL EltConvert(EltType(iElt),EltID(iElt),SrfType(iElt))
-              WRITE(*,*)' Element='//EltTypeName(EltID(iElt))(1:12)
-              WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
-
+C             WRITE(*,*)' Element='//EltTypeName(EltID(iElt))(1:12)
+C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               EltID_FLG=.TRUE.
               SrfType_FLG=.TRUE.
 
@@ -1088,7 +1037,7 @@ C For Design Optimization Only
               READ(VALUE,*) LnkElt(iElt)
               If (LnkElt(iElt).LE.0) Then
                 WRITE(*,*)
-     &      ' Link or DP Elt ID is not positive at Elt',iElt
+     &          ' Link Elt value can not be negative at Elt',iElt
                 WRITE(*,*)' Input file not properly loaded'
                 GO TO 99
               End If
@@ -1270,7 +1219,6 @@ C  Assign ZernTypeL
               READ(1,123)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=115,120)
               MonCoef_FLG=.TRUE.
-              !print*,'** Read in 120 MonCoef'
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'UDSrfFile',6)) THEN
@@ -1342,7 +1290,7 @@ C  Assign ZernTypeL
 !               READ(VALUE,*)tMetSrf(iElt),ntMetPos(iElt),
 !    &                       tMetSrfPos(1:ntMetPos(iElt),iElt)
               End If
-             !print*,' ** End tMetSrf(iElt) =',tMetSrf(iElt)
+              print*,' ** End tMetSrf(iElt) =',tMetSrf(iElt)
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'nAmplMat',3)) THEN
@@ -1361,6 +1309,10 @@ C  Assign ZernTypeL
               END IF
               GridFile(iElt)=VALUE
 
+	      if (iElt==14) then
+	        print*,'*** iElt = 14, GridFile(iElt) =',GridFile(iElt)
+	      end if
+
 	      k=ICLEN(GridFile(iElt))
 	      If (.false.) Then
 	        print*,'Grid file extension: ',GridFile(iElt)(k-2:k) 
@@ -1368,15 +1320,22 @@ C  Assign ZernTypeL
 
 	      If (.not.LCMP(GridFile(iElt)(k-2:k),'bin',3)) Then
 	        ! ascii
+
 !	 print*,'***** msmacosio: iElt,iEltToGridSrf(iElt),GridFile(iElt)=',
 !    &          iElt,iEltToGridSrf(iElt),GridFile(iElt)
+      
+                 
                 CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
      &                        ifGridInit,.false.)
+               
 	      Else
 	        ! binary
 	        CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
      &                        ifGridInit,.true.)	
 	      End If
+
+	      ! added 09/20/2016 -jzlou
+	      ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
 
 c       write(*,*)' iElt=',iElt,'iEltToGridSrf(iElt)=',
 c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
@@ -1824,14 +1783,6 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               End If
               GO TO 61
 
-	    ELSE IF (LCMP(VAR_NAM,'StopSetAlg',10)) THEN
-              If (LCMP(VALUE,'Lin',3)) Then
-                StopSetAlg=Linear
-              Else If (LCMP(VALUE,'NLin',4)) Then
-                StopSetAlg=Nonlin
-              End If
-              GO TO 61
-
 	    ELSE IF (LCMP(VAR_NAM,'ApType',6)) THEN
 
               LApTypeDefined(iElt)=.TRUE.
@@ -1904,12 +1855,6 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               END IF
               ApType_FLG=.TRUE.
               GO TO 61
-
-            ELSE IF (LCMP(VAR_NAM,'ApCent',6)) THEN
-              ! Added 03/2020 -jzlou
-              If (LCMP(VALUE,'RptElt',6)) 
-     &          UseRptForApe_Flg(iElt)=.TRUE. 
-              ! default to using VptElt as aperture center on all elements
 
 	    ELSE IF (LCMP(VAR_NAM,'ApVec',5)) THEN
               LApVecDefined(iElt)=.TRUE.
@@ -2270,7 +2215,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 	    ELSE IF (LCMP(VAR_NAM,'CopyElt',7) .OR.
      &               LCMP(VAR_NAM,'DuplElt',7)) THEN
               ! Make a duplicate element at given element id, for douple-pass
-              READ(VALUE,*) dupElt  ! ID of element to be duplicated
+              READ(VALUE,*) dupElt  ! duplicate Element id
               If (dupElt>0 .AND. dupElt<nElt .AND. iElt>dupElt) Then
                 Call MakeDupElt(iElt,dupElt,jGridSrf)
                 DupElt_FLG=.TRUE.
@@ -2299,13 +2244,6 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 	      LnOutCordPass=.TRUE.
 	      if (nElt/=iElt) nElt=iElt
               CALL ChkDf2(iElt,ELEM_OK)
-#ifdef CMACOS
-              If (RefOPD_Rx_Flg .AND. nGridpts_FLG) Then
-                Call InitRefOPD(RefOpdFn,nGridpts)
-                RefOPD_Flg = .TRUE.
-                WRITE(*,*) '2=> msmacosio: RefOPD read in'
-              End If
-#endif
               IF (ELEM_OK) THEN
                 LOAD_SUCCESS=.true.; GO TO 70
               ELSE
@@ -2320,7 +2258,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 
 
 	    ! This part is added so that load will work when nElt in Rx is smaller 
-            ! than actual elements listed in Rx. -jzlou
+            ! than actual elements in Rx. -jzlou
  62	    IF (iElt==nElt .AND. (.not. LnOutCordPass)) THEN
               ! need to increase 'nElt' since there are extra element(s) in Rx
               nElt=nElt+1

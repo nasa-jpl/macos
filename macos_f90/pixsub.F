@@ -50,21 +50,21 @@ C  2. Initialize array
 
 	dxplot=FLOAT(npix)/FLOAT(npix-1)
 	IF (.NOT.ifAdd) THEN
-	  DO jpix=1,npix
-	    DO ipix=1,npix
+	  DO 2 jpix=1,npix
+	    DO 1 ipix=1,npix
 	      PixArray(ipix,jpix)=0e0
-   	    END DO
-   	  END DO
+  1	    CONTINUE
+  2	  CONTINUE
 	END IF
 
-	DO jpix=1,npix
+	DO 12 jpix=1,npix
           XDET(jpix)=(jpix-1)*dxplot
           YDET(jpix)=(jpix-1)*dxplot
-   	END DO
+ 12	CONTINUE
 	
 C  3. Bin WF intensity values into pixels
 
-	DO j=1,nWF
+	DO 4 j=1,nWF
 	  yij=(FLOAT(j)-0.5e0)*dxWF-yc
 	  jpix=(yij+ycpix)/dxpix+1e0
 	  IF ((jpix.GE.0).AND.(jpix.LE.(npix+1))) THEN
@@ -91,7 +91,7 @@ C  3. Bin WF intensity values into pixels
 
 	    jp1=jpix+1; jm1=jpix-1
 
-	    DO i=1,nWF
+	    DO 3 i=1,nWF
 	      xij=(FLOAT(i)-0.5e0)*dxWF-xc
 	      ipix=(xij+xcpix)/dxpix+1e0
 
@@ -149,9 +149,9 @@ C  3. Bin WF intensity values into pixels
      &	            PixArray(ip1,jm1)=PixArray(ip1,jm1)+A9*IWF
 	        END IF
 	      END IF
-   	    END DO  ! DO i
+  3	    CONTINUE
 	  END IF
-   	END DO  ! DO j
+  4	CONTINUE
 
 	RETURN
 	END SUBROUTINE CPIXILATE

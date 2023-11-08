@@ -2158,14 +2158,13 @@ C    Calculate N!  - jzlou
 
 C***********************************************************************
 
-C Calculate RMS of map using only nonzero elements - jzlou
+C Calculate RMS of 'map' using only nonzero elements - jzlou
         Function RMS2(map,m,n)
         Implicit none
-        Real*8 , dimension(m,n) :: map
-        Real*8 :: s, mean, RMS2
+        Real*8 , dimension(m,n) :: map, tmp_map
+        Real*8 :: s,mean,RMS2
         Integer :: m,n,im,in, tot_nonzeros
 
-	!print*,'Function RMS2: m,n =',m,n 
         s=0d0; tot_nonzeros=0
         Do im=1,m
           Do in=1,n
@@ -2181,12 +2180,13 @@ C Calculate RMS of map using only nonzero elements - jzlou
         end if
         mean=s/tot_nonzeros
 
+        tmp_map = map-mean
+
         s=0d0
         Do im=1,m
           Do in=1,n
             if (map(im,in)/=0) then
-              map(im,in) = map(im,in) - mean 
-              s=s+map(im,in)*map(im,in)
+              s=s+tmp_map(im,in)*tmp_map(im,in)
             end if
           End Do
         End Do
@@ -2487,6 +2487,23 @@ C stored in ya.
           inTrig=.true.
         End If
         End Function inTrig
+
+C ********************************************************
+        Real*8 Function Calc_RMS2(datArr,ndim)
+        Real*8 :: datArr(ndim),mv,t1
+        Integer :: ndim,i
+
+        If (ndim==0) Then
+          Calc_RMS2 = 0d0
+        Else
+          mv = sum(datArr)/ndim
+          t1 = 0d0
+          Do i=1,ndim
+            t1 = t1 + (datArr(i)-mv)**2
+          End Do
+          Calc_RMS2 = dsqrt(t1/ndim)
+        End If
+        End Function Calc_RMS2
 	
         End Module math_mod
 

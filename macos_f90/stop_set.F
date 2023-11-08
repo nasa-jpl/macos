@@ -30,7 +30,7 @@ C
 	use tracesub_mod
         use dopt_mod, only : beamOpt,mVarDOF,old_wfe,new_wfe,rtn_flag,
      &   		     ifOptPrint,OptAlg,NonLin
-        use design_optim_mod  
+        use design_optim_mod
 
         IMPLICIT NONE
 
@@ -46,7 +46,7 @@ C
      &           DrawRayVec(2,mDrawElt,mDrawRay)
 
         REAL*8 :: Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
-     &   	xTarg(3),th(3),del(3),
+     &   	xTarg(3),th(3),
      &   	oldChfRayDir(3),ChfRayDirSv(3),ChfRayPosSv(3),CrsDist,
      &   	xLocal(3),yLocal(3),sqErr,errTol,zp
 
@@ -106,14 +106,9 @@ C
 	tgtWF_flg_loc=.false.
 	nWFZern_loc=0
 	OptTgtElt_loc=iLocal  ! STOP element 
-
-        !print*,'OptTgtElt_loc =', OptTgtElt_loc
-        !stop       
-
 	LOptIfFEX_loc=.false.
 	nitrs_dopt_loc=12  ! max iterations
-	!errTol=1d-22
-        errTol = 1d-4; ! tol set at 100 nm
+	errTol=1d-22
 	dopt_tol_loc=0.5*sqrt(errTol)
 	oldChfRayDir(1:3)=ChfRayDir(1:3)
 
@@ -124,18 +119,14 @@ C
 	beamOpt%beamPosElt=iLocal
 
 	!StopPos=ChfRayPos(1:3)  ! rotation point for chief ray, temporary
- 	StopPos=ChfRayPos(1:3)+zSource*ChfRayDir(1:3) ! object point, 
-                                                      ! used as rotation point for source
+ 	StopPos=ChfRayPos(1:3)+zSource*ChfRayDir(1:3) ! correct way, keep real source point
+						      ! unchanged.
 	ifStopSet=.TRUE.  ! tentatively
 
-	OptAlg_sv=OptAlg; 
-        OptAlg=StopSetAlg 
-        print*,'** stop_set: StopSetAlg =', StopSetAlg
-        !stop
-        !OptAlg=NonLin
-        !OptAlg=Linear
+	OptAlg_sv=OptAlg; OptAlg=NonLin
 	npts_sv=npts; npts=2
         opt_npts_sv=opt_npts; opt_npts=npts
+	
 	ifOptPrint=.false.
 
         ! Unconstrained system optimization
@@ -150,16 +141,6 @@ C
      &                     old_wfe,new_wfe,rtn_flag,
      &                     tgtWF_flg_loc,tgtWF_fn_loc,tgtWF_fmt_loc,
      &                     OptTgtElt_loc,LOptIfFEX_loc,beamOpt)
-
-        ! Need to check flag lmlsq_success to see whether optimzer worked 
-        If (.not. lmlsq_success) Then
-          ifBeamCentered=.FALSE.
-          ifStopSet=.FALSE.
-	  WRITE(*,*)' ' 
-          WRITE(*,102) iLocal
-	  WRITE(*,*)' ' 
-          return
-        End If
 
 #if 0
 	! Check convergence
@@ -179,24 +160,17 @@ C
 	WRITE(*,*)'** Final ChfRay STOP error =',
      &            sqrt(sqErr)*1d06,' nm'	
 #endif
-
-        del(1:3)=RayPos(1:3,1)-beamOpt%nomBeamPos(1:3)
-        sqErr=DDOTC(del,del)
-       !print*,'** sqErr = ', sqErr
-       !print*,'** sq_errTol = ', errTol*errTol 
-
+	
 	WRITE(*,*)' ' 
-	If (sqErr.LE.(errTol*errTol)) Then
-          WRITE(*,103) iLocal
+	If (sqErr.LE.errTol) Then
+          WRITE(*,*)' STOP set successfully at element',iLocal 
+	  ifBeamCentered=.TRUE.
 	Else
-	  WRITE(*,*)
-     &   ' WARNING: Stop set error exceeded tol at Elt',
-     &     iLocal
-          !CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-          !ifBeamCentered=.FALSE.
-	  !ifStopSet=.FALSE.
+	  WRITE(*,*)' WARNING: Stop calculation failed to converge!'
+          CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
+          ifBeamCentered=.FALSE.
+	  ifStopSet=.FALSE.
 	End If
-	ifBeamCentered=.TRUE.
 
 
 	! ** Now compute entrance pupil position **
@@ -271,9 +245,7 @@ C     Compute new differential chief ray, displaced in -yGrid:
 	! Find crossing point of the two chief rays:
 	CALL FindCrossPt(ChfRayPosSv,ChfRayDirSv,
      &                ChfRayPos,ChfRayDir,zp,CrsDist,StopPos)
-	WRITE(*,*)' '
-	WRITE(*,101) StopPos(1:3)
-        WRITE(*,*)'StopPos now set to entrance pupil'
+	WRITE(*,*)' Computed StopPos =',StopPos(1:3)
 	WRITE(*,*)' '
 
 	ChfRayPos=ChfRayPosSv; ChfRayDir=ChfRayDirSv
@@ -284,12 +256,6 @@ C     Compute new differential chief ray, displaced in -yGrid:
 	nGridPts=npts+1
         beamOpt=beamOpt_sv
 	ifOptPrint=.true.
- 101    FORMAT(1P,' Computed entrance pupil location =',
-     &         D17.9,D17.9,D17.9) 
- 102    FORMAT(1P,
-     &  ' *** STOP set (optimzer) failed at Elt',I5)
- 103    FORMAT(1P,
-     &  '  STOP is set successfully at Elt',I4) 
 	END SUBROUTINE SetStop
 
 	End Module stop_set_mod

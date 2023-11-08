@@ -145,7 +145,7 @@ void splin2(SREAL x1a[],SREAL x2a[],SREAL** ya,SREAL** y2a,
   }
 
   if (0 & !first_entry) {
-    printf("***** splin2: ya = %p, y2a = %p\n",ya,y2a);
+    printf("***** splin2: ya = %x, y2a = %x\n",ya,y2a);
   }
 
   for (j=1;j<=m;j++) {

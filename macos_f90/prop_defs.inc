@@ -18,7 +18,7 @@ C File prop_defs.inc
         SrfTypeName(8)='Zernike'
         SrfTypeName(9)='GridData'
         SrfTypeName(10)='Toric'
-        SrfTypeName(11)='AsGrData'  ! Aspherical with GridData,05/2016 -jzlou 
+        SrfTypeName(11)='AsGrData'  ! Aspherical with GridData -jzlou 
         !SrfTypeName(11)='InfluenceFunction'
 
 #if 0

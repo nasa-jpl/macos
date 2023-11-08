@@ -1179,7 +1179,7 @@ C  nPetals = number of petals in flower
 	LOGICAL FSEG
 	INTEGER S(3),ith,nPetal,iRing
 	REAL*8 x,y,r,SegXgrid(3),xt,yt,width,radCtr,cth,sth,th,twopi,xc,
-     &	       dnp,Q,thc,rv,gap,hspan,dd,dRad(2),radmin,radmax,S2,dth
+     &	       dnp,Q,thc,rv,gap,hspan,dd,dRad(2),radmin,radmax
 	DATA twopi/6.28318530717959d0/
 
 C  **** rotate segment frame of reference
@@ -1226,13 +1226,8 @@ C  ***  end rotate segment frame of reference
 	  th=DATAN2(sth,cth)
 	  IF (th.LT.0d0) th=th+twopi
 	  ith=th/Q+1d0
-          if (th>(twopi-0.5*Q)) th=th-twopi 
-          dth=th/Q
-          S2=S(2)-1d0;
-	  !IF (ith.EQ.S(2)) THEN
-	  IF (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5)) THEN
-	    !thc=(DBLE(ith)-0.5d0)*Q
-	    thc=S2*Q
+	  IF (ith.EQ.S(2)) THEN
+	    thc=(DBLE(ith)-0.5d0)*Q
 	    rv=xt*COS(thc)+yt*SIN(thc)
 	    !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
 	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN

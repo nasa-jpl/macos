@@ -33,11 +33,10 @@ C
 #ifdef CMACOS
         SREAL, dimension(:,:), allocatable :: PixArray
         Real*8, dimension(:,:), allocatable :: RaySpot,OPDMat,
-     &                   OPDSave,OPDbuf,RaySpotSave,RaySpotBuf,
-     &                   RefOPD
+     &                          OPDSave,OPDbuf
 	Logical :: ifPGColor
 	
-        Integer :: OPDElt,OPDEltSave,SpotElt,SpotEltSave
+        Integer :: OPDElt,OPDEltSave
 #endif
 
 	LOGICAL ifLoad,ifTrace,ifCmt,ifPerturb,ifPol,ifVecDif3,
@@ -46,8 +45,7 @@ C
      &    ifDMBuild,ifDraw,ifCentroid,ifFilterData,ifPixArray,ifLNegOK,
      &    ifStopSet,ifBeamCentered,ifLocalCoord,ifGraphics,ifMacro,
      &    ifUDSinit,ifPlot_sv,ifObjImgSet,LRtn_FLG,
-     &    firstOPDCalc,multiOPDCalc,firstSPOTCalc,multiSPOTCalc,
-     &    firstIntCalc
+     &    firstOPDCalc,multiOPDCalc,firstIntCalc
 
 	Character(len=MacosValLen) :: ObjIntFn
 	LREAL, dimension(:,:), allocatable :: ObjInt
@@ -78,8 +76,7 @@ C
 
 #ifdef CMACOS
 	  deallocate(PixArray,RaySpot,OPDMat,OPDSave,
-     &               OPDbuf,RaySpotSave,RaySpotBuf,
-     &               RefOPD,stat=m_err_macos)
+     &               OPDbuf,stat=m_err_macos)
           if (m_err_macos /= 0)
      &      call macos_memory_failure(
      &          'macos_mod_init: deallocate failed!') 		    
@@ -122,14 +119,11 @@ C
 	! PixArray = SREAL, RaySpot and OPDMat = Real*8
 	allocate(PixArray(mPix,mPix), RaySpot(mRay,2), 
      &           OPDMat(mpts,mpts),OPDSave(mpts,mpts),
-     &           OPDbuf(mpts,mpts),RaySpotSave(mRay,2),
-     &           RaySpotBuf(mRay,2),RefOPD(mpts,mpts),
-     &           stat=m_err_macos)
+     &           OPDbuf(mpts,mpts),stat=m_err_macos)
         if (m_err_macos /= 0)
      &    call macos_memory_failure(
      &          'macos_mod_init: allocate failed!')
 	PixArray=0.0; RaySpot=0d0; OPDMat=0d0; OPDSave=0d0
-        RaySpotSave=0d0; RefOPD=0d0
 
 	ifPGColor=.false. ! default 
 #endif
@@ -158,7 +152,7 @@ C
      &  '* MACOS Version 3.34                                '//
      &  '                   *' 
         print*,
-     &  '* Copyright (C) 1995-2019, California Institute of T'//
+     &  '* Copyright (C) 1995-2015, California Institute of T'//
      &  'echnology          *' 
         print*,
      &  '* U.S. Government Sponsorship Is Acknowledged.      '//

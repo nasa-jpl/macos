@@ -34,16 +34,13 @@ C  Use this routine to initialize graphic output - such as '/xw' or '/gif'
           CALL PGBEGIN(0,'?',1,1)
 	else if (nPgPanel==2) then
           CALL PGBEGIN(0,'?',2,1) ! 1x2 horizontal panels
-	  CALL PGPAP(9.0,0.4)  ! width, aspect-ratio
+	  CALL PGPAP(9.0,0.4)
 	else if (nPgPanel==3) then
           CALL PGBEGIN(0,'?',3,1) ! 1x3 horizontal panels
           CALL PGPAP(13.0,0.4)
 	else if (nPgPanel==4) then
           CALL PGBEGIN(0,'?',2,2) ! 2x2 panels
 	  CALL PGPAP(7.5,1.0)
-        else if (nPgPanel==9) then
-          CALL PGBEGIN(0,'?',3,3) ! 3x3 panels
-	  CALL PGPAP(9.21,1.0)
 	end if
 	!print*,'*** nPgPanel =',nPgPanel
 
@@ -123,12 +120,13 @@ C***********************************************************************
         REAL*8 DXYMAT(NDROW,NDCOL)
         REAL*4 XYMAT(NDROW,NDCOL),XMIN,XMAX,YMIN,YMAX,PAD,DX,DY
         DATA ISYM/20,5,8,16/
-        
+
         CALL PGBBUF
 
 C       XYMAT = XYMAT(n_pts,2), storing corrds of points in 
 C       the spot diagram. -jzlou	
 	XYMAT(1:NROW,1:NCOL) = DXYMAT(1:NROW,1:NCOL)
+
 
 C       SET PLOT DIMENSIONS
 

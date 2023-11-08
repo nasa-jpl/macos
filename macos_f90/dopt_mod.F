@@ -54,7 +54,7 @@ C***********************************************************************
         Real*8 :: old_wfe(max_fov,max_wl),new_wfe(max_fov,max_wl),
      &            dopt_tol,eltRotations(3,3),consArr(2*mVarDOF),
      &            OptSpotSize,SvdSvCut
-	Integer :: OptTgtElt,OptAlg,StopSetAlg,aparam_off
+	Integer :: OptTgtElt,OptAlg,aparam_off
 	Logical :: LOptIfFEX,isSrcOpt,LOptCons,tgtWF_flg,ifOptPrint,
      &             LOptNomSens,OptSrcRpt_FLG,LCmdCalibElts,
      &             save_pinv, ! whether to save linear optimizer pseduo inverse
@@ -152,9 +152,6 @@ C***********************************************************************
 	Else If (LCMP(pname,'TgtWFFile',9)) Then
 	   tgtWF_fmt=carr(1)
 	   tgtWF_fn=carr(2)
-          !print*,'tgtWF_fmt =',tgtWF_fmt 
-          !print*,'tgtWF_fn =',tgtWF_fn
-          !stop 
 	End If
         End Subroutine SMACOS_SetOptParam
 

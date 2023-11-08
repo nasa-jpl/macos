@@ -1283,8 +1283,6 @@ C***********************************************************************
      &                 prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef,
      &                 nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &                 xhat,yhat,zhat)
-	use elt_mod, only : iEltToGridSrf,ifGridDataDefined
-        use traceutil_mod, only : crnt_Elt 
         use math_mod
 
         IMPLICIT NONE
@@ -1312,25 +1310,6 @@ C***********************************************************************
         INTEGER :: nGridMat,mGridMat
         REAL*8 :: GridMat(mGridMat,mGridMat),GridSrfdx,pmon(3),
      &            xhat(3),yhat(3),zhat(3)
-
-
-!	 CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
-!    &            prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
-!        return
-
-
-#if 0
-	 If (.not. ifGridDataDefined(iEltToGridSrf(crnt_Elt))) Then
-           ! if grid data are not initialized/provided for this element, just
- 	   ! call subroutine AsphSrf() and return 
-	   CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
-     &            prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
-	   !print*,'iElt =',crnt_Elt,', GridMat NOT initialized!'
-           return
-	 Else
-           !print*,'iElt =',crnt_Elt,', GridMat initialized!'
-         End If
-#endif
 
 
         If (first_entry) Then

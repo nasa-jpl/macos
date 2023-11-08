@@ -14,8 +14,7 @@ C***********************************************************************
 	Implicit none
 	Save
 
-        Integer, parameter :: Tout_4SPOT=-112,Beam_4SPOT=-113
-	Integer :: nSpotRays 
+	Integer :: nSpotRays
 
 	Contains
 
@@ -47,8 +46,6 @@ C***********************************************************************
 	INTEGER, dimension(:), optional :: zernIDArr,asphIDArr
         REAL*8, dimension(:), optional :: zernCoefArr,asphCoefArr
 	LOGICAL :: LCMP
-
-        Integer, save :: SPOT_CoordOption=Beam_4SPOT  ! default
 
 C  FORMAT statements
 #include "macos_formats.inc"
@@ -126,25 +123,16 @@ C  FORMAT statements
 
 	Else If (LCMP(cmd,'SPOT',4)) Then
           IF (ifLoad) THEN
-            !spcOption=1  ! so that spot diagram centered around element, default in MACOS;
-            spcOption=2   ! so that spot diagram centered around chief ray.
-                          ! spcOption is set using 'SPCenter' command
-
-            If (SPOT_CoordOption == Tout_4SPOT) Then
-              ! 'Tout' option 'SPOT command
-
-            Else ! default   
-              ! 'BEAM' option in 'SPOT' command 
-              ifGrid=.FALSE.
-              ifDraw=.FALSE.
-              ifPropagate=.FALSE.
-              ifTrace=.FALSE.
-              ifBuild=.FALSE.
-              ifOPDCalc=.FALSE.
-              iLocal=iElt
-             !spcOption=1  ! so that spot diagram centered around element, default in MACOS;
-              spcOption=2  ! so that spot diagram centered around chief ray.
-                           ! spcOption is set using 'SPCenter' command
+            ! use 'BEAM' option in 'SPOT' command
+            ifGrid=.FALSE.
+            ifDraw=.FALSE.
+            ifPropagate=.FALSE.
+            ifTrace=.FALSE.
+            ifBuild=.FALSE.
+            ifOPDCalc=.FALSE.
+            iLocal=iElt
+            !spcOption=1  ! so that spot diagram centered around element
+            spcOption=2  ! so that spot diagram centered around chief ray
 
             CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
@@ -153,30 +141,28 @@ C  FORMAT statements
      &        Cmatrix,DrawRayVec,DrawEltVec,
      &        iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
 
-              IF (ifLocalCoord) THEN
-                !WRITE(*,311)xLocal,yLocal,zLocal
-                CALL DZERO(Tspot(1,1),49)
-                DO iCoord=1,3
-                  Tspot(1,iCoord)=xLocal(iCoord)
-                  Tspot(2,iCoord)=yLocal(iCoord)
-                  Tspot(3,3+iCoord)=xLocal(iCoord)
-                  Tspot(4,3+iCoord)=yLocal(iCoord)
-                END DO
-                Tspot(5,7)=1
-                ! Now Tspot can be viewed as a 5x7 matrix, as
-                ! xL(1) xL(2) xL(3) 0 0 0 0 0
-                ! yL(1) yL(2) yL(3) 0 0 0 0 0
-                ! 0     0     0     xL(1) xL(2) xL(3) 0
-                ! 0     0     0     yL(1) yL(2) yL(3) 0
-                ! 0     0     0     0     0     0     1
-                CALL COMPACT(Tcompact,Tspot,5,7,7,7)
-                CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
-              ELSE
-                WRITE(*,*)'** macos_ops: SPOT command error!'
-                STOP
-              END IF
-            END IF ! SPOT_CoordOption
-
+            IF (ifLocalCoord) THEN
+              !WRITE(*,311)xLocal,yLocal,zLocal
+              CALL DZERO(Tspot(1,1),49)
+              DO iCoord=1,3
+                Tspot(1,iCoord)=xLocal(iCoord)
+                Tspot(2,iCoord)=yLocal(iCoord)
+                Tspot(3,3+iCoord)=xLocal(iCoord)
+                Tspot(4,3+iCoord)=yLocal(iCoord)
+              END DO
+              Tspot(5,7)=1
+              ! Now Tspot can be viewed as a 5x7 matrix, as
+              ! xL(1) xL(2) xL(3) 0 0 0 0 0
+              ! yL(1) yL(2) yL(3) 0 0 0 0 0
+              ! 0     0     0     xL(1) xL(2) xL(3) 0
+              ! 0     0     0     yL(1) yL(2) yL(3) 0
+              ! 0     0     0     0     0     0     1
+              CALL COMPACT(Tcompact,Tspot,5,7,7,7)
+              CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
+            ELSE
+              WRITE(*,*)'** macos_ops: SPOT command error!'
+              STOP
+            END IF
             RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
             RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
 
@@ -372,7 +358,8 @@ C  FORMAT statements
             DO iElt=1,mElt
               ifRegrid(iElt)=.FALSE.
             END DO
-            !ifPol=.FALSE.; ifVecDif3=.FALSE.
+            ifPol=.FALSE.
+            ifVecDif3=.FALSE.
             ifOld=.FALSE.
             ifRayPrint=.FALSE.
             ifGrid=.FALSE.
@@ -424,7 +411,7 @@ C  FORMAT statements
 	CHARACTER(len=MacosCharLen) :: CARG(9),ANS
         REAL*8 :: DARG(9)
         INTEGER i,j,k, iElt 
-        LOGICAL LLocCoord,LCMP
+        LOGICAL LCMP
 
         REAL*8 th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &         DDEF(7),PV(6),del2(3)
@@ -432,7 +419,6 @@ C  FORMAT statements
  400    FORMAT(' Computing new perturbed system parameters')
 
         CALL DZERO(DDEF,7)
-        LLocCoord=.true.  ! default
 
 C  1. Compute perturbed entrance pupil data
 
@@ -491,7 +477,6 @@ c         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
                IF (k .LT. 0) THEN
                  ! just global coordinates, continue anyway
                  k = -k
-                 LLocCoord=.false.
                END IF
 c              CALL DACCEPT(D1,DDEF,k,
 c    &           'Enter perturbation vector in element coordinates:')
@@ -506,7 +491,6 @@ C    &             D1(1),D1(2),D1(3),D1(4),D1(5),D1(6)
             END IF
           ELSE
             ! global corrd system
-            LLocCoord=.false.
 c           CALL DACCEPT(PV(1:3),DDEF,3,
 c    &        'Enter rotational perturbation vector (x,y,z):')
 c           CALL DACCEPT(PV(4:6),DDEF,3,
@@ -556,8 +540,7 @@ C fixed by Gopal Vasudevan:
             CALL DADD(h2HOE(1,iElt),D1,del,3)
           END IF
 
-          IF (((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) 
-     &        .OR. SrfType(iElt).EQ.11) THEN  ! added type 11 for AsGrData, 07/2019
+          IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
             CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
             CALL DMPROD(D2,dQ,D1,3,3,1)
             CALL DADD(D1,pMon(1,iElt),D2,3)

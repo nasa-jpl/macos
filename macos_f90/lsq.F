@@ -36,7 +36,7 @@ C
 	LREAL, dimension(:,:), intent(inout) :: a
 	LREAL, dimension(:), intent(out) :: w
 	LREAL, dimension(:,:) :: v
-	Integer :: i, its, j, k, l, m, n, nm, i1, l1
+	Integer :: i, its, j, k, l, m, n, nm
 	LREAL :: anorm, c, f, g, h, s, scale, x, y, z
 	LREAL, dimension(size(a,1)) :: tempm
 	LREAL, dimension(size(a,2)) :: rv1, tempn
@@ -57,20 +57,8 @@ C
 	      g=-sign(sqrt(s),f)
 	      h=f*g-s; a(i,i)=f-g
 	      tempn(l:n)=matmul(a(i:m,i),a(i:m,l:n))/h
-#if 0
 	      a(i:m,l:n)=a(i:m,l:n)
      &                   +outerprod(a(i:m,i),tempn(l:n))
-#else
-	      ! Implement outer-product explicitly below.
-              ! The intrinsic outerprod function above doesn't work with large arrays,
-              ! probably its internal automatic array (return) variable has limit on its size.
-              ! -jzlou, 07-11-2020
-              Do i1=i,m
-                Do l1=l,n
-                  a(i1,l1)=a(i1,l1)+a(i1,i)*tempn(l1)
-                End Do
-              End Do
-#endif
 	      a(i:m,i)=scale*a(i:m,i)
 	    end if
 	  end if
@@ -83,17 +71,8 @@ C
 	      f=a(i,l); g=-sign(sqrt(s),f); h=f*g-s;
 	      a(i,l)=f-g; rv1(l:n)=a(i,l:n)/h
 	      tempm(l:m) = matmul(a(l:m,l:n),a(i,l:n))
-#if 0
 	      a(l:m,l:n) = a(l:m,l:n)
      &                     +outerprod(tempm(l:m),rv1(l:n)) 
-#else
-	      ! Implement outer-product
-              Do i1=l,m
-                Do l1=l,n
-                  a(i1,l1)=a(i1,l1)+tempm(i1)*rv1(l1)
-                End Do
-              End Do
-#endif
 	      a(i,l:n)=scale*a(i,l:n)
 	    end if
 	  end if
@@ -105,17 +84,8 @@ C
 	    if (g /= 0.0) then
 	      v(l:n,i) = (a(i,l:n)/a(i,l))/g
 	      tempn(l:n) = matmul(a(i,l:n),v(l:n,l:n))
-#if 0
 	      v(l:n,l:n) = v(l:n,l:n)
      &			   +outerprod(v(l:n,i),tempn(l:n))
-#else
-	      ! Implement outer-product
-              Do i1=l,n
-                Do l1=l,n
-                  v(i1,l1)=v(i1,l1)+v(i1,i)*tempn(l1)
-                End Do
-              End Do
-#endif
 	    end if
 	    v(i,l:n)=0.0; v(l:n,i)=0.0
 	  end if
@@ -127,16 +97,7 @@ C
 	  if (g /= 0.0) then
 	    g=1.0d0/g
 	    tempn(l:n) = (matmul(a(l:m,i),a(l:m,l:n))/a(i,i))*g
-#if 0
 	    a(i:m,l:n) = a(i:m,l:n)+outerprod(a(i:m,i),tempn(l:n))
-#else
-	    ! Implement outer-product
-            Do i1=i,m
-              Do l1=l,n
-                a(i1,l1)=a(i1,l1)+a(i1,i)*tempn(l1)
-              End Do
-            End Do
-#endif
 	    a(i:m,i)=a(i:m,i)*g
 	  else
 	    a(i:m,i)=0.0

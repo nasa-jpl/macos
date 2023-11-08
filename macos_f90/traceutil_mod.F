@@ -8,14 +8,16 @@ C***********************************************************************
 
 	Module traceutil_mod
 	use param_mod, only : mpts,mDrawRay,czero_
-	use elt_mod, only : mPolySide
+	use elt_mod, only : mPolySide,mRefRay,mPupRay
 
 	Implicit none
         Save
 
 	Integer :: crnt_Elt,crnt_traced_ray,m_err_ray,tAsphCoef=0,
-     &    nValidRays,iDrawRay_global,pgplotDrawPlane,numGradInd
+     &    nValidRays,iDrawRay_global,pgplotDrawPlane,numGradInd,
+     &    RayTgtElt
 	Integer, dimension(:,:), allocatable :: opdRayMask,gradInd_kmax
+        Real*8 :: RRayPosHis(3,mPupRay)
 	Real*8, dimension(:), allocatable :: taperFactor
         Real*8 :: NewIndRef,PolyVtx3D(3,mPolySide),UDxDrawGrid(3),
      &            UDyDrawGrid(3),UDzDrawGrid(3),OPDRefRayLen
@@ -30,9 +32,9 @@ C***********************************************************************
 	Logical, dimension(:), allocatable :: Poly3DApVecL
         Logical :: LBWKnoPrint,LNewIndRef,ifSave3DApVec,ifSRT,
      &             LCalcWFElt,ifCtraceCalled,Rx_FEXCentrFlg,
-     &             LShowDTime,LudDrawGrid,OPDRefRayLen_FLG,
-     &             ShowMetData_FLG,saveOPD_Flg,saveSPOT_Flg,
-     &             SaveRayPosHist_Flg,SaveVis3d_dat_Flg 
+     &             LShowDTime,LudDrawGrid,OPDRefRayLen_FLG,LRayTgtElt,
+     &             ShowMetData_FLG,saveOPD_Flg,SaveRayPosHist_Flg,
+     &             DumpRayPosHist_Flg,SaveVis3d_dat_Flg 
 	
 	! Supporting variable IndRef, etc.
 	Integer, parameter :: mLenslet=250,mGradIndRaySegs=256
@@ -148,14 +150,6 @@ C***********************************************************************
    	Rx_FEXCentrFlg=.TRUE.  ! default 
         SaveRayPosHist_Flg=.FALSE. ! default 
         SaveVis3d_dat_Flg=.FALSE.  ! default
-
-	! Allocate storage for members of thisRay structure variable
-        allocate(thisRay%InciPos(3,max_elt),thisRay%InciDir(3,max_elt),
-     &    thisRay%InciSrfN(3,max_elt),thisRay%PrevIndRef(max_elt),
-     &    thisRay%CurIndRef(max_elt),stat=m_err_ray)
-        if (m_err_ray /= 0)
-     &      call macos_memory_failure
-     &             ('ray_mod_init: thisRay allocate failed!')          
 	End Subroutine ray_mod_init
 
 

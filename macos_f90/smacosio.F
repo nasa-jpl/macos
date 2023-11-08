@@ -25,9 +25,7 @@ C***********************************************************************
  	use cfiles_mod
  	use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                       cUnit,ifRegrid,ifPol,ifPropagate,
-     &                       ifVecDif3
-        use smacos_vars_mod, only : DV1,DV2
+     &                       cUnit,ifRegrid
 	use traceutil_mod
 
 	use loh_I1
