@@ -54,6 +54,7 @@ C  Load CARG(1 and 2) for some commands
 C  Load IARG(1) for other commands
 	IF (LCMP(command,'SHOW',3).OR.LCMP(command,'RAY',3).OR.
      &	  LCMP(command,'PARTIALS',3).OR.LCMP(command,'OPD',3).OR.
+     &    LCMP(command,'GBS',3).OR.
      &	  LCMP(command,'ROW',3).OR.LCMP(command,'COL',3).OR.
      &	  LCMP(command,'PARTIALS',3).OR.LCMP(command,'OPD',3).OR.
      &	  LCMP(command,'AM',2).OR.LCMP(command,'REAL',3).OR.
@@ -70,7 +71,7 @@ C	IF (LCMP(command,'RAY',3)) ! these two lines were commented out by jzlou
 C     	  CALL I2C(0,ls,STACK,' ') ! since it caused problem in *loop*.inc  
 
 C  Load IARG(1) and IARG(2) for COL
-	IF (LCMP(command,'COL',3)) THEN
+	IF (LCMP(command,'COL',3).OR.LCMP(command,'GBS',3)) THEN
       	  CALL I2C(0,ls,STACK,' ')
 	  GO TO 110
 	END IF

@@ -369,11 +369,7 @@ c		 warning messages when you have nObs=0
 	use param_mod
 	use src_mod
 	use elt_mod
-        use loh_I1, only : nGridpts_FLG
 	use loh_I2
-!#ifdef CMACOS
-!       use macosio_mod, only : RefOPD_Flg,RefOpdFn
-!#endif
 
 	IMPLICIT NONE
 
@@ -889,6 +885,7 @@ C	  WRITE(*,112)'nObs',iElt
 	  KcElt(iElt)=-eElt(iElt)*eElt(iElt)
 	  KrElt(iElt)=-(1.0 + eElt(iElt))*fElt(iElt)
 	END IF
+
 	RETURN
 	END SUBROUTINE ChkDf2
 
@@ -1595,8 +1592,7 @@ C Basic params & optical params & conic params
 	      WRITE(*,95)IndRef(iElt),Extinc(iElt)
 	    ENDIF
 
- 	  IF (SrfType(iElt).EQ.3 .OR. SrfType(iElt).EQ.11) THEN
-            ! surface types Aspheric and AsGrData
+ 	  IF (SrfType(iElt).EQ.3) THEN
 	    !WRITE(*,103)(AsphCoef(j,iElt),j=1,maxAsphCoef)
 	    WRITE(*,*)'AsphCoef=   ',
      &                (AsphCoef(j,iElt),j=1,maxAsphCoef)
@@ -2957,8 +2953,6 @@ C***********************************************************************
 	ELSE IF (EltType.EQ.16) THEN
 	  EltID=1
 	  SrfType=4
-         !print*,'EltConvert: EltID, SrfType =', EltID,SrfType
-         !STOP
 	ELSE IF (EltType.EQ.17) THEN
 	  EltID=11
 	  SrfType=4

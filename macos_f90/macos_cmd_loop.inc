@@ -20,7 +20,7 @@ C  *** Begin MACOS top-level command loop ***
 
 	  CALL PROMPT(command,'MACOS> ')
 
-	  IF (LCMP(command,'QUIT',3) .OR.
+	  IF (LCMP(command,'QUIT',1) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
 	    CALL GRAEND
@@ -164,8 +164,7 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 	    CALL IACCEPT_S(nPgPanel,1,1,
      &             'Enter PGPLOT display panel option (1,2,3 or 4):')
 	    If (nPgPanel/=1.and.nPgPanel/=2.and.
-     &          nPgPanel/=3.and.nPgPanel/=4.and.
-     &          nPgPanel/=9) Then
+     &          nPgPanel/=3.and.nPgPanel/=4) Then
 	      nPgPanel=1
 	      WRITE(*,*)'  Invalid input! Use 1 PGPLOT panel'
 	    Else 
@@ -177,8 +176,6 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 	        WRITE(*,*)'  Use 1 x 3 PGPLOT panels'
 	      else if (nPgPanel==4) then
 	        WRITE(*,*)'  Use 2 x 2 PGPLOT panels'
-	      else if (nPgPanel==9) then
-	        WRITE(*,*)'  Use 3 x 3 PGPLOT panels'
 	      end if
 	    End If
 	    ifPlot=.FALSE.  ! enable reinitialize PGPLOT
@@ -279,7 +276,6 @@ C         ***next command: Load optical description data***
 	    LOptIfFEX=.TRUE.   ! default
 	    OptTgtElt=-1  ! init value
 	    OptAlg=NonLin ! init value
-            StopSetAlg=OptAlg  ! default setting
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
 	    LUseChfRayIfOK=.TRUE.
@@ -291,8 +287,8 @@ C         ***next command: Load optical description data***
 #endif
 	    LUpdateTElt_FLG=.FALSE.
             saveOPD_Flg=.FALSE.  ! default
-            saveSPOT_Flg=.FALSE. ! default
             SaveRayPosHist_Flg=.FALSE. ! default
+            DumpRayPosHist_Flg=.FALSE. ! default
             SaveVis3d_dat_Flg=.FALSE.  ! default
 	    EltGrp(0,0:mElt)=0
 	    RxStopSet=.FALSE.; ifStopSet=.FALSE.
@@ -303,6 +299,9 @@ C         ***next command: Load optical description data***
 	    zernUsrOpt=.FALSE.; LxObsDef=.FALSE.;
 	    UDBeam_FLG=.FALSE.; ifObjImgSet=.FALSE.
 	    ifRegrid(1:mElt)=.FALSE.; ifOPDModGrid=.FALSE.
+	    LRayTgtElt=.FALSE. ! default 
+            refRay = -1d2   ! default initial value, indicating state RRAY before running
+	                    ! RRAY command  01/27/2017
             GridSrfOrder=1  ! default GridSrf interpolation to linear order
 	    iElt2iGradInd=0 ! for graded index lenses, mapping from iElt to 
 	                    ! graded index lens id, initialized in msmacosio.inc
@@ -316,12 +315,6 @@ C         ***next command: Load optical description data***
 	    ! For source local frames (will set to true if defined in Rx)
             SrcLF_FLG=.FALSE.  ! default
             CalcSrcZFrame_FLG=.TRUE.  ! default
-
-	    FSEG_CCAT_Flg=.FALSE.  ! default, flower segment source flag
-
-            ! Moved polarization default here, because now Rx parameter can turn  
-            ! on polarization ray-tracing  -jzlou, 01/2019
-	    ifPol=.FALSE.; ifVecDif3=.FALSE.
 
 #ifdef MACOS_CMD
 	    PrtPrinRots=.FALSE.; LudDrawGrid=.FALSE.
@@ -338,12 +331,10 @@ C         ***next command: Load optical description data***
 	    end if
 #endif
 
-	   !print*,'** Aft MBFile6: ifPol =',ifPol
-
 	    ifLoad=.TRUE.; ifBuild=.FALSE.
 	    ifPropagate=.FALSE.; ifPerturb=.FALSE.
-	   !ifPol=.FALSE.; ifVecDif3=.FALSE.; 
-            ifPixLoc=.FALSE.; ifTrace=.FALSE.
+	    ifPol=.FALSE.; ifPixLoc=.FALSE.
+	    ifVecDif3=.FALSE.; ifTrace=.FALSE.
 	    ifGrid=.FALSE.; ifAdd=.FALSE.; 
 	    ifAddCA=.FALSE.; ifPixArray=.FALSE.
 	    ifCmt=.FALSE.; ifEFLCalc=.FALSE.
@@ -365,7 +356,6 @@ C         ***next command: Load optical description data***
 #ifdef MACOS_CMD
 	    curFov=1; curwl=1; OPDSave=0d0
             firstOPDCalc=.FALSE.; multiOPDCalc=.FALSE.
-            firstSPOTCalc=.FALSE.; multiSPOTCalc=.FALSE.
 	    firstIntCalc=.FALSE.
 #endif
 
@@ -411,7 +401,6 @@ C         ***next command: Load optical description data***
                 WRITE(*,*)' '
                 goto 108
               end if
-
 
 	      ! Process input arguments to system optimer drivers
               varZerns=0; zern_off=1 
@@ -549,7 +538,6 @@ C         ***next command: Load optical description data***
              End Do
 	  End If
 #endif
-
 	  ! Set default option for source adjustment
 	  IF (ABS(zSource).LE.1d10) THEN
 	    SAOpt=SADir  ! point source, ChfRayDir adjusted
@@ -577,7 +565,6 @@ C         ***next command: Load optical description data***
               end if
             end if
           End If
-
 
 #ifdef MACOS_CMD
 C         *** Select a new FOV
@@ -662,11 +649,11 @@ C           * sparse pupil aperture. -jzlou
               iStartElt=0; iEndElt=nElt
               ifRayPrint=.FALSE.
               CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
-     &          ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
-     &          ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
-     &          iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
-     &          nBadRays,StartIndRef,StartExtinc,
-     &          Cmatrix,DrawRayVec,DrawEltVec)
+     &         ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &         ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,iCurRayElt,
+     &         iEndElt,Dicr,Djcr,dxSource,nBadRays,StartIndRef,
+     &         StartExtinc,Cmatrix,DrawRayVec,DrawEltVec)
+              !
 	      If (LRayOK(1)) Then
 	        refRay(1)=1;
 	      Else 
@@ -698,6 +685,111 @@ C           * sparse pupil aperture. -jzlou
 	    ELSE
               WRITE(*,150)
             END IF
+
+C
+C    Find "pupil rays" indexes, eight rays total
+C
+	  ELSE IF (LCMP(command,'PRAY',3)) THEN
+            IF (ifLoad) THEN
+              WRITE(*,163) '  Source aperture diameter = ',
+     &                     Aperture,BaseUnits
+              ! Try to trace chief ray
+              iStartElt=0; iEndElt=nElt
+              ifRayPrint=.FALSE.
+              CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
+     &         ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &         ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,iCurRayElt,
+     &         iEndElt,Dicr,Djcr,dxSource,nBadRays,StartIndRef,
+     &         StartExtinc,Cmatrix,DrawRayVec,DrawEltVec)
+              !
+              If (LRayOK(1)) Then
+                refRay(1)=1;
+              Else
+                refRay(1)=-1;
+              End If
+              WRITE(*,*)' At source aperture: '
+              srp(1)=9.0; srp(2)=0.0
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(2),.TRUE.) 
+              srp(1)=0.6364; srp(2)=0.6364
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(3),.TRUE.)
+              srp(1)=0.0; srp(2)=0.9
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(4),.TRUE.)
+              srp(1)=-0.6364; srp(2)=0.6364
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(5),.TRUE.) 
+              srp(1)=-0.9; srp(2)=0.0
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(6),.TRUE.)
+              srp(1)=-0.6364; srp(2)=-0.6364
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(7),.TRUE.)
+              srp(1)=0.0; srp(2)=-0.9
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(8),.TRUE.)
+              srp(1)=0.6364; srp(2)=-0.6364
+              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                 srp(1),srp(2),refRay(9),.TRUE.)
+	    ELSE
+              WRITE(*,150) 
+	    End IF
+
+C         *** Trace pupil rays, need to run 'PRAY' command first ***
+C         *** Pupil rays are chief ray + eight marginal rays ***
+C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surface)
+
+	  ELSE IF (LCMP(command,'TPR',3)) THEN
+	    IF (refRay(1) < -2) THEN
+              WRITE(*,163) 
+     &     '   ** Need to run RRAY command before executing TRR command',
+            ELSE
+	      ! Trace all reference rays
+	      IF (ABS(zSource).GE.1d10) THEN
+               CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+              ELSE
+               CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+	      END IF
+              Do iRay=1,mPupRay
+                If (refRay(iRay) < 0) Then
+	          Exit  ! Cycle would do the same    
+	        End If
+                ! Trace a ray
+                iStartElt=0
+	        If (LRayTgtElt==.TRUE.) Then
+                  iEndElt=RayTgtElt
+                Else
+                  iEndElt=nElt
+                End If
+                ifRayPrint=.FALSE.; ifBuild=.FALSE.;
+                ifTrace=.FALSE.; ifPropagate=.FALSE.
+                iStartRay=refRay(iRay)  ! refRay(iRay) is one of reference rays
+                iEndRay=iStartRay
+                iStartElt=0
+                If (.not. LRayTgtElt) Then
+                  iEndElt=nElt
+                Else
+                  iEndElt=RayTgtElt
+                End If
+                CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &                 ifLNegOK,Cmatrix,iStartElt,iEndElt,
+     &                 iStartRay,iEndRay,RayMap,SegMap,
+     &                 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
+     &                 StartIndRef,StartExtinc,
+     &                 DrawRayVec,DrawEltVec,nDrawElt(1),
+     &                 xDraw,yDraw)
+                print*,' **CTRACE iRay =',refRay(iRay),', 
+     &                 iEndElt =',iEndElt
+                print*,'     RayPosHist(1:3,iray,iEndElt) =',
+     &                 RayPosHist(1:3,refRay(iRay),iEndElt)
+
+	        ! Pupil rays are indexed 2 to 9
+	        RRayPosHis(1:3,iRay) = 
+     &              RayPosHist(1:3,refRay(iRay),iEndElt)
+	      End Do ! Do iRay 
+	    END IF
+
 
 C         ***Set up interpolated surface calculations***
 
@@ -902,8 +994,6 @@ C         ***Turn on polarization option***
     	    ifPropagate=.FALSE.
 	    WRITE(*,*)' Polarization turned on'
 	    IF (mWF.GE.3) THEN
-              ! mWF seems to set to 3 in macos_param.txt for all
-              ! MACOS model sizes -jzlou, 01/2019
 	      WRITE(*,*)' Vector diffraction enabled'
 	      ifVecDif3=.TRUE.
 	    ELSE
@@ -1085,10 +1175,10 @@ C         ***Print ray maps***
 	      IF (.NOT.ifGrid) THEN
 	        IF (ABS(zSource).GE.1d10) THEN
 	          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                         ifPropagate)
+     &	          ifPropagate)
 	        ELSE
 	          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                        ifPropagate)
+     &	          ifPropagate)
 	        END IF
 	        ifGrid=.TRUE.
 	      END IF
@@ -1192,7 +1282,11 @@ C         *** 'ray' command ***
 	        iStartRay=iRay
 	        iEndRay=iRay
 	        iStartElt=0
-	        iEndElt=nElt
+	        If (.not. LRayTgtElt) Then
+ 	          iEndElt=nElt
+	        Else
+	          iEndElt=RayTgtElt
+	        End If
 	        ifRayPrint=.TRUE.
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
@@ -1201,6 +1295,8 @@ C         *** 'ray' command ***
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &		       xDraw,yDraw)
+C	        print*,'**CTRACE cmd: RayPosHist(1:3,iray,iEndElt) =',
+C    &                 RayPosHist(1:3,iRay,iEndElt)
 C	        GO TO 4
   5	      CONTINUE
 	      ifRayPrint=.FALSE.
@@ -1936,14 +2032,7 @@ cdebug	    WRITE(*,*) ' Initial OPD=',S1
             CALL CRSOPTIMIZE(iElt)
 
 C         ***Slave reference surface***
-C Comment by jzlou: 10/2019
-C   'SRC' tries to set up a starting diffraction propagation (iSlv1)
-C   relative to a target surface (iSlv2) by
-C   1) tracing chief ray to surface iSlv1
-C   2) tracing chief ray to surface iSlv2
-C   3) For the code to work, it seems value of zElt of surface iSlv2 needs to 
-C      be negative of expected propagation distiance from surface iSlv1 to iSlv2
-C   
+
 	  ELSE IF (LCMP(command,'SRS',3)) THEN
  57	    CALL IACCEPT_S(iSlv1,1,1,
      &	    'Enter number of element to be slaved:')
@@ -1988,7 +2077,6 @@ C
 	      CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
      &	      ifPropagate)
 	    END IF
-            ! Trace from source to first slave element (elt to be slaved)
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	     ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
      &       RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
@@ -1997,8 +2085,8 @@ C
 
 	    LSlv1=CumRayL(1)
 	    signpsi=SIGN(1D0,DDOTC(RayDir(1,1),psiElt(1,iSlv1)))
-	    CALL DSMPROD(psip,RayDir,signpsi,3) ! psip = signpsi*RayDir
-	    CALL DEQUATE(Vptp,RayPos,3) ! Vptp = RayPos
+	    CALL DSMPROD(psip,RayDir,signpsi,3)
+	    CALL DEQUATE(Vptp,RayPos,3)
 
 	    iEndElt=iSlv2
 	    IF (ABS(zSource).GE.1d10) THEN
@@ -2008,7 +2096,6 @@ C
 	      CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
      &	      ifPropagate)
 	    END IF
-            ! Trace from source to second element (elt which is the target to slave)
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	     ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
      &       RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
@@ -2017,17 +2104,15 @@ C
 
 	    ifReturn1=.FALSE.
 	    DO j=2,(iSlv1-1)
-              ! EltID 8 is of Return Surface type  -jzlou 
 	      IF (EltID(j).EQ.8) ifReturn1=.NOT.ifReturn1
 	    END DO
 	    ifReturn2=.FALSE.
 	    DO j=2,(iSlv2-1)
-              ! EltID 8 is of Return Surface type  -jzlou
 	      IF (EltID(j).EQ.8) ifReturn2=.NOT.ifReturn2
 	    END DO
 
 	    IF (.NOT.(ifReturn1.OR.ifReturn2)) THEN
-	      IF (fElt(iSlv1).GE.BIG) THEN  ! BIG=1d18, defined in macos_vars_mod.F/smacos_vars_mod.F
+	      IF (fElt(iSlv1).GE.BIG) THEN
 	        IF (fElt(iSlv2).LT.BIG) THEN
 	          DO i=1,3
 	            Vptp(i)=RayPos(i,1)+zElt(iSlv2)*RayDir(i,1)
@@ -2082,22 +2167,22 @@ C
 	    END IF
 
 	    WRITE(*,109)fElt(iSlv1),fp,zElt(iSlv1),zp,psiElt(1,iSlv1),
-     &	     psip(1),psiElt(2,iSlv1),psip(2),psiElt(3,iSlv1),psip(3),
-     &	     VptElt(1,iSlv1),Vptp(1),VptElt(2,iSlv1),Vptp(2),
-     &	     VptElt(3,iSlv1),Vptp(3)
+     &	    psip(1),psiElt(2,iSlv1),psip(2),psiElt(3,iSlv1),psip(3),
+     &	    VptElt(1,iSlv1),Vptp(1),VptElt(2,iSlv1),Vptp(2),
+     &	    VptElt(3,iSlv1),Vptp(3)
 	    CALL CACCEPT(ANS,'YES',
-     &                   'Accept the new element? ')
+     &      'Accept the new element? ')
 	    IF ((ANS(1:1).NE.'n').OR.(ANS(1:1).NE.'N')) THEN
 	      eElt(iSlv1)=0d0
 	      fElt(iSlv1)=fp
 	      KcElt(iSlv1)=0d0
 	      KrElt(iSlv1)=-fp
 	      zElt(iSlv1)=zp
-	      DO i=1,3
+	      DO 59 i=1,3
 	        psiElt(i,iSlv1)=psip(i)
 	        VptElt(i,iSlv1)=Vptp(i)
 	        RptElt(i,iSlv1)=Vptp(i)
-    	      END DO
+  59	      CONTINUE
 	    END IF
 
 
@@ -2224,51 +2309,7 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
 	    END IF
 
-
-C         *** Find Pupil Position  11/2017
-
-          ELSE IF (LCMP(command,'FPPOS',3)) THEN    
-            IF (ifLoad) THEN
- 55           CALL IACCEPT_S(iElt,(1),1,
-     &          'Enter number of pupil return surface:')
-              IF (iElt.LE.0 .OR. iElt.GT.nElt) THEN
-                WRITE (*,*)'FEXIT: Invalid element number: ',iElt
-                GO TO 55
-              ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
-                WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
-                                                               ! or Reference surface
-                GO TO 55
-              END IF
-            ELSE
-              WRITE(*,*)' Must load optical data first: use NEW or OLD.'
-              GO TO 1
-            END IF
-
-	    IF (.NOT.ifStopSet) THEN
-              WRITE(*,*)
-     &        ' Must set stop before finding pupil. Use STOP command.'
-              GO TO 1
-            END IF
-
-            ifGrid=.FALSE.
-            ifPropagate=.FALSE.
-            ifTrace=.FALSE.
-            ifBuild=.FALSE.
-            ifOPDCalc=.FALSE.
-
-            CALL FPP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
-     &        ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
-     &        iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
-     &        nBadRays,StartIndRef,StartExtinc,
-     &        Cmatrix,DrawRayVec,DrawEltVec,
-     &        iElt,zp,psip,CrossPt,ifCentroid,
-     &        CRSpot,CentroidSpot,dCRCentroid)
- 
-
-
 C         ***Find Field Point using global or pixel coordinates***
-C         -- adjust source for chief ray to go through specified point on
-C         -- a given surface  -jzlou 
 
 	  ELSE IF (LCMP(command,'FFP',3)
      &             .OR.LCMP(command,'PFP',3)) THEN
@@ -2711,13 +2752,11 @@ C         *** Set System Stop ***
 	        ifBuild=.FALSE.
 	        ifOPDCalc=.FALSE.
 
-
                 IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
 		  ! With point source (source at finite distance) and
 		  ! when SAOpt is set to SAPos, enforce ChfRay
                   ! thru STOP position at element by tip/tilt
                   ! chief ray in source plane. -jzlou
-
 	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
@@ -2727,13 +2766,11 @@ C         *** Set System Stop ***
      &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
      &              xTarg,sqErr,ifBeamCentered)
 
-
 	          !WRITE(*,310) StopPos
                    ! The "Computed StopPos" is actually system entrance pupil
                   ifStopSet=.TRUE.
 	          GO TO 1
 	        END IF
-
 	        
 	        ! Otherwise, for source at infinity OR finite source with 
                 ! SAOpt set to SAPos,
@@ -3367,7 +3404,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	   WRITE(*,*)'    ==============================================='
 	        WRITE(*,*)'  '
 	        If (.not.LOptCons) Then
-                  if (OptAlg==Linear) then
+                  if (OptAlg==1) then
                WRITE(*,*)' Optimization Scheme: Linear Unconstrained'
                   else
                WRITE(*,*)' Optimization Scheme: Nonlinear Unconstrained'
@@ -3715,29 +3752,18 @@ C         ***Plot OPD map***
               OPDElt=iElt
 #endif
 
-#if 1
+              ! Dump OPD to a file
 	      If (saveOPD_Flg) Then
- ! Dump OPD to file for debugging
 	        print*,'** Dumping OPD: npts =',npts
 	        Open(Unit=15,File='Opd_macos.txt')
                 Do j=1,npts+1
-                   If (npts+1==255) Then
-                     Write(15,322) OPDMat(1:npts+1,j)
-                   Else If (npts+1==511) Then
-                     Write(15,323) OPDMat(1:npts+1,j)
-                   Else If (npts+1==1023) Then
-                     Write(15,324) OPDMat(1:npts+1,j)
-                   Else If (npts+1==127) Then
-                     Write(15,325) OPDMat(1:npts+1,j)
-		   Else
-                     Write(15,*) OPDMat(1:npts+1,j)
-                   End If
+                   Write(15,*) OPDMat(1:npts+1,j)
                 End Do	      
 	        Close(15)
 	      End If
                
-              If (SaveRayPosHist_Flg) Then
  ! Dump ray positions on all elements for 3D system rendering  09/27/2014
+              If (SaveRayPosHist_Flg .AND. DumpRayPosHist_Flg) Then
                 print*,'** Dumping RayPosHist array ...'
                 Open(Unit=15,File='RayPosHist.txt')
 	        Write(*,*)'** Writing RayPosHist: nElt,nRay =',nElt,nRay 
@@ -3764,7 +3790,6 @@ C         ***Plot OPD map***
                 End Do 
 		Close(16)
 	      End If  
-#endif
 
 #if 0
 	      Open(Unit=15,File='RBOpd.txt')
@@ -3843,27 +3868,16 @@ C         ***Plot OPD map***
 
 C  Plot differential OPD
           ELSE IF (LCMP(command,'DOPD',3)) THEN
-            If (ifLoad .and. (multiOPDCalc .or.
-     &          (firstOPDCalc .and. RefOPD_Flg))) Then
-              If (RefOPD_Flg) Then 
-                OPDSave(1:nGridPts,1:nGridPts) 
-     &             = RefOPD(1:nGridPts,1:nGridPts)
-              Else If (OPDEltSave /= OPDElt) Then
+            If (ifLoad .and. multiOPDCalc) Then
+              If (OPDEltSave /= OPDElt) Then
                 WRITE(*,*)' **Warning: OPDs are not on same element!'
               End If
-              OPDbuf = OPDMat - OPDSave
-             !OPDbuf = RefOPD
-
-	      print*,'**B4 RMS: mpts,nGridPts =',mpts,nGridPts
-              OPDMat = OPDbuf ! so that OPDbuf won't be overwritten in RMS function
-              c1 = RMS2(OPDMat(1:nGridPts,1:nGridPts),nGridPts,nGridPts)
-              WRITE(*,*)' RMS dOPD =', c1
-!    &          RMS2(OPDMat(1:nGridPts,1:nGridPts),nGridPts,nGridPts)
+              OPDbuf=OPDMat-OPDSave
+              WRITE(*,*)' RMS dOPD =',RMS2(OPDbuf,nGridPts,nGridPts)
               Call FindPV(OPDbuf,nGridPts,nGridPts,c1,c2)
               WRITE(*,*)' P-V dOPD =',c1,c2
 
-              WRITE(*,*)' Plotting differential OPD map, iPloTyp =',
-     &                  iPloTyp  ! iPloTyp = 2 here, -jzlou
+              WRITE(*,*)' Plotting differential OPD map ...'
               IF ((iPloTyp.EQ.5).OR.(iPloTyp.EQ.6).OR.(iPloTyp.EQ.8)
      &            .OR.(iPloTyp.EQ.9)) THEN
                 j=ICLEN(filnam)
@@ -3878,116 +3892,10 @@ C  Plot differential OPD
            CALL DSRFPLT(iPloTyp,XFP,YFP,OPDbuf,nGridPts,nGridPts,
      &                 mpts,mpts,'X-Axis','Y-Axis',CTITLE,R1,R2,1)
               END IF
-
-#if 0
-              If (saveOPD_Flg) Then
-                Open(Unit=15,File='OPDMat_macos.txt')
-                Do j=1,npts+1
-                   If (npts+1==255) Then
-                     Write(15,322) OPDMat(1:npts+1,j)
-                   Else If (npts+1==511) Then
-                     Write(15,323) OPDMat(1:npts+1,j)
-                   Else If (npts+1==1023) Then
-                     Write(15,324) OPDMat(1:npts+1,j)
-                   Else If (npts+1==127) Then
-                     Write(15,325) OPDMat(1:npts+1,j)
-                   Else
-                     Write(15,*) OPDMat(1:npts+1,j)
-                   End If
-                End Do
-                Close(15)
-                Open(Unit=15,File='OPDSave_macos.txt')
-                Do j=1,npts+1
-                   If (npts+1==255) Then
-                     Write(15,322) OPDSave(1:npts+1,j)
-                   Else If (npts+1==511) Then
-                     Write(15,323) OPDSave(1:npts+1,j)
-                   Else If (npts+1==1023) Then
-                     Write(15,324) OPDSave(1:npts+1,j)
-                   Else If (npts+1==127) Then
-                     Write(15,325) OPDSave(1:npts+1,j)
-                   Else
-                     Write(15,*) OPDSave(1:npts+1,j)
-                   End If
-                End Do
-                Close(15)
-              End If
-#endif
-#if 1
-              ! Dump dOPD to file for debugging - OPDbuf array
-              print*,'** Dumping dOPD: npts =',npts
-              Open(Unit=15,File='dOpd_macos.txt')
-              Do j=1,npts+1
-                 If (npts+1==255) Then
-                   Write(15,322) OPDbuf(1:npts+1,j)
-                 Else If (npts+1==511) Then
-                   Write(15,323) OPDbuf(1:npts+1,j)
-                 Else If (npts+1==1023) Then
-                   Write(15,324) OPDbuf(1:npts+1,j)
-                 Else If (npts+1==127) Then
-                   Write(15,325) OPDbuf(1:npts+1,j)
-                 Else
-                   Write(15,*) OPDbuf(1:npts+1,j)
-                 End If
-              End Do
-              Close(15)
-#endif
             Else
-	      print*,'** firstOPDCalc =',firstOPDCalc
-              print*,'** RefOPD_Flg =',RefOPD_Flg
-
 	      WRITE(*,*)' Before run DOPD command, load Rx and'
               WRITE(*,*)' run OPD command at least twice!'
             End If
-
-
-C  Plot differential SPOT diagram
-             ELSE IF (LCMP(command,'DSPOT',4)) THEN
-               If (ifLoad .and. multiSPOTCalc) Then
-                 If (SPOTEltSave /= SpotElt) Then
-                 WRITE(*,*)' **Warning: SPOTs are not on same element!'
-                 End If
-                 RaySPOTbuf = RaySpot - RaySpotSave  
-
-#if 1
- ! Dump ray spot if Rx flag is set
-             If (saveSPOT_Flg) Then
-               print*,'** Dumping differential SPOT array'
-               Open(Unit=15,File='dSpot_macos.txt')
-               Do j=1,2
-                 Write(15,*) RaySpot(1:iSpot,j)
-               End Do
-             End If
-             Close(15)
-#endif
-                 WRITE(*,*)' Plotting differential SPOT diagram ...' 
-                 ! ...
-                 CALL IntToChar(Cinteger,SpotElt,i)
-                 IF ((iPloTyp.EQ.5).OR.(iPloTyp.EQ.6)
-     &            .OR.(iPloTyp.EQ.8)
-     &            .OR.(iPloTyp.EQ.9)) THEN
-                  j=ICLEN(filnam)
-                  imgfil=filnam(1:j)//'.spot'//Cinteger(1:i)
-                  CTITLE='DSpot Diagram, Elt='//Cinteger(1:i)
-
-                  ! write to a file, iSpot is number of ray spots to plot,
-                  ! which was computed in previous SPOT commands
-                  CALL SPOTOUT(RaySpot,iSpot,2,mRay,2,1,
-     &           'X-Axis','Y-Axis',CTITLE,iPloTyp,imgfil,iElt)
-
-                 ELSE IF (iPloTyp.NE.0) THEN
-                CTITLE='DSpot Diagram, Elt='//Cinteger(1:i)//
-     &           ', File='//filnam
-
-                ! Go to pgplot
-                CALL SpotDiag(RaySPOTbuf,iSpot,2,mRay,2,1,
-     &                        'X-Axis','Y-Axis',CTITLE)
-              END IF
-
-	       Else
-                 WRITE(*,*)' Before run DSPOT command, load Rx and'
-                 WRITE(*,*)' run SPOT command at least twice!'
-	       End If 
 
 C   Remove Zernike components from OPD. Intended for command-line MACOS only -jzlou
           ELSE IF (LCMP(command,'ZRM',3)) THEN
@@ -4111,7 +4019,7 @@ C    &                   'Enter dOPL mode (CHFRay,BEAM): ')
 C	   
 C	    CALL dOPL(ifLoad,Rx1,Rx2,iElt,command)  ! defined in utilsub.F
 
-#if 1
+C#if 1
 C          *** Get optical beam size at element surface(s)
 	   ELSE IF (LCMP(command,'GBS',3)) THEN
 	     IF (ifLoad) THEN
@@ -4132,6 +4040,8 @@ C          *** Get optical beam size at element surface(s)
                    WRITE(*,167)' Aperture at source =',Aperture,cUnit
                  Else
                    iElt=iLocal
+	           ifRayPrint=.FALSE. ! don't print raytrace output in 'GBS' cmd -jzlou 
+	           !print*,'** B4 GetBeamSizeCmd(), ifRayPrint =',ifRayPrint
                Call 
      &            GetBeamSizeCmd(bmRad,npts,ifPol,ifGrid,ifPropagate,
      &            ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
@@ -4176,10 +4086,10 @@ C          *** Get optical beam size at element surface(s)
      &                            ' (',EltName(iElt),', ', 
      &                            EltTypeName(EltID(iElt)),')',
      &                            '  Beam diameter =',2d0*bmRad                                 
-                     Write(*,168)  'iElt =',iElt,' (',
+                     Write(*,169)  'iElt =',iElt,' (',
      &                 EltTypeName(EltID(iElt)),')',
-     &                 '  Optical beam diameter =',2d0*bmRad,cUnit
-                     !WRITE(*,*) 2d0*bmRad,cUnit
+     &                 '  Optical beam diameter ='
+                     WRITE(*,*) 2d0*bmRad
 		     If (SaveVis3d_dat_Flg) Then
 	               ! Kr,Kc,Psi,Vpt
                        Write(12,*) '  KrElt =',KrElt(iElt)
@@ -4201,7 +4111,7 @@ C          *** Get optical beam size at element surface(s)
           WRITE(*,*)' Must load optical data first: use NEW or OLD.'
                GO TO 1
              END IF
-#endif
+C#endif
 
 C         ***Set spot diagram centering option***
 
@@ -4280,7 +4190,7 @@ C	  Get local coordinates:
 	          xLocal(i)=Tspot(1,i)
 	          yLocal(i)=Tspot(2,i)
 	        END DO
-	      ELSE  ! 'BEAm' option
+	      ELSE
 	        ifGrid=.FALSE.
 	        ifDraw=.FALSE.
 	        ifPropagate=.FALSE.
@@ -4290,11 +4200,11 @@ C	  Get local coordinates:
 	        iLocal=iElt
 	        CALL 
      &      LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
-     &	     ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
-     &	     ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,
-     &	     Dicr,Djcr,dxSource,nBadRays,StartIndRef,StartExtinc,
-     &	     Cmatrix,DrawRayVec,DrawEltVec,
-     &	     iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
+     &	    ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
+     &	    ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,
+     &	    Dicr,Djcr,dxSource,nBadRays,StartIndRef,StartExtinc,
+     &	    Cmatrix,DrawRayVec,DrawEltVec,
+     &	    iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
 	        IF (ifLocalCoord) THEN
 	          WRITE(*,311)xLocal,yLocal,zLocal
 	          CALL DZERO(Tspot(1,1),49)
@@ -4310,8 +4220,7 @@ C	  Get local coordinates:
 	        ELSE
 	          GO TO 10
 	        END IF
-	      END IF  ! xLocal/yLocal option
-
+	      END IF
 	      RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
 	      RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
 
@@ -4344,11 +4253,11 @@ C	  Trace rays:
 	        iStartRay=1
 	        iEndRay=nRay
 	        CALL 
-     &            CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	           ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,
-     &             iEndRay,RayMap,SegMap,ifRayPrint,ifIntSrfSet,
-     &             LRayPass,nBadRays,StartIndRef,StartExtinc,
-     &             DrawRayVec,DrawEltVec,nDrawElt(1),xDraw,yDraw)
+     &     CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	   ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
+     &     RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
+     &           StartIndRef,StartExtinc,DrawRayVec,DrawEltVec,
+     & 		 nDrawElt(1),xDraw,yDraw)
 	        iCurRayElt=iEndElt
 	        ifTrace=.TRUE.
 	        ifBuild=.FALSE.
@@ -4367,13 +4276,6 @@ C	      Initialize graphics:
 	        ifPlot=.TRUE.
 	        CALL GRAINI
 	      END IF
-
-#ifdef MACOS_CMD
-              if (firstSPOTCalc) then
-                ! save previously computed SPOT array
-                RaySpotSave=RaySpot; SpotEltSave=SpotElt
-              end if
-#endif
 
 C	      Compute spot diagram data from ray trace and plot:
 	      iSpot=0
@@ -4412,39 +4314,23 @@ C	      Compute spot diagram data from ray trace and plot:
 	        END IF
  823	      CONTINUE
 
-#ifdef MACOS_CMD
-	      SpotElt = iElt
-#endif
-
 	      NBEAMS=1
 	      IF (iSpot.GT.0) THEN
 	        xcent=xcent/DBLE(iSpot)
 	        ycent=ycent/DBLE(iSpot)
 	        WRITE(*,408)(CntrSpot(1)-RefSpot(1)),
      &	          (CntrSpot(2)-RefSpot(2)),xcent,ycent
-                !
-                if (.not. firstSPOTCalc) then
-                  firstSPOTCalc=.TRUE.
-                else
-                  multiSPOTCalc=.TRUE.
-                end if
 	      ELSE
-	        WRITE(*,*)' SPOT: All rays were obscured or lost'
+	        WRITE(*,*)' All rays were obscured or lost'
 	      END IF
 
-#ifdef MACOS_CMD
- ! Dump Ray Spot if Rx flag is set, appended elt-id to filename, 09/14/2019 
-             If (saveSPOT_Flg) Then
-               print*,'** Dumping SPOT array at element ',iElt
-               Call IntToChar(Cinteger,iElt,i)
-               filnam = 'Spot_macos_elt'//Cinteger(1:i)//'.txt'
-              !Open(Unit=15,File='Spot_macos.txt')
-               Open(Unit=15,File=filnam)
-               Do j=1,2
-                 Write(15,*) RaySpot(1:iSpot,j)
+#if 0
+ ! dump ray spot
+               Open(Unit=15,File='sspot.txt')
+               Do j=1,iSpot
+                 Write(15,*) RaySpot(j,1:2)
                End Do
-             End If
-             Close(15)
+               Close(15)
 #endif
 
 	      CALL IntToChar(Cinteger,iElt,i)
@@ -4455,9 +4341,8 @@ C	      Compute spot diagram data from ray trace and plot:
 	        CTITLE='Spot Diagram, Elt='//Cinteger(1:i)
 
 	        ! write to a file 
-  	        CALL SPOTOUT(RaySpot,iSpot,2,
-     &                       mRay,2,1,'X-Axis','Y-Axis',
-     &                       CTITLE,iPloTyp,imgfil,iElt)
+	  CALL SPOTOUT(RaySpot,iSpot,2,mRay,2,1,
+     &	         'X-Axis','Y-Axis',CTITLE,iPloTyp,imgfil,iElt)
 
 	      ELSE IF (iPloTyp.NE.0) THEN
 	        CTITLE='Spot Diagram, Elt='//Cinteger(1:i)//

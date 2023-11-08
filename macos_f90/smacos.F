@@ -21,8 +21,6 @@ C***********************************************************************
 C***********************************************************************
 C       Subroutine Modeling and Analysis for Controlled Optical Systems  
 C       SMACOS Version 3.31            	     05/2007
-C       SMACOS Version 3.50                  Last updated: 07/2019
-C       (Based on MACOS Versions 3.34, 3.31, 3.2 and 2.86)
 C       (Based On SMACOS Versions 2.86 and 3.2)
 C
 C       Contact:     John Z. Lou
@@ -30,8 +28,7 @@ C       Address:     Jet Propulsion Laboratory
 C                    MS 306-451
 C                    4800 Oak Grove Dr., Pasadena CA 91109
 C       Email:       John.Z.Lou@jpl.nasa.gov
-C        Cell:       (818)653-8023
-C      Office:       (818)354-4870
+C       Phone:       (818)354-4870
 C***********************************************************************
 
 C***********************************************************************
@@ -178,7 +175,7 @@ C  ***Load command stack***
         command=commandARG
 
         ! -jzlou
-        ! Added for converting from Zemax input to MACOS input.
+        ! Added for converting from ZMAX input to MACOS input.
         ! If the filename (CARG(1)) has the extension 'ZMX' or 'zmx',
         ! the input file will be converted from ZMX format to a 
         ! MACOS prescription file with the extension '.in'.

@@ -17,7 +17,7 @@ C
 	use macos_mod
 	use traceutil_mod
 
-        Implicit none
+        implicit none
 
         integer, optional :: psize
 

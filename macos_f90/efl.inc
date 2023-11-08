@@ -1,4 +1,4 @@
-C code for EFL command
+C  code for EFL command
 	    
             IF (ifLoad) THEN
               ifRayPrint=.FALSE.
@@ -7,8 +7,7 @@ C code for EFL command
               ifPropagate=.FALSE.
 
               IF (ABS(zSource).GE.1d10) THEN
-                CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                         ifPropagate)
+          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
               ELSE
                 WRITE(*,*)' **Need source at infinity'//
      &                    ' to run EFL command!'

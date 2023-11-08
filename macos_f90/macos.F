@@ -21,8 +21,6 @@ C***********************************************************************
 
 C***********************************************************************
 C       Modeling and Analysis for Controlled Optical Systems (MACOS)
-C       MACOS Version 3.50 	               Last updated: 07/2019
-C       (Based on MACOS Versions 3.34, 3.31, 3.2 and 2.86)
 C       MACOS Version 3.34 	               Last updated: 11/2011
 C       (Based on MACOS Versions 3.31, 3.2 and 2.86)
 C
@@ -31,8 +29,7 @@ C       Address:     Jet Propulsion Laboratory
 C                    MS 306-451 
 C                    4800 Oak Grove Dr., Pasadena CA 91109
 C       Email:       John.Z.Lou@jpl.nasa.gov
-C        Cell:       (818)653-8024
-C      Office:       (818)354-4870
+C       Phone:       (818)354-4870
 C***********************************************************************
 
 C***********************************************************************
