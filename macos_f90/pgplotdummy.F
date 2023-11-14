@@ -35,13 +35,13 @@ C***********************************************************************
 C***********************************************************************
 
         SUBROUTINE SPOTDIAG(DXYMAT,NROW,NCOL,NDROW,NDCOL,NBEAMS,
-     &  CXLABL,CZLABL,CTITLE,XYMAT)
+     &  		    CXLABL,CZLABL,CTITLE)
 
+        IMPLICIT NONE
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,K,NBEAMS,ISYM(4),CI
-        SREAL XYMAT(NDROW,NDCOL),XMIN,XMAX,YMIN,YMAX,PAD,DX,DY
+        INTEGER NROW,NCOL,NDROW,NDCOL,NBEAMS
+        SREAL XYMAT(NDROW,NDCOL)
         REAL*8 DXYMAT(NDROW,NDCOL)
-        DATA ISYM/20,5,8,16/
 
         END SUBROUTINE SPOTDIAG
 
@@ -96,7 +96,7 @@ C***********************************************************************
         SUBROUTINE FREDDY(ARRAY,KX,NY,SIZE,ANGLE)
         INTEGER KX, NY
         REAL ARRAY(KX,NY), SIZE, ANGLE
- 
+
         END SUBROUTINE FREDDY
 
 C***********************************************************************
@@ -104,7 +104,7 @@ C***********************************************************************
         SUBROUTINE FREDGO(ARRAY,MN)
         INTEGER MN
         REAL ARRAY(MN)
- 
+
         END SUBROUTINE FREDGO
 
 C***********************************************************************
@@ -132,16 +132,20 @@ C***********************************************************************
 
 C***********************************************************************
 
-        SUBROUTINE DRAW(iPloTyp,CTITLE,nDrawElt,nDrawRay,DrawEltVec,
-     &  DrawRayVec,XLabel,YLabel)
-	use param_mod
+        SUBROUTINE DRAW(CTITLE,nDrawElt,nDrawRay,DrawEltVec,
+     &                  DrawRayVec_in,XLabel,YLabel)
+           use param_mod
+           use elt_mod
 
-        INTEGER :: iPloTyp,nDrawRay,nDrawElt(mDrawRay)
-        SREAL :: DrawRayVec(2,mDrawElt,mDrawRay)
-        CHARACTER*(*) CTITLE
-        CHARACTER*8 XLabel,YLabel
+           IMPLICIT NONE
 
-        END SUBROUTINE DRAW
+           INTEGER :: nDrawRay,nDrawElt(mDrawRay),
+     &                DrawEltVec(mDrawElt,mDrawRay)
+           SREAL :: DrawRayVec_in(2,mDrawElt,mDrawRay)
+           CHARACTER*(*) CTITLE
+           CHARACTER*8 XLabel,YLabel
+
+           END SUBROUTINE DRAW
 
 C***********************************************************************a
 
