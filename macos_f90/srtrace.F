@@ -6,8 +6,8 @@ C    |  U.S. Government Sponsorship Is Acknowledged.                  |
 C    +----------------------------------------------------------------+
 C***********************************************************************
 
-C 
-C  Subroutine SRTRACE traces a single ray through a set of optical surfaces, 
+C
+C  Subroutine SRTRACE traces a single ray through a set of optical surfaces,
 C  either in forward or backward order.
 C
 
@@ -73,7 +73,7 @@ C *********************************************************************
 
         ifIntSrfSet(1:mElt)=.false.
 C
-	! Define optical element indexes in the order to be traced 
+	! Define optical element indexes in the order to be traced
 	if (iStartElt<iEndElt) then
 	  iStep=1
 	else
@@ -107,7 +107,7 @@ C       Find start and end points for segmented elements
 ! NextElt(iElt) gives index of next non-segment element.
 
 	! Trace single ray only, setting ray id = 1
-	iRay=1  
+	iRay=1
 
 	! Initialize Index of Reflection etc.
         StartIndRef=IndRef(iStartElt)
@@ -139,15 +139,15 @@ C Set Zerns
             IF (ZernTypeL(iElt).EQ.1 .OR.
      &          ZernTypeL(iElt).EQ.4) THEN
 C Malacara's
-              CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt))
+              CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
             ELSEIF (ZernTypeL(iElt).EQ.2 .OR.
      &              ZernTypeL(iElt).EQ.5) THEN
 C Noll's
-              CALL ZerntoMon2(ZernCoef(1,iElt),MonCoef(1,iElt))
+              CALL ZerntoMon2(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
             ELSEIF (ZernTypeL(iElt).EQ.3 .OR.
      &              ZernTypeL(iElt).EQ.6) THEN
 C Fringe's
-              CALL ZerntoMon3(ZernCoef(1,iElt),MonCoef(1,iElt))
+              CALL ZerntoMon3(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
             END IF
           END IF
 
@@ -186,7 +186,7 @@ C Fringe's
 
 
 C  Begin iRay loop to trace a single ray and compute its partials
-	
+
 C       Loop through each element
 
         iElt=iSecondElt
@@ -289,7 +289,7 @@ C                                               ! Focal Plane
               PrevExtinc=CurExtinc
               ifRayElt(iElt)=.TRUE.
 	  !
-C                                               ! Reference Surface 
+C                                               ! Reference Surface
             ELSE IF (EltID(iElt).EQ.3) THEN
 	      print*,' --> Trace through a Reference Surface'
               PrevNonSeg=iElt
@@ -364,9 +364,9 @@ c               NextElt(iElt)=NextNonSeg
                 NextElt(iElt)=0
                 ifRayElt(iElt)=.FALSE.
               END IF
-	        
-	  END IF ! Element selection 
+
+	  END IF ! Element selection
 	  iElt=iElt+1
- 10	CONTINUE 
-  
+ 10	CONTINUE
+
 	End Subroutine SRTRACE_Test
