@@ -39,7 +39,7 @@ C***********************************************************************
         REAL*8 :: DARG(9)
         LOGICAL :: LARG
         INTEGER :: IARG(9)
-        SREAL :: RARG(9) 
+        SREAL :: RARG(9)
         REAL*8, dimension(:,:),intent(out) :: OPDMap,SpotMap
 	SREAL, dimension(:,:),intent(out) :: PixMap
 	REAL*8 :: WFErms,WFEPV_loc
@@ -55,7 +55,7 @@ C  FORMAT statements
 
 	If (LCMP(cmd,'STOP',4)) Then
 	  StopPos(1:3)=DARG(1:3)
-	  ifStopSet=.TRUE. 
+	  ifStopSet=.TRUE.
 
 	Else If (LCMP(cmd,'FEX',3)) Then
           !print*,'In OPT FEX ...'
@@ -85,7 +85,7 @@ C  FORMAT statements
 
 	Else If (LCMP(cmd,'PERT',4)) Then
 	  IF ((iElt.EQ.0).AND.(.NOT.ifStopSet)) THEN
-!               WRITE(*,*) '** Error (MACOS_OPS): Must set stop'// 
+!               WRITE(*,*) '** Error (MACOS_OPS): Must set stop'//
 !    &      'before perturbing source. Use STOP command.'
 !            stop
           END IF
@@ -98,7 +98,7 @@ C  FORMAT statements
           ifGrid=.FALSE.
           iCurRayElt=0
 	  !
-	  ! In double-pass system, also need to perturb its 
+	  ! In double-pass system, also need to perturb its
 	  ! return-pass counterpart if exists.
 	  Do i=1, nElt
 	    if (LnkElt(i)==iElt) then
@@ -244,7 +244,7 @@ C  FORMAT statements
             WRITE(*,*) '** Error (MACOS_OPS): load Rx first!'
             STOP
           END IF
-	   
+
 	Else If (LCMP(cmd,'OPD',3)) Then
 	  IF (ifLoad) THEN
 	    isDOP=.true.
@@ -306,7 +306,7 @@ C  FORMAT statements
 	Else If (LCMP(cmd,'ROC_PERT',8)) Then
 	  KrElt(iElt)=KrElt(iElt)+DARG(1)
 	  Do i=1, nElt
-            if (LnkElt(i)==iElt) 
+            if (LnkElt(i)==iElt)
      &	      KrElt(i)=KrElt(i)+DARG(1)
 	  End Do
 
@@ -322,7 +322,7 @@ C  FORMAT statements
 	  Do i=1,IARG(2)
 	    j=zernIDArr(i)  ! Zern term id
 	    ZernCoef(j,iElt)=ZernCoef(j,iElt)+zernCoefArr(i)
-	  End Do 
+	  End Do
 
 	  Do i=1,nElt  ! for double-pass
             if (LnkElt(i)==iElt) then
@@ -410,7 +410,7 @@ C  FORMAT statements
 
 	CHARACTER(len=MacosCharLen) :: CARG(9),ANS
         REAL*8 :: DARG(9)
-        INTEGER i,j,k, iElt 
+        INTEGER i,j,k, iElt
         LOGICAL LCMP
 
         REAL*8 th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
@@ -445,7 +445,7 @@ c    &       'Enter translational perturbation vector (x,y,z):')
 	  If (.not.OptSrcRpt_FLG) Then
             CALL DSUB(D1,ChfRayPos,StopPos,3)
 	  Else
-	    CALL DSUB(D1,ChfRayPos,OptSrcRpt,3) 
+	    CALL DSUB(D1,ChfRayPos,OptSrcRpt,3)
 	  End If
 
           CALL DMPROD(D2,dQ,D1,3,3,1)
@@ -466,7 +466,8 @@ c	  CALL CACCEPT(ANS,'GLOBAL',
 c    &      'Enter coordinate system for perturbation '//
 c    &      '(ELEMENT or GLOBAL): ')
 c         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
-	  IF (LCMP(CARG(1:3),'ELE',3)) THEN
+	  IF ((LCMP(CARG(1),'ELE',3)).OR.(LCMP(CARG(2),'ELE',3)).OR.
+     &        (LCMP(CARG(3),'ELE',3))) THEN
             ! element coord system
             k= nECoord(iElt)
             IF (k .EQ. 0) THEN
@@ -626,5 +627,5 @@ C fixed by Gopal Vasudevan:
      &                      LLocCoord)
         End Do
         End Subroutine CPERTURB_GRP_DVR_2
-	
+
         End Module macos_ops_mod

@@ -34,7 +34,7 @@ c***loh
 c***loh
 #ifdef VIS3D_DEMO
             Call killdemo
-#endif 
+#endif
 	    STOP
 
 #else
@@ -81,12 +81,12 @@ C         *** reset model size ***
      &       'Enter new size '//
      &       '(128, 256, 512, 1024, 2048, 4096, 8192):')
 
-	    print*,'macos_model_size = ', 
+	    print*,'macos_model_size = ',
      &        macos_model_size
 
-	    if ((macos_model_size == 128) .or. 
+	    if ((macos_model_size == 128) .or.
      &	        (macos_model_size == 256) .or.
-     &          (macos_model_size == 512) .or. 
+     &          (macos_model_size == 512) .or.
      &		(macos_model_size == 1024) .or.
      &          (macos_model_size == 2048) .or.
      &          (macos_model_size == 4096) .or.
@@ -130,7 +130,7 @@ C         *** reset model size ***
                    DWF = czero_
                  end if
 
-		 WRITE(*,303) mElt, mEm1, mRay, bRay, mWF, 
+		 WRITE(*,303) mElt, mEm1, mRay, bRay, mWF,
      &               mIntSrf, mDP, mPix, mPix, mdttl, mdttl
 
 C Reload glass table
@@ -149,12 +149,12 @@ C  Variable re-initializations (including ifLoad)
 #endif
 	  ELSE IF (LCMP(command,'JWST_V3D',4) .OR.
      &             LCMP(command,'Vis3D',4)) THEN
-	 
+
 #ifdef VIS3D_DEMO
 	    !Call startpthread
 	    Call startchild
 #else
-	    WRITE(*,*)'  **JWST 3D rendering demo not included in MACOS!' 
+	    WRITE(*,*)'  **JWST 3D rendering demo not included in MACOS!'
 #endif
 
 
@@ -167,7 +167,7 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
      &          nPgPanel/=3.and.nPgPanel/=4) Then
 	      nPgPanel=1
 	      WRITE(*,*)'  Invalid input! Use 1 PGPLOT panel'
-	    Else 
+	    Else
 	      if (nPgPanel==1) then
 	        WRITE(*,*)'  Use 1 PGPLOT panel'
 	      else if (nPgPanel==2) then
@@ -263,7 +263,7 @@ C         ***next command: Load optical description data***
             varElts=0; varDOFs=0
             psiElt_old=0d0; vptElt_old=0d0
 	    nVarElt=0
-            nOptFov=0 
+            nOptFov=0
 	    tgtWF_flg=.false.
 	    fov_weight=1.0  ! uniform weighting by default
 	    nOptWavelen=0
@@ -299,11 +299,11 @@ C         ***next command: Load optical description data***
 	    zernUsrOpt=.FALSE.; LxObsDef=.FALSE.;
 	    UDBeam_FLG=.FALSE.; ifObjImgSet=.FALSE.
 	    ifRegrid(1:mElt)=.FALSE.; ifOPDModGrid=.FALSE.
-	    LRayTgtElt=.FALSE. ! default 
+	    LRayTgtElt=.FALSE. ! default
             refRay = -1d2   ! default initial value, indicating state RRAY before running
 	                    ! RRAY command  01/27/2017
             GridSrfOrder=1  ! default GridSrf interpolation to linear order
-	    iElt2iGradInd=0 ! for graded index lenses, mapping from iElt to 
+	    iElt2iGradInd=0 ! for graded index lenses, mapping from iElt to
 	                    ! graded index lens id, initialized in msmacosio.inc
 	    numGradInd=0; nDOE=0
 	    iEltToMetSrf=0; tMetSrf=0; metBeamFlg=0 ! clean up metrology setting
@@ -335,13 +335,13 @@ C         ***next command: Load optical description data***
 	    ifPropagate=.FALSE.; ifPerturb=.FALSE.
 	    ifPol=.FALSE.; ifPixLoc=.FALSE.
 	    ifVecDif3=.FALSE.; ifTrace=.FALSE.
-	    ifGrid=.FALSE.; ifAdd=.FALSE.; 
+	    ifGrid=.FALSE.; ifAdd=.FALSE.;
 	    ifAddCA=.FALSE.; ifPixArray=.FALSE.
 	    ifCmt=.FALSE.; ifEFLCalc=.FALSE.
 	    ifCentroid=.TRUE.; ifFilterData=.FALSE.
 	    ifDMBuild=.FALSE.; ifLNegOK=.TRUE.; i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
-	    iCurRayElt=0; iCurWFElt=0; iObsOpt=1 
+	    iCurRayElt=0; iCurWFElt=0; iObsOpt=1
 	    If (UDBeam_FLG) Then
 	      BeamType=5
 	    Else
@@ -360,12 +360,12 @@ C         ***next command: Load optical description data***
 #endif
 
 #if 0
-	    Do iElt=1,nElt 
+	    Do iElt=1,nElt
 	      If (IsVarIndRefElt(iElt)) Then
 	        Call InitLensletIndex(LensArrayType(iElt),
      &                          TotalLensletsArray(iElt),iElt)
 	      End If
-	    End Do 
+	    End Do
 #endif
 
 #ifdef DESIGN_OPTIM
@@ -383,7 +383,7 @@ C         ***next command: Load optical description data***
 
 	    OptSrcRpt_FLG=.FALSE.
 
-            ! ** Support Linear WFC, calc system sensitivity around nominal 
+            ! ** Support Linear WFC, calc system sensitivity around nominal
             !    state. Sensitivity will be kept in system optimizer **
 	    If (LOptNomSens) Then
 	      if (nVarElt==0) then
@@ -403,7 +403,7 @@ C         ***next command: Load optical description data***
               end if
 
 	      ! Process input arguments to system optimer drivers
-              varZerns=0; zern_off=1 
+              varZerns=0; zern_off=1
 	      varAsphs=0; asph_off=1
               k=1
               iVarElt=0
@@ -458,7 +458,7 @@ C         ***next command: Load optical description data***
                         k=k+1
                       end if
                     end do
-                  end if 
+                  end if
 	        End If
               End Do
 
@@ -481,7 +481,7 @@ C         ***next command: Load optical description data***
      &                   OptTgtElt,LOptIfFEX,beamOpt)
 	     NomSensOnly=.FALSE.
 	     WRITE(*,*)' '
-               
+
 	     If (rtn_flag /= 0) goto 108
 
 	     ! Restore Rx state
@@ -498,14 +498,14 @@ C         ***next command: Load optical description data***
      &                   dopt_tol,-1,
      &                   old_wfe,new_wfe,rtn_flag,
      &                   tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                   OptTgtElt,LOptIfFEX,beamOpt) 
+     &                   OptTgtElt,LOptIfFEX,beamOpt)
 #endif
 	     npts=npts_Rx; nGridPts=npts+1
 
  108          If (rtn_flag /= 0) Then
                 WRITE(*,*) ' ** Nominal sensitivity  calc aborted!'
-              End If 
-	    End If  ! If (LOptNomSens) 
+              End If
+	    End If  ! If (LOptNomSens)
 
 #endif
 
@@ -542,7 +542,7 @@ C         ***next command: Load optical description data***
 	  IF (ABS(zSource).LE.1d10) THEN
 	    SAOpt=SADir  ! point source, ChfRayDir adjusted
 	  ELSE
-	    SAOpt=SAPos  ! collimated source, ChfRayPos adjusted 
+	    SAOpt=SAPos  ! collimated source, ChfRayPos adjusted
 	  END IF
 
 	  ! Set aperture stop if needed - must be last step in 'LOAD' cmd,
@@ -578,8 +578,8 @@ C         *** Select a new FOV
 	        curFov=ifov
 	        ChfRayDir(1:3)=opt_fov(1:3,1,curFov)
 	        ChfRayPos(1:3)=opt_fov(1:3,2,curFov)
-	        WRITE(*,*)'   Set ChfRayDir =',opt_fov(1:3,1,curFov) 
-	        WRITE(*,*)'   Set ChfRayPos =',opt_fov(1:3,2,curFov) 
+	        WRITE(*,*)'   Set ChfRayDir =',opt_fov(1:3,1,curFov)
+	        WRITE(*,*)'   Set ChfRayPos =',opt_fov(1:3,2,curFov)
 	        WRITE(*,*)' '
 	        ! Reinitialize some variables
                 ifBuild=.FALSE.; ifPropagate=.FALSE.
@@ -588,7 +588,7 @@ C         *** Select a new FOV
                 i=mElt; iCurRayElt=0; iCurWFElt=0
 	      End If
 	    ELSE
-	      WRITE(*,150)	
+	      WRITE(*,150)
 	    END IF
 
 C	  *** Select a new wavelength
@@ -598,7 +598,7 @@ C	  *** Select a new wavelength
 	      If (nOptWavelen>0) Then
 		WRITE(*,*)' ',opt_wavelen(1:nOptWavelen)
 	        WRITE(*,*)' '
-	      End If 
+	      End If
 	      CALL IACCEPT_S(iwl,curwl,1,'Enter ID of wavelength to use')
               If (iwl<1 .OR. iwl>nOptWavelen) Then
                 WRITE(*,*)' ** Invalid wavelength ID ',iwl
@@ -621,24 +621,24 @@ C	  *** Select a new wavelength
 #endif
 
 
-C         ***next command: Find a source ray for a given position in source 
+C         ***next command: Find a source ray for a given position in source
 C            aperture, -jzlou***
-	
+
 	  ELSE IF (LCMP(command,'FSR',3)) THEN
             IF (ifLoad) THEN
 	      dsrp(1:2)=0d0
 	      Call DACCEPT(srp,dsrp,2,
-     &          'Enter ray position in source aperture:') 
-	 
+     &          'Enter ray position in source aperture:')
+
 	      Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),srid,.TRUE.) 
+     &                 srp(1),srp(2),srid,.TRUE.)
 	      write(*,*) 'Ray id: ', srid
 	    ELSE
               WRITE(*,150)
             END IF
 
 C         *** Next command: Find reference ('marginal') rays, fairly
-C           * robust now; works for any shape of source aperture and 
+C           * robust now; works for any shape of source aperture and
 C           * sparse pupil aperture. -jzlou
 
 	  ELSE IF (LCMP(command,'RRAY',3)) THEN
@@ -656,10 +656,10 @@ C           * sparse pupil aperture. -jzlou
               !
 	      If (LRayOK(1)) Then
 	        refRay(1)=1;
-	      Else 
+	      Else
 		refRay(1)=-1;
 	      End If
-	      WRITE(*,*)' At source aperture: ' 
+	      WRITE(*,*)' At source aperture: '
 	      srp(1)=1.0; srp(2)=0.0
 	      Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &                 srp(1),srp(2),refRay(2),.TRUE.)
@@ -673,11 +673,11 @@ C           * sparse pupil aperture. -jzlou
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &                 srp(1),srp(2),refRay(5),.TRUE.)
 	      If (refRay(1)==1) Then
-	        WRITE(*,*) 
-     &             ' Reference ray indices (chief + 4 marginal) = ', 
+	        WRITE(*,*)
+     &             ' Reference ray indices (chief + 4 marginal) = ',
      &             refRay(1:5)
 	      Else
-	        WRITE(*,*) 
+	        WRITE(*,*)
      &             ' Reference ray indices (4 marginal) = ',
      &             refRay(2:5)
 	        WRITE(*,*) ' Chief ray failed to pass through system'
@@ -710,7 +710,7 @@ C
               WRITE(*,*)' At source aperture: '
               srp(1)=9.0; srp(2)=0.0
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(2),.TRUE.) 
+     &                 srp(1),srp(2),refRay(2),.TRUE.)
               srp(1)=0.6364; srp(2)=0.6364
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &                 srp(1),srp(2),refRay(3),.TRUE.)
@@ -719,7 +719,7 @@ C
      &                 srp(1),srp(2),refRay(4),.TRUE.)
               srp(1)=-0.6364; srp(2)=0.6364
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(5),.TRUE.) 
+     &                 srp(1),srp(2),refRay(5),.TRUE.)
               srp(1)=-0.9; srp(2)=0.0
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &                 srp(1),srp(2),refRay(6),.TRUE.)
@@ -733,7 +733,7 @@ C
               Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &                 srp(1),srp(2),refRay(9),.TRUE.)
 	    ELSE
-              WRITE(*,150) 
+              WRITE(*,150)
 	    End IF
 
 C         *** Trace pupil rays, need to run 'PRAY' command first ***
@@ -742,8 +742,8 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
 
 	  ELSE IF (LCMP(command,'TPR',3)) THEN
 	    IF (refRay(1) < -2) THEN
-              WRITE(*,163) 
-     &     '   ** Need to run RRAY command before executing TRR command',
+              WRITE(*,163)
+     &     '   ** Need to run RRAY command before executing TRR command'
             ELSE
 	      ! Trace all reference rays
 	      IF (ABS(zSource).GE.1d10) THEN
@@ -753,7 +753,7 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
 	      END IF
               Do iRay=1,mPupRay
                 If (refRay(iRay) < 0) Then
-	          Exit  ! Cycle would do the same    
+	          Exit  ! Cycle would do the same
 	        End If
                 ! Trace a ray
                 iStartElt=0
@@ -779,15 +779,15 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &                 xDraw,yDraw)
-                print*,' **CTRACE iRay =',refRay(iRay),', 
+                print*,' **CTRACE iRay =',refRay(iRay),',
      &                 iEndElt =',iEndElt
                 print*,'     RayPosHist(1:3,iray,iEndElt) =',
      &                 RayPosHist(1:3,refRay(iRay),iEndElt)
 
 	        ! Pupil rays are indexed 2 to 9
-	        RRayPosHis(1:3,iRay) = 
+	        RRayPosHis(1:3,iRay) =
      &              RayPosHist(1:3,refRay(iRay),iEndElt)
-	      End Do ! Do iRay 
+	      End Do ! Do iRay
 	    END IF
 
 
@@ -840,7 +840,7 @@ C         ***Modify optical description data***
 	      !print*,'b4 CALL Mod_Loh'
 	      CALL MOD_LOH(npts)
 #else
-   ! for SMACOS 
+   ! for SMACOS
 	      WRITE(*,*)' SMACOS MODIFY reset performed.'
 #endif
 	      ifBuild=.FALSE.
@@ -1216,10 +1216,10 @@ C         ***Print ray maps***
 	        !DO i=k,1,-iSkip
 	        DO i=1,k,iSkip
                   srcMap%rayMap(i1,j1)=RayMap(i,j); i1=i1+1
-	        END DO     
-	        j1=j1+1 
+	        END DO
+	        j1=j1+1
 	      END DO
-	      srcMap%size=j1-1 
+	      srcMap%size=j1-1
 #endif
 	      IF (GridType.GE.3) THEN
 #ifdef MACOS_CMD
@@ -1376,7 +1376,7 @@ C         *** 'BWK' command ***
             ELSE
               WRITE(*,150)
             END IF
-#endif 
+#endif
 
 
 C	  ***next command: Calculate system effective focal length***
@@ -1395,22 +1395,22 @@ C	  ***next command: Calculate system effective focal length***
      &                    efl
 	      End If
 #endif
-	      If (abs(Aperture) > smallestReal) Then 
+	      If (abs(Aperture) > smallestReal) Then
                 focalRatio=efl/Aperture
 	        If (LCMP(BaseUnits,'mm',2) .OR.
-     &	            LCMP(BaseUnits,'none',4)) Then 
+     &	            LCMP(BaseUnits,'none',4)) Then
 	          plateScale=206265d0/(Aperture*focalRatio)
 	        Else If (LCMP(BaseUnits,'m',1)) Then
 	          plateScale=206265d0/(Aperture*1d3*focalRatio)
 	        End If
 #ifdef MACOS_CMD
-      	        WRITE(*,*) '  Estimated system focal ratio =', 
+      	        WRITE(*,*) '  Estimated system focal ratio =',
      &                     focalRatio
 	        WRITE(*,*) '  Estimated system plate scale =',
      &                     plateScale,'arcsec/mm'
 	        If (LCMP(BaseUnits,'none',4)) Then
 	          WRITE(*,*) '  Plate scale calculated assuming base unit'
-	          WRITE(*,*) '  is mm' 
+	          WRITE(*,*) '  is mm'
 	        End If
 #endif
 	      End If
@@ -1443,7 +1443,7 @@ C         ***next command: Print rays surface - to - surface***
 	        WRITE (*,*)' Invalid element sequence.'
 	        GO TO 1
 	      END IF
-	
+
 	      print*,'iElt,iCurRayElt =',iElt,iCurRayElt
 
 	      IF (iElt.GT.iCurRayElt) THEN
@@ -1494,7 +1494,7 @@ C         ***next command: Print rays surface - to - surface***
 	      If (abs(srp(1))>0.5d0 .OR.abs(srp(2))>0.5d0) Then
 	        WRITE(*,*)' **Ray position is outside source aperture'
 	        GO TO 1
-	      End If 
+	      End If
 
 	      ifRayPrint=.TRUE.
 	      Call SRTrace(srp(1),srp(2),ifPol,ifGrid,ifPropagate,
@@ -1578,7 +1578,7 @@ C         ***Draw system layout and rays***
  	          CALL DEQUATE(xDraw,xGrid,3)
 	          CALL DEQUATE(yDraw,yGrid,3)
 	        Else
-	          xDraw(1:3)=UDxDrawGrid(1:3); yDraw(1:3)=UDyDrawGrid(1:3) 
+	          xDraw(1:3)=UDxDrawGrid(1:3); yDraw(1:3)=UDyDrawGrid(1:3)
 		End If
 	        XLabel='X Axis'; YLabel='Y Axis'
 	      ELSE
@@ -1650,7 +1650,7 @@ C    Trace up to first element to be drawn
      &		    StartIndRef,StartExtinc,DrawRayVec(1,1,iDrawRay),
      &	            DrawEltVec(1,iDrawRay),nDrawElt(iDrawRay),
      &              xDraw,yDraw)
-	          iDrawRay_global=0 
+	          iDrawRay_global=0
 	          if (.false. .and. iDrawRay==1) then
                     print*,'****** DrawRayVec(1:2,1,iDrawRay)=',
      &                DrawRayVec(1:2,1,iDrawRay)
@@ -1678,14 +1678,14 @@ C	-jzlou
 	        j=ICLEN(filnam)
 	        CTITLE='Layout, '//ANS(1:2)//' Plane, File='//
      &	        filnam(1:j)
-	        CALL DRAWOUT(iPloTyp,CTITLE,nDrawElt,nDrawRay, 
+	        CALL DRAWOUT(iPloTyp,CTITLE,nDrawElt,nDrawRay,
      &	        	     DrawEltVec,DrawRayVec,imgfil,R1)
 
 	      ELSE IF (iPloTyp.NE.0) THEN
 C 	Produce PGPLOT output  -jzlou
 	        CTITLE='Layout, '//ANS(1:2)//' Plane, File='//
      &	               filnam(1:j)
-	        CALL DRAW(CTITLE,nDrawElt,nDrawRay, 
+	        CALL DRAW(CTITLE,nDrawElt,nDrawRay,
      &	                  DrawEltVec,DrawRayVec,XLabel,YLabel)
 	      END IF
 
@@ -1709,7 +1709,7 @@ C         ***Add atmospheric effects***
 C         Get element number:
 	    IF (ifTrace.OR.ifPropagate) THEN
 	      iElt=iCurRayElt
-	    ELSE 
+	    ELSE
 	      iElt=1
 	    END IF
 	    CALL IACCEPT_S(iElt,iCurRayElt,1,
@@ -1834,7 +1834,7 @@ C	  Otherwise add atmospheric effects using separate grid
 
 C         ***Compute linear models***
 
-	  ELSE IF (LCMP(command,'BUILD',2).OR.LCMP(command,'DMBUILD',3)) 
+	  ELSE IF (LCMP(command,'BUILD',2).OR.LCMP(command,'DMBUILD',3))
      &	  THEN
 	    IF (ifLoad) THEN
  26	      CALL IACCEPT_S(iElt,1,1,
@@ -1885,7 +1885,7 @@ C         ***Compute linear models***
      &	      	ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	      	StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(nRay),
      &        	xDraw,yDraw)
-	
+
 	      CALL RTIME(EndTime)
 	      DTime=EndTime-StartTime
 	      WRITE(*,116)DTime
@@ -2213,7 +2213,7 @@ C	  *** Compute system Line of Sight (LOS) ***
 	      If (iElt<0 .OR. iElt>nElt) Then
 	        iElt=nElt-1  ! default to XP element
 	      End If
-	      iEndElt=iElt; 
+	      iEndElt=iElt;
 	      LCalcWFElt=.TRUE.  ! enabling computing WFElt in OPD()
 
 	       CALL RunProp(iElt,npts,ifPol,ifGrid,ifPropagate,
@@ -2224,13 +2224,13 @@ C	  *** Compute system Line of Sight (LOS) ***
 	       CALL DXCALC(iElt,iEm1,dxMin(iElt),dxMax(iElt),
      &            dxAvg(iElt),dxDev(iElt),ifRegrid,ifOPDCalc,npts)
 	       ! dxElt(iElt) = dx of XP OPD grid for LOS command
-	      
+
 	       ! Calc LOS, both linear and angular
 	       iWF=1  ! assuming non-polarized
 	       Call LOSCALC(zElt(iElt),dxElt(iElt),nGridpts,
      &                      OPDMat(1:mpts,1:mpts),
      &    		    mdttl,mpts,WFElt(1:mdttl,1:mdttl,iWF),
-     &                      sysLOS,sysLOSAng) 
+     &                      sysLOS,sysLOSAng)
 
 	    ELSE
 	 WRITE(*,*)' Must load optical data first: use NEW or OLD.'
@@ -2238,30 +2238,30 @@ C	  *** Compute system Line of Sight (LOS) ***
 	    END IF
 
 
-C         *** Surface metrology calculation ***	  
+C         *** Surface metrology calculation ***
 	  ELSE IF (LCMP(command,'METcalc',3)) THEN
-            IF (ifLoad) THEN  
+            IF (ifLoad) THEN
 	      Call SrfMetCalc(nElt,iEltToMetSrf,nMetPos,tMetSrf,
      &                        SrfMetPos,SrfMetMea)
 	    ELSE
 	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
               GO TO 1
 	    END IF
-	  
+
 C         *** Find exit pupil (with option to minimize tilt) ***
 
 	  ELSE IF (LCMP(command,'FEXIT',3)) THEN
-            IF (ifLoad) THEN  
+            IF (ifLoad) THEN
  54	      CALL IACCEPT_S(iElt,(nElt-1),1,
      &	        'Enter number of exit pupil return surface:')
 	      iEm1=iElt-1
 	      IF (iElt.LE.0) THEN
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
-	        WRITE (*,*)'FEXIT: Invalid element number: ',iElt 
+	        WRITE (*,*)'FEXIT: Invalid element number: ',iElt
 	        GO TO 54
 	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return 
+	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
                                                                ! or Reference surface
 	        GO TO 54
 	      END IF
@@ -2418,7 +2418,7 @@ c--Incidence pt in local coords
 	    xInt0(2)=xInt(2)
 c--Loop until desired pt is matched (max 100)
 	    !DO k=1,100
-            Do k=1,100 
+            Do k=1,100
 c----Check for convergence
 	      CALL DSUB(dxPt,xInt,xTarg,2)
 	      sqErr=dxPt(1)*dxPt(1)+dxPt(2)*dxPt(2)
@@ -2441,7 +2441,7 @@ c----Compute x-gradient
 	      ddxPt(2)=DDOTC(DV1,yPt)
 	      GPt(1,1)=ddxPt(1)/dthPt
 	      GPt(2,1)=ddxPt(2)/dthPt
-c----Compute y-gradient	      
+c----Compute y-gradient
 	      CALL DSMPROD(th,yGrid,dthPt,3)
 	      CALL DEQUATE(cr2indir,cr1indir,3)
 	      CALL DEQUATE(cr2inpos,cr1inpos,3)
@@ -2493,7 +2493,7 @@ c----Compute next step
 	      xInt(2)=DDOTC(yPt,DV1)
 	      S1=SQRT(thx*thx+thy*thy)
 	      IF ((dthPt.GT.S1).AND.(dthPt.GT.5d-12)) dthPt=0.2*dthPt
-    	    End Do 
+    	    End Do
  384	    CONTINUE
 	    k=k-1
 	    IF (k.EQ.0) THEN
@@ -2598,7 +2598,7 @@ C         ***Compute beam coordinates at an element***
                GO TO 1
             END IF
 
-	    ! Compute and save 
+	    ! Compute and save
             Open(unit=12,file='xyzLocal.txt',status='replace')
 	    Write(*,*) ' Result is saved in file xyzLocal.txt'
             Do ie=iLocal,jLocal
@@ -2607,7 +2607,7 @@ C         ***Compute beam coordinates at an element***
                 ifGrid=.FALSE.; ifDraw=.FALSE.
                 ifPropagate=.FALSE.; ifTrace=.FALSE.
                 ifBuild=.FALSE.; ifOPDCalc=.FALSE.
-                !       
+                !
                 CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &           ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &           ifIntSrfSet,
@@ -2634,22 +2634,22 @@ C         ***   For collimated source, ChfRayDir is fixed.
 C         ***   For point source, ChfRayPos is fixed.
 	  ELSE IF (LCMP(command,'SAOpt',3)) THEN
 	    CALL CACCEPT(ANS,'DIr',
-     &              'Choose a source adjustment option, DIr or POs? ') 
+     &              'Choose a source adjustment option, DIr or POs? ')
 	    IF (LCMP(ANS,'DI',2) .AND. ABS(zSource).LE.1d10) THEN
-       WRITE(*,*)'- Source direction changes when ajusting source' 
+       WRITE(*,*)'- Source direction changes when ajusting source'
 	      SAOpt=SADir
-	    ELSE IF (LCMP(ANS,'PO',2)) THEN 
-       WRITE(*,*)'- Source position changes when ajusting source' 
+	    ELSE IF (LCMP(ANS,'PO',2)) THEN
+       WRITE(*,*)'- Source position changes when ajusting source'
 	      SAOpt=SAPos
 	    ELSE
 	      If (LCMP(ANS,'DI',2).AND.(ABS(zSource).GT.1d10)) THEN
-	       WRITE(*,*) 
+	       WRITE(*,*)
      &   '** Can not change source direction for collimated source'
 	      End If
 	      If (SAOpt==SADir) Then
-	 WRITE(*,*)'- Source direction changes when ajusting source' 
+	 WRITE(*,*)'- Source direction changes when ajusting source'
 	      Else
-	 WRITE(*,*)'- Source position changes when ajusting source' 
+	 WRITE(*,*)'- Source position changes when ajusting source'
 	      End If
 	    END IF
 
@@ -2672,7 +2672,7 @@ C         ***   For point source, ChfRayPos is fixed.
             ELSE
               WRITE(*,150)
             END IF
- 
+
 C         *** Set System Stop ***
 
 	  ELSE IF (LCMP(command,'STOP',3)) THEN
@@ -2681,8 +2681,8 @@ C         *** Set System Stop ***
 	      CALL DZERO(DDEF,7)
 	      CALL DACCEPT(StopPos,DDEF,3,
      &	 'Enter stop (entrance pupil) position in object space (x,y,z):')
-	
-	      ! Chief ray aiming 
+
+	      ! Chief ray aiming
 	      ! 'Clean up' xGrid, yGrid first, as in source routines
  205	      CALL DXPROD(zGrid,xGrid,yGrid)
               IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
@@ -2690,8 +2690,8 @@ C         *** Set System Stop ***
               ELSE
                 zGrid = -ChfRayDir
               END IF
-              CALL DUNITIZE(zGrid) 
-              CALL DXPROD(yGrid,zGrid,xGrid) 
+              CALL DUNITIZE(zGrid)
+              CALL DXPROD(yGrid,zGrid,xGrid)
               CALL DUNITIZE(yGrid)
               CALL DXPROD(xGrid,yGrid,zGrid)
 
@@ -2705,24 +2705,24 @@ C         *** Set System Stop ***
 	          CALL DUNITIZE(ChfRayDir)
 	          c1=DDOTC(ChfRayDir,ChfRayDir)
 	          If (c1.LE.1d-22) Then
-                    WRITE(*,*)' Error in setting STOP, abort ...' 
+                    WRITE(*,*)' Error in setting STOP, abort ...'
 	            ChfRayDir(1:3)=cr1indir(1:3)
 	          Else
 	            ! Need update ChfRayPos as well
-	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)  
+	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)
 		  End If
 	        Else If (SAOpt==SAPos) Then
 	          ! Translate chief ray in (xGrid,yGrid) plane
 	          x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
                   y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
-	        End If 
+	        End If
 	      ELSE
 	        ! Collimated source, translate chief ray in (xGrid,yGrid) plane
 	        x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
 	        y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
-           ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3) 
-	      END IF	      
+           ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	      END IF
 	      ifStopSet=.TRUE.
 
 	    ELSE
@@ -2744,7 +2744,7 @@ C         *** Set System Stop ***
 	          xTarg(1:2)=StopOffset(1:2)
 	          RxStopSet=.false.
 	        End If
- 
+
 	        ifGrid=.FALSE.
 	        ifDraw=.FALSE.
 	        ifPropagate=.FALSE.
@@ -2771,8 +2771,8 @@ C         *** Set System Stop ***
                   ifStopSet=.TRUE.
 	          GO TO 1
 	        END IF
-	        
-	        ! Otherwise, for source at infinity OR finite source with 
+
+	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
                 ! Center beam in stop to get new chief ray:
 	        CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
@@ -2819,10 +2819,10 @@ c	        th(3)=3.5355d-6
 	        !print*,' **B4 2nd STOP , yGrid =',yGrid
 
 	        ! When differential chief ray is used to set up source
-	        ! xGrid and ygrid will be recomputed, so save the existing 
+	        ! xGrid and ygrid will be recomputed, so save the existing
                 ! ones for 'main chief ray'. Otherwise it would be at least
-	        ! confusing to the user when running 'show 0' command  
-	        xGrid_sv=xGrid; yGrid_sv=yGrid 
+	        ! confusing to the user when running 'show 0' command
+	        xGrid_sv=xGrid; yGrid_sv=yGrid
 
 	        CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	          ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
@@ -2842,8 +2842,8 @@ C         Find crossing point of the 2 chief rays:
 
 	        WRITE(*,310) StopPos
 	        WRITE(*,*)' '
-	          ! The "Computed" StopPos is actually the entrance pupil, 
-                  ! which is different from the user specified position 
+	          ! The "Computed" StopPos is actually the entrance pupil,
+                  ! which is different from the user specified position
 	          ! on the element where system STOP is set. -jzlou
 	        ifStopSet=.TRUE.
 	        CALL DEQUATE(ChfRayDir,cr1indir,3)
@@ -2868,14 +2868,14 @@ C	  *** System Optimization Commands ***
 	       End Do
 	    ELSE
               WRITE(*,150)
-            END IF	    
+            END IF
 
-C         *** Add a variable element, supported in both MACOS and SMACOS 
-       
+C         *** Add a variable element, supported in both MACOS and SMACOS
+
 	  ELSE IF (LCMP(command,'AVAR',4)) THEN
 	    IF (ifLoad) THEN
  21	      CALL IACCEPT_S(iElt,iCurWFElt,1,
-     &               'Enter variable element id for optimization:') 
+     &               'Enter variable element id for optimization:')
 	      IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)'AVAR: Invalid element number: ',iElt
 #ifdef MACOS_CMD
@@ -2884,11 +2884,11 @@ C         *** Add a variable element, supported in both MACOS and SMACOS
 	        WRITE(*,*)'SMACOS quit ...'
 	        stop
 #endif
-	        
+
 C	      ELSE IF (EltId(iElt)==3) THEN
 C	        WRITE(*,*)' '
 C	        WRITE (*,*)
-C    &           'Variable element can not be a reference surface!' 
+C    &           'Variable element can not be a reference surface!'
 C	        GO TO 24
 	      ELSE
 	        If (.not. isVarElt(iElt)) then
@@ -2907,13 +2907,13 @@ C	        GO TO 24
 	            end if
                   End Do
 
-	          ! Add Zernike terms (range) for optimization 
+	          ! Add Zernike terms (range) for optimization
 	          zernRange(1)=1; zernRange(2)=45
  156	          CALL IACCEPT(zernRange,zernRange,2,
      &			       'Enter range of Zernike terms:')
 	          if (zernRange(1)>0 .and. zernRange(1)<46 .and.
      &                zernRange(2)>0 .and. zernRange(2)<46 .and.
-     &                zernRange(1)<zernRange(2)) then 
+     &                zernRange(1)<zernRange(2)) then
 	            nOptEltZern(iElt)=zernRange(2)-zernRange(1)+1
 	            Do i=zernRange(1),zernRange(2)
 	              OptEltZernTerm(i-zernRange(1)+1,iElt)=i
@@ -2929,19 +2929,19 @@ C	        GO TO 24
 	            end if
 #else
 	            ! SMACOS, and no Zernike optimization
-	            nOptEltZern(iElt)=0 
+	            nOptEltZern(iElt)=0
 #endif
 	          end if
 	        Else
 	          WRITE(*,*)' Variable element',iElt,'already defined!'
-	        End If 
-              END IF 
+	        End If
+              END IF
 	    ELSE
               WRITE(*,150)
             END IF
  24	    CONTINUE
 
-C	  *** Modify a defined variable element 
+C	  *** Modify a defined variable element
 	  ELSE IF (LCMP(command,'MVAR',4)) THEN
 	    IF (ifLoad) THEN
  25           CALL IACCEPT_S(iElt,iCurWFElt,-1,
@@ -2950,11 +2950,11 @@ C	  *** Modify a defined variable element
                 WRITE (*,*)' MVAR: Invalid element ID: ',iElt
                 GO TO 25
 	      ELSE
-	        ! Search 
+	        ! Search
 	        if (.not.isVarElt(iElt)) then
 	      	  WRITE(*,*)' Element',iElt,'is not a variable'
 	          GO TO 27
-	        end if 
+	        end if
 	        Do iVarElt=1,nVarElt
 	          if (varElts(iVarElt)==iElt) exit
 	        End Do
@@ -2986,19 +2986,19 @@ C             SMACOS
 	        WRITE (*,*)'DVAR: Invalid element ID: ',iElt
                 GO TO 23
 	      END IF
-#endif	      
+#endif
 	      IF ((iElt.GE.0) .AND. (iElt.LE.nElt)) THEN
 	        If (isVarElt(iElt)) then
 	          isVarElt(iElt)=.false.
                   nVarElt=nVarElt-1
 	          varEltDOF(1:mVarDOF,iElt)=0
-	          nOptEltZern(iElt)=0 
+	          nOptEltZern(iElt)=0
 	        Else
 	          WRITE(*,*)'Element ',iElt,
-     &                      ' is not a variable element!' 
+     &                      ' is not a variable element!'
 	        End If
 	      END IF
-	  
+
 	    ELSE
               WRITE(*,150)
             END IF
@@ -3008,7 +3008,7 @@ C             SMACOS
 	      WRITE(*,*)'Add FOV for design optimization ...'
 	      CALL DACCEPT(fov_ChfRayDir,
      &               fov_ChfRayDir,-3,
-     &               'Enter Chief Ray Direction') 
+     &               'Enter Chief Ray Direction')
 	      CALL DACCEPT(fov_ChfRayPos,
      &               fov_ChfRayDir,-3,
      &               'Enter Chief Ray Position')
@@ -3025,7 +3025,7 @@ C             SMACOS
      &               jfov,-1,
      &               'Enter ID of FOV to delete')
 	      If (jfov<1 .or. jfov>nOptFov) Then
-	        WRITE(*,*)'DFOV: Invalid FOV ID' 
+	        WRITE(*,*)'DFOV: Invalid FOV ID'
 	      Else
 	        Do ifov=1,nOptFov
 	          if (ifov==jfov) then
@@ -3089,7 +3089,7 @@ C             SMACOS
                   varEltID(nID)=varElts(iElt)
                   Do i=1, nElt
                     if (LnkElt(i)==varElts(iElt)) then
-                      nID=nID+1 
+                      nID=nID+1
                       varEltID(nID)=i
                     end if
                   End Do
@@ -3119,7 +3119,7 @@ C             SMACOS
 	            WRITE(*,374)'  Zern Terms='
 	            Do i=1,nOptEltZern(varElts(iElt))
 	              WRITE(*,375) OptEltZernTerm(i,varElts(iElt))
-	            End Do 
+	            End Do
 	          end if
 	          WRITE(*,*)' '
 	        End Do
@@ -3151,7 +3151,7 @@ C       *** Set parameters for design optimization
 	      If (LCMP(ANS,'WFE',3)) Then
 	        OptTarget=WFE_TARGET
 	      Else If (LCMP(ANS,'ZWF',3)) Then
-	        OptTarget=WFE_ZMODE_TARGET 
+	        OptTarget=WFE_ZMODE_TARGET
 	        CALL IACCEPT_S(nWFZern,0,-1,
      &                         'Enter number of Zernike modes:')
 	        WFZernMode=0
@@ -3179,10 +3179,10 @@ C       *** Set parameters for design optimization
 	      CALL DACCEPT(fov_weight(1:nOptFov),
      &                     fov_weight(1:nOptFov),nOptFov,
      &          	   'Set field of view weights:')
-	  
+
 	      CALL CACCEPT(ANS,'no',
-     &         'Set target wavefront file for optimization (no/yes):') 
-	      if (LCMP(ANS,'Y',1)) then 
+     &         'Set target wavefront file for optimization (no/yes):')
+	      if (LCMP(ANS,'Y',1)) then
 	        CALL CACCEPT(tgtWF_fmt,'bin',
      &         'Enter file format for target wavefront (bin/ascii):')
 	        CALL CACCEPT(tgtWF_fn,' ',
@@ -3250,7 +3250,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	      end if
 
 	      ! Process input arguments to system optimzer drivers
-	      varZerns=0; zern_off=1  
+	      varZerns=0; zern_off=1
 	      varAsphs=0; asph_off=1
               k=1
               iVarElt=0
@@ -3312,9 +3312,9 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	          vptElt_old(1:3,iVarElt)=vptElt(1:3,iElt)
 	          KrElt_old(iVarElt)=KrElt(iElt)
 	          KcElt_old(iVarElt)=KcElt(iElt)
-	        
+
 #if 0
-	           nDOF_VarElt(iVarElt)=0 
+	           nDOF_VarElt(iVarElt)=0
 	           Do i=1,7
 	             if (varEltDOF(i,iElt)/=0) then
 	 	       nDOF_VarElt(iVarElt)=nDOF_VarElt(iVarElt)+1
@@ -3322,7 +3322,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &                   = DOF_NameList(i)
 	             end if
 	           End Do
-#endif	          
+#endif
 	        end if
 	      End Do
 
@@ -3337,7 +3337,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	      !print*,'nOptEltZern= ',nOptEltZern(1:nElt)
 	      !print*,'varZerns= ',varZerns
 
-	      If (OptTarget==BEAM_TARGET .and. 
+	      If (OptTarget==BEAM_TARGET .and.
      &          beamOpt%ifOptBeamRefRayDir) Then
 	        ! Find number of ref rays and their ray ids
 	        iEndElt=beamOpt%beamRefRayElt
@@ -3346,15 +3346,15 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &                 ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,iObsOpt,
      &                 iCurWFElt,iCurRayElt,iEndElt,Dicr,Djcr,
      &                 dxSource,nBadRays,StartIndRef,StartExtinc,
-     &                 Cmatrix,DrawRayVec,DrawEltVec) 
+     &                 Cmatrix,DrawRayVec,DrawEltVec)
 	      End If
 
 	      If (.not. LOptCons) Then
-	        print*,'*** Before nls_driver: ifStopSet =',ifStopSet 
+	        print*,'*** Before nls_driver: ifStopSet =',ifStopSet
                 ! Unconstrained system optimization
 	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
                 Call nls_optim_dvr(.true.,OptTarget,
-     &                             nVarElt,varElts,varDOFs, 
+     &                             nVarElt,varElts,varDOFs,
      &                             nWFZern,WFZernMode,
      &                             zernElt(1:nVarElt),varZerns,
      &                             asphElt(1:nVarElt),varAsphs,
@@ -3364,8 +3364,8 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &                             old_wfe,new_wfe,rtn_flag,
      &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
      &                             OptTgtElt,LOptIfFEX,beamOpt)
-	        print*,'*** After nls_driver: ifStopSet =',ifStopSet 
-	      Else 
+	        print*,'*** After nls_driver: ifStopSet =',ifStopSet
+	      Else
                 ! Constrained system optimization
                 Call np_optim_dvr(.true.,OptTarget,
      &                             nVarElt,varElts,varDOFs,
@@ -3384,7 +3384,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	      If (rtn_flag /= 0) Then
 	        goto 105
 	      Else
-	        If (isVarElt(0)) Then 
+	        If (isVarElt(0)) Then
 		  ! set STOP
 !#include "srcaim.inc"
 	        End If
@@ -3414,7 +3414,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
                 End If
 
 	        If (OptTarget==WFE_TARGET) Then
-	          WRITE(*,*)' Optimization Target = ', 
+	          WRITE(*,*)' Optimization Target = ',
      &		          DOPT_TARGET(OptTarget)(1:19),' at Element ',
      &                    OptTgtElt
 	        Else If (OptTarget==WFE_ZMODE_TARGET) Then
@@ -3436,13 +3436,13 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
                 Do iwl=1,nOptWavelen
 	          WRITE(*,198)'  Wavelength = ', opt_wavelen(iwl),
      &            '  ',WaveUnits
- 198    	  Format(1P,A15,D14.6,A2,A6) 
+ 198    	  Format(1P,A15,D14.6,A2,A6)
 	          if (OptTarget==WFE_TARGET) then
 	            WRITE(*,*)
-     &    	     ' * RMS WFE at FOVs BEFORE Optimization:', 
-     &               old_wfe(1:nOptFov,iwl) 
+     &    	     ' * RMS WFE at FOVs BEFORE Optimization:',
+     &               old_wfe(1:nOptFov,iwl)
 	            WRITE(*,*)
-     &               ' * RMS WFE at FOVs AFTER  Optimization:', 
+     &               ' * RMS WFE at FOVs AFTER  Optimization:',
      &               new_wfe(1:nOptFov,iwl)
 	          else if (OptTarget==SPOT_TARGET) then
 	            WRITE(*,*)
@@ -3461,9 +3461,9 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	          varEltID(nID)=varElts(iElt)
 	          Do i=1,nElt
                     if (LnkElt(i)==varElts(iElt)) then
-     	              nID=nID+1  
-	              varEltID(nID)=i 
-	            end if 
+     	              nID=nID+1
+	              varEltID(nID)=i
+	            end if
                   End Do
 	          slen=StrLen(EltName(varElts(iElt)))
 
@@ -3509,7 +3509,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
                     WRITE(*,*)' '
                   Else
                     WRITE(*,*)', Variable DOF = None'
-                  End If 
+                  End If
  374              FORMAT(A,$)
 
 	          If (varElts(iElt)==0) Then ! source
@@ -3552,7 +3552,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 	              if (varEltDOF(i,varElts(iElt))>0) then
 	                j=1; exit
 	              end if
-	            End DO  
+	            End DO
 	            If (j>0) Then
                       ! there were DOF to adjust in VarElt
 	              If (nECoord(varElts(iElt))>0) Then
@@ -3575,7 +3575,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 		      aparam_off=aparam_off+j
 		    Else
 	              ! for constrained optimizer ...
-		    End If 
+		    End If
 
 	            If (zernElt(iElt)>0) Then
                       WRITE(*,*)'    New Zernike coef='
@@ -3596,7 +3596,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
                         WRITE(*,*)'       ',
      &                    AsphCoef(4:maxAsphCoef,varElts(iElt))
                       End If
-                    End If 	           
+                    End If
 	          End If ! not source
 	        End Do
 	        WRITE(*,*)'  '
@@ -3605,7 +3605,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 #ifdef MACOS_CMD
 	      ! Should output 'aparam' vector from nls_optim_dvr routine,
 	      ! which provides total adjustments of calibrated parameters
-	      ! from initial state, and thus provides rotations and 
+	      ! from initial state, and thus provides rotations and
 	      ! translations of each calibrated elements. So the following
 	      ! PrtPrinRots calculation is not necessary. -jzlou, 01/2008
 
@@ -3613,20 +3613,20 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 	        ! Calculate three PRINCIPAL rotations needed to go from initial
 	        ! element orientations to optimized element orientations
 	        WRITE(*,*)
-     &           ' Calculated Element Principal Rotations (Z-Y-X order)' 
+     &           ' Calculated Element Principal Rotations (Z-Y-X order)'
 	        Do i=1,nVarElt
 	          iElt=varElts(i)
 	          Call Calc_EltPrRotations(psiElt_old(1:3,i),
      &                      psiElt(1:3,iElt),nECoord(iElt),
      &                      TElt(1:3,1:3,iElt),eltRotations,rtnOK)
 	          if (nECoord(iElt) .lt. 3) then
-	            WRITE(*,208) '  Element',iElt,'  (global coord frame):' 
+	            WRITE(*,208) '  Element',iElt,'  (global coord frame):'
 	          else
-	            WRITE(*,208) '  Element',iElt,'  (element coord frame):' 
+	            WRITE(*,208) '  Element',iElt,'  (element coord frame):'
 	          end if
-              WRITE(*,209) '   Z-rotation vector: ',eltRotations(1:3,3) 
-              WRITE(*,209) '   Y-rotation vector: ',eltRotations(1:3,2) 
-              WRITE(*,209) '   X-rotation vector: ',eltRotations(1:3,1) 
+              WRITE(*,209) '   Z-rotation vector: ',eltRotations(1:3,3)
+              WRITE(*,209) '   Y-rotation vector: ',eltRotations(1:3,2)
+              WRITE(*,209) '   X-rotation vector: ',eltRotations(1:3,1)
 	          print*,' '
  208              FORMAT(A,I3,A)
  209              FORMAT(A,3D17.9)
@@ -3646,13 +3646,13 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
                 npts_Rx=npts; npts=opt_npts
 
 	        ! Restore pre-optimization optical state by calling
-	        ! this routine with start_optim=.false. and 
+	        ! this routine with start_optim=.false. and
 	        ! nitr_dopt < 0.
 	        If (.not. LOptCons) Then
                   ! Unconstrained version
 	          Call nls_optim_dvr(.false.,OptTarget,
      &			 nVarElt,varElts,varDOFs,
-     &                   nWFZern,WFZernMode, 
+     &                   nWFZern,WFZernMode,
      & 			 zernElt(1:nVarElt),varZerns,
      &                   asphElt(1:nVarElt),varAsphs,
      &                   opt_fov,nOptFov,fov_weight,
@@ -3714,7 +3714,7 @@ C         ***Plot OPD map***
 	    IF (ifLoad) THEN
 	      IF (ifTrace.OR.ifPropagate) THEN
 	        i=iCurRayElt
-	      ELSE 
+	      ELSE
 	        i=0
 	      END IF
   6	      CALL IACCEPT_S(iElt,iCurRayElt,1,
@@ -3733,7 +3733,7 @@ C         ***Plot OPD map***
 
 #ifdef MACOS_CMD
 	      if (firstOPDCalc) then
-	        OPDSave=OPDMat; OPDEltSave=OPDElt 
+	        OPDSave=OPDMat; OPDEltSave=OPDElt
 	      end if
 #endif
 
@@ -3742,9 +3742,9 @@ C         ***Plot OPD map***
      &	       iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
      &	       nBadRays,StartIndRef,StartExtinc,OPDMat,WFE,WFEPV,DAvgL,
      &	       L1,Cmatrix,DrawRayVec,DrawEltVec)
-	      Avgl=DAvgl; ifOPDCalc=.TRUE.  
+	      Avgl=DAvgl; ifOPDCalc=.TRUE.
 	      If (.not. firstOPDCalc) Then
-                firstOPDCalc=.TRUE. 
+                firstOPDCalc=.TRUE.
 	      Else
 	        multiOPDCalc=.TRUE.
 	      End if
@@ -3758,26 +3758,26 @@ C         ***Plot OPD map***
 	        Open(Unit=15,File='Opd_macos.txt')
                 Do j=1,npts+1
                    Write(15,*) OPDMat(1:npts+1,j)
-                End Do	      
+                End Do
 	        Close(15)
 	      End If
-               
+
  ! Dump ray positions on all elements for 3D system rendering  09/27/2014
               If (SaveRayPosHist_Flg .AND. DumpRayPosHist_Flg) Then
                 print*,'** Dumping RayPosHist array ...'
                 Open(Unit=15,File='RayPosHist.txt')
-	        Write(*,*)'** Writing RayPosHist: nElt,nRay =',nElt,nRay 
-	        i=0  ! line counter 
+	        Write(*,*)'** Writing RayPosHist: nElt,nRay =',nElt,nRay
+	        i=0  ! line counter
 	        Do j=0,nElt
 	          Do iRay=1,nRay
 	            If (LRayOKHist(iRay,j)) Then
                       i=i+1
-	              !Write(15,*) j, iRay, RayPosHist(1:3,iRay,j) 
-	              Write(15,320) j, iRay, RayPosHist(1:3,iRay,j) 
+	              !Write(15,*) j, iRay, RayPosHist(1:3,iRay,j)
+	              Write(15,320) j, iRay, RayPosHist(1:3,iRay,j)
 	            End If
 	          End Do
 	        End Do
-	        Write(*,*) '** Dumping RayPosHist: Total lines =',i  
+	        Write(*,*) '** Dumping RayPosHist: Total lines =',i
 	        Close(15)
 	        !
 	        Open(Unit=16,File='ChfRayPosHist.txt')
@@ -3786,10 +3786,10 @@ C         ***Plot OPD map***
 	        Do j=1,nElt
                   If (LRayOKHist(1,j)) Then
 	            Write(16,*) j, vptElt(1:3,j), RayPosHist(1:3,1,j)
-		  End If 
-                End Do 
+		  End If
+                End Do
 		Close(16)
-	      End If  
+	      End If
 
 #if 0
 	      Open(Unit=15,File='RBOpd.txt')
@@ -3802,7 +3802,7 @@ C         ***Plot OPD map***
 	      Close(15)
 #endif
 
-	      
+
 	      iEm1=iElt-1
 	      !print*,'*******OPD: iElt,iEm1 =',iElt,iEm1
 
@@ -3840,7 +3840,7 @@ C         ***Plot OPD map***
 
 #if 0
 	      print*,'******OPD: dxElt(iElt),dxAvg(iElt) =', dxElt(iElt),
-     &               dxAvg(iElt) 
+     &               dxAvg(iElt)
 	      print*,'******OPD: DXO,XMIN,YMIN =', DXO,XMIN,YMIN
 #endif
 
@@ -3973,7 +3973,7 @@ C         *** Compute and display Zernike mode coefficients
             END IF
             WRITE(*,161)
             Call zern_interface(OPDElt,OPDMat,OPDbuf,WFE,
-     &                          zernUsrOpt(OPDElt),ZABcmd) 
+     &                          zernUsrOpt(OPDElt),ZABcmd)
 	    WRITE(*,*)'  RMS WFE (after ZAB) =',WFE
             print*,' '
 
@@ -4016,7 +4016,7 @@ C  	    CALL IACCEPT_S(iElt,-1,1,
 C    &         'Enter last element number:')
 C 	    CALL CACCEPT(command,'CHFRay',
 C    &                   'Enter dOPL mode (CHFRay,BEAM): ')
-C	   
+C
 C	    CALL dOPL(ifLoad,Rx1,Rx2,iElt,command)  ! defined in utilsub.F
 
 C#if 1
@@ -4040,9 +4040,9 @@ C          *** Get optical beam size at element surface(s)
                    WRITE(*,167)' Aperture at source =',Aperture,cUnit
                  Else
                    iElt=iLocal
-	           ifRayPrint=.FALSE. ! don't print raytrace output in 'GBS' cmd -jzlou 
+	           ifRayPrint=.FALSE. ! don't print raytrace output in 'GBS' cmd -jzlou
 	           !print*,'** B4 GetBeamSizeCmd(), ifRayPrint =',ifRayPrint
-               Call 
+               Call
      &            GetBeamSizeCmd(bmRad,npts,ifPol,ifGrid,ifPropagate,
      &            ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &            ifIntSrfSet,ifRayPrint,iObsOpt,iLocal,iCurWFElt,
@@ -4061,8 +4061,8 @@ C          *** Get optical beam size at element surface(s)
                    If (iElt==0) Then
                      ! source element
 	             If (SaveVis3d_dat_Flg) Then
-		       WRITE(12,318) 'ChfRayDir =',ChfRayDir(1:3) 
-		       WRITE(12,318) 'ChfRayPos =',ChfRayPos(1:3) 
+		       WRITE(12,318) 'ChfRayDir =',ChfRayDir(1:3)
+		       WRITE(12,318) 'ChfRayPos =',ChfRayPos(1:3)
                      End If
                      WRITE(12,*) 'iElt =  0, Source aperture =',
      &                           Aperture
@@ -4070,7 +4070,7 @@ C          *** Get optical beam size at element surface(s)
      &                           Aperture
        WRITE(12,*)'-------------------------------------------------'
                    Else
-                     Call 
+                     Call
      &            GetBeamSizeCmd(bmRad,npts,ifPol,ifGrid,ifPropagate,
      &             ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &             ifIntSrfSet,ifRayPrint,iObsOpt,iElt,iCurWFElt,
@@ -4083,9 +4083,9 @@ C          *** Get optical beam size at element surface(s)
 !                    Write(12,*) '  Beam diameter =',2d0*bmRad
 
                      Write(12,319)'iElt =',iElt,
-     &                            ' (',EltName(iElt),', ', 
+     &                            ' (',EltName(iElt),', ',
      &                            EltTypeName(EltID(iElt)),')',
-     &                            '  Beam diameter =',2d0*bmRad                                 
+     &                            '  Beam diameter =',2d0*bmRad
                      Write(*,169)  'iElt =',iElt,' (',
      &                 EltTypeName(EltID(iElt)),')',
      &                 '  Optical beam diameter ='
@@ -4120,7 +4120,7 @@ C         ***Set spot diagram centering option***
      &	  'Enter spot diagram centering option (elt,chfray):')
 	    IF (LCMP(ANS,'ELT',1)) THEN
 	      spcOption=1
-	    ELSE 
+	    ELSE
 	      spcOption=2
 	    END IF
 
@@ -4132,7 +4132,7 @@ C         ***Plot spot diagram***
 	        i=iCurRayElt
 	      ELSE IF (ifPropagate) THEN
 	        i=iCurWFElt
-	      ELSE 
+	      ELSE
 	        i=0
 	      END IF
  10	      CALL IACCEPT_S(iElt,i,1,
@@ -4142,7 +4142,7 @@ C         ***Plot spot diagram***
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'SPOT: Invalid element number: ',iElt
 	        GO TO 10
-	      ELSE IF 
+	      ELSE IF
      &        ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.11).OR.
      &	      (EltID(iElt).EQ.12)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
@@ -4198,7 +4198,7 @@ C	  Get local coordinates:
 	        ifBuild=.FALSE.
 	        ifOPDCalc=.FALSE.
 	        iLocal=iElt
-	        CALL 
+	        CALL
      &      LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	    ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
      &	    ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,
@@ -4228,7 +4228,7 @@ C	  Trace rays:
 	      iEndElt=iElt
 	      IF (ifTrace.AND.(iCurRayElt.LE.iEndElt)) THEN
 	        iStartElt=iCurRayElt
-	      ELSE IF 
+	      ELSE IF
      &          (ifPropagate.AND.(iCurWFElt.EQ.iEndElt)) THEN
 	        iStartElt=iCurWFElt
 	      ELSE
@@ -4252,7 +4252,7 @@ C	  Trace rays:
 	        WRITE(*,*)' STOP cmd: Tracing ',nRay,' rays...'
 	        iStartRay=1
 	        iEndRay=nRay
-	        CALL 
+	        CALL
      &     CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	   ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
      &     RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
@@ -4340,7 +4340,7 @@ C	      Compute spot diagram data from ray trace and plot:
 	        imgfil=filnam(1:j)//'.spot'//Cinteger(1:i)
 	        CTITLE='Spot Diagram, Elt='//Cinteger(1:i)
 
-	        ! write to a file 
+	        ! write to a file
 	  CALL SPOTOUT(RaySpot,iSpot,2,mRay,2,1,
      &	         'X-Axis','Y-Axis',CTITLE,iPloTyp,imgfil,iElt)
 
@@ -4370,7 +4370,7 @@ C         ***Export data***
 	      WRITE(*,*)' No data has been generated yet.'
 	    END IF
 
-C         ***next command: Plot wavefront stuff*** 
+C         ***next command: Plot wavefront stuff***
 C                          -- original comment, doesn't make sense -jzlou
 C         *** Should perform ray trace and diffraction here -- jzlou
 
@@ -4394,11 +4394,11 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	    END IF
 
 	    IF (LCMP(command,'IMG',3)) THEN
-	      ! Abort if in vector mode or input object intensity 
+	      ! Abort if in vector mode or input object intensity
 	      ! file not available ...
 	      If (.not.ifObjImgSet) Then
 	        WRITE(*,*)' * Object intensity input not available'
-	      Else If (ifVecDif3) Then 
+	      Else If (ifVecDif3) Then
 	        WRITE(*,*)
      &         ' * Imaging not available in vector diffraction mode'
 	      End If
@@ -4409,33 +4409,33 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 !  each of these cmds just sets 'iElt' to 'iComElt' that is set by COMPOSE,
 !  so the subsequent RunProp() will propagate to the proper iElt. -jzlou
 	    IF (LCMP(command,'ADD',2)) THEN
-	      IF (.NOT.ifAdd) THEN 
+	      IF (.NOT.ifAdd) THEN
 	        WRITE(*,*)' Must COMpose before ADDing images'
 	        GO TO 1
 	      END IF
 	      iElt=iComElt
 	    ELSE IF (LCMP(command,'DADD',3)) THEN
-	      IF (.NOT.ifPixArray) THEN 
+	      IF (.NOT.ifPixArray) THEN
 	        WRITE(*,*)' No data to display'
 	        GO TO 1
 	      END IF
 	      iElt=iComElt
 #if 0
 	    ELSE IF (LCMP(command,'CADD',3)) THEN
-	      IF (.NOT.ifRegrid(iElt)) THEN 
+	      IF (.NOT.ifRegrid(iElt)) THEN
 	        WRITE(*,*)' Must REGRID before adding complex WFs'
 	        GO TO 1
 	      END IF
 	      iElt=iComElt
 #endif
 	    ELSE IF (LCMP(command,'BLUR',3)) THEN
-	      IF (.NOT.ifPixArray) THEN 
+	      IF (.NOT.ifPixArray) THEN
 	        WRITE(*,*)' No data to display'
 	        GO TO 1
 	      END IF
 	      iElt=iComElt
 	    ELSE IF (LCMP(command,'GBLUR',3)) THEN
-	      IF (.NOT.ifAdd) THEN 
+	      IF (.NOT.ifAdd) THEN
 	        WRITE(*,*)' Must COMpose before GBLURing images'
 	        GO TO 1
 	      END IF
@@ -4500,7 +4500,7 @@ C         *** Should perform ray trace and diffraction here -- jzlou
      &    ', j=',i5)
 
 	    WRITE(*,206) Wavelen,Flux,udia,du,xdia,dx
-	     
+
 	    ! Calc physical (image plane) coords for intensity
 	    X0PFP=0d0-dx*FLOAT((mdttl)/2)
 	    DO i=1,mdttl
@@ -4518,10 +4518,10 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	        ANS='LOG10 Intensity#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Intensity#%'
-	      ELSE 
+	      ELSE
 	        ANS='Intensity#%'
 	      END IF
- 
+
 	      CALL SrfOut(iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.int',mdttl,mdttl,R1,R2,StretchType)
 	      !print*,'****Int: after SrfOut, mdttl =',mdttl
@@ -4543,8 +4543,8 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 
 #ifdef MACOS_CMD
 	      if (.not.ifEFLCalc) then
-#include "efl.inc"	
-	        if (abs(Aperture) > smallestReal) 
+#include "efl.inc"
+	        if (abs(Aperture) > smallestReal)
      &            focalRatio=efl/Aperture
 	      end if
 
@@ -4552,23 +4552,23 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      if (iPloTyp==2) then
 	         iPloTyp=1 ! set to slice (no gray image for MTF)
 	      end if
-	      ANS='MTF Plot#%' 
+	      ANS='MTF Plot#%'
 	      CALL SrfOut(iElt,iPloTyp,ANS,
      &     'Cycle/'//BaseUnits(1:ICLEN(BaseUnits)),'Normalized MTF',
      &     '.mtf',mdttl,mdttl,R1,R2,StretchType)
-	      if (iPloTyp==1) then 
+	      if (iPloTyp==1) then
 	        print*,' '
         print*,'Use ROW or COL command to plot 1D MTF in each dimension'
-	        print*,' ' 
+	        print*,' '
 	      end if
-	      !print*,'Image plane sampling dx =', 1d0/(mdttl*dxElt(iElt)) 
+	      !print*,'Image plane sampling dx =', 1d0/(mdttl*dxElt(iElt))
 	      !print*,'Nyquist sampling dx =', (WaveLen*focalRatio/2d0)
 	      if ((WaveLen*focalRatio/2d0)<(1d0/(mdttl*dxElt(iElt)))) then
-	        !print*,'**Warning: There could be aliasing in MTF,' 
-	        !print*,'**         use larger ray-tracing grid and macos model' 
+	        !print*,'**Warning: There could be aliasing in MTF,'
+	        !print*,'**         use larger ray-tracing grid and macos model'
 	      end if
 	      iPloTyp=saviPloTyp
-#endif 
+#endif
 
 	    ELSE IF (LCMP(command,'AMPLITUDE',2)) THEN
 	      IF (ifVecDif3) THEN
@@ -4624,7 +4624,7 @@ C         *** Should perform ray trace and diffraction here -- jzlou
               Open(Unit=15,File='phase.txt')
               Do j=1,mdttl
                  Write(15,*) MWFFT(1:mdttl,j)
-              End Do       
+              End Do
               Close(15)
 #endif
 	      END IF
@@ -4639,7 +4639,7 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      End If
 
 	      ImgMode=InCohImg  ! incoherent is default
-	      ! Simulate coherent or incoherent imaging with computed INT 
+	      ! Simulate coherent or incoherent imaging with computed INT
 	      ! or CA; focal plane psf has been computed.
 	      CALL CACCEPT(ANS,'INC','INCoherent or COHerent imaging? ')
 	      If (.not.LCMP(ANS,'INC',3)) Then
@@ -4651,7 +4651,7 @@ C         *** Should perform ray trace and diffraction here -- jzlou
  	      Call SysImging(ImgMode,WFElt(:,:,1),ObjInt,
      &                       MWFFT,mdttl)
 
-#if 0  
+#if 0
  ! for test only
 	      Open(unit=13,file='caReal.txt',status='replace')
 	      Open(unit=14,file='caImag.txt',status='replace')
@@ -4666,7 +4666,7 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      Close(13)
 	      Close(14)
 	      Close(15)
-#endif 
+#endif
 
 	      If (ImgMode==InCohImg) Then
 	       CALL SrfOut(iElt,iPloTyp,'Incoherent Imaging#%',
@@ -4760,8 +4760,8 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      END IF
 
 	      !print*,'PIX: DV1(1:3) =', DV1(1:3)
-	      !print*,'PIX: iCurWFElt =', iCurWFElt 
-	      !print*,'PIX: PropType(iCurWFElt-1) =', PropType(iCurWFElt-1) 
+	      !print*,'PIX: iCurWFElt =', iCurWFElt
+	      !print*,'PIX: PropType(iCurWFElt-1) =', PropType(iCurWFElt-1)
 
 	      IF (PropType((iCurWFElt-1)).NE.1) THEN
 	        ! =1 for Geometric, other values for diffraction types. -jzlou
@@ -4779,7 +4779,7 @@ C     &	          psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        ANS='LOG10 Pixilated Intensity#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Pixilated Intensity#%'
-	      ELSE 
+	      ELSE
 	        ANS='Pixilated Intensity#%'
 	      END IF
 
@@ -4839,7 +4839,7 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	          ANS='LOG10 Composed Image#%'
 	        ELSE IF (StretchType.EQ.3) THEN
 	          ANS='SQRT Composed Image#%'
-	        ELSE 
+	        ELSE
 	          ANS='Composed Image#%'
 	        END IF
 	        CALL PixOut(PixArray,iElt,iPloTyp,ANS,
@@ -4852,18 +4852,18 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        ANS='LOG10 Composed Image#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Composed Image#%'
-	      ELSE 
+	      ELSE
 	        ANS='Composed Image#%'
 	      END IF
 	      CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	      'X-Axis','Y-Axis','.add',nPixAdd,mpix,R1,R2,StretchType)
-	
+
 	    ELSE IF (LCMP(command,'CADD',3)) THEN
-	      If (.not.ifAddCA) Then  
+	      If (.not.ifAddCA) Then
 	        ifAddCA=.true.
 	        iComElt=iElt  ! target element for combining complex WF
 
-	        ! Resample CA to a rectangular grid at the image plane. 
+	        ! Resample CA to a rectangular grid at the image plane.
 	        ! The Grid has dims mdttl by mdttl, centered around the
 	        ! chief ray of first CA.
 	        !Call CAReGrid(...)
@@ -4872,8 +4872,8 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	      ! Resample and add complex WFs, need implementatioin ...
               ! CaArray stores resampled and accumulated CA fields.
 	      If (ifAddCA) Then
-	        !Call ResampAddCa(CaArray,...) 
-	      End If 
+	        !Call ResampAddCa(CaArray,...)
+	      End If
 
 	      CALL CACCEPT(ANS,'YES',
      &          'Complex amplitude added. Plot composed image? ')
@@ -4889,7 +4889,7 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        ANS='LOG10 Composed Image#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Composed Image#%'
-	      ELSE 
+	      ELSE
 	        ANS='Composed Image#%'
 	      END IF
 	      CALL RACCEPT_S(kval,1d0,1,'Enter blur kernel peak (1e0):')
@@ -4903,7 +4903,7 @@ c  set plot label
 	        ANS='LOG10 Composed Image#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Composed Image#%'
-	      ELSE 
+	      ELSE
 	        ANS='Composed Image#%'
 	      END IF
 c  convert WF amplitude to intensity
@@ -4994,18 +4994,18 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        ANS='LOG10 Composed Image#%'
 	      ELSE IF (StretchType.EQ.3) THEN
 	        ANS='SQRT Composed Image#%'
-	      ELSE 
+	      ELSE
 	        ANS='Composed Image#%'
 	      END IF
 	        CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.add',nPixAdd,mpix,R1,R2,StretchType)
 	      END IF
-	    END IF 
+	    END IF
 
 C	  ***next command: Calculate system modular transfer function (MTF) ***
 #if 1
 	  ELSE IF (LCMP(command,'CMTF',4)) THEN
-	     IF (.NOT.ifLoad) then 
+	     IF (.NOT.ifLoad) then
                WRITE(*,150); GO TO 1
 	     END IF
 
@@ -5035,7 +5035,7 @@ C	  ***next command: Calculate system modular transfer function (MTF) ***
 	       Open(Unit=15,File='MTFData.txt')
 	       Do j=1,2*mdttl
 	         Write(15,*) MTFMat2(1:2*mdttl,j)
-	       End Do	     
+	       End Do
 	       Close(15)
 	     end if
 
@@ -5054,7 +5054,7 @@ C         ***next command: Set plot stretch***
 	      StretchType=3
 	    ELSE
 	      StretchType=1
-	    END IF 
+	    END IF
 
 C         ***Set noise seed***
 
@@ -5066,7 +5066,7 @@ C         ***Set noise seed***
 C         ***Add noise to composed image***
 
 	  ELSE IF (LCMP(command,'NOISE',3)) THEN
-	    IF (.NOT.ifAdd) THEN 
+	    IF (.NOT.ifAdd) THEN
 	      WRITE(*,*)' Must COMpose before adding noise.'
 	      GO TO 1
 	    END IF
@@ -5076,7 +5076,7 @@ C         ***Add noise to composed image***
 	      DO  j=1,nPixAdd
 	        DO  i=1,nPixAdd
                   PixArray(i,j)=POIDEV(PixArray(i,j),NoiseSeed(1))
-	        END DO            
+	        END DO
 	      END DO
 	    ELSE IF (LCMP(ANS,'BACKGROUND',3)) THEN
 	      CALL RACCEPT_S(expval,0d0,1,
@@ -5086,7 +5086,7 @@ C         ***Add noise to composed image***
 	        DO  i=1,nPixAdd
 	          S2=POIDEV(expval,NoiseSeed(1))
                   PixArray(i,j)=PixArray(i,j)+S2
-	        END DO            
+	        END DO
 	      END DO
 	    ELSE IF (LCMP(ANS,'POISSON',3)) THEN
 	      CALL RACCEPT_S(expval,0d0,1,
@@ -5097,7 +5097,7 @@ C         ***Add noise to composed image***
 	        DO  i=1,nPixAdd
                   PixArray(i,j)=PixArray(i,j)+
      &	          POIDEV(expval,NoiseSeed(1))/S2
-	        END DO            
+	        END DO
 	      END DO
 	    ELSE IF (LCMP(ANS,'READ',3)) THEN
 	      CALL DACCEPT_S(S1,0d0,1,
@@ -5107,7 +5107,7 @@ C         ***Add noise to composed image***
 	      DO  j=1,nPixAdd
 	        DO  i=1,nPixAdd
                   PixArray(i,j)=PixArray(i,j)+S1*GAUSS(NoiseSeed)/S2
-	        END DO            
+	        END DO
 	      END DO
 	    ELSE IF (LCMP(ANS,'GAUSSIAN',3)) THEN
 	      CALL DACCEPT_S(S1,0d0,1,
@@ -5115,7 +5115,7 @@ C         ***Add noise to composed image***
 	      DO  j=1,nPixAdd
 	        DO  i=1,nPixAdd
                   PixArray(i,j)=PixArray(i,j)+S1*GAUSS(NoiseSeed)
-	        END DO            
+	        END DO
 	      END DO
 	    ELSE
 	      WRITE(*,*)' Unknown noise type.'
@@ -5270,7 +5270,7 @@ C         ***Plot multi-spectral image***
 	      xdia=FLOAT(mdttl-1)*dx
 
 	      WRITE(*,206)Wavelen,Flux,udia,du,xdia,dx
-	        
+
 	      X0PFP=0d0-dx*FLOAT((mdttl)/2)
 	      DO 834 i=1,mdttl
 	        XFP(i)=X0PFP
@@ -5314,7 +5314,7 @@ c     &	        psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	    ELSE IF (StretchType.EQ.3) THEN
 	      ANS='SQRT Image, Filter='//
      &	      filtfil(1:(ICLEN(filtfil)-4))//'#%'
-	    ELSE 
+	    ELSE
 	      ANS='Image, Filter='//filtfil(1:(ICLEN(filtfil)-4))//'#%'
 	    END IF
 	    CALL PixOut(PixArray,iElt,iPloTyp,
@@ -5349,7 +5349,7 @@ C         ***Compute perturbed system parameters from entered data***
 	      ifGrid=.FALSE.
 	      iCurRayElt=0
 
-	      If (EltStopSet .AND. (iElt<=StopElt) 
+	      If (EltStopSet .AND. (iElt<=StopElt)
      &            .AND. LStopAtEltAutoSet) Then
                 ! Set aperture stop at element after perturb
                 WRITE(*,*)' '
@@ -5497,14 +5497,14 @@ C         ***Linear WF plots***
      &        OPDMat,AvgL,Cmatrix,npts,RayIndex,iPertElt,iElt)
 	      CALL CLPLOT(command,npts,RaySpot,
      &        OPDMat,AvgL,RayIndex,RayMap,
-     &	      iPloTyp,iPertElt,CD1,D2,PixArray,StretchType)
+     &	      iPloTyp,iPertElt,CD1,CD2,PixArray,StretchType)
 	    ELSE
 	      WRITE(*,157)
 	    END IF
 
 C         ***Set surface plot type***
 
-	  ELSE IF (LCMP(command,'NULL',3).OR.LCMP(command,'NONE',3)) 
+	  ELSE IF (LCMP(command,'NULL',3).OR.LCMP(command,'NONE',3))
      &	  THEN
 	    iPloTyp=0
 	  ELSE IF (LCMP(command,'SLICE',3)) THEN
@@ -5582,7 +5582,7 @@ C             Go into interactive mode
 	        FitsFilename='Opd.fits'
 	        Call fitswrite(FitsFilename,OPDMat,npts+1)
               Else
-	        Write(*,*)'  OPD data is not available, run OPD command' 
+	        Write(*,*)'  OPD data is not available, run OPD command'
 	      End If
 	    Else If (LCMP(ANS,'INT',3)) THEN
 	      If (firstIntCalc) Then
@@ -5590,7 +5590,7 @@ C             Go into interactive mode
 	        FitsFilename='Int.fits'
 	        Call fitswrite(FitsFilename,MWFFT,mdttl);
               Else
-	        Write(*,*)'  Intensity data is not available, run INt command' 
+	        Write(*,*)'  Intensity data is not available, run INt command'
 	      End If
 	    Else
 	      Write(*,*)'  Invalid answer: ',ANS
@@ -5618,7 +5618,7 @@ C  For testing srtrace.F only, -jzlou
 	  ELSE IF (LCMP(command,'SRTRACE',6)) THEN
 	    IF (ifLoad) THEN
 	      print*,'Calling SRTRACE_Test ...'
-	      CALL SRTRACE_Test(0,nElt,ChfRayPos,ChfRayDir) 
+	      CALL SRTRACE_Test(0,nElt,ChfRayPos,ChfRayDir)
 	      print*,'After Calling SRTRACE_Test ...'
 	    ELSE
 	      WRITE(*,150)
