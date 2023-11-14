@@ -179,7 +179,7 @@ C  8. Compute PSF
 	  CALL IACCEPT_S(npix,i,1,'Enter number of pixels per side:')
 	  dxWF=dx
 	  CALL RACCEPT_S(dxpix,dxWF,1,'Enter size of pixel:')
-	  CALL CPIXILATE(PixArray,MWFFT,XFP,YFP,0e0,0e0,
+	  CALL CPIXILATE(PixArray,MWFFT,XFP,YFP,0d0,0d0,
      &	  npix,mPix,mdttl,dxWF,dxpix,iPloTyp,.FALSE.,.FALSE.)
 	  CALL IntToChar(Cinteger,iLinElt,i)
 	  IF (iPloTyp.GE.5) THEN
@@ -195,11 +195,12 @@ C  8. Compute PSF
 	      CTITLE='LOG10 Linear Model Pixilated Intensity#%'
 	    ELSE IF (StretchType.EQ.3) THEN
 	      CTITLE='SQRT Linear Model Pixilated Intensity#%'
-	    ELSE 
+	    ELSE
 	      CTITLE='Linear Model Pixilated Intensity#%'
 	    END IF
 	    CALL PixOut(PixArray,iElt,iPloTyp,CTITLE,
-     &	    'X-Axis','Y-Axis','.pix',npix,mpix,CD1,CD2,StretchType)
+     &	    'X-Axis','Y-Axis','.pix',npix,mpix,REAL(CD1,KIND=8),
+     &	    REAL(CD2,KIND=8),StretchType)
 	  END IF
 
 	ELSE IF (LCMP(command,'LLO',3)) THEN
@@ -240,12 +241,12 @@ C  8. Compute PSF
 	      CTITLE='LOG10 Linear Model Intensity#%'
 	    ELSE IF (StretchType.EQ.3) THEN
 	      CTITLE='SQRT Linear Model Intensity#%'
-	    ELSE 
+	    ELSE
 	      CTITLE='Linear Model Intensity#%'
 	    END IF
 	    CALL SrfOut(iElt,iPloTyp,CTITLE,
      &	    'X-Axis','Y-Axis','.int',mdttl,mdttl,
-     &	    CD1,CD2,StretchType)
+     &	    REAL(CD1,KIND=8),REAL(CD2,KIND=8),StretchType)
 	  END IF
 	END IF
 
@@ -349,7 +350,7 @@ C       with element 1 and proceding to the last element.  Deformable
 C       elements are loaded completely (all rays); non-deformable
 C       elements are loaded for ray 1 only.
 
-	use param_mod	
+	use param_mod
 	use cfiles_mod
 	use elt_mod
 #ifdef CSMACOS
