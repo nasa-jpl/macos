@@ -255,6 +255,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	  ELSE
 	    WRITE(*,111)' xGrid'
 	    ENTR_OK=.FALSE.
+	    RETURN
 	  END IF
 	END IF
 
@@ -271,6 +272,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	  ELSE
 	    WRITE(*,111)' yGrid'
 	    ENTR_OK=.FALSE.
+            RETURN
 	  END IF
 	END IF
 
@@ -279,6 +281,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	ELSE
 	  WRITE(*,111)' nElt'
 	  ENTR_OK=.FALSE.
+          RETURN
 	END IF
 
 	IF (nSeg_FLG) THEN
@@ -287,6 +290,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	  IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
 	    WRITE(*,111)' nSeg'
 	    ENTR_OK=.FALSE.
+            RETURN
 	  ELSE
 	    nSeg=0
 	    nSeg_FLG=.TRUE.
@@ -331,6 +335,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	ELSE
 	  WRITE(*,111)' SegCoord'
 	  ENTR_OK=.FALSE.
+          RETURN
 	END IF
 
 	IF (SegXgrid_FLG) THEN
