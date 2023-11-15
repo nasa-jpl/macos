@@ -1,8 +1,8 @@
 C***********************************************************************
 C	Begin file iosub.inc
 C    +----------------------------------------------------------------+
-C    |  Copyright (C) 1995-2007, California Institute of Technology.  |  
-C    |  U.S. Government Sponsorship Is Acknowledged.      	      | 
+C    |  Copyright (C) 1995-2007, California Institute of Technology.  |
+C    |  U.S. Government Sponsorship Is Acknowledged.      	      |
 C    +----------------------------------------------------------------+
 C***********************************************************************
 
@@ -43,7 +43,7 @@ C***********************************************************************
 	SUBROUTINE LOHIN2()
 	use param_mod
 	use src_mod
-	use loh_I2 
+	use loh_I2
 
 	IMPLICIT NONE
 
@@ -149,9 +149,8 @@ C       Set defaults, if necessary
 	IF (ChfRayDir_FLG) THEN
 	  CONTINUE
 	ELSE
-	  CALL DZERO(ChfRayDir,3)
-	  ChfRayDir(3)=1.0
-	  ChfRayDir_FLG=.TRUE.
+	  ChfRayDir(:)  = (/0d0, 0d0, 1d0/)
+	  ChfRayDir_FLG = .TRUE.
 	  WRITE(*,112)'ChfRayDir'
 	END IF
 
@@ -253,7 +252,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	    xGrid(3)=ChfRayDir(2)
 	    xGrid_FLG=.TRUE.
 	    WRITE(*,112)' xGrid'
-	  ELSE 
+	  ELSE
 	    WRITE(*,111)' xGrid'
 	    ENTR_OK=.FALSE.
 	  END IF
@@ -269,7 +268,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	    CALL DXPROD(xGrid,yGrid,zaxis)
 	    yGrid_FLG=.TRUE.
 	    WRITE(*,112)' yGrid'
-	  ELSE 
+	  ELSE
 	    WRITE(*,111)' yGrid'
 	    ENTR_OK=.FALSE.
 	  END IF
@@ -338,7 +337,7 @@ c	  WRITE(*,112)'Extinc(0)'
 	  CONTINUE
 	ELSE
 	  IF (xGrid_FLG) THEN
-	    CALL DEQUATE(SegXgrid(1),xGrid(1),3)	    
+	    CALL DEQUATE(SegXgrid(1),xGrid(1),3)
 	    SegXgrid_FLG=.TRUE.
 	    WRITE(*,112)' SegXgrid'
 	  END IF
@@ -362,7 +361,7 @@ C***********************************************************************
 cHistory
 c  24Jul97 loh:  Added flag to indicate zernike type
 c  24Jul97 loh:  Fixed bug so that when the xObs default is used, the
-c		 warning message is printed correctly, and fixed it so 
+c		 warning message is printed correctly, and fixed it so
 c		 you don't get the irritating "Default Used for xObs"
 c		 warning messages when you have nObs=0
 
@@ -855,7 +854,7 @@ C	  WRITE(*,112)'nObs',iElt
 	      xObs(3,iElt)=psiElt(2,iElt)
 	      xObs_FLG=.TRUE.
 	      WRITE(*,112)' xObs',iElt
-	    ELSE 
+	    ELSE
 	      WRITE(*,111)' xObs',iElt
 	      ELEM_OK=.FALSE.
 	    END IF
@@ -982,7 +981,7 @@ C***********************************************************************
 	END SUBROUTINE SumData
 
 C***********************************************************************
-	
+
 	SUBROUTINE ViewData(npts,FU)
 	use param_mod
 	use src_mod
@@ -1073,7 +1072,7 @@ C Basic params & optical params & conic params
  	    ELSE IF (SrfType(iElt).EQ.7) THEN
 	      WRITE(*,106)UDSrfType(iElt),UDSrfFile(iElt),
      &	      (UDSrfParam(j,iElt),j=1,6)
- 	    ELSE IF (SrfType(iElt).EQ.8 
+ 	    ELSE IF (SrfType(iElt).EQ.8
      &               .OR. SrfType(iElt).EQ.9) THEN
 	      WRITE(*,131) ZernTypeNameL(ZernTypeL(iElt))
 	      WRITE(*,107)(ZernCoef(j,iElt),j=1,45)
@@ -1439,11 +1438,11 @@ C Basic params & optical params & conic params
  130    FORMAT(1P/'    iElt= ',i4/' EltName= ',a16/
      &  ' Element= ',a12/ ' Surface= ',a8)
  133    FORMAT(1P,'    psiElt= ',3D23.15/
-     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15) 
+     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
  134    FORMAT(1P,'    fElt= ',D23.15/
      &  '    eElt= ',D23.15/
      &  '   KrElt= ',D23.15/'   KcElt= ',D23.15/'  psiElt= ',3D23.15/
-     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15) 
+     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
  135    FORMAT(1P,'    KrElt= ',D23.15/
      &  '   KcElt= ',D23.15/'  psiElt= ',3D23.15/
      &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
@@ -1561,28 +1560,28 @@ C Basic params & optical params & conic params
      &          (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
 	      END IF
 	    ELSE
-	      ! With EltGrp defined at iElt 
+	      ! With EltGrp defined at iElt
 	      IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
                 WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
      &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt) 
+                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
                 WRITE(*,133)(psiElt(j,iElt),j=1,3),
      &                (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE IF (KcElt(iElt).LE.0) THEN 
+              ELSE IF (KcElt(iElt).LE.0) THEN
 	        WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
      &            	    SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt) 
+                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
 	        WRITE(*,134)fElt(iElt),eElt(iElt),
      &       	    KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
      &              (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
               ELSE
 	        WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
      &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt) 
+                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
 	        WRITE(*,135)
      &            KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
      &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	      END IF 
+	      END IF
 	    END IF
 
 	    IF (LGlass(iElt)) THEN
@@ -1664,7 +1663,7 @@ C  obscuration params
  21	    CONTINUE
 	    WRITE(*,126)(xObs(j,iElt),j=1,3)
 	  END IF
-	
+
 	  WRITE(*,121)ApTypeName(ApType(iElt))
 	  IF (ApType(iElt).NE.0) THEN
 	    IF (ApType(iElt).EQ.1) THEN
@@ -1749,7 +1748,7 @@ C  input data
               END DO
             END IF
           ELSE IF (GridType.EQ.5) THEN
-	    WRITE(*,*)'    gap= ',gap 
+	    WRITE(*,*)'    gap= ',gap
 	    WRITE(*,*)' nRings= ',nRings
             WRITE(*,*)' nPetals= ',nPetals(0:nRings)
             WRITE(*,*)' RingRads= ',RingRads(1:nRings)
@@ -1802,7 +1801,7 @@ C Basic params & optical params & conic params
                 WRITE(*,230)
      &            iElt,EltName(iElt),EltTypeName(EltID(iElt)),
      &            SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', 
+                WRITE(*,*)'   EltGrp= ',
      &                    EltGrp(1:EltGrp(0,iElt),iElt)
                 WRITE(*,235)
      &            KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
@@ -2009,7 +2008,7 @@ C	Get file name
 C	Create new input file and write input data
 
 	WRITE(*,*) ' File '//INFIL(1:ICLEN(infil))//' being created.'
-	OPEN (UNIT=1,FILE=INFIL,STATUS='NEW',FORM='FORMATTED')  
+	OPEN (UNIT=1,FILE=INFIL,STATUS='NEW',FORM='FORMATTED')
 	CALL ViewData(npts,1)
 	CLOSE (UNIT=1)
 
@@ -2208,7 +2207,7 @@ C     VARIABLE IS AN ARRAY, AND THE VALUE OF THE VARIABLE NAME.
 
         CHARACTER(len=MacosCharLen) :: STRING  ! to match those in macosio.F, -jzlou
 !	CHARACTER*130 STRING  ! original
-!	CHARACTER*180 STRING  ! -jzlou,  to match those in macosio.F 
+!	CHARACTER*180 STRING  ! -jzlou,  to match those in macosio.F
         CHARACTER(len=MacosVarNamLen) :: VAR_NAM
 !	CHARACTER*120 VALUE   ! original
  	CHARACTER(len=MacosValLen) :: VALUE   ! -jzlou,  to match those in macosio.F
@@ -2227,7 +2226,7 @@ C     k=counter for # of indexes
   123	FORMAT(A)
 
 	! Test only
-	!STRING='  MACOS  =an optical % analysis program' 
+	!STRING='  MACOS  =an optical % analysis program'
 
 	SP_FLG=.FALSE.  ! set to false on entrance; will be set to true later i
 			! when a blank or comment line is found.
@@ -2256,7 +2255,7 @@ C       BEGIN PARSING THE STRING
 	in_tok=.false.
 	DO 12 I=1,maxStringLen
 	  if (J .EQ. maxValueLen) exit ! reached max size of VALUE, exit loop !-jzlou
-    
+
 	  IF (STRING(I:I) .EQ. ' ') THEN
 	    IF (NO_LET) THEN
 	      CONTINUE
@@ -2326,7 +2325,7 @@ C       BEGIN PARSING THE STRING
 	        J=J+1
 	        in_tok=.true.
 	      END IF
-	    ELSE 
+	    ELSE
 	      VALUE(J:J)=STRING(I:I)
 	      J=J+1
 	      VAL_LET=.FALSE.
@@ -2351,7 +2350,7 @@ C       BEGIN PARSING THE STRING
 	  LInCommentMode=.FALSE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
           GO TO 20
-	END IF 
+	END IF
 	IF (LInCommentMode) GO TO 20
 
 	NVTOK=ntok
@@ -2376,7 +2375,7 @@ C      THIS SUBROUTINE OPENS AND CLOSES THE BATCH FILE
 
 	IF (task .EQ. 1) THEN
 
-c new unit number 
+c new unit number
 	   ustack = ustack+1
 
 	   CALL CACCEPT(filnamloh,' ','Enter file name: ')
@@ -2507,7 +2506,7 @@ C***********************************************************************
 	tot_col=7   ! always 7 columns for src
 	Do ib=1,nElt
           tot_col=tot_col+iabs(nEC(ib))
-	End Do 
+	End Do
 
 	!WRITE(8,*) 'iabs(nEC)=',iabs(nEC(1:nElt))
 
@@ -2516,7 +2515,7 @@ C***********************************************************************
 	END SUBROUTINE NasFil1_old
 
 C***********************************************************************
-	
+
 	! Save or write out C-matrix in Nastran fixed long format.
         ! 1) Write out a sensitivity matrix block, for one surface.
         !    Each block is dimension nOutCord x nEcrd
@@ -2597,7 +2596,7 @@ C***********************************************************************
         ! 2) The block is written out in column-oriented sparse matrix
         !    form, non-zero values only.
 
-	SUBROUTINE NasFil2_old_2(Cout,nOutCord,nEcrd,irow,icol) 
+	SUBROUTINE NasFil2_old_2(Cout,nOutCord,nEcrd,irow,icol)
         IMPLICIT NONE
 
         SREAL Cout(nOutCord,nEcrd)
@@ -2637,19 +2636,19 @@ C***********************************************************************
             end if
             if (cout(ir,ic)/=0d0) then
               WRITE(8,203)cout(ir,ic),' '
-	      off=off+17; 
+	      off=off+17;
               curr_col_nz=curr_col_nz+1  ! total non-zeros already written
             end if
-	    if ((off==73 .OR. off==59) .AND. 
+	    if ((off==73 .OR. off==59) .AND.
      &          curr_col_nz < tot_col_nz) then
 	      ! add continuation '*'
-	      do i=1,(80-off-1)  
+	      do i=1,(80-off-1)
 	        WRITE(8,204)' '
-	      end do  
+	      end do
 	      WRITE(8,204)'*'
               WRITE(8,*)' '  ! new line
 	      WRITE(8,205)' '  ! skip first 8 chars
-	      off=8 
+	      off=8
 	    end if
           End Do  ! writing column loop
           WRITE(8,*)' '  ! new line
@@ -2715,7 +2714,7 @@ C***********************************************************************
 	END IF
 	RETURN
 	END SUBROUTINE MFil2
- 
+
 C***********************************************************************
 
 	SUBROUTINE MFil3(Cout,nOutCord,nEcrd,irow,icol,iRay,iElt,
@@ -2985,7 +2984,7 @@ C***********************************************************************
 	  SrfType=7
 	END IF
 
-	RETURN 
+	RETURN
 	END SUBROUTINE EltConvert
 
 C***********************************************************************
@@ -2996,7 +2995,7 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	INTEGER iElt 
+	INTEGER iElt
 	LOGICAL EltID_FLG,SrfType_FLG
 
 	IF (EltID(iElt).EQ.2) THEN
@@ -3005,7 +3004,7 @@ C***********************************************************************
 	    SrfType_FLG=.FALSE.
 	  END IF
 	ELSE IF (EltID(iElt).EQ.3) THEN
-	  ! extended to allow reference to have GridData, 04/2009, -jzlou 
+	  ! extended to allow reference to have GridData, 04/2009, -jzlou
 	  IF ((SrfType(iElt).GT.2) .AND. (SrfType(iElt)/=9)) THEN
 	    EltID_FLG=.FALSE.
 	    SrfType_FLG=.FALSE.
@@ -3047,7 +3046,7 @@ C***********************************************************************
 	  END IF
 	END IF
 
-	RETURN 
+	RETURN
 	END SUBROUTINE EltSurfCompat
 
 C***********************************************************************
@@ -3060,7 +3059,7 @@ C***********************************************************************
 
         Integer :: iElt
         Character(len=*) eName
- 	Logical :: lastCall	
+ 	Logical :: lastCall
 
         Logical :: LCMP, LCMP2
         Logical, save :: firstSegFound=.false., inSeg=.false.,
@@ -3076,7 +3075,7 @@ C***********************************************************************
 	if (lastCall) then
 	  ! final call to this routine
 	  if (m_nLensGrp > 0) then
-	    m_LensGrp(2,1:m_nLensGrp) 
+	    m_LensGrp(2,1:m_nLensGrp)
      &	     = m_LensGrp(1,1:m_nLensGrp)
      &         +m_LensGrpElts(1:m_nLensGrp)-1
 	  end if
@@ -3089,7 +3088,7 @@ C***********************************************************************
              firstSegFound = .true.
              inSeg = .true.
           end if
-	  ! 
+	  !
 	Else If (LCMP(eName,'Lens',4)) then
 	   if (inSeg) then
             m_iLastPMSeg = iElt-1
@@ -3123,7 +3122,7 @@ C***********************************************************************
               m_nLensGrp = m_nLensGrp + 1
             end if
             m_LensGrpElts(4) = m_LensGrpElts(4) + 1
-	  end if 
+	  end if
 	  !
         Else  ! not 'Seg' and not 'Lens'
           if (inSeg) then
@@ -3146,7 +3145,7 @@ C***********************************************************************
           else if (LCMP(eName,'FSM',3)) then
             m_iFSM = iElt
 	  else if (LCMP(eName,'Pickoff',7)) then
-	    m_iPickoff = iElt 
+	    m_iPickoff = iElt
           else if (LCMP(eName,'ExitPupil',9)) then
             m_iExitPupil = iElt
           else if (LCMP(eName,'FocalPlane',10) .or.
