@@ -10,7 +10,7 @@ C       Set entrance condition flags to .FALSE.
           READ(1,123,END=354) STRING
  354      CONTINUE
 
-          CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,NVTOKEN)
+          CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 
 	  IF (LCMP(VAR_NAM,'JZLouChfRayDir',9)) THEN  ! disabled
             READ(VALUE,*)(ChfRayDir(i),i=1,3)
@@ -690,7 +690,7 @@ C       Set entrance condition flags to .FALSE.
 
             READ(1,123) STRING
 
-  901       CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,NVTOKEN)
+  901       CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 
             IF (LCMP(VAR_NAM,'EltName',7)) THEN
               EltName(iElt)=VALUE
@@ -2070,8 +2070,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
                 DO iObs=1,nObs(iElt)
                   IF (iObs.GT.1) THEN
                     READ(1,123) STRING
-                    CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,N
-     &				VTOKEN)
+                    CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
                   END IF
                   TypeString=VALUE
 	          IF (LCMP(VALUE,ObsTypeName(-8),7).OR.
@@ -2162,8 +2161,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 
 	          ! Read in ObsVec line
                   READ(1,123) STRING
-                  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,
-     &			      NVTOKEN)
+                  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 
 	          ! Check whether ObsVec are 3D vertices
 	          If (LCMP(VAR_NAM,'PolyObsVec',10).OR.
