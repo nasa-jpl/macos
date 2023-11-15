@@ -50,7 +50,7 @@ C***********************************************************************
      &          ifAmplInit,ifFid,LnOutCordPass,LOAD_SUCCESS
 	INTEGER i,j,k,l,g,iaxis,iElt,npts,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
-     &          nValsPerRow,fid,status,nvtoken,jAmplSrf,jMetSrf,
+     &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken
 	REAL*8 invec6(6),invec7(7),DDEF(7)
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
@@ -171,7 +171,7 @@ C	Get file name
 	  if (status==0) then
 	    WRITE(*,*)' ** Invalid file id; can not load file'
 	    WRITE(*,*)' '
-	    LOAD_SUCCESS=.false.; return 
+	    LOAD_SUCCESS=.false.; return
 	  end if
 	End If
 
@@ -215,7 +215,7 @@ C	Get file name
 
 	! Comment:  -jzlou
 	! When iopt=1 here, read in an existing Rx file;
-        ! when iopt=0 here, write system data to a new Rx. 
+        ! when iopt=0 here, write system data to a new Rx.
 
  29	CONTINUE
 	EltName(0)='InputRay'
@@ -227,7 +227,7 @@ C	Read existing input file
 C
 	IF (iopt.EQ.1) THEN
 	  !print*,' ****** Openning file 1 ......'
-	  OPEN (1,FILE=INFIL,STATUS='OLD')  
+	  OPEN (1,FILE=INFIL,STATUS='OLD')
 	  REWIND(1)
 
 #include "msmacosio.inc"
@@ -240,8 +240,8 @@ C
 	  ! Check ApType and ApVec consistency for all elements
 	  ApInputErr=.false.
 	  Do iElt=1,nElt
-	    if ((LApTypeDefined(iElt) .and. 
-     &           (.not.LApVecDefined(iElt))) .OR. 
+	    if ((LApTypeDefined(iElt) .and.
+     &           (.not.LApVecDefined(iElt))) .OR.
      &          ((.not.LApTypeDefined(iElt)) .and.
      &          LApVecDefined(iElt))) then
 	      ApInputErr=.true.
@@ -260,7 +260,7 @@ C
 	  nOutCord_FLG=.TRUE.
 
 	  READ(1,123) STRING
-	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,nvtoken)
+	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
@@ -302,7 +302,7 @@ C
 	    nGridpts=mpts
 	    npts=nGridpts-1
 	    if (.not.opt_npts_flg) then
-	      opt_npts=nGridpts/2-1  
+	      opt_npts=nGridpts/2-1
 	      opt_npts_flg=.true.
 	    end if
 	  ELSE
@@ -311,7 +311,7 @@ C
 
 	  IF (nElt.GT.mElt) THEN
 	    WRITE(*,*) ' Too many elements, ',
-     &        'mElt=', mElt, ',  nElt=', nElt 
+     &        'mElt=', mElt, ',  nElt=', nElt
 	    WRITE(*,*) '  MODIFY or use another version. '
 	  END IF
 	  IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
@@ -323,7 +323,7 @@ C	Create new input file
 
 	ELSE
 	  WRITE(*,*) 'File '//infil(1:ICLEN(infil))//' being created.'
-	  OPEN (1,FILE=infil,STATUS='NEW')  
+	  OPEN (1,FILE=infil,STATUS='NEW')
 
 C	Specify input ray grid parameters
 
@@ -352,7 +352,7 @@ C	Specify input ray grid parameters
 	    CBM=2.54d-2
 	  ELSE IF (LCMP(WaveUnits,'none',2)) THEN
 	    CBM=1d0
-	  ELSE 
+	  ELSE
 	    WRITE(*,*)' Unknown units, unitless operation assumed'
 	    BaseUnits='none'
 	    WaveUnits='none'
@@ -385,7 +385,7 @@ C	Specify input ray grid parameters
 	  ELSE IF (LCMP(WaveUnits,'none',2)) THEN
 	    DDEF(1)=6.328d-7
 	    CWM=1d0
-	  ELSE 
+	  ELSE
 	    WRITE(*,*)' Unknown units, unitless operation assumed'
 	    WaveUnits='none'
 	    DDEF(1)=6.328d-7
@@ -408,7 +408,7 @@ C	Specify input ray grid parameters
 	  IF (.NOT.GridType_FLG) THEN
 	    WRITE(*,*)' Unknown grid type'
 	    GridType=1
-	  END IF 
+	  END IF
 	  CALL DACCEPT_S(Aperture,1d0,1,
      &	  'Enter aperture diameter or angle ')
 C	  CALL DACCEPT_S(Obscratn,DDEF(1),1,
@@ -511,7 +511,7 @@ C  Assign SrfType
 	    END DO
 	    IF (.NOT.SrfType_FLG) THEN
 	      WRITE(*,132) TypeString
-	    END IF 
+	    END IF
 
 C  Check to make sure no Element/Surface incompatability exists
 
@@ -592,7 +592,7 @@ C  Interupt Basic Parameter Set with Conic Parameter Set
 		ELSE
 		  fElt(iElt) = 0.0
 		END IF
-	      END IF	
+	      END IF
 	    ELSE IF (iSeg.GT.1) THEN
 	      fElt(iElt)=fElt(iElt-1)
 	      eElt(iElt)=eElt(iElt-1)
@@ -604,7 +604,7 @@ C  Interupt Basic Parameter Set with Conic Parameter Set
 	      KcElt(iElt)=0d0
 	      KrElt(iElt)=-1d22
 	    END IF
-		
+
 C  End Conic Parameter Set
 C  Back to Basic Parameter Set
 
@@ -622,7 +622,7 @@ C  Back to Basic Parameter Set
 	      IF (.NOT.ApType_FLG) THEN
 	        WRITE(*,*)' Unknown aperture type'
 	        ApType(iElt)=0
-	      END IF 
+	      END IF
 	    ELSE
 	      ApType(iElt)=0
 	    END IF
@@ -660,7 +660,7 @@ C  Back to Basic Parameter Set
      &	        ' obscurations'
 	        nObs(iElt)=mObs
 	      END IF
-	    END IF 	
+	    END IF
 
 C  Get Obscuration Parameters
 
@@ -678,7 +678,7 @@ C  Get Obscuration Parameters
 	        IF (.NOT.ObsType_FLG(iObs)) THEN
 	          WRITE(*,*)' Unknown obscuration type'
 	          ObsType(iObs,iElt)=0
-	        END IF 
+	        END IF
 
 	        IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
 		  CALL DACCEPT(ObsVec(:,iObs,iElt),DDEF,-3,
@@ -714,7 +714,7 @@ C  Get Obscuration Parameters
 	    END IF
 
 C  End Obscuration Parameters
-C  Get xObs if aperture or obscuration 
+C  Get xObs if aperture or obscuration
 
 	    IF ((ApType(iElt).NE.0).OR.(nObs(iElt).NE.0)) THEN
 	      xObs(1,iElt)=psiElt(3,iElt)
@@ -723,7 +723,7 @@ C  Get xObs if aperture or obscuration
 	      CALL DACCEPT(xObs(:,iElt),xObs(:,iElt),3,
      &	        'Enter element x-axis vector (x,y,z) ')
 	    END IF
-C  End xObs 
+C  End xObs
 
 C  Back to Basic Parameter Set
 	    CALL DACCEPT_S(zElt(iElt),fElt(iElt),1,
@@ -745,7 +745,7 @@ C  Back to Basic Parameter Set
 	    IF (.NOT.PropType_FLG) THEN
 	      WRITE(*,*)' Unknown propagation type'
 	      PropType(iElt)=1
-	    END IF 
+	    END IF
  	    IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8)) THEN
       	      CALL DACCEPT_S(PinHole(iElt),1d22,1,
      &	      'Enter pinhole radius ')
@@ -886,7 +886,7 @@ C  Get Zernike Parameters
 	      CALL CACCEPT(TypeString,'Malacara',
      &	             'Enter Zernike Type :')
 	      if (LCMP(TypeString,'Norm',4)) then
-                ! normalized Zernike coeff 
+                ! normalized Zernike coeff
 	        DO i=4,6
                   IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
                     ZernTypeL(iElt)=i
@@ -905,7 +905,7 @@ C  Get Zernike Parameters
 	      IF (.NOT.ZernTypeL_FLG) THEN
 	        WRITE(*,*)' Unknown Zernike type'
 	        ZernTypeL(iElt)=1
-	      END IF 
+	      END IF
 	    ELSE
               ZernTypeL(iElt)=1
               ZernTypeL_FLG=.TRUE.
@@ -933,7 +933,7 @@ C  Get Zernike Parameters
 
 	      ! Added by jzlou, 03/2005
               if ( ZernTypeL(iElt)>3) then ! A normalized Zern type
-                ! Set up normalizing coef for circular Zernike terms 
+                ! Set up normalizing coef for circular Zernike terms
                 Call SetZernNormCoef(ZernTypeL(iElt))
               end if
 	    ELSE
@@ -1016,7 +1016,7 @@ C  End GridSurf Parameters & Data
 
 C  Get Surface Coordinate Parameters
 	    ! EltID(*) indicates what type of element (e.g. Reflector,
-            ! Refractor etc.) that element is. 
+            ! Refractor etc.) that element is.
 	    ! EltID(iElt)=10 says the element is a 'LensArray'
 	    ! (see prop_defs.inc). -jzlou
 	    !
@@ -1039,7 +1039,7 @@ C  Get Surface Coordinate Parameters
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
 
-	      if (.false.) then	
+	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
 	        stop
@@ -1100,7 +1100,7 @@ C	Specify output coordinates
 	  invec7(2)=-psiElt(1,nElt)
 	  invec7(3)=-psiElt(2,nElt)
 	  CALL DACCEPT(invec7,invec7,3,'Enter xOut (x,y,z) ')
-	
+
 	  CALL DXPROD(invec6,psiElt,invec7)
 	  CALL DNEGATE(invec6,invec6,3)
 	  CALL DACCEPT(invec6,invec6,3,'Enter yOut (x,y,z) ')
@@ -1151,7 +1151,7 @@ C	Close input file
 
 	RETURN
 
-c  Stuff to handle backward compatability of zernike's (only 36, 
+c  Stuff to handle backward compatability of zernike's (only 36,
 c  instead of 45)
 
   900 	DO I=37,45
@@ -1169,24 +1169,24 @@ C***********************************************************************
         use param_mod
         use src_mod
         use elt_mod
-	
+
 	Integer :: iElt,iSeg
-	Real*8 :: h,a,theta 
+	Real*8 :: h,a,theta
 	Logical :: LCMP
 	Real*8, parameter :: pi=3.1415926
 
-	iSeg=0; a=dsqrt(3.d0)/3.d0  
-        h=width/2  
-        
+	iSeg=0; a=dsqrt(3.d0)/3.d0
+        h=width/2
+
         theta=-pi/2.d0  ! -90 degree
 
 	Do iElt=1,nElt
-	  if (EltID(iElt)==11 .and. 
+	  if (EltID(iElt)==11 .and.
      &        (.not.LCMP(EltName(iElt),'CenterSeg',9))) then
 	    iSeg=iSeg+1
 	    ApType(iElt)=SegApType
 	    ApVec(1,iElt)=SegApVec(1) ! size of aperture
-	    ApVec(4,iElt)=SegApVec(2) ! orientation 
+	    ApVec(4,iElt)=SegApVec(2) ! orientation
 
 	    ! Compute segment center coords
 	    ApVec(3,iElt)=SegCoord(1,iSeg)*h  ! y coord
@@ -1201,25 +1201,25 @@ C***********************************************************************
 C	    print*,'SegCoord(1:2,iSeg),ApType,ApVec(1:4)=',
 C    &           SegCoord(1:2,iSeg),ApType(iElt),ApVec(1:4,iElt)
 
-	    ! Define xGrid axis for segment, needed in the aperture and 
-	    ! obscuration routine ChkRayTrans. 
+	    ! Define xGrid axis for segment, needed in the aperture and
+	    ! obscuration routine ChkRayTrans.
 	    ! zObs is defined as psiElt, the normal to element surface,
 	    ! in the beginning of CPROPGATE of propsub.F,
 	    ! and yObs is cross product of xObs and zObs, also computed
 	    ! in CPROPGATE. -jzlou
  	    !xObs(1:3,iElt)=0.d0; xObs(1,iElt)=-1
- 	    !xObs(1:3,iElt)=0.d0  
+ 	    !xObs(1:3,iElt)=0.d0
             !xObs(1,iElt)=-0.7071; xObs(2,iElt)=0.7071
 
 	    xObs(1,iElt)=SegXgrid(1)*cos(theta)+SegXgrid(2)*sin(theta)
 	    xObs(2,iElt)=-SegXgrid(1)*sin(theta)+SegXgrid(2)*cos(theta)
 
- 	  else if (EltID(iElt)==11 .and. 
+ 	  else if (EltID(iElt)==11 .and.
      &             LCMP(EltName(iElt),'CenterSeg',9)) then
 	    ! Skip center segment
 	    iSeg=iSeg+1
-	  end if          	
-	End Do	
+	  end if
+	End Do
 	END SUBROUTINE SetSegAp
 
 
@@ -1245,7 +1245,7 @@ c  24Jul97 loh:  Added flag to indicate zernike type
         CHARACTER(len=MacosValLen) :: VALUE
 	!CHARACTER*128 VALUE
 	LOGICAL ARR_FLG,LCMP,EXIST,LNOTSET,ifGridInit,ifUDSinit
-	INTEGER MB_I(3),MB_J,npts,i,j,nvtoken,ICLEN
+	INTEGER MB_I(3),MB_J,npts,i,j,ICLEN
 	REAL*8 S1,S2
 
 	CHARACTER(len=MacosCharLen) :: TypeString
@@ -1306,10 +1306,10 @@ C       parse the statement
 	!print*,'In MOD_LOH(): b4 call GET_EQ(), STRING=',STRING
 	!read*, i_jzlou
 
-	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,NVTOKEN)
+	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 	!print*,'AFTER GET_EQ: VAR_NAM = ', VAR_NAM
 
-	IF (LCMP(VAR_NAM,'A',1)) THEN 
+	IF (LCMP(VAR_NAM,'A',1)) THEN
 	    IF (LCMP(VAR_NAM,'Aperture',8)) THEN
 	      READ(VALUE,*,ERR=999,END=999)Aperture
 	    WRITE(*,11)' Aperture',Aperture
@@ -1365,8 +1365,8 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      END IF
 	    END IF
 	END IF
-	IF (LCMP(VAR_NAM,'C',1)) THEN 
-	    IF (LCMP(VAR_NAM,'ChfRayDir',9)) THEN 
+	IF (LCMP(VAR_NAM,'C',1)) THEN
+	    IF (LCMP(VAR_NAM,'ChfRayDir',9)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(ChfRayDir(MB_J),MB_J=1,3)
 	      ELSE
@@ -1411,7 +1411,7 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
      &	    (CoatThkElt(MB_J,MB_I(2)),MB_J=1,3)
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'E',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'E',1)) THEN
 	    IF (LCMP(VAR_NAM,'EltName',7)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)EltName(MB_I(1))
@@ -1436,10 +1436,10 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      END DO
 	      IF (LNOTSET) THEN
 		WRITE(*,130) TypeString
-	      ELSE 
+	      ELSE
  	        WRITE(*,34)
      & 	        ' Element',MB_I(1),EltTypeName(EltID(MB_I(1)))
-	      END IF 
+	      END IF
 
 	    ELSE IF (LCMP(VAR_NAM,'eElt',4)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
@@ -1455,7 +1455,7 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
  	    WRITE(*,18)' Extinc',MB_I(1),Extinc(MB_I(1))
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN
 	    print*,'Debug: VAR_NAM = ', VAR_NAM
 	    IF (LCMP(VAR_NAM,'FLUX',4)) THEN
 	      print*,'Debug: VALUE = ', VALUE
@@ -1469,14 +1469,14 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
  	      WRITE(*,18)' KrElt',MB_I(1),KrElt(MB_I(1))
 	    END IF
 
-	ELSE IF (LCMP(VAR_NAM,'G',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'G',1)) THEN
 	  IF (LCMP(VAR_NAM,'GridType',8)) THEN
 c	    READ(VALUE,*)GridType
 	    DO i=1,5
 	      IF (LCMP(VALUE,GridTypeName(i),2)) GridType=i
 	    END DO
  	    WRITE(*,36)' GridType',GridTypeName(GridType)
-	  ELSE IF (LCMP(VAR_NAM,'GlassElt',6)) THEN	      
+	  ELSE IF (LCMP(VAR_NAM,'GlassElt',6)) THEN
 	    READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	    LNOTSET=.TRUE.
 	    i=1
@@ -1522,7 +1522,7 @@ c	    READ(VALUE,*)GridType
  	    WRITE(*,11)' GridSrfdx',GridSrfdx
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'H',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'H',1)) THEN
  	  IF (LCMP(VAR_NAM,'h1HOE',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1606,66 +1606,66 @@ c	    READ(VALUE,*)GridType
 	      READ(VALUE,*,ERR=999,END=999)MonCoef(MB_I(1),MB_I(2))
 	    IF (MB_I(1) .LE. 6) THEN
 	      WRITE(*,22)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=1,6)    
+     &	       MB_J=1,6)
 	    ELSE IF ((MB_I(1) .GT. 6) .AND. (MB_I(1) .LE. 12)) THEN
 	      WRITE(*,23)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=7,12)   
+     &	       MB_J=7,12)
 	    ELSE IF ((MB_I(1) .GT. 12) .AND. (MB_I(1) .LE. 18)) THEN
 	      WRITE(*,24)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=13,18)   
+     &	       MB_J=13,18)
 	    ELSE IF ((MB_I(1) .GT. 18) .AND. (MB_I(1) .LE. 24)) THEN
 	      WRITE(*,25)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=19,24)   
+     &	       MB_J=19,24)
 	    ELSE IF ((MB_I(1) .GT. 24) .AND. (MB_I(1) .LE. 30)) THEN
 	      WRITE(*,26)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=25,30)   
+     &	       MB_J=25,30)
 	    ELSE IF ((MB_I(1) .GT. 31) .AND. (MB_I(1) .LE. 36)) THEN
 	      WRITE(*,27)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=31,36)  
+     &	       MB_J=31,36)
 	    ELSE IF ((MB_I(1) .GT. 36) .AND. (MB_I(1) .LE. 42)) THEN
 	      WRITE(*,23)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=37,42)   
+     &	       MB_J=37,42)
 	    ELSE IF ((MB_I(1) .GT. 42) .AND. (MB_I(1) .LE. 48)) THEN
 	      WRITE(*,24)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=43,48)   
+     &	       MB_J=43,48)
 	    ELSE IF ((MB_I(1) .GT. 48) .AND. (MB_I(1) .LE. 54)) THEN
 	      WRITE(*,25)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=49,54)   
+     &	       MB_J=49,54)
 	    ELSE IF ((MB_I(1) .GT. 54) .AND. (MB_I(1) .LE. 60)) THEN
 	      WRITE(*,26)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=55,60)   
+     &	       MB_J=55,60)
 	    ELSE IF ((MB_I(1) .GT. 61) .AND. (MB_I(1) .LE. 66)) THEN
 	      WRITE(*,27)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=61,66)  
+     &	       MB_J=61,66)
 	    ELSE IF ((MB_I(1) .GT. 66) .AND. (MB_I(1) .LE. 72)) THEN
 	      WRITE(*,23)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=67,72)   
+     &	       MB_J=67,72)
 	    ELSE IF ((MB_I(1) .GT. 72) .AND. (MB_I(1) .LE. 78)) THEN
 	      WRITE(*,24)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=73,78)   
+     &	       MB_J=73,78)
 	    ELSE IF ((MB_I(1) .GT. 78) .AND. (MB_I(1) .LE. 84)) THEN
 	      WRITE(*,25)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=79,84)   
+     &	       MB_J=79,84)
 	    ELSE IF ((MB_I(1) .GT. 84) .AND. (MB_I(1) .LE. 90)) THEN
 	      WRITE(*,26)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=85,90)   
+     &	       MB_J=85,90)
 	    ELSE IF ((MB_I(1) .GT. 91) .AND. (MB_I(1) .LE. 96)) THEN
 	      WRITE(*,27)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=91,96)  
+     &	       MB_J=91,96)
 	    ELSE IF ((MB_I(1) .GT. 96) .AND. (MB_I(1) .LE. 102)) THEN
 	      WRITE(*,23)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=97,102)   
+     &	       MB_J=97,102)
 	    ELSE IF ((MB_I(1) .GT. 102) .AND. (MB_I(1) .LE. 108)) THEN
 	      WRITE(*,24)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=103,108)   
+     &	       MB_J=103,108)
 	    ELSE IF ((MB_I(1) .GT. 108) .AND. (MB_I(1) .LE. 114)) THEN
 	      WRITE(*,25)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=109,114)   
+     &	       MB_J=109,114)
 	    ELSE IF ((MB_I(1) .GT. 115) .AND. (MB_I(1) .LE. 120)) THEN
 	      WRITE(*,26)' MonCoef',MB_I(2),(MonCoef(MB_J,MB_I(2)),
-     &	       MB_J=115,120)   
-	    END IF 
-	  END IF 
+     &	       MB_J=115,120)
+	    END IF
+	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'N',1)) THEN
 	  IF (LCMP(VAR_NAM,'npts',4)) THEN
@@ -1707,7 +1707,7 @@ c	    READ(VALUE,*)GridType
   	    WRITE(*,12)' nOutCord',nOutCord
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'O',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'O',1)) THEN
 	    IF (LCMP(VAR_NAM,'Obscratn',8)) THEN
 	      READ(VALUE,*)Obscratn
   	    WRITE(*,11)' Obscratn',Obscratn
@@ -1716,7 +1716,7 @@ c	    READ(VALUE,*)GridType
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
 	      DO i=-3,3
-	        IF (LCMP(VALUE,ObsTypeName(i),4)) 
+	        IF (LCMP(VALUE,ObsTypeName(i),4))
      &	          ObsType(MB_I(1),MB_I(2))=i
 	      END DO
  	      WRITE(*,35)' ObsType',
@@ -1731,7 +1731,7 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
 	        ELSE IF (ABS(ObsType(MB_I(2),MB_I(3))) .EQ. 4) THEN
 	          READ(VALUE,*,ERR=999,END=999)
      &	          (ObsVec(MB_J,MB_I(2),MB_I(3)),MB_J=1,6)
-	        ELSE 
+	        ELSE
 	          READ(VALUE,*,ERR=999,END=999)
      &	          (ObsVec(MB_J,MB_I(2),MB_I(3)),MB_J=1,4)
 	        END IF
@@ -1769,7 +1769,7 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
  	    WRITE(*,18)' OrderHOE',MB_I(1),OrderHOE(MB_I(1))
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'P',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'P',1)) THEN
 	    IF (LCMP(VAR_NAM,'psiElt',6)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1808,7 +1808,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    WRITE(*,18)' PinHole',MB_I(1),PinHole(MB_I(1))
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'R',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'R',1)) THEN
 	  IF (LCMP(VAR_NAM,'RptElt',6)) THEN
 	    IF (ARR_FLG) THEN
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1830,7 +1830,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
  	    WRITE(*,11)' RadCtr',RadCtr
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'S',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'S',1)) THEN
 	  IF (LCMP(VAR_NAM,'SegCoord',8)) THEN
 	    IF (ARR_FLG) THEN
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1869,13 +1869,13 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      END DO
 	      IF (LNOTSET) THEN
 		WRITE(*,132) TypeString
-	      ELSE 
+	      ELSE
  	        WRITE(*,34)
      & 	        ' SrfType',MB_I(1),SrfTypeName(SrfType(MB_I(1)))
-	      END IF 
+	      END IF
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'T',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'T',1)) THEN
 	  IF (LCMP(VAR_NAM,'TElt',4)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1905,7 +1905,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      WRITE(*,31)' Tout ',MB_I(1),(Tout(MB_I(1),MB_J),MB_J=1,7)
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'U',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'U',1)) THEN
 	  IF (LCMP(VAR_NAM,'UDSrfFile',7)) THEN
 	    READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999)UDSrfFile(MB_I(1))
@@ -1944,7 +1944,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 	  WRITE(*,17)' VptElt',MB_I(2),(VptElt(MB_J,MB_I(2)),MB_J=1,3)
 
-	ELSE IF (LCMP(VAR_NAM,'W',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'W',1)) THEN
 	  IF (LCMP(VAR_NAM,'Wavelen',7)) THEN
 	    READ(VALUE,*)Wavelen
 	    WRITE(*,11)' Wavelen',Wavelen
@@ -1957,7 +1957,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
  	    WRITE(*,18)' WaveHOE',MB_I(1),WaveHOE(MB_I(1))
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'X',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'X',1)) THEN
 	    IF (LCMP(VAR_NAM,'xGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(xGrid(MB_J),MB_J=1,3)
@@ -1992,7 +1992,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    WRITE(*,17)' xObs',MB_I(2),(xObs(MB_J,MB_I(2)),MB_J=1,3)
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'Y',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'Y',1)) THEN
 	    IF (LCMP(VAR_NAM,'yGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(yGrid(MB_J),MB_J=1,3)
@@ -2015,7 +2015,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    WRITE(*,17)' yMon',MB_I(2),(yMon(MB_J,MB_I(2)),MB_J=1,3)
 	  END IF
 
-	ELSE IF (LCMP(VAR_NAM,'Z',1)) THEN 
+	ELSE IF (LCMP(VAR_NAM,'Z',1)) THEN
 	    IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -2029,29 +2029,29 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 
 	      IF (MB_I(1) .LE. 6) THEN
 	       WRITE(*,22)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=1,6)    
+     &	         MB_J=1,6)
 	      ELSE IF ((MB_I(1) .GT. 6) .AND. (MB_I(1) .LE. 12)) THEN
 	       WRITE(*,23)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=7,12)   
+     &	         MB_J=7,12)
 	      ELSE IF ((MB_I(1) .GT. 12) .AND. (MB_I(1) .LE. 18)) THEN
 	       WRITE(*,24)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=13,18)   
+     &	         MB_J=13,18)
 	      ELSE IF ((MB_I(1) .GT. 18) .AND. (MB_I(1) .LE. 24)) THEN
 	       WRITE(*,25)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=19,24)   
+     &	         MB_J=19,24)
 	      ELSE IF ((MB_I(1) .GT. 24) .AND. (MB_I(1) .LE. 30)) THEN
 	       WRITE(*,26)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=25,30)   
+     &	         MB_J=25,30)
 	      ELSE IF ((MB_I(1) .GT. 31) .AND. (MB_I(1) .LE. 36)) THEN
 	       WRITE(*,27)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=31,36)  
+     &	         MB_J=31,36)
 	      ELSE IF ((MB_I(1) .GT. 37) .AND. (MB_I(1) .LE. 42)) THEN
 	       WRITE(*,271)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=37,42) 
+     &	         MB_J=37,42)
 	      ELSE IF ((MB_I(1) .GT. 43) .AND. (MB_I(1) .LE. 45)) THEN
 	       WRITE(*,272)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
-     &	         MB_J=43,45) 
-	      END IF 
+     &	         MB_J=43,45)
+	      END IF
 	    ELSE IF (LCMP(VAR_NAM,'zMon',4)) THEN
 	      IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -2092,10 +2092,10 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      end if
 	      IF (LNOTSET) THEN
 		WRITE(*,133) TypeString
-	      ELSE 
+	      ELSE
  	        WRITE(*,34)
      & 	        ' ZernType',MB_I(1),ZernTypeNameL(ZernTypeL(MB_I(1)))
-	      END IF 
+	      END IF
 	    END IF
 	END IF
 
@@ -2147,7 +2147,7 @@ C          Write to screen
 	   END IF
 
 C  Write out journal data to file, if in journal mode
-c sws 
+c sws
 	   IF (jou_task .EQ. 2) THEN
 	      IF (.not. LCMP(CVAR,'jou',3)) THEN
 		 WRITE (27,6) CVAR(1:ICLEN(CVAR))
@@ -2193,7 +2193,7 @@ C
         INTEGER len_max
         LOGICAL last_flag,cma
 	Integer, parameter :: maxBlanks=10
-	
+
 
 C    if last flag = true, then the semi colon is the last character
 C    on the line, (besides spaces)
@@ -2232,7 +2232,7 @@ C       Read new statement to be parsed
 #endif
         END IF
 
-	! At this point, 'VAR' holds the entire command line text, 
+	! At this point, 'VAR' holds the entire command line text,
         ! such as "old j18sd_s"  -jzlou
 	cmdline=' '; cmdline=VAR
 
@@ -2266,8 +2266,8 @@ C  End of command
                 j=j+1; k=1
                 i=i+1
                 last_flag=.TRUE.
-	        GO TO 1 
-	      ELSE 
+	        GO TO 1
+	      ELSE
                 i=i+1
 	      END IF
               GO TO 1
@@ -2278,7 +2278,7 @@ C  Go to next character
           ELSE
 	    if (VAR(i:i)==',') then
               cma=.true.
-	    else 
+	    else
               cma=.false.
 	    end if
             var_store(j,pstack)(k:k)=VAR(i:i)
@@ -2354,11 +2354,11 @@ C *********************************************************************
 
 	SUBROUTINE PARSE_LOH_SAVE()
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10 
-C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED 
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
-C       
+C
 	use lohpars_mod
 
 	CHARACTER*130 VAR
@@ -2376,7 +2376,7 @@ c       maximum length of a line
 
     6   FORMAT(A)
 
-C sws 
+C sws
 C  added for jump from popping the stack
  10     continue
 
@@ -2407,7 +2407,7 @@ C  Check for % sign, semicolon, blank space...
 C           Comment follows, no more input data
 	    GO TO 2
 	  ELSE IF (VAR(i:i) .EQ. ';') THEN
-C  End of command 
+C  End of command
 	    j=j+1
 	    k=1
 	    i=i+1
@@ -2418,7 +2418,7 @@ C  End of command
 	      l=i-1
 	      IF ((var(l:l).NE.' ').AND.(var(l:l).NE.';')) THEN
 	        ! this test, when true, signifies the end of
-	        ! a 'word' in a command, when there is a space 
+	        ! a 'word' in a command, when there is a space
                 ! before next input value.
 C  End of command
 	        j=j+1
@@ -2511,7 +2511,7 @@ c sws
  5    FORMAT(' ',A,$)
  6    FORMAT(A)
 
-c sws 
+c sws
 c   jump here if we need a new line from the console
  100  CONTINUE
 
@@ -2604,7 +2604,7 @@ C  Write prompt line:
 	IF (N.LT.0) THEN
 	  WRITE(*,100)'[no default]: '
 	  ifDefault=.FALSE.
-	ELSE 
+	ELSE
 	  CALL DScreenDef(DDEF,ABSN)
 	  ifDefault=.TRUE.
 	END IF
@@ -2637,7 +2637,7 @@ C    If building a journal file, write out the default
 	INTEGER :: N
         dvar_arr(1) = DVAR; ddef_arr(1) = DDEF
         CALL DACCEPT(dvar_arr,ddef_arr,N,TEXT)
-        DVAR = dvar_arr(1) 
+        DVAR = dvar_arr(1)
         END SUBROUTINE DACCEPT_S
 
 
@@ -2763,7 +2763,7 @@ C  Write prompt line:
 	IF (N.LT.0) THEN
 	  WRITE(*,100)'[no default]: '
 	  ifDefault=.FALSE.
-	ELSE 
+	ELSE
 	  CALL RScreenDef(RDEF,ABSN)
 	  ifDefault=.TRUE.
 	END IF
@@ -2796,7 +2796,7 @@ C    If building a journal file, write out the default
 	INTEGER :: N
         rvar_arr(1) = RVAR; rdef_arr(1) = RDEF
         CALL RACCEPT(rvar_arr,rdef_arr,N,TEXT)
-        RVAR = rvar_arr(1) 
+        RVAR = rvar_arr(1)
         END SUBROUTINE RACCEPT_S
 
 C***********************************************************************
@@ -2919,7 +2919,7 @@ C  Write prompt line:
 	IF (N.LT.0) THEN
 	  WRITE(*,100)'[no default]: '
 	  ifDefault=.FALSE.
-	ELSE 
+	ELSE
 	  CALL IScreenDef(IDEF,ABSN)
 	  ifDefault=.TRUE.
 	END IF
@@ -3036,7 +3036,7 @@ C  Write to character output
 	RETURN
 	END SUBROUTINE I2Screen
 
-#include "iosub.inc"	
+#include "iosub.inc"
 	End Module macosio_mod
 
 C***********************************************************************

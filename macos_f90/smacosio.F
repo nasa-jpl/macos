@@ -37,15 +37,15 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	Integer :: npts
-	Logical :: ifOld	
+	Logical :: ifOld
 
 c	CHARACTER*8 CDEF
 	CHARACTER(len=MacosCharLen) :: TypeString
 	LOGICAL exist,LCMP,IHSTPM,IHSTSM,ifGridInit,ifAmplInit,
-     &          LnOutCordPass,LOAD_SUCCESS 
+     &          LnOutCordPass,LOAD_SUCCESS
 	INTEGER i,j,k,l,iaxis,iElt,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
-     &          nValsPerRow,g,nvtoken,jAmplSrf,jMetSrf,
+     &          nValsPerRow,g,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken
 	REAL*8 invec6(6),invec7(7),DDEF(7)
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
@@ -192,7 +192,7 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
-	  OPEN (1,FILE=infil(1:L),STATUS='OLD')  
+	  OPEN (1,FILE=infil(1:L),STATUS='OLD')
 	  REWIND(1)
 
 #include "msmacosio.inc"
@@ -208,7 +208,7 @@ C
 	  nOutCord_FLG=.TRUE.
 
 	  READ(1,123)STRING
-	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,NVTOKEN)
+	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
@@ -239,7 +239,7 @@ C
 	    nGridpts=mpts
 	    npts=nGridpts-1
 	    if (.not.opt_npts_flg) then
-	      opt_npts=nGridpts/2-1  
+	      opt_npts=nGridpts/2-1
 	      opt_npts_flg=.true.
 	    end if
 	  END IF
@@ -297,7 +297,7 @@ C	Close input file
 
 	RETURN
 
-c  Stuff to handle backward compatability of zernike's (only 36, 
+c  Stuff to handle backward compatability of zernike's (only 36,
 c  instead of 45)
 
   900 	DO I=37,45
@@ -366,7 +366,7 @@ C    &           SegCoord(1:2,iSeg),ApType(iElt),ApVec(1:4,iElt)
           end if
         End Do
         End SUBROUTINE SetSegAp
-	
+
 
 C***********************************************************************
 C***********************************************************************
@@ -416,7 +416,7 @@ C       Write to screen
 	   END IF
 
 C  Write out journal data to file, if in journal mode
-c sws 
+c sws
 	   IF (jou_task .EQ. 2) THEN
 	      IF (.NOT. LCMP(CVAR,'jou',3)) THEN
 	         WRITE (27,6) CVAR(1:ICLEN(CVAR))
@@ -447,12 +447,12 @@ C***********************************************************************
 
 	SUBROUTINE PARSE_LOH()
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10 
-C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED 
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE 1000 CHARACTERS LONG.
-C       
-	use lohpars_mod 
+C
+	use lohpars_mod
 
 	IMPLICIT NONE
 
@@ -472,7 +472,7 @@ C    on the line, (besides spaces)
 
     6   FORMAT(A)
 
-c sws 
+c sws
 c  added for jump from poping the stack
  10     CONTINUE
 
@@ -630,7 +630,7 @@ c	COUT=' '
 	L = ICLEN(COUT)
 	COUT(1:L) = ' '
 
-c sws 
+c sws
 c   jump here IF we need a new line from the console
 100     CONTINUE
 	IF (ifEcho) WRITE(*,5)TEXT
@@ -789,7 +789,7 @@ C ************************************************************
 	INTEGER N
         REAL*8 DVAR,DDEF, dvar_arr(1), ddef_arr(1)
         dvar_arr(1) = DVAR; ddef_arr(1) = DDEF
-        CALL DACCEPT(dvar_arr,ddef_arr,1,TEXT) 
+        CALL DACCEPT(dvar_arr,ddef_arr,1,TEXT)
         DVAR = dvar_arr(1)
         END SUBROUTINE DACCEPT_S
 
@@ -845,7 +845,7 @@ c we're building a journal file, write out the default
         CHARACTER*(*) TEXT
         SREAL RVAR,RDEF, rvar_arr(1), rdef_arr(1)
         rvar_arr(1) = RVAR; rdef_arr(1) = RDEF
-        CALL RACCEPT(rvar_arr,rdef_arr,1,TEXT) 
+        CALL RACCEPT(rvar_arr,rdef_arr,1,TEXT)
         RVAR = rvar_arr(1)
         END SUBROUTINE RACCEPT_S
 
@@ -901,7 +901,7 @@ c we're building a journal file, write out the default
         INTEGER IVAR,IDEF, ivar_arr(1), idef_arr(1)
 	ivar_arr(1) = IVAR; idef_arr(1) = IDEF
 	CALL IACCEPT(ivar_arr,idef_arr,1,TEXT)
-	IVAR = ivar_arr(1) 
+	IVAR = ivar_arr(1)
 	END SUBROUTINE IACCEPT_S
 
 #include "iosub.inc"
