@@ -6,36 +6,36 @@ C    |  U.S. Government Sponsorship Is Acknowledged.                  |
 C    +----------------------------------------------------------------+
 C***********************************************************************
 
-C Zernike utility routines, adapted from Green's Matlab routines 
+C Zernike utility routines, adapted from Green's Matlab routines
 C (Noll Circular Zernike Ordering)
-C Added support for using NormHex and NormAnnular Zernike types 
-C 
+C Added support for using NormHex and NormAnnular Zernike types
+C
 C zern_mode :      Extract a single Zernike mode from an OPD map using circular
 C                  Zernike type NormNoll.
 C zern_mode_nc :   Extract a single Zernike mode from an OPD map using hex or
 C                  annular Zernike types.
-C zern_fit:        Fit OPD with a set of given Zernike modes. 
+C zern_fit:        Fit OPD with a set of given Zernike modes.
 C zern_remove:     Remove given Zernike modes from an OPD map.
 C zern_modes_coef: Compute and display Zernike modes coefficients.
-C zern_aberrate:   Given an OPD and a set of user selected Zernike modes, 
+C zern_aberrate:   Given an OPD and a set of user selected Zernike modes,
 C                  return an OPD map containing those Zernike modes in
 C                  the original OPD.
 C
-C Motivation: 
+C Motivation:
 C   1) Zernike mode based WF analysis, such as mode(s) fit and mode(s) removal
 C   2) Supporting system optimization based on minimizing Zernike modes in WF
 C
 C John Z. Lou, Jet Propulsion Laboratory
 C Last modified: 07/2008
 
- 
+
 	Module zern_wf_mod
 	use param_mod
 	use math_mod
 	use lsq_mod
 
 	use src_mod, only : nGridPts,RayIndex
-   	use elt_mod, only : nRay,LRayPass,RayPos,ZernAnnuRatio, 
+   	use elt_mod, only : nRay,LRayPass,RayPos,ZernAnnuRatio,
      & 	                    ZernCent,ZernXGrid,ZernYGrid,ZernRad
 	use macos_mod, only : zcoType,ZernCircular,ZernAnnular,ZernHex
 
@@ -47,7 +47,7 @@ C Last modified: 07/2008
 
 	Implicit none
 
-	Integer, parameter :: max_zern_modes=90, 
+	Integer, parameter :: max_zern_modes=90,
      &                        mzname=9  ! total zmode names supported
 	Integer, parameter :: ZRMcmd=1,ZCOcmd=2,ZABcmd=3
         Integer :: ie_m,nzrm_modes_m,zrm_modes_m(max_zern_modes)
@@ -60,12 +60,12 @@ C Last modified: 07/2008
    	Logical :: usrOpt
    	! usrOpt is .true. if using user-specified parameters
 
-	
+
 	Contains
 
 
 	! Extract Zernike modes from a given OPD map
-	! Input: OPD, Zernike coefficients for each mode 
+	! Input: OPD, Zernike coefficients for each mode
 	! Output Linear combination of Zernike modes of OPD: OPDzern
 	!
 	Subroutine zern_aberrate(OPD,OPDzern,mode,act)
@@ -105,7 +105,7 @@ C   Remove one or more Zernike modes from an OPD map
           pmask(1:nGridPts,1:nGridPts)=mask_m(1:nGridPts,1:nGridPts)
         end if
 
-	! OPDout below returns as least-square Zernike fit of all 
+	! OPDout below returns as least-square Zernike fit of all
         ! given Zernike modes
 	Call zern_fit(OPDin,pmask,z_fit_modes(1:max_mode),OPDout,act)
 
@@ -117,7 +117,7 @@ C  ***************************************************************************
 	Subroutine zern_modes_coef(OPDin,z_modes,z_coefs,act)
         Real*8, dimension(:,:) :: OPDin
         Integer, dimension(:) :: z_modes
-        Real*8, dimension(size(z_modes)) :: z_coefs	
+        Real*8, dimension(size(z_modes)) :: z_coefs
 	Integer :: act
 	Real*8, dimension(size(OPDin,1),size(OPDin,2)) :: OPDout
         Logical, dimension(size(OPDin,1),size(OPDin,2)) :: pmask
@@ -144,8 +144,8 @@ C  of the specified pupil
 
 	Function zern_mode(OPDin,z_mode)
 	Real*8, dimension(:,:) :: OPDin
-        Integer :: z_mode  ! single Zernike mode	
-	Real*8, dimension(size(OPDin,1),size(OPDin,2)) 
+        Integer :: z_mode  ! single Zernike mode
+	Real*8, dimension(size(OPDin,1),size(OPDin,2))
      &          :: zern_mode
 !    &          :: zern_mode,r,a,R1
 	Real*8 :: cent(2),x,y,r_tmp,rmax,q(4),Rk
@@ -154,18 +154,18 @@ C  of the specified pupil
 
 	!Logical, dimension(size(OPDin,1),size(OPDin,2)) :: mask
 	!Real*8, dimension(size(OPDin,1),size(OPDin,2)) :: dmask
-        Logical, dimension(:,:), allocatable :: mask 
-        Real*8, dimension(:,:), allocatable :: a,r,R1,dmask  
+        Logical, dimension(:,:), allocatable :: mask
+        Real*8, dimension(:,:), allocatable :: a,r,R1,dmask
 	Integer :: nrow,ncol, ir,ic, j,n,m,m1,s1,iRay,N1,N2
 
         If (.NOT. allocated(r)) Then
           N1=size(OPDin,1); N2=size(OPDin,2)
-          allocate(r(N1,N2),a(N1,N2),R1(N1,N2), 
+          allocate(r(N1,N2),a(N1,N2),R1(N1,N2),
      &             mask(N1,N2),dmask(N1,N2))
         End If
 
 	pi_loc = 4d0*datan(1d0)
-	
+
         nrow=nGridPts; ncol=nGridPts
 	!nrow=size(OPDin,1); ncol=size(OPDin,2)
 	!mask=(OPDin/=0d0)  ! mask out zero region
@@ -181,7 +181,7 @@ C  of the specified pupil
           ! use user-specified Zernike center and axes
           mask(1:nrow,1:ncol)=mask_m(1:nrow,1:ncol)
 	End If
-	
+
 	dmask=0d0
         Do ic=1,ncol
 	  Do ir=1,nrow
@@ -210,7 +210,7 @@ C  of the specified pupil
 	      if (mask(ir,ic)) then
 	        x=ir; x=x-cent(1)
 	        r_tmp=dsqrt(x*x+y*y)
-	        if (r_tmp>rmax) rmax=r_tmp   
+	        if (r_tmp>rmax) rmax=r_tmp
 	      end if
 	    End Do
 	  End Do
@@ -231,9 +231,9 @@ C  of the specified pupil
 	    if (mod(n,2) /= 0) then
 	      m=m1+1
 	    else
- 	      m=m1 
+ 	      m=m1
 	    end if
-	    ! 
+	    !
 	    zm(j)=m; zn(j)=n; j=j+1
 	    if (m>0) then
 	      zm(j)=m; zn(j)=n; j=j+1
@@ -244,19 +244,19 @@ C  of the specified pupil
 	End Do
  20	m=zm(z_mode); n=zn(z_mode)
 
- 	!print*,'zern_mode: j,m,n =',j,m,n	
+ 	!print*,'zern_mode: j,m,n =',j,m,n
 
 	! Compute Zernike mode over pupil support
 	Do ic=1,ncol
 	  if (.not.usrOpt) y=ic-cent(2)
 	  Do ir=1,nrow
-	    if (.not.usrOpt) then 
-	      x=ir-cent(1) 
+	    if (.not.usrOpt) then
+	      x=ir-cent(1)
 	    else
 	      y = OpdCoord_m(2,ir,ic)
               x = OpdCoord_m(1,ir,ic)
 	    end if
-	    r(ir,ic) = dsqrt(x*x+y*y)/rmax 
+	    r(ir,ic) = dsqrt(x*x+y*y)/rmax
 	    !a(ir,ic)=atan(y/(x+1d-9))
 	    a(ir,ic)=atan(y/(x+1d-14))
 	    q(1:4)=0d0
@@ -264,12 +264,12 @@ C  of the specified pupil
 	    if (x<0 .and. y>=0)  q(2)=1
 	    if (x<0 .and. y<0)   q(3)=1
 	    if (x>=0 .and. y<0)  q(4)=1
-	    a(ir,ic)= -1d0*(q(1)*a(ir,ic)+q(2)*(pi_loc+a(ir,ic)) 
+	    a(ir,ic)= -1d0*(q(1)*a(ir,ic)+q(2)*(pi_loc+a(ir,ic))
      &                      +q(3)*(a(ir,ic)-pi_loc)+q(4)*a(ir,ic))
 	  End Do
 	End Do
 
-	R1=0d0	
+	R1=0d0
 	zern_mode=0d0  ! output OPD with the Zernike modes
 
 	Do s1=0,(n-m)/2
@@ -277,7 +277,7 @@ C  of the specified pupil
      &       /dble(Factorial((n+m)/2-s1))/dble(Factorial((n-m)/2-s1))
 	  Do ic=1,ncol
 	    Do ir=1,nrow
-	      R1(ir,ic)=R1(ir,ic)+Rk*PowerF(r(ir,ic),n-2*s1) 
+	      R1(ir,ic)=R1(ir,ic)+Rk*PowerF(r(ir,ic),n-2*s1)
 	    End Do
 	  End Do
 	End Do
@@ -298,7 +298,7 @@ C  of the specified pupil
 	    	zern_mode(ir,ic)
      &            =zern_mode(ir,ic)*dsin(m*a(ir,ic))*dsqrt(2d0);
 	      End Do
-            End Do 
+            End Do
 	  End If
 	End If
 
@@ -319,6 +319,7 @@ C  ***************************************************************************
 
         ! For non-circular types
         FUNCTION zern_mode_nc(OPDin,z_mode,zt,ratio)
+		  use elt_mod, only: mZernModes, mMonCoef
 
         Real*8, DIMENSION(:,:) :: OPDin
         Integer :: z_mode  ! single Zernike mode
@@ -326,7 +327,7 @@ C  ***************************************************************************
         Real*8, DIMENSION(size(OPDin,1),size(OPDin,2)) :: dmask
         Logical, DIMENSION(size(OPDin,1),size(OPDin,2)) :: mask
         !
-        Real*8 :: ratio,zc(45),mc(120),x,y,r,cent(2),r_tmp,rmax, 
+        Real*8 :: ratio,zc(mZernModes),mc(mMonCoef),x,y,r,cent(2),r_tmp,rmax,
      &            xj,yi,yimj,p,v
         Integer :: zt,nrow,ncol, ir,ic,n,m,m1,s1,iRay,i,j,k
         Logical, save :: first_entry=.true.
@@ -392,7 +393,7 @@ C  ***************************************************************************
                     k=k+1
                     If (mc(k)/=0d0) Then
                       If (j==0) Then
-                        zern_mode_nc(ir,ic) 
+                        zern_mode_nc(ir,ic)
      &                       =zern_mode_nc(ir,ic)+mc(k)*yi
                       End If
                     End If
@@ -406,7 +407,7 @@ C  ***************************************************************************
                   Do j=0,i
                     k=k+1
                     IF ((mc(k)/=0d0).AND.(i==j)) Then
-                      zern_mode_nc(ir,ic) 
+                      zern_mode_nc(ir,ic)
      &                      =zern_mode_nc(ir,ic)+mc(k)*xj
                     End If
                     xj=xj*x
@@ -419,7 +420,7 @@ C  ***************************************************************************
                   Do j=0,i
                     k=k+1
                     If (mc(k).NE.0d0) Then
-                      zern_mode_nc(ir,ic) 
+                      zern_mode_nc(ir,ic)
      &                =zern_mode_nc(ir,ic)+mc(k)*xj*yimj
                     End If
                     yimj=yimj/y
@@ -463,24 +464,24 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 	Integer, dimension(:) :: modes
 	Integer :: act
 
-	Integer, parameter :: nmzline=6  ! modes displayed per line 
-	Real*8 :: coefs(size(modes)) 
- 
-!    &            ovec(size(OPDin,1)*size(OPDin,2)), 
+	Integer, parameter :: nmzline=6  ! modes displayed per line
+	Real*8 :: coefs(size(modes))
+
+!    &            ovec(size(OPDin,1)*size(OPDin,2)),
 !    &            zn(size(OPDin,1),size(OPDin,2),size(modes))
         Real*8, dimension(:), allocatable :: ovec
         Real*8, dimension(:,:,:), allocatable :: zn
-  
+
 	Real*8, dimension(:,:), allocatable :: Cz,pCz
-    
+
         !Integer, dimension(size(OPDin,1),size(OPDin,2)) :: yidx
         Integer, dimension(:), allocatable :: yidx
 	Integer :: nrow,ncol,ir,ic,inz,k,strt_iz,end_iz,iz
 
         !print*,'** zern_fit: size(OPDin,1) =',size(OPDin,1)
         !print*,'** zern_fit: size(OPDin,2) =',size(OPDin,2)
-       
-        If (.NOT. allocated(yidx)) Then 
+
+        If (.NOT. allocated(yidx)) Then
           allocate(yidx(size(OPDin,1)*size(OPDin,2)),
      &             ovec(size(OPDin,1)*size(OPDin,2)),
      &             zn(size(OPDin,1),size(OPDin,2),size(modes)))
@@ -496,7 +497,7 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 	    if (OPDin(ir,ic)/=0) then
 	      inz=inz+1; yidx(inz)=k
 	      ovec(inz)=OPDin(ir,ic)
-	    end if 
+	    end if
 	  End Do
 	End Do
 
@@ -510,13 +511,13 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 	  If (zcoType==ZernCircular) Then
             zn(:,:,iz)=zern_mode(OPDin,modes(iz))
           Else
-            zn(:,:,iz)=zern_mode_nc(OPDin,modes(iz),zcoType, 
+            zn(:,:,iz)=zern_mode_nc(OPDin,modes(iz),zcoType,
      &                              ZernAnnuRatio(ie_m))
           End If
-	  Do k=1,inz 
-	    ic=floor((yidx(k)-1)/DBLE(nrow))+1  
+	  Do k=1,inz
+	    ic=floor((yidx(k)-1)/DBLE(nrow))+1
 	    ir=mod(yidx(k)-1,nrow)+1
-	    Cz(k,iz)=zn(ir,ic,iz) 
+	    Cz(k,iz)=zn(ir,ic,iz)
 	  End Do
 	End Do
 
@@ -533,8 +534,8 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
           WRITE(*,*)' Zernike mode coeffs (OPD best fit):'
 
 	  strt_iz=1; end_iz=min(strt_iz+nmzline-1,size(modes))
-	  Do while (strt_iz.LE.size(modes)) 
-	    ! Print mode names 
+	  Do while (strt_iz.LE.size(modes))
+	    ! Print mode names
 	    WRITE(*,21)
  21         FORMAT('  ',$)
 	    Do iz=strt_iz,end_iz
@@ -581,8 +582,8 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 	  End Do
 	End Do
 #endif
-	deallocate(Cz,pCz)	
-	!deallocate(yidx,ovec,zn,Cz,pCz)	
+	deallocate(Cz,pCz)
+	!deallocate(yidx,ovec,zn,Cz,pCz)
 	End Subroutine zern_fit
 
 C ***************************************************************************
@@ -621,13 +622,13 @@ C ***************************************************************************
      &                            action)
 	Real*8, dimension(:,:) :: OPDin,OPDout
 	Real*8 :: wfe,pval,vval
-	Integer :: ie,action, iz,jz,nzern,zerns(max_zern_modes) 
+	Integer :: ie,action, iz,jz,nzern,zerns(max_zern_modes)
 	Logical :: usrOpt_in
 	Real*8 :: zcoefs(max_zern_modes)
 
 	ie_m=ie; usrOpt=usrOpt_in
         If (usrOpt) Then
-          Call zern_beam_proc(RayPos,zernCent(1:3,ie), 
+          Call zern_beam_proc(RayPos,zernCent(1:3,ie),
      &          zernXGrid(1:3,ie),ZernYGrid(1:3,ie),zernRad(ie))
         End If
 
@@ -654,7 +655,7 @@ C ***************************************************************************
      &      zerns(1)+nzern-1
 	  If (nzern>1) Then
 	    jz=zerns(1)+1
-	    Do iz=2,nzern 
+	    Do iz=2,nzern
 	      zerns(iz)=jz; jz=jz+1
 	    End Do
 	  End If
@@ -669,7 +670,7 @@ C ***************************************************************************
             WRITE(*,*)'Invalid Zernike mode: ',zerns(iz)
 	    WRITE(*,*)'Zernike mode value must be between 1 and ',
      &                max_zern_modes
-	    return 
+	    return
 	  End If
 	End Do
 
@@ -688,4 +689,4 @@ C ***************************************************************************
 	!print*,'zern_interface: OPD P,V =',pval,vval
 	End Subroutine zern_interface
 
-	End Module zern_wf_mod 
+	End Module zern_wf_mod
