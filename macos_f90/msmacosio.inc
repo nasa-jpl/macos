@@ -29,19 +29,19 @@ C       Set entrance condition flags to .FALSE.
 
 	  ELSE IF (LCMP(VAR_NAM,'xFrame',6)) THEN
             READ(VALUE,*) TElt(1:3,1,0)
-            SrcLF_FLG=.TRUE.; 
+            SrcLF_FLG=.TRUE.;
 	    print*,' **** msmacosio: src xFrame read'
             GO TO 50
 
           ELSE IF (LCMP(VAR_NAM,'yFrame',6)) THEN
             READ(VALUE,*) TElt(1:3,2,0)
-            SrcLF_FLG=.TRUE. 
+            SrcLF_FLG=.TRUE.
 	    print*,' **** msmacosio: src yFrame read'
-            GO TO 50 
+            GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'zFrame',6)) THEN
             READ(VALUE,*) TElt(1:3,3,0)
-            SrcLF_FLG=.TRUE. 
+            SrcLF_FLG=.TRUE.
             CalcSrcZFrame_FLG=.FALSE.
             GO TO 50
 
@@ -52,14 +52,14 @@ C       Set entrance condition flags to .FALSE.
 
 	  ELSE IF (LCMP(VAR_NAM,'FEXCentroid',11)) THEN
             IF (.NOT.LCMP(VALUE,'Y',1)) Rx_FEXCentrFlg=.False.
-            GO TO 50 
+            GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'SaveVis3dDat',12)) THEN
             IF (LCMP(VALUE,'Y',1)) SaveVis3d_dat_Flg=.TRUE.
-            GO TO 50	
+            GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'ShowMetData',11)) THEN
-	    IF (LCMP(VALUE,'Y',1)) ShowMetData_FLG=.TRUE.	    
+	    IF (LCMP(VALUE,'Y',1)) ShowMetData_FLG=.TRUE.
 	    GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'ObjFile',7)) THEN
@@ -96,13 +96,13 @@ C       Set entrance condition flags to .FALSE.
 
 	  ELSE IF (LCMP(VAR_NAM,'SaveOPDMap',10)) THEN
 	    IF (LCMP(VALUE,'Y',1)) THEN
-              saveOPD_Flg=.TRUE. 
+              saveOPD_Flg=.TRUE.
             END IF
             GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'SaveRayPosH',11)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
-    	      SaveRayPosHist_Flg=.TRUE. 
+    	      SaveRayPosHist_Flg=.TRUE.
 	      print*,'** msmacosio: SaveRayPosHist is true ...'
 	    END IF
  	    GO TO 50
@@ -128,13 +128,13 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 #endif
 
-	  ELSE IF (LCMP(VAR_NAM,'OptTarget',7)) THEN 
+	  ELSE IF (LCMP(VAR_NAM,'OptTarget',7)) THEN
 !    &             .OR. LCMP(VAR_NAM,'OptTgt',6)) THEN
 	    IF (LCMP(VALUE,'WFE',3)) THEN
 	      OptTarget=WFE_TARGET
 	    ELSE IF (LCMP(VALUE,'SPOT',3)) THEN
               OptTarget=SPOT_TARGET
-	    ELSE IF (LCMP(VALUE,'ZWF',3)) THEN 
+	    ELSE IF (LCMP(VALUE,'ZWF',3)) THEN
 	      OptTarget=WFE_ZMODE_TARGET
 	    ELSE IF (LCMP(VALUE,'Beam',4)) THEN
 	      OptTarget=BEAM_TARGET
@@ -146,7 +146,7 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'OptSpotSize',11)) THEN
             READ(VALUE,*)OptSpotSize
             if (OptSpotSize<0) OptSpotSize=0d0
-            GO TO 50	
+            GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'OptRayGrid',6)) THEN
 	    opt_npts_flg=.true.
@@ -227,20 +227,20 @@ C       Set entrance condition flags to .FALSE.
 #if 0
 	    !print*,' **OptTgtWF: VALUE =',VALUE(1:ICLEN(VALUE))
 	    print*,'  **In OptTgtWF'
-	    tgtWF_fn(1:ICLEN(VALUE))=VALUE(1:ICLEN(VALUE)) 
+	    tgtWF_fn(1:ICLEN(VALUE))=VALUE(1:ICLEN(VALUE))
 	    If (LCMP(tgtWF_fn(ICLEN(tgtWF_fn)-2:ICLEN(tgtWF_fn)),
      &              'bin',3)) Then
               tgtWF_fmt(1:1)='B'
 	    Else
               tgtWF_fmt(1:1)='T'
-	    End If 
+	    End If
 #endif
 	    tgtWF_fn(1:ICLEN(VALUE))=VALUE(1:ICLEN(VALUE))
 	    !print*,' ** tgtWF_fn =',tgtWF_fn
 	    If (LCMP(tgtWF_fn(ICLEN(VALUE):ICLEN(VALUE)),
      &          'T',1)) Then
 	      tgtWF_fmt(1:1)='T'
-	   Else 
+	   Else
 	      tgtWF_fmt(1:1)='B'
 	    End If
             tgtWF_flg=.true.
@@ -260,7 +260,7 @@ C       Set entrance condition flags to .FALSE.
 
 	  ELSE IF (LCMP(VAR_NAM,'OptNomSens',9)) THEN
 	    if (LCMP(VALUE,'Y',1)) LOptNomSens=.TRUE.
-	    GO TO 50 
+	    GO TO 50
 
 	  ELSE IF (LCMP(VAR_NAM,'OptSavePinv',11)) THEN
             if (LCMP(VALUE,'Y',1)) save_pinv=.TRUE.
@@ -307,10 +307,12 @@ C       Set entrance condition flags to .FALSE.
 	    End If
             GO TO 50
 
+        ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptMaxItrs',10)) THEN
             READ(VALUE,*) nitrs_dopt
             GO TO 50
 
+        ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'ZCOZernType',10)) THEN
             ! zcoType is default to ZernCircular
             ! which uses NormNoll
@@ -322,6 +324,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
 #ifdef CMACOS
+        ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'PgplotImage',11)) THEN
 	    IF (LCMP(VALUE,'Color',5)) THEN
 	      ifPGColor=.TRUE.
@@ -329,21 +332,27 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 #endif
 
+        ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'UseChfRay4OPD',10)) THEN
             If (LCMP(VALUE,'N',1)) Then
               LUseChfRayIfOK=.FALSE.  ! default to TRUE
             End If
             GO TO 50
 
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'zSource',7)) THEN
             READ(VALUE,*)zSource
+            IF (ABS(zSource) <= EPS) GOTO 99
             zSource_FLG=.TRUE.
             GO TO 50
+
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'IndRef',6)) THEN
             READ(VALUE,*)IndRef(0)
             IndRef_FLG=.TRUE.
             GO TO 50
 
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Extinc',6)) THEN
             READ(VALUE,*)Extinc(0)
             Extinc_FLG=.TRUE.
@@ -368,6 +377,8 @@ C       Set entrance condition flags to .FALSE.
               CBM=1d0
             END IF
             GO TO 50
+
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'WaveUnits',7)) THEN
             WaveUnits=VALUE
             WaveUnits_FLG=.TRUE.
@@ -395,14 +406,20 @@ C       Set entrance condition flags to .FALSE.
               CWM=1d0
             END IF
             GO TO 50
+
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'JZLouWavelen',7)) THEN
             READ(VALUE,*)Wavelen
             Wavelen_FLG=.TRUE.
             GO TO 50
+
+        ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Flux',4)) THEN
             READ(VALUE,*)Flux
             Flux_FLG=.TRUE.
             GO TO 50
+
+        ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'GridType',8)) THEN
             IF (LCMP(VALUE,GridTypeName(1),2).OR.
      &      LCMP(VALUE,'1',1)) THEN
@@ -437,19 +454,27 @@ C       Set entrance condition flags to .FALSE.
               width_FLG=.TRUE.
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Aperture',8)) THEN
             READ(VALUE,*)Aperture
             Aperture_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Obscratn',8)) THEN
             READ(VALUE,*)Obscratn
             Obscratn_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nGridpts',8)) THEN
             READ(VALUE,*) nGridpts
             npts=nGridpts-1
             nGridpts_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
             IF (DMAG(xGrid(1),3) .EQ. 0.0D0) THEN
@@ -458,6 +483,8 @@ C       Set entrance condition flags to .FALSE.
               xGrid_FLG=.TRUE.
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
             READ(VALUE,*)(yGrid(i),i=1,3)
             IF (DMAG(yGrid(1),3) .EQ. 0.0D0) THEN
@@ -466,30 +493,44 @@ C       Set entrance condition flags to .FALSE.
               yGrid_FLG=.TRUE.
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'drawXGrid',6)) THEN
             READ(VALUE,*)(UDxDrawGrid(i),i=1,3)
             LudDrawGrid=.TRUE.
-            GO TO 50 
+            GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'drawYGrid',6)) THEN
             READ(VALUE,*)(UDyDrawGrid(i),i=1,3)
             LudDrawGrid=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'UDBeam',6)) THEN
 	    If (LCMP(VALUE,'Y',1)) Then
 	      UDBeam_FLG=.TRUE.
 	    End If
 	    GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'UDSrcProf',9)) THEN
 	    UDSrcProf=VALUE(1:MacosValLen)
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nElt',4)) THEN
             READ(VALUE,*)nElt
             nElt_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nSeg',4)) THEN
             READ(VALUE,*) nSeg
             nSeg_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'width',5)) THEN
 	    READ(VALUE,*)width
             IF (GridType .NE. 5) THEN
@@ -499,6 +540,8 @@ C       Set entrance condition flags to .FALSE.
             END IF
             width_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'gap',3)) THEN
 #if 0
             IF (GridType .NE. 5) THEN
@@ -510,10 +553,14 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*)gap
             gap_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'nRings',5)) THEN
             READ(VALUE,*) nRings
             nRings_FLG=.TRUE.
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'nPetals',5)) THEN
 	    If (nRings_FLG) Then
               READ(VALUE,*) nPetals(0:nRings)
@@ -562,6 +609,8 @@ C       Set entrance condition flags to .FALSE.
               END IF
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'SegXgrid',8)) THEN
              READ(VALUE,*)(SegXgrid(i),i=1,3)
             IF (DMAG(SegXgrid(1),3) .EQ. 0.0D0) THEN
@@ -570,6 +619,8 @@ C       Set entrance condition flags to .FALSE.
               SegXgrid_FLG=.TRUE.
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'SegApType',9)) THEN
             ! Added by jzlou
             If (.NOT.SegCoord_FLG) Then
@@ -583,6 +634,8 @@ C       Set entrance condition flags to .FALSE.
               SegApType=6; SegApType_FLG=.true.
             END IF
             GO TO 50
+
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'SegApVec',8)) THEN
             ! Added by jzlou
             If (SegApType_FLG) Then
@@ -592,6 +645,7 @@ C       Set entrance condition flags to .FALSE.
             End If
             GO TO 50
 
+          ! -------------------------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'iElt',4)) THEN
             CALL ChkDf1(npts,ENTR_OK)
             IF (ENTR_OK) THEN
@@ -604,7 +658,12 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
           END IF
 
-   60     CONTINUE   ! Start the Element Definition Section 
+          ! ------------------------------------------------------------------------
+          !
+          ! Start the Element Definition Section
+          !
+          ! ------------------------------------------------------------------------
+   60     CONTINUE   ! Start the Element Definition Section
 
 	  CWB=CWM/CBM
           WaveBU=CWB*Wavelen
@@ -614,13 +673,17 @@ C       Set entrance condition flags to .FALSE.
 	  LStopAtEltAutoSet=.false.
 
 	  iSeg=0
-          jGridSrf=0; iEltToGridSrf=0 
-          jAmplSrf=0; iEltToAmplSrf=0; ifAmplSrf=.FALSE.; 
-          jMetSrf=0; iEltToMetSrf=0; nMetPos=0  
+          jGridSrf=0; iEltToGridSrf=0
+          jAmplSrf=0; iEltToAmplSrf=0; ifAmplSrf=.FALSE.;
+          jMetSrf=0; iEltToMetSrf=0; nMetPos=0
           tMetSrf=-1; tMetSrfPos=0; LnOutCordPass=.FALSE.
-	 
-	  iElt=1 
-          DO   ! this is a "DO ... END DO" loop 
+
+          maxAsphCoef   = 4   ! reset to default
+          AsphCoef(:,:) = 0d0
+          nZernCoef     = 45  ! Default # of Zernike Coefficients to read in
+
+	  iElt=1
+          DO   ! this is a "DO ... END DO" loop
 
             CALL LOHIN2()  ! set all elt flags to false. -jzlou
    61       CONTINUE
@@ -725,8 +788,8 @@ C  Check to make sure no Element/Surface incompatability exists
                   EltGrp(k,iElt)=i; k=k+1
                 End Do
               end if
-              GO TO 61	     
-	    
+              GO TO 61
+
             ELSE IF (LCMP(VAR_NAM,'MrEltGrp',8)) THEN
               ! Allow an EltGrp to be specified with multiple ranges
               ! Syntax: #groups strt1 end1 strt2 end2 ...
@@ -768,10 +831,10 @@ C Assign SrfType
                   SrfType_FLG=.TRUE.
 	          If (EltID(iElt)==3 .AND. SrfType(iElt)==9) Then
 	            ! a reference (EltID=3) and GridData surface, a surface grid
-		    ! data array will be defined to modulate wavefront. -jzlou  
+		    ! data array will be defined to modulate wavefront. -jzlou
                     ifOPDModGrid(iElt)=.TRUE.
 		  End If
-	          If (.false. .AND. EltID(iElt)==1 
+	          If (.false. .AND. EltID(iElt)==1
      &                .AND. SrfType(iElt)==11) Then
 	            print*,'** Found a reflector with AsphGrid srf'
 	            STOP
@@ -983,9 +1046,9 @@ C For System Optimization Only
                 beamOpt%beamPosElt=iElt
                 beamOpt%ifOptBeamPos=.TRUE.
 	        If (OptTgtElt /= beamOpt%beamPosElt) Then
-	          Write(*,*)'*** msmacosio warning: ' 
+	          Write(*,*)'*** msmacosio warning: '
 	          Write(*,*)'      OptTgtElt /= beamOpt%beamPosElt'
-                 Write(*,*)'      OptTgtElt reset to beamOpt%beamPosElt' 
+                 Write(*,*)'      OptTgtElt reset to beamOpt%beamPosElt'
                   OptTgtElt = beamOpt%beamPosElt
 	        End If
               End If
@@ -1065,7 +1128,7 @@ C For Design Optimization Only
                 maxAsphCoef = 4
               End If
               GO TO 61
-	
+
             ELSE IF (LCMP(VAR_NAM,'AsphCoef',8)) THEN
               READ(VALUE,*)(AsphCoef(j,iElt),j=1,maxAsphCoef)
 !             print*,'****macosio: AsphCoef=',
@@ -1081,7 +1144,7 @@ C For Design Optimization Only
 	      If (LCMP(TypeString,'Noll',4))
      &  	TypeString='NormNoll'  ! backward compatibility
 C  Assign ZernTypeL
-              If (LCMP(TypeString,'Norm',4)) Then 
+              If (LCMP(TypeString,'Norm',4)) Then
                 ! normalized Zernike coeff
                 DO i=4,9
                   IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
@@ -1100,7 +1163,7 @@ C  Assign ZernTypeL
 		    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
                     i=i+1
                   End Do
-	          If (i<MacosValLen) 
+	          If (i<MacosValLen)
      &              READ(VALUE(i:),*) ZernAnnuRatio(iElt)
                 End If
               Else
@@ -1125,23 +1188,46 @@ C  Assign ZernTypeL
 		LOAD_SUCCESS=.FALSE.; GO TO 70
               END IF
               GO TO 61
+
+            ! ---------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
+              READ(VALUE,*) nZernCoef
+              if ((nZernCoef<1).or.(nZernCoef>mZernModes)) GOTO 99
+              GO TO 61
+
+            ! ---------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
-              ! This part is for getting Zernike coeff from Rx. -jzlou
-              READ(VALUE,*)(ZernCoef(j,iElt),j=1,6)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=7,12)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=13,18)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=19,24)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=25,30)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=31,36)
-              READ(1,123)STRING
-              READ(STRING,*,ERR=900,END=900)(ZernCoef(j,iElt),j=37,42)
-              READ(1,123)STRING
-              READ(STRING,*)(ZernCoef(j,iElt),j=43,45)
+
+              ! QUICK FIX to make it backwards compatible
+              ! ==> Flag "nZernCoef" can be used to define max modes to read in
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6  ! defines # of Coefs. within a Grp per line
+                INTEGER            :: iZ, nZ
+                ! --------------------------
+
+                ZernCoef(:,iElt) = 0d0
+                IF (nZernCoef<=Grp) THEN
+                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,nZernCoef)
+                ELSE
+
+                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,Grp)
+
+                  ! complete line group ("Grp" Coefficients)
+                  DO iZ=1, nZernCoef/Grp-1
+                    READ(1, 123)STRING
+                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+
+                  ! incomplete Grp
+                  nZ = MOD(nZernCoef,Grp)
+                  iZ = nZernCoef/Grp
+                  IF (nZ>0) THEN
+                    READ(1, 123)STRING
+                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+                nZernCoef = 45  ! reset to default
+              END BLOCK
 
 	      ! Added by jzlou, 03/2005
 	      If ( ZernTypeL(iElt)>3 .and. ZernTypeL(iElt)<7)
@@ -1153,6 +1239,7 @@ C  Assign ZernTypeL
 	      ZernCoef_FLG=.TRUE.
               GO TO 61
 
+            ! ---------------------------------------------------------------------------------
 	     ELSE IF (LCMP(VAR_NAM,'ZernCenter',8)) THEN
               READ(VALUE,*) ZernCent(1:3,iElt)
               ZernCent_FLG=.TRUE.
@@ -1265,7 +1352,7 @@ C  Assign ZernTypeL
                 READ(STRING,*) SrfMetPos(1:3,i,iEltToMetSrf(iElt))
               End Do
 	      GO TO 61
-             ! 
+             !
 	    ELSE IF (LCMP(VAR_NAM,'tMetElt',7)) THEN
 	      If (nMetPos(iElt).LE.0) Then
                 Write(*,*)' ** MACOS Rx error: iElt,nMetPos =',
@@ -1284,7 +1371,7 @@ C  Assign ZernTypeL
               If (tMetSrf(iElt)>0) Then
 	        Do i=1,nMetPos(iElt)
 	          READ(1,123) STRING
-                  READ(STRING,*) 
+                  READ(STRING,*)
      &              metBeamFlg(1:ntMetPos(iElt),i,iEltToMetSrf(iElt))
 	        End Do
 !               READ(VALUE,*)tMetSrf(iElt),ntMetPos(iElt),
@@ -1315,7 +1402,7 @@ C  Assign ZernTypeL
 
 	      k=ICLEN(GridFile(iElt))
 	      If (.false.) Then
-	        print*,'Grid file extension: ',GridFile(iElt)(k-2:k) 
+	        print*,'Grid file extension: ',GridFile(iElt)(k-2:k)
 	      End If
 
 	      If (.not.LCMP(GridFile(iElt)(k-2:k),'bin',3)) Then
@@ -1323,15 +1410,15 @@ C  Assign ZernTypeL
 
 !	 print*,'***** msmacosio: iElt,iEltToGridSrf(iElt),GridFile(iElt)=',
 !    &          iElt,iEltToGridSrf(iElt),GridFile(iElt)
-      
-                 
+
+
                 CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
      &                        ifGridInit,.false.)
-               
+
 	      Else
 	        ! binary
 	        CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
-     &                        ifGridInit,.true.)	
+     &                        ifGridInit,.true.)
 	      End If
 
 	      ! added 09/20/2016 -jzlou
@@ -1345,14 +1432,14 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               END IF
               GridMat_FLG=.TRUE.
 
-	      ! if a reference surface (EltID=3), the grid is defined 
+	      ! if a reference surface (EltID=3), the grid is defined
               ! for wavefront/OPD modulation -jzlou
 	      !If (EltID(iElt)==3) ifOPDModGrid(iElt)=.TRUE.
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'GridSrfOrder',10)) THEN
               READ(VALUE,*) GridSrfOrder(iElt)
-	      If (GridSrfOrder(iElt) /= 1 .and. 
+	      If (GridSrfOrder(iElt) /= 1 .and.
      &            GridSrfOrder(iElt) /= 3) Then
 	        WRITE(*,*)' ** Invalid GridSrfOrder value for Elt ',iElt
                 WRITE(*,*)' ** Reset to bi-linear surface interpolator'
@@ -1451,15 +1538,15 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
                 TotalLensletsArray(iElt)=nRecLenlets
               End If
 	      READ(VALUE,*)TotalLensletsArray(iElt),nValsPerRow
-	      If (nValsPerRow>0) Then 
+	      If (nValsPerRow>0) Then
 	        k=TotalLensletsArray(iElt); i=1
-	        Do 
+	        Do
 	         if (k<nValsPerRow) exit
 	          ! read in 'nValsPerRow' IndRef values from Rx
 	          READ(1,123)STRING
-	          READ(STRING,*) 
+	          READ(STRING,*)
      &	           LensletStrArray(i:i+nValsPerRow-1,iElt)%IndRef
-	          k=k-nValsPerRow; i=i+nValsPerRow 
+	          k=k-nValsPerRow; i=i+nValsPerRow
 	        End Do
 	        If (k>0) Then
 	          READ(1,123)STRING
@@ -1489,7 +1576,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 	      If (EltID(iElt)==6) Then ! only valid on Refractor
 	        IsVarIndRefElt(iElt)=.true.
 	        ! IndRefGridArr(iElt)%width is read in from index grid file -jzlou
-	        Call InitIndRefGridFrmFile(VALUE,iElt) 
+	        Call InitIndRefGridFrmFile(VALUE,iElt)
 	        !print*,'Stop after reading index grid'
 	        !stop
 	      End If
@@ -1549,7 +1636,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 
 	    ELSE IF (LCMP(VAR_NAM,'ArrIndRef',9)) THEN
 	      ArrIndRef(1:nOptWavelen,iElt)=1d0 ! default first
-              Call Get_Values(VALUE,ArrIndRef(:,iElt),nTok) 
+              Call Get_Values(VALUE,ArrIndRef(:,iElt),nTok)
                      ! nTok returns number of values read into ArrIndRef
 	      If (nTok /= nOptWavelen) Then
                 WRITE(*,*)' '
@@ -1559,13 +1646,13 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
      &   '   Inconsistent number of values between '//
      &   '   wavelengths and '//
      &   '   refractive indexes'
-	        Pause 
+	        Pause
 	      End If
 	      IndRef(iElt)=ArrIndRef(1,iElt)
               IndRefE_FLG=.TRUE.
               GlassElt_FLG=.TRUE.
               GlassCoef_FLG=.TRUE.
-              GO TO 61 
+              GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'GradInd',7)) THEN
               READ(VALUE,*)GrinRefArr(iElt)%modelType
@@ -1574,7 +1661,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               GlassCoef_FLG=.TRUE.
 	      IsGrinRefElt(iElt)=.TRUE.
 	      numGradInd=numGradInd+1
-	      iElt2iGradInd(iElt)=numGradInd  
+	      iElt2iGradInd(iElt)=numGradInd
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'GradCoef',8)) THEN
@@ -1583,9 +1670,9 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 	        READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:8)
 	      Else If (GrinRefArr(iElt)%modelType==1 .OR.
      &                 GrinRefArr(iElt)%modelType==6) Then
-                READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:3) 
+                READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:3)
 	      Else If (GrinRefArr(iElt)%modelType==7) Then
-	        READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:5) 
+	        READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:5)
 	      Else
 	        ! If unknown graded-index modelType or undefine,
 	        ! return from function with error message
@@ -1630,7 +1717,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
      &	 	   IndRefArr(k,iElt),ExtincArr(k,iElt),
      &		   EltCoatThk(k,iElt)
 	       End Do
-	      End If 
+	      End If
               GO TO 61
 	    ELSE IF (LCMP(VAR_NAM,'GlassElt',6)) THEN
               GlassElt(iElt)=VALUE
@@ -1676,7 +1763,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'Regrid',6)) THEN ! added by jzlou
-              If (LCMP(VALUE,'Y',1)) Then 
+              If (LCMP(VALUE,'Y',1)) Then
 	        ifRegrid(iElt)=.TRUE.
 	      End If
               GO TO 61
@@ -1812,7 +1899,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               ELSE IF (LCMP(VALUE,ApTypeName(7),7).OR.
      &                 LCMP(VALUE,'7',1)) THEN
                 ApType(iElt)=7 ! ApType = 'Polygonal'
-	      
+
 	      ELSE IF (LCMP(VALUE,ApTypeName(8),12).OR.
      &                 LCMP(VALUE,'8',1)) THEN
                 ApType(iElt)=8 ! ApType = 'Tapered_Polygonal'
@@ -1849,7 +1936,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 		  LApSunBlades=.TRUE.
 	        Else
                   WRITE(*,*)
-     &          ' **Load error: ApType SunBlades multiply defined!' 
+     &          ' **Load error: ApType SunBlades multiply defined!'
 	          GO TO 61
 	        End If
               END IF
@@ -1928,7 +2015,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
                     READ(STRING,*)(PolyApVtx(j,k,iElt),j=1,2)
                   End Do
                   Call SetCvxPolyApBound(iElt)
- 
+
 	        ELSE IF (ApType(iElt).EQ.9) THEN
 		  READ(VALUE,*) (ApVec(j,iElt),j=1,5)
 	          !print*,' **SunBlades, ApVec =',ApVec(1:5,iElt)
@@ -2191,7 +2278,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
               ! in global frame
               Do k=1,EdgeSensor(iElt)
                 !READ(1,123)STRING
-                READ(1,*)EdgeSensVec(1:9,k,iElt) ! (position + two directions) 
+                READ(1,*)EdgeSensVec(1:9,k,iElt) ! (position + two directions)
                 If (iElt==12) Then
                   print*,'EdgeSensVec(1:9,k,12) =',
      &                   EdgeSensVec(1:10,k,12)
@@ -2257,7 +2344,7 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
             END IF
 
 
-	    ! This part is added so that load will work when nElt in Rx is smaller 
+	    ! This part is added so that load will work when nElt in Rx is smaller
             ! than actual elements in Rx. -jzlou
  62	    IF (iElt==nElt .AND. (.not. LnOutCordPass)) THEN
               ! need to increase 'nElt' since there are extra element(s) in Rx
@@ -2265,10 +2352,10 @@ c     & iEltToGridSrf(iElt),', ifGridInit=',ifGridInit
 	    END If
 
 	    !print*,'****** iSeg =',iSeg
-	      
+
             iElt=iElt+1
 	    DupElt_FLG=.FALSE.
             If (iElt>nElt) EXIT
 	  END DO
           ! End of "DO ... END DO" loop, -jzlou
-	    
+
