@@ -84,20 +84,20 @@ C***********************************************************************
 	LOGICAL LROK,ifBuild,ifLNsrf
 
 ! ifLNsrf is a flag indicating whether to allow ray length 'L' to be negative -jzlou
-! pr is ray incident point on current surface (to be computed) -jzlou 
+! pr is ray incident point on current surface (to be computed) -jzlou
 
 ! ihat = RayDir(1:3,iRay) = direction of incident ray
 ! Nhat = surface normal at ray incident point (jzlou guessed);
 !        Nhat will be used to compute direction of reflected ray (rhat) in calling routine -jzlou
 
- 
+
 C	Compute incidence point of ray on the surface
 
 	Do i=1,3
 	  prel(i)=pin(i)-pv(i) ! current Ray position (on previous surface) minus current VptElt
     	End Do
 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3) ! = ihat projected onto psi
-	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3) ! = psi projected onto prel 
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3) ! = psi projected onto prel
 
 	IF (ABS(Kr).LT.1d22) THEN
 	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
@@ -131,7 +131,7 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 #if 0
-	  if (iElt_debug==214) then 
+	  if (iElt_debug==214) then
             print*,'******* pv(1:3) =',pv(1:3)
             print*,'******* psi(1:3) =',psi(1:3)
             print*,'****** ConSrf(): ksqrt,kp,km =',ksqrt,kp,km
@@ -166,7 +166,7 @@ C	Compute intersection point and normal vector
 
 	IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
 
-	S1=Kr+Kc*(psitprel+L*itpsi) 
+	S1=Kr+Kc*(psitprel+L*itpsi)
         Do i=1,3
 	  S2=L*ihat(i)
 	  pr(i)=pin(i)+S2  ! pr is ray incident point on current surface -jzlou
@@ -180,7 +180,7 @@ C	Compute intersection point and normal vector
           print*,'****** ConSrf: L =',L
           print*,'****** ConSrf: pin(1:3) =',pin(1:3)
           print*,'****** ConSrf: pr(1:3) =',pr(1:3)
-        end if 
+        end if
 #endif
 
 	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
@@ -199,7 +199,7 @@ C	Compute partials of the normal
 C  Compute partials of the local normal (Nhat) wrt psi -jzlou
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3) ! D1 = psi*Kc
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -214,7 +214,7 @@ C  Compute partials of the local normal (Nhat) wrt psi -jzlou
 	  CALL DSMPROD(dNdp,D2,S1,9) ! dNdp is derivative of Nhat wrt psi, a 3x3 matrix -jzlou
                                      ! Nhat is surface normal at ray incident point
           ! Since Nhat is computed from an analytical function/equation of psi, its derivative
-          ! wrt psi can be analytically computed as well -jzlou 
+          ! wrt psi can be analytically computed as well -jzlou
 	END IF
 
 	RETURN
@@ -324,7 +324,7 @@ cLnegOK -- Nonsequential surfaces must have positive L!!
 C	Compute partials of the normal
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -437,12 +437,12 @@ C***********************************************************************
      &	ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	pout,L,SrfType,
      &	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
-	
+
 	use elemsub_mod
 	use traceutil_mod
 	use math_mod
 
-C  Compute reflection point, normal, reflection and transition	
+C  Compute reflection point, normal, reflection and transition
 C  matrices for a reflecting surface
 
 	IMPLICIT NONE
@@ -506,9 +506,9 @@ C  Compute incidence point of ray
      &             psi,pv,prot,pin,
      &             ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef,
      &             nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
-     &             xhat,yhat,zhat) 
+     &             xhat,yhat,zhat)
 	ELSE
-	  WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType, 
+	  WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType,
      &      ', Aborting trace.'
 	END IF
 
@@ -517,7 +517,7 @@ C   If not obscured, check if ray has negative length
 
 C  Check if ray is obscured
 
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -612,10 +612,10 @@ c	psiy=psi(1)*yhat(1)+psi(2)*yhat(2)+psi(3)*yhat(3)
 C    Find surface roots and select L:
 	CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
 	IF (Order.EQ.0) THEN
-	  if (.false.) then !(abs(f1) .le. 1d-10) then 
+	  if (.false.) then !(abs(f1) .le. 1d-10) then
 	    print*,'AnaSrf(): f1 = ', f1
 	    stop
-	  endif 
+	  endif
 	  L=-f0/f1
 	ELSE
 	  L=1d22
@@ -744,12 +744,12 @@ C
         Krx=-AnaCoef(1); Kry=-AnaCoef(2); Cx=AnaCoef(3)
 
 	! yhat is computed from psi cross xhat
-	! xhat, yhat and psi orthogonal to each other 
+	! xhat, yhat and psi orthogonal to each other
         CALL DORTHOGANALIZE(psi,xhat,yhat)
 
         prel(1:3)=pin(1:3)-pv(1:3)
 
-	! Convert ray direction cosine from global 
+	! Convert ray direction cosine from global
         ! to element-local coord system -jzlou
         itpsi = ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
         ix = ihat(1)*xhat(1)+ihat(2)*xhat(2)+ihat(3)*xhat(3)
@@ -762,7 +762,7 @@ C
 
 	! psix and psiy never used later in this routine.
 	! Since psi, xhat, yhat are orthogonal to one another now,
-	! psix and psiy must be zero. -jzlou 
+	! psix and psiy must be zero. -jzlou
         psix = psi(1)*xhat(1)+psi(2)*xhat(2)+psi(3)*xhat(3)
         psiy = psi(1)*yhat(1)+psi(2)*yhat(2)+psi(3)*yhat(3)
 
@@ -770,7 +770,7 @@ C
 	!
 	! This 'if' section was added by J.Lou. 11/11/04
 	!
-	if (abs(Kry) .gt. 1d07) then 
+	if (abs(Kry) .gt. 1d07) then
 	  isCYL=.true.
 	else
 	  isCYL=.false.
@@ -785,15 +785,15 @@ C
            q0 = (1.0+Cx)*psitprel*psitprel-2.0*Krx*psitprel+px*px
 
 	   if (prtL) print*,'B4 ROOT4 (cyl): q2,q1,q0=',
-     &                       q2,q1,q0 
+     &                       q2,q1,q0
 
-	   ! Solve for path length 
-	   ! for cylinder surface, there are at most two real roots 
-	   CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0) 
+	   ! Solve for path length
+	   ! for cylinder surface, there are at most two real roots
+	   CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
 
 	   if (prtL) print*,'In ToricSrf(cyl): CL(1:4)=', CL(1:4)
 
-	   if (isReal(CL(1)) .and. dble(CL(1)).ge.0 .and. 
+	   if (isReal(CL(1)) .and. dble(CL(1)).ge.0 .and.
      &         isReal(CL(2)) .and. dble(CL(2)).ge.0) then
 	     if (AnaCoef(1).ge.0) then
 	       ! Take 'first' intesection point, which is the one
@@ -801,7 +801,7 @@ C
 	       ! positive 'L' solution.
 	       if (dble(CL(1))<dble(CL(2))) then
 	         L=dble(CL(1))
-	       else 
+	       else
 	         L=dble(CL(2))
 	       end if
 	     else ! AnaCoef(1).lt.0
@@ -816,7 +816,7 @@ C
 	     end if
 	   else if ((isReal(CL(1)) .and. dble(CL(1)).ge.0) .or.
      &              (isReal(CL(2)) .and. dble(CL(2)).ge.0)) then
-	     if (isReal(CL(1)) .and. dble(CL(1)).ge.0) then 
+	     if (isReal(CL(1)) .and. dble(CL(1)).ge.0) then
 	       L=dble(CL(1))
 	     else
 	       L=dble(CL(2))
@@ -873,7 +873,7 @@ C
 C Find surface roots and select L:
 C
 
-	   if (prtL) print*,'B4 ROOT4: q4,q3,q2,q1,q0=',q4,q3,q2,q1,q0 
+	   if (prtL) print*,'B4 ROOT4: q4,q3,q2,q1,q0=',q4,q3,q2,q1,q0
 
            CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
 
@@ -890,7 +890,7 @@ C
 
 	     if (.false.) then
 
-	     ! dcr's original version 
+	     ! dcr's original version
 	     ! L is taken as minimum of roots when Cx < 1.0. -jzlou
              L= 1d22
              DO i=1,Order
@@ -951,7 +951,7 @@ C       Fix by S.A.B.  maybe need abs(Krx) and abs(Kyr) ???  doesn't always work
               L= -Ccoef/Bcoef
 	      if (prtL) print*,'6: L= -Ccoef/Bcoef=',L
            ELSE
-              L= -psitprel/itpsi	
+              L= -psitprel/itpsi
               if (prtL) print*,'7: L= -psitprel/itpsi=',L
            END IF
         END IF
@@ -977,7 +977,7 @@ c
            zpt = psitprel + L*itpsi
 c
 	   if (isCYL) then
-	     ! cylinder, added by jzlou	
+	     ! cylinder, added by jzlou
 	     Nvl(1) =2.0*xpt
 	     Nvl(2) =0.0
 	     Nvl(3) =2.0*((1.0+Cx)*zpt-Krx)
@@ -991,7 +991,7 @@ c
                Nvl(3) = 0.5d0
 	     else
 	       ! use torus normal computed by Lou
-	       Call Calc_ToricNormal(Kry,Krx,Cx,xpt,ypt,zpt,Nvl) 
+	       Call Calc_ToricNormal(Kry,Krx,Cx,xpt,ypt,zpt,Nvl)
 	     end if
 	   end if
 
@@ -1032,10 +1032,10 @@ c       Here if ray misses surface
         ! Kx = conic constant in X
         Implicit none
         Real*8 :: Ry,Rx,Kx,x,y,z,nv(3)
-        Real*8 :: x2,tt1,tt2,Zx  
+        Real*8 :: x2,tt1,tt2,Zx
 
         tt1=(1.0+Kx)/(Rx*Rx)
-        x2=x*x; tt2=sqrt(1.0-tt1*x2)  
+        x2=x*x; tt2=sqrt(1.0-tt1*x2)
 	Zx=x2/(1.0+tt2)/Rx
 
         nv(1)=2*x*(1.0+tt2)+tt1*x2*x/tt2
@@ -1103,7 +1103,7 @@ C	Compute intersection point and normal vector
 	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
 	  if (.false.) then ! (abs(b) .le. 1d-10) then
 	    print*,'AsphSrf(): b = ', b
-	    stop  
+	    stop
 	  end if
 	  L=-c/b
 	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
@@ -1182,9 +1182,9 @@ C	Compute normal vector
         Do i=1,nAsphCoef
           fh=fh+coef(i)*hh1
           S1=S1+sc(i,1)*coef(i)*hh2
-          hh1=hh1*h2; hh2=hh2*h2 
+          hh1=hh1*h2; hh2=hh2*h2
         End Do
-#endif 
+#endif
 
 	Do i=1,3
 	  zc(i)=rho(i)-fh*psi(i)
@@ -1216,7 +1216,7 @@ C	Compute partials of the normal
 
 	IF (ifBuild) THEN
 
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -1237,13 +1237,13 @@ C	Compute partials of the normal
           ! S1=(dS2/dh)/h  -jzlou
 #else
 ! jzlou
-	  hh1=1d0; hh2=h2 
+	  hh1=1d0; hh2=h2
 	  S1=0d0; S2=0d0
 	  Do i=2,nAsphCoef
             S1=S1+sc(i,2)*coef(i)*hh1
 	    S2=S2+sc(i,1)*coef(i)*hh2
             hh1=hh1*h2; hh2=hh2*h2
-          End Do 
+          End Do
 #endif
 
 	  CALL DPROJECT(Ppsi,psi)
@@ -1261,7 +1261,7 @@ C	Compute partials of the normal
 	  S1=Kr+(1d0+Kc)*psitzc
 	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
 	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
+
 	  S1=1d0/Nmag
 	  CALL DPROJECT(D1,Nhat)
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
@@ -1284,7 +1284,7 @@ C***********************************************************************
      &                 nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &                 xhat,yhat,zhat)
 	use elt_mod, only : iEltToGridSrf,ifGridDataDefined
-        use traceutil_mod, only : crnt_Elt 
+        use traceutil_mod, only : crnt_Elt
         use math_mod
 
         IMPLICIT NONE
@@ -1292,7 +1292,7 @@ C***********************************************************************
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),Kc,Kr,
      &         pr(3),L,Nvec(3),Nmag,Nhat(3),dNdp(3,3),
      &         Nvec_Asph(3),coef(nAsphCoef),dNdp_asph(3,3),
-     &         dNdp2(3,3),L_conic,L_asph 
+     &         dNdp2(3,3),L_conic,L_asph
         Integer :: nAsphCoef
 
         REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
@@ -1322,7 +1322,7 @@ C***********************************************************************
 #if 0
 	 If (.not. ifGridDataDefined(iEltToGridSrf(crnt_Elt))) Then
            ! if grid data are not initialized/provided for this element, just
- 	   ! call subroutine AsphSrf() and return 
+ 	   ! call subroutine AsphSrf() and return
 	   CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
      &            prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
 	   !print*,'iElt =',crnt_Elt,', GridMat NOT initialized!'
@@ -1468,7 +1468,7 @@ C      Compute normal vector
           pr(i)=pin(i)+L*ihat(i)
           Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
         End Do
-        
+
         Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
         S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
         IF (S1.LE.0d0) THEN
@@ -1482,13 +1482,13 @@ C      Compute normal vector
         END IF
 #endif
 
-        ! Separate conic and pure_aspherical parts of Nvec 
+        ! Separate conic and pure_aspherical parts of Nvec
 
         ! Compute Nvec of pure-aspherical part - Nvec_Asph
         Do i=1,3
-          rho(i)=prel(i)+L*ihat(i)    ! rho updated with new 'L' on aspherical -jzlou 
+          rho(i)=prel(i)+L*ihat(i)    ! rho updated with new 'L' on aspherical -jzlou
           Nvec_Asph(i)=zc_asph(i)+S1_asph*psi(i)-S2_asph*dFdrho(i)
-            ! Nvec_Asph is "local surface normal from "pure aspherical" -jzlou 
+            ! Nvec_Asph is "local surface normal from "pure aspherical" -jzlou
         End Do
 
 #if 0
@@ -1520,11 +1520,11 @@ C      Compute normal vector
 ! Now add grid surface contribution on top of aspherical surface -jzlou
 !
 
-C       grdm_rms2 = 
+C       grdm_rms2 =
 C    &    Calc_RMS2(GridMat(1:nGridMat,1:nGridMat),nGridMat*nGridMat)
 C       !print*,'** gridm_rms2 =',grdm_rms2
 
-        ! 'TRUE' = complete code, with grid part included 
+        ! 'TRUE' = complete code, with grid part included
         ! 'FALSE' = skip the grid part, just use aspherical part
         If (.TRUE.) Then
 ! ----
@@ -1568,7 +1568,7 @@ C  Compute normal
           S1=Kr+Kc*psitzc
           S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
 ! ----
-          ! Compute total Nvec = Nvec of pure-aspherical + Nvec of conic+grid 
+          ! Compute total Nvec = Nvec of pure-aspherical + Nvec of conic+grid
           DO i=1,3
             pr(i)=pin(i)+L*ihat(i)  ! final ray footprint on surface -jzlou
             Nvec(i)=Nvec_Asph(i) + zc(i)+S1*psi(i)-S2*dFdrho(i)
@@ -1578,7 +1578,7 @@ C  Compute normal
              ! contributions to local surface normal. -jzlou
           End Do
           !
-        Else 
+        Else
           L=L_asph  ! skip grid part
 
           ! Compute Nvec = Nvec of pure-aspherical + Nvec of conic part
@@ -1590,7 +1590,7 @@ C  Compute normal
             Nvec(i)=Nvec_Asph(i) + zc(i)+S1*psi(i)
           END DO
         End If  ! If .TRUE. or .FALSE.
- 
+
         Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
         S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
         IF (S1.LE.0d0) THEN
@@ -1653,8 +1653,8 @@ C      Compute partials of the normal
           CALL DMPROD(D2,D1,dNvecdp,3,3,3)
           CALL DSMPROD(dNdp_asph,D2,S1,9)
 
-          ! 
-          ! Now add conic+grid dNdp to the total dNdp 
+          !
+          ! Now add conic+grid dNdp to the total dNdp
           !
           Do j=1,3
             Do i=1,3
@@ -1847,231 +1847,493 @@ C***********************************************************************
 	END SUBROUTINE AZPB
 
 C***********************************************************************
+        ! ---------------------------------------------------------------------
+        !           ANSI    n   m   Z(R,theta)      Z(x,y)
+        ! zc(1)  |    0  |  0   0 | 1                 1
+        ! zc(2)  |    1  |  1  -1 | R*sin(Theta)      y
+        ! zc(3)  |    2  |  1   1 | R*cos(theta)      x
+        ! zc(4)  |    3  |  2  -2 | R^2*sin(2*theta)  2*x*y
+        ! zc(5)  |    4  |  2   0 | 2*R^2 - 1         2(x^2+y^2) - 1
+        ! zc(6)  |    5  |  2   2 | R^2*cos(2*theta)  x^2 - y^2
 
-	SUBROUTINE ZerntoMon1(zc_in,mc,ie)
-	use elt_mod, only : ZernTypeL,ZnNmFac_m
+        !      x^i y^(i-j)
+        !     --------------------------
+        !     ( 0,  0 ) = ( 1   *  1  )
+        !     --------------------------
+        !     ( 0,  1 ) = ( 1   *  y  )
+        !     ( 1,  0 ) = ( x   *  1  )
+        !     --------------------------
+        !     ( 0,  2 ) = ( 1   *  y^2)
+        !     ( 1,  1 ) = ( x   *  y  )
+        !     ( 2,  0 ) = ( x^2 *  1  )
+        ! ---------------------------------------------------------------------
 
-C	With Greg's fixes: uses Malacara approach
+        ! Mapping ANSI Zernike Ordering to Monomials
+        SUBROUTINE ZerntoMon1(zc_in, mc, ie)
+          use elt_mod ! , only : ZernTypeL,ZnNmFac_m,mZernModes,mMonCoef
 
-cHistory
-c  24Jul97 loh:  changed name to ZerntoMon1 (from ZerntoMon) since 
-c		 additional Zernike types have been added
+          IMPLICIT NONE
+          REAL*8 :: zc_in(mZernModes),zc(mZernModes),mc(mMonCoef)
+          INTEGER :: ie,i
 
-	IMPLICIT NONE
-	INTEGER ie,i
-	REAL*8 zc_in(45),zc(45),mc(120)
+          zc = zc_in
 
-	zc=zc_in
+          ! Apply rms Normalisation Factor
+          IF (ANY(ZernType_rms_normalised == ZernTypeL(ie))) zc = zc * ZnNmFac_m
 
-	If ((ZernTypeL(ie).ge.4 .and. ZernTypeL(ie).le.6)
-     &      .or. (ZernTypeL(ie)==8)) Then
-          zc(1:45)=zc_in(1:45)*ZnNmFac_m(1:45)
-	End If
+          ! ANSI Zernike (index shifted by 1) to Monomials
+          mc( 1) = zc(1)-zc(5)+zc(13)-zc(25)+zc(41)-zc(61)
 
-	mc(1)=zc(1)-zc(5)+zc(13)-zc(25)+zc(41)
-	mc(2)=zc(3)-2d0*zc(9)+3d0*zc(19)-4d0*zc(33)
-	mc(3)=zc(2)-2d0*zc(8)+3d0*zc(18)-4d0*zc(32)
-	mc(4)=2d0*zc(5)+zc(6)-6d0*zc(13)-
-     &	3d0*zc(14)+12d0*zc(25)+6d0*zc(26)-20d0*zc(41)-10d0*zc(42)
-	mc(5)=2d0*zc(4)-6d0*zc(12)+12d0*zc(24)-20d0*zc(40)
-	mc(6)=2d0*zc(5)-zc(6)-6d0*zc(13)+
-     &	3d0*zc(14)+12d0*zc(25)-6d0*zc(26)-20d0*zc(41)+10d0*zc(42)
-	mc(7)=3d0*zc(9)+zc(10)-12d0*zc(19)-4d0*zc(20)+30d0*zc(33)
-     &	+10d0*zc(34)
-	mc(8)=3d0*zc(7)+3d0*zc(8)-12d0*zc(17)-12d0*zc(18)+30d0*zc(31)
-     &	+30d0*zc(32)
-	mc(9)=3d0*zc(9)-3d0*zc(10)-12d0*zc(19)+12d0*zc(20)+30d0*zc(33)
-     &	-30d0*zc(34)
-	mc(10)=-zc(7)+3d0*zc(8)+4d0*zc(17)-12d0*zc(18)-10d0*zc(31)
-     &	+30d0*zc(32)
-	mc(11)=6d0*zc(13)+4d0*zc(14)+zc(15)-20d0*zc(26)-30d0*zc(25)
-     &	-5d0*zc(27)+90d0*zc(41)+60d0*zc(42)+15d0*zc(43)
-	mc(12)=4d0*zc(11)+8d0*zc(12)-20d0*zc(23)-40d0*zc(24)+60d0*zc(39)
-     &	+120d0*zc(40)
-	mc(13)=12d0*zc(13)-6d0*zc(15)-60d0*zc(25)+30d0*zc(27)
-     &	+180d0*zc(41)-90d0*zc(43)
-	mc(14)=-4d0*zc(11)+8d0*zc(12)+20d0*zc(23)-40d0*zc(24)
-     &	-60d0*zc(39)+120d0*zc(40)
-	mc(15)=6d0*zc(13)-4d0*zc(14)+zc(15)-30d0*zc(25)
-     &	+20d0*zc(26)-5d0*zc(27)+90d0*zc(41)-60d0*zc(42)+15d0*zc(43)
-	mc(16)=10d0*zc(19)+5d0*zc(20)+zc(21)-60d0*zc(33)
-     &	-30d0*zc(34)-6d0*zc(35)
-	mc(17)=5d0*zc(16)+15d0*zc(17)+10d0*zc(18)-30d0*zc(30)
-     &	-90d0*zc(31)-60d0*zc(32)
-	mc(18)=20d0*zc(19)-10d0*zc(20)-10d0*zc(21)-120d0*zc(33)
-     &	+60d0*zc(34)+60d0*zc(35)
-	mc(19)=-10d0*zc(16)+10d0*zc(17)+20d0*zc(18)+60d0*zc(30)
-     &	-60d0*zc(31)-120d0*zc(32)
-	mc(20)=10d0*zc(19)-15d0*zc(20)+5d0*zc(21)-60d0*zc(33)
-     &	+90d0*zc(34)-30d0*zc(35)
-	mc(21)=zc(16)-5d0*zc(17)+10d0*zc(18)-6d0*zc(30)
-     &	+30d0*zc(31)-60d0*zc(32)
-	mc(22)=20d0*zc(25)+15d0*zc(26)+6d0*zc(27)+zc(28)-140d0*zc(41)
-     &	-105d0*zc(42)-42d0*zc(43)-7d0*zc(44)
-	mc(23)=6d0*zc(22)+24d0*zc(23)+30d0*zc(24)-42d0*zc(38)
-     &	-168d0*zc(39)-210d0*zc(40)
-	mc(24)=60d0*zc(25)+15d0*zc(26)-30d0*zc(27)-15d0*zc(28)
-     &	-420d0*zc(41)-105d0*zc(42)+210d0*zc(43)+105d0*zc(44)
-	mc(25)=-20d0*zc(22)+60d0*zc(24)+140d0*zc(38)-420d0*zc(40)
-	mc(26)=60d0*zc(25)-15d0*zc(26)-30d0*zc(27)+15d0*zc(28)
-     &	-420d0*zc(41)+105d0*zc(42)+210d0*zc(43)-105d0*zc(44)
-	mc(27)=6d0*zc(22)-24d0*zc(23)+30d0*zc(24)-42d0*zc(38)
-     &	+168d0*zc(39)-210d0*zc(40)
-	mc(28)=20d0*zc(25)-15d0*zc(26)+6d0*zc(27)-zc(28)-140d0*zc(41)
-     &	+105d0*zc(42)-42d0*zc(43)+7d0*zc(44)
-	mc(29)=35d0*zc(33)+21d0*zc(34)+7d0*zc(35)+zc(36)
-	mc(30)=7d0*zc(29)+35d0*zc(30)+63d0*zc(31)+35d0*zc(32)
-	!mc(31)=105d0*zc(33)-21d0*zc(34)-70d0*zc(35)-21d0*zc(36) ! -70d0*zc(35) appears wrong!
-        mc(31)=105d0*zc(33)-21d0*zc(34)-63d0*zc(35)-21d0*zc(36)  ! fixed by jzlou, 03/31/08
-	mc(32)=-35d0*zc(29)-35d0*zc(30)+105d0*zc(31)+105d0*zc(32)
-	mc(33)=105d0*zc(33)-105d0*zc(34)-35d0*zc(35)+35d0*zc(36)
-	!mc(34)=21d0*zc(29)-70d0*zc(30)+21d0*zc(31)+105d0*zc(32) ! 70d0*zc(30) is wrong!
-        mc(34)=21d0*zc(29)-63d0*zc(30)+21d0*zc(31)+105d0*zc(32)  ! fixed by jzlou, 03/31/08
-	mc(35)=35d0*zc(33)-63d0*zc(34)+35d0*zc(35)-7d0*zc(36)
-	mc(36)=-zc(29)+7d0*zc(30)-21d0*zc(31)+35d0*zc(32)
-	mc(37)=70d0*zc(41)+56d0*zc(42)+28d0*zc(43)+8d0*zc(44)+zc(45)
-	mc(38)=8d0*zc(37)+48d0*zc(38)+112d0*zc(39)+112d0*zc(40)
-	mc(39)=280d0*zc(41)+112d0*zc(42)-112d0*zc(43)-112d0*zc(44)
-     &	-28d0*zc(45)
-	mc(40)=-56d0*zc(37)-112d0*zc(38)+112d0*zc(39)+336d0*zc(40)
-	mc(41)=420d0*zc(41)-280d0*zc(43)+70d0*zc(45)
-	mc(42)=56d0*zc(37)-112d0*zc(38)-112d0*zc(39)+336d0*zc(40)
-	mc(43)=280d0*zc(41)-112d0*zc(42)-112d0*zc(43)+112d0*zc(44)
-     &	-28d0*zc(45)
-	mc(44)=-8d0*zc(37)+48d0*zc(38)-112d0*zc(39)+112d0*zc(40)
-	mc(45)=70d0*zc(41)-56d0*zc(42)+28d0*zc(43)-8d0*zc(44)+zc(45)
-	DO i=46,120
-	  mc(i)=0d0
-	END DO
+          mc( 2) = zc(2)-2d0*zc(8)+3d0*zc(18)-4d0*zc(32)+5d0*zc(50)
+          mc( 3) = zc(3)-2d0*zc(9)+3d0*zc(19)-4d0*zc(33)+5d0*zc(51)
 
-	!print*,' ** ZerntoMon1: mc(1:30) = ', mc(1:30)
+          mc( 4) = 2d0*zc(5)-zc(6)-6d0*zc(13)+3d0*zc(14)+12d0*zc(25)
+     &             -6d0*zc(26)-20d0*zc(41)+10d0*zc(42)+30d0*zc(61)-15d0*zc(62)
+          mc( 5) = 2d0*zc(4)-6d0*zc(12)+12d0*zc(24)-20d0*zc(40)+30d0*zc(60)
+          mc( 6) = 2d0*zc(5)+zc(6)-6d0*zc(13)-3d0*zc(14)+12d0*zc(25)+6d0*zc(26)
+     &            -20d0*zc(41)-10d0*zc(42)+30d0*zc(61)+15d0*zc(62)
+          mc( 7) = -zc(7)+3d0*zc(8)+4d0*zc(17)-12d0*zc(18)-10d0*zc(31)+30d0*zc(32)+20d0*zc(49)-60d0*zc(50)
+          mc( 8) = 3d0*zc(9)-3d0*zc(10)-12d0*zc(19)+12d0*zc(20)+30d0*zc(33)-30d0*zc(34)-60d0*zc(51)+60d0*zc(52)
+          mc( 9) = 3d0*zc(7)+3d0*zc(8)-12d0*zc(17)-12d0*zc(18)+30d0*zc(31)+30d0*zc(32)-60d0*zc(49)-60d0*zc(50)
+          mc(10) = 3d0*zc(9)+zc(10)-12d0*zc(19)-4d0*zc(20)+30d0*zc(33)+10d0*zc(34)-60d0*zc(51)-20d0*zc(52)
 
-	RETURN
-	END SUBROUTINE ZerntoMon1
+          mc(11) = 6d0*zc(13)-4d0*zc(14)+zc(15)-30d0*zc(25)+20d0*zc(26)-5d0*zc(27)
+     &             +90d0*zc(41)-60d0*zc(42)+15d0*zc(43)-210d0*zc(61)+140d0*zc(62)-35d0*zc(63)
+          mc(12) = -4d0*zc(11)+8d0*zc(12)+20d0*zc(23)-40d0*zc(24)-60d0*zc(39)+120d0*zc(40)+140d0*zc(59)-280d0*zc(60)
+          mc(13) = 12d0*zc(13)-6d0*zc(15)-60d0*zc(25)+30d0*zc(27)+180d0*zc(41)-90d0*zc(43)-420d0*zc(61)+210d0*zc(63)
+          mc(14) = 4d0*zc(11)+8d0*zc(12)-20d0*zc(23)-40d0*zc(24)+60d0*zc(39)+120d0*zc(40)-140d0*zc(59)-280d0*zc(60)
+          mc(15) = 6d0*zc(13)+4d0*zc(14)+zc(15)-30d0*zc(25)-20d0*zc(26)-5d0*zc(27)+90d0*zc(41)+60d0*zc(42)
+     &             +15d0*zc(43)-210d0*zc(61)-140d0*zc(62)-35d0*zc(63)
+          mc(16) = zc(16)-5d0*zc(17)+10d0*zc(18)-6d0*zc(30)+30d0*zc(31)
+     &             -60d0*zc(32)+21d0*zc(48)-105d0*zc(49)+210d0*zc(50)
+          mc(17) = 10d0*zc(19)-15d0*zc(20)+5d0*zc(21)-60d0*zc(33)+90d0*zc(34)
+     &            -30d0*zc(35)+210d0*zc(51)-315d0*zc(52)+105d0*zc(53)
+          mc(18) = -10d0*zc(16)+10d0*zc(17)+20d0*zc(18)+60d0*zc(30)-60d0*zc(31)
+     &             -120d0*zc(32)-210d0*zc(48)+210d0*zc(49)+420d0*zc(50)
+          mc(19) = 20d0*zc(19)-10d0*zc(20)-10d0*zc(21)-120d0*zc(33)+60d0*zc(34)
+     &             +60d0*zc(35)+420d0*zc(51)-210d0*zc(52)-210d0*zc(53)
+          mc(20) = 5d0*zc(16)+15d0*zc(17)+10d0*zc(18)-30d0*zc(30)-90d0*zc(31)
+     &             -60d0*zc(32)+105d0*zc(48)+315d0*zc(49)+210d0*zc(50)
+          mc(21) = 10d0*zc(19)+5d0*zc(20)+zc(21)-60d0*zc(33)-30d0*zc(34)
+     &             -6d0*zc(35)+210d0*zc(51)+105d0*zc(52)+21d0*zc(53)
+          mc(22) = 20d0*zc(25)-15d0*zc(26)+6d0*zc(27)-zc(28)-140d0*zc(41)+105d0*zc(42)
+     &             -42d0*zc(43)+7d0*zc(44)+560d0*zc(61)-420d0*zc(62)+168d0*zc(63)-28d0*zc(64)
+          mc(23) = 6d0*zc(22)-24d0*zc(23)+30d0*zc(24)-42d0*zc(38)+168d0*zc(39)
+     &            -210d0*zc(40)+168d0*zc(58)-672d0*zc(59)+840d0*zc(60)
+          mc(24) = 60d0*zc(25)-15d0*zc(26)-30d0*zc(27)+15d0*zc(28)-420d0*zc(41)+105d0*zc(42)
+     &             +210d0*zc(43)-105d0*zc(44)+1680d0*zc(61)-420d0*zc(62)-840d0*zc(63)+420d0*zc(64)
+          mc(25) = -20d0*zc(22)+60d0*zc(24)+140d0*zc(38)-420d0*zc(40)-560d0*zc(58)+1680d0*zc(60)
+          mc(26) = 60d0*zc(25)+15d0*zc(26)-30d0*zc(27)-15d0*zc(28)-420d0*zc(41)-105d0*zc(42)
+     &             +210d0*zc(43)+105d0*zc(44)+1680d0*zc(61)+420d0*zc(62)-840d0*zc(63)-420d0*zc(64)
+          mc(27) = 6d0*zc(22)+24d0*zc(23)+30d0*zc(24)-42d0*zc(38)-168d0*zc(39)-210d0*zc(40)
+     &             +168d0*zc(58)+672d0*zc(59)+840d0*zc(60)
+          mc(28) = 20d0*zc(25)+15d0*zc(26)+6d0*zc(27)+zc(28)-140d0*zc(41)-105d0*zc(42)-42d0*zc(43)
+     &             -7d0*zc(44)+560d0*zc(61)+420d0*zc(62)+168d0*zc(63)+28d0*zc(64)
+          mc(29) = -zc(29)+7d0*zc(30)-21d0*zc(31)+35d0*zc(32)+8d0*zc(47)-56d0*zc(48)+168d0*zc(49)-280d0*zc(50)
+          mc(30) = 35d0*zc(33)-63d0*zc(34)+35d0*zc(35)-7d0*zc(36)-280d0*zc(51)+504d0*zc(52)-280d0*zc(53)+56d0*zc(54)
+          mc(31) = 21d0*zc(29)-63d0*zc(30)+21d0*zc(31)+105d0*zc(32)-168d0*zc(47)+504d0*zc(48)-168d0*zc(49)-840d0*zc(50)
+          mc(32) = 105d0*zc(33)-105d0*zc(34)-35d0*zc(35)+35d0*zc(36)-840d0*zc(51)+840d0*zc(52)+280d0*zc(53)-280d0*zc(54)
+          mc(33) = -35d0*zc(29)-35d0*zc(30)+105d0*zc(31)+105d0*zc(32)+280d0*zc(47)+280d0*zc(48)-840d0*zc(49)-840d0*zc(50)
+          mc(34) = 105d0*zc(33)-21d0*zc(34)-63d0*zc(35)-21d0*zc(36)-840d0*zc(51)+168d0*zc(52)+504d0*zc(53)+168d0*zc(54)
+          mc(35) = 7d0*zc(29)+35d0*zc(30)+63d0*zc(31)+35d0*zc(32)-56d0*zc(47)-280d0*zc(48)-504d0*zc(49)-280d0*zc(50)
+          mc(36) = 35d0*zc(33)+21d0*zc(34)+7d0*zc(35)+zc(36)-280d0*zc(51)-168d0*zc(52)-56d0*zc(53)-8d0*zc(54)
 
-C***********************************************************************
+          mc(37) = 70d0*zc(41)-56d0*zc(42)+28d0*zc(43)-8d0*zc(44)+zc(45)-630d0*zc(61)
+     &             +504d0*zc(62)-252d0*zc(63)+72d0*zc(64)-9d0*zc(65)
+          mc(38) = -8d0*zc(37)+48d0*zc(38)-112d0*zc(39)+112d0*zc(40)+72d0*zc(57)
+     &             -432d0*zc(58)+1008d0*zc(59)-1008d0*zc(60)
+          mc(39) = 280d0*zc(41)-112d0*zc(42)-112d0*zc(43)+112d0*zc(44)-28d0*zc(45)
+     &             -2520d0*zc(61)+1008d0*zc(62)+1008d0*zc(63)-1008d0*zc(64)+252d0*zc(65)
+          mc(40) = 56d0*zc(37)-112d0*zc(38)-112d0*zc(39)+336d0*zc(40)
+     &             -504d0*zc(57)+1008d0*zc(58)+1008d0*zc(59)-3024d0*zc(60)
+          mc(41) = 420d0*zc(41)-280d0*zc(43)+70d0*zc(45)-3780d0*zc(61)+2520d0*zc(63)-630d0*zc(65)
+          mc(42) = -56d0*zc(37)-112d0*zc(38)+112d0*zc(39)+336d0*zc(40)
+     &             +504d0*zc(57)+1008d0*zc(58)-1008d0*zc(59)-3024d0*zc(60)
+          mc(43) = 280d0*zc(41)+112d0*zc(42)-112d0*zc(43)-112d0*zc(44)-28d0*zc(45)
+     &             -2520d0*zc(61)-1008d0*zc(62)+1008d0*zc(63)+1008d0*zc(64)+252d0*zc(65)
+          mc(44) = 8d0*zc(37)+48d0*zc(38)+112d0*zc(39)+112d0*zc(40)-72d0*zc(57)
+     &             -432d0*zc(58)-1008d0*zc(59)-1008d0*zc(60)
+          mc(45) = 70d0*zc(41)+56d0*zc(42)+28d0*zc(43)+8d0*zc(44)+zc(45)-630d0*zc(61)
+     &             -504d0*zc(62)-252d0*zc(63)-72d0*zc(64)-9d0*zc(65)
 
-	SUBROUTINE ZerntoMon2(zc,mc,ie)
+          mc(46) = zc(46)-9d0*zc(47)+36d0*zc(48)-84d0*zc(49)+126d0*zc(50)
+          mc(47) = 126d0*zc(51)-252d0*zc(52)+180d0*zc(53)-63d0*zc(54)+9d0*zc(55)
+          mc(48) = -36d0*zc(46)+180d0*zc(47)-288d0*zc(48)+504d0*zc(50)
+          mc(49) = 504d0*zc(51)-672d0*zc(52)+252d0*zc(54)-84d0*zc(55)
+          mc(50) = 126d0*zc(46)-126d0*zc(47)-504d0*zc(48)+504d0*zc(49)+756d0*zc(50)
+          mc(51) = 756d0*zc(51)-504d0*zc(52)-504d0*zc(53)+126d0*zc(54)+126d0*zc(55)
+          mc(52) = -84d0*zc(46)-252d0*zc(47)+672d0*zc(49)+504d0*zc(50)
+          mc(53) = 504d0*zc(51)-288d0*zc(53)-180d0*zc(54)-36d0*zc(55)
+          mc(54) = 9d0*zc(46)+63d0*zc(47)+180d0*zc(48)+252d0*zc(49)+126d0*zc(50)
+          mc(55) = 126d0*zc(51)+84d0*zc(52)+36d0*zc(53)+9d0*zc(54)+zc(55)
 
-C	uses Noll approach (Born & Wolf)
+          mc(56) = 252d0*zc(61)-210d0*zc(62)+120d0*zc(63)-45d0*zc(64)+10d0*zc(65)-zc(66)
+          mc(57) = 10d0*zc(56)-80d0*zc(57)+270d0*zc(58)-480d0*zc(59)+420d0*zc(60)
+          mc(58) = 1260d0*zc(61)-630d0*zc(62)-360d0*zc(63)+585d0*zc(64)-270d0*zc(65)+45d0*zc(66)
+          mc(59) = -120d0*zc(56)+480d0*zc(57)-360d0*zc(58)-960d0*zc(59)+1680d0*zc(60)
+          mc(60) = 2520d0*zc(61)-420d0*zc(62)-1680d0*zc(63)+630d0*zc(64)+420d0*zc(65)-210d0*zc(66)
+          mc(61) = 252d0*zc(56)-1260d0*zc(58)+2520d0*zc(60)
+          mc(62) = 2520d0*zc(61)+420d0*zc(62)-1680d0*zc(63)-630d0*zc(64)+420d0*zc(65)+210d0*zc(66)
+          mc(63) = -120d0*zc(56)-480d0*zc(57)-360d0*zc(58)+960d0*zc(59)+1680d0*zc(60)
+          mc(64) = 1260d0*zc(61)+630d0*zc(62)-360d0*zc(63)-585d0*zc(64)-270d0*zc(65)-45d0*zc(66)
+          mc(65) = 10d0*zc(56)+80d0*zc(57)+270d0*zc(58)+480d0*zc(59)+420d0*zc(60)
+          mc(66) = 252d0*zc(61)+210d0*zc(62)+120d0*zc(63)+45d0*zc(64)+10d0*zc(65)+zc(66)
 
-cHistory
-c  24Jul97 loh:  added stub routine to accomodate additional Zernike 
-c                types that have been added
+          ! set undefined values to zero
+          mc((mZernModes+1):) = 0d0
 
-	IMPLICIT NONE
-	INTEGER ie,i
-	REAL*8 zc(45),mc(120),z2c(45)
-
-	z2c(1)=zc(1)
-	z2c(2)=zc(3)
-	z2c(3)=zc(2)
-	z2c(4)=zc(6)
-	z2c(5)=zc(5)
-	z2c(6)=zc(4)
-	z2c(7)=zc(10)
-	z2c(8)=zc(9)
-	z2c(9)=zc(8)
-	z2c(10)=zc(7)
-	z2c(11)=zc(15)
-	z2c(12)=zc(14)
-	z2c(13)=zc(13)
-	z2c(14)=zc(12)
-	z2c(15)=zc(11)
-	z2c(16)=zc(21)
-	z2c(17)=zc(20)
-	z2c(18)=zc(19)
-	z2c(19)=zc(18)
-	z2c(20)=zc(17)
-	z2c(21)=zc(16)
-	z2c(22)=zc(28)
-	z2c(23)=zc(27)
-	z2c(24)=zc(26)
-	z2c(25)=zc(25)
-	z2c(26)=zc(24)
-	z2c(27)=zc(23)
-	z2c(28)=zc(22)
-	z2c(29)=zc(36)
-	z2c(30)=zc(35)
-	z2c(31)=zc(34)
-	z2c(32)=zc(33)
-	z2c(33)=zc(32)
-	z2c(34)=zc(31)
-	z2c(35)=zc(30)
-	z2c(36)=zc(29)
-	z2c(37)=zc(45)
-	z2c(38)=zc(44)
-	z2c(39)=zc(43)
-	z2c(40)=zc(42)
-	z2c(41)=zc(41)
-	z2c(42)=zc(40)
-	z2c(43)=zc(39)
-	z2c(44)=zc(38)
-	z2c(45)=zc(37)
-
-	CALL ZerntoMon1(z2c,mc,ie)
-
-	RETURN
-	END SUBROUTINE ZerntoMon2
+        END SUBROUTINE ZerntoMon1
 
 C***********************************************************************
 
-	SUBROUTINE ZerntoMon3(zc,mc,ie)
-	use elt_mod, only : ZernTypeL
-C	uses Fringe approach
+        ! ---------------------------------------------------------------------
+        ! Mapping from Born & Wolf => ANSI Ordering => Monomial Coefficients
+        ! ---------------------------------------------------------------------
+        SUBROUTINE ZerntoMon2(zc,mc,ie)
+          use elt_mod, only : mZernModes, mMonCoef
 
-cHistory
-c  24Jul97 loh:  added stub routine to accomodate additional Zernike 
-c                types that have been added
+          IMPLICIT NONE
+          REAL*8 zc(mZernModes),mc(mMonCoef),z2c(mZernModes)
+          Integer :: ie
 
-	IMPLICIT NONE
-        REAL*8, parameter :: eps_loc=1d-18
-	INTEGER ie,i
-	REAL*8 zc(45),mc(120),z2c(45),zcm(4)
+                              ! | "ANSI"|  B&W  | (n,m)  |  Zrn
+                              ! | Order | Order | n ,  m |
+                              ! |  Idx  |  Idx  |  Idx   |
+          z2c( 1) = zc( 1)    ! |    0  |    1  |  0   0 | 1
 
-	z2c(1)=zc(1); z2c(2)=zc(3)
-	z2c(3)=zc(2); z2c(4)=zc(6)
-	z2c(5)=zc(4); z2c(6)=zc(5)
-	z2c(7)=zc(11); z2c(8)=zc(8)
-	z2c(9)=zc(7); z2c(10)=zc(10)
-	z2c(11)=zc(18); z2c(12)=zc(13)
-	z2c(13)=zc(9); z2c(14)=zc(12)
-	z2c(15)=zc(17); z2c(16)=zc(27)
-	z2c(17)=zc(20); z2c(18)=zc(15)
-	z2c(19)=zc(14); z2c(20)=zc(19)
-	z2c(21)=zc(26); z2c(22)=0.d0
-	z2c(23)=zc(29); z2c(24)=zc(22)
-	z2c(25)=zc(16); z2c(26)=zc(21)
-	z2c(27)=zc(28); z2c(28:30)=0d0
-	z2c(31)=zc(31); z2c(32)=zc(24)
-	z2c(33)=zc(23); z2c(34)=zc(30)
-	z2c(35:39)=0d0; z2c(40)=zc(33)
-	z2c(41)=zc(25); z2c(42)=zc(32)
-	z2c(43:45)=0d0
+          z2c( 2) = zc( 3)    ! |    1  |    3  |  1  -1 | R*sin(Theta)
+          z2c( 3) = zc( 2)    ! |    2  |    2  |  1   1 | R*cos(theta)
 
-	CALL ZerntoMon1(z2c,mc,ie)
+          z2c( 4) = zc( 6)    ! |    3  |    6  |  2  -2 | R^2*sin(2*theta)
+          z2c( 5) = zc( 5)    ! |    4  |    5  |  2   0 | 2*R^2 - 1
+          z2c( 6) = zc( 4)    ! |    5  |    4  |  2   2 | R^2*cos(2*theta)
 
-	If (abs(zc(34))>eps_loc .or. abs(zc(35))>eps_loc .or.
-     &      abs(zc(36))>eps_loc .or. abs(zc(37))>eps_loc) Then
-	  If (ZernTypeL(ie).eq.6) Then
-	    ! normalize Fz 34-37 here
-	    zcm(1) = dsqrt(20d0)*zc(34); zcm(2) = dsqrt(20d0)*zc(35)
-            zcm(3) = dsqrt(11d0)*zc(36); zcm(4) = dsqrt(13d0)*zc(37)
-	  Else 
-	    zcm(1:4)=zc(34:37)
-	  End If
-          Call ZerntoMon5(zcm(1:4),mc)
-        End If
+          z2c( 7) = zc(10)    ! |    6  |   10  |  3  -3 |
+          z2c( 8) = zc( 9)    ! |    7  |    9  |  3  -1 |
+          z2c( 9) = zc( 8)    ! |    8  |    8  |  3   1 |
+          z2c(10) = zc( 7)    ! |    9  |    7  |  3   3 |
 
-	RETURN
+          z2c(11) = zc(15)    ! |   10  |   15  |  4  -4 |
+          z2c(12) = zc(14)    ! |   11  |   14  |  4  -2 |
+          z2c(13) = zc(13)    ! |   12  |   13  |  4   0 |
+          z2c(14) = zc(12)    ! |   13  |   12  |  4   2 |
+          z2c(15) = zc(11)    ! |   14  |   11  |  4   4 |
+
+          z2c(16) = zc(21)    ! |   15  |   21  |  5  -5 |
+          z2c(17) = zc(20)    ! |   16  |   20  |  5  -3 |
+          z2c(18) = zc(19)    ! |   17  |   19  |  5  -1 |
+          z2c(19) = zc(18)    ! |   18  |   18  |  5   1 |
+          z2c(20) = zc(17)    ! |   19  |   17  |  5   3 |
+          z2c(21) = zc(16)    ! |   20  |   16  |  5   5 |
+
+          z2c(22) = zc(28)    ! |   21  |   28  |  6  -6 |
+          z2c(23) = zc(27)    ! |   22  |   27  |  6  -4 |
+          z2c(24) = zc(26)    ! |   23  |   26  |  6  -2 |
+          z2c(25) = zc(25)    ! |   24  |   25  |  6   0 |
+          z2c(26) = zc(24)    ! |   25  |   24  |  6   2 |
+          z2c(27) = zc(23)    ! |   26  |   23  |  6   4 |
+          z2c(28) = zc(22)    ! |   27  |   22  |  6   6 |
+
+          z2c(29) = zc(36)    ! |   28  |   36  |  7  -7 |
+          z2c(30) = zc(35)    ! |   29  |   35  |  7  -5 |
+          z2c(31) = zc(34)    ! |   30  |   34  |  7  -3 |
+          z2c(32) = zc(33)    ! |   31  |   33  |  7  -1 |
+          z2c(33) = zc(32)    ! |   32  |   32  |  7   1 |
+          z2c(34) = zc(31)    ! |   33  |   31  |  7   3 |
+          z2c(35) = zc(30)    ! |   34  |   30  |  7   5 |
+          z2c(36) = zc(29)    ! |   35  |   29  |  7   7 |
+
+          z2c(37) = zc(45)    ! |   36  |   45  |  8  -8 |
+          z2c(38) = zc(44)    ! |   37  |   44  |  8  -6 |
+          z2c(39) = zc(43)    ! |   38  |   43  |  8  -4 |
+          z2c(40) = zc(42)    ! |   39  |   42  |  8  -2 |
+          z2c(41) = zc(41)    ! |   40  |   41  |  8   0 |
+          z2c(42) = zc(40)    ! |   41  |   40  |  8   2 |
+          z2c(43) = zc(39)    ! |   42  |   39  |  8   4 |
+          z2c(44) = zc(38)    ! |   43  |   38  |  8   6 |
+          z2c(45) = zc(37)    ! |   44  |   37  |  8   8 |
+
+          z2c(46) = zc(55)    ! |   45  |   55  |  9  -9 |
+          z2c(47) = zc(54)    ! |   46  |   54  |  9  -7 |
+          z2c(48) = zc(53)    ! |   47  |   53  |  9  -5 |
+          z2c(49) = zc(52)    ! |   48  |   52  |  9  -3 |
+          z2c(50) = zc(51)    ! |   49  |   51  |  9  -1 |
+          z2c(51) = zc(50)    ! |   50  |   50  |  9   1 |
+          z2c(52) = zc(49)    ! |   51  |   49  |  9   3 |
+          z2c(53) = zc(48)    ! |   52  |   48  |  9   5 |
+          z2c(54) = zc(47)    ! |   53  |   47  |  9   7 |
+          z2c(55) = zc(46)    ! |   54  |   46  |  9   9 |
+
+          z2c(56) = zc(66)    ! |   55  |   66  | 10 -10 |
+          z2c(57) = zc(65)    ! |   56  |   65  | 10  -8 |
+          z2c(58) = zc(64)    ! |   57  |   64  | 10  -6 |
+          z2c(59) = zc(63)    ! |   58  |   63  | 10  -4 |
+          z2c(60) = zc(62)    ! |   59  |   62  | 10  -2 |
+          z2c(61) = zc(61)    ! |   60  |   61  | 10   0 |
+          z2c(62) = zc(60)    ! |   61  |   60  | 10   2 |
+          z2c(63) = zc(59)    ! |   62  |   59  | 10   4 |
+          z2c(64) = zc(58)    ! |   63  |   58  | 10   6 |
+          z2c(65) = zc(57)    ! |   64  |   57  | 10   8 |
+          z2c(66) = zc(56)    ! |   65  |   56  | 10  10 |
+
+          CALL ZerntoMon1(z2c,mc,ie)
+
+        END SUBROUTINE ZerntoMon2
+
+C***********************************************************************
+
+        ! ---------------------------------------------------------------------
+        ! Mapping from Extended Fringe => ANSI Ordering => Monomial Coefficients
+        ! ---------------------------------------------------------------------
+        SUBROUTINE ZerntoMon_ZFE(zc,mc,ie)
+          use elt_mod, only : mZernModes, mMonCoef
+
+          IMPLICIT NONE
+          REAL*8 zc(mZernModes),mc(mMonCoef),z2c(mZernModes)
+          Integer :: ie
+
+                              !           Extended
+                              ! | "ANSI"| Fringe | (n,m)  |
+                              ! | Order | Order  | n ,  m |
+                              ! |  Idx  |  Idx   |  Idx   |
+          z2c( 1) = zc(  1)    ! |    0  |     1  |  0   0 |
+
+          z2c( 2) = zc(  3)    ! |    1  |     3  |  1  -1 |
+          z2c( 3) = zc(  2)    ! |    2  |     2  |  1   1 |
+
+          z2c( 4) = zc(  6)    ! |    3  |     6  |  2  -2 |
+          z2c( 5) = zc(  4)    ! |    4  |     4  |  2   0 |
+          z2c( 6) = zc(  5)    ! |    5  |     5  |  2   2 |
+
+          z2c( 7) = zc( 11)    ! |    6  |    11  |  3  -3 |
+          z2c( 8) = zc(  8)    ! |    7  |     8  |  3  -1 |
+          z2c( 9) = zc(  7)    ! |    8  |     7  |  3   1 |
+          z2c(10) = zc( 10)    ! |    9  |    10  |  3   3 |
+
+          z2c(11) = zc( 18)    ! |   10  |    18  |  4  -4 |
+          z2c(12) = zc( 13)    ! |   11  |    13  |  4  -2 |
+          z2c(13) = zc(  9)    ! |   12  |     9  |  4   0 |
+          z2c(14) = zc( 12)    ! |   13  |    12  |  4   2 |
+          z2c(15) = zc( 17)    ! |   14  |    17  |  4   4 |
+
+          z2c(16) = zc( 27)    ! |   15  |    27  |  5  -5 |
+          z2c(17) = zc( 20)    ! |   16  |    20  |  5  -3 |
+          z2c(18) = zc( 15)    ! |   17  |    15  |  5  -1 |
+          z2c(19) = zc( 14)    ! |   18  |    14  |  5   1 |
+          z2c(20) = zc( 19)    ! |   19  |    19  |  5   3 |
+          z2c(21) = zc( 26)    ! |   20  |    26  |  5   5 |
+
+          z2c(22) = zc( 38)    ! |   21  |    38  |  6  -6 |
+          z2c(23) = zc( 29)    ! |   22  |    29  |  6  -4 |
+          z2c(24) = zc( 22)    ! |   23  |    22  |  6  -2 |
+          z2c(25) = zc( 16)    ! |   24  |    16  |  6   0 |
+          z2c(26) = zc( 21)    ! |   25  |    21  |  6   2 |
+          z2c(27) = zc( 28)    ! |   26  |    28  |  6   4 |
+          z2c(28) = zc( 37)    ! |   27  |    37  |  6   6 |
+
+          z2c(29) = zc( 51)    ! |   28  |    51  |  7  -7 |
+          z2c(30) = zc( 40)    ! |   29  |    40  |  7  -5 |
+          z2c(31) = zc( 31)    ! |   30  |    31  |  7  -3 |
+          z2c(32) = zc( 24)    ! |   31  |    24  |  7  -1 |
+          z2c(33) = zc( 23)    ! |   32  |    23  |  7   1 |
+          z2c(34) = zc( 30)    ! |   33  |    30  |  7   3 |
+          z2c(35) = zc( 39)    ! |   34  |    39  |  7   5 |
+          z2c(36) = zc( 50)    ! |   35  |    50  |  7   7 |
+
+          z2c(37) = zc( 66)    ! |   36  |    66  |  8  -8 |
+          z2c(38) = zc( 53)    ! |   37  |    53  |  8  -6 |
+          z2c(39) = zc( 42)    ! |   38  |    42  |  8  -4 |
+          z2c(40) = zc( 33)    ! |   39  |    33  |  8  -2 |
+          z2c(41) = zc( 25)    ! |   40  |    25  |  8   0 |
+          z2c(42) = zc( 32)    ! |   41  |    32  |  8   2 |
+          z2c(43) = zc( 41)    ! |   42  |    41  |  8   4 |
+          z2c(44) = zc( 52)    ! |   43  |    52  |  8   6 |
+          z2c(45) = zc( 65)    ! |   44  |    65  |  8   8 |
+
+                               ! |   45  |    83  |  9  -9 |
+                               ! |   46  |    68  |  9  -7 |
+          z2c(48) = zc( 55)    ! |   47  |    55  |  9  -5 |
+          z2c(49) = zc( 44)    ! |   48  |    44  |  9  -3 |
+          z2c(50) = zc( 35)    ! |   49  |    35  |  9  -1 |
+          z2c(51) = zc( 34)    ! |   50  |    34  |  9   1 |
+          z2c(52) = zc( 43)    ! |   51  |    43  |  9   3 |
+          z2c(53) = zc( 54)    ! |   52  |    54  |  9   5 |
+                               ! |   53  |    67  |  9   7 |
+                               ! |   54  |    82  |  9   9 |
+
+                               ! |   55  |   102  | 10 -10 |
+                               ! |   56  |    85  | 10  -8 |
+                               ! |   57  |    70  | 10  -6 |
+          z2c(59) = zc( 57)    ! |   58  |    57  | 10  -4 |
+          z2c(60) = zc( 46)    ! |   59  |    46  | 10  -2 |
+          z2c(61) = zc( 36)    ! |   60  |    36  | 10   0 |
+          z2c(62) = zc( 45)    ! |   61  |    45  | 10   2 |
+          z2c(63) = zc( 56)    ! |   62  |    56  | 10   4 |
+                               ! |   63  |    69  | 10   6 |
+                               ! |   64  |    84  | 10   8 |
+                               ! |   65  |   101  | 10  10 |
+
+          CALL ZerntoMon1(z2c,mc,ie)
+
+        END SUBROUTINE ZerntoMon_ZFE
+
+C***********************************************************************
+
+        ! ---------------------------------------------------------------------
+        ! Mapping from Fringe => ANSI Ordering => Monomial Coefficients
+        ! ---------------------------------------------------------------------
+        SUBROUTINE ZerntoMon3(zc,mc,ie)
+	  use elt_mod,   only: mZernModes, mMonCoef
+          use Constants, only: EPS
+
+	  IMPLICIT NONE
+          REAL*8,  INTENT(IN)   :: zc(mZernModes)  ! Zernike Coefficients: Noll
+          REAL*8,  INTENT(INOUT):: mc(mMonCoef)    ! Monomial Coefficients: relay to Monomial Mapping
+          INTEGER, INTENT(IN)   :: ie              ! Element ID
+
+          REAL*8 :: z2c(mZernModes)
+          ! ---------------------------------------------------------
+
+          z2c(:) = 0d0   ! reset
+
+                              ! | "ANSI"| Fringe| (n,m)  |  Zrn
+                              ! | Order | Order | n ,  m |
+                              ! |  Idx  |  Idx  |  Idx   |
+          z2c( 1) = zc( 1)    ! |    0  |    1  |  0   0 |
+
+          z2c( 2) = zc( 3)    ! |    1  |    3  |  1  -1 |
+          z2c( 3) = zc( 2)    ! |    2  |    2  |  1   1 |
+
+          z2c( 4) = zc( 6)    ! |    3  |    6  |  2  -2 |
+          z2c( 5) = zc( 4)    ! |    4  |    4  |  2   0 |
+          z2c( 6) = zc( 5)    ! |    5  |    5  |  2   2 |
+
+          z2c( 7) = zc(11)    ! |    6  |   11  |  3  -3 |
+          z2c( 8) = zc( 8)    ! |    7  |    8  |  3  -1 |
+          z2c( 9) = zc( 7)    ! |    8  |    7  |  3   1 |
+          z2c(10) = zc(10)    ! |    9  |   10  |  3   3 |
+
+          z2c(11) = zc(18)    ! |   10  |   18  |  4  -4 |
+          z2c(12) = zc(13)    ! |   11  |   13  |  4  -2 |
+          z2c(13) = zc( 9)    ! |   12  |    9  |  4   0 |
+          z2c(14) = zc(12)    ! |   13  |   12  |  4   2 |
+          z2c(15) = zc(17)    ! |   14  |   17  |  4   4 |
+
+          z2c(16) = zc(27)    ! |   15  |   27  |  5  -5 |
+          z2c(17) = zc(20)    ! |   16  |   20  |  5  -3 |
+          z2c(18) = zc(15)    ! |   17  |   15  |  5  -1 |
+          z2c(19) = zc(14)    ! |   18  |   14  |  5   1 |
+          z2c(20) = zc(19)    ! |   19  |   19  |  5   3 |
+          z2c(21) = zc(26)    ! |   20  |   26  |  5   5 |
+
+                              ! |   21  |       |  6  -6 |
+          z2c(23) = zc(29)    ! |   22  |   29  |  6  -4 |
+          z2c(24) = zc(22)    ! |   23  |   22  |  6  -2 |
+          z2c(25) = zc(16)    ! |   24  |   16  |  6   0 |
+          z2c(26) = zc(21)    ! |   25  |   21  |  6   2 |
+          z2c(27) = zc(28)    ! |   26  |   28  |  6   4 |
+                              ! |   27  |       |  6   6 |
+
+                              ! |   28  |       |  7  -7 |
+                              ! |   29  |       |  7  -5 |
+          z2c(31) = zc(31)    ! |   30  |   31  |  7  -3 |
+          z2c(32) = zc(24)    ! |   31  |   24  |  7  -1 |
+          z2c(33) = zc(23)    ! |   32  |   23  |  7   1 |
+          z2c(34) = zc(30)    ! |   33  |   30  |  7   3 |
+                              ! |   34  |       |  7   5 |
+                              ! |   35  |       |  7   7 |
+
+                              ! |   36  |       |  8  -8 |
+                              ! |   37  |       |  8  -6 |
+                              ! |   38  |       |  8  -4 |
+          z2c(40) = zc(33)    ! |   39  |   33  |  8  -2 |
+          z2c(41) = zc(25)    ! |   40  |   25  |  8   0 |
+          z2c(42) = zc(32)    ! |   41  |   32  |  8   2 |
+                              ! |   42  |       |  8   4 |
+                              ! |   43  |       |  8   6 |
+                              ! |   44  |       |  8   8 |
+
+                              ! |   45  |       |  9  -9 |
+                              ! |   46  |       |  9  -7 |
+                              ! |   47  |       |  9  -5 |
+                              ! |   48  |       |  9  -3 |
+          z2c(50) = zc(35)    ! |   49  |   35  |  9  -1 |
+          z2c(51) = zc(34)    ! |   50  |   34  |  9   1 |
+                              ! |   51  |       |  9   3 |
+                              ! |   52  |       |  9   5 |
+                              ! |   53  |       |  9   7 |
+                              ! |   54  |       |  9   9 |
+
+                              ! |   55  |       | 10 -10 |
+                              ! |   56  |       | 10  -8 |
+                              ! |   57  |       | 10  -6 |
+                              ! |   58  |       | 10  -4 |
+                              ! |   59  |       | 10  -2 |
+          z2c(61) = zc(36)    ! |   60  |   36  | 10   0 |
+                              ! |   61  |       | 10   2 |
+                              ! |   62  |       | 10   4 |
+                              ! |   63  |       | 10   6 |
+                              ! |   64  |       | 10   8 |
+                              ! |   65  |       | 10  10 |
+                              ! ...
+                              ! |   84  |   37  | 12   0 | <<< Special
+
+	  CALL ZerntoMon1(z2c,mc,ie)
+
+	  ! Special: update Monomials for Z37  (radial n=12, azimuthal m=0)
+          !   ==> CODE V Manual, p751: LensSystemSetupRM.pdf
+          !
+          ! ANSI: j=84  n=12  m=0
+          !  --> Z84 = C84 * (1-42 R^2 + 420*R^4-1680*R^6 + 3150*R^8 - 2772*R^10 + 924*R^12)
+
+          IF (ABS(zc(37)) > EPS) THEN
+                                                !  x^j * y^(i-j)
+            mc( 1) = mc( 1) +         zc(37)    !  { 0 ,  0 }
+
+            mc( 4) = mc( 4) -    42d0*zc(37)    !  { 0 ,  2 }
+            mc( 6) = mc( 6) -    42d0*zc(37)    !  { 2 ,  0 }
+
+            mc(11) = mc(11) +   420d0*zc(37)    !  { 0 ,  4 }
+            mc(13) = mc(13) +   840d0*zc(37)    !  { 2 ,  2 }
+            mc(15) = mc(15) +   420d0*zc(37)    !  { 4 ,  0 }
+
+            mc(22) = mc(22) -  1680d0*zc(37)    !  { 0 ,  6 }
+            mc(24) = mc(24) -  5040d0*zc(37)    !  { 2 ,  4 }
+            mc(26) = mc(26) -  5040d0*zc(37)    !  { 4 ,  2 }
+            mc(28) = mc(28) -  1680d0*zc(37)    !  { 6 ,  0 }
+
+            mc(37) = mc(37) +  3150d0*zc(37)    !  { 0 ,  8 }
+            mc(39) = mc(39) + 12600d0*zc(37)    !  { 2 ,  6 }
+            mc(41) = mc(41) + 18900d0*zc(37)    !  { 4 ,  4 }
+            mc(43) = mc(43) + 12600d0*zc(37)    !  { 6 ,  2 }
+            mc(45) = mc(45) +  3150d0*zc(37)    !  { 8 ,  0 }
+
+            mc(56) = mc(56) -  2772d0*zc(37)    !  { 0 , 10 }
+            mc(58) = mc(58) - 13860d0*zc(37)    !  { 2 ,  8 }
+            mc(60) = mc(60) - 27720d0*zc(37)    !  { 4 ,  6 }
+            mc(62) = mc(62) - 27720d0*zc(37)    !  { 6 ,  4 }
+            mc(64) = mc(64) - 13860d0*zc(37)    !  { 8 ,  2 }
+            mc(66) = mc(66) -  2772d0*zc(37)    !  {10 ,  0 }
+
+            mc(79) = mc(79) +   924d0*zc(37)    !  { 0,  12 }
+            mc(81) = mc(81) +  5544d0*zc(37)    !  { 2,  10 }
+            mc(83) = mc(83) + 13860d0*zc(37)    !  { 4,   8 }
+            mc(85) = mc(85) + 18480d0*zc(37)    !  { 6,   6 }
+            mc(87) = mc(87) + 13860d0*zc(37)    !  { 8,   4 }
+            mc(89) = mc(89) +  5544d0*zc(37)    !  {10,   2 }
+            mc(91) = mc(91) +   924d0*zc(37)    !  {12,   0 }
+
+          END IF
+
 	END SUBROUTINE ZerntoMon3
 
 C***********************************************************************
 
        Subroutine ZerntoMon4(Zc,mc)
+       use elt_mod  !, only : ZernTypeL
        Implicit none
 
-       Real*8 Zc(45),mc(120)
+       Real*8 Zc(1:mZernModes),mc(mMonCoef)
        Integer, parameter :: mzern=45,mpolyterm=15
        Integer, save :: nterm(mzern),hzi(mzern,mpolyterm,2),
      &                  mij2k(0:14,0:14),iz,i,j,k,jm,ii,jj
@@ -2149,39 +2411,111 @@ C ---
 
 C***********************************************************************
 
-	SUBROUTINE ZerntoMon6(zc,mc,ie)
-C   Noll Zernikes
+        ! ---------------------------------------------------------------------
+        ! Zernike-Order Mapping: Noll ==> ANSI => Monomials
+        ! ---------------------------------------------------------------------
+        SUBROUTINE ZerntoMon6(zc,mc,ie)
+          use elt_mod, only: mZernModes, mMonCoef
 
-        IMPLICIT NONE
-        REAL*8 zc(45),mc(120),z2c(45)
-        Integer :: ie
+          IMPLICIT NONE
+          REAL*8,  INTENT(IN)   :: zc(mZernModes)  ! Zernike Coefficients: Noll
+          REAL*8,  INTENT(INOUT):: mc(mMonCoef)    ! Monomial Coefficients: relay to Monomial Mapping
+          INTEGER, INTENT(IN)   :: ie              ! Element ID
 
-        z2c(1)=zc(1);   z2c(2)=zc(3);   z2c(3)=zc(2)
-        z2c(4)=zc(5);   z2c(5)=zc(4);   z2c(6)=zc(6)
-        z2c(7)=zc(9);  z2c(8)=zc(7);   z2c(9)=zc(8)
-        z2c(10)=zc(10);  z2c(11)=zc(15); z2c(12)=zc(13)
-        z2c(13)=zc(11); z2c(14)=zc(12); z2c(15)=zc(14)
-        z2c(16)=zc(21); z2c(17)=zc(19); z2c(18)=zc(17)
-        z2c(19)=zc(16); z2c(20)=zc(18); z2c(21)=zc(20)
-        z2c(22)=zc(27); z2c(23)=zc(25); z2c(24)=zc(23)
-        z2c(25)=zc(22); z2c(26)=zc(24); z2c(27)=zc(26)
-        z2c(28)=zc(28); z2c(29)=zc(35); z2c(30)=zc(33)
-        z2c(31)=zc(31); z2c(32)=zc(29); z2c(33)=zc(30)
-        z2c(34)=zc(32); z2c(35)=zc(34); z2c(36)=zc(36)
-        z2c(37)=zc(45); z2c(38)=zc(43); z2c(39)=zc(41)
-        z2c(40)=zc(39); z2c(41)=zc(37); z2c(42)=zc(38)
-        z2c(43)=zc(40); z2c(44)=zc(42); z2c(45)=zc(44)
+          REAL*8 :: z2c(mZernModes)
+          ! ---------------------------------------------------------
 
-        CALL ZerntoMon1(z2c,mc,ie)
-        RETURN
-        End SUBROUTINE ZerntoMon6
+                              ! | "ANSI"|  Noll | (n,m)  |
+                              ! | Order | Order | n ,  m |
+                              ! |  Idx  |  Idx  |  Idx   |
+          z2c( 1) = zc( 1)    ! |    0  |    1  |  0   0 |
+
+          z2c( 2) = zc( 3)    ! |    1  |    3  |  1  -1 |
+          z2c( 3) = zc( 2)    ! |    2  |    2  |  1   1 |
+
+          z2c( 4) = zc( 5)    ! |    3  |    5  |  2  -2 |
+          z2c( 5) = zc( 4)    ! |    4  |    4  |  2   0 |
+          z2c( 6) = zc( 6)    ! |    5  |    6  |  2   2 |
+
+          z2c( 7) = zc( 9)    ! |    6  |    9  |  3  -3 |
+          z2c( 8) = zc( 7)    ! |    7  |    7  |  3  -1 |
+          z2c( 9) = zc( 8)    ! |    8  |    8  |  3   1 |
+          z2c(10) = zc(10)    ! |    9  |   10  |  3   3 |
+
+          z2c(11) = zc(15)    ! |   10  |   15  |  4  -4 |
+          z2c(12) = zc(13)    ! |   11  |   13  |  4  -2 |
+          z2c(13) = zc(11)    ! |   12  |   11  |  4   0 |
+          z2c(14) = zc(12)    ! |   13  |   12  |  4   2 |
+          z2c(15) = zc(14)    ! |   14  |   14  |  4   4 |
+
+          z2c(16) = zc(21)    ! |   15  |   21  |  5  -5 |
+          z2c(17) = zc(19)    ! |   16  |   19  |  5  -3 |
+          z2c(18) = zc(17)    ! |   17  |   17  |  5  -1 |
+          z2c(19) = zc(16)    ! |   18  |   16  |  5   1 |
+          z2c(20) = zc(18)    ! |   19  |   18  |  5   3 |
+          z2c(21) = zc(20)    ! |   20  |   20  |  5   5 |
+
+          z2c(22) = zc(27)    ! |   21  |   27  |  6  -6 |
+          z2c(23) = zc(25)    ! |   22  |   25  |  6  -4 |
+          z2c(24) = zc(23)    ! |   23  |   23  |  6  -2 |
+          z2c(25) = zc(22)    ! |   24  |   22  |  6   0 |
+          z2c(26) = zc(24)    ! |   25  |   24  |  6   2 |
+          z2c(27) = zc(26)    ! |   26  |   26  |  6   4 |
+          z2c(28) = zc(28)    ! |   27  |   28  |  6   6 |
+
+          z2c(29) = zc(35)    ! |   28  |   35  |  7  -7 |
+          z2c(30) = zc(33)    ! |   29  |   33  |  7  -5 |
+          z2c(31) = zc(31)    ! |   30  |   31  |  7  -3 |
+          z2c(32) = zc(29)    ! |   31  |   29  |  7  -1 |
+          z2c(33) = zc(30)    ! |   32  |   30  |  7   1 |
+          z2c(34) = zc(32)    ! |   33  |   32  |  7   3 |
+          z2c(35) = zc(34)    ! |   34  |   34  |  7   5 |
+          z2c(36) = zc(36)    ! |   35  |   36  |  7   7 |
+
+          z2c(37) = zc(45)    ! |   36  |   45  |  8  -8 |
+          z2c(38) = zc(43)    ! |   37  |   43  |  8  -6 |
+          z2c(39) = zc(41)    ! |   38  |   41  |  8  -4 |
+          z2c(40) = zc(39)    ! |   39  |   39  |  8  -2 |
+          z2c(41) = zc(37)    ! |   40  |   37  |  8   0 |
+          z2c(42) = zc(38)    ! |   41  |   38  |  8   2 |
+          z2c(43) = zc(40)    ! |   42  |   40  |  8   4 |
+          z2c(44) = zc(42)    ! |   43  |   42  |  8   6 |
+          z2c(45) = zc(44)    ! |   44  |   44  |  8   8 |
+
+          z2c(46) = zc(55)    ! |   45  |   55  |  9  -9 |
+          z2c(47) = zc(53)    ! |   46  |   53  |  9  -7 |
+          z2c(48) = zc(51)    ! |   47  |   51  |  9  -5 |
+          z2c(49) = zc(49)    ! |   48  |   49  |  9  -3 |
+          z2c(50) = zc(47)    ! |   49  |   47  |  9  -1 |
+          z2c(51) = zc(46)    ! |   50  |   46  |  9   1 |
+          z2c(52) = zc(48)    ! |   51  |   48  |  9   3 |
+          z2c(53) = zc(50)    ! |   52  |   50  |  9   5 |
+          z2c(54) = zc(52)    ! |   53  |   52  |  9   7 |
+          z2c(55) = zc(54)    ! |   54  |   54  |  9   9 |
+
+          z2c(56) = zc(65)    ! |   55  |   65  | 10 -10 |
+          z2c(57) = zc(63)    ! |   56  |   63  | 10  -8 |
+          z2c(58) = zc(61)    ! |   57  |   61  | 10  -6 |
+          z2c(59) = zc(59)    ! |   58  |   59  | 10  -4 |
+          z2c(60) = zc(57)    ! |   59  |   57  | 10  -2 |
+          z2c(61) = zc(56)    ! |   60  |   56  | 10   0 |
+          z2c(62) = zc(58)    ! |   61  |   58  | 10   2 |
+          z2c(63) = zc(60)    ! |   62  |   60  | 10   4 |
+          z2c(64) = zc(62)    ! |   63  |   62  | 10   6 |
+          z2c(65) = zc(64)    ! |   64  |   64  | 10   8 |
+          z2c(66) = zc(66)    ! |   65  |   66  | 10  10 |
+
+          CALL ZerntoMon1(z2c,mc,ie)
+
+        END SUBROUTINE ZerntoMon6
 
 C***********************************************************************
 
        Subroutine ZerntoMon7(Zc,mc,r)
-       Implicit none
+        use elt_mod, only: mZernModes, mMonCoef
+        Implicit none
 
-       Real*8 :: Zc(45),mc(120),r
+       Real*8 :: Zc(mZernModes),mc(mMonCoef),r
        Integer, parameter :: mzern=45,mpolyterm=15
        Integer, save :: nterm(mzern),azi(mzern,mpolyterm,2),
      &                  mij2k(0:14,0:14),iz,i,j,k,jm,ii,jj
@@ -2191,7 +2525,7 @@ C***********************************************************************
        nterm=(/1,1,1,3,1,2,3,3,2,2,6,4,3,3,2,6,6,5,5,3,
      &         3,10,6,8,4,7,3,4,10,10,9,9,7,7,4,4,15,12,
      &         10,12,8,8,7,5,4/)
-       
+
        If (first_entry) Then
 #include "azdef.inc"
           k=0; jm=0
@@ -2219,453 +2553,485 @@ C***********************************************************************
 
 C***********************************************************************
 
-	SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
-     &	  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
-	use math_mod
+        SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
+     &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+        use math_mod
+        use Constants, only: EPS
 
-	IMPLICIT NONE
+        IMPLICIT NONE
 
-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
-     &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),yi,yimj,xj
+        REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
+     &  pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),yi,yimj,xj
 
-	REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
-     &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
-     &   k2,itpsi,psitprel,L1,L2,L3,tol,
-     &	 zc(3),dfdrho(3),d2fdrho2(3,3),
-     &	 rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),x,
-     &	 y,dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm
+        REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
+     &  Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
+     &  k2,itpsi,psitprel,L1,L2,L3,tol,
+     &  zc(3),dfdrho(3),d2fdrho2(3,3),
+     &  rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),x,
+     &  y,dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm, fh_dz
 
-	REAL*8 D1(9),D2(9),S1,S2,S3,MZPSolve
+        REAL*8 D1(9),D2(9),S1,S2,S3,MZPSolve
 
-	INTEGER i,j,k
+        INTEGER i,j,k
 
-	LOGICAL LROK,ifBuild,ifLNsrf
+        LOGICAL LROK,ifBuild,ifLNsrf
 
-C	Compute incidence point of ray on the surface
+        ! Compute incidence point of ray on the surface
 
-	DO 1 i=1,3
-	  prel(i)=pin(i)-pv(i)
-	  rhoc(i)=pmon(i)-pv(i)
-   1	CONTINUE
-	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
-	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+        DO i=1,3
+          prel(i)=pin(i)-pv(i)
+          rhoc(i)=pmon(i)-pv(i)
+        END DO
+        itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+        psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
 
-	IF (ABS(Kr).LT.1d10) THEN
-	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
-	  a=1d0+Kc*itpsi*itpsi
-	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
-     &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
-	ELSE
-	  a=0d0
-	  b=itpsi
-	  c=psitprel
-	END IF
+        IF (ABS(Kr).LT.1d10) THEN
+          mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+          a=1d0+Kc*itpsi*itpsi
+          b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &      ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+          c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+        ELSE
+          a=0d0
+          b=itpsi
+          c=psitprel
+        END IF
 
-C	Compute intersection point and normal vector
+        ! Compute intersection point and normal vector
 
-	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
-	  if (.false.) then ! (abs(b) .le. 1d-10) then
-	    print*,'MonSrf(): b = ', b
-	    stop
-	  end if
-	  L=-c/b
-	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
-	ELSE
-	  k2=b*b-4d0*a*c
-	  IF (k2.LT.0d0) GO TO 98
-	  IF (b.GE.0d0) THEN
-	    ksqrt=-0.5d0*(b+DSQRT(k2))
-	  ELSE
-	    ksqrt=-0.5d0*(b-DSQRT(k2))
-	  END IF
-	  kp=ksqrt/a
-	  km=c/ksqrt
-	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
-	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
-	    IF (L.LT.0d0) GO TO 98
-	  END IF
-	END IF
+        IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+          L=-c/b
+          IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+        ELSE
+          k2=b*b-4d0*a*c
+          IF (k2.LT.0d0) GO TO 98
+          IF (b.GE.0d0) THEN
+            ksqrt=-0.5d0*(b+SQRT(k2))
+          ELSE
+            ksqrt=-0.5d0*(b-SQRT(k2))
+          END IF
+          kp=ksqrt/a
+          km=c/ksqrt
+          IF(ifLNsrf) THEN
+            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+              L=kp
+            ELSE
+              L=km
+            END IF
+          ELSE
+            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+              IF (kp.GT.0D0) THEN
+                L=kp
+              ELSE
+                L=km
+              END IF
+            ELSE
+              IF (km.GT.0D0) THEN
+                L=km
+              ELSE
+                L=kp
+              END IF
+            END IF
+            IF (L.LT.0d0) GO TO 98
+          END IF
+        END IF
 
-C	Use L as a starting point, find incidence pt on full surface
-        
-        IF (ABS(L).GT.1e-7) THEN
+         ! Use L as a starting point, find incidence pt on full surface
+
+        IF (ABS(L).GT.1d-7) THEN
           L1=0.999d0*L
           L2=1.001d0*L
         ELSE
-          L1=-1e-7
-          L2=1e-7
+          L1=-1d-7
+          L2=1d-7
         END IF
 
-	CALL MZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	          pmon,rhoc,xhat,yhat,zhat,L)
-	tol=1d-14
-	L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+        CALL MZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &            pmon,rhoc,xhat,yhat,zhat,L)
+        tol=2d-15
+        L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
      &              rad,pmon,rhoc,xhat,yhat,zhat,L)
-	L=L3
+        L=L3
 
-C	Compute normal vector
+        ! Compute normal vector
+        rho  = prel + L*ihat
+        rhom = rho - rhoc
 
-	DO 2 i=1,3
-	  rho(i)=prel(i)+L*ihat(i)
-	  rhom(i)=rho(i)-rhoc(i)
-  2	CONTINUE
-	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+        x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+        y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
-	k=1
-	S1=0d0
-	S2=0d0
-	fh=COEF(1)
-	IF ((x.NE.0d0).OR.(y.NE.0d0)) THEN
-	  IF (x.EQ.0d0) THEN
-	    yi=y
-	    DO 16 i=1,14
-	      yimj=yi
-	      DO 15 j=0,i
-	        k=k+1
-	        IF (COEF(k).NE.0d0) THEN
-	          IF (j.EQ.0) THEN
-	            fh=fh+coef(k)*yi
-	            S2=S2+coef(k)*FLOAT(i)*yi/y
-	          END IF
-	        END IF
-	        yimj=yimj/y
-  15	      CONTINUE
-	      yi=yi*y
-  16	    CONTINUE
-	  ELSE IF (y.EQ.0d0) THEN
-	    DO 14 i=1,14
-	      xj=1
-	      DO 13 j=0,i
-	        k=k+1
-	        IF ((COEF(k).NE.0d0).AND.(i.EQ.j)) THEN
-	          fh=fh+coef(k)*xj
-	          S1=S1+coef(k)*FLOAT(j)*xj/x
-	        END IF
-	        xj=xj*x
-  13	      CONTINUE
-  14	    CONTINUE
-	  ELSE
-	    yi=y
-	    DO 4 i=1,14
-	      xj=1
-	      yimj=yi
-	      DO 3 j=0,i
-	        k=k+1
-	        IF (COEF(k).NE.0d0) THEN
-	          IF (j.EQ.0) THEN
-	            fh=fh+coef(k)*yi
-	            S2=S2+coef(k)*FLOAT(i)*yi/y
-	          ELSE IF (i.EQ.j) THEN
-	            fh=fh+coef(k)*xj
-	            S1=S1+coef(k)*FLOAT(j)*xj/x
-	          ELSE
-	            fh=fh+coef(k)*xj*yimj
-	            S1=S1+coef(k)*FLOAT(j)*xj*yimj/x
-	            S2=S2+coef(k)*FLOAT((i-j))*xj*yimj/y
-	          END IF
-	        END IF
-	        yimj=yimj/y
-	        xj=xj*x
-  3	      CONTINUE
-	      yi=yi*y
-  4	    CONTINUE
-	  END IF
-	END IF
+        k  = 1
+        S1 = 0d0
+        S2 = 0d0
+        fh = COEF(1)
 
-	DO 5 i=1,3
-	  dxdrho(i)=xhat(i)/rad
-	  dydrho(i)=yhat(i)/rad
-	  dFdrho(i)=S1*dxdrho(i)+S2*dydrho(i)
-	  zc(i)=rho(i)-fh*zhat(i)
-  5	CONTINUE
+        IF ((ABS(x) <= EPS).AND.(ABS(y) <= EPS)) THEN
 
-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
-	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
-	S1=Kr+Kc*psitzc
-	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
+          S1 = S1 + coef(3)
+          S2 = S2 + coef(2)
 
-	DO 6 i=1,3
-	  pr(i)=pin(i)+L*ihat(i)
-	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
-   6	CONTINUE
-	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
-	IF (S1.LE.0d0) THEN
-	  DO 7 i=1,3
-	    Nhat(i)=Nvec(i)/Nmag
-   7	  CONTINUE
-	ELSE
-	  DO 8 i=1,3
-	    Nhat(i)=-Nvec(i)/Nmag
-   8	  CONTINUE
-	END IF
+        ELSE IF (ABS(x) <= EPS) THEN
 
-C	Compute partials of the normal
+            yi=y
+            DO CONCURRENT (i=1:14)
+              DO CONCURRENT (j=0:i)
 
-	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
-	    CALL DSMPROD(D1,psi,Kc,3)
-	    CALL DOUTER(M,D1,psi)
-	    M(1,1)=M(1,1)+1d0
-	    M(2,2)=M(2,2)+1d0
-	    M(3,3)=M(3,3)+1d0
-	  ELSE
-	    CALL DZERO(M,9)
-	  END IF
+                k=k+1
+                IF (j>1) CYCLE
 
-	  k=1
-	  S1=0d0
-	  S2=0d0
-	  S3=0d0
-c	  DO 10 i=2,7
-	  DO 10 i=2,14
-	    DO 9 j=0,i
-	      k=k+1
-	      IF (coef(k).NE.0d0) THEN
-	        IF (j.GT.1) THEN
-	          S1=S1+coef(k)*FLOAT(j*(j-1))*(x**(j-2))*(y**(i-j))
-	        END IF
-	        IF (j.LT.(i-1)) THEN
-	          S2=S2+coef(k)*FLOAT((i-j)*(i-j-1))*(x**j)*(y**(i-j-2))
-	        END IF
-	        IF ((j.GT.0).AND.(j.LT.i)) THEN
-	          S3=S3+coef(k)*FLOAT(j*(i-j))*(x**(j-1))*(y**(i-j-1))
-	        END IF
-	      END IF
-  9	    CONTINUE
-  10	  CONTINUE
+              IF (ABS(COEF(k)) > EPS) THEN
 
-	  DO 12 j=1,3
-	    DO 11 i=1,3
-	      d2Fdrho2(i,j)=S1*dxdrho(i)*dxdrho(j)+
-     &	      S2*dydrho(i)*dydrho(j)+S3*(dxdrho(i)*dydrho(j)+
-     &	      dydrho(i)*dxdrho(j))
-	      dzcdrho(i,j)=-zhat(i)*dFdrho(j)
-  11	    CONTINUE
-	    dzcdrho(j,j)=dzcdrho(j,j)+1d0
-  12	  CONTINUE
-	  CALL DMPROD(D1,dzcdrho,M,3,3,3)
-	  CALL DMPROD(D2,D1,dzcdrho,3,3,3)
-	  S1=Kr+Kc*psitzc
-	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
-	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
-	  S1=1d0/Nmag
-	  CALL DPROJECT(D1,Nhat)
-	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
-	  CALL DSMPROD(dNdp,D2,S1,9)
-	END IF
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                    fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  END IF
+
+                IF (j.EQ.1) S1 = S1 + coef(k)*yi/y
+
+                END IF
+                END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+
+              IF (ABS(COEF(k)) > EPS) THEN
+
+                IF (i.EQ.j) THEN
+                  fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                  S1    = S1 + DBLE(j)*fh_dz/x
+                END IF
+
+                IF (i-j.EQ.1) S2 = S2 + coef(k)*xj
+
+                END IF
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=y
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF (ABS(COEF(k)) > EPS) THEN
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                  fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  ELSE IF (i.EQ.j) THEN
+                    fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                  ELSE
+                    fh_dz = coef(k)*xj*yimj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                    S2    = S2 + DBLE(i-j)*fh_dz/y
+                  END IF
+                END IF
+                yimj=yimj/y
+                xj=xj*x
+              END DO
+              yi=yi*y
+          END DO
+        END IF
+
+        dxdrho  = xhat / rad
+        dydrho  = yhat / rad
+        dFdrho  = S1*dxdrho + S2*dydrho
+        zc      = rho - fh*zhat
+
+        psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+        psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+        zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+
+        S1 = Kr + Kc*psitzc
+        S2 = psitzm*Kr + psitzm*psitzc*Kc + zmtzc
+
+        pr   = pin + L*ihat
+        Nvec = zc + S1*psi - S2*dFdrho
+
+        Nmag = SQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+        S1   = Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+        IF (S1.LE.0d0) THEN
+          Nhat = Nvec/Nmag
+        ELSE
+          Nhat = -Nvec/Nmag
+        END IF
+
+        ! Compute partials of the normal
+
+        IF (ifBuild) THEN
+          IF (ABS(Kr).LT.1d10) THEN
+            CALL DSMPROD(D1,psi,Kc,3)
+            CALL DOUTER(M,D1,psi)
+            M(1,1)=M(1,1)+1d0
+            M(2,2)=M(2,2)+1d0
+            M(3,3)=M(3,3)+1d0
+          ELSE
+            CALL DZERO(M,9)
+          END IF
+
+          k=1
+          S1=0d0
+          S2=0d0
+          S3=0d0
+          DO i=2,14
+            DO j=0,i
+              k=k+1
+              IF (coef(k).NE.0d0) THEN
+                IF (j.GT.1) THEN
+                  S1=S1+coef(k)*DBLE(j*(j-1))*(x**(j-2))*(y**(i-j))
+                END IF
+                IF (j.LT.(i-1)) THEN
+                  S2=S2+coef(k)*DBLE((i-j)*(i-j-1))*(x**j)*(y**(i-j-2))
+                END IF
+                IF ((j.GT.0).AND.(j.LT.i)) THEN
+                  S3=S3+coef(k)*DBLE(j*(i-j))*(x**(j-1))*(y**(i-j-1))
+                END IF
+              END IF
+            END DO
+          END DO
+
+          DO j=1,3
+            DO i=1,3
+              d2Fdrho2(i,j)=S1*dxdrho(i)*dxdrho(j)+
+     &        S2*dydrho(i)*dydrho(j)+S3*(dxdrho(i)*dydrho(j)+
+     &        dydrho(i)*dxdrho(j))
+              dzcdrho(i,j)=-zhat(i)*dFdrho(j)
+            END DO
+            dzcdrho(j,j)=dzcdrho(j,j)+1d0
+          END DO
+          CALL DMPROD(D1,dzcdrho,M,3,3,3)
+          CALL DMPROD(D2,D1,dzcdrho,3,3,3)
+          S1=Kr+Kc*psitzc
+          CALL DSMPROD(D1,d2Fdrho2,S1,9)
+          CALL DSUB(dNvecdp,D2,D1,9)
+
+          S1=1d0/Nmag
+          CALL DPROJECT(D1,Nhat)
+          CALL DMPROD(D2,D1,dNvecdp,3,3,3)
+          CALL DSMPROD(dNdp,D2,S1,9)
+        END IF
 
 	RETURN
+        ! Here if ray misses surface
 
-C	Here if ray misses surface
-
-  98	CONTINUE
+  98    CONTINUE
 	LROK=.FALSE.
 	RETURN
 	END SUBROUTINE MonSrf
 
 C***********************************************************************
 
-	FUNCTION SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	xhat,yhat,zhat,L)
-	IMPLICIT NONE
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),xhat(3),
-     &	yhat(3),zhat(3),rad,pmon(3),L,SMonomial,x,y,yi,yimj,xj
-	REAL*8 rho(3),rhom(3),rhoc(3),fh,zc(3),zc2,psitzc
+        REAL*8 FUNCTION SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,
+     &                            rhoc,xhat,yhat,zhat,L)
+          use Constants, only: EPS
+          IMPLICIT NONE
+          REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),xhat(3),
+     &           yhat(3),zhat(3),rad,pmon(3),L,x,y,yi,yimj,xj
+          REAL*8 rho(3),rhom(3),rhoc(3),fh,zc(3),zc2,psitzc
 
-	INTEGER i,j,k
-cdebug
-c	REAL*8 Sval
-c	INTEGER icnt
-c	DATA icnt/0/
-c	icnt=icnt+1
-cdebug
+          INTEGER i,j,k
 
-C	Compute normalized point-of-incidence coordinates
+          ! Compute normalized point-of-incidence coordinates
 
-	DO 1 i=1,3
-	  rho(i)=prel(i)+L*ihat(i)
-	  rhom(i)=rho(i)-rhoc(i)
-  1	CONTINUE
-	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+          !                   Monomials
+          !  k   i   j   i-j   x     y
+          !  ===========================
+          !  1   0   0    0    1  *  1     i==j
+          !  ---------------------------
+          !  2   1   0    1    1  *  y     j==0
+          !  3   1   1    0    x  *  1     i==j, j==1
+          !  ---------------------------
+          !  4   2   0    2    1   * y^2   j==0
+          !  5   2   1    1    x   * y           j==1
+          !  6   2   2    0    x^2 * 1     i==j
+          !  ---------------------------
+          !  7   3   0    3    1   * y^3   j==0
+          !  8   3   1    2    x   * y^2         j==1
+          !  9   3   2    1    x^2 * y
+          ! 10   3   3    0    x^3 * 1     i==j
+          !  ---------------------------
 
-	IF (y.EQ.0d0) THEN
-	  k=0
-	  fh=0d0
-	  yi=1d0
-	  DO 3 i=0,14
-	    xj=1
-	    yimj=yi
-	    DO 2 j=0,i
-	      k=k+1
-	      IF (i.EQ.j) THEN
-	        fh=fh+coef(k)*xj
-	      END IF
-	      xj=xj*x
-  2	    CONTINUE
-	    yi=yi*y
-  3	  CONTINUE
-	ELSE
-	  k=0
-	  fh=0d0
-	  yi=1d0
-	  DO 5 i=0,14
-	    xj=1
-	    yimj=yi
-	    DO 4 j=0,i
-	      k=k+1
-	      fh=fh+coef(k)*xj*yimj
-	      xj=xj*x
-	      yimj=yimj/y
-  4	    CONTINUE
-	    yi=yi*y
-  5	  CONTINUE
-	END IF
+          rho  = prel + L*ihat
+          rhom = rho - rhoc
 
-	DO 6 i=1,3
-	  zc(i)=rho(i)-fh*zhat(i)
-  6	CONTINUE
-	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-	SMonomial=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+          x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+          y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
-cdebug
-c	SVal=SMonomial
-c 100	FORMAT(1P,' SMonomial: S=',d12.5,' L=',d12.5,' i=',i4)
-c	WRITE(*,100)SMonomial,L,icnt
-cdebug
+          k  = 0
+          fh = 0d0
 
-	RETURN
-	END FUNCTION SMonomial
+          IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
+
+            fh = coef(1)
+
+          ELSE IF (ABS(x) <= EPS) THEN
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((j.EQ.0).AND.(ABS(COEF(k)) > EPS)) fh=fh+coef(k)*yi
+              END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((ABS(coef(k)) > EPS).AND.(i.EQ.j)) fh=fh+coef(k)*xj
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                fh=fh+coef(k)*xj*yimj
+                xj=xj*x
+                yimj=yimj/y
+              END DO
+              yi=yi*y
+            END DO
+          END IF
+
+          zc        = rho - fh*zhat
+          zc2       = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+          psitzc    = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+          SMonomial = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
+
+          RETURN
+        END FUNCTION SMonomial
 
 C***********************************************************************
+! Check: Numerical Recipies: pg 404
 
-      FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,
-     &	rhoc,xhat,yhat,zhat,L)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMonomial,
-     &	     MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-      PARAMETER (ITMAX=400,EPS=1d-14)
-      A=X1
-      B=X2
-      FA=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	xhat,yhat,zhat,A)
-      FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	xhat,yhat,zhat,B)
-      IF(FB*FA.GT.0.) PAUSE 'MZPB failed.'
+        REAL*8 FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
+     &                           rad,pmon,rhoc,xhat,yhat,zhat,L)
+          use Constants, only: EPS_def => EPS
 
-      FC=FB
-      DO 11 ITER=1,ITMAX
-        IF(FB*FC.GT.0.) THEN
-          C=A
-          FC=FA
-          D=B-A
-          E=D
-        ENDIF
-        IF(ABS(FC).LT.ABS(FB)) THEN
-          A=B
-          B=C
-          C=A
-          FA=FB
-          FB=FC
-          FC=FA
-        ENDIF
-        TOL1=2.*EPS*ABS(B)+0.5*TOL
-        XM=.5*(C-B)
-        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
+          IMPLICIT REAL*8 (A-H,O-Z)
+          REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
+     &           rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+          PARAMETER (ITMAX=400) !,EPS=1d-14)
+          A=X1
+          B=X2
+          FA=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &                 xhat,yhat,zhat,A)
+          FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &                 xhat,yhat,zhat,B)
+          IF(FB*FA.GT.0d0) PAUSE 'MZPB failed.'
+          FC=FB
+          DO ITER=1,ITMAX
+            IF(FB*FC.GT.0d0) THEN
+              C=A
+              FC=FA
+              D=B-A
+              E=D
+            ENDIF
+            IF(ABS(FC).LT.ABS(FB)) THEN
+              A=B
+              B=C
+              C=A
+              FA=FB
+              FB=FC
+              FC=FA
+            ENDIF
+            TOL1=2d0*EPS_def*ABS(B)+0.5d0*TOL
+            !   TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+            !   TOL1 = EPS_def
+              XM=0.5d0*(C-B)
+            IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
+              MZPSolve=B
+              RETURN
+            ENDIF
+            IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+              S=FB/FA
+              IF(A.EQ.C) THEN
+                P=2d0*XM*S
+                Q=1d0-S
+              ELSE
+                Q=FA/FC
+                R=FB/FC
+                P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+                Q=(Q-1d0)*(R-1d0)*(S-1d0)
+              ENDIF
+              IF(P.GT.0d0) Q=-Q
+              P=ABS(P)
+              IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+                E=D
+                D=P/Q
+              ELSE
+                D=XM
+                E=D
+              ENDIF
+            ELSE
+              D=XM
+              E=D
+            ENDIF
+            A=B
+            FA=FB
+            IF(ABS(D) .GT. TOL1) THEN
+              B=B+D
+            ELSE
+              B=B+SIGN(TOL1,XM)
+            ENDIF
+            FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &                   xhat,yhat,zhat,B)
+          END DO
+          PAUSE 'MZPSolve exceeding maximum iterations.'
           MZPSolve=B
           RETURN
-        ENDIF
-        IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
-          S=FB/FA
-          IF(A.EQ.C) THEN
-            P=2.*XM*S
-            Q=1.-S
-          ELSE
-            Q=FA/FC
-            R=FB/FC
-            P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
-            Q=(Q-1.)*(R-1.)*(S-1.)
-          ENDIF
-          IF(P.GT.0.) Q=-Q
-          P=ABS(P)
-          IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
-            E=D
-            D=P/Q
-          ELSE
-            D=XM
-            E=D
-          ENDIF
-        ELSE
-          D=XM
-          E=D
-        ENDIF
-        A=B
-        FA=FB
-        IF(ABS(D) .GT. TOL1) THEN
-          B=B+D
-        ELSE
-          B=B+SIGN(TOL1,XM)
-        ENDIF
-        FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	xhat,yhat,zhat,B)
-11    CONTINUE
-      PAUSE 'MZPSolve exceeding maximum iterations.'
-      MZPSolve=B
-      RETURN
-      END FUNCTION MZPSolve
+        END FUNCTION MZPSolve
 
 C***********************************************************************
 
-	SUBROUTINE MZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &		        pmon,rhoc,xhat,yhat,zhat,L)
-	IMPLICIT REAL*8 (A-H,O-Z)
-	PARAMETER (gold=1.6,NTRY=50)
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMonomial,
-     &	       rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-
-	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
-	F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	             xhat,yhat,zhat,X1)
-	F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	             xhat,yhat,zhat,X2)
-	DO 1 J=1,NTRY
-	  IF(F1*F2.LT.0.)RETURN
-	  IF(ABS(F1).LT.ABS(F2))THEN
-	    X1=X1+gold*(X1-X2)
-	    F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	                 xhat,yhat,zhat,X1)
-	  ELSE
-	    X2=X2+gold*(X2-X1)
-	    F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
-     &	    		 xhat,yhat,zhat,X2)
-	  ENDIF
- 1	CONTINUE
-	RETURN
-	END SUBROUTINE MZPB
+        SUBROUTINE MZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &                  pmon,rhoc,xhat,yhat,zhat,L)
+        IMPLICIT REAL*8 (A-H,O-Z)
+        PARAMETER (gold=1.6d0,NTRY=50)
+        REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMonomial,
+     &         rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+        IF(X1.EQ.X2)PAUSE 'You have to guess an initial range'
+        F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &               xhat,yhat,zhat,X1)
+        F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &               xhat,yhat,zhat,X2)
+        DO J=1,NTRY
+          IF(F1*F2.LT.0d0)RETURN
+          IF(ABS(F1).LT.ABS(F2))THEN
+            X1=X1+gold*(X1-X2)
+            F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &                   xhat,yhat,zhat,X1)
+          ELSE
+            X2=X2+gold*(X2-X1)
+            F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+     &                   xhat,yhat,zhat,X2)
+          ENDIF
+        END DO
+        RETURN
+        END SUBROUTINE MZPB
 
 C***********************************************************************
 
@@ -2795,7 +3161,7 @@ C  Compute normal
 C	Compute partials of the normal
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -2816,7 +3182,7 @@ C	Compute partials of the normal
 	  S1=Kr+Kc*psitzc
 	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
 	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
+
 	  S1=1d0/Nmag
 	  CALL DPROJECT(D1,Nhat)
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
@@ -2958,7 +3324,7 @@ C***********************************************************************
   103	FORMAT(' Grid surface array is of dimension',i5,' by ',i5)
 
 C   If no file, zero matrix and return
-        IF ((GridFile(1:1).EQ.' ') .OR. 
+        IF ((GridFile(1:1).EQ.' ') .OR.
      &      (GridFile(1:ICLEN(GridFile)).EQ.'none') .OR.
      &      (GridFile(1:ICLEN(GridFile)).EQ.'NONE') .OR.
      &      (GridFile(1:ICLEN(GridFile)).EQ.'None')) THEN
@@ -2999,7 +3365,7 @@ C  Read input data
 	DO j=1,nGridMatS
 	  iDat=iDat+1
 	  if (.not.isBinFil) then
-	    READ(94,*,ERR=2,END=1) 
+	    READ(94,*,ERR=2,END=1)
      &        (GridMat(i,j,jGridSrf),i=1,nGridMatS)
 	  else
             ! read binary data
@@ -3036,7 +3402,7 @@ C***********************************************************************
 
 	CHARACTER(len=*) :: AmplFile
         LOGICAL exist,ifAmplInit,LCMP
-        INTEGER jAmplSrf,nAmplMatS,i,j,iDat,ICLEN	
+        INTEGER jAmplSrf,nAmplMatS,i,j,iDat,ICLEN
 
 	If (LCMP(AmplFile(1:1),' ',1) .OR.
      &      LCMP(AmplFile(1:ICLEN(AmplFile)),'none',4)) Then
@@ -3109,7 +3475,7 @@ C***********************************************************************
      &	       dzcdrho(3,3),dNvecdp(3,3),rhoc(3),zmtzc,psitzm,
      &         D1(9),D2(9),S1,S2,GSZPSolve
 
-	if (.false.) then 
+	if (.false.) then
 	  print*,'**Begin GridSrf: GridSrfdx = ',GridSrfdx
 	  print*,'**Begin GridSrf: pmon = ',pmon(1:3)
 	  print*,'**Begin GridSrf: nGridMat = ',nGridMat
@@ -3249,7 +3615,7 @@ C    &      Kr,Kc,psitzc  ! good
 C	Compute partials of the normal
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -3270,7 +3636,7 @@ C	Compute partials of the normal
 	  S1=Kr+Kc*psitzc
 	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
 	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
+
 	  S1=1d0/Nmag
 	  CALL DPROJECT(D1,Nhat)
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
