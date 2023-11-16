@@ -2202,7 +2202,7 @@ C  Here if data not correctly set
 
 C***********************************************************************
 
-	SUBROUTINE GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
+	SUBROUTINE GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 C     THIS ROUTINE TAKES THE STRING, AND DOES SOME PARSING ON IT
 C     AND RETURNS THE VARIABLE NAME, THE INDEX LOCATIONS IF THE
@@ -2219,37 +2219,39 @@ C     VARIABLE IS AN ARRAY, AND THE VALUE OF THE VARIABLE NAME.
 	Integer, parameter :: maxStringLen=MacosCharLen,
      &                        maxValueLen=MacosValLen
 
-	CHARACTER*4 IND(3)
-	INTEGER :: I,J,K,NVTOK,ntok
-        LOGICAL :: IND_FND,CLS_IND,ARR_FLG,NO_LET,VAL_LET,SP_FLG
-	LOGICAL :: LInCommentMode,LCMP,in_tok
+	CHARACTER*4 :: IND(3)
+        INTEGER     :: RX_FID
+	INTEGER     :: I,J,K,ntok
+	LOGICAL     :: LInCommentMode,LCMP,in_tok
 
 C     i=counter for string, j=counter for output variable being filled
 C     k=counter for # of indexes
 
+        LOGICAL IND_FND,CLS_IND,ARR_FLG,NO_LET,VAL_LET,SP_FLG
 
   123	FORMAT(A)
-
-	! Test only
-	!STRING='  MACOS  =an optical % analysis program'
 
 	SP_FLG=.FALSE.  ! set to false on entrance; will be set to true later i
 			! when a blank or comment line is found.
 
 	VAR_NAM=' '
 	VALUE=' '
-	IND(1)='    '; IND(2)='    '; IND(3)='    '
+	IND(1)='    '
+        IND(2)='    '
+        IND(3)='    '
 	LInCommentMode=.FALSE.
 
    20   CONTINUE
 
 	IF (SP_FLG) THEN
-	  READ(1,123,END=354) STRING
+	  READ(RX_FID, 123, END=354) STRING
 	  !print*,'GET_EQ() SECOND STRING = ',STRING
  354	  CONTINUE
 	END IF
 
-	J=1; K=1; ntok=0
+	J=1
+        K=1
+        ntok=0
 	IND_FND=.FALSE.
 	CLS_IND=.FALSE.
 	ARR_FLG=.FALSE.
@@ -2358,7 +2360,6 @@ C       BEGIN PARSING THE STRING
 	END IF
 	IF (LInCommentMode) GO TO 20
 
-	NVTOK=ntok
 	RETURN
 	END SUBROUTINE GET_EQ
 
