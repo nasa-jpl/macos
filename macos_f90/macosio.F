@@ -43,6 +43,11 @@ C***********************************************************************
 	use loh_I2
 	use loh_I3
 	use dopt_mod
+! --------------------------------------
+        IMPLICIT NONE
+
+        INTEGER, PARAMETER :: RX_FID = 77
+        LOGICAL :: isRxOpen
 
 	CHARACTER*8 CNUM
 	CHARACTER(len=MacosCharLen) :: ANS,TypeString
@@ -225,17 +230,14 @@ C	Get file name
 C
 C	Read existing input file
 C
-	IF (iopt.EQ.1) THEN
-	  !print*,' ****** Openning file 1 ......'
-	  OPEN (1,FILE=INFIL,STATUS='OLD')
-	  REWIND(1)
+	IF (IOPT.EQ.1) THEN
+	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
+
    70     CONTINUE
-	  If (.not.LOAD_SUCCESS) Then
-	    WRITE(*,*)' ** Rx input file load failed'
-	    CLOSE(UNIT=1); RETURN
-	  End If
+	  If (.not.LOAD_SUCCESS) GOTO 99
 
 	  ! Check ApType and ApVec consistency for all elements
 	  ApInputErr=.false.
@@ -259,16 +261,16 @@ C
 	  READ(VALUE,*) nOutCord
 	  nOutCord_FLG=.TRUE.
 
-	  READ(1,123) STRING
-	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
+	  READ(RX_FID, 123) STRING
+	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
 	    IF (nOutCord .GT. 1) THEN
-	      DO 71, k=2,nOutCord
-	 	READ(1,123)STRING
+	      DO k=2,nOutCord
+	 	READ(RX_FID, 123)STRING
 	        READ(STRING,*)(Tout(k,j),j=1,7)
-   71	      CONTINUE
+              END DO
 	    END IF
 	    Tout_FLG=.TRUE.
 	  END IF
@@ -308,7 +310,7 @@ C
 	  ELSE
 	    WRITE(*,*)' Grid size set to ',nGridpts
 	  END IF
-
+! ToDo: this will cause segmentation faults
 	  IF (nElt.GT.mElt) THEN
 	    WRITE(*,*) ' Too many elements, ',
      &        'mElt=', mElt, ',  nElt=', nElt
@@ -1120,17 +1122,15 @@ C	Specify output coordinates
 	IF (iopt.EQ.0) CALL ViewData(npts,1)
 	iopt=0
 
-C	Close input file
+        ! Close input file
+        CLOSE (UNIT=RX_FID)
 
-	CLOSE (UNIT=1)
-
+	! Finalise Configuration
 	npts=nGridpts-1
 
 	! Setup ApType and ApVec for all segments if an aperture
         ! is defined.
         if (SegApType_FLG) Call SetSegAp
-
-   99   CONTINUE
 
 	! Final call
 	Call RecordElementID(-1,"",.true.)
@@ -1140,26 +1140,20 @@ C	Close input file
 	  opt_npts_flg=.true.
 	end if
 
-	if (.false.) then
-	 print*,'End of MBFile6 in macosio: '
-	 print*,'  SrfType(1)=',SrfType(1)
-         print*,'  pMon(1:3,1)=', pMon(1:3,1)
-         print*,'  xMon(1:3,1)=', xMon(1:3,1)
-         print*,'  yMon(1:3,1)=', yMon(1:3,1)
-         stop  ! debugging
-	end if
+        LOAD_SUCCESS = .TRUE.
+        RETURN
+
+        !
+        ! Rx loading failed
+        !
+   99   CONTINUE
+        LOAD_SUCCESS = .FALSE.
+
+        INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
+        IF (isRxOpen) CLOSE(UNIT=RX_FID)
+
 
 	RETURN
-
-c  Stuff to handle backward compatability of zernike's (only 36,
-c  instead of 45)
-
-  900 	DO I=37,45
-	  ZernCoef(j,I)=0d0
-	  ZernCoef_FLG=.TRUE.
-	  GOTO 901
-	END DO
-
 	END SUBROUTINE MBFile6
 
 
@@ -1303,11 +1297,8 @@ C       read in command
 
 C       parse the statement
 
-	!print*,'In MOD_LOH(): b4 call GET_EQ(), STRING=',STRING
-	!read*, i_jzlou
 
-	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
-	!print*,'AFTER GET_EQ: VAR_NAM = ', VAR_NAM
+	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	IF (LCMP(VAR_NAM,'A',1)) THEN
 	    IF (LCMP(VAR_NAM,'Aperture',8)) THEN
