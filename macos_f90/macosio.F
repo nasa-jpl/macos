@@ -1298,7 +1298,7 @@ C       read in command
 C       parse the statement
 
 
-	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
+	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,0)  ! String parsing and not parsing from a Rx file: RX_FID=0
 
 	IF (LCMP(VAR_NAM,'A',1)) THEN
 	    IF (LCMP(VAR_NAM,'Aperture',8)) THEN
