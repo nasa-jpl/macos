@@ -39,6 +39,8 @@ C***********************************************************************
 	Integer :: npts
 	Logical :: ifOld
 
+	INTEGER, PARAMETER :: RX_FID = 77
+        LOGICAL :: isRxOpen
 c	CHARACTER*8 CDEF
 	CHARACTER(len=MacosCharLen) :: TypeString
 	LOGICAL exist,LCMP,IHSTPM,IHSTSM,ifGridInit,ifAmplInit,
@@ -192,14 +194,14 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
-	  OPEN (1,FILE=infil(1:L),STATUS='OLD')
-	  REWIND(1)
+	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
    70     CONTINUE
 	  If (.not.LOAD_SUCCESS) Then
             WRITE(*,*)' ** Rx input file load failed'
-            CLOSE(UNIT=1); RETURN
+            CLOSE(UNIT=RX_FID); RETURN
           End If
 
 	  CALL LOHIN3()
@@ -207,14 +209,14 @@ C
 	  READ(VALUE,*)nOutCord
 	  nOutCord_FLG=.TRUE.
 
-	  READ(1,123)STRING
-	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG)
+	  READ(RX_FID, 123)STRING
+	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
-	 	READ(1,123)STRING
+	 	READ(RX_FID, 123)STRING
 	        READ(STRING,*)(Tout(k,j),j=1,7)
    71	      CONTINUE
 	    END IF
@@ -257,19 +259,19 @@ C
 	ELSE
 	  WRITE(*,*)' SMACOS does not support the NEW command.'
 	END IF
-C
 
-C	Close input file
 
-	CLOSE (UNIT=1)
+        ! Close input file
+        INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
+        IF (isRxOpen) CLOSE(UNIT=RX_FID)
 
+
+        ! Finalise Configuration
 	npts=nGridpts-1
 
 	! Setup ApType and ApVec for all segments if an aperture
         ! is defined.
         if (SegApType_FLG) Call SetSegAp
-
-   99   CONTINUE
 
 	! Final call
         Call RecordElementID(-1,"",.true.)
@@ -279,33 +281,19 @@ C	Close input file
 	  opt_npts_flg=.true.
 	end if
 
-	if (.false.) then
-         print*,'CenterPMSeg = ', m_iCenterPMSeg
-         print*,'firstPMSeg = ', m_iFirstPMSeg
-         print*,'lastPMSeg = ', m_iLastPMSeg
-         print*,'SM = ', m_iSM
-         print*,'TM = ', m_iTM
-         print*,'FSM = ', m_iFSM
-         print*,'Pickoff = ', m_iPickoff
-         print*,'ExitPupil_ID = ', m_iExitPupil
-         print*,'FocalPlane_ID = ', m_iFocalPlane
-         print*,'nLensGrp = ', m_nLensGrp
-         print*,'LensGrpElts(1:2) = ', m_LensGrpElts(1:2)
-         print*,'LensGrp(1:2,1) = ', m_LensGrp(1:2,1)
-         print*,'LensGrp(1:2,2) = ', m_LensGrp(1:2,2)
-        end if
+	LOAD_SUCCESS = .TRUE.
+        RETURN
 
-	RETURN
+        !
+        ! Rx loading failed
+        !
+   99   CONTINUE
+	LOAD_SUCCESS = .FALSE.
 
-c  Stuff to handle backward compatability of zernike's (only 36,
-c  instead of 45)
+        INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
+        IF (isRxOpen) CLOSE(UNIT=RX_FID)
 
-  900 	DO I=37,45
-	  ZernCoef(j,I)=0d0
-	  ZernCoef_FLG=.TRUE.
-	  GOTO 901
-	END DO
-
+        RETURN
 	END SUBROUTINE MBFile6
 
 C***********************************************************************
