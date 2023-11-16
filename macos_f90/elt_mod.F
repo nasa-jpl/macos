@@ -421,9 +421,11 @@ C***********************************************************************
 	allocate(RptElt(3,mElt), psiElt(3,mElt), RayPos(3,mRay),
      &           RayDir(3,mRay), ApVec(6,mElt), xObs(3,mElt),
      &           AsphCoef(mAsphCoef,mElt),MonCoef(120,mElt),
-     &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),ZernRad(mElt),
+     &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),
+     &           ZernRad(mElt),
      &		 ZernXGrid(3,mElt),ZernYGrid(3,mElt),
-     &           pMon(3,mElt),pMonRx(3,mElt),ZernCoefRx(mZernModes,mElt),
+     &           pMon(3,mElt),pMonRx(3,mElt),
+     &           ZernCoefRx(mZernModes,mElt),
      &           LxObsDef(mElt),tMetSrfPos(mMetPos,mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
