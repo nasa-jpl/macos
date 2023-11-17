@@ -96,7 +96,7 @@ clean::
 
 # begin depends
 kinds.o: kinds.f90
-constants.o: constants.f90
+constants.o: constants.f90 kinds.f90
 macos_debug.o: macos_debug.F
 param_mod.o: param_mod.F
 elt_mod.o: elt_mod.F param_mod.F
