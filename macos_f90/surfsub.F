@@ -1873,9 +1873,9 @@ C***********************************************************************
           use elt_mod ! , only : ZernTypeL,ZnNmFac_m,mZernModes,mMonCoef
 
           IMPLICIT NONE
-          REAL*8 :: zc_in(mZernModes),zc(mZernModes),mc(mMonCoef)
+          REAL*8  :: zc_in(mZernModes),zc(mZernModes),mc(mMonCoef)
           INTEGER :: ie,i
-
+          ! ----------------------------------------
           zc = zc_in
 
           ! Apply rms Normalisation Factor
@@ -1995,7 +1995,7 @@ C***********************************************************************
           IMPLICIT NONE
           REAL*8 zc(mZernModes),mc(mMonCoef),z2c(mZernModes)
           Integer :: ie
-
+          ! ----------------------------------------
                               ! | "ANSI"|  B&W  | (n,m)  |  Zrn
                               ! | Order | Order | n ,  m |
                               ! |  Idx  |  Idx  |  Idx   |
@@ -2091,11 +2091,13 @@ C***********************************************************************
           IMPLICIT NONE
           REAL*8 zc(mZernModes),mc(mMonCoef),z2c(mZernModes)
           Integer :: ie
+          ! ----------------------------------------
+          z2c(:) = 0d0
 
-                              !           Extended
-                              ! | "ANSI"| Fringe | (n,m)  |
-                              ! | Order | Order  | n ,  m |
-                              ! |  Idx  |  Idx   |  Idx   |
+                               !           Extended
+                               ! | "ANSI"| Fringe | (n,m)  |
+                               ! | Order | Order  | n ,  m |
+                               ! |  Idx  |  Idx   |  Idx   |
           z2c( 1) = zc(  1)    ! |    0  |     1  |  0   0 |
 
           z2c( 2) = zc(  3)    ! |    1  |     3  |  1  -1 |
@@ -2183,7 +2185,7 @@ C***********************************************************************
         ! Mapping from Fringe => ANSI Ordering => Monomial Coefficients
         ! ---------------------------------------------------------------------
         SUBROUTINE ZerntoMon3(zc,mc,ie)
-	  use elt_mod,   only: mZernModes, mMonCoef
+          use elt_mod,   only: mZernModes, mMonCoef
           use Constants, only: EPS
 
 	  IMPLICIT NONE
@@ -2192,8 +2194,7 @@ C***********************************************************************
           INTEGER, INTENT(IN)   :: ie              ! Element ID
 
           REAL*8 :: z2c(mZernModes)
-          ! ---------------------------------------------------------
-
+          ! ----------------------------------------
           z2c(:) = 0d0   ! reset
 
                               ! | "ANSI"| Fringe| (n,m)  |  Zrn
@@ -2423,7 +2424,7 @@ C***********************************************************************
           INTEGER, INTENT(IN)   :: ie              ! Element ID
 
           REAL*8 :: z2c(mZernModes)
-          ! ---------------------------------------------------------
+          ! ----------------------------------------
 
                               ! | "ANSI"|  Noll | (n,m)  |
                               ! | Order | Order | n ,  m |
@@ -2929,7 +2930,7 @@ C***********************************************************************
 
         REAL*8 FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
      &                           rad,pmon,rhoc,xhat,yhat,zhat,L)
-          use Constants, only: EPS_def => EPS
+          use Constants, only: EPS
 
           IMPLICIT REAL*8 (A-H,O-Z)
           REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
@@ -2958,7 +2959,7 @@ C***********************************************************************
               FB=FC
               FC=FA
             ENDIF
-            TOL1=2d0*EPS_def*ABS(B)+0.5d0*TOL
+            TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
             !   TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
             !   TOL1 = EPS_def
               XM=0.5d0*(C-B)
