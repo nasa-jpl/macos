@@ -2011,8 +2011,9 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 
-	      if (MB_I(1)>maxZernTerms) then
+	      if (MB_I(1)>mZernModes) then
 	        ! ZernCoef index out of range
+                ! ToDo --> FIX
 	      end if
 
 	      ! MB_I(1)=ZernCoef index, MB_I(2)=iElt index. -jzlou
