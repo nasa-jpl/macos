@@ -64,7 +64,7 @@ export smacoslib     := smacos_lib
 
 #### Compilers:
 #export FC = f95
-export FC = ifort -g -fPIC
+export FC = ifx -g -fPIC
 #export FC = gfortran -fPIC
 export CC = gcc -fPIC
 #export CC = icc -fPIC
@@ -75,7 +75,7 @@ export LD = $(FC)
 
 #### Compiler/Linker Flags:
 
-export FFLAGS += -fs -w -tpp
+export FFLAGS += -fs -w -tpp -132
 # For Optimization:
 #FFLAGS += -O2
 # For Debugging:
