@@ -33,6 +33,117 @@ C***********************************************************************
 
 	Contains
 
+
+	SUBROUTINE FindSrf(ifLNsrf,ifObs,
+     &	LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
+     &	UDSrfParam,nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	psi,pv,prot,pin,ihat,
+     &  rad,pmon,xhat,yhat,zhat,
+     &	ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
+     &	pout,L,SrfType,
+     &	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
+
+	! use elemsub_mod
+	use traceutil_mod
+	use math_mod
+
+C  Compute reflection point, normal, reflection and transition
+C  matrices for a reflecting surface
+
+	IMPLICIT NONE
+
+	INTEGER nGridMat,mGridMat,nAsphCoef
+	REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
+
+	INTEGER i,SrfType,NDP,IWORK(*),IERROR,UDSrfType,mDP,
+     &	ApType,nObs,ObsType(nObs)
+
+	LOGICAL LROK,ifBuild,ifLNsrf,ifObs,LRT,ifPol !,ChkRayTrans
+
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+     &   MonCoef(120),pr(3),L,Nhat(3),pout(3),rout(3),rho(3),
+     &	 AnaCoef(4),UDSrfCoef(*),DWORK(*),xGrid(3),yGrid(3),
+     &   zGrid(3),ApVec(6),ObsVec(6,nObs),UDSrfParam(6),
+     &	 AsphCoef(nAsphCoef)
+
+	REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),Nvec(3),Nmag,dNdp(3,3),wVec(3)
+
+	REAL*8 Kc,Kr,rad,pmon(3),xhat(3),yhat(3),zhat(3)
+
+C  Compute incidence point of ray
+
+	IF (SrfType.EQ.1) THEN
+	  CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
+     &	  	pr,L,Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.2) THEN
+	  CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
+     &	  	prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.3) THEN
+	  CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
+     &	        prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef)
+	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+     &	  	prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &	  	Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.5) THEN
+	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+     &	  	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
+     &	  	wVec,pr,L,pmon,xhat,yhat,zhat,
+     &	  	Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.6) THEN
+	  CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &	  	prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.7) THEN
+	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
+     &	  	UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &	  	pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.9) THEN
+	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
+     &	  	psi,pv,prot,pin,ihat,pr,L,
+     &	  	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	  	pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.10) THEN
+	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &	           prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+        ELSE IF (SrfType.EQ.11) THEN
+          ! Grid Srf on top of Aspherical Srf -jzlou 05/2016
+          CALL AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AnaCoef,
+     &             psi,pv,prot,pin,
+     &             ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef,
+     &             nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
+     &             xhat,yhat,zhat)
+	ELSE
+	  WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType,
+     &      ', Aborting trace.'
+	END IF
+
+C   If not obscured, check if ray has negative length
+        IF (LRT.AND.(L.LT.1d-22)) GO TO 98
+
+C  Check if ray is obscured
+
+	IF (ifObs) THEN
+	  DO i=1,3
+	    rho(i)=pin(i)-pv(i)+L*ihat(i)
+	  END DO
+	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
+     &	        psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
+     &          xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
+	ELSE
+	  LRT=.TRUE.
+	END IF
+
+	RETURN
+
+C	Here if ray misses surface
+
+  98	CONTINUE
+	LROK=.FALSE.
+	RETURN
+	END SUBROUTINE FindSrf
+
+C***********************************************************************
+
 	SUBROUTINE Reflector(
      &    ifBuild,ifDMBuild,ifPol,ifLNsrf,
      &    ifObs,LROK,LRT,Kc,
