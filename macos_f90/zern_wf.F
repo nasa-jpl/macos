@@ -319,7 +319,8 @@ C  ***************************************************************************
 
         ! For non-circular types
         FUNCTION zern_mode_nc(OPDin,z_mode,zt,ratio)
-		  use elt_mod, only: mZernModes, mMonCoef
+          use surfsub, only : ZerntoMon4, ZerntoMon7
+          use elt_mod, only: mZernModes, mMonCoef
 
         Real*8, DIMENSION(:,:) :: OPDin
         Integer :: z_mode  ! single Zernike mode
