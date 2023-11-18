@@ -6,6 +6,14 @@ C    |  U.S. Government Sponsorship Is Acknowledged.                  |
 C    +----------------------------------------------------------------+
 C***********************************************************************
 
+        MODULE surfsub
+
+        PUBLIC
+        PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB,SMonomial,
+     &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf
+     &             NGSrf
+        CONTAINS
+
 	SUBROUTINE FlatSrf(ifBuild,ifLNsrf,LROK,
      &                     psi,pv,prot,pin,ihat,
      &		           pr,L,Nvec,Nmag,Nhat,dNdp)
@@ -351,84 +359,6 @@ C	End of NSConSrf
 
 C***********************************************************************
 
-	SUBROUTINE FindConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
-     &	  pin,ihat,pr,L)
-	use math_mod
-
-	IMPLICIT NONE
-
-	INTEGER i
-	LOGICAL LROK,ifBuild,ifLNsrf
-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
-     &  pr(3),L,S1
-	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,Kc,Kr,
-     &  k2,itpsi,psitprel
-
-C	Compute incidence point of ray on the surface
-
-	DO 1 i=1,3
-	  prel(i)=pin(i)-pv(i)
-   1	CONTINUE
-	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
-	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
-
-	IF (ABS(Kr).LT.1d22) THEN
-	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
-	  a=1d0+Kc*itpsi*itpsi
-	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
-     &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
-	ELSE
-	  a=0d0
-	  b=itpsi
-	  c=psitprel
-	END IF
-
-C	Compute intersection point
-
-	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
-	  L=-c/b
-	ELSE
-	  k2=b*b-4d0*a*c
-	  IF (k2.LT.0d0) GO TO 98
-	  ksqrt=DSQRT(k2)
-	  S1=ABS(ABS(b)-ksqrt)
-	  IF (S1.LT.1d-4) THEN
-	    kp=(ksqrt-b)/(2d0*a)
-	    km=(-ksqrt-b)/(2d0*a)
-	  ELSE
-	    kp=(-2d0*c)/(b+ksqrt)
-	    km=(-2d0*c)/(b-ksqrt)
-	  END IF
-	  IF (kp.LT.km) THEN
-	    IF (kp.GT.1d-12) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
-	  ELSE
-	    IF (km.GT.1d-12) THEN
-	      L=km
-	    ELSE
-	      L=kp
-	    END IF
-	  END IF
-	END IF
-
-cLnegOK -- Nonsequential surfaces must have positive L!!
-	IF (L.LT.1d-12) GO TO 98
-
-	RETURN
-
-C	Here if ray misses surface
-
-  98	CONTINUE
-	LROK=.FALSE.
-	RETURN
-	END SUBROUTINE FindConSrf
-
-C***********************************************************************
-
 	SUBROUTINE FindSrf(ifLNsrf,ifObs,
      &	LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	UDSrfParam,nGridMat,mGridMat,GridMat,GridSrfdx,
@@ -438,7 +368,7 @@ C***********************************************************************
      &	pout,L,SrfType,
      &	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
 
-	use elemsub_mod
+	! use elemsub_mod
 	use traceutil_mod
 	use math_mod
 
@@ -3941,6 +3871,85 @@ C    &      iElt_debug == 90) then
 	END SUBROUTINE NGSrf
 
 C***********************************************************************
-C*******End file surfsub.F**********************************************
+
+#if 0
+	SUBROUTINE FindConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
+     &                        pin,ihat,pr,L)
+	use math_mod
+
+	IMPLICIT NONE
+
+	INTEGER i
+	LOGICAL LROK,ifBuild,ifLNsrf
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+     &  pr(3),L,S1
+	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,Kc,Kr,
+     &  k2,itpsi,psitprel
+
+        ! Compute incidence point of ray on the surface
+
+	DO i=1,3
+	  prel(i)=pin(i)-pv(i)
+        END DO
+	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+
+	IF (ABS(Kr).LT.1d22) THEN
+	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+	  a=1d0+Kc*itpsi*itpsi
+	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &    ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+	ELSE
+	  a=0d0
+	  b=itpsi
+	  c=psitprel
+	END IF
+
+        ! Compute intersection point
+
+	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+	  L=-c/b
+	ELSE
+	  k2=b*b-4d0*a*c
+	  IF (k2.LT.0d0) GO TO 98
+	  ksqrt=DSQRT(k2)
+	  S1=ABS(ABS(b)-ksqrt)
+	  IF (S1.LT.1d-4) THEN
+	    kp=(ksqrt-b)/(2d0*a)
+	    km=(-ksqrt-b)/(2d0*a)
+	  ELSE
+	    kp=(-2d0*c)/(b+ksqrt)
+	    km=(-2d0*c)/(b-ksqrt)
+	  END IF
+	  IF (kp.LT.km) THEN
+	    IF (kp.GT.1d-12) THEN
+	      L=kp
+	    ELSE
+	      L=km
+	    END IF
+	  ELSE
+	    IF (km.GT.1d-12) THEN
+	      L=km
+	    ELSE
+	      L=kp
+	    END IF
+	  END IF
+	END IF
+
+        ! LnegOK -- Nonsequential surfaces must have positive L!!
+	IF (L.LT.1d-12) GO TO 98
+
+	RETURN
+
+        ! Here if ray misses surface
+
+  98    CONTINUE
+	LROK=.FALSE.
+	RETURN
+	END SUBROUTINE FindConSrf
+
+#endif
 C***********************************************************************
 
+        END MODULE surfsub
