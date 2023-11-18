@@ -78,7 +78,13 @@ smacos_dvr: $(SMACOS_DVR_OBJS) $(NPSOL_OBJS)
 %.o:%.f
 	$(FC) $(LOCAL_FFLAGS) -c $<
 
+%.o:%.f90
+	$(FC) $(LOCAL_FFLAGS) -c $<
+
 %.o:%.F
+	$(FC) $(LOCAL_FFLAGS) -c $<
+
+%.o:%.F90
 	$(FC) $(LOCAL_FFLAGS) -c $<
 
 %.o:%.c
