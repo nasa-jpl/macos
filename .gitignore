@@ -185,8 +185,13 @@ dmypy.json
 *__genmod.f90
 *__genmod.mod
 *.i
+*.i90
 *.obj
 *.mod
 
 # Editor
 *.bak
+
+# Project specific
+MACOS_OBJS/
+SMACOS_OBJS/
