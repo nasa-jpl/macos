@@ -15,21 +15,22 @@ C Converted the file into a f90 module, for the convenience of expanding
 C AsphCoef array
 
 C 06/16/06
-C Trying to add support for multi-layer thin-film coating on optical 
+C Trying to add support for multi-layer thin-film coating on optical
 C surfaces during ray-tracing of polarized light.
 
 C***********************************************************************
 
 #include "realtype.h"
-	
+
 	module elemsub_mod
 	use math_mod
+	use surfsub
 
 	Implicit none
 
 	Integer, private, parameter :: max_coat_layers=10,mSB=10000
 	Real*8 :: NhatP(3),Nsrfm(3)
-	
+
 	Contains
 
 	SUBROUTINE Reflector(
@@ -54,7 +55,7 @@ C***********************************************************************
      &    IWORK,DWORK,NDP,mDP,nCoat,CoatW,nb_arr,kxb_arr)
 
 !  pin = RayPos(1,iRay)
-!  ihat = RayDir(1,iRay) 
+!  ihat = RayDir(1,iRay)
 !  prot = RayE(1,iRay),
 
 	use macos_debug
@@ -62,7 +63,7 @@ C***********************************************************************
 
 C  ierror,iwork,ndp,wvec,anacoef,udsrftype,udsrfcoef + intsrf stuff
 
-C  Compute reflection point, normal, reflection and transition	
+C  Compute reflection point, normal, reflection and transition
 C  matrices for a reflecting surface
 
 	IMPLICIT NONE
@@ -77,7 +78,7 @@ C  matrices for a reflecting surface
 	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
      &	        LRT
 
-	REAL*8, dimension(:) :: CoatW 
+	REAL*8, dimension(:) :: CoatW
         REAL*8, dimension(0:) :: nb_arr,kxb_arr
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
@@ -186,7 +187,7 @@ C  Compute reflected ray
 	   print*,'**** rhat = ', rhat, ' Nhat(1),Nmag =',
      &        Nhat(1), Nmag, ' Nvec = ', Nvec,
      &        'SrfType = ', SrfType
-	end if 
+	end if
 
 
 C  Polarization calcs
@@ -198,10 +199,10 @@ C  Polarization calcs
           S1=-TwoPi*L/lambda
           C2=DCMPLX(0d0,S1)*NaCmplx
           C1=CDEXP(C2)
-          Esrf(1:3)=C1*Evec(1:3) ! Esrf = electric field at the surface, 
+          Esrf(1:3)=C1*Evec(1:3) ! Esrf = electric field at the surface,
 	                         ! C1 is a phase factor resulted from OPL,
 	                         ! and Evec is "input" E field.
-                                 ! -jzlou	  
+                                 ! -jzlou
 
 	  !print*,'** E at surface: Esrf=',Esrf(1:3)
 
@@ -250,7 +251,7 @@ C  Polarization calcs
 	  C1=cone-cmu*cmu*(cone-cNdi*cNdi)
 	  ccfb=CDSQRT(C1)  ! = cos(theta2), -jzlou
 
-	  ! cosine of incidence ray with surface normal -jzlou 
+	  ! cosine of incidence ray with surface normal -jzlou
 	  ccfa=ABS(cNdi) ! = cos(theta1), -jzlou
 
 	  ! RP=Reflectance in P pol, RS=Reflectance in S pol, -jzlou
@@ -305,7 +306,7 @@ C  Polarization calcs
 	  !print*,'Innermost RP = ', RP
 	  !print*,'Innermost RS = ', RS
 
-	  if (.false.) then 
+	  if (.false.) then
 	   ! Add transmittance
            TS=2d0*NaCmplx*ccfb_arr(nCoat)
      &        /(NaCmplx*ccfb_arr(nCoat)+NbCmplx*ccfb_arr(nCoat+1))
@@ -437,12 +438,12 @@ C    Pathlength partials
 	   print*,'** rhat = ', rhat
 	   print*,'** ihat = ', ihat
 	   print*,'** Ndoti = ', Ndoti
-	   print*,'** S1 = ', S1 
+	   print*,'** S1 = ', S1
 	   print*,'** Nhat = ', Nhat
 	   print*,'** dddth matrix = ', dddth
 	   print*,'** dldd = ', dldd
 	  end if
-	
+
 	  CALL DMPROD(dldth,dldd,dddth,1,3,3)
 
 	  !print*,'** dldth = ', dldth
@@ -478,7 +479,7 @@ C	IF (ifDMBuild.AND.(SrfType.EQ.5)) THEN
 C	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -505,7 +506,7 @@ C  Set output values for ray position, direction
 	NhatP(1:3)=Nhat(1:3)
 
 	RETURN
-	END SUBROUTINE Reflector 
+	END SUBROUTINE Reflector
 
 C***********************************************************************
 
@@ -529,7 +530,7 @@ C***********************************************************************
 
 	 IMPLICIT NONE
 
-	 Interface 
+	 Interface
            Function getIndexGrad_grin5(pt,pv,zdir,mc)
            Implicit none
            Real*8, dimension(3) :: getIndexGrad_grin5,pt,pv,zdir
@@ -547,7 +548,7 @@ C  for a general lens surface
 	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
      &	        LRT,IsVarIndRef,IsGrinRef,ifnc
 
-	REAL*8, dimension(:) :: CoatW 
+	REAL*8, dimension(:) :: CoatW
         REAL*8, dimension(0:) :: nb_arr,kxb_arr
 	Type(IndRefGridStr) :: IndRefStr
         Type(GrinRefStr) :: thisGrinRef
@@ -679,9 +680,9 @@ C  Return if ray missed surface
 
 #if 1
 	If (IsGrinRef) Then
-          ! Implement graded-index media (lens) here, using ray eqns for inhomogeneous 
-          ! media ! and based on the numerical procedure in A. Sharma's paper in Applied 
-          ! Physics / Vol. 21, No. 6, March 15, 1982, -jzlou 
+          ! Implement graded-index media (lens) here, using ray eqns for inhomogeneous
+          ! media ! and based on the numerical procedure in A. Sharma's paper in Applied
+          ! Physics / Vol. 21, No. 6, March 15, 1982, -jzlou
           ! Assumed input at the front surface of the lens:
           ! 1) Lens type, which dictates a specific refractive index model.
 	  ! 2) Lens depth, which determines how far the integration of ray path
@@ -690,7 +691,7 @@ C  Return if ray missed surface
 	  ! 3) dt, the size of numerical integration step.
           ! Ray path integration proceeds until the projection of ray position along
           ! front surface normal is within 'delta' distance to the end of lens depth.
-          ! At that point, the final ray position and direction is returned from 
+          ! At that point, the final ray position and direction is returned from
           ! the defractor routine to go on ray tracing to the next optical surface.
           ! jzlou, 02/2011.
 #if 0
@@ -704,16 +705,16 @@ C  Return if ray missed surface
 	  A_(1:3)=getIndexGrad_grin5(pcrnt,thisGrinRef%modelCoef)
 	  print*,'return from grad func =',A_(1:3)
 	  stop
-#endif	  
+#endif
 
           If (thisGrinRef%modelType==5) Then
 	    ! one of the graded-index lens supported by Zemax
             L = L*na  ! ray segment OPL from previous surface to this surface
 	    dt=thisGrinRef%dt ! integration path step size
 	    thkZ=thisGrinRef%lensDepth
-	    
+
 	    ! starting ray point is 'pr', computed by one of the above surface routines,
-	    ! starting ray direction should be 'ihat'. 
+	    ! starting ray direction should be 'ihat'.
 	    If (DDOTC(ihat,psi)<0) Then
 	      zdir=-psi;
 	    Else
@@ -727,7 +728,7 @@ C  Return if ray missed surface
 	    Else
               segGap=1
 	    End If
-	    ! Tcrnt below is intial optical ray vector  
+	    ! Tcrnt below is intial optical ray vector
             Tcrnt(1:3)=n_loc*ihat
 	    k=0; k1=0  ! for saving ray path only
 	    Do while (abs(DDOTC(pcrnt,psi))<=(thkZ-dt))
@@ -756,22 +757,22 @@ C  Return if ray missed surface
 	      L=L+dt*n_loc*n_loc  ! since ds = dt*n_loc, optical ds = ds*n_loc
               k1=k1+1
             End Do ! R-K integration loop
-	    gradInd_kmax(iDrawRay_global,iElt2iGradInd(crnt_Elt))=k 
+	    gradInd_kmax(iDrawRay_global,iElt2iGradInd(crnt_Elt))=k
 !	    print*,'crnt_traced_ray =',crnt_traced_ray,
 !    &        ', gradInd_kmax(crnt_traced_ray,1) =',gradInd_kmax(crnt_traced_ray,1)
           Else
             ! other lens models -- to implement
           End If
           !
-          ! Now the last point on integrated ray path becomes 'pr', and the ray 
+          ! Now the last point on integrated ray path becomes 'pr', and the ray
           ! direction at 'pr' becomes rhat.
-          pr(1:3)=pcrnt(1:3) 
+          pr(1:3)=pcrnt(1:3)
           rhat(1:3)=Tcrnt(1:3)/getIndex_grin5(pcrnt,
      &              pv,zdir,thisGrinRef%modelCoef)
 	  Call DUNITIZE(rhat)
           Go to 110
         End If
-#endif 
+#endif
 
 
 C  Compute refracted ray (with lens of homogeneous media)
@@ -782,7 +783,7 @@ C  Compute refracted ray (with lens of homogeneous media)
 	  cvec(i)=Ndi*Nhat(i)-ihat(i)
    	END DO
 
-C  Check for total internal reflection; 
+C  Check for total internal reflection;
 C  possibly occurs only when from dense to loose media -jzlou
 	S2=1d0-mu2+muNdi*muNdi
 	IF (S2.LT.0d0) THEN
@@ -790,7 +791,7 @@ C  possibly occurs only when from dense to loose media -jzlou
 	  RETURN
 	END IF
 
-C  Compute direction of refracted ray -jzlou 
+C  Compute direction of refracted ray -jzlou
 	cfb=DSQRT(S2)
 	S1=0d0
 	DO i=1,3
@@ -800,7 +801,7 @@ C  Compute direction of refracted ray -jzlou
 	S2=DSQRT(S1)
 	rhat(1:3)=rhat(1:3)/S2
 
- 110    Continue  ! used to skip computing refracted ray in homogeneous media 
+ 110    Continue  ! used to skip computing refracted ray in homogeneous media
 	          ! as done above -jzlou, 02/2011
 
 
@@ -950,7 +951,7 @@ C    Compute refracted ray cosine
      &          /(NaCmplx*ccfb_arr(ic-1)+NbCmplx*ccfb_arr(ic))
             TS= (TS1*TS*DD1)/(1d0+RS1*RS*C1)
 
-            RP=RPnew; RS=RSnew 
+            RP=RPnew; RS=RSnew
 	  End Do
 	END IF
 
@@ -1042,7 +1043,7 @@ C    Beamwalk partials
 	  CALL DMPROD(D2,Perpr,ihat,3,3,1)
 	  CALL DMPROD(dgdd,D2,D1,3,1,3)
 	  CALL DMPROD(dgdth,dgdd,dddth,3,3,3)
-	  
+
 C    Pathlength partials
 
 	  CALL DSUB(D3,rhat,ihat,3)
@@ -1078,7 +1079,7 @@ C    Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -1393,7 +1394,7 @@ C    Beamwalk partials
 	  CALL DMPROD(D2,Perpr,ihat,3,3,1)
 	  CALL DMPROD(dgdd,D2,D1,3,1,3)
 	  CALL DMPROD(dgdth,dgdd,dddth,3,3,3)
-	  
+
 C    Pathlength partials
 
 	  CALL DSUB(D3,rhat,ihat,3)
@@ -1429,7 +1430,7 @@ C    Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -1452,7 +1453,7 @@ C  Check if ray is obscured
 	END SUBROUTINE NSRefractor
 
 C***********************************************************************
-	
+
 	SUBROUTINE AirGap(TP,TS,cfa,sfa,cfb,n1,n3,mu,Wavelen,nCoat,
      &	CoatIndx,CoatThk)
 	IMPLICIT NONE
@@ -1523,7 +1524,7 @@ C***********************************************************************
      &	 rad,pmon,xhat,yhat,zhat,
      &	 na,nb, ! na,nb = CurIndRef,IndRef(iElt) in calling routine
      &   ifnc,nc,
-     &   kxa,kxb,lambda, 
+     &   kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
      &	 LensArrayType,width,
@@ -1567,11 +1568,11 @@ C***********************************************************************
 
 	COMPLEX*16 Evec(3),Eout(3)
 
-	DATA 
+	DATA
      &    tan30/5.773502691896257d-01/cos30/8.660254037844387d-01/
 	DATA sin30/5d-01/
 
-        ! nb,mu,mu2 will be updated below for LensArray 
+        ! nb,mu,mu2 will be updated below for LensArray
         ! with variable IndRef
 	mu=na/nb
 	mu2=mu*mu
@@ -1586,11 +1587,11 @@ C  Compute incidence point of ray on face plane
 	print*,'b4: Kc =', Kc
 	print*,'b4: Kr =', Kr
 	print*,'b4: pv =',  pv
-	print*,'b4: prot =',prot 
-	print*,'b4: pin =',pin 
-	print*,'b4: ihat =',ihat 
-	print*,'b4: Nhat =',Nhat 
-	print*,'b4: Nvec =',Nvec 
+	print*,'b4: prot =',prot
+	print*,'b4: pin =',pin
+	print*,'b4: ihat =',ihat
+	print*,'b4: Nhat =',Nhat
+	print*,'b4: Nvec =',Nvec
 	print*,'b4 ifLNsrf =',ifLNsrf
 	print*,'b4: Nmag =',Nmag
 	print*,'b4: dNdp =',dNdp
@@ -1608,11 +1609,11 @@ C  Compute incidence point of ray on face plane
 	print*,'aft: Kc =', Kc
 	print*,'aft: Kr =', Kr
         print*,'aft: pv =',  pv
-        print*,'aft: prot =',prot  
-        print*,'aft: pin =',pin 
-        print*,'aft: ihat =',ihat 
+        print*,'aft: prot =',prot
+        print*,'aft: pin =',pin
+        print*,'aft: ihat =',ihat
         print*,'aft: Nhat =',Nhat
-	print*,'aft: Nvec =',Nvec 
+	print*,'aft: Nvec =',Nvec
 	print*,'aft ifLNsrf =',ifLNsrf
 	print*,'aft: Nmag =',Nmag
 	print*,'aft: dNdp =',dNdp
@@ -1623,7 +1624,7 @@ C  Compute incidence point of ray on face plane
 
 	print*,'LensArray: LROK =',LROK
         stop
-#endif 
+#endif
 
 
 C  Find vertex of appropriate lenslet
@@ -1641,11 +1642,11 @@ C  Find vertex of appropriate lenslet
 	    Do i=1,TotLenslets
 	      if (abs(LensArrayType).EQ.1) then
 	   print*,LensletStrArray(i,j)%Xtri,LensletStrArray(i,j)%Ltri,
-     &            LensletStrArray(i,j)%Rtri,LensletStrArray(i,j)%IndRef 
+     &            LensletStrArray(i,j)%Rtri,LensletStrArray(i,j)%IndRef
 	      else
            print*,LensletStrArray(i,j)%RecXtri,
      &            LensletStrArray(i,j)%RecYtri,
-     &            LensletStrArray(i,j)%IndRef 
+     &            LensletStrArray(i,j)%IndRef
 	      end if
 	    End Do
 	    stop
@@ -1689,7 +1690,7 @@ C  Find vertex of appropriate lenslet
                 ifnc=.true.
                 mu=na/nc; mu2=mu*mu
 	        exit
-              End If 
+              End If
 	    End Do
 	  End If
 
@@ -1715,7 +1716,7 @@ C  Find vertex of appropriate lenslet
                 nc=LensletStrArray(i,thisElt)%IndRef
 	        ifnc=.true.
                 mu=na/nc; mu2=mu*mu
-              End If 
+              End If
 	    End Do
 	  End If
 	END IF
@@ -1726,7 +1727,7 @@ C  Find vertex of appropriate lenslet
   	  END DO
 	Else
 	  ! Use VptElt instead when LensArrayType < 0
-	  vptL(1:3)=pv(1:3) 
+	  vptL(1:3)=pv(1:3)
 	End If
 
 C  Compute incidence point of ray on lenslet
@@ -1759,7 +1760,7 @@ C  Compute incidence point of ray on lenslet
 	  print*,'ihat =',ihat
 	  print*,'pin =',pin
 	  print*,'vptL =',vptL
-	  stop	
+	  stop
 	Else
 	  print*,'=== Ray did not miss surface ...'
 	End If
@@ -1851,7 +1852,7 @@ C    Beamwalk partials
 	  CALL DMPROD(D2,Perpr,ihat,3,3,1)
 	  CALL DMPROD(dgdd,D2,D1,3,1,3)
 	  CALL DMPROD(dgdth,dgdd,dddth,3,3,3)
-	  
+
 C    Pathlength partials
 
 	  CALL DSUB(D3,rhat,ihat,3)
@@ -1887,7 +1888,7 @@ C    Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -1921,10 +1922,10 @@ C***********************************************************************
      &	 na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui)
-	
+
 	use traceutil_mod
 
-C       Compute reflection point, normal, reflection and transition	
+C       Compute reflection point, normal, reflection and transition
 C	matrices for a conic-of-revolution retroreflecting surface
 
 	IMPLICIT NONE
@@ -2002,13 +2003,13 @@ C	Compute intersection point and normal vector
 	  END IF
 	END IF
 
-        !print*,' ** ReturnSrf: L =',L 
+        !print*,' ** ReturnSrf: L =',L
         !print*,' ** ReturnSrf: ihat =',ihat
 
 cLnegOK	-- Return surface will always have L positive;
 c      *-- that would cause a confusion when settng XP which doesn't
 c      *-- need a return surface. When the erroneous return surface is
-c      *-- present, rays end up at a wrong 'XP' surface (a mirror image 
+c      *-- present, rays end up at a wrong 'XP' surface (a mirror image
 c      *-- of the XP with respect to the focal plane) -jzlou, 02/28/2009
 	IF (L.LT.0d0) GO TO 98
 
@@ -2061,7 +2062,7 @@ c	  S1=MOD((TwoPi*L/lambda),TwoPi)
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -2104,7 +2105,7 @@ C***********************************************************************
 
 	use traceutil_mod
 
-C       Compute reflection point, normal, reflection and transition	
+C       Compute reflection point, normal, reflection and transition
 C	matrices for a general focal plane or reference surface
 
 	IMPLICIT NONE
@@ -2232,7 +2233,7 @@ C	  Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -2281,7 +2282,7 @@ C***********************************************************************
      &                      GridSrfdx,nGridMat,GridMat,iEltToGridSrf
 	use traceutil_mod
 
-C       Compute reflection point, normal, reflection and transition	
+C       Compute reflection point, normal, reflection and transition
 C	matrices for a general conic-of-revolution reference surface
 
 	IMPLICIT NONE
@@ -2409,7 +2410,7 @@ C	  Combined partial matrices
 	if (.true.) then
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  DO i=1,3
 	    rho(i)=pin(i)-pv(i)+L*ihat(i)
 	  END DO
@@ -2433,24 +2434,24 @@ C  Check if ray is obscured
   10	CONTINUE
 
 #if 1
-	! If an OPD-modulation grid is defined at this reference surface, 
+	! If an OPD-modulation grid is defined at this reference surface,
         ! modify L (ray path length) accordingly. -jzlou
         If (ifOPDModGrid(crnt_Elt)) Then
 	  poff=pout(1:3)-pMon(1:3,crnt_Elt)
-	  poffx = DDOTC(poff,xMon(1:3,crnt_Elt)) 
+	  poffx = DDOTC(poff,xMon(1:3,crnt_Elt))
 	  poffy = DDOTC(poff,yMon(1:3,crnt_Elt))
           grid_dx = GridSrfdx(crnt_Elt)
 	  jdx = poffx/grid_dx; idx = poffy/grid_dx
           jdx = jdx + (nGridMat(crnt_Elt)+1)/2
           idx = idx + (nGridMat(crnt_Elt)+1)/2
-          if (idx<1 .OR. idx>nGridMat(crnt_Elt) .OR. 
+          if (idx<1 .OR. idx>nGridMat(crnt_Elt) .OR.
      &        jdx<1 .OR. jdx>nGridMat(crnt_Elt)) then
             GO TO 99  ! ray outside grid region
 	  end if
 	  dL=GridMat(idx,jdx,iEltToGridSrf(crnt_Elt))
 	  L=L+dL
         End If
-#endif 
+#endif
   99	RETURN
 
 C	Here if ray misses surface
@@ -2471,7 +2472,7 @@ C***********************************************************************
      &	 na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui)
-	
+
 	use traceutil_mod
 
 C  Compute incidence point for a ray on a conic-of-revolution
@@ -2592,7 +2593,7 @@ C  Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &	        psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &	        xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
@@ -2623,14 +2624,14 @@ C***********************************************************************
         use elt_mod, only : ApHexBound,ObsHexBound,PolyApEqn,VptElt,
      &                      PolyObsEqn,ifAmplSrf,nAmplMat,AmplMat,
      &                      AmplSrfdx,iEltToAmplSrf,xMon,yMon,pMon
-        use cfiles_mod, only : stepApod,linApod,gaussApod,iApodType 
+        use cfiles_mod, only : stepApod,linApod,gaussApod,iApodType
 	use traceutil_mod
 
 ! Check wether a given ray passes an aperture or hits an obscuration
 ! -jzlou
 
 ! A 'taperFac' is defined for this ray on this element if the ray falls
-! into the taperred region of a tapering aperture or obscuration. -jzlou 
+! into the taperred region of a tapering aperture or obscuration. -jzlou
 
 	IMPLICIT NONE
 
@@ -2646,13 +2647,13 @@ C***********************************************************************
      &	  sqrt_A1, sqrt_A2, sqrt_r2, rd1,rd2,r1,taperFac,
      &    pxx,pyy,px2,py2,coss,sins,ApRot,ObsRot,tmpx,tmpy,
      &	  inPt(2),inPt_val,ray_val,dd,tf,sig,pOff(3),pOffx,pOffy,
-     &    xsb(3),ysb(3),th1,th2,dth 
+     &    xsb(3),ysb(3),th1,th2,dth
 	Real*8, save :: Asb(3,mSB),Bsb(3,mSB),Csb(3,mSB),
      &                  xcm(mSB),ycm(mSB)
 	Integer :: nSides,iside,iamp,jamp,jAmpSrf,nBlades,
      &             ib,j,i1,i2
 	Logical :: inHex,inPoly,inSB
-	Logical, save :: firstEntry_sunBlades=.true. 
+	Logical, save :: firstEntry_sunBlades=.true.
         Integer, save :: nC=0
 
 #if 0
@@ -2667,7 +2668,7 @@ C***********************************************************************
 C  Compute aperture and obscurations
 
 	! rho(3), an argument, was computed as
-        ! rho(i)=pin(i)-pv(i)+L*ihat(i)        
+        ! rho(i)=pin(i)-pv(i)+L*ihat(i)
         ! in the calling routine, where pin+L*ihat gives the intersection
         ! point on the element surface (in global coords) and pv(i) is
         ! element vertex point. So rho is a vector from element vertex to
@@ -2684,24 +2685,24 @@ C  Compute aperture and obscurations
 	ELSE IF (ApType.EQ.2) THEN ! rectangular aperture -jzlou
 	  IF ((px.LT.ApVec(1)).OR.(px.GT.ApVec(2)).OR.(py.LT.ApVec(3))
      &	      .OR.(py.GT.ApVec(4))) GO TO 99
-	ELSE IF (ApType.EQ.3) THEN ! tapered circulcar aperture -jzlou	
+	ELSE IF (ApType.EQ.3) THEN ! tapered circulcar aperture -jzlou
 	  r2=(ApVec(2)-px)**2+(ApVec(3)-py)**2
 	  A2=ApVec(1)**2
 	  IF (r2.GT.A2) then
 	    GO TO 99
-	  ELSE 
-            ! As ray passes thru aperture, taper its amplitude 
+	  ELSE
+            ! As ray passes thru aperture, taper its amplitude
             ! linearly if ray falls into tapered region
 	    sqrt_A1=ApVec(1)*(1.0-ApVec(4)); sqrt_A2=ApVec(1)
 	    sqrt_r2=dsqrt(r2)
-	    if (sqrt_r2>sqrt_A1) then ! fall into tapered region 
+	    if (sqrt_r2>sqrt_A1) then ! fall into tapered region
 	      if ((sqrt_A2-sqrt_A1)<1d-20) then
 	        print*,'ChkRayTrans warning: tapered size = 0!'
 	        GO TO 99
 	      end if
 	      ! tapering factor for this ray on this element only
 	      taperFac = (sqrt_A2-sqrt_r2)/(sqrt_A2-sqrt_A1)
-	      !print*,'ChkRay(): taperFac = ...'	
+	      !print*,'ChkRay(): taperFac = ...'
             else
 	      taperFac = 1.0 ! ray is outside tapered region, but inside aperture
 	    end if
@@ -2780,7 +2781,7 @@ C  Compute aperture and obscurations
      &         +ApHexBound(3,6,crnt_Elt))) then
                inHex = .true.
              end if
-	   end if 
+	   end if
 
 	   if (.not.inHex) GO TO 99
 	ELSE IF (ApType.EQ.7) THEN ! Polygonal aperture
@@ -2865,7 +2866,7 @@ C  Compute aperture and obscurations
                 end if
                 if (tf<taperFac) taperFac=tf
               End If
-           End Do 
+           End Do
 	   !print*,'*** taperFac =',taperFac
 
         ELSE IF (ApType.EQ.9) THEN
@@ -2921,16 +2922,16 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
               inSB=.true.; exit
             End If
           End Do
-	  if (.not.inSB) GO TO 99	
+	  if (.not.inSB) GO TO 99
 
 	ELSE IF (ApType.EQ.-4) THEN
 	  ! This section is disabled for now. 07/04, -jzlou
 	  ! still rectangular aperture, but with a interior margin
-          ! specified by 'rc'. 
+          ! specified by 'rc'.
 	  ! This secion is not supported in macosio.F and smacosio.F,
 	  ! so it's never used currently? -jzlou
 	  IF ((px.LT.ApVec(1)).OR.(px.GT.ApVec(2)).OR.(py.LT.ApVec(3))
-     &	      .OR.(py.GT.ApVec(4))) GO TO 99  
+     &	      .OR.(py.GT.ApVec(4))) GO TO 99
 	  rc=ApVec(5)
 	  xcmin=ApVec(1)+rc; xcmax=ApVec(2)-rc
 	  ycmin=ApVec(3)+rc; ycmax=ApVec(4)-rc
@@ -2953,7 +2954,7 @@ C  Check if ray hits an obscuration
 	DO 10 iObs=1,nObs
 
 #if 0
-	  ! debugging only 
+	  ! debugging only
 	   print*,'In Obs: nObs,ObsType(iObs) =',nObs,ObsType(iObs)
 	   print*,'In Obs: xgrid =',xgrid
 	   print*,'In Obs: ygrid =',ygrid
@@ -2963,7 +2964,7 @@ C  Check if ray hits an obscuration
 	   print*,'px,py =',px,py
 	   if (nC==100) stop
 	   nC=nC+1
-#endif	  
+#endif
 
 	  IF (ABS(ObsType(iObs)).EQ.1) THEN
 	    ! Circular
@@ -3038,7 +3039,7 @@ C  Check if ray hits an obscuration
 	    r2=((px-ObsVec(3,iObs))/ObsVec(1,iObs))**2
      &         +((py-ObsVec(4,iObs))/ObsVec(2,iObs))**2
 	    if (r2 < rd1) then
-	      ! Ray hit obs and beyond tapered region, 
+	      ! Ray hit obs and beyond tapered region,
 	      ! turn on Obs flag
               ifHitsPosObs=.TRUE.
 	    else if (r2 < 1.0 .and. r2 > rd1) then
@@ -3084,12 +3085,12 @@ C  Check if ray hits an obscuration
            ELSE
              ifHitsNegObs=.TRUE.
            END IF
-	   
+
 	  ELSE IF (ABS(ObsType(iObs)).EQ.9) THEN
 	    ! RotRectangle or RotNegRectangle
 	    ! ObsVec(1:2,iObs) = W,H, ObsVec(3:4,iObs) = dx,dy
 	    ! ObsVec(5,iObs) = rot_angle
-	
+
 	    ObsRot=ObsVec(5,iObs)   ! input in radian
             coss=cos(ObsRot); sins=sin(ObsRot)
 
@@ -3114,7 +3115,7 @@ C  Check if ray hits an obscuration
 	    ObsRot=ObsVec(5,iObs)   ! input in radian
             coss=cos(ObsRot); sins=sin(ObsRot)
 	    tmpx=px-ObsVec(3,iObs); tmpy=py-ObsVec(4,iObs)
-            px2=tmpx*coss+tmpy*sins; py2=-tmpx*sins+tmpy*coss 
+            px2=tmpx*coss+tmpy*sins; py2=-tmpx*sins+tmpy*coss
 
             r2=(px2/ObsVec(1,iObs))**2+(py2/ObsVec(2,iObs))**2
             IF (r2.LT.1.d0) THEN
@@ -3240,12 +3241,12 @@ C***********************************************************************
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),MonCoef(120),
-     & 	 rad,pmon(3),xhat(3),yhat(3),zhat(3), 
+     & 	 rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &	 na,nb,kxa,kxb,lambda,
      &	 AnaCoef(4),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6)
-	REAL*8, dimension(:) :: AsphCoef	
+	REAL*8, dimension(:) :: AsphCoef
 
 	REAL*8 Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
      &   Ndoti,Niinv,Nouti(3,3),ioutN(3,3),drdN(3,3),
@@ -3585,7 +3586,7 @@ cshouldbe	  CALL DADD(drdi,D2,D3,9)
 	  CALL DSUB(drdth,D3,D2,9)
 
 C    Beamwalk partials
-	  
+
 	  CALL DPROJECT(Perpr,rhat)
 	  CALL DMPROD(D1,Perpr,dpdd,3,3,3)
 	  CALL DNEGATE(dgda,D1,9)
@@ -3669,7 +3670,7 @@ C    Combined partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
@@ -3701,7 +3702,7 @@ C For reflective grating - jzlou
      &	 na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
-     &	 Order,RuleWidth,RuleDir, ! RuleDir = h1HOE(1,iElt) 
+     &	 Order,RuleWidth,RuleDir, ! RuleDir = h1HOE(1,iElt)
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
 	use traceutil_mod
@@ -3795,7 +3796,7 @@ C  Compute incidence point of ray
 	  WRITE(*,*)'4: Unknown surface type. Aborting trace.'
 	END IF
 
-#if 0  
+#if 0
 ! Test code
 	pin(1)=RuleWidth/3d0
 	!pin(1)=RuleWidth/2d0
@@ -3833,17 +3834,17 @@ C  Compute grating parameters -- see Siegman pg. 698 et. seq.
         !stop
 
 C  for fixed rule width: -dcr
-        Gr=Order*lambda/RuleWidth 
-          ! Gr is the quantity pre-computed for applying grating eqn later. 
+        Gr=Order*lambda/RuleWidth
+          ! Gr is the quantity pre-computed for applying grating eqn later.
 
 C  this implements the grating equation: -dcr
         CALL DPERPUVEC(RuleDir,RuleDir,psi)
 
 	CALL DXPROD(uhat,Nhat,RuleDir)
           ! Nhat = (negative) local srf normal
-          ! uhat is in direction along rule line 
+          ! uhat is in direction along rule line
         CALL DUNITIZE(uhat)
-	CALL DXPROD(shat,uhat,Nhat) 
+	CALL DXPROD(shat,uhat,Nhat)
           ! shat is the direction along grating (substrate) surface,
           ! and perpendicular to the rule lines -jzlou
         CALL DUNITIZE(shat)
@@ -3852,7 +3853,7 @@ C  this implements the grating equation: -dcr
                              ! equals to sin of angle betwen incident ray and
                              ! (substrate) surface normal -jzlou
 	rts=its-Gr  ! **** this is the use of grating equation; ****
-                    ! rts is the sin of angle between reflected ray and 
+                    ! rts is the sin of angle between reflected ray and
                     ! (substrate) surface normal -jzlou
 	uti=DDOTC(uhat,ihat)
 	S1=1d0-uti*uti-rts*rts
@@ -3884,34 +3885,34 @@ C  this implements the grating equation: -dcr
          print*,' ***** rts = ',rts
          print*,'***** S1 = ',S1
          !print*,'***** rhat = ',rhat(1:3)
-         !stop  
+         !stop
         End If
 
 	strho=DDOTC(RuleDir,rho) ! strho = distance of ray to grating vertex projected onto
                                  ! direction of RuleDir
 	dSig=MOD(strho,RuleWidth) ! dSig is strho moduled by grating step size
 	IF (dSig.LT.0d0) dSig=dSig+RuleWidth
-	L=L-Gr*dSig ! 'Gr*dSig' is the 'extra part' needed to be 
+	L=L-Gr*dSig ! 'Gr*dSig' is the 'extra part' needed to be
                     ! subtracted from path-length 'L' to make this
                     ! ray coherent with the ray hitting grating vertex.
 
-        ! Derivation of "L=L-Gr*dSig"   -jzlou 
-        ! Path difference = a*(sin(I)+sin(D)); 
-        !   a = the separation distance between the two parallel rays; 
+        ! Derivation of "L=L-Gr*dSig"   -jzlou
+        ! Path difference = a*(sin(I)+sin(D));
+        !   a = the separation distance between the two parallel rays;
         !   I = angle between incident rays and grating (base surface) normal;
         !   D = angle between reflected rays and grating (base surface) normal;
         ! Now:
-        ! a*(sin(I)+sin(D)) = a*(sin(I)+sin(D))*RuleWidth/RuleWidth 
+        ! a*(sin(I)+sin(D)) = a*(sin(I)+sin(D))*RuleWidth/RuleWidth
         !  = a*(Order*lambda)/RuleWidth = a*Gr = Gr*dSig = path difference of the two rays
 
         ! Implication of "L=L-Gr*dsig"   -jzlou
         ! This makes sure any ray 'dSig' away from a grove starting point is conherent with
-        ! the ray hitting the grove starting point. For rays hitting the grove starting 
+        ! the ray hitting the grove starting point. For rays hitting the grove starting
         ! or end point, the path differnce between any two of them would be
         ! k*RuleWith*(sin(I)+sin(D)) = k*Order*lambda, so the two rays are phase conherent,
         ! where assuming the two rays are k groves apart.
 
-#if 0	
+#if 0
 	print*,'--Grating: dSig =',dSig
 	print*,'--Grating: Gr*dSig =',Gr*dSig
 	print*,'--Grating: L_final =',L
@@ -3928,7 +3929,7 @@ C         Zero partial matrices
         END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
@@ -3962,7 +3963,7 @@ C***********************************************************************
      &	 Order,RuleWidth,RuleDir,
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
-! h1HOE(1:3,iElt) = RuleDir(1:3) = groove srf tangent, -jzlou 
+! h1HOE(1:3,iElt) = RuleDir(1:3) = groove srf tangent, -jzlou
 
 	use traceutil_mod
 
@@ -4083,13 +4084,13 @@ C  for fixed rule width: -dcr
         Gr=Order*lambda/RuleWidth  ! = m*lambda/a, where a is grating period
 
         CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! When RuleDir and psi are othogonal to each other,
-				             ! the routine doesn't change RuleDir. 
+				             ! the routine doesn't change RuleDir.
 	!print*,' **TrGrating: aft RuleDir =',RuleDir
 
 	CALL DXPROD(uhat,Nhat,RuleDir)    ! Nhat = (negative) local srf normal
 					  ! uhat will be 'out of paper' direction
 
-	CALL DUNITIZE(uhat)    
+	CALL DUNITIZE(uhat)
 	CALL DXPROD(shat,uhat,Nhat)
 	CALL DUNITIZE(shat)   ! shat othogonal to Nhat and uhat (in paper)
 
@@ -4148,11 +4149,11 @@ C  Check for total internal reflection
 	  rhat(i)=rhat(i)/S2
  	END DO
 
-	! The direction of refracted ray (rhat) obeys grating equation in 
+	! The direction of refracted ray (rhat) obeys grating equation in
 	! the case of normal incident ray, a sanity check by jzlou.
 	! The specific direction of h1HOE (along each groove surface) does
-	! not matter in determining the direction of refracted ray emerging 
-	! from the transmission grating. -jzlou   
+	! not matter in determining the direction of refracted ray emerging
+	! from the transmission grating. -jzlou
 
 #if 0
 	! Pure test
@@ -4183,7 +4184,7 @@ C    Zero partial matrices
 	END IF
 
 C  Check if ray is obscured
-	IF (ifObs) THEN 
+	IF (ifObs) THEN
 	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
@@ -4342,10 +4343,10 @@ C  Compute grating parameters
         CALL DUNITIZE(CurRuleDir)
 
 	! Fresnel zone plate focal length
-	!DoeFocLen=5d3 ! 5 meters 
+	!DoeFocLen=5d3 ! 5 meters
 	DoeFocLen=DoeFl(crnt_Elt)
 
-!  RuleWidth value is computed to generate a ray direction so that the ray will focus 
+!  RuleWidth value is computed to generate a ray direction so that the ray will focus
 !  'DoeFocLen' distance from the Fresnel plate center -jzlou
 
 	!Order=2  ! order probably needs to be positive to have rays converging to focus
@@ -4356,11 +4357,11 @@ C  Compute grating parameters
         If (pdd<1d-18) then
 	  ! needed to avoid divide by zero if is chief ray
 	  CurRuleWidth=lambda*1d8 ! so sin(theta_m) ~= 0
-	Else          
+	Else
 	  CurRuleWidth=abs(focalOrder*lambda/sin(atan(pdd/DoeFocLen)))
         End If
 !	print*,'**abs(DDOTC(rho,CurRuleDir)),DoeFocLen =',
-!    &         abs(DDOTC(rho,CurRuleDir)),DoeFocLen 
+!    &         abs(DDOTC(rho,CurRuleDir)),DoeFocLen
 !       print*,'**CurRuleWidth =',CurRuleWidth
 
         Gr=Order*lambda/CurRuleWidth  ! = N*lambda/a = sin(theta_N)
@@ -4402,18 +4403,18 @@ C       L=L-Gr*dSig
 #if 1
 	! Now make ray path length conherent with the chief ray - difference of them
 	! needs be multiple of wavelength
-	d1_loc = dsqrt(pdd**2+DoeFocLen**2)+(rts-its)*dSig 
+	d1_loc = dsqrt(pdd**2+DoeFocLen**2)+(rts-its)*dSig
 	!d1_loc = dsqrt(pdd**2+DoeFocLen**2)
           ! d1_loc = distance from grating-adjusted L to FZP focal pt
         If (d1_loc > DoeFocLen) Then
-          resid=mod(d1_loc-DoeFocLen,lambda)  
+          resid=mod(d1_loc-DoeFocLen,lambda)
           L=L-resid
         Else
-	  resid=mod(DoeFocLen-d1_loc,lambda)  
+	  resid=mod(DoeFocLen-d1_loc,lambda)
           L=L+resid
 	End If
 #endif
-	
+
 
 
 C  Compute refracted ray
@@ -4509,8 +4510,8 @@ C  Set output values for ray position, direction
 C***********************************************************************
 C
 C DOE element modeled after Code V, with an input phase(actually OPD) profile
-C that determines direction of diffracted rays and phase compensations thru 
-C the DOE element. -jzlou, 07/2011   
+C that determines direction of diffracted rays and phase compensations thru
+C the DOE element. -jzlou, 07/2011
 
 	SUBROUTINE DoeTrGrating(ifBuild,ifDMBuild,ifPol,
      &   ifLNsrf,ifObs,LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,
@@ -4646,7 +4647,7 @@ C  Compute grating parameters
 
 
 ! CurRuleWidth (local period) value is computed given diffraction order, dPhidR and
-! lambda, where Phi(R) is input phase profile as a function of distance to DOE center. 
+! lambda, where Phi(R) is input phase profile as a function of distance to DOE center.
 
         pdd=abs(DDOTC(rho,CurRuleDir)) ! distance from ray to DOE element center
         If (pdd<1d-18) then
@@ -4661,7 +4662,7 @@ C  Compute grating parameters
 	  CurRuleWidth=abs(thisDoeWL/dPhidR)
         End If
 
-	! Use grating equation 
+	! Use grating equation
         Gr=Order*lambda/CurRuleWidth  ! = N*lambda/a = sin(theta_N)
 
         CALL DPERPUVEC(CurRuleDir,CurRuleDir,psi) ! When RuleDir and psi are othogonal to
@@ -4700,7 +4701,7 @@ C       strho=DDOTC(CurRuleDir,rho)
         dSig=MOD(strho,CurRuleWidth)
         IF (dSig.LT.0d0) dSig=dSig+CurRuleWidth
 
-	! Don't update L here; L is now updated by phase profile -jzlou 
+	! Don't update L here; L is now updated by phase profile -jzlou
         !L=L+(rts-its)*dSig ! Ray optical path changes to make sure the cross-section of
                             ! diffracted beam has coherent phase (subtract 'extra' path
                             ! length for each ray) -jzlou
@@ -4738,7 +4739,7 @@ C  Check for total internal reflection
         DO i=1,3
           rhat(i)=rhat(i)/S2
         END DO
-	
+
 
         ! The direction of refracted ray (rhat) obeys grating equation in
         ! the case of normal incident ray, a sanity check by jzlou.

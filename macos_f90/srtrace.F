@@ -23,6 +23,7 @@ C *********************************************************************
 	Subroutine SRTRACE_Test(iStartElt,iEndElt,RayPos_in,RayDir_in)
 	use param_mod
         use elt_mod
+        use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3
 	use elemsub_mod
         use traceutil_mod
 	use tracesub_mod  ! for accessing getIndex() function
