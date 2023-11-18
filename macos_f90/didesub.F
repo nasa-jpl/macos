@@ -6,6 +6,13 @@ C    |  U.S. Government Sponsorship Is Acknowledged.                  |
 C    +----------------------------------------------------------------+
 C***********************************************************************
 
+	MODULE didesub
+
+	PRIVATE
+	PUBLIC :: IntSrf, dides
+
+	CONTAINS
+
 
 	SUBROUTINE IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
      &	  pin,ihat,XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
@@ -16,7 +23,7 @@ C***********************************************************************
 
 	INTEGER NDP,IERROR,IWORK(*),IMODE,IDNDP(31),mDP
 	REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),xIDES,yIDES,wVec(3),
-     &	DWORK(*)	
+     &	DWORK(*)
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &  pr(3),pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3)
 	REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
@@ -151,7 +158,7 @@ C	Compute normal vector
 C	Compute partials of the normal
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -179,7 +186,7 @@ CDIDES     &	      S3*dydrho(i)*dydrho(j)
 	  S1=Kr+Kc*psitzc
 	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
 	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
+
 	  S1=1d0/Nmag
 	  CALL DPROJECT(D1,Nhat)
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
@@ -306,7 +313,7 @@ C***********************************************************************
             D=XM; E=D
           ENDIF
         ELSE
-          D=XM; E=D; 
+          D=XM; E=D;
         ENDIF
         A=B; FA=FB
         IF(ABS(D) .GT. TOL1) THEN
@@ -538,7 +545,7 @@ C                                            Get new partials.
          END IF
       ELSE
 
-C	 ==================== 
+C	 ====================
 C        DO the interpolation
 C        ====================
          Q(1) = XI
@@ -3227,11 +3234,8 @@ C     Clean up small subfiles using insertion sort on everything.
             IF (cl .GT. m) GO TO 180
          END IF
          p(cl)=ptemp
-  200 CONTINUE
-      RETURN
-      END SUBROUTINE DSORTQ
+  200   CONTINUE
+        RETURN
+        END SUBROUTINE DSORTQ
 
-C***********************************************************************
-C*******End DIDES routine library***************************************
-C*******End file idesub.f***********************************************
-C***********************************************************************
+        END MODULE didesub
