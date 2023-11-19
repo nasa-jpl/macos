@@ -5595,12 +5595,12 @@ C             Go into interactive mode
 	    Else
 	      Write(*,*)'  Invalid answer: ',ANS
 	    End If
-#endif
 
 	  ELSE IF (LCMP(command,'PWIN',4)) THEN
 	    ! Start a Python-Tcl/Tk GUI window
             ANS='!he.py&'
   	    Call SHELLCMD(ANS,7)
+#endif
 
 
 c***loh
