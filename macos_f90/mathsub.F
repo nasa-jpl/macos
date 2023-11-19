@@ -8,10 +8,12 @@ C***********************************************************************
 
 #include "realtype.h"
 
-      Module math_mod
-      Implicit none
+      MODULE math_mod
+      IMPLICIT NONE
 
-      Contains
+      PUBLIC
+      PRIVATE :: CSWAP, DROTG, DDOTLP, CNRM2, zrhqr, balanc, hqr
+      CONTAINS
 
       SUBROUTINE RZERO(A,N)
       SREAL A(1)
@@ -2268,7 +2270,6 @@ C x1a,x2a provide tabulated locations of grid function values
 C stored in ya.
 
 	FUNCTION splin2(x1a,x2a,ya,y2a,x1,x2)
-        USE nn_type
         USE nn_util, ONLY : assert_eq
         IMPLICIT NONE
         ! Given x1a, x2a, ya as described in splie2 and y2a as produced by
@@ -2298,7 +2299,6 @@ C stored in ya.
 
 
 	SUBROUTINE splie2(x1a,x2a,ya,y2a)
-	USE nn_type;
 	USE nn_util, ONLY : assert_eq
 	IMPLICIT NONE
 
@@ -2321,11 +2321,10 @@ C stored in ya.
 	END SUBROUTINE splie2
 
 	FUNCTION splint(xa,ya,y2a,x)
-	USE nn_type;
         USE nn_util, ONLY : assert_eq,nerror
 	IMPLICIT NONE
 	! Given the arrays xa and ya, which tabulate a function (with
-	! the xais in increasing or decreasing order), and given the
+	! the xaxis in increasing or decreasing order), and given the
 	! array y2a, which is the output from spline above, and
 	! given a value of x, this routine returns a cubic-spline interpolated
         ! value. The arrays xa, ya and y2a are all of the same size.
@@ -2346,7 +2345,7 @@ C stored in ya.
 	khi=klo+1 ! klo and khi now bracket the input value of x.
 	h=xa(khi)-xa(klo)
 	If (h == 0.0) call nerror('bad xa input in splint')
-	   ! The xas must be distinct.
+	   ! The xaxis must be distinct.
 	a=(xa(khi)-x)/h  ! Cubic spline polynomial is now evaluated.
 	b=(x-xa(klo))/h
 	splint=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)
@@ -2355,7 +2354,6 @@ C stored in ya.
 
 
 	SUBROUTINE spline(x,y,yp1,ypn,y2)
-	USE nn_type;
         USE nn_util, ONLY : assert_eq
 	IMPLICIT NONE
 	! Given arrays x and y of length N containing a tabulated function,
@@ -2401,7 +2399,6 @@ C stored in ya.
 
 
 	SUBROUTINE tridag(a,b,c,r,u)
-	USE nn_type;
 	USE nn_util, ONLY : assert_eq,nerror
 	IMPLICIT NONE
 	! Solves for a vector u of size N the tridiagonal linear set
@@ -2440,7 +2437,6 @@ C stored in ya.
 	! j such that x is between xx(j) and xx(j+1). xx must be monotonic,
 	! either increasing or decreasing. j=0 or j=N is returned to indicate
 	! that x is out of range.
-	use nn_type
 	Implicit none
 
 	SREAL, dimension(:), intent(in) :: xx
@@ -2506,7 +2502,54 @@ C ********************************************************
         End If
         End Function Calc_RMS2
 
-        End Module math_mod
+C ********************************************************
+
+        SUBROUTINE  CSWAP (N,DX,INCX,DY,INCY)
+          IMPLICIT NONE
+          DOUBLE PRECISION DX(1),DY(1),DTEMP
+          INTEGER I,INCX,INCY,IX,IY,M,MP1,N
+          IF(N.LE.0)RETURN
+          IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
+          IX = 1
+          IY = 1
+          IF(INCX.LT.0)IX = (-N+1)*INCX + 1
+          IF(INCY.LT.0)IY = (-N+1)*INCY + 1
+          DO I = 1,N
+            DTEMP = DX(IX)
+            DX(IX) = DY(IY)
+            DY(IY) = DTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+          END DO
+          RETURN
+
+   20     M = MOD(N,3)
+          IF( M .EQ. 0 ) GO TO 40
+          DO I = 1,M
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+          END DO
+          IF( N .LT. 3 ) RETURN
+
+   40     MP1 = M + 1
+          DO I = MP1,N,3
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+            DTEMP = DX(I + 1)
+            DX(I + 1) = DY(I + 1)
+            DY(I + 1) = DTEMP
+            DTEMP = DX(I + 2)
+            DX(I + 2) = DY(I + 2)
+            DY(I + 2) = DTEMP
+          END DO
+          RETURN
+        END SUBROUTINE  CSWAP
+
+
+        END MODULE math_mod
+
 
 C***********************************************************************
 C****** End file mathsub.F *********************************************

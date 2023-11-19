@@ -10,7 +10,7 @@ C***********************************************************************
 
 	Module dopt_mod
 	use param_mod
-	use nn_type, only : eps
+	use Constants, only : EPS
 	use elt_mod
 
 	Implicit none
@@ -22,7 +22,7 @@ C***********************************************************************
      &                        BEAM_TARGET=3,SPOT_TARGET=4,OPL_TARGET=5
 
 	Integer, parameter :: mVarDOF=8, mOptZern=45,mOptAsph=9,
-     &           max_fov=12, max_wl=6 
+     &           max_fov=12, max_wl=6
 	! total DOFs = 6 rb + ROC + Conic + mOptZern
 	Character(len=6), dimension(8) :: DOF_NameList
 	Character(len=6), dimension(:,:), allocatable :: DOF_VarElt
@@ -32,7 +32,7 @@ C***********************************************************************
 	Logical, dimension(:), allocatable :: isVarElt,isVarElt_Rx
 	Integer, dimension(:,:),allocatable :: varEltDOF,
      &           OptEltZernTerm,OptEltAsphTerm
-	Integer :: OptTarget,nVarElt,nOptWavelen,nVarElt_Rx, 
+	Integer :: OptTarget,nVarElt,nOptWavelen,nVarElt_Rx,
      &             nOptFov,nOptChfRayDir,nOptChfRayPos,off
 	Integer, dimension(:), allocatable :: varElts,varDOFs,varZerns,
      &            nDOF_VarElt,nOptEltZern,zernElt,WFZernMode,
@@ -59,10 +59,10 @@ C***********************************************************************
      &             LOptNomSens,OptSrcRpt_FLG,LCmdCalibElts,
      &             save_pinv, ! whether to save linear optimizer pseduo inverse
      &             use_saved_pinv
-	
+
 	Type(OptBeamStr) :: beamOpt
 	Integer, parameter :: Linear=1,NonLin=2
-	
+
 
 	Contains
 
@@ -75,7 +75,7 @@ C***********************************************************************
      &               nOptEltZern,zernElt,nOptEltAsph,asphElt,
      &               varZerns,varAsphs,isVarElt_Rx,
      &               OptEltZernTerm,OptEltAsphTerm,WFZernMode,
-     &               EltCons,varEltCons,stat=m_err_dopt) 
+     &               EltCons,varEltCons,stat=m_err_dopt)
 	  if (m_err_dopt /= 0) then
               call macos_memory_failure
      &                  ('dopt_mod: deallocate failed!')
@@ -94,7 +94,7 @@ C***********************************************************************
      &           varAsphs(mOptAsph*mElt),
      &           isVarElt_Rx(0:mElt),
      &           OptEltZernTerm(0:mOptZern,mElt),
-     &           OptEltAsphTerm(0:mOptAsph,mElt), 
+     &           OptEltAsphTerm(0:mOptAsph,mElt),
      &           EltCons(2,mVarDOF,mElt),varEltCons(2,mVarDOF*mElt),
      &	         WFZernMode(mOptZern),stat=m_err_dopt)
         if (m_err_dopt /= 0) then
@@ -129,7 +129,7 @@ C***********************************************************************
 
 	! Set one of design optimization parameters in SMACOS
         Subroutine SMACOS_SetOptParam(pname,carr,iarr,darr)
-        Character(len=*) :: pname,carr(2)    
+        Character(len=*) :: pname,carr(2)
         Integer, dimension(:) :: iarr
         Real*8, dimension(:) :: darr
 	Logical :: LCMP
@@ -146,7 +146,7 @@ C***********************************************************************
 	  nOptFov=iarr(1)
 	  fov_weight(1:nOptFov)=darr(1:nOptFov)
 	Else If (LCMP(pname,'NItr',4)) Then
-          nitrs_dopt=iarr(1)	
+          nitrs_dopt=iarr(1)
 	Else If (LCMP(pname,'ErrTol',6)) Then
 	  dopt_tol=darr(1)
 	Else If (LCMP(pname,'TgtWFFile',9)) Then

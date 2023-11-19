@@ -44,6 +44,7 @@ C***********************************************************************
      &  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
 
         use traceutil_mod
+        use didesub, only: IntSrf
         use math_mod
 
 
@@ -179,6 +180,7 @@ C***********************************************************************
 
 	use macos_debug
 	use traceutil_mod
+	use didesub, only: IntSrf
 
 C  ierror,iwork,ndp,wvec,anacoef,udsrftype,udsrfcoef + intsrf stuff
 
@@ -646,6 +648,7 @@ C***********************************************************************
      &   IsVarIndRef,IndRefStr,IsGrinRef,thisGrinRef)
 
 	 use traceutil_mod
+	 use didesub, only: IntSrf
 
 	 IMPLICIT NONE
 
@@ -1235,6 +1238,7 @@ C***********************************************************************
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
 	 use traceutil_mod
+	 use didesub, only: IntSrf
 
 C  Compute refraction point, normal and transition matrices
 C  for a general lens surface
@@ -3824,7 +3828,8 @@ C For reflective grating - jzlou
      &	 Order,RuleWidth,RuleDir, ! RuleDir = h1HOE(1,iElt)
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
-	use traceutil_mod
+	use didesub, only: IntSrf
+        use traceutil_mod
 
 	IMPLICIT NONE
 
@@ -4085,6 +4090,7 @@ C***********************************************************************
 ! h1HOE(1:3,iElt) = RuleDir(1:3) = groove srf tangent, -jzlou
 
 	use traceutil_mod
+	use didesub, only: IntSrf
 
 	IMPLICIT NONE
 
@@ -4344,6 +4350,7 @@ C***********************************************************************
 
 	use elt_mod, only : DoeFl
         use traceutil_mod
+	use didesub, only: IntSrf
 
         IMPLICIT NONE
 
@@ -4643,6 +4650,7 @@ C the DOE element. -jzlou, 07/2011
 ! h1HOE(1:3,iElt) = RuleDir(1:3) = direction across rulings, -jzlou
 
         use elt_mod, only : DoeId,DoeWL,DoeFl,DoePhProf
+        use didesub, only: IntSrf
         use traceutil_mod
 
         IMPLICIT NONE
