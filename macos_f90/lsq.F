@@ -17,7 +17,6 @@ C  John Z. Lou, Jet Propulsion Laboratory
 #include "realtype.h"
 
 	Module lsq_mod
-	use nn_type
         use nn_util, only : assert_eq,nerror,outerprod
 
 	Implicit none
@@ -26,8 +25,8 @@ C  John Z. Lou, Jet Propulsion Laboratory
 
 C
 C Given an M x N matrix a, this routine computes its SVD,
-C A = U*WVt. The matrix U replaces matrix 'a' on output. The 
-C diagonal matrix of singular values W is output as the N-dim 
+C A = U*WVt. The matrix U replaces matrix 'a' on output. The
+C diagonal matrix of singular values W is output as the N-dim
 C vector w. The N x N matrix V is output as v.
 C
 	Subroutine svd_decomp(a,w,v)
@@ -72,7 +71,7 @@ C
 	      a(i,l)=f-g; rv1(l:n)=a(i,l:n)/h
 	      tempm(l:m) = matmul(a(l:m,l:n),a(i,l:n))
 	      a(l:m,l:n) = a(l:m,l:n)
-     &                     +outerprod(tempm(l:m),rv1(l:n)) 
+     &                     +outerprod(tempm(l:m),rv1(l:n))
 	      a(i,l:n)=scale*a(i,l:n)
 	    end if
 	  end if
@@ -89,9 +88,9 @@ C
 	    end if
 	    v(i,l:n)=0.0; v(l:n,i)=0.0
 	  end if
-	  v(i,i)=1.0; g=rv1(i); l=i 
+	  v(i,i)=1.0; g=rv1(i); l=i
 	End Do
-	
+
 	Do i=min(m,n),1,-1
 	  l=i+1; g=w(i); a(i,l:n)=0.0
 	  if (g /= 0.0) then
@@ -119,7 +118,7 @@ C
 	          h=1.0d0/h; c=(g*h); s=-(f*h)
 	          tempm(1:m)=a(1:m,nm)
 	          a(1:m,nm)=a(1:m,nm)*c+a(1:m,i)*s
-	          a(1:m,i)=-tempm(1:m)*s+a(1:m,i)*c 
+	          a(1:m,i)=-tempm(1:m)*s+a(1:m,i)*c
 	        end do ! i
 	        exit
 	      end if
@@ -132,19 +131,19 @@ C
 	      end if
 	      exit
 	    end if
-	    if (its == 30) 
+	    if (its == 30)
      &        call nerror('svd_decomp: no convergence in svd_decomp')
 	    x=w(l); nm=k-1; y=w(nm)
             g=rv1(nm); h=rv1(k)
             f = ((y-z)*(y+z)+(g-h)*(g+h))/(2.0d0*h*y)
 	    g = pythag(f,1.0d0)
 	    f = ((x-z)*(x+z)+h*((y/(f+sign(g,f)))-h))/x
-	   
+
 	    c=1.0; s=1.0
 	    do j=l,nm
 	      i=j+1; g=rv1(i); y=w(i); h=s*g; g=c*g
               z=pythag(f,h)
-	      rv1(j)=z; c=f/z; s=h/z  
+	      rv1(j)=z; c=f/z; s=h/z
 	      f=(x*c)+(g*s); g=-(x*s)+(g*c)
               h=y*s; y=y*c
 	      tempn(1:n) = v(1:n,j)
@@ -166,7 +165,7 @@ C
 	! Sort singular values in 'w' and re-arrange rows
 	! in 'a' and columns in v.
         ! *** Disabled ***, it could mess up the pseudo-inverse
-	! based least-square solution !!!  
+	! based least-square solution !!!
 	Call svd_sort(a,w,v,size(a,1),size(v,1))
 	End Subroutine svd_decomp
 
@@ -190,15 +189,16 @@ C
               tmpv=Vm(:,i); Vm(:,i)=Vm(:,j); Vm(:,j)=tmpv
             end if
           End Do
-	End Do	
+	End Do
 	End Subroutine svd_sort
 
-	
+
 	!
 	! Compute pseudo-inverse of given matrix 'a',
-	! output is 'pa' - pseudo-inverse of 'a' 
+	! output is 'pa' - pseudo-inverse of 'a'
 	!
 	Subroutine pinv(a,pa,tol)
+        use Constants, only: EPS
 	LREAL, dimension(:,:) :: a, pa
 	LREAL, intent(in), optional :: tol
 	LREAL, dimension(:), allocatable, save :: w
@@ -215,7 +215,7 @@ C
 	    deallocate(w,v,stat=pinv_err)
  	    if (pinv_err /= 0)
      &      call macos_memory_failure
-     &             ('pinv: deallocate failed!') 
+     &             ('pinv: deallocate failed!')
 	  else
 	    first_entry = .false.
 	  end if
@@ -228,7 +228,7 @@ C
 	! SVD, and singular values are sorted
 	Call svd_decomp(a,w,v)
 
-	! Compute pinv 
+	! Compute pinv
  	If (present(tol)) Then
  	  cutoff=max(size(a,1),size(a,2))*abs(w(1))*tol
  	Else
@@ -237,10 +237,10 @@ C
 	!
 	pa=0.d0
 	Do i=1,n
-	  if (abs(w(i)) < cutoff) w(i)=0.d0 
+	  if (abs(w(i)) < cutoff) w(i)=0.d0
 	  if (w(i) /= 0) then
 	    Call RankOneMultiply(a(:,i),v(:,i),w(i),pa)
-	  end if 
+	  end if
 	End Do
 	End Subroutine pinv
 
@@ -255,7 +255,7 @@ C
 	!print*,'size u=', m
 	!print*,'size v=', n
 
-	Do i=1,n ! row 
+	Do i=1,n ! row
 	  Do j=1,m ! col
 	    p(i,j)=p(i,j)+v(i)*u(j)/w
 	  End Do

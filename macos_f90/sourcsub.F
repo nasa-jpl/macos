@@ -54,7 +54,7 @@ C***********************************************************************
 	w2=0.5d0*width
 	ciy=1.5d0*tan30*width
 
-	nRayToSeg(1:mRay)=0 
+	nRayToSeg(1:mRay)=0
 
 	CALL DXPROD(zGrid,xGrid,yGrid)
 	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
@@ -75,25 +75,25 @@ C***********************************************************************
 ! GridTypeName(3)='Hex'
 ! GridTypeName(4)='Pie'
 ! GridTypeName(5)='Flower'
- 
+
 	IF ((GridType.GE.3).AND.(GridType.LE.5)) THEN
 	  ! Hex, Pie or Flower source grid type
 
 	  ! D1 is cross-product of ChfRay and SegXgrid -jzlou
-	  CALL DXPROD(D1,ChfRayDir,SegXgrid) 
+	  CALL DXPROD(D1,ChfRayDir,SegXgrid)
 	  CALL DXPROD(SegXgrid,D1,ChfRayDir)
 	  CALL DUNITIZE(SegXgrid)
 
 	  ! xGrid,yGrid and SegXgrid are all unit vectors,
-	  ! so computed SegX2(1) and SegX2(2) are cosines 
-          ! of angles of SegXgrid with xGrid and yGrid. -jzlou 
+	  ! so computed SegX2(1) and SegX2(2) are cosines
+          ! of angles of SegXgrid with xGrid and yGrid. -jzlou
 	  SegX2(1)=DDOTC(xGrid,SegXgrid)
 	  SegX2(2)=DDOTC(yGrid,SegXgrid)
 	  SegX2(3)=0d0
 	END IF
 
 
-C  Find the segment for the chief ray 
+C  Find the segment for the chief ray
 	nGridPts=npts+1  ! no. of grid pts in X (or Y) of source aperture
 	iRay=1  ! chief ray
 
@@ -110,7 +110,7 @@ C  Find the segment for the chief ray
 ! nRayToSeg(iRay) - given iRay, (nRayToSeg(iRay)-1) gives the number of
 ! rays that have hit iSeg before iRay does. -jzlou
 
-        ! GridType from 3 to 5 are segmented 
+        ! GridType from 3 to 5 are segmented
         ! - jzlou
 	IF (GridType.EQ.3) THEN
 	  DO iSeg=1,nSeg   ! nSeg is read from Rx -jzlou
@@ -162,7 +162,7 @@ C  Find the segment for the chief ray
 
 	SegMap(1:mpts,1:mpts)=0; RayID(1:mpts,1:mpts)=0
 
-        ! In the code section below, jwf,iwf are indexes to put source ray grid 
+        ! In the code section below, jwf,iwf are indexes to put source ray grid
         ! (nGridPts x nGridPts) at the center of WF grid (mdttl x mdttl). -jzlou
 
 	IF (nGridPts.GT.1) THEN
@@ -170,7 +170,7 @@ C  Find the segment for the chief ray
 	  !ds=Aperture/DBLE(npts)  ! original
 	  ds=Aperture/DBLE(npts-1); nGridPts=npts
 	  dinset=ds/2d0
-          !ds=Aperture/DBLE(nGridPts-1-mod(nGridPts+1,2)) ! nGridPts even or odd 
+          !ds=Aperture/DBLE(nGridPts-1-mod(nGridPts+1,2)) ! nGridPts even or odd
 	  !ds=Aperture/DBLE(nGridPts-1)  ! nGridPts odd
 	  if (DrawMode) then
 	    y=-Aperture/2d0-ds+dinset  !1d0/DBLE(npts)
@@ -179,7 +179,7 @@ C  Find the segment for the chief ray
 	  end if
 	  DO 10 j=1,nGridPts
 	    !jwf=j+(mdttl-nGridPts)/2+1  ! original
-	    !jwf=j+(mdttl-nGridPts+1)/2 
+	    !jwf=j+(mdttl-nGridPts+1)/2
 	    jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
 	    If (DrawMode .AND. j==nGridPts) Then
 	      y=y+ds-2d0*dinset  !2d0/DBLE(npts)
@@ -240,7 +240,7 @@ C  Find the segment for the chief ray
 
 	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
 	          DO 7 iSeg=1,nSeg
-		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN 
+		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN
 !		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2) .OR.
 !    &                  (i==1 .and. j==(nDrawRay/2+1)) .OR.
 !    &                  (i==(nDrawRay/2+1) .and. j==1)) THEN
@@ -255,7 +255,7 @@ C  Find the segment for the chief ray
 	                !print*,'i=',i,', j=',j
 
 	                if (.false. .and. i==33 .and. j==1) then
-	                  print*,'i=33,j=1: RayMap(i,j)=',RayMap(i,j)	
+	                  print*,'i=33,j=1: RayMap(i,j)=',RayMap(i,j)
 	                  stop
 	                endif
 
@@ -316,7 +316,7 @@ C  Find the segment for the chief ray
                   print*,'** src: gap,x,y,r =',gap,x,y,r
                   IF (((r.GE.O2).AND.(r.LE.A2)).AND.(iRay.LT.mRay)) THEN
 	            print*,'** B4 FSEG routine ...'
-	            DO iSeg=1,nSeg 
+	            DO iSeg=1,nSeg
 	              iRing=SegCoord(1,iSeg)
 	              If (iRing>0) Then
                         dRad(1)=RingRads(iRing-1)*radCtr
@@ -324,7 +324,7 @@ C  Find the segment for the chief ray
                       End If
 	              inFSEG=FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
      &                            SegCoord(1,iSeg),SegX2)
-	              if (inFSEG) exit  
+	              if (inFSEG) exit
 	            END DO
 	            print*,'** inFSEG =',inFSEG
 	          END IF
@@ -335,7 +335,7 @@ C  Find the segment for the chief ray
 	          DO iSeg=1,nSeg
 	            iRing=SegCoord(1,iSeg)
 	            If (iRing>0) Then
-                      dRad(1)=RingRads(iRing-1)*radCtr 
+                      dRad(1)=RingRads(iRing-1)*radCtr
                       dRad(2)=RingRads(iRing)*radCtr
 	            End If
 		    IF (FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
@@ -501,7 +501,7 @@ C  Cosine beam...
 	        END IF
    28	      CONTINUE
    29	    CONTINUE
-	  ELSE 
+	  ELSE
 C  Uniform or Dipole beam...
 	    S=SQRT(Flux/DBLE(nRay-1))
 	    SEx0=S*Ex0
@@ -571,10 +571,10 @@ C***********************************************************************
 	REAL*8 A,O2,A2,ds,thx,thy,r2,Tbg(3,2),
      &	       Dicr,Djcr,dxSource,th(3),RotPt(3),
      &	       rx2,ry2,Sy,yg,Sx,xg,Sg,S,xray(3),yray(3),zray(3),
-     &	       S1,SegX2(3),D1(9) 
-        Real*8 :: du_loc,dx_loc,zElt_loc,dRad(2) 
+     &	       S1,SegX2(3),D1(9)
+        Real*8 :: du_loc,dx_loc,zElt_loc,dRad(2)
 
-	COMPLEX*16 SC,SEx0,SEy0 
+	COMPLEX*16 SC,SEx0,SEy0
         COMPLEX*16, dimension(:,:), allocatable :: dsc,DWF_loc
 	Real*8, parameter :: pio2=1.57079632679490
 
@@ -608,7 +608,7 @@ C***********************************************************************
 	  SegX2(3)=0d0
 	END IF
 
-C  Find the segment for the chief ray 
+C  Find the segment for the chief ray
 	nGridPts=npts+1
 	iRay=1
 	IF (Obscratn.NE.0d0) THEN
@@ -648,8 +648,8 @@ C  Find the segment for the chief ray
 	  DO iSeg=1,nSeg
 	    iRing=SegCoord(1,iSeg)
 	    If (iRing>0) Then
-              dRad(1)=RingRads(iRing-1)*radCtr                  
-              dRad(2)=RingRads(iRing)*radCtr                    
+              dRad(1)=RingRads(iRing-1)*radCtr
+              dRad(2)=RingRads(iRing)*radCtr
             End If
 	    IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
      &          SegCoord(1,iSeg),SegX2)) THEN
@@ -669,13 +669,13 @@ C  Find the segment for the chief ray
           RayMap(1:mpts,1:mpts)=0
           SegMap(1:mpts,1:mpts)=0  ! not needed, user-provided source rays is non-segmented
           RayID(1:mdttl,1:mdttl)=0
-          
+
           ! Read in user-provided source beam data; source rays are defined 'zSource'
           ! distance from the point source location, on a spherical surface -jzlou
           fu=12
 	  Open(Unit=fu,File='UDSrcBeam.txt',Status='OLD')
 	  Read(fu,*) nGridPts,nRay  ! nRay= total number of valid rays
-	  Do iRay=1,nRay  
+	  Do iRay=1,nRay
             Read(fu,*) i,j,RayPos(1:3,iRay),RayDir(1:3,iRay)
 	    if (iRay==1) then
 	      ! make sure chief ray is consistent with user data
@@ -684,15 +684,15 @@ C  Find the segment for the chief ray
 	    end if
             jwf=j+(mdttl-nGridPts)/2+1
 	    iwf=i+(mdttl-nGridPts+1)/2
-            RayIndex(1,iRay)=i; RayIndex(2,iRay)=j; 
-            RayMap(i,j)=iRay  
+            RayIndex(1,iRay)=i; RayIndex(2,iRay)=j;
+            RayMap(i,j)=iRay
             RayID(iwf,jwf)=iRay
             RayWFMap(1,iRay)=iwf
             RayWFMap(2,iRay)=jwf
-	  End Do 
-	  Close(fu)            
-	  GOTO 16  ! no need to go thru other GridType 
-	End If  
+	  End Do
+	  Close(fu)
+	  GOTO 16  ! no need to go thru other GridType
+	End If
 
 
 C       RotPt defines the spatial position of the physical light source,
@@ -851,7 +851,7 @@ C  ifPropagate is true when performing diffraction commands -jzlou
 C  Gaussian beam...
 	    S=SQRT(Flux)
 	    rx2=rxBeam*rxBeam  ! rxBeam = beam waist in X axis -jzlou
-	    ry2=ryBeam*ryBeam  ! ryBeam = ... 
+	    ry2=ryBeam*ryBeam  ! ryBeam = ...
 	    IF (ifPol) THEN
 	      DO 35 k=1,3
 	        RayE(k,1)=Ex0*DCMPLX((S*xGrid(k)),0d0)+
@@ -975,7 +975,7 @@ C  Dipole beam...
      &          call macos_memory_failure
      &              ('sourcsub (BeamType 5): allocate failed!')
 	    End If
- 
+
 	    ! Input user defined beam profile ...
 	    Open(Unit=12,File=UDSrcProf,Status='old')
 	    Do j=1,nGridPts
@@ -999,15 +999,15 @@ C  Dipole beam...
 
 	      ! The complex E field need be 'back-propagated' from
 	      ! image plane to pupil plane, since we eventually want
-              ! the input E field to end up at the detector plane. 
+              ! the input E field to end up at the detector plane.
 	      ! -jzlou
 	      !
               ! These system-specific values are from a test run -jzlou
-	      du_loc=2.8828222D-02; dx_loc=-6.0386600D-03 
-              zElt_loc=1.408516486242871D+02 
-	      ! Back diffraction propagation 
+	      du_loc=2.8828222D-02; dx_loc=-6.0386600D-03
+              zElt_loc=1.408516486242871D+02
+	      ! Back diffraction propagation
 	      Call BKFFPROP(dsc,dx_loc,dsc,du_loc,zElt_loc,WaveBU,
-     &                      mdttl,DWF_loc) 
+     &                      mdttl,DWF_loc)
 
 	      WFElt(1:mdttl,1:mdttl,iWFA)=dsc
 
@@ -1028,7 +1028,7 @@ C  Dipole beam...
 	    End If
 #endif
 
-	  ELSE 
+	  ELSE
 C  Uniform beam...
 	    S=SQRT(Flux/DBLE(nRay-1))  ! flux averaged to each ray -jzlou
 	    SEx0=S*Ex0
@@ -1164,9 +1164,9 @@ C In the flower pattern, prescription is defined by:
 C   width=   8d0		% nPetal
 C   gap=   1.61679d0		% radCtr
 
-C Order of petals is fixed: 
+C Order of petals is fixed:
 C   1. Center segment
-C   2. First petal in SegXgrid coords (rays occupy wedge with 
+C   2. First petal in SegXgrid coords (rays occupy wedge with
 C      theta between 0 and 2*pi/nPetal)
 C   3. Next petal.
 C   4-nPetals. Etc.
@@ -1216,7 +1216,7 @@ C  ***  end rotate segment frame of reference
 	  END IF
 	ELSE IF (r.GT.1d-22) THEN
 	  ! for other segment
-	  iRing= S(1)  ! get ring id 
+	  iRing= S(1)  ! get ring id
 	  !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
 	  radmin=dRad(1); radmax=dRad(2)
 	  dnp=nPetal
@@ -1226,7 +1226,7 @@ C  ***  end rotate segment frame of reference
 	  th=DATAN2(sth,cth)
 	  IF (th.LT.0d0) th=th+twopi
 	  ith=th/Q+1d0
-          if (th>(twopi-0.5*Q)) th=th-twopi 
+          if (th>(twopi-0.5*Q)) th=th-twopi
           dth=th/Q
           S2=S(2)-1d0;
 	  !IF (ith.EQ.S(2)) THEN
@@ -1238,7 +1238,7 @@ C  ***  end rotate segment frame of reference
 	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
               hspan=rv*DTAN(0.5*Q)
 	      dd=DSQRT(r*r-rv*rv)
-	      IF (dd.LE.(hspan-gap/2d0)) THEN  
+	      IF (dd.LE.(hspan-gap/2d0)) THEN
 	        FSEG=.TRUE.
 	      ELSE
 	        FSEG=.FALSE.
@@ -1252,7 +1252,7 @@ C  ***  end rotate segment frame of reference
 	ELSE
 	  FSEG=.FALSE.
 	END IF
-	
+
 	RETURN
 	END FUNCTION FSEG
 
@@ -1277,7 +1277,7 @@ C**************************************************************************
      &	       xGrid(3),yGrid(3),zGrid(3),D1(9),D2(9),dth,thx,thy,
      &         oldRayPos(2*nRay),oldOPDMat(nGridPts*nGridPts),x0,y0
 
-C	Compute "chief ray" indices - these coincide with the real 
+C	Compute "chief ray" indices - these coincide with the real
 C	chief ray only if an odd number of grid pts is used
 C
 	iRayCR=nRay/2+1
@@ -1350,7 +1350,7 @@ C Regrid on a plane
 	  x0=CRPos(1)-ddel*nGridPts/2
 	  y0=CRPos(2)-ddel*nGridPts/2
 	  Call mOPDGridData(oldRayPos,nGridPts,x0,y0,ddel,oldOPDMat,
-     &                      OPDMat)  
+     &                      OPDMat)
 #endif
 
 	  DO iRay=2,nRay
@@ -1368,7 +1368,7 @@ C Regrid on a plane
 	END IF
 
 	RETURN
-	END SUBROUTINE ReGrid 
+	END SUBROUTINE ReGrid
 
 C***********************************************************************
 
@@ -1377,7 +1377,7 @@ C***********************************************************************
 	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),Q(3,3),dQ(3,3),
      &	       D1(3),D2(3),RayDir(3),RayPos(3)
 
-C       Q and dQ computed in Qform, and dQ = Q - I, -jzlou	
+C       Q and dQ computed in Qform, and dQ = Q - I, -jzlou
 	CALL Qform(Q,dQ,th)
 
 C       CRDir = ChfRayDir, and from the routine
@@ -1386,7 +1386,7 @@ C       we get RayDir = Q*CRDir -jzlou
 
 	D1(1:3) = CRPos(1:3) - RotPt(1:3)
 	CALL DMPROD(D2,dQ,D1,3,3,1)
-	RayPos(1:3) = CRPos(1:3)+D2(1:3) ! effectively RayPos(1:3)=Q*D1 
+	RayPos(1:3) = CRPos(1:3)+D2(1:3) ! effectively RayPos(1:3)=Q*D1
 	RETURN
 	END SUBROUTINE ReRay
 
@@ -1485,7 +1485,7 @@ c	C1=ztdir*0.5d0/dx
 	  Rim1jp1=R1(im1,jp1)
 	  Rip1jm1=R1(ip1,jm1)
 	  Rim1jm1=R1(im1,jm1)
-	  
+
 C	  tiltx=C1*(Rim1j-Rip1j)
 C	  tilty=C1*(Rijm1-Rijp1)
 	  tiltx=C1*(Rim1j-Rip1j+Rim1jm1+Rim1jp1-Rip1jm1-Rip1jp1)
@@ -1531,7 +1531,7 @@ C	Generates a turbulent OPD array with piston errors
 C	subtracted and tilt added back in (short exposure)
 C	mmc 2/89
 C
-C	      x = npts*npts COMPLEX*8 array (used internally) 
+C	      x = npts*npts COMPLEX*8 array (used internally)
 C	      f = npts*npts SREAL array containing the returned phase
 C	     r0 = coherence diameter in cm
 C	  rsamp = sampling interval in cm
@@ -1580,7 +1580,7 @@ C  Initialization section
 
 C  Generate filter for kolmogorov turbulence:
 C  sqrt(psd)={0.151/r0**(5/6)}f**(-11/6)
-	
+
 	power=0.91666666666667
 	coeff=(0.151/r00**0.83333333333333)*(1./(FLOAT(npts)*rsamp))
 	scale=(1./(FLOAT(npts)*rsamp))**2
@@ -1685,15 +1685,15 @@ C    calc piston and tilt
 
 C    IF selected, add back in approx. tilt
 	  IF (pTilt .NE. 0.0) THEN
-	    tiltamp = pTilt 
-     &	      *SQRT(1.8d0*(2d0*nradius*rsamp/r00)**1.66666666667) 
+	    tiltamp = pTilt
+     &	      *SQRT(1.8d0*(2d0*nradius*rsamp/r00)**1.66666666667)
 	    bxt = tiltamp * GAUSS(NoiseSeed) / nradius
 	    bx = bx + bxt
 	    byt = tiltamp * GAUSS(NoiseSeed) / nradius
 	    by = by + byt
 	  END IF
 
-C    subtract piston and tilt: 
+C    subtract piston and tilt:
 	  DO 400 i=-npts/2, npts/2-1
 	    IF (i.LT.0) THEN
 	      i1=i+npts+1
@@ -1727,6 +1727,7 @@ C  copy to real array
 C***********************************************************************
 
         SUBROUTINE BKFFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
+		use dft_mod, only: REVAPPLYFAC2
         IMPLICIT NONE
         INTEGER I,J,NN(2),NFFT
         REAL*8 DX1,DX2,DZ,S,LAMBDA,PI,TWOPI,C2
@@ -1759,4 +1760,4 @@ C***********************************************************************
 C***********************************************************************
 #include "ssrcray.inc"
 C***********************************************************************
-	End Module sourcsub_mod 
+	End Module sourcsub_mod

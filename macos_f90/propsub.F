@@ -20,6 +20,7 @@ C***********************************************************************
 
         Module propsub_mod
 	use math_mod
+        use dft_mod
 
 	PUBLIC :: RunProp, CPROPAGATE, NFPROP, FFPROP, FRPROP
 
@@ -118,6 +119,7 @@ C***********************************************************************
      &    npts,nBadRays,StartIndRef,StartExtinc)
 
 	use param_mod
+        use dft_mod, only: NFPropDFT, FFPropDFT
         use elt_mod
         use sourcsub_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
@@ -1904,12 +1906,12 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE FFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
+        use Constants, only: PI
+        use dft_mod, only: applyfac2
 	IMPLICIT NONE
 	INTEGER I,J,NN(2),NFFT
-	REAL*8 DX1,DX2,DZ,S,LAMBDA,PI,TWOPI,C2
+	REAL*8 DX1,DX2,DZ,S,LAMBDA,TWOPI,C2
 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
-
-	DATA pi/3.141592653589793d0/
 
 	NN(1)=NFFT
 	NN(2)=NFFT
