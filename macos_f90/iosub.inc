@@ -2045,6 +2045,7 @@ C	and (if iComputeDZ=0) the x and y slopes at that point.
 	use param_mod
 	use cfiles_mod
 	use elt_mod
+        use didesub, only: DIDES
 
 	IMPLICIT NONE
 

@@ -103,26 +103,26 @@ export FMEX = fmex
 
 ################################################################################
 
-export MOD_SRCS = kinds.f90 constants.f90 macos_debug.F param_mod.F elt_mod.F \
+export MOD_SRCS = kinds.f90 constants.f90 dftsub.F macos_debug.F param_mod.F elt_mod.F \
            src_mod.F cfiles_mod.F lohpars_mod.F nn_util.F \
            traceutil_mod.F macos_mod.F loh_mod.F dopt_mod.F
 
-export MOD_OBJS = kinds.o constants.o macos_debug.o param_mod.o elt_mod.o src_mod.o cfiles_mod.o \
+export MOD_OBJS = kinds.o constants.o dftsub.o macos_debug.o param_mod.o elt_mod.o src_mod.o cfiles_mod.o \
            lohpars_mod.o traceutil_mod.o macos_mod.o nn_util.o loh_mod.o \
            dopt_mod.o
 
 export M_OBJS = macos_vars_mod.o mathsub.o macosio.o macos_init.o \
         elemsub.o surfsub.o funcsub.o \
         pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
-        linsub.o propsub.o usersub.o matloh.o didesub.o \
-        dftsub.o pgplotsub.o sunsub.o lsq.o nls.o macos_ops.o\
+        linsub.o propsub.o usersub.o didesub.o \
+        pgplotsub.o sunsub.o lsq.o nls.o macos_ops.o\
         zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o f90prt.o
 
 export SM_OBJS = smacos_vars_mod.o mathsub.o smacosutil.o smacosio.o \
         macos_init.o elemsub.o surfsub.o funcsub.o \
         pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
-        linsub.o propsub.o usersub.o matloh.o didesub.o \
-        dftsub.o pgplotdummy.o sunsub.o lsq.o nls.o \
+        linsub.o propsub.o usersub.o didesub.o \
+        pgplotdummy.o sunsub.o lsq.o nls.o \
         macos_ops.o zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o
 
 export C_SRCS = utilsub_c.c mhist.c splicubi2.c

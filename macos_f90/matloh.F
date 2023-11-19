@@ -14,32 +14,32 @@ C
 C***********************************************************************
 
 C***********************************************************************
-C Routines in this file have been made dummy to avoid the need for 
+C Routines in this file have been made dummy to avoid the need for
 C linking matlab libraries - jzlou
 C***********************************************************************
 
 #include "realtype.h"
 
-	Subroutine RWRITE_MAT_LOH(image,row_sz,col_sz,brow_sz,bcol_sz,
-     &  		          image_file,imag_file)
-	IMPLICIT NONE
-	CHARACTER*80 :: imag_file
-        CHARACTER*(*) :: image_file
-	integer :: row_sz,col_sz, brow_sz,bcol_sz
-	SREAL :: image(brow_sz,bcol_sz)
-	return
-	End Subroutine RWRITE_MAT_LOH
+	! Subroutine RWRITE_MAT_LOH(image,row_sz,col_sz,brow_sz,bcol_sz,
+    !  &  		          image_file,imag_file)
+	! IMPLICIT NONE
+	! CHARACTER*80 :: imag_file
+    !     CHARACTER*(*) :: image_file
+	! integer :: row_sz,col_sz, brow_sz,bcol_sz
+	! SREAL :: image(brow_sz,bcol_sz)
+	! return
+	! End Subroutine RWRITE_MAT_LOH
 
 
-	SUBROUTINE RREAD_MAT_LOH(fname,varname,var,row_sz,col_sz)
-	use param_mod
-        IMPLICIT NONE
-        INTEGER row_sz,col_sz
-        SREAL var(mdttl,mdttl)
-        CHARACTER fname*(*)
-        CHARACTER varname*(*)
-	return
-	End Subroutine RREAD_MAT_LOH
+	! SUBROUTINE RREAD_MAT_LOH(fname,varname,var,row_sz,col_sz)
+	! use param_mod
+    !     IMPLICIT NONE
+    !     INTEGER row_sz,col_sz
+    !     SREAL var(mdttl,mdttl)
+    !     CHARACTER fname*(*)
+    !     CHARACTER varname*(*)
+	! return
+	! End Subroutine RREAD_MAT_LOH
 
 
 #if 0
@@ -48,7 +48,7 @@ C***********************************************************************
 
 C  matPutMatrix was used, instead of matPutFull because of problems with
 C  the imaginary/real "flag" in Matlab.  Although
-C  max(max(abs(imag(tr800))))=0,and mesh(tr800') works, mesh(tr800) 
+C  max(max(abs(imag(tr800))))=0,and mesh(tr800') works, mesh(tr800)
 C  gives you the following error:
 C  ??? Error using ==> surface, Argument must be real.
 
@@ -56,7 +56,7 @@ C  ??? Error using ==> surface, Argument must be real.
 	use cfiles_mod
 
 	IMPLICIT NONE
-	 
+
 
 	INTEGER matOpen,matClose,strLen
 	INTEGER mxCreateFull,mxGetPr,matPutMatrix
@@ -75,7 +75,7 @@ C  ??? Error using ==> surface, Argument must be real.
  	    dimage(k)=image(i,j)
    98	  CONTINUE
    99	CONTINUE
-	  
+
 C  Open .mat file
 
 	file_name_len = strLen(imag_file)
@@ -119,7 +119,7 @@ C  fname=name of .mat file, .mat extension included
 C  varname=name of variable to be gotten
 	use param_mod
 	IMPLICIT NONE
-	 
+
 
 	INTEGER matOpen,matClose,matGetMatrix,mxGetPr,mxGetM,mxGetN
 	INTEGER row_sz,col_sz
@@ -150,13 +150,13 @@ C  Close .mat file & free space
 
 C  Fortran stores as (1,1)(2,1)(3,1)(1,2)(2,2)(3,2)
 C  Matlab stores as (1,1)(2,1)(3,1)(1,2)(2,2)(3,2)
-  
+
 	DO 98 j=1,col_sz
 	  DO 99 i=1,row_sz
  	    var(i,j)=dimage((j-1)*row_sz+i)
    99	  CONTINUE
    98	CONTINUE
-	  
+
 
 	RETURN
 	END

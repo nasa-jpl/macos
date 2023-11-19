@@ -33,7 +33,7 @@ C***********************************************************************
      &	rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),
      &	dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm
 
-	REAL*8 D1(9),D2(9),S1,S2,S3,DZPSolve
+	REAL*8 D1(9),D2(9),S1,S2,S3 !,DZPSolve
 
 	INTEGER i,j
 
@@ -266,7 +266,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
       INTEGER NDP,IERROR,IWORK(*),mDP
       REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),DWORK(*)
-      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,SIntSrf,
+      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,!SIntSrf,
      &	DZPSolve,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
       PARAMETER (ITMAX=400,EPS=1d-14)
       A=X1
@@ -338,7 +338,7 @@ C***********************************************************************
 	PARAMETER (gold=1.6,NTRY=50)
 	INTEGER NDP,IERROR,IWORK(*),mDP
 	REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),DWORK(*)
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,SIntSrf,
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,!SIntSrf,
      &	pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
 	F1=SIntSrf(Kc,Kr,psi,pv,prel,ihat,
      &	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
@@ -552,7 +552,7 @@ C        ====================
          Q(2) = YI
          NT = WRK(29)
          CALL DTGFI(XYZDAT(1,1),XYZDAT(1,2),XYZDAT(1,3),DZ,NDP0,
-     &          IWK,NT,NCONT,Q,ZI(1),MD0.EQ.6,ZI(2),IERROR,WRK)
+     &          IWK,NT,NCONT,Q,ZI(1),MD0.EQ.6,ZI(2:3),IERROR,WRK)
          IF (IERROR .NE. 0) CALL ERROUT(IERROR-2)
        END IF
        RETURN
@@ -1301,7 +1301,6 @@ C     ------------------------------------------------------------------
 C--D replaces "?": ?TGGRD, ?TGANG, ?TGSET, ?TGGET, ?TGPUT, ?TGSIZ,
 C--&               ?TGADJ, ?SORTP
 C     ------------------------------------------------------------------
-      EXTERNAL DTGANG
       INTEGER NP, mb, mt
       INTEGER AVAIL, B(MB,4), ext, TRI(6)
       INTEGER i, i1, i2, i3, i3prev, index, INFO(3), ip(np), isave
@@ -1312,7 +1311,6 @@ C     ------------------------------------------------------------------
       INTEGER n20025
       INTEGER nb, nt, ntlim, mbused,  TRIANG(1:MT)
       DOUBLE PRECISION aref, cross, dx12, dy12, pangle
-      DOUBLE PRECISION DTGANG
       DOUBLE PRECISION W(np), X(NP), xmean, Y(NP), ymean
       LOGICAL  OK, OK1
 C     ------------------------------------------------------------------

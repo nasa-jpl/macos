@@ -7,7 +7,7 @@ C    +----------------------------------------------------------------+
 C***********************************************************************
 
 C
-C This implemenation is based on the Levenberg-Marquardt 
+C This implemenation is based on the Levenberg-Marquardt
 C nonlinear least-square model-fitting method.
 C John Z. Lou, Jet Propulsion Laboratory
 C
@@ -16,7 +16,6 @@ C
 
 
 	Module nls
-	use nn_type
 	use nn_util, only : assert_eq, diagmult
 	use nn_mod, only : covsrt, gaussj
 
@@ -31,39 +30,36 @@ C
  	Subroutine lmlsq(y,sig,a,maska,covar,
      &                   alpha,chisq,funcs_app,alamda,success)
 	LREAL, dimension(:), intent(in) :: y,sig
-	LREAL, dimension(:), intent(inout) :: a 
+	LREAL, dimension(:), intent(inout) :: a
 	LREAL, dimension(:,:), intent(out) :: covar,alpha
 	LREAL, intent(out) :: chisq
 	LREAL, intent(inout) :: alamda
-	Logical, dimension(:), intent(in) :: maska  
+	Logical, dimension(:), intent(in) :: maska
         Logical :: success
 
- 	Interface 
+ 	Interface
 	  Subroutine funcs_app(a_p, yfit_p, dyda_p)
-	  !use nn_type
           use traceutil_mod, only : LUseChfRayIfOK
 	  LREAL, dimension(:), intent(in) :: a_p
 	  LREAL, dimension(:), intent(out) :: yfit_p
 	  LREAL, dimension(:,:), intent(out) :: dyda_p
-	  End Subroutine funcs_app	
+	  End Subroutine funcs_app
 	End Interface
 
 	Integer :: ma, ndata
 	Integer, save :: mfit
 
-	!print*,'***** maxval = ',maxval(y)
-	!print*,'***** minval = ',minval(y)
 
 	Call mrqmin_private
 
 
 	Contains
 
-	 ! An inner subroutine 
-	 Subroutine mrqmin_private 
+	 ! An inner subroutine
+	 Subroutine mrqmin_private
 	 LREAL, save :: ochisq
 	 LREAL, dimension(:), allocatable, save :: atry, beta
-	 LREAL, dimension(:,:), allocatable, save :: da 
+	 LREAL, dimension(:,:), allocatable, save :: da
 
 	 !integer, dimension(5) :: tmp
 	 !tmp(1:5) = (/1,2,2,3,4/)
@@ -95,7 +91,7 @@ C
 	 end if
 
 	 covar(1:mfit,1:mfit) = alpha(1:mfit,1:mfit)
-	 call diagmult(covar(1:mfit,1:mfit),1.0+alamda) 
+	 call diagmult(covar(1:mfit,1:mfit),1.0+alamda)
 
 	 da(1:mfit,1) = beta(1:mfit)
 	 Call gaussj(covar(1:mfit,1:mfit),da(1:mfit,1:1),success)
@@ -104,9 +100,9 @@ C
 	   Call covsrt(covar,maska)
 	   Call covsrt(alpha,maska)
 	   deallocate(atry, beta, da)
-	   return 
+	   return
 	 end if
-	
+
 	 atry = a + unpack(da(1:mfit,1),maska,0d0)
 	 Call mrqcof(atry, covar, da(1:mfit,1))
 
@@ -118,8 +114,8 @@ C
 	   a = atry
 	 else
 	   alamda = 10.0*alamda
-	   chisq = ochisq	   
-	 end if  
+	   chisq = ochisq
+	 end if
 	 End Subroutine mrqmin_private
 
 
@@ -131,11 +127,11 @@ C
 
          integer :: j, k, l, m
          LREAL, dimension(size(y),size(a)) :: dyda
-         LREAL, dimension(size(y)) :: dy, sig2i  
+         LREAL, dimension(size(y)) :: dy, sig2i
          !LREAL, dimension(size(y)) :: wt, ymod
          LREAL, dimension(261121) :: wt, ymod
 
-         print*,'**mrqcof: size(y) =',size(y) 
+         print*,'**mrqcof: size(y) =',size(y)
          Stop
          End Subroutine mrqcof
 #endif
@@ -155,13 +151,13 @@ C
          !LREAL, dimension(261121) :: dy, sig2i
          !LREAL, dimension(261121) :: wt, ymod
 
-         !print*,'**mrqcof: size(y),size(a) =',size(y),size(a)	
+         !print*,'**mrqcof: size(y),size(a) =',size(y),size(a)
 	 Call funcs_app(a, ymod, dyda)
 
 	 sig2i = 1.0/(sig**2)
 	 dy = y - ymod
 	 j = 0
-	 
+
 	 do l=1, ma
 	   if (maska(l)) then
 	     j = j+1
@@ -173,12 +169,12 @@ C
 	         alpha(j,k) = dot_product_jl(wt,dyda(:,m))
 	         alpha(k,j) = alpha(j,k)
 	       end if
-	     end do 
+	     end do
 	     beta(j) = dot_product_jl(dy,wt)
 	   end if
 	 end do
 	 chisq = dot_product_jl(dy**2,sig2i)
-	 End Subroutine mrqcof 
+	 End Subroutine mrqcof
 #endif
 
 
@@ -190,7 +186,7 @@ C
 	 dot_product_jl = 0d0
 	 do i=1, size(xx)
 	   dot_product_jl = dot_product_jl + xx(i)*yy(i)
-	 end do  
+	 end do
 	 End Function dot_product_jl
 
   	End Subroutine lmlsq

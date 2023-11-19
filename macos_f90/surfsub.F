@@ -9,7 +9,7 @@ C***********************************************************************
         MODULE surfsub
 
         PUBLIC
-        PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB,SMonomial,
+        PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB, SMonomial,
      &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf
      &             NGSrf
         CONTAINS
@@ -876,7 +876,7 @@ C***********************************************************************
 	Integer :: nAsphCoef
 
 	REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
-     &    k2,itpsi,psitprel,L1,L2,L3,AZPSolve,tol,
+     &    k2,itpsi,psitprel,L1,L2,L3,tol,
      &	  z,rho2,h2,h4,h6,h8,h10,zc(3),dfdrho(3),d2fdrho2(3,3),
      &	  rho(3),psitzc,psitrho,fh,Ppsi(3,3),ImpsidF(3,3),
      &    dNvecdp(3,3),hh1,hh2
@@ -1114,13 +1114,13 @@ C***********************************************************************
         Integer :: nAsphCoef
 
         REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
-     &    k2,itpsi,psitprel,L1,L2,L3,AZPSolve,tol,
+     &    k2,itpsi,psitprel,L1,L2,L3,tol,
      &    z,rho2,h2,h4,h6,h8,h10,zc(3),dFdrho(3),
      &    d2Fdrho2_asph(3,3),d2Fdrho2_grid(3,3),
      &    rho(3),psitzc,psitrho,fh,Ppsi(3,3),ImpsidF(3,3),
      &    dNvecdp(3,3),hh1,hh2,zc_asph(3),rhoc(3),zmtzc,psitzm,
      &    psitzc_asph,dzcdrho(3,3),grdm_rms2
-        REAL*8 D1(9),D2(9),S1,S2,S1_asph,S2_asph,GSZPSolve
+        REAL*8 D1(9),D2(9),S1,S2,S1_asph,S2_asph !,GSZPSolve
         Real*8, save :: sc(9,2)
 
         INTEGER i,j
@@ -1572,7 +1572,7 @@ C***********************************************************************
      &                  nAsphCoef)
       IMPLICIT REAL*8 (A-H,O-Z)
       REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L,
-     &       SAsphere,AZPSolve
+     &       AZPSolve
       Integer :: nAsphCoef
       PARAMETER (ITMAX=400,EPS=1d-14)
       A=X1
@@ -1646,8 +1646,7 @@ C***********************************************************************
 	SUBROUTINE AZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
 	IMPLICIT REAL*8 (A-H,O-Z)
 	PARAMETER (gold=1.6,NTRY=50)
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L,
-     &         SAsphere
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
 	Integer :: nAsphCoef
 	F1=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X1,nAsphCoef)
 	F2=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X2,nAsphCoef)
@@ -2389,7 +2388,7 @@ C***********************************************************************
      &  rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),x,
      &  y,dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm, fh_dz
 
-        REAL*8 D1(9),D2(9),S1,S2,S3,MZPSolve
+        REAL*8 D1(9),D2(9),S1,S2,S3
 
         INTEGER i,j,k
 
@@ -2830,7 +2829,7 @@ C***********************************************************************
      &                  pmon,rhoc,xhat,yhat,zhat,L)
         IMPLICIT REAL*8 (A-H,O-Z)
         PARAMETER (gold=1.6d0,NTRY=50)
-        REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMonomial,
+        REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
      &         rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
         IF(X1.EQ.X2)PAUSE 'You have to guess an initial range'
         F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
@@ -2870,7 +2869,7 @@ C***********************************************************************
      &   k2,itpsi,psitprel,L1,L2,L3,tol,
      &	 zc(3),dFdrho(3),d2Fdrho2(3,3),
      &	 psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),rhoc(3),zmtzc,psitzm,
-     &   D1(9),D2(9),S1,S2,UDSZPSolve,param(6)
+     &   D1(9),D2(9),S1,S2,param(6)
 
 C	Compute incidence point of ray on the surface
 
@@ -3292,7 +3291,7 @@ C***********************************************************************
      &	       GridMat(mGridMat,mGridMat),GridSrfdx,
      &	       zc(3),dFdrho(3),d2Fdrho2(3,3),psitzc,fh,
      &	       dzcdrho(3,3),dNvecdp(3,3),rhoc(3),zmtzc,psitzm,
-     &         D1(9),D2(9),S1,S2,GSZPSolve
+     &         D1(9),D2(9),S1,S2
 
 	if (.false.) then
 	  print*,'**Begin GridSrf: GridSrfdx = ',GridSrfdx
@@ -3482,7 +3481,7 @@ C***********************************************************************
 	INTEGER nGridMat,mGridMat
 	REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
 	INTEGER UDSrfType
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,SGSrf,
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
      &	  GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
 	  PARAMETER (ITMAX=400,EPS=1d-10)
 	A=X1
@@ -3561,7 +3560,7 @@ C***********************************************************************
 	  REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
 	  PARAMETER (gold=1.6,NTRY=50)
 	  INTEGER UDSrfType
-	  REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,SGSrf,
+	  REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
      &	         pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
 
 	IF(X1.EQ.X2)PAUSE 'GSZPB initial range error'
