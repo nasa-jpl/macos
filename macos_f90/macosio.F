@@ -33,7 +33,7 @@ C***********************************************************************
 	use param_mod
         use src_mod
         use elt_mod
-        use surfsub, only: GridInit
+        use surfsub, only: GridInit, AMPLINIT
         use cfiles_mod
         use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,

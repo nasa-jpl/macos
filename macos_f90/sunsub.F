@@ -14,7 +14,7 @@ C***********************************************************************
         SUBROUTINE RTIME(RSECS)
         SREAL RSECS
 
-        ! SECNDS is a Fortran library function 
+        ! SECNDS is a Fortran library function
         RSECS=SECNDS(0e0)
         RETURN
         END SUBROUTINE RTIME
@@ -120,8 +120,8 @@ C***********************************************************************
 # else
 #   if defined INTEL_FFT_LIB
 #     define INTEL_FFT
-#   else 
-#     define NR_FFT 
+#   else
+#     define NR_FFT
 #   endif
 # endif
 #endif
@@ -142,7 +142,7 @@ C***********************************************************************
 C
 C  A FFT routine from Numerical Recipes, adapted from
 C  /home/comp/macos-v2.86/sunsubDFOURN.f
-C 
+C
       SUBROUTINE DFOURN(CDATA,NN,NDIM,ISIGN)
       Implicit none
       INTEGER :: NDIM,ISIGN,NN(NDIM)
@@ -155,10 +155,10 @@ C
       Integer :: SzData,m_err_rtn,i,j,k
       Logical, save :: first_entry=.true.
 
-      If (first_entry) Then 
+      If (first_entry) Then
 	SzData=2
 	Do i=1,NDIM
-	  SzData=SzData*NN(i)	  
+	  SzData=SzData*NN(i)
 	End Do
 	if (allocated(DATA)) then
 	  deallocate(DATA,stat=m_err_rtn)
@@ -170,7 +170,7 @@ C
 	if (m_err_rtn /= 0)
      &    call macos_memory_failure
      &               ('DFOURN: allocate failed!')
-	first_entry=.false.	
+	first_entry=.false.
       End If
 
       k=1; DATA=0d0
@@ -282,8 +282,8 @@ c           WI=0.Q0
 
 #ifdef FFTW_FFT
 !
-! This is the wrapper routine for orininal FFTW 
-! To use this routine, must decomment the relevant FFT calls starting 
+! This is the wrapper routine for orininal FFTW
+! To use this routine, must decomment the relevant FFT calls starting
 ! with '!!'
 !
       SUBROUTINE DFOURN(DATA,NN,NDIM,ISIGN)
@@ -297,9 +297,9 @@ c           WI=0.Q0
       COMPLEX*16 DATA(NN(1),NN(2))
       Integer, save :: crnt_model_size = -1
 
-      if (crnt_model_size < 0 .or. 
+      if (crnt_model_size < 0 .or.
      &    macos_model_size /= crnt_model_size) then
-        ! first entry or model size has changed 
+        ! first entry or model size has changed
         crnt_model_size = macos_model_size
         FPLAN = 0; IPLAN = 0
       end if
@@ -338,7 +338,7 @@ c           WI=0.Q0
       INTEGER NDIM, ISIGN ,NN(NDIM)
       COMPLEX*16 DATA(NN(1),NN(2))
 
-      IF ((ISIGN /= 1 .and. ISIGN /= -1) 
+      IF ((ISIGN /= 1 .and. ISIGN /= -1)
      &    .or. NN(1) .le. 0 .or. NN(2) .le. 0) THEN
         PRINT *,'INTEL-FFT ERROR:  invalid ISIGN or NN value'
         STOP
@@ -354,7 +354,7 @@ c           WI=0.Q0
 #ifdef SUN_FFT
 !
 ! This version uses Sun's Performance Library
-! 
+!
       SUBROUTINE DFOURN(DATA,NN,NDIM,ISIGN)
       use sunperf
 
@@ -384,13 +384,13 @@ c           WI=0.Q0
         FPLAN = 0
 	if (allocated(WS)) then
 	  deallocate(WS, stat=m_err_fft)
-	  if (m_err_fft /= 0) 
+	  if (m_err_fft /= 0)
      &	    call macos_memory_failure
      &                ('dfourn: deallocate failed!')
 	end if
 	LWS = 4*(NN(1)+NN(2))+30
 	allocate(WS(LWS), stat=m_err_fft)
-	if (m_err_fft /= 0) 
+	if (m_err_fft /= 0)
      &      call macos_memory_failure
      &                ('dfourn: allocate failed!')
 	print*,'***** WS for FFT allocated *****'
@@ -398,7 +398,7 @@ c           WI=0.Q0
 
       if (FPLAN==0) then
 	print *,'********** INITIALIZING SunPerf FFT *************'
-	Call ZFFT2I(NN(1), NN(2), WS)	
+	Call ZFFT2I(NN(1), NN(2), WS)
 	FPLAN = 1
       end if
 
@@ -453,7 +453,9 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE RFOURN(DATA,NN,NDIM,ISIGN)
+      USE Constants, ONLY: TWOPI
       REAL*8 WR,WI,WPR,WPI,WTEMP,THETA
+      COMPLEX*8 DATA
       DIMENSION NN(NDIM),DATA(1)
       NTOT=1
       DO 11 IDIM=1,NDIM
@@ -492,7 +494,7 @@ C***********************************************************************
         IFP1=IP1
 2       IF(IFP1.LT.IP2)THEN
           IFP2=2*IFP1
-          THETA=ISIGN*6.28318530717959D0/(IFP2/IP1)
+          THETA=ISIGN*TWOPI/(IFP2/IP1)
           WPR=-2.D0*SIN(0.5D0*THETA)**2
           WPI=SIN(THETA)
           WR=1.D0
@@ -545,7 +547,7 @@ C***********************************************************************
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
 	INTEGER iElt,NA,NC,NDA,NDC,iPloTyp,L,ICLEN,RecordLength,iBeam
 	REAL*8 XYMAT(NDA,NDC)
- 
+
  102	FORMAT(' Text array is of dimension',i6,' by',i6)
  103	FORMAT(' Binary array is of dimension',i6,' by',i6)
  104	FORMAT(1P,512(1x,e13.6))
@@ -625,12 +627,12 @@ C  Fits format file
 	ELSE IF (iPloTyp.EQ.8) THEN
 	  WRITE(*,*)'Sorry, FITS not supported for SPOT or DRAW'
 
-C  Matlab format file
-	ELSE IF (iPloTyp.EQ.9) THEN
-	  WRITE(*,*) 'Writing ',CTITLE
-	  WRITE(*,*) 'MATLAB File=',image_file
-	  WRITE(*,108)NA,NC
- 	  CALL RWRITE_MAT_LOH(XYMAT,NA,NC,NDA,NDC,image_file,imag_file)
+! C  Matlab format file
+! 	ELSE IF (iPloTyp.EQ.9) THEN
+! 	  WRITE(*,*) 'Writing ',CTITLE
+! 	  WRITE(*,*) 'MATLAB File=',image_file
+! 	  WRITE(*,108)NA,NC
+!  	  CALL RWRITE_MAT_LOH(XYMAT,NA,NC,NDA,NDC,image_file,imag_file)
 
 C  Unknown format
 	ELSE
@@ -767,12 +769,12 @@ C  Fits format file
 	ELSE IF (iPloTyp.EQ.8) THEN
 	  WRITE(*,*)'Sorry, FITS not supported for SPOT or DRAW'
 
-C  Matlab format file
-	ELSE IF (iPloTyp.EQ.9) THEN
-	  WRITE(*,*) 'Writing ',CTITLE
-	  WRITE(*,*) 'MATLAB File=',image_file
-	  WRITE(*,108) k,1
- 	  CALL RWRITE_MAT_LOH(R1,k,1,k,1,image_file,imag_file)
+! C  Matlab format file
+! 	ELSE IF (iPloTyp.EQ.9) THEN
+! 	  WRITE(*,*) 'Writing ',CTITLE
+! 	  WRITE(*,*) 'MATLAB File=',image_file
+! 	  WRITE(*,108) k,1
+!  	  CALL RWRITE_MAT_LOH(R1,k,1,k,1,image_file,imag_file)
 
 C  Unknown format
 	ELSE
@@ -972,7 +974,7 @@ C Render in pgplot window
      &	    R1(1,1),R1(1,2),CXLABL,CYLABL,CTITLE)
 
 	ELSE IF (iPloTyp.EQ.2) THEN
-	  ! here it is used when 'OPD' command is run 
+	  ! here it is used when 'OPD' command is run
 	  !print*,'*** b4 call GRAY: NA,NC,NDA,NDC =',NA,NC,NDA,NDC
  	  CALL GRAY(X,Y,R2,NA,NC,NDA,NDC,
      &	    CXLABL,CYLABL,CTITLE)
@@ -1036,11 +1038,11 @@ C***********************************************************************
 	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8     dx_elt, dy_elt
 
- 
+
 C***********************************************************************
 C    CONSTANT DEFINITIONS
 C***********************************************************************
- 
+
 	INTEGER*4  BYTES_PER_PIXEL, BITS_PER_BYTE, BITS_PER_PIXEL
 	PARAMETER(BYTES_PER_PIXEL = 4)
 	PARAMETER(BITS_PER_BYTE   = 8)
@@ -1163,15 +1165,15 @@ C     &	  STATUS='NEW')
 	  CALL WRITE_FITS_FILE(Z, NDA, NDC, NA, NC, BITS_PER_PIXEL,
      &	                  filnam, image_file, dx_elt,dy_elt, iElt)
 
-	ELSE IF (iPloTyp.EQ.9) THEN
-c	  OPEN (UNIT=13,FILE=image_file,STATUS='NEW',FORM='FORMATTED')
-	  SCR = 'Writing '//CTITLE
-	  WRITE(*,*) SCR
-	  SCR = 'FORMATTED File='//image_file
-	  WRITE(*,*) SCR
-	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
+! 	ELSE IF (iPloTyp.EQ.9) THEN
+! c	  OPEN (UNIT=13,FILE=image_file,STATUS='NEW',FORM='FORMATTED')
+! 	  SCR = 'Writing '//CTITLE
+! 	  WRITE(*,*) SCR
+! 	  SCR = 'FORMATTED File='//image_file
+! 	  WRITE(*,*) SCR
+! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
- 	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+!  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1182,7 +1184,7 @@ C***********************************************************************
 
 	SUBROUTINE DBINOUT(iPloTyp,X,Y,DZ,NA,NC,NDA,NDC,
      &	   CXLABL,CYLABL,CTITLE,image_file,dx_elt,dy_elt,iElt,Z)
-	use param_mod	
+	use param_mod
 	use cfiles_mod
 #ifdef CSMACOS
         use smacosio_mod
@@ -1197,7 +1199,7 @@ C***********************************************************************
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
 	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN
 	INTEGER*4  iElt
-	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)  
+	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8    dx_elt, dy_elt, DZ(NDA,NDC)
 C
 C***********************************************************************
@@ -1220,7 +1222,7 @@ C
 	print*,'** In DBINOUT: NA,NC =',NA,NC
 
 	L=ICLEN(image_file)
-	
+
 	DO j=1,NDC
 	  DO i=1,NDA
 	    Z(i,j)=DZ(i,j)
@@ -1332,15 +1334,15 @@ C     &	        STATUS='NEW')
 	  CALL WRITE_FITS_FILE(Z, NDA, NDC, NA, NC, BITS_PER_PIXEL,
      &	                  filnam, image_file, dx_elt,dy_elt, iElt)
 
-	ELSE IF (iPloTyp.EQ.9) THEN
-c	  OPEN (UNIT=13,FILE=image_file,STATUS='NEW',FORM='FORMATTED')
-	  SCR = 'Writing '//CTITLE
-	  WRITE(*,*) SCR
-	  SCR = 'FORMATTED File='//image_file
-	  WRITE(*,*) SCR
-	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
+! 	ELSE IF (iPloTyp.EQ.9) THEN
+! c	  OPEN (UNIT=13,FILE=image_file,STATUS='NEW',FORM='FORMATTED')
+! 	  SCR = 'Writing '//CTITLE
+! 	  WRITE(*,*) SCR
+! 	  SCR = 'FORMATTED File='//image_file
+! 	  WRITE(*,*) SCR
+! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
- 	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+!  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1352,11 +1354,11 @@ C***********************************************************************
 
 	SUBROUTINE WRITE_FITS_FILE(image, array_row_size,
      &	  array_col_size, image_row_size, image_col_size,
-     &	  bits_per_pixel, root_file_name, output_file_name, 
+     &	  bits_per_pixel, root_file_name, output_file_name,
      &	  dx_elt, dy_elt, i_elt)
- 
+
 	Implicit       None
-	 
+
 	INTEGER*4      image_row_size, image_col_size
 	INTEGER*4      bits_per_pixel
 	INTEGER*4      array_row_size, array_col_size
@@ -1366,7 +1368,7 @@ C***********************************************************************
 	INTEGER        bit_representation
 	INTEGER        i_elt
 	SREAL          image(array_row_size, array_col_size)
-	SREAL          max_image_value, min_image_value   
+	SREAL          max_image_value, min_image_value
 	REAL*8         dx_elt, dy_elt
 	SREAL          scale(3), zero(3), error(3)
 	INTEGER*4      strLen
@@ -1381,14 +1383,14 @@ C***********************************************************************
 	output_file_name_len           = strLen(output_file_name)
 	root_file_name_len             = strLen(root_file_name)
 c
-c     see comments of fits_scalc SUBROUTINE (included in this file) 
+c     see comments of fits_scalc SUBROUTINE (included in this file)
 c     for explanation of 'bit_representation'
 c
 	IF (bits_per_pixel .EQ. 32) THEN
 	   bit_representation = 3
 	Elseif (bits_per_pixel .EQ. 16) THEN
 	   bit_representation = 2
-	Elseif (bits_per_pixel .EQ. 8) THEN 
+	Elseif (bits_per_pixel .EQ. 8) THEN
 	   bit_representation = 1
 	ELSE
 	   WRITE(*,*) 'Cannot WRITE FITS file for given image.'
@@ -1400,100 +1402,100 @@ c
 
         new_file_name = output_file_name(1:output_file_name_len)
 
-	IF (root_file_name_len .GT. 18) THEN 
-	   WRITE(*,*) 'File name ' // 
-     &	             root_file_name(1:root_file_name_len) // 
+	IF (root_file_name_len .GT. 18) THEN
+	   WRITE(*,*) 'File name ' //
+     &	             root_file_name(1:root_file_name_len) //
      &	            ' too long for FITS FILENAME data field.' //
      &	            ' Enter a shorter one' //
      &	            '(< 19 characters).'
 	   GO TO 1
 	   END IF
 	CALL fits_init(new_file_name, actual_file_name, lout, ier)
-c sws debugging 
+c sws debugging
 c	print *, 'fits_init called'
 c	print *,'file= [',new_file_name,'], result =[',
 c	1    actual_file_name,']'
 	CALL fdate(date)
 c
-c     fits_scalc, in addition to computing the scaling and zero values, 
+c     fits_scalc, in addition to computing the scaling and zero values,
 c     it also computes the min and max values of image array
-c      
-	CALL fits_scalc(image, num_elm, dont_check_for_rounding_errors, 
+c
+	CALL fits_scalc(image, num_elm, dont_check_for_rounding_errors,
      &	min_image_value,max_image_value, scale, zero, error,
      &	image_row_size, image_col_size,array_col_size)
-   
+
 	CALL  fits_wlog('SIMPLE', .TRUE., 'FITS standard ', ier)
-	CALL  fits_wint('BITPIX', bits_per_pixel, 
+	CALL  fits_wint('BITPIX', bits_per_pixel,
      &	              'Number of bits per pixel', ier)
 	CALL  fits_wint('NAXIS',  2, 'Number of axes', ier)
-	CALL  fits_wint('NAXIS1', image_row_size, 
+	CALL  fits_wint('NAXIS1', image_row_size,
      &	              'Pixel length of axis 1', ier)
-	CALL  fits_wint('NAXIS2', image_col_size, 
+	CALL  fits_wint('NAXIS2', image_col_size,
      &	              'Pixel length of axis 2', ier)
-	CALL  fits_wlog('EXTEND', .TRUE., 
+	CALL  fits_wlog('EXTEND', .TRUE.,
      &	              'There maybe standard extensions',
      &	               ier)
-	CALL  fits_wreal('BSCALE', scale(bit_representation), 
+	CALL  fits_wreal('BSCALE', scale(bit_representation),
      &	               'REAL = array_value*bscale + bzero',
      &	               ier)
-	CALL  fits_wreal('BZERO', zero(bit_representation), 
+	CALL  fits_wreal('BZERO', zero(bit_representation),
      &	               ' ',
      &	               ier)
-	CALL  fits_wstr('ORIGIN', 'COMP', 
+	CALL  fits_wstr('ORIGIN', 'COMP',
      &	              'Name of PROGRAM which generated image', ier)
 c
-c     date(5:11) represents the month and date portion of date string, 
+c     date(5:11) represents the month and date portion of date string,
 c     and date(21:24) represents the year
 c
-	CALL  fits_wstr('FITSDATE', date(5:11) // date(21:24), 
-     &	              'Date FITS file was created', 
+	CALL  fits_wstr('FITSDATE', date(5:11) // date(21:24),
+     &	              'Date FITS file was created',
      &	               ier)
-	CALL  fits_wstr('FILENAME', 
-     &	                root_file_name(1:root_file_name_len), 
-     &	               'Name of original file name', 
+	CALL  fits_wstr('FILENAME',
+     &	                root_file_name(1:root_file_name_len),
+     &	               'Name of original file name',
      &	               ier)
-	CALL  fits_wreal('CRVAL1', 0d0, 
-     &	               'Center detector position along axis 1', 
+	CALL  fits_wreal('CRVAL1', 0d0,
+     &	               'Center detector position along axis 1',
      &	                ier)
-	CALL  fits_wreal('CRVAL2', 0d0, 
-     &	               'Center detector position along axis 2', 
+	CALL  fits_wreal('CRVAL2', 0d0,
+     &	               'Center detector position along axis 2',
      &	                ier)
-	CALL  fits_wreal('CRPIX1', image_row_size / 2d0, 
-     &	               'Center reference pixel along axis 1', 
-     &	                ier)    
-	CALL  fits_wreal('CRPIX2', image_col_size / 2d0, 
-     &	               'Center reference pixel along axis 2', 
-     &	                ier)    
+	CALL  fits_wreal('CRPIX1', image_row_size / 2d0,
+     &	               'Center reference pixel along axis 1',
+     &	                ier)
+	CALL  fits_wreal('CRPIX2', image_col_size / 2d0,
+     &	               'Center reference pixel along axis 2',
+     &	                ier)
 	CALL  fits_wdble('CDELT1', dx_elt, 'dxElt(iElt)',ier)
 	CALL  fits_wdble('CDELT2', dy_elt, 'dyElt(iElt)',ier)
-	CALL  fits_wreal('DATAMIN', min_image_value, 
-     &	               'Minimum data value in image', 
+	CALL  fits_wreal('DATAMIN', min_image_value,
+     &	               'Minimum data value in image',
      &	                ier)
-	CALL  fits_wreal('DATAMAX', max_image_value, 
-     &	               'Maximum data value in image', 
+	CALL  fits_wreal('DATAMAX', max_image_value,
+     &	               'Maximum data value in image',
      &	                ier)
 	CALL  fits_wstr('CTYPE1', 'COLUMN','Coord. name of axis 1',ier)
 	CALL  fits_wstr('CTYPE2', 'ROW', 'Coord. name of axis 2',ier)
 	CALL  IntToChar(int_str, i_elt, i)
 	CALL  fits_wstr('HISTORY', 'ELT' // int_str(1:i), ' ', ier)
-	CALL  fits_wstr('FILTNAM1', 'WAVELEN=XX', 'First filter name', 
+	CALL  fits_wstr('FILTNAM1', 'WAVELEN=XX', 'First filter name',
      &	               ier)
-	CALL  fits_wstr('IMAGETYP', 'SIMULATED', 
-     &	              'Image type characteristics', 
+	CALL  fits_wstr('IMAGETYP', 'SIMULATED',
+     &	              'Image type characteristics',
      &	               ier)
 c
 c     creates "END" field
 c
 	CALL  fits_wend(ier)
 c grw -- 1/18/94
-	CALL  fits_wrayf(image, num_elm, bits_per_pixel, 
-     &	scale(bit_representation), 
+	CALL  fits_wrayf(image, num_elm, bits_per_pixel,
+     &	scale(bit_representation),
      &	zero(bit_representation), ier,
      &	image_row_size, image_col_size,array_col_size)
 	CALL  fits_close(ier)
  1      RETURN
 	END SUBROUTINE WRITE_FITS_FILE
-c		
+c
 c
 	FUNCTION StrLen(stringName)
 	CHARACTER   stringName*(*)
@@ -1511,7 +1513,7 @@ C
 C----------------------------------------------------------------------
 	SUBROUTINE FITS_WLOG (NAME,VALUE,COMMENT,STATUS)
 C-----------------------------------------------------------------------
-C     Writes a LOGICAL keyword into a FITS header.  Assumes 
+C     Writes a LOGICAL keyword into a FITS header.  Assumes
 C     FITS_INIT has been called to initialise the header routines.
 C
 C     Parameters -  (">" input, "<" output)
@@ -1555,11 +1557,11 @@ C
 	CALL FITS_BUFFO(STATUS)
 C
 	END
-C 
-C---------------------------------------------------------------------- 
+C
+C----------------------------------------------------------------------
 	SUBROUTINE FITS_WINT (NAME,VALUE,COMMENT,STATUS)
 C-----------------------------------------------------------------------
-C     Writes an INTEGER keyword into a FITS header.  Assumes 
+C     Writes an INTEGER keyword into a FITS header.  Assumes
 C     FITS_INIT has been called to initialise the header routines.
 C
 C     Parameters -  (">" input, "<" output)
@@ -1598,11 +1600,11 @@ C
 	CALL FITS_BUFFO(STATUS)
 C
 	END
-C 
+C
 C----------------------------------------------------------------------
 	SUBROUTINE FITS_WREAL (NAME,VALUE,COMMENT,STATUS)
 C-----------------------------------------------------------------------
-C     Writes a REAL keyword into a FITS header.  Assumes 
+C     Writes a REAL keyword into a FITS header.  Assumes
 C     FITS_INIT has been called to initialise the header routines.
 C
 C     Parameters -  (">" input, "<" output)
@@ -1646,7 +1648,7 @@ C
 C----------------------------------------------------------------------
 	SUBROUTINE FITS_WSTR (NAME,STRING,COMMENT,STATUS)
 C-----------------------------------------------------------------------
-C     Writes a string keyword into a FITS header.  Assumes 
+C     Writes a string keyword into a FITS header.  Assumes
 C     FITS_INIT has been called to initialise the header routines.
 C
 C     Parameters -  (">" input, "<" output)
@@ -1665,7 +1667,7 @@ C                   values will be error codes caused by an
 C                   I/O error.  These can be decoded by FITS_ERROR.
 C
 C     Note: The FITS standard says keyword names and values must be
-C     output in upper case.  NAME & STRING can be passed in lower case, 
+C     output in upper case.  NAME & STRING can be passed in lower case,
 C     but will be output in upper.  COMMENT will be output as passed.
 C
 C     COMMON variables used -
@@ -1726,7 +1728,7 @@ C     COMMON variables used -
 C
 C     (<) BUFF       (CHARACTER) Buffer for one header line
 C
-C     Subroutines / functions used - 
+C     Subroutines / functions used -
 C
 C     UPCASE         Convert string to upper case.
 C
@@ -1753,7 +1755,7 @@ C     up the rest of the FITS buffer with blanks.
 C
 C     Parameters -    (">" input, "!" modified, "<" output)
 C
-C     (<) STATUS     (INTEGER) RETURN code.  0 => OK.  Non-zero 
+C     (<) STATUS     (INTEGER) RETURN code.  0 => OK.  Non-zero
 C                    values will be error codes caused by an
 C                    I/O error.  These can be decoded by FITS_ERROR.
 C
@@ -1797,7 +1799,7 @@ C
 C     Parameters -   (">" input, "<" output)
 C
 C     (>) FILE     (CHARACTER) The name of the disk file to be
-C                  created. 
+C                  created.
 C     (<) FILEXP   (CHARACTER) The name of the file that was actually
 C                  created (expanded file name)>
 C     (<) STATUS   (INTEGER) A returned status code.  0 => OK, non-
@@ -1843,7 +1845,7 @@ C
 	     STATUS = VLBOPE(MTUNIT, FILE, 'FITS', 'OLD', FILEXP)
 	     END IF
 	   END IF
-	   
+
 	IF (STATUS.NE.0) THEN
 	    STATUS = 0
 	ELSE
@@ -1955,7 +1957,7 @@ C     buffer, writing the buffer out whenever it fills.  This means
 C     that this routine may be called as many times as necessary - for
 C     example, if all the data is not available in memory at one time.
 C     This routine should be called for the first time immediately
-C     following the FITS_WEND CALL that terminated the FITS header. 
+C     following the FITS_WEND CALL that terminated the FITS header.
 C     Once all the data is output, FITS_CLOSE should be called to flush
 C     the data buffer.
 C
@@ -1989,7 +1991,7 @@ C
 C
 	INTEGER FPTRO,FPTRS,I
 C
-C     WRITE out as signed 32 bit reals.  
+C     WRITE out as signed 32 bit reals.
 C
 	STATUS=0
 	FPTRS=FPTR/2+1
@@ -2011,7 +2013,7 @@ csun	IF (FPTRS.GT.1) CALL FITS_BSWAP(FBUFFS(FPTRO),FPTRS-FPTRO)
 C
   600 CONTINUE
 	END
- 
+
 C*UPCASE -- convert CHARACTER string to upper case
 C+
 	SUBROUTINE UPCASE (SRC)
@@ -2037,7 +2039,7 @@ C
 C
 	END
 
- 
+
 C*VLBOPE -- OPEN a VLB data file [Sun-UNIX]
 C+
 	INTEGER FUNCTION VLBOPE (UNIT, NAME, TYPE, STATUS, RESULT)
@@ -2072,7 +2074,7 @@ C      enough.
 C
 C Discussion: this encapsulates all system-dependent OPEN parameters
 C like READONLY, CARRIAGECONTROL in a single SUBROUTINE.  Moving to
-C a different operating system should require only this routine to be 
+C a different operating system should require only this routine to be
 C changed, assuming the operating system can cope with Fortran formatted
 C and unformatted READ and WRITE.
 C-----------------------------------------------------------------------
@@ -2119,36 +2121,36 @@ C  Note -- RECL=720 for mac, 2880 for sun
 C         -- 'OLD' file
 	    IF (ITYPE.EQ.2) THEN
 	        OPEN (UNIT=UNIT, FILE=NAME, STATUS='OLD',
-C    1              RECORDTYPE='FIXED', 
+C    1              RECORDTYPE='FIXED',
      &	             RECL=2880,
-csun     2              RECL=720, 
+csun     2              RECL=720,
      &	             ACCESS='DIRECT',
-C    4              READONLY, 
-     &	             FORM='UNFORMATTED', 
+C    4              READONLY,
+     &	             FORM='UNFORMATTED',
      &	             IOSTAT=IER)
 	        BLKNO = 0
 	    ELSE
 	        OPEN (UNIT=UNIT, FILE=NAME, STATUS='OLD',
-C    1              READONLY, 
+C    1              READONLY,
      &	             ACCESS='SEQUENTIAL', FORM=FMT, IOSTAT=IER)
 	    END IF
 	ELSE
 C         -- 'NEW' file
 C  Note -- RECL=720 for mac, 2880 for sun
 	    IF (ITYPE.EQ.2) THEN
-	        OPEN (UNIT=UNIT, 
+	        OPEN (UNIT=UNIT,
      &              FILE=NAME(1:ICLEN(NAME)),
      &              STATUS='NEW',
 C    &              RECORDTYPE='FIXED',
      &              ACCESS='DIRECT',
      &	             RECL=2880,
 csun     &              RECL=720,
-     &              FORM='UNFORMATTED', 
+     &              FORM='UNFORMATTED',
      &              IOSTAT=IER)
 	    ELSE
 	        OPEN (UNIT=UNIT, FILE=NAME(1:ICLEN(NAME)), STATUS='NEW',
-     &	             ACCESS='SEQUENTIAL', FORM=FMT, 
-C    2              CARRIAGECONTROL=CC, 
+     &	             ACCESS='SEQUENTIAL', FORM=FMT,
+C    2              CARRIAGECONTROL=CC,
      &	             IOSTAT=IER)
 	    END IF
 	END IF
@@ -2204,7 +2206,7 @@ C Subroutines / functions used - None
 C
 C KS / CIT 11th Oct 1983
 C-----------------------------------------------------------------------
-C 
+C
 C-----------------------------------------------------------------------
 C
 C     2 = NUMBER OF BYTES PER ARRAY ELEMENT PASSED TO BUFFER
@@ -2220,8 +2222,8 @@ C
  10      CONTINUE
 	RETURN
 	END
- 
- 
+
+
 	SUBROUTINE FITS_FLUSH (STATUS)
 C-----------------------------------------------------------------------
 C     Flushes the main I/O buffer to disk.
@@ -2233,7 +2235,7 @@ C                   codes are I/O error codes, which may be decoded
 C                   by FITS_ERROR.
 C
 C     COMMON variables used -
-C  
+C
 C                   be filled with zeros and flushed to the output file.
 C     (!) FPTR      (INTEGER) Pointer to next free byte in FBUFF.
 C
@@ -2263,7 +2265,7 @@ C
 C
   600 CONTINUE
 	END
- 
+
 
 	SUBROUTINE FITS_MWRIT (STATUS)
 C-----------------------------------------------------------------------
@@ -2291,8 +2293,8 @@ C
 	BLKNO = BLKNO + 1
 C
 	END SUBROUTINE FITS_MWRIT
- 
- 
+
+
 C*PUTOUT -- WRITE line on standard output [Convex-UNIX]
 C+
 	SUBROUTINE PUTOUT(TEXT)
@@ -2358,8 +2360,8 @@ C+
 	CHARACTER*(*) STRING
 	CHARACTER*24 CTMP
 C
-C This SUBROUTINE prints its argument (a CHARACTER string) on the 
-C standard output, prefixed with '++ERROR++', and THEN terminates 
+C This SUBROUTINE prints its argument (a CHARACTER string) on the
+C standard output, prefixed with '++ERROR++', and THEN terminates
 C execution of the PROGRAM, returning an error status to its parent
 C (shell or command interpreter).
 C
@@ -2389,7 +2391,7 @@ C     and zero values needed to WRITE it out as a) 8 bit
 C     unsigned integers, b) 16 bit signed integers, c) 32 bit
 C     signed integers.  The user has to choose which of these
 C     representations should be used, trading off precision
-C     against compactness of DATA.  
+C     against compactness of DATA.
 C
 C     Parameters -   (">" input, "<" output)
 C
@@ -2399,7 +2401,7 @@ C                  treated here as 1-dimensional for generality.
 C     (>) NELM     (INTEGER) The number of elements in DATA.
 C     (>) CHECK    (LOGICAL) IF true, the routine will pass through
 C                  the DATA applying the scaling for each INTEGER
-C                  representaion and THEN applying the inverse 
+C                  representaion and THEN applying the inverse
 C                  operation to the result.  The maximum errors
 C                  found will be returned in ERRORS.
 C     (<) VMIN     (REAL) Minimum value in DATA.
@@ -2416,10 +2418,10 @@ C                  for each of the three representaions.  This may
 C                  help in deciding that the loss in precision that
 C                  be acceptable.
 C     (>) IMAGE_ROW_SIZE
-C                  (INTEGER) The actual row length of the image stored 
+C                  (INTEGER) The actual row length of the image stored
 C                  in DATA
 C     (>) IMAGE_COL_SIZE
-C                  (INTEGER) The actual column length of the image 
+C                  (INTEGER) The actual column length of the image
 C                  stored in DATA
 C     (>) MAX_IMAGE_COL_SIZE
 C                  (INTEGER) The maximum possible column length of the
@@ -2450,8 +2452,8 @@ C
 	VMIN=DATA(1)
 	VMAX=VMIN
 c grw -- 1/18/94
-	DO i = 0, 
-     &	    (image_row_size - 1) * max_image_col_size, 
+	DO i = 0,
+     &	    (image_row_size - 1) * max_image_col_size,
      &	     max_image_col_size
 	   DO j=1, image_col_size
 	      k = i + j
@@ -2460,9 +2462,9 @@ c grw -- 1/18/94
 	   END DO
 	END DO
 C
-C     Now get the three scales and zeros.  Note that we don't 
+C     Now get the three scales and zeros.  Note that we don't
 C     try to make use of the VERY ends of the INTEGER ranges, to
-C     allow a little slop for rounding errors etc.  
+C     allow a little slop for rounding errors etc.
 C
 	RANGE=VMAX-VMIN
 	IF (RANGE.LT.1.E-35) THEN
@@ -2492,9 +2494,9 @@ C
 	      RSCALE(J)=1./SCALES(J)
 	   END DO
 c grw -- 1/18/94
-	   DO i = 0, 
-     &	       (image_row_size - 1) * max_image_col_size, 
-     &	        max_image_col_size 
+	   DO i = 0,
+     &	       (image_row_size - 1) * max_image_col_size,
+     &	        max_image_col_size
 	      DO j=1, image_col_size
 	         VALUE=DATA(i + j)
 	         DO l=1,3
@@ -2507,16 +2509,16 @@ c grw -- 1/18/94
 	END IF
 	END SUBROUTINE FITS_SCALC
 
-C*********************************************************************** 
+C***********************************************************************
 
-c grw -- 1/18/94 
+c grw -- 1/18/94
 	SUBROUTINE FITS_WRAYF (DATA,NELM,BITPIX,BSCALE,BZERO,STATUS,
-     &	                     IMAGE_ROW_SIZE, IMAGE_COL_SIZE, 
+     &	                     IMAGE_ROW_SIZE, IMAGE_COL_SIZE,
      &	                     MAX_IMAGE_COL_SIZE)
 C-----------------------------------------------------------------------
 C     Writes a REAL array to output file as part of a FITS image,
-C     converting it to one of a) 8 bit unsigned integers, b) 16 bit 
-C     signed integers,32 bit signed integers, by application of a scale 
+C     converting it to one of a) 8 bit unsigned integers, b) 16 bit
+C     signed integers,32 bit signed integers, by application of a scale
 C     and zero value.
 C
 C     This routine simply copies the array element by element into a
@@ -2524,11 +2526,11 @@ C     buffer, writing the buffer out whenever it fills.  This means
 C     that this routine may be called as many times as necessary - for
 C     example, IF all the data is not available in memory at one time.
 C     This routine should be called for the first time immediately
-C     following the FITS_WEND CALL that terminated the FITS header. 
+C     following the FITS_WEND CALL that terminated the FITS header.
 C     Once all the data is output, FITS_CLOSE should be called to flush
 C     the data buffer.
 C
-C     Parameters -   (">" input, "W" workspace, "!" modified, "<" 
+C     Parameters -   (">" input, "W" workspace, "!" modified, "<"
 C     output)
 C
 C     (>) DATA     (REAL array DATA(NELM)) The DATA array to be output.
@@ -2551,15 +2553,15 @@ C                  values indicate an I/O error and can be
 C                  decoded using FITS_ERROR.
 C grw -- 1/18/94
 C     (>) IMAGE_ROW_SIZE
-C                  (INTEGER) The actual row length of the image stored 
+C                  (INTEGER) The actual row length of the image stored
 C                  in DATA
 C     (>) IMAGE_COL_SIZE
-C                  (INTEGER) The actual column length of the image 
+C                  (INTEGER) The actual column length of the image
 C                  stored in DATA
 C     (>) MAX_IMAGE_COL_SIZE
 C                  (INTEGER) The maximum possible column length of the
 C                  DATA array.
-C     
+C
 C     COMMON variables used -
 C
 C     (W) FBUFF    (Byte array) The main FITS I/O buffer
@@ -2573,7 +2575,7 @@ C     FITS_BSWAP    (FITS_ package) Swap order of bytes in words
 C     FITS_WBSWAP   ( "      "   ) Swap order of bytes in longwords
 C     FITS_MWRIT    (FITS_    "   ) WRITE FBUFF buffer to output file
 C
-C     Note: This routine assumes that the values for BSCALE and 
+C     Note: This routine assumes that the values for BSCALE and
 C     BZERO will not generate DATA outside the INTEGER range
 C     used.  IF this is not true, arithmetic faults will occur.
 C
@@ -2592,7 +2594,7 @@ C
 	SREAL SCALE
 C
 C     The equivalence is to get round the problem that a VAX byte is
-C     signed, and so cannot be assigned to an INTEGER in the range 
+C     signed, and so cannot be assigned to an INTEGER in the range
 C     0..255
 C
 	EQUIVALENCE (IBYTE,IVAL)
@@ -2606,14 +2608,14 @@ C
 C        WRITE out as 8 bit unsigned integers.  Note the sneaky
 C        use of IVAL and IBYTE.
 C
-c grw -- 1/18/94 modifying algorithm to handle variable dimensioned 
+c grw -- 1/18/94 modifying algorithm to handle variable dimensioned
 c                fits images
 C
-	   DO i = 0, 
-     &	       (image_row_size - 1) * max_image_col_size, 
-     &	        max_image_col_size 
+	   DO i = 0,
+     &	       (image_row_size - 1) * max_image_col_size,
+     &	        max_image_col_size
 	      DO j = 1, image_col_size
-	         
+
 	         IVAL=(DATA(i + j)-BZERO)*SCALE+0.5
 	         FBUFF(FPTR)=IBYTE
 	         FPTR=FPTR+1
@@ -2633,14 +2635,14 @@ C        by the FITS standard. Comment out for sun machines!!!
 C
 	   FPTRS=FPTR/2+1
 	   FPTRO=FPTRS
-c grw -- 1/18/94 modifying algorithm to handle variable dimensioned 
+c grw -- 1/18/94 modifying algorithm to handle variable dimensioned
 c                fits images
 C
-	   DO i = 0, 
-     &	       (image_row_size - 1) * max_image_col_size, 
-     &	        max_image_col_size 
+	   DO i = 0,
+     &	       (image_row_size - 1) * max_image_col_size,
+     &	        max_image_col_size
 	      DO j = 1, image_col_size
-	         
+
 	         FBUFFS(FPTRS)=(DATA(i + j)-BZERO) *
      &	                      SCALE+0.5
 	         FPTRS=FPTRS+1
@@ -2665,14 +2667,14 @@ C
 	   FPTRI=FPTR/4+1
 	   FPTRO=FPTRI
 
-c grw -- 1/18/94 modifying algorithm to handle variable dimensioned 
+c grw -- 1/18/94 modifying algorithm to handle variable dimensioned
 c                fits images
 C
-	   DO i = 0, 
-     &	        (image_row_size - 1) * max_image_col_size, 
+	   DO i = 0,
+     &	        (image_row_size - 1) * max_image_col_size,
      &	        max_image_col_size
 	      DO j = 1, image_col_size
-	         
+
 	         FBUFFI(FPTRI)=(DATA(i + j)-BZERO) *
      &	                      SCALE+0.5
 	         FPTRI=FPTRI+1
@@ -2700,20 +2702,20 @@ C     4 = NUMBER OF BYTES PER ELEMENT IN ARRAY PASSED TO BUFFER
 C
 	integer*1 BUFFER(LWORDS*4)  ! JLOU
 	INTEGER LWORDS
-C 
+C
 C 	Exchanges the byte order in an array of 32 bit longwords
 C       so that it matches the convention used by non-DEC
 C 	machines.  This is based on an MTPCKG routine written
-C 	by Bill Sebok.  
-C 
+C 	by Bill Sebok.
+C
 C 	Parameters -    (">" input, "!" modified, "<" output)
-C 
+C
 C 	(!) BUFFER  (BYTE array BUFFER(LWORDS*4)) The array
 C 		     to be swapped.
 C 	(>) LWORDS   (INTEGER) The number of longwords in ARRAY
-C 
+C
 C 	Subroutines / functions used - None
-C 
+C
 C                                    KS / CIT 11th Oct 1983
 C-----------------------------------------------------------------------
 C
@@ -2738,7 +2740,7 @@ c         WRITE(*,*) buffer(i-3),buffer(i-2),buffer(i-1),buffer(i)
 
 	SUBROUTINE FITS_WDBLE (NAME,VALUE,COMMENT,STATUS)
 C-----------------------------------------------------------------------
-C     Writes a DOUBLE PRECISION keyword into a FITS header.  Assumes 
+C     Writes a DOUBLE PRECISION keyword into a FITS header.  Assumes
 C     FITS_INIT has been called to initialise the header routines.
 C
 C     Parameters -  (">" input, "<" output)
@@ -2778,57 +2780,57 @@ C
 	CALL FITS_BUFFO(STATUS)
 C
 	END
- 
+
 
 C***********************************************************************
 C***********************************************************************
 
-	SUBROUTINE RBININ(iPloTyp,var,row_sz,col_sz)
+! 	SUBROUTINE RBININ(iPloTyp,var,row_sz,col_sz)
 
-C  Gets a matrix from a .mat file
-	use param_mod
-#ifdef CSMACOS
-        use smacosio_mod
-#else
-        use macosio_mod
-#endif
+! C  Gets a matrix from a .mat file
+! 	use param_mod
+! #ifdef CSMACOS
+!         use smacosio_mod
+! #else
+!         use macosio_mod
+! #endif
 
-	IMPLICIT NONE
+! 	IMPLICIT NONE
 
-	LOGICAL exist
+! 	LOGICAL exist
 
-	CHARACTER(len=MacosCharLen) :: file,fname,varname
-	CHARACTER*82 SCR
-	INTEGER iPloTyp,row_sz,col_sz,strLen,fnamelen
-	SREAL var(mdttl,mdttl)
+! 	CHARACTER(len=MacosCharLen) :: file,fname,varname
+! 	CHARACTER*82 SCR
+! 	INTEGER iPloTyp,row_sz,col_sz,strLen,fnamelen
+! 	SREAL var(mdttl,mdttl)
 
-C  get file name and variable name
+! C  get file name and variable name
 
-    1	CONTINUE
+!     1	CONTINUE
 
-	CALL CACCEPT(file,'no default','Enter file name:')
-	fnamelen=strLen(file)
-	fname=file(1:fnamelen)
+! 	CALL CACCEPT(file,'no default','Enter file name:')
+! 	fnamelen=strLen(file)
+! 	fname=file(1:fnamelen)
 
-	INQUIRE (FILE=fname,EXIST=exist)
-	IF (exist) THEN
-	  CALL CACCEPT(file,'no default','Enter variable name:')
-	  fnamelen=strLen(file)
-	  varname=file(1:fnamelen)
-	ELSE
-	  SCR= '.mat file does not exist'
-	  WRITE(*,*) SCR
-	  GO TO 1
-	END IF
+! 	INQUIRE (FILE=fname,EXIST=exist)
+! 	IF (exist) THEN
+! 	  CALL CACCEPT(file,'no default','Enter variable name:')
+! 	  fnamelen=strLen(file)
+! 	  varname=file(1:fnamelen)
+! 	ELSE
+! 	  SCR= '.mat file does not exist'
+! 	  WRITE(*,*) SCR
+! 	  GO TO 1
+! 	END IF
 
-C	IF (iPloTyp.EQ.9) THEN
+! C	IF (iPloTyp.EQ.9) THEN
 
- 	    CALL RREAD_MAT_LOH(fname,varname,var,row_sz,col_sz)
+!  	    CALL RREAD_MAT_LOH(fname,varname,var,row_sz,col_sz)
 
-C	END IF
+! C	END IF
 
- 	RETURN
-	END SUBROUTINE RBININ
+!  	RETURN
+! 	END SUBROUTINE RBININ
 
 
 C***********************************************************************
@@ -2854,8 +2856,8 @@ C***********************************************************************
 	  !Do i=1,size/2
 	Do j=1,size
 	  Do i=1,size
-            If (obj(i,j)>zmax) zmax=obj(i,j)	
-            If (obj(i,j)<zmin) zmin=obj(i,j)	
+            If (obj(i,j)>zmax) zmax=obj(i,j)
+            If (obj(i,j)<zmin) zmin=obj(i,j)
 	  End Do
 	End Do
 	print*,'* obj: zmax, zmin =',zmax,zmin
@@ -2865,7 +2867,7 @@ C***********************************************************************
 	!obj2(size/4+1:size*3/4,size/4+1:size*3/4)=1d0-obj
 	!obj2=1d0-obj
 	obj2=obj;
-	
+
 	 !print*,'obj2(1,1) =',obj2(1,1)
 	 !print*,'obj2(128,128) =',obj2(128,128)
 

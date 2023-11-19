@@ -103,6 +103,7 @@ clean::
 # begin depends
 kinds.o: kinds.f90
 constants.o: constants.f90 kinds.f90
+dftsub.o: dftsub.F
 macos_debug.o: macos_debug.F
 param_mod.o: param_mod.F
 elt_mod.o: elt_mod.F param_mod.F
@@ -121,7 +122,6 @@ didesub.o: didesub.F
 pgplotsub.o: pgplotsub.F $(MOD_SRCS) fits1.inc mcolors.inc
 sunsub.o: sunsub.F $(MOD_SRCS) fits1.inc
 pixsub.o: pixsub.F $(MOD_SRCS)
-dftsub.o: dftsub.F $(MOD_SRCS)
 propsub.o: propsub.F $(MOD_SRCS)
 sourcsub.o: sourcsub.F $(MOD_SRCS) ssrcray.inc
 utilsub.o: utilsub.F lensarr_indexes.inc collim.inc
@@ -133,7 +133,7 @@ macos.o: macos.F $(MOD_SRCS) fits1.inc glass.inc
 macosio.o: macosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
 smacosutil.o: smacosutil.F
 smacosio.o: smacosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
-matloh.o: matloh.F
+# matloh.o: matloh.F
 pgplotdummy.o: pgplotdummy.F
 mhist.o : mhist.c
 
