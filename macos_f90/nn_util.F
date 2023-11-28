@@ -9,7 +9,6 @@ C***********************************************************************
 #include "realtype.h"
 
 	Module nn_util
-	use nn_type
 
 	implicit none
 
@@ -152,14 +151,12 @@ C***********************************************************************
 C -----
 
 	Module nn_mod
-	use nn_type
 
 	implicit none
 
 	Contains
 
 	Subroutine covsrt(covar, maska)
-	use nn_type
 	use nn_util, only : assert_eq, swap
 
 	LREAL, dimension(:,:), intent(inout) :: covar
@@ -182,7 +179,6 @@ C -----
 
 
 	Subroutine gaussj(a,b,success)
-        use nn_type
 	use nn_util, only : assert_eq, nerror, outerand, outerprod, swap
 
 	LREAL, dimension(:,:), intent(inout) :: a, b

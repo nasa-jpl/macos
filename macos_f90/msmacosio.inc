@@ -7,7 +7,7 @@ C       Set entrance condition flags to .FALSE.
 
   50      CONTINUE   ! This section is for header part of Rx
 
-          READ(RX_FID, 123,END=354) STRING
+          READ(RX_FID, 123, END=99) STRING
  354      CONTINUE
 
           CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
@@ -382,7 +382,7 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'zSource',7)) THEN
             READ(VALUE,*)zSource
-            IF (ABS(zSource) <= EPS) GOTO 99
+            IF (ABS(zSource) <= EPSILON(1d0)) GOTO 99
             zSource_FLG=.TRUE.
             GO TO 50
 
@@ -585,13 +585,13 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'gap',3)) THEN
-#if 0
-            IF (GridType .NE. 5) THEN
-              READ(VALUE,*)gap
-            ELSE
-              READ(VALUE,*)radCtr
-            END IF
-#endif
+!#if 0
+!            IF (GridType .NE. 5) THEN
+!              READ(VALUE,*)gap
+!            ELSE
+!              READ(VALUE,*)radCtr
+!            END IF
+!#endif
             READ(VALUE,*)gap
             gap_FLG=.TRUE.
             GO TO 50
@@ -634,7 +634,7 @@ C       Set entrance condition flags to .FALSE.
               IF (nSeg_FLG) THEN
                 IF (nSeg .GT. 1)  THEN
                   DO iSeg=2,nSeg
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)(SegCoord(i,iSeg),i=1,3)
                   END DO
                 END IF
@@ -647,7 +647,7 @@ C       Set entrance condition flags to .FALSE.
               IF (nSeg_FLG) THEN
                 IF (nSeg .GT. 1)  THEN
                   DO iSeg=2,nSeg
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)SegCoord(1:2,iSeg)
                   END DO
                 END IF
@@ -694,6 +694,8 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
+          ! Header Exit Criteria
+          ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'iElt',4)) THEN
             CALL ChkDf1(npts,ENTR_OK)
             IF (ENTR_OK) THEN
@@ -712,7 +714,11 @@ C       Set entrance condition flags to .FALSE.
           ! Start the Element Definition Section
           !
           ! --------------------------------------------------------------------------------
-   60     CONTINUE   ! Start the Element Definition Section
+          !
+          ! Ignore "nElt" definition in Rx => updated at the end
+          !
+
+   60     CONTINUE
 
 	  CWB=CWM/CBM
           WaveBU=CWB*Wavelen
@@ -725,21 +731,32 @@ C       Set entrance condition flags to .FALSE.
           jGridSrf=0; iEltToGridSrf=0
           jAmplSrf=0; iEltToAmplSrf=0; ifAmplSrf=.FALSE.;
           jMetSrf=0; iEltToMetSrf=0; nMetPos=0
-          tMetSrf=-1; tMetSrfPos=0; LnOutCordPass=.FALSE.
+          tMetSrf=-1; tMetSrfPos=0
 
-          maxAsphCoef   = 4   ! reset to default
+          nAsphCoef     = nAsphCoef_Default   ! reset to default
           AsphCoef(:,:) = 0d0
-          nZernCoef     = 45  ! Default # of Zernike Coefficients to read in
 
-	  iElt=1
+          nZernCoef     = nZernModes_Default  ! Default # of Zernike Coefficients to read in
+          ZernCoef(:,:) = 0d0
+
+	  iElt=0
           DO   ! this is a "DO ... END DO" loop
 
-            CALL LOHIN2()  ! set all elt flags to false. -jzlou
-   61       CONTINUE
+            ! update -- nElt were read in thus far
+            !           note that duplicate Elements can only use iElt < nElt
+            nElt = iElt
 
-            READ(RX_FID, 123) STRING
+            ! prep for next Element reading
+            iElt       = iElt + 1
+	    DupElt_FLG = .FALSE.
+
+            CALL LOHIN2()  ! set all elt flags to false. -jzlou
+
+   61       CONTINUE
+            READ(RX_FID, 123, END=99) STRING
 
   901       CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
+            IF (LCMP(STRING,'EOF',3)) GOTO 99
 
             ! ------------------------------------------------------------------------------
             IF (LCMP(VAR_NAM,'EltName',7)) THEN
@@ -1188,15 +1205,17 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               End If
               GO TO 61
 
-            ! ------------------------------------------------------------------------------
+            ! ------------------------------------------------------------------------------ fElt
 	    ELSE IF (LCMP(VAR_NAM,'fElt',4)) THEN
               READ(VALUE,*) fElt(iElt)
-              fElt_FLG=.TRUE.
-              KrElt_FLG = .TRUE.; KcElt_FLG = .TRUE.
-              KcElt(iElt) = 0.0D0; KrElt(iElt) = 0.0D0
+              fElt_FLG    = .TRUE.
+              KrElt_FLG   = .TRUE.
+              KcElt_FLG   = .TRUE.
+              KcElt(iElt) = 0D0;
+              KrElt(iElt) = 0D0
               GO TO 61
 
-            ! ------------------------------------------------------------------------------
+            ! ------------------------------------------------------------------------------ eElt
             ELSE IF (LCMP(VAR_NAM,'eElt',4)) THEN
               READ(VALUE,*)eElt(iElt)
               eElt_FLG=.TRUE.
@@ -1205,27 +1224,66 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'nAsphCoefs',5)) THEN
-              ! Added by jzlou, 09/21/05, moved here 05/30/07
-              READ(VALUE,*) maxAsphCoef
-              If (maxAsphCoef<4 .OR. maxAsphCoef>9) Then
-                WRITE(*,*)'**WARNING: nAsphCoefs is out of range, '//
-     &                    'has been reset to 4!'
-                maxAsphCoef = 4
-              End If
+            !  ...
+            !  nAsphCoef=  7
+            !  AsphCoefs=  3.825055423250000d-009 -1.713067033850000d-014  8.407870699740000d-020 -4.925133142010000d-025
+            !             -1.623672889230000d-028  4.446562373320000d-033 -7.802857348350000d-038
+            !  ...
+            !
+            ! Group of 4 Coefficients -- if not formatted this way, it will crash
+            ! ------------------------------------------------------------------------------ nAsphCoefs
+            ELSE IF (LCMP(VAR_NAM,'nAsphCoefs',7)) THEN
+
+              READ(VALUE,*) nAsphCoef
+              IF (nAsphCoef<1 .OR. nAsphCoef>mAsphCoef) THEN
+                WRITE(*,*)'**WARNING: nAsphCoefs is out of range -- failure'
+                GO TO 99
+              END IF
               GO TO 61
 
-            ! ------------------------------------------------------------------------------
+            ! ------------------------------------------------------------------------------ AsphCoefs
             ELSE IF (LCMP(VAR_NAM,'AsphCoef',8)) THEN
-              READ(VALUE,*)(AsphCoef(j,iElt),j=1,maxAsphCoef)
-!             print*,'****macosio: AsphCoef=',
-!    &               AsphCoef(1:maxAsphCoef,iElt)
+
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 4  ! defines # of Coefs. within a Grp per line
+                INTEGER            :: iZ, nZ
+                ! --------------------------
+
+                AsphCoef(:,iElt) = 0d0
+                IF (nAsphCoef<=Grp) THEN
+                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,nAsphCoef)
+                ELSE
+
+                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,Grp)
+
+                  ! complete line group ("Grp" Coefficients)
+                  DO iZ=1, nAsphCoef/Grp-1
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+
+                  ! incomplete Grp
+                  nZ = MOD(nAsphCoef,Grp)
+                  iZ = nAsphCoef/Grp
+                  IF (nZ>0) THEN
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+
+                nAsphCoef = nAsphCoef_Default  ! reset to default
+              END BLOCK
+
               AsphCoef_FLG=.TRUE.
               GO TO 61
+
+            ! ------------------------------------------------------------------------------ AnaCoef
             ELSE IF (LCMP(VAR_NAM,'AnaCoef',7)) THEN
               READ(VALUE,*)(AnaCoef(j,iElt),j=1,4)
               AnaCoef_FLG=.TRUE.
               GO TO 61
+
+            ! ------------------------------------------------------------------------------ ZernType
             ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
               TypeString=VALUE
 	      If (LCMP(TypeString,'Noll',4))
@@ -1302,7 +1360,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nZernCoef/Grp-1
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
 
@@ -1310,7 +1368,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   nZ = MOD(nZernCoef,Grp)
                   iZ = nZernCoef/Grp
                   IF (nZ>0) THEN
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
@@ -1360,43 +1418,43 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'MonCoef',7)) THEN
               READ(VALUE,*)(MonCoef(j,iElt),j=1,6)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=7,12)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=13,18)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=19,24)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=25,30)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=31,36)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=37,42)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=43,48)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=49,54)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=55,60)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=61,66)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=67,72)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=73,78)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=79,84)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=85,90)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=91,96)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=97,102)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=103,108)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=109,114)
-              READ(RX_FID, 123)STRING
+              READ(RX_FID, 123, END=99)STRING
               READ(STRING,*)(MonCoef(j,iElt),j=115,120)
               MonCoef_FLG=.TRUE.
               GO TO 61
@@ -1448,7 +1506,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      END IF
 	      READ(VALUE,*) nMetPos(iElt)
 	      Do i=1,nMetPos(iElt)
-                READ(RX_FID, 123) STRING
+                READ(RX_FID, 123, END=99) STRING
                 READ(STRING,*) SrfMetPos(1:3,i,iEltToMetSrf(iElt))
               End Do
 	      GO TO 61
@@ -1471,7 +1529,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !    &               nMetPos(iElt),tMetSrf(iElt),ntMetPos(iElt)
               If (tMetSrf(iElt)>0) Then
 	        Do i=1,nMetPos(iElt)
-	          READ(RX_FID, 123) STRING
+	          READ(RX_FID, 123, END=99) STRING
                   READ(STRING,*)
      &              metBeamFlg(1:ntMetPos(iElt),i,iEltToMetSrf(iElt))
 	        End Do
@@ -1498,14 +1556,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
               GridFile(iElt)=VALUE
 
-	      if (iElt==14) then
-	        print*,'*** iElt = 14, GridFile(iElt) =',GridFile(iElt)
-	      end if
-
 	      k=ICLEN(GridFile(iElt))
-	      If (.false.) Then
-	        print*,'Grid file extension: ',GridFile(iElt)(k-2:k)
-	      End If
 
 	      If (.not.LCMP(GridFile(iElt)(k-2:k),'bin',3)) Then
 	        ! ascii
@@ -1546,7 +1597,6 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	        jAmplSrf=jAmplSrf+1
 	        iEltToAmplSrf(iElt)=jAmplSrf
 	        ifAmplSrf(iElt)=.TRUE.
-	        !print*,'**ms-io: ifAmplSrf is true for iElt =',iElt
 	        LTaperedElt(iElt)=.true.
 	      END IF
 
@@ -1667,13 +1717,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	        Do
 	         if (k<nValsPerRow) exit
 	          ! read in 'nValsPerRow' IndRef values from Rx
-	          READ(RX_FID, 123)STRING
+	          READ(RX_FID, 123, END=99)STRING
 	          READ(STRING,*)
      &	           LensletStrArray(i:i+nValsPerRow-1,iElt)%IndRef
 	          k=k-nValsPerRow; i=i+nValsPerRow
 	        End Do
 	        If (k>0) Then
-	          READ(RX_FID, 123)STRING
+	          READ(RX_FID, 123, END=99)STRING
 	          READ(STRING,*)
      &             LensletStrArray(i:i+k-1,iElt)%IndRef
 	        End If
@@ -1852,7 +1902,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	        ! and layer_thickiness is in terms of wavelength lambda
 	        i=EltCoat(iElt)
 	        Do k=1,EltCoat(iElt)
-	          READ(RX_FID, 123) STRING
+	          READ(RX_FID, 123, END=99) STRING
                   READ(STRING,*)IndRefArr(k,iElt),ExtincArr(k,iElt),
      &				EltCoatThk(k,iElt)
 	          EltCoatThk(k,iElt)
@@ -2163,7 +2213,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     GOTO 99
                   End If
                   Do k=1,nVertex
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)(PolyApVtx(j,k,iElt),j=1,2)
                   End Do
                   Call SetCvxPolyApBound(iElt)
@@ -2194,7 +2244,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          print*,'** iElt = ',iElt,', is Tapered_Polygonal ...'
 	          !
 	          Do k=1,nVertex
-                    READ(RX_FID, 123)STRING
+                    READ(RX_FID, 123, END=99)STRING
                     READ(STRING,*)(PolyApVtx(j,k,iElt),j=1,2)
                   End Do
                   Call SetCvxPolyApBound(iElt)
@@ -2234,7 +2284,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   GO TO 99
                 End If
                 Do k=1,nVertex
-                  READ(RX_FID, 123)STRING
+                  READ(RX_FID, 123, END=99)STRING
                   READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
                 End Do
                 Call SetCvxPolyApVtx(iElt,nVertex,
@@ -2255,7 +2305,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (nObs_FLG) THEN
                 DO iObs=1,nObs(iElt)
                   IF (iObs.GT.1) THEN
-                    READ(RX_FID, 123) STRING
+                    READ(RX_FID, 123, END=99) STRING
                     CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
                   END IF
                   TypeString=VALUE
@@ -2346,7 +2396,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   END IF
 
 	          ! Read in ObsVec line
-                  READ(RX_FID, 123) STRING
+                  READ(RX_FID, 123, END=99) STRING
                   CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	          ! Check whether ObsVec are 3D vertices
@@ -2376,7 +2426,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                         GO TO 99
                       End If
                       Do k=1,nVertex
-                        READ(RX_FID, 123) STRING
+                        READ(RX_FID, 123, END=99) STRING
                         READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
                       End Do
                       Call SetCvxPolyObsVtx(iElt,nVertex,
@@ -2418,7 +2468,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                        GO TO 99
                       END IF
                       Do k=1,nVertex
-                        READ(RX_FID, 123)STRING
+                        READ(RX_FID, 123, END=99)STRING
                         READ(STRING,*)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
                       End Do
                       Call SetCvxPolyObsBound(iObs,iElt)
@@ -2464,7 +2514,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               ! Read in position and measuring direction of all edge-sensors,
               ! in global frame
               Do k=1,EdgeSensor(iElt)
-                !READ(RX_FID, 123)STRING
+                !READ(RX_FID, 123, END=99)STRING
                 READ(RX_FID, *)EdgeSensVec(1:9,k,iElt) ! (position + two directions)
                 If (iElt==12) Then
                   print*,'EdgeSensVec(1:9,k,12) =',
@@ -2477,7 +2527,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (nECoord_FLG) THEN
                 READ(VALUE,*)(TElt(1,j,iElt),j=1,nECoord(iElt))
                 DO 63 k=2,6
-                  READ(RX_FID, 123)STRING
+                  READ(RX_FID, 123, END=99)STRING
                   READ(STRING,*)(TElt(k,j,iElt),j=1,nECoord(iElt))
  63             CONTINUE
                 TElt_FLG=.TRUE.
@@ -2487,6 +2537,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 GO TO 99
               END IF
 
+            ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'CopyElt',7) .OR.
      &               LCMP(VAR_NAM,'DuplElt',7)) THEN
               ! Make a duplicate element at given element id, for douple-pass
@@ -2500,6 +2551,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               End If
               GO TO 61
 
+            ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'iElt',4)) THEN
 	      IF (DupElt_FLG) THEN
                 ! If the element previsouly read in is a duplicate element,
@@ -2512,38 +2564,45 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 GO TO 62
               ELSE
                 WRITE(*,*)'  Input file not properly loaded'
+                LOAD_SUCCESS = .FALSE.
                 GO TO 99
               END IF
-            ELSE IF (LCMP(VAR_NAM,'nOutCord',8).OR.
-     &               LCMP(VAR_NAM,'RxEnd',5)) THEN
-	      LnOutCordPass=.TRUE.
-	      if (nElt/=iElt) nElt=iElt
-              CALL ChkDf2(iElt,ELEM_OK)
-              IF (ELEM_OK) THEN
-                LOAD_SUCCESS=.true.; GO TO 70
-              ELSE
-                WRITE(*,*)'  Input file not properly loaded'
-                GO TO 99
-              END IF
+
+            ! ------------------------------------------------------------------------------
+            ! Exit criteria for reading element definitions
+            ! ------------------------------------------------------------------------------
+
+            ELSE IF (LCMP(VAR_NAM,'nOutCord',8)) THEN
+
+	      nElt = iElt
+
+              CALL ChkDf2(iElt, LOAD_SUCCESS)
+              IF (LOAD_SUCCESS) GO TO 70
+
+              ! Failure case
+              GO TO 99
+
+            ! ------------------------------------------------------------------------------
             ELSE
               WRITE(*,*)' MBFile6: Unidentified string =',VAR_NAM,
      &                  ', iElt=',iElt
               GO TO 61
             END IF
 
+ 62	    CONTINUE
+            ! ------------------------------------------------------------------------------
+            ! Prep for next Element definition
+            !    since Element Exit criteria was not yet triggered
+            ! ------------------------------------------------------------------------------
 
-	    ! This part is added so that load will work when nElt in Rx is smaller
-            ! than actual elements in Rx. -jzlou
- 62	    IF (iElt==nElt .AND. (.not. LnOutCordPass)) THEN
-              ! need to increase 'nElt' since there are extra element(s) in Rx
-              nElt=nElt+1
-	    END If
+            ! check array size
+            IF ((iElt+1).GT.mElt) THEN
+              nElt         = 0
+              LOAD_SUCCESS = .FALSE.
 
-	    !print*,'****** iSeg =',iSeg
+              WRITE(*,*) ' Too many elements defined => increase allocation.'
+              GO TO 99
+            END IF
 
-            iElt=iElt+1
-	    DupElt_FLG=.FALSE.
-            If (iElt>nElt) EXIT
-	  END DO
-          ! End of "DO ... END DO" loop, -jzlou
+	  END DO  ! End of "DO ... END DO" loop for reading elements
 

@@ -28,13 +28,11 @@ C***********************************************************************
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
      &                       cUnit,ifRegrid
 	use traceutil_mod
-
 	use loh_I1
 	use loh_I2
 	use loh_I3
-
 	use dopt_mod
-
+        ! --------------------------------------
 	IMPLICIT NONE
 
 	Integer :: npts
@@ -45,7 +43,7 @@ C***********************************************************************
 c	CHARACTER*8 CDEF
 	CHARACTER(len=MacosCharLen) :: TypeString
 	LOGICAL exist,LCMP,IHSTPM,IHSTSM,ifGridInit,ifAmplInit,
-     &          LnOutCordPass,LOAD_SUCCESS
+     &          LOAD_SUCCESS
 	INTEGER i,j,k,l,iaxis,iElt,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,g,jAmplSrf,jMetSrf,
@@ -56,17 +54,17 @@ c	CHARACTER*8 CDEF
 C       Setup for new input scheme
 
 	CHARACTER*4 IND(3)
-	CHARACTER(len=MacosCharLen) :: STRING
- 	!CHARACTER*180 STRING
-	CHARACTER(MacosVarNamLen) :: VAR_NAM
+        CHARACTER(len=MacosCharLen) :: STRING
+        CHARACTER(MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
-	!CHARACTER*36 VAR_NAM
- 	!CHARACTER*160 VALUE
 	LOGICAL ARR_FLG, opt_npts_flg
 	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
 	INTEGER ians, nVertex
 
 	REAL*8 D1(9)
+
+        INTEGER :: nZernCoef    ! Set to Default when reading in values to make it backwards compatible
+        INTEGER :: nAsphCoef    ! Ditto
 
 c***loh<
 C	File setup and initial conditions read
@@ -146,17 +144,30 @@ C	File setup and initial conditions read
      &	' |   Malacara       Noll           Fringe     |'/
      &	' +--------------------------------------------+')
 
+        ! Flags
+        LOAD_SUCCESS = .FALSE.        ! so far, Rx is not loaded
 
-C	Initialize constants
+        CALL reinitialise_variables() ! Reset ALL: see "call macos_init_all()" in macos_init.F
+        CALL LOHIN1()                 ! def in iosub.inc
+        CALL LOHIN2()                 ! def in iosub.inc
 
-	DDEF(1:7)=0D0
-	IDEF(1:7)=0D0
- 	CWM=1d0; CBM=1d0
-	opt_npts_flg=.false.
+        ! ----------------------------------------------------------
+        ! 'NEW' cmd is not supported
+        IF (.NOT.ifOld) THEN
+          WRITE(*,*)' SMACOS does not support the NEW command.'
+          RETURN
+        END IF
 
-C	Get file name
+        ! Initialize constants
 
- 43	CONTINUE
+        DDEF(1:7)=0D0
+        IDEF(1:7)=0D0
+        CWM=1d0; CBM=1d0
+        opt_npts_flg=.false.
+
+C       Get file name
+
+ 43     CONTINUE
 	CALL CACCEPT(filnam,' ','Enter file name: ')
 	l=ICLEN(filnam)
 	IF ((l.EQ.1).AND.((filnam.EQ.'q').OR.(filnam.EQ.'Q'))) RETURN
@@ -167,29 +178,31 @@ C	Get file name
 	mfil=filnam(1:l)//'.m'
 	pertfil=filnam(1:l)//'.pert'
 	L=ICLEN(infil)
-	INQUIRE (file=infil(1:L),exist=exist)
+
+        INQUIRE (file=infil(1:L), exist=exist)
 	IF (exist) THEN
-	  IF (ifOld) THEN
+	!   IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
-	  ELSE
-	    WRITE (*,*) ' Input file ',infil(1:L),
-     &	    ' already exists. Please use a new name or use OLD.'
-	    GO TO 43
-	  END IF
+! 	  ELSE
+! 	    WRITE (*,*) ' Input file ',infil(1:L),
+!      &	    ' already exists. Please use a new name or use OLD.'
+! 	    GO TO 43
+! 	  END IF
 	  iopt=1
 	ELSE
-	  IF (ifOld) THEN
+	!   IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),
      &	    ' does not exist. Check name/path or use NEW.'
-	    GO TO 43
-	  END IF
+	!     GO TO 43
+	!   END IF
 	  iopt=0   ! ifOLD = .false. - jzlou
+          GO TO 99
 	END IF
 
- 29	CONTINUE
-	EltName(0)='InputRay'
-	PropType(0)=1
-	zElt(0)=1d19
+ 29     CONTINUE
+        EltName(0)  = 'InputRay'
+        PropType(0) = 1
+        zElt(0)     = 1d22
 
 C
 C	Read existing input file
@@ -199,27 +212,29 @@ C
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
-   70     CONTINUE
-	  If (.not.LOAD_SUCCESS) Then
-            WRITE(*,*)' ** Rx input file load failed'
-            CLOSE(UNIT=RX_FID); RETURN
-          End If
 
-	  CALL LOHIN3()
+   70     CONTINUE
+	  IF (.not.LOAD_SUCCESS) GOTO 99
+        !     WRITE(*,*)' ** Rx input file load failed'
+        !     CLOSE(UNIT=RX_FID);
+        !     RETURN
+        !   End If
+
+	  CALL LOHIN3()    ! def in iosub.inc
 
 	  READ(VALUE,*)nOutCord
 	  nOutCord_FLG=.TRUE.
 
-	  READ(RX_FID, 123)STRING
+	  READ(RX_FID, 123, END=99)STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
-	 	READ(RX_FID, 123)STRING
+	 	READ(RX_FID, 123, END=99)STRING
 	        READ(STRING,*)(Tout(k,j),j=1,7)
-   71	      CONTINUE
+   71         CONTINUE
 	    END IF
 	    Tout_FLG=.TRUE.
 	  END IF
@@ -233,11 +248,11 @@ C
 	    GO TO 99
 	  END IF
 
-   80 	  CONTINUE
+   80     CONTINUE
 
 	  CALL SumData(GridType,npts)
 
-	  IF (nGridpts.GT.mpts) THEN
+          IF (nGridpts.GT.mpts) THEN
 	    WRITE(*,121)mpts
 	    nGridpts=mpts
 	    npts=nGridpts-1
@@ -246,19 +261,18 @@ C
 	      opt_npts_flg=.true.
 	    end if
 	  END IF
-	  IF (nElt.GT.mElt) THEN
-	    WRITE(*,*) ' Too many elements.'
-	    WRITE(*,*) '  MODIFY or use another version. '
-	  END IF
-	  IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
+
+! ToDo: this will cause indexing faults
+          IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
 	    WRITE(*,*) ' Too many segments.'
 	    WRITE(*,*) '  MODIFY or use another version. '
 	  END IF
 
-C	Create new input file
-C
+C       Create new input file
+
 	ELSE
 	  WRITE(*,*)' SMACOS does not support the NEW command.'
+          GO TO 99
 	END IF
 
 
@@ -289,10 +303,12 @@ C
         ! Rx loading failed
         !
    99   CONTINUE
-	LOAD_SUCCESS = .FALSE.
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+
+        nElt = 0
+        LOAD_SUCCESS = .FALSE.
 
         RETURN
 	END SUBROUTINE MBFile6

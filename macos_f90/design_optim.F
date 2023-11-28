@@ -12,13 +12,13 @@ C  Last updated: 08/2008
 C
 C  This MACOS system optimizer can optimize WFE, WF Zernike modes, and
 C  optical beam pointing (position and/or direction at an optical surface)
-C  in terms of (by adjusting) eight DOF of any optical element (six DOF 
-C  rigid-body motion, ROC and conic constant) as well as Zernike modes 
-C  and aspherical coefficients for element surface figures, at any designated 
-C  elements including the light source (rotations and shifts of source plane). 
+C  in terms of (by adjusting) eight DOF of any optical element (six DOF
+C  rigid-body motion, ROC and conic constant) as well as Zernike modes
+C  and aspherical coefficients for element surface figures, at any designated
+C  elements including the light source (rotations and shifts of source plane).
 C  Also supported are
 C   1) Double-pass configuration, add a 'Link' field in the return-path
-C      element section in MACOS Rx. 
+C      element section in MACOS Rx.
 C   2) Subassembly (group) based optimizations.
 C   3) Multi-field (Field of View) and multi-wavelength optimizations.
 C   4) Choice between Nonlinear (default) and Linear algorithms.
@@ -59,15 +59,15 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         Integer :: wf_zern_mode_m(max_zern_modes)
         LREAL, dimension(:), allocatable :: objfun_nom,da,aparams_nls_m
         Logical :: start_curr_optim,ifCalcOPD,ifFEX_m,lmlsq_success,
-     &		   NomSensOnly,LinNomCtrl   
+     &		   NomSensOnly,LinNomCtrl
         Type(OptBeamStr) :: OptBeam_m
-        Real*8, dimension(:,:), allocatable :: OPDMat_m 
+        Real*8, dimension(:,:), allocatable :: OPDMat_m
 
 
 	Contains
 
-        ! This driver routine performs optimization on an optical system 
-        ! based on the Levenberg-Marquardt nonlinear least-square method, 
+        ! This driver routine performs optimization on an optical system
+        ! based on the Levenberg-Marquardt nonlinear least-square method,
         ! a unconstrained, nonlinear iterative minimization algorithm.
 	! When in this routine, it is assumed that
 	!  1) Rx is already loaded.
@@ -116,7 +116,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         LREAL, dimension(:), allocatable :: aparams,tmpda,sig
         LREAL, dimension(:,:), allocatable :: covar,alpha
         Logical, dimension(:), allocatable :: maska
-        LREAL :: alamda, chisq, chisq_arr(tot_itrs+1), 
+        LREAL :: alamda, chisq, chisq_arr(tot_itrs+1),
      &           wfe_rms, wfe_rms_old(12,6)
         Integer :: len_a, idof,ifov,iwl,k,tot_itrs_done,m_err_rtn
 	LREAL, save :: dtt,dx,dp,dc,drc,dcc,dz,das,das_scale
@@ -139,12 +139,18 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	tgt_wf_funit=10  ! default WF file unit
 
 	opt_tgt_m=opt_target
-	If (opt_tgt_m==WFE_ZMODE_TARGET) Then 
+	If (opt_tgt_m==WFE_ZMODE_TARGET) Then
           n_wf_zern_m=n_wf_zern
 	  wf_zern_mode_m(1:n_wf_zern)=wf_zern_mode(1:n_wf_zern)
 	End If
-	nfov_m=nfov; fovs_m=fovs 
-	nwls_m=nwls; wls_m(1:6)=wls(1:6) 
+	nfov_m = nfov;
+        fovs_m = fovs
+
+        ! Wavelength
+	nwls_m       = nwls;
+        wls_m(:)     = 0d0
+        wls_m(:nwls) = wls(:nwls)
+
         optElt_m=optElt; ifFEX_m=ifFEX
 
 	mBeamOff=0
@@ -153,13 +159,13 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  if (OptBeam%ifOptBeamDir)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamPos)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamSize) mBeamOff=mBeamOff+1
-	  if (OptBeam%ifOptBeamRefRayDir) mBeamOff=mBeamOff+3*nRefRay 
+	  if (OptBeam%ifOptBeamRefRayDir) mBeamOff=mBeamOff+3*nRefRay
 	  if (OptBeam%ifOptBeamRefRayDir) then
 	    print*,' **design_optim: nRefRay =',nRefRay
 	    print*,' **design_optim: OptBeam%nomBeamRefRayDir(1:3)=',
      &                   OptBeam%nomBeamRefRayDir(1:3)
 	  end if
-	End If	
+	End If
 
 	If (ifFEX) Then
 	  if (ifStopSet) then
@@ -175,19 +181,19 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	! At the beginning of each design optimization, the current
 	! optical state will be saved as sort of "nominal" state, and
-	! the calibrated parameter array "aparams" (which in fact is the 
-        ! deviation amounts from initial optical state) will be initialized 
-        ! to zero. The following statement makes sure the initial optical 
-	! state is saved in smacos_compute_perturbed routine. 
+	! the calibrated parameter array "aparams" (which in fact is the
+        ! deviation amounts from initial optical state) will be initialized
+        ! to zero. The following statement makes sure the initial optical
+	! state is saved in smacos_compute_perturbed routine.
 	start_curr_optim = start_optim
 
 	If (first_entry) Then
-	  dtt = 1e-9   ! 1 nrad, differential for tip and tilt 
+	  dtt = 1e-9   ! 1 nrad, differential for tip and tilt
 	  dx  = 1d-5   ! 10 nm, differential for dx and dy (if base unit = mm)
 	  dp  = 2d-5   ! 20 nm, differential for piston
 	  dc  = 1d-4   ! 0.1 mrad, differential for clock
-	  drc = 1d-4   ! 0.1 um, differential for ROC 
-	  dcc = 1d-04  ! differential for conic constant  
+	  drc = 1d-4   ! 0.1 um, differential for ROC
+	  dcc = 1d-04  ! differential for conic constant
 	  dz  = 2d-6   ! 2 nm, differential for Zernike coeff
 	  das = 1d-10  ! for aspherical coeff
 	  first_entry=.false.
@@ -272,8 +278,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                 +mOptZern_nls+mOptAsph_nls)))
 	len_a=0; k=1
 	!
-	Do iElt=1, n_elts 
-	  Do idof=1,mVarDOF_nls  
+	Do iElt=1, n_elts
+	  Do idof=1,mVarDOF_nls
 	    if (dof_arr(k)>0) then
 	      len_a=len_a+1
 	      if (idof==1 .or. idof==2) then
@@ -285,7 +291,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      else if (idof==6) then
 	        tmpda(len_a) = dp
 	      else if (idof==7) then
-	        tmpda(len_a) = drc  ! ROC 
+	        tmpda(len_a) = drc  ! ROC
 	      else
 	        tmpda(len_a) = dcc  ! Conic
 	      end if
@@ -295,7 +301,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  ! Add zern for this varElt
 	  Do idof=1,n_optZern(iElt)
 	    len_a=len_a+1
-	    tmpda(len_a)=dz  
+	    tmpda(len_a)=dz
 	  End Do
 	  ! Add asph for this varElt
 	  das_scale=1d0
@@ -313,17 +319,17 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           if (m_err_rtn /= 0)
      &      call macos_memory_failure
      &             ('nls_optim_dvr(4): allocate failed!')
-	da=tmpda(1:len_a)  
+	da=tmpda(1:len_a)
 
 	!print*,'**** len_a = ', len_a
 	!print*,'**** da = ', da
 
-	! Define nominal target values 
+	! Define nominal target values
 	If ((opt_tgt_m/=SPOT_TARGET) .and. (.not. tgt_wf_flag)) Then
 	  objfun_nom=0d0  ! target WF default to 0
 
 	  ! OptBeam currently works only for single FOV and wavelength
-	  off=1 
+	  off=1
 	  if (OptBeam_m%ifOptBeamDir) then
 	    ! initialize target beam direction for beamDirElt
 	    objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamDir
@@ -355,7 +361,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    ! tgt_wf currently not supported for multiple wavelengths
 	    WRITE(*,*) ' User-specified target WF not supported'//
      &                 ' yet for multiple wavelengths'
-	    return   
+	    return
 	  end if
 	  ! Use user provided target WF
 	  If (LCMP(tgt_wf_format,'B',1)) Then
@@ -367,7 +373,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      WRITE(*,*)' Open binary WF file failed, filename = ',
      &                  tgt_wf_filename
 	      rtn_flg=1
-              go to 100 
+              go to 100
 	    end if
 	    Do ifov=1,nfov
 	      Do j=1,nGridPts
@@ -418,7 +424,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
         aparams=0d0   ! default initial values for calibrated paramters
 	maska=.true.  ! everything in aparams will be calibrated
-	alamda=-1.0 
+	alamda=-1.0
 
 	If (tot_itrs.ge.0) Then
 	  ifCalcOPD=.true.
@@ -441,14 +447,14 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           status_flag = -2
           WRITE(*,*)' Computing nominal system sensitivity ...'
           Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
-	  WRITE(*,*)' Done!'   
+	  WRITE(*,*)' Done!'
           go to 110
         End If
 
-	If (ifOptPrint) Then 
+	If (ifOptPrint) Then
 	  WRITE(*,*)' '
           WRITE(*,*)'Starting MACOS System Optimization ...'
-	  WRITE(*,*)'Number of rays used for optimization =',opt_npts*opt_npts   
+	  WRITE(*,*)'Number of rays used for optimization =',opt_npts*opt_npts
           WRITE(*,*)' '
 	End If
 
@@ -465,7 +471,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
  	    old_wfe(ifov,iwl)=wfe_rms
 	    wfe_rms_old(ifov,iwl)=wfe_rms
 	    SpotSize_old=SpotSizem
-	  End Do	
+	  End Do
 	  if (opt_tgt_m==WFE_TARGET) then
 	    WRITE(*,*)'Initial RMS WFE =', old_wfe(1:nfov,iwl)
 	  else if (opt_tgt_m==SPOT_TARGET) then
@@ -483,7 +489,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	status_flag = 0 ! for svdls_itr() only
 
 	! Apply LM (or SVD) optimization iterations
-	Do itr=1,tot_itrs 
+	Do itr=1,tot_itrs
 
 	  If (OptAlg==NonLin) Then
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
@@ -502,7 +508,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
 	  End If
 
-	  If (tot_itrs>4 .and. 
+	  If (tot_itrs>4 .and.
      &        (itr==int(0.21*tot_itrs) .or. itr==int(0.5*tot_itrs) .or.
      &         itr==int(0.71*tot_itrs))) Then
 	    if (ifOptPrint) WRITE(*,*)itr,
@@ -516,7 +522,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                 SpotSizem,PIXm,
      &                 wfe_rms,n_elts,elt_arr_m,dof_arr_m,
      &		       n_optZern,varZern_arr_m,
-     &                 n_optAsph,varAsph_arr_m, 
+     &                 n_optAsph,varAsph_arr_m,
      &                 fovs(:,:,ifov),wls(iwl),aparams)
 	        !WRITE(*,*)' wfe_rms(ifov,iwl)=', wfe_rms; stop
 	        If (abs(wfe_rms-wfe_rms_old(ifov,iwl))>opt_tol .or.
@@ -540,20 +546,20 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
 	  if (.not. lmlsq_success) then
-            rtn_flg=1; return 
+            rtn_flg=1; return
 	  end if
 	  chisq_arr(tot_itrs_done+1) = chisq
 	Else
 	  ! Linear algorithm
 	  if (.not.LinNomCtrl) then
-	    ! If not using nominal system sensitivity, clean up 
-	    ! senstitivity array storage.  
+	    ! If not using nominal system sensitivity, clean up
+	    ! senstitivity array storage.
 	    status_flag=-1
             Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
 	  end if
 	End If
 
-	! Apply optimized state to current system and get OPD 
+	! Apply optimized state to current system and get OPD
 	Do iwl=1,nwls
 	  Do ifov=1,nFov
 	    Call smacos_compute_perturbed(OPDm,ZCoefm,SPOTm,
@@ -574,8 +580,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           Call zern_modes_coef(OPDMat_m,wf_zern_mode(1:n_wf_zern),
      &                         ZCoefm,4)
         End If
-	aparams_nls_m=aparams ! for external output 
-	
+	aparams_nls_m=aparams ! for external output
+
 
 	!WRITE(*,*)' len_a = ', len_a
 	!WRITE(*,*)' final a = ',aparams(1:len_a)
@@ -595,7 +601,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  if (m_err_rtn /= 0) then
 	    call macos_memory_failure
      &             ('nls_optim_dvr(1): deallocate failed!')
-	    stop 
+	    stop
 	  end if
         End If
 	If (allocated(n_optZern_m)) Then
@@ -618,7 +624,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
             call macos_memory_failure
      &             ('nls_optim_dvr(4): deallocate failed!')
           end if
-        End If	
+        End If
 	If (allocated(varAsph_arr_m)) Then
           deallocate(varAsph_arr_m,stat=m_err_rtn)
           if (m_err_rtn /= 0) then
@@ -626,7 +632,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &             ('nls_optim_dvr(5): deallocate failed!')
           end if
         End If
-	End Subroutine nls_optim_dvr	
+	End Subroutine nls_optim_dvr
 
 C ***************************************************************************
 
@@ -644,10 +650,10 @@ C
         Real*8, dimension(size(a)) :: a2
 	Real*8 :: wfe_rms
         Integer :: size_a, ifov,iwl,off,off2,i,j,k
-	Logical :: LUseChfRayIfOK_sv 
+	Logical :: LUseChfRayIfOK_sv
 
 ! y = objfun_nom, yfit = OPD(a)
-! call smacos_compute_perturbed to compute OPD and its derivatives 
+! call smacos_compute_perturbed to compute OPD and its derivatives
 ! w.r.t. to a.
 
 	LUseChfRayIfOK_sv=LUseChfRayIfOK
@@ -685,7 +691,7 @@ C
 		! smacos_compute_perturbed()
 	        off=off+obj_size; off2=1
 	        if (OptBeam_m%ifOptBeamDir) then
- 	          yfit(off+off2:off+off2+2)=beamDir_m(1:3) 
+ 	          yfit(off+off2:off+off2+2)=beamDir_m(1:3)
 	          off2=off2+3
 	        end if
 	        if (OptBeam_m%ifOptBeamPos) then
@@ -693,13 +699,13 @@ C
 	          off2=off2+3
                 end if
 	        if (OptBeam_m%ifOptBeamSize) then
-	          yfit(off+off2)=beamSize_m 
+	          yfit(off+off2)=beamSize_m
 	          off2=off2+1
 		end if
 	        if (OptBeam_m%ifOptBeamRefRayDir) then
 	          Do j=1,nRefRay
 	            yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j)      
+     &                beamRefRayDir_m(1:3,j)
 	            off2=off2+3
 		  End Do
 	        end if
@@ -726,7 +732,7 @@ C
 	        if (OptBeam_m%ifOptBeamRefRayDir) then
                   Do j=1,nRefRay
 		    yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j) 
+     &                beamRefRayDir_m(1:3,j)
                     off2=off2+3
 		  End Do
 	        end if
@@ -737,22 +743,22 @@ C
 	      if (OptBeam_m%ifOptBeamDir) then
 	        yfit(off:off+2)=beamDir_m(1:3)
                 off=off+3
-              end if  
+              end if
 	      if (OptBeam_m%ifOptBeamPos) then
                 yfit(off:off+2)=beamPos_m(1:3)
                 off=off+3
               end if
 	      if (OptBeam_m%ifOptBeamSize) then
-	        yfit(off)=beamSize_m 
+	        yfit(off)=beamSize_m
 	        off=off+1
 	      end if
 	      if (OptBeam_m%ifOptBeamRefRayDir) then
 	        Do j=1,nRefRay
 		  yfit(off:off+2)=beamRefRayDir_m(1:3,j)
-	          off=off+3 
+	          off=off+3
 	        End Do
 	      end if
-	    End If 
+	    End If
 	  End Do
 	End Do
 
@@ -772,7 +778,7 @@ C
 
 	      If (opt_tgt_m==WFE_TARGET .OR.
      &            opt_tgt_m==SPOT_TARGET) Then
-	        if (opt_tgt_m==WFE_TARGET) then 
+	        if (opt_tgt_m==WFE_TARGET) then
 	          dyda(off:off+obj_size-1,i)=
      &                (OPDm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
 	        else if (opt_tgt_m==SPOT_TARGET) then
@@ -782,7 +788,7 @@ C
 	           !print*,'dyda: yfit =',yfit(off:off+obj_size-1)
                    !print*,'dyda =',dyda(off:off+obj_size-1,i)
 	        end if
-	        if (.not. (OptBeam_m%ifOptBeamDir .OR. 
+	        if (.not. (OptBeam_m%ifOptBeamDir .OR.
      &                     OptBeam_m%ifOptBeamPos .OR.
      &                     OptBeam_m%ifOptBeamSize)) then
 	          off=off+opd_size
@@ -790,7 +796,7 @@ C
 	          off=off+opd_size; off2=1
 	          if (OptBeam_m%ifOptBeamDir) then
 	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i) 
+     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
 	            off2=off2+3
 	          end if
 	          if (OptBeam_m%ifOptBeamPos) then
@@ -799,7 +805,7 @@ C
 	            off2=off2+3
 	          end if
 	          if (OptBeam_m%ifOptBeamSize) then
-	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i) 
+	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i)
 	            off2=off2+1
 	          end if
 	          if (OptBeam_m%ifOptBeamRefRayDir) then
@@ -807,7 +813,7 @@ C
 	              dyda(off+off2:off+off2+2,i)=(beamRefRayDir_m(1:3,j)
      &                  -yfit(off+off2:off+off2+2))/da(i)
 	              off2=off2+3
-	            End Do 
+	            End Do
 	          end if
 	          off=off+mBeamOff
 	        end if
@@ -822,7 +828,7 @@ C
 	          off=off+opd_size; off2=1
 	          if (OptBeam_m%ifOptBeamDir) then
 	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)          
+     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
                     off2=off2+3
                   end if
                   if (OptBeam_m%ifOptBeamPos) then
@@ -861,7 +867,7 @@ C
 		if (OptBeam_m%ifOptBeamRefRayDir) then
 		  Do j=1,nRefRay
 	            dyda(off:off+2,i)=(beamRefRayDir_m(1:3,j)
-     &                -yfit(off:off+2))/da(i)	
+     &                -yfit(off:off+2))/da(i)
 	            off=off+3
 		  End Do
 	        end if
@@ -871,8 +877,8 @@ C
 	  End Do
         End Do
 
-	LUseChfRayIfOK=LUseChfRayIfOK_sv ! restore 
-        End Subroutine funcs_app	
+	LUseChfRayIfOK=LUseChfRayIfOK_sv ! restore
+        End Subroutine funcs_app
 
 
 C ***************************************************************************
@@ -881,9 +887,9 @@ C
 C  Implement a SVD-based linear least-square system optimizer
 C
 
-	! This routine performs a single SVD-pseudo inverse 
+	! This routine performs a single SVD-pseudo inverse
 	! iteration, which updates the params vector
- 	!	
+ 	!
 	Subroutine svdls_itr(objfunNom,fovWt,params,statFlg)
 	use lsq_mod
 
@@ -899,7 +905,7 @@ C
 
 	! case statFlg==-2 for computing nominal sensitivity only
 	! case statFlg==-1 for clean up
-	! case statFlg==0 for performing one SVD iteration 
+	! case statFlg==0 for performing one SVD iteration
 
 	If (first_entry .and. (statFlg==0 .OR. statFlg==-2)) Then
 	  first_entry=.FALSE.
@@ -937,7 +943,7 @@ C
               close(12)
             End If
 	    if (statFlg == -2) return ! case for calc nominal sens only
-	    statFlg = 1  ! this says argument 'statFlg' can't be constant 
+	    statFlg = 1  ! this says argument 'statFlg' can't be constant
 		          ! in actual argument, otherwise would crash.
 	  ELSE
             INQUIRE (FILE=PinvFile,EXIST=exist)
@@ -960,7 +966,7 @@ C
                 Read(12,*) dady0(1:size(dady0,1),j)
               End Do
             End If
-            close(12) 
+            close(12)
 	  END IF
           print*,' ** size(dy0da,1) =',size(dy0da,1)
           print*,' ** size(dy0da,2) =',size(dy0da,2)
@@ -982,7 +988,7 @@ C
      &                n_optAsph_m,varAsph_arr_m,
      &                fovs_m(:,1:2,ifov),wls_m(iwl),params)
 
-            If (opt_tgt_m==WFE_TARGET) Then 
+            If (opt_tgt_m==WFE_TARGET) Then
               y1(off:off+opd_size-1)=OPDm(1:opd_size)
               if (.not. OptBeam_m%ifOptBeamDir) then
                 off=off+opd_size
@@ -1030,7 +1036,7 @@ C
                 off=off+3
               end if
 	      if (OptBeam_m%ifOptBeamSize) then
-	        y1(off)=beamSize_m 
+	        y1(off)=beamSize_m
 	      end if
             End If
           End Do
@@ -1068,7 +1074,7 @@ C ***************************************************************************
 #if 1
 	Subroutine glsss_coef_estim(indRefArr,wavlenArr,wavlen,
      &                              glsType,coef)
-	Implicit none 
+	Implicit none
 	LREAL, dimension(:) :: indRefArr,wavlenArr,coef
 	LREAL :: idxfit(3),wlfit(3),wavlen,alamda,alph(3,3),sigh(3),
      &           covarh(3,3),chisq,chisq_arr(10)
@@ -1081,13 +1087,13 @@ C ***************************************************************************
 	    coef=0d0
 	    WRITE(*,*)
      &       ' ** glsss_coef_estim: Can not estimate glass coefs'
-	    return 
+	    return
 	  end if
 	  Call get_nearest_ngbs(wavlenArr,wavlen,idx(1:3))
 
 	  wlfit(1:3)=wavlenArr(idx(1:3))
 	  idxfit(1:3)=indRefArr(idx(1:3))
-	  coef=0d0; maskh=.true.; alamda=-1d0  
+	  coef=0d0; maskh=.true.; alamda=-1d0
 
 	  Do itr=1,3
 	    Call lmlsq(idxfit,sigh,coef,maskh,covarh,alph,chisq,hmod,
@@ -1102,25 +1108,25 @@ C ***************************************************************************
 	Else If (glsType==SellmeierGlass) Then
 	  ! To be implemented
 	End If
-	End Subroutine glsss_coef_estim 	
+	End Subroutine glsss_coef_estim
 
 C ********************************************************
 
 	Subroutine get_nearest_ngbs(wlarr,wl,ida)
 	LREAL, dimension(:) :: wlarr
-	LREAL :: wl,wlarr_loc(size(wlarr)),dd,dmin 
+	LREAL :: wl,wlarr_loc(size(wlarr)),dd,dmin
 	Integer, dimension(:) :: ida
 	Integer :: nwl,i,j,imin
 
 	wlarr_loc=wlarr; nwl=size(wlarr_loc)
-	Do j=1,3 
+	Do j=1,3
 	  dmin=1d22; imin=0
-	  Do i=1,nwl 
-	    dd=abs(wl-wlarr_loc(i))	
+	  Do i=1,nwl
+	    dd=abs(wl-wlarr_loc(i))
 	    if (dd<dmin) then
 	      dmin=dd; imin=i
 	    end if
-	  End Do	
+	  End Do
 	  ida(j)=imin
 	  wlarr_loc(imin)=1d22
 	End Do
@@ -1129,7 +1135,7 @@ C ********************************************************
 C ********************************************************
 
 	Subroutine hmod(a,yfit,dyda)
-        Implicit none	
+        Implicit none
 	LREAL, dimension(:), intent(in) :: a
         LREAL, dimension(:), intent(out) :: yfit
         LREAL, dimension(:,:), intent(out) :: dyda
@@ -1139,11 +1145,11 @@ C ********************************************************
 
 	Do i=1,3
           yfit(i)=a(1)+a(2)/(a(3)-wla(i))**1.2
-	  dyda(i,1)=a(2)/(a(3)-wla(i))**1.2;   
-          dyda(i,2)=1d0/(a(3)-wla(i))**1.2        
+	  dyda(i,1)=a(2)/(a(3)-wla(i))**1.2;
+          dyda(i,2)=1d0/(a(3)-wla(i))**1.2
 	  dyda(i,3)=-1.2d0*a(2)/(a(3)-wla(i))**2.2
 	End Do
 	End Subroutine hmod
-	
+
 #endif
 	End Module design_optim_mod
