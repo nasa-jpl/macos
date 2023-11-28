@@ -1000,14 +1000,8 @@ C********************************************************************
         Real*8 :: ray_d,ray_apd ! for test only
 
         ! Calc source ray grid
-        IF (ABS(zSource).GE.1d10) THEN
-          ! source at infinity - jzlou
-          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                   ifPropagate)
-        ELSE
-          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                  ifPropagate)
-        END IF
+		CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
 
         CALL DUNITIZE(xGrid)
         CALL DUNITIZE(yGrid)
@@ -1116,12 +1110,7 @@ C***********************************************************************
         Real*8 :: ray_d,ray_apd ! for test only
 
         ! Calc source ray grid
-        IF (ABS(zSource).GE.1d10) THEN
-          ! source at infinity - jzlou
-          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-        ELSE
-          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-        END IF
+		CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
 
         CALL DUNITIZE(xGrid)
         CALL DUNITIZE(yGrid)

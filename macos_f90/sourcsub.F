@@ -9,12 +9,108 @@ C***********************************************************************
 #include "realtype.h"
 
 	Module sourcsub_mod
-	use math_mod
+          use Kinds
+	  use math_mod
 
-	Integer, parameter :: SADir=-1, SAPos=-2
-	Integer :: SAOpt
+	  Integer, parameter :: SADir=-1, SAPos=-2
+	  Integer :: SAOpt
 
-	Contains
+          private :: FSEG,HSEG,PSEG,SetColSrcRay,SetPtSrcRay!,ColSource,PtSource
+
+          real(pr), parameter :: MaxPntSrcDist = 1e10_pr    ! if |zSource| <= MaxPntSrcDist ==> finite Obj.
+
+
+        CONTAINS
+
+        ! --------------------------------------------------------------
+        !
+        ! Returns "effective" Src. position as fnct. of ChfRay & zSource
+        !
+        function SourcePos() result(SrcPos)
+                use src_mod, only: ChfRayPos, ChfRayDir
+                use elt_mod, only: zSource
+
+                implicit none
+                real(pr) :: SrcPos(size(ChfRayPos))
+                ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+                SrcPos(:) = ChfRayPos(:) + zSource*ChfRayDir(:)
+
+              end function SourcePos
+        !
+        ! --------------------------------------------------------------
+        !
+        logical function isCollimatedSource()
+          use elt_mod, only: zSource
+          implicit none
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          isCollimatedSource = (ABS(zSource) > MaxPntSrcDist)
+
+        end function isCollimatedSource
+        !
+        ! --------------------------------------------------------------
+        !
+        logical function isPointSource()
+          use elt_mod, only: zSource
+          implicit none
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          isPointSource = (ABS(zSource) <= MaxPntSrcDist)
+
+        end function isPointSource
+        !
+        ! --------------------------------------------------------------
+        !
+        ! Determine ray grid at source (initial)  => "ifGrid" is updated
+        !
+        SUBROUTINE SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate,ifGrid)
+          USE elt_mod,   ONLY: zSource
+        !   use macos_mod, only: ifGrid
+
+          IMPLICIT NONE
+          integer,           intent(in)   :: npts
+          logical,           intent(in)   :: ifPol, ifPropagate
+          real(pr),          intent(out)  :: Dicr, Djcr, dxSource
+          logical, optional, intent(inout):: ifGrid
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          IF (ABS(zSource) .GE. MaxPntSrcDist) THEN
+            CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+          ELSE
+            CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+          END IF
+
+          IF (PRESENT(ifGrid)) ifGrid = .TRUE.
+
+        END SUBROUTINE SetSourceRayGrid
+        !
+        ! --------------------------------------------------------------
+        !
+        SUBROUTINE SetSourceRay(npts,Dicr,Djcr,dxSource,
+     &                          xo,yo,ifPol,ifPropagate)
+          USE elt_mod, ONLY: zSource
+
+          implicit none
+          integer,  intent(in)   :: npts
+          real(pr), intent(out)  :: Dicr, Djcr, dxSource
+          real(pr), intent(in)   :: xo, yo
+          logical,  intent(in)   :: ifPol, ifPropagate
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          IF (abs(zSource) .GE. MaxPntSrcDist) THEN
+            CALL SetColSrcRay(npts,Dicr,Djcr,dxSource,
+     &                        xo,yo,ifPol,ifPropagate)
+          ELSE
+            CALL SetPtSrcRay(npts,Dicr,Djcr,dxSource,
+     &                       xo,yo,ifPol,ifPropagate)
+          END IF
+
+        END SUBROUTINE SetSourceRay
+        !
+        ! --------------------------------------------------------------
+        !
 
 ! Argument npts is declared in macos.F, and read in from Rx
 ! for command-line macos.
@@ -23,6 +119,8 @@ C***********************************************************************
 ! Argument ifPol and ifPropagate are input arguments only.
 
 	SUBROUTINE ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+        use Kinds
+	use Constants, only: pio2=>HALFPI, tan30=>Tan30
 	use param_mod
         use src_mod
         use elt_mod
@@ -43,9 +141,6 @@ C***********************************************************************
      &	       Sy,yg,Sx,xg,Sg,S,S1,SegX2(3),D1(9),dinset
 
 	COMPLEX*16 SC,SEx0,SEy0
-
-	Real*8, parameter :: tan30=5.773502691896257d-01,
-     &			     pio2=1.57079632679490
 
 	Real*8 :: dRay(3),rx,ry  ! test only
 
@@ -104,14 +199,14 @@ C  Find the segment for the chief ray
 	END IF
 
 	!A2=(Aperture/2d0)**2  ! original
-	!A2=(Aperture*0.5001)**2  ! original
 	A2= (Aperture/2d0 + Aperture/DBLE(npts))**2  ! for plotting a 'bottom' ray
+	!A2=(Aperture*0.5001)**2  ! original
 
 ! nRayToSeg(iRay) - given iRay, (nRayToSeg(iRay)-1) gives the number of
 ! rays that have hit iSeg before iRay does. -jzlou
 
         ! GridType from 3 to 5 are segmented
-        ! - jzlou
+        ! -------------------------------------
 	IF (GridType.EQ.3) THEN
 	  DO iSeg=1,nSeg   ! nSeg is read from Rx -jzlou
 	    IF (HSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
@@ -124,6 +219,7 @@ C  Find the segment for the chief ray
 	    nRayToSeg(iRay)=1
 	    RayToSegMap(iRay,nRayToSeg(iRay))=1
 	  END IF
+        ! ---------------------------------------------
 	ELSE IF (GridType.EQ.4) THEN
 	  DO iSeg=1,nSeg
 	    IF (PSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
@@ -135,6 +231,7 @@ C  Find the segment for the chief ray
 	    nRayToSeg(iRay)=1
 	    RayToSegMap(iRay,nRayToSeg(iRay))=1
 	  END IF
+        ! ---------------------------------------------
 	ELSE IF (GridType.EQ.5) THEN
 	  DO iSeg=1,nSeg
 	    iRing=SegCoord(1,iSeg)
@@ -216,6 +313,7 @@ C  Find the segment for the chief ray
 	          RayDir(1:3,iRay)=ChfRayDir(1:3)  ! collimated source
 	          RayPos(1:3,iRay)=ChfRayPos(1:3)+dpr(1:3)
 	        END IF
+              ! ---------------------------------------
 	      ELSE IF (GridType.EQ.2) THEN
 	        IF (((ABS(x).LE.A).AND.(ABS(y).LE.A))
      &	            .AND.(iRay.LT.mRay)) THEN
@@ -234,12 +332,13 @@ C  Find the segment for the chief ray
 	            RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
    12	          CONTINUE
 	        END IF
+              ! ---------------------------------------
 	      ELSE IF (GridType.EQ.3) THEN
 	        ifRay=.FALSE.
 	        r2=y**2+x**2
 
 	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          DO 7 iSeg=1,nSeg
+	          DO iSeg=1,nSeg
 		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN
 !		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2) .OR.
 !    &                  (i==1 .and. j==(nDrawRay/2+1)) .OR.
@@ -251,14 +350,6 @@ C  Find the segment for the chief ray
 	                RayIndex(2,iRay)=j
 	                RayMap(i,j)=iRay
 
-	                !print*,'iseg=',iseg,', iRay=',iRay
-	                !print*,'i=',i,', j=',j
-
-	                if (.false. .and. i==33 .and. j==1) then
-	                  print*,'i=33,j=1: RayMap(i,j)=',RayMap(i,j)
-	                  stop
-	                endif
-
 	                SegMap(i,j)=iSeg
 	                RayID(iwf,jwf)=iRay
 	                RayWFMap(1,iRay)=iwf
@@ -275,38 +366,42 @@ C  Find the segment for the chief ray
 	              nRayToSeg(iRay)=nRayToSeg(iRay)+1
 	              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
 	            END IF
-  7	  	  CONTINUE
+                  END DO
 	        END IF
+
+              ! ---------------------------------------
 	      ELSE IF (GridType.EQ.4) THEN
 	        ifRay=.FALSE.
 	        r2=y**2+x**2
 	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          DO 8 iSeg=1,nSeg
+	          DO iSeg=1,nSeg
 		    IF (PSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2))
      &		    THEN
-	              IF (.NOT.ifRay) THEN
-	                iRay=iRay+1
-	                ifRay=.TRUE.
-	                RayIndex(1,iRay)=i
-	                RayIndex(2,iRay)=j
-	                RayMap(i,j)=iRay
-	                SegMap(i,j)=iSeg
-	                RayID(iwf,jwf)=iRay
-	                RayWFMap(1,iRay)=iwf
-	                RayWFMap(2,iRay)=jwf
-	                ddr(1)=x
-	                ddr(2)=y
-	                CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	                DO k=1,3
-	                  RayDir(k,iRay)=ChfRayDir(k)
-	                  RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
- 	                END DO
-	              END IF
-	              nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	            END IF
-    8		  CONTINUE
-	        END IF
+                      IF (.NOT.ifRay) THEN
+                        iRay=iRay+1
+                        ifRay=.TRUE.
+                        RayIndex(1,iRay)=i
+                        RayIndex(2,iRay)=j
+                        RayMap(i,j)=iRay
+                        SegMap(i,j)=iSeg
+                        RayID(iwf,jwf)=iRay
+                        RayWFMap(1,iRay)=iwf
+                        RayWFMap(2,iRay)=jwf
+                        ddr(1)=x
+                        ddr(2)=y
+                        CALL DMPROD(dpr,Tbg,ddr,3,2,1)
+                        DO k=1,3
+                          RayDir(k,iRay)=ChfRayDir(k)
+                          RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
+                        END DO
+                      END IF
+                      nRayToSeg(iRay)=nRayToSeg(iRay)+1
+                      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+                    END IF
+                  END DO
+                END IF
+
+              ! ---------------------------------------
 	      ELSE IF (GridType.EQ.5) THEN
 	        ifRay=.FALSE.
 	        r2=y**2+x**2
@@ -557,6 +652,8 @@ C  Uniform or Dipole beam...
 C***********************************************************************
 
 	SUBROUTINE PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+        use Kinds
+	use Constants, only: pio2=>HALFPI
 	use param_mod
         use src_mod
         use elt_mod
@@ -576,9 +673,6 @@ C***********************************************************************
 
 	COMPLEX*16 SC,SEx0,SEy0
         COMPLEX*16, dimension(:,:), allocatable :: dsc,DWF_loc
-	Real*8, parameter :: pio2=1.57079632679490
-
-	!print*,' *******PtSource: BeamType =',BeamType
 
 	nRayToSeg(1:nRay)=0
 
