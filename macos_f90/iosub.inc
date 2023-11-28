@@ -2247,7 +2247,6 @@ C     k=counter for # of indexes
 	IF (SP_FLG) THEN
 	  READ(RX_FID, 123, END=354) STRING
 	  !print*,'GET_EQ() SECOND STRING = ',STRING
- 354	  CONTINUE
 	END IF
 
 	J=1
@@ -2360,6 +2359,12 @@ C       BEGIN PARSING THE STRING
           GO TO 20
 	END IF
 	IF (LInCommentMode) GO TO 20
+
+        RETURN
+
+        ! Rx reading -- EOF reached
+ 354	CONTINUE
+        STRING = 'EOF'
 
 	RETURN
 	END SUBROUTINE GET_EQ

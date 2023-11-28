@@ -14,18 +14,22 @@ C***********************************************************************
 	Implicit none
 	Save
 
-	CHARACTER(len=MacosCharLen) ::  filnam,infil,outfil,cmatfil, 
+	CHARACTER(len=MacosCharLen) ::  filnam,infil,outfil,cmatfil,
      &                plotfil, mfil,pertfil,nasfil,imgfil,hdrfil,
      &                srffil,filtfil,chBuf,apodType
 
 	CHARACTER(len=MacosCharLen),dimension(:),allocatable :: UDSrfFile
         CHARACTER*24, dimension(:), allocatable :: GridFile,AmplFile
 
-	Integer, parameter :: stepApod=1,linApod=2,gaussApod=3
+	Integer, parameter :: stepApod  = 1,
+     &                        linApod   = 2,
+     &                        gaussApod = 3
+
         Integer :: iApodType,m_err_cfile
 
         Contains
 
+        ! --------------------------------------------------------------
         Subroutine cfiles_mod_init
 
         if (allocated(UDSrfFile)) then
@@ -42,6 +46,35 @@ C***********************************************************************
      &      call macos_memory_failure
      &               ('cfile_mod_init: allocate failed!')
 
+          ! Initalise
+          CALL cfiles_mod_init_vars()
+
         End Subroutine cfiles_mod_init
+
+
+        ! --------------------------------------------------------------
+        SUBROUTINE cfiles_mod_init_vars()
+
+          filnam   = ''
+          infil    = ''
+          outfil   = ''
+          cmatfil  = ''
+          plotfil  = ''
+          mfil     = ''
+          pertfil  = ''
+          nasfil   = ''
+          imgfil   = ''
+          hdrfil   = ''
+          srffil   = ''
+          filtfil  = ''
+          chBuf    = ''
+          apodType = ''
+
+          UDSrfFile(:) = ''
+          GridFile(:)  = ''
+          AmplFile(:)  = ''
+
+        END SUBROUTINE cfiles_mod_init_vars
+
 
 	End Module cfiles_mod

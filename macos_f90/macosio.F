@@ -53,7 +53,7 @@ C***********************************************************************
 	CHARACTER*8 CNUM
 	CHARACTER(len=MacosCharLen) :: ANS,TypeString
 	LOGICAL exist,ifOld,LCMP,IHSTPM,IHSTSM,ifGridInit,
-     &          ifAmplInit,ifFid,LnOutCordPass,LOAD_SUCCESS
+     &          ifAmplInit,ifFid,LOAD_SUCCESS
 	INTEGER i,j,k,l,g,iaxis,iElt,npts,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
@@ -64,7 +64,6 @@ C***********************************************************************
 C       Setup for new input scheme
 
 	CHARACTER*4 IND(3)
-!	CHARACTER*130 STRING
         CHARACTER(len=MacosCharLen) :: STRING
         CHARACTER(len=MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
@@ -74,6 +73,10 @@ C       Setup for new input scheme
 	INTEGER ians, nVertex,StrLen
 
 	REAL*8 D1(9)
+
+        INTEGER :: nZernCoef    ! Set to Default when reading in values to make it backwards compatible
+        INTEGER :: nAsphCoef    ! Ditto
+
 
 c***loh<
 C	File setup and initial conditions read
@@ -153,13 +156,19 @@ C	File setup and initial conditions read
      &	' |   Malacara       Noll           Fringe     |'/
      &	' +--------------------------------------------+')
 
+        ! Flags
+        LOAD_SUCCESS = .FALSE.        ! so far, Rx is not loaded
 
-C	Initialize constants
+        CALL reinitialise_variables() ! Reset ALL: see "call macos_init_all()" in macos_init.F
+        CALL LOHIN1()                 ! def in iosub.inc
+        CALL LOHIN2()                 ! def in iosub.inc
 
-	DDEF(1:7)=0D0; IDEF(1:7)=0D0
- 	CWM=1d0; CBM=1d0
-	opt_npts_flg=.false.
-	LOAD_SUCCESS=.true.  ! success return, default
+        ! Initialize constants
+
+        DDEF(1:7)=0D0
+        IDEF(1:7)=0D0
+        CWM=1d0; CBM=1d0
+        opt_npts_flg=.false.
 
 C	Get file name
 
@@ -224,9 +233,9 @@ C	Get file name
         ! when iopt=0 here, write system data to a new Rx.
 
  29	CONTINUE
-	EltName(0)='InputRay'
-	PropType(0)=1
-	zElt(0)=1d19
+	EltName(0)  = 'InputRay'
+	PropType(0) = 1
+	zElt(0)     = 1d22
 
 C
 C	Read existing input file
@@ -262,14 +271,14 @@ C
 	  READ(VALUE,*) nOutCord
 	  nOutCord_FLG=.TRUE.
 
-	  READ(RX_FID, 123) STRING
+	  READ(RX_FID, 123, END=99) STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
 	    IF (nOutCord .GT. 1) THEN
 	      DO k=2,nOutCord
-	 	READ(RX_FID, 123)STRING
+	 	READ(RX_FID, 123, END=99)STRING
 	        READ(STRING,*)(Tout(k,j),j=1,7)
               END DO
 	    END IF
@@ -311,13 +320,9 @@ C
 	  ELSE
 	    WRITE(*,*)' Grid size set to ',nGridpts
 	  END IF
-! ToDo: this will cause segmentation faults
-	  IF (nElt.GT.mElt) THEN
-	    WRITE(*,*) ' Too many elements, ',
-     &        'mElt=', mElt, ',  nElt=', nElt
-	    WRITE(*,*) '  MODIFY or use another version. '
-	  END IF
-	  IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
+
+! ToDo: this will cause indexing faults
+          IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
 	    WRITE(*,*) ' Too many segments.'
 	    WRITE(*,*) '  MODIFY or use another version. '
 	  END IF
@@ -1152,7 +1157,6 @@ C	Specify output coordinates
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
-
 
 	RETURN
 	END SUBROUTINE MBFile6
