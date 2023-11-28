@@ -1269,24 +1269,33 @@ C Set index
      &                            GlassType(iElt))
 	  END IF
 C Set Zerns
-	  IF (SrfType(iElt).EQ.8) THEN
-	    IF (ZernTypeL(iElt).EQ.1 .OR.
-     &          ZernTypeL(iElt).EQ.4) THEN
-C Malacara's
+	  IF (SrfType(iElt).EQ.SrfType_Zernike) THEN
+            ! Zernike: ANSI Ordering
+	    IF (ZernTypeL(iElt).EQ.ZernType_ANSI .OR.
+     &          ZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
 	      CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSE IF (ZernTypeL(iElt).EQ.2 .OR.
-     &              ZernTypeL(iElt).EQ.5) THEN
-C Noll's
+
+            ! Zernike: Born & Wolf Ordering
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
+     &              ZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
 	      CALL ZerntoMon2(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSE IF (ZernTypeL(iElt).EQ.3 .OR.
-     &               ZernTypeL(iElt).EQ.6) THEN
-C Fringe's
+
+            ! Zernike: Fringe Ordering
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_Fringe .OR.
+     &              ZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
 	      CALL ZerntoMon3(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (ZernTypeL(iElt).EQ.7) THEN
+
+            ! Special Zernike: Hex
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormHex) THEN
               CALL ZerntoMon4(ZernCoef(1,iElt),MonCoef(1,iElt))
-	    ELSEIF (ZernTypeL(iElt).EQ.8) THEN
+
+            ! Zernike: Noll Ordering
+            ELSEIF ((ZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
+     &              (ZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (ZernTypeL(iElt).EQ.9) THEN
+
+            ! Special Zernike: Annular Zernikes using Noll Ordering
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(ZernCoef(1,iElt),MonCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
 	    END IF
@@ -1308,7 +1317,7 @@ C Fringe's
 	    ifIntSrfOK(iElt)=.TRUE.
 	  END IF
 	  IF ((EltID(iElt).EQ.7).OR.(nObs(iElt).GT.0).OR.
-     &	      (ApType(iElt).GT.0)) THEN
+     &        (ApType(iElt).GT.0)) THEN
 	    LEltObs(iElt)=.TRUE.
 
 	    CALL DEQUATE(zObs(1,iElt),psiElt(1,iElt),3)
