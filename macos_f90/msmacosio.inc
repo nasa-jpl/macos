@@ -222,6 +222,7 @@ C       Set entrance condition flags to .FALSE.
 	       ChfRayDir(1:3)=opt_fov(1:3,1,nOptChfRayDir)
 	       IF (DMAG(ChfRayDir(1),3) .EQ. 0.0D0) THEN
                  WRITE(*,124)' ChfRayDir'
+                 GO TO 99
                ELSE
                  CALL DUNITIZE(ChfRayDir)
                  ChfRayDir_FLG=.TRUE.
@@ -382,7 +383,7 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'zSource',7)) THEN
             READ(VALUE,*)zSource
-            IF (ABS(zSource) <= EPSILON(1d0)) GOTO 99
+            IF (ABS(zSource) <= EPS) GOTO 99
             zSource_FLG=.TRUE.
             GO TO 50
 
@@ -769,7 +770,6 @@ C       Set entrance condition flags to .FALSE.
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'MRP',3)) THEN
               EltMRP(iElt)=VALUE
-              !print*,'MRP value = ', VALUE
               LEltMRP_FLG(iElt)=.TRUE.
               GO TO 61
 
@@ -832,7 +832,6 @@ C       Set entrance condition flags to .FALSE.
               END IF
 
               ! Check to make sure no Element/Surface incompatability exists
-
 	      IF (SrfType_FLG) THEN
                 CALL EltSurfCompat(iElt,EltID_FLG,SrfType_FLG)
                 IF (EltID_FLG.AND.SrfType_FLG) THEN
@@ -873,16 +872,16 @@ C       Set entrance condition flags to .FALSE.
               ! Allow an EltGrp to be specified with multiple ranges
               ! Syntax: #groups strt1 end1 strt2 end2 ...
               READ(VALUE,*) j ! number of element groups
-              If (j<=0 .or. j>10) Then
+              IF (j<=0 .or. j>10) THEN
                 WRITE(*,*)
      &          ' **MrEltGrp: elt groups must be >=1 and <=10 in Rx!'
-                stop
-              End If
+                GO TO 99
+              END IF
               READ(VALUE,*) j,grpRange(1:2*j)
               EltGrp(0,iElt)=0; k=1
               Do g=1,j
-                EltGrp(0,iElt)
-     &            =EltGrp(0,iElt)+grpRange(2*g)-grpRange(2*g-1)+1
+                EltGrp(0,iElt) = EltGrp(0,iElt) +
+     &            grpRange(2*g)-grpRange(2*g-1)+1
                 Do i=grpRange(2*g-1),grpRange(2*g)
                   EltGrp(k,iElt)=i; k=k+1
                 End Do
@@ -930,7 +929,7 @@ C       Set entrance condition flags to .FALSE.
               END IF
 
               ! Set flags that aren't needed
-              IF (SrfType(iElt).EQ.1) THEN
+              IF (SrfType(iElt).EQ.SrfType_Flat) THEN
                 KcElt(iElt)=0d0
                 KrElt(iElt)=-1d22
                 fElt(iElt)=1d22
@@ -939,42 +938,47 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-              ELSE IF (SrfType(iElt).EQ.6) THEN
+              ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.3) THEN
+              IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
+     &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.4) THEN
+              IF (SrfType(iElt).NE.SrfType_Monomial) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).NE.6).AND.(SrfType(iElt).NE.10)) THEN
+              IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
+     &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.7) THEN
+              IF (SrfType(iElt).NE.SrfType_UserDefined) THEN
                 UDSrfCoef_FLG=.TRUE.
                 UDSrfType_FLG=.TRUE.
                 UDSrfParam_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.8) THEN
+              IF (SrfType(iElt).NE.SrfType_Zernike) THEN
                 ZernCoef_FLG=.TRUE.
                 ZernTypeL_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.9) THEN
+              IF (SrfType(iElt).NE.SrfType_GridData) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).LT.4).AND.(EltID(iElt).NE.10)) THEN
+              IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
+     &            (EltID(iElt).NE.SrfType_Toric).AND.
+     &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).NE.4).AND.(SrfType(iElt).LT.8)) THEN
+              IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
+     &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
               END IF
 
