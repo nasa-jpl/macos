@@ -114,40 +114,26 @@ C	Compute incidence point of ray on the surface
      &	    +ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
 	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
 	ELSE
-	  a=0d0
-	  b=itpsi
-	  c=psitprel
+	  a = 0d0
+	  b = itpsi
+	  c = psitprel
 	END IF
 
 C	Compute intersection point and normal vector
 
 	IF ((ABS(a).LE.1d-20).OR.(ABS(Kr).GE.1d20)) THEN
-	  if (.false.) then !(abs(b) .le. 1d-10) then
-	    print*,'ConSrf(): b =', b
-	    stop
-	  end if
 	  L=-c/b
 	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
 	ELSE
-	  k2=b*b-4d0*a*c
+	  k2 = b*b - 4d0*a*c
 	  IF (k2.LT.0d0) GO TO 98
 	  IF (b.GE.0d0) THEN
-	    ksqrt=-0.5d0*(b+DSQRT(k2))
+	    ksqrt = -0.5d0*(b+SQRT(k2))
 	  ELSE
-	    ksqrt=-0.5d0*(b-DSQRT(k2))
+	    ksqrt = -0.5d0*(b-SQRT(k2))
 	  END IF
-	  kp=ksqrt/a
-	  km=c/ksqrt
-#if 0
-	  if (iElt_debug==214) then
-            print*,'******* pv(1:3) =',pv(1:3)
-            print*,'******* psi(1:3) =',psi(1:3)
-            print*,'****** ConSrf(): ksqrt,kp,km =',ksqrt,kp,km
-            print*,'******** ABS((kp*kp)-mpr)=',ABS((kp*kp)-mpr)
-            print*,'******** ABS((km*km)-mpr)=',ABS((km*km)-mpr)
-            print*,'******** ifLNsrf =',ifLNsrf
-          end if
-#endif
+	  kp = ksqrt/a
+	  km = c/ksqrt
 	  IF(ifLNsrf) THEN
 	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
 	      L=kp
@@ -172,35 +158,27 @@ C	Compute intersection point and normal vector
 	  END IF
 	END IF
 
+
+
 	IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
 
-	S1=Kr+Kc*(psitprel+L*itpsi)
-        Do i=1,3
+	S1 = Kr + Kc*(psitprel+L*itpsi)
+        DO i=1,3
 	  S2=L*ihat(i)
 	  pr(i)=pin(i)+S2  ! pr is ray incident point on current surface -jzlou
 	  Nvec(i)=S1*psi(i)+prel(i)+S2 ! direction of surface normal at ray incident point -jzlou
-    	End Do
+    	END DO
 
-#if 0
-        if (iElt_debug==214) then
-          print*,'****** ConSrf: a,b,c,k2 =',a,b,c,k2
-          print*,'****** ConSrf: ihat(1:3) =',ihat(1:3)
-          print*,'****** ConSrf: L =',L
-          print*,'****** ConSrf: pin(1:3) =',pin(1:3)
-          print*,'****** ConSrf: pr(1:3) =',pr(1:3)
-        end if
-#endif
-
-	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
-	IF (S1.LE.0d0) THEN
-	  DO 3 i=1,3
+	Nmag = SQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+	S1 = Nvec(1)*ihat(1) + Nvec(2)*ihat(2) + Nvec(3)*ihat(3)
+	IF (S1 .LE. 0d0) THEN
+	  DO i=1,3
 	    Nhat(i)=Nvec(i)/Nmag
-   3	  CONTINUE
+          END DO
 	ELSE
-	  DO 4 i=1,3
+	  DO i=1,3
 	    Nhat(i)=-Nvec(i)/Nmag
-   4	  CONTINUE
+          END DO
 	END IF
 
 C	Compute partials of the normal
@@ -227,7 +205,7 @@ C  Compute partials of the local normal (Nhat) wrt psi -jzlou
 
 	RETURN
 
-C	Here if ray misses surface
+        ! Here if ray misses surface
 
   98	CONTINUE
 	LROK=.FALSE.
@@ -253,9 +231,9 @@ C***********************************************************************
 
 C	Compute incidence point of ray on the surface
 
-	DO 1 i=1,3
+	DO i=1,3
 	  prel(i)=pin(i)-pv(i)
-   1	CONTINUE
+        END DO
 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
 	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
 
@@ -271,7 +249,7 @@ C	Compute incidence point of ray on the surface
 	  c=psitprel
 	END IF
 
-C	Compute intersection point and normal vector
+        ! Compute intersection point and normal vector
 
 	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d22)) THEN
 	  if (.false.) then !(abs(b) .le. 1d-10) then
@@ -650,7 +628,7 @@ C
         ix2  = ix*ix; iy2  = iy*iy
         px2  = px*px; py2  = py*py
         pxxi = px*ix; pyyi = py*iy
-c
+
         If((Cx.eq.-1.0) .and. (.not.isCYL)) Cx=Cx-2.0e-6
 
         alpha = Kry - Krx/(1.0+Cx)
@@ -659,7 +637,7 @@ c
         beta  = alpha*alpha + Krx*Krx/(1.0+Cx)/(1.0+Cx)
         gamma = 2.0*alpha/(1.0+Cx)
 	if (prtL) print*,'gamma =', gamma
-c
+
         Acoef = itpsi*itpsi+ix2/(1.0+Cx)+iy2
 	if (prtL) print*,'Acoef =', Acoef
         Bcoef = 2.0 * (itpsi*(psitprel-Kry) + pxxi/(1.0+Cx) + pyyi)
@@ -667,29 +645,29 @@ c
         Ccoef = (Kry-psitprel)*(Kry-psitprel)
      &         + px2/(1.0+Cx) + py2 - beta
 	if (prtL) print*,'Ccoef =', Ccoef
-c
+
         IF(dabs(alpha).gt.1.d-9) Then
            Acoef = Acoef/gamma
            Bcoef = Bcoef/gamma
            Ccoef = Ccoef/gamma
 
 	   if (prtL) print*,'2: Acoef,Bcoef,Ccoef=',Acoef,Bcoef,Ccoef
-C
+
            q4 = Acoef*Acoef
            q3 = 2.0*Acoef*Bcoef
            q2 = Bcoef*Bcoef + 2.0*Acoef*Ccoef + (1.0+Cx)*ix2
            q1 = 2.0 * (Bcoef*Ccoef+(1.0+Cx)*pxxi)
            q0 = Ccoef*Ccoef-Krx*Krx + (1.0+Cx)*px2
-c
+
            if(dabs(q4).lt.1d-16) q4=0d0
            if(dabs(q3).lt.1d-16) q3=0d0
            if(dabs(q2).lt.1d-16) q2=0d0
            if(dabs(q1).lt.1d-16) q1=0d0
            if(dabs(q0).lt.1d-16) q0=0d0
 
-C
-C Find surface roots and select L:
-C
+           !
+           ! Find surface roots and select L:
+           !
 
 	   if (prtL) print*,'B4 ROOT4: q4,q3,q2,q1,q0=',q4,q3,q2,q1,q0
 
@@ -781,19 +759,19 @@ C       Fix by S.A.B.  maybe need abs(Krx) and abs(Kyr) ???  doesn't always work
 	! for cylindrical case to jump
  95     continue
 
-c
-C  Compute normal. First set coefficients.
-c
+        !
+        !  Compute normal. First set coefficients.
+        !
         DO i=1,3
           pr(i)  = pin(i)+L*ihat(i)
           rho(i) = pr(i)-pv(i)  ! rho is local, never used after
         END DO
-c
+
         IF( Order.NE.0d0 ) THEN
            xpt = px + L*ix
            ypt = py + L*iy
            zpt = psitprel + L*itpsi
-c
+
 	   if (isCYL) then
 	     ! cylinder, added by jzlou
 	     Nvl(1) =2.0*xpt
@@ -821,24 +799,24 @@ c
         END IF
 
         if (prtL) print*,'Toric: Nvec(1:3) = ', Nvec(1:3)
-c
+
         Nmag=dsqrt(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
         S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
-c
+
         IF( S1.LE.0d0 ) THEN
           Nhat(1:3) = Nvec(1:3)/Nmag
         ELSE
           Nhat(1:3) =-Nvec(1:3)/Nmag
         END IF
-c
-c       Compute partials of the normal
-c
+        !
+        !       Compute partials of the normal
+        !
         IF (ifBuild) THEN
         END IF
 
         RETURN
 
-c       Here if ray misses surface
+        ! Here if ray misses surface
   98    CONTINUE
 
         LROK=.FALSE.
@@ -846,7 +824,7 @@ c       Here if ray misses surface
         END SUBROUTINE ToricSrf
 
 
-	Subroutine Calc_ToricNormal(Ry,Rx,Kx,x,y,z,nv)
+	SUBROUTINE Calc_ToricNormal(Ry,Rx,Kx,x,y,z,nv)
         ! Kx = conic constant in X
         Implicit none
         Real*8 :: Ry,Rx,Kx,x,y,z,nv(3)
@@ -860,7 +838,7 @@ c       Here if ray misses surface
         nv(1)=nv(1)/Rx/((1.0+tt2)*(1.0+tt2))
         nv(1)=2.0*nv(1)*(Ry-Zx)
         nv(2)=2.0*y; nv(3)=2.0*(z-Ry)
-        End Subroutine Calc_ToricNormal
+        END SUBROUTINE Calc_ToricNormal
 
 C***********************************************************************
 
@@ -1120,7 +1098,7 @@ C***********************************************************************
      &    rho(3),psitzc,psitrho,fh,Ppsi(3,3),ImpsidF(3,3),
      &    dNvecdp(3,3),hh1,hh2,zc_asph(3),rhoc(3),zmtzc,psitzm,
      &    psitzc_asph,dzcdrho(3,3),grdm_rms2
-        REAL*8 D1(9),D2(9),S1,S2,S1_asph,S2_asph !,GSZPSolve
+        REAL*8 D1(9),D2(9),S1,S2,S1_asph,S2_asph
         Real*8, save :: sc(9,2)
 
         INTEGER i,j
@@ -1184,10 +1162,6 @@ C       Compute incidence point of ray on the surface
 C       Compute intersection point and normal vector
 
         IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
-          if (.false.) then ! (abs(b) .le. 1d-10) then
-            print*,'AsphSrf(): b = ', b
-            stop
-          end if
           L=-c/b
           IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
         ELSE
@@ -1365,20 +1339,12 @@ C       !print*,'** gridm_rms2 =',grdm_rms2
      &         nGridMat,mGridMat,GridMat,GridSrfdx,
      &         pmon,rhoc,xhat,yhat,zhat,L_conic)
 
-#if 0
-          print*,'L_conic =',L_conic
-          print*,'L3 =',L3
-          print*,'L3-L_conic =',L3-L_conic
-          pause
-#endif;
           L = L_asph+L3-L_conic
 
 C  Compute normal
           CALL NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
      &               nGridMat,mGridMat,GridMat,GridSrfdx,pmon,rhoc,
      &               xhat,yhat,zhat,L,zc,fh,dFdrho,d2Fdrho2_grid)
-
-          !print*,' **dFdrho =',dFdrho(1:3)
 
           psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
           psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
@@ -1512,11 +1478,6 @@ C***********************************************************************
 	REAL*8 rho(3),h2,h4,h6,h8,h10,fh,z,rho2,zc,zc2,psitzc,
      &         zcv(3),coef(nAsphCoef),hh
 	Integer :: nAsphCoef,i
-cdebug
-c	INTEGER icnt
-c	DATA icnt/0/
-c	icnt=icnt+1
-cdebug
 
 #if 0
 	if (nAsphCoef /= 4) then
@@ -1528,9 +1489,9 @@ cdebug
         end if
 #endif
 
-	DO 1 i=1,3
+	DO i=1,3
 	  rho(i)=prel(i)+L*ihat(i)
-  1	CONTINUE
+        END DO
 
 	z=psi(1)*rho(1)+psi(2)*rho(2)+psi(3)*rho(3)
 	rho2=rho(1)*rho(1)+rho(2)*rho(2)+rho(3)*rho(3)
@@ -1551,37 +1512,32 @@ cdebug
         End Do
 #endif
 
-	DO 2 i=1,3
+	DO i=1,3
 	  zcv(i)=rho(i)-fh*psi(i)
-  2	CONTINUE
+        END DO
 	zc2=zcv(1)*zcv(1)+zcv(2)*zcv(2)+zcv(3)*zcv(3)
 	psitzc=psi(1)*zcv(1)+psi(2)*zcv(2)+psi(3)*zcv(3)
 	SAsphere=zc2+Kc*psitzc*psitzc+2d0*Kr*psitzc
-
-cdebug
-c 100	FORMAT(1P,' SAsphere: S=',d12.5,' L=',d12.5,' i=',i4)
-c	WRITE(*,100)SAsphere,L,icnt
-cdebug
 
 	RETURN
 	END FUNCTION SAsphere
 
 C***********************************************************************
 
-      FUNCTION AZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,L,
-     &                  nAsphCoef)
+      REAL*8 FUNCTION AZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
+     &                           coef,L,nAsphCoef)
+        USE Constants, ONLY: EPS
       IMPLICIT REAL*8 (A-H,O-Z)
-      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L,
-     &       AZPSolve
+      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
       Integer :: nAsphCoef
-      PARAMETER (ITMAX=400,EPS=1d-14)
+      PARAMETER (ITMAX=400)
       A=X1
       B=X2
       FA=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,A,nAsphCoef)
       FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
       IF(FB*FA.GT.0.) PAUSE 'AZPB failed.'
       FC=FB
-      DO 11 ITER=1,ITMAX
+      DO ITER=1,ITMAX
         IF(FB*FC.GT.0.) THEN
           C=A
           FC=FA
@@ -1596,7 +1552,7 @@ C***********************************************************************
           FB=FC
           FC=FA
         ENDIF
-        TOL1=2.*EPS*ABS(B)+0.5*TOL
+        TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
         XM=.5*(C-B)
 C        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
         IF((ABS(XM).LE.TOL1).OR.(FB.EQ.0.) .OR.(ITER.GE.ITMAX))THEN
@@ -1606,17 +1562,17 @@ C        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
           S=FB/FA
           IF(A.EQ.C) THEN
-            P=2.*XM*S
-            Q=1.-S
+            P=2d0*XM*S
+            Q=1d0-S
           ELSE
             Q=FA/FC
             R=FB/FC
-            P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
-            Q=(Q-1.)*(R-1.)*(S-1.)
+            P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+            Q=(Q-1d0)*(R-1d0)*(S-1d0)
           ENDIF
-          IF(P.GT.0.) Q=-Q
+          IF(P.GT.0d0) Q=-Q
           P=ABS(P)
-          IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+          IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
             E=D
             D=P/Q
           ELSE
@@ -1635,7 +1591,7 @@ C        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           B=B+SIGN(TOL1,XM)
         ENDIF
         FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
-11    CONTINUE
+      END DO
       PAUSE 'AZPSolve exceeding maximum iterations.'
       AZPSolve=B
       RETURN
@@ -1645,21 +1601,21 @@ C***********************************************************************
 
 	SUBROUTINE AZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
 	IMPLICIT REAL*8 (A-H,O-Z)
-	PARAMETER (gold=1.6,NTRY=50)
+	PARAMETER (gold=1.6d0,NTRY=50)
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
 	Integer :: nAsphCoef
 	F1=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X1,nAsphCoef)
 	F2=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X2,nAsphCoef)
-	DO 11 J=1,NTRY
+	DO J=1,NTRY
 	  IF(F1*F2.LT.0.)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
-	    X1=X1+gold*(X1-X2)
-	    F1=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X1,nAsphCoef)
+	    X1 = X1 + gold*(X1-X2)
+	    F1 = SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X1,nAsphCoef)
 	  ELSE
-	    X2=X2+gold*(X2-X1)
-	    F2=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X2,nAsphCoef)
+	    X2 = X2 + gold*(X2-X1)
+	    F2 = SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,X2,nAsphCoef)
 	  ENDIF
-11	CONTINUE
+        END DO
 	RETURN
 	END SUBROUTINE AZPB
 
@@ -2006,7 +1962,7 @@ C***********************************************************************
           use Constants, only: EPS
 
 	  IMPLICIT NONE
-          REAL*8,  INTENT(IN)   :: zc(mZernModes)  ! Zernike Coefficients: Noll
+          REAL*8,  INTENT(IN)   :: zc(mZernModes)  ! Zernike Coefficients: Fringe
           REAL*8,  INTENT(INOUT):: mc(mMonCoef)    ! Monomial Coefficients: relay to Monomial Mapping
           INTEGER, INTENT(IN)   :: ie              ! Element ID
 
@@ -2892,7 +2848,7 @@ C	Compute incidence point of ray on the surface
 	  c=psitprel
 	END IF
 
-C	Compute intersection point and normal vector
+        ! Compute intersection point and normal vector
 
 	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
 	  L=-c/b
@@ -2931,14 +2887,14 @@ C	Compute intersection point and normal vector
 	  END IF
 	END IF
 
-C  Use L as a starting point, find incidence pt on full surface
+        ! Use L as a starting point, find incidence pt on full surface
 
         IF (ABS(L).GT.1e-7) THEN
           L1=0.999d0*L
           L2=1.001d0*L
         ELSE
-          L1=-1e-7
-          L2=1e-7
+          L1=-1d-7
+          L2=1d-7
         END IF
 
 	CALL UDSZPB(L1,L2,UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,
@@ -2948,7 +2904,7 @@ C  Use L as a starting point, find incidence pt on full surface
      &	              coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
 	L=L3
 
-C  Compute normal
+        ! Compute normal
 
 	CALL UDSrfNorm(ifBuild,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
      &	       coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L,zc,
@@ -2960,23 +2916,23 @@ C  Compute normal
 	S1=Kr+Kc*psitzc
 	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
 
-	DO 6 i=1,3
+	DO i=1,3
 	  pr(i)=pin(i)+L*ihat(i)
 	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
-   6	CONTINUE
+        END DO
 	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
 	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
 	IF (S1.LE.0d0) THEN
-	  DO 7 i=1,3
+	  DO i=1,3
 	    Nhat(i)=Nvec(i)/Nmag
-   7	  CONTINUE
+          END DO
 	ELSE
-	  DO 8 i=1,3
+	  DO i=1,3
 	    Nhat(i)=-Nvec(i)/Nmag
-   8	  CONTINUE
+          END DO
 	END IF
 
-C	Compute partials of the normal
+        ! Compute partials of the normal
 
 	IF (ifBuild) THEN
 	  IF (ABS(Kr).LT.1d10) THEN
@@ -2989,12 +2945,12 @@ C	Compute partials of the normal
 	    CALL DZERO(M,9)
 	  END IF
 
-	  DO 12 j=1,3
-	    DO 11 i=1,3
+	  DO j=1,3
+	    DO i=1,3
 	      dzcdrho(i,j)=-zhat(i)*d2Fdrho2(i,j)
-  11	    CONTINUE
+            END DO
 	    dzcdrho(j,j)=dzcdrho(j,j)+1d0
-  12	  CONTINUE
+          END DO
 	  CALL DMPROD(D1,dzcdrho,M,3,3,3)
 	  CALL DMPROD(D2,D1,dzcdrho,3,3,3)
 	  S1=Kr+Kc*psitzc
@@ -3018,8 +2974,10 @@ C	Here if ray misses surface
 
 C***********************************************************************
 
+
       FUNCTION UDSZPSolve(X1,X2,TOL,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
      &	coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+
       IMPLICIT REAL*8 (A-H,O-Z)
       INTEGER UDSrfType
       REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(*),L,SUDSrf,
@@ -3028,13 +2986,13 @@ C***********************************************************************
       A=X1
       B=X2
       FA=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &	        rad,pmon,rhoc,xhat,yhat,zhat,A)
+     &          rad,pmon,rhoc,xhat,yhat,zhat,A)
       FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &	        rad,pmon,rhoc,xhat,yhat,zhat,B)
-      IF(FB*FA.GT.0.) PAUSE 'UDSZPB failed.'
+     &          rad,pmon,rhoc,xhat,yhat,zhat,B)
+      IF(FB*FA.GT.0d0) PAUSE 'UDSZPB failed.'
       FC=FB
-      DO 11 ITER=1,ITMAX
-        IF(FB*FC.GT.0.) THEN
+      DO ITER=1,ITMAX
+        IF(FB*FC.GT.0d0) THEN
           C=A
           FC=FA
           D=B-A
@@ -3048,26 +3006,26 @@ C***********************************************************************
           FB=FC
           FC=FA
         ENDIF
-        TOL1=2.*EPS*ABS(B)+0.5*TOL
-        XM=.5*(C-B)
-        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
+        TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+        XM=0.5d0*(C-B)
+        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0)THEN
           UDSZPSolve=B
           RETURN
         ENDIF
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
           S=FB/FA
           IF(A.EQ.C) THEN
-            P=2.*XM*S
-            Q=1.-S
+            P=2d0*XM*S
+            Q=1d0-S
           ELSE
             Q=FA/FC
             R=FB/FC
-            P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
-            Q=(Q-1.)*(R-1.)*(S-1.)
+            P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+            Q=(Q-1d0)*(R-1d0)*(S-1d0)
           ENDIF
           IF(P.GT.0.) Q=-Q
           P=ABS(P)
-          IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+          IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
             E=D
             D=P/Q
           ELSE
@@ -3087,7 +3045,7 @@ C***********************************************************************
         ENDIF
         FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
      &		  rad,pmon,rhoc,xhat,yhat,zhat,B)
-11    CONTINUE
+      END DO
       PAUSE 'UDSZPSolve exceeding maximum iterations.'
       UDSZPSolve=B
       RETURN
@@ -3096,31 +3054,30 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE UDSZPB(X1,X2,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
-     &		          coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
-	IMPLICIT REAL*8 (A-H,O-Z)
-	PARAMETER (gold=1.6,NTRY=50)
-	INTEGER UDSrfType
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(*),L,SUDSrf,
-     &	       rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
+     &                    coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
 
+	IMPLICIT REAL*8 (A-H,O-Z)
+	PARAMETER (gold=1.6d0,NTRY=50)
+	INTEGER UDSrfType
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(*),L,
+     &         rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
 	IF(X1.EQ.X2)PAUSE 'You have to guess an initial range'
 	F1=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &		  rad,pmon,rhoc,xhat,yhat,zhat,X1)
+     &            rad,pmon,rhoc,xhat,yhat,zhat,X1)
 	F2=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &		  rad,pmon,rhoc,xhat,yhat,zhat,X2)
-
-	DO 1 J=1,NTRY
-	  IF(F1*F2.LT.0.)RETURN
+     &            rad,pmon,rhoc,xhat,yhat,zhat,X2)
+	DO J=1,NTRY
+	  IF(F1*F2.LT.0d0)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
-	    X1=X1+gold*(X1-X2)
-	    F1=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &	              rad,pmon,rhoc,xhat,yhat,zhat,X1)
+	    X1 = X1 + gold*(X1-X2)
+	    F1 = SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
+     &                  rad,pmon,rhoc,xhat,yhat,zhat,X1)
 	  ELSE
-	    X2=X2+gold*(X2-X1)
-	    F2=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &	    	      rad,pmon,rhoc,xhat,yhat,zhat,X2)
+	    X2 = X2 + gold*(X2-X1)
+	    F2 = SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
+     &                  rad,pmon,rhoc,xhat,yhat,zhat,X2)
 	  ENDIF
- 1	 CONTINUE
+        END DO
 	RETURN
 	END SUBROUTINE UDSZPB
 
@@ -3153,8 +3110,9 @@ C   If no file, zero matrix and return
           RETURN
         END IF
 
-C   Check file existence
-	print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))
+        ! Check file existence
+
+	!print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))
 
 	INQUIRE (FILE=GridFile,EXIST=exist)
 	IF (exist) THEN
@@ -3299,12 +3257,12 @@ C***********************************************************************
 	  print*,'**Begin GridSrf: nGridMat = ',nGridMat
 	end if
 
-C	Compute incidence point of ray on the surface
+        ! Compute incidence point of ray on the surface
 
-	DO 1 i=1,3
+	DO i=1,3
 	  prel(i)=pin(i)-pv(i)
 	  rhoc(i)=pmon(i)-pv(i)
-   1	CONTINUE
+        END DO
 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
 	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
 
@@ -3320,13 +3278,9 @@ C	Compute incidence point of ray on the surface
 	  c=psitprel
 	END IF
 
-C	Compute intersection point and normal vector
+        ! Compute intersection point and normal vector
 
 	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
-	  if (.false.) then !(abs(b) .le. 1d-10) then
-	    print*,'GridSrf(): b = ', b
-	    stop
-	  end if
 	  L=-c/b
 	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
 	ELSE
@@ -3371,13 +3325,14 @@ C    &      iElt_debug == 90) then
      &      ihat, psi, itpsi
         end if
 
-C  Use L as a starting point, find incidence pt on full surface
+        !  Use L as a starting point, find incidence pt on full surface
+
         IF (ABS(L).GT.1e-7) THEN
           L1=0.999d0*L
           L2=1.001d0*L
         ELSE
-          L1=-1e-7
-          L2=1e-7
+          L1=-1d-7
+          L2=1d-7
         END IF
 
 	CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
@@ -3395,42 +3350,30 @@ C  Compute normal
      &	  pmon,rhoc,xhat,yhat,zhat,L,zc,
      &	  fh,dFdrho,d2Fdrho2)
 
-	!print*,' **dFdrho =',dFdrho(1:3)
-
 	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
 	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
 	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
 	S1=Kr+Kc*psitzc
 	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
 
-	DO 6 i=1,3
+	DO i=1,3
 	  pr(i)=pin(i)+L*ihat(i)
 	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
-   6	CONTINUE
+        END DO
 	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
 	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
 	IF (S1.LE.0d0) THEN
-	  DO 7 i=1,3
+	  DO i=1,3
 	    Nhat(i)=Nvec(i)/Nmag
-   7	  CONTINUE
+   	  END DO
 	ELSE
-	  DO 8 i=1,3
+	  DO i=1,3
 	    Nhat(i)=-Nvec(i)/Nmag
-   8	  CONTINUE
+   	  END DO
 	END IF
 
-	!print*,' Nmag =',Nmag
 
-	if (.false.) then !(iRay_debug == 2526 .and.
-C    &      iElt_debug == 90) then
-C	  print*,'**In GridSrf: Kr,Kc,psitzc = ',
-C    &      Kr,Kc,psitzc  ! good
-	  print*,'**In GridSrf:zc = ',zc,' S1 = ', S1,
-     &      'psi = ', psi,' S2 = ', S2, ' dFdrho = ',dFdrho
-	  print*,'**In GridSrf: Nvec = ', Nvec  ! bad
-	end if
-
-C	Compute partials of the normal
+        ! Compute partials of the normal
 
 	IF (ifBuild) THEN
 	  IF (ABS(Kr).LT.1d10) THEN
@@ -3443,12 +3386,12 @@ C	Compute partials of the normal
 	    CALL DZERO(M,9)
 	  END IF
 
-	  DO 12 j=1,3
-	    DO 11 i=1,3
+	  DO j=1,3
+	    DO i=1,3
 	      dzcdrho(i,j)=-zhat(i)*d2Fdrho2(i,j)
-  11	    CONTINUE
+  	    END DO
 	    dzcdrho(j,j)=dzcdrho(j,j)+1d0
-  12	  CONTINUE
+  	  END DO
 	  CALL DMPROD(D1,dzcdrho,M,3,3,3)
 	  CALL DMPROD(D2,D1,dzcdrho,3,3,3)
 	  S1=Kr+Kc*psitzc
@@ -3463,7 +3406,7 @@ C	Compute partials of the normal
 
 	RETURN
 
-C	Here if ray misses surface
+        ! Here if ray misses surface
 
   98	CONTINUE
 	LROK=.FALSE.
@@ -3494,34 +3437,34 @@ C***********************************************************************
      &		 pmon,rhoc,xhat,yhat,zhat,B)
 	IF(FB*FA.GT.0.) PAUSE 'GSZPB failed.'
 	FC=FB
-	DO 11 ITER=1,ITMAX
-	  IF(FB*FC.GT.0.) THEN
+	DO ITER=1,ITMAX
+	  IF(FB*FC.GT.0d0) THEN
 	    C=A; FC=FA; D=B-A; E=D
 	  ENDIF
 	  IF(ABS(FC).LT.ABS(FB)) THEN
 	    A=B; B=C; C=A
 	    FA=FB; FB=FC; FC=FA
 	  ENDIF
-	  TOL1=2.*EPS*ABS(B)+0.5*TOL
-	  XM=.5*(C-B)
-	  IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.) THEN
+	  TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+	  XM=0.5d0*(C-B)
+	  IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
 	    GSZPSolve=B
 	    RETURN
 	  ENDIF
 	  IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
 	    S=FB/FA
 	    IF(A.EQ.C) THEN
-	      P=2.*XM*S
-	      Q=1.-S
+	      P=2d0*XM*S
+	      Q=1d0-S
 	    ELSE
 	      Q=FA/FC
 	      R=FB/FC
-	      P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
-	      Q=(Q-1.)*(R-1.)*(S-1.)
+	      P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+	      Q=(Q-1d0)*(R-1d0)*(S-1d0)
 	    ENDIF
 	    IF(P.GT.0.) Q=-Q
 	    P=ABS(P)
-	    IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+	    IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
 	      E=D
 	      D=P/Q
 	    ELSE
@@ -3542,7 +3485,7 @@ C***********************************************************************
 	  FB=SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &	  	   nGridMat,mGridMat,GridMat,GridSrfdx,
      &	  	   pmon,rhoc,xhat,yhat,zhat,B)
-11	CONTINUE
+        END DO
 	PAUSE 'GSZPSolve exceeding maximum iterations.'
 	GSZPSolve=B
 	RETURN
@@ -3570,7 +3513,7 @@ C***********************************************************************
 	F2=SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &	         nGridMat,mGridMat,GridMat,GridSrfdx,
      &	         pmon,rhoc,xhat,yhat,zhat,X2)
-	DO 1 J=1,NTRY
+	DO J=1,NTRY
 	  IF(F1*F2.LT.0.)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
 	    X1=X1+gold*(X1-X2)
@@ -3583,7 +3526,7 @@ C***********************************************************************
      &	             nGridMat,mGridMat,GridMat,GridSrfdx,
      &	             pmon,rhoc,xhat,yhat,zhat,X2)
 	  ENDIF
- 1	 CONTINUE
+        END DO
 	RETURN
 	END SUBROUTINE GSZPB
 
@@ -3609,18 +3552,19 @@ C  Computes surface function for gridded data surface
      &	  yhat(3),zhat(3),pmon(3),L,SGSrf,rho(3),rhom(3),rhoc(3),
      &	  fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,yj,diCtr
 
-C  Compute point-of-incidence in surface coords
+        ! Compute point-of-incidence in surface coords
 
 	diCtr=INT((nGridMat+1)/2)
 	DO i=1,3
 	  rho(i)=prel(i)+L*ihat(i)
 	  rhom(i)=rho(i)-rhoc(i)
 	END DO
+
+        ! xi is non-integer coordinate in 1-99 frame, similar for yi
 	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
 	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
-        ! xi is non-integer coordinate in 1-99 frame, similar for yi
 
-C  Find grid coordinates of ray incidence point
+        ! Find grid coordinates of ray incidence point
 
 	i0=IDFLOOR(xi) ! floor integer part of xi
 	i1=i0+1
@@ -3629,21 +3573,14 @@ C  Find grid coordinates of ray incidence point
 	x=xi-DBLE(i0)  ! fractional part, ray position from i0
 	y=yj-DBLE(j0)
 
-	if (.false.) then
-	  print*,'**** i0,i1,j0,j1=',i0,i1,j0,j1
-	  print*,'**** xi,yj=',xi,yj
-	  print*,'**** rho=',rho(1:3)
-	  print*,'**** rhom=',rhom(1:3)
-	  print*,'**** xhat=',xhat(1:3)
-	  print*,'**** yhat=',yhat(1:3)
-	end if
 
-C  Compute excess surface height
+        ! Compute excess surface height
 
 	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &	    (j1.GT.nGridMat)) THEN
 	  fh=0d0
-	  tiltx=0d0; tilty=0d0
+	  tiltx=0d0
+          tilty=0d0
 	ELSE
           If (GridSrfOrder(crnt_Elt)==1) Then
             ! bi-linear interpolation of GridMat
@@ -3666,7 +3603,7 @@ C  Compute excess surface height
           End If
 	END IF
 
-C  Compute surface function
+        ! Compute surface function
 
 	DO i=1,3
 	  zc(i)=rho(i)-fh*zhat(i)
@@ -3734,14 +3671,6 @@ C  Compute excess surface height
 
 	tiltx=tiltx/dAct
 	tilty=tilty/dAct
-
-	if (.false.) then !(iRay_debug == 2526 .and.
-	  print*,'** tiltx,tilty,dAct =',tiltx,tilty,dAct
-C    &      iElt_debug == 90) then
-	  print*,'**In NGSrf: tiltx,tilty=',tiltx,tilty,
-     &      'xhat = ', xhat, 'yhat = ', yhat,
-     &       'dAct = ', dAct
-	end if
 
 	DO jAxis=1,3
  	  dFdrho(jAxis)=tiltx*xhat(jAxis)+tilty*yhat(jAxis)

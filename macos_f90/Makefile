@@ -64,7 +64,7 @@ export smacoslib     := smacos_lib
 
 #### Compilers:
 #export FC = f95
-export FC = ifx -g -fPIC
+export FC = ifx -g -fPIC -132
 #export FC = gfortran -fPIC
 export CC = gcc -fPIC
 #export CC = icc -fPIC
@@ -75,7 +75,7 @@ export LD = $(FC)
 
 #### Compiler/Linker Flags:
 
-export FFLAGS += -fs -w -tpp -132
+export FFLAGS += -fs -w -tpp
 # For Optimization:
 #FFLAGS += -O2
 # For Debugging:
@@ -103,27 +103,23 @@ export FMEX = fmex
 
 ################################################################################
 
-export MOD_SRCS = kinds.f90 constants.f90 dftsub.F macos_debug.F param_mod.F elt_mod.F \
-           src_mod.F cfiles_mod.F lohpars_mod.F nn_util.F \
-           traceutil_mod.F macos_mod.F loh_mod.F dopt_mod.F
+export MOD_SRCS = kinds.f90 constants.f90 dftsub.F lohpars_mod.F param_mod.F elt_mod.F nn_util.F mathsub.F macos_debug.F \
+	       src_mod.F cfiles_mod.F usersub.F  lsq.F loh_mod.F \
+	       traceutil_mod.F nls.F macos_mod.F dopt_mod.F surfsub.F didesub.F elemsub.F
 
-export MOD_OBJS = kinds.o constants.o dftsub.o macos_debug.o param_mod.o elt_mod.o src_mod.o cfiles_mod.o \
-           lohpars_mod.o traceutil_mod.o macos_mod.o nn_util.o loh_mod.o \
-           dopt_mod.o
+export MOD_OBJS = kinds.o constants.o dftsub.o lohpars_mod.o param_mod.o elt_mod.o nn_util.o mathsub.o macos_debug.o \
+	       src_mod.o cfiles_mod.o usersub.o lsq.o loh_mod.o \
+	       traceutil_mod.o nls.o macos_mod.o dopt_mod.o surfsub.o didesub.o elemsub.o
 
-export M_OBJS = macos_vars_mod.o mathsub.o macosio.o macos_init.o \
-        elemsub.o surfsub.o funcsub.o \
-        pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
-        linsub.o propsub.o usersub.o didesub.o \
-        pgplotsub.o sunsub.o lsq.o nls.o macos_ops.o\
-        zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o f90prt.o
+export M_OBJS = macos_vars_mod.o macosio.o macos_init.o funcsub.o \
+	    pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
+	    linsub.o propsub.o pgplotsub.o sunsub.o macos_ops.o\
+	    zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o f90prt.o
 
-export SM_OBJS = smacos_vars_mod.o mathsub.o smacosutil.o smacosio.o \
-        macos_init.o elemsub.o surfsub.o funcsub.o \
-        pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
-        linsub.o propsub.o usersub.o didesub.o \
-        pgplotdummy.o sunsub.o lsq.o nls.o \
-        macos_ops.o zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o
+export SM_OBJS = smacos_vars_mod.o smacosutil.o smacosio.o macos_init.o funcsub.o \
+	    pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
+	    linsub.o propsub.o pgplotdummy.o sunsub.o macos_ops.o \
+	    zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o
 
 export C_SRCS = utilsub_c.c mhist.c splicubi2.c
 export C_OBJS = utilsub_c.o mhist.o splicubi2.o

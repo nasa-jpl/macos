@@ -65,8 +65,6 @@ C
  120	FORMAT(' Tracing ',i9,' rays and propagating ',i9,
      &	' grid points...')
 
-	! Test only
-        !print*,'********* In propsub: iCurWFElt =',iCurWFElt
 
 	tAsphCoef=maxAsphCoef  ! added by jzlou
 
