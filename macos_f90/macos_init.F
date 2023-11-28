@@ -31,9 +31,9 @@ C
         call cfiles_mod_init_vars()
         call elt_mod_init_vars()
         call macos_mod_init_vars()
+        call dopt_init_vars()
 
         call ray_mod_init(mElt,mRay)
-        call dopt_init
 
       end subroutine reinitialise_variables
 

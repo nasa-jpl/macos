@@ -83,17 +83,10 @@ C***********************************************************************
 
 	IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
 	  CALL RTIME(StartTime)
-	  IF (iStartElt.EQ.0) THEN
-	    IF (ABS(zSource).GE.1d10) THEN
-              ! source at infinity - jzlou
-	      CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                     ifPropagate)
-	    ELSE
-	      CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                    ifPropagate)
-	    END IF
-	    ifGrid=.TRUE.
-	  END IF
+	  IF (iStartElt.EQ.0)
+     &      CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                            ifPropagate,ifGrid)
+
 	  if (.not. isDOP)
      &      WRITE(*,*) 'OPD: Rays being traced = ', nRay
 	  iStartRay=1
@@ -116,13 +109,13 @@ C***********************************************************************
      &	    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 
 	  iCurRayElt=iEndElt
-	  ifTrace=.TRUE.
-          ifCtraceCalled=.TRUE.
-	  ifOPDCalc=.TRUE.
-	  ifBuild=.FALSE.
-	  ifDMBuild=.FALSE.
-	  ifPropagate=.FALSE.
-	  ifRayPrint=.FALSE.
+	  ifTrace        = .TRUE.
+          ifCtraceCalled = .TRUE.
+	  ifOPDCalc      = .TRUE.
+	  ifBuild        = .FALSE.
+	  ifDMBuild      = .FALSE.
+	  ifPropagate    = .FALSE.
+	  ifRayPrint     = .FALSE.
 	  CALL RTIME(EndTime)
 	  DTime=EndTime-StartTime
 	  if ((.not.isDOP) .and. (LShowDTime)) WRITE(*,116) DTime
@@ -130,18 +123,18 @@ C***********************************************************************
           ifCtraceCalled=.FALSE.
 	END IF
 
-	nGridPts=npts+1
-	SumL=0d0
-	SumL2=0d0
-        SumCumL=0d0
-	MaxL=-1d38
-	MinL=1d38
-	mpt2=mpts*mpts
+	nGridPts = npts+1
+	SumL     = 0d0
+	SumL2    = 0d0
+        SumCumL  = 0d0
+	MaxL     =-1d38
+	MinL     = 1d38
+	mpt2     = mpts*mpts
 	CALL DZERO(OPDMat,mpt2)
 
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
-cstartscottfix
+
 	IF (LRayOK(1)) THEN
 	   RefCumRayL=CumRayL(1)
 	ELSE IF (OPDRefRayLen_FLG) THEN
@@ -149,7 +142,7 @@ cstartscottfix
 	ELSE
 	   RefCumRayL=0d0
 	END IF
-cendscottfix
+
 
 #if 1
 	! Define ray mask: 1 for ray not-lost AND passed, 0 for otherwise,
@@ -297,19 +290,14 @@ C***********************************************************************
 
 C         ***Find exit pupil (with option to minimize tilt)***
 
-	IF (ABS(zSource).GE.1d10) THEN
-	  CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	    ifPropagate)
-	ELSE
-	  CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	    ifPropagate)
-	END IF
+	CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
 
-	iEm1=iElt-1
-	iStartRay=1
-	iEndRay=1
-	iStartElt=0
-	iEndElt=iEm1
+	iEm1      = iElt-1
+	iStartRay = 1
+	iEndRay   = 1
+	iStartElt = 0
+	iEndElt   = iEm1
 	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &		ifLNegOK,Cmatrix,
      &		iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
@@ -352,7 +340,7 @@ c	th(3)=3.5355d-6
 
 C  Centroid or chief ray option tested
 	IF (ifCentroid .AND. Rx_FEXCentrFlg) THEN
-          print*,'***** FEX: ifCentroid used!\n'
+          !   print*,'***** FEX: ifCentroid used!\n'
 
 	  IF (ifTrace) THEN
 	    i=iCurRayElt
@@ -372,49 +360,42 @@ C  Centroid or chief ray option tested
 
 	  IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
 	    ifRayPrint=.FALSE.
-	    IF (iStartElt.EQ.0) THEN
-	      IF (ABS(zSource).GE.1d10) THEN
-	        CALL ColSource(nTestPts,Dicr,Djcr,dxSource,ifPol,
-     &	        ifPropagate)
-	      ELSE
-	        CALL PtSource(nTestPts,Dicr,Djcr,dxSource,ifPol,
-     &	        ifPropagate)
-	      END IF
-	      ifGrid=.TRUE.
-	    END IF
-	    !WRITE(*,*)' Tracing ',nRay,' rays...'
-	    iStartRay=1
-	    iEndRay=nRay
+	    IF (iStartElt.EQ.0)
+     &        CALL SetSourceRayGrid(nTestPts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate, ifGrid)
+
+            iStartRay = 1
+            iEndRay   = nRay
 
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	      ifLNegOK,Cmatrix,
-     &	      iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &	      ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &	      StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+     &        ifLNegOK,Cmatrix,
+     &        iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &        ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &        StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 
-	    iCurRayElt=iEndElt
-	    ifTrace=.FALSE.
-	    ifBuild=.FALSE.
-	    ifPropagate=.FALSE.
+	    iCurRayElt  = iEndElt
+	    ifTrace     = .FALSE.
+	    ifBuild     = .FALSE.
+	    ifPropagate = .FALSE.
 	  END IF
 
-	  iSpot=0
-	  nGridPts=npts+1
-	  mpt2=mpts*mpts
-	  DO 23 iRay=1,nRay
+	  iSpot    = 0
+	  nGridPts = npts+1
+	  mpt2     = mpts*mpts
+	  DO iRay=1,nRay
 	    IF (LRayOK(iRay).AND.((iRay.EQ.1).OR.(iObsOpt.EQ.0).OR.
-     &	        (LRayPass(iRay).AND.(iObsOpt.EQ.1)))) THEN
+     &          (LRayPass(iRay).AND.(iObsOpt.EQ.1)))) THEN
 	      IF (iRay.EQ.1) THEN
 	        CALL DEQUATE(CRSpot,RayPos(1,1),3)
 	        CALL DZERO(DV1,3)
 	      END IF
 	      IF ((iRay.NE.1).OR.
-     &	        ((iRay.EQ.1).AND.(nGridpts.EQ.1))) THEN
+     &          ((iRay.EQ.1).AND.(nGridpts.EQ.1))) THEN
                 iSpot=iSpot+1
                 CALL DADD(DV1,DV1,RayPos(1,iRay),3)
 	      END IF
 	    END IF
- 23	  CONTINUE
+	  END DO
 	  IF (iSpot.GT.0) THEN
             S1=1d0/DBLE(iSpot)
 	    CALL DSMPROD(CentroidSpot,DV1,S1,3)
@@ -429,12 +410,13 @@ C  Centroid or chief ray option tested
 	  CALL DUNITIZE(psip)
 	ELSE
 	  CALL DNEGATE(psip,cr1dir,3)
-	  print*,'***** FEX: Centroid NOT used!'
+	  !   print*,'***** FEX: Centroid NOT used!'
 	END IF
 	END SUBROUTINE FEX
 
 
 C***********************************************************************
+        ! Find Detector (Focal) Plane Position and Orientation
 
 	SUBROUTINE FDPN(dpElt,npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &    ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
@@ -461,7 +443,7 @@ C***********************************************************************
      &    ifLNegOK,ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),
      &    ifDMBuild,ifDraw,ifLocalCoord
 
-        INTEGER :: dpElt,npts,ICLEN,iCurWFElt,iCurRayElt,
+        INTEGER :: dpElt,npts,iCurWFElt,iCurRayElt,
      &             nBadRays,iStartElt,iEndElt,iObsOpt,
      &             DrawEltVec(mDrawElt,mDrawRay)
 
@@ -473,13 +455,8 @@ C***********************************************************************
      &          cr2Pos(3),cr2Dir(3),zp,th(3),CrsDist,DplnPos(3),
      &          DplnPosSag(3),DplnPosTan(3)
 
-	IF (ABS(zSource).GE.1d10) THEN
-	  CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                   ifPropagate)
-        ELSE
-	  CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                  ifPropagate)
-        END IF
+	CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
 
 	ChfRayDirSv(1:3)=ChfRayDir(1:3)
         ChfRayPosSv(1:3)=ChfRayPos(1:3)
@@ -493,24 +470,23 @@ C***********************************************************************
      &    iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
      &    nBadRays,StartIndRef,StartExtinc,
      &    Cmatrix,DrawRayVec,DrawEltVec)
-        cr1Pos=CRIncidPos(1:3,iEndElt); cr1Dir=CROutgoDir(1:3,iEndElt)
 
-	!print*,'cr1Dir =', cr1Dir
-	!print*,'cr1Pos =', cr1Pos
+	cr1Pos = CRIncidPos(1:3,iEndElt)
+        cr1Dir = CROutgoDir(1:3,iEndElt)
 
-	IF (ABS(zSource).GE.1d10) THEN
-	  ! Collimated source
+        IF (isPointSource()) THEN
+          ! Point source
+          ! Trace a differential chief ray rotated wrt xGrid
+          CALL DSMPROD(th,xGrid,5d-6,3)
+          CALL RotChfRay(th,ChfRayDir,ChfRayPos,ChfRayPosSv)
+        ELSE
+          ! Collimated source
           ! Trace a differential chief ray displaced in -yGrid
           CALL DSMPROD(th,-yGrid,1d-5,3)
           CALL DADD(ChfRayPos,ChfRayPosSv,th,3)
-	ELSE
-          ! Point source
-	  ! Trace a differential chief ray rotated wrt xGrid
-          CALL DSMPROD(th,xGrid,5d-6,3)
-          CALL RotChfRay(th,ChfRayDir,ChfRayPos,ChfRayPosSv)
-	END IF
-	RayDir(1:3,1)=ChfRayDir(1:3)
-	RayPos(1:3,1)=ChfRayPos(1:3)
+        END IF
+	RayDir(1:3,1) = ChfRayDir(1:3)
+	RayPos(1:3,1) = ChfRayPos(1:3)
 
 	CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
      &    ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
@@ -518,27 +494,30 @@ C***********************************************************************
      &    iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
      &    nBadRays,StartIndRef,StartExtinc,
      &    Cmatrix,DrawRayVec,DrawEltVec)
-	cr2Pos=CRIncidPos(1:3,iEndElt); cr2Dir=CROutgoDir(1:3,iEndElt)
-        !cr2Dir=CRIncidDir(1:3,iEndElt)
-	ifTrace=.FALSE.; ifBuild=.FALSE.; ifPropagate=.FALSE.
+	cr2Pos      = CRIncidPos(1:3,iEndElt)
+        cr2Dir      = CROutgoDir(1:3,iEndElt)
+        !cr2Dir      = CRIncidDir(1:3,iEndElt)
+	ifTrace     = .FALSE.;
+        ifBuild     = .FALSE.;
+        ifPropagate = .FALSE.
 
 	! Find crossing point of 2 chief rays
         CALL FindCrossPt(cr1Pos,cr1Dir,cr2Pos,cr2Dir,
      &                   zp,CrsDist,DplnPosSag)
 
-	IF (ABS(zSource).GE.1d10) THEN
-          ! Collimated source
-          ! Trace a differential chief ray displaced in -yGrid
-          CALL DSMPROD(th,-xGrid,1d-5,3)
-          CALL DADD(ChfRayPos,ChfRayPosSv,th,3)
-        ELSE
+        IF (isPointSource()) THEN
           ! Point source
           ! Trace a differential chief ray rotated wrt xGrid
           CALL DSMPROD(th,yGrid,5d-6,3)
           CALL RotChfRay(th,ChfRayDir,ChfRayPos,ChfRayPosSv)
+        ELSE
+          ! Collimated source
+          ! Trace a differential chief ray displaced in -yGrid
+          CALL DSMPROD(th,-xGrid,1d-5,3)
+          CALL DADD(ChfRayPos,ChfRayPosSv,th,3)
         END IF
-        RayDir(1:3,1)=ChfRayDir(1:3)
-        RayPos(1:3,1)=ChfRayPos(1:3)
+        RayDir(1:3,1) = ChfRayDir(1:3)
+        RayPos(1:3,1) = ChfRayPos(1:3)
 
 	CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
      &    ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
@@ -546,8 +525,12 @@ C***********************************************************************
      &    iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
      &    nBadRays,StartIndRef,StartExtinc,
      &    Cmatrix,DrawRayVec,DrawEltVec)
-        cr2Pos=CRIncidPos(1:3,iEndElt); cr2Dir=CROutgoDir(1:3,iEndElt)
-	ifTrace=.FALSE.; ifBuild=.FALSE.; ifPropagate=.FALSE.
+
+        cr2Pos      = CRIncidPos(1:3,iEndElt)
+        cr2Dir      = CROutgoDir(1:3,iEndElt)
+	ifTrace     = .FALSE.
+        ifBuild     = .FALSE.
+        ifPropagate = .FALSE.
 
 	CALL FindCrossPt(cr1Pos,cr1Dir,cr2Pos,cr2Dir,
      &                   zp,CrsDist,DplnPosTan)
@@ -1010,24 +993,27 @@ C***********************************************************************
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
      &	       xDraw(3),yDraw(3)
 
-	ifDraw=.FALSE.
-	iStartElt=0
-	iStartRay=1
-	iEndRay=1
-	nMinPts=3
+	ifDraw    = .FALSE.
+	iStartElt = 0
+	iStartRay = 1
+	iEndRay   = 1
+	nMinPts   = 3
 
-	IF (ABS(zSource).GE.1d10) THEN
-	  CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	                 ifPropagate)
-	ELSE
-	  CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	                ifPropagate)
-	END IF
+	! define source with npts = nMinPts (note: it will modify nGridPts)
+        !    -- Huge Overhead for simple chief-ray trace
+        CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
+
 	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &		ifLNegOK,Cmatrix,
      &	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
      &	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	 StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+        ! Restore  (ToDo: Needed?)
+        CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate,ifGrid)
+
 	END SUBROUTINE CRTrace
 
 C***********************************************************************
@@ -1073,14 +1059,8 @@ C***********************************************************************
 
 	! Test only
 	!iEndElt=nElt; xoff=0.3; yoff=0.2
-
-	IF (ABS(zSource).GE.1d10) THEN
-	  Call SetColSrcRay(nMinPts,Dicr,Djcr,dxSource,
-     &                      xoff,yoff,ifPol,ifPropagate)
-	ELSE
-	  Call SetPtSrcRay(nMinPts,Dicr,Djcr,dxSource,
-     &                     xoff,yoff,ifPol,ifPropagate)
-	END If
+        CALL SetSourceRay(nMinPts,Dicr,Djcr,dxSource,
+     &                    xoff,yoff,ifPol,ifPropagate)
 
 	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &   ifLNegOK,Cmatrix,
@@ -1317,7 +1297,7 @@ C Set Zerns
 	    ifIntSrfOK(iElt)=.TRUE.
 	  END IF
 	  IF ((EltID(iElt).EQ.7).OR.(nObs(iElt).GT.0).OR.
-     &        (ApType(iElt).GT.0)) THEN
+     &	      (ApType(iElt).GT.0)) THEN
 	    LEltObs(iElt)=.TRUE.
 
 	    CALL DEQUATE(zObs(1,iElt),psiElt(1,iElt),3)

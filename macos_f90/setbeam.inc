@@ -135,7 +135,7 @@ C
         Return
         End Subroutine SetBeam
 
-C *********************************************************************** 
+C ***********************************************************************
 
         ! A) Steps for computing objective function value:
         !   1) For given element, call OPD to that surface
@@ -153,6 +153,7 @@ C ***********************************************************************
         !   3) grad_obj_fun=(new_obj_fun_value-obj_fun_value)/da
         !
         Subroutine setbeam_funobj(mode,n,rstate_vec,objf,objgrd,nstate)
+        Use sourcsub_mod
         Implicit none
 
         ! Subroutine arguments
@@ -174,13 +175,13 @@ C ***********************************************************************
 	! da is step size in computing gradient of beam size
         ! at the given surface wrt source change. Need to
         ! distinguish betw collmated and point source.
-        if (abs(zSource) .ge. 1d10) then
-          ! Collmated source.
-          da=1d0  ! 1 mm = min resolution for collimated aperture size
-        else
+        if (isPointSource()) then
           ! Assume point source
           da=1d-05 ! 10 urad
-        end if
+        else
+          ! Collmated source.
+          da=1d0  ! 1 mm = min resolution for collimated aperture size
+                end if
 
         ! Use current source aperture to trace rays
         Aperture=rstate_vec(1)
@@ -215,7 +216,7 @@ C ***********************************************************************
         Return
         End Subroutine setbeam_funobj
 
-C *********************************************************************** 
+C ***********************************************************************
 
         Subroutine GetBeamSize(iEndEltArg,bm_size)
         use tracesub_mod
@@ -248,7 +249,7 @@ C ***********************************************************************
         bm_size=sqrt(tmp)
         End Subroutine GetBeamSize
 
-C *********************************************************************** 
+C ***********************************************************************
 
 #if 0
 	Subroutine GetBeamSizeCmd(bmSize,npts_,
@@ -315,13 +316,13 @@ C ***********************************************************************
         End Subroutine GetBeamSizeCmd
 #endif
 
-C *********************************************************************** 
+C ***********************************************************************
 
         ! Dummy routine since no nonlinear constraints
         Subroutine setbeam_funcon
         End Subroutine setbeam_funcon
 
-C *********************************************************************** 
+C ***********************************************************************
 
         !
         ! Set chief ray position and direction on given (one or
