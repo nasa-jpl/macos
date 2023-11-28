@@ -331,17 +331,28 @@ C         ***next command: Load optical description data***
 	    end if
 #endif
 
-	    ifLoad=.TRUE.; ifBuild=.FALSE.
-	    ifPropagate=.FALSE.; ifPerturb=.FALSE.
-	    ifPol=.FALSE.; ifPixLoc=.FALSE.
-	    ifVecDif3=.FALSE.; ifTrace=.FALSE.
-	    ifGrid=.FALSE.; ifAdd=.FALSE.;
-	    ifAddCA=.FALSE.; ifPixArray=.FALSE.
-	    ifCmt=.FALSE.; ifEFLCalc=.FALSE.
-	    ifCentroid=.TRUE.; ifFilterData=.FALSE.
-	    ifDMBuild=.FALSE.; ifLNegOK=.TRUE.; i=mElt
+            ifLoad           = .TRUE.
+            ifBuild          = .FALSE.
+            ifPropagate      = .FALSE.
+            ifPerturb        = .FALSE.
+            ifPol            = .FALSE.
+            ifPixLoc         = .FALSE.
+            ifVecDif3        = .FALSE.
+            ifTrace          = .FALSE.
+            ifGrid           = .FALSE.
+            ifAdd            = .FALSE.
+            ifAddCA          = .FALSE.
+            ifPixArray       = .FALSE.
+            ifCmt            = .FALSE.
+            ifEFLCalc        = .FALSE.
+            ifCentroid       = .TRUE.
+            ifFilterData     = .FALSE.
+            ifDMBuild        = .FALSE.
+            ifLNegOK         = .TRUE.
+
+            i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
-	    iCurRayElt=0; iCurWFElt=0; iObsOpt=1
+            iCurRayElt=0; iCurWFElt=0; iObsOpt=1
 	    If (UDBeam_FLG) Then
 	      BeamType=5
 	    Else
@@ -513,18 +524,14 @@ C         ***next command: Load optical description data***
            ! Preprocessing for 'BWK' command -jzlou
   	   If (BWK_FLG) Then
              iRay=1
-             IF (ABS(zSource).GE.1d10) THEN
-               CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                        ifPropagate)
-             ELSE
-               CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                       ifPropagate)
-             END IF
-             iStartRay=iRay
-             iEndRay=iRay
-             iStartElt=0
-             iEndElt=nElt
-             ifRayPrint=.TRUE.; LBWKnoPrint=.TRUE.
+             CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,
+     &                             ifPol,ifPropagate)
+             iStartRay   = iRay
+             iEndRay     = iRay
+             iStartElt   = 0
+             iEndElt     = nElt
+             ifRayPrint  = .TRUE.
+             LBWKnoPrint = .TRUE.
              CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &                   ifLNegOK,Cmatrix,iStartElt,iEndElt,
      &                   iStartRay,iEndRay,RayMap,SegMap,
@@ -532,14 +539,15 @@ C         ***next command: Load optical description data***
      &                   StartIndRef,StartExtinc,
      &                   DrawRayVec,DrawEltVec,nDrawElt(1),
      &                   xDraw,yDraw)
-             ifRayPrint=.FALSE.; LBWKnoPrint=.FALSE.
+             ifRayPrint  = .FALSE.
+             LBWKnoPrint = .FALSE.
              Do j=1,nElt
                CRIncidPosNom(1:3,j)=CRIncidPos(1:3,j)
              End Do
 	  End If
 #endif
 	  ! Set default option for source adjustment
-	  IF (ABS(zSource).LE.1d10) THEN
+	  IF (isPointSource()) THEN
 	    SAOpt=SADir  ! point source, ChfRayDir adjusted
 	  ELSE
 	    SAOpt=SAPos  ! collimated source, ChfRayPos adjusted
@@ -746,11 +754,8 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
      &     '   ** Need to run RRAY command before executing TRR command'
             ELSE
 	      ! Trace all reference rays
-	      IF (ABS(zSource).GE.1d10) THEN
-               CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-              ELSE
-               CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-	      END IF
+              CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate)
               Do iRay=1,mPupRay
                 If (refRay(iRay) < 0) Then
 	          Exit  ! Cycle would do the same
@@ -1172,18 +1177,12 @@ C         ***Print ray maps***
 
 	  ELSE IF (LCMP(command,'MAP',3)) THEN
 	    IF (ifLoad) THEN
-	      IF (.NOT.ifGrid) THEN
-	        IF (ABS(zSource).GE.1d10) THEN
-	          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        ELSE
-	          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        END IF
-	        ifGrid=.TRUE.
-	      END IF
-	      WRITE(*,217)
-	      iLognRay=LOG10(FLOAT(nRay))
+	      IF (.NOT.ifGrid)
+     &          CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate,ifGrid)
+
+              WRITE(*,217)
+	      iLognRay=LOG10(DBLE(nRay))
 	      IF (iLognRay.LE.0) iLognRay=1
 	      nAcross(1)=26
 	      nAcross(2)=20
@@ -1268,13 +1267,10 @@ C         *** 'ray' command ***
 	        CALL IACCEPT_S(iRay,0,1,
      &          	'Enter number of ray (1=chief ray, 0=quit):')
 	        IF (iRay.EQ.0) GO TO 5
-	        IF (ABS(zSource).GE.1d10) THEN
-	          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          		 ifPropagate)
-	        ELSE
-	          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          	        ifPropagate)
-	        END IF
+
+                CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
+
 	        IF ((iRay.LT.1).OR.(iRay.GT.nRay)) THEN
 		  WRITE(*,*)' Invalid ray number. '
 		  GO TO 4
@@ -1329,13 +1325,8 @@ C         *** 'BWK' command ***
 
               ! First trace chief ray
               iRay=1
-              IF (ABS(zSource).GE.1d10) THEN
-                CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                         ifPropagate)
-              ELSE
-                CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                        ifPropagate)
-              END IF
+              CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate)
               iStartRay=iRay
               iEndRay=iRay
               iStartElt=0
@@ -1423,7 +1414,7 @@ C         ***next command: Print rays surface - to - surface***
 
 	  ELSE IF (LCMP(command,'SRAY',3)) THEN
 	    !
-	    ! This command is buggy, doesn't work  - jzlou
+	    ! This command is buggy, doesn't work  - jzlou   (ToDo)
 	    !
 	    IF (ifLoad) THEN
 	      ifRayPrint=.TRUE.
@@ -1448,13 +1439,8 @@ C         ***next command: Print rays surface - to - surface***
 
 	      IF (iElt.GT.iCurRayElt) THEN
 	        iStartElt=0
-	        IF (ABS(zSource).GE.1d10) THEN
-	          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        ELSE
-	          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        END IF
+                CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
 	      ELSE
 	        iStartElt=iCurRayElt
 	      END IF
@@ -1540,13 +1526,8 @@ C         ***Draw system layout and rays***
 	      IF (MOD(nDrawRay,2).EQ.0) nDrawRay=nDrawRay-1
 	      k=1
 
-	      IF (ABS(zSource).GE.1d10) THEN
-	        CALL ColSource(nDrawRay,Dicr,Djcr,dxSource,ifPol,
-     &	                       ifPropagate)
-	      ELSE
-	        CALL PtSource(nDrawRay,Dicr,Djcr,dxSource,ifPol,
-     &	                      ifPropagate)
-	      END IF
+              CALL SetSourceRayGrid(nDrawRay,Dicr,Djcr,dxSource,ifPol,
+     &	                            ifPropagate)
 
 	      iStartElt=0
 	      iEndElt=nElt
@@ -1855,14 +1836,8 @@ C         ***Compute linear models***
 	      iCurRayElt=iEndElt
 
 	      CALL RTIME(StartTime)
-	      IF (ABS(zSource).GE.1d10) THEN
-	        CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	        ifPropagate)
-	      ELSE
-	        CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	        ifPropagate)
-	      END IF
-	      ifGrid=.TRUE.
+              CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate,ifGrid)
               IF (nRay.LE.bRay) THEN
 	        WRITE(*,118)nRay
 	      ELSE
@@ -2004,14 +1979,9 @@ C         ***Optimize reference surface***
 	    iStartElt=0
 	    iEndElt=iElt-1
 
-	    IF (ABS(zSource).GE.1d10) THEN
-	      CALL ColSource(nTestPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    ELSE
-	      CALL PtSource(nTestPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    END IF
-	    ifGrid=.FALSE.
+            CALL SetSourceRayGrid(nTestPts,Dicr,Djcr,dxSource,ifPol,
+     &                            ifPropagate)
+	    ifGrid=.FALSE.               ! ToDo: why set to False ???
 	    ifPropagate=.FALSE.
 	    ifTrace=.FALSE.
 	    ifBuild=.FALSE.
@@ -2070,13 +2040,10 @@ C         ***Slave reference surface***
 
 	    iStartElt=0
 	    iEndElt=iSlv1
-	    IF (ABS(zSource).GE.1d10) THEN
-	      CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    ELSE
-	      CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    END IF
+
+            CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                            ifPropagate)
+
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	     ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
      &       RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
@@ -2089,13 +2056,9 @@ C         ***Slave reference surface***
 	    CALL DEQUATE(Vptp,RayPos,3)
 
 	    iEndElt=iSlv2
-	    IF (ABS(zSource).GE.1d10) THEN
-	      CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    ELSE
-	      CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    END IF
+            CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                            ifPropagate)
+
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	     ifLNegOK,Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,
      &       RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
@@ -2355,13 +2318,10 @@ C         ***Find Field Point using global or pixel coordinates***
 c--Nominal incidence point
 	    CALL DEQUATE(cr1indir,ChfRayDir,3)
 	    CALL DEQUATE(cr1inpos,ChfRayPos,3)
-	    IF (ABS(zSource).GE.1d10) THEN
-	      CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    ELSE
-	      CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	      ifPropagate)
-	    END IF
+
+            CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                            ifPropagate)
+
 	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	      ifLNegOK,Cmatrix,
      &	    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
@@ -2792,13 +2752,9 @@ C         *** Set System Stop ***
 	        iStartElt=0
 	        iEndElt=1
 	        nMinPts=3
-	        IF (ABS(zSource).GE.1d10) THEN
-	          CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        ELSE
-	          CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &	          ifPropagate)
-	        END IF
+                CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
+
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	          ifLNegOK,Cmatrix,
      &	          iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
@@ -4239,17 +4195,11 @@ C	  Trace rays:
      &            .OR.(iStartElt.LT.iEndElt)) THEN
 	        ifRayPrint=.FALSE.
 	        CALL RTIME(StartTime)
-	        IF (iStartElt.EQ.0) THEN
-	          IF (ABS(zSource).GE.1d10) THEN
-	            CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	            ifPropagate)
-	          ELSE
-	            CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	            ifPropagate)
-	          END IF
-	          ifGrid=.TRUE.
-	        END IF
-	        WRITE(*,*)' STOP cmd: Tracing ',nRay,' rays...'
+	        IF (iStartElt.EQ.0)
+     &            CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,
+     &                                  ifPol,ifPropagate,ifGrid)
+
+                WRITE(*,*)' STOP cmd: Tracing ',nRay,' rays...'
 	        iStartRay=1
 	        iEndRay=nRay
 	        CALL

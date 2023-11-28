@@ -19,6 +19,7 @@ C***********************************************************************
 	Contains
 
 	SUBROUTINE MBFile6(npts,ifOld,LOAD_SUCCESS)
+	use Constants, only: EPS
 	use param_mod
 	use src_mod
 	use elt_mod
@@ -262,7 +263,7 @@ C
 	    end if
 	  END IF
 
-! ToDo: this will cause indexing faults
+	  ! ToDo: this might cause indexing faults
           IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
 	    WRITE(*,*) ' Too many segments.'
 	    WRITE(*,*) '  MODIFY or use another version. '
