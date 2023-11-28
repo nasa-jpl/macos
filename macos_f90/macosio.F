@@ -30,6 +30,7 @@ C***********************************************************************
 	Contains
 
 	SUBROUTINE MBFile6(npts,ifOld,ifFid,LOAD_SUCCESS)
+	use Constants, only: EPS
 	use param_mod
         use src_mod
         use elt_mod

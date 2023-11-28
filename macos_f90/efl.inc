@@ -1,18 +1,17 @@
 C  code for EFL command
-	    
+
             IF (ifLoad) THEN
               ifRayPrint=.FALSE.
               ifBuild=.FALSE.
               ifTrace=.FALSE.
               ifPropagate=.FALSE.
 
-              IF (ABS(zSource).GE.1d10) THEN
-          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-              ELSE
+              IF (isPointSource()) THEN
                 WRITE(*,*)' **Need source at infinity'//
      &                    ' to run EFL command!'
                 GO TO 1
               END IF
+              CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
 
 	      ! Trace chief ray
               iStartRay=1; iEndRay=1
@@ -46,8 +45,8 @@ C  code for EFL command
 	        !print*,' ** srid =',srid, ', nElt =',nElt; pause
 
 	        ! source must be reset here, otherwise when the same ray is traced
-	        ! twice, once in FSR above and once below, the result will be incorrect.
-	        ! Need take a closer look at CTRACE ... -jzlou   
+	        ! twice, once in FSR above and once below, the result will be incorrect.  (ToDo)
+	        ! Need take a closer look at CTRACE ... -jzlou
 	        CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
      &                         ifPropagate)
 
@@ -65,8 +64,8 @@ C  code for EFL command
                   off_axis_rayOK=.true.
                   exit
                 end if
-              End Do  ! 100 trys 
- 
+              End Do  ! 100 trys
+
               if (.not.off_axis_rayOK) then
                 WRITE(*,*)
      &            ' **Failed to find a valid off-aix ray to trace,'//
@@ -85,7 +84,7 @@ C  code for EFL command
 	      If (abs(costh-1d0)<1d-10) Then
 	        print*,'**Warning: EFL = infinity'
 	        efl=1d22
-	      Else 
+	      Else
                 efl=rayHt/dsin(dacos(costh))
 	      End If
            ELSE

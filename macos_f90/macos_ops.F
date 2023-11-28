@@ -170,16 +170,10 @@ C  FORMAT statements
             iEndElt=iElt; iStartElt=0
             IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
               ifRayPrint=.FALSE.
-              IF (iStartElt.EQ.0) THEN
-                IF (ABS(zSource).GE.1d10) THEN
-                  CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &            ifPropagate)
-                ELSE
-                  CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &            ifPropagate)
-                END IF
-                ifGrid=.TRUE.
-              END IF
+              IF (iStartElt.EQ.0)
+     &          CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate,ifGrid)
+
               WRITE(*,*)' Tracing ',nRay,' rays...'
               iStartRay=1
               iEndRay=nRay
