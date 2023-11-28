@@ -81,15 +81,10 @@ C
 	  IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
 	    CALL RTIME(StartTime)
 	    IF (iStartElt.EQ.0) THEN
-	      taperFactor=1.0  ! reset tapering factor -jzlou
-	      IF (ABS(zSource).GE.1d10) THEN
-	        CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                       ifPropagate)
-	      ELSE
-	        CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                      ifPropagate)
-	      END IF
-	      ifGrid=.TRUE.
+	      taperFactor=1d0  ! reset tapering factor -jzlou
+
+		  CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &	                        ifPropagate,ifGrid)
 	    END IF
 	    WRITE(*,120) nRay, md2
 	    ifPropagate=.TRUE.
