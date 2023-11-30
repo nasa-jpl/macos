@@ -23,19 +23,19 @@ C***********************************************************************
      &            UDyDrawGrid(3),UDzDrawGrid(3),OPDRefRayLen
         Real*8, dimension(:), allocatable :: VarStrtIndRef,VarCurIndRef
 	Real*8, dimension(:,:), allocatable :: CRIncidDir,CROutgoDir,
-     &       CRIncidPosNom,CRIncidPos,CRIncidSurfN,CRXLoc,CRYLoc,CRNhat 
-	Real*8, dimension(:,:,:), allocatable :: PolyVtx3DSav,RayPosHist 
+     &       CRIncidPosNom,CRIncidPos,CRIncidSurfN,CRXLoc,CRYLoc,CRNhat
+	Real*8, dimension(:,:,:), allocatable :: PolyVtx3DSav,RayPosHist
         Real*8, dimension(:,:,:,:), allocatable :: gradIndRayPath
 	  ! note that gradIndRayPath now only supports two gradInd elems
-	  ! see allocate for gradIndRayPath below 
+	  ! see allocate for gradIndRayPath below
         Logical, dimension(:,:), allocatable :: LRayOKHist
 	Logical, dimension(:), allocatable :: Poly3DApVecL
         Logical :: LBWKnoPrint,LNewIndRef,ifSave3DApVec,ifSRT,
      &             LCalcWFElt,ifCtraceCalled,Rx_FEXCentrFlg,
      &             LShowDTime,LudDrawGrid,OPDRefRayLen_FLG,LRayTgtElt,
      &             ShowMetData_FLG,saveOPD_Flg,SaveRayPosHist_Flg,
-     &             DumpRayPosHist_Flg,SaveVis3d_dat_Flg 
-	
+     &             DumpRayPosHist_Flg,SaveVis3d_dat_Flg
+
 	! Supporting variable IndRef, etc.
 	Integer, parameter :: mLenslet=250,mGradIndRaySegs=256
 	Integer :: nHexLenlets=91,   ! hex lens array is hardwired,
@@ -44,7 +44,7 @@ C***********************************************************************
 	! Supporting FZP grating models
 	Integer :: Dielectric=1,  ! dielectric lens (grating)
      &             Metal=2	  ! metal lens (grating)
-        Integer, dimension(:), allocatable :: GratingMaterial 
+        Integer, dimension(:), allocatable :: GratingMaterial
 	Complex*16, dimension(:), allocatable :: rayTC ! transmission coefficient for rays
 
 	Type LensletStr
@@ -60,17 +60,17 @@ C***********************************************************************
      &                         HexLensletIdx,RecLensletIdx,iElt2iGradInd
 
 	Type IndRefGridStr
-	  Real*8, dimension(:,:), allocatable :: IndRefGrid  
+	  Real*8, dimension(:,:), allocatable :: IndRefGrid
 	  Real*8 :: width
 	End Type IndRefGridStr
-	Type(IndRefGridStr), dimension(:), allocatable :: IndRefGridArr 
+	Type(IndRefGridStr), dimension(:), allocatable :: IndRefGridArr
 
         Type GrinRefStr
           Integer :: modelType
           Real*8, dimension(10) :: modelCoef
 	  Real*8 :: lensDepth,dt
-          Real*8, dimension(:,:), allocatable :: raypt  ! ray points array 
-	End Type GrinRefStr 
+          Real*8, dimension(:,:), allocatable :: raypt  ! ray points array
+	End Type GrinRefStr
 	Type(GrinRefStr), dimension(:), allocatable :: GrinRefArr
 
 	Type RayStateStr
@@ -133,24 +133,34 @@ C***********************************************************************
      &      call macos_memory_failure
      &                 ('ray_mod_init: deallocate failed!')
 
-	taperFactor=1d0  ! default value, no tapering
-	IsVarIndRefElt=.FALSE.; TotalLensletsArray=0
-        LensletStrArray%Ltri=0; LensletStrArray%Rtri=0
-        LensletStrArray%Xtri=0; IsGrinRefElt=.FALSE.
-        LensletStrArray%RecXtri=0; LensletStrArray%RecYtri=0
-        LensletStrArray%IndRef=0d0
-	CRIncidDir=0d0; CROutgoDir=0d0; CRIncidPosNom=0d0
-	CRIncidPos=0d0; CRIncidSurfN=0d0; iElt2iGradInd=0
-	CRXLoc=0d0; CRYLoc=0d0; CRNhat=0d0
-	VarStrtIndRef=0d0; VarCurIndRef=0d0
-        HexLensletIdx=0; RecLensletIdx=0; LShowDTime=.TRUE.
-	iDrawRay_global=0; IsOverDraw=.FALSE.; rayTC=czero_
-        GratingMaterial=0
-        ChfRayHist%keepHist=.FALSE.; ChfRayHist%tot_srfs=0
-   	Rx_FEXCentrFlg=.TRUE.  ! default 
-        SaveRayPosHist_Flg=.FALSE. ! default 
-        SaveVis3d_dat_Flg=.FALSE.  ! default
-	End Subroutine ray_mod_init
+        if (allocated(ChfRayHist%SrfId)) then
+          deallocate(ChfRayHist%SrfId,
+     &               ChfRayHist%RayPosAtSrf,
+     &               ChfRayHist%RayDirAtSrf,stat=m_err_ray)
+          if (m_err_ray /= 0)
+     &      call macos_memory_failure
+     &                 ('ray_mod_init: deallocate failed!')
+        end if
+
+
+          taperFactor=1d0  ! default value, no tapering
+          IsVarIndRefElt=.FALSE.; TotalLensletsArray=0
+          LensletStrArray%Ltri=0; LensletStrArray%Rtri=0
+          LensletStrArray%Xtri=0; IsGrinRefElt=.FALSE.
+          LensletStrArray%RecXtri=0; LensletStrArray%RecYtri=0
+          LensletStrArray%IndRef=0d0
+          CRIncidDir=0d0; CROutgoDir=0d0; CRIncidPosNom=0d0
+          CRIncidPos=0d0; CRIncidSurfN=0d0; iElt2iGradInd=0
+          CRXLoc=0d0; CRYLoc=0d0; CRNhat=0d0
+          VarStrtIndRef=0d0; VarCurIndRef=0d0
+          HexLensletIdx=0; RecLensletIdx=0; LShowDTime=.TRUE.
+          iDrawRay_global=0; IsOverDraw=.FALSE.; rayTC=czero_
+          GratingMaterial=0
+          ChfRayHist%keepHist=.FALSE.; ChfRayHist%tot_srfs=0
+          Rx_FEXCentrFlg=.TRUE.  ! default
+          SaveRayPosHist_Flg=.FALSE. ! default
+          SaveVis3d_dat_Flg=.FALSE.  ! default
+        End Subroutine ray_mod_init
 
 
 #if 1
