@@ -5563,6 +5563,7 @@ C       ***Get matrix from matlab
 cwr         CALL RBININ(iPloTyp,R1,row_sz,col_sz)
 #endif
 
+#if 0
 C *************************************************
 C  For testing srtrace.F only, -jzlou
 	  ELSE IF (LCMP(command,'SRTRACE',6)) THEN
@@ -5574,6 +5575,7 @@ C  For testing srtrace.F only, -jzlou
 	      WRITE(*,150)
 	    END IF
 C *************************************************
+#endif
 
 C         ***Here if no match***
 
