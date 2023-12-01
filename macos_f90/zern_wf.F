@@ -68,22 +68,26 @@ C Last modified: 07/2008
 	! Input: OPD, Zernike coefficients for each mode
 	! Output Linear combination of Zernike modes of OPD: OPDzern
 	!
-	Subroutine zern_aberrate(OPD,OPDzern,mode,act)
-        Real*8, dimension(:,:) :: OPD  ! nGridPts x nGridPts
-        Real*8, dimension(:,:) :: OPDzern  ! output OPD w/ relevant Zernike terms
-	Integer, dimension(:) :: mode
-        Logical, dimension(size(OPD,1),size(OPD,2)) :: pmask
-	Integer :: act,n_mode,iz
+	subroutine zern_aberrate(OPD,OPDzern,mode,act)
+          implicit none
+          Real*8, dimension(:,:) :: OPD  ! nGridPts x nGridPts
+          Real*8, dimension(:,:) :: OPDzern  ! output OPD w/ relevant Zernike terms
+	  Integer, dimension(:) :: mode
+          Logical, dimension(size(OPD,1),size(OPD,2)) :: pmask
+	  Integer :: act
 
-	OPDzern=0d0; pmask=(OPD/=0d0)
-	Call zern_fit(OPD,pmask,mode,OPDzern,act)
-	End Subroutine zern_aberrate
+	  OPDzern = 0d0;
+          pmask   = (OPD/=0d0)
+	  call zern_fit(OPD,pmask,mode,OPDzern,act)
+
+	end subroutine zern_aberrate
 
 
 C  ***************************************************************************
 
 C   Remove one or more Zernike modes from an OPD map
 	Subroutine zern_remove(OPDin,OPDout,z_modes,act)
+        implicit none
 	Real*8, dimension(:,:) :: OPDin,OPDout
  	Integer, dimension(:) :: z_modes
         Integer, dimension(max_zern_modes) :: z_fit_modes
@@ -115,6 +119,7 @@ C   Remove one or more Zernike modes from an OPD map
 C  ***************************************************************************
 
 	Subroutine zern_modes_coef(OPDin,z_modes,z_coefs,act)
+        implicit none
         Real*8, dimension(:,:) :: OPDin
         Integer, dimension(:) :: z_modes
         Real*8, dimension(size(z_modes)) :: z_coefs
@@ -321,137 +326,141 @@ C  ***************************************************************************
         FUNCTION zern_mode_nc(OPDin,z_mode,zt,ratio)
           use surfsub, only : ZerntoMon4, ZerntoMon7
           use elt_mod, only: mZernModes, mMonCoef
+          implicit none
 
-        Real*8, DIMENSION(:,:) :: OPDin
-        Integer :: z_mode  ! single Zernike mode
-        Real*8, DIMENSION(size(OPDin,1),size(OPDin,2)) :: zern_mode_nc
-        Real*8, DIMENSION(size(OPDin,1),size(OPDin,2)) :: dmask
-        Logical, DIMENSION(size(OPDin,1),size(OPDin,2)) :: mask
-        !
-        Real*8 :: ratio,zc(mZernModes),mc(mMonCoef),x,y,r,cent(2),r_tmp,rmax,
-     &            xj,yi,yimj,p,v
-        Integer :: zt,nrow,ncol, ir,ic,n,m,m1,s1,iRay,i,j,k
-        Logical, save :: first_entry=.true.
+          Real*8, DIMENSION(:,:) :: OPDin
+          Integer :: z_mode  ! single Zernike mode
+          Real*8, DIMENSION(size(OPDin,1),size(OPDin,2)) :: zern_mode_nc
+          Real*8, DIMENSION(size(OPDin,1),size(OPDin,2)) :: dmask
+          Logical, DIMENSION(size(OPDin,1),size(OPDin,2)) :: mask
+          !
+          Real*8 :: ratio,zc(mZernModes),mc(mMonCoef),x,y,cent(2),r_tmp,rmax,
+     &              xj,yi,yimj
+          Integer :: zt,nrow,ncol, ir,ic,iRay,i,j,k
 
-        ncol=nGridPts; nrow=nGridPts
-        zc=0d0; zc(z_mode)=1d0
+          Logical, save :: first_entry=.true.    ! save statement implied
 
-        If (zt==ZernHex) Then
-          Call ZerntoMon4(zc,mc)
-        Else If (zt==ZernAnnular) Then
-          Call ZerntoMon7(zc,mc,ratio)
-        End If
+          ncol       = nGridPts
+          nrow       = nGridPts
+          zc         = 0d0
+          zc(z_mode) = 1d0
 
-	mask=.false.
-        Do iRay=2,nRay
-          if (LRayPass(iRay)) then
-            mask(RayIndex(1,iRay),RayIndex(2,iRay))=.true.
-          end if
-        End Do
-        !
-        dmask=0d0
-        Do ic=1,ncol
-          Do ir=1,nrow
-            IF (mask(ir,ic)) dmask(ir,ic)=1d0
+          If (zt==ZernHex) Then
+            Call ZerntoMon4(zc,mc)
+          Else If (zt==ZernAnnular) Then
+            Call ZerntoMon7(zc,mc,ratio)
+          End If
+
+! ToDo: replace with WHERE ...
+	  mask=.false.
+          do concurrent (iRay=2:nRay)
+            if (LRayPass(iRay))
+     &        mask(RayIndex(1,iRay),RayIndex(2,iRay)) = .TRUE.
+          end do
+          !
+          dmask=0d0
+          Do ic=1,ncol
+            Do ir=1,nrow
+              IF (mask(ir,ic)) dmask(ir,ic)=1d0
+            End Do
           End Do
-        End Do
 
-        If (mod(nGridpts,2) /= 0) Then
-          ! odd grid
-          Call Centroid(dmask(1:nrow,1:ncol),nrow,ncol,cent(1),cent(2))
-        Else
-          ! even grid
-          cent(1:2)=nGridpts/2+0.5d0
-        End If
+          If (mod(nGridpts,2) /= 0) Then
+            ! odd grid
+            Call Centroid(dmask(:nrow,:ncol),nrow,ncol,cent(1),cent(2))
+          Else
+            ! even grid
+            cent(1:2)=nGridpts/2+0.5d0
+          End If
 
-	DO ic=1,ncol
-          y=ic; y=y-cent(2)
-          DO ir=1,nrow
-            x=ir; x=x-cent(1)
-            IF (mask(ir,ic)) THEN
-              r_tmp=dsqrt(x*x+y*y)
-              IF (r_tmp>rmax) rmax=r_tmp
-            END IF
+	  DO ic=1,ncol
+            y=ic; y=y-cent(2)
+            DO ir=1,nrow
+              x=ir; x=x-cent(1)
+              IF (mask(ir,ic)) THEN
+                r_tmp=dsqrt(x*x+y*y)
+                IF (r_tmp>rmax) rmax=r_tmp
+              END IF
+            END DO
           END DO
-        END DO
-        !
-        If (mod(nGridPts,2)==0) Then
-          rmax=nGridPts/2-0.5  ! even grid, test only
-        End If
+          !
+          If (mod(nGridPts,2)==0) Then
+            rmax=nGridPts/2-0.5d0  ! even grid, test only
+          End If
 
-	Do ic=1,ncol
-          y=ic; y=y-cent(2); y=y/rmax
-          Do ir=1,nrow
-            x=ir; x=x-cent(1); x=x/rmax
-            k=1; yi=y
-            zern_mode_nc(ir,ic)=mc(1)
-            If ((x/=0d0).OR.(y/=0d0)) Then
-              If (x==0d0) Then
-                yi=y
-                Do i=1,14
-                  yimj=yi
-                  Do j=0,i
-                    k=k+1
-                    If (mc(k)/=0d0) Then
-                      If (j==0) Then
-                        zern_mode_nc(ir,ic)
-     &                       =zern_mode_nc(ir,ic)+mc(k)*yi
+	  Do ic=1,ncol
+            y=ic; y=y-cent(2); y=y/rmax
+            Do ir=1,nrow
+              x=ir; x=x-cent(1); x=x/rmax
+              k=1; yi=y
+              zern_mode_nc(ir,ic)=mc(1)
+              If ((x/=0d0).OR.(y/=0d0)) Then
+                If (x==0d0) Then
+                  yi=y
+                  Do i=1,14
+                    yimj=yi
+                    Do j=0,i
+                      k=k+1
+                      If (mc(k)/=0d0) Then
+                        If (j==0) Then
+                          zern_mode_nc(ir,ic)
+     &                         =zern_mode_nc(ir,ic)+mc(k)*yi
+                        End If
                       End If
-                    End If
-                    yimj=yimj/y
+                      yimj=yimj/y
+                    End Do
+                    yi=yi*y
                   End Do
-                  yi=yi*y
-                End Do
-              Else If (y==0d0) Then
-	        Do i=1,14
-                  xj=1
-                  Do j=0,i
-                    k=k+1
-                    IF ((mc(k)/=0d0).AND.(i==j)) Then
-                      zern_mode_nc(ir,ic)
-     &                      =zern_mode_nc(ir,ic)+mc(k)*xj
-                    End If
-                    xj=xj*x
+                Else If (y==0d0) Then
+	          Do i=1,14
+                    xj=1
+                    Do j=0,i
+                      k=k+1
+                      IF ((mc(k)/=0d0).AND.(i==j)) Then
+                        zern_mode_nc(ir,ic)
+     &                        =zern_mode_nc(ir,ic)+mc(k)*xj
+                      End If
+                      xj=xj*x
+                    End Do
                   End Do
-                End Do
-              Else
-	        Do i=1,14
-                  xj=1
-                  yimj=yi
-                  Do j=0,i
-                    k=k+1
-                    If (mc(k).NE.0d0) Then
-                      zern_mode_nc(ir,ic)
-     &                =zern_mode_nc(ir,ic)+mc(k)*xj*yimj
-                    End If
-                    yimj=yimj/y
-                    xj=xj*x
+                Else
+	          Do i=1,14
+                    xj=1
+                    yimj=yi
+                    Do j=0,i
+                      k=k+1
+                      If (mc(k).NE.0d0) Then
+                        zern_mode_nc(ir,ic)
+     &                  =zern_mode_nc(ir,ic)+mc(k)*xj*yimj
+                      End If
+                      yimj=yimj/y
+                      xj=xj*x
+                    End Do
+                    yi=yi*y
                   End Do
-                  yi=yi*y
-                End Do
+                End If
               End If
-            End If
+            End Do
           End Do
-        End Do
 
-	Do ic=1,ncol
-          Do ir=1,nrow
-            If (.not.mask(ir,ic)) zern_mode_nc(ir,ic)=0d0
+	  Do ic=1,ncol
+            Do ir=1,nrow
+              If (.not.mask(ir,ic)) zern_mode_nc(ir,ic)=0d0
+            End Do
           End Do
-        End Do
 
 #if 0
-        Open(Unit=12,File='az.txt')
-        Do ic=1,ncol
-          Write(12,*) zern_mode_nc(1:nrow,ic)
-        End Do
-        Close(12)
+          Open(Unit=12,File='az.txt')
+          Do ic=1,ncol
+            Write(12,*) zern_mode_nc(1:nrow,ic)
+          End Do
+          Close(12)
 #endif
 
-        !Call FindPV(zern_mode_nc,nrow,ncol,p,v)
-        !print*,'zern_mode_nc, P,V =',p,v
+          !Call FindPV(zern_mode_nc,nrow,ncol,p,v)
+          !print*,'zern_mode_nc, P,V =',p,v
 
-        first_entry=.false.
+          first_entry=.false.
 	End FUNCTION zern_mode_nc
 
 
@@ -460,6 +469,7 @@ C Changed local arrays to dynamic arrays to avoid segmentation problem when
 C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 
 	Subroutine zern_fit(OPDin,pupil_mask,modes,z_fit,act)
+        implicit none
 	Real*8, dimension(:,:) :: OPDin,z_fit
 	Logical, dimension(:,:) :: pupil_mask
 	Integer, dimension(:) :: modes
@@ -591,6 +601,7 @@ C ***************************************************************************
 
 	Subroutine zern_beam_proc(rPos,zernCent,zernX,ZernY,zRad)
      	use math_mod, only : DDOTC
+        implicit none
 
      	Real*8 :: rPos(:,:),zernCent(3),zernX(3),ZernY(3),zRad,dr(3)
      	Integer :: iRay
@@ -621,8 +632,9 @@ C ***************************************************************************
 
 	Subroutine zern_interface(ie,OPDin,OPDout,wfe,usrOpt_in,
      &                            action)
+        implicit none
 	Real*8, dimension(:,:) :: OPDin,OPDout
-	Real*8 :: wfe,pval,vval
+	Real*8 :: wfe
 	Integer :: ie,action, iz,jz,nzern,zerns(max_zern_modes)
 	Logical :: usrOpt_in
 	Real*8 :: zcoefs(max_zern_modes)
