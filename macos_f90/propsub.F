@@ -54,7 +54,7 @@ C
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifLNegOK,ifBuild,ifTrace,
      &	        ifRegrid(mElt),ifVecDif3,ifIntSrfSet(mElt)
-	INTEGER iElt,npts,ICLEN,iCurWFElt,iCurRayElt,iWF,
+	INTEGER iElt,npts,iCurWFElt,iCurRayElt,iWF,
      &	        iObsOpt,nBadRays,iStartElt,iEndElt
 	SREAL StartTime,DTime,EndTime
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
@@ -126,7 +126,7 @@ C***********************************************************************
 	LOGICAL ifBuild,LROKdummy,ifRegrid(mElt),ifAccumOPD,LRayTrans,
      &	 ifOPDCalc,ifIntSrfSet(mElt),ifIntSrfOK(mElt),ifDMBuild,ifPol,
      &	 ifVecDif3,ifReturn,ifTransmit,ifLNegOK,ifLNsrf,LRTdummy,
-     &	 ifRayToSeg,ifUseBaseSrf,ifReturnElt(mElt)
+     &	 ifRayToSeg,ifReturnElt(mElt)
 cdebug     &	,ifRayPrint
 
 	INTEGER i,j,k,iElt,iSeg,iRay,iEm1,RayIndex(2,mRay),
@@ -135,7 +135,7 @@ cdebug     &	,ifRayPrint
      &	  iLend,RayMap(mpts,mpts),SegMap(mpts,mpts),PrevElt(0:mElt),
      &	  iCurRayElt,iStartElt,iEndElt,iSecondElt,iEltLoop,IERROR,
      &	  BeamType,iNextSeq,npts,nBadRays,iNextElt,NextElt(0:mElt),
-     &	  iPrevNonSeg,jGridSrf(mElt),CrntNSCnt,nSides,iObs,nPassRays
+     &	  iPrevNonSeg,jGridSrf(mElt),CrntNSCnt,nPassRays
 cdebug  &, pRay
 
 	SREAL dxdx(7,7),dxdu(7,6),spot(3)
@@ -158,7 +158,7 @@ cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 
 	COMPLEX*16 CD,DWF(mdttl,mdttl),Evec(3),C1
 
-	DATA ifUseBaseSrf/.FALSE./
+	! DATA ifUseBaseSrf/.FALSE./
 
 	If (.not.allocated(CumLStart)) allocate(CumLStart(mRay))
 
@@ -166,20 +166,16 @@ cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 #include "propsub.inc"
 
 
-	ifBuild=.FALSE.; ifDMBuild=.FALSE.
-	ifAccumOPD=.FALSE.; ifOPDCalc=.FALSE.
-	ifLNsrf=.FALSE.
-
-cdebug
-c	ifRayPrint=.TRUE.
-c	pRay=1
-cdebug
-
+	ifBuild    = .FALSE.
+	ifDMBuild  = .FALSE.
+	ifAccumOPD = .FALSE.
+	ifOPDCalc  = .FALSE.
+	ifLNsrf    = .FALSE.
 
 C  1. Initialize raytrace parameters
 
-	EltID(0)=0
-	iSecondElt=iStartElt+1
+	EltID(0)   = 0
+	iSecondElt = iStartElt+1
 
 C	Find start and end points for segmented elements
 
@@ -1903,13 +1899,13 @@ C***********************************************************************
         use dft_mod, only: applyfac2
 	IMPLICIT NONE
 	INTEGER I,J,NN(2),NFFT
-	REAL*8 DX1,DX2,DZ,S,LAMBDA,TWOPI,C2
+	REAL*8 DX1,DX2,DZ,S,LAMBDA,C2
 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
 
-	NN(1)=NFFT
-	NN(2)=NFFT
-	S=1D0/DBLE(NFFT)
-	C1=DCMPLX(S)
+	NN(1) = NFFT
+	NN(2) = NFFT
+	S     = 1D0/DBLE(NFFT)
+	C1    = DCMPLX(S)
 
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
@@ -1923,7 +1919,7 @@ C***********************************************************************
         END DO
 
 	C1 = 1d0/DCMPLX(0d0,lambda*dz)
-	C2 = pi/lambda/dz
+	C2 = PI/lambda/dz
 	CALL applyfac2(wf2,NFFT,NFFT,C1*dx1*dx1,C2,dx2)
 
 	!wf2 = CDEXP(DCMPLX(0d0,(2d0*pi/lambda)*dz))*wf2   ! added by jzlou
@@ -1936,12 +1932,12 @@ C***********************************************************************
 
 	SUBROUTINE SFPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF,PHRAD,
      &	                  DXFF)
-
-	IMPLICIT NONE
-	LOGICAL IFPOS
-	INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2,IRAD2,IPHRAD,IPHRAD2
-	REAL*8 DX1,DX2,Z1,Z2,S,LAMBDA,NSQ,PHRAD,DXFF,PHRAD2
- 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,
+          USE Constants, ONLY: PI
+          IMPLICIT NONE
+          LOGICAL IFPOS
+          INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2,IRAD2,IPHRAD2
+          REAL*8 DX1,DX2,Z1,Z2,S,LAMBDA,NSQ,PHRAD,DXFF,PHRAD2
+          COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,
      &	           M2,C4,C5
 
 	PHRAD2 = 0  ! jzlou
@@ -1953,16 +1949,17 @@ C***********************************************************************
 cscale	S=Z1/Z2
 	S=1D0
 	C4=DCMPLX(S)
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(Z1/Z2)*
-     &	  (1E0/DX1/DBLE(NFFT))**2
+	S=-PI*LAMBDA*(Z2-Z1)*(Z1/Z2)*
+     &	  (1D0/DX1/DBLE(NFFT))**2
 	C5=DCMPLX(0D0,S)
 	DXFF=LAMBDA*(Z1/DX1)/DBLE(NFFT)
 
-	IF (PHRAD.GE.0D0) THEN
-	  IFPOS=.TRUE.
-	ELSE
-	  IFPOS=.FALSE.
-	END IF
+        IFPOS = (PHRAD.GE.0D0)
+	! IF (PHRAD.GE.0D0) THEN
+	!   IFPOS=.TRUE.
+	! ELSE
+	!   IFPOS=.FALSE.
+	! END IF
 
 	IPHRAD2=(PHRAD*NFFT/2)**2
 	IF (PHRAD2.LT.0) IPHRAD2=0
@@ -2001,11 +1998,12 @@ cscale	S=Z1/Z2
 	CALL DFOURN(DWF,NN,2,-1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 
-	DO 4 J=1,NFFT
-	  DO 3 I=1,NFFT
-	    WF2(I,J)=C4*WF2(I,J)
-    3	  CONTINUE
-    4	CONTINUE
+	WF2(:NFFT, :NFFT) = C4*WF2(:NFFT, :NFFT)
+!         DO 4 J=1,NFFT
+! 	  DO 3 I=1,NFFT
+! 	    WF2(I,J)=C4*WF2(I,J)
+!     3	  CONTINUE
+!     4	CONTINUE
 
 	RETURN
 	END SUBROUTINE SFPROP
@@ -2019,52 +2017,51 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE FRPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
-
+        USE Constants, ONLY: PI
 	IMPLICIT NONE
 	INTEGER NN(2),NFFT,II2,JJ2, NSQ, I,J
-	REAL*8 DX1,DX2,S,SP,LAMBDA,Z1,Z2,N2,M2,PI,C3,II,JJ
+	REAL*8 DX1,DX2,S,SP,LAMBDA,Z1,Z2,N2,M2,C3,II,JJ
 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT)
         COMPLEX*16 C4,C5
-C
 
 	NN(1) = NFFT
 	NN(2) = NFFT
-	NSQ = NFFT*NFFT
-	C3  = -NFFT/2-1
-c
-	S  = 3.14159265358979/LAMBDA/(Z2-Z1)*DX1*DX1*Z1/Z2
+	NSQ   = NFFT*NFFT
+	C3    = -NFFT/2-1
+
+	S  = PI/LAMBDA/(Z2-Z1)*DX1*DX1*Z1/Z2
 	C5 = DCMPLX(0D0,S)
-	SP = 3.14159265358979/LAMBDA/(Z2-Z1)*DX2*DX2*Z1/Z2
+	SP = PI/LAMBDA/(Z2-Z1)*DX2*DX2*Z1/Z2
         C4 = DCMPLX(0D0,SP)
 C
-	DO 2 J=1,NFFT
+	DO J=1,NFFT
 	   JJ=C3+J
 	   JJ2=JJ*JJ
-	   N2=DCMPLX(JJ2,0.0)
-	   DO 1 I=1,NFFT
+	   N2=DCMPLX(JJ2,0d0)
+	   DO I=1,NFFT
 	      II=C3+I
 	      II2=II*II
-	      M2=DCMPLX(II2,0.0)
+	      M2=DCMPLX(II2,0d0)
 	      WF1(I,J)=WF1(I,J)*EXP(C5*(M2+N2))/NFFT
-    1	   CONTINUE
-    2	CONTINUE
+           END DO
+        END DO
 C
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 C
 	DO J=1,NFFT
-           JJ=C3+J
-	   JJ2=JJ*JJ
-	   N2=DCMPLX(JJ2,0.0)
-	   DO I=1,NFFT
-	      II=C3+I
-	      II2=II*II
-	      M2=DCMPLX(II2,0.0)
-	      WF2(I,J)=WF2(I,J)*EXP(C4*(M2+N2))*DX1/DX2
-	   END DO
+          JJ=C3+J
+	  JJ2=JJ*JJ
+	  N2=DCMPLX(JJ2,0.0)
+	  DO I=1,NFFT
+	     II=C3+I
+	     II2=II*II
+	     M2=DCMPLX(II2,0.0)
+	     WF2(I,J)=WF2(I,J)*EXP(C4*(M2+N2))*DX1/DX2
+	  END DO
     	END DO
-C
+
 	RETURN
 	END SUBROUTINE FRPROP
 
@@ -2075,38 +2072,37 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE SPH2PL(WF2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
-
-	IMPLICIT NONE
-	LOGICAL IFPOS
-	INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2
-	REAL*8 DX1,Z1,Z2,S,LAMBDA,NSQ
-	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,M2,
+        USE Constants, ONLY: PI
+        IMPLICIT NONE
+        INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2
+        REAL*8 DX1,Z1,Z2,S,LAMBDA,NSQ
+        COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,M2,
      &		   C4,C5
 
-	NN(1)=NFFT
-	NN(2)=NFFT
-	C4=1D0/DBLE(NFFT)
-	C3=-NFFT/2-1
+	NN(1) = NFFT
+	NN(2) = NFFT
+	C4    = 1D0/DBLE(NFFT)
+	C3    = -NFFT/2-1
 cscale	S=Z1/Z2
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(Z1/Z2)*
-     &	 (1E0/DX1/DBLE(NFFT))**2
-	 C5=DCMPLX(0D0,S)
+	S     = -PI*LAMBDA*(Z2-Z1)*(Z1/Z2)*
+     &	           (1d0/DX1/DBLE(NFFT))**2
+	 C5    = DCMPLX(0D0,S)
 
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 
-	DO 2 J=1,NFFT
+	DO CONCURRENT (J=1:NFFT)
 	  JJ=C3+J
 	  JJ2=JJ*JJ
 	  N2=DCMPLX(JJ2)
-	  DO 1 I=1,NFFT
+	  DO CONCURRENT (I=1:NFFT)
 	    II=C3+I
 	    II2=II*II
 	    M2=DCMPLX(II2)
 	    WF2(I,J)=WF2(I,J)*C4*EXP(C5*(M2+N2))
-    1	  CONTINUE
-    2	CONTINUE
+          END DO
+        END DO
 
 	RETURN
 	END SUBROUTINE SPH2PL
@@ -2171,7 +2167,6 @@ C***********************************************************************
 
 	SUBROUTINE FFObscure(psi,pv,prot,pCR,dx,nGridPts,
      &		    ApType,ApVec,nObs,ObsType,ObsVec,xGrid,WF,NFFT)
-
 C  Turn off wavefront points that are obscured.
 
 	IMPLICIT NONE
@@ -2181,13 +2176,11 @@ C  Turn off wavefront points that are obscured.
 	REAL*8 pv(3),prot(3),pCR(3),psi(3),dx,xCell,yCell
 	REAL*8 prel(3),pxCR,pyCR,dxCtr,
      &	xGrid(3),yGrid(3),zGrid(3),px,py,ApVec(6),ObsVec(6,nObs)
-	REAL*8 TwoPi,Kd,K123,q1xq2y,q2xq3y,q3xq1y,
+	REAL*8 Kd,K123,q1xq2y,q2xq3y,q3xq1y,
      &	q1yq2x,q2yq3x,q3yq1x,q1x,q1y,q2x,q2y,q3x,q3y,rc,
      &	xcmin,xcmax,ycmin,ycmax,yt,R2,A2,A3
 
 	COMPLEX*16 WF(NFFT,NFFT)
-
-	DATA TwoPi/6.28318530717959D0/
 
 	NFCTR=NFFT/2+1
 
