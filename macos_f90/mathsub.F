@@ -239,32 +239,33 @@ C         and A is NAxNC
       END SUBROUTINE DMPROD
 
 C
-      SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
-      REAL*8 A(1),B(1),C(1),BIK
-      Integer :: NA,NB,NC,NAMAX,NBMAX,
-     &           NAPTR,NBPTR,NCPTR,I,J,K
-      NAMAX=NA*NC
-      NBMAX=NA*NB
-      DO 1 NAPTR=1,NAMAX
-    1 A(NAPTR)=0D0
-      DO 3 I=1,NA
-      K=0
-      DO 3 NBPTR=I,NBMAX,NA
-      K=K+1
-      BIK=B(NBPTR)
-      IF (BIK.EQ.0D0) GO TO 3
-      NCPTR=K
-      DO 2 NAPTR=I,NAMAX,NA
-      A(NAPTR)=A(NAPTR)+BIK*C(NCPTR)
-    2 NCPTR=NCPTR+NB
-    3 CONTINUE
-      RETURN
-      END SUBROUTINE DMPRDB
+        SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
+        IMPLICIT NONE
+        REAL*8 A(1),B(1),C(1),BIK
+        Integer :: NA,NB,NC,NAMAX,NBMAX,
+     &           NAPTR,NBPTR,NCPTR,I,K
+        NAMAX=NA*NC
+        NBMAX=NA*NB
+        DO 1 NAPTR=1,NAMAX
+    1     A(NAPTR)=0D0
+        DO 3 I=1,NA
+        K=0
+        DO 3 NBPTR=I,NBMAX,NA
+          K=K+1
+          BIK=B(NBPTR)
+          IF (BIK.EQ.0D0) GO TO 3
+          NCPTR=K
+          DO 2 NAPTR=I,NAMAX,NA
+            A(NAPTR)=A(NAPTR)+BIK*C(NCPTR)
+    2     NCPTR=NCPTR+NB
+    3   CONTINUE
+        RETURN
+        END SUBROUTINE DMPRDB
 C
       SUBROUTINE RMPRDB(A,B,C,NA,NB,NC)
       SREAL A(1),B(1),C(1),BIK
       Integer :: NA,NB,NC,NAMAX,NBMAX,
-     &           NAPTR,NBPTR,NCPTR,I,J,K
+     &           NAPTR,NBPTR,NCPTR,I,K
       NAMAX=NA*NC
       NBMAX=NA*NB
       DO 1 NAPTR=1,NAMAX
@@ -464,7 +465,7 @@ C with its direction defining the rotation axis, and its magnitude
 C defining the amount of rotation. -jzlou
 C
 	SUBROUTINE Qform(Q,dQ,th)
-	INTEGER i,j
+        IMPLICIT NONE
 	REAL*8 Q(3,3),dQ(3,3),th(3),qmag,qhat(3),cq,sq,omcq
 
 	qmag=DSQRT(th(1)**2+th(2)**2+th(3)**2) ! amount (angle) of rotation
@@ -577,7 +578,6 @@ C***********************************************************************
 
       SUBROUTINE INTNORM(X,Y,U00,U01,U10,U11,U,DUDX,DUDY)
       IMPLICIT NONE
-      INTEGER IDFLOOR
       REAL*8 X,Y,U00,U01,U10,U11,U,DUDX,DUDY,C1,C2,C3
       C1=U10-U00
       C2=U11-U10-U01+U00
@@ -605,9 +605,11 @@ C***********************************************************************
       Logical, save :: first_entry=.true.
 
       If (first_entry) Then
-        allocate(splineInit(mGridSrf)); splineInit=.false.
+        allocate(splineInit(mGridSrf))
+        splineInit = .FALSE.
+
         allocate(xa(nGridMat,mGridSrf),ya(nGridMat,mGridSrf))
-        first_entry=.false.
+        first_entry = .FALSE.
       End If
 
       ! GridMat(:,:): (in Fortran) first dimension is x, second dimension is y.
@@ -1240,9 +1242,9 @@ C  For 4th order roots, use Laguer (method=1) or Eigensolver (method=2)
 
         IMPLICIT NONE
         INTEGER n,method
-        REAL*8 y1,y2,y3,y4,y5,a,b,c,d,q,r,p2,yr(5),rtr(4),rti(4),
-     &  po3,ao4,a2o4,p1,p0,p22,q3,r2,disc,dw(2),dw2(2)
-        COMPLEX*16 x1,x2,x3,x4,rad,partA,partB,Y,RR,cR2,c1,c2,
+        REAL*8 y1,y2,y3,y4,y5,q,r,p2,yr(5),rtr(4),rti(4),
+     &  po3,p1,p0,p22,q3,r2,disc,dw(2),dw2(2)
+        COMPLEX*16 x1,x2,x3,x4,rad,partA,partB,
      &  w,w2,cdisc,yc(5),x(4)
         EQUIVALENCE (dw(1),w),(dw2(1),w2)
         DATA dw/-0.5d0,0.8660254037844386d0/
@@ -1789,7 +1791,7 @@ C              (user must dimension 2)
 C
 	INTEGER nts(2)
 
-	REAL*8 a,b,k,u,v
+	REAL*8 a,u,v
 
 	u= a*gauss(nts)
 	v= a*gauss(nts)
@@ -2217,8 +2219,8 @@ C***********************************************************************
 
         Function Med(A,sz)
         Implicit none
-        Integer :: sz,i,j
-        Real*8 :: A(sz),B(sz),tmp,Med
+        Integer :: sz,i
+        Real*8 :: A(sz),B(sz),Med
 
         B=A
 #if 0
