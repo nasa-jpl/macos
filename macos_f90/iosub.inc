@@ -2823,7 +2823,7 @@ C       A routine to load filter data interactively.
 
 	LOGICAL ifFilterData,exist
 	INTEGER i,j,ICLEN
-	CHARACTER(len=MacosCharLen) :: ANS,FiltName
+	CHARACTER(len=MacosCharLen) :: ANS
 
  100	FORMAT(' Filter includes information for ',i3,
      &	' wavelengths and ',i2,' star types.')
