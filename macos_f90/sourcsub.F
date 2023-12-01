@@ -26,17 +26,21 @@ C***********************************************************************
         !
         ! Returns "effective" Src. position as fnct. of ChfRay & zSource
         !
-        function SourcePos() result(SrcPos)
-                use src_mod, only: ChfRayPos, ChfRayDir
-                use elt_mod, only: zSource
+        FUNCTION SourcePos() RESULT(SrcPos)
+          USE src_mod, ONLY: ChfRayPos, ChfRayDir
+          USE elt_mod, ONLY: zSource
 
-                implicit none
-                real(pr) :: SrcPos(size(ChfRayPos))
-                ! - - - - - - - - - - - - - - - - - - - - - - - - -
+          IMPLICIT NONE
+          REAL(pr) :: SrcPos(size(ChfRayPos))
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
-                SrcPos(:) = ChfRayPos(:) + zSource*ChfRayDir(:)
+          IF (ABS(zSource) <= MaxPntSrcDist) THEN
+            SrcPos(:) = ChfRayPos(:) + zSource*ChfRayDir(:)
+          ELSE
+            SrcPos(:) = ChfRayPos(:)
+          END IF
 
-              end function SourcePos
+        END FUNCTION SourcePos
         !
         ! --------------------------------------------------------------
         !
@@ -140,9 +144,7 @@ C***********************************************************************
      &	       Dicr,Djcr,dxSource,w2,ciy,rx2,ry2,dRad(2),
      &	       Sy,yg,Sx,xg,Sg,S,S1,SegX2(3),D1(9),dinset
 
-	COMPLEX*16 SC,SEx0,SEy0
-
-	Real*8 :: dRay(3),rx,ry  ! test only
+	COMPLEX*16 :: SC,SEx0,SEy0
 
 	nDrawRay=MIN(mRay,mDrawRay)
 
@@ -240,7 +242,7 @@ C  Find the segment for the chief ray
 	      dRad(2)=RingRads(iRing)*radCtr
 	    End If
 	    IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(1,iSeg),SegX2)) THEN
+     &          SegCoord(:,iSeg),SegX2)) THEN
 	      nRayToSeg(iRay)=1
 	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
 	    END IF
@@ -418,7 +420,7 @@ C  Find the segment for the chief ray
                         dRad(2)=RingRads(iRing)*radCtr
                       End If
 	              inFSEG=FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &                            SegCoord(1,iSeg),SegX2)
+     &                            SegCoord(:,iSeg),SegX2)
 	              if (inFSEG) exit
 	            END DO
 	            print*,'** inFSEG =',inFSEG
@@ -434,7 +436,7 @@ C  Find the segment for the chief ray
                       dRad(2)=RingRads(iRing)*radCtr
 	            End If
 		    IF (FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &                  SegCoord(1,iSeg),SegX2)) THEN
+     &                  SegCoord(:,iSeg),SegX2)) THEN
 	              IF (.NOT.ifRay) THEN
 	                iRay=iRay+1
 	                ifRay=.TRUE.
@@ -746,7 +748,7 @@ C  Find the segment for the chief ray
               dRad(2)=RingRads(iRing)*radCtr
             End If
 	    IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(1,iSeg),SegX2)) THEN
+     &          SegCoord(:,iSeg),SegX2)) THEN
 	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
 	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
 	    END IF
@@ -789,11 +791,9 @@ C  Find the segment for the chief ray
 	End If
 
 
-C       RotPt defines the spatial position of the physical light source,
-C       see MACOS manual. -jzlou
-        DO i=1,3
-          RotPt(i)=ChfRayPos(i)+zSource*ChfRayDir(i)
-        END DO
+        ! RotPt defines the spatial position of the physical light source,
+        ! see MACOS manual.
+        RotPt = SourcePos()   ! ChfRayPos+zSource*ChfRayDir
 
 	! Define RayDir and RayPos for chief ray
 	th(1:3)=0d0
@@ -1250,9 +1250,30 @@ C  ***  end rotate segemnt frame of reference
 	END FUNCTION PSEG
 
 C***********************************************************************
+! radCtr=   Radius of the central region
+! nRings=   Number of segment rings not counting the central region
+! nPetals=   Number of segments in each ring. The first number is repeated for some reason...
+! RingRads=   Ratio of ring radii to central region ring radius radCtr
+!   nSeg=   Number of segments (1 for central region plus number in first and second ring)
+!    gap=   Width of gap between segments
+!
 
-	FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
-	IMPLICIT NONE
+	PURE FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
+	  USE Constants, ONLY: TWOPI, EPS
+	  IMPLICIT NONE
+          REAL*8,  INTENT(IN) :: x,           ! ray: x-pos in Glb. Source CSYS
+     &                           y,           ! ray: y-pos in Glb. Source CSYS
+     &                           r,           ! ray: radius from centre
+     &                           radCtr,      ! Center Segment Radius
+     &                           dRad(2)      ! (min, max) radius of ring (gap not included)
+                                              !  min = RingRads(iRing-1)*radCtr
+                                              !  max = RingRads(iRing)*radCtr
+          INTEGER, INTENT(IN) :: nPetal       ! Number of segments in each ring. (was "number of petals in flower")
+          REAL*8,  INTENT(IN) :: gap          ! gap between rings and petals
+          INTEGER, INTENT(IN) :: S(3)         ! SegCoord(1:3,mElt)
+                                              ! S(1) == 0: central region (iRing=SegCoord(1,iSeg))
+                                              ! S(2) == iPetal for Ring
+          REAL*8,  INTENT(IN) :: SegXgrid(3)  ! Source x-axis
 
 C In the flower pattern, prescription is defined by:
 C   width=   8d0		% nPetal
@@ -1271,10 +1292,9 @@ C           segment midpoints
 C  nPetals = number of petals in flower
 
 	LOGICAL FSEG
-	INTEGER S(3),ith,nPetal,iRing
-	REAL*8 x,y,r,SegXgrid(3),xt,yt,width,radCtr,cth,sth,th,twopi,xc,
-     &	       dnp,Q,thc,rv,gap,hspan,dd,dRad(2),radmin,radmax,S2,dth
-	DATA twopi/6.28318530717959d0/
+	INTEGER ith !,iRing
+	REAL*8 xt,yt,width,cth,sth,th,xc,
+     &	       dnp,Q,thc,rv,hspan,dd,radmin,radmax,S2,dth
 
 C  **** rotate segment frame of reference
 c	IF (SegXgrid(1) .EQ. 0) THEN
@@ -1286,65 +1306,62 @@ c	ELSE
 c	END IF
 C  ***  end rotate segment frame of reference
 
+        FSEG = .FALSE.    ! default
+        ! ----------------------------------------- Central region (no sub-division)
 	IF (S(1).EQ.0) THEN
 	  ! for central segment
-	  IF (r.LE.(radCtr-gap/2d0)) THEN
-	    FSEG=.TRUE.  ! within central circular region
-	  ELSE
-	    ! since radCtr is radius of max inscribed circle, a ray outside the circle
-	    ! could still belong to the central segment. -jzlou
-	    dnp=nPetal
-	    Q=twopi/dnp  ! wedge angle value
-	    cth=xt/r; sth=yt/r
-	    th=DATAN2(sth,cth)
-	    IF (th.LT.0d0) th=th+twopi
-	    ith=th/Q+1d0
-	    thc=(DBLE(ith)-0.5d0)*Q
-	    rv=xt*COS(thc)+yt*SIN(thc)
-	    !IF (rv.LE.(radCtr-gap/2d0)) THEN
-	    IF (r.LE.(radCtr-gap/2d0)) THEN
-	      FSEG=.TRUE.
-	    ELSE
-	      FSEG=.FALSE.
-	    END IF
-	  END IF
-	ELSE IF (r.GT.1d-22) THEN
+          FSEG = (r.LE.(radCtr-gap/2d0))
+	!   IF (r.LE.(radCtr-gap/2d0)) THEN
+	!     FSEG=.TRUE.  ! within central circular region
+	!   ELSE
+	!     ! since radCtr is radius of max inscribed circle, a ray outside the circle
+	!     ! could still belong to the central segment. -jzlou
+	!     dnp = nPetal
+	!     Q   = TWOPI/dnp              ! wedge angle value
+	!     cth = xt/r                   ! cos(theta) of data point
+        !     sth = yt/r                   ! sin(theta) of data point
+	!     th  = ATAN2(sth,cth)         ! theta
+	!     IF (th.LT.0d0) th=th+TWOPI   ! ensure 0 <= theta < 2*PI
+
+	!     ith = INT(th/Q)+1
+	!     thc = (DBLE(ith)-0.5d0)*Q
+	!     rv  = xt*COS(thc)+yt*SIN(thc)
+	!     !IF (rv.LE.(radCtr-gap/2d0)) THEN
+	!     FSEG = (r.LE.(radCtr-gap/2d0))             ! <<< the same condition as above
+	!   END IF
+
+        ! -----------------------------------------
+	ELSE IF (ABS(r).GT.EPS) THEN
 	  ! for other segment
-	  iRing= S(1)  ! get ring id
+	  ! iRing = S(1)  ! get ring id
 	  !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
-	  radmin=dRad(1); radmax=dRad(2)
-	  dnp=nPetal
-	  Q=twopi/dnp
-	  cth=xt/r
-	  sth=yt/r
-	  th=DATAN2(sth,cth)
-	  IF (th.LT.0d0) th=th+twopi
-	  ith=th/Q+1d0
-          if (th>(twopi-0.5*Q)) th=th-twopi
-          dth=th/Q
-          S2=S(2)-1d0;
-	  !IF (ith.EQ.S(2)) THEN
-	  IF (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5)) THEN
-	    !thc=(DBLE(ith)-0.5d0)*Q
-	    thc=S2*Q
-	    rv=xt*COS(thc)+yt*SIN(thc)
-	    !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
-	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
-              hspan=rv*DTAN(0.5*Q)
-	      dd=DSQRT(r*r-rv*rv)
-	      IF (dd.LE.(hspan-gap/2d0)) THEN
-	        FSEG=.TRUE.
-	      ELSE
-	        FSEG=.FALSE.
+	  radmin = dRad(1)
+          radmax = dRad(2)
+          IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0))) THEN
+	    dnp    = nPetal
+	    Q      = TWOPI/dnp
+	    cth    = xt/r
+	    sth    = yt/r
+	    th     = ATAN2(sth,cth)
+	    IF (th.LT.0d0) th=th+TWOPI
+
+	    !ith = INT(th/Q) + 1
+            if (th>(TWOPI-0.5d0*Q)) th=th-TWOPI
+            dth = th/Q
+            S2  = DBLE(S(2)-1)
+	    !IF (ith.EQ.S(2)) THEN
+	    IF (dth.GE.(S2-0.5d0) .AND. dth.LE.(S2+0.5d0)) THEN
+	      !thc=(DBLE(ith)-0.5d0)*Q
+	      thc = S2*Q
+	      rv  = xt*COS(thc) + yt*SIN(thc)
+	      !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
+	      IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
+                hspan = rv*TAN(0.5d0*Q)
+	        dd    = SQRT(r*r-rv*rv)
+	        FSEG  = (dd.LE.(hspan-gap/2d0))
 	      END IF
-	    ELSE
-	      FSEG=.FALSE.
 	    END IF
-	  ELSE
-	    FSEG=.FALSE.
-	  END IF
-	ELSE
-	  FSEG=.FALSE.
+          END IF
 	END IF
 
 	RETURN
@@ -1367,9 +1384,8 @@ C**************************************************************************
 
 	INTEGER i,iElt,iEm1,iWF,jWF,iCR,jCR,iRayCR,iRay
 
-	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),del(3),delx,dely,ddel,
-     &	       xGrid(3),yGrid(3),zGrid(3),D1(9),D2(9),dth,thx,thy,
-     &         oldRayPos(2*nRay),oldOPDMat(nGridPts*nGridPts),x0,y0
+	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),delx,dely,ddel,
+     &	       xGrid(3),yGrid(3),zGrid(3),D1(9),D2(9),dth,thx,thy
 
 C	Compute "chief ray" indices - these coincide with the real
 C	chief ray only if an odd number of grid pts is used
@@ -1501,14 +1517,14 @@ C***********************************************************************
      &	 ifRegrid
 	INTEGER i,j,iElt,npts,iWFA,iray,k,NoiseSeed(2),
      &	 im1,ip1,jm1,jp1,iwf,jwf
-	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen,AvgR
+	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen
 	 REAL*8 Dicr,Djcr,dxSource,xhat(3),yhat(3),zhat(3),ztdir,
-     &	 dx,C1,dxMin,dxMax,dxAvg,dxDev,s1,ddotc,tiltx,tilty,
+     &	 dx,C1,dxMin,dxMax,dxAvg,dxDev,tiltx,tilty,
      &	 Rij,Rip1j,Rim1j,Rijp1,Rijm1,Rip1jp1,Rim1jp1,Rip1jm1,Rim1jm1
 	COMPLEX*8 CD2(mdttl,mdttl)
 	COMPLEX*16 cztdir
 
-	ztdir = 0.0  ! -jzlou
+	ztdir = 0.0d0  ! -jzlou
 
 C  Generate ray grid if not previously done
 	IF ((iElt.EQ.0).AND..NOT.ifGrid) THEN
@@ -1656,12 +1672,11 @@ C                                LE var = 454 (th = 425)
 
 	SAVE
 
-	DATA rlast/-999./
-	DATA idum/1/
-	DATA s2o2/0.70710678118655/
-	DATA cs2o2/(0.0,0.70710678118655)/
-	DATA sqrt2/1.41421356237310/
-	DATA Crad2d/0.15915494309190/
+	DATA rlast/-999d0/
+	DATA s2o2/0.70710678118655d0/
+	DATA cs2o2/(0.0d0,0.70710678118655d0)/
+	DATA sqrt2/1.41421356237310d0/
+	DATA Crad2d/0.15915494309190d0/
 
 	r00=ABS(r0)
 	nn(1)=npts
@@ -1675,9 +1690,9 @@ C  Initialization section
 C  Generate filter for kolmogorov turbulence:
 C  sqrt(psd)={0.151/r0**(5/6)}f**(-11/6)
 
-	power=0.91666666666667
-	coeff=(0.151/r00**0.83333333333333)*(1./(FLOAT(npts)*rsamp))
-	scale=(1./(FLOAT(npts)*rsamp))**2
+	power=0.91666666666667d0
+	coeff=(0.151d0/r00**0.83333333333333d0)*(1d0/(DBLE(npts)*rsamp))
+	scale=(1d0/(DBLE(npts)*rsamp))**2
 	rad2d=Crad2d*atmWavelen
 
 	DO j=1,npts
@@ -1744,12 +1759,12 @@ C    inverse transform
 C    calc piston and tilt
 	IF ((nradius.GT.0).AND.(nradius.LE.npts)) THEN
 
-	  bm=0.
-	  bx=0.
-	  by=0.
-	  cm=0.
-	  cx=0.
-	  cy=0.
+	  bm=0d0
+	  bx=0d0
+	  by=0d0
+	  cm=0d0
+	  cx=0d0
+	  cy=0d0
 	  nr2=nradius*nradius
 	  DO 300 i=-nradius,nradius
 	    IF (i.LT.0) THEN
@@ -1821,13 +1836,12 @@ C  copy to real array
 C***********************************************************************
 
         SUBROUTINE BKFFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
+		use Constants, only: PI
 		use dft_mod, only: REVAPPLYFAC2
         IMPLICIT NONE
         INTEGER I,J,NN(2),NFFT
-        REAL*8 DX1,DX2,DZ,S,LAMBDA,PI,TWOPI,C2
+        REAL*8 DX1,DX2,DZ,S,LAMBDA,C2
         COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
-
-        DATA pi/3.141592653589793d0/
 
         NN(1)=NFFT
         NN(2)=NFFT
@@ -1846,7 +1860,7 @@ C***********************************************************************
         END DO
 
         C1 = 1d0/DCMPLX(0d0,lambda*dz)
-        C2 = pi/lambda/dz
+        C2 = PI/lambda/dz
         CALL RevApplyfac2(wf2,NFFT,NFFT,C1*dx1*dx1,C2,dx2)
 
         END SUBROUTINE BKFFPROP
