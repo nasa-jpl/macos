@@ -46,21 +46,21 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifOPDCalc,ifRayPrint,
-     &    ifLNegOK,ifBuild,ifTrace,ifRegrid(mElt),ifVecDif3,
-     &    ifIntSrfSet(mElt),ifDMBuild,ifDraw,L1(mRay),ifCalWFElt
+     &    ifLNegOK,ifBuild,ifTrace,ifRegrid(mElt),
+     &    ifIntSrfSet(mElt),ifDMBuild,ifDraw,L1(mRay)
 
-	INTEGER npts,i,j,ICLEN,iCurWFElt,iCurRayElt,ie,
+	INTEGER npts,i,iCurWFElt,iCurRayElt,
      &	  nBadRays,iStartElt,iEndElt,nPassRays,iObsOpt,
-     &    iStartRay,iEndRay,nDrawElt,iElt,iEm1,iRay,mpt2,
-     &    DrawElt(mDrawElt),DrawEltVec(mDrawElt,mDrawRay)
+     &    iStartRay,iEndRay,nDrawElt,iElt,iRay,mpt2,
+     &    DrawEltVec(mDrawElt,mDrawRay)
 
 	SREAL StartTime,DTime,EndTime,
-     &	  Cmatrix(7,mCm,bRay),DrawRay(2,mDrawElt),
+     &	  Cmatrix(7,mCm,bRay),
      &	  DrawRayVec(2,mDrawElt,mDrawRay)
 
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,Dn,
      &    WFE,WFEPV,MinL,MaxL,DAvgL,SumL,SumL2,SumCumL,
-     &    OPDScal,OPDMat(mpts,mpts),dxMin,dxAvg,dxMax,dxDev,
+     &    OPDScal,OPDMat(mpts,mpts),
      &    xDraw(3),yDraw(3),RefCumRayL,WFmax,WFmin
 ! jzlou: RefCumRayL = RayL for chief ray
 
@@ -284,7 +284,6 @@ C***********************************************************************
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
      &	  xDraw(3),yDraw(3),CentroidSpot(3),dCRCentroid(3),CRSpot(3),
      &	  DV1(9),S1,th(3),
-     &	  oldChfRayDir(3),oldChfRayPos(3),
      &	  zp,psip(3),CrossPt(3),cr1dir(3),cr1pos(3),cr2dir(3),cr2pos(3),
      &	  cr2indir(3),cr2inpos(3),CrossDist
 
@@ -441,7 +440,7 @@ C***********************************************************************
 	CHARACTER(len=MacosCharLen) :: ANS
         LOGICAL :: ifPol,ifGrid,ifPropagate,ifRayPrint,
      &    ifLNegOK,ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),
-     &    ifDMBuild,ifDraw,ifLocalCoord
+     &    ifDMBuild,ifDraw
 
         INTEGER :: dpElt,npts,iCurWFElt,iCurRayElt,
      &             nBadRays,iStartElt,iEndElt,iObsOpt,
@@ -643,24 +642,23 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	LOGICAL ifPol,ifGrid,ifPropagate,ifOPDCalc,ifRayPrint,ifLNegOK,
+	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
      &	  ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
      &	  ifDraw,ifBeamCentered,ifLocalCoord
 
-	INTEGER k,npts,ICLEN,iCurWFElt,iCurRayElt,
+	INTEGER k,npts,iCurWFElt,iCurRayElt,
      &	        nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
-     &	        iEndRay,nDrawElt,
+     &	        iEndRay,
      &	        DrawEltVec(mDrawElt,mDrawRay),iLocal
 
 	SREAL Cmatrix(7,mCm,bRay),
      &	       DrawRayVec(2,mDrawElt,mDrawRay)
 
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
-     &	 xDraw(3),yDraw(3),
      &	 DV1(9),DV2(9),S1,
      &	 xTarg(3),xInt(2),xInt0(2),thx,thy,dthPt,ddxPt(2),
      &	 xLocal(3),yLocal(3),zLocal(3),
-     &	 newChfRayDir(3),newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
+     &	 newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
      &	 crLocalPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
      &	 del(3),errTol
 
@@ -681,13 +679,13 @@ c 1. Replace "enter stop position" querys with auto calc
 c 2. Include stop kinematics in linear source perturbation models
 c 3. Include local source coordinates in linear source models
 
-	dthPt=1d-3
-	iStartRay=1
-	iEndRay=1
-	iStartElt=0
-	iEndElt=iLocal  ! = id of STOP element
-	nMinPts=3
-	errTol=1d-22
+	dthPt     = 1d-3
+	iStartRay = 1
+	iEndRay   = 1
+	iStartElt = 0
+	iEndElt   = iLocal  ! = id of STOP element
+	nMinPts   = 3
+	errTol    = 1d-22
 	CALL DEQUATE(oldChfRayDir,ChfRayDir,3)
 	CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
 	CALL DEQUATE(newChfRayPos,ChfRayPos,3)
@@ -1096,18 +1094,18 @@ C***********************************************************************
 c History
 c  24Jul97 loh:  added ZernTypeL stuff
 
-	use param_mod
+        use param_mod
         use elt_mod
         use surfsub
-	use elemsub_mod
-	use traceutil_mod
-	use dopt_mod, only : beamOpt
-	use macos_debug
+        use elemsub_mod
+        use traceutil_mod
+        use dopt_mod, only : beamOpt
+        use macos_debug
 
-	IMPLICIT NONE
+        IMPLICIT NONE
 
-	! Arguments
-	LOGICAL ifBuild,ifDMBuild,LROKdummy,ifRayPrint,
+        ! Arguments
+        LOGICAL ifBuild,ifDMBuild,LROKdummy,ifRayPrint,
      &      LRayTrans,ifPol,
      &	    ifLNegOK,L1(mRay),ifIntSrfSet(mElt),ifDraw
 ! ifIntSrfSet: related to interpolated surface -jzlou
@@ -1122,16 +1120,16 @@ c  24Jul97 loh:  added ZernTypeL stuff
         ! Local variables
 	Logical ifRayElt(0:mElt),ifIntSrfOK(mElt),
      &	        ifTransmit,ifLNsrf,LRTdummy,ifRayToSeg,
-     &	        ifUseBaseSrf,ifReturn
+     &	        ifReturn
 
-	INTEGER i,j,iElt,iRay,iNode,nEm1,nEm2,RayIndex(2,mRay),
+	INTEGER i,j,iElt,iRay,nEm1,nEm2,RayIndex(2,mRay),
      &     PrevNonSeg,NextNonSeg,itst,imin,iFirstNonSeq,
      &     iLastNonSeq,IERROR
 
         Integer :: NextElt(0:mElt),PrevElt(0:mElt),iminPrev,
      &      jGridSrf(mElt),
      &	    iSecondElt,AdjRay(4),LastElt,iEltLoop,NextLast,
-     &	    iIntSrf,NDP3,jElt,iNextSeq,iNextElt,CrntNSCnt
+     &	    iIntSrf,jElt,iNextSeq,iNextElt,CrntNSCnt
 
 	SREAL :: dxndxi(7,7,0:mElt),dxndui(7,6,mElt),spot(3)
 
@@ -1140,7 +1138,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
      &	       xa,xb,CurIndRef,PrevIndRef,NextIndRef,
      &	       Intxyz,CurExtinc,PrevExtinc,NextExtinc,CWU
 
-	DATA ifUseBaseSrf/.FALSE./
+	! DATA ifUseBaseSrf/.FALSE./
 
  115    FORMAT(1P,' Ray ',i4,' segment from Element ',i4,' (',a12,
      &  ') to Element ',i4,' (',a12,'):'/
@@ -2665,7 +2663,7 @@ C***********************************************************************
 	INTEGER :: i,iElt,iRay,iEm1,nCalls,jRay,jElt
 	SREAL :: dxdx(7,7),dxdu(7,6)
 	REAL*8 :: Vpt(3),Rpt(3),psi(3),pr(3),rhat(3),L,fRS,RMSOPD,CumL,
-     &	          L1,signpsi,SIGN,KrRS,S1,SumL,SumL2,OPDScal,Dn,DAvgL
+     &	          L1,signpsi,SIGN,KrRS,S1,SumL,SumL2,OPDScal,DAvgL
 	COMPLEX*16 :: C1(3)
 
 C  1. Initialize various parameters
