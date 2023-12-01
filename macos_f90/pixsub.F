@@ -34,7 +34,7 @@ C  1. Compute various parameters
 	IF (ifPixLoc) THEN
 	  ! xc = x_center coord (not pix coord) of WF grid
 	  ! yc = y_center coord (not pix coord) of WF grid
-	  xc=FLOAT(nWF+1)*dxWF/2e0+drx  
+	  xc=FLOAT(nWF+1)*dxWF/2e0+drx
 	  yc=FLOAT(nWF+1)*dxWF/2e0+dry
 	  xcpix=FLOAT(npix)*dxpix/2e0
 	  ycpix=FLOAT(npix)*dxpix/2e0
@@ -61,7 +61,7 @@ C  2. Initialize array
           XDET(jpix)=(jpix-1)*dxplot
           YDET(jpix)=(jpix-1)*dxplot
  12	CONTINUE
-	
+
 C  3. Bin WF intensity values into pixels
 
 	DO 4 j=1,nWF
@@ -125,27 +125,27 @@ C  3. Bin WF intensity values into pixels
 	        IWF=WFArray(i,j)/A
 
 	        IF (jp1.LE.npix) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jp1)=PixArray(im1,jp1)+A1*IWF
-	          IF ((ipix.GE.1).AND.(ipix.LE.npix)) 
+	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jp1)=PixArray(ipix,jp1)+A2*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jp1)=PixArray(ip1,jp1)+A3*IWF
 	        END IF
 	        IF ((jpix.GE.1).AND.(jpix.LE.npix)) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jpix)=PixArray(im1,jpix)+A4*IWF
 	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jpix)=PixArray(ipix,jpix)+A5*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jpix)=PixArray(ip1,jpix)+A6*IWF
 	        END IF
 	        IF (jm1.GE.1) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jm1)=PixArray(im1,jm1)+A7*IWF
-	          IF ((ipix.GE.1).AND.(ipix.LE.npix)) 
+	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jm1)=PixArray(ipix,jm1)+A8*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jm1)=PixArray(ip1,jm1)+A9*IWF
 	        END IF
 	      END IF
@@ -163,13 +163,13 @@ C***********************************************************************
      &    psidet,vdet,LRayOk,ifPixLoc,ifAdd)
 
 c This routine takes a wavefront intensity array contained in WFArray
-c and the location of the rays in RayPos array at the last element 
+c and the location of the rays in RayPos array at the last element
 c The location of the rays are mapped into detector coordinates using
 c subroutine detmap (to be written).
-c It is assumed that the axis of the detector coordinate system is near 
-c parallel to the axis of the wavefront grid.  
-c The dx between wavefront data is determined by the distance 
-c between it and adjacent rays (given in AdjRay and RayID arrays) 
+c It is assumed that the axis of the detector coordinate system is near
+c parallel to the axis of the wavefront grid.
+c The dx between wavefront data is determined by the distance
+c between it and adjacent rays (given in AdjRay and RayID arrays)
 c The detector center is chosen to be at the chfray location if
 c ifPixLoc is .TRUE., if not it is determined by array detcen.
 
@@ -236,7 +236,7 @@ c compute othervec as the vector from the WF center to adjacent pixel
  17     continue
         call DUNITIZE(xdetvec)
         call DUNITIZE(psidet)
-        
+
         call DXPROD(ydetvec,xdetvec,psidet)
         print *, 'xdetvec', xdetvec
         print *, 'psidet', psidet
@@ -340,7 +340,7 @@ C  3.b. Compute grid and pixel dimension extremes
             yWFmin=yij-abs((detcoord(2)-detcoordmy(2)))/2e0
             yWFmax=yij+abs((detcoordpy(2)-detcoord(2)))/2e0
 
-c compute maximum and minium dWFx and dWFy            
+c compute maximum and minium dWFx and dWFy
 
             dWFxx=abs(xWFmax-xWFmin)
             dWFyy=abs(yWFmax-yWFmin)
@@ -379,7 +379,7 @@ c compute amount of non-rectangularity
             call dequate(rayppy,RayPos(1,RayID(i+1,j+1)),3)
             call detmap(ddrx,ddry,rayppy,xdetvec,ydetvec,vdet,
      &      detcoordpy)
-            
+
             dxp=abs(detcoordpy(1)-detcoordmy(1))
             dxm=abs(detcoordmx(1)-detcoordpx(1))
             dyp=abs(detcoordpy(2)-detcoordpx(2))
@@ -396,17 +396,17 @@ c compute amount of non-rectangularity
             if (dyerr.gt.maxdyerr) maxdyerr=dyerr
 
 c             print *, 'derr=',dxerr,dyerr
-            
+
 c            write (27,*) '-,-',detcoordmx
 c            write (27,*) '-,+',detcoordmy
 c            write (27,*) '+,-',detcoordpx
 c            write (27,*) '+,+',detcoordpy
-c            write (27,*) i,j, dxerr,dyerr 
+c            write (27,*) i,j, dxerr,dyerr
 c compute area based on new dx and dy
             A = abs((detcoordpx(1)-detcoordmx(1))*(detcoordpy(2)-
      &           detcoordmy(2))/4.0)
 
-           
+
  23     continue
  24     continue
 
@@ -417,7 +417,7 @@ c compute area based on new dx and dy
         print *, 'dymax=',dWFyymax,'dymin=',dWFyymin
         print *, 'maxerror =',maxdxerr,maxdyerr
         print *, 'avgerr =', avgdxerr,avgdyerr
-	
+
 C  3. Bin WF intensity values into pixels
 
 c	DO 4 j=nWF/2-1,nWF/2+1
@@ -466,7 +466,7 @@ c ignore edge rays
             call dequate(rayppy,RayPos(1,RayID(i,j+1)),3)
             call detmap(ddrx,ddry,rayppy,xdetvec,ydetvec,vdet,
      &      detcoordpy)
-           
+
 c            print *, 'mx',detcoordmx
 c            print *, 'my',detcoordmy
 c            print *, 'px',detcoordpx
@@ -563,27 +563,27 @@ C  3.d. Bin the pixel intensities
 	        IWF=WFArray(i,j)/A
 
 	        IF (jp1.LE.npix) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jp1)=PixArray(im1,jp1)+A1*IWF
-	          IF ((ipix.GE.1).AND.(ipix.LE.npix)) 
+	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jp1)=PixArray(ipix,jp1)+A2*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jp1)=PixArray(ip1,jp1)+A3*IWF
 	        END IF
 	        IF ((jpix.GE.1).AND.(jpix.LE.npix)) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jpix)=PixArray(im1,jpix)+A4*IWF
 	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jpix)=PixArray(ipix,jpix)+A5*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jpix)=PixArray(ip1,jpix)+A6*IWF
 	        END IF
 	        IF (jm1.GE.1) THEN
-	          IF (im1.GE.1) 
+	          IF (im1.GE.1)
      &	            PixArray(im1,jm1)=PixArray(im1,jm1)+A7*IWF
-	          IF ((ipix.GE.1).AND.(ipix.LE.npix)) 
+	          IF ((ipix.GE.1).AND.(ipix.LE.npix))
      &	            PixArray(ipix,jm1)=PixArray(ipix,jm1)+A8*IWF
-	          IF (ip1.LE.npix) 
+	          IF (ip1.LE.npix)
      &	            PixArray(ip1,jm1)=PixArray(ip1,jm1)+A9*IWF
 	        END IF
 	      END IF
@@ -599,7 +599,7 @@ C***********************************************************************
 
         subroutine detmap(ddrx,ddry,xin,xdetvec,ydetvec,vdet,xout)
         use math_mod
- 
+
         real*8 xin(3),xdetvec(3),ydetvec(3),vdet(3),xout(3)
         real*8 delvec(3),zdetvec(3)
         real*8 ddrx,ddry
@@ -667,7 +667,7 @@ C***********************************************************************
 	  DO i=1,nPix
 	    PixArray(i,j)=R1(i,j)
 	  END DO
-	END DO	        
+	END DO
 
 	RETURN
 	END SUBROUTINE CBLUR
@@ -681,28 +681,28 @@ C***********************************************************************
 
 	INTEGER npix,mPix,i,j,k,l,ik,jl,mk,jj
 
-	SREAL PixArray(mPix,mPix),kval,R1(mPix,mPix),
-     &	  da,b,c,kernel(-mk:mk,-mk:mk),pv,r2,krad,c1
+	SREAL PixArray(mPix,mPix),R1(mPix,mPix),
+     &	  kernel(-mk:mk,-mk:mk),pv,r2,krad,c1
 
 	IF (krad.LE.0e0) RETURN
 
-	c1=-1.17741002251547/2e0/krad
+	c1=-1.17741002251547d0/2e0/krad
 
 	DO j=0,mk
 	  jj=j*j
 	  DO i=0,mk
 	    r2=i*i+jj
-	    kernel(i,j)=0.39894228040143*EXP(r2*c1)
+	    kernel(i,j)=0.39894228040143d0*EXP(r2*c1)
 	    kernel(-i,j)=kernel(i,j)
 	    kernel(i,-j)=kernel(i,j)
 	    kernel(-i,-j)=kernel(i,j)
 	  END DO
 	END DO
 
-	DO j=1,nPix
-	  DO i=1,nPix
-	  END DO
-	END DO
+	!DO j=1,nPix
+	!  DO i=1,nPix
+	!  END DO
+	!END DO
 
 	DO j=1,nPix
 	  DO i=1,nPix
@@ -724,7 +724,7 @@ C***********************************************************************
 	  DO i=1,nPix
 	    PixArray(i,j)=R1(i,j)
 	  END DO
-	END DO	        
+	END DO
 
 	RETURN
 	END SUBROUTINE GBLUR
