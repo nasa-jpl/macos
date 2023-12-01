@@ -18,6 +18,8 @@ C    &    RayMap,SegMap,ifRayPrint,ifIntSrfSet,L1,nBadRays,
 C    &    StartIndRef,StartExtinc,DrawRay,DrawElt,nDrawElt,xDraw,yDraw)
 C *********************************************************************
 
+#if 0
+
 #include "realtype.h"
 
 	Subroutine SRTRACE_Test(iStartElt,iEndElt,RayPos_in,RayDir_in)
@@ -37,14 +39,13 @@ C *********************************************************************
 	Real*8 :: RayPos_in(3), RayDir_in(3)
 
 	! Local variables
-	Logical :: ifRayElt(0:mElt),ifIntSrfOK(mElt),if,ifDraw,
-     &             ifTransmit,ifLNegOK,ifLNsrf,LRTdummy,ifRayToSeg,
-     &             ifUseBaseSrf,ifReturn,L1(1),LRayTrans
+	Logical :: ifRayElt(0:mElt),ifIntSrfOK(mElt),
+     &             ifLNegOK,ifLNsrf,ifRayToSeg,
+     &             ifReturn,L1(1),LRayTrans
 
-	Integer :: i,j,iElt,iRay,iNode,nEm1,nEm2,RayIndex(2,mRay),
-     &    PrevNonSeg,NextNonSeg,itst,imin,iFirstNonSeq,iLastNonSeq,
-     &    iStartRay,iEndRay,IERROR,nDrawElt,
-     &    RayMap(mpts,mpts),SegMap(mpts,mpts),DrawElt(mDrawElt)
+	Integer :: i,iElt,iRay,
+     &    PrevNonSeg,NextNonSeg,iFirstNonSeq,iLastNonSeq,
+     &    IERROR
 
 	Integer :: NextElt(0:mElt),PrevElt(0:mElt),iminPrev,
      &    jGridSrf(mElt),
@@ -371,3 +372,4 @@ c               NextElt(iElt)=NextNonSeg
  10	CONTINUE
 
 	End Subroutine SRTRACE_Test
+#endif
