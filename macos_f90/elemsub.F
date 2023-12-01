@@ -46,6 +46,7 @@ C***********************************************************************
         use traceutil_mod
         use didesub, only: IntSrf
         use math_mod
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 
         ! Compute reflection point, normal, reflection and transition
@@ -56,14 +57,14 @@ C***********************************************************************
         INTEGER nGridMat,mGridMat,nAsphCoef
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
 
-        INTEGER i,SrfType,NDP,IWORK(*),IERROR,UDSrfType,mDP,
+        INTEGER SrfType,NDP,IWORK(*),IERROR,UDSrfType,mDP,
      &          ApType,nObs,ObsType(nObs)
 
         LOGICAL LROK,ifBuild,ifLNsrf,ifObs,LRT,ifPol !,ChkRayTrans
 
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
-     &   MonCoef(120),pr(3),L,Nhat(3),pout(3),rout(3),rho(3),
-     &   AnaCoef(4),UDSrfCoef(*),DWORK(*),xGrid(3),yGrid(3),
+     &   MonCoef(mMonCoef),pr(3),L,Nhat(3),pout(3),rho(3),
+     &   AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),xGrid(3),yGrid(3),
      &   zGrid(3),ApVec(6),ObsVec(6,nObs),UDSrfParam(6),
      &   AsphCoef(nAsphCoef)
 
@@ -178,9 +179,11 @@ C***********************************************************************
 !  ihat = RayDir(1,iRay)
 !  prot = RayE(1,iRay),
 
+	USE Constants, ONLY: TWOPI
 	use macos_debug
 	use traceutil_mod
 	use didesub, only: IntSrf
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 C  ierror,iwork,ndp,wvec,anacoef,udsrftype,udsrfcoef + intsrf stuff
 
@@ -192,8 +195,8 @@ C  matrices for a reflecting surface
 	INTEGER nGridMat,mGridMat
 	REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
 
-	INTEGER i,j,ip3,jp3,SrfType,NDP,IWORK(*),IERROR,IDNDP(31),iNode,
-     &	  IMODE,kNode,jdx,iDebug,UDSrfType,mDP,
+	INTEGER i,j,ip3,jp3,SrfType,NDP,IWORK(*),IERROR,
+     &	  iDebug,UDSrfType,mDP,
      &	  ApType,nObs,ObsType(nObs),nCoat,ic
 
 	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
@@ -204,19 +207,15 @@ C  matrices for a reflecting surface
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
-     &    MonCoef(120),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
-     &	  na,nb,kxa,kxb,AnaCoef(4),UDSrfCoef(*),DWORK(*),
+        REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+     &    MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
+     &	  na,nb,kxa,kxb,AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &    UDSrfParam(6),dd
 	REAL*8, dimension(:) :: AsphCoef
 
-	REAL*8 xIDES,yIDES,w,psitzc,zc(3),
-     &	  XYZSRF(3,NDP),DZSRF(2,NDP),
-     &	  wVec(3),drdwi(3,3),dgdwi(3,3),dldwi(3),
-     &	  dwdw(3,3),dNdw(3,3),rho(3),rhom(3),prel(3),rhoc(3),
-     &	  dthdw(3,3),dddw(3,3),zmtzc,psitzm,drdwk(3,3),
-     &	  dgdwk(3,3),dldwk(3),drdthp(3,3)
+	REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),
+     &	  wVec(3),rho(3),drdthp(3,3)
 
 	REAL*8 Nvec(3),Nmag,dNdp(3,3),R(3,3),dpdd(3,3),dNdd(3,3),
      &    dNdi(3,3),Ndoti,Niinv,Nouti(3,3),drdN(3,3),drdd(3,3),
@@ -224,9 +223,9 @@ C  matrices for a reflecting surface
      &    drdi(3,3),drda(3,3),dgda(3,3),dgdi(3,3),dgdd(3,3),dldd(3),
      &    dprot(3),dddth(3,3),dgdth(3,3),dldth(3),Kc,Kr,
      &    NoidNdi(3,3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
-     &	  svec(3),shat(3),prhat(3),pihat(3),sfa,TwoPi
+     &	  svec(3),shat(3),prhat(3),pihat(3),sfa
 
-	REAL*8 D1(3,3),D2(3,3),D3(3,3),S1,S2
+	REAL*8 D1(3,3),D2(3,3),D3(3,3),S1
 
 	COMPLEX*16 Evec(3),Esrf(3),Eout(3),RP,RS,Epi,Esi,Epr,Esr,
      &	           C1,C2,NaCmplx,NbCmplx,ccfa,ccfb,cmu,cNdi,cone,
@@ -234,7 +233,6 @@ C  matrices for a reflecting surface
      &             DD1,DD2,RPnew,RSnew
 
 	DATA idebug/0/
-	DATA TwoPi/6.28318530717959D0/
 
 C  Compute incidence point of ray
 
@@ -317,7 +315,7 @@ C  Polarization calcs
 	! applicable to both non-coated and coated surfaces
 	If (ifPol) Then
           cone=1d0
-          S1=-TwoPi*L/lambda
+          S1=-TWOPI*L/lambda
           C2=DCMPLX(0d0,S1)*NaCmplx
           C1=CDEXP(C2)
           Esrf(1:3)=C1*Evec(1:3) ! Esrf = electric field at the surface,
@@ -445,7 +443,7 @@ C  Polarization calcs
             !dd=CoatW(ic)/ccfb_arr(ic) ! ray pathlength in this layer
             !C2=DCMPLX(0d0,1d0)*TwoPi*2d0*dd*NbCmplx/lambda
             dd=CoatW(ic)*ccfb_arr(ic)
-            C2=DCMPLX(0d0,1d0)*2d0*(TwoPi/lambda)*dd*NbCmplx
+            C2=DCMPLX(0d0,1d0)*2d0*(TWOPI/lambda)*dd*NbCmplx
             C1=CDEXP(-C2)
 
             ! Reflectance
@@ -465,7 +463,7 @@ C       print*,'layer RP1 = ', RP1
 
 	    if (.false.) then
              ! Transmittance
-             DD2=DCMPLX(0d0,1d0)*(TwoPi/lambda)*dd*NbCmplx
+             DD2=DCMPLX(0d0,1d0)*(TWOPI/lambda)*dd*NbCmplx
              DD1=CDEXP(-DD2)
              TP1= 2d0*NaCmplx*ccfb_arr(ic-1)
      &            /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
@@ -480,12 +478,12 @@ C       print*,'layer RP1 = ', RP1
 	END IF ! ifPol & nCoat/=0
 
 	! Check result
-	if (.false. .and. ifPol) then
-	  print*,'*** In Reflector: RP = ', RP
-	  print*,'*** In Reflector: RS = ', RS
-	  !print*,'*** In Reflector: Epi = ', Epi
-	  !print*,'*** In Reflector: Esi = ', Esi
-	end if
+	!if (.false. .and. ifPol) then
+	!  print*,'*** In Reflector: RP = ', RP
+	!  print*,'*** In Reflector: RS = ', RS
+	!  !print*,'*** In Reflector: Epi = ', Epi
+	!  !print*,'*** In Reflector: Esi = ', Esi
+	!end if
 
 	IF (ifPol) THEN
 	  Epr=RP*Epi
@@ -647,8 +645,10 @@ C***********************************************************************
      &   nCoat,CoatW,nb_arr,kxb_arr,
      &   IsVarIndRef,IndRefStr,IsGrinRef,thisGrinRef)
 
+	 use Constants, only: PI, TWOPI
 	 use traceutil_mod
 	 use didesub, only: IntSrf
+         use elt_mod, only: mMonCoef,mAnaCoef
 
 	 IMPLICIT NONE
 
@@ -675,16 +675,16 @@ C  for a general lens surface
 	Type(IndRefGridStr) :: IndRefStr
         Type(GrinRefStr) :: thisGrinRef
 
-	INTEGER :: i,j,k,k1,ip3,jp3,SrfType,UDSrfType,while_cnt,
-     &	  NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+	INTEGER :: i,j,k,k1,ip3,jp3,SrfType,UDSrfType,
+     &	  NDP,IWORK(*),IERROR,mDP,
      &	  ApType,nObs,ObsType(nObs),nCoat,ic,segGap,totStepsGuess,
      &    xoff,yoff,xseg,yseg,ClosestInt
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
 	REAL*8 :: pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,nc,
-     &   MonCoef(120),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
-     &	 AnaCoef(4),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
+     &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
+     &	 AnaCoef(mAnaCoef),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
      &	 rho(3),wVec(3),xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6),dd,dpface(3),dt,thkZ,pcrnt(3),
      &   Tcrnt(3),
@@ -701,7 +701,7 @@ C  for a general lens surface
 	REAL*8 :: mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	 Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
      &	 rad,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
-     &	 svec(3),shat(3),prhat(3),pihat(3),sfa,TwoPi,Pi,
+     &	 svec(3),shat(3),prhat(3),pihat(3),sfa,
      &	 evpha(3),espha(3),eopha(3),dpha,dtr
 
 	COMPLEX*16 :: Evec(3),Esrf(3),Eout(3),RP,RS,Epi,Esi,Epr,Esr,
@@ -709,8 +709,6 @@ C  for a general lens surface
      &            ccfb_arr(0:max_coat_layers),RP1,RS1,TP,TS,TP1,TS1,
      &                DD1,DD2,RPnew,RSnew
         Logical, save :: saveRayPath=.TRUE.
-
-	DATA TwoPi/6.28318530717959D0/Pi/3.14159265358979/
 
 C  Compute surface
 
@@ -938,14 +936,14 @@ C  Polarization calcs - only then coating effects could be included
 C    Propagation through isotropic medium a to surface
 
 c	  S1=MOD((TwoPi*L/lambda),TwoPi)
-	  S1=-TwoPi*L/lambda
+	  S1=-TWOPI*L/lambda
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
 	  Esrf(1)=C1*Evec(1)
 	  Esrf(2)=C1*Evec(2)
 	  Esrf(3)=C1*Evec(3)
 cdebug
-	  dtr=TwoPi/360d0
+	  dtr=TWOPI/360d0
 	  dpha=datan2(DIMAG(c1),DBLE(c1))/dtr
 	  do i=1,1
 	    evpha(i)=datan2(DIMAG(Evec(i)),DBLE(Evec(i)))/dtr
@@ -1050,7 +1048,7 @@ C    Compute refracted ray cosine
             !dd=CoatW(ic)/ccfb_arr(ic) ! ray pathlength in this layer
             !C2=DCMPLX(0d0,1d0)*TwoPi*2d0*dd*NbCmplx/lambda
             dd=CoatW(ic)*ccfb_arr(ic)
-            C2=DCMPLX(0d0,1d0)*2d0*(TwoPi/lambda)*dd*NbCmplx
+            C2=DCMPLX(0d0,1d0)*2d0*(TWOPI/lambda)*dd*NbCmplx
             C1=CDEXP(-C2)
 
             ! Reflectance
@@ -1064,7 +1062,7 @@ C    Compute refracted ray cosine
             RSnew=(RS1+RS*C1)/(1d0+RS1*RS*C1)
 
             ! Transmittance
-            DD2=DCMPLX(0d0,1d0)*(TwoPi/lambda)*dd*NbCmplx
+            DD2=DCMPLX(0d0,1d0)*(TWOPI/lambda)*dd*NbCmplx
             DD1=CDEXP(-DD2)
             TP1= 2d0*NaCmplx*ccfb_arr(ic-1)
      &          /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
@@ -1237,8 +1235,10 @@ C***********************************************************************
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
+         use Constants, only: PI, TWOPI
 	 use traceutil_mod
 	 use didesub, only: IntSrf
+         use elt_mod, only: mMonCoef,mAnaCoef
 
 C  Compute refraction point, normal and transition matrices
 C  for a general lens surface
@@ -1249,7 +1249,7 @@ C  for a general lens surface
      &	LRT
 
 	INTEGER i,j,ip3,jp3,SrfType,nCoat,UDSrfType,
-     &	  NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+     &	  NDP,IWORK(*),IERROR,mDP,
      &	  ApType,nObs,ObsType(nObs)
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
@@ -1258,8 +1258,8 @@ C  for a general lens surface
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,
-     &   MonCoef(120),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
-     &	 AnaCoef(4),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),
+     &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
+     &	 AnaCoef(mAnaCoef),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),
      &	 rho(3),DWORK(*),wVec(3),xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
@@ -1274,12 +1274,10 @@ C  for a general lens surface
 	REAL*8 mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
      &	rad,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
-     &	svec(3),shat(3),prhat(3),pihat(3),sfa,TwoPi,Pi
+     &	svec(3),shat(3),prhat(3),pihat(3),sfa
 
 	COMPLEX*16 Evec(3),Esrf(3),Eout(3),TP,TS,Epi,Esi,Epr,Esr,
      &	C1,C2,NaCmplx,NbCmplx,ccfa,ccfb,cone,cmu,cNdi
-
-	DATA TwoPi/6.28318530717959D0/Pi/3.14159265358979/
 
 C  Compute surface
 
@@ -1376,7 +1374,7 @@ C  Polarization calcs
 C    Propagation through isotropic medium a to surface
 
 c	  S1=MOD((TwoPi*L/lambda),TwoPi)
-	  S1=-TwoPi*L/lambda
+	  S1=-TWOPI*L/lambda
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
 	  Esrf(1)=C1*Evec(1)
@@ -1579,17 +1577,17 @@ C***********************************************************************
 
 	SUBROUTINE AirGap(TP,TS,cfa,sfa,cfb,n1,n3,mu,Wavelen,nCoat,
      &	CoatIndx,CoatThk)
+        USE Constants, ONLY: TWOPI
 	IMPLICIT NONE
 	INTEGER nCoat
 	REAL*8 cfa,sfa,cfb,n1,n3,mu,Wavelen,CoatIndx(20),CoatThk(20),
-     &	d,k,ky,k1x,k2x,k3x,ky2,k2x2,n2,TwoPi,sfac,RP,IP,A2,SA2,CA2,
+     &	d,k,ky,k1x,k2x,k3x,ky2,k2x2,n2,sfac,RP,IP,A2,SA2,CA2,
      &	y1,sfbc
 	COMPLEX*16 TP,TS,C1
-	DATA TwoPi/6.28318530717959D0/
 
 	n2=1d0
 	d=CoatThk(1)
-	k=TwoPi/Wavelen
+	k=TWOPI/Wavelen
 	ky=n1*k*sfa
 	ky2=ky*ky
 	k1x=n1*k*cfa
@@ -1656,22 +1654,23 @@ C***********************************************************************
 
 	!use traceutil_mod, only : LensletStrArray
 	use traceutil_mod
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 	IMPLICIT NONE
 
 	LOGICAL LROK,ifBuild,ifLNsrf,ifDMBuild,ifPol,ifObs,!ChkRayTrans,
-     &          LRT,IsVarIndRefLensArr,ifnc,matchFound
+     &          LRT,IsVarIndRefLensArr,ifnc
 
 	INTEGER i,j,ip3,jp3,SrfType,LensArrayType,IXseg,IYseg,IXtri,
      &	  ILtri,IRtri,IYtri,LINT,UDSrfType,
-     &	  NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+     &	  NDP,IWORK(*),IERROR,mDP,
      &	  ApType,nObs,ObsType(nObs),TotLenslets,thisElt
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,nc,
-     &    MonCoef(120),pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),
-     &	  kxa,kxb,lambda,rho(3),DWORK(*),AnaCoef(4),
+     &    MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),
+     &	  kxa,kxb,lambda,rho(3),DWORK(*),AnaCoef(mAnaCoef),
      &	  UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),xGrid(3),yGrid(3),
      &    zGrid(3),ApVec(6),ObsVec(6,nObs),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
@@ -2046,7 +2045,8 @@ C***********************************************************************
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui)
 
-	use traceutil_mod
+	USE Constants, ONLY: TWOPI
+        USE traceutil_mod
 
 C       Compute reflection point, normal, reflection and transition
 C	matrices for a conic-of-revolution retroreflecting surface
@@ -2065,11 +2065,9 @@ C	matrices for a conic-of-revolution retroreflecting surface
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs)
 
 	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,rho(3),
-     &         Kc,Kr,k2,itpsi,psitprel,TwoPi
+     &         Kc,Kr,k2,itpsi,psitprel
 
 	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx
-
-	DATA TwoPi/6.28318530717959D0/
 
 C	Compute mirror model
 c		Kc=-e*e
@@ -2157,9 +2155,9 @@ C    Propagation through isotropic medium a to surface
 
 c	  S1=MOD((TwoPi*L/lambda),TwoPi)
 	  IF (ifReturn) THEN
-	    S1=TwoPi*L/lambda
+	    S1=TWOPI*L/lambda
 	  ELSE
-	    S1=-TwoPi*L/lambda
+	    S1=-TWOPI*L/lambda
 	  END IF
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
@@ -2226,6 +2224,7 @@ C***********************************************************************
      &	ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	pout,rout,L,Eout,s,dxidxim1,dxidui)
 
+	USE Constants, ONLY: TWOPI
 	use traceutil_mod
 
 C       Compute reflection point, normal, reflection and transition
@@ -2250,11 +2249,9 @@ C	matrices for a general focal plane or reference surface
      &	dddth(3,3),dsdth(3,3),dldth(3),dlda(3),dldi(3),
      &	PN(3,3),dpvdth(3,3)
 
-	REAL*8 D1(9),D2(9),S1,eye3(9),TwoPi
+	REAL*8 D1(9),D2(9),S1,eye3(9)
 
 	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx
-
-	DATA TwoPi/6.28318530717959D0/
 
 C	Compute mirror model
 
@@ -2283,7 +2280,7 @@ C  Polarization calcs
 C    Propagation through isotropic medium a to surface
 
 c	  S1=MOD((TwoPi*L/lambda),TwoPi)
-	  S1=-TwoPi*L/lambda
+	  S1=-TWOPI*L/lambda
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
 	  Eout(1)=C1*Evec(1)
@@ -2401,7 +2398,8 @@ C***********************************************************************
 ! rout = RayDir(1:3,iRay)
 ! L = RayL(iRay)
 
-        use elt_mod, only : ifOPDModGrid,xMon,yMon,zMon,pMon,
+	USE Constants, ONLY: TWOPI
+        use elt_mod, only : ifOPDModGrid,xMon,yMon,pMon,
      &                      GridSrfdx,nGridMat,GridMat,iEltToGridSrf
 	use traceutil_mod
 
@@ -2423,11 +2421,9 @@ C    &     ChkRayTrans,LRT
      &   poffx,poffy,grid_dx,dL
 
 	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,S1,
-     &   Kc,Kr,k2,itpsi,psitprel,TwoPi
+     &   Kc,Kr,k2,itpsi,psitprel
 
 	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx
-
-	DATA TwoPi/6.28318530717959D0/
 
 C	Compute mirror model
 c		Kc=-e*e
@@ -2504,7 +2500,7 @@ C  Polarization calcs
 C    Propagation through isotropic medium a to surface
 
 c	  S1=MOD((TwoPi*L/lambda),TwoPi)
-	  S1=-TwoPi*L/lambda
+	  S1=-TWOPI*L/lambda
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
 	  Eout(1)=C1*Evec(1)
@@ -2596,6 +2592,7 @@ C***********************************************************************
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui)
 
+	USE Constants, ONLY: TWOPI
 	use traceutil_mod
 
 C  Compute incidence point for a ray on a conic-of-revolution
@@ -2615,12 +2612,10 @@ C  surface and determine if the ray is obscured.
      &	 na,nb,kxa,kxb,lambda
 
 	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,
-     &   Kc,Kr,rho(3),itpsi,psitprel,TwoPi,S1,k2,
+     &   Kc,Kr,rho(3),itpsi,psitprel,S1,k2,
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs)
 
 	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx
-
-	DATA TwoPi/6.28318530717959D0/
 
 	DO 1 i=1,3
 	  prel(i)=pin(i)-pv(i)
@@ -2692,7 +2687,7 @@ C  Polarization calcs
 	  NaCmplx=DCMPLX(na,(-kxa))
 
 C  Propagation through isotropic medium a to surface
-	  S1=-TwoPi*L/lambda
+	  S1=-TWOPI*L/lambda
 	  C2=DCMPLX(0d0,S1)*NaCmplx
 	  C1=CDEXP(C2)
 	  Eout(1)=C1*Evec(1)
@@ -2744,7 +2739,8 @@ C***********************************************************************
 	FUNCTION ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &		    psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &              xGrid,yGrid,zGrid,taperFac)
-        use elt_mod, only : ApHexBound,ObsHexBound,PolyApEqn,VptElt,
+        use Constants, only: PI
+        use elt_mod, only : ApHexBound,PolyApEqn,VptElt,
      &                      PolyObsEqn,ifAmplSrf,nAmplMat,AmplMat,
      &                      AmplSrfdx,iEltToAmplSrf,xMon,yMon,pMon
         use cfiles_mod, only : stepApod,linApod,gaussApod,iApodType
@@ -2761,14 +2757,13 @@ C***********************************************************************
 	!LOGICAL ChkRayTrans,ChkLineSide
 	LOGICAL ChkRayTrans
 	INTEGER ApType,nObs,ObsType(nObs),iObs
-	LOGICAL ifBuild,ifPol,ifHitsPosObs,ifHitsNegObs,ifLNsrf,LCMP
+	LOGICAL ifBuild,ifPol,ifHitsPosObs,ifHitsNegObs,ifLNsrf
 
-	Real*8, save :: pi
 	REAL*8 psi(3),rho(3),xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &	  ObsVec(6,nObs),r2,A2,A3,px,py,
      &	  ax,ay,bx,by,cx,cy,rc,xcmin,xcmax,ycmin,ycmax,yt,
      &	  sqrt_A1, sqrt_A2, sqrt_r2, rd1,rd2,r1,taperFac,
-     &    pxx,pyy,px2,py2,coss,sins,ApRot,ObsRot,tmpx,tmpy,
+     &    px2,py2,coss,sins,ApRot,ObsRot,tmpx,tmpy,
      &	  inPt(2),inPt_val,ray_val,dd,tf,sig,pOff(3),pOffx,pOffy,
      &    xsb(3),ysb(3),th1,th2,dth
 	Real*8, save :: Asb(3,mSB),Bsb(3,mSB),Csb(3,mSB),
@@ -2777,13 +2772,7 @@ C***********************************************************************
      &             ib,j,i1,i2
 	Logical :: inHex,inPoly,inSB
 	Logical, save :: firstEntry_sunBlades=.true.
-        Integer, save :: nC=0
 
-#if 0
-	! Test only
-	xGrid(1)=1d0;  xGrid(2)=0d0; xGrid(3)=0d0
-	yGrid(1)=0d0;  yGrid(2)=1d0; yGrid(3)=0d0
-#endif
 
 	ifHitsPosObs=.FALSE.
 	ifHitsNegObs=.FALSE.
@@ -2999,7 +2988,6 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
           r1=ApVec(3); r2=ApVec(4)
           nBlades=ApVec(5)
 
-	  pi=4d0*atan(1d0)
           dth=2d0*pi/nBlades
           th1=0d0; th2=th1+dth
 
@@ -3350,6 +3338,7 @@ C***********************************************************************
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
 	use traceutil_mod
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 	IMPLICIT NONE
 
@@ -3357,16 +3346,16 @@ C***********************************************************************
      &	LRT
 
 	INTEGER i,j,ip3,jp3,UDSrfType,SrfType,NDP,
-     &	 IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+     &	 IWORK(*),IERROR,mDP,
      &	 ApType,nObs,ObsType(nObs)
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
-     &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),MonCoef(120),
+     &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),MonCoef(mMonCoef),
      & 	 rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &	 na,nb,kxa,kxb,lambda,
-     &	 AnaCoef(4),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
+     &	 AnaCoef(mAnaCoef),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
@@ -3830,52 +3819,43 @@ C For reflective grating - jzlou
 
 	use didesub, only: IntSrf
         use traceutil_mod
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 	IMPLICIT NONE
 
 	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,LRT !ChkRayTrans
 
-	INTEGER i,j,ip3,jp3,UDSrfType,SrfType,NDP,IWORK(*),IERROR,
-     &	  IDNDP(31),iNode,IMODE,kNode,mDP,ApType,nObs,ObsType(nObs)
+	INTEGER i,UDSrfType,SrfType,NDP,IWORK(*),IERROR,
+     &	  mDP,ApType,nObs,ObsType(nObs)
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
-     &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
-     &	 na,nb,kxa,kxb,AnaCoef(4),MonCoef(120),
-     &	 RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
-     &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
-     &	 UDSrfCoef(*),UDSrfParam(6)
+     &         pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
+     &	       na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
+     &	       RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &	       xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &	       UDSrfCoef(*),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
 
-	REAL*8 Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
-     &   Ndoti,Niinv,Nouti(3,3),ioutN(3,3),drdN(3,3),itN,its,Sig(3),
-     &   dSig,strho,ihatn(3),rhatn(3),
-     &   XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),
-     &	 DWORK(*),dprot(3),dddth(3,3),Kc,Kr,NoidNdi(3,3),dNda(3,3),
-     &	 dpdi(3,3),dpda(3,3),dpdth(3,3),Crn,inmrn(3),smag,
-     &   svec(3),dsvecdN(3,3),dsdp(3,3),dGrdp(3),imagn,rmagn,
-     &	 D4(3,3),drGdp(3,3),drsdp(3,3),drds(3,3),drdGr(3)
+	REAL*8 Nvec(3),Nmag,dNdp(3,3),its,
+     &         dSig,strho,ihatn(3),rhatn(3),
+     &         XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),
+     &	       DWORK(*),Kc,Kr
 
 	REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),
-     &   dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),
-     &	 dLdi(3),dLda(3),dLdth(3),dLdd(3)
+     &         dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),
+     &	       dLdi(3),dLda(3),dLdth(3),dLdd(3)
 
-	REAL*8 dshatdsvec(3,3),dLivecdth(3,3),dsdN(3,3),dsNdp(3,3),
-     &	 dindp(3,3),dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
-     &	 drndp(3,3),drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
-     &	 Perpin(3,3),Perprn(3,3),dsdrnmin(3,3),
-     &	 dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
-     &	 dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3),
-     &	 dDLidi(3),dDLida(3),dDLidth(3),dDLidd(3),
-     &	 dDLrdi(3),dDLrda(3),dDLrdth(3),dDLrdd(3),rhoi(3),rhor(3)
+	REAL*8 dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
+     &	       drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
+     &	       dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
+     &	       dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-	REAL*8 Nx(3,3),
-     &	 Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,
-     &	 Order,shat(3),uhat(3),rts,uti,
-     &	 prel(3),rho(3),dLi,Pnhat(3,3),sti,str,Gr
+	REAL*8 S1,Order,shat(3),uhat(3),rts,uti,
+     &	       prel(3),rho(3),Gr
 
-	COMPLEX*16 Evec(3),Esrf(3),Eout(3)
+	COMPLEX*16 Evec(3),Eout(3)
 
 cdebug
 	COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
@@ -4048,8 +4028,8 @@ C  Compute partials
 
 	IF (ifBuild) THEN
 C         Zero partial matrices
-          dxidxim1(1:7,1:7)=0e0
-          dxidui(1:7,1:6)=0e0
+          dxidxim1(1:7,1:7)=0d0
+          dxidui(1:7,1:6)=0d0
         END IF
 
 C  Check if ray is obscured
@@ -4089,59 +4069,48 @@ C***********************************************************************
 
 ! h1HOE(1:3,iElt) = RuleDir(1:3) = groove srf tangent, -jzlou
 
-	use traceutil_mod
+	use Constants, only: PI
+        use traceutil_mod
 	use didesub, only: IntSrf
+        use elt_mod, only: mMonCoef,mAnaCoef
 
 	IMPLICIT NONE
 
 	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
      &          LRT
 
-	INTEGER i,j,ip3,jp3,UDSrfType,SrfType,
-     &	  NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+	INTEGER i,j,UDSrfType,SrfType,
+     &	  NDP,IWORK(*),IERROR,mDP,
      &	  ApType,nObs,ObsType(nObs)
 
 	SREAL :: dxidxim1(7,7),dxidui(7,6)
 
-	Real*8 :: pi  ! test only
-
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
-     &	 na,nb,kxa,kxb,AnaCoef(4),MonCoef(120),
+     &	 na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
      &	 RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &	 UDSrfCoef(*),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
 
-	REAL*8 Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
-     &   Ndoti,Niinv,Nouti(3,3),ioutN(3,3),drdN(3,3),itN,its,Sig(3),
+	REAL*8 Nvec(3),Nmag,dNdp(3,3),its,
      &   dSig,strho,ihatn(3),rhatn(3),XYZSRF(3,NDP),DZSRF(2,NDP),
-     &	 wVec(3),DWORK(*),
-     &	 dprot(3),dddth(3,3),Kc,Kr,NoidNdi(3,3),dNda(3,3),
-     &	 dpdi(3,3),dpda(3,3),dpdth(3,3),Crn,inmrn(3),smag,
-     &   svec(3),dsvecdN(3,3),dsdp(3,3),dGrdp(3),
-     &	 imagn,rmagn,D4(3,3),drGdp(3,3),drsdp(3,3),drds(3,3),
-     &	 drdGr(3)
+     &	 wVec(3),DWORK(*),Kc,Kr
 
 	REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),
-     &   dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),
-     &	 dLdi(3),dLda(3),dLdth(3),dLdd(3)
+     &         dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),
+     &	       dLdi(3),dLda(3),dLdth(3),dLdd(3)
 
-	REAL*8 dshatdsvec(3,3),dLivecdth(3,3),dsdN(3,3),dsNdp(3,3),
-     &	 dindp(3,3),dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
-     &	 drndp(3,3),drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
-     &	 Perpin(3,3),Perprn(3,3),dsdrnmin(3,3),
-     &	 dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
-     &	 dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3),
-     &	 dDLidi(3),dDLida(3),dDLidth(3),dDLidd(3),
-     &	 dDLrdi(3),dDLrda(3),dDLrdth(3),dDLrdd(3),rhoi(3),rhor(3)
+	REAL*8 dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
+     &	       drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
+     &	       dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
+     &	       dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-	REAL*8 Ndi,cvec(3),muNdi,cfb,mu,Nx(3,3),dhat(3),
-     &	 Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,
-     &	 Order,shat(3),uhat(3),rts,uti,
-     &	 prel(3),rho(3),dLi,Pnhat(3,3),sti,str,Gr
+	REAL*8 Ndi,cvec(3),muNdi,cfb,mu,dhat(3),
+     &	 S1,S2,Order,shat(3),uhat(3),rts,uti,
+     &	 prel(3),rho(3),Gr
 
-	COMPLEX*16 Evec(3),Esrf(3),Eout(3)
+	COMPLEX*16 Evec(3),Eout(3)
 
 cdebug
 	COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
@@ -4230,7 +4199,7 @@ C  for fixed rule width: -dcr
 	END IF
 	DO i=1,3
 	  dhat(i)=rts*shat(i)+uti*uhat(i)-SQRT(S1)*Nhat(i)
-   	END DO
+        END DO
 
 C	strho=DDOTC(RuleDir,rho)
 	strho=DDOTC(shat,rho)
@@ -4247,7 +4216,7 @@ C  Compute refracted ray
 	muNdi=mu*Ndi
 	DO i=1,3
 	  cvec(i)=Ndi*Nhat(i)-dhat(i)
- 	END DO
+        END DO
 
 C  Check for total internal reflection
 
@@ -4268,11 +4237,11 @@ C  Check for total internal reflection
 	DO i=1,3
 	  rhat(i)=-mu*cvec(i)-cfb*Nhat(i)
 	  S1=S1+rhat(i)*rhat(i)
- 	END DO
+        END DO
 	S2=DSQRT(S1)
 	DO i=1,3
 	  rhat(i)=rhat(i)/S2
- 	END DO
+        END DO
 
 	! The direction of refracted ray (rhat) obeys grating equation in
 	! the case of normal incident ray, a sanity check by jzlou.
@@ -4298,12 +4267,12 @@ C    Zero partial matrices
 
 	  DO 7 j=1,7
 	    DO 6 i=1,7
-	      dxidxim1(i,j)=0e0
+	      dxidxim1(i,j)=0d0
     6	    CONTINUE
     7	  CONTINUE
 	  DO 9 j=1,6
 	    DO 8 i=1,7
-	      dxidui(i,j)=0e0
+	      dxidui(i,j)=0d0
     8	    CONTINUE
     9	  CONTINUE
 	END IF
@@ -4348,7 +4317,8 @@ C***********************************************************************
 
 ! h1HOE(1:3,iElt) = RuleDir(1:3) = groove srf tangent, -jzlou
 
-	use elt_mod, only : DoeFl
+	use Constants, only: PI
+        use elt_mod, only : DoeFl,mMonCoef,mAnaCoef
         use traceutil_mod
 	use didesub, only: IntSrf
 
@@ -4357,50 +4327,39 @@ C***********************************************************************
         LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
      &          LRT
 
-        INTEGER i,j,ip3,jp3,UDSrfType,SrfType,
-     &    NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+        INTEGER i,j,UDSrfType,SrfType,
+     &    NDP,IWORK(*),IERROR,mDP,
      &    ApType,nObs,ObsType(nObs)
 
         SREAL :: dxidxim1(7,7),dxidui(7,6)
 
-        Real*8 :: pi  ! test only
-
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
-     &   na,nb,kxa,kxb,AnaCoef(4),MonCoef(120),
+     &   na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
      &   RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &   xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &   UDSrfCoef(*),UDSrfParam(6)
         REAL*8, dimension(:) :: AsphCoef
 
-        REAL*8 Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
-     &   Ndoti,Niinv,Nouti(3,3),ioutN(3,3),drdN(3,3),itN,its,Sig(3),
+        REAL*8 Nvec(3),Nmag,dNdp(3,3),its,
      &   dSig,strho,ihatn(3),rhatn(3),XYZSRF(3,NDP),DZSRF(2,NDP),
-     &   wVec(3),DWORK(*),
-     &   dprot(3),dddth(3,3),Kc,Kr,NoidNdi(3,3),dNda(3,3),
-     &   dpdi(3,3),dpda(3,3),dpdth(3,3),Crn,inmrn(3),smag,
-     &   svec(3),dsvecdN(3,3),dsdp(3,3),dGrdp(3),
-     &   imagn,rmagn,D4(3,3),drGdp(3,3),drsdp(3,3),drds(3,3),drdGr(3)
+     &   wVec(3),DWORK(*),Kc,Kr
 
         REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),
      &   dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),resid,d1_loc,
      &   dLdi(3),dLda(3),dLdth(3),dLdd(3)
 
-        REAL*8 dshatdsvec(3,3),dLivecdth(3,3),dsdN(3,3),dsNdp(3,3),
-     &   dindp(3,3),dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
-     &   drndp(3,3),drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
-     &   Perpin(3,3),Perprn(3,3),dsdrnmin(3,3),
-     &   dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
-     &   dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3),
-     &   dDLidi(3),dDLida(3),dDLidth(3),dDLidd(3),
-     &   dDLrdi(3),dDLrda(3),dDLrdth(3),dDLrdd(3),rhoi(3),rhor(3)
+        REAL*8 dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
+     &         drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
+     &         dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
+     &         dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-        REAL*8 Ndi,cvec(3),muNdi,cfb,mu,Nx(3,3),dhat(3),pdd,
-     &   Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,F,DoeFocLen,focalOrder,
+        REAL*8 Ndi,cvec(3),muNdi,cfb,mu,dhat(3),pdd,
+     &   S1,S2,DoeFocLen,focalOrder,
      &   Order,shat(3),uhat(3),rts,uti,CurRuleWidth,CurRuleDir(3),
-     &   prel(3),rho(3),dLi,Pnhat(3,3),sti,str,Gr,rwFac,prelUnity(3)
+     &   prel(3),rho(3),Gr
 
-        COMPLEX*16 :: Evec(3),Esrf(3),Eout(3),
+        COMPLEX*16 :: Evec(3),Eout(3),
      &                Calc_RayDielectricTC,Calc_RayMetalTC
 
 cdebug
@@ -4597,12 +4556,12 @@ C    Zero partial matrices
 
           DO 7 j=1,7
             DO 6 i=1,7
-              dxidxim1(i,j)=0e0
+              dxidxim1(i,j)=0d0
     6       CONTINUE
     7     CONTINUE
           DO 9 j=1,6
             DO 8 i=1,7
-              dxidui(i,j)=0e0
+              dxidui(i,j)=0d0
     8       CONTINUE
     9     CONTINUE
         END IF
@@ -4649,7 +4608,7 @@ C the DOE element. -jzlou, 07/2011
 
 ! h1HOE(1:3,iElt) = RuleDir(1:3) = direction across rulings, -jzlou
 
-        use elt_mod, only : DoeId,DoeWL,DoeFl,DoePhProf
+        use elt_mod, only : DoeId,DoeWL,DoePhProf,mMonCoef,mAnaCoef
         use didesub, only: IntSrf
         use traceutil_mod
 
@@ -4658,50 +4617,44 @@ C the DOE element. -jzlou, 07/2011
         LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
      &          LRT
 
-        INTEGER i,j,ip3,jp3,UDSrfType,SrfType,
-     &    NDP,IWORK(*),IERROR,IDNDP(31),iNode,IMODE,kNode,mDP,
+        INTEGER i,UDSrfType,SrfType,
+     &    NDP,IWORK(*),IERROR,mDP,
      &    ApType,nObs,ObsType(nObs)
 
         SREAL :: dxidxim1(7,7),dxidui(7,6)
 
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
-     &   na,nb,kxa,kxb,AnaCoef(4),MonCoef(120),
-     &   RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &   na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
+     &   rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &   xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &   UDSrfCoef(*),UDSrfParam(6),thisDoeWL
         REAL*8, dimension(:) :: AsphCoef
 
-        REAL*8 Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
-     &   Ndoti,Niinv,Nouti(3,3),ioutN(3,3),drdN(3,3),itN,its,Sig(3),
+        REAL*8 Nvec(3),Nmag,dNdp(3,3),
+     &   its,
      &   dSig,strho,ihatn(3),rhatn(3),XYZSRF(3,NDP),DZSRF(2,NDP),
      &   wVec(3),DWORK(*),
-     &   dprot(3),dddth(3,3),Kc,Kr,NoidNdi(3,3),dNda(3,3),
-     &   dpdi(3,3),dpda(3,3),dpdth(3,3),Crn,inmrn(3),smag,
-     &   svec(3),dsvecdN(3,3),dsdp(3,3),dGrdp(3),
-     &   imagn,rmagn,D4(3,3),drGdp(3,3),drsdp(3,3),drds(3,3),drdGr(3)
+     &   Kc,Kr
 
         REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),dgdi(3,3),
      &   dgda(3,3),dgdth(3,3),dgdd(3,3),dLdi(3),dLda(3),dLdth(3),dLdd(3)
 
-        REAL*8 dshatdsvec(3,3),dLivecdth(3,3),dsdN(3,3),dsNdp(3,3),
-     &   dindp(3,3),dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
-     &   drndp(3,3),drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
-     &   Perpin(3,3),Perprn(3,3),dsdrnmin(3,3),dPhidR,
+        REAL*8
+     &   dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
+     &   drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
+     &   dPhidR,
      &   dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
-     &   dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3),
-     &   dDLidi(3),dDLida(3),dDLidth(3),dDLidd(3),
-     &   dDLrdi(3),dDLrda(3),dDLrdth(3),dDLrdd(3),rhoi(3),rhor(3)
+     &   dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-        REAL*8 Ndi,cvec(3),muNdi,cfb,mu,Nx(3,3),dhat(3),pdd,
-     &   Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,F,
+        REAL*8 Ndi,cvec(3),muNdi,cfb,mu,dhat(3),pdd,
+     &   S1,S2,
      &   Order,shat(3),uhat(3),rts,uti,CurRuleWidth,CurRuleDir(3),
-     &   prel(3),rho(3),dLi,Pnhat(3,3),sti,str,Gr,rwFac,prelUnity(3)
+     &   prel(3),rho(3),Gr
 
 	Real*8, save :: C1,C2,C3,C4,C5,C6
 
-        COMPLEX*16 :: Evec(3),Esrf(3),Eout(3),
-     &                Calc_RayDielectricTC,Calc_RayMetalTC
+        COMPLEX*16 :: Evec(3),Eout(3)
 
 cdebug
         COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
@@ -4808,7 +4761,7 @@ C  Compute grating parameters
 	!if (Order==-1) print*,'ihat =',ihat
 
         its=DDOTC(shat,ihat)  ! = sin(alpha)
- 	rts=its-Gr  ! = Gr+sin(alpha) = sin(beta), Gr can be positive or negative
+        rts=its-Gr  ! = Gr+sin(alpha) = sin(beta), Gr can be positive or negative
 		    ! depending on Order.
         !rts=-Gr-its    = Gr+sin(alpha) = sin(beta)
 
