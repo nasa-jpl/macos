@@ -10,7 +10,7 @@ C***********************************************************************
 
         CONTAINS
 	SUBROUTINE NFPropDFT(u1,n1,dx1,u2,n2,dx2,lambda,z)
-
+          USE Constants, only: PI
 C  Near field propagator using DFT
 C       u1 = complex field at first surface
 C       n1 = dimension of field at first surface
@@ -24,12 +24,9 @@ C	 z = propagation distance
 	IMPLICIT NONE
 
 C  These are local variables
-	INTEGER n1,n2,ii
-     	REAL*8 lambda,z,dx1,dx2,x1,c2,dfx,pi,twopi, C11
+	INTEGER n1,n2
+     	REAL*8 lambda,z,dx1,dx2,x1,c2,dfx, C11
 	COMPLEX*16 c1,u1(n1,n1),u2(n2,n2)
-
-	DATA pi/3.141592653589793d0/
-	DATA twopi/6.283185307179586476925286766559005768394d0/
 
 C Apply factors to input array
 	c2 = pi/lambda/z
@@ -40,7 +37,7 @@ C Compute DFT
 	x1=-dx1*INT(n1/2)
 
 	CALL DFT2D(u1,n1,n1,dx1,dx1,x1,x1,1,
-     &	u2,n2,n2,dfx,dfx)
+     &	           u2,n2,n2,dfx,dfx)
 
 C Apply factors to output array
 	C11=DBLE(N2*N2)
@@ -54,7 +51,7 @@ C	c1 = CDEXP(DCMPLX(0d0,twopi*z/lambda))/DCMPLX(0d0,lambda*z)
 C***********************************************************************
 
 	SUBROUTINE FFPropDFT(u1,n1,dx1,u2,n2,dx2,lambda,z)
-
+        USE Constants, only: PI
 C  Far field propagator using DFT
 C       u1 = complex field at first surface
 C       n1 = dimension of field at first surface
@@ -69,11 +66,8 @@ C	 z = propagation distance
 
 C  These are local variables
 	INTEGER n1,n2
-     	REAL*8 lambda,z,dx1,dx2,x1,c2,pi,twopi,dfx, C11
+     	REAL*8 lambda,z,dx1,dx2,x1,c2,dfx, C11
 	COMPLEX*16 c1,u1(n1,n1),u2(n2,n2)
-
-	DATA pi/3.141592653589793d0/
-	DATA twopi/6.283185307179586476925286766559005768394d0/
 
 C Compute DFT
 	dfx=ABS(dx2/lambda/z)
