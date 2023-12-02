@@ -169,7 +169,7 @@ C***********************************************************************
 	REAL*8 RS,MaxInt,power
 
 	MaxInt=-1d33
-	power=0e0
+	power=0d0
 	IF (ifVecDif3) THEN
 	  DO j=1,mdttl
 	    DO i=1,mdttl
@@ -261,7 +261,7 @@ C***********************************************************************
 	INTEGER i,j,iWF,imax,jmax
 	REAL*8 RS,MaxInt,power
 	MaxInt=-1d33
-	power=0e0
+	power=0d0
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
 	    RS=ABS(WFElt(i,j,iWF))
@@ -388,7 +388,7 @@ C***********************************************************************
 	INTEGER i,j,iElt,iEm1,imax,jmax
 	SREAL X0PFP,dangle
 	REAL*8 DA,A,power,MaxInt,RS
-	power=0e0
+	power=0d0
 	MaxInt=-1d33
 	IF (ifVecDif3) THEN
 	  DO 4 j=1,mdttl
@@ -426,13 +426,13 @@ C***********************************************************************
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
 	    DA=MWFFT(i,j)
-	    IF (DA.LT.1E-36) THEN
-	      DA=1e-36
+	    IF (DA.LT.1d-36) THEN
+	      DA=1d-36
 	    END IF
-	    MWFFT(i,j)=10e0*LOG10(DA*RS)
+	    MWFFT(i,j)=10d0*LOG10(DA*RS)
  1	  CONTINUE
  2	CONTINUE
-	dangle=57.29577951308232*dxElt(iElt)/zElt(iEm1)
+	dangle=57.29577951308232d0*dxElt(iElt)/zElt(iEm1)
 	X0PFP=-dangle*FLOAT((mdttl)/2)
 	DO 7 i=1,mdttl
 	  XFP(i)=X0PFP
@@ -994,7 +994,7 @@ C********************************************************************
         Real*8 :: Dicr,Djcr,dxSource, rxp,ryp
         Logical :: ifPol,ifPropagate,ifPrt
 
-        Integer :: iRay,iStartRay,iEndRay,iElt,iStartElt,iEndElt,ii
+        Integer :: iRay,iStartRay,iEndRay,iElt,iStartElt
         Real*8 :: rx,ry,rx_max,rx_min,ry_max,ry_min,xD,yD,xray_p,yray_p,
      &            rd,tmp_d,dRay(3),dRaySave(3)
         Real*8 :: ray_d,ray_apd ! for test only
@@ -1183,35 +1183,30 @@ C***********************************************************************
 
 C***********************************************************************
 
-C Find system magnification factor M
-	Function FindSysMag(npts,Dicr,Djcr,dxSource,
-     & 		            ifPol,ifPropagate,ifPrt)
-	use param_mod
-        use src_mod
-        use elt_mod
-        use sourcsub_mod
-        use math_mod
-        use macos_mod, only : ifBuild,ifDMBuild,ifDraw,
-     &       nDrawElt,
-     &       ifLNegOK,Cmatrix,ifRayPrint,ifIntSrfSet,ifTrace
-#ifdef CMACOS
-        use macos_vars_mod, only : xDraw,yDraw,DrawEltVec,
-     &                   DrawRayVec,StartExtinc,StartIndRef,
-     &                   nBadRays
-#else
-        use smacos_vars_mod, only : xDraw,yDraw,DrawEltVec,
-     &                   DrawRayVec,StartExtinc,StartIndRef,
-     &                   nBadRays
-#endif
-        use tracesub_mod
-
-	Implicit none
-
-	Integer :: npts
-	Real*8 :: Dicr,Djcr,dxSource,FindSysMag
-	Logical :: ifPol,ifPropagate,ifPrt
-        FindSysMag = 1.0  ! placeholder
-	End Function FindSysMag
+!C Find system magnification factor M
+!	Function FindSysMag(npts,Dicr,Djcr,dxSource,
+!     & 		            ifPol,ifPropagate,ifPrt)
+!	use param_mod
+!        use src_mod
+!        use elt_mod
+!        use sourcsub_mod
+!        use math_mod
+!#ifdef CMACOS
+!        use macos_vars_mod, only : DrawEltVec,
+!     &                   DrawRayVec,StartExtinc,StartIndRef,
+!     &                   nBadRays
+!#else
+!        ! use smacos_vars_mod, only : nBadRays
+!#endif
+!        use tracesub_mod
+!
+!	Implicit none
+!
+!	Integer :: npts
+!	Real*8 :: Dicr,Djcr,dxSource,FindSysMag
+!	Logical :: ifPol,ifPropagate,ifPrt
+!        FindSysMag = 1.0  ! placeholder
+!	End Function FindSysMag
 
 C***********************************************************************
 
@@ -1707,7 +1702,7 @@ C***********************************************************************
      &             ifBuild_,ifDMBuild_,ifTrace_,ifRayPrint_
         Logical :: ifRegrid_(mElt),ifIntSrfSet_(mElt),L1_(mRay),
      &             printDbg
-        Integer :: npts_,iObsOpt_,iEndElt_,iCurWFElt_,iCurRayElt_,
+        Integer :: npts_,iObsOpt_,iCurWFElt_,iCurRayElt_,
      &             iElt_,nBadRays_
         Real*8 :: Dicr_,Djcr_,dxSource_,StartIndRef_,StartExtinc_,
      &            WFE_,DAvgL_,WFEPV_
@@ -1924,23 +1919,27 @@ C***********************************************************************
 	End Function getIndexGrad_grin5
 
 C***********************************************************************
+! ToDo: to be implemented
 
 	Function Calc_RayDielectricTC(wl)
-	use elt_mod, only : czero_
-	Implicit none
-	Real*8 :: wl
-	Complex*16 :: Calc_RayDielectricTC
-	Calc_RayDielectricTC = czero_
+	  Implicit none
+	  Real*8 :: wl
+	  Complex*16 :: Calc_RayDielectricTC
+
+	  Calc_RayDielectricTC = (0d0, 0d0)
+
 	End Function Calc_RayDielectricTC
 
 C***********************************************************************
+! ToDo: to be implemented
 
 	Function Calc_RayMetalTC(wl)
-	use elt_mod, only : czero_
-	Implicit none
-	Real*8 :: wl
-	Complex*16 :: Calc_RayMetalTC
-	Calc_RayMetalTC = czero_
+          Implicit none
+          Real*8 :: wl
+          Complex*16 :: Calc_RayMetalTC
+
+	  Calc_RayMetalTC = (0d0, 0d0)
+
         End Function Calc_RayMetalTC
 
 C***********************************************************************
