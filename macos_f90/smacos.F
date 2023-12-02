@@ -19,7 +19,7 @@ C
 C***********************************************************************
 
 C***********************************************************************
-C       Subroutine Modeling and Analysis for Controlled Optical Systems  
+C       Subroutine Modeling and Analysis for Controlled Optical Systems
 C       SMACOS Version 3.31            	     05/2007
 C       (Based On SMACOS Versions 2.86 and 3.2)
 C
@@ -36,8 +36,8 @@ C       ** History **
 C       SMACOS Version 2.86                  08/16/2001
 C
 C       Contact:     David Redding
-C       Address:     Jet Propulsion Laboratory 
-C                    MS 306-451 
+C       Address:     Jet Propulsion Laboratory
+C                    MS 306-451
 C                    4800 Oak Grove Dr., Pasadena CA 91109
 C       Email:       dcr@huey.jpl.nasa.gov
 C       Phone:       (818)354-3696
@@ -73,22 +73,22 @@ C***********************************************************************
 	use dopt_mod
 	use smacos_vars_mod
  	use design_optim_mod
-	use design_cons_optim_mod 
+	use design_cons_optim_mod
 	use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
 
 	IMPLICIT NONE
 
 	! Subroutine arguments
-	Character(len=max_cmd_len) :: commandARG 
+	Character(len=max_cmd_len) :: commandARG
         Character(len=max_cmd_len), dimension(:), intent(in) :: CARG(9)
 	Logical, intent(in) :: LARG
 	Integer, dimension(:), intent(in) :: IARG
  	SREAL, dimension(:), intent(in) :: RARG
 	Real*8, dimension(:), intent(in) :: DARG
-	
+
 	!Integer, intent(in) :: IARG(9)
-	!SREAL, intent(in) :: RARG(9)  
+	!SREAL, intent(in) :: RARG(9)
 	!Real*8, intent(in) :: DARG(9)
 
         SREAL, intent(out) :: RMSWFE
@@ -100,7 +100,7 @@ C***********************************************************************
 
 
 c***loh	Declares for journal and batch files
-	INTEGER row_sz,col_sz
+	! INTEGER row_sz,col_sz
 cc***loh
 C
 C	DATA ifInit/.FALSE./
@@ -111,35 +111,43 @@ C
 	If (first_enter .or. macos_realloc) then
 	  if (allocated(L1)) then
 	    deallocate(L1, DrawEltVec,R1,R2,PertVec,
-     &                 DrawRayVec,D2,DV1,DV2, 
+     &                 DrawRayVec,D2,DV1,DV2,
      &                 CD1,CD2,DWF,
      &		       stat=m_err_smacos)
 	    if (m_err_smacos /= 0) call macos_memory_failure
      &               ('SMACOS: deallocate failed!')
 	  end if
-	  !
+
 	  allocate(L1(md2), DrawEltVec(mDrawElt,mDrawRay),
      &	           R1(mdttl,mdttl), R2(mdttl,mdttl),
-     &             PertVec(6,mElt), 
+     &             PertVec(6,mElt),
      &             DrawRayVec(2,mDrawElt,mDrawRay),
      &	  	   D2(mdttl,mdttl),
      &             DV1(md2), DV2(md2),
      &		   CD1(mdttl,mdttl), CD2(mdttl,mdttl),
      &		   DWF(mdttl,mdttl), stat=m_err_smacos)
 	  if (m_err_smacos /= 0) call macos_memory_failure
-     &               ('SMACOS: allocate failed!') 
-	  L1 = .false.; DrawEltVec = 0
-	  R1 = 0.0; R2 = 0.0; PertVec = 0.0
-	  DrawRayVec = 0.0; D2 = dzero_
-	  DV1 = dzero_; DV2 = dzero_
-	  CD1 = (0d0,0d0); CD2 = (0d0,0d0)
-	  DWF = czero_ 
-	  ifInit = .false.  ! for glass-table etc.
-	  ifEcho = .false.
-	  macos_realloc = .false.; first_enter = .false.
+     &               ('SMACOS: allocate failed!')
+	  L1         = .FALSE.
+	  DrawEltVec = 0
+	  R1         = 0d0
+	  R2         = 0d0
+	  PertVec    = 0d0
+	  DrawRayVec = 0d0
+	  D2(:,:)    = 0d0
+	  DV1(:)     = 0d0
+	  DV2(:)     = 0d0
+	  CD1(:,:)   = (0d0,0d0)
+	  CD2(:,:)   = (0d0,0d0)
+	  DWF(:,:)   = (0d0,0d0)
 
-	  mVarDOF_nls=mVarDOF    ! mVarDOF_nls and mOptZern_nls
-	  mOptZern_nls=mOptZern  ! are defined in design_optim_mod
+	  ifInit        = .FALSE.  ! for glass-table etc.
+	  ifEcho        = .FALSE.
+	  macos_realloc = .FALSE.
+	  first_enter   = .FALSE.
+
+	  mVarDOF_nls   = mVarDOF    ! mVarDOF_nls and mOptZern_nls
+	  mOptZern_nls  = mOptZern  ! are defined in design_optim_mod
 
 	  Call dopt_init
 	End If
@@ -177,10 +185,10 @@ C  ***Load command stack***
         ! -jzlou
         ! Added for converting from ZMAX input to MACOS input.
         ! If the filename (CARG(1)) has the extension 'ZMX' or 'zmx',
-        ! the input file will be converted from ZMX format to a 
+        ! the input file will be converted from ZMX format to a
         ! MACOS prescription file with the extension '.in'.
-        ! The returned CARC(1) will be contain the same filename 
-        ! but without an extension. 
+        ! The returned CARC(1) will be contain the same filename
+        ! but without an extension.
         !
         !if (LCMP(command,'LOAD',3).OR.LCMP(command,'OLD',2)) then
         !  Call MACOSZ2MDVR(CARG(1))
