@@ -43,14 +43,12 @@ C***********************************************************************
         LOGICAL :: isRxOpen
 c	CHARACTER*8 CDEF
 	CHARACTER(len=MacosCharLen) :: TypeString
-	LOGICAL exist,LCMP,IHSTPM,IHSTSM,ifGridInit,ifAmplInit,
-     &          LOAD_SUCCESS
-	INTEGER i,j,k,l,iaxis,iElt,iopt,iCoord,IDEF(7),ICLEN,
+	LOGICAL exist,LCMP,ifGridInit,ifAmplInit,LOAD_SUCCESS
+	INTEGER i,j,k,l,iaxis,iElt,iopt,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,g,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken
-	REAL*8 invec6(6),invec7(7),DDEF(7)
-	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
+	REAL*8 DDEF(7)
 
 C       Setup for new input scheme
 
@@ -60,9 +58,7 @@ C       Setup for new input scheme
         CHARACTER(len=MacosValLen) :: VALUE
 	LOGICAL ARR_FLG, opt_npts_flg
 	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
-	INTEGER ians, nVertex
-
-	REAL*8 D1(9)
+	INTEGER nVertex
 
         INTEGER :: nZernCoef    ! Set to Default when reading in values to make it backwards compatible
         INTEGER :: nAsphCoef    ! Ditto
