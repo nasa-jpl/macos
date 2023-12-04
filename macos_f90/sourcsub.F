@@ -1292,8 +1292,7 @@ C           segment midpoints
 C  nPetals = number of petals in flower
 
 	LOGICAL FSEG
-	INTEGER ith !,iRing
-	REAL*8 xt,yt,width,cth,sth,th,xc,
+	REAL*8 xt,yt,cth,sth,th,
      &	       dnp,Q,thc,rv,hspan,dd,radmin,radmax,S2,dth
 
 C  **** rotate segment frame of reference
@@ -1377,7 +1376,7 @@ C**************************************************************************
 
 	SUBROUTINE ReGrid(iElt)
 	use param_mod
-	use src_mod, only : nGridPts
+	! use src_mod, only : nGridPts   ! Resample OPDMat to new grid
         use elt_mod
 
 	IMPLICIT NONE
