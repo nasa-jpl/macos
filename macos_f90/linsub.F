@@ -76,6 +76,8 @@ C  2. Get perturbation data
 	END SUBROUTINE CLPERTURB
 
 C***********************************************************************
+! ToDo: move to a plotting module for MACOS
+
 
 	SUBROUTINE CLPLOT(command,npts,RaySpot,
      &  		  OPDMat,AvgL,RayIndex,RayMap,iPloTyp,
@@ -125,7 +127,7 @@ C  1. Command loop
 
 	lambda=Wavelen
 	TransDis=zElt(iLinElt)
-	Intensity=Flux/FLOAT(nRay)
+	Intensity=Flux/DBLE(nRay)
 
 	tpl=6.28318530717959D0/Wavelen
 	du=dxElt(iLinElt)
@@ -142,7 +144,7 @@ C  7. Pad OPD map for FFT
 	pad=(mdttl-nGridPts+1)/2
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
-	    CD1(i,j)=0e0
+	    CD1(i,j)=0d0
  1	  CONTINUE
 	  XFP(j)=X0PFP
 	  YFP(j)=Y0PFP
@@ -303,8 +305,8 @@ C  3. Compute perturbed rays
 	WRITE(*,400)
 
 	AvgL=0d0
-	RMSWFE=0e0
-	RMSOPD=0e0
+	RMSWFE=0d0
+	RMSOPD=0d0
 	mpt2=mpts**2
 	CALL DZERO(OPDMat,mpt2)
 	DO 3 iRay=1,nRay
@@ -320,7 +322,7 @@ C  3. Compute perturbed rays
 	    xdum(iaxis)=RayDir(iaxis,iRay)
 	    xdum(j)=RayPos(iaxis,iRay)
  2        CONTINUE
-	  xdum(7)=0e0
+	  xdum(7)=0d0
 	  CALL RMPRDB(xnom,Tcompact,xdum,5,7,1)
 	  RaySpot(iRay,1)=xnom(3)+xout(3)*SpotMag
 	  RaySpot(iRay,2)=xnom(4)+xout(4)*SpotMag
@@ -333,7 +335,7 @@ C  3. Compute perturbed rays
 	  END IF
  3      CONTINUE
 	AvgL=AvgL/DBLE(nRay-1)
-	RMSOPD=SQRT(RMSOPD/FLOAT(nRay-1))
+	RMSOPD=SQRT(RMSOPD/DBLE(nRay-1))
 	WRITE(*,404) AvgL
 	WRITE(*,402) RMSOPD
 
