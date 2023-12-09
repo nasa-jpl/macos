@@ -260,6 +260,10 @@ lcl num ^cuy
 lcl num ^xobs_scale
 lcl str ^outputfile
 
+lcl num ^e          ! error code
+gbl num ^data(12)   ! CSYS transformation information
+
+
 rfd 1 1 1 1 'macosfile.in'
 
 
@@ -380,8 +384,8 @@ els
 end if  ! END OF FINITE- VERSUS INFINITE-CONJUGATE CHECK IF LOOP.
 
 !
-^format4 =="ChfRayDir= '2e.15e' '2e.15e' '2e.15e'"
-^format5 =="ChfRayPos= '2e.15e' '2e.15e' '2e.15e'"
+^format4 =="ChfRayDir= '3e.20e' '3e.20e' '3e.20e'"
+^format5 =="ChfRayPos= '3e.20e' '3e.20e' '3e.20e'"
 !
 wri Q^format4 ^l_chief ^m_chief ^n_chief
 wri Q^format5 ^x_chief ^y_chief ^z_chief
@@ -493,14 +497,14 @@ wri""
 ^format19 ==" EltName= surface_'d'"
 ^format19a ==" EltName= '32c'"
 ^format20 ==" EltType=  '3d'"
-^format21 =="   KrElt=  '2e.15e'"
-^format21a =="  KrElt=  '2e.15e'"
-^format22 =="   KcElt=  '2e.15e'"
-^format22a =="AsphCoef=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
-^format22b =="   KcElt=  '2e.15e'"
-^format23 =="  psiElt=  '2e.15e' '2e.15e' '2e.15e'"
-^format24 =="  VptElt=  '2e.15e' '2e.15e' '2e.15e'"
-^format25 =="  RptElt=  '2e.15e' '2e.15e' '2e.15e'"
+^format21 =="   KrElt=  '3e.20e'"
+^format21a =="  KrElt=  '3e.20e'"
+^format22 =="   KcElt=  '3e.20e'"
+^format22a =="AsphCoef=  '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
+^format22b =="   KcElt=  '3e.20e'"
+^format23 =="  psiElt=  '3e.20e' '3e.20e' '3e.20e'"
+^format24 =="  VptElt=  '3e.20e' '3e.20e' '3e.20e'"
+^format25 =="  RptElt=  '3e.20e' '3e.20e' '3e.20e'"
 ^format26 =="  IndRef=  '2e.15e'"
 ^format27 =="  Extinc=  '2e.15e'"
 ^format28 =="    zElt=  '2e.15e'"
@@ -510,14 +514,14 @@ wri""
 ^format32 =="   ApVec=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
 
 !  Zernike variables
-^format33 =="ZernCoef=  '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
-^format34 =="           '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
-^format35 =="           '2e.15e' '2e.15e' '2e.15e'"
-^format36 =="    pMon=  '2e.15e' '2e.15e' '2e.15e'"
-^format37 =="    xMon=  '2e.15e' '2e.15e' '2e.15e'"
-^format38 =="    yMon=  '2e.15e' '2e.15e' '2e.15e'"
-^format39 =="    zMon=  '2e.15e' '2e.15e' '2e.15e'"
-^format40 =="    lMon=  '2e.15e'"
+^format33 =="ZernCoef=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
+^format34 =="           '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
+^format35 =="           '3e.20e' '3e.20e' '3e.20e'"
+^format36 =="    pMon=  '3e.20e' '3e.20e' '3e.20e'"
+^format37 =="    xMon=  '3e.20e' '3e.20e' '3e.20e'"
+^format38 =="    yMon=  '3e.20e' '3e.20e' '3e.20e'"
+^format39 =="    zMon=  '3e.20e' '3e.20e' '3e.20e'"
+^format40 =="    lMon=  '3e.20e'"
 ^format41 == " '5c' '3e.15e' '3e.15e' '3e.15e' '3e.15e' '3e.15e' '3e.15e' "
 !
 
@@ -857,69 +861,97 @@ end if
 !
 ! --------------- Write Zernike parameters to 45th term ----------------------
 !
-        if (^elt_type = 14)OR(^elt_type = 21)
-		if (rdy s^s z^zoom_pos)>= 0
-                      for ^n 1 45
-                          ^m == ^n+1
-                          ^z(^n) == (sco s^s z^zoom_pos c^m)
-                      end for
-		els
-!  Should coefficients go negative @ convex surfaces, as implemented below ?
-                      for ^n 1 45
-                          ^m == ^n+1
-                          ^z(^n) == -(sco s^s z^zoom_pos c^m)
-                      end for
-		end if
-!                      ***** Currently using VptElt for pMon *****
-!                      This probably does not accommodate off-axis type optics
-!               ^pMx ==
-!               ^pMy ==
-!               ^pMz ==
-                ^ascr== (asc s^s g^global_sur z^zoom_pos)*^pi/180.0
-                ^bscr== (bsc s^s g^global_sur z^zoom_pos)*^pi/180.0
-                ^cscr== (csc s^s g^global_sur z^zoom_pos)*^pi/180.0
-!                ^xMx == COSF(^cscr)*COSF(^bscr)
-!                ^xMy == SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr)
-!                ^xMz == SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr)
-!                ^yMx == -SINF(^cscr)*COSF(^bscr)
-!                ^yMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
-!                ^yMz == COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr)
-              ^yMx == -(COSF(^cscr)*COSF(^bscr))
-              ^yMy == -(SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr))
-              ^yMz == -(SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr))
-              ^xMx == -SINF(^cscr)*COSF(^bscr)
-              ^xMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
-              ^xMz == -(COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr))
+! ToDo: Fringe Zernikes
+! ToDo: update if not SPS ZRN type
 !
-!                         ***** Currently using psiElt for zMon *****
-!               ^zMx ==
-!               ^zMy ==
-!               ^zMz ==
-                ^lMr == (sco s^s z^zoom_pos c69)
-                wri"ZernType= Noll"          ! Default to Code V type ordering
-                wri Q^format33 ^z(1)  ^z(2)  ^z(3)  ^z(4)  ^z(5)  ^z(6)
-                wri Q^format34 ^z(7)  ^z(8)  ^z(9)  ^z(10) ^z(11) ^z(12)
-                wri Q^format34 ^z(13) ^z(14) ^z(15) ^z(16) ^z(17) ^z(18)
-                wri Q^format34 ^z(19) ^z(20) ^z(21) ^z(22) ^z(23) ^z(24)
-                wri Q^format34 ^z(25) ^z(26) ^z(27) ^z(28) ^z(29) ^z(30)
-                wri Q^format34 ^z(31) ^z(32) ^z(33) ^z(34) ^z(35) ^z(36)
-                wri Q^format34 ^z(37) ^z(38) ^z(39) ^z(40) ^z(41) ^z(42)
-                wri Q^format35 ^z(43) ^z(44) ^z(45)
-!        wri Q^format36 ^pMx   ^pMy   ^pMz
-                wri Q^format36 ^x_sur ^y_sur ^z_sur
-                wri Q^format37 ^xMx   ^xMy   ^xMz
-                wri Q^format38 ^yMx   ^yMy   ^yMz
-!        wri Q^format39 ^zMx   ^zMy   ^zMz
-	        if (rdy s^s z^zoom_pos) >= 0
-		     wri Q^format39 ^l_sur ^m_sur ^n_sur
-	        els
-                     wri Q^format39 -(^l_sur) -(^m_sur) -(^n_sur)
-!						reverse psi for negative element
-                end if
-                wri Q^format40 ^lMr
+    if (^elt_type = 14)OR(^elt_type = 21)
+        ! ------------------------------------------------------------------------- (2023-10-08: no sign flip)
+        ! coefficients are independent of sign of (psiElt / KrElt) pair
+        !
+        ! if (rdy s^s z^zoom_pos)>= 0
+        !     for ^n 1 45
+        !         ^m == ^n+1
+        !         ^z(^n) == (sco s^s z^zoom_pos c^m)
+        !     end for
+        ! els
+        !     ! ToDo: Should coefficients go negative @ convex surfaces, as implemented below ?
+        !     for ^n 1 45
+        !         ^m == ^n+1
+        !         ^z(^n) == -(sco s^s z^zoom_pos c^m)  ! (2023-10-08: no sign flip)
+        !     end for
+        ! end if
+        ! -------------------------
+        for ^n 1 45
+          ^m == ^n+1
+          ^z(^n) == (sco s^s z^zoom_pos c^m)
+        end for
+        ! ------------------------------------------------------------------------- end
 
-        end if  ! end of if-branch for Zernikes.
-! ----------------------------------------------------------------------------
+
+        !          ***** Currently using VptElt for pMon *****
+        !          This probably does not accommodate off-axis type optics
+        !   ^pMx ==
+        !   ^pMy ==
+        !   ^pMz ==
+            ^ascr== (asc s^s g^global_sur z^zoom_pos)*^pi/180.0
+            ^bscr== (bsc s^s g^global_sur z^zoom_pos)*^pi/180.0
+            ^cscr== (csc s^s g^global_sur z^zoom_pos)*^pi/180.0
+        !   ^xMx == COSF(^cscr)*COSF(^bscr)
+        !   ^xMy == SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr)
+        !   ^xMz == SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr)
+        !   ^yMx == -SINF(^cscr)*COSF(^bscr)
+        !   ^yMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
+        !   ^yMz == COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr)
+        ^yMx == -(COSF(^cscr)*COSF(^bscr))
+        ^yMy == -(SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr))
+        ^yMz == -(SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr))
+        ^xMx == -SINF(^cscr)*COSF(^bscr)
+        ^xMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
+        ^xMz == -(COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr))
+        !
+        ! ***** Currently using psiElt for zMon *****
+        ! ^zMx ==
+        ! ^zMy ==
+        ! ^zMz ==
+        ^lMr == (sco s^s z^zoom_pos c69)
+        wri"ZernType= BornWolf"          ! Default to Code V type ordering     (2023-10-08: Noll to B&W)
+        wri Q^format33 ^z(1)  ^z(2)  ^z(3)  ^z(4)  ^z(5)  ^z(6)
+        wri Q^format34 ^z(7)  ^z(8)  ^z(9)  ^z(10) ^z(11) ^z(12)
+        wri Q^format34 ^z(13) ^z(14) ^z(15) ^z(16) ^z(17) ^z(18)
+        wri Q^format34 ^z(19) ^z(20) ^z(21) ^z(22) ^z(23) ^z(24)
+        wri Q^format34 ^z(25) ^z(26) ^z(27) ^z(28) ^z(29) ^z(30)
+        wri Q^format34 ^z(31) ^z(32) ^z(33) ^z(34) ^z(35) ^z(36)
+        wri Q^format34 ^z(37) ^z(38) ^z(39) ^z(40) ^z(41) ^z(42)
+        wri Q^format35 ^z(43) ^z(44) ^z(45)
+
+        ! ----------------------------------------------------- (2023-10-08: upd Zernike coordinate frame)
+        ! ! wri Q^format36 ^pMx   ^pMy   ^pMz
+        ! wri Q^format36 ^x_sur ^y_sur ^z_sur
+        ! wri Q^format37 ^xMx   ^xMy   ^xMz
+        ! wri Q^format38 ^yMx   ^yMy   ^yMz
+        !
+        ! wri Q^format39 ^zMx   ^zMy   ^zMz
+        !if (rdy s^s z^zoom_pos) >= 0
+        !    wri Q^format39 ^l_sur ^m_sur ^n_sur
+        !els
+        !    wri Q^format39 -(^l_sur) -(^m_sur) -(^n_sur)  ! reverse psi for negative element
+        !end if
+        ! ----------------------------
+        ^e == transform(^s, ^global_sur, ^zoom_pos, ^data)
+
+        wri Q^format36 ^data( 1) ^data( 2) ^data( 3)   ! P (x,y,z) == VptElt
+        wri Q^format37 ^data( 4) ^data( 5) ^data( 6)   ! rx
+        wri Q^format38 ^data( 7) ^data( 8) ^data( 9)   ! ry
+        wri Q^format39 ^data(10) ^data(11) ^data(12)   ! rz
+        ! ----------------------------------------------------- 2023-10-08 end
+
+
+        wri Q^format40 ^lMr   ! Zernike Normalisation Radius
+
+    end if  ! end of if-branch for Zernikes.
+
+
+	! ----------------------------------------------------------------------------
 	if (rdy s^s z^zoom_pos) >= 0
 		wri Q^format23 ^l_sur ^m_sur ^n_sur    ! psiElt
 	els
@@ -1088,7 +1120,7 @@ end if
 ! New Sept 2013: Prop Type.
 	if (^s = ^exitpupil)
 		wri "PropType= FarField"
-      els
+   els
 		wri"PropType=  Geometric"
 	end if
 
