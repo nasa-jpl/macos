@@ -16,16 +16,16 @@ C***********************************************************************
 	Logical :: RxStopSet, EltStopSet,RxNoStopSet_Flg
         REAL*8 :: StopOffset(2)
 
-	Contains
+        Contains
 
-	SUBROUTINE MBFile6(npts,ifOld,LOAD_SUCCESS)
-	use Constants, only: EPS
-	use param_mod
-	use src_mod
-	use elt_mod
+        SUBROUTINE MBFile6(npts,ifOld,LOAD_SUCCESS)
+        use Constants, only: EPS
+        use param_mod
+        use src_mod
+        use elt_mod
         use surfsub, only: GridInit, AMPLINIT
- 	use cfiles_mod
- 	use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
+        use cfiles_mod
+        use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
      &                       cUnit,ifRegrid
 	use traceutil_mod
@@ -34,17 +34,17 @@ C***********************************************************************
 	use loh_I3
 	use dopt_mod
         ! --------------------------------------
-	IMPLICIT NONE
+        IMPLICIT NONE
 
-	Integer :: npts
-	Logical :: ifOld
+        Integer :: npts
+        Logical :: ifOld
 
-	INTEGER, PARAMETER :: RX_FID = 77
+        INTEGER, PARAMETER :: RX_FID = 77    ! Rx File ID
         LOGICAL :: isRxOpen
-c	CHARACTER*8 CDEF
-	CHARACTER(len=MacosCharLen) :: TypeString
-	LOGICAL exist,LCMP,ifGridInit,ifAmplInit,LOAD_SUCCESS
-	INTEGER i,j,k,l,iaxis,iElt,iopt,IDEF(7),ICLEN,
+
+        CHARACTER(len=MacosCharLen) :: TypeString
+        LOGICAL exist,LCMP,ifGridInit,ifAmplInit,LOAD_SUCCESS
+        INTEGER i,j,k,l,iaxis,iElt,iopt,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,g,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken
