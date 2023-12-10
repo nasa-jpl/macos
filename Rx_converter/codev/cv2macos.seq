@@ -262,9 +262,10 @@ lcl str ^outputfile
 
 lcl num ^e          ! error code
 gbl num ^data(12)   ! CSYS transformation information
+lcl num ^Finite_distance
+lcl num ^incl_dummy
 
-
-rfd 1 1 1 1 'macosfile.in'
+rfd 1 1 1 1 'macosfile.in' 0
 
 
 !
@@ -296,8 +297,9 @@ rfd 1 1 1 1 'macosfile.in'
 ^field_pos  == #3
 ^wave_pos   == #4
 ^outputfile == #5
+^incl_dummy == #6
 
-
+!
 ! 9/17/2013 JMR. Skip the interactive reads.
 goto skipread
    ver all no
@@ -463,15 +465,16 @@ for ^s 1 (num s)
   ^ind_previous == (ind s^s-1)
   ^ind_delta == ^ind_current-^ind_previous
 
-  if ((^s < ^lastsurf) and (^ind_delta <> 0))
-     ^num_real_surfaces == ^num_real_surfaces+1
+  if (((^s < ^lastsurf) and (^ind_delta <> 0)) or ^incl_dummy)
+    ^num_real_surfaces == ^num_real_surfaces+1
   end if
 end for
 
 ! Sept 2013. The above loop did not include the image surface, exit pupil, or dummy imager surface,
 ! so we get the final number of real surfaces by incrementing 3.
-
-^num_real_surfaces ==  ^num_real_surfaces+3
+if not ^incl_dummy
+  ^num_real_surfaces ==  ^num_real_surfaces+3
+end if
 
 wri Q^format17 ^num_real_surfaces
 
@@ -531,7 +534,7 @@ for ^s 1 (num s)
   ^ind_previous == (ind s^s-1)
   ^ind_delta == ^ind_current-^ind_previous
 
-  if ((^s < ^dummyfpa) and (^ind_delta = 0))
+  if ((^s < ^dummyfpa) and (^ind_delta = 0) and not ^incl_dummy)
      goto label_100
   end if
 
