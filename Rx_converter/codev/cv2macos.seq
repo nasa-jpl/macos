@@ -277,13 +277,14 @@ rfd 1 1 1 1 'macosfile.in'
 !
 ! DEFAULT MACOS CONSTANTS
 !
-^ext_coef    == ^zero
-^flux        == 1.000000000e+00
-^gridtype    == 1
-^obscuration == ^zero
-^ngridpts    == 65
-^prop_type   ==  1
-^n_ecoord    == 6   ! new value on 9/17/2013
+^Finite_distance == 1e10
+^ext_coef        == 0e0
+^flux            == 1e0
+^gridtype        ==   1
+^obscuration     == 0e0
+^ngridpts        ==  65
+^prop_type       ==   1
+^n_ecoord        ==   6   ! new value on 9/17/2013
 !
 !	READ IN CODE V PARAMETERS
 !
@@ -296,10 +297,7 @@ rfd 1 1 1 1 'macosfile.in'
 ^wave_pos   == #4
 ^outputfile == #5
 
-!
 
-
-!
 ! 9/17/2013 JMR. Skip the interactive reads.
 goto skipread
    ver all no
@@ -338,49 +336,39 @@ out t ^outputfile	!	Write output to screen and default file macosfile.in
 ^x_s1 ==(x r1 s1 w^wave_pos g^global_sur f^field_pos z^zoom_pos)
 ^y_s1 ==(y r1 s1 w^wave_pos g^global_sur f^field_pos z^zoom_pos)
 ^z_s1 ==(z r1 s1 w^wave_pos g^global_sur f^field_pos z^zoom_pos)
-!
 
-!	FOR 'INFINITE' CONJUGATE (defined as |object distance| >= 1e10 units)
-!
-if (absf((thi so z^zoom_pos)) >= (1.000e10))
-!
-! 9/17/13: hard-code an infinite object to a distance 1e22
-	^z_source == 1e22
-	^aperture ==(epd)
-!
-!	- Locate CR 100 units before s1.
-!
-	^x_chief ==(^x_s1-(100*^l_chief))
-	^y_chief ==(^y_s1-(100*^m_chief))
-	^z_chief ==(^z_s1-(100*^n_chief))
+
+if (absf((thi so z^zoom_pos)) >= (^Finite_distance))
+    !
+    ! FOR 'INFINITE' CONJUGATE (defined as |object distance| >= 1e10 units)
+    !
+    ! 9/17/13: hard-code an infinite object to a distance 1e22
+    ^z_source == 1e22
+    ^aperture ==(epd)
+    !
+    ! Locate CR 100 units before s1.
+    !
+    ^x_chief ==(^x_s1-(100*^l_chief))
+    ^y_chief ==(^y_s1-(100*^m_chief))
+    ^z_chief ==(^z_s1-(100*^n_chief))
+
 els
-!	FOR 'FINITE' CONJUGATE (defined as |object distance| < 1e10 units)
-!
-	^aperture == absf(2*(nao))
-!
+    ! FOR 'FINITE' CONJUGATE (defined as |object distance| < 1e10 units)
+    !
+    ^aperture == absf(2*(nao))
+
 	^x_so ==(x r1 so w^wave_pos g^global_sur f^field_pos z^zoom_pos)
 	^y_so ==(y r1 so w^wave_pos g^global_sur f^field_pos z^zoom_pos)
 	^z_so ==(z r1 so w^wave_pos g^global_sur f^field_pos z^zoom_pos)
-!
-!	- ChfRayPos halfway between object and s1.
-!
-	if (thi so z^zoom_pos) > 0		! REAL OBJECT
-		^z_source == -((thi so z^zoom_pos)/2)
-		^x_chief ==  ((^x_so+^x_s1)/2)
-		^y_chief ==  ((^y_so+^x_s1)/2)
-		^z_chief ==  ((^z_so+^x_s1)/2)
-	els if (thi so z^zoom_pos) < 0		! VIRTURAL OBJECT
-		^z_source == -(3*(thi so z^zoom_pos)/2)
-		^x_chief == -((^x_so+^x_s1)/2)
-		^y_chief == -((^y_so+^x_s1)/2)
-		^z_chief == -((^z_so+^x_s1)/2)
-	els
-		wri""
-		wri"Cannot have zero object distances.  Increment thi so"
-		wri"infinitesimally as an approximation so that rays travel"
-		wri"sequentially."
-		wri""
-	end if
+
+    ! define a converging wavefront to the Point Source
+    !  => ensures that no neg. ray lengths when (thi s1 ...) == 0
+
+    ^z_source == 1.
+    ^x_chief  == ^x_so - ^l_chief*^z_source
+    ^y_chief  == ^y_so - ^m_chief*^z_source
+    ^z_chief  == ^z_so - ^n_chief*^z_source
+
 end if  ! END OF FINITE- VERSUS INFINITE-CONJUGATE CHECK IF LOOP.
 
 !
