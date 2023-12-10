@@ -7,7 +7,7 @@ C    +----------------------------------------------------------------+
 C***********************************************************************
 
 C
-C This implemenation is based on the Levenberg-Marquardt
+C This implementation is based on the Levenberg-Marquardt
 C nonlinear least-square model-fitting method.
 C John Z. Lou, Jet Propulsion Laboratory
 C
@@ -15,36 +15,38 @@ C
 #include "realtype.h"
 
 
-	Module nls
-	use nn_util, only : assert_eq, diagmult
-	use nn_mod, only : covsrt, gaussj
+        Module nls
+          use nn_util, only : assert_eq, diagmult
+          use nn_mod, only : covsrt, gaussj
 
-	Implicit none
+          Implicit none
 
-        LREAL, dimension(:,:), allocatable :: dyda
-        LREAL, dimension(:), allocatable :: dy,sig2i,wt,ymod
+          LREAL, dimension(:,:), allocatable :: dyda
+          LREAL, dimension(:), allocatable :: dy,sig2i,wt,ymod
 
 
-	Contains
+          contains
 
- 	Subroutine lmlsq(y,sig,a,maska,covar,
+        ! Levenberg-Marquardt non-linear least-square
+        subroutine lmlsq(y,sig,a,maska,covar,
      &                   alpha,chisq,funcs_app,alamda,success)
-	LREAL, dimension(:), intent(in) :: y,sig
-	LREAL, dimension(:), intent(inout) :: a
-	LREAL, dimension(:,:), intent(out) :: covar,alpha
-	LREAL, intent(out) :: chisq
-	LREAL, intent(inout) :: alamda
-	Logical, dimension(:), intent(in) :: maska
+          LREAL, dimension(:), intent(in) :: y,sig
+          LREAL, dimension(:), intent(inout) :: a
+          LREAL, dimension(:,:), intent(out) :: covar,alpha
+          LREAL, intent(out) :: chisq
+          LREAL, intent(inout) :: alamda
+
+        Logical, dimension(:), intent(in) :: maska
         Logical :: success
 
- 	Interface
+        Interface
 	  Subroutine funcs_app(a_p, yfit_p, dyda_p)
           use traceutil_mod, only : LUseChfRayIfOK
 	  LREAL, dimension(:), intent(in) :: a_p
 	  LREAL, dimension(:), intent(out) :: yfit_p
 	  LREAL, dimension(:,:), intent(out) :: dyda_p
 	  End Subroutine funcs_app
-	End Interface
+        End Interface
 
 	Integer :: ma, ndata
 	Integer, save :: mfit
@@ -70,14 +72,14 @@ C
 
 	 mfit = count(maska)
 
-	 if (alamda < 0.0) then  ! initialization
+	 if (alamda < 0d0) then  ! initialization
 	   allocate(atry(ma),beta(ma),da(ma,1));
-	   alamda = 0.001
+	   alamda = 0.001d0
 
-           print*,'**mrqmin_private: size(a) =',size(a)
-           print*,'**mrqmin_private: size(alpha,1) =',size(alpha,1)
-           print*,'**mrqmin_private: size(alpha,2) =',size(alpha,2)
-           print*,'**mrqmin_private: size(beta) =',size(beta)
+        !    print*,'**mrqmin_private: size(a) =',size(a)
+        !    print*,'**mrqmin_private: size(alpha,1) =',size(alpha,1)
+        !    print*,'**mrqmin_private: size(alpha,2) =',size(alpha,2)
+        !    print*,'**mrqmin_private: size(beta) =',size(beta)
 
            if (allocated(dyda)) then
               deallocate(dyda,dy,sig2i,wt,ymod)
@@ -91,12 +93,12 @@ C
 	 end if
 
 	 covar(1:mfit,1:mfit) = alpha(1:mfit,1:mfit)
-	 call diagmult(covar(1:mfit,1:mfit),1.0+alamda)
+	 call diagmult(covar(1:mfit,1:mfit), 1d0+alamda)
 
 	 da(1:mfit,1) = beta(1:mfit)
 	 Call gaussj(covar(1:mfit,1:mfit),da(1:mfit,1:1),success)
 	 if (.not. success) return
-	 if (alamda == 0.0) then
+	 if (alamda == 0d0) then
 	   Call covsrt(covar,maska)
 	   Call covsrt(alpha,maska)
 	   deallocate(atry, beta, da)
@@ -107,13 +109,13 @@ C
 	 Call mrqcof(atry, covar, da(1:mfit,1))
 
 	 if (chisq < ochisq) then
-	   alamda = 0.1*alamda
+	   alamda = 0.1d0*alamda
 	   ochisq = chisq
 	   alpha(1:mfit,1:mfit) = covar(1:mfit,1:mfit)
 	   beta(1:mfit) = da(1:mfit,1)
 	   a = atry
 	 else
-	   alamda = 10.0*alamda
+	   alamda = 10d0*alamda
 	   chisq = ochisq
 	 end if
 	 End Subroutine mrqmin_private
@@ -154,7 +156,7 @@ C
          !print*,'**mrqcof: size(y),size(a) =',size(y),size(a)
 	 Call funcs_app(a, ymod, dyda)
 
-	 sig2i = 1.0/(sig**2)
+	 sig2i = 1d0/(sig**2)
 	 dy = y - ymod
 	 j = 0
 
