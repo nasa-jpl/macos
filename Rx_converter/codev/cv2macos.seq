@@ -264,6 +264,7 @@ lcl num ^e          ! error code
 gbl num ^data(12)   ! CSYS transformation information
 lcl num ^Finite_distance
 lcl num ^incl_dummy
+lcl num ^L_zGrid ^M_zGrid ^N_zGrid ^mag
 
 rfd 1 1 1 1 'macosfile.in' 0
 
@@ -399,17 +400,17 @@ els
       wri""
 end if
 !
-^format6  ==" zSource=  '2e.15e'"
-^format7  =="  IndRef=  '2e.15e'"
-^format8  =="  Extinc=  '2e.15e'"
-^format9  ==" Wavelen=  '2e.15e'"
-^format10 =="    Flux=  '2e.15e'"
+^format6  ==" zSource=  '3e.20e'"
+^format7  =="  IndRef=  '3e.20e'"
+^format8  =="  Extinc=  '3e.20e'"
+^format9  ==" Wavelen=  '3e.20e'"
+^format10 =="    Flux=  '3e.20e'"
 ^format11 =="GridType=    '2d'"
-^format12 =="Aperture=  '2e.15e'"
-^format13 =="Obscratn=  '2e.15e'"
+^format12 =="Aperture=  '3e.20e'"
+^format13 =="Obscratn=  '3e.20e'"
 ^format14 =="nGridpts=  '3d'"
-^format15 =="   xGrid=  '2e.15e' '2e.15e' '2e.15e'"
-^format16 =="   yGrid=  '2e.15e' '2e.15e' '2e.15e'"
+^format15 =="   xGrid=  '3e.20e' '3e.20e' '3e.20e'"
+^format16 =="   yGrid=  '3e.20e' '3e.20e' '3e.20e'"
 ^format17 =="    nElt=  '3d'"
 !
 wri Q^format6 ^z_source
@@ -418,7 +419,7 @@ wri Q^format8 ^ext_coef
 wri Q^format9 ^wavelength
 wri Q^format10 ^flux
 if ^gridtype=1
-	wri "GridType=   Circular"
+	wri "GridType=    Circular"
 els
 	wri Q^format11 ^gridtype
 end if
@@ -426,29 +427,26 @@ wri Q^format12 ^aperture
 wri Q^format13 ^obscuration
 wri Q^format14 ^ngridpts
 
-! Sept 2013. The next commands find xGrid and yGrid, the direction cosines of the object x axis and y axis.
-! We temporarily insert a dummy surface after the object surface and parallel to it, to find these axes.
-ins s1
-dar s1
-! Rotate the dummy surface by 90 degrees in Y and find direction cosines. This will be Ygrid .
-      ade s1 90
-      bde s1 0
-	^L_yGrid == (lsc s1 g^global_sur z^zoom_pos)
-	^M_yGrid == (msc s1 g^global_sur z^zoom_pos)
-	^N_yGrid == (nsc s1 g^global_sur z^zoom_pos)
+! -----------------------------------------
+! Source Grid Orientation: non-special cases
+! -----------------------------------------
 
-! Rotate the dummy surface by 90 degrees in X and find direction cosines. This will be the Xgrid
-      ade s1 0
-      bde s1 90
-	^L_xGrid == (lsc s1 g^global_sur z^zoom_pos)
-	^M_xGrid == (msc s1 g^global_sur z^zoom_pos)
-	^N_xGrid == (nsc s1 g^global_sur z^zoom_pos)
+  ^L_zGrid == (L r1 f^field_pos s1 z^zoom_pos)
+  ^M_zGrid == (M r1 f^field_pos s1 z^zoom_pos)
+  ^N_zGrid == (N r1 f^field_pos s1 z^zoom_pos)
 
-! Delete the temporary dummy surface.
-del s1
+  ^mag == sqrtf(^L_zGrid**2 + ^N_zGrid**2)
 
-wri Q^format15 ^L_xGrid ^M_xGrid ^N_xGrid    ! Sep 2013. xgrid.  Direction cosines of object X axis.
-wri Q^format16 ^L_yGrid ^M_yGrid ^N_yGrid    ! Sep 2013. ygrid.  Direction cosines of object X axis.
+  ^L_xGrid == +^N_zGrid/^mag
+  ^M_xGrid ==  0
+  ^N_xGrid == -^L_zGrid/^mag
+
+  ^L_yGrid == -^L_zGrid*^M_zGrid/^mag
+  ^M_yGrid ==  (^L_zGrid**2+^N_zGrid**2)/^mag
+  ^N_yGrid == -^M_zGrid*^N_zGrid/^mag
+
+  wri Q^format15 ^L_xGrid ^M_xGrid ^N_xGrid    ! Sep 2013. xgrid.  Direction cosines of object X axis.
+  wri Q^format16 ^L_yGrid ^M_yGrid ^N_yGrid    ! Sep 2013. ygrid.  Direction cosines of object X axis.
 
 
 
