@@ -204,10 +204,8 @@ ver all no
 ! VARIABLE DECLARATIONS
 !
 chk yes		! enforce explicit declaration
-lcl str ^format1  ^format2a ^format2   ^format3  ^format4  ^format5
-lcl str ^format6  ^format7  ^format8   ^format9  ^format10
-lcl str ^format11 ^format12 ^format13  ^format14 ^format15
-lcl str ^format16 ^format17 ^format18  ^format19 ^format19a ^format20
+lcl str ^format1  ^format2a ^format2   ^format3
+lcl str ^format17 ^format18  ^format19 ^format19a ^format20
 lcl str ^format21 ^format21a ^format22 ^format22b ^format22a ^format23
 lcl str ^format24 ^format25
 lcl str ^format26 ^format27 ^format28  ^format29 ^format30
@@ -265,6 +263,7 @@ gbl num ^data(12)   ! CSYS transformation information
 lcl num ^Finite_distance
 lcl num ^incl_dummy
 lcl num ^L_zGrid ^M_zGrid ^N_zGrid ^mag
+lcl str ^baseunits ^waveunits
 
 rfd 1 1 1 1 'macosfile.in' 0
 
@@ -284,7 +283,7 @@ rfd 1 1 1 1 'macosfile.in' 0
 ^flux            == 1e0
 ^gridtype        ==   1
 ^obscuration     == 0e0
-^ngridpts        ==  65
+^ngridpts        == 128
 ^prop_type       ==   1
 ^n_ecoord        ==   6   ! new value on 9/17/2013
 !
@@ -374,80 +373,75 @@ els
 
 end if  ! END OF FINITE- VERSUS INFINITE-CONJUGATE CHECK IF LOOP.
 
-!
-^format4 =="ChfRayDir= '3e.20e' '3e.20e' '3e.20e'"
-^format5 =="ChfRayPos= '3e.20e' '3e.20e' '3e.20e'"
-!
-wri Q^format4 ^l_chief ^m_chief ^n_chief
-wri Q^format5 ^x_chief ^y_chief ^z_chief
-!
-
 
 !  WRITE OTHER INITIAL PARAMETERS
 !
 !   Next, convert CODE V wavelength which is in nanometers, to System Dimensions
 
-^wavelength ==(wl w^wave_pos)
-if (dim) = 'I'                                       ! Inches
-	^wavelength == ^wavelength/2.54*1.000000000e-07
-els if (dim) = 'C'                                   ! Centimeters
-	^wavelength == ^wavelength*1.000000000e-07
-els if (dim) = 'M'                                   ! Millimeters
-	^wavelength == ^wavelength*1.000000000e-06
-els
-      wri""
-      wri"  *** Warning: Wavelength units not converted from nm! ***"
-      wri""
-end if
-!
-^format6  ==" zSource=  '3e.20e'"
-^format7  =="  IndRef=  '3e.20e'"
-^format8  =="  Extinc=  '3e.20e'"
-^format9  ==" Wavelen=  '3e.20e'"
-^format10 =="    Flux=  '3e.20e'"
-^format11 =="GridType=    '2d'"
-^format12 =="Aperture=  '3e.20e'"
-^format13 =="Obscratn=  '3e.20e'"
-^format14 =="nGridpts=  '3d'"
-^format15 =="   xGrid=  '3e.20e' '3e.20e' '3e.20e'"
-^format16 =="   yGrid=  '3e.20e' '3e.20e' '3e.20e'"
-^format17 =="    nElt=  '3d'"
-!
-wri Q^format6 ^z_source
-wri Q^format7 ^obj_index
-wri Q^format8 ^ext_coef
-wri Q^format9 ^wavelength
-wri Q^format10 ^flux
+! --------------------------------------------------------
+! Source: Units & Wavelength
+! --------------------------------------------------------
+  ^wavelength == (wl w^wave_pos)
+  ^waveunits  == 'nm'
+
+  if (dim) = 'I'
+    ^baseunits  == 'inch'
+  els if (dim) = 'C'
+    ^baseunits  == 'cm'
+  els
+    ^baseunits  == 'mm'
+  end if
+
+! --------------------------------------------------------
+! Source: Grid Orientation: non-special cases
+! --------------------------------------------------------
+
+^L_zGrid == (L r1 f^field_pos s1 z^zoom_pos)
+^M_zGrid == (M r1 f^field_pos s1 z^zoom_pos)
+^N_zGrid == (N r1 f^field_pos s1 z^zoom_pos)
+
+^mag == sqrtf(^L_zGrid**2 + ^N_zGrid**2)
+
+^L_xGrid == +^N_zGrid/^mag
+^M_xGrid ==  0
+^N_xGrid == -^L_zGrid/^mag
+
+^L_yGrid == -^L_zGrid*^M_zGrid/^mag
+^M_yGrid ==  (^L_zGrid**2+^N_zGrid**2)/^mag
+^N_yGrid == -^M_zGrid*^N_zGrid/^mag
+
+
+! --------------------------------------------------------
+! Export Source Information
+! --------------------------------------------------------
+
+^format17 =="      nElt=  '3d'"
+
+wri  "  BaseUnits=   " ^baseunits
+wri  "  WaveUnits=   " ^waveunits
+wri
+wri Q"  ChfRayDir= '3e.20e' '3e.20e' '3e.20e'" ^l_chief  ^m_chief  ^n_chief
+wri Q"  ChfRayPos= '3e.20e' '3e.20e' '3e.20e'" ^x_chief  ^y_chief  ^z_chief
+wri Q"    zSource= '3e.20e'" ^z_source
+wri
+wri Q"     IndRef=  '3e.20e'" ^obj_index
+wri Q"     Extinc=  '3e.20e'" ^ext_coef
+wri
+wri Q"    Wavelen=  '3e.20e'" ^wavelength
+wri Q"       Flux=  '3e.20e'" ^flux
+wri Q"   Aperture=  '3e.20e'" ^aperture
+wri Q"   Obscratn=  '3e.20e'" ^obscuration
+wri
+wri Q"   nGridpts=   '3d'" ^ngridpts
 if ^gridtype=1
-	wri "GridType=    Circular"
+	wri  "   GridType=   Circular"
 els
-	wri Q^format11 ^gridtype
+	wri Q"   GridType=    '2d'" ^gridtype
 end if
-wri Q^format12 ^aperture
-wri Q^format13 ^obscuration
-wri Q^format14 ^ngridpts
-
-! -----------------------------------------
-! Source Grid Orientation: non-special cases
-! -----------------------------------------
-
-  ^L_zGrid == (L r1 f^field_pos s1 z^zoom_pos)
-  ^M_zGrid == (M r1 f^field_pos s1 z^zoom_pos)
-  ^N_zGrid == (N r1 f^field_pos s1 z^zoom_pos)
-
-  ^mag == sqrtf(^L_zGrid**2 + ^N_zGrid**2)
-
-  ^L_xGrid == +^N_zGrid/^mag
-  ^M_xGrid ==  0
-  ^N_xGrid == -^L_zGrid/^mag
-
-  ^L_yGrid == -^L_zGrid*^M_zGrid/^mag
-  ^M_yGrid ==  (^L_zGrid**2+^N_zGrid**2)/^mag
-  ^N_yGrid == -^M_zGrid*^N_zGrid/^mag
-
-  wri Q^format15 ^L_xGrid ^M_xGrid ^N_xGrid    ! Sep 2013. xgrid.  Direction cosines of object X axis.
-  wri Q^format16 ^L_yGrid ^M_yGrid ^N_yGrid    ! Sep 2013. ygrid.  Direction cosines of object X axis.
-
+wri Q"      xGrid=  '3e.20e' '3e.20e' '3e.20e'" ^L_xGrid ^M_xGrid ^N_xGrid
+wri Q"      yGrid=  '3e.20e' '3e.20e' '3e.20e'" ^L_yGrid ^M_yGrid ^N_yGrid
+wri
+wri
 
 
 ! New on 9/17/2013: Because NElt is written at the start of the printout,
