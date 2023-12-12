@@ -11,7 +11,7 @@ C  John Z. Lou, Jet Propulsion Laboratory
 C  Last modified: 04/2007
 C
 
-#include "realtype.h" 
+#include "realtype.h"
 
  	Module design_cons_optim_mod
  	use param_mod
@@ -26,7 +26,7 @@ C
 	Implicit none
 	Save
 
-	Integer, parameter :: MAXVAR=100, ! max # variables constrained optimizer allows 
+	Integer, parameter :: MAXVAR=100, ! max # variables constrained optimizer allows
      &            mZern=max_zern_modes, ! defined in zern_wf_mod
      &            mAsph=mAsphCoef       ! defined in elt_mod
         Integer :: opd_size, obj_size, tot_objfun_size,
@@ -82,7 +82,7 @@ C ----------------------------------------------------------------------
                                    ! has 8 DOFs, 0 for fixed, 1 for variable
         Integer, dimension(:) :: n_optZern  ! no. of Zern terms of for each varElt
         Integer, dimension(:) :: varZern_arr ! Zern term ids for each varElt
-	Real*8, dimension(:,:) :: cons_arr 
+	Real*8, dimension(:,:) :: cons_arr
         Real*8, dimension(:,:,:) :: fovs
         Real*8 :: fov_wt(:), wls(:), old_wfe(:,:), new_wfe(:,:)
         Real*8 :: opt_tol
@@ -91,10 +91,10 @@ C ----------------------------------------------------------------------
         Logical :: tgt_wf_flag,ifFEX,LCMP
         Type(OptBeamStr) :: OptBeam
 
-	! npsol related local variables 
+	! npsol related local variables
 	Integer, parameter :: nclin=0,ncnln=0,nrowA=1,nrowj=1,nrowR=MAXVAR,
      &                        nctotl=MAXVAR+nclin+ncnln,
-     &                        leniw=3*MAXVAR,lenw=20*MAXVAR 
+     &                        leniw=3*MAXVAR,lenw=20*MAXVAR
 	Integer :: istate(nctotl)
 	Integer :: len_a,inform,iw(leniw),C2MM
 	Real*8 :: mtxA(nrowA,MAXVAR),bl(nctotl),bu(nctotl),
@@ -221,7 +221,7 @@ C ----------------------------------------------------------------------
               end if
             end if
 
-	    ! Set bl, bu from cons_arr 
+	    ! Set bl, bu from cons_arr
 	    bl(k)=cons_arr(1,k); bu(k)=cons_arr(2,k)
             k=k+1
           End Do
@@ -235,7 +235,7 @@ C ----------------------------------------------------------------------
 	  WRITE(*,*)'**np_optim_dvr: Number of variables exceeds limit (100)'
 	  WRITE(*,*)'  Optimizer quiting ...'
     	  rtn_flg=1
-          return	  
+          return
 	End If
 	!
 	allocate(aparams(len_a),da(len_a),sig(tot_objfun_size),
@@ -384,7 +384,7 @@ C ----------------------------------------------------------------------
      &	           npsol_funcon,npsol_funcobj,
      &	           inform,tot_itrs,istate,cnp,cjac,clamda(nctotl),
      & 	           objf,grad,rnp,aparams,
-     &             iw,leniw,work(lenw),lenw) 
+     &             iw,leniw,work(lenw),lenw)
 	WRITE(*,*)' '
         ! -------------------------------------------------------------
 
@@ -425,22 +425,22 @@ C ******************************************************************************
 
 ! obf = objective function
 !       For WFE_TARGET, its value is the 2-norm of difference between
-!       current WF and target WF. 
-!       For WFE_ZMODE_TARGET, its value is the 2-norm of Zernike coefs  
-!       being optimized. 
+!       current WF and target WF.
+!       For WFE_ZMODE_TARGET, its value is the 2-norm of Zernike coefs
+!       being optimized.
 !       For BEAM_TARGET, its value is the 2-norm of difference between
 !       current beam dir/pos and target beam dir/pos values.
 !       When optimizing on both WF and BEAM, obf is combination of each target obf.
 !
-! grd = gradient vector of objective function 
-!       Its dimension is n by 1, where n is size(a), a = vector of calibrated 
+! grd = gradient vector of objective function
+!       Its dimension is n by 1, where n is size(a), a = vector of calibrated
 !       parameters. The i-th element of grd = d(obf)/d(a_i), computed with
 !       finite difference.
 
 	! Local variables
 	Real*8, dimension(size(a)) :: a2
         Real*8 :: wfe_rms,yfit(size(objfun_nom)),obfp
-        Integer :: size_a,ifov,iwl,off,off2,i,j,k
+        Integer :: size_a,ifov,iwl,off,off2,i
 
 	size_a = size(a)
 
@@ -562,12 +562,12 @@ C ******************************************************************************
           yfit=yfit-objfun_nom
           obfp=DDOTN(yfit,yfit,size(yfit)) ! perturbed obf
           grd(i)=(obfp-obf)/da(i)
-	End Do  ! do size_a 
+	End Do  ! do size_a
 	End Subroutine npsol_funcobj
 
 
 	! Function computing nonlinear constraints for npsol, a dummy
-	! function since no nonlinear constraints in our optimization 
+	! function since no nonlinear constraints in our optimization
 	Subroutine npsol_funcon
         End Subroutine npsol_funcon
 

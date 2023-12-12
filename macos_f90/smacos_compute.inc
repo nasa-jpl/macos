@@ -8,7 +8,7 @@ C***********************************************************************
 
 C SMACOS wrapper - Given DOFs of a set of elements and the total
 C perturbations for them, apply the perturbations, and compute
-C the corresponding WF. 
+C the corresponding WF.
 C
 
 #ifdef NLS_OPT
@@ -16,7 +16,7 @@ C
 #else
 	Subroutine smacos_compute_perturbed_np
 #define mVarDOF_nls mVarDOF_np
-#endif	
+#endif
      &                   (OPDarr,ZCArr,
      &                    SPOTarr,SpotSize,PIXarr,
      &                    WFErms,n_varElt,eltArr,dofArr,
@@ -55,15 +55,15 @@ C
      &          		  ObsVecNom,TEltNom
 
 	CHARACTER(len=MacosCharLen) :: cmd,CARG(9)
-        REAL*8 DARG(9),tmp_v
-        INTEGER IARG(9),idof,ie,je,ke,id,ia,iz,ias,i,j,k,m_err_rtn
+        REAL*8 DARG(9)
+        INTEGER IARG(9),idof,ie,je,id,ia,iz,ias,i,j,k,m_err_rtn
         LOGICAL LARG
         SREAL RARG(9)
 	Integer, save :: entry_count=0
 
 #ifndef NLS_OPT
 	! aspheric coeffs not supported in constrained optim
-        n_optAsphArr=0  
+        n_optAsphArr=0
 #endif
 
         IF (start_curr_optim) THEN
@@ -175,7 +175,7 @@ C
      &		      =ObsVec(1:3,1:nObs(je),je)
 	  	  end if
                   ZernCoefNom(1:mZern,je)=ZernCoef(1:mZern,je)
-	          AsphCoefNom(1:mAsph,je)=AsphCoef(1:mAsph,je) 
+	          AsphCoefNom(1:mAsph,je)=AsphCoef(1:mAsph,je)
                   CALL DEQUATE(TEltNom(1,1,je),TElt(1,1,je),36)
                 end if
               End Do
@@ -397,7 +397,7 @@ C Find exit pupil
           end if
 
 C Compute OPD
-	  If ((opt_tgt_m==WFE_TARGET) .OR. 
+	  If ((opt_tgt_m==WFE_TARGET) .OR.
      &        (opt_tgt_m==WFE_ZMODE_TARGET)) Then
             cmd='OPD'
             IARG(1)=optElt_m
@@ -411,13 +411,13 @@ C Compute OPD
 	    DO j=1,nGridPts
               DO i=1,nGridPts
                 k=k+1
-                OPDarr(k)=OPDMat(i,j)	
+                OPDarr(k)=OPDMat(i,j)
               END DO
             END DO
             OPDMat_m=OPDMat(1:nGridPts,1:nGridPts)  ! saved to module level
 	  End If
 
-C Trace chief ray or whole beam when BEAM_TARGET 
+C Trace chief ray or whole beam when BEAM_TARGET
 	  If (opt_tgt_m==BEAM_TARGET) Then
 	    if (OptBeam_m%ifOptBeamDir .OR. OptBeam_m%ifOptBeamPos) then
 	      cmd='CRT'
@@ -435,19 +435,19 @@ C Trace chief ray or whole beam when BEAM_TARGET
 	      cmd='RefRAY'
 	      IARG(1)=OptBeam_m%beamRefRayElt
 	      CALL MACOS_OPS(cmd,CARG,DARG,IARG,LARG,RARG,
-     &                       OPDMat,SpotMat,WFErms,PixMat) 
+     &                       OPDMat,SpotMat,WFErms,PixMat)
 	    end if
-	  End If 
+	  End If
 
 C Compute SPOT diagram
           If (opt_tgt_m==SPOT_TARGET) Then
 	    cmd='SPOT'
-	    IARG(1)=optElt_m 
+	    IARG(1)=optElt_m
 	    CALL MACOS_OPS(cmd,CARG,DARG,IARG,LARG,RARG,
      &                     OPDMat,SpotMat,WFErms,PixMat)
 	    Do j=1,nSpotRays
 	      Do i=1,2
-	        SPOTarr(i,j)=SpotMat(j,i) 
+	        SPOTarr(i,j)=SpotMat(j,i)
 	      End Do
 	    End Do
 	    nSpotRays_m=nSpotRays
@@ -455,7 +455,7 @@ C Compute SPOT diagram
 	                  ! to the chief ray
             Do j=1,nSpotRays
 	      ss=sqrt(SPOTarr(1,j)*SPOTarr(1,j)+SPOTarr(2,j)*SPOTarr(2,j))
-	      if (SpotSize<ss) SpotSize=ss 
+	      if (SpotSize<ss) SpotSize=ss
 	    End Do
 	    !print*,'nSpotRays  =',nSpotRays
 	    !print*,'SPOT Radius =',SpotSize
@@ -508,4 +508,4 @@ C Restore Rx wavelength
 #else
         End Subroutine smacos_compute_perturbed_np
 #endif
-	
+
