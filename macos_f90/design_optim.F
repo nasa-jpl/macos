@@ -649,7 +649,7 @@ C
 
         Real*8, dimension(size(a)) :: a2
 	Real*8 :: wfe_rms
-        Integer :: size_a, ifov,iwl,off,off2,i,j,k
+        Integer :: size_a, ifov,iwl,off,off2,i,j
 	Logical :: LUseChfRayIfOK_sv
 
 ! y = objfun_nom, yfit = OPD(a)
@@ -899,7 +899,7 @@ C
 	LREAL, dimension(:), allocatable, save :: y0,y1
 	LREAL, dimension(:,:), allocatable, save :: dy0da,dady0
         LREAL :: dparams(size(params)),wfe_rms
-	Integer :: iwl,ifov,off,off2,i,j,ICLEN,m_err_rtn
+	Integer :: iwl,ifov,off,off2,j,ICLEN,m_err_rtn
         Logical :: exist,LCMP
 	Logical, save :: first_entry = .TRUE.
 

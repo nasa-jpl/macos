@@ -2075,7 +2075,7 @@ C***********************************************************************
         USE Constants, ONLY: PI
         IMPLICIT NONE
         INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2
-        REAL*8 DX1,Z1,Z2,S,LAMBDA,NSQ
+        REAL*8 DX1,Z1,Z2,S,LAMBDA
         COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,M2,
      &		   C4,C5
 
