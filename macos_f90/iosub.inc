@@ -47,8 +47,6 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	INTEGER I
-
 C       This routine initializes the Element Flags to .FALSE.
 
 	EltName_FLG = .FALSE.
@@ -2538,7 +2536,7 @@ C***********************************************************************
         IMPLICIT NONE
 
         SREAL Cout(nOutCord,nEcrd)
-        Integer :: nOutCord,nEcrd,irow,icol,ir,ic,i
+        Integer :: nOutCord,nEcrd,irow,icol,ir,ic
         Logical :: ColStrt,NzBlkStrt
         Integer :: icol_loc,tot_col_nz,curr_col_nz,off
 
@@ -2734,7 +2732,7 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	INTEGER nOutCord,nEcrd,irow,icol,i,j,nline,jrow,jcol,iRay,iElt,
+	INTEGER nOutCord,nEcrd,irow,icol,i,j,nline,iRay,iElt,
      &	iExMode,iNode,jRay
 
 	SREAL Cout(nOutCord,nEcrd)
@@ -2822,7 +2820,7 @@ C       A routine to load filter data interactively.
 	IMPLICIT NONE
 
 	LOGICAL ifFilterData,exist
-	INTEGER i,j,ICLEN
+	INTEGER i,ICLEN
 	CHARACTER(len=MacosCharLen) :: ANS
 
  100	FORMAT(' Filter includes information for ',i3,
