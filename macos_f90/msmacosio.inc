@@ -1339,13 +1339,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
               GO TO 61
 
-            ! ------------------------------------------------------------------------------
+            ! ------------------------------------------------------------------------------ nZernCoef
+            ! if not defined, default value is used
             ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
               READ(VALUE,*) nZernCoef
               if ((nZernCoef<1).or.(nZernCoef>mZernModes)) GOTO 99
               GO TO 61
 
-            ! ------------------------------------------------------------------------------
+            ! ------------------------------------------------------------------------------ ZernCoef
             ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 
               ! QUICK FIX to make it backwards compatible
@@ -1376,7 +1377,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
-                nZernCoef = 45  ! reset to default
+                nZernCoef = nZernModes_Default  ! reset to default
               END BLOCK
 
 	      ! Added by jzlou, 03/2005
