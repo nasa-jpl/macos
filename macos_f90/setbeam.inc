@@ -161,7 +161,7 @@ C ***********************************************************************
         Real*8 :: objf
         Real*8 :: rstate_vec(n),objgrd(n)
 
-        Real*8 :: da,beam_size,tmp,new_objf
+        Real*8 :: da,beam_size,new_objf
         Integer,save :: entry_count=0
 
         entry_count=entry_count+1

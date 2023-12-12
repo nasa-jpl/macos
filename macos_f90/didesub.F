@@ -33,7 +33,7 @@ C***********************************************************************
      &	rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),
      &	dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm
 
-	REAL*8 D1(9),D2(9),S1,S2,S3 !,DZPSolve
+	REAL*8 D1(9),D2(9),S1,S2
 
 	INTEGER i,j
 

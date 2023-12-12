@@ -402,7 +402,7 @@ C  FORMAT statements
 
         IMPLICIT NONE
 
-	CHARACTER(len=MacosCharLen) :: CARG(9),ANS
+	CHARACTER(len=MacosCharLen) :: CARG(9)
         REAL*8 :: DARG(9)
         INTEGER i,j,k, iElt
         LOGICAL LCMP
@@ -563,7 +563,7 @@ C fixed by Gopal Vasudevan:
 
 	CHARACTER(len=MacosCharLen) :: CARG(9)
         REAL*8 :: DARG(9)
-        INTEGER :: i,j,k,iElt
+        INTEGER :: i,k,iElt
         LOGICAL :: LLocCoord, LCMP
         REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &            DDEF(7),PV(6),RptVec(3)
