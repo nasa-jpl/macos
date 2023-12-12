@@ -1362,7 +1362,7 @@ C***********************************************************************
 	INTEGER*4      image_row_size, image_col_size
 	INTEGER*4      bits_per_pixel
 	INTEGER*4      array_row_size, array_col_size
-	INTEGER        mpix, i, j, num_elm
+	INTEGER        i, num_elm
 	INTEGER        lout, ier, root_file_name_len
 	INTEGER        output_file_name_len
 	INTEGER        bit_representation
