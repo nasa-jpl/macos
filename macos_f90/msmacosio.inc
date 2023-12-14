@@ -655,6 +655,7 @@ C       Set entrance condition flags to .FALSE.
                 SegCoord_FLG=.TRUE.
               ELSE
                 WRITE(*,*) '  Must input nSeg before SegCoord.'
+                GO To 99    ! abort reading Rx
               END IF
             END IF
             GO TO 50
