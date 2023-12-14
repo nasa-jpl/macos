@@ -662,9 +662,10 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'SegXgrid',8)) THEN
-             READ(VALUE,*)(SegXgrid(i),i=1,3)
+            READ(VALUE,*)(SegXgrid(i),i=1,3)
             IF (DMAG(SegXgrid(1),3) .EQ. 0.0D0) THEN
               WRITE(*,124)' SegXGrid'
+              GO To 99    ! abort reading Rx
             ELSE
               SegXgrid_FLG=.TRUE.
             END IF
