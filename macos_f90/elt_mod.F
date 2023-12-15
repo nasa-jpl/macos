@@ -89,6 +89,12 @@ C***********************************************************************
      &                       'Toric',              !10
      &                       'AsGrData'/)          !11  ! was 'InfluenceFunction'
 
+        ! Surface types that require a Srf. Coord. Systems
+        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(4)=
+     &                      [SrfType_Zernike,
+     &                       SrfType_Monomial,
+     &                       SrfType_GridData,
+     &                       SrfType_AsGrData]
 
         !
         ! --------- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS  ---------
@@ -127,6 +133,21 @@ C***********************************************************************
      &          ZernType_NormAnnularNoll =  9,
      &          ZernType_Noll            = 10,
      &          ZernType_ExtFringe       = 11
+
+        INTEGER, PARAMETER :: ZernType_MaxMode(mZernType) =
+     &          [mZernModes,  ! ZernType_ANSI
+     &           mZernModes,  ! ZernType_BornWolf
+     &                   37,  ! ZernType_Fringe
+     &           mZernModes,  ! ZernType_NormANSI
+     &           mZernModes,  ! ZernType_NormBornWolf
+     &                   37,  ! ZernType_NormFringe
+     &                    0,  ! ZernType_NormHex          implemented ???
+     &           mZernModes,  ! ZernType_NormNoll
+     &           mZernModes,  ! ZernType_NormAnnularNoll
+     &           mZernModes,  ! ZernType_Noll
+     &           mZernModes]  ! ZernType_ExtFringe
+
+
 
         INTEGER, DIMENSION(5), PARAMETER ::
      &          ZernType_rms_normalised = (/ZernType_NormANSI,
