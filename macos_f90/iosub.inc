@@ -40,70 +40,74 @@ C       This routine initializes the Entrance Condition Flags to .FALSE.
 
 C***********************************************************************
 
-	SUBROUTINE LOHIN2()
-	use param_mod
-	use src_mod
-	use loh_I2
+        SUBROUTINE LOHIN2()
+          use param_mod
+          use src_mod
+          use loh_I2
 
-	IMPLICIT NONE
+          IMPLICIT NONE
 
-C       This routine initializes the Element Flags to .FALSE.
+          ! This routine initializes the Element Flags to .FALSE.
 
-	EltName_FLG = .FALSE.
-	EltType_FLG = .FALSE.
-	EltID_FLG = .FALSE.
-	SrfType_FLG = .FALSE.
-	fElt_FLG = .FALSE.
-	eElt_FLG = .FALSE.
-	AsphCoef_FLG = .FALSE.
-	AnaCoef_FLG = .FALSE.
-	ZernCoef_FLG = .FALSE.
-	ZernTypeL_FLG = .FALSE.
-	MonCoef_FLG = .FALSE.
-	UDSrfCoef_FLG = .FALSE.; UDSrfType_FLG = .FALSE.
-	UDSrfParam_FLG = .FALSE.
-	pMon_FLG = .FALSE.
-	xMon_FLG = .FALSE.; yMon_FLG = .FALSE.; zMon_FLG = .FALSE.
-	lMon_FLG = .FALSE.
-	KrElt_FLG=.FALSE.
-	KcElt_FLG=.FALSE.
-	psiElt_FLG = .FALSE.
-	VptElt_FLG = .FALSE.
-	RptElt_FLG = .FALSE.
-	IndRefE_FLG = .FALSE.
-	GlassElt_FLG = .FALSE.
-	GlassCoef_FLG = .TRUE.
-	ExtincE_FLG = .FALSE.
-	nCoat_FLG = .FALSE.
-	CoatIndx_FLG = .FALSE.
-	CoatThk_FLG = .FALSE.
-	zElt_FLG = .FALSE.
-	PropType_FLG = .FALSE.
-	PinHole_FLG = .FALSE.
-	nECoord_FLG = .FALSE.
-	ApType_FLG = .FALSE.
-	ApVec_FLG = .FALSE.
-	nObs_FLG = .FALSE.
-	ObsType_FLG(1:mObs) = .FALSE.
-	ObsVec_FLG(1:mObs) = .FALSE.
+          EltName_FLG         = .FALSE.
+          EltType_FLG         = .FALSE.
+          EltID_FLG           = .FALSE.
+          SrfType_FLG         = .FALSE.
+          fElt_FLG            = .FALSE.
+          eElt_FLG            = .FALSE.
+          AsphCoef_FLG        = .FALSE.
+          AnaCoef_FLG         = .FALSE.
+          ZernCoef_FLG        = .FALSE.
+          nZernCoef_FLG       = .FALSE.
+          ZernModes_FLG       = .FALSE.
+          ZernTypeL_FLG       = .FALSE.
+          MonCoef_FLG         = .FALSE.
+          UDSrfCoef_FLG       = .FALSE.
+          UDSrfType_FLG       = .FALSE.
+          UDSrfParam_FLG      = .FALSE.
+          pMon_FLG            = .FALSE.
+          xMon_FLG            = .FALSE.
+          yMon_FLG            = .FALSE.
+          zMon_FLG            = .FALSE.
+          lMon_FLG            = .FALSE.
+          KrElt_FLG           = .FALSE.
+          KcElt_FLG           = .FALSE.
+          psiElt_FLG          = .FALSE.
+          VptElt_FLG          = .FALSE.
+          RptElt_FLG          = .FALSE.
+          IndRefE_FLG         = .FALSE.
+          GlassElt_FLG        = .FALSE.
+          GlassCoef_FLG       = .TRUE.      ! <<<< check
+          ExtincE_FLG         = .FALSE.
+          nCoat_FLG           = .FALSE.
+          CoatIndx_FLG        = .FALSE.
+          CoatThk_FLG         = .FALSE.
+          zElt_FLG            = .FALSE.
+          PropType_FLG        = .FALSE.
+          PinHole_FLG         = .FALSE.
+          nECoord_FLG         = .FALSE.
+          ApType_FLG          = .FALSE.
+          ApVec_FLG           = .FALSE.
+          nObs_FLG            = .FALSE.
+          ObsType_FLG(1:mObs) = .FALSE.
+          ObsVec_FLG(1:mObs)  = .FALSE.
 
-	xObs_FLG = .FALSE.
-	TElt_FLG = .FALSE.
-	LensArrayType_FLG = .FALSE.
-	LensArrayWidth_FLG = .FALSE.
-	h1HOE_FLG = .FALSE.
-	h2HOE_FLG = .FALSE.
-	OrderHOE_FLG = .FALSE.
-	WaveHOE_FLG = .FALSE.
-	RuleWidth_FLG = .FALSE.
-	nGridMat_FLG = .FALSE.
-	GridMat_FLG = .FALSE.
-	GridSrfdx_FLG = .FALSE.
+          xObs_FLG            = .FALSE.
+          TElt_FLG            = .FALSE.
+          LensArrayType_FLG   = .FALSE.
+          LensArrayWidth_FLG  = .FALSE.
+          h1HOE_FLG           = .FALSE.
+          h2HOE_FLG           = .FALSE.
+          OrderHOE_FLG        = .FALSE.
+          WaveHOE_FLG         = .FALSE.
+          RuleWidth_FLG       = .FALSE.
+          nGridMat_FLG        = .FALSE.
+          GridMat_FLG         = .FALSE.
+          GridSrfdx_FLG       = .FALSE.
 
-	ZernCent_FLG  = .FALSE.
+          ZernCent_FLG        = .FALSE.
 
-	RETURN
-	END SUBROUTINE LOHIN2
+        END SUBROUTINE LOHIN2
 
 C***********************************************************************
 

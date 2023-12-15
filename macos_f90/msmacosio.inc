@@ -1337,15 +1337,38 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (.NOT.ZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
 		WRITE(*,*)'Check and reload Rx!'
-		LOAD_SUCCESS=.FALSE.; GO TO 70
+                GO TO 99
               END IF
               GO TO 61
 
             ! ------------------------------------------------------------------------------ nZernCoef
-            ! if not defined, default value is used
+            ! if not defined, default value of 45 is used (backwards compatibility)
             ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
               READ(VALUE,*) nZernCoef
-              if ((nZernCoef<1).or.(nZernCoef>mZernModes)) GOTO 99
+              IF ((nZernCoef<1) .OR. (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) GOTO 99
+
+              nZernCoef_FLG = .True.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------ ZernModes
+            ! nZernCoef  = 4
+            ! ZernModes  = 8 2 3 10
+            ! ZernCoef   = ...
+
+            ELSE IF (LCMP(VAR_NAM,'ZernModes',9)) THEN
+
+              IF (.NOT. nZernCoef_FLG) THEN
+                PRINT *, "must define nZernCoef before ZernModes"
+                GOTO 99
+              END IF
+              ZernModes(:) = 0
+              READ(VALUE,*)(ZernModes(j),j=1,nZernCoef)
+              IF (ANY(ZernModes(:nZernCoef)<1) .OR.
+     &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
+                PRINT *, "Ensure that: 0 < ZernModes <= max Zrn Mode"
+                GOTO 99
+              END IF
+              ZernModes_FLG = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------ ZernCoef
@@ -1356,19 +1379,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6  ! defines # of Coefs. within a Grp per line
                 INTEGER            :: iZ, nZ
+                REAL(8)            :: ZernCoefs(mZernModes)
                 ! --------------------------
 
-                ZernCoef(:,iElt) = 0d0
+                ZernCoefs(:) = 0d0
                 IF (nZernCoef<=Grp) THEN
-                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,nZernCoef)
+                  READ(VALUE,*)(ZernCoefs(j),j=1,nZernCoef)
                 ELSE
 
-                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,Grp)
+                  READ(VALUE,*)(ZernCoefs(j),j=1,Grp)
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nZernCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
 
                   ! incomplete Grp
@@ -1376,12 +1400,23 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   iZ = nZernCoef/Grp
                   IF (nZ>0) THEN
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
-                nZernCoef = nZernModes_Default  ! reset to default
+
+                ! may need to remap coefficients based on ZernModes
+                IF (ZernModes_FLG) THEN
+                  ZernCoef(:,iElt) = 0d0
+                  ZernCoef(ZernModes(:nZernCoef),iElt) = ZernCoefs(:nZernCoef)
+                ELSE
+                  ZernCoef(:,iElt) = ZernCoefs
+                END IF
+
+                ! reset to default (backwards compatibility)
+                nZernCoef = nZernModes_Default
               END BLOCK
 
+!ToDo: fix
 	      ! Added by jzlou, 03/2005
 	      If ( ZernTypeL(iElt)>3 .and. ZernTypeL(iElt)<7)
      &        Then ! normalized Zern type

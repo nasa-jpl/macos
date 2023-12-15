@@ -20,15 +20,16 @@ C
      &    BaseUnits_FLG,nPetals_FLG,radCtr_FLG,nRings_FLG,RingRad_FLG
 	End Module loh_I1
 
-	
+
 	Module loh_I2
 	Implicit none
 
 	LOGICAL EltName_FLG,EltType_FLG,fElt_FLG,eElt_FLG,
-     &    AsphCoef_FLG,ZernCoef_FLG,pMon_FLG,xMon_FLG,yMon_FLG,zMon_FLG,
+     &    AsphCoef_FLG,ZernCoef_FLG,nZernCoef_FLG,ZernModes_FLG,
+     &    pMon_FLG,xMon_FLG,yMon_FLG,zMon_FLG,
      &    lMon_FLG,psiElt_FLG,VptElt_FLG,RptElt_FLG,IndRefE_FLG,
      &    zElt_FLG,PropType_FLG,nECoord_FLG,ApType_FLG,ApVec_FLG,
-     &    nObs_FLG,xObs_FLG,TElt_FLG,SegApType_FLG,ZernCent_FLG, 
+     &    nObs_FLG,xObs_FLG,TElt_FLG,SegApType_FLG,ZernCent_FLG,
      &    KrElt_FLG,KcElt_FLG,LensArrayType_FLG,LensArrayWidth_FLG,
      &    h1HOE_FLG,h2HOE_FLG,OrderHOE_FLG,WaveHOE_FLG,PinHole_FLG,
      &    ExtincE_FLG,nCoat_FLG,CoatIndx_FLG,CoatThk_FLG,AnaCoef_FLG,
@@ -43,4 +44,4 @@ C
 	Implicit none
 
 	LOGICAL nOutCord_FLG,Tout_FLG
-	End Module loh_I3	
+	End Module loh_I3
