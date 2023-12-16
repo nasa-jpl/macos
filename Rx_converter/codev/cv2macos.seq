@@ -210,9 +210,8 @@ lcl str ^format21 ^format21a ^format22 ^format22b ^format22a ^format23
 lcl str ^format24 ^format25
 lcl str ^format26 ^format27 ^format28  ^format29 ^format30
 lcl str ^format31 ^format32
-lcl str ^format33 ^format34 ^format35                       ! Zernike listings
-lcl str ^format36 ^format37 ^format38 ^format39 ^format40   ! p,x,y,z,l Mon
-lcl str ^format41  ! local axes direction cosines for 6x6 matrix
+lcl str ^format40   ! p,x,y,z,l Mon
+lcl str ^fmt
 lcl str ^slabel
 lcl num ^a_flat_surf ^an_index_match ^a_vacuum		      ! Boolean variables
 lcl num ^zero ^infinity ^pi
@@ -233,7 +232,7 @@ lcl num ^elt_type ^Kr_elt ^prop_type ^n_ecoord
 lcl num ^ape_type ^ape_1 ^ape_2 ^ape_3 ^ape_4
 lcl num ^obs_type ^obs_1 ^obs_2 ^obs_3 ^obs_4
 lcl num ^n ^m                 ! Counters
-lcl num ^z(1..45)             ! Zernike Coefficient Array
+lcl num ^z(1..66)             ! Zernike Coefficient Array
 lcl num ^ascr ^bscr ^cscr     ! Surface Coordinate Angles [radians]
 lcl num ^pMx  ^pMy  ^pMz      ! pMon components
 lcl num ^xMx  ^xMy  ^xMz      ! xMon components
@@ -263,7 +262,8 @@ gbl num ^data(12)   ! CSYS transformation information
 lcl num ^Finite_distance
 lcl num ^incl_dummy
 lcl num ^L_zGrid ^M_zGrid ^N_zGrid ^mag
-lcl str ^baseunits ^waveunits
+lcl num ^ZrnMode(66) ^ZrnMaxMode ^nZrnCoef ^k ^iZ ^Grp
+lcl str ^baseunits ^waveunits ^ZrnTypeStr
 
 rfd 1 1 1 1 'macosfile.in' 0
 
@@ -298,6 +298,10 @@ rfd 1 1 1 1 'macosfile.in' 0
 ^wave_pos   == #4
 ^outputfile == #5
 ^incl_dummy == #6
+
+
+if (buf.emp b70)=0; buf del b70; end if
+buf put b70 i1 j1 0
 
 !
 ! 9/17/2013 JMR. Skip the interactive reads.
@@ -496,17 +500,6 @@ wri""
 ^format31 =="   ApVec=  '2e.15e' '2e.15e' '2e.15e'"
 ^format32 =="   ApVec=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
 
-!  Zernike variables
-^format33 =="ZernCoef=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
-^format34 =="           '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
-^format35 =="           '3e.20e' '3e.20e' '3e.20e'"
-^format36 =="    pMon=  '3e.20e' '3e.20e' '3e.20e'"
-^format37 =="    xMon=  '3e.20e' '3e.20e' '3e.20e'"
-^format38 =="    yMon=  '3e.20e' '3e.20e' '3e.20e'"
-^format39 =="    zMon=  '3e.20e' '3e.20e' '3e.20e'"
-^format40 =="    lMon=  '3e.20e'"
-^format41 == " '5c' '3e.15e' '3e.15e' '3e.15e' '3e.15e' '3e.15e' '3e.15e' "
-!
 
 ! ----------------------------------------------------------------------------------------------
 ! LOOP THROUGH SURFACES AND WRITE OUT DATA FOR EACH SURFACE.
@@ -592,7 +585,9 @@ if (rmd s^s z^zoom_pos)='REFL'			! mirror
 			^c_sur == -(c s^s z^zoom_pos)
 			^d_sur == -(d s^s z^zoom_pos)
 		end if
-      els if (typ sur s^s) = 'SPS ZRN'           ! *** Zernike reflector ***
+      els if ((typ sur s^s) = 'SPS ZRN') or &    ! Zernike Standard B&W ***
+             ((typ sur s^s) = 'SPS ZFR') or &    ! Zernike Fringe
+             ((typ sur s^s) = 'SPS ZFE')         ! Zernike Extended Fringe
                 ^elt_type == 14
       els
 	wri""
@@ -640,7 +635,9 @@ els if (rmd s^s z^zoom_pos)='REFR'	! refractive surface
 			^c_sur == -(c s^s z^zoom_pos)
 			^d_sur == -(d s^s z^zoom_pos)
 		end if
-      els if (typ sur s^s) = 'SPS ZRN'              ! *** Zernike refractor ***
+      els if ((typ sur s^s) = 'SPS ZRN') or &    ! Zernike Standard B&W ***
+             ((typ sur s^s) = 'SPS ZFR') or &    ! Zernike Fringe
+             ((typ sur s^s) = 'SPS ZFE')         ! Zernike Extended Fringe
                 ^elt_type == 21
       els
 
@@ -822,12 +819,12 @@ end if
 		wri" Surface= Conic"
 
       els if ^elt_type = 14             ! added Zernike Reflector
-                wri" Element= Reflector"
-                wri" Surface= Zernike"
+        wri" Element= Reflector"
+        wri" Surface= Zernike"
 
       els if ^elt_type = 21             ! added Zernike Refractor (not tested)
-                wri" Element= Refractor"
-                wri" Surface= Zernike"
+        wri" Element= Refractor"
+        wri" Surface= Zernike"
 
 	els
 		wri Q^format20 ^elt_type    ! y toroid refractor
@@ -848,26 +845,45 @@ end if
 ! ToDo: update if not SPS ZRN type
 !
     if (^elt_type = 14)OR(^elt_type = 21)
-        ! ------------------------------------------------------------------------- (2023-10-08: no sign flip)
-        ! coefficients are independent of sign of (psiElt / KrElt) pair
-        !
-        ! if (rdy s^s z^zoom_pos)>= 0
-        !     for ^n 1 45
-        !         ^m == ^n+1
-        !         ^z(^n) == (sco s^s z^zoom_pos c^m)
-        !     end for
-        ! els
-        !     ! ToDo: Should coefficients go negative @ convex surfaces, as implemented below ?
-        !     for ^n 1 45
-        !         ^m == ^n+1
-        !         ^z(^n) == -(sco s^s z^zoom_pos c^m)  ! (2023-10-08: no sign flip)
-        !     end for
-        ! end if
-        ! -------------------------
-        for ^n 1 45
-          ^m == ^n+1
-          ^z(^n) == (sco s^s z^zoom_pos c^m)
-        end for
+
+        ! Zernike Standard B&W
+        if ((typ sur s^s)='SPS ZRN')
+          ^ZrnTypeStr == 'BornWolf'
+          ^lMr == (sco s^s z^zoom_pos c69)   ! Normalisation Radius
+
+          ^ZrnMaxMode == (sco S^s z^zoom_pos c68)   ! max Zrn Mode
+          ^nZrnCoef == 0
+          for ^n 1 ^ZrnMaxMode
+            ^m == ^n+1
+            if (sco s^s z^zoom_pos c^m) <> 0
+              ^nZrnCoef == ^nZrnCoef+1
+              ^z(^nZrnCoef) == (sco s^s z^zoom_pos c^m)
+              ^ZrnMode(^nZrnCoef) == ^n
+            end if
+          end for
+
+        ! Zernike Extended Fringe
+        els if ((typ sur s^s)='SPS ZFE')
+          ^ZrnTypeStr == 'ExtFringe'
+          wri ">>>>>>>>> NOT YET AVAILABLE"
+
+        ! Zernike Fringe ('SPS ZFR')
+        else
+          ^ZrnTypeStr == 'Fringe'
+          ^lMr == (sco s^s z^zoom_pos c2)   ! Normalisation Radius
+
+          ^ZrnMaxMode == (sco S^s z^zoom_pos c3)   ! max Zrn Mode
+          ^nZrnCoef == 0
+          for ^n 1 ^ZrnMaxMode
+            ^m == ^n+3
+            if (sco s^s z^zoom_pos c^m) <> 0
+              ^nZrnCoef == ^nZrnCoef+1
+              ^z(^nZrnCoef) == (sco s^s z^zoom_pos c^m)
+              ^ZrnMode(^nZrnCoef) == ^n
+            end if
+          end for
+        end if
+
         ! ------------------------------------------------------------------------- end
 
 
@@ -893,43 +909,63 @@ end if
         ^xMz == -(COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr))
         !
         ! ***** Currently using psiElt for zMon *****
-        ! ^zMx ==
-        ! ^zMy ==
-        ! ^zMz ==
-        ^lMr == (sco s^s z^zoom_pos c69)
-        wri"ZernType= BornWolf"          ! Default to Code V type ordering     (2023-10-08: Noll to B&W)
-        wri Q^format33 ^z(1)  ^z(2)  ^z(3)  ^z(4)  ^z(5)  ^z(6)
-        wri Q^format34 ^z(7)  ^z(8)  ^z(9)  ^z(10) ^z(11) ^z(12)
-        wri Q^format34 ^z(13) ^z(14) ^z(15) ^z(16) ^z(17) ^z(18)
-        wri Q^format34 ^z(19) ^z(20) ^z(21) ^z(22) ^z(23) ^z(24)
-        wri Q^format34 ^z(25) ^z(26) ^z(27) ^z(28) ^z(29) ^z(30)
-        wri Q^format34 ^z(31) ^z(32) ^z(33) ^z(34) ^z(35) ^z(36)
-        wri Q^format34 ^z(37) ^z(38) ^z(39) ^z(40) ^z(41) ^z(42)
-        wri Q^format35 ^z(43) ^z(44) ^z(45)
 
-        ! ----------------------------------------------------- (2023-10-08: upd Zernike coordinate frame)
-        ! ! wri Q^format36 ^pMx   ^pMy   ^pMz
-        ! wri Q^format36 ^x_sur ^y_sur ^z_sur
-        ! wri Q^format37 ^xMx   ^xMy   ^xMz
-        ! wri Q^format38 ^yMx   ^yMy   ^yMz
-        !
-        ! wri Q^format39 ^zMx   ^zMy   ^zMz
-        !if (rdy s^s z^zoom_pos) >= 0
-        !    wri Q^format39 ^l_sur ^m_sur ^n_sur
-        !els
-        !    wri Q^format39 -(^l_sur) -(^m_sur) -(^n_sur)  ! reverse psi for negative element
-        !end if
+        if ^nZrnCoef=0
+            wri  " ZernType=  " ^ZrnTypeStr
+            wri  "nZernCoef=    1"
+            wri  " ZernCoef=    0e0"
+        else
+
+          for ^iZ 1 ^nZrnCoef
+            buf put B70 i1 j^iZ ^ZrnMode(^iZ)
+          end for
+          buf fmt b70 i1 j1..L 'd'
+
+          wri   " ZernType=  " ^ZrnTypeStr
+          wri  Q"nZernCoef=   'dd'" ^nZrnCoef
+          wri   "ZernModes=  " (buf.txt B70 i1)
+
+          ^Grp == 6
+           buf del b70 i1
+          if ^nZrnCoef <= ^Grp
+            for ^iZ 1 ^nZrnCoef
+              buf put B70 i1 j^iZ ^ZrnMode(^iZ)
+            end for
+            buf fmt b70 i1 j1..L '3e.20e'
+            wri "ZernCoef="  (buf.txt b70 i1)
+          else
+            ^k == 0
+            for ^iZ 1 ^nZrnCoef
+              ^k == ^k+1
+              buf put b70 i1 j^k ^z(^iZ)
+              if ^k=^Grp
+                buf fmt b70 i1 j1..^Grp '3e.20e'
+                if ^iZ<=^Grp
+                  wri " ZernCoef=" (buf.txt b70 i1)
+                else
+                  wri "          " (buf.txt b70 i1)
+                end if
+                buf del b70 i1
+                ^k == 0
+              end if
+            end for
+            if modf(^nZrnCoef,^Grp)>0
+              buf fmt b70 i1 j1..L '3e.20e'
+              wri "          " (buf.txt b70 i1)
+            end if
+          end if
+
+        end if
+
         ! ----------------------------
         ^e == transform(^s, ^global_sur, ^zoom_pos, ^data)
 
-        wri Q^format36 ^data( 1) ^data( 2) ^data( 3)   ! P (x,y,z) == VptElt
-        wri Q^format37 ^data( 4) ^data( 5) ^data( 6)   ! rx
-        wri Q^format38 ^data( 7) ^data( 8) ^data( 9)   ! ry
-        wri Q^format39 ^data(10) ^data(11) ^data(12)   ! rz
-        ! ----------------------------------------------------- 2023-10-08 end
+        wri Q"    lMon=  '3e.20e'" ^lMr                                              ! Zernike Normalisation Radius
+        wri Q"    pMon=  '3e.20e' '3e.20e' '3e.20e'" ^data( 1) ^data( 2) ^data( 3)   ! P (x,y,z) == VptElt
+        wri Q"    xMon=  '3e.20e' '3e.20e' '3e.20e'" ^data( 4) ^data( 5) ^data( 6)   ! rx
+        wri Q"    yMon=  '3e.20e' '3e.20e' '3e.20e'" ^data( 7) ^data( 8) ^data( 9)   ! ry
+        wri Q"    zMon=  '3e.20e' '3e.20e' '3e.20e'" ^data(10) ^data(11) ^data(12)   ! rz
 
-
-        wri Q^format40 ^lMr   ! Zernike Normalisation Radius
 
     end if  ! end of if-branch for Zernikes.
 
@@ -948,54 +984,63 @@ end if
 	wri Q^format27 ^ext_coef
 !	wri"    nObs=    0"
 !
-!
 
-! NEW ON 9/17/2013:  find the direction cosines of the x-y-z axes of the normal of the parent surface.
-! We will consider these to be the axes directions of the local surface at point RptElt.
-! These axes generally will not be the true surface normals and tangents but the hope it, it is close enough
-! for sensitivity analysis.  In any case it is the best known way for automatic computation.
-! The direction cosine of the X axis will be used for the apertures and obscurations also.
-!
-! Step 1: insert a dummy surface before surface ^s (the current surface) and make it DAR.
-! This dummy surface becomes the new surface ^s, and the original surface number is ^s+1
-      ins s^s
 
-      slb s^s 'axes'
-      dar s'axes'
+! determine Local Coordinate Frame w.r.t. global reference
+^e == transform(^s, ^global_sur, ^zoom_pos, ^data)
+^L_LocalXaxis == ^data( 4); ^L_LocalYaxis == ^data( 7); ^L_LocalZaxis == ^data(10)
+^M_LocalXaxis == ^data( 5); ^M_LocalYaxis == ^data( 8); ^M_LocalZaxis == ^data(11)
+^N_LocalXaxis == ^data( 6); ^N_LocalYaxis == ^data( 9); ^N_LocalZaxis == ^data(12)
 
-! Step 2: Assign tilts to surface 'axes' to make the surface have the same orientation as surface s+1.
-      ade s'axes' (ade s'axes'+1)
-      bde s'axes' (bde s'axes'+1)
-      cde s'axes' (cde s'axes'+1)
 
-      ^ade_local == (ade s'axes')
-      ^bde_local == (bde s'axes')
-      ^cde_local == (cde s'axes')
-
-! Step 3: Evaluate the direction cosines of the z axis (normal to dummy surface).
-	^L_LocalZaxis == (lsc s'axes' g^global_sur z^zoom_pos)
-	^M_LocalZaxis == (msc s'axes' g^global_sur z^zoom_pos)
-	^N_LocalZaxis == (nsc s'axes' g^global_sur z^zoom_pos)
-
-! Step 4: rotate the dummy surface by 90 degrees in Y and find direction cosines. This will be the Y axis.
-      ade s'axes' ^ade_local+90
-      bde s'axes' ^bde_local
-	^L_LocalYaxis == (lsc s'axes' g^global_sur z^zoom_pos)
-	^M_LocalYaxis == (msc s'axes' g^global_sur z^zoom_pos)
-	^N_LocalYaxis == (nsc s'axes' g^global_sur z^zoom_pos)
-
-! Step 5: rotate the dummy surface by 90 degrees in X and find direction cosines. This will be the X axis.
-      ade s'axes' ^ade_local
-      bde s'axes' ^bde_local+90
-	^L_LocalXaxis == (lsc s'axes' g^global_sur z^zoom_pos)
-	^M_LocalXaxis == (msc s'axes' g^global_sur z^zoom_pos)
-	^N_LocalXaxis == (nsc s'axes' g^global_sur z^zoom_pos)
-
-! Step 6: Now that we have the direciton cosines, delete the dummy surface.
-     del s'axes'
-
-! At this point we have direction cosines of a X, Y, and Z axis, which will be used in the next
-! sections of text, applied to apertures and surfaces.
+if 0
+  ! ! NEW ON 9/17/2013:  find the direction cosines of the x-y-z axes of the normal of the parent surface.
+  ! ! We will consider these to be the axes directions of the local surface at point RptElt.
+  ! ! These axes generally will not be the true surface normals and tangents but the hope it, it is close enough
+  ! ! for sensitivity analysis.  In any case it is the best known way for automatic computation.
+  ! ! The direction cosine of the X axis will be used for the apertures and obscurations also.
+  ! !
+  ! ! Step 1: insert a dummy surface before surface ^s (the current surface) and make it DAR.
+  ! ! This dummy surface becomes the new surface ^s, and the original surface number is ^s+1
+  !       ins s^s
+  !
+  !       slb s^s 'axes'
+  !       dar s'axes'
+  !
+  ! ! Step 2: Assign tilts to surface 'axes' to make the surface have the same orientation as surface s+1.
+  !       ade s'axes' (ade s'axes'+1)
+  !       bde s'axes' (bde s'axes'+1)
+  !       cde s'axes' (cde s'axes'+1)
+  !
+  !       ^ade_local == (ade s'axes')
+  !       ^bde_local == (bde s'axes')
+  !       ^cde_local == (cde s'axes')
+  !
+  ! ! Step 3: Evaluate the direction cosines of the z axis (normal to dummy surface).
+  ! 	^L_LocalZaxis == (lsc s'axes' g^global_sur z^zoom_pos)
+  ! 	^M_LocalZaxis == (msc s'axes' g^global_sur z^zoom_pos)
+  ! 	^N_LocalZaxis == (nsc s'axes' g^global_sur z^zoom_pos)
+  !
+  ! ! Step 4: rotate the dummy surface by 90 degrees in Y and find direction cosines. This will be the Y axis.
+  !       ade s'axes' ^ade_local+90
+  !       bde s'axes' ^bde_local
+  ! 	^L_LocalYaxis == (lsc s'axes' g^global_sur z^zoom_pos)
+  ! 	^M_LocalYaxis == (msc s'axes' g^global_sur z^zoom_pos)
+  ! 	^N_LocalYaxis == (nsc s'axes' g^global_sur z^zoom_pos)
+  !
+  ! ! Step 5: rotate the dummy surface by 90 degrees in X and find direction cosines. This will be the X axis.
+  !       ade s'axes' ^ade_local
+  !       bde s'axes' ^bde_local+90
+  ! 	^L_LocalXaxis == (lsc s'axes' g^global_sur z^zoom_pos)
+  ! 	^M_LocalXaxis == (msc s'axes' g^global_sur z^zoom_pos)
+  ! 	^N_LocalXaxis == (nsc s'axes' g^global_sur z^zoom_pos)
+  !
+  ! ! Step 6: Now that we have the direciton cosines, delete the dummy surface.
+  !      del s'axes'
+  !
+  ! ! At this point we have direction cosines of a X, Y, and Z axis, which will be used in the next
+  ! ! sections of text, applied to apertures and surfaces.
+end if
 
 !---------------------------------------------------------------------------------------------------------------------
 ! 9/17/2013.  New commands to evaluate aperture data, easier than trying to understand and modify the original commands
@@ -1067,15 +1112,15 @@ END IF
 ! xObs is the direction cosine of the x axis of the aperture.
 
 if (^ape_type = 1) ! (circular aperture)
-   wri "   ApType = Circle"
-   wri q"  ApVec = '2e.15e' '2e.15e' '2e.15e' " ^cir ^adx ^ady
-   wri q"  xObs = '2e.15e' '2e.15e' '2e.15e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri  "  ApType=    Circle"
+   wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
+   wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 end if
 
 if (^ape_type = 2) ! (rectangular aperture)
-   wri "   ApType = Rectangular"
-   wri q"  ApVec = '2e.15e' '2e.15e' '2e.15e' '2e.15e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
-   wri q"  xObs = '2e.15e' '2e.15e' '2e.15e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri  "  ApType=    Rectangular"
+   wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
+   wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 end if
 
 ! Now write out the obscuration data, if any. ----------------------------------
@@ -1084,15 +1129,15 @@ if (^obs_type = 0)
 end if
 
 if (^obs_type = 1)
-   wri "   nObs =   1"
-   wri "   ObsType = Circle"
-   wri q"  ObsVec = '2e.15e' '2e.15e' '2e.15e' " ^cirobs ^adxobs ^adyobs
+   wri  "     nObs=   1"
+   wri  "  ObsType=   Circle"
+   wri q"   ObsVec=  '3e.20e' '3e.20e' '3e.20e' " ^cirobs ^adxobs ^adyobs
 end if
 
 if (^obs_type = 2)
-   wri "   nObs =   1"
-   wri "   ObsType = Rectangular"
-   wri q"  ObsVec = '2e.15e' '2e.15e' '2e.15e' '2e.15e' " ^adxobs-^rexobs ^adxobs+^rexobs ^adyobs-^reyobs ^adyobs+^reyobs
+   wri  "     nObs=   1"
+   wri  "  ObsType=   Rectangular"
+   wri q"   ObsVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adxobs-^rexobs ^adxobs+^rexobs ^adyobs-^reyobs ^adyobs+^reyobs
 end if
 
 ! End of 9/17/2013 section for apertures and obscurations. ======================================================================
@@ -1114,12 +1159,14 @@ end if
 ! Upper right and lower left 3x3 quadrants are zeros. The upper left and lower right quadrants
 ! have the x,y,z axis direction cosines arranged in columns.
 
-      wri Q^format41 "TElt=" ^L_LocalXaxis ^L_LocalYaxis ^L_LocalZaxis 0             0             0
-      wri Q^format41 "     " ^M_LocalXaxis ^M_LocalYaxis ^M_LocalZaxis 0             0             0
-      wri Q^format41 "     " ^N_LocalXaxis ^N_LocalYaxis ^N_LocalZaxis 0             0             0
-      wri Q^format41 "     " 0             0             0           ^L_LocalXaxis ^L_LocalYaxis ^L_LocalZaxis
-      wri Q^format41 "     " 0             0             0           ^M_LocalXaxis ^M_LocalYaxis ^M_LocalZaxis
-      wri Q^format41 "     " 0             0             0           ^N_LocalXaxis ^N_LocalYaxis ^N_LocalZaxis
+      ^fmt == " '5c' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' "
+
+      wri Q^fmt "TElt=" ^L_LocalXaxis ^L_LocalYaxis ^L_LocalZaxis 0             0             0
+      wri Q^fmt "     " ^M_LocalXaxis ^M_LocalYaxis ^M_LocalZaxis 0             0             0
+      wri Q^fmt "     " ^N_LocalXaxis ^N_LocalYaxis ^N_LocalZaxis 0             0             0
+      wri Q^fmt "     " 0             0             0           ^L_LocalXaxis ^L_LocalYaxis ^L_LocalZaxis
+      wri Q^fmt "     " 0             0             0           ^M_LocalXaxis ^M_LocalYaxis ^M_LocalZaxis
+      wri Q^fmt "     " 0             0             0           ^N_LocalXaxis ^N_LocalYaxis ^N_LocalZaxis
 
       wri " "
 
@@ -1191,8 +1238,8 @@ yde si 1		! displace image plane to calc. y-dir
 !
 !
 ^format2a== " nOutCord=    5"
-^format2 == "     Tout= '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
-^format3 == "           '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
+^format2 == "     Tout= '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
+^format3 == "           '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
 !
 wri Q^format2a
 wri Q^format2 ^lsc_x ^msc_x ^nsc_x ^zero ^zero ^zero ^zero
