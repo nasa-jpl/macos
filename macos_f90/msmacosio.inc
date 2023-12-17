@@ -783,7 +783,7 @@ C       Set entrance condition flags to .FALSE.
               DO i=1,mEltTypes
                 IF (LCMP(TypeString,EltTypeName(i),6)) THEN
                   EltID(iElt)=i
-	          If (i==DoeTrGrating) Then
+	          If (i==DoeTrGratingElt) Then
 		    ! is a DOE element
 	            nDOE=nDOE+1; DoeId(iElt)=nDOE
 	          End If
@@ -909,21 +909,18 @@ C       Set entrance condition flags to .FALSE.
               TypeString=VALUE
 
               ! Assign SrfType
-              DO i=1,mSrfType  ! mSrfType = 11  -jzlou
-                IF (LCMP(TypeString,SrfTypeName(i),4)) THEN
-                  SrfType(iElt)=i
-                  SrfType_FLG=.TRUE.
-	          If (EltID(iElt)==3 .AND. SrfType(iElt)==9) Then
-	            ! a reference (EltID=3) and GridData surface, a surface grid
-		    ! data array will be defined to modulate wavefront. -jzlou
-                    ifOPDModGrid(iElt)=.TRUE.
-		  End If
-	          If (.false. .AND. EltID(iElt)==1
-     &                .AND. SrfType(iElt)==11) Then
-	            print*,'** Found a reflector with AsphGrid srf'
-	            STOP
-	          End If
-                 END IF
+              DO i=1,mSrfType
+                IF (LCMP(TypeString, SrfTypeName(i),4)) THEN
+                  SrfType(iElt) = i
+                  SrfType_FLG   = .TRUE.
+
+                  ! Phase Grid
+                  !   a reference (EltID=3) and GridData surface, a surface grid
+                  !   data array will be defined to modulate wavefront. -jzlou
+                  ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
+     &                                 SrfType(iElt)==SrfType_GridData)
+
+                END IF
               END DO
               IF (.NOT.SrfType_FLG) THEN
                 WRITE(*,132) TypeString
