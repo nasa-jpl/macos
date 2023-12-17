@@ -205,14 +205,13 @@ ver all no
 !
 chk yes		! enforce explicit declaration
 lcl str ^format1  ^format2a ^format2   ^format3
-lcl str ^format17 ^format18  ^format19 ^format19a ^format20
-lcl str ^format21 ^format21a ^format22 ^format22b ^format22a ^format23
+lcl str ^format17 ^format18  ^format19 ^format19a
+lcl str ^format21 ^format21a ^format22 ^format22b ^format23
 lcl str ^format24 ^format25
 lcl str ^format26 ^format27 ^format28  ^format29 ^format30
 lcl str ^format31 ^format32
 lcl str ^format40   ! p,x,y,z,l Mon
 lcl str ^fmt
-lcl str ^slabel
 lcl num ^a_flat_surf ^an_index_match ^a_vacuum		      ! Boolean variables
 lcl num ^zero ^infinity ^pi
 lcl num ^s ^global_sur ^zoom_pos ^field_pos ^wave_pos
@@ -221,7 +220,6 @@ lcl num ^z_source ^ext_coef ^wavelength ^flux ^gridtype ^aperture
 lcl num ^obscuration ^ngridpts ^previous_n ^current_n ^conic_const
 lcl num ^l_chief ^m_chief ^n_chief ^x_chief ^y_chief ^z_chief
 lcl num ^x_so ^y_so ^z_so ^x_s1 ^y_s1 ^z_s1
-lcl num ^a_sur ^b_sur ^c_sur ^d_sur
 lcl num ^x_sur ^y_sur ^z_sur ^l_sur ^m_sur ^n_sur
 lcl num ^x_RptElt ^y_RptElt ^z_RptElt  ! new on 9/17/13
 lcl num ^num_sur
@@ -262,7 +260,8 @@ gbl num ^data(12)   ! CSYS transformation information
 lcl num ^Finite_distance
 lcl num ^incl_dummy
 lcl num ^L_zGrid ^M_zGrid ^N_zGrid ^mag
-lcl num ^ZrnMode(66) ^ZrnMaxMode ^nZrnCoef ^k ^iZ ^Grp
+lcl num ^ZrnMode(66) ^ZrnMaxMode ^nZrnCoef ^k ^iZ ^Grp ^SrfType_Zernike
+lcl num ^AsphCoef(9) ^nAsphCoef
 lcl str ^baseunits ^waveunits ^ZrnTypeStr
 
 rfd 1 1 1 1 'macosfile.in' 0
@@ -300,10 +299,6 @@ rfd 1 1 1 1 'macosfile.in' 0
 ^incl_dummy == #6
 
 
-if (buf.emp b70)=0; buf del b70; end if
-buf put b70 i1 j1 0
-
-!
 ! 9/17/2013 JMR. Skip the interactive reads.
 goto skipread
    ver all no
@@ -324,6 +319,9 @@ goto skipread
    wri""
 lbl skipread
 
+
+if (buf.emp b70)=0; buf del b70; end if
+buf ins b70 i1 20
 
 
 out t ^outputfile	!	Write output to screen and default file macosfile.in
@@ -480,25 +478,21 @@ wri""
 !  FORMAT SURFACE VARIABLES
 !
 !^format1 =="'3d'  '2e.15e'  '2e.15e'  '2e.15e' '2e.15e'  '2e.15e'  '2e.15e'"
-^format18 =="    iElt=  '3d'"
-^format19 ==" EltName= surface_'d'"
-^format19a ==" EltName= '32c'"
-^format20 ==" EltType=  '3d'"
-^format21 =="   KrElt=  '3e.20e'"
-^format21a =="  KrElt=  '3e.20e'"
-^format22 =="   KcElt=  '3e.20e'"
-^format22a =="AsphCoef=  '3e.20e' '3e.20e' '3e.20e' '3e.20e'"
+^format19  ==" EltName= surface_'d'"
+^format21  =="   KrElt=  '3e.20e'"
+^format21a =="   KrElt=  '3e.20e'"
+^format22  =="   KcElt=  '3e.20e'"
 ^format22b =="   KcElt=  '3e.20e'"
-^format23 =="  psiElt=  '3e.20e' '3e.20e' '3e.20e'"
-^format24 =="  VptElt=  '3e.20e' '3e.20e' '3e.20e'"
-^format25 =="  RptElt=  '3e.20e' '3e.20e' '3e.20e'"
-^format26 =="  IndRef=  '2e.15e'"
-^format27 =="  Extinc=  '2e.15e'"
-^format28 =="    zElt=  '2e.15e'"
-^format29 =="PropType=    '1d'"
-^format30 ==" nECoord=   '2d'"
-^format31 =="   ApVec=  '2e.15e' '2e.15e' '2e.15e'"
-^format32 =="   ApVec=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
+^format23  =="  psiElt=  '3e.20e' '3e.20e' '3e.20e'"
+^format24  =="  VptElt=  '3e.20e' '3e.20e' '3e.20e'"
+^format25  =="  RptElt=  '3e.20e' '3e.20e' '3e.20e'"
+^format26  =="  IndRef=  '2e.15e'"
+^format27  =="  Extinc=  '2e.15e'"
+^format28  =="    zElt=  '2e.15e'"
+^format29  =="PropType=    '1d'"
+^format30  ==" nECoord=   '2d'"
+^format31  =="   ApVec=  '2e.15e' '2e.15e' '2e.15e'"
+^format32  =="   ApVec=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
 
 
 ! ----------------------------------------------------------------------------------------------
@@ -559,6 +553,10 @@ end if
 
 ! Check surface shape type.  Separate IF branches for mirrors and non-mirrors.  ! in progress, sep 25 2013
 ! MIRRORS:
+^SrfType_Zernike == ((typ sur s^s) = 'SPS ZRN') or &    ! Zernike Standard B&W ***
+                    ((typ sur s^s) = 'SPS ZFR') or &    ! Zernike Fringe
+                    ((typ sur s^s) = 'SPS ZFE')
+
 if (rmd s^s z^zoom_pos)='REFL'			! mirror
 	if (typ sur s^s)='SPH'
 		if (^a_flat_surf)
@@ -566,35 +564,39 @@ if (rmd s^s z^zoom_pos)='REFL'			! mirror
 		els
 			^elt_type == 1		! conic relector
 		end if
+
 	els if (typ sur s^s)='CON'
 		^elt_type == 1			! conic relector
-	els if ((typ sur s^s)='ASP')or((typ sur s^s)='YTO')  ! aspheric reflector or
-		^elt_type == 12				     ! y-toroid set to asphere
-		wri""
-		wri"ASPHERIC COEFFICIENTS FOR THE NEXT SURFACE ARE ONLY LISTED"
-		wri"TO 10th ORDER 'D' TERM."
-		wri""
-		if (rdy s^s z^zoom_pos)>= 0
-			^a_sur == (a s^s z^zoom_pos)
-			^b_sur == (b s^s z^zoom_pos)
-			^c_sur == (c s^s z^zoom_pos)
-			^d_sur == (d s^s z^zoom_pos)
-		els
-			^a_sur == -(a s^s z^zoom_pos)
-			^b_sur == -(b s^s z^zoom_pos)
-			^c_sur == -(c s^s z^zoom_pos)
-			^d_sur == -(d s^s z^zoom_pos)
-		end if
-      els if ((typ sur s^s) = 'SPS ZRN') or &    ! Zernike Standard B&W ***
-             ((typ sur s^s) = 'SPS ZFR') or &    ! Zernike Fringe
-             ((typ sur s^s) = 'SPS ZFE')         ! Zernike Extended Fringe
-                ^elt_type == 14
-      els
-	wri""
-	wri"This macro does not incorporate this reflective element type."
-	wri"Surface data not included here."
-	wri""
-	goto label_100
+
+	els if ((typ sur s^s)='ASP') or &   ! aspheric reflector or
+           ((typ sur s^s)='YTO')        ! y-toroid set to asphere
+		^elt_type == 12
+
+        ^AsphCoef(1) == (a s^s z^zoom_pos) ! r^4
+        ^AsphCoef(2) == (b s^s z^zoom_pos) ! r^6
+        ^AsphCoef(3) == (c s^s z^zoom_pos) ! r^8
+        ^AsphCoef(4) == (d s^s z^zoom_pos) ! r^10
+        ^AsphCoef(5) == (e s^s z^zoom_pos) ! r^12
+        ^AsphCoef(6) == (f s^s z^zoom_pos) ! r^14
+        ^AsphCoef(7) == (g s^s z^zoom_pos) ! r^16
+        ^AsphCoef(8) == (h s^s z^zoom_pos) ! r^18
+        ^AsphCoef(9) == (j s^s z^zoom_pos) ! r^20
+
+        if (rdy s^s z^zoom_pos)< 0
+          for ^iZ 1 9
+	        ^AsphCoef(^iZ) == -^AsphCoef(^iZ)
+          end for
+        end if
+
+    els if ^SrfType_Zernike
+          ^elt_type == 14
+
+    els
+	    wri""
+	    wri"This macro does not incorporate this reflective element type."
+	    wri"Surface data not included here."
+	    wri""
+	    goto label_100
 
 	end if
 !
@@ -603,7 +605,10 @@ if (rmd s^s z^zoom_pos)='REFL'			! mirror
 els if (rmd s^s z^zoom_pos)='REFR'	! refractive surface
 	^previous_n == (ind s^s-1 z^zoom_pos w^wave_pos)
 	^an_index_match == (^previous_n=^current_n)
-!
+
+    ! ----------------------------------
+    ! Surface: Spherical
+    ! ----------------------------------
 	if (typ sur s^s)='SPH'
 		if (^s=(num s))and(^a_flat_surf)
 			^elt_type == 3	 ! Focal plane (if the image plane is curved
@@ -612,51 +617,65 @@ els if (rmd s^s z^zoom_pos)='REFR'	! refractive surface
 		els
 			^elt_type == 8	! conic refractor
 		end if
+
+    ! ----------------------------------
+    ! Surface: Conical
+    ! ----------------------------------
 	els if (typ sur s^s)='CON'
 		if (^an_index_match)
 			^elt_type == 4	! reference surface
 		els
 			^elt_type == 8	! conic refractor   *** Why was this commented out? ***
 		end if
+
+    ! ----------------------------------
+    ! Surface: Asphere
+    ! ----------------------------------
 	els if ((typ sur s^s)='ASP')or((typ sur s^s)='YTO') ! aspheric refractor or
 		^elt_type == 20				    ! y-toroid set to asphere
-		wri""
-		wri"ASPHERIC COEFFICIENTS FOR THE NEXT SURFACE ARE ONLY LISTED"
-		wri"TO 10th ORDER 'D' TERM."
-		wri""
-		if (rdy s^s z^zoom_pos)>= 0
-			^a_sur == (a s^s z^zoom_pos)
-			^b_sur == (b s^s z^zoom_pos)
-			^c_sur == (c s^s z^zoom_pos)
-			^d_sur == (d s^s z^zoom_pos)
-		els
-			^a_sur == -(a s^s z^zoom_pos)
-			^b_sur == -(b s^s z^zoom_pos)
-			^c_sur == -(c s^s z^zoom_pos)
-			^d_sur == -(d s^s z^zoom_pos)
-		end if
-      els if ((typ sur s^s) = 'SPS ZRN') or &    ! Zernike Standard B&W ***
-             ((typ sur s^s) = 'SPS ZFR') or &    ! Zernike Fringe
-             ((typ sur s^s) = 'SPS ZFE')         ! Zernike Extended Fringe
-                ^elt_type == 21
-      els
+
+        ^AsphCoef(1) == (a s^s z^zoom_pos) ! r^4
+        ^AsphCoef(2) == (b s^s z^zoom_pos) ! r^6
+        ^AsphCoef(3) == (c s^s z^zoom_pos) ! r^8
+        ^AsphCoef(4) == (d s^s z^zoom_pos) ! r^10
+        ^AsphCoef(5) == (e s^s z^zoom_pos) ! r^12
+        ^AsphCoef(6) == (f s^s z^zoom_pos) ! r^14
+        ^AsphCoef(7) == (g s^s z^zoom_pos) ! r^16
+        ^AsphCoef(8) == (h s^s z^zoom_pos) ! r^18
+        ^AsphCoef(9) == (j s^s z^zoom_pos) ! r^20
+
+        if (rdy s^s z^zoom_pos)<0
+          for ^iZ 1 9
+	        ^AsphCoef(^iZ) == -^AsphCoef(^iZ)
+          end for
+        end if
+
+    ! ----------------------------------
+    ! Surface: Zernike
+    ! ----------------------------------
+    els if ^SrfType_Zernike
+            ^elt_type == 21
+
+    ! ----------------------------------
+    ! Surface: not implemented
+    ! ----------------------------------
+    els
 
 	     wri""
 	     wri"This macro does not incorporate this refractive element type."
 	     wri"Surface data not included here."
 	     wri""
-!
 	     goto label_100
-!
+
 	end if
 els
 	wri""
 	wri"This macro does not incorporate this element type."
 	wri"Surface data not included here."
 	wri""
-!
+
 	goto label_100
-!
+
 end if    ! END OF CHECKING SURFACE SHAPE TYPE
 
 lbl skip_surfaceshape_check
@@ -676,32 +695,36 @@ if (typ sur s^s) = 'SPH'
 		end if
 	end if
 
-els if ((typ sur s^s)='ASP')or((typ sur s^s)='CON')or((typ sur s^s)='YTO'or((typ sur s^s)='SPS ZRN'))
-	^conic_const == (k s^s z^zoom_pos)
-	if ^conic_const > 0		! oblate ellipsoid
-		if (^a_flat_surf)
-			^Kr_elt == -^infinity
-		els
-			if (rdy s^s z^zoom_pos) >= 0
-				^Kr_elt == -(rdy s^s z^zoom_pos)
-			els
-				^Kr_elt == (rdy s^s z^zoom_pos)
-			end if
-			wri""
-			wri"Verify fElt, eElt for the following oblate ellipsoid surface."
-			wri""
-		end if
-	els
-		if (^a_flat_surf)
-			^Kr_elt == -^infinity
-		els
-			if (rdy s^s z^zoom_pos) >= 0
-				^Kr_elt == -(rdy s^s z^zoom_pos)
-			els
-				^Kr_elt == (rdy s^s z^zoom_pos)
-			end if
-		end if
-	end if
+els if ((typ sur s^s)='ASP') or &
+       ((typ sur s^s)='CON') or &
+       ((typ sur s^s)='YTO') or &
+       ^SrfType_Zernike
+
+      ^conic_const == (k s^s z^zoom_pos)
+      if ^conic_const > 0		! oblate ellipsoid
+      	if (^a_flat_surf)
+          ^Kr_elt == -^infinity
+      	els
+          if (rdy s^s z^zoom_pos) >= 0
+      	    ^Kr_elt == -(rdy s^s z^zoom_pos)
+      	  els
+      	    ^Kr_elt == (rdy s^s z^zoom_pos)
+      	  end if
+      	  ! wri""
+      	  ! wri"Verify fElt, eElt for the following oblate ellipsoid surface."
+      	  ! wri""
+      	end if
+      els
+      	if (^a_flat_surf)
+      	  ^Kr_elt == -^infinity
+      	els
+      	  if (rdy s^s z^zoom_pos) >= 0
+      	    ^Kr_elt == -(rdy s^s z^zoom_pos)
+      	  els
+      	    ^Kr_elt == (rdy s^s z^zoom_pos)
+      	  end if
+      	end if
+      end if
 els
 
    wri""
@@ -734,21 +757,19 @@ end if
 ! Assume it is always the intersection with ray R1 F1 Z1.
 ! This means that for Macos creation of different field angles,
 ! F1 Z1 must be the same, for consistency.
+
+!ToDo: if F1 is not the optical axis ray then it will be off
+!      with segmented optics, it is not defined
+!      need to define it at the centre of the aperture if defined otherwise at the VptElt
+!      Z1 => z^zoom_pos
+
       ^x_RptElt == (x r1 f1 s^s g^global_sur z1)
       ^y_RptElt == (y r1 f1 s^s g^global_sur z1)
       ^z_RptElt == (z r1 f1 s^s g^global_sur z1)
 !
 ! Write out the current number of real surfaces, excluding dummy surfaces.
-	wri Q^format18 ^iRealElt
-
-!                         Write Surface Label (commented out writing "Surface_#")
-!      if  ((sll s^s)='')
-!          wri Q^format19 ^s
-!      els
-          ^slabel == (sll s^s)
-          wri Q^format19a ^slabel
-!      end if
-!
+	wri Q"    iElt=  '3d'" ^iRealElt
+    wri Q" EltName= '32c'" (sll s^s)
 
 ! Write out text that indicates the surface shape and element type.
 
@@ -799,45 +820,98 @@ end if
 
 
 	if ^elt_type = 1
-		wri" Element= Reflector"
-		wri" Surface= Conic"
+		wri"  Element=   Reflector"
+		wri"  Surface=   Conic"
 
 	els if ^elt_type = 2
-		wri" Element= Reflector"
-		wri" Surface= Flat"
+		wri"  Element=   Reflector"
+		wri"  Surface=   Flat"
 
 	els if ^elt_type = 3
-		wri" Element= FocalPlane"
-		wri" Surface= Flat"
+		wri"  Element=   FocalPlane"
+		wri"  Surface=   Flat"
 
-	els if ^elt_type = 4
-		wri" Element= Reference"
-		wri" Surface= Conic"
+    els if ^elt_type = 4
+		wri"  Element=   Reference"
+		wri"  Surface=   Conic"
 
-	els if ^elt_type = 8
-		wri" Element= Refractor"
-		wri" Surface= Conic"
+    els if ^elt_type = 8
+		wri"  Element=   Refractor"
+		wri"  Surface=   Conic"
 
-      els if ^elt_type = 14             ! added Zernike Reflector
-        wri" Element= Reflector"
-        wri" Surface= Zernike"
+    els if ^elt_type = 12             ! Aspheric Reflector
+        wri"  Element=   Reflector"
+        wri"  Surface=   Aspheric"
 
-      els if ^elt_type = 21             ! added Zernike Refractor (not tested)
-        wri" Element= Refractor"
-        wri" Surface= Zernike"
+    els if ^elt_type = 14             ! Zernike Reflector
+        wri"  Element=   Reflector"
+        wri"  Surface=   Zernike"
+
+    els if ^elt_type = 21             ! Zernike Refractor
+        wri"  Element=   Refractor"
+        wri"  Surface=   Zernike"
 
 	els
-		wri Q^format20 ^elt_type    ! y toroid refractor
-	end if
-!
-	wri Q^format21 ^Kr_elt
-	wri Q^format22 ^conic_const
-!
-	if (^elt_type = 12)OR(^elt_type = 20)
-		wri Q^format22a ^a_sur ^b_sur ^c_sur ^d_sur
+		wri Q" EltType=  '3d'" ^elt_type    ! y toroid refractor
 	end if
 
-      lbl skipwriteshape
+	wri Q"   KrElt=  '3e.20e'" ^Kr_elt
+	wri Q"   KcElt=  '3e.20e'" ^conic_const
+
+
+    ! Aspheric Surface: 4 Coefficients per line
+	if (^elt_type = 12)OR(^elt_type = 20)
+
+      ! get max AsphCoef
+      ^nAsphCoef == 0
+      for ^iZ 1 9
+        if ^AsphCoef(^iZ) <> 0
+          ^nAsphCoef == ^iZ
+        end if
+      end for
+
+      ! dump data
+      if ^nAsphCoef = 0
+        write "nAsphCoef=   1"
+        write " AsphCoef=   0e0"
+      else
+        ^Grp == 4
+        buf ins b70 i1
+        if ^nAsphCoef <= ^Grp
+          ! all Coefs are zero
+          write Q"nAsphCoef=   'd'" ^nAsphCoef
+          for ^iZ 1 ^nAsphCoef
+            buf put B70 i1 j^iZ ^AsphCoef(^iZ)
+          end for
+          buf fmt b70 i1 j1..L '3e.20e'
+          wri " AsphCoef="  (buf.txt b70 i1)
+        else
+          write Q"nAsphCoef=   'd'" ^nAsphCoef
+          ^k == 0
+          for ^iZ 1 ^nAsphCoef
+            ^k == ^k+1
+            buf put b70 i1 j^k ^AsphCoef(^iZ)
+            if ^k=^Grp
+              buf fmt b70 i1 j1..^Grp '3e.20e'
+              if ^iZ<=^Grp
+                wri " AsphCoef=" (buf.txt b70 i1)
+              else
+                wri "          " (buf.txt b70 i1)
+              end if
+              buf del b70 i1
+              ^k == 0
+            end if
+          end for
+
+          if modf(^nAsphCoef,^Grp)>0
+            buf fmt b70 i1 j1..L '3e.20e'
+            wri "          " (buf.txt b70 i1)
+          end if
+        end if
+      end if
+
+    end if
+lbl skipwriteshape
 !
 ! --------------- Write Zernike parameters to 45th term ----------------------
 !
@@ -926,7 +1000,7 @@ end if
           wri   "ZernModes=  " (buf.txt B70 i1)
 
           ^Grp == 6
-           buf del b70 i1
+          buf del b70 i1
           if ^nZrnCoef <= ^Grp
             for ^iZ 1 ^nZrnCoef
               buf put B70 i1 j^iZ ^ZrnMode(^iZ)
@@ -1057,23 +1131,25 @@ out yes
 buf mov b0 i1 j1
 
 buf fnd "APERTURE DATA"
-^apestr == (buf.str b0 iC+1 j1)
-^shape == substr(^apestr,1,3)
+if (buf.fnd) = 1
+  ^apestr == (buf.str b0 iC+1 j1)
+  ^shape == substr(^apestr,1,3)
 
-IF (^shape = 'CIR')
-  ^Ape_type == 1
-  ^cir == (cir s^s)
-  ^adx == (adx s^s)
-  ^ady == (ady s^s)
-ELS IF (^shape = 'REX')
-  ^ape_type == 2
-  ^rex == (rex s^s)
-  ^rey == (rey s^s)
-  ^adx == (adx s^s)
-  ^ady == (ady s^s)
-ELS
-   ^ape_type == 0
-END IF
+  IF (^shape = 'CIR')
+    ^Ape_type == 1
+    ^cir == (cir s^s)
+    ^adx == (adx s^s)
+    ^ady == (ady s^s)
+  ELS IF (^shape = 'REX')
+    ^ape_type == 2
+    ^rex == (rex s^s)
+    ^rey == (rey s^s)
+    ^adx == (adx s^s)
+    ^ady == (ady s^s)
+  ELS
+     ^ape_type == 0
+  END IF
+end if
 
 ! -----------------------------------
 ! Determine shape of obscuration.
@@ -1087,23 +1163,25 @@ out yes
 buf mov b0 i1 j1
 
 buf fnd "APERTURE DATA"
-^apestr == (buf.str b0 iC+1 j1)
-^shape == substr(^apestr,1,3)
+if (buf.fnd) = 1
+  ^apestr == (buf.str b0 iC+1 j1)
+  ^shape == substr(^apestr,1,3)
 
-IF (^shape = 'CIR')
-  ^obs_type == 1
-  ^cirobs == (cir obs s^s)
-  ^adxobs == (adx obs s^s)
-  ^adyobs == (ady obs s^s)
-ELS IF (^shape = 'REX')
-  ^obs_type == 2
-  ^rexobs == (rex obs s^s)
-  ^reyobs == (rey obs s^s)
-  ^adxobs == (adx obs s^s)
-  ^adyobs == (ady obs s^s)
-ELS
-  ^obs_type == 0
-END IF
+  IF (^shape = 'CIR')
+    ^obs_type == 1
+    ^cirobs == (cir obs s^s)
+    ^adxobs == (adx obs s^s)
+    ^adyobs == (ady obs s^s)
+  ELS IF (^shape = 'REX')
+    ^obs_type == 2
+    ^rexobs == (rex obs s^s)
+    ^reyobs == (rey obs s^s)
+    ^adxobs == (adx obs s^s)
+    ^adyobs == (ady obs s^s)
+  ELS
+    ^obs_type == 0
+  END IF
+end if
 ! ============================================ end of aperture determination -=--------------------------
 
 ! Now write out the aperture data, if any. ----------------------------------
@@ -1250,7 +1328,7 @@ wri Q^format3 ^zero ^zero ^zero ^zero ^zero ^zero  1
 wri""
 out t		! close output file, output to screen only.
 !
-ver all yes
+ver all no; chk no
 
 ! 9/17/13  undo the y decenter of si
 yde si 0
