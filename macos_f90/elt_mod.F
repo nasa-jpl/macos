@@ -27,24 +27,24 @@ C***********************************************************************
         CHARACTER,DIMENSION(:),    ALLOCATABLE :: EltName*maxEltNameLength
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
 
-        INTEGER, PARAMETER :: ReflectorElt   =   1,
-     &                        FocalPlaneElt  =   2,
-     &                        ReferenceElt   =   3,
-     &                        HOEElt         =   4,
-     &                        GratingElt     =   5,
-     &                        RefractorElt   =   6,
-     &                        ObscuringElt   =   7,
-     &                        ReturnElt      =   8,
-     &                        NSRefractorElt =   9,
-     &                        LensArrayElt   =  10,
-     &                        SegmentElt     =  11,
-     &                        NSReflectorElt =  12,
-     &                        TrGratingElt   =  13,
-     &                        RfPolarizerElt =  14,
-     &                        TrPolarizerElt =  15,
-     &                        CGHNullPlate   =  16,
-     &                        DoeTrGrating   =  17,
-     &                        mEltTypes      =  17     ! defines available Element Types
+        INTEGER, PARAMETER :: ReflectorElt    =   1,
+     &                        FocalPlaneElt   =   2,
+     &                        ReferenceElt    =   3,
+     &                        HOEElt          =   4,
+     &                        GratingElt      =   5,
+     &                        RefractorElt    =   6,
+     &                        ObscuringElt    =   7,
+     &                        ReturnElt       =   8,
+     &                        NSRefractorElt  =   9,
+     &                        LensArrayElt    =  10,
+     &                        SegmentElt      =  11,
+     &                        NSReflectorElt  =  12,
+     &                        TrGratingElt    =  13,
+     &                        RfPolarizerElt  =  14,
+     &                        TrPolarizerElt  =  15,
+     &                        CGHNullPlateElt =  16,
+     &                        DoeTrGratingElt =  17,
+     &                        mEltTypes       =  17     ! defines available Element Types
 
         CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
      &                     (/'Reflector',         ! 1
