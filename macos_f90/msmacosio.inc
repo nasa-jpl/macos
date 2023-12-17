@@ -780,10 +780,10 @@ C       Set entrance condition flags to .FALSE.
               TypeString=VALUE
 
               !  Assign EltID & set flags that aren't needed
-              DO i=1,17
+              DO i=1,mEltTypes
                 IF (LCMP(TypeString,EltTypeName(i),6)) THEN
                   EltID(iElt)=i
-	          If (i==17) Then
+	          If (i==DoeTrGrating) Then
 		    ! is a DOE element
 	            nDOE=nDOE+1; DoeId(iElt)=nDOE
 	          End If

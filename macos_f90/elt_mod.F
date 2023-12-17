@@ -42,6 +42,8 @@ C***********************************************************************
      &                        TrGratingElt   =  13,
      &                        RfPolarizerElt =  14,
      &                        TrPolarizerElt =  15,
+     &                        CGHNullPlate   =  16,
+     &                        DoeTrGrating   =  17,
      &                        mEltTypes      =  17     ! defines available Element Types
 
         CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
