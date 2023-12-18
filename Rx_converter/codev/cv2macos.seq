@@ -207,7 +207,7 @@ chk yes		! enforce explicit declaration
 lcl str ^format1  ^format2a ^format2   ^format3
 lcl str ^format17 ^format18 ^format19a
 lcl str ^format22 ^format22b
-lcl str ^format29 ^format30
+lcl str ^format29
 lcl str ^format31 ^format32
 lcl str ^format40   ! p,x,y,z,l Mon
 lcl str ^fmt
@@ -479,7 +479,6 @@ wri""
 ^format22  =="   KcElt=  '3e.20e'"
 ^format22b =="   KcElt=  '3e.20e'"
 ^format29  =="PropType=    '1d'"
-^format30  ==" nECoord=   '2d'"
 ^format31  =="   ApVec=  '2e.15e' '2e.15e' '2e.15e'"
 ^format32  =="   ApVec=  '2e.15e' '2e.15e' '2e.15e' '2e.15e'"
 
@@ -1191,21 +1190,21 @@ end if
 ! xObs is the direction cosine of the x axis of the aperture.
 
 if (^ape_type = 1) ! (circular aperture)
-   wri  "  ApType=    Circle"
-   wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
-   wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri  "   ApType=   Circle"
+   wri q"    ApVec=  '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
+   wri q"     xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 
 els if (^ape_type = 2) ! (rectangular aperture)
-   wri  "  ApType=    Rectangular"
-   wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
-   wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri  "   ApType=   Rectangular"
+   wri q"    ApVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
+   wri q"     xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 else
-  wri   "  ApType=    None"
+  wri   "   ApType=   None"
 end if
 
 ! Now write out the obscuration data, if any. ----------------------------------
 if (^obs_type = 0)
-   wri "   nObs =   0"
+   wri  "     nObs=   0"
 
 else if (^obs_type = 1)
    wri  "     nObs=   1"
@@ -1221,24 +1220,24 @@ end if
 ! End of 9/17/2013 section for apertures and obscurations. ======================================================================
 
 ! Write Zelt
-	wri Q"    zElt=  '2e.15e'" -^Kr_elt   ! Zelt
+	wri Q"     zElt= '3e.20e'" -^Kr_elt   ! Zelt
 
 ! New Sept 2013: Prop Type.
 	if (^s = ^exitpupil)
-		wri "PropType=   FarField"
+		wri " PropType=   FarField"
    els
-		wri "PropType=   Geometric"
+		wri " PropType=   Geometric"
 	end if
 
-	wri Q^format30 ^n_ecoord    ! necoord
 
 ! 6x6 matrix creation.
 ! Now write out the direction cosine data, found above, as a 6x6 matrix.
 ! Upper right and lower left 3x3 quadrants are zeros. The upper left and lower right quadrants
 ! have the x,y,z axis direction cosines arranged in columns.
 
-      ^fmt == "    '5c'  '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' "
+      ^fmt == "     '5c' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' '3e.20e' "
 
+      wri Q"  nECoord=  '2d'" ^n_ecoord
       wri Q^fmt "TElt=" ^L_LocalXaxis ^L_LocalYaxis ^L_LocalZaxis 0             0             0
       wri Q^fmt "     " ^M_LocalXaxis ^M_LocalYaxis ^M_LocalZaxis 0             0             0
       wri Q^fmt "     " ^N_LocalXaxis ^N_LocalYaxis ^N_LocalZaxis 0             0             0
