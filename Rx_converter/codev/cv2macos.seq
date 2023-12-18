@@ -1116,6 +1116,7 @@ if 0
   ! ! sections of text, applied to apertures and surfaces.
 end if
 
+
 !---------------------------------------------------------------------------------------------------------------------
 ! 9/17/2013.  New commands to evaluate aperture data, easier than trying to understand and modify the original commands
 ! which had been commented out anyway.
@@ -1189,15 +1190,21 @@ end if
 ! The scale factor, ^xobs_scale, was computed near the top of the FOR loop through the surfaces.
 ! xObs is the direction cosine of the x axis of the aperture.
 
+if (rdy s^s z^zoom_pos) <= 0   ! PsiElt*zAxis (TElt) -- Srf. Normal <=> Local CSYS
+  ^xobs_scale == -1
+else
+  ^xobs_scale == +1
+end if
+
 if (^ape_type = 1) ! (circular aperture)
-   wri  "   ApType=   Circle"
-   wri q"    ApVec=  '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
-   wri q"     xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri  "   ApType=   Circle   !"
+   wri q"    ApVec= '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
+   wri q"     xObs= '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 
 els if (^ape_type = 2) ! (rectangular aperture)
    wri  "   ApType=   Rectangular"
-   wri q"    ApVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
-   wri q"     xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+   wri q"    ApVec= '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
+   wri q"     xObs= '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
 else
   wri   "   ApType=   None"
 end if
