@@ -232,10 +232,10 @@ lcl num ^obs_type ^obs_1 ^obs_2 ^obs_3 ^obs_4
 lcl num ^n ^m                 ! Counters
 lcl num ^z(1..66)             ! Zernike Coefficient Array
 lcl num ^ascr ^bscr ^cscr     ! Surface Coordinate Angles [radians]
-lcl num ^pMx  ^pMy  ^pMz      ! pMon components
-lcl num ^xMx  ^xMy  ^xMz      ! xMon components
-lcl num ^yMx  ^yMy  ^yMz      ! yMon components
-lcl num ^zMx  ^zMy  ^zMz      ! zMon components
+! lcl num ^pMx  ^pMy  ^pMz      ! pMon components
+! lcl num ^xMx  ^xMy  ^xMz      ! xMon components
+! lcl num ^yMx  ^yMy  ^yMz      ! yMon components
+! lcl num ^zMx  ^zMy  ^zMz      ! zMon components
 lcl num ^lMr                  ! Normalizing Radius
 lcl num ^L_LocalXaxis ^M_LocalXaxis ^N_LocalXaxis
 lcl num ^L_LocalYaxis ^M_LocalYaxis ^N_LocalYaxis
@@ -858,11 +858,13 @@ end if
 	wri Q"   KrElt=  '3e.20e'" ^Kr_elt
 	wri Q"   KcElt=  '3e.20e'" ^conic_const
 
-
+    ! ---------------------------
+    ! Aspheric Surface
+    ! ---------------------------
     ! Aspheric Surface: 4 Coefficients per line
 	if (^elt_type = 12)OR(^elt_type = 20)
 
-      ! get max AsphCoef
+      ! get max AsphCoef idx
       ^nAsphCoef == 0
       for ^iZ 1 9
         if ^AsphCoef(^iZ) <> 0
@@ -912,12 +914,13 @@ end if
 
     end if
 lbl skipwriteshape
-!
-! --------------- Write Zernike parameters to 45th term ----------------------
-!
-! ToDo: Fringe Zernikes
-! ToDo: update if not SPS ZRN type
-!
+
+    ! ---------------------------
+    ! Zernike Surface
+    ! ---------------------------
+
+! ToDo: Extended Fringe
+
     if (^elt_type = 14)OR(^elt_type = 21)
 
         ! Zernike Standard B&W
@@ -961,26 +964,26 @@ lbl skipwriteshape
         ! ------------------------------------------------------------------------- end
 
 
-        !          ***** Currently using VptElt for pMon *****
-        !          This probably does not accommodate off-axis type optics
-        !   ^pMx ==
-        !   ^pMy ==
-        !   ^pMz ==
-            ^ascr== (asc s^s g^global_sur z^zoom_pos)*^pi/180.0
-            ^bscr== (bsc s^s g^global_sur z^zoom_pos)*^pi/180.0
-            ^cscr== (csc s^s g^global_sur z^zoom_pos)*^pi/180.0
-        !   ^xMx == COSF(^cscr)*COSF(^bscr)
-        !   ^xMy == SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr)
-        !   ^xMz == SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr)
-        !   ^yMx == -SINF(^cscr)*COSF(^bscr)
-        !   ^yMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
-        !   ^yMz == COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr)
-        ^yMx == -(COSF(^cscr)*COSF(^bscr))
-        ^yMy == -(SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr))
-        ^yMz == -(SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr))
-        ^xMx == -SINF(^cscr)*COSF(^bscr)
-        ^xMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
-        ^xMz == -(COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr))
+        ! !          ***** Currently using VptElt for pMon *****
+        ! !          This probably does not accommodate off-axis type optics
+        ! !   ^pMx ==
+        ! !   ^pMy ==
+        ! !   ^pMz ==
+        !     ^ascr== (asc s^s g^global_sur z^zoom_pos)*^pi/180.0
+        !     ^bscr== (bsc s^s g^global_sur z^zoom_pos)*^pi/180.0
+        !     ^cscr== (csc s^s g^global_sur z^zoom_pos)*^pi/180.0
+        ! !   ^xMx == COSF(^cscr)*COSF(^bscr)
+        ! !   ^xMy == SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr)
+        ! !   ^xMz == SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr)
+        ! !   ^yMx == -SINF(^cscr)*COSF(^bscr)
+        ! !   ^yMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
+        ! !   ^yMz == COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr)
+        ! ^yMx == -(COSF(^cscr)*COSF(^bscr))
+        ! ^yMy == -(SINF(^cscr)*COSF(^ascr)-SINF(^ascr)*COSF(^cscr)*SINF(^bscr))
+        ! ^yMz == -(SINF(^cscr)*SINF(^ascr)+COSF(^cscr)*SINF(^bscr)*COSF(^ascr))
+        ! ^xMx == -SINF(^cscr)*COSF(^bscr)
+        ! ^xMy == COSF(^cscr)*COSF(^ascr)+SINF(^cscr)*SINF(^bscr)*SINF(^ascr)
+        ! ^xMz == -(COSF(^cscr)*SINF(^ascr)+SINF(^cscr)*SINF(^bscr)*COSF(^ascr))
         !
         ! ***** Currently using psiElt for zMon *****
 
@@ -1193,12 +1196,13 @@ if (^ape_type = 1) ! (circular aperture)
    wri  "  ApType=    Circle"
    wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' " ^cir ^adx ^ady
    wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
-end if
 
-if (^ape_type = 2) ! (rectangular aperture)
+els if (^ape_type = 2) ! (rectangular aperture)
    wri  "  ApType=    Rectangular"
    wri q"   ApVec=  '3e.20e' '3e.20e' '3e.20e' '3e.20e' " ^adx-^rex ^adx+^rex ^ady-^rey ^ady+^rey
    wri q"    xObs=  '3e.20e' '3e.20e' '3e.20e' " ^L_LocalXaxis*^xobs_scale ^M_LocalXaxis*^xobs_scale ^N_LocalXaxis*^xobs_scale
+else
+  wri   "  ApType=    None"
 end if
 
 ! Now write out the obscuration data, if any. ----------------------------------
