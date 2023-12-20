@@ -15,7 +15,7 @@ LOCAL_FFLAGS = -g
 #LOCAL_FFLAGS += -O3
 
 # Readline Library Defines
-USE_READLINE = 1
+USE_READLINE = 0
 ifeq ($(USE_READLINE),1)
   RL_LIBRARY_VERSION = 8.2
   RL_ROOT = $(SRC_DIR)/readline-8.2
