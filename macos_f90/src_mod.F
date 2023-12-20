@@ -16,13 +16,12 @@ C***********************************************************************
 
         !   integer, parameter :: SrcGrid_
 
-
-        ! From "prop_defs.inc"
-        ! GridTypeName(1)='Circular'
-        ! GridTypeName(2)='Square'
-        ! GridTypeName(3)='Hex'
-        ! GridTypeName(4)='Pie'
-        ! GridTypeName(5)='Flower'
+        INTEGER, PARAMETER :: GridType_Circular  = 1,
+     &                        GridType_Square    = 2,
+     &                        GridType_Hex       = 3,
+     &                        GridType_Pie       = 4,
+     &                        GridType_Flower    = 5,
+     &                        GridType_UDG       = 6
 
         Character*32, PARAMETER :: GridTypeName(6) = ['Circular',
      &                                                'Square',
