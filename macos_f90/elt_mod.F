@@ -204,7 +204,7 @@ C***********************************************************************
 	Logical, dimension(:,:), allocatable :: LRayToElt
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
-     &                  PropTypeName(15), GridTypeName(6),
+     &                  PropTypeName(15), ! GridTypeName(6),
      &                  BaseUnits,WaveUnits
 
         Character*32, dimension(:), allocatable ::
