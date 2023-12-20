@@ -13,7 +13,26 @@ C***********************************************************************
 	use param_mod
 
 	Implicit none
-	Save
+
+        !   integer, parameter :: SrcGrid_
+
+
+        ! From "prop_defs.inc"
+        ! GridTypeName(1)='Circular'
+        ! GridTypeName(2)='Square'
+        ! GridTypeName(3)='Hex'
+        ! GridTypeName(4)='Pie'
+        ! GridTypeName(5)='Flower'
+
+        Character*32, PARAMETER :: GridTypeName(6) = ['Circular',
+     &                                                'Square',
+     &                                                'Hex',
+     &                                                'Pie',
+     &                                                'Flower',
+     &                                                'UDGrid']
+
+
+        Save
 
 	Logical :: UDBeam_FLG, DrawMode
 	Logical, dimension(:), allocatable :: ObsType_FLG,
