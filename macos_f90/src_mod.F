@@ -12,9 +12,7 @@ C***********************************************************************
         use Kinds
 	use param_mod
 
-	Implicit none
-
-        !   integer, parameter :: SrcGrid_
+	IMPLICIT NONE
 
         INTEGER, PARAMETER :: GridType_Circular  = 1,
      &                        GridType_Square    = 2,
