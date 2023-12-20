@@ -958,6 +958,7 @@ C***********************************************************************
 	SUBROUTINE SumData(GridType,npts)
 	use param_mod
 	use elt_mod
+        use src_mod, only: GridTypeName
 
 	IMPLICIT NONE
 
