@@ -1289,8 +1289,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------ ZernType
             ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
               TypeString=VALUE
-	      If (LCMP(TypeString,'Noll',4))
-     &  	TypeString='NormNoll'  ! backward compatibility
+              If (LCMP(TypeString,'Noll',4))
+     &          TypeString='NormNoll'  ! backward compatibility
 
               ! Assign ZernTypeL
               If (LCMP(TypeString,'Norm',4)) Then
@@ -1301,7 +1301,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     ZernTypeL_FLG=.TRUE.
                   END IF
                 END DO
-	        If (ZernTypeL(iElt)==9) Then
+                If (ZernTypeL(iElt)==9) Then
                   ! Annual
                   i=1
                   Do ! find first ' ' in VALUE
@@ -1309,10 +1309,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     i=i+1
                   End Do
                   Do ! skip all leading ' '
-		    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
+                    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
                     i=i+1
                   End Do
-	          If (i<MacosValLen)
+                  If (i<MacosValLen)
      &              READ(VALUE(i:),*) ZernAnnuRatio(iElt)
                 End If
               Else
@@ -1412,14 +1412,6 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 ! reset to default (backwards compatibility)
                 nZernCoef = nZernModes_Default
               END BLOCK
-
-!ToDo: fix
-	      ! Added by jzlou, 03/2005
-	      If ( ZernTypeL(iElt)>3 .and. ZernTypeL(iElt)<7)
-     &        Then ! normalized Zern type
-                ! Set up normalizing coef for circular Zernike terms
-                Call SetZernNormCoef(ZernTypeL(iElt))
-	      End If
 
 	      ZernCoef_FLG=.TRUE.
               GO TO 61
