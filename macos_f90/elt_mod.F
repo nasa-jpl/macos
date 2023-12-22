@@ -126,7 +126,7 @@ C***********************************************************************
         INTEGER, PARAMETER ::
      &          ZernType_ANSI            =  1,
      &          ZernType_BornWolf        =  2,
-     &          ZernType_Fringe          =  3,
+     &          ZernType_Fringe          =  3,   ! incl. CODE V's 37th mode
      &          ZernType_NormANSI        =  4,
      &          ZernType_NormBornWolf    =  5,
      &          ZernType_NormFringe      =  6,
@@ -172,12 +172,24 @@ C***********************************************************************
      &           'NormANSI',         !  4   was Malacara
      &           'NormBornWolf',     !  5
      &           'NormFringe',       !  6
-     &           'NormHex',          !  7   Mahajan ordering
-     &           'NormNoll',         !  8   Mahajan ordering
+     &           'NormHex',          !  7
+     &           'NormNoll',         !  8
      &           'NormAnnularNoll',  !  9   Annular Zernike
      &           'Noll',             ! 10   Noll Ordering
      &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
 
+        REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
+     &             (/       1d0,        2d0,        2d0, sqrt( 6d0), sqrt( 3d0), sqrt( 6d0),
+     &               sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt(10d0), sqrt(10d0),
+     &               sqrt( 5d0), sqrt(10d0), sqrt(10d0), sqrt(12d0), sqrt(12d0), sqrt(12d0),
+     &               sqrt(12d0), sqrt(12d0), sqrt(12d0), sqrt(14d0), sqrt(14d0), sqrt(14d0),
+     &               sqrt( 7d0), sqrt(14d0), sqrt(14d0), sqrt(14d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt( 9d0), sqrt(18d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0),
+     &               sqrt(11d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0)/)
 
 	Integer, parameter :: mCoat=10,
      &           	      mPrvGlass=5, ! max private glasses defined in Rx
@@ -542,9 +554,6 @@ C***********************************************************************
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
 
-        ! Initialize Zernike normalizing factors only
-        Call SetZernNormCoef(0)
-
         End Subroutine elt_mod_init
 
 C  ***************************************************************
@@ -824,33 +833,5 @@ C  ***************************************************************
      &                                  WavLen  = 0e0_pr)
 
         END SUBROUTINE elt_mod_init_vars
-
-C  ***************************************************************
-!ToDo -- update
-
-	Subroutine SetZernNormCoef(arg_flag)
-        Integer :: arg_flag
-	Logical, save :: first_entry=.true.
-
-	if (arg_flag==0) first_entry=.true.  ! needed by MRESET command
-
-	if (first_entry) then
-          ! Define normalizing constants for circular Zernike terms,
-          ! in Malacara order
-          ZnNmFac_m(1)=1; ZnNmFac_m(2)=2; ZnNmFac_m(3)=2
-          ZnNmFac_m(4)=sqrt(6d0); ZnNmFac_m(5)=sqrt(3d0)
-          ZnNmFac_m(6)=sqrt(6d0); ZnNmFac_m(7)=2.*sqrt(2d0)
-          ZnNmFac_m(8:10)=ZnNmFac_m(7); ZnNmFac_m(11:12)=sqrt(10d0)
-          ZnNmFac_m(13)=sqrt(5d0); ZnNmFac_m(14:15)=sqrt(10d0)
-          ZnNmFac_m(16:21)=2.*sqrt(3d0); ZnNmFac_m(22:24)=sqrt(14d0)
-          ZnNmFac_m(25)=sqrt(7d0); ZnNmFac_m(26:28)=sqrt(14d0)
-          ZnNmFac_m(29:36)=4d0; ZnNmFac_m(37:40)=3.*sqrt(2d0)
-          ZnNmFac_m(41)=3d0; ZnNmFac_m(42:45)=3.*sqrt(2d0)
-          ZnNmFac_m(46:66)=0.0 ! undefined beyond first 45 terms; MACOS now
-	  		       ! supports zern coef upto first 45 terms
-	  first_entry=.false.
-	  return
-	end if
-        End Subroutine SetZernNormCoef
 
 	End Module elt_mod
