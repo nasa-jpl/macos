@@ -2914,96 +2914,6 @@ C  Here if read failed
 
 C***********************************************************************
 
-	SUBROUTINE EltConvert(EltType,EltID,SrfType)
-
-	IMPLICIT NONE
-	INTEGER EltType,EltID,SrfType
-
-	IF (EltType.EQ.1) THEN
-	  EltID=1
-	  SrfType=2
-	ELSE IF (EltType.EQ.2) THEN
-	  EltID=1
-	  SrfType=1
-	ELSE IF (EltType.EQ.3) THEN
-	  EltID=2
-	  SrfType=1
-	ELSE IF (EltType.EQ.4) THEN
-	  EltID=3
-	  SrfType=2
-	ELSE IF (EltType.EQ.5) THEN
-	  EltID=11
-	  SrfType=2
-	ELSE IF (EltType.EQ.6) THEN
-	  EltID=4
-	  SrfType=2
-	ELSE IF (EltType.EQ.7) THEN
-	  EltID=5
-	  SrfType=2
-	ELSE IF (EltType.EQ.8) THEN
-	  EltID=6
-	  SrfType=2
-	ELSE IF (EltType.EQ.9) THEN
-	  EltID=7
-	  SrfType=2
-	ELSE IF (EltType.EQ.10) THEN
-	  EltID=8
-	  SrfType=2
-	ELSE IF (EltType.EQ.11) THEN
-	  EltID=1
-	  SrfType=2
-	ELSE IF (EltType.EQ.12) THEN
-	  EltID=1
-	  SrfType=3
-	ELSE IF (EltType.EQ.13) THEN
-	  EltID=12
-	  SrfType=2
-	ELSE IF (EltType.EQ.14) THEN
-	  EltID=1
-	  SrfType=8
-	ELSE IF (EltType.EQ.15) THEN
-	  EltID=11
-	  SrfType=8
-	ELSE IF (EltType.EQ.16) THEN
-	  EltID=1
-	  SrfType=4
-	ELSE IF (EltType.EQ.17) THEN
-	  EltID=11
-	  SrfType=4
-	ELSE IF (EltType.EQ.18) THEN
-	  EltID=1
-	  SrfType=5
-	ELSE IF (EltType.EQ.19) THEN
-	  EltID=11
-	  SrfType=5
-	ELSE IF (EltType.EQ.20) THEN
-	  EltID=6
-	  SrfType=3
-	ELSE IF (EltType.EQ.21) THEN
-	  EltID=6
-	  SrfType=8
-	ELSE IF (EltType.EQ.22) THEN
-	  EltID=10
-	  SrfType=2
-	ELSE IF (EltType.EQ.23) THEN
-	  EltID=10
-	  SrfType=3
-	ELSE IF (EltType.EQ.24) THEN
-	  EltID=9
-	  SrfType=2
-	ELSE IF (EltType.EQ.25) THEN
-	  EltID=1
-	  SrfType=6
-	ELSE IF (EltType.EQ.26) THEN
-	  EltID=1
-	  SrfType=7
-	END IF
-
-	RETURN
-	END SUBROUTINE EltConvert
-
-C***********************************************************************
-
 	SUBROUTINE EltSurfCompat(iElt,EltID_FLG,SrfType_FLG)
 	use param_mod
 	use elt_mod
@@ -3210,5 +3120,3 @@ C***********************************************************************
 C***********************************************************************
 C*******End file iosub.inc**********************************************
 C***********************************************************************
-
-
