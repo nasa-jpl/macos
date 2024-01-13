@@ -780,10 +780,10 @@ C       Set entrance condition flags to .FALSE.
               TypeString=VALUE
 
               !  Assign EltID & set flags that aren't needed
-              DO i=1,17
+              DO i=1,mEltTypes
                 IF (LCMP(TypeString,EltTypeName(i),6)) THEN
                   EltID(iElt)=i
-	          If (i==17) Then
+	          If (i==DoeTrGratingElt) Then
 		    ! is a DOE element
 	            nDOE=nDOE+1; DoeId(iElt)=nDOE
 	          End If
@@ -909,21 +909,18 @@ C       Set entrance condition flags to .FALSE.
               TypeString=VALUE
 
               ! Assign SrfType
-              DO i=1,mSrfType  ! mSrfType = 11  -jzlou
-                IF (LCMP(TypeString,SrfTypeName(i),4)) THEN
-                  SrfType(iElt)=i
-                  SrfType_FLG=.TRUE.
-	          If (EltID(iElt)==3 .AND. SrfType(iElt)==9) Then
-	            ! a reference (EltID=3) and GridData surface, a surface grid
-		    ! data array will be defined to modulate wavefront. -jzlou
-                    ifOPDModGrid(iElt)=.TRUE.
-		  End If
-	          If (.false. .AND. EltID(iElt)==1
-     &                .AND. SrfType(iElt)==11) Then
-	            print*,'** Found a reflector with AsphGrid srf'
-	            STOP
-	          End If
-                 END IF
+              DO i=1,mSrfType
+                IF (LCMP(TypeString, SrfTypeName(i),4)) THEN
+                  SrfType(iElt) = i
+                  SrfType_FLG   = .TRUE.
+
+                  ! Phase Grid
+                  !   a reference (EltID=3) and GridData surface, a surface grid
+                  !   data array will be defined to modulate wavefront. -jzlou
+                  ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
+     &                                 SrfType(iElt)==SrfType_GridData)
+
+                END IF
               END DO
               IF (.NOT.SrfType_FLG) THEN
                 WRITE(*,132) TypeString
@@ -1292,8 +1289,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------ ZernType
             ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
               TypeString=VALUE
-	      If (LCMP(TypeString,'Noll',4))
-     &  	TypeString='NormNoll'  ! backward compatibility
+              If (LCMP(TypeString,'Noll',4))
+     &          TypeString='NormNoll'  ! backward compatibility
 
               ! Assign ZernTypeL
               If (LCMP(TypeString,'Norm',4)) Then
@@ -1304,7 +1301,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     ZernTypeL_FLG=.TRUE.
                   END IF
                 END DO
-	        If (ZernTypeL(iElt)==9) Then
+                If (ZernTypeL(iElt)==9) Then
                   ! Annual
                   i=1
                   Do ! find first ' ' in VALUE
@@ -1312,10 +1309,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     i=i+1
                   End Do
                   Do ! skip all leading ' '
-		    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
+                    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
                     i=i+1
                   End Do
-	          If (i<MacosValLen)
+                  If (i<MacosValLen)
      &              READ(VALUE(i:),*) ZernAnnuRatio(iElt)
                 End If
               Else
@@ -1337,15 +1334,38 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (.NOT.ZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
 		WRITE(*,*)'Check and reload Rx!'
-		LOAD_SUCCESS=.FALSE.; GO TO 70
+                GO TO 99
               END IF
               GO TO 61
 
             ! ------------------------------------------------------------------------------ nZernCoef
-            ! if not defined, default value is used
+            ! if not defined, default value of 45 is used (backwards compatibility)
             ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
               READ(VALUE,*) nZernCoef
-              if ((nZernCoef<1).or.(nZernCoef>mZernModes)) GOTO 99
+              IF ((nZernCoef<1) .OR. (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) GOTO 99
+
+              nZernCoef_FLG = .True.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------ ZernModes
+            ! nZernCoef  = 4
+            ! ZernModes  = 8 2 3 10
+            ! ZernCoef   = ...
+
+            ELSE IF (LCMP(VAR_NAM,'ZernModes',9)) THEN
+
+              IF (.NOT. nZernCoef_FLG) THEN
+                PRINT *, "must define nZernCoef before ZernModes"
+                GOTO 99
+              END IF
+              ZernModes(:) = 0
+              READ(VALUE,*)(ZernModes(j),j=1,nZernCoef)
+              IF (ANY(ZernModes(:nZernCoef)<1) .OR.
+     &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
+                PRINT *, "Ensure that: 0 < ZernModes <= max Zrn Mode"
+                GOTO 99
+              END IF
+              ZernModes_FLG = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------ ZernCoef
@@ -1356,19 +1376,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6  ! defines # of Coefs. within a Grp per line
                 INTEGER            :: iZ, nZ
+                REAL(8)            :: ZernCoefs(mZernModes)
                 ! --------------------------
 
-                ZernCoef(:,iElt) = 0d0
+                ZernCoefs(:) = 0d0
                 IF (nZernCoef<=Grp) THEN
-                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,nZernCoef)
+                  READ(VALUE,*)(ZernCoefs(j),j=1,nZernCoef)
                 ELSE
 
-                  READ(VALUE,*)(ZernCoef(j,iElt),j=1,Grp)
+                  READ(VALUE,*)(ZernCoefs(j),j=1,Grp)
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nZernCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
 
                   ! incomplete Grp
@@ -1376,18 +1397,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   iZ = nZernCoef/Grp
                   IF (nZ>0) THEN
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
-                nZernCoef = nZernModes_Default  ! reset to default
-              END BLOCK
 
-	      ! Added by jzlou, 03/2005
-	      If ( ZernTypeL(iElt)>3 .and. ZernTypeL(iElt)<7)
-     &        Then ! normalized Zern type
-                ! Set up normalizing coef for circular Zernike terms
-                Call SetZernNormCoef(ZernTypeL(iElt))
-	      End If
+                ! may need to remap coefficients based on ZernModes
+                IF (ZernModes_FLG) THEN
+                  ZernCoef(:,iElt) = 0d0
+                  ZernCoef(ZernModes(:nZernCoef),iElt) = ZernCoefs(:nZernCoef)
+                ELSE
+                  ZernCoef(:,iElt) = ZernCoefs
+                END IF
+
+                ! reset to default (backwards compatibility)
+                nZernCoef = nZernModes_Default
+              END BLOCK
 
 	      ZernCoef_FLG=.TRUE.
               GO TO 61
@@ -2612,4 +2636,3 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             END IF
 
 	  END DO  ! End of "DO ... END DO" loop for reading elements
-

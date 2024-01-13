@@ -40,70 +40,74 @@ C       This routine initializes the Entrance Condition Flags to .FALSE.
 
 C***********************************************************************
 
-	SUBROUTINE LOHIN2()
-	use param_mod
-	use src_mod
-	use loh_I2
+        SUBROUTINE LOHIN2()
+          use param_mod
+          use src_mod
+          use loh_I2
 
-	IMPLICIT NONE
+          IMPLICIT NONE
 
-C       This routine initializes the Element Flags to .FALSE.
+          ! This routine initializes the Element Flags to .FALSE.
 
-	EltName_FLG = .FALSE.
-	EltType_FLG = .FALSE.
-	EltID_FLG = .FALSE.
-	SrfType_FLG = .FALSE.
-	fElt_FLG = .FALSE.
-	eElt_FLG = .FALSE.
-	AsphCoef_FLG = .FALSE.
-	AnaCoef_FLG = .FALSE.
-	ZernCoef_FLG = .FALSE.
-	ZernTypeL_FLG = .FALSE.
-	MonCoef_FLG = .FALSE.
-	UDSrfCoef_FLG = .FALSE.; UDSrfType_FLG = .FALSE.
-	UDSrfParam_FLG = .FALSE.
-	pMon_FLG = .FALSE.
-	xMon_FLG = .FALSE.; yMon_FLG = .FALSE.; zMon_FLG = .FALSE.
-	lMon_FLG = .FALSE.
-	KrElt_FLG=.FALSE.
-	KcElt_FLG=.FALSE.
-	psiElt_FLG = .FALSE.
-	VptElt_FLG = .FALSE.
-	RptElt_FLG = .FALSE.
-	IndRefE_FLG = .FALSE.
-	GlassElt_FLG = .FALSE.
-	GlassCoef_FLG = .TRUE.
-	ExtincE_FLG = .FALSE.
-	nCoat_FLG = .FALSE.
-	CoatIndx_FLG = .FALSE.
-	CoatThk_FLG = .FALSE.
-	zElt_FLG = .FALSE.
-	PropType_FLG = .FALSE.
-	PinHole_FLG = .FALSE.
-	nECoord_FLG = .FALSE.
-	ApType_FLG = .FALSE.
-	ApVec_FLG = .FALSE.
-	nObs_FLG = .FALSE.
-	ObsType_FLG(1:mObs) = .FALSE.
-	ObsVec_FLG(1:mObs) = .FALSE.
+          EltName_FLG         = .FALSE.
+          EltType_FLG         = .FALSE.
+          EltID_FLG           = .FALSE.
+          SrfType_FLG         = .FALSE.
+          fElt_FLG            = .FALSE.
+          eElt_FLG            = .FALSE.
+          AsphCoef_FLG        = .FALSE.
+          AnaCoef_FLG         = .FALSE.
+          ZernCoef_FLG        = .FALSE.
+          nZernCoef_FLG       = .FALSE.
+          ZernModes_FLG       = .FALSE.
+          ZernTypeL_FLG       = .FALSE.
+          MonCoef_FLG         = .FALSE.
+          UDSrfCoef_FLG       = .FALSE.
+          UDSrfType_FLG       = .FALSE.
+          UDSrfParam_FLG      = .FALSE.
+          pMon_FLG            = .FALSE.
+          xMon_FLG            = .FALSE.
+          yMon_FLG            = .FALSE.
+          zMon_FLG            = .FALSE.
+          lMon_FLG            = .FALSE.
+          KrElt_FLG           = .FALSE.
+          KcElt_FLG           = .FALSE.
+          psiElt_FLG          = .FALSE.
+          VptElt_FLG          = .FALSE.
+          RptElt_FLG          = .FALSE.
+          IndRefE_FLG         = .FALSE.
+          GlassElt_FLG        = .FALSE.
+          GlassCoef_FLG       = .TRUE.      ! <<<< check
+          ExtincE_FLG         = .FALSE.
+          nCoat_FLG           = .FALSE.
+          CoatIndx_FLG        = .FALSE.
+          CoatThk_FLG         = .FALSE.
+          zElt_FLG            = .FALSE.
+          PropType_FLG        = .FALSE.
+          PinHole_FLG         = .FALSE.
+          nECoord_FLG         = .FALSE.
+          ApType_FLG          = .FALSE.
+          ApVec_FLG           = .FALSE.
+          nObs_FLG            = .FALSE.
+          ObsType_FLG(1:mObs) = .FALSE.
+          ObsVec_FLG(1:mObs)  = .FALSE.
 
-	xObs_FLG = .FALSE.
-	TElt_FLG = .FALSE.
-	LensArrayType_FLG = .FALSE.
-	LensArrayWidth_FLG = .FALSE.
-	h1HOE_FLG = .FALSE.
-	h2HOE_FLG = .FALSE.
-	OrderHOE_FLG = .FALSE.
-	WaveHOE_FLG = .FALSE.
-	RuleWidth_FLG = .FALSE.
-	nGridMat_FLG = .FALSE.
-	GridMat_FLG = .FALSE.
-	GridSrfdx_FLG = .FALSE.
+          xObs_FLG            = .FALSE.
+          TElt_FLG            = .FALSE.
+          LensArrayType_FLG   = .FALSE.
+          LensArrayWidth_FLG  = .FALSE.
+          h1HOE_FLG           = .FALSE.
+          h2HOE_FLG           = .FALSE.
+          OrderHOE_FLG        = .FALSE.
+          WaveHOE_FLG         = .FALSE.
+          RuleWidth_FLG       = .FALSE.
+          nGridMat_FLG        = .FALSE.
+          GridMat_FLG         = .FALSE.
+          GridSrfdx_FLG       = .FALSE.
 
-	ZernCent_FLG  = .FALSE.
+          ZernCent_FLG        = .FALSE.
 
-	RETURN
-	END SUBROUTINE LOHIN2
+        END SUBROUTINE LOHIN2
 
 C***********************************************************************
 
@@ -954,6 +958,7 @@ C***********************************************************************
 	SUBROUTINE SumData(GridType,npts)
 	use param_mod
 	use elt_mod
+        use src_mod, only: GridTypeName
 
 	IMPLICIT NONE
 
@@ -2909,96 +2914,6 @@ C  Here if read failed
 
 C***********************************************************************
 
-	SUBROUTINE EltConvert(EltType,EltID,SrfType)
-
-	IMPLICIT NONE
-	INTEGER EltType,EltID,SrfType
-
-	IF (EltType.EQ.1) THEN
-	  EltID=1
-	  SrfType=2
-	ELSE IF (EltType.EQ.2) THEN
-	  EltID=1
-	  SrfType=1
-	ELSE IF (EltType.EQ.3) THEN
-	  EltID=2
-	  SrfType=1
-	ELSE IF (EltType.EQ.4) THEN
-	  EltID=3
-	  SrfType=2
-	ELSE IF (EltType.EQ.5) THEN
-	  EltID=11
-	  SrfType=2
-	ELSE IF (EltType.EQ.6) THEN
-	  EltID=4
-	  SrfType=2
-	ELSE IF (EltType.EQ.7) THEN
-	  EltID=5
-	  SrfType=2
-	ELSE IF (EltType.EQ.8) THEN
-	  EltID=6
-	  SrfType=2
-	ELSE IF (EltType.EQ.9) THEN
-	  EltID=7
-	  SrfType=2
-	ELSE IF (EltType.EQ.10) THEN
-	  EltID=8
-	  SrfType=2
-	ELSE IF (EltType.EQ.11) THEN
-	  EltID=1
-	  SrfType=2
-	ELSE IF (EltType.EQ.12) THEN
-	  EltID=1
-	  SrfType=3
-	ELSE IF (EltType.EQ.13) THEN
-	  EltID=12
-	  SrfType=2
-	ELSE IF (EltType.EQ.14) THEN
-	  EltID=1
-	  SrfType=8
-	ELSE IF (EltType.EQ.15) THEN
-	  EltID=11
-	  SrfType=8
-	ELSE IF (EltType.EQ.16) THEN
-	  EltID=1
-	  SrfType=4
-	ELSE IF (EltType.EQ.17) THEN
-	  EltID=11
-	  SrfType=4
-	ELSE IF (EltType.EQ.18) THEN
-	  EltID=1
-	  SrfType=5
-	ELSE IF (EltType.EQ.19) THEN
-	  EltID=11
-	  SrfType=5
-	ELSE IF (EltType.EQ.20) THEN
-	  EltID=6
-	  SrfType=3
-	ELSE IF (EltType.EQ.21) THEN
-	  EltID=6
-	  SrfType=8
-	ELSE IF (EltType.EQ.22) THEN
-	  EltID=10
-	  SrfType=2
-	ELSE IF (EltType.EQ.23) THEN
-	  EltID=10
-	  SrfType=3
-	ELSE IF (EltType.EQ.24) THEN
-	  EltID=9
-	  SrfType=2
-	ELSE IF (EltType.EQ.25) THEN
-	  EltID=1
-	  SrfType=6
-	ELSE IF (EltType.EQ.26) THEN
-	  EltID=1
-	  SrfType=7
-	END IF
-
-	RETURN
-	END SUBROUTINE EltConvert
-
-C***********************************************************************
-
 	SUBROUTINE EltSurfCompat(iElt,EltID_FLG,SrfType_FLG)
 	use param_mod
 	use elt_mod
@@ -3205,5 +3120,3 @@ C***********************************************************************
 C***********************************************************************
 C*******End file iosub.inc**********************************************
 C***********************************************************************
-
-

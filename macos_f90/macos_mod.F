@@ -12,25 +12,25 @@ C application code, such as dda.f and nng.f, etc.
 C
 
 #include "realtype.h"
+#include "macos_definitions.h"
 
- 	Module macos_mod
-	use traceutil_mod, only: RayStateStr
+        Module macos_mod
+        use traceutil_mod, only: RayStateStr
         use Constants, only: smallestReal => EPS   ! used in macos_cmd_loop.inc
 
-	Implicit none
-	Save
+        Implicit none
+        Save
 
-	Logical, dimension(:), allocatable :: ifRegrid,ifIntSrfSet,
-     &			                      zernUsrOpt
+        Logical, dimension(:), allocatable :: ifRegrid,ifIntSrfSet,
+     &                                        zernUsrOpt
         Integer, dimension(:), allocatable :: nDrawElt
         SREAL, dimension(:,:,:), allocatable :: Cmatrix,TEsp
-        Real*8, dimension(:), allocatable :: dxMin,dxMax,
-     &	  		      DXavg,dxDev
-	! Real*8, parameter :: smallestReal=1.0d-15
-	Integer, parameter :: CohImg=-1,InCohImg=1
-	Integer :: ImgMode
-	Real*8 :: bmRad  ! beam radius
-	Character(len=2) :: cUnit
+        Real*8, dimension(:), allocatable :: dxMin,dxMax,DXavg,dxDev
+        ! Real*8, parameter :: smallestReal=1.0d-15
+        Integer, parameter :: CohImg=-1,InCohImg=1
+        Integer :: ImgMode
+        Real*8 :: bmRad  ! beam radius
+        Character(len=2) :: cUnit
 
 #ifdef CMACOS
         SREAL, dimension(:,:), allocatable :: PixArray
@@ -233,34 +233,19 @@ C
 	Character(len=MacosCharLen) :: input_buf
 	Logical :: use_default = .false.
 
-	print*,' '
-	print*,
-     &  '******************'//
-     &  '******************************************************'
-	print*,
-     &  '*                 '//
-     &  '                                                     *'
-	print*,
-     &  '* Modeling and Analysis for Controlled Optical Systems '//
-     &  'Program (MACOS) *'
-        print*,
-     &  '* MACOS Version 3.35                                '//
-     &  '                   *'
-        print*,
-     &  '* Copyright (C) 1995-2015, California Institute of T'//
-     &  'echnology          *'
-        print*,
-     &  '* U.S. Government Sponsorship Is Acknowledged.      '//
-     &  '                   *'
-        print*,
-     &  '*                 '//
-     &  '                                                     *'
-	print*,
-     &  '******************'//
-     &  '******************************************************'
+        print*,' '
+        write(*, "(' ',A)"), repeat('*',72)
+        write(*, "(' *',70x,'*')")
+        write(*, "(' * ',A,' *')") MACOS_ACRONYM
+        write(*, "(' * Copyright (C) 1995-',I4,', California Institute of Technology',10X,'*')"), MACOS_VERSION_YEAR
+        write(*, "(' * U.S. Government Sponsorship is Acknowledged.',25x,'*')")
+        write(*, "(' *',70x,'*')")
+        write(*, "(' * ',20x,'MACOS Version: ',A7,27X,'*')"), MACOS_VERSION
+        write(*, "(' *',70x,'*')")
+        write(*, "(' ',A)"), repeat('*',72)
 
-	!problem_size = default_problem_size
-	problem_size = -1
+        !problem_size = default_problem_size
+        problem_size = -1
   15    print*,' '
         print*,'Please select a model size to run MACOS.'
         print*,

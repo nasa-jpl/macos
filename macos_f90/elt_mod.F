@@ -27,22 +27,24 @@ C***********************************************************************
         CHARACTER,DIMENSION(:),    ALLOCATABLE :: EltName*maxEltNameLength
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
 
-        INTEGER, PARAMETER :: ReflectorElt   =   1,
-     &                        FocalPlaneElt  =   2,
-     &                        ReferenceElt   =   3,
-     &                        HOEElt         =   4,
-     &                        GratingElt     =   5,
-     &                        RefractorElt   =   6,
-     &                        ObscuringElt   =   7,
-     &                        ReturnElt      =   8,
-     &                        NSRefractorElt =   9,
-     &                        LensArrayElt   =  10,
-     &                        SegmentElt     =  11,
-     &                        NSReflectorElt =  12,
-     &                        TrGratingElt   =  13,
-     &                        RfPolarizerElt =  14,
-     &                        TrPolarizerElt =  15,
-     &                        mEltTypes      =  17     ! defines available Element Types
+        INTEGER, PARAMETER :: ReflectorElt    =   1,
+     &                        FocalPlaneElt   =   2,
+     &                        ReferenceElt    =   3,
+     &                        HOEElt          =   4,
+     &                        GratingElt      =   5,
+     &                        RefractorElt    =   6,
+     &                        ObscuringElt    =   7,
+     &                        ReturnElt       =   8,
+     &                        NSRefractorElt  =   9,
+     &                        LensArrayElt    =  10,
+     &                        SegmentElt      =  11,
+     &                        NSReflectorElt  =  12,
+     &                        TrGratingElt    =  13,
+     &                        RfPolarizerElt  =  14,
+     &                        TrPolarizerElt  =  15,
+     &                        CGHNullPlateElt =  16,
+     &                        DoeTrGratingElt =  17,
+     &                        mEltTypes       =  17     ! defines available Element Types
 
         CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
      &                     (/'Reflector',         ! 1
@@ -89,6 +91,45 @@ C***********************************************************************
      &                       'Toric',              !10
      &                       'AsGrData'/)          !11  ! was 'InfluenceFunction'
 
+        ! Old Element Definitions:
+        INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
+                     !  EltType           SrfType                           EltID       Element                        EltType         SurfType
+     &               [[ReflectorElt,   SrfType_Conic],         ! [[ 1, 2], !  1   <==  Conic Mirror                  1 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Flat],          !  [ 1, 1], !  2   <==  Flat Mirror                   1 (Reflector)   |  1 (FlatSrf)
+     &                [FocalPlaneElt,  SrfType_Flat],          !  [ 2, 1], !  3   <==  Focal Plane                   2 (FocalPln)    |  1 (FlatSrf)
+     &                [ReferenceElt,   SrfType_Conic],         !  [ 3, 2], !  4   <==  Reference Surface             3 (RefSrf)      |  2 (ConSrf)
+     &                [SegmentElt,     SrfType_Conic],         !  [11, 2], !  5   <==  Mirror Segment               11 (Segment)     |  2 (ConSrf)
+     &                [HOEElt,         SrfType_Conic],         !  [ 4, 2], !  6   <==  Holographic Optical Elmnt     4 (HOE)         |  2 (ConSrf)
+     &                [GratingElt,     SrfType_Conic],         !  [ 5, 2], !  7   <==  Straight-Ruled Grating        5 (Grating)     |  2 (ConSrf)
+     &                [RefractorElt,   SrfType_Conic],         !  [ 6, 2], !  8   <==  Conic Refractor               6 (Refractor)   |  2 (ConSrf)
+     &                [ObscuringElt,   SrfType_Conic],         !  [ 7, 2], !  9   <==  Obscuring Surface             7 (ObsSrf)      |  2 (ConSrf)
+     &                [ReturnElt,      SrfType_Conic],         !  [ 8, 2], ! 10   <==  Return Surface                8 (ReturnSrf)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Conic],         !  [ 1, 2], ! 11   <==  General Conic Reflector       1 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Aspheric],      !  [ 1, 3], ! 12   <==  Aspheric Reflector            1 (Reflector)   |  3 (AsphSrf)
+     &                [NSReflectorElt, SrfType_Conic],         !  [12, 2], ! 13   <==  Non-Sequential Reflector     12 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Zernike],       !  [ 1, 8], ! 14   <==  Zernike Reflector             1 (Reflector)   |  8 (MonSrf)
+     &                [SegmentElt,     SrfType_Zernike],       !  [11, 8], ! 15   <==  Zernike Segment              11 (Segment)     |  8 (MonSrf)
+     &                [ReflectorElt,   SrfType_Monomial],      !  [ 1, 4], ! 16   <==  Monomial Reflector            1 (Reflector)   |  4 (MonSrf)
+     &                [SegmentElt,     SrfType_Monomial],      !  [11, 4], ! 17   <==  Monomial Segment             11 (Segment)     |  4 (MonSrf)
+     &                [ReflectorElt,   SrfType_Interpolated],  !  [ 1, 5], ! 18   <==  Interpolated Reflector        1 (Reflector)   |  5 (IntSrf)
+     &                [SegmentElt,     SrfType_Interpolated],  !  [11, 5], ! 19   <==  Interpolated Segment         11 (Segment)     |  5 (IntSrf)
+     &                [RefractorElt,   SrfType_Aspheric],      !  [ 6, 3], ! 20   <==  Aspheric Refractor            6 (Refractor)   |  3 (AsphSrf)
+     &                [RefractorElt,   SrfType_Zernike],       !  [ 6, 8], ! 21   <==  Zernike Refractor             6 (Refractor)   |  4 (MonSrf)
+     &                [LensArrayElt,   SrfType_Conic],         !  [10, 2], ! 22   <==  Conic Lens Array             10 (LensArray)   |  2 (ConSrf)
+     &                [LensArrayElt,   SrfType_Aspheric],      !  [10, 3], ! 23   <==  Aspheric Lens Array          10 (LensArray)   |  3 (AsphSrf)
+     &                [NSRefractorElt, SrfType_Conic],         !  [ 9, 2], ! 24   <==  Non-Sequential Refractor      9 (NSRefractor) |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Anamorphic],    !  [ 1, 6], ! 25   <==  Anamorphic Reflector          1 (Reflector)   |  6 (AnaSrf)
+     &                [ReflectorElt,   SrfType_UserDefined]]   !  [ 1, 7]] ! 26   <==  User-Defined Reflector        1 (Reflector)   |  7 (UDSrf)
+
+
+
+
+        ! Surface types that require a Srf. Coord. Systems
+        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(4)=
+     &                      [SrfType_Zernike,
+     &                       SrfType_Monomial,
+     &                       SrfType_GridData,
+     &                       SrfType_AsGrData]
 
         !
         ! --------- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS  ---------
@@ -118,7 +159,7 @@ C***********************************************************************
         INTEGER, PARAMETER ::
      &          ZernType_ANSI            =  1,
      &          ZernType_BornWolf        =  2,
-     &          ZernType_Fringe          =  3,
+     &          ZernType_Fringe          =  3,   ! incl. CODE V's 37th mode
      &          ZernType_NormANSI        =  4,
      &          ZernType_NormBornWolf    =  5,
      &          ZernType_NormFringe      =  6,
@@ -127,6 +168,21 @@ C***********************************************************************
      &          ZernType_NormAnnularNoll =  9,
      &          ZernType_Noll            = 10,
      &          ZernType_ExtFringe       = 11
+
+        INTEGER, PARAMETER :: ZernType_MaxMode(mZernType) =
+     &          [mZernModes,  ! ZernType_ANSI
+     &           mZernModes,  ! ZernType_BornWolf
+     &                   37,  ! ZernType_Fringe
+     &           mZernModes,  ! ZernType_NormANSI
+     &           mZernModes,  ! ZernType_NormBornWolf
+     &                   37,  ! ZernType_NormFringe
+     &                    0,  ! ZernType_NormHex          implemented ???
+     &           mZernModes,  ! ZernType_NormNoll
+     &           mZernModes,  ! ZernType_NormAnnularNoll
+     &           mZernModes,  ! ZernType_Noll
+     &           mZernModes]  ! ZernType_ExtFringe
+
+
 
         INTEGER, DIMENSION(5), PARAMETER ::
      &          ZernType_rms_normalised = (/ZernType_NormANSI,
@@ -149,12 +205,24 @@ C***********************************************************************
      &           'NormANSI',         !  4   was Malacara
      &           'NormBornWolf',     !  5
      &           'NormFringe',       !  6
-     &           'NormHex',          !  7   Mahajan ordering
-     &           'NormNoll',         !  8   Mahajan ordering
+     &           'NormHex',          !  7
+     &           'NormNoll',         !  8
      &           'NormAnnularNoll',  !  9   Annular Zernike
      &           'Noll',             ! 10   Noll Ordering
      &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
 
+        REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
+     &             (/       1d0,        2d0,        2d0, sqrt( 6d0), sqrt( 3d0), sqrt( 6d0),
+     &               sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt(10d0), sqrt(10d0),
+     &               sqrt( 5d0), sqrt(10d0), sqrt(10d0), sqrt(12d0), sqrt(12d0), sqrt(12d0),
+     &               sqrt(12d0), sqrt(12d0), sqrt(12d0), sqrt(14d0), sqrt(14d0), sqrt(14d0),
+     &               sqrt( 7d0), sqrt(14d0), sqrt(14d0), sqrt(14d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt( 9d0), sqrt(18d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0),
+     &               sqrt(11d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0)/)
 
 	Integer, parameter :: mCoat=10,
      &           	      mPrvGlass=5, ! max private glasses defined in Rx
@@ -181,7 +249,7 @@ C***********************************************************************
 	Logical, dimension(:,:), allocatable :: LRayToElt
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
-     &                  PropTypeName(15), GridTypeName(6),
+     &                  PropTypeName(15), ! GridTypeName(6),
      &                  BaseUnits,WaveUnits
 
         Character*32, dimension(:), allocatable ::
@@ -519,9 +587,6 @@ C***********************************************************************
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
 
-        ! Initialize Zernike normalizing factors only
-        Call SetZernNormCoef(0)
-
         End Subroutine elt_mod_init
 
 C  ***************************************************************
@@ -803,31 +868,17 @@ C  ***************************************************************
         END SUBROUTINE elt_mod_init_vars
 
 C  ***************************************************************
-!ToDo -- update
 
-	Subroutine SetZernNormCoef(arg_flag)
-        Integer :: arg_flag
-	Logical, save :: first_entry=.true.
+        SUBROUTINE EltConvert(EltType,EltID,SrfType)
+          IMPLICIT NONE
+          INTEGER, intent(in) :: EltType   ! old Encoding ID
+          INTEGER, intent(out):: EltID
+          INTEGER, intent(out):: SrfType
+          ! ----------------------------------
+          EltID   = EltType2EltIDSrfType(EltType,1)  ! => EltTypeName
+          SrfType = EltType2EltIDSrfType(EltType,2)  ! => SrfTypeName
 
-	if (arg_flag==0) first_entry=.true.  ! needed by MRESET command
+        END SUBROUTINE EltConvert
 
-	if (first_entry) then
-          ! Define normalizing constants for circular Zernike terms,
-          ! in Malacara order
-          ZnNmFac_m(1)=1; ZnNmFac_m(2)=2; ZnNmFac_m(3)=2
-          ZnNmFac_m(4)=sqrt(6d0); ZnNmFac_m(5)=sqrt(3d0)
-          ZnNmFac_m(6)=sqrt(6d0); ZnNmFac_m(7)=2.*sqrt(2d0)
-          ZnNmFac_m(8:10)=ZnNmFac_m(7); ZnNmFac_m(11:12)=sqrt(10d0)
-          ZnNmFac_m(13)=sqrt(5d0); ZnNmFac_m(14:15)=sqrt(10d0)
-          ZnNmFac_m(16:21)=2.*sqrt(3d0); ZnNmFac_m(22:24)=sqrt(14d0)
-          ZnNmFac_m(25)=sqrt(7d0); ZnNmFac_m(26:28)=sqrt(14d0)
-          ZnNmFac_m(29:36)=4d0; ZnNmFac_m(37:40)=3.*sqrt(2d0)
-          ZnNmFac_m(41)=3d0; ZnNmFac_m(42:45)=3.*sqrt(2d0)
-          ZnNmFac_m(46:66)=0.0 ! undefined beyond first 45 terms; MACOS now
-	  		       ! supports zern coef upto first 45 terms
-	  first_entry=.false.
-	  return
-	end if
-        End Subroutine SetZernNormCoef
 
-	End Module elt_mod
+        End Module elt_mod
