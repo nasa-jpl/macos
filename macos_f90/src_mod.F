@@ -12,8 +12,24 @@ C***********************************************************************
         use Kinds
 	use param_mod
 
-	Implicit none
-	Save
+	IMPLICIT NONE
+
+        INTEGER, PARAMETER :: GridType_Circular  = 1,
+     &                        GridType_Square    = 2,
+     &                        GridType_Hex       = 3,
+     &                        GridType_Pie       = 4,
+     &                        GridType_Flower    = 5,
+     &                        GridType_UDG       = 6
+
+        Character*32, PARAMETER :: GridTypeName(6) = ['Circular',
+     &                                                'Square',
+     &                                                'Hex',
+     &                                                'Pie',
+     &                                                'Flower',
+     &                                                'UDGrid']
+
+
+        Save
 
 	Logical :: UDBeam_FLG, DrawMode
 	Logical, dimension(:), allocatable :: ObsType_FLG,

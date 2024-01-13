@@ -60,8 +60,9 @@ C       Setup for new input scheme
 	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
 	INTEGER nVertex
 
-        INTEGER :: nZernCoef    ! Set to Default when reading in values to make it backwards compatible
-        INTEGER :: nAsphCoef    ! Ditto
+        INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
+        INTEGER :: nZernCoef              ! Ditto
+        INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
 
 c***loh<
 C	File setup and initial conditions read

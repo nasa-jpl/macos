@@ -75,8 +75,9 @@ C       Setup for new input scheme
 
 	REAL*8 D1(9)
 
-        INTEGER :: nZernCoef    ! Set to Default when reading in values to make it backwards compatible
-        INTEGER :: nAsphCoef    ! Ditto
+        INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
+        INTEGER :: nZernCoef              ! Ditto
+        INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
 
 
 c***loh<
@@ -940,16 +941,9 @@ C  Get Zernike Parameters
 	      CALL DACCEPT(ZernCoef(43:45,iElt),DDEF,3,
      &	        'Enter Zernike coefficients 43-45 ')
 
-	      ! Added by jzlou, 03/2005
-              if ( ZernTypeL(iElt)>3) then ! A normalized Zern type
-                ! Set up normalizing coef for circular Zernike terms
-                Call SetZernNormCoef(ZernTypeL(iElt))
-              end if
-	    ELSE
-	      DO I=1,45
-		ZernCoef(I,iElt)=0d0
-	      END DO
-	    END IF
+            ELSE
+              ZernCoef(:,iElt)=0d0
+            END IF
 C  End Zernike Parameters
 
 C  Get User-defined Parameters & Data
@@ -2077,7 +2071,6 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	        DO i=4,6
                   IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
                     ZernTypeL(MB_I(1))=i
-	            Call SetZernNormCoef(ZernTypeL(MB_I(1)))
                     LNOTSET=.FALSE.
                   END IF
                 END DO
@@ -3041,4 +3034,3 @@ C  Write to character output
 C***********************************************************************
 C****** End file macosio.F *********************************************
 C***********************************************************************
-
