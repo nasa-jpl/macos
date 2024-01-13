@@ -1,12 +1,12 @@
 C File prop_defs.inc
 
-	! Source aperture grid types
-	GridTypeName(1)='Circular'
-        GridTypeName(2)='Square'
-        GridTypeName(3)='Hex'
-        GridTypeName(4)='Pie'
-        GridTypeName(5)='Flower'
-        GridTypeName(6)='UDGrid'
+	! Source aperture grid types  => moved to sourcsub.F
+!	GridTypeName(1)='Circular'
+!        GridTypeName(2)='Square'
+!        GridTypeName(3)='Hex'
+!        GridTypeName(4)='Pie'
+!        GridTypeName(5)='Flower'
+!        GridTypeName(6)='UDGrid'
 
 !        SrfTypeName(1)='Flat'
 !        SrfTypeName(2)='Conic'
