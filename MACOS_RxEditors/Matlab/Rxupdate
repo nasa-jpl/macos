@@ -1,0 +1,15 @@
+#!/bin/sh
+echo $1
+sed -i s/e+018/D+22/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e+0/D+/ $1
+sed -i s/e-0/D-/ $1
+sed -i s/e-0/D-/ $1
+sed -i s/e-0/D-/ $1
+sed -i s/e-0/D-/ $1
+sed -i s/e-0/D-/ $1
+sed -i s/e-0/D-/ $1
