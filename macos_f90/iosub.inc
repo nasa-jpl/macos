@@ -148,107 +148,81 @@ C       Setup for new input scheme
 C       Check for things user must specify
 C       Set defaults, if necessary
 
-	IF (ChfRayDir_FLG) THEN
-	  CONTINUE
-	ELSE
-	  ChfRayDir(:)  = (/0d0, 0d0, 1d0/)
+	IF (.not.ChfRayDir_FLG) THEN
+	  	  ChfRayDir(:)  = (/0d0, 0d0, 1d0/)
 	  ChfRayDir_FLG = .TRUE.
 	  WRITE(*,112)'ChfRayDir'
 	END IF
 
-	IF (ChfRayPos_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.ChfRayPos_FLG) THEN
 	  CALL DZERO(ChfRayPos,3)
 	  ChfRayPos_FLG=.TRUE.
 	  WRITE(*,112)'ChfRayPos'
 	END IF
 
-	IF (IndRef_FLG) THEN
-	  CONTINUE
-	ELSE
-	  IndRef(0)=1.0D0
+	IF (.not.IndRef_FLG) THEN
+	  	  IndRef(0)=1.0D0
 	  IndRef_FLG=.TRUE.
 	  WRITE(*,112)'IndRef(0)'
 	END IF
 
-	IF (Extinc_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.Extinc_FLG) THEN
 	  Extinc(0)=0.0D0
 	  Extinc_FLG=.TRUE.
-c	  WRITE(*,112)'Extinc(0)'
+	  WRITE(*,112)'Extinc(0)'
 	END IF
 
-	IF (BaseUnits_FLG) THEN
-	  CONTINUE
-	ELSE
-	  BaseUnits='(default-unit)'
+	IF (.not.BaseUnits_FLG) THEN
+	  	  BaseUnits='(default-unit)'
 	  BaseUnits_FLG=.TRUE.
 	  WRITE(*,112)'BaseUnits'
 	END IF
 
-	IF (WaveUnits_FLG) THEN
-	  CONTINUE
-	ELSE
-	  WaveUnits='none'
+	IF (.not.WaveUnits_FLG) THEN
+	  	  WaveUnits='none'
 	  WaveUnits_FLG=.TRUE.
 	  WRITE(*,112)'WaveUnits'
 	END IF
 
-	IF (Wavelen_FLG) THEN
-	  CONTINUE
-	ELSE
-	  Wavelen=6.0D-7
+	IF (.not.Wavelen_FLG) THEN
+	  	  Wavelen=6.0D-7
 	  Wavelen_FLG=.TRUE.
 	  WRITE(*,112)'Wavelen'
 	END IF
 
-	IF (Flux_FLG) THEN
-	  CONTINUE
-	ELSE
-	  Flux=1.0D0
+	IF (.not.Flux_FLG) THEN
+	  	  Flux=1.0D0
 	  Flux_FLG=.TRUE.
 	  WRITE(*,112)'Flux'
 	END IF
 
-	IF (GridType_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.GridType_FLG) THEN
 	  GridType=1
 	  GridType_FLG=.TRUE.
 	  WRITE(*,112)'GridType'
 	END IF
 
-	IF (Aperture_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.Aperture_FLG) THEN
 	  Aperture=1.0D0
 	  Aperture_FLG=.TRUE.
 	  WRITE(*,112)'Aperture'
 	END IF
 
-	IF (Obscratn_FLG) THEN
-	  CONTINUE
-	ELSE
-	  Obscratn=0.0D0
-	  Obscratn_FLG=.TRUE.
+	IF (.not.Obscratn_FLG) THEN
+	  Obscratn     = 0.0D0
+	  Obscratn_FLG = .TRUE.
 	  WRITE(*,112)'Obscratn'
 	END IF
 
-	IF (nGridpts_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.nGridpts_FLG) THEN
 	  nGridpts=mpts/2
 	  npts=nGridpts-1
 	  nGridpts_FLG=.TRUE.
 	  WRITE(*,112)'nGridpts'
 	END IF
 
-	IF (xGrid_FLG) THEN
-	  CONTINUE
-	ELSE
-	  IF (ChfRayDir_FLG) THEN
+	IF (.not.xGrid_FLG) THEN
+	  	  IF (ChfRayDir_FLG) THEN
 	    xGrid(1)=ChfRayDir(3)
 	    xGrid(2)=ChfRayDir(1)
 	    xGrid(3)=ChfRayDir(2)
@@ -261,10 +235,8 @@ c	  WRITE(*,112)'Extinc(0)'
 	  END IF
 	END IF
 
-	IF (yGrid_FLG) THEN
-	  CONTINUE
-	ELSE
-	  IF (xGrid_FLG) THEN
+	IF (.not.yGrid_FLG) THEN
+	  	  IF (xGrid_FLG) THEN
 	    CALL DNEGATE(zaxis,ChfRayDir,3)
 	    CALL DXPROD(yGrid,zaxis,xGrid)
 	    CALL DUNITIZE(yGrid)
@@ -278,17 +250,13 @@ c	  WRITE(*,112)'Extinc(0)'
 	  END IF
 	END IF
 
-	IF (nElt_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.nElt_FLG) THEN
 	  WRITE(*,111)' nElt'
 	  ENTR_OK=.FALSE.
           RETURN
 	END IF
 
-	IF (nSeg_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.nSeg_FLG) THEN
 	  IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
 	    WRITE(*,111)' nSeg'
 	    ENTR_OK=.FALSE.
@@ -300,65 +268,50 @@ c	  WRITE(*,112)'Extinc(0)'
 	  END IF
 	END IF
 
-	IF (width_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.width_FLG) THEN
 	  width=Aperture
 	  width_FLG=.TRUE.
 	  WRITE(*,112)'width'
 	END IF
 
-	IF (gap_FLG) THEN
-	  CONTINUE
-	ELSE
-	  gap=0.0D0
+	IF (.not.gap_FLG) THEN
+	  	  gap=0.0D0
 	  gap_FLG=.TRUE.
 	  WRITE(*,112)'gap'
 	END IF
 
-	IF (nPetals_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.nPetals_FLG) THEN
 	  nPetals=nSeg-1
 	  nPetals_FLG=.TRUE.
 	  WRITE(*,112)'nPetals'
 	END IF
 
-	IF (radCtr_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.radCtr_FLG) THEN
 	  radCtr=Aperture/3d0
 	  radCtr_FLG=.TRUE.
 	  WRITE(*,112)'radCtr'
 	END IF
 
-	IF (SegCoord_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.SegCoord_FLG) THEN
 	  WRITE(*,111)' SegCoord'
 	  ENTR_OK=.FALSE.
           RETURN
 	END IF
 
-	IF (SegXgrid_FLG) THEN
-	  CONTINUE
-	ELSE
-	  IF (xGrid_FLG) THEN
+	IF (.not.SegXgrid_FLG) THEN
+	  	  IF (xGrid_FLG) THEN
 	    CALL DEQUATE(SegXgrid(1),xGrid(1),3)
 	    SegXgrid_FLG=.TRUE.
 	    WRITE(*,112)' SegXgrid'
 	  END IF
 	END IF
 
-	IF (zSource_FLG) THEN
-	  CONTINUE
-	ELSE
+	IF (.not.zSource_FLG) THEN
 	  zSource=1D19
 	  zSource_FLG=.TRUE.
 	  WRITE(*,112)'zSource'
 	END IF
 
-	RETURN
 	END SUBROUTINE ChkDf1
 
 C***********************************************************************
