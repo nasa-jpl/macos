@@ -406,32 +406,26 @@ c	psiy=psi(1)*yhat(1)+psi(2)*yhat(2)+psi(3)*yhat(3)
 	q4=a2*p2+c2*c2
 
 C    Find surface roots and select L:
-	CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
-	IF (Order.EQ.0) THEN
-	  if (.false.) then !(abs(f1) .le. 1d-10) then
-	    print*,'AnaSrf(): f1 = ', f1
-	    stop
-	  endif
-	  L=-f0/f1
-	ELSE
-	  L=1d22
-	  rhomag=1d22
-	  DO i=1,Order
-	    IF (isReal(CL(i))) THEN
-	      L2=DBLE(CL(i))
-	      DO j=1,3
-cgopal	        pr(j)=pin(j)+L2*ihat(i)
-c	        rho(j)=pr(j)-pv(i)
-	        pr(j)=pin(j)+L2*ihat(j)
-	        rho(j)=pr(j)-pv(j)
- 	      END DO
-	      rhomag2=rho(1)*rho(1)+rho(2)*rho(2)+rho(3)*rho(3)
-	      IF ((L2.GE.0d0).AND.(rhomag2.LT.rhomag)) THEN
-	        L=L2
-	      END IF
-	    END IF
-	  END DO
-	END IF
+        CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
+        IF (Order.EQ.0) THEN
+          L = -f0/f1
+        ELSE
+          L      = 1d22
+          rhomag = 1d22
+          DO i=1,Order
+            IF (isReal(CL(i))) THEN
+              L2  = DBLE(CL(i))
+              pr  = pin + L2*ihat
+              rho = pr - pv
+
+              rhomag2=rho(1)*rho(1)+rho(2)*rho(2)+rho(3)*rho(3)
+              IF ((L2.GE.0d0).AND.(rhomag2.LT.rhomag)) THEN
+                rhomag = rhomag2
+                L      = L2
+              END IF
+            END IF
+          END DO
+        END IF
 
 cLnegOK -- Anamorphic surfaces temporarily require positive L
 	IF (L.EQ.1d22) GO TO 98
