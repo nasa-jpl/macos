@@ -251,7 +251,7 @@ C  Find the segment for the chief ray
               dRad(2)=RingRads(iRing)*radCtr
             End If
             IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(:,iSeg),SegX2)) THEN
+     &          SegCoord(:3,iSeg),SegX2)) THEN
               nRayToSeg(iRay)=1
               RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
             END IF
@@ -429,25 +429,6 @@ C  Find the segment for the chief ray
                 ifRay=.FALSE.
                 r2=y**2+x**2
 
-                !if (.false. .and. j==1 .and. i==51) then
-                !  r =sqrt(x**2+y**2)
-                !  print*,'** src: gap,x,y,r =',gap,x,y,r
-                !  IF (((r.GE.O2).AND.(r.LE.A2)).AND.(iRay.LT.mRay)) THEN
-                !    print*,'** B4 FSEG routine ...'
-                !    DO iSeg=1,nSeg
-                !      iRing=SegCoord(1,iSeg)
-                !      If (iRing>0) Then
-                !        dRad(1)=RingRads(iRing-1)*radCtr
-                !        dRad(2)=RingRads(iRing)*radCtr
-                !      End If
-	        !      inFSEG=FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &          !                  SegCoord(:,iSeg),SegX2)
-	        !      if (inFSEG) exit
-	        !    END DO
-	        !    print*,'** inFSEG =',inFSEG
-	        !  END IF
-	        !end if
-
                 IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
                   r2 = SQRT(r2)
                   DO iSeg=1,nSeg
@@ -457,7 +438,7 @@ C  Find the segment for the chief ray
                       dRad(2)=RingRads(iRing)*radCtr
                     End If
                     IF (FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &                  SegCoord(:,iSeg),SegX2)) THEN
+     &                  SegCoord(:3,iSeg),SegX2)) THEN
                       IF (.NOT.ifRay) THEN
                         iRay             = iRay+1
                         ifRay            = .TRUE.
@@ -778,7 +759,7 @@ C  Find the segment for the chief ray
               dRad(2)=RingRads(iRing)*radCtr
             End If
             IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(:,iSeg),SegX2)) THEN
+     &          SegCoord(:3,iSeg),SegX2)) THEN
               nRayToSeg(iRay)=nRayToSeg(iRay)+1
               RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
             END IF
@@ -1304,18 +1285,19 @@ C***********************************************************************
 !    gap=   Width of gap between segments
 !
 
-	PURE FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
-	  USE Constants, ONLY: TWOPI, EPS
-	  IMPLICIT NONE
+        PURE LOGICAL FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
+          use src_mod, only : FSEG_CCAT_Flg
+          USE Constants, ONLY: TWOPI, EPS
+          IMPLICIT NONE
           REAL*8,  INTENT(IN) :: x,           ! ray: x-pos in Glb. Source CSYS
      &                           y,           ! ray: y-pos in Glb. Source CSYS
      &                           r,           ! ray: radius from centre
      &                           radCtr,      ! Center Segment Radius
-     &                           dRad(2)      ! (min, max) radius of ring (gap not included)
+     &                           dRad(2)      ! (min, max) radius of ring (gap not included) scaled by radCtr
                                               !  min = RingRads(iRing-1)*radCtr
                                               !  max = RingRads(iRing)*radCtr
           INTEGER, INTENT(IN) :: nPetal       ! Number of segments in each ring. (was "number of petals in flower")
-          REAL*8,  INTENT(IN) :: gap          ! gap between rings and petals
+          REAL*8,  INTENT(IN) :: gap          ! Width of gap between rings and petals
           INTEGER, INTENT(IN) :: S(3)         ! SegCoord(1:3,mElt)
                                               ! S(1) == 0: central region (iRing=SegCoord(1,iSeg))
                                               ! S(2) == iPetal for Ring
@@ -1332,12 +1314,15 @@ C      theta between 0 and 2*pi/nPetal)
 C   3. Next petal.
 C   4-nPetals. Etc.
 
+C S(1) = ring ID, S(2) = petal id on that ring
+
 C  radCtr = radius of the center segment. Actual segment boundaries
 C           are curcumscribed polygon tangent to circle at outer
 C           segment midpoints
 C  nPetals = number of petals in flower
 
-	LOGICAL FSEG
+	! LOGICAL FSEG
+	INTEGER :: iRing, ith
 	REAL*8 xt,yt,cth,sth,th,
      &	       dnp,Q,thc,rv,hspan,dd,radmin,radmax,S2,dth
 
@@ -1353,64 +1338,71 @@ C  ***  end rotate segment frame of reference
 
         FSEG = .FALSE.    ! default
         ! ----------------------------------------- Central region (no sub-division)
-	IF (S(1).EQ.0) THEN
-	  ! for central segment
-          FSEG = (r.LE.(radCtr-gap/2d0))
-	!   IF (r.LE.(radCtr-gap/2d0)) THEN
-	!     FSEG=.TRUE.  ! within central circular region
-	!   ELSE
-	!     ! since radCtr is radius of max inscribed circle, a ray outside the circle
-	!     ! could still belong to the central segment. -jzlou
-	!     dnp = nPetal
-	!     Q   = TWOPI/dnp              ! wedge angle value
-	!     cth = xt/r                   ! cos(theta) of data point
-        !     sth = yt/r                   ! sin(theta) of data point
-	!     th  = ATAN2(sth,cth)         ! theta
-	!     IF (th.LT.0d0) th=th+TWOPI   ! ensure 0 <= theta < 2*PI
-
-	!     ith = INT(th/Q)+1
-	!     thc = (DBLE(ith)-0.5d0)*Q
-	!     rv  = xt*COS(thc)+yt*SIN(thc)
-	!     !IF (rv.LE.(radCtr-gap/2d0)) THEN
-	!     FSEG = (r.LE.(radCtr-gap/2d0))             ! <<< the same condition as above
-	!   END IF
-
-        ! -----------------------------------------
-	ELSE IF (ABS(r).GT.EPS) THEN
-	  ! for other segment
-	  ! iRing = S(1)  ! get ring id
-	  !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
-	  radmin = dRad(1)
-          radmax = dRad(2)
-          IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0))) THEN
-	    dnp    = nPetal
-	    Q      = TWOPI/dnp
-	    cth    = xt/r
-	    sth    = yt/r
-	    th     = ATAN2(sth,cth)
-	    IF (th.LT.0d0) th=th+TWOPI
-
-	    !ith = INT(th/Q) + 1
-            if (th>(TWOPI-0.5d0*Q)) th=th-TWOPI
-            dth = th/Q
-            S2  = DBLE(S(2)-1)
-	    !IF (ith.EQ.S(2)) THEN
-	    IF (dth.GE.(S2-0.5d0) .AND. dth.LE.(S2+0.5d0)) THEN
-	      !thc=(DBLE(ith)-0.5d0)*Q
-	      thc = S2*Q
-	      rv  = xt*COS(thc) + yt*SIN(thc)
-	      !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
-	      IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
-                hspan = rv*TAN(0.5d0*Q)
-	        dd    = SQRT(r*r-rv*rv)
-	        FSEG  = (dd.LE.(hspan-gap/2d0))
-	      END IF
-	    END IF
+        IF (S(1).EQ.0) THEN
+          ! for central segment
+          IF (r.LE.(radCtr-gap/2d0)) THEN
+            FSEG=.TRUE.  ! within central circular region
+          ELSE
+            ! since radCtr is radius of max inscribed circle, a ray outside the circle
+            ! could still belong to the central segment. -jzlou
+            dnp = nPetal
+            Q   = TWOPI/dnp              ! wedge angle value
+            cth = xt/r                   ! cos(theta) of data point
+            sth = yt/r                   ! sin(theta) of data point
+            th  = ATAN2(sth,cth)         ! theta
+            IF (th.LT.0d0) th=th+TWOPI   ! ensure 0 <= theta < 2*PI
+            ith = INT(th/Q)+1
+            thc = (DBLE(ith)-0.5d0)*Q
+            rv  = xt*COS(thc)+yt*SIN(thc)
+            !IF (rv.LE.(radCtr-gap/2d0)) THEN
+            FSEG = (r.LE.(radCtr-gap/2d0))
           END IF
-	END IF
 
-	RETURN
-	END FUNCTION FSEG
+        ! ----------------------------------------- Outer Rings
+        ELSE IF (r.GT.EPS) THEN
+          ! for other segment
+          iRing= S(1)  ! get ring id
+          !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
+          radmin=dRad(1); radmax=dRad(2)
+          dnp = nPetal
+          Q   = twopi/dnp
+          cth = xt/r
+          sth = yt/r
+          th  = ATAN2(sth,cth)
+          IF (th.LT.0d0) th=th+twopi
+          ith = th/Q+1d0  ! in 'ith' petal
+          if (th>(twopi-0.5*Q)) th=th-twopi  ! now 'th' for CCAT case only
+          dth = th/Q
+          S2  = S(2)-1d0
+          ! This section was updated by jzlou to accommodate both CCAT and non-CCAT
+          ! cases of FSEG segmentation, 08/2020
+          thc = -1d18
+          IF (.not.FSEG_CCAT_Flg .AND.
+     &        ith.EQ.S(2)) THEN
+!    &        (dth.GE.(S2) .AND. dth.LE.(S2+1))) THEN
+            thc=(DBLE(ith)-0.5d0)*Q
+          END IF
+          IF (FSEG_CCAT_Flg .AND.
+     &        (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5))) THEN
+            thc=S2*Q
+          END IF
+          !
+          IF (thc > -1d10) THEN
+              rv=xt*COS(thc)+yt*SIN(thc)
+             !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
+              IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
+                hspan = rv*TAN(0.5d0*Q)
+                dd    = SQRT(abs(r*r-rv*rv))
+              IF (dd.LE.(hspan-gap/2d0)) THEN
+                FSEG=.TRUE.
+              ELSE
+                FSEG=.FALSE.
+              END IF
+            END IF
+          END IF
+        END IF
+
+        END FUNCTION FSEG
 
 C *************************************************************************
 

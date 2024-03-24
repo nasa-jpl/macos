@@ -629,6 +629,13 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'FlowerSegSrc',11)) THEN
+            IF (LCMP(VALUE,'CCAT',4)) THEN
+              FSEG_CCAT_Flg=.TRUE.
+            END IF
+            GO TO 50
+
+          ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'SegCoord',8)) THEN
             IF (GridType .NE. 5) THEN
               READ(VALUE,*)(SegCoord(i,1),i=1,3)

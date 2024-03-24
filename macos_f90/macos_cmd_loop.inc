@@ -20,7 +20,7 @@ C  *** Begin MACOS top-level command loop ***
 
 	  CALL PROMPT(command,'MACOS> ')
 
-	  IF (LCMP(command,'QUIT',1) .OR.
+	  IF (LCMP(command,'QUIT',3) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
 	    CALL GRAEND
@@ -164,7 +164,8 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 	    CALL IACCEPT_S(nPgPanel,1,1,
      &             'Enter PGPLOT display panel option (1,2,3 or 4):')
 	    If (nPgPanel/=1.and.nPgPanel/=2.and.
-     &          nPgPanel/=3.and.nPgPanel/=4) Then
+     &          nPgPanel/=3.and.nPgPanel/=4.and.
+     &          nPgPanel/=9) Then
 	      nPgPanel=1
 	      WRITE(*,*)'  Invalid input! Use 1 PGPLOT panel'
 	    Else
@@ -176,6 +177,8 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 	        WRITE(*,*)'  Use 1 x 3 PGPLOT panels'
 	      else if (nPgPanel==4) then
 	        WRITE(*,*)'  Use 2 x 2 PGPLOT panels'
+	      else if (nPgPanel==9) then
+	        WRITE(*,*)'  Use 3 x 3 PGPLOT panels'
 	      end if
 	    End If
 	    ifPlot=.FALSE.  ! enable reinitialize PGPLOT
@@ -315,6 +318,8 @@ C         ***next command: Load optical description data***
 	    ! For source local frames (will set to true if defined in Rx)
             SrcLF_FLG=.FALSE.  ! default
             CalcSrcZFrame_FLG=.TRUE.  ! default
+
+            FSEG_CCAT_Flg=.FALSE.  ! default, flower segment source flag
 
 #ifdef MACOS_CMD
 	    PrtPrinRots=.FALSE.; LudDrawGrid=.FALSE.
@@ -2002,7 +2007,14 @@ cdebug	    WRITE(*,*) ' Initial OPD=',S1
             CALL CRSOPTIMIZE(iElt)
 
 C         ***Slave reference surface***
-
+C Comment by jzlou: 10/2019
+C   'SRC' tries to set up a starting diffraction propagation (iSlv1)
+C   relative to a target surface (iSlv2) by
+C   1) tracing chief ray to surface iSlv1
+C   2) tracing chief ray to surface iSlv2
+C   3) For the code to work, it seems value of zElt of surface iSlv2 needs to
+C      be negative of expected propagation distiance from surface iSlv1 to iSlv2
+C
 	  ELSE IF (LCMP(command,'SRS',3)) THEN
  57	    CALL IACCEPT_S(iSlv1,1,1,
      &	    'Enter number of element to be slaved:')
@@ -2273,6 +2285,8 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	    END IF
 
 C         ***Find Field Point using global or pixel coordinates***
+C         -- adjust source for chief ray to go through specified point on
+C         -- a given surface  -jzlou
 
 	  ELSE IF (LCMP(command,'FFP',3)
      &             .OR.LCMP(command,'PFP',3)) THEN
@@ -4146,7 +4160,7 @@ C	  Get local coordinates:
 	          xLocal(i)=Tspot(1,i)
 	          yLocal(i)=Tspot(2,i)
 	        END DO
-	      ELSE
+	      ELSE  ! 'BEAm' option
 	        ifGrid=.FALSE.
 	        ifDraw=.FALSE.
 	        ifPropagate=.FALSE.
@@ -4176,7 +4190,8 @@ C	  Get local coordinates:
 	        ELSE
 	          GO TO 10
 	        END IF
-	      END IF
+	      END IF  ! xLocal/yLocal option
+
 	      RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
 	      RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
 
