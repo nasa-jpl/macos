@@ -31,7 +31,7 @@ C***********************************************************************
 
         Save
 
-	Logical :: UDBeam_FLG, DrawMode
+	Logical :: UDBeam_FLG, DrawMode, FSEG_CCAT_Flg
 	Logical, dimension(:), allocatable :: ObsType_FLG,
      &		 ObsVec_FLG
 
@@ -64,8 +64,9 @@ C***********************************************************************
             m_err_src    = 0
             UDSrcProf    = ''
 
-            UDBeam_FLG   = .FALSE.
-            DrawMode     = .FALSE.
+            UDBeam_FLG    = .FALSE.
+            DrawMode      = .FALSE.
+            FSEG_CCAT_Flg = .False.
 
             nGridPts     = 0
             GridType     = 0
