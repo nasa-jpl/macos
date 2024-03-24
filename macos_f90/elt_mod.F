@@ -8,11 +8,11 @@ C***********************************************************************
 
 #include "realtype.h"
 
-	Module elt_mod
-	use param_mod
+        Module elt_mod
+        use param_mod
 
-	Implicit none
-	Save
+        Implicit none
+        Save
 
         !
         ! --------- Basic Surface Definition ---------
@@ -78,6 +78,11 @@ C***********************************************************************
      &                        SrfType_AsGrData          = 11,
      &                        mSrfType                  = 11
 
+        ! Surface types with Gridded Surface Parameters
+        INTEGER, DIMENSION(2), PARAMETER ::
+     &          GridTypeAll = (/SrfType_GridData,
+     &                          SrfType_AsGrData/)
+
         CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=  ! SrfTypeName(20)
      &                     (/'Flat',               ! 1
      &                       'Conic',              ! 2
@@ -120,8 +125,6 @@ C***********************************************************************
      &                [NSRefractorElt, SrfType_Conic],         !  [ 9, 2], ! 24   <==  Non-Sequential Refractor      9 (NSRefractor) |  2 (ConSrf)
      &                [ReflectorElt,   SrfType_Anamorphic],    !  [ 1, 6], ! 25   <==  Anamorphic Reflector          1 (Reflector)   |  6 (AnaSrf)
      &                [ReflectorElt,   SrfType_UserDefined]]   !  [ 1, 7]] ! 26   <==  User-Defined Reflector        1 (Reflector)   |  7 (UDSrf)
-
-
 
 
         ! Surface types that require a Srf. Coord. Systems
@@ -172,7 +175,7 @@ C***********************************************************************
         INTEGER, PARAMETER :: ZernType_MaxMode(mZernType) =
      &          [mZernModes,  ! ZernType_ANSI
      &           mZernModes,  ! ZernType_BornWolf
-     &                   37,  ! ZernType_Fringe
+     &                   37,  ! ZernType_Fringe   (CODE V notation: #37 = 12th radial mode)
      &           mZernModes,  ! ZernType_NormANSI
      &           mZernModes,  ! ZernType_NormBornWolf
      &                   37,  ! ZernType_NormFringe
