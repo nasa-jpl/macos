@@ -2709,7 +2709,7 @@ C         *** Set System Stop ***
 	      ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
 	        WRITE(*,*)'STOP: Invalid element number: ',iStop
 	      ELSE
-	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)
+	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
 
@@ -4266,10 +4266,10 @@ C	      Compute spot diagram data from ray trace and plot:
 	          IF ((iRay.NE.1).OR.
      &	            ((iRay.EQ.1).AND.(nGridpts.EQ.1))) THEN
 	            iSpot=iSpot+1
-	            IF (spcOption.EQ.1) THEN
+	            IF (spcOption.EQ.1) THEN                   ! SPCENTER: ELT
 	              RaySpot(iSpot,1)=xnom(3)-RefSpot(1)
 	              RaySpot(iSpot,2)=xnom(4)-RefSpot(2)
-	            ELSE
+	            ELSE                                       ! SPCENTER: ChfRay
 	              RaySpot(iSpot,1)=xnom(3)-CntrSpot(1)
 	              RaySpot(iSpot,2)=xnom(4)-CntrSpot(2)
 	            END IF
