@@ -4113,8 +4113,9 @@ C         ***Plot spot diagram***
 	        WRITE (*,*)'SPOT: Invalid element number: ',iElt
 	        GO TO 10
 	      ELSE IF
-     &        ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.11).OR.
-     &	      (EltID(iElt).EQ.12)) THEN
+     &        ((EltID(iElt).EQ.NSRefractorElt).OR.
+     &         (EltID(iElt).EQ.SegmentElt).OR.
+     &	       (EltID(iElt).EQ.NSReflectorElt)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
 	        GO TO 10
 	      END IF
