@@ -4126,41 +4126,60 @@ C	  Get local coordinates:
      &	  'Enter output coordinate option (Enter or Beam):')
 	      ELSE
 	        CALL CACCEPT(ANS,'Tout',
-     &	  'Enter output coordinate option (Tout, Enter or Beam):')
+     &	  'Enter output coordinate option (Tout, Enter, TElt or Beam):')
 	      END IF
-	      IF (LCMP(ANS,'YES',1).OR.LCMP(ANS,'TOUT',3)) THEN
-	        CALL COMPACT(Tcompact,Tout,5,7,7,7)
-	        CALL DCOMPACT(DTcompact,Tout,5,7,7,7)
-	        iEndElt=iElt
-	        DO i=1,3
-	          xLocal(i)=Tout(1,i)
-	          yLocal(i)=Tout(2,i)
-	        END DO
-	      ELSE IF (LCMP(ANS,'ENTER',3)) THEN
-	        invec7(1)=-psiElt(3,iElt)
-	        invec7(2)=-psiElt(1,iElt)
-	        invec7(3)=-psiElt(2,iElt)
-	    CALL DACCEPT(invec7,invec7,3,'Enter xOut (x,y,z) ')
-	    CALL DUNITIZE(invec7)
-	    CALL DXPROD(DDEF,psiElt,invec7)
-	    CALL DNEGATE(DDEF,DDEF,3)
-	    CALL DACCEPT(DDEF,DDEF,3,'Enter yOut (x,y,z) ')
-	    CALL DUNITIZE(DDEF)
-	    CALL DZERO(Tspot(1,1),49)
-	        DO iCoord=1,3
-	          Tspot(1,iCoord)=invec7(iCoord)
-	          Tspot(3,3+iCoord)=invec7(iCoord)
-	          Tspot(2,iCoord)=DDEF(iCoord)
-	          Tspot(4,3+iCoord)=DDEF(iCoord)
-	        END DO
-	        Tspot(5,7)=1
-	        CALL COMPACT(Tcompact,Tspot,5,7,7,7)
-	        CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
-	        iEndElt=iElt
-	        DO i=1,3
-	          xLocal(i)=Tspot(1,i)
-	          yLocal(i)=Tspot(2,i)
-	        END DO
+              ! ------------------------------------
+              IF (LCMP(ANS,'YES',1).OR.LCMP(ANS,'TOUT',3)) THEN
+                CALL COMPACT(Tcompact,Tout,5,7,7,7)
+                CALL DCOMPACT(DTcompact,Tout,5,7,7,7)
+                iEndElt=iElt
+                xLocal(1:3) = Tout(1,1:3)
+                yLocal(1:3) = Tout(2,1:3)
+              ! ------------------------------------
+              ELSE IF (LCMP(ANS,'TELT',3)) THEN
+
+                xLocal = TElt(:, 1, iElt)
+                yLocal = TElt(:, 2, iElt)
+                zLocal = TElt(:, 3, iElt)
+
+                Tspot(:, :)   = 0e0_pr
+                Tspot(1, 1:3) = xLocal   ! x-axis     | x1, x2, x3,  0,  0,  0,   0 |
+                Tspot(2, 1:3) = yLocal   ! y-axis     | y1, y2. y3,  0,  0,  0,   0 |
+                Tspot(3, 4:6) = xLocal   ! x-axis     |  0,  0,  0,  x1, x2, x3,  0 |
+                Tspot(4, 4:6) = yLocal   ! y-axis     |  0,  0,  0,  y1, y2, y3,  0 |
+                Tspot(5, 7)   = 1e0_pr   !            |  0,  0,  0,   0,  0,  0,  1 |
+
+                CALL COMPACT(Tcompact,Tspot,5,7,7,7)
+                CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
+                iEndElt=iElt
+
+              ! ------------------------------------
+              ELSE IF (LCMP(ANS,'ENTER',3)) THEN
+                invec7(1)=-psiElt(3,iElt)
+                invec7(2)=-psiElt(1,iElt)
+                invec7(3)=-psiElt(2,iElt)
+                CALL DACCEPT(invec7,invec7,3,'Enter xOut (x,y,z) ')
+                CALL DUNITIZE(invec7)
+                CALL DXPROD(DDEF,psiElt,invec7)
+                CALL DNEGATE(DDEF,DDEF,3)
+                CALL DACCEPT(DDEF,DDEF,3,'Enter yOut (x,y,z) ')
+                CALL DUNITIZE(DDEF)
+                CALL DZERO(Tspot(1,1),49)
+
+                DO CONCURRENT (iCoord=1:3)
+                  Tspot(1,iCoord)   = invec7(iCoord)
+                  Tspot(3,3+iCoord) = invec7(iCoord)
+                  Tspot(2,iCoord)   = DDEF(iCoord)
+                  Tspot(4,3+iCoord) = DDEF(iCoord)
+                END DO
+                Tspot(5,7)=1d0
+                CALL COMPACT(Tcompact,Tspot,5,7,7,7)
+                CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
+
+                iEndElt=iElt
+                xLocal(1:3) = Tspot(1,1:3)
+                yLocal(1:3) = Tspot(2,1:3)
+              ! ------------------------------------
 	      ELSE  ! 'BEAm' option
 	        ifGrid=.FALSE.
 	        ifDraw=.FALSE.
@@ -4258,7 +4277,7 @@ C	      Compute spot diagram data from ray trace and plot:
 	            xdum(iaxis)=RayDir(iaxis,iRay)
 	            xdum(j)=RayPos(iaxis,iRay)
  22	          CONTINUE
-	          xdum(7)=0e0
+	          xdum(7)=0d0
 	          CALL DMPRDB(xnom,DTcompact,xdum,5,7,1)
 	          IF (iRay.EQ.1) THEN
 	            CntrSpot(1)=xnom(3)
