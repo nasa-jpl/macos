@@ -335,7 +335,7 @@ C***********************************************************************
      &             m_LensGrpElts(maxLensGrp),refRay(mPupRay),
      &             m_err_elt
 
-	Integer, parameter :: mPolySide=64  ! changed to 64 from 32 02/04/2015
+	Integer, parameter :: mPolySide=128  ! changed to 64 from 32 02/04/2015
 
 	Type OptBeamStr
           Logical :: ifOptBeamDir,ifOptBeamPos,ifOptBeamSize,
