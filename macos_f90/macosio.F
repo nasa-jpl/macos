@@ -1089,7 +1089,7 @@ C  Get LensArray Parameters
 
 C  End LensArray Parameters
 
-	    CALL ShowData(npts,iElt)
+	    CALL ShowData(iElt)
 
 	    CALL CACCEPT(ANS,'YES','Is this correct?')
 	    IF ((ANS(1:1).EQ.'n').OR.(ANS(1:1).EQ.'N')) GO TO 11
@@ -1117,17 +1117,24 @@ C	Specify output coordinates
 	  END DO
 	  Tout(5,7)=1
 
-	  CALL ViewData(npts,0)
+	  CALL ViewData()   ! output to SCreen
 	END IF
 
-	IF (iopt.EQ.0) CALL ViewData(npts,1)
+	! Finalise Configuration
+	npts=nGridpts-1
+
+        ! Create Rx
+        IF (iopt.EQ.0) THEN
+          CALL SetPrtToFileID(RX_FID)  ! re-direct output to File
+          CALL ViewData()
+          CALL SetPrtToFileID(0)       ! re-direct to screen
+        END IF
+
 	iopt=0
 
         ! Close input file
         CLOSE (UNIT=RX_FID)
 
-	! Finalise Configuration
-	npts=nGridpts-1
 
 	! Setup ApType and ApVec for all segments if an aperture
         ! is defined.

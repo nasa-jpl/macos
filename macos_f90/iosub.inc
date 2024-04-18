@@ -322,7 +322,7 @@ cHistory
 c  24Jul97 loh:  Added flag to indicate zernike type
 c  24Jul97 loh:  Fixed bug so that when the xObs default is used, the
 c		 warning message is printed correctly, and fixed it so
-c		 you don't get the irritating "Default Used for xObs"
+c		 you do not get the irritating "Default Used for xObs"
 c		 warning messages when you have nObs=0
 
 	use param_mod
@@ -941,985 +941,567 @@ C***********************************************************************
 	RETURN
 	END SUBROUTINE SumData
 
-C***********************************************************************
-
-	SUBROUTINE ViewData(npts,FU)
-	use param_mod
-	use src_mod
-	use cfiles_mod
-	use elt_mod
-	use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,ifSave3DApVec
-
-	IMPLICIT NONE
-
-	INTEGER iElt,npts,i,j,k,iSeg,FU,iObs
-
-C  input data
-
-#include "viewdata_formats.inc"
-
-C	Screen output:
-
-	IF (FU.EQ.0) THEN
-
-C  input data
-	  WRITE(*,100)(ChfRayDir(j),j=1,3),(ChfRayPos(j),j=1,3),zSource,
-     &	   IndRef(0),Extinc(0),BaseUnits,WaveUnits,Wavelen,Flux,
-     &	   GridTypeName(GridType),Aperture,Obscratn,
-     &	   nGridPts,(xGrid(j),j=1,3),(yGrid(j),j=1,3),nElt
-	  IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
-	    WRITE(*,117)nSeg,width,gap,(SegXgrid(j),j=1,3),
-     &                  (SegCoord(i,1),i=1,3)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(*,116)(SegCoord(i,iSeg),i=1,3)
-	      END DO
-	    END IF
-	  ELSE IF (GridType.EQ.5) THEN
-	    WRITE(*,*)'    gap= ',gap
-	    WRITE(*,*)' nRings= ',nRings
-	    WRITE(*,*)' nPetals= ',nPetals(0:nRings)
-	    WRITE(*,*)' RingRads= ',RingRads(1:nRings)
-	    WRITE(*,118)nSeg,radCtr,(SegXgrid(j),j=1,3),
-     &                  SegCoord(1:2,1)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(*,116)SegCoord(1:2,iSeg)
-	      END DO
-	    END IF
-	  END IF
-
-C  element data
-
- 	  DO 3 iElt=1,nElt
-C Basic params & optical params & conic params
-
-	    IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-	      WRITE(*,98)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	      SrfTypeName(SrfType(iElt)),
-     &	      (psiElt(j,iElt),j=1,3),
-     &        (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	    ELSE IF (KcElt(iElt).LE.0) THEN
-	      WRITE(*,101)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	      SrfTypeName(SrfType(iElt)),fElt(iElt),eElt(iElt),
-     &	      KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &        (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	    ELSE
-	      WRITE(*,99)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	      SrfTypeName(SrfType(iElt)),
-     &	      KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &        (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	    END IF
-
-	    If (EltGrp(0,iElt)/=0) Then
-              ! Element group
-              WRITE(*,133)
-              WRITE(*,*) (EltGrp(i,iElt),i=0,EltGrp(0,iElt))
-            End If
-
-	    IF (LGlass(iElt)) THEN
-	      WRITE(*,97)GlassElt(iElt),
-     &	      (GlassCoef(j,iElt),j=1,6),Extinc(iElt)
-	    ELSE
-	      WRITE(*,95)IndRef(iElt),Extinc(iElt)
-	    ENDIF
- 	    IF (SrfType(iElt).EQ.3) THEN
-	      WRITE(*,*)'AsphCoef=   ',
-     &                (AsphCoef(j,iElt),j=1,maxAsphCoef)
- 	    ELSE IF (SrfType(iElt).EQ.6) THEN
-	      WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
- 	    ELSE IF (SrfType(iElt).EQ.4) THEN
-	      WRITE(*,105)(MonCoef(j,iElt),j=1,120)
- 	    ELSE IF (SrfType(iElt).EQ.7) THEN
-	      WRITE(*,106)UDSrfType(iElt),UDSrfFile(iElt),
-     &	      (UDSrfParam(j,iElt),j=1,6)
- 	    ELSE IF (SrfType(iElt).EQ.8
-     &               .OR. SrfType(iElt).EQ.9) THEN
-	      WRITE(*,131) ZernTypeNameL(ZernTypeL(iElt))
-	      WRITE(*,107)(ZernCoef(j,iElt),j=1,45)
- 	    ELSE IF (SrfType(iElt).EQ.9) THEN
-	      WRITE(*,132) GridFile(iElt),nGridMat(iElt),
-     &	      GridSrfdx(iElt)
- 	    ELSE IF (SrfType(iElt).EQ.10) THEN
-	      WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
-	    END IF
-
-	    IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
-	      WRITE(*,108)(pMon(j,iElt),j=1,3),(xMon(j,iElt),j=1,3),
-     &	        (yMon(j,iElt),j=1,3),(zMon(j,iElt),j=1,3)
-              IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
-		WRITE(*,109)lMon(iElt)
-	      END IF
-	    END IF
-
-	    ! Added by J.Lou, 11-17-03
-	    IF (SrfType(iElt)==9) THEN
-	      ! grid surface type
-              WRITE(*,108)(pMon(j,iElt),j=1,3),(xMon(j,iElt),j=1,3),
-     &          (yMon(j,iElt),j=1,3),(zMon(j,iElt),j=1,3)
-            END IF
-
-	    IF (EltID(iElt).EQ.4) THEN
-	      WRITE(*,110)(h1HOE(j,iElt),j=1,3),(h2HOE(j,iElt),j=1,3),
-     &	      OrderHOE(iElt),WaveHOE(iElt)
-	    ELSE IF ((EltID(iElt).EQ.5).OR.(EltID(iElt).EQ.13)) THEN
-	      WRITE(*,111)(h1HOE(j,iElt),j=1,3),
-     &	      OrderHOE(iElt),RuleWidth(iElt)
-	    ELSE IF (EltID(iElt).EQ.10) THEN
-	      WRITE(*,112)LensArrayType(iElt),LensArrayWidth(iElt)
-	    END IF
-
-C  Basic parameter
-	    WRITE(*,102)nObs(iElt)
-
-C  obscuration params
-	    IF (nObs(iElt).GT.0) THEN
-	      DO 21 iObs=1,nObs(iElt)
-	        WRITE(*,124)ObsTypeName(ObsType(iObs,iElt))
-	        IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
-	          WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,3)
-	  	ELSE IF (ABS(ObsType(iObs,iElt)).EQ.4) THEN
-	          WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,6)
-	        ELSE IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-                  ! sws polygonal
-                  i = ObsVec(3,iObs,iElt)
-                  WRITE(*,139) ObsVec(1:2,iObs,iElt),i
-                  Do k=1,i
-                    WRITE(*,136)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
-                  End Do
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.9) THEN
-                  WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.10) THEN
-                  WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-		ELSE
-	          WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,4)
-	        END IF
- 21	      CONTINUE
-	      WRITE(*,126)(xObs(j,iElt),j=1,3)
-	    END IF
-
-	    WRITE(*,121)ApTypeName(ApType(iElt))
-	    IF (ApType(iElt).NE.0) THEN
-	      IF (ApType(iElt).EQ.1) THEN
-	        WRITE(*,122)(ApVec(j,iElt),j=1,3)
-	      ELSE IF (ApType(iElt).EQ.2) THEN
-	        WRITE(*,122)(ApVec(j,iElt),j=1,4)
-	      ELSE IF (ApType(iElt).EQ.6) THEN ! hex
-                WRITE(*,122)(ApVec(j,iElt),j=1,4)
-	      ELSE IF (ApType(iElt).EQ.7) THEN ! polygonal
-                i=ApVec(3,iElt)
-                If (ifSave3DApVec.and.Poly3DApVecL(iElt)) Then
-                  WRITE(*,127) i
-                  Do k=1,i
-                    WRITE(*,128)(PolyVtx3DSav(j,k,iElt),j=1,3)
-                  End Do
-                Else
-                  ! 2D polygon
-                  WRITE(*,129) ApVec(1:2,iElt),i
-                  Do k=1,i
-                    WRITE(*,136)(PolyApVtx(j,k,iElt),j=1,2)
-                  End Do
-                End If
-	      ELSE
-	        WRITE(*,122)(ApVec(j,iElt),j=1,5)
-	      END IF
-	    END IF
-
-C  basic params
-	    WRITE(*,113)zElt(iElt),PropTypeName(PropType(iElt))
-C  pinhole
-	    IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
-     &	    THEN
-	      WRITE(*,151)PinHole(iElt)
-	    END IF
-
-C  coatings
-	    IF (nCoatElt(iElt).GT.0) THEN
-	      WRITE(*,141)nCoatElt(iElt),(CoatIndxElt(j,iElt),
-     &	      j=1,nCoatElt(iElt))
-	      WRITE(*,142)(CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
-	    END IF
-
-C  basic params
-	    WRITE(*,114)nECoord(iElt)
-	    IF (nECoord(iElt).GT.0) THEN
-	      WRITE(*,115)(TElt(1,j,iElt),j=1,nECoord(iElt))
-	      DO 2 k=2,6
-	        WRITE(*,162)(TElt(k,j,iElt),j=1,nECoord(iElt))
- 2	      CONTINUE
-	    END IF
- 3	  CONTINUE
-
-C  Output Variables
-	  WRITE(*,161)nOutCord,((Tout(k,j),j=1,7),k=1,nOutCord)
-
-	ELSE
-
-C	File output:
-
-C  input data
-
-	  If (ifSave3DApVec) WRITE(FU,171)
-
-	  WRITE(FU,100)(ChfRayDir(j),j=1,3),(ChfRayPos(j),j=1,3),
-     &	  zSource,IndRef(0),Extinc(0),BaseUnits,WaveUnits,Wavelen,Flux,
-     &	  GridTypeName(GridType),Aperture,Obscratn,
-     &	  nGridPts,(xGrid(j),j=1,3),(yGrid(j),j=1,3),nElt
-	  IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
-	    WRITE(FU,117)nSeg,width,gap,(SegXgrid(j),j=1,3),
-     &      (SegCoord(i,1),i=1,3)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(FU,116)(SegCoord(i,iSeg),i=1,3)
- 	      END DO
-	    END IF
-	  ELSE IF (GridType.EQ.5) THEN
-	    WRITE(FU,*)'    gap= ',gap
-	    WRITE(FU,*)' nRings= ',nRings
-            WRITE(FU,*)' nPetals= ',nPetals(0:nRings)
-            WRITE(FU,*)' RingRads= ',RingRads(1:nRings)
-	    WRITE(FU,118)nSeg,radCtr,(SegXgrid(j),j=1,3),
-     &                   SegCoord(1:2,1)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(FU,116)SegCoord(1:2,iSeg)
-	      END DO
-	    END IF
-	  END IF
-
-C  element data
-
- 	  DO 993 iElt=1,nElt
-C Basic params & optical params & conic params
-	    IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-	      WRITE(FU,98)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	      SrfTypeName(SrfType(iElt)),
-     &	      (psiElt(j,iElt),j=1,3),
-     &        (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	    ELSE
-	      WRITE(FU,99)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	      SrfTypeName(SrfType(iElt)),
-     &	      KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &        (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	    END IF
-
-	    If (EltGrp(0,iElt)/=0) Then
-              ! Element group
-              WRITE(FU,133)
-              WRITE(FU,*) (EltGrp(i,iElt),i=0,EltGrp(0,iElt))
-            End If
-
-	    IF (LGlass(iElt)) THEN
-	      WRITE(FU,97)GlassElt(iElt),
-     &	      (GlassCoef(j,iElt),j=1,6),Extinc(iElt)
-	    ELSE
-	      WRITE(FU,95)IndRef(iElt),Extinc(iElt)
-	    ENDIF
- 	    IF (SrfType(iElt).EQ.3) THEN
-	      WRITE(FU,*)'AsphCoef=   ',
-     &                (AsphCoef(j,iElt),j=1,maxAsphCoef)
- 	    ELSE IF (SrfType(iElt).EQ.6) THEN
-	      WRITE(FU,104)(AnaCoef(j,iElt),j=1,4)
- 	    ELSE IF (SrfType(iElt).EQ.4) THEN
-	      WRITE(FU,105)(MonCoef(j,iElt),j=1,120)
- 	    ELSE IF (SrfType(iElt).EQ.7) THEN
-	      WRITE(FU,106)UDSrfType(iElt),UDSrfFile(iElt),
-     &	      (UDSrfParam(j,iElt),j=1,6)
- 	    ELSE IF (SrfType(iElt).EQ.8) THEN
-	      WRITE(FU,131) ZernTypeNameL(ZernTypeL(iElt))
-	      If (ZernTypeL(iElt)==9) Then
-                WRITE(FU,*)'ZernAnnualRatio= ',ZernAnnuRatio(iElt)
-              End If
-	      WRITE(FU,107)(ZernCoef(j,iElt),j=1,45)
- 	    ELSE IF (SrfType(iElt).EQ.9) THEN
-	      WRITE(FU,132) GridFile(iElt),nGridMat(iElt),
-     &	      GridSrfdx(iElt)
- 	    ELSE IF (SrfType(iElt).EQ.10) THEN
-	      WRITE(FU,104)(AnaCoef(j,iElt),j=1,4)
-	    END IF
-
-	    IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
-	      WRITE(FU,108)(pMon(j,iElt),j=1,3),(xMon(j,iElt),j=1,3),
-     &	      (yMon(j,iElt),j=1,3),(zMon(j,iElt),j=1,3)
-              IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
-		WRITE(FU,109)lMon(iElt)
-	      END IF
-	    END IF
-
-	    IF (EltID(iElt).EQ.4) THEN
-	      WRITE(FU,110)(h1HOE(j,iElt),j=1,3),(h2HOE(j,iElt),j=1,3),
-     &	      OrderHOE(iElt),WaveHOE(iElt)
-	    ELSE IF ((EltID(iElt).EQ.5).OR.(EltID(iElt).EQ.13)) THEN
-	      WRITE(FU,111)(h1HOE(j,iElt),j=1,3),
-     &	      OrderHOE(iElt),RuleWidth(iElt)
-	    ELSE IF (EltID(iElt).EQ.10) THEN
-	      WRITE(FU,112)LensArrayType(iElt),LensArrayWidth(iElt)
-	    END IF
-
-C  Basic parameter
-	    WRITE(FU,102)nObs(iElt)
-
-C  obscuration params
-	    IF (nObs(iElt).GT.0) THEN
-	      DO 9921 iObs=1,nObs(iElt)
-	        WRITE(FU,124)ObsTypeName(ObsType(iObs,iElt))
-	        IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
-	          WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,3)
-	  	ELSE IF (ABS(ObsType(iObs,iElt)).EQ.4) THEN
-	          WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,6)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.7) THEN
-                   WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-	           ! sws polygonal
-                   i = ObsVec(3,iObs,iElt)
-                   WRITE(FU,139) ObsVec(1:2,iObs,iElt),i
-                   Do k=1,i
-                     WRITE(FU,136)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
-                   End Do
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.9) THEN
-                   WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.10) THEN
-                   WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,5)
-		ELSE
-	          WRITE(FU,125)(ObsVec(j,iObs,iElt),j=1,4)
-	        END IF
-9921	      CONTINUE
-	    END IF
-
-	    IF ((nObs(iElt).GT.0).OR.(ApType(iElt).NE.0)) THEN
-	      WRITE(FU,126)(xObs(j,iElt),j=1,3)
-	    END IF
-
-	    WRITE(FU,121)ApTypeName(ApType(iElt))
-	    IF (ApType(iElt).NE.0) THEN
-	      IF (ApType(iElt).EQ.1) THEN
-	        WRITE(FU,122)(ApVec(j,iElt),j=1,3)
-	      ELSE IF (ApType(iElt).EQ.2) THEN
-	        WRITE(FU,122)(ApVec(j,iElt),j=1,4)
-	      ELSE IF (ApType(iElt).EQ.6) THEN ! hex
-                WRITE(FU,122)(ApVec(j,iElt),j=1,4)
-	      ELSE IF (ApType(iElt).EQ.7) THEN ! polygonal
-                i=ApVec(3,iElt)
-                If (ifSave3DApVec.and.Poly3DApVecL(iElt)) Then
-                  WRITE(FU,127) i
-                  Do k=1,i
-                    WRITE(FU,128)(PolyVtx3DSav(j,k,iElt),j=1,3)
-                  End Do
-                Else
-                  ! 2D polygon
-                  WRITE(FU,129) ApVec(1:2,iElt),i
-                  Do k=1,i
-                    WRITE(FU,136)(PolyApVtx(j,k,iElt),j=1,2)
-                  End Do
-                End If
-	      ELSE
-	        WRITE(FU,122)(ApVec(j,iElt),j=1,5)
-	      END IF
-	    END IF
-
-C  basic params
-	    WRITE(FU,113)zElt(iElt),PropTypeName(PropType(iElt))
-C  pinhole
-	    IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
-     &	    THEN
-	      WRITE(FU,151)PinHole(iElt)
-	    END IF
-
-C  coatings
-	    IF (nCoatElt(iElt).GT.0) THEN
-	      WRITE(FU,141)nCoatElt(iElt),(CoatIndxElt(j,iElt),
-     &	      j=1,nCoatElt(iElt))
-	      WRITE(FU,142)(CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
-	    END IF
-
-C  basic params
-	    WRITE(FU,114)nECoord(iElt)
-	    IF (nECoord(iElt).GT.0) THEN
-	      WRITE(FU,115)(TElt(1,j,iElt),j=1,nECoord(iElt))
-	      DO 992 k=2,6
-	        WRITE(FU,162)(TElt(k,j,iElt),j=1,nECoord(iElt))
-992	      CONTINUE
-	    END IF
-993	  CONTINUE
-
-C  Output Variables
-	  WRITE(FU,161)nOutCord,((Tout(k,j),j=1,7),k=1,nOutCord)
-
-	END IF
-
-	RETURN
-	END SUBROUTINE ViewData
-
-C***********************************************************************
-
-#if 0
-! This is the 'old' version, before Sirlin made his update on the ShowData function.
-	SUBROUTINE ShowData(npts,iElt)
-	use param_mod
-	use src_mod
-	use cfiles_mod
-	use elt_mod
-
-	IMPLICIT NONE
-
-	INTEGER iElt,npts,i,j,k,iSeg,iObs
-
-#include "viewdata_formats.inc"
-
-c  input data
- 100	FORMAT(1P,'ChfRayDir=',3D23.15/'ChfRayPos=',3D23.15/
-     &	' zSource= ',D23.15/'  IndRef= ',D23.15/'  Extinc= ',D23.15/
-     &	'BaseUnits= ',A16/'WaveUnits= ',A16/' Wavelen= ',D23.15/
-     &	'    Flux= ',D23.15/'GridType=   ',A16/'Aperture= ',D23.15/
-     &	'Obscratn= ',D23.15/'nGridpts= ',i4/'   xGrid= ',3D23.15/
-     &	'   yGrid= ',3D23.15/'    nElt= ',i4)
- 116	FORMAT(1P,10x,i5,5x,i5,5x,i5)
- 117	FORMAT(1P,'    nSeg= ',i4/'   width= ',D23.15/
-     &	'     gap= ',D23.15/'SegXgrid= ',D23.15,2(2x,D23.15)/
-     &  'SegCoord= ',i5,2(5x,i5))
- 118	FORMAT(1P,'    nSeg= ',i4/
-     &	'  radCtr= ',D23.15/'SegXgrid= ',D23.15,2(2x,D23.15)/
-     &  'SegCoord= ',i5,5x,i5)
-
-C Basic params & optical params & conic params
-  98	FORMAT(1P/'    iElt= ',i4/' EltName= ',a16/
-     &  ' Element= ',a12/ ' Surface= ',a8/
-     &	'  psiElt= ',3D23.15/
-     &	'  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
-  99	FORMAT(1P/'    iElt= ',i4/' EltName= ',a16/
-     &  ' Element= ',a12/ ' Surface= ',a8/
-     &	'   KrElt= ',D23.15/'   KcElt= ',D23.15/'  psiElt= ',3D23.15/
-     &	'  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
- 101	FORMAT(1P/'    iElt= ',i4/' EltName= ',a16/
-     &  ' Element= ',a12/ ' Surface= ',a8/
-     &	'    fElt= ',D23.15/'    eElt= ',D23.15/
-     &	'   KrElt= ',D23.15/'   KcElt= ',D23.15/'  psiElt= ',3D23.15/
-     &	'  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
-
- 130    FORMAT(1P/'    iElt= ',i4/' EltName= ',a16/
-     &  ' Element= ',a12/ ' Surface= ',a8)
- 133    FORMAT(1P,'    psiElt= ',3D23.15/
-     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
- 134    FORMAT(1P,'    fElt= ',D23.15/
-     &  '    eElt= ',D23.15/
-     &  '   KrElt= ',D23.15/'   KcElt= ',D23.15/'  psiElt= ',3D23.15/
-     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
- 135    FORMAT(1P,'    KrElt= ',D23.15/
-     &  '   KcElt= ',D23.15/'  psiElt= ',3D23.15/
-     &  '  VptElt= ',3D23.15/'  RptElt= ',3D23.15)
-
-  95	FORMAT(1P,'  IndRef= ',D23.15/'  Extinc= ',D23.15)
-  96	FORMAT(1P,'GlassElt= ',A16/'  Extinc= ',D23.15)
-  97	FORMAT(1P,'GlassElt= ',A16/'GlassCoef= ',6D23.15/
-     &	'  Extinc= ',D23.15)
- 102	FORMAT(1P,'    nObs= ',i4)
- 121	FORMAT(1P,'  ApType=   ',A16)
-
-C  asphere params
- 103	FORMAT(1P,'AsphCoef= ',4D23.15)
-
-C  anamorph params
- 104	FORMAT(1P,' AnaCoef= ',4D23.15)
-
-C  monomial params
- 105	FORMAT(1P,' MonCoef= ',6D23.15/	19(10x,6D23.15/))
-
-C  user-defined params
- 106	FORMAT(1P,'UDSrfType= ',i4/'UDSrfFile= ',A/
-     &	'UDSrfParam= ',6D23.15)
-
-C  zernike params
- 107	FORMAT(1P,'ZernCoef= ',6D23.15/ 6(10x,6D23.15/) (10x,3D23.15))
-
-C  zernike type
- 131	FORMAT(1P,'ZernType=   ',A16)
-
-C  grid surface params
- 132	FORMAT(1P,'GridFile= ',A/'nGridMat= ',i4/
-     &	'GridSrfdx= ',D23.15)
-
-C  surface coord params
- 108	FORMAT(1P,'    pMon= ',3D23.15/'    xMon= ',3D23.15/
-     &	'    yMon= ',3D23.15/'    zMon= ',3D23.15)
- 109	FORMAT(1P,'    lMon= ',D23.15)
-
-C  HOE params & Grating params
- 110	FORMAT(1P,'   h1HOE= ',3D23.15/'   h2HOE= ',3D23.15/
-     &	'OrderHOE= ',D23.15/' WaveHOE= ',D23.15)
- 111	FORMAT(1P,'   h1HOE= ',3D23.15/
-     &	'OrderHOE= ',D23.15/'RuleWidth= ',D23.15)
-
-C  lens array params
- 112	FORMAT(1P,'LensArrayType= ',i2/'LensArrayWidth= ',D23.15)
-
-C  obscuration params
- 122	FORMAT(1P,'   ApVec= ',6D23.15)
- 124	FORMAT(1P,' ObsType=   ',A16)
- 125	FORMAT(1P,'  ObsVec= ',6D23.15)
- 126	FORMAT(1P,'    xObs= ',3D23.15)
-
-C  coatings
- 141	FORMAT(1P,'   nCoat= ',i4/'CoatIndx= ',5D23.15/3(10X,5D23.15))
- 142	FORMAT(1P,'CoatThk= ',5D23.15/3(10X,5D23.15))
-
-C  pinhole
- 151	FORMAT(1P,' PinHole= ',D23.15)
-
-C  basic params
- 113	FORMAT(1P,'    zElt= ',D23.15/'PropType=   ',A16)
- 114	FORMAT(1P,' nECoord= ',i4)
- 115	FORMAT(1P,'    TElt= ',6D23.15)
- 162	FORMAT(1P,10x,6D23.15)
-
-C  Output Variables
- 161	FORMAT(1P/'nOutCord= ',i4/'    Tout= ',7D23.15,6(/10x,7D23.15))
-
-C	Screen output:
-
-	IF (iElt.EQ.0) THEN
-
-C  input data
-	  WRITE(*,100)(ChfRayDir(j),j=1,3),(ChfRayPos(j),j=1,3),zSource,
-     &	  IndRef(0),Extinc(0),BaseUnits,WaveUnits,Wavelen,Flux,
-     &	  GridTypeName(GridType),Aperture,Obscratn,
-     &	  nGridPts,(xGrid(j),j=1,3),(yGrid(j),j=1,3),nElt
-	  IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
-	    WRITE(*,117)nSeg,width,gap,(SegXgrid(j),j=1,3),
-     &      (SegCoord(i,1),i=1,3)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(*,116)(SegCoord(i,iSeg),i=1,3)
-	      END DO
-	    END IF
-	  ELSE IF (GridType.EQ.5) THEN
-	    WRITE(*,118)nSeg,nPetals,radCtr,(SegXgrid(j),j=1,3),
-     &      SegCoord(1,1)
-	    IF (nSeg.GT.1) THEN
-	      DO iSeg=2,nSeg
-	        WRITE(*,116)SegCoord(1,iSeg)
-	      END DO
-	    END IF
-	  END IF
-	ELSE
-C  Element Data
-C Basic params & optical params & conic params
-	    IF (EltGrp(0,iElt)==0) THEN
-	      IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-	        WRITE(*,98)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	          SrfTypeName(SrfType(iElt)),
-     &	          (psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	      ELSE IF (KcElt(iElt).LE.0) THEN
-	        WRITE(*,101)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	        SrfTypeName(SrfType(iElt)),fElt(iElt),eElt(iElt),
-     &	        KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &          (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	      ELSE
-	        WRITE(*,99)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &	        SrfTypeName(SrfType(iElt)),
-     &	        KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &          (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	      END IF
-	    ELSE
-	      ! With EltGrp defined at iElt
-	      IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-                WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
-                WRITE(*,133)(psiElt(j,iElt),j=1,3),
-     &                (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE IF (KcElt(iElt).LE.0) THEN
-	        WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &            	    SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
-	        WRITE(*,134)fElt(iElt),eElt(iElt),
-     &       	    KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &              (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE
-	        WRITE(*,130)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
-	        WRITE(*,135)
-     &            KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-	      END IF
-	    END IF
-
-	    IF (LGlass(iElt)) THEN
-	      WRITE(*,97)GlassElt(iElt),
-     &	      (GlassCoef(j,iElt),j=1,6),Extinc(iElt)
-	    ELSE
-	      WRITE(*,95)IndRef(iElt),Extinc(iElt)
-	    ENDIF
-
- 	  IF (SrfType(iElt).EQ.3) THEN
-	    !WRITE(*,103)(AsphCoef(j,iElt),j=1,maxAsphCoef)
-	    WRITE(*,*)'AsphCoef=   ',
-     &                (AsphCoef(j,iElt),j=1,maxAsphCoef)
- 	  ELSE IF (SrfType(iElt).EQ.6) THEN
-	    WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
- 	  ELSE IF (SrfType(iElt).EQ.4) THEN
-	    WRITE(*,105)(MonCoef(j,iElt),j=1,120)
- 	  ELSE IF (SrfType(iElt).EQ.7) THEN
-	    WRITE(*,106)UDSrfType(iElt),UDSrfFile(iElt),
-     &	    (UDSrfParam(j,iElt),j=1,6)
- 	  ELSE IF (SrfType(iElt).EQ.8) THEN
-	    WRITE(*,131) ZernTypeNameL(ZernTypeL(iElt))
-	    If (ZernTypeL(iElt)==9) Then
-              WRITE(*,*)'ZernAnnualRatio= ',ZernAnnuRatio(iElt)
-            End If
-	    WRITE(*,107)(ZernCoef(j,iElt),j=1,45)
- 	  ELSE IF (SrfType(iElt).EQ.9) THEN
-	    WRITE(*,132) GridFile(iElt),nGridMat(iElt),
-     &	    GridSrfdx(iElt)
- 	  ELSE IF (SrfType(iElt).EQ.10) THEN
-	    WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
-	  END IF
-
-	  IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
-	    WRITE(*,108)(pMon(j,iElt),j=1,3),(xMon(j,iElt),j=1,3),
-     &	    (yMon(j,iElt),j=1,3),(zMon(j,iElt),j=1,3)
-            IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
-	      WRITE(*,109)lMon(iElt)
-	    END IF
-	  END IF
-
-	  IF (EltID(iElt).EQ.4) THEN
-	    WRITE(*,110)(h1HOE(j,iElt),j=1,3),(h2HOE(j,iElt),j=1,3),
-     &	    OrderHOE(iElt),WaveHOE(iElt)
-	  ELSE IF ((EltID(iElt).EQ.5).OR.(EltID(iElt).EQ.13)) THEN
-	    WRITE(*,111)(h1HOE(j,iElt),j=1,3),
-     &	    OrderHOE(iElt),RuleWidth(iElt)
-	  ELSE IF (EltID(iElt).EQ.10) THEN
-	    WRITE(*,112)LensArrayType(iElt),LensArrayWidth(iElt)
-	  END IF
-
-C  Basic parameter
-	  WRITE(*,102)nObs(iElt)
-
-C  obscuration params
-	  IF (nObs(iElt).GT.0) THEN
-	    DO 21 iObs=1,nObs(iElt)
-	      WRITE(*,124)ObsTypeName(ObsType(iObs,iElt))
-	      IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
-	        WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,3)
-	      ELSE IF (ABS(ObsType(iObs,iElt)).EQ.4) THEN
-	        WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,6)
-              ELSE IF (ABS(ObsType(iObs,iElt)).EQ.7) THEN
-                WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-              ELSE IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-                ! sws polygonal
-                i = ObsVec(3,iObs,iElt)
-                WRITE(*,139) ObsVec(1:2,iObs,iElt),i
-                Do k=1,i
-                  WRITE(*,136)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
-                End Do
-              ELSE IF (ABS(ObsType(iObs,iElt)).EQ.9) THEN
-                WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-              ELSE IF (ABS(ObsType(iObs,iElt)).EQ.10) THEN
-                WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-	      ELSE
-	        WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,4)
-	      END IF
- 21	    CONTINUE
-	    WRITE(*,126)(xObs(j,iElt),j=1,3)
-	  END IF
-
-	  WRITE(*,121)ApTypeName(ApType(iElt))
-	  IF (ApType(iElt).NE.0) THEN
-	    IF (ApType(iElt).EQ.1) THEN
-	      WRITE(*,122)(ApVec(j,iElt),j=1,3)
-	    ELSE IF (ApType(iElt).EQ.2) THEN
-	      WRITE(*,122)(ApVec(j,iElt),j=1,4)
-	    ELSE IF (ApType(iElt).EQ.6) THEN ! hex
-              WRITE(*,122)(ApVec(j,iElt),j=1,4)
-	    ELSE
-	      WRITE(*,122)(ApVec(j,iElt),j=1,5)
-	    END IF
-	  END IF
-
-C  basic params
-	  WRITE(*,113)zElt(iElt),PropTypeName(PropType(iElt))
-C  pinhole
-	  IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
-     &	  THEN
-	    WRITE(*,151)PinHole(iElt)
-	  END IF
-
-C  coatings
-	  IF (nCoatElt(iElt).GT.0) THEN
-	    WRITE(*,141)nCoatElt(iElt),(CoatIndxElt(j,iElt),
-     &	    j=1,nCoatElt(iElt))
-	    WRITE(*,142)(CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
-	  END IF
-
-C  basic params
-	  WRITE(*,114)nECoord(iElt)
-	  IF (nECoord(iElt).GT.0) THEN
-	    WRITE(*,115)(TElt(1,j,iElt),j=1,nECoord(iElt))
-	    DO 2 k=2,6
-	      WRITE(*,162)(TElt(k,j,iElt),j=1,nECoord(iElt))
- 2	    CONTINUE
-	  END IF
-
-	  IF (iElt.EQ.nElt) THEN
-C  Output Variables
-	    WRITE(*,161)nOutCord,((Tout(k,j),j=1,7),k=1,nOutCord)
-	  END IF
-	END IF
-
-	RETURN
-	END SUBROUTINE ShowData
-#endif
-
-
-C***********************************************************************
-!  This is Sirlin's updated version ShowData routine
-!  06/25/2009
-        SUBROUTINE ShowData(npts,iElt)
-        use param_mod
-        use src_mod
-        use cfiles_mod
-        use elt_mod
-        use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,
-     &                            ifSave3DApVec
-
-        IMPLICIT NONE
-
-        INTEGER iElt,npts,i,j,k,iSeg,iObs
-
-#include "viewdata_formats.inc"
-
-
-C       Screen output:
-
-        IF (iElt.EQ.0) THEN
-
-C  input data
-          WRITE(*,100)(ChfRayDir(j),j=1,3),(ChfRayPos(j),j=1,3),zSource,
-     &     IndRef(0),Extinc(0),BaseUnits,WaveUnits,Wavelen,Flux,
-     &     GridTypeName(GridType),Aperture,Obscratn,
-     &     nGridPts,(xGrid(j),j=1,3),(yGrid(j),j=1,3),nElt
-           IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
-             WRITE(*,117)nSeg,width,gap,(SegXgrid(j),j=1,3),
-     &                   (SegCoord(i,1),i=1,3)
-            IF (nSeg.GT.1) THEN
-              DO iSeg=2,nSeg
-                WRITE(*,116)(SegCoord(i,iSeg),i=1,3)
-              END DO
-            END IF
-          ELSE IF (GridType.EQ.5) THEN
-	    WRITE(*,*)'    gap= ',gap
-	    WRITE(*,*)' nRings= ',nRings
-            WRITE(*,*)' nPetals= ',nPetals(0:nRings)
-            WRITE(*,*)' RingRads= ',RingRads(1:nRings)
-            WRITE(*,118)nSeg,radCtr,(SegXgrid(j),j=1,3),
-     &                  SegCoord(1:2,1)
-            IF (nSeg.GT.1) THEN
-              DO iSeg=2,nSeg
-                WRITE(*,116)SegCoord(1:2,iSeg)
-              END DO
-            END IF
-          END IF
-        ELSE
-
-C  Element Data
-C Basic params & optical params & conic params
-            IF (EltGrp(0,iElt)==0) THEN
-              IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-                WRITE(*,98)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &            SrfTypeName(SrfType(iElt)),
-     &            (psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE IF (KcElt(iElt).LE.0) THEN
-                WRITE(*,101)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &          SrfTypeName(SrfType(iElt)),fElt(iElt),eElt(iElt),
-     &          KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &          (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE
-                WRITE(*,99)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &          SrfTypeName(SrfType(iElt)),
-     &          KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &          (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              END IF
-            ELSE
-              ! With EltGrp defined at iElt
-              IF ((SrfType(iElt).EQ.6).OR.(SrfType(iElt).EQ.10)) THEN
-                WRITE(*,230)iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
-                WRITE(*,233)(psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE IF (KcElt(iElt).LE.0) THEN
-                WRITE(*,230)iElt,EltName(iElt),
-     &                      EltTypeName(EltID(iElt)),
-     &                      SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ', EltGrp(1:EltGrp(0,iElt),iElt)
-                WRITE(*,234)fElt(iElt),eElt(iElt),
-     &            KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              ELSE
-                WRITE(*,230)
-     &            iElt,EltName(iElt),EltTypeName(EltID(iElt)),
-     &            SrfTypeName(SrfType(iElt))
-                WRITE(*,*)'   EltGrp= ',
-     &                    EltGrp(1:EltGrp(0,iElt),iElt)
-                WRITE(*,235)
-     &            KrElt(iElt),KcElt(iElt),(psiElt(j,iElt),j=1,3),
-     &            (VptElt(j,iElt),j=1,3),(RptElt(j,iElt),j=1,3)
-              END IF
-            END IF
-
-            IF (LGlass(iElt)) THEN
-              WRITE(*,97)GlassElt(iElt),
-     &        (GlassCoef(j,iElt),j=1,6),Extinc(iElt)
-            ELSE
-              WRITE(*,95)IndRef(iElt),Extinc(iElt)
-            ENDIF
-
-          IF (SrfType(iElt).EQ.3) THEN
-            !WRITE(*,103)(AsphCoef(j,iElt),j=1,maxAsphCoef)
-            WRITE(*,*)'AsphCoef=   ',
-     &                (AsphCoef(j,iElt),j=1,maxAsphCoef)
-          ELSE IF (SrfType(iElt).EQ.6) THEN
-            WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
-          ELSE IF (SrfType(iElt).EQ.4) THEN
-            WRITE(*,105)(MonCoef(j,iElt),j=1,120)
-          ELSE IF (SrfType(iElt).EQ.7) THEN
-            WRITE(*,106)UDSrfType(iElt),UDSrfFile(iElt),
-     &      (UDSrfParam(j,iElt),j=1,6)
-          ELSE IF (SrfType(iElt).EQ.8) THEN
-            WRITE(*,131) ZernTypeNameL(ZernTypeL(iElt))
-            If (ZernTypeL(iElt)==9) Then
-              WRITE(*,*)'ZernAnnualRatio= ',ZernAnnuRatio(iElt)
-            End If
-            WRITE(*,107)(ZernCoef(j,iElt),j=1,45)
-          ELSE IF (SrfType(iElt).EQ.9) THEN
-            WRITE(*,132) GridFile(iElt),nGridMat(iElt),
-     &      GridSrfdx(iElt)
-          ELSE IF (SrfType(iElt).EQ.10) THEN
-            WRITE(*,104)(AnaCoef(j,iElt),j=1,4)
+        ! ***********************************************************************
+
+        SUBROUTINE ShowData(iElt)
+          use param_mod
+          use src_mod
+          use cfiles_mod
+          use elt_mod
+          use macos_IO
+
+          IMPLICIT NONE
+          INTEGER, INTENT(IN):: iElt
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+          IF (iELT==0) THEN
+            CALL PrtSourceInfo()
+          ELSE
+            CALL PrtSingleEltInfo(iElt)
           END IF
 
-          IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
-            WRITE(*,108)(pMon(j,iElt),j=1,3),(xMon(j,iElt),j=1,3),
-     &      (yMon(j,iElt),j=1,3),(zMon(j,iElt),j=1,3)
-            IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
-              WRITE(*,109)lMon(iElt)
-            END IF
-          END IF
-
-          IF (EltID(iElt).EQ.4) THEN
-            WRITE(*,110)(h1HOE(j,iElt),j=1,3),(h2HOE(j,iElt),j=1,3),
-     &      OrderHOE(iElt),WaveHOE(iElt)
-          ELSE IF ((EltID(iElt).EQ.5).OR.(EltID(iElt).EQ.13)) THEN
-            WRITE(*,111)(h1HOE(j,iElt),j=1,3),
-     &      OrderHOE(iElt),RuleWidth(iElt)
-          ELSE IF (EltID(iElt).EQ.10) THEN
-            WRITE(*,112)LensArrayType(iElt),LensArrayWidth(iElt)
-          END IF
-
-C  Basic parameter
-          WRITE(*,102)nObs(iElt)
-
-C  obscuration params
-          IF (nObs(iElt).GT.0) THEN
-             DO 21 iObs=1,nObs(iElt)
-                WRITE(*,124)ObsTypeName(ObsType(iObs,iElt))
-                IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,3)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.4) THEN
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,6)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.7) THEN
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-! sws polygonal
-                   i = ObsVec(3,iObs,iElt)
-                   WRITE(*,139) ObsVec(1:2,iObs,iElt),i
-                   Do k=1,i
-                      WRITE(*,136)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
-                   End Do
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.9) THEN
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE IF (ABS(ObsType(iObs,iElt)).EQ.10) THEN
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,5)
-                ELSE
-                   WRITE(*,125)(ObsVec(j,iObs,iElt),j=1,4)
-                END IF
- 21          CONTINUE
-             WRITE(*,126)(xObs(j,iElt),j=1,3)
-          END IF
-
-          WRITE(*,121)ApTypeName(ApType(iElt))
-          IF (ApType(iElt).NE.0) THEN
-             IF (ApType(iElt).EQ.1) THEN
-                WRITE(*,122)(ApVec(j,iElt),j=1,3)
-             ELSE IF (ApType(iElt).EQ.2) THEN
-                WRITE(*,122)(ApVec(j,iElt),j=1,4)
-             ELSE IF (ApType(iElt).EQ.6) THEN ! hex
-                WRITE(*,122)(ApVec(j,iElt),j=1,4)
-             ELSE IF (ApType(iElt).EQ.7) THEN ! polygonal
-                i=ApVec(3,iElt)
-                If (ifSave3DApVec.and.Poly3DApVecL(iElt)) Then
-                   WRITE(*,127) i
-                   Do k=1,i
-                      WRITE(*,128)(PolyVtx3DSav(j,k,iElt),j=1,3)
-                   End Do
-                Else
-! 2D polygon
-                   WRITE(*,129) ApVec(1:2,iElt),i
-                   Do k=1,i
-                      WRITE(*,136)(PolyApVtx(j,k,iElt),j=1,2)
-                   End Do
-                End If
-             ELSE
-                WRITE(*,122)(ApVec(j,iElt),j=1,5)
-             END IF
-          END IF
-
-C  basic params
-          WRITE(*,113)zElt(iElt),PropTypeName(PropType(iElt))
-C  pinhole
-          IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
-     &    THEN
-            WRITE(*,151)PinHole(iElt)
-          END IF
-
-C  coatings
-          IF (nCoatElt(iElt).GT.0) THEN
-            WRITE(*,141)nCoatElt(iElt),(CoatIndxElt(j,iElt),
-     &      j=1,nCoatElt(iElt))
-            WRITE(*,142)(CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
-          END IF
-
-C  basic params
-          WRITE(*,114)nECoord(iElt)
-          IF (nECoord(iElt).GT.0) THEN
-            WRITE(*,115)(TElt(1,j,iElt),j=1,nECoord(iElt))
-            DO 2 k=2,6
-              WRITE(*,162)(TElt(k,j,iElt),j=1,nECoord(iElt))
- 2          CONTINUE
-          END IF
-
-          IF (iElt.EQ.nElt) THEN
-C  Output Variables
-            WRITE(*,161)nOutCord,((Tout(k,j),j=1,7),k=1,nOutCord)
-          END IF
-        END IF
-
-        RETURN
         END SUBROUTINE ShowData
 
 
-C***********************************************************************
-C       - Save a new MACOS prescription  - jzlou
-C***********************************************************************
+        SUBROUTINE ViewData()
+          use elt_mod
+          use macos_IO
+
+          IMPLICIT NONE
+          INTEGER :: iElt
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+            ! --------------------------------------------
+            ! Flags
+            ! --------------------------------------------
+
+            ! --------------------------------------------
+            ! Source Definitions
+            ! --------------------------------------------
+            CALL PrtSourceInfo()
+
+            ! --------------------------------------------
+            ! Element Definitions
+            ! --------------------------------------------
+            CALL PrtHeaderEltInfo()
+            DO iElt=1,nElt
+              CALL PrtSingleEltInfo(iElt)
+            END DO
+
+            ! --------------------------------------------
+            ! Global Coord. Output
+            ! --------------------------------------------
+            CALL PrintBanner('Lin. Model Coordinate System Definition')
+
+            CALL PrintFmt('nOutCord', "i3", nOutCord)
+            CALL PrintFmtArray('Tout','1PD23.15',7,PACK(TRANSPOSE(Tout(1:nOutCord,:)),MASK=.TRUE.))
+
+        END SUBROUTINE ViewData
+
+
+        SUBROUTINE PrintBanner(Header)
+          USE macos_IO
+          IMPLICIT NONE
+          CHARACTER*(*), INTENT(IN) :: Header
+
+          INTEGER, PARAMETER :: LineLength = 87
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+          CALL PrintMsg('')
+          CALL PrintMsg('% '//REPEAT('-',LineLength))
+          CALL PrintMsg('% '//TRIM(Header))
+          CALL PrintMsg('% '//REPEAT('-',LineLength))
+          CALL PrintMsg('')
+
+        END SUBROUTINE PrintBanner
+
+
+        SUBROUTINE PrtSourceInfo()
+          USE macos_IO
+          use src_mod
+          use elt_mod
+          use param_mod
+
+          IMPLICIT NONE
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
+          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
+
+          CALL PrintBanner('Element Definitions')
+
+          CALL PrintFmtArray('ChfRayDir', '1PD23.15', 3, ChfRayDir)
+          CALL PrintFmtArray('ChfRayPos', '1PD23.15', 3, ChfRayPos)
+          CALL PrintFmt('zSource', "1PD23.15", zSource)
+          CALL PrintMsg('')
+
+          CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
+          CALL PrintFmt('Extinc',  "1PD23.15", Extinc(0))
+          CALL PrintFmt('Wavelen', "1PD23.15", Wavelen)
+          CALL PrintFmt('Flux',    "1PD23.15", Flux)
+          CALL PrintMsg('')
+
+          CALL PrintFmt('Aperture', "1PD23.15", Aperture)
+          CALL PrintFmt('Obscratn', "1PD23.15", Obscratn)
+          CALL PrintMsg('')
+
+          CALL PrintFmt('GridType', "2x,A", TRIM(GridTypeName(GridType)))
+          CALL PrintFmt('nGridpts', "2x,i0", nGridpts)
+          CALL PrintFmtArray('xGrid', '1PD23.15', 3, xGrid)
+          CALL PrintFmtArray('yGrid', '1PD23.15', 3, yGrid)
+
+          !
+          ! Add. Src. Grid Specifications
+          !
+          IF ((GridType .EQ. GridType_Hex).OR.(GridType .EQ. GridType_Pie)) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('nSeg',  "2x,i0", nSeg)
+            CALL PrintFmt('width', "1PD23.15", width)
+            CALL PrintFmt('gap',   "1PD23.15", gap)
+            CALL PrintFmtArray('SegXgrid', '1PD23.15', 3, SegXgrid)
+            CALL PrintFmtArray('SegCoord', '2x,i2', 3, PACK(SegCoord(1:3,1:nSeg),MASK=.TRUE.))
+
+          ELSE IF (GridType .EQ. GridType_Flower) THEN
+
+            CALL PrintMsg('')
+            IF (FSEG_CCAT_Flg)
+     &        CALL PrintFmt('FlowerSegSrc', "2x,A", 'CCAT')
+            CALL PrintFmt(     'gap',     "1PD23.15", gap)
+            CALL PrintFmt(     'nRings',  "2x,i0", nRings)
+            CALL PrintFmtArray('nPetals', '2x,i2', nRings+1, nPetals(0:nRings))
+            CALL PrintFmtArray('RingRads','1PD23.15', nRings, RingRads(1:nRings))
+            CALL PrintFmt(     'nSeg',    "2x,i0", nSeg)
+            CALL PrintFmt(     'radCtr', "1PD23.15", radCtr)
+            CALL PrintFmtArray('SegXgrid', '1PD23.15', 3, SegXgrid)
+            CALL PrintFmtArray('SegCoord', '2x,i3', 2, PACK(SegCoord(1:2,1:nSeg),MASK=.TRUE.))
+
+          END IF
+
+        END SUBROUTINE PrtSourceInfo
+
+
+
+        SUBROUTINE PrtHeaderEltInfo()
+          use elt_mod
+          use traceutil_mod, only: ifSave3DApVec
+          use macos_IO
+
+          IMPLICIT NONE
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          ! Flags
+          IF (ifSave3DApVec) CALL PrintFmt('Save3DApVec', "2x,A", 'Y')
+
+          ! Element Count
+          CALL PrintBanner('Element Definitions')
+          CALL PrintFmt('nElt', "2x,i0", nElt)
+          CALL PrintMsg('')
+
+        END SUBROUTINE PrtHeaderEltInfo
+
+
+        SUBROUTINE PrtSingleEltInfo(iElt)
+          use param_mod
+          use src_mod
+          use cfiles_mod
+          use elt_mod
+          use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,ifSave3DApVec
+          use macos_IO
+
+          IMPLICIT NONE
+          INTEGER, INTENT(IN):: iElt
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          ! --------------------------------------------
+          ! Rx Srf. Info
+          ! --------------------------------------------
+          CALL PrintMsg('')
+          CALL PrintFmt('iElt', "2x,i0", iElt)
+          CALL PrintFmt('EltName', "2x,A", TRIM(EltName(iElt)))
+          CALL PrintFmt('Element', "2x,A", TRIM(EltTypeName(EltID(iElt))))
+          CALL PrintFmt('Surface', "2x,A", TRIM(SrfTypeName(SrfType(iElt))))
+
+          ! --------------------------------------------
+          ! Elt. Grouping Info
+          ! --------------------------------------------
+          ! ToDo:
+          !    EltGrp=  -3 5 7
+          !      where -3 indicates a group of 3 elements, with starting element 5 and ending
+          !      element 7, so the group has elements 5, 6 and 7. Note that the last value in
+          !      the EltGrp field is optional.
+
+          IF (EltGrp(0,iElt)/=0)
+     &      CALL PrintFmtArray('EltGrp','2x,i0',EltGrp(0,iElt)+1,EltGrp(0:EltGrp(0,iElt),iElt))
+
+          ! --------------------------------------------
+          ! Srf. dependent parameters
+          ! --------------------------------------------
+          ! include: fElt(iElt),eElt(iElt)  ???? ToDo
+
+          SELECT CASE (SrfType(iElt))
+            CASE (SrfType_Anamorphic)
+              ! ???
+            CASE (SrfType_Toric)
+              ! ???
+            CASE DEFAULT
+              CALL PrintFmt('KrElt', "1PD23.15", KrElt(iElt))
+              CALL PrintFmt('KcElt', "1PD23.15", KcElt(iElt))
+          END SELECT
+
+          ! --------------------------------------------
+          ! Srf. Position & Orientation & Rot. Location
+          ! --------------------------------------------
+          CALL PrintFmtArray('psiElt','1PD23.15',3,psiElt(:,iElt))
+          CALL PrintFmtArray('VptElt','1PD23.15',3,VptElt(:,iElt))
+          CALL PrintFmtArray('RptElt','1PD23.15',3,RptElt(:,iElt))
+
+          ! --------------------------------------------
+          ! Special Srf. Type Parameters
+          ! --------------------------------------------
+          SELECT CASE (SrfType(iElt))
+
+            ! ---------------------------- Aspherical Srf (3)
+            CASE (SrfType_Aspheric)
+              BLOCK
+                INTEGER  :: nCoef
+                LOGICAL  :: nonzero(mAsphCoef)
+
+                nonzero(:) = .FALSE.
+                WHERE (AsphCoef(:,iElt)/=0e0_pr) nonzero = .TRUE.
+                nCoef = FINDLOC(nonzero, VALUE=.true., DIM=1, BACK=.true.)
+
+                IF (nCoef==0) THEN
+                  CALL PrintFmt('nAsphCoef', "2x,i0", 1)
+                  CALL PrintFmt('AsphCoef',  "1PD23.15", 0e0_pr)
+                ELSE
+                  CALL PrintFmt('nAsphCoef', "2x,i0", nCoef)
+                  CALL PrintFmtArray('AsphCoef','1PD23.15', 4, AsphCoef(1:nCoef, iElt))
+                END IF
+              END BLOCK
+
+            ! ---------------------------- Monomial Srf. (4)
+            CASE (SrfType_Monomial)
+              CALL PrintFmtArray('MonCoef','1PD23.15', 6, MonCoef(:,iElt))
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+
+            ! ---------------------------- Anamorphic Srf (6)
+            CASE (SrfType_Anamorphic)
+              CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
+
+            ! ---------------------------- User Defined SArf. (7)
+            CASE (SrfType_UserDefined)
+              CALL PrintFmt('UDSrfType', "2x,i0", UDSrfType(iElt))
+              CALL PrintFmt('UDSrfFile', "2x,A", TRIM(UDSrfFile(iElt)))
+              CALL PrintFmtArray('UDSrfParam','1PD23.15',6,UDSrfParam(:,iElt))
+
+            ! ---------------------------- Zernikes (8)
+            CASE (SrfType_Zernike)
+              CALL Srf_Zernike()
+
+            ! ---------------------------- Grid Type Srf (9)
+            CASE (SrfType_GridData)
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- Toric (10)  ToDo
+            CASE (SrfType_Toric)
+              CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
+
+            ! ---------------------------- undefined Special Srf.
+            CASE DEFAULT
+
+          END SELECT
+
+          ! --------------------------------------------------------
+          ! Special Srf. Coord. Parameters: Position and orientation
+          ! --------------------------------------------------------
+          IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)) THEN
+            CALL PrintFmtArray('pMon', "1PD23.15", 3, pMon(:,iElt))
+            CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
+            CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
+            CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
+          END IF
+
+          ! -----------------------------------------------------
+          ! Special Element: HOE, Grating & Lens Array Parameters
+          ! -----------------------------------------------------
+          SELECT CASE (EltID(iElt))
+
+            ! ------------------------ HOE
+            CASE (HOEElt)
+
+               CALL PrintFmtArray('h1HOE', "1PD23.15", 3, h1HOE(1:3, iElt))
+               CALL PrintFmtArray('h2HOE', "1PD23.15", 3, h2HOE(1:3, iElt))
+               CALL PrintFmt('OrderHOE', "1PD23.15", OrderHOE(iElt))
+               CALL PrintFmt('WaveHOE', "1PD23.15", WaveHOE(iElt))
+
+            ! ------------------------ Reflection & Transmission Grating
+            CASE (GratingElt, TrGratingElt)
+
+              CALL PrintFmtArray('h1HOE', "1PD23.15", 3, h1HOE(1:3, iElt))
+              CALL PrintFmt('OrderHOE', "1PD23.15", OrderHOE(iElt))
+              CALL PrintFmt('RuleWidth', "1PD23.15", RuleWidth(iElt))
+
+            ! ------------------------ Lens Array
+            CASE (LensArrayElt)
+
+              CALL PrintFmt('LensArrayType', "i2", LensArrayType(iElt))
+              CALL PrintFmt('LensArrayWidth', "1PD23.15", LensArrayWidth(iElt))
+
+          END SELECT
+
+          ! --------------------------------------------
+          ! Material properties
+          ! --------------------------------------------
+          !  GlassElt= N-BK7
+          ! GlassType= Sellmeier
+          ! GlassCoef= 1.03961212d0 2.31792344d-001 1.01046945d+000 6.00069867d-003  2.00179144d-002  1.03560653d+002
+
+          IF (LGlass(iElt)) THEN
+            ! Glass Model: Sellmeier, SCHOTT, Hartmann
+            CALL PrintFmt('GlassElt', "2x,A", TRIM(GlassElt(iElt)))
+            CALL PrintFmt('GlassType', "2x,A", TRIM(GlassTypeName(GlassType(iElt))))   ! Glass model: Sellmeier (6 Coef), SCHOTT (6), Hartman
+            CALL PrintFmtArray('GlassCoef', "1PD23.15", 6, GlassCoef(1:6,iElt))
+            CALL PrintFmt('Extinc', "1PD23.15", Extinc(iElt))
+          ELSE
+            ! Specific Ref. Index
+            CALL PrintFmt('IndRef', "1PD23.15", IndRef(iElt))
+            CALL PrintFmt('Extinc', "1PD23.15", Extinc(iElt))
+          END IF
+
+          ! --------------------------------------------
+          ! Coating
+          ! --------------------------------------------
+          ! problem: nCoatElt might be different then size of nCoatElt(iElt) !!!!!!  (ToDo)
+          CALL PrintFmt('nCoat', "2x,i0", nCoatElt(iElt))
+          IF (nCoatElt(iElt).GT.0) THEN
+            CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))
+            CALL PrintFmtArray( 'CoatThk','1PD23.15',5,CoatThkElt(1:nCoatElt(iElt),iElt))
+          END IF
+
+          ! --------------------------------------------
+          ! Obscuration & Aperture Orientation
+          ! --------------------------------------------
+          IF ((nObs(iElt).GT.0).OR.(ApType(iElt).NE.0))
+     &          CALL PrintFmtArray('xObs', "1PD23.15", 3, xObs(1:3,iElt))
+
+          ! --------------------------------------------
+          ! Obscuration(s)
+          ! --------------------------------------------
+          CALL Define_Obscurations()
+
+          ! --------------------------------------------
+          ! Aperture
+          ! --------------------------------------------
+          CALL Define_Aperture()
+
+          ! --------------------------------------------
+          ! Propagation
+          ! --------------------------------------------
+          CALL PrintFmt('PropType', "2x,A", TRIM(PropTypeName(PropType(iElt))))
+          CALL PrintFmt('zElt', "1PD23.15", zElt(iElt))
+
+          ! Special Elements: Pinhole
+          IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
+     &       CALL PrintFmt('PinHole', "1PD23.15", PinHole(iElt))
+
+          ! --------------------------------------------
+          ! Local Coordinate Frame
+          ! --------------------------------------------
+          IF (LUpdateTElt_FLG(iElt)) CALL PrintFmt('UpdateTElt', "2x,A", 'Y')
+          CALL PrintFmt('nECoord', "i3", nECoord(iElt))
+          IF (nECoord(iElt).GT.0) CALL PrintFmtArray('TElt','1PD23.15',nECoord(iElt),
+     &                                          PACK(TRANSPOSE(TElt(:,1:nECoord(iElt),iElt)),MASK=.TRUE.))
+
+          ! ----------------------------------------------------------
+          CONTAINS
+
+          SUBROUTINE Srf_Zernike()
+            USE Kinds
+            IMPLICIT NONE
+            INTEGER, PARAMETER :: nCol = 6   ! max number of data columns in a row (must be in sync with reading Rx)
+
+            INTEGER  :: nCoef, mCoef, modes(mZernModes), nModes, k
+            LOGICAL  :: nonzero(mZernModes)
+            REAL(pr) :: Coefs(mZernModes)
+            ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+            CALL PrintFmt('ZernType', "2x,A", TRIM(ZernTypeNameL(ZernTypeL(iElt))))
+            IF (ZernTypeL(iElt)==ZernType_NormAnnularNoll)
+     &        CALL PrintFmt('ZernAnnualRatio', "1PD23.15", ZernAnnuRatio(iElt))
+
+            mCoef = ZernType_MaxMode(ZernTypeL(iElt))
+            WHERE (ZernCoef(:mCoef,iElt)/=0e0_pr)
+              nonzero = .TRUE.
+            ELSEWHERE
+              nonzero = .FALSE.
+            END WHERE
+            nCoef = COUNT(nonzero)                                      ! # of non-zero values
+            nModes = FINDLOC(nonzero, VALUE=.true., DIM=1, BACK=.true.) ! index of the max non-zero value
+
+            SELECT CASE (nCoef)
+              ! ------------------------------- no coefficients
+              CASE  (0) ! -- all zeros
+                CALL PrintFmt('nZernCoef', "i4", 1)
+                CALL PrintFmt('ZernCoef',  "1PD23.15", 0e0_pr)
+
+              ! ------------------------------- up to 20 Modes -- write individual modes
+              CASE (1:20)
+                k = 0
+                DO CONCURRENT (INTEGER::i=1:mCoef, nonzero(i))
+                  k = k+1
+                  modes(k) = i
+                  Coefs(k) = ZernCoef(i, iElt)
+                END DO
+                CALL PrintFmt('nZernCoef', "i4", nCoef)
+                CALL PrintFmtArray('ZernModes','I3', nCoef, modes(:nCoef))
+                CALL PrintFmtArray('ZernCoef','1PD23.15', nCol, Coefs(:nCoef))
+
+              ! ------------------------------- write all modes up to last non-zero mode
+              CASE DEFAULT
+                CALL PrintFmt('nZernCoef', "i4", nModes)
+                CALL PrintFmtArray('ZernCoef','1PD23.15', nCol, ZernCoef(:nModes,iElt))
+
+            END SELECT
+
+            ! Normalisation Radius
+            CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+
+          END SUBROUTINE Srf_Zernike
+
+
+          SUBROUTINE Define_Obscurations()
+            IMPLICIT NONE
+            INTEGER :: iObs, j
+            CHARACTER(LEN=256) :: PrtMsgStr
+
+            CALL PrintFmt('nObs', "2x,i0", nObs(iElt))
+
+            IF (nObs(iElt).LE.0) RETURN
+
+            DO iObs=1,nObs(iElt)
+              CALL PrintFmt('ObsType', "2x,A", TRIM(ObsTypeName(ObsType(iObs,iElt))))
+
+              SELECT CASE (ABS(ObsType(iObs,iElt)))
+
+                ! ------ Neg- / Circle ------
+                CASE (1)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 3, ObsVec(1:3,iObs,iElt))
+
+                ! ------ Neg- / Rectangle ------
+                CASE (2)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 4, ObsVec(1:4,iObs,iElt))
+
+                ! ------ Annulus ------
+                CASE (3)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 4, ObsVec(1:4,iObs,iElt))
+
+                ! ------ Neg- / Triangle ------
+                CASE (4)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 6, ObsVec(1:6,iObs,iElt))
+
+                ! ------ Neg- / Ellipse ------
+                CASE (5)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 4, ObsVec(1:4,iObs,iElt))
+
+                ! ------ Matrix ------  ToDo
+                CASE (6)
+                  CALL PrintMsg("Obs Matrix is a ToDo item ")
+
+                ! ------ Tapered Ellipse ------
+                CASE (7)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 5, ObsVec(1:5,iObs,iElt))
+
+                ! ------ Polygon ------
+                CASE (8)
+                  j = INT(ObsVec(3,iObs,iElt))
+                  WRITE(PrtMsgStr,"(2(1PD23.15),i4)") ObsVec(1:2,iObs,iElt),j
+                  CALL PrintFmt('ObsVec', "A", PrtMsgStr)
+                  CALL PrintFmtArray('', "1PD23.15", 2, PACK(PolyObsVtx(1:2,1:j,iObs,iElt),MASK=.TRUE.))
+
+                ! ------ RotRectangle ------
+                CASE (9)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 5, ObsVec(1:5,iObs,iElt))
+
+                ! ------ RotEllipse ------
+                CASE (10)
+                  CALL PrintFmtArray('ObsVec', "1PD23.15", 5, ObsVec(1:5,iObs,iElt))
+
+                CASE DEFAULT
+                  CALL PrintMsg('-- Obscuration type unknown --')
+
+              END SELECT
+            END DO
+
+          END SUBROUTINE Define_Obscurations
+
+
+          SUBROUTINE Define_Aperture()
+            IMPLICIT NONE
+            INTEGER :: j
+            CHARACTER(LEN=256) :: PrtMsgStr
+
+            CALL PrintFmt('ApType', "2x,A", TRIM(ApTypeName(ApType(iElt))))
+
+            IF (ApType(iElt).LE.0) RETURN
+
+            SELECT CASE (ApType(iElt))
+
+              CASE (1) ! ------ Circular ------
+                CALL PrintFmtArray('ApVec', "1PD23.15", 3, ApVec(1:3,iElt))
+
+              CASE (2) ! ------ Rectangular ------
+                CALL PrintFmtArray('ApVec', "1PD23.15", 4, ApVec(1:4,iElt))
+
+              CASE (6) ! ------ Hexagonal ------
+                CALL PrintFmtArray('ApVec', "1PD23.15", 4, ApVec(1:4,iElt))
+
+              CASE (7) ! ------ Polygonal ------
+
+                j = INT(ApVec(3,iElt))
+                IF (ifSave3DApVec .AND. Poly3DApVecL(iElt)) THEN
+
+                  ! ------ 3D polygon ------
+                  !
+                  !      ApType= Polygonal
+                  ! Poly3DApVec= 3
+                  !              382.40  -610.49  -15.91
+                  !             1729.58  -608.86 -103.10
+                  !              719.90   -25.92  -15.91
+                  CALL PrintFmt('Poly3DApVec', "2x,i0", j)
+                  CALL PrintFmtArray('', "1PD23.15", 3, PACK(PolyVtx3DSav(1:3,1:j,iElt),MASK=.TRUE.))
+
+                ELSE
+                  ! ------ 2D polygon ------
+                  !
+                  !    ApType= Polygonal
+                  !     ApVec=  ctr_x ctr_y nVertex    center of aperture coord system and # vertices
+                  !             v1_x v1_y               x and y distances of first vertex w.r.t. (ctr_x,ctr_y)
+                  !             v2_x v2_y               ...
+
+                  WRITE(PrtMsgStr,"(2(1PD23.15),i4)") ApVec(1:2,iElt), j
+                  CALL PrintFmt('ApVec', "A", PrtMsgStr)
+                  CALL PrintFmtArray('', "1PD23.15", 2, PACK(PolyApVtx(1:2,1:j,iElt),MASK=.TRUE.))
+                END IF
+
+               CASE DEFAULT ! all others: Tapered_Circular, Elliptical, Tapered_Elliptical, SunBlades
+                 CALL PrintFmtArray('ApVec', "1PD23.15", 5, ApVec(1:5,iElt))
+              ! ToDo
+
+              END SELECT
+
+          END SUBROUTINE Define_Aperture
+
+        END SUBROUTINE PrtSingleEltInfo
+
+! ***********************************************************************
+!        - Save a new MACOS prescription  - jzlou
+! ***********************************************************************
 
 	SUBROUTINE CSAVE(npts)
 	use param_mod
 	use src_mod
 	use cfiles_mod
 	use elt_mod
+        use macos_IO, only: SetPrtToFileID
 
 	IMPLICIT NONE
 
@@ -1969,14 +1551,16 @@ C	Get file name
 C	Create new input file and write input data
 
 	WRITE(*,*) ' File '//INFIL(1:ICLEN(infil))//' being created.'
-	OPEN (UNIT=1,FILE=INFIL,STATUS='NEW',FORM='FORMATTED')
-	CALL ViewData(npts,1)
-	CLOSE (UNIT=1)
 
-	RETURN
-	END SUBROUTINE CSAVE
+	OPEN (UNIT=31,FILE=INFIL,STATUS='NEW',FORM='FORMATTED')
+        CALL SetPrtToFileID(31)
+        CALL ViewData()
+        CLOSE (UNIT=31)
+        CALL SetPrtToFileID(0)
 
-C***********************************************************************
+        END SUBROUTINE CSAVE
+
+! ***********************************************************************
 
 	SUBROUTINE SetIntSrf(ifIntSrfSet)
 

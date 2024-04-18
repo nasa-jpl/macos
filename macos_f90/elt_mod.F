@@ -79,9 +79,14 @@ C***********************************************************************
      &                        mSrfType                  = 11
 
         ! Surface types with Gridded Surface Parameters
-        INTEGER, DIMENSION(2), PARAMETER ::
-     &          GridTypeAll = (/SrfType_GridData,
-     &                          SrfType_AsGrData/)
+        INTEGER, PARAMETER :: GridTypeAll(2) = (/SrfType_GridData,
+     &                                           SrfType_AsGrData/)
+
+        ! Surfaces having a Local Coord. System defined
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(4) = [SrfType_Monomial,
+     &                                             SrfType_Zernike,
+     &                                             SrfType_AsGrData,
+     &                                             SrfType_GridData]
 
         CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=  ! SrfTypeName(20)
      &                     (/'Flat',               ! 1
@@ -151,7 +156,7 @@ C***********************************************************************
 
 
         INTEGER, PARAMETER :: mZernType          =  11,
-     &                        mZernModes         =  66,  ! max. Zernike Coefficients (8th radial mode)
+     &                        mZernModes         =  66,  ! max. # of Zernike Coefficients (8th radial mode)
      &                        nZernModes_Default =  45,  ! default if "nZernCoef" is not defined in Rx
      &                        mAsphCoef          =   9,  ! max terms = 9, up to term h^20
      &                        nAsphCoef_Default  =   4,  ! default if "nAsphCoef" is not defined in Rx
@@ -226,6 +231,8 @@ C***********************************************************************
      &               sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
      &               sqrt(20d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0),
      &               sqrt(11d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0)/)
+
+        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(3) = ['Sellmeier', 'SCHOTT', 'Hartman']  ! see 'param_mod.F' for id
 
 	Integer, parameter :: mCoat=10,
      &           	      mPrvGlass=5, ! max private glasses defined in Rx
