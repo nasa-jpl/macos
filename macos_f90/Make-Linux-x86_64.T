@@ -111,6 +111,7 @@ src_mod.o: src_mod.F param_mod.F
 cfiles_mod.o: cfiles_mod.F param_mod.F
 macos_mod.o: macos_mod.F param_mod.F
 lohpars_mod.o: lohpars_mod.F
+macos_IO.o: macos_IO.f90
 macos_vars_mod.o: macos_vars_mod.F
 
 macos_init.o: macos_init.F
@@ -130,9 +131,9 @@ tracesub.o: tracesub.F $(MOD_SRCS) fpp.inc
 srtrace.o: srtrace.F $(MOD_SRCS)
 usersub.o: usersub.F $(MOD_SRCS) collim.inc
 macos.o: macos.F $(MOD_SRCS) fits1.inc glass.inc
-macosio.o: macosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
+macosio.o: macosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc #viewdata_formats.inc
 smacosutil.o: smacosutil.F
-smacosio.o: smacosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
+smacosio.o: smacosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc #viewdata_formats.inc
 # matloh.o: matloh.F
 pgplotdummy.o: pgplotdummy.F
 mhist.o : mhist.c

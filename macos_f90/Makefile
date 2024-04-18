@@ -103,11 +103,11 @@ export FMEX = fmex
 
 ################################################################################
 
-export MOD_SRCS = kinds.f90 constants.f90 dftsub.F lohpars_mod.F param_mod.F elt_mod.F nn_util.F mathsub.F macos_debug.F \
+export MOD_SRCS = kinds.f90 constants.f90 dftsub.F lohpars_mod.F macos_IO.f90 param_mod.F elt_mod.F nn_util.F mathsub.F macos_debug.F \
 	       src_mod.F cfiles_mod.F usersub.F  lsq.F loh_mod.F \
 	       traceutil_mod.F nls.F macos_mod.F dopt_mod.F surfsub.F didesub.F elemsub.F
 
-export MOD_OBJS = kinds.o constants.o dftsub.o lohpars_mod.o param_mod.o elt_mod.o nn_util.o mathsub.o macos_debug.o \
+export MOD_OBJS = kinds.o constants.o dftsub.o lohpars_mod.o macos_IO.o param_mod.o elt_mod.o nn_util.o mathsub.o macos_debug.o \
 	       src_mod.o cfiles_mod.o usersub.o lsq.o loh_mod.o \
 	       traceutil_mod.o nls.o macos_mod.o dopt_mod.o surfsub.o didesub.o elemsub.o
 
