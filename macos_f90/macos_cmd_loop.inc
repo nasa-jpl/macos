@@ -975,7 +975,7 @@ C         ***Show element data***
      &        'Enter number of element (0=aperture):')
 	      IF (iElt.GT.nElt) iElt=nElt
 	      IF (iElt.LT.0) iElt=0
-	      CALL ShowData(npts,iElt)
+	      CALL ShowData(iElt)
 	    ELSE
 	      WRITE(*,150)
 	    END IF
