@@ -1371,7 +1371,7 @@ C  ***  end rotate segment frame of reference
           th  = ATAN2(sth,cth)
           IF (th.LT.0d0) th=th+twopi
           ith = th/Q+1d0  ! in 'ith' petal
-          if (th>(twopi-0.5*Q)) th=th-twopi  ! now 'th' for CCAT case only
+          if (th>(twopi-0.5d0*Q)) th=th-twopi  ! now 'th' for CCAT case only
           dth = th/Q
           S2  = S(2)-1d0
           ! This section was updated by jzlou to accommodate both CCAT and non-CCAT
@@ -1383,7 +1383,7 @@ C  ***  end rotate segment frame of reference
             thc=(DBLE(ith)-0.5d0)*Q
           END IF
           IF (FSEG_CCAT_Flg .AND.
-     &        (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5))) THEN
+     &        (dth.GE.(S2-0.5d0) .AND. dth.LE.(S2+0.5d0))) THEN
             thc=S2*Q
           END IF
           !
