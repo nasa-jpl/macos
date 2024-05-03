@@ -4166,11 +4166,11 @@ C	  Get local coordinates:
                 CALL DUNITIZE(DDEF)
                 CALL DZERO(Tspot(1,1),49)
 
-                DO CONCURRENT (iCoord=1:3)
-                  Tspot(1,iCoord)   = invec7(iCoord)
-                  Tspot(3,3+iCoord) = invec7(iCoord)
-                  Tspot(2,iCoord)   = DDEF(iCoord)
-                  Tspot(4,3+iCoord) = DDEF(iCoord)
+                DO CONCURRENT (integer::iCoord_=1:3)
+                  Tspot(1,iCoord_)   = invec7(iCoord_)
+                  Tspot(3,3+iCoord_) = invec7(iCoord_)
+                  Tspot(2,iCoord_)   = DDEF(iCoord_)
+                  Tspot(4,3+iCoord_) = DDEF(iCoord_)
                 END DO
                 Tspot(5,7)=1d0
                 CALL COMPACT(Tcompact,Tspot,5,7,7,7)
