@@ -16,7 +16,7 @@ C
        use sourcsub_mod
        use traceutil_mod, only : Rx_FEXCentrFlg
 
-       IMPLICIT NONE 
+       IMPLICIT NONE
 
        LOGICAL :: ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
      &     ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),
@@ -39,13 +39,8 @@ C
 
 C      *** Find a pupil location after tracing rays to a given surface ***
 
-       IF (ABS(zSource).GE.1d10) THEN
-         CALL ColSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &          ifPropagate)
-       ELSE
-         CALL PtSource(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &          ifPropagate)
-       END IF
+        CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
 
        iStartRay = 1
        iEndRay = 1

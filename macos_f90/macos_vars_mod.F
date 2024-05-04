@@ -2,6 +2,7 @@
 #include "realtype.h"
 
 	Module macos_vars_mod
+          use Constants, only: TWOPI, BIG, INF
 	IMPLICIT NONE
 
 	INCLUDE 'fits1.inc'
@@ -40,11 +41,11 @@
      &    baseFlux,baseWavelen,WFE,DAvgL,WinCenPix(2),sizPix,EltPix(2),
      &    crLocalPos(3),CentroidSpot(3),DAvgCumL,
      &    dCRCentroid(3),CRSpot(3),x,y,rAtm,tiltx,tilty,dL,u00,u01,
-     &    u10,u11,TWOPI,sigx,sigy,c1,c2,c3,xdum(7),xnom(7),
-     &    DTcompact(5,7), AvgL,INF,BIG
+     &    u10,u11,sigx,sigy,c1,c2,c3,xdum(7),xnom(7),
+     &    DTcompact(5,7), AvgL !,INF,BIG
 
-        PARAMETER (TWOPI=6.283185307179586476925286766559005768394)
-        PARAMETER (BIG=1d18,INF=1d22)
+        ! PARAMETER (TWOPI=6.283185307179586476925286766559005768394)
+        ! PARAMETER (BIG=1d18,INF=1d22)
 
         ! Scratch (dynamic) arrays
         LOGICAL, dimension(:), allocatable, save :: L1

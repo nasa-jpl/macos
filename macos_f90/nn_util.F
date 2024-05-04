@@ -8,20 +8,7 @@ C***********************************************************************
 
 #include "realtype.h"
 
-
-	Module nn_type
-	implicit none
-
-	LREAL, parameter :: pi=3.1415926535897973
-	LREAL, parameter :: eps=2.2204d-18
-
-        End Module nn_type
-
-
-C ------
-
 	Module nn_util
-	use nn_type
 
 	implicit none
 
@@ -29,7 +16,7 @@ C ------
 	  module procedure swap_i, swap_r, swap_rv
 	end interface
 
-	interface assert_eq	
+	interface assert_eq
 	  module procedure assert_eq2, assert_eq3, assert_eq4, assert_eqn
 	end interface
 
@@ -51,7 +38,7 @@ C ------
 	if (n1==n2) then
 	  assert_eq2=n1
         else
-	  print*,'assert_eq2(): failed with tag: ', string 
+	  print*,'assert_eq2(): failed with tag: ', string
 	  stop 'program terminated by assert_eq2'
 	end if
 	End Function assert_eq2
@@ -62,9 +49,9 @@ C ------
 	integer :: assert_eq3
 
         if (n1==n2 .and. n2==n3) then
-          assert_eq3=n1 
+          assert_eq3=n1
         else
-          print*,'assert_eq3(): failed with tag: ', string 
+          print*,'assert_eq3(): failed with tag: ', string
           stop 'program terminated by assert_eq3'
         end if
         End Function assert_eq3
@@ -75,9 +62,9 @@ C ------
 	integer :: assert_eq4
 
         if (n1==n2 .and. n2==n3 .and. n3==n4) then
-          assert_eq4=n1 
+          assert_eq4=n1
         else
-          print*,'assert_eq4(): failed with tag: ', string 
+          print*,'assert_eq4(): failed with tag: ', string
           stop 'program terminated by assert_eq4'
         end if
         End Function assert_eq4
@@ -88,9 +75,9 @@ C ------
 	integer :: assert_eqn
 
         if (all(nn(2:)==nn(1))) then
-          assert_eqn=nn(1) 
+          assert_eqn=nn(1)
         else
-          print*,'assert_eqn(): failed with tag: ', string 
+          print*,'assert_eqn(): failed with tag: ', string
           stop 'program terminated by assert_eqn'
         end if
         End Function assert_eqn
@@ -164,25 +151,23 @@ C ------
 C -----
 
 	Module nn_mod
-	use nn_type
-	
+
 	implicit none
 
 	Contains
 
 	Subroutine covsrt(covar, maska)
-	use nn_type
 	use nn_util, only : assert_eq, swap
 
 	LREAL, dimension(:,:), intent(inout) :: covar
 	logical, dimension(:), intent(in) :: maska
   	integer :: ma, mfit, j, k
-	
+
 	ma = assert_eq(size(covar,1), size(covar,2),size(maska),'covsrt')
 	mfit = count(maska)
 	covar(mfit+1:ma,1:ma) = 0.0
 	covar(1:ma,mfit+1:ma) = 0.0
-	k = mfit	
+	k = mfit
 	do j=ma, 1, -1
 	  if (maska(j)) then
 	    call swap(covar(1:ma,k), covar(1:ma,j))
@@ -194,7 +179,6 @@ C -----
 
 
 	Subroutine gaussj(a,b,success)
-        use nn_type
 	use nn_util, only : assert_eq, nerror, outerand, outerprod, swap
 
 	LREAL, dimension(:,:), intent(inout) :: a, b
@@ -212,20 +196,20 @@ C -----
 	if (.false.) then
 	! Debugging: check matrix 'a'
 	print*,'gaussj: matrix a: '
-	do i=1, size(a,1)	
+	do i=1, size(a,1)
 	  print*, a(i,:)
-	end do	
+	end do
 	print*,' '
 	end if
 
 	n = assert_eq(size(a,1),size(a,2),size(b,1),'gaussj')
 	irow => irc(1); icol => irc(2)
 	ipiv=0
-	
+
 	Do i=1, n
 	  lpiv = (ipiv == 0)
 	  irc = maxloc(abs(a), outerand(lpiv,lpiv))
-	  ipiv(icol) = ipiv(icol)+1 
+	  ipiv(icol) = ipiv(icol)+1
 	  if (ipiv(icol) > 1) then
             print*,'gaussj: singular matrix (1)'
 	    success=.false.
@@ -251,7 +235,7 @@ C -----
 	  a(icol,icol) = pivinv
 	  a(1:icol-1,:) =
      &      a(1:icol-1,:)-outerprod(dumc(1:icol-1),a(icol,:))
-	  b(1:icol-1,:) = 
+	  b(1:icol-1,:) =
      &      b(1:icol-1,:)-outerprod(dumc(1:icol-1),b(icol,:))
 	  a(icol+1:,:) = a(icol+1:,:)-outerprod(dumc(icol+1:),a(icol,:))
 	  b(icol+1:,:) = b(icol+1:,:)-outerprod(dumc(icol+1:),b(icol,:))

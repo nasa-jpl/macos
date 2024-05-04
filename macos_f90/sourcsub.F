@@ -9,12 +9,117 @@ C***********************************************************************
 #include "realtype.h"
 
 	Module sourcsub_mod
-	use math_mod
+          use Kinds
+	  use math_mod
 
-	Integer, parameter :: SADir=-1, SAPos=-2
-	Integer :: SAOpt
+	  Integer, parameter :: SADir=-1, SAPos=-2
+	  Integer :: SAOpt
 
-	Contains
+          private :: FSEG,HSEG,PSEG,SetColSrcRay,SetPtSrcRay,ColSource,PtSource
+
+          real(pr), parameter :: MaxPntSrcDist = 1e10_pr    ! if |zSource| <= MaxPntSrcDist ==> finite Obj.
+
+
+        CONTAINS
+
+        ! --------------------------------------------------------------
+        !
+        ! Returns "effective" Src. position as fnct. of ChfRay & zSource
+        !
+        FUNCTION SourcePos() RESULT(SrcPos)
+          USE src_mod, ONLY: ChfRayPos, ChfRayDir
+          USE elt_mod, ONLY: zSource
+
+          IMPLICIT NONE
+          REAL(pr) :: SrcPos(size(ChfRayPos))
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          IF (ABS(zSource) <= MaxPntSrcDist) THEN
+            SrcPos(:) = ChfRayPos(:) + zSource*ChfRayDir(:)
+          ELSE
+            SrcPos(:) = ChfRayPos(:)
+          END IF
+
+        END FUNCTION SourcePos
+        !
+        ! --------------------------------------------------------------
+        !
+        logical function isCollimatedSource()
+          use elt_mod, only: zSource
+          implicit none
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          isCollimatedSource = (ABS(zSource) > MaxPntSrcDist)
+
+        end function isCollimatedSource
+        !
+        ! --------------------------------------------------------------
+        !
+        logical function isPointSource()
+          use elt_mod, only: zSource
+          implicit none
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          isPointSource = (ABS(zSource) <= MaxPntSrcDist)
+
+        end function isPointSource
+        !
+        ! --------------------------------------------------------------
+        !
+        ! Determine ray grid at source (initial)  => "ifGrid" is updated
+        !
+        ! Note: in SMACOS usage "ifGrid" was not always updated; hence,
+        !       defined it as optional
+        ! ToDo:
+        !   [ ] in those instances where it was not updated, is it a bug?
+        !
+        SUBROUTINE SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate,ifGrid)
+          USE elt_mod,   ONLY: zSource
+        !   use macos_mod, only: ifGrid
+
+          IMPLICIT NONE
+          integer,           intent(in)   :: npts
+          logical,           intent(in)   :: ifPol, ifPropagate
+          real(pr),          intent(out)  :: Dicr, Djcr, dxSource
+          logical, optional, intent(inout):: ifGrid
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          IF (ABS(zSource) .GE. MaxPntSrcDist) THEN
+            CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+          ELSE
+            CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+          END IF
+
+          IF (PRESENT(ifGrid)) ifGrid = .TRUE.
+
+        END SUBROUTINE SetSourceRayGrid
+        !
+        ! --------------------------------------------------------------
+        !
+        SUBROUTINE SetSourceRay(npts,Dicr,Djcr,dxSource,
+     &                          xo,yo,ifPol,ifPropagate)
+          USE elt_mod, ONLY: zSource
+
+          implicit none
+          integer,  intent(in)   :: npts
+          real(pr), intent(out)  :: Dicr, Djcr, dxSource
+          real(pr), intent(in)   :: xo, yo
+          logical,  intent(in)   :: ifPol, ifPropagate
+          ! - - - - - - - - - - - - - - - - - - - - - - - - -
+
+          IF (abs(zSource) .GE. MaxPntSrcDist) THEN
+            CALL SetColSrcRay(npts,Dicr,Djcr,dxSource,
+     &                        xo,yo,ifPol,ifPropagate)
+          ELSE
+            CALL SetPtSrcRay(npts,Dicr,Djcr,dxSource,
+     &                       xo,yo,ifPol,ifPropagate)
+          END IF
+
+        END SUBROUTINE SetSourceRay
+        !
+        ! --------------------------------------------------------------
+        !
 
 ! Argument npts is declared in macos.F, and read in from Rx
 ! for command-line macos.
@@ -23,6 +128,8 @@ C***********************************************************************
 ! Argument ifPol and ifPropagate are input arguments only.
 
 	SUBROUTINE ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+        use Kinds
+	use Constants, only: pio2=>HALFPI, tan30=>Tan30
 	use param_mod
         use src_mod
         use elt_mod
@@ -42,19 +149,14 @@ C***********************************************************************
      &	       Dicr,Djcr,dxSource,w2,ciy,rx2,ry2,dRad(2),
      &	       Sy,yg,Sx,xg,Sg,S,S1,SegX2(3),D1(9),dinset
 
-	COMPLEX*16 SC,SEx0,SEy0
-
-	Real*8, parameter :: tan30=5.773502691896257d-01,
-     &			     pio2=1.57079632679490
-
-	Real*8 :: dRay(3),rx,ry  ! test only
+	COMPLEX*16 :: SC,SEx0,SEy0
 
 	nDrawRay=MIN(mRay,mDrawRay)
 
 	w2=0.5d0*width
 	ciy=1.5d0*tan30*width
 
-	nRayToSeg(1:mRay)=0 
+	nRayToSeg(1:mRay)=0
 
 	CALL DXPROD(zGrid,xGrid,yGrid)
 	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
@@ -69,31 +171,27 @@ C***********************************************************************
 	Tbg(1:3,1)=xGrid(1:3)
 	Tbg(1:3,2)=yGrid(1:3)
 
-! From "prop_defs.inc"
-! GridTypeName(1)='Circular'
-! GridTypeName(2)='Square'
-! GridTypeName(3)='Hex'
-! GridTypeName(4)='Pie'
-! GridTypeName(5)='Flower'
- 
-	IF ((GridType.GE.3).AND.(GridType.LE.5)) THEN
+
+	IF ((GridType.EQ.GridType_Hex).OR.
+     &      (GridType.EQ.GridType_Pie).OR.
+     &      (GridType.EQ.GridType_Flower)) THEN
 	  ! Hex, Pie or Flower source grid type
 
 	  ! D1 is cross-product of ChfRay and SegXgrid -jzlou
-	  CALL DXPROD(D1,ChfRayDir,SegXgrid) 
+	  CALL DXPROD(D1,ChfRayDir,SegXgrid)
 	  CALL DXPROD(SegXgrid,D1,ChfRayDir)
 	  CALL DUNITIZE(SegXgrid)
 
 	  ! xGrid,yGrid and SegXgrid are all unit vectors,
-	  ! so computed SegX2(1) and SegX2(2) are cosines 
-          ! of angles of SegXgrid with xGrid and yGrid. -jzlou 
+	  ! so computed SegX2(1) and SegX2(2) are cosines
+          ! of angles of SegXgrid with xGrid and yGrid. -jzlou
 	  SegX2(1)=DDOTC(xGrid,SegXgrid)
 	  SegX2(2)=DDOTC(yGrid,SegXgrid)
 	  SegX2(3)=0d0
 	END IF
 
 
-C  Find the segment for the chief ray 
+C  Find the segment for the chief ray
 	nGridPts=npts+1  ! no. of grid pts in X (or Y) of source aperture
 	iRay=1  ! chief ray
 
@@ -103,56 +201,66 @@ C  Find the segment for the chief ray
 	  O2=0d0
 	END IF
 
+!ToDo: defining aperture for the sake of plotting is wrong => what is the correct physics
+
 	!A2=(Aperture/2d0)**2  ! original
-	!A2=(Aperture*0.5001)**2  ! original
 	A2= (Aperture/2d0 + Aperture/DBLE(npts))**2  ! for plotting a 'bottom' ray
+	!A2=(Aperture*0.5001)**2  ! original
 
 ! nRayToSeg(iRay) - given iRay, (nRayToSeg(iRay)-1) gives the number of
 ! rays that have hit iSeg before iRay does. -jzlou
 
-        ! GridType from 3 to 5 are segmented 
-        ! - jzlou
-	IF (GridType.EQ.3) THEN
-	  DO iSeg=1,nSeg   ! nSeg is read from Rx -jzlou
-	    IF (HSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
-	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	    END IF
-	  END DO
-	  IF (nRayToSeg(iRay).EQ.0) THEN
-	    ! if chief ray didn't hit any segment, assign it to seg 1. -jzlou
-	    nRayToSeg(iRay)=1
-	    RayToSegMap(iRay,nRayToSeg(iRay))=1
-	  END IF
-	ELSE IF (GridType.EQ.4) THEN
-	  DO iSeg=1,nSeg
-	    IF (PSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
-	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	    END IF
-	  END DO
-	  IF (nRayToSeg(iRay).EQ.0) THEN
-	    nRayToSeg(iRay)=1
-	    RayToSegMap(iRay,nRayToSeg(iRay))=1
-	  END IF
-	ELSE IF (GridType.EQ.5) THEN
-	  DO iSeg=1,nSeg
-	    iRing=SegCoord(1,iSeg)
-	    If (iRing>0) Then
-	      dRad(1)=RingRads(iRing-1)*radCtr
-	      dRad(2)=RingRads(iRing)*radCtr
-	    End If
-	    IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(1,iSeg),SegX2)) THEN
-	      nRayToSeg(iRay)=1
-	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	    END IF
-	  END DO
-	  IF (nRayToSeg(iRay).EQ.0) THEN
-	    nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	    RayToSegMap(iRay,nRayToSeg(iRay))=1
-	  END IF
-	END IF
+        ! GridType from 3 to 5 are segmented
+        ! -------------------------------------
+        ! GridType: Hex
+        ! -------------------------------------
+        IF (GridType.EQ.GridType_Hex) THEN
+          DO iSeg=1,nSeg   ! nSeg is read from Rx -jzlou
+            IF (HSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
+              nRayToSeg(iRay)=nRayToSeg(iRay)+1
+              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+            END IF
+          END DO
+          IF (nRayToSeg(iRay).EQ.0) THEN
+            ! if chief ray didn't hit any segment, assign it to seg 1. -jzlou
+            nRayToSeg(iRay)=1
+            RayToSegMap(iRay,nRayToSeg(iRay))=1
+          END IF
+        ! ---------------------------------------------
+        ! GridType: Pie
+        ! ---------------------------------------------
+        ELSE IF (GridType.EQ.GridType_Pie) THEN
+          DO iSeg=1,nSeg
+            IF (PSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
+              nRayToSeg(iRay)=nRayToSeg(iRay)+1
+              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+            END IF
+          END DO
+          IF (nRayToSeg(iRay).EQ.0) THEN
+            nRayToSeg(iRay)=1
+            RayToSegMap(iRay,nRayToSeg(iRay))=1
+          END IF
+        ! ---------------------------------------------
+        ! GridType: Flower
+        ! ---------------------------------------------
+        ELSE IF (GridType.EQ.GridType_Flower) THEN
+          DO iSeg=1,nSeg
+            iRing=SegCoord(1,iSeg)
+            If (iRing>0) Then
+              dRad(1)=RingRads(iRing-1)*radCtr
+              dRad(2)=RingRads(iRing)*radCtr
+            End If
+            IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
+     &          SegCoord(:3,iSeg),SegX2)) THEN
+              nRayToSeg(iRay)=1
+              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+            END IF
+          END DO
+          IF (nRayToSeg(iRay).EQ.0) THEN
+            nRayToSeg(iRay)=nRayToSeg(iRay)+1
+            RayToSegMap(iRay,nRayToSeg(iRay))=1
+          END IF
+        END IF
 
 	! Statements below seem useless -jzlou
 	ddr(1:2)=0d0
@@ -160,27 +268,30 @@ C  Find the segment for the chief ray
 	RayDir(1:3,iRay)=ChfRayDir(1:3)
         RayPos(1:3,iRay)=ChfRayPos(1:3)+dpr(1:3)
 
-	SegMap(1:mpts,1:mpts)=0; RayID(1:mpts,1:mpts)=0
+        SegMap(1:mpts,1:mpts) = 0
+        RayID(1:mpts,1:mpts)  = 0
 
-        ! In the code section below, jwf,iwf are indexes to put source ray grid 
+        ! In the code section below, jwf,iwf are indexes to put source ray grid
         ! (nGridPts x nGridPts) at the center of WF grid (mdttl x mdttl). -jzlou
 
 	IF (nGridPts.GT.1) THEN
-	  A=Aperture/2d0
-	  !ds=Aperture/DBLE(npts)  ! original
-	  ds=Aperture/DBLE(npts-1); nGridPts=npts
-	  dinset=ds/2d0
-          !ds=Aperture/DBLE(nGridPts-1-mod(nGridPts+1,2)) ! nGridPts even or odd 
+	  A        = Aperture/2d0
+	 !ds       = Aperture/DBLE(npts)  ! original
+	  ds       = Aperture/DBLE(npts-1)
+          nGridPts = npts
+	  dinset   = ds/2d0
+          !ds=Aperture/DBLE(nGridPts-1-mod(nGridPts+1,2)) ! nGridPts even or odd
 	  !ds=Aperture/DBLE(nGridPts-1)  ! nGridPts odd
 	  if (DrawMode) then
 	    y=-Aperture/2d0-ds+dinset  !1d0/DBLE(npts)
 	  else
 	    y=-Aperture/2d0-ds
 	  end if
+
 	  DO 10 j=1,nGridPts
 	    !jwf=j+(mdttl-nGridPts)/2+1  ! original
-	    !jwf=j+(mdttl-nGridPts+1)/2 
-	    jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
+	    !jwf=j+(mdttl-nGridPts+1)/2
+	    jwf = j+(mdttl-nGridPts+mod(nGridPts,2))/2
 	    If (DrawMode .AND. j==nGridPts) Then
 	      y=y+ds-2d0*dinset  !2d0/DBLE(npts)
             Else
@@ -191,6 +302,7 @@ C  Find the segment for the chief ray
 	    else
 	      x=-Aperture/2d0-ds
 	    end if
+
 	    DO 9 i=1,nGridPts
 	      !iwf=i+(mdttl-nGridPts+1)/2  ! original
 	      !iwf=i+(mdttl-nGridPts+1)/2
@@ -200,181 +312,166 @@ C  Find the segment for the chief ray
               Else
                 x=x+ds
               End If
-	      IF (GridType.EQ.1) THEN
+
+              ! ---------------------------------------
+              ! GridType: Circular
+              ! ---------------------------------------
+              ! where O2 = (Obscratn/2d0)**2
+
+	      IF (GridType.EQ.GridType_Circular) THEN
 	        r2=y**2+x**2
 	        !IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
 	        IF (((r2.GE.O2).AND.(r2.LE.(A2+1d-9))).AND.(iRay.LT.mRay)) THEN
 	          iRay=iRay+1
-	          RayIndex(1,iRay)=i
-	          RayIndex(2,iRay)=j
-	          RayMap(i,j)=iRay
-		  RayID(iwf,jwf)=iRay
-	          RayWFMap(1,iRay)=iwf  ! index for WF grid array 'WFElt'
-	          RayWFMap(2,iRay)=jwf
-	          ddr(1)=x; ddr(2)=y
+	          RayIndex(1,iRay) = i
+	          RayIndex(2,iRay) = j
+	          RayMap(i,j)      = iRay
+		  RayID(iwf,jwf)   = iRay
+	          RayWFMap(1,iRay) = iwf  ! index for WF grid array 'WFElt'
+	          RayWFMap(2,iRay) = jwf
+	          ddr(:2)          = (/x, y/)
+
 	          CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	          RayDir(1:3,iRay)=ChfRayDir(1:3)  ! collimated source
-	          RayPos(1:3,iRay)=ChfRayPos(1:3)+dpr(1:3)
+	          RayDir(:,iRay) = ChfRayDir(:)        ! collimated source
+	          RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
 	        END IF
-	      ELSE IF (GridType.EQ.2) THEN
+              ! ---------------------------------------
+              ! GridType: Square
+              ! ---------------------------------------
+	      ELSE IF (GridType.EQ.GridType_Square) THEN
 	        IF (((ABS(x).LE.A).AND.(ABS(y).LE.A))
      &	            .AND.(iRay.LT.mRay)) THEN
-	          iRay=iRay+1
-	          RayIndex(1,iRay)=i
-	          RayIndex(2,iRay)=j
-	          RayMap(i,j)=iRay
-		  RayID(iwf,jwf)=iRay
-	          RayWFMap(1,iRay)=iwf
-	          RayWFMap(2,iRay)=jwf
-	          ddr(1)=x
-	          ddr(2)=y
-	          CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	          DO 12 k=1,3
-	            RayDir(k,iRay)=ChfRayDir(k)
-	            RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
-   12	          CONTINUE
-	        END IF
-	      ELSE IF (GridType.EQ.3) THEN
-	        ifRay=.FALSE.
-	        r2=y**2+x**2
+                  iRay             = iRay+1
+                  RayIndex(1,iRay) = i
+                  RayIndex(2,iRay) = j
+                  RayMap(i,j)      = iRay
+                  RayID(iwf,jwf)   = iRay
+                  RayWFMap(1,iRay) = iwf
+                  RayWFMap(2,iRay) = jwf
+                  ddr(:2)          = (/x, y/)
 
-	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          DO 7 iSeg=1,nSeg
-		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN 
-!		    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2) .OR.
+                  CALL DMPROD(dpr,Tbg,ddr,3,2,1)
+                  RayDir(:,iRay) = ChfRayDir(:)
+                  RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
+                END IF
+              ! ---------------------------------------
+              ! GridType: Hex
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Hex) THEN
+                ifRay=.FALSE.
+                r2=y**2+x**2
+
+                IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
+                  DO iSeg=1,nSeg
+                    IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN
+!                   IF (HSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2) .OR.
 !    &                  (i==1 .and. j==(nDrawRay/2+1)) .OR.
 !    &                  (i==(nDrawRay/2+1) .and. j==1)) THEN
-	              IF (.NOT.ifRay) THEN
-	                iRay=iRay+1
-	                ifRay=.TRUE.
-	                RayIndex(1,iRay)=i
-	                RayIndex(2,iRay)=j
-	                RayMap(i,j)=iRay
+                      IF (.NOT.ifRay) THEN
+                        iRay             = iRay+1
+                        ifRay            = .TRUE.
+                        RayIndex(1,iRay) = i
+                        RayIndex(2,iRay) = j
+                        RayMap(i,j)      = iRay
 
-	                !print*,'iseg=',iseg,', iRay=',iRay
-	                !print*,'i=',i,', j=',j
+                        SegMap(i,j)      = iSeg
+                        RayID(iwf,jwf)   = iRay
+                        RayWFMap(1,iRay) = iwf
+                        RayWFMap(2,iRay) = jwf
+                        ddr(:2)          = (/x, y/)
 
-	                if (.false. .and. i==33 .and. j==1) then
-	                  print*,'i=33,j=1: RayMap(i,j)=',RayMap(i,j)	
-	                  stop
-	                endif
+                        CALL DMPROD(dpr,Tbg,ddr,3,2,1)
+                        RayDir(:,iRay) = ChfRayDir(:)
+                        RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
+                      END IF
 
-	                SegMap(i,j)=iSeg
-	                RayID(iwf,jwf)=iRay
-	                RayWFMap(1,iRay)=iwf
-	                RayWFMap(2,iRay)=jwf
-	                ddr(1)=x
-	                ddr(2)=y
-	                CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	                DO k=1,3
-	                  RayDir(k,iRay)=ChfRayDir(k)
-	                  RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
- 	                END DO
-	              END IF
+                      nRayToSeg(iRay) = nRayToSeg(iRay)+1
+                      RayToSegMap(iRay,nRayToSeg(iRay)) = iSeg
+                    END IF
+                  END DO
+                END IF
 
-	              nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	            END IF
-  7	  	  CONTINUE
-	        END IF
-	      ELSE IF (GridType.EQ.4) THEN
-	        ifRay=.FALSE.
-	        r2=y**2+x**2
-	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          DO 8 iSeg=1,nSeg
-		    IF (PSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2))
-     &		    THEN
-	              IF (.NOT.ifRay) THEN
-	                iRay=iRay+1
-	                ifRay=.TRUE.
-	                RayIndex(1,iRay)=i
-	                RayIndex(2,iRay)=j
-	                RayMap(i,j)=iRay
-	                SegMap(i,j)=iSeg
-	                RayID(iwf,jwf)=iRay
-	                RayWFMap(1,iRay)=iwf
-	                RayWFMap(2,iRay)=jwf
-	                ddr(1)=x
-	                ddr(2)=y
-	                CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	                DO k=1,3
-	                  RayDir(k,iRay)=ChfRayDir(k)
-	                  RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
- 	                END DO
-	              END IF
-	              nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	            END IF
-    8		  CONTINUE
-	        END IF
-	      ELSE IF (GridType.EQ.5) THEN
-	        ifRay=.FALSE.
-	        r2=y**2+x**2
+              ! ---------------------------------------
+              ! GridType: Pie
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Pie) THEN
+                ifRay=.FALSE.
+                r2=y**2+x**2
+                IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
+                  DO iSeg=1,nSeg
+                    IF (PSEG(x,y,width,gap,SegCoord(1,iSeg),SegX2)) THEN
+                      IF (.NOT.ifRay) THEN
+                        iRay             = iRay+1
+                        ifRay            = .TRUE.
+                        RayIndex(1,iRay) = i
+                        RayIndex(2,iRay) = j
+                        RayMap(i,j)      = iRay
+                        SegMap(i,j)      = iSeg
+                        RayID(iwf,jwf)   = iRay
+                        RayWFMap(1,iRay) = iwf
+                        RayWFMap(2,iRay) = jwf
+                        ddr(:2)          = (/x, y/)
 
-	        if (.false. .and. j==1 .and. i==51) then
-	          r =sqrt(x**2+y**2)
-                  print*,'** src: gap,x,y,r =',gap,x,y,r
-                  IF (((r.GE.O2).AND.(r.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	            print*,'** B4 FSEG routine ...'
-	            DO iSeg=1,nSeg 
-	              iRing=SegCoord(1,iSeg)
-	              If (iRing>0) Then
-                        dRad(1)=RingRads(iRing-1)*radCtr
-                        dRad(2)=RingRads(iRing)*radCtr
-                      End If
-	              inFSEG=FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &                            SegCoord(1,iSeg),SegX2)
-	              if (inFSEG) exit  
-	            END DO
-	            print*,'** inFSEG =',inFSEG
-	          END IF
-	        end if
+                        CALL DMPROD(dpr,Tbg,ddr,3,2,1)
+                        RayDir(:,iRay) = ChfRayDir(:)
+                        RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
+                      END IF
+                      nRayToSeg(iRay) = nRayToSeg(iRay)+1
+                      RayToSegMap(iRay,nRayToSeg(iRay)) = iSeg
+                    END IF
+                  END DO
+                END IF
 
-	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          r2=DSQRT(r2)
-	          DO iSeg=1,nSeg
-	            iRing=SegCoord(1,iSeg)
-	            If (iRing>0) Then
-                      dRad(1)=RingRads(iRing-1)*radCtr 
+              ! ---------------------------------------
+              ! GridType: Flower
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Flower) THEN
+                ifRay=.FALSE.
+                r2=y**2+x**2
+
+                IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
+                  r2 = SQRT(r2)
+                  DO iSeg=1,nSeg
+                    iRing=SegCoord(1,iSeg)
+                    If (iRing>0) Then
+                      dRad(1)=RingRads(iRing-1)*radCtr
                       dRad(2)=RingRads(iRing)*radCtr
-	            End If
-		    IF (FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
-     &                  SegCoord(1,iSeg),SegX2)) THEN
-	              IF (.NOT.ifRay) THEN
-	                iRay=iRay+1
-	                ifRay=.TRUE.
-	                RayIndex(1,iRay)=i
-	                RayIndex(2,iRay)=j
-	                RayMap(i,j)=iRay
-	                SegMap(i,j)=iSeg
-	                RayID(iwf,jwf)=iRay
-	                RayWFMap(1,iRay)=iwf
-	                RayWFMap(2,iRay)=jwf
-	                ddr(1)=x
-	                ddr(2)=y
-	                CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	                DO k=1,3
-	                  RayDir(k,iRay)=ChfRayDir(k)
-	                  RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
- 	                END DO
-	                if (.false. .AND. i==51 .AND. j<=5) then
-	                 print*,'**src: iRay =',iRay,', RayPos(:,iRay)=',
-     &                          RayPos(3,iRay),RayPos(2,iRay)
-	                end if
-	              END IF
-	              nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	            END IF
-   		  END DO
-	        END IF
-	      END IF
+                    End If
+                    IF (FSEG(x,y,r2,radCtr,dRad,nPetals(iRing),gap,
+     &                  SegCoord(:3,iSeg),SegX2)) THEN
+                      IF (.NOT.ifRay) THEN
+                        iRay             = iRay+1
+                        ifRay            = .TRUE.
+                        RayIndex(1,iRay) = i
+                        RayIndex(2,iRay) = j
+                        RayMap(i,j)      = iRay
+                        SegMap(i,j)      = iSeg
+                        RayID(iwf,jwf)   = iRay
+                        RayWFMap(1,iRay) = iwf
+                        RayWFMap(2,iRay) = jwf
+                        ddr(:2)          = (/x, y/)
+
+                        CALL DMPROD(dpr,Tbg,ddr,3,2,1)
+                        RayDir(:,iRay) = ChfRayDir(:)
+                        RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
+                      END IF
+                      nRayToSeg(iRay) = nRayToSeg(iRay)+1
+                      RayToSegMap(iRay,nRayToSeg(iRay)) = iSeg
+                    END IF
+                  END DO
+                END IF
+              END IF
     9	    CONTINUE
    10	  CONTINUE
 	  nRay=iRay
 
-	ELSE IF ((GridType.EQ.3).OR.(GridType.EQ.4)) THEN
+        ! ------------------------------
+        ! nGridPts == 1
+        ! ------------------------------
+	ELSE IF ((GridType.EQ.GridType_Hex).OR.
+     &           (GridType.EQ.GridType_Pie)) THEN
 	  nRay=nSeg
-	  DO 17 iRay=1,nRay
+	  DO iRay=1,nRay
 	    iSeg=iRay
 	    ddr(1)=DBLE(SegCoord(1,iSeg))*w2
 	    ddr(2)=ciy*DBLE((SegCoord(2,iSeg)+SegCoord(3,iSeg)))/3D0
@@ -385,18 +482,18 @@ c	    RayToSegMap(iRay)=iSeg
 	    j=((SegCoord(2,iSeg)+SegCoord(3,iSeg))/3)+(mpts/2)
 	    iwf=SegCoord(1,iSeg)+mdttl/2
 	    jwf=((SegCoord(2,iSeg)+SegCoord(3,iSeg))/3)+(mdttl/2)
-	    RayIndex(1,iRay)=i
-	    RayIndex(2,iRay)=j
-	    RayMap(i,j)=iRay
-	    RayID(iwf,jwf)=iRay
-	    RayWFMap(1,iRay)=iwf
-	    RayWFMap(2,iRay)=jwf
+
+	    RayIndex(1,iRay) = i
+	    RayIndex(2,iRay) = j
+	    RayMap(i,j)      = iRay
+	    RayID(iwf,jwf)   = iRay
+	    RayWFMap(1,iRay) = iwf
+	    RayWFMap(2,iRay) = jwf
+
 	    CALL DMPROD(dpr,Tbg,ddr,3,2,1)
-	    DO 16 k=1,3
-	      RayDir(k,iRay)=ChfRayDir(k)
-	      RayPos(k,iRay)=ChfRayPos(k)+dpr(k)
-   16	    CONTINUE
-   17	  CONTINUE
+            RayDir(:,iRay) = ChfRayDir(:)
+            RayPos(:,iRay) = ChfRayPos(:)+dpr(:)
+          END DO
 
 	ELSE
 	  nRay=1
@@ -424,6 +521,8 @@ C  Set source amplitude if propagating for polarized light
 ! RayE(1:3,iRay) is the source electric field for ith ray
 ! WFElt(i,j,1) = first wavefront field
 ! jzlou
+
+! BeamTypes: (1) UNIFORM, (2) GAUSSIAN, (3) COS**POWER, (4) DIPOLE
 
 	IF (ifPropagate.OR.ifPol) THEN
 	  iWFA=1
@@ -501,21 +600,16 @@ C  Cosine beam...
 	        END IF
    28	      CONTINUE
    29	    CONTINUE
-	  ELSE 
+	  ELSE
 C  Uniform or Dipole beam...
 	    S=SQRT(Flux/DBLE(nRay-1))
 	    SEx0=S*Ex0
 	    SEy0=S*Ey0
-
-           !print*,'** sourcsub: SEx0 =',SEx0
-           !print*,'** sourcsub: SEy0 =',SEy0
-           !STOP
-
 	    SC=DCMPLX(S,0D0)
 	    IF (ifPol) THEN
 	      DO 36 k=1,3
 	        RayE(k,1)=SEx0*DCMPLX(xGrid(k),0d0)+
-     &	           SEy0*DCMPLX(yGrid(k),0d0)
+     &	        SEy0*DCMPLX(yGrid(k),0d0)
    36	      CONTINUE
 	    END IF
 	    DO 25 j=1,mdttl
@@ -562,6 +656,8 @@ C  Uniform or Dipole beam...
 C***********************************************************************
 
 	SUBROUTINE PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
+        use Kinds
+	use Constants, only: pio2=>HALFPI
 	use param_mod
         use src_mod
         use elt_mod
@@ -576,14 +672,11 @@ C***********************************************************************
 	REAL*8 A,O2,A2,ds,thx,thy,r2,Tbg(3,2),
      &	       Dicr,Djcr,dxSource,th(3),RotPt(3),
      &	       rx2,ry2,Sy,yg,Sx,xg,Sg,S,xray(3),yray(3),zray(3),
-     &	       S1,SegX2(3),D1(9) 
-        Real*8 :: du_loc,dx_loc,zElt_loc,dRad(2) 
+     &	       S1,SegX2(3),D1(9)
+        Real*8 :: du_loc,dx_loc,zElt_loc,dRad(2)
 
-	COMPLEX*16 SC,SEx0,SEy0 
+	COMPLEX*16 SC,SEx0,SEy0
         COMPLEX*16, dimension(:,:), allocatable :: dsc,DWF_loc
-	Real*8, parameter :: pio2=1.57079632679490
-
-	!print*,' *******PtSource: BeamType =',BeamType
 
 	nRayToSeg(1:nRay)=0
 
@@ -613,7 +706,7 @@ C***********************************************************************
 	  SegX2(3)=0d0
 	END IF
 
-C  Find the segment for the chief ray 
+C  Find the segment for the chief ray
 	nGridPts=npts+1
 	iRay=1
 	IF (Obscratn.NE.0d0) THEN
@@ -626,7 +719,10 @@ C  Find the segment for the chief ray
 	!A2= (Aperture/2d0 + Aperture/DBLE(npts))**2  ! for plotting a 'bottom' ray
 
         ! for segmented apetures (Hex,Pie,Flower) only
-	IF (GridType.EQ.3) THEN
+        ! -------------------------------------
+        ! GridType: Hex
+        ! -------------------------------------
+	IF (GridType.EQ.GridType_Hex) THEN
 	  DO iSeg=1,nSeg
 	    IF (HSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
 	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
@@ -637,50 +733,60 @@ C  Find the segment for the chief ray
 	    nRayToSeg(iRay)=1
 	    RayToSegMap(iRay,nRayToSeg(iRay))=1
 	  END IF
-	ELSE IF (GridType.EQ.4) THEN
+        ! ---------------------------------------------
+        ! GridType: Pie
+        ! ---------------------------------------------
+        ELSE IF (GridType.EQ.GridType_Pie) THEN
           ! 'Pie' type
-	  DO iSeg=1,nSeg
-	    IF (PSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
-	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	    END IF
- 	  END DO
-	  IF (nRayToSeg(iRay).EQ.0) THEN
-	    nRayToSeg(iRay)=1
-	    RayToSegMap(iRay,nRayToSeg(iRay))=1
-	  END IF
-	ELSE IF (GridType.EQ.5) THEN
-	  DO iSeg=1,nSeg
-	    iRing=SegCoord(1,iSeg)
-	    If (iRing>0) Then
-              dRad(1)=RingRads(iRing-1)*radCtr                  
-              dRad(2)=RingRads(iRing)*radCtr                    
+          DO iSeg=1,nSeg
+            IF (PSEG(0d0,0d0,width,gap,SegCoord(1,iSeg),SegX2)) THEN
+              nRayToSeg(iRay)=nRayToSeg(iRay)+1
+              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+            END IF
+          END DO
+          IF (nRayToSeg(iRay).EQ.0) THEN
+            nRayToSeg(iRay)=1
+            RayToSegMap(iRay,nRayToSeg(iRay))=1
+          END IF
+        ! ---------------------------------------------
+        ! GridType: Flower
+        ! ---------------------------------------------
+        ELSE IF (GridType.EQ.GridType_Flower) THEN
+          DO iSeg=1,nSeg
+            iRing=SegCoord(1,iSeg)
+            If (iRing>0) Then
+              dRad(1)=RingRads(iRing-1)*radCtr
+              dRad(2)=RingRads(iRing)*radCtr
             End If
-	    IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
-     &          SegCoord(1,iSeg),SegX2)) THEN
-	      nRayToSeg(iRay)=nRayToSeg(iRay)+1
-	      RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
-	    END IF
-	  END DO
-	  IF (nRayToSeg(iRay).EQ.0) THEN
-	    nRayToSeg(iRay)=1
-	    RayToSegMap(iRay,nRayToSeg(iRay))=1
-	  END IF
-	END IF
+            IF (FSEG(0d0,0d0,0d0,radCtr,dRad,nPetals(iRing),gap,
+     &          SegCoord(:3,iSeg),SegX2)) THEN
+              nRayToSeg(iRay)=nRayToSeg(iRay)+1
+              RayToSegMap(iRay,nRayToSeg(iRay))=iSeg
+            END IF
+          END DO
+          IF (nRayToSeg(iRay).EQ.0) THEN
+            nRayToSeg(iRay)=1
+            RayToSegMap(iRay,nRayToSeg(iRay))=1
+          END IF
+        END IF
 
 
-	! Define user-provided source ray beam - added by jzlou
-	If (GridType.EQ.6) Then
+        ! Define user-provided source ray beam - added by jzlou
+
+        ! ---------------------------------------------
+        ! GridType: UDG
+        ! ---------------------------------------------
+        If (GridType.EQ.GridType_UDG) Then
           RayMap(1:mpts,1:mpts)=0
           SegMap(1:mpts,1:mpts)=0  ! not needed, user-provided source rays is non-segmented
           RayID(1:mdttl,1:mdttl)=0
-          
+
           ! Read in user-provided source beam data; source rays are defined 'zSource'
           ! distance from the point source location, on a spherical surface -jzlou
           fu=12
 	  Open(Unit=fu,File='UDSrcBeam.txt',Status='OLD')
 	  Read(fu,*) nGridPts,nRay  ! nRay= total number of valid rays
-	  Do iRay=1,nRay  
+	  Do iRay=1,nRay
             Read(fu,*) i,j,RayPos(1:3,iRay),RayDir(1:3,iRay)
 	    if (iRay==1) then
 	      ! make sure chief ray is consistent with user data
@@ -689,22 +795,21 @@ C  Find the segment for the chief ray
 	    end if
             jwf=j+(mdttl-nGridPts)/2+1
 	    iwf=i+(mdttl-nGridPts+1)/2
-            RayIndex(1,iRay)=i; RayIndex(2,iRay)=j; 
-            RayMap(i,j)=iRay  
+            RayIndex(1,iRay)=i; RayIndex(2,iRay)=j;
+            RayMap(i,j)=iRay
             RayID(iwf,jwf)=iRay
             RayWFMap(1,iRay)=iwf
             RayWFMap(2,iRay)=jwf
-	  End Do 
-	  Close(fu)            
-	  GOTO 16  ! no need to go thru other GridType 
-	End If  
+	  End Do
+	  Close(fu)
+	  GOTO 16  ! no need to go thru other GridType
+	End If
 
+        ! ---------------------------------------------
 
-C       RotPt defines the spatial position of the physical light source,
-C       see MACOS manual. -jzlou
-        DO i=1,3
-          RotPt(i)=ChfRayPos(i)+zSource*ChfRayDir(i)
-        END DO
+        ! RotPt defines the spatial position of the physical light source,
+        ! see MACOS manual.
+        RotPt = SourcePos()   ! ChfRayPos+zSource*ChfRayDir
 
 	! Define RayDir and RayPos for chief ray
 	th(1:3)=0d0
@@ -721,50 +826,57 @@ C       see MACOS manual. -jzlou
 	  ds=Aperture/DBLE(npts)
 	  thy=-Aperture/2d0-ds
 
-	  DO 10 j=1,nGridPts
-	    jwf=j+(mdttl-nGridPts)/2+1
-	    thy=thy+ds
-	    thx=-Aperture/2d0-ds
-	    DO 9 i=1,nGridPts
-	      iwf=i+(mdttl-nGridPts+1)/2
-	      thx=thx+ds
-	      IF (GridType.EQ.1) THEN
-	        r2=thy**2+thx**2
-	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
-	          iRay=iRay+1
-	          RayIndex(1,iRay)=i
-	          RayIndex(2,iRay)=j
-	          RayMap(i,j)=iRay
-		  RayID(iwf,jwf)=iRay
-	          RayWFMap(1,iRay)=iwf
-	          RayWFMap(2,iRay)=jwf
+          DO 10 j=1,nGridPts
+            jwf=j+(mdttl-nGridPts)/2+1
+            thy=thy+ds
+            thx=-Aperture/2d0-ds
 
-	          ! Eular vector
-	          DO 12 k=1,3
-	            th(k)=-xGrid(k)*thy+yGrid(k)*thx
- 12	          CONTINUE
+            DO 9 i=1,nGridPts
+              iwf=i+(mdttl-nGridPts+1)/2
+              thx=thx+ds
+              ! ---------------------------------------
+              ! GridType: Circular
+              ! ---------------------------------------
+              IF (GridType.EQ.GridType_Circular) THEN
+                r2=thy**2+thx**2
+                IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
+                  iRay             = iRay+1
+                  RayIndex(1,iRay) = i
+                  RayIndex(2,iRay) = j
+                  RayMap(i,j)      = iRay
+                  RayID(iwf,jwf)   = iRay
+                  RayWFMap(1,iRay) = iwf
+                  RayWFMap(2,iRay) = jwf
 
-	          ! this routine sets ray direction and position -jzlou
-	          CALL ReRay(th,ChfRayDir,ChfRayPos,RotPt,
+                  ! Euler vector
+                  th(:) = -xGrid(:)*thy + yGrid(:)*thx
+
+                  ! this routine sets ray direction and position -jzlou
+                  CALL ReRay(th,ChfRayDir,ChfRayPos,RotPt,
      &	                     RayDir(1,iRay),RayPos(1,iRay))
-	        END IF
-	      ELSE IF (GridType.EQ.2) THEN
-	        IF (((ABS(thx).LE.A).AND.(ABS(thy).LE.A))
+                END IF
+              ! ---------------------------------------
+              ! GridType: Square
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Square) THEN
+                IF (((ABS(thx).LE.A).AND.(ABS(thy).LE.A))
      &	            .AND.(iRay.LT.mRay)) THEN
-	          iRay=iRay+1
-	          RayIndex(1,iRay)=i
-	          RayIndex(2,iRay)=j
-	          RayMap(i,j)=iRay
-		  RayID(iwf,jwf)=iRay
-	          RayWFMap(1,iRay)=iwf
-	          RayWFMap(2,iRay)=jwf
-	          DO 13 k=1,3
-	            th(k)=-xGrid(k)*thy+yGrid(k)*thx
- 13	          CONTINUE
+	          iRay             = iRay+1
+	          RayIndex(1,iRay) = i
+	          RayIndex(2,iRay) = j
+	          RayMap(i,j)      = iRay
+		  RayID(iwf,jwf)   = iRay
+	          RayWFMap(1,iRay) = iwf
+	          RayWFMap(2,iRay) = jwf
+
+                  th(:) = -xGrid(:)*thy + yGrid(:)*thx
 	          CALL ReRay(th,ChfRayDir,ChfRayPos,RotPt,
      &	                     RayDir(1,iRay),RayPos(1,iRay))
 	        END IF
-	      ELSE IF (GridType.EQ.3) THEN
+              ! ---------------------------------------
+              ! GridType: Hex
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Hex) THEN
 	        ifRay=.FALSE.
 	        r2=thy**2+thx**2
 	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
@@ -792,7 +904,10 @@ C       see MACOS manual. -jzlou
 	            END IF
   7	  	  CONTINUE
 	        END IF
-	      ELSE IF (GridType.EQ.4) THEN
+              ! ---------------------------------------
+              ! GridType: Pie
+              ! ---------------------------------------
+              ELSE IF (GridType.EQ.GridType_Pie) THEN
 	        ifRay=.FALSE.
 	        r2=thy**2+thx**2
 	        IF (((r2.GE.O2).AND.(r2.LE.A2)).AND.(iRay.LT.mRay)) THEN
@@ -856,7 +971,7 @@ C  ifPropagate is true when performing diffraction commands -jzlou
 C  Gaussian beam...
 	    S=SQRT(Flux)
 	    rx2=rxBeam*rxBeam  ! rxBeam = beam waist in X axis -jzlou
-	    ry2=ryBeam*ryBeam  ! ryBeam = ... 
+	    ry2=ryBeam*ryBeam  ! ryBeam = ...
 	    IF (ifPol) THEN
 	      DO 35 k=1,3
 	        RayE(k,1)=Ex0*DCMPLX((S*xGrid(k)),0d0)+
@@ -970,7 +1085,7 @@ C  Dipole beam...
    39	      CONTINUE
    40	    CONTINUE
 
-#if 1
+
 	  ELSE IF (BeamType.EQ.5) THEN
 	    If (.not. allocated(ds1)) Then
 	      allocate(ds1(mpts,mpts),ds2(mpts,mpts),
@@ -980,7 +1095,7 @@ C  Dipole beam...
      &          call macos_memory_failure
      &              ('sourcsub (BeamType 5): allocate failed!')
 	    End If
- 
+
 	    ! Input user defined beam profile ...
 	    Open(Unit=12,File=UDSrcProf,Status='old')
 	    Do j=1,nGridPts
@@ -991,58 +1106,55 @@ C  Dipole beam...
 	    End Do
 	    Close(12)
 
-	    If (.false.) Then
-	      ! Form complex E field of input beam
-              dsc=DCMPLX(0d0,0d0)
+!            If (.false.) Then
+!              ! Form complex E field of input beam
+!              dsc=DCMPLX(0d0,0d0)
+!              Do j=1,nGridPts
+!                jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
+!                Do i=1,nGridPts
+!                  iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
+!                  dsc(iwf,jwf)=DCMPLX(ds1(i,j),ds2(i,j))
+!                End Do
+!              End Do
+!
+!              ! The complex E field need be 'back-propagated' from
+!              ! image plane to pupil plane, since we eventually want
+!              ! the input E field to end up at the detector plane.
+!              ! -jzlou
+!              !
+!              ! These system-specific values are from a test run -jzlou
+!              du_loc=2.8828222D-02; dx_loc=-6.0386600D-03
+!              zElt_loc=1.408516486242871D+02
+!              ! Back diffraction propagation
+!              Call BKFFPROP(dsc,dx_loc,dsc,du_loc,zElt_loc,WaveBU,
+!     &                      mdttl,DWF_loc)
+!
+!              WFElt(1:mdttl,1:mdttl,iWFA)=dsc
+!
+!              deallocate(ds1,ds2,dsc,DWF_loc,stat=m_err_ptsrc)
+!              If (m_err_ptsrc /= 0)
+!     &          call macos_memory_failure
+!     &                ('sourcsub: deallocate failed!')
+!
+!            Else
+              ! Assume complex E field is for pupil plane
+              WFElt=DCMPLX(0d0,0d0)
               Do j=1,nGridPts
-                jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
-                Do i=1,nGridPts
-                  iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
-                  dsc(iwf,jwf)=DCMPLX(ds1(i,j),ds2(i,j))
-                End Do
-              End Do
-
-	      ! The complex E field need be 'back-propagated' from
-	      ! image plane to pupil plane, since we eventually want
-              ! the input E field to end up at the detector plane. 
-	      ! -jzlou
-	      !
-              ! These system-specific values are from a test run -jzlou
-	      du_loc=2.8828222D-02; dx_loc=-6.0386600D-03 
-              zElt_loc=1.408516486242871D+02 
-	      ! Back diffraction propagation 
-	      Call BKFFPROP(dsc,dx_loc,dsc,du_loc,zElt_loc,WaveBU,
-     &                      mdttl,DWF_loc) 
-
-	      WFElt(1:mdttl,1:mdttl,iWFA)=dsc
-
-	      deallocate(ds1,ds2,dsc,DWF_loc,stat=m_err_ptsrc)
-	      If (m_err_ptsrc /= 0)
-     &          call macos_memory_failure
-     &                ('sourcsub: deallocate failed!')
-	    Else
-	      ! Assume complex E field is for pupil plane
-	      WFElt=DCMPLX(0d0,0d0)
-	      Do j=1,nGridPts
                 jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
                 Do i=1,nGridPts
                   iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
                   WFElt(iwf,jwf,iWFA)=DCMPLX(ds1(i,j),ds2(i,j))
                 End Do
               End Do
-	    End If
-#endif
+!            End If
 
-	  ELSE 
+
+	  ELSE
 C  Uniform beam...
 	    S=SQRT(Flux/DBLE(nRay-1))  ! flux averaged to each ray -jzlou
 	    SEx0=S*Ex0
 	    SEy0=S*Ey0
 	    SC=DCMPLX(S,0D0)
-
-           !print*,'**sourcsub, Ex0,Ey0 =',Ex0,Ey0
-           !STOP
-
 	    IF (ifPol) THEN
 	      DO 36 k=1,3
 	        RayE(k,1)=SEx0*DCMPLX(xGrid(k),0d0)+
@@ -1063,8 +1175,7 @@ C  Uniform beam...
 	            CALL DXPROD(xray,yray,zray)
 	            DO 33 k=1,3
 	              RayE(k,irayid)=SEx0*DCMPLX(xray(k),0d0)+
-     &	                             SEy0*DCMPLX(yray(k),0d0)
-                     !print*,'** iray,RayE =',irayid,RayE(k,irayid)
+     &	              SEy0*DCMPLX(yray(k),0d0)
 	              S1=RayE(k,irayid)
    33	            CONTINUE
 	          END IF
@@ -1166,18 +1277,39 @@ C  ***  end rotate segemnt frame of reference
 	END FUNCTION PSEG
 
 C***********************************************************************
+! radCtr=   Radius of the central region
+! nRings=   Number of segment rings not counting the central region
+! nPetals=   Number of segments in each ring. The first number is repeated for some reason...
+! RingRads=   Ratio of ring radii to central region ring radius radCtr
+!   nSeg=   Number of segments (1 for central region plus number in first and second ring)
+!    gap=   Width of gap between segments
+!
 
-	FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
-        use src_mod, only : FSEG_CCAT_Flg
-	IMPLICIT NONE
+        PURE LOGICAL FUNCTION FSEG(x,y,r,radCtr,dRad,nPetal,gap,S,SegXgrid)
+          use src_mod, only : FSEG_CCAT_Flg
+          USE Constants, ONLY: TWOPI, EPS
+          IMPLICIT NONE
+          REAL*8,  INTENT(IN) :: x,           ! ray: x-pos in Glb. Source CSYS
+     &                           y,           ! ray: y-pos in Glb. Source CSYS
+     &                           r,           ! ray: radius from centre
+     &                           radCtr,      ! Center Segment Radius
+     &                           dRad(2)      ! (min, max) radius of ring (gap not included) scaled by radCtr
+                                              !  min = RingRads(iRing-1)*radCtr
+                                              !  max = RingRads(iRing)*radCtr
+          INTEGER, INTENT(IN) :: nPetal       ! Number of segments in each ring. (was "number of petals in flower")
+          REAL*8,  INTENT(IN) :: gap          ! Width of gap between rings and petals
+          INTEGER, INTENT(IN) :: S(3)         ! SegCoord(1:3,mElt)
+                                              ! S(1) == 0: central region (iRing=SegCoord(1,iSeg))
+                                              ! S(2) == iPetal for Ring
+          REAL*8,  INTENT(IN) :: SegXgrid(3)  ! Source x-axis
 
 C In the flower pattern, prescription is defined by:
 C   width=   8d0		% nPetal
 C   gap=   1.61679d0		% radCtr
 
-C Order of petals is fixed: 
+C Order of petals is fixed:
 C   1. Center segment
-C   2. First petal in SegXgrid coords (rays occupy wedge with 
+C   2. First petal in SegXgrid coords (rays occupy wedge with
 C      theta between 0 and 2*pi/nPetal)
 C   3. Next petal.
 C   4-nPetals. Etc.
@@ -1189,11 +1321,10 @@ C           are curcumscribed polygon tangent to circle at outer
 C           segment midpoints
 C  nPetals = number of petals in flower
 
-	LOGICAL FSEG
-	INTEGER S(3),ith,nPetal,iRing
-	REAL*8 x,y,r,SegXgrid(3),xt,yt,width,radCtr,cth,sth,th,twopi,xc,
-     &	       dnp,Q,thc,rv,gap,hspan,dd,dRad(2),radmin,radmax,S2,dth
-	DATA twopi/6.28318530717959d0/
+	! LOGICAL FSEG
+	INTEGER :: iRing, ith
+	REAL*8 xt,yt,cth,sth,th,
+     &	       dnp,Q,thc,rv,hspan,dd,radmin,radmax,S2,dth
 
 C  **** rotate segment frame of reference
 c	IF (SegXgrid(1) .EQ. 0) THEN
@@ -1205,79 +1336,73 @@ c	ELSE
 c	END IF
 C  ***  end rotate segment frame of reference
 
-	IF (S(1).EQ.0) THEN
-	  ! for central segment
-	  IF (r.LE.(radCtr-gap/2d0)) THEN
-	    FSEG=.TRUE.  ! within central circular region
-	  ELSE
-	    ! since radCtr is radius of max inscribed circle, a ray outside the circle
-	    ! could still belong to the central segment. -jzlou
-	    dnp=nPetal
-	    Q=twopi/dnp  ! wedge angle value
-	    cth=xt/r; sth=yt/r
-	    th=DATAN2(sth,cth)
-	    IF (th.LT.0d0) th=th+twopi
-	    ith=th/Q+1d0  ! in 'ith' petal
-	    thc=(DBLE(ith)-0.5d0)*Q
-	    rv=xt*COS(thc)+yt*SIN(thc)
-	    !IF (rv.LE.(radCtr-gap/2d0)) THEN
-	    IF (r.LE.(radCtr-gap/2d0)) THEN
-	      FSEG=.TRUE.
-	    ELSE
-	      FSEG=.FALSE.
-	    END IF
-	  END IF
-	ELSE IF (r.GT.1d-22) THEN
-	  ! for other segment
-	  iRing= S(1)  ! get ring id 
-	  !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
-	  radmin=dRad(1); radmax=dRad(2)
-	  dnp=nPetal
-	  Q=twopi/dnp
-	  cth=xt/r
-	  sth=yt/r
-	  th=DATAN2(sth,cth)
-	  IF (th.LT.0d0) th=th+twopi
-	  ith=th/Q+1d0  ! in 'ith' petal
-          if (th>(twopi-0.5*Q)) th=th-twopi  ! now 'th' for CCAT case only
-          dth=th/Q
-          S2=S(2)-1d0
-C This section was updated by jzlou to accommodate both CCAT and non-CCAT
-C cases of FSEG segmentation, 08/2020      
+        FSEG = .FALSE.    ! default
+        ! ----------------------------------------- Central region (no sub-division)
+        IF (S(1).EQ.0) THEN
+          ! for central segment
+          IF (r.LE.(radCtr-gap/2d0)) THEN
+            FSEG=.TRUE.  ! within central circular region
+          ELSE
+            ! since radCtr is radius of max inscribed circle, a ray outside the circle
+            ! could still belong to the central segment. -jzlou
+            dnp = nPetal
+            Q   = TWOPI/dnp              ! wedge angle value
+            cth = xt/r                   ! cos(theta) of data point
+            sth = yt/r                   ! sin(theta) of data point
+            th  = ATAN2(sth,cth)         ! theta
+            IF (th.LT.0d0) th=th+TWOPI   ! ensure 0 <= theta < 2*PI
+            ith = INT(th/Q)+1
+            thc = (DBLE(ith)-0.5d0)*Q
+            rv  = xt*COS(thc)+yt*SIN(thc)
+            !IF (rv.LE.(radCtr-gap/2d0)) THEN
+            FSEG = (r.LE.(radCtr-gap/2d0))
+          END IF
+
+        ! ----------------------------------------- Outer Rings
+        ELSE IF (r.GT.EPS) THEN
+          ! for other segment
+          iRing= S(1)  ! get ring id
+          !radmin=radCtr+dRad*DBLE(iRing-1); radmax=radmin+dRad
+          radmin=dRad(1); radmax=dRad(2)
+          dnp = nPetal
+          Q   = twopi/dnp
+          cth = xt/r
+          sth = yt/r
+          th  = ATAN2(sth,cth)
+          IF (th.LT.0d0) th=th+twopi
+          ith = th/Q+1d0  ! in 'ith' petal
+          if (th>(twopi-0.5d0*Q)) th=th-twopi  ! now 'th' for CCAT case only
+          dth = th/Q
+          S2  = S(2)-1d0
+          ! This section was updated by jzlou to accommodate both CCAT and non-CCAT
+          ! cases of FSEG segmentation, 08/2020
           thc = -1d18
-	  IF (.not.FSEG_CCAT_Flg .AND.
+          IF (.not.FSEG_CCAT_Flg .AND.
      &        ith.EQ.S(2)) THEN
-!    &        (dth.GE.(S2) .AND. dth.LE.(S2+1))) THEN 
+!    &        (dth.GE.(S2) .AND. dth.LE.(S2+1))) THEN
             thc=(DBLE(ith)-0.5d0)*Q
           END IF
-          IF (FSEG_CCAT_Flg .AND. 
-     &        (dth.GE.(S2-0.5) .AND. dth.LE.(S2+0.5))) THEN
+          IF (FSEG_CCAT_Flg .AND.
+     &        (dth.GE.(S2-0.5d0) .AND. dth.LE.(S2+0.5d0))) THEN
             thc=S2*Q
           END IF
           !
           IF (thc > -1d10) THEN
-	    rv=xt*COS(thc)+yt*SIN(thc)
-	    !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
- 	    IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
-              hspan=rv*DTAN(0.5*Q)
-	      dd=DSQRT(abs(r*r-rv*rv))  ! rr^2 = rv^2 + dd^2, I think
-	      IF (dd.LE.(hspan-gap/2d0)) THEN  
-	        FSEG=.TRUE.
-	      ELSE
-	        FSEG=.FALSE.
-	      END IF
-	    ELSE
-	      FSEG=.FALSE.
-	    END IF
-	  ELSE
-	    FSEG=.FALSE.
-	  END IF
-	ELSE
-	  FSEG=.FALSE.
-	END IF
-	
-	RETURN
-	END FUNCTION FSEG
+              rv=xt*COS(thc)+yt*SIN(thc)
+             !IF ((rv.GT.(radmin+gap/2d0)).AND.(rv.LT.(radmax-gap/2d0)))THEN
+              IF ((r.GT.(radmin+gap/2d0)).AND.(r.LT.(radmax-gap/2d0)))THEN
+                hspan = rv*TAN(0.5d0*Q)
+                dd    = SQRT(abs(r*r-rv*rv))
+              IF (dd.LE.(hspan-gap/2d0)) THEN
+                FSEG=.TRUE.
+              ELSE
+                FSEG=.FALSE.
+              END IF
+            END IF
+          END IF
+        END IF
+
+        END FUNCTION FSEG
 
 C *************************************************************************
 
@@ -1289,18 +1414,17 @@ C**************************************************************************
 
 	SUBROUTINE ReGrid(iElt)
 	use param_mod
-	use src_mod, only : nGridPts
+	! use src_mod, only : nGridPts   ! Resample OPDMat to new grid
         use elt_mod
 
 	IMPLICIT NONE
 
 	INTEGER i,iElt,iEm1,iWF,jWF,iCR,jCR,iRayCR,iRay
 
-	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),del(3),delx,dely,ddel,
-     &	       xGrid(3),yGrid(3),zGrid(3),D1(9),D2(9),dth,thx,thy,
-     &         oldRayPos(2*nRay),oldOPDMat(nGridPts*nGridPts),x0,y0
+	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),delx,dely,ddel,
+     &	       xGrid(3),yGrid(3),zGrid(3),D1(9),D2(9),dth,thx,thy
 
-C	Compute "chief ray" indices - these coincide with the real 
+C	Compute "chief ray" indices - these coincide with the real
 C	chief ray only if an odd number of grid pts is used
 C
 	iRayCR=nRay/2+1
@@ -1373,7 +1497,7 @@ C Regrid on a plane
 	  x0=CRPos(1)-ddel*nGridPts/2
 	  y0=CRPos(2)-ddel*nGridPts/2
 	  Call mOPDGridData(oldRayPos,nGridPts,x0,y0,ddel,oldOPDMat,
-     &                      OPDMat)  
+     &                      OPDMat)
 #endif
 
 	  DO iRay=2,nRay
@@ -1391,7 +1515,7 @@ C Regrid on a plane
 	END IF
 
 	RETURN
-	END SUBROUTINE ReGrid 
+	END SUBROUTINE ReGrid
 
 C***********************************************************************
 
@@ -1400,7 +1524,7 @@ C***********************************************************************
 	REAL*8 th(3),CRDir(3),CRPos(3),RotPt(3),Q(3,3),dQ(3,3),
      &	       D1(3),D2(3),RayDir(3),RayPos(3)
 
-C       Q and dQ computed in Qform, and dQ = Q - I, -jzlou	
+C       Q and dQ computed in Qform, and dQ = Q - I, -jzlou
 	CALL Qform(Q,dQ,th)
 
 C       CRDir = ChfRayDir, and from the routine
@@ -1409,7 +1533,7 @@ C       we get RayDir = Q*CRDir -jzlou
 
 	D1(1:3) = CRPos(1:3) - RotPt(1:3)
 	CALL DMPROD(D2,dQ,D1,3,3,1)
-	RayPos(1:3) = CRPos(1:3)+D2(1:3) ! effectively RayPos(1:3)=Q*D1 
+	RayPos(1:3) = CRPos(1:3)+D2(1:3) ! effectively RayPos(1:3)=Q*D1
 	RETURN
 	END SUBROUTINE ReRay
 
@@ -1430,14 +1554,14 @@ C***********************************************************************
      &	 ifRegrid
 	INTEGER i,j,iElt,npts,iWFA,iray,k,NoiseSeed(2),
      &	 im1,ip1,jm1,jp1,iwf,jwf
-	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen,AvgR
+	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen
 	 REAL*8 Dicr,Djcr,dxSource,xhat(3),yhat(3),zhat(3),ztdir,
-     &	 dx,C1,dxMin,dxMax,dxAvg,dxDev,s1,ddotc,tiltx,tilty,
+     &	 dx,C1,dxMin,dxMax,dxAvg,dxDev,tiltx,tilty,
      &	 Rij,Rip1j,Rim1j,Rijp1,Rijm1,Rip1jp1,Rim1jp1,Rip1jm1,Rim1jm1
 	COMPLEX*8 CD2(mdttl,mdttl)
 	COMPLEX*16 cztdir
 
-	ztdir = 0.0  ! -jzlou
+	ztdir = 0.0d0  ! -jzlou
 
 C  Generate ray grid if not previously done
 	IF ((iElt.EQ.0).AND..NOT.ifGrid) THEN
@@ -1508,7 +1632,7 @@ c	C1=ztdir*0.5d0/dx
 	  Rim1jp1=R1(im1,jp1)
 	  Rip1jm1=R1(ip1,jm1)
 	  Rim1jm1=R1(im1,jm1)
-	  
+
 C	  tiltx=C1*(Rim1j-Rip1j)
 C	  tilty=C1*(Rijm1-Rijp1)
 	  tiltx=C1*(Rim1j-Rip1j+Rim1jm1+Rim1jp1-Rip1jm1-Rip1jp1)
@@ -1554,7 +1678,7 @@ C	Generates a turbulent OPD array with piston errors
 C	subtracted and tilt added back in (short exposure)
 C	mmc 2/89
 C
-C	      x = npts*npts COMPLEX*8 array (used internally) 
+C	      x = npts*npts COMPLEX*8 array (used internally)
 C	      f = npts*npts SREAL array containing the returned phase
 C	     r0 = coherence diameter in cm
 C	  rsamp = sampling interval in cm
@@ -1585,12 +1709,11 @@ C                                LE var = 454 (th = 425)
 
 	SAVE
 
-	DATA rlast/-999./
-	DATA idum/1/
-	DATA s2o2/0.70710678118655/
-	DATA cs2o2/(0.0,0.70710678118655)/
-	DATA sqrt2/1.41421356237310/
-	DATA Crad2d/0.15915494309190/
+	DATA rlast/-999d0/
+	DATA s2o2/0.70710678118655d0/
+	DATA cs2o2/(0.0d0,0.70710678118655d0)/
+	DATA sqrt2/1.41421356237310d0/
+	DATA Crad2d/0.15915494309190d0/
 
 	r00=ABS(r0)
 	nn(1)=npts
@@ -1603,10 +1726,10 @@ C  Initialization section
 
 C  Generate filter for kolmogorov turbulence:
 C  sqrt(psd)={0.151/r0**(5/6)}f**(-11/6)
-	
-	power=0.91666666666667
-	coeff=(0.151/r00**0.83333333333333)*(1./(FLOAT(npts)*rsamp))
-	scale=(1./(FLOAT(npts)*rsamp))**2
+
+	power=0.91666666666667d0
+	coeff=(0.151d0/r00**0.83333333333333d0)*(1d0/(DBLE(npts)*rsamp))
+	scale=(1d0/(DBLE(npts)*rsamp))**2
 	rad2d=Crad2d*atmWavelen
 
 	DO j=1,npts
@@ -1673,12 +1796,12 @@ C    inverse transform
 C    calc piston and tilt
 	IF ((nradius.GT.0).AND.(nradius.LE.npts)) THEN
 
-	  bm=0.
-	  bx=0.
-	  by=0.
-	  cm=0.
-	  cx=0.
-	  cy=0.
+	  bm=0d0
+	  bx=0d0
+	  by=0d0
+	  cm=0d0
+	  cx=0d0
+	  cy=0d0
 	  nr2=nradius*nradius
 	  DO 300 i=-nradius,nradius
 	    IF (i.LT.0) THEN
@@ -1708,15 +1831,15 @@ C    calc piston and tilt
 
 C    IF selected, add back in approx. tilt
 	  IF (pTilt .NE. 0.0) THEN
-	    tiltamp = pTilt 
-     &	      *SQRT(1.8d0*(2d0*nradius*rsamp/r00)**1.66666666667) 
+	    tiltamp = pTilt
+     &	      *SQRT(1.8d0*(2d0*nradius*rsamp/r00)**1.66666666667)
 	    bxt = tiltamp * GAUSS(NoiseSeed) / nradius
 	    bx = bx + bxt
 	    byt = tiltamp * GAUSS(NoiseSeed) / nradius
 	    by = by + byt
 	  END IF
 
-C    subtract piston and tilt: 
+C    subtract piston and tilt:
 	  DO 400 i=-npts/2, npts/2-1
 	    IF (i.LT.0) THEN
 	      i1=i+npts+1
@@ -1749,13 +1872,14 @@ C  copy to real array
 
 C***********************************************************************
 
+#if 0
         SUBROUTINE BKFFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
-        IMPLICIT NONE
-        INTEGER I,J,NN(2),NFFT
-        REAL*8 DX1,DX2,DZ,S,LAMBDA,PI,TWOPI,C2
-        COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
-
-        DATA pi/3.141592653589793d0/
+          use Constants, only: PI
+          use dft_mod, only: REVAPPLYFAC2
+          IMPLICIT NONE
+          INTEGER I,J,NN(2),NFFT
+          REAL*8 DX1,DX2,DZ,S,LAMBDA,C2
+          COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
 
         NN(1)=NFFT
         NN(2)=NFFT
@@ -1774,12 +1898,13 @@ C***********************************************************************
         END DO
 
         C1 = 1d0/DCMPLX(0d0,lambda*dz)
-        C2 = pi/lambda/dz
+        C2 = PI/lambda/dz
         CALL RevApplyfac2(wf2,NFFT,NFFT,C1*dx1*dx1,C2,dx2)
 
         END SUBROUTINE BKFFPROP
+#endif
 
 C***********************************************************************
 #include "ssrcray.inc"
 C***********************************************************************
-	End Module sourcsub_mod 
+	End Module sourcsub_mod

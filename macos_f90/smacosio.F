@@ -16,56 +16,53 @@ C***********************************************************************
 	Logical :: RxStopSet, EltStopSet,RxNoStopSet_Flg
         REAL*8 :: StopOffset(2)
 
-	Contains
+        Contains
 
-	SUBROUTINE MBFile6(npts,ifOld,LOAD_SUCCESS)
-	use param_mod
-	use src_mod
-	use elt_mod
- 	use cfiles_mod
- 	use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
+        SUBROUTINE MBFile6(npts,ifOld,LOAD_SUCCESS)
+        use Constants, only: EPS
+        use param_mod
+        use src_mod
+        use elt_mod
+        use surfsub, only: GridInit, AMPLINIT
+        use cfiles_mod
+        use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                       cUnit,ifRegrid,ifPol,ifPropagate,
-     &                       ifVecDif3
-        use smacos_vars_mod, only : DV1,DV2
+     &                       cUnit,ifRegrid
 	use traceutil_mod
-
 	use loh_I1
 	use loh_I2
 	use loh_I3
-
 	use dopt_mod
+        ! --------------------------------------
+        IMPLICIT NONE
 
-	IMPLICIT NONE
+        Integer :: npts
+        Logical :: ifOld
 
-	Integer :: npts
-	Logical :: ifOld	
+        INTEGER, PARAMETER :: RX_FID = 77    ! Rx File ID
+        LOGICAL :: isRxOpen
 
-c	CHARACTER*8 CDEF
-	CHARACTER(len=MacosCharLen) :: TypeString
-	LOGICAL exist,LCMP,IHSTPM,IHSTSM,ifGridInit,ifAmplInit,
-     &          LnOutCordPass,LOAD_SUCCESS 
-	INTEGER i,j,k,l,iaxis,iElt,iopt,iCoord,IDEF(7),ICLEN,
+        CHARACTER(len=MacosCharLen) :: TypeString
+        LOGICAL exist,LCMP,ifGridInit,ifAmplInit,LOAD_SUCCESS
+        INTEGER i,j,k,l,iaxis,iElt,iopt,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
-     &          nValsPerRow,g,nvtoken,jAmplSrf,jMetSrf,
+     &          nValsPerRow,g,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken
-	REAL*8 invec6(6),invec7(7),DDEF(7)
-	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
+	REAL*8 DDEF(7)
 
 C       Setup for new input scheme
 
 	CHARACTER*4 IND(3)
-	CHARACTER(len=MacosCharLen) :: STRING
- 	!CHARACTER*180 STRING
-	CHARACTER(MacosVarNamLen) :: VAR_NAM
+        CHARACTER(len=MacosCharLen) :: STRING
+        CHARACTER(MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
-	!CHARACTER*36 VAR_NAM
- 	!CHARACTER*160 VALUE
 	LOGICAL ARR_FLG, opt_npts_flg
 	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
-	INTEGER ians, nVertex
+	INTEGER nVertex
 
-	REAL*8 D1(9)
+        INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
+        INTEGER :: nZernCoef              ! Ditto
+        INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
 
 c***loh<
 C	File setup and initial conditions read
@@ -145,17 +142,30 @@ C	File setup and initial conditions read
      &	' |   Malacara       Noll           Fringe     |'/
      &	' +--------------------------------------------+')
 
+        ! Flags
+        LOAD_SUCCESS = .FALSE.        ! so far, Rx is not loaded
 
-C	Initialize constants
+        CALL reinitialise_variables() ! Reset ALL: see "call macos_init_all()" in macos_init.F
+        CALL LOHIN1()                 ! def in iosub.inc
+        CALL LOHIN2()                 ! def in iosub.inc
 
-	DDEF(1:7)=0D0
-	IDEF(1:7)=0D0
- 	CWM=1d0; CBM=1d0
-	opt_npts_flg=.false.
+        ! ----------------------------------------------------------
+        ! 'NEW' cmd is not supported
+        IF (.NOT.ifOld) THEN
+          WRITE(*,*)' SMACOS does not support the NEW command.'
+          RETURN
+        END IF
 
-C	Get file name
+        ! Initialize constants
 
- 43	CONTINUE
+        DDEF(1:7)=0D0
+        IDEF(1:7)=0D0
+        CWM=1d0; CBM=1d0
+        opt_npts_flg=.false.
+
+C       Get file name
+
+ 43     CONTINUE
 	CALL CACCEPT(filnam,' ','Enter file name: ')
 	l=ICLEN(filnam)
 	IF ((l.EQ.1).AND.((filnam.EQ.'q').OR.(filnam.EQ.'Q'))) RETURN
@@ -166,59 +176,63 @@ C	Get file name
 	mfil=filnam(1:l)//'.m'
 	pertfil=filnam(1:l)//'.pert'
 	L=ICLEN(infil)
-	INQUIRE (file=infil(1:L),exist=exist)
+
+        INQUIRE (file=infil(1:L), exist=exist)
 	IF (exist) THEN
-	  IF (ifOld) THEN
+	!   IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
-	  ELSE
-	    WRITE (*,*) ' Input file ',infil(1:L),
-     &	    ' already exists. Please use a new name or use OLD.'
-	    GO TO 43
-	  END IF
+! 	  ELSE
+! 	    WRITE (*,*) ' Input file ',infil(1:L),
+!      &	    ' already exists. Please use a new name or use OLD.'
+! 	    GO TO 43
+! 	  END IF
 	  iopt=1
 	ELSE
-	  IF (ifOld) THEN
+	!   IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),
      &	    ' does not exist. Check name/path or use NEW.'
-	    GO TO 43
-	  END IF
+	!     GO TO 43
+	!   END IF
 	  iopt=0   ! ifOLD = .false. - jzlou
+          GO TO 99
 	END IF
 
- 29	CONTINUE
-	EltName(0)='InputRay'
-	PropType(0)=1
-	zElt(0)=1d19
+ 29     CONTINUE
+        EltName(0)  = 'InputRay'
+        PropType(0) = 1
+        zElt(0)     = 1d22
 
 C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
-	  OPEN (1,FILE=infil(1:L),STATUS='OLD')  
-	  REWIND(1)
+	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
-   70     CONTINUE
-	  If (.not.LOAD_SUCCESS) Then
-            WRITE(*,*)' ** Rx input file load failed'
-            CLOSE(UNIT=1); RETURN
-          End If
 
-	  CALL LOHIN3()
+   70     CONTINUE
+	  IF (.not.LOAD_SUCCESS) GOTO 99
+        !     WRITE(*,*)' ** Rx input file load failed'
+        !     CLOSE(UNIT=RX_FID);
+        !     RETURN
+        !   End If
+
+	  CALL LOHIN3()    ! def in iosub.inc
 
 	  READ(VALUE,*)nOutCord
 	  nOutCord_FLG=.TRUE.
 
-	  READ(1,123)STRING
-	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,NVTOKEN)
+	  READ(RX_FID, 123, END=99)STRING
+	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
 	    READ(VALUE,*)(Tout(1,j),j=1,7)
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
-	 	READ(1,123)STRING
+	 	READ(RX_FID, 123, END=99)STRING
 	        READ(STRING,*)(Tout(k,j),j=1,7)
-   71	      CONTINUE
+   71         CONTINUE
 	    END IF
 	    Tout_FLG=.TRUE.
 	  END IF
@@ -232,46 +246,45 @@ C
 	    GO TO 99
 	  END IF
 
-   80 	  CONTINUE
+   80     CONTINUE
 
 	  CALL SumData(GridType,npts)
 
-	  IF (nGridpts.GT.mpts) THEN
+          IF (nGridpts.GT.mpts) THEN
 	    WRITE(*,121)mpts
 	    nGridpts=mpts
 	    npts=nGridpts-1
 	    if (.not.opt_npts_flg) then
-	      opt_npts=nGridpts/2-1  
+	      opt_npts=nGridpts/2-1
 	      opt_npts_flg=.true.
 	    end if
 	  END IF
-	  IF (nElt.GT.mElt) THEN
-	    WRITE(*,*) ' Too many elements.'
-	    WRITE(*,*) '  MODIFY or use another version. '
-	  END IF
-	  IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
+
+	  ! ToDo: this might cause indexing faults
+          IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
 	    WRITE(*,*) ' Too many segments.'
 	    WRITE(*,*) '  MODIFY or use another version. '
 	  END IF
 
-C	Create new input file
-C
+C       Create new input file
+
 	ELSE
 	  WRITE(*,*)' SMACOS does not support the NEW command.'
+          GO TO 99
 	END IF
-C
 
-C	Close input file
 
-	CLOSE (UNIT=1)
+        ! Close input file
+        INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
+        IF (isRxOpen) CLOSE(UNIT=RX_FID)
 
+
+        ! Finalise Configuration
 	npts=nGridpts-1
 
 	! Setup ApType and ApVec for all segments if an aperture
         ! is defined.
         if (SegApType_FLG) Call SetSegAp
-
-   99   CONTINUE
 
 	! Final call
         Call RecordElementID(-1,"",.true.)
@@ -281,33 +294,21 @@ C	Close input file
 	  opt_npts_flg=.true.
 	end if
 
-	if (.false.) then
-         print*,'CenterPMSeg = ', m_iCenterPMSeg
-         print*,'firstPMSeg = ', m_iFirstPMSeg
-         print*,'lastPMSeg = ', m_iLastPMSeg
-         print*,'SM = ', m_iSM
-         print*,'TM = ', m_iTM
-         print*,'FSM = ', m_iFSM
-         print*,'Pickoff = ', m_iPickoff
-         print*,'ExitPupil_ID = ', m_iExitPupil
-         print*,'FocalPlane_ID = ', m_iFocalPlane
-         print*,'nLensGrp = ', m_nLensGrp
-         print*,'LensGrpElts(1:2) = ', m_LensGrpElts(1:2)
-         print*,'LensGrp(1:2,1) = ', m_LensGrp(1:2,1)
-         print*,'LensGrp(1:2,2) = ', m_LensGrp(1:2,2)
-        end if
+	LOAD_SUCCESS = .TRUE.
+        RETURN
 
-	RETURN
+        !
+        ! Rx loading failed
+        !
+   99   CONTINUE
 
-c  Stuff to handle backward compatability of zernike's (only 36, 
-c  instead of 45)
+        INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
+        IF (isRxOpen) CLOSE(UNIT=RX_FID)
 
-  900 	DO I=37,45
-	  ZernCoef(j,I)=0d0
-	  ZernCoef_FLG=.TRUE.
-	  GOTO 901
-	END DO
+        nElt = 0
+        LOAD_SUCCESS = .FALSE.
 
+        RETURN
 	END SUBROUTINE MBFile6
 
 C***********************************************************************
@@ -368,7 +369,7 @@ C    &           SegCoord(1:2,iSeg),ApType(iElt),ApVec(1:4,iElt)
           end if
         End Do
         End SUBROUTINE SetSegAp
-	
+
 
 C***********************************************************************
 C***********************************************************************
@@ -418,7 +419,7 @@ C       Write to screen
 	   END IF
 
 C  Write out journal data to file, if in journal mode
-c sws 
+c sws
 	   IF (jou_task .EQ. 2) THEN
 	      IF (.NOT. LCMP(CVAR,'jou',3)) THEN
 	         WRITE (27,6) CVAR(1:ICLEN(CVAR))
@@ -449,12 +450,12 @@ C***********************************************************************
 
 	SUBROUTINE PARSE_LOH()
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10 
-C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED 
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE 1000 CHARACTERS LONG.
-C       
-	use lohpars_mod 
+C
+	use lohpars_mod
 
 	IMPLICIT NONE
 
@@ -474,7 +475,7 @@ C    on the line, (besides spaces)
 
     6   FORMAT(A)
 
-c sws 
+c sws
 c  added for jump from poping the stack
  10     CONTINUE
 
@@ -632,7 +633,7 @@ c	COUT=' '
 	L = ICLEN(COUT)
 	COUT(1:L) = ' '
 
-c sws 
+c sws
 c   jump here IF we need a new line from the console
 100     CONTINUE
 	IF (ifEcho) WRITE(*,5)TEXT
@@ -791,7 +792,7 @@ C ************************************************************
 	INTEGER N
         REAL*8 DVAR,DDEF, dvar_arr(1), ddef_arr(1)
         dvar_arr(1) = DVAR; ddef_arr(1) = DDEF
-        CALL DACCEPT(dvar_arr,ddef_arr,1,TEXT) 
+        CALL DACCEPT(dvar_arr,ddef_arr,1,TEXT)
         DVAR = dvar_arr(1)
         END SUBROUTINE DACCEPT_S
 
@@ -847,7 +848,7 @@ c we're building a journal file, write out the default
         CHARACTER*(*) TEXT
         SREAL RVAR,RDEF, rvar_arr(1), rdef_arr(1)
         rvar_arr(1) = RVAR; rdef_arr(1) = RDEF
-        CALL RACCEPT(rvar_arr,rdef_arr,1,TEXT) 
+        CALL RACCEPT(rvar_arr,rdef_arr,1,TEXT)
         RVAR = rvar_arr(1)
         END SUBROUTINE RACCEPT_S
 
@@ -903,7 +904,7 @@ c we're building a journal file, write out the default
         INTEGER IVAR,IDEF, ivar_arr(1), idef_arr(1)
 	ivar_arr(1) = IVAR; idef_arr(1) = IDEF
 	CALL IACCEPT(ivar_arr,idef_arr,1,TEXT)
-	IVAR = ivar_arr(1) 
+	IVAR = ivar_arr(1)
 	END SUBROUTINE IACCEPT_S
 
 #include "iosub.inc"

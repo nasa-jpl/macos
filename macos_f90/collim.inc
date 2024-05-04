@@ -1,4 +1,4 @@
-C 
+C
 C Code for generation of reference rays direction - used for collimating a beam
 C
 
@@ -10,7 +10,7 @@ C
      &                Cmatrix,DrawRayVec,DrawEltVec)
 	use param_mod
 	use elt_mod, only : LRayOK,mRefRay
-	use tracesub_mod, only : CRTrace 
+	use tracesub_mod, only : CRTrace
 
         Implicit none
 
@@ -38,13 +38,13 @@ C
 	!print*,' **Aft CRTrace, npts =',npts
 	ifRayPrint=.TRUE.
         If (LRayOK(1)) Then
-	  nRefRay = nRefRay+1; refRay(nRefRay)=1 
+	  nRefRay = nRefRay+1; refRay(nRefRay)=1
         End If
 
         srp(1)=1.0; srp(2)=0.0
         Call FSR(npts,iEndElt,Dicr,Djcr,dxSource,ifPol,
      &           ifPropagate,srp(1),srp(2),refRay(2),.TRUE.)
- 	!	
+ 	!
         srp(1)=0.0; srp(2)=1.0
         Call FSR(npts,iEndElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
      &           srp(1),srp(2),refRay(3),.TRUE.)
@@ -59,7 +59,7 @@ C
 	nRefRay = nRefRay+4
 	print*,' ** getRefRays: refRay(1:5) =', refRay(1:5)
         End Subroutine getRefRays
-	     
+
 C  **********************************************************************
 
 #if 1
@@ -70,12 +70,12 @@ C  **********************************************************************
 	!use elt_mod, only : zSource,LRayPass,CurRefRayDir,mRefRay
 	use src_mod
 	use elt_mod
-	use macos_mod	
+	use macos_mod
 #ifdef CMACOS
         use macos_vars_mod
 #else
         use smacos_vars_mod
-#endif 
+#endif
 	use sourcsub_mod
 	use tracesub_mod, only : ctrace
 
@@ -85,30 +85,26 @@ C  **********************************************************************
 	!Integer :: iLastElt,nRefRay,refRay(mRefRay) ! chief plus four marginal rays
         !Real*8 ::  refRayDir(3,nRefRay)
 
-	Do iRay=1,nRefRay
+	DO iRay=1,nRefRay
 	  ifBuild=.FALSE.
           ifTrace=.FALSE.
           ifPropagate=.FALSE.
-	  IF (ABS(zSource).GE.1d10) THEN
-            CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                     ifPropagate)
-          ELSE
-            CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                    ifPropagate)
-	  END IF
-	  !
-	  iStartElt=0
-          iStartRay=refRay(iRay); iEndRay=iStartRay
-	  !print*,' **iStartRay =',iStartRay
+          CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate)
+
+	  iStartElt = 0
+          iStartRay = refRay(iRay)
+          iEndRay   = iStartRay
+
           CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &           ifLNegOK,Cmatrix,iStartElt,iLastElt,iStartRay,iEndRay,
      &           RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,
      &           nBadRays,StartIndRef,StartExtinc,DrawRayVec,
      &           DrawEltVec,nDrawElt(1),xDraw,yDraw)
 	  refRayDir(1:3,iRay)=CurRefRayDir(1:3)
-          !print*,' ** TraceRefRays: refRayDir =', refRayDir(1:3,iRay)
-	End Do
-	!stop
+
+	END DO
+
 	End Subroutine TraceRefRays
 #endif
- 
+

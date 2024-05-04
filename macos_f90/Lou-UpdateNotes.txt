@@ -1,0 +1,1054 @@
+**************************************************************************
+***                      MACOS Update Notes                            ***
+***                      Last Updated: 07/2010                         ***
+***                      John Z. Lou                                   ***
+***                      Office: 818-354-4870                          ***
+***                      Cell:   818-653-8023                          ***
+***                      Email: John.Z.Lou@jpl.nasa.gov                ***
+**************************************************************************
+
+1) Added tapered circular and elliptical aperture types. (f77,f90) (02/04, notes updated 12/2011)
+
+   ApType= Tapered_Circular
+   ApVec= Radius Cx Cy Percent_of_taper  % as a percentage of radius
+   ...
+
+   ApType= Tapered_Elliptical
+   ApVec= a b Cx Cy Percent_of_taper  % as a percentage of radius
+
+2) Added support for hexagonal aperture. (f90) (09/04)
+
+3) Added performance optimization for non-sequential elements in ray-tracing.
+   (f90,f77) (09/04)
+   Need to use 'NSCount=1' in prescription to restrict rays to hitting the element 
+   no more than once.
+
+4.1) Added support for arbitrary Convex Polygonal Apertures. (f90,f77) (11/04,11/05)
+     Polygonal aperture syntax in MACOS prescription (in element local coordinate system)
+
+   ...    
+   ApType= Polygonal 
+   ApVec=  ctr_x ctr_y nVertex  % center of aperture coord system and # vertices
+           v1_x v1_y   % x and y distances of first vertex w.r.t. (ctr_x,ctr_y)
+	   v2_x v2_y   %      ...             second  ...
+   ...
+
+4.2) This is an extension to 4.1). Now polygon aperture vertices in global coords can be
+     entered directly into MACOS prescription. Here is the syntax
+
+     ...
+     ApType= Polygonal
+     PolyApVec= ctr_x ctr_y ctr_z nVertex  % optional, aperture "center" coords and # vertices
+     v1_x v1_y v1_z
+     v2_x v2_y v2_z
+     ...
+
+     MACOS will internally convert the global coords of vertices into their x and y 
+     coords in the aperture frame.
+
+4.3) Similar to 4.2), PolyObsVec can be used to specify an obscuration in 3D global coords.
+
+
+5) Created a command-line MACOS program for Windows. (08/04)
+   a) Compiled with pgplot library. 
+   b) Works with model size <= 256; the size limit is probably
+      due to the Digital Fortran Compiler (kind of old) I used.
+
+6) Added support for cylindrical surfaces. (f77,f90) (10/04)
+   For a toric surface in prescription with Y radius greater than 1d07, it will
+   be treated as a cylindrical surface in ray-tracing; otherwise an incorrect
+   toric surface equation could be solved due to rounding error, thus resulting 
+   in big error.
+
+7) Added FSR command. (f90, command-line tested) (12/04)
+   Find Source Ray: given a position in source aperture, FSR returns a 
+   ray id of the ray that is closest to the given position.
+
+8) Integrated npsol library into MACOS (f90 npsol version) (01/05)
+
+9) Added SetBeam command. (f90 npsol version) (01/05)
+   Set beam size at a given surface by adjusting source aperture,
+   using npsol library.
+
+10) Added RMS normalized Zernike types (f90, command-line) (03/05) 
+    a) New ZernType of NormMalacara, NormNoll, NormFringe are added.
+    b) When a normalized type is specified in Rx or by the 'modify'
+       command, all the Zernike coefficients will be multiplied
+       by the corresponding normalizing scaling factors.
+
+11) Added EFL command. (f90, command-line version tested) (08/05)
+    It returns an estimated effective focal length (EFL) of 
+    the optical system and its focal ratio (F-number).
+    Currently it requires the source to be at infinity to run the command.
+
+11.1) Now the EFL command also computes the plate scale value of the system,
+     returned in unit of arcsec/mm. When the Rx base unit is mm or meter,
+     the plate scale calculation will be handled appropriately. If the Rx
+     base unit specification is missing, plate scale calculation will assume
+     the base unit is mm. (06/2012)
+
+12) Expanded AsphCoef (aspheric surface coefficients) from four to nine
+    coefficients (currently f90 only). To use more than four values for 
+    AsphCoef in a Rx, specify in the Rx file an optional line "nAsphCoefs=N", 
+    where N must be between 4 and 9, and then the number of values for each 
+    AsphCoef in the Rx must be N (or no less than N). (09/05) 
+    This update is backward compatible - when "nAsphCoefs=N" does not appear
+    in the Rx file, MACOS assumes nAsphCoefs=4 by default.
+
+13) Added support for arbitrary convex polygonal obscurations. (f90) (11/05)
+    It has the same Rx syntax as those for polygonal apertures (see 4)).
+    Purpose: Use a combination of convex polygonal apertures and obscurations
+             for non-convex polygonal apertures. 
+
+14) Added new obscuration types "RotRectangle", "RotNegRectangle",
+    "RotEllipse" and "RotNegEllipse". (f90/f77) (01/2006)
+    These obscurations can be translated from the origin of the local obscuration 
+    coordinate system and then rotated around their center. For example, a RotRectangle 
+    ObsType can be defined in MACOS prescription with the syntax
+    %
+    ObsType=  RotRectangle
+    ObsVec=   W H DX DY Rot_Angle
+    %
+    where W and H are dimensions of rectangular obscuration in X and Y directions,
+    and the obscuration is initially centered at the origin of local obscuration
+    coordinate system; the obscuration is then displaced from origin by DX and DY;
+    finally the obscuration is rotated by Rot_Angle radian around its center.
+    Obscuration type RotEllipse is defined similarly as
+    %
+    ObsType= RotEllipse
+    ObsVec=  A B DX DY Rot_Angle
+    %
+    where A and B are half axis of the ellipse, and DX, DY and Rot_Angle have the 
+    same meaning as for RotRectangle. RotNegRectangle and RotNegEllipse can be 
+    defined just like RotRectangle and RotEllipse, respectively.
+
+15) Added support for specifying "ApStop" in MACOS prescription. (f90,03/2006)
+    Aperture stop can specified in Rx either in the header area or in an element
+    section. In the header area, "ApStop" must be specified with global coordinates,
+    whereas in an element section, it is specified in element coordinate system with
+    offsets from element vertex. For example, in the header region, one could have
+   
+    ApStop=  0d0  0d0  0d0
+    
+    And in an element section, one could have
+
+    EltName= ACF
+    Element= Reflector
+    ApStop= 0d0  0d0   % offsets from element vertex  
+    ... 
+
+15.1) Added support for "auto stop set". If, for example, the ApStop field in the element section 
+      is specified as 
+      ...
+      ApStop= 0d0  0d0  autoreset   
+
+      then when the element is perturbed, the STOP at the element will be automatically enforced 
+      by MACOS. (12/2008)
+
+    
+16) Added a C-matrix output option "NAStran", which writes out sensitivity matrix
+    (computed analytically) in Nastran DMI (sparse matrix) format. (f90) (03/2006)
+
+
+17) Added support for system optimizations. (f90) (03/2006)
+    It is a wavefront-based system (or design) optimizer. Each element can be 
+    adjusted in terms of the following degrees of freedom
+    * Six DOF of rigid body motion 
+    * Radius of curvature (ROC) and conic constant (CC)
+    * Surface Zernike coefficients (45 of them)
+
+    Most parameters that control the behavior of the optimizer can be specified 
+    in a MACOS prescription, and a few of them can be modified at MACOS command-line 
+    as well. 
+
+    The system optimizer also features
+
+    a) Support for both a nonlinear optimization procedure and a linear one.
+       The linear procedure (SVD) option is fast, thus more suitable for 
+       situations where a large number of elements need to adjuseted but the 
+       adjustments are small. The nonlinear procedure (which is default) is 
+       more robust, but is relatively slower. Use the global flag (in Rx) 
+       OptAlg= Linear (Nonlin) to choose, and the default is nonlinear.
+
+       ** A constrained system optimizer is also added (see 32) below) **
+
+    b) An optional optimization target can be specified:
+       OptTgt= WFE (ZWF, BeamOnly)
+       The first one is for wavefront optimization, the second is for 
+       optimization wrt a set of Zernike coefficients, and the last one
+       for optimizing chief ray direction and/or position on specified
+       elements. When OptTgt=ZWF, use global flag 'OptZernModes' to specify
+       Zernike modes to minimize (see the entry on OptZernModes in this file). 
+
+    c) A system optimization can be performed for (weighted) multiple fields 
+       and/or multiple wavelengths. Use fields 'OptChfRayDir', 'OptChfRayPos'
+       and 'OptFOVWt' in the Rx header section to specify fields and
+       corresponding optimization weights. 
+
+    d) It accepts user-specified target wavefront input, and in this case, the 
+       system will be calibrated to minimize the difference between system 
+       wavefront and the target wavefront. The default target wavefront is 0.
+
+    e) It supports double-pass system configurations. 
+
+    f) Input to the system optimizer can be specified either in Rx or at the
+       command-line (see below).
+
+    g) There are several optimizer-related utility commands (for both MACOS
+       and SMACOS) to improve the flexibility of using the system optimizer,
+       with a few examples shown below, 
+            
+       * 'AVAR' - Add a variable element; its first argument is an element id,
+          and its second argument is array of 8 integer values for six 
+          rigid-body motions plus ROC and CC, either 1 (turned on) or 0
+          (turned off). 
+       * 'DVAR' - Delete a previously defined variable; its only argument is
+         an element id.
+       * 'AFOV' - Add a field of view for the optimizer. Its arguments are  
+	 chief ray direction and chief ray position.
+       * 'DFOV' - Delete a previously defined field of view for optimization.
+
+    The command to start system optimization is 'CALib'. The system optimizer
+    has been updated several times since its first implementation, with several 
+    new extensions added. Refer to some of the entries below to find out more 
+    recent updates.
+       
+
+18) Added support for group perturbation with "GPERturb" command (f90) (03/2006)
+    It performs perturbations on a set of elements with a common rotation point
+    and local coordinate system as defined at the element where the group of 
+    elements is defined. An element group can be specified in an element
+    section in a MACOS prescription in several ways, as illustrated below.
+
+    ** Example 1:
+
+    iElt=    4
+    EltName= Primary
+    Element= Reflector
+    EltGrp=  3 5 6 7
+    ...
+
+    where the ElgGrp field indicates a group of 3 elements having element indexes
+    5, 6 and 7. Suppose this Primary element has (MACOS internal) element ID 4, 
+    the command
+
+    MACOS> GPER 4 
+
+    will perturb elements 5, 6 and 7 using the rotation point and TElt specified 
+    for element 4. 
+
+    For group perturbations, the source can also be included in the group, and 
+    the source will also be rotated about the rotation point (RptElt) defined 
+    at the element where the group of elements is defined. 
+
+    ** Example 2:
+
+    iElt=  4
+    EltName= Primary
+    Element= Reflector
+    EltGrp=  -3 5 7
+    ...
+    
+    where -3 indicates a group of 3 elements, with starting element 5 and ending
+    element 7, so the group has elements 5, 6 and 7. Note that the last value in
+    the EltGrp field is optional.
+
+    ** Example 3: (specify a group with multiple ranges)
+
+    iElt=  4
+    EltName= Primary
+    Element= Reflector
+    MrEltGrp= 2 23 25 27 28
+    ...
+
+    where the first value 2 indicates two element ranges are specified for this element
+    group. The first range of elements is 23-25, and the second range is 27-28. So the
+    group has elements 23,24,25,27,28.
+
+    % Added 05/23/2015
+    Note: When running GPERTURB command, while each element in the group is being perturbed,
+          MACOS will *not* try to perturb an element linked to that element. In other words,
+          when running a 'GPER' command, only the elements in the group will be perturbed.
+
+
+19) Added support for TElt update during PERTURB operation. (03/2006)
+    By default, MACOS does not change element coordinate system after
+    an element is moved. By including 
+
+    UpdateTElt=Y
+
+    in the element section, TElt for that element will move with the element.
+
+
+20) Added support for multi-layer thin-film coatings. Under the ray-trace setting
+    for polarized light, it computes the Reflectance and Transmittance at 
+    reflective and refractive surfaces where coatings are specified in a MACOS
+    optical prescription. (08/2006)
+
+    Syntax for coatings for a reflective or refractive element in a MACOS Rx
+    (an example):
+
+    ...
+    RptElt= 10.45699785 
+    IndRef= 1
+    Extinc=   1.000000000D+22
+    Coating=  2  % two coating layers
+     2.32 0.5 0.25  % Real_IndRef Imag_IndRef Thickness
+     1.36 0.4 0.30
+    ...
+
+    Note:
+	1) Coating section must appear after IndRef and Extinc parameters.
+	2) To get Coating effect, 'Pol' flag (polarization ray-tracing) must 
+           be turned on before starting ray-tracing.
+        3) Thin-film coating effects on reflectance and transmittance at a 
+           surface are implemented in the Reflector and Refractor routines.
+
+
+21) Added commands 'ZRM' and 'ZCOef' (09/2006)
+    ZRM removes selected Zernike modes (Noll ordered) from a computed wavefront.
+    ZCOef displays a set of selected Zernike mode coefficients in a computed 
+    wavefront. 'OPD' command must be executed before running these two commands.
+    See examples below:
+
+    MACOS> ZRM
+    ** Removing Zernike modes from OPD (Noll ordered) **
+    Enter number of Zernike terms: [1]: 3
+    Enter Zernike indexes: [no default]: 3,4,5
+    Save new OPD (no,yes): [no]:yes
+
+   MACOS> zrm -5;1
+   ** Removing Zernike modes from OPD (Noll ordered) **
+   Enter number of Zernike modes: [1]:  -5
+   Enter starting Zernike mode index:  [no default]:  1
+   Fitting OPD with Zernike modes  1  to  5
+     RMS WFE (after ZRM) = 7.518711445083454E-15
+  
+   MACOS> ZCO 
+   ** Computing OPD Zernike fit coeffs (Noll ordered) **
+   Enter number of Zernike terms: [1]:  4
+   Enter Zernike indexes: [no default]:  2,3,4,5
+  
+   Zernike mode coeffs (OPD best fit):
+   X-tilt         Y-tilt         Focus          XY-Astig         
+  -0.125035E-05 -0.227801E-05  0.554887E-05  0.330042E-05
+
+
+22) Added computing "beam walk" on all optical surfaces in a MACOS model. It computes
+    chief ray footprints before and after perturbing the system on each surface, and 
+    computes the distance vector between the footprints on each surface, then outputs
+    the projection of the distance vector onto element coordinate system. 
+    supported in MACOS ("BWK" command) and SMACOS. (09/2006)
+
+23) Added support for system optimizations with respect to specific Zernike modes in
+    a wavefront. (MACOS/SMACOS) (f90) (09/2006)
+    In MACOS Rx, one can have
+
+    ...
+    ApStop= 0d0 0d0 0d0
+    OptTarget=ZWF  % WFE (default) for WFE based, ZWF for Zernike mode(s) based
+    OptZernModes= 3 3 4 5  % n_modes mode1 mode2 mode3 ...
+    ...
+
+
+24) Added several "Unix shell-like" utility commands to command-line MACOS; 
+    among them are
+    "pwd"      - show current directory path
+    "ls","dir" - list all files in current directory
+    "RX"       - list all MACOS prescription files in current directory
+    "FId"      - load Rx file with given file id as shown in RX command
+    "cd dir_path" - change directory
+    "vi", "emacs" - text editors 
+    "!command"    - run "command" in Unix/Linux shell
+
+
+25) Added 'PGP' command to command-line MACOS to set PGPlot panels. Default
+    number of PGPlot panels is 1, can also be set to 2 and 4. (09/2006) 
+
+
+26) Added "soft constraints" (to be enforced in the objective function by the 
+    system optimizer) for constraining optical beam (i.e. chief ray) direction
+    and/or position on user-specified elements. These beam direction and position
+    constraints can be optimized independently or along with wavefront 
+    optimization. (10/2006);  here is an example from a SIM Rx
+
+    % In Rx header
+    OptTarget= BeamOnly
+    OptWFElt= 18
+    OptFEX= No
+
+    ...
+   
+    % At element 18 
+    iElt=    18
+    EltName= Siderostat
+    Element= Reflector
+    Surface= Flat
+    OptBeamPos=10.46899785               -1.003275553      -0.092738935999999994
+    KrElt= -10000000000000000000
+    KcElt= 0
+    psiElt= 0        -0.8829475928589271       -0.46947156278589053
+    VptElt= 10.45699785               -1.002275553      -0.092738935999999994
+    RptElt= 10.45699785               -1.002275553      -0.092738935999999994
+    IndRef= 1
+    ...
+
+
+27) MACOS optimizer is extended to supporting adjustment of sub-assembly of optics
+    for optimizing beam pointing and WFE. When the EltGrp field and VarElt field
+    BOTH APPEAR in an element section of a Rx, the optimizer will try to optimize
+    the target by adjusting the element group as a single rigid-body with the
+    RptElt defined for the element. 
+    A note on the coordinate system used in group perturbation/optimization:
+    the coordinate system used for group operations will be the one specified
+    in the element section where the group is defined. (12/2006)
+
+
+28) Added a variable CumCRL(1:nElt) defined in elt_mod.F, for capturing chief ray
+    path length on every element surface after ray tracing. This capture is NOT
+    implemented for PSF type ray propagation. (12/2006)
+
+
+29) Added support for a global field in a MACOS Rx, "OptRayGrid =value", for a
+    user-specified size of source ray grid used in a system optimization, which  
+    is similar to the nGridPts field in a prescription for ray-tracing commands 
+    (such as 'OPD') . (12/2006)
+
+
+30) A grid distribution of refractive indices can now be added to Refractor and 
+    LensArray elements. For Refractor, the grid must be a rectangular grid; for
+    LensArray, the grid can be irregular. Both MACOS prescription interface and
+    Fortran/mexfunction interface are provided. (02/2007)
+    Examples of MACOS prescription interface are shown below
+
+    % Refractor example
+    ...
+    Element= Refractor
+    IndRef=  1.51508919834D+00
+    IndRefGridFile= IndRefGridFile.txt
+    pMon=  0.000000000D+00  1.031253750D+03 -1.810547607D+02 % = chief ray intersect
+    xMon=  1d0 0d0 0d0
+    yMon=  0d0 1d0 0d0
+    zMon=  0d0 0d0 1d0
+    ...
+
+    % LensArray example  
+    ...
+    Element= LensArray
+    IndRef=  1.51508919834D+00
+    LensArrayType= -2
+    LensArrayWidth= 0.5d2
+    XYIndRefFile= mandXYIndRef.txt  % IndRef grid input file
+    pMon=  0.000000000D+00  1.031253750D+03 -1.810547607D+02 % = chief ray intersect
+    xMon=  1d0 0d0 0d0
+    yMon=  0d0 1d0 0d0
+    zMon=  0d0 0d0 1d0
+    ...
+
+   The two Fotran subroutines in MACOS, with APIs shown below, can be called to 
+   initialize or update the distribution of refrective indice on any element of
+   type Refractor or LensArray at runtime.
+
+     Subroutine SetIndRefGrid(iElt,gridData,width) 
+     Subroutine SetLensArrIndRefXYLoc(iElt,type,nval,xyzset)
+
+
+31) Use 'SETP' or 'SETC' command in command-line MACOS to reset parameters that 
+    control the behavior of the system optimizer. In SMACOS, call subroutine 
+
+    SMACOS_SetOptParam(pname,carr,iarr,darr) 
+
+    to change the default parameter values for the optimizer.
+
+
+32) Added an npsol-based constained system optimizer to MACOS, also invoked by
+    the 'CALib' command (the same command is used for unconstrained optimizer). 
+    In a MACOS Rx, the constraints for each DOF can be specified in a 'VARCons' 
+    field within an element section. The constrained optimizer will be invoked 
+    only when some constraint is specified for at least for ONE DOF in the 
+    system, otherwise a non-constrained system optimizer (linear or nonlinear) 
+    will be used instead. (04/2007)
+
+
+33) Added 'SFOV' and 'SWL' commands to command-line MACOS. These commands set
+    Field of View and Wavelength to a user selection. Now MULTIPLE Field of View
+    (i.e. ChfRayDir and ChfRayPos) and Wavelength (Wavelen field) can be specified
+    in a MACOS prescription. (04/2007)
+    For example in a prescription, one can have
+
+    ...
+    ChfRayDir=  4.127692651003587D-04  2.29946906717782D-03  9.9999727102805D-01
+    ChfRayPos= -3.09576948825269D+00 -1.724601800383363D+01 -7.49997953271036D+03
+    ChfRayDir=  4.137692651003587D-04  2.28946906717782D-03  9.9899727102805D-01
+    ChfRayPos= -3.09576948825269D+00 -1.724601800383363D+01 -7.49997953271036D+03 
+    ...
+    Wavelen=   2.300000000D-03
+    Wavelen=   2.500000000D-03	
+    ...
+
+    where the first occurances of source and wavelength definitions will be the 
+    default ones to use. These commands DO NOT change the current optical system 
+    state, but will remove from the memory any previous ray-tracing state.
+
+
+34) MACOS optimizer can now optimize a target (WFE etc.) by adjusting Zernike modes 
+    and Aspheric coefficients on any element surface. (updated 06/12/2007)
+
+    In an element section of MACOS prescription, one can have, for example,
+
+    ...
+    VarElt=  0 0 0 0 0 0 0 0
+    OptZern= 6 4 5 6 7 8 9
+    ...
+
+    where the  'VarElt= ...' line is needed to make this element a "variable 
+    element". The OptZern line specifies the number of Zernike modes to optimize
+    (first value), followed by indices of specific Zernike modes.
+
+    The syntax is similar for AsphCoef optimization, for example in an element 
+    section, one can have
+   
+    ...
+    VarElt=  0 0 0 0 0 0 0 0
+    OptAsphCoef = 5 1 2 3 4 5
+    ... 
+
+    where the first five aspheric coefficients for that element are to be optimized.
+
+
+35) The maximum number of iterations used by the system optimizer (CALib command)
+    can be set in a MACOS prescription by a global flag in the Rx header section.
+    The line below sets the maximum optimizer iterations to 20, 
+
+    OptMaxItrs = 20
+
+
+36) The 'STOP' command has been updated as follows  (02/2008)
+    For a collimated source, source can ONLY be translated in the source plane 
+    to satisfy the stop. For a point source, source can be either translated in
+    the source plane OR rotated around X or Y axis of the source plane to satisfy
+    the stop.
+ 
+    For a point source, the default source adjustment option is chief ray direction,
+    which can be changed by the 'SAOpt' command (see item ?)
+   
+    When the STOP is set globally (i.e. in Object Space), the given STOP position 
+    will be used as the entrance pupil position. The source is either rotated or 
+    translated in the source plane to aim at the entrance pupil. 
+
+
+37) Added a FDP command for finding Detector (Focal Plane) position given the source
+    and the optical system. The detector position is found by tracing differential
+    rays through the system, and the detector plane will be normal to the incoming
+    nominal chief ray. (11/2007)  
+
+    Command syntax: 
+    MACOS> FDP detector_element_number
+
+    where detector_element_number is the detector element id in the Rx, but note that
+    the detector element does not actually need to be physically present in the Rx. 
+    When a 'focal return' element exists in Rx, the user must 'link' it with the 
+    detector element so that the focal return element can be updated along with the
+    detector by the FDP command.  
+
+
+38.1) Added support for the 'Poly3DApVec' (or 'PolyApVec') field, which is used to 
+      specify the ApVec for a polygonal aperture on a surface when polygon nodes are 
+      given in the 3D global frame. Here is an example for an AMD segment. 
+      (f90, 12/2007)
+
+    ApType=  Polygonal
+    Poly3DApVec= 6
+                 382.408765000000    -610.495235000000     -15.914195000000
+                 718.495147000000   -1194.246230000000     -59.568783000000
+                 1392.089038000000   -1193.434412000000    -103.107444000000
+                 1729.589038000000    -608.867265000000    -103.107444000000
+                 1393.495147000000     -25.111935000000     -59.568783000000
+                 719.908765000000     -25.928088000000     -15.914195000000 
+ 
+    The first line of the Poly3DApVec field specifies number of vertices of the 
+    polygon, followed by lines which specify 3D glboal coordinates of all vertices. 
+
+
+38.2) Added support for the 'Poly3DObsVec', which is used to specify the ObsVec
+      for a polygonal obscuration on a surface when polygon nodes are given in the
+      3D global frame. Its usage is parallel to the Poly3DApVec field as described
+      in 38.1). (f90, 01/2008)
+
+
+39) Added support for the pair of flags 'CommentBegin' and 'CommentEnd' and the pair
+    of '/*' and '*/' in MACOS prescription. Lines within those pairs of flags will be 
+    treated as comments (the same as lines starting with '%'). The flags are convenient 
+    when large blocks of fields in the prescription need to be skipped, say for testing 
+    purposes. (f90, 12/2007)
+
+
+40) Expanded support for beam amplitude apodization at apertures. Useful for simulating 
+    optical surfaces with coating characteristics causing change/transition of amplitude
+    profile near apertue edges (e.g. reducing scattering effects along edges and psf tail 
+    rippling). (01/2008)
+
+    MACOS currently supports
+    a) Linear apodization for circular and elliptic apertures.
+    b) Step, linear and Gaussian apodizations for polygonal apertures.
+
+    Here is an example of a polygonal aperture with step apodization in a JWST Rx,
+    ...
+    %ApVec=   1.3235000000d+03   0.0000000000d+00 6  1.2d2 1.2d2 % width_from_edge std_dev
+    ApType=  Tapered_Polygonal Step  % or Linear / Gaussian
+    ApVec=   1.3235000000d+03   0.0000000000d+00 6  5 0.7  % On first line, last value is pct step height, 
+            -6.5589600000d+02   3.8101000000d+02           % and second to last value is width of tapered
+            -1.5010000000d+00   7.5882600000d+02           % region as measured from element boundary              
+             6.5290700000d+02   3.8101000000d+02           
+             6.5290700000d+02  -3.8101000000d+02
+            -1.5010000000d+00  -7.5882600000d+02
+            -6.5589600000d+02  -3.8101000000d+02
+   ...
+
+
+41) Added a 'SAOpt' command which sets the option for how the source should be adjusted
+    when running the STOP command. The default option is
+    For a point source, the default is to rotate the source in the source plane.
+    For a collimated source, the source will always be translated in the source plane.
+    (02/2008)
+
+42) Updated OPD calculation: when the chief ray is available, it will be used 
+    in the OPD calculation instead of using average OPD. (02/2008) 
+
+43) Improved the robustness of diffraction grid spacing calculation for sparse
+    aperture systems by searching the entire target (pupil) plane instead of
+    just looking at the center line. (02/2008)  
+  
+44) Improved readability of the output from 'ZCO' command, which does a Zernike
+    decomposition (least-square fit) of the computed wavefront, and displays the
+    coefficients of the selected Zernike terms. (command-line only, 02,2008)
+   
+
+45) Added a MACOS Rx flag 'LUseChfRayIfOK'. When used, it should appear in the Rx 
+    header section, as 
+    
+    ...
+    LUseChfRayIfOK = YES  % or 'NO'
+    ...
+
+    When set to 'NO', average OPL will be used in computing OPD even when chief ray
+    OPL is available. The *default* is LUseChfRayIfOK = YES, which means chief ray
+    OPL will be used in computing OPD when it's available. (03/2008)
+    
+
+46) Added explicit prescription interface support for source optimization with
+    the MACOS system optimizer. The source can be adjusted in three rotations
+    and three translations in the source frame, six DOF, to optimize one of
+    the supported optimization targets (rms WFE, beam pointing etc.). The
+    default source rotation point is the entrance pupil location (so the STOP
+    command must precede source optimization), but the rotation point can also
+    be optionally specified by the user. In a prescription, source optimization  
+    information must appear in the header section. Below is a usage example
+    (03/2008)
+
+    VarSrc=   0 0 0 0 0 1  % three rotations followed by three translations
+    OptSrcRpt=  0d0  4.125032537771745d-009 -1.389977125684197d+003  % source
+				% rotation point, optional, default to EP location
+    OptFEX= YES  % whether do FEX during optimization
+    ChfRayDir=  0d0 -2.483193726834528d-004 -9.999999691687442d-001
+    ChfRayPos=  0d0  4.125032537771745d-009 -1.389977125684197d+003 
+    ...
+
+
+47) 'save' command is updated to support PolyApVec/Poly3DApVec of polygon aperture
+    type. Note that by default the aperture as projected to the 2D aperture frame will 
+    actually be saved, which is preferred since the aperture definition w.r.t. the 
+    aperture frame is invariant with element motions, but the 3D specification is not.
+    The 3D aperture specification however can be saved by specifying
+ 
+    Save3DApVec = Y
+ 
+    in the header section (before element definitions) of the input
+    MACOS prescription. (03/2008)
+
+49) Added an option for displaying color image (OPD, Int maps) with command-line 
+    MACOS. The color table was "borrowed" from Matlab. (03/2008)
+    The default display mode is gray-scale. The command 'CIR' (Color Image Rendering)
+    turns on color rendering, and 'GIR' restores gray-scaling rendering.
+
+50) Added command 'SRT' for single ray tracing. The ray is specified by its position
+    in normalized source aperture with ranges [-1,1]x[-1,1]. (05/2008)
+
+51) Added support for command history/recall feature in command-line version. Up/down 
+    arrow keys retrieve previous commands. 'HISt' command list commands in history,
+    and 'CLEar' command deletes command history. The implemenation is based on the 
+    Gnu Readline Library. (05/2008)
+
+52) Adding support for MACOS 'macro programming', that is writing and running a batch 
+    processing script with programming logic support as opposed to MACOS journal files 
+    where only MACOS raw commands can be run. (under development)
+
+53) Added support for Fringe Zernike modes 34-37, with their analytic expressions from
+    Code V Reference Manual. (07/2008)
+ 
+54) Added support for user-specified Zernike frame and radius of Zernike region at an 
+    optical surface, which ZCO and ZRM commands use to compute Zernike modes.  At an 
+    element section in Rx, they are defined in global coordinates, e.g.
+
+   ...
+   ZernCent = 0d0 0d0 1d02  % center of Zernike frame
+   ZernX    = 1d0 0d0  0d0  % x axis of Zernike frame
+   ZernY    = 0d0 -1d0  0d0 % y axis of Zernike frame
+   ZernRad  = 0.25d02       % radius of Zernike region 
+   ...
+
+   If a user-specified Zernike frame is not specified, the computed OPD array is 
+   used by ZCO and ZRM commands in such a way that its first dimention is assumed 
+   along X axis and second dimension is along Y axis of the Zernike frame. (07/2008)
+
+55) Added command 'DOPD' which computes the difference OPD of the two most recently 
+    generated OPD by the OPD command. Display the difference OPD map and its RMS 
+    and P-V values. (command-line only, 08/2008)
+
+56) Added command 'ZAB'. For a previouly generated OPD, ZAB computes an aberration 
+    map which contains a set of user-specified Zernike modes from the generated OPD,
+    same input interface as ZRM command. (08/2008)
+
+57) Added an update so that commands run from a journal file are now added to MACOS 
+    command history as well. (08/2008)
+
+58) Added support for the option 'OptNomSens' in the header section of Rx. When set to 
+    'Yes', MACOS will precompute nominal sensitivity based on the DOF of variable 
+    elements defined in the Rx; the computed nominal sensitivity will be used by the 
+    MACOS linear optimizer. The default value for OptNomSens is 'No'. (08/2008)
+
+59) Added support for 'NormAnnular' Zernike type. The annular ratio of the aperture 
+    can be specified by the field 'ZernAnnularRatio', which is ratio of the radius of 
+    inner cirle over the radius of the outer circle. (08/2008)
+
+60) 'ZCO' and 'ZRM' commands have been extended to using NormHex and NormAnnular
+    Zernike types. When analyzing WF due to annular or hex surface Zernikes with ZCO 
+    or ZRM command, it would be appropriate to use the corresponding Zernike type with 
+    those commands. To set ZCO or ZRM to using annular Zernike, for example, one option
+    is to add the line below to the header section of Rx (08/2008)
+
+    ZCOZernType =  NormAnnularNoll  %  Can also be NormNoll or NormHex
+
+    Zernike type for ZCO/ZRM can also be set at the command line after loading Rx, using 
+    the command 'SZCo'. The default is to use circular Zernike NormNoll.    
+
+
+61) Added command 'GBS' (Get Beam Size) for computing and displaying/saving optical beam sizes
+    at a set of elements. (09/2008)
+
+
+62) Added command 'LOS' for computing optical system Light of Sight (LOS), based on V.N. Mahajan's  
+    early paper "Line of Sight of an Aberrated Optical System". The implemention uses its pupil 
+    function formulation, by integrating the product of optical field amplitude and gradient of 
+    wavefront at exit pupil. The command outputs angular and linear LOS values. The linear 
+    LOS are defined as the centroid of PSF at the detector, while the angular LOS are the 
+    linear LOS divided by the diffraction propagation distance. Care is also taken in the 
+    computation for sparse aperture systems.  (11/2008)
+
+
+(63) Added support for tracking metrology points at optical elements. At an optical element in a 
+     MACOS Rx, a set of "metrology points" can be defined in global coords. In addition, a 
+     set of metrology points can also be speficied on another "target" element, also in 
+     global coords. With that information available, MACOS will track all metrology points
+     when the elements are rigidly perturbed. (11/2008, updated 02/2012)
+
+     Also added a commond 'METcalc', which computes all physical lengths between metrology points
+     for all surfaces.
+
+     Below is an example of metrology points and beam specifications on optical elements A1 
+     (elt 9) and SM (elt 11):
+
+     iElt=  9
+     EltName=  A1
+     Element=  NSReflector
+     NSCount=  1
+     Surface=  Conic
+     KrElt=  -2.200003310000000D+03
+     KcElt=  -9.952988846000000D-01
+      ...
+     nMetPos=  6
+                50          277.651547444262         -18.0890455266945
+               100          277.651547444262         -19.7936574111111
+               162.5        636.943916789016         -98.2155684788731
+               137.5        679.213607300164         -109.157424346225
+              -212.5        552.404535766721         -79.6218857818344
+              -237.5        510.134845255574         -71.9699282118346
+     tMetElt= 11  6   % target met elt is 11 (SM), on which there are 6 met pts
+      1 0 0 0 0 0  % 1 - 1 beam (each row must have 6 values since SM has 6 met pts)
+      0 0 1 0 0 0  % 2 - 3
+      0 0 1 0 0 0  % 3 - 3
+      0 0 0 0 1 0
+      0 0 0 0 1 0
+      1 0 0 0 0 0
+
+      ...
+     iElt=  11
+     EltName=  Secondary
+     Element=  Reflector
+     Surface=  Conic
+     KrElt=  -3.302669140000000D+02
+     KcElt=  -2.025183892000000D+00
+     ...
+     nMetPos=  6
+          83.5768931661399          30.4195013849213         -976.761146351818
+          15.4443856132722          87.5894633437158         -976.761146351818
+         -68.1325075528677          57.1699619587945         -976.761146351818
+         -83.5768931661399         -30.4195013849212         -976.761146351818
+         -15.4443856132723         -87.5894633437158         -976.761146351818
+          68.1325075528676         -57.1699619587946         -976.761146351818
+     ...
+
+     When executing 'METcalc', there is an option to print out current beam length values 
+     on the screen. To do that, place the following line in the header section of a Rx.
+
+     ShowMetData= Y
+
+     The default is 'ShowMetData= N'.
+
+
+(64) The unconstrained system optimizers are extended to controlling beam size at a specified 
+     element surface (11/2008). To use it, set 
+
+     % At Rx header
+     OptTgtElt= 29
+     OptTarget= BeamTarget   
+     ...
+     OptBeamSize= 161.9796032534414  % at target element section (elt 29 in this case)
+
+ 
+(65) The system optimizer is extended to controlling the direction of reference rays.
+     System reference rays are created at the source aperture and consist of the chief
+     ray (if available) plus four "marginal rays". Two X marginal rays start from left and 
+     right edges on the X axis of the source aperture, similar for two Y marginal rays. 
+     An iterative procedure is implemented to make sure all selected reference rays can go
+     through the system up to the target element specified by the user.
+     (12/2008)
+
+     An example of using the optimizer to control the direction of reference rays, set
+
+     % At Rx header
+     OptTgtElt= 29
+     OptTarget= BeamTarget  
+     ...
+     OptBeamRefRayDir=  2.92371703693203D-01  9.56304756277795D-01  1.37276540881914D-09 
+                       % at target element section (elt 29 in this case)
+
+
+(66) The 'RRAY' command reports the indices of system reference rays. The indices can be used 
+     in the 'RAY' command to trace individual reference rays. This command was implemented quite
+     a while ago, but its description was not added to this file until now. For the definition
+     of MACOS system reference rays, see item (65) above. (12/2008)
+     
+
+(67) Fixed a bug in argument inconsistency for SUBROUTINE PPPROP in propsub.F:
+     Z1 and Z2 positions are switched to match the calling statements. (11/2008)
+
+
+(68) Added support of 'GridData' on a Reference surface. The GridData on a reference surface
+     is used to alter the wavefront shape where the reference surface is located. The GridData, 
+     just as used on a reflector, is a 2D array of real values defined in a (pMon,xMon,yMon,zMon)
+     local frame in the Rx, and ray optical path lengths are modified based on their intersection 
+     locations on the reference surface and the closest value in the GridData array. Note that,
+     unlike GridData defined on a reflector, GridData defined on a reference surface DOES NOT
+     change ray directions.  (04/2009) 
+      
+
+(69) Rx flags 'OptSavePinv = Y/N', 'OptPinvFile = filename', 'OptUseSavedPinv = Y/N' have been
+     added to support computing and saving system linear sensitivity for use in system
+     optimizations. They can be placed in the header section of a Rx. See examples below.
+
+     % In MACOS Rx
+     OptSavePinv = Y      % default is 'No'
+     OptUseSavedPinv = N  % default is 'No'
+     OptPinvFile = 'mysens.txt'  % optional, default name is 'dady0_saved.txt'
+    
+     Then load Rx and run 'CALIB' command (use linear optimizer) to generate system sensitivity
+     around the system state given by the Rx.
+
+     To use existing computed system sensitivity, 
+     % In MACOS Rx
+     OptSavePinv = N 
+     OptUseSavedPinv = Y
+     % when 'OptPinvFile' is not specified, the file 'dady0_saved.txt' is used
+
+     Then load Rx and run 'CALIB' command (use linear optimizer) to do system optimization.
+
+     By default, system sensitivity data will be saved in a binary file with the extension 'bin',
+     the default filename being 'dady0_saved.bin'. To save in a text file, use the Rx file flag
+     'OptPinvFile' to specify a filename with extension 'txt', like 
+     OptPinvFile = dady0_saved.txt. (08/2009)
+
+
+70)  Extended the "Flower" source aperture type to support mutiple annular rings and different 
+     number of keystone shaped segments on each ring. The central segment is circular and its 
+     radius defined by "radCtr" (as before). The radius of each outer ring is described as
+     a (fractional) multiple of radCtr, with all of them defined in the "RingRads" field. The
+     "nPetals" field defines numbers of segments on rings. Its use in a CCAT Rx is shown below
+     (10/2009)
+
+     % -- CCAT model example --
+     ChfRayDir=  0d0   0d0    1d0
+     ChfRayPos=  0d0   0d0   -2d04
+     zSource=   1d22
+     IndRef=   1d0
+     Extinc=  0d0
+     BaseUnits= mm
+     WaveUnits= mm
+     Wavelen=   200.0D-03
+     Flux=   1d0
+     GridType= Flower
+     radCtr=  1562.5  % =Aperture/8
+     nRings=   7
+     nPetals=  12 12 18 24 30 36 42 48  % nPetal(0) nPetal(1) nPetal(2) etc.
+     RingRads=  2 3 4 5 6 7 8  % radii of rings as a (fractional) multiple of radCtr
+     SegXgrid= 1d0  0d0  0d0
+     SegYgrid= 0d0  1d0  0d0
+     Aperture=  25d3
+     nGridpts=  1023
+     xGrid=  1d0   0d0   0d0
+     yGrid=  0d0   1d0   0d0
+     nSeg=   211
+     gap=   0.105d3  %0d0 %0.105d3
+     nElt=   217
+
+     SegCoord=     0   0   %  central segment assumed to be on 0th ring
+                   1   1   %  1st_ring  1st_segment
+                   1   2   %  1st_ring  2nd_segment
+                   1   3   %  ...
+                   ...
+                   2   1   %  
+                   2   2   %
+                   ...  
+		   ...
+		   ---
+
+
+71)  Added a 'WFITS' command for writing out OPD and image arrays in FITS format after 
+     running 'OPD' or 'INT' commands. The old code in MACOS for FITS I/O seems outdated 
+     and doesn't work properly on 64-bit Linux machines. Before I would have time to fix 
+     them, a downloaded FITS library is now linked to command-line MACOS and is used by 
+     the WFITS command. (07/2010)
+
+72)  Added an option to perform 2D cubic spline interpolations over a grided surface on
+     an optical element. The default is to perform a bi-linear interpolation. To activate
+     cubic spline on a grided surface, add the following line to the corresponding element 
+     section in the optical prescription, 
+
+     GridSrfOrder = 3
+
+     That's all that's needed for both MACOS and SMACOS to use cubic spline on a grid surface. 
+     When GridSrfOrder = 1 or the line is not present, bi-linear interpolation will be used on 
+     the grid surface.
+
+
+73)  Added support for the MACOS Rx flag 'PgplotImage' which can be placed in the header section
+     of a Rx. The flag is used to turn on color rendering of images in MACOS command-line mode.
+     When PgplotImage's value is set to 'Color', OPD images will be shown in color. The default 
+     mode of PGPLOT is to render images in gray scales. 
+
+
+74)  Added command 'PGD' to allow switch between pgplot output devices during a MACOS session. 
+
+
+75)  Added update to allow multiple wavelengths and refractive indexes specified in a single Rx 
+     file. At an element section, use 'ArrIndRef' field to provide all glass refractive indexes. 
+     For example,
+    
+     ...
+     ArrIndex =  1.515089 1.515992 1.514275
+     ...
+     
+     The order of refractive index values must match the wavelength values in the Rx header section.    
+     Use 'SWL' command to switch among wavelengths while refractive indexes will be switched 
+     accordingly.
+  
+
+76)  Added support for Diffractive Optical Elements (DOE). A DOE is defined by a phase profile 
+     (polynomial coefficients) at its design wavelength following Code V. 
+
+77)  Added support for forcing MACOS OPD calculation to use a pre-computed chief ray OPL when
+     chief ray is lost in tracing instead of using averaged ray OPL. To to that, place the line
+     below in the Rx header section
+
+     ...
+     OPDRefRayLen=  3.23613081661334D+03
+     ... 
+
+     This is useful, for example, when using a segmented mirror Rx to calculate wavefront sensitivity.
+     The chief ray OPL can be pre-computed in a monolithic Rx. (01/2012)
+
+78)  Chief ray state on optical surfaces can now be exported to GMI. (10/2012)
+
+
+79)  Light source can now be perturbed in a local coordinate frame specified by the user in a Rx.
+     The source local frame is defined in the header section by  (added around 2013)
+     xFrame = ..  ..  ..
+     yFrame = ..  ..  ..
+     
+     and optionally
+     zFrame = .. .. ..
+
+
+80)  Note: source can be a part of a group perturbation. When the source is part of a group 
+     perturbation, the rotation point for the source is the rotation point of the group
+     perturbation, not the aperture stop used when the source is perturbed alone. (09/2014) 
+
+
+81)  A double-pass prescription simplification feature added. (09/2015)
+     In a double-pass Rx, suppose optical element 39 is the same element 6 on return path, 
+     the element 39 can be specified by the following two lines.
+
+       iElt=  39
+       DuplElt=  6
+ 
+     MACOS will then internally generate iElt 39 data that are identical to element 6.
+
+
+82)  MACOS glass table file update: the glass table file read in by MACOS must
+     be called 'macos_glass_list.txt'. 04/04/2016
+
+ 
+**************************************************************************************
+**************************************************************************************
+**************************************************************************************
+ 
+**) Adding a framework for analyzing multipath, interferometric systems. (in-progress)
+    Among them are
+
+    * Supporting specifying an interferometer in a single MACOS prescription.
+    * Plotting such a system in MACOS.
+    * Added a Delaunary triangulation based interpolator for resampling data
+      from an irregular grid to a regular grid, useful for combining E-fields
+      for generating interferometric fringes. (work in progress, 10/2006)
+
+
+**) Implementing a MACOS 3D optical model visualizer. A demo 3D visualizer was 
+    already developed and is attached to the command-line MACOS for 32-bit Linux. 
+    The current work is to extend the demo code to a 3D visualizer for a general 
+    MACOS prescription. (work in progress, 04/2007)
+
+
+
+===  A (Partial) List of Added Parameters That Can Appear in MACOS Prescriptions ===
+
+ Parameter Name and Values 
+   * ApStop (global or elemental flag) 
+   * OptAlg - 
+   * OptTarget -
+   * OptRayGrid - 
+   * OptZernModes - 
+   * OptChfRayDir -
+   * OptChfRayPos -
+   * OptWFElt -
+   * OptFOVWt (Weighting values for FOVs used in optimization, global flag)
+   * OptWaveLen - 
+   * OptFEX -     
+   * OptMaxItrs -
+   * OptRayGrid - 
+   * OptUseNom -   
+   * EltGrp - 
+   * MrEltGrp - 
+   * Link (DpElt) - 
+   * CalBWK - 
+   * VarElt - 
+   

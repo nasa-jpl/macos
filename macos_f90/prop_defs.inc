@@ -1,70 +1,58 @@
 C File prop_defs.inc
 
-	! Source aperture grid types
-	GridTypeName(1)='Circular'
-        GridTypeName(2)='Square'
-        GridTypeName(3)='Hex'
-        GridTypeName(4)='Pie'
-        GridTypeName(5)='Flower'
-        GridTypeName(6)='UDGrid'
+	! Source aperture grid types  => moved to sourcsub.F
+!	GridTypeName(1)='Circular'
+!        GridTypeName(2)='Square'
+!        GridTypeName(3)='Hex'
+!        GridTypeName(4)='Pie'
+!        GridTypeName(5)='Flower'
+!        GridTypeName(6)='UDGrid'
 
-        SrfTypeName(1)='Flat'
-        SrfTypeName(2)='Conic'
-        SrfTypeName(3)='Aspheric'
-        SrfTypeName(4)='Monomial'
-        SrfTypeName(5)='Interpolated'
-        SrfTypeName(6)='Anamorphic'
-        SrfTypeName(7)='UserDefined'
-        SrfTypeName(8)='Zernike'
-        SrfTypeName(9)='GridData'
-        SrfTypeName(10)='Toric'
-        SrfTypeName(11)='AsGrData'  ! Aspherical with GridData,05/2016 -jzlou 
-        !SrfTypeName(11)='InfluenceFunction'
+!        SrfTypeName(1)='Flat'
+!        SrfTypeName(2)='Conic'
+!        SrfTypeName(3)='Aspheric'
+!        SrfTypeName(4)='Monomial'
+!        SrfTypeName(5)='Interpolated'
+!        SrfTypeName(6)='Anamorphic'
+!        SrfTypeName(7)='UserDefined'
+!        SrfTypeName(8)='Zernike'
+!        SrfTypeName(9)='GridData'
+!        SrfTypeName(10)='Toric'
+!        SrfTypeName(11)='AsGrData'  ! Aspherical with GridData -jzlou
+!        !SrfTypeName(11)='InfluenceFunction'
 
-#if 0
-        ZernTypeNameL(1)='Malacara'
-        ZernTypeNameL(2)='BornWolf'
-        ZernTypeNameL(3)='Fringe'
-        ZernTypeNameL(4)='NormMalacara'
-        ZernTypeNameL(5)='NormNoll'
-        ZernTypeNameL(6)='NormFringe'
-	ZernTypeNameL(7)='NormHex'  ! Mahajan ordering
-	ZernTypeNameL(8)='NormNoll'
-        ZernTypeNameL(9)='NormAnnular'
-#endif
+!#if 1
+!        ! Copied from folder 'cdsvn', 05/15/2009
+!	ZernTypeNameL(1)='Malacara'
+!        ZernTypeNameL(2)='BornWolf'
+!        ZernTypeNameL(3)='Fringe'
+!        ZernTypeNameL(4)='NormMalacara'
+!        ZernTypeNameL(5)='NormBornWolf'
+!        ZernTypeNameL(6)='NormFringe'
+!C  Mahajan ordering hex
+!        ZernTypeNameL(7)='NormHex'
+!        ZernTypeNameL(8)='NormNoll'
+!C  Annular Zernike
+!        ZernTypeNameL(9)='NormAnnularNoll'
+!#endif
 
-#if 1
-        ! Copied from folder 'cdsvn', 05/15/2009 
-	ZernTypeNameL(1)='Malacara'
-        ZernTypeNameL(2)='BornWolf'
-        ZernTypeNameL(3)='Fringe'
-        ZernTypeNameL(4)='NormMalacara'
-        ZernTypeNameL(5)='NormBornWolf'
-        ZernTypeNameL(6)='NormFringe'
-C  Mahajan ordering hex
-        ZernTypeNameL(7)='NormHex'
-        ZernTypeNameL(8)='NormNoll'
-C  Annular Zernike
-        ZernTypeNameL(9)='NormAnnularNoll'
-#endif
-
-        EltTypeName(1)='Reflector'
-        EltTypeName(2)='FocalPlane'
-        EltTypeName(3)='Reference'
-        EltTypeName(4)='HOE'
-        EltTypeName(5)='Grating'
-        EltTypeName(6)='Refractor'
-        EltTypeName(7)='Obscuring'
-        EltTypeName(8)='Return'
-        EltTypeName(9)='NSRefractor'
-        EltTypeName(10)='LensArray'
-        EltTypeName(11)='Segment'
-        EltTypeName(12)='NSReflector'
-        EltTypeName(13)='TrGrating'
-        EltTypeName(14)='RfPolarizer'
-        EltTypeName(15)='TrPolarizer'
-	EltTypeName(16)='CGHNullPlate'
-	EltTypeName(17)='DoeTrGrating' ! Diffractive Optical Element (DOE)
+!        EltTypeName(1)='Reflector'
+!        EltTypeName(2)='FocalPlane'
+!        EltTypeName(3)='Reference'
+!        EltTypeName(4)='HOE'
+!        EltTypeName(5)='Grating'
+!        EltTypeName(6)='Refractor'
+!        EltTypeName(7)='Obscuring'
+!        EltTypeName(8)='Return'
+!        EltTypeName(9)='NSRefractor'
+!        EltTypeName(10)='LensArray'
+!        EltTypeName(11)='Segment'
+!        EltTypeName(12)='NSReflector'
+!        EltTypeName(13)='TrGrating'
+!        EltTypeName(14)='RfPolarizer'
+!        EltTypeName(15)='TrPolarizer'
+!	EltTypeName(16)='CGHNullPlate'
+!	EltTypeName(17)='DoeTrGrating' ! Diffractive Optical Element (DOE)
 
 	ApTypeName(0)='None'
         ApTypeName(1)='Circular'
@@ -78,7 +66,7 @@ C  Annular Zernike
 	ApTypeName(9)='SunBlades'
         !ApTypeName(10)='UDR_Circular'
 
-        ObsTypeName(0)='None' 
+        ObsTypeName(0)='None'
         ObsTypeName(1)='Circle';    ObsTypeName(-1)='NegCircle'
         ObsTypeName(2)='Rectangle'; ObsTypeName(-2)='NegRectangle'
         ObsTypeName(3)='Annulus';   ObsTypeName(-3)='NegAnnulus'
@@ -86,7 +74,7 @@ C  Annular Zernike
         ObsTypeName(5)='Ellipse';   ObsTypeName(-5)='NegEllipse'
         ObsTypeName(6)='Matrix';    ObsTypeName(-6)='NegMatrix'
         ObsTypeName(7)='Tapered_Ellipse'
-	ObsTypeName(8)='Polygon';   ObsTypeName(-8)='NegPolygon' 
+	ObsTypeName(8)='Polygon';   ObsTypeName(-8)='NegPolygon'
 	ObsTypeName(9)='RotRectangle'; ObsTypeName(-9)='RotNegRectangle'
 	ObsTypeName(10)='RotEllipse';  ObsTypeName(-10)='RotNegEllipse'
 

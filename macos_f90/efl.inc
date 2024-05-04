@@ -1,19 +1,18 @@
-C code for EFL command
-	    
+C  code for EFL command
+
             IF (ifLoad) THEN
               ifRayPrint=.FALSE.
               ifBuild=.FALSE.
               ifTrace=.FALSE.
               ifPropagate=.FALSE.
 
-              IF (ABS(zSource).GE.1d10) THEN
-                CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                         ifPropagate)
-              ELSE
+              IF (isPointSource()) THEN
                 WRITE(*,*)' **Need source at infinity'//
      &                    ' to run EFL command!'
                 GO TO 1
               END IF
+              CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate)
 
 	      ! Trace chief ray
               iStartRay=1; iEndRay=1
@@ -44,13 +43,13 @@ C code for EFL command
                 rayHt= dsqrt(srp(1)*srp(1)+srp(2)*srp(2))
 
                 ! Trace a parallel off-axis ray returned by FSR routine
-	        !print*,' ** srid =',srid, ', nElt =',nElt; pause
+                !print*,' ** srid =',srid, ', nElt =',nElt; pause
 
-	        ! source must be reset here, otherwise when the same ray is traced
-	        ! twice, once in FSR above and once below, the result will be incorrect.
-	        ! Need take a closer look at CTRACE ... -jzlou   
-	        CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                         ifPropagate)
+                ! source must be reset here, otherwise when the same ray is traced
+                ! twice, once in FSR above and once below, the result will be incorrect.  (ToDo)
+                ! Need take a closer look at CTRACE ... -jzlou
+                CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
 
                 iStartRay=srid; iEndRay=srid
                 iStartElt=0; iEndElt=nElt
@@ -66,8 +65,8 @@ C code for EFL command
                   off_axis_rayOK=.true.
                   exit
                 end if
-              End Do  ! 100 trys 
- 
+              End Do  ! 100 trys
+
               if (.not.off_axis_rayOK) then
                 WRITE(*,*)
      &            ' **Failed to find a valid off-aix ray to trace,'//
@@ -77,18 +76,18 @@ C code for EFL command
               ! Save off-axis ray angle/direction to focal plane
               RayDirBuff(1:3,2)=RayDir(1:3,iStartRay)
 
-	      ! Calculate EFL
+              ! Calculate EFL
               costh=RayDirBuff(1,1)*RayDirBuff(1,2)+
      &              RayDirBuff(2,1)*RayDirBuff(2,2)+
      &              RayDirBuff(3,1)*RayDirBuff(3,2)
-	      if (costh > 1d0) costh = 1d0;
+              if (costh > 1d0) costh = 1d0;
 
-	      If (abs(costh-1d0)<1d-10) Then
-	        print*,'**Warning: EFL = infinity'
-	        efl=1d22
-	      Else 
+              If (abs(costh-1d0)<1d-10) Then
+                print*,'**Warning: EFL = infinity'
+                efl=1d22
+              Else
                 efl=rayHt/dsin(dacos(costh))
-	      End If
+              End If
            ELSE
              WRITE(*,150)  ! 'load Rx first' warning
            END IF

@@ -76,6 +76,8 @@ C  2. Get perturbation data
 	END SUBROUTINE CLPERTURB
 
 C***********************************************************************
+! ToDo: move to a plotting module for MACOS
+
 
 	SUBROUTINE CLPLOT(command,npts,RaySpot,
      &  		  OPDMat,AvgL,RayIndex,RayMap,iPloTyp,
@@ -125,7 +127,7 @@ C  1. Command loop
 
 	lambda=Wavelen
 	TransDis=zElt(iLinElt)
-	Intensity=Flux/FLOAT(nRay)
+	Intensity=Flux/DBLE(nRay)
 
 	tpl=6.28318530717959D0/Wavelen
 	du=dxElt(iLinElt)
@@ -142,7 +144,7 @@ C  7. Pad OPD map for FFT
 	pad=(mdttl-nGridPts+1)/2
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
-	    CD1(i,j)=0e0
+	    CD1(i,j)=0d0
  1	  CONTINUE
 	  XFP(j)=X0PFP
 	  YFP(j)=Y0PFP
@@ -179,7 +181,7 @@ C  8. Compute PSF
 	  CALL IACCEPT_S(npix,i,1,'Enter number of pixels per side:')
 	  dxWF=dx
 	  CALL RACCEPT_S(dxpix,dxWF,1,'Enter size of pixel:')
-	  CALL CPIXILATE(PixArray,MWFFT,XFP,YFP,0e0,0e0,
+	  CALL CPIXILATE(PixArray,MWFFT,XFP,YFP,0d0,0d0,
      &	  npix,mPix,mdttl,dxWF,dxpix,iPloTyp,.FALSE.,.FALSE.)
 	  CALL IntToChar(Cinteger,iLinElt,i)
 	  IF (iPloTyp.GE.5) THEN
@@ -195,11 +197,12 @@ C  8. Compute PSF
 	      CTITLE='LOG10 Linear Model Pixilated Intensity#%'
 	    ELSE IF (StretchType.EQ.3) THEN
 	      CTITLE='SQRT Linear Model Pixilated Intensity#%'
-	    ELSE 
+	    ELSE
 	      CTITLE='Linear Model Pixilated Intensity#%'
 	    END IF
 	    CALL PixOut(PixArray,iElt,iPloTyp,CTITLE,
-     &	    'X-Axis','Y-Axis','.pix',npix,mpix,CD1,CD2,StretchType)
+     &	    'X-Axis','Y-Axis','.pix',npix,mpix,REAL(CD1,KIND=8),
+     &	    REAL(CD2,KIND=8),StretchType)
 	  END IF
 
 	ELSE IF (LCMP(command,'LLO',3)) THEN
@@ -240,12 +243,12 @@ C  8. Compute PSF
 	      CTITLE='LOG10 Linear Model Intensity#%'
 	    ELSE IF (StretchType.EQ.3) THEN
 	      CTITLE='SQRT Linear Model Intensity#%'
-	    ELSE 
+	    ELSE
 	      CTITLE='Linear Model Intensity#%'
 	    END IF
 	    CALL SrfOut(iElt,iPloTyp,CTITLE,
      &	    'X-Axis','Y-Axis','.int',mdttl,mdttl,
-     &	    CD1,CD2,StretchType)
+     &	    REAL(CD1,KIND=8),REAL(CD2,KIND=8),StretchType)
 	  END IF
 	END IF
 
@@ -302,8 +305,8 @@ C  3. Compute perturbed rays
 	WRITE(*,400)
 
 	AvgL=0d0
-	RMSWFE=0e0
-	RMSOPD=0e0
+	RMSWFE=0d0
+	RMSOPD=0d0
 	mpt2=mpts**2
 	CALL DZERO(OPDMat,mpt2)
 	DO 3 iRay=1,nRay
@@ -319,7 +322,7 @@ C  3. Compute perturbed rays
 	    xdum(iaxis)=RayDir(iaxis,iRay)
 	    xdum(j)=RayPos(iaxis,iRay)
  2        CONTINUE
-	  xdum(7)=0e0
+	  xdum(7)=0d0
 	  CALL RMPRDB(xnom,Tcompact,xdum,5,7,1)
 	  RaySpot(iRay,1)=xnom(3)+xout(3)*SpotMag
 	  RaySpot(iRay,2)=xnom(4)+xout(4)*SpotMag
@@ -332,7 +335,7 @@ C  3. Compute perturbed rays
 	  END IF
  3      CONTINUE
 	AvgL=AvgL/DBLE(nRay-1)
-	RMSOPD=SQRT(RMSOPD/FLOAT(nRay-1))
+	RMSOPD=SQRT(RMSOPD/DBLE(nRay-1))
 	WRITE(*,404) AvgL
 	WRITE(*,402) RMSOPD
 
@@ -349,7 +352,7 @@ C       with element 1 and proceding to the last element.  Deformable
 C       elements are loaded completely (all rays); non-deformable
 C       elements are loaded for ray 1 only.
 
-	use param_mod	
+	use param_mod
 	use cfiles_mod
 	use elt_mod
 #ifdef CSMACOS
