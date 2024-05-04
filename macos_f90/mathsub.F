@@ -8,11 +8,13 @@ C***********************************************************************
 
 #include "realtype.h"
 
-      Module math_mod
-      Implicit none
-	
-      Contains
-	
+      MODULE math_mod
+      IMPLICIT NONE
+
+      PUBLIC
+      PRIVATE :: CSWAP, DROTG, DDOTLP, CNRM2, zrhqr, balanc, hqr
+      CONTAINS
+
       SUBROUTINE RZERO(A,N)
       SREAL A(1)
       Integer :: N
@@ -37,7 +39,7 @@ C
 	Do j=1,N
 	  S=S+A(i,j)
 	End Do
-      End Do 
+      End Do
       END SUBROUTINE CMATSUM
 C
       ! Sum all elements of a matrix
@@ -63,7 +65,7 @@ C
         RVECSUM=RVECSUM+V(i)
       END DO
       END FUNCTION RVECSUM
-	
+
 C
       SUBROUTINE DSUB(A,B,C,N)
       REAL*8 A(N),B(N),C(N)
@@ -184,8 +186,8 @@ C
         DDOTN=DDOTN+X(i)*Y(i)
       End Do
       RETURN
-      END FUNCTION DDOTN	
-	
+      END FUNCTION DDOTN
+
 C
       SUBROUTINE DUNITIZE(X)
       REAL*8 X(3),Y
@@ -198,13 +200,13 @@ C
       RETURN
       END SUBROUTINE DUNITIZE
 C
- 
-C ************** OLD and WRONG !!! *************************************** 
+
+C ************** OLD and WRONG !!! ***************************************
 C jzlou - compute matrix product A = C*B,
 C         where C is NCxNB, B is NBxNA, and A is NCxNA
-C         A, B, C are stored as 1-D arrays, and 
+C         A, B, C are stored as 1-D arrays, and
 C         matrices are formed row by row.
-C         The above was verified on 01/04/2005 in 
+C         The above was verified on 01/04/2005 in
 C         /proj/jwst/jzlou/macos-vY/macos-v3.2b/frm-lnx-taper/tst_DMPROD.F
 C ************************************************************************
 
@@ -213,7 +215,7 @@ C This is the correct one - 03/16/05
 C jzlou - compute matrix product A = B*C,
 C         where B is NAxNB, C is NBxNC
 C         and A is NAxNC
- 
+
       SUBROUTINE DMPROD(A,B,C,NA,NB,NC)
       REAL*8 A(1),B(1),C(1)
       Integer :: NA,NB,NC,NAMAX,NBMAX,I,J,K,
@@ -237,32 +239,33 @@ C         and A is NAxNC
       END SUBROUTINE DMPROD
 
 C
-      SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
-      REAL*8 A(1),B(1),C(1),BIK
-      Integer :: NA,NB,NC,NAMAX,NBMAX,
-     &           NAPTR,NBPTR,NCPTR,I,J,K
-      NAMAX=NA*NC
-      NBMAX=NA*NB
-      DO 1 NAPTR=1,NAMAX
-    1 A(NAPTR)=0D0
-      DO 3 I=1,NA
-      K=0
-      DO 3 NBPTR=I,NBMAX,NA
-      K=K+1
-      BIK=B(NBPTR)
-      IF (BIK.EQ.0D0) GO TO 3
-      NCPTR=K
-      DO 2 NAPTR=I,NAMAX,NA
-      A(NAPTR)=A(NAPTR)+BIK*C(NCPTR)
-    2 NCPTR=NCPTR+NB
-    3 CONTINUE
-      RETURN
-      END SUBROUTINE DMPRDB
+        SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
+        IMPLICIT NONE
+        REAL*8 A(1),B(1),C(1),BIK
+        Integer :: NA,NB,NC,NAMAX,NBMAX,
+     &           NAPTR,NBPTR,NCPTR,I,K
+        NAMAX=NA*NC
+        NBMAX=NA*NB
+        DO 1 NAPTR=1,NAMAX
+    1     A(NAPTR)=0D0
+        DO 3 I=1,NA
+        K=0
+        DO 3 NBPTR=I,NBMAX,NA
+          K=K+1
+          BIK=B(NBPTR)
+          IF (BIK.EQ.0D0) GO TO 3
+          NCPTR=K
+          DO 2 NAPTR=I,NAMAX,NA
+            A(NAPTR)=A(NAPTR)+BIK*C(NCPTR)
+    2     NCPTR=NCPTR+NB
+    3   CONTINUE
+        RETURN
+        END SUBROUTINE DMPRDB
 C
       SUBROUTINE RMPRDB(A,B,C,NA,NB,NC)
       SREAL A(1),B(1),C(1),BIK
       Integer :: NA,NB,NC,NAMAX,NBMAX,
-     &           NAPTR,NBPTR,NCPTR,I,J,K
+     &           NAPTR,NBPTR,NCPTR,I,K
       NAMAX=NA*NC
       NBMAX=NA*NB
       DO 1 NAPTR=1,NAMAX
@@ -429,8 +432,9 @@ C
       END SUBROUTINE DTSP2
 C
 
-      SUBROUTINE DORTHOGANALIZE(X,Y,Z)
-      REAL*8 X(3),Y(3),Z(3),D
+      PURE SUBROUTINE DORTHOGANALIZE(X,Y,Z)
+      REAL*8, intent(inout) :: X(3),Y(3),Z(3)
+      REAL*8 :: D
 
       ! Normalize X
       D=SQRT(X(1)*X(1)+X(2)*X(2)+X(3)*X(3))
@@ -453,21 +457,21 @@ C
       END SUBROUTINE DORTHOGANALIZE
 C
 
-C	
-C This routine is based on Eular's rotation theorem, 
+C
+C This routine is based on Eular's rotation theorem,
 C see Spacecraft Attitude Dynamics (Peter C. Hughes), pg 10
 C The subroutine argument 'th' is the Eular rotation input vector,
 C with its direction defining the rotation axis, and its magnitude
 C defining the amount of rotation. -jzlou
-C  
+C
 	SUBROUTINE Qform(Q,dQ,th)
-	INTEGER i,j
+        IMPLICIT NONE
 	REAL*8 Q(3,3),dQ(3,3),th(3),qmag,qhat(3),cq,sq,omcq
 
 	qmag=DSQRT(th(1)**2+th(2)**2+th(3)**2) ! amount (angle) of rotation
 
 	IF (qmag.GT.1d-18) THEN
-	  ! Here defines the 3x3 Eular rotation matrix 
+	  ! Here defines the 3x3 Eular rotation matrix
 	  qhat(1:3)=th(1:3)/qmag  ! qhat = normalized theta angle
 	  cq=COS(qmag)  ! cos(theta)
 	  sq=SIN(qmag)  ! sin(theta)
@@ -533,7 +537,7 @@ C
 	END SUBROUTINE DPROJECT
 
 C***********************************************************************
- 
+
 	SUBROUTINE DXMAT(X,Y)
 	REAL*8 X(3,3),Y(3)
 	X(1,1)=0D0
@@ -574,7 +578,6 @@ C***********************************************************************
 
       SUBROUTINE INTNORM(X,Y,U00,U01,U10,U11,U,DUDX,DUDY)
       IMPLICIT NONE
-      INTEGER IDFLOOR
       REAL*8 X,Y,U00,U01,U10,U11,U,DUDX,DUDY,C1,C2,C3
       C1=U10-U00
       C2=U11-U10-U01+U00
@@ -602,9 +605,11 @@ C***********************************************************************
       Logical, save :: first_entry=.true.
 
       If (first_entry) Then
-        allocate(splineInit(mGridSrf)); splineInit=.false.
+        allocate(splineInit(mGridSrf))
+        splineInit = .FALSE.
+
         allocate(xa(nGridMat,mGridSrf),ya(nGridMat,mGridSrf))
-        first_entry=.false.
+        first_entry = .FALSE.
       End If
 
       ! GridMat(:,:): (in Fortran) first dimension is x, second dimension is y.
@@ -1237,9 +1242,9 @@ C  For 4th order roots, use Laguer (method=1) or Eigensolver (method=2)
 
         IMPLICIT NONE
         INTEGER n,method
-        REAL*8 y1,y2,y3,y4,y5,a,b,c,d,q,r,p2,yr(5),rtr(4),rti(4),
-     &  po3,ao4,a2o4,p1,p0,p22,q3,r2,disc,dw(2),dw2(2)
-        COMPLEX*16 x1,x2,x3,x4,rad,partA,partB,Y,RR,cR2,c1,c2,
+        REAL*8 y1,y2,y3,y4,y5,q,r,p2,yr(5),rtr(4),rti(4),
+     &  po3,p1,p0,p22,q3,r2,disc,dw(2),dw2(2)
+        COMPLEX*16 x1,x2,x3,x4,rad,partA,partB,
      &  w,w2,cdisc,yc(5),x(4)
         EQUIVALENCE (dw(1),w),(dw2(1),w2)
         DATA dw/-0.5d0,0.8660254037844386d0/
@@ -1400,7 +1405,7 @@ CU    USES dlaguer
       END SUBROUTINE dzroots
 
 C***********************************************************************
-	
+
       SUBROUTINE dlaguer(a,m,x,its)
 C     Needed for ROOT4, method=1
       INTEGER m,its,MAXIT,MR,MT
@@ -1710,7 +1715,7 @@ C
 	REAL*8 FUNCTION POISSON(theta, nts)
 	IMPLICIT NONE
 
-C  value returned is a pseudo-random number with Poisson distribution. 
+C  value returned is a pseudo-random number with Poisson distribution.
 C     theta    Poisson PARAMETER, both mean and variance
 C     nts      INTEGER*4 temporary storage
 C              (user must dimension 2)
@@ -1741,11 +1746,11 @@ C   rayleigh - rayleigh noise random number generator
 	IMPLICIT NONE
 
 C     value returned is a pseudo-random number with rayleigh
-C     distribution. 
+C     distribution.
 
 C     b: bound; for large b, we have
-C           mean     = a*sqrt(pi/2)   (about 1.25 a)  
-C           variance = a*sqrt(2-pi/2) (about 0.655 a) 
+C           mean     = a*sqrt(pi/2)   (about 1.25 a)
+C           variance = a*sqrt(2-pi/2) (about 0.655 a)
 C
 C     nts      INTEGER*4 temporary storage
 C              (user must dimension 2)
@@ -1776,17 +1781,17 @@ C***********************************************************************
 	IMPLICIT NONE
 
 C     value returned is a pseudo-random number with rayleigh
-C     distribution. 
+C     distribution.
 
-C           mean     = a*sqrt(pi/2)   (about 1.25 a)  
-C           variance = a*sqrt(2-pi/2) (about 0.655 a) 
+C           mean     = a*sqrt(pi/2)   (about 1.25 a)
+C           variance = a*sqrt(2-pi/2) (about 0.655 a)
 C
 C     nts      INTEGER*4 temporary storage
 C              (user must dimension 2)
 C
 	INTEGER nts(2)
 
-	REAL*8 a,b,k,u,v
+	REAL*8 a,u,v
 
 	u= a*gauss(nts)
 	v= a*gauss(nts)
@@ -1895,7 +1900,7 @@ C     advance the lcgs
 
 C*****************************************************************
 
-C     RNGIN -  uniform random number generator initialization    
+C     RNGIN -  uniform random number generator initialization
 
 	SUBROUTINE RNGIN (seed, nts)
 
@@ -2158,14 +2163,13 @@ C    Calculate N!  - jzlou
 
 C***********************************************************************
 
-C Calculate RMS of map using only nonzero elements - jzlou
+C Calculate RMS of 'map' using only nonzero elements - jzlou
         Function RMS2(map,m,n)
         Implicit none
-        Real*8 , dimension(m,n) :: map
-        Real*8 :: s, mean, RMS2
+        Real*8 , dimension(m,n) :: map, tmp_map
+        Real*8 :: s,mean,RMS2
         Integer :: m,n,im,in, tot_nonzeros
 
-	!print*,'Function RMS2: m,n =',m,n 
         s=0d0; tot_nonzeros=0
         Do im=1,m
           Do in=1,n
@@ -2181,12 +2185,13 @@ C Calculate RMS of map using only nonzero elements - jzlou
         end if
         mean=s/tot_nonzeros
 
+        tmp_map = map-mean
+
         s=0d0
         Do im=1,m
           Do in=1,n
             if (map(im,in)/=0) then
-              map(im,in) = map(im,in) - mean 
-              s=s+map(im,in)*map(im,in)
+              s=s+tmp_map(im,in)*tmp_map(im,in)
             end if
           End Do
         End Do
@@ -2214,8 +2219,8 @@ C***********************************************************************
 
         Function Med(A,sz)
         Implicit none
-        Integer :: sz,i,j
-        Real*8 :: A(sz),B(sz),tmp,Med
+        Integer :: sz,i
+        Real*8 :: A(sz),B(sz),Med
 
         B=A
 #if 0
@@ -2243,7 +2248,7 @@ C***********************************************************************
 C Bicubic spline routines
 
 C  Bicubic spline driver routine - find interpolated values on a set
-C  of untabulated locations defined by xloc and yloc, given tabulated 
+C  of untabulated locations defined by xloc and yloc, given tabulated
 C  grid defined by x1a and x2a and function values by ya.
 
 	Subroutine bcubic_int(x1a,x2a,ya,xloc,yloc,val)
@@ -2254,20 +2259,19 @@ C  grid defined by x1a and x2a and function values by ya.
 	LREAL, DIMENSION(size(x1a),size(x2a)) :: y2a
 	Integer :: iv
 
-	! First call splie2 once	
+	! First call splie2 once
 	Call splie2(x1a,x2a,ya,y2a)
 
 	Do iv=1,size(val)
 	  val(iv)=splin2(x1a,x2a,ya,y2a,yloc(iv),xloc(iv))
 	End Do
-	End Subroutine bcubic_int 
+	End Subroutine bcubic_int
 
 
 C x1a,x2a provide tabulated locations of grid function values
 C stored in ya.
- 
+
 	FUNCTION splin2(x1a,x2a,ya,y2a,x1,x2)
-        USE nn_type
         USE nn_util, ONLY : assert_eq
         IMPLICIT NONE
         ! Given x1a, x2a, ya as described in splie2 and y2a as produced by
@@ -2297,13 +2301,12 @@ C stored in ya.
 
 
 	SUBROUTINE splie2(x1a,x2a,ya,y2a)
-	USE nn_type; 
 	USE nn_util, ONLY : assert_eq
 	IMPLICIT NONE
 
-	! Given an M x N tabulated function ya, and N tabulated independent 
-	! variables x2a, this routine constructs one-dimensional natural cubic 
-        ! splines of the rows of ya and returns the second derivatives in the 
+	! Given an M x N tabulated function ya, and N tabulated independent
+	! variables x2a, this routine constructs one-dimensional natural cubic
+        ! splines of the rows of ya and returns the second derivatives in the
 	! M x N array y2a. (The array x1a is included in the argument
 	! list merely for consistency with routine splin2.)
 	LREAL, DIMENSION(:), INTENT(IN) :: x1a,x2a
@@ -2320,13 +2323,12 @@ C stored in ya.
 	END SUBROUTINE splie2
 
 	FUNCTION splint(xa,ya,y2a,x)
-	USE nn_type; 
         USE nn_util, ONLY : assert_eq,nerror
 	IMPLICIT NONE
-	! Given the arrays xa and ya, which tabulate a function (with 
-	! the xais in increasing or decreasing order), and given the 
+	! Given the arrays xa and ya, which tabulate a function (with
+	! the xaxis in increasing or decreasing order), and given the
 	! array y2a, which is the output from spline above, and
-	! given a value of x, this routine returns a cubic-spline interpolated 
+	! given a value of x, this routine returns a cubic-spline interpolated
         ! value. The arrays xa, ya and y2a are all of the same size.
 	LREAL, DIMENSION(:), INTENT(IN) :: xa,ya,y2a
 
@@ -2336,35 +2338,34 @@ C stored in ya.
 	LREAL :: a,b,h
 	n=assert_eq(size(xa),size(ya),size(y2a),'splint')
 	klo=max(min(locate(xa,x),n-1),1)
-	! We will find the right place in the table by means of locate's 
-	! bisection algorithm. This is optimal if sequential calls to this 
+	! We will find the right place in the table by means of locate's
+	! bisection algorithm. This is optimal if sequential calls to this
 	! routine are at random values of x. If sequential calls are in
-	! order, and closely spaced, one would do better to store previous 
-	! values of klo and khi and test if they remain appropriate on the 
+	! order, and closely spaced, one would do better to store previous
+	! values of klo and khi and test if they remain appropriate on the
 	! next call.
 	khi=klo+1 ! klo and khi now bracket the input value of x.
 	h=xa(khi)-xa(klo)
-	If (h == 0.0) call nerror('bad xa input in splint') 
-	   ! The xas must be distinct.
+	If (h == 0.0) call nerror('bad xa input in splint')
+	   ! The xaxis must be distinct.
 	a=(xa(khi)-x)/h  ! Cubic spline polynomial is now evaluated.
 	b=(x-xa(klo))/h
 	splint=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)
      &         +(b**3-b)*y2a(khi))*(h**2)/6.0d0
 	END FUNCTION splint
 
-	
+
 	SUBROUTINE spline(x,y,yp1,ypn,y2)
-	USE nn_type; 
         USE nn_util, ONLY : assert_eq
 	IMPLICIT NONE
-	! Given arrays x and y of length N containing a tabulated function, 
-	! i.e., yi = f(xi), with x1 < x2 < .. . < xN, and given values yp1 
+	! Given arrays x and y of length N containing a tabulated function,
+	! i.e., yi = f(xi), with x1 < x2 < .. . < xN, and given values yp1
 	! and ypn for the first derivative of the interpolating
-	! function at points 1 and N, respectively, this routine returns an 
-	! array y2 of length N that contains the second derivatives of the 
-	! interpolating function at the tabulated points xi. If yp1 and/or ypn 
+	! function at points 1 and N, respectively, this routine returns an
+	! array y2 of length N that contains the second derivatives of the
+	! interpolating function at the tabulated points xi. If yp1 and/or ypn
 	! are equal to 1 \327 1030 or larger, the routine is signaled to set the
-	! corresponding boundary condition for a natural spline, with zero second 
+	! corresponding boundary condition for a natural spline, with zero second
 	! derivative on that boundary.
 
 	LREAL, DIMENSION(:), INTENT(IN) :: x,y
@@ -2379,17 +2380,17 @@ C stored in ya.
 	a(2:n-1)=c(1:n-2)
 	b(2:n-1)=2.0d0*(c(2:n-1)+a(2:n-1))
 	b(1)=1.0; b(n)=1.0
-	If (yp1 > 0.99d30) Then  
+	If (yp1 > 0.99d30) Then
 	  ! The lower boundary condition is set either to be 'natural'
 	  r(1)=0.0; c(1)=0.0
 	Else ! or else to have a specified first derivative.
 	  r(1)=(3.0d0/(x(2)-x(1)))*((y(2)-y(1))/(x(2)-x(1))-yp1)
 	  c(1)=0.5
-	End If  
+	End If
         If (ypn > 0.99d30) Then
-          ! The upper boundary condition is set either to be 'natural' 
+          ! The upper boundary condition is set either to be 'natural'
 	  r(n)=0.0; a(n)=0.0
-        Else 
+        Else
           ! Or else to have a specified first derivative.
 	  r(n)=(-3.0d0/(x(n)-x(n-1)))
      &         *((y(n)-y(n-1))/(x(n)-x(n-1))-ypn)
@@ -2400,11 +2401,10 @@ C stored in ya.
 
 
 	SUBROUTINE tridag(a,b,c,r,u)
-	USE nn_type; 
 	USE nn_util, ONLY : assert_eq,nerror
 	IMPLICIT NONE
-	! Solves for a vector u of size N the tridiagonal linear set 
-	! given by equation (2.4.1) using a serial algorithm. Input vectors b 
+	! Solves for a vector u of size N the tridiagonal linear set
+	! given by equation (2.4.1) using a serial algorithm. Input vectors b
 	! (diagonal elements) and r (right-hand sides) have size N,
 	! while a and c (off-diagonal elements) are size N-1.
 
@@ -2417,7 +2417,7 @@ C stored in ya.
      &              size(r),size(u)/),'tridag')
 	bet=b(1)
 	If (bet == 0.0) call nerror('tridag: Error at code stage 1')
-	! If this happens then you should rewrite your equations as 
+	! If this happens then you should rewrite your equations as
 	! a set of order N-1, with u2 trivially eliminated.
 	u(1)=r(1)/bet
 	Do j=2,n ! Decomposition and forward substitution.
@@ -2435,24 +2435,23 @@ C stored in ya.
 
 
 	FUNCTION locate(xx,x)
-	! Given an array xx(1:N), and given a value x, returns a value 
-	! j such that x is between xx(j) and xx(j+1). xx must be monotonic, 
+	! Given an array xx(1:N), and given a value x, returns a value
+	! j such that x is between xx(j) and xx(j+1). xx must be monotonic,
 	! either increasing or decreasing. j=0 or j=N is returned to indicate
 	! that x is out of range.
-	use nn_type
 	Implicit none
-	
+
 	SREAL, dimension(:), intent(in) :: xx
 	SREAL, intent(in) :: x
 	Integer :: locate
 	Integer :: n,jl,jm,ju
 	Logical :: ascnd
-	
+
 	n=size(xx)
 	ascnd=(xx(n) >= xx(1))
 	jl=0; ju=n+1
-	
-	Do 
+
+	Do
 	  if (ju-jl<=1) exit
 	  jm=(ju+jl)/2
 	  if (ascnd .eqv. (x >= xx(jm))) then
@@ -2461,7 +2460,7 @@ C stored in ya.
 	    ju=jm
 	  end if
 	End Do
-	
+
 	If (x==xx(1)) Then
 	  locate=1
 	Else If (x==xx(n)) Then
@@ -2487,8 +2486,72 @@ C stored in ya.
           inTrig=.true.
         End If
         End Function inTrig
-	
-        End Module math_mod
+
+C ********************************************************
+        Real*8 Function Calc_RMS2(datArr,ndim)
+        Real*8 :: datArr(ndim),mv,t1
+        Integer :: ndim,i
+
+        If (ndim==0) Then
+          Calc_RMS2 = 0d0
+        Else
+          mv = sum(datArr)/ndim
+          t1 = 0d0
+          Do i=1,ndim
+            t1 = t1 + (datArr(i)-mv)**2
+          End Do
+          Calc_RMS2 = dsqrt(t1/ndim)
+        End If
+        End Function Calc_RMS2
+
+C ********************************************************
+
+        SUBROUTINE  CSWAP (N,DX,INCX,DY,INCY)
+          IMPLICIT NONE
+          DOUBLE PRECISION DX(1),DY(1),DTEMP
+          INTEGER I,INCX,INCY,IX,IY,M,MP1,N
+          IF(N.LE.0)RETURN
+          IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
+          IX = 1
+          IY = 1
+          IF(INCX.LT.0)IX = (-N+1)*INCX + 1
+          IF(INCY.LT.0)IY = (-N+1)*INCY + 1
+          DO I = 1,N
+            DTEMP = DX(IX)
+            DX(IX) = DY(IY)
+            DY(IY) = DTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+          END DO
+          RETURN
+
+   20     M = MOD(N,3)
+          IF( M .EQ. 0 ) GO TO 40
+          DO I = 1,M
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+          END DO
+          IF( N .LT. 3 ) RETURN
+
+   40     MP1 = M + 1
+          DO I = MP1,N,3
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+            DTEMP = DX(I + 1)
+            DX(I + 1) = DY(I + 1)
+            DY(I + 1) = DTEMP
+            DTEMP = DX(I + 2)
+            DX(I + 2) = DY(I + 2)
+            DY(I + 2) = DTEMP
+          END DO
+          RETURN
+        END SUBROUTINE  CSWAP
+
+
+        END MODULE math_mod
+
 
 C***********************************************************************
 C****** End file mathsub.F *********************************************

@@ -17,7 +17,6 @@ C  John Z. Lou, Jet Propulsion Laboratory
 #include "realtype.h"
 
 	Module lsq_mod
-	use nn_type
         use nn_util, only : assert_eq,nerror,outerprod
 
 	Implicit none
@@ -26,8 +25,8 @@ C  John Z. Lou, Jet Propulsion Laboratory
 
 C
 C Given an M x N matrix a, this routine computes its SVD,
-C A = U*WVt. The matrix U replaces matrix 'a' on output. The 
-C diagonal matrix of singular values W is output as the N-dim 
+C A = U*WVt. The matrix U replaces matrix 'a' on output. The
+C diagonal matrix of singular values W is output as the N-dim
 C vector w. The N x N matrix V is output as v.
 C
 	Subroutine svd_decomp(a,w,v)
@@ -36,7 +35,7 @@ C
 	LREAL, dimension(:,:), intent(inout) :: a
 	LREAL, dimension(:), intent(out) :: w
 	LREAL, dimension(:,:) :: v
-	Integer :: i, its, j, k, l, m, n, nm, i1, l1
+	Integer :: i, its, j, k, l, m, n, nm
 	LREAL :: anorm, c, f, g, h, s, scale, x, y, z
 	LREAL, dimension(size(a,1)) :: tempm
 	LREAL, dimension(size(a,2)) :: rv1, tempn
@@ -57,20 +56,8 @@ C
 	      g=-sign(sqrt(s),f)
 	      h=f*g-s; a(i,i)=f-g
 	      tempn(l:n)=matmul(a(i:m,i),a(i:m,l:n))/h
-#if 0
 	      a(i:m,l:n)=a(i:m,l:n)
      &                   +outerprod(a(i:m,i),tempn(l:n))
-#else
-	      ! Implement outer-product explicitly below.
-              ! The intrinsic outerprod function above doesn't work with large arrays,
-              ! probably its internal automatic array (return) variable has limit on its size.
-              ! -jzlou, 07-11-2020
-              Do i1=i,m
-                Do l1=l,n
-                  a(i1,l1)=a(i1,l1)+a(i1,i)*tempn(l1)
-                End Do
-              End Do
-#endif
 	      a(i:m,i)=scale*a(i:m,i)
 	    end if
 	  end if
@@ -83,17 +70,8 @@ C
 	      f=a(i,l); g=-sign(sqrt(s),f); h=f*g-s;
 	      a(i,l)=f-g; rv1(l:n)=a(i,l:n)/h
 	      tempm(l:m) = matmul(a(l:m,l:n),a(i,l:n))
-#if 0
 	      a(l:m,l:n) = a(l:m,l:n)
-     &                     +outerprod(tempm(l:m),rv1(l:n)) 
-#else
-	      ! Implement outer-product
-              Do i1=l,m
-                Do l1=l,n
-                  a(i1,l1)=a(i1,l1)+tempm(i1)*rv1(l1)
-                End Do
-              End Do
-#endif
+     &                     +outerprod(tempm(l:m),rv1(l:n))
 	      a(i,l:n)=scale*a(i,l:n)
 	    end if
 	  end if
@@ -105,38 +83,20 @@ C
 	    if (g /= 0.0) then
 	      v(l:n,i) = (a(i,l:n)/a(i,l))/g
 	      tempn(l:n) = matmul(a(i,l:n),v(l:n,l:n))
-#if 0
 	      v(l:n,l:n) = v(l:n,l:n)
      &			   +outerprod(v(l:n,i),tempn(l:n))
-#else
-	      ! Implement outer-product
-              Do i1=l,n
-                Do l1=l,n
-                  v(i1,l1)=v(i1,l1)+v(i1,i)*tempn(l1)
-                End Do
-              End Do
-#endif
 	    end if
 	    v(i,l:n)=0.0; v(l:n,i)=0.0
 	  end if
-	  v(i,i)=1.0; g=rv1(i); l=i 
+	  v(i,i)=1.0; g=rv1(i); l=i
 	End Do
-	
+
 	Do i=min(m,n),1,-1
 	  l=i+1; g=w(i); a(i,l:n)=0.0
 	  if (g /= 0.0) then
 	    g=1.0d0/g
 	    tempn(l:n) = (matmul(a(l:m,i),a(l:m,l:n))/a(i,i))*g
-#if 0
 	    a(i:m,l:n) = a(i:m,l:n)+outerprod(a(i:m,i),tempn(l:n))
-#else
-	    ! Implement outer-product
-            Do i1=i,m
-              Do l1=l,n
-                a(i1,l1)=a(i1,l1)+a(i1,i)*tempn(l1)
-              End Do
-            End Do
-#endif
 	    a(i:m,i)=a(i:m,i)*g
 	  else
 	    a(i:m,i)=0.0
@@ -158,7 +118,7 @@ C
 	          h=1.0d0/h; c=(g*h); s=-(f*h)
 	          tempm(1:m)=a(1:m,nm)
 	          a(1:m,nm)=a(1:m,nm)*c+a(1:m,i)*s
-	          a(1:m,i)=-tempm(1:m)*s+a(1:m,i)*c 
+	          a(1:m,i)=-tempm(1:m)*s+a(1:m,i)*c
 	        end do ! i
 	        exit
 	      end if
@@ -171,19 +131,19 @@ C
 	      end if
 	      exit
 	    end if
-	    if (its == 30) 
+	    if (its == 30)
      &        call nerror('svd_decomp: no convergence in svd_decomp')
 	    x=w(l); nm=k-1; y=w(nm)
             g=rv1(nm); h=rv1(k)
             f = ((y-z)*(y+z)+(g-h)*(g+h))/(2.0d0*h*y)
 	    g = pythag(f,1.0d0)
 	    f = ((x-z)*(x+z)+h*((y/(f+sign(g,f)))-h))/x
-	   
+
 	    c=1.0; s=1.0
 	    do j=l,nm
 	      i=j+1; g=rv1(i); y=w(i); h=s*g; g=c*g
               z=pythag(f,h)
-	      rv1(j)=z; c=f/z; s=h/z  
+	      rv1(j)=z; c=f/z; s=h/z
 	      f=(x*c)+(g*s); g=-(x*s)+(g*c)
               h=y*s; y=y*c
 	      tempn(1:n) = v(1:n,j)
@@ -205,7 +165,7 @@ C
 	! Sort singular values in 'w' and re-arrange rows
 	! in 'a' and columns in v.
         ! *** Disabled ***, it could mess up the pseudo-inverse
-	! based least-square solution !!!  
+	! based least-square solution !!!
 	Call svd_sort(a,w,v,size(a,1),size(v,1))
 	End Subroutine svd_decomp
 
@@ -229,15 +189,16 @@ C
               tmpv=Vm(:,i); Vm(:,i)=Vm(:,j); Vm(:,j)=tmpv
             end if
           End Do
-	End Do	
+	End Do
 	End Subroutine svd_sort
 
-	
+
 	!
 	! Compute pseudo-inverse of given matrix 'a',
-	! output is 'pa' - pseudo-inverse of 'a' 
+	! output is 'pa' - pseudo-inverse of 'a'
 	!
 	Subroutine pinv(a,pa,tol)
+        use Constants, only: EPS
 	LREAL, dimension(:,:) :: a, pa
 	LREAL, intent(in), optional :: tol
 	LREAL, dimension(:), allocatable, save :: w
@@ -254,7 +215,7 @@ C
 	    deallocate(w,v,stat=pinv_err)
  	    if (pinv_err /= 0)
      &      call macos_memory_failure
-     &             ('pinv: deallocate failed!') 
+     &             ('pinv: deallocate failed!')
 	  else
 	    first_entry = .false.
 	  end if
@@ -267,7 +228,7 @@ C
 	! SVD, and singular values are sorted
 	Call svd_decomp(a,w,v)
 
-	! Compute pinv 
+	! Compute pinv
  	If (present(tol)) Then
  	  cutoff=max(size(a,1),size(a,2))*abs(w(1))*tol
  	Else
@@ -276,10 +237,10 @@ C
 	!
 	pa=0.d0
 	Do i=1,n
-	  if (abs(w(i)) < cutoff) w(i)=0.d0 
+	  if (abs(w(i)) < cutoff) w(i)=0.d0
 	  if (w(i) /= 0) then
 	    Call RankOneMultiply(a(:,i),v(:,i),w(i),pa)
-	  end if 
+	  end if
 	End Do
 	End Subroutine pinv
 
@@ -294,7 +255,7 @@ C
 	!print*,'size u=', m
 	!print*,'size v=', n
 
-	Do i=1,n ! row 
+	Do i=1,n ! row
 	  Do j=1,m ! col
 	    p(i,j)=p(i,j)+v(i)*u(j)/w
 	  End Do

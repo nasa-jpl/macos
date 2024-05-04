@@ -5,7 +5,7 @@
         use math_mod
 	use traceutil_mod, only : CRIncidPosNom
 
-	Integer :: jElt,i,j
+	Integer :: jElt,j
 	Real*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9)
 	Logical :: LLocCrd,LUpdateTElt
 

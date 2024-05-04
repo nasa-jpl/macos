@@ -20,6 +20,7 @@ C***********************************************************************
 
         Module propsub_mod
 	use math_mod
+        use dft_mod
 
 	PUBLIC :: RunProp, CPROPAGATE, NFPROP, FFPROP, FRPROP
 
@@ -53,7 +54,7 @@ C
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifLNegOK,ifBuild,ifTrace,
      &	        ifRegrid(mElt),ifVecDif3,ifIntSrfSet(mElt)
-	INTEGER iElt,npts,ICLEN,iCurWFElt,iCurRayElt,iWF,
+	INTEGER iElt,npts,iCurWFElt,iCurRayElt,iWF,
      &	        iObsOpt,nBadRays,iStartElt,iEndElt
 	SREAL StartTime,DTime,EndTime
 	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
@@ -64,8 +65,6 @@ C
  120	FORMAT(' Tracing ',i9,' rays and propagating ',i9,
      &	' grid points...')
 
-	! Test only
-        !print*,'********* In propsub: iCurWFElt =',iCurWFElt
 
 	tAsphCoef=maxAsphCoef  ! added by jzlou
 
@@ -82,15 +81,10 @@ C
 	  IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
 	    CALL RTIME(StartTime)
 	    IF (iStartElt.EQ.0) THEN
-	      taperFactor=1.0  ! reset tapering factor -jzlou
-	      IF (ABS(zSource).GE.1d10) THEN
-	        CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                       ifPropagate)
-	      ELSE
-	        CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &	                      ifPropagate)
-	      END IF
-	      ifGrid=.TRUE.
+	      taperFactor=1d0  ! reset tapering factor -jzlou
+
+		  CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &	                        ifPropagate,ifGrid)
 	    END IF
 	    WRITE(*,120) nRay, md2
 	    ifPropagate=.TRUE.
@@ -118,8 +112,11 @@ C***********************************************************************
      &    npts,nBadRays,StartIndRef,StartExtinc)
 
 	use param_mod
+        use dft_mod, only: NFPropDFT, FFPropDFT
         use elt_mod
         use sourcsub_mod
+        use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
+     &                     ZerntoMon4
         use tracesub_mod
 	use elemsub_mod
 	use traceutil_mod
@@ -129,7 +126,7 @@ C***********************************************************************
 	LOGICAL ifBuild,LROKdummy,ifRegrid(mElt),ifAccumOPD,LRayTrans,
      &	 ifOPDCalc,ifIntSrfSet(mElt),ifIntSrfOK(mElt),ifDMBuild,ifPol,
      &	 ifVecDif3,ifReturn,ifTransmit,ifLNegOK,ifLNsrf,LRTdummy,
-     &	 ifRayToSeg,ifUseBaseSrf,ifReturnElt(mElt)
+     &	 ifRayToSeg,ifReturnElt(mElt)
 cdebug     &	,ifRayPrint
 
 	INTEGER i,j,k,iElt,iSeg,iRay,iEm1,RayIndex(2,mRay),
@@ -138,7 +135,7 @@ cdebug     &	,ifRayPrint
      &	  iLend,RayMap(mpts,mpts),SegMap(mpts,mpts),PrevElt(0:mElt),
      &	  iCurRayElt,iStartElt,iEndElt,iSecondElt,iEltLoop,IERROR,
      &	  BeamType,iNextSeq,npts,nBadRays,iNextElt,NextElt(0:mElt),
-     &	  iPrevNonSeg,jGridSrf(mElt),CrntNSCnt,nSides,iObs,nPassRays
+     &	  iPrevNonSeg,jGridSrf(mElt),CrntNSCnt,nPassRays
 cdebug  &, pRay
 
 	SREAL dxdx(7,7),dxdu(7,6),spot(3)
@@ -161,7 +158,7 @@ cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 
 	COMPLEX*16 CD,DWF(mdttl,mdttl),Evec(3),C1
 
-	DATA ifUseBaseSrf/.FALSE./
+	! DATA ifUseBaseSrf/.FALSE./
 
 	If (.not.allocated(CumLStart)) allocate(CumLStart(mRay))
 
@@ -169,20 +166,16 @@ cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 #include "propsub.inc"
 
 
-	ifBuild=.FALSE.; ifDMBuild=.FALSE.
-	ifAccumOPD=.FALSE.; ifOPDCalc=.FALSE.
-	ifLNsrf=.FALSE.
-
-cdebug
-c	ifRayPrint=.TRUE.
-c	pRay=1
-cdebug
-
+	ifBuild    = .FALSE.
+	ifDMBuild  = .FALSE.
+	ifAccumOPD = .FALSE.
+	ifOPDCalc  = .FALSE.
+	ifLNsrf    = .FALSE.
 
 C  1. Initialize raytrace parameters
 
-	EltID(0)=0
-	iSecondElt=iStartElt+1
+	EltID(0)   = 0
+	iSecondElt = iStartElt+1
 
 C	Find start and end points for segmented elements
 
@@ -219,7 +212,7 @@ C	Initialize input beam if first element is source
 	END IF
 
 C	Set wavelength in base units; set index of refraction for Glass;
-C	convert Zernike coefficients to monomials; initialize LEltOK; 
+C	convert Zernike coefficients to monomials; initialize LEltOK;
 C	check interpolated surfaces; compute obscuration coords
 
 	CWU=CWM*1e6
@@ -329,7 +322,7 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 
 	!
 	! iElt is defined as next Elt to trace to in the following
-        ! loop. -jzlou 
+        ! loop. -jzlou
 	DO 14 iEltLoop=iSecondElt,iEndElt
 	  crnt_Elt=iElt  ! crnt_Elt, defined in traceutil_mod, is shared
                          ! with ChkRayTrans function in elemsub.F
@@ -361,7 +354,7 @@ C	Set conditions for accumulating OPD
 
 	  IF ((PropType(iElt).NE.1).OR.((PropType(iEm1).NE.3)
      &	      .AND.(PropType(iEm1).NE.5).AND.(PropType(iEm1).NE.6)
-     &	      .AND.(PropType(iEm1).NE.7).AND.(PropType(iEm1).LT.10))) 
+     &	      .AND.(PropType(iEm1).NE.7).AND.(PropType(iEm1).LT.10)))
      &	  THEN
 	    IF ((PropType(iElt).EQ.11).AND.(PropType(iEm1).EQ.10)) THEN
 	      ifAccumOPD=.FALSE.
@@ -418,14 +411,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &           EltCoat(iElt),EltCoatThk(:,iElt),
      &           IndRefArr(:,iElt),ExtincArr(:,iElt))
 
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	             (PropType(PrevElt(iElt)).NE.10).AND.
      &	             (PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
     	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	          IF (ifPol) THEN
     	            RayE(1,iRay)=Evec(1)
@@ -458,14 +451,14 @@ c	        END IF
      &            RayL(iRay),Evec,spot,dxdx,dxdu)
 
 	        IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	          (PropType(PrevElt(iElt)).NE.10).AND.
      &	          (PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	          IF (ifPol) THEN
     	            RayE(1,iRay)=Evec(1)
@@ -490,14 +483,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),Evec,
      &	        dxdx,dxdu)
 	        IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	          (PropType(PrevElt(iElt)).NE.10).AND.
      &	          (PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	          IF (ifPol) THEN
     	            RayE(1,iRay)=Evec(1)
@@ -540,14 +533,14 @@ c		  PrevElt=PrevNonSeg(iRay)
      &	           DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &             EltCoat(iElt),EltCoatThk(:,iElt),
      &             IndRefArr(:,iElt),ExtincArr(:,iElt))
-	          IF (.NOT.LRayTrans) THEN 
+	          IF (.NOT.LRayTrans) THEN
 	            LRayPass(iRay)=.FALSE.
 	            IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	            .AND.(PropType(PrevElt(iElt)).NE.10)
      &	            .AND.(PropType(PrevElt(iElt)).NE.12))
      &	              WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	          END IF
-	          IF (ifAccumOPD) THEN 
+	          IF (ifAccumOPD) THEN
 	            CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	            IF (ifPol) THEN
     	              RayE(1,iRay)=Evec(1)
@@ -585,14 +578,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         CWB*WaveHOE(iElt),XYZSRF(1,1,iIntSrf),
      &	         DZSRF(1,1,iIntSrf),IERROR,IWORK(1,iIntSrf),
      &	         DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) 
+	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
@@ -619,14 +612,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	         XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	         IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) 
+	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
@@ -653,19 +646,19 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	         XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	         IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) 
+	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
 
-C                                    ! Diffractive Optical Element (DOE) 
+C                                    ! Diffractive Optical Element (DOE)
               ELSE IF (EltID(iElt).EQ.17) THEN
 c               PrevElt=PrevNonSeg(iRay)
                 PrevNonSeg(iRay)=iElt
@@ -730,14 +723,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &           IsVarIndRefElt(iElt),IndRefGridArr(iElt),
      &           IsGrinRefElt(iElt),GrinRefArr(iElt))
 
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
 	          If (.not. IsGrinRefElt(iElt)) Then
   	            CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
                   Else
@@ -767,14 +760,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),
      &	        RayDir(1,iRay),RayL(iRay),Evec,dxdx,dxdu)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	          IF (ifPol) RayE(1:3,iRay)=Evec(1:3)
     	        END IF
@@ -802,14 +795,14 @@ c	        END IF
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),Evec,
      &	        dxdx,dxdu)
 	        IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) THEN 
+	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
     	          IF (ifPol) RayE(1:3,iRay)=Evec(1:3)
     	        END IF
@@ -869,7 +862,7 @@ c	            ELSE
      &	              mDP,maxAsphCoef)
 c	            END IF
 C note: RayLTst changed from 1d-12 to 1d-22
-	            IF ((SrfType(iminPrev).LE.2).OR.(iminPrev.NE.itst)) 
+	            IF ((SrfType(iminPrev).LE.2).OR.(iminPrev.NE.itst))
      &	            THEN
 	              IF (LROKdummy.AND.(RayLTst.LT.Lmin).AND.LRTdummy.AND.
      &	              (RayLTst.GT.1d-8).AND.((SrfType(iminPrev).LE.2)
@@ -885,7 +878,7 @@ C	Here when element number is determined...
 	              LROKdummy=.TRUE.
 	              LRTdummy=.TRUE.
 	              IF (EltID(imin).EQ.12) THEN
-	                IF ((SrfType(imin).EQ.5).AND.ifIntSrfOK(imin)) 
+	                IF ((SrfType(imin).EQ.5).AND.ifIntSrfOK(imin))
      &	                  iIntSrf=iEltToIntSrf(iElt)
 
 	                ! test -jzlou
@@ -918,7 +911,7 @@ C	Here when element number is determined...
      &          	 IndRefArr(:,imin),ExtincArr(:,imin))
 	                NextIndRef=CurIndRef
 	                NextExtinc=CurExtinc
-	              ELSE 
+	              ELSE
 	                IF (EltID(PrevNonSeg(iRay)).NE.9) THEN
 	                  na=CurIndRef
 	                  nb=IndRef(imin)
@@ -983,7 +976,7 @@ C	Here when element number is determined...
 	              ELSE
 	                PrevElt(iElt)=PrevNonSeg(iRay)
 	                PrevNonSeg(iRay)=imin
-	                IF (ifAccumOPD) THEN 
+	                IF (ifAccumOPD) THEN
 	                  CumRayL(iRay)=CumRayL(iRay)+
      &	                  CurIndRef*RayL(iRay)
     	                  IF (ifPol) THEN
@@ -1080,14 +1073,14 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         DZSRF(1,1,iIntSrf),IERROR,IWORK(1,iIntSrf),
      &	         DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
 
-	        IF (.NOT.LRayTrans) THEN 
+	        IF (.NOT.LRayTrans) THEN
 	          LRayPass(iRay)=.FALSE.
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD) 
+	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef; PrevExtinc=CurExtinc
 
@@ -1107,7 +1100,7 @@ C  End of element section
 C	End of iRay loop
 
 	! End of DO 9 loop, all rays traced to current element, -jzlou
-  9	CONTINUE 
+  9	CONTINUE
 
 !	print*,'***** Right after DO 9 loop in propsub, iElt,iEndElt =',
 !    &         iElt,iEndElt
@@ -1122,7 +1115,7 @@ C    Reset values for next elt loop pass
 
 	StartIndRef=CurIndRef
 	StartExtinc=CurExtinc
-	IF ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.12)) 
+	IF ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.12))
      &	    iElt=iLastNonSeq
 
 cdebug
@@ -1144,7 +1137,7 @@ c     &	    RayE(2,iRay),RayE(3,iRay),Intxyz
 c	  END IF
 c	END IF
 cdebug
-	
+
 	If (.false.) Then
 	  ! test only
           print*,'**** At element: ',iElt,', LTaperedElt(iElt) = ',
@@ -1152,16 +1145,16 @@ cdebug
 	  !stop
 	End If
 
-	
+
 	! Apodization effects added here because the user eventually would want
-        ! to see the result of diffraction propagation. 
+        ! to see the result of diffraction propagation.
 	! For tapered (apodized) aperture or tapered obscuration, add tapering
 	! effect, which scales the complex E field, but no change to the phase.
-	! Here is for a sequential element. 
+	! Here is for a sequential element.
 	If ((EltID(iElt).NE.9).AND.(EltID(iElt).NE.12).AND.
      &      LTaperedElt(iElt)) Then
 !	  print*,'=> LTaperedElt(iElt), iElt=',iElt,', taperFactor(iRay) =',
-!    &             taperFactor(iRay)  
+!    &             taperFactor(iRay)
           ! Multiply tapering factor to each ray. -jzlou
           Do j=1,mdttl
             Do i=1,mdttl
@@ -1176,9 +1169,9 @@ cdebug
 	If (EltID==17 .and. (GratingMaterial(iElt)==Dielectric .or.
      &        GratingMaterial(iElt)==Metal)) Then
 	    ! is FzpTrGrating, and need to include transimission coefficient effect
-	    ! to compute diffraction efficiency. 
-       
-	End If 
+	    ! to compute diffraction efficiency.
+
+	End If
 #endif
 
 
@@ -1198,7 +1191,7 @@ C      Find starting surface for propagation
 	  !print*,'*nRay =',nRay
 	  CALL DXCALC(iElt,j,dxMin(iElt),dxMax(iElt),
      &	         dxAvg(iElt),dxDev(iElt),ifRegrid,ifOPDCalc,npts)
-	  !print*,'** dxAvg(iElt) =',dxAvg(iElt) 
+	  !print*,'** dxAvg(iElt) =',dxAvg(iElt)
 	  iLend=iElt
 	END IF
 
@@ -1264,21 +1257,21 @@ cscale	    z1z2=dxElt(nEstart)/dxElt(iElt)
 	            ELSE IF (LRayOK(iRay)) THEN
 	              IF (ifVecDif3) THEN
 	                DO k=1,3
-	                  ! For vector diffraction, E fields in X,Y and Z directions 
+	                  ! For vector diffraction, E fields in X,Y and Z directions
 			  ! diffracted separately. -jzlou
 	                  WFElt(i,j,k)=RayE(k,iRay)
 cscale	                  WFElt(i,j,k)=-z1z2*RayE(k,iRay)
      	                END DO
 	              ELSE
-	                ! Non-polarization case:
-	                ! Here a complex optical field is formed in 
+	                ! Polarization case:
+	                ! Here a complex optical field is formed in
 			! WFElt(*,*,iWF) array, with its phase equal
 		        ! to OPD and its amplitude equal to the 2-norm
-			! of RayE. WFElt array is used in a diffraction 
+			! of RayE. WFElt array is used in a diffraction
                         ! propagation below. For a more complete picture, read
 	                ! comments in the non-polarization section, -jzlou
 	                Cphi=CumRayL(iRay)-CumLStart(iRay)
-	                ! in the following, 
+	                ! in the following,
 	                ! TPL*Cphi = (2*pi/lambda)*OPL -jzlou
 	                DPHI=MOD((TPL*Cphi),6.28318530717959D0)
 cscale	                C1=z1z2*SQRT(DBLE(...))
@@ -1315,7 +1308,7 @@ cscale	                C1=z1z2*SQRT(DBLE(...))
 	            IF ((iRay.GT.nRay).OR.(iRay.LE.0)) THEN
 	              CD=0D0
 	            ELSE IF (LRayOK(iRay)) THEN
-	              ! This section is reached when 
+	              ! This section is reached when
 	              !  1) (iElt-1) to iElt is NOT geometric propagation, or
 	              !  2) iElt is the last surface of propagation.
 		      ! Here the complex optical field in WFElt(*,*,iWF) is updated.
@@ -1324,22 +1317,22 @@ cscale	                C1=z1z2*SQRT(DBLE(...))
 	              ! has been accumulated upto iElt. If propagation from (iElt-1) to
 		      ! iElt is physical, CumRayL(iRay) has been accumulated only to (iElt-1).
 	              ! So if the propagation from (iElt-1) to iElt is physical, the complex
-		      ! field WElt formed below is the input E field for the physical 
-		      ! propagation below. If the propagation from (iElt-1) to iElt is 
-                      ! geometric, (which has been completed above), the complex WElt field 
+		      ! field WElt formed below is the input E field for the physical
+		      ! propagation below. If the propagation from (iElt-1) to iElt is
+                      ! geometric, (which has been completed above), the complex WElt field
                       ! formed below will be the final E field at iElt.  -jzlou
 	              !
 	              Cphi=CumRayL(iRay)-CumLStart(iRay)
 	              DPHI=MOD((TPL*Cphi),6.28318530717959D0)
 
 	              if (iRay==-2) then
-	                print*,'***** iRay = 2, i,j,DPHI =',i,j,DPHI 
+	                print*,'***** iRay = 2, i,j,DPHI =',i,j,DPHI
 	                print*,'*****  WFElt(i,j,iWF) =',WFElt(i,j,iWF)
 	              end if
- 
+
 		      ! OPD is combined with existing complex E field below, -jzlou
 cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
-	              CD=EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)  
+	              CD=EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
 	              CumLStart(iRay)=CumRayL(iRay)
 	            ELSE
 	              CD=0D0
@@ -1357,10 +1350,10 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
 ! exit-pupil wavefront (OPD) array. -jzlou, 01/2011
                  Open(Unit=12,file='OPD_in.txt',Status='OLD')
                  Do j=1,mdttl/2
-                   Read(12,*) OPD_in(1:mdttl/2,j)                   
+                   Read(12,*) OPD_in(1:mdttl/2,j)
 	         End Do
-	         Do j=1,mdttl/2 
-	           Do i=1,mdttl/2 
+	         Do j=1,mdttl/2
+	           Do i=1,mdttl/2
 	             DPHI=MOD((TPL*OPD_in(i,j)),6.28318530717959D0)
 	             CD=EXP(DCMPLX(0D0,DPHI))
 	             WFElt(i+mdttl/4,j+mdttl/4,iWF)=CD
@@ -1390,7 +1383,7 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
                       nPassRays=nPassRays+1
             	      OPDScal=CumRayL(iRay)-RefCumRayL
                       SumL=SumL+OPDScal
-                    END IF  
+                    END IF
 	          End Do
 	          !
 	          IF (nPassRays.GT.0) THEN
@@ -1417,7 +1410,7 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
             	      END DO
 	            END IF
 		  END IF  ! If nPassRays
-	          
+
 	          ! Dump OPD for debugging
                   !Open(Unit=15,File='Opd_propsub.txt')
                   !Do j=1,npts+1
@@ -1443,15 +1436,15 @@ C       Geometric propagation has been performed upto iElt.
 C
 C       Now physically propagate optical field from nEstart to iElt
 C       (nEstart and iEm1 are (iElt-1)). The input to physical propagation
-C       is the complex E field WFElt formed above (see comments above), which 
-C       is updated in the physical propagation below. So after physical propagation, 
+C       is the complex E field WFElt formed above (see comments above), which
+C       is updated in the physical propagation below. So after physical propagation,
 C       both OPD map and WFElt field exist at iElt. Upon next physical propagation,
 C       WFElt will be combined with (CumRayL(iRay)-CumLStart(iRay)) to form the
 C       needed input field for diffiraction. -jzlou
 
-C       Since geometric propagation has reached iElt, after the physical propagation, 
+C       Since geometric propagation has reached iElt, after the physical propagation,
 C       all the rays' positions and directions are still determined by the geometric
-C       propagation from (iElt-1) to iElt, unless ReGrid is called. -jzlou 
+C       propagation from (iElt-1) to iElt, unless ReGrid is called. -jzlou
 
 	    iLstart=iElt
 
@@ -1483,7 +1476,7 @@ C					Far-field sphere-to-plane
 		If (ifFnCalc)
      &            Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
 
-	        ! Far-field diffraction for polarized light, 
+	        ! Far-field diffraction for polarized light,
 	        CALL PFFPROP(WFElt(1,1,1),dxElt(iElt),
      &	               dxElt(nEstart),zElt(nEstart),WaveBU,mdttl)
 
@@ -1492,7 +1485,7 @@ C					Far-field sphere-to-plane
      &	          dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
 	      ELSE
                 print*,
-     &  '==> 2: Far-field (scalar) sphere-to-plane diffraction ...'
+     &     '===> 2: Far-field sphere-to-plane diffraction ...'
 	        If (ifFnCalc)
      &            Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
 
@@ -1508,7 +1501,7 @@ C					Far-field sphere-to-plane
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
 
 C    Now compute obscurations in diffracted light
-	      IF (EltID(iElt).EQ.7)  ! 'Obscuring' element 
+	      IF (EltID(iElt).EQ.7)  ! 'Obscuring' element
      & 	        CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
      &	   RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
      &	   ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -1551,8 +1544,8 @@ C					Near-field using 2 RS
      &	       zElt(iElt),dxElt(iElt),dxMin(iElt),dxMax(iElt),
      &	       dxDev(iElt),Lin2
 
-	      ! Optionally re-create OPD grid at iElt if system aberration 
-	      ! is large. 
+	      ! Optionally re-create OPD grid at iElt if system aberration
+	      ! is large.
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
 
 C				Near-field plane-to-plane using 2 RS
@@ -1575,7 +1568,7 @@ C				Near-field plane-to-plane using 2 RS
 
 #if 0
 	      print*,' ****** nEstart,iElt =',nEstart,iElt
-	      print*,' ****** RayPos(1:3,1) =',RayPos(1:3,1) 
+	      print*,' ****** RayPos(1:3,1) =',RayPos(1:3,1)
 	      IF (ifRegrid(iElt)) THEN
                  print*,'Calling ReGrid ...'
                  CALL ReGrid(iElt)
@@ -1650,7 +1643,7 @@ C    NOTE: set dx, z according to nf prop surfaces!!!
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
 
 C    Now compute obscurations in diffracted light
-	      IF (EltID(iElt).EQ.7) 
+	      IF (EltID(iElt).EQ.7)
      & 	        CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
      &	         RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
      &	         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -1692,7 +1685,7 @@ C					NF DFT plane-to-plane
 
 c	      CALL nfpropdft(uin,npt,dx1,utst,npt,dx2,lambda,z)
 Cmore efficient	-- CALL WFrepack(DWF,WFElt(1,1,iWF),nGridPts)
-	          
+
 	      CALL NFPropDFT(WFElt(1,1,iWF),mdttl,dxElt(nEstart),
      &	             WFElt(1,1,iWF),mdttl,dxElt(iElt),WaveBU,
      &	             zElt(nEstart)-zElt(iElt))
@@ -1732,7 +1725,7 @@ C					FF DFT
      &	       dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
      &	       dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
-	      
+
 C					Geometric prop
 	    ELSE IF ((PropType(iEm1).EQ.9).OR.(iElt.EQ.iEndElt)) THEN
 	       WRITE(*,506) nEstart,iElt,iWF
@@ -1785,14 +1778,14 @@ c	  END IF
 
 
 C***************************************************************************
-!	This is the Near Field (Fresnel) sphere-to sphere propagation 
-!       routine. Z1 and Z2 and are distances from the two (source and image) 
+!	This is the Near Field (Fresnel) sphere-to sphere propagation
+!       routine. Z1 and Z2 and are distances from the two (source and image)
 !       reference planes to the center of curvature of the spherical
 !	source surface (see MACOS manual). When specifiying Z1 and Z2 in Rx,
-!       the origin is set at the center of curvature of the spherical source 
+!       the origin is set at the center of curvature of the spherical source
 !       surface, so Z1 and Z2 are both negative, |Z2| < |Z1|, and (Z2-Z1) is
-!       positive. 
-!	Algorithm: Propagation of angular spectrum between planes (Goodman), 
+!       positive.
+!	Algorithm: Propagation of angular spectrum between planes (Goodman),
 !       plus idea of spherical-to-plane transformation (Sziklas & Siegman)
 !	which is reflected in the factor Z1/Z2 in computing S.
 !       -jzlou
@@ -1841,22 +1834,22 @@ C***************************************************************************
 C ********************************************************************************
 
 C*********************************************************************************
-!        Near field plane-to-plane propagation. The code is almost the 
-!        same as NFPROP except for the lack of Sziklas sphere-to-plane 
-!        transformation. 
+!        Near field plane-to-plane propagation. The code is almost the
+!        same as NFPROP except for the lack of Sziklas sphere-to-plane
+!        transformation.
 !        More about the angular spectrum approach of propagating plane waves
-!        between two planes (Goodman): 
+!        between two planes (Goodman):
 !        1) This is a general approach applicable to both near and far-field
-!           propagations, but with far-field, FFT of input field is simpler. 
+!           propagations, but with far-field, FFT of input field is simpler.
 !        2) Angular spectrum <==> Fourier transform of a field.
 !        3) Angular spectrum approach for plane wave propagation:
 !           a) Find the angular spectrum of source plane wave - FFT(source-wave).
 !           b) "Propagating" source spectrum by distance (Z2-Z1) - multiply
 !              the source spectrum by a complex phase factor. The result is
 !              is the angular spectrum of the destination wave field.
-!           c) Inverse Fourier transform the destination angular spectrum.  
+!           c) Inverse Fourier transform the destination angular spectrum.
 !        4) The implemention below assumes the wave propagates in Z direction,
-!           a special case of the general formula in Goodman's book. 
+!           a special case of the general formula in Goodman's book.
 !        -jzlou
 C********************************************************************************
 
@@ -1902,17 +1895,17 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE FFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
+        use Constants, only: PI
+        use dft_mod, only: applyfac2
 	IMPLICIT NONE
 	INTEGER I,J,NN(2),NFFT
-	REAL*8 DX1,DX2,DZ,S,LAMBDA,PI,TWOPI,C2
+	REAL*8 DX1,DX2,DZ,S,LAMBDA,C2
 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),C1
 
-	DATA pi/3.141592653589793d0/
-
-	NN(1)=NFFT
-	NN(2)=NFFT
-	S=1D0/DBLE(NFFT)
-	C1=DCMPLX(S)
+	NN(1) = NFFT
+	NN(2) = NFFT
+	S     = 1D0/DBLE(NFFT)
+	C1    = DCMPLX(S)
 
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
@@ -1926,7 +1919,7 @@ C***********************************************************************
         END DO
 
 	C1 = 1d0/DCMPLX(0d0,lambda*dz)
-	C2 = pi/lambda/dz
+	C2 = PI/lambda/dz
 	CALL applyfac2(wf2,NFFT,NFFT,C1*dx1*dx1,C2,dx2)
 
 	!wf2 = CDEXP(DCMPLX(0d0,(2d0*pi/lambda)*dz))*wf2   ! added by jzlou
@@ -1939,12 +1932,12 @@ C***********************************************************************
 
 	SUBROUTINE SFPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF,PHRAD,
      &	                  DXFF)
-
-	IMPLICIT NONE
-	LOGICAL IFPOS
-	INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2,IRAD2,IPHRAD,IPHRAD2
-	REAL*8 DX1,DX2,Z1,Z2,S,LAMBDA,NSQ,PHRAD,DXFF,PHRAD2
- 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,
+          USE Constants, ONLY: PI
+          IMPLICIT NONE
+          LOGICAL IFPOS
+          INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2,IRAD2,IPHRAD2
+          REAL*8 DX1,DX2,Z1,Z2,S,LAMBDA,NSQ,PHRAD,DXFF,PHRAD2
+          COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,
      &	           M2,C4,C5
 
 	PHRAD2 = 0  ! jzlou
@@ -1956,16 +1949,17 @@ C***********************************************************************
 cscale	S=Z1/Z2
 	S=1D0
 	C4=DCMPLX(S)
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(Z1/Z2)*
-     &	  (1E0/DX1/DBLE(NFFT))**2
+	S=-PI*LAMBDA*(Z2-Z1)*(Z1/Z2)*
+     &	  (1D0/DX1/DBLE(NFFT))**2
 	C5=DCMPLX(0D0,S)
 	DXFF=LAMBDA*(Z1/DX1)/DBLE(NFFT)
 
-	IF (PHRAD.GE.0D0) THEN
-	  IFPOS=.TRUE.
-	ELSE
-	  IFPOS=.FALSE.
-	END IF
+        IFPOS = (PHRAD.GE.0D0)
+	! IF (PHRAD.GE.0D0) THEN
+	!   IFPOS=.TRUE.
+	! ELSE
+	!   IFPOS=.FALSE.
+	! END IF
 
 	IPHRAD2=(PHRAD*NFFT/2)**2
 	IF (PHRAD2.LT.0) IPHRAD2=0
@@ -2004,11 +1998,12 @@ cscale	S=Z1/Z2
 	CALL DFOURN(DWF,NN,2,-1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 
-	DO 4 J=1,NFFT
-	  DO 3 I=1,NFFT
-	    WF2(I,J)=C4*WF2(I,J)
-    3	  CONTINUE
-    4	CONTINUE
+	WF2(:NFFT, :NFFT) = C4*WF2(:NFFT, :NFFT)
+!         DO 4 J=1,NFFT
+! 	  DO 3 I=1,NFFT
+! 	    WF2(I,J)=C4*WF2(I,J)
+!     3	  CONTINUE
+!     4	CONTINUE
 
 	RETURN
 	END SUBROUTINE SFPROP
@@ -2018,56 +2013,55 @@ cscale	S=Z1/Z2
 C***********************************************************************
 !	Near field (Fresnel) diffraction, direct FFT based (not
 !       angular spectrum).
-!	-jzlou	
+!	-jzlou
 C***********************************************************************
 
 	SUBROUTINE FRPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
-
+        USE Constants, ONLY: PI
 	IMPLICIT NONE
 	INTEGER NN(2),NFFT,II2,JJ2, NSQ, I,J
-	REAL*8 DX1,DX2,S,SP,LAMBDA,Z1,Z2,N2,M2,PI,C3,II,JJ
+	REAL*8 DX1,DX2,S,SP,LAMBDA,Z1,Z2,N2,M2,C3,II,JJ
 	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT)
         COMPLEX*16 C4,C5
-C
 
 	NN(1) = NFFT
 	NN(2) = NFFT
-	NSQ = NFFT*NFFT
-	C3  = -NFFT/2-1
-c
-	S  = 3.14159265358979/LAMBDA/(Z2-Z1)*DX1*DX1*Z1/Z2
+	NSQ   = NFFT*NFFT
+	C3    = -NFFT/2-1
+
+	S  = PI/LAMBDA/(Z2-Z1)*DX1*DX1*Z1/Z2
 	C5 = DCMPLX(0D0,S)
-	SP = 3.14159265358979/LAMBDA/(Z2-Z1)*DX2*DX2*Z1/Z2
+	SP = PI/LAMBDA/(Z2-Z1)*DX2*DX2*Z1/Z2
         C4 = DCMPLX(0D0,SP)
 C
-	DO 2 J=1,NFFT
+	DO J=1,NFFT
 	   JJ=C3+J
 	   JJ2=JJ*JJ
-	   N2=DCMPLX(JJ2,0.0)
-	   DO 1 I=1,NFFT
+	   N2=DCMPLX(JJ2,0d0)
+	   DO I=1,NFFT
 	      II=C3+I
 	      II2=II*II
-	      M2=DCMPLX(II2,0.0)
+	      M2=DCMPLX(II2,0d0)
 	      WF1(I,J)=WF1(I,J)*EXP(C5*(M2+N2))/NFFT
-    1	   CONTINUE
-    2	CONTINUE
+           END DO
+        END DO
 C
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 C
 	DO J=1,NFFT
-           JJ=C3+J
-	   JJ2=JJ*JJ
-	   N2=DCMPLX(JJ2,0.0)
-	   DO I=1,NFFT
-	      II=C3+I
-	      II2=II*II
-	      M2=DCMPLX(II2,0.0)
-	      WF2(I,J)=WF2(I,J)*EXP(C4*(M2+N2))*DX1/DX2   
-	   END DO
+          JJ=C3+J
+	  JJ2=JJ*JJ
+	  N2=DCMPLX(JJ2,0.0)
+	  DO I=1,NFFT
+	     II=C3+I
+	     II2=II*II
+	     M2=DCMPLX(II2,0.0)
+	     WF2(I,J)=WF2(I,J)*EXP(C4*(M2+N2))*DX1/DX2
+	  END DO
     	END DO
-C
+
 	RETURN
 	END SUBROUTINE FRPROP
 
@@ -2078,38 +2072,37 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE SPH2PL(WF2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
-
-	IMPLICIT NONE
-	LOGICAL IFPOS
-	INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2
-	REAL*8 DX1,Z1,Z2,S,LAMBDA,NSQ
-	COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,M2,
+        USE Constants, ONLY: PI
+        IMPLICIT NONE
+        INTEGER I,J,II,JJ,NN(2),C3,NFFT,II2,JJ2
+        REAL*8 DX1,Z1,Z2,S,LAMBDA
+        COMPLEX*16 WF1(NFFT,NFFT),WF2(NFFT,NFFT),DWF(NFFT,NFFT),N2,M2,
      &		   C4,C5
 
-	NN(1)=NFFT
-	NN(2)=NFFT
-	C4=1D0/DBLE(NFFT)
-	C3=-NFFT/2-1
+	NN(1) = NFFT
+	NN(2) = NFFT
+	C4    = 1D0/DBLE(NFFT)
+	C3    = -NFFT/2-1
 cscale	S=Z1/Z2
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(Z1/Z2)*
-     &	 (1E0/DX1/DBLE(NFFT))**2
-	 C5=DCMPLX(0D0,S)
+	S     = -PI*LAMBDA*(Z2-Z1)*(Z1/Z2)*
+     &	           (1d0/DX1/DBLE(NFFT))**2
+	 C5    = DCMPLX(0D0,S)
 
 	CALL DSWAP2(DWF,WF1,NFFT)
 	CALL DFOURN(DWF,NN,2,1)
 	CALL DSWAP2(WF2,DWF,NFFT)
 
-	DO 2 J=1,NFFT
+	DO CONCURRENT (J=1:NFFT)
 	  JJ=C3+J
 	  JJ2=JJ*JJ
 	  N2=DCMPLX(JJ2)
-	  DO 1 I=1,NFFT
+	  DO CONCURRENT (I=1:NFFT)
 	    II=C3+I
 	    II2=II*II
 	    M2=DCMPLX(II2)
 	    WF2(I,J)=WF2(I,J)*C4*EXP(C5*(M2+N2))
-    1	  CONTINUE
-    2	CONTINUE
+          END DO
+        END DO
 
 	RETURN
 	END SUBROUTINE SPH2PL
@@ -2174,7 +2167,6 @@ C***********************************************************************
 
 	SUBROUTINE FFObscure(psi,pv,prot,pCR,dx,nGridPts,
      &		    ApType,ApVec,nObs,ObsType,ObsVec,xGrid,WF,NFFT)
-	
 C  Turn off wavefront points that are obscured.
 
 	IMPLICIT NONE
@@ -2184,13 +2176,11 @@ C  Turn off wavefront points that are obscured.
 	REAL*8 pv(3),prot(3),pCR(3),psi(3),dx,xCell,yCell
 	REAL*8 prel(3),pxCR,pyCR,dxCtr,
      &	xGrid(3),yGrid(3),zGrid(3),px,py,ApVec(6),ObsVec(6,nObs)
-	REAL*8 TwoPi,Kd,K123,q1xq2y,q2xq3y,q3xq1y,
+	REAL*8 Kd,K123,q1xq2y,q2xq3y,q3xq1y,
      &	q1yq2x,q2yq3x,q3yq1x,q1x,q1y,q2x,q2y,q3x,q3y,rc,
      &	xcmin,xcmax,ycmin,ycmax,yt,R2,A2,A3
 
 	COMPLEX*16 WF(NFFT,NFFT)
-
-	DATA TwoPi/6.28318530717959D0/
 
 	NFCTR=NFFT/2+1
 
@@ -2304,7 +2294,7 @@ C  Check if grid pt hits an obscuration
 	          q1yq2x=q1y*q2x
 	          q2yq3x=q2y*q3x
 	          q3yq1x=q3y*q1x
-	          K123=DABS(q1xq2y+q2xq3y+q3xq1y-q1yq2x-q2yq3x-q3yq1x)	      
+	          K123=DABS(q1xq2y+q2xq3y+q3xq1y-q1yq2x-q2yq3x-q3yq1x)
 	          Kd=DABS(px*q2y+q2xq3y+q3x*py-py*q2x-q2yq3x-q3y*px)
 	          IF (Kd.GT.K123) THEN
 	            GO TO 10
@@ -2353,17 +2343,17 @@ C *****************************************************************************
 
         Real*8 Function FnCalc(Z2,Z1,Lambda)
         Implicit none
-      
+
         Real*8 :: Z2,Z1,Lambda,DZ
         Real*8, parameter :: eps_fncalc = 1.0D-16
-  
+
         !FnCalc=0d0 ! debug
         !return
 
         if (abs(Z2-Z1) < eps_fncalc) then
           print*,
      &     'Fncalc() Warning: Diffraction Distance (Z2-Z1) Almost Zero!'
-          return 
+          return
         end if
 
 	DZ=abs(Z2-Z1)
@@ -2371,13 +2361,13 @@ C *****************************************************************************
         End Function FnCalc
 
 C ***************************************************************************
-	
+
         Real*8 Function FnCalc_DZ(DZ,Lambda,op_flag)
         use param_mod
         use elt_mod
 
         Implicit none
-      
+
         Integer :: op_flag, i
         Real*8 :: DZ, Lambda, wv_len
         Real*8 :: dd, RayOne(3), dx(3)
@@ -2404,7 +2394,7 @@ C ***************************************************************************
 	  print*,'=====> Beam diameter estimate = ', dd
           return  ! compute beam diameter only
         End If
-	
+
         DZ = abs(DZ)
         wv_len = Lambda*1.0  ! no conversion
 
@@ -2412,7 +2402,7 @@ C ***************************************************************************
         FnCalc_DZ = 4.*beam_dm/(DZ*wv_len)  ! Frensel # = D/(Z*lambda)
 
         print*,'=====> Beam diameter estimate = ', dd
-        print*,'=====> DZ = ', DZ 
+        print*,'=====> DZ = ', DZ
         print*,'=====> Wave length = ', wv_len
         print*,'=====> Fresnel number of propagation =', FnCalc_DZ
         End Function FnCalc_DZ

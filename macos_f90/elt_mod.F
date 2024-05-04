@@ -8,43 +8,261 @@ C***********************************************************************
 
 #include "realtype.h"
 
-	Module elt_mod
-	use param_mod
-	
-	Implicit none
-	Save
+        Module elt_mod
+        use param_mod
 
-	Integer, parameter :: mZernType=9,maxZernTerms=100,mCoat=10,
+        Implicit none
+        Save
+
+        !
+        ! --------- Basic Surface Definition ---------
+        !
+
+        INTEGER,  PARAMETER:: maxEltNameLength = 32
+
+        REAL*8,   DIMENSION(:,:),  ALLOCATABLE :: VptElt,RptElt,psiElt,VptRx,psiRx,RptRx
+        REAL*8,   DIMENSION(:),    ALLOCATABLE :: fElt,eElt,zElt,KcElt,KrElt,KrRx,KcRx
+        REAL*8,   DIMENSION(:,:,:),ALLOCATABLE :: TElt
+        INTEGER,  DIMENSION(:),    ALLOCATABLE :: nECoord,SrfType,EltType,EltID
+        CHARACTER,DIMENSION(:),    ALLOCATABLE :: EltName*maxEltNameLength
+        LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
+
+        INTEGER, PARAMETER :: ReflectorElt    =   1,
+     &                        FocalPlaneElt   =   2,
+     &                        ReferenceElt    =   3,
+     &                        HOEElt          =   4,
+     &                        GratingElt      =   5,
+     &                        RefractorElt    =   6,
+     &                        ObscuringElt    =   7,
+     &                        ReturnElt       =   8,
+     &                        NSRefractorElt  =   9,
+     &                        LensArrayElt    =  10,
+     &                        SegmentElt      =  11,
+     &                        NSReflectorElt  =  12,
+     &                        TrGratingElt    =  13,
+     &                        RfPolarizerElt  =  14,
+     &                        TrPolarizerElt  =  15,
+     &                        CGHNullPlateElt =  16,
+     &                        DoeTrGratingElt =  17,
+     &                        mEltTypes       =  17     ! defines available Element Types
+
+        CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
+     &                     (/'Reflector',         ! 1
+     &                       'FocalPlane',        ! 2
+     &                       'Reference',         ! 3
+     &                       'HOE',               ! 4
+     &                       'Grating',           ! 5
+     &                       'Refractor',         ! 6
+     &                       'Obscuring',         ! 7
+     &                       'Return',            ! 8
+     &                       'NSRefractor',       ! 9
+     &                       'LensArray',         !10
+     &                       'Segment',           !11
+     &                       'NSReflector',       !12
+     &                       'TrGrating',         !13
+     &                       'RfPolarizer',       !14
+     &                       'TrPolarizer',       !15
+     &                       'CGHNullPlate',      !16
+     &                       'DoeTrGrating'/)     !17  Diffractive Optical Element (DOE)
+
+        INTEGER, PARAMETER :: SrfType_Flat              =  1,
+     &                        SrfType_Conic             =  2,
+     &                        SrfType_Aspheric          =  3,
+     &                        SrfType_Monomial          =  4,
+     &                        SrfType_Interpolated      =  5,
+     &                        SrfType_Anamorphic        =  6,
+     &                        SrfType_UserDefined       =  7,
+     &                        SrfType_Zernike           =  8,
+     &                        SrfType_GridData          =  9,
+     &                        SrfType_Toric             = 10,
+     &                        SrfType_AsGrData          = 11,
+     &                        mSrfType                  = 11
+
+        ! Surface types with Gridded Surface Parameters
+        INTEGER, PARAMETER :: GridTypeAll(2) = (/SrfType_GridData,
+     &                                           SrfType_AsGrData/)
+
+        ! Surfaces having a Local Coord. System defined
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(4) = [SrfType_Monomial,
+     &                                             SrfType_Zernike,
+     &                                             SrfType_AsGrData,
+     &                                             SrfType_GridData]
+
+        CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=  ! SrfTypeName(20)
+     &                     (/'Flat',               ! 1
+     &                       'Conic',              ! 2
+     &                       'Aspheric',           ! 3
+     &                       'Monomial',           ! 4
+     &                       'Interpolated',       ! 5
+     &                       'Anamorphic',         ! 6
+     &                       'UserDefined',        ! 7
+     &                       'Zernike',            ! 8
+     &                       'GridData',           ! 9
+     &                       'Toric',              !10
+     &                       'AsGrData'/)          !11  ! was 'InfluenceFunction'
+
+        ! Old Element Definitions:
+        INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
+                     !  EltType           SrfType                           EltID       Element                        EltType         SurfType
+     &               [[ReflectorElt,   SrfType_Conic],         ! [[ 1, 2], !  1   <==  Conic Mirror                  1 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Flat],          !  [ 1, 1], !  2   <==  Flat Mirror                   1 (Reflector)   |  1 (FlatSrf)
+     &                [FocalPlaneElt,  SrfType_Flat],          !  [ 2, 1], !  3   <==  Focal Plane                   2 (FocalPln)    |  1 (FlatSrf)
+     &                [ReferenceElt,   SrfType_Conic],         !  [ 3, 2], !  4   <==  Reference Surface             3 (RefSrf)      |  2 (ConSrf)
+     &                [SegmentElt,     SrfType_Conic],         !  [11, 2], !  5   <==  Mirror Segment               11 (Segment)     |  2 (ConSrf)
+     &                [HOEElt,         SrfType_Conic],         !  [ 4, 2], !  6   <==  Holographic Optical Elmnt     4 (HOE)         |  2 (ConSrf)
+     &                [GratingElt,     SrfType_Conic],         !  [ 5, 2], !  7   <==  Straight-Ruled Grating        5 (Grating)     |  2 (ConSrf)
+     &                [RefractorElt,   SrfType_Conic],         !  [ 6, 2], !  8   <==  Conic Refractor               6 (Refractor)   |  2 (ConSrf)
+     &                [ObscuringElt,   SrfType_Conic],         !  [ 7, 2], !  9   <==  Obscuring Surface             7 (ObsSrf)      |  2 (ConSrf)
+     &                [ReturnElt,      SrfType_Conic],         !  [ 8, 2], ! 10   <==  Return Surface                8 (ReturnSrf)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Conic],         !  [ 1, 2], ! 11   <==  General Conic Reflector       1 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Aspheric],      !  [ 1, 3], ! 12   <==  Aspheric Reflector            1 (Reflector)   |  3 (AsphSrf)
+     &                [NSReflectorElt, SrfType_Conic],         !  [12, 2], ! 13   <==  Non-Sequential Reflector     12 (Reflector)   |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Zernike],       !  [ 1, 8], ! 14   <==  Zernike Reflector             1 (Reflector)   |  8 (MonSrf)
+     &                [SegmentElt,     SrfType_Zernike],       !  [11, 8], ! 15   <==  Zernike Segment              11 (Segment)     |  8 (MonSrf)
+     &                [ReflectorElt,   SrfType_Monomial],      !  [ 1, 4], ! 16   <==  Monomial Reflector            1 (Reflector)   |  4 (MonSrf)
+     &                [SegmentElt,     SrfType_Monomial],      !  [11, 4], ! 17   <==  Monomial Segment             11 (Segment)     |  4 (MonSrf)
+     &                [ReflectorElt,   SrfType_Interpolated],  !  [ 1, 5], ! 18   <==  Interpolated Reflector        1 (Reflector)   |  5 (IntSrf)
+     &                [SegmentElt,     SrfType_Interpolated],  !  [11, 5], ! 19   <==  Interpolated Segment         11 (Segment)     |  5 (IntSrf)
+     &                [RefractorElt,   SrfType_Aspheric],      !  [ 6, 3], ! 20   <==  Aspheric Refractor            6 (Refractor)   |  3 (AsphSrf)
+     &                [RefractorElt,   SrfType_Zernike],       !  [ 6, 8], ! 21   <==  Zernike Refractor             6 (Refractor)   |  4 (MonSrf)
+     &                [LensArrayElt,   SrfType_Conic],         !  [10, 2], ! 22   <==  Conic Lens Array             10 (LensArray)   |  2 (ConSrf)
+     &                [LensArrayElt,   SrfType_Aspheric],      !  [10, 3], ! 23   <==  Aspheric Lens Array          10 (LensArray)   |  3 (AsphSrf)
+     &                [NSRefractorElt, SrfType_Conic],         !  [ 9, 2], ! 24   <==  Non-Sequential Refractor      9 (NSRefractor) |  2 (ConSrf)
+     &                [ReflectorElt,   SrfType_Anamorphic],    !  [ 1, 6], ! 25   <==  Anamorphic Reflector          1 (Reflector)   |  6 (AnaSrf)
+     &                [ReflectorElt,   SrfType_UserDefined]]   !  [ 1, 7]] ! 26   <==  User-Defined Reflector        1 (Reflector)   |  7 (UDSrf)
+
+
+        ! Surface types that require a Srf. Coord. Systems
+        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(4)=
+     &                      [SrfType_Zernike,
+     &                       SrfType_Monomial,
+     &                       SrfType_GridData,
+     &                       SrfType_AsGrData]
+
+        !
+        ! --------- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS  ---------
+        !
+        LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifComputeDZ                              ! interpolated Srf. Data (Grid)
+        REAL*8,   DIMENSION(:),     ALLOCATABLE:: ZernRad, lMon, GridSrfdx, ZernAnnuRatio
+        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: AsphCoef,MonCoef,ZernCoef,pMon,
+     &                                            xMon,yMon,zMon,
+     &                                            AnaCoef,ZernCent,ZernXGrid,ZernYGrid,
+     &                                            UDSrfCoef,UDSrfParam,
+     &                                            xMonRx,yMonRx,zMonRx,pMonRx,ZernCoefRx
+        REAL*8,   DIMENSION(:,:,:), ALLOCATABLE:: GridMat
+        INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
+     &                                            nGridMat,iEltToGridSrf,
+     &                                            nDP                                      ! interpolated Srf. Data (Grid)
+
+
+        INTEGER, PARAMETER :: mZernType          =  11,
+     &                        mZernModes         =  66,  ! max. # of Zernike Coefficients (8th radial mode)
+     &                        nZernModes_Default =  45,  ! default if "nZernCoef" is not defined in Rx
+     &                        mAsphCoef          =   9,  ! max terms = 9, up to term h^20
+     &                        nAsphCoef_Default  =   4,  ! default if "nAsphCoef" is not defined in Rx
+     &                        mAnaCoef           =   4,
+     &                        mMonCoef           = 120,
+     &                        mUDSrfParam        =  10
+
+        INTEGER, PARAMETER ::
+     &          ZernType_ANSI            =  1,
+     &          ZernType_BornWolf        =  2,
+     &          ZernType_Fringe          =  3,   ! incl. CODE V's 37th mode
+     &          ZernType_NormANSI        =  4,
+     &          ZernType_NormBornWolf    =  5,
+     &          ZernType_NormFringe      =  6,
+     &          ZernType_NormHex         =  7,   ! ??? ToDo: Implemented?
+     &          ZernType_NormNoll        =  8,
+     &          ZernType_NormAnnularNoll =  9,
+     &          ZernType_Noll            = 10,
+     &          ZernType_ExtFringe       = 11
+
+        INTEGER, PARAMETER :: ZernType_MaxMode(mZernType) =
+     &          [mZernModes,  ! ZernType_ANSI
+     &           mZernModes,  ! ZernType_BornWolf
+     &                   37,  ! ZernType_Fringe   (CODE V notation: #37 = 12th radial mode)
+     &           mZernModes,  ! ZernType_NormANSI
+     &           mZernModes,  ! ZernType_NormBornWolf
+     &                   37,  ! ZernType_NormFringe
+     &                    0,  ! ZernType_NormHex          implemented ???
+     &           mZernModes,  ! ZernType_NormNoll
+     &           mZernModes,  ! ZernType_NormAnnularNoll
+     &           mZernModes,  ! ZernType_Noll
+     &           mZernModes]  ! ZernType_ExtFringe
+
+
+
+        INTEGER, DIMENSION(5), PARAMETER ::
+     &          ZernType_rms_normalised = (/ZernType_NormANSI,
+     &                                      ZernType_NormBornWolf,
+     &                                      ZernType_NormFringe,
+     &                                      ZernType_NormNoll,
+     &                                      ZernType_NormAnnularNoll/)
+
+        INTEGER, DIMENSION(5), PARAMETER ::
+     &           ZernType_not_normalised = (/ZernType_ANSI,        !  1,
+     &                                       ZernType_BornWolf,    !  2,
+     &                                       ZernType_Fringe,      !  3,
+     &                                       ZernType_Noll,        ! 10,
+     &                                       ZernType_ExtFringe/)  ! 11
+
+        CHARACTER(LEN=*), PARAMETER :: ZernTypeNameL(mZernType)=
+     &         (/'ANSI',             !  1   was Malacara
+     &           'BornWolf',         !  2
+     &           'Fringe',           !  3
+     &           'NormANSI',         !  4   was Malacara
+     &           'NormBornWolf',     !  5
+     &           'NormFringe',       !  6
+     &           'NormHex',          !  7
+     &           'NormNoll',         !  8
+     &           'NormAnnularNoll',  !  9   Annular Zernike
+     &           'Noll',             ! 10   Noll Ordering
+     &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
+
+        REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
+     &             (/       1d0,        2d0,        2d0, sqrt( 6d0), sqrt( 3d0), sqrt( 6d0),
+     &               sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt(10d0), sqrt(10d0),
+     &               sqrt( 5d0), sqrt(10d0), sqrt(10d0), sqrt(12d0), sqrt(12d0), sqrt(12d0),
+     &               sqrt(12d0), sqrt(12d0), sqrt(12d0), sqrt(14d0), sqrt(14d0), sqrt(14d0),
+     &               sqrt( 7d0), sqrt(14d0), sqrt(14d0), sqrt(14d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt( 9d0), sqrt(18d0),
+     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
+     &               sqrt(20d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0),
+     &               sqrt(11d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0)/)
+
+        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(3) = ['Sellmeier', 'SCHOTT', 'Hartman']  ! see 'param_mod.F' for id
+
+	Integer, parameter :: mCoat=10,
      &           	      mPrvGlass=5, ! max private glasses defined in Rx
-     &                        mPrvGlassEntry=20, ! max wavlen/index entries for 
+     &                        mPrvGlassEntry=20, ! max wavlen/index entries for
 					 	 ! each glass in catalog
      &                        mES=10  ! max edge-sensors per element
-	Integer, parameter :: mAsphCoef=9,  ! max terms = 9, up to term h^20
-     &                        mSrfType=11   ! number of surface types as defined in prop_defs.inc 
-	Integer, parameter :: mMetSrf=150,  ! max surfaces with metrology
-     &                        mMetBeam=24,  ! max met beams on each met srf. 
+	Integer, parameter :: mMetSrf=20,  ! max surfaces with metrology
+     &                        mMetBeam=48, ! max met beams on each met srf.
      &                        mMetPos=mMetBeam,  ! max metrology points on each met srf.
-     &                        mSysMetBeam=mMetSrf*mMetBeam,   ! max total system met measurements
+     &                        mSysMetBeam=128,    ! max total system met measurements
      &                        mRefRay=5,   ! max # reference rays, chief + 4 marginal
-     &                        mIndRef=5,   ! 
-     & 			      mDOE=6       ! max # DOE elements 
-        Integer :: maxAsphCoef=4  ! default to 4 terms
+     &                        mPupRay=9,   ! max # pupil rays, chief + 8 marginal
+     &                        mIndRef=5,   !
+     & 			      mDOE=6       ! max # DOE elements
+        Integer :: maxAsphCoef  ! default to 4 terms
 
 	Logical :: ifInMTFCalc,BWK_FLG,LStopAtEltAutoSet,LSavRayL,SrcLF_FLG,
      &             CalcSrcZFrame_FLG,DupElt_FLG
         Logical, dimension(:), allocatable :: LFastRayTrace,LRayOK,
-     &                  LEltOK,LRayPass,LEltObs,ifComputeDZ,LGlass,
+     &                  LRayPass,LEltObs,LGlass,
      &                  LTaperedElt,LApTypeDefined,LApVecDefined,
      &	                LEltMRP_FLG,LUpdateTElt_FLG,LxObsDef,
-     &                  ifAmplSrf,ifOPDModGrid,UseRptForApe_Flg
+     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
 	Logical, dimension(:,:), allocatable :: LRayToElt
 
-        Character*32 :: EltTypeName(20), SrfTypeName(20),
-     &                  ApTypeName(0:15), ObsTypeName(-10:10),
-     &                  PropTypeName(15), GridTypeName(6),
-     &                  ZernTypeNameL(mZernType),BaseUnits,WaveUnits
+        Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
+     &                  PropTypeName(15), ! GridTypeName(6),
+     &                  BaseUnits,WaveUnits
 
-        Character*32, dimension(:), allocatable :: EltName,
+        Character*32, dimension(:), allocatable ::
      &                GlassElt, GlassName,EltMRP
 
         Integer :: nElt,nRay,nOutCord,nSeg,spcOption,nRefRay,nDOE,
@@ -56,15 +274,15 @@ C***********************************************************************
      &           RayToSegMap,RayID,RayWFMap,ObsType,
      &           IWORK,EltGrp,ObsTypeRx,tMetSrfPos
 
-        Integer, dimension(:), allocatable :: EltType,LnkElt,
-     &         nECoord,EltToSegMap,SegToEltMap,PropType,ApType,
-     &         nObs,iEltToiWF,SrfType,OpType,iEltToIntSrf, 
-     &         nDP,LensArrayType,nCoatElt,UDSrfType, EltID,
-     &         ZernaType,ZernTypeL,iEltToGridSrf,nGridMat,GridSrfOrder,
+        Integer, dimension(:), allocatable :: LnkElt,
+     &         EltToSegMap,SegToEltMap,PropType,ApType,
+     &         nObs,iEltToiWF,OpType,iEltToIntSrf,
+     &         LensArrayType,nCoatElt,
+     &         GridSrfOrder,
      &	       GlassType,EltCoat,nObsRx,nAmplMat,passRayIds,
      &         iEltToAmplSrf,iEltToMetSrf,nMetPos,tMetSrf,ntMetPos
 
-	Integer, dimension(:), allocatable :: nRayToSeg,NSCnt,EdgeSensor 
+	Integer, dimension(:), allocatable :: nRayToSeg,NSCnt,EdgeSensor
 
         SREAL, dimension(:,:,:), allocatable :: dxidxim1,dxidui
         SREAL, dimension(:,:), allocatable :: MWFFT
@@ -74,68 +292,58 @@ C***********************************************************************
      &            WavelenUM,WavelenConv,WaveBU,CBM,CWM,CWB,WavelenRx,
      &            ToutRx(7,7),sysLOS(2),sysLOSAng(2),CurRefRayDir(3)
 
-        Real*8, dimension(:,:,:), allocatable :: TElt,ObsVec,XYZSRF,
-     &          DZSRF,GridMat,ApHexBound,PolyApVtx,PolyApEqn,ObsVecRx,
+        Real*8, dimension(:,:,:), allocatable :: ObsVec,XYZSRF,
+     &          DZSRF,ApHexBound,PolyApVtx,PolyApEqn,ObsVecRx,
      &          TEltRx,AmplMat,SrfMetPos,EdgeSensVec
 
 	Real*8, dimension(:,:,:,:), allocatable :: ObsHexBound,
-     &          PolyObsVtx,PolyObsEqn   
+     &          PolyObsVtx,PolyObsEqn
 
-        Real*8, dimension(:,:), allocatable :: vptElt,
-     &        RptElt, psiElt, RayPos, RayDir, ApVec, xObs,
-     &        AsphCoef,MonCoef, ZernCoef,pMon,xMon,yMon,zMon,
-     &        ZernCent,ZernXGrid,ZernYGrid,
-     &        h1HOE,h2HOE, CoatIndxElt,CoatThkElt,AnaCoef,
-     &        UDSrfCoef,yObs, zObs,DWORK,UDSrfParam,vptRx,psiRx,RptRx,
-     &        GlassCoef, GlassTable,MTFMat,MTFMat2,pMonRx,xMonRx,
-     &        yMonRx,zMonRx,IndRefArr,ExtincArr,EltCoatThk,ZernCoefRx,
+        Real*8, dimension(:,:), allocatable ::
+     &        RayPos, RayDir, ApVec, xObs,
+     &        h1HOE,h2HOE, CoatIndxElt,CoatThkElt,
+     &        yObs, zObs,DWORK,
+     &        GlassCoef, GlassTable,MTFMat,MTFMat2,
+     &        IndRefArr,ExtincArr,EltCoatThk,
      &	      ArrIndRef,SrfMetMea
-	! IndRefArr is for coating layers, ArrIndRef is for lens element 
+	! IndRefArr is for coating layers, ArrIndRef is for lens element
 	! having several IndRef for different wavelengths
 
-        Real*8, dimension(:), allocatable :: fElt,eElt,ZernRad,
-     &          RayL,dxElt,IndRef,CumRayL,CumCRL,zElt,KcElt,KrElt,
-     &          lMon, LensArrayWidth, OrderHOE,WaveHOE,PinHole,
-     &          Extinc,RuleWidth,GridSrfdx,AmplSrfdx,KrRx,KcRx,
-     &	        ZernAnnuRatio,CumRayLsav,metMeasBuf
+        Real*8, dimension(:), allocatable ::
+     &          RayL,dxElt,IndRef,CumRayL,CumCRL,
+     &          LensArrayWidth, OrderHOE,WaveHOE,PinHole,
+     &          Extinc,RuleWidth,AmplSrfdx,
+     &	        CumRayLsav,metMeasBuf
 
-        Real*8 :: Fn,  ! Fresnel number 
+        Real*8 :: Fn,  ! Fresnel number
      &	          OPDdx, OPDdy, ! exit pupil OPD grid spacing
      &            RayDirBuff(3,5),rayHt,costh,efl, ! used in 'EFL' command
      &            ChfRayDirAtElt(3),ChfRayPosAtElt(3),BeamSizeAtElt,
      &	          RefRayDir(3,mRefRay)
 
-	! Zernike normallizing coefs (Malacara) 
-	Real*8 :: ZnNmFac_m(maxZernTerms)
+	! Zernike normallizing coefs (Malacara)
+	Real*8 :: ZnNmFac_m(mZernModes)
 
 	! Diffractive Optical Element (DOE) related arrays
-	Integer, dimension(:), allocatable :: DoeId 
+	Integer, dimension(:), allocatable :: DoeId
 	Real*8 :: DoeWL(mDOE)  ! DOE design wavelength
 	Real*8, dimension(:), allocatable :: DoeFl
 	Real*8, dimension(:,:), allocatable :: DoePhProf  ! phase profile
 
-        Complex*16, dimension(:,:,:), allocatable :: WFElt,JmatElt, 
+        Complex*16, dimension(:,:,:), allocatable :: WFElt,JmatElt,
      &                                               ObsMat
         Complex*16, dimension(:,:), allocatable :: RayE,WFbuff,OTFMat
-	
+
 	Integer, parameter :: maxLensGrp = 10
 	Integer :: m_iCenterPMSeg,m_iFirstPMSeg,m_iLastPMSeg,
-     &             m_iPM,m_iSM,m_iTM,m_iFSM,m_iPickoff, 
-     &             m_iFM(2),m_iExitPupil,m_iFocalPlane, 
-     &             m_nLensGrp,m_LensGrp(2,maxLensGrp), 
-     &             m_LensGrpElts(maxLensGrp),refRay(mRefRay),
+     &             m_iPM,m_iSM,m_iTM,m_iFSM,m_iPickoff,
+     &             m_iFM(2),m_iExitPupil,m_iFocalPlane,
+     &             m_nLensGrp,m_LensGrp(2,maxLensGrp),
+     &             m_LensGrpElts(maxLensGrp),refRay(mPupRay),
      &             m_err_elt
-	
-	Integer, parameter :: mPolySide=64  ! changed to 64 from 32, 02/04/2015
 
-	Integer, parameter :: ReflectorElt=1, FocalPlaneElt=2,
-     &           ReferenceElt=3, HOEElt=4, GratingElt=5,
-     &           RefractorElt=6, ObscuringElt=7,
-     &           ReturnElt=8, NSRefractorElt=9,
-     &           LensArrayElt=10, SegmentElt=11,
-     &           NSReflectorElt=12, TrGratingElt=13,
-     &           RfPolarizerElt=14, TrPolarizerElt=15
-	
+	Integer, parameter :: mPolySide=128  ! changed to 64 from 32 02/04/2015
+
 	Type OptBeamStr
           Logical :: ifOptBeamDir,ifOptBeamPos,ifOptBeamSize,
      &               ifOptBeamRefRayDir
@@ -163,7 +371,8 @@ C***********************************************************************
         If (allocated(LRayToElt)) Then
           deallocate(LRayToElt,LRayOK,LEltOK,LRayPass,LEltObs,
      &               ifComputeDZ,LGlass,LTaperedElt,LFastRayTrace,
-     &               LApTypeDefined,LApVecDefined,stat=m_err_elt)
+     &               LApTypeDefined,LApVecDefined,
+     &               ifGridDataDefined,stat=m_err_elt)
           if (m_err_elt /= 0)
      &      call macos_memory_failure
      &               ('elt_mod_init(logical): deallocate failed!')
@@ -179,7 +388,7 @@ C***********************************************************************
      &               PropType,ApType,nObs,iEltToiWF,SrfType,
      &		     LUpdateTElt_FLG,nObsRx,ObsTypeRx,ifAmplSrf,
      &               ifOPDModGrid,passRayIds,metBeamFlg,
-     &               UseRptForApe_Flg,stat=m_err_elt)
+     &               stat=m_err_elt)
 	  if (m_err_elt /= 0)
      &      call macos_memory_failure
      &               ('elt_mod_init(int): deallocate failed!')
@@ -218,7 +427,7 @@ C***********************************************************************
 	  if (m_err_elt /= 0)
      &      call macos_memory_failure
      &             ('elt_mod_init(real*8): deallocate failed!')
-     
+
           deallocate(AnaCoef,UDSrfCoef,yObs, zObs,DWORK,UDSrfParam,
      &               GlassCoef, GlassTable, MTFMat,MTFMat2,fElt, eElt,
      &               RayL,dxElt,IndRef,CumRayL,CumCRL,zElt,KcElt,KrElt,
@@ -229,7 +438,7 @@ C***********************************************************************
      &             ('elt_mod_init(real*8): deallocate failed!')
 
 	  deallocate(lMon,LensArrayWidth,OrderHOE,WaveHOE,PinHole,
-     &               Extinc,RuleWidth,GridSrfdx,GlassType,EltGrp, 
+     &               Extinc,RuleWidth,GridSrfdx,GlassType,EltGrp,
      &               EltCoat,IndRefArr,ExtincArr,EltCoatThk,
      &               AmplSrfdx,SrfMetPos,SrfMetMea,
      &               ArrIndRef,DoeFl,stat=m_err_elt)
@@ -243,25 +452,22 @@ C***********************************************************************
      &      call macos_memory_failure
      &             ('elt_mod_init(complex*16): deallocate failed!')
         End If
-	
+
 
 	! Allocations
 
 	! Logical arrays
         allocate(LRayToElt(0:mElt,bRay),LRayOK(mRay),LEltOK(mElt),
      &           LRayPass(mRay),LEltObs(mElt),ifComputeDZ(mIntSrf),
-     &           LGlass(mElt),LTaperedElt(mElt),LEltMRP_FLG(0:mElt), 
+     &           LGlass(mElt),LTaperedElt(mElt),LEltMRP_FLG(0:mElt),
      &           LApTypeDefined(mElt),LApVecDefined(mElt),
-     &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay), 
-     &           UseRptForApe_Flg(mElt),stat=m_err_elt)
+     &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay),
+     &           ifGridDataDefined(mGridSrf),stat=m_err_elt)
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init: allocate(logical) failed!')
-	LRayToElt = .false.; LRayOK = .false.; LEltOK = .false.
-	LRayPass = .false.; LEltObs = .false.; ifComputeDZ = .false.
-	LGlass = .false.; LTaperedElt=.false.
-        LApTypeDefined=.false.; LApVecDefined=.false. 
-        LFastRayTrace=.false.; UseRptForApe_Flg=.false.
+
+
 
         ! Character arrays
         allocate(EltName(0:mElt), GlassElt(mElt), GlassName(mGlass),
@@ -288,19 +494,14 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(int-1): allocate failed!')
-	SegCoord=0; RayToSegMap=0; RayID=0; DoeId=0
-        RayWFMap=0; ObsType=0; IWORK=0
-	EltType=0; nECoord=0; EltToSegMap=0
-	SegToEltMap=0; PropType=0; ApType=0
-	nObs=0; iEltToiWF=0; SrfType=0; OpType=0
-        LnkElt=-1; EltCoat=0; ifAmplSrf=.FALSE.; ifOPDModGrid=.FALSE.
+
 
         allocate(iEltToIntSrf(mElt),nDP(mIntSrf),
-     &           LensArrayType(mElt),nCoatElt(mElt), 
+     &           LensArrayType(mElt),nCoatElt(mElt),
      &           UDSrfType(0:mElt),EltID(0:mElt),
-     &           ZernaType(mElt),ZernTypeL(mElt), 
+     &           ZernaType(mElt),ZernTypeL(mElt),
      &           iEltToGridSrf(mElt),nGridMat(mElt),
-     &           GridSrfOrder(mElt), 
+     &           GridSrfOrder(mElt),
      &           nRayToSeg(mRay),NScnt(mElt),nAmplMat(mElt),
      &           iEltToAmplSrf(mElt),iEltToMetSrf(mElt),
      &           nMetPos(mElt),tMetSrf(mElt),ntMetPos(mElt),
@@ -308,11 +509,7 @@ C***********************************************************************
 	if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(int-2): allocate failed!')
-	iEltToIntSrf=0; nDP=0; LensArrayType=0
-        nCoatElt=0; UDSrfType=0; nAmplMat=0
-	EltID=0; ZernaType=0; ZernTypeL=0
-	iEltToGridSrf=0; nGridMat=0; nRayToSeg=0;GridSrfOrder=1
-	iEltToAmplSrf=0; NScnt=0; EdgeSensor=0
+
 
         ! SREAL arrays
         allocate(dxidxim1(7,7,mElt), dxidui(7,6,mElt),
@@ -321,18 +518,17 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(SREAL): allocate failed!')
-	dxidxim1 = fzero_; dxidui = fzero_
-        MWFFT = fzero_; XFP = fzero_; YFP = fzero_
 
-	! Temporary set, need to update later ...
-	mAmplMat=mGridMat; mAmplSrf=mGridSrf
+	! Temporary set, need to update later ...  ==> ToDo: move to param_mod.F
+	mAmplMat = mGridMat
+        mAmplSrf = mGridSrf
 
         ! REAL*8 arrays
         allocate(TElt(6,6,0:mElt), ObsVec(6,mObs,mElt),
      &           XYZSRF(mDP,3,mIntSrf), DZSRF(2,mDP,mIntSrf),
      &           GridMat(mGridMat,mGridMat,mGridSrf),
      &           AmplMat(mAmplMat,mAmplMat,mAmplSrf),
-     &           ApHexBound(3,6,mElt),ObsVecRx(6,mObs,mElt), 
+     &           ApHexBound(3,6,mElt),ObsVecRx(6,mObs,mElt),
      &           ObsHexBound(3,6,mObs,mElt),EdgeSensVec(9,mES,mElt),
      &           PolyApVtx(2,mPolySide,mElt),TEltRx(6,6,mElt),
      &           PolyApEqn(3,mPolySide,mElt),
@@ -343,27 +539,22 @@ C***********************************************************************
 	if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(real*8-0.5): allocate failed!')
-	ApHexBound = -1d0; EdgeSensVec=-1d0
+
 
 	allocate(RptElt(3,mElt), psiElt(3,mElt), RayPos(3,mRay),
      &           RayDir(3,mRay), ApVec(6,mElt), xObs(3,mElt),
-     &           AsphCoef(mAsphCoef,mElt),MonCoef(120,mElt),
-     &           ZernCoef(45,mElt),ZernCent(3,mElt),ZernRad(mElt),
+     &           AsphCoef(mAsphCoef,mElt),MonCoef(mMonCoef,mElt),
+     &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),
+     &           ZernRad(mElt),
      &		 ZernXGrid(3,mElt),ZernYGrid(3,mElt),
-     &           pMon(3,mElt),pMonRx(3,mElt),ZernCoefRx(45,mElt),
+     &           pMon(3,mElt),pMonRx(3,mElt),
+     &           ZernCoefRx(mZernModes,mElt),
      &           LxObsDef(mElt),tMetSrfPos(mMetPos,mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(real*8-1): allocate failed!')
 
-	TElt = dzero_; ObsVec = dzero_  
-        XYZSRF = dzero_; DZSRF = dzero_
-	GridMat = dzero_; vptElt = dzero_; RptElt = dzero_
-	psiElt = dzero_; RayPos = dzero_; RayDir = dzero_ 
- 	ApVec = dzero_; xObs = dzero_; AsphCoef = dzero_
-	MonCoef = dzero_; ZernCoef = dzero_
-        pMon = dzero_; AmplMat = dzero_; DoePhProf=dzero_
 
         allocate(xMon(3,mElt),yMon(3,mElt),zMon(3,mElt),
      &           xMonRx(3,mElt),yMonRx(3,mElt),zMonRx(3,mElt),
@@ -380,14 +571,8 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(real*8-2): allocate failed!')
-	xMon=dzero_; yMon = dzero_; zMon=dzero_; h1HOE=dzero_ 
-	h2HOE=dzero_; CoatIndxElt=dzero_; CoatThkElt=dzero_
-	AnaCoef=dzero_; UDSrfCoef=dzero_; yObs=dzero_
-	zObs=dzero_; DWORK=dzero_; UDSrfParam=dzero_
-	GlassCoef=dzero_; GlassTable=dzero_; fElt=dzero_ 
-	eElt=dzero_; RayL=dzero_; dxElt=0; IndRef=dzero_
-        MTFMat=dzero_  
-	
+
+
         allocate(CumRayL(mRay),CumCRL(mElt),zElt(0:mElt),KcElt(mElt),
      &        KrElt(mElt),lMon(mElt), LensArrayWidth(mElt),
      &        OrderHOE(mElt),WaveHOE(mElt),KrRx(mElt),KcRx(mElt),
@@ -401,13 +586,7 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(real*8-3): allocate failed!')
-	CumRayL=dzero_; CumCRL=dzero_; zElt=dzero_; KcElt=dzero_
-	KrElt = dzero_; lMon = dzero_; LensArrayWidth = dzero_
-	OrderHOE = dzero_; WaveHOE = dzero_; PinHole = dzero_
-	Extinc = dzero_;  RuleWidth = dzero_; GridSrfdx = dzero_
-	IndRefArr=dzero_; ExtincArr=dzero_; EltCoatThk=dzero_
-	AmplSrfdx=dzero_; CumRayLsav=dzero_; DoeFl=-1d0
-        ArrIndRef=dzero_
+
 
         ! Complex*16 arrays
         allocate(WFElt(mdttl,mdttl,mWF), JmatElt(2,2,mElt),
@@ -417,40 +596,299 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
-	WFElt = czero_; JmatElt = czero_; ObsMat = czero_
-	RayE = czero_; WFbuff = czero_; OTFMat=czero_
 
-	LSavRayL=.false. 
-
-	! Initialize Zernike normalizing factors only
-	Call SetZernNormCoef(0)
         End Subroutine elt_mod_init
 
-C  *****************************************************************
+C  ***************************************************************
 
-	Subroutine SetZernNormCoef(arg_flag)
-        Integer :: arg_flag
-	Logical, save :: first_entry=.true.
+        SUBROUTINE elt_mod_init_vars()
+          USE Kinds
+          IMPLICIT NONE
 
-	if (arg_flag==0) first_entry=.true.  ! needed by MRESET command
+! ToDo: move system flags to macos_mod.F  <<<<<<
 
-	if (first_entry) then
-          ! Define normalizing constants for circular Zernike terms,
-          ! in Malacara order
-          ZnNmFac_m(1)=1; ZnNmFac_m(2)=2; ZnNmFac_m(3)=2
-          ZnNmFac_m(4)=sqrt(6d0); ZnNmFac_m(5)=sqrt(3d0)
-          ZnNmFac_m(6)=sqrt(6d0); ZnNmFac_m(7)=2.*sqrt(2d0)
-          ZnNmFac_m(8:10)=ZnNmFac_m(7); ZnNmFac_m(11:12)=sqrt(10d0)
-          ZnNmFac_m(13)=sqrt(5d0); ZnNmFac_m(14:15)=sqrt(10d0)
-          ZnNmFac_m(16:21)=2.*sqrt(3d0); ZnNmFac_m(22:24)=sqrt(14d0)
-          ZnNmFac_m(25)=sqrt(7d0); ZnNmFac_m(26:28)=sqrt(14d0)
-          ZnNmFac_m(29:36)=4d0; ZnNmFac_m(37:40)=3.*sqrt(2d0)
-          ZnNmFac_m(41)=3d0; ZnNmFac_m(42:45)=3.*sqrt(2d0)
-          ZnNmFac_m(46:66)=0.0 ! undefined beyond first 45 terms; MACOS now 
-	  		       ! supports zern coef upto first 45 terms
-	  first_entry=.false.
-	  return
-	end if
-        End Subroutine SetZernNormCoef
+          LRayToElt(:,:)       = .FALSE.
+          LRayOK(:)            = .FALSE.
+          LEltOK(:)            = .FALSE.
+          LRayPass(:)          = .FALSE.
+          LEltObs(:)           = .FALSE.
+          ifComputeDZ(:)       = .FALSE.
+          LGlass(:)            = .FALSE.
+          LTaperedElt(:)       = .FALSE.
+          LApTypeDefined(:)    = .FALSE.
+          LApVecDefined(:)     = .FALSE.
+          LEltMRP_FLG(:)       = .FALSE.
+          LUpdateTElt_FLG(:)   = .FALSE.
+          LxObsDef(:)          = .FALSE.
+          ifAmplSrf(:)         = .FALSE.
+          ifOPDModGrid(:)      = .FALSE.
+          LFastRayTrace(:)     = .FALSE.
+          ifGridDataDefined(:) = .FALSE.
 
-	End Module elt_mod
+          ifInMTFCalc          = .FALSE.
+          BWK_FLG              = .FALSE.
+          LStopAtEltAutoSet    = .FALSE.
+          LSavRayL             = .FALSE.
+          SrcLF_FLG            = .FALSE.    ! set when "xFrame" or "yFrame" for Source Prb. is set  (Why here?) -> macos_init.inc, macos_mod.F   <- system flag
+          CalcSrcZFrame_FLG    = .FALSE.    ! set when "zFrame" is defined in Rx                    (Why here?) -> macos_init.inc, macos_mod.F
+          DupElt_FLG           = .FALSE.
+
+          EltName(:)           = ''
+          GlassElt(:)          = ''
+          GlassName(:)         = ''
+          EltMRP(:)            = ''
+
+          nElt                 =  0          ! total number of optical elements                (nElt <= mElt)
+          nRay                 =  0
+          nOutCord             =  0
+          nSeg                 =  0          ! total number of segments (requires seg. source) (nSeg <= mSeg)
+          spcOption            =  0
+
+          maxAsphCoef          =  4          ! default to 4 terms  (Heritage => affects MACOS 'NEW' cmd)
+
+          nRefRay              =  0
+
+          nDOE                 =  0          ! Diffractive Optical Element (DOE) related arrays
+          DoeId(:)             =  0
+          DoeWL(:)             =  0e0_pr     ! DOE design wavelength
+          DoeFl(:)             = -1e0_pr
+          DoePhProf(:,:)       =  0e0_pr     ! phase profile
+
+          EdgeSensor(:)        =  0
+          EdgeSensVec(:,:,:)   = -1e0_pr
+
+          nMetMeas             =  0          ! Metrology
+          metBeamFlg(:,:,:)    =  0
+          tMetSrfPos(:,:)      =  0
+          iEltToMetSrf(:)      =  0
+          nMetPos(:)           =  0
+          tMetSrf(:)           =  0
+          ntMetPos(:)          =  0
+          SrfMetPos(:,:,:)     =  0e0_pr
+          SrfMetMea(:,:)       =  0e0_pr
+          metMeasBuf(:)        =  0e0_pr
+
+          sysLOS(:)            =  0e0_pr
+          sysLOSAng(:)         =  0e0_pr
+          CurRefRayDir(:)      =  0e0_pr
+
+          nAmplMat(:)          =  0
+          AmplMat(:,:,:)       =  0e0_pr
+          AmplSrfdx(:)         =  0e0_pr
+
+          iEltToAmplSrf(:)     =  0
+          SegCoord(:,:)        =  0
+          RayToSegMap(:,:)     =  0
+          passRayIds(:)        =  0
+          RayID(:,:)           =  0
+          RayWFMap(:,:)        =  0
+          IWORK(:,:)           =  0
+          EltGrp(:,:)          =  0
+          ObsType(:,:)         =  0
+          ObsTypeRx(:,:)       =  0
+
+          EltType(:)           =  0
+          LnkElt(:)            = -1
+          nECoord(:)           =  0
+          EltToSegMap(:)       =  0
+          SegToEltMap(:)       =  0
+          PropType(:)          =  0
+          ApType(:)            =  0
+          nObs(:)              =  0
+          iEltToiWF(:)         =  0
+          SrfType(:)           =  0
+          OpType(:)            =  0
+          iEltToIntSrf(:)      =  0
+          nDP(:)               =  0
+          LensArrayType(:)     =  0
+          nCoatElt(:)          =  0
+          UDSrfType(:)         =  0
+          EltID(:)             =  0
+          ZernaType(:)         =  0
+          ZernTypeL(:)         =  0
+          iEltToGridSrf(:)     =  0
+          nGridMat(:)          =  0
+          GridSrfOrder(:)      =  1
+          GlassType(:)         =  0
+          EltCoat(:)           =  0
+          nObsRx(:)            =  0
+
+          nRayToSeg(:)         =  0
+          NSCnt(:)             =  0
+
+          SegApType            =  0
+          SegApVec(:)          = 0e0_pr
+
+          dxidxim1(:,:,:)      = 0e0_pr   ! SREAL
+          dxidui(:,:,:)        = 0e0_pr   ! SREAL
+          MWFFT(:,:)           = 0e0_pr   ! SREAL
+          XFP(:)               = 0e0_pr   ! SREAL
+          YFP(:)               = 0e0_pr   ! SREAL
+
+          Wavelen              = 0e0_pr
+          Flux                 = 0e0_pr
+          zSource              = 0e0_pr
+          Tout(:,:)            = 0e0_pr
+          WavelenUM            = 0e0_pr
+          WavelenConv          = 0e0_pr
+          WaveBU               = 0e0_pr
+          CBM                  = 0e0_pr
+          CWM                  = 0e0_pr
+          CWB                  = 0e0_pr
+          WavelenRx            = 0e0_pr
+          ToutRx(:,:)          = 0e0_pr
+          BeamSizeAtElt        = 0e0_pr
+
+
+          TElt(:,:,:)          =  0e0_pr
+          TEltRx(:,:,:)        =  0e0_pr
+          ObsVec(:,:,:)        =  0e0_pr
+          XYZSRF(:,:,:)        =  0e0_pr
+          DZSRF(:,:,:)         =  0e0_pr
+          GridMat(:,:,:)       =  0e0_pr
+          ApHexBound(:,:,:)    = -1e0_pr
+          PolyApVtx(:,:,:)     =  0e0_pr
+          PolyApEqn(:,:,:)     =  0e0_pr
+          ObsVecRx(:,:,:)      =  0e0_pr
+
+          ObsHexBound(:,:,:,:) = 0e0_pr
+          PolyObsVtx(:,:,:,:)  = 0e0_pr
+          PolyObsEqn(:,:,:,:)  = 0e0_pr
+
+          VptElt(:,:)          = 0e0_pr
+          RptElt(:,:)          = 0e0_pr
+          psiElt(:,:)          = 0e0_pr
+          RayPos(:,:)          = 0e0_pr
+          RayDir(:,:)          = 0e0_pr
+          ApVec(:,:)           = 0e0_pr
+          xObs(:,:)            = 0e0_pr
+          AsphCoef(:,:)        = 0e0_pr
+          MonCoef(:,:)         = 0e0_pr
+          ZernCoefRx(:,:)      = 0e0_pr
+          ZernCoef(:,:)        = 0e0_pr
+          pMon(:,:)            = 0e0_pr
+          xMon(:,:)            = 0e0_pr
+          yMon(:,:)            = 0e0_pr
+          zMon(:,:)            = 0e0_pr
+          ZernCent(:,:)        = 0e0_pr
+          ZernXGrid(:,:)       = 0e0_pr
+          ZernYGrid(:,:)       = 0e0_pr
+          h1HOE(:,:)           = 0e0_pr
+          h2HOE(:,:)           = 0e0_pr
+          CoatIndxElt(:,:)     = 0e0_pr
+          CoatThkElt(:,:)      = 0e0_pr
+          AnaCoef(:,:)         = 0e0_pr
+          UDSrfCoef(:,:)       = 0e0_pr
+          yObs(:,:)            = 0e0_pr
+          zObs(:,:)            = 0e0_pr
+          DWORK(:,:)           = 0e0_pr
+          UDSrfParam(:,:)      = 0e0_pr
+          vptRx(:,:)           = 0e0_pr
+          psiRx(:,:)           = 0e0_pr
+          RptRx(:,:)           = 0e0_pr
+          GlassCoef(:,:)       = 0e0_pr
+          GlassTable(:,:)      = 0e0_pr
+          MTFMat(:,:)          = 0e0_pr
+          MTFMat2(:,:)         = 0e0_pr
+          pMonRx(:,:)          = 0e0_pr
+          xMonRx(:,:)          = 0e0_pr
+          yMonRx(:,:)          = 0e0_pr
+          zMonRx(:,:)          = 0e0_pr
+          IndRefArr(:,:)       = 0e0_pr
+          ExtincArr(:,:)       = 0e0_pr
+          EltCoatThk(:,:)      = 0e0_pr
+
+          fElt(:)              = 0e0_pr
+          eElt(:)              = 0e0_pr
+          ZernRad(:)           = 0e0_pr
+          RayL(:)              = 0e0_pr
+          dxElt(:)             = 0e0_pr
+          IndRef(:)            = 0e0_pr
+          ArrIndRef(:,:)       = 0e0_pr
+          CumRayL(:)           = 0e0_pr
+          CumRayLsav(:)        = 0e0_pr
+          CumCRL(:)            = 0e0_pr
+          zElt(:)              = 0e0_pr
+          KcElt(:)             = 0e0_pr
+          KrElt(:)             = 0e0_pr
+          lMon(:)              = 0e0_pr
+          LensArrayWidth(:)    = 0e0_pr
+          OrderHOE(:)          = 0e0_pr
+          WaveHOE(:)           = 0e0_pr
+          PinHole(:)           = 0e0_pr
+          Extinc(:)            = 0e0_pr
+          RuleWidth(:)         = 0e0_pr
+          GridSrfdx(:)         = 0e0_pr
+          KrRx(:)              = 0e0_pr
+          KcRx(:)              = 0e0_pr
+
+          ZernAnnuRatio(:)     = 0e0_pr
+
+          Fn                   = 0e0_pr  ! Fresnel number
+          OPDdx                = 0e0_pr  ! exit pupil OPD grid spacing
+          OPDdy                = 0e0_pr  !
+          RayDirBuff(:,:)      = 0e0_pr
+          RefRayDir(:,:)       = 0e0_pr
+          rayHt                = 0e0_pr
+          costh                = 0e0_pr
+          efl                  = 0e0_pr
+          focalRatio           = 0e0_pr
+          plateScale           = 0e0_pr
+          ChfRayDirAtElt(:)    = 0e0_pr
+          ChfRayPosAtElt(:)    = 0e0_pr
+
+          ! Zernike normlizing coefs (Malacara, Noll and Fringe)
+          ZnNmFac_m(:)         = 0e0_pr
+          !ZnNmFac_bw(:)        = 0e0_pr   !not used
+          !ZnNmFac_f(:)         = 0e0_pr   !not used
+          !ZnNmFac_n(:)         = 0e0_pr   !not used
+
+          WFElt(:,:,:)         = 0e0_prc  ! (0e0_pr, 0e0_pr)
+          JmatElt(:,:,:)       = 0e0_prc  ! (0e0_pr, 0e0_pr)
+          ObsMat(:,:,:)        = 0e0_prc  ! (0e0_pr, 0e0_pr)
+
+          RayE  (:,:)          = 0e0_prc  ! (0e0_pr, 0e0_pr)
+          WFbuff(:,:)          = 0e0_prc  ! (0e0_pr, 0e0_pr)
+          OTFMat(:,:)          = 0e0_prc  ! (0e0_pr, 0e0_pr)
+
+          m_iCenterPMSeg       = 0
+          m_iFirstPMSeg        = 0
+          m_iLastPMSeg         = 0
+          m_iPM                = 0
+          m_iSM                = 0
+          m_iTM                = 0
+          m_iFSM               = 0
+          m_iPickoff           = 0
+          m_iFM(:)             = 0
+          m_iExitPupil         = 0
+          m_iFocalPlane        = 0
+          m_nLensGrp           = 0
+          m_LensGrp(:,:)       = 0
+          m_LensGrpElts(:)     = 0
+          refRay(:)            = 0
+          m_err_elt            = 0
+
+          ! PrvGlass
+          nPrvGlass          =   0      ! actual private glasses defined in Rx
+          PrvGlassCatalog(:) = PrvGlass(glsName =  '',
+     &                                  nEntry  =   0,
+     &                                  IndRef  = 0e0_pr,
+     &                                  WavLen  = 0e0_pr)
+
+        END SUBROUTINE elt_mod_init_vars
+
+C  ***************************************************************
+
+        SUBROUTINE EltConvert(EltType,EltID,SrfType)
+          IMPLICIT NONE
+          INTEGER, intent(in) :: EltType   ! old Encoding ID
+          INTEGER, intent(out):: EltID
+          INTEGER, intent(out):: SrfType
+          ! ----------------------------------
+          EltID   = EltType2EltIDSrfType(EltType,1)  ! => EltTypeName
+          SrfType = EltType2EltIDSrfType(EltType,2)  ! => SrfTypeName
+
+        END SUBROUTINE EltConvert
+
+
+        End Module elt_mod

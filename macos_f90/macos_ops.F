@@ -14,8 +14,7 @@ C***********************************************************************
 	Implicit none
 	Save
 
-        Integer, parameter :: Tout_4SPOT=-112,Beam_4SPOT=-113
-	Integer :: nSpotRays 
+	Integer :: nSpotRays
 
 	Contains
 
@@ -40,15 +39,13 @@ C***********************************************************************
         REAL*8 :: DARG(9)
         LOGICAL :: LARG
         INTEGER :: IARG(9)
-        SREAL :: RARG(9) 
+        SREAL :: RARG(9)
         REAL*8, dimension(:,:),intent(out) :: OPDMap,SpotMap
 	SREAL, dimension(:,:),intent(out) :: PixMap
 	REAL*8 :: WFErms,WFEPV_loc
 	INTEGER, dimension(:), optional :: zernIDArr,asphIDArr
         REAL*8, dimension(:), optional :: zernCoefArr,asphCoefArr
 	LOGICAL :: LCMP
-
-        Integer, save :: SPOT_CoordOption=Beam_4SPOT  ! default
 
 C  FORMAT statements
 #include "macos_formats.inc"
@@ -58,7 +55,7 @@ C  FORMAT statements
 
 	If (LCMP(cmd,'STOP',4)) Then
 	  StopPos(1:3)=DARG(1:3)
-	  ifStopSet=.TRUE. 
+	  ifStopSet=.TRUE.
 
 	Else If (LCMP(cmd,'FEX',3)) Then
           !print*,'In OPT FEX ...'
@@ -88,7 +85,7 @@ C  FORMAT statements
 
 	Else If (LCMP(cmd,'PERT',4)) Then
 	  IF ((iElt.EQ.0).AND.(.NOT.ifStopSet)) THEN
-!               WRITE(*,*) '** Error (MACOS_OPS): Must set stop'// 
+!               WRITE(*,*) '** Error (MACOS_OPS): Must set stop'//
 !    &      'before perturbing source. Use STOP command.'
 !            stop
           END IF
@@ -101,7 +98,7 @@ C  FORMAT statements
           ifGrid=.FALSE.
           iCurRayElt=0
 	  !
-	  ! In double-pass system, also need to perturb its 
+	  ! In double-pass system, also need to perturb its
 	  ! return-pass counterpart if exists.
 	  Do i=1, nElt
 	    if (LnkElt(i)==iElt) then
@@ -126,25 +123,16 @@ C  FORMAT statements
 
 	Else If (LCMP(cmd,'SPOT',4)) Then
           IF (ifLoad) THEN
-            !spcOption=1  ! so that spot diagram centered around element, default in MACOS;
-            spcOption=2   ! so that spot diagram centered around chief ray.
-                          ! spcOption is set using 'SPCenter' command
-
-            If (SPOT_CoordOption == Tout_4SPOT) Then
-              ! 'Tout' option 'SPOT command
-
-            Else ! default   
-              ! 'BEAM' option in 'SPOT' command 
-              ifGrid=.FALSE.
-              ifDraw=.FALSE.
-              ifPropagate=.FALSE.
-              ifTrace=.FALSE.
-              ifBuild=.FALSE.
-              ifOPDCalc=.FALSE.
-              iLocal=iElt
-             !spcOption=1  ! so that spot diagram centered around element, default in MACOS;
-              spcOption=2  ! so that spot diagram centered around chief ray.
-                           ! spcOption is set using 'SPCenter' command
+            ! use 'BEAM' option in 'SPOT' command
+            ifGrid=.FALSE.
+            ifDraw=.FALSE.
+            ifPropagate=.FALSE.
+            ifTrace=.FALSE.
+            ifBuild=.FALSE.
+            ifOPDCalc=.FALSE.
+            iLocal=iElt
+            !spcOption=1  ! so that spot diagram centered around element
+            spcOption=2  ! so that spot diagram centered around chief ray
 
             CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
@@ -153,30 +141,28 @@ C  FORMAT statements
      &        Cmatrix,DrawRayVec,DrawEltVec,
      &        iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
 
-              IF (ifLocalCoord) THEN
-                !WRITE(*,311)xLocal,yLocal,zLocal
-                CALL DZERO(Tspot(1,1),49)
-                DO iCoord=1,3
-                  Tspot(1,iCoord)=xLocal(iCoord)
-                  Tspot(2,iCoord)=yLocal(iCoord)
-                  Tspot(3,3+iCoord)=xLocal(iCoord)
-                  Tspot(4,3+iCoord)=yLocal(iCoord)
-                END DO
-                Tspot(5,7)=1
-                ! Now Tspot can be viewed as a 5x7 matrix, as
-                ! xL(1) xL(2) xL(3) 0 0 0 0 0
-                ! yL(1) yL(2) yL(3) 0 0 0 0 0
-                ! 0     0     0     xL(1) xL(2) xL(3) 0
-                ! 0     0     0     yL(1) yL(2) yL(3) 0
-                ! 0     0     0     0     0     0     1
-                CALL COMPACT(Tcompact,Tspot,5,7,7,7)
-                CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
-              ELSE
-                WRITE(*,*)'** macos_ops: SPOT command error!'
-                STOP
-              END IF
-            END IF ! SPOT_CoordOption
-
+            IF (ifLocalCoord) THEN
+              !WRITE(*,311)xLocal,yLocal,zLocal
+              CALL DZERO(Tspot(1,1),49)
+              DO iCoord=1,3
+                Tspot(1,iCoord)=xLocal(iCoord)
+                Tspot(2,iCoord)=yLocal(iCoord)
+                Tspot(3,3+iCoord)=xLocal(iCoord)
+                Tspot(4,3+iCoord)=yLocal(iCoord)
+              END DO
+              Tspot(5,7)=1
+              ! Now Tspot can be viewed as a 5x7 matrix, as
+              ! xL(1) xL(2) xL(3) 0 0 0 0 0
+              ! yL(1) yL(2) yL(3) 0 0 0 0 0
+              ! 0     0     0     xL(1) xL(2) xL(3) 0
+              ! 0     0     0     yL(1) yL(2) yL(3) 0
+              ! 0     0     0     0     0     0     1
+              CALL COMPACT(Tcompact,Tspot,5,7,7,7)
+              CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
+            ELSE
+              WRITE(*,*)'** macos_ops: SPOT command error!'
+              STOP
+            END IF
             RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
             RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
 
@@ -184,16 +170,10 @@ C  FORMAT statements
             iEndElt=iElt; iStartElt=0
             IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
               ifRayPrint=.FALSE.
-              IF (iStartElt.EQ.0) THEN
-                IF (ABS(zSource).GE.1d10) THEN
-                  CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &            ifPropagate)
-                ELSE
-                  CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &            ifPropagate)
-                END IF
-                ifGrid=.TRUE.
-              END IF
+              IF (iStartElt.EQ.0)
+     &          CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate,ifGrid)
+
               WRITE(*,*)' Tracing ',nRay,' rays...'
               iStartRay=1
               iEndRay=nRay
@@ -258,7 +238,7 @@ C  FORMAT statements
             WRITE(*,*) '** Error (MACOS_OPS): load Rx first!'
             STOP
           END IF
-	   
+
 	Else If (LCMP(cmd,'OPD',3)) Then
 	  IF (ifLoad) THEN
 	    isDOP=.true.
@@ -320,7 +300,7 @@ C  FORMAT statements
 	Else If (LCMP(cmd,'ROC_PERT',8)) Then
 	  KrElt(iElt)=KrElt(iElt)+DARG(1)
 	  Do i=1, nElt
-            if (LnkElt(i)==iElt) 
+            if (LnkElt(i)==iElt)
      &	      KrElt(i)=KrElt(i)+DARG(1)
 	  End Do
 
@@ -336,7 +316,7 @@ C  FORMAT statements
 	  Do i=1,IARG(2)
 	    j=zernIDArr(i)  ! Zern term id
 	    ZernCoef(j,iElt)=ZernCoef(j,iElt)+zernCoefArr(i)
-	  End Do 
+	  End Do
 
 	  Do i=1,nElt  ! for double-pass
             if (LnkElt(i)==iElt) then
@@ -372,7 +352,8 @@ C  FORMAT statements
             DO iElt=1,mElt
               ifRegrid(iElt)=.FALSE.
             END DO
-            !ifPol=.FALSE.; ifVecDif3=.FALSE.
+            ifPol=.FALSE.
+            ifVecDif3=.FALSE.
             ifOld=.FALSE.
             ifRayPrint=.FALSE.
             ifGrid=.FALSE.
@@ -421,10 +402,10 @@ C  FORMAT statements
 
         IMPLICIT NONE
 
-	CHARACTER(len=MacosCharLen) :: CARG(9),ANS
+	CHARACTER(len=MacosCharLen) :: CARG(9)
         REAL*8 :: DARG(9)
-        INTEGER i,j,k, iElt 
-        LOGICAL LLocCoord,LCMP
+        INTEGER i,j,k, iElt
+        LOGICAL LCMP
 
         REAL*8 th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &         DDEF(7),PV(6),del2(3)
@@ -432,7 +413,6 @@ C  FORMAT statements
  400    FORMAT(' Computing new perturbed system parameters')
 
         CALL DZERO(DDEF,7)
-        LLocCoord=.true.  ! default
 
 C  1. Compute perturbed entrance pupil data
 
@@ -459,7 +439,7 @@ c    &       'Enter translational perturbation vector (x,y,z):')
 	  If (.not.OptSrcRpt_FLG) Then
             CALL DSUB(D1,ChfRayPos,StopPos,3)
 	  Else
-	    CALL DSUB(D1,ChfRayPos,OptSrcRpt,3) 
+	    CALL DSUB(D1,ChfRayPos,OptSrcRpt,3)
 	  End If
 
           CALL DMPROD(D2,dQ,D1,3,3,1)
@@ -480,7 +460,8 @@ c	  CALL CACCEPT(ANS,'GLOBAL',
 c    &      'Enter coordinate system for perturbation '//
 c    &      '(ELEMENT or GLOBAL): ')
 c         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
-	  IF (LCMP(CARG(1:3),'ELE',3)) THEN
+	  IF ((LCMP(CARG(1),'ELE',3)).OR.(LCMP(CARG(2),'ELE',3)).OR.
+     &        (LCMP(CARG(3),'ELE',3))) THEN
             ! element coord system
             k= nECoord(iElt)
             IF (k .EQ. 0) THEN
@@ -491,7 +472,6 @@ c         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
                IF (k .LT. 0) THEN
                  ! just global coordinates, continue anyway
                  k = -k
-                 LLocCoord=.false.
                END IF
 c              CALL DACCEPT(D1,DDEF,k,
 c    &           'Enter perturbation vector in element coordinates:')
@@ -506,7 +486,6 @@ C    &             D1(1),D1(2),D1(3),D1(4),D1(5),D1(6)
             END IF
           ELSE
             ! global corrd system
-            LLocCoord=.false.
 c           CALL DACCEPT(PV(1:3),DDEF,3,
 c    &        'Enter rotational perturbation vector (x,y,z):')
 c           CALL DACCEPT(PV(4:6),DDEF,3,
@@ -556,8 +535,7 @@ C fixed by Gopal Vasudevan:
             CALL DADD(h2HOE(1,iElt),D1,del,3)
           END IF
 
-          IF (((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) 
-     &        .OR. SrfType(iElt).EQ.11) THEN  ! added type 11 for AsGrData, 07/2019
+          IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
             CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
             CALL DMPROD(D2,dQ,D1,3,3,1)
             CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -585,7 +563,7 @@ C fixed by Gopal Vasudevan:
 
 	CHARACTER(len=MacosCharLen) :: CARG(9)
         REAL*8 :: DARG(9)
-        INTEGER :: i,j,k,iElt
+        INTEGER :: i,k,iElt
         LOGICAL :: LLocCoord, LCMP
         REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &            DDEF(7),PV(6),RptVec(3)
@@ -643,5 +621,5 @@ C fixed by Gopal Vasudevan:
      &                      LLocCoord)
         End Do
         End Subroutine CPERTURB_GRP_DVR_2
-	
+
         End Module macos_ops_mod

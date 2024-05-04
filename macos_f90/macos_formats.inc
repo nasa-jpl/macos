@@ -132,7 +132,6 @@ C  2. FORMAT statements
      &	'           PERturb optical system'/
      &	'           PREad: perturb using input from a file'/
      &	'           OPD plot and analysis'/
-     &	'           DOPd plot differential OPD maps'/
      &	'           CENTEr beam in system stop'/
      &	'           STOP defines system stop'/
      &	'           COOrd: compute beam coordinates at an element'/
@@ -143,7 +142,6 @@ C  2. FORMAT statements
      &	'           specified pixel location on a detector'/
      &	'           SPCenter: specify spot diagram centering option'/
      &	'           SPOt diagram plot'/
-     &  '           GBS: report beam sizes on selected elements'/
      &  '           FDP finds detector plane position and orientation')
  304    FORMAT('  Commands for linear model building and analysis are:'/
      &	'           BUild linear model using ray partials'/
@@ -210,7 +208,7 @@ C  2. FORMAT statements
      &	' Old crp=',D17.9,' New crp=',D17.9,2(/9x,D17.9,9x,D17.9))
  309	FORMAT(1P,' Beam centered in',i4,' iterations, error=',D17.9)
  310	FORMAT(1P,'  Computed StopPos =',3D20.12)
- 315    FORMAT(1P,'  Stop specified at Elt',I3,', offset =',2D20.12)
+ 315    FORMAT(1P,'  Stop set at Elt',I3,', offset =',2D20.12)
  311	FORMAT(1P,' Computed xLocal=',3D24.16/
      &	' Computed yLocal=',3D24.16/' Computed zLocal=',3D24.16)
  316    FORMAT(1P,' xLocal=',3D24.16/
@@ -219,10 +217,7 @@ C  2. FORMAT statements
  318    FORMAT(1P,A12,3D22.12)
  319    FORMAT(1P,A7,I3,A2,A14,A2,A12,A2,A18,D18.10)
  320    FORMAT(5P,I3,I8,'  ',D17.9,'  ',D17.9,'  ',D17.9)
- 322    FORMAT(1P,255D17.9)
- 323    FORMAT(1P,511D17.9)
- 324    FORMAT(1P,1023D17.9)
- 325    FORMAT(1P,127D17.9)
+
  402    FORMAT(1P,' RMS OPD error is ',e13.6)
 
  442    FORMAT(1P,' RMS OPD error is ',D17.9/
