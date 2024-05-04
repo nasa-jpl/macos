@@ -45,6 +45,7 @@ C***********************************************************************
 	use loh_I2
 	use loh_I3
 	use dopt_mod
+        use macos_IO, only: SetPrtToFileID
 ! --------------------------------------
         IMPLICIT NONE
 
