@@ -9,8 +9,8 @@ C    |  Acknowledged. Any commercial use must be negotiated with the  |
 C    !  Office of Technology Transfer at the California Institute of  |
 C    |  Technology.                                                   |
 C    |  							      |
-C    | This software may be subject to U.S. export control laws. By   | 
-C    ! accepting this software, the user agrees to comply with all    | 
+C    | This software may be subject to U.S. export control laws. By   |
+C    ! accepting this software, the user agrees to comply with all    |
 C    | applicable U.S. export laws and regulations. User has the      |
 C    | responsibility to obtain export licenses, or other export      |
 C    | authority as may be required before exporting such information |
@@ -21,18 +21,15 @@ C***********************************************************************
 
 C***********************************************************************
 C       Modeling and Analysis for Controlled Optical Systems (MACOS)
-C       MACOS Version 3.50 	               Last updated: 07/2019
-C       (Based on MACOS Versions 3.34, 3.31, 3.2 and 2.86)
 C       MACOS Version 3.34 	               Last updated: 11/2011
 C       (Based on MACOS Versions 3.31, 3.2 and 2.86)
 C
 C       Contact:     John Z. Lou
-C       Address:     Jet Propulsion Laboratory 
-C                    MS 306-451 
+C       Address:     Jet Propulsion Laboratory
+C                    MS 306-451
 C                    4800 Oak Grove Dr., Pasadena CA 91109
 C       Email:       John.Z.Lou@jpl.nasa.gov
-C        Cell:       (818)653-8024
-C      Office:       (818)354-4870
+C       Phone:       (818)354-4870
 C***********************************************************************
 
 C***********************************************************************
@@ -55,6 +52,7 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+        use surfsub
 
 	use macosio_mod
         use sourcsub_mod
@@ -87,26 +85,26 @@ C  FORMAT statements
 
 	! External function declearations
 	Logical :: LCMP,inCmdHist
-	INTEGER :: ICLEN,StrLen 
+	INTEGER :: ICLEN,StrLen
         !INTEGER :: IDFLOOR,STRLEN
 	!Real*8 :: DDOTC,GAUSS,POISSON
 	!SREAL :: POIDEV
 
 	! Threading related
         !Integer :: macos_threads,new_macos_threads,iam
- 
+
 C  Execution starts
 
         ! Scene pthread defined in C
 	!Call startpthread
 
-	Call set_macos_problem_size(macos_model_size) 
+	Call set_macos_problem_size(macos_model_size)
 
-	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls 
+	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls
 	mOptZern_nls=mOptZern  ! are declared in design_optim_mod
 	mOptAsph_nls=mOptAsph
 	mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
-        mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod 
+        mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
 
         ! Initialize MACOS
         Call macos_init_all(macos_model_size)
@@ -121,7 +119,7 @@ C  Execution starts
      &	         CRWalk(3,mElt), CRWalkProjLoc(3,mElt),
      &           CD1(mdttl,mdttl), CD2(mdttl,mdttl),
      &           DWF(mdttl,mdttl), stat=m_err_macos)
-	If (m_err_macos /= 0) 
+	If (m_err_macos /= 0)
      &	  call macos_memory_failure('MACOS: allocate failed!')
         L1 = .false.; DrawEltVec = 0
         R1 = 0.0; R2 = 0.0; PertVec = 0.0
@@ -132,7 +130,7 @@ C  Execution starts
 
 	Call dopt_init
 
-        WRITE(*,303) mElt,mEm1,mRay,bRay,mWF,mIntSrf,mDP,mPix,mPix, 
+        WRITE(*,303) mElt,mEm1,mRay,bRay,mWF,mIntSrf,mDP,mPix,mPix,
      &		     mdttl,mdttl
 
 

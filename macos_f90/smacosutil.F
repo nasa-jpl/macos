@@ -37,7 +37,7 @@ C  Load CARG(1) for some commands
 	IF (LCMP(command,'LOAD',3).OR.LCMP(command,'OLD',2).OR.
      &	 LCMP(command,'EXECUTE',3).OR.LCMP(command,'LQW',3).OR.
      &	 LCMP(command,'SPCENTER',3).OR.LCMP(command,'SAO',3).OR.
-     &	 LCMP(command,'PREAD',3).OR.LCMP(command,'LPREAD',3)) 
+     &	 LCMP(command,'PREAD',3).OR.LCMP(command,'LPREAD',3))
      &   THEN
       	  CALL C2CW(CARG(1),ls,STACK,' ')
 	  GO TO 110
@@ -54,6 +54,7 @@ C  Load CARG(1 and 2) for some commands
 C  Load IARG(1) for other commands
 	IF (LCMP(command,'SHOW',3).OR.LCMP(command,'RAY',3).OR.
      &	  LCMP(command,'PARTIALS',3).OR.LCMP(command,'OPD',3).OR.
+     &    LCMP(command,'GBS',3).OR.
      &	  LCMP(command,'ROW',3).OR.LCMP(command,'COL',3).OR.
      &	  LCMP(command,'PARTIALS',3).OR.LCMP(command,'OPD',3).OR.
      &	  LCMP(command,'AM',2).OR.LCMP(command,'REAL',3).OR.
@@ -67,10 +68,10 @@ C  Load IARG(1) for other commands
 
 C  Load IARG(1) and stick a zero in after for RAY
 C	IF (LCMP(command,'RAY',3)) ! these two lines were commented out by jzlou
-C     	  CALL I2C(0,ls,STACK,' ') ! since it caused problem in *loop*.inc  
+C     	  CALL I2C(0,ls,STACK,' ') ! since it caused problem in *loop*.inc
 
 C  Load IARG(1) and IARG(2) for COL
-	IF (LCMP(command,'COL',3)) THEN
+	IF (LCMP(command,'COL',3).OR.LCMP(command,'GBS',3)) THEN
       	  CALL I2C(0,ls,STACK,' ')
 	  GO TO 110
 	END IF
@@ -103,8 +104,8 @@ C  Load IARG(1) and UDS file name for UDSINIT
 
 C  Load IARG(1) and coordinate type for SPOT
 	IF (LCMP(command,'SPOT',3)) THEN
-	  CALL I2C(IARG(1),ls,STACK,' ')
-	  CALL C2CW(CARG(1),ls,STACK,' ')
+	  CALL I2C(IARG(1),ls,STACK,' ')   ! iElt
+	  CALL C2CW(CARG(1),ls,STACK,' ')  ! BEAM, TOUT, ENTER
 	  GO TO 110
 	END IF
 
@@ -180,7 +181,7 @@ C  Load SRS
 	  END IF
 	  GO TO 110
 	END IF
-	
+
 C Added by GV, 26 Oct 1999
 C  Load ray #, 1st & last elt, for SRAY
 	IF (LCMP(command,'SRAY',3)) THEN
@@ -425,16 +426,16 @@ C  Load EXPORT
 	  CALL I2C(IARG(6),ls,STACK,',')
 	  CALL I2C(IARG(7),ls,STACK,',')
 	  CALL I2C(IARG(8),ls,STACK,',')
-	  CALL I2C(IARG(9),ls,STACK,' ') 
+	  CALL I2C(IARG(9),ls,STACK,' ')
 	  !CALL I2C(IARG(10),ls,STACK,',') ! Zernike coef range
-	  !CALL I2C(IARG(11),ls,STACK,' ') 
+	  !CALL I2C(IARG(11),ls,STACK,' ')
 	  GO TO 110
 	END IF
 
 	IF (LCMP(command,'SETC',4)) THEN
 	  CALL C2CW(CARG(1),ls,STACK,' ')
 	  IF (LCMP(CARG(1),'OptTgt',6)) THEN
-	    CALL C2CW(CARG(2),ls,STACK,' ') 
+	    CALL C2CW(CARG(2),ls,STACK,' ')
 	    IF (LCMP(CARG(2),'ZWF',3)) THEN
 	      CALL I2C(IARG(1),ls,STACK,' ')
 	      DO K=1,IARG(1)-1
@@ -459,7 +460,7 @@ C  Load SRT
 
 C  Load RETURN at end of each string
  110	CALL C2C('RETURN',ls,STACK,' ')
-	END SUBROUTINE LoadStack 
+	END SUBROUTINE LoadStack
 
 C***********************************************************************
 
@@ -501,7 +502,7 @@ csws	C1=CARG
 c        i = 132
 c        i = min( i, 1+iclen(carg) )
 c        C1(1:i)=CARG(1:i)
-c sws  
+c sws
 c assume carg is just characters
 	c1 = carg // ' '
 

@@ -26,8 +26,8 @@ C***********************************************************************
 
 	CHARACTER(len=MacosCharLen) :: ANS
 
-	INTEGER :: i,j,k,iElt
-	LOGICAL :: LLocCoord,LCMP
+	INTEGER i,j,iElt, k
+	LOGICAL LLocCoord,LCMP
 
 	REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),DDEF(7),PV(6)
 
@@ -48,10 +48,10 @@ C  1. Compute perturbed entrance pupil data
 c	  WRITE(*,400)
 
           If (SrcLF_FLG) Then
-            ! Source local frames defined, so convert source perturbations 
+            ! Source local frames defined, so convert source perturbations
             ! from local frames to global frames
             If (CalcSrcZFrame_FLG) Then
-              ! Compute zFrame only when it's not defined in Rx
+              ! Compute zFrame only when the user did not define it in Rx
               Call DXPROD(TElt(1:3,3,0),TElt(1:3,1,0),TElt(1:3,2,0))
               Call DUNITIZE(TElt(1:3,3,0))
               Call DXPROD(TElt(1:3,2,0),TElt(1:3,3,0),TElt(1:3,1,0))
@@ -68,7 +68,7 @@ c	  WRITE(*,400)
               th(i)=PV(i); del(i)=PV(i+3)
             End Do
           End If
-          print*,'*** CPERTURB src: th = ',th(1:3),', del =',del(1:3) 
+          print*,'*** CPERTURB src: th = ',th(1:3),', del =',del(1:3)
 
 	  CALL Qform(Q,dQ,th)
 	  CALL DMPROD(D1,Q,ChfRayDir,3,3,1)
@@ -85,16 +85,16 @@ c	  WRITE(*,400)
 	  CALL DADD(D1,ChfRayPos,D2,3)
 	  CALL DADD(ChfRayPos,D1,del,3)
 
-	  If (SegXgrid_FLG) Then
+	  if (SegXgrid_FLG) then
             CALL DMPROD(D1,Q,SegXGrid,3,3,1)
             CALL DEQUATE(SegXGrid,D1,3)
             CALL DUNITIZE(SegXGrid)
-          End If
+          end if
 
 C  2. Compute perturbed element data
 
 	ELSE  ! other element (than source) perturbed
-          !print*,'******funcsub: iElt, nECoord(iElt) =',iElt,nECoord(iElt) 
+          !print*,'******funcsub: iElt, nECoord(iElt) =',iElt,nECoord(iElt)
 
 	  CALL CACCEPT(ANS,'GLOBAL',
      &      'Enter coordinate system for perturbation '//
@@ -117,8 +117,8 @@ c just global coordinates, continue anyway
 
 	        If (nECoord(iElt)<0) Then
                   PV(1:6)=D1(1:6)  ! assuming global frame
-	        Else 
-  	          CALL DMPROD(PV,TElt(1,1,iElt),D1,6,k,1) ! convert to global 
+	        Else
+  	          CALL DMPROD(PV,TElt(1,1,iElt),D1,6,k,1) ! convert to global
 	        End If
 	      END IF
 
@@ -217,8 +217,7 @@ C fixed by Gopal Vasudevan:
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF (((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9))
-     &        .OR. SrfType(iElt).EQ.11) THEN  ! added type 11 for AsGrData, 07/2019
+	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -253,7 +252,7 @@ C fixed by Gopal Vasudevan:
 	End Do
 #endif
 	RETURN
-	END SUBROUTINE CPERTURB 
+	END SUBROUTINE CPERTURB
 
 
 C***********************************************************************
@@ -391,15 +390,14 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-
-	INTEGER i,j,iElt,iNode,iDOF,npts,RayMap(mpts,mpts),
+	INTEGER i,j,iElt,npts,RayMap(mpts,mpts),
      &	 iRay,jRay,RayIndex(2,mRay),SegMap(mpts,mpts),NCROWS,NCCOLS,
-     &	 GridType,nFirstRay,nLastRay,nExpRay,nCMCoords(0:mElt),iObsOpt,
+     &	 GridType,nFirstRay,nLastRay,nCMCoords(0:mElt),iObsOpt,
      &	 irow,icol,iPertElt,LENGTH,ICLEN,iExMode,iCurRayElt,eRay,
-     &   iIntSrf,totRow,totCol
+     &   totRow,totCol
 
 	SREAL :: Cmatrix(7,mCm,bRay),Celt(49),Cout(49),Tcompact(49),
-     &	         TEsp(6,6,mElt),CoutDM(21)
+     &	         TEsp(6,6,mElt)
 
 	LOGICAL IfEltCoords,IfInPartials,ifBuild,exist,LCMP,ifDMBuild
 
@@ -525,7 +523,7 @@ C  Set EXPORT mode
               CALL CACCEPT(ANS,'YES',
      &        'File '//mfil(1:LENGTH)//' exists.  Overwrite?')
 	      IF (LCMP(ans,'NO',1)) THEN
-                CALL CACCEPT(mfil,mfil,'Enter new .dat-file name:')	  	    
+                CALL CACCEPT(mfil,mfil,'Enter new .dat-file name:')
 	        IF ((ICLEN(mfil).EQ.1).AND.(mfil(1:1).EQ.'q')) RETURN
 	        LENGTH=ICLEN(mfil)
                 mfil=mfil(1:LENGTH)//'.dat'
@@ -559,7 +557,7 @@ C  Set EXPORT mode
 	    nLastRay=nRay
 	  END IF
 
-	  ! Currently for test, when iExMode=4 (Nastran), 
+	  ! Currently for test, when iExMode=4 (Nastran),
 	  ! "CHFRay only" is the only option -jzlou
 	  if (iExMode==4) then
 	    nFirstRay=1; nLastRay=1
@@ -776,10 +774,10 @@ C  Write data to file
 	      nCMCoords(0)=0
 	    END IF
 
-	    ! Write out header 
+	    ! Write out header
 	    IF ((iExMode.EQ.2).OR.(iExMode.EQ.3)) THEN
       	      CALL MFil1(iPertElt,nCMCoords,nOutCord,
-     &	                 nFirstRay,nLastRay,eRay) 
+     &	                 nFirstRay,nLastRay,eRay)
 	    ELSE IF (iExMode.EQ.4) THEN
 	      ! NAStran format
 	      Call NasFil1(iPertElt,IfInPartials,
@@ -801,7 +799,7 @@ C  Write data to file
 	          if (iExMode/=4) then
 	            CALL MFil2(Cout,nOutCord,7,irow,icol,iRay,iElt,
      &	          	     iExMode,jRay)
-	          else 
+	          else
 	            Call NasFil2(Cout,nOutCord,7,irow,icol)
 	          end if
 	          icol=8
@@ -827,7 +825,7 @@ C  Write data to file
 	            if (iExMode/=4) then
 	              CALL MFil2(Cout,nOutCord,IABS(nECoord(iElt)),
      &	            	     irow,icol,iRay,iElt,iExMode,jRay)
-	            else 
+	            else
 	              Call NasFil2(Cout,nOutCord,IABS(nECoord(iElt)),
      &                       irow,icol)
 	            end if
@@ -837,7 +835,7 @@ C  Write data to file
 	            if (iExMode/=4) then
 	              CALL MFil2(Cmatrix(1,i,iRay),7,6,irow,
      &	            	       icol,iRay,iElt,iExMode,jRay)
-	            else 
+	            else
 	              Call NasFil2(Cmatrix(1,i,iRay),7,6,irow,icol)
 	            end if
 	            icol=icol+6
@@ -882,7 +880,7 @@ C***********************************************************************
 	CHARACTER(len=MacosCharLen) :: ANS
         REAL*8 :: th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
      &            DDEF(7),PV(6),RptVec(3)
-        INTEGER :: i,j,k,iElt
+        INTEGER :: i,iElt,k
         LOGICAL :: LLocCoord, LCMP
 
         CALL DZERO(DDEF,7)
@@ -894,7 +892,7 @@ C***********************************************************************
 
         IF (LCMP(ANS,'Y',1).OR.LCMP(ANS,'E',1)) THEN
           ! element coord system
-          k=nECoord(iElt)
+          k= nECoord(iElt)
           IF (k .EQ. 0) THEN
              ! k = 0, no dof
              WRITE (*,*) 'No local DOF available!'
@@ -922,16 +920,8 @@ C***********************************************************************
           ! Perturbations entered in global coords are used as they are. -jzlou
         END IF
 
-!       print*,'* CPERTURB_GRP_DVR: iElt =',iElt
-!       print*,'* CPERTURB_GRP_DVR: EltGrp(0,iElt) =',EltGrp(0,iElt)
-!       print*,'* CPERTURB_GRP_DVR: EltGrp(1:EltGrp(0,iElt),iElt) =',
-!    &              EltGrp(1:EltGrp(0,iElt),iElt)
-!       STOP
-
 	RptVec(1:3)=RptElt(1:3,iElt)
         Do i=1,EltGrp(0,iElt)
-!         print*,'****B4 CPERTURB_GRP: EltGrp(i,iElt) =',
-!    &           EltGrp(i,iElt)  
           Call CPERTURB_GRP(RptVec,EltGrp(i,iElt),th,del,Q,dQ,D1,D2,PV,
      &                      LLocCoord)
         End Do
@@ -958,10 +948,10 @@ C***********************************************************************
 
         IMPLICIT NONE
 
-        INTEGER :: jElt,i,j,k
+        INTEGER :: jElt,i,j
         LOGICAL :: lloc  ! global or local coord system
         REAL*8 :: rptVec(3),th(3),del(3),Q(3,3),dQ(3,3),D1(9),D2(9),
-     &            DDEF(7),PV(6)
+     &            PV(6)
 
         Do i=1,3
           j=i+3
@@ -983,7 +973,7 @@ C***********************************************************************
           CALL DEQUATE(yGrid,D1,3)
           CALL DUNITIZE(yGrid)
 
-          print*,'*** Grp rotation of src: Rpt =',rptVec(1:3)  
+          print*,'*** Grp rotation of src: Rpt =',rptVec(1:3)
 
           !CALL DSUB(D1,ChfRayPos,StopPos,3)
         ! When source is part of a group perturbation, the source is
@@ -1095,7 +1085,7 @@ C fixed by Gopal Vasudevan:
           End Do
         End If
         End Subroutine CPERTURB_GRP
-	
+
 C***********************************************************************
 C****** End file funcsub.F *********************************************
 C***********************************************************************

@@ -7,7 +7,7 @@
 //
 
 // *** Warning: maximum number of grid surfaces currently supported: 256;
-//     need to change the constant below to increase the limit.           
+//     need to change the constant below to increase the limit.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,10 +41,10 @@ int main()
   for (i=1;i<=m; i++) x1arr[i]=1.0+(i-1)*dx;
   for (i=1;i<=n; i++) x2arr[i]=1.0+(i-1)*dx;
   y1m=vector(1,m*n);
-  
+
   // Define a conic y1m: z = x^2+y^2
   for (i=1;i<=m;i++) {
-    y=1.0+(i-1)*dx;    
+    y=1.0+(i-1)*dx;
     for (j=1;j<=n;j++) {
       x=1.0+(j-1)*dx;
       y1m[(i-1)*n+j]=x*x+y*y;
@@ -114,7 +114,7 @@ void splie2(SREAL x1a[],SREAL x2a[],SREAL** ya,int m,int n,SREAL** y2a)
 
 // *** This function is called from Fortran code in MACOS ***
 // Given p={x1,x2}, it computes cubic spline fn at p and partial derivatives
-// dfdx1, dfdx2 at p. 
+// dfdx1, dfdx2 at p.
 void splin2f2c_(SREAL x1a[],SREAL x2a[],int* m,int* n,
                 SREAL* x1,SREAL* x2, SREAL* fn,SREAL* dfdx1,SREAL* dfdx2,
                 int* i0,int* j0,int* srf_id)
@@ -144,9 +144,9 @@ void splin2(SREAL x1a[],SREAL x2a[],SREAL** ya,SREAL** y2a,
     first_entry=0;
   }
 
-  if (0 & !first_entry) {
-    printf("***** splin2: ya = %p, y2a = %p\n",ya,y2a);
-  }
+  // if (0 & !first_entry) {
+  //   printf("***** splin2: ya = %x, y2a = %x\n",ya,y2a);
+  // }
 
   for (j=1;j<=m;j++) {
     splint(x2a,ya[j],y2a[j],n,x2,&yytmp1[j]); // yytmp1 is row spline at x2
@@ -162,14 +162,14 @@ void splin2(SREAL x1a[],SREAL x2a[],SREAL** ya,SREAL** y2a,
           -(3.0*A*A-1.0)/6.0*(x1a[i0+1]-x1a[i0])*ytmp1[i0]
           +(3.0*B*B-1.0)/6.0*(x1a[i0+1]-x1a[i0])*ytmp1[i0+1];
 
-  // To compute dfdx2, need first compute interpolated values and 2nd derivatives along  
+  // To compute dfdx2, need first compute interpolated values and 2nd derivatives along
   // 'n' direction with fixed 'x1'.
   for (j=1;j<=n;j++) {
     for (i=1;i<=m;i++) { ya_tmp[i]=ya[i][j]; y2a_tmp[i]=y2a[i][j]; }
     splint(x1a,ya_tmp,y2a_tmp,m,x1,&yytmp2[j]); // yytmp2 is column spline at x1
   }
   spline(x2a,yytmp2,n,1.0e30,1.0e30,ytmp2); // ytmp2 is 2nd derivative
-  
+
   // With yytmp2 and ytmp2 computed, now compute dfdx2
   A=(x2a[j0+1]-x2)/(x2a[j0+1]-x2a[j0]); B=1.0-A;
   *dfdx2=(yytmp2[j0+1]-yytmp2[j0])/(x2a[j0+1]-x2a[j0])

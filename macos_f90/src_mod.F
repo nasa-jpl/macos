@@ -9,10 +9,27 @@ C***********************************************************************
 #include "realtype.h"
 
 	Module src_mod
+        use Kinds
 	use param_mod
 
-	Implicit none
-	Save
+	IMPLICIT NONE
+
+        INTEGER, PARAMETER :: GridType_Circular  = 1,
+     &                        GridType_Square    = 2,
+     &                        GridType_Hex       = 3,
+     &                        GridType_Pie       = 4,
+     &                        GridType_Flower    = 5,
+     &                        GridType_UDG       = 6
+
+        Character*32, PARAMETER :: GridTypeName(6) = ['Circular',
+     &                                                'Square',
+     &                                                'Hex',
+     &                                                'Pie',
+     &                                                'Flower',
+     &                                                'UDGrid']
+
+
+        Save
 
 	Logical :: UDBeam_FLG, DrawMode, FSEG_CCAT_Flg
 	Logical, dimension(:), allocatable :: ObsType_FLG,
@@ -21,7 +38,7 @@ C***********************************************************************
 	Integer, parameter :: mRing=20  ! max number flower rings allowed
 	Integer :: nGridPts,GridType,BeamType,nTestPts,nMinPts,
      &		   nSpotPts,nWavelen,nStarType,nPetals(0:mRing),StopElt,
-     &	           nRings,npts_Rx,opt_npts	   
+     &	           nRings,npts_Rx,opt_npts
 
 	Integer, dimension(:,:), allocatable :: RayIndex,RayMap,SegMap
 
@@ -42,11 +59,73 @@ C***********************************************************************
 
 	Contains
 
+   	  Subroutine src_mod_init_vars()
+
+            m_err_src    = 0
+            UDSrcProf    = ''
+
+            UDBeam_FLG    = .FALSE.
+            DrawMode      = .FALSE.
+            FSEG_CCAT_Flg = .False.
+
+            nGridPts     = 0
+            GridType     = 0
+            BeamType     = 0
+            nTestPts     = 0
+            nMinPts      = 0
+            nSpotPts     = 0
+            nWavelen     = 0
+            nStarType    = 0
+            nPetals(:)   = 0
+            nRings       = 0
+            StopElt      = 0
+            npts_Rx      = 0
+            opt_npts     = 0
+
+            Aperture     = 0e0_pr
+            Obscratn     = 0e0_pr
+            xGrid(:)     = 0e0_pr
+            yGrid(:)     = 0e0_pr
+            zGrid(:)     = 0e0_pr
+            ChfRayDir(:) = 0e0_pr
+            ChfRayPos(:) = 0e0_pr
+            rxBeam       = 0e0_pr
+            ryBeam       = 0e0_pr
+            width        = 0e0_pr
+            gap          = 0e0_pr
+            CosPower     = 0e0_pr
+            SegXgrid(:)  = 0e0_pr
+            StopPos(:)   = 0e0_pr
+            srcPos(:)    = 0e0_pr
+            radCtr       = 0e0_pr
+            RingRads(:)  = 0e0_pr
+
+            xGrid_sv(:)  = 0e0_pr
+            yGrid_sv(:)  = 0e0_pr
+
+            Ex0          = 0e0_prc
+            Ey0          = 0e0_prc
+
+            ObsType_FLG(:) = .FALSE.
+            ObsVec_FLG(:)  = .FALSE.
+
+            RayIndex(:, :) = 0
+            RayMap(:, :)   = 0
+            SegMap(:, :)   = 0
+
+            FiltFlux(:, :) = 0e0_pr
+            ds1(:, :)      = 0e0_pr
+            ds2(:, :)      = 0e0_pr
+            FiltWavelen(:) = 0e0_pr
+
+          end subroutine src_mod_init_vars
+
+
 	Subroutine src_mod_init
 
 	DrawMode=.FALSE.  ! default
 
-	! Deallocate if arrays already allocated	
+	! Deallocate if arrays already allocated
 	if (allocated(RayIndex)) then
 	  deallocate(ObsType_FLG, ObsVec_FLG,
      &		     RayIndex, RayMap, SegMap,
@@ -54,7 +133,7 @@ C***********************************************************************
      &	             stat=m_err_src)
 	  if (m_err_src /= 0)
      &      call macos_memory_failure
-     &               ('src_mod_init: deallocate failed!') 
+     &               ('src_mod_init: deallocate failed!')
 	end if
 
 	! Logical arrays
@@ -63,7 +142,6 @@ C***********************************************************************
         if (m_err_src /= 0)
      &    call macos_memory_failure
      &               ('src_mod_init: allocate failed!')
-	ObsType_FLG = .false.; ObsVec_FLG = .false.
 
 	! Integer arrays
 	allocate(RayIndex(2,mRay), RayMap(mpts,mpts),
@@ -71,15 +149,16 @@ C***********************************************************************
 	if (m_err_src /= 0)
      &    call macos_memory_failure
      &               ('src_mod_init: allocate failed!')
-	RayIndex = 0; RayMap = 0; SegMap = 0
 
 	! Real*8 arrays
 	allocate(FiltFlux(mWavelen,mStarType), FiltWavelen(mWavelen),
      &		 stat=m_err_src)
-        if (m_err_src /= 0) 
+        if (m_err_src /= 0)
      &    call macos_memory_failure
      &               ('src_mod_init: allocate failed!')
-	FiltFlux = dzero_; FiltWavelen = dzero_
+
+          ! initialise variables
+          CALL src_mod_init_vars()
 
 	End Subroutine src_mod_init
 

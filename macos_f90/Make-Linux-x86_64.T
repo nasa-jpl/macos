@@ -4,18 +4,18 @@
 
 #LOCAL_FFLAGS = $(FFLAGS)
 # Override FFLAGS with our compiler settings:
-LOCAL_FFLAGS = -g 
+LOCAL_FFLAGS = -g
 #LOCAL_FFLAGS = -Kpic -fs -w -tpp --wo
 # Wth Optimization
-#LOCAL_FFLAGS += -O3 
-#LOCAL_FFLAGS += -O3 --fast -Kfast 
+#LOCAL_FFLAGS += -O3
+#LOCAL_FFLAGS += -O3 --fast -Kfast
 # With Debugging and trace
 #LOCAL_FFLAGS += -g --chk --trace --info
-#LOCAL_FFLAGS += -g -fpe1 
+#LOCAL_FFLAGS += -g -fpe1
 #LOCAL_FFLAGS += -O3
 
 # Readline Library Defines
-USE_READLINE = 1
+USE_READLINE = 0
 ifeq ($(USE_READLINE),1)
   RL_LIBRARY_VERSION = 8.2
   RL_ROOT = $(SRC_DIR)/readline-8.2
@@ -45,7 +45,7 @@ MLIBS = /opt/intel-$(intel_version)/lib/intel64/libimf.a \
         -L/usr/lib64 -lX11 \
         -L$(SRC_DIR)/pgplot -lpgplot \
         -L$(SRC_DIR)/fits_build -lfits \
-        $(RL_LIBS) 
+        $(RL_LIBS)
 
 NPSOL_ROOT=$(SRC_DIR)/npsol
 NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
@@ -55,7 +55,7 @@ NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
 # MACOS executable
 MACOSOBJS = $(MOD_OBJS) $(C_OBJS) $(M_OBJS) macos.o
 $(macosexe): $(MACOSOBJS)
-	$(FC) $(LDFLAGS) -o $@ $(NPSOL_OBJS) $(MACOSOBJS) $(MLIBS) 
+	$(FC) $(LDFLAGS) -o $@ $(NPSOL_OBJS) $(MACOSOBJS) $(MLIBS)
 
 
 SMDRVLIBS = -L/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64 -limf -lintlc -lifport -lifcore -lc -lm \
@@ -78,7 +78,13 @@ smacos_dvr: $(SMACOS_DVR_OBJS) $(NPSOL_OBJS)
 %.o:%.f
 	$(FC) $(LOCAL_FFLAGS) -c $<
 
+%.o:%.f90
+	$(FC) $(LOCAL_FFLAGS) -c $<
+
 %.o:%.F
+	$(FC) $(LOCAL_FFLAGS) -c $<
+
+%.o:%.F90
 	$(FC) $(LOCAL_FFLAGS) -c $<
 
 %.o:%.c
@@ -95,7 +101,9 @@ clean::
 ###############################################################################
 
 # begin depends
-
+kinds.o: kinds.f90
+constants.o: constants.f90 kinds.f90
+dftsub.o: dftsub.F
 macos_debug.o: macos_debug.F
 param_mod.o: param_mod.F
 elt_mod.o: elt_mod.F param_mod.F
@@ -103,6 +111,7 @@ src_mod.o: src_mod.F param_mod.F
 cfiles_mod.o: cfiles_mod.F param_mod.F
 macos_mod.o: macos_mod.F param_mod.F
 lohpars_mod.o: lohpars_mod.F
+macos_IO.o: macos_IO.f90
 macos_vars_mod.o: macos_vars_mod.F
 
 macos_init.o: macos_init.F
@@ -114,7 +123,6 @@ didesub.o: didesub.F
 pgplotsub.o: pgplotsub.F $(MOD_SRCS) fits1.inc mcolors.inc
 sunsub.o: sunsub.F $(MOD_SRCS) fits1.inc
 pixsub.o: pixsub.F $(MOD_SRCS)
-dftsub.o: dftsub.F $(MOD_SRCS)
 propsub.o: propsub.F $(MOD_SRCS)
 sourcsub.o: sourcsub.F $(MOD_SRCS) ssrcray.inc
 utilsub.o: utilsub.F lensarr_indexes.inc collim.inc
@@ -123,16 +131,16 @@ tracesub.o: tracesub.F $(MOD_SRCS) fpp.inc
 srtrace.o: srtrace.F $(MOD_SRCS)
 usersub.o: usersub.F $(MOD_SRCS) collim.inc
 macos.o: macos.F $(MOD_SRCS) fits1.inc glass.inc
-macosio.o: macosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
-smacosutil.o: smacosutil.F 
-smacosio.o: smacosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc viewdata_formats.inc
-matloh.o: matloh.F 
+macosio.o: macosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc #viewdata_formats.inc
+smacosutil.o: smacosutil.F
+smacosio.o: smacosio.F $(MOD_SRCS) prop_defs.inc msmacosio.inc iosub.inc #viewdata_formats.inc
+# matloh.o: matloh.F
 pgplotdummy.o: pgplotdummy.F
 mhist.o : mhist.c
 
 macos_inc = macos_cmd_loop.inc macos_formats.inc macos_glass.inc \
             fits1.inc glass.inc fits1.inc macos_init.inc efl.inc \
-            setbeam.inc 
+            setbeam.inc
 smacos_inc = macos_cmd_loop.inc macos_formats.inc smacos_glass.inc \
             fits1.inc glass.inc fits1.inc macos_init.inc setbeam.inc
 
@@ -144,7 +152,7 @@ smacos.o: smacos.F smacos_vars_mod.F $(MOD_SRCS) $(smacos_inc)
 nn_util.o: nn_util.F
 lsq.o: lsq.F
 nls.o: nls.F
-design_optim.o: design_optim.F smacos_compute.inc 
+design_optim.o: design_optim.F smacos_compute.inc
 design_cons_optim.o: design_cons_optim.F smacos_compute.inc setbeam_vars.inc setbeam.inc
 zern_wf.o: zern_wf.F
 

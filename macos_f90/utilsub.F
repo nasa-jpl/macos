@@ -64,7 +64,7 @@ C***********************************************************************
 	Character(len=clen) :: S1,S2
 	Logical :: LCMP2
 	S1=C1(1:clen); S2=C2(1:clen)
-	LCMP2 = (.not. LGT(S1,S2)).and.(.not. LGT(S2,S1)) 
+	LCMP2 = (.not. LGT(S1,S2)).and.(.not. LGT(S2,S1))
 	END FUNCTION LCMP2
 
 
@@ -128,47 +128,6 @@ C***********************************************************************
 
 C***********************************************************************
 
-      SUBROUTINE  CSWAP (N,DX,INCX,DY,INCY)
-      Implicit none
-      DOUBLE PRECISION DX(1),DY(1),DTEMP
-      INTEGER I,INCX,INCY,IX,IY,M,MP1,N
-      IF(N.LE.0)RETURN
-      IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
-      IX = 1
-      IY = 1
-      IF(INCX.LT.0)IX = (-N+1)*INCX + 1
-      IF(INCY.LT.0)IY = (-N+1)*INCY + 1
-      DO 10 I = 1,N
-        DTEMP = DX(IX)
-        DX(IX) = DY(IY)
-        DY(IY) = DTEMP
-        IX = IX + INCX
-        IY = IY + INCY
-   10 CONTINUE
-      RETURN
-   20 M = MOD(N,3)
-      IF( M .EQ. 0 ) GO TO 40
-      DO 30 I = 1,M
-        DTEMP = DX(I)
-        DX(I) = DY(I)
-        DY(I) = DTEMP
-   30 CONTINUE
-      IF( N .LT. 3 ) RETURN
-   40 MP1 = M + 1
-      DO 50 I = MP1,N,3
-        DTEMP = DX(I)
-        DX(I) = DY(I)
-        DY(I) = DTEMP
-        DTEMP = DX(I + 1)
-        DX(I + 1) = DY(I + 1)
-        DY(I + 1) = DTEMP
-        DTEMP = DX(I + 2)
-        DX(I + 2) = DY(I + 2)
-        DY(I + 2) = DTEMP
-   50 CONTINUE
-      RETURN
-      END SUBROUTINE  CSWAP
-
 C***********************************************************************
 
 	FUNCTION LINT(X)
@@ -187,14 +146,14 @@ C***********************************************************************
 
 	FUNCTION ClosestInt(X)
 	Implicit None
-	Real*8 :: X,R 
+	Real*8 :: X,R
 	Integer :: ClosestInt
 	R=X-Int(X);
         if (R<0.5) then
 	  ClosestInt=Int(X)
 	else
-	  ClosestInt=Int(X)+1 
-	end if  
+	  ClosestInt=Int(X)+1
+	end if
 	End FUNCTION ClosestInt
 
 C***********************************************************************
@@ -210,7 +169,7 @@ C***********************************************************************
 	REAL*8 RS,MaxInt,power
 
 	MaxInt=-1d33
-	power=0e0
+	power=0d0
 	IF (ifVecDif3) THEN
 	  DO j=1,mdttl
 	    DO i=1,mdttl
@@ -225,7 +184,6 @@ C***********************************************************************
 	      END IF
   	    End Do
   	  End Do
-          print*,'*** Ca2Int,ifVecDif3=true: power =',power
 	ELSE
 	  Do j=1,mdttl
 	    Do i=1,mdttl
@@ -245,8 +203,8 @@ C***********************************************************************
 
 C***********************************************************************
 	! Data: on input = Intensity data, on output = MTF data
-	! dx (input): dx of intensity array 
-	! X,Y (output): spatial freq coords of MTF 
+	! dx (input): dx of intensity array
+	! X,Y (output): spatial freq coords of MTF
 
 	SUBROUTINE Int2MTF(Data,Dim,dx,X,Y)
 	use param_mod
@@ -278,8 +236,8 @@ C***********************************************************************
 	Do i=1,Dim
 	  Do j=1,Dim
 	    W=CData(i,j)/S
-	    Data(i,j) = W*DCONJG(W) 
-	    !Data(i,j) = sqrt(CData(i,j)*DCONJG(CData(i,j))) 
+	    Data(i,j) = W*DCONJG(W)
+	    !Data(i,j) = sqrt(CData(i,j)*DCONJG(CData(i,j)))
 	    !Data(i,j) = CData(i,j)*DCONJG(CData(i,j))
 	  End Do
 	End Do
@@ -303,7 +261,7 @@ C***********************************************************************
 	INTEGER i,j,iWF,imax,jmax
 	REAL*8 RS,MaxInt,power
 	MaxInt=-1d33
-	power=0e0
+	power=0d0
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
 	    RS=ABS(WFElt(i,j,iWF))
@@ -430,7 +388,7 @@ C***********************************************************************
 	INTEGER i,j,iElt,iEm1,imax,jmax
 	SREAL X0PFP,dangle
 	REAL*8 DA,A,power,MaxInt,RS
-	power=0e0
+	power=0d0
 	MaxInt=-1d33
 	IF (ifVecDif3) THEN
 	  DO 4 j=1,mdttl
@@ -468,13 +426,13 @@ C***********************************************************************
 	DO 2 j=1,mdttl
 	  DO 1 i=1,mdttl
 	    DA=MWFFT(i,j)
-	    IF (DA.LT.1E-36) THEN
-	      DA=1e-36
+	    IF (DA.LT.1d-36) THEN
+	      DA=1d-36
 	    END IF
-	    MWFFT(i,j)=10e0*LOG10(DA*RS)
+	    MWFFT(i,j)=10d0*LOG10(DA*RS)
  1	  CONTINUE
  2	CONTINUE
-	dangle=57.29577951308232*dxElt(iElt)/zElt(iEm1)
+	dangle=57.29577951308232d0*dxElt(iElt)/zElt(iEm1)
 	X0PFP=-dangle*FLOAT((mdttl)/2)
 	DO 7 i=1,mdttl
 	  XFP(i)=X0PFP
@@ -487,7 +445,7 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE SrfOut(iElt,iPloTyp,CTEXT,CXLABL,CYLABL,CTAG,np,na,
-     &			  R1,R2,StretchType) 
+     &			  R1,R2,StretchType)
 	use param_mod
 	use cfiles_mod
 	use elt_mod
@@ -597,23 +555,23 @@ C       If far field, compute dx on that basis
      &    	      DBLE(mdttl)
           !print*,'***LFFProp: dxElt(nEstart) =',dxElt(nEstart)
           !print*,'***LFFProp: dxElt(iElt) =',dxElt(iElt)
-	  ! For far field diffraction: how is grid-spacing on the image 
-	  ! plane computed as a function of grid-spacing on pupil plane? 
+	  ! For far field diffraction: how is grid-spacing on the image
+	  ! plane computed as a function of grid-spacing on pupil plane?
 	  !  Let grid-spacing on pupil plane dx1 = dxElt(nEstart),
           !  FFT variable on image plane f = u/(lamda*zElt(nEstart)),
           !  where u is the spatial variable on image plane.
 	  !  According to FFT theory, ith freq f_i = i/(mdttl*dx1), so
 	  !  df = 1/(mdttl*dx1) = 1/(mdttl*dxElt(nEstart)), and
-          !  dxElt(iElt)= dx2 = du = df*(lamda*zElt(nEstart)) 
+          !  dxElt(iElt)= dx2 = du = df*(lamda*zElt(nEstart))
           !             = lamda*zElt(nEstart)/(mdttl*dxElt(nEstart))
 	  !  The last equation is the code statement above.
 
 	  ! Test only  -jzlou
-	  !dxElt(iElt)=2d0*dxElt(iElt)	  
+	  !dxElt(iElt)=2d0*dxElt(iElt)
 
 	  ! When dxElt(nEstart) is too large (and thus dx2 too small)
-          ! compared to the 'needed spectrum band' on image plane, 
-          ! fft wrapping happens. 
+          ! compared to the 'needed spectrum band' on image plane,
+          ! fft wrapping happens.
 
         ELSE IF (LSSProp) THEN
           dxElt(iElt)=ABS(dxElt(nEstart)*zElt(iElt)/zElt(nEstart))
@@ -651,11 +609,11 @@ C        linear rather than arc lengths!
             END IF
           END DO
 
-	  !print*,'Begin*** l =', l 
+	  !print*,'Begin*** l =', l
 
 	  !If (l==0) Then
 	  If (l<4) Then
-	    ! Got here because too few valid rays across center of pupil, 
+	    ! Got here because too few valid rays across center of pupil,
 	    ! so try to search all line slices to find the slice with the
             ! most valid rays. -jzlou
 
@@ -717,7 +675,7 @@ C       the average value
 	    !print*,'** dx(i) =',dx(i)
             IF ((dxRat.GE.0.5).AND.(dxRat.LE.2)) THEN
 	      ! above 'if' makes sure dx(i) used is not too far away
-	      ! from average dx(i) -jzlou 
+	      ! from average dx(i) -jzlou
               j=j+1
               dxAvg=dxAvg+dx(i)
             END IF
@@ -762,7 +720,7 @@ C***********************************************************************
 	if ((2*h)<=eps) then
 	  print*,' '
           print*,'** Invalid hexagon aperture size, width=', 2*h,
-     &           ' , quit ...' 
+     &           ' , quit ...'
 	  stop
         end if
 
@@ -770,7 +728,7 @@ C***********************************************************************
 
         if (.true.) then
 	  ! sharp top hexagon
-	  ApHexBound(1,1,thisElt)=h 
+	  ApHexBound(1,1,thisElt)=h
 	  ApHexBound(1,2,thisElt)=(2*a-a)/(0.0-h)
           ApHexBound(2,2,thisElt)=h; ApHexBound(3,2,thisElt)=a;
           ApHexBound(1,3,thisElt)=(a-2*a)/(-h-0.0)
@@ -780,7 +738,7 @@ C***********************************************************************
           ApHexBound(2,5,thisElt)=-h; ApHexBound(3,5,thisElt)=-a
           ApHexBound(1,6,thisElt)=(-a+2*a)/(h-0)
 	  ApHexBound(2,6,thisElt)=0; ApHexBound(3,6,thisElt)=-2*a
-        else 
+        else
 	  ! flat top hexagon
 	  ApHexBound(1,1,thisElt)=(h-0.0)/(a-2*a)
 	  ApHexBound(2,1,thisElt)=2*a; ApHexBound(3,1,thisElt)=0
@@ -791,7 +749,7 @@ C***********************************************************************
           ApHexBound(2,4,thisElt)=-2*a; ApHexBound(3,4,thisElt)=0
           ApHexBound(1,5,thisElt)=-h
 	  ApHexBound(1,6,thisElt)=(0.0+h)/(2*a-a)
-	  ApHexBound(2,6,thisElt)=a; ApHexBound(3,6,thisElt)=-h 
+	  ApHexBound(2,6,thisElt)=a; ApHexBound(3,6,thisElt)=-h
 	end if
 	End Subroutine SetHexBound
 
@@ -815,25 +773,24 @@ C***********************************************************************
         CALL DXPROD(xObs_loc,yObs_loc,zObs_loc)
         CALL DUNITIZE(xObs_loc)
 
-	nVertex = ApVec(1,thisElt); ApVec(1:3,thisElt) = 0d0
+	nVertex=ApVec(1,thisElt); ApVec(1:3,thisElt)=0d0
 	Do j=1,nVertex
-	  ApVec(1:3,thisElt) = ApVec(1:3,thisElt)+Vtx3D(1:3,j)
+	  ApVec(1:3,thisElt)=ApVec(1:3,thisElt)+Vtx3D(1:3,j)
 	End Do
-        ! Calc PolyAp geometric center (3D)
-	ApVec(1:3,thisElt) = ApVec(1:3,thisElt)/nVertex
+	ApVec(1:3,thisElt)=ApVec(1:3,thisElt)/nVertex
 
         !nVertex=ApVec(4,thisElt)
-        off = ApVec(1:3,thisElt)-VptElt(1:3,thisElt) ! off = vector from VptElt to PolyAp geometric center 
-        ApVec(1,thisElt) = DDOTC(off,xObs_loc) ! 'off' projected to xObs and yObs axes
-        ApVec(2,thisElt) = DDOTC(off,yObs_loc)
-        ApVec(3,thisElt) = nVertex
+        off=ApVec(1:3,thisElt)-VptElt(1:3,thisElt)
+        ApVec(1,thisElt)=DDOTC(off,xObs_loc)
+        ApVec(2,thisElt)=DDOTC(off,yObs_loc)
+        ApVec(3,thisElt)=nVertex
         !
         Do j=1,nVertex
-          off(1:3) = Vtx3D(1:3,j)-VptElt(1:3,thisElt)
-          PolyApVtx(1,j,thisElt) = DDOTC(off,xObs_loc)
-          PolyApVtx(2,j,thisElt) = DDOTC(off,yObs_loc)
-          PolyApVtx(1,j,thisElt)=PolyApVtx(1,j,thisElt)-ApVec(1,thisElt) ! dx from PolyAp geom ctr to Vtx3D
-          PolyApVtx(2,j,thisElt)=PolyApVtx(2,j,thisElt)-ApVec(2,thisElt) ! dy from PolyAp geom ctr to Vtx3D
+          off(1:3)=Vtx3D(1:3,j)-VptElt(1:3,thisElt)
+          PolyApVtx(1,j,thisElt)=DDOTC(off,xObs_loc)
+          PolyApVtx(2,j,thisElt)=DDOTC(off,yObs_loc)
+          PolyApVtx(1,j,thisElt)=PolyApVtx(1,j,thisElt)-ApVec(1,thisElt)
+          PolyApVtx(2,j,thisElt)=PolyApVtx(2,j,thisElt)-ApVec(2,thisElt)
         End Do
         End Subroutine SetCvxPolyApVtx
 
@@ -891,7 +848,7 @@ C***********************************************************************
 
 	Implicit none
 
-	Integer :: thisElt,nside,iside,idx1,idx2 
+	Integer :: thisElt,nside,iside,idx1,idx2
 	Real*8, parameter :: eps=1.d-8
 	Real*8 :: pt1(2),pt2(2),det
 
@@ -907,8 +864,8 @@ C***********************************************************************
 	  else
 	    idx2=iside+1
 	  end if
-	  pt1(1:2)=PolyApVtx(1:2,idx1,thisElt) 
-	  pt2(1:2)=PolyApVtx(1:2,idx2,thisElt) 
+	  pt1(1:2)=PolyApVtx(1:2,idx1,thisElt)
+	  pt2(1:2)=PolyApVtx(1:2,idx2,thisElt)
 
 	  if (abs(pt2(2)-pt1(2))<eps) then
 	    PolyApEqn(1,iside,thisElt)=0.d0
@@ -918,7 +875,7 @@ C***********************************************************************
 	    PolyApEqn(1,iside,thisElt)=1.d0
             PolyApEqn(2,iside,thisElt)=0.d0
             PolyApEqn(3,iside,thisElt)=-pt1(1)
-	  else 
+	  else
 	    det=(pt2(2)-pt1(2))/(pt2(1)-pt1(1))
 	    PolyApEqn(1,iside,thisElt)=-det
             PolyApEqn(2,iside,thisElt)=1.d0
@@ -931,7 +888,7 @@ C***********************************************************************
      &          PolyApEqn(1:3,iside,thisElt)
             end if
 	  end if
-	End Do 
+	End Do
 
         if (.false. .and. thisElt==18) then
 	  print*,'In SetCvxPolyBound: '
@@ -1037,20 +994,14 @@ C********************************************************************
         Real*8 :: Dicr,Djcr,dxSource, rxp,ryp
         Logical :: ifPol,ifPropagate,ifPrt
 
-        Integer :: iRay,iStartRay,iEndRay,iElt,iStartElt,iEndElt,ii
+        Integer :: iRay,iStartRay,iEndRay,iElt,iStartElt
         Real*8 :: rx,ry,rx_max,rx_min,ry_max,ry_min,xD,yD,xray_p,yray_p,
      &            rd,tmp_d,dRay(3),dRaySave(3)
         Real*8 :: ray_d,ray_apd ! for test only
 
         ! Calc source ray grid
-        IF (ABS(zSource).GE.1d10) THEN
-          ! source at infinity - jzlou
-          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                   ifPropagate)
-        ELSE
-          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,
-     &                  ifPropagate)
-        END IF
+		CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
 
         CALL DUNITIZE(xGrid)
         CALL DUNITIZE(yGrid)
@@ -1068,15 +1019,15 @@ C********************************************************************
           if (ry>ry_max) ry_max=ry
           if (ry<ry_min) ry_min=ry
 	  ray_d=sqrt(rx**2+ry**2)
-	  if (ray_d>ray_apd) ray_apd=ray_d 
+	  if (ray_d>ray_apd) ray_apd=ray_d
         End Do
 
 	! X and y spans of source aperture
 	xD=rx_max; yD=ry_max
 
         ! Ideal (target) source ray position
-        xray_p=rxp*xD; yray_p=ryp*yD 
- 
+        xray_p=rxp*xD; yray_p=ryp*yD
+
         rid=-1
 
 	! Initial distance of difference rays
@@ -1091,7 +1042,7 @@ C********************************************************************
           ry=DDOTC(dRay(1:3),yGrid(1:3))
 	  !if (abs(rx) < 350.d0 .and. abs(ry) < 15.*dxSource) then
 	  !  print*,'ray id, ry =', iRay, ry
-	  !end if 
+	  !end if
           tmp_d=sqrt((rx-xray_p)**2+(ry-yray_p)**2)
           If (tmp_d<rd) Then
 	    ! Make sure the ray can go thru system
@@ -1102,7 +1053,7 @@ C********************************************************************
      &        RayMap,SegMap,ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
      &        StartIndRef,StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(1),
      &        xDraw,yDraw)
-	    !print*,'** iRay,LRayOK(iRay) =',iRay,LRayOK(iRay); pause 
+	    !print*,'** iRay,LRayOK(iRay) =',iRay,LRayOK(iRay); pause
 	    if (LRayOK(iRay).AND.LRayPass(iRay)) then
               rd=tmp_d; rid=iRay; dRaySave=dRay
 	    end if
@@ -1119,15 +1070,15 @@ C********************************************************************
 	end if
  150    format('   Ref. ray XY offsets from chief ray:',f12.4,',',f12.4,
      &         ',   ID =',I8)
-	rxp=rx; ryp=ry   ! return coord positions of ray, -jzlou 
+	rxp=rx; ryp=ry   ! return coord positions of ray, -jzlou
         End Subroutine FSR
 
 C***********************************************************************
 
         Subroutine FindMarginalRay(npts,lastElt,Dicr,Djcr,dxSource,
      &                  ifPol,ifPropagate,rxp,ryp,rid,PrtFlg)
-! rxp,ryp = ray position in source aperture of found marginal ray, 
-!           in source frame; return value 
+! rxp,ryp = ray position in source aperture of found marginal ray,
+!           in source frame; return value
 ! rid = ray ID of found marginal ray, return value
         use param_mod
         use src_mod
@@ -1159,12 +1110,7 @@ C***********************************************************************
         Real*8 :: ray_d,ray_apd ! for test only
 
         ! Calc source ray grid
-        IF (ABS(zSource).GE.1d10) THEN
-          ! source at infinity - jzlou
-          CALL ColSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-        ELSE
-          CALL PtSource(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
-        END IF
+		CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,ifPropagate)
 
         CALL DUNITIZE(xGrid)
         CALL DUNITIZE(yGrid)
@@ -1237,35 +1183,30 @@ C***********************************************************************
 
 C***********************************************************************
 
-C Find system magnification factor M
-	Function FindSysMag(npts,Dicr,Djcr,dxSource,
-     & 		            ifPol,ifPropagate,ifPrt)
-	use param_mod
-        use src_mod
-        use elt_mod
-        use sourcsub_mod
-        use math_mod
-        use macos_mod, only : ifBuild,ifDMBuild,ifDraw,
-     &       nDrawElt,
-     &       ifLNegOK,Cmatrix,ifRayPrint,ifIntSrfSet,ifTrace
-#ifdef CMACOS
-        use macos_vars_mod, only : xDraw,yDraw,DrawEltVec,
-     &                   DrawRayVec,StartExtinc,StartIndRef,
-     &                   nBadRays
-#else
-        use smacos_vars_mod, only : xDraw,yDraw,DrawEltVec,
-     &                   DrawRayVec,StartExtinc,StartIndRef,
-     &                   nBadRays
-#endif
-        use tracesub_mod
-
-	Implicit none
-	
-	Integer :: npts
-	Real*8 :: Dicr,Djcr,dxSource,FindSysMag
-	Logical :: ifPol,ifPropagate,ifPrt
-        FindSysMag = 1.0  ! placeholder
-	End Function FindSysMag
+!C Find system magnification factor M
+!	Function FindSysMag(npts,Dicr,Djcr,dxSource,
+!     & 		            ifPol,ifPropagate,ifPrt)
+!	use param_mod
+!        use src_mod
+!        use elt_mod
+!        use sourcsub_mod
+!        use math_mod
+!#ifdef CMACOS
+!        use macos_vars_mod, only : DrawEltVec,
+!     &                   DrawRayVec,StartExtinc,StartIndRef,
+!     &                   nBadRays
+!#else
+!        ! use smacos_vars_mod, only : nBadRays
+!#endif
+!        use tracesub_mod
+!
+!	Implicit none
+!
+!	Integer :: npts
+!	Real*8 :: Dicr,Djcr,dxSource,FindSysMag
+!	Logical :: ifPol,ifPropagate,ifPrt
+!        FindSysMag = 1.0  ! placeholder
+!	End Function FindSysMag
 
 C***********************************************************************
 
@@ -1276,7 +1217,7 @@ C***********************************************************************
 
 	Complex*16, dimension(1:ndim,1:ndim) :: WF
 	Real*8, dimension(1:2*ndim,1:2*ndim) :: MTF2
-        Complex*16, dimension(1:ndim,1:ndim) :: tmp_carr 
+        Complex*16, dimension(1:ndim,1:ndim) :: tmp_carr
 	Complex*16 :: csum
 	Real*8 :: cv
 	Integer :: ndim,dimi,dimj,i,j
@@ -1285,7 +1226,7 @@ C***********************************************************************
 	  Do j=0,ndim-1
 	     dimi=ndim-i; dimj=ndim-j
 	     tmp_carr(1:dimi,1:dimj)
-     &         =WF(i+1:ndim,j+1:ndim)*WF(1:ndim-i,1:ndim-j)  
+     &         =WF(i+1:ndim,j+1:ndim)*WF(1:ndim-i,1:ndim-j)
 	     Call CMATSUM(tmp_carr(1:dimi,1:dimj),
      &                    csum,dimi,dimj)
              cv=csum*DCONJG(csum)
@@ -1296,7 +1237,7 @@ C***********************************************************************
 	     Call CMATSUM(tmp_carr(1:dimi,1:dimj),
      &                    csum,dimi,dimj)
              cv=csum*DCONJG(csum)
-             MTF2(ndim-i,ndim+j)=sqrt(cv) 
+             MTF2(ndim-i,ndim+j)=sqrt(cv)
 	     !
 	     tmp_carr(1:dimi,1:dimj)
      &         =WF(i+1:ndim,1:ndim-j)*WF(1:ndim-i,j+1:ndim)
@@ -1337,7 +1278,7 @@ C***********************************************************************
 
 	!print*,'Calc_EltRot: old_psiElt=',old_psiElt(1:3)
 	!print*,'Calc_EltRot: new_psiElt=',new_psiElt(1:3)
-        	
+
 	! Calc Eular rotation vector to go from old_psiElt to new_psiElt
 	Call DXPROD(rotAxis,old_psiElt,new_psiElt)
 	Call DUNITIZE(rotAxis)
@@ -1352,7 +1293,7 @@ C***********************************************************************
 	end if
 
 	dd=DDOTC(old_psiElt,new_psiElt)
-	dd=dd/(sqrt(DDOTC(old_psiElt,old_psiElt))* 
+	dd=dd/(sqrt(DDOTC(old_psiElt,old_psiElt))*
      &         DDOTC(new_psiElt,new_psiElt))
 	if (abs(dd)>1d0) then
 	  dd=DSIGN(1d0,dd) ! make sure abs(dd) not exceeding one
@@ -1365,7 +1306,7 @@ C***********************************************************************
 	      tTElt(i,j)=TElt(j,i)
 	    End Do
 	  End Do
-	  ! Project rotAxis from global onto element coord system 
+	  ! Project rotAxis from global onto element coord system
 	  CALL DMPROD(R,tTElt(1:3,1:3),rotAxis,3,3,1)
 	  rotAxis=R
 	End If
@@ -1383,7 +1324,7 @@ C***********************************************************************
      &      +rotAxis(1)*dsin(rotAng)
 	C33=(1d0-dcos(rotAng))*rotAxis(3)**2+dcos(rotAng)
 	C12=(1d0-dcos(rotAng))*rotAxis(1)*rotAxis(2)
-     &      +rotAxis(3)*dsin(rotAng) 
+     &      +rotAxis(3)*dsin(rotAng)
 	C11=(1d0-dcos(rotAng))*rotAxis(1)**2+dcos(rotAng)
 
         theta(2)=-dasin(C13)
@@ -1395,13 +1336,13 @@ C***********************************************************************
 	dd=dcos(theta(2))**2
 	theta(1)=atan(C23*C33/dd)
 	theta(3)=atan(C12*C11/dd)
-	
+
 	! Construct elt_rots
 	elt_rots(1:3,1:3)=0d0
 	elt_rots(1,1)=1d0; elt_rots(2,2)=1d0; elt_rots(3,3)=1d0;
-	elt_rots(1:3,1)=theta(1)*elt_rots(1:3,1)	
-	elt_rots(1:3,2)=theta(2)*elt_rots(1:3,2)	
-	elt_rots(1:3,3)=theta(3)*elt_rots(1:3,3)	
+	elt_rots(1:3,1)=theta(1)*elt_rots(1:3,1)
+	elt_rots(1:3,2)=theta(2)*elt_rots(1:3,2)
+	elt_rots(1:3,3)=theta(3)*elt_rots(1:3,3)
 	End Subroutine Calc_EltPrRotations
 
 C***********************************************************************
@@ -1452,7 +1393,7 @@ C Several routines supporting LensArray and Refractor with variable IndRef
 	  Do i=1,totLensElts
 	    ILtri=LensletStrArray(i,iElt)%Ltri
 	    IRtri=LensletStrArray(i,iElt)%Rtri
-	    IXtri=LensletStrArray(i,iElt)%Xtri  
+	    IXtri=LensletStrArray(i,iElt)%Xtri
 	    IYtri=IRtri+ILtri
 
 	    IYseg=LINT(DBLE(IYtri+2)/3d0)
@@ -1523,15 +1464,15 @@ C
 	  ! Nearest neighbor scheme
 	  LensletStrArray(1:nHexLenlets,iElt)%NgbDist=1d22
 	  Do j=1,nHexLenlets
-	    dd(1)=LensletStrArray(j,iElt)%Xctr          
-	    dd(2)=LensletStrArray(j,iElt)%Yctr          
+	    dd(1)=LensletStrArray(j,iElt)%Xctr
+	    dd(2)=LensletStrArray(j,iElt)%Yctr
 	    Do i=1,nval
 	      dd2(1:2)=xyzset(1:2,i)-dd(1:2)
 	      ds=DDOTC2(dd2,dd2) ! diff vector from data pt to pmon
 	      if (ds<LensletStrArray(j,iElt)%NgbDist) then
 	        LensletStrArray(j,iElt)%NgbDist=ds
 	        LensletStrArray(j,iElt)%IndRef=xyzset(3,i)
-	      end if 
+	      end if
 	    End Do
 	  End Do
 	Else
@@ -1549,7 +1490,7 @@ C
                 LensletStrArray(j,iElt)%IndRef=xyzset(3,i)
               end if
 	    End Do
-          End Do	    
+          End Do
 	End If
         End Subroutine InitLensArrIndRefFrmXYFile
 
@@ -1616,7 +1557,7 @@ C***********************************************************************
         Integer :: iElt,fu,nx,ny,j
 	Real*8 :: fnx,fny
 
-        ! Read in IndRefGrid  
+        ! Read in IndRefGrid
         fu=12
         Open(unit=fu,file=filename)
         Read(fu,*) fnx,fny,IndRefGridArr(iElt)%width
@@ -1625,13 +1566,13 @@ C***********************************************************************
 	  print*,'** InitIndRefGridFrmFile: invalid input'
 	  stop
 	end if
-	if (allocated(IndRefGridArr(iElt)%IndRefGrid)) 
+	if (allocated(IndRefGridArr(iElt)%IndRefGrid))
      &    deallocate(IndRefGridArr(iElt)%IndRefGrid)
 	allocate(IndRefGridArr(iElt)%IndRefGrid(ny+1,nx+1))
-       
-	Write(*,*)'Reading in index gridfile ', filename 
+
+	Write(*,*)'Reading in index gridfile ', filename
         Do j=1,ny
-          Read(fu,*)IndRefGridArr(iElt)%IndRefGrid(j,1:nx) 
+          Read(fu,*)IndRefGridArr(iElt)%IndRefGrid(j,1:nx)
         End Do
         close(fu)
 	End Subroutine InitIndRefGridFrmFile
@@ -1642,7 +1583,7 @@ C***********************************************************************
 	Subroutine CalcOrthoVec(vec,ovec)
 	Implicit none
 	Real*8 :: vec(3),ovec(3),vecl(3),dtmp
-	Integer :: idx(3),i,j,itmp 
+	Integer :: idx(3),i,j,itmp
 
 	idx(1)=1; idx(2)=2; idx(3)=3
 	vecl(1:3)=vec(1:3)
@@ -1650,8 +1591,8 @@ C***********************************************************************
 	  Do j=i+1,3
             if (abs(vecl(i))<abs(vecl(j))) then
 	      dtmp=vecl(i); vecl(i)=vecl(j); vecl(j)=dtmp
-	      itmp=idx(i); idx(i)=idx(j); idx(j)=itmp 
-	    end if 
+	      itmp=idx(i); idx(i)=idx(j); idx(j)=itmp
+	    end if
 	  End Do
 	End Do
 
@@ -1665,7 +1606,7 @@ C***********************************************************************
 	Function IsNSElt(iElt)
 	Integer :: iElt
 	Logical :: IsNSElt
-	IsNSElt = (iElt==9).OR.(iElt==12)	
+	IsNSElt = (iElt==9).OR.(iElt==12)
 	End Function IsNSElt
 
 C***********************************************************************
@@ -1686,8 +1627,8 @@ C***********************************************************************
 	Open(unit=fu,file=fn,status='old')
 	Do i=1,dim
 	  Read(fu,*) ObjInt(1:dim,i)
-	End Do	
-	Close(fu)	
+	End Do
+	Close(fu)
 	End Subroutine ReadDblArray2D
 
 C***********************************************************************
@@ -1704,17 +1645,17 @@ C***********************************************************************
 	Complex*16 :: CWF(md,md)
 
 	a2dwdx=0d0; auv2=0d0
-	off=(md-ng)/2	
+	off=(md-ng)/2
 	Do j=1,ng-1
 	  Do i=1,ng-1
 	    iRay=RayMap(i,j); ip1Ray=RayMap(i+1,j)
-	    If (LRayOK(iRay) .and. LRayPass(iRay) .and. 
+	    If (LRayOK(iRay) .and. LRayPass(iRay) .and.
      &          LRayOK(iRay) .and. LRayPass(ip1Ray)) Then
 	      auv2ij=CWF(off+i,off+j)*DCONJG(CWF(off+i,off+j))
 	      !a2dwdx=a2dwdx+auv2ij*(OPD(i+1,j)-OPD(i,j))/dx
 	      a2dwdx=a2dwdx+(OPD(i+1,j)-OPD(i,j))/dx
-	      !auv2=auv2+auv2ij 
-	      auv2=auv2+1d0 
+	      !auv2=auv2+auv2ij
+	      auv2=auv2+1d0
 	    End If
 	  End Do
 	End Do
@@ -1724,11 +1665,11 @@ C***********************************************************************
         Do i=1,ng-1
 	  Do j=1,ng-1
 	    jRay=RayMap(i,j); jp1Ray=RayMap(i,j+1)
-	    If (LRayOK(jRay) .and. LRayPass(jRay) .and. 
+	    If (LRayOK(jRay) .and. LRayPass(jRay) .and.
      &          LRayOK(jp1Ray) .and. LRayPass(jp1Ray)) Then
-	      auv2ji=CWF(off+i,off+j)*DCONJG(CWF(off+i,off+j)) 
+	      auv2ji=CWF(off+i,off+j)*DCONJG(CWF(off+i,off+j))
 	      a2dwdy=a2dwdy+auv2ji*(OPD(i,j+1)-OPD(i,j))/dx
-	      auv2=auv2+auv2ji 
+	      auv2=auv2+auv2ji
 	    End If
           End Do
         End Do
@@ -1736,7 +1677,7 @@ C***********************************************************************
 	losAng(2)=a2dwdy/auv2; los(2)=zE*losAng(2)
 
         WRITE(*,100) losAng(2),',',losAng(1)
-        WRITE(*,105) BaseUnits(1:2), ')) =',los(1),',',los(2) 
+        WRITE(*,105) BaseUnits(1:2), ')) =',los(1),',',los(2)
  100    FORMAT(2P,'  System Line of Sight (X-tilt, Y-tilt (radian)) =',
      &         D16.7,A,D16.7)
  105    FORMAT(2P,'  System Line of Sight (PSF centroid at detector (',
@@ -1761,7 +1702,7 @@ C***********************************************************************
      &             ifBuild_,ifDMBuild_,ifTrace_,ifRayPrint_
         Logical :: ifRegrid_(mElt),ifIntSrfSet_(mElt),L1_(mRay),
      &             printDbg
-        Integer :: npts_,iObsOpt_,iEndElt_,iCurWFElt_,iCurRayElt_,
+        Integer :: npts_,iObsOpt_,iCurWFElt_,iCurRayElt_,
      &             iElt_,nBadRays_
         Real*8 :: Dicr_,Djcr_,dxSource_,StartIndRef_,StartExtinc_,
      &            WFE_,DAvgL_,WFEPV_
@@ -1789,13 +1730,13 @@ C***********************************************************************
         ! at a segment or a nonseq element, this routine however will call
         ! OPD (i.e. trace rays to) on such elements.
         ! Note when iElt_ is a segment or a non-sequential element, all rays
-        ! will be traced to the group of non-seq elements, so the beam size 
-        ! estimated in such a case will be the *global* beam size for all 
+        ! will be traced to the group of non-seq elements, so the beam size
+        ! estimated in such a case will be the *global* beam size for all
         ! non-seq elements in the group. -jzlou 08/22/2015
 
         firstRayToLook = 1  ! default to chief ray
 
-        If (EltID(iElt_)==9 .OR. EltID(iElt_)==11 .OR. 
+        If (EltID(iElt_)==9 .OR. EltID(iElt_)==11 .OR.
      &      EltID(iElt_)==12) Then
           ! Segment or Nonseq Refractor or Reflector
           firstRayToLook = 2 ! don't include chief ray
@@ -1927,7 +1868,7 @@ C***********************************************************************
 	Implicit none
 	Integer :: wl_id,ie
 
-	Do ie=1,nElt	
+	Do ie=1,nElt
  	  If (EltID(ie).GT.3 .AND. EltID(ie).NE.7 .AND.
      &        EltID(ie).NE.8) Then
 	    ! not Reflector,FocalPlane,Reference,Obscuring,Return surfaces
@@ -1938,7 +1879,7 @@ C***********************************************************************
 	        WRITE(*,*)' ** Invalid IndRef value in ArrIndRef for elt ',
      &          ie
 	      End If
-	    End If 
+	    End If
 	  End If
 	End Do
 	End Subroutine SetIndRef4Refractors
@@ -1949,13 +1890,13 @@ C***********************************************************************
 	use math_mod, only : DDOTC
 	Implicit none
 	Real*8 :: getIndex_grin5,crnt_pos(3),pv(3),zdir(3),modelCoef(10)
-!	Real*8, parameter :: n0=1.62893, n2=-7.673417129133d-2,  
+!	Real*8, parameter :: n0=1.62893, n2=-7.673417129133d-2,
 !    &          n4=3.153771895506d-3
         Real*8 :: n0,n2,n4,rvec(3),r2,r4
 	rvec=(crnt_pos-pv)-DDOTC(crnt_pos-pv,zdir)*zdir
 	n0=modelCoef(2); n2=modelCoef(3); n4=modelCoef(4)
         r2=rvec(1)**2+rvec(2)**2+rvec(3)**2; r4=r2*r2
-	getIndex_grin5=n0+n2*r2+n4*r4 
+	getIndex_grin5=n0+n2*r2+n4*r4
 	End Function getIndex_grin5
 
 
@@ -1963,38 +1904,42 @@ C***********************************************************************
 	use math_mod, only : DDOTC
 	Implicit none
         Real*8 :: getIndexGrad_grin5(3),crnt_pos(3),pv(3),zdir(3),
-     &            modelCoef(10) 
+     &            modelCoef(10)
 	Real*8 :: n0,n2,n4,n,rvec(3),r2,r4,getIndex_grin5
-!	Real*8, parameter :: n0=1.62893, n2=-7.673417129133d-2,  
+!	Real*8, parameter :: n0=1.62893, n2=-7.673417129133d-2,
 !    &          n4=3.153771895506d-3
         n0=modelCoef(2); n2=modelCoef(3); n4=modelCoef(4)
         n=getIndex_grin5(crnt_pos,pv,zdir,modelCoef)
         rvec=(crnt_pos-pv)-DDOTC(crnt_pos-pv,zdir)*zdir
 	r2=rvec(1)**2+rvec(2)**2+rvec(3)**2; r4=r2*r2
-        getIndexGrad_grin5(1)=2d0*rvec(1)*(n2+2*n4*r2)  
+        getIndexGrad_grin5(1)=2d0*rvec(1)*(n2+2*n4*r2)
 	getIndexGrad_grin5(2)=2d0*rvec(2)*(n2+2*n4*r2)
 	getIndexGrad_grin5(3)=2d0*rvec(3)*(n2+2*n4*r2)
         getIndexGrad_grin5(1:3)=n*getIndexGrad_grin5(1:3)
 	End Function getIndexGrad_grin5
 
 C***********************************************************************
+! ToDo: to be implemented
 
 	Function Calc_RayDielectricTC(wl)
-	use elt_mod, only : czero_
-	Implicit none
-	Real*8 :: wl
-	Complex*16 :: Calc_RayDielectricTC
-	Calc_RayDielectricTC = czero_
+	  Implicit none
+	  Real*8 :: wl
+	  Complex*16 :: Calc_RayDielectricTC
+
+	  Calc_RayDielectricTC = (0d0, 0d0)
+
 	End Function Calc_RayDielectricTC
 
 C***********************************************************************
+! ToDo: to be implemented
 
 	Function Calc_RayMetalTC(wl)
-	use elt_mod, only : czero_
-	Implicit none
-	Real*8 :: wl
-	Complex*16 :: Calc_RayMetalTC
-	Calc_RayMetalTC = czero_
+          Implicit none
+          Real*8 :: wl
+          Complex*16 :: Calc_RayMetalTC
+
+	  Calc_RayMetalTC = (0d0, 0d0)
+
         End Function Calc_RayMetalTC
 
 C***********************************************************************
@@ -2016,7 +1961,6 @@ C***********************************************************************
         NSCnt(thsElt)=NSCnt(dupElt)
         KrElt(thsElt)=KrElt(dupElt)
         KcElt(thsElt)=KcElt(dupElt)
-        AsphCoef(1:mAsphCoef,thsElt) = AsphCoef(1:mAsphCoef,dupElt)
         fElt(thsElt)=fElt(dupElt); eElt(thsElt)=eElt(dupElt)
           if (.false.) then
            print*,'dupElt, fElt(dupElt) =',dupElt,fElt(dupElt)
@@ -2083,13 +2027,23 @@ C***********************************************************************
         Extinc(thsElt)=Extinc(dupElt)
         LUpdateTElt_FLG(thsElt)=LUpdateTElt_FLG(dupElt)
         ifOPDModGrid(thsElt)=ifOPDModGrid(dupElt)
-        zElt(thsElt)=zElt(dupElt) 
+        zElt(thsElt)=zElt(dupElt)
         PropType(thsElt)=PropType(dupElt)
         nECoord(thsElt)=nECoord(dupElt)
         TElt(1:6,1:nECoord(thsElt),thsElt)=
      &    TElt(1:6,1:nECoord(dupElt),dupElt)
 #endif
         End Subroutine MakeDupElt
+
+#if 0
+! Dump fits write routine
+	Subroutine fitswrite(FitsFn,OPD,nsz)
+	Character(len=80) :: FitsFn
+	Real*8, dimension(:,:) :: OPD
+	Integer :: nsz
+	! ...
+	End Subroutine  fitswrite
+#endif
 
 C***********************************************************************
 
@@ -2098,24 +2052,8 @@ C***********************************************************************
  	Logical :: ifLoad
  	Character(len=*) :: Rx1,Rx2,mode
  	Integer :: iElt
-	! ... 	
+	! ...
  	End Subroutine dOPL
-#endif
-
-#ifdef CMACOS 
-        Subroutine InitRefOPD(RefOPDfile,nOpdDim)
-        use macos_mod, only : RefOPD 
-        CHARACTER(len=*) :: RefOPDfile
-        Integer :: nOpdDim,j
-       !Open(Unit=12,File='tb_dat2d_mode20.txt')
-        Open(Unit=12,File=RefOPDfile)
-       !print*,'** RefOPDfile =',RefOPDfile
-       !print*,'** nOPdDim =',nOpdDim
-        Do j=1,nOpdDim
-          Read(12,*) RefOPD(1:nOpdDim,j)
-        End Do  
-        Close(12) 
-        End Subroutine InitRefOPD 
 #endif
 
 C***********************************************************************
