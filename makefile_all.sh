@@ -4,23 +4,18 @@ set -e
 
 # source intel iccvars file which will be used to compile all libraries
 # source /opt/intel-$intel_version/bin/compilervars.sh intel64
-#source /opt/intel/bin/compilervars.sh intel64
-# The following line assumes compilation occurs on s383 Network on mustang4 
-# for a different computer make sure to specify the correct path for setvars.sh
 source /opt/intel-14.0.0/oneapi/setvars.sh intel64 --force
 
-# User must also set paths in order for compilation and macos to run as follows (
-# user can uncomment lines below if user would not like to update the .aliases file):
-# export LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib/intel64
-# export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-dev_wrk/macos_f90/pgplot
-# export PGPLOT_FONT=/home/lmarchen/MACOS/work/git_macos/macos-dev_wrk/macos_f90/pgplot/grfont.dat
-# export PGPLOT_DIR=/home/lmarchen/MACOS/work/git_macos/macos-dev_wrk/macos_f90/pgplot
-# export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-dev_wrk/macos_f90/readline-8.2
-# export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin
+#export LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib/intel64
+export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
 
-#--------------------------------------------------------------------------
-# cd to macos source code directory: macos_f90
-#--------------------------------------------------------------------------
+export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot
+export PGPLOT_FONT=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot/grfont.dat
+export PGPLOT_DIR=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot
+export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/readline-8.2
+export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
+
+
 cd macos_f90
 
 #--------------------------------------------------------------------------
@@ -82,25 +77,39 @@ make clean-smacos
 make smacos
 
 #--------------------------------------------------------------------------
-# Requirements
+# Compile GMI
+#
+# Note:
+#
+# 1. User must change text /home/lmarchen/MACOS/work/git_macos/macos-develop2
+#    to user's local path to macos source code
+# 2. User must change /usr/local/MATLAB/R2023b if using different version of
+#    Matlab to compile GMI or if location of Matlab is different
+# 3. User must change /opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin 
+#    if using a different version of the compiler or if different from it.
+#-------------------------------------------------------------------------
+cd ../GMI
+
+
+
+ifx -C -traceback -fstack-protector -c  -I/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90 -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F"
+
+ifx -C -traceback -fstack-protector -c  -I/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90 -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F"
+
+ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,/usr/local/MATLAB/R2023b/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,/usr/local/MATLAB/R2023b/bin/glnxa64 -L/usr/local/MATLAB/R2023b/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64/smacos_lib.a
+
+
+
+
+#--------------------------------------------------------------------------
+# Requirements to Compile on a Linux System 
 #--------------------------------------------------------------------------
 # Luis used following versions of compilers for compiling macos on "marchen":
-#bash-4.2$ ifort --version
-#ifort (IFORT) 2021.9.0 20230302
-#Copyright (C) 1985-2023 Intel Corporation.  All rights reserved.
-#or
-#ifx (IFX) 2023.1.0 20230320
-#Copyright (C) 1985-2023 Intel Corporation. All rights reserved.
+# 1. bash (run on bash, any version)
+# 2. Fortran Intel Compiler oneAPI (2024 or earlier down to 2013) ifort or ifx (ifx early 2024 won't compile GMI)
+#    User must install oneAPI HPC Toolbox to compile Fortran and Intel oneAPIBase Toolkit. 
+# 3. GCC (4.2 or later, used to compile supporting libraries)
+# 4. Matlab 2013a to Latest (2023b, GMI will compile with any of these version with either ifort or ifx 
+#    with the exception of the ifx early 2024 Fortran Intel Compiler
 
-#bash-4.2$ gcc --version
-#gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
-#Copyright (C) 2019 Free Software Foundation, Inc.
-#This is free software; see the source for copying conditions.  There is NO
-#warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-#bash-4.2$ gfortran --version
-#GNU Fortran (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
-#Copyright (C) 2019 Free Software Foundation, Inc.
-#This is free software; see the source for copying conditions.  There is NO
-#warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
