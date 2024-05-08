@@ -39,9 +39,9 @@ LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
 ################################################################################
 # Libraries for MACOS:
 
-MLIBS = /opt/intel-$(intel_version)/lib/intel64/libimf.a \
-        /opt/intel-$(intel_version)/lib/intel64/libifport.a \
-        /opt/intel-$(intel_version)/lib/intel64/libifcore.a \
+MLIBS = /opt/intel-${INTEL_VER}/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64/libimf.a \
+        /opt/intel-${INTEL_VER}/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64/libifport.a \
+        /opt/intel-${INTEL_VER}/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64/libifcore.a \
         -L/usr/lib64 -lX11 \
         -L$(SRC_DIR)/pgplot -lpgplot \
         -L$(SRC_DIR)/fits_build -lfits \

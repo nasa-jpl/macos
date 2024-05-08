@@ -3,10 +3,11 @@
 set -e
 
 export MACOS_SRC="${PWD}"
+export INTEL_VER="14.0.0"
 
 # source intel iccvars file which will be used to compile all libraries
 # source /opt/intel-$intel_version/bin/compilervars.sh intel64
-source /opt/intel-14.0.0/oneapi/setvars.sh intel64 --force
+source /opt/intel-${INTEL_VER}/oneapi/setvars.sh intel64 --force
 
 #export LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib/intel64
 export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
