@@ -47,7 +47,7 @@ MLIBS = /opt/intel-$(intel_version)/lib/intel64/libimf.a \
         -L$(SRC_DIR)/fits_build -lfits \
         $(RL_LIBS)
 
-NPSOL_ROOT=$(SRC_DIR)/npsol
+NPSOL_ROOT=${MACOS_SRC}/macos_f90/npsol
 NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
             $(NPSOL_ROOT)/Linux-x86_64/npsol.o
 ###############################################################################
