@@ -2,6 +2,8 @@
 ## exit on the first error.
 set -e
 
+export MACOS_SRC="${PWD}"
+
 # source intel iccvars file which will be used to compile all libraries
 # source /opt/intel-$intel_version/bin/compilervars.sh intel64
 source /opt/intel-14.0.0/oneapi/setvars.sh intel64 --force
@@ -9,12 +11,11 @@ source /opt/intel-14.0.0/oneapi/setvars.sh intel64 --force
 #export LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib/intel64
 export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
 
-export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot
-export PGPLOT_FONT=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot/grfont.dat
-export PGPLOT_DIR=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/pgplot
-export LD_LIBRARY_PATH=/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/readline-8.2
-export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
-
+export LD_LIBRARY_PATH="${MACOS_SRC}/macos_f90/pgplot:${LD_LIBRARY_PATH}"
+export PGPLOT_FONT="${MACOS_SRC}/macos_f90/pgplot/grfont.dat"
+export PGPLOT_DIR="${MACOS_SRC}/macos_f90/pgplot"
+export LD_LIBRARY_PATH="${MACOS_SRC}/macos_f90/readline-8.2:${LD_LIBRARY_PATH}"
+#export LD_LIBRARY_PATH=/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64
 
 cd macos_f90
 
@@ -88,15 +89,15 @@ make smacos
 # 3. User must change /opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin 
 #    if using a different version of the compiler or if different from it.
 #-------------------------------------------------------------------------
-cd ../GMI
+cd ../../GMI
 
 
 
-ifx -C -traceback -fstack-protector -c  -I/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90 -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F"
+ifx -C -traceback -fstack-protector -c  -I"${MACOS_SRC}/macos_f90" -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/sab/git/macos/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F"
 
-ifx -C -traceback -fstack-protector -c  -I/home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90 -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F"
+ifx -C -traceback -fstack-protector -c  -I/home/sab/git/macos/macos_f90 -I/usr/local/MATLAB/R2023b/extern/include -I/usr/local/MATLAB/R2023b/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module /home/sab/git/macos/macos_f90/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F"
 
-ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,/usr/local/MATLAB/R2023b/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,/usr/local/MATLAB/R2023b/bin/glnxa64 -L/usr/local/MATLAB/R2023b/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  /home/lmarchen/MACOS/work/git_macos/macos-develop2/macos_f90/SMACOS_OBJS/Linux-x86_64/smacos_lib.a
+ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,/usr/local/MATLAB/R2023b/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,/usr/local/MATLAB/R2023b/bin/glnxa64 -L/usr/local/MATLAB/R2023b/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  /home/sab/git/macos/macos_f90/SMACOS_OBJS/Linux-x86_64/smacos_lib.a
 
 
 
