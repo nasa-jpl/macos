@@ -52,10 +52,10 @@ cd macos_f90
 export macossrc_dir=$(pwd)
 export matlab_version=$(matlab -e | sed -n 's/MATLAB=//p')  #/usr/local/MATLAB/R2013a #$(which matlab)
 
-export PGPLOT_FONT=$macossrc_dir/grfont.dat
-export PGPLOT_DIR=$macossrc_dir/pgplot
-export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2
-export LD_LIBRARY_PATH=$intel64_lib
+export PGPLOT_FONT=$macossrc_dir/grfont.dat:"$PGPLOT_FONT"
+export PGPLOT_DIR=$macossrc_dir/pgplot:"$PGPLOTDIR"
+export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:"$LD_LIBRARY_PATH"
+#export LD_LIBRARY_PATH=$intel64_lib:"$LD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------
 # Compile npsol library (can be compiled with gfortran or ifort)
