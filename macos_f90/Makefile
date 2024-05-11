@@ -64,7 +64,9 @@ export smacoslib     := smacos_lib
 
 #### Compilers:
 #export FC = f95
-export FC = ifx -g -fPIC -132 -traceback -check bounds,stack
+#export FC = ifx -Ofast -xhost -fPIC -132 -traceback -check bounds,stack
+export FC = ifx -Ofast -xhost -fPIC -132 -traceback
+
 #export FC = gfortran -fPIC
 export CC = gcc -fPIC
 #export CC = icc -fPIC
