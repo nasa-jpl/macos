@@ -225,7 +225,7 @@ C  8. Compute PSF
 	    END DO
 	    CALL SRFPLT(iPloTyp,XFP,YFP,MWFFT,
      &	    mdttl,mdttl,mdttl,mdttl,'X-Axis','Y-Axis',CTITLE,
-     &	    CD1,CD2,1)
+     &	    real(abs(CD1),kind=8),real(abs(CD2),kind=8),1)   ! changed CD1 => abs(CD1) (ditto for CD2) -- input is double not complex  (ToDo: check)
 	  END IF
 
 	ELSE
