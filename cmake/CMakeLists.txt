@@ -23,7 +23,7 @@
 #        [ ] OS dependent compilation
 #            [ ] Linux
 #            [ ] MacOS
-#        [ ] pre-processor => easier way to define it -- via cmake parameter?
+#        [ ] pre-processor parameters
 #        [ ] add MACOS compilation
 #        [ ]
 # ------------------------------------------------------------------
@@ -36,6 +36,10 @@ project(SMACOS
   LANGUAGES Fortran C CXX
 )
 enable_language(Fortran C CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Release or Debug: set to Release
 # Set the Build type to Release
@@ -312,6 +316,7 @@ add_library(smacos STATIC
 
       ${smacos_src_dir}/smacos_vars_mod.F
       ${smacos_src_dir}/smacosio.F          # prop_defs.inc msmacosio.inc iosub.inc
+      ${smacos_src_dir}/smacos.F
 
       ${smacos_src_dir}/sourcsub.F   # ssrcray.inc
       ${smacos_src_dir}/smacosutil.F
@@ -323,7 +328,7 @@ add_library(smacos STATIC
       ${smacos_src_dir}/utilsub.F   # lensarr_indexes.inc collim.inc
       ${smacos_src_dir}/linsub.F
       ${smacos_src_dir}/pgplotdummy.F
-      ${smacos_src_dir}/sunsub.F    # $(MOD_SRCS) fits1.inc
+      ${smacos_src_dir}/sunsub.F    # fits1.inc
       ${smacos_src_dir}/propsub.F
       ${smacos_src_dir}/macos_ops.F
       ${smacos_src_dir}/zern_wf.F
@@ -334,7 +339,9 @@ add_library(smacos STATIC
 
       ${smacos_src_dir}/mhist.c
       # ${smacos_src_dir}/utilsub_c.c  # unistd.h missing
-      ${smacos_src_dir}/splicubi2.c
+
+      ${smacos_src_dir}/splicubi2.c    # needed in mathsub.F
+      ${smacos_src_dir}/splicubi2.f90  # DUMMY !!!  ==> ToDo: Need to find a way to incorporate splicubi2.c with f2py !!!
       )
 
 # needed for cmake dependencies determination (together with "Fortran_PREPROCESS ON")
