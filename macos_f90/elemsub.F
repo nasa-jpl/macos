@@ -1081,7 +1081,7 @@ C    Compute refracted ray cosine
 	  Eout(1)=DCMPLX(prhat(1),0d0)*Epr+DCMPLX(shat(1),0d0)*Esr
 	  Eout(2)=DCMPLX(prhat(2),0d0)*Epr+DCMPLX(shat(2),0d0)*Esr
 	  Eout(3)=DCMPLX(prhat(3),0d0)*Epr+DCMPLX(shat(3),0d0)*Esr
-cdebug
+cdebug -- ToDo: significance of this portion???
 	  DO i=1,1
 	    eopha(i)=datan2(DIMAG(Eout(i)),DBLE(Eout(i)))/dtr
 	  END DO
@@ -3022,7 +3022,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End Do
             firstEntry_sunBlades=.false.
           End If
-
+! ToDo: Exit Statement in code below ?????
 	  inSB=.false.
           Do ib=1,nBlades
             r2=px2**2+py2**2
@@ -3034,6 +3034,8 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End If
           End Do
 	  if (.not.inSB) GO TO 99
+
+! ToDo: check if Statement below is still true
 
 	ELSE IF (ApType.EQ.-4) THEN
 	  ! This section is disabled for now. 07/04, -jzlou
@@ -4177,6 +4179,7 @@ C  Compute grating parameters
 C  for fixed rule width: -dcr
         Gr=Order*lambda/RuleWidth  ! = m*lambda/a, where a is grating period
 
+        ! RuleDir => unit vector perpendicular to Unit Vector Psi
         CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! When RuleDir and psi are othogonal to each other,
 				             ! the routine doesn't change RuleDir.
 	!print*,' **TrGrating: aft RuleDir =',RuleDir

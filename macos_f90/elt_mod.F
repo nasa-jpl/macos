@@ -9,6 +9,8 @@ C***********************************************************************
 #include "realtype.h"
 
         Module elt_mod
+        use Constants, only:  SQRT_3,  SQRT_5,  SQRT_6,  SQRT_7,  SQRT_8, SQRT_10,
+     &                       SQRT_11, SQRT_12, SQRT_14, SQRT_18, SQRT_20, SQRT_22
         use param_mod
 
         Implicit none
@@ -82,7 +84,7 @@ C***********************************************************************
         INTEGER, PARAMETER :: GridTypeAll(2) = (/SrfType_GridData,
      &                                           SrfType_AsGrData/)
 
-        ! Surfaces having a Local Coord. System defined
+        ! Surfaces having a Local Coord. System defined (required)
         INTEGER, PARAMETER :: SrfTypes_LCSYS(4) = [SrfType_Monomial,
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
@@ -220,17 +222,17 @@ C***********************************************************************
      &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
 
         REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
-     &             (/       1d0,        2d0,        2d0, sqrt( 6d0), sqrt( 3d0), sqrt( 6d0),
-     &               sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt( 8d0), sqrt(10d0), sqrt(10d0),
-     &               sqrt( 5d0), sqrt(10d0), sqrt(10d0), sqrt(12d0), sqrt(12d0), sqrt(12d0),
-     &               sqrt(12d0), sqrt(12d0), sqrt(12d0), sqrt(14d0), sqrt(14d0), sqrt(14d0),
-     &               sqrt( 7d0), sqrt(14d0), sqrt(14d0), sqrt(14d0), sqrt(16d0), sqrt(16d0),
-     &               sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0), sqrt(16d0),
-     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt( 9d0), sqrt(18d0),
-     &               sqrt(18d0), sqrt(18d0), sqrt(18d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
-     &               sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0), sqrt(20d0),
-     &               sqrt(20d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0),
-     &               sqrt(11d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0), sqrt(22d0)/)
+     &             (/    1d0,      2d0,      2d0,  SQRT_6,   SQRT_3,   SQRT_6,
+     &               SQRT_8,   SQRT_8,   SQRT_8,   SQRT_8,   SQRT_10,  SQRT_10,
+     &               SQRT_5,   SQRT_10,  SQRT_10,  SQRT_12,  SQRT_12,  SQRT_12,
+     &               SQRT_12,  SQRT_12,  SQRT_12,  SQRT_14,  SQRT_14,  SQRT_14,
+     &               SQRT_7,   SQRT_14,  SQRT_14,  SQRT_14,      4d0,      4d0,
+     &                   4d0,      4d0,      4d0,      4d0,      4d0,      4d0,
+     &               SQRT_18,  SQRT_18,  SQRT_18,  SQRT_18,      3d0,  SQRT_18,
+     &               SQRT_18,  SQRT_18,  SQRT_18,  SQRT_20,  SQRT_20,  SQRT_20,
+     &               SQRT_20,  SQRT_20,  SQRT_20,  SQRT_20,  SQRT_20,  SQRT_20,
+     &               SQRT_20,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,
+     &               SQRT_11,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22/)
 
         CHARACTER(LEN=*), PARAMETER :: GlassTypeName(3) = ['Sellmeier', 'SCHOTT', 'Hartman']  ! see 'param_mod.F' for id
 
