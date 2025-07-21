@@ -1824,6 +1824,7 @@ C***********************************************************************
 C   gauss -  gaussian random number generator
 
 	REAL*8 FUNCTION GAUSS (nts)
+  use Constants, only: TWOPI
 	IMPLICIT NONE
 C
 C     value returned is a pseudo-random number with gaussian
@@ -1839,12 +1840,11 @@ C
 C
 C     DATA typing
 C
-	REAL*8 u, v, twopi
-	DATA twopi / 6.28318530717959 /
+	REAL*8 u, v
 C
 	u = RNG (nts)
 	v = RNG (nts)
-	GAUSS = SQRT (-2d0 * LOG(u)) * COS(twopi * v)
+	GAUSS = SQRT (-2d0 * LOG(u)) * COS(TWOPI * v)
 C
 	RETURN
 	END FUNCTION GAUSS
