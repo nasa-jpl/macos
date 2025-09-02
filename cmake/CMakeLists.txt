@@ -1,9 +1,15 @@
 # ------------------------------------------------------------------
+# Note:
+#  -- only a rough draft without using sub-project CMakeList
+#     definitions
+#  -- Code needs to be simplified
+#
+# ------------------------------------------------------------------
 # Create SMACOS Libs
 # ------------------------------------------------------------------
 # [ ] Status:
 #     [ ] Windows:
-#         Require: - Intel Fortran IFX Compiler
+#         Require: - Intel Fortran IFX Compiler (2025.x)
 #                  - Visual Studio 2022
 #
 #         Info:    not compiling MACOS but SMACOS for pymacos
@@ -19,16 +25,8 @@
 #
 #          ==> this will create the libs placed under .\build\libs
 # ------------------------------------------------------------------
-# ToDo:  [ ] define compiler flags for C / C++ compilation
-#        [ ] OS dependent compilation
-#            [ ] Linux
-#            [ ] MacOS
-#        [ ] pre-processor parameters
-#        [ ] add MACOS compilation
-#        [ ]
-# ------------------------------------------------------------------
-
 cmake_minimum_required(VERSION 3.31)
+include(CMakePrintHelpers)
 
 project(SMACOS
   VERSION 1.0
@@ -37,42 +35,64 @@ project(SMACOS
 )
 enable_language(Fortran C CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Release or Debug: set to Release
-# Set the Build type to Release
-# if(NOT CMAKE_BUILD_TYPE)   # default is Debug
-  # set(CMAKE_BUILD_TYPE Release CACHE STRING " " FORCE)
-# endif()
-# Set the Build type to Release
-set(CMAKE_BUILD_TYPE Release)
-message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-
-# set(CMAKE_C_COMPILER "cl")  # Visual C compiler
-# set(CMAKE_F_COMPILER "ifx")
-
-
-
+# ---------------------------------------------
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-  message(
-    FATAL_ERROR
+  message(FATAL_ERROR
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n"
   )
 endif()
 
+
+# --------------------------------------------- Module dir
+set(mod_dir "${CMAKE_BINARY_DIR}/mod")
+make_directory(${mod_dir})
+set(CMAKE_Fortran_MODULE_DIRECTORY ${mod_dir})
+
+# --------------------------------------------- OS Definition
+if(WIN32)
+  message("-------------------------------\nWindows x64 Settings\n-------------------------------")
+  set(WINx64 TRUE)
+  set(LINUX64 FALSE)
+else() # if(CMAKE_SYSTEM_NAME STREQUAL "Linux")  # (CMAKE_HOST_UNIX)
+  message("-------------------------------\nLinux Settings\n-------------------------------")
+  set(WINx64 FALSE)
+  set(LINUX64 TRUE)
+endif()
+
+# ------------------------------------------------------- Compiler
+if (LINUX64)
+  set(CMAKE_C_COMPILER icx)          # Intel oneAPI
+  set(CMAKE_CXX_COMPILER icpx)       # Intel oneAPI
+  set(CMAKE_Fortran_COMPILER ifx)    # Intel oneAPI
+else()
+  set(CMAKE_Fortran_COMPILER ifx)    # Intel oneAPI
+  set(CMAKE_C_COMPILER cl)           # MS VC
+  set(CMAKE_CXX_COMPILER cl)         # MS VC
+endif()
+
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)      # chk lnx
+
+# ------------------------------------------------------- Build Type
+# Set the Build type to Release  (Default is Debug)
+set(CMAKE_BUILD_TYPE Release)
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+
+
 # -------------------------------------------
 # Fortran: Compiler options for all
 # -------------------------------------------
+set_source_files_properties(PROPERTIES Fortran_PREPROCESS ON)
+
 # get_filename_component(Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 
-if (WIN32)
-  #  Require: - Intel Fortran IFX Compiler
-  #           - Visual Studio 2022 or Intel C/C++ Compiler
-
-  set(CMAKE_Fortran_COMPILER "ifx")
+# if (WINx64)
 
   # update Fortran Flags: default: /nologo /fpp
 
@@ -83,6 +103,8 @@ if (WIN32)
   #    /MD                       use dynamically-loaded, multithread C runtime
   #    /O2                       optimize for maximum speed (DEFAULT)
   #    /Qm64                     generate code for Intel(R) 64 architecture
+  #    /QxHost                   generate instructions for the highest instruction set and processor
+  #                                available on the compilation host machine
   #    /Qmkl                     link to the Intel(R) Math Kernel Library (Intel(R) MKL) and bring in the associated headers
   #                                parallel - link using the threaded Intel(R) MKL libraries. (default)
   #    /Qopt-mem-layout-trans    memory layout transformations performed by the compiler: enabled
@@ -90,14 +112,11 @@ if (WIN32)
   #    /c                        compile to object (.obj) only, do not link
   #    /fpp                      run Fortran preprocessor on source files prior to compilation
   #    /D<name>                  Preprocessor directives
-
-
-  set(CMAKE_Fortran_FLAGS     "${CMAKE_Fortran_FLAGS} /4L132 /fp:strict /Qfp-speculation:strict /Qm64 /Qmkl /Qparallel /O2 /Qopt-mem-layout-trans /MD /align /fpp /nologo")
-  set(CMAKE_Fortran_FLAGS_Lib "${CMAKE_Fortran_FLAGS} /c /gen-interfaces")
+  #    /RTCu                     report use of variable that was not initialized
 
   # [ ] SMACOS target compile Options
   #
-  #   for development:  (will disable )
+  #   for development:  (will disable opt)
   #     /traceback
   #     /check:bounds
   #     /check:stack
@@ -105,8 +124,6 @@ if (WIN32)
   #     /warn:unused
   #     /check:ALL
   #     /warn:ALL
-
-  set(CMAKE_Fortran_FLAGS_Lib_SMACOS_Target /traceback /check:bounds /check:stack /warn:interfaces /warn:unused)
 
   # [ ] SMACOS/MACOS pre-processing options
   #       CMACOS      MACOS
@@ -121,48 +138,62 @@ if (WIN32)
   #       MACOS_CMD
   #       DREADLINE_LIBRARY
 
-  set(SMACOS_preprocessing_CMAKE   -DCSMACOS -DMSWIN -DNR_FFT)
-  set(SMACOS_preprocessing_Fortran /DCSMACOS /DMSWIN /DNR_FFT)
+if (WINx64)
+  # Fortran Flags
+  set(FFlags  "/4L132 /align /O2 /fpp /nologo")
+  set(FFlags  "${FFlags} /fp:strict /Qfp-speculation:strict")
+  set(FFlags  "${FFlags} /Qm64 /Qmkl /Qparallel /Qopt-mem-layout-trans /QxHost")
+  set(FFlags  "${FFlags} /c /gen-interfaces") # /RTCu")
 
-endif()  # WIN32
+  # Fortran Flags: SMACOS  (Debug / Development)
+  set(FFlags_SMACOS "${FFlags}")
+  set(FFlags_SMACOS "${FFlags_SMACOS} /traceback /check:bounds /check:stack")
+  set(FFlags_SMACOS "${FFlags_SMACOS} /warn:interfaces /warn:unused") # /warn:all
 
+  # Fortran pre-processing options
+  set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
 
+else()
+  # Fortran Flags
+  set(FFlags  "-c -132 -align -O2 -fpp -nologo -fPIC -gen-interfaces ")
+  set(FFlags  "${FFlags} -fp-model=strict -fp-speculation=strict")
+  set(FFlags  "${FFlags} -m64 -qmkl -qopt-matmul -qopt-mem-layout-trans")
 
-# Print out (debugging)
-include(CMakePrintHelpers)
-# cmake_print_variables(WIN32)
-# cmake_print_variables(CMAKE_F_COMPILER)
-# cmake_print_variables(CMAKE_Fortran_FLAGS)
-# cmake_print_variables(PROJECT_NAME)
+  # Fortran Flags: SMACOS  (Debug)
+  set(FFlags_SMACOS "${FFlags}")
+  set(FFlags_SMACOS "${FFlags_SMACOS} -traceback -check bounds -check stack -fstack-protector-all")
 
+  # Fortran pre-processing options
+  set(SMACOS_preprocessing_Definition CSMACOS NR_FFT LNXOS)
+
+endif()
+
+set(Fortran_FLAGS_Lib        "${FFlags}")
+set(Fortran_FLAGS_Lib_SMACOS "${FFlags_SMACOS}")
+
+# cmake_print_variables(Fortran_FLAGS_Lib)
+# cmake_print_variables(Fortran_FLAGS_Lib_SMACOS)
 
 
 # Common variables
-set(mod_dir "${CMAKE_BINARY_DIR}/mod")
-
 set(smacos_src_dir "${CMAKE_SOURCE_DIR}/../macos_f90")
 cmake_path(ABSOLUTE_PATH smacos_src_dir NORMALIZE OUTPUT_VARIABLE smacos_src_dir)  # eliminate /../
 
+set(lib_bin_dir    "${CMAKE_BINARY_DIR}/libs")
 set(npsol_src_dir  "${smacos_src_dir}/npsol")
 set(blas_src_dir   "${npsol_src_dir}/blas")
 set(lapack_src_dir "${npsol_src_dir}/lapack")
-
-make_directory(${mod_dir})
-set(CMAKE_Fortran_MODULE_DIRECTORY ${mod_dir})
 
 
 # -------------------------------------------
 # Fortran Libs: Blas / LaPack / NPSol
 # -------------------------------------------
 
-if (1)
 
 # -------------------------------------------
 # [ ] Lib -- NPSOL: blas
 # -------------------------------------------
   message("-------------------- Lib: npsol/blas")
-  set(CMAKE_Fortran_FLAGS "/modul:${mod_dir} ${CMAKE_Fortran_FLAGS_Lib}")
-  message(STATUS "CMAKE_Fortran_FLAGS: ${CMAKE_Fortran_FLAGS}\n")
 
   add_library(blaslib STATIC
          ${blas_src_dir}/daxpy.f
@@ -184,13 +215,15 @@ if (1)
   )
 
   set_target_properties(blaslib PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
   )
 
   target_include_directories(blaslib
           PUBLIC
-          ${CMAKE_SOURCE_DIR}
           ${blas_src_dir}
+          ${lib_bin_dir}
   )
 
 
@@ -198,8 +231,6 @@ if (1)
 # [ ] Lib -- NPSOL: lapack
 # -------------------------------------------
   message("-------------------- Lib: npsol/lapack")
-  set(CMAKE_Fortran_FLAGS "/modul:${mod_dir} ${CMAKE_Fortran_FLAGS_Lib}")
-  message(STATUS "CMAKE_Fortran_FLAGS: ${CMAKE_Fortran_FLAGS}\n")
 
   add_library(lapacklib STATIC
         ${lapack_src_dir}/dbdsqr.f
@@ -240,13 +271,15 @@ if (1)
   )
 
   set_target_properties(lapacklib PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
   )
 
   target_include_directories(lapacklib
           PUBLIC
-          ${CMAKE_SOURCE_DIR}
           ${lapack_src_dir}
+          ${lib_bin_dir}
   )
 
 
@@ -254,8 +287,6 @@ if (1)
 # [ ] Lib -- NPSOL:
 # -------------------------------------------
   message("-------------------- npsol")
-  set(CMAKE_Fortran_FLAGS "/modul:${mod_dir} ${CMAKE_Fortran_FLAGS_Lib}")
-  message(STATUS "CMAKE_Fortran_FLAGS: ${CMAKE_Fortran_FLAGS}\n")
 
   add_library(npsol STATIC
         ${npsol_src_dir}/blaso.f
@@ -271,16 +302,17 @@ if (1)
         )
 
   set_target_properties(npsol PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
   )
 
   target_include_directories(npsol
           PUBLIC
-          ${CMAKE_SOURCE_DIR}
           ${npsol_src_dir}
+          ${lib_bin_dir}
   )
 
-endif()
 
 
 # -------------------------------------------
@@ -288,7 +320,7 @@ endif()
 # -------------------------------------------
 message("-------------------- Lib: smacos")
 
-set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_Lib})
+# set(CMAKE_Fortran_FLAGS "/modul:${mod_dir} ${CMAKE_Fortran_FLAGS_Lib}")
 add_library(smacos STATIC
       ${smacos_src_dir}/macos_definitions.h
       ${smacos_src_dir}/kinds.f90
@@ -337,32 +369,28 @@ add_library(smacos STATIC
       ${smacos_src_dir}/stop_set.F          # $(MOD_SRCS) design_optim.F
       ${smacos_src_dir}/psesub.F
 
-      ${smacos_src_dir}/mhist.c
+      # ${smacos_src_dir}/mhist.c
       # ${smacos_src_dir}/utilsub_c.c  # unistd.h missing
 
-      ${smacos_src_dir}/splicubi2.c    # needed in mathsub.F
+      # ${smacos_src_dir}/splicubi2.c    # needed in mathsub.F
       ${smacos_src_dir}/splicubi2.f90  # DUMMY !!!  ==> ToDo: Need to find a way to incorporate splicubi2.c with f2py !!!
       )
 
 # needed for cmake dependencies determination (together with "Fortran_PREPROCESS ON")
-target_compile_definitions(smacos PUBLIC ${SMACOS_preprocessing_CMAKE})
+# target_compile_definitions(smacos PUBLIC ${SMACOS_preprocessing_Fortran})
 
-target_compile_options(smacos
-    PUBLIC
-      ${SMACOS_preprocessing_Fortran}
-      ${CMAKE_Fortran_FLAGS_Lib_SMACOS_Target})
-
-set_source_files_properties(PROPERTIES Fortran_PREPROCESS ON)
-
-# set_target_properties(smacos PROPERTIES Fortran_PREPROCESS ON)
-set_target_properties(smacos PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
+set_target_properties(smacos PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS             "${Fortran_FLAGS_Lib_SMACOS}"
+      COMPILE_DEFINITIONS       "${SMACOS_preprocessing_Definition}"
+    )
 
 target_include_directories(smacos
       PUBLIC
         ${CMAKE_SOURCE_DIR}
         ${smacos_src_dir}
         ${mod_dir}
+        ${lib_bin_dir}
         )
- message(STATUS "CMAKE_Fortran_FLAGS: ${CMAKE_Fortran_FLAGS}\n")
-
 
