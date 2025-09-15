@@ -589,8 +589,9 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
-C						! Ruled Grating
-	      ELSE IF (EltID(iElt).EQ.5) THEN
+
+              ! Ruled Grating
+              ELSE IF (EltID(iElt).EQ.5) THEN
 c	        PrevElt=PrevNonSeg(iRay)
 	        PrevNonSeg(iRay)=iElt
 	        CALL Grating(ifBuild,ifDMBuild,ifPol,ifLNsrf,
@@ -619,11 +620,12 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD)
-     &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
-C						! Ruled TrGrating
+
+              ! Ruled TrGrating
 	      ELSE IF (EltID(iElt).EQ.13) THEN
 c	        PrevElt=PrevNonSeg(iRay)
 	        PrevNonSeg(iRay)=iElt
@@ -653,8 +655,8 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD)
-     &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
 
