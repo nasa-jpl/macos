@@ -1623,7 +1623,8 @@ c	      NextElt(PrevNonSeg)=iElt
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
-C						! Reflective Grating
+
+            ! Reflective Grating
 	    ELSE IF (EltID(iElt).EQ.5) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
@@ -1647,12 +1648,14 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
-	       IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	       CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
-	      PrevIndRef=CurIndRef
-	      PrevExtinc=CurExtinc
-	      ifRayElt(iElt)=.TRUE.
-C						! Transmissive Grating
+               IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
+             ! CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+              CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
+              PrevIndRef=CurIndRef
+              PrevExtinc=CurExtinc
+              ifRayElt(iElt)=.TRUE.
+
+            ! Transmissive Grating
 	    ELSE IF (EltID(iElt).EQ.13) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
@@ -1677,7 +1680,8 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	!       CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	      CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
 	      CurIndRef=IndRef(iElt)

@@ -1081,7 +1081,7 @@ C    Compute refracted ray cosine
 	  Eout(1)=DCMPLX(prhat(1),0d0)*Epr+DCMPLX(shat(1),0d0)*Esr
 	  Eout(2)=DCMPLX(prhat(2),0d0)*Epr+DCMPLX(shat(2),0d0)*Esr
 	  Eout(3)=DCMPLX(prhat(3),0d0)*Epr+DCMPLX(shat(3),0d0)*Esr
-cdebug
+cdebug -- ToDo: significance of this portion???
 	  DO i=1,1
 	    eopha(i)=datan2(DIMAG(Eout(i)),DBLE(Eout(i)))/dtr
 	  END DO
@@ -3022,7 +3022,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End Do
             firstEntry_sunBlades=.false.
           End If
-
+! ToDo: Exit Statement in code below ?????
 	  inSB=.false.
           Do ib=1,nBlades
             r2=px2**2+py2**2
@@ -3034,6 +3034,8 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End If
           End Do
 	  if (.not.inSB) GO TO 99
+
+! ToDo: check if Statement below is still true
 
 	ELSE IF (ApType.EQ.-4) THEN
 	  ! This section is disabled for now. 07/04, -jzlou
@@ -3804,10 +3806,94 @@ C  Set output values for ray position, direction
 	END SUBROUTINE HOE
 
 
-C***********************************************************************
-C For reflective grating - jzlou
+        ! -------------------------------------------------------------------------------
+        ! [ ] Grating Equation
+        ! -------------------------------------------------------------------------------
+        ! ToDo: Polarisation Ray-Trace, Metal (Extinction coeff)
 
-	SUBROUTINE Grating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
+        ! -------------------------------------------------------------------------------
+        ! Determine refracted/reflected ray dir (rhat) & change in OPL (dL) for a Grating
+        !
+        !   Lambda:     Wavelength
+        !   uhat:
+        !   shat:
+        ! -------------------------------------------------------------------------------
+        SUBROUTINE Snells_Law_Grating(LROK, rhat, dL,
+     &                                psi,ihat,rho,Nhat,na,nb,lambda,
+     &                                Order,RuleWidth,RuleDir,in_reflection)
+
+          real(8), intent(in)::
+     &         psi(3),         ! Srf. Normal of element at Vertex position
+     &         ihat(3),        ! Incident Ray Direction
+     &         rho(3),         ! Ray-Srf. Intersection point measured from Srf. Vertex Pos.
+     &         Nhat(3),        ! Srf. Normal at Ray-Srf. Intersection Point (rho)
+     &         na, nb,         ! Ref. Index before and after Surface
+     &         lambda,         ! Grating: Wavelength in Vacuum
+     &         Order,          ! Grating: Diff. Order
+     &         RuleWidth,      ! Grating: Groove Spacing in the Grating Direction
+     &         RuleDir(3)      ! Grating: Grating Direction (perp. to Groove Orientation)
+
+          logical, intent(in)::
+     &         in_reflection   ! If True, Reflection Grating mode is used
+
+          real(8), intent(inout)::
+     &         rhat(3),        ! Diffracted Ray Direction
+     &         dL              ! Change in OPL
+
+          logical, intent(inout)::
+     &         LROK            ! valid ray
+
+          ! ---------------------------
+          real(8) :: Gr_vec(3), u_vec(3), val, rho_prj(3), Nhat_u_vec,
+     &               uhat(3), shat(3)
+          ! ------------------------------------------------------------
+          ! Initialisation
+          LROK = .false.  ! assume ray failed
+          dL   = 0d0      ! OPL
+          rhat = ihat     ! no diffraction
+
+          !------------------------------
+          ! Project & Orthonormalise Grating Orientation
+          !
+          !   uhat: Dir. along the Rule Line (Groove Dir.)
+          !   shat: Dir. grating Direction in tangent plane & perp. to Grooves
+
+        ! ToDo: check if psi is not parallel to RuleDir and if it is, then it
+        !       does not behave like a Grating -- Snell's Law with Order = 0
+
+          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! prj. RuleDir onto tangent plane (psi)
+          CALL DXPROD(uhat,Nhat,RuleDir)       !
+          uhat = uhat / norm2(uhat)            ! CALL DUNITIZE(uhat)
+          CALL DXPROD(shat,uhat,Nhat)
+          shat = shat / norm2(shat)          ! CALL DUNITIZE(shat)
+          ! -------------------------------
+
+          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector
+          u_vec = (na * ihat + Gr_vec) / nb       ! Inc. Dir (Vector Refraction Equ.)
+
+          ! Chk: TIR or Evanescent Wave
+          Nhat_u_vec = dot_product(Nhat, u_vec)
+          val = 1d0 - norm2(u_vec) ** 2 + Nhat_u_vec ** 2
+          if (val <= 0d0) return
+          LROK = .True.
+
+          ! reflected / refracted ray direction
+          rhat = u_vec + (sqrt(val) - Nhat_u_vec) * Nhat
+          if (.not.in_reflection)
+     &        rhat = rhat - 2d0 * dot_product(Nhat, rhat) * Nhat
+
+          ! OPL change
+          rho_prj = rho - dot_product(Nhat, rho) * Nhat
+          dL = -dot_product((ihat*na-rhat*nb), rho_prj)
+
+        END SUBROUTINE Snells_Law_Grating
+
+
+        ! -------------------------------------------------------------------------------
+        ! [ ] Reflective Grating
+        ! -------------------------------------------------------------------------------
+
+        SUBROUTINE Grating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,psi,pv,prot,pin,ihat,Evec,
      &	 rad,pmon,xhat,yhat,zhat,
@@ -3817,247 +3903,189 @@ C For reflective grating - jzlou
      &	 Order,RuleWidth,RuleDir, ! RuleDir = h1HOE(1,iElt)
      &	 XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
 
-	use didesub, only: IntSrf
+        use didesub, only: IntSrf
         use traceutil_mod
-        use elt_mod, only: mMonCoef,mAnaCoef
+        use elt_mod, only: mMonCoef,mAnaCoef,
+     &                     SrfType_Flat,             ! =  1
+     &                     SrfType_Conic,            ! =  2
+     &                     SrfType_Aspheric,         ! =  3
+     &                     SrfType_Monomial,         ! =  4
+     &                     SrfType_Interpolated,     ! =  5
+     &                     SrfType_Anamorphic,       ! =  6
+     &                     SrfType_UserDefined,      ! =  7
+     &                     SrfType_Zernike,          ! =  8
+    !&                     SrfType_GridData,         ! =  9  <<<< not implemented Srf
+     &                     SrfType_Toric             ! = 10
+    !&                     SrfType_AsGrData          ! = 11  <<<< not implemented Srf
 
-	IMPLICIT NONE
 
-	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,LRT !ChkRayTrans
+        IMPLICIT NONE
 
-	INTEGER i,UDSrfType,SrfType,NDP,IWORK(*),IERROR,
+        LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,LRT !ChkRayTrans
+
+        INTEGER i,UDSrfType,SrfType,NDP,IWORK(*),IERROR,
      &	  mDP,ApType,nObs,ObsType(nObs)
 
-	SREAL :: dxidxim1(7,7),dxidui(7,6)
+        SREAL :: dxidxim1(7,7),dxidui(7,6)
 
-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+        REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &         pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
      &	       na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
      &	       RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
      &	       xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &	       UDSrfCoef(*),UDSrfParam(6)
-	REAL*8, dimension(:) :: AsphCoef
+        REAL*8, dimension(:) :: AsphCoef
 
-	REAL*8 Nvec(3),Nmag,dNdp(3,3),its,
+        REAL*8 Nvec(3),Nmag,dNdp(3,3),its,
      &         dSig,strho,ihatn(3),rhatn(3),
      &         XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),
      &	       DWORK(*),Kc,Kr
 
-	REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),
+        REAL*8 drdi(3,3),drda(3,3),drdd(3,3),drdth(3,3),
      &         dgdi(3,3),dgda(3,3),dgdth(3,3),dgdd(3,3),
      &	       dLdi(3),dLda(3),dLdth(3),dLdd(3)
 
-	REAL*8 dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
+        REAL*8 dindi(3,3),dinda(3,3),dindth(3,3),dindd(3,3),
      &	       drndi(3,3),drnda(3,3),drndth(3,3),drndd(3,3),
      &	       dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
      &	       dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-	REAL*8 S1,Order,shat(3),uhat(3),rts,uti,
+        REAL*8 S1,Order,shat(3),uhat(3),rts,uti,
      &	       prel(3),rho(3),Gr
 
-	COMPLEX*16 Evec(3),Eout(3)
+        COMPLEX*16 Evec(3),Eout(3)
+
+        REAL*8  Gr_vec(3), u_vec(3), val, rho_prj(3), Nhat_u_vec, dL
 
 cdebug
-	COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
-     &	 dGrdi,dGrda,dGrdth,dGrdd,drdi,drda,drdd,drdth,
-     &	 dgdi,dgda,dgdd,dgdth,dLdi,dLda,dLdd,dLdth,
-     &	 dindi,dinda,dindth,dindd,drndi,drnda,drndth,drndd
+        COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
+     &                dGrdi,dGrda,dGrdth,dGrdd,drdi,drda,drdd,drdth,
+     &                dgdi,dgda,dgdd,dgdth,dLdi,dLda,dLdd,dLdth,
+     &                dindi,dinda,dindth,dindd,drndi,drnda,drndth,drndd
 cdebug
 
-        !print*,'***** in Reflective Grating ...'
+        ! Compute incidence point of ray
+        select case (SrfType)
+          ! --------------------------------
+          case (SrfType_Flat)
+            CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
+     &                   pr,L,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Conic)
+            CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
+     &                  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Aspheric)
+            CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
+     &                   prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+          ! --------------------------------
+          case (SrfType_Monomial, SrfType_Zernike)
+            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &                  Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Interpolated)
+            CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+     &                  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
+     &                  wVec,pr,L,pmon,xhat,yhat,zhat,
+     &                  Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Anamorphic)
+            CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &                  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_UserDefined)
+            CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
+     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,
+     &                 xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Toric)
+            CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &                    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case default
+            LROK = .False.
+            WRITE(*,*)'SMACOS:Grating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
 
-C  Compute incidence point of ray
+        end select
 
-	IF (SrfType.EQ.1) THEN
-	  CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
-     &	  	pr,L,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.2) THEN
-	  CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
-     &	  	prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.3) THEN
-	  CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
-     &	  	prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
-	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
-	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	  	prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
-     &	  	Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.5) THEN
-	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
-     &	  	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
-     &	  	wVec,pr,L,pmon,xhat,yhat,zhat,
-     &	  	Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.6) THEN
-	  CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
-     &	  	prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.7) THEN
-	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	  	UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,
-     &          xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.10) THEN
-	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
-     &	  	prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
-	ELSE
-	  WRITE(*,*)'4: Unknown surface type. Aborting trace.'
-	END IF
+        ! Return if ray missed surface
+        IF (.NOT.LROK) RETURN
 
-#if 0
-! Test code
-	pin(1)=RuleWidth/3d0
-	!pin(1)=RuleWidth/2d0
-	!pin(1)=RuleWidth
-	print*,'--Grating: pv =',pv(1:3)
-	print*,'--Grating: pin =',pin(1:3)
-	print*,'--Grating: ihat =',ihat(1:3)
-	print*,'--Grating: Nvec =',Nvec(1:3)
-	print*,'--Grating: L =',L
-#endif
 
-C  Return if ray missed surface
+        Nsrfm = Nvec/Nmag
+        S1 = Nvec(1)*ihat(1) + Nvec(2)*ihat(2) + Nvec(3)*ihat(3)
+        IF (S1.GT.0d0) CALL DNEGATE(dNdp,dNdp,9)
 
-	IF (.NOT.LROK) THEN
-          RETURN
-        END IF
 
-	Nsrfm=Nvec/Nmag
+        ! pv:       Vertex Pos
+        ! pin:      Last ray Ray Pos (Ray-start)
+        ! prel:     Ray-Pos (start) w.r.t. pv          (= pin - pv)
+        ! rho:      Ray-Srf. Intersection w.r.t. pv    (= prel + L*ihat)
+        ! ihat:     incident Ray direction
+        ! rhat:     emerging Ray direction
+        ! Nhat:     (negative) local srf normal @ rho
+        ! na, nb:   Ref. Index of incident / emerging media
 
-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
-	IF (S1.GT.0d0) THEN
-	  CALL DNEGATE(dNdp,dNdp,9)
-	END IF
+        prel(1:3) = pin(1:3) - pv(1:3)         ! ray start w.r.t. Vpt
+        rho(1:3)  = prel(1:3) + L*ihat(1:3)    ! ray-srf intersection w.r.t. Vpt
+        L         = L*na                       ! OPL from prel to rho
 
-C  Compute grating parameters -- see Siegman pg. 698 et. seq.
+        ! ============================================================================
+        !
+        ! Grating: Fixed Rule Width  (see Siegman pg. 698 et. seq.)
+        !
+        !   gr_reflect: True if reflection Grating, otherwise False
+        !   Order:      Grating Order
+        !   RuleWidth:  Grating Spacing in the Grating Direction
+        !   Lambda:     Wavelength
+        !   uhat:       Dir. along the Rule Line
+        !   shat:       Dir. along grating & perpendicular to the Rule Lines
+        !   strho:      length of ray to grating vertex projected onto RuleDir
 
-	prel(1:3)=pin(1:3)-pv(1:3)
-	rho(1:3)=prel(1:3)+L*ihat(1:3)
-          ! rho = (pin+L*ihat)-pv = vector from elt vertex to ray
-          ! intersection point at current surface.
+        call Snells_Law_Grating(LROK, rhat, dL,
+     &                          psi,ihat,rho,Nhat,na,nb,lambda,
+     &                          Order,RuleWidth,RuleDir,.True.)
+        L = L + dL
 
-        !print*,'**** Order =',Order
-        !print*,'**** lambda =',lambda
-        !print*,'****  RuleWidth =',RuleWidth
-        !stop
+        ! ----------------------------------------------------------------
+        ! Compute partials
 
-C  for fixed rule width: -dcr
-        Gr=Order*lambda/RuleWidth
-          ! Gr is the quantity pre-computed for applying grating eqn later.
-
-C  this implements the grating equation: -dcr
-        CALL DPERPUVEC(RuleDir,RuleDir,psi)
-
-	CALL DXPROD(uhat,Nhat,RuleDir)
-          ! Nhat = (negative) local srf normal
-          ! uhat is in direction along rule line
-        CALL DUNITIZE(uhat)
-	CALL DXPROD(shat,uhat,Nhat)
-          ! shat is the direction along grating (substrate) surface,
-          ! and perpendicular to the rule lines -jzlou
-        CALL DUNITIZE(shat)
-
-	its=DDOTC(shat,ihat) ! cos of angle between incident ray and shat, which
-                             ! equals to sin of angle betwen incident ray and
-                             ! (substrate) surface normal -jzlou
-	rts=its-Gr  ! **** this is the use of grating equation; ****
-                    ! rts is the sin of angle between reflected ray and
-                    ! (substrate) surface normal -jzlou
-	uti=DDOTC(uhat,ihat)
-	S1=1d0-uti*uti-rts*rts
-	IF (S1.LT.0D0) THEN  ! original
-	!IF (S1.LT.-1D-8) THEN
-	  LROK=.FALSE.
-          print*,'Gr =', Gr
-          print*,'uhat =', uhat
-          print*,'shat =', shat
-          print*,'ihat =', ihat
-          print*,'its =',its
-          print*,'rts =',rts
-          print*,'** S1 =',S1
-          print*,'** S1 negativ, Ray does NOT pass grating ...'
-	  RETURN
-	END IF
-	DO i=1,3
-	  rhat(i)=rts*shat(i)+uti*uhat(i)+DSQRT(S1)*Nhat(i)
-    	END DO
-
-        If (.false.) Then
-         !print*,'*** RuleDir =',RuleDir
-         print*,' ********** Gr =', Gr
-         print*,' ******* ihat=',ihat
-         print*,' ******* shat=',shat
-         print*,' ******* uhat=',uhat
-         print*,' ******* Nhat=',Nhat
-         print*,' ***** its = ',its
-         print*,' ***** rts = ',rts
-         print*,'***** S1 = ',S1
-         !print*,'***** rhat = ',rhat(1:3)
-         !stop
-        End If
-
-	strho=DDOTC(RuleDir,rho) ! strho = distance of ray to grating vertex projected onto
-                                 ! direction of RuleDir
-	dSig=MOD(strho,RuleWidth) ! dSig is strho moduled by grating step size
-	IF (dSig.LT.0d0) dSig=dSig+RuleWidth
-	L=L-Gr*dSig ! 'Gr*dSig' is the 'extra part' needed to be
-                    ! subtracted from path-length 'L' to make this
-                    ! ray coherent with the ray hitting grating vertex.
-
-        ! Derivation of "L=L-Gr*dSig"   -jzlou
-        ! Path difference = a*(sin(I)+sin(D));
-        !   a = the separation distance between the two parallel rays;
-        !   I = angle between incident rays and grating (base surface) normal;
-        !   D = angle between reflected rays and grating (base surface) normal;
-        ! Now:
-        ! a*(sin(I)+sin(D)) = a*(sin(I)+sin(D))*RuleWidth/RuleWidth
-        !  = a*(Order*lambda)/RuleWidth = a*Gr = Gr*dSig = path difference of the two rays
-
-        ! Implication of "L=L-Gr*dsig"   -jzlou
-        ! This makes sure any ray 'dSig' away from a grove starting point is conherent with
-        ! the ray hitting the grove starting point. For rays hitting the grove starting
-        ! or end point, the path differnce between any two of them would be
-        ! k*RuleWith*(sin(I)+sin(D)) = k*Order*lambda, so the two rays are phase conherent,
-        ! where assuming the two rays are k groves apart.
-
-#if 0
-	print*,'--Grating: dSig =',dSig
-	print*,'--Grating: Gr*dSig =',Gr*dSig
-	print*,'--Grating: L_final =',L
-	print*,'--Grating: rhat =',rhat(1:3)
-	!stop
-#endif
-
-C  Compute partials
-
-	IF (ifBuild) THEN
-C         Zero partial matrices
+        IF (ifBuild) THEN
+          ! Zero partial matrices
           dxidxim1(1:7,1:7)=0d0
           dxidui(1:7,1:6)=0d0
         END IF
 
-C  Check if ray is obscured
-	IF (ifObs) THEN
-	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
-     &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
+        ! ----------------------------------------------------------------
+        ! Check if ray is obscured
+        IF (ifObs) THEN
+          LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
+     &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
-	  IF (.NOT.LRT) Eout(1:3)=0d0
-	END IF
-	IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-	  LRT=.FALSE.
-	ELSE
-	  LRT=.TRUE.
-	END IF
+          IF (.NOT.LRT) Eout(1:3)=0d0
+        END IF
+        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
+        !   LRT=.FALSE.
+        ! ELSE
+        !   LRT=.TRUE.
+        ! END IF
 
-C  Set output values for ray position, direction
-	rout(1:3)=rhat(1:3)
-	pout(1:3)=pr(1:3)
-	NhatP(1:3)=Nhat(1:3)
+        ! ----------------------------------------------------------------
+        ! Set output values for ray position, direction
+        rout(1:3)  = rhat(1:3)
+        pout(1:3)  = pr(1:3)
+        NhatP(1:3) = Nhat(1:3)
 
-	RETURN
-	END SUBROUTINE Grating
+        RETURN
+        END SUBROUTINE Grating
 
-C***********************************************************************
+        ! -------------------------------------------------------------------------------
+        ! [ ] Transmission Grating
+        ! -------------------------------------------------------------------------------
 
-! Transmission grating (used in DFS) -- jzlou
-
-	SUBROUTINE TrGrating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
+        SUBROUTINE TrGrating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,psi,pv,prot,pin,ihat,Evec,
      &	 rad,pmon,xhat,yhat,zhat,
@@ -4072,12 +4100,22 @@ C***********************************************************************
 	use Constants, only: PI
         use traceutil_mod
 	use didesub, only: IntSrf
-        use elt_mod, only: mMonCoef,mAnaCoef
+        use elt_mod, only: mMonCoef,mAnaCoef,
+     &                     SrfType_Flat,             ! =  1
+     &                     SrfType_Conic,            ! =  2
+     &                     SrfType_Aspheric,         ! =  3
+     &                     SrfType_Monomial,         ! =  4
+     &                     SrfType_Interpolated,     ! =  5
+     &                     SrfType_Anamorphic,       ! =  6
+     &                     SrfType_UserDefined,      ! =  7
+     &                     SrfType_Zernike,          ! =  8
+    !&                     SrfType_GridData,         ! =  9  <<<< not implemented Srf
+     &                     SrfType_Toric             ! = 10
+    !&                     SrfType_AsGrData          ! = 11  <<<< not implemented Srf
 
 	IMPLICIT NONE
 
-	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,!ChkRayTrans,
-     &          LRT
+	LOGICAL LROK,ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,LRT
 
 	INTEGER i,j,UDSrfType,SrfType,
      &	  NDP,IWORK(*),IERROR,mDP,
@@ -4106,11 +4144,13 @@ C***********************************************************************
      &	       dsdi(3,3),dsda(3,3),dsdth(3,3),dsdd(3,3),
      &	       dGrdi(3),dGrda(3),dGrdth(3),dGrdd(3)
 
-	REAL*8 Ndi,cvec(3),muNdi,cfb,mu,dhat(3),
+	REAL*8 Ndi,cvec(3),muNdi,cfb,mu,
      &	 S1,S2,Order,shat(3),uhat(3),rts,uti,
      &	 prel(3),rho(3),Gr
 
 	COMPLEX*16 Evec(3),Eout(3)
+
+        REAL*8  Gr_vec(3), u_vec(3), val, rho_prj(3), Nhat_u_vec, dL
 
 cdebug
 	COMMON/DEBUG/ shat,Gr,ihatn,rhatn,dsdi,dsda,dsdth,dsdd,
@@ -4120,186 +4160,122 @@ cdebug
 cdebug
 
 C  Compute incidence point of ray
+        select case (SrfType)
+          ! --------------------------------
+          case (SrfType_Flat)
+            CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
+     &                   pr,L,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Conic)
+            CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
+     &                  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Aspheric)
+            CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
+     &                   prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+          ! --------------------------------
+          case (SrfType_Monomial, SrfType_Zernike)
+            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &                  Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Interpolated)
+            CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+     &                  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
+     &                  wVec,pr,L,pmon,xhat,yhat,zhat,
+     &                  Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Anamorphic)
+            CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &                  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_UserDefined)
+            CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
+     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,
+     &                 xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case (SrfType_Toric)
+            CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
+     &                    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+          ! --------------------------------
+          case default
+            LROK = .False.
+            WRITE(*,*)'SMACOS:TrGrating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
 
-	IF (SrfType.EQ.1) THEN
-	  CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
-     &	  pr,L,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.2) THEN
-	  CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
-     &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.3) THEN
-	  CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
-	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
-	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
-     &	  Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.5) THEN
-	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
-     &	  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
-     &	  wVec,pr,L,pmon,xhat,yhat,zhat,
-     &	  Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.6) THEN
-	  CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.7) THEN
-	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	  UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
-     &	  Nvec,Nmag,Nhat,dNdp)
-	ELSE IF (SrfType.EQ.10) THEN
-	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
-	ELSE
-	  WRITE(*,*)'5: Unknown surface type. Aborting trace.'
-	END IF
+        end select
 
+        ! Return if ray missed surface
+        IF (.NOT.LROK) RETURN
 
-C  Return if ray missed surface
-
-	IF (.NOT.LROK) RETURN
-
-	Nsrfm=Nvec/Nmag
-
-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
-	IF (S1.GT.0d0) THEN
-	  CALL DNEGATE(dNdp,dNdp,9)
-	END IF
-
-
-C  Compute grating parameters
-
-	DO i=1,3
-	  prel(i)=pin(i)-pv(i)
-	  rho(i)=prel(i)+L*ihat(i) ! rho = (pin+L*ihat)-pv is vector from elt vertex to ray
-                                   ! intersection point at current surface.
-  	END DO
-
-C  for fixed rule width: -dcr
-        Gr=Order*lambda/RuleWidth  ! = m*lambda/a, where a is grating period
-
-        CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! When RuleDir and psi are othogonal to each other,
-				             ! the routine doesn't change RuleDir.
-	!print*,' **TrGrating: aft RuleDir =',RuleDir
-
-	CALL DXPROD(uhat,Nhat,RuleDir)    ! Nhat = (negative) local srf normal
-					  ! uhat will be 'out of paper' direction
-
-	CALL DUNITIZE(uhat)
-	CALL DXPROD(shat,uhat,Nhat)
-	CALL DUNITIZE(shat)   ! shat othogonal to Nhat and uhat (in paper)
-
-	its=DDOTC(shat,ihat)  ! cos(th), th = angle betw. ihat and shat
-	rts=its-Gr
-	uti=DDOTC(uhat,ihat)
-	S1=1d0-uti*uti-rts*rts
-
-	IF (S1.LT.0D0) THEN
-	  LROK=.FALSE.
-	  RETURN
-	END IF
-	DO i=1,3
-	  dhat(i)=rts*shat(i)+uti*uhat(i)-SQRT(S1)*Nhat(i)
-        END DO
-
-C	strho=DDOTC(RuleDir,rho)
-	strho=DDOTC(shat,rho)
-	dSig=MOD(strho,RuleWidth)
-	IF (dSig.LT.0d0) dSig=dSig+RuleWidth
-C	L=L-Gr*dSig
-	L=L+(rts-its)*dSig
+        Nsrfm=Nvec/Nmag
+        S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+        IF (S1.GT.0d0) CALL DNEGATE(dNdp,dNdp,9)
 
 
-C  Compute refracted ray
+        ! pv:       Vertex Pos
+        ! pin:      Last ray Ray Pos (Ray-start)
+        ! prel:     Ray-Pos (start) w.r.t. pv          (= pin - pv)
+        ! rho:      Ray-Srf. Intersection w.r.t. pv    (= prel + L*ihat)
+        ! ihat:     incident Ray direction
+        ! rhat:     emerging Ray direction
+        ! Nhat:     (negative) local srf normal @ rho
+        ! na, nb:   Ref. Index of incident / emerging media
 
-	mu=na/nb
-	Ndi=dhat(1)*Nhat(1)+dhat(2)*Nhat(2)+dhat(3)*Nhat(3)
-	muNdi=mu*Ndi
-	DO i=1,3
-	  cvec(i)=Ndi*Nhat(i)-dhat(i)
-        END DO
+        prel(1:3) = pin(1:3) - pv(1:3)         ! ray start w.r.t. Vpt
+        rho(1:3)  = prel(1:3) + L*ihat(1:3)    ! ray-srf intersection w.r.t. Vpt
+        L         = L*na                       ! OPL from prel to rho
 
-C  Check for total internal reflection
+        ! ============================================================================
+        !
+        ! Grating: Fixed Rule Width  (see Siegman pg. 698 et. seq.)
+        !
+        !   gr_reflect: True if reflection Grating, otherwise False
+        !   Order:      Grating Order
+        !   RuleWidth:  Grating Spacing in the Grating Direction
+        !   Lambda:     Wavelength
+        !   uhat:       Dir. along the Rule Line
+        !   shat:       Dir. along grating & perpendicular to the Rule Lines
+        !   strho:      length of ray to grating vertex projected onto RuleDir
 
-	S2=1d0-mu*mu+muNdi*muNdi
-#if 0
-	print*,' **TrGrating: S2 =',S2
-	stop
-#endif
+        call Snells_Law_Grating(LROK, rhat, dL,
+     &                          psi,ihat,rho,Nhat,na,nb,lambda,
+     &                          Order,RuleWidth,RuleDir,.False.)
+        L = L + dL
 
-	IF (S2.LT.0d0) THEN
-	  LROK=.FALSE.
-	  RETURN
-	END IF
+        ! ----------------------------------------------------------------
+        ! Compute partials
 
+        IF (ifBuild) THEN
+          ! Zero partial matrices
+          dxidxim1(1:7,1:7)=0d0
+          dxidui(1:7,1:6)=0d0
+        END IF
 
-	cfb=DSQRT(S2)
-	S1=0d0
-	DO i=1,3
-	  rhat(i)=-mu*cvec(i)-cfb*Nhat(i)
-	  S1=S1+rhat(i)*rhat(i)
-        END DO
-	S2=DSQRT(S1)
-	DO i=1,3
-	  rhat(i)=rhat(i)/S2
-        END DO
-
-	! The direction of refracted ray (rhat) obeys grating equation in
-	! the case of normal incident ray, a sanity check by jzlou.
-	! The specific direction of h1HOE (along each groove surface) does
-	! not matter in determining the direction of refracted ray emerging
-	! from the transmission grating. -jzlou
-
-#if 0
-	! Pure test
-	print*,' **TrGrating: rhat =',rhat(1:3)
-        S2=DDOTC(rhat,ihat)
-	S2=sqrt(1d0-S2*S2)
-	print*,' **TrGrating: sin(beta) = ',S2
-	print*,' **TrGrating: Gr =',Gr
-	stop
-#endif
-
-C  Compute partials
-
-	IF (ifBuild) THEN
-
-C    Zero partial matrices
-
-	  DO 7 j=1,7
-	    DO 6 i=1,7
-	      dxidxim1(i,j)=0d0
-    6	    CONTINUE
-    7	  CONTINUE
-	  DO 9 j=1,6
-	    DO 8 i=1,7
-	      dxidui(i,j)=0d0
-    8	    CONTINUE
-    9	  CONTINUE
-	END IF
-
-C  Check if ray is obscured
-	IF (ifObs) THEN
-	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
-     &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
+        ! ----------------------------------------------------------------
+        ! Check if ray is obscured
+        IF (ifObs) THEN
+          LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
+     &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
-	  IF (.NOT.LRT) THEN
-	    Eout(1:3)=0d0
-	  END IF
-	END IF
-	IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-	  LRT=.FALSE.
-	ELSE
-	  LRT=.TRUE.
-	END IF
+          IF (.NOT.LRT) THEN
+            Eout(1:3)=0d0
+          END IF
+        END IF
+        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
+        !   LRT=.FALSE.
+        ! ELSE
+        !   LRT=.TRUE.
+        ! END IF
 
-C  Set output values for ray position, direction
-	rout(1:3)=rhat(1:3)
-	pout(1:3)=pr(1:3)
+        ! ----------------------------------------------------------------
+        ! Set output values for ray position, direction
+        rout(1:3)=rhat(1:3)
+        pout(1:3)=pr(1:3)
+        NhatP(1:3)=Nhat(1:3)
 
-	NhatP(1:3)=Nhat(1:3)
-
-	RETURN
-	END SUBROUTINE TrGrating
+        RETURN
+        END SUBROUTINE TrGrating
 
 
 C***********************************************************************

@@ -1551,7 +1551,7 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifOPDCalc,
-     &	 ifRegrid
+     &	 ifRegrid(mElt)
 	INTEGER i,j,iElt,npts,iWFA,iray,k,NoiseSeed(2),
      &	 im1,ip1,jm1,jp1,iwf,jwf
 	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen
@@ -1578,7 +1578,7 @@ C  Generate ray grid if not previously done
 	  dx=dxSource
 	ELSE
 	  ifOPDCalc=.FALSE.
-	  ifRegrid=.FALSE.
+	  ifRegrid(:)=.FALSE.
 	  CALL DXCALC(iElt,iElt,dxMin,dxMax,
      &	  dxAvg,dxDev,ifRegrid,ifOPDCalc,npts)
 	  dx=dxElt(iElt)

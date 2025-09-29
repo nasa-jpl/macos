@@ -589,8 +589,9 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
-C						! Ruled Grating
-	      ELSE IF (EltID(iElt).EQ.5) THEN
+
+              ! Ruled Grating
+              ELSE IF (EltID(iElt).EQ.5) THEN
 c	        PrevElt=PrevNonSeg(iRay)
 	        PrevNonSeg(iRay)=iElt
 	        CALL Grating(ifBuild,ifDMBuild,ifPol,ifLNsrf,
@@ -619,11 +620,12 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD)
-     &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
-C						! Ruled TrGrating
+
+              ! Ruled TrGrating
 	      ELSE IF (EltID(iElt).EQ.13) THEN
 c	        PrevElt=PrevNonSeg(iRay)
 	        PrevNonSeg(iRay)=iElt
@@ -653,8 +655,8 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
      &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
 	        END IF
-	        IF (ifAccumOPD)
-     &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
 
@@ -1792,6 +1794,7 @@ C***************************************************************************
 C***************************************************************************
 
 	SUBROUTINE NFPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
+        USE Constants, only: PI
 
 	IMPLICIT NONE
 	INTEGER I,J,II,JJ,NN(2),C3,NFFT
@@ -1805,7 +1808,7 @@ C***************************************************************************
 	C3=-NFFT/2-1
 	S=1D0
 	C4=DCMPLX(S)
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(Z1/Z2)*
+	S=-PI*LAMBDA*(Z2-Z1)*(Z1/Z2)*
      &	  (1E0/DX1/DBLE(NFFT))**2
 	C5=DCMPLX(0D0,S)  ! make a pure complex (imaginary) value
 
@@ -1854,6 +1857,7 @@ C*******************************************************************************
 C********************************************************************************
 
 	SUBROUTINE PPPROP(WF2,DX2,WF1,DX1,Z2,Z1,LAMBDA,NFFT,DWF)
+        USE Constants, only: PI
 
 	IMPLICIT NONE
 	INTEGER I,J,II,JJ,NN(2),C3,NFFT
@@ -1864,7 +1868,7 @@ C*******************************************************************************
 	NN(2)=NFFT
 	NSQ=NFFT*NFFT
 	C3=-NFFT/2-1
-	S=-3.14159265358979*LAMBDA*(Z2-Z1)*(1E0/DX1/DBLE(NFFT))**2
+	S=-PI*LAMBDA*(Z2-Z1)*(1E0/DX1/DBLE(NFFT))**2
 	C5=DCMPLX(0D0,S)
 
 	CALL DSWAP2(DWF,WF1,NFFT)
