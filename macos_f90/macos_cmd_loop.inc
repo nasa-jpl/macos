@@ -483,19 +483,19 @@ C         ***next command: Load optical description data***
 
 #if 1
 	      WRITE(*,*)' '
-	      NomSensOnly=.TRUE.; LinNomCtrl=.TRUE.
-	      Call nls_optim_dvr(.true.,OptTarget,
-     &                   nVarElt,varElts,varDOFs,
-     &                   nWFZern,WFZernMode,
-     &                   zernElt(1:nVarElt),varZerns,
-     &                   asphElt(1:nVarElt),varAsphs,
-     &                   opt_fov,nOptFov,fov_weight,
-     &                   opt_wavelen,nOptWavelen,
-     &                   dopt_tol,1,
-     &                   old_wfe,new_wfe,rtn_flag,
-     &                   tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                   OptTgtElt,LOptIfFEX,beamOpt)
-	     NomSensOnly=.FALSE.
+!	      NomSensOnly=.TRUE.; LinNomCtrl=.TRUE.
+!	      Call nls_optim_dvr(.true.,OptTarget,
+!     &                   nVarElt,varElts,varDOFs,
+!     &                   nWFZern,WFZernMode,
+!     &                   zernElt(1:nVarElt),varZerns,
+!     &                   asphElt(1:nVarElt),varAsphs,
+!     &                   opt_fov,nOptFov,fov_weight,
+!     &                   opt_wavelen,nOptWavelen,
+!     &                   dopt_tol,1,
+!     &                   old_wfe,new_wfe,rtn_flag,
+!     &                   tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                   OptTgtElt,LOptIfFEX,beamOpt)
+!	     NomSensOnly=.FALSE.
 	     WRITE(*,*)' '
 
 	     If (rtn_flag /= 0) goto 108
@@ -504,17 +504,17 @@ C         ***next command: Load optical description data***
 	     ! Restore pre-optimization optical state by calling
              ! this routine with start_optim=.false. and
              ! nitr_dopt < 0.
-             Call nls_optim_dvr(.false.,OptTarget,
-     &                   nVarElt,varElts,varDOFs,
-     &                   nWFZern,WFZernMode,
-     &                   zernElt(1:nVarElt),varZerns,
-     &                   asphElt(1:nVarElt),varAsphs,
-     &                   opt_fov,nOptFov,fov_weight,
-     &                   opt_wavelen,nOptWavelen,
-     &                   dopt_tol,-1,
-     &                   old_wfe,new_wfe,rtn_flag,
-     &                   tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                   OptTgtElt,LOptIfFEX,beamOpt)
+!             Call nls_optim_dvr(.false.,OptTarget,
+!     &                   nVarElt,varElts,varDOFs,
+!     &                   nWFZern,WFZernMode,
+!     &                   zernElt(1:nVarElt),varZerns,
+!     &                   asphElt(1:nVarElt),varAsphs,
+!     &                   opt_fov,nOptFov,fov_weight,
+!     &                   opt_wavelen,nOptWavelen,
+!     &                   dopt_tol,-1,
+!     &                   old_wfe,new_wfe,rtn_flag,
+!     &                   tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                   OptTgtElt,LOptIfFEX,beamOpt)
 #endif
 	     npts=npts_Rx; nGridPts=npts+1
 
@@ -3323,31 +3323,31 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 	        print*,'*** Before nls_driver: ifStopSet =',ifStopSet
                 ! Unconstrained system optimization
 	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
-                Call nls_optim_dvr(.true.,OptTarget,
-     &                             nVarElt,varElts,varDOFs,
-     &                             nWFZern,WFZernMode,
-     &                             zernElt(1:nVarElt),varZerns,
-     &                             asphElt(1:nVarElt),varAsphs,
-     &                             opt_fov,nOptFov,fov_weight,
-     &                             opt_wavelen,nOptWavelen,
-     &                             dopt_tol,nitrs_dopt,
-     &                             old_wfe,new_wfe,rtn_flag,
-     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                             OptTgtElt,LOptIfFEX,beamOpt)
+!                Call nls_optim_dvr(.true.,OptTarget,
+!     &                             nVarElt,varElts,varDOFs,
+!     &                             nWFZern,WFZernMode,
+!     &                             zernElt(1:nVarElt),varZerns,
+!     &                             asphElt(1:nVarElt),varAsphs,
+!     &                             opt_fov,nOptFov,fov_weight,
+!     &                             opt_wavelen,nOptWavelen,
+!     &                             dopt_tol,nitrs_dopt,
+!     &                             old_wfe,new_wfe,rtn_flag,
+!     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                             OptTgtElt,LOptIfFEX,beamOpt)
 	        print*,'*** After nls_driver: ifStopSet =',ifStopSet
 	      Else
                 ! Constrained system optimization
-                Call np_optim_dvr(.true.,OptTarget,
-     &                             nVarElt,varElts,varDOFs,
-     &                             varEltCons,
-     &                             nWFZern,WFZernMode,
-     &                             zernElt(1:nVarElt),varZerns,
-     &                             opt_fov,nOptFov,fov_weight,
-     &                             opt_wavelen,nOptWavelen,
-     &                             dopt_tol,nitrs_dopt,
-     &                             old_wfe,new_wfe,rtn_flag,
-     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                             OptTgtElt,LOptIfFEX,beamOpt)
+!                Call np_optim_dvr(.true.,OptTarget,
+!     &                             nVarElt,varElts,varDOFs,
+!     &                             varEltCons,
+!     &                             nWFZern,WFZernMode,
+!     &                             zernElt(1:nVarElt),varZerns,
+!     &                             opt_fov,nOptFov,fov_weight,
+!     &                             opt_wavelen,nOptWavelen,
+!     &                             dopt_tol,nitrs_dopt,
+!     &                             old_wfe,new_wfe,rtn_flag,
+!     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                             OptTgtElt,LOptIfFEX,beamOpt)
               End If
 
 	      npts=npts_Rx; nGridPts=npts+1
@@ -3415,12 +3415,12 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &               ' * RMS WFE at FOVs AFTER  Optimization:',
      &               new_wfe(1:nOptFov,iwl)
 	          else if (OptTarget==SPOT_TARGET) then
-	            WRITE(*,*)
-     &               ' * Spot size at FOVs BEFORE Optimization:',
-     &               SpotSize_old
-	            WRITE(*,*)
-     &               ' * Spot size at FOVs AFTER Optimization:',
-     &               SpotSize_new
+!	            WRITE(*,*)
+!     &               ' * Spot size at FOVs BEFORE Optimization:',
+!     &               SpotSize_old
+!	            WRITE(*,*)
+!     &               ' * Spot size at FOVs AFTER Optimization:',
+!     &               SpotSize_new
 	          end if
 	        End Do
 
@@ -3538,7 +3538,7 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 		      Do i=1,mVarDOF
 		        if (varEltDOF(i,varElts(iElt))>0) then
 		 	  j=j+1
-                          WRITE(*,166) aparams_nls_m(aparam_off+j)
+                          !WRITE(*,166) aparams_nls_m(aparam_off+j)
 	                end if
 		      End Do
 		      WRITE(*,'(x)')
@@ -3620,30 +3620,30 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 	        ! nitr_dopt < 0.
 	        If (.not. LOptCons) Then
                   ! Unconstrained version
-	          Call nls_optim_dvr(.false.,OptTarget,
-     &			 nVarElt,varElts,varDOFs,
-     &                   nWFZern,WFZernMode,
-     & 			 zernElt(1:nVarElt),varZerns,
-     &                   asphElt(1:nVarElt),varAsphs,
-     &                   opt_fov,nOptFov,fov_weight,
-     &                   opt_wavelen,nOptWavelen,
-     &                   dopt_tol,-1,
-     &                   old_wfe,new_wfe,rtn_flag,
-     &			 tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                   OptTgtElt,LOptIfFEX,beamOpt)
+!	          Call nls_optim_dvr(.false.,OptTarget,
+!     &			 nVarElt,varElts,varDOFs,
+!     &                   nWFZern,WFZernMode,
+!     & 			 zernElt(1:nVarElt),varZerns,
+!     &                   asphElt(1:nVarElt),varAsphs,
+!     &                   opt_fov,nOptFov,fov_weight,
+!     &                   opt_wavelen,nOptWavelen,
+!     &                   dopt_tol,-1,
+!     &                   old_wfe,new_wfe,rtn_flag,
+!     &			 tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                   OptTgtElt,LOptIfFEX,beamOpt)
 	        Else
                   ! Constrained version
-                  Call np_optim_dvr(.false.,OptTarget,
-     &                              nVarElt,varElts,varDOFs,
-     &                              varEltCons,
-     &                              nWFZern,WFZernMode,
-     &                              zernElt(1:nVarElt),varZerns,
-     &                              opt_fov,nOptFov,fov_weight,
-     &                              opt_wavelen,nOptWavelen,
-     &                              dopt_tol,nitrs_dopt,
-     &                              old_wfe,new_wfe,rtn_flag,
-     &                              tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-     &                              OptTgtElt,LOptIfFEX,beamOpt)
+!                  Call np_optim_dvr(.false.,OptTarget,
+!     &                              nVarElt,varElts,varDOFs,
+!     &                              varEltCons,
+!     &                              nWFZern,WFZernMode,
+!     &                              zernElt(1:nVarElt),varZerns,
+!     &                              opt_fov,nOptFov,fov_weight,
+!     &                              opt_wavelen,nOptWavelen,
+!     &                              dopt_tol,nitrs_dopt,
+!     &                              old_wfe,new_wfe,rtn_flag,
+!     &                              tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+!     &                              OptTgtElt,LOptIfFEX,beamOpt)
                 End If
 	        npts=npts_Rx
                 WRITE(*,*)'* Optimized optical state NOT saved!'
