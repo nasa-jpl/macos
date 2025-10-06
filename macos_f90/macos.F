@@ -66,7 +66,7 @@ C***********************************************************************
 	use macos_vars_mod  ! variables specific for macos.F
 	use dopt_mod
 	use zern_wf_mod
-	!use design_optim_mod
+	use design_optim_mod
 	!use design_cons_optim_mod
         use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
@@ -100,9 +100,9 @@ C  Execution starts
 
 	Call set_macos_problem_size(macos_model_size)
 
-	!mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls
-	!mOptZern_nls=mOptZern  ! are declared in design_optim_mod
-	!mOptAsph_nls=mOptAsph
+	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls
+	mOptZern_nls=mOptZern  ! are declared in design_optim_mod
+	mOptAsph_nls=mOptAsph
 	!mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
         !mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
 
