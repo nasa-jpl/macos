@@ -85,10 +85,11 @@ C***********************************************************************
      &                                           SrfType_AsGrData/)
 
         ! Surfaces having a Local Coord. System defined (required)
-        INTEGER, PARAMETER :: SrfTypes_LCSYS(4) = [SrfType_Monomial,
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(5) = [SrfType_Monomial,
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
-     &                                             SrfType_GridData]
+     &                                             SrfType_GridData,
+     &                                             SrfType_Anamorphic]
 
         CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=  ! SrfTypeName(20)
      &                     (/'Flat',               ! 1
