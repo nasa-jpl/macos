@@ -134,15 +134,15 @@ C***********************************************************************
 
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
-
-	IF (LRayOK(1)) THEN
+cstartscottfix
+	IF (LRayOK(1) .and. (.not. OPDRefRayLen_FLG)) THEN
 	   RefCumRayL=CumRayL(1)
 	ELSE IF (OPDRefRayLen_FLG) THEN
            RefCumRayL=OPDRefRayLen
 	ELSE
 	   RefCumRayL=0d0
 	END IF
-
+cendscottfix
 
 #if 1
 	! Define ray mask: 1 for ray not-lost AND passed, 0 for otherwise,
