@@ -138,6 +138,38 @@ C       Set entrance condition flags to .FALSE.
 	    END IF
 	    GO TO 50
 
+          ! --------------------------------------------------------------------------------
+! ToDo: copied code from main (initial dump) -- it requires integration of ifPol, ...
+
+!           ELSE IF (LCMP(VAR_NAM,'PolBeam',7).OR.
+!      &             LCMP(VAR_NAM,'PolSrc',6)) THEN
+!             IF (LCMP(VALUE,'Y',1)) THEN
+!               ! Turn on polarized ray-traceing
+!               ! Stmts below copied from 'POLARIZATION' cmd
+!               ! in macos_cmd_loop.inc, jzlou, 01/2019
+!               ifPol=.TRUE.
+!               ifPropagate=.FALSE.
+!               WRITE(*,*)' PolSrc: Polarization turned on'
+!               IF (mWF.GE.3) THEN
+!                 WRITE(*,*)' Vector diffraction enabled'
+!                 ifVecDif3=.TRUE.
+!               ELSE
+!                 ifVecDif3=.FALSE.
+!               END IF
+!               ! Default values for Ex0 and Ey0
+!               DV1(1)=1d0; DV1(2)=0d0
+!               DV2 = DV1
+!               !CALL DACCEPT(DV2,DV1,2,'Enter Ex0 (real,imag):')
+!               Ex0=DCMPLX(DV2(1),DV2(2))
+!               !CALL DACCEPT(DV2,DV1,2,'Enter Ey0 (real,imag):')
+!               Ey0=DCMPLX(DV2(1),DV2(2))
+!             END IF
+!             GO TO 50
+
+          ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'Ex0Ey0',6)) THEN
+            GO TO 50
+
 #ifdef CMACOS
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'PrtEltRots',6)) THEN
@@ -944,37 +976,45 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
+
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
+
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
+
               IF (SrfType(iElt).NE.SrfType_Monomial) THEN
                 MonCoef_FLG=.TRUE.
               END IF
+
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
               END IF
+
               IF (SrfType(iElt).NE.SrfType_UserDefined) THEN
                 UDSrfCoef_FLG=.TRUE.
                 UDSrfType_FLG=.TRUE.
                 UDSrfParam_FLG=.TRUE.
               END IF
+
               IF (SrfType(iElt).NE.SrfType_Zernike) THEN
                 ZernCoef_FLG=.TRUE.
                 ZernTypeL_FLG=.TRUE.
               END IF
+
               IF (SrfType(iElt).NE.SrfType_GridData) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
               END IF
+
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
@@ -983,6 +1023,7 @@ C       Set entrance condition flags to .FALSE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
+
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
