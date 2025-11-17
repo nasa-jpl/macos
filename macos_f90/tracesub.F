@@ -644,27 +644,31 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
-     &	  ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
-     &	  ifDraw,ifBeamCentered,ifLocalCoord,
+     &    ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
+     &    ifDraw,ifBeamCentered,ifLocalCoord,
      &    ifDraw_, ifBuild_
 
-	INTEGER k,npts,iCurWFElt,iCurRayElt,
-     &	        nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
-     &	        iEndRay,
-     &	        DrawEltVec(mDrawElt,mDrawRay),iLocal,
+        INTEGER k,npts,iCurWFElt,iCurRayElt,
+     &          nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
+     &          iEndRay,
+     &          DrawEltVec(mDrawElt,mDrawRay),iLocal,
      &          nDrawElt
 
-	SREAL Cmatrix(7,mCm,bRay),
+        SREAL Cmatrix(7,mCm,bRay),
      &	       DrawRayVec(2,mDrawElt,mDrawRay)
 
-	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
-     &	 DV1(9),DV2(9),S1,
-     &	 xTarg(3),xInt(2),thx,thy,dthPt,ddxPt(2),
-     &	 xLocal(3),yLocal(3),zLocal(3),
-     &	 newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
-     &	 crLocalPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
-     &	 del(3),errTol,
+        REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
+     &   DV1(9),DV2(9),S1,
+     &   xTarg(3),xInt(2),thx,thy,dthPt,ddxPt(2),
+     &   xLocal(3),yLocal(3),zLocal(3),
+     &   newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
+     &   crLocalPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
+     &   del(3),errTol,
      &   xDraw(3),yDraw(3)
+
+        INTEGER, PARAMETER :: MaxIterrations = 100
+
+        ! ------------------------------------------------
 
 C         ***Center Beam in System Stop***
 
@@ -720,7 +724,7 @@ C  STOP element. -jzlou)
         xInt(2) = DDOTC(yLocal,DV1)
 
         ! Loop until desired pt is matched (max 100)
-        DO 388 k=1,100
+        DO 388 k=1, MaxIterrations
 
           ! Check for convergence  (xTarg is STOP offset from VptElt in local frame)
           dxPt(:2) = xInt(:2) - xTarg(:2)               ! CALL DSUB(dxPt,xInt,xTarg,2)
