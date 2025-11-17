@@ -1205,7 +1205,8 @@ C       Use L as a starting point, find incidence pt on full (aspherical) surfac
         END IF
 
         CALL AZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
-        tol=1d-14
+        !tol=1d-14  ! original
+        tol=1d-16   ! modified at suggestion of DCR, 05/31/2016
         L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
         L=L3
         L_asph=L  ! L_asph is L on top of aspherical surface (conic+pure_aspherical)
