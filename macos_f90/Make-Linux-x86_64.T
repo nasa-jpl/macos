@@ -38,16 +38,15 @@ LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
 
 ################################################################################
 # Libraries for MACOS:
-
-MLIBS = /opt/intel-$(intel_version)/lib/intel64/libimf.a \
-        /opt/intel-$(intel_version)/lib/intel64/libifport.a \
-        /opt/intel-$(intel_version)/lib/intel64/libifcore.a \
+MLIBS = $(intel64_lib)/libimf.a \
+        $(intel64_lib)/libifport.a \
+        $(intel64_lib)/libifcore.a \
         -L/usr/lib64 -lX11 \
         -L$(SRC_DIR)/pgplot -lpgplot \
         -L$(SRC_DIR)/fits_build -lfits \
         $(RL_LIBS)
 
-NPSOL_ROOT=$(SRC_DIR)/npsol
+NPSOL_ROOT=$(macossrc_dir)/npsol
 NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
             $(NPSOL_ROOT)/Linux-x86_64/npsol.o
 ###############################################################################
@@ -58,7 +57,7 @@ $(macosexe): $(MACOSOBJS)
 	$(FC) $(LDFLAGS) -o $@ $(NPSOL_OBJS) $(MACOSOBJS) $(MLIBS)
 
 
-SMDRVLIBS = -L/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64 -limf -lintlc -lifport -lifcore -lc -lm \
+SMDRVLIBS = -L$intel64_lib -limf -lintlc -lifport -lifcore -lc -lm \
             -L/usr/lib64 -lX11
 
 # SMACOS library
