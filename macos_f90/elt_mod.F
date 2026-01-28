@@ -29,6 +29,7 @@ C***********************************************************************
         CHARACTER,DIMENSION(:),    ALLOCATABLE :: EltName*maxEltNameLength
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
 
+      !                                         EltID
         INTEGER, PARAMETER :: ReflectorElt    =   1,
      &                        FocalPlaneElt   =   2,
      &                        ReferenceElt    =   3,
@@ -39,14 +40,14 @@ C***********************************************************************
      &                        ReturnElt       =   8,
      &                        NSRefractorElt  =   9,
      &                        LensArrayElt    =  10,
-     &                        SegmentElt      =  11,
+     &                        SegmentElt      =  11,  ! Reflector
      &                        NSReflectorElt  =  12,
      &                        TrGratingElt    =  13,
      &                        RfPolarizerElt  =  14,
      &                        TrPolarizerElt  =  15,
      &                        CGHNullPlateElt =  16,
      &                        DoeTrGratingElt =  17,
-     &                        mEltTypes       =  17     ! defines available Element Types
+     &                        mEltTypes       =  17   ! defines available Element Types
 
         CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
      &                     (/'Reflector',         ! 1
@@ -85,10 +86,11 @@ C***********************************************************************
      &                                           SrfType_AsGrData/)
 
         ! Surfaces having a Local Coord. System defined (required)
-        INTEGER, PARAMETER :: SrfTypes_LCSYS(4) = [SrfType_Monomial,
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(5) = [SrfType_Monomial,
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
-     &                                             SrfType_GridData]
+     &                                             SrfType_GridData,
+     &                                             SrfType_Anamorphic]
 
         CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=  ! SrfTypeName(20)
      &                     (/'Flat',               ! 1
