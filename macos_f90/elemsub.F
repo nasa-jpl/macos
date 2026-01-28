@@ -46,18 +46,8 @@ C***********************************************************************
         use traceutil_mod
         use didesub, only: IntSrf
         use math_mod
-        use elt_mod, only: mMonCoef,mAnaCoef,
-     &                     SrfType_Flat,
-     &                     SrfType_Conic,
-     &                     SrfType_Aspheric,
-     &                     SrfType_Monomial,
-     &                     SrfType_Interpolated,
-     &                     SrfType_Anamorphic,
-     &                     SrfType_UserDefined,
-     &                     SrfType_Zernike,
-     &                     SrfType_GridData,
-     &                     SrfType_Toric,
-     &                     SrfType_AsGrData
+        use elt_mod, only: mMonCoef,mAnaCoef
+
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
@@ -84,48 +74,48 @@ C***********************************************************************
         ! Compute incidence point of ray
 
         SELECT CASE (SrfType)
-          CASE (SrfType_Flat) ! (1)
+          CASE (1)
           CALL FlatSrf(ifBuild,ifLNsrf,LROK,psi,pv,prot,pin,ihat,
      &                   pr,L,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_Conic)  ! (2)
+          CASE (2)
             CALL ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,
      &                  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_Aspheric)  ! (3)
+          CASE (3)
             CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AsphCoef,psi,pv,
      &                   prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,
      &                   nAsphCoef)
 
-          CASE (SrfType_Monomial, SrfType_Zernike)! (4,8)
+          CASE (4,8)
             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
      &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
      &                  Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_Interpolated) ! (5)
+          CASE (5)
             CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
      &                  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,wVec,pr,
      &                  L,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_Anamorphic) ! (6)
+          CASE (6)
             CALL AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &                  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_UserDefined) ! (7)
+          CASE (7)
             CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
      &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
      &                 pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_GridData) ! (9)
+          CASE (9)
             CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
      &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
      &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_Toric) ! (10)
+          CASE (10)
             CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &                    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 
-          CASE (SrfType_AsGrData) ! (11)
+          CASE (11)
             CALL AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,AnaCoef,psi,pv,
      &                       prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,
      &                       nAsphCoef,nGridMat,mGridMat,GridMat,

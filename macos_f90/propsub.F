@@ -262,8 +262,7 @@ C Fringe's
 	    ifIntSrfOK(iElt)=.TRUE.
 	    iIntSrf=1
 	  END IF
-	  IF (SrfType(iElt).EQ.SrfType_GridData .OR.
-     &        SrfType(iElt).EQ.SrfType_AsGrData) THEN
+	  IF (SrfType(iElt).EQ.9) THEN
 	    jGridSrf(iElt)=iEltToGridSrf(iElt)
 	  ELSE
 	    jGridSrf(iElt)=1

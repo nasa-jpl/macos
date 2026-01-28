@@ -134,15 +134,15 @@ C***********************************************************************
 
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
-cstartscottfix
-	IF (LRayOK(1) .and. (.not. OPDRefRayLen_FLG)) THEN
+
+	IF (LRayOK(1)) THEN
 	   RefCumRayL=CumRayL(1)
 	ELSE IF (OPDRefRayLen_FLG) THEN
            RefCumRayL=OPDRefRayLen
 	ELSE
 	   RefCumRayL=0d0
 	END IF
-cendscottfix
+
 
 #if 1
 	! Define ray mask: 1 for ray not-lost AND passed, 0 for otherwise,
@@ -635,40 +635,32 @@ C***********************************************************************
      &	  nBadRays,StartIndRef,StartExtinc,Cmatrix,DrawRayVec,
      &	  DrawEltVec,iLocal,xTarg,k,sqErr,ifBeamCentered)
 
-        use param_mod
+	use param_mod
         use src_mod
         use cfiles_mod
         use elt_mod
-        use sourcsub_mod
 
 	IMPLICIT NONE
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
-     &    ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
-     &    ifDraw,ifBeamCentered,ifLocalCoord,
-     &    ifDraw_, ifBuild_
+     &	  ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
+     &	  ifDraw,ifBeamCentered,ifLocalCoord
 
-        INTEGER k,npts,iCurWFElt,iCurRayElt,
-     &          nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
-     &          iEndRay,
-     &          DrawEltVec(mDrawElt,mDrawRay),iLocal,
-     &          nDrawElt
+	INTEGER k,npts,iCurWFElt,iCurRayElt,
+     &	        nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
+     &	        iEndRay,
+     &	        DrawEltVec(mDrawElt,mDrawRay),iLocal
 
-        SREAL Cmatrix(7,mCm,bRay),
+	SREAL Cmatrix(7,mCm,bRay),
      &	       DrawRayVec(2,mDrawElt,mDrawRay)
 
-        REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
-     &   DV1(9),DV2(9),S1,
-     &   xTarg(3),xInt(2),thx,thy,dthPt,ddxPt(2),
-     &   xLocal(3),yLocal(3),zLocal(3),
-     &   newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
-     &   crLocalPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
-     &   del(3),errTol,
-     &   xDraw(3),yDraw(3)
-
-        INTEGER, PARAMETER :: MaxIterrations = 100
-
-        ! ------------------------------------------------
+	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
+     &	 DV1(9),DV2(9),S1,
+     &	 xTarg(3),xInt(2),xInt0(2),thx,thy,dthPt,ddxPt(2),
+     &	 xLocal(3),yLocal(3),zLocal(3),
+     &	 newChfRayPos(3),oldChfRayDir(3),oldChfRayPos(3),
+     &	 crLocalPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
+     &	 del(3),errTol
 
 C         ***Center Beam in System Stop***
 
@@ -687,131 +679,130 @@ c 1. Replace "enter stop position" querys with auto calc
 c 2. Include stop kinematics in linear source perturbation models
 c 3. Include local source coordinates in linear source models
 
-        ifDraw_   = .FALSE.
-        ifBuild_  = .FALSE.
-        dthPt     = 1d-3
-        iStartRay = 1
-        iEndRay   = 1
-        iStartElt = 0
-        iEndElt   = iLocal  ! = id of STOP element
-        nMinPts   = 3
-        errTol    = 1d-22
-
-        oldChfRayDir(:) = ChfRayDir(:)  ! CALL DEQUATE(oldChfRayDir,ChfRayDir,3)
-        oldChfRayPos(:) = ChfRayPos(:)  ! CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
-        newChfRayPos(:) = ChfRayPos(:)  ! CALL DEQUATE(newChfRayPos,ChfRayPos,3)
+	dthPt     = 1d-3
+	iStartRay = 1
+	iEndRay   = 1
+	iStartElt = 0
+	iEndElt   = iLocal  ! = id of STOP element
+	nMinPts   = 3
+	errTol    = 1d-22
+	CALL DEQUATE(oldChfRayDir,ChfRayDir,3)
+	CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
+	CALL DEQUATE(newChfRayPos,ChfRayPos,3)
 
 C Find nominal incidence point and local coords
 C (Need to define local frame axes (xLocal and yLocal) at
 C  STOP element. -jzlou)
+	CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
+     &	 ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
+     &	 ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,
+     &	 dxSource,nBadRays,StartIndRef,StartExtinc,
+     &	 Cmatrix,DrawRayVec,DrawEltVec,
+     &	 iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
 
-        CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw_,
-     &                  ifLNegOK,ifBuild_,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
-     &                  ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,
-     &                  dxSource,nBadRays,StartIndRef,StartExtinc,
-     &                  Cmatrix,DrawRayVec,DrawEltVec,
-     &                  iLocal,xLocal,yLocal,zLocal,crLocalPos,ifLocalCoord)
+	IF (.NOT.ifLocalCoord) THEN
+	  WRITE(*,*)'Local coordinates could not be computed'
+	  ifBeamCentered=.FALSE.
+	END IF
 
-        IF (.NOT.ifLocalCoord) THEN
-          WRITE(*,*)'Local coordinates could not be computed'
-          go to 385
-        END IF
+C  Nominal (unperturbed) incidence pt in local coords
+	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
+	CALL DSUB(DV1,crLocalPos,VptElt(1,iLocal),3)
+	xInt(1)=DDOTC(xLocal,DV1)
+	xInt(2)=DDOTC(yLocal,DV1)
+	xInt0(1:2)=xInt(1:2)
 
-        ! Nominal (unperturbed) incidence pt in local coords
-        CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-        CALL DSUB(DV1,crLocalPos,VptElt(1,iLocal),3)
-        xInt(1) = DDOTC(xLocal,DV1)
-        xInt(2) = DDOTC(yLocal,DV1)
+C  Loop until desired pt is matched (max 100)
+	DO 388 k=1,100
 
-        ! Loop until desired pt is matched (max 100)
-        DO 388 k=1, MaxIterrations
+C    Check for convergence
+	  CALL DSUB(dxPt,xInt,xTarg,2)  ! xTarg is STOP offset from VptElt in
+                             ! local frame, also is target position in local frame
+	  sqErr=dxPt(1)*dxPt(1)+dxPt(2)*dxPt(2)
+	  IF (sqErr.LE.errTol) GO TO 386
 
-          ! Check for convergence  (xTarg is STOP offset from VptElt in local frame)
-          dxPt(:2) = xInt(:2) - xTarg(:2)               ! CALL DSUB(dxPt,xInt,xTarg,2)
-          sqErr    = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)  ! Squared Error
-          IF (sqErr.LE.errTol) GO TO 386
+C    Compute x-gradient
+	  CALL DSMPROD(del,xGrid,dthPt,3) ! dx projected in xGrid
+	  CALL DADD(ChfRayPos,newChfRayPos,del,3) ! ChfRayPos perturbed along xGrid
 
-          ! Compute x-gradient
-          CALL DSMPROD(del,xGrid,dthPt,3)         ! dx projected in xGrid
-          CALL DADD(ChfRayPos,newChfRayPos,del,3) ! ChfRayPos perturbed along xGrid
+	  ! Trace chief ray from source to STOP element (=iEndElt)
+	  CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
+     &	   ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &	   ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
+     &	   iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
+     &	   nBadRays,StartIndRef,StartExtinc,
+     &	   Cmatrix,DrawRayVec,DrawEltVec)
 
-          ! Trace chief ray from source to STOP element (=iEndElt)
-          CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
-          CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
-     &                ifLNegOK,Cmatrix,
-     &                iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &                ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &                StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-          IF (nBadRays.NE.0) GO TO 385
+	  CALL DSUB(DV1,RayPos,crLocalPos,3) ! diff of ChfRayPos footprint at STOP
+	  ddxPt(1)=DDOTC(DV1,xLocal)
+	  ddxPt(2)=DDOTC(DV1,yLocal)
+	  GPt(1,1)=ddxPt(1)/dthPt
+	  GPt(2,1)=ddxPt(2)/dthPt
 
-          CALL DSUB(DV1,RayPos,crLocalPos,3) ! diff of ChfRayPos footprint at STOP
-          ddxPt(1)=DDOTC(DV1,xLocal)
-          ddxPt(2)=DDOTC(DV1,yLocal)
-          GPt(1,1)=ddxPt(1)/dthPt
-          GPt(2,1)=ddxPt(2)/dthPt
+C    Compute y-gradient
+	  CALL DSMPROD(del,yGrid,dthPt,3)
+	  CALL DADD(ChfRayPos,newChfRayPos,del,3)
 
-          ! Compute y-gradient
-          CALL DSMPROD(del,yGrid,dthPt,3)
-          CALL DADD(ChfRayPos,newChfRayPos,del,3)
+	  CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
+     &	   ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &	   ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
+     &	   iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
+     &	   nBadRays,StartIndRef,StartExtinc,
+     &	   Cmatrix,DrawRayVec,DrawEltVec)
 
-          CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
-          CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
-     &                ifLNegOK,Cmatrix,
-     &                iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &                ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &                StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-          IF (nBadRays.NE.0) GO TO 385
+	  CALL DSUB(DV1,RayPos,crLocalPos,3)
+	  ddxPt(1)=DDOTC(DV1,xLocal)
+	  ddxPt(2)=DDOTC(DV1,yLocal)
+	  GPt(1,2)=ddxPt(1)/dthPt
+	  GPt(2,2)=ddxPt(2)/dthPt
 
-          CALL DSUB(DV1,RayPos,crLocalPos,3)
-          ddxPt(1)=DDOTC(DV1,xLocal)
-          ddxPt(2)=DDOTC(DV1,yLocal)
-          GPt(1,2)=ddxPt(1)/dthPt
-          GPt(2,2)=ddxPt(2)/dthPt
+C    Compute next step
+	  S1=1d0/(GPt(1,1)*GPt(2,2)-GPt(1,2)*GPt(2,1))
+	  GPtInv(1,1)=S1*GPt(2,2)
+	  GPtInv(1,2)=-S1*GPt(1,2)
+	  GPtInv(2,1)=-S1*GPt(2,1)
+	  GPtInv(2,2)=S1*GPt(1,1)
+	  thx=-(GPtInv(1,1)*dxPt(1)+GPtInv(1,2)*dxPt(2))
+	  thy=-(GPtInv(2,1)*dxPt(1)+GPtInv(2,2)*dxPt(2))
+	  CALL DSMPROD(DV1,xGrid,thx,3)
+	  CALL DSMPROD(DV2,yGrid,thy,3)
+	  CALL DADD(del,DV1,DV2,3)
+	  CALL DADD(ChfRayPos,newChfRayPos,del,3)
 
-          ! Compute next step
-          S1=1d0/(GPt(1,1)*GPt(2,2)-GPt(1,2)*GPt(2,1))
-          GPtInv(1,1)=S1*GPt(2,2)
-          GPtInv(1,2)=-S1*GPt(1,2)
-          GPtInv(2,1)=-S1*GPt(2,1)
-          GPtInv(2,2)=S1*GPt(1,1)
-          thx=-(GPtInv(1,1)*dxPt(1)+GPtInv(1,2)*dxPt(2))
-          thy=-(GPtInv(2,1)*dxPt(1)+GPtInv(2,2)*dxPt(2))
-          CALL DSMPROD(DV1,xGrid,thx,3)
-          CALL DSMPROD(DV2,yGrid,thy,3)
-          CALL DADD(del,DV1,DV2,3)
-          CALL DADD(ChfRayPos,newChfRayPos,del,3)
+	  CALL CRTrace(npts,ifPol,ifGrid,ifPropagate,
+     &	   ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &	   ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
+     &	   iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
+     &	   nBadRays,StartIndRef,StartExtinc,
+     &	   Cmatrix,DrawRayVec,DrawEltVec)
 
-          CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
-          CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
-     &                ifLNegOK,Cmatrix,
-     &                iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &                ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &                StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-          IF (nBadRays.NE.0) GO TO 385
+	  IF (nBadRays.NE.0) THEN
+	    WRITE(*,*)'Chief ray becomes undefined during search'
+	    ifBeamCentered=.FALSE.
+	  END IF
 
+	  CALL DEQUATE(newChfRayPos,ChfRayPos,3)
 
-          newChfRayPos(:) = ChfRayPos(:)           ! CALL DEQUATE(newChfRayPos,ChfRayPos,3)
-          crLocalPos(:)   = RayPos(:,1)            ! CALL DEQUATE(crLocalPos,RayPos,3)
-          CALL DSUB(DV1,RayPos,VptElt(1,iLocal),3)
-          xInt(1)=DDOTC(xLocal,DV1)
-          xInt(2)=DDOTC(yLocal,DV1)
-          S1=SQRT(thx*thx+thy*thy)
-          IF ((dthPt.GT.S1).AND.(dthPt.GT.5d-12)) dthPt=0.2d0*dthPt
- 388    CONTINUE
+	  CALL DEQUATE(crLocalPos,RayPos,3)
+	  CALL DSUB(DV1,RayPos,VptElt(1,iLocal),3)
+	  xInt(1)=DDOTC(xLocal,DV1)
+	  xInt(2)=DDOTC(yLocal,DV1)
+	  S1=SQRT(thx*thx+thy*thy)
+	  IF ((dthPt.GT.S1).AND.(dthPt.GT.5d-12)) dthPt=0.2*dthPt
+ 388	CONTINUE
 
-        ! Here if did not converge
- 385    CONTINUE
-        WRITE(*,*)' WARNING: Stop calculation failed to converge!'
-        ChfRayPos(:) = oldChfRayPos(:)  ! CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-        ChfRayDir(:) = oldChfRayDir(:)  ! CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-        ifBeamCentered=.FALSE.
-        return
+C   Here if did not converge
 
-        ! Here if converged
- 386    CONTINUE
-        ifBeamCentered=.TRUE.
-        ! k=k-1
-        END SUBROUTINE STOP
+	WRITE(*,*)' WARNING: Stop calculation failed to converge!'
+	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
+	ifBeamCentered=.FALSE.
+
+ 386	CONTINUE
+
+C   Here if converged
+	ifBeamCentered=.TRUE.
+	k=k-1
+	END SUBROUTINE STOP
 
 C***********************************************************************
 
@@ -866,9 +857,6 @@ C  Find nominal incidence point
 	IF (nBadRays.NE.0) THEN
 	  WRITE(*,*)'Nominal chief ray becomes undefined'
 	  ifLocalCoord=.FALSE.
-          ChfRayDir(:) = oldChfRayDir(:)
-          ChfRayPos(:) = oldChfRayPos(:)
-          return
 	END IF
 
 	CALL DEQUATE(crLocalPos,RayPos,3)
@@ -889,9 +877,6 @@ C    First try translating differential ray:
 	IF (nBadRays.NE.0) THEN
 	  WRITE(*,*)'Differential ray (x-t) becomes undefined'
 	  ifLocalCoord=.FALSE.
-          ChfRayDir(:) = oldChfRayDir(:)
-          ChfRayPos(:) = oldChfRayPos(:)
-          return
 	END IF
 	CALL DSUB(xLocal,RayPos,crLocalPos,3)
 	CALL DUNITVEC(v1,xLocal,DMAG1,3)
@@ -911,9 +896,6 @@ C    Didn't work, try rotating differential ray:
 	  IF (nBadRays.NE.0) THEN
 	    WRITE(*,*)'Differential ray (x-r) becomes undefined'
 	    ifLocalCoord=.FALSE.
-            ChfRayDir(:) = oldChfRayDir(:)
-            ChfRayPos(:) = oldChfRayPos(:)
-            return
 	  END IF
 	  CALL DSUB(xLocal,RayPos,crLocalPos,3)
 	  CALL DUNITVEC(v2,xLocal,DMAG2,3)
@@ -940,9 +922,6 @@ C    First try translating differential ray:
 	IF (nBadRays.NE.0) THEN
 	  WRITE(*,*)'Tilted differential ray becomes undefined'
 	  ifLocalCoord=.FALSE.
-          ChfRayDir(:) = oldChfRayDir(:)
-          ChfRayPos(:) = oldChfRayPos(:)
-          return
 	END IF
 	CALL DSUB(yLocal,RayPos,crLocalPos,3)
 	CALL DUNITVEC(v1,yLocal,DMAG1,3)
@@ -962,9 +941,6 @@ C    Didn't work, try rotating differential ray:
 	  IF (nBadRays.NE.0) THEN
 	    WRITE(*,*)'Rotated differential ray becomes undefined'
 	    ifLocalCoord=.FALSE.
-            ChfRayDir(:) = oldChfRayDir(:)
-            ChfRayPos(:) = oldChfRayPos(:)
-            return
 	  END IF
 	  CALL DUNITVEC(v2,yLocal,DMAG2,3)
 	  IF (DMAG2.GT.DMAG1) THEN
@@ -981,9 +957,6 @@ C  Successful termination
 	CALL DXPROD(zLocal,xLocal,yLocal)
 	CALL DUNITIZE(zLocal)
 	CALL DXPROD(yLocal,zLocal,xLocal)
-        ChfRayDir(:) = oldChfRayDir(:)
-        ChfRayPos(:) = oldChfRayPos(:)
-
 	END SUBROUTINE LocalCoord
 
 C***********************************************************************
@@ -1027,17 +1000,17 @@ C***********************************************************************
 	! define source with npts = nMinPts (note: it will modify nGridPts)
         !    -- Huge Overhead for simple chief-ray trace
         CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
-     &                        ifPropagate, ifGrid)
+     &                        ifPropagate)
 
-        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &		ifLNegOK,Cmatrix,
      &	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
      &	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	 StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 
         ! Restore  (ToDo: Needed?)
-!         CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
-!      &                        ifPropagate,ifGrid)
+        CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate,ifGrid)
 
 	END SUBROUTINE CRTrace
 
@@ -1332,8 +1305,7 @@ C Set Zerns
 	  ELSE
 	    LEltObs(iElt)=.FALSE.
 	  END IF
-	  IF (SrfType(iElt).EQ.SrfType_GridData .OR.
-     &        SrfType(iElt).EQ.SrfType_AsGrData) THEN
+	  IF (SrfType(iElt).EQ.9) THEN
 	    jGridSrf(iElt)=iEltToGridSrf(iElt)
 	  ELSE
 	    jGridSrf(iElt)=1
@@ -1465,19 +1437,13 @@ C       Loop through each element
 	    crnt_Elt=iElt  ! crnt_Elt, defined in traceutil_mod, is shared
                            ! with ChkRayTrans function in elemsub.F
 
-        ! ----------------------------------------------
-        ! Trace rays using appropriate element routines
-        ! ----------------------------------------------
-
-            ! ----------------------------------
-            ! (1) Reflector
-            ! ----------------------------------
-
-            IF (EltID(iElt).EQ.ReflectorElt) THEN
-              ! PrevElt(iElt)=PrevNonSeg
-              ! NextElt(PrevNonSeg)=iElt
-              PrevNonSeg=iElt
-              CALL Reflector(
+C	Trace rays using appropriate element routines
+C						! Reflector
+	    IF (EltID(iElt).EQ.1) THEN
+c	      PrevElt(iElt)=PrevNonSeg
+c	      NextElt(PrevNonSeg)=iElt
+	      PrevNonSeg=iElt
+	      CALL Reflector(
      &          ifBuild,ifDMBuild,ifPol,ifLNsrf,
      &	        LEltObs(iElt),LRayOK(iRay),LRayTrans,KcElt(iElt),
      &          KrElt(iElt),AsphCoef(1:tAsphCoef,iElt),MonCoef(1,iElt),
@@ -1499,34 +1465,30 @@ C       Loop through each element
      &          EltCoat(iElt),EltCoatThk(:,iElt),
      &          IndRefArr(:,iElt),ExtincArr(:,iElt))
 
-!  	      if (.false. .and. iEltLoop==21) then
-!  	        print*,'*** Elt 21 Aft Reflector(),LRayOK(iRay)=',
-!      &			LRayOK(iRay)
-!        	      end if
+ 	      if (.false. .and. iEltLoop==21) then
+ 	        print*,'*** Elt 21 Aft Reflector(),LRayOK(iRay)=',
+     &			LRayOK(iRay)
+       	      end if
 
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
 	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 
-! 	      if (.false.) then !if (iRay == (iEndRay-45)) then
-! 	        print*,'**After Reflector RayDir(:,iRay) = ',
-!      &            RayDir(:,iRay)
-! 	        !print*,'==>iSecondElt,iEndElt = ',iSecondElt,iEndElt
-! 	        print*,'===> CumRayL(iEndRay-45)=',
-!      &            CumRayL(iEndRay-45),
-!      &            ',RayL(iEndRay-45)=',RayL(iEndRay-45),
-!      &            'SrfType(iElt)=',SrfType(iElt),
-!      &            'iElt = ', iElt
-! 	      end if
+	      if (.false.) then !if (iRay == (iEndRay-45)) then
+	        print*,'**After Reflector RayDir(:,iRay) = ',
+     &            RayDir(:,iRay)
+	        !print*,'==>iSecondElt,iEndElt = ',iSecondElt,iEndElt
+	        print*,'===> CumRayL(iEndRay-45)=',
+     &            CumRayL(iEndRay-45),
+     &            ',RayL(iEndRay-45)=',RayL(iEndRay-45),
+     &            'SrfType(iElt)=',SrfType(iElt),
+     &            'iElt = ', iElt
+	      end if
 
-              PrevIndRef=CurIndRef
-              PrevExtinc=CurExtinc
-              ifRayElt(iElt)=.TRUE.
-
-            ! ----------------------------------
-            ! (2) Focal Plane
-            ! ----------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.FocalPlaneElt) THEN
+	      PrevIndRef=CurIndRef
+	      PrevExtinc=CurExtinc
+	      ifRayElt(iElt)=.TRUE.
+C						! Focal Plane
+	    ELSE IF (EltID(iElt).EQ.2) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1558,12 +1520,10 @@ c	      END IF
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
-
-            ! ----------------------------------
-            ! (3) Reference Surface
-            ! ----------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.ReferenceElt) THEN
+C						! Reference Surface
+c	    ELSE IF ((EltID(iElt).EQ.3).AND.
+c     &	    (ifRayPrint.OR.ifDraw.OR.(iElt.EQ.iEndElt))) THEN
+	    ELSE IF (EltID(iElt).EQ.3) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1587,12 +1547,8 @@ c	      IndRef(iElt)=IndRef(PrevElt(iElt))
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
-
-            ! ----------------------------------
-            ! (11) Reflector Segment
-            ! ----------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.SegmentElt) THEN
+C						! Reflector Segment
+	    ELSE IF (EltID(iElt).EQ.11) THEN
 	      ifRayToSeg=.FALSE.
 	      DO i=1,nRayToSeg(iRay)
 	        IF (RayToSegMap(iRay,i).EQ.EltToSegMap(iElt))
@@ -1637,12 +1593,8 @@ c		NextElt(iElt)=NextNonSeg
 		NextElt(iElt)=0
 		ifRayElt(iElt)=.FALSE.
 	      END IF
-
-            ! -------------------------------------
-            ! (4) Holographic Optical Element (HOE)
-            ! -------------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.HOEElt) THEN
+C				! Holographic Optical Element (HOE)
+	    ELSE IF (EltID(iElt).EQ.4) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1672,11 +1624,8 @@ c	      NextElt(PrevNonSeg)=iElt
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
 
-            ! -------------------------------------
-            ! (5) Reflective Grating
-            ! -------------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.GratingElt) THEN
+            ! Reflective Grating
+	    ELSE IF (EltID(iElt).EQ.5) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1706,11 +1655,8 @@ c	      NextElt(PrevNonSeg)=iElt
               PrevExtinc=CurExtinc
               ifRayElt(iElt)=.TRUE.
 
-            ! -------------------------------------
-            ! (13) Transmissive Grating
-            ! -------------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.TrGratingElt) THEN
+            ! Transmissive Grating
+	    ELSE IF (EltID(iElt).EQ.13) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1742,11 +1688,8 @@ c	      NextElt(PrevNonSeg)=iElt
 	      CurExtinc=Extinc(iElt)
 	      ifRayElt(iElt)=.TRUE.
 
-            ! --------------------------------------
-            ! (17) Diffractive Optical Element (DOE)
-            ! --------------------------------------
-
-            ELSE IF (EltID(iElt).EQ.DoeTrGratingElt) THEN
+C                                ! Diffractive Optical Element (DOE)
+            ELSE IF (EltID(iElt).EQ.17) THEN
 c             PrevElt(iElt)=PrevNonSeg
 c             NextElt(PrevNonSeg)=iElt
               PrevNonSeg=iElt
@@ -1777,11 +1720,9 @@ c             NextElt(PrevNonSeg)=iElt
               CurExtinc=Extinc(iElt)
               ifRayElt(iElt)=.TRUE.
 
-            ! --------------------------------------
-            ! Refractor
-            ! --------------------------------------
 
-	    ELSE IF (EltID(iElt).EQ.RefractorElt) THEN
+C						! Refractor
+	    ELSE IF (EltID(iElt).EQ.6) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -1835,12 +1776,8 @@ c	      NextElt(PrevNonSeg)=iElt
               End If
 	      CurExtinc=Extinc(iElt)
 	      ifRayElt(iElt)=.TRUE.
-
-            ! --------------------------------------
-            ! (7) Conic Obscuration
-            ! --------------------------------------
-
-	    ELSE IF ((EltID(iElt).EQ.ObscuringElt).AND.(ifDraw.OR.
+C						! Conic Obscuration
+	    ELSE IF ((EltID(iElt).EQ.7).AND.(ifDraw.OR.
      &	        ifRayPrint.OR.(iElt.EQ.iEndElt).OR.(.NOT.ifBuild)))
      &	     THEN
 c	      PrevElt(iElt)=PrevNonSeg
@@ -1863,12 +1800,8 @@ c	      NextElt(PrevNonSeg)=iElt
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
-
-            ! --------------------------------------
-            ! (8) Return element
-            ! --------------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.ReturnElt) THEN
+C						! Return element
+	    ELSE IF (EltID(iElt).EQ.8) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      ifTransmit=.FALSE.
@@ -1901,23 +1834,20 @@ c	      END IF
 	      PrevExtinc=CurExtinc
 	      ifRayElt(iElt)=.TRUE.
 
-            ! --------------------------------------
-            ! (9 or 12) Nonsequential Elements
-            ! --------------------------------------
+C					! Nonsequential Elements
+	    ELSE IF ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.12))
+     &	    THEN
 
-            ELSE IF ((EltID(iElt).EQ.NSRefractorElt).OR.
-     &               (EltID(iElt).EQ.NSReflectorElt)) THEN
-
-        !      if (.false.) then
-        !        print*,'Nonseq elem: iElt = ', iElt
-        !        print*,'EltID=', EltID(iElt)
-        !        !print*,'ApVec(1:4,iElt) = ', ApVec(1:4,iElt)
-        !      end if
+	     if (.false.) then
+	       print*,'Nonseq elem: iElt = ', iElt
+	       print*,'EltID=', EltID(iElt)
+	       !print*,'ApVec(1:4,iElt) = ', ApVec(1:4,iElt)
+	     end if
 
 
-              ! Initialize search parameters
-              iFirstNonSeq=iElt
-              iNextSeq=iElt
+C	Initialize search parameters
+	      iFirstNonSeq=iElt
+	      iNextSeq=iElt
  706	      CONTINUE
 	        IF ((EltID(iNextSeq).EQ.9).OR.
      &	        (EltID(iNextSeq).EQ.12)) THEN
@@ -1928,7 +1858,7 @@ c	      END IF
 	        iLastNonSeq=iNextSeq-1
 	        iminPrev=iElt-1
 
-              ! Loop until ray hits next sequential element
+C	Loop until ray hits next sequential element
 	      CrntNSCnt=0
  708	      CONTINUE
 	        CrntNSCnt=CrntNSCnt+1
@@ -1939,8 +1869,7 @@ c	      END IF
 	          CALL DEQUATE(PrevDir,RayDir(1,iRay),3)
 	          CALL DEQUATE(PrevPos,RayPos(1,iRay),3)
 	        END IF
-
-                ! Find next element as least ray length
+C	Find next element as least ray length
 	        Lmin=1D22
 	        imin=iNextSeq
 	        DO 707 itst=iFirstNonSeq,iNextSeq
@@ -2199,11 +2128,8 @@ C	Here when element number is determined...
 	        END IF
 	      iElt=iLastNonSeq
 
-            ! --------------------------------------
-            ! (10) Lens Array
-            ! --------------------------------------
-
-	    ELSE IF (EltID(iElt).EQ.LensArrayElt) THEN
+C					! Lens Array
+	    ELSE IF (EltID(iElt).EQ.10) THEN
 c	      PrevElt(iElt)=PrevNonSeg
 c	      NextElt(PrevNonSeg)=iElt
 	      PrevNonSeg=iElt
@@ -2245,23 +2171,23 @@ c	      NextElt(PrevNonSeg)=iElt
 C  End of element section
 	    END IF
 
-! #if 0
-! 	    if (iStartRay==1738) then
-! 	      print*,'** iStartRay=1738: iElt =',iElt,
-!      &         ', ifRayElt(iElt) =',ifRayElt(iElt),
-!      &         ', EltID(iElt) =',EltID(iElt),', LRayOK(iRay)=',LRayOK(iRay),
-!      &         ', ifDraw =',ifDraw
-! 	    end if
+#if 0
+	    if (iStartRay==1738) then
+	      print*,'** iStartRay=1738: iElt =',iElt,
+     &         ', ifRayElt(iElt) =',ifRayElt(iElt),
+     &         ', EltID(iElt) =',EltID(iElt),', LRayOK(iRay)=',LRayOK(iRay),
+     &         ', ifDraw =',ifDraw
+	    end if
 
-! 	    if (iElt==25) then
-!               print*,'** Right after End of element section,LRayOK(iRay)=',
-!      &	 	LRayOK(iRay), ',  iRay=', iRay
-! 	      print*,'** ifRayElt(iElt) =',ifRayElt(iElt)
-! 	      print*,'EltID(iElt) =',EltID(iElt)
-! 	      print*,'beamOpt%ifOptBeamPos =',beamOpt%ifOptBeamPos
-! 	      print*,'beamOpt%beamPosElt =',beamOpt%beamPosElt
-! 	    end if
-! #endif
+	    if (iElt==25) then
+              print*,'** Right after End of element section,LRayOK(iRay)=',
+     &	 	LRayOK(iRay), ',  iRay=', iRay
+	      print*,'** ifRayElt(iElt) =',ifRayElt(iElt)
+	      print*,'EltID(iElt) =',EltID(iElt)
+	      print*,'beamOpt%ifOptBeamPos =',beamOpt%ifOptBeamPos
+	      print*,'beamOpt%beamPosElt =',beamOpt%beamPosElt
+	    end if
+#endif
 
 	    IF (ifRayElt(iElt).AND.
      &          (EltID(iElt).NE.9).AND.(EltID(iElt).NE.12)) THEN
@@ -2289,9 +2215,9 @@ C  End of element section
                 ChfRayHist%SrfId(ChfRayHist%tot_srfs)=iElt
                 ChfRayHist%RayPosAtSrf(1:3,ChfRayHist%tot_srfs)
      &            =RayPos(1:3,iRay)
-                ! If (.false. .and. iElt==7) Then
-	        !  print*,'***** MACOS at elt 7: RayPos =',RayPos(1:3,iRay)
-                ! End If
+                If (.false. .and. iElt==7) Then
+	         print*,'***** MACOS at elt 7: RayPos =',RayPos(1:3,iRay)
+                End If
 	        ChfRayHist%RayDirAtSrf(1:3,ChfRayHist%tot_srfs)
      &            =PrevDir(1:3)
 	      End If
@@ -2442,15 +2368,15 @@ C  7. Compute interpolated surface partials and load CmDM:
 C	  IF (ifBuild.AND.ifDMBuild) THEN
 C	  END IF
 
-! #if 0
-! 	  If (LFastRayTrace) Then
-! 	    if (LRayOK(iRay).AND.LRayPass(iRay)) then
-!                FastRayTrace(iRay)=.TRUE.
-! 	    else
-! 	      FastRayTrace(iRay)=.FALSE.
-! 	    end if
-! 	  End If
-! #endif
+#if 0
+	  If (LFastRayTrace) Then
+	    if (LRayOK(iRay).AND.LRayPass(iRay)) then
+               FastRayTrace(iRay)=.TRUE.
+	    else
+	      FastRayTrace(iRay)=.FALSE.
+	    end if
+	  End If
+#endif
 
 C  9. End of iRay loop
 

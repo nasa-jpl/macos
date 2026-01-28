@@ -372,19 +372,19 @@ C    Set surface coefficients:
 	  prel(i)=pin(i)-pv(i)
    1	CONTINUE
 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
-	ix=ihat(1)*xhat(1)+ihat(2)*xhat(2)+ihat(3)*xhat(3)     ! ihat (L) in Local CSYS
-	iy=ihat(1)*yhat(1)+ihat(2)*yhat(2)+ihat(3)*yhat(3)     ! ihat (M) in Local CSYS
-	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)  ! dot(psi, prel)
+	ix=ihat(1)*xhat(1)+ihat(2)*xhat(2)+ihat(3)*xhat(3)
+	iy=ihat(1)*yhat(1)+ihat(2)*yhat(2)+ihat(3)*yhat(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
 c	psix=psi(1)*xhat(1)+psi(2)*xhat(2)+psi(3)*xhat(3)
 c	psiy=psi(1)*yhat(1)+psi(2)*yhat(2)+psi(3)*yhat(3)
-	px=prel(1)*xhat(1)+prel(2)*xhat(2)+prel(3)*xhat(3)     ! prel (x) in Local CSYS
-	py=prel(1)*yhat(1)+prel(2)*yhat(2)+prel(3)*yhat(3)     ! prel (y) in Local CSYS
-	ix2=ix*ix                                              ! L^2
-	iy2=iy*iy                                              ! M^2
-	px2=px*px                                              ! x^2
-	py2=py*py                                              ! y^2
-	pxxi=2d0*px*ix                                         ! 2*L*x
-	pyyi=2d0*py*iy                                         ! 2*M*y
+	px=prel(1)*xhat(1)+prel(2)*xhat(2)+prel(3)*xhat(3)
+	py=prel(1)*yhat(1)+prel(2)*yhat(2)+prel(3)*yhat(3)
+	ix2=ix*ix
+	iy2=iy*iy
+	px2=px*px
+	py2=py*py
+	pxxi=2d0*px*ix
+	pyyi=2d0*py*iy
 	opkrx=(1d0+Kx)*Cx*Cx
 	opkry=(1d0+Ky)*Cy*Cy
 
@@ -406,7 +406,7 @@ c	psiy=psi(1)*yhat(1)+psi(2)*yhat(2)+psi(3)*yhat(3)
 	q4=a2*p2+c2*c2
 
 C    Find surface roots and select L:
-        CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)  ! poly = q4*a^4 + q3*a^3 + q2*a^2 + q1*a + q0
+        CALL ROOT4(Order,CL(1),CL(2),CL(3),CL(4),q4,q3,q2,q1,q0)
         IF (Order.EQ.0) THEN
           L = -f0/f1
         ELSE
@@ -1205,8 +1205,7 @@ C       Use L as a starting point, find incidence pt on full (aspherical) surfac
         END IF
 
         CALL AZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
-        !tol=1d-14  ! original
-        tol=1d-16   ! modified at suggestion of DCR, 05/31/2016
+        tol=1d-14
         L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
         L=L3
         L_asph=L  ! L_asph is L on top of aspherical surface (conic+pure_aspherical)
