@@ -1046,10 +1046,10 @@ C  Get Surface Coordinate Parameters
 	!--> Mod for Grid coords
 	      IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
      &		(SrfType(iElt).EQ.9).OR.(SrfType(iElt).EQ.11)) THEN
-	        CALL DEQUATE(pGrid(1,iElt),pMon(1,iElt),3)
-	        CALL DEQUATE(xGrid(1,iElt),xMon(1,iElt),3)
-	        CALL DEQUATE(yGrid(1,iElt),yMon(1,iElt),3)
-	        CALL DEQUATE(zGrid(1,iElt),zMon(1,iElt),3)
+	        CALL DEQUATE(pGr(1,iElt),pMon(1,iElt),3)
+	        CALL DEQUATE(xGr(1,iElt),xMon(1,iElt),3)
+	        CALL DEQUATE(yGr(1,iElt),yMon(1,iElt),3)
+	        CALL DEQUATE(zGr(1,iElt),zMon(1,iElt),3)
 	      END IF
 	!<--
 	
