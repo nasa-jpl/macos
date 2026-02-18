@@ -82,8 +82,10 @@ C***********************************************************************
      &                        mSrfType                  = 11
 
         ! Surface types with Gridded Surface Parameters
-        INTEGER, PARAMETER :: GridTypeAll(2) = (/SrfType_GridData,
-     &                                           SrfType_AsGrData/)
+        INTEGER, PARAMETER :: GridTypeAll(4) = (/SrfType_GridData,
+     &                                           SrfType_AsGrData,
+     &						 SrfType_Monomial,
+     &                                           SrfType_Zernike/)
 
         ! Surfaces having a Local Coord. System defined (required)
         INTEGER, PARAMETER :: SrfTypes_LCSYS(5) = [SrfType_Monomial,
@@ -154,6 +156,13 @@ C***********************************************************************
      &                                            UDSrfCoef,UDSrfParam,
      &                                            xMonRx,yMonRx,zMonRx,pMonRx,ZernCoefRx
         REAL*8,   DIMENSION(:,:,:), ALLOCATABLE:: GridMat
+        
+        ! --- Added for multisurface:
+        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lGrid,lGridRx
+        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pGrid,xGrid,yGrid,zGrid,
+     &						  pGridRx,xGridRx,yGridRx,zGridRx
+     	! --- end
+     	
         INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
      &                                            nGridMat,iEltToGridSrf,
      &                                            nDP                                      ! interpolated Srf. Data (Grid)
