@@ -27,6 +27,7 @@ C
 	LOGICAL EltName_FLG,EltType_FLG,fElt_FLG,eElt_FLG,
      &    AsphCoef_FLG,ZernCoef_FLG,nZernCoef_FLG,ZernModes_FLG,
      &    pMon_FLG,xMon_FLG,yMon_FLG,zMon_FLG,
+     &    pGr_FLG,xGr_FLG,yGr_FLG,zGr_FLG,lGr_FLG,
      &    lMon_FLG,psiElt_FLG,VptElt_FLG,RptElt_FLG,IndRefE_FLG,
      &    zElt_FLG,PropType_FLG,nECoord_FLG,ApType_FLG,ApVec_FLG,
      &    nObs_FLG,xObs_FLG,TElt_FLG,SegApType_FLG,ZernCent_FLG,
