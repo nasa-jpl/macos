@@ -1042,7 +1042,17 @@ C  Get Surface Coordinate Parameters
 	      CALL DORTHOGANALIZE(xMon(1,iElt),yMon(1,iElt),
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
-
+	      
+	!--> Mod for Grid coords
+	      IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
+     &		(SrfType(iElt).EQ.9).OR.(SrfType(iElt).EQ.11)) THEN
+	        CALL DEQUATE(pGrid(1,iElt),pMon(1,iElt),3)
+	        CALL DEQUATE(xGrid(1,iElt),xMon(1,iElt),3)
+	        CALL DEQUATE(yGrid(1,iElt),yMon(1,iElt),3)
+	        CALL DEQUATE(zGrid(1,iElt),zMon(1,iElt),3)
+	      END IF
+	!<--
+	
 	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
