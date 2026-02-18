@@ -127,7 +127,7 @@ C	File setup and initial conditions read
      &	' |   Flat           Conic          Aspheric   |'/
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
-     &	' |   Toric          InfluenceFcn              |'/
+     &	' |   Toric          InfluenceFcn   AsphGrid   |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -834,7 +834,7 @@ C  Get Optical Parameters
 C  End Optical Parameters
 C  Get Aspheric Parameters
 
-	    IF (SrfType(iElt).EQ.3) THEN
+	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.12)) THEN
 	      If (maxAsphCoef==4) then
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
