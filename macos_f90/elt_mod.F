@@ -158,9 +158,9 @@ C***********************************************************************
         REAL*8,   DIMENSION(:,:,:), ALLOCATABLE:: GridMat
         
         ! --- Added for multisurface:
-        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lGrid,lGridRx
-        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pGrid,xGrid,yGrid,zGrid,
-     &						  pGridRx,xGridRx,yGridRx,zGridRx
+        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lGr,lGrRx
+        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pGr,xGr,yGr,zGr,
+     &						  pGrRx,xGrRx,yGrRx,zGrRx
      	! --- end
      	
         INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
