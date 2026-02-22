@@ -976,54 +976,59 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-
+                
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-
+              
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-
-              IF (SrfType(iElt).NE.SrfType_Monomial) THEN
+              
+              IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-
+              
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_UserDefined) THEN
                 UDSrfCoef_FLG=.TRUE.
                 UDSrfType_FLG=.TRUE.
                 UDSrfParam_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_Zernike) THEN
                 ZernCoef_FLG=.TRUE.
                 ZernTypeL_FLG=.TRUE.
               END IF
-
-              IF (SrfType(iElt).NE.SrfType_GridData) THEN
+              IF ((SrfType(iElt).NE.SrfType_GridData).AND. 
+     &            (SrfType(iElt).NE.SrfType_AsGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
               END IF
-
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
+     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-
+              IF (SrfType(iElt).NE.SrfType_MonGrData) THEN
+                pGr_FLG=.TRUE.
+                xGr_FLG=.TRUE.
+                yGr_FLG=.TRUE.
+                zGr_FLG=.TRUE.
+              END IF
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
