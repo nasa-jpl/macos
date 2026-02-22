@@ -834,7 +834,7 @@ C  Get Optical Parameters
 C  End Optical Parameters
 C  Get Aspheric Parameters
 
-	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.12)) THEN
+	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.11)) THEN
 	      If (maxAsphCoef==4) then
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
@@ -852,7 +852,7 @@ C  End Aspheric Parameters
 C  Get Monomial Parameters
 
 	    CALL DZERO(DDEF,7)
-	    IF (SrfType(iElt).EQ.4) THEN
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.12)) THEN
 	      CALL DACCEPT(MonCoef(1:6,iElt),DDEF,6,
      &	      'Enter monomial coefficients 1-6 ')
 	      CALL DACCEPT(MonCoef(7:12,iElt),DDEF,6,
@@ -892,7 +892,7 @@ C  Get Anamorph Parameters
 C  End Anamorph Parameters
 
 C  Get Zernike Parameters
-	    IF (SrfType(iElt).EQ.8) THEN
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      WRITE(*,146)
 	      CALL CACCEPT(TypeString,'Malacara',
      &	             'Enter Zernike Type :')
@@ -1003,7 +1003,7 @@ C	Param order = beta,dact or drad,dq,minrad
 C  End User-defined Parameters & Data
 
 C  Get GridSurf Parameters & Data
-	    IF (SrfType(iElt).EQ.9) THEN
+	    IF ((SrfType(iElt).EQ.9).OR.(SrfType(iElt).GE.11)) THEN
 	      CALL IACCEPT_S(nGridMat(iElt),mGridMat,1,
      &	        'Enter dimension of gridded data matrix ')
 	      CALL DACCEPT_S(GridSrfdx(iElt),1d0,1,
@@ -1043,9 +1043,8 @@ C  Get Surface Coordinate Parameters
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
 	      
-	!--> Mod for Grid coords
-	      IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
-     &		(SrfType(iElt).EQ.9).OR.(SrfType(iElt).EQ.11)) THEN
+	!--> Mod for MonGrData and ZernGrData Grid coords
+	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
 	        CALL DEQUATE(pGr(1,iElt),pMon(1,iElt),3)
 	        CALL DEQUATE(xGr(1,iElt),xMon(1,iElt),3)
 	        CALL DEQUATE(yGr(1,iElt),yMon(1,iElt),3)
