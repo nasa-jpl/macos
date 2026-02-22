@@ -80,20 +80,23 @@ C***********************************************************************
      &                        SrfType_Toric             = 10,
      &                        SrfType_AsGrData          = 11,
      &                        SrfType_MonGrData         = 12,
-     &                        mSrfType                  = 12
+     &                        SrfType_ZernGrData        = 13,
+     &                        mSrfType                  = 13
 
         ! Surface types with Gridded Surface Parameters
-        INTEGER, PARAMETER :: GridTypeAll(5) = (/SrfType_GridData,
+        INTEGER, PARAMETER :: GridTypeAll(6) = (/SrfType_GridData,
      &                                           SrfType_AsGrData,
      &                                           SrfType_MonGrData,
+     &                                           SrfType_ZernGrData,
      &						 SrfType_Monomial,
      &                                           SrfType_Zernike/)
 
         ! Surfaces having a Local Coord. System defined (required)
-        INTEGER, PARAMETER :: SrfTypes_LCSYS(6) = [SrfType_Monomial,
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(7) = [SrfType_Monomial,
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
      &                                             SrfType_MonGrData,
+     &                                             SrfType_ZernGrData,
      &                                             SrfType_GridData,
      &                                             SrfType_Anamorphic]
 
@@ -109,7 +112,8 @@ C***********************************************************************
      &                       'GridData',           ! 9
      &                       'Toric',              !10
      &                       'AsGrData',           !11  ! was 'InfluenceFunction'
-     &                       'MonGrData'/)         !12  
+     &                       'MonGrData',          !12  
+     &                       'ZernGrData'/)        !13  
 
         ! Old Element Definitions:
         INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
@@ -143,12 +147,13 @@ C***********************************************************************
 
 
         ! Surface types that require a Srf. Coord. Systems
-        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(5)=
+        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(6)=
      &                      [SrfType_Zernike,
      &                       SrfType_Monomial,
      &                       SrfType_GridData,
      &                       SrfType_AsGrData,
-     &                       SrfType_MonGrData]
+     &                       SrfType_MonGrData,
+     &                       SrfType_ZernGrData]
 
         !
         ! --- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS, AsGrid, MonGrid  -------
