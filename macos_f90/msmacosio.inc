@@ -1016,7 +1016,7 @@ C       Set entrance condition flags to .FALSE.
               END IF
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
-     &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
+     &            (EltID(iElt).NE.SrfType_AsGrData).AND.
      &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
