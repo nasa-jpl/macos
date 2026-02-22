@@ -79,18 +79,21 @@ C***********************************************************************
      &                        SrfType_GridData          =  9,
      &                        SrfType_Toric             = 10,
      &                        SrfType_AsGrData          = 11,
-     &                        mSrfType                  = 11
+     &                        SrfType_MonGrData         = 11,
+     &                        mSrfType                  = 12
 
         ! Surface types with Gridded Surface Parameters
-        INTEGER, PARAMETER :: GridTypeAll(4) = (/SrfType_GridData,
+        INTEGER, PARAMETER :: GridTypeAll(5) = (/SrfType_GridData,
      &                                           SrfType_AsGrData,
+     &                                           SrfType_MonGrData,
      &						 SrfType_Monomial,
      &                                           SrfType_Zernike/)
 
         ! Surfaces having a Local Coord. System defined (required)
-        INTEGER, PARAMETER :: SrfTypes_LCSYS(5) = [SrfType_Monomial,
+        INTEGER, PARAMETER :: SrfTypes_LCSYS(6) = [SrfType_Monomial,
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
+     &                                             SrfType_MonGrData,
      &                                             SrfType_GridData,
      &                                             SrfType_Anamorphic]
 
@@ -105,7 +108,8 @@ C***********************************************************************
      &                       'Zernike',            ! 8
      &                       'GridData',           ! 9
      &                       'Toric',              !10
-     &                       'AsGrData'/)          !11  ! was 'InfluenceFunction'
+     &                       'AsGrData',           !11  ! was 'InfluenceFunction'
+     &                       'MonGrData'/)         !12  
 
         ! Old Element Definitions:
         INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
@@ -139,14 +143,15 @@ C***********************************************************************
 
 
         ! Surface types that require a Srf. Coord. Systems
-        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(4)=
+        INTEGER, PARAMETER :: SrfType_RequireSrfCSYS(5)=
      &                      [SrfType_Zernike,
      &                       SrfType_Monomial,
      &                       SrfType_GridData,
-     &                       SrfType_AsGrData]
+     &                       SrfType_AsGrData,
+     &                       SrfType_MonGrData]
 
         !
-        ! --------- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS  ---------
+        ! --- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS, AsGrid, MonGrid  -------
         !
         LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifComputeDZ                              ! interpolated Srf. Data (Grid)
         REAL*8,   DIMENSION(:),     ALLOCATABLE:: ZernRad, lMon, GridSrfdx, ZernAnnuRatio
@@ -434,6 +439,7 @@ C***********************************************************************
      &               AsphCoef,MonCoef, ZernCoef,EdgeSensVec,
      &		     ZernCent,ZernXGrid,ZernYGrid,ZernRad,
      &               pMon,xMon,yMon,zMon,pMonRx,xMonRx,yMonRx,
+     &               pGr,xGr,yGr,zGr,pGrRx,xGrRx,yGrRx,zGrRx,lGr,
      &               zMonRx, h1HOE,h2HOE, CoatIndxElt, CoatThkElt,
      &               PolyApVtx,PolyApEqn,PolyObsVtx,PolyObsEqn,
      &               ObsHexBound,DoeId,DoePhProf,stat=m_err_elt)
@@ -561,6 +567,7 @@ C***********************************************************************
      &           ZernRad(mElt),
      &		 ZernXGrid(3,mElt),ZernYGrid(3,mElt),
      &           pMon(3,mElt),pMonRx(3,mElt),
+     &           pGr(3,mElt),pGrRx(3,mElt),
      &           ZernCoefRx(mZernModes,mElt),
      &           LxObsDef(mElt),tMetSrfPos(mMetPos,mElt),
      &           stat=m_err_elt)
@@ -571,6 +578,8 @@ C***********************************************************************
 
         allocate(xMon(3,mElt),yMon(3,mElt),zMon(3,mElt),
      &           xMonRx(3,mElt),yMonRx(3,mElt),zMonRx(3,mElt),
+     &           xGr(3,mElt),yGr(3,mElt),zGr(3,mElt),
+     &           xGrRx(3,mElt),yGrRx(3,mElt),zGrRx(3,mElt),
      &           h1HOE(3,mElt),h2HOE(3,mElt),
      &           CoatIndxElt(20,mElt),CoatThkElt(20,mElt),
      &           AnaCoef(4,mElt),
@@ -587,7 +596,7 @@ C***********************************************************************
 
 
         allocate(CumRayL(mRay),CumCRL(mElt),zElt(0:mElt),KcElt(mElt),
-     &        KrElt(mElt),lMon(mElt), LensArrayWidth(mElt),
+     &        KrElt(mElt),lMon(mElt), lGr(mElt), LensArrayWidth(mElt),
      &        OrderHOE(mElt),WaveHOE(mElt),KrRx(mElt),KcRx(mElt),
      &        PinHole(mElt),Extinc(0:mElt),AmplSrfdx(mGridSrf),
      &        RuleWidth(mElt),GridSrfdx(mGridSrf),ZernAnnuRatio(mElt),
@@ -783,6 +792,10 @@ C  ***************************************************************
           xMon(:,:)            = 0e0_pr
           yMon(:,:)            = 0e0_pr
           zMon(:,:)            = 0e0_pr
+          pGr(:,:)            = 0e0_pr
+          xGr(:,:)            = 0e0_pr
+          yGr(:,:)            = 0e0_pr
+          zGr(:,:)            = 0e0_pr
           ZernCent(:,:)        = 0e0_pr
           ZernXGrid(:,:)       = 0e0_pr
           ZernYGrid(:,:)       = 0e0_pr
@@ -807,6 +820,10 @@ C  ***************************************************************
           xMonRx(:,:)          = 0e0_pr
           yMonRx(:,:)          = 0e0_pr
           zMonRx(:,:)          = 0e0_pr
+          pGrRx(:,:)          = 0e0_pr
+          xGrRx(:,:)          = 0e0_pr
+          yGrRx(:,:)          = 0e0_pr
+          zGrRx(:,:)          = 0e0_pr
           IndRefArr(:,:)       = 0e0_pr
           ExtincArr(:,:)       = 0e0_pr
           EltCoatThk(:,:)      = 0e0_pr
@@ -825,6 +842,7 @@ C  ***************************************************************
           KcElt(:)             = 0e0_pr
           KrElt(:)             = 0e0_pr
           lMon(:)              = 0e0_pr
+          lGr(:)              = 0e0_pr
           LensArrayWidth(:)    = 0e0_pr
           OrderHOE(:)          = 0e0_pr
           WaveHOE(:)           = 0e0_pr
