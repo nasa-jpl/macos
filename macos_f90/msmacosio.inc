@@ -956,6 +956,7 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
+                  
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
      &                                 SrfType(iElt)==SrfType_GridData)
 
