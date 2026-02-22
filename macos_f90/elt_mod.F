@@ -79,7 +79,7 @@ C***********************************************************************
      &                        SrfType_GridData          =  9,
      &                        SrfType_Toric             = 10,
      &                        SrfType_AsGrData          = 11,
-     &                        SrfType_MonGrData         = 11,
+     &                        SrfType_MonGrData         = 12,
      &                        mSrfType                  = 12
 
         ! Surface types with Gridded Surface Parameters
