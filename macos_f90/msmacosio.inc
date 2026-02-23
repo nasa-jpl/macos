@@ -549,46 +549,40 @@ C       Set entrance condition flags to .FALSE.
             nGridpts_FLG=.TRUE.
             GO TO 50
 
-          ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'xData',5)) THEN
-            READ(VALUE,*)(xData(i),i=1,3)
-            IF (DMAG(xData(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' xData'
-            ELSE
-             xData_FLG=.TRUE.
-            END IF
-            GO TO 50
-
-          ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'yData',5)) THEN
-            READ(VALUE,*)(yData(i),i=1,3)
-            IF (DMAG(yData(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' yData'
-            ELSE
-              yData_FLG=.TRUE.
-            END IF
-            GO TO 50
-
-          ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'zData',5)) THEN
-            READ(VALUE,*)(zData(i),i=1,3)
-            IF (DMAG(zData(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' zData'
-            ELSE
-              zData_FLG=.TRUE.
-            END IF
-            GO TO 50
-
-          ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'pData',5)) THEN
-            READ(VALUE,*)(pData(i),i=1,3)
-            IF (DMAG(pData(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' pData'
-            ELSE
+          !<--
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
               pData_FLG=.TRUE.
-            END IF
-            GO TO 50
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
 
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
+              READ(VALUE,*)lData(iElt)
+              lData_FLG=.TRUE.
+              GO TO 61
+	!-->
+	  
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
@@ -1064,11 +1058,12 @@ C       Set entrance condition flags to .FALSE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-              IF (SrfType(iElt).NE.SrfType_MonGrData) THEN
-                pGr_FLG=.TRUE.
-                xGr_FLG=.TRUE.
-                yGr_FLG=.TRUE.
-                zGr_FLG=.TRUE.
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.(SrfType(iElt).NE.SrfType_ZernGrData)) THEN
+                lData_FLG=.TRUE.
+                pData_FLG=.TRUE.
+                xData_FLG=.TRUE.
+                yData_FLG=.TRUE.
+                zData_FLG=.TRUE.
               END IF
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
