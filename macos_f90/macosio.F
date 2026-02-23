@@ -155,18 +155,6 @@ C	File setup and initial conditions read
      &	' | Aperture types:                            |'/
      &	' |   Circular       Rectangular               |'/
      &	' +--------------------------------------------+')
-     
-          &         (/'ANSI',             !  1   was Malacara
-     &           'BornWolf',         !  2
-     &           'Fringe',           !  3
-     &           'NormANSI',         !  4   was Malacara
-     &           'NormBornWolf',     !  5
-     &           'NormFringe',       !  6
-     &           'NormHex',          !  7
-     &           'NormNoll',         !  8
-     &           'NormAnnularNoll',  !  9   Annular Zernike
-     &           'Noll',             ! 10   Noll Ordering
-     &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
 
  146	FORMAT(' +--------------------------------------------+'/
      &	' | Zernike types:                             |'/
