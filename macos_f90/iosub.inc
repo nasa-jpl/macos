@@ -65,6 +65,11 @@ C***********************************************************************
           UDSrfCoef_FLG       = .FALSE.
           UDSrfType_FLG       = .FALSE.
           UDSrfParam_FLG      = .FALSE.
+          pData_FLG           = .FALSE.
+          xData_FLG           = .FALSE.
+          yData_FLG           = .FALSE.
+          zData_FLG           = .FALSE.
+          lData_FLG           = .FALSE.
           pMon_FLG            = .FALSE.
           xMon_FLG            = .FALSE.
           yMon_FLG            = .FALSE.
@@ -538,6 +543,58 @@ C	Param order = beta,dact or drad,dq,minrad
 	  END IF
 	END IF
 
+	!<--
+	IF (pData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (VptElt_FLG) THEN
+	    CALL DEQUATE(pData(1,iElt),VptElt(1,iElt),3)
+	    pData_FLG=.TRUE.
+	    WRITE(*,112)'pData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (xData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  xData(1,iElt)=psiElt(3,iElt)
+	  xData(2,iElt)=psiElt(1,iElt)
+	  xData(3,iElt)=psiElt(2,iElt)
+	  xData_FLG=.TRUE.
+	  WRITE(*,112)'xData',iElt
+	END IF
+
+	IF (yData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData)
+	  yData_FLG=.TRUE.
+	  WRITE(*,112)'yData',iElt
+	END IF
+
+	IF (zData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (psiElt_FLG) THEN
+	    CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
+	    zData_FLG=.TRUE.
+	    WRITE(*,112)'zData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (lData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  lData(iElt)=Aperture
+	  lData_FLG=.TRUE.
+	  WRITE(*,112)'lData',iElt
+	END IF
+	!-->
+	
 	IF (xMon_FLG) THEN
 	  CONTINUE
 	ELSE

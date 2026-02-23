@@ -168,9 +168,9 @@ C***********************************************************************
         REAL*8,   DIMENSION(:,:,:), ALLOCATABLE:: GridMat
         
         ! --- Added for multisurface:
-        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lGr,lGrRx
-        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pGr,xGr,yGr,zGr,
-     &						  pGrRx,xGrRx,yGrRx,zGrRx
+        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lData,lDataRx
+        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pData,xData,yData,zData,
+     &						  pDataRx,xDataRx,yDataRx,zDataRx
      	! --- end
      	
         INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
@@ -444,7 +444,7 @@ C***********************************************************************
      &               AsphCoef,MonCoef, ZernCoef,EdgeSensVec,
      &		     ZernCent,ZernXGrid,ZernYGrid,ZernRad,
      &               pMon,xMon,yMon,zMon,pMonRx,xMonRx,yMonRx,
-     &               pGr,xGr,yGr,zGr,pGrRx,xGrRx,yGrRx,zGrRx,lGr,
+     &               pData,xData,yData,zData,pDataRx,xDataRx,yDataRx,zDataRx,lData,
      &               zMonRx, h1HOE,h2HOE, CoatIndxElt, CoatThkElt,
      &               PolyApVtx,PolyApEqn,PolyObsVtx,PolyObsEqn,
      &               ObsHexBound,DoeId,DoePhProf,stat=m_err_elt)
@@ -572,7 +572,7 @@ C***********************************************************************
      &           ZernRad(mElt),
      &		 ZernXGrid(3,mElt),ZernYGrid(3,mElt),
      &           pMon(3,mElt),pMonRx(3,mElt),
-     &           pGr(3,mElt),pGrRx(3,mElt),
+     &           pData(3,mElt),pDataRx(3,mElt),
      &           ZernCoefRx(mZernModes,mElt),
      &           LxObsDef(mElt),tMetSrfPos(mMetPos,mElt),
      &           stat=m_err_elt)
@@ -583,8 +583,8 @@ C***********************************************************************
 
         allocate(xMon(3,mElt),yMon(3,mElt),zMon(3,mElt),
      &           xMonRx(3,mElt),yMonRx(3,mElt),zMonRx(3,mElt),
-     &           xGr(3,mElt),yGr(3,mElt),zGr(3,mElt),
-     &           xGrRx(3,mElt),yGrRx(3,mElt),zGrRx(3,mElt),
+     &           xData(3,mElt),yData(3,mElt),zData(3,mElt),
+     &           xDataRx(3,mElt),yDataRx(3,mElt),zDataRx(3,mElt),
      &           h1HOE(3,mElt),h2HOE(3,mElt),
      &           CoatIndxElt(20,mElt),CoatThkElt(20,mElt),
      &           AnaCoef(4,mElt),
@@ -601,7 +601,7 @@ C***********************************************************************
 
 
         allocate(CumRayL(mRay),CumCRL(mElt),zElt(0:mElt),KcElt(mElt),
-     &        KrElt(mElt),lMon(mElt), lGr(mElt), LensArrayWidth(mElt),
+     &        KrElt(mElt),lMon(mElt), lData(mElt), LensArrayWidth(mElt),
      &        OrderHOE(mElt),WaveHOE(mElt),KrRx(mElt),KcRx(mElt),
      &        PinHole(mElt),Extinc(0:mElt),AmplSrfdx(mGridSrf),
      &        RuleWidth(mElt),GridSrfdx(mGridSrf),ZernAnnuRatio(mElt),
@@ -797,10 +797,10 @@ C  ***************************************************************
           xMon(:,:)            = 0e0_pr
           yMon(:,:)            = 0e0_pr
           zMon(:,:)            = 0e0_pr
-          pGr(:,:)            = 0e0_pr
-          xGr(:,:)            = 0e0_pr
-          yGr(:,:)            = 0e0_pr
-          zGr(:,:)            = 0e0_pr
+          pData(:,:)           = 0e0_pr
+          xData(:,:)           = 0e0_pr
+          yData(:,:)           = 0e0_pr
+          zData(:,:)           = 0e0_pr
           ZernCent(:,:)        = 0e0_pr
           ZernXGrid(:,:)       = 0e0_pr
           ZernYGrid(:,:)       = 0e0_pr
@@ -825,10 +825,10 @@ C  ***************************************************************
           xMonRx(:,:)          = 0e0_pr
           yMonRx(:,:)          = 0e0_pr
           zMonRx(:,:)          = 0e0_pr
-          pGrRx(:,:)          = 0e0_pr
-          xGrRx(:,:)          = 0e0_pr
-          yGrRx(:,:)          = 0e0_pr
-          zGrRx(:,:)          = 0e0_pr
+          pDataRx(:,:)         = 0e0_pr
+          xDataRx(:,:)         = 0e0_pr
+          yDataRx(:,:)         = 0e0_pr
+          zDataRx(:,:)         = 0e0_pr
           IndRefArr(:,:)       = 0e0_pr
           ExtincArr(:,:)       = 0e0_pr
           EltCoatThk(:,:)      = 0e0_pr
@@ -847,7 +847,7 @@ C  ***************************************************************
           KcElt(:)             = 0e0_pr
           KrElt(:)             = 0e0_pr
           lMon(:)              = 0e0_pr
-          lGr(:)              = 0e0_pr
+          lData(:)             = 0e0_pr
           LensArrayWidth(:)    = 0e0_pr
           OrderHOE(:)          = 0e0_pr
           WaveHOE(:)           = 0e0_pr
