@@ -1043,7 +1043,7 @@ C  Get Surface Coordinate Parameters
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
 	      
-	!--> Mod for MonGrData and ZernGrData Grid coords
+	!--> Mod for MonGrData and ZrnGrData Grid coords
 	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
 	        CALL DEQUATE(pData(1,iElt),pMon(1,iElt),3)
 	        CALL DEQUATE(xData(1,iElt),xMon(1,iElt),3)

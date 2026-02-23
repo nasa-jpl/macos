@@ -80,14 +80,14 @@ C***********************************************************************
      &                        SrfType_Toric             = 10,
      &                        SrfType_AsGrData          = 11,
      &                        SrfType_MonGrData         = 12,
-     &                        SrfType_ZernGrData        = 13,
+     &                        SrfType_ZrnGrData         = 13,
      &                        mSrfType                  = 13
 
         ! Surface types with Gridded Surface Parameters
         INTEGER, PARAMETER :: GridTypeAll(6) = (/SrfType_GridData,
      &                                           SrfType_AsGrData,
      &                                           SrfType_MonGrData,
-     &                                           SrfType_ZernGrData,
+     &                                           SrfType_ZrnGrData,
      &						 SrfType_Monomial,
      &                                           SrfType_Zernike/)
 
@@ -96,7 +96,7 @@ C***********************************************************************
      &                                             SrfType_Zernike,
      &                                             SrfType_AsGrData,
      &                                             SrfType_MonGrData,
-     &                                             SrfType_ZernGrData,
+     &                                             SrfType_ZrnGrData,
      &                                             SrfType_GridData,
      &                                             SrfType_Anamorphic]
 
@@ -113,7 +113,7 @@ C***********************************************************************
      &                       'Toric',              !10
      &                       'AsGrData',           !11  ! was 'InfluenceFunction'
      &                       'MonGrData',          !12  
-     &                       'ZernGrData'/)        !13  
+     &                       'ZrnGrData'/)        !13  
 
         ! Old Element Definitions:
         INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
@@ -153,7 +153,7 @@ C***********************************************************************
      &                       SrfType_GridData,
      &                       SrfType_AsGrData,
      &                       SrfType_MonGrData,
-     &                       SrfType_ZernGrData]
+     &                       SrfType_ZrnGrData]
 
         !
         ! --- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS, AsGrid, MonGrid  -------
