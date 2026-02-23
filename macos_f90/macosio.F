@@ -128,7 +128,7 @@ C	File setup and initial conditions read
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
      &	' |   Toric          InfluenceFcn   AsphGrid   |'/
-     &	' |        MonGrData          ZernGrData       |'/
+     &	' |         MonGrData        ZrnGrData         |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -155,9 +155,25 @@ C	File setup and initial conditions read
      &	' | Aperture types:                            |'/
      &	' |   Circular       Rectangular               |'/
      &	' +--------------------------------------------+')
+     
+          &         (/'ANSI',             !  1   was Malacara
+     &           'BornWolf',         !  2
+     &           'Fringe',           !  3
+     &           'NormANSI',         !  4   was Malacara
+     &           'NormBornWolf',     !  5
+     &           'NormFringe',       !  6
+     &           'NormHex',          !  7
+     &           'NormNoll',         !  8
+     &           'NormAnnularNoll',  !  9   Annular Zernike
+     &           'Noll',             ! 10   Noll Ordering
+     &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
+
  146	FORMAT(' +--------------------------------------------+'/
      &	' | Zernike types:                             |'/
-     &	' |   Malacara       Noll           Fringe     |'/
+     &	' |   ANSI          NormANSI       NormHex     |'/
+     &	' |   BornWolf      NormBornWolf               |'/
+     &	' |   Noll          NormNoll                   |'/
+     &	' |   Fringe        NormFringe     ExtFringe   |'/
      &	' +--------------------------------------------+')
 
         ! Flags
@@ -893,9 +909,10 @@ C  Get Anamorph Parameters
 C  End Anamorph Parameters
 
 C  Get Zernike Parameters
+
 	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      WRITE(*,146)
-	      CALL CACCEPT(TypeString,'Malacara',
+	      CALL CACCEPT(TypeString,'ANSI',
      &	             'Enter Zernike Type :')
 	      if (LCMP(TypeString,'Norm',4)) then
                 ! normalized Zernike coeff

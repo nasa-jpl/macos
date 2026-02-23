@@ -1079,15 +1079,15 @@ C***********************************************************************
 
           IMPLICIT NONE
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
-          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
-          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
-
-          CALL PrintBanner('Element Definitions')
+          CALL PrintBanner('Source Definition')
 
           CALL PrintFmtArray('ChfRayDir', '1PD23.15', 3, ChfRayDir)
           CALL PrintFmtArray('ChfRayPos', '1PD23.15', 3, ChfRayPos)
           CALL PrintFmt('zSource', "1PD23.15", zSource)
           CALL PrintMsg('')
+
+          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
+          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
 
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
           CALL PrintFmt('Extinc',  "1PD23.15", Extinc(0))
@@ -1261,6 +1261,43 @@ C***********************************************************************
             ! ---------------------------- Toric (10)  ToDo
             CASE (SrfType_Toric)
               CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
+
+            ! ---------------------------- AsGrData Srf (11)
+            CASE (SrfType_AsGrData)
+              BLOCK
+                INTEGER  :: nCoef
+                LOGICAL  :: nonzero(mAsphCoef)
+
+                nonzero(:) = .FALSE.
+                WHERE (AsphCoef(:,iElt)/=0e0_pr) nonzero = .TRUE.
+                nCoef = FINDLOC(nonzero, VALUE=.true., DIM=1, BACK=.true.)
+
+                IF (nCoef==0) THEN
+                  CALL PrintFmt('nAsphCoef', "2x,i0", 1)
+                  CALL PrintFmt('AsphCoef',  "1PD23.15", 0e0_pr)
+                ELSE
+                  CALL PrintFmt('nAsphCoef', "2x,i0", nCoef)
+                  CALL PrintFmtArray('AsphCoef','1PD23.15', 4, AsphCoef(1:nCoef, iElt))
+                END IF
+              END BLOCK
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- MonGrData Srf. (12)
+            CASE (SrfType_MonGrData)
+              CALL PrintFmtArray('MonCoef','1PD23.15', 6, MonCoef(:,iElt))
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- ZrnGrData Srf. (13)
+            CASE (SrfType_ZrnGrData)
+              CALL Srf_Zernike()
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- undefined Special Srf.
             CASE DEFAULT
