@@ -1962,7 +1962,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(VALUE,*,ERR=999,END=999)
      &	      UDSrfParam(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' UDSrfParam',(UDSrfParam(MB_J),MB_J=1,6)
+	    WRITE(*,10)' UDSrfParam',(UDSrfParam(MB_J,MB_I(2)),MB_J=1,6)
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'VptElt',6)) THEN
@@ -1993,16 +1993,20 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 
 	ELSE IF (LCMP(VAR_NAM,'X',1)) THEN
 	    !-->
-	    IF (LCMP(VAR_NAM,'xData',5)) THEN
+	    IF (LCMP(VAR_NAM,'xData',4)) THEN
 	    IF (ARR_FLG) THEN
-	        READ(VALUE,*,ERR=999,END=999)(xData(MB_J),MB_J=1,3)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (xData(MB_J,MB_I(2)),MB_J=1,3)
 	    ELSE
 	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
-	        READ(VALUE,*,ERR=999,END=999)xData(MB_I(1))
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        xData(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' xData',(xData(MB_J),MB_J=1,3)
+	    WRITE(*,17)' xData',MB_I(2),(xData(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
-	    IF (LCMP(VAR_NAM,'xGrid',5)) THEN
+	    ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(xGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -2038,16 +2042,20 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 
 	ELSE IF (LCMP(VAR_NAM,'Y',1)) THEN
 	    !-->
-	    IF (LCMP(VAR_NAM,'yData',5)) THEN
+	    IF (LCMP(VAR_NAM,'yData',4)) THEN
 	    IF (ARR_FLG) THEN
-	        READ(VALUE,*,ERR=999,END=999)(yData(MB_J),MB_J=1,3)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (yData(MB_J,MB_I(2)),MB_J=1,3)
 	    ELSE
 	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
-	        READ(VALUE,*,ERR=999,END=999)yData(MB_I(1))
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        yData(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' yData',(yData(MB_J),MB_J=1,3)
+	    WRITE(*,17)' yData',MB_I(2),(yData(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
-	    IF (LCMP(VAR_NAM,'yGrid',5)) THEN
+	    ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(yGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -2071,16 +2079,20 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 
 	ELSE IF (LCMP(VAR_NAM,'Z',1)) THEN
 	    !-->
-	    IF (LCMP(VAR_NAM,'zData',5)) THEN
+	    IF (LCMP(VAR_NAM,'zData',4)) THEN
 	    IF (ARR_FLG) THEN
-	        READ(VALUE,*,ERR=999,END=999)(zData(MB_J),MB_J=1,3)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (zData(MB_J,MB_I(2)),MB_J=1,3)
 	    ELSE
 	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
-	        READ(VALUE,*,ERR=999,END=999)zData(MB_I(1))
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        zData(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' zData',(zData(MB_J),MB_J=1,3)
+	    WRITE(*,17)' zData',MB_I(2),(zData(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
-	    IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
+	    ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 
