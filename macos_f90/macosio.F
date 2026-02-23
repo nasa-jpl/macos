@@ -128,6 +128,7 @@ C	File setup and initial conditions read
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
      &	' |   Toric          InfluenceFcn   AsphGrid   |'/
+     &	' |        MonGrData          ZernGrData       |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -514,7 +515,7 @@ C  Assign SrfType
 
 	    WRITE(*,141)
 	    CALL CACCEPT(TypeString,' ','Enter surface type :')
-	    DO i=1,10
+	    DO i=1,mSrfType
 	      IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 	        SrfType(iElt)=i
 	        SrfType_FLG=.TRUE.
