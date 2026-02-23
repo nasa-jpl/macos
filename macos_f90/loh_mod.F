@@ -27,7 +27,7 @@ C
 	LOGICAL EltName_FLG,EltType_FLG,fElt_FLG,eElt_FLG,
      &    AsphCoef_FLG,ZernCoef_FLG,nZernCoef_FLG,ZernModes_FLG,
      &    pMon_FLG,xMon_FLG,yMon_FLG,zMon_FLG,
-     &    pGr_FLG,xGr_FLG,yGr_FLG,zGr_FLG,lGr_FLG,
+     &    pData_FLG,xData_FLG,yData_FLG,zData_FLG,lData_FLG,
      &    lMon_FLG,psiElt_FLG,VptElt_FLG,RptElt_FLG,IndRefE_FLG,
      &    zElt_FLG,PropType_FLG,nECoord_FLG,ApType_FLG,ApVec_FLG,
      &    nObs_FLG,xObs_FLG,TElt_FLG,SegApType_FLG,ZernCent_FLG,
@@ -37,7 +37,8 @@ C
      &    MonCoef_FLG,RuleWidth_FLG,UDSrfCoef_FLG,UDSrfType_FLG,
      &    EltID_FLG,SrfType_FLG,UDSrfParam_FLG,ZernTypeL_FLG,
      &    nGridMat_FLG,GridMat_FLG,GridSrfdx_FLG,GlassCoef_FLG,
-     &    GlassElt_FLG,nAmplMat_FLG,AmplSrfdx_FLG,LApSunBlades
+     &    GlassElt_FLG,nAmplMat_FLG,AmplSrfdx_FLG,LApSunBlades,
+     &	  GrCoef_FLG
 	End Module loh_I2
 
 

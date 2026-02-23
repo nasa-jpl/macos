@@ -550,6 +550,46 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'xData',5)) THEN
+            READ(VALUE,*)(xData(i),i=1,3)
+            IF (DMAG(xData(1),3) .EQ. 0.0D0) THEN
+              WRITE(*,124)' xData'
+            ELSE
+             xData_FLG=.TRUE.
+            END IF
+            GO TO 50
+
+          ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'yData',5)) THEN
+            READ(VALUE,*)(yData(i),i=1,3)
+            IF (DMAG(yData(1),3) .EQ. 0.0D0) THEN
+              WRITE(*,124)' yData'
+            ELSE
+              yData_FLG=.TRUE.
+            END IF
+            GO TO 50
+
+          ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'zData',5)) THEN
+            READ(VALUE,*)(zData(i),i=1,3)
+            IF (DMAG(zData(1),3) .EQ. 0.0D0) THEN
+              WRITE(*,124)' zData'
+            ELSE
+              zData_FLG=.TRUE.
+            END IF
+            GO TO 50
+
+          ! --------------------------------------------------------------------------------
+          ELSE IF (LCMP(VAR_NAM,'pData',5)) THEN
+            READ(VALUE,*)(pData(i),i=1,3)
+            IF (DMAG(pData(1),3) .EQ. 0.0D0) THEN
+              WRITE(*,124)' pData'
+            ELSE
+              pData_FLG=.TRUE.
+            END IF
+            GO TO 50
+
+          ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
             IF (DMAG(xGrid(1),3) .EQ. 0.0D0) THEN
