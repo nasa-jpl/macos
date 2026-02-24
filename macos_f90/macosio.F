@@ -930,7 +930,7 @@ C  Get Zernike Parameters
 
 	    ! This part is for entering Zernike coeff in command-lind
 	    ! mode. -jzlou
-	    IF (SrfType(iElt).EQ.8) THEN
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      CALL DACCEPT(ZernCoef(1:6,iElt),DDEF,6,
      &	        'Enter Zernike coefficients 1-6 ')
 	      CALL DACCEPT(ZernCoef(7:12,iElt),DDEF,6,
