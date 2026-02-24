@@ -1076,7 +1076,7 @@ C  Get Surface Coordinate Parameters
 	      end if
 	    END IF
 
-	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
      &	      'Enter scale length ')
 	    ELSE
