@@ -1313,6 +1313,12 @@ C***********************************************************************
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
             CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
           END IF
+          IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.(SrfType(iElt).EQ.SrfType_ZrnGrData)) THEN
+            CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
+            CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
+            CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
+            CALL PrintFmtArray('zData', "1PD23.15", 3, zData(:,iElt))
+          END IF
 
           ! -----------------------------------------------------
           ! Special Element: HOE, Grating & Lens Array Parameters
