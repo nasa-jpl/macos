@@ -1274,7 +1274,7 @@ C Set index
      &                            GlassType(iElt))
 	  END IF
 C Set Zerns
-	  IF (SrfType(iElt).EQ.SrfType_Zernike) THEN
+	  IF ((SrfType(iElt).EQ.SrfType_Zernike).OR.(SrfType(iElt).EQ.SrfType_ZrnGrData)) THEN
             ! Zernike: ANSI Ordering
 	    IF (ZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          ZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
@@ -1488,6 +1488,7 @@ C       Loop through each element
      &	        RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	        lMon(iElt),pMon(1,iElt),
      &	        xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
+     &	        pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
      &	        CurIndRef,IndRef(iElt),
      &	        CurExtinc,Extinc(iElt),WaveBU,
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -1617,6 +1618,7 @@ c		NextElt(iElt)=NextNonSeg
      &	          RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	          lMon(iElt),pMon(1,iElt),
      &	          xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
+     &	          pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
      &	          CurIndRef,IndRef(iElt),
      &	          CurExtinc,Extinc(iElt),WaveBU,
      &	          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -2007,6 +2009,7 @@ C	Here when element number is determined...
      &	               RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	               lMon(imin),pMon(1,imin),
      &	               xMon(1,imin),yMon(1,imin),zMon(1,imin),
+     &	               pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
      &	               CurIndRef,IndRef(imin),
      &	               CurExtinc,Extinc(imin),WaveBU,
      &	               ApType(imin),ApVec(1,imin),nObs(imin),

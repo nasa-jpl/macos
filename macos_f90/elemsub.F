@@ -175,6 +175,7 @@ C***********************************************************************
      &    pin,ihat,Evec, ! RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay)
      &    rad,pmon,
      &    xhat,yhat,zhat, ! xMon,yMon,zMon
+     &	  pData,xData,yData,zData,
      &	  na,nb,
      &    kxa,kxb,lambda,
      &	  ApType,ApVec,nObs,ObsType,
@@ -221,6 +222,7 @@ C  matrices for a reflecting surface
      &    MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
      &	  na,nb,kxa,kxb,AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &	  pData(3),xData(3),yData(3),zData(3),
      &    UDSrfParam(6),dd
 	REAL*8, dimension(:) :: AsphCoef
 
