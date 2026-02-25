@@ -1047,7 +1047,7 @@ C***********************************************************************
             ! --------------------------------------------
             ! Global Coord. Output
             ! --------------------------------------------
-            CALL PrintBanner('Lin. Model Coordinate System Definition')
+            CALL PrintBanner('Output Coordinate System Definition')
 
             CALL PrintFmt('nOutCord', "i3", nOutCord)
             CALL PrintFmtArray('Tout','1PD23.15',7,PACK(TRANSPOSE(Tout(1:nOutCord,:)),MASK=.TRUE.))
@@ -1088,6 +1088,7 @@ C***********************************************************************
 
           CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
           CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
+          CALL PrintMsg('')
 
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
           CALL PrintFmt('Extinc',  "1PD23.15", Extinc(0))
