@@ -3848,7 +3848,7 @@ C combining monomial and grid data types
      &	 rho(3),psitzc,fh,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
-     &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,SMGZPB,
+     &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,
      &	 Lconic,dAct,rhotpsi,rho2
 
 	INTEGER i,j,k,nGridMat,mGridMat
@@ -4124,7 +4124,7 @@ C	Here if ray misses surface
 
 C***********************************************************************
 
-	FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
+	REAL*8 FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
      &	            nGridMat,mGridMat,GridMat,dAct,
      &	            pmon,rhoc,xhat,yhat,zhat,
      &		    pData,xData,yData,zData,L)
@@ -4285,8 +4285,8 @@ C  Compute surface function
 
 C***********************************************************************
 
-      	FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,
-     &	nGridMat,mGridMat,GridMat,dAct,
+      	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
+     &	coef,rad,pmon,nGridMat,mGridMat,GridMat,dAct,
      &	rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
