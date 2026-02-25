@@ -992,7 +992,9 @@ C       Set entrance condition flags to .FALSE.
                   !   data array will be defined to modulate wavefront. -jzlou
                   
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
-     &                                 SrfType(iElt)==SrfType_GridData)
+     &                                 ((SrfType(iElt)==SrfType_GridData).OR.
+     &                                 (SrfType(iElt)==SrfType_MonGrData).OR.
+     &                                 (SrfType(iElt)==SrfType_ZrnGrData))
 
                 END IF
               END DO
@@ -1044,7 +1046,8 @@ C       Set entrance condition flags to .FALSE.
               END IF
               IF ((SrfType(iElt).NE.SrfType_GridData).AND. 
      &            (SrfType(iElt).NE.SrfType_AsGrData).AND. 
-     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
@@ -1052,13 +1055,15 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.(SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.
+    &             (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 lData_FLG=.TRUE.
                 pData_FLG=.TRUE.
                 xData_FLG=.TRUE.
