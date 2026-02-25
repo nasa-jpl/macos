@@ -3838,7 +3838,7 @@ C Will need to call GridInit (etc.) to load grid data
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
      &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,
-     &	 Lconic
+     &	 Lconic,dAct,rhotpsi,rho2
 
 	INTEGER i,j,k,nGridMat,mGridMat
 
@@ -4133,10 +4133,11 @@ C  	combined surface
 	
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
      &	yhat(3),zhat(3),rad,pmon(3),L,SMGSrf,rho(3),rhom(3),rhoc(3),
-     &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yim1,diCtr,
+     &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
-     &	Fmonomial,Fgrid,Sconic,dSmon,dSgrid
+     &	Fmon,Fgrid,Sconic,dSmon,dSgrid,,
+     &	Lconic,dAct,rhotpsi,rho2
 
 C----------------------------------------------------------------------------
 C  Compute Sconic
@@ -4155,7 +4156,7 @@ C	SMGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
 	rhotpsi = rho(1)*psi(1) + rho(2)*psi(2) + rho(3)*psi(3)
 	rho2 = rho(1)*rho(1) + rho(2)*rho(2) + rho(3)*rho(3)
 	
-	Sconic = rho2 + rhotpsi*(Kc*rhopsi + 2d0*Kr)
+	Sconic = rho2 + rhotpsi*(Kc*rhotpsi + 2d0*Kr)
 
 C----------------------------------------------------------------------------
 C  Compute dSmon
@@ -4355,7 +4356,7 @@ C***********************************************************************
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
       SMGZPSolve=B
       RETURN
-      END FUNCTION SMZPSolve
+      END FUNCTION SMGZPSolve
 
 C***********************************************************************
 
