@@ -1060,8 +1060,7 @@ C       Set entrance condition flags to .FALSE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.
-    &             (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.(SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 lData_FLG=.TRUE.
                 pData_FLG=.TRUE.
                 xData_FLG=.TRUE.
