@@ -3848,7 +3848,7 @@ C combining monomial and grid data types
      &	 rho(3),psitzc,fh,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
-     &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,
+     &	 D1(9),D2(9),S1,S2,S3,
      &	 Lconic,dAct,rhotpsi,rho2
 
 	INTEGER i,j,k,nGridMat,mGridMat
