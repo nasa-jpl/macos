@@ -59,7 +59,7 @@ C***********************************************************************
      &                     SrfType_Toric,
      &                     SrfType_AsGrData,
      &                     SrfType_MonGrData,
-     &                     SrfType_ZernGrData
+     &                     SrfType_ZrnGrData
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
