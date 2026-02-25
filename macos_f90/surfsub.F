@@ -4137,7 +4137,7 @@ C  	combined surface
      &	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	Fmon,Fgrid,Sconic,dSmon,dSgrid,
-     &	Lconic,dAct,rhotpsi,rho2
+     &	Lconic,rhotpsi,rho2
 
 C----------------------------------------------------------------------------
 C  Compute Sconic
