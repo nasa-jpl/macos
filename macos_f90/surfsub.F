@@ -11,7 +11,7 @@ C***********************************************************************
         PUBLIC
         PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB, SMonomial,
      &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf
-     &             NGSrf
+     &             NGSrf, SMGSrf, SMGZPSolve, SMGZPB
         CONTAINS
 
 	SUBROUTINE FlatSrf(ifBuild,ifLNsrf,LROK,
@@ -4374,22 +4374,22 @@ C***********************************************************************
 	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
 	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	   nGridMat,mGridMat,GridMat,dAct,
-     &	   pmon,rhoc,xhat,yhat,zhat,X1)
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
 	F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	   nGridMat,mGridMat,GridMat,dAct,
-     &	   pmon,rhoc,xhat,yhat,zhat,X2)
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
 	DO 1 J=1,NTRY
 	  IF(F1*F2.LT.0.)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
 	    X1=X1+gold*(X1-X2)
 	    F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	       nGridMat,mGridMat,GridMat,dAct,
-     &	       pmon,rhoc,xhat,yhat,zhat,X1)
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
 	  ELSE
 	    X2=X2+gold*(X2-X1)
 	    F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	       nGridMat,mGridMat,GridMat,dAct,
-     &	       pmon,rhoc,xhat,yhat,zhat,X2)
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
 	  ENDIF
  1	CONTINUE
 	RETURN
