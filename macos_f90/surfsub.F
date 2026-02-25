@@ -4143,7 +4143,7 @@ C  	combined surface
 	INTEGER i,j,k,i1,i0,j1,j0,nGridMat,mGridMat,gridSrfIdx
 	
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
-     &	yhat(3),zhat(3),rad,pmon(3),L,SMGSrf,rho(3),rhom(3),rhoc(3),
+     &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),
      &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
