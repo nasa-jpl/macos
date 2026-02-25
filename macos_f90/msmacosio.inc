@@ -1791,6 +1791,34 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               zMon_FLG=.TRUE.
               GO TO 61
 
+	!-->
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              pData_FLG=.TRUE.
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+	!<--
+
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lMon',4)) THEN
               READ(VALUE,*)lMon(iElt)
