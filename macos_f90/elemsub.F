@@ -57,7 +57,9 @@ C***********************************************************************
      &                     SrfType_Zernike,
      &                     SrfType_GridData,
      &                     SrfType_Toric,
-     &                     SrfType_AsGrData
+     &                     SrfType_AsGrData,
+     &                     SrfType_MonGrData,
+     &                     SrfType_ZernGrData
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
@@ -130,7 +132,15 @@ C***********************************************************************
      &                       prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,
      &                       nAsphCoef,nGridMat,mGridMat,GridMat,
      &                       GridSrfdx,pmon,xhat,yhat,zhat)
-
+	!-->
+          CASE (SrfType_MonGrData, SrfType_ZrnGrData) ! (12,13)
+!            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+!     &                  Nvec,Nmag,Nhat,dNdp)
+            CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
+     &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
+     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	!<--
           CASE DEFAULT
             LROK = .FALSE.
             WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType,
