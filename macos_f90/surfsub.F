@@ -3804,5 +3804,596 @@ C***********************************************************************
 
 #endif
 C***********************************************************************
+C***********************************************************************
+C New draft routines to compute ray intersection points for surfaces 
+C combining monomial and grid data types
+C ---------------------------------------------------------------------
+C	CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+C    &	psi,pv,prot,pin,ihat,pr,L,rad,
+C    &	nGridMat,mGridMat,GridMat,GridSrfdx,
+C    &	pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+C ---------------------------------------------------------------------
+C Will need to call GridInit (etc.) to load grid data
+
+	SUBROUTINE MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
+     &	psi,pv,prot,pin,ihat,pr,L,rad,
+     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	pmon,xhat,yhat,zhat,pData,xData,yData,zData,
+     &	Nvec,Nmag,Nhat,dNdp)
+     
+	use macos_debug
+	use math_mod
+
+	IMPLICIT NONE
+
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
+     &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &	 pData(3),xData(3),yData(3),zData(3),
+     &	 yi,yimj,xj,GridMat(mGridMat,mGridMat),GridSrfdx,
+     &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
+     &   k2,itpsi,psitprel,L1,L2,L3,tol,
+     &	 zc(3),dfdrho(3),d2fdrho2(3,3),
+     &	 rho(3),psitzc,fh,
+     &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),rhoc(3),zmtzc,psitzm,
+     &	 x,y,dxdrho(3),dydrho(3),
+     &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,
+     &	 Lconic
+
+	INTEGER i,j,k,nGridMat,mGridMat
+
+	LOGICAL LROK,ifBuild,ifLNsrf
+
+C----------------------------------------------------------------------------
+C	Compute incidence point of ray on the base conic surface
+
+	DO 1 i=1,3
+	  prel(i)=pin(i)-pv(i)
+	  rhoc(i)=pmon(i)-pv(i)
+   1	CONTINUE
+	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+
+	IF (ABS(Kr).LT.1d10) THEN
+	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+	  a=1d0+Kc*itpsi*itpsi
+	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+	ELSE
+	  a=0d0
+	  b=itpsi
+	  c=psitprel
+	END IF
+
+C	Compute intersection point and normal vector on the base conic surface
+
+	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+	  if (.false.) then ! (abs(b) .le. 1d-10) then
+	    print*,'MonGridSrf(): b = ', b
+	    stop
+	  end if
+	  L=-c/b
+	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+	ELSE
+	  k2=b*b-4d0*a*c
+	  IF (k2.LT.0d0) GO TO 98
+	  IF (b.GE.0d0) THEN
+	    ksqrt=-0.5d0*(b+DSQRT(k2))
+	  ELSE
+	    ksqrt=-0.5d0*(b-DSQRT(k2))
+	  END IF
+	  kp=ksqrt/a
+	  km=c/ksqrt
+	  IF(ifLNsrf) THEN
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      L=kp
+	    ELSE
+	      L=km
+	    END IF
+	  ELSE
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      IF (kp.GT.0D0) THEN
+	        L=kp
+	      ELSE
+	        L=km
+	      END IF
+	    ELSE
+	      IF (km.GT.0D0) THEN
+	        L=km
+	      ELSE
+	        L=kp
+	      END IF
+	    END IF
+	    IF (L.LT.0d0) GO TO 98
+	  END IF
+	END IF
+	
+	Lconic = L
+
+C----------------------------------------------------------------------------
+C	Use Lconic as a starting point, find incidence pt on full surface
+        
+        IF (ABS(Lconic).GT.1e-7) THEN
+          L1=0.999d0*Lconic
+          L2=1.001d0*Lconic
+        ELSE
+          L1=-1e-7
+          L2=1e-7
+        END IF
+
+	CALL SMGZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	       pmon,rhoc,xhat,yhat,zhat,
+     &	       pData,xData,yData,zData,L)
+	tol=1d-10
+	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &         rad,pmon,rhoc,xhat,yhat,zhat,
+     &	       pData,xData,yData,zData,L)
+	L=L3
+
+C----------------------------------------------------------------------------
+C	Compute normal vector for conic + monomial surface
+
+	DO 2 i=1,3
+	  rho(i)=prel(i)+L*ihat(i)
+	  rhom(i)=rho(i)-rhoc(i)
+  2	CONTINUE
+	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+
+	k=1
+	S1=0d0
+	S2=0d0
+	fh=coef(1)
+	IF ((x.NE.0d0).OR.(y.NE.0d0)) THEN
+	  IF (x.EQ.0d0) THEN
+	    yi=y
+	    DO 16 i=1,14
+	      yimj=yi
+	      DO 15 j=0,i
+	        k=k+1
+	        IF (coef(k).NE.0d0) THEN
+	          IF (j.EQ.0) THEN
+	            fh=fh+coef(k)*yi
+	            S2=S2+coef(k)*FLOAT(i)*yi/y
+	          END IF
+	        END IF
+	        yimj=yimj/y
+  15	      CONTINUE
+	      yi=yi*y
+  16	    CONTINUE
+	  ELSE IF (y.EQ.0d0) THEN
+	    DO 14 i=1,14
+	      xj=1
+	      DO 13 j=0,i
+	        k=k+1
+	        IF ((coef(k).NE.0d0).AND.(i.EQ.j)) THEN
+	          fh=fh+coef(k)*xj
+	          S1=S1+coef(k)*FLOAT(j)*xj/x
+	        END IF
+	        xj=xj*x
+  13	      CONTINUE
+  14	    CONTINUE
+	  ELSE
+	    yi=y
+	    DO 4 i=1,14
+	      xj=1
+	      yimj=yi
+	      DO 3 j=0,i
+	        k=k+1
+	        IF (coef(k).NE.0d0) THEN
+	          IF (j.EQ.0) THEN
+	            fh=fh+coef(k)*yi
+	            S2=S2+coef(k)*FLOAT(i)*yi/y
+	          ELSE IF (i.EQ.j) THEN
+	            fh=fh+coef(k)*xj
+	            S1=S1+coef(k)*FLOAT(j)*xj/x
+	          ELSE
+	            fh=fh+coef(k)*xj*yimj
+	            S1=S1+coef(k)*FLOAT(j)*xj*yimj/x
+	            S2=S2+coef(k)*FLOAT((i-j))*xj*yimj/y
+	          END IF
+	        END IF
+	        yimj=yimj/y
+	        xj=xj*x
+  3	      CONTINUE
+	      yi=yi*y
+  4	    CONTINUE
+	  END IF
+	END IF
+
+	DO 5 i=1,3
+	  dxdrho(i)=xhat(i)/rad
+	  dydrho(i)=yhat(i)/rad
+	  dFdrho(i)=S1*dxdrho(i)+S2*dydrho(i)
+	  zc(i)=rho(i)-fh*zhat(i)
+  5	CONTINUE
+
+	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+	S1=Kr+Kc*psitzc
+	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
+
+	DO 6 i=1,3
+	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
+   6	CONTINUE
+   
+   C    Now add grid data contribution
+   
+   	Call NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
+     &	  nGridMat,mGridMat,GridMat,dAct,
+     &	  pmon,rhoc,xhat,yhat,zhat,L,zc,fh,
+     &	  dFdrho,d2Fdrho2)
+     
+	DO 49 i=1,3
+	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
+   49	CONTINUE
+   
+   C    Compute unit normal vector
+   
+	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+	IF (S1.LE.0d0) THEN
+	  DO 7 i=1,3
+	    Nhat(i)=Nvec(i)/Nmag
+   7	  CONTINUE
+	ELSE
+	  DO 8 i=1,3
+	    Nhat(i)=-Nvec(i)/Nmag
+   8	  CONTINUE
+	END IF
+
+C	Compute partials of the normal
+
+	IF (ifBuild) THEN
+	  IF (ABS(Kr).LT.1d10) THEN 
+	    CALL DSMPROD(D1,psi,Kc,3)
+	    CALL DOUTER(M,D1,psi)
+	    M(1,1)=M(1,1)+1d0
+	    M(2,2)=M(2,2)+1d0
+	    M(3,3)=M(3,3)+1d0
+	  ELSE
+	    CALL DZERO(M,9)
+	  END IF
+
+	  k=1
+	  S1=0d0
+	  S2=0d0
+	  S3=0d0
+c	  DO 10 i=2,7
+	  DO 10 i=2,14
+	    DO 9 j=0,i
+	      k=k+1
+	      IF (coef(k).NE.0d0) THEN
+	        IF (j.GT.1) THEN
+	          S1=S1+coef(k)*FLOAT(j*(j-1))*(x**(j-2))*(y**(i-j))
+	        END IF
+	        IF (j.LT.(i-1)) THEN
+	          S2=S2+coef(k)*FLOAT((i-j)*(i-j-1))*(x**j)*(y**(i-j-2))
+	        END IF
+	        IF ((j.GT.0).AND.(j.LT.i)) THEN
+	          S3=S3+coef(k)*FLOAT(j*(i-j))*(x**(j-1))*(y**(i-j-1))
+	        END IF
+	      END IF
+  9	    CONTINUE
+  10	  CONTINUE
+
+	  DO 12 j=1,3
+	    DO 11 i=1,3
+	      d2Fdrho2(i,j)=S1*dxdrho(i)*dxdrho(j)+
+     &	      S2*dydrho(i)*dydrho(j)+S3*(dxdrho(i)*dydrho(j)+
+     &	      dydrho(i)*dxdrho(j))
+	      dzcdrho(i,j)=-zhat(i)*dFdrho(j)
+  11	    CONTINUE
+	    dzcdrho(j,j)=dzcdrho(j,j)+1d0
+  12	  CONTINUE
+	  CALL DMPROD(D1,dzcdrho,M,3,3,3)
+	  CALL DMPROD(D2,D1,dzcdrho,3,3,3)
+	  S1=Kr+Kc*psitzc
+	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
+	  CALL DSUB(dNvecdp,D2,D1,9)
+	  
+	  S1=1d0/Nmag
+	  CALL DPROJECT(D1,Nhat)
+	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
+	  CALL DSMPROD(dNdp,D2,S1,9)
+	END IF
+
+	RETURN
+
+C	Here if ray misses surface
+
+  98	CONTINUE
+	LROK=.FALSE.
+	RETURN
+	END SUBROUTINE MonGridSrf
+
+C***********************************************************************
+
+	FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
+     &	            nGridMat,mGridMat,GridMat,dAct,
+     &	            pmon,rhoc,xhat,yhat,zhat,
+     &		    pData,xData,yData,zData,L)
+     
+	use param_mod, only : mGridSrf
+	use elt_mod, only : iEltToGridSrf,GridSrfOrder
+	use traceutil_mod, only : crnt_Elt
+	use math_mod
+
+C  Computes surface function S for conic + monomial + grid data surface 
+C	as a function of ray length L, for a candidate point of incidence on the 
+C  	combined surface
+     
+	IMPLICIT NONE
+	
+	INTEGER i,j,k,i1,i0,j1,j0,nGridMat,mGridMat,gridSrfIdx
+	
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
+     &	yhat(3),zhat(3),rad,pmon(3),L,SMGSrf,rho(3),rhom(3),rhoc(3),
+     &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yim1,diCtr,
+     &	GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	pData(3),xData(3),yData(3),zData(3),
+     &	Fmonomial,Fgrid,Sconic,dSmon,dSgrid
+
+C----------------------------------------------------------------------------
+C  Compute Sconic
+C !!! Make sure the mon and grid data parameters are correctly passed!!!
+
+	DO 1 i=1,3
+	  rho(i)=prel(i)+L*ihat(i)			! vector from element pole to PoI
+	  rhom(i)=rho(i)-rhoc(i)			! vector from data center to PoI
+  1	CONTINUE
+	DO 6 i=1,3
+	  zc(i)=rho(i)-fh*zhat(i)
+  6	CONTINUE
+	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+C	SMGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+	rhotpsi = rho(1)*psi(1) + rho(2)*psi(2) + rho(3)*psi(3)
+	rho2 = rho(1)*rho(1) + rho(2)*rho(2) + rho(3)*rho(3)
+	
+	Sconic = rho2 + rhotpsi*(Kc*rhopsi + 2d0*Kr)
+
+C----------------------------------------------------------------------------
+C  Compute dSmon
+C	Compute normalized monomial surface data coordinates
+
+	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+
+C   Compute Fmonomial point-of-incidence in surface data coords
+
+	diCtr=INT((nGridMat+1)/2)
+	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
+        ! xi is non-integer coordinate in 1-99 frame, similar for yi
+
+	IF (y.EQ.0d0) THEN
+	  k=0
+	  fh=0d0
+	  yi=1d0
+	  DO 3 i=0,14
+	    xj=1
+	    yimj=yi
+	    DO 2 j=0,i
+	      k=k+1
+	      IF (i.EQ.j) THEN
+	        fh=fh+mcoef(k)*xj
+	      END IF
+	      xj=xj*x
+  2	    CONTINUE
+	    yi=yi*y
+  3	  CONTINUE
+	ELSE
+	  k=0
+	  fh=0d0
+	  yi=1d0
+	  DO 5 i=0,14
+	    xj=1
+	    yimj=yi
+	    DO 4 j=0,i
+	      k=k+1
+	      fh=fh+mcoef(k)*xj*yimj
+	      xj=xj*x
+	      yimj=yimj/y
+  4	    CONTINUE
+	    yi=yi*y
+  5	  CONTINUE
+	END IF
+
+C  Compute monomial part of surface function
+	
+	Fmon = fh	
+	dSmon = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fmon + (1 + Kc)*Fmon*Fmon
+
+C----------------------------------------------------------------------------
+C  Compute dSgrid
+C	Compute surface grid data coordinates
+
+	diCtr=INT((nGridMat+1)/2)
+	DO i=1,3
+	  rho(i)=prel(i)+L*ihat(i)
+	  rhom(i)=rho(i)-rhoc(i)
+	END DO
+	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
+        ! xi is non-integer coordinate in 1-99 frame, similar for yi
+
+C   Find grid coordinates of ray incidence point
+
+	i0=IDFLOOR(xi) ! floor integer part of xi
+	i1=i0+1
+	j0=IDFLOOR(yj)
+	j1=j0+1
+	x=xi-DBLE(i0)  ! fractional part, ray position from i0
+	y=yj-DBLE(j0)
+
+C  Compute grid data surface height and slope at candidate PoI
+
+	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+     & (j1.GT.nGridMat)) THEN
+	   fh=0d0
+	   tiltx=0d0; tilty=0d0
+	ELSE
+       IF (GridSrfOrder(crnt_Elt)==1) Then
+         ! bi-linear interpolation of GridMat
+	     CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+     &	    	     GridMat(i1,j1),fh,tiltx,tilty)
+       ELSE IF (GridSrfOrder(crnt_Elt)==3) Then
+	     ! cubic-spline interpolation of GridMat
+         gridSrfIdx=iEltToGridSrf(crnt_Elt)
+         x=xi*dAct
+         y=yj*dAct
+         CALL INTCUBIC(gridSrfIdx,crnt_Elt,
+     &                x,y,GridMat(1:nGridMat,1:nGridMat),
+     &                mGridMat,nGridMat,mGridSrf,
+     &                i0,j0,fh,tiltx,tilty)
+	   ELSE
+	     WRITE(*,*)'*** Function SGSrf: Invalid SrfOrder: ',
+     &                GridSrfOrder(crnt_Elt)
+            Stop
+       END IF
+	END IF
+
+C  Compute grid data part of surface function
+
+	Fgrid = fh	
+	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
+
+C----------------------------------------------------------------------------
+C  Compute surface function
+
+	SMGSrf = Sconic + dSmon + dSgrid
+
+	RETURN
+	END FUNCTION SMGSrf
+
+C***********************************************************************
+
+      	FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+      	IMPLICIT REAL*8 (A-H,O-Z)
+	INTEGER nGridMat,mGridMat
+      	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMGSrf,
+     & 	GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	pData(3),xData(3),yData(3),zData(3),
+     &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+      	PARAMETER (ITMAX=400,EPS=1d-14)
+
+      A=X1
+      B=X2
+     
+      FA=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,A)
+      FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
+      IF(FB*FA.GT.0.) PAUSE 'MZPB failed.'
+
+      FC=FB
+      DO 11 ITER=1,ITMAX
+        IF(FB*FC.GT.0.) THEN
+          C=A
+          FC=FA
+          D=B-A
+          E=D
+        ENDIF
+        IF(ABS(FC).LT.ABS(FB)) THEN
+          A=B
+          B=C
+          C=A
+          FA=FB
+          FB=FC
+          FC=FA
+        ENDIF
+        TOL1=2.*EPS*ABS(B)+0.5*TOL
+        XM=.5*(C-B)
+        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
+          MZPSolve=B
+          RETURN
+        ENDIF
+        IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+          S=FB/FA
+          IF(A.EQ.C) THEN
+            P=2.*XM*S
+            Q=1.-S
+          ELSE
+            Q=FA/FC
+            R=FB/FC
+            P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
+            Q=(Q-1.)*(R-1.)*(S-1.)
+          ENDIF
+          IF(P.GT.0.) Q=-Q
+          P=ABS(P)
+          IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+            E=D
+            D=P/Q
+          ELSE
+            D=XM
+            E=D
+          ENDIF
+        ELSE
+          D=XM
+          E=D
+        ENDIF
+        A=B
+        FA=FB
+        IF(ABS(D) .GT. TOL1) THEN
+          B=B+D
+        ELSE
+          B=B+SIGN(TOL1,XM)
+        ENDIF
+        FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	  nGridMat,mGridMat,GridMat,dAct,
+     &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
+11    CONTINUE
+      PAUSE 'SMGZPSolve exceeding maximum iterations.'
+      SMGZPSolve=B
+      RETURN
+      END FUNCTION SMZPSolve
+
+C***********************************************************************
+
+	SUBROUTINE SMGZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+	IMPLICIT REAL*8 (A-H,O-Z)
+	PARAMETER (gold=1.6,NTRY=50)
+	INTEGER nGridMat,mGridMat
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMGSrf,
+     &	GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
+     &	pData(3),xData(3),yData(3),zData(3)
+
+	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
+	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	   nGridMat,mGridMat,GridMat,dAct,
+     &	   pmon,rhoc,xhat,yhat,zhat,X1)
+	F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	   nGridMat,mGridMat,GridMat,dAct,
+     &	   pmon,rhoc,xhat,yhat,zhat,X2)
+	DO 1 J=1,NTRY
+	  IF(F1*F2.LT.0.)RETURN
+	  IF(ABS(F1).LT.ABS(F2))THEN
+	    X1=X1+gold*(X1-X2)
+	    F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,dAct,
+     &	       pmon,rhoc,xhat,yhat,zhat,X1)
+	  ELSE
+	    X2=X2+gold*(X2-X1)
+	    F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,dAct,
+     &	       pmon,rhoc,xhat,yhat,zhat,X2)
+	  ENDIF
+ 1	CONTINUE
+	RETURN
+	END SUBROUTINE SMGZPB
+
+C***********************************************************************
+C***********************************************************************
 
         END MODULE surfsub
