@@ -4290,7 +4290,7 @@ C***********************************************************************
      &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
-      	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMGSrf,
+      	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,	!SMGSrf,
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
@@ -4377,7 +4377,7 @@ C***********************************************************************
 	IMPLICIT REAL*8 (A-H,O-Z)
 	PARAMETER (gold=1.6,NTRY=50)
 	INTEGER nGridMat,mGridMat
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMGSrf,
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,	!SMGSrf,
      &	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
      &	pData(3),xData(3),yData(3),zData(3)
