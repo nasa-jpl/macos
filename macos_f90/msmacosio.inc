@@ -992,9 +992,7 @@ C       Set entrance condition flags to .FALSE.
                   !   data array will be defined to modulate wavefront. -jzlou
                   
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
-     &                                 ((SrfType(iElt)==SrfType_GridData).OR.
-     &                                 (SrfType(iElt)==SrfType_MonGrData).OR.
-     &                                 (SrfType(iElt)==SrfType_ZrnGrData))
+     &                                 (SrfType(iElt)==SrfType_GridData))
 
                 END IF
               END DO
