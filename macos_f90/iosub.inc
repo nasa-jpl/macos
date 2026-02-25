@@ -1255,8 +1255,8 @@ C***********************************************************************
 
             ! ---------------------------- Grid Type Srf (9)
             CASE (SrfType_GridData)
-              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- Toric (10)  ToDo
@@ -1289,15 +1289,15 @@ C***********************************************************************
             CASE (SrfType_MonGrData)
               CALL PrintFmtArray('MonCoef','1PD23.15', 6, MonCoef(:,iElt))
               CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
-              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- ZrnGrData Srf. (13)
             CASE (SrfType_ZrnGrData)
               CALL Srf_Zernike()
-              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- undefined Special Srf.
