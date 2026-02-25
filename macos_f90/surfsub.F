@@ -4285,9 +4285,9 @@ C  Compute surface function
 
 C***********************************************************************
 
-      	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
-     &	coef,rad,pmon,nGridMat,mGridMat,GridMat,dAct,
-     &	rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+      	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
       	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,SMGSrf,
