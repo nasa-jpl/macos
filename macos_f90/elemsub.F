@@ -292,13 +292,13 @@ cides
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
 	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
-	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
-     &	    Nvec,Nmag,Nhat,dNdp)
-!	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
-!     &	    psi,pv,prot,pin,ihat,pr,L,
-!     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
-!     &	    pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
+!	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+!     &	    Nvec,Nmag,Nhat,dNdp)
+	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
+     &	    psi,pv,prot,pin,ihat,pr,L,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 	ELSE
 	  WRITE(*,*)'Reflector: Unknown surface type. Aborting trace.'
 	END IF
