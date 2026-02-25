@@ -3830,11 +3830,12 @@ C Will need to call GridInit (etc.) to load grid data
      &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &	 pData(3),xData(3),yData(3),zData(3),
      &	 yi,yimj,xj,GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
      &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
      &   k2,itpsi,psitprel,L1,L2,L3,tol,
      &	 zc(3),dfdrho(3),d2fdrho2(3,3),
      &	 rho(3),psitzc,fh,
-     &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),rhoc(3),zmtzc,psitzm,
+     &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
      &	 D1(9),D2(9),S1,S2,S3,SMGZPSolve,
      &	 Lconic
