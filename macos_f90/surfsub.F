@@ -4020,7 +4020,7 @@ C	Compute normal vector for conic + monomial surface
 	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
    6	CONTINUE
    
-   C    Now add grid data contribution
+C    Now add grid data contribution
    
    	Call NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
      &	  nGridMat,mGridMat,GridMat,dAct,
@@ -4031,7 +4031,7 @@ C	Compute normal vector for conic + monomial surface
 	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
    49	CONTINUE
    
-   C    Compute unit normal vector
+C    Compute unit normal vector
    
 	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
 	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
