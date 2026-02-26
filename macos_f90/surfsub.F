@@ -4030,6 +4030,7 @@ C	Compute normal vector for conic + monomial surface
 	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
 	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
 	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+	
 	S1=Kr+Kc*psitzc
 	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
 
@@ -4038,7 +4039,7 @@ C	Compute normal vector for conic + monomial surface
    6	CONTINUE
    	
    	
-   	IF (.FALSE.) THEN			!<-->
+ !  	IF (.FALSE.) THEN			!<-->
 C    Now add grid data contribution
    
    	Call NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
@@ -4050,7 +4051,7 @@ C    Now add grid data contribution
 	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
    49	CONTINUE
    
-   	END IF		!<-->
+ !  	END IF		!<-->
    
 C    Compute unit normal vector
    
