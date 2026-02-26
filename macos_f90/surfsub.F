@@ -3933,15 +3933,20 @@ C	Use Lconic as a starting point, find incidence pt on full surface
           L2=1e-7
         END IF
 
-	CALL SMGZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
-     &	       pmon,rhoc,xhat,yhat,zhat,
-     &	       pData,xData,yData,zData,L)
+
+!	CALL SMGZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+!     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &	       pmon,rhoc,xhat,yhat,zhat,
+!     &	       pData,xData,yData,zData,L)
+        CALL MZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &            pmon,rhoc,xhat,yhat,zhat,L)
 	tol=1d-10
-	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
-     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
-     &         rad,pmon,rhoc,xhat,yhat,zhat,
-     &	       pData,xData,yData,zData,L)
+!	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+!     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &         rad,pmon,rhoc,xhat,yhat,zhat,
+!     &	       pData,xData,yData,zData,L)
+        L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+     &              rad,pmon,rhoc,xhat,yhat,zhat,L)
 	L=L3
 
 C----------------------------------------------------------------------------
