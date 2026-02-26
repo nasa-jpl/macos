@@ -4033,7 +4033,7 @@ C	Compute normal vector for conic + monomial surface
    6	CONTINUE
    	
    	
-   	IF (.FALSE.)				!<-->
+   	IF (.FALSE.) THEN			!<-->
 C    Now add grid data contribution
    
    	Call NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
