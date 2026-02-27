@@ -3851,7 +3851,7 @@ C combining monomial and grid data types
      &	 D1(9),D2(9),S1,S2,S3,
      &	 Lconic,dAct,rhotpsi,rho2
 
-	INTEGER i,j,k,nGridMat,mGridMat
+	INTEGER i,j,k,nGridMat,mGridMat,iAxis,jAxis
 
 	LOGICAL LROK,ifBuild,ifLNsrf
 
