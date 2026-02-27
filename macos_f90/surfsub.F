@@ -4034,10 +4034,7 @@ C	Compute normalized monomial surface data coordinates
 C----------------------------------------------------------------------------
 C    Now add grid data contribution
    
-!   	Call NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
-!     &	  nGridMat,mGridMat,GridMat,dAct,
-!     &	  pData,rhoc,xData,yData,zData,L,zc,fh,
-!     &	  dFdrho,d2Fdrho2)
+	dAct=GridSrfdx
      
      	diCtr=INT((nGridMat+1)/2)
 	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
