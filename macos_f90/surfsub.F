@@ -3845,7 +3845,7 @@ C combining monomial and grid data types
      &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
      &   k2,itpsi,psitprel,L1,L2,L3,tol,
      &	 zc(3),dfdrho(3),d2fdrho2(3,3),
-     &	 rho(3),psitzc,fh,
+     &	 rho(3),psitzc,fh,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
      &	 D1(9),D2(9),S1,S2,S3,
@@ -4055,29 +4055,14 @@ C   Find grid coordinates of ray incidence point
 C  Compute grid data surface height and slope at PoI
 
 	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
-     & (j1.GT.nGridMat)) THEN
+     &     (j1.GT.nGridMat)) THEN
 	   fh=0d0
 	   tiltx=0d0
 	   tilty=0d0
 	ELSE
-          IF (GridSrfOrder(crnt_Elt)==1) Then
          ! bi-linear interpolation of GridMat
-	     CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
-     &	    	     GridMat(i1,j1),fh,tiltx,tilty)
-          ELSE IF (GridSrfOrder(crnt_Elt)==3) Then
-	     ! cubic-spline interpolation of GridMat
-             gridSrfIdx=iEltToGridSrf(crnt_Elt)
-             x=xi*dAct
-             y=yj*dAct
-             CALL INTCUBIC(gridSrfIdx,crnt_Elt,
-     &                x,y,GridMat(1:nGridMat,1:nGridMat),
-     &                mGridMat,nGridMat,mGridSrf,
-     &                i0,j0,fh,tiltx,tilty)
-	   ELSE
-	     WRITE(*,*)'*** Function SGSrf: Invalid SrfOrder: ',
-     &                GridSrfOrder(crnt_Elt)
-             Stop
-           END IF
+	  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+     &	    	       GridMat(i1,j1),fh,tiltx,tilty)
 	END IF
 
 C  Compute grid data part of surface function
