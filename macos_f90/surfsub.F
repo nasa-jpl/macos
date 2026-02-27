@@ -3840,7 +3840,7 @@ C combining monomial and grid data types
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
      &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &	 pData(3),xData(3),yData(3),zData(3),
-     &	 yi,yimj,xj,GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	 GridMat(mGridMat,mGridMat),GridSrfdx,
      &	 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
      &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
      &   k2,itpsi,psitprel,L1,L2,L3,tol,
