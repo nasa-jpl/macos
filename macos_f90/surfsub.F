@@ -4210,7 +4210,7 @@ C  combined surface
      &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
-     &	Fmon,Fgrid,Sconic,dSmon,Sgrid,dSgrid,
+     &	Fmon,Fgrid,Sconic,SMon,dSmon,Sgrid,dSgrid,
      &	Lconic,rhotpsi,rho2
 
 C----------------------------------------------------------------------------
@@ -4289,12 +4289,12 @@ C   Compute Fmonomial point-of-incidence in surface data coords
           zc        = rho - fh*zhat
           zc2       = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
           psitzc    = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-          SMonomial = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
+          SMon = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
 
 C  Monomial part of surface function
 	
 	Fmon = fh	
-	dSmon = SMonomial - Sconic
+	dSmon = SMon - Sconic
 
 C----------------------------------------------------------------------------
 C  Compute dSgrid
