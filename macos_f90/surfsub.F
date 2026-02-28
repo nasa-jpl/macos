@@ -4209,7 +4209,7 @@ C  combined surface
      &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
-     &	Fmon,Fgrid,Sconic,dSmon,dSgrid,
+     &	Fmon,Fgrid,Sconic,dSmon,Sgrid,dSgrid,
      &	Lconic,rhotpsi,rho2
 
 C----------------------------------------------------------------------------
