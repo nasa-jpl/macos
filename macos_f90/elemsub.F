@@ -302,15 +302,15 @@ cides
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
 	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
-!	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
-!     &	    psi,pv,prot,pin,ihat,pr,L,rad,
-!     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
-!     &	    pmon,xhat,yhat,zhat,
-!     &	    pData,xData,yData,zData,
-!     &	    Nvec,Nmag,Nhat,dNdp)
-	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
      &	    Nvec,Nmag,Nhat,dNdp)
+!	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+!     &	    Nvec,Nmag,Nhat,dNdp)
 !	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
 !     &	    psi,pv,prot,pin,ihat,pr,L,
 !     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
