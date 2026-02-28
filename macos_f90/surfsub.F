@@ -4246,7 +4246,7 @@ C   Compute Fmonomial point-of-incidence in surface data coords
 
           IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
 
-            fh = coef(1)
+            fh = mcoef(1)
 
           ELSE IF (ABS(x) <= EPS) THEN
 
@@ -4254,7 +4254,7 @@ C   Compute Fmonomial point-of-incidence in surface data coords
             DO CONCURRENT (i=0:14)
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((j.EQ.0).AND.(ABS(COEF(k)) > EPS)) fh=fh+coef(k)*yi
+                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > EPS)) fh=fh+mcoef(k)*yi
               END DO
               yi=yi*y
             END DO
@@ -4265,7 +4265,7 @@ C   Compute Fmonomial point-of-incidence in surface data coords
               xj=1d0
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((ABS(coef(k)) > EPS).AND.(i.EQ.j)) fh=fh+coef(k)*xj
+                IF ((ABS(mcoef(k)) > EPS).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
                 xj=xj*x
               END DO
             END DO
@@ -4278,7 +4278,7 @@ C   Compute Fmonomial point-of-incidence in surface data coords
               yimj=yi
               DO CONCURRENT (j=0:i)
                 k=k+1
-                fh=fh+coef(k)*xj*yimj
+                fh=fh+mcoef(k)*xj*yimj
                 xj=xj*x
                 yimj=yimj/y
               END DO
