@@ -4320,8 +4320,16 @@ C  Compute grid data surface height and slope at PoI
 
 C  Compute grid data part of surface function
 
-	Fgrid = fh	
-	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
+!	Fgrid = fh	
+!	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
+	DO i=1,3
+	  zc(i)=rho(i)-fh*zhat(i)
+   	END DO
+	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+	SGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+	
+	dSgrid = SGSrf - Sconic
 
 C----------------------------------------------------------------------------
 C  Compute surface function
