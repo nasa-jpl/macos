@@ -3845,7 +3845,7 @@ C combining monomial and grid data types
      &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
      &   k2,itpsi,psitprel,L1,L2,L3,tol,
      &	 zc(3),dfdrho(3),d2fdrho2(3,3),
-     &	 rho(3),psitzc,fh,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
+     &	 rho(3),psitzc,fh,fh_dz,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
      &	 D1(9),D2(9),S1,S2,S3,
