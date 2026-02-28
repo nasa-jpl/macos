@@ -2477,6 +2477,7 @@ C***********************************************************************
         L=L3
 
         ! Compute normal vector
+        
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -4240,48 +4241,60 @@ C	Compute normalized monomial surface data coordinates
 
 C   Compute Fmonomial point-of-incidence in surface data coords
 
-	diCtr=INT((nGridMat+1)/2)
-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
-        ! xi is non-integer coordinate in 1-99 frame, similar for yi
+          k  = 0
+          fh = 0d0
 
-	IF (y.EQ.0d0) THEN
-	  k=0
-	  fh=0d0
-	  yi=1d0
-	  DO 3 i=0,14
-	    xj=1
-	    yimj=yi
-	    DO 2 j=0,i
-	      k=k+1
-	      IF (i.EQ.j) THEN
-	        fh=fh+mcoef(k)*xj
-	      END IF
-	      xj=xj*x
-  2	    CONTINUE
-	    yi=yi*y
-  3	  CONTINUE
-	ELSE
-	  k=0
-	  fh=0d0
-	  yi=1d0
-	  DO 5 i=0,14
-	    xj=1
-	    yimj=yi
-	    DO 4 j=0,i
-	      k=k+1
-	      fh=fh+mcoef(k)*xj*yimj
-	      xj=xj*x
-	      yimj=yimj/y
-  4	    CONTINUE
-	    yi=yi*y
-  5	  CONTINUE
-	END IF
+          IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
 
-C  Compute monomial part of surface function
+            fh = coef(1)
+
+          ELSE IF (ABS(x) <= EPS) THEN
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((j.EQ.0).AND.(ABS(COEF(k)) > EPS)) fh=fh+coef(k)*yi
+              END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((ABS(coef(k)) > EPS).AND.(i.EQ.j)) fh=fh+coef(k)*xj
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                fh=fh+coef(k)*xj*yimj
+                xj=xj*x
+                yimj=yimj/y
+              END DO
+              yi=yi*y
+            END DO
+          END IF
+
+          zc        = rho - fh*zhat
+          zc2       = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+          psitzc    = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+          SMonomial = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
+
+C  Monomial part of surface function
 	
 	Fmon = fh	
-	dSmon = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fmon + (1 + Kc)*Fmon*Fmon
+	dSmon = SMonomial - Sconic
 
 C----------------------------------------------------------------------------
 C  Compute dSgrid
