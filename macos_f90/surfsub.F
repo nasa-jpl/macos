@@ -4327,9 +4327,9 @@ C  Compute grid data part of surface function
    	END DO
 	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
 	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-	SGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+	Sgrid=zc2+(Kc*psitzc+2d0*Kr)*psitzc
 	
-	dSgrid = SGSrf - Sconic
+	dSgrid = Sgrid - Sconic
 
 C----------------------------------------------------------------------------
 C  Compute surface function
