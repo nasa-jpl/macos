@@ -3945,6 +3945,8 @@ C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
 C	Compute normalized monomial surface data coordinates
 
+	eps = 1d-14
+
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -3956,12 +3958,12 @@ C	Compute normalized monomial surface data coordinates
         S2 = 0d0
         fh = COEF(1)
 
-        IF ((ABS(x) <= EPS).AND.(ABS(y) <= EPS)) THEN
+        IF ((ABS(x) <= eps).AND.(ABS(y) <= eps)) THEN
 
           S1 = S1 + coef(3)
           S2 = S2 + coef(2)
 
-        ELSE IF (ABS(x) <= EPS) THEN
+        ELSE IF (ABS(x) <= eps) THEN
 
             yi=y
             DO CONCURRENT (i=1:14)
@@ -3970,7 +3972,7 @@ C	Compute normalized monomial surface data coordinates
                 k=k+1
                 IF (j>1) CYCLE
 
-              IF (ABS(COEF(k)) > EPS) THEN
+              IF (ABS(COEF(k)) > eps) THEN
 
                   IF (j.EQ.0) THEN
                     fh_dz = coef(k)*yi
@@ -3985,14 +3987,14 @@ C	Compute normalized monomial surface data coordinates
               yi=yi*y
             END DO
 
-          ELSE IF (ABS(y) <= EPS) THEN
+          ELSE IF (ABS(y) <= eps) THEN
 
             DO CONCURRENT (i=1:14)
               xj=1d0
               DO CONCURRENT (j=0:i)
                 k=k+1
 
-              IF (ABS(COEF(k)) > EPS) THEN
+              IF (ABS(COEF(k)) > eps) THEN
 
                 IF (i.EQ.j) THEN
                   fh_dz = coef(k)*xj
@@ -4015,7 +4017,7 @@ C	Compute normalized monomial surface data coordinates
               yimj=yi
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF (ABS(COEF(k)) > EPS) THEN
+                IF (ABS(COEF(k)) > eps) THEN
                   IF (j.EQ.0) THEN
                     fh_dz = coef(k)*yi
                   fh    = fh + fh_dz
@@ -4101,9 +4103,9 @@ C  Compute grid data part of surface function
 
 C  Add grid part of normal vector to the conic+monomial part
 
-!	DO 49 i=1,3
-!	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
-!   49	CONTINUE
+	DO 49 i=1,3
+	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
+   49	CONTINUE
    
 C----------------------------------------------------------------------------
 C    Compute unit normal vector
@@ -4240,6 +4242,8 @@ C	Compute normalized monomial surface data coordinates
 	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
 C   Compute Fmonomial point-of-incidence in surface data coords
+
+	eps = 1d-14
 
           k  = 0
           fh = 0d0
