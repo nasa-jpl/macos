@@ -3944,96 +3944,116 @@ C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
 C	Compute normalized monomial surface data coordinates
 
-	DO 2 i=1,3
-	  rho(i)=prel(i)+L*ihat(i)
-	  rhom(i)=rho(i)-rhoc(i)
-  2	CONTINUE
-  
-	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+        rho  = prel + L*ihat
+        rhom = rho - rhoc
 
-	k=1
-	S1=0d0
-	S2=0d0
-	fh=coef(1)
-	IF ((x.NE.0d0).OR.(y.NE.0d0)) THEN
-	  IF (x.EQ.0d0) THEN
-	    yi=y
-	    DO 16 i=1,14
-	      yimj=yi
-	      DO 15 j=0,i
-	        k=k+1
-	        IF (coef(k).NE.0d0) THEN
-	          IF (j.EQ.0) THEN
-	            fh=fh+coef(k)*yi
-	            S2=S2+coef(k)*FLOAT(i)*yi/y
-	          END IF
-	        END IF
-	        yimj=yimj/y
-  15	      CONTINUE
-	      yi=yi*y
-  16	    CONTINUE
-	  ELSE IF (y.EQ.0d0) THEN
-	    DO 14 i=1,14
-	      xj=1
-	      DO 13 j=0,i
-	        k=k+1
-	        IF ((coef(k).NE.0d0).AND.(i.EQ.j)) THEN
-	          fh=fh+coef(k)*xj
-	          S1=S1+coef(k)*FLOAT(j)*xj/x
-	        END IF
-	        xj=xj*x
-  13	      CONTINUE
-  14	    CONTINUE
-	  ELSE
-	    yi=y
-	    DO 4 i=1,14
-	      xj=1
-	      yimj=yi
-	      DO 3 j=0,i
-	        k=k+1
-	        IF (coef(k).NE.0d0) THEN
-	          IF (j.EQ.0) THEN
-	            fh=fh+coef(k)*yi
-	            S2=S2+coef(k)*FLOAT(i)*yi/y
-	          ELSE IF (i.EQ.j) THEN
-	            fh=fh+coef(k)*xj
-	            S1=S1+coef(k)*FLOAT(j)*xj/x
-	          ELSE
-	            fh=fh+coef(k)*xj*yimj
-	            S1=S1+coef(k)*FLOAT(j)*xj*yimj/x
-	            S2=S2+coef(k)*FLOAT((i-j))*xj*yimj/y
-	          END IF
-	        END IF
-	        yimj=yimj/y
-	        xj=xj*x
-  3	      CONTINUE
-	      yi=yi*y
-  4	    CONTINUE
-	  END IF
-	END IF
+        x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+        y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
-	DO 5 i=1,3
-	  dxdrho(i)=xhat(i)/rad
-	  dydrho(i)=yhat(i)/rad
-	  dFdrho(i)=S1*dxdrho(i)+S2*dydrho(i)
-	  zc(i)=rho(i)-fh*zhat(i)
-  5	CONTINUE
+        k  = 1
+        S1 = 0d0
+        S2 = 0d0
+        fh = COEF(1)
 
-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
-	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
-	
-	S1=Kr+Kc*psitzc
-	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
+        IF ((ABS(x) <= EPS).AND.(ABS(y) <= EPS)) THEN
 
-	DO 6 i=1,3
-	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
-   6	CONTINUE
+          S1 = S1 + coef(3)
+          S2 = S2 + coef(2)
+
+        ELSE IF (ABS(x) <= EPS) THEN
+
+            yi=y
+            DO CONCURRENT (i=1:14)
+              DO CONCURRENT (j=0:i)
+
+                k=k+1
+                IF (j>1) CYCLE
+
+              IF (ABS(COEF(k)) > EPS) THEN
+
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                    fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  END IF
+
+                IF (j.EQ.1) S1 = S1 + coef(k)*yi/y
+
+                END IF
+                END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+
+              IF (ABS(COEF(k)) > EPS) THEN
+
+                IF (i.EQ.j) THEN
+                  fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                  S1    = S1 + DBLE(j)*fh_dz/x
+                END IF
+
+                IF (i-j.EQ.1) S2 = S2 + coef(k)*xj
+
+                END IF
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=y
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF (ABS(COEF(k)) > EPS) THEN
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                  fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  ELSE IF (i.EQ.j) THEN
+                    fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                  ELSE
+                    fh_dz = coef(k)*xj*yimj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                    S2    = S2 + DBLE(i-j)*fh_dz/y
+                  END IF
+                END IF
+                yimj=yimj/y
+                xj=xj*x
+              END DO
+              yi=yi*y
+          END DO
+        END IF
+
+        dxdrho  = xhat / rad
+        dydrho  = yhat / rad
+        dFdrho  = S1*dxdrho + S2*dydrho
+        zc      = rho - fh*zhat
+
+        psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+        psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+        zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+
+        S1 = Kr + Kc*psitzc
+        S2 = psitzm*Kr + psitzm*psitzc*Kc + zmtzc
+
+        pr   = pin + L*ihat
+        Nvec = zc + S1*psi - S2*dFdrho
    
 C----------------------------------------------------------------------------
 C    Now add grid data contribution
-   
 
 	dAct=GridSrfdx
      
@@ -4080,9 +4100,9 @@ C  Compute grid data part of surface function
 
 C  Add grid part of normal vector to the conic+monomial part
 
-!!!!!	DO 49 i=1,3
-!	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
-!   49	CONTINUE
+	DO 49 i=1,3
+	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
+   49	CONTINUE
    
 C----------------------------------------------------------------------------
 C    Compute unit normal vector
@@ -4177,8 +4197,8 @@ C***********************************************************************
 	use math_mod
 
 C  Computes surface function S for conic + monomial + grid data surface 
-C	as a function of ray length L, for a candidate point of incidence on the 
-C  	combined surface
+C  as a function of ray length L, for a candidate point of incidence on the 
+C  combined surface
      
 	IMPLICIT NONE
 	
@@ -4285,32 +4305,17 @@ C   Find grid coordinates of ray incidence point
 	x=xi-DBLE(i0)  ! fractional part, ray position from i0
 	y=yj-DBLE(j0)
 
-C  Compute grid data surface height and slope at candidate PoI
+C  Compute grid data surface height and slope at PoI
 
 	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
-     & (j1.GT.nGridMat)) THEN
+     &     (j1.GT.nGridMat)) THEN
 	   fh=0d0
 	   tiltx=0d0
 	   tilty=0d0
 	ELSE
-          IF (GridSrfOrder(crnt_Elt)==1) Then
          ! bi-linear interpolation of GridMat
-	     CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
-     &	    	     GridMat(i1,j1),fh,tiltx,tilty)
-          ELSE IF (GridSrfOrder(crnt_Elt)==3) Then
-	     ! cubic-spline interpolation of GridMat
-             gridSrfIdx=iEltToGridSrf(crnt_Elt)
-             x=xi*dAct
-             y=yj*dAct
-             CALL INTCUBIC(gridSrfIdx,crnt_Elt,
-     &                x,y,GridMat(1:nGridMat,1:nGridMat),
-     &                mGridMat,nGridMat,mGridSrf,
-     &                i0,j0,fh,tiltx,tilty)
-	   ELSE
-	     WRITE(*,*)'*** Function SGSrf: Invalid SrfOrder: ',
-     &                GridSrfOrder(crnt_Elt)
-             Stop
-           END IF
+	  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+     &	    	       GridMat(i1,j1),fh,tiltx,tilty)
 	END IF
 
 C  Compute grid data part of surface function
