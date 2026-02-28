@@ -4080,9 +4080,9 @@ C  Compute grid data part of surface function
 
 C  Add grid part of normal vector to the conic+monomial part
 
-	DO 49 i=1,3
-	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
-   49	CONTINUE
+!!!!!	DO 49 i=1,3
+!	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
+!   49	CONTINUE
    
 C----------------------------------------------------------------------------
 C    Compute unit normal vector
