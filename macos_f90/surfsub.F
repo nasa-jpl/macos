@@ -4211,7 +4211,7 @@ C  combined surface
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
      &	Fmon,Fgrid,Sconic,SMon,dSmon,Sgrid,dSgrid,
-     &	Lconic,rhotpsi,rho2
+     &	Lconic,rhotpsi,rho2,eps
 
 C----------------------------------------------------------------------------
 C  Compute Sconic
@@ -4244,28 +4244,28 @@ C   Compute Fmonomial point-of-incidence in surface data coords
           k  = 0
           fh = 0d0
 
-          IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
+          IF ((ABS(x)<=eps).AND.(ABS(y)<=eps)) THEN
 
             fh = mcoef(1)
 
-          ELSE IF (ABS(x) <= EPS) THEN
+          ELSE IF (ABS(x) <= eps) THEN
 
             yi=1d0
             DO CONCURRENT (i=0:14)
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > EPS)) fh=fh+mcoef(k)*yi
+                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > eps)) fh=fh+mcoef(k)*yi
               END DO
               yi=yi*y
             END DO
 
-          ELSE IF (ABS(y) <= EPS) THEN
+          ELSE IF (ABS(y) <= eps) THEN
 
             DO CONCURRENT (i=0:14)
               xj=1d0
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((ABS(mcoef(k)) > EPS).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
+                IF ((ABS(mcoef(k)) > eps).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
                 xj=xj*x
               END DO
             END DO
