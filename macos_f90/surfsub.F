@@ -3586,7 +3586,7 @@ C***********************************************************************
 C***********************************************************************
 
 	FUNCTION SGSrf(Kc,Kr,psi,pv,prel,ihat,
-     &	               nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	               nGridMat,mGridMat,GridMat,dAct,
      &		       pmon,rhoc,xhat,yhat,zhat,L)
         use param_mod, only : mGridSrf
         use elt_mod, only : iEltToGridSrf,GridSrfOrder
@@ -3603,7 +3603,7 @@ C  Computes surface function for gridded data surface
 	INTEGER i,i1,i0,j1,j0
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
      &	  yhat(3),zhat(3),pmon(3),L,SGSrf,rho(3),rhom(3),rhoc(3),
-     &	  fh,GridSrfdx,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,yj,diCtr
+     &	  fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,yj,diCtr
 
         ! Compute point-of-incidence in surface coords
 
@@ -3614,8 +3614,8 @@ C  Computes surface function for gridded data surface
 	END DO
 
         ! xi is non-integer coordinate in 1-99 frame, similar for yi
-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/GridSrfdx+diCtr
-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/GridSrfdx+diCtr
+	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
 
         ! Find grid coordinates of ray incidence point
 
@@ -3644,7 +3644,7 @@ C  Computes surface function for gridded data surface
             gridSrfIdx=iEltToGridSrf(crnt_Elt)
 !           print*,'******* mGridSrf,crnt_Elt,gridSrfIdx =',
 !    &	           mGridSrf,crnt_Elt,gridSrfIdx
-            x=xi*GridSrfdx; y=yj*GridSrfdx
+            x=xi*dAct; y=yj*dAct
             CALL INTCUBIC(gridSrfIdx,crnt_Elt,
      &                    x,y,GridMat(1:nGridMat,1:nGridMat),
      &                    mGridMat,nGridMat,mGridSrf,
@@ -3671,7 +3671,7 @@ C  Computes surface function for gridded data surface
 C***********************************************************************
 
 	SUBROUTINE NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
-     &	  nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,L,zc,fh,
      &	  dFdrho,d2Fdrho2)
 	use macos_debug
@@ -3688,7 +3688,7 @@ C  Computes surface function for grid data
 	INTEGER i,iAxis,jAxis,i1,i0,j1,j0
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
      &	       yhat(3),zhat(3),pmon(3),L,rho(3),rhom(3),rhoc(3),
-     &	       fh,x,y,zc(3),GridSrfdx,xi,yj,
+     &	       fh,x,y,zc(3),dAct,xi,yj,
      &	       dFdrho(3),d2Fdrho2(3,3),tiltx,tilty,diCtr
 
 C  Compute point-of-incidence in surface coords
@@ -3698,8 +3698,8 @@ C  Compute point-of-incidence in surface coords
 	  rho(i)=prel(i)+L*ihat(i)
 	  rhom(i)=rho(i)-rhoc(i)
 	END DO
-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/GridSrfdx+diCtr
-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/GridSrfdx+diCtr
+	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
 
 C  Find actuator coordinates of ray incidence point
 
@@ -3722,8 +3722,8 @@ C  Compute excess surface height
      &	    GridMat(i1,j1),fh,tiltx,tilty)
 	END IF
 
-	tiltx=tiltx/GridSrfdx
-	tilty=tilty/GridSrfdx
+	tiltx=tiltx/dAct
+	tilty=tilty/dAct
 
 	DO jAxis=1,3
  	  dFdrho(jAxis)=tiltx*xhat(jAxis)+tilty*yhat(jAxis)
@@ -3849,7 +3849,7 @@ C combining monomial and grid data types
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
      &	 D1(9),D2(9),S1,S2,S3,
-     &	 Lconic,rhotpsi,rho2,Fgrid,tiltx,tilty
+     &	 Lconic,dAct,rhotpsi,rho2,Fgrid,tiltx,tilty
 
 	INTEGER i,j,k,nGridMat,mGridMat,iAxis,jAxis
 
@@ -4033,10 +4033,13 @@ C	Compute normalized monomial surface data coordinates
    
 C----------------------------------------------------------------------------
 C    Now add grid data contribution
-        
+   
+
+	dAct=GridSrfdx
+     
      	diCtr=INT((nGridMat+1)/2)
-	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/GridSrfdx+diCtr
-	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/GridSrfdx+diCtr
+	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
+	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
 
 C   Find grid coordinates of ray incidence point
 
@@ -4065,8 +4068,8 @@ C  Compute grid data part of surface function
 	Fgrid = fh	
 !	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
 	
-	tiltx=tiltx/GridSrfdx
-	tilty=tilty/GridSrfdx
+	tiltx=tiltx/dAct
+	tilty=tilty/dAct
 
 	DO jAxis=1,3
  	  dFdrho(jAxis)=tiltx*xhat(jAxis)+tilty*yhat(jAxis)
@@ -4164,7 +4167,7 @@ C	Here if ray misses surface
 C***********************************************************************
 
 	REAL*8 FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
-     &	            nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	            nGridMat,mGridMat,GridMat,dAct,
      &	            pmon,rhoc,xhat,yhat,zhat,
      &		    pData,xData,yData,zData,L)
      
@@ -4183,7 +4186,7 @@ C  	combined surface
 	
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
      &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),
-     &	fh,GridSrfdx,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
+     &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
      &	Fmon,Fgrid,Sconic,dSmon,dSgrid,
@@ -4216,6 +4219,11 @@ C	Compute normalized monomial surface data coordinates
 	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
 
 C   Compute Fmonomial point-of-incidence in surface data coords
+
+	diCtr=INT((nGridMat+1)/2)
+	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
+        ! xi is non-integer coordinate in 1-99 frame, similar for yi
 
 	IF (y.EQ.0d0) THEN
 	  k=0
@@ -4265,8 +4273,8 @@ C	Compute surface grid data coordinates
 	  rhom(i)=rho(i)-rhoc(i)
 	END DO
 	
-	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/GridSrfdx+diCtr
-	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/GridSrfdx+diCtr
+	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
+	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
 
 C   Find grid coordinates of ray incidence point
 
@@ -4292,8 +4300,8 @@ C  Compute grid data surface height and slope at candidate PoI
           ELSE IF (GridSrfOrder(crnt_Elt)==3) Then
 	     ! cubic-spline interpolation of GridMat
              gridSrfIdx=iEltToGridSrf(crnt_Elt)
-             x=xi*GridSrfdx
-             y=yj*GridSrfdx
+             x=xi*dAct
+             y=yj*dAct
              CALL INTCUBIC(gridSrfIdx,crnt_Elt,
      &                x,y,GridMat(1:nGridMat,1:nGridMat),
      &                mGridMat,nGridMat,mGridSrf,
@@ -4321,7 +4329,7 @@ C  Compute surface function
 C***********************************************************************
 
       	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
-     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	nGridMat,mGridMat,GridMat,dAct,
      &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
@@ -4335,10 +4343,10 @@ C***********************************************************************
       B=X2
      
       FA=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	nGridMat,mGridMat,GridMat,dAct,
      &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,A)
       FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	nGridMat,mGridMat,GridMat,dAct,
      &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
       IF(FB*FA.GT.0.) PAUSE 'MZPB failed.'
 
@@ -4396,7 +4404,7 @@ C***********************************************************************
           B=B+SIGN(TOL1,XM)
         ENDIF
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	  nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
 11    CONTINUE
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
@@ -4407,7 +4415,7 @@ C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE SMGZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	nGridMat,mGridMat,GridMat,dAct,
      &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
 	IMPLICIT REAL*8 (A-H,O-Z)
 	PARAMETER (gold=1.6,NTRY=50)
@@ -4419,22 +4427,22 @@ C***********************************************************************
 
 	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
 	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	   nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	   nGridMat,mGridMat,GridMat,dAct,
      &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
 	F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	   nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	   nGridMat,mGridMat,GridMat,dAct,
      &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
 	DO 1 J=1,NTRY
 	  IF(F1*F2.LT.0.)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
 	    X1=X1+gold*(X1-X2)
 	    F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	       nGridMat,mGridMat,GridMat,dAct,
      &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
 	  ELSE
 	    X2=X2+gold*(X2-X1)
 	    F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
-     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	       nGridMat,mGridMat,GridMat,dAct,
      &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
 	  ENDIF
  1	CONTINUE
