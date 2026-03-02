@@ -3480,7 +3480,7 @@ C***********************************************************************
 	INTEGER UDSrfType
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
      &	  GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-	  PARAMETER (ITMAX=400,EPS=1d-10)
+	  PARAMETER (ITMAX=400,EPS=1d-14)
 	A=X1
 	B=X2
 	FA=SGSrf(Kc,Kr,psi,pv,prel,ihat,
@@ -3850,7 +3850,7 @@ C combining monomial and grid data types
      &	 rho(3),psitzc,fh,fh_dz,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
-     &	 D1(9),D2(9),S1,S2,S3,EPS,
+     &	 D1(9),D2(9),S1,S2,S3,
      &	 Lconic,dAct,rhotpsi,rho2,Fgrid,tiltx,tilty
 
 	INTEGER i,j,k,nGridMat,mGridMat,iAxis,jAxis
@@ -4213,7 +4213,7 @@ C  combined surface
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
      &	Fmon,Fgrid,Sconic,SMon,dSmon,Sgrid,dSgrid,
-     &	Lconic,rhotpsi,rho2,EPS
+     &	Lconic,rhotpsi,rho2
 
 C----------------------------------------------------------------------------
 C  Compute Sconic
@@ -4365,9 +4365,7 @@ C***********************************************************************
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-      	PARAMETER (ITMAX=400)
-      	
-        USE Constants, ONLY: EPS
+      	PARAMETER (EPS=1D-15,ITMAX=400)
       	
       A=X1
       B=X2
