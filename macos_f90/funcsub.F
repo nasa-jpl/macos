@@ -229,6 +229,19 @@ C fixed by Gopal Vasudevan:
 	    CALL DMPROD(D1,Q,zMon(1,iElt),3,3,1)
 	    CALL DEQUATE(zMon(1,iElt),D1,3)
 	  END IF
+
+	  IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).LE.13)) THEN
+	    CALL DSUB(D1,pData(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,iElt),D2,3)
+	    CALL DADD(pData(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,iElt),3,3,1)
+	    CALL DEQUATE(xData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,iElt),3,3,1)
+	    CALL DEQUATE(yData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,iElt),3,3,1)
+	    CALL DEQUATE(zData(1,iElt),D1,3)
+	  END IF
 	END IF
 
 	If (LLocCoord .and. LUpdateTElt_FLG(iElt)) Then
@@ -358,6 +371,19 @@ C  Apply perturbations to each element
 	    CALL DEQUATE(yMon(1,iElt),D1,3)
 	    CALL DMPROD(D1,Q,zMon(1,iElt),3,3,1)
 	    CALL DEQUATE(zMon(1,iElt),D1,3)
+	  END IF
+
+	  IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).LE.13)) THEN
+	    CALL DSUB(D1,pData(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,iElt),D2,3)
+	    CALL DADD(pData(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,iElt),3,3,1)
+	    CALL DEQUATE(xData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,iElt),3,3,1)
+	    CALL DEQUATE(yData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,iElt),3,3,1)
+	    CALL DEQUATE(zData(1,iElt),D1,3)
 	  END IF
   6	CONTINUE
 	RETURN
@@ -1074,6 +1100,19 @@ C fixed by Gopal Vasudevan:
           CALL DMPROD(D1,Q,zMon(1,jElt),3,3,1)
           CALL DEQUATE(zMon(1,jElt),D1,3)
         END IF
+
+	IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).LE.13)) THEN
+	    CALL DSUB(D1,pData(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,iElt),D2,3)
+	    CALL DADD(pData(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,iElt),3,3,1)
+	    CALL DEQUATE(xData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,iElt),3,3,1)
+	    CALL DEQUATE(yData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,iElt),3,3,1)
+	    CALL DEQUATE(zData(1,iElt),D1,3)
+	END IF
 
         If (lloc .and. LUpdateTElt_FLG(jElt)) Then
           ! TElt(1:6,1:6,jElt) is updated here
