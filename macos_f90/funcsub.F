@@ -217,7 +217,8 @@ C fixed by Gopal Vasudevan:
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
+        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).NE.10)
+     &	    .AND.(SrfType(jElt).NE.11)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -360,7 +361,8 @@ C  Apply perturbations to each element
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
+        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).NE.10)
+     &	    .AND.(SrfType(jElt).NE.11)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -1081,7 +1083,8 @@ C fixed by Gopal Vasudevan:
           CALL DADD(h2HOE(1,jElt),D1,del,3)
         END IF
 
-        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).LE.9)) THEN
+        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).NE.10)
+     &	    .AND.(SrfType(jElt).NE.11)) THEN
           ! update pMon(*,jElt)
           CALL DSUB(D1,pMon(1,jElt),rptVec,3)
           CALL DMPROD(D2,dQ,D1,3,3,1)
