@@ -3945,8 +3945,7 @@ C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
 C	Compute normalized monomial surface data coordinates
 
-	eps = 1d-14
-
+	eps = EPSILON(1.0_pr)
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -4243,7 +4242,7 @@ C	Compute normalized monomial surface data coordinates
 
 C   Compute Fmonomial point-of-incidence in surface data coords
 
-	eps = 1d-14
+	eps = EPSILON(1.0_pr)
 
           k  = 0
           fh = 0d0
@@ -4367,7 +4366,10 @@ C***********************************************************************
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-      	PARAMETER (ITMAX=400,EPS=1d-14)
+      	PARAMETER (ITMAX=400)
+      	
+      	EPS = EPSILON(1.0_pr)
+
 
       A=X1
       B=X2
