@@ -3835,6 +3835,7 @@ C combining monomial and grid data types
      
 	use macos_debug
 	use math_mod
+        USE Constants, ONLY: EPS
 
 	IMPLICIT NONE
 
@@ -3849,7 +3850,7 @@ C combining monomial and grid data types
      &	 rho(3),psitzc,fh,fh_dz,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
      &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
      &	 x,y,dxdrho(3),dydrho(3),
-     &	 D1(9),D2(9),S1,S2,S3,eps,
+     &	 D1(9),D2(9),S1,S2,S3,EPS,
      &	 Lconic,dAct,rhotpsi,rho2,Fgrid,tiltx,tilty
 
 	INTEGER i,j,k,nGridMat,mGridMat,iAxis,jAxis
@@ -3945,7 +3946,6 @@ C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
 C	Compute normalized monomial surface data coordinates
 
-	eps = EPSILON(1.0_pr)
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -3957,12 +3957,12 @@ C	Compute normalized monomial surface data coordinates
         S2 = 0d0
         fh = COEF(1)
 
-        IF ((ABS(x) <= eps).AND.(ABS(y) <= eps)) THEN
+        IF ((ABS(x) <= EPS).AND.(ABS(y) <= EPS)) THEN
 
           S1 = S1 + coef(3)
           S2 = S2 + coef(2)
 
-        ELSE IF (ABS(x) <= eps) THEN
+        ELSE IF (ABS(x) <= EPS) THEN
 
             yi=y
             DO CONCURRENT (i=1:14)
@@ -3971,7 +3971,7 @@ C	Compute normalized monomial surface data coordinates
                 k=k+1
                 IF (j>1) CYCLE
 
-              IF (ABS(COEF(k)) > eps) THEN
+              IF (ABS(COEF(k)) > EPS) THEN
 
                   IF (j.EQ.0) THEN
                     fh_dz = coef(k)*yi
@@ -3986,14 +3986,14 @@ C	Compute normalized monomial surface data coordinates
               yi=yi*y
             END DO
 
-          ELSE IF (ABS(y) <= eps) THEN
+          ELSE IF (ABS(y) <= EPS) THEN
 
             DO CONCURRENT (i=1:14)
               xj=1d0
               DO CONCURRENT (j=0:i)
                 k=k+1
 
-              IF (ABS(COEF(k)) > eps) THEN
+              IF (ABS(COEF(k)) > EPS) THEN
 
                 IF (i.EQ.j) THEN
                   fh_dz = coef(k)*xj
@@ -4016,7 +4016,7 @@ C	Compute normalized monomial surface data coordinates
               yimj=yi
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF (ABS(COEF(k)) > eps) THEN
+                IF (ABS(COEF(k)) > EPS) THEN
                   IF (j.EQ.0) THEN
                     fh_dz = coef(k)*yi
                   fh    = fh + fh_dz
@@ -4197,6 +4197,7 @@ C***********************************************************************
 	use elt_mod, only : iEltToGridSrf,GridSrfOrder
 	use traceutil_mod, only : crnt_Elt
 	use math_mod
+        USE Constants, ONLY: EPS
 
 C  Computes surface function S for conic + monomial + grid data surface 
 C  as a function of ray length L, for a candidate point of incidence on the 
@@ -4212,7 +4213,7 @@ C  combined surface
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
      &	Fmon,Fgrid,Sconic,SMon,dSmon,Sgrid,dSgrid,
-     &	Lconic,rhotpsi,rho2,eps
+     &	Lconic,rhotpsi,rho2,EPS
 
 C----------------------------------------------------------------------------
 C  Compute Sconic
@@ -4242,33 +4243,31 @@ C	Compute normalized monomial surface data coordinates
 
 C   Compute Fmonomial point-of-incidence in surface data coords
 
-	eps = EPSILON(1.0_pr)
-
           k  = 0
           fh = 0d0
 
-          IF ((ABS(x)<=eps).AND.(ABS(y)<=eps)) THEN
+          IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
 
             fh = mcoef(1)
 
-          ELSE IF (ABS(x) <= eps) THEN
+          ELSE IF (ABS(x) <= EPS) THEN
 
             yi=1d0
             DO CONCURRENT (i=0:14)
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > eps)) fh=fh+mcoef(k)*yi
+                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > EPS)) fh=fh+mcoef(k)*yi
               END DO
               yi=yi*y
             END DO
 
-          ELSE IF (ABS(y) <= eps) THEN
+          ELSE IF (ABS(y) <= EPS) THEN
 
             DO CONCURRENT (i=0:14)
               xj=1d0
               DO CONCURRENT (j=0:i)
                 k=k+1
-                IF ((ABS(mcoef(k)) > eps).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
+                IF ((ABS(mcoef(k)) > EPS).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
                 xj=xj*x
               END DO
             END DO
@@ -4368,9 +4367,8 @@ C***********************************************************************
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
       	PARAMETER (ITMAX=400)
       	
-      	EPS = EPSILON(1.0_pr)
-
-
+        USE Constants, ONLY: EPS
+      	
       A=X1
       B=X2
      
