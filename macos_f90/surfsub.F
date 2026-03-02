@@ -3924,8 +3924,8 @@ C----------------------------------------------------------------------------
 C	Use Lconic as a starting point, find incidence pt on full surface
         
         IF (ABS(Lconic).GT.1e-7) THEN
-          L1=0.999d0*Lconic
-          L2=1.001d0*Lconic
+          L1=0.9987d0*Lconic
+          L2=1.00125d0*Lconic
         ELSE
           L1=-1e-7
           L2=1e-7
@@ -3935,7 +3935,7 @@ C	Use Lconic as a starting point, find incidence pt on full surface
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &	       pmon,rhoc,xhat,yhat,zhat,
      &	       pData,xData,yData,zData,L)
-	tol=1d-10
+        tol=2d-15
 	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &         rad,pmon,rhoc,xhat,yhat,zhat,
@@ -4223,6 +4223,7 @@ C !!! Make sure the mon and grid data parameters are correctly passed!!!
 	  rho(i)=prel(i)+L*ihat(i)			! vector from element pole to PoI
 	  rhom(i)=rho(i)-rhoc(i)			! vector from data center to PoI
   1	CONTINUE
+  
 	DO 6 i=1,3
 	  zc(i)=rho(i)-fh*zhat(i)
   6	CONTINUE
@@ -4359,13 +4360,16 @@ C***********************************************************************
       	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
      &	nGridMat,mGridMat,GridMat,dAct,
      &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+
+        USE Constants, only: EPS
+     
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
       	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-      	PARAMETER (EPS=1D-15,ITMAX=400)
+      	PARAMETER (ITMAX=400)
       	
       A=X1
       B=X2
@@ -4394,7 +4398,7 @@ C***********************************************************************
           FB=FC
           FC=FA
         ENDIF
-        TOL1=2.*EPS*ABS(B)+0.5*TOL
+        TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
         XM=.5*(C-B)
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           MZPSolve=B
@@ -4403,17 +4407,17 @@ C***********************************************************************
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
           S=FB/FA
           IF(A.EQ.C) THEN
-            P=2.*XM*S
-            Q=1.-S
+	    P=2d0*XM*S
+            Q=1d0-S
           ELSE
             Q=FA/FC
             R=FB/FC
-            P=S*(2.*XM*Q*(Q-R)-(B-A)*(R-1.))
-            Q=(Q-1.)*(R-1.)*(S-1.)
+            P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+            Q=(Q-1d0)*(R-1d0)*(S-1d0)
           ENDIF
           IF(P.GT.0.) Q=-Q
           P=ABS(P)
-          IF(2.*P .LT. MIN(3.*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+          IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
             E=D
             D=P/Q
           ELSE
