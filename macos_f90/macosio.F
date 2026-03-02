@@ -1902,7 +1902,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'Surface',7)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      DO i=1,8
+	      DO i=1,13
 	        IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 		  SrfType(MB_I(1))=i
 	          LNOTSET=.FALSE.
