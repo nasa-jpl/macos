@@ -4176,6 +4176,13 @@ c	  DO 10 i=2,7
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
 	  CALL DSMPROD(dNdp,D2,S1,9)
 	END IF
+    
+     	
+ 110	format('MonGridSurf done: L=',d16.8,' Nhat=',3d16.8)
+	write(*,110)L,Nhat
+
+
+
 
 	RETURN
 
