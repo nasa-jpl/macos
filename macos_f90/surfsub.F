@@ -3935,6 +3935,11 @@ C	Use Lconic as a starting point, find incidence pt on full surface
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &	       pmon,rhoc,xhat,yhat,zhat,
      &	       pData,xData,yData,zData,L)
+          	
+ 112	format('MonGridSurf ZPB: Lconic=',d16.8,' L1=',d16.8,' L2=',d16.8,' L=',d16.8)
+	write(*,112)Lconic,L1,L2,L
+
+
         tol=2d-15
 	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
@@ -3943,7 +3948,7 @@ C	Use Lconic as a starting point, find incidence pt on full surface
 	L=L3
     
      	
- 111	format('MonGridSurf L: L=',d16.8,' Nhat=',3d16.8)
+ 111	format('MonGridSurf Solve: L=',d16.8,' Nhat=',3d16.8)
 	write(*,111)L,Nhat
 
 
