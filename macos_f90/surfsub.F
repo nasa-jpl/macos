@@ -3941,6 +3941,12 @@ C	Use Lconic as a starting point, find incidence pt on full surface
      &         rad,pmon,rhoc,xhat,yhat,zhat,
      &	       pData,xData,yData,zData,L)
 	L=L3
+    
+     	
+ 111	format('MonGridSurf L: L=',d16.8,' Nhat=',3d16.8)
+	write(*,111)L,Nhat
+
+
 
 C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
