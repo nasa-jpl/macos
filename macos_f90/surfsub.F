@@ -4368,7 +4368,7 @@ C***********************************************************************
      &	nGridMat,mGridMat,GridMat,dAct,
      &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
 
- !      USE Constants, only: EPS
+        USE Constants, only: EPS
      
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
@@ -4376,8 +4376,7 @@ C***********************************************************************
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	pData(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
- !     	PARAMETER (ITMAX=400)
-	PARAMETER (ITMAX=400,EPS=1d-14)
+      	PARAMETER (ITMAX=400)
       	
       A=X1
       B=X2
@@ -4398,7 +4397,6 @@ C***********************************************************************
           D=B-A
           E=D
         ENDIF
-        
         IF(ABS(FC).LT.ABS(FB)) THEN
           A=B
           B=C
@@ -4409,7 +4407,6 @@ C***********************************************************************
         ENDIF
         TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
         XM=.5*(C-B)
-        
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           MZPSolve=B
      
@@ -4418,10 +4415,8 @@ C***********************************************************************
 	write(*,110)B,XM,A
 
 
-
           RETURN
         ENDIF
-        
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
           S=FB/FA
           IF(A.EQ.C) THEN
@@ -4433,7 +4428,6 @@ C***********************************************************************
             P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
             Q=(Q-1d0)*(R-1d0)*(S-1d0)
           ENDIF
-          
           IF(P.GT.0.) Q=-Q
           P=ABS(P)
           IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
@@ -4447,7 +4441,6 @@ C***********************************************************************
           D=XM
           E=D
         ENDIF
-        
         A=B
         FA=FB
         IF(ABS(D) .GT. TOL1) THEN
@@ -4455,7 +4448,6 @@ C***********************************************************************
         ELSE
           B=B+SIGN(TOL1,XM)
         ENDIF
-        
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
@@ -4464,8 +4456,8 @@ C***********************************************************************
  111	format('SMGZPSolve: FB=',d16.8,' ')
 	write(*,111)FB
 
-11    CONTINUE
 
+11    CONTINUE
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
       SMGZPSolve=B
       RETURN
