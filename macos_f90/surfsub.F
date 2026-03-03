@@ -4412,6 +4412,13 @@ C***********************************************************************
         
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           MZPSolve=B
+     
+     	
+ 110	format('SMGZPSolve: B=',d16.8,' XM=',d16.8,' A=',d16.8)
+	write(*,110)B,XM,A
+
+
+
           RETURN
         ENDIF
         
@@ -4452,6 +4459,11 @@ C***********************************************************************
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
+     
+     	
+ 110	format('SMGZPSolve: FB=',d16.8,' ')
+	write(*,110)FB
+
 11    CONTINUE
 
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
