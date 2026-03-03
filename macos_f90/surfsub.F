@@ -3935,10 +3935,6 @@ C	Use Lconic as a starting point, find incidence pt on full surface
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &	       pmon,rhoc,xhat,yhat,zhat,
      &	       pData,xData,yData,zData,L)
-          	
- 112	format('MonGridSurf ZPB: Lconic=',d16.8,' L1=',d16.8,' L2=',d16.8,' L=',d16.8)
-	write(*,112)Lconic,L1,L2,L
-
 
         tol=2d-15
 	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
@@ -3946,12 +3942,6 @@ C	Use Lconic as a starting point, find incidence pt on full surface
      &         rad,pmon,rhoc,xhat,yhat,zhat,
      &	       pData,xData,yData,zData,L)
 	L=L3
-    
-     	
- 111	format('MonGridSurf Solve: L=',d16.8,' Nhat=',3d16.8)
-	write(*,111)L,Nhat
-
-
 
 C----------------------------------------------------------------------------
 C   Compute normal vector for conic + monomial surface
@@ -4187,14 +4177,6 @@ c	  DO 10 i=2,7
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
 	  CALL DSMPROD(dNdp,D2,S1,9)
 	END IF
-    
-     	
- 110	format('MonGridSurf done: L=',d16.8,' Nhat=',3d16.8)
-	write(*,110)L,Nhat
-
-
-
-
 	RETURN
 
 C	Here if ray misses surface
@@ -4420,13 +4402,6 @@ C***********************************************************************
         XM=.5*(C-B)
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           SMGZPSolve=B
-     
-     	
- 110	format('SMGZPSolve done: B=',d16.8,' XM=',d16.8,' A=',d16.8)
-	write(*,110)B,XM,A
-
-
-
           RETURN
         ENDIF
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
@@ -4463,11 +4438,6 @@ C***********************************************************************
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
-     
-     	
- 111	format('SMGZPSolve iter: FA=',d16.8,' FB=',d16.8,' B=',d16.8)
-	write(*,111)FA,FB,B
-
 11    CONTINUE
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
       SMGZPSolve=B
