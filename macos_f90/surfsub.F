@@ -3481,10 +3481,8 @@ C***********************************************************************
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
      &	  GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
 	  PARAMETER (ITMAX=400,EPS=1d-14)
-	  
 	A=X1
 	B=X2
-	
 	FA=SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &		 nGridMat,mGridMat,GridMat,GridSrfdx,
      &		 pmon,rhoc,xhat,yhat,zhat,A)
@@ -3492,7 +3490,6 @@ C***********************************************************************
      &		 nGridMat,mGridMat,GridMat,GridSrfdx,
      &		 pmon,rhoc,xhat,yhat,zhat,B)
 	IF(FB*FA.GT.0.) PAUSE 'GSZPB failed.'
-	
 	FC=FB
 	DO ITER=1,ITMAX
 	  IF(FB*FC.GT.0d0) THEN
@@ -3502,14 +3499,12 @@ C***********************************************************************
 	    A=B; B=C; C=A
 	    FA=FB; FB=FC; FC=FA
 	  ENDIF
-	  
 	  TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
 	  XM=0.5d0*(C-B)
 	  IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
 	    GSZPSolve=B
 	    RETURN
 	  ENDIF
-	  
 	  IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
 	    S=FB/FA
 	    IF(A.EQ.C) THEN
@@ -3534,7 +3529,6 @@ C***********************************************************************
 	    D=XM
 	    E=D
 	  ENDIF
-	  
 	  A=B
 	  FA=FB
 	  IF(ABS(D) .GT. TOL1) THEN
@@ -3542,7 +3536,6 @@ C***********************************************************************
 	  ELSE
 	    B=B+SIGN(TOL1,XM)
 	  ENDIF
-	  
 	  FB=SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &	  	   nGridMat,mGridMat,GridMat,GridSrfdx,
      &	  	   pmon,rhoc,xhat,yhat,zhat,B)
@@ -3931,7 +3924,7 @@ C----------------------------------------------------------------------------
 C	Use Lconic as a starting point, find incidence pt on full surface
         
         IF (ABS(Lconic).GT.1e-7) THEN
-          L1=0.9987d0*Lconic
+          L1=0.9988d0*Lconic
           L2=1.00125d0*Lconic
         ELSE
           L1=-1e-7
@@ -4409,12 +4402,6 @@ C***********************************************************************
         XM=.5*(C-B)
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
           MZPSolve=B
-     
-     	
- 110	format('SMGZPSolve: B=',d16.8,' XM=',d16.8,' A=',d16.8)
-	write(*,110)B,XM,A
-
-
           RETURN
         ENDIF
         IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
@@ -4451,12 +4438,6 @@ C***********************************************************************
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	  nGridMat,mGridMat,GridMat,dAct,
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
-     
-     	
- 111	format('SMGZPSolve: FB=',d16.8,' ')
-	write(*,111)FB
-
-
 11    CONTINUE
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
       SMGZPSolve=B
