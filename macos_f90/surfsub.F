@@ -4419,7 +4419,7 @@ C***********************************************************************
         TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
         XM=.5*(C-B)
         IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
-          MZPSolve=B
+          SMGZPSolve=B
      
      	
  110	format('SMGZPSolve done: B=',d16.8,' XM=',d16.8,' A=',d16.8)
