@@ -4461,8 +4461,8 @@ C***********************************************************************
      &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
      
      	
- 110	format('SMGZPSolve: FB=',d16.8,' ')
-	write(*,110)FB
+ 111	format('SMGZPSolve: FB=',d16.8,' ')
+	write(*,111)FB
 
 11    CONTINUE
 
