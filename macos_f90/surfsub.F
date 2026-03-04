@@ -3841,7 +3841,7 @@ C combining monomial and grid data types
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
      &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
-     &	 pData(3),xData(3),yData(3),zData(3),
+     &	 pData(3),rhod(3),xData(3),yData(3),zData(3),
      &	 GridMat(mGridMat,mGridMat),GridSrfdx,
      &	 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
      &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
@@ -3863,6 +3863,7 @@ C	Compute incidence point of ray on the base conic surface
 	DO 1 i=1,3
 	  prel(i)=pin(i)-pv(i)
 	  rhoc(i)=pmon(i)-pv(i)
+	  rhod(i)=pData(i)-pv(i)
    1	CONTINUE
 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
 	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
@@ -3934,13 +3935,13 @@ C	Use Lconic as a starting point, find incidence pt on full surface
 	CALL SMGZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &	       pmon,rhoc,xhat,yhat,zhat,
-     &	       pData,xData,yData,zData,L)
+     &	       pData,rhod,xData,yData,zData,L)
 
         tol=2d-15
 	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
      &	       nGridMat,mGridMat,GridMat,GridSrfdx,
      &         rad,pmon,rhoc,xhat,yhat,zhat,
-     &	       pData,xData,yData,zData,L)
+     &	       pData,rhod,xData,yData,zData,L)
 	L=L3
 
 C----------------------------------------------------------------------------
@@ -4059,6 +4060,7 @@ C----------------------------------------------------------------------------
 C    Now add grid data contribution
 
 	dAct=GridSrfdx
+        rhom = rho - rhod
      
      	diCtr=INT((nGridMat+1)/2)
 	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
@@ -4191,7 +4193,7 @@ C***********************************************************************
 	REAL*8 FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
      &	            nGridMat,mGridMat,GridMat,dAct,
      &	            pmon,rhoc,xhat,yhat,zhat,
-     &		    pData,xData,yData,zData,L)
+     &		    pData,rhod,xData,yData,zData,L)
      
 	use param_mod, only : mGridSrf
 	use elt_mod, only : iEltToGridSrf,GridSrfOrder
@@ -4208,7 +4210,7 @@ C  combined surface
 	INTEGER i,j,k,i1,i0,j1,j0,nGridMat,mGridMat,gridSrfIdx
 	
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
-     &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),
+     &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),rhod(3),
      &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
      &	GridMat(mGridMat,mGridMat),
      &	pData(3),xData(3),yData(3),zData(3),
@@ -4306,7 +4308,7 @@ C	Compute surface grid data coordinates
 	diCtr=INT((nGridMat+1)/2)
 	DO i=1,3
 	  rho(i)=prel(i)+L*ihat(i)
-	  rhom(i)=rho(i)-rhoc(i)
+	  rhom(i)=rho(i)-rhod(i)
 	END DO
 	
 	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
@@ -4359,7 +4361,7 @@ C***********************************************************************
 
       	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
      &	nGridMat,mGridMat,GridMat,dAct,
-     &	rad,pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+     &	rad,pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L)
 
         USE Constants, only: EPS
      
@@ -4367,7 +4369,7 @@ C***********************************************************************
 	INTEGER nGridMat,mGridMat
       	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
      & 	GridMat(mGridMat,mGridMat),GridSrfdx,
-     &	pData(3),xData(3),yData(3),zData(3),
+     &	pData(3),rhod(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
       	PARAMETER (ITMAX=400)
       	
@@ -4376,10 +4378,10 @@ C***********************************************************************
      
       FA=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	nGridMat,mGridMat,GridMat,dAct,
-     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,A)
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,A)
       FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	nGridMat,mGridMat,GridMat,dAct,
-     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B)
       IF(FB*FA.GT.0.) PAUSE 'MZPB failed.'
 
       FC=FB
@@ -4437,7 +4439,7 @@ C***********************************************************************
         ENDIF
         FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	  nGridMat,mGridMat,GridMat,dAct,
-     &	  pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,B)
+     &	  pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B)
 11    CONTINUE
       PAUSE 'SMGZPSolve exceeding maximum iterations.'
       SMGZPSolve=B
@@ -4448,34 +4450,34 @@ C***********************************************************************
 
 	SUBROUTINE SMGZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	nGridMat,mGridMat,GridMat,dAct,
-     &	pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,L)
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L)
 	IMPLICIT REAL*8 (A-H,O-Z)
 	PARAMETER (gold=1.6,NTRY=50)
 	INTEGER nGridMat,mGridMat
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
      &	GridMat(mGridMat,mGridMat),GridSrfdx,
      &	rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
-     &	pData(3),xData(3),yData(3),zData(3)
+     &	pData(3),xData(3),yData(3),zData(3),rhod(3)
 
 	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
 	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	   nGridMat,mGridMat,GridMat,dAct,
-     &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1)
 	F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	   nGridMat,mGridMat,GridMat,dAct,
-     &	   pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X2)
 	DO 1 J=1,NTRY
 	  IF(F1*F2.LT.0.)RETURN
 	  IF(ABS(F1).LT.ABS(F2))THEN
 	    X1=X1+gold*(X1-X2)
 	    F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	       nGridMat,mGridMat,GridMat,dAct,
-     &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X1)
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1)
 	  ELSE
 	    X2=X2+gold*(X2-X1)
 	    F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	       nGridMat,mGridMat,GridMat,dAct,
-     &	       pmon,rhoc,xhat,yhat,zhat,pData,xData,yData,zData,X2)
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X2)
 	  ENDIF
  1	CONTINUE
 	RETURN
