@@ -4459,7 +4459,6 @@ C***********************************************************************
      &	rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
      &	pData(3),xData(3),yData(3),zData(3),rhod(3)
 
-	IF(X1.EQ.X2) PAUSE 'You have to guess an initial range'
 	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	   nGridMat,mGridMat,GridMat,dAct,
      &	   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1)
