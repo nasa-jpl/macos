@@ -110,11 +110,11 @@ export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:"$LD_LIBRARY_PATH"
 # Compile macos and smacos
 #--------------------------------------------------------------------------
 
-#make clean-macos
-#make macos
+make clean-macos
+make macos
 
-#make clean-smacos
-#make smacos
+make clean-smacos
+make smacos
 
 #--------------------------------------------------------------------------
 # Compile macos and smacos
