@@ -130,7 +130,7 @@ export C2_OBJS = utilsub_c.o fk.o splicubi2.o
 
 ################################################################################
 
-default: macos smacos smacosdvr
+default: macos smacos
 
 # Make the object directories:
 make-obj-dirs:
