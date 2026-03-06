@@ -119,6 +119,8 @@ make smacos
 #--------------------------------------------------------------------------
 # Compile macos and smacos
 #--------------------------------------------------------------------------
+smacos_dvr: $(SCOMP_$(APP)) smacos_dvr.o
+	$(FC) -o $@ $(APP).o $(SMACOS_OBJS)/smacos_lib.a smacos_dvr.o
 
 # begin fortran depends
 smacos_dvr.o: smacos_dvr.F param_mod.mod $(MOD_SRCS)
