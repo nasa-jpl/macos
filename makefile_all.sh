@@ -125,7 +125,7 @@ make smacos
 #
 #-------------------------------------------------------------------------
 #cd ../MACOS_resources/GMI
-cd /home/dcr/dev/MACOS_resources/GMI
+cd ~/dev/MACOS_resources/GMI
 #make clean
 #make
 
