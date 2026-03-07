@@ -124,7 +124,8 @@ make smacos
 #    has been setup as /usr/local/bin/matlab
 #
 #-------------------------------------------------------------------------
-cd ../MACOS_resources/GMI
+#cd ../MACOS_resources/GMI
+cd /home/dcr/dev/MACOS_resources/GMI
 #make clean
 #make
 
