@@ -121,17 +121,6 @@ make smacos
 #--------------------------------------------------------------------------
 
 # SMACOS driver program (example)
-#LOCAL_FFLAGS = $(FFLAGS)
-# Override FFLAGS with our compiler settings:
-LOCAL_FFLAGS = -g
-
-# Add in Defines:
-LOCAL_FFLAGS += $(DEFINES) -DBUILD_LOC="'$(BUILD_LOC)'"
-LOCAL_CFLAGS += $(CFLAGS) $(DEFINES) -DBUILD_LOC="\"$(BUILD_LOC)\""
-
-# Add in SVN_REV:
-LOCAL_FFLAGS += -DSVN_REV="'$(SVN_REV)'"
-LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
 
 # Libraries for MACOS:
 MLIBS = $(intel64_lib)/libimf.a \
