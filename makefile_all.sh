@@ -136,6 +136,9 @@ eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version
 
 eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
 
+eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DMX_COMPAT_32 -O2 -xHOST  "smacos_dvr.F")
+
+eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared  -Wl,--no-undefined -o  "smacos_dvr"  smacos_dvr.o     -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
 
 
 
