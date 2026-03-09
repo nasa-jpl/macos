@@ -121,11 +121,46 @@ make smacos
 #--------------------------------------------------------------------------
 
 # SMACOS driver program (example)
+#LOCAL_FFLAGS = $(FFLAGS)
+# Override FFLAGS with our compiler settings:
+LOCAL_FFLAGS = -g
+
+# Add in Defines:
+LOCAL_FFLAGS += $(DEFINES) -DBUILD_LOC="'$(BUILD_LOC)'"
+LOCAL_CFLAGS += $(CFLAGS) $(DEFINES) -DBUILD_LOC="\"$(BUILD_LOC)\""
+
+# Add in SVN_REV:
+LOCAL_FFLAGS += -DSVN_REV="'$(SVN_REV)'"
+LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
+
+# Libraries for MACOS:
+MLIBS = $(intel64_lib)/libimf.a \
+        $(intel64_lib)/libifport.a \
+        $(intel64_lib)/libifcore.a \
+        -L/usr/lib64 -lX11 \
+        -L$(SRC_DIR)/pgplot -lpgplot \
+        -L$(SRC_DIR)/fits_build -lfits \
+        $(RL_LIBS)
+
+NPSOL_ROOT=$(macossrc_dir)/npsol
+NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
+            $(NPSOL_ROOT)/Linux-x86_64/npsol.o
+
+# MACOS executable
+MACOSOBJS = $(MOD_OBJS) $(C_OBJS) $(M_OBJS) macos.o
+$(macosexe): $(MACOSOBJS)
+	$(FC) $(LDFLAGS) -o $@ $(NPSOL_OBJS) $(MACOSOBJS) $(MLIBS)
+#SMDRVLIBS = -L$intel64_lib -limf -lintlc -lifport -lifcore -lc -lm \
+#            -L/usr/lib64 -lX11
+SMDRVLIBS = -L/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64 -limf -lintlc -lifport -lifcore -lc -lm \
+            -L/usr/lib64 -lX11
+SMACOSOBJS = $(MOD_OBJS) $(SM_OBJS) $(C2_OBJS) smacos.o
+$(smacoslib).o: $(SMACOSOBJS) $(NPSOL_OBJS)
+	ld -r -o $@ $(NPSOL_OBJS) $(SMACOSOBJS)
+	ar -r smacos_lib.a $(NPSOL_OBJS) $(SMACOSOBJS)
 SMACOS_DVR_OBJS = $(SMACOSOBJS) smacos_dvr.o
 smacos_dvr: $(SMACOS_DVR_OBJS) $(NPSOL_OBJS)
   $(FC) -o $@ $(SMACOS_DVR_OBJS) $(NPSOL_OBJS) $(SMDRVLIBS)
-SMDRVLIBS = -L/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64 -limf -lintlc -lifport -lifcore -lc -lm \
-            -L/usr/lib64 -lX11
 
 
 #eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DMX_COMPAT_32 -O2 -xHOST  "smacos_dvr.F")
