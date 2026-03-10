@@ -61,30 +61,30 @@ export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:"$LD_LIBRARY_PATH"
 # Compile npsol library (can be compiled with gfortran or ifort)
 #--------------------------------------------------------------------------
 # cd to npsol/blas and compile
-cd npsol/blas
-make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+#cd npsol/blas
+#make -f Makefile_Intel clean; make -f Makefile_Intel
+#cd ../
 
 # cd to lappack and compile
-cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+#cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
+#cd ../
 
 # now compile npsol
-make -f Makefile_Intel clean; make -f Makefile_Intel
+#make -f Makefile_Intel clean; make -f Makefile_Intel
 
 # cd back to /macos_f90 folder
-cd ../
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile readline-8.2 (uses gnu gcc to compile)
 #--------------------------------------------------------------------------
 # cd to readline-8.2, configure, and compile
-cd readline-8.2
-./configure
-make
+#cd readline-8.2
+#./configure
+#make
 
 # cd back to /macos_f90
-cd ../
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile pgplot (Uses Intel Compiler)
@@ -92,23 +92,24 @@ cd ../
 # Note: we need to change libpgplot.so to sv_libpgplot.so
 #--------------------------------------------------------------------------
 #cd to pgplot and compile
-cd pgplot
-make
+#cd pgplot
+#make
 #macos compilation expects sv_libpgplot.so
-mv libpgplot.so sv_libpgplot.so 
-cd ../
+#mv libpgplot.so sv_libpgplot.so 
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile fitsio 
 #--------------------------------------------------------------------------
-cd fits_build
-bash cmp
-bash amp
-cd ../
+#cd fits_build
+#bash cmp
+#bash amp
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile macos and smacos
 #--------------------------------------------------------------------------
+
 make clean-macos
 make macos
 
@@ -116,25 +117,48 @@ make clean-smacos
 make smacos
 
 #--------------------------------------------------------------------------
-# Compile GMI
-#
-# Note:
-#
-# 1. User must change matlab_version above, or leave it as is if matlab
-#    has been setup as /usr/local/bin/matlab
-#
-#-------------------------------------------------------------------------
-#cd ../MACOS_resources/GMI
-cd ~/dev/MACOS_resources/GMI
-#make clean
-#make
+# Compile smacos_dvr
+#--------------------------------------------------------------------------
+
+# SMACOS driver program (example)
+
+# Libraries for MACOS:
+MLIBS = $(intel64_lib)/libimf.a \
+        $(intel64_lib)/libifport.a \
+        $(intel64_lib)/libifcore.a \
+        -L/usr/lib64 -lX11 \
+        -L$(SRC_DIR)/pgplot -lpgplot \
+        -L$(SRC_DIR)/fits_build -lfits \
+        $(RL_LIBS)
+
+NPSOL_ROOT=$(macossrc_dir)/npsol
+NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
+            $(NPSOL_ROOT)/Linux-x86_64/npsol.o
+
+# MACOS executable
+MACOSOBJS = $(MOD_OBJS) $(C_OBJS) $(M_OBJS) macos.o
+$(macosexe): $(MACOSOBJS)
+	$(FC) $(LDFLAGS) -o $@ $(NPSOL_OBJS) $(MACOSOBJS) $(MLIBS)
+#SMDRVLIBS = -L$intel64_lib -limf -lintlc -lifport -lifcore -lc -lm \
+#            -L/usr/lib64 -lX11
+SMDRVLIBS = -L/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64 -limf -lintlc -lifport -lifcore -lc -lm \
+            -L/usr/lib64 -lX11
+SMACOSOBJS = $(MOD_OBJS) $(SM_OBJS) $(C2_OBJS) smacos.o
+$(smacoslib).o: $(SMACOSOBJS) $(NPSOL_OBJS)
+	ld -r -o $@ $(NPSOL_OBJS) $(SMACOSOBJS)
+	ar -r smacos_lib.a $(NPSOL_OBJS) $(SMACOSOBJS)
+SMACOS_DVR_OBJS = $(SMACOSOBJS) smacos_dvr.o
+smacos_dvr: $(SMACOS_DVR_OBJS) $(NPSOL_OBJS)
+  $(FC) -o $@ $(SMACOS_DVR_OBJS) $(NPSOL_OBJS) $(SMDRVLIBS)
 
 
-eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F")
+#eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DMX_COMPAT_32 -O2 -xHOST  "smacos_dvr.F")
 
-eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F")
+#eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F")
 
-eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
+#eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  smacos_dvr.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
+
+#source /opt/intel/oneapi/setvars.sh
 
 
 #--------------------------------------------------------------------------

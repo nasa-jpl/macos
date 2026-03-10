@@ -3,7 +3,7 @@ C  File macos.F
 C  MACOS main program
 C
 C    +----------------------------------------------------------------+
-C    |  Copyright (C) 1995-2012, California Institute of Technology.  |
+C    |  Copyright (C) 1995-2026, California Institute of Technology.  |
 C    |  ALL RIGHTS RESERVED. United State Government Sponsorship Is   |
 C    |  Acknowledged. Any commercial use must be negotiated with the  |
 C    !  Office of Technology Transfer at the California Institute of  |
@@ -21,27 +21,25 @@ C***********************************************************************
 
 C***********************************************************************
 C       Modeling and Analysis for Controlled Optical Systems (MACOS)
+C	MACOS Version 4.xx		       Work in progress
+C***********************************************************************
+C
 C       MACOS Version 3.34 	               Last updated: 11/2011
 C       (Based on MACOS Versions 3.31, 3.2 and 2.86)
-C
 C       Contact:     John Z. Lou
 C       Address:     Jet Propulsion Laboratory
 C                    MS 306-451
 C                    4800 Oak Grove Dr., Pasadena CA 91109
 C       Email:       John.Z.Lou@jpl.nasa.gov
 C       Phone:       (818)354-4870
-C***********************************************************************
-
-C***********************************************************************
-C       ** History **
-C       MACOS Version 2.86		           08/2001
 C
+C       MACOS Version 2.86		           08/2001
 C       Contact:     David C. Redding
 C       Address:     Jet Propulsion Laboratory
-C                    MS 306-451
+C                    MS 126-100
 C                    4800 Oak Grove Dr., Pasadena CA 91109
-C       Email:       dcr@huey.jpl.nasa.gov
-C       Phone:       (818)354-3696
+C       Email:       david.c.redding@jpl.nasa.gov
+C       Phone:       (626)298-0330
 C***********************************************************************
 
 #include "realtype.h"

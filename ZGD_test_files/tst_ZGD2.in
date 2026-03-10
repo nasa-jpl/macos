@@ -1,0 +1,93 @@
+
+% ---------------------------------------------------------------------------------------
+% Source Definition
+% ---------------------------------------------------------------------------------------
+
+        ChfRayDir=  0.0D+00  0.0D+00  1.0D+00
+        ChfRayPos=  0.0D+00  0.0D+00 -1.0D+01
+          zSource=  1.0D+22
+
+        BaseUnits=  mm
+        WaveUnits=  mm
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+          Wavelen=  6.328000000000000D-04
+             Flux=  1.0D+00
+
+         Aperture=  1.0D+00
+         Obscratn=  0.0D+00
+
+         GridType=  Circular
+         nGridpts=  256
+            xGrid=  1.0D+00  0.0D+00  0.0D+00
+            yGrid=  0.0D+00  1.0D+00  0.0D+00
+
+% ---------------------------------------------------------------------------------------
+% Element Definitions
+% ---------------------------------------------------------------------------------------
+
+             nElt=  2
+
+
+             iElt=  1
+          EltName=  ZGD_refl
+          Element=  Reflector
+          Surface=  ZrnGrData
+            KrElt= -1.0D+22
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00 -1.0D+00
+           VptElt=  0.0D+00  0.0D+00  0.0D+00
+           RptElt=  0.0D+00  0.0D+00  0.0D+00
+         ZernType=  ANSI
+        nZernCoef=   2
+        ZernModes=  4  15
+         ZernCoef=  1.0D-05  5.0D-03
+             lMon=  1.0D+00
+        nGridData=  256
+         GridFile=  zern41em5z155em3.txt
+        GridSrfdx=  0.004D+00
+             pMon=  0.0D+00  0.0D+00  0.0D+00
+             xMon=  1.0D+00  0.0D+00  0.0D+00
+             yMon=  0.0D+00  1.0D+00  0.0D+00
+             zMon=  0.0D+00  0.0D+00  1.0D+00
+            pData=  0.0D+00  0.0D+00  0.0D+00
+            xData=  1.0D+00  0.0D+00  0.0D+00
+            yData=  0.0D+00  1.0D+00  0.0D+00
+            zData=  0.0D+00  0.0D+00  1.0D+00
+           IndRef=  1.0D+00
+           Extinc=  1.0D+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=  1.0D+22
+          nECoord= -6
+
+             iElt=  2
+          EltName=  fpa
+          Element=  Reference
+          Surface=  Flat
+            KrElt= -1.0D+22
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00 -1.0D+00
+           VptElt=  0.0D+00  0.0D+00 -5.0D+00
+           RptElt=  0.0D+00  0.0D+00 -5.0D+00
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=  1.0D+22
+          nECoord= -6
+
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
+
+         nOutCord=  5
+             Tout=  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00

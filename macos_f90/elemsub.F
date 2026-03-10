@@ -57,7 +57,9 @@ C***********************************************************************
      &                     SrfType_Zernike,
      &                     SrfType_GridData,
      &                     SrfType_Toric,
-     &                     SrfType_AsGrData
+     &                     SrfType_AsGrData,
+     &                     SrfType_MonGrData,
+     &                     SrfType_ZrnGrData
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
@@ -130,7 +132,15 @@ C***********************************************************************
      &                       prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,
      &                       nAsphCoef,nGridMat,mGridMat,GridMat,
      &                       GridSrfdx,pmon,xhat,yhat,zhat)
-
+	!-->
+          CASE (SrfType_MonGrData, SrfType_ZrnGrData) ! (12,13)
+!            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+!     &                  Nvec,Nmag,Nhat,dNdp)
+            CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
+     &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
+     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	!<--
           CASE DEFAULT
             LROK = .FALSE.
             WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType,
@@ -175,6 +185,7 @@ C***********************************************************************
      &    pin,ihat,Evec, ! RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay)
      &    rad,pmon,
      &    xhat,yhat,zhat, ! xMon,yMon,zMon
+     &	  pData,xData,yData,zData,
      &	  na,nb,
      &    kxa,kxb,lambda,
      &	  ApType,ApVec,nObs,ObsType,
@@ -221,6 +232,7 @@ C  matrices for a reflecting surface
      &    MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
      &	  na,nb,kxa,kxb,AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &	  pData(3),xData(3),yData(3),zData(3),
      &    UDSrfParam(6),dd
 	REAL*8, dimension(:) :: AsphCoef
 
@@ -289,6 +301,21 @@ cides
      &      ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
+	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
+	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    Nvec,Nmag,Nhat,dNdp)
+!	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+!     &	    Nvec,Nmag,Nhat,dNdp)
+!	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
+!     &	    psi,pv,prot,pin,ihat,pr,L,
+!     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &	    pData,xData,yData,zData,
+!     &	    Nvec,Nmag,Nhat,dNdp)
 	ELSE
 	  WRITE(*,*)'Reflector: Unknown surface type. Aborting trace.'
 	END IF
