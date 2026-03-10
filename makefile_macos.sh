@@ -61,30 +61,30 @@ export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:"$LD_LIBRARY_PATH"
 # Compile npsol library (can be compiled with gfortran or ifort)
 #--------------------------------------------------------------------------
 # cd to npsol/blas and compile
-cd npsol/blas
-make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+#cd npsol/blas
+#make -f Makefile_Intel clean; make -f Makefile_Intel
+#cd ../
 
 # cd to lappack and compile
-cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+#cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
+#cd ../
 
 # now compile npsol
-make -f Makefile_Intel clean; make -f Makefile_Intel
+#make -f Makefile_Intel clean; make -f Makefile_Intel
 
 # cd back to /macos_f90 folder
-cd ../
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile readline-8.2 (uses gnu gcc to compile)
 #--------------------------------------------------------------------------
 # cd to readline-8.2, configure, and compile
-cd readline-8.2
-./configure
-make
+#cd readline-8.2
+#./configure
+#make
 
 # cd back to /macos_f90
-cd ../
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile pgplot (Uses Intel Compiler)
@@ -92,19 +92,19 @@ cd ../
 # Note: we need to change libpgplot.so to sv_libpgplot.so
 #--------------------------------------------------------------------------
 #cd to pgplot and compile
-cd pgplot
-make
+#cd pgplot
+#make
 #macos compilation expects sv_libpgplot.so
-mv libpgplot.so sv_libpgplot.so 
-cd ../
+#mv libpgplot.so sv_libpgplot.so 
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile fitsio 
 #--------------------------------------------------------------------------
-cd fits_build
-bash cmp
-bash amp
-cd ../
+#cd fits_build
+#bash cmp
+#bash amp
+#cd ../
 
 #--------------------------------------------------------------------------
 # Compile macos and smacos
@@ -115,6 +115,7 @@ make macos
 make clean-smacos
 make smacos
 
+make smacos_dvr
 #--------------------------------------------------------------------------
 # Compile GMI
 #
@@ -124,17 +125,19 @@ make smacos
 #    has been setup as /usr/local/bin/matlab
 #
 #-------------------------------------------------------------------------
-#cd ../MACOS_resources/GMI
-cd ~/dev/MACOS_resources/GMI
+#cd ../../GMI
 #make clean
 #make
 
+cd ../
 
-eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F")
+#eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMI.F")
 
-eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F")
+#eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F")
 
-eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
+#eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
+
+#source /opt/intel/oneapi/setvars.sh
 
 
 #--------------------------------------------------------------------------

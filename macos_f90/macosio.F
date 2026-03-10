@@ -127,7 +127,8 @@ C	File setup and initial conditions read
      &	' |   Flat           Conic          Aspheric   |'/
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
-     &	' |   Toric          InfluenceFcn              |'/
+     &	' |   Toric          InfluenceFcn   AsphGrid   |'/
+     &	' |         MonGrData        ZrnGrData         |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -154,9 +155,13 @@ C	File setup and initial conditions read
      &	' | Aperture types:                            |'/
      &	' |   Circular       Rectangular               |'/
      &	' +--------------------------------------------+')
+
  146	FORMAT(' +--------------------------------------------+'/
      &	' | Zernike types:                             |'/
-     &	' |   Malacara       Noll           Fringe     |'/
+     &	' |   ANSI          NormANSI       NormHex     |'/
+     &	' |   BornWolf      NormBornWolf               |'/
+     &	' |   Noll          NormNoll                   |'/
+     &	' |   Fringe        NormFringe     ExtFringe   |'/
      &	' +--------------------------------------------+')
 
         ! Flags
@@ -514,7 +519,7 @@ C  Assign SrfType
 
 	    WRITE(*,141)
 	    CALL CACCEPT(TypeString,' ','Enter surface type :')
-	    DO i=1,10
+	    DO i=1,mSrfType
 	      IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 	        SrfType(iElt)=i
 	        SrfType_FLG=.TRUE.
@@ -834,7 +839,7 @@ C  Get Optical Parameters
 C  End Optical Parameters
 C  Get Aspheric Parameters
 
-	    IF (SrfType(iElt).EQ.3) THEN
+	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.11)) THEN
 	      If (maxAsphCoef==4) then
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
@@ -852,7 +857,7 @@ C  End Aspheric Parameters
 C  Get Monomial Parameters
 
 	    CALL DZERO(DDEF,7)
-	    IF (SrfType(iElt).EQ.4) THEN
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.12)) THEN
 	      CALL DACCEPT(MonCoef(1:6,iElt),DDEF,6,
      &	      'Enter monomial coefficients 1-6 ')
 	      CALL DACCEPT(MonCoef(7:12,iElt),DDEF,6,
@@ -892,9 +897,10 @@ C  Get Anamorph Parameters
 C  End Anamorph Parameters
 
 C  Get Zernike Parameters
-	    IF (SrfType(iElt).EQ.8) THEN
+
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      WRITE(*,146)
-	      CALL CACCEPT(TypeString,'Malacara',
+	      CALL CACCEPT(TypeString,'ANSI',
      &	             'Enter Zernike Type :')
 	      if (LCMP(TypeString,'Norm',4)) then
                 ! normalized Zernike coeff
@@ -924,7 +930,7 @@ C  Get Zernike Parameters
 
 	    ! This part is for entering Zernike coeff in command-lind
 	    ! mode. -jzlou
-	    IF (SrfType(iElt).EQ.8) THEN
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      CALL DACCEPT(ZernCoef(1:6,iElt),DDEF,6,
      &	        'Enter Zernike coefficients 1-6 ')
 	      CALL DACCEPT(ZernCoef(7:12,iElt),DDEF,6,
@@ -1003,7 +1009,7 @@ C	Param order = beta,dact or drad,dq,minrad
 C  End User-defined Parameters & Data
 
 C  Get GridSurf Parameters & Data
-	    IF (SrfType(iElt).EQ.9) THEN
+	    IF ((SrfType(iElt).EQ.9).OR.(SrfType(iElt).GE.11)) THEN
 	      CALL IACCEPT_S(nGridMat(iElt),mGridMat,1,
      &	        'Enter dimension of gridded data matrix ')
 	      CALL DACCEPT_S(GridSrfdx(iElt),1d0,1,
@@ -1042,7 +1048,27 @@ C  Get Surface Coordinate Parameters
 	      CALL DORTHOGANALIZE(xMon(1,iElt),yMon(1,iElt),
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
-
+	      
+	!--> Mod for MonGrData and ZrnGrData Grid coords
+	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
+	        CALL DEQUATE(pData(1,iElt),pMon(1,iElt),3)
+	        CALL DEQUATE(xData(1,iElt),xMon(1,iElt),3)
+	        CALL DEQUATE(yData(1,iElt),yMon(1,iElt),3)
+	        CALL DEQUATE(zData(1,iElt),zMon(1,iElt),3)
+	        CALL DACCEPT(xMon(:,iElt),xMon(:,iElt),3,
+     &	          'Enter data x-axis unit vector (x,y,z) ')
+	        CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData(1,iElt))
+	        CALL DACCEPT(yData(:,iElt),yData(:,iElt),3,
+     &	          'Enter data y-axis unit vector (x,y,z) ')
+	        CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
+	        CALL DACCEPT(zData(:,iElt),zData(:,iElt),3,
+     &	          'Enter data z-axis unit vector (x,y,z) ')
+	        CALL DORTHOGANALIZE(xData(1,iElt),yData(1,iElt),
+     &	          ZData(1,iElt))
+	        WRITE(*,*)' Orthoganalized zData=',(zData(i,iElt),i=1,3)
+	      END IF
+	!<--
+	
 	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
@@ -1050,7 +1076,8 @@ C  Get Surface Coordinate Parameters
 	      end if
 	    END IF
 
-	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
+     &		(SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
 	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
      &	      'Enter scale length ')
 	    ELSE
@@ -1511,13 +1538,13 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'gap',3)) THEN
 	    READ(VALUE,*)gap
  	    WRITE(*,11)' gap',gap
-	  ELSE IF (LCMP(VAR_NAM,'GridFile',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'GridFile',8)) THEN
 	    READ(IND(1),*,ERR=999,END=999) MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999) GridFile(MB_I(1))
 	    WRITE(*,*)' GridFile(',MB_I(1),')=',GridFile(MB_I(1))
 	    CALL GridInit(GridFile(MB_I(1)),iEltToGridSrf(MB_I(1)),
      &	    	   nGridMat(MB_I(1)),ifGridInit,.FALSE.)
-	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',8)) THEN
 	    READ(VALUE,*) GridSrfdx
  	    WRITE(*,11)' GridSrfdx',GridSrfdx
 	  END IF
@@ -1782,6 +1809,20 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
      &	        psiElt(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' psiElt',MB_I(2),(psiElt(MB_J,MB_I(2)),MB_J=1,3)
+	    ! -->
+	    ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (pData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        pData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' pData',MB_I(2),(pData(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'pMon',4)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1861,7 +1902,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'Surface',7)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      DO i=1,8
+	      DO i=1,13
 	        IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 		  SrfType(MB_I(1))=i
 	          LNOTSET=.FALSE.
@@ -1928,7 +1969,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(VALUE,*,ERR=999,END=999)
      &	      UDSrfParam(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' UDSrfParam',(xGrid(MB_J),MB_J=1,6)
+	    WRITE(*,10)' UDSrfParam',(UDSrfParam(MB_J,MB_I(2)),MB_J=1,6)
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'VptElt',6)) THEN
@@ -1958,7 +1999,21 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'X',1)) THEN
-	    IF (LCMP(VAR_NAM,'xGrid',5)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'xData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (xData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        xData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' xData',MB_I(2),(xData(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(xGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -1993,7 +2048,21 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'Y',1)) THEN
-	    IF (LCMP(VAR_NAM,'yGrid',5)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'yData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (yData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        yData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' yData',MB_I(2),(yData(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(yGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -2016,7 +2085,21 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'Z',1)) THEN
-	    IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'zData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (zData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        zData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' zData',MB_I(2),(zData(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 

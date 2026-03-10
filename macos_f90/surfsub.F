@@ -11,7 +11,7 @@ C***********************************************************************
         PUBLIC
         PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB, SMonomial,
      &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf
-     &             NGSrf
+     &             NGSrf, SMGSrf, SMGZPSolve, SMGZPB
         CONTAINS
 
 	SUBROUTINE FlatSrf(ifBuild,ifLNsrf,LROK,
@@ -72,6 +72,7 @@ C	Here if ray misses surface
 	RETURN
 	END SUBROUTINE FlatSrf
 
+C***********************************************************************
 C***********************************************************************
 
 ! Input arguments: pin, ihat, ifLNsrf
@@ -214,6 +215,7 @@ C  Compute partials of the local normal (Nhat) wrt psi -jzlou
 	END SUBROUTINE ConSrf
 
 C***********************************************************************
+C***********************************************************************
 
 	SUBROUTINE NSConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
      &	  pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
@@ -332,9 +334,10 @@ C	Here if ray misses surface
   98	CONTINUE
 	LROK=.FALSE.
 	RETURN
-	END
+	END SUBROUTINE NSConSrf
 C	End of NSConSrf
 
+C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,prot,
@@ -488,6 +491,7 @@ C	Here if ray misses surface
 	RETURN
 	END SUBROUTINE AnaSrf
 
+C***********************************************************************
 C***********************************************************************
 
         SUBROUTINE ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,prot,
@@ -817,6 +821,7 @@ C       Fix by S.A.B.  maybe need abs(Krx) and abs(Kyr) ???  doesn't always work
         RETURN
         END SUBROUTINE ToricSrf
 
+C***********************************************************************
 
 	SUBROUTINE Calc_ToricNormal(Ry,Rx,Kx,x,y,z,nv)
         ! Kx = conic constant in X
@@ -832,8 +837,10 @@ C       Fix by S.A.B.  maybe need abs(Krx) and abs(Kyr) ???  doesn't always work
         nv(1)=nv(1)/Rx/((1.0+tt2)*(1.0+tt2))
         nv(1)=2.0*nv(1)*(Ry-Zx)
         nv(2)=2.0*y; nv(3)=2.0*(z-Ry)
+        
         END SUBROUTINE Calc_ToricNormal
 
+C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
@@ -1067,6 +1074,7 @@ C	Here if ray misses surface
 	RETURN
 	END SUBROUTINE AsphSrf
 
+C***********************************************************************
 C***********************************************************************
 
         SUBROUTINE AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
@@ -1615,66 +1623,69 @@ C***********************************************************************
 	END SUBROUTINE AZPB
 
 C***********************************************************************
-        ! ---------------------------------------------------------------------
-        !           ANSI    n   m   Z(R,theta)      Z(x,y)
-        ! zc(1)  |    0  |  0   0 | 1                 1
-        ! zc(2)  |    1  |  1  -1 | R*sin(Theta)      y
-        ! zc(3)  |    2  |  1   1 | R*cos(theta)      x
-        ! zc(4)  |    3  |  2  -2 | R^2*sin(2*theta)  2*x*y
-        ! zc(5)  |    4  |  2   0 | 2*R^2 - 1         2(x^2+y^2) - 1
-        ! zc(6)  |    5  |  2   2 | R^2*cos(2*theta)  x^2 - y^2
+C***********************************************************************
 
-        !---------------------------------|---------------------------------|---------------------------------|
-        !   idx  | ANSI  |        |  Norm |   idx  | ANSI  |        |  Norm |   idx  | ANSI  |        |  Norm |
-        !        |  idx  |  n   m | Square|        |  idx  |  n   m | Square|        |  idx  |  n   m | Square|
-        ! -------|-------|--------|-------| -------|-------|--------|-------| -------|-------|--------|-------|
-        !     1  |    0  |  0   0 |    1  |    22  |   21  |  6  -6 |   14  |    46  |   45  |  9  -9 |   20  |
-        !---------------------------------|    23  |   22  |  6  -4 |   14  |    47  |   46  |  9  -7 |   20  |
-        !     2  |    1  |  1  -1 |    4  |    24  |   23  |  6  -2 |   14  |    48  |   47  |  9  -5 |   20  |
-        !     3  |    2  |  1   1 |    4  |    25  |   24  |  6   0 |    7  |    49  |   48  |  9  -3 |   20  |
-        !---------------------------------|    26  |   25  |  6   2 |   14  |    50  |   49  |  9  -1 |   20  |
-        !     4  |    3  |  2  -2 |    6  |    27  |   26  |  6   4 |   14  |    51  |   50  |  9   1 |   20  |
-        !     5  |    4  |  2   0 |    3  |    28  |   27  |  6   6 |   14  |    52  |   51  |  9   3 |   20  |
-        !     6  |    5  |  2   2 |    6  |---------------------------------|    53  |   52  |  9   5 |   20  |
-        !---------------------------------|    29  |   28  |  7  -7 |   16  |    54  |   53  |  9   7 |   20  |
-        !     7  |    6  |  3  -3 |    8  |    30  |   29  |  7  -5 |   16  |    55  |   54  |  9   9 |   20  |
-        !     8  |    7  |  3  -1 |    8  |    31  |   30  |  7  -3 |   16  |---------------------------------|
-        !     9  |    8  |  3   1 |    8  |    32  |   31  |  7  -1 |   16  |    56  |   55  | 10 -10 |   22  |
-        !    10  |    9  |  3   3 |    8  |    33  |   32  |  7   1 |   16  |    57  |   56  | 10  -8 |   22  |
-        !---------------------------------|    34  |   33  |  7   3 |   16  |    58  |   57  | 10  -6 |   22  |
-        !    11  |   10  |  4  -4 |   10  |    35  |   34  |  7   5 |   16  |    59  |   58  | 10  -4 |   22  |
-        !    12  |   11  |  4  -2 |   10  |    36  |   35  |  7   7 |   16  |    60  |   59  | 10  -2 |   22  |
-        !    13  |   12  |  4   0 |    5  |---------------------------------|    61  |   60  | 10   0 |   11  |
-        !    14  |   13  |  4   2 |   10  |    37  |   36  |  8  -8 |   18  |    62  |   61  | 10   2 |   22  |
-        !    15  |   14  |  4   4 |   10  |    38  |   37  |  8  -6 |   18  |    63  |   62  | 10   4 |   22  |
-        !---------------------------------|    39  |   38  |  8  -4 |   18  |    64  |   63  | 10   6 |   22  |
-        !    16  |   15  |  5  -5 |   12  |    40  |   39  |  8  -2 |   18  |    65  |   64  | 10   8 |   22  |
-        !    17  |   16  |  5  -3 |   12  |    41  |   40  |  8   0 |    9  |    66  |   65  | 10  10 |   22  |
-        !    18  |   17  |  5  -1 |   12  |    42  |   41  |  8   2 |   18  |---------------------------------|
-        !    19  |   18  |  5   1 |   12  |    43  |   42  |  8   4 |   18  |
-        !    20  |   19  |  5   3 |   12  |    44  |   43  |  8   6 |   18  |
-        !    21  |   20  |  5   5 |   12  |    45  |   44  |  8   8 |   18  |
-        !---------------------------------|---------------------------------|
+ ! ---------------------------------------------------------------------
+ !           ANSI    n   m   Z(R,theta)      Z(x,y)
+ ! zc(1)  |    0  |  0   0 | 1                 1
+ ! zc(2)  |    1  |  1  -1 | R*sin(Theta)      y
+ ! zc(3)  |    2  |  1   1 | R*cos(theta)      x
+ ! zc(4)  |    3  |  2  -2 | R^2*sin(2*theta)  2*x*y
+ ! zc(5)  |    4  |  2   0 | 2*R^2 - 1         2(x^2+y^2) - 1
+ ! zc(6)  |    5  |  2   2 | R^2*cos(2*theta)  x^2 - y^2
 
-        !      x^i y^(i-j)
-        !     --------------------------
-        !     ( 0,  0 ) = ( 1   *  1  )
-        !     --------------------------
-        !     ( 0,  1 ) = ( 1   *  y  )
-        !     ( 1,  0 ) = ( x   *  1  )
-        !     --------------------------
-        !     ( 0,  2 ) = ( 1   *  y^2)
-        !     ( 1,  1 ) = ( x   *  y  )
-        !     ( 2,  0 ) = ( x^2 *  1  )
-        ! ---------------------------------------------------------------------
+ !---------------------------------|---------------------------------|---------------------------------|
+ !   idx  | ANSI  |        |  Norm |   idx  | ANSI  |        |  Norm |   idx  | ANSI  |        |  Norm |
+ !        |  idx  |  n   m | Square|        |  idx  |  n   m | Square|        |  idx  |  n   m | Square|
+ ! -------|-------|--------|-------| -------|-------|--------|-------| -------|-------|--------|-------|
+ !     1  |    0  |  0   0 |    1  |    22  |   21  |  6  -6 |   14  |    46  |   45  |  9  -9 |   20  |
+ !---------------------------------|    23  |   22  |  6  -4 |   14  |    47  |   46  |  9  -7 |   20  |
+ !     2  |    1  |  1  -1 |    4  |    24  |   23  |  6  -2 |   14  |    48  |   47  |  9  -5 |   20  |
+ !     3  |    2  |  1   1 |    4  |    25  |   24  |  6   0 |    7  |    49  |   48  |  9  -3 |   20  |
+ !---------------------------------|    26  |   25  |  6   2 |   14  |    50  |   49  |  9  -1 |   20  |
+ !     4  |    3  |  2  -2 |    6  |    27  |   26  |  6   4 |   14  |    51  |   50  |  9   1 |   20  |
+ !     5  |    4  |  2   0 |    3  |    28  |   27  |  6   6 |   14  |    52  |   51  |  9   3 |   20  |
+ !     6  |    5  |  2   2 |    6  |---------------------------------|    53  |   52  |  9   5 |   20  |
+ !---------------------------------|    29  |   28  |  7  -7 |   16  |    54  |   53  |  9   7 |   20  |
+ !     7  |    6  |  3  -3 |    8  |    30  |   29  |  7  -5 |   16  |    55  |   54  |  9   9 |   20  |
+ !     8  |    7  |  3  -1 |    8  |    31  |   30  |  7  -3 |   16  |---------------------------------|
+ !     9  |    8  |  3   1 |    8  |    32  |   31  |  7  -1 |   16  |    56  |   55  | 10 -10 |   22  |
+ !    10  |    9  |  3   3 |    8  |    33  |   32  |  7   1 |   16  |    57  |   56  | 10  -8 |   22  |
+ !---------------------------------|    34  |   33  |  7   3 |   16  |    58  |   57  | 10  -6 |   22  |
+ !    11  |   10  |  4  -4 |   10  |    35  |   34  |  7   5 |   16  |    59  |   58  | 10  -4 |   22  |
+ !    12  |   11  |  4  -2 |   10  |    36  |   35  |  7   7 |   16  |    60  |   59  | 10  -2 |   22  |
+ !    13  |   12  |  4   0 |    5  |---------------------------------|    61  |   60  | 10   0 |   11  |
+ !    14  |   13  |  4   2 |   10  |    37  |   36  |  8  -8 |   18  |    62  |   61  | 10   2 |   22  |
+ !    15  |   14  |  4   4 |   10  |    38  |   37  |  8  -6 |   18  |    63  |   62  | 10   4 |   22  |
+ !---------------------------------|    39  |   38  |  8  -4 |   18  |    64  |   63  | 10   6 |   22  |
+ !    16  |   15  |  5  -5 |   12  |    40  |   39  |  8  -2 |   18  |    65  |   64  | 10   8 |   22  |
+ !    17  |   16  |  5  -3 |   12  |    41  |   40  |  8   0 |    9  |    66  |   65  | 10  10 |   22  |
+ !    18  |   17  |  5  -1 |   12  |    42  |   41  |  8   2 |   18  |---------------------------------|
+ !    19  |   18  |  5   1 |   12  |    43  |   42  |  8   4 |   18  |
+ !    20  |   19  |  5   3 |   12  |    44  |   43  |  8   6 |   18  |
+ !    21  |   20  |  5   5 |   12  |    45  |   44  |  8   8 |   18  |
+ !---------------------------------|---------------------------------|
 
-        ! Mapping ANSI Zernike Ordering to Monomials
+ !      x^i y^(i-j)
+ !     --------------------------
+ !     ( 0,  0 ) = ( 1   *  1  )
+ !     --------------------------
+ !     ( 0,  1 ) = ( 1   *  y  )
+ !     ( 1,  0 ) = ( x   *  1  )
+ !     --------------------------
+ !     ( 0,  2 ) = ( 1   *  y^2)
+ !     ( 1,  1 ) = ( x   *  y  )
+ !     ( 2,  0 ) = ( x^2 *  1  )
+ ! ---------------------------------------------------------------------
+
+ ! Mapping ANSI Zernike Ordering to Monomials
+ 
         SUBROUTINE ZerntoMon1(zc_in, mc, ie)
           use elt_mod ! , only : ZernTypeL,ZnNmFac_m,mZernModes,mMonCoef,NORM_RMS_PARAM_ANSI
 
           IMPLICIT NONE
           REAL*8, intent(in)  :: zc_in(mZernModes)   ! Zernike Coefficients (ANSI ordering)
-          REAL*8, intent(out) :: mc(mMonCoef)        ! Monomial Coefficients
+          REAL*8, intent(out) :: mc(mMonCoef) ! Monomial Coefficients
           INTEGER             :: ie                  ! Element ID
 
           REAL*8  :: zc(mZernModes)
@@ -1790,9 +1801,9 @@ C***********************************************************************
 
 C***********************************************************************
 
-        ! ---------------------------------------------------------------------
-        ! Mapping from Born & Wolf => ANSI Ordering => Monomial Coefficients
-        ! ---------------------------------------------------------------------
+ ! ---------------------------------------------------------------------
+ ! Mapping from Born & Wolf => ANSI Ordering => Monomial Coefficients
+ ! ---------------------------------------------------------------------
         SUBROUTINE ZerntoMon2(zc,mc,ie)
           use elt_mod, only : mZernModes, mMonCoef
 
@@ -1886,9 +1897,9 @@ C***********************************************************************
 
 C***********************************************************************
 
-        ! ---------------------------------------------------------------------
-        ! Mapping from Extended Fringe => ANSI Ordering => Monomial Coefficients
-        ! ---------------------------------------------------------------------
+ ! ---------------------------------------------------------------------
+ ! Mapping from Extended Fringe => ANSI Ordering => Monomial Coefficients
+ ! ---------------------------------------------------------------------
         SUBROUTINE ZerntoMon_ZFE(zc,mc,ie)
           use elt_mod, only : mZernModes, mMonCoef
 
@@ -1985,9 +1996,9 @@ C***********************************************************************
 
 C***********************************************************************
 
-        ! ---------------------------------------------------------------------
-        ! Mapping from Fringe => ANSI Ordering => Monomial Coefficients
-        ! ---------------------------------------------------------------------
+ ! ---------------------------------------------------------------------
+ ! Mapping from Fringe => ANSI Ordering => Monomial Coefficients
+ ! ---------------------------------------------------------------------
         SUBROUTINE ZerntoMon3(zc,mc,ie)
           use elt_mod,   only: mZernModes, mMonCoef, ZernType_rms_normalised, ZernTypeL
           use Constants, only: EPS
@@ -2222,9 +2233,9 @@ C ---
 
 C***********************************************************************
 
-        ! ---------------------------------------------------------------------
-        ! Zernike-Order Mapping: Noll ==> ANSI => Monomials
-        ! ---------------------------------------------------------------------
+ ! ---------------------------------------------------------------------
+ ! Zernike-Order Mapping: Noll ==> ANSI => Monomials
+ ! ---------------------------------------------------------------------
         SUBROUTINE ZerntoMon6(zc,mc,ie)
           use elt_mod, only: mZernModes, mMonCoef
 
@@ -2363,6 +2374,7 @@ C***********************************************************************
         End Subroutine ZerntoMon7
 
 C***********************************************************************
+C***********************************************************************
 
         SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
      &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
@@ -2465,6 +2477,7 @@ C***********************************************************************
         L=L3
 
         ! Compute normal vector
+        
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -2656,25 +2669,25 @@ C***********************************************************************
 
           INTEGER i,j,k
 
-          ! Compute normalized point-of-incidence coordinates
+   ! Compute normalized point-of-incidence coordinates
 
-          !                   Monomials
-          !  k   i   j   i-j   x     y
-          !  ===========================
-          !  1   0   0    0    1  *  1     i==j
-          !  ---------------------------
-          !  2   1   0    1    1  *  y     j==0
-          !  3   1   1    0    x  *  1     i==j, j==1
-          !  ---------------------------
-          !  4   2   0    2    1   * y^2   j==0
-          !  5   2   1    1    x   * y           j==1
-          !  6   2   2    0    x^2 * 1     i==j
-          !  ---------------------------
-          !  7   3   0    3    1   * y^3   j==0
-          !  8   3   1    2    x   * y^2         j==1
-          !  9   3   2    1    x^2 * y
-          ! 10   3   3    0    x^3 * 1     i==j
-          !  ---------------------------
+   !                   Monomials
+   !  k   i   j   i-j   x     y
+   !  ===========================
+   !  1   0   0    0    1  *  1     i==j
+   !  ---------------------------
+   !  2   1   0    1    1  *  y     j==0
+   !  3   1   1    0    x  *  1     i==j, j==1
+   !  ---------------------------
+   !  4   2   0    2    1   * y^2   j==0
+   !  5   2   1    1    x   * y           j==1
+   !  6   2   2    0    x^2 * 1     i==j
+   !  ---------------------------
+   !  7   3   0    3    1   * y^3   j==0
+   !  8   3   1    2    x   * y^2         j==1
+   !  9   3   2    1    x^2 * y
+   ! 10   3   3    0    x^3 * 1     i==j
+   !  ---------------------------
 
           rho  = prel + L*ihat
           rhom = rho - rhoc
@@ -2844,6 +2857,7 @@ C***********************************************************************
         RETURN
         END SUBROUTINE MZPB
 
+C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,coef,
@@ -3119,6 +3133,7 @@ C***********************************************************************
 	END SUBROUTINE UDSZPB
 
 C***********************************************************************
+C***********************************************************************
 
  	SUBROUTINE GridInit(GridFile,jGridSrf,nGridMatS,ifGridInit,
      &                      isBinFil)
@@ -3205,6 +3220,7 @@ C  Read input data
 	END SUBROUTINE GridInit
 
 C***********************************************************************
+C***********************************************************************
 
 	SUBROUTINE AmplInit(AmplFile,jAmplSrf,nAmplMatS,ifAmplInit)
 	use param_mod
@@ -3265,6 +3281,7 @@ C Read amplitude data
         RETURN
 	END SUBROUTINE AmplInit
 
+C***********************************************************************
 C***********************************************************************
 
 	SUBROUTINE GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
@@ -3463,7 +3480,7 @@ C***********************************************************************
 	INTEGER UDSrfType
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
      &	  GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
-	  PARAMETER (ITMAX=400,EPS=1d-10)
+	  PARAMETER (ITMAX=400,EPS=1d-14)
 	A=X1
 	B=X2
 	FA=SGSrf(Kc,Kr,psi,pv,prel,ihat,
@@ -3661,7 +3678,7 @@ C***********************************************************************
 	use macos_debug
 	use math_mod
 
-C  Computes surface function for HST primary mirror
+C  Computes surface function for grid data
 
 	IMPLICIT NONE
 
@@ -3723,6 +3740,7 @@ C  Compute excess surface height
 	RETURN
 	END SUBROUTINE NGSrf
 
+C***********************************************************************
 C***********************************************************************
 
 #if 0
@@ -3803,6 +3821,668 @@ C***********************************************************************
 	END SUBROUTINE FindConSrf
 
 #endif
+
+C***********************************************************************
+C***********************************************************************
+C New draft routines to compute ray intersection points for surfaces 
+C combining monomial and grid data types
+
+	SUBROUTINE MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
+     &	psi,pv,prot,pin,ihat,pr,L,rad,
+     &	nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	pmon,xhat,yhat,zhat,pData,xData,yData,zData,
+     &	Nvec,Nmag,Nhat,dNdp)
+     
+	use macos_debug
+	use math_mod
+        USE Constants, ONLY: EPS
+
+	IMPLICIT NONE
+
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
+     &   pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &	 pData(3),rhod(3),xData(3),yData(3),zData(3),
+     &	 GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
+     &   Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
+     &   k2,itpsi,psitprel,L1,L2,L3,tol,
+     &	 zc(3),dfdrho(3),d2fdrho2(3,3),
+     &	 rho(3),psitzc,fh,fh_dz,i0,i1,j0,j1,xi,xj,yi,yj,yimj,diCtr,
+     &	 dzcdrho(3,3),dNvecdp(3,3),rhoc(3),rhom(3),zmtzc,psitzm,
+     &	 x,y,dxdrho(3),dydrho(3),
+     &	 D1(9),D2(9),S1,S2,S3,
+     &	 Lconic,dAct,rhotpsi,rho2,Fgrid,tiltx,tilty
+
+	INTEGER i,j,k,nGridMat,mGridMat,iAxis,jAxis
+
+	LOGICAL LROK,ifBuild,ifLNsrf
+
+C----------------------------------------------------------------------------
+C	Compute incidence point of ray on the base conic surface
+
+	DO 1 i=1,3
+	  prel(i)=pin(i)-pv(i)
+	  rhoc(i)=pmon(i)-pv(i)
+	  rhod(i)=pData(i)-pv(i)
+   1	CONTINUE
+	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+
+	IF (ABS(Kr).LT.1d10) THEN
+	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+	  a=1d0+Kc*itpsi*itpsi
+	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+	ELSE
+	  a=0d0
+	  b=itpsi
+	  c=psitprel
+	END IF
+
+C	Compute intersection point and normal vector on the base conic surface
+
+	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+	  L=-c/b
+	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+	ELSE
+	  k2=b*b-4d0*a*c
+	  IF (k2.LT.0d0) GO TO 98
+	  IF (b.GE.0d0) THEN
+	    ksqrt=-0.5d0*(b+DSQRT(k2))
+	  ELSE
+	    ksqrt=-0.5d0*(b-DSQRT(k2))
+	  END IF
+	  kp=ksqrt/a
+	  km=c/ksqrt
+	  IF(ifLNsrf) THEN
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      L=kp
+	    ELSE
+	      L=km
+	    END IF
+	  ELSE
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      IF (kp.GT.0D0) THEN
+	        L=kp
+	      ELSE
+	        L=km
+	      END IF
+	    ELSE
+	      IF (km.GT.0D0) THEN
+	        L=km
+	      ELSE
+	        L=kp
+	      END IF
+	    END IF
+	    IF (L.LT.0d0) GO TO 98
+	  END IF
+	END IF
+	
+	Lconic = L
+
+C----------------------------------------------------------------------------
+C	Use Lconic as a starting point, find incidence pt on full surface
+        
+        IF (ABS(Lconic).GT.1e-7) THEN
+          L1=0.9988d0*Lconic
+          L2=1.00125d0*Lconic
+        ELSE
+          L1=-1e-7
+          L2=1e-7
+        END IF
+
+	CALL SMGZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	       pmon,rhoc,xhat,yhat,zhat,
+     &	       pData,rhod,xData,yData,zData,L)
+
+        tol=2d-15
+	L3=SMGZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &         rad,pmon,rhoc,xhat,yhat,zhat,
+     &	       pData,rhod,xData,yData,zData,L)
+	L=L3
+
+C----------------------------------------------------------------------------
+C   Compute normal vector for conic + monomial surface
+C	Compute normalized monomial surface data coordinates
+
+        rho  = prel + L*ihat
+        rhom = rho - rhoc
+
+        x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+        y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+
+        k  = 1
+        S1 = 0d0
+        S2 = 0d0
+        fh = COEF(1)
+
+        IF ((ABS(x) <= EPS).AND.(ABS(y) <= EPS)) THEN
+
+          S1 = S1 + coef(3)
+          S2 = S2 + coef(2)
+
+        ELSE IF (ABS(x) <= EPS) THEN
+
+            yi=y
+            DO CONCURRENT (i=1:14)
+              DO CONCURRENT (j=0:i)
+
+                k=k+1
+                IF (j>1) CYCLE
+
+              IF (ABS(COEF(k)) > EPS) THEN
+
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                    fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  END IF
+
+                IF (j.EQ.1) S1 = S1 + coef(k)*yi/y
+
+                END IF
+                END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+
+              IF (ABS(COEF(k)) > EPS) THEN
+
+                IF (i.EQ.j) THEN
+                  fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                  S1    = S1 + DBLE(j)*fh_dz/x
+                END IF
+
+                IF (i-j.EQ.1) S2 = S2 + coef(k)*xj
+
+                END IF
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=y
+            DO CONCURRENT (i=1:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF (ABS(COEF(k)) > EPS) THEN
+                  IF (j.EQ.0) THEN
+                    fh_dz = coef(k)*yi
+                  fh    = fh + fh_dz
+                    S2    = S2 + DBLE(i)*fh_dz/y
+                  ELSE IF (i.EQ.j) THEN
+                    fh_dz = coef(k)*xj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                  ELSE
+                    fh_dz = coef(k)*xj*yimj
+                  fh    = fh + fh_dz
+                    S1    = S1 + DBLE(j)*fh_dz/x
+                    S2    = S2 + DBLE(i-j)*fh_dz/y
+                  END IF
+                END IF
+                yimj=yimj/y
+                xj=xj*x
+              END DO
+              yi=yi*y
+          END DO
+        END IF
+
+        dxdrho  = xhat / rad
+        dydrho  = yhat / rad
+        dFdrho  = S1*dxdrho + S2*dydrho
+        zc      = rho - fh*zhat
+
+        psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+        psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+        zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+
+        S1 = Kr + Kc*psitzc
+        S2 = psitzm*Kr + psitzm*psitzc*Kc + zmtzc
+
+        pr   = pin + L*ihat
+        Nvec = zc + S1*psi - S2*dFdrho
+   
+C----------------------------------------------------------------------------
+C    Now add grid data contribution
+
+	dAct=GridSrfdx
+        rhom = rho - rhod
+     
+     	diCtr=INT((nGridMat+1)/2)
+	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
+	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
+
+C   Find grid coordinates of ray incidence point
+
+	i0=IDFLOOR(xi) ! floor integer part of xi
+	i1=i0+1
+	j0=IDFLOOR(yj)
+	j1=j0+1
+	x=xi-DBLE(i0)  ! fractional part, ray position from i0
+	y=yj-DBLE(j0)
+
+C  Compute grid data surface height and slope at PoI
+
+	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+     &     (j1.GT.nGridMat)) THEN
+	   fh=0d0
+	   tiltx=0d0
+	   tilty=0d0
+	ELSE
+         ! bi-linear interpolation of GridMat
+	  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+     &	    	       GridMat(i1,j1),fh,tiltx,tilty)
+	END IF
+
+C  Compute grid data part of surface function
+
+	Fgrid = fh	
+!	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
+	
+	tiltx=tiltx/dAct
+	tilty=tilty/dAct
+
+	DO jAxis=1,3
+ 	  dFdrho(jAxis)=tiltx*xhat(jAxis)+tilty*yhat(jAxis)
+ 	  DO iAxis=1,3
+   	    d2Fdrho2(iAxis,jAxis)=0d0
+   	  END DO
+   	END DO
+
+C  Add grid part of normal vector to the conic+monomial part
+
+	DO 49 i=1,3
+	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
+   49	CONTINUE
+   
+C----------------------------------------------------------------------------
+C    Compute unit normal vector
+   
+	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+	IF (S1.LE.0d0) THEN
+	  DO 7 i=1,3
+	    Nhat(i)=Nvec(i)/Nmag
+   7	  CONTINUE
+	ELSE
+	  DO 8 i=1,3
+	    Nhat(i)=-Nvec(i)/Nmag
+   8	  CONTINUE
+	END IF
+
+C	Compute partials of the normal
+
+	IF (ifBuild) THEN
+	  IF (ABS(Kr).LT.1d10) THEN 
+	    CALL DSMPROD(D1,psi,Kc,3)
+	    CALL DOUTER(M,D1,psi)
+	    M(1,1)=M(1,1)+1d0
+	    M(2,2)=M(2,2)+1d0
+	    M(3,3)=M(3,3)+1d0
+	  ELSE
+	    CALL DZERO(M,9)
+	  END IF
+
+	  k=1
+	  S1=0d0
+	  S2=0d0
+	  S3=0d0
+c	  DO 10 i=2,7
+	  DO 10 i=2,14
+	    DO 9 j=0,i
+	      k=k+1
+	      IF (coef(k).NE.0d0) THEN
+	        IF (j.GT.1) THEN
+	          S1=S1+coef(k)*FLOAT(j*(j-1))*(x**(j-2))*(y**(i-j))
+	        END IF
+	        IF (j.LT.(i-1)) THEN
+	          S2=S2+coef(k)*FLOAT((i-j)*(i-j-1))*(x**j)*(y**(i-j-2))
+	        END IF
+	        IF ((j.GT.0).AND.(j.LT.i)) THEN
+	          S3=S3+coef(k)*FLOAT(j*(i-j))*(x**(j-1))*(y**(i-j-1))
+	        END IF
+	      END IF
+  9	    CONTINUE
+  10	  CONTINUE
+
+	  DO 12 j=1,3
+	    DO 11 i=1,3
+	      d2Fdrho2(i,j)=S1*dxdrho(i)*dxdrho(j)+
+     &	      S2*dydrho(i)*dydrho(j)+S3*(dxdrho(i)*dydrho(j)+
+     &	      dydrho(i)*dxdrho(j))
+	      dzcdrho(i,j)=-zhat(i)*dFdrho(j)
+  11	    CONTINUE
+	    dzcdrho(j,j)=dzcdrho(j,j)+1d0
+  12	  CONTINUE
+	  CALL DMPROD(D1,dzcdrho,M,3,3,3)
+	  CALL DMPROD(D2,D1,dzcdrho,3,3,3)
+	  S1=Kr+Kc*psitzc
+	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
+	  CALL DSUB(dNvecdp,D2,D1,9)
+	  
+	  S1=1d0/Nmag
+	  CALL DPROJECT(D1,Nhat)
+	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
+	  CALL DSMPROD(dNdp,D2,S1,9)
+	END IF
+	RETURN
+
+C	Here if ray misses surface
+
+  98	CONTINUE
+	LROK=.FALSE.
+	RETURN
+	END SUBROUTINE MonGridSrf
+
+C***********************************************************************
+
+	REAL*8 FUNCTION SMGSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
+     &	            nGridMat,mGridMat,GridMat,dAct,
+     &	            pmon,rhoc,xhat,yhat,zhat,
+     &		    pData,rhod,xData,yData,zData,L)
+     
+	use param_mod, only : mGridSrf
+	use elt_mod, only : iEltToGridSrf,GridSrfOrder
+	use traceutil_mod, only : crnt_Elt
+	use math_mod
+        USE Constants, ONLY: EPS
+
+C  Computes surface function S for conic + monomial + grid data surface 
+C  as a function of ray length L, for a candidate point of incidence on the 
+C  combined surface
+     
+	IMPLICIT NONE
+	
+	INTEGER i,j,k,i1,i0,j1,j0,nGridMat,mGridMat,gridSrfIdx
+	
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
+     &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),rhod(3),
+     &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
+     &	GridMat(mGridMat,mGridMat),
+     &	pData(3),xData(3),yData(3),zData(3),
+     &	Fmon,Fgrid,Sconic,SMon,dSmon,Sgrid,dSgrid,
+     &	Lconic,rhotpsi,rho2
+
+C----------------------------------------------------------------------------
+C  Compute Sconic
+C !!! Make sure the mon and grid data parameters are correctly passed!!!
+
+	DO 1 i=1,3
+	  rho(i)=prel(i)+L*ihat(i)			! vector from element pole to PoI
+	  rhom(i)=rho(i)-rhoc(i)			! vector from data center to PoI
+  1	CONTINUE
+  
+	DO 6 i=1,3
+	  zc(i)=rho(i)-fh*zhat(i)
+  6	CONTINUE
+	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+C	SMGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+	rhotpsi = rho(1)*psi(1) + rho(2)*psi(2) + rho(3)*psi(3)
+	rho2 = rho(1)*rho(1) + rho(2)*rho(2) + rho(3)*rho(3)
+	
+	Sconic = rho2 + rhotpsi*(Kc*rhotpsi + 2d0*Kr)
+
+C----------------------------------------------------------------------------
+C  Compute dSmon
+C	Compute normalized monomial surface data coordinates
+
+	x=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+	y=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+
+C   Compute Fmonomial point-of-incidence in surface data coords
+
+          k  = 0
+          fh = 0d0
+
+          IF ((ABS(x)<=EPS).AND.(ABS(y)<=EPS)) THEN
+
+            fh = mcoef(1)
+
+          ELSE IF (ABS(x) <= EPS) THEN
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((j.EQ.0).AND.(ABS(mcoef(k)) > EPS)) fh=fh+mcoef(k)*yi
+              END DO
+              yi=yi*y
+            END DO
+
+          ELSE IF (ABS(y) <= EPS) THEN
+
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                IF ((ABS(mcoef(k)) > EPS).AND.(i.EQ.j)) fh=fh+mcoef(k)*xj
+                xj=xj*x
+              END DO
+            END DO
+
+          ELSE
+
+            yi=1d0
+            DO CONCURRENT (i=0:14)
+              xj=1d0
+              yimj=yi
+              DO CONCURRENT (j=0:i)
+                k=k+1
+                fh=fh+mcoef(k)*xj*yimj
+                xj=xj*x
+                yimj=yimj/y
+              END DO
+              yi=yi*y
+            END DO
+          END IF
+
+          zc        = rho - fh*zhat
+          zc2       = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+          psitzc    = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+          SMon = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
+
+C  Monomial part of surface function
+	
+	Fmon = fh	
+	dSmon = SMon - Sconic
+
+C----------------------------------------------------------------------------
+C  Compute dSgrid
+C	Compute surface grid data coordinates
+
+	diCtr=INT((nGridMat+1)/2)
+	DO i=1,3
+	  rho(i)=prel(i)+L*ihat(i)
+	  rhom(i)=rho(i)-rhod(i)
+	END DO
+	
+	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
+	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
+
+C   Find grid coordinates of ray incidence point
+
+	i0=IDFLOOR(xi) ! floor integer part of xi
+	i1=i0+1
+	j0=IDFLOOR(yj)
+	j1=j0+1
+	x=xi-DBLE(i0)  ! fractional part, ray position from i0
+	y=yj-DBLE(j0)
+
+C  Compute grid data surface height and slope at PoI
+
+	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+     &     (j1.GT.nGridMat)) THEN
+	   fh=0d0
+	   tiltx=0d0
+	   tilty=0d0
+	ELSE
+         ! bi-linear interpolation of GridMat
+	  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+     &	    	       GridMat(i1,j1),fh,tiltx,tilty)
+	END IF
+
+C  Compute grid data part of surface function
+
+!	Fgrid = fh	
+!	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
+	DO i=1,3
+	  zc(i)=rho(i)-fh*zhat(i)
+   	END DO
+	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+	Sgrid=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+	
+	dSgrid = Sgrid - Sconic
+
+C----------------------------------------------------------------------------
+C  Compute surface function
+
+	SMGSrf = Sconic + dSmon + dSgrid
+
+	RETURN
+	END FUNCTION SMGSrf
+
+C***********************************************************************
+
+      	REAL*8 FUNCTION SMGZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	rad,pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L)
+
+        USE Constants, only: EPS
+     
+      	IMPLICIT REAL*8 (A-H,O-Z)
+	INTEGER nGridMat,mGridMat
+      	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
+     & 	GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	pData(3),rhod(3),xData(3),yData(3),zData(3),
+     &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+      	PARAMETER (ITMAX=400)
+      	
+      A=X1
+      B=X2
+     
+      FA=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,A)
+      FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B)
+      IF(FB*FA.GT.0.) PAUSE 'MZPB failed.'
+
+      FC=FB
+      DO 11 ITER=1,ITMAX
+        IF(FB*FC.GT.0.) THEN
+          C=A
+          FC=FA
+          D=B-A
+          E=D
+        ENDIF
+        IF(ABS(FC).LT.ABS(FB)) THEN
+          A=B
+          B=C
+          C=A
+          FA=FB
+          FB=FC
+          FC=FA
+        ENDIF
+        TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+        XM=.5*(C-B)
+        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
+          SMGZPSolve=B
+          RETURN
+        ENDIF
+        IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+          S=FB/FA
+          IF(A.EQ.C) THEN
+	    P=2d0*XM*S
+            Q=1d0-S
+          ELSE
+            Q=FA/FC
+            R=FB/FC
+            P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+            Q=(Q-1d0)*(R-1d0)*(S-1d0)
+          ENDIF
+          IF(P.GT.0.) Q=-Q
+          P=ABS(P)
+          IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+            E=D
+            D=P/Q
+          ELSE
+            D=XM
+            E=D
+          ENDIF
+        ELSE
+          D=XM
+          E=D
+        ENDIF
+        A=B
+        FA=FB
+        IF(ABS(D) .GT. TOL1) THEN
+          B=B+D
+        ELSE
+          B=B+SIGN(TOL1,XM)
+        ENDIF
+        FB=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	  nGridMat,mGridMat,GridMat,dAct,
+     &	  pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B)
+11    CONTINUE
+      PAUSE 'SMGZPSolve exceeding maximum iterations.'
+      SMGZPSolve=B
+      RETURN
+      END FUNCTION SMGZPSolve
+
+C***********************************************************************
+
+	SUBROUTINE SMGZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	nGridMat,mGridMat,GridMat,dAct,
+     &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L)
+	IMPLICIT REAL*8 (A-H,O-Z)
+	PARAMETER (gold=1.6,NTRY=50)
+	INTEGER nGridMat,mGridMat
+	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
+     &	GridMat(mGridMat,mGridMat),GridSrfdx,
+     &	rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
+     &	pData(3),xData(3),yData(3),zData(3),rhod(3)
+
+	F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	   nGridMat,mGridMat,GridMat,dAct,
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1)
+	F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	   nGridMat,mGridMat,GridMat,dAct,
+     &	   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X2)
+	DO 1 J=1,NTRY
+	  IF(F1*F2.LT.0.)RETURN
+	  IF(ABS(F1).LT.ABS(F2))THEN
+	    X1=X1+gold*(X1-X2)
+	    F1=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,dAct,
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1)
+	  ELSE
+	    X2=X2+gold*(X2-X1)
+	    F2=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+     &	       nGridMat,mGridMat,GridMat,dAct,
+     &	       pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X2)
+	  ENDIF
+ 1	CONTINUE
+	RETURN
+	END SUBROUTINE SMGZPB
+
+C***********************************************************************
 C***********************************************************************
 
         END MODULE surfsub
