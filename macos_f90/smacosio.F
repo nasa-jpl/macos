@@ -110,7 +110,8 @@ C	File setup and initial conditions read
      &	' |   Flat           Conic          Aspheric   |'/
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
-     &	' |   Toric          InfluenceFcn              |'/
+     &	' |   Toric          InfluenceFcn   AsphGrid   |'/
+     &	' |         MonGrData        ZrnGrData         |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/

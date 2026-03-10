@@ -549,6 +549,40 @@ C       Set entrance condition flags to .FALSE.
             nGridpts_FLG=.TRUE.
             GO TO 50
 
+          !<--
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              pData_FLG=.TRUE.
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
+              READ(VALUE,*)lData(iElt)
+              lData_FLG=.TRUE.
+              GO TO 61
+	!-->
+	  
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
@@ -956,8 +990,9 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
+                  
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
-     &                                 SrfType(iElt)==SrfType_GridData)
+     &                                 (SrfType(iElt)==SrfType_GridData))
 
                 END IF
               END DO
@@ -976,54 +1011,62 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-
+                
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-
+              
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-
-              IF (SrfType(iElt).NE.SrfType_Monomial) THEN
+              
+              IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-
+              
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_UserDefined) THEN
                 UDSrfCoef_FLG=.TRUE.
                 UDSrfType_FLG=.TRUE.
                 UDSrfParam_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_Zernike) THEN
                 ZernCoef_FLG=.TRUE.
                 ZernTypeL_FLG=.TRUE.
               END IF
-
-              IF (SrfType(iElt).NE.SrfType_GridData) THEN
+              IF ((SrfType(iElt).NE.SrfType_GridData).AND. 
+     &            (SrfType(iElt).NE.SrfType_AsGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
               END IF
-
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
-     &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
+     &            (EltID(iElt).NE.SrfType_AsGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.(SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
+                lData_FLG=.TRUE.
+                pData_FLG=.TRUE.
+                xData_FLG=.TRUE.
+                yData_FLG=.TRUE.
+                zData_FLG=.TRUE.
+              END IF
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
@@ -1749,6 +1792,34 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*)(zMon(j,iElt),j=1,3)
               zMon_FLG=.TRUE.
               GO TO 61
+
+	!-->
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              pData_FLG=.TRUE.
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+	!<--
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lMon',4)) THEN

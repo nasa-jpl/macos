@@ -65,6 +65,11 @@ C***********************************************************************
           UDSrfCoef_FLG       = .FALSE.
           UDSrfType_FLG       = .FALSE.
           UDSrfParam_FLG      = .FALSE.
+          pData_FLG           = .FALSE.
+          xData_FLG           = .FALSE.
+          yData_FLG           = .FALSE.
+          zData_FLG           = .FALSE.
+          lData_FLG           = .FALSE.
           pMon_FLG            = .FALSE.
           xMon_FLG            = .FALSE.
           yMon_FLG            = .FALSE.
@@ -538,6 +543,58 @@ C	Param order = beta,dact or drad,dq,minrad
 	  END IF
 	END IF
 
+	!<--
+	IF (pData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (VptElt_FLG) THEN
+	    CALL DEQUATE(pData(1,iElt),VptElt(1,iElt),3)
+	    pData_FLG=.TRUE.
+	    WRITE(*,112)'pData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (xData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  xData(1,iElt)=psiElt(3,iElt)
+	  xData(2,iElt)=psiElt(1,iElt)
+	  xData(3,iElt)=psiElt(2,iElt)
+	  xData_FLG=.TRUE.
+	  WRITE(*,112)'xData',iElt
+	END IF
+
+	IF (yData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData)
+	  yData_FLG=.TRUE.
+	  WRITE(*,112)'yData',iElt
+	END IF
+
+	IF (zData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (psiElt_FLG) THEN
+	    CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
+	    zData_FLG=.TRUE.
+	    WRITE(*,112)'zData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (lData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  lData(iElt)=Aperture
+	  lData_FLG=.TRUE.
+	  WRITE(*,112)'lData',iElt
+	END IF
+	!-->
+	
 	IF (xMon_FLG) THEN
 	  CONTINUE
 	ELSE
@@ -990,7 +1047,7 @@ C***********************************************************************
             ! --------------------------------------------
             ! Global Coord. Output
             ! --------------------------------------------
-            CALL PrintBanner('Lin. Model Coordinate System Definition')
+            CALL PrintBanner('Output Coordinate System Definition')
 
             CALL PrintFmt('nOutCord', "i3", nOutCord)
             CALL PrintFmtArray('Tout','1PD23.15',7,PACK(TRANSPOSE(Tout(1:nOutCord,:)),MASK=.TRUE.))
@@ -1022,14 +1079,15 @@ C***********************************************************************
 
           IMPLICIT NONE
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
-          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
-          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
-
-          CALL PrintBanner('Element Definitions')
+          CALL PrintBanner('Source Definition')
 
           CALL PrintFmtArray('ChfRayDir', '1PD23.15', 3, ChfRayDir)
           CALL PrintFmtArray('ChfRayPos', '1PD23.15', 3, ChfRayPos)
           CALL PrintFmt('zSource', "1PD23.15", zSource)
+          CALL PrintMsg('')
+
+          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
+          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
           CALL PrintMsg('')
 
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
@@ -1197,13 +1255,50 @@ C***********************************************************************
 
             ! ---------------------------- Grid Type Srf (9)
             CASE (SrfType_GridData)
-              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- Toric (10)  ToDo
             CASE (SrfType_Toric)
               CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
+
+            ! ---------------------------- AsGrData Srf (11)
+            CASE (SrfType_AsGrData)
+              BLOCK
+                INTEGER  :: nCoef
+                LOGICAL  :: nonzero(mAsphCoef)
+
+                nonzero(:) = .FALSE.
+                WHERE (AsphCoef(:,iElt)/=0e0_pr) nonzero = .TRUE.
+                nCoef = FINDLOC(nonzero, VALUE=.true., DIM=1, BACK=.true.)
+
+                IF (nCoef==0) THEN
+                  CALL PrintFmt('nAsphCoef', "2x,i0", 1)
+                  CALL PrintFmt('AsphCoef',  "1PD23.15", 0e0_pr)
+                ELSE
+                  CALL PrintFmt('nAsphCoef', "2x,i0", nCoef)
+                  CALL PrintFmtArray('AsphCoef','1PD23.15', 4, AsphCoef(1:nCoef, iElt))
+                END IF
+              END BLOCK
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- MonGrData Srf. (12)
+            CASE (SrfType_MonGrData)
+              CALL PrintFmtArray('MonCoef','1PD23.15', 6, MonCoef(:,iElt))
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- ZrnGrData Srf. (13)
+            CASE (SrfType_ZrnGrData)
+              CALL Srf_Zernike()
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- undefined Special Srf.
             CASE DEFAULT
@@ -1218,6 +1313,12 @@ C***********************************************************************
             CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
             CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
+          END IF
+          IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.(SrfType(iElt).EQ.SrfType_ZrnGrData)) THEN
+            CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
+            CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
+            CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
+            CALL PrintFmtArray('zData', "1PD23.15", 3, zData(:,iElt))
           END IF
 
           ! -----------------------------------------------------
