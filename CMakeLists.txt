@@ -46,7 +46,7 @@ endif()
 
 
 # --------------------------------------------- Module dir
-set(mod_dir "${CMAKE_BINARY_DIR}/mod")
+set(mod_dir "${CMAKE_CURRENT_BINARY_DIR}/mod")
 make_directory(${mod_dir})
 set(CMAKE_Fortran_MODULE_DIRECTORY ${mod_dir})
 
@@ -176,10 +176,10 @@ set(Fortran_FLAGS_Lib_SMACOS "${FFlags_SMACOS}")
 
 
 # Common variables
-set(smacos_src_dir "${CMAKE_SOURCE_DIR}/../macos_f90")
+set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
 cmake_path(ABSOLUTE_PATH smacos_src_dir NORMALIZE OUTPUT_VARIABLE smacos_src_dir)  # eliminate /../
 
-set(lib_bin_dir    "${CMAKE_BINARY_DIR}/libs")
+set(lib_bin_dir    "${CMAKE_CURRENT_BINARY_DIR}/libs")
 set(npsol_src_dir  "${smacos_src_dir}/npsol")
 set(blas_src_dir   "${npsol_src_dir}/blas")
 set(lapack_src_dir "${npsol_src_dir}/lapack")
@@ -388,7 +388,7 @@ set_target_properties(smacos PROPERTIES
 
 target_include_directories(smacos
       PUBLIC
-        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${smacos_src_dir}
         ${mod_dir}
         ${lib_bin_dir}
