@@ -5,18 +5,21 @@ NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 ## Build
-source ./makealldcr.sh
+- Full build (npsol, pgplot, readline, fitsio, macos, smacos): source ./makealldcr.sh
+- macos/smacos only (macos_f90 changes): source ./makeMSdcr.sh
+- GMI mex (Matlab interface): source ./makeGMIdcr.sh
+- All scripts use /opt/intel/oneapi/compiler/latest/ for portability.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
 - macos_f90/surfsub.F        : all surface intersection routines
-- macos_f90/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector)
+- macos_f90/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector, Refractor)
 - macos_f90/param_mod.F      : array dimension parameters (mElt, mGridMat, etc.)
 - macos_f90/iosub.inc        : ChkDf2 defaults, PrtSingleEltInfo output (included by macosio.F)
 - macos_f90/msmacosio.inc    : prescription file reader (included by macosio.F and smacosio.F)
 - macos_f90/macosio.F        : interactive UI dialog for element entry
-- macos_f90/tracesub.F       : ray trace loop (Reflector + FindSrf call sites)
-- macos_f90/propsub.F        : propagation (Reflector + FindSrf call sites)
+- macos_f90/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
+- macos_f90/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
 - macos_f90/srtrace.F        : single-ray trace (Reflector call sites)
 
 ## Current work: SrfType_FreeForm = 14
