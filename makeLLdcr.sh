@@ -1,15 +1,3 @@
-#!/bin/bash
-## exit on the first error.
-#     set -e
-
-#--------------------------------------------------------------------------
-#--------------------------------------------------------------------------
-## Compilation Instructions
-#
-# Instructions to compile MACOS, SMACOS, and necessary libraries such as 
-# npsol, pgplot, and readline. Assumption is user has cd to the MACOS folder.
-# Here we set some global variable which can serve as reference inside
-# the Makefile to avoid the need for user to change or hack the MACOS 
 # Makefile.
 #
 # To Compile:
@@ -32,11 +20,7 @@
 #  we are using oneAPI which requires oneAPI folder inside inte-$intel_version
 #  to source oneAPI Intel Compiler variables.
 #------------------------------------------------------------------------------
-#export intel_version=14.0.0
-#export intel64_lib=/opt/intel-$intel_version/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin
-#source /opt/intel-$intel_version/oneapi/setvars.sh intel64 --force
-
-#export intel64_lib=/opt/intel/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin
+export intel64_lib="/opt/intel/oneapi/compiler/latest/lib"
 source /opt/intel/oneapi/setvars.sh intel64 --force
 
 #------------------------------------------------------------------------------------------------------
@@ -63,22 +47,24 @@ export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH="/opt/intel/oneapi/compiler/latest/lib":$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH="/usr/local/pgplot":$LD_LIBRARY_PATH
 
-export intel64_lib="/opt/intel/oneapi/compiler/latest/lib"
-
 #--------------------------------------------------------------------------
 # Compile npsol library (can be compiled with gfortran or ifort)
 #--------------------------------------------------------------------------
 # cd to npsol/blas and compile
 cd npsol/blas
-make -f Makefile_Intel clean; make -f Makefile_Intel
+make -f Makefile_Intel clean
+make -f Makefile_Intel
 cd ../
 
 # cd to lappack and compile
-cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
+cd lapack; 
+make -f Makefile_Intel clean
+make -f Makefile_Intel
 cd ../
 
 # now compile npsol
-make -f Makefile_Intel clean; make -f Makefile_Intel
+make -f Makefile_Intel clean
+make -f Makefile_Intel
 
 # cd back to /macos_f90 folder
 cd ../
@@ -101,13 +87,15 @@ cd ../
 #--------------------------------------------------------------------------
 #cd to pgplot and compile
 cd pgplot
+make clean
 make
+
 #macos compilation expects sv_libpgplot.so
-cp libpgplot.so sv_libpgplot.so 
+cp libpgplot.so sv_libpgplot.so
 cd ../
 
 #--------------------------------------------------------------------------
-# Compile fitsio 
+# Compile fitsio
 #--------------------------------------------------------------------------
 cd fits_build
 bash cmp
