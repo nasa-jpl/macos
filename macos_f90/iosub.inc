@@ -112,6 +112,20 @@ C***********************************************************************
 
           ZernCent_FLG        = .FALSE.
 
+          lFF_FLG             = .FALSE.
+          pFF_FLG             = .FALSE.
+          xFF_FLG             = .FALSE.
+          yFF_FLG             = .FALSE.
+          zFF_FLG             = .FALSE.
+          FFZernCoef_FLG      = .FALSE.
+          FFZernTypeL_FLG     = .FALSE.
+          nFFZernCoef_FLG     = .FALSE.
+          FFZernModes_FLG     = .FALSE.
+          MonZernCoef_FLG     = .FALSE.
+          MonZernTypeL_FLG    = .FALSE.
+          nMonZernCoef_FLG    = .FALSE.
+          MonZernModes_FLG    = .FALSE.
+
         END SUBROUTINE LOHIN2
 
 C***********************************************************************
@@ -544,6 +558,15 @@ C	Param order = beta,dact or drad,dq,minrad
 	END IF
 
 	!<--
+	! FreeForm with no grid term does not use pData/xData/yData/zData/lData
+	IF (SrfType(iElt).EQ.SrfType_FreeForm.AND.nGridMat(iElt).EQ.0) THEN
+	  pData_FLG=.TRUE.
+	  xData_FLG=.TRUE.
+	  yData_FLG=.TRUE.
+	  zData_FLG=.TRUE.
+	  lData_FLG=.TRUE.
+	END IF
+
 	IF (pData_FLG) THEN
 	  CONTINUE
 	ELSE
@@ -631,6 +654,69 @@ C	Param order = beta,dact or drad,dq,minrad
 	  lMon(iElt)=Aperture
 	  lMon_FLG=.TRUE.
 	  WRITE(*,112)'lMon',iElt
+	END IF
+
+C  FreeForm surface: set FF coordinate frame defaults; mark FF flags
+C  as satisfied for all other surface types.
+	IF (SrfType(iElt) .EQ. SrfType_FreeForm) THEN
+	  IF (.NOT.lFF_FLG) THEN
+	    lFF(iElt) = 0d0
+	    lFF_FLG = .TRUE.
+	    WRITE(*,112)'lFF',iElt
+	  END IF
+	  IF (.NOT.pFF_FLG) THEN
+	    CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
+	    pFF_FLG = .TRUE.
+	    WRITE(*,112)'pFF',iElt
+	  END IF
+	  IF (.NOT.xFF_FLG) THEN
+	    xFF(1,iElt) = psiElt(3,iElt)
+	    xFF(2,iElt) = psiElt(1,iElt)
+	    xFF(3,iElt) = psiElt(2,iElt)
+	    xFF_FLG = .TRUE.
+	    WRITE(*,112)'xFF',iElt
+	  END IF
+	  IF (.NOT.yFF_FLG) THEN
+	    CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
+	    yFF_FLG = .TRUE.
+	    WRITE(*,112)'yFF',iElt
+	  END IF
+	  IF (.NOT.zFF_FLG) THEN
+	    CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
+	    zFF_FLG = .TRUE.
+	    WRITE(*,112)'zFF',iElt
+	  END IF
+	  IF (.NOT.FFZernTypeL_FLG) THEN
+	    FFZernTypeL(iElt) = ZernType_ANSI
+	    FFZernTypeL_FLG = .TRUE.
+	    WRITE(*,112)'FFZernTypeL',iElt
+	  END IF
+	  IF (.NOT.FFZernCoef_FLG) THEN
+	    FFZernCoef(:,iElt) = 0d0
+	    FFZernCoef_FLG = .TRUE.
+	    WRITE(*,112)'FFZernCoef',iElt
+	  END IF
+	  IF (.NOT.MonZernTypeL_FLG) THEN
+	    MonZernTypeL(iElt) = ZernType_ANSI
+	    MonZernTypeL_FLG = .TRUE.
+	    WRITE(*,112)'MonZernTypeL',iElt
+	  END IF
+	  IF (.NOT.MonZernCoef_FLG) THEN
+	    MonZernCoef(:,iElt) = 0d0
+	    MonZernCoef_FLG = .TRUE.
+	    WRITE(*,112)'MonZernCoef',iElt
+	  END IF
+	  CALL SetFreeFormFlags(iElt)
+	ELSE
+	  lFF_FLG          = .TRUE.
+	  pFF_FLG          = .TRUE.
+	  xFF_FLG          = .TRUE.
+	  yFF_FLG          = .TRUE.
+	  zFF_FLG          = .TRUE.
+	  FFZernCoef_FLG   = .TRUE.
+	  FFZernTypeL_FLG  = .TRUE.
+	  MonZernCoef_FLG  = .TRUE.
+	  MonZernTypeL_FLG = .TRUE.
 	END IF
 
 	IF (LensArrayType_FLG) THEN
@@ -1300,6 +1386,18 @@ C***********************************************************************
               CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
+            ! ---------------------------- FreeForm Srf. (14)
+            CASE (SrfType_FreeForm)
+              CALL Srf_FFZernike()
+              CALL PrintFmt('lFF', "1PD23.15", lFF(iElt))
+              CALL Srf_MonZernike()
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              IF (nGridMat(iElt).GT.0) THEN
+                CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+                CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+                CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+              END IF
+
             ! ---------------------------- undefined Special Srf.
             CASE DEFAULT
 
@@ -1308,13 +1406,22 @@ C***********************************************************************
           ! --------------------------------------------------------
           ! Special Srf. Coord. Parameters: Position and orientation
           ! --------------------------------------------------------
+          IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            CALL PrintFmtArray('pFF', "1PD23.15", 3, pFF(:,iElt))
+            CALL PrintFmtArray('xFF', "1PD23.15", 3, xFF(:,iElt))
+            CALL PrintFmtArray('yFF', "1PD23.15", 3, yFF(:,iElt))
+            CALL PrintFmtArray('zFF', "1PD23.15", 3, zFF(:,iElt))
+          END IF
           IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)) THEN
             CALL PrintFmtArray('pMon', "1PD23.15", 3, pMon(:,iElt))
             CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
             CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
           END IF
-          IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.(SrfType(iElt).EQ.SrfType_ZrnGrData)) THEN
+          IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
+     &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
+     &        (SrfType(iElt).EQ.SrfType_FreeForm.AND.
+     &         nGridMat(iElt).GT.0)) THEN
             CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
             CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
             CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
@@ -1414,6 +1521,95 @@ C***********************************************************************
 
           ! ----------------------------------------------------------
           CONTAINS
+
+          SUBROUTINE Srf_MonZernike()
+            USE Kinds
+            IMPLICIT NONE
+            INTEGER, PARAMETER :: nCol = 6
+            INTEGER  :: i, k, nCoef, mCoef, nModes
+            INTEGER  :: modes(mMonCoef)
+            LOGICAL  :: nonzero(mMonCoef)
+            REAL(pr) :: Coefs(mMonCoef)
+            ! - - - - - - - - - - - - - - - - - - - - - - -
+            CALL PrintFmt('MonZernType', "2x,A",
+     &           TRIM(ZernTypeNameL(MonZernTypeL(iElt))))
+            mCoef = MIN(ZernType_MaxMode(MonZernTypeL(iElt)), mMonCoef)
+            nonzero(:) = .FALSE.
+            DO i = 1, mCoef
+              nonzero(i) = (MonZernCoef(i,iElt) /= 0e0_pr)
+            END DO
+            nCoef = COUNT(nonzero)
+            nModes = 0
+            DO i = mCoef, 1, -1
+              IF (nonzero(i)) THEN; nModes = i; EXIT; END IF
+            END DO
+            SELECT CASE (nCoef)
+              CASE (0)
+                CALL PrintFmt('nMonZernCoef', "i4", 1)
+                CALL PrintFmt('MonZernCoef',  "1PD23.15", 0e0_pr)
+              CASE (1:20)
+                k = 0
+                DO i = 1, mCoef
+                  IF (nonzero(i)) THEN
+                    k = k + 1
+                    modes(k) = i
+                    Coefs(k) = MonZernCoef(i, iElt)
+                  END IF
+                END DO
+                CALL PrintFmt(     'nMonZernCoef', "i4",    nCoef)
+                CALL PrintFmtArray('MonZernModes', "I3",    nCol, modes(:nCoef))
+                CALL PrintFmtArray('MonZernCoef',  "1PD23.15", nCol, Coefs(:nCoef))
+              CASE DEFAULT
+                CALL PrintFmt(     'nMonZernCoef', "i4",    nModes)
+                CALL PrintFmtArray('MonZernCoef',  "1PD23.15", nCol,
+     &               MonZernCoef(:nModes,iElt))
+            END SELECT
+          END SUBROUTINE Srf_MonZernike
+
+          SUBROUTINE Srf_FFZernike()
+            USE Kinds
+            IMPLICIT NONE
+            INTEGER, PARAMETER :: nCol = 6
+            INTEGER  :: i, k, nCoef, mCoef, nModes
+            INTEGER  :: modes(mFFCoef)
+            LOGICAL  :: nonzero(mFFCoef)
+            REAL(pr) :: Coefs(mFFCoef)
+            ! - - - - - - - - - - - - - - - - - - - - - - -
+            CALL PrintFmt('FFZernType', "2x,A",
+     &           TRIM(ZernTypeNameL(FFZernTypeL(iElt))))
+            mCoef = MIN(ZernType_MaxMode(FFZernTypeL(iElt)), mFFCoef)
+            nonzero(:) = .FALSE.
+            DO i = 1, mCoef
+              nonzero(i) = (FFZernCoef(i,iElt) /= 0e0_pr)
+            END DO
+            nCoef = COUNT(nonzero)
+            nModes = 0
+            DO i = mCoef, 1, -1
+              IF (nonzero(i)) THEN; nModes = i; EXIT; END IF
+            END DO
+            SELECT CASE (nCoef)
+              CASE (0)
+                CALL PrintFmt('nFFZernCoef', "i4", 1)
+                CALL PrintFmt('FFZernCoef',  "1PD23.15", 0e0_pr)
+              CASE (1:20)
+                k = 0
+                DO i = 1, mCoef
+                  IF (nonzero(i)) THEN
+                    k = k + 1
+                    modes(k) = i
+                    Coefs(k) = FFZernCoef(i, iElt)
+                  END IF
+                END DO
+                CALL PrintFmt(     'nFFZernCoef', "i4",    nCoef)
+                CALL PrintFmtArray('FFZernModes', "I3",    nCol, modes(:nCoef))
+                CALL PrintFmtArray('FFZernCoef',  "1PD23.15", nCol, Coefs(:nCoef))
+              CASE DEFAULT
+                CALL PrintFmt(     'nFFZernCoef', "i4",    nModes)
+                CALL PrintFmtArray('FFZernCoef',  "1PD23.15", nCol,
+     &               FFZernCoef(:nModes,iElt))
+            END SELECT
+          END SUBROUTINE Srf_FFZernike
+
 
           SUBROUTINE Srf_Zernike()
             USE Kinds
