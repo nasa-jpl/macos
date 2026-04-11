@@ -4,11 +4,11 @@ source /opt/intel/oneapi/setvars.sh intel64 --force
 
 #------------------------------------------------------------------------------------------------------
 
-cd macos_f90
+cd ~/dev/macos/macos_f90
 
 export macossrc_dir=$(pwd)
 export intellib_dir=""
-export matlab_version=$/usr/local/MATLAB/R2025b
+export matlab_version=/usr/local/MATLAB/R2025b
 
 export PGPLOT_FONT=$macossrc_dir/grfont.dat     # :"$PGPLOT_FONT"
 #export PGPLOT_DIR="/usr/local/pgplot":"$PGPLOT_DIR"

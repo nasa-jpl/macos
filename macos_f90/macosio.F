@@ -79,6 +79,11 @@ C       Setup for new input scheme
         INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
         INTEGER :: nZernCoef              ! Ditto
         INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
+        INTEGER :: nFFZernCoef            ! # of FF Zernike coefs to read (sparse)
+        INTEGER :: FFZernModes(mFFCoef)   ! FF Zernike mode index mapping (sparse)
+        INTEGER :: nMonZernCoef           ! # of Mon Zernike coefs to read (sparse)
+        INTEGER :: MonZernModes(mMonCoef) ! Mon Zernike mode index mapping (sparse)
+        INTEGER :: iZMode                 ! loop variable: Zernike mode index
 
 
 c***loh<
@@ -128,7 +133,7 @@ C	File setup and initial conditions read
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
      &	' |   Toric          InfluenceFcn   AsphGrid   |'/
-     &	' |         MonGrData        ZrnGrData         |'/
+     &	' |   FreeForm       MonGrData      ZrnGrData  |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -856,7 +861,103 @@ C  Get Aspheric Parameters
 C  End Aspheric Parameters
 C  Get Monomial Parameters
 
+C  Get FF Zernike and Mon Zernike coefficients for FreeForm surface
+
 	    CALL DZERO(DDEF,7)
+
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      WRITE(*,146)
+	      CALL CACCEPT(TypeString,'ANSI',
+     &	             'Enter FF Zernike Type :')
+	      if (LCMP(TypeString,'Norm',4)) then
+	        DO i=4,6
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            FFZernTypeL(iElt)=i
+	            FFZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      else
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            FFZernTypeL(iElt)=i
+	            FFZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      end if
+	      IF (.NOT.FFZernTypeL_FLG) THEN
+	        WRITE(*,*)' Unknown FF Zernike type'
+	        FFZernTypeL(iElt)=ZernType_ANSI
+	      END IF
+	    ELSE
+	      FFZernTypeL(iElt)=ZernType_ANSI
+	      FFZernTypeL_FLG=.TRUE.
+	    END IF
+
+	!--> FF Zernike sparse input
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      FFZernCoef(:,iElt) = 0d0
+	      CALL IACCEPT_S(nFFZernCoef,0,1,
+     &	        'Enter # of FF Zern coefs (mode-value pairs, 0=none) ')
+	      DO i=1, nFFZernCoef
+	        CALL IACCEPT_S(iZMode,0,1,'  FF Zern mode index ')
+	        IF ((iZMode.GE.1).AND.(iZMode.LE.mFFCoef)) THEN
+	          CALL DACCEPT_S(FFZernCoef(iZMode,iElt),0d0,1,
+     &	              '  FF Zernike coefficient ')
+	        END IF
+	      END DO
+	    ELSE
+	      FFZernCoef(:,iElt) = 0d0
+	    END IF
+	!<-- FF Zernike
+
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      CALL DACCEPT_S(lFF(iElt),Aperture,1,
+     &	      'Enter FF scale length ')
+	    ELSE
+	      lFF(iElt)=1d0
+	    END IF
+
+	!--> Mon Zernike sparse input (FreeForm only; SrfType 4/12 use direct MonCoef below)
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      WRITE(*,146)
+	      CALL CACCEPT(TypeString,'ANSI',
+     &	             'Enter Mon Zernike Type :')
+	      if (LCMP(TypeString,'Norm',4)) then
+	        DO i=4,6
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            MonZernTypeL(iElt)=i
+	            MonZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      else
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            MonZernTypeL(iElt)=i
+	            MonZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      end if
+	      IF (.NOT.MonZernTypeL_FLG) THEN
+	        WRITE(*,*)' Unknown Mon Zernike type'
+	        MonZernTypeL(iElt)=ZernType_ANSI
+	      END IF
+	      MonZernCoef(:,iElt) = 0d0
+	      CALL IACCEPT_S(nMonZernCoef,0,1,
+     &	        'Enter # of Mon Zern coefs (mode-value pairs, 0=none) ')
+	      DO i=1, nMonZernCoef
+	        CALL IACCEPT_S(iZMode,0,1,'  Mon Zern mode index ')
+	        IF ((iZMode.GE.1).AND.(iZMode.LE.mMonCoef)) THEN
+	          CALL DACCEPT_S(MonZernCoef(iZMode,iElt),0d0,1,
+     &	              '  Mon Zernike coefficient ')
+	        END IF
+	      END DO
+	    ELSE
+	      MonZernTypeL(iElt) = ZernType_ANSI
+	      MonZernTypeL_FLG   = .TRUE.
+	      MonZernCoef(:,iElt) = 0d0
+	    END IF
+	!<-- Mon Zernike
+
 	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.12)) THEN
 	      CALL DACCEPT(MonCoef(1:6,iElt),DDEF,6,
      &	      'Enter monomial coefficients 1-6 ')
@@ -877,6 +978,15 @@ C  Get Monomial Parameters
 	      DO I=1,120
 	        MonCoef(I,iElt)=0d0
 	      END DO
+	    END IF
+
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
+     &		(SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13).OR.
+     &		(SrfType(iElt).EQ.SrfType_FreeForm)) THEN
+	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
+     &	      'Enter Mon scale length ')
+	    ELSE
+	      lMon(iElt)=1d0
 	    END IF
 
 C  End Monomial Parameters
@@ -1031,6 +1141,28 @@ C  Get Surface Coordinate Parameters
 	    ! (see prop_defs.inc). -jzlou
 	    !
 	    IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
+
+	!--> FreeForm FF coordinate frame (asked first for FreeForm)
+	      IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	        CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
+	        CALL DACCEPT(pFF(:,iElt),pFF(:,iElt),3,
+     &	          'Enter FF coord origin pFF (x,y,z) ')
+	        xFF(1,iElt)=psiElt(3,iElt)
+	        xFF(2,iElt)=psiElt(1,iElt)
+	        xFF(3,iElt)=psiElt(2,iElt)
+	        CALL DACCEPT(xFF(:,iElt),xFF(:,iElt),3,
+     &	          'Enter FF x-axis unit vector (x,y,z) ')
+	        CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
+	        CALL DACCEPT(yFF(:,iElt),yFF(:,iElt),3,
+     &	          'Enter FF y-axis unit vector (x,y,z) ')
+	        CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
+	        CALL DACCEPT(zFF(:,iElt),zFF(:,iElt),3,
+     &	          'Enter FF z-axis unit vector (x,y,z) ')
+	        CALL DORTHOGANALIZE(xFF(1,iElt),yFF(1,iElt),zFF(1,iElt))
+	        WRITE(*,*)' Orthoganalized zFF=',(zFF(i,iElt),i=1,3)
+	      END IF
+	!<--
+
 	      CALL DEQUATE(pMon(1,iElt),VptElt(1,iElt),3)
 	      CALL DACCEPT(pMon(:,iElt),pMon(:,iElt),3,
      &	        'Enter surface reference point location (x,y,z) ')
@@ -1048,14 +1180,18 @@ C  Get Surface Coordinate Parameters
 	      CALL DORTHOGANALIZE(xMon(1,iElt),yMon(1,iElt),
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
-	      
-	!--> Mod for MonGrData and ZrnGrData Grid coords
-	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
+
+	!--> Mod for MonGrData, ZrnGrData, and FreeForm (with grid) Grid coords
+	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13).OR.
+     &	        (SrfType(iElt).EQ.SrfType_FreeForm.AND.
+     &	         nGridMat(iElt).GT.0)) THEN
 	        CALL DEQUATE(pData(1,iElt),pMon(1,iElt),3)
 	        CALL DEQUATE(xData(1,iElt),xMon(1,iElt),3)
 	        CALL DEQUATE(yData(1,iElt),yMon(1,iElt),3)
 	        CALL DEQUATE(zData(1,iElt),zMon(1,iElt),3)
-	        CALL DACCEPT(xMon(:,iElt),xMon(:,iElt),3,
+	        CALL DACCEPT(pData(:,iElt),pData(:,iElt),3,
+     &	          'Enter data origin pData (x,y,z) ')
+	        CALL DACCEPT(xData(:,iElt),xData(:,iElt),3,
      &	          'Enter data x-axis unit vector (x,y,z) ')
 	        CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData(1,iElt))
 	        CALL DACCEPT(yData(:,iElt),yData(:,iElt),3,
@@ -1076,13 +1212,6 @@ C  Get Surface Coordinate Parameters
 	      end if
 	    END IF
 
-	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
-     &		(SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
-	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
-     &	      'Enter scale length ')
-	    ELSE
-	      lMon(iElt)=1d0
-	    END IF
 C  End Surface Coordinate Parameters
 
 C  Get HOE/Grating Parameters
@@ -1484,7 +1613,29 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 
 	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN
 	    print*,'Debug: VAR_NAM = ', VAR_NAM
-	    IF (LCMP(VAR_NAM,'FLUX',4)) THEN
+	    IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	      READ(VALUE,*,ERR=999,END=999)FFZernCoef(MB_I(1),MB_I(2))
+	      WRITE(*,22)' FFZernCoef',MB_I(2),
+     &	        (FFZernCoef(MB_J,MB_I(2)),MB_J=1,6)
+	    ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      TypeString=VALUE
+	      IF (LCMP(TypeString,'Norm',4)) THEN
+	        DO i=4,9
+	          IF (LCMP(TypeString,ZernTypeNameL(i),7))
+     &	            FFZernTypeL(MB_I(1))=i
+	        END DO
+	      ELSE
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3))
+     &	            FFZernTypeL(MB_I(1))=i
+	        END DO
+	      END IF
+	      WRITE(*,*)' FFZernType',MB_I(1),
+     &	        ZernTypeNameL(FFZernTypeL(MB_I(1)))
+	    ELSE IF (LCMP(VAR_NAM,'FLUX',4)) THEN
 	      print*,'Debug: VALUE = ', VALUE
 	      READ(VALUE,*)Flux
  	      WRITE(*,11)' Flux',Flux
@@ -1616,6 +1767,10 @@ c	    READ(VALUE,*)GridType
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)lMon(MB_I(1))
  	    WRITE(*,18)' lMon',MB_I(1),lMon(MB_I(1))
+ 	  ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)lFF(MB_I(1))
+	    WRITE(*,18)' lFF',MB_I(1),lFF(MB_I(1))
  	  ELSE IF (LCMP(VAR_NAM,'LensArrayType',12)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)LensArrayType(MB_I(1))
@@ -1627,7 +1782,29 @@ c	    READ(VALUE,*)GridType
  	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'M',1)) THEN
-	    IF (LCMP(VAR_NAM,'MonCoef',8)) THEN
+	    IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	      READ(VALUE,*,ERR=999,END=999)MonZernCoef(MB_I(1),MB_I(2))
+	      WRITE(*,22)' MonZernCoef',MB_I(2),
+     &	        (MonZernCoef(MB_J,MB_I(2)),MB_J=1,6)
+	    ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      TypeString=VALUE
+	      IF (LCMP(TypeString,'Norm',4)) THEN
+	        DO i=4,9
+	          IF (LCMP(TypeString,ZernTypeNameL(i),7))
+     &	            MonZernTypeL(MB_I(1))=i
+	        END DO
+	      ELSE
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3))
+     &	            MonZernTypeL(MB_I(1))=i
+	        END DO
+	      END IF
+	      WRITE(*,*)' MonZernType',MB_I(1),
+     &	        ZernTypeNameL(MonZernTypeL(MB_I(1)))
+	    ELSE IF (LCMP(VAR_NAM,'MonCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 	      READ(VALUE,*,ERR=999,END=999)MonCoef(MB_I(1),MB_I(2))
@@ -1822,6 +1999,18 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
      &	        pData(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' pData',MB_I(2),(pData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (pFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        pFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' pFF',MB_I(2),(pFF(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'pMon',4)) THEN
 	    IF (ARR_FLG) THEN
@@ -1902,7 +2091,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'Surface',7)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      DO i=1,13
+	      DO i=1,mSrfType
 	        IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 		  SrfType(MB_I(1))=i
 	          LNOTSET=.FALSE.
@@ -2012,6 +2201,18 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
      &	        xData(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' xData',MB_I(2),(xData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (xFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        xFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' xFF',MB_I(2),(xFF(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
 	    IF (ARR_FLG) THEN
@@ -2061,6 +2262,18 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
      &	        yData(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' yData',MB_I(2),(yData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (yFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        yFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' yFF',MB_I(2),(yFF(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
 	    IF (ARR_FLG) THEN
@@ -2098,6 +2311,18 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
      &	        zData(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' zData',MB_I(2),(zData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (zFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        zFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' zFF',MB_I(2),(zFF(MB_J,MB_I(2)),MB_J=1,3)
 	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)

@@ -39,6 +39,8 @@ C***********************************************************************
      &  UDSrfParam,nGridMat,mGridMat,GridMat,GridSrfdx,
      &  psi,pv,prot,pin,ihat,
      &  rad,pmon,xhat,yhat,zhat,
+     &  pData,xData,yData,zData,
+     &  lFF,pFF,xFF,yFF,zFF,FFCoef,
      &  ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &  pout,L,SrfType,
      &  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
@@ -46,7 +48,7 @@ C***********************************************************************
         use traceutil_mod
         use didesub, only: IntSrf
         use math_mod
-        use elt_mod, only: mMonCoef,mAnaCoef,
+        use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,
      &                     SrfType_Flat,
      &                     SrfType_Conic,
      &                     SrfType_Aspheric,
@@ -59,7 +61,8 @@ C***********************************************************************
      &                     SrfType_Toric,
      &                     SrfType_AsGrData,
      &                     SrfType_MonGrData,
-     &                     SrfType_ZrnGrData
+     &                     SrfType_ZrnGrData,
+     &                     SrfType_FreeForm
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
@@ -82,6 +85,8 @@ C***********************************************************************
 
         REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),Nvec(3),Nmag,dNdp(3,3),wVec(3)
         REAL*8 Kc,Kr,rad,pmon(3),xhat(3),yhat(3),zhat(3)
+        REAL*8 pData(3),xData(3),yData(3),zData(3)
+        REAL*8 lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef)
 
         ! Compute incidence point of ray
 
@@ -137,10 +142,25 @@ C***********************************************************************
 !            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
 !     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
 !     &                  Nvec,Nmag,Nhat,dNdp)
-            CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
-     &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
-     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+!            CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
+!     &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	  	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    			 psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    			 nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    			 pmon,xhat,yhat,zhat,
+     &	    			 pData,xData,yData,zData,
+     &	    			 Nvec,Nmag,Nhat,dNdp)
 	!<--
+          CASE (SrfType_FreeForm) ! (14)
+            CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &                       psi,pv,prot,pin,ihat,pr,L,rad,
+     &                       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &                       pmon,xhat,yhat,zhat,
+     &                       pData,xData,yData,zData,
+     &                       lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &                       Nvec,Nmag,Nhat,dNdp)
+
           CASE DEFAULT
             LROK = .FALSE.
             WRITE(*,*)'FindSrf(): Unknown surface type = ',SrfType,
@@ -186,6 +206,7 @@ C***********************************************************************
      &    rad,pmon,
      &    xhat,yhat,zhat, ! xMon,yMon,zMon
      &	  pData,xData,yData,zData,
+     &    lFF,pFF,xFF,yFF,zFF,FFCoef,
      &	  na,nb,
      &    kxa,kxb,lambda,
      &	  ApType,ApVec,nObs,ObsType,
@@ -204,7 +225,7 @@ C***********************************************************************
 	use macos_debug
 	use traceutil_mod
 	use didesub, only: IntSrf
-        use elt_mod, only: mMonCoef,mAnaCoef
+        use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm
 
 C  ierror,iwork,ndp,wvec,anacoef,udsrftype,udsrfcoef + intsrf stuff
 
@@ -233,6 +254,7 @@ C  matrices for a reflecting surface
      &	  na,nb,kxa,kxb,AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &	  pData(3),xData(3),yData(3),zData(3),
+     &    lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef),
      &    UDSrfParam(6),dd
 	REAL*8, dimension(:) :: AsphCoef
 
@@ -316,6 +338,14 @@ cides
 !     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
 !     &	    pData,xData,yData,zData,
 !     &	    Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.SrfType_FreeForm) THEN
+	  CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &	    Nvec,Nmag,Nhat,dNdp)
 	ELSE
 	  WRITE(*,*)'Reflector: Unknown surface type. Aborting trace.'
 	END IF
@@ -675,6 +705,8 @@ C***********************************************************************
      &   nGridMat,mGridMat,GridMat,GridSrfdx,
      &   psi,pv,prot,pin,ihat,Evec,
      &	 rad,pmon,xhat,yhat,zhat,
+     &	 pData,xData,yData,zData,
+     &	 lFF,pFF,xFF,yFF,zFF,FFCoef,
      &	 na,nb,ifnc,nc,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
@@ -685,7 +717,7 @@ C***********************************************************************
 	 use Constants, only: PI, TWOPI
 	 use traceutil_mod
 	 use didesub, only: IntSrf
-         use elt_mod, only: mMonCoef,mAnaCoef
+         use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm
 
 	 IMPLICIT NONE
 
@@ -725,7 +757,9 @@ C  for a general lens surface
      &	 rho(3),wVec(3),xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6),dd,dpface(3),dt,thkZ,pcrnt(3),
      &   Tcrnt(3),
-     &   A_(3),B_(3),C_(3),pcrnt_prev(3),zdir(3)
+     &   A_(3),B_(3),C_(3),pcrnt_prev(3),zdir(3),
+     &   pData(3),xData(3),yData(3),zData(3),
+     &   lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef)
 	REAL*8, dimension(:) :: AsphCoef
 
 	REAL*8 :: Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
@@ -797,8 +831,25 @@ C  Compute incidence point of ray
      &      ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
+!-->
+	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
+	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.SrfType_FreeForm) THEN
+	  CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &	    Nvec,Nmag,Nhat,dNdp)
+!<--
 	ELSE
-	  WRITE(*,*)'2: Unknown surface type. Aborting trace.'
+	  WRITE(*,*)'Refractor: Unknown surface type. Aborting trace.'
 	  RETURN
 	END IF
 
