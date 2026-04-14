@@ -59,6 +59,7 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 12. Add FreeForm to Refractor in elemsub.F + update call sites -- done
 13. Fix makeGMIdcr.sh: remove -fsanitize=memory, replace -C with -check all, remove eval -- done
 14. SHOW UI display during input -- deferred
+15. Fix FreeFormSrf normal: zc must use total sag (fh+fhFF), not just Mon sag -- done
 
 ## Reference
 - macos_f90/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
@@ -92,6 +93,18 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   FreeForm only when nGridMat > 0.
 - ChkDf2: FreeForm with nGridMat=0 silently satisfies pData/xData/yData/zData/lData
   (no spurious "Default used" warnings).
+
+## Debug builds
+- All build scripts accept an optional `debug` argument:
+  source ./makeMSdcr.sh debug   # macos + smacos with -O0 -check all
+  source ./makeSDdcr.sh debug   # smacos_dvr with -O0 -check all
+- Makefile uses `OPT ?= -Ofast`; scripts export `OPT="-O0 -check all"` for debug.
+- VS Code launch configs in macos_f90/.vscode/launch.json:
+  "Debug MACOS" (interactive macos) and "Debug SMACOS_DVR" (smacos driver).
+  Requires ms-vscode.cpptools extension.
+- smacos_dvr: compiles smacos_dvr.F with -DCMACOS, links against smacos_lib.a
+  plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
+  Requires prior make macos + make smacos.
 
 ## Build notes
 - Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — make

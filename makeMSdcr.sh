@@ -1,8 +1,17 @@
 # Makefile.
+# Usage: source ./makeMSdcr.sh [debug]
+#   debug  — build with -O0 -check all for interactive debugging
 
 source /opt/intel/oneapi/setvars.sh intel64 --force
 
 #------------------------------------------------------------------------------------------------------
+
+if [ "$1" = "debug" ]; then
+  export OPT="-O0 -check all"
+  echo "*** Debug build: OPT=$OPT"
+else
+  unset OPT    # let Makefile default to -Ofast
+fi
 
 cd ~/dev/macos/macos_f90
 
