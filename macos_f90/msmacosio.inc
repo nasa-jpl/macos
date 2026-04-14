@@ -732,20 +732,22 @@ C       Set entrance condition flags to .FALSE.
               MonZernModes(:) = 0
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,nMonZernCoef)
-                ELSE
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernModes(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(MonZernModes(j),j=1,Grp)
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
                   nZ = MOD(nMonZernCoef,Grp)
                   iZ = nMonZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
               END BLOCK
@@ -804,6 +806,7 @@ C       Set entrance condition flags to .FALSE.
                 nMonZernCoef = mMonCoef
               END BLOCK
               MonZernCoef_FLG = .TRUE.
+              MonCoef_FLG = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -823,20 +826,22 @@ C       Set entrance condition flags to .FALSE.
               FFZernModes(:) = 0
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,nFFZernCoef)
-                ELSE
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernModes(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(FFZernModes(j),j=1,Grp)
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
                   nZ = MOD(nFFZernCoef,Grp)
                   iZ = nFFZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
               END BLOCK
@@ -2188,20 +2193,22 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               FFZernModes(:) = 0
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,nFFZernCoef)
-                ELSE
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernModes(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(FFZernModes(j),j=1,Grp)
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
                   nZ = MOD(nFFZernCoef,Grp)
                   iZ = nFFZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
               END BLOCK
@@ -2304,20 +2311,22 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               MonZernModes(:) = 0
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,nMonZernCoef)
-                ELSE
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernModes(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(MonZernModes(j),j=1,Grp)
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
                   END DO
                   nZ = MOD(nMonZernCoef,Grp)
                   iZ = nMonZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)(MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
                   END IF
                 END IF
               END BLOCK
@@ -2376,6 +2385,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 nMonZernCoef = mMonCoef
               END BLOCK
               MonZernCoef_FLG = .TRUE.
+              MonCoef_FLG = .TRUE.
               GO TO 61
 	!<--
 

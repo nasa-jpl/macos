@@ -1598,7 +1598,7 @@ C***********************************************************************
             REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
             INTEGER UDSrfType
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
-     &      GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+     &      GSZPSolve,lMon,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
             PARAMETER (ITMAX=400,EPS=1d-14)
             A=X1
             B=X2
@@ -1802,14 +1802,14 @@ C  MonSrf -- thin wrapper: calls FreeFormSrf with FF and Grid inactive
 C***********************************************************************
 
          SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
-     &     pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &     pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
             use math_mod
             use Constants, only: EPS
 
             IMPLICIT NONE
 
             REAL*8  pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
-     &              pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &              pr(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &              Nvec(3),Nmag,dNdp(3,3),Kc,Kr
             LOGICAL LROK,ifBuild,ifLNsrf
 
@@ -1829,7 +1829,7 @@ C***********************************************************************
             REAL*8  :: zData_null(3)   = 0d0
 
             CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
-     &        psi,pv,prot,pin,ihat,pr,L,rad,
+     &        psi,pv,prot,pin,ihat,pr,L,lMon,
      &        nGridMat_null,mGridMat_stub,GridMat_stub,GridSrfdx_null,
      &        pmon,xhat,yhat,zhat,
      &        pData_null,xData_null,yData_null,zData_null,
@@ -1886,7 +1886,7 @@ C  MonGridSrf -- thin wrapper: calls FreeFormSrf with FF inactive
 C***********************************************************************
 
          SUBROUTINE MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
-     &     psi,pv,prot,pin,ihat,pr,L,rad,
+     &     psi,pv,prot,pin,ihat,pr,L,lMon,
      &     nGridMat,mGridMat,GridMat,GridSrfdx,
      &     pmon,xhat,yhat,zhat,pData,xData,yData,zData,
      &     Nvec,Nmag,Nhat,dNdp)
@@ -1898,7 +1898,7 @@ C***********************************************************************
             IMPLICIT NONE
 
             REAL*8  pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
-     &              pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &              pr(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &              pData(3),xData(3),yData(3),zData(3),
      &              GridMat(mGridMat,mGridMat),GridSrfdx,
      &              Nvec(3),Nmag,dNdp(3,3),Kc,Kr
@@ -1913,7 +1913,7 @@ C***********************************************************************
             REAL*8  :: coefFF_null(120) = 0d0
 
             CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
-     &        psi,pv,prot,pin,ihat,pr,L,rad,
+     &        psi,pv,prot,pin,ihat,pr,L,lMon,
      &        nGridMat,mGridMat,GridMat,GridSrfdx,
      &        pmon,xhat,yhat,zhat,
      &        pData,xData,yData,zData,
@@ -1929,13 +1929,13 @@ C  Ray intersection and normal vector for composite surface:
 C    S = S_conic + dS_Mon + dS_FF + dS_grid
 C
 C  Active terms controlled by sentinels:
-C    Mon  active : rad      > 0     (lMon in prescription file)
+C    Mon  active : lMon      > 0
 C    FF   active : LFF      > 0
 C    Grid active : nGridMat > 0
 C***********************************************************************
 
          SUBROUTINE FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
-     &     psi,pv,prot,pin,ihat,pr,L,rad,
+     &     psi,pv,prot,pin,ihat,pr,L,lMon,
      &     nGridMat,mGridMat,GridMat,GridSrfdx,
      &     pmon,xhat,yhat,zhat,
      &     pData,xData,yData,zData,
@@ -1950,7 +1950,7 @@ C***********************************************************************
 
             REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &      coef(120),coefFF(120),
-     &      pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &      pr(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &      pData(3),rhod(3),xData(3),yData(3),zData(3),
      &      LFF,pFF(3),xFF(3),yFF(3),zFF(3),
      &      GridMat(mGridMat,mGridMat),GridSrfdx,
@@ -1975,7 +1975,7 @@ C***********************************************************************
 
 C  Determine active terms from sentinels
 
-            ifMon  = (rad      .GT. 0d0)
+            ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
             ifGridTerm = (nGridMat .GT.  0 )
 
@@ -2053,7 +2053,7 @@ C	Use Lconic as a starting point; find incidence pt on full surface
                L2=1d-7
             END IF
 
-            CALL SFFZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+            CALL SFFZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
      &      pmon,rhoc,xhat,yhat,zhat,
      &      pData,rhod,xData,yData,zData,L,
@@ -2062,7 +2062,7 @@ C	Use Lconic as a starting point; find incidence pt on full surface
             tol=2d-15
             L3=SFFZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
-     &      rad,pmon,rhoc,xhat,yhat,zhat,
+     &      lMon,pmon,rhoc,xhat,yhat,zhat,
      &      pData,rhod,xData,yData,zData,L,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
             L=L3
@@ -2082,11 +2082,11 @@ C  Evaluate Mon monomials and first partials (if active)
                DO i=1,3
                   rhom(i) = rho(i)-rhoc(i)
                END DO
-               x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-               y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+               x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/lMon
+               y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/lMon
                CALL MonomialEval(x,y,coef,EPS,fh,S1,S2)
-               dxdrho = xhat / rad
-               dydrho = yhat / rad
+               dxdrho = xhat / lMon
+               dydrho = yhat / lMon
                dFdrho = S1*dxdrho + S2*dydrho
             END IF
 
@@ -2205,11 +2205,11 @@ C  Mon second derivatives
                      rhom(i) = rho(i)-rhoc(i)
                   END DO
                   x      = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+
-     &                      xhat(3)*rhom(3))/rad
+     &                      xhat(3)*rhom(3))/lMon
                   y      = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+
-     &                      yhat(3)*rhom(3))/rad
-                  dxdrho = xhat / rad
-                  dydrho = yhat / rad
+     &                      yhat(3)*rhom(3))/lMon
+                  dxdrho = xhat / lMon
+                  dydrho = yhat / lMon
                   CALL MonomialD2(x,y,coef,dxdrho,dydrho,d2Fdrho2)
                   CALL MonomialEval(x,y,coef,EPS,fh,S1,S2)
                   dFdrho = S1*dxdrho + S2*dydrho
@@ -2269,12 +2269,12 @@ C  SFFSrf
 C
 C  Composite surface function S(L) = Sconic + dSmon + dSFF + dSgrid
 C  Active terms controlled by sentinels:
-C    Mon  : rad      > 0
+C    Mon  : lMon      > 0
 C    FF   : LFF      > 0
 C    Grid : nGridMat > 0
 C***********************************************************************
 
-         REAL*8 FUNCTION SFFSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,rad,
+         REAL*8 FUNCTION SFFSrf(Kc,Kr,psi,pv,prel,ihat,mcoef,lMon,
      &   nGridMat,mGridMat,GridMat,dAct,
      &   pmon,rhoc,xhat,yhat,zhat,
      &   pData,rhod,xData,yData,zData,L,
@@ -2288,7 +2288,7 @@ C***********************************************************************
             INTEGER i,nGridMat,mGridMat,i0,i1,j0,j1
 
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),
-     &      xhat(3),yhat(3),zhat(3),rad,pmon(3),L,
+     &      xhat(3),yhat(3),zhat(3),lMon,pmon(3),L,
      &      rho(3),rhom(3),rhoc(3),rhod(3),
      &      fh,fhFF,dAct,x,y,tiltx,tilty,xi,yj,diCtr,
      &      zc(3),psitzc,
@@ -2301,7 +2301,7 @@ C***********************************************************************
 
             LOGICAL ifMon,ifFF,ifGridTerm
 
-            ifMon  = (rad      .GT. 0d0)
+            ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
             ifGridTerm = (nGridMat .GT.  0 )
 
@@ -2321,8 +2321,8 @@ C  Compute dSmon (if active)
 
             dSmon = 0d0
             IF (ifMon) THEN
-               x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
-               y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
+               x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/lMon
+               y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/lMon
                CALL MonomialEval(x,y,mcoef,EPS,fh,S1,S2)
                CALL ConicDeltaS(rho,fh,zhat,psi,Kc,Kr,Sconic,
      &                          zc,psitzc,deltaS)
@@ -2391,7 +2391,7 @@ C***********************************************************************
 
          REAL*8 FUNCTION SFFZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
      &   coef,nGridMat,mGridMat,GridMat,dAct,
-     &   rad,pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L,
+     &   lMon,pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L,
      &   LFF,pFF,xFF,yFF,zFF,coefFF)
 
             USE Constants, only: EPS
@@ -2402,18 +2402,18 @@ C***********************************************************************
      &      GridMat(mGridMat,mGridMat),dAct,
      &      pData(3),rhod(3),xData(3),yData(3),zData(3),
      &      LFF,pFF(3),xFF(3),yFF(3),zFF(3),coefFF(120),
-     &      rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
+     &      lMon,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
      &      X1,X2,TOL,A,B,C,FA,FB,FC,D,E,TOL1,XM,P,Q,R,S
             PARAMETER (ITMAX=400)
 
             A=X1
             B=X2
 
-            FA=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+            FA=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,dAct,
      &      pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,A,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
-            FB=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+            FB=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,dAct,
      &      pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
@@ -2462,7 +2462,7 @@ C***********************************************************************
                ELSE
                   B=B+SIGN(TOL1,XM)
                ENDIF
-               FB=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+               FB=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &         nGridMat,mGridMat,GridMat,dAct,
      &         pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B,
      &         LFF,pFF,xFF,yFF,zFF,coefFF)
@@ -2476,7 +2476,7 @@ C***********************************************************************
 C  SFFZPB -- bracket finder for SFFSrf = 0
 C***********************************************************************
 
-         SUBROUTINE SFFZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+         SUBROUTINE SFFZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &   nGridMat,mGridMat,GridMat,dAct,
      &   pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L,
      &   LFF,pFF,xFF,yFF,zFF,coefFF)
@@ -2485,17 +2485,17 @@ C***********************************************************************
             INTEGER nGridMat,mGridMat,J,NTRY
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
      &      GridMat(mGridMat,mGridMat),dAct,
-     &      rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
+     &      lMon,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),
      &      pData(3),xData(3),yData(3),zData(3),rhod(3),
      &      LFF,pFF(3),xFF(3),yFF(3),zFF(3),coefFF(120),
      &      X1,X2,F1,F2,gold
             PARAMETER (gold=1.6d0,NTRY=50)
 
-            F1=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+            F1=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,dAct,
      &      pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X1,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
-            F2=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+            F2=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,dAct,
      &      pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,X2,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
@@ -2503,13 +2503,13 @@ C***********************************************************************
                IF(F1*F2.LT.0d0)RETURN
                IF(ABS(F1).LT.ABS(F2))THEN
                   X1=X1+gold*(X1-X2)
-                  F1=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+                  F1=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &            nGridMat,mGridMat,GridMat,dAct,
      &            pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,
      &            zData,X1,LFF,pFF,xFF,yFF,zFF,coefFF)
                ELSE
                   X2=X2+gold*(X2-X1)
-                  F2=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
+                  F2=SFFSrf(Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &            nGridMat,mGridMat,GridMat,dAct,
      &            pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,
      &            zData,X2,LFF,pFF,xFF,yFF,zFF,coefFF)
@@ -2810,7 +2810,7 @@ C***********************************************************************
 C***********************************************************************
 
          SUBROUTINE UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,coef,
-     &   param,psi,pv,prot,pin,ihat,pr,L,rad,
+     &   param,psi,pv,prot,pin,ihat,pr,L,lMon,
      &   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
             use math_mod
 
@@ -2819,7 +2819,7 @@ C***********************************************************************
             LOGICAL LROK,ifBuild,ifLNsrf
             INTEGER i,j,UDSrfType
             REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(*),
-     &         pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+     &         pr(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &         prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
      &         Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
      &         k2,itpsi,psitprel,L1,L2,L3,tol,
@@ -2898,16 +2898,16 @@ C	Compute incidence point of ray on the surface
             END IF
 
             CALL UDSZPB(L1,L2,UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,
-     &      param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+     &      param,lMon,pmon,rhoc,xhat,yhat,zhat,L)
             tol=1d-10
             L3=UDSZPSolve(L1,L2,tol,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
-     &      coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+     &      coef,param,lMon,pmon,rhoc,xhat,yhat,zhat,L)
             L=L3
 
             ! Compute normal
 
             CALL UDSrfNorm(ifBuild,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
-     &      coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L,zc,
+     &      coef,param,lMon,pmon,rhoc,xhat,yhat,zhat,L,zc,
      &      fh,dFdrho,d2Fdrho2)
 
             psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
@@ -2976,19 +2976,19 @@ C***********************************************************************
 
 
          FUNCTION UDSZPSolve(X1,X2,TOL,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
-     &   coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+     &   coef,param,lMon,pmon,rhoc,xhat,yhat,zhat,L)
 
             IMPLICIT REAL*8 (A-H,O-Z)
             INTEGER UDSrfType,ITMAX
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(*),L,SUDSrf,
-     &      UDSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
+     &      UDSZPSolve,lMon,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
             PARAMETER (ITMAX=400,EPS=1d-10)
             A=X1
             B=X2
             FA=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                rad,pmon,rhoc,xhat,yhat,zhat,A)
+     &                lMon,pmon,rhoc,xhat,yhat,zhat,A)
             FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                rad,pmon,rhoc,xhat,yhat,zhat,B)
+     &                lMon,pmon,rhoc,xhat,yhat,zhat,B)
             IF(FB*FA.GT.0d0)THEN
                WRITE(*,*) 'UDSZPB failed.'
                STOP
@@ -3047,7 +3047,7 @@ C***********************************************************************
                   B=B+SIGN(TOL1,XM)
                ENDIF
                FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &         rad,pmon,rhoc,xhat,yhat,zhat,B)
+     &         lMon,pmon,rhoc,xhat,yhat,zhat,B)
             END DO
             WRITE(*,*) 'UDSZPSolve exceeding maximum iterations.'
             UDSZPSolve=B
@@ -3057,28 +3057,28 @@ C***********************************************************************
 C***********************************************************************
 
          SUBROUTINE UDSZPB(X1,X2,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
-     &                       coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+     &                       coef,param,lMon,pmon,rhoc,xhat,yhat,zhat,L)
 
             IMPLICIT REAL*8 (A-H,O-Z)
             PARAMETER (gold=1.6d0,NTRY=50)
             INTEGER UDSrfType
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(*),L,
-     &               rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
+     &               lMon,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3),param(6)
             ! IF(X1.EQ.X2)PAUSE 'You have to guess an initial range'
             F1=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                  rad,pmon,rhoc,xhat,yhat,zhat,X1)
+     &                  lMon,pmon,rhoc,xhat,yhat,zhat,X1)
             F2=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                  rad,pmon,rhoc,xhat,yhat,zhat,X2)
+     &                  lMon,pmon,rhoc,xhat,yhat,zhat,X2)
             DO J=1,NTRY
                IF(F1*F2.LT.0d0)RETURN
                IF(ABS(F1).LT.ABS(F2))THEN
                   X1 = X1 + gold*(X1-X2)
                   F1 = SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                          rad,pmon,rhoc,xhat,yhat,zhat,X1)
+     &                          lMon,pmon,rhoc,xhat,yhat,zhat,X1)
                ELSE
                   X2 = X2 + gold*(X2-X1)
                   F2 = SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
-     &                          rad,pmon,rhoc,xhat,yhat,zhat,X2)
+     &                          lMon,pmon,rhoc,xhat,yhat,zhat,X2)
                ENDIF
             END DO
             RETURN

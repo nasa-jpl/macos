@@ -558,13 +558,15 @@ C	Param order = beta,dact or drad,dq,minrad
 	END IF
 
 	!<--
-	! FreeForm with no grid term does not use pData/xData/yData/zData/lData
-	IF (SrfType(iElt).EQ.SrfType_FreeForm.AND.nGridMat(iElt).EQ.0) THEN
-	  pData_FLG=.TRUE.
-	  xData_FLG=.TRUE.
-	  yData_FLG=.TRUE.
-	  zData_FLG=.TRUE.
+	! FreeForm: lData is unused; pData/xData/yData/zData only needed with grid
+	IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
 	  lData_FLG=.TRUE.
+	  IF (nGridMat(iElt).EQ.0) THEN
+	    pData_FLG=.TRUE.
+	    xData_FLG=.TRUE.
+	    yData_FLG=.TRUE.
+	    zData_FLG=.TRUE.
+	  END IF
 	END IF
 
 	IF (pData_FLG) THEN
