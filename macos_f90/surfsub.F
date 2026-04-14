@@ -1929,7 +1929,7 @@ C  Ray intersection and normal vector for composite surface:
 C    S = S_conic + dS_Mon + dS_FF + dS_grid
 C
 C  Active terms controlled by sentinels:
-C    Mon  active : rad      > 0
+C    Mon  active : rad      > 0     (lMon in prescription file)
 C    FF   active : LFF      > 0
 C    Grid active : nGridMat > 0
 C***********************************************************************
@@ -2110,7 +2110,7 @@ C  Evaluate FF monomials and first partials (if active)
 
 C  Compute conic quantities for normal vector assembly
 
-            zc     = rho - fh*zhat
+            zc     = rho - (fh+fhFF)*zhat
             psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
             psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
             zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)

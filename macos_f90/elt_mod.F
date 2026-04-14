@@ -178,20 +178,27 @@ C***********************************************************************
      &                                            pDataRx,xDataRx,yDataRx,zDataRx
 
         ! --- FreeForm surface (FF monomial term: separate from design Mon term) ---
-        !     lFF      : FF scale length (sentinel: lFF <= 0 means FF term inactive)
-        !     pFF      : FF data center (3 x mElt)
-        !     xFF,yFF  : FF local x,y axes (3 x mElt each)
-        !     zFF      : FF surface axis (3 x mElt)
-        !     FFCoef   : FF monomial coefficients (mFFCoef x mElt)
-        !     ifMon    : Mon term active for this element
-        !     ifFF     : FF term active for this element
-        !     ifGridTerm   : Grid term active for this element
+        !     lFF         : FF scale length (sentinel: lFF <= 0 means FF term inactive)
+        !     pFF         : FF data center (3 x mElt)
+        !     xFF,yFF     : FF local x,y axes (3 x mElt each)
+        !     zFF         : FF surface axis (3 x mElt)
+        !     FFZernCoef  : FF Zernike coefficients as entered (mFFCoef x mElt)
+        !     FFZernTypeL : FF Zernike type index per element (uses ZernType_* constants)
+        !     FFCoef      : FF monomial coefficients after ZerntoMon conversion (mFFCoef x mElt)
+        !     MonZernCoef : Mon Zernike coefficients as entered (mMonCoef x mElt)
+        !     MonZernTypeL: Mon Zernike type index per element (uses ZernType_* constants)
+        !     ifMon       : Mon term active for this element
+        !     ifFF        : FF term active for this element
+        !     ifGridTerm  : Grid term active for this element
         !     (all three set at prescription-read time from SrfType and sentinels)
 
         INTEGER,  PARAMETER :: mFFCoef = 120   ! max FF monomial coefficients
 
         REAL*8,   DIMENSION(:),     ALLOCATABLE:: lFF
-        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pFF,xFF,yFF,zFF,FFCoef
+        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pFF,xFF,yFF,zFF,
+     &                                            FFZernCoef,FFCoef,
+     &                                            MonZernCoef
+        INTEGER,  DIMENSION(:),     ALLOCATABLE:: FFZernTypeL,MonZernTypeL
         LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifMon,ifFF,ifGridTerm
         ! --- end FreeForm ---
 
@@ -437,7 +444,8 @@ C***********************************************************************
 
           deallocate(OpType, iEltToIntSrf, nDP,LensArrayType,
      &               nCoatElt,UDSrfType,EltID,ZernaType,
-     &               ZernTypeL,iEltToGridSrf,nGridMat,GridSrfOrder,
+     &               ZernTypeL,FFZernTypeL,MonZernTypeL,
+     &               iEltToGridSrf,nGridMat,GridSrfOrder,
      &               iEltToMetSrf,
      &               nMetPos,tMetSrf,tMetSrfPos,iEltToAmplSrf,
      &               ntMetPos,nAmplMat,stat=m_err_elt)
@@ -491,7 +499,8 @@ C***********************************************************************
      &             ('elt_mod_init(real*8): deallocate failed!')
 
           ! Deallocate FreeForm arrays
-          deallocate(lFF,pFF,xFF,yFF,zFF,FFCoef,stat=m_err_elt)
+          deallocate(lFF,pFF,xFF,yFF,zFF,FFZernCoef,FFCoef,
+     &               MonZernCoef,stat=m_err_elt)
           if (m_err_elt /= 0)
      &      call macos_memory_failure
      &             ('elt_mod_init(FreeForm real*8): deallocate failed!')
@@ -547,7 +556,7 @@ C***********************************************************************
         allocate(iEltToIntSrf(mElt),nDP(mIntSrf),
      &           LensArrayType(mElt),nCoatElt(mElt),
      &           UDSrfType(0:mElt),EltID(0:mElt),
-     &           ZernaType(mElt),ZernTypeL(mElt),
+     &           ZernaType(mElt),ZernTypeL(mElt),FFZernTypeL(mElt),MonZernTypeL(mElt),
      &           iEltToGridSrf(mElt),nGridMat(mElt),
      &           GridSrfOrder(mElt),
      &           nRayToSeg(mRay),NScnt(mElt),nAmplMat(mElt),
@@ -636,7 +645,8 @@ C***********************************************************************
         ! FreeForm arrays
         allocate(lFF(mElt),
      &           pFF(3,mElt),xFF(3,mElt),yFF(3,mElt),zFF(3,mElt),
-     &           FFCoef(mFFCoef,mElt),
+     &           FFZernCoef(mFFCoef,mElt),FFCoef(mFFCoef,mElt),
+     &           MonZernCoef(mMonCoef,mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
@@ -904,7 +914,11 @@ C***********************************************************************
           xFF(:,:)             =  0e0_pr
           yFF(:,:)             =  0e0_pr
           zFF(:,:)             =  0e0_pr
+          FFZernCoef(:,:)      =  0e0_pr
           FFCoef(:,:)          =  0e0_pr
+          FFZernTypeL(:)       =  0
+          MonZernCoef(:,:)     =  0e0_pr
+          MonZernTypeL(:)      =  0
 
           WFElt(:,:,:)         =  0e0_prc
           JmatElt(:,:,:)       =  0e0_prc

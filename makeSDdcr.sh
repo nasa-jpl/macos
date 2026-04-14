@@ -1,6 +1,7 @@
 # Makefile.
-# Usage: source ./makeMSdcr.sh [debug]
+# Usage: source ./makeSDdcr.sh [debug]
 #   debug  — build with -O0 -check all for interactive debugging
+# Requires prior make macos and make smacos (for .mod files and smacos_lib.a)
 
 source /opt/intel/oneapi/setvars.sh intel64 --force
 
@@ -29,15 +30,12 @@ export LD_LIBRARY_PATH="/usr/local/pgplot":$LD_LIBRARY_PATH
 export intel64_lib="/opt/intel/oneapi/compiler/latest/lib"
 
 #--------------------------------------------------------------------------
-# Compile macos and smacos
+# Compile smacos-driver (builds in MACOS_OBJS; requires prior make macos)
 #--------------------------------------------------------------------------
-make clean-macos
-make macos
 
-make clean-smacos
-make smacos
+make smacos_dvr
 
 #--------------------------------------------------------------------------
 # End
 #--------------------------------------------------------------------------
-cd ../
+cd ~/dev/macos/

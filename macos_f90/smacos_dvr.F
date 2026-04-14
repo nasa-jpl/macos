@@ -31,24 +31,19 @@ C
 	use design_cons_optim_mod
         use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
+	use smacos_mod
 
 	Implicit none
 
-	CHARACTER(len=MacosCharLen) :: command,CARG(9),RxName
+	CHARACTER(len=MacosCharLen) :: CARG(9),RxName
         REAL*8 :: DARG(9),tmpDARG(9)
         INTEGER :: IARG(9),modelSize
         LOGICAL :: LARG
-        SREAL :: RARG(9),RmsWfe
-	SREAL, dimension(:,:), allocatable, save :: PixArray
-        REAL*8, dimension(:,:), allocatable, save ::OPDMat,RaySpot
-
+        SREAL :: RARG(9)
 
 C  Execution starts
 	modelSize=512; nGridPts=255
 	Call macos_init_all(modelSize)
-
-	allocate(PixArray(mPix,mPix),
-     &           OPDMat(mpts,mpts),RaySpot(mRay,2));
 
 	RxName='SegDemo3'		! 'most3frntdbl'
 
