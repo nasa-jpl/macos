@@ -13,7 +13,7 @@ C***********************************************************************
 
 	Implicit none
 
-	Logical :: RxStopSet, EltStopSet,RxNoStopSet_Flg
+	Logical :: RxStopSet, EltStopSet, PrtPrinRots, RxNoStopSet_Flg
         REAL*8 :: StopOffset(2)
 
         Contains
@@ -26,8 +26,8 @@ C***********************************************************************
         use surfsub, only: GridInit, AMPLINIT
         use cfiles_mod
         use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
-     &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                       cUnit,ifRegrid
+     &                   zcoType,ZernCircular,ZernAnnular,ZernHex,
+     &                   cUnit,ifRegrid
 	use traceutil_mod
 	use loh_I1
 	use loh_I2
