@@ -1,0 +1,401 @@
+================================================================================
+Giza / Cairo / Pixman / zlib / libpng Build Integration Notes
+================================================================================
+Date: April 2026
+Platform: Windows x86-64, Intel oneAPI (ifx/icx), CMake 4.1, Ninja
+
+================================================================================
+1. OVERVIEW
+================================================================================
+Giza is a drop-in replacement for PGPLOT that uses Cairo as its rendering
+backend. This document covers the complete integration of the following
+library stack into the MACOS/SMACOS CMake build system:
+
+  Giza 1.2.0        - PGPLOT-compatible graphics library (C + Fortran)
+  Cairo 1.13.1      - 2D vector graphics library (C)
+  Pixman 0.35.1     - Pixel manipulation library (C, Cairo dependency)
+  zlib 1.3.1        - Compression library (C, Cairo/PNG dependency)
+  libpng 1.6.43     - PNG image library (C, Cairo dependency)
+
+The integration is controlled by the CMake option USE_GIZA (default OFF).
+When USE_GIZA=OFF the build is unchanged from the original MACOS build.
+
+================================================================================
+2. SOURCE FILE LOCATIONS
+================================================================================
+All graphics library sources are bundled within the project tree:
+
+  macos_f90/giza/src/                          <- Giza sources
+  macos_f90/giza/src/subprojects/cairo/        <- Cairo 1.13.1 sources
+  macos_f90/giza/src/subprojects/pixman/       <- Pixman 0.35.1 sources
+  macos_f90/giza/src/subprojects/zlib/         <- zlib 1.3.1 sources
+  macos_f90/giza/src/subprojects/libpng/       <- libpng 1.6.43 sources
+
+Source acquisition:
+  Giza:    https://github.com/danieljprice/giza (tag: giza-1.2.0)
+  Cairo:   https://gitlab.freedesktop.org/cairo/cairo (tag: 1.13.1)
+  Pixman:  https://gitlab.freedesktop.org/pixman/pixman (tag: pixman-0.35.1)
+  zlib:    https://github.com/madler/zlib/releases/tag/v1.3.1
+           curl -L -o zlib.tar.gz https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
+  libpng:  https://github.com/pnggroup/libpng/releases/tag/v1.6.43
+           curl -L -o libpng.tar.gz https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.43.tar.gz
+
+Note: zlib and libpng ship with their own CMakeLists.txt — no custom
+CMakeLists.txt needed for them. Pixman, Cairo, and Giza require custom
+CMakeLists.txt files (see Section 4).
+
+================================================================================
+3. CMAKE FILES PLACEMENT
+================================================================================
+Four CMakeLists.txt files are required:
+
+  File                                                    Replaces/creates
+  -----------------------------------------------------------------------
+  CMakeLists.txt (project root)                          Updated (existing)
+  macos_f90/giza/src/CMakeLists.txt                      New
+  macos_f90/giza/src/subprojects/cairo/CMakeLists.txt    New
+  macos_f90/giza/src/subprojects/pixman/CMakeLists.txt   New
+
+zlib and libpng use their own bundled CMakeLists.txt — no custom files needed.
+
+================================================================================
+4. BUILD COMMANDS
+================================================================================
+
+Standard build (no Giza, uses pgplotdummy.F / pgplotsub.F):
+  rd /s /q build
+  cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+  cmake --build build --target macos
+  cmake --build build --target smacos
+
+Build with Giza (replaces pgplot stub, adds full graphics):
+  rd /s /q build
+  cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_GIZA=ON
+  cmake --build build --target macos
+
+Build both macos and smacos with Giza:
+  cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DBUILD_MACOS=ON -DBUILD_SMACOS=ON -DUSE_GIZA=ON
+  cmake --build build --target macos
+  cmake --build build --target smacos
+
+================================================================================
+5. MAIN CMakeLists.txt CHANGES (project root)
+================================================================================
+
+A) New option:
+     option(USE_GIZA "Build and link Giza instead of pgplotdummy" OFF)
+
+B) New section 4 — Giza subdirectory:
+     if(USE_GIZA)
+       add_subdirectory(macos_f90/giza/src)
+     endif()
+
+C) MACOS_ONLY_SOURCES — pgplotsub.F always included:
+   - pgplotsub.F is ALWAYS compiled regardless of USE_GIZA
+   - Reason: defines pgplot_mod which sunsub.F and macos.F depend on
+   - When USE_GIZA=ON, actual PGPLOT calls are resolved by giza pgplot library
+
+D) SMACOS_ONLY_SOURCES — pgplotdummy.F conditional:
+   - $<$<NOT:$<BOOL:${USE_GIZA}>>:${smacos_src_dir}/pgplotdummy.F>
+   - When USE_GIZA=ON, pgplotdummy.F is excluded; giza pgplot library used instead
+
+E) Link libraries — both macos and smacos:
+   - $<$<BOOL:${USE_GIZA}>:pgplot> added to target_link_libraries
+
+PGPLOT source matrix:
+  Target  | USE_GIZA=OFF        | USE_GIZA=ON
+  --------|---------------------|---------------------------
+  macos   | pgplotsub.F         | pgplotsub.F + pgplot.lib
+  smacos  | pgplotdummy.F       | pgplot.lib (no dummy)
+
+================================================================================
+6. PIXMAN CMakeLists.txt
+================================================================================
+Location: macos_f90/giza/src/subprojects/pixman/CMakeLists.txt
+
+Key decisions:
+- config.h generated by CMake (no autoconf) — written to binary dir
+- pixman-version.h generated via configure_file from pixman-version.h.in
+- MMX disabled: not supported in 64-bit mode with Intel icx
+- SSE2 enabled: implicit on x86-64, no arch flag needed
+- SSSE3 enabled: requires /arch:AVX flag with Intel icx on 64-bit
+- ARM/MIPS/VMX/LoongArch sources excluded (x86-64 Windows target)
+- intrin.h included in config.h to provide __cpuid for pixman-x86.c
+
+Source list: from pixman/Makefile.sources (core) + pixman-sse2.c + pixman-ssse3.c
+Excluded:    pixman-mmx.c (64-bit incompatible)
+
+================================================================================
+7. CAIRO CMakeLists.txt
+================================================================================
+Location: macos_f90/giza/src/subprojects/cairo/CMakeLists.txt
+
+Key decisions:
+- config.h written to BOTH binary dir AND source src/ dir
+  Reason: cairoint.h uses #include "config.h" with quotes, which searches
+  relative to the source file's directory before include paths
+- cairo-features.h similarly written to both locations
+- HAVE_UINT64_T and HAVE_INT64_T defined in config.h
+  Reason: without these, cairo uses struct-based 64-bit types causing
+  type mismatch errors in cairo-contour.c and cairo-path-stroke-polygon.c
+- CAIRO_WIN32_STATIC_BUILD defined as PUBLIC
+  Reason: prevents __imp_ DLL import prefix on cairo symbols when
+  consumers link against the static library
+- All backends enabled: image, win32, pdf, ps, svg, tee, script, png
+- zlib/libpng include paths: ../zlib and ../libpng (relative to cairo subproject)
+- Linked against: pixman, zlibstatic, png_static, gdi32, msimg32, user32
+  gdi32/msimg32 required for cairo-win32-*.c GDI functions
+- Source list: from src/Makefile.sources plus font subsets, pdf operators,
+  deflate stream, pdf/ps/svg surfaces, win32 surfaces, cairo-png.c
+
+Excluded backends (require unavailable dependencies):
+  FreeType font (cairo-ft-font.c)  — requires freetype2
+  FontConfig (cairo-fc-font.c)     — requires fontconfig
+  XLib/XCB surfaces                — Unix only
+  GL/EGL/GLX/WGL surfaces          — not needed for file output
+  Quartz/OS2/BeOS/DirectFB         — platform-specific
+
+================================================================================
+8. GIZA CMakeLists.txt
+================================================================================
+Location: macos_f90/giza/src/CMakeLists.txt
+
+Build order within this file:
+  1. zlib       (add_subdirectory)
+  2. libpng     (add_subdirectory, wired to zlibstatic)
+  3. pixman     (add_subdirectory)
+  4. cairo      (add_subdirectory, depends on pixman + zlib + libpng)
+  5. giza       (add_library — C sources)
+  6. cpgplot    (add_library — C PGPLOT interface)
+  7. pgplot     (add_library — Fortran PGPLOT interface)
+
+zlib integration:
+  - ZLIB_BUILD_EXAMPLES=OFF, BUILD_SHARED_LIBS=OFF
+  - ZLIB_LIBRARY set to ${CMAKE_BINARY_DIR}/lib/zlibstatic.lib
+    (CMAKE_ARCHIVE_OUTPUT_DIRECTORY is build/lib/)
+  - ZLIB_FOUND=TRUE, ZLIB_INCLUDE_DIR set before libpng's add_subdirectory
+    so libpng's internal find_package(ZLIB) succeeds
+  - After add_subdirectory: target_link_libraries(png_static PRIVATE zlibstatic)
+    to wire the dependency explicitly
+
+libpng integration:
+  - PNG_SHARED=OFF, PNG_STATIC=ON, PNG_TESTS=OFF, PNG_TOOLS=OFF
+  - SKIP_INSTALL_ALL=ON (no install targets)
+
+Cairo forwarding headers:
+  - giza includes cairo headers as <cairo/cairo.h>, <cairo/cairo-ps.h> etc.
+  - Cairo exposes headers directly (cairo.h not in a cairo/ subdirectory)
+  - Solution: generate forwarding headers in ${CMAKE_CURRENT_BINARY_DIR}/cairo/
+  - Headers forwarded: cairo.h, cairo-deprecated.h, cairo-ps.h, cairo-pdf.h,
+    cairo-svg.h, cairo-script.h, cairo-ft.h, cairo-win32.h, cairo-tee.h,
+    cairo-version.h
+
+Windows POSIX compatibility (unistd.h stub):
+  Generated at ${CMAKE_CURRENT_BINARY_DIR}/unistd.h providing:
+  - access, getcwd, getpid macros
+  - sleep/usleep via Windows Sleep()
+  - strcasecmp/strncasecmp via _stricmp/_strnicmp (also as compile definitions)
+  - getlogin() stub returning "user"
+  - strsep() implementation (not available on Windows)
+  Note: strcasecmp also added as compile definition (-Dstrcasecmp=_stricmp)
+  for files that use it without including unistd.h
+
+giza-driver-xw.c excluded: requires X11 (not available on Windows)
+giza-driver-png.c included: libpng available via bundled subproject
+
+Fortran modules:
+  - pgplot target writes .mod files to ${CMAKE_BINARY_DIR}/mod_giza
+  - This directory added to macos target's include path via USE_GIZA
+
+Libraries produced:
+  lib/giza.lib         C core graphics library
+  lib/cpgplot.lib      C PGPLOT interface
+  lib/pgplot.lib       Fortran PGPLOT interface (drop-in for pgplotsub.F)
+  lib/cairo.lib        Cairo graphics library
+  lib/pixman.lib       Pixman pixel library
+  lib/zlibstatic.lib   zlib compression
+  lib/libpng16_static.lib  PNG image library
+  mod_giza/            Fortran module files
+
+================================================================================
+9. SOURCE-LEVEL FIXES REQUIRED IN MACOS SOURCE FILES
+================================================================================
+These fixes were required separately from the CMake changes:
+
+A) smacosio.F
+   - Add PrtPrinRots to module-level logical declarations
+   - Add ifPGColor to use macos_mod only-list
+
+B) zern_wf.F (line ~43)
+   - Change #ifdef CMACOS guard to #ifdef CSMACOS
+   - Reason: bug in original source — wrong guard name caused macosio_mod
+     to always be selected even in smacos builds
+
+C) smacos.F
+   - Change: use macos_mod
+   - To:     use macos_mod, PixArray_mod=>PixArray,
+                            OPDMat_mod=>OPDMat,
+                            RaySpot_mod=>RaySpot
+   - Reason: these are declared as dummy arguments of SMACOS subroutine
+     but also exist as allocatable module variables in macos_mod under
+     #ifdef CMACOS — renaming avoids the conflict
+
+================================================================================
+10. KNOWN LIMITATIONS / FUTURE WORK
+================================================================================
+- giza-driver-xw.c (X11 window driver) excluded on Windows
+  To enable on Linux: remove exclusion and add X11 to find_package/link
+- FreeType font support not enabled (cairo-ft-font.c excluded)
+  To enable: add find_package(Freetype) and bundle/install freetype2
+- Linux/macOS extension: replace WIN32-specific paths and stubs
+  with platform-appropriate equivalents; most CMake logic is already
+  cross-platform via generator expressions
+- The duplicate lib\zlibstatic.lib in the link command is harmless
+  but could be cleaned up by auditing transitive dependencies
+
+================================================================================
+END OF NOTES
+================================================================================
+
+================================================================================
+11. POST-BUILD FIXES APPLIED
+================================================================================
+
+FIX 1: Axis numbers showing as "$c$s"
+--------------------------------------
+File: macos_f90/giza/src/giza-format-number.c
+
+Root cause: POSIX positional format specifiers (%2$c, %1$s) in snprintf are
+not supported by MSVC/Intel on Windows. The literal text "$c" and "$s" was
+being printed instead of the formatted number.
+
+Find:
+  const int nprint = snprintf(string, maxchar, (minus ? "%2$c%1$s" : "%1$s"), tmp, '-');
+
+Replace with:
+  const int nprint = minus ? snprintf(string, maxchar, "-%s", tmp)
+                           : snprintf(string, maxchar,  "%s", tmp);
+
+Cross-platform note: The replacement uses standard C format specifiers that
+work on all platforms. This fix should be contributed back to upstream giza.
+
+--------------------------------------------------------------------------------
+FIX 2: Color plots showing as grayscale despite CIR command / PgplotImage=Color
+---------------------------------------------------------------------------------
+File: macos_f90/pgplotsub.F  (GRAY subroutine)
+
+Root cause: MACOS uses PGSCR to set color representations (indices 16-79 from
+CInd array in mcolors.inc). Original PGPLOT's PGIMAG renders using PGSCIR
+range directly. But giza's giza_render (called by PGIMAG) uses the colour
+table set via giza_set_colour_table, completely ignoring PGSCIR/PGSCR.
+PGCTAB must be called to feed the CInd array into giza's colour table.
+
+Changes:
+1. Add local arrays to GRAY subroutine declarations:
+     REAL*4 :: CTAB_L(mColor),CTAB_R(mColor),
+    &           CTAB_G(mColor),CTAB_B(mColor)
+
+2. Add PGCTAB call before PGIMAG in the ifPGColor block:
+     If (ifPGColor) Then
+       ! Build PGCTAB arrays from CInd for giza colour table
+       Do J=1,mColor
+         CTAB_L(J) = FLOAT(J-1)/FLOAT(mColor-1)
+         CTAB_R(J) = CInd(1,J)
+         CTAB_G(J) = CInd(2,J)
+         CTAB_B(J) = CInd(3,J)
+       End Do
+       CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,mColor,1.0,0.5)
+       CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
+    &              ZMIN,ZMAX,TRCONT)
+
+--------------------------------------------------------------------------------
+FIX 3: Win32 windowed display driver
+--------------------------------------
+New files: macos_f90/giza/src/giza-driver-win.c
+           macos_f90/giza/src/giza-driver-win-private.h
+
+Modified:  macos_f90/giza/src/giza-drivers-private.h (adds GIZA_DEVICE_WIN=10)
+           macos_f90/giza/src/giza-drivers.c (all switch statements + device string)
+           macos_f90/giza/src/CMakeLists.txt (adds source + _GIZA_HAS_WIN define)
+
+Device string: /xw (same as X11, mutually exclusive via #ifdef)
+Architecture:  Cairo image surface (ARGB32) as backing store + Win32 HWND
+               via separate thread + SetDIBitsToDevice on flush
+Interaction:   WM_KEYDOWN/WM_CHAR/WM_LBUTTONDOWN/WM_RBUTTONDOWN → shared
+               state protected by CRITICAL_SECTION, polled by get_key_press
+
+Cross-platform: entire driver wrapped in #ifdef _WIN32. On Linux/macOS,
+               _GIZA_HAS_XW is defined instead and the existing XW driver
+               handles /xw. On Windows, _GIZA_HAS_WIN is defined instead.
+
+================================================================================
+12. KNOWN REMAINING COSMETIC ISSUE
+================================================================================
+Cairo version string prints as:
+  "giza version 1.2.0 built with cairo vUSE_cairo_version_OR..."
+
+Root cause: giza calls cairo_version_string() at runtime which reads from
+src/cairo-version.h (a dummy stub file in the cairo source tree that says
+"use cairo_version() function instead"). The real version numbers are in
+the toplevel cairo-version.h but cairo_version_string() reads the dummy.
+This is display-only and does not affect functionality.
+
+================================================================================
+
+================================================================================
+13. LINUX BUILD — ADDITIONAL FIXES
+================================================================================
+
+Platform: Linux x86-64, Intel oneAPI 2023.1.0 (ifx/icx)
+
+KEY DIFFERENCE FROM WINDOWS BUILD:
+  The original MACOS Makefile defines preprocessor symbols differently:
+  - macos target:  -DCMACOS  (only)
+  - smacos target: -DCSMACOS (only, NOT -DCMACOS)
+
+  Our CMake build must match this:
+  - macos:  CMACOS defined
+  - smacos: CSMACOS defined only (NOT CMACOS)
+
+  This is set in root CMakeLists.txt:
+    target_compile_definitions(smacos PRIVATE ... CSMACOS)   <- Linux
+    target_compile_definitions(smacos PRIVATE ... CSMACOS)   <- Windows also updated
+
+COMPILER FLAGS — Linux vs Windows:
+  Windows Intel oneAPI:
+    -fpp /extend-source:132 /align /names:uppercase /assume:underscore
+    /warn:nointerfaces /DPGPLOT /DMSWIN
+  Linux Intel oneAPI:
+    -fpp -extend-source 132 -align -warn nointerfaces -DPGPLOT -DLNXOS
+    NOTE: No -names uppercase or -assume underscore on Linux
+    (Linux ifx default: lowercase symbols with trailing underscore)
+
+SOURCE FILE FIXES FOR LINUX:
+  See smacos_linux_source_fixes.txt for full details.
+
+  utilsub_c.c — FTN_NAME macro:
+    Windows branch: FTN_NAME(lower,upper) = upper##_  (UPPERCASE_)
+    Linux branch:   FTN_NAME(lower,upper) = lower##_  (lowercase_)
+    Reason: Linux ifx default generates lowercase symbols
+
+  splicubi2.c — Fortran-to-C name mapping:
+    Only needed on Windows (#if defined(_WIN32) || defined(_WIN64))
+    Linux ifx default generates splie2f2c_ (lowercase) matching C function names
+
+  smacosio.F — ifPGColor in use macos_mod only-list:
+    Wrapped in #ifdef CMACOS guard so it's only included when
+    CMACOS is defined (macos build or Windows smacos build)
+    Linux smacos build does not define CMACOS so ifPGColor excluded
+
+BUILD COMMANDS — Linux:
+  source /opt/intel/oneapi/setvars.sh
+  rm -rf build
+  cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_GIZA=ON
+  cmake --build build --target macos
+  cmake --build build --target smacos
+
+BUILD OUTPUT:
+  build/bin/macos          (executable)
+  build/lib/libsmacos.a    (static library)
+
+================================================================================

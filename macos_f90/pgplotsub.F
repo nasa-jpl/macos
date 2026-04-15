@@ -370,6 +370,8 @@ C***********************************************************************
 	Integer, Save :: ICILO,ICIHI,NDROW_sv
         REAL, Save :: CInd(3,mColor),CR(512),CG(512),CB(512)
 	LOGICAL, Save :: first_entry=.true.
+        REAL*4 :: CTAB_L(mColor),CTAB_R(mColor),
+     &            CTAB_G(mColor),CTAB_B(mColor)
 
 !	print*,'*** In GRAY: NROW,NCOL,NDROW,NDCOL =',
 !    &    NROW,NCOL,NDROW,NDCOL
@@ -473,6 +475,14 @@ C       CALL PLOT ROUTINES
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
 
 	If (ifPGColor) Then
+          ! Build PGCTAB arrays from CInd for giza colour table
+          Do J=1,mColor
+            CTAB_L(J) = FLOAT(J-1)/FLOAT(mColor-1)
+            CTAB_R(J) = CInd(1,J)
+            CTAB_G(J) = CInd(2,J)
+            CTAB_B(J) = CInd(3,J)
+          End Do
+          CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,mColor,1.0,0.5)
  	  CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &                ZMIN,ZMAX,TRCONT)
 	  CALL PGWEDG('RI',2.2,5.0,ZMIN,ZMAX,'pixel value')
