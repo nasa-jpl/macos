@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug MACOS",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build_debug/macos",
+      "args": [],
+      "cwd": "/home/dcr/dev/tst_dir",
+      "stopAtEntry": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "CMake Build (Debug)",
+      "environment": [
+        { "name": "PGPLOT_FONT", "value": "${workspaceFolder}/grfont.dat" },
+        { "name": "PGPLOT_DIR", "value": "${workspaceFolder}/pgplot/" },
+        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot" }
+      ],
+      "setupCommands": [
+        { "text": "set print pretty on" },
+        { "text": "set print elements 0" }
+      ]
+    },
+    {
+      "name": "Debug SMACOS_DVR",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build_debug/smacos_dvr",
+      "args": [],
+      "cwd": "/home/dcr/dev/tst_dir",
+      "stopAtEntry": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "CMake Build (Debug)",
+      "environment": [
+        { "name": "PGPLOT_FONT", "value": "${workspaceFolder}/grfont.dat" },
+        { "name": "PGPLOT_DIR", "value": "${workspaceFolder}/pgplot/" },
+        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot" }
+      ],
+      "setupCommands": [
+        { "text": "set print pretty on" },
+        { "text": "set print elements 0" }
+      ]
+    }
+  ]
+}
