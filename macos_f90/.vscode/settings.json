@@ -1,0 +1,12 @@
+{
+    "debug.allowBreakpointsEverywhere": true,
+    "editor.fontSize": 9,
+    "editor.defaultFormatter": "fortran-lang.linter-gfortran",
+    "fortran.formatting.path": "/usr/bin/findent",
+    "fortran.fortls.path": "/home/dcr/.local/bin/fortls",
+    "fortran.fortls.extraArgs": ["--fixed_form_extension", ".F,.f", "--fixed_form_columns", "132"],
+    "files.associations": {
+        "*.F": "fortran_fixed-form",
+        "*.f": "fortran_fixed-form"
+    }
+}
