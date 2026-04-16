@@ -10,6 +10,20 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 - GMI mex (Matlab interface): source ./makeGMIdcr.sh
 - All scripts use /opt/intel/oneapi/compiler/latest/ for portability.
 
+### CMake build (alternative)
+- Build script: source ./makeCMdcr.sh [debug] [gfortran]
+  - `source ./makeCMdcr.sh`                — Release ifx
+  - `source ./makeCMdcr.sh debug`          — Debug ifx (-O0 -check all)
+  - `source ./makeCMdcr.sh gfortran`       — Release gfortran
+  - `source ./makeCMdcr.sh debug gfortran` — Debug gfortran
+- Each combination gets its own build directory (build_release_ifx, build_debug_gfortran, etc.).
+- CMakeLists.txt files: macos_f90/CMakeLists.txt (top-level), macos_f90/npsol/CMakeLists.txt.
+- CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
+- Targets: macos (executable), smacos_lib (static library), smacos_dvr (executable, -DBUILD_SMACOS_DVR=ON), GMI (mex, -DBUILD_GMI=ON).
+- pgplot and fitsio are pre-built externals — build them first with their own scripts before running CMake.
+- C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
+- smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
+
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
 - macos_f90/surfsub.F        : all surface intersection routines
@@ -67,6 +81,7 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 17. Fix pData perturbation condition (was <=13, now ==12/==13/==FreeForm) -- done
 18. Add MODIFY handlers for nFFZernCoef, FFZernModes, nMonZernCoef, MonZernModes -- done
 19. Archive/remove obsolete source files -- done
+20. CMake build system (CMakeLists.txt, presets, VS Code integration, makeCMdcr.sh) -- done
 
 ## PERTURB notes
 - 5 routines perturb coordinate frames: CPERTURB, CPRead, CPERTURB_GRP (funcsub.F),
@@ -115,16 +130,16 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   (no spurious "Default used" warnings).
 
 ## Debug builds
-- All build scripts accept an optional `debug` argument:
-  source ./makeMSdcr.sh debug   # macos + smacos with -O0 -check all
-  source ./makeSDdcr.sh debug   # smacos_dvr with -O0 -check all
+- Makefile: source ./makeMSdcr.sh debug   # macos + smacos with -O0 -check all
+- CMake: source ./makeCMdcr.sh debug      # macos + smacos + smacos_dvr
 - Makefile uses `OPT ?= -Ofast`; scripts export `OPT="-O0 -check all"` for debug.
-- VS Code launch configs in macos_f90/.vscode/launch.json:
-  "Debug MACOS" (interactive macos) and "Debug SMACOS_DVR" (smacos driver).
-  Requires ms-vscode.cpptools extension.
+- CMake debug uses -check all,noarg_temp_created (suppresses harmless array temporary warnings).
+- VS Code: F5 launches debug session; builds automatically via preLaunchTask.
+  launch.json points to build_debug_ifx/macos and build_debug_ifx/smacos_dvr.
+  tasks.json runs cmake --preset debug. Requires ms-vscode.cpptools extension.
+  `debug.allowBreakpointsEverywhere: true` in settings.json enables breakpoints in .F files.
 - smacos_dvr: compiles smacos_dvr.F with -DCMACOS, links against smacos_lib.a
   plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
-  Requires prior make macos + make smacos.
 
 ## Build notes
 - Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — make
