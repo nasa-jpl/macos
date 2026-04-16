@@ -1408,6 +1408,12 @@ c  24Jul97 loh:  Added flag to indicate zernike type
 	REAL*8 S1,S2
 
 	CHARACTER(len=MacosCharLen) :: TypeString
+!-->  FreeForm sparse Zernike locals
+	INTEGER :: nFFZernCoef
+	INTEGER :: FFZernModes(mFFCoef)
+	INTEGER :: nMonZernCoef
+	INTEGER :: MonZernModes(mMonCoef)
+!<--
 
   10	FORMAT(1P,A,' = ',3D17.9)
   11	FORMAT(1P,A,' = ',D17.9)
@@ -1635,6 +1641,12 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      END IF
 	      WRITE(*,*)' FFZernType',MB_I(1),
      &	        ZernTypeNameL(FFZernTypeL(MB_I(1)))
+!-->  FFZernModes: set mode index for sparse FF Zernike
+	    ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)FFZernModes(MB_I(1))
+	      WRITE(*,19)' FFZernModes',MB_I(1),FFZernModes(MB_I(1))
+!<--
 	    ELSE IF (LCMP(VAR_NAM,'FLUX',4)) THEN
 	      print*,'Debug: VALUE = ', VALUE
 	      READ(VALUE,*)Flux
@@ -1804,6 +1816,12 @@ c	    READ(VALUE,*)GridType
 	      END IF
 	      WRITE(*,*)' MonZernType',MB_I(1),
      &	        ZernTypeNameL(MonZernTypeL(MB_I(1)))
+!-->  MonZernModes: set mode index for sparse Mon Zernike
+	    ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)MonZernModes(MB_I(1))
+	      WRITE(*,19)' MonZernModes',MB_I(1),MonZernModes(MB_I(1))
+!<--
 	    ELSE IF (LCMP(VAR_NAM,'MonCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1909,6 +1927,14 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'nOutCord',8)) THEN
 	    READ(VALUE,*)nOutCord
   	    WRITE(*,12)' nOutCord',nOutCord
+!-->  FreeForm sparse Zernike counts
+	  ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
+	    READ(VALUE,*,ERR=999,END=999)nFFZernCoef
+	    WRITE(*,12)' nFFZernCoef',nFFZernCoef
+	  ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
+	    READ(VALUE,*,ERR=999,END=999)nMonZernCoef
+	    WRITE(*,12)' nMonZernCoef',nMonZernCoef
+!<--
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'O',1)) THEN

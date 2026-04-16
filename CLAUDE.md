@@ -21,6 +21,9 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 - macos_f90/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
 - macos_f90/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
 - macos_f90/srtrace.F        : single-ray trace (Reflector call sites)
+- macos_f90/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
+- macos_f90/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
+- macos_f90/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
 
 ## Current work: SrfType_FreeForm = 14
 Composite surface: conic + Mon monomial + FF monomial + grid data.
@@ -60,9 +63,26 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 13. Fix makeGMIdcr.sh: remove -fsanitize=memory, replace -C with -check all, remove eval -- done
 14. SHOW UI display during input -- deferred
 15. Fix FreeFormSrf normal: zc must use total sag (fh+fhFF), not just Mon sag -- done
+16. Add pFF/xFF/yFF/zFF to all PERTURB routines -- done
+17. Fix pData perturbation condition (was <=13, now ==12/==13/==FreeForm) -- done
+18. Add MODIFY handlers for nFFZernCoef, FFZernModes, nMonZernCoef, MonZernModes -- done
+19. Archive/remove obsolete source files -- done
+
+## PERTURB notes
+- 5 routines perturb coordinate frames: CPERTURB, CPRead, CPERTURB_GRP (funcsub.F),
+  CPERTURB_2 (macos_ops.F), LnkEltCPERTURB (lnk_pert.inc).
+- All now handle pFF/xFF/yFF/zFF for SrfType_FreeForm (position translates+rotates
+  relative to RptElt; orientation vectors rotate only).
+- pMon condition: funcsub.F uses SrfType>=4 .AND. !=10 .AND. !=11 (correct for all
+  Mon-using types including FreeForm). macos_ops.F and lnk_pert.inc were <=9,
+  now fixed to match funcsub.F pattern.
+- pData condition: includes FreeForm so grid coord frame perturbs when nGridMat>0.
+- pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
+  now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
 
 ## Reference
-- macos_f90/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
+- macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
+- macos_f90/Archive/ : obsolete source files (sourcsub variants, test programs, etc.)
 
 ## Name collision warnings
 - macos_mod exports scalar LOGICAL ifGrid (ray-grid-established flag, used everywhere).
