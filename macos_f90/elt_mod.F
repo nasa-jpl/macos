@@ -84,6 +84,15 @@ C***********************************************************************
      &                        SrfType_FreeForm          = 14,
      &                        mSrfType                  = 14
 
+!-->  Per-ray status codes
+        INTEGER, PARAMETER :: RayStat_OK       = 0
+        INTEGER, PARAMETER :: RayStat_Obscured = 1
+        INTEGER, PARAMETER :: RayStat_Miss     = 2
+        INTEGER, PARAMETER :: RayStat_Bracket  = 3
+        INTEGER, PARAMETER :: RayStat_MaxIter  = 4
+        INTEGER, PARAMETER :: RayStat_Undef    = 5
+!<--
+
         ! Surface types with Gridded Surface Parameters
         INTEGER, PARAMETER :: GridTypeAll(7) = (/SrfType_GridData,
      &                                           SrfType_AsGrData,
@@ -307,6 +316,11 @@ C***********************************************************************
      &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
         Logical, dimension(:,:), allocatable :: LRayToElt
 
+!-->  Per-ray status tracking arrays
+        Integer, dimension(:), allocatable :: RayStatus, RayFailElt
+        Character(len=40), dimension(:), allocatable :: RayFailMsg
+!<--
+
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
      &                  PropTypeName(15),
      &                  BaseUnits,WaveUnits
@@ -426,10 +440,16 @@ C***********************************************************************
      &      call macos_memory_failure
      &               ('elt_mod_init(logical): deallocate failed!')
 
-          deallocate(EltName,GlassElt,GlassName,stat=m_err_elt)
+          deallocate(EltName,GlassElt,GlassName,
+     &               RayFailMsg,stat=m_err_elt)
           if (m_err_elt /= 0)
      &      call macos_memory_failure
      &               ('elt_mod_init(char): deallocate failed!')
+
+          deallocate(RayStatus,RayFailElt,stat=m_err_elt)
+          if (m_err_elt /= 0)
+     &      call macos_memory_failure
+     &               ('elt_mod_init(RayStat): deallocate failed!')
 
           deallocate(SegCoord,RayToSegMap,RayID,RayWFMap,
      &               ObsType,IWORK,LnkElt,EltMRP, LEltMRP_FLG,
@@ -530,10 +550,17 @@ C***********************************************************************
 
         ! Character arrays
         allocate(EltName(0:mElt), GlassElt(mElt), GlassName(mGlass),
-     &           EltMRP(0:mElt),stat=m_err_elt)
+     &           EltMRP(0:mElt),RayFailMsg(mRay),stat=m_err_elt)
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init: allocate(char) failed!')
+
+!-->  Per-ray status arrays
+        allocate(RayStatus(mRay),RayFailElt(mRay),stat=m_err_elt)
+        if (m_err_elt /= 0)
+     &    call macos_memory_failure(
+     &          'elt_mod_init: allocate(RayStat) failed!')
+!<--
 
         ! Integer arrays
         allocate(SegCoord(3,mElt),RayToSegMap(mRay,mSegMirs),
@@ -673,6 +700,12 @@ C***********************************************************************
           LRayOK(:)            = .FALSE.
           LEltOK(:)            = .FALSE.
           LRayPass(:)          = .FALSE.
+
+!-->  Per-ray status reset
+          RayStatus(:)         = RayStat_OK
+          RayFailElt(:)        = 0
+          RayFailMsg(:)        = ' '
+!<--
           LEltObs(:)           = .FALSE.
           ifComputeDZ(:)       = .FALSE.
           LGlass(:)            = .FALSE.
@@ -994,6 +1027,26 @@ C***********************************************************************
           END IF
 
         END SUBROUTINE SetFreeFormFlags
+
+C***********************************************************************
+C  SetRayFail -- record the first failure for a ray
+C
+C  Only stores the first failure (subsequent calls for the same ray
+C  are ignored), so the root cause is preserved.
+C***********************************************************************
+
+!-->
+        SUBROUTINE SetRayFail(iRay, iStat, iElt, cMsg)
+          IMPLICIT NONE
+          INTEGER, INTENT(IN) :: iRay, iStat, iElt
+          CHARACTER(len=*), INTENT(IN) :: cMsg
+          IF (RayStatus(iRay) .EQ. RayStat_OK) THEN
+            RayStatus(iRay)  = iStat
+            RayFailElt(iRay) = iElt
+            RayFailMsg(iRay) = cMsg
+          END IF
+        END SUBROUTINE SetRayFail
+!<--
 
 C***********************************************************************
 

@@ -1206,6 +1206,12 @@ C  0. Initialize parameters
 	End If
 
 	nBadRays=0
+!-->  Reset per-ray status for this trace
+	RayStatus(:) = RayStat_OK
+	RayFailElt(:) = 0
+	RayFailMsg(:) = ' '
+	nZPFailMsg = 0
+!<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
 
@@ -2240,6 +2246,16 @@ C	Here when element number is determined...
 	          PrevElt(iFirstNonSeq)=PrevNonSeg
 	        END IF
 	        IF (.NOT.LRayOK(iRay)) THEN
+!-->  Record failure reason (non-sequential)
+	          IF (LZPFailed) THEN
+	            CALL SetRayFail(iRay,RayStat_Bracket,iElt,
+     &              'root-find bracket/iter fail')
+	            LZPFailed = .FALSE.
+	          ELSE
+	            CALL SetRayFail(iRay,RayStat_Miss,iElt,
+     &              'surface miss')
+	          END IF
+!<--
 	          nBadRays=nBadRays+1
 	          LastElt=PrevElt(iElt)
 	          LEltOK(imin)=.FALSE.
@@ -2383,6 +2399,16 @@ C  End of element section
             ! affect L1(iRay) (= LRayPass) -jzlou
 
 	    IF (.NOT.LRayOK(iRay)) THEN
+!-->  Record failure reason
+	      IF (LZPFailed) THEN
+	        CALL SetRayFail(iRay,RayStat_Bracket,iElt,
+     &            'root-find bracket/iter fail')
+	        LZPFailed = .FALSE.
+	      ELSE
+	        CALL SetRayFail(iRay,RayStat_Miss,iElt,
+     &            'surface miss')
+	      END IF
+!<--
 	      nBadRays=nBadRays+1
 	      LEltOK(iElt)=.FALSE.
 	      LastElt=PrevElt(iElt)
@@ -2532,6 +2558,13 @@ C	  END IF
 ! 	    end if
 ! 	  End If
 ! #endif
+
+!-->  Record obscuration (if ray passed surfaces but was blocked)
+	    IF (.NOT.L1(iRay)) THEN
+	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
+     &          'obscured/vignetted')
+	    END IF
+!<--
 
 C  9. End of iRay loop
 
@@ -2802,7 +2835,7 @@ C       FU=F(U)
           ENDIF
         ENDIF
 11    CONTINUE
-      PAUSE 'ZPSolve exceeded maximum iterations.'
+      WRITE(*,*) 'ZPSolve exceeded maximum iterations.'
 3     XMIN=X
       ZPSolve=FX
       RETURN
@@ -3006,18 +3039,51 @@ c   p1v=p1+v*r1
 C***********************************************************************
 
 	SUBROUTINE WARN(LEltOK,nElt,nBadRays)
+	use elt_mod, only: RayStatus, RayFailElt,
+     &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
+     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
+	use surfsub, only: nZPFailMsg, mZPFailMsg
 	IMPLICIT NONE
-	INTEGER nElt,iElt,nBadRays
+	INTEGER nElt,iElt,nBadRays,iRay
+	INTEGER :: nMiss,nObs,nBrkt,nOther
 	LOGICAL LEltOK(nElt)
 
   124	FORMAT(' One or more rays become undefined at element',i4)
   125	FORMAT(' A total of ',i8,' rays were lost')
-	DO 1 iElt=1,nElt
-	  IF (.NOT.LEltOK(iElt)) THEN
-	    WRITE(*,124)iElt
-	  END IF
-   1	CONTINUE
-	WRITE(*,125)nBadRays
+  126	FORMAT('   Surface miss:   ',i8)
+  127	FORMAT('   Obscured:       ',i8)
+  128	FORMAT('   Bracket/iter:   ',i8)
+  129	FORMAT('   Other:          ',i8)
+
+	DO iElt=1,nElt
+	  IF (.NOT.LEltOK(iElt)) WRITE(*,124) iElt
+	END DO
+	WRITE(*,125) nBadRays
+
+!-->  Per-status summary
+	nMiss=0; nObs=0; nBrkt=0; nOther=0
+	DO iRay=1,nRay
+	  SELECT CASE (RayStatus(iRay))
+	  CASE (RayStat_Miss)
+	    nMiss = nMiss + 1
+	  CASE (RayStat_Obscured)
+	    nObs = nObs + 1
+	  CASE (RayStat_Bracket, RayStat_MaxIter)
+	    nBrkt = nBrkt + 1
+	  CASE (RayStat_Undef)
+	    nOther = nOther + 1
+	  END SELECT
+	END DO
+	IF (nMiss.GT.0)  WRITE(*,126) nMiss
+	IF (nObs.GT.0)   WRITE(*,127) nObs
+	IF (nBrkt.GT.0)  WRITE(*,128) nBrkt
+	IF (nOther.GT.0) WRITE(*,129) nOther
+	IF (nZPFailMsg.GT.mZPFailMsg)
+     &    WRITE(*,130) mZPFailMsg, nZPFailMsg
+  130	FORMAT('   (',i4,' of ',i6,
+     &    ' bracket/iteration messages shown)')
+!<--
+
 	RETURN
 	END SUBROUTINE WARN
 
