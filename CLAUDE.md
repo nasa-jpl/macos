@@ -82,6 +82,23 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 18. Add MODIFY handlers for nFFZernCoef, FFZernModes, nMonZernCoef, MonZernModes -- done
 19. Archive/remove obsolete source files -- done
 20. CMake build system (CMakeLists.txt, presets, VS Code integration, makeCMdcr.sh) -- done
+21. Per-ray status tracking + convert STOP/PAUSE to graceful failures -- done
+22. Fix short filename crash in OLD command (macosio.F substring bounds) -- done
+
+## Per-ray status tracking
+- RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
+- Per-ray arrays: RayStatus(mRay), RayFailElt(mRay), RayFailMsg(mRay) — allocated in elt_mod.
+- SetRayFail(iRay, iStat, iElt, cMsg) records first failure only (avoids overwriting root cause).
+- LZPFailed module variable in MODULE surfsub: set by *ZPSolve on bracket/max-iter failure,
+  checked by surface routine callers (IF (LZPFailed) GO TO 98), reset after recording status.
+- All STOP statements in surfsub.F converted: AZPSolve, GSZPSolve, GSZPB, SFFZPSolve, UDSZPSolve.
+- All PAUSE statements converted: DZPSolve (didesub.F), ZPSolve (tracesub.F).
+- Status recorded at nBadRays increment points in CTRACE (tracesub.F) and CPROPAGATE (propsub.F).
+- Obscuration recorded at end of iRay loop (L1/LRayPass check).
+- RayStatus/nZPFailMsg reset at trace start (alongside nBadRays=0).
+- WARN subroutine enhanced with per-category breakdown (miss/obscured/bracket/other).
+- Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
+  First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.
 
 ## PERTURB notes
 - 5 routines perturb coordinate frames: CPERTURB, CPRead, CPERTURB_GRP (funcsub.F),

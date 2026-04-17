@@ -15,6 +15,12 @@ C***********************************************************************
      &              SFFSrf, SFFZPSolve, SFFZPB,
      &              MonomialEval, MonomialD2, ConicDeltaS
 
+!-->  Root-finding failure flag (set by *ZPSolve, checked by callers)
+         LOGICAL :: LZPFailed = .FALSE.
+         INTEGER :: nZPFailMsg = 0
+         INTEGER, PARAMETER :: mZPFailMsg = 20
+!<--
+
       CONTAINS
 
 C***********************************************************************
@@ -911,6 +917,7 @@ C	Use L as a starting point, find incidence pt on full surface
             CALL AZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
             tol=1d-14
             L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
+            IF (LZPFailed) GO TO 98
             L=L3
 
 C	Compute normal vector
@@ -1176,6 +1183,7 @@ C       Use L as a starting point, find incidence pt on full (aspherical) surfac
             !tol=1d-14  ! original
             tol=1d-16   ! modified at suggestion of DCR, 05/31/2016
             L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
+            IF (LZPFailed) GO TO 98
             L=L3
             L_asph=L  ! L_asph is L on top of aspherical surface (conic+pure_aspherical)
 
@@ -1295,12 +1303,14 @@ C       !print*,'** gridm_rms2 =',grdm_rms2
                CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
      &                nGridMat,mGridMat,GridMat,GridSrfdx,
      &                pmon,rhoc,xhat,yhat,zhat,L_conic)
+               IF (LZPFailed) GO TO 98
 
                ! This function updates 'L' for grid surface -jzlou
                tol=1d-10
                L3=GSZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,
      &              nGridMat,mGridMat,GridMat,GridSrfdx,
      &              pmon,rhoc,xhat,yhat,zhat,L_conic)
+               IF (LZPFailed) GO TO 98
 
                L = L_asph+L3-L_conic
 
@@ -1499,8 +1509,9 @@ C***********************************************************************
             FA=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,A,nAsphCoef)
             FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
             IF(FB*FA.GT.0d0)THEN
-               WRITE(*,*) 'AZPB failed.'
-               STOP
+               LZPFailed = .TRUE.
+               AZPSolve = X1
+               RETURN
             END IF
             FC=FB
             DO ITER=1,ITMAX
@@ -1558,7 +1569,10 @@ C        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
                ENDIF
                FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
             END DO
-            WRITE(*,*) 'AZPSolve exceeding maximum iterations.'
+            nZPFailMsg = nZPFailMsg + 1
+            IF (nZPFailMsg.LE.mZPFailMsg)
+     &        WRITE(*,*) 'AZPSolve exceeded maximum iterations.'
+            LZPFailed = .TRUE.
             AZPSolve=B
             RETURN
          END FUNCTION AZPSolve
@@ -1609,8 +1623,12 @@ C***********************************************************************
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
      &      pmon,rhoc,xhat,yhat,zhat,B)
             IF(FB*FA.GT.0.) THEN
-               WRITE(*,*) 'GSZPB failed.'
-               STOP
+               nZPFailMsg = nZPFailMsg + 1
+               IF (nZPFailMsg.LE.mZPFailMsg)
+     &           WRITE(*,*) 'GSZPB failed.'
+               LZPFailed = .TRUE.
+               GSZPSolve = X1
+               RETURN
             END IF
             FC=FB
             DO ITER=1,ITMAX
@@ -1662,7 +1680,10 @@ C***********************************************************************
      &         nGridMat,mGridMat,GridMat,GridSrfdx,
      &         pmon,rhoc,xhat,yhat,zhat,B)
             END DO
-            WRITE(*,*) 'GSZPSolve exceeding maximum iterations.'
+            nZPFailMsg = nZPFailMsg + 1
+            IF (nZPFailMsg.LE.mZPFailMsg)
+     &        WRITE(*,*) 'GSZPSolve exceeding maximum iterations.'
+            LZPFailed = .TRUE.
             GSZPSolve=B
             RETURN
          END FUNCTION GSZPSolve
@@ -1683,8 +1704,11 @@ C***********************************************************************
      &      pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
 
             IF(X1.EQ.X2)THEN
-               WRITE(*,*) 'GSZPB initial range error'
-               STOP
+               nZPFailMsg = nZPFailMsg + 1
+               IF (nZPFailMsg.LE.mZPFailMsg)
+     &           WRITE(*,*) 'GSZPB initial range error'
+               LZPFailed = .TRUE.
+               RETURN
             END IF
             F1=SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
@@ -2045,13 +2069,16 @@ C	Compute incidence point of ray on the base conic surface
 C----------------------------------------------------------------------------
 C	Use Lconic as a starting point; find incidence pt on full surface
 
-            IF (ABS(Lconic).GT.1d-7) THEN
-               L1=0.9988d0*Lconic
-               L2=1.00125d0*Lconic
-            ELSE
-               L1=-1d-7
-               L2=1d-7
-            END IF
+      !      IF (ABS(Lconic).GT.1d-7) THEN
+      !         L1=0.9988d0*Lconic
+      !         L2=1.00125d0*Lconic
+      !      ELSE
+      !         L1=-1d-7
+      !         L2=1d-7
+      !      END IF
+
+            L1=Lconic-1d-3 
+            L2=Lconic+1d-3 
 
             CALL SFFZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,lMon,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
@@ -2065,6 +2092,7 @@ C	Use Lconic as a starting point; find incidence pt on full surface
      &      lMon,pmon,rhoc,xhat,yhat,zhat,
      &      pData,rhod,xData,yData,zData,L,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
+            IF (LZPFailed) GO TO 98
             L=L3
 
 C----------------------------------------------------------------------------
@@ -2418,8 +2446,12 @@ C***********************************************************************
      &      pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B,
      &      LFF,pFF,xFF,yFF,zFF,coefFF)
             IF(FB*FA.GT.0d0) THEN
-               WRITE(*,*) 'SFFZPSolve: bracketing failed (FA*FB > 0).'
-               STOP
+               nZPFailMsg = nZPFailMsg + 1
+               IF (nZPFailMsg.LE.mZPFailMsg)
+     &           WRITE(*,*) 'SFFZPSolve: bracketing failed.'
+               LZPFailed = .TRUE.
+               SFFZPSolve = X1
+               RETURN
             END IF
 
             FC=FB
@@ -2467,7 +2499,10 @@ C***********************************************************************
      &         pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,B,
      &         LFF,pFF,xFF,yFF,zFF,coefFF)
    11       CONTINUE
-            WRITE(*,*) 'SFFZPSolve: exceeded maximum iterations.'
+            nZPFailMsg = nZPFailMsg + 1
+            IF (nZPFailMsg.LE.mZPFailMsg)
+     &        WRITE(*,*) 'SFFZPSolve: exceeded maximum iterations.'
+            LZPFailed = .TRUE.
             SFFZPSolve=B
             RETURN
          END FUNCTION SFFZPSolve
@@ -2902,6 +2937,7 @@ C	Compute incidence point of ray on the surface
             tol=1d-10
             L3=UDSZPSolve(L1,L2,tol,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
      &      coef,param,lMon,pmon,rhoc,xhat,yhat,zhat,L)
+            IF (LZPFailed) GO TO 98
             L=L3
 
             ! Compute normal
@@ -2990,8 +3026,12 @@ C***********************************************************************
             FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
      &                lMon,pmon,rhoc,xhat,yhat,zhat,B)
             IF(FB*FA.GT.0d0)THEN
-               WRITE(*,*) 'UDSZPB failed.'
-               STOP
+               nZPFailMsg = nZPFailMsg + 1
+               IF (nZPFailMsg.LE.mZPFailMsg)
+     &           WRITE(*,*) 'UDSZPB failed.'
+               LZPFailed = .TRUE.
+               UDSZPSolve = X1
+               RETURN
             END IF
             FC=FB
             DO ITER=1,ITMAX
@@ -3049,7 +3089,10 @@ C***********************************************************************
                FB=SUDSrf(UDSrfType,Kc,Kr,psi,pv,prel,ihat,coef,param,
      &         lMon,pmon,rhoc,xhat,yhat,zhat,B)
             END DO
-            WRITE(*,*) 'UDSZPSolve exceeding maximum iterations.'
+            nZPFailMsg = nZPFailMsg + 1
+            IF (nZPFailMsg.LE.mZPFailMsg)
+     &        WRITE(*,*) 'UDSZPSolve exceeding maximum iterations.'
+            LZPFailed = .TRUE.
             UDSZPSolve=B
             RETURN
          END FUNCTION UDSZPSolve
