@@ -213,9 +213,11 @@ C	Get file name
 	pertfil=filnam
 
         ! Updated so will accept '.in' file extension -jzlou
-	if (.not.LCMP(infil(l-2:l),'.in',3)) then
-	  infil(l+1:l+4)='.in '
-        end if
+	if (l.GE.3) then
+	  if (LCMP(infil(l-2:l),'.in',3)) go to 44
+	end if
+	infil(l+1:l+4)='.in '
+   44	continue
 	outfil(l+1:l+5)='.out '
 	cmatfil(l+1:l+6)='.cmat '
 	plotfil(l+1:l+6)='.plot '
