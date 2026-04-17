@@ -116,7 +116,7 @@ C***********************************************************************
         use elt_mod
         use sourcsub_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
-     &                     ZerntoMon4
+     &                     ZerntoMon4, LZPFailed, nZPFailMsg
         use tracesub_mod
 	use elemsub_mod
 	use traceutil_mod
@@ -356,6 +356,12 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 	  iNextElt=nElt
 	END IF
 	nBadRays=0
+!-->  Reset per-ray status for this trace
+	RayStatus(:) = RayStat_OK
+	RayFailElt(:) = 0
+	RayFailMsg(:) = ' '
+	nZPFailMsg = 0
+!<--
 	iElt=iSecondElt  ! iElt = next Elt to trace to -jzlou
 	iEm1=iElt-1
 	CurIndRef=StartIndRef
@@ -1076,6 +1082,16 @@ cdebug
 	            PrevElt(iElt)=PrevNonSeg(iRay)
 	          END IF
 	          IF (.NOT.LRayOK(iRay)) THEN
+!-->  Record failure reason (non-sequential)
+	            IF (LZPFailed) THEN
+	              CALL SetRayFail(iRay,RayStat_Bracket,iElt,
+     &                'root-find bracket/iter fail')
+	              LZPFailed = .FALSE.
+	            ELSE
+	              CALL SetRayFail(iRay,RayStat_Miss,iElt,
+     &                'surface miss')
+	            END IF
+!<--
 	            nBadRays=nBadRays+1
 	            LEltOK(imin)=.FALSE.
 	            IF (IRAY.GT.1) THEN
@@ -1149,6 +1165,16 @@ C  End of element section
 	      END IF
 
 	      IF (.NOT.LRayOK(iRay)) THEN
+!-->  Record failure reason
+	        IF (LZPFailed) THEN
+	          CALL SetRayFail(iRay,RayStat_Bracket,iElt,
+     &            'root-find bracket/iter fail')
+	          LZPFailed = .FALSE.
+	        ELSE
+	          CALL SetRayFail(iRay,RayStat_Miss,iElt,
+     &            'surface miss')
+	        END IF
+!<--
 	        nBadRays=nBadRays+1
 	        LEltOK(iElt)=.FALSE.
 	        IF (IRAY.GT.1) THEN
@@ -1157,6 +1183,13 @@ C  End of element section
 	        END IF
 	      END IF
 	    END IF
+
+!-->  Record obscuration (if ray passed surfaces but was blocked)
+	    IF (.NOT.LRayPass(iRay)) THEN
+	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
+     &          'obscured/vignetted')
+	    END IF
+!<--
 
 C	End of iRay loop
 
