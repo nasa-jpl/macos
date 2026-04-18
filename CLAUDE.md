@@ -164,10 +164,23 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - Full link requires environment from makealldcr.sh (macossrc_dir, intel64_lib, etc.).
   Running make macos directly will compile but fail at link due to missing paths.
 - Use makeMSdcr.sh for macos_f90-only changes (faster than makealldcr.sh).
+  makeMSdcr.sh runs `make clean-macos` then `make macos` — this removes the old binary
+  first. If the link fails (e.g. missing propsub_mod128), the binary is gone; use CMake
+  instead: source ./makeCMdcr.sh debug (from macos/, not macos_f90/).
+- macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
 - GMI (Matlab mex): built separately via makeGMIdcr.sh.
   ifx 2025.3 quirk: -C flag implies -fsanitize=memory; use -check all instead.
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
+
+## Test prescriptions (ZGD_test_files/)
+- All FreeForm test prescriptions use nGridpts=11 (gives 89 rays for Circular grid).
+  Reason: model 256 has bRay=500 (BUILD limit) and mDrawRay=101 (nDrawElt array size);
+  nGridpts=11 gives 89 rays which is under both limits.
+  Grid-using prescriptions (tst_FF_g/mg/fg/refl) also need model 256 for mGridMat=256.
+- Obscured rays now increment nBadRays so WARN fires: tracesub.F and propsub.F both
+  have `nBadRays=nBadRays+1` inside the `IF (.NOT.L1(iRay))` / `IF (.NOT.LRayPass(iRay))`
+  blocks that call SetRayFail(RayStat_Obscured).
 
 ## Conventions (new code)
 - IMPLICIT NONE throughout

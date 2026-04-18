@@ -8,5 +8,6 @@
     "files.associations": {
         "*.F": "fortran_fixed-form",
         "*.f": "fortran_fixed-form"
-    }
+    },
+    "makefile.configureOnOpen": false
 }

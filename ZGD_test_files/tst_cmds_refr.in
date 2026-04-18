@@ -1,0 +1,141 @@
+
+% tst_cmds_refr.in
+% Phase 2: Refractor (lens) system for exercising refraction-related commands
+% System: collimated +z beam -> plano-convex singlet lens -> focal plane
+%
+% Lens:
+%   Front surface (flat):  Refractor, KrElt=-1e22, n=1.0 -> 1.5
+%   Back surface (conic):  Refractor, KrElt=-200mm, n=1.5 -> 1.0
+%   Thin lens: 1/f = (n-1)/R2 ~ 0.5/200 = 0.0025 -> f~400mm (rough estimate)
+%
+% Useful command sequence:
+%   OLD tst_cmds_refr.in
+%   BUILD
+%   SPOT
+%   OPD
+%   SWL 5.5e-4      % change wavelength
+%   BUILD
+%   OPD
+%   BEAM GAUSS      % change beam profile
+%   BUILD
+%   SPOT
+%   POLARIZATION    % enable polarization
+%   BUILD
+%   NOPOLARIZATION
+
+% ---------------------------------------------------------------------------------------
+% Source Definition
+% ---------------------------------------------------------------------------------------
+
+        ChfRayDir=  0.0D+00  0.0D+00  1.0D+00
+        ChfRayPos=  0.0D+00  0.0D+00 -1.0D+04
+          zSource=  1.0D+22
+
+        BaseUnits=  mm
+        WaveUnits=  mm
+
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+          Wavelen=  6.328D-04
+             Flux=  1.0D+00
+
+         Aperture=  1.0D+01
+         Obscratn=  0.0D+00
+
+         GridType=  Circular
+         nGridpts=  11
+            xGrid=  1.0D+00  0.0D+00  0.0D+00
+            yGrid=  0.0D+00  1.0D+00  0.0D+00
+
+% ---------------------------------------------------------------------------------------
+% Element Definitions
+% ---------------------------------------------------------------------------------------
+
+             nElt=  4
+
+% Flat front surface of lens: air (n=1) -> glass (n=1.5)
+             iElt=  1
+          EltName=  LensFront
+          Element=  Refractor
+          Surface=  Flat
+            KrElt= -1.0D+22
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00 -1.0D+00
+           VptElt=  0.0D+00  0.0D+00  0.0D+00
+           RptElt=  0.0D+00  0.0D+00  0.0D+00
+           IndRef=  1.5D+00
+           Extinc=  0.0D+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=  1.0D+22
+          nECoord= -6
+
+% Curved back surface: glass (n=1.5) -> air (n=1)
+             iElt=  2
+          EltName=  LensBack
+          Element=  Refractor
+          Surface=  Conic
+            KrElt= -2.0D+02
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00 -1.0D+00
+           VptElt=  0.0D+00  0.0D+00  5.0D+00
+           RptElt=  0.0D+00  0.0D+00  5.0D+00
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=  1.0D+22
+          nECoord= -6
+
+% Reference surface downstream
+             iElt=  3
+          EltName=  RefSurf
+          Element=  Reference
+          Surface=  Flat
+            KrElt= -1.0D+22
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00  1.0D+00
+           VptElt=  0.0D+00  0.0D+00  4.0D+02
+           RptElt=  0.0D+00  0.0D+00  4.0D+02
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  FarField
+             zElt=  1.0D+22
+          nECoord= -6
+
+% Focal plane
+             iElt=  4
+          EltName=  FclPlane
+          Element=  FocalPlane
+          Surface=  Flat
+            KrElt= -1.0D+22
+            KcElt=  0.0D+00
+           psiElt=  0.0D+00  0.0D+00  1.0D+00
+           VptElt=  0.0D+00  0.0D+00  4.0D+02
+           RptElt=  0.0D+00  0.0D+00  4.0D+02
+           IndRef=  1.0D+00
+           Extinc=  0.0D+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=  1.0D+22
+          nECoord= -6
+
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
+
+         nOutCord=  5
+             Tout=  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00
+                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00
