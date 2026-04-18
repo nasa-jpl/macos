@@ -2563,6 +2563,7 @@ C	  END IF
 	    IF (.NOT.L1(iRay)) THEN
 	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
      &          'obscured/vignetted')
+	      nBadRays=nBadRays+1
 	    END IF
 !<--
 

@@ -1188,6 +1188,7 @@ C  End of element section
 	    IF (.NOT.LRayPass(iRay)) THEN
 	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
      &          'obscured/vignetted')
+	      nBadRays=nBadRays+1
 	    END IF
 !<--
 
