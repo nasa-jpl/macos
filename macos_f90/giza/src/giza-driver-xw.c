@@ -56,8 +56,10 @@ struct GIZA_XWindow
   unsigned char *virtualscreen;
   int videoaccesstype;
 
-  int width;
-  int height;
+  int width;       /* X window / pixmap width  (1× screen pixels) */
+  int height;      /* X window / pixmap height (1× screen pixels) */
+  int render_w;    /* off-screen render surface width  (supersample × width)  */
+  int render_h;    /* off-screen render surface height (supersample × height) */
   int depth;
   int pixelsize;
   int screensize;
@@ -70,11 +72,16 @@ struct GIZA_XWindow
 #define GIZA_DEVICE_UNITS_PER_PIXEL 1.0 /* device units are pixels */
 #define GIZA_DEVICE_INTERACTIVE 1
 #define GIZA_XW_MARGIN 20
+/* Render at this factor above the window pixel count, then downsample on flush.
+ * Gives sharper lines/text/contours (supersampling) with no CPU penalty for
+ * the data path (OPD/PIX/INT pixels are still 1:1 mapped to data values). */
+#define GIZA_XW_SUPERSAMPLE 2
 
 static void _giza_xevent_loop (int mode, int moveCurs, int nanc, const int *anchorx, const int *anchory, int *x, int *y, char *ch);
 static void _giza_expose_xw (XEvent *event);
 static void _giza_flush_xw_event_queue (XEvent *event);
 static int _giza_errors_xw (Display *display, XErrorEvent *error);
+static void _giza_paint_xw_to_window (unsigned int win_w, unsigned int win_h);
 
 /*static int giza_xw_debug = 0;*/
 
@@ -134,7 +141,12 @@ _giza_open_device_xw (double width, double height, int units)
     }
 
 
-  Dev[id].deviceUnitsPermm    = GIZA_DEVICE_UNITS_PER_MM;
+  /* Use actual screen DPI when X11 reports sensible values (fall back to compiled default) */
+  {
+    double xdpm = (double)DisplayWidth (XW[id].display, XW[id].screennum) /
+                  (double)DisplayWidthMM(XW[id].display, XW[id].screennum);
+    Dev[id].deviceUnitsPermm = (xdpm > 1.0 && xdpm < 20.0) ? xdpm : GIZA_DEVICE_UNITS_PER_MM;
+  }
   Dev[id].deviceUnitsPerPixel = GIZA_DEVICE_UNITS_PER_PIXEL;
   Dev[id].isInteractive       = GIZA_DEVICE_INTERACTIVE;
 
@@ -149,9 +161,12 @@ _giza_open_device_xw (double width, double height, int units)
       Dev[id].height = GIZA_DEFAULT_HEIGHT;
     }
 
-  /* set the XLib stuff */
-  XW[id].width = Dev[id].width + 2 * GIZA_XW_MARGIN;
+  /* 1× window/pixmap size — Dev[id].width/height stay at logical (1×) values */
+  XW[id].width  = Dev[id].width  + 2 * GIZA_XW_MARGIN;
   XW[id].height = Dev[id].height + 2 * GIZA_XW_MARGIN;
+  /* 2× off-screen render surface dimensions */
+  XW[id].render_w = XW[id].width  * GIZA_XW_SUPERSAMPLE;
+  XW[id].render_h = XW[id].height * GIZA_XW_SUPERSAMPLE;
 
   /* set the depth */
   XW[id].depth = DefaultDepth(XW[id].display,XW[id].screennum);
@@ -192,7 +207,19 @@ _giza_open_device_xw (double width, double height, int units)
     }
 
   XStoreName (XW[id].display, XW[id].window, Dev[id].prefix);
-  XSelectInput(XW[id].display, XW[id].window, StructureNotifyMask);
+  XSelectInput(XW[id].display, XW[id].window,
+               StructureNotifyMask | ExposureMask);
+
+  /* Preserve existing content when window is resized (NorthWestGravity) and
+   * ask server to save content across exposures (backing store). */
+  {
+    XSetWindowAttributes swa;
+    swa.bit_gravity   = NorthWestGravity;
+    swa.backing_store = WhenMapped;
+    XChangeWindowAttributes(XW[id].display, XW[id].window,
+                            CWBitGravity | CWBackingStore, &swa);
+  }
+
   XMapWindow (XW[id].display, XW[id].window);
 
    /* register interest in the delete window message */
@@ -211,13 +238,18 @@ _giza_open_device_xw (double width, double height, int units)
   /* version below works on older X11 distros */
   XW[id].gc = XDefaultGC (XW[id].display, XW[id].screennum);
 
-  /* create Xlib surface in cairo */
-  Dev[id].surface = cairo_xlib_surface_create (XW[id].display, XW[id].pixmap, XW[id].visual, XW[id].width, XW[id].height);
+  /* Off-screen image surface at 2× physical pixels.
+   * device_scale keeps logical coordinates at 1× so all giza/PGPLOT
+   * geometry (viewport, labels, character sizes) is unchanged. */
+  Dev[id].surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+                                                XW[id].render_w, XW[id].render_h);
   if (!Dev[id].surface)
     {
       _giza_error ("_giza_open_device_xw", "Could not create surface");
       return 5;
     }
+  cairo_surface_set_device_scale (Dev[id].surface,
+                                  GIZA_XW_SUPERSAMPLE, GIZA_XW_SUPERSAMPLE);
 
   Dev[id].defaultBackgroundAlpha = 1.;
 
@@ -233,16 +265,138 @@ _giza_open_device_xw (double width, double height, int units)
 }
 
 /**
+ * Drain pending X events (expose, configure, close-button) and repaint the
+ * window.  Called while MACOS is idle at the prompt so that plot windows
+ * remain responsive to resizes without blanking.
+ */
+void
+_giza_process_events_xw (void)
+{
+  if (!XW[id].in_use || !XW[id].display || !XW[id].window) return;
+
+  /* Close-button: dispose of device and return immediately */
+  {
+    Atom wmDelete = XInternAtom(XW[id].display, "WM_DELETE_WINDOW", True);
+    XEvent event;
+    if (wmDelete != None &&
+        XCheckTypedWindowEvent(XW[id].display, XW[id].window,
+                               ClientMessage, &event))
+      {
+        if (event.xclient.data.l[0] == (long)wmDelete)
+          {
+            giza_close_device();
+            return;
+          }
+        XPutBackEvent(XW[id].display, &event);
+      }
+  }
+
+  /* Drain any ConfigureNotify + Expose events; repaint once if any arrived. */
+  {
+    int needs_redraw = 0;
+    XEvent event;
+    while (XCheckTypedWindowEvent(XW[id].display, XW[id].window,
+                                  ConfigureNotify, &event))
+      needs_redraw = 1;
+    while (XCheckTypedWindowEvent(XW[id].display, XW[id].window,
+                                  Expose, &event))
+      needs_redraw = 1;
+    if (needs_redraw)
+      {
+        Window root_ret;
+        int x_ret, y_ret;
+        unsigned int win_w, win_h, bw_ret, depth_ret;
+        XGetGeometry(XW[id].display, XW[id].window, &root_ret,
+                     &x_ret, &y_ret, &win_w, &win_h, &bw_ret, &depth_ret);
+        cairo_surface_flush(Dev[id].surface);
+        _giza_paint_xw_to_window(win_w, win_h);
+        XFlush(XW[id].display);
+      }
+  }
+}
+
+/**
+ * Paint the offscreen pixmap onto the window, scaling to fit if the window
+ * has been resized.  Called from both flush and expose handlers.
+ */
+static void
+_giza_paint_xw_to_window (unsigned int win_w, unsigned int win_h)
+{
+  if (win_w == (unsigned)XW[id].width && win_h == (unsigned)XW[id].height)
+    {
+      /* Native size — fast pixel-exact copy */
+      XCopyArea (XW[id].display, XW[id].pixmap, XW[id].window, XW[id].gc,
+                 0, 0, (unsigned)XW[id].width, (unsigned)XW[id].height, 0, 0);
+    }
+  else
+    {
+      /* Window was resized — scale the 1× pixmap to fit the new window size */
+      cairo_surface_t *pix_surf = cairo_xlib_surface_create (
+          XW[id].display, XW[id].pixmap, XW[id].visual, XW[id].width, XW[id].height);
+      cairo_surface_t *win_surf = cairo_xlib_surface_create (
+          XW[id].display, XW[id].window, XW[id].visual, win_w, win_h);
+      cairo_t *cr = cairo_create (win_surf);
+      cairo_scale (cr, (double)win_w / XW[id].width, (double)win_h / XW[id].height);
+      cairo_set_source_surface (cr, pix_surf, 0, 0);
+      cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_BILINEAR);
+      cairo_paint (cr);
+      cairo_destroy (cr);
+      cairo_surface_destroy (win_surf);
+      cairo_surface_destroy (pix_surf);
+    }
+}
+
+/**
  * Flushes the X device.
  */
 void
 _giza_flush_device_xw (void)
 {
-  /* flush the offscreen surface */
-  cairo_surface_flush (Dev[id].surface);
+  /* Non-blocking check: did the user click the window's close button?
+   * WM_DELETE_WINDOW arrives as a ClientMessage.  Handle it here so
+   * the window dismisses immediately without requiring MACOS to quit. */
+  {
+    Atom wmDelete = XInternAtom(XW[id].display, "WM_DELETE_WINDOW", True);
+    XEvent event;
+    if (wmDelete != None &&
+        XCheckTypedWindowEvent(XW[id].display, XW[id].window,
+                               ClientMessage, &event))
+      {
+        if (event.xclient.data.l[0] == (long)wmDelete)
+          {
+            giza_close_device();
+            return;              /* device is gone — nothing left to flush */
+          }
+        XPutBackEvent(XW[id].display, &event); /* unrelated event, restore */
+      }
+  }
 
-  /* move the offscreen surface to the onscreen one */
-  XCopyArea (XW[id].display, XW[id].pixmap, XW[id].window, XW[id].gc, 0, 0, (unsigned) XW[id].width, (unsigned) XW[id].height, 0, 0);
+  /* Downsample the 2× render surface into the 1× X pixmap.
+   * Dev[id].surface has device_scale=2, so its logical coordinate space
+   * already matches pix_surf (1× pixels).  No extra cairo_scale needed —
+   * adding one would shrink content to the upper-left quarter. */
+  cairo_surface_flush (Dev[id].surface);
+  {
+    cairo_surface_t *pix_surf = cairo_xlib_surface_create (
+        XW[id].display, XW[id].pixmap, XW[id].visual,
+        XW[id].width, XW[id].height);
+    cairo_t *cr = cairo_create (pix_surf);
+    cairo_set_source_surface (cr, Dev[id].surface, 0, 0);
+    cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_BEST);
+    cairo_paint (cr);
+    cairo_destroy (cr);
+    cairo_surface_destroy (pix_surf);
+  }
+
+  /* Paint 1× pixmap to window (scales further if user resized the window) */
+  {
+    Window root_ret;
+    int x_ret, y_ret;
+    unsigned int win_w, win_h, bw_ret, depth_ret;
+    XGetGeometry (XW[id].display, XW[id].window, &root_ret,
+                  &x_ret, &y_ret, &win_w, &win_h, &bw_ret, &depth_ret);
+    _giza_paint_xw_to_window (win_w, win_h);
+  }
 
   if (!XFlush (XW[id].display))
     {
@@ -270,23 +424,24 @@ _giza_change_page_xw (void)
   if (Sets.autolog && Dev[id].drawn) _giza_write_log_file(Dev[id].surface);
 
   if (Dev[id].resize) {
-     /* Set the new device size */
-     XW[id].width  = Dev[id].width + 2 * GIZA_XW_MARGIN;
+     /* Set the new device size (1× logical) */
+     XW[id].width  = Dev[id].width  + 2 * GIZA_XW_MARGIN;
      XW[id].height = Dev[id].height + 2 * GIZA_XW_MARGIN;
+     XW[id].render_w = XW[id].width  * GIZA_XW_SUPERSAMPLE;
+     XW[id].render_h = XW[id].height * GIZA_XW_SUPERSAMPLE;
 
      /* Request window to be resized */
      XResizeWindow(XW[id].display, XW[id].window, (unsigned) XW[id].width, (unsigned) XW[id].height);
   } else if( (unsigned int)XW[id].width!=width_return || (unsigned int)XW[id].height!=height_return ) {
-      /* Oh. Someone probably resized the XWindow behind our backs. Handle that here */
-      XW[id].width  = Dev[id].width  = width_return;
-      XW[id].height = Dev[id].height = height_return;
-
-      /* take care of margin - if there's room for that */
-      if( Dev[id].width > 2*GIZA_XW_MARGIN )
-          Dev[id].width -= 2*GIZA_XW_MARGIN;
-      if( Dev[id].height > 2*GIZA_XW_MARGIN )
-          Dev[id].height -= 2*GIZA_XW_MARGIN;
-      /* Do stuff needed to reflect changed window size, notably adjust panel size in case of resized surface*/
+      /* User resized the window — update 1× and 2× dimensions */
+      XW[id].width  = width_return;
+      XW[id].height = height_return;
+      XW[id].render_w = width_return  * GIZA_XW_SUPERSAMPLE;
+      XW[id].render_h = height_return * GIZA_XW_SUPERSAMPLE;
+      Dev[id].width  = width_return;
+      Dev[id].height = height_return;
+      if( Dev[id].width  > 2*GIZA_XW_MARGIN ) Dev[id].width  -= 2*GIZA_XW_MARGIN;
+      if( Dev[id].height > 2*GIZA_XW_MARGIN ) Dev[id].height -= 2*GIZA_XW_MARGIN;
       _giza_init_norm();
       Dev[id].panelwidth  = Dev[id].width  / Dev[id].nx;
       Dev[id].panelheight = Dev[id].height / Dev[id].ny;
@@ -305,8 +460,11 @@ _giza_change_page_xw (void)
   /* New page means new pixmap */
   XW[id].pixmap = XCreatePixmap (XW[id].display, XW[id].window, (unsigned) XW[id].width, (unsigned) XW[id].height, (unsigned) XW[id].depth);
 
-  /* New pixmap means new cairo surface */
-  Dev[id].surface = cairo_xlib_surface_create (XW[id].display, XW[id].pixmap, XW[id].visual, XW[id].width, XW[id].height);
+  /* New page: fresh 2× image surface with 1× logical coordinate scale */
+  Dev[id].surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+                                                XW[id].render_w, XW[id].render_h);
+  cairo_surface_set_device_scale (Dev[id].surface,
+                                  GIZA_XW_SUPERSAMPLE, GIZA_XW_SUPERSAMPLE);
   Dev[id].context = cairo_create (Dev[id].surface);
 }
 
@@ -316,7 +474,8 @@ _giza_change_page_xw (void)
 void
 _giza_init_norm_xw (void)
 {
-  cairo_matrix_init (&(Dev[id].Win.normCoords),(double) Dev[id].width, 0, 0, (double) -Dev[id].height,
+  cairo_matrix_init (&(Dev[id].Win.normCoords),
+                     (double) Dev[id].width, 0, 0, (double) -Dev[id].height,
                      GIZA_XW_MARGIN, Dev[id].height + GIZA_XW_MARGIN);
 }
 
@@ -511,12 +670,25 @@ _giza_flush_xw_event_queue (XEvent *event)
 static void
 _giza_expose_xw (XEvent *event)
 {
-  XCopyArea (XW[id].display, XW[id].pixmap, XW[id].window, XW[id].gc, event->xexpose.x,
-	     event->xexpose.y, (unsigned) event->xexpose.width,
-	     (unsigned) event->xexpose.height, event->xexpose.x,
-	     event->xexpose.y);
+  Window root_ret;
+  int x_ret, y_ret;
+  unsigned int win_w, win_h, bw_ret, depth_ret;
+  XGetGeometry (XW[id].display, XW[id].window, &root_ret,
+                &x_ret, &y_ret, &win_w, &win_h, &bw_ret, &depth_ret);
 
-/*  XFlush(XW[id].display); */
+  if (win_w == (unsigned)XW[id].width && win_h == (unsigned)XW[id].height)
+    {
+      /* Native size — copy only the damaged region */
+      XCopyArea (XW[id].display, XW[id].pixmap, XW[id].window, XW[id].gc,
+                 event->xexpose.x, event->xexpose.y,
+                 (unsigned)event->xexpose.width, (unsigned)event->xexpose.height,
+                 event->xexpose.x, event->xexpose.y);
+    }
+  else
+    {
+      /* Window was resized — repaint full window scaled */
+      _giza_paint_xw_to_window (win_w, win_h);
+    }
 }
 
 /**
