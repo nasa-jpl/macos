@@ -97,9 +97,6 @@ giza_get_colour_index (int *ci)
 void
 giza_set_colour_representation (int ci, double red, double green, double blue)
 {
-  if (!_giza_check_device_ready ("giza_set_colour_representation"))
-    return;
-
   giza_set_colour_representation_alpha (ci, red, green, blue, 1.);
 }
 
@@ -131,9 +128,10 @@ void
 giza_set_colour_representation_alpha (int ci, double red, double green,
 				      double blue, double alpha)
 {
-  if (!_giza_check_device_ready ("giza_set_colour_representation"))
-    return;
-
+  /* colourIndex is global state — allow setting before a device is open
+   * (MACOS sets up colour tables before calling pgbeg, matching PGPLOT
+   * behaviour where pgscr is valid without an open device).
+   * Only skip the Cairo source update when no device is ready. */
   if (ci < GIZA_COLOUR_INDEX_MIN || ci > GIZA_COLOUR_INDEX_MAX)
     {
       _giza_warning ("giza_set_colour_representation",
@@ -146,10 +144,10 @@ giza_set_colour_representation_alpha (int ci, double red, double green,
   colourIndex[ci][2] = blue;
   colourIndex[ci][3] = alpha;
 
-  /* If we are changing the current colour index
-     make the change teke effect immediately
-   */
-  if (ci == _giza_ci) giza_set_colour_index(ci);
+  /* If we are changing the current colour index, apply it immediately —
+   * but only when a device is open (giza_set_colour_index uses Cairo). */
+  if (ci == _giza_ci && _giza_check_device_ready("giza_set_colour_representation"))
+    giza_set_colour_index(ci);
 /*  if (ci == 0) {
      printf("in scr ci = %i rgb = %f %f %f %f drawn = %i \n",ci,red,green,blue,alpha,Dev[id].drawn);
      giza_draw_background();

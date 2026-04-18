@@ -177,6 +177,17 @@ giza_open_device_size (const char *newDeviceName, const char *newPrefix, double 
       return -1;
     }
 
+  /* Improve rendering quality: full font hinting + gray antialiasing for lines */
+  {
+    cairo_font_options_t *fo = cairo_font_options_create();
+    cairo_font_options_set_antialias    (fo, CAIRO_ANTIALIAS_GRAY);
+    cairo_font_options_set_hint_style  (fo, CAIRO_HINT_STYLE_FULL);
+    cairo_font_options_set_hint_metrics(fo, CAIRO_HINT_METRICS_ON);
+    cairo_set_font_options(Dev[id].context, fo);
+    cairo_font_options_destroy(fo);
+    cairo_set_antialias(Dev[id].context, CAIRO_ANTIALIAS_BEST);
+  }
+
   Dev[id].deviceOpen = 1;
   Dev[id].defaultBackgroundAlpha = 1.;
 
@@ -238,6 +249,23 @@ giza_select_device (int devid)
         return;
     }
     id = tmpid;
+}
+
+/**
+ * Non-blocking: drain any pending X events (expose, configure, close-button)
+ * so that plot windows remain responsive while the host program is idle.
+ * Safe to call before any device has been opened (no-op in that case).
+ * Intended to be installed as readline's rl_event_hook by the host program.
+ */
+void
+giza_process_events (void)
+{
+  if (id < 0 || id >= GIZA_MAX_DEVICES) return;
+  if (!Dev[id].deviceOpen) return;
+#ifdef _GIZA_HAS_XW
+  if (Dev[id].type == GIZA_DEVICE_XW)
+    _giza_process_events_xw ();
+#endif
 }
 
 void

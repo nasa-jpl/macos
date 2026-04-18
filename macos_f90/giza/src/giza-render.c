@@ -186,6 +186,7 @@ _giza_render (int sizex, int sizey, const double* data, int i1, int i2,
 
   /* paint the pixmap to the primary surface */
   cairo_set_source_surface (Dev[id].context, pixmap, 0, 0);
+  cairo_pattern_set_filter (cairo_get_source (Dev[id].context), CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend (cairo_get_source (Dev[id].context), cairoextendtype);
   cairo_paint (Dev[id].context);
 
@@ -340,6 +341,7 @@ _giza_render_float (int sizex, int sizey, const float* data, int i1,
 						width, height, stride);
 
   cairo_set_source_surface (Dev[id].context, pixmap, 0, 0);
+  cairo_pattern_set_filter (cairo_get_source (Dev[id].context), CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend (cairo_get_source (Dev[id].context), cairoextendtype);
   cairo_paint (Dev[id].context);
 
@@ -550,6 +552,7 @@ giza_draw_pixels (int sizex, int sizey, const int* idata, int i1, int i2,
 
   /* paint the pixmap to the primary surface */
   cairo_set_source_surface (Dev[id].context, pixmap, 0, 0);
+  cairo_pattern_set_filter (cairo_get_source (Dev[id].context), CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend (cairo_get_source (Dev[id].context), cairoextendtype);
   cairo_paint (Dev[id].context);
 

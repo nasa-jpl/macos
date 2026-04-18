@@ -145,6 +145,7 @@ int giza_open_device_size_float (const char *newDeviceName, const char *newPrefi
 void giza_select_device (int devid);
 void giza_get_device_id (int *devid);
 void giza_flush_device (void);
+void giza_process_events (void);
 void giza_change_page (void);
 void giza_close_devices (void);
 void giza_close_device (void);
