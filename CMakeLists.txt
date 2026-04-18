@@ -10,16 +10,20 @@ endif()
 
 project(SMACOS LANGUAGES Fortran C)
 
-option(BUILD_MACOS  "Build the MACOS executable"      ON)
-option(BUILD_SMACOS "Build the SMACOS static library" ON)
-option(USE_GIZA     "Build and link Giza instead of pgplotdummy" OFF)
+option(BUILD_MACOS      "Build the MACOS executable"          ON)
+option(BUILD_SMACOS     "Build the SMACOS static library"     ON)
+option(BUILD_SMACOS_DVR "Build the smacos_dvr test driver"    OFF)
+option(BUILD_GMI        "Build the GMI Matlab mex interface"  OFF)
+option(USE_GIZA         "Build and link Giza instead of pre-built PGPLOT" OFF)
+set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # ==============================================================================
-# 2. Compiler Flag Logic (Intel ifx/icx — Windows and Linux)
+# 2. Compiler Flag Logic
 # ==============================================================================
 if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   if(WIN32)
@@ -37,6 +41,13 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
     set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
     set(CMAKE_C_FLAGS "-D_CRT_SECURE_NO_WARNINGS -DLNXOS -fPIC")
   endif()
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  # Linux gfortran / gcc
+  set(BASE_FFLAGS "-cpp -ffixed-line-length-132 -fd-lines-as-comments -fallow-argument-mismatch -std=legacy -DPGPLOT -DLNXOS -fPIC")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
+  set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbounds-check -fcheck=all")
+  set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
+  set(CMAKE_C_FLAGS "-DLNXOS -fPIC")
 endif()
 
 # ==============================================================================
@@ -118,14 +129,17 @@ set(COMMON_SOURCES
 )
 
 # SMACOS-only sources (smacos-specific modules + Fortran splicubi2)
+# pgplotdummy.F is always included for smacos: the library is computational only
+# and needs MODULE pgplot_mod (stubs). Real graphics run in the driver (macos/smacos_dvr).
 set(SMACOS_ONLY_SOURCES
   ${COMMON_SOURCES}
   ${smacos_src_dir}/smacos_vars_mod.F
   ${smacos_src_dir}/smacosio.F
   ${smacos_src_dir}/smacosutil.F
-  $<$<NOT:$<BOOL:${USE_GIZA}>>:${smacos_src_dir}/pgplotdummy.F>
+  ${smacos_src_dir}/pgplotdummy.F
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
+  ${smacos_src_dir}/fk.c
 )
 
 # MACOS-only sources (macos-specific modules + C splicubi2)
@@ -166,6 +180,18 @@ if(NOT WIN32 AND NOT USE_GIZA)
   find_library(X11_LIB X11 PATHS /usr/lib64 /usr/lib/x86_64-linux-gnu)
   message(STATUS "Using pre-built PGPLOT: ${PGPLOT_LIB}")
   message(STATUS "Using X11: ${X11_LIB}")
+endif()
+
+# INTEL runtime libraries (ifx only — needed by smacos_dvr and GMI)
+if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+  set(INTEL_LIB_DIR "/opt/intel/oneapi/compiler/latest/lib" CACHE PATH
+      "Intel compiler runtime library directory")
+  find_library(LIBIMF    imf    PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
+  find_library(LIBIFPORT ifport PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
+  find_library(LIBIFCORE ifcore PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
+  set(INTEL_LIBS ${LIBIMF} ${LIBIFPORT} ${LIBIFCORE})
+else()
+  set(INTEL_LIBS "")
 endif()
 
 # ==============================================================================
@@ -209,21 +235,38 @@ if(BUILD_SMACOS)
       npsol
       lapacklib
       blaslib
-      $<$<BOOL:${USE_GIZA}>:pgplot>
       ${PLATFORM_LIBS}
   )
+endif()
+
+# Readline (bundled) — used by macos interactive command line
+set(READLINE_ROOT "${smacos_src_dir}/readline-8.2")
+set(READLINE_LIB  "${READLINE_ROOT}/libreadline.a")
+if(NOT EXISTS "${READLINE_LIB}")
+  message(WARNING "Bundled libreadline.a not found at ${READLINE_LIB} — "
+      "arrow-key/history support disabled. Build readline first: "
+      "cd macos_f90/readline-8.2 && ./configure && make")
+  set(READLINE_LIB "")
 endif()
 
 # MACOS Executable
 if(BUILD_MACOS)
   add_executable(macos ${MACOS_ONLY_SOURCES})
-  target_compile_definitions(macos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CMACOS)
+  target_compile_definitions(macos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CMACOS
+      $<$<BOOL:${READLINE_LIB}>:READLINE_LIBRARY>
+  )
   set_target_properties(macos PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_macos)
   target_include_directories(macos PUBLIC
       ${smacos_src_dir}
       ${fits_src_dir}
       ${CMAKE_BINARY_DIR}/mod_macos
   )
+  if(READLINE_LIB)
+    target_include_directories(macos PRIVATE ${READLINE_ROOT})
+    target_compile_options(macos PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-DHAVE_CONFIG_H -DRL_LIBRARY_VERSION="8.2" -I${READLINE_ROOT}>
+    )
+  endif()
   if(USE_GIZA)
     target_include_directories(macos PUBLIC
         ${CMAKE_BINARY_DIR}/mod_giza
@@ -241,5 +284,98 @@ if(BUILD_MACOS)
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
       ${PLATFORM_LIBS}
+      $<$<BOOL:${READLINE_LIB}>:${READLINE_LIB}>
+      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<BOOL:${READLINE_LIB}>>:ncurses>
+  )
+
+  # Embed Intel library paths in the binary so it runs without sourcing setvars.sh.
+  # --disable-new-dtags forces DT_RPATH (not DT_RUNPATH) so the path propagates
+  # transitively to libraries loaded by our shared libs (e.g. libimf→libintlc).
+  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+    set_target_properties(macos PROPERTIES
+        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+    )
+    target_link_options(macos PRIVATE -Wl,--disable-new-dtags)
+  endif()
+endif()
+
+# SMACOS Driver Executable
+if(BUILD_SMACOS_DVR)
+  add_executable(smacos_dvr
+      ${smacos_src_dir}/smacos_dvr.F
+      ${smacos_src_dir}/macos_mod.F
+      ${smacos_src_dir}/macos_vars_mod.F
+      ${smacos_src_dir}/macosio.F
+      ${smacos_src_dir}/pgplotsub.F
+  )
+  target_compile_definitions(smacos_dvr PRIVATE
+      $<$<BOOL:${WIN32}>:MSWIN> CMACOS)
+  set_target_properties(smacos_dvr PROPERTIES
+      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_macos)
+  target_include_directories(smacos_dvr PRIVATE
+      ${smacos_src_dir}
+      ${fits_src_dir}
+      ${CMAKE_BINARY_DIR}/mod_macos
+      ${CMAKE_BINARY_DIR}/mod_smacos
+      ${CMAKE_BINARY_DIR}/mod
+  )
+  add_dependencies(smacos_dvr macos smacos)
+  target_link_libraries(smacos_dvr PRIVATE
+      smacos
+      fitslib
+      npsol
+      lapacklib
+      blaslib
+      ${INTEL_LIBS}
+      $<$<BOOL:${USE_GIZA}>:pgplot>
+      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
+      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
+      ${PLATFORM_LIBS}
+  )
+endif()
+
+# GMI Matlab mex interface
+if(BUILD_GMI)
+  set(GMI_SRC_DIR "$ENV{HOME}/dev/MACOS_resources/GMI" CACHE PATH
+      "Directory containing GMI.F and GMIG.F")
+  if(NOT EXISTS ${GMI_SRC_DIR}/GMI.F)
+    message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}")
+  endif()
+  add_library(GMI SHARED
+      ${GMI_SRC_DIR}/GMI.F
+      ${GMI_SRC_DIR}/GMIG.F
+  )
+  set_target_properties(GMI PROPERTIES
+      OUTPUT_NAME GMI
+      SUFFIX ".mexa64"
+      PREFIX ""
+      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_gmi
+  )
+  target_compile_definitions(GMI PRIVATE MX_COMPAT_32)
+  target_compile_options(GMI PRIVATE
+      -fPIC -fpp -132 -gen-interfaces -fp-model strict
+      -fno-omit-frame-pointer -O2 -xHOST
+  )
+  target_include_directories(GMI PRIVATE
+      ${smacos_src_dir}
+      ${CMAKE_BINARY_DIR}/mod_smacos
+      ${MATLAB_ROOT}/extern/include
+  )
+  target_link_libraries(GMI PRIVATE
+      smacos
+      fitslib
+      npsol
+      lapacklib
+      blaslib
+      ${INTEL_LIBS}
+      -L${MATLAB_ROOT}/bin/glnxa64
+      -l:libmx.so -l:libmex.so -lmat
+      -lm -lstdc++
+  )
+  target_link_options(GMI PRIVATE
+      -Wl,--version-script,${MATLAB_ROOT}/extern/lib/glnxa64/fexport.map
+      -Wl,--no-undefined
+      -Wl,-rpath-link,${MATLAB_ROOT}/bin/glnxa64
   )
 endif()
