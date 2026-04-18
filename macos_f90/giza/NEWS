@@ -1,0 +1,354 @@
+-----------------------------------
+Changes in 0.9.5 compared to 0.9.4
+-----------------------------------
+      (web) moved to github hosting
+      bug fix with shaded error bars
+      (giza_box) bug fix with spacing between box and numbers when numbers written on top of box
+      fix compiler warning in giza-viewport/giza-window
+      updated .gitignore to ignore .lo and .la files
+      (giza_box) bug fix with drawing major axis only; also with drawing grid (iaxis=1)
+      fix string allocation (thanks to Ole Streicher)
+
+-----------------------------------
+Changes in 0.9.4 compared to 0.9.3
+-----------------------------------
+      updated readme
+      (os/x) fixed X11 library path for OS/X El Capitan
+      docs->doc (thanks to Joachim Frieben)
+      test->test/C test/F90 (thanks to Joachim Frieben)
+      test->test/C test/F90 (thanks to Joachim Frieben)
+      interface/*->src (thanks to Joachim Frieben)
+      include/*.h->src (thanks to Joachim Frieben)
+      perl scripts updated to point to ../src instead of ../interface (thanks to Joachim Frieben)
+      removed include and lib dirs (thanks to Joachim Frieben)
+      CHANGES->NEWS and added ChangeLog (thanks to Joachim Frieben)
+      added pkg-config metadata files (thanks to Joachim Frieben)
+      bug fixes with variables defined in headers; now uses extern and declared in .c files
+      replaced Makefiles with automake and autoconf scripts (thanks to Joachim Frieben)
+      replaced Makefiles with automake and autoconf scripts (thanks to Joachim Frieben)
+      added autotools-generated files for distribution (thanks to Joachim Frieben)
+      added autoconf scripts to build dir
+      added versioning of giza-version.h to configure stuff
+      updated build to use pkg-config to find X11 and cairo libs
+      removed obsolete include dir (thanks to Joachim Frieben)
+      removed obsolete dirs in svn (thanks to Joachim Frieben)
+      updated INSTALL instructions for autotools build (thanks to Joachim Frieben)
+      test-error-bars-2.c -> test/C (thanks to Joachim Frieben)
+      update libtool version info + added comments
+      build libgiza before libcpgplot; also copy giza-fortran.F90 to include directory
+      libpgplot and libcpgplot link to libgiza instead of including .o files; faster build (thanks to Joachim Frieben)
+      added fallback options for cairo and x11 on OS/X if pkg-config not available
+      updated INSTALL instructions
+      patch for negative marker indices; now matches expected PGPLOT behaviour; contributed by Joachim Frieben
+      0.9.4
+
+-----------------------------------
+Changes in 0.9.3 compared to 0.9.2
+-----------------------------------
+      added FFLAGS setting and -fPIC to Makefile
+      fixed build of test-fortran
+      renamed test-xw.c->test-giza-xw.c (thanks to Joachim Frieben)
+      added test-2D to default tests
+      test-arrow now works as expected (thanks to Joachim Frieben)
+      test-png spits out sensible number of files
+      added separate test-svg; test-pdf now outputs pdf
+      added testpg target to compile pgplot tests (thanks to Joachim Frieben)
+      better error handling in png device (thanks to Hugh Williams)
+      BUG FIX with long device names; string length increased to 256 chars; added error checks for strings too long (thanks to Hugh Williams)
+      flush stdin after giza prompt to avoid repeated device tries
+      flushing achieved with fflush instead of getchar to avoid unnecessary hangs
+      add -I$(PREFIX)/include/cairo to include flags
+      version bumped to 0.9.3
+
+-----------------------------------
+Changes in 0.9.2 compared to 0.9.1
+-----------------------------------
+      workaround for macports issue with all target
+      reverted build targets; also install giza.mod into include dir by default
+      bug fix with giza.mod in install target
+      bug fix with typedef of line width in giza fill (thanks to W. Dehnen)
+      fine-tuning of line styles; added offset to patterns to give better legend
+      use $(FC) instead of $(LIBTOOL) to compile shared Fortran library (thanks to Sean Farley)
+      0.9.2
+
+-----------------------------------
+Changes in 0.9.1 compared to 0.9.0
+-----------------------------------
+danielprice (6):
+      updated docs for fortran interface
+      bug fix with shaded error bar plotting (causing shading of outside not inside)
+      implemented sorting in mark_cursor/PGNCUR
+      minor changes to build: default target is default, not all to avoid macports issue
+      added test for pgaxis routines
+      version 0.9.1
+
+-----------------------------------
+Changes in 0.9.0 compared to 0.8.1
+-----------------------------------
+danielprice (27):
+      sub-panelling routines implemented
+      can use /xs, /xserve and /xwindow to specify X-windows device
+      added interfaces for histogram routines
+      giza_histogram implemented; compatible with PGHIST
+      implemented giza_histogram_binned; implements PGBIN
+      clipping of plot for sub-panels now works as expected; advance_subpanel returns flag when page changes
+      docs fixed for viewport routines
+      bug fix with uninitialised variables if bad args to giza_viewport
+      sub-panelling now works; various bugs fixed with this
+      deleted obsolete branch
+      comment removed
+      BUG FIX with missing last page on interactive devices if prompting is on
+      BUG FIX with flushing if multiple XW devices used
+      BUG FIX with panel changing if more than one row
+      BUG FIX with clipping and positioning of panels if more than one row
+      character size scaled according to panel height not page height
+      better margins in PGENV/giza_environment
+      version 0.9.0
+
+-----------------------------------
+Changes in 0.8.1 compared to 0.8.0
+-----------------------------------
+danielprice (16):
+      updated changelog
+      added cpgtbox interface to giza_box_time; also bug fix with cpgswin
+      interface added for giza_get_device_id in giza.h
+      added test-2D thanks to Jean-Francois Gonzalez
+      affine array does not need to be passed for most rendered images in simple f90 interface
+      updated links in docs
+      bug fix in docs referring to giza_colour_ramp, should be to giza_set_colour_table
+      added link to giza_set_colour_table in docs
+      updated text scanner (uses unicode Sun symbol)
+      minor change to 2D test
+      can use \bf or \fb to get bold face in strings
+      BUG FIX with font changing in rotated strings; also original font now preserved after string is printed
+      version bumped to 0.8.1
+      giza-save uses GIZA_FONT_LEN to be consistent
+      text routines handle escape sequences for backslash (\\), underscore (\_), hat (\^) and curly brackets
+      support for limited scope of font changing commands in strings, i.e. {\bf text} and {\it text}
+
+-----------------------------------
+Changes in 0.8.0 compared to 0.7.6
+-----------------------------------
+danielprice (42):
+      gfortran version checking removed (obsolete/no longer necessary)
+      floating exception fixed in giza_set_window_equal_scale if width=height=0
+      newline removed
+      BUG FIX with vector arrows in double precision
+      link for -lgfortran fixed
+      added autolog feature: controlled via begin_autolog/end_autolog routines and GIZA_LOG environment variable
+      silenced warning regarding colour not set if NaNs input to giza-render routines
+      better cleanup on failure to open device; does not require giza_close_device call
+      multiple device support implemented (LOTS of code changed): added giza_select/pgslct routines to switch between de
+      deviceOpen and drawn now specific to each device: removed sizeSpecified and reworked the way devices are opened to
+      implemented resizing of X-window/bitmap devices via giza_paper_size (not perfect yet)
+      numbering of devices now from 1->N externally, from 0->N-1 internally; implemented PGQID/giza_get_device_id
+      start/stop prompting setting now specific to each device, not global
+      typo fixed
+      window settings now specific to each device
+      viewport settings now specific to each device
+      commented out temporary stuff
+      buffering setting is specific to each device
+      fill style and settings specific to each device
+      arrow style settings specific to each device (giza_arrow_t)
+      line width setting specific to each device
+      line style setting specific to each device
+      fontExtents stored specific to each device; not globally
+      fontAngle setting specific to each device
+      character height setting specific to each device
+      get_line_style always returns something even if giza not started
+      text background colour setting specific to each device
+      clip setting specific to each device
+      bug fix with default text background (should be -1 not 0)
+      debugging info removed
+      device help shows filename option (file.png instead of /png)
+      updated docs on return value for giza_open_device
+      debugging/commented out cruft removed
+      added integer parameters giving version number info in Fortran interface
+      added docs for giza_vector
+      added giza version routine to query version info
+      added giza_version routine to Fortran interface
+      bug fix with documentation of giza_version
+      updated status of PGPAP/cpgpap
+      typo fixed in api script
+      updated changelog for 0.8.0
+      extra files included in release tarball
+
+-----------------------------------
+Changes in 0.7.6 compared to 0.7.5
+-----------------------------------
+
+danielprice (4):
+      better clean targets for Makefiles
+      bug fix with box being drawn randomly due to giza_stroke call
+      fortran interface compiles with ifort+debugging; thanks to Andy McLeod
+      minor fixes to install target; should now work with Macports
+
+-----------------------------------
+Changes in 0.7.5 compared to 0.7.4
+-----------------------------------
+
+danielprice (18):
+      README included in distribution
+      README added to repository
+      routines added to set colour representation in rgb
+      various line palettes added; can be selected with GIZA_PALETTE environment variable
+      build respects DESTDIR conventions
+      BUG FIX with log axis labelling if interval < 10
+      new colour palette options added
+      giza_stroke called after device opened; avoids black page bug if no box/window/viewport called prior to drawing
+      BUG FIX with arrow heads becoming small in certain directions
+      giza arrow uses semi-angle instead of full angle, as in PGPLOT (pgdemo1)
+      added box/more arrow tests
+      XW driver no longer uses XNextEvent to prevent compile problems on Ubuntu; also initial window call uses WhitePixel as defined by Xlib
+      LICENSE file renamed to COPYING
+      CHANGES file added; README now contains small blurb
+      updated INSTALL instructions
+      added AUTHORS file
+      compiler warning fixed
+      compiler warnings with strncpy fixed (clang)
+
+-----------------------------------
+Changes in 0.7.4 compared to 0.7.3
+-----------------------------------
+
+danielprice(36)
+      bug fix with gfortran4.6 and giza_open interface
+      work on giza_plot continues; handles and renders 2D array
+      giza_units_normalised added
+      optional viewport arguments to giza_plot handled correctly
+      added giza_render_alpha routines for brightness-corrected rendering
+      defined GIZA_FOREGROUND and GIZA_BACKGROUND
+      added tests for the xw bug
+      added Makefile for tests
+      test reports cairo version
+      updated xw test
+      added png test
+      better error handling on closing vector surfaces (picks up cairo bug in Lion)
+      makefile compiles several tests
+      use surface_finish and checks for errors when closing xlib surface
+      giza-io routines declare const char* not just char; avoids compiler warnings
+      typo fixed
+      file headers updated and unified across all files
+      updated comments in cpgplot.h
+      fixed comment so does not get deleted by header script
+      uses X11DIR to specify libX11 location in Makefile
+      minor change to script
+      version number bumped
+      xw driver returns key bindings for right/middle clicks and scroll events
+      circle cursor uses filled, partially transparent circle similar to rectangle selection
+      improvements to cursor routines: mark_with_cursor handled by get_key_press routine,
+       allows polygon selection to be redrawn on the fly
+      added giza_rectangle_rounded routine for plotting rectangles with rounded corners
+      BUG FIX with giza_function_x/y/t interfaces with gfortran v4.7; also giza_plot_line now giza_line in Fortran interface
+      minor change to comment
+      better handling of valMin=valMax in giza_render_float
+      can specify hardcopy devices just using the filename e.g. crap.png instead of having to type crap.png/png
+      test Makefile compiles a fortran example
+      png device names first file differently depending on whether or not it is part of a sequence
+      uses _0000 numbering if part of sequence for eps and svg devices (by renaming file when changing page)
+      commented out X-windows error-handling routine to avoid compilation problems in Ubuntu
+
+-----------------------------------
+Changes in 0.7.3 compared to 0.7.2
+-----------------------------------
+
+danielprice (35):
+      BUG FIX with default viewport on first page (character height not initialised correctly), affects giza_environment
+      minor cleanups
+      full range of box/env options implemented (grid lines, log axes)
+      minor cleanup, commented-out stuff removed
+      improved readability of giza_box; variables better named; docs added for M and L options
+      obsolete comment removed
+      bug fix with .png.png naming in png device; change page now calls close_device_png to avoid repeated code
+      PGQINF fully implemented; additional queries added to giza_query_device
+      fixed icc warnings for eps driver
+      minor fix to documentation
+      freetype font loading added (experimental, not compiled by default)
+      high level giza_open/giza_close interfaces added to Fortran interface
+      routines/interfaces added for pgtbox/giza_box_time (currently just calls giza_box with options unchanged)
+      X11 driver no longer uses XDefaultGCOfScreen so should work on older systems
+      bug fix with gfortran4.6 and giza_open interface
+      work on giza_plot continues; handles and renders 2D array
+      giza_units_normalised added
+      optional viewport arguments to giza_plot handled correctly
+      added giza_render_alpha routines for brightness-corrected rendering
+      defined GIZA_FOREGROUND and GIZA_BACKGROUND
+      added tests for the xw bug
+      added Makefile for tests
+      test reports cairo version
+      updated xw test
+      added png test
+      better error handling on closing vector surfaces (picks up cairo bug in Lion)
+      makefile compiles several tests
+      use surface_finish and checks for errors when closing xlib surface
+      giza-io routines declare const char* not just char; avoids compiler warnings
+      typo fixed
+      file headers updated and unified across all files
+      updated comments in cpgplot.h
+      fixed comment so does not get deleted by header script
+      uses X11DIR to specify libX11 location in Makefile
+
+-----------------------------------
+Changes in 0.7.2 compared to 0.7.1
+-----------------------------------
+
+danielprice (34):
+      bug fix in default viewport causing labels with giza_label to be clipped
+      giza-annotate code shortened (unnecessary extra lines removed)
+      bug fix with chopped labels in giza_label
+      updated list of fortran params automatically
+      changed order of long/short dashes; line styles in libpgplot now always match pgplot
+      test added for memory leaks in X11
+      bug fix with log labelling of 1 and 10
+      valgrind bug fix with init_device_list using uninitialised string
+      basic test of multiple open/close calls added
+      markerHeight declared static
+      bug fix with array overflow in giza_contour
+      colour index variables declared static
+      uses explicit font face creation/destruction to avoid memory leaks (cairo >=1.8 only)
+      bug fixes with generation of api documentation
+      mistaken const declarations removed; replaced with static
+      implemented semi-transparent error bar plotting
+      [PATCH contributed by Daniel Kelson] Arrays now passed as C pointers, not fixed size; fixes cpgplot interface issues; tested against splash and works fine
+      updated cpgplot interface to include imaging routines; now similar to libpgplot in implementation level
+      [PATCH contributed by Daniel Kelson] viewport and window now handle xmin>xmax and ymin>ymax correctly
+      added const to all array input variables; consistent with cpgplot interface
+      public header files now live in the include directory rather than being copied around
+
+-----------------------------------
+Changes in 0.7.1 compared to 0.7.0
+-----------------------------------
+
+danielprice (31):
+      updated include paths
+      better flush of xevents
+      silenced spurious warnings in giza-points and giza-polygon
+      uses libtool instead of c compiler to build shared library
+      more warnings silenced
+      handles failure to call close_device; also bug fix with _giza_lowercase
+      handles failure to call close_device; also bug fix with _giza_lowercase
+      bug fix with whitespace in device names
+      whitespace removed from strings in when passed through giza-fortran interface
+      better linewidth conversion between pgplot and giza in libpgplot
+      implemented option to give exact pgplot colour table
+      better placement of text above viewport in giza-annotate
+      spurious whitespace at end of lines removed (script)
+      bug fix with len_trim in f2c string conversion
+      added giza_colour_palette routines; libpgplot uses PGPLOT colour palette by default
+      shared lib extension determined automatically
+      build more portable on os/x vs linux
+      still working on dylib vs .so; works on both now
+      minor changes to Makefile structure
+      id decreased again when device close (fixes spurious warnings)
+      all drivers call get_filename_for_device; avoids trim/case issues
+      added $PREFIX/include to include line
+      checks gfortran version number and gives error if gfortran is too old to compile fortran interface
+      gfortran version checks work with old gfortran (v4.1.2) and give error
+      standard viewport (as used by giza_environment) now leaves boundary of 4 character heights on each size rather than a fixed fraction
+      added comments to postscript header
+      set_viewport_inches uses Dev.width not Dev.widthCM (safer)
+      paper size queries use Dev.width not Dev.widthCM (safer)
+      rejigged the way the paper size is set; can now be set in different units; set_paper_size calls redone; Dev.widthCM and Dev.heightCM removed; less confusing all round
+      header included for internal routine
+      bumped version number
+
