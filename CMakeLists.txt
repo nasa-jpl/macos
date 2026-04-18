@@ -149,6 +149,25 @@ else()
   set(PLATFORM_LIBS "")
 endif()
 
+# Pre-built PGPLOT library (Linux, non-Giza path)
+# pgplotsub.F calls real PGPLOT symbols; must link the pre-built static lib.
+# PGPLOT itself needs X11; search static first to avoid runtime path issues.
+if(NOT WIN32 AND NOT USE_GIZA)
+  find_library(PGPLOT_LIB libpgplot.a
+      PATHS
+        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/pgplot
+        /usr/local/pgplot
+      NO_DEFAULT_PATH
+  )
+  if(NOT PGPLOT_LIB)
+    message(FATAL_ERROR "Pre-built libpgplot.a not found. "
+        "Build pgplot first or set USE_GIZA=ON.")
+  endif()
+  find_library(X11_LIB X11 PATHS /usr/lib64 /usr/lib/x86_64-linux-gnu)
+  message(STATUS "Using pre-built PGPLOT: ${PGPLOT_LIB}")
+  message(STATUS "Using X11: ${X11_LIB}")
+endif()
+
 # ==============================================================================
 # 8. Targets & Linking
 # ==============================================================================
@@ -219,6 +238,8 @@ if(BUILD_MACOS)
       lapacklib
       blaslib
       $<$<BOOL:${USE_GIZA}>:pgplot>
+      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
+      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
       ${PLATFORM_LIBS}
   )
 endif()
