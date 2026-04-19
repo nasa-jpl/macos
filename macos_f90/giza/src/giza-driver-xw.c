@@ -64,6 +64,7 @@ struct GIZA_XWindow
   int pixelsize;
   int screensize;
   int in_use;
+  int window_hidden;  /* 1 when user clicked close — window unmapped but device kept alive */
 } XW[GIZA_MAX_DEVICES];
 
 #define GIZA_DEFAULT_WIDTH 800
@@ -274,7 +275,10 @@ _giza_process_events_xw (void)
 {
   if (!XW[id].in_use || !XW[id].display || !XW[id].window) return;
 
-  /* Close-button: dispose of device and return immediately */
+  /* Close-button: unmap the window (hide) but keep the Giza device alive.
+   * Closing the device here would strand MACOS, which tracks its own ifPlot
+   * state and does not re-open the device between plots.  The next flush
+   * will re-map the window automatically. */
   {
     Atom wmDelete = XInternAtom(XW[id].display, "WM_DELETE_WINDOW", True);
     XEvent event;
@@ -284,12 +288,17 @@ _giza_process_events_xw (void)
       {
         if (event.xclient.data.l[0] == (long)wmDelete)
           {
-            giza_close_device();
+            XUnmapWindow(XW[id].display, XW[id].window);
+            XFlush(XW[id].display);
+            XW[id].window_hidden = 1;
             return;
           }
         XPutBackEvent(XW[id].display, &event);
       }
   }
+
+  /* Window is hidden — nothing to repaint. */
+  if (XW[id].window_hidden) return;
 
   /* Drain any ConfigureNotify + Expose events; repaint once if any arrived. */
   {
@@ -353,8 +362,8 @@ void
 _giza_flush_device_xw (void)
 {
   /* Non-blocking check: did the user click the window's close button?
-   * WM_DELETE_WINDOW arrives as a ClientMessage.  Handle it here so
-   * the window dismisses immediately without requiring MACOS to quit. */
+   * WM_DELETE_WINDOW arrives as a ClientMessage.  We unmap (hide) the window
+   * but keep the device alive — this flush will re-map it below. */
   {
     Atom wmDelete = XInternAtom(XW[id].display, "WM_DELETE_WINDOW", True);
     XEvent event;
@@ -364,12 +373,22 @@ _giza_flush_device_xw (void)
       {
         if (event.xclient.data.l[0] == (long)wmDelete)
           {
-            giza_close_device();
-            return;              /* device is gone — nothing left to flush */
+            XW[id].window_hidden = 1;
           }
-        XPutBackEvent(XW[id].display, &event); /* unrelated event, restore */
+        else
+          {
+            XPutBackEvent(XW[id].display, &event);
+          }
       }
   }
+
+  /* If the window was hidden by a previous close-button click, re-map it
+   * so this new plot is visible. */
+  if (XW[id].window_hidden)
+    {
+      XMapWindow(XW[id].display, XW[id].window);
+      XW[id].window_hidden = 0;
+    }
 
   /* Downsample the 2× render surface into the 1× X pixmap.
    * Dev[id].surface has device_scale=2, so its logical coordinate space

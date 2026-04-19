@@ -84,6 +84,12 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 20. CMake build system (CMakeLists.txt, presets, VS Code integration, makeCMdcr.sh) -- done
 21. Per-ray status tracking + convert STOP/PAUSE to graceful failures -- done
 22. Fix short filename crash in OLD command (macosio.F substring bounds) -- done
+23. Giza plot sharpness (supersampling + HiDPI via cairo_surface_set_device_scale) -- done
+24. Giza window resize (no blank on resize; 2× render → 1× pixmap → scaled copy to window) -- done
+25. Readline arrow keys for CMake build (-DREADLINE_LIBRARY in top-level CMakeLists.txt) -- done
+26. Embed Intel RPATH so ifx-built macos runs without sourcing setvars.sh -- done
+27. Giza close-button handling: unmap window instead of closing device -- done
+28. Linefeed after MODIFY Q exit so next MACOS prompt doesn't overwrite -- done
 
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
@@ -111,6 +117,31 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - pData condition: includes FreeForm so grid coord frame perturbs when nGridMat>0.
 - pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
   now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
+
+## Giza plot improvements (macos_f90/giza/)
+- Supersampling: off-screen image surface is 2× (GIZA_XW_SUPERSAMPLE) in giza-driver-xw.c;
+  `cairo_surface_set_device_scale(surface, 2, 2)` keeps MACOS logical coordinates at 1×
+  while rendering at 2× physical pixels.  Downsample to 1× pixmap on flush, then XCopyArea
+  or cairo-scale to the window (handles user resize).  Text/font antialiasing: GRAY hinting
+  enabled in giza-drivers.c; image data uses CAIRO_FILTER_NEAREST in giza-render.c
+  (sharp pixel boundaries for OPD/PIX/INT raster arrays).
+- Idle window responsiveness: mhist.c sets rl_event_hook to `_macos_rl_event_hook` which
+  (via weak `giza_process_events`) calls `_giza_process_events_xw` — drains ConfigureNotify,
+  Expose, and WM_DELETE_WINDOW while readline blocks at the prompt.
+- Close button (WM_DELETE_WINDOW): unmaps the window and sets XW[id].window_hidden=1;
+  the next `_giza_flush_device_xw` re-maps it.  Does NOT call `giza_close_device()` —
+  MACOS tracks its own `ifPlot` flag and skips `GRAINI`/`PGBEGIN` after first plot.
+  Closing the device would strand MACOS with spam of "No device open" errors.
+- `giza_set_colour_representation` (giza-colour-index.c) no longer requires an open
+  device — `colourIndex[]` is static global, matching PGPLOT's pgscr semantics.
+  `giza_set_colour_index(ci)` is still guarded (uses Cairo context).
+
+## Intel RPATH (self-contained ifx binary)
+- Top-level CMakeLists.txt embeds RPATH for ifx builds so `/opt/intel/oneapi/...` libs
+  are found without sourcing setvars.sh:
+  `BUILD_RPATH/INSTALL_RPATH` = `${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib`,
+  `-Wl,--disable-new-dtags` forces DT_RPATH (transitive) over DT_RUNPATH (direct-only).
+  libimf → libintlc transitive dep requires DT_RPATH.
 
 ## Reference
 - macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
