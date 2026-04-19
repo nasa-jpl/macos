@@ -378,4 +378,25 @@ if(BUILD_GMI)
       -Wl,--no-undefined
       -Wl,-rpath-link,${MATLAB_ROOT}/bin/glnxa64
   )
+
+  # Embed compiler runtime paths in the MEX file so MATLAB can load it
+  # without sourcing setvars.sh (ifx) or a module file (gfortran).
+  # --disable-new-dtags forces DT_RPATH (transitive) over DT_RUNPATH
+  # so paths propagate to indirect deps (e.g. libimf→libintlc).
+  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+    set_target_properties(GMI PROPERTIES
+        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+    )
+    target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
+  elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    # gfortran: embed the directory containing libgfortran/libquadmath.
+    # CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES is already a CMake list
+    # (semicolon-separated), which is the form BUILD_RPATH expects.
+    set_target_properties(GMI PROPERTIES
+        BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
+        INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
+    )
+    target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
+  endif()
 endif()
