@@ -1463,6 +1463,7 @@ C       read in command
 	STRING(66:128)=' '
 
 	IF (LCMP(STRING,'QUIT',1)) THEN
+	  WRITE(*,*)
 	  RETURN
 	ELSE IF (LCMP(STRING,'HELP',2)) THEN
 	  WRITE(*,100)
