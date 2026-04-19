@@ -40,6 +40,9 @@ ifx -check all -traceback -fstack-protector -O -shared-intel -shared \
   -Wl,-rpath-link,/usr/local/MATLAB/R2025b/bin/glnxa64 \
   -L/usr/local/MATLAB/R2025b/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat \
   -L/opt/intel/oneapi/compiler/latest/lib \
+  -Wl,-rpath,/opt/intel/oneapi/compiler/latest/lib \
+  -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib \
+  -Wl,--disable-new-dtags \
   -L/usr/lib/x86_64-linux-gnu/libstdc++.so -lirc -lm -lstdc++  \
   $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a
 
