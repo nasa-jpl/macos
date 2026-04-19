@@ -90,6 +90,7 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 26. Embed Intel RPATH so ifx-built macos runs without sourcing setvars.sh -- done
 27. Giza close-button handling: unmap window instead of closing device -- done
 28. Linefeed after MODIFY Q exit so next MACOS prompt doesn't overwrite -- done
+29. Embed Intel RPATH in GMI.mexa64 (CMakeLists.txt) so MATLAB loads it without setvars.sh -- done
 
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
@@ -136,12 +137,14 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   device — `colourIndex[]` is static global, matching PGPLOT's pgscr semantics.
   `giza_set_colour_index(ci)` is still guarded (uses Cairo context).
 
-## Intel RPATH (self-contained ifx binary)
+## Intel RPATH (self-contained ifx binary + GMI mex)
 - Top-level CMakeLists.txt embeds RPATH for ifx builds so `/opt/intel/oneapi/...` libs
-  are found without sourcing setvars.sh:
+  are found without sourcing setvars.sh. Applies to both macos executable and GMI.mexa64:
   `BUILD_RPATH/INSTALL_RPATH` = `${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib`,
   `-Wl,--disable-new-dtags` forces DT_RPATH (transitive) over DT_RUNPATH (direct-only).
   libimf → libintlc transitive dep requires DT_RPATH.
+- For gfortran builds: `CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES` (auto-set by CMake) used
+  as RPATH so libgfortran/libquadmath are found without a module file.
 
 ## Reference
 - macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
