@@ -333,6 +333,22 @@ if(BUILD_SMACOS_DVR)
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
       ${PLATFORM_LIBS}
   )
+
+  # Embed compiler runtime paths so smacos_dvr runs without sourcing
+  # setvars.sh (ifx) or a module file (gfortran). Same pattern as macos/GMI.
+  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+    set_target_properties(smacos_dvr PROPERTIES
+        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+    )
+    target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
+  elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    set_target_properties(smacos_dvr PROPERTIES
+        BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
+        INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
+    )
+    target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
+  endif()
 endif()
 
 # GMI Matlab mex interface

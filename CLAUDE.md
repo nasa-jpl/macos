@@ -91,6 +91,9 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 27. Giza close-button handling: unmap window instead of closing device -- done
 28. Linefeed after MODIFY Q exit so next MACOS prompt doesn't overwrite -- done
 29. Embed Intel RPATH in GMI.mexa64 (CMakeLists.txt) so MATLAB loads it without setvars.sh -- done
+30. Embed Intel/gfortran RPATH in smacos_dvr (CMakeLists.txt) so it runs without setvars.sh -- done
+31. Fix CR/CG/CB out-of-bounds in GRAY (pgplotsub.F) when Giza returns ICILO=0 -- done
+32. smacos_dvr: open Giza device (nPgPanel=1; CALL GRAINI) — otherwise plots spam "No device open" -- done
 
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
@@ -137,14 +140,33 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   device — `colourIndex[]` is static global, matching PGPLOT's pgscr semantics.
   `giza_set_colour_index(ci)` is still guarded (uses Cairo context).
 
-## Intel RPATH (self-contained ifx binary + GMI mex)
+## Intel RPATH (self-contained ifx binary + smacos_dvr + GMI mex)
 - Top-level CMakeLists.txt embeds RPATH for ifx builds so `/opt/intel/oneapi/...` libs
-  are found without sourcing setvars.sh. Applies to both macos executable and GMI.mexa64:
-  `BUILD_RPATH/INSTALL_RPATH` = `${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib`,
+  are found without sourcing setvars.sh. Applies to macos executable, smacos_dvr, and
+  GMI.mexa64: `BUILD_RPATH/INSTALL_RPATH` = `${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib`,
   `-Wl,--disable-new-dtags` forces DT_RPATH (transitive) over DT_RUNPATH (direct-only).
   libimf → libintlc transitive dep requires DT_RPATH.
 - For gfortran builds: `CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES` (auto-set by CMake) used
   as RPATH so libgfortran/libquadmath are found without a module file.
+
+## smacos_dvr graphics initialization
+- smacos_dvr.F calls `SMACOS()` directly; unlike the interactive macos.F command loop
+  it never opens a Giza device. Any plot-producing SMACOS command (OPD, SPOT, INT, ...)
+  then emits "No device open" for every Giza call. Fix: after `macos_init_all(modelSize)`,
+  set `nPgPanel = 1` and call `GRAINI` (opens device via `PGBEGIN(0,'?',1,1)`).
+- `macos_init_all` does NOT include `macos_init.inc`, so `nPgPanel` is not defaulted to 1
+  — it stays at 0 and `GRAINI`'s panel-layout if/elseif (1/2/3/4) silently skips
+  `PGBEGIN`. Consumers outside the interactive path must set `nPgPanel` themselves.
+
+## Giza GRAY CR/CG/CB array bounds
+- macos_f90/pgplotsub.F GRAY subroutine caches default color representations for
+  restoration when exiting color mode. It calls `PGQCIR(ICILO,ICIHI)` then loops
+  `Do J=ICILO,ICIHI; CALL PGQCR(J,CR(J),CG(J),CB(J))`. Under Giza, `PGQCIR` returns
+  ICILO=0 (GIZA_COLOUR_INDEX_MIN), whereas classic PGPLOT starts at 1 — so CR/CG/CB
+  must be declared 0-based: `REAL, Save :: CR(0:511),CG(0:511),CB(0:511)`. Same total
+  size (512), but bounds now cover index 0. Otherwise the first-entry gray image crashes
+  on CR(0) out-of-bounds write (hard to debug inside giza since graphics libs are
+  typically stripped).
 
 ## Reference
 - macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
