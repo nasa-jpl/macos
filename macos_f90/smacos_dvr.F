@@ -24,7 +24,7 @@ C
 	use pgplot_mod
 	use math_mod
 
-	use macos_vars_mod  ! variables specific for macos.F
+	use macos_vars_mod  ! variables specific for macos.F (incl. nPgPanel)
 	use dopt_mod
 	use zern_wf_mod
 	use design_optim_mod
@@ -44,6 +44,14 @@ C
 C  Execution starts
 	modelSize=512; nGridPts=255
 	Call macos_init_all(modelSize)
+
+C  Open graphics device once for OPD/SPOT plot commands below.
+C  Interactive macos.F does this via GRAINI calls scattered through
+C  macos_cmd_loop.inc; smacos_dvr must open the device itself.
+C  nPgPanel selects 1x1/1x2/1x3/2x2 layout (see pgplotsub.F:GRAINI);
+C  default 1 = single panel.
+        nPgPanel = 1
+        CALL GRAINI
 
 	RxName='SegDemo3'		! 'most3frntdbl'
 

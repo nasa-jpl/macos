@@ -368,7 +368,7 @@ C***********************************************************************
 #endif
 	INTEGER, PARAMETER :: mColor=64
 	Integer, Save :: ICILO,ICIHI,NDROW_sv
-        REAL, Save :: CInd(3,mColor),CR(512),CG(512),CB(512)
+        REAL, Save :: CInd(3,mColor),CR(0:511),CG(0:511),CB(0:511)
 	LOGICAL, Save :: first_entry=.true.
         REAL*4 :: CTAB_L(mColor),CTAB_R(mColor),
      &            CTAB_G(mColor),CTAB_B(mColor)
