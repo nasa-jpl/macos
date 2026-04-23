@@ -95,6 +95,7 @@ GMI_MEX="${GMI_DIR}/GMI.mexa64"
 if [ -f "${GMI_DIR}/Makefile" ]; then
   echo "makejoint: building GMI via ${GMI_DIR}/Makefile ..."
   make -C "${GMI_DIR}" macossrc_dir="${SCRIPT_DIR}/macos_f90" \
+    MACOS_BUILD_DIR="${BUILD_DIR}" \
     || { echo "makejoint: WARNING — GMI build failed (continuing)"; }
 else
   echo "makejoint: GMI Makefile not found at ${GMI_DIR}, skipping GMI build."

@@ -46,31 +46,30 @@ git -C MACOS_resources checkout dr-dev
 
 ## 3. Build
 
-Run one script from the `macos/` directory — it builds all four targets.
+All scripts run from `~/dev/macos/` and accept options
+`[giza|pgplot] [debug|release] [gfortran]` in any order
+(defaults: giza, release, ifx).
 
-### Intel ifx (recommended)
-
-```bash
-cd ~/dev/macos
-source ./makejoint.sh
-```
-
-### gfortran alternative
+### Build all four targets at once
 
 ```bash
 cd ~/dev/macos
-source ./makegfortran.sh
+source ./makejoint.sh            # ifx, Giza, release (most common)
+source ./makejoint.sh debug      # ifx, Giza, debug
+source ./makejoint.sh gfortran   # gfortran, Giza, release
 ```
 
-Both scripts accept optional `debug` and `pgplot` arguments (order-independent):
+### Build individual targets
 
-| Invocation | Compiler | Graphics | Optimisation |
-|---|---|---|---|
-| `source ./makejoint.sh` | ifx | Giza | -O2 (default) |
-| `source ./makejoint.sh debug` | ifx | Giza | -O0 -check all |
-| `source ./makejoint.sh pgplot` | ifx | PGPLOT | -O2 |
-| `source ./makegfortran.sh` | gfortran | Giza | -O2 |
-| `source ./makegfortran.sh debug` | gfortran | Giza | -O0 |
+| Script | Targets built |
+|---|---|
+| `source ./makems.sh` | `macos` + `libsmacos.a` |
+| `source ./makesd.sh` | `smacos_dvr` (also builds macos/smacos if needed) |
+| `source ./makegmi.sh` | `GMI.mexa64` (requires macos+smacos built first) |
+
+All three accept the same `[giza|pgplot] [debug|release] [gfortran]` options.
+`makesd.sh` and `makegmi.sh` must use matching options to the preceding
+`makems.sh` (or `makejoint.sh`) call so they target the same build directory.
 
 ---
 
