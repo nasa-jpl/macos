@@ -337,10 +337,13 @@ if(BUILD_GMI)
             "Set -DGMI_SRC_DIR=<path> to the MACOS_resources/GMI directory. "
             "Disabling GMI target.")
         set(BUILD_GMI OFF)
-    elseif(NOT MATLAB_ROOT OR NOT EXISTS "${MATLAB_ROOT}/extern/include/mex.h")
+    elseif(NOT MATLAB_ROOT
+           OR NOT EXISTS "${MATLAB_ROOT}/extern/include/mex.h"
+           OR NOT EXISTS "${MATLAB_ROOT}/extern/include/fintrf.h")
         message(WARNING
-            "BUILD_GMI=ON but MATLAB not found at ${MATLAB_ROOT}. "
-            "Set -DMATLAB_ROOT=/usr/local/MATLAB/R20XXx. "
+            "BUILD_GMI=ON but MATLAB MEX/Fortran headers not found under "
+            "${MATLAB_ROOT}/extern/include (need mex.h and fintrf.h). "
+            "Set -DMATLAB_ROOT=/usr/local/MATLAB/R20XXx or install full MATLAB. "
             "Disabling GMI target.")
         set(BUILD_GMI OFF)
     endif()
