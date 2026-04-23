@@ -22,7 +22,17 @@ project(MACOS VERSION 3.34 LANGUAGES Fortran C)
 # ---- Options ----
 option(BUILD_GMI        "Build GMI Matlab mex interface"  OFF)
 option(BUILD_SMACOS_DVR "Build smacos_dvr executable"     OFF)
-set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
+
+# Auto-detect the latest MATLAB under /usr/local/MATLAB (R20XXa/b).
+# Override: -DMATLAB_ROOT=/usr/local/MATLAB/R2023a
+if(NOT DEFINED MATLAB_ROOT OR MATLAB_ROOT STREQUAL "")
+    file(GLOB _matlab_dirs LIST_DIRECTORIES true "/usr/local/MATLAB/R[0-9][0-9][0-9][0-9][ab]")
+    if(_matlab_dirs)
+        list(SORT _matlab_dirs COMPARE NATURAL ORDER ASCENDING)
+        list(GET  _matlab_dirs -1 MATLAB_ROOT)
+    endif()
+endif()
+set(MATLAB_ROOT "${MATLAB_ROOT}" CACHE PATH "Matlab installation root" FORCE)
 
 # ---- Platform detection ----
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -321,9 +331,22 @@ if(BUILD_GMI)
     set(GMI_SRC_DIR "$ENV{HOME}/dev/MACOS_resources/GMI" CACHE PATH
         "Directory containing GMI.F and GMIG.F")
 
-    if(NOT EXISTS ${GMI_SRC_DIR}/GMI.F)
-        message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}")
+    if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")
+        message(WARNING
+            "BUILD_GMI=ON but GMI.F not found in ${GMI_SRC_DIR}. "
+            "Set -DGMI_SRC_DIR=<path> to the MACOS_resources/GMI directory. "
+            "Disabling GMI target.")
+        set(BUILD_GMI OFF)
+    elseif(NOT MATLAB_ROOT OR NOT EXISTS "${MATLAB_ROOT}/extern/include/mex.h")
+        message(WARNING
+            "BUILD_GMI=ON but MATLAB not found at ${MATLAB_ROOT}. "
+            "Set -DMATLAB_ROOT=/usr/local/MATLAB/R20XXx. "
+            "Disabling GMI target.")
+        set(BUILD_GMI OFF)
     endif()
+endif()
+
+if(BUILD_GMI)
 
     add_library(GMI SHARED
         ${GMI_SRC_DIR}/GMI.F
