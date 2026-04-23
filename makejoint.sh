@@ -90,7 +90,7 @@ cmake --build "${BUILD_DIR}" -j"$(nproc)" \
   || { echo "makejoint: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build GMI via its own Makefile (handles MATLAB detection itself) ---
-GMI_DIR="${SCRIPT_DIR}/../MACOS_resources/GMI"
+GMI_DIR="$(realpath "${SCRIPT_DIR}/../MACOS_resources/GMI" 2>/dev/null || cd "${SCRIPT_DIR}/../MACOS_resources/GMI" && pwd)"
 GMI_MEX="${GMI_DIR}/GMI.mexa64"
 if [ -f "${GMI_DIR}/Makefile" ]; then
   echo "makejoint: building GMI via ${GMI_DIR}/Makefile ..."
