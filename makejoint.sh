@@ -83,12 +83,22 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \
-  -DBUILD_GMI=ON \
   || { echo "makejoint: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
-# --- Build ---
+# --- Build macos / smacos / smacos_dvr ---
 cmake --build "${BUILD_DIR}" -j"$(nproc)" \
   || { echo "makejoint: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
+
+# --- Build GMI via its own Makefile (handles MATLAB detection itself) ---
+GMI_DIR="${SCRIPT_DIR}/../MACOS_resources/GMI"
+GMI_MEX="${GMI_DIR}/GMI.mexa64"
+if [ -f "${GMI_DIR}/Makefile" ]; then
+  echo "makejoint: building GMI via ${GMI_DIR}/Makefile ..."
+  make -C "${GMI_DIR}" macossrc_dir="${SCRIPT_DIR}/macos_f90" \
+    || { echo "makejoint: WARNING — GMI build failed (continuing)"; }
+else
+  echo "makejoint: GMI Makefile not found at ${GMI_DIR}, skipping GMI build."
+fi
 
 # --- Report ---
 echo ""
@@ -98,6 +108,6 @@ echo "  smacos     : ${BUILD_DIR}/lib/libsmacos.a"
 if [ -f "${BUILD_DIR}/bin/smacos_dvr" ]; then
   echo "  smacos_dvr : ${BUILD_DIR}/bin/smacos_dvr"
 fi
-if ls "${BUILD_DIR}"/lib/GMI.mexa64 > /dev/null 2>&1; then
-  echo "  GMI        : ${BUILD_DIR}/lib/GMI.mexa64"
+if [ -f "${GMI_MEX}" ]; then
+  echo "  GMI        : ${GMI_MEX}"
 fi
