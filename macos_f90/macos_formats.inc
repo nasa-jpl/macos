@@ -85,7 +85,7 @@ C  2. FORMAT statements
  302	FORMAT(' Command not understood.  Please reenter...')
 
 !303	FORMAT(/' Modeling and Analysis for Controlled Optical Systems'/
-!    &	' MACOS Version 3.2, 2006'//
+!    &	' MACOS Version 4.0, 2026'//
 !    &	' This run is limited to',i4,' surfaces,',i4,' segments,',
 
  303    FORMAT(/'  This run is limited to',i4,
@@ -167,6 +167,7 @@ C  2. FORMAT statements
      &	'           NOLNeg prohibits negative ray lengths'/
      &	'           COMpose a multiple object/color image'/
      &	'  Commands to plot wavefronts and images are:'/
+     &  '              IMGMODE selects NEGative or POSitive image display'/
      &	'              INtensity of the wavefront output'/
      &	'              PIXillated intensity output'/
      &	'              ADD current intensity to composed image'/
