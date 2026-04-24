@@ -238,16 +238,16 @@ C         and A is NAxNC
   !    RETURN
   !    END SUBROUTINE DMPROD
 
-SUBROUTINE DMPROD(A, B, C, NA, NB, NC)
-  IMPLICIT NONE
-  INTEGER, INTENT(IN)    :: NA, NB, NC
-  REAL*8,  INTENT(OUT)   :: A(NA, NC)
-  REAL*8,  INTENT(IN)    :: B(NA, NB)
-  REAL*8,  INTENT(IN)    :: C(NB, NC)
+      SUBROUTINE DMPROD(A, B, C, NA, NB, NC)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN)    :: NA, NB, NC
+        REAL*8,  INTENT(OUT)   :: A(NA, NC)
+        REAL*8,  INTENT(IN)    :: B(NA, NB)
+        REAL*8,  INTENT(IN)    :: C(NB, NC)
 
-  A = MATMUL(B, C)
+        A = MATMUL(B, C)
 
-END SUBROUTINE DMPROD
+        END SUBROUTINE DMPROD
 
 C
         SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
