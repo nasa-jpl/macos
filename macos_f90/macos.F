@@ -50,6 +50,7 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+	use plot_mode_mod
         use surfsub
 
 	use macosio_mod

@@ -93,6 +93,7 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/macos_IO.f90
   ${smacos_src_dir}/param_mod.F
   ${smacos_src_dir}/elt_mod.F
+  ${smacos_src_dir}/plot_mode_mod.F
   ${smacos_src_dir}/nn_util.F
   ${smacos_src_dir}/mathsub.F
   ${smacos_src_dir}/macos_debug.F

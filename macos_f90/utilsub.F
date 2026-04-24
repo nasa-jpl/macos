@@ -468,8 +468,8 @@ C***********************************************************************
      &	              na,na,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                dxElt(iElt),dxElt(iElt), iElt)
 	ELSE IF (iPloTyp.NE.0) THEN
-	  ! Screen output
-	  CTITLE=CTEXT(1:k)//', Elt='//CEltNum(1:i)//', File='//filnam
+	  ! Screen output.  Title style matches OPD: "<kind>, Surface N".
+	  CTITLE=CTEXT(1:k)//', Surface '//CEltNum(1:i)//', File='//filnam
 	  CALL SRFPLT(iPloTyp,XFP,YFP,MWFFT,
      &	    np,np,na,na,CXLABL,CYLABL,CTITLE,R1,R2,StretchType)
 C    &	    np,np,na,na,'X-Axis','Y-Axis',CTITLE,R1,R2,StretchType)
@@ -505,7 +505,7 @@ C***********************************************************************
      &	              na,na,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                dxElt(iElt), dxElt(iElt), iElt)
 	ELSE IF (iPloTyp.NE.0) THEN
-	  CTITLE=CTEXT(1:k)//', Elt='//CEltNum(1:i)//', File='//filnam
+	  CTITLE=CTEXT(1:k)//', Surface '//CEltNum(1:i)//', File='//filnam
 	  CALL SRFPLT(iPloTyp,XFP,YFP,PixArray,
      &	  np,np,na,na,'X-Axis','Y-Axis',CTITLE,R1,R2,StretchType)
 	END IF
