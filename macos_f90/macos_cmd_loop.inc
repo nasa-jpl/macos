@@ -3787,6 +3787,23 @@ C         ***Plot OPD map***
 	        WRITE(*,442) RMSWFE,WFEPV,DAvgl
 	      End If
 
+	      ! Arm annotation for bottom of raster plot:
+	      !   "OPD=<rms> <cUnit> RMS, <pv> <cUnit> P-V"
+	      ! and wedge label "OPD (<cUnit>)".
+	      If (BaseUnits_FLG) Then
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," ",A," RMS, ",E12.5," ",A," P-V")')
+     &	          RMSWFE,TRIM(cUnit),WFEPV,TRIM(cUnit)
+	        wedgeLabel = 'OPD ('//TRIM(cUnit)//')'
+	      Else
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," RMS, ",E12.5," P-V")')
+     &	          RMSWFE,WFEPV
+	        wedgeLabel = 'OPD'
+	      End If
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+
 	      !iEm1=iElt-1
 
 	      IF ((iPloTyp.NE.0).AND.(iPloTyp.NE.5).AND.(iPloTyp.NE.6)
@@ -3819,13 +3836,13 @@ C         ***Plot OPD map***
      &            .OR.(iPloTyp.EQ.9)) THEN
 	        j=ICLEN(filnam)
 	        imgfil=filnam(1:j)//'.OPD'//Cinteger(1:i)
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DBINOUT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	        	mpts,mpts,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                  dxElt(iElt),dxElt(iElt),iElt,R1)
 	      ELSE IF (iPloTyp.NE.0) THEN
 	        ! Render in pgplot window, XFP and YFP are grid coord vectors
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)//', File='//filnam
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DSRFPLT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	               mpts,mpts,'X-Axis','Y-Axis',CTITLE,R1,R2,1)
 	      END IF
@@ -4305,6 +4322,24 @@ C	      Compute spot diagram data from ray trace and plot:
 	        ycent=ycent/DBLE(iSpot)
 	        WRITE(*,408)(CntrSpot(1)-RefSpot(1)),
      &	          (CntrSpot(2)-RefSpot(2)),xcent,ycent
+
+	        ! RMS spot radius about centroid, for plot annotation.
+	        S1=0d0
+	        Do i=1,iSpot
+	          S1 = S1 + (RaySpot(i,1)-xcent)**2
+     &	                 + (RaySpot(i,2)-ycent)**2
+	        End Do
+	        S1 = DSQRT(S1/DBLE(iSpot))
+	        If (BaseUnits_FLG) Then
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5," ",A)')
+     &	            S1, TRIM(cUnit)
+	        Else
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5)') S1
+	        End If
+	        annotLine2 = ' '
+	        annotOn    = .TRUE.
 	      ELSE
 	        WRITE(*,*)' All rays were obscured or lost'
 	      END IF
@@ -4358,6 +4393,29 @@ C         ***Export data***
 C         ***next command: Plot wavefront stuff***
 C                          -- original comment, doesn't make sense -jzlou
 C         *** Should perform ray trace and diffraction here -- jzlou
+
+	  ELSE IF (LCMP(command,'IMGMODE',4)) THEN
+	    ! Raster display polarity for OPD / INT / PIX / GRAY etc.
+	    ! NEG = astronomy (large -> dark), POS = conventional.
+	    ! Non-raster plots (SLICE, WIRE, CONTOUR, COLUMN, ROW, SPOT)
+	    ! are unaffected.
+	    ! Must dispatch BEFORE 'IMG' branch below (LCMP 3-char match).
+	    IF (ifAstroMode) THEN
+	      CALL CACCEPT(ANS,'NEG',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    ELSE
+	      CALL CACCEPT(ANS,'POS',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    END IF
+	    IF (LCMP(ANS,'NEG',3).OR.LCMP(ANS,'ASTRO',3)) THEN
+	      ifAstroMode = .TRUE.
+	      WRITE(*,*)' IMGMODE = NEG (astronomy: large -> dark)'
+	    ELSE IF (LCMP(ANS,'POS',3).OR.LCMP(ANS,'CONV',3)) THEN
+	      ifAstroMode = .FALSE.
+	      WRITE(*,*)' IMGMODE = POS (conventional: large -> bright)'
+	    ELSE
+	      WRITE(*,*)' IMGMODE: unrecognized option, no change'
+	    END IF
 
 	  ELSE IF (LCMP(command,'IN',2).OR.LCMP(command,'PH',2).OR.
      &      LCMP(command,'AMPL',3).OR.LCMP(command,'REAL',3).OR.
@@ -4506,6 +4564,11 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      ELSE
 	        ANS='Intensity#%'
 	      END IF
+
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') MaxInt
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      wedgeLabel = 'Intensity'
 
 	      CALL SrfOut(iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.int',mdttl,mdttl,R1,R2,StretchType)
@@ -4772,6 +4835,12 @@ C     &	          psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        pixMax=maxval(PixArray); pixMin=minval(PixArray)
 	        print*,'PIX: pixMax, pixMin=', pixMax,pixMin
 	      end if
+
+	      pixMax = MAXVAL(PixArray(1:npix,1:npix))
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') pixMax
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      wedgeLabel = 'Pixel value'
 
 	      CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.pix',npix,mpix,R1,R2,StretchType)
