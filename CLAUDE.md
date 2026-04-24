@@ -5,24 +5,24 @@ NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 ## Build
-- Full build (npsol, pgplot, readline, fitsio, macos, smacos): source ./makealldcr.sh
-- macos/smacos only (macos_f90 changes): source ./makeMSdcr.sh
-- GMI mex (Matlab interface): source ./makeGMIdcr.sh
-- All scripts use /opt/intel/oneapi/compiler/latest/ for portability.
+CMake-based. All scripts live in `macos/` and accept `[giza|pgplot] [debug|release] [gfortran]`
+in any order (defaults: giza, release, ifx). Each combination gets its own build directory.
 
-### CMake build (alternative)
-- Build script: source ./makeCMdcr.sh [debug] [gfortran]
-  - `source ./makeCMdcr.sh`                — Release ifx
-  - `source ./makeCMdcr.sh debug`          — Debug ifx (-O0 -check all)
-  - `source ./makeCMdcr.sh gfortran`       — Release gfortran
-  - `source ./makeCMdcr.sh debug gfortran` — Debug gfortran
-- Each combination gets its own build directory (build_release_ifx, build_debug_gfortran, etc.).
-- CMakeLists.txt files: macos_f90/CMakeLists.txt (top-level), macos_f90/npsol/CMakeLists.txt.
+| Script | Targets |
+|---|---|
+| `source ./makejoint.sh` | macos + smacos + smacos_dvr + GMI (all four) |
+| `source ./makems.sh` | macos + libsmacos.a |
+| `source ./makesd.sh` | smacos_dvr (builds macos/smacos too if needed) |
+| `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first) |
+| `source ./makegfortran.sh` | macos + smacos + smacos_dvr via gfortran |
+
+Build directory naming: `build_{release|debug}_{giza|pgplot}[_gfortran]`
+
+- CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources), `macos_f90/npsol/CMakeLists.txt`.
 - CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
-- Targets: macos (executable), smacos_lib (static library), smacos_dvr (executable, -DBUILD_SMACOS_DVR=ON), GMI (mex, -DBUILD_GMI=ON).
-- pgplot and fitsio are pre-built externals — build them first with their own scripts before running CMake.
 - C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
+- GMI.mexa64 is built via the standalone `MACOS_resources/GMI/Makefile` (not cmake) — more robust across MATLAB versions. makejoint.sh and makegmi.sh both call it with `MACOS_BUILD_DIR` pointing to the cmake build tree.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
@@ -61,39 +61,6 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - Prescription output: MonZernType/MonZernCoef + FFZernType/FFZernCoef (dense).
 - SrfType 4 (Monomial) and 12 (MonGrData): still use direct MonCoef input.
 
-## Next tasks
-1. Verify surfsub.F and elt_mod.F compile cleanly -- done
-2. Add UI input for lFF, pFF, xFF, yFF, zFF, FFZernCoef, MonZernCoef -- done
-3. Prescription file output -- done
-4. Add FreeFormSrf calls in elemsub.F (FindSrf + Reflector) -- done
-5. Fix OLD command surface type loop (was DO i=1,13; now mSrfType) -- done
-6. Fix OLD prescription reader: FreeForm keywords in element chain -- done
-7. Fix pData/xData/yData/zData output and ChkDf2 defaults for FreeForm -- done
-8. Fix UI dialog: pData/xData/yData/zData prompts for FreeForm+grid -- done
-9. Reorder NEW dialog: FF-first (FFZernType→FFZernCoef→lFF→Mon→Grid→coords) -- done
-10. Reorder prescription output: FF-first -- done
-11. Fix jGridSrf mapping for grid-using surfaces (was only SrfType 9/11) -- done
-12. Add FreeForm to Refractor in elemsub.F + update call sites -- done
-13. Fix makeGMIdcr.sh: remove -fsanitize=memory, replace -C with -check all, remove eval -- done
-14. SHOW UI display during input -- deferred
-15. Fix FreeFormSrf normal: zc must use total sag (fh+fhFF), not just Mon sag -- done
-16. Add pFF/xFF/yFF/zFF to all PERTURB routines -- done
-17. Fix pData perturbation condition (was <=13, now ==12/==13/==FreeForm) -- done
-18. Add MODIFY handlers for nFFZernCoef, FFZernModes, nMonZernCoef, MonZernModes -- done
-19. Archive/remove obsolete source files -- done
-20. CMake build system (CMakeLists.txt, presets, VS Code integration, makeCMdcr.sh) -- done
-21. Per-ray status tracking + convert STOP/PAUSE to graceful failures -- done
-22. Fix short filename crash in OLD command (macosio.F substring bounds) -- done
-23. Giza plot sharpness (supersampling + HiDPI via cairo_surface_set_device_scale) -- done
-24. Giza window resize (no blank on resize; 2× render → 1× pixmap → scaled copy to window) -- done
-25. Readline arrow keys for CMake build (-DREADLINE_LIBRARY in top-level CMakeLists.txt) -- done
-26. Embed Intel RPATH so ifx-built macos runs without sourcing setvars.sh -- done
-27. Giza close-button handling: unmap window instead of closing device -- done
-28. Linefeed after MODIFY Q exit so next MACOS prompt doesn't overwrite -- done
-29. Embed Intel RPATH in GMI.mexa64 (CMakeLists.txt) so MATLAB loads it without setvars.sh -- done
-30. Embed Intel/gfortran RPATH in smacos_dvr (CMakeLists.txt) so it runs without setvars.sh -- done
-31. Fix CR/CG/CB out-of-bounds in GRAY (pgplotsub.F) when Giza returns ICILO=0 -- done
-32. smacos_dvr: open Giza device (nPgPanel=1; CALL GRAINI) — otherwise plots spam "No device open" -- done
 
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
@@ -121,6 +88,91 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - pData condition: includes FreeForm so grid coord frame perturbs when nGridMat>0.
 - pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
   now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
+
+## Display polarity + plot annotations
+- `plot_mode_mod.F` (registered early in `COMMON_SOURCES`) holds session
+  state:
+  - `ifAstroMode` (default `.TRUE.` = astronomy / negative polarity,
+    large→dark — matches legacy PGPlot users' expectation)
+  - Bottom-of-plot annotation: `annotOn`, `annotLine1`, `annotLine2`
+  - `wedgeLabel` (default `'pixel value'`) — text under the color wedge
+  - `ClearAnnot()` resets all three (annotOn + both lines + wedgeLabel)
+    after the draw routine emits them.
+- `IMGMODE` command toggles polarity interactively (prompts `NEG|POS`,
+  accepts `ASTRO|CONV` as synonyms). Must be dispatched BEFORE the
+  `LCMP(command,'IMG',3)` branch in `macos_cmd_loop.inc` — placed at
+  ~line 4362 for that reason (otherwise "IMGMODE" is absorbed by the
+  3-char 'IMG' match and treated as a plot command requiring `ifLoad`).
+
+### Raster inversion — the key Giza gotcha
+Giza's `giza_render_gray` (backing `PGGRAY`) internally calls
+`giza_set_colour_table_gray()` and forcibly resets its own ramp,
+**ignoring any `PGSCR` setup the caller does** (see
+`macos_f90/giza/src/giza-render.c:368`). You cannot use `PGGRAY` for
+polarity control. The fix in `pgplotsub.F:GRAY`:
+- Render the image via `PGIMAG` + a 2-point `PGCTAB` we build ourselves
+  (both the color and gray paths).
+- For gray: `CTAB_R/G/B = [1.0, 0.0]` (white→black) under astro mode,
+  `[0.0, 1.0]` under POS.
+- For color: walk `CInd` in reverse under astro mode (palette flipped
+  end-to-end; hue order preserved).
+
+### The second Giza gotcha: `PGCTAB` clobbers CI 0 and 1
+`giza_set_colour_table` (called by `PGCTAB`) ends with
+`_giza_set_range_from_colour_table(_giza_colour_index_min,
+_giza_colour_index_max)` — that range starts at **0**. A 2-point ramp
+written with `L=[0,1]` overwrites CI 0 and CI 1 with the ramp endpoints,
+clobbering the bg=white / fg=black that axes, tick labels, wedge axis,
+and `PGMTXT` rely on. Symptoms (all debugged this way): axis-label text
+invisible on first plot, annotation visible but axes ticks gone on a
+second plot, etc.
+- Fix: **reserve CI 0=white and CI 1=black** via explicit `PGSCR` at
+  start of GRAY, then `PGSCIR(16, 255)` pushes the image ramp into CI
+  16..255 so `PGCTAB` can't touch CI 0/1. Always use `PGSCI(1)` (never
+  `PGSCI(ICILO)`) for axes/box/labels/wedge/annotation.
+- Re-assert `PGSCI(1)` before `PGWEDG` and before `PGMTXT` — the
+  intervening `PGCTAB`/`PGIMAG` may shift the current CI.
+
+### Non-raster plots — always black ink on white
+`CONTOUR`, `SLICE`, `WIRE`, `SPOTDIAG`, `PLOTCOL` all set
+`PGSCR(0,1,1,1); PGSCR(1,0,0,0); PGSCI(1)` at entry — overrides any
+`IMGMODE` setup. Harmless under PGPlot (same as its default).
+
+### Labels, titles, wedge
+- `PGLABEL(' ', ' ', CTITLE)` in GRAY suppresses the placeholder
+  `'X-Axis'` / `'Y-Axis'` arg strings (the 76 callers that pass those
+  literals are untouched — GRAY just ignores them). Only the title
+  survives above the plot.
+- `PGMTXT('B', 3.5, 0.5, 0.5, line)` centers the annotation under
+  the x-axis (coord=0.5 is middle, fjust=0.5 is center-justify).
+- Tick numeric labels come from `PGENV(...,axis=0)` → internally
+  `PGBOX('BCNST', ...)` — the `N` option prints numeric values at
+  each major tick. Keep as-is; for OPD the tick values are projected
+  dimensions on the reference surface (usually the OPD reference,
+  e.g. Elt 9 in SegDemo3) which is sometimes meaningful.
+- Titles:
+  - OPD → `'OPD, Surface N'` (no `File=` suffix)
+  - INT / PIX → `'<kind>, Surface N, File=<filnam>'` (via `SrfOut`
+    and `PixOut` in `utilsub.F`; `File=` kept because the in-file
+    stretch variant — `LOG10 Intensity` etc. — can distinguish runs)
+- Wedge labels (`wedgeLabel` in `plot_mode_mod`):
+  - OPD with BaseUnits → `'OPD (<cUnit>)'` (e.g., `OPD (m)`)
+  - OPD without BaseUnits → `'OPD'`
+  - INT → `'Intensity'`
+  - PIX → `'Pixel value'`
+  - Others → default `'pixel value'`
+
+### Annotation lines (bottom of plot)
+Command handler sets `annotLine1/2` + `annotOn=.TRUE.` before the draw
+call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
+`ClearAnnot()`.
+- OPD → `OPD=<rms> <cUnit> RMS, <pv> <cUnit> P-V` (from `RMSWFE`,
+  `WFEPV`, `cUnit`; falls back to no-unit form if `.NOT.BaseUnits_FLG`)
+- SPOT → `RMS spot radius=<r> <cUnit>` — computed from `RaySpot`
+  about the centroid in the SPOT handler (not a pre-existing var).
+- INT → `Peak pixel=<MaxInt>` (from `Ca2Int` output).
+- PIX → `Peak pixel=<maxval(PixArray)>`.
+- Phase/Amplitude/etc. intentionally left unannotated.
 
 ## Giza plot improvements (macos_f90/giza/)
 - Supersampling: off-screen image surface is 2× (GIZA_XW_SUPERSAMPLE) in giza-driver-xw.c;
@@ -168,6 +220,19 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   on CR(0) out-of-bounds write (hard to debug inside giza since graphics libs are
   typically stripped).
 
+## mathsub.F modernization
+- `DMPROD(A,B,C,NA,NB,NC)` in `mathsub.F` is now a thin wrapper over
+  `MATMUL(B,C)` with explicit `A(NA,NC) / B(NA,NB) / C(NB,NC)` shapes
+  and `IMPLICIT NONE`. 287 call sites unchanged — the wrapper preserves
+  the old flat-indexing contract (caller's physical leading dim == NA,
+  which all existing call sites satisfy since the dominant shapes are
+  3×3, 3×1, 1×3). Do not inline `MATMUL` at call sites: many callers
+  pass flat scratch buffers (`D1(100)`, `D2(100)`) where MATMUL would
+  force awkward `RESHAPE` noise, and keeping one chokepoint means a
+  future DGEMM swap is a single edit. Aliasing is undefined for both
+  old and new (old code zeros `A(NAPTR)` before accumulating, which
+  corrupts B or C if aliased), so no regression.
+
 ## Reference
 - macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
 - macos_f90/Archive/ : obsolete source files (sourcsub variants, test programs, etc.)
@@ -203,28 +268,24 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   (no spurious "Default used" warnings).
 
 ## Debug builds
-- Makefile: source ./makeMSdcr.sh debug   # macos + smacos with -O0 -check all
-- CMake: source ./makeCMdcr.sh debug      # macos + smacos + smacos_dvr
-- Makefile uses `OPT ?= -Ofast`; scripts export `OPT="-O0 -check all"` for debug.
+- `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
+- `source ./makejoint.sh debug` — all four targets, debug
 - CMake debug uses -check all,noarg_temp_created (suppresses harmless array temporary warnings).
 - VS Code: F5 launches debug session; builds automatically via preLaunchTask.
-  launch.json points to build_debug_ifx/macos and build_debug_ifx/smacos_dvr.
-  tasks.json runs cmake --preset debug. Requires ms-vscode.cpptools extension.
+  launch.json points to build_debug_giza/macos and build_debug_giza/smacos_dvr.
+  tasks.json runs cmake -S/-B with debug flags. Requires ms-vscode.cpptools extension.
   `debug.allowBreakpointsEverywhere: true` in settings.json enables breakpoints in .F files.
 - smacos_dvr: compiles smacos_dvr.F with -DCMACOS, links against smacos_lib.a
   plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
 
 ## Build notes
-- Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — make
-  picks it up via implicit rules and tries to build it as a standalone executable.
-- Full link requires environment from makealldcr.sh (macossrc_dir, intel64_lib, etc.).
-  Running make macos directly will compile but fail at link due to missing paths.
-- Use makeMSdcr.sh for macos_f90-only changes (faster than makealldcr.sh).
-  makeMSdcr.sh runs `make clean-macos` then `make macos` — this removes the old binary
-  first. If the link fails (e.g. missing propsub_mod128), the binary is gone; use CMake
-  instead: source ./makeCMdcr.sh debug (from macos/, not macos_f90/).
+- Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — cmake
+  may pick it up and try to build it as a standalone executable.
+- Use `source ./makems.sh` for macos_f90-only changes (faster than makejoint.sh).
+  cmake recompiles only changed files; delete the build directory for a clean rebuild.
 - macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
-- GMI (Matlab mex): built separately via makeGMIdcr.sh.
+- GMI (Matlab mex): built via standalone MACOS_resources/GMI/Makefile (invoked by
+  makejoint.sh and makegmi.sh). MATLAB auto-detected under /usr/local/MATLAB/R*.
   ifx 2025.3 quirk: -C flag implies -fsanitize=memory; use -check all instead.
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
