@@ -95,6 +95,29 @@ MODULE macos_IO
 
 
     ! ------------------------------------------------------------------
+    ! FmtD -- compact REAL*8 formatter: up to 16 sig digits, trailing
+    ! zeros stripped from mantissa.  1.2d0 -> '1.2E+00', etc.
+    !
+    FUNCTION FmtD(x) RESULT(s)
+      USE Kinds
+      IMPLICIT NONE
+      REAL(pr),         INTENT(IN) :: x
+      CHARACTER(LEN=24)            :: s
+      CHARACTER(LEN=24)            :: buf
+      INTEGER                      :: ie, i
+      WRITE(buf,'(1P,ES23.15E2)') x
+      buf = ADJUSTL(buf)
+      ie  = INDEX(buf,'E')
+      IF (ie == 0) THEN; s = TRIM(buf); RETURN; END IF
+      i = ie - 1
+      DO WHILE (i > 1 .AND. buf(i:i) == '0')
+        i = i - 1
+      END DO
+      IF (buf(i:i) == '.') i = i + 1
+      s = buf(1:i) // buf(ie:LEN_TRIM(buf))
+    END FUNCTION FmtD
+
+    ! ------------------------------------------------------------------
     !
     SUBROUTINE PrtFmtScalar_dbl(NameStr,DigitFmtStr,PrtScalar)
       USE Kinds
@@ -102,10 +125,12 @@ MODULE macos_IO
       IMPLICIT NONE
       CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
       REAL(pr),         INTENT(IN):: PrtScalar
+      CHARACTER(LEN=24)           :: valStr
       ! - - - - - - - - - - - - - - - - - - -
       WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
-      WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), PrtScalar
+      valStr = FmtD(PrtScalar)
+      WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//"A)") TRIM(NameStr), TRIM(valStr)
       CALL PrintMsg(PrtMsgStr)
 
     END SUBROUTINE PrtFmtScalar_dbl
