@@ -18,9 +18,8 @@ C***********************************************************************
 
         SUBROUTINE GRAEND
 C       Use this routine to terminate graphic output
-
-        CALL PGEND
-
+        use macos_mod, only: ifPlot
+        IF (ifPlot) CALL PGEND
         RETURN
         END SUBROUTINE GRAEND
 
