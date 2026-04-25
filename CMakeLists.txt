@@ -127,6 +127,7 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/psesub.F
   ${smacos_src_dir}/utilsub_c.c
   ${smacos_src_dir}/mhist.c
+  ${smacos_src_dir}/macos_signal.c
 )
 
 # SMACOS-only sources (smacos-specific modules + Fortran splicubi2)

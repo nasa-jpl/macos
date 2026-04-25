@@ -75,6 +75,9 @@ C***********************************************************************
           implicit none
           integer, optional :: psize
           End Subroutine macos_init_all
+          Subroutine install_sigint_handler() bind(C,name='install_sigint_handler')
+          use iso_c_binding
+          End Subroutine install_sigint_handler
         End Interface
 
 C  FORMAT statements
@@ -95,6 +98,7 @@ C  Execution starts
         ! Scene pthread defined in C
 	!Call startpthread
 
+	Call install_sigint_handler()
 	Call set_macos_problem_size(macos_model_size)
 
 	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls

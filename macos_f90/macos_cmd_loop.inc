@@ -20,6 +20,8 @@ C  *** Begin MACOS top-level command loop ***
 
 	  CALL PROMPT(command,'MACOS> ')
 
+	  IF (ICLEN(command).EQ.0) GO TO 1
+
 	  IF (LCMP(command,'QUIT',3) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
@@ -4568,7 +4570,13 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') MaxInt
 	      annotLine2 = ' '
 	      annotOn    = .TRUE.
-	      wedgeLabel = 'Intensity'
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Intensity'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Intensity'
+	      ELSE
+	        wedgeLabel = 'Intensity'
+	      END IF
 
 	      CALL SrfOut(iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.int',mdttl,mdttl,R1,R2,StretchType)
@@ -4840,7 +4848,13 @@ C     &	          psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') pixMax
 	      annotLine2 = ' '
 	      annotOn    = .TRUE.
-	      wedgeLabel = 'Pixel value'
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Pixel value'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Pixel value'
+	      ELSE
+	        wedgeLabel = 'Pixel value'
+	      END IF
 
 	      CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.pix',npix,mpix,R1,R2,StretchType)
@@ -5690,7 +5704,7 @@ C         ***Here if no match***
 #else
 	    IF (ifEcho) WRITE(*,302)
 #endif
-	    print*,'** Unknown command = ', command
+	    WRITE(*,'(A,A)') '** Unknown command = ', TRIM(command)
 	  END IF
 	GO TO 1
 
