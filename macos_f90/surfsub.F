@@ -1987,7 +1987,7 @@ C***********************************************************************
      &      i0,i1,j0,j1,xi,yj,diCtr,
      &      dzcdrho(3,3),dNvecdp(3,3),
      &      rhoc(3),rhoFF(3),rhom(3),rhomFF(3),
-     &      zmtzc,psitzm,
+     &      zmtzc,psitzm,zFFtzc,psitzFF,S2_mon,S2_FF,
      &      x,y,dxdrho(3),dydrho(3),dxdrhoFF(3),dydrhoFF(3),
      &      D1(9),D2(9),S1,S2,S3,
      &      Lconic,dAct,Fgrid,tiltx,tilty,
@@ -2136,18 +2136,27 @@ C  Evaluate FF monomials and first partials (if active)
                dFdrhoFF = S1*dxdrhoFF + S2*dydrhoFF
             END IF
 
-C  Compute conic quantities for normal vector assembly
+C  Compute conic quantities for normal vector assembly.
+C  Mon sag is along zhat (=zMon); FF sag is along zFF.  When zMon != zFF
+C  (e.g. segmented mirrors with face-aligned Mon frames) the two terms
+C  must be treated as displacements along independent z-axes; using a
+C  single combined zhat causes the FF sag to be applied along the wrong
+C  axis and produces wrong intersection + normal.
 
-            zc     = rho - (fh+fhFF)*zhat
-            psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-            psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
-            zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+            zc      = rho - fh*zhat - fhFF*zFF
+            psitzc  = psi(1)*zc(1)  +psi(2)*zc(2)  +psi(3)*zc(3)
+            psitzm  = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+            psitzFF = psi(1)*zFF(1) +psi(2)*zFF(2) +psi(3)*zFF(3)
+            zmtzc   = zhat(1)*zc(1) +zhat(2)*zc(2) +zhat(3)*zc(3)
+            zFFtzc  = zFF(1)*zc(1)  +zFF(2)*zc(2)  +zFF(3)*zc(3)
 
-            S1 = Kr + Kc*psitzc
-            S2 = psitzm*Kr + psitzm*psitzc*Kc + zmtzc
+            S1     = Kr + Kc*psitzc
+            S2_mon = psitzm*S1 + zmtzc
+            S2_FF  = psitzFF*S1 + zFFtzc
+            S2     = S2_mon       ! retained for the grid-term path below
 
             pr   = pin + L*ihat
-            Nvec = zc + S1*psi - S2*(dFdrho + dFdrhoFF)
+            Nvec = zc + S1*psi - S2_mon*dFdrho - S2_FF*dFdrhoFF
 
 C----------------------------------------------------------------------------
 C  Evaluate grid data and add grid contribution to normal vector (if active)
@@ -2262,12 +2271,15 @@ C  FF second derivatives
                   dFdrhoFF = S1*dxdrhoFF + S2*dydrhoFF
                END IF
 
-C  Combine Mon + FF second derivatives; grid d2 is zero (bilinear)
+C  Combine Mon + FF second derivatives; grid d2 is zero (bilinear).
+C  Mon contribution displaces along zhat (zMon), FF contribution along
+C  zFF — must be summed with their respective axes when zMon != zFF.
 
                DO 12 j=1,3
                   DO 11 i=1,3
                      d2Fdrho2(i,j) = d2Fdrho2(i,j) + d2Fdrho2FF(i,j)
-                     dzcdrho(i,j)  = -zhat(i)*(dFdrho(j)+dFdrhoFF(j))
+                     dzcdrho(i,j)  = -zhat(i)*dFdrho(j)
+     &                              -zFF(i) *dFdrhoFF(j)
    11             CONTINUE
                   dzcdrho(j,j) = dzcdrho(j,j) + 1d0
    12          CONTINUE
@@ -2357,7 +2369,7 @@ C  Compute dSmon (if active)
                dSmon = deltaS
             END IF
 
-C  Compute dSFF (if active)
+C  Compute dSFF (if active).  FF sag is along zFF, not zMon (zhat).
 
             dSFF = 0d0
             IF (ifFF) THEN
@@ -2369,7 +2381,7 @@ C  Compute dSFF (if active)
                y = (yFF(1)*rhomFF(1)+yFF(2)*rhomFF(2)+
      &              yFF(3)*rhomFF(3))/LFF
                CALL MonomialEval(x,y,coefFF,EPS,fhFF,S1,S2)
-               CALL ConicDeltaS(rho,fhFF,zhat,psi,Kc,Kr,Sconic,
+               CALL ConicDeltaS(rho,fhFF,zFF,psi,Kc,Kr,Sconic,
      &                          zc,psitzc,deltaS)
                dSFF = deltaS
             END IF
