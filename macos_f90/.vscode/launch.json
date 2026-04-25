@@ -12,13 +12,26 @@
       "MIMode": "gdb",
       "preLaunchTask": "CMake Build (Debug)",
       "environment": [
-        { "name": "PGPLOT_FONT", "value": "${workspaceFolder}/grfont.dat" },
-        { "name": "PGPLOT_DIR", "value": "${workspaceFolder}/pgplot/" },
-        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot" }
+        {
+          "name": "PGPLOT_FONT",
+          "value": "${workspaceFolder}/grfont.dat"
+        },
+        {
+          "name": "PGPLOT_DIR",
+          "value": "${workspaceFolder}/pgplot/"
+        },
+        {
+          "name": "LD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot"
+        }
       ],
       "setupCommands": [
-        { "text": "set print pretty on" },
-        { "text": "set print elements 0" }
+        {
+          "text": "set print pretty on"
+        },
+        {
+          "text": "set print elements 0"
+        }
       ]
     },
     {
@@ -32,14 +45,33 @@
       "MIMode": "gdb",
       "preLaunchTask": "CMake Build (Debug)",
       "environment": [
-        { "name": "PGPLOT_FONT", "value": "${workspaceFolder}/grfont.dat" },
-        { "name": "PGPLOT_DIR", "value": "${workspaceFolder}/pgplot/" },
-        { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot" }
+        {
+          "name": "PGPLOT_FONT",
+          "value": "${workspaceFolder}/grfont.dat"
+        },
+        {
+          "name": "PGPLOT_DIR",
+          "value": "${workspaceFolder}/pgplot/"
+        },
+        {
+          "name": "LD_LIBRARY_PATH",
+          "value": "${workspaceFolder}/readline-8.2:/opt/intel/oneapi/compiler/latest/lib:/usr/local/pgplot"
+        }
       ],
       "setupCommands": [
-        { "text": "set print pretty on" },
-        { "text": "set print elements 0" }
+        {
+          "text": "set print pretty on"
+        },
+        {
+          "text": "set print elements 0"
+        }
       ]
+    },
+    {
+      "type": "node-terminal",
+      "name": "JavaScript Debug Terminal",
+      "request": "launch",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
