@@ -3582,15 +3582,15 @@ C***********************************************************************
         use traceutil_mod, only : crnt_Elt
 	use math_mod
 
-C  Computes surface function for gridded data surface
+        ! Computes surface function for gridded data surface
 
 	IMPLICIT NONE
 
-	INTEGER nGridMat,mGridMat,gridSrfIdx
-	REAL*8 GridMat(mGridMat,mGridMat)
+	INTEGER :: nGridMat,mGridMat,gridSrfIdx
+	REAL(8) :: GridMat(mGridMat,mGridMat)
 
-	INTEGER i,i1,i0,j1,j0
-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
+	INTEGER :: i,i1,i0,j1,j0
+	REAL(8) :: Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
      &	  yhat(3),zhat(3),pmon(3),L,SGSrf,rho(3),rhom(3),rhoc(3),
      &	  fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,yj,diCtr
 
@@ -3599,38 +3599,34 @@ C  Computes surface function for gridded data surface
         diCtr = DBLE(nGridMat+1) / 2d0
         rho   = prel + L*ihat
         rhom  = rho - rhoc
-        ! diCtr=INT((nGridMat+1)/2)
-	! DO i=1,3
-	!   rho(i)=prel(i)+L*ihat(i)
-	!   rhom(i)=rho(i)-rhoc(i)
-	! END DO
 
         ! xi is non-integer coordinate in 1-99 frame, similar for yi
-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
+	xi = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+	yj = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
 
         ! Find grid coordinates of ray incidence point
 
-	i0=IDFLOOR(xi) ! floor integer part of xi
-	i1=i0+1
-	j0=IDFLOOR(yj)
-	j1=j0+1
-	x=xi-DBLE(i0)  ! fractional part, ray position from i0
-	y=yj-DBLE(j0)
-
+	i0 = IDFLOOR(xi) ! floor integer part of xi
+	i1 = i0+1
+	j0 = IDFLOOR(yj)
+	j1 = j0+1
+	x = xi-DBLE(i0)  ! fractional part, ray position from i0
+	y = yj-DBLE(j0)
 
         ! Compute excess surface height
 
 	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &	    (j1.GT.nGridMat)) THEN
-	  fh=0d0
-	  tiltx=0d0
-          tilty=0d0
+	  fh    = 0d0
+	  tiltx = 0d0
+          tilty = 0d0
 	ELSE
           If (GridSrfOrder(crnt_Elt)==1) Then
             ! bi-linear interpolation of GridMat
 	    CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
      &	    	         GridMat(i1,j1),fh,tiltx,tilty)
+
+        ! ToDo: Is this functional?
           Else IF (GridSrfOrder(crnt_Elt)==3) Then
 	    ! cubic-spline interpolation of GridMat
             gridSrfIdx=iEltToGridSrf(crnt_Elt)
@@ -3642,6 +3638,7 @@ C  Computes surface function for gridded data surface
      &                    mGridMat,nGridMat,mGridSrf,
      &                    i0,j0,fh,tiltx,tilty)
 	  Else
+        !ToDo: Eliminate STOP call
 	    WRITE(*,*)'*** Function SGSrf: Invalid SrfOrder: ',
      &                GridSrfOrder(crnt_Elt)
             Stop
@@ -3649,15 +3646,12 @@ C  Computes surface function for gridded data surface
 	END IF
 
         ! Compute surface function
+        zc = rho - fh*zhat
 
-	DO i=1,3
-	  zc(i)=rho(i)-fh*zhat(i)
-   	END DO
-	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
-	SGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
+        zc2    = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+        psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+        SGSrf  = zc2+(Kc*psitzc+2d0*Kr)*psitzc
 
-	RETURN
 	END FUNCTION SGSrf
 
 C***********************************************************************
