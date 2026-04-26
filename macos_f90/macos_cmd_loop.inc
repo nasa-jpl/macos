@@ -60,17 +60,15 @@ c***loh
 #endif
 
 
-C         *** print help message***
+C         *** print help message ***
+C
+C  HELP text lives in macos_help.inc -- single source of truth for the
+C  user-facing command list.  When you add a new ELSE IF (LCMP...)
+C  branch elsewhere in this file, also add a one-line entry to
+C  macos_help.inc under the right category.
 
 	  ELSE IF (LCMP(command,'HELP',3)) THEN
-	    WRITE(*,300)
-	    WRITE(*,307)
-	    WRITE(*,304)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,305)
-	    WRITE(*,306)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,321)
+#include "macos_help.inc"
 
 
 ! For command-line MACOS only
