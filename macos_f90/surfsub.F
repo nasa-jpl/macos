@@ -837,7 +837,7 @@ C***********************************************************************
         nv(1)=nv(1)/Rx/((1.0+tt2)*(1.0+tt2))
         nv(1)=2.0*nv(1)*(Ry-Zx)
         nv(2)=2.0*y; nv(3)=2.0*(z-Ry)
-        
+
         END SUBROUTINE Calc_ToricNormal
 
 C***********************************************************************
@@ -1679,7 +1679,7 @@ C***********************************************************************
  ! ---------------------------------------------------------------------
 
  ! Mapping ANSI Zernike Ordering to Monomials
- 
+
         SUBROUTINE ZerntoMon1(zc_in, mc, ie)
           use elt_mod ! , only : ZernTypeL,ZnNmFac_m,mZernModes,mMonCoef,NORM_RMS_PARAM_ANSI
 
@@ -2477,7 +2477,7 @@ C***********************************************************************
         L=L3
 
         ! Compute normal vector
-        
+
         rho  = prel + L*ihat
         rhom = rho - rhoc
 
@@ -3608,11 +3608,14 @@ C  Computes surface function for gridded data surface
 
         ! Compute point-of-incidence in surface coords
 
-	diCtr=INT((nGridMat+1)/2)
-	DO i=1,3
-	  rho(i)=prel(i)+L*ihat(i)
-	  rhom(i)=rho(i)-rhoc(i)
-	END DO
+        diCtr = DBLE(nGridMat+1) / 2d0
+        rho   = prel + L*ihat
+        rhom  = rho - rhoc
+        ! diCtr=INT((nGridMat+1)/2)
+	! DO i=1,3
+	!   rho(i)=prel(i)+L*ihat(i)
+	!   rhom(i)=rho(i)-rhoc(i)
+	! END DO
 
         ! xi is non-integer coordinate in 1-99 frame, similar for yi
 	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
@@ -3824,7 +3827,7 @@ C***********************************************************************
 
 C***********************************************************************
 C***********************************************************************
-C New draft routines to compute ray intersection points for surfaces 
+C New draft routines to compute ray intersection points for surfaces
 C combining monomial and grid data types
 
 	SUBROUTINE MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,
@@ -3832,7 +3835,7 @@ C combining monomial and grid data types
      &	nGridMat,mGridMat,GridMat,GridSrfdx,
      &	pmon,xhat,yhat,zhat,pData,xData,yData,zData,
      &	Nvec,Nmag,Nhat,dNdp)
-     
+
 	use macos_debug
 	use math_mod
         USE Constants, ONLY: EPS
@@ -3918,12 +3921,12 @@ C	Compute intersection point and normal vector on the base conic surface
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
-	
+
 	Lconic = L
 
 C----------------------------------------------------------------------------
 C	Use Lconic as a starting point, find incidence pt on full surface
-        
+
         IF (ABS(Lconic).GT.1e-7) THEN
           L1=0.9988d0*Lconic
           L2=1.00125d0*Lconic
@@ -4055,13 +4058,13 @@ C	Compute normalized monomial surface data coordinates
 
         pr   = pin + L*ihat
         Nvec = zc + S1*psi - S2*dFdrho
-   
+
 C----------------------------------------------------------------------------
 C    Now add grid data contribution
 
 	dAct=GridSrfdx
         rhom = rho - rhod
-     
+
      	diCtr=INT((nGridMat+1)/2)
 	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
 	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
@@ -4090,9 +4093,9 @@ C  Compute grid data surface height and slope at PoI
 
 C  Compute grid data part of surface function
 
-	Fgrid = fh	
+	Fgrid = fh
 !	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
-	
+
 	tiltx=tiltx/dAct
 	tilty=tilty/dAct
 
@@ -4108,10 +4111,10 @@ C  Add grid part of normal vector to the conic+monomial part
 	DO 49 i=1,3
 	  Nvec(i)=Nvec(i)-S2*dFdrho(i)
    49	CONTINUE
-   
+
 C----------------------------------------------------------------------------
 C    Compute unit normal vector
-   
+
 	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
 	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
 	IF (S1.LE.0d0) THEN
@@ -4127,7 +4130,7 @@ C    Compute unit normal vector
 C	Compute partials of the normal
 
 	IF (ifBuild) THEN
-	  IF (ABS(Kr).LT.1d10) THEN 
+	  IF (ABS(Kr).LT.1d10) THEN
 	    CALL DSMPROD(D1,psi,Kc,3)
 	    CALL DOUTER(M,D1,psi)
 	    M(1,1)=M(1,1)+1d0
@@ -4173,7 +4176,7 @@ c	  DO 10 i=2,7
 	  S1=Kr+Kc*psitzc
 	  CALL DSMPROD(D1,d2Fdrho2,S1,9)
 	  CALL DSUB(dNvecdp,D2,D1,9)
-	  
+
 	  S1=1d0/Nmag
 	  CALL DPROJECT(D1,Nhat)
 	  CALL DMPROD(D2,D1,dNvecdp,3,3,3)
@@ -4194,21 +4197,21 @@ C***********************************************************************
      &	            nGridMat,mGridMat,GridMat,dAct,
      &	            pmon,rhoc,xhat,yhat,zhat,
      &		    pData,rhod,xData,yData,zData,L)
-     
+
 	use param_mod, only : mGridSrf
 	use elt_mod, only : iEltToGridSrf,GridSrfOrder
 	use traceutil_mod, only : crnt_Elt
 	use math_mod
         USE Constants, ONLY: EPS
 
-C  Computes surface function S for conic + monomial + grid data surface 
-C  as a function of ray length L, for a candidate point of incidence on the 
+C  Computes surface function S for conic + monomial + grid data surface
+C  as a function of ray length L, for a candidate point of incidence on the
 C  combined surface
-     
+
 	IMPLICIT NONE
-	
+
 	INTEGER i,j,k,i1,i0,j1,j0,nGridMat,mGridMat,gridSrfIdx
-	
+
 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),xhat(3),
      &	yhat(3),zhat(3),rad,pmon(3),L,rho(3),rhom(3),rhoc(3),rhod(3),
      &	fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,xj,yi,yj,yimj,diCtr,
@@ -4225,7 +4228,7 @@ C !!! Make sure the mon and grid data parameters are correctly passed!!!
 	  rho(i)=prel(i)+L*ihat(i)			! vector from element pole to PoI
 	  rhom(i)=rho(i)-rhoc(i)			! vector from data center to PoI
   1	CONTINUE
-  
+
 	DO 6 i=1,3
 	  zc(i)=rho(i)-fh*zhat(i)
   6	CONTINUE
@@ -4234,7 +4237,7 @@ C !!! Make sure the mon and grid data parameters are correctly passed!!!
 C	SMGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
 	rhotpsi = rho(1)*psi(1) + rho(2)*psi(2) + rho(3)*psi(3)
 	rho2 = rho(1)*rho(1) + rho(2)*rho(2) + rho(3)*rho(3)
-	
+
 	Sconic = rho2 + rhotpsi*(Kc*rhotpsi + 2d0*Kr)
 
 C----------------------------------------------------------------------------
@@ -4297,8 +4300,8 @@ C   Compute Fmonomial point-of-incidence in surface data coords
           SMon = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
 
 C  Monomial part of surface function
-	
-	Fmon = fh	
+
+	Fmon = fh
 	dSmon = SMon - Sconic
 
 C----------------------------------------------------------------------------
@@ -4310,7 +4313,7 @@ C	Compute surface grid data coordinates
 	  rho(i)=prel(i)+L*ihat(i)
 	  rhom(i)=rho(i)-rhod(i)
 	END DO
-	
+
 	xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+xData(3)*rhom(3))/dAct+diCtr
 	yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+yData(3)*rhom(3))/dAct+diCtr
 
@@ -4338,7 +4341,7 @@ C  Compute grid data surface height and slope at PoI
 
 C  Compute grid data part of surface function
 
-!	Fgrid = fh	
+!	Fgrid = fh
 !	dSgrid = -2d0*((1d0 + Kc)*rhotpsi + Kr)*Fgrid + (1 + Kc)*Fgrid*Fgrid
 	DO i=1,3
 	  zc(i)=rho(i)-fh*zhat(i)
@@ -4346,7 +4349,7 @@ C  Compute grid data part of surface function
 	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
 	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
 	Sgrid=zc2+(Kc*psitzc+2d0*Kr)*psitzc
-	
+
 	dSgrid = Sgrid - Sconic
 
 C----------------------------------------------------------------------------
@@ -4364,7 +4367,7 @@ C***********************************************************************
      &	rad,pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,L)
 
         USE Constants, only: EPS
-     
+
       	IMPLICIT REAL*8 (A-H,O-Z)
 	INTEGER nGridMat,mGridMat
       	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
@@ -4372,10 +4375,10 @@ C***********************************************************************
      &	pData(3),rhod(3),xData(3),yData(3),zData(3),
      &	MZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
       	PARAMETER (ITMAX=400)
-      	
+
       A=X1
       B=X2
-     
+
       FA=SMGSrf(Kc,Kr,psi,pv,prel,ihat,coef,rad,
      &	nGridMat,mGridMat,GridMat,dAct,
      &	pmon,rhoc,xhat,yhat,zhat,pData,rhod,xData,yData,zData,A)
