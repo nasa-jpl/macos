@@ -1320,6 +1320,100 @@ C	        GO TO 4
 #endif
 
 
+C         *** 'SEGRAYTRACE' command ***
+C         Trace a single ray that passes through the geometric center
+C         (RptElt) of a chosen Segment element, printing the ray state
+C         at every surface.  Mirrors RAY's loop / output structure but
+C         skips the source-grid setup and forces the ray onto the
+C         requested segment via RayToSegMap.
+C
+C         Notes:
+C           - RptElt is the design segment center as written by
+C             SegMirMaker (= pr from SurfCoordFF).  PERTURB does not
+C             modify RptElt, so this remains the design-time location
+C             across perturbations.
+C           - For a collimated source (|zSource| > MaxPntSrcDist) the
+C             ray's source position is offset from ChfRayPos so the
+C             ray (parallel to ChfRayDir) lands on RptElt.
+C           - For a point source the ray starts at ChfRayPos and aims
+C             directly at RptElt.
+
+	  ELSE IF (LCMP(command,'SEGRAYTRACE',7)) THEN
+	    IF (ifLoad) THEN
+	      ifRayPrint = .TRUE.
+	      ifBuild     = .FALSE.
+	      ifTrace     = .FALSE.
+	      ifPropagate = .FALSE.
+ 11	      CONTINUE
+	        CALL IACCEPT_S(iSeg, 0, 1,
+     &            'Enter segment number (0=quit):')
+	        IF (iSeg .EQ. 0) GO TO 12
+
+	        IF ((iSeg .LT. 1) .OR. (iSeg .GT. nElt)) THEN
+	          WRITE(*,*) ' Invalid element number.'
+	          GO TO 11
+	        END IF
+	        IF (EltID(iSeg) .NE. SegmentElt) THEN
+	          WRITE(*,*) ' Element ', iSeg,
+     &              ' is not a Segment.'
+	          GO TO 11
+	        END IF
+
+C           Initialize the source ray grid first (this sets up shared
+C           state -- RayMap/SegMap/Pol/etc -- that CTRACE expects).
+	        CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
+
+C           Override the chief-ray slot to land on RptElt(:,iSeg).
+	        DV1(1:3) = RptElt(1:3,iSeg) - ChfRayPos(1:3)
+	        IF (isCollimatedSource()) THEN
+	          S1 = DV1(1)*ChfRayDir(1)
+     &               + DV1(2)*ChfRayDir(2)
+     &               + DV1(3)*ChfRayDir(3)
+	          DV2(1:3) = DV1(1:3) - S1*ChfRayDir(1:3)
+	          RayPos(1:3,1) = ChfRayPos(1:3) + DV2(1:3)
+	          RayDir(1:3,1) = ChfRayDir(1:3)
+	        ELSE
+	          RayPos(1:3,1) = ChfRayPos(1:3)
+	          S1 = DSQRT(DV1(1)**2 + DV1(2)**2 + DV1(3)**2)
+	          IF (S1 .LE. 0d0) THEN
+	            WRITE(*,*)
+     &              ' Segment center coincides with source position.'
+	            GO TO 11
+	          END IF
+	          RayDir(1:3,1) = DV1(1:3) / S1
+	        END IF
+
+C           Force this ray onto the requested segment in CTRACE's
+C           segment-dispatch path (tracesub.F:1669-1716).  Use the
+C           segment number (= EltToSegMap(iSeg)), not the element
+C           index, since that is what CTRACE compares against.
+	        nRayToSeg(1)        = 1
+	        RayToSegMap(1,1)    = EltToSegMap(iSeg)
+
+	        iStartRay = 1; iEndRay = 1
+	        iStartElt = 0
+	        IF (.NOT. LRayTgtElt) THEN
+	          iEndElt = nElt
+	        ELSE
+	          iEndElt = RayTgtElt
+	        END IF
+
+	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
+     &	               iStartRay,iEndRay,RayMap,SegMap,
+     &	               ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
+     &                 StartIndRef,StartExtinc,
+     &                 DrawRayVec,DrawEltVec,nDrawElt(1),
+     &		       xDraw,yDraw)
+	        GO TO 11
+ 12	      CONTINUE
+	      ifRayPrint = .FALSE.
+	    ELSE
+	      WRITE(*,150)
+	    END IF
+
+
 #ifdef MACOS_CMD
 C         *** 'BWK' command ***
 

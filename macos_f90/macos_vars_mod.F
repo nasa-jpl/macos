@@ -25,7 +25,7 @@ C ----------------------------------------------------------
      &    iLinElt,iSlv1,iSlv2,iStop,iObsOpt,iSpot,nPixAdd,
      &    iComElt,nBadRays,imax,jmax,nDrawRay,iDrawRay,iLocal,jLocal,
      &    iWavelen,iStarType,StretchType,curFov,curwl,ie,
-     &    nAtmPts,i1,i0,j1,j0,NN(2)
+     &    nAtmPts,i1,i0,j1,j0,NN(2),iSeg
 
       SREAL Cout(49),Tcompact(5,7),
      &    StartTime,EndTime,DTime,RMSWFE,WFEPV,Celt(49),
