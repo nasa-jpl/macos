@@ -1147,8 +1147,13 @@ C       Set entrance condition flags to .FALSE.
 
               ! Set flags that aren't needed
 
-	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
-     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
+              IF (any(EltID(iElt) == [FocalPlaneElt, ! 2
+     &                                ReferenceElt,  ! 3,
+     &                                ObscuringElt   ! 7,
+    !&                                NSRefractorElt ! 9  WHY set ??? ToDo Check
+     &                              ]))  then
+!	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
+!     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
                 IndRef_FLG=.TRUE.
                 Extinc_FLG=.TRUE.
                 GlassCoef_FLG=.TRUE.
@@ -1267,7 +1272,7 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
-                  
+
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
      &                                 (SrfType(iElt)==SrfType_GridData))
 
@@ -1288,25 +1293,25 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-                
+
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
      &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
@@ -1323,8 +1328,7 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).NE.SrfType_GridData).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData).AND.
      &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
@@ -1332,7 +1336,7 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
      &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
@@ -2648,9 +2652,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GlassElt(iElt) = VALUE
               IndRefE_FLG    = .TRUE.
               GlassElt_FLG   = .TRUE.
+
               ! Assume Sellmeier glass by default
-              GlassType(iElt)=SellmeierGlass
-              LGlass(iElt)=.FALSE.
+              GlassType(iElt) = SellmeierGlass
+              LGlass(iElt)    = .FALSE.
               i=1
               DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
                 IF (LCMP(GlassElt(iElt),GlassName(i),
@@ -2668,23 +2673,76 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
+            ! GlassTypeName(1:6) = ['Sellmeier', 'Schott', 'Herzberger',
+            !                       'Sellm2TA', 'Kingslake', 'Cauchy']
+            !
+            !  SellmeierGlass      = 1,  ! Schott's definition (SELLMEIER3TA)
+            !  SchottGlass         = 2,  ! Schott = Laurent model   ("Old Schott" Model)
+            !  HerzbergerGlass     = 3,  ! HERZBRGR4X2
+            !  SELLMEIER_2TA_GLASS = 4,  ! Sellmeier, 2 Terms with Constant A (5 Parameters)
+            !  KINGSLAKE1_GLASS    = 5,  ! Kingslake with 2 Terms (5 Parameters)
+            !  CauchyGlass         = 6,  ! Cauchy
+
             ELSE IF (LCMP(VAR_NAM,'GlassType',7)) THEN
-              IF (LCMP(VALUE,'Scho',4)) THEN
-                GlassType(iElt)=SchottGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-	      ELSE IF (LCMP(VALUE,'Sell',4)) THEN
-                GlassType(iElt)=SellmeierGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-              END IF
-              GO TO 61
+
+              do i=1,MAX_GLASS_MODELS
+                found = (LCMP(VALUE,GlassTypeName(i),len(GlassTypeName(i))))
+                if (found) then
+                  GlassType(iElt) = i
+                  LGlass(iElt)    = .TRUE.
+                  GlassCoef_FLG   = .FALSE.
+                  exit
+                end if
+              end do
+              if (.not. found) then
+                write(*,*) '** Unknown glass type at Elt ',iElt
+                goto 99
+              else
+                goto 61
+              end if
+
+
+              !IF (LCMP(VALUE,'Sellmeier',9)) THEN
+              !  GlassType(iElt) = SellmeierGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Scho',4)) THEN
+              !  GlassType(iElt) = SchottGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Cauchy',6)) THEN
+              !  GlassType(iElt) = CauchyGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Sellmeier2TA',12)) THEN
+              !  GlassType(iElt) = SELLMEIER_2TA_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'KINGSLAKE',9)) THEN
+              !  GlassType(iElt) = KINGSLAKE1_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Herzberg',8)) THEN
+              !  GlassType(iElt) = HerzbergerGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE
+              !  WRITE(*,*) '** Unknown glass type at Elt ',iElt
+              !  GO TO 99
+              !END IF
+              !GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'GlassCoef',6)) THEN
-              READ(VALUE,*)(GlassCoef(j,iElt),j=1,6)
-              GlassCoef_FLG=.TRUE.
-              LGlass(iElt)=.TRUE.
+              READ(VALUE,*)(GlassCoef(j,iElt),j=1,nGLASS_COEF(GlassType(iElt)))
+              GlassCoef_FLG = .TRUE.
+              LGlass(iElt)  = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
