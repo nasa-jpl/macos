@@ -1276,7 +1276,7 @@ C Set index
 	    !print*,'** CTRACE, iElt=', iElt
 	    !print*,'** GlassType(iElt)=', GlassType(iElt)
 
-	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(1,iElt),
+	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(:,iElt),
      &                            GlassType(iElt))
 	  END IF
 C Set Zerns
@@ -3088,47 +3088,203 @@ C***********************************************************************
 	RETURN
 	END SUBROUTINE WARN
 
-C***********************************************************************
 
-! glassProp argument is the six glass coefs of that glass type;
-! Given wavelength 'lamda', index of refraction can then be computed -jzlou
-        FUNCTION getIndex(lamda,glassProp,eltGlassType)
-	use param_mod
+        ! ---------------------------------------------------------------------
+        ! Compute index of refraction at wavelength lambda [um]
+        ! ---------------------------------------------------------------------
+         real(8) FUNCTION getIndex(lamda,glassProp,eltGlassType)
+          implicit none
+          real(8), intent(in) :: lamda,          ! Wavlength [um]
+     &                           glassProp(:)    ! Glass Model Coefficients
+          integer, intent(in) :: eltGlassType    ! Glass Model ID
 
-C       Compute index of refraction at wavelengths in microns
+          real(8) :: p,L2
+          ! -----------------------------------------------
 
-	IMPLICIT NONE
+          SELECT CASE(eltGlassType)
 
-        REAL*8 :: A1,A2,A3,glassProp(6),lamda,
-     &            p2,p4,p6,p8,getIndex
-	INTEGER :: eltGlassType
+            CASE (SellmeierGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Sellmeier
+              ! -------------------------------
+              ! Sellmeier Glass Model:
+              ! n(\lambda)^2 - 1 = \sum_i frac{A_i \lambda^2}{\lambda^2 - B_i^2}
+              !                                               for i=0,...,3
+              !
+              ! Caution:
+              !  Some authors use a linear term (e.g., A) in the denominator of
+              !  the Sellmeier terms and others use a squared term (e.g., A^2).
+              !  The term 'A' carries the dimension of wavelength and represents
+              !  the wavelength of a resonance.
+              !
+              ! Schott's Sellmeier Dispersion Formula:
+              !
+              !  n(\lambda)^2 - 1 = B1*L2/(L2-C1) + B2*L2/(L2-C2) + B3*L2/(L2-C3)
+              !      with L2 = \lambda^2
+              !
+              ! Parameter Order: B1, B2, B3, C1, C2, C3
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(1d0 + glassProp(1)*L2 / (L2-glassProp(4)) +
+     &                              glassProp(2)*L2 / (L2-glassProp(5)) +
+     &                              glassProp(3)*L2 / (L2-glassProp(6)))
 
-        ! There are only *two types* of glasses, Sellmeier type
-        ! or Schott type, which have different formulas for computing
-        ! indx given lamda and glass coefs (or glassProp) -jzlou
-	If (eltGlassType==SellmeierGlass) Then
-C The Sellmeier formula
-C  Index*Index-1=B1*lamda*lamda/(lamda*lamda-C1)
-C               +B2*lamda*lamda/(lamda*lamda-C2)
-C               +B3*lamda*lamda/(lamda*lamda-C3)
-          p2=lamda*lamda
-          A1=glassProp(1)*p2/(p2-glassProp(4))
-          A2=glassProp(2)*p2/(p2-glassProp(5))
-          A3=glassProp(3)*p2/(p2-glassProp(6))
-          getIndex=sqrt(1+A1+A2+A3)
-	Else If (eltGlassType==SchottGlass) then
-	  p2=lamda*lamda;p4=p2*p2;p6=p2*p2*p2;p8=p4*p4
-	  getIndex=glassProp(1)+glassProp(2)*p2+
-     &             glassProp(3)/p2+glassProp(4)/p4+
-     &             glassProp(5)/p6+glassProp(6)/p8
-	  getIndex=sqrt(getIndex)
-	Else
-	  print*,'getIndex(): eltGlassType=', eltGlassType
-	  print*,'getIndex(): unknown glass type, quitting ...'
-	  stop
-	End If
 
-        RETURN
+            CASE (SELLMEIER_2TA_GLASS)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Sellm2TA
+              ! -------------------------------
+              ! Glass Model: n(\lamba)^2 = A + B1*L2 / (L2 - C1^2) +
+              !                                B2*L2 / (L2 - C2^2)
+              !
+              ! Parameter Order: A, B1, B2, C1, C2
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(glassProp(1) +
+     &                        glassProp(2)*L2 / (L2 - glassProp(4)**2) +
+     &                        glassProp(3)*L2 / (L2 - glassProp(5)**2))
+
+
+            CASE (KINGSLAKE1_GLASS)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Kingslake
+              ! -------------------------------
+              ! Glass Model: Kettler-Drude or Helmholzz- Drude used by
+              ! Li for ZnS & ZnSe
+              !
+              !  ==> n(lamba)^2 = A + B1 / (L2 - C1^2) + B2 / (L2 - C2^2)
+              !
+              ! Example:
+              !  https://refractiveindex.info/?shelf=main&book=ZnS&page=Debenham
+              !
+              ! Parameter Order: A, B1, B2, C1, C2
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(glassProp(1) +
+     &                       glassProp(2) / (L2 - glassProp(4)**2) +
+     &                       glassProp(3) / (L2 - glassProp(5)**2))
+
+
+            CASE (SchottGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Schott
+              ! -------------------------------
+              ! Schott = Laurent model
+              !            --> "Old Schott" Model based on Laurent Series
+              !
+              ! SCHOTT2X4:
+              !  => n(L)^2 = A + B*L^2 + C/L^2 + D/L^4 + E/L^6 + F/L^8
+              !
+              ! Parameter Order: A, B, C, D, E, F
+              ! ---------------------------------------------------------------
+              L2=lamda*lamda
+              getIndex = glassProp(1) + glassProp(2)*L2 +
+     &                      (glassProp(3) + (glassProp(4)+
+     &                      (glassProp(5) + glassProp(6)/L2)/L2)/L2)/L2
+              getIndex=sqrt(getIndex)
+
+
+            CASE (CauchyGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType= Cauchy
+              ! -------------------------------
+              !
+              ! Cauchy Glass Model
+              !
+              !  => n(\lamba) = A + B/L^2 + C/L^4
+              !
+              ! Parameter Order: A, B, C
+              ! ---------------------------------------------------------------
+
+              L2 = lamda*lamda;
+              getIndex = glassProp(1) + (glassProp(2) + glassProp(3)/L2)/L2
+
+
+            CASE (HerzbergerGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType= Herzberger
+              ! -------------------------------
+              !
+              ! Note:
+              !  HERZBERGER devised a useful equation for fitting over wide
+              !  wavelength ranges. The first is a 4-term Herzberger equation.
+              !  The constant 0.028 represents a short wavelength corresponding
+              !  to the high frequency absorption edge, which is valid for a
+              !  wide class of materials.
+              !
+              !  Herzberger: HERZBRGR4X2
+              !
+              !  n(lambda) = A + B*L^2 + C*L^4 + D*L^6 + E*p + F*p^2
+              !     where p = 1/(L^2 - 0.027989)
+              !
+              !  --------------------------------
+              ! Herzberger Formula: (using Horner's method)
+              !
+              !  L2 = L^2
+              !  p = 1/(L^2 - 0.027989)
+              !
+              !  n(lambda) = A + (B + (C + D*L^2)*L^2)*L^2 + (E + F*p)*p
+              !
+              ! Parameter Order: A, B, C, D, E, F
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              p  = 1d0/(L2 - 0.027989d0)
+
+              getIndex = glassProp(1) + (glassProp(2) + (glassProp(3) +
+     &                                   glassProp(4)*L2)*L2)*L2 +
+     &                                  (glassProp(5) + glassProp(6)*p)*p
+
+
+            CASE DEFAULT
+              ! => should never be reached
+              getIndex = 1d22
+
+          END SELECT
+
         END FUNCTION getIndex
+
+
+
+
+!         ! glassProp argument is the six glass coefs of that glass type;
+! ! Given wavelength 'lamda', index of refraction can then be computed -jzlou
+!         FUNCTION getIndex(lamda,glassProp,eltGlassType)
+! 	use param_mod
+
+! C       Compute index of refraction at wavelengths in microns
+
+! 	IMPLICIT NONE
+
+!         REAL*8 :: A1,A2,A3,glassProp(6),lamda,
+!      &            p2,p4,p6,p8,getIndex
+! 	INTEGER :: eltGlassType
+
+!         ! There are only *two types* of glasses, Sellmeier type
+!         ! or Schott type, which have different formulas for computing
+!         ! indx given lamda and glass coefs (or glassProp) -jzlou
+! 	If (eltGlassType==SellmeierGlass) Then
+! C The Sellmeier formula
+! C  Index*Index-1=B1*lamda*lamda/(lamda*lamda-C1)
+! C               +B2*lamda*lamda/(lamda*lamda-C2)
+! C               +B3*lamda*lamda/(lamda*lamda-C3)
+!           p2=lamda*lamda
+!           A1=glassProp(1)*p2/(p2-glassProp(4))
+!           A2=glassProp(2)*p2/(p2-glassProp(5))
+!           A3=glassProp(3)*p2/(p2-glassProp(6))
+!           getIndex=sqrt(1+A1+A2+A3)
+! 	Else If (eltGlassType==SchottGlass) then
+! 	  p2=lamda*lamda;p4=p2*p2;p6=p2*p2*p2;p8=p4*p4
+! 	  getIndex=glassProp(1)+glassProp(2)*p2+
+!      &             glassProp(3)/p2+glassProp(4)/p4+
+!      &             glassProp(5)/p6+glassProp(6)/p8
+! 	  getIndex=sqrt(getIndex)
+! 	Else
+! 	  print*,'getIndex(): eltGlassType=', eltGlassType
+! 	  print*,'getIndex(): unknown glass type, quitting ...'
+! 	  stop
+! 	End If
+
+!         RETURN
+!         END FUNCTION getIndex
 
 	End Module tracesub_mod
