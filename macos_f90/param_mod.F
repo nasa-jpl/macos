@@ -7,7 +7,7 @@ C    +----------------------------------------------------------------+
 C***********************************************************************
 
 C
-C mElt = number of surfaces 
+C mElt = number of surfaces
 C mEm1 = number of segments
 C mRay = max numberof rays
 C bRay = max numberof rays for sensitivity calc.
@@ -15,7 +15,7 @@ C mWF =  max number diffraction planes
 C mIntSrf = max number of interploation surfaces
 C mDP = number of data points on each interploation surface
 C mdttl = diffraction grid size
-C 
+C
 
 #include "realtype.h"
 
@@ -26,12 +26,9 @@ C
 	! Application Problem Size
         Integer :: macos_model_size
 
-	Integer, parameter :: SellmeierGlass=1,SchottGlass=2,
-     &                        HartmannGlass=3
-
 	INTEGER :: mElt, mEm1, mRay, bRay, mCm, mpts, mdttl, md2,
-     &    mWF, mPix, mIntSrf, mDP, LIWORK, mDMdof, mDrawRay, 
-     &    mDrawElt, mObs, mWavelen, mStarType, mSegMirs, mUDS, 
+     &    mWF, mPix, mIntSrf, mDP, LIWORK, mDMdof, mDrawRay,
+     &    mDrawElt, mObs, mWavelen, mStarType, mSegMirs, mUDS,
      &    mUDScoef, mGridSrf, mGridMat, mGlass, mCplxObs, mObsMat,
      &    mAmplMat, mAmplSrf
 
@@ -44,17 +41,17 @@ C
 !       the build location of MACOS and current subversion revision.
         CHARACTER(*), PARAMETER :: build_loc = 'BUILD_LOC'
         CHARACTER(*), PARAMETER :: svn_rev   = 'SVN_REV'
-	
+
 	Contains
 
 	Subroutine param_mod_init(psize)
         implicit none
 
-        Integer, optional :: psize  
+        Integer, optional :: psize
         Integer :: ICLEN
 !	character(len=64), parameter :: macos_param_file =
-!    &                     'macos_param.txt' 
-	character(len=MacosCharLen) :: macos_param_file 
+!    &                     'macos_param.txt'
+	character(len=MacosCharLen) :: macos_param_file
 	Integer :: macos_param_unit, ios
 	Logical :: EXIST
 
@@ -115,12 +112,12 @@ C
           macos_param_file = 'macos_param.txt'
         else
 	  print*,' '
-          print*,'macos_env_var = ', 
+          print*,'macos_env_var = ',
      &      macos_env_var(1:ICLEN(macos_env_var))
           macos_param_file =
      &      macos_env_var(1:ICLEN(macos_env_var))
      &      //'/macos_param.txt'
-          print*,'macos_param_file = ', 
+          print*,'macos_param_file = ',
      &      macos_param_file(1:ICLEN(macos_param_file))
         end if
 #else
@@ -135,14 +132,14 @@ C
 # endif
 #endif
 
-	INQUIRE (FILE=macos_param_file,EXIST=EXIST)	
+	INQUIRE (FILE=macos_param_file,EXIST=EXIST)
 	if (.not. EXIST) then
 	  ! The macos parameter file must be either in the
           ! MACOS_HOME directory or in the current execution
-          ! directory. If not, it's an error, so quit.  
+          ! directory. If not, it's an error, so quit.
 	  call macos_io_failure
      &           ('** macos parameter file '//
-     &            macos_param_file//'does not exist, bye!') 
+     &            macos_param_file//'does not exist, bye!')
 	end if
 #endif
 
@@ -188,7 +185,7 @@ C
 
 	if (ios /= 0) call macos_io_failure(
      &     '** Error read file '//macos_param_file)
-	
+
 	mdttl = macos_model_size
         mPix = macos_model_size
         mEm1 = mElt-1; mRay=mpts**2+1; mCm=7+6*mElt
@@ -214,7 +211,7 @@ C
 
 
 #ifdef DEBUG
-        print *, '==> find_macos_file(', env_var_name, ',', 
+        print *, '==> find_macos_file(', env_var_name, ',',
      &    file_name(1:ICLEN(file_name)), ')'
 #endif
 
@@ -225,7 +222,7 @@ C
            CALL GETENV(env_var_name,env_var_value)
            IF (ICLEN(env_var_value).GT.0) then
               ! See if the file exists
-              full_file_name = 
+              full_file_name =
      &            env_var_value(1:ICLEN(env_var_value)) // '/'
      &            // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
@@ -239,7 +236,7 @@ C
                  RETURN
               ELSE
                  ! Warn user that it doesn't exist.
-                 print *,'Warning: $', 
+                 print *,'Warning: $',
      &                   env_var_name(1:LEN(env_var_name)),
      &                   ' is defined to be ',
      &                    env_var_value(1:ICLEN(env_var_value)), ', but'
@@ -264,7 +261,7 @@ C
         ! don't warn the user.
 
 ! 3) Look in the BUILD directory
-        full_file_name = 
+        full_file_name =
      &       build_loc // '/' // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
               print *, '  Looking for "',
@@ -278,9 +275,9 @@ C
         ELSE
          ! If it's not found in the build directory, then we're in trouble.
          ! Warn the user we couldn't find it anywhere.
-         print *, 
+         print *,
      &   'Warning: Failed to find ', file_name(1:ICLEN(file_name))
-         print *, 
+         print *,
      &   '  in the current directory or in the build directory:'
          print *, '        ', build_loc
          ! Return an empty string.

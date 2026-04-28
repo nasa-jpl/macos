@@ -71,7 +71,7 @@ C       Setup for new input scheme
         CHARACTER(len=MacosValLen) :: VALUE
 !	CHARACTER*160 VALUE
 	LOGICAL ARR_FLG,opt_npts_flg
-	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, ApInputErr
+	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, found, ApInputErr
 	INTEGER ians, nVertex,StrLen
 
 	REAL*8 D1(9)
@@ -1048,7 +1048,7 @@ C  Get Surface Coordinate Parameters
 	      CALL DORTHOGANALIZE(xMon(1,iElt),yMon(1,iElt),
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
-	      
+
 	!--> Mod for MonGrData and ZrnGrData Grid coords
 	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)) THEN
 	        CALL DEQUATE(pData(1,iElt),pMon(1,iElt),3)
@@ -1068,7 +1068,7 @@ C  Get Surface Coordinate Parameters
 	        WRITE(*,*)' Orthoganalized zData=',(zData(i,iElt),i=1,3)
 	      END IF
 	!<--
-	
+
 	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
