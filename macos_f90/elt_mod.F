@@ -123,10 +123,9 @@ C***********************************************************************
      &                       'Zernike',            ! 8
      &                       'GridData',           ! 9
      &                       'Toric',              !10
-     &                       'AsGrData',           !11
+     &                       'AsGrData',           !11  ! was 'InfluenceFunction'
      &                       'MonGrData',          !12
-     &                       'ZrnGrData',          !13
-     &                       'FreeForm'/)          !14
+     &                       'ZrnGrData'/)         !13
 
         ! Old Element Definitions:
         INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
@@ -181,35 +180,11 @@ C***********************************************************************
      &                                            xMonRx,yMonRx,zMonRx,pMonRx,ZernCoefRx
         REAL*8,   DIMENSION(:,:,:), ALLOCATABLE:: GridMat
 
-        ! --- Added for multisurface (grid data coord frame):
+        ! --- Added for multisurface:
         REAL*8,   DIMENSION(:),     ALLOCATABLE:: lData,lDataRx
         REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pData,xData,yData,zData,
-     &                                            pDataRx,xDataRx,yDataRx,zDataRx
-
-        ! --- FreeForm surface (FF monomial term: separate from design Mon term) ---
-        !     lFF         : FF scale length (sentinel: lFF <= 0 means FF term inactive)
-        !     pFF         : FF data center (3 x mElt)
-        !     xFF,yFF     : FF local x,y axes (3 x mElt each)
-        !     zFF         : FF surface axis (3 x mElt)
-        !     FFZernCoef  : FF Zernike coefficients as entered (mFFCoef x mElt)
-        !     FFZernTypeL : FF Zernike type index per element (uses ZernType_* constants)
-        !     FFCoef      : FF monomial coefficients after ZerntoMon conversion (mFFCoef x mElt)
-        !     MonZernCoef : Mon Zernike coefficients as entered (mMonCoef x mElt)
-        !     MonZernTypeL: Mon Zernike type index per element (uses ZernType_* constants)
-        !     ifMon       : Mon term active for this element
-        !     ifFF        : FF term active for this element
-        !     ifGridTerm  : Grid term active for this element
-        !     (all three set at prescription-read time from SrfType and sentinels)
-
-        INTEGER,  PARAMETER :: mFFCoef = 120   ! max FF monomial coefficients
-
-        REAL*8,   DIMENSION(:),     ALLOCATABLE:: lFF
-        REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: pFF,xFF,yFF,zFF,
-     &                                            FFZernCoef,FFCoef,
-     &                                            MonZernCoef
-        INTEGER,  DIMENSION(:),     ALLOCATABLE:: FFZernTypeL,MonZernTypeL
-        LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifMon,ifFF,ifGridTerm
-        ! --- end FreeForm ---
+     &						  pDataRx,xDataRx,yDataRx,zDataRx
+     	! --- end
 
         INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
      &                                            nGridMat,iEltToGridSrf,
@@ -291,21 +266,49 @@ C***********************************************************************
      &               SQRT_20,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,
      &               SQRT_11,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22/)
 
-        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(3) = ['Sellmeier', 'SCHOTT', 'Hartman']
+        !
+        ! --------- Basic Surface Definition: Material ---------
+        !
+! 	Integer, parameter :: SellmeierGlass=1,
+!      &                         SchottGlass=2,
+!      &                         HartmannGlass=3
+
+        Integer, parameter :: HartmannGlass       = 0,  ! Not used
+     &                        SellmeierGlass      = 1,  ! Schott's definition (SELLMEIER3TA)
+     &                        SchottGlass         = 2,  ! Schott = Laurent model   ("Old Schott" Model)
+     &                        HerzbergerGlass     = 3,  ! HERZBRGR4X2
+     &                        SELLMEIER_2TA_GLASS = 4,  ! Sellmeier, 2 Terms with Constant A (5 Parameters)
+     &                        KINGSLAKE1_GLASS    = 5,  ! Kingslake with 2 Terms (5 Parameters)
+     &                        CauchyGlass         = 6,  ! Cauchy
+     &                        MAX_GLASS_MODELS    = 6
+
+        Integer, parameter :: nGLASS_COEF(0:6) = [0,    ! HartmannGlass
+     &                                            6,    ! SellmeierGlass
+     &                                            6,    ! SchottGlass
+     &                                            6,    ! HerzbergerGlass
+     &                                            5,    ! SELLMEIER_2TA_GLASS
+     &                                            5,    ! KINGSLAKE1_GLASS
+     &                                            3]    ! CauchyGlass
+
+        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(0:6) =
+     &                         ['Hartmann', 'Sellmeier',
+     &                          'Schott', 'Herzberger', 'Sellm2TA',
+     &                          'Kingslake', 'Cauchy']
 
         Integer, parameter :: mCoat=10,
-     &                        mPrvGlass=5,
-     &                        mPrvGlassEntry=20,
-     &                        mES=10
-        Integer, parameter :: mMetSrf=20,
-     &                        mMetBeam=48,
-     &                        mMetPos=mMetBeam,
-     &                        mSysMetBeam=128,
-     &                        mRefRay=5,
-     &                        mPupRay=9,
-     &                        mIndRef=5,
-     &                        mDOE=6
-        Integer :: maxAsphCoef
+     &           	      mPrvGlass=5, ! max private glasses defined in Rx
+     &                        mPrvGlassEntry=20, ! max wavlen/index entries for
+					 	 ! each glass in catalog
+     &                        mES=10  ! max edge-sensors per element
+        Integer, parameter :: mMetSrf=20,  ! max surfaces with metrology
+     &                        mMetBeam=48, ! max met beams on each met srf.
+     &                        mMetPos=mMetBeam,  ! max metrology points on each met srf.
+     &                        mSysMetBeam=128,    ! max total system met measurements
+     &                        mRefRay=5,   ! max # reference rays, chief + 4 marginal
+     &                        mPupRay=9,   ! max # pupil rays, chief + 8 marginal
+     &                        mIndRef=5,   !
+     & 			      mDOE=6       ! max # DOE elements
+        Integer :: maxAsphCoef  ! default to 4 terms
 
         Logical :: ifInMTFCalc,BWK_FLG,LStopAtEltAutoSet,LSavRayL,SrcLF_FLG,
      &             CalcSrcZFrame_FLG,DupElt_FLG
