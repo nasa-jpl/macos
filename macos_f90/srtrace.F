@@ -133,7 +133,7 @@ C       check interpolated surfaces; compute obscuration coords
         DO 17 iElt=iSecondElt,iEndElt,iStep
 C Set index
           IF (LGlass(iElt)) THEN
-            IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(1,iElt),
+            IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(:,iElt),
      &                            GlassType(iElt))
           END IF
 C Set Zerns
