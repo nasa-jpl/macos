@@ -60,6 +60,7 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+	use plot_mode_mod
 
 	use math_mod
 	use smacosio_mod
@@ -75,6 +76,7 @@ C***********************************************************************
  	use design_optim_mod
 	use design_cons_optim_mod
 	use stop_set_mod
+	use pgplot_mod
 	use loh_I1, only : BaseUnits_FLG
 
 	IMPLICIT NONE

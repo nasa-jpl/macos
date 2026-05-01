@@ -207,6 +207,8 @@ C
 
         CHARACTER(len=MacosCharLen)         :: env_var_value
         CHARACTER(len=MacosCharLen)         :: full_file_name
+        CHARACTER(len=MacosCharLen)         :: exe_path
+        INTEGER                             :: exe_len, slash_pos
         LOGICAL   :: doesExist
 
 
@@ -226,8 +228,7 @@ C
      &            env_var_value(1:ICLEN(env_var_value)) // '/'
      &            // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
-              print *, '  Looking for "',
-     &                  full_file_name(1:ICLEN(full_file_name)), '"'
+        print *, '  Looking for "', file_name(1:ICLEN(file_name)), '"'
 #endif
               INQUIRE (FILE=full_file_name,EXIST=doesExist)
               IF (doesExist) THEN
@@ -246,28 +247,67 @@ C
               END IF
            END IF
         END IF
-#endif
 
-! 2) Look in the current directory
+#ifndef MSWIN
+! 2) Look in the directory of the running executable (argv[0]).
+!    Covers installed binaries placed outside the build tree.
+!    Note: when smacos is called from Matlab, argv[0] is the Matlab
+!    binary; use $MACOS_HOME for that case instead.
+        CALL GET_COMMAND_ARGUMENT(0, exe_path, exe_len)
+        IF (exe_len .GT. 0) THEN
+          slash_pos = INDEX(exe_path(1:exe_len), '/', BACK=.TRUE.)
+          IF (slash_pos .GT. 1) THEN
+            full_file_name =
+     &        exe_path(1:slash_pos-1) // '/'
+     &        // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
-        print *, '  Looking for "', file_name(1:ICLEN(file_name)), '"'
+            print *, '  Looking for "',
+     &                full_file_name(1:ICLEN(full_file_name)), '"'
 #endif
-        INQUIRE (FILE=file_name,EXIST=doesExist)
-        IF (doesExist) THEN
-           ! Found it and we're done.
-           RETURN
+            INQUIRE (FILE=full_file_name, EXIST=doesExist)
+            IF (doesExist) THEN
+              file_name = full_file_name
+              RETURN
+            END IF
+          END IF
         END IF
-        ! If it's not found in the current directory, that's normal so
-        ! don't warn the user.
+
+! 3) Look in directory specified by environment variable ($MACOS_HOME)
+        IF (LEN(env_var_name).GT.0) THEN
+          CALL GETENV(env_var_name, env_var_value)
+          IF (ICLEN(env_var_value).GT.0) THEN
+            full_file_name =
+     &          env_var_value(1:ICLEN(env_var_value)) // '/'
+     &          // file_name(1:ICLEN(file_name))
+#ifdef DEBUG
+            print *, '  Looking for "',
+     &                full_file_name(1:ICLEN(full_file_name)), '"'
+#endif
+            INQUIRE (FILE=full_file_name, EXIST=doesExist)
+            IF (doesExist) THEN
+              file_name = full_file_name
+              RETURN
+            ELSE
+              print *, 'Warning: $',
+     &                 env_var_name(1:LEN(env_var_name)),
+     &                 ' is defined to be ',
+     &                 env_var_value(1:ICLEN(env_var_value)), ', but'
+              print *, '         failed to find file: $',
+     &                 env_var_name(1:LEN(env_var_name)), '/',
+     &                 file_name(1:ICLEN(file_name))
+            END IF
+          END IF
+        END IF
+#endif
 
 ! 3) Look in the BUILD directory
         full_file_name =
      &       build_loc // '/' // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
-              print *, '  Looking for "',
-     &                  full_file_name(1:ICLEN(full_file_name)), '"'
+        print *, '  Looking for "',
+     &            full_file_name(1:ICLEN(full_file_name)), '"'
 #endif
-        INQUIRE (FILE=full_file_name,EXIST=doesExist)
+        INQUIRE (FILE=full_file_name, EXIST=doesExist)
         IF (doesExist) THEN
          ! Found it and we're done.
          file_name = full_file_name
@@ -283,7 +323,16 @@ C
          ! Return an empty string.
          file_name = ''
         END IF
+
+        ! Not found in any location — warn and return empty string.
+        print *,
+     &  'Warning: Failed to find ', file_name(1:ICLEN(file_name))
+        print *,
+     &  '  Searched: current directory, executable directory,'
+        print *,
+     &  '  $MACOS_HOME, and build directory.'
+        print *, '  Build directory: ', build_loc
+        file_name = ''
         RETURN
         END SUBROUTINE find_macos_file
-
 	End module param_mod
