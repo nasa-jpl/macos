@@ -119,7 +119,7 @@
          ZernCoef=  6.0D-05  8.0D-05  2.0D-06  1.0D-06
              lMon=  0.92D+00
          nGridMat=  256
-         GridFile=  flat.txt	% zern41em5z155em3.txt
+         GridFile=  zern41em5z155em3.txt
         GridSrfdx=  1.0D-02
              pMon=  1.225D+00 -3.699397078D-07  2.569563356D-01
              xMon=  9.22139876D-01  -2.784784949D-07  3.868566261D-01
