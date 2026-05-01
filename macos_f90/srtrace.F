@@ -25,7 +25,8 @@ C *********************************************************************
 	Subroutine SRTRACE_Test(iStartElt,iEndElt,RayPos_in,RayDir_in)
 	use param_mod
         use elt_mod
-        use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3
+        use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
+     &                     LZPFailed
 	use elemsub_mod
         use traceutil_mod
 	use tracesub_mod  ! for accessing getIndex() function
@@ -153,6 +154,49 @@ C Fringe's
             END IF
           END IF
 
+C Set FF Zernike coefficients for FreeForm surface
+          IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            IF (FFZernTypeL(iElt).EQ.ZernType_ANSI .OR.
+     &          FFZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
+              CALL ZerntoMon1(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ELSEIF (FFZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
+     &              FFZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
+              CALL ZerntoMon2(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ELSEIF (FFZernTypeL(iElt).EQ.ZernType_Fringe .OR.
+     &              FFZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
+              CALL ZerntoMon3(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormHex) THEN
+              CALL ZerntoMon4(FFZernCoef(1,iElt),FFCoef(1,iElt))
+            ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
+     &              FFZernTypeL(iElt).EQ.ZernType_Noll) THEN
+              CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
+              CALL ZerntoMon7(FFZernCoef(1,iElt),FFCoef(1,iElt),
+     &                        ZernAnnuRatio(iElt))
+            END IF
+          END IF
+C Set Mon Zernike coefficients for FreeForm surface
+          IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            IF (MonZernTypeL(iElt).EQ.ZernType_ANSI .OR.
+     &          MonZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
+              CALL ZerntoMon1(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ELSEIF (MonZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
+     &              MonZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
+              CALL ZerntoMon2(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ELSEIF (MonZernTypeL(iElt).EQ.ZernType_Fringe .OR.
+     &              MonZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
+              CALL ZerntoMon3(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormHex) THEN
+              CALL ZerntoMon4(MonZernCoef(1,iElt),MonCoef(1,iElt))
+            ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
+     &              MonZernTypeL(iElt).EQ.ZernType_Noll) THEN
+              CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
+              CALL ZerntoMon7(MonZernCoef(1,iElt),MonCoef(1,iElt),
+     &                        ZernAnnuRatio(iElt))
+            END IF
+          END IF
+
 	  iEltToiWF(iElt)=0
           LEltOK(iElt)=.TRUE.
           IF (SrfType(iElt).EQ.5) THEN
@@ -179,7 +223,7 @@ C Fringe's
           ELSE
             LEltObs(iElt)=.FALSE.
           END IF
-          IF (SrfType(iElt).EQ.9) THEN
+          IF (nGridMat(iElt).GT.0) THEN
             jGridSrf(iElt)=iEltToGridSrf(iElt)
           ELSE
             jGridSrf(iElt)=1
@@ -248,6 +292,8 @@ C                                               ! Reflector
      &          lMon(iElt),pMon(1,iElt),
      &          xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	        pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
+     &	        lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
+     &	        zFF(1,iElt),FFCoef(1,iElt),
      &          CurIndRef,IndRef(iElt),
      &          CurExtinc,Extinc(iElt),WaveBU,
      &          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -345,6 +391,8 @@ c               NextElt(iElt)=NextNonSeg
      &            lMon(iElt),pMon(1,iElt),
      &            xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	          pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
+     &	          lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
+     &	          zFF(1,iElt),FFCoef(1,iElt),
      &            CurIndRef,IndRef(iElt),
      &            CurExtinc,Extinc(iElt),WaveBU,
      &            ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),

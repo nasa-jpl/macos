@@ -13,8 +13,8 @@ endif
 # Autodetect 32-bit v. 64-bit
 ifeq ($(OS),Linux)
 	ifeq ($(ARCH),x86_64)
-		FC = ifort
-		FFLAGS = -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -O2 ##-xHOST
+		FC = ifx			## ifort
+		FFLAGS = -nologo -fPIC -fpp -132 -gen-interfaces -fp-model strict -O2 ##-xHOST
 #		##      Gnu g77 compiler
 #		FC         = gfortran
 #		FFLAGS_O  +=  -O2
