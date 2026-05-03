@@ -1,0 +1,43 @@
+%   MACOS demonstration macro
+
+%   This system is a simple coronograph. The demo
+%   generates a bright on-axis (occulted) image, then
+%   adds a dim, nearby but slightly off-axis image.
+
+%   Run this with macos512!
+
+old coroExample;
+draw 0 16 XZ                           % sketch system
+stretch sqrt
+mod ngridpts=128
+    nObs(6)=0                          % undo occulting mask
+    q
+int 1                                  % pupil function
+int 6                                  % unocculted PSF
+pix 6 64 ;                             % blowup of PSF
+mod ngridpts=128
+    nObs(6)=1                          % redo occulting mask
+    q
+pix 6 64 ;                             % blowup of occulted PSF
+stretch linear
+int 10                                 % pupil
+int 11                                 % pupil at Lyot stop
+stretch sqrt
+int 16                                 % on-axis PSF at detector
+
+win Tout 1.392542d-6 0,0 0,0           % set window for composite image
+compose 16 64 1.392542E-06             % build composite image
+add yes                                % blowup of on-axis PSF
+
+stop elt 11 0,0                        % set system stop at Lyot stop
+ffp 6 2d-5,2d-5 yes                    % move new image off occulting mask
+ors 5 yes                              % reset return surface
+ors 7 yes                              % reset return surface
+fex 15 yes                             % reset return surface
+mod flux=0.01                          % 100x dimmer object
+    q
+stretch log10
+int 6                                  % new dim image at occulting mask
+stretch sqrt
+
+      add yes                                % add dim image to composite image

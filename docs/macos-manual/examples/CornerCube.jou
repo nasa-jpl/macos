@@ -1,0 +1,10 @@
+old CornerCube
+
+draw;;;xz
+
+mod ChfRayPos(1)=0.762
+    ChfRayPos(2)=0.762
+    Aperture=0.125
+    nGridpts=11
+    q
+draw;;;yz
