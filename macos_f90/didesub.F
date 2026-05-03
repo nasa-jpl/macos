@@ -18,6 +18,7 @@ C***********************************************************************
      &	  pin,ihat,XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
      &	  wVec,pr,L,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 	use math_mod
+	use surfsub, only: LZPFailed
 
 	IMPLICIT NONE
 
@@ -108,6 +109,7 @@ C	Use L as a starting point, find incidence point on full surface
 	tol=1d-14
 	L3=DZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,XYZSRF,DZSRF,
      &	IERROR,IWORK,DWORK,NDP,mDP,wVec,pmon,rhoc,xhat,yhat,zhat,L)
+	IF (LZPFailed) GO TO 98
 	L=L3
 
 C	Compute normal vector
@@ -263,6 +265,7 @@ C***********************************************************************
 
       FUNCTION DZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,XYZSRF,DZSRF,
      &	IERROR,IWORK,DWORK,NDP,mDP,wVec,pmon,rhoc,xhat,yhat,zhat,L)
+      use surfsub, only: LZPFailed, nZPFailMsg, mZPFailMsg
       IMPLICIT REAL*8 (A-H,O-Z)
       INTEGER NDP,IERROR,IWORK(*),mDP
       REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),wVec(3),DWORK(*)
@@ -278,7 +281,14 @@ C***********************************************************************
       FB=SIntSrf(Kc,Kr,psi,pv,prel,ihat,
      &	XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
      &	wVec,pmon,rhoc,xhat,yhat,zhat,B)
-      IF (FB*FA.GT.0.) PAUSE 'DZPB failed.'
+      IF (FB*FA.GT.0.) THEN
+         nZPFailMsg = nZPFailMsg + 1
+         IF (nZPFailMsg.LE.mZPFailMsg)
+     &     WRITE(*,*) 'DZPB failed.'
+         LZPFailed = .TRUE.
+         DZPSolve = X1
+         RETURN
+      END IF
       FC=FB
       DO 11 ITER=1,ITMAX
         IF(FB*FC.GT.0.) THEN
@@ -325,7 +335,10 @@ C***********************************************************************
      &		   XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
      &		   wVec,pmon,rhoc,xhat,yhat,zhat,B)
 11    CONTINUE
-      PAUSE 'DZPSolve exceeding maximum iterations.'
+      nZPFailMsg = nZPFailMsg + 1
+      IF (nZPFailMsg.LE.mZPFailMsg)
+     &  WRITE(*,*) 'DZPSolve exceeding maximum iterations.'
+      LZPFailed = .TRUE.
       DZPSolve=B
       RETURN
       END FUNCTION DZPSolve

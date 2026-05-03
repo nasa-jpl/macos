@@ -39,7 +39,7 @@ C       These are other MACOS variables
      &   iLinElt,iSlv1,iSlv2,iStop,iSpot,nPixAdd,
      &   iComElt,nBadRays,imax,jmax,nDrawRay,iDrawRay,iLocal,jLocal,
      &   iWavelen,iStarType,NoiseSeed(2),StretchType,ie,
-     &   nAtmPts,i1,i0,j1,j0,NN(2)
+     &   nAtmPts,i1,i0,j1,j0,NN(2),iSeg
 
         Integer, save :: iObsOpt
 
