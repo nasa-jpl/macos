@@ -12,10 +12,14 @@ C***********************************************************************
 
 #include "realtype.h"
 
-        SUBROUTINE GRAEND
-        END SUBROUTINE GRAEND
+        Module pgplot_mod
+
+        Contains
 
 C***********************************************************************
+
+        SUBROUTINE GRAEND
+        END SUBROUTINE GRAEND
 
         SUBROUTINE GRAINI
         END SUBROUTINE GRAINI
@@ -26,20 +30,22 @@ C***********************************************************************
      &  CXLABL,CZLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL,NCONTOURS
-        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL)
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,NCONTOURS
+        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),TRCONT(6),
+     &  DX,DY,ZMIN,ZMAX,CONTOURS(16)
 
         END SUBROUTINE CONTOUR
 
 C***********************************************************************
 
         SUBROUTINE SPOTDIAG(DXYMAT,NROW,NCOL,NDROW,NDCOL,NBEAMS,
-     &  		    CXLABL,CZLABL,CTITLE)
+     &                      CXLABL,CZLABL,CTITLE)
 
-        IMPLICIT NONE
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL,NBEAMS
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,K,NBEAMS,ISYM(4),CI
+        SREAL XYMAT(NDROW,NDCOL),XMIN,XMAX,YMIN,YMAX,PAD,DX,DY
         REAL*8 DXYMAT(NDROW,NDCOL)
+        DATA ISYM/20,5,8,16/
 
         END SUBROUTINE SPOTDIAG
 
@@ -49,8 +55,9 @@ C***********************************************************************
      &  CXLABL,CZLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL,NBEAMS
-        SREAL XYMAT(NDROW,NDCOL)
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,K,NBEAMS,ISYM(4),CI
+        SREAL XYMAT(NDROW,NDCOL),XMIN,XMAX,YMIN,YMAX,PAD,DX,DY
+        DATA ISYM/20,5,8,16/
 
         END SUBROUTINE LINSPOTDIAG
 
@@ -60,8 +67,9 @@ C***********************************************************************
      &  CXLABL,CYLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CYLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL
-        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),PX(NROW),PZ(NROW)
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J
+        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),PX(NROW),PZ(NROW),
+     &  DX,DZ,ZMIN,ZMAX,XSKEW,ZSKEW,XBMIN,XBMAX,ZBMIN,ZBMAX
 
         END SUBROUTINE SLICE
 
@@ -69,9 +77,9 @@ C***********************************************************************
 
         SUBROUTINE PGSLICE(X,Y,Z,PX,PZ,NROW,NCOL,NDROW,NDCOL,DX,DZ,ZMIN)
 
-        INTEGER NROW,NCOL,NDROW,NDCOL
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,IP1,CI
         SREAL X(NROW),Y(NROW),Z(NDROW,NDCOL),PX(NROW),PZ(NROW),DX,DZ,
-     &  ZMIN
+     &  XSTEP,ZSTEP,ZMIN,POLYX(4),POLYZ(4)
 
         END SUBROUTINE PGSLICE
 
@@ -81,8 +89,9 @@ C***********************************************************************
      &  CXLABL,CZLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL
-        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL)
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J
+        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),TRCONT(6),
+     &  DX,DY,ZMIN,ZMAX
 
         END SUBROUTINE GRAY
 
@@ -91,7 +100,7 @@ C***********************************************************************
         SUBROUTINE FREDDY(ARRAY,KX,NY,SIZE,ANGLE)
         INTEGER KX, NY
         REAL ARRAY(KX,NY), SIZE, ANGLE
-
+ 
         END SUBROUTINE FREDDY
 
 C***********************************************************************
@@ -99,7 +108,7 @@ C***********************************************************************
         SUBROUTINE FREDGO(ARRAY,MN)
         INTEGER MN
         REAL ARRAY(MN)
-
+ 
         END SUBROUTINE FREDGO
 
 C***********************************************************************
@@ -108,8 +117,9 @@ C***********************************************************************
      &  CXLABL,CZLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL,ND2
-        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),ZVEC(ND2)
+        INTEGER NROW,NCOL,NDROW,NDCOL,ND2,I,J,K
+        SREAL X(NROW),Y(NCOL),Z(NDROW,NDCOL),ZVEC(ND2),DX,DZ,SIZE,
+     &  ZMIN,ZMAX
 
         END SUBROUTINE WIRE
 
@@ -119,8 +129,8 @@ C***********************************************************************
      &  CXLABL,CYLABL,CTITLE)
 
         CHARACTER*(*) CXLABL,CYLABL,CTITLE
-        INTEGER NROW,NCOL,NDROW,NDCOL
-        SREAL X(NROW),Y(NCOL),Z(NDROW)
+        INTEGER NROW,NCOL,NDROW,NDCOL,I,J,IMAX,JMAX,CI
+        SREAL X(NROW),Y(NCOL),Z(NDROW),ZMIN,ZMAX
 
         END SUBROUTINE PLOTCOL
 
@@ -128,18 +138,16 @@ C***********************************************************************
 
         SUBROUTINE DRAW(CTITLE,nDrawElt,nDrawRay,DrawEltVec,
      &                  DrawRayVec_in,XLabel,YLabel)
-           use param_mod
-           use elt_mod
 
-           IMPLICIT NONE
+	use param_mod
 
-           INTEGER :: nDrawRay,nDrawElt(mDrawRay),
-     &                DrawEltVec(mDrawElt,mDrawRay)
-           SREAL :: DrawRayVec_in(2,mDrawElt,mDrawRay)
-           CHARACTER*(*) CTITLE
-           CHARACTER*8 XLabel,YLabel
+        INTEGER :: nDrawRay,nDrawElt(mDrawRay),
+     &             DrawEltVec(mDrawElt,mDrawRay)
+        SREAL :: DrawRayVec_in(2,mDrawElt,mDrawRay)
+        CHARACTER*(*) CTITLE
+        CHARACTER*8 XLabel,YLabel
 
-           END SUBROUTINE DRAW
+        END SUBROUTINE DRAW
 
 C***********************************************************************a
 
@@ -147,3 +155,7 @@ C***********************************************************************a
 	SUBROUTINE GERROR(STRING)
 	CHARACTER*80 STRING
 	END SUBROUTINE GERROR
+
+C***********************************************************************a
+
+         End Module pgplot_mod        
