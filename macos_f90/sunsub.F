@@ -822,9 +822,8 @@ C On-screen display
         use smacosio_mod
 #else
         use macosio_mod
-	
+	use pgplot_mod
 #endif
-        use pgplot_mod
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE
 	CHARACTER*1 TAB
 	CHARACTER*82 SCR
@@ -922,9 +921,9 @@ C Render in pgplot window
         use smacosio_mod
 #else
         use macosio_mod
-	
+	use pgplot_mod
 #endif
-        use pgplot_mod
+
 	!CHARACTER*(*) CXLABL,CYLABL,CTITLE
 	CHARACTER(len=*) :: CXLABL,CYLABL,CTITLE
 	CHARACTER*1 TAB
