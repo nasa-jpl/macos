@@ -38,12 +38,7 @@ C
      &    EltID_FLG,SrfType_FLG,UDSrfParam_FLG,ZernTypeL_FLG,
      &    nGridMat_FLG,GridMat_FLG,GridSrfdx_FLG,GlassCoef_FLG,
      &    GlassElt_FLG,nAmplMat_FLG,AmplSrfdx_FLG,LApSunBlades,
-     &	  GrCoef_FLG,
-     &    lFF_FLG,pFF_FLG,xFF_FLG,yFF_FLG,zFF_FLG,
-     &    FFZernCoef_FLG,FFZernTypeL_FLG,
-     &    nFFZernCoef_FLG,FFZernModes_FLG,
-     &    MonZernCoef_FLG,MonZernTypeL_FLG,
-     &    nMonZernCoef_FLG,MonZernModes_FLG
+     &	  GrCoef_FLG
 	End Module loh_I2
 
 

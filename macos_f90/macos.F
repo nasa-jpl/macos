@@ -21,23 +21,25 @@ C***********************************************************************
 
 C***********************************************************************
 C       Modeling and Analysis for Controlled Optical Systems (MACOS)
-C	MACOS Version 4.00		       Work in progress
+C	MACOS Version 4.xx		       Work in progress
 C***********************************************************************
 C
-C       MACOS Version 4.00 	               Last updated: 4/2026
-C       Contacts:    Scott Basinger, Scott.A.Basinger@jpl.nasa.gov
-C                    John Lou, John.Z.Lou@jpl.nasa.gov
-C                    Luis Marchen, Luis.F.Marchen@jpl.nasa.gov
-C                    Carl Nissly, Carl.R.Nissly@jpl.nasa.gov
-C                    David C. Redding, david.c.redding@gmail.com
-C                    Norbert Sigrist, Norbert.Sigrist@jpl.nasa.gov
+C       MACOS Version 3.34 	               Last updated: 11/2011
+C       (Based on MACOS Versions 3.31, 3.2 and 2.86)
+C       Contact:     John Z. Lou
+C       Address:     Jet Propulsion Laboratory
+C                    MS 306-451
+C                    4800 Oak Grove Dr., Pasadena CA 91109
+C       Email:       John.Z.Lou@jpl.nasa.gov
+C       Phone:       (818)354-4870
 C
-C       Based on MACOS Versions 3.31, 3.2 and 2.86, and COMP, the
-C       Controlled Optics Modeling Program
-C       Authors:     David C. Redding, Laura Needels, Sam Sirlin,
-C                    Scott Basinger, John Lou, Luis Marchen, Carl 
-C                    Nissly, and Norbert Sigrist
-C
+C       MACOS Version 2.86		           08/2001
+C       Contact:     David C. Redding
+C       Address:     Jet Propulsion Laboratory
+C                    MS 126-100
+C                    4800 Oak Grove Dr., Pasadena CA 91109
+C       Email:       david.c.redding@jpl.nasa.gov
+C       Phone:       (626)298-0330
 C***********************************************************************
 
 #include "realtype.h"
@@ -48,7 +50,6 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
-	use plot_mode_mod
         use surfsub
 
 	use macosio_mod
@@ -75,9 +76,6 @@ C***********************************************************************
           implicit none
           integer, optional :: psize
           End Subroutine macos_init_all
-          Subroutine install_sigint_handler() bind(C,name='install_sigint_handler')
-          use iso_c_binding
-          End Subroutine install_sigint_handler
         End Interface
 
 C  FORMAT statements
@@ -98,7 +96,6 @@ C  Execution starts
         ! Scene pthread defined in C
 	!Call startpthread
 
-	Call install_sigint_handler()
 	Call set_macos_problem_size(macos_model_size)
 
 	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls

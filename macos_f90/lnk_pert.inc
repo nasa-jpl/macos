@@ -49,8 +49,7 @@
           CALL DADD(h2HOE(1,jElt),D1,del,3)
         END IF
 
-	IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).NE.10)
-     &      .AND.(SrfType(jElt).NE.11)) THEN
+	IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).LE.9)) THEN
           CALL DSUB(D1,pMon(1,jElt),RptElt(1,jElt),3)
           CALL DMPROD(D2,dQ,D1,3,3,1)
           CALL DADD(D1,pMon(1,jElt),D2,3)
@@ -62,21 +61,6 @@
           CALL DMPROD(D1,Q,zMon(1,jElt),3,3,1)
           CALL DEQUATE(zMon(1,jElt),D1,3)
         END IF
-
-!-->  FreeForm FF coordinate frame
-        IF (SrfType(jElt).EQ.SrfType_FreeForm) THEN
-          CALL DSUB(D1,pFF(1,jElt),RptElt(1,jElt),3)
-          CALL DMPROD(D2,dQ,D1,3,3,1)
-          CALL DADD(D1,pFF(1,jElt),D2,3)
-          CALL DADD(pFF(1,jElt),D1,del,3)
-          CALL DMPROD(D1,Q,xFF(1,jElt),3,3,1)
-          CALL DEQUATE(xFF(1,jElt),D1,3)
-          CALL DMPROD(D1,Q,yFF(1,jElt),3,3,1)
-          CALL DEQUATE(yFF(1,jElt),D1,3)
-          CALL DMPROD(D1,Q,zFF(1,jElt),3,3,1)
-          CALL DEQUATE(zFF(1,jElt),D1,3)
-        END IF
-!<--
 
 	If (LLocCrd .and. LUpdateTElt) Then
           ! TElt(1:6,1:6,jElt) is updated here
