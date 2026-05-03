@@ -116,7 +116,7 @@ C***********************************************************************
         use elt_mod
         use sourcsub_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
-     &                     ZerntoMon4, LZPFailed, nZPFailMsg
+     &                     ZerntoMon4
         use tracesub_mod
 	use elemsub_mod
 	use traceutil_mod
@@ -222,7 +222,7 @@ C	check interpolated surfaces; compute obscuration coords
 	DO 16 iElt=iSecondElt,iEndElt
 C Set index
 	  IF (LGlass(iElt)) THEN
-	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(1,iElt),
+	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(:,iElt),
      &                            GlassType(iElt))
 	  END IF
 C Set Zerns
@@ -248,49 +248,6 @@ C Fringe's
      &                        ZernAnnuRatio(iElt))
 	    END IF
 	  END IF
-
-C Set FF Zernike coefficients for FreeForm surface
-	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
-	    IF (FFZernTypeL(iElt).EQ.ZernType_ANSI .OR.
-     &          FFZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
-	      CALL ZerntoMon1(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
-     &              FFZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
-	      CALL ZerntoMon2(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_Fringe .OR.
-     &              FFZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
-	      CALL ZerntoMon3(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormHex) THEN
-              CALL ZerntoMon4(FFZernCoef(1,iElt),FFCoef(1,iElt))
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
-     &              FFZernTypeL(iElt).EQ.ZernType_Noll) THEN
-              CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
-              CALL ZerntoMon7(FFZernCoef(1,iElt),FFCoef(1,iElt),
-     &                        ZernAnnuRatio(iElt))
-	    END IF
-	  END IF
-C Set Mon Zernike coefficients for FreeForm surface
-	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
-	    IF (MonZernTypeL(iElt).EQ.ZernType_ANSI .OR.
-     &          MonZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
-	      CALL ZerntoMon1(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
-     &              MonZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
-	      CALL ZerntoMon2(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_Fringe .OR.
-     &              MonZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
-	      CALL ZerntoMon3(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormHex) THEN
-              CALL ZerntoMon4(MonZernCoef(1,iElt),MonCoef(1,iElt))
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
-     &              MonZernTypeL(iElt).EQ.ZernType_Noll) THEN
-              CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
-              CALL ZerntoMon7(MonZernCoef(1,iElt),MonCoef(1,iElt),
-     &                        ZernAnnuRatio(iElt))
-	    END IF
-	  END IF
 	  LEltOK(iElt)=.TRUE.
 	  IF (SrfType(iElt).EQ.5) THEN
 	    IF (ifIntSrfSet(iElt)) THEN
@@ -305,7 +262,8 @@ C Set Mon Zernike coefficients for FreeForm surface
 	    ifIntSrfOK(iElt)=.TRUE.
 	    iIntSrf=1
 	  END IF
-	  IF (nGridMat(iElt).GT.0) THEN
+	  IF (SrfType(iElt).EQ.SrfType_GridData .OR.
+     &        SrfType(iElt).EQ.SrfType_AsGrData) THEN
 	    jGridSrf(iElt)=iEltToGridSrf(iElt)
 	  ELSE
 	    jGridSrf(iElt)=1
@@ -356,12 +314,6 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 	  iNextElt=nElt
 	END IF
 	nBadRays=0
-!-->  Reset per-ray status for this trace
-	RayStatus(:) = RayStat_OK
-	RayFailElt(:) = 0
-	RayFailMsg(:) = ' '
-	nZPFailMsg = 0
-!<--
 	iElt=iSecondElt  ! iElt = next Elt to trace to -jzlou
 	iEm1=iElt-1
 	CurIndRef=StartIndRef
@@ -450,8 +402,6 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         lMon(iElt),pMon(1,iElt),
      &	         xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	         pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	         lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
-     &	         zFF(1,iElt),FFCoef(1,iElt),
      &	         CurIndRef,IndRef(iElt),
      &	         CurExtinc,Extinc(iElt),WaveBU,
      &	         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -575,8 +525,6 @@ c		  PrevElt=PrevNonSeg(iRay)
      &	              lMon(iElt),pMon(1,iElt),
      &	              xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	              pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	              lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
-     &	              zFF(1,iElt),FFCoef(1,iElt),
      &	              CurIndRef,IndRef(iElt),
      &	              CurExtinc,Extinc(iElt),WaveBU,
      &	           ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -766,10 +714,6 @@ c	        PrevElt=PrevNonSeg(iRay)
      &	         RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	         lMon(iElt),pMon(1,iElt),
      &	         xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
-     &	         pData(1,iElt),xData(1,iElt),
-     &	         yData(1,iElt),zData(1,iElt),
-     &	         lFF(iElt),pFF(1,iElt),xFF(1,iElt),
-     &	         yFF(1,iElt),zFF(1,iElt),FFCoef(1,iElt),
      &	         CurIndRef,IndRef(iElt),LNewIndRef,NewIndRef,
      &	         CurExtinc,Extinc(iElt),WaveBU,
      &	         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -914,9 +858,6 @@ c	            ELSE
      &	              RayPos(1,iRay),RayDir(1,iRay),
      &	              lMon(itst),pMon(1,itst),
      &	              xMon(1,itst),yMon(1,itst),zMon(1,itst),
-     &	              pData(1,itst),xData(1,itst),yData(1,itst),zData(1,itst),
-     &	              lFF(itst),pFF(1,itst),xFF(1,itst),yFF(1,itst),
-     &	              zFF(1,itst),FFCoef(1,itst),
      &	              ApType(itst),ApVec(1,itst),nObs(itst),
      &	              ObsType(1,itst),ObsVec(1,1,itst),
      &	              xObs(1,itst),yObs(1,itst),zObs(1,itst),
@@ -962,8 +903,6 @@ C	Here when element number is determined...
      &	                 lMon(imin),pMon(1,imin),
      &	                 xMon(1,imin),yMon(1,imin),zMon(1,imin),
      &	                 pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	                 lFF(imin),pFF(1,imin),xFF(1,imin),yFF(1,imin),
-     &	                 zFF(1,imin),FFCoef(1,imin),
      &	                 CurIndRef,IndRef(imin),
      &	                 CurExtinc,Extinc(imin),WaveBU,
      &	                 ApType(imin),ApVec(1,imin),nObs(imin),
@@ -1082,16 +1021,6 @@ cdebug
 	            PrevElt(iElt)=PrevNonSeg(iRay)
 	          END IF
 	          IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason (non-sequential)
-	            IF (LZPFailed) THEN
-	              CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &                'root-find bracket/iter fail')
-	              LZPFailed = .FALSE.
-	            ELSE
-	              CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &                'surface miss')
-	            END IF
-!<--
 	            nBadRays=nBadRays+1
 	            LEltOK(imin)=.FALSE.
 	            IF (IRAY.GT.1) THEN
@@ -1165,16 +1094,6 @@ C  End of element section
 	      END IF
 
 	      IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason
-	        IF (LZPFailed) THEN
-	          CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &            'root-find bracket/iter fail')
-	          LZPFailed = .FALSE.
-	        ELSE
-	          CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &            'surface miss')
-	        END IF
-!<--
 	        nBadRays=nBadRays+1
 	        LEltOK(iElt)=.FALSE.
 	        IF (IRAY.GT.1) THEN
@@ -1183,14 +1102,6 @@ C  End of element section
 	        END IF
 	      END IF
 	    END IF
-
-!-->  Record obscuration (if ray passed surfaces but was blocked)
-	    IF (.NOT.LRayPass(iRay)) THEN
-	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
-     &          'obscured/vignetted')
-	      nBadRays=nBadRays+1
-	    END IF
-!<--
 
 C	End of iRay loop
 

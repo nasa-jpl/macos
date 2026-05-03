@@ -629,11 +629,1281 @@ C***********************************************************************
 ! For 'STOP' command, it is called ONLY WHEN the stop is speicied on an
 ! element surface.
 
-	SUBROUTINE STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+#if 1
+
+
+        SUBROUTINE STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
      &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
      &	  iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
      &	  nBadRays,StartIndRef,StartExtinc,Cmatrix,DrawRayVec,
-     &	  DrawEltVec,iLocal,xTarg,k,sqErr,ifBeamCentered)
+     &	  DrawEltVec,iLocal,xTarg,sqErr,ifBeamCentered)
+
+          use param_mod
+          use src_mod
+          use cfiles_mod
+          use elt_mod
+          use sourcsub_mod
+
+          IMPLICIT NONE
+
+          ! INPUT arguments
+          INTEGER,  INTENT(IN)    :: npts              ! Number of points in ray grid
+          INTEGER,  INTENT(IN)    :: iObsOpt           ! Observation option
+          INTEGER,  INTENT(INOUT) :: iEndElt           ! End element for trace (defined by iLocal)
+          INTEGER,  INTENT(IN)    :: iCurWFElt         ! Current wavefront element
+          INTEGER,  INTENT(IN)    :: iCurRayElt        ! Current ray element
+          INTEGER,  INTENT(IN)    :: iLocal            ! Local element ID (STOP)
+
+          LOGICAL,  INTENT(IN)    :: ifPol             ! Polarization flag
+          LOGICAL,  INTENT(INOUT) :: ifGrid            ! Grid flag
+          LOGICAL,  INTENT(IN)    :: ifPropagate       ! Propagation flag
+          LOGICAL,  INTENT(IN)    :: ifDraw            ! Draw flag
+          LOGICAL,  INTENT(IN)    :: ifLNegOK          ! Allow negative L flag
+          LOGICAL,  INTENT(IN)    :: ifBuild           ! Build flag
+          LOGICAL,  INTENT(IN)    :: ifDMBuild         ! DM build flag
+          LOGICAL,  INTENT(IN)    :: ifTrace           ! Trace flag
+          LOGICAL,  INTENT(IN)    :: ifRayPrint        ! Ray print flag
+          LOGICAL,  INTENT(IN)    :: ifRegrid(mElt)    ! Regrid flags per element
+          LOGICAL,  INTENT(IN)    :: ifIntSrfSet(mElt) ! Interface surface flags
+
+          REAL(8),  INTENT(INOUT) :: Dicr              ! Grid increment i
+          REAL(8),  INTENT(INOUT) :: Djcr              ! Grid increment j
+          REAL(8),  INTENT(INOUT) :: dxSource          ! Source offset
+          REAL(8),  INTENT(IN)    :: StartIndRef       ! Starting index of refraction
+          REAL(8),  INTENT(IN)    :: StartExtinc       ! Starting extinction
+          REAL(8),  INTENT(IN)    :: xTarg(3)          ! Target position in local coords
+
+          SREAL,    INTENT(INOUT) :: Cmatrix(7,mCm,bRay)  ! Coating matrix
+
+          INTEGER,  INTENT(INOUT) :: DrawEltVec(mDrawElt,mDrawRay)   ! Draw element vector (mod by LocalCoord)
+          SREAL,    INTENT(INOUT) :: DrawRayVec(2,mDrawElt,mDrawRay) ! Draw ray vector     (mod by LocalCoord)
+
+          ! OUTPUT arguments
+          INTEGER,  INTENT(OUT)   :: nBadRays          ! Number of failed rays
+          REAL(8),  INTENT(OUT)   :: sqErr             ! Squared error at convergence
+          LOGICAL,  INTENT(OUT)   :: ifBeamCentered    ! Success flag
+
+          ! Local Variables
+          LOGICAL :: local_coord_ok
+          REAL(8) :: xLocal(3), yLocal(3), zLocal(3), xInt(2)
+          REAL(8) :: crLocalPos(3)
+
+          ! -------------------------------------------------------------------
+          local_coord_ok = .false.
+
+          ! ============================================================
+          ! COMPUTE LOCAL COORDINATE SYSTEM AT STOP ELEMENT
+          ! Must be done BEFORE point source setup since xLocal/yLocal
+          ! are used as perturbation directions in point source mode
+          ! ============================================================
+          if (nECoord(iLocal)>0) then
+
+            ! use TElt when it is defined
+            xLocal = TElt(1:3, 1, iLocal)
+            yLocal = TElt(1:3, 2, iLocal)
+            zLocal = TElt(1:3, 3, iLocal)
+            local_coord_ok = .True.
+
+          else
+
+            ! define CSYS  (this should be defined when reading Rx  -- ToDo)
+            call define_local_csys(psiElt(1:3,iLocal), xLocal, yLocal, zLocal, local_coord_ok)
+
+            if (.not.local_coord_ok)
+     &        CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
+     &                    ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
+     &                    ifRayPrint,iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,
+     &                    dxSource,nBadRays,StartIndRef,StartExtinc,
+     &                    Cmatrix,DrawRayVec,DrawEltVec,
+     &                    iLocal,xLocal,yLocal,zLocal,crLocalPos,local_coord_ok)
+
+            if (.not.local_coord_ok) then
+              WRITE(*,*)'ERROR: Local coordinates could not be computed'
+              return
+            end if
+
+            ! update TElt
+            TElt(1:3, 1, iLocal) = xLocal
+            TElt(1:3, 2, iLocal) = yLocal
+            TElt(1:3, 3, iLocal) = zLocal
+
+            TElt(4:6, 4, iLocal) = xLocal
+            TElt(4:6, 5, iLocal) = yLocal
+            TElt(4:6, 6, iLocal) = zLocal
+
+            LUpdateTElt_FLG(iLocal) = .True.
+            nECoord(iLocal)         = 6
+
+          end if
+
+
+          CALL ChiefRayAiming(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	  iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	  nBadRays,StartIndRef,StartExtinc,Cmatrix,DrawRayVec,
+     &	  DrawEltVec,iLocal,xTarg,sqErr,ifBeamCentered,xInt)
+
+        END SUBROUTINE STOP
+
+
+        #define ChiefRayAiming_Debug 0
+
+        SUBROUTINE ChiefRayAiming(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	  iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	  nBadRays,StartIndRef,StartExtinc,Cmatrix,DrawRayVec,
+     &	  DrawEltVec,iLocal,xTarg,sqErr,ifBeamCentered,xInt)
+
+          use param_mod
+          use src_mod
+          use cfiles_mod
+          use elt_mod
+          use sourcsub_mod
+          use Constants, only: EPS, EPS_CBRT, EPS_SQRT, TOL_ZERO, TOL_GEOM2, TOL_GEOM
+
+          IMPLICIT NONE
+
+          ! INPUT arguments
+          INTEGER,  INTENT(IN)    :: npts              ! Number of points in ray grid
+          INTEGER,  INTENT(IN)    :: iObsOpt           ! Observation option
+          INTEGER,  INTENT(INOUT) :: iEndElt           ! End element for trace (defined by iLocal)
+          INTEGER,  INTENT(IN)    :: iCurWFElt         ! Current wavefront element
+          INTEGER,  INTENT(IN)    :: iCurRayElt        ! Current ray element
+          INTEGER,  INTENT(IN)    :: iLocal            ! Local element ID (STOP)
+
+          LOGICAL,  INTENT(IN)    :: ifPol             ! Polarization flag
+          LOGICAL,  INTENT(INOUT) :: ifGrid            ! Grid flag
+          LOGICAL,  INTENT(IN)    :: ifPropagate       ! Propagation flag
+          LOGICAL,  INTENT(IN)    :: ifDraw            ! Draw flag
+          LOGICAL,  INTENT(IN)    :: ifLNegOK          ! Allow negative L flag
+          LOGICAL,  INTENT(IN)    :: ifBuild           ! Build flag
+          LOGICAL,  INTENT(IN)    :: ifDMBuild         ! DM build flag
+          LOGICAL,  INTENT(IN)    :: ifTrace           ! Trace flag
+          LOGICAL,  INTENT(IN)    :: ifRayPrint        ! Ray print flag
+          LOGICAL,  INTENT(IN)    :: ifRegrid(mElt)    ! Regrid flags per element
+          LOGICAL,  INTENT(IN)    :: ifIntSrfSet(mElt) ! Interface surface flags
+
+          REAL(8),   INTENT(INOUT) :: Dicr              ! Grid increment i
+          REAL(8),   INTENT(INOUT) :: Djcr              ! Grid increment j
+          REAL(8),   INTENT(INOUT) :: dxSource          ! Source offset
+          REAL(8),   INTENT(IN)    :: StartIndRef       ! Starting index of refraction
+          REAL(8),   INTENT(IN)    :: StartExtinc       ! Starting extinction
+          REAL(8),   INTENT(IN)    :: xTarg(3)          ! Target position in local coords
+
+          SREAL,    INTENT(INOUT) :: Cmatrix(7,mCm,bRay)  ! Coating matrix
+
+          INTEGER,  INTENT(INOUT) :: DrawEltVec(mDrawElt,mDrawRay)  ! Draw element vector (mod by LocalCoord)
+          SREAL,    INTENT(INOUT) :: DrawRayVec(2,mDrawElt,mDrawRay) ! Draw ray vector    (mod by LocalCoord)
+
+          ! OUTPUT arguments
+          INTEGER,  INTENT(OUT)   :: nBadRays          ! Number of failed rays
+          REAL(8),  INTENT(OUT)   :: sqErr             ! Squared error at convergence
+          LOGICAL,  INTENT(OUT)   :: ifBeamCentered    ! Success flag
+          REAL(8),  INTENT(OUT)   :: xInt(2)           ! Final target position
+
+          ! LOCAL variables
+          INTEGER :: k, iStartElt, iStartRay, iEndRay, nDrawElt
+
+          LOGICAL :: ifDraw_, ifBuild_, ifLocalCoord
+
+          REAL(8) :: DV1(3), DV2(3), S1
+          REAL(8) :: thx, thy, dthPt, ddxPt(2)
+          REAL(8) :: xLocal(3), yLocal(3), zLocal(3)
+
+          ! State management: separate accepted state from gradient baseline
+          REAL(8) :: acceptedChfRayDir(3), acceptedChfRayPos(3)  ! Last accepted state
+          REAL(8) :: baselineChfRayDir(3), baselineChfRayPos(3)  ! Baseline for gradient FD
+          REAL(8) :: crLocalPos(3), dxPt(2), GPt(2,2), GPtInv(2,2)
+          REAL(8) :: del(3)
+          REAL(8) :: xDraw(3), yDraw(3)
+
+          ! Point source support variables
+          LOGICAL :: ifPointSrc
+          REAL(8) :: saveSrcPos(3), fixedChfRayPos(3)
+          REAL(8) :: ChfRayDir_pert(3), norm_dir, det_GPt
+          REAL(8) :: sqErr_prev, step_norm, step_limit
+          REAL(8) :: dthPt_fd  ! Finite difference perturbation (separate from step control)
+          REAL(8) :: dthPt_fd_max  ! Maximum safe perturbation
+          REAL(8) :: convergence_rate
+          REAL(8) :: grad_x_mag, grad_y_mag  ! Gradient magnitudes
+          REAL(8) :: grad_threshold          ! Adaptive gradient threshold (LM)
+          LOGICAL :: grad_x_ok, grad_y_ok  ! Gradient quality flags
+          INTEGER :: n_error_increase  ! Count consecutive error increases
+          INTEGER :: n_grad_increase  ! Count gradient increase attempts
+
+          ! Levenberg-Marquardt variables
+          REAL(8) :: lambda_lm        ! LM damping parameter (adaptive)
+          REAL(8) :: JtJ(2,2)         ! J^T * J (Hessian approximation)
+          REAL(8) :: Jt_f(2)          ! J^T * f (gradient)
+          REAL(8) :: A_lm(2,2)        ! Augmented system matrix
+          REAL(8) :: det_lm           ! Determinant of augmented system
+          REAL(8) :: sqErr_trial      ! Trial error for step acceptance
+          LOGICAL :: step_accepted   ! Step acceptance flag
+          LOGICAL :: ray_success
+
+          ! Condition number estimation and adaptive regularization
+          REAL(8) :: cond_est, reg_factor
+
+          ! Stagnation and failure detection
+          INTEGER :: n_stagnant      ! Consecutive iterations with minimal progress
+          INTEGER :: n_ray_failures  ! Consecutive ray failures in inner loop
+          REAL(8) :: sqErr_best       ! Best error achieved so far
+
+          ! Source CSYS (keep original -- stable)
+          REAL(8) :: xSrcGrid(3), ySrcGrid(3)
+
+          ! Control flow variables
+          LOGICAL :: converged      !, local_coord_ok
+
+          INTEGER, PARAMETER :: MAXITERRATIONS = 100
+          INTEGER, PARAMETER :: MAX_BACKTRACK = 20
+
+          ! Tolerances (connected to constants.f90 for consistency)
+          real(8), parameter :: errTol             = TOL_GEOM2,      ! ~2.7e-22 mm^2 (geometric tolerance squared)
+     &                          dthPt_min          = EPS_SQRT,       ! ~1.49e-8 (minimum for finite differences)
+     &                          det_GPt_min        = TOL_ZERO*1d-2,  ! ~6e-22 (more lenient Jacobian threshold)
+     &                          alpha_min          = EPS_CBRT,       ! ~6e-6 (minimum backtracking fraction)
+     &                          dthPt_adaptive_min = EPS_SQRT        ! ~1.49e-8 (adaptive step threshold)
+
+          ! LM regularization options
+          LOGICAL, PARAMETER :: ifUseScaling = .FALSE.  ! Use scaled condition number estimation
+
+          ! ------------------------------------------------
+          ! Initialize control flags
+          ifBeamCentered = .FALSE.  ! Assume failure until proven otherwise
+          converged      = .FALSE.
+
+          ! Ray-Trace Setup parameters
+          ifDraw_   = .FALSE.
+          ifBuild_  = .FALSE.
+          iStartRay = 1
+          iEndRay   = 1
+          iStartElt = 0
+          iEndElt   = iLocal  ! = id of STOP element
+          nMinPts   = 3
+
+          ! Tolerances & Tracking
+          dthPt              = 1d-3   ! Initial perturbation: 0.001 rad or mm
+          n_error_increase   = 0      ! Track consecutive error increases
+          n_grad_increase    = 0      ! Track gradient increase attempts
+          sqErr_prev         = 1d10  ! Initialize for error monitoring
+
+          ! Adaptive finite difference perturbation strategy
+          ! Start small to avoid ray failures, increase if gradients insufficient
+          ifPointSrc = isPointSource()
+          IF (ifPointSrc) THEN
+            dthPt_fd     = 1d-6  ! Start small to avoid ray failures
+            dthPt_fd_max = 1d-3  ! Maximum safe angular perturbation
+          ELSE
+            dthPt_fd     = 1d-6  ! Collimated: position perturbation
+            dthPt_fd_max = 1d-3  ! Maximum safe position perturbation
+          END IF
+
+          ! Levenberg-Marquardt initialization
+          lambda_lm = 1d-3  ! Initial damping (will adapt during iteration)
+          n_stagnant = 0    ! No stagnation yet
+          sqErr_best = 1d10 ! Initialize best error
+
+          #if ChiefRayAiming_Debug
+            WRITE(*,*)' '
+            WRITE(*,*)' =========================================='
+            WRITE(*,*)' USING LEVENBERG-MARQUARDT ALGORITHM'
+            WRITE(*,*)' =========================================='
+            WRITE(*,*)' Initial damping: lambda =', lambda_lm
+          #endif ! ChiefRayAiming_Debug
+
+          ! Initialize accepted state with initial configuration
+          acceptedChfRayDir(1:3) = ChfRayDir(1:3)
+          acceptedChfRayPos(1:3) = ChfRayPos(1:3)
+
+          ! require TElt to be defined
+          if (nECoord(iLocal) < 0) return
+
+          ! use TElt
+          xLocal = TElt(1:3, 1, iLocal)
+          yLocal = TElt(1:3, 2, iLocal)
+          zLocal = TElt(1:3, 3, iLocal)
+
+          #if ChiefRayAiming_Debug
+            !
+            ! DISPLAY SETUP BASED ON SOURCE TYPE
+            !
+            IF (ifPointSrc) THEN
+              ! Point source: will modify direction, keep source position fixed
+              saveSrcPos = SourcePos()
+
+              WRITE(*,*)' '
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' STOP SETTING: Point Source Mode'
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' Will modify ChfRayDir (direction)'
+              WRITE(*,*)' Fixed SourcePos =', saveSrcPos
+              WRITE(*,*)' Initial ChfRayDir =', ChfRayDir
+              WRITE(*,*)' STOP surface axes (from optical prescription):'
+              WRITE(*,*)' - xLocal =', xLocal
+              WRITE(*,*)' - yLocal =', yLocal
+            ELSE
+              ! Collimated source: will modify position (current behavior)
+              WRITE(*,*)' '
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' STOP SETTING: Collimated Source Mode'
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' Will modify ChfRayPos (position)'
+              WRITE(*,*)' Initial ChfRayPos =', ChfRayPos
+              WRITE(*,*)' Initial ChfRayDir =', ChfRayDir
+            END IF
+            WRITE(*,*)' Target (local): xTarg =', xTarg(1:2)
+            WRITE(*,*)' Tolerance: errTol =', errTol
+            WRITE(*,*)' '
+
+          #else ! ChiefRayAiming_Debug
+
+            ! Point source: will modify direction, keep source position fixed
+            IF (ifPointSrc) saveSrcPos = SourcePos()
+
+          #endif ! ChiefRayAiming_Debug
+
+
+          ! Trace chief ray from source to STOP element (=iEndElt)
+          CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
+          CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
+     &                    ifLNegOK,Cmatrix,
+     &                    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &                    ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &                    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt, xDraw,yDraw)
+
+          crLocalPos = RayPos(:3, 1)  ! chief ray
+
+          ! Source CSYS (retained from initial configuration)
+          ! => zGrid, xGrid, yGrid are updated after SetSourceRayGrid call
+          xSrcGrid(:) = xGrid(:)
+          ySrcGrid(:) = yGrid(:)
+
+          ! Check if initial ray trace succeeded
+          IF (.NOT. LRayOK(1)) THEN
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' ========================================='
+              WRITE(*,*)' ERROR: Initial ray trace FAILED'
+              WRITE(*,*)' ========================================='
+              WRITE(*,*)' The target position may be unreachable due to:'
+              WRITE(*,*)' - Aperture limits or vignetting'
+              WRITE(*,*)' - Total internal reflection'
+              WRITE(*,*)' - Geometric constraints of the optical system'
+              WRITE(*,*)' '
+              WRITE(*,*)' Cannot proceed with STOP setting.'
+            #endif ! ChiefRayAiming_Debug
+
+            RETURN
+          END IF
+
+          ! Nominal (unperturbed) incidence pt in local coords
+          DV1(1:3) = crLocalPos(1:3) - VptElt(1:3, iLocal)  ! CALL DSUB(DV1,crLocalPos,VptElt(1,iLocal),3)
+          xInt(1)  = DDOTC(xLocal,DV1)
+          xInt(2)  = DDOTC(yLocal,DV1)
+
+          ! Initialize sqErr_best with actual initial error for proper stagnation detection
+          dxPt(1) = xInt(1) - xTarg(1)
+          dxPt(2) = xInt(2) - xTarg(2)
+          sqErr_best = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)
+
+          #if ChiefRayAiming_Debug
+            !
+            ! INITIAL STATE DIAGNOSTICS
+            !
+            WRITE(*,*)' '
+            WRITE(*,*)' === INITIAL STATE ==='
+            WRITE(*,*)' RayPos         =', RayPos(:3,1)
+            WRITE(*,*)' d(RayPos)      =', DV1(:3)
+            WRITE(*,*)' xInt (current) =', xInt(1:2)
+            WRITE(*,*)' xTarg (target) =', xTarg(1:2)
+            WRITE(*,*)' Initial error  =', xInt(1:2) - xTarg(1:2)
+            WRITE(*,*)' Initial sqErr  =', (xInt(1)-xTarg(1))**2 + (xInt(2)-xTarg(2))**2
+            WRITE(*,*)' sqErr_best     =', sqErr_best
+            WRITE(*,*)' '
+
+          #endif ! ChiefRayAiming_Debug
+
+          ! -------------------------------------------------------------------
+          ! MAIN ITERATION LOOP
+          ! -------------------------------------------------------------------
+          ! State management:
+          ! - Accepted state  = last successfully accepted configuration
+          ! - Baseline state  = state at iteration start for gradient computation
+          !
+          ! At each iteration:
+          !   1. Save current state -> baseline
+          !   2. Compute gradients by perturbing from baseline
+          !   3. Apply step from baseline
+          !   4. If step accepted: update accepted state
+          !   5. If step rejected: restore to baseline (= accepted state)
+          ! -------------------------------------------------------------------
+          DO k=1, MAXITERRATIONS
+
+            ! Check for convergence  (xTarg is STOP offset from VptElt in local frame)
+            dxPt(:2) = xInt(:2) - xTarg(:2)               ! CALL DSUB(dxPt,xInt,xTarg,2)
+            sqErr    = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)  ! Squared Error
+
+            #if ChiefRayAiming_Debug
+              !
+              ! ITERATION DIAGNOSTICS
+              !
+              WRITE(*,*)' '
+              WRITE(*,*)' ========== ITERATION', k, ' =========='
+              WRITE(*,*)' Current position:'
+              WRITE(*,*)' - xInt (actual)  =', xInt(1:2)
+              WRITE(*,*)' - xTarg (target) =', xTarg(1:2)
+              WRITE(*,*)' - dxPt (error)   =', dxPt(1:2)
+              WRITE(*,*)' - sqErr          =', sqErr
+              WRITE(*,*)' - SQRT(sqErr)    =', SQRT(sqErr)
+              WRITE(*,*)' - errTol         =', errTol
+              IF (ifPointSrc) THEN
+                WRITE(*,*)' ChfRayDir =', ChfRayDir(1:3)
+                WRITE(*,*)' ChfRayPos =', ChfRayPos(1:3)
+                WRITE(*,*)' SourcePos =', SaveSrcPos(1:3), '(fixed)'
+              ELSE
+                WRITE(*,*)' ChfRayPos =', ChfRayPos(1:3)
+                WRITE(*,*)' ChfRayDir =', ChfRayDir(1:3)
+              END IF
+              WRITE(*,*)' Perturbation: dthPt_fd =', dthPt_fd
+
+            #endif ! ChiefRayAiming_Debug
+
+            ! Save baseline state for this iteration (for gradient computation)
+            baselineChfRayDir(1:3) = ChfRayDir(1:3)
+            baselineChfRayPos(1:3) = ChfRayPos(1:3)
+
+            ! Check for convergence
+            IF (sqErr.LE.errTol) THEN
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' '
+                WRITE(*,*)' *** CONVERGED: sqErr <= errTol ***'
+              #endif ! ChiefRayAiming_Debug
+
+              converged = .TRUE.
+              EXIT  ! Exit main iteration loop
+            END IF
+
+            ! LM: Additional practical convergence check
+            ! If we've reached numerical precision limits, accept convergence
+            ! sqErr < TOL_GEOM means position error < sqrt(TOL_GEOM) ≈ 1.3e-6 mm
+            ! TOL_GEOM = EPS^(2/3) accounts for accumulated roundoff in geometric ops
+            IF (sqErr <= errTol) THEN
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' '
+                WRITE(*,*)' *** LM CONVERGED: Reached numerical precision limit ***'
+                WRITE(*,*)' sqErr =', sqErr, ' (< Tol =', errTol, ')'
+                WRITE(*,*)' Position error ~', SQRT(sqErr), ' mm'
+                WRITE(*,*)' (Target errTol =', errTol, ' is beyond precision)'
+              #endif ! ChiefRayAiming_Debug
+
+              converged = .TRUE.
+              EXIT  ! Exit main iteration loop
+            END IF
+
+            ! -----------------------------------------------------------------
+            ! Compute x-gradient (with ray failure recovery)
+            ! -----------------------------------------------------------------
+            CALL ComputeGradient(xSrcGrid, 1, "X", grad_x_ok, GPt(:,1))
+            IF (.NOT. grad_x_ok) EXIT  ! Exit main iteration loop
+
+            ! -----------------------------------------------------------------
+            ! Compute y-gradient (with ray failure recovery)
+            ! -----------------------------------------------------------------
+            CALL ComputeGradient(ySrcGrid, 2, "Y", grad_y_ok, GPt(:,2))
+            IF (.NOT. grad_y_ok) EXIT  ! Exit main iteration loop
+
+            !
+            ! JACOBIAN ANALYSIS
+            !
+            det_GPt = GPt(1,1)*GPt(2,2) - GPt(1,2)*GPt(2,1)
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' === JACOBIAN MATRIX ==='
+              WRITE(*,*)' GPt = [', GPt(1,1), GPt(1,2), ']'
+              WRITE(*,*)' GPt = [', GPt(2,1), GPt(2,2), ']'
+              WRITE(*,*)' det(GPt) =', det_GPt
+              WRITE(*,*)' |det(GPt)| =', ABS(det_GPt)
+              WRITE(*,*)' det_GPt_min =', det_GPt_min
+            #endif ! ChiefRayAiming_Debug
+
+            ! -----------------------------------------------------------------
+            ! GRADIENT QUALITY CHECK
+            ! Check if gradients are too small (insufficient perturbation)
+            ! -----------------------------------------------------------------
+            grad_x_mag = SQRT(GPt(1,1)**2 + GPt(2,1)**2)
+            grad_y_mag = SQRT(GPt(1,2)**2 + GPt(2,2)**2)
+
+            ! Gradient is "good" if magnitude is reasonable relative to error
+            ! For LM: Only check if gradients are above machine epsilon
+            ! LM's adaptive regularization handles ill-conditioning
+            ! Accept any gradient that's distinguishable from roundoff error
+            grad_x_ok = (grad_x_mag > EPS)
+            grad_y_ok = (grad_y_mag > EPS)
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' === GRADIENT QUALITY ==='
+              WRITE(*,*)' X-gradient magnitude =', grad_x_mag, ' OK =', grad_x_ok
+              WRITE(*,*)' Y-gradient magnitude =', grad_y_mag, ' OK =', grad_y_ok
+              WRITE(*,*)' dthPt_fd (current)   =', dthPt_fd
+            #endif ! ChiefRayAiming_Debug
+
+
+            ! If gradients are insufficient and we haven't tried too many times
+            IF ((.NOT. grad_x_ok .OR. .NOT. grad_y_ok) .AND.
+     &          n_grad_increase < 3 .AND. dthPt_fd < dthPt_fd_max) THEN
+
+              dthPt_fd = min(dthPt_fd_max, dthPt_fd * 10.0d0)
+              n_grad_increase = n_grad_increase + 1
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' '
+                WRITE(*,*)' *** Gradients too small - increasing perturbation ***'
+                WRITE(*,*)' New dthPt_fd =', dthPt_fd
+                WRITE(*,*)' Will retry gradient computation...'
+              #endif ! ChiefRayAiming_Debug
+
+              CYCLE  ! Retry this iteration with larger perturbation
+            END IF
+
+            ! Reset counter if gradients are good
+            IF (grad_x_ok .AND. grad_y_ok) n_grad_increase = 0
+
+            #if ChiefRayAiming_Debug
+              ! Check Jacobian conditioning (robustness safeguard)
+              ! Only fail if EXTREMELY singular (more lenient than before)
+              IF (ABS(det_GPt) < det_GPt_min) THEN
+                WRITE(*,*)' '
+                WRITE(*,*)' *** WARNING: Jacobian nearly singular! ***'
+                WRITE(*,*)' det(GPt) =', det_GPt, ' < threshold =', det_GPt_min
+                WRITE(*,*)' Attempting to continue with regularization...'
+                ! Don't reduce dthPt_fd or cycle - let regularization handle it
+              END IF
+            #endif ! ChiefRayAiming_Debug
+
+            ! -----------------------------------------------------------------
+            ! LEVENBERG-MARQUARDT METHOD
+            ! Compute J^T*J, J^T*f, condition number, and regularization
+            ! -----------------------------------------------------------------
+            reg_factor = DetLMRegularization(GPt, dxPt, ifUseScaling, JtJ, Jt_f, cond_est)
+
+            ! LM damping adjustment loop - recompute step when lambda changes
+            step_accepted = .FALSE.
+            n_ray_failures = 0  ! Reset consecutive failure counter
+            DO  ! LM inner loop
+              ! Augmented system with adaptive regularization:
+              ! A = J^T*J + lambda*diag(J^T*J) + reg_factor*I
+              A_lm(1,1) = JtJ(1,1) * (1.0d0 + lambda_lm) + reg_factor
+              A_lm(1,2) = JtJ(1,2)
+              A_lm(2,1) = JtJ(2,1)
+              A_lm(2,2) = JtJ(2,2) * (1.0d0 + lambda_lm) + reg_factor
+
+              det_lm = A_lm(1,1)*A_lm(2,2) - A_lm(1,2)*A_lm(2,1)
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' '
+                WRITE(*,*)' === LEVENBERG-MARQUARDT ==='
+                WRITE(*,*)' lambda (damping) =', lambda_lm
+                WRITE(*,*)' det(A_lm) =', det_lm
+              #endif ! ChiefRayAiming_Debug
+
+              ! Solve using Cramer's rule: A_lm * step = -Jt_f
+              thx = -( A_lm(2,2)*Jt_f(1) - A_lm(1,2)*Jt_f(2)) / det_lm
+              thy = -(-A_lm(2,1)*Jt_f(1) + A_lm(1,1)*Jt_f(2)) / det_lm
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' thx (trial) =', thx
+                WRITE(*,*)' thy (trial) =', thy
+                WRITE(*,*)' step_norm =', SQRT(thx*thx + thy*thy)
+                WRITE(*,*)' '
+                WRITE(*,*)' === STEP APPLICATION DEBUG ==='
+                IF (ifPointSrc) THEN
+                  WRITE(*,*)' baselineChfRayDir =', baselineChfRayDir(1:3)
+                ELSE
+                  WRITE(*,*)' baselineChfRayPos =', baselineChfRayPos(1:3)
+                END IF
+              #endif ! ChiefRayAiming_Debug
+
+              ! Apply trial step from baseline state
+              IF (ifPointSrc) THEN
+                ! Apply angular rotations: thx around xSrcGrid, thy around ySrcGrid (Source CSYS)
+                ! Rotation by angle θ around axis a: d_new ≈ d + θ*(a × d)
+                ! Combined rotation: d_new = d + thx*(xSrcGrid × d) + thy*(ySrcGrid × d)
+
+                ! Cross product: xSrcGrid × baselineChfRayDir
+                DV1(1) = xSrcGrid(2)*baselineChfRayDir(3) - xSrcGrid(3)*baselineChfRayDir(2)
+                DV1(2) = xSrcGrid(3)*baselineChfRayDir(1) - xSrcGrid(1)*baselineChfRayDir(3)
+                DV1(3) = xSrcGrid(1)*baselineChfRayDir(2) - xSrcGrid(2)*baselineChfRayDir(1)
+
+                ! Cross product: ySrcGrid × baselineChfRayDir
+                DV2(1) = ySrcGrid(2)*baselineChfRayDir(3) - ySrcGrid(3)*baselineChfRayDir(2)
+                DV2(2) = ySrcGrid(3)*baselineChfRayDir(1) - ySrcGrid(1)*baselineChfRayDir(3)
+                DV2(3) = ySrcGrid(1)*baselineChfRayDir(2) - ySrcGrid(2)*baselineChfRayDir(1)
+
+                ! Apply combined rotation from baseline
+                ChfRayDir_pert(1:3) = baselineChfRayDir(1:3) +
+     &                                      thx*DV1(1:3) + thy*DV2(1:3)
+
+                ! Normalize
+                norm_dir = SQRT(ChfRayDir_pert(1)*ChfRayDir_pert(1) +
+     &                          ChfRayDir_pert(2)*ChfRayDir_pert(2) +
+     &                          ChfRayDir_pert(3)*ChfRayDir_pert(3))
+                ChfRayDir(1:3) = ChfRayDir_pert(1:3) / norm_dir
+                ChfRayPos(1:3) = saveSrcPos(1:3) - zSource*ChfRayDir(1:3)
+              ELSE
+                ChfRayPos(1:3) = baselineChfRayPos(1:3) +
+     &                                 thx*xSrcGrid(1:3) + thy*ySrcGrid(1:3)
+              END IF
+
+              ! Trace ray to evaluate trial step
+              CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
+              CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
+     &                    ifLNegOK,Cmatrix,
+     &                    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &                    ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &                    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt, xDraw,yDraw)
+
+              IF (LRayOK(1)) THEN  ! IF (nBadRays.EQ.0) THEN
+                ! ----------------------------------------------
+                ! Ray succeeded - compute trial error
+                ! ----------------------------------------------
+                DV1(1:3) = RayPos(1:3,1) - VptElt(1:3,iLocal) ! CALL DSUB(DV1,RayPos,VptElt(1,iLocal),3)
+                xInt(1) = DDOTC(DV1, xLocal)                  ! DOT_PRODUCT(xLocal, DV1)
+                xInt(2) = DDOTC(DV1, yLocal)                  ! DOT_PRODUCT(yLocal, DV1)
+                dxPt(1) = xInt(1) - xTarg(1)
+                dxPt(2) = xInt(2) - xTarg(2)
+                sqErr_trial = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' '
+                  WRITE(*,*)' === TRIAL STEP RESULT ==='
+                  IF (ifPointSrc) THEN
+                    WRITE(*,*)' ChfRayDir (trial) =', ChfRayDir(1:3)
+                    WRITE(*,*)' ChfRayPos (trial) =', ChfRayPos(1:3)
+                  ELSE
+                    WRITE(*,*)' ChfRayPos (trial) =', ChfRayPos(1:3)
+                  END IF
+                  WRITE(*,*)' RayPos at STOP    =', RayPos(1:3,1)
+                  WRITE(*,*)' xInt (trial)      =', xInt(1:2)
+                  WRITE(*,*)' dxPt (trial err)  =', dxPt(1:2)
+                  WRITE(*,*)' sqErr_trial       =', sqErr_trial
+                  WRITE(*,*)' sqErr (current)   =', sqErr
+                  WRITE(*,*)' Delta sqErr       =', sqErr_trial - sqErr
+                #endif ! ChiefRayAiming_Debug
+
+                IF (sqErr_trial < sqErr) THEN
+
+                  ! Accept step - error decreased
+                  step_accepted = .TRUE.
+                  lambda_lm = lambda_lm / 10.0d0  ! Reduce damping
+
+                  ! Update best error and check for stagnation
+                  IF (sqErr_trial < sqErr_best * 0.999d0) THEN
+                    ! Significant progress (>0.1% improvement)
+                    sqErr_best = sqErr_trial
+                    n_stagnant = 0
+                  ELSE
+                    ! Minimal progress - increment stagnation counter
+                    n_stagnant = n_stagnant + 1
+                  END IF
+
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' '
+                    WRITE(*,*)' === LM STEP ACCEPTED ==='
+                    WRITE(*,*)' sqErr: ', sqErr, ' -> ', sqErr_trial
+                    WRITE(*,*)' Reduced lambda to', lambda_lm
+                  #endif ! ChiefRayAiming_Debug
+
+                  EXIT  ! Exit LM inner loop
+
+                ELSE
+
+                  ! Reject step - error increased
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' '
+                    WRITE(*,*)' === LM STEP REJECTED ==='
+                    WRITE(*,*)' sqErr would increase: ', sqErr, ' -> ', sqErr_trial
+                  #endif ! ChiefRayAiming_Debug
+
+                  ! Check if we're at numerical precision limit
+                  IF (sqErr < errTol) THEN
+
+                    #if ChiefRayAiming_Debug
+                      WRITE(*,*)' Already at numerical precision (sqErr < errTol)'
+                      WRITE(*,*)' Accepting current state as converged'
+                    #endif ! ChiefRayAiming_Debug
+
+                    step_accepted = .TRUE.
+                    EXIT
+                  END IF
+
+                  ! Increase damping
+                  lambda_lm = lambda_lm * 10.0d0
+
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' Increased lambda to', lambda_lm
+                  #endif ChiefRayAiming_Debug
+
+                  IF (lambda_lm > 1d10) THEN
+                    #if ChiefRayAiming_Debug
+                      WRITE(*,*)' Lambda too large - convergence stalled'
+                    #endif ! ChiefRayAiming_Debug
+
+                    step_accepted = .FALSE.
+                    EXIT
+                  END IF
+
+                  ! Restore to baseline and CYCLE to recompute with new lambda
+                  IF (ifPointSrc) ChfRayDir(1:3) = baselineChfRayDir(1:3)
+                  ChfRayPos(1:3) = baselineChfRayPos(1:3)
+
+                  CYCLE  ! Go back to top of loop, recompute step
+                END IF
+
+              ELSE
+                ! ----------------------------------------------
+                ! Ray failed - increase damping and retry
+                ! ----------------------------------------------
+                n_ray_failures = n_ray_failures + 1
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' '
+                  WRITE(*,*)' *** Ray trace failed with LM step ***'
+                #endif ! ChiefRayAiming_Debug
+
+                ! Check if we're at numerical precision limit
+                IF (sqErr < TOL_GEOM) THEN
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' Already at numerical precision (sqErr < TOL_GEOM)'
+                    WRITE(*,*)' Accepting current state as converged'
+                  #endif ! ChiefRayAiming_Debug
+
+                  step_accepted = .TRUE.
+                  EXIT
+                END IF
+
+                lambda_lm = lambda_lm * 10.0d0
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' Increased lambda to', lambda_lm
+                #endif ! ChiefRayAiming_Debug
+
+                ! Abort if too many consecutive ray failures
+                IF (n_ray_failures >= 5) THEN
+
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' '
+                    WRITE(*,*)' *** TOO MANY CONSECUTIVE RAY FAILURES ***'
+                    WRITE(*,*)' Target position appears unreachable from current state'
+                    WRITE(*,*)' sqErr =', sqErr, ' (best achieved: ', sqErr_best, ')'
+                  #endif ! ChiefRayAiming_Debug
+
+                  step_accepted = .FALSE.
+                  EXIT
+                END IF
+
+                IF (lambda_lm > 1d10) THEN
+                  #if ChiefRayAiming_Debug
+                    WRITE(*,*)' Lambda too large - cannot find valid step'
+                  #endif ! ChiefRayAiming_Debug
+
+                  step_accepted = .FALSE.
+                  EXIT
+                END IF
+
+                ! Restore to baseline
+                IF (ifPointSrc) ChfRayDir(1:3) = baselineChfRayDir(1:3)
+                ChfRayPos(1:3) = baselineChfRayPos(1:3)
+
+                CYCLE  ! Recompute with larger lambda
+              END IF
+            END DO  ! LM inner loop
+
+            IF (.NOT. step_accepted) THEN
+
+              ! Check if we failed due to numerical precision limits
+              IF (sqErr < TOL_GEOM) THEN
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' '
+                  WRITE(*,*)' LM reached numerical precision limit'
+                  WRITE(*,*)' sqErr =', sqErr, ' (excellent convergence)'
+                #endif ! ChiefRayAiming_Debug
+
+                converged = .TRUE.
+                EXIT  ! Exit main iteration loop with success
+
+              ELSE
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' '
+                  WRITE(*,*)' ========================================'
+                  WRITE(*,*)' ERROR: LM algorithm failed to find acceptable step'
+                  WRITE(*,*)' ========================================'
+                  WRITE(*,*)' Current sqErr  =', sqErr
+                  WRITE(*,*)' Best sqErr     =', sqErr_best
+                  WRITE(*,*)' Target errTol  =', errTol
+                  WRITE(*,*)' '
+                  WRITE(*,*)' Likely causes:'
+                  WRITE(*,*)' - Target position is beyond physical aperture limits'
+                  WRITE(*,*)' - Ray encounters vignetting or TIR'
+                  WRITE(*,*)' - Geometric constraints prevent reaching target'
+                #endif ! ChiefRayAiming_Debug
+
+                EXIT  ! Exit main iteration loop with failure
+              END IF
+            END IF
+
+            ! Check for stagnation - too many iterations without progress
+            IF (n_stagnant >= 10) THEN
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' '
+                WRITE(*,*)' ========================================'
+                WRITE(*,*)' WARNING: Algorithm stagnated'
+                WRITE(*,*)' ========================================'
+                WRITE(*,*)' No significant progress in', n_stagnant, 'iterations'
+                WRITE(*,*)' Current sqErr =', sqErr
+                WRITE(*,*)' Best sqErr    =', sqErr_best
+                WRITE(*,*)' Target errTol =', errTol
+                WRITE(*,*)' '
+              #endif ! ChiefRayAiming_Debug
+
+              IF (sqErr < TOL_GEOM) THEN
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' Accepting current state (within numerical precision)'
+                #endif ! ChiefRayAiming_Debug
+
+                converged = .TRUE.
+
+              ELSE
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' Target may be unreachable - aborting'
+                #endif ! ChiefRayAiming_Debug
+
+                converged = .FALSE.
+
+              END IF
+              EXIT  ! Exit main iteration loop
+
+            END IF
+
+            ! -----------------------------------------------------------------
+            ! Update accepted state after successful step
+            ! -----------------------------------------------------------------
+            IF (ifPointSrc) THEN
+
+              ! Ensure ChfRayDir is normalized before saving as accepted state
+              norm_dir = ChfRayDir(1)*ChfRayDir(1) +
+     &                   ChfRayDir(2)*ChfRayDir(2) +
+     &                   ChfRayDir(3)*ChfRayDir(3)
+              IF (ABS(norm_dir - 1.0d0) > 2d0*EPS_SQRT) THEN
+                ChfRayDir(1:3) = ChfRayDir(1:3) / sqrt(norm_dir)
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' WARNING: ChfRayDir not normalized! |ChfRayDir| =', norm_dir
+                  WRITE(*,*)' Normalized ChfRayDir =', ChfRayDir(1:3)
+                #endif ! ChiefRayAiming_Debug
+
+              END IF
+              acceptedChfRayDir(:) = ChfRayDir(:)
+              acceptedChfRayPos(:) = saveSrcPos(1:3) - zSource*ChfRayDir(:)
+              ChfRayPos(:)         = acceptedChfRayPos(:)
+            ELSE
+              acceptedChfRayPos(:) = ChfRayPos(:)
+            END IF
+
+            crLocalPos(:) = RayPos(:,1)
+            DV1(1:3)      = RayPos(1:3,1) - VptElt(1:3, iLocal) ! CALL DSUB(DV1,RayPos,VptElt(1,iLocal),3)
+            xInt(1)       = DDOTC(xLocal, DV1)                   ! DOT_PRODUCT(xLocal, DV1)
+            xInt(2)       = DDOTC(yLocal, DV1)                   ! DOT_PRODUCT(yLocal, DV1)
+
+            #if ChiefRayAiming_Debug
+              !
+              ! CONVERGENCE METRICS AND ADAPTIVE CONTROL
+              !
+              WRITE(*,*)' '
+              WRITE(*,*)' === CONVERGENCE METRICS ==='
+              WRITE(*,*)' sqErr (new)  =', sqErr
+              WRITE(*,*)' sqErr (prev) =', sqErr_prev
+            #endif ! ChiefRayAiming_Debug
+
+
+            ! LM handles adaptation internally - minimal post-processing
+            sqErr_prev = sqErr
+
+          END DO  ! Main iteration loop (k=1, MAXITERRATIONS)
+
+          ! -----------------------------------------------------------------
+          ! Finalize: Check convergence and set output flag
+          ! -----------------------------------------------------------------
+          IF (converged) THEN
+            ifBeamCentered = .TRUE.
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' SUCCESS: Stop calculation converged!'
+              WRITE(*,*)' Final sqErr =', sqErr
+              WRITE(*,*)' Iterations =', k-1
+            #endif ! ChiefRayAiming_Debug
+
+          ELSE
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' *** CONVERGENCE FAILURE DIAGNOSTICS ***'
+              WRITE(*,*)' ========================================'
+              WRITE(*,*)' Final sqErr     =', sqErr
+              WRITE(*,*)' Target errTol   =', errTol
+              WRITE(*,*)' Ratio sqErr/tol =', sqErr/errTol
+              WRITE(*,*)' SQRT(sqErr)     =', SQRT(sqErr)
+              WRITE(*,*)' Iterations used =', k-1
+              WRITE(*,*)' Max iterations  =', MAXITERRATIONS
+              WRITE(*,*)' '
+              WRITE(*,*)' Final position:'
+              WRITE(*,*)' - xInt (actual)  =', xInt(1:2)
+              WRITE(*,*)' - xTarg (target) =', xTarg(1:2)
+              WRITE(*,*)' - dxPt (error)   =', dxPt(1:2)
+              WRITE(*,*)' '
+              WRITE(*,*)' Final perturbation: dthPt =', dthPt
+              WRITE(*,*)' Minimum allowed: dthPt_min =', dthPt_min
+              WRITE(*,*)' '
+              IF (ifPointSrc) THEN
+                WRITE(*,*)' Final ChfRayDir =', ChfRayDir(1:3)
+              ELSE
+                WRITE(*,*)' Final ChfRayPos =', ChfRayPos(1:3)
+              END IF
+              WRITE(*,*)' '
+              WRITE(*,*)' Possible causes:'
+              IF (sqErr > 1d-10) THEN
+                WRITE(*,*)' - Large residual: algorithm diverged or stalled'
+              END IF
+              IF (dthPt < dthPt_min * 10) THEN
+                WRITE(*,*)' - Small perturbation: Jacobian may be ill-conditioned'
+              END IF
+              IF (k >= MAXITERRATIONS) THEN
+                WRITE(*,*)' - Max iterations reached: slow convergence'
+              END IF
+              WRITE(*,*)' '
+            #endif ! ChiefRayAiming_Debug
+
+            ! Restore original state
+            ChfRayPos(:) = acceptedChfRayPos(:)
+            ChfRayDir(:) = acceptedChfRayDir(:)
+            ! ifBeamCentered already FALSE
+          END IF
+
+          CONTAINS
+
+          ! -----------------------------------------------------------------------
+          !  SUBROUTINE: ComputeGradient
+          !
+          !  PURPOSE: Compute gradient column by finite difference perturbation
+          !           Handles both point source (direction) and collimated (position)
+          !
+          !  INPUTS:
+          !    pertAxis(3)  - Perturbation axis (xSrcGrid or ySrcGrid)
+          !    gradCol      - Gradient column index (1 for x, 2 for y)
+          !    axisName     - Axis name for debug messages ("X" or "Y")
+          !
+          !  OUTPUTS:
+          !    gradient_ok  - .TRUE. if gradient computed successfully
+          !    GPt_col(2)   - Computed gradient column GPt(:,gradCol)
+          !
+          !  SIDE EFFECTS:
+          !    - Modifies dthPt_fd (may reduce if ray fails)
+          !    - Traces rays via CTRACE
+          !    - Restores baseline state before returning
+          ! -----------------------------------------------------------------------
+          SUBROUTINE ComputeGradient(pertAxis, gradCol, axisName,
+     &                               gradient_ok, GPt_col)
+            IMPLICIT NONE
+            REAL(8),      INTENT(IN)  :: pertAxis(3)
+            INTEGER,      INTENT(IN)  :: gradCol
+            CHARACTER(*), INTENT(IN)  :: axisName
+            LOGICAL,      INTENT(OUT) :: gradient_ok
+            REAL(8),      INTENT(OUT) :: GPt_col(2)
+
+            ! Local variables (ChfRayDir_pert accessed from parent via host association)
+            LOGICAL :: ray_success
+            REAL(8) :: ddxPt(3)
+
+            gradient_ok = .FALSE.
+            ray_success = .FALSE.
+
+            ! Retry loop with perturbation reduction
+            DO
+              IF (ifPointSrc) THEN
+                ! Point source: perturb direction by rotating around pertAxis
+                ! For small angle dthPt_fd, rotation of ChfRayDir around pertAxis:
+                ! ChfRayDir_new ≈ ChfRayDir + dthPt_fd * (pertAxis × ChfRayDir)
+                ! Cross product: pertAxis × ChfRayDir
+                ChfRayDir_pert(1) = pertAxis(2)*ChfRayDir(3) - pertAxis(3)*ChfRayDir(2)
+                ChfRayDir_pert(2) = pertAxis(3)*ChfRayDir(1) - pertAxis(1)*ChfRayDir(3)
+                ChfRayDir_pert(3) = pertAxis(1)*ChfRayDir(2) - pertAxis(2)*ChfRayDir(1)
+
+                ! Apply rotation: d_new = d + θ*(axis × d)
+                ChfRayDir(1:3) = ChfRayDir(1:3) + dthPt_fd * ChfRayDir_pert(1:3)
+
+                ! Normalize to ensure unit vector
+                norm_dir = SQRT(ChfRayDir(1)*ChfRayDir(1) +
+     &                          ChfRayDir(2)*ChfRayDir(2) +
+     &                          ChfRayDir(3)*ChfRayDir(3))
+                ChfRayDir(1:3) = ChfRayDir(1:3) / norm_dir
+                ChfRayPos(1:3) = saveSrcPos(1:3) - zSource*ChfRayDir(1:3)
+
+              ELSE
+                ! Collimated source: perturb position along pertAxis
+                ChfRayPos(1:3) = ChfRayPos(1:3) + dthPt_fd*pertAxis(1:3)
+              END IF
+
+              ! Trace chief ray from source to STOP element
+              CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,ifPropagate, ifGrid)
+              CALL CTRACE(RayIndex,ifBuild_,ifDMBuild,ifPol,ifDraw_,
+     &                    ifLNegOK,Cmatrix,
+     &                    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &                    ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &                    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+              IF (LRayOK(1)) THEN
+                ray_success = .TRUE.
+                EXIT  ! Success - exit retry loop
+              END IF
+
+              ! Ray failed - reduce perturbation and retry
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' WARNING: Ray failed during ',axisName,'-gradient computation'
+                WRITE(*,*)' Reducing perturbation: dthPt_fd =', dthPt_fd, '->',dthPt_fd*0.5d0
+              #endif ! ChiefRayAiming_Debug
+
+              dthPt_fd = dthPt_fd * 0.5d0
+              IF (dthPt_fd < dthPt_min) THEN
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' Perturbation too small (< dthPt_min), giving up'
+                #endif ! ChiefRayAiming_Debug
+                EXIT  ! Exit retry loop
+              END IF
+
+              ! Restore to baseline and retry
+              IF (ifPointSrc) ChfRayDir(1:3) = baselineChfRayDir(1:3)
+              ChfRayPos(1:3) = baselineChfRayPos(1:3)
+
+            END DO  ! Retry loop
+
+            IF (.NOT. ray_success) THEN
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' ERROR: ',axisName,'-gradient computation failed'
+              #endif ! ChiefRayAiming_Debug
+              RETURN
+            END IF
+
+            ! Compute gradient from displacement
+            DV1(1:3)   = RayPos(1:3,1) - crLocalPos(1:3)
+            ddxPt(1)   = DDOTC(DV1,xLocal)
+            ddxPt(2)   = DDOTC(DV1,yLocal)
+
+            GPt_col(1) = ddxPt(1)/dthPt_fd
+            GPt_col(2) = ddxPt(2)/dthPt_fd
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' ',axisName,'-gradient: ddxPt =', ddxPt(1:2),
+     &                 ' GPt(:,',gradCol,') =', GPt_col(1:2)
+            #endif ! ChiefRayAiming_Debug
+
+            ! Restore to baseline for next perturbation
+            IF (ifPointSrc) ChfRayDir(1:3) = baselineChfRayDir(1:3)
+            ChfRayPos(1:3) = baselineChfRayPos(1:3)
+
+            gradient_ok = .TRUE.
+
+          END SUBROUTINE ComputeGradient
+
+          ! -----------------------------------------------------------------------
+          !  FUNCTION: DetLMRegularization
+          !
+          !  PURPOSE: Compute Levenberg-Marquardt system matrices and regularization
+          !           Computes J^T*J, J^T*f, condition number, and adaptive regularization
+          !
+          !  INPUTS:
+          !    GPt(2,2)     - Jacobian matrix
+          !    dxPt(2)      - Error vector
+          !    ifUseScaling - Use scaled condition number estimation
+          !
+          !  OUTPUTS (via arguments):
+          !    JtJ(2,2)     - J^T * J (Hessian approximation)
+          !    Jt_f(2)      - J^T * f (gradient)
+          !    cond_est     - Condition number estimate
+          !
+          !  RETURNS:
+          !    reg_factor   - Adaptive regularization factor
+          ! -----------------------------------------------------------------------
+          FUNCTION DetLMRegularization(GPt, dxPt, ifUseScaling,
+     &                                     JtJ, Jt_f, cond_est) RESULT(reg_factor)
+            IMPLICIT NONE
+            REAL(8), INTENT(IN)  :: GPt(2,2), dxPt(2)
+            LOGICAL, INTENT(IN)  :: ifUseScaling
+            REAL(8), INTENT(OUT) :: JtJ(2,2), Jt_f(2), cond_est
+            REAL(8)              :: reg_factor
+
+            ! Local variables (moved from parent scope)
+            REAL(8) :: trace_JtJ, det_JtJ, discriminant, sqrt_disc
+            REAL(8) :: lambda_max, lambda_min, b2, amc
+            REAL(8) :: scale, as, bs, cs
+
+            ! ============================================================
+            ! LEVENBERG-MARQUARDT METHOD
+            ! Solve: (J^T*J + lambda*diag(J^T*J)) * step = -J^T*f
+            ! ============================================================
+
+            ! Compute J^T * J (Hessian approximation)
+            JtJ(1,1) = GPt(1,1)*GPt(1,1) + GPt(2,1)*GPt(2,1)  ! dthx row
+            JtJ(1,2) = GPt(1,1)*GPt(1,2) + GPt(2,1)*GPt(2,2)  ! cross term
+            JtJ(2,1) = JtJ(1,2)                               ! symmetric
+            JtJ(2,2) = GPt(1,2)*GPt(1,2) + GPt(2,2)*GPt(2,2)  ! dthy row
+
+            b2 = JtJ(1,2)*JtJ(1,2)
+            amc = JtJ(1,1) - JtJ(2,2)
+
+            ! Compute J^T * f (gradient)
+            Jt_f(1) = GPt(1,1)*dxPt(1) + GPt(2,1)*dxPt(2)
+            Jt_f(2) = GPt(1,2)*dxPt(1) + GPt(2,2)*dxPt(2)
+
+            #if ChiefRayAiming_Debug
+              WRITE(*,*)' '
+              WRITE(*,*)' === JACOBIAN & GRADIENT DEBUG ==='
+              WRITE(*,*)' GPt (Jacobian) = [', GPt(1,1), GPt(1,2), ']'
+              WRITE(*,*)' GPt (Jacobian) = [', GPt(2,1), GPt(2,2), ']'
+              WRITE(*,*)' dxPt (error)   = [', dxPt(1), dxPt(2), ']'
+              WRITE(*,*)' JtJ(1,1) =', JtJ(1,1)
+              WRITE(*,*)' JtJ(1,2) =', JtJ(1,2)
+              WRITE(*,*)' JtJ(2,2) =', JtJ(2,2)
+              WRITE(*,*)' Jt_f (gradient) = [', Jt_f(1), Jt_f(2), ']'
+              WRITE(*,*)' scale =', scale
+            #endif ! ChiefRayAiming_Debug
+
+            IF (ifUseScaling) THEN
+              ! ---------------------------------------------------------------
+              ! SCALED CONDITION NUMBER ESTIMATION
+              ! ---------------------------------------------------------------
+              ! Find scale (largest magnitude entry)
+              scale = max(abs(JtJ(1,1)), abs(JtJ(1,2)), abs(JtJ(2,2)))
+
+              if (scale <= EPS) then
+                cond_est = 1d20
+              else
+                ! Scale matrix
+                as = JtJ(1,1) / scale
+                bs = JtJ(1,2) / scale
+                cs = JtJ(2,2) / scale
+
+                amc = as - cs
+                b2  = bs * bs
+
+                ! Estimate condition number and apply adaptive regularization
+                ! For ill-conditioned systems, add extra damping to weak directions
+                trace_JtJ = as + cs
+                det_JtJ   = max(0d0, as*cs - b2) ! Clamp small negative due to roundoff
+
+                ! Condition estimate: ratio of largest to smallest eigenvalue
+                ! For 2x2: λ_max ≈ (trace + sqrt(trace²-4det))/2
+                !          λ_min ≈ (trace - sqrt(trace²-4det))/2
+                ! Use numerically stable formulation to avoid catastrophic cancellation
+
+                ! Stable discriminant
+                discriminant = amc*amc + 4.0d0*b2
+                sqrt_disc = SQRT(discriminant)
+
+                ! Eigenvalues (scaled: no need to scale back for "cond_est")
+                lambda_max = 0.5d0 * (trace_JtJ + sqrt_disc)
+                lambda_min = det_JtJ / lambda_max
+
+                IF (lambda_min > TOL_ZERO) THEN
+                  cond_est = lambda_max / lambda_min
+                ELSE
+                  cond_est = 1d20
+                END IF
+
+                #if ChiefRayAiming_Debug
+                  WRITE(*,*)' cond_est =', cond_est
+                #endif ! ChiefRayAiming_Debug
+
+              end if
+
+            ELSE
+              ! ---------------------------------------------------------------
+              ! UNSCALED CONDITION NUMBER ESTIMATION
+              ! ---------------------------------------------------------------
+
+              ! Estimate condition number and apply adaptive regularization
+              ! For ill-conditioned systems, add extra damping to weak directions
+              trace_JtJ = JtJ(1,1) + JtJ(2,2)
+              det_JtJ = max(0d0, JtJ(1,1)*JtJ(2,2) - b2)  ! symmetric
+
+              ! Condition estimate: ratio of largest to smallest eigenvalue
+              ! For 2x2: λ_max ≈ (trace + sqrt(trace²-4det))/2
+              !          λ_min ≈ (trace - sqrt(trace²-4det))/2
+              ! Use numerically stable formulation to avoid catastrophic cancellation
+              IF (det_JtJ > TOL_ZERO .AND. trace_JtJ > TOL_ZERO) THEN
+                ! Stable discriminant (no cancellation)
+                discriminant = amc*amc + 4d0*b2
+                sqrt_disc = SQRT(discriminant)
+
+                ! Largest eigenvalue (safe)
+                lambda_max = 0.5d0 * (trace_JtJ + sqrt_disc)
+
+                ! Smallest eigenvalue via product relation
+                lambda_min = det_JtJ / lambda_max
+
+                IF (lambda_min > TOL_ZERO) THEN
+                  cond_est = lambda_max / lambda_min
+                ELSE
+                  cond_est = 1d20  ! Essentially singular
+                END IF
+              ELSE
+                cond_est = 1d20  ! Essentially singular
+              END IF
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' cond_est =', cond_est
+              #endif ! ChiefRayAiming_Debug
+
+            END IF
+
+            ! Adaptive regularization factor based on conditioning
+            IF (cond_est > 1d9) THEN
+              reg_factor = SQRT(cond_est) * TOL_ZERO
+
+              #if ChiefRayAiming_Debug
+                WRITE(*,*)' WARNING: Ill-conditioned Jacobian detected'
+                WRITE(*,*)' Condition estimate =', cond_est
+                WRITE(*,*)' Applying enhanced regularization =', reg_factor
+              #endif ! ChiefRayAiming_Debug
+
+            ELSE IF (cond_est > 1d6) THEN
+              ! Moderately ill-conditioned: apply regularization silently
+              reg_factor = SQRT(cond_est) * TOL_ZERO
+
+            ELSE
+              reg_factor = 0.0d0
+            END IF
+
+          END FUNCTION DetLMRegularization
+
+      END SUBROUTINE ChiefRayAiming
+
+
+#else
+
+        SUBROUTINE STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	  iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	  nBadRays,StartIndRef,StartExtinc,Cmatrix,DrawRayVec,
+     &	  DrawEltVec,iLocal,xTarg,sqErr,ifBeamCentered)
 
         use param_mod
         use src_mod
@@ -643,7 +1913,7 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
+      	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
      &    ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
      &    ifDraw,ifBeamCentered,ifLocalCoord,
      &    ifDraw_, ifBuild_
@@ -669,24 +1939,6 @@ C***********************************************************************
         INTEGER, PARAMETER :: MaxIterrations = 100
 
         ! ------------------------------------------------
-
-C         ***Center Beam in System Stop***
-
-#if 0
-	IF (ABS(zSource).LE.1d10) THEN
-	  ! With point source (source at finite distance),
-	  ! enforce ChfRay thru STOP position at element by tip/tilt
-          ! chief ray in source plane. -jzlou
-#include "stop_set.inc"
-	  return
-	End If
-#endif
-
-c Note: still to be done...
-c 1. Replace "enter stop position" querys with auto calc
-c 2. Include stop kinematics in linear source perturbation models
-c 3. Include local source coordinates in linear source models
-
         ifDraw_   = .FALSE.
         ifBuild_  = .FALSE.
         dthPt     = 1d-3
@@ -701,9 +1953,9 @@ c 3. Include local source coordinates in linear source models
         oldChfRayPos(:) = ChfRayPos(:)  ! CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
         newChfRayPos(:) = ChfRayPos(:)  ! CALL DEQUATE(newChfRayPos,ChfRayPos,3)
 
-C Find nominal incidence point and local coords
-C (Need to define local frame axes (xLocal and yLocal) at
-C  STOP element. -jzlou)
+        ! Find nominal incidence point and local coords
+        ! (Need to define local frame axes (xLocal and yLocal) at
+        !  STOP element. -jzlou)
 
         CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw_,
      &                  ifLNegOK,ifBuild_,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,
@@ -813,6 +2065,9 @@ C  STOP element. -jzlou)
         ! k=k-1
         END SUBROUTINE STOP
 
+#endif
+
+
 C***********************************************************************
 
 	SUBROUTINE LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
@@ -829,31 +2084,64 @@ C***********************************************************************
 
 	IMPLICIT NONE
 
-	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
-     &	  ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),
-     &    ifDMBuild,ifDraw,ifLocalCoord
+        ! Input arguments (control flags)
+        LOGICAL, INTENT(IN) :: ifPol             ! Polarization flag
+        LOGICAL, INTENT(IN) :: ifPropagate       ! Propagation flag
+        LOGICAL, INTENT(IN) :: ifDraw            ! Draw flag
+        LOGICAL, INTENT(IN) :: ifLNegOK          ! Allow negative L flag
+        LOGICAL, INTENT(IN) :: ifBuild           ! Build flag
+        LOGICAL, INTENT(IN) :: ifDMBuild         ! DM build flag
+        LOGICAL, INTENT(IN) :: ifTrace           ! Trace flag
+        LOGICAL, INTENT(IN) :: ifRayPrint        ! Ray print flag
+        LOGICAL, INTENT(IN) :: ifRegrid(mElt)    ! Regrid flags per element
+        LOGICAL, INTENT(IN) :: ifIntSrfSet(mElt) ! Interface surface flags
 
-	INTEGER npts,iCurWFElt,iCurRayElt,
-     &	  nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
-     &	  iEndRay,DrawEltVec(mDrawElt,mDrawRay),
-     &	  iLocal
+        ! Input arguments (ray trace parameters)
+        INTEGER, INTENT(IN)    :: npts           ! Number of points in ray grid
+        INTEGER, INTENT(IN)    :: iObsOpt        ! Observation option
+        INTEGER, INTENT(IN)    :: iCurWFElt      ! Current wavefront element
+        INTEGER, INTENT(IN)    :: iCurRayElt     ! Current ray element
+        INTEGER, INTENT(IN)    :: iLocal         ! Local element ID (STOP) - target for trace
+        INTEGER, INTENT(INOUT) :: iEndElt        ! End element for trace (not used, overridden by iLocal but update used in calling code)
 
-	SREAL Cmatrix(7,mCm,bRay),
-     &	  DrawRayVec(2,mDrawElt,mDrawRay)
+        REAL*8, INTENT(IN)     :: StartIndRef    ! Starting index of refraction
+        REAL*8, INTENT(IN)     :: StartExtinc    ! Starting extinction
 
-	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
-     &	  delMag,thMag,del(3),th(3),xLocal(3),yLocal(3),zLocal(3),
-     &	  DMAG1,DMAG2,oldChfRayDir(3),oldChfRayPos(3),crLocalPos(3),
-     &	  v1(3),v2(3)
+        ! Input/Output arguments (modified by ray tracing)
+        LOGICAL, INTENT(INOUT) :: ifGrid         ! Grid flag (modified by SetSourceRayGrid)
 
-	delMag=1d-6
-	thMag=1d-6
-	iStartRay=1
-	iEndRay=1
-	iStartElt=0
-	iEndElt=iLocal
-	CALL DEQUATE(oldChfRayDir,ChfRayDir,3)
-	CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
+        REAL*8, INTENT(INOUT) :: Dicr            ! Grid increment i (modified by SetSourceRayGrid)
+        REAL*8, INTENT(INOUT) :: Djcr            ! Grid increment j (modified by SetSourceRayGrid)
+        REAL*8, INTENT(INOUT) :: dxSource        ! Source offset (modified by SetSourceRayGrid)
+
+        SREAL, INTENT(INOUT) :: Cmatrix(7,mCm,bRay)              ! Ray matrix (modified by CRTrace)
+        SREAL, INTENT(INOUT) :: DrawRayVec(2,mDrawElt,mDrawRay)  ! Draw ray vector (modified by CRTrace)
+        INTEGER, INTENT(INOUT) :: DrawEltVec(mDrawElt,mDrawRay)  ! Draw element vector (modified by CRTrace)
+
+        ! Output arguments (computed local coordinate system)
+        INTEGER, INTENT(OUT) :: nBadRays         ! Number of failed rays
+
+        REAL*8, INTENT(OUT) :: xLocal(3)         ! Local x-axis at STOP element
+        REAL*8, INTENT(OUT) :: yLocal(3)         ! Local y-axis at STOP element
+        REAL*8, INTENT(OUT) :: zLocal(3)         ! Local z-axis at STOP element (normal)
+        REAL*8, INTENT(OUT) :: crLocalPos(3)     ! Chief ray position at STOP element
+
+        LOGICAL, INTENT(OUT) :: ifLocalCoord     ! Success flag (TRUE if local coords computed)
+
+        ! Local variables
+        INTEGER :: iStartElt, iStartRay, iEndRay
+        REAL*8 :: delMag, thMag, del(3), th(3)
+        REAL*8 :: DMAG1, DMAG2, oldChfRayDir(3), oldChfRayPos(3)
+        REAL*8 :: v1(3), v2(3)
+
+	delMag            = 1d-6
+	thMag             = 1d-6
+	iStartRay         = 1
+	iEndRay           = 1
+	iStartElt         = 0
+	iEndElt           = iLocal
+        oldChfRayDir(1:3) = ChfRayDir(1:3)  ! CALL DEQUATE(oldChfRayDir,ChfRayDir,3)
+        oldChfRayPos(1:3) = ChfRayPos(1:3)  ! CALL DEQUATE(oldChfRayPos,ChfRayPos,3)
 
 C  Find nominal incidence point
         !ifRayPrint=.TRUE. ! test only
@@ -1206,12 +2494,6 @@ C  0. Initialize parameters
 	End If
 
 	nBadRays=0
-!-->  Reset per-ray status for this trace
-	RayStatus(:) = RayStat_OK
-	RayFailElt(:) = 0
-	RayFailMsg(:) = ' '
-	nZPFailMsg = 0
-!<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
 
@@ -1276,7 +2558,7 @@ C Set index
 	    !print*,'** CTRACE, iElt=', iElt
 	    !print*,'** GlassType(iElt)=', GlassType(iElt)
 
-	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(1,iElt),
+	    IndRef(iElt)=getIndex(CWU*Wavelen,GlassCoef(:,iElt),
      &                            GlassType(iElt))
 	  END IF
 C Set Zerns
@@ -1312,72 +2594,6 @@ C Set Zerns
 	    END IF
 	  END IF
 
-C Set FF Zernike coefficients for FreeForm surface
-	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
-            ! FF Zernike: ANSI Ordering
-	    IF (FFZernTypeL(iElt).EQ.ZernType_ANSI .OR.
-     &          FFZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
-	      CALL ZerntoMon1(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-
-            ! FF Zernike: Born & Wolf Ordering
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
-     &              FFZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
-	      CALL ZerntoMon2(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-
-            ! FF Zernike: Fringe Ordering
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_Fringe .OR.
-     &              FFZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
-	      CALL ZerntoMon3(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-
-            ! Special FF Zernike: Hex
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormHex) THEN
-              CALL ZerntoMon4(FFZernCoef(1,iElt),FFCoef(1,iElt))
-
-            ! FF Zernike: Noll Ordering
-            ELSEIF ((FFZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
-     &              (FFZernTypeL(iElt).EQ.ZernType_Noll)) THEN
-              CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
-
-            ! Special FF Zernike: Annular Zernikes using Noll Ordering
-	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
-              CALL ZerntoMon7(FFZernCoef(1,iElt),FFCoef(1,iElt),
-     &                        ZernAnnuRatio(iElt))
-	    END IF
-	  END IF
-
-C Set Mon Zernike coefficients for FreeForm surface
-	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
-            ! Mon Zernike: ANSI Ordering
-	    IF (MonZernTypeL(iElt).EQ.ZernType_ANSI .OR.
-     &          MonZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
-	      CALL ZerntoMon1(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-
-            ! Mon Zernike: Born & Wolf Ordering
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
-     &              MonZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
-	      CALL ZerntoMon2(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-
-            ! Mon Zernike: Fringe Ordering
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_Fringe .OR.
-     &              MonZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
-	      CALL ZerntoMon3(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-
-            ! Special Mon Zernike: Hex
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormHex) THEN
-              CALL ZerntoMon4(MonZernCoef(1,iElt),MonCoef(1,iElt))
-
-            ! Mon Zernike: Noll Ordering
-            ELSEIF ((MonZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
-     &              (MonZernTypeL(iElt).EQ.ZernType_Noll)) THEN
-              CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
-
-            ! Special Mon Zernike: Annular Zernikes using Noll Ordering
-	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
-              CALL ZerntoMon7(MonZernCoef(1,iElt),MonCoef(1,iElt),
-     &                        ZernAnnuRatio(iElt))
-	    END IF
-	  END IF
-
 	  iEltToiWF(iElt)=0
 	  LEltOK(iElt)=.TRUE.
 	  IF (SrfType(iElt).EQ.5) THEN
@@ -1404,7 +2620,8 @@ C Set Mon Zernike coefficients for FreeForm surface
 	  ELSE
 	    LEltObs(iElt)=.FALSE.
 	  END IF
-	  IF (nGridMat(iElt).GT.0) THEN
+	  IF (SrfType(iElt).EQ.SrfType_GridData .OR.
+     &        SrfType(iElt).EQ.SrfType_AsGrData) THEN
 	    jGridSrf(iElt)=iEltToGridSrf(iElt)
 	  ELSE
 	    jGridSrf(iElt)=1
@@ -1560,8 +2777,6 @@ C       Loop through each element
      &	        lMon(iElt),pMon(1,iElt),
      &	        xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	        pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	        lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
-     &	        zFF(1,iElt),FFCoef(1,iElt),
      &	        CurIndRef,IndRef(iElt),
      &	        CurExtinc,Extinc(iElt),WaveBU,
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -1573,24 +2788,9 @@ C       Loop through each element
      &          EltCoat(iElt),EltCoatThk(:,iElt),
      &          IndRefArr(:,iElt),ExtincArr(:,iElt))
 
-!  	      if (.false. .and. iEltLoop==21) then
-!  	        print*,'*** Elt 21 Aft Reflector(),LRayOK(iRay)=',
-!      &			LRayOK(iRay)
-!        	      end if
 
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
 	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
-
-! 	      if (.false.) then !if (iRay == (iEndRay-45)) then
-! 	        print*,'**After Reflector RayDir(:,iRay) = ',
-!      &            RayDir(:,iRay)
-! 	        !print*,'==>iSecondElt,iEndElt = ',iSecondElt,iEndElt
-! 	        print*,'===> CumRayL(iEndRay-45)=',
-!      &            CumRayL(iEndRay-45),
-!      &            ',RayL(iEndRay-45)=',RayL(iEndRay-45),
-!      &            'SrfType(iElt)=',SrfType(iElt),
-!      &            'iElt = ', iElt
-! 	      end if
 
               PrevIndRef=CurIndRef
               PrevExtinc=CurExtinc
@@ -1692,8 +2892,6 @@ c		NextElt(iElt)=NextNonSeg
      &	          lMon(iElt),pMon(1,iElt),
      &	          xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
      &	          pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	          lFF(iElt),pFF(1,iElt),xFF(1,iElt),yFF(1,iElt),
-     &	          zFF(1,iElt),FFCoef(1,iElt),
      &	          CurIndRef,IndRef(iElt),
      &	          CurExtinc,Extinc(iElt),WaveBU,
      &	          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -1879,10 +3077,6 @@ c	      NextElt(PrevNonSeg)=iElt
      &	        RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	        lMon(iElt),pMon(1,iElt),
      &	        xMon(1,iElt),yMon(1,iElt),zMon(1,iElt),
-     &	        pData(1,iElt),xData(1,iElt),
-     &	        yData(1,iElt),zData(1,iElt),
-     &	        lFF(iElt),pFF(1,iElt),xFF(1,iElt),
-     &	        yFF(1,iElt),zFF(1,iElt),FFCoef(1,iElt),
      &	        CurIndRef,IndRef(iElt),LNewIndRef,NewIndRef,
      &	        CurExtinc,Extinc(iElt),WaveBU,
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -2048,9 +3242,6 @@ c	          ELSE
      &	             RayPos(1,iRay),RayDir(1,iRay),
      &	             lMon(itst),pMon(1,itst),
      &	             xMon(1,itst),yMon(1,itst),zMon(1,itst),
-     &	             pData(1,itst),xData(1,itst),yData(1,itst),zData(1,itst),
-     &	             lFF(itst),pFF(1,itst),xFF(1,itst),yFF(1,itst),
-     &	             zFF(1,itst),FFCoef(1,itst),
      &	             ApType(itst),ApVec(1,itst),nObs(itst),
      &	             ObsType(1,itst),ObsVec(1,1,itst),
      &	             xObs(1,itst),yObs(1,itst),zObs(1,itst),
@@ -2092,8 +3283,6 @@ C	Here when element number is determined...
      &	               lMon(imin),pMon(1,imin),
      &	               xMon(1,imin),yMon(1,imin),zMon(1,imin),
      &	               pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
-     &	               lFF(imin),pFF(1,imin),xFF(1,imin),yFF(1,imin),
-     &	               zFF(1,imin),FFCoef(1,imin),
      &	               CurIndRef,IndRef(imin),
      &	               CurExtinc,Extinc(imin),WaveBU,
      &	               ApType(imin),ApVec(1,imin),nObs(imin),
@@ -2246,16 +3435,6 @@ C	Here when element number is determined...
 	          PrevElt(iFirstNonSeq)=PrevNonSeg
 	        END IF
 	        IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason (non-sequential)
-	          IF (LZPFailed) THEN
-	            CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &              'root-find bracket/iter fail')
-	            LZPFailed = .FALSE.
-	          ELSE
-	            CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &              'surface miss')
-	          END IF
-!<--
 	          nBadRays=nBadRays+1
 	          LastElt=PrevElt(iElt)
 	          LEltOK(imin)=.FALSE.
@@ -2399,16 +3578,6 @@ C  End of element section
             ! affect L1(iRay) (= LRayPass) -jzlou
 
 	    IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason
-	      IF (LZPFailed) THEN
-	        CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &            'root-find bracket/iter fail')
-	        LZPFailed = .FALSE.
-	      ELSE
-	        CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &            'surface miss')
-	      END IF
-!<--
 	      nBadRays=nBadRays+1
 	      LEltOK(iElt)=.FALSE.
 	      LastElt=PrevElt(iElt)
@@ -2558,14 +3727,6 @@ C	  END IF
 ! 	    end if
 ! 	  End If
 ! #endif
-
-!-->  Record obscuration (if ray passed surfaces but was blocked)
-	    IF (.NOT.L1(iRay)) THEN
-	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
-     &          'obscured/vignetted')
-	      nBadRays=nBadRays+1
-	    END IF
-!<--
 
 C  9. End of iRay loop
 
@@ -2836,7 +3997,7 @@ C       FU=F(U)
           ENDIF
         ENDIF
 11    CONTINUE
-      WRITE(*,*) 'ZPSolve exceeded maximum iterations.'
+      PAUSE 'ZPSolve exceeded maximum iterations.'
 3     XMIN=X
       ZPSolve=FX
       RETURN
@@ -3002,10 +4163,41 @@ C***********************************************************************
 
 	SUBROUTINE FindCrossPt(p1,r1,p2,r2,v,CrossDist,CrossPt)
 
+          ! -------------------------------------------------------------------
+          ! PURPOSE:
+          !   Find the closest crossing point between two skew lines in 3D space.
+          !   Computes the point on line 1 that is nearest to line 2, the minimum
+          !   distance between the lines, and the parameter v along line 1.
+          !   Used for entrance/exit pupil calculations and ray intersection analysis.
+          !
+          ! INPUTS:
+          !   p1(3)      - Position vector of point on line 1
+          !   r1(3)      - Direction vector of line 1 (unit vector)
+          !   p2(3)      - Position vector of point on line 2
+          !   r2(3)      - Direction vector of line 2 (unit vector)
+          !
+          ! OUTPUTS:
+          !   v          - Parameter along line 1 where crossing point occurs
+          !   CrossDist  - Minimum distance between the two lines
+          !   CrossPt(3) - Crossing point coordinates (on line 1)
+          ! -------------------------------------------------------------------
+
 	IMPLICIT NONE
 
-	REAL*8 p1(3),p2(3),r1(3),r2(3),r1r2i,Cp1(3),Cp2(3),
-     &	       rho(3),CrossPt(3),del(3),CrossDist,CL,v
+	! INPUT arguments
+	REAL*8, INTENT(IN)  :: p1(3)       ! Position on line 1
+	REAL*8, INTENT(IN)  :: r1(3)       ! Direction of line 1
+	REAL*8, INTENT(IN)  :: p2(3)       ! Position on line 2
+	REAL*8, INTENT(IN)  :: r2(3)       ! Direction of line 2
+
+	! OUTPUT arguments
+	REAL*8, INTENT(OUT) :: v           ! Parameter along line 1
+	REAL*8, INTENT(OUT) :: CrossDist   ! Minimum distance between lines
+	REAL*8, INTENT(OUT) :: CrossPt(3)  ! Crossing point on line 1
+
+	! LOCAL variables
+	REAL*8 :: r1r2i, Cp1(3), Cp2(3)
+	REAL*8 :: rho(3), del(3), CL
 
 c   r1r2i=1/(r1'*r2);
 	r1r2i=1d0/DDOTC(r1,r2)
@@ -3040,95 +4232,218 @@ c   p1v=p1+v*r1
 C***********************************************************************
 
 	SUBROUTINE WARN(LEltOK,nElt,nBadRays)
-	use elt_mod, only: RayStatus, RayFailElt,
-     &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
-     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
-	use surfsub, only: nZPFailMsg, mZPFailMsg
 	IMPLICIT NONE
-	INTEGER nElt,iElt,nBadRays,iRay
-	INTEGER :: nMiss,nObs,nBrkt,nOther
+	INTEGER nElt,iElt,nBadRays
 	LOGICAL LEltOK(nElt)
 
   124	FORMAT(' One or more rays become undefined at element',i4)
   125	FORMAT(' A total of ',i8,' rays were lost')
-  126	FORMAT('   Surface miss:   ',i8)
-  127	FORMAT('   Obscured:       ',i8)
-  128	FORMAT('   Bracket/iter:   ',i8)
-  129	FORMAT('   Other:          ',i8)
-
-	DO iElt=1,nElt
-	  IF (.NOT.LEltOK(iElt)) WRITE(*,124) iElt
-	END DO
-	WRITE(*,125) nBadRays
-
-!-->  Per-status summary
-	nMiss=0; nObs=0; nBrkt=0; nOther=0
-	DO iRay=1,nRay
-	  SELECT CASE (RayStatus(iRay))
-	  CASE (RayStat_Miss)
-	    nMiss = nMiss + 1
-	  CASE (RayStat_Obscured)
-	    nObs = nObs + 1
-	  CASE (RayStat_Bracket, RayStat_MaxIter)
-	    nBrkt = nBrkt + 1
-	  CASE (RayStat_Undef)
-	    nOther = nOther + 1
-	  END SELECT
-	END DO
-	IF (nMiss.GT.0)  WRITE(*,126) nMiss
-	IF (nObs.GT.0)   WRITE(*,127) nObs
-	IF (nBrkt.GT.0)  WRITE(*,128) nBrkt
-	IF (nOther.GT.0) WRITE(*,129) nOther
-	IF (nZPFailMsg.GT.mZPFailMsg)
-     &    WRITE(*,130) mZPFailMsg, nZPFailMsg
-  130	FORMAT('   (',i4,' of ',i6,
-     &    ' bracket/iteration messages shown)')
-!<--
-
+	DO 1 iElt=1,nElt
+	  IF (.NOT.LEltOK(iElt)) THEN
+	    WRITE(*,124)iElt
+	  END IF
+   1	CONTINUE
+	WRITE(*,125)nBadRays
 	RETURN
 	END SUBROUTINE WARN
 
-C***********************************************************************
 
-! glassProp argument is the six glass coefs of that glass type;
-! Given wavelength 'lamda', index of refraction can then be computed -jzlou
-        FUNCTION getIndex(lamda,glassProp,eltGlassType)
-	use param_mod
+        ! ---------------------------------------------------------------------
+        ! Compute index of refraction at wavelength lambda [um]
+        ! ---------------------------------------------------------------------
+         real(8) FUNCTION getIndex(lamda,glassProp,eltGlassType)
+          implicit none
+          real(8), intent(in) :: lamda,          ! Wavlength [um]
+     &                           glassProp(:)    ! Glass Model Coefficients
+          integer, intent(in) :: eltGlassType    ! Glass Model ID
 
-C       Compute index of refraction at wavelengths in microns
+          real(8) :: p,L2
+          ! -----------------------------------------------
 
-	IMPLICIT NONE
+          SELECT CASE(eltGlassType)
 
-        REAL*8 :: A1,A2,A3,glassProp(6),lamda,
-     &            p2,p4,p6,p8,getIndex
-	INTEGER :: eltGlassType
+            CASE (SellmeierGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Sellmeier
+              ! -------------------------------
+              ! Sellmeier Glass Model:
+              ! n(\lambda)^2 - 1 = \sum_i frac{A_i \lambda^2}{\lambda^2 - B_i^2}
+              !                                               for i=0,...,3
+              !
+              ! Caution:
+              !  Some authors use a linear term (e.g., A) in the denominator of
+              !  the Sellmeier terms and others use a squared term (e.g., A^2).
+              !  The term 'A' carries the dimension of wavelength and represents
+              !  the wavelength of a resonance.
+              !
+              ! Schott's Sellmeier Dispersion Formula:
+              !
+              !  n(\lambda)^2 - 1 = B1*L2/(L2-C1) + B2*L2/(L2-C2) + B3*L2/(L2-C3)
+              !      with L2 = \lambda^2
+              !
+              ! Parameter Order: B1, B2, B3, C1, C2, C3
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(1d0 + glassProp(1)*L2 / (L2-glassProp(4)) +
+     &                              glassProp(2)*L2 / (L2-glassProp(5)) +
+     &                              glassProp(3)*L2 / (L2-glassProp(6)))
 
-        ! There are only *two types* of glasses, Sellmeier type
-        ! or Schott type, which have different formulas for computing
-        ! indx given lamda and glass coefs (or glassProp) -jzlou
-	If (eltGlassType==SellmeierGlass) Then
-C The Sellmeier formula
-C  Index*Index-1=B1*lamda*lamda/(lamda*lamda-C1)
-C               +B2*lamda*lamda/(lamda*lamda-C2)
-C               +B3*lamda*lamda/(lamda*lamda-C3)
-          p2=lamda*lamda
-          A1=glassProp(1)*p2/(p2-glassProp(4))
-          A2=glassProp(2)*p2/(p2-glassProp(5))
-          A3=glassProp(3)*p2/(p2-glassProp(6))
-          getIndex=sqrt(1+A1+A2+A3)
-	Else If (eltGlassType==SchottGlass) then
-	  p2=lamda*lamda;p4=p2*p2;p6=p2*p2*p2;p8=p4*p4
-	  getIndex=glassProp(1)+glassProp(2)*p2+
-     &             glassProp(3)/p2+glassProp(4)/p4+
-     &             glassProp(5)/p6+glassProp(6)/p8
-	  getIndex=sqrt(getIndex)
-	Else
-	  print*,'getIndex(): eltGlassType=', eltGlassType
-	  print*,'getIndex(): unknown glass type, quitting ...'
-	  stop
-	End If
 
-        RETURN
+            CASE (SELLMEIER_2TA_GLASS)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Sellm2TA
+              ! -------------------------------
+              ! Glass Model: n(\lamba)^2 = A + B1*L2 / (L2 - C1^2) +
+              !                                B2*L2 / (L2 - C2^2)
+              !
+              ! Parameter Order: A, B1, B2, C1, C2
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(glassProp(1) +
+     &                        glassProp(2)*L2 / (L2 - glassProp(4)**2) +
+     &                        glassProp(3)*L2 / (L2 - glassProp(5)**2))
+
+
+            CASE (KINGSLAKE1_GLASS)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Kingslake
+              ! -------------------------------
+              ! Glass Model: Kettler-Drude or Helmholzz- Drude used by
+              ! Li for ZnS & ZnSe
+              !
+              !  ==> n(lamba)^2 = A + B1 / (L2 - C1^2) + B2 / (L2 - C2^2)
+              !
+              ! Example:
+              !  https://refractiveindex.info/?shelf=main&book=ZnS&page=Debenham
+              !
+              ! Parameter Order: A, B1, B2, C1, C2
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              getIndex = sqrt(glassProp(1) +
+     &                       glassProp(2) / (L2 - glassProp(4)**2) +
+     &                       glassProp(3) / (L2 - glassProp(5)**2))
+
+
+            CASE (SchottGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType=  Schott
+              ! -------------------------------
+              ! Schott = Laurent model
+              !            --> "Old Schott" Model based on Laurent Series
+              !
+              ! SCHOTT2X4:
+              !  => n(L)^2 = A + B*L^2 + C/L^2 + D/L^4 + E/L^6 + F/L^8
+              !
+              ! Parameter Order: A, B, C, D, E, F
+              ! ---------------------------------------------------------------
+              L2=lamda*lamda
+              getIndex = glassProp(1) + glassProp(2)*L2 +
+     &                      (glassProp(3) + (glassProp(4)+
+     &                      (glassProp(5) + glassProp(6)/L2)/L2)/L2)/L2
+              getIndex=sqrt(getIndex)
+
+
+            CASE (CauchyGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType= Cauchy
+              ! -------------------------------
+              !
+              ! Cauchy Glass Model
+              !
+              !  => n(\lamba) = A + B/L^2 + C/L^4
+              !
+              ! Parameter Order: A, B, C
+              ! ---------------------------------------------------------------
+
+              L2 = lamda*lamda;
+              getIndex = glassProp(1) + (glassProp(2) + glassProp(3)/L2)/L2
+
+
+            CASE (HerzbergerGlass)
+              ! ---------------------------------------------------------------
+              ! GlassType= Herzberger
+              ! -------------------------------
+              !
+              ! Note:
+              !  HERZBERGER devised a useful equation for fitting over wide
+              !  wavelength ranges. The first is a 4-term Herzberger equation.
+              !  The constant 0.028 represents a short wavelength corresponding
+              !  to the high frequency absorption edge, which is valid for a
+              !  wide class of materials.
+              !
+              !  Herzberger: HERZBRGR4X2
+              !
+              !  n(lambda) = A + B*L^2 + C*L^4 + D*L^6 + E*p + F*p^2
+              !     where p = 1/(L^2 - 0.027989)
+              !
+              !  --------------------------------
+              ! Herzberger Formula: (using Horner's method)
+              !
+              !  L2 = L^2
+              !  p = 1/(L^2 - 0.027989)
+              !
+              !  n(lambda) = A + (B + (C + D*L^2)*L^2)*L^2 + (E + F*p)*p
+              !
+              ! Parameter Order: A, B, C, D, E, F
+              ! ---------------------------------------------------------------
+              L2 = lamda*lamda
+              p  = 1d0/(L2 - 0.027989d0)
+
+              getIndex = glassProp(1) + (glassProp(2) + (glassProp(3) +
+     &                                   glassProp(4)*L2)*L2)*L2 +
+     &                                  (glassProp(5) + glassProp(6)*p)*p
+
+
+            CASE DEFAULT
+              ! => should never be reached
+              getIndex = 1d22
+
+          END SELECT
+
         END FUNCTION getIndex
+
+
+
+
+!         ! glassProp argument is the six glass coefs of that glass type;
+! ! Given wavelength 'lamda', index of refraction can then be computed -jzlou
+!         FUNCTION getIndex(lamda,glassProp,eltGlassType)
+! 	use param_mod
+
+! C       Compute index of refraction at wavelengths in microns
+
+! 	IMPLICIT NONE
+
+!         REAL*8 :: A1,A2,A3,glassProp(6),lamda,
+!      &            p2,p4,p6,p8,getIndex
+! 	INTEGER :: eltGlassType
+
+!         ! There are only *two types* of glasses, Sellmeier type
+!         ! or Schott type, which have different formulas for computing
+!         ! indx given lamda and glass coefs (or glassProp) -jzlou
+! 	If (eltGlassType==SellmeierGlass) Then
+! C The Sellmeier formula
+! C  Index*Index-1=B1*lamda*lamda/(lamda*lamda-C1)
+! C               +B2*lamda*lamda/(lamda*lamda-C2)
+! C               +B3*lamda*lamda/(lamda*lamda-C3)
+!           p2=lamda*lamda
+!           A1=glassProp(1)*p2/(p2-glassProp(4))
+!           A2=glassProp(2)*p2/(p2-glassProp(5))
+!           A3=glassProp(3)*p2/(p2-glassProp(6))
+!           getIndex=sqrt(1+A1+A2+A3)
+! 	Else If (eltGlassType==SchottGlass) then
+! 	  p2=lamda*lamda;p4=p2*p2;p6=p2*p2*p2;p8=p4*p4
+! 	  getIndex=glassProp(1)+glassProp(2)*p2+
+!      &             glassProp(3)/p2+glassProp(4)/p4+
+!      &             glassProp(5)/p6+glassProp(6)/p8
+! 	  getIndex=sqrt(getIndex)
+! 	Else
+! 	  print*,'getIndex(): eltGlassType=', eltGlassType
+! 	  print*,'getIndex(): unknown glass type, quitting ...'
+! 	  stop
+! 	End If
+
+!         RETURN
+!         END FUNCTION getIndex
 
 	End Module tracesub_mod
