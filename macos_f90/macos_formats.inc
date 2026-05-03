@@ -85,7 +85,7 @@ C  2. FORMAT statements
  302	FORMAT(' Command not understood.  Please reenter...')
 
 !303	FORMAT(/' Modeling and Analysis for Controlled Optical Systems'/
-!    &	' MACOS Version 4.0, 2026'//
+!    &	' MACOS Version 3.2, 2006'//
 !    &	' This run is limited to',i4,' surfaces,',i4,' segments,',
 
  303    FORMAT(/'  This run is limited to',i4,
@@ -106,9 +106,101 @@ C  2. FORMAT statements
      & '  For a list of commands, type HELp.'/
      & '  Use RX command to show prescription files in current folder.'/
      & '  Use up/down arrow keys to access command history.')
-C  HELP command output now lives in macos_help.inc as plain WRITE(*,*)
-C  statements (single source of truth, easier to grow than FORMATs
-C  300/307/304/305/306/321).  See macos_help.inc.
+ 300	FORMAT(' MACOS command summary:'/
+     &	'  Commands:   Quit or END MACOS'/
+     &	'              NEW: build new optical system dataset'/
+     &	'              OLD: load existing optical system dataset'/
+     &  '              EXEcute: run a .jou journal file'/
+     &  '              JOUrnal: generate a .jou journal file'/
+     &	'              SUMmarize optical system data'/
+     &	'              STAtus of current calculations'/
+     &  '              RESet options and defaults to starting values'/
+     &	'              SHOw data for a particular element'/
+     &	'              MODify optical system data'/
+     &	'              SAVe optical system data'/
+     &	'              EXPort specified results in various formats')
+ 307    FORMAT('  Commands for ray-trace analysis are:'/
+     &	'           MAP prints ray and segment ID maps'/
+     &	'           RAYtrace a specified ray'/
+     &	'           LNEG allows negative pathlengths (default)'/
+     &	'           NOLNEG turns off negative pathlengths'/
+     &	'           POLarized light'/
+     &	'           NOPOL: no polarization calculations'/
+     &	'           OBS: spot diagram obscuration option'/
+     &	'           SINT: setup interpolated surface data'/
+     &	'           UDSINIT: setup user-defined surface data'/
+     &	'           PERturb optical system'/
+     &	'           PREad: perturb using input from a file'/
+     &	'           OPD plot and analysis'/
+     &	'           CENTEr beam in system stop'/
+     &	'           STOP defines system stop'/
+     &	'           COOrd: compute beam coordinates at an element'/
+     &	'           CENTRoid sets centroid as reference pt for FEX'/
+     &	'           FFP: find field point to place chief ray at a'/
+     &	'           specified point on an element'/
+     &	'           PFP: find field point to place chief ray at a'/
+     &	'           specified pixel location on a detector'/
+     &	'           SPCenter: specify spot diagram centering option'/
+     &	'           SPOt diagram plot'/
+     &  '           FDP finds detector plane position and orientation')
+ 304    FORMAT('  Commands for linear model building and analysis are:'/
+     &	'           BUild linear model using ray partials'/
+     &	'           DMBUild including a deformable mirror'/
+     &	'           PARtials: print partials of a specified ray'/
+     &	'           LPErturb optical system using linear model'/
+     &	'           LPRead: perturb using input from a file'/
+     &	'           LREset: zero previous linear perturbations'/
+     &	'           LSPot: perturbed linear system spot diagram'/
+     &	'           LOPD: perturbed linear system OPD map'/
+     &	'           LPIxilate: plot perturbed pixilated image'/
+     &	'           LINtensity: plot perturbed wavefront')
+ 305	FORMAT('  Commands for diffraction analysis are:'/
+     &	'           PROpagate diffraction wavefront'/
+     &	'           BEAm: set beam type'/
+     &	'           VECtor diffraction (with polarized light)'/
+     &	'           SCAlar diffraction (with polarized light)'/
+     &	'           REGrid at specified element during propagation'/
+     &	'           NOREGrid: regridding off at specified element'/
+     &	'           ORS to optimize reference surface'/
+     &	'           SRS to slave one reference surface to another'/
+     &	'           LNEGok allows negative ray lengths at ref surfs'/
+     &	'           NOLNeg prohibits negative ray lengths'/
+     &	'           COMpose a multiple object/color image'/
+     &	'  Commands to plot wavefronts and images are:'/
+     &	'              INtensity of the wavefront output'/
+     &	'              PIXillated intensity output'/
+     &	'              ADD current intensity to composed image'/
+     &	'              DADD: display current composed image'/
+     &	'              LOg intensity output')
+ 306	FORMAT('              AMplitude and phase output'/
+     &	'              REal and imaginary wavefront output'/
+     &	'              PFP: find field point to place chief ray at a'/
+     &	'              location specified in pixel coordinates'/
+     &	'              PLOcate: specify location of pixel array'/
+     &	'              SEEd sets image noise seed value'/
+     &	'              NOIse adds noise to a COMposed image'/
+     &	'              STRetch specifies display data stretch'/
+     &	'  Commands to set wavefront plot type are:'/
+     &	'              WIRe sets wireframe surface plotting'/
+     &	'              SLIce sets "slice" surface plotting'/
+     &	'              GRay sets gray-scale surface plotting'/
+     &	'              COLumn sets column line-plotting'/
+     &	'              CONtour sets contour surface plotting'/
+     &	'              TEXt print output'/
+     &	'              BINary image file output'/
+     &	'              FITS image file output'/
+     &	'              MATlab image file output')
+ 321     FORMAT('  Commands for system optimizations are:'/
+     &  '              SETOPT set options for optimization'/
+     &  '              AVAR add a variable element'/
+     &  '              MVAR modify a variable element'/
+     &  '              DVAR delete a variable element'/
+     &  '              VARS list all variable elements'/
+     &  '              AFOV add a field of view'/
+     &  '              DFOV delete a field of view'/
+     &  '              FOVS list all field of view'/
+     &  '              CALib perform system optimization'/
+     &	'  Help repeats this message')
  308	FORMAT(1P,' Field angle finder results:'/
      &	' Did',i5,' iterations, error=',D17.9/
      &	'  Old dx=',D17.9,'  New dx=',D17.9/9x,D17.9,9x,D17.9/

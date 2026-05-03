@@ -40,9 +40,9 @@ C Last modified: 07/2008
 	use macos_mod, only : zcoType,ZernCircular,ZernAnnular,ZernHex
 
 #ifdef CMACOS
-        use macosio_mod
+	use macosio_mod
 #else
-        use smacosio_mod
+	use smacosio_mod
 #endif
 
 	Implicit none

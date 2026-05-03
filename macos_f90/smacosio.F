@@ -13,7 +13,7 @@ C***********************************************************************
 
 	Implicit none
 
-	Logical :: RxStopSet, EltStopSet, PrtPrinRots, RxNoStopSet_Flg
+	Logical :: RxStopSet, EltStopSet,RxNoStopSet_Flg
         REAL*8 :: StopOffset(2)
 
         Contains
@@ -26,8 +26,8 @@ C***********************************************************************
         use surfsub, only: GridInit, AMPLINIT
         use cfiles_mod
         use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
-     &                   zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                   cUnit,ifRegrid
+     &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
+     &                       cUnit,ifRegrid
 	use traceutil_mod
 	use loh_I1
 	use loh_I2
@@ -63,11 +63,6 @@ C       Setup for new input scheme
         INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
         INTEGER :: nZernCoef              ! Ditto
         INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
-        INTEGER :: nFFZernCoef            ! # of FF Zernike coefs to read (sparse)
-        INTEGER :: FFZernModes(mFFCoef)   ! FF Zernike mode index mapping (sparse)
-        INTEGER :: nMonZernCoef           ! # of Mon Zernike coefs to read (sparse)
-        INTEGER :: MonZernModes(mMonCoef) ! Mon Zernike mode index mapping (sparse)
-        INTEGER :: iZMode                 ! loop variable: Zernike mode index
 
 c***loh<
 C	File setup and initial conditions read
