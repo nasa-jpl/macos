@@ -1,1 +1,0 @@
-SUBDIRS = C F90

@@ -22,7 +22,7 @@ TKDIR=../pgplot/drivers/xtk
 #
 # Fortran compiler and compilation flags
 #
-FCOMPL=ifx -fPIC			## ifort -fPIC
+FCOMPL=ifort -fPIC
 #FFLAGC=-Wc,-Wall,-fPIC -O
 FFLAGD=-Wc,-Wall
 #
