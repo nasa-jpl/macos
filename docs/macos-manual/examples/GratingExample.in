@@ -1,0 +1,142 @@
+      ChfRayDir=   0d0 0d0 1d0
+      ChfRayPos=   0d0 0d0 -6d0
+       zSource=    1d22
+        IndRef=    1d0
+        Extinc=    0d0
+       Wavelen=    6.d-07
+          Flux=    1d0
+      GridType=    Circular
+      Aperture=    1d0
+      Obscratn=    0d0
+      nGridpts=    65
+         xGrid=    1d0 0d0 0d0
+         yGrid=    0d0 1d0 0d0
+          nElt=     2
+
+         iElt=    1
+      EltName= Grating
+      Element= Grating
+      Surface= Flat
+        KrElt= -1d22
+        KcElt=   0d0
+       psiElt=   0d0 0d0 -1d0
+       VptElt=   0d0 0d0 0d0
+       RptElt=   0d0 0d0 0d0
+
+  IndRef=    1d0
+  Extinc=    1d22
+   h1HOE=    1d0 0d0 0d0
+OrderHOE=    1d0
+RuleWidth=    18.97366596d-7
+    nObs=     0
+  ApType=    None
+    zElt=    1d22
+PropType=    Geometric
+ nECoord=    -6
+
+    iElt=    2
+ EltName= FP
+ Element= FocalPlane
+ Surface= Flat
+   KrElt=   1d22
+   KcElt=   0d0
+  psiElt=   0d0 0d0 1d0
+  VptElt=   0d0 0d0 -3d0
+  RptElt=   0d0 0d0 0d0
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None
+    zElt=   1d22
+PropType=   Geometric
+ nECoord=   -6
+
+nOutCord=     5
+    Tout=    1d0   0d0   0d0   0d0   0d0   0d0    0d0
+             0d0   1d0   0d0   0d0   0d0   0d0    0d0
+             0d0   0d0   0d0   1d0   0d0   0d0    0d0
+             0d0   0d0   0d0   0d0   1d0   0d0    0d0
+             0d0   0d0   0d0   0d0   0d0   0d0    1d0
+
+      A.2.3 HOEExample.jou
+% This macro generates example figures
+% for Section 4 of the MACOS User Manual
+
+loa HOEExample
+mod ngridpts=15 q
+map
+ray 76
+stop elt 1 0,0
+fex;;;
+int;;
+draw;;;;                                                            % Fig ??
+
+mod Element(1)=reflector q
+ray 76
+fex;;;
+int;;
+
+      draw;;;;                                                            % Fig ??
+
+           A.2.4 HOEExample.in
+      ChfRayDir=   0d0 0d0 1d0
+      ChfRayPos=   0d0 0d0 -4d0
+       zSource=    1d22
+        IndRef=    1d0
+        Extinc=    0d0
+       Wavelen=    6.d-07
+          Flux=    1d0
+      GridType=    Circular
+      Aperture=    5.d-01
+      Obscratn=    0d0
+      nGridpts=    64
+         xGrid=    1d0 0d0 0d0
+         yGrid=    0d0 1d0 0d0
+          nElt=     2
+
+          iElt=    1
+       EltName= HOEonMirror
+       Element= HOE
+       Surface= Conic
+         KrElt= -6d0
+         KcElt= -1d0
+        psiElt=   0d0 0d0 -1d0
+        VptElt=   0d0 0d0 0d0
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   1d22
+         h1HOE=   0d0 0d0 -1d22
+         h2HOE=   1d0 0d0 -3d0
+      OrderHOE=   1d0
+       WaveHOE=   6.d-07
+          nObs=    0
+        ApType=   None
+          zElt=   1d22
+      PropType=   Geometric
+       nECoord=   -6
+
+          iElt=    2
+       EltName= FP
+       Element= FocalPlane
+       Surface= Flat
+         KrElt= -1d22
+         KcElt=   0d0
+        psiElt=   0d0 0d0 1d0
+        VptElt=   0d0 0d0 -3d0
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   0d0
+          nObs=    0
+        ApType=   None
+          zElt=   1d22
+      PropType=   Geometric
+       nECoord=   -6
+
+      nOutCord=     5
+          Tout=    1d0   0d0   0d0   0d0   0d0   0d0    0d0
+                   0d0   1d0   0d0   0d0   0d0   0d0    0d0
+                   0d0   0d0   0d0   1d0   0d0   0d0    0d0
+                   0d0   0d0   0d0   0d0   1d0   0d0    0d0
+                   0d0   0d0   0d0   0d0   0d0   0d0    1d0
+
+      A.3 Non-Sequential Surface Examples
