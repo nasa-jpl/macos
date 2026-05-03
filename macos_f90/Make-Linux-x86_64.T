@@ -17,15 +17,15 @@ LOCAL_FFLAGS = -g
 # Readline Library Defines
 USE_READLINE = 0
 ifeq ($(USE_READLINE),1)
-  RL_LIBRARY_VERSION = 8.2
-  RL_ROOT = $(SRC_DIR)/readline-8.2
-  RL_INC = $(RL_ROOT)
-  DEFS = -DHAVE_CONFIG_H
-  LOCAL_FFLAGS += -DREADLINE_LIBRARY
-  LOCAL_CFLAGS += -I$(RL_INC) $(DEFS) -DREADLINE_LIBRARY -DRL_LIBRARY_VERSION='"$(RL_LIBRARY_VERSION)"'
-  READLINE_LIB = $(RL_ROOT)/libreadline.a
-  #HISTORY_LIB = $(RL_ROOT)/lnx_libs/64/libhistory.a
-  RL_LIBS = $(READLINE_LIB) -ltermcap
+	RL_LIBRARY_VERSION = 8.2
+	RL_ROOT = $(SRC_DIR)/readline-8.2
+	RL_INC = $(RL_ROOT)
+	DEFS = -DHAVE_CONFIG_H
+	LOCAL_FFLAGS += -DREADLINE_LIBRARY
+	LOCAL_CFLAGS += -I$(RL_INC) $(DEFS) -DREADLINE_LIBRARY -DRL_LIBRARY_VERSION='"$(RL_LIBRARY_VERSION)"'
+	READLINE_LIB = $(RL_ROOT)/libreadline.a
+	#HISTORY_LIB = $(RL_ROOT)/lnx_libs/64/libhistory.a
+	RL_LIBS = $(READLINE_LIB) -ltermcap
 endif
 
 # Add in Defines:
@@ -33,22 +33,22 @@ LOCAL_FFLAGS += $(DEFINES) -DBUILD_LOC="'$(BUILD_LOC)'"
 LOCAL_CFLAGS += $(CFLAGS) $(DEFINES) -DBUILD_LOC="\"$(BUILD_LOC)\""
 
 # Add in SVN_REV:
-LOCAL_FFLAGS += -DSVN_REV="'$(SVN_REV)'"
-LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
+#LOCAL_FFLAGS += -DSVN_REV="'$(SVN_REV)'"
+#LOCAL_CFLAGS += -DSVN_REV="\"$(SVN_REV)\""
 
 ################################################################################
 # Libraries for MACOS:
 MLIBS = $(intel64_lib)/libimf.a \
-        $(intel64_lib)/libifport.a \
-        $(intel64_lib)/libifcore.a \
-        -L/usr/lib64 -lX11 \
-        -L$(SRC_DIR)/pgplot -lpgplot \
-        -L$(SRC_DIR)/fits_build -lfits \
-        $(RL_LIBS)
+	$(intel64_lib)/libifport.a \
+	$(intel64_lib)/libifcore.a \
+	-L/usr/lib64 -lX11 \
+	-L$(SRC_DIR)/pgplot -lpgplot \
+	-L$(SRC_DIR)/fits_build -lfits \
+	$(RL_LIBS)
 
 NPSOL_ROOT=$(macossrc_dir)/npsol
 NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
-            $(NPSOL_ROOT)/Linux-x86_64/npsol.o
+	$(NPSOL_ROOT)/Linux-x86_64/npsol.o
 ###############################################################################
 
 # MACOS executable
@@ -58,7 +58,7 @@ $(macosexe): $(MACOSOBJS)
 
 
 SMDRVLIBS = -L$intel64_lib -limf -lintlc -lifport -lifcore -lc -lm \
-            -L/usr/lib64 -lX11
+	-L/usr/lib64 -lX11
 
 # SMACOS library
 SMACOSOBJS = $(MOD_OBJS) $(SM_OBJS) $(C2_OBJS) smacos.o
@@ -138,10 +138,10 @@ pgplotdummy.o: pgplotdummy.F
 mhist.o : mhist.c
 
 macos_inc = macos_cmd_loop.inc macos_formats.inc macos_glass.inc \
-            fits1.inc glass.inc fits1.inc macos_init.inc efl.inc \
-            setbeam.inc
+	fits1.inc glass.inc fits1.inc macos_init.inc efl.inc \
+	setbeam.inc
 smacos_inc = macos_cmd_loop.inc macos_formats.inc smacos_glass.inc \
-            fits1.inc glass.inc fits1.inc macos_init.inc setbeam.inc
+	fits1.inc glass.inc fits1.inc macos_init.inc setbeam.inc
 
 stop_set.o: stop_set.F $(MOD_SRCS) design_optim.F
 

@@ -18,9 +18,8 @@ C***********************************************************************
 
         SUBROUTINE GRAEND
 C       Use this routine to terminate graphic output
-
-        CALL PGEND
-
+        use macos_mod, only: ifPlot
+        IF (ifPlot) CALL PGEND
         RETURN
         END SUBROUTINE GRAEND
 
@@ -68,6 +67,10 @@ C***********************************************************************
 	X=X_in; Y=Y_in; Z=Z_in
 
         CALL PGBBUF
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
 
         DX=(X(NROW)-X(1))/FLOAT(NROW)
         DY=(Y(NCOL)-Y(1))/FLOAT(NCOL)
@@ -113,6 +116,8 @@ C***********************************************************************
         SUBROUTINE SPOTDIAG(DXYMAT,NROW,NCOL,NDROW,NDCOL,NBEAMS,
      &  		    CXLABL,CZLABL,CTITLE)
 
+	use plot_mode_mod, only : annotOn, annotLine1, annotLine2,
+     &	                          ClearAnnot
         IMPLICIT NONE
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
@@ -122,9 +127,13 @@ C***********************************************************************
         DATA ISYM/20,5,8,16/
 
         CALL PGBBUF
+C       Spot diagram: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
 
-C       XYMAT = XYMAT(n_pts,2), storing corrds of points in 
-C       the spot diagram. -jzlou	
+C       XYMAT = XYMAT(n_pts,2), storing corrds of points in
+C       the spot diagram. -jzlou
 	XYMAT(1:NROW,1:NCOL) = DXYMAT(1:NROW,1:NCOL)
 
 
@@ -167,9 +176,18 @@ C       CALL PLOT ROUTINES
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGQCI(CI)
 
-C       When nbeams=1, j=1 and k=2; when nbeams == 2, j=3 and k=4 
+C       When nbeams=1, j=1 and k=2; when nbeams == 2, j=3 and k=4
         I=NBEAMS; K=2*I; J=K-1
         CALL PGPOINT(NROW,XYMAT(1,J),XYMAT(1,K),ISYM(I))
+
+        ! Bottom-of-plot annotation (e.g., "RMS spot radius=...")
+        If (annotOn) Then
+          If (LEN_TRIM(annotLine1) > 0)
+     &      CALL PGMTXT('B',3.5,0.0,0.0,TRIM(annotLine1))
+          If (LEN_TRIM(annotLine2) > 0)
+     &      CALL PGMTXT('B',4.7,0.0,0.0,TRIM(annotLine2))
+          CALL ClearAnnot()
+        End If
 
         CALL PGEBUF
 
@@ -256,6 +274,11 @@ C***********************************************************************
  	SREAL :: X(NROW),Y(NCOL),Z(NDROW,NDCOL),
      &           PX(NROW),PZ(NROW),DX,DZ,ZMIN
         REAL*4 ZMAX,XSKEW,ZSKEW,XBMIN,XBMAX,ZBMIN,ZBMAX
+
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
 
 C       SET PLOT DIMENSIONS
 
@@ -348,10 +371,13 @@ C***********************************************************************
 
         SUBROUTINE GRAY(X_in,Y_in,Z_in,NROW,NCOL,NDROW,NDCOL,
      &  	        CXLABL,CZLABL,CTITLE)
-	use macos_mod, only : ifPGColor
+	use macos_mod,     only : ifPGColor
+	use plot_mode_mod, only : ifAstroMode, annotOn,
+     &	                          annotLine1, annotLine2, wedgeLabel,
+     &	                          ClearAnnot
         IMPLICIT NONE
 
-        INTEGER :: NROW,NCOL,NDROW,NDCOL,I,J
+        INTEGER :: NROW,NCOL,NDROW,NDCOL,I,J,K
         !CHARACTER*(*) CXLABL,CZLABL,CTITLE
 	REAL*8 :: X_in(NDROW),Y_in(NDCOL),Z_in(NDROW,NDCOL)
         CHARACTER(len=*) :: CXLABL,CZLABL,CTITLE
@@ -368,8 +394,10 @@ C***********************************************************************
 #endif
 	INTEGER, PARAMETER :: mColor=64
 	Integer, Save :: ICILO,ICIHI,NDROW_sv
-        REAL, Save :: CInd(3,mColor),CR(512),CG(512),CB(512)
+        REAL, Save :: CInd(3,mColor),CR(0:511),CG(0:511),CB(0:511)
 	LOGICAL, Save :: first_entry=.true.
+        REAL*4 :: CTAB_L(mColor),CTAB_R(mColor),
+     &            CTAB_G(mColor),CTAB_B(mColor)
 
 !	print*,'*** In GRAY: NROW,NCOL,NDROW,NDCOL =',
 !    &    NROW,NCOL,NDROW,NDCOL
@@ -396,22 +424,18 @@ C***********************************************************************
 	  first_entry=.false.
 	End If
 
+	! Reserve CI 0=white (background) and CI 1=black (foreground) for
+	! axes, labels, wedge axis, and bottom annotation.  The image ramp
+	! lives in CI 16..255 so PGCTAB won't clobber CI 0/1.
+	CALL PGSCR(0, 1.0, 1.0, 1.0)
+	CALL PGSCR(1, 0.0, 0.0, 0.0)
+	CALL PGSCIR(16, 255)
 	If (ifPGColor) Then
-	  ! Set color representation
+	  ! Color CInd is used as the table source for PGCTAB below.
 	  Do J=1,mColor
 	    Call PGSCR(J-1+16,CInd(1,J),CInd(2,J),CInd(3,J))
 	  End Do
-	  ! Set color range
-	  !CALL PGSCIR(0,mColor-1)
-	  CALL PGSCIR(16,(mColor-1)+16)
-	Else
-	  ! Set default color representation for gray image
-	  Do J=ICILO,ICIHI
-            Call PGSCR(J,CR(J),CG(J),CB(J))
-          End Do
-	  ! Set color range
-          CALL PGSCIR(ICILO,ICIHI) 
-	End If	
+	End If
 
 	X(1:NROW)=X_in(1:NROW); Y(1:NCOL)=Y_in(1:NCOL)
         Z(1:NROW,1:NCOL)=Z_in(1:NROW,1:NCOL)
@@ -463,25 +487,69 @@ C       CALL PLOT ROUTINES
 !    &    NROW,NCOL,NDROW,NDCOL
 !        print*,'TRCONT =',TRCONT
 
-	If (ifPGColor) Then
-	  CALL PGSCI(1)
-	Else
-	  CALL PGSCI(ICILO)
-	End If
-	
+	! Axes / box / labels in foreground black.  Per-plot CXLABL/CZLABL
+	! are placeholder 'X-Axis' / 'Y-Axis' strings that add no info on
+	! a raster image; suppress them and keep only the title.
+	CALL PGSCI(1)
         CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
-        CALL PGLABEL(CXLABL,CZLABL,CTITLE)
+        CALL PGLABEL(' ',' ',CTITLE)
 
 	If (ifPGColor) Then
+	  ! Build PGCTAB arrays from CInd.  Under astro mode walk CInd in
+	  ! reverse so the palette is flipped end-to-end (dark first).
+	  Do J=1,mColor
+	    CTAB_L(J) = FLOAT(J-1)/FLOAT(mColor-1)
+	    If (ifAstroMode) Then
+	      K = mColor + 1 - J
+	    Else
+	      K = J
+	    End If
+	    CTAB_R(J) = CInd(1,K)
+	    CTAB_G(J) = CInd(2,K)
+	    CTAB_B(J) = CInd(3,K)
+	  End Do
+	  CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,mColor,1.0,0.5)
  	  CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &                ZMIN,ZMAX,TRCONT)
-	  CALL PGWEDG('RI',2.2,5.0,ZMIN,ZMAX,'pixel value')
 	Else
-          CALL PGGRAY(Z,NDROW,NDCOL,1,NROW,1,NCOL,
+	  ! Render grayscale via PGIMAG + a 2-point gray PGCTAB we control.
+	  ! PGGRAY cannot be used for polarity control -- Giza's internal
+	  ! giza_render_gray forcibly calls giza_set_colour_table_gray,
+	  ! bypassing any caller-set PGSCR/PGCTAB.
+	  CTAB_L(1) = 0.0; CTAB_L(2) = 1.0
+	  If (ifAstroMode) Then
+	    ! white -> black: large values render dark
+	    CTAB_R(1) = 1.0; CTAB_R(2) = 0.0
+	    CTAB_G(1) = 1.0; CTAB_G(2) = 0.0
+	    CTAB_B(1) = 1.0; CTAB_B(2) = 0.0
+	  Else
+	    ! black -> white: large values render bright
+	    CTAB_R(1) = 0.0; CTAB_R(2) = 1.0
+	    CTAB_G(1) = 0.0; CTAB_G(2) = 1.0
+	    CTAB_B(1) = 0.0; CTAB_B(2) = 1.0
+	  End If
+	  CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,2,1.0,0.5)
+	  CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &                ZMIN,ZMAX,TRCONT)
-	  CALL PGWEDG('RG',2.2,5.0,ZMIN,ZMAX,'pixel value')
 	End If
+
+	! Wedge axis + label in foreground black.
+	CALL PGSCI(1)
+	CALL PGWEDG('RI',2.2,5.0,ZMIN,ZMAX,TRIM(wedgeLabel))
 	CALL PGSCH(1.0)
+
+	! Bottom-of-plot annotation, centered under the x-axis.
+	! PGMTXT(side, disp, coord, fjust, text):
+	!   coord=0.5 anchors at the middle of the bottom edge,
+	!   fjust=0.5 centers the text on that anchor.
+	CALL PGSCI(1)
+	If (annotOn) Then
+	  If (LEN_TRIM(annotLine1) > 0)
+     &	    CALL PGMTXT('B',3.5,0.5,0.5,TRIM(annotLine1))
+	  If (LEN_TRIM(annotLine2) > 0)
+     &	    CALL PGMTXT('B',4.7,0.5,0.5,TRIM(annotLine2))
+	  CALL ClearAnnot()
+	End If
 
         CALL PGEBUF
 !#endif
@@ -785,6 +853,11 @@ C***********************************************************************
 
 	X=X_in; Y=Y_in; Z=Z_in; ZVEC=ZVEC_in
 
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
+
 C       SET PLOT DIMENSIONS
 
         ZMIN=1E31
@@ -832,6 +905,10 @@ C***********************************************************************
 	X=X_in; Y=Y_in; Z=Z_in
 
         CALL PGBBUF
+C       Non-raster plot (COLUMN/ROW): force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
         CALL PGQCI(CI)
 
 C       FIND PLOT DIMENSIONS
