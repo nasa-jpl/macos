@@ -40,18 +40,6 @@ extern HIST_ENTRY **history_list();
 extern void fntprint();
 void show_history(HIST_ENTRY**);
 
-/* Weak reference to giza_process_events — resolved at link time only when
- * the Giza library is linked (pgplot target with USE_GIZA=ON).  When linked
- * against classic PGPLOT, the symbol is NULL and the hook becomes a no-op. */
-extern void giza_process_events(void) __attribute__((weak));
-
-static int
-_macos_rl_event_hook (void)
-{
-  if (giza_process_events) giza_process_events();
-  return 0;
-}
-
 int tot_hist=0;
 
 void
@@ -73,9 +61,6 @@ mhist_(char* mp, char *cmd)
   }
   temp = (char *) NULL;
   done = 0;
-
-  /* Let Giza repaint plot windows while we wait at the prompt */
-  rl_event_hook = _macos_rl_event_hook;
 
   while (!done) {
       register int i, j, k;

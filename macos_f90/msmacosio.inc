@@ -581,273 +581,6 @@ C       Set entrance condition flags to .FALSE.
               READ(VALUE,*)lData(iElt)
               lData_FLG=.TRUE.
               GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
-              READ(VALUE,*)lFF(iElt)
-              lFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
-              READ(VALUE,*)(pFF(j,iElt),j=1,3)
-              pFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
-              READ(VALUE,*)(xFF(j,iElt),j=1,3)
-              xFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
-              READ(VALUE,*)(yFF(j,iElt),j=1,3)
-              yFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
-              READ(VALUE,*)(zFF(j,iElt),j=1,3)
-              zFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
-              BLOCK
-                INTEGER :: iZ, nZ, ios
-                REAL*8  :: FFZernCoefs(mFFCoef)
-                INTEGER, PARAMETER :: Grp = 6
-                FFZernCoefs(:) = 0d0
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,nFFZernCoef)
-                ELSE
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
-                IF (FFZernModes_FLG) THEN
-                  FFZernCoef(:,iElt) = 0d0
-                  FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
-     &                    FFZernCoefs(:nFFZernCoef)
-                ELSE
-                  FFZernCoef(:,iElt) = FFZernCoefs
-                END IF
-                nFFZernCoef = mFFCoef
-              END BLOCK
-              FFZernCoef_FLG=.TRUE.
-              GO TO 61
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
-              IF (.NOT.FFZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
-                GO TO 99
-              END IF
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
-              IF (.NOT.MonZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
-                GO TO 99
-              END IF
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
-              READ(VALUE,*) nMonZernCoef
-              IF ((nMonZernCoef.LT.1).OR.
-     &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
-              nMonZernCoef_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
-              IF (.NOT.nMonZernCoef_FLG) THEN
-                PRINT *, "must define nMonZernCoef before MonZernModes"
-                GO TO 99
-              END IF
-              MonZernModes(:) = 0
-              BLOCK
-                INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ, ios
-                READ(VALUE,*,IOSTAT=ios)
-     &            (MonZernModes(j),j=1,nMonZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                  END IF
-                END IF
-              END BLOCK
-              MonZernModes_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
-              BLOCK
-                INTEGER :: iZ, nZ, nGrp, ios
-                REAL*8  :: MonZernCoefs(mMonCoef)
-                INTEGER, PARAMETER :: Grp = 6
-                MonZernCoefs(:) = 0d0
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,nMonZernCoef)
-                ELSE
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
-                IF (MonZernModes_FLG) THEN
-                  MonZernCoef(:,iElt) = 0d0
-                  MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
-     &                    MonZernCoefs(:nMonZernCoef)
-                ELSE
-                  MonZernCoef(:,iElt) = MonZernCoefs
-                END IF
-                nMonZernCoef = mMonCoef
-              END BLOCK
-              MonZernCoef_FLG = .TRUE.
-              MonCoef_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
-              READ(VALUE,*) nFFZernCoef
-              IF ((nFFZernCoef.LT.1).OR.
-     &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
-              nFFZernCoef_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
-              IF (.NOT.nFFZernCoef_FLG) THEN
-                PRINT *, "must define nFFZernCoef before FFZernModes"
-                GO TO 99
-              END IF
-              FFZernModes(:) = 0
-              BLOCK
-                INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ, ios
-                READ(VALUE,*,IOSTAT=ios)
-     &            (FFZernModes(j),j=1,nFFZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                  END IF
-                END IF
-              END BLOCK
-              FFZernModes_FLG = .TRUE.
-              GO TO 61
-
 	!-->
 
           ! --------------------------------------------------------------------------------
@@ -1082,11 +815,6 @@ C       Set entrance condition flags to .FALSE.
           nZernCoef     = nZernModes_Default  ! Default # of Zernike Coefficients to read in
           ZernCoef(:,:) = 0d0
 
-          nFFZernCoef   = mFFCoef   ! Default: read all FF Zernike coefs
-          FFZernModes(:)= 0
-          nMonZernCoef  = mMonCoef  ! Default: read all Mon Zernike coefs
-          MonZernModes(:)= 0
-
 	  iElt=0
           DO   ! this is a "DO ... END DO" loop
 
@@ -1097,11 +825,6 @@ C       Set entrance condition flags to .FALSE.
             ! prep for next Element reading
             iElt       = iElt + 1
 	    DupElt_FLG = .FALSE.
-
-            nFFZernCoef    = mFFCoef   ! reset per-element sparse count defaults
-            FFZernModes(:) = 0
-            nMonZernCoef   = mMonCoef
-            MonZernModes(:)= 0
 
             CALL LOHIN2()  ! set all elt flags to false. -jzlou
 
@@ -1147,8 +870,13 @@ C       Set entrance condition flags to .FALSE.
 
               ! Set flags that aren't needed
 
-	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
-     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
+              IF (any(EltID(iElt) == [FocalPlaneElt, ! 2
+     &                                ReferenceElt,  ! 3,
+     &                                ObscuringElt   ! 7,
+    !&                                NSRefractorElt ! 9  WHY set ??? ToDo Check
+     &                              ]))  then
+!	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
+!     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
                 IndRef_FLG=.TRUE.
                 Extinc_FLG=.TRUE.
                 GlassCoef_FLG=.TRUE.
@@ -1267,7 +995,7 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
-                  
+
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
      &                                 (SrfType(iElt)==SrfType_GridData))
 
@@ -1288,25 +1016,24 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-                
+
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
-     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+     &            (SrfType(iElt).NE.SrfType_MonGrData)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
@@ -1323,8 +1050,7 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).NE.SrfType_GridData).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData).AND.
      &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
@@ -1332,16 +1058,14 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
      &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.(SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 lData_FLG=.TRUE.
                 pData_FLG=.TRUE.
                 xData_FLG=.TRUE.
@@ -1349,22 +1073,8 @@ C       Set entrance condition flags to .FALSE.
                 zData_FLG=.TRUE.
               END IF
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
-     &            (SrfType(iElt).NE.SrfType_FreeForm).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
-              END IF
-
-              ! Mark FF and Mon Zernike flags as done for non-FreeForm surfaces
-              IF (SrfType(iElt).NE.SrfType_FreeForm) THEN
-                lFF_FLG          = .TRUE.
-                pFF_FLG          = .TRUE.
-                xFF_FLG          = .TRUE.
-                yFF_FLG          = .TRUE.
-                zFF_FLG          = .TRUE.
-                FFZernCoef_FLG   = .TRUE.
-                FFZernTypeL_FLG  = .TRUE.
-                MonZernCoef_FLG  = .TRUE.
-                MonZernTypeL_FLG = .TRUE.
               END IF
 
               ! Check to make sure no Element/Surface incompatibility exists
@@ -2114,279 +1824,6 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*)(zData(j,iElt),j=1,3)
               zData_FLG=.TRUE.
               GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
-              READ(VALUE,*)lData(iElt)
-              lData_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
-              READ(VALUE,*)lFF(iElt)
-              lFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
-              READ(VALUE,*)(pFF(j,iElt),j=1,3)
-              pFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
-              READ(VALUE,*)(xFF(j,iElt),j=1,3)
-              xFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
-              READ(VALUE,*)(yFF(j,iElt),j=1,3)
-              yFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
-              READ(VALUE,*)(zFF(j,iElt),j=1,3)
-              zFF_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
-              IF (.NOT.FFZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
-                GO TO 99
-              END IF
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
-              READ(VALUE,*) nFFZernCoef
-              IF ((nFFZernCoef.LT.1).OR.
-     &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
-              nFFZernCoef_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
-              IF (.NOT.nFFZernCoef_FLG) THEN
-                PRINT *, "must define nFFZernCoef before FFZernModes"
-                GO TO 99
-              END IF
-              FFZernModes(:) = 0
-              BLOCK
-                INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ, ios
-                READ(VALUE,*,IOSTAT=ios)
-     &            (FFZernModes(j),j=1,nFFZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                  END IF
-                END IF
-              END BLOCK
-              FFZernModes_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
-              BLOCK
-                INTEGER :: iZ, nZ, ios
-                REAL*8  :: FFZernCoefs(mFFCoef)
-                INTEGER, PARAMETER :: Grp = 6
-                FFZernCoefs(:) = 0d0
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,nFFZernCoef)
-                ELSE
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
-                IF (FFZernModes_FLG) THEN
-                  FFZernCoef(:,iElt) = 0d0
-                  FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
-     &                    FFZernCoefs(:nFFZernCoef)
-                ELSE
-                  FFZernCoef(:,iElt) = FFZernCoefs
-                END IF
-                nFFZernCoef = mFFCoef
-              END BLOCK
-              FFZernCoef_FLG=.TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
-              IF (.NOT.MonZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
-                GO TO 99
-              END IF
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
-              READ(VALUE,*) nMonZernCoef
-              IF ((nMonZernCoef.LT.1).OR.
-     &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
-              nMonZernCoef_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
-              IF (.NOT.nMonZernCoef_FLG) THEN
-                PRINT *, "must define nMonZernCoef before MonZernModes"
-                GO TO 99
-              END IF
-              MonZernModes(:) = 0
-              BLOCK
-                INTEGER, PARAMETER :: Grp = 6
-                INTEGER :: iZ, nZ, ios
-                READ(VALUE,*,IOSTAT=ios)
-     &            (MonZernModes(j),j=1,nMonZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
-     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                  END IF
-                END IF
-              END BLOCK
-              MonZernModes_FLG = .TRUE.
-              GO TO 61
-
-            ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
-              BLOCK
-                INTEGER :: iZ, nZ, nGrp, ios
-                REAL*8  :: MonZernCoefs(mMonCoef)
-                INTEGER, PARAMETER :: Grp = 6
-                MonZernCoefs(:) = 0d0
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,nMonZernCoef)
-                ELSE
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
-                IF (MonZernModes_FLG) THEN
-                  MonZernCoef(:,iElt) = 0d0
-                  MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
-     &                    MonZernCoefs(:nMonZernCoef)
-                ELSE
-                  MonZernCoef(:,iElt) = MonZernCoefs
-                END IF
-                nMonZernCoef = mMonCoef
-              END BLOCK
-              MonZernCoef_FLG = .TRUE.
-              MonCoef_FLG = .TRUE.
-              GO TO 61
 	!<--
 
             ! ------------------------------------------------------------------------------
@@ -2648,9 +2085,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GlassElt(iElt) = VALUE
               IndRefE_FLG    = .TRUE.
               GlassElt_FLG   = .TRUE.
+
               ! Assume Sellmeier glass by default
-              GlassType(iElt)=SellmeierGlass
-              LGlass(iElt)=.FALSE.
+              GlassType(iElt) = SellmeierGlass
+              LGlass(iElt)    = .FALSE.
               i=1
               DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
                 IF (LCMP(GlassElt(iElt),GlassName(i),
@@ -2668,23 +2106,76 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
+            ! GlassTypeName(1:6) = ['Sellmeier', 'Schott', 'Herzberger',
+            !                       'Sellm2TA', 'Kingslake', 'Cauchy']
+            !
+            !  SellmeierGlass      = 1,  ! Schott's definition (SELLMEIER3TA)
+            !  SchottGlass         = 2,  ! Schott = Laurent model   ("Old Schott" Model)
+            !  HerzbergerGlass     = 3,  ! HERZBRGR4X2
+            !  SELLMEIER_2TA_GLASS = 4,  ! Sellmeier, 2 Terms with Constant A (5 Parameters)
+            !  KINGSLAKE1_GLASS    = 5,  ! Kingslake with 2 Terms (5 Parameters)
+            !  CauchyGlass         = 6,  ! Cauchy
+
             ELSE IF (LCMP(VAR_NAM,'GlassType',7)) THEN
-              IF (LCMP(VALUE,'Scho',4)) THEN
-                GlassType(iElt)=SchottGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-	      ELSE IF (LCMP(VALUE,'Sell',4)) THEN
-                GlassType(iElt)=SellmeierGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-              END IF
-              GO TO 61
+
+              do i=1,MAX_GLASS_MODELS
+                found = (LCMP(VALUE,GlassTypeName(i),len(GlassTypeName(i))))
+                if (found) then
+                  GlassType(iElt) = i
+                  LGlass(iElt)    = .TRUE.
+                  GlassCoef_FLG   = .FALSE.
+                  exit
+                end if
+              end do
+              if (.not. found) then
+                write(*,*) '** Unknown glass type at Elt ',iElt
+                goto 99
+              else
+                goto 61
+              end if
+
+
+              !IF (LCMP(VALUE,'Sellmeier',9)) THEN
+              !  GlassType(iElt) = SellmeierGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Scho',4)) THEN
+              !  GlassType(iElt) = SchottGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Cauchy',6)) THEN
+              !  GlassType(iElt) = CauchyGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Sellmeier2TA',12)) THEN
+              !  GlassType(iElt) = SELLMEIER_2TA_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'KINGSLAKE',9)) THEN
+              !  GlassType(iElt) = KINGSLAKE1_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Herzberg',8)) THEN
+              !  GlassType(iElt) = HerzbergerGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE
+              !  WRITE(*,*) '** Unknown glass type at Elt ',iElt
+              !  GO TO 99
+              !END IF
+              !GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'GlassCoef',6)) THEN
-              READ(VALUE,*)(GlassCoef(j,iElt),j=1,6)
-              GlassCoef_FLG=.TRUE.
-              LGlass(iElt)=.TRUE.
+              READ(VALUE,*)(GlassCoef(j,iElt),j=1,nGLASS_COEF(GlassType(iElt)))
+              GlassCoef_FLG = .TRUE.
+              LGlass(iElt)  = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------

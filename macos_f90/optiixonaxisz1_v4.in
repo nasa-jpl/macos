@@ -5,14 +5,7 @@
 PgplotImage= Color
 SaveOPDMap= No
 %SaveRayPosHist= No
-SaveVis3dDat= Yes
-
-OptTgt= WFE
-OptWFElt= 17
-OptMaxItrs= 20
-OptFEX= No
-OptAlg= Nonlin
-ApStop= 0 0 0
+SaveVis3dDat= No
 
 % When set to 'yes', can perturb source without setting STOP
 %RxNoStopSet = Yes
@@ -514,7 +507,6 @@ PolyApVec=  6
   EltName=  ExitPupil
   Element=  Return
   Surface=  Conic
-   VarElt= 0 0 0 0 0 0 1 0
    KrElt=  -9.473696018473738D+02
    KcElt=   0.000000000000000D+00
   psiElt=   1.000000000000000D+00 -3.807083233075207D-13  6.882150462312471D-14

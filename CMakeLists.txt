@@ -1,420 +1,396 @@
-cmake_minimum_required(VERSION 3.21)
+# ------------------------------------------------------------------
+# Note:
+#  -- only a rough draft without using sub-project CMakeList
+#     definitions
+#  -- Code needs to be simplified
+#
+# ------------------------------------------------------------------
+# Create SMACOS Libs
+# ------------------------------------------------------------------
+# [ ] Status:
+#     [ ] Windows:
+#         Require: - Intel Fortran IFX Compiler (2025.x)
+#                  - Visual Studio 2022
+#
+#         Info:    not compiling MACOS but SMACOS for pymacos
+#
+#         How:
+#           ==> in cmd window with Fortran already set up
+#                E.g.: C:\"Program Files (x86)"\Intel\oneAPI\setvars intel64 vs2022
+#
+#              mkdir build
+#              cd build
+#              cmake -G "NMake Makefiles" -S ..
+#              nmake
+#
+#          ==> this will create the libs placed under .\build\libs
+# ------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.31)
+include(CMakePrintHelpers)
 
-# ==============================================================================
-# 1. Compiler Selection & Project Setup
-# ==============================================================================
-if(NOT DEFINED CMAKE_Fortran_COMPILER)
-  find_program(IFX_EXECUTABLE ifx)
-  set(CMAKE_Fortran_COMPILER "${IFX_EXECUTABLE}" CACHE FILEPATH "Fortran compiler")
+project(SMACOS
+  VERSION 1.0
+  DESCRIPTION "SMACOS Libs"
+  LANGUAGES Fortran C CXX
+)
+enable_language(Fortran C CXX)
+
+
+# ---------------------------------------------
+# Safety net
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+  message(FATAL_ERROR
+      "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n"
+  )
 endif()
 
-project(SMACOS LANGUAGES Fortran C)
 
-option(BUILD_MACOS      "Build the MACOS executable"          ON)
-option(BUILD_SMACOS     "Build the SMACOS static library"     ON)
-option(BUILD_SMACOS_DVR "Build the smacos_dvr test driver"    OFF)
-option(BUILD_GMI        "Build the GMI Matlab mex interface"  OFF)
-option(USE_GIZA         "Build and link Giza instead of pre-built PGPLOT" OFF)
-set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
+# --------------------------------------------- Module dir
+set(mod_dir "${CMAKE_CURRENT_BINARY_DIR}/mod")
+make_directory(${mod_dir})
+set(CMAKE_Fortran_MODULE_DIRECTORY ${mod_dir})
 
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-# ==============================================================================
-# 2. Compiler Flag Logic
-# ==============================================================================
-if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-  if(WIN32)
-    # Windows Intel oneAPI (ifx/icx)
-    set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
-    set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
-    set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-    set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
-  else()
-    # Linux Intel oneAPI (ifx/icx)
-    set(BASE_FFLAGS "-fpp -extend-source 132 -align -warn nointerfaces -DPGPLOT -DLNXOS -fPIC")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -fp-model strict -qmkl")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback -check bounds")
-    set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-    set(CMAKE_C_FLAGS "-D_CRT_SECURE_NO_WARNINGS -DLNXOS -fPIC")
-  endif()
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  # Linux gfortran / gcc
-  set(BASE_FFLAGS "-cpp -ffixed-line-length-132 -fd-lines-as-comments -fallow-argument-mismatch -std=legacy -DPGPLOT -DLNXOS -fPIC")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
-  set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbounds-check -fcheck=all")
-  set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-  set(CMAKE_C_FLAGS "-DLNXOS -fPIC")
-endif()
-
-# ==============================================================================
-# 3. Source Directory Configuration
-# ==============================================================================
-set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
-set(npsol_src_dir  "${smacos_src_dir}/npsol")
-set(fits_src_dir   "${smacos_src_dir}/fits_build")
-
-# ==============================================================================
-# 4. Giza (optional — replaces pgplotdummy)
-# ==============================================================================
-if(USE_GIZA)
-  add_subdirectory(macos_f90/giza/src)
-endif()
-
-# ==============================================================================
-# 5. FITS Library
-# ==============================================================================
-set(FITS_SOURCES
-    ${fits_src_dir}/macos_fitswrite.f90
-    ${fits_src_dir}/cookbook_sub.f90
-    ${fits_src_dir}/fitsfort.f90
-    ${fits_src_dir}/fitsf90.f90
-    ${fits_src_dir}/fitsio.f90
-)
-
-# Numerical library sources
-file(GLOB BLAS_SOURCES   "${npsol_src_dir}/blas/*.f")
-file(GLOB LAPACK_SOURCES "${npsol_src_dir}/lapack/*.f")
-file(GLOB NPSOL_SOURCES  "${npsol_src_dir}/*.f")
-
-# ==============================================================================
-# 6. Source Lists
-# ==============================================================================
-
-# Common Fortran/C sources shared by both macos and smacos targets
-set(COMMON_SOURCES
-  ${smacos_src_dir}/kinds.f90
-  ${smacos_src_dir}/constants.f90
-  ${smacos_src_dir}/dftsub.F
-  ${smacos_src_dir}/lohpars_mod.F
-  ${smacos_src_dir}/macos_IO.f90
-  ${smacos_src_dir}/param_mod.F
-  ${smacos_src_dir}/elt_mod.F
-  ${smacos_src_dir}/plot_mode_mod.F
-  ${smacos_src_dir}/nn_util.F
-  ${smacos_src_dir}/mathsub.F
-  ${smacos_src_dir}/macos_debug.F
-  ${smacos_src_dir}/src_mod.F
-  ${smacos_src_dir}/cfiles_mod.F
-  ${smacos_src_dir}/usersub.F
-  ${smacos_src_dir}/lsq.F
-  ${smacos_src_dir}/loh_mod.F
-  ${smacos_src_dir}/traceutil_mod.F
-  ${smacos_src_dir}/nls.F
-  ${smacos_src_dir}/dopt_mod.F
-  ${smacos_src_dir}/surfsub.F
-  ${smacos_src_dir}/didesub.F
-  ${smacos_src_dir}/elemsub.F
-  ${smacos_src_dir}/sourcsub.F
-  ${smacos_src_dir}/macos_mod.F
-  ${smacos_src_dir}/tracesub.F
-  ${smacos_src_dir}/propsub.F
-  ${smacos_src_dir}/funcsub.F
-  ${smacos_src_dir}/linsub.F
-  ${smacos_src_dir}/macos_ops.F
-  ${smacos_src_dir}/sunsub.F
-  ${smacos_src_dir}/macos_init.F
-  ${smacos_src_dir}/pixsub.F
-  ${smacos_src_dir}/srtrace.F
-  ${smacos_src_dir}/utilsub.F
-  ${smacos_src_dir}/zern_wf.F
-  ${smacos_src_dir}/design_optim.F
-  ${smacos_src_dir}/design_cons_optim.F
-  ${smacos_src_dir}/stop_set.F
-  ${smacos_src_dir}/psesub.F
-  ${smacos_src_dir}/utilsub_c.c
-  ${smacos_src_dir}/mhist.c
-  ${smacos_src_dir}/macos_signal.c
-)
-
-# SMACOS-only sources (smacos-specific modules + Fortran splicubi2)
-# pgplotdummy.F is always included for smacos: the library is computational only
-# and needs MODULE pgplot_mod (stubs). Real graphics run in the driver (macos/smacos_dvr).
-set(SMACOS_ONLY_SOURCES
-  ${COMMON_SOURCES}
-  ${smacos_src_dir}/smacos_vars_mod.F
-  ${smacos_src_dir}/smacosio.F
-  ${smacos_src_dir}/smacosutil.F
-  ${smacos_src_dir}/pgplotdummy.F
-  ${smacos_src_dir}/smacos.F
-  ${smacos_src_dir}/splicubi2.f90
-  ${smacos_src_dir}/fk.c
-)
-
-# MACOS-only sources (macos-specific modules + C splicubi2)
-set(MACOS_ONLY_SOURCES
-  ${COMMON_SOURCES}
-  ${smacos_src_dir}/macos_vars_mod.F
-  ${smacos_src_dir}/macosio.F
-  ${smacos_src_dir}/pgplotsub.F
-  ${smacos_src_dir}/f90prt.F
-  ${smacos_src_dir}/macos.F
-  ${smacos_src_dir}/splicubi2.c
-)
-
-# ==============================================================================
-# 7. Platform-specific system libraries
-# ==============================================================================
-# Windows needs user32.lib for console/windowing; Linux needs nothing extra here
+# --------------------------------------------- OS Definition
 if(WIN32)
-  set(PLATFORM_LIBS user32.lib)
+  message("-------------------------------\nWindows x64 Settings\n-------------------------------")
+  set(WINx64 TRUE)
+  set(LINUX64 FALSE)
+else() # if(CMAKE_SYSTEM_NAME STREQUAL "Linux")  # (CMAKE_HOST_UNIX)
+  message("-------------------------------\nLinux Settings\n-------------------------------")
+  set(WINx64 FALSE)
+  set(LINUX64 TRUE)
+endif()
+
+# ------------------------------------------------------- Compiler
+if (LINUX64)
+  set(CMAKE_C_COMPILER icx)          # Intel oneAPI
+  set(CMAKE_CXX_COMPILER icpx)       # Intel oneAPI
+  set(CMAKE_Fortran_COMPILER ifx)    # Intel oneAPI
 else()
-  set(PLATFORM_LIBS "")
+  set(CMAKE_Fortran_COMPILER ifx)    # Intel oneAPI
+  set(CMAKE_C_COMPILER cl)           # MS VC
+  set(CMAKE_CXX_COMPILER cl)         # MS VC
 endif()
 
-# Pre-built PGPLOT library (Linux, non-Giza path)
-# pgplotsub.F calls real PGPLOT symbols; must link the pre-built static lib.
-# PGPLOT itself needs X11; search static first to avoid runtime path issues.
-if(NOT WIN32 AND NOT USE_GIZA)
-  find_library(PGPLOT_LIB libpgplot.a
-      PATHS
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/pgplot
-        /usr/local/pgplot
-      NO_DEFAULT_PATH
-  )
-  if(NOT PGPLOT_LIB)
-    message(FATAL_ERROR "Pre-built libpgplot.a not found. "
-        "Build pgplot first or set USE_GIZA=ON.")
-  endif()
-  find_library(X11_LIB X11 PATHS /usr/lib64 /usr/lib/x86_64-linux-gnu)
-  message(STATUS "Using pre-built PGPLOT: ${PGPLOT_LIB}")
-  message(STATUS "Using X11: ${X11_LIB}")
-endif()
 
-# INTEL runtime libraries (ifx only — needed by smacos_dvr and GMI)
-if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-  set(INTEL_LIB_DIR "/opt/intel/oneapi/compiler/latest/lib" CACHE PATH
-      "Intel compiler runtime library directory")
-  find_library(LIBIMF    imf    PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
-  find_library(LIBIFPORT ifport PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
-  find_library(LIBIFCORE ifcore PATHS ${INTEL_LIB_DIR} NO_DEFAULT_PATH)
-  set(INTEL_LIBS ${LIBIMF} ${LIBIFPORT} ${LIBIFCORE})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)      # chk lnx
+
+# ------------------------------------------------------- Build Type
+# Set the Build type to Release  (Default is Debug)
+set(CMAKE_BUILD_TYPE Release)
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+
+
+# -------------------------------------------
+# Fortran: Compiler options for all
+# -------------------------------------------
+set_source_files_properties(PROPERTIES Fortran_PREPROCESS ON)
+
+# get_filename_component(Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
+
+# if (WINx64)
+
+  # update Fortran Flags: default: /nologo /fpp
+
+  #    /4L132                    specify rightmost column for fixed form sources
+  #    /fp:strict                Floating Point: enables /fp:precise, disables contractions and enables pragma stdc fenv_access
+  #    /Qfp-speculation:strict   turns off floating point speculations
+  #    /Qparallel                enable the auto-parallelizer to gen. multi-threaded code for loops that can be safely executed in parallel
+  #    /MD                       use dynamically-loaded, multithread C runtime
+  #    /O2                       optimize for maximum speed (DEFAULT)
+  #    /Qm64                     generate code for Intel(R) 64 architecture
+  #    /QxHost                   generate instructions for the highest instruction set and processor
+  #                                available on the compilation host machine
+  #    /Qmkl                     link to the Intel(R) Math Kernel Library (Intel(R) MKL) and bring in the associated headers
+  #                                parallel - link using the threaded Intel(R) MKL libraries. (default)
+  #    /Qopt-mem-layout-trans    memory layout transformations performed by the compiler: enabled
+  #    /align                    specify how data items are aligned  (commons)
+  #    /c                        compile to object (.obj) only, do not link
+  #    /fpp                      run Fortran preprocessor on source files prior to compilation
+  #    /D<name>                  Preprocessor directives
+  #    /RTCu                     report use of variable that was not initialized
+
+  # [ ] SMACOS target compile Options
+  #
+  #   for development:  (will disable opt)
+  #     /traceback
+  #     /check:bounds
+  #     /check:stack
+  #     /warn:interfaces
+  #     /warn:unused
+  #     /check:ALL
+  #     /warn:ALL
+
+  # [ ] SMACOS/MACOS pre-processing options
+  #       CMACOS      MACOS
+  #       CSMACOS     SMACOS
+  #       MSWIN       Target OS: Windows
+  #       NR_FFT      Numerical Recipe Code
+  #       FFTW_FFT
+  #       INTEL_FFT
+  #       SUN_FFT
+  #       NLS_OPT
+  #       DEBUG
+  #       MACOS_CMD
+  #       DREADLINE_LIBRARY
+
+if (WINx64)
+  # Fortran Flags
+  set(FFlags  "/4L132 /align /O2 /fpp /nologo")
+  set(FFlags  "${FFlags} /fp:strict /Qfp-speculation:strict")
+  set(FFlags  "${FFlags} /Qm64 /Qmkl /Qparallel /Qopt-mem-layout-trans /QxHost")
+  set(FFlags  "${FFlags} /c /gen-interfaces") # /RTCu")
+
+  # Fortran Flags: SMACOS  (Debug / Development)
+  set(FFlags_SMACOS "${FFlags}")
+  set(FFlags_SMACOS "${FFlags_SMACOS} /traceback /check:bounds /check:stack")
+  set(FFlags_SMACOS "${FFlags_SMACOS} /warn:interfaces /warn:unused") # /warn:all
+
+  # Fortran pre-processing options
+  set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
+
 else()
-  set(INTEL_LIBS "")
+  # Fortran Flags
+  set(FFlags  "-c -132 -align -O2 -fpp -nologo -fPIC -gen-interfaces ")
+  set(FFlags  "${FFlags} -fp-model=strict -fp-speculation=strict")
+  set(FFlags  "${FFlags} -m64 -qmkl -qopt-matmul -qopt-mem-layout-trans")
+
+  # Fortran Flags: SMACOS  (Debug)
+  set(FFlags_SMACOS "${FFlags}")
+  set(FFlags_SMACOS "${FFlags_SMACOS} -traceback -check bounds -check stack -fstack-protector-all")
+
+  # Fortran pre-processing options
+  set(SMACOS_preprocessing_Definition CSMACOS NR_FFT LNXOS)
+
 endif()
 
-# ==============================================================================
-# 8. Targets & Linking
-# ==============================================================================
+set(Fortran_FLAGS_Lib        "${FFlags}")
+set(Fortran_FLAGS_Lib_SMACOS "${FFlags_SMACOS}")
 
-# FITS Library Target
-add_library(fitslib STATIC ${FITS_SOURCES})
-target_include_directories(fitslib PUBLIC ${fits_src_dir} ${CMAKE_Fortran_MODULE_DIRECTORY})
-if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-  # fitsio.f90 is legacy code with rank/type mismatches — suppress with ifx flags
-  target_compile_options(fitslib PRIVATE -mismatch -warn nousage)
-endif()
+# cmake_print_variables(Fortran_FLAGS_Lib)
+# cmake_print_variables(Fortran_FLAGS_Lib_SMACOS)
 
-# Numerical Libraries
-add_library(blaslib   STATIC ${BLAS_SOURCES})
-add_library(lapacklib STATIC ${LAPACK_SOURCES})
-add_library(npsol     STATIC ${NPSOL_SOURCES})
 
-# SMACOS Static Library
-if(BUILD_SMACOS)
-  add_library(smacos STATIC ${SMACOS_ONLY_SOURCES})
-  target_compile_definitions(smacos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CSMACOS)
-  set_target_properties(smacos PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_smacos)
-  target_include_directories(smacos PUBLIC
-      ${smacos_src_dir}
-      ${fits_src_dir}
-      ${CMAKE_BINARY_DIR}/mod_smacos
-      ${CMAKE_BINARY_DIR}/mod
-  )
-  if(USE_GIZA)
-    target_include_directories(smacos PUBLIC
-        ${CMAKE_BINARY_DIR}/mod_giza
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-        ${CMAKE_BINARY_DIR}/macos_f90/giza/src
-    )
-  endif()
+# Common variables
+set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
+cmake_path(ABSOLUTE_PATH smacos_src_dir NORMALIZE OUTPUT_VARIABLE smacos_src_dir)  # eliminate /../
 
-  target_link_libraries(smacos PRIVATE
-      fitslib
-      npsol
-      lapacklib
-      blaslib
-      ${PLATFORM_LIBS}
-  )
-endif()
+set(lib_bin_dir    "${CMAKE_CURRENT_BINARY_DIR}/libs")
+set(npsol_src_dir  "${smacos_src_dir}/npsol")
+set(blas_src_dir   "${npsol_src_dir}/blas")
+set(lapack_src_dir "${npsol_src_dir}/lapack")
 
-# Readline (bundled) — used by macos interactive command line
-set(READLINE_ROOT "${smacos_src_dir}/readline-8.2")
-set(READLINE_LIB  "${READLINE_ROOT}/libreadline.a")
-if(NOT EXISTS "${READLINE_LIB}")
-  message(WARNING "Bundled libreadline.a not found at ${READLINE_LIB} — "
-      "arrow-key/history support disabled. Build readline first: "
-      "cd macos_f90/readline-8.2 && ./configure && make")
-  set(READLINE_LIB "")
-endif()
 
-# MACOS Executable
-if(BUILD_MACOS)
-  add_executable(macos ${MACOS_ONLY_SOURCES})
-  target_compile_definitions(macos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CMACOS
-      $<$<BOOL:${READLINE_LIB}>:READLINE_LIBRARY>
-  )
-  set_target_properties(macos PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_macos)
-  target_include_directories(macos PUBLIC
-      ${smacos_src_dir}
-      ${fits_src_dir}
-      ${CMAKE_BINARY_DIR}/mod_macos
-  )
-  if(READLINE_LIB)
-    target_include_directories(macos PRIVATE ${READLINE_ROOT})
-    target_compile_options(macos PRIVATE
-        $<$<COMPILE_LANGUAGE:C>:-DHAVE_CONFIG_H -DRL_LIBRARY_VERSION="8.2" -I${READLINE_ROOT}>
-    )
-  endif()
-  if(USE_GIZA)
-    target_include_directories(macos PUBLIC
-        ${CMAKE_BINARY_DIR}/mod_giza
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-        ${CMAKE_BINARY_DIR}/macos_f90/giza/src
-    )
-  endif()
+# -------------------------------------------
+# Fortran Libs: Blas / LaPack / NPSol
+# -------------------------------------------
 
-  target_link_libraries(macos PRIVATE
-      fitslib
-      npsol
-      lapacklib
-      blaslib
-      $<$<BOOL:${USE_GIZA}>:pgplot>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
-      ${PLATFORM_LIBS}
-      $<$<BOOL:${READLINE_LIB}>:${READLINE_LIB}>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<BOOL:${READLINE_LIB}>>:ncurses>
+
+# -------------------------------------------
+# [ ] Lib -- NPSOL: blas
+# -------------------------------------------
+  message("-------------------- Lib: npsol/blas")
+
+  add_library(blaslib STATIC
+         ${blas_src_dir}/daxpy.f
+         ${blas_src_dir}/dcopy.f
+         ${blas_src_dir}/ddot.f
+         ${blas_src_dir}/dgemm.f
+         ${blas_src_dir}/dgemv.f
+         ${blas_src_dir}/dger.f
+         ${blas_src_dir}/dnrm2.f
+         ${blas_src_dir}/dscal.f
+         ${blas_src_dir}/dswap.f
+         ${blas_src_dir}/dsyr.f
+         ${blas_src_dir}/dtrmm.f
+         ${blas_src_dir}/dtrmv.f
+         ${blas_src_dir}/dtrsv.f
+         ${blas_src_dir}/idamax.f
+         ${blas_src_dir}/lsame.f
+         ${blas_src_dir}/xerbla.f
   )
 
-  # Embed Intel library paths in the binary so it runs without sourcing setvars.sh.
-  # --disable-new-dtags forces DT_RPATH (not DT_RUNPATH) so the path propagates
-  # transitively to libraries loaded by our shared libs (e.g. libimf→libintlc).
-  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-    set_target_properties(macos PROPERTIES
-        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-    )
-    target_link_options(macos PRIVATE -Wl,--disable-new-dtags)
-  endif()
-endif()
+  set_target_properties(blaslib PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
+  )
 
-# SMACOS Driver Executable
-if(BUILD_SMACOS_DVR)
-  add_executable(smacos_dvr
-      ${smacos_src_dir}/smacos_dvr.F
+  target_include_directories(blaslib
+          PUBLIC
+          ${blas_src_dir}
+          ${lib_bin_dir}
+  )
+
+
+# -------------------------------------------
+# [ ] Lib -- NPSOL: lapack
+# -------------------------------------------
+  message("-------------------- Lib: npsol/lapack")
+
+  add_library(lapacklib STATIC
+        ${lapack_src_dir}/dbdsqr.f
+        ${lapack_src_dir}/dgebd2.f
+        ${lapack_src_dir}/dgebrd.f
+        ${lapack_src_dir}/dgelq2.f
+        ${lapack_src_dir}/dgelqf.f
+        ${lapack_src_dir}/dgeqr2.f
+        ${lapack_src_dir}/dgeqrf.f
+        ${lapack_src_dir}/dgesvd.f
+        ${lapack_src_dir}/dlabrd.f
+        ${lapack_src_dir}/dlacpy.f
+        ${lapack_src_dir}/dlamch.f
+        ${lapack_src_dir}/dlange.f
+        ${lapack_src_dir}/dlapy2.f
+        ${lapack_src_dir}/dlarf.f
+        ${lapack_src_dir}/dlarfb.f
+        ${lapack_src_dir}/dlarfg.f
+        ${lapack_src_dir}/dlarft.f
+        ${lapack_src_dir}/dlartg.f
+        ${lapack_src_dir}/dlas2.f
+        ${lapack_src_dir}/dlascl.f
+        ${lapack_src_dir}/dlaset.f
+        ${lapack_src_dir}/dlasr.f
+        ${lapack_src_dir}/dlassq.f
+        ${lapack_src_dir}/dlasv2.f
+        ${lapack_src_dir}/dorg2r.f
+        ${lapack_src_dir}/dorgbr.f
+        ${lapack_src_dir}/dorgl2.f
+        ${lapack_src_dir}/dorglq.f
+        ${lapack_src_dir}/dorgqr.f
+        ${lapack_src_dir}/dorm2r.f
+        ${lapack_src_dir}/dormbr.f
+        ${lapack_src_dir}/dorml2.f
+        ${lapack_src_dir}/dormlq.f
+        ${lapack_src_dir}/dormqr.f
+        ${lapack_src_dir}/ilaenv.f
+  )
+
+  set_target_properties(lapacklib PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
+  )
+
+  target_include_directories(lapacklib
+          PUBLIC
+          ${lapack_src_dir}
+          ${lib_bin_dir}
+  )
+
+
+# -------------------------------------------
+# [ ] Lib -- NPSOL:
+# -------------------------------------------
+  message("-------------------- npsol")
+
+  add_library(npsol STATIC
+        ${npsol_src_dir}/blaso.f
+        ${npsol_src_dir}/chsubs.f
+        ${npsol_src_dir}/cmsubs.f
+        ${npsol_src_dir}/lsmain.f
+        ${npsol_src_dir}/lssubs.f
+        ${npsol_src_dir}/mcsubs.f
+        ${npsol_src_dir}/npmain.f
+        ${npsol_src_dir}/npsubs.f
+        ${npsol_src_dir}/opsubs.f
+        ${npsol_src_dir}/srsubs.f
+        )
+
+  set_target_properties(npsol PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS ${Fortran_FLAGS_Lib}
+  )
+
+  target_include_directories(npsol
+          PUBLIC
+          ${npsol_src_dir}
+          ${lib_bin_dir}
+  )
+
+
+
+# -------------------------------------------
+# [ ] Lib -- SMACOS:
+# -------------------------------------------
+message("-------------------- Lib: smacos")
+
+# set(CMAKE_Fortran_FLAGS "/modul:${mod_dir} ${CMAKE_Fortran_FLAGS_Lib}")
+add_library(smacos STATIC
+      ${smacos_src_dir}/macos_definitions.h
+      ${smacos_src_dir}/kinds.f90
+      ${smacos_src_dir}/constants.f90
+      ${smacos_src_dir}/dftsub.F
+      ${smacos_src_dir}/lohpars_mod.F
+      ${smacos_src_dir}/macos_IO.f90
+      ${smacos_src_dir}/param_mod.F
+      ${smacos_src_dir}/elt_mod.F
+      ${smacos_src_dir}/nn_util.F
+      ${smacos_src_dir}/mathsub.F
+      ${smacos_src_dir}/macos_debug.F
+      ${smacos_src_dir}/src_mod.F
+      ${smacos_src_dir}/cfiles_mod.F
+      ${smacos_src_dir}/usersub.F
+      ${smacos_src_dir}/lsq.F
+      ${smacos_src_dir}/loh_mod.F
+      ${smacos_src_dir}/traceutil_mod.F
+      ${smacos_src_dir}/nls.F
       ${smacos_src_dir}/macos_mod.F
-      ${smacos_src_dir}/macos_vars_mod.F
-      ${smacos_src_dir}/macosio.F
-      ${smacos_src_dir}/pgplotsub.F
-  )
-  target_compile_definitions(smacos_dvr PRIVATE
-      $<$<BOOL:${WIN32}>:MSWIN> CMACOS)
-  set_target_properties(smacos_dvr PROPERTIES
-      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_macos)
-  target_include_directories(smacos_dvr PRIVATE
-      ${smacos_src_dir}
-      ${fits_src_dir}
-      ${CMAKE_BINARY_DIR}/mod_macos
-      ${CMAKE_BINARY_DIR}/mod_smacos
-      ${CMAKE_BINARY_DIR}/mod
-  )
-  add_dependencies(smacos_dvr macos smacos)
-  target_link_libraries(smacos_dvr PRIVATE
-      smacos
-      fitslib
-      npsol
-      lapacklib
-      blaslib
-      ${INTEL_LIBS}
-      $<$<BOOL:${USE_GIZA}>:pgplot>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
-      ${PLATFORM_LIBS}
-  )
+      ${smacos_src_dir}/dopt_mod.F
+      ${smacos_src_dir}/surfsub.F
+      ${smacos_src_dir}/didesub.F
+      ${smacos_src_dir}/elemsub.F
 
-  # Embed compiler runtime paths so smacos_dvr runs without sourcing
-  # setvars.sh (ifx) or a module file (gfortran). Same pattern as macos/GMI.
-  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-    set_target_properties(smacos_dvr PROPERTIES
-        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-    )
-    target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
-  elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    set_target_properties(smacos_dvr PROPERTIES
-        BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-        INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-    )
-    target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
-  endif()
-endif()
+      ${smacos_src_dir}/smacos_vars_mod.F
+      ${smacos_src_dir}/smacosio.F          # prop_defs.inc msmacosio.inc iosub.inc
+      ${smacos_src_dir}/smacos.F
 
-# GMI Matlab mex interface
-if(BUILD_GMI)
-  set(GMI_SRC_DIR "$ENV{HOME}/dev/MACOS_resources/GMI" CACHE PATH
-      "Directory containing GMI.F and GMIG.F")
-  if(NOT EXISTS ${GMI_SRC_DIR}/GMI.F)
-    message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}")
-  endif()
-  add_library(GMI SHARED
-      ${GMI_SRC_DIR}/GMI.F
-      ${GMI_SRC_DIR}/GMIG.F
-  )
-  set_target_properties(GMI PROPERTIES
-      OUTPUT_NAME GMI
-      SUFFIX ".mexa64"
-      PREFIX ""
-      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_gmi
-  )
-  target_compile_definitions(GMI PRIVATE MX_COMPAT_32)
-  target_compile_options(GMI PRIVATE
-      -fPIC -fpp -132 -gen-interfaces -fp-model strict
-      -fno-omit-frame-pointer -O2 -xHOST
-  )
-  target_include_directories(GMI PRIVATE
-      ${smacos_src_dir}
-      ${CMAKE_BINARY_DIR}/mod_smacos
-      ${MATLAB_ROOT}/extern/include
-  )
-  target_link_libraries(GMI PRIVATE
-      smacos
-      fitslib
-      npsol
-      lapacklib
-      blaslib
-      ${INTEL_LIBS}
-      -L${MATLAB_ROOT}/bin/glnxa64
-      -l:libmx.so -l:libmex.so -lmat
-      -lm -lstdc++
-  )
-  target_link_options(GMI PRIVATE
-      -Wl,--version-script,${MATLAB_ROOT}/extern/lib/glnxa64/fexport.map
-      -Wl,--no-undefined
-      -Wl,-rpath-link,${MATLAB_ROOT}/bin/glnxa64
-  )
+      ${smacos_src_dir}/sourcsub.F   # ssrcray.inc
+      ${smacos_src_dir}/smacosutil.F
+      ${smacos_src_dir}/macos_init.F
+      ${smacos_src_dir}/funcsub.F   # funcsub.F $(MOD_SRCS) lnk_pert.inc
+      ${smacos_src_dir}/pixsub.F
+      ${smacos_src_dir}/tracesub.F   #  fpp.inc  requires smacosio.F
+      ${smacos_src_dir}/srtrace.F
+      ${smacos_src_dir}/utilsub.F   # lensarr_indexes.inc collim.inc
+      ${smacos_src_dir}/linsub.F
+      ${smacos_src_dir}/pgplotdummy.F
+      ${smacos_src_dir}/sunsub.F    # fits1.inc
+      ${smacos_src_dir}/propsub.F
+      ${smacos_src_dir}/macos_ops.F
+      ${smacos_src_dir}/zern_wf.F
+      ${smacos_src_dir}/design_optim.F      # smacos_compute.inc
+      ${smacos_src_dir}/design_cons_optim.F # smacos_compute.inc setbeam_vars.inc setbeam.inc
+      ${smacos_src_dir}/stop_set.F          # $(MOD_SRCS) design_optim.F
+      ${smacos_src_dir}/psesub.F
 
-  # Embed compiler runtime paths in the MEX file so MATLAB can load it
-  # without sourcing setvars.sh (ifx) or a module file (gfortran).
-  # --disable-new-dtags forces DT_RPATH (transitive) over DT_RUNPATH
-  # so paths propagate to indirect deps (e.g. libimf→libintlc).
-  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-    set_target_properties(GMI PROPERTIES
-        BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-        INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
+      # ${smacos_src_dir}/mhist.c
+      # ${smacos_src_dir}/utilsub_c.c  # unistd.h missing
+
+      # ${smacos_src_dir}/splicubi2.c    # needed in mathsub.F
+      ${smacos_src_dir}/splicubi2.f90  # DUMMY !!!  ==> ToDo: Need to find a way to incorporate splicubi2.c with f2py !!!
+      )
+
+# needed for cmake dependencies determination (together with "Fortran_PREPROCESS ON")
+# target_compile_definitions(smacos PUBLIC ${SMACOS_preprocessing_Fortran})
+
+set_target_properties(smacos PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${lib_bin_dir}
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_FLAGS             "${Fortran_FLAGS_Lib_SMACOS}"
+      COMPILE_DEFINITIONS       "${SMACOS_preprocessing_Definition}"
     )
-    target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
-  elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    # gfortran: embed the directory containing libgfortran/libquadmath.
-    # CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES is already a CMake list
-    # (semicolon-separated), which is the form BUILD_RPATH expects.
-    set_target_properties(GMI PROPERTIES
-        BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-        INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-    )
-    target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
-  endif()
-endif()
+
+target_include_directories(smacos
+      PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${smacos_src_dir}
+        ${mod_dir}
+        ${lib_bin_dir}
+        )
+
