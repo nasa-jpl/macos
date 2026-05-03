@@ -1,132 +1,31 @@
-# MACOS — Modeling and Analysis for Controlled Optical Systems
-
+# macos
+MACOS source distribution
 Jet Propulsion Laboratory
+09/02/2022
+Updated 09/30/2022
 
----
+Modeling and Analysis for Controlled Optical Systems
 
-## Prerequisites
+The MACOS source code files and Linux Makefiles can be used to
 
-- **Intel oneAPI** (`ifx` compiler) — install from intel.com/oneapi.
-  The build scripts source `/opt/intel/oneapi/setvars.sh` automatically.
-- **gcc / g++** — for C sources and the Giza graphics library.
-- **CMake ≥ 3.20** — verify with `cmake --version`.
-- **X11 development headers** — `sudo apt install libx11-dev` on Ubuntu/Debian.
-- **MATLAB** *(optional, for `GMI.mexa64`)* — any recent release under `/usr/local/MATLAB/`.
+1) Compile a MACOS executabale program on a Linux workstation
+2) Compile a SMACOS library smacos_lib.a to be linked to a Matlab
+   mex function module. The SMACOS mex module provides an interface
+   to MACOS operations in a Matlab session.
 
-For a gfortran build use `makegfortran.sh` instead; Intel oneAPI is not required.
+On a Linux machine, "make macos" command generates a MACOS executable;
+"make smacos" command generates a SMACOS library. 
 
----
+To clean out existing complied modules of MACOS and SMACOS, say for
+re-compilations, do 
+"make clean-macos" for MACOS
+"make clean-smacos" for SMACOS
 
-## 1. Directory layout
+The Makefiles use Intel Fortran and C compilers on a Linux platform
+for MACOS compilations. Also included are sub-folders of source files for
+1) a pgplot library for graphics plotting
+2) a fits library for fits format input and output
 
-Both repositories must be siblings under the same parent directory.
-Replace `<username>` with your login name throughout.
+At JPL, the compilations can be done on 
+mustang2@jpl.nasa.gov
 
-```
-/home/<username>/dev/
-├── macos/            ← main MACOS/SMACOS source tree
-└── MACOS_resources/  ← GMI mex interface and SegMirMaker
-```
-
----
-
-## 2. Clone the repositories
-
-```bash
-mkdir -p ~/dev && cd ~/dev
-
-git clone git@github.com:nasa-jpl/macos.git
-git -C macos checkout joint-dev
-
-git clone git@github.com:nasa-jpl/MACOS_resources.git
-git -C MACOS_resources checkout dr-dev
-```
-
----
-
-## 3. Build
-
-All scripts run from `~/dev/macos/` and accept options
-`[giza|pgplot] [debug|release] [gfortran]` in any order
-(defaults: giza, release, ifx).
-
-### Build all four targets at once
-
-```bash
-cd ~/dev/macos
-source ./makejoint.sh            # ifx, Giza, release (most common)
-source ./makejoint.sh debug      # ifx, Giza, debug
-source ./makejoint.sh gfortran   # gfortran, Giza, release
-```
-
-### Build individual targets
-
-| Script | Targets built |
-|---|---|
-| `source ./makems.sh` | `macos` + `libsmacos.a` |
-| `source ./makesd.sh` | `smacos_dvr` (also builds macos/smacos if needed) |
-| `source ./makegmi.sh` | `GMI.mexa64` (requires macos+smacos built first) |
-
-All three accept the same `[giza|pgplot] [debug|release] [gfortran]` options.
-`makesd.sh` and `makegmi.sh` must use matching options to the preceding
-`makems.sh` (or `makejoint.sh`) call so they target the same build directory.
-
----
-
-## 4. Build outputs
-
-After a default `source ./makejoint.sh` (ifx, Giza, release):
-
-| Target | Location |
-|---|---|
-| `macos` executable | `~/dev/macos/build_release_giza/bin/macos` |
-| `smacos_dvr` executable | `~/dev/macos/build_release_giza/bin/smacos_dvr` |
-| `libsmacos.a` static library | `~/dev/macos/build_release_giza/lib/libsmacos.a` |
-| `GMI.mexa64` MATLAB mex | `~/dev/MACOS_resources/GMI/GMI.mexa64` |
-
-Build directory names for other combinations:
-
-| Script + options | Build directory |
-|---|---|
-| `makejoint.sh` | `build_release_giza/` |
-| `makejoint.sh debug` | `build_debug_giza/` |
-| `makejoint.sh pgplot` | `build_release_pgplot/` |
-| `makegfortran.sh` | `build_release_giza_gfortran/` |
-| `makegfortran.sh debug` | `build_debug_giza_gfortran/` |
-
----
-
-## 5. Shell aliases
-
-Add to `~/.bashrc` (or `~/.bash_aliases`), then `source ~/.bashrc`:
-
-```bash
-alias macos='~/dev/macos/build_release_giza/bin/macos'
-alias smacos_dvr='~/dev/macos/build_release_giza/bin/smacos_dvr'
-```
-
-For a debug build:
-
-```bash
-alias macos='~/dev/macos/build_debug_giza/bin/macos'
-alias smacos_dvr='~/dev/macos/build_debug_giza/bin/smacos_dvr'
-```
-
-For MATLAB, add the GMI directory to the MATLAB path in `startup.m` or via
-the MATLAB **Set Path** dialog:
-
-```matlab
-addpath('~/dev/MACOS_resources/GMI')
-```
-
----
-
-## 6. Rebuilding after source changes
-
-Re-run the same script; CMake recompiles only changed files.
-To force a clean rebuild delete the build directory first:
-
-```bash
-rm -rf ~/dev/macos/build_release_giza
-source ~/dev/macos/makejoint.sh
-```

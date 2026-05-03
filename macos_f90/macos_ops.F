@@ -535,8 +535,7 @@ C fixed by Gopal Vasudevan:
             CALL DADD(h2HOE(1,iElt),D1,del,3)
           END IF
 
-          IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).NE.10)
-     &        .AND.(SrfType(iElt).NE.11)) THEN
+          IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
             CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
             CALL DMPROD(D2,dQ,D1,3,3,1)
             CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -548,21 +547,6 @@ C fixed by Gopal Vasudevan:
             CALL DMPROD(D1,Q,zMon(1,iElt),3,3,1)
             CALL DEQUATE(zMon(1,iElt),D1,3)
           END IF
-
-!-->  FreeForm FF coordinate frame
-          IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
-            CALL DSUB(D1,pFF(1,iElt),RptElt(1,iElt),3)
-            CALL DMPROD(D2,dQ,D1,3,3,1)
-            CALL DADD(D1,pFF(1,iElt),D2,3)
-            CALL DADD(pFF(1,iElt),D1,del,3)
-            CALL DMPROD(D1,Q,xFF(1,iElt),3,3,1)
-            CALL DEQUATE(xFF(1,iElt),D1,3)
-            CALL DMPROD(D1,Q,yFF(1,iElt),3,3,1)
-            CALL DEQUATE(yFF(1,iElt),D1,3)
-            CALL DMPROD(D1,Q,zFF(1,iElt),3,3,1)
-            CALL DEQUATE(zFF(1,iElt),D1,3)
-          END IF
-!<--
         END IF
 
         RETURN

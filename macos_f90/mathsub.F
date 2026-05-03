@@ -348,38 +348,27 @@ C jzlou - compute matrix product A = B*C,
 C         where B is NAxNB, C is NBxNC
 C         and A is NAxNC
 
-  !    SUBROUTINE DMPROD(A,B,C,NA,NB,NC)
-  !    REAL*8 A(1),B(1),C(1)
-  !    Integer :: NA,NB,NC,NAMAX,NBMAX,I,J,K,
-  !   &           NAPTR,NBPTR,NCPTR
-  !    NAMAX=NA*NC
-  !    NBMAX=NA*NB
-  !    DO I=1,NA
-  !      J=-NB
-  !      DO NAPTR=I,NAMAX,NA
-  !        J=J+NB
-  !        K=0
-  !        A(NAPTR)=0D0
-  !        DO NBPTR=I,NBMAX,NA
-  !          K=K+1
-  !          NCPTR=J+K
-  !          A(NAPTR)=A(NAPTR)+B(NBPTR)*C(NCPTR)
-  !        END DO
-  !      END DO
-  !    END DO
-  !    RETURN
-  !    END SUBROUTINE DMPROD
-
-      SUBROUTINE DMPROD(A, B, C, NA, NB, NC)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN)    :: NA, NB, NC
-        REAL*8,  INTENT(OUT)   :: A(NA, NC)
-        REAL*8,  INTENT(IN)    :: B(NA, NB)
-        REAL*8,  INTENT(IN)    :: C(NB, NC)
-
-        A = MATMUL(B, C)
-
-        END SUBROUTINE DMPROD
+      SUBROUTINE DMPROD(A,B,C,NA,NB,NC)
+      REAL*8 A(1),B(1),C(1)
+      Integer :: NA,NB,NC,NAMAX,NBMAX,I,J,K,
+     &           NAPTR,NBPTR,NCPTR
+      NAMAX=NA*NC
+      NBMAX=NA*NB
+      DO I=1,NA
+        J=-NB
+        DO NAPTR=I,NAMAX,NA
+          J=J+NB
+          K=0
+          A(NAPTR)=0D0
+          DO NBPTR=I,NBMAX,NA
+            K=K+1
+            NCPTR=J+K
+            A(NAPTR)=A(NAPTR)+B(NBPTR)*C(NCPTR)
+          END DO
+        END DO
+      END DO
+      RETURN
+      END SUBROUTINE DMPROD
 
 C
         SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
