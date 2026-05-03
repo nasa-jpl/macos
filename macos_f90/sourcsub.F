@@ -119,20 +119,6 @@ C***********************************************************************
         END SUBROUTINE SetSourceRay
         !
         ! --------------------------------------------------------------
-        ! Src. zGrid is in direction of ChfRayDir and yGrid from
-        ! previous Src. definition
-        subroutine UpdSrcGrid(ok)
-          use src_mod,  only: ChfRayDir, xGrid, yGrid, zGrid
-          use math_mod, only: define_local_csys
-          implicit none
-          logical, intent(out) :: ok
-          ! - - - - - - - - - - - - - - -
-
-          call define_local_csys(ChfRayDir, xGrid, yGrid, zGrid, ok, yGrid)
-
-        end subroutine UpdSrcGrid
-        !
-        ! --------------------------------------------------------------
         !
 
 ! Argument npts is declared in macos.F, and read in from Rx

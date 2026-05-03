@@ -20,6 +20,8 @@ C  *** Begin MACOS top-level command loop ***
 
 	  CALL PROMPT(command,'MACOS> ')
 
+	  IF (ICLEN(command).EQ.0) GO TO 1
+
 	  IF (LCMP(command,'QUIT',3) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
@@ -58,17 +60,15 @@ c***loh
 #endif
 
 
-C         *** print help message***
+C         *** print help message ***
+C
+C  HELP text lives in macos_help.inc -- single source of truth for the
+C  user-facing command list.  When you add a new ELSE IF (LCMP...)
+C  branch elsewhere in this file, also add a one-line entry to
+C  macos_help.inc under the right category.
 
 	  ELSE IF (LCMP(command,'HELP',3)) THEN
-	    WRITE(*,300)
-	    WRITE(*,307)
-	    WRITE(*,304)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,305)
-	    WRITE(*,306)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,321)
+#include "macos_help.inc"
 
 
 ! For command-line MACOS only
@@ -1318,6 +1318,100 @@ C	        GO TO 4
 #endif
 
 
+C         *** 'SEGRAYTRACE' command ***
+C         Trace a single ray that passes through the geometric center
+C         (RptElt) of a chosen Segment element, printing the ray state
+C         at every surface.  Mirrors RAY's loop / output structure but
+C         skips the source-grid setup and forces the ray onto the
+C         requested segment via RayToSegMap.
+C
+C         Notes:
+C           - RptElt is the design segment center as written by
+C             SegMirMaker (= pr from SurfCoordFF).  PERTURB does not
+C             modify RptElt, so this remains the design-time location
+C             across perturbations.
+C           - For a collimated source (|zSource| > MaxPntSrcDist) the
+C             ray's source position is offset from ChfRayPos so the
+C             ray (parallel to ChfRayDir) lands on RptElt.
+C           - For a point source the ray starts at ChfRayPos and aims
+C             directly at RptElt.
+
+	  ELSE IF (LCMP(command,'SEGRAYTRACE',7)) THEN
+	    IF (ifLoad) THEN
+	      ifRayPrint = .TRUE.
+	      ifBuild     = .FALSE.
+	      ifTrace     = .FALSE.
+	      ifPropagate = .FALSE.
+ 11	      CONTINUE
+	        CALL IACCEPT_S(iSeg, 0, 1,
+     &            'Enter segment number (0=quit):')
+	        IF (iSeg .EQ. 0) GO TO 12
+
+	        IF ((iSeg .LT. 1) .OR. (iSeg .GT. nElt)) THEN
+	          WRITE(*,*) ' Invalid element number.'
+	          GO TO 11
+	        END IF
+	        IF (EltID(iSeg) .NE. SegmentElt) THEN
+	          WRITE(*,*) ' Element ', iSeg,
+     &              ' is not a Segment.'
+	          GO TO 11
+	        END IF
+
+C           Initialize the source ray grid first (this sets up shared
+C           state -- RayMap/SegMap/Pol/etc -- that CTRACE expects).
+	        CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
+
+C           Override the chief-ray slot to land on RptElt(:,iSeg).
+	        DV1(1:3) = RptElt(1:3,iSeg) - ChfRayPos(1:3)
+	        IF (isCollimatedSource()) THEN
+	          S1 = DV1(1)*ChfRayDir(1)
+     &               + DV1(2)*ChfRayDir(2)
+     &               + DV1(3)*ChfRayDir(3)
+	          DV2(1:3) = DV1(1:3) - S1*ChfRayDir(1:3)
+	          RayPos(1:3,1) = ChfRayPos(1:3) + DV2(1:3)
+	          RayDir(1:3,1) = ChfRayDir(1:3)
+	        ELSE
+	          RayPos(1:3,1) = ChfRayPos(1:3)
+	          S1 = DSQRT(DV1(1)**2 + DV1(2)**2 + DV1(3)**2)
+	          IF (S1 .LE. 0d0) THEN
+	            WRITE(*,*)
+     &              ' Segment center coincides with source position.'
+	            GO TO 11
+	          END IF
+	          RayDir(1:3,1) = DV1(1:3) / S1
+	        END IF
+
+C           Force this ray onto the requested segment in CTRACE's
+C           segment-dispatch path (tracesub.F:1669-1716).  Use the
+C           segment number (= EltToSegMap(iSeg)), not the element
+C           index, since that is what CTRACE compares against.
+	        nRayToSeg(1)        = 1
+	        RayToSegMap(1,1)    = EltToSegMap(iSeg)
+
+	        iStartRay = 1; iEndRay = 1
+	        iStartElt = 0
+	        IF (.NOT. LRayTgtElt) THEN
+	          iEndElt = nElt
+	        ELSE
+	          iEndElt = RayTgtElt
+	        END IF
+
+	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
+     &	               iStartRay,iEndRay,RayMap,SegMap,
+     &	               ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
+     &                 StartIndRef,StartExtinc,
+     &                 DrawRayVec,DrawEltVec,nDrawElt(1),
+     &		       xDraw,yDraw)
+	        GO TO 11
+ 12	      CONTINUE
+	      ifRayPrint = .FALSE.
+	    ELSE
+	      WRITE(*,150)
+	    END IF
+
+
 #ifdef MACOS_CMD
 C         *** 'BWK' command ***
 
@@ -2514,10 +2608,10 @@ C         ***Center Beam in System Stop***
      &	        iCurRayElt,Dicr,Djcr,dxSource,
      &	        nBadRays,StartIndRef,StartExtinc,
      &	        Cmatrix,DrawRayVec,DrawEltVec,
-     &	        iStop,xTarg,sqErr,ifBeamCentered)
+     &	        iStop,xTarg,k,sqErr,ifBeamCentered)
 
 	      IF (ifBeamCentered) THEN
-	        WRITE(*,309) 0,SQRT(sqErr)
+	        WRITE(*,309)k,DSQRT(sqErr)
 	      END IF
 
 	    END IF
@@ -2726,25 +2820,25 @@ C         *** Set System Stop ***
 	        ifBuild=.FALSE.
 	        ifOPDCalc=.FALSE.
 
-!                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
-!		  ! With point source (source at finite distance) and
-!		  ! when SAOpt is set to SAPos, enforce ChfRay
-!                  ! thru STOP position at element by tip/tilt
-!                  ! chief ray in source plane. -jzlou
-!	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
-!     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
-!     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
-!     &              iCurRayElt,Dicr,Djcr,dxSource,
-!     &              nBadRays,StartIndRef,StartExtinc,
-!     &              Cmatrix,DrawRayVec,DrawEltVec,
-!     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
-!     &              xTarg,sqErr,ifBeamCentered)
-!
-!	          !WRITE(*,310) StopPos
-!                   ! The "Computed StopPos" is actually system entrance pupil
-!                  ifStopSet=.TRUE.
-!	          GO TO 1
-!	        END IF
+                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
+		  ! With point source (source at finite distance) and
+		  ! when SAOpt is set to SAPos, enforce ChfRay
+                  ! thru STOP position at element by tip/tilt
+                  ! chief ray in source plane. -jzlou
+	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
+     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
+     &              iCurRayElt,Dicr,Djcr,dxSource,
+     &              nBadRays,StartIndRef,StartExtinc,
+     &              Cmatrix,DrawRayVec,DrawEltVec,
+     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
+     &              xTarg,sqErr,ifBeamCentered)
+
+	          !WRITE(*,310) StopPos
+                   ! The "Computed StopPos" is actually system entrance pupil
+                  ifStopSet=.TRUE.
+	          GO TO 1
+	        END IF
 
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
@@ -2755,7 +2849,7 @@ C         *** Set System Stop ***
      &	            iCurRayElt,Dicr,Djcr,dxSource,
      &	            nBadRays,StartIndRef,StartExtinc,
      &	            Cmatrix,DrawRayVec,DrawEltVec,
-     &	            iStop,xTarg,sqErr,ifBeamCentered)
+     &	            iStop,xTarg,k,sqErr,ifBeamCentered)
 
 	        CALL DEQUATE(cr1indir,ChfRayDir,3)
 	        CALL DEQUATE(cr1inpos,ChfRayPos,3)
@@ -2800,7 +2894,7 @@ c	        th(3)=3.5355d-6
      &	          iCurRayElt,Dicr,Djcr,dxSource,
      &	          nBadRays,StartIndRef,StartExtinc,
      &	          Cmatrix,DrawRayVec,DrawEltVec,
-     &	          iStop,xTarg,sqErr,ifBeamCentered)
+     &	          iStop,xTarg,k,sqErr,ifBeamCentered)
 	        xGrid=xGrid_sv; yGrid=yGrid_sv
 
 	        !print*,' **Aft 2nd STOP , yGrid =',yGrid
@@ -3787,6 +3881,23 @@ C         ***Plot OPD map***
 	        WRITE(*,442) RMSWFE,WFEPV,DAvgl
 	      End If
 
+	      ! Arm annotation for bottom of raster plot:
+	      !   "OPD=<rms> <cUnit> RMS, <pv> <cUnit> P-V"
+	      ! and wedge label "OPD (<cUnit>)".
+	      If (BaseUnits_FLG) Then
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," ",A," RMS, ",E12.5," ",A," P-V")')
+     &	          RMSWFE,TRIM(cUnit),WFEPV,TRIM(cUnit)
+	        wedgeLabel = 'OPD ('//TRIM(cUnit)//')'
+	      Else
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," RMS, ",E12.5," P-V")')
+     &	          RMSWFE,WFEPV
+	        wedgeLabel = 'OPD'
+	      End If
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+
 	      !iEm1=iElt-1
 
 	      IF ((iPloTyp.NE.0).AND.(iPloTyp.NE.5).AND.(iPloTyp.NE.6)
@@ -3819,13 +3930,13 @@ C         ***Plot OPD map***
      &            .OR.(iPloTyp.EQ.9)) THEN
 	        j=ICLEN(filnam)
 	        imgfil=filnam(1:j)//'.OPD'//Cinteger(1:i)
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DBINOUT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	        	mpts,mpts,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                  dxElt(iElt),dxElt(iElt),iElt,R1)
 	      ELSE IF (iPloTyp.NE.0) THEN
 	        ! Render in pgplot window, XFP and YFP are grid coord vectors
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)//', File='//filnam
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DSRFPLT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	               mpts,mpts,'X-Axis','Y-Axis',CTITLE,R1,R2,1)
 	      END IF
@@ -4305,6 +4416,24 @@ C	      Compute spot diagram data from ray trace and plot:
 	        ycent=ycent/DBLE(iSpot)
 	        WRITE(*,408)(CntrSpot(1)-RefSpot(1)),
      &	          (CntrSpot(2)-RefSpot(2)),xcent,ycent
+
+	        ! RMS spot radius about centroid, for plot annotation.
+	        S1=0d0
+	        Do i=1,iSpot
+	          S1 = S1 + (RaySpot(i,1)-xcent)**2
+     &	                 + (RaySpot(i,2)-ycent)**2
+	        End Do
+	        S1 = DSQRT(S1/DBLE(iSpot))
+	        If (BaseUnits_FLG) Then
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5," ",A)')
+     &	            S1, TRIM(cUnit)
+	        Else
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5)') S1
+	        End If
+	        annotLine2 = ' '
+	        annotOn    = .TRUE.
 	      ELSE
 	        WRITE(*,*)' All rays were obscured or lost'
 	      END IF
@@ -4358,6 +4487,29 @@ C         ***Export data***
 C         ***next command: Plot wavefront stuff***
 C                          -- original comment, doesn't make sense -jzlou
 C         *** Should perform ray trace and diffraction here -- jzlou
+
+	  ELSE IF (LCMP(command,'IMGMODE',4)) THEN
+	    ! Raster display polarity for OPD / INT / PIX / GRAY etc.
+	    ! NEG = astronomy (large -> dark), POS = conventional.
+	    ! Non-raster plots (SLICE, WIRE, CONTOUR, COLUMN, ROW, SPOT)
+	    ! are unaffected.
+	    ! Must dispatch BEFORE 'IMG' branch below (LCMP 3-char match).
+	    IF (ifAstroMode) THEN
+	      CALL CACCEPT(ANS,'NEG',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    ELSE
+	      CALL CACCEPT(ANS,'POS',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    END IF
+	    IF (LCMP(ANS,'NEG',3).OR.LCMP(ANS,'ASTRO',3)) THEN
+	      ifAstroMode = .TRUE.
+	      WRITE(*,*)' IMGMODE = NEG (astronomy: large -> dark)'
+	    ELSE IF (LCMP(ANS,'POS',3).OR.LCMP(ANS,'CONV',3)) THEN
+	      ifAstroMode = .FALSE.
+	      WRITE(*,*)' IMGMODE = POS (conventional: large -> bright)'
+	    ELSE
+	      WRITE(*,*)' IMGMODE: unrecognized option, no change'
+	    END IF
 
 	  ELSE IF (LCMP(command,'IN',2).OR.LCMP(command,'PH',2).OR.
      &      LCMP(command,'AMPL',3).OR.LCMP(command,'REAL',3).OR.
@@ -4505,6 +4657,17 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	        ANS='SQRT Intensity#%'
 	      ELSE
 	        ANS='Intensity#%'
+	      END IF
+
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') MaxInt
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Intensity'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Intensity'
+	      ELSE
+	        wedgeLabel = 'Intensity'
 	      END IF
 
 	      CALL SrfOut(iElt,iPloTyp,ANS,
@@ -4772,6 +4935,18 @@ C     &	          psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        pixMax=maxval(PixArray); pixMin=minval(PixArray)
 	        print*,'PIX: pixMax, pixMin=', pixMax,pixMin
 	      end if
+
+	      pixMax = MAXVAL(PixArray(1:npix,1:npix))
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') pixMax
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Pixel value'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Pixel value'
+	      ELSE
+	        wedgeLabel = 'Pixel value'
+	      END IF
 
 	      CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.pix',npix,mpix,R1,R2,StretchType)
@@ -5621,7 +5796,7 @@ C         ***Here if no match***
 #else
 	    IF (ifEcho) WRITE(*,302)
 #endif
-	    print*,'** Unknown command = ', command
+	    WRITE(*,'(A,A)') '** Unknown command = ', TRIM(command)
 	  END IF
 	GO TO 1
 
