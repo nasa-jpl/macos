@@ -42,6 +42,8 @@ C***********************************************************************
       WRITE(*,*)'   NEW         - start a new optical system'
       WRITE(*,*)'   OLD <file>  - load a .in prescription'
       WRITE(*,*)'   FID <id>    - load by file id (from RX listing)'
+      WRITE(*,*)'   VALidate <file> - syntax-check a .in prescription'
+      WRITE(*,*)'                     without loading it'
       WRITE(*,*)'   SAVe        - write current system to .in'
       WRITE(*,*)'   EXPort      - write select results to file'
       WRITE(*,*)'   SHOw <elt>  - print all data for one element [Rx]'

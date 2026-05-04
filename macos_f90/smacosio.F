@@ -33,6 +33,7 @@ C***********************************************************************
 	use loh_I2
 	use loh_I3
 	use dopt_mod
+        use validate_prescription_mod, only: ValidatePrescription
         ! --------------------------------------
         IMPLICIT NONE
 
@@ -212,6 +213,20 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
+	  ! Pre-validate the .in file before the parser opens it; on failure
+	  ! abort cleanly with LOAD_SUCCESS=.FALSE. so callers get a clear
+	  ! error instead of a half-initialized model.
+	  BLOCK
+	    INTEGER :: vios
+	    CHARACTER(LEN=256) :: vmsg
+	    CALL ValidatePrescription(infil(1:L),vios,vmsg)
+	    IF (vios /= 0) THEN
+	      WRITE(*,*)' ** Prescription validation failed:'
+	      WRITE(*,*)'    ',TRIM(vmsg)
+	      LOAD_SUCCESS = .FALSE.
+	      GO TO 99
+	    END IF
+	  END BLOCK
 	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
 	  REWIND(RX_FID)
 

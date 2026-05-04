@@ -425,6 +425,100 @@ C***********************************************************************
         Contains
 
 C***********************************************************************
+C  ParseZernType -- shared parser for ZernType / FFZernType / MonZernType
+C  prescription values.
+C
+C  Maps a user-supplied typename string (e.g. "Noll", "NormNoll",
+C  "BornWolf", "NormAnnularNoll 0.3") to:
+C    typeL        -- the corresponding ZernType_* index (1..mZernType)
+C    found        -- .TRUE. if the typename was recognized
+C    annuRatio    -- annular pupil ratio (only meaningful when typeL == 9)
+C    hasRatio     -- .TRUE. if a ratio was successfully extracted
+C
+C  Match policy:
+C    - Norm-prefixed names (NormANSI, NormBornWolf, NormFringe, NormHex,
+C      NormNoll, NormAnnularNoll) match by the first 7 characters.
+C    - Un-normalized names (ANSI, BornWolf, Fringe, Noll, ExtFringe)
+C      match by the first 3 characters; this preserves backward
+C      compatibility with shortened forms like "Bor" for BornWolf.
+C    - Earlier MACOS versions silently rewrote "Noll" -> "NormNoll" as
+C      a "backward compatibility" shim.  That shim is removed: "Noll"
+C      now correctly resolves to ZernType_Noll (index 10).
+C
+C  Centralized so all parser sites (msmacosio.inc, macosio.F) share one
+C  source of truth -- a previous bug where the rewrite shim existed at
+C  one site only is what motivated this consolidation.
+C***********************************************************************
+
+        Subroutine ParseZernType(value, typeL, found, annuRatio, hasRatio)
+        Implicit none
+
+        Character(*), intent(in)  :: value
+        Integer,      intent(out) :: typeL
+        Logical,      intent(out) :: found
+        Real*8,       intent(out) :: annuRatio
+        Logical,      intent(out) :: hasRatio
+
+        Integer :: i, k, val_len
+        Logical :: LCMP        ! external
+
+        typeL     = 0
+        found     = .FALSE.
+        annuRatio = 0d0
+        hasRatio  = .FALSE.
+
+        If (LCMP(value, 'Norm', 4)) Then
+          ! Norm-prefixed types: NormANSI(4), NormBornWolf(5),
+          ! NormFringe(6), NormHex(7), NormNoll(8), NormAnnularNoll(9)
+          DO i = 4, 9
+            IF (LCMP(value, ZernTypeNameL(i), 7)) THEN
+              typeL = i
+              found = .TRUE.
+            END IF
+          END DO
+          ! For NormAnnularNoll, look for an additional whitespace-
+          ! separated numeric token after the typename and parse it.
+          If (typeL == 9) Then
+            val_len = LEN(value)
+            ! Skip past the typename
+            i = 1
+            DO WHILE (i <= val_len)
+              IF (value(i:i) == ' ') EXIT
+              i = i + 1
+            END DO
+            ! Skip whitespace
+            DO WHILE (i <= val_len)
+              IF (value(i:i) /= ' ') EXIT
+              i = i + 1
+            END DO
+            ! Try to parse a real number from the remainder
+            If (i < val_len) Then
+              READ(value(i:), *, IOSTAT=k) annuRatio
+              hasRatio = (k == 0)
+            End If
+          End If
+        Else
+          ! Un-normalized types.  Indices 1..3 (ANSI, BornWolf,
+          ! Fringe) plus the later additions Noll(10) and ExtFringe(11).
+          ! 3-character prefix is unambiguous: no other typename starts
+          ! with "ANS", "Bor", "Fri", "Nol", or "Ext".
+          DO i = 1, 3
+            IF (LCMP(value, ZernTypeNameL(i), 3)) THEN
+              typeL = i
+              found = .TRUE.
+            END IF
+          END DO
+          DO i = 10, 11
+            IF (LCMP(value, ZernTypeNameL(i), 3)) THEN
+              typeL = i
+              found = .TRUE.
+            END IF
+          END DO
+        End If
+
+        End Subroutine ParseZernType
+
+C***********************************************************************
 
         Subroutine elt_mod_init
 

@@ -667,22 +667,20 @@ C       Set entrance condition flags to .FALSE.
               GO TO 61
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  FFZernTypeL(iElt) = ptypeL
+                  FFZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.FFZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
                 WRITE(*,*)'Check and reload Rx!'
@@ -692,22 +690,20 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  MonZernTypeL(iElt) = ptypeL
+                  MonZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.MonZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
                 WRITE(*,*)'Check and reload Rx!'
@@ -1674,49 +1670,23 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ ZernType
             ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Noll',4))
-     &          TypeString='NormNoll'  ! backward compatibility
-
-              ! Assign ZernTypeL
-              If (LCMP(TypeString,'Norm',4)) Then
-                ! normalized Zernike coeff
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    ZernTypeL(iElt)=i
-                    ZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-                If (ZernTypeL(iElt)==9) Then
-                  ! Annual
-                  i=1
-                  Do ! find first ' ' in VALUE
-                    If (VALUE(i:i) == ' ') exit
-                    i=i+1
-                  End Do
-                  Do ! skip all leading ' '
-                    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
-                    i=i+1
-                  End Do
-                  If (i<MacosValLen)
-     &              READ(VALUE(i:),*) ZernAnnuRatio(iElt)
-                End If
-              Else
-                ! un-normalized Zernike coeff
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    ZernTypeL(iElt)=i
-                    ZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-!#if 0
-!	        IF (LCMP(TypeString,ZernTypeNameL(7),7)) THEN
-!                  ! Hex zernike
-!                  ZernTypeL(iElt)=7
-!                  ZernTypeL_FLG=.TRUE.
-!                END IF
-!#endif
-              End If
+              ! Centralized parser -- maps the user-supplied typename
+              ! to a ZernType_* index, correctly distinguishing 'Noll'
+              ! (index 10) from 'NormNoll' (index 8).  See ParseZernType
+              ! in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  ZernTypeL(iElt) = ptypeL
+                  ZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.ZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
 		WRITE(*,*)'Check and reload Rx!'
@@ -2153,22 +2123,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    FFZernTypeL(iElt)=i
-                    FFZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  FFZernTypeL(iElt) = ptypeL
+                  FFZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.FFZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
                 WRITE(*,*)'Check and reload Rx!'
@@ -2271,22 +2239,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Norm',4)) Then
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              Else
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    MonZernTypeL(iElt)=i
-                    MonZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-              End If
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  MonZernTypeL(iElt) = ptypeL
+                  MonZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.MonZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
                 WRITE(*,*)'Check and reload Rx!'

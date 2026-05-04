@@ -99,6 +99,7 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/macos_debug.F
   ${smacos_src_dir}/src_mod.F
   ${smacos_src_dir}/cfiles_mod.F
+  ${smacos_src_dir}/validate_prescription.F90
   ${smacos_src_dir}/usersub.F
   ${smacos_src_dir}/lsq.F
   ${smacos_src_dir}/loh_mod.F
