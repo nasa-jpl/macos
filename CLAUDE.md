@@ -267,6 +267,34 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
 - ChkDf2: FreeForm with nGridMat=0 silently satisfies pData/xData/yData/zData/lData
   (no spurious "Default used" warnings).
 
+## ZernType parsing (ParseZernType in elt_mod.F)
+- All eight ZernType / FFZernType / MonZernType parser sites — three in
+  msmacosio.inc (load) and three MOD-dialog sites in macosio.F — go through the
+  shared `ParseZernType(value, typeL, found, annuRatio, hasRatio)` helper in
+  elt_mod.F. Don't add a new local copy; extend the helper.
+- Norm-prefixed names (NormANSI, NormBornWolf, NormFringe, NormHex, NormNoll,
+  NormAnnularNoll) match by 7 chars; un-normalized names (ANSI, BornWolf,
+  Fringe, Noll, ExtFringe) by 3. NormAnnularNoll (typeL=9) parses an annular
+  ratio from the trailing token.
+- Historical bug: a "Noll → NormNoll" rewrite shim existed at one site only,
+  and the un-normalized loop ran indices 1..3 (omitting 10=Noll, 11=ExtFringe),
+  so `MOD ZernType=Noll` silently became NormNoll. Both fixed in the helper.
+
+## Prescription validator (validate_prescription.F90)
+- Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
+  (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
+  I/O: catches missing values after `Key=` (inline or continuation), bad keys,
+  file-not-found, and open errors. Returns ios=0 on success; ios/=0 with a
+  bare `msg` (no filename prefix — caller adds context).
+- Wired into MBFile6 in macosio.F (interactive: re-prompt on failure via
+  `GO TO 43`) and smacosio.F (SMACOS: clean abort with LOAD_SUCCESS=.FALSE.,
+  `GO TO 99`). Both paths run the validator only when iopt=1 (existing file
+  being loaded).
+- Top-level `VALIDATE` command added in macos_cmd_loop.inc — same subroutine,
+  no state change, just prints `<file>: OK` or `<file>: <msg>`.
+- Phase 2 (deferred): IOSTAT-armoring of msmacosio.inc parser internals;
+  enum-value validation against the type tables.
+
 ## Debug builds
 - `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
 - `source ./makejoint.sh debug` — all four targets, debug
