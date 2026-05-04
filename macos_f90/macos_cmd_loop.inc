@@ -236,6 +236,37 @@ C         *** A few OS shell utility commands ***
 #endif
 
 
+C         ***next command: Validate a .in prescription file***
+
+	  ELSE IF (LCMP(command,'VALIDATE',3)) THEN
+	    CALL CACCEPT(ANS,' ','Enter file name (.in optional): ')
+	    BLOCK
+	      INTEGER :: vios, vlen
+	      CHARACTER(LEN=256) :: vmsg
+	      CHARACTER(LEN=MacosCharLen) :: vfile
+	      vfile = ANS
+	      vlen = ICLEN(vfile)
+	      IF (vlen.GE.3) THEN
+	        IF (.NOT.LCMP(vfile(vlen-2:vlen),'.in',3)) THEN
+	          vfile(vlen+1:vlen+3)='.in'
+	          vlen = vlen + 3
+	        END IF
+	      ELSE IF (vlen.GT.0) THEN
+	        vfile(vlen+1:vlen+3)='.in'
+	        vlen = vlen + 3
+	      END IF
+	      IF (vlen.EQ.0) THEN
+	        WRITE(*,*)' ** No file name given.'
+	      ELSE
+	        CALL ValidatePrescription(vfile(1:vlen),vios,vmsg)
+	        IF (vios.EQ.0) THEN
+	          WRITE(*,*)' ',vfile(1:vlen),': OK'
+	        ELSE
+	          WRITE(*,*)' ',vfile(1:vlen),': ',TRIM(vmsg)
+	        END IF
+	      END IF
+	    END BLOCK
+
 C         ***next command: Load optical description data***
 
 	  ELSE IF (LCMP(command,'LOAD',3).OR.

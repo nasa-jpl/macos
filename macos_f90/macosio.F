@@ -46,6 +46,7 @@ C***********************************************************************
 	use loh_I3
 	use dopt_mod
         use macos_IO, only: SetPrtToFileID
+        use validate_prescription_mod, only: ValidatePrescription
 ! --------------------------------------
         IMPLICIT NONE
 
@@ -256,6 +257,23 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
+	  ! Pre-validate the .in file before the parser opens it.  Catches
+	  ! obvious file-level breakage (missing values, etc.) and lets
+	  ! the user pick a different file (or 'q' to abort) instead of
+	  ! letting the parser walk into the breakage and leave the model
+	  ! half-initialized.
+	  BLOCK
+	    INTEGER :: vios
+	    CHARACTER(LEN=256) :: vmsg
+	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg)
+	    IF (vios /= 0) THEN
+	      WRITE(*,*)' ** Prescription validation failed:'
+	      WRITE(*,*)'    ',TRIM(vmsg)
+	      WRITE(*,*)'    Pick a different file (or "q" to abort).'
+	      LOAD_SUCCESS = .FALSE.
+	      GO TO 43
+	    END IF
+	  END BLOCK
 	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
 	  REWIND(RX_FID)
 
@@ -1630,18 +1648,19 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
      &	        (FFZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
-	      TypeString=VALUE
-	      IF (LCMP(TypeString,'Norm',4)) THEN
-	        DO i=4,9
-	          IF (LCMP(TypeString,ZernTypeNameL(i),7))
-     &	            FFZernTypeL(MB_I(1))=i
-	        END DO
-	      ELSE
-	        DO i=1,3
-	          IF (LCMP(TypeString,ZernTypeNameL(i),3))
-     &	            FFZernTypeL(MB_I(1))=i
-	        END DO
-	      END IF
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(VALUE, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          FFZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	        END IF
+	      END BLOCK
+	      TypeString = VALUE
 	      WRITE(*,*)' FFZernType',MB_I(1),
      &	        ZernTypeNameL(FFZernTypeL(MB_I(1)))
 !-->  FFZernModes: set mode index for sparse FF Zernike
@@ -1805,18 +1824,19 @@ c	    READ(VALUE,*)GridType
      &	        (MonZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
-	      TypeString=VALUE
-	      IF (LCMP(TypeString,'Norm',4)) THEN
-	        DO i=4,9
-	          IF (LCMP(TypeString,ZernTypeNameL(i),7))
-     &	            MonZernTypeL(MB_I(1))=i
-	        END DO
-	      ELSE
-	        DO i=1,3
-	          IF (LCMP(TypeString,ZernTypeNameL(i),3))
-     &	            MonZernTypeL(MB_I(1))=i
-	        END DO
-	      END IF
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(VALUE, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          MonZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	        END IF
+	      END BLOCK
+	      TypeString = VALUE
 	      WRITE(*,*)' MonZernType',MB_I(1),
      &	        ZernTypeNameL(MonZernTypeL(MB_I(1)))
 !-->  MonZernModes: set mode index for sparse Mon Zernike
@@ -2411,22 +2431,22 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      if (LCMP(TypeString,'Norm',4)) then
-	        ! normalized Zernike coeff
-	        DO i=4,6
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    ZernTypeL(MB_I(1))=i
-                    LNOTSET=.FALSE.
-                  END IF
-                END DO
-	      else
-	        DO i=1,3
-	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-		    ZernTypeL(MB_I(1))=i
-	            LNOTSET=.FALSE.
-	          END IF
-	        END DO
-	      end if
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      ! This is the site that triggered the consolidation
+	      ! (MOD ZernType(N)=Noll formerly resolved to NormNoll due
+	      ! to a backward-compatibility shim and an under-sized loop).
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(TypeString, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          ZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	          LNOTSET = .FALSE.
+	        END IF
+	      END BLOCK
 	      IF (LNOTSET) THEN
 		WRITE(*,133) TypeString
 	      ELSE
