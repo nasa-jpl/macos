@@ -78,6 +78,7 @@ C***********************************************************************
 	use stop_set_mod
 	use pgplot_mod
 	use loh_I1, only : BaseUnits_FLG
+        use validate_prescription_mod, only: ValidatePrescription
 
 	IMPLICIT NONE
 
