@@ -178,7 +178,7 @@ set(SMACOS_ONLY_SOURCES
   ${smacos_src_dir}/pgplotdummy.F
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
-  # ${smacos_src_dir}/fk.c
+  ${smacos_src_dir}/fk.c   # defines fkprocs_, needed by GMI mex link
 )
 
 # MACOS-only sources (macos-specific modules + C splicubi2)
