@@ -2702,7 +2702,10 @@ c sws    error RETURN in reading input
  300    CONTINUE
         WRITE(*,*) '[parse_loh]',
      &     ' file error during READ, bat_task = ',bat_task
-        RETURN
+c       Treat the read error as end-of-file: pop the journal stack and
+c       return to the console.  Without this, the cmd loop would call
+c       PARSE_LOH again, hit the same broken READ, and spin forever.
+        GO TO 100
         END SUBROUTINE PARSE_LOH
 
 #endif
@@ -2850,7 +2853,8 @@ c sws    error RETURN in reading input
  300    CONTINUE
 	  WRITE(*,*) '[parse_loh]',
      &	     ' file error during READ, bat_task = ',bat_task
-	  RETURN
+c       Treat the read error as end-of-file (see PARSE_LOH for context).
+	  GO TO 100
 
 	END SUBROUTINE PARSE_LOH_SAVE
 
