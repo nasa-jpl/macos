@@ -72,7 +72,7 @@ C       Setup for new input scheme
         CHARACTER(len=MacosValLen) :: VALUE
 !	CHARACTER*160 VALUE
 	LOGICAL ARR_FLG,opt_npts_flg
-	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, ApInputErr
+	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, found, ApInputErr
 	INTEGER ians, nVertex,StrLen
 
 	REAL*8 D1(9)
@@ -1224,7 +1224,7 @@ C  Get Surface Coordinate Parameters
 	        WRITE(*,*)' Orthoganalized zData=',(zData(i,iElt),i=1,3)
 	      END IF
 	!<--
-	
+
 	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
