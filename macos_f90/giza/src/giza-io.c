@@ -96,7 +96,17 @@ _giza_prompt_for_device (void)
        *  newline character as the default input
        */
       char *p = fgets(input,sizeof(input)-1,stdin);
-      if (p != NULL)
+      if (p == NULL)
+        {
+          /* stdin closed (EOF) -- e.g. running from a journal/pipe that
+           * has been exhausted.  Without this, the loop spun forever
+           * because the termination condition (count>0) is never false.
+           * Fall back to the default device, matching what we do when
+           * the user just presses Enter. */
+          devType = _giza_default_device ();
+          break;
+        }
+      else
         {
           size_t last = strlen(input) - 1;
           if (input[last] == '\n')
@@ -112,16 +122,9 @@ _giza_prompt_for_device (void)
                  }
              }
 
-          if (!p)
-	    {
-	      _giza_error ("_giza_prompt_for_device", "Error reading input");
-	    }
-          else
-	    {
 	      char const *devTypeStr;
 	      _giza_split_device_string (input, &devTypeStr);
 	      devType = _giza_device_to_int (devTypeStr);
-	    }
 
           if (devType == GIZA_DEVICE_IV)
 	    {
