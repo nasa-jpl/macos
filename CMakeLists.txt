@@ -10,11 +10,12 @@ endif()
 
 project(SMACOS LANGUAGES Fortran C)
 
-option(BUILD_MACOS      "Build the MACOS executable"          ON)
-option(BUILD_SMACOS     "Build the SMACOS static library"     ON)
-option(BUILD_SMACOS_DVR "Build the smacos_dvr test driver"    OFF)
-option(BUILD_GMI        "Build the GMI Matlab mex interface"  OFF)
-option(USE_GIZA         "Build and link Giza instead of pre-built PGPLOT" OFF)
+option(BUILD_MACOS       "Build the MACOS executable"          ON)
+option(BUILD_SMACOS      "Build the SMACOS static library"     ON)
+option(BUILD_SMACOS_LEAN "Build the SMACOS static library"     OFF)
+option(BUILD_SMACOS_DVR  "Build the smacos_dvr test driver"    OFF)
+option(BUILD_GMI         "Build the GMI Matlab mex interface"  OFF)
+option(USE_GIZA          "Build and link Giza instead of pre-built PGPLOT" OFF)
 set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
@@ -22,12 +23,42 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+
+if(BUILD_SMACOS_LEAN)
+  # ---------------------------------------------
+  # Safety net
+  if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(FATAL_ERROR
+        "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n"
+    )
+  endif()
+  # ---------------------------------------------
+  set(BUILD_MACOS       OFF)
+  set(BUILD_SMACOS      OFF)
+  set(BUILD_SMACOS_DVR  OFF)
+  set(BUILD_GMI         OFF)
+  set(USE_GIZA          OFF)
+
+  set(CMAKE_BUILD_TYPE Debug)  # Release
+  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # ==============================================================================
 # 2. Compiler Flag Logic
 # ==============================================================================
 if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   if(WIN32)
     # Windows Intel oneAPI (ifx/icx)
+    if(BUILD_SMACOS_LEAN)
+      set(BASE_FFLAGS "/4L132 /align /O2 /fpp /nologo /warn:nointerfaces")
+      set(BASE_FFLAGS "${BASE_FFLAGS} /fp:strict /Qfp-speculation:strict /Qopt-mem-layout-trans")
+      set(BASE_FFLAGS "${BASE_FFLAGS} /Qmkl /c /gen-interfaces /Qm64")
+
+      set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /QxHost ")
+      set(CMAKE_Fortran_FLAGS_DEBUG   "/debug:full /traceback /check:bounds /warn:interfaces /warn:unused")
+      set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
+      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
+    endif()
     set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
     set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
@@ -128,7 +159,6 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/psesub.F
   ${smacos_src_dir}/utilsub_c.c
   ${smacos_src_dir}/mhist.c
-  ${smacos_src_dir}/macos_signal.c
 )
 
 # SMACOS-only sources (smacos-specific modules + Fortran splicubi2)
@@ -142,7 +172,7 @@ set(SMACOS_ONLY_SOURCES
   ${smacos_src_dir}/pgplotdummy.F
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
-  ${smacos_src_dir}/fk.c
+  # ${smacos_src_dir}/fk.c
 )
 
 # MACOS-only sources (macos-specific modules + C splicubi2)
@@ -154,6 +184,7 @@ set(MACOS_ONLY_SOURCES
   ${smacos_src_dir}/f90prt.F
   ${smacos_src_dir}/macos.F
   ${smacos_src_dir}/splicubi2.c
+  ${smacos_src_dir}/macos_signal.c
 )
 
 # ==============================================================================
@@ -202,17 +233,37 @@ endif()
 # ==============================================================================
 
 # FITS Library Target
-add_library(fitslib STATIC ${FITS_SOURCES})
-target_include_directories(fitslib PUBLIC ${fits_src_dir} ${CMAKE_Fortran_MODULE_DIRECTORY})
-if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-  # fitsio.f90 is legacy code with rank/type mismatches — suppress with ifx flags
-  target_compile_options(fitslib PRIVATE -mismatch -warn nousage)
+if(NOT BUILD_SMACOS_LEAN)
+  add_library(fitslib STATIC ${FITS_SOURCES})
+  target_include_directories(fitslib PUBLIC ${fits_src_dir} ${CMAKE_Fortran_MODULE_DIRECTORY})
+  if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+    # fitsio.f90 is legacy code with rank/type mismatches — suppress with ifx flags
+    target_compile_options(fitslib PRIVATE -mismatch -warn nousage)
+  endif()
 endif()
 
 # Numerical Libraries
 add_library(blaslib   STATIC ${BLAS_SOURCES})
 add_library(lapacklib STATIC ${LAPACK_SOURCES})
 add_library(npsol     STATIC ${NPSOL_SOURCES})
+
+# SMACOS Static Library
+if(BUILD_SMACOS_LEAN)
+  add_library(smacos STATIC ${SMACOS_ONLY_SOURCES})
+  target_compile_definitions(smacos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CSMACOS)
+  set_target_properties(smacos PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
+  target_include_directories(smacos PUBLIC
+      ${smacos_src_dir}
+      ${CMAKE_BINARY_DIR}/mod
+  )
+
+  target_link_libraries(smacos PRIVATE
+      npsol
+      lapacklib
+      blaslib
+      ${PLATFORM_LIBS}
+  )
+endif()
 
 # SMACOS Static Library
 if(BUILD_SMACOS)
