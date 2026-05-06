@@ -1263,7 +1263,7 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
-                  
+
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
      &                                 (SrfType(iElt)==SrfType_GridData))
 
@@ -1284,25 +1284,25 @@ C       Set entrance condition flags to .FALSE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
-                
+
               ELSE IF (SrfType(iElt).EQ.SrfType_Anamorphic) THEN
                 KcElt_FLG=.TRUE.
                 KrElt_FLG=.TRUE.
                 fElt_FLG=.TRUE.
                 eElt_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Aspheric).AND.
      &            (SrfType(iElt).NE.SrfType_AsGrData)) THEN
                 AsphCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
      &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
      &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
-              
+
               IF ((SrfType(iElt).NE.SrfType_Anamorphic).AND.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
@@ -1328,7 +1328,7 @@ C       Set entrance condition flags to .FALSE.
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
      &            (EltID(iElt).NE.SrfType_AsGrData).AND.
-     &            (SrfType(iElt).NE.SrfType_MonGrData).AND. 
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
      &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
@@ -2614,6 +2614,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GlassElt(iElt) = VALUE
               IndRefE_FLG    = .TRUE.
               GlassElt_FLG   = .TRUE.
+
               ! Assume Sellmeier glass by default
               GlassType(iElt)=SellmeierGlass
               LGlass(iElt)=.FALSE.
@@ -2763,24 +2764,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ApStop',6)) THEN
-              RxStopSet=.TRUE.
-              IF (EltID(iElt)==0 .OR.
-     &          EltID(iElt)==NSRefractorElt .OR.
-     &          EltID(iElt)==NSReflectorElt .OR.
-     &          EltID(iElt)==SegmentElt) THEN
-                  ifStopSet=.FALSE.
-                  EltStopSet=.FALSE.
-              ELSE
-                StopElt=iElt
-                READ(VALUE,*) StopOffset(1:2)
-                EltStopSet=.TRUE.
-	        nTok = GetNumToken(VALUE)
-                LStopAtEltAutoSet = (nTok > 2)
-                !IF (nTok > 2) THEN
-                !  !print*,' ** STOP at element will be auto-reset!'
-	        !  LStopAtEltAutoSet=.TRUE.
-                !END IF
-              END IF
+              ! if multiple ApStop statements are found, it will pick the last
+              RxStopSet  = .TRUE.
+              StopElt    = iElt
+              EltStopSet = .TRUE.
+              READ(VALUE,*) StopOffset(1:2)
+
+              nTok = GetNumToken(VALUE)
+              LStopAtEltAutoSet = (nTok > 2)
+
               GO TO 61
 
             ! ------------------------------------------------------------------------------

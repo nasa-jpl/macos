@@ -348,6 +348,7 @@ c		 warning messages when you have nObs=0
 	use src_mod
 	use elt_mod
 	use loh_I2
+        use macos_mod, only: ifStopSet
 
 	IMPLICIT NONE
 
@@ -365,6 +366,17 @@ C   Setup for new input scheme
 	ELEM_OK = .TRUE.
 
 C       Set defaults, if necessary
+
+        ! ApStop -- cannot be placed at NS-Surfaces or at the Object Location
+        if (RxStopSet .and. EltStopSet) then
+          if (EltID(iElt)==0 .OR.
+     &          EltID(iElt) == NSRefractorElt .OR.
+     &          EltID(iElt) == NSReflectorElt .OR.
+     &          EltID(iElt) == SegmentElt) THEN
+                  ifStopSet  =.FALSE.
+                  EltStopSet =.FALSE.
+          end if
+        end if
 
 	IF (EltName_FLG) THEN
 	  CONTINUE
@@ -619,7 +631,7 @@ C	Param order = beta,dact or drad,dq,minrad
 	  WRITE(*,112)'lData',iElt
 	END IF
 	!-->
-	
+
 	IF (xMon_FLG) THEN
 	  CONTINUE
 	ELSE
