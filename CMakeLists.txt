@@ -50,7 +50,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   if(WIN32)
     # Windows Intel oneAPI (ifx/icx)
     if(BUILD_SMACOS_LEAN)
-      set(BASE_FFLAGS "/4L132 /align /O2 /fpp /nologo /warn:nointerfaces")
+      set(BASE_FFLAGS "/4L132 /align /O2 /fpp /nologo /warn:nointerfaces")  # /names:uppercase /assume:nounderscore
       set(BASE_FFLAGS "${BASE_FFLAGS} /fp:strict /Qfp-speculation:strict /Qopt-mem-layout-trans")
       set(BASE_FFLAGS "${BASE_FFLAGS} /Qmkl /c /gen-interfaces /Qm64")
 
@@ -58,12 +58,18 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
       set(CMAKE_Fortran_FLAGS_DEBUG   "/debug:full /traceback /check:bounds /warn:interfaces /warn:unused")
       set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
       set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
+
+      # Fortran pre-processing options
+      set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
+
+    else()
+      set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
+      set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
+      set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
+      set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
+      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
     endif()
-    set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
-    set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
-    set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-    set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
+
   else()
     # Linux Intel oneAPI (ifx/icx)
     set(BASE_FFLAGS "-fpp -extend-source 132 -align -warn nointerfaces -DPGPLOT -DLNXOS -fPIC")
@@ -251,7 +257,11 @@ add_library(npsol     STATIC ${NPSOL_SOURCES})
 if(BUILD_SMACOS_LEAN)
   add_library(smacos STATIC ${SMACOS_ONLY_SOURCES})
   target_compile_definitions(smacos PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CSMACOS)
-  set_target_properties(smacos PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
+  set_target_properties(smacos PROPERTIES
+      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod
+      POSITION_INDEPENDENT_CODE TRUE
+      COMPILE_DEFINITIONS       "${SMACOS_preprocessing_Definition}"
+  )
   target_include_directories(smacos PUBLIC
       ${smacos_src_dir}
       ${CMAKE_BINARY_DIR}/mod
