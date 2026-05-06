@@ -58,7 +58,7 @@ C       Setup for new input scheme
         CHARACTER(MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
 	LOGICAL ARR_FLG, opt_npts_flg
-	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
+	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, found
 	INTEGER nVertex
 
         INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible

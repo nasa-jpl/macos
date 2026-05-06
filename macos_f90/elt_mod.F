@@ -172,7 +172,7 @@ C***********************************************************************
         !
         ! --- Surfaces: Asphere, Zernikes, Monomials, Grid, UDS, AsGrid, MonGrid, FreeForm -------
         !
-        LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifComputeDZ
+        LOGICAL,  DIMENSION(:),     ALLOCATABLE:: ifComputeDZ                              ! interpolated Srf. Data (Grid)
         REAL*8,   DIMENSION(:),     ALLOCATABLE:: ZernRad, lMon, GridSrfdx, ZernAnnuRatio
         REAL*8,   DIMENSION(:,:),   ALLOCATABLE:: AsphCoef,MonCoef,ZernCoef,pMon,
      &                                            xMon,yMon,zMon,
@@ -213,14 +213,14 @@ C***********************************************************************
 
         INTEGER,  DIMENSION(:),     ALLOCATABLE:: UDSrfType,ZernaType,ZernTypeL,
      &                                            nGridMat,iEltToGridSrf,
-     &                                            nDP
+     &                                            nDP                                      ! interpolated Srf. Data (Grid)
 
 
         INTEGER, PARAMETER :: mZernType          =  11,
-     &                        mZernModes         =  66,
-     &                        nZernModes_Default =  45,
-     &                        mAsphCoef          =   9,
-     &                        nAsphCoef_Default  =   4,
+     &                        mZernModes         =  66,  ! max. # of Zernike Coefficients (8th radial mode)
+     &                        nZernModes_Default =  45,  ! default if "nZernCoef" is not defined in Rx
+     &                        mAsphCoef          =   9,  ! max terms = 9, up to term h^20
+     &                        nAsphCoef_Default  =   4,  ! default if "nAsphCoef" is not defined in Rx
      &                        mAnaCoef           =   4,
      &                        mMonCoef           = 120,
      &                        mUDSrfParam        =  10
@@ -228,11 +228,11 @@ C***********************************************************************
         INTEGER, PARAMETER ::
      &          ZernType_ANSI            =  1,
      &          ZernType_BornWolf        =  2,
-     &          ZernType_Fringe          =  3,
+     &          ZernType_Fringe          =  3,   ! incl. CODE V's 37th mode
      &          ZernType_NormANSI        =  4,
      &          ZernType_NormBornWolf    =  5,
      &          ZernType_NormFringe      =  6,
-     &          ZernType_NormHex         =  7,
+     &          ZernType_NormHex         =  7,   ! ??? ToDo: Implemented?
      &          ZernType_NormNoll        =  8,
      &          ZernType_NormAnnularNoll =  9,
      &          ZernType_Noll            = 10,
@@ -241,15 +241,17 @@ C***********************************************************************
         INTEGER, PARAMETER :: ZernType_MaxMode(mZernType) =
      &          [mZernModes,  ! ZernType_ANSI
      &           mZernModes,  ! ZernType_BornWolf
-     &                   37,  ! ZernType_Fringe
+     &                   37,  ! ZernType_Fringe   (CODE V notation: #37 = 12th radial mode)
      &           mZernModes,  ! ZernType_NormANSI
      &           mZernModes,  ! ZernType_NormBornWolf
      &                   37,  ! ZernType_NormFringe
-     &                    0,  ! ZernType_NormHex
+     &                    0,  ! ZernType_NormHex          implemented ???
      &           mZernModes,  ! ZernType_NormNoll
      &           mZernModes,  ! ZernType_NormAnnularNoll
      &           mZernModes,  ! ZernType_Noll
      &           mZernModes]  ! ZernType_ExtFringe
+
+
 
         INTEGER, DIMENSION(5), PARAMETER ::
      &          ZernType_rms_normalised = (/ZernType_NormANSI,
@@ -259,24 +261,24 @@ C***********************************************************************
      &                                      ZernType_NormAnnularNoll/)
 
         INTEGER, DIMENSION(5), PARAMETER ::
-     &           ZernType_not_normalised = (/ZernType_ANSI,
-     &                                       ZernType_BornWolf,
-     &                                       ZernType_Fringe,
-     &                                       ZernType_Noll,
-     &                                       ZernType_ExtFringe/)
+     &           ZernType_not_normalised = (/ZernType_ANSI,        !  1,
+     &                                       ZernType_BornWolf,    !  2,
+     &                                       ZernType_Fringe,      !  3,
+     &                                       ZernType_Noll,        ! 10,
+     &                                       ZernType_ExtFringe/)  ! 11
 
         CHARACTER(LEN=*), PARAMETER :: ZernTypeNameL(mZernType)=
-     &         (/'ANSI',             !  1
+     &         (/'ANSI',             !  1   was Malacara
      &           'BornWolf',         !  2
      &           'Fringe',           !  3
-     &           'NormANSI',         !  4
+     &           'NormANSI',         !  4   was Malacara
      &           'NormBornWolf',     !  5
      &           'NormFringe',       !  6
      &           'NormHex',          !  7
      &           'NormNoll',         !  8
-     &           'NormAnnularNoll',  !  9
-     &           'Noll',             ! 10
-     &           'ExtFringe'/)       ! 11
+     &           'NormAnnularNoll',  !  9   Annular Zernike
+     &           'Noll',             ! 10   Noll Ordering
+     &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
 
         REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
      &             (/    1d0,      2d0,      2d0,  SQRT_6,   SQRT_3,   SQRT_6,
@@ -291,21 +293,46 @@ C***********************************************************************
      &               SQRT_20,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,
      &               SQRT_11,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22,  SQRT_22/)
 
-        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(3) = ['Sellmeier', 'SCHOTT', 'Hartman']
+        !
+        ! --------- Basic Surface Definition: Material ---------
+        !
+
+        Integer, parameter :: HartmannGlass       = 0,  ! Not used
+     &                        SellmeierGlass      = 1,  ! Schott's definition (SELLMEIER3TA)
+     &                        SchottGlass         = 2,  ! Schott = Laurent model   ("Old Schott" Model)
+     &                        HerzbergerGlass     = 3,  ! HERZBRGR4X2
+     &                        SELLMEIER_2TA_GLASS = 4,  ! Sellmeier, 2 Terms with Constant A (5 Parameters)
+     &                        KINGSLAKE1_GLASS    = 5,  ! Kingslake with 2 Terms (5 Parameters)
+     &                        CauchyGlass         = 6,  ! Cauchy
+     &                        MAX_GLASS_MODELS    = 6
+
+        Integer, parameter :: nGLASS_COEF(0:6) = [0,    ! HartmannGlass
+     &                                            6,    ! SellmeierGlass
+     &                                            6,    ! SchottGlass
+     &                                            6,    ! HerzbergerGlass
+     &                                            5,    ! SELLMEIER_2TA_GLASS
+     &                                            5,    ! KINGSLAKE1_GLASS
+     &                                            3]    ! CauchyGlass
+
+        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(0:6) =
+     &                         ['Hartmann', 'Sellmeier',
+     &                          'Schott', 'Herzberger', 'Sellm2TA',
+     &                          'Kingslake', 'Cauchy']
 
         Integer, parameter :: mCoat=10,
-     &                        mPrvGlass=5,
-     &                        mPrvGlassEntry=20,
-     &                        mES=10
-        Integer, parameter :: mMetSrf=20,
-     &                        mMetBeam=48,
-     &                        mMetPos=mMetBeam,
-     &                        mSysMetBeam=128,
-     &                        mRefRay=5,
-     &                        mPupRay=9,
-     &                        mIndRef=5,
-     &                        mDOE=6
-        Integer :: maxAsphCoef
+     &           	      mPrvGlass=5, ! max private glasses defined in Rx
+     &                        mPrvGlassEntry=20, ! max wavlen/index entries for
+					 	 ! each glass in catalog
+     &                        mES=10  ! max edge-sensors per element
+        Integer, parameter :: mMetSrf=20,  ! max surfaces with metrology
+     &                        mMetBeam=48, ! max met beams on each met srf.
+     &                        mMetPos=mMetBeam,  ! max metrology points on each met srf.
+     &                        mSysMetBeam=128,    ! max total system met measurements
+     &                        mRefRay=5,   ! max # reference rays, chief + 4 marginal
+     &                        mPupRay=9,   ! max # pupil rays, chief + 8 marginal
+     &                        mIndRef=5,   !
+     & 			      mDOE=6       ! max # DOE elements
+        Integer :: maxAsphCoef  ! default to 4 terms
 
         Logical :: ifInMTFCalc,BWK_FLG,LStopAtEltAutoSet,LSavRayL,SrcLF_FLG,
      &             CalcSrcZFrame_FLG,DupElt_FLG
@@ -368,7 +395,9 @@ C***********************************************************************
      &        yObs, zObs,DWORK,
      &        GlassCoef, GlassTable,MTFMat,MTFMat2,
      &        IndRefArr,ExtincArr,EltCoatThk,
-     &        ArrIndRef,SrfMetMea
+     &	      ArrIndRef,SrfMetMea
+	! IndRefArr is for coating layers, ArrIndRef is for lens element
+	! having several IndRef for different wavelengths
 
         Real*8, dimension(:), allocatable ::
      &          RayL,dxElt,IndRef,CumRayL,CumCRL,
@@ -376,18 +405,20 @@ C***********************************************************************
      &          Extinc,RuleWidth,AmplSrfdx,
      &          CumRayLsav,metMeasBuf
 
-        Real*8 :: Fn,
-     &            OPDdx, OPDdy,
-     &            RayDirBuff(3,5),rayHt,costh,efl,
+        Real*8 :: Fn,  ! Fresnel number
+     &	          OPDdx, OPDdy, ! exit pupil OPD grid spacing
+     &            RayDirBuff(3,5),rayHt,costh,efl, ! used in 'EFL' command
      &            ChfRayDirAtElt(3),ChfRayPosAtElt(3),BeamSizeAtElt,
      &            RefRayDir(3,mRefRay)
 
-        Real*8 :: ZnNmFac_m(mZernModes)
+	! Zernike normallizing coefs (Malacara)
+	Real*8 :: ZnNmFac_m(mZernModes)
 
-        Integer, dimension(:), allocatable :: DoeId
-        Real*8 :: DoeWL(mDOE)
-        Real*8, dimension(:), allocatable :: DoeFl
-        Real*8, dimension(:,:), allocatable :: DoePhProf
+	! Diffractive Optical Element (DOE) related arrays
+	Integer, dimension(:), allocatable :: DoeId
+	Real*8 :: DoeWL(mDOE)  ! DOE design wavelength
+	Real*8, dimension(:), allocatable :: DoeFl
+	Real*8, dimension(:,:), allocatable :: DoePhProf  ! phase profile
 
         Complex*16, dimension(:,:,:), allocatable :: WFElt,JmatElt,
      &                                               ObsMat
@@ -418,8 +449,8 @@ C***********************************************************************
           LREAL :: WavLen(mPrvGlassEntry)
         End Type
 
-        Type(PrvGlass) :: PrvGlassCatalog(mPrvGlass)
-        Integer :: nPrvGlass
+	Type(PrvGlass) :: PrvGlassCatalog(mPrvGlass)
+	Integer :: nPrvGlass  ! actual private glasses defined in Rx
 
 
         Contains
@@ -824,8 +855,8 @@ C***********************************************************************
           BWK_FLG              = .FALSE.
           LStopAtEltAutoSet    = .FALSE.
           LSavRayL             = .FALSE.
-          SrcLF_FLG            = .FALSE.
-          CalcSrcZFrame_FLG    = .FALSE.
+          SrcLF_FLG            = .FALSE.    ! set when "xFrame" or "yFrame" for Source Prb. is set  (Why here?) -> macos_init.inc, macos_mod.F   <- system flag
+          CalcSrcZFrame_FLG    = .FALSE.    ! set when "zFrame" is defined in Rx                    (Why here?) -> macos_init.inc, macos_mod.F
           DupElt_FLG           = .FALSE.
 
           EltName(:)           = ''
@@ -833,23 +864,26 @@ C***********************************************************************
           GlassName(:)         = ''
           EltMRP(:)            = ''
 
-          nElt                 =  0
+          nElt                 =  0          ! total number of optical elements                (nElt <= mElt)
           nRay                 =  0
           nOutCord             =  0
-          nSeg                 =  0
+          nSeg                 =  0          ! total number of segments (requires seg. source) (nSeg <= mSeg)
           spcOption            =  0
-          maxAsphCoef          =  4
+
+          maxAsphCoef          =  4          ! default to 4 terms  (Heritage => affects MACOS 'NEW' cmd)
+
           nRefRay              =  0
-          nDOE                 =  0
+
+          nDOE                 =  0          ! Diffractive Optical Element (DOE) related arrays
           DoeId(:)             =  0
-          DoeWL(:)             =  0e0_pr
+          DoeWL(:)             =  0e0_pr     ! DOE design wavelength
           DoeFl(:)             = -1e0_pr
-          DoePhProf(:,:)       =  0e0_pr
+          DoePhProf(:,:)       =  0e0_pr     ! phase profile
 
           EdgeSensor(:)        =  0
           EdgeSensVec(:,:,:)   = -1e0_pr
 
-          nMetMeas             =  0
+          nMetMeas             =  0          ! Metrology
           metBeamFlg(:,:,:)    =  0
           tMetSrfPos(:,:)      =  0
           iEltToMetSrf(:)      =  0
@@ -904,8 +938,10 @@ C***********************************************************************
           GlassType(:)         =  0
           EltCoat(:)           =  0
           nObsRx(:)            =  0
+
           nRayToSeg(:)         =  0
           NSCnt(:)             =  0
+
           SegApType            =  0
           SegApVec(:)          =  0e0_pr
 
@@ -928,6 +964,7 @@ C***********************************************************************
           WavelenRx            = 0e0_pr
           ToutRx(:,:)          = 0e0_pr
           BeamSizeAtElt        = 0e0_pr
+
 
           TElt(:,:,:)          =  0e0_pr
           TEltRx(:,:,:)        =  0e0_pr
@@ -1020,8 +1057,8 @@ C***********************************************************************
           KcRx(:)              =  0e0_pr
           ZernAnnuRatio(:)     =  0e0_pr
 
-          Fn                   =  0e0_pr
-          OPDdx                =  0e0_pr
+          Fn                   =  0e0_pr  ! Fresnel number
+          OPDdx                =  0e0_pr  ! exit pupil OPD grid spacing
           OPDdy                =  0e0_pr
           RayDirBuff(:,:)      =  0e0_pr
           RefRayDir(:,:)       =  0e0_pr
@@ -1071,7 +1108,8 @@ C***********************************************************************
           refRay(:)            =  0
           m_err_elt            =  0
 
-          nPrvGlass          =   0
+          ! PrvGlass
+          nPrvGlass          =   0      ! actual private glasses defined in Rx
           PrvGlassCatalog(:) = PrvGlass(glsName =  '',
      &                                  nEntry  =   0,
      &                                  IndRef  =  0e0_pr,
@@ -1083,11 +1121,13 @@ C***********************************************************************
 
         SUBROUTINE EltConvert(EltType,EltID,SrfType)
           IMPLICIT NONE
-          INTEGER, intent(in) :: EltType
+          INTEGER, intent(in) :: EltType   ! old Encoding ID
           INTEGER, intent(out):: EltID
           INTEGER, intent(out):: SrfType
-          EltID   = EltType2EltIDSrfType(EltType,1)
-          SrfType = EltType2EltIDSrfType(EltType,2)
+          ! ----------------------------------
+          EltID   = EltType2EltIDSrfType(EltType,1)  ! => EltTypeName
+          SrfType = EltType2EltIDSrfType(EltType,2)  ! => SrfTypeName
+
         END SUBROUTINE EltConvert
 
 C***********************************************************************
