@@ -1,7 +1,7 @@
 % This macro generates example figures
 % for Section 4 of the MACOS User Manual
 
-old gratingExample
+old GratingExample
 
 mod OrderHOE(1)=0 q
 draw;;;;
