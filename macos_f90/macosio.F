@@ -2905,35 +2905,45 @@ C       CHARACTER INPUT ROUTINE CACCEPT
 C       TYPES OUT TEXT
 C       IF INPUT IS CR, CVAR=CDEF
 C       OTHERWISE, CVAR=INPUT
+C
+C  Note (2026-05-06): the prompt is no longer printed via Fortran WRITE.
+C  Instead it's built as a string and pushed to mhist's sub-prompt
+C  cache via set_sub_prompt(); readline then renders it itself and
+C  handles cursor state correctly.  This eliminated a recurring class
+C  of "MACOS> the new element data?" overwrite bugs and the cosmetic
+C  blank-line band-aids around them.
 
 	CHARACTER*(*) TEXT,CDEF
 	CHARACTER(len=*) COUT
 	INTEGER ICLEN
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
- 1	FORMAT(' ',A,' [',A,']: ',$)
  4	FORMAT(9A)
- 5	FORMAT(' ',A,$)
 
  100	CONTINUE
 	CVAR=' '
 	COUT=' '
 
-c if cdef is blank, read till we get something
+c Build the prompt string and hand it to mhist.
 	IF (CDEF.EQ.' ')THEN
-	   WRITE(*,5) TEXT
-	   CALL READ_LOH(1)
-	   IF(CVAR.EQ.' ') GO TO 100
+	  prompt_str = ' '//TRIM(TEXT)//' '
+	  CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
+	  CALL READ_LOH(1)
+	  CALL clear_sub_prompt
+	  IF (CVAR.EQ.' ') GO TO 100
 	ELSE
 c show default, use it if we get a blank
-	   WRITE(*,1)TEXT,CDEF
-	   CALL READ_LOH(1)
-	   IF(CVAR.EQ.' ') THEN
-	      CVAR=CDEF
-	      IF (JOU_TASK .EQ. 2) THEN
+	  prompt_str = ' '//TRIM(TEXT)//' ['//TRIM(CDEF)//']: '
+	  CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
+	  CALL READ_LOH(1)
+	  CALL clear_sub_prompt
+	  IF(CVAR.EQ.' ') THEN
+	    CVAR=CDEF
+	    IF (JOU_TASK .EQ. 2) THEN
 c we're building a journal file, write out the default
-	         WRITE(27,*) '   ',CDEF
-	      END IF
-	   END IF
+	      WRITE(27,*) '   ',CDEF
+	    END IF
+	  END IF
 	END IF
 	COUT(1:ICLEN(CVAR))=CVAR(1:ICLEN(CVAR))
 
@@ -2949,29 +2959,44 @@ C       DOUBLE-PRECISION N-VECTOR INPUT ROUTINE DACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
 C       OTHERWISE, VAR=NPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I,N,ABSN
+	INTEGER I,N,ABSN,LEN
+	INTEGER ICLEN
 	REAL*8 DVAR(N),DDEF(N)
+	CHARACTER*23 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
- 100	FORMAT(' ',A,$)
  101	FORMAT(1P,6D18.10)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100)TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL DScreenDef(DDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL D2Screen(DDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']:'
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
 	END IF
+	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
 
 C  Read response:
 	CALL READ_LOH(2)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
 	   READ(CVAR,*,ERR=1)(DVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
@@ -3101,36 +3126,50 @@ C  Write to character output
 C***********************************************************************
 
 	SUBROUTINE RACCEPT(RVAR,RDEF,N,TEXT)
-C       DOUBLE-PRECISION N-VECTOR INPUT ROUTINE DACCEPT
+C       SINGLE-PRECISION N-VECTOR INPUT ROUTINE RACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
-C       OTHERWISE, VAR=NPUT
+C       OTHERWISE, VAR=INPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 
 	use lohpars_mod
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I,N,ABSN
+	INTEGER I,N,ABSN,LEN
+	INTEGER ICLEN
 	SREAL RVAR(N),RDEF(N)
+	CHARACTER*23 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
-
- 100	FORMAT(' ',A,$)
  101	FORMAT(1P,6E16.8)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100)TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL RScreenDef(RDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL R2Screen(RDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']:'
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
 	END IF
+	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
 
 C  Read response:
 	CALL READ_LOH(3)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
 	   READ(CVAR,*,ERR=1)(RVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
@@ -3262,43 +3301,54 @@ C       INTEGER N-VECTOR INPUT ROUTINE IACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
 C       OTHERWISE, VAR=INPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(), instead of being written
+C  with Fortran WRITE.  See CACCEPT for the rationale.
 
 	use lohpars_mod
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I, N, ABSN, IVAR(N), IDEF(N)
+	INTEGER I, N, ABSN, LEN, IVAR(N), IDEF(N)
+	INTEGER ICLEN
+	CHARACTER*16 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
-
- 100	FORMAT(' ',A,$)
  101	FORMAT(8I6)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100) TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL IScreenDef(IDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL I2Screen(IDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']: '
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
 	END IF
-
-	!print*,'IACCEPT: ifDefault=',ifDefault
+	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
 
 C  Read response:
 	CALL READ_LOH(4)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ') THEN
 	   READ(CVAR,*,ERR=1)(IVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
      	   ! No data entered, use the default
-	   !print*,'**** IACCEPT: use default ...'
 	   DO 9 I=1,ABSN
 	      IVAR(I)=IDEF(I)
  9	   CONTINUE
      	   ! Write to read buffer
-	   !print*,'B4 WRITE to CVAR Buffer'
 	   WRITE(CVAR,101,ERR=1)(IDEF(I),I=1,ABSN)
      	   ! If building a journal file, write out the default
 	   IF (JOU_TASK .EQ. 2) THEN
