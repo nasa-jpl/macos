@@ -233,7 +233,6 @@ C         *** A few OS shell utility commands ***
 	    CALL CACCEPT(ANS,'no default', 'Enter filename ')
             Call StartEditor(command,ICLEN(command),ANS,ICLEN(ANS))
 	    WRITE(*,*)' '
-#endif
 
 
 C         ***next command: Validate a .in prescription file***
@@ -266,6 +265,8 @@ C         ***next command: Validate a .in prescription file***
 	        END IF
 	      END IF
 	    END BLOCK
+
+#endif
 
 C         ***next command: Load optical description data***
 
