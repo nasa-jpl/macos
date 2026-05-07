@@ -98,9 +98,8 @@ C***********************************************************************
 	SREAL, intent(out), dimension(:,:) :: PixArray
         Real*8, intent(out), dimension(:,:) :: OPDMat,RaySpot
 
-	INTEGER :: ICLEN,STRLEN
-	LOGICAL :: LCMP
-
+        INTEGER, EXTERNAL :: ICLEN,STRLEN
+        LOGICAL, EXTERNAL :: LCMP
 
 c***loh	Declares for journal and batch files
 	! INTEGER row_sz,col_sz

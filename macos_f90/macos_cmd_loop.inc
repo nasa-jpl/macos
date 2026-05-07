@@ -2640,10 +2640,10 @@ C         ***Center Beam in System Stop***
      &	        iCurRayElt,Dicr,Djcr,dxSource,
      &	        nBadRays,StartIndRef,StartExtinc,
      &	        Cmatrix,DrawRayVec,DrawEltVec,
-     &	        iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	        iStop,xTarg,sqErr,ifBeamCentered)
 
 	      IF (ifBeamCentered) THEN
-	        WRITE(*,309)k,DSQRT(sqErr)
+	        WRITE(*,309) 0,SQRT(sqErr)
 	      END IF
 
 	    END IF
@@ -2852,25 +2852,25 @@ C         *** Set System Stop ***
 	        ifBuild=.FALSE.
 	        ifOPDCalc=.FALSE.
 
-                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
-		  ! With point source (source at finite distance) and
-		  ! when SAOpt is set to SAPos, enforce ChfRay
-                  ! thru STOP position at element by tip/tilt
-                  ! chief ray in source plane. -jzlou
-	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
-     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
-     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
-     &              iCurRayElt,Dicr,Djcr,dxSource,
-     &              nBadRays,StartIndRef,StartExtinc,
-     &              Cmatrix,DrawRayVec,DrawEltVec,
-     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
-     &              xTarg,sqErr,ifBeamCentered)
-
-	          !WRITE(*,310) StopPos
-                   ! The "Computed StopPos" is actually system entrance pupil
-                  ifStopSet=.TRUE.
-	          GO TO 1
-	        END IF
+!                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
+!		  ! With point source (source at finite distance) and
+!		  ! when SAOpt is set to SAPos, enforce ChfRay
+!                  ! thru STOP position at element by tip/tilt
+!                  ! chief ray in source plane. -jzlou
+!	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
+!     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+!     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
+!     &              iCurRayElt,Dicr,Djcr,dxSource,
+!     &              nBadRays,StartIndRef,StartExtinc,
+!     &              Cmatrix,DrawRayVec,DrawEltVec,
+!     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
+!     &              xTarg,sqErr,ifBeamCentered)
+!
+!	          !WRITE(*,310) StopPos
+!                   ! The "Computed StopPos" is actually system entrance pupil
+!                  ifStopSet=.TRUE.
+!	          GO TO 1
+!	        END IF
 
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
@@ -2881,7 +2881,7 @@ C         *** Set System Stop ***
      &	            iCurRayElt,Dicr,Djcr,dxSource,
      &	            nBadRays,StartIndRef,StartExtinc,
      &	            Cmatrix,DrawRayVec,DrawEltVec,
-     &	            iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	            iStop,xTarg,sqErr,ifBeamCentered)
 
 	        CALL DEQUATE(cr1indir,ChfRayDir,3)
 	        CALL DEQUATE(cr1inpos,ChfRayPos,3)
@@ -2926,7 +2926,7 @@ c	        th(3)=3.5355d-6
      &	          iCurRayElt,Dicr,Djcr,dxSource,
      &	          nBadRays,StartIndRef,StartExtinc,
      &	          Cmatrix,DrawRayVec,DrawEltVec,
-     &	          iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	          iStop,xTarg,sqErr,ifBeamCentered)
 	        xGrid=xGrid_sv; yGrid=yGrid_sv
 
 	        !print*,' **Aft 2nd STOP , yGrid =',yGrid
