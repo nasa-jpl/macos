@@ -31,6 +31,7 @@
 #include <giza.h>
 #include <time.h>
 #include <stdarg.h>
+#include <unistd.h>      /* isatty(), STDIN_FILENO */
 
 /**
  * If warnings are switched on displays a warning message to stderr
@@ -173,16 +174,15 @@ _giza_newpage_prompt (void)
    */
   if( fgets(input,2,stdin)==NULL )
     _giza_error("giza_newpage_prompt", "Failed to read character from stdin");
-  /* Always advance the cursor to a fresh line.  On a normal TTY the
-   * kernel echoes the user's Enter and the cursor already advances --
-   * so this adds one blank line, minor cosmetic cost.  But after
-   * opening an /xw window the terminal mode can be left in a state
-   * that suppresses kernel echo, and stdin-from-pipe never gets an
-   * echo at all.  In those cases the next output (e.g. MACOS>)
-   * collides with " Press RETURN for next page: ".  Emitting the
-   * newline ourselves keeps the transcript tidy regardless. */
-  putchar('\n');
-  fflush(stdout);
+  /* Advance the cursor to a fresh line in non-TTY mode (pipe/redirect
+   * gives no kernel echo of the Enter; without this the next output
+   * collides with " Press RETURN for next page: ").  On a normal TTY
+   * the kernel already echoed Enter -- skip to avoid a cosmetic blank
+   * line. */
+  if (!isatty(STDIN_FILENO)) {
+    putchar('\n');
+    fflush(stdout);
+  }
 }
 
 /**
