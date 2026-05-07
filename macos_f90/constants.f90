@@ -34,5 +34,25 @@ MODULE Constants
       SQRT_20 = 4.472135954999579392818347337462552470881236719223051448541794491_pr, &
       SQRT_22 = 4.690415759823429554565630113544466280588228353411737153605701891_pr
 
+  ! Epsilon-based derived constants for numerical analysis
+  ! These scale automatically with the precision (pr)
+  REAL(pr), PARAMETER :: &
+      EPS_SQRT      = SQRT(EPS),              & ! ~1.49d-8  (for sqrt operations)
+      EPS_CBRT      = EPS**(1.0_pr/3.0_pr),   & ! ~6.04d-6  (for cubic operations)
+      EPS_2_3       = EPS**(2.0_pr/3.0_pr),   & ! ~1.64d-11 (for accumulated errors)
+      EPS_SQ        = EPS*EPS                   ! ~4.93d-32 (for double precision)
+
+  ! Ray tracing numerical tolerances (based on machine epsilon)
+  ! These provide consistent, precision-aware thresholds for surface intersection
+  REAL(pr), PARAMETER :: &
+      TOL_LINEAR    = EPS_CBRT,               & ! ~6d-6    Linear case threshold
+      TOL_TANGENT   = EPS_SQRT * 1e-6_pr,     & ! ~1d-14   Near-tangent detection
+      TOL_CANCEL    = 1e-4_pr,                & ! 0.01%    Cancellation detection
+      TOL_GEOM      = EPS_2_3,                & ! ~1d-11   Geometric validation
+      TOL_GEOM2     = TOL_GEOM * TOL_GEOM,    & ! ~2.7e-22 Geometric tolerance squared
+      TOL_NORMAL    = EPS_SQ * 1e2_pr,        & ! ~1d-30   Normal magnitude threshold
+      TOL_ZERO      = EPS_CBRT * 1e-14_pr,    & ! ~6d-20   Near-zero threshold
+      TOL_VERTEX    = 1e-10_pr,               & ! ~1d-10   Vertex region (paraxial approximation)
+      TOL_BRENT     = 1e-14_pr                  ! ~1d-14   Brent solver tolerance
 
 END MODULE Constants
