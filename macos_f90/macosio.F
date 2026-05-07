@@ -2918,26 +2918,37 @@ C  blank-line band-aids around them.
 	INTEGER ICLEN
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
+ 1	FORMAT(A,$)
  4	FORMAT(9A)
 
  100	CONTINUE
 	CVAR=' '
 	COUT=' '
 
-c Build the prompt string and hand it to mhist.
+c Build the prompt string.  Two cases:
+c   - read buffer is non-empty: the next READ_LOH will consume a
+c     buffered token without going through MHIST/readline, so we WRITE
+c     the prompt directly (legacy path).
+c   - read buffer is empty: READ_LOH will trigger PARSE_LOH -> MHIST
+c     and readline will render the prompt; push it to the cache so
+c     readline knows what to display and can manage cursor state.
 	IF (CDEF.EQ.' ')THEN
 	  prompt_str = ' '//TRIM(TEXT)//' '
-	  CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
-	  CALL READ_LOH(1)
-	  CALL clear_sub_prompt
+	ELSE
+	  prompt_str = ' '//TRIM(TEXT)//' ['//TRIM(CDEF)//']: '
+	END IF
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,1) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
+	CALL READ_LOH(1)
+	CALL clear_sub_prompt
+
+	IF (CDEF.EQ.' ') THEN
 	  IF (CVAR.EQ.' ') GO TO 100
 	ELSE
-c show default, use it if we get a blank
-	  prompt_str = ' '//TRIM(TEXT)//' ['//TRIM(CDEF)//']: '
-	  CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
-	  CALL READ_LOH(1)
-	  CALL clear_sub_prompt
-	  IF(CVAR.EQ.' ') THEN
+	  IF (CVAR.EQ.' ') THEN
 	    CVAR=CDEF
 	    IF (JOU_TASK .EQ. 2) THEN
 c we're building a journal file, write out the default
@@ -2971,6 +2982,7 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
+ 100	FORMAT(A,$)
  101	FORMAT(1P,6D18.10)
 
 C  Build prompt line:
@@ -2992,7 +3004,12 @@ C  Build prompt line:
 	  END DO
 	  ifDefault=.TRUE.
 	END IF
-	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
+c Buffered tokens: direct WRITE; fresh read: cache for readline.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
 
 C  Read response:
 	CALL READ_LOH(2)
@@ -3144,6 +3161,7 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
+ 100	FORMAT(A,$)
  101	FORMAT(1P,6E16.8)
 
 C  Build prompt line:
@@ -3165,7 +3183,12 @@ C  Build prompt line:
 	  END DO
 	  ifDefault=.TRUE.
 	END IF
-	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
+c Buffered tokens: direct WRITE; fresh read: cache for readline.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
 
 C  Read response:
 	CALL READ_LOH(3)
@@ -3315,6 +3338,7 @@ C  with Fortran WRITE.  See CACCEPT for the rationale.
 	CHARACTER*16 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
+ 100	FORMAT(A,$)
  101	FORMAT(8I6)
 
 C  Build prompt line:
@@ -3336,7 +3360,13 @@ C  Build prompt line:
 	  END DO
 	  ifDefault=.TRUE.
 	END IF
-	CALL set_sub_prompt(prompt_str(1:ICLEN(prompt_str)))
+c Buffered tokens take the legacy path (direct WRITE); fresh-read
+c goes via the cache so readline can render and own cursor state.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
 
 C  Read response:
 	CALL READ_LOH(4)
