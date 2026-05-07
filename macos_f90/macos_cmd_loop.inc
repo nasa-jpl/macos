@@ -2262,9 +2262,64 @@ C
 	      fp=ABS(zp)
 
 	    ELSE
-	      WRITE(*,*)' WARNING: SRS is confused about return status'
-	      !fp=fElt(iSlv1)
-	      !zp=zElt(iSlv1)
+	      ! Asymmetric Returns case: ifReturn1 and ifReturn2 differ.
+	      ! The chief ray crosses one extra Return between iSlv1 and
+	      ! iSlv2, so its direction at iSlv1 is sign-flipped relative
+	      ! to iSlv2's frame.  Work directly from iSlv2's prescription
+	      ! quantities (VptElt, psiElt, zElt) instead of from the
+	      ! ray-trace, per Dave's spec (2026-05-07).  Three subcases:
+	      !   (a) plane <- sphere : plane sits at sphere center,
+	      !                         f = zElt(iSlv2)
+	      !   (b) plane <- plane  : both planes share psi, slave plane
+	      !                         shifted by zElt(iSlv2)*psi
+	      !   (c) sphere <- sphere: both spheres share the same center;
+	      !                         slave's vertex unchanged, psi
+	      !                         points toward shared center,
+	      !                         radius = distance to it.
+	      ! sphere <- plane is uncommon and not yet specified -- warn.
+	      IF (fElt(iSlv1).GE.BIG) THEN
+	        ! Slave is a plane.
+	        DO i=1,3
+	          psip(i) = psiElt(i,iSlv2)
+	          Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	        END DO
+	        zp = zElt(iSlv1)              ! plane stays a plane
+	        IF (fElt(iSlv2).LT.BIG) THEN
+	          fp = zElt(iSlv2)            ! L between iSlv2 and the
+	                                      ! slave plane at sphere center
+	        ELSE
+	          fp = INF                    ! plane <- plane
+	        END IF
+	      ELSE
+	        ! Slave is a sphere.
+	        IF (fElt(iSlv2).LT.BIG) THEN
+	          ! sphere <- sphere: shared center.
+	          ! Keep slave's user-supplied vertex; compute psip toward
+	          ! the slave-to's center; radius = distance.
+	          DO i=1,3
+	            Vptp(i) = VptElt(i,iSlv1)
+	            psip(i) = (VptElt(i,iSlv2)
+     &                       + zElt(iSlv2)*psiElt(i,iSlv2))
+     &                      - Vptp(i)
+	          END DO
+	          zp = SQRT(psip(1)**2 + psip(2)**2 + psip(3)**2)
+	          IF (zp.GT.0d0) THEN
+	            DO i=1,3
+	              psip(i) = psip(i)/zp
+	            END DO
+	          END IF
+	          fp = zp
+	        ELSE
+	          WRITE(*,*)
+     &        ' WARNING: SRS asymmetric sphere<-plane not implemented'
+	          fp = fElt(iSlv1)            ! preserve old values
+	          zp = zElt(iSlv1)
+	          DO i=1,3
+	            psip(i) = psiElt(i,iSlv1)
+	            Vptp(i) = VptElt(i,iSlv1)
+	          END DO
+	        END IF
+	      END IF
 	    END IF
 
 	    WRITE(*,109)fElt(iSlv1),fp,zElt(iSlv1),zp,psiElt(1,iSlv1),
