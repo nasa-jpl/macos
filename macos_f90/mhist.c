@@ -79,23 +79,6 @@ mhist_(char* mp, char *cmd)
   /* Let Giza repaint plot windows while we wait at the prompt */
   rl_event_hook = _macos_rl_event_hook;
 
-  /* Sub-prompt rendering hint to readline.
-   *
-   * For CACCEPT/IACCEPT/etc., the Fortran caller already wrote a prompt
-   * with no trailing newline (e.g. " Enter file name: "), and we pass
-   * an empty string "" to readline so it doesn't render its own prompt.
-   * Without further hint, readline's editing assumes the cursor is at
-   * column 0 and on Enter may not advance it -- so the next readline
-   * call's "\r MACOS> " overwrites the start of the visible prompt
-   * (symptom: "MACOS> the new element data?  [YES]:").
-   *
-   * Setting rl_already_prompted = 1 tells readline "the prompt is
-   * already on screen" so it manages cursor and on-Enter newline
-   * correctly.  Cleared back to 0 for top-level (" MACOS> ") prompts
-   * so readline renders those itself.
-   */
-  rl_already_prompted = (prompt[0] == '\0') ? 1 : 0;
-
   while (!done) {
       register int i, j, k;
       char *temp2;
@@ -108,18 +91,29 @@ mhist_(char* mp, char *cmd)
 	exit (1);
       }
 
-      /* Non-TTY transcript echo.
+      /* Sub-prompt cursor recovery.
        *
-       * On piped/redirected stdin neither kernel nor readline echoes
-       * anything; the prior prompt sits mid-line and the next stdout
-       * output collides with it (sometimes tripping a Fortran
-       * list-directed READ on the next response).  Echo "<resp>\n"
-       * here so the transcript shows what was typed and the next
-       * prompt starts on a fresh line.  No-op on TTY -- readline +
-       * rl_already_prompted handles cursor advancement.
+       * For CACCEPT/IACCEPT/etc. the Fortran caller already wrote the
+       * prompt without a trailing newline.  After readline returns,
+       * we ALWAYS emit "\n" so the next output (typically the
+       * " MACOS> " redisplay, which starts with "\r" and would
+       * otherwise overwrite the start of the previous prompt --
+       * "MACOS> the new element data?  [YES]:" symptom) starts on a
+       * fresh line.  In non-TTY mode also echo the response so the
+       * transcript records it.
+       *
+       * Trade-off acknowledged: on a TTY where readline already
+       * emitted its own newline on Enter, this produces one cosmetic
+       * blank line.  Tried suppressing this with rl_already_prompted
+       * but readline's behavior in our environment didn't reliably
+       * advance the cursor on Enter -- a blank line is preferable to
+       * data corruption from overwrite.
        */
-      if (prompt[0] == '\0' && !isatty(STDIN_FILENO)) {
-        printf("%s\n", temp);
+      if (prompt[0] == '\0') {
+        if (!isatty(STDIN_FILENO)) {
+          printf("%s", temp);
+        }
+        putchar('\n');
         fflush(stdout);
       }
 
