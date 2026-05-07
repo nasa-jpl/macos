@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>      /* isatty(), STDIN_FILENO */
 
 #ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -83,10 +84,31 @@ mhist_(char* mp, char *cmd)
       done = 1;
       temp = readline(prompt);
 
-      // Test for EOF. 
+      // Test for EOF.
       if (!temp) {
 	fprintf (stderr,"  **mhist: Invalid command input, quit!\n");
 	exit (1);
+      }
+
+      /* Echo the response for sub-prompts in non-TTY mode.
+       *
+       * When CACCEPT/IACCEPT/etc. call this with a blank `mp` we pass
+       * NULL to readline -- the caller already wrote a prompt with no
+       * trailing newline (e.g. " Enter file name: ").  In TTY mode the
+       * kernel echoes the user's typing and the trailing newline, so
+       * the next prompt comes out on a fresh line.  When stdin is a
+       * pipe/redirect, neither the kernel nor readline echoes anything,
+       * leaving the previous prompt mid-line and the next output
+       * collides with it -- a tangled transcript that occasionally
+       * trips Fortran list-directed reads on the next response.
+       *
+       * Echoing "<response>\n" only when prompt==NULL covers the
+       * sub-prompt case without doubling readline's own non-TTY echo
+       * for top-level prompts (e.g. " MACOS> ").
+       */
+      if (prompt == NULL && !isatty(STDIN_FILENO)) {
+        printf("%s\n", temp);
+        fflush(stdout);
       }
 
       non_empty = 0;
