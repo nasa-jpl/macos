@@ -2936,7 +2936,6 @@ C         Find crossing point of the 2 chief rays:
      &	               ChfRayPos,ChfRayDir,zp,CrossDist,StopPos)
 
 	        WRITE(*,310) StopPos
-	        WRITE(*,*)' '
 	          ! The "Computed" StopPos is actually the entrance pupil,
                   ! which is different from the user specified position
 	          ! on the element where system STOP is set. -jzlou
