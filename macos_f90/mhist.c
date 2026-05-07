@@ -65,8 +65,9 @@ mhist_(char* mp, char *cmd)
   // Test Calling a Fortran routine
   //fntprint_();  // works!
 
-  if (mp[0]==' ') 
-    prompt = (char*) NULL;
+  if (mp[0]==' ')
+    prompt = "";    /* sub-prompt: empty string, NOT NULL.  NULL makes
+                       readline misbehave on piped stdin (hangs). */
   else {
     cbuf[0] = ' ';
     strncpy(&cbuf[1],mp,5); cbuf[6]='\0';
@@ -90,24 +91,29 @@ mhist_(char* mp, char *cmd)
 	exit (1);
       }
 
-      /* Echo the response for sub-prompts in non-TTY mode.
+      /* Sub-prompt cursor recovery.
        *
-       * When CACCEPT/IACCEPT/etc. call this with a blank `mp` we pass
-       * NULL to readline -- the caller already wrote a prompt with no
-       * trailing newline (e.g. " Enter file name: ").  In TTY mode the
-       * kernel echoes the user's typing and the trailing newline, so
-       * the next prompt comes out on a fresh line.  When stdin is a
-       * pipe/redirect, neither the kernel nor readline echoes anything,
-       * leaving the previous prompt mid-line and the next output
-       * collides with it -- a tangled transcript that occasionally
-       * trips Fortran list-directed reads on the next response.
+       * For CACCEPT/IACCEPT/etc. the Fortran caller already wrote the
+       * prompt without a trailing newline.  After readline returns,
+       * we ALWAYS emit "\n" so the next output (typically the
+       * " MACOS> " redisplay, which starts with "\r" and would
+       * otherwise overwrite the start of the previous prompt --
+       * "MACOS> the new element data?  [YES]:" symptom) starts on a
+       * fresh line.  In non-TTY mode also echo the response so the
+       * transcript records it.
        *
-       * Echoing "<response>\n" only when prompt==NULL covers the
-       * sub-prompt case without doubling readline's own non-TTY echo
-       * for top-level prompts (e.g. " MACOS> ").
+       * Trade-off acknowledged: on a TTY where readline already
+       * emitted its own newline on Enter, this produces one cosmetic
+       * blank line.  Tried suppressing this with rl_already_prompted
+       * but readline's behavior in our environment didn't reliably
+       * advance the cursor on Enter -- a blank line is preferable to
+       * data corruption from overwrite.
        */
-      if (prompt == NULL && !isatty(STDIN_FILENO)) {
-        printf("%s\n", temp);
+      if (prompt[0] == '\0') {
+        if (!isatty(STDIN_FILENO)) {
+          printf("%s", temp);
+        }
+        putchar('\n');
         fflush(stdout);
       }
 
