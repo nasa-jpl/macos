@@ -65,8 +65,9 @@ mhist_(char* mp, char *cmd)
   // Test Calling a Fortran routine
   //fntprint_();  // works!
 
-  if (mp[0]==' ') 
-    prompt = (char*) NULL;
+  if (mp[0]==' ')
+    prompt = "";    /* sub-prompt: empty string, NOT NULL.  NULL makes
+                       readline misbehave on piped stdin (hangs). */
   else {
     cbuf[0] = ' ';
     strncpy(&cbuf[1],mp,5); cbuf[6]='\0';
@@ -90,24 +91,37 @@ mhist_(char* mp, char *cmd)
 	exit (1);
       }
 
-      /* Echo the response for sub-prompts in non-TTY mode.
+      /* Sub-prompt cursor recovery.
        *
        * When CACCEPT/IACCEPT/etc. call this with a blank `mp` we pass
-       * NULL to readline -- the caller already wrote a prompt with no
-       * trailing newline (e.g. " Enter file name: ").  In TTY mode the
-       * kernel echoes the user's typing and the trailing newline, so
-       * the next prompt comes out on a fresh line.  When stdin is a
-       * pipe/redirect, neither the kernel nor readline echoes anything,
-       * leaving the previous prompt mid-line and the next output
-       * collides with it -- a tangled transcript that occasionally
-       * trips Fortran list-directed reads on the next response.
+       * an empty string "" to readline -- the caller already wrote a
+       * prompt with no trailing newline (e.g. " Enter file name: ").
+       * (Note: passing NULL instead of "" makes some readline versions
+       * hang on piped stdin, so empty string is required.)
        *
-       * Echoing "<response>\n" only when prompt==NULL covers the
-       * sub-prompt case without doubling readline's own non-TTY echo
-       * for top-level prompts (e.g. " MACOS> ").
+       * Two failure modes after readline returns:
+       *   1. Non-TTY (pipe/redirect/journal): neither kernel nor
+       *      readline echoes anything; the prior prompt sits mid-line
+       *      and the next output collides with it (sometimes tripping
+       *      a Fortran list-directed READ on the next response).
+       *   2. Interactive TTY: readline with empty prompt edits in
+       *      place and leaves the cursor mid-line; the next readline
+       *      call (e.g. " MACOS> ") emits its leading "\r" and
+       *      overwrites the start of the previous prompt -- producing
+       *      a tangled line like "MACOS> the new element data?".
+       *
+       * Cure for both: emit a newline ourselves so subsequent output
+       * lands on a fresh row.  In non-TTY mode, also echo the response
+       * so the transcript records it.  Cost on a clean TTY where the
+       * kernel already advanced is one cosmetic blank line.  Top-level
+       * prompts (e.g. " MACOS> ") are untouched -- readline manages
+       * those correctly because it knows the prompt width.
        */
-      if (prompt == NULL && !isatty(STDIN_FILENO)) {
-        printf("%s\n", temp);
+      if (prompt[0] == '\0') {
+        if (!isatty(STDIN_FILENO)) {
+          printf("%s", temp);
+        }
+        putchar('\n');
         fflush(stdout);
       }
 
