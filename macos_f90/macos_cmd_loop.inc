@@ -271,6 +271,16 @@ C         *** A few OS shell utility commands ***
 	    WRITE(*,*)' '
 
 
+C         *** Open a fresh graphics window for subsequent plots ***
+C         Re-initializes the PGPLOT/giza device.  Min-match 4 chars
+C         ('NEWP') so plain 'NEW' still routes to NEW (load).  Must
+C         appear BEFORE the NEW branch in the dispatch chain.
+
+	  ELSE IF (LCMP(command,'NEWPAGE',4)) THEN
+	    ifPlot = .FALSE.     ! force re-init
+	    CALL GRAINI
+	    ifPlot = .TRUE.
+
 C         ***next command: Validate a .in prescription file***
 
 	  ELSE IF (LCMP(command,'VALIDATE',3)) THEN
