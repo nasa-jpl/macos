@@ -136,16 +136,20 @@ void FTN_NAME(lsfiles, LSFILES)(int* fileType, char* cmdArg, int* clen)
 #endif
 }
 
-/* Returns a filename from the internal list based on index ID */
+/* Returns a filename from the internal list based on index ID.
+ * `rxfn` is a Fortran CHARACTER buffer; the caller is expected to have
+ * blank-initialized it.  We copy the filename in WITHOUT writing a NUL
+ * terminator -- a NUL byte makes ICLEN (which scans for a space) skip
+ * past the end of the filename and trip later substring logic into
+ * appending ".in" again, producing names like "coroExample.in.in". */
 void FTN_NAME(getrxfn, GETRXFN)(int *id, char* rxfn, int *status)
 {
     if ((*id) > 0 && (*id) <= file_cnt) {
         int len = strlen(files[*id-1]);
         memcpy(rxfn, files[*id-1], len);
-        rxfn[len] = '\0';
         *status = 1;
     } else {
-        *status = 0; 
+        *status = 0;
     }
 }
 
