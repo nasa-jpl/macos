@@ -24,6 +24,59 @@ C       Use this routine to terminate graphic output
         END SUBROUTINE GRAEND
 
 C***********************************************************************
+C  PANEL_ENV: PGENV equivalent with a tighter viewport in multi-panel
+C             layouts (pgp 2/3/4).
+C
+C  PGENV's standard panel viewport leaves only ~5% of panel width on
+C  each side -- in 2x2 layout the remaining margin is too small for
+C  axis labels (and, in GRAY, also the right-side colorbar) before
+C  bumping into the next panel.  In nPgPanel > 1 mode we explicitly
+C  expand PGENV into PGPAGE + PGVSTD + PGSWIN/PGWNAD + PGBOX, then
+C  shrink the viewport's width to 78% to recover the missing margin.
+C
+C  AXIS argument follows PGENV's convention; we honor:
+C     -2  : no box drawn (used by WIRE)
+C     -1  : box only, no labels
+C      0  : box + labels (default for most callers)
+C      1  : box + labels + zero-axis lines
+C  Other values (log scales etc.) fall through to plain PGBOX BCNST.
+C***********************************************************************
+
+        SUBROUTINE PANEL_ENV(X1, X2, Y1, Y2, JUST, AXIS)
+        use macos_vars_mod, only: nPgPanel
+        IMPLICIT NONE
+        REAL,    INTENT(IN) :: X1, X2, Y1, Y2
+        INTEGER, INTENT(IN) :: JUST, AXIS
+        REAL :: vx1, vx2, vy1, vy2
+
+        IF (nPgPanel .LE. 1) THEN
+          CALL PGENV(X1, X2, Y1, Y2, JUST, AXIS)
+          RETURN
+        END IF
+
+        CALL PGPAGE
+        CALL PGVSTD                          ! panel-relative std vp
+        CALL PGQVP(0, vx1, vx2, vy1, vy2)    ! query in NDC
+        vx2 = vx1 + 0.78*(vx2 - vx1)         ! keep 78% of width
+        CALL PGSVP(vx1, vx2, vy1, vy2)
+        IF (JUST .EQ. 1) THEN
+          CALL PGWNAD(X1, X2, Y1, Y2)
+        ELSE
+          CALL PGSWIN(X1, X2, Y1, Y2)
+        END IF
+        IF (AXIS .EQ. -2) THEN
+          ! no box
+        ELSE IF (AXIS .EQ. -1) THEN
+          CALL PGBOX('BC', 0.0, 0, 'BC', 0.0, 0)
+        ELSE IF (AXIS .EQ. 1) THEN
+          CALL PGBOX('ABCNST', 0.0, 0, 'ABCNST', 0.0, 0)
+        ELSE
+          CALL PGBOX('BCNST', 0.0, 0, 'BCNST', 0.0, 0)
+        END IF
+        RETURN
+        END SUBROUTINE PANEL_ENV
+
+C***********************************************************************
 
 C  Use this routine to initialize graphic output - such as '/xw' or '/gif'
         SUBROUTINE GRAINI
@@ -99,7 +152,7 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
+        CALL PANEL_ENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGCONT(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &  CONTOURS,NCONTOURS,TRCONT)
@@ -172,7 +225,7 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(XMIN,XMAX,YMIN,YMAX,1,0)
+        CALL PANEL_ENV(XMIN,XMAX,YMIN,YMAX,1,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGQCI(CI)
 
@@ -243,7 +296,7 @@ C       SET PLOT DIMENSIONS
 C       CALL PLOT ROUTINES
 
         !CALL PGENV(XMIN,XMAX,YMIN,YMAX,1,0)
-        CALL PGENV(XMIN,XMAX,YMIN,YMAX,0,0)
+        CALL PANEL_ENV(XMIN,XMAX,YMIN,YMAX,0,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGQCI(CI)
         DO 5 I=1,NBEAMS
@@ -302,7 +355,7 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(XBMIN,XBMAX,ZBMIN,ZBMAX,0,0)
+        CALL PANEL_ENV(XBMIN,XBMAX,ZBMIN,ZBMAX,0,0)
         CALL PGLABEL(CXLABL,CYLABL,CTITLE)
         CALL PGSFS(1)
         CALL PGSCI(1)
@@ -492,29 +545,10 @@ C       CALL PLOT ROUTINES
 	! are placeholder 'X-Axis' / 'Y-Axis' strings that add no info on
 	! a raster image; suppress them and keep only the title.
 	CALL PGSCI(1)
-	IF (nPgPanel .GT. 1) THEN
-	  ! Multi-panel layouts (pgp 2/3/4): PGENV's standard viewport
-	  ! leaves no room for the right-side colorbar before it bumps
-	  ! into the next panel's left tick labels.  Reproduce PGENV's
-	  ! actions but with a tightened viewport.  PGENV is documented
-	  ! as: PGPAGE + PGVSTD + PGSWIN + PGBOX + PGLAB.  Skipping the
-	  ! PGPAGE causes every plot to render in the same panel
-	  ! (stacking) -- include it explicitly here.
-	  BLOCK
-	    REAL :: vx1, vx2, vy1, vy2
-	    CALL PGPAGE                          ! advance to next panel
-	    CALL PGVSTD                          ! panel-relative std vp
-	    CALL PGQVP(0, vx1, vx2, vy1, vy2)    ! query in NDC
-	    vx2 = vx1 + 0.78*(vx2 - vx1)         ! keep 78% of width;
-	                                          ! the rest accommodates
-	                                          ! the right colorbar
-	    CALL PGSVP(vx1, vx2, vy1, vy2)
-	  END BLOCK
-	  CALL PGWNAD(X(1), X(NROW), Y(1), Y(NCOL))
-	  CALL PGBOX('BCNST', 0.0, 0, 'BCNST', 0.0, 0)
-	ELSE
-	  CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
-	END IF
+	! Routes through PANEL_ENV which tightens the viewport in
+	! multi-panel layouts so PGWEDG (drawn below) fits without
+	! crashing into the next panel's labels.
+	CALL PANEL_ENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
         CALL PGLABEL(' ',' ',CTITLE)
 
 	If (ifPGColor) Then
@@ -906,7 +940,7 @@ C       SET PLOT DIMENSIONS
 C       CALL PLOT ROUTINES
 
         SIZE=X(NROW)
-        CALL PGENV(0., SIZE, 0., SIZE, 1, -2)
+        CALL PANEL_ENV(0., SIZE, 0., SIZE, 1, -2)
         CALL FREDDY(ZVEC,NROW,NROW,SIZE,25.0)
 
         RETURN
@@ -945,7 +979,7 @@ C       FIND PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(X(1),X(NROW),ZMIN,ZMAX,0,0)
+        CALL PANEL_ENV(X(1),X(NROW),ZMIN,ZMAX,0,0)
         CALL PGLABEL(CXLABL,CYLABL,CTITLE)
         CALL PGSCI(1)
         CALL PGLINE(NROW,X,Z)
