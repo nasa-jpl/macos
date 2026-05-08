@@ -157,8 +157,6 @@ C***********************************************************************
       WRITE(*,*)'   CONtour     - contour surface plot'
       WRITE(*,*)'   IMGmode     - toggle image polarity'
       WRITE(*,*)'                 (NEG=astro, POS=conventional)'
-      WRITE(*,*)'   NEWPage     - open a fresh graphics window for'
-      WRITE(*,*)'                 subsequent plots'
       WRITE(*,*)'   CIR, GIR    - color / gray image rendering'
       WRITE(*,*)'   PGP         - PGPLOT panel layout (1,2,3,4,9)'
 
