@@ -1,27 +1,18 @@
 C  ***Load glass tables***
+C  Resolution order (via find_macos_file in param_mod):
+C    1) CWD
+C    2) directory of the running macos executable
+C    3) $MACOS_HOME
+C    4) compile-time build directory (BUILD_LOC)
+C  If none of those have it, fall back to the hardcoded
+C  Air / BK7 / LAK9 set below.
 
-        CALL GETENV('MACOS_HOME',macosHome)
-	!print*,'**GETENV: macosHome =',macosHome
-        IF (.false. .and. macosHome(1:2).EQ.'  ') THEN
-          WRITE(*,313)
-          macosHome='~/macosData/'
-          glassFile='~/macosData/macos_glass_list.txt'
-          INQUIRE (FILE=glassFile,EXIST=EXIST)
-          IF (.NOT.EXIST) THEN
-            macosHome='/home/comp/macosData/'
-         glassFile='/home/comp/macosData/macos_glass_list.txt'
-            INQUIRE (FILE=glassFile,EXIST=EXIST)
-            IF (.NOT.EXIST) THEN
-              macosHome=''
-              glassFile='macos_glass_list.txt'
-              INQUIRE (FILE=glassFile,EXIST=EXIST)
-            END IF
-	    print*,'**Glass list not found in ~/macosData folder'
-          END IF
+        glassFile = 'macos_glass_list.txt'
+        CALL find_macos_file('MACOS_HOME', glassFile)
+        IF (ICLEN(glassFile) .GT. 0) THEN
+          INQUIRE (FILE=glassFile, EXIST=EXIST)
         ELSE
-          !glassFile=macosHome(1:ICLEN(macosHome))//'macos.glass'
-          glassFile='macos_glass_list.txt'
-          INQUIRE (FILE=glassFile,EXIST=EXIST)
+          EXIST = .FALSE.
         END IF
 
 	!print*,'**INQUIRE: EXIST =',EXIST
