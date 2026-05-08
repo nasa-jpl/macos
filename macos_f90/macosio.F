@@ -2512,11 +2512,18 @@ c   Only do this if we got something
 	IF (read_len(pstack) .NE. 0) THEN
 	   CVAR = var_store(read_cur(pstack),pstack)
 
-C          Write to screen
+C          Write to screen.  Skip the keyword echo when consuming the
+C          first token of an ECHO command -- the cmd_loop's ECHO
+C          branch will print just the message.  Without this skip,
+C          journal-mode runs would print a stray "echo" line above
+C          every comment.
 	   IF ( (read_cur(pstack) .GT. 1) .OR. (bat_task .EQ. 2) )THEN
-	      L=ICLEN(CVAR)
-	      IF (L.LE.0) L=1
-	      WRITE(*,6) CVAR(1:L)
+	      IF (.NOT. (read_cur(pstack).EQ.1
+     &                   .AND. LCMP(CVAR,'ECHO',3))) THEN
+	        L=ICLEN(CVAR)
+	        IF (L.LE.0) L=1
+	        WRITE(*,6) CVAR(1:L)
+	      END IF
 	   END IF
 
 C  Write out journal data to file, if in journal mode
