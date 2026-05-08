@@ -70,6 +70,42 @@ C  macos_help.inc under the right category.
 	  ELSE IF (LCMP(command,'HELP',3)) THEN
 #include "macos_help.inc"
 
+C         *** Echo a comment line to stdout (and journal) ***
+C         Useful for marking phases when running interactively or
+C         from a .jou file.  Prints everything on the line after the
+C         ECHO keyword, then discards remaining tokens so they aren't
+C         re-interpreted as commands.
+
+	  ELSE IF (LCMP(command,'ECHO',3)) THEN
+	    BLOCK
+	      INTEGER :: ichar_i, ichar_n
+	      ichar_n = LEN_TRIM(cmdline)
+	      ichar_i = 1
+	      ! skip leading blanks
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).EQ.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      ! skip the ECHO keyword itself
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).NE.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      ! skip whitespace separating keyword from message
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).EQ.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      IF (ichar_i.LE.ichar_n) THEN
+	        WRITE(*,'(A)') cmdline(ichar_i:ichar_n)
+	      ELSE
+	        WRITE(*,*)   ! bare 'echo' -> blank line
+	      END IF
+	    END BLOCK
+	    ! Drop any remaining tokens so we don't re-dispatch them
+	    read_len(pstack) = 0
+	    read_cur(pstack) = 0
+
 
 ! For command-line MACOS only
 #ifdef MACOS_CMD
