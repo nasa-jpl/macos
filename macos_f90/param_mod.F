@@ -96,7 +96,7 @@ C
            end if
            macos_model_size = psize
         Else
-           macos_model_size = 128 ! default problem size
+           macos_model_size = 256 ! default problem size
         End If
 
 

@@ -229,7 +229,7 @@ C
         use param_mod
 
 	Integer :: problem_size
-	Integer, parameter :: default_problem_size = 128
+	Integer, parameter :: default_problem_size = 256
 	Character(len=MacosCharLen) :: input_buf
 	Logical :: use_default = .false.
 
