@@ -22,7 +22,7 @@ C  *** Begin MACOS top-level command loop ***
 
 	  IF (ICLEN(command).EQ.0) GO TO 1
 
-	  IF (LCMP(command,'QUIT',3) .OR.
+	  IF (LCMP(command,'QUIT',1) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
 	    CALL GRAEND
