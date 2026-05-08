@@ -372,6 +372,7 @@ C***********************************************************************
         SUBROUTINE GRAY(X_in,Y_in,Z_in,NROW,NCOL,NDROW,NDCOL,
      &  	        CXLABL,CZLABL,CTITLE)
 	use macos_mod,     only : ifPGColor
+	use macos_vars_mod,only : nPgPanel
 	use plot_mode_mod, only : ifAstroMode, annotOn,
      &	                          annotLine1, annotLine2, wedgeLabel,
      &	                          ClearAnnot
@@ -491,7 +492,29 @@ C       CALL PLOT ROUTINES
 	! are placeholder 'X-Axis' / 'Y-Axis' strings that add no info on
 	! a raster image; suppress them and keep only the title.
 	CALL PGSCI(1)
-        CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
+	IF (nPgPanel .GT. 1) THEN
+	  ! Multi-panel layouts (pgp 2/3/4): PGENV's standard viewport
+	  ! leaves no room for the right-side colorbar before it bumps
+	  ! into the next panel's left tick labels.  Reproduce PGENV's
+	  ! actions but with a tightened viewport.  PGENV is documented
+	  ! as: PGPAGE + PGVSTD + PGSWIN + PGBOX + PGLAB.  Skipping the
+	  ! PGPAGE causes every plot to render in the same panel
+	  ! (stacking) -- include it explicitly here.
+	  BLOCK
+	    REAL :: vx1, vx2, vy1, vy2
+	    CALL PGPAGE                          ! advance to next panel
+	    CALL PGVSTD                          ! panel-relative std vp
+	    CALL PGQVP(0, vx1, vx2, vy1, vy2)    ! query in NDC
+	    vx2 = vx1 + 0.78*(vx2 - vx1)         ! keep 78% of width;
+	                                          ! the rest accommodates
+	                                          ! the right colorbar
+	    CALL PGSVP(vx1, vx2, vy1, vy2)
+	  END BLOCK
+	  CALL PGWNAD(X(1), X(NROW), Y(1), Y(NCOL))
+	  CALL PGBOX('BCNST', 0.0, 0, 'BCNST', 0.0, 0)
+	ELSE
+	  CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
+	END IF
         CALL PGLABEL(' ',' ',CTITLE)
 
 	If (ifPGColor) Then
