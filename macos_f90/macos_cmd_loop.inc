@@ -2278,18 +2278,16 @@ C
 	      !                         radius = distance to it.
 	      ! sphere <- plane is uncommon and not yet specified -- warn.
 	      IF (fElt(iSlv1).GE.BIG) THEN
-	        ! Slave is a plane.
+	        ! Slave is a plane.  Geometric placement: at the slave-to's
+	        ! center of curvature (or shifted by zElt for plane<-plane).
+	        ! fp stays at INF -- a Flat surface always has infinite
+	        ! curvature regardless of the propagation distance.
 	        DO i=1,3
 	          psip(i) = psiElt(i,iSlv2)
 	          Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
 	        END DO
 	        zp = zElt(iSlv1)              ! plane stays a plane
-	        IF (fElt(iSlv2).LT.BIG) THEN
-	          fp = zElt(iSlv2)            ! L between iSlv2 and the
-	                                      ! slave plane at sphere center
-	        ELSE
-	          fp = INF                    ! plane <- plane
-	        END IF
+	        fp = INF                      ! Flat: big f, big Kr
 	      ELSE
 	        ! Slave is a sphere.
 	        IF (fElt(iSlv2).LT.BIG) THEN
@@ -2330,10 +2328,20 @@ C
      &      'Accept the new element? ')
 	    IF ((ANS(1:1).NE.'n').OR.(ANS(1:1).NE.'N')) THEN
 	      eElt(iSlv1)=0d0
-	      fElt(iSlv1)=fp
 	      KcElt(iSlv1)=0d0
-	      KrElt(iSlv1)=-fp
 	      zElt(iSlv1)=zp
+	      ! For a Flat surface, curvature is intrinsically infinite --
+	      ! preserve KrElt and fElt at their big-magnitude values
+	      ! regardless of the propagation distance fp computed above.
+	      ! Per Dave's note (2026-05-07): "Flat should always have
+	      ! big Kr or f".
+	      IF (SrfType(iSlv1).EQ.SrfType_Flat) THEN
+	        fElt(iSlv1) = INF
+	        KrElt(iSlv1) = -INF
+	      ELSE
+	        fElt(iSlv1) = fp
+	        KrElt(iSlv1) = -fp
+	      END IF
 	      DO 59 i=1,3
 	        psiElt(i,iSlv1)=psip(i)
 	        VptElt(i,iSlv1)=Vptp(i)
