@@ -60,7 +60,7 @@ C***********************************************************************
 	INTEGER i,j,k,l,g,iaxis,iElt,npts,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
-     &          dupElt,nTok,GetNumToken
+     &          dupElt,nTok,GetNumToken,ios
 	REAL*8 invec6(6),invec7(7),DDEF(7)
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
 
@@ -194,7 +194,23 @@ C	Get file name
 	    Call LSFILES(0,cmdArg,0)
             RX_Flg=.TRUE.
 	  end if
-	  CALL IACCEPT_S(fid,1,1,'Enter file id: ')
+	  ! Read the file id as a string first so we can honor 'q'/'Q'
+	  ! to abort, matching the CACCEPT path above.  IACCEPT_S would
+	  ! parse 'q' as a bad integer and silently re-prompt, then
+	  ! eventually accept the default (1) on a blank line -- which
+	  ! used to load whatever was first in the listing without the
+	  ! user's intent.
+	  ANS=' '
+	  CALL CACCEPT(ANS,'1','Enter file id: ')
+	  L=ICLEN(ANS)
+	  IF ((L.EQ.1).AND.((ANS.EQ.'q').OR.(ANS.EQ.'Q'))) THEN
+	    LOAD_SUCCESS=.FALSE.; RETURN
+	  END IF
+	  READ(ANS,*,IOSTAT=ios) fid
+	  IF (ios /= 0) THEN
+	    WRITE(*,*)' ** Invalid file id; can not load file'
+	    LOAD_SUCCESS=.FALSE.; RETURN
+	  END IF
 	  filnam(:)=' '
 	  CALL GETRXFN(fid,filnam,status)
 	  if (status==0) then
