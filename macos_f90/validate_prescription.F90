@@ -13,6 +13,11 @@
 ! More elaborate checks (enum-value validation, expected array lengths)
 ! belong in Phase 2.
 !
+! Per-key exceptions:
+!   - EltName is allowed to be empty (Norbert request 2026-05-08).
+!     Some prescriptions have unnamed elements; the parser tolerates
+!     this so the validator should too.
+!
 ! Public: validate_prescription_mod%ValidatePrescription
 ! ----------------------------------------------------------------------
 
@@ -118,8 +123,17 @@
               END IF
 
               IF (LEN_TRIM(line(eqpos+1:)) == 0) THEN
-                pending = .TRUE.
-                pending_lineno = lineno
+                ! Empty value on this line.  Most keys must get a
+                ! value via continuation (or by EOF this is an error),
+                ! but a few prescription keys are intentionally allowed
+                ! to be empty -- handle those here without setting
+                ! `pending`.
+                IF (KeyEq(pending_key, 'EltName')) THEN
+                  pending = .FALSE.
+                ELSE
+                  pending = .TRUE.
+                  pending_lineno = lineno
+                END IF
               ELSE
                 pending = .FALSE.
                 ! Inline value present: this key is now eligible to
@@ -169,5 +183,32 @@
           WRITE(msg, '(A,I0,A,A,A)') &
               'line ', lineno, ': key "', TRIM(key), '" has no value'
         END SUBROUTINE FormatMissingValue
+
+        ! Case-insensitive equality between two trimmed key strings.
+        ! Used to recognize specific keyword exceptions regardless of
+        ! how the user cased them in the .in file.
+        LOGICAL FUNCTION KeyEq(a, b)
+          CHARACTER(*), INTENT(IN) :: a, b
+          INTEGER :: i, na, nb, ca, cb
+          na = LEN_TRIM(a)
+          nb = LEN_TRIM(b)
+          IF (na /= nb) THEN
+            KeyEq = .FALSE.
+            RETURN
+          END IF
+          DO i = 1, na
+            ca = IACHAR(a(i:i))
+            cb = IACHAR(b(i:i))
+            IF (ca >= IACHAR('a') .AND. ca <= IACHAR('z'))   &
+              ca = ca - 32
+            IF (cb >= IACHAR('a') .AND. cb <= IACHAR('z'))   &
+              cb = cb - 32
+            IF (ca /= cb) THEN
+              KeyEq = .FALSE.
+              RETURN
+            END IF
+          END DO
+          KeyEq = .TRUE.
+        END FUNCTION KeyEq
 
       END MODULE validate_prescription_mod
