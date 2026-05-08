@@ -29,6 +29,8 @@ C***********************************************************************
       WRITE(*,*)'   ELTS        - list elements (type, surface)'
       WRITE(*,*)'   EXEcute     - run a .jou journal file'
       WRITE(*,*)'   JOUrnal     - generate a .jou journal file'
+      WRITE(*,*)'   ECHo <text> - print <text> to stdout (annotate'
+      WRITE(*,*)'                 console / journal output)'
       WRITE(*,*)'   MREset      - reset MACOS model size (128..8192)'
       WRITE(*,*)'   ! <cmd>     - run a shell command'
       WRITE(*,*)'   PWD, CD     - working directory shell helpers'
