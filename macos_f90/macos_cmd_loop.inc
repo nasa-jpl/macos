@@ -2568,9 +2568,18 @@ c--Nominal incidence point
      &	      StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(1),
      &	          xDraw,yDraw)
 	    CALL DEQUATE(crPos,RayPos,3)
+c--Allow chief-ray obscuration: the geometric path still reaches
+c  the target element, just blocked by an obscuration mask, so
+c  FFP/PFP can still compute the source adjustment.  Bail only on
+c  miss/bracket/iter failures (chief ray didn't reach iSlv1).
 	    IF (nBadRays.NE.0) THEN
-	      WRITE(*,*)'Nominal chief ray becomes undefined'
-	      GO TO 385
+	      IF (RayStatus(1) .EQ. RayStat_Obscured) THEN
+	        WRITE(*,*)' Chief ray obscured at element ',iSlv1,
+     &	                  '; proceeding with FFP/PFP calculation.'
+	      ELSE
+	        WRITE(*,*)'Nominal chief ray becomes undefined'
+	        GO TO 385
+	      END IF
 	    END IF
 c--Define elt coords
 	    IF ((iSlv1.EQ.nElt).AND.(nOutCord.EQ.5)) THEN
@@ -2680,7 +2689,11 @@ c----Compute next step
      &	       ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	       StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(1),
      &	       xDraw,yDraw)
-	      IF (nBadRays.NE.0) THEN
+c--Same obscuration tolerance as for the nominal trace above:
+c  obscured chief ray still reached iSlv1 geometrically, only
+c  miss/bracket/iter failures abort the search.
+	      IF (nBadRays.NE.0 .AND.
+     &	          RayStatus(1) .NE. RayStat_Obscured) THEN
 	        WRITE(*,*)'Chief ray becomes undefined during search'
 	        GO TO 385
 	      END IF
