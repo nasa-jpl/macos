@@ -284,8 +284,15 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
   I/O: catches missing values after `Key=` (inline or continuation), bad keys,
-  file-not-found, and open errors. Returns ios=0 on success; ios/=0 with a
+  file-not-found, and open errors. Also catches blank lines inside multi-row
+  continuation blocks (e.g. a stray blank in the middle of a `Tout=` matrix),
+  which trip msmacosio.inc's fixed-format READ even when every individual
+  line is well-formed. Returns ios=0 on success; ios/=0 with a
   bare `msg` (no filename prefix — caller adds context).
+- Per-key empty-value exceptions (KeyEq helper inside the module): `EltName`,
+  `BaseUnits`, `WaveUnits` may have empty values. Older prescriptions leave
+  these blank and the parser tolerates it. Add more keys to the `.OR.` chain
+  in `ValidatePrescription` if Norbert flags additional ones.
 - Wired into MBFile6 in macosio.F (interactive: re-prompt on failure via
   `GO TO 43`) and smacosio.F (SMACOS: clean abort with LOAD_SUCCESS=.FALSE.,
   `GO TO 99`). Both paths run the validator only when iopt=1 (existing file
@@ -294,6 +301,82 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
   no state change, just prints `<file>: OK` or `<file>: <msg>`.
 - Phase 2 (deferred): IOSTAT-armoring of msmacosio.inc parser internals;
   enum-value validation against the type tables.
+
+## CLI sub-prompts via mhist cache (macosio.F + mhist.c)
+The old fragile pattern was: Fortran ACCEPT routine WRITE-s a prompt
+(no trailing newline), then calls READ_LOH which goes through MHIST →
+`readline(empty)` for the input. readline couldn't see the prompt and
+mis-managed cursor state, producing the recurring "MACOS> the new
+element data?" overwrite class of bugs.
+
+Replaced with a small cache in mhist.c:
+- `sub_prompt_buf[256]` (file-scope, OUTSIDE the READLINE_LIBRARY
+  guard so non-readline builds still link)
+- `set_sub_prompt_(s, slen)` / `clear_sub_prompt_()` — Fortran-callable
+- `mhist_` for sub-prompts (mp[0]==' ') passes `sub_prompt_buf` to
+  readline, so readline renders the prompt itself and owns cursor
+  state authoritatively. Setter appends one trailing space to match
+  the legacy `' ',A,' [',A,']: '` format the old WRITE produced.
+
+CACCEPT, IACCEPT, DACCEPT, RACCEPT in macosio.F (NOT in smacosio.F —
+that one has no readline) now:
+1. Build the full prompt string from TEXT + `[default]:`.
+2. If `read_len(pstack) > 0` (token will come from the existing
+   buffer, no MHIST call), WRITE the prompt directly with format
+   `(A,$)` — matches legacy behavior for multi-token lines like
+   `stop elt 1 0,0`.
+3. Else `CALL set_sub_prompt(...)` then `CALL READ_LOH(...)` and
+   `CALL clear_sub_prompt` afterwards.
+
+Use `LEN_TRIM(prompt_str)` for the slice length, NOT `ICLEN` —
+`ICLEN` returns the length of the first *non-blank* prefix (length
+of the first word), which gives 4 for ` Enter...` etc. That bug ate
+several debug cycles; don't repeat.
+
+When adding new ACCEPT-style prompt routines, follow the same
+pattern. New top-level commands that need their own prompt should
+either reuse the existing ACCEPT routines or push their prompt
+through `set_sub_prompt` directly.
+
+## Plot routine viewport (pgplotsub.F PANEL_ENV)
+All raster/contour/spot plot routines in pgplotsub.F (CONTOUR,
+SPOTDIAG, LINSPOTDIAG, SLICE, GRAY, WIRE, PLOTCOL) call `PANEL_ENV`
+instead of `PGENV` directly. The helper:
+
+- In single-panel mode (`nPgPanel <= 1`) calls `PGENV` unchanged.
+- In multi-panel mode (`pgp 2/3/4`) expands PGENV into the explicit
+  sequence `PGPAGE + PGVSTD + PGQVP + PGSVP + PGSWIN/PGWNAD + PGBOX`
+  with the viewport's horizontal extent shrunk to 78% of the standard
+  panel viewport. The 22% remaining width inside the panel is where
+  PGWEDG (the colorbar in GRAY) lives without crashing into the next
+  panel's left tick labels.
+- Subtle bug found during development: `PGENV` implicitly calls
+  `PGPAGE` to advance to the next panel. Custom replacements MUST
+  include the explicit `CALL PGPAGE`; without it, every plot lands
+  in the same panel.
+- Sanity-checks the input bounds (`SaneBounds` contained function)
+  for NaN, reversed (x1 >= x2), and overflow (|x2-x1| > 1e30) — emits
+  `** Error: inconsistent propagation parameters` then lets the plot
+  proceed with the original bounds so the historical giza
+  `giza_set_window: Invalid arguments` is still produced. Catches the
+  pathology where a FarField reference surface has `zElt = INF` and
+  the propagation math returns garbage extents.
+
+DRAW (system-layout sketch) still uses `PGENV` directly — it's a
+single-plot routine, no multi-panel concern.
+
+## GRAINI graphics-device caching (pgplotsub.F)
+`GRAINI` is called once per `ifPlot=.FALSE.` event (e.g. on the
+first plot after `PGP` changes layout, or after `NEWPAGE`). The
+first call passes `'?'` to `PGBEGIN` so the user is prompted for
+the graphics device (`/xw`, `/png`, etc.). After PGBEGIN returns,
+`PGQINF('DEV/TYPE', dev_str, dlen)` queries the user's choice and
+caches it in a `SAVE`'d local. Subsequent GRAINI calls pass the
+cached `dev_str` to PGBEGIN instead of `'?'`, so giza doesn't
+re-prompt every time the layout changes. With giza the new PGBEGIN
+opens an additional window (it doesn't close the previous one);
+that's intentional and supports the multi-window-history workflow
+in CoroExample.jou-style scripts.
 
 ## Debug builds
 - `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
