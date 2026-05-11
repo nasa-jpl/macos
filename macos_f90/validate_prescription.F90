@@ -13,10 +13,12 @@
 ! More elaborate checks (enum-value validation, expected array lengths)
 ! belong in Phase 2.
 !
-! Per-key exceptions:
-!   - EltName is allowed to be empty (Norbert request 2026-05-08).
-!     Some prescriptions have unnamed elements; the parser tolerates
-!     this so the validator should too.
+! Per-key exceptions (empty value accepted):
+!   - EltName    -- unnamed element (Norbert 2026-05-08)
+!   - BaseUnits  -- unspecified base units, backward compat
+!   - WaveUnits  -- unspecified wavelength units, backward compat
+!   These keys are routinely left blank in older prescription files
+!   and the parser tolerates it, so the validator should too.
 !
 ! Public: validate_prescription_mod%ValidatePrescription
 ! ----------------------------------------------------------------------
@@ -126,9 +128,11 @@
                 ! Empty value on this line.  Most keys must get a
                 ! value via continuation (or by EOF this is an error),
                 ! but a few prescription keys are intentionally allowed
-                ! to be empty -- handle those here without setting
-                ! `pending`.
-                IF (KeyEq(pending_key, 'EltName')) THEN
+                ! to be empty for backward compatibility -- handle
+                ! those here without setting `pending`.
+                IF (KeyEq(pending_key, 'EltName')   .OR. &
+                    KeyEq(pending_key, 'BaseUnits') .OR. &
+                    KeyEq(pending_key, 'WaveUnits')) THEN
                   pending = .FALSE.
                 ELSE
                   pending = .TRUE.
