@@ -49,6 +49,20 @@ C***********************************************************************
         INTEGER, INTENT(IN) :: JUST, AXIS
         REAL :: vx1, vx2, vy1, vy2
 
+c       Sanity-check the bounds.  Upstream pathology (e.g. an
+c       ill-configured prop where zElt is INF for a FarField sphere
+c       reference surface) can produce NaN, +/-Inf, degenerate
+c       (x1 >= x2), or overflow ranges.  giza will then reject the
+c       PGSWIN call below with a cryptic "giza_set_window: Invalid
+c       arguments" message.  Print a clearer diagnostic here and let
+c       the plot proceed as before -- the user gets the cryptic giza
+c       warning AND the meaningful one, telling them where to look.
+        IF (.NOT.SaneBounds(X1, X2, Y1, Y2)) THEN
+          WRITE(*,*) ' ** Error: inconsistent propagation parameters'
+          WRITE(*,*) '    plot bounds are degenerate, infinite, or '//
+     &               'NaN; check the prescription'
+        END IF
+
         IF (nPgPanel .LE. 1) THEN
           CALL PGENV(X1, X2, Y1, Y2, JUST, AXIS)
           RETURN
@@ -74,26 +88,60 @@ C***********************************************************************
           CALL PGBOX('BCNST', 0.0, 0, 'BCNST', 0.0, 0)
         END IF
         RETURN
+
+        CONTAINS
+          LOGICAL FUNCTION SaneBounds(x1, x2, y1, y2)
+            REAL, INTENT(IN) :: x1, x2, y1, y2
+            REAL, PARAMETER  :: maxRange = 1.0E30
+            ! Reject NaN (x /= x), reversed/degenerate (x1 >= x2),
+            ! and over-large ranges (likely overflow from upstream).
+            IF (x1 /= x1 .OR. x2 /= x2 .OR.
+     &          y1 /= y1 .OR. y2 /= y2) THEN
+              SaneBounds = .FALSE.
+            ELSE IF (x1 .GE. x2 .OR. y1 .GE. y2) THEN
+              SaneBounds = .FALSE.
+            ELSE IF (ABS(x2-x1) .GT. maxRange .OR.
+     &               ABS(y2-y1) .GT. maxRange) THEN
+              SaneBounds = .FALSE.
+            ELSE
+              SaneBounds = .TRUE.
+            END IF
+          END FUNCTION SaneBounds
         END SUBROUTINE PANEL_ENV
 
 C***********************************************************************
 
 C  Use this routine to initialize graphic output - such as '/xw' or '/gif'
+C  The user is prompted for the graphics device only on the FIRST call;
+C  subsequent calls (e.g. when PGP changes panel layout, or after
+C  ifPlot=.FALSE. forces a new window) silently reuse the cached
+C  choice so the user doesn't have to re-Enter past the device prompt
+C  every time.
         SUBROUTINE GRAINI
 	use macos_vars_mod, only: nPgPanel
+	CHARACTER(LEN=64), SAVE :: dev_str = '?'
+	INTEGER :: dlen
 
 	if (nPgPanel==1) then
-          CALL PGBEGIN(0,'?',1,1)
+          CALL PGBEGIN(0,dev_str,1,1)
 	else if (nPgPanel==2) then
-          CALL PGBEGIN(0,'?',2,1) ! 1x2 horizontal panels
+          CALL PGBEGIN(0,dev_str,2,1) ! 1x2 horizontal panels
 	  CALL PGPAP(9.0,0.4)
 	else if (nPgPanel==3) then
-          CALL PGBEGIN(0,'?',3,1) ! 1x3 horizontal panels
+          CALL PGBEGIN(0,dev_str,3,1) ! 1x3 horizontal panels
           CALL PGPAP(13.0,0.4)
 	else if (nPgPanel==4) then
-          CALL PGBEGIN(0,'?',2,2) ! 2x2 panels
+          CALL PGBEGIN(0,dev_str,2,2) ! 2x2 panels
 	  CALL PGPAP(7.5,1.0)
 	end if
+
+c       Cache the user's device choice after the first PGBEGIN so
+c       subsequent calls bypass the "Graphics device/type" prompt.
+c       PGQINF('DEV/TYPE',...) returns the full device string ready
+c       to feed back to PGBEGIN.
+	IF (dev_str(1:1) .EQ. '?') THEN
+	  CALL PGQINF('DEV/TYPE', dev_str, dlen)
+	END IF
 	!print*,'*** nPgPanel =',nPgPanel
 
         !CALL PGSVP(0.0,2.0,0.0,1.0)
