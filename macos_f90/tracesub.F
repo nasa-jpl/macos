@@ -3536,17 +3536,20 @@ C	Here when element number is determined...
 	          PrevElt(iFirstNonSeq)=PrevNonSeg
 	        END IF
 	        IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason (non-sequential)
+!-->  Record failure reason (non-sequential).  Only count this ray
+!     in nBadRays if SetRayFail actually recorded a status (i.e. the
+!     ray was previously OK); see elt_mod%SetRayFail.
 	          IF (LZPFailed) THEN
-	            CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &              'root-find bracket/iter fail')
+	            IF (SetRayFail(iRay,RayStat_Bracket,iElt,
+     &                  'root-find bracket/iter fail'))
+     &              nBadRays=nBadRays+1
 	            LZPFailed = .FALSE.
 	          ELSE
-	            CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &              'surface miss')
+	            IF (SetRayFail(iRay,RayStat_Miss,iElt,
+     &                  'surface miss'))
+     &              nBadRays=nBadRays+1
 	          END IF
 !<--
-	          nBadRays=nBadRays+1
 	          LastElt=PrevElt(iElt)
 	          LEltOK(imin)=.FALSE.
 	          IF (IRAY.GT.1) THEN
@@ -3689,17 +3692,19 @@ C  End of element section
             ! affect L1(iRay) (= LRayPass) -jzlou
 
 	    IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason
+!-->  Record failure reason.  Only bump nBadRays when SetRayFail
+!     actually recorded the status (first-failure wins).
 	      IF (LZPFailed) THEN
-	        CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &            'root-find bracket/iter fail')
+	        IF (SetRayFail(iRay,RayStat_Bracket,iElt,
+     &              'root-find bracket/iter fail'))
+     &          nBadRays=nBadRays+1
 	        LZPFailed = .FALSE.
 	      ELSE
-	        CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &            'surface miss')
+	        IF (SetRayFail(iRay,RayStat_Miss,iElt,
+     &              'surface miss'))
+     &          nBadRays=nBadRays+1
 	      END IF
 !<--
-	      nBadRays=nBadRays+1
 	      LEltOK(iElt)=.FALSE.
 	      LastElt=PrevElt(iElt)
 	      IF (IRAY.GT.1) THEN
@@ -3849,11 +3854,14 @@ C	  END IF
 ! 	  End If
 ! #endif
 
-!-->  Record obscuration (if ray passed surfaces but was blocked)
+!-->  Record obscuration (if ray passed surfaces but was blocked).
+!     Bump nBadRays only on first-failure (SetRayFail is also called
+!     from CPROPAGATE; an already-obscured ray must not be counted
+!     again at every subsequent propagation pass).
 	    IF (.NOT.L1(iRay)) THEN
-	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
-     &          'obscured/vignetted')
-	      nBadRays=nBadRays+1
+	      IF (SetRayFail(iRay,RayStat_Obscured,iElt,
+     &            'obscured/vignetted'))
+     &        nBadRays=nBadRays+1
 	    END IF
 !<--
 
