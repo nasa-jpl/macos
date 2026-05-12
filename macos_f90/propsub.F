@@ -1082,17 +1082,19 @@ cdebug
 	            PrevElt(iElt)=PrevNonSeg(iRay)
 	          END IF
 	          IF (.NOT.LRayOK(iRay)) THEN
-!-->  Record failure reason (non-sequential)
+!-->  Record failure reason (non-sequential).  nBadRays bumps once
+!     per ray (gated on SetRayFail recording a new status).
 	            IF (LZPFailed) THEN
-	              CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &                'root-find bracket/iter fail')
+	              IF (SetRayFail(iRay,RayStat_Bracket,iElt,
+     &                    'root-find bracket/iter fail'))
+     &                nBadRays=nBadRays+1
 	              LZPFailed = .FALSE.
 	            ELSE
-	              CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &                'surface miss')
+	              IF (SetRayFail(iRay,RayStat_Miss,iElt,
+     &                    'surface miss'))
+     &                nBadRays=nBadRays+1
 	            END IF
 !<--
-	            nBadRays=nBadRays+1
 	            LEltOK(imin)=.FALSE.
 	            IF (IRAY.GT.1) THEN
 	              RayMap(RayIndex(1,iRay),RayIndex(2,iRay))=0
@@ -1167,15 +1169,16 @@ C  End of element section
 	      IF (.NOT.LRayOK(iRay)) THEN
 !-->  Record failure reason
 	        IF (LZPFailed) THEN
-	          CALL SetRayFail(iRay,RayStat_Bracket,iElt,
-     &            'root-find bracket/iter fail')
+	          IF (SetRayFail(iRay,RayStat_Bracket,iElt,
+     &                'root-find bracket/iter fail'))
+     &          nBadRays=nBadRays+1
 	          LZPFailed = .FALSE.
 	        ELSE
-	          CALL SetRayFail(iRay,RayStat_Miss,iElt,
-     &            'surface miss')
+	          IF (SetRayFail(iRay,RayStat_Miss,iElt,
+     &                'surface miss'))
+     &          nBadRays=nBadRays+1
 	        END IF
 !<--
-	        nBadRays=nBadRays+1
 	        LEltOK(iElt)=.FALSE.
 	        IF (IRAY.GT.1) THEN
 	          RayMap(RayIndex(1,iRay),RayIndex(2,iRay))=0
@@ -1184,11 +1187,13 @@ C  End of element section
 	      END IF
 	    END IF
 
-!-->  Record obscuration (if ray passed surfaces but was blocked)
+!-->  Record obscuration (if ray passed surfaces but was blocked).
+!     Gated by SetRayFail; an already-obscured ray observed at a
+!     later propagation pass won't be double-counted.
 	    IF (.NOT.LRayPass(iRay)) THEN
-	      CALL SetRayFail(iRay,RayStat_Obscured,iElt,
-     &          'obscured/vignetted')
-	      nBadRays=nBadRays+1
+	      IF (SetRayFail(iRay,RayStat_Obscured,iElt,
+     &            'obscured/vignetted'))
+     &        nBadRays=nBadRays+1
 	    END IF
 !<--
 
