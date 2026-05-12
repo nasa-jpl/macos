@@ -362,7 +362,8 @@ C***********************************************************************
 
         Integer, dimension(:,:), allocatable :: SegCoord,
      &           RayToSegMap,RayID,RayWFMap,ObsType,
-     &           IWORK,EltGrp,ObsTypeRx,tMetSrfPos
+     &           IWORK,EltGrp,ObsTypeRx,tMetSrfPos,
+     &           nPolyObsVtx3DPending
 
         Integer, dimension(:), allocatable :: LnkElt,
      &         EltToSegMap,SegToEltMap,PropType,ApType,
@@ -387,7 +388,7 @@ C***********************************************************************
      &          TEltRx,AmplMat,SrfMetPos,EdgeSensVec
 
         Real*8, dimension(:,:,:,:), allocatable :: ObsHexBound,
-     &          PolyObsVtx,PolyObsEqn
+     &          PolyObsVtx,PolyObsEqn,PolyObsVtx3DPending
 
         Real*8, dimension(:,:), allocatable ::
      &        RayPos, RayDir, ApVec, xObs,
@@ -620,6 +621,7 @@ C***********************************************************************
      &               yDataRx,zDataRx,lData,
      &               zMonRx, h1HOE,h2HOE, CoatIndxElt, CoatThkElt,
      &               PolyApVtx,PolyApEqn,PolyObsVtx,PolyObsEqn,
+     &               PolyObsVtx3DPending,nPolyObsVtx3DPending,
      &               ObsHexBound,DoeId,DoePhProf,stat=m_err_elt)
           if (m_err_elt /= 0)
      &      call macos_memory_failure
@@ -741,6 +743,8 @@ C***********************************************************************
      &           PolyApEqn(3,mPolySide,mElt),
      &           PolyObsVtx(2,mPolySide,mObs,mElt),
      &           PolyObsEqn(3,mPolySide,mObs,mElt),
+     &           PolyObsVtx3DPending(3,mPolySide,mObs,mElt),
+     &           nPolyObsVtx3DPending(mObs,mElt),
      &           vptElt(3,mElt),vptRx(3,mElt),RptRx(3,mElt),
      &           psiRx(3,mElt),DoePhProf(6,mDOE),stat=m_err_elt)
         if (m_err_elt /= 0)
@@ -979,6 +983,8 @@ C***********************************************************************
           ObsHexBound(:,:,:,:) =  0e0_pr
           PolyObsVtx(:,:,:,:)  =  0e0_pr
           PolyObsEqn(:,:,:,:)  =  0e0_pr
+          PolyObsVtx3DPending(:,:,:,:) = 0e0_pr
+          nPolyObsVtx3DPending(:,:)    = 0
 
           VptElt(:,:)          =  0e0_pr
           RptElt(:,:)          =  0e0_pr
