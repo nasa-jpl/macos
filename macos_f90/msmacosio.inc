@@ -3136,21 +3136,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          ! Check whether ObsVec are 3D vertices
 	          If (LCMP(VAR_NAM,'PolyObsVec',10).OR.
      &                LCMP(VAR_NAM,'Poly3DObsVec',12)) THEN
-                    ! 3D vertices in global frame
-                    IF (.not.xObs_FLG) THEN
-                     WRITE(*,*)
-     &               ' Must specify xObs before PolyObs3DVec, iElt=',
-     &                         iElt
-	              LOAD_SUCCESS=.false.; GO TO 70
-	            ELSE IF (.not.ObsType_FLG(iObs)) THEN
+                    ! 3D vertices in global frame.  Projection to the
+                    ! element-local 2D plane requires xObs; if xObs has
+                    ! not yet been parsed for this element, stash the
+                    ! raw vertices and defer the projection until xObs
+                    ! is set (or until ChkDf2 catches it as missing).
+                    IF (.not.ObsType_FLG(iObs)) THEN
                       WRITE(*,*)
-     &                ' Must specify ObsType before PolyObsVec'
+     &                ' Must specify ObsType before '//
+     &                'PolyObsVec/Poly3DObsVec, iElt=', iElt
                       LOAD_SUCCESS=.false.; GO TO 70
                     END IF
 
                     IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-                      !READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,4)
-                      !nVertex=ObsVec(4,iObs,iElt) ! # of vertices of polygon
                       READ(VALUE,*) ObsVec(1,iObs,iElt)
                       nVertex=ObsVec(1,iObs,iElt) ! # of vertices of polygon
                       If (nVertex < 3) Then
@@ -3163,15 +3161,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                         READ(RX_FID, 123, END=99) STRING
                         READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
                       End Do
-                      Call SetCvxPolyObsVtx(iElt,nVertex,
+                      IF (xObs_FLG) THEN
+                        Call SetCvxPolyObsVtx(iElt,nVertex,
      &                                      PolyVtx3D(:,1:nVertex),iObs)
-                      Call SetCvxPolyObsBound(iObs,iElt)
-	              !print*,' *** msmacosio: iObs,nVertex =',iObs,nVertex
-	              !do i=1,nVertex
-	              ! print*,' ** PolyVtx3D(1:3,i) =',PolyVtx3D(1:3,i)
-	              !end do
+                        Call SetCvxPolyObsBound(iObs,iElt)
+                      ELSE
+                        ! Defer: xObs not seen yet for this element
+                        PolyObsVtx3DPending(:,1:nVertex,iObs,iElt) =
+     &                                          PolyVtx3D(:,1:nVertex)
+                        nPolyObsVtx3DPending(iObs,iElt) = nVertex
+                      END IF
                     ELSE
-                      WRITE(*,*)' **Incorrect ObsType for PolyObs3DVec'
+                      WRITE(*,*)
+     &                ' **Incorrect ObsType for '//
+     &                'PolyObsVec/Poly3DObsVec'
                       GO TO 99
                     END IF
                     ObsVec_FLG(iObs)=.TRUE.
@@ -3234,6 +3237,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 WRITE(*,124)' xObs'
               ELSE
                 xObs_FLG = .TRUE.; LxObsDef(iElt)=.TRUE.
+                ! Resolve any PolyObsVec/Poly3DObsVec stashed before
+                ! xObs was set: project 3D vertices into element-local
+                ! 2D coords now that xObs is known.
+                DO i=1,mObs
+                  IF (nPolyObsVtx3DPending(i,iElt).GT.0) THEN
+                    Call SetCvxPolyObsVtx(iElt,
+     &                  nPolyObsVtx3DPending(i,iElt),
+     &                  PolyObsVtx3DPending(:,
+     &                      1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
+                    Call SetCvxPolyObsBound(i,iElt)
+                    nPolyObsVtx3DPending(i,iElt) = 0
+                  END IF
+                END DO
               END IF
               GO TO 61
 
