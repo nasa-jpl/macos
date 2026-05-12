@@ -978,6 +978,27 @@ C	  WRITE(*,112)'nObs',iElt
 	  END IF
 	END IF
 
+	! Resolve any PolyObsVec/Poly3DObsVec entries that were parsed
+	! before xObs was set.  xObs may have just been defaulted above,
+	! so this is the last chance to project.  If xObs is still
+	! unavailable, fail the element with a targeted message.
+	DO i=1,mObs
+	  IF (nPolyObsVtx3DPending(i,iElt).GT.0) THEN
+	    IF (xObs_FLG) THEN
+	      Call SetCvxPolyObsVtx(iElt,
+     &            nPolyObsVtx3DPending(i,iElt),
+     &            PolyObsVtx3DPending(:,
+     &                1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
+	      Call SetCvxPolyObsBound(i,iElt)
+	    ELSE
+	      WRITE(*,*)' xObs missing for PolyObsVec/Poly3DObsVec',
+     &                 ', iElt=',iElt,', iObs=',i
+	      ELEM_OK=.FALSE.
+	    END IF
+	    nPolyObsVtx3DPending(i,iElt) = 0
+	  END IF
+	END DO
+
 	IF (TElt_FLG) THEN
 	  CONTINUE
 	ELSE
