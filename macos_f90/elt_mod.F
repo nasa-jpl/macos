@@ -1172,11 +1172,15 @@ C***********************************************************************
 C  SetRayFail -- record the first failure for a ray
 C
 C  Only stores the first failure (subsequent calls for the same ray
-C  are ignored), so the root cause is preserved.
+C  are ignored), so the root cause is preserved.  Returns .TRUE. iff
+C  this call actually recorded a status (i.e. the ray was previously
+C  OK).  Callers gate per-failure tallies (nBadRays) on the return so
+C  the same ray isn't counted more than once across propagation
+C  passes that re-observe the obscured/missed state.
 C***********************************************************************
 
 !-->
-        SUBROUTINE SetRayFail(iRay, iStat, iElt, cMsg)
+        LOGICAL FUNCTION SetRayFail(iRay, iStat, iElt, cMsg)
           IMPLICIT NONE
           INTEGER, INTENT(IN) :: iRay, iStat, iElt
           CHARACTER(len=*), INTENT(IN) :: cMsg
@@ -1184,8 +1188,11 @@ C***********************************************************************
             RayStatus(iRay)  = iStat
             RayFailElt(iRay) = iElt
             RayFailMsg(iRay) = cMsg
+            SetRayFail = .TRUE.
+          ELSE
+            SetRayFail = .FALSE.
           END IF
-        END SUBROUTINE SetRayFail
+        END FUNCTION SetRayFail
 !<--
 
 C***********************************************************************
