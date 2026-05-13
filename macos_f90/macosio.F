@@ -1427,6 +1427,7 @@ C***********************************************************************
 	use elt_mod
 	use cfiles_mod
         use surfsub, only: GridInit
+        use lohpars_mod, only: pstack, read_len, read_cur
 
 	implicit none
 
@@ -1497,7 +1498,6 @@ C       read in command
 	STRING(66:128)=' '
 
 	IF (LCMP(STRING,'QUIT',1)) THEN
-	  WRITE(*,*)
 	  RETURN
 	ELSE IF (LCMP(STRING,'HELP',2)) THEN
 	  WRITE(*,100)
@@ -1507,6 +1507,21 @@ C       parse the statement
 
 
 	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,0)  ! String parsing and not parsing from a Rx file: RX_FID=0
+
+C       Catch the "mod var = val" case (spaces around '=' on the MACOS>
+C       line).  CACCEPT only consumed the first whitespace-separated
+C       token, so VALUE is empty here.  Some field handlers below have
+C       READ(VALUE,*) without ERR=/END= labels and would crash on the
+C       empty value (forrtl severe (24)).  Warn and drain leftover
+C       tokens so the user gets one message instead of one per token.
+	IF (LEN_TRIM(VALUE) .EQ. 0 .AND.
+     &      .NOT. LCMP(STRING,'HELP',2)) THEN
+	  WRITE(*,*) ' ** MOD: assignment must be "<var>=<value>"'//
+     &               ' with no spaces around "=" (e.g. "ngridpts=33")'
+	  read_len(pstack) = 0
+	  read_cur(pstack) = 0
+	  GO TO 998
+	END IF
 
 	IF (LCMP(VAR_NAM,'A',1)) THEN
 	    IF (LCMP(VAR_NAM,'Aperture',8)) THEN
