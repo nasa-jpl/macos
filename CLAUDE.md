@@ -65,7 +65,12 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
 - Per-ray arrays: RayStatus(mRay), RayFailElt(mRay), RayFailMsg(mRay) — allocated in elt_mod.
-- SetRayFail(iRay, iStat, iElt, cMsg) records first failure only (avoids overwriting root cause).
+- `LOGICAL FUNCTION SetRayFail(iRay, iStat, iElt, cMsg)` records first failure only (avoids
+  overwriting root cause) and returns .TRUE. iff it actually recorded a status this call.
+  All six `nBadRays = nBadRays + 1` sites in tracesub.F and propsub.F are gated on the return:
+  `IF (SetRayFail(...)) nBadRays = nBadRays + 1`. This prevents an obscured ray being counted
+  once per propagation pass — the bug that produced the "26076 rays were lost / Obscured: 4346"
+  diagnostic where 4346 × N_elements gave the inflated headline number.
 - LZPFailed module variable in MODULE surfsub: set by *ZPSolve on bracket/max-iter failure,
   checked by surface routine callers (IF (LZPFailed) GO TO 98), reset after recording status.
 - All STOP statements in surfsub.F converted: AZPSolve, GSZPSolve, GSZPB, SFFZPSolve, UDSZPSolve.
@@ -280,6 +285,47 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
   and the un-normalized loop ran indices 1..3 (omitting 10=Noll, 11=ExtFringe),
   so `MOD ZernType=Noll` silently became NormNoll. Both fixed in the helper.
 
+## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
+- For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
+  used to require xObs to be parsed BEFORE the polygon line, because
+  `SetCvxPolyObsVtx` projects the 3D vertices to element-local 2D at parse
+  time and needs xObs/yObs to do so. Wrong order produced a hard error.
+- Now the order doesn't matter. On a 3D-vertex polygon line:
+  - If `xObs_FLG` is true, project immediately (legacy behaviour).
+  - Else, stash raw 3D vertices into `PolyObsVtx3DPending(3, mPolySide, mObs,
+    mElt)` and the count into `nPolyObsVtx3DPending(mObs, mElt)` (both in
+    elt_mod), defer the projection.
+- xObs parser, after setting xObs_FLG, walks the pending-list for the
+  current element and runs `SetCvxPolyObsVtx + SetCvxPolyObsBound` on any
+  stashed vertices.
+- ChkDf2 (iosub.inc): after the existing psiElt-based xObs default kicks in
+  for elements that need it, runs the same pending-resolution pass. If
+  xObs is still unavailable for an element with pending vertices, ELEM_OK
+  is set false with a targeted message naming iElt and iObs.
+- Error message text now references both accepted keyword names —
+  `PolyObsVec/Poly3DObsVec` — not the never-implemented `PolyObs3DVec`.
+- Note: `PolyApVec=`/`Poly3DApVec=` have the same xObs-ordering wrinkle
+  but were left as-is (still error on bad order). Same deferral pattern
+  would extend to them if needed.
+
+## MOD command: empty-value crash guard (macosio.F MOD_LOH)
+- `mod ngridpts = 33` (spaces around `=`) used to crash with
+  `forrtl: severe (24): end-of-file during read, unit -5`. CACCEPT in
+  MOD_LOH only consumes the first whitespace-separated token, so VALUE
+  ends up empty and the subsequent `READ(VALUE,*) nGridpts` (which has
+  no ERR=/END= label) hits EOF on the empty string.
+- Guard added right after GET_EQ: if `LEN_TRIM(VALUE) == 0` and the
+  command isn't HELP, print a clear warning ("assignment must be
+  \"<var>=<value>\" with no spaces around \"=\"") and drain remaining
+  buffered tokens (`read_len(pstack)=0, read_cur(pstack)=0`) so the
+  leftover `=` and `33` tokens don't cascade into more bogus commands.
+- Smaller scope than fixing the parser to slurp multi-token assignments.
+  Users get one targeted message and prompt continues. `mod ngridpts=33`
+  (no spaces) still works as before.
+- Also dropped the cosmetic `WRITE(*,*)` blank line in the QUIT branch
+  of MOD_LOH — left a stray empty line between the MOD prompt and
+  `MACOS>` on every exit.
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
@@ -409,6 +455,43 @@ in CoroExample.jou-style scripts.
 - Obscured rays now increment nBadRays so WARN fires: tracesub.F and propsub.F both
   have `nBadRays=nBadRays+1` inside the `IF (.NOT.L1(iRay))` / `IF (.NOT.LRayPass(iRay))`
   blocks that call SetRayFail(RayStat_Obscured).
+
+## Regression tests via pymacos (~/dev/MACOS_resources/pymacos/)
+- CodeV-comparison tests in `tests/test_api_rx_grating.py` and `tests/test_masks.py`
+  cover the geometric / ray-trace paths (6601 tests, all passing).
+- PROPER-comparison tests in `tests/proper_compare/` cover the physical-optics paths
+  (INT/PIX/DFT-propagation) that CodeV can't validate. Currently scoped to one
+  prescription (`tests/Rx/Rx_Cass_FarField.in`); macos and PROPER agree at the
+  numerical-precision level (max |a-b| ~ 1e-11 on Strehl-normalised PSFs) for
+  nominal + secondary-mirror Tx/Ty/Tz perturbations.
+- Rerun after any macos_f90 edit: `cd ~/dev/MACOS_resources/pymacos && source
+  .venv/bin/activate && source /opt/intel/oneapi/setvars.sh intel64 && cd
+  src/cmake/build && make && cd ../../../tests && pytest`. Pymacos rebuilds its
+  f2py wrapper against the freshly-rebuilt libsmacos.a.
+- The pymacos<->PROPER coupling needs two corrections to reach this level of
+  agreement (both in tests/proper_compare/geometries/cass_farfield.py):
+  - **Aperture match.** Take PROPER's amplitude DIRECTLY from macos's mask via
+    `prop_multiply`, instead of building an analytical circular_aperture +
+    obscurations model. Otherwise PROPER illuminates pixels macos zeroed out
+    (spider, edge losses), and the resulting phase mismatch halves the
+    apparent PSF tilt response.
+  - **Sign flip.** macos OPD sign convention is opposite to PROPER's
+    `prop_add_phase` input. Default `opd_sign_flip=True` reconciles them.
+    Worth checking macos source which convention is actually documented.
+
+## pymacos intensity() wrapper (pymacos.f90 + macos.py)
+- pymacos exposes `intensity(srf, reset_trace=True) -> np.ndarray` that runs
+  the SMACOS 'INT' command at element `srf` and returns the (mdttl, mdttl)
+  intensity buffer (MWFFT in elt_mod, widened from SREAL to float64).
+- Template for extending pymacos to cover commands that fill a buffer:
+  - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
+    returns the output array dim.
+  - `<thing>_get` Fortran subroutine: copies the module-level buffer into a
+    caller-allocated output array (REAL(8) widened from SREAL where needed).
+  - Python wrapper in macos.py: input validation + lib.api.<thing>_cmd +
+    lib.api.<thing>_get + return ndarray.
+- The pattern mirrors the existing spot_cmd/spot_get pair. Use for future
+  PIX, FFP, PFP, etc. wrappers.
 
 ## Conventions (new code)
 - IMPLICIT NONE throughout
