@@ -4974,16 +4974,18 @@ C         *** Should perform ray trace and diffraction here -- jzlou
      &	      'X-Axis','Y-Axis','.gain',mdttl,mdttl,R1,R2,1)
 
 	    ELSE IF (LCMP(command,'LOG',3)) THEN
+	      ! LOG -- log10 intensity wavefront display.  Don't read this
+	      ! as "start logging"; transcript/journal is JOU/JOURNAL.
 	      CALL Ca2Log(ifVecDif3,Power,MaxInt,imax,jmax)
 	      WRITE(*,418)MaxInt,imax,jmax,Power
-
-	      print*,'*****B4 SrfOut: mdttl =',mdttl
 
 	      CALL SrfOut(iElt,iPloTyp,'Log10 Wavefront Intensity#%',
      &	                  'X-Axis','Y-Axis','.log',mdttl,mdttl,R1,R2,1)
 
-#if 1
-   ! Dump intensity for debugging
+#if 0
+   ! Debug-only: dump intensity to IntLog.txt.  Leave disabled
+   ! (was accidentally left on).  Enable temporarily during
+   ! diagnostic runs only.
                Open(Unit=15,File='IntLog.txt')
                Do j=1,mdttl
                  Write(15,*) MWFFT(1:mdttl,j)
