@@ -460,38 +460,69 @@ in CoroExample.jou-style scripts.
 - CodeV-comparison tests in `tests/test_api_rx_grating.py` and `tests/test_masks.py`
   cover the geometric / ray-trace paths (6601 tests, all passing).
 - PROPER-comparison tests in `tests/proper_compare/` cover the physical-optics paths
-  (INT/PIX/DFT-propagation) that CodeV can't validate. Currently scoped to one
-  prescription (`tests/Rx/Rx_Cass_FarField.in`); macos and PROPER agree at the
-  numerical-precision level (max |a-b| ~ 1e-11 on Strehl-normalised PSFs) for
-  nominal + secondary-mirror Tx/Ty/Tz perturbations.
-- Rerun after any macos_f90 edit: `cd ~/dev/MACOS_resources/pymacos && source
-  .venv/bin/activate && source /opt/intel/oneapi/setvars.sh intel64 && cd
-  src/cmake/build && make && cd ../../../tests && pytest`. Pymacos rebuilds its
-  f2py wrapper against the freshly-rebuilt libsmacos.a.
-- The pymacos<->PROPER coupling needs two corrections to reach this level of
-  agreement (both in tests/proper_compare/geometries/cass_farfield.py):
-  - **Aperture match.** Take PROPER's amplitude DIRECTLY from macos's mask via
-    `prop_multiply`, instead of building an analytical circular_aperture +
-    obscurations model. Otherwise PROPER illuminates pixels macos zeroed out
-    (spider, edge losses), and the resulting phase mismatch halves the
-    apparent PSF tilt response.
+  (INT/PIX/DFT-propagation) that CodeV can't validate. Organised by phase:
+  - **Phase 1** (`test_cass_ff*.py`, results in `results_phase1/`): far-field
+    image-plane PSF comparison on `Rx_Cass_FarField.in`. Nominal + SM Tx/Ty/Tz
+    perturbations.  Peak-normalised agreement at 1e-11 with OPD pass-through.
+  - **Phase 2** (`test_coro_nfprop.py`, results in `results_phase2/`):
+    near-field plane-to-plane propagation between Elt 2 and Elt 3 of
+    `Rx_Coro.in` (HCIT-style coronagraph, simplified-conic version).
+    Sum-normalised agreement at 5e-12 RMS, 2.5e-10 max -- effectively at
+    double-precision FFT round-off.
+- Run via `./run_proper_tests.sh` at the pymacos root.  It rebuilds pymacosf90
+  (if needed) and invokes each phase in its own pytest process to dodge a
+  pymacos state-leak across model_size transitions (512 ↔ 1024).  Artefacts
+  go into per-phase `results_phaseN/` directories.
+- The pymacos<->PROPER coupling needs three reconciliations to reach the
+  observed agreement:
+  - **Aperture match.** PROPER takes amplitude DIRECTLY from macos's mask
+    via `prop_multiply`, NOT from an analytical circular_aperture +
+    obscurations model.  Mismatched apertures put light where macos has
+    zeroed it out, breaking the wavefront tilt and halving the apparent
+    PSF shift under perturbation.
   - **Sign flip.** macos OPD sign convention is opposite to PROPER's
-    `prop_add_phase` input. Default `opd_sign_flip=True` reconciles them.
-    Worth checking macos source which convention is actually documented.
+    `prop_add_phase` input.  Default `opd_sign_flip=True` reconciles them.
+  - **Normalisation choice.** `compare_and_record` takes `norm_kind=`
+    `'peak'` (Strehl-norm, default; right for image-plane PSFs) or `'sum'`
+    (flux-norm; right for pupil-plane / near-field intensities).  Peak-norm
+    inflates the residual on flat-top NF PSFs (where peak position inside
+    a uniform region is noise-dominated); sum-norm gives the physically-
+    meaningful flux-conservation precision.
+- Centroid-based (not peak-based) alignment in `compare_and_record`:
+  intensity-weighted center of mass is robust for both sharp Airy peaks
+  (Phase 1) and flat-top NF pillars (Phase 2).
 
-## pymacos intensity() wrapper (pymacos.f90 + macos.py)
-- pymacos exposes `intensity(srf, reset_trace=True) -> np.ndarray` that runs
-  the SMACOS 'INT' command at element `srf` and returns the (mdttl, mdttl)
-  intensity buffer (MWFFT in elt_mod, widened from SREAL to float64).
+## pymacos intensity() and complex_field() wrappers (pymacos.f90 + macos.py)
+- `intensity(srf, reset_trace=True) -> np.ndarray` runs the SMACOS 'INT'
+  command at element `srf` and returns the (mdttl, mdttl) intensity buffer
+  (`MWFFT` in elt_mod, widened from SREAL to float64).
+- `complex_field(srf, reset_trace=True) -> np.complex128 ndarray` exposes
+  `WFElt(:,:, iEltToiWF(srf))` on the diffraction grid -- macos's actual
+  internal complex amplitude that its own propagation routines operate on.
+  `|complex_field|^2` matches `intensity()` to numerical precision.  Used
+  for faithful macos→PROPER wavefront pass-through in the Phase 2 comparison
+  harness (`prop_multiply(|cfield|) + prop_add_phase(angle(cfield) * λ /
+  2π)`).
 - Template for extending pymacos to cover commands that fill a buffer:
   - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
     returns the output array dim.
   - `<thing>_get` Fortran subroutine: copies the module-level buffer into a
-    caller-allocated output array (REAL(8) widened from SREAL where needed).
+    caller-allocated output array (REAL(8) widened from SREAL where needed;
+    complex arrays split into real + imag pairs because f2py handles real-
+    valued arrays more robustly).
   - Python wrapper in macos.py: input validation + lib.api.<thing>_cmd +
     lib.api.<thing>_get + return ndarray.
-- The pattern mirrors the existing spot_cmd/spot_get pair. Use for future
+- The pattern mirrors the existing spot_cmd/spot_get pair.  Use for future
   PIX, FFP, PFP, etc. wrappers.
+
+## LOG command cleanup (macos_cmd_loop.inc)
+- The `LOG` interactive command (log10-intensity wavefront display, not
+  transcript logging -- which is `JOU`/`JOURNAL`) previously dumped an
+  always-on debug print (`*****B4 SrfOut: mdttl=`) plus a 5 MB ASCII file
+  (`IntLog.txt`) to the cwd on every invocation, gated by an `#if 1`.
+  Both removed; diagnostic block gated `#if 0`.  `LOG` syntax and 3-char
+  min-match unchanged -- existing `.jou` scripts using `log <iElt>` keep
+  working.
 
 ## Conventions (new code)
 - IMPLICIT NONE throughout
