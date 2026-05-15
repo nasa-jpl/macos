@@ -467,8 +467,19 @@ in CoroExample.jou-style scripts.
   - **Phase 2** (`test_coro_nfprop.py`, results in `results_phase2/`):
     near-field plane-to-plane propagation between Elt 2 and Elt 3 of
     `Rx_Coro.in` (HCIT-style coronagraph, simplified-conic version).
-    Sum-normalised agreement at 5e-12 RMS, 2.5e-10 max -- effectively at
-    double-precision FFT round-off.
+    Sum-normalised agreement at 2.4e-14 RMS, 4.8e-13 max -- at
+    double-precision FFT round-off (needs the runtime `dx_at()` query
+    described below + odd `nGridpts=511`).
+  - **Phase 3 + 4 + 5** (`test_coro_nfprop_phase3.py`, results in
+    `results_phase3/`): six additional Coro steps:
+      - 3a NFPlane 5→6 (sampling-limited 3.7e-8)
+      - 3b sphere→plane 8→9 (4.2e-11)
+      - 4a pupil→pupil 8→10 through focus (5.9e-13)
+      - 4b NFPlane 13→14 (7.4e-5; localized post-focus diffraction ring)
+      - 5.1 ExitPupil 20→FocalPlane 21, no mask (2.3e-9)
+      - 5.2 same with FPM=400 um + Lyot=14 mm coronagraph
+        (2.6e-6 Strehl-norm against a peak suppressed by 3.2 million
+        relative to the un-coronagraphed baseline).
 - Run via `./run_proper_tests.sh` at the pymacos root.  It rebuilds pymacosf90
   (if needed) and invokes each phase in its own pytest process to dodge a
   pymacos state-leak across model_size transitions (512 ↔ 1024).  Artefacts
@@ -503,6 +514,16 @@ in CoroExample.jou-style scripts.
   for faithful macos→PROPER wavefront pass-through in the Phase 2 comparison
   harness (`prop_multiply(|cfield|) + prop_add_phase(angle(cfield) * λ /
   2π)`).
+- `dx_at(srf, unit='m'|'mm'|'native') -> float` exposes
+  `dxElt(srf) * CBM` (converted to SI metres by default).  macos's
+  per-element pitch is in the prescription's BaseUnits (mm for
+  Rx_Coro.in, m for Rx_Cass_FarField.in); the Fortran wrapper
+  multiplies by `CBM` so callers get a uniform unit regardless of the
+  loaded prescription.  Companion `base_unit_to_metres()` exposes CBM
+  for the `'native'` path.  Critical for matching macos's kernel dx
+  to better than 5 sig figs -- the diagnostic output truncates at
+  display precision, and hardcoded values cap macos↔PROPER agreement
+  at ~1e-7.
 - Template for extending pymacos to cover commands that fill a buffer:
   - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
     returns the output array dim.
@@ -514,6 +535,30 @@ in CoroExample.jou-style scripts.
     lib.api.<thing>_get + return ndarray.
 - The pattern mirrors the existing spot_cmd/spot_get pair.  Use for future
   PIX, FFP, PFP, etc. wrappers.
+
+## Coronagraph mask element type (silent failure mode)
+Circular obscurations declared in a prescription (`nObs`, `ObsType=Circle`,
+`ObsVec=...`) are **only applied to the diffraction-grid wavefront when the
+element is `Element= Obscuring`**.  If the element is `Element= Reference`
+(or any non-Obscuring type), macos still parses the obscuration metadata
+and applies it to geometric rays during ray tracing, but the
+diffraction-grid `WFElt` array sails through untouched -- a hard-edge
+"mask" that's invisible to the diffraction propagation.
+
+Caught while building the Phase 5 coronagraph test
+(`tests/proper_compare/test_coro_nfprop_phase3.py`).  Original
+`Rx_Coro_FPM.in` had Elt 9 (the FPM) as `Element= Reference` with a
+132 um circular obscuration -- it looked like a working coronagraph
+in the prescription, but `complex_field(9)` and `intensity(9)` were
+byte-identical with and without the mask.  Suppression at the science
+focal plane was ~17%, all of which came from flux trimming at the
+Lyot stop (Elt 14) -- not the FPM.  After changing to
+`Element= Obscuring`, the FPM finally bites: on-axis suppression at
+Elt 21 became factor ~1e5 from FPM alone, factor ~3e6 with the Lyot.
+
+The right model to follow is `MACOS_resources/docs/macos-manual/examples/CoroExample.in`
+Elt 6 (the working CoroMask).  Any new coronagraph test prescription
+should use `Element= Obscuring` for the mask element.
 
 ## LOG command cleanup (macos_cmd_loop.inc)
 - The `LOG` interactive command (log10-intensity wavefront display, not
