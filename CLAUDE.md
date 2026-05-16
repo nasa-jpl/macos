@@ -480,6 +480,24 @@ in CoroExample.jou-style scripts.
       - 5.2 same with FPM=400 um + Lyot=14 mm coronagraph
         (2.6e-6 Strehl-norm against a peak suppressed by 3.2 million
         relative to the un-coronagraphed baseline).
+  - **Phase 6a** (`test_coro_apodizer.py` + `apodizer.py` + new
+    `pymacos.apodize` wrapper): pupil apodisation via a user-supplied
+    NxN amplitude mask, multiplied into macos's WFElt and PROPER's
+    wavefront via the same numpy array.  Apodiser construction uses
+    KxK super-sampling for sub-pixel area-weighted aperture edges so
+    low-N results converge to high-N as the same physical shape.
+    First test (Gaussian-edge pupil at Elt 5, NFPlane to Elt 6):
+    4.0e-8 max, 1.1e-9 RMS (same sampling-limited regime as 3a,
+    confirms the wrapper integrates correctly with downstream
+    propagation).
+  - **Contrast scoring** (`test_coro_contrast_curve.py` +
+    `contrast.py`): radial dark-zone contrast vs lambda/D at the
+    science focal plane.  lambda/D derived empirically from the
+    no-mask PSF's first Airy null (1.22 lambda/D with a fractional-
+    depth guard).  Phase 5.2 dark-zone contrast hits ~3e-10 in the
+    7-10 lambda/D range; bright outer-ring artefact at ~15 lambda/D
+    (Lyot edge diffraction).  Baseline for Phase 6b/c apodised
+    designs to score against.
 - Run via `./run_proper_tests.sh` at the pymacos root.  It rebuilds pymacosf90
   (if needed) and invokes each phase in its own pytest process to dodge a
   pymacos state-leak across model_size transitions (512 ↔ 1024).  Artefacts
@@ -524,6 +542,16 @@ in CoroExample.jou-style scripts.
   to better than 5 sig figs -- the diagnostic output truncates at
   display precision, and hardcoded values cap macos↔PROPER agreement
   at ~1e-7.
+- `apodize(srf, mask) -> None` multiplies macos's
+  `WFElt(:,:, iEltToiWF(srf))` by a user-supplied real NxN mask
+  IN PLACE.  Companion to PROPER's `prop_multiply` -- pass the same
+  numpy array to both engines and the apodisation is bit-identical
+  (no parametric drift, no FITS round-tripping).  Underlying Fortran
+  wrapper is `cfield_apodize(MASK, iElt)`.  Caller must already have
+  propagated to `srf`; subsequent intensity/cfield calls with
+  `reset_trace=False` see the apodised wavefront.  (Default
+  `reset_trace=True` runs MODIFY and wipes the mask -- bites first-
+  time users; the wrapper docstring warns about it.)
 - Template for extending pymacos to cover commands that fill a buffer:
   - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
     returns the output array dim.
