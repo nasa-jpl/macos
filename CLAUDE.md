@@ -552,6 +552,19 @@ in CoroExample.jou-style scripts.
   `reset_trace=False` see the apodised wavefront.  (Default
   `reset_trace=True` runs MODIFY and wipes the mask -- bites first-
   time users; the wrapper docstring warns about it.)
+  **Limitation:** modifies only WFElt, not the ray channel.
+  Macos's prescription aperture stops (Element=Reference +
+  ApType=Circular etc.) clip rays too, and those ray clips
+  propagate through geometric props to the next diffractive plane
+  where WFElt is reconstructed.  External `apodize` for a hard-
+  edged Lyot at Elt 14 of `Rx_Coro.in` achieves only ~factor 17
+  of Phase 5.2's 3.2-million suppression because the un-clipped
+  rays carry flux through the 6 geometric props between Elt 14
+  and Elt 20 (the FarField input).  Use this wrapper for smooth
+  apodisers, or for hard-edge masks immediately before a
+  diffractive prop with no following geometric chain.  For hard
+  apertures in a real chain, use prescription-driven `ApType=` --
+  that's what Phase 5.2 does correctly.
 - Template for extending pymacos to cover commands that fill a buffer:
   - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
     returns the output array dim.
