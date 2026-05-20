@@ -2509,6 +2509,73 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
 	    END IF
 
+C         *** Set eXit Pupil (SXP) -- FEX variant with EP radius set
+C         *** to chief-ray distance from EP to FP (iElt+1) instead of
+C         *** the legacy "iEm1 to EP" distance.  Captures FP-Tz
+C         *** perturbations through the EP radius (which FEX misses,
+C         *** because it uses upstream-only chief-ray geometry).
+C         *** Otherwise identical to FEX -- same interactive prompts,
+C         *** same EP-element updates.  See tracesub.F SUBROUTINE SXP.
+
+	  ELSE IF (LCMP(command,'SXP',3)) THEN
+            IF (ifLoad) THEN
+ 8073	      CALL IACCEPT_S(iElt,(nElt-1),1,
+     &	        'Enter number of exit pupil return surface:')
+	      iEm1=iElt-1
+	      IF (iElt.LE.0) THEN
+	        GO TO 1
+	      ELSE IF (iElt.GT.nElt) THEN
+	        WRITE (*,*)'SXP: Invalid element number: ',iElt
+	        GO TO 8073
+	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
+	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
+                                                               ! or Reference surface
+	        GO TO 8073
+	      END IF
+	    ELSE
+	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
+	      GO TO 1
+	    END IF
+
+	    IF (.NOT.ifStopSet) THEN
+	      WRITE(*,*)
+     &	      ' Must set stop before finding pupil. Use STOP command.'
+	      GO TO 1
+	    END IF
+
+	    ifGrid=.FALSE.
+	    ifPropagate=.FALSE.
+	    ifTrace=.FALSE.
+	    ifBuild=.FALSE.
+	    ifOPDCalc=.FALSE.
+
+	    CALL SXP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	      ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	      iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	      nBadRays,StartIndRef,StartExtinc,
+     &	      Cmatrix,DrawRayVec,DrawEltVec,
+     &	      iElt,zp,psip,CrossPt,ifCentroid,
+     &	      CRSpot,CentroidSpot,dCRCentroid)
+
+	    WRITE(*,407)CRSpot,CentroidSpot,dCRCentroid
+
+	    WRITE(*,107)fElt(iElt),ABS(zp),zElt(iElt),zp,psiElt(1,iElt),
+     &	      psip(1),psiElt(2,iElt),psip(2),psiElt(3,iElt),psip(3),
+     &	      VptElt(1,iElt),CrossPt(1),VptElt(2,iElt),CrossPt(2),
+     &	      VptElt(3,iElt),CrossPt(3)
+	    CALL CACCEPT(ANS,'YES',
+     &                   'Accept the new element? ')
+	    IF ((ANS(1:1).NE.'n').AND.(ANS(1:1).NE.'N')) THEN
+	      eElt(iElt)=0d0
+	      fElt(iElt)=ABS(zp)
+	      KcElt(iElt)=0d0
+	      KrElt(iElt)=-fElt(iElt)
+	      zElt(iElt)=zp
+	      CALL DEQUATE(psiElt(1,iElt),psip,3)
+	      CALL DEQUATE(VptElt(1,iElt),CrossPt,3)
+	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
+	    END IF
+
 C         ***Find Field Point using global or pixel coordinates***
 C         -- adjust source for chief ray to go through specified point on
 C         -- a given surface  -jzlou
