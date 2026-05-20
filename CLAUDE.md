@@ -94,6 +94,36 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
   now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
 
+## SXP command (Set eXit Pupil)
+FEX clone with one geometry fix: the EP focal length / radius is set
+to the chief-ray distance from the EP (CrossPt) to the FP (assumed
+iElt+1, the standard imager Rx ... -> EP -> FP) instead of FEX's
+legacy distance from iEm1 to the EP.  Captures FP-Tz perturbations
+through the EP radius and -- as an opt-in -- catches EP shifts when
+upstream optics are perturbed (use case: sensitivity / dw/dx loops).
+FEX itself is unchanged to avoid breaking the many existing
+prescriptions / GMI workflows / journals that depend on its behavior.
+- `SUBROUTINE SXP` in `tracesub.F` — cloned from FEX; after
+  `FindCrossPt` replaces zp with `t_FP = -((FP_vpt - CrossPt) · psi_FP)
+  / (cr1dir · psi_FP)`, i.e. the chief-ray distance from CrossPt to
+  the FP plane (chief ray reverses at EP, so post-EP direction is
+  `-cr1dir`).  Falls back to `zp_iEm1` if iElt+1 is out of range.
+- Dispatch added in `macos_cmd_loop.inc` alongside FEXIT (uses label
+  8073 to avoid the existing 73 collision) — reachable from both
+  interactive macos AND SMACOS, since SMACOS `#include`s
+  `macos_cmd_loop.inc` from `smacos.F:210`.
+- `LoadStack` entry in `smacosutil.F` — one IARG (iElt) + one CARG
+  (YES/NO), same signature as FEXIT.
+- pymacos wrapper `m.sxp(mode=1)` (in MACOS_resources/pymacos/dr-dev2).
+
+Pre-existing dispatch puzzle worth knowing: `macos_ops.F:MACOS_OPS`
+is NOT the SMACOS dispatcher — it's only called from the inner
+optimization loop (`smacos_compute.inc`).  SMACOS proper dispatches
+via `#include "macos_cmd_loop.inc"` from `smacos.F`.  When adding
+new commands callable via SMACOS, add them to `macos_cmd_loop.inc`
+and to `smacosutil.F`'s LoadStack (so the args get on the STACK
+that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
+
 ## Display polarity + plot annotations
 - `plot_mode_mod.F` (registered early in `COMMON_SOURCES`) holds session
   state:
