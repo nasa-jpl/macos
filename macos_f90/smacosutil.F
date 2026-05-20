@@ -201,6 +201,13 @@ c	  CALL D2C(DARG(3),ls,STACK,' ')
 	  GO TO 110
 	END IF
 
+C  Load SXP  (FEX variant -- see tracesub.F SUBROUTINE SXP)
+	IF (LCMP(command,'SXP',3)) THEN
+	  CALL I2C(IARG(1),ls,STACK,' ')
+	  CALL C2CW(CARG(1),ls,STACK,' ')
+	  GO TO 110
+	END IF
+
 C  Load STOP
 	IF (LCMP(command,'STOP',3)) THEN
 	  CALL C2CW(CARG(1),ls,STACK,' ')

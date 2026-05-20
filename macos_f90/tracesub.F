@@ -415,6 +415,205 @@ C  Centroid or chief ray option tested
 
 
 C***********************************************************************
+C       Set eXit Pupil (SXP)
+C
+C       Clone of FEX with one geometry fix per Dave's spec (2026-05-19):
+C       the returned zp -- which the caller uses as the EP's focal
+C       length / radius of curvature -- is the chief-ray distance from
+C       the EP (CrossPt) to the FP (assumed iElt+1 in a typical imager
+C       Rx: ... -> EP -> FP), instead of FEX's legacy distance from
+C       iEm1 to the EP.  Makes the EP radius sensitive to FP
+C       perturbations through Tz_FP (focus) -- the original FEX is
+C       insensitive because iEm1 is upstream and doesn't move when FP
+C       moves.  Lateral FP perturbations (Tx/Ty) and FP rotations are
+C       NOT captured here; they need the EP vertex / orientation to
+C       follow, not just the radius (use the dw/dx FocalPlaneChannel
+C       "track" mode for full coverage).
+C
+C       FEX is left untouched to avoid breaking existing prescriptions,
+C       GMI workflows, and journals that rely on its current behavior.
+C***********************************************************************
+
+	SUBROUTINE SXP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	  iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	  nBadRays,StartIndRef,StartExtinc,
+     &	  Cmatrix,DrawRayVec,DrawEltVec,
+     &	  iElt,zp,psip,CrossPt,ifCentroid,
+     &	  CRSpot,CentroidSpot,dCRCentroid)
+
+	use param_mod
+        use src_mod
+        use cfiles_mod
+        use elt_mod
+
+        use sourcsub_mod
+	use traceutil_mod, only : Rx_FEXCentrFlg
+
+	IMPLICIT NONE
+
+	LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
+     &	  ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
+     &	  ifDraw,ifCentroid
+
+	INTEGER i,iSpot,iRay,mpt2,npts,iCurWFElt,iCurRayElt,
+     &	  nBadRays,iStartElt,iEndElt,iObsOpt,iStartRay,
+     &	  iEndRay,nDrawElt,DrawEltVec(mDrawElt,mDrawRay),
+     &	  iElt,iEm1,iFP_loc
+
+	SREAL Cmatrix(7,mCm,bRay),DrawRayVec(2,mDrawElt,mDrawRay)
+
+	REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
+     &	  xDraw(3),yDraw(3),CentroidSpot(3),dCRCentroid(3),CRSpot(3),
+     &	  DV1(9),S1,th(3),
+     &	  zp,psip(3),CrossPt(3),cr1dir(3),cr1pos(3),cr2dir(3),cr2pos(3),
+     &	  cr2indir(3),cr2inpos(3),CrossDist,
+     &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1
+
+C       Standard FEX chief-ray pair trace (source -> iEm1) and find
+C       the two-ray crossing point -- that's the EP location.
+
+	CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
+     &                        ifPropagate)
+
+	iEm1      = iElt-1
+	iStartRay = 1
+	iEndRay   = 1
+	iStartElt = 0
+	iEndElt   = iEm1
+	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &		ifLNegOK,Cmatrix,
+     &		iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &		ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &		StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+	CALL DEQUATE(cr1dir,RayDir(1,1),3)
+	CALL DEQUATE(cr1pos,RayPos(1,1),3)
+	CALL DSMPROD(th,xGrid,5d-6,3)
+	CALL DEQUATE(cr2indir,ChfRayDir,3)
+	CALL DEQUATE(cr2inpos,ChfRayPos,3)
+	CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
+	CALL DEQUATE(RayDir(1,1),cr2indir,3)
+	CALL DEQUATE(RayPos(1,1),cr2inpos,3)
+
+	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	  	 ifLNegOK,Cmatrix,
+     &	  	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &	  	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &	         StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+	CALL DEQUATE(cr2dir,RayDir(1,1),3)
+	CALL DEQUATE(cr2pos,RayPos(1,1),3)
+
+	CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zp_iEm1,
+     &		         CrossDist,CrossPt)
+
+C       Replace the FEX zp (iEm1-to-EP distance) with the chief-ray
+C       distance from the EP (CrossPt) to the FP (iElt+1).
+C       Post-EP chief ray direction = -cr1dir for a normally-incident
+C       chief ray reflecting off the EP Return surface at its vertex.
+C       r(t) = CrossPt - t * cr1dir; intersect with FP plane.
+
+	iFP_loc = iElt + 1
+	IF (iFP_loc .LE. nElt) THEN
+	  dvec(1) = VptElt(1,iFP_loc) - CrossPt(1)
+	  dvec(2) = VptElt(2,iFP_loc) - CrossPt(2)
+	  dvec(3) = VptElt(3,iFP_loc) - CrossPt(3)
+	  denom = cr1dir(1)*psiElt(1,iFP_loc) +
+     &            cr1dir(2)*psiElt(2,iFP_loc) +
+     &            cr1dir(3)*psiElt(3,iFP_loc)
+	  IF (DABS(denom) .GT. 1d-15) THEN
+	    dot_dvec = dvec(1)*psiElt(1,iFP_loc) +
+     &                 dvec(2)*psiElt(2,iFP_loc) +
+     &                 dvec(3)*psiElt(3,iFP_loc)
+	    t_FP = -dot_dvec / denom
+	    zp = t_FP
+	  ELSE
+	    zp = zp_iEm1
+	  END IF
+	ELSE
+	  zp = zp_iEm1
+	END IF
+
+	print*,'***** SXP: CrossPt =',CrossPt
+        print*,'***** SXP: zp_iEm1 =',zp_iEm1,
+     &         '  zp_FP =',zp
+
+C       Centroid / chief-ray option -- unchanged from FEX.
+
+	IF (ifCentroid .AND. Rx_FEXCentrFlg) THEN
+	  IF (ifTrace) THEN
+	    i=iCurRayElt
+	  ELSE IF (ifPropagate) THEN
+	    i=iCurWFElt
+	  ELSE
+	    i=0
+	  END IF
+	  iEndElt=iElt+1
+	  IF (ifTrace.AND.(iCurRayElt.LE.iEndElt)) THEN
+	    iStartElt=iCurRayElt
+	  ELSE IF (ifPropagate.AND.(iCurWFElt.EQ.iEndElt)) THEN
+	    iStartElt=iCurWFElt
+	  ELSE
+	    iStartElt=0
+	  END IF
+
+	  IF ((iStartElt.EQ.0).OR.(iStartElt.LT.iEndElt)) THEN
+	    ifRayPrint=.FALSE.
+	    IF (iStartElt.EQ.0)
+     &        CALL SetSourceRayGrid(nTestPts,Dicr,Djcr,dxSource,ifPol,
+     &                              ifPropagate, ifGrid)
+
+            iStartRay = 1
+            iEndRay   = nRay
+
+	    CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &        ifLNegOK,Cmatrix,
+     &        iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &        ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &        StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+	    iCurRayElt  = iEndElt
+	    ifTrace     = .FALSE.
+	    ifBuild     = .FALSE.
+	    ifPropagate = .FALSE.
+	  END IF
+
+	  iSpot    = 0
+	  nGridPts = npts+1
+	  mpt2     = mpts*mpts
+	  DO iRay=1,nRay
+	    IF (LRayOK(iRay).AND.((iRay.EQ.1).OR.(iObsOpt.EQ.0).OR.
+     &          (LRayPass(iRay).AND.(iObsOpt.EQ.1)))) THEN
+	      IF (iRay.EQ.1) THEN
+	        CALL DEQUATE(CRSpot,RayPos(1,1),3)
+	        CALL DZERO(DV1,3)
+	      END IF
+	      IF ((iRay.NE.1).OR.
+     &          ((iRay.EQ.1).AND.(nGridpts.EQ.1))) THEN
+                iSpot=iSpot+1
+                CALL DADD(DV1,DV1,RayPos(1,iRay),3)
+	      END IF
+	    END IF
+	  END DO
+	  IF (iSpot.GT.0) THEN
+            S1=1d0/DBLE(iSpot)
+	    CALL DSMPROD(CentroidSpot,DV1,S1,3)
+	    CALL DSUB(dCRCentroid,CRSpot,CentroidSpot,3)
+	  ELSE
+	    WRITE(*,*)' All rays were obscured or lost'
+	  END IF
+
+	  IF (nBadRays.GT.0) CALL WARN(LEltOK,iEndElt,nBadRays)
+
+	  CALL DSUB(psip,CentroidSpot,CrossPt,3)
+	  CALL DUNITIZE(psip)
+	ELSE
+	  CALL DNEGATE(psip,cr1dir,3)
+	END IF
+	END SUBROUTINE SXP
+
+
+C***********************************************************************
         ! Find Detector (Focal) Plane Position and Orientation
 
 	SUBROUTINE FDPN(dpElt,npts,ifPol,ifGrid,ifPropagate,ifDraw,
