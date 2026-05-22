@@ -33,7 +33,8 @@ set -e
 #  to source oneAPI Intel Compiler variables.
 #------------------------------------------------------------------------------
 export intel_version=14.0.0
-export intel64_lib=/opt/intel-$intel_version/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64_lin
+export intel_lib_dir=latest/lib
+export intel64_lib=/opt/intel-$intel_version/oneapi/compiler/$intel_lib_dir
 source /opt/intel-$intel_version/oneapi/setvars.sh intel64 --force
 
 #------------------------------------------------------------------------------------------------------
@@ -61,19 +62,19 @@ export LD_LIBRARY_PATH=$macossrc_dir/readline-8.2:"$LD_LIBRARY_PATH"
 # Compile npsol library (can be compiled with gfortran or ifort)
 #--------------------------------------------------------------------------
 # cd to npsol/blas and compile
-cd npsol/blas
-make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+# cd npsol/blas
+# make -f Makefile_Intel clean; make -f Makefile_Intel
+# cd ../
 
 # cd to lappack and compile
-cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
-cd ../
+# cd lapack; make -f Makefile_Intel clean; make -f Makefile_Intel
+# cd ../
 
 # now compile npsol
-make -f Makefile_Intel clean; make -f Makefile_Intel
+# make -f Makefile_Intel clean; make -f Makefile_Intel
 
 # cd back to /macos_f90 folder
-cd ../
+# cd ../
 
 #--------------------------------------------------------------------------
 # Compile readline-8.2 (uses gnu gcc to compile)
@@ -133,7 +134,7 @@ eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version
 
 eval $(ifx -C -traceback -fstack-protector -c  -I$macossrc_dir -I$matlab_version/extern/include -I$matlab_version/simulink/include -nologo -fpic -fpp -132 -gen-interfaces -fp-model strict -fno-omit-frame-pointer -D__amd64 -module $macossrc_dir/SMACOS_OBJS/Linux-x86_64  -DGMI_SVN_REV="''" -DGMI_DATE="'2024-01-18'"  -DMX_COMPAT_32 -O2 -xHOST  "GMIG.F")
 
-eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/2023.1.0/linux/compiler/lib/intel64 -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
+eval $(ifx -C -traceback -fstack-protector -O -shared-intel -shared -Wl,--version-script,$matlab_version/extern/lib/glnxa64/fexport.map  -Wl,--no-undefined -o  "GMI.mexa64"  GMI.o GMIG.o   -Wl,-rpath-link,$matlab_version/bin/glnxa64 -L$matlab_version/bin/glnxa64  -l:libmx.so -l:libmex.so -lmat -L/opt/intel-14.0.0/oneapi/compiler/$intel_lib_dir -lirc -lm -lstdc++  $macossrc_dir/SMACOS_OBJS/Linux-x86_64/smacos_lib.a)
 
 
 
