@@ -83,6 +83,7 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \
+  -DBUILD_GMI=ON \
   || { echo "makejoint: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build macos / smacos / smacos_dvr ---
