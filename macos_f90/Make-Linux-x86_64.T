@@ -46,9 +46,10 @@ MLIBS = $(intel64_lib)/libimf.a \
 	-L$(SRC_DIR)/fits_build -lfits \
 	$(RL_LIBS)
 
-NPSOL_ROOT=$(macossrc_dir)/npsol
-NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
-	$(NPSOL_ROOT)/Linux-x86_64/npsol.o
+#NPSOL_ROOT=$(macossrc_dir)/npsol
+#NPSOL_OBJS=$(NPSOL_ROOT)/blas/blas.o $(NPSOL_ROOT)/lapack/lapack.o \
+#            $(NPSOL_ROOT)/Linux-x86_64/npsol.o
+NPSOL_OBJS=
 ###############################################################################
 
 # MACOS executable
@@ -152,7 +153,7 @@ nn_util.o: nn_util.F
 lsq.o: lsq.F
 nls.o: nls.F
 design_optim.o: design_optim.F smacos_compute.inc
-design_cons_optim.o: design_cons_optim.F smacos_compute.inc setbeam_vars.inc setbeam.inc
+# design_cons_optim.o: design_cons_optim.F smacos_compute.inc setbeam_vars.inc setbeam.inc
 zern_wf.o: zern_wf.F
 
 utilsub_c.o: utilsub_c.c

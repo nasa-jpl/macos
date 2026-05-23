@@ -176,7 +176,12 @@ set(M_SRCS
     macos_ops.F
     zern_wf.F
     design_optim.F
-    design_cons_optim.F
+    # design_cons_optim.F removed from build by rem_npsol PR (main):
+    # the NPSOL-based constrained-optim path is dead code now; the
+    # file stays in the tree but isn't compiled because its npsol
+    # callees were deleted.  Levenberg-Marquardt via nls_optim_dvr
+    # (inside design_optim_mod) is the replacement.
+    nls.F
     stop_set.F
     psesub.F
     f90prt.F
@@ -201,7 +206,8 @@ set(SM_SRCS
     macos_ops.F
     zern_wf.F
     design_optim.F
-    design_cons_optim.F
+    # design_cons_optim.F removed -- see comment above.
+    nls.F
     stop_set.F
     psesub.F
 )
