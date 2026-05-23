@@ -117,12 +117,12 @@ export MOD_OBJS = kinds.o constants.o dftsub.o lohpars_mod.o macos_IO.o param_mo
 export M_OBJS = macos_vars_mod.o macosio.o macos_init.o funcsub.o \
 	    pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
 	    linsub.o propsub.o pgplotsub.o sunsub.o macos_ops.o\
-	    zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o f90prt.o
+	    zern_wf.o design_optim.o stop_set.o psesub.o f90prt.o
 
 export SM_OBJS = smacos_vars_mod.o smacosutil.o smacosio.o macos_init.o funcsub.o \
 	    pixsub.o sourcsub.o tracesub.o srtrace.o utilsub.o \
 	    linsub.o propsub.o pgplotdummy.o sunsub.o macos_ops.o \
-	    zern_wf.o design_optim.o design_cons_optim.o stop_set.o psesub.o
+	    zern_wf.o design_optim.o stop_set.o psesub.o
 
 export C_SRCS = utilsub_c.c mhist.c splicubi2.c
 export C_OBJS = utilsub_c.o mhist.o splicubi2.o
