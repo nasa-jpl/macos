@@ -91,7 +91,10 @@ endif()
 # 3. Source Directory Configuration
 # ==============================================================================
 set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
-set(npsol_src_dir  "${smacos_src_dir}/npsol")
+# npsol_src_dir intentionally removed: the rem_npsol PR (main) deleted
+# the macos_f90/npsol/ tree.  Levenberg-Marquardt via nls_optim_dvr
+# (inside design_optim_mod) is the replacement for the NPSOL-based
+# constrained-optim path.
 set(fits_src_dir   "${smacos_src_dir}/fits_build")
 
 # ==============================================================================
@@ -112,10 +115,10 @@ set(FITS_SOURCES
     ${fits_src_dir}/fitsio.f90
 )
 
-# Numerical library sources
-file(GLOB BLAS_SOURCES   "${npsol_src_dir}/blas/*.f")
-file(GLOB LAPACK_SOURCES "${npsol_src_dir}/lapack/*.f")
-file(GLOB NPSOL_SOURCES  "${npsol_src_dir}/*.f")
+# Numerical library sources removed with rem_npsol PR -- npsol/blas/
+# /lapack/ all deleted.  Targets blaslib, lapacklib, npsol below are
+# also dropped; downstream target_link_libraries() calls that used to
+# pull them in have been removed.
 
 # ==============================================================================
 # 6. Source Lists
@@ -160,7 +163,10 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/utilsub.F
   ${smacos_src_dir}/zern_wf.F
   ${smacos_src_dir}/design_optim.F
-  ${smacos_src_dir}/design_cons_optim.F
+  # design_cons_optim.F removed by rem_npsol PR -- references npsol/
+  # npoptn which no longer link.  nls_optim_dvr (in design_optim.F)
+  # is the replacement.
+  ${smacos_src_dir}/nls.F
   ${smacos_src_dir}/stop_set.F
   ${smacos_src_dir}/psesub.F
   ${smacos_src_dir}/utilsub_c.c
@@ -250,10 +256,8 @@ if(NOT BUILD_SMACOS_LEAN)
   endif()
 endif()
 
-# Numerical Libraries
-add_library(blaslib   STATIC ${BLAS_SOURCES})
-add_library(lapacklib STATIC ${LAPACK_SOURCES})
-add_library(npsol     STATIC ${NPSOL_SOURCES})
+# Numerical Libraries removed with rem_npsol PR.  No blaslib /
+# lapacklib / npsol targets here; SMACOS no longer needs them.
 
 # SMACOS Static Library
 if(BUILD_SMACOS_LEAN)
@@ -270,9 +274,6 @@ if(BUILD_SMACOS_LEAN)
   )
 
   target_link_libraries(smacos PRIVATE
-      npsol
-      lapacklib
-      blaslib
       ${PLATFORM_LIBS}
   )
 endif()
@@ -298,9 +299,6 @@ if(BUILD_SMACOS)
 
   target_link_libraries(smacos PRIVATE
       fitslib
-      npsol
-      lapacklib
-      blaslib
       ${PLATFORM_LIBS}
   )
 endif()
@@ -343,9 +341,6 @@ if(BUILD_MACOS)
 
   target_link_libraries(macos PRIVATE
       fitslib
-      npsol
-      lapacklib
-      blaslib
       $<$<BOOL:${USE_GIZA}>:pgplot>
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
@@ -390,9 +385,6 @@ if(BUILD_SMACOS_DVR)
   target_link_libraries(smacos_dvr PRIVATE
       smacos
       fitslib
-      npsol
-      lapacklib
-      blaslib
       ${INTEL_LIBS}
       $<$<BOOL:${USE_GIZA}>:pgplot>
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
@@ -447,9 +439,6 @@ if(BUILD_GMI)
   target_link_libraries(GMI PRIVATE
       smacos
       fitslib
-      npsol
-      lapacklib
-      blaslib
       ${INTEL_LIBS}
       -L${MATLAB_ROOT}/bin/glnxa64
       -l:libmx.so -l:libmex.so -lmat
