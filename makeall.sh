@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# makejoint.sh  — CMake build for macos + smacos + smacos_dvr + GMI
+# makeall.sh  — CMake build for macos + smacos + smacos_dvr + GMI
 #
 # Usage:
-#   source ./makejoint.sh [debug|release]
+#   source ./makeall.sh [debug|release]
 #
 # Options (default: release):
 #   debug   — -O0 -check all
 #   release — -O2 (default)
 #
 # Examples:
-#   source ./makejoint.sh                      # release
-#   source ./makejoint.sh debug                # debug
+#   source ./makeall.sh                      # release
+#   source ./makeall.sh debug                # debug
 #
 # Output locations after a default (release) build:
 #   macos executable  : ./build_release/bin/macos
@@ -31,23 +31,23 @@ for arg in "$@"; do
     debug)   BUILD_TYPE="Debug"    ;;
     release) BUILD_TYPE="Release"  ;;
     *)
-      echo "makejoint.sh: unknown option '$arg'"
-      echo "Usage: source ./makejoint.sh [debug|release]"
+      echo "makeall.sh: unknown option '$arg'"
+      echo "Usage: source ./makeall.sh [debug|release]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
 BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
-echo "makejoint: BUILD_TYPE=${BUILD_TYPE}"
-echo "makejoint: BUILD_DIR=${BUILD_DIR}"
+echo "makeall: BUILD_TYPE=${BUILD_TYPE}"
+echo "makeall: BUILD_DIR=${BUILD_DIR}"
 
 # --- Intel oneAPI environment ---
 ONEAPI_SETVARS="/opt/intel/oneapi/setvars.sh"
 if [ -f "$ONEAPI_SETVARS" ]; then
   source "$ONEAPI_SETVARS" --force > /dev/null 2>&1
 else
-  echo "makejoint: WARNING — Intel oneAPI setvars.sh not found; using system compilers"
+  echo "makeall: WARNING — Intel oneAPI setvars.sh not found; using system compilers"
 fi
 
 # --- LD_LIBRARY_PATH (readline + Intel runtime; pgplot path removed) ---
@@ -64,27 +64,27 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \
   -DBUILD_GMI=ON \
-  || { echo "makejoint: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
+  || { echo "makeall: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build macos / smacos / smacos_dvr ---
 cmake --build "${BUILD_DIR}" -j"$(nproc)" \
-  || { echo "makejoint: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
+  || { echo "makeall: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build GMI via its own Makefile (handles MATLAB detection itself) ---
 GMI_DIR="$(realpath "${SCRIPT_DIR}/../MACOS_resources/GMI" 2>/dev/null || (cd "${SCRIPT_DIR}/../MACOS_resources/GMI" && pwd))"
 GMI_MEX="${GMI_DIR}/GMI.mexa64"
 if [ -f "${GMI_DIR}/Makefile" ]; then
-  echo "makejoint: building GMI via ${GMI_DIR}/Makefile ..."
+  echo "makeall: building GMI via ${GMI_DIR}/Makefile ..."
   make -C "${GMI_DIR}" macossrc_dir="${SCRIPT_DIR}/macos_f90" \
     MACOS_BUILD_DIR="${BUILD_DIR}" \
-    || { echo "makejoint: WARNING — GMI build failed (continuing)"; }
+    || { echo "makeall: WARNING — GMI build failed (continuing)"; }
 else
-  echo "makejoint: GMI Makefile not found at ${GMI_DIR}, skipping GMI build."
+  echo "makeall: GMI Makefile not found at ${GMI_DIR}, skipping GMI build."
 fi
 
 # --- Report ---
 echo ""
-echo "makejoint: BUILD SUCCEEDED"
+echo "makeall: BUILD SUCCEEDED"
 echo "  macos      : ${BUILD_DIR}/bin/macos"
 echo "  smacos     : ${BUILD_DIR}/lib/libsmacos.a"
 if [ -f "${BUILD_DIR}/bin/smacos_dvr" ]; then
