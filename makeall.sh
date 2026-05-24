@@ -2,51 +2,44 @@
 # makejoint.sh  — CMake build for macos + smacos + smacos_dvr + GMI
 #
 # Usage:
-#   source ./makejoint.sh [giza|pgplot] [debug|release]
+#   source ./makejoint.sh [debug|release]
 #
-# Options (order-independent, defaults: giza, release):
-#   giza    — build Giza instead of pre-built PGPLOT (default)
-#   pgplot  — link pre-built libpgplot.a + X11
+# Options (default: release):
 #   debug   — -O0 -check all
 #   release — -O2 (default)
 #
 # Examples:
-#   source ./makejoint.sh                      # giza, release
-#   source ./makejoint.sh debug                # giza, debug
-#   source ./makejoint.sh pgplot               # pgplot, release
-#   source ./makejoint.sh pgplot debug         # pgplot, debug
+#   source ./makejoint.sh                      # release
+#   source ./makejoint.sh debug                # debug
 #
-# Output locations after a default (giza, release) build:
-#   macos executable  : ./build_release_giza/bin/macos
-#   smacos library    : ./build_release_giza/lib/libsmacos.a
-#   smacos_dvr        : ./build_release_giza/bin/smacos_dvr
-#   GMI mex           : ./build_release_giza/lib/GMI.mexa64
+# Output locations after a default (release) build:
+#   macos executable  : ./build_release/bin/macos
+#   smacos library    : ./build_release/lib/libsmacos.a
+#   smacos_dvr        : ./build_release/bin/smacos_dvr
+#   GMI mex           : ./build_release/lib/GMI.mexa64
 #
-# For other combinations substitute the build directory name:
-#   build_release_pgplot, build_debug_giza, build_debug_pgplot
+# Note: PGPLOT support was removed on release-candidate.  Giza is the
+# only PGPLOT-API provider now; the [giza|pgplot] arg is gone.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Parse arguments ---
-PLOT_CHOICE="giza"
 BUILD_TYPE="Release"
 
 for arg in "$@"; do
   case "$arg" in
-    giza)    PLOT_CHOICE="giza"    ;;
-    pgplot)  PLOT_CHOICE="pgplot"  ;;
     debug)   BUILD_TYPE="Debug"    ;;
     release) BUILD_TYPE="Release"  ;;
     *)
       echo "makejoint.sh: unknown option '$arg'"
-      echo "Usage: source ./makejoint.sh [giza|pgplot] [debug|release]"
+      echo "Usage: source ./makejoint.sh [debug|release]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
-BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')_${PLOT_CHOICE}"
-echo "makejoint: BUILD_TYPE=${BUILD_TYPE}  PLOT=${PLOT_CHOICE}"
+BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
+echo "makejoint: BUILD_TYPE=${BUILD_TYPE}"
 echo "makejoint: BUILD_DIR=${BUILD_DIR}"
 
 # --- Intel oneAPI environment ---
@@ -57,29 +50,16 @@ else
   echo "makejoint: WARNING — Intel oneAPI setvars.sh not found; using system compilers"
 fi
 
-# --- LD_LIBRARY_PATH ---
+# --- LD_LIBRARY_PATH (readline + Intel runtime; pgplot path removed) ---
 READLINE_LIB="${SCRIPT_DIR}/macos_f90/readline-8.2/shlib"
 INTEL_LIB="/opt/intel/oneapi/compiler/latest/lib"
-if [ "$PLOT_CHOICE" = "pgplot" ]; then
-  PGPLOT_DIR="${SCRIPT_DIR}/macos_f90/pgplot"
-  export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${PGPLOT_DIR}:${LD_LIBRARY_PATH}"
-else
-  export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${LD_LIBRARY_PATH}"
-fi
-
-# --- USE_GIZA flag ---
-if [ "$PLOT_CHOICE" = "giza" ]; then
-  USE_GIZA_FLAG="ON"
-else
-  USE_GIZA_FLAG="OFF"
-fi
+export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${LD_LIBRARY_PATH}"
 
 # --- Configure ---
 cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DCMAKE_Fortran_COMPILER=ifx \
   -DCMAKE_C_COMPILER=gcc \
   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-  -DUSE_GIZA="${USE_GIZA_FLAG}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \

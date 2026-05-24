@@ -15,7 +15,9 @@ option(BUILD_SMACOS      "Build the SMACOS static library"     ON)
 option(BUILD_SMACOS_LEAN "Build the SMACOS static library"     OFF)
 option(BUILD_SMACOS_DVR  "Build the smacos_dvr test driver"    OFF)
 option(BUILD_GMI         "Build the GMI Matlab mex interface"  OFF)
-option(USE_GIZA          "Build and link Giza instead of pre-built PGPLOT" OFF)
+# USE_GIZA removed on release-candidate: Giza is now the only
+# PGPLOT-API provider.  The legacy pre-built libpgplot.a path is
+# no longer supported.
 set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
@@ -37,7 +39,6 @@ if(BUILD_SMACOS_LEAN)
   set(BUILD_SMACOS      OFF)
   set(BUILD_SMACOS_DVR  OFF)
   set(BUILD_GMI         OFF)
-  set(USE_GIZA          OFF)
 
   set(CMAKE_BUILD_TYPE Debug)  # Release
   message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
@@ -98,11 +99,11 @@ set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
 set(fits_src_dir   "${smacos_src_dir}/fits_build")
 
 # ==============================================================================
-# 4. Giza (optional — replaces pgplotdummy)
+# 4. Giza (replaces the legacy PGPLOT library; PGPLOT support dropped
+#    on release-candidate per Dave's request -- Giza has been working
+#    well as the drop-in replacement)
 # ==============================================================================
-if(USE_GIZA)
-  add_subdirectory(macos_f90/giza/src)
-endif()
+add_subdirectory(macos_f90/giza/src)
 
 # ==============================================================================
 # 5. FITS Library
@@ -211,24 +212,9 @@ else()
   set(PLATFORM_LIBS "")
 endif()
 
-# Pre-built PGPLOT library (Linux, non-Giza path)
-# pgplotsub.F calls real PGPLOT symbols; must link the pre-built static lib.
-# PGPLOT itself needs X11; search static first to avoid runtime path issues.
-if(NOT WIN32 AND NOT USE_GIZA)
-  find_library(PGPLOT_LIB libpgplot.a
-      PATHS
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/pgplot
-        /usr/local/pgplot
-      NO_DEFAULT_PATH
-  )
-  if(NOT PGPLOT_LIB)
-    message(FATAL_ERROR "Pre-built libpgplot.a not found. "
-        "Build pgplot first or set USE_GIZA=ON.")
-  endif()
-  find_library(X11_LIB X11 PATHS /usr/lib64 /usr/lib/x86_64-linux-gnu)
-  message(STATUS "Using pre-built PGPLOT: ${PGPLOT_LIB}")
-  message(STATUS "Using X11: ${X11_LIB}")
-endif()
+# Legacy pre-built PGPLOT path removed: Giza is now the only
+# PGPLOT-API provider.  pgplotsub.F calls PGPLOT entry points which
+# the giza library implements; libpgplot.a / X11 are no longer linked.
 
 # INTEL runtime libraries (ifx only — needed by smacos_dvr and GMI)
 if(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
@@ -289,13 +275,11 @@ if(BUILD_SMACOS)
       ${CMAKE_BINARY_DIR}/mod_smacos
       ${CMAKE_BINARY_DIR}/mod
   )
-  if(USE_GIZA)
-    target_include_directories(smacos PUBLIC
-        ${CMAKE_BINARY_DIR}/mod_giza
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-        ${CMAKE_BINARY_DIR}/macos_f90/giza/src
-    )
-  endif()
+  target_include_directories(smacos PUBLIC
+      ${CMAKE_BINARY_DIR}/mod_giza
+      ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
+      ${CMAKE_BINARY_DIR}/macos_f90/giza/src
+  )
 
   target_link_libraries(smacos PRIVATE
       fitslib
@@ -331,19 +315,15 @@ if(BUILD_MACOS)
         $<$<COMPILE_LANGUAGE:C>:-DHAVE_CONFIG_H -DRL_LIBRARY_VERSION="8.2" -I${READLINE_ROOT}>
     )
   endif()
-  if(USE_GIZA)
-    target_include_directories(macos PUBLIC
-        ${CMAKE_BINARY_DIR}/mod_giza
-        ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-        ${CMAKE_BINARY_DIR}/macos_f90/giza/src
-    )
-  endif()
+  target_include_directories(macos PUBLIC
+      ${CMAKE_BINARY_DIR}/mod_giza
+      ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
+      ${CMAKE_BINARY_DIR}/macos_f90/giza/src
+  )
 
   target_link_libraries(macos PRIVATE
       fitslib
-      $<$<BOOL:${USE_GIZA}>:pgplot>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
+      pgplot
       ${PLATFORM_LIBS}
       $<$<BOOL:${READLINE_LIB}>:${READLINE_LIB}>
       $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<BOOL:${READLINE_LIB}>>:ncurses>
@@ -386,9 +366,7 @@ if(BUILD_SMACOS_DVR)
       smacos
       fitslib
       ${INTEL_LIBS}
-      $<$<BOOL:${USE_GIZA}>:pgplot>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${PGPLOT_LIB}>
-      $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<NOT:$<BOOL:${USE_GIZA}>>>:${X11_LIB}>
+      pgplot
       ${PLATFORM_LIBS}
   )
 
