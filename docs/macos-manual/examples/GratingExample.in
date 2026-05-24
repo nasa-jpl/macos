@@ -1,142 +1,81 @@
-      ChfRayDir=   0d0 0d0 1d0
-      ChfRayPos=   0d0 0d0 -6d0
-       zSource=    1d22
-        IndRef=    1d0
-        Extinc=    0d0
-       Wavelen=    6.d-07
-          Flux=    1d0
-      GridType=    Circular
-      Aperture=    1d0
-      Obscratn=    0d0
-      nGridpts=    65
-         xGrid=    1d0 0d0 0d0
-         yGrid=    0d0 1d0 0d0
-          nElt=     2
 
-         iElt=    1
-      EltName= Grating
-      Element= Grating
-      Surface= Flat
-        KrElt= -1d22
-        KcElt=   0d0
-       psiElt=   0d0 0d0 -1d0
-       VptElt=   0d0 0d0 0d0
-       RptElt=   0d0 0d0 0d0
+% ---------------------------------------------------------------------------------------
+% Source Definition
+% ---------------------------------------------------------------------------------------
 
-  IndRef=    1d0
-  Extinc=    1d22
-   h1HOE=    1d0 0d0 0d0
-OrderHOE=    1d0
-RuleWidth=    18.97366596d-7
-    nObs=     0
-  ApType=    None
-    zElt=    1d22
-PropType=    Geometric
- nECoord=    -6
+        ChfRayDir=  0.0E+00  0.0E+00  1.0E+00
+        ChfRayPos=  0.0E+00  0.0E+00  -6.0E+00
+          zSource=1.0E+22
 
-    iElt=    2
- EltName= FP
- Element= FocalPlane
- Surface= Flat
-   KrElt=   1d22
-   KcElt=   0d0
-  psiElt=   0d0 0d0 1d0
-  VptElt=   0d0 0d0 -3d0
-  RptElt=   0d0 0d0 0d0
-  IndRef=   1d0
-  Extinc=   0d0
-    nObs=    0
-  ApType=   None
-    zElt=   1d22
-PropType=   Geometric
- nECoord=   -6
+        BaseUnits=  (default-unit)
+        WaveUnits=  none
 
-nOutCord=     5
-    Tout=    1d0   0d0   0d0   0d0   0d0   0d0    0d0
-             0d0   1d0   0d0   0d0   0d0   0d0    0d0
-             0d0   0d0   0d0   1d0   0d0   0d0    0d0
-             0d0   0d0   0d0   0d0   1d0   0d0    0d0
-             0d0   0d0   0d0   0d0   0d0   0d0    1d0
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+          Wavelen=6.0E-07
+             Flux=1.0E+00
 
-      A.2.3 HOEExample.jou
-% This macro generates example figures
-% for Section 4 of the MACOS User Manual
+         Aperture=1.0E+00
+         Obscratn=0.0E+00
 
-loa HOEExample
-mod ngridpts=15 q
-map
-ray 76
-stop elt 1 0,0
-fex;;;
-int;;
-draw;;;;                                                            % Fig ??
+         GridType=  Circular
+         nGridpts=  65
+            xGrid=  1.0E+00  0.0E+00  0.0E+00
+            yGrid=  0.0E+00  1.0E+00  0.0E+00
 
-mod Element(1)=reflector q
-ray 76
-fex;;;
-int;;
+% ---------------------------------------------------------------------------------------
+% Element Definitions
+% ---------------------------------------------------------------------------------------
 
-      draw;;;;                                                            % Fig ??
+             nElt=  2
 
-           A.2.4 HOEExample.in
-      ChfRayDir=   0d0 0d0 1d0
-      ChfRayPos=   0d0 0d0 -4d0
-       zSource=    1d22
-        IndRef=    1d0
-        Extinc=    0d0
-       Wavelen=    6.d-07
-          Flux=    1d0
-      GridType=    Circular
-      Aperture=    5.d-01
-      Obscratn=    0d0
-      nGridpts=    64
-         xGrid=    1d0 0d0 0d0
-         yGrid=    0d0 1d0 0d0
-          nElt=     2
 
-          iElt=    1
-       EltName= HOEonMirror
-       Element= HOE
-       Surface= Conic
-         KrElt= -6d0
-         KcElt= -1d0
-        psiElt=   0d0 0d0 -1d0
-        VptElt=   0d0 0d0 0d0
-        RptElt=   0d0 0d0 0d0
-        IndRef=   1d0
-        Extinc=   1d22
-         h1HOE=   0d0 0d0 -1d22
-         h2HOE=   1d0 0d0 -3d0
-      OrderHOE=   1d0
-       WaveHOE=   6.d-07
-          nObs=    0
-        ApType=   None
-          zElt=   1d22
-      PropType=   Geometric
-       nECoord=   -6
+             iElt=  1
+          EltName=  Grating
+          Element=  Grating
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+            h1HOE=  1.0E+00  0.0E+00  0.0E+00
+         OrderHOE=1.0E+00
+        RuleWidth=1.897366596E-06
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
 
-          iElt=    2
-       EltName= FP
-       Element= FocalPlane
-       Surface= Flat
-         KrElt= -1d22
-         KcElt=   0d0
-        psiElt=   0d0 0d0 1d0
-        VptElt=   0d0 0d0 -3d0
-        RptElt=   0d0 0d0 0d0
-        IndRef=   1d0
-        Extinc=   0d0
-          nObs=    0
-        ApType=   None
-          zElt=   1d22
-      PropType=   Geometric
-       nECoord=   -6
+             iElt=  2
+          EltName=  FP
+          Element=  FocalPlane
+          Surface=  Flat
+            KrElt=1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -3.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
 
-      nOutCord=     5
-          Tout=    1d0   0d0   0d0   0d0   0d0   0d0    0d0
-                   0d0   1d0   0d0   0d0   0d0   0d0    0d0
-                   0d0   0d0   0d0   1d0   0d0   0d0    0d0
-                   0d0   0d0   0d0   0d0   1d0   0d0    0d0
-                   0d0   0d0   0d0   0d0   0d0   0d0    1d0
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
 
-      A.3 Non-Sequential Surface Examples
+         nOutCord=  5
+             Tout=  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00
