@@ -40,4 +40,4 @@ stretch log10
 int 6                                  % new dim image at occulting mask
 stretch sqrt
 
-      add yes                                % add dim image to composite image
+add yes                                % add dim image to composite image
