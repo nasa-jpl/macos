@@ -1,107 +1,132 @@
-ChfRayDir= 0d0 0d0 -1d0
-ChfRayPos= 1.d-05 1.d-05       1.d+01
- zSource=  1.d22
-  IndRef=  1d0
-  Extinc=  0d0
- Wavelen=  1.059d-04
-    Flux=  1d0
-GridType=  Circular
-Aperture=  2.54d+00
-Obscratn=  0d0
-nGridpts=  65
-   xGrid=  0d0 1d0 0d0
-   yGrid= -1d0 0d0 0d0
-    nElt=   5
 
-    iElt=    1
- EltName= Ref Srf
- Element= Reference
- Surface= Conic
-   KrElt= -1d22
-   KcElt=   0d0
-  psiElt=   0d0 0d0 -1d0
-  VptElt=   0d0 0d0 3.5d+00
-  RptElt=   0d0 0d0 0d0
-  IndRef=   1d0
-  Extinc=   1d22
-    nObs=    0
-  ApType=   None
-    zElt=   0d0
-PropType=   NFP1surf
- nECoord=    0
+% ---------------------------------------------------------------------------------------
+% Source Definition
+% ---------------------------------------------------------------------------------------
 
-   iElt=    2
-EltName= CC1
-Element= NSReflector
-Surface= Conic
-  KrElt=   1d22
-  KcElt=   0d0
- psiElt=   8.164994677D-01      0d0    5.773461867D-01
- VptElt=   0d0 0d0 0d0
- RptElt=   0d0 0d0 0d0
+        ChfRayDir=  0.0E+00  0.0E+00  -1.0E+00
+        ChfRayPos=  1.0E-05  1.0E-05  1.0E+01
+          zSource=1.0E+22
 
-        IndRef=   1d0
-        Extinc=   1d22
-          nObs=    0
-        ApType=   None
-          zElt=   1d22
-      PropType=   Geometric
-       nECoord=   -6
+        BaseUnits=  (default-unit)
+        WaveUnits=  none
 
-          iElt=    3
-       EltName= CC2
-       Element= NSReflector
-       Surface= Conic
-         KrElt=   1d22
-         KcElt=   0d0
-        psiElt= -4.082497338D-01      7.071092812D-01        5.773461867D-01
-        VptElt=   0d0 0d0 0d0
-        RptElt=   0d0 0d0 0d0
-        IndRef=   1d0
-        Extinc=   1d22
-          nObs=    0
-        ApType=   None
-          zElt=   1d22
-      PropType=   Geometric
-       nECoord=   -6
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+          Wavelen=1.059E-04
+             Flux=1.0E+00
 
-          iElt=    4
-       EltName= CC3
-       Element= NSReflector
-       Surface= Conic
-         KrElt=   1d22
-         KcElt=   0d0
-        psiElt= -4.082497338D-01 -7.071092812D-01            5.773461867D-01
-        VptElt=   0d0 0d0 0d0
-        RptElt=   0d0 0d0 0d0
-        IndRef=   1d0
-        Extinc=   1d22
-          nObs=    0
-        ApType=   None
-          zElt=   1d22
-      PropType=   Geometric
-       nECoord=   -6
+         Aperture=2.54E+00
+         Obscratn=0.0E+00
 
-          iElt=    5
-       EltName= FP
-       Element= FocalPlane
-       Surface= Flat
-         KrElt= -1d22
-         KcElt=   0d0
-        psiElt=   0d0 0d0 -1d0
-        VptElt=   0d0 0d0 3.5d+00
-        RptElt=   0d0 0d0 0d0
-        IndRef=   1d0
-        Extinc=   1d22
-          nObs=    0
-        ApType=   None
-          zElt=   1.d+03
-      PropType=   Geometric
-       nECoord=    0
+         GridType=  Circular
+         nGridpts=  65
+            xGrid=  0.0E+00  1.0E+00  0.0E+00
+            yGrid=  -1.0E+00  0.0E+00  0.0E+00
 
-      nOutCord=    5
-          Tout=   1d0   0d0   0d0   0d0   0d0   0d0    0d0
-                  0d0   1d0   0d0   0d0   0d0   0d0    0d0
-                  0d0   0d0   0d0   1d0   0d0   0d0    0d0
-                  0d0   0d0   0d0   0d0   1d0   0d0    0d0
-                  0d0   0d0   0d0    0d0   0d0   0d0    1d0
+% ---------------------------------------------------------------------------------------
+% Element Definitions
+% ---------------------------------------------------------------------------------------
+
+             nElt=  5
+
+
+             iElt=  1
+          EltName=  Ref Srf
+          Element=  Reference
+          Surface=  Conic
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  3.5E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  NFP1surf
+             zElt=0.0E+00
+          nECoord=  0
+
+             iElt=  2
+          EltName=  CC1
+          Element=  NSReflector
+          Surface=  Conic
+            KrElt=1.0E+22
+            KcElt=0.0E+00
+           psiElt=  8.164994676790102E-01  0.0E+00  5.77346186685158E-01
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  3
+          EltName=  CC2
+          Element=  NSReflector
+          Surface=  Conic
+            KrElt=1.0E+22
+            KcElt=0.0E+00
+           psiElt=  -4.08249733799187E-01  7.071092811985918E-01  5.773461866988503E-01
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  4
+          EltName=  CC3
+          Element=  NSReflector
+          Surface=  Conic
+            KrElt=1.0E+22
+            KcElt=0.0E+00
+           psiElt=  -4.08249733799187E-01  -7.071092811985918E-01  5.773461866988503E-01
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  5
+          EltName=  FP
+          Element=  FocalPlane
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  3.5E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+03
+          nECoord=  0
+
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
+
+         nOutCord=  5
+             Tout=  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00
