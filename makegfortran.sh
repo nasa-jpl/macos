@@ -2,75 +2,55 @@
 # makegfortran.sh  — CMake build for macos + smacos + smacos_dvr + GMI using gfortran/gcc
 #
 # Usage:
-#   source ./makegfortran.sh [giza|pgplot] [debug|release]
+#   source ./makegfortran.sh [debug|release]
 #
-# Options (order-independent, defaults: giza, release):
-#   giza    — build Giza instead of pre-built PGPLOT (default)
-#   pgplot  — link pre-built libpgplot.a + X11
+# Options (order-independent, default: release):
 #   debug   — -O0 -fcheck=all
 #   release — -O2 (default)
 #
 # Examples:
-#   source ./makegfortran.sh                      # giza, release
-#   source ./makegfortran.sh debug                # giza, debug
-#   source ./makegfortran.sh pgplot               # pgplot, release
-#   source ./makegfortran.sh pgplot debug         # pgplot, debug
+#   source ./makegfortran.sh                      # release
+#   source ./makegfortran.sh debug                # debug
 #
-# Output locations after a default (giza, release) build:
-#   macos executable  : ./build_release_giza_gfortran/bin/macos
-#   smacos library    : ./build_release_giza_gfortran/lib/libsmacos.a
-#   smacos_dvr        : ./build_release_giza_gfortran/bin/smacos_dvr
-#   GMI mex           : ./build_release_giza_gfortran/lib/GMI.mexa64
+# Output locations after a default release build:
+#   macos executable  : ./build_release_gfortran/bin/macos
+#   smacos library    : ./build_release_gfortran/lib/libsmacos.a
+#   smacos_dvr        : ./build_release_gfortran/bin/smacos_dvr
+#   GMI mex           : ./build_release_gfortran/lib/GMI.mexa64
 #
-# For other combinations substitute the build directory name:
-#   build_release_pgplot_gfortran, build_debug_giza_gfortran, build_debug_pgplot_gfortran
+# Note: PGPLOT support was removed on release-candidate; Giza is now
+# the only PGPLOT-API provider.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Parse arguments ---
-PLOT_CHOICE="giza"
 BUILD_TYPE="Release"
 
 for arg in "$@"; do
   case "$arg" in
-    giza)    PLOT_CHOICE="giza"    ;;
-    pgplot)  PLOT_CHOICE="pgplot"  ;;
     debug)   BUILD_TYPE="Debug"    ;;
     release) BUILD_TYPE="Release"  ;;
     *)
       echo "makegfortran.sh: unknown option '$arg'"
-      echo "Usage: source ./makegfortran.sh [giza|pgplot] [debug|release]"
+      echo "Usage: source ./makegfortran.sh [debug|release]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
-BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')_${PLOT_CHOICE}_gfortran"
-echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}  PLOT=${PLOT_CHOICE}"
+BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')_gfortran"
+echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}"
 echo "makegfortran: BUILD_DIR=${BUILD_DIR}"
 
 # --- LD_LIBRARY_PATH ---
 READLINE_LIB="${SCRIPT_DIR}/macos_f90/readline-8.2/shlib"
-if [ "$PLOT_CHOICE" = "pgplot" ]; then
-  PGPLOT_DIR="${SCRIPT_DIR}/macos_f90/pgplot"
-  export LD_LIBRARY_PATH="${READLINE_LIB}:${PGPLOT_DIR}:${LD_LIBRARY_PATH}"
-else
-  export LD_LIBRARY_PATH="${READLINE_LIB}:${LD_LIBRARY_PATH}"
-fi
-
-# --- USE_GIZA flag ---
-if [ "$PLOT_CHOICE" = "giza" ]; then
-  USE_GIZA_FLAG="ON"
-else
-  USE_GIZA_FLAG="OFF"
-fi
+export LD_LIBRARY_PATH="${READLINE_LIB}:${LD_LIBRARY_PATH}"
 
 # --- Configure ---
 cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DCMAKE_Fortran_COMPILER=gfortran \
   -DCMAKE_C_COMPILER=gcc \
   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-  -DUSE_GIZA="${USE_GIZA_FLAG}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \

@@ -47,16 +47,20 @@ git -C MACOS_resources checkout dr-dev
 ## 3. Build
 
 All scripts run from `~/dev/macos/` and accept options
-`[giza|pgplot] [debug|release] [gfortran]` in any order
-(defaults: giza, release, ifx).
+`[debug|release] [gfortran]` in any order
+(defaults: release, ifx).
+
+> **PGPLOT removed on release-candidate.**  Giza is now the only
+> PGPLOT-API provider.  The `[giza|pgplot]` argument the build
+> scripts previously accepted is gone.
 
 ### Build all four targets at once
 
 ```bash
 cd ~/dev/macos
-source ./makejoint.sh            # ifx, Giza, release (most common)
-source ./makejoint.sh debug      # ifx, Giza, debug
-source ./makejoint.sh gfortran   # gfortran, Giza, release
+source ./makeall.sh              # ifx, release (most common)
+source ./makeall.sh debug        # ifx, debug
+source ./makegfortran.sh         # gfortran, release
 ```
 
 ### Build individual targets
@@ -67,32 +71,31 @@ source ./makejoint.sh gfortran   # gfortran, Giza, release
 | `source ./makesd.sh` | `smacos_dvr` (also builds macos/smacos if needed) |
 | `source ./makegmi.sh` | `GMI.mexa64` (requires macos+smacos built first) |
 
-All three accept the same `[giza|pgplot] [debug|release] [gfortran]` options.
+All three accept the same `[debug|release] [gfortran]` options.
 `makesd.sh` and `makegmi.sh` must use matching options to the preceding
-`makems.sh` (or `makejoint.sh`) call so they target the same build directory.
+`makems.sh` (or `makeall.sh`) call so they target the same build directory.
 
 ---
 
 ## 4. Build outputs
 
-After a default `source ./makejoint.sh` (ifx, Giza, release):
+After a default `source ./makeall.sh` (ifx, release):
 
 | Target | Location |
 |---|---|
-| `macos` executable | `~/dev/macos/build_release_giza/bin/macos` |
-| `smacos_dvr` executable | `~/dev/macos/build_release_giza/bin/smacos_dvr` |
-| `libsmacos.a` static library | `~/dev/macos/build_release_giza/lib/libsmacos.a` |
+| `macos` executable | `~/dev/macos/build_release/bin/macos` |
+| `smacos_dvr` executable | `~/dev/macos/build_release/bin/smacos_dvr` |
+| `libsmacos.a` static library | `~/dev/macos/build_release/lib/libsmacos.a` |
 | `GMI.mexa64` MATLAB mex | `~/dev/MACOS_resources/GMI/GMI.mexa64` |
 
 Build directory names for other combinations:
 
 | Script + options | Build directory |
 |---|---|
-| `makejoint.sh` | `build_release_giza/` |
-| `makejoint.sh debug` | `build_debug_giza/` |
-| `makejoint.sh pgplot` | `build_release_pgplot/` |
-| `makegfortran.sh` | `build_release_giza_gfortran/` |
-| `makegfortran.sh debug` | `build_debug_giza_gfortran/` |
+| `makeall.sh` | `build_release/` |
+| `makeall.sh debug` | `build_debug/` |
+| `makegfortran.sh` | `build_release_gfortran/` |
+| `makegfortran.sh debug` | `build_debug_gfortran/` |
 
 ---
 
@@ -101,15 +104,15 @@ Build directory names for other combinations:
 Add to `~/.bashrc` (or `~/.bash_aliases`), then `source ~/.bashrc`:
 
 ```bash
-alias macos='~/dev/macos/build_release_giza/bin/macos'
-alias smacos_dvr='~/dev/macos/build_release_giza/bin/smacos_dvr'
+alias macos='~/dev/macos/build_release/bin/macos'
+alias smacos_dvr='~/dev/macos/build_release/bin/smacos_dvr'
 ```
 
 For a debug build:
 
 ```bash
-alias macos='~/dev/macos/build_debug_giza/bin/macos'
-alias smacos_dvr='~/dev/macos/build_debug_giza/bin/smacos_dvr'
+alias macos='~/dev/macos/build_debug/bin/macos'
+alias smacos_dvr='~/dev/macos/build_debug/bin/smacos_dvr'
 ```
 
 For MATLAB, add the GMI directory to the MATLAB path in `startup.m` or via
@@ -127,6 +130,6 @@ Re-run the same script; CMake recompiles only changed files.
 To force a clean rebuild delete the build directory first:
 
 ```bash
-rm -rf ~/dev/macos/build_release_giza
-source ~/dev/macos/makejoint.sh
+rm -rf ~/dev/macos/build_release
+source ~/dev/macos/makeall.sh
 ```

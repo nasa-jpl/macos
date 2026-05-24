@@ -5,24 +5,31 @@ NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 ## Build
-CMake-based. All scripts live in `macos/` and accept `[giza|pgplot] [debug|release] [gfortran]`
-in any order (defaults: giza, release, ifx). Each combination gets its own build directory.
+CMake-based. All scripts live in `macos/` and accept `[debug|release] [gfortran]`
+in any order (defaults: release, ifx). Each combination gets its own build directory.
+
+PGPLOT was dropped on release-candidate: Giza is the only PGPLOT-API
+provider now, and the legacy `[giza|pgplot]` script argument is gone.
+NPSOL was also removed via main's PR #44; `design_cons_optim.F` is
+dead code, replaced by `nls_optim_dvr` (Levenberg-Marquardt) in
+`design_optim_mod`.
 
 | Script | Targets |
 |---|---|
-| `source ./makejoint.sh` | macos + smacos + smacos_dvr + GMI (all four) |
+| `source ./makeall.sh` | macos + smacos + smacos_dvr + GMI (all four) |
 | `source ./makems.sh` | macos + libsmacos.a |
 | `source ./makesd.sh` | smacos_dvr (builds macos/smacos too if needed) |
 | `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first) |
 | `source ./makegfortran.sh` | macos + smacos + smacos_dvr via gfortran |
 
-Build directory naming: `build_{release|debug}_{giza|pgplot}[_gfortran]`
+Build directory naming: `build_{release|debug}[_gfortran]`
 
-- CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources), `macos_f90/npsol/CMakeLists.txt`.
+- CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources).
+  (The legacy `macos_f90/npsol/CMakeLists.txt` is gone with rem_npsol.)
 - CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
 - C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
-- GMI.mexa64 is built via the standalone `MACOS_resources/GMI/Makefile` (not cmake) — more robust across MATLAB versions. makejoint.sh and makegmi.sh both call it with `MACOS_BUILD_DIR` pointing to the cmake build tree.
+- GMI.mexa64 is built via the standalone `MACOS_resources/GMI/Makefile` (not cmake) — more robust across MATLAB versions. makeall.sh and makegmi.sh both call it with `MACOS_BUILD_DIR` pointing to the cmake build tree.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
@@ -456,7 +463,7 @@ in CoroExample.jou-style scripts.
 
 ## Debug builds
 - `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
-- `source ./makejoint.sh debug` — all four targets, debug
+- `source ./makeall.sh debug` — all four targets, debug
 - CMake debug uses -check all,noarg_temp_created (suppresses harmless array temporary warnings).
 - VS Code: F5 launches debug session; builds automatically via preLaunchTask.
   launch.json points to build_debug_giza/macos and build_debug_giza/smacos_dvr.
@@ -468,11 +475,11 @@ in CoroExample.jou-style scripts.
 ## Build notes
 - Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — cmake
   may pick it up and try to build it as a standalone executable.
-- Use `source ./makems.sh` for macos_f90-only changes (faster than makejoint.sh).
+- Use `source ./makems.sh` for macos_f90-only changes (faster than makeall.sh).
   cmake recompiles only changed files; delete the build directory for a clean rebuild.
 - macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
 - GMI (Matlab mex): built via standalone MACOS_resources/GMI/Makefile (invoked by
-  makejoint.sh and makegmi.sh). MATLAB auto-detected under /usr/local/MATLAB/R*.
+  makeall.sh and makegmi.sh). MATLAB auto-detected under /usr/local/MATLAB/R*.
   ifx 2025.3 quirk: -C flag implies -fsanitize=memory; use -check all instead.
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
