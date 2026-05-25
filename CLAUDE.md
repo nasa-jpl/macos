@@ -321,6 +321,34 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
 - Historical bug: a "Noll → NormNoll" rewrite shim existed at one site only,
   and the un-normalized loop ran indices 1..3 (omitting 10=Noll, 11=ExtFringe),
   so `MOD ZernType=Noll` silently became NormNoll. Both fixed in the helper.
+- Legacy alias: "Malacara" (pre-modernization name for ANSI) maps to typeL=1
+  via a `Mala`-prefix check at the bottom of the un-normalized branch. Older
+  JPL Rx files (optiix etc.) still use it; without the alias the parser
+  silently dropped the field and ZernTypeL stayed 0 — which then silently
+  broke the Zernike-apply trace path (see next section).
+
+## Zernike-apply trace dispatch requires ZernTypeL ≠ 0
+- `propsub.F:230-249` (and the parallel `srtrace.F:145-153`) dispatches
+  `ZerntoMon1/2/3/4/6/7` based on `ZernTypeL(iElt)`. The chain has NO `ELSE`
+  branch — if ZernTypeL is 0 (the elt_mod.F:944 initial value), the IF/ELSEIF
+  falls through, ZerntoMon is never called, MonCoef stays zero, and the
+  surface intersection (which uses MonCoef, not ZernCoef) sees no perturbation.
+  Result: silent zero-response.
+- ChkDf2 defaults ZernTypeL to 1 (ANSI) for elements whose parse path visited
+  the ZernType default block. **NSReflector+Conic elements don't visit that
+  block** — their ZernTypeL stays 0 unless explicitly set in the Rx.
+- GMI workaround at `GMI.F:1066`: when forcing `SrfType(iElt)=8` to apply a
+  Zernike perturbation to an arbitrary element, also force `ZernTypeL=1` if
+  currently 0. Without this, GMI's pzern channel silently no-ops when applied
+  to a Conic-typed element. Caught by `test03_zern_response_optiix` (had been
+  masked under ifx because the same broken path also corrupted memory and
+  triggered an exit-time SIGSEGV — gfortran exposed the actual zero-response
+  bug cleanly).
+- Latent gap (not yet fixed): the propsub/srtrace IF/ELSEIF chains don't
+  handle ZernTypeL=10 (Noll) or =11 (ExtFringe). A user Rx with
+  `ZernType= Noll` parses correctly and sets ZernTypeL=10, then the trace
+  dispatch silently no-ops. Add ELSE-with-error or extend the chain when this
+  surfaces. (We didn't extend it now because no current test exercises it.)
 
 ## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
 - For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
