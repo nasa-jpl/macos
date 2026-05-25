@@ -32,16 +32,18 @@ C***********************************************************************
         INTEGER, PARAMETER :: Linear = 1,
      &                        NonLin = 2
 
-        CHARACTER(len=*), PARAMETER :: DOPT_TARGET(5)=
-     &                    (/'RMS Wavefront Error',
+        CHARACTER(len=19), PARAMETER :: DOPT_TARGET(5)=
+     &                    [CHARACTER(len=19) ::
+     &                      'RMS Wavefront Error',
      &                      'WFE Zernike Modes',
      &                      'Beam Property',
      &                      'Spot Size',
-     &                      'OPL'/)
+     &                      'OPL']
 
-        CHARACTER(len=*), PARAMETER :: DOF_NameList(8)=
-     &                    (/'TIP', 'TILT', 'CLOCK',
-     &                       'DX', 'DY', 'PIST','ROC', 'CONIC'/)
+        CHARACTER(len=5), PARAMETER :: DOF_NameList(8)=
+     &                    [CHARACTER(len=5) ::
+     &                      'TIP', 'TILT', 'CLOCK',
+     &                      'DX', 'DY', 'PIST','ROC', 'CONIC']
 
 	! total DOFs = 6 rb + ROC + Conic + mOptZern
 	Character(len=6), dimension(:,:), allocatable :: DOF_VarElt

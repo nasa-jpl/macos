@@ -1678,11 +1678,16 @@ C***********************************************************************
               ! ------------------------------- up to 20 Modes -- write individual modes
               CASE (1:20)
                 k = 0
-                DO CONCURRENT (INTEGER::i=1:mCoef, nonzero(i))
-                  k = k+1
-                  modes(k) = i
-                  Coefs(k) = ZernCoef(i, iElt)
-                END DO
+                BLOCK
+                  INTEGER :: i
+                  DO i = 1, mCoef
+                    IF (nonzero(i)) THEN
+                      k = k+1
+                      modes(k) = i
+                      Coefs(k) = ZernCoef(i, iElt)
+                    END IF
+                  END DO
+                END BLOCK
                 CALL PrintFmt('nZernCoef', "i4", nCoef)
                 CALL PrintFmtArray('ZernModes','I3', nCoef, modes(:nCoef))
                 CALL PrintFmtArray('ZernCoef','1PD23.15', nCol, Coefs(:nCoef))
