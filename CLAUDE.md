@@ -515,23 +515,34 @@ in CoroExample.jou-style scripts.
     (`arr(:) = 0` when `allocated(arr)` is .FALSE.) — ifx silently no-ops,
     gfortran SIGSEGVs. Guard with `if (allocated(arr)) arr(:) = 0`. Caught in
     `src_mod_init_vars` (ds1/ds2 are allocated lazily by sourcsub).
-- Build choice for GMI (`makegmi.sh` now defaults to gfortran):
+- Build choice for GMI (`makegmi.sh` defaults to gfortran):
   - **gfortran (default):** `source ./makegmi.sh` (or `makegmi.sh release`).
-    Clean MATLAB exit, no SIGSEGV. Mex lands at
-    `~/dev/MACOS_resources/GMI/GMI.mexa64`. Requires
+    Mex lands at `~/dev/MACOS_resources/GMI/GMI.mexa64`. Requires
     `build_release_gfortran/` populated by `makegfortran.sh release` first.
-  - **ifx (opt-in):** `source ./makegmi.sh ifx`. Mex SIGSEGVs in MATLAB's
-    process-exit teardown (suspected Fortran-module finalizer on second
-    mex unload). Results are correct — crash is after all work completes.
-    Requires `build_release/` populated by `makems.sh release` first.
+  - **ifx (opt-in):** `source ./makegmi.sh ifx`. Requires `build_release/`
+    populated by `makems.sh release` first.
 - Both compilers run the GMI regression suite green (6/6) with bit-identical
-  numeric results. They use the SAME source tree; the standalone
-  `MACOS_resources/GMI/Makefile` and the top-level `CMakeLists.txt` both
-  have per-compiler conditionals for the compile/link flags
-  (ifx: `-fpp -132 -gen-interfaces -fp-model strict -xHOST -lirc
-  -shared-intel`;
+  numeric results AND exit MATLAB cleanly (exit 0). They use the SAME source
+  tree; the standalone `MACOS_resources/GMI/Makefile` and the top-level
+  `CMakeLists.txt` have per-compiler conditionals for the compile/link flags
+  (ifx: `-fpp -132 -gen-interfaces -fp-model strict -xHOST -shared-intel
+  -reentrancy=none`;
   gfortran: `-cpp -ffixed-line-length-132 -march=native
   -fallow-argument-mismatch -std=legacy`, no Intel runtime).
+- `-reentrancy=none` on the ifx link line is **load-bearing for ifx**: it
+  switches the Intel Fortran runtime from the default multi-threaded variant
+  (`libifcoremt.so.5`) to the single-threaded one (`libifcore.so.5`).
+  `libifcoremt` keeps worker threads parked in the host process across mex
+  calls; once MATLAB's `clear mex` unloads the DSO that owned their wake-up
+  callback, those threads die at process exit by jumping to a now-unmapped
+  function pointer. Symptom: `SIGSEGV` with `RIP=...e2c0` inside a
+  `clone3/start_thread` stack — pure thread-spawn-to-freed-memory, no module
+  of our own on the stack. GMI doesn't use the Intel Fortran runtime's
+  internal threading anyway, so `-reentrancy=none` is a strict win. Without
+  this flag, the ifx mex still produces correct numerical results but
+  SIGSEGVs at MATLAB process exit, after the regression summary has printed.
+  Diagnosed via stack-frame symbolization
+  (`libc+641168 = start_thread`, `libc+1219692 = clone3`).
 - Makefile gotcha: gfortran's `ld` is stricter about lib-after-object
   ordering than ifx's bundled linker. The Makefile splits compile flags
   (`LDFLAGS`, before objects) from trailing `POST_LIBS` (`-l:libmx.so` etc.,
