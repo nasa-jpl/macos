@@ -21,7 +21,9 @@ C***********************************************************************
      &                        GridType_Flower    = 5,
      &                        GridType_UDG       = 6
 
-        Character*32, PARAMETER :: GridTypeName(6) = ['Circular',
+        Character*32, PARAMETER :: GridTypeName(6) =
+     &                              [CHARACTER(LEN=32) ::
+     &                                                'Circular',
      &                                                'Square',
      &                                                'Hex',
      &                                                'Pie',
@@ -114,8 +116,11 @@ C***********************************************************************
             SegMap(:, :)   = 0
 
             FiltFlux(:, :) = 0e0_pr
-            ds1(:, :)      = 0e0_pr
-            ds2(:, :)      = 0e0_pr
+            ! ds1/ds2 are allocated lazily by sourcsub on first point-source
+            ! call — guard here so init-time zero is a no-op when unallocated
+            ! (gfortran SIGSEGVs on slice assignment to unallocated; ifx no-ops).
+            if (allocated(ds1)) ds1(:, :) = 0e0_pr
+            if (allocated(ds2)) ds2(:, :) = 0e0_pr
             FiltWavelen(:) = 0e0_pr
 
           end subroutine src_mod_init_vars

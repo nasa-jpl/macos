@@ -835,7 +835,7 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
 	        End If
                 ! Trace a ray
                 iStartElt=0
-	        If (LRayTgtElt==.TRUE.) Then
+	        If (LRayTgtElt.eqv..TRUE.) Then
                   iEndElt=RayTgtElt
                 Else
                   iEndElt=nElt
@@ -1317,7 +1317,7 @@ C         ***Print ray maps***
 	        DO j=k,1,-iSkip
 	          i1=1
 	          DO i=k,1,-iSkip
-                    srcMap.segMap(i1,j1)=SegMap(i,j); i1=i1+1
+                    srcMap%segMap(i1,j1)=SegMap(i,j); i1=i1+1
 		  END DO
 	          j1=j1+1
 	        END DO
@@ -4487,12 +4487,15 @@ C	  Get local coordinates:
                 CALL DUNITIZE(DDEF)
                 CALL DZERO(Tspot(1,1),49)
 
-                DO CONCURRENT (integer::iCoord_=1:3)
-                  Tspot(1,iCoord_)   = invec7(iCoord_)
-                  Tspot(3,3+iCoord_) = invec7(iCoord_)
-                  Tspot(2,iCoord_)   = DDEF(iCoord_)
-                  Tspot(4,3+iCoord_) = DDEF(iCoord_)
-                END DO
+                BLOCK
+                  INTEGER :: iCoord_
+                  DO iCoord_ = 1, 3
+                    Tspot(1,iCoord_)   = invec7(iCoord_)
+                    Tspot(3,3+iCoord_) = invec7(iCoord_)
+                    Tspot(2,iCoord_)   = DDEF(iCoord_)
+                    Tspot(4,3+iCoord_) = DDEF(iCoord_)
+                  END DO
+                END BLOCK
                 Tspot(5,7)=1d0
                 CALL COMPACT(Tcompact,Tspot,5,7,7,7)
                 CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
