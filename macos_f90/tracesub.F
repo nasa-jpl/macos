@@ -947,7 +947,7 @@ C***********************************************************************
         END SUBROUTINE STOP
 
 
-        #define ChiefRayAiming_Debug 0
+#define ChiefRayAiming_Debug 0
 
         SUBROUTINE ChiefRayAiming(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
      &	  ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
@@ -1105,13 +1105,13 @@ C***********************************************************************
           n_stagnant = 0    ! No stagnation yet
           sqErr_best = 1d10 ! Initialize best error
 
-          #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
             WRITE(*,*)' '
             WRITE(*,*)' =========================================='
             WRITE(*,*)' USING LEVENBERG-MARQUARDT ALGORITHM'
             WRITE(*,*)' =========================================='
             WRITE(*,*)' Initial damping: lambda =', lambda_lm
-          #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
           ! Initialize accepted state with initial configuration
           acceptedChfRayDir(1:3) = ChfRayDir(1:3)
@@ -1125,7 +1125,7 @@ C***********************************************************************
           yLocal = TElt(1:3, 2, iLocal)
           zLocal = TElt(1:3, 3, iLocal)
 
-          #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
             !
             ! DISPLAY SETUP BASED ON SOURCE TYPE
             !
@@ -1157,12 +1157,12 @@ C***********************************************************************
             WRITE(*,*)' Tolerance: errTol =', errTol
             WRITE(*,*)' '
 
-          #else ! ChiefRayAiming_Debug
+#else ! ChiefRayAiming_Debug
 
             ! Point source: will modify direction, keep source position fixed
             IF (ifPointSrc) saveSrcPos = SourcePos()
 
-          #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
 
           ! Trace chief ray from source to STOP element (=iEndElt)
@@ -1183,7 +1183,7 @@ C***********************************************************************
           ! Check if initial ray trace succeeded
           IF (.NOT. LRayOK(1)) THEN
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' ========================================='
               WRITE(*,*)' ERROR: Initial ray trace FAILED'
@@ -1194,7 +1194,7 @@ C***********************************************************************
               WRITE(*,*)' - Geometric constraints of the optical system'
               WRITE(*,*)' '
               WRITE(*,*)' Cannot proceed with STOP setting.'
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             RETURN
           END IF
@@ -1209,7 +1209,7 @@ C***********************************************************************
           dxPt(2) = xInt(2) - xTarg(2)
           sqErr_best = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)
 
-          #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
             !
             ! INITIAL STATE DIAGNOSTICS
             !
@@ -1224,7 +1224,7 @@ C***********************************************************************
             WRITE(*,*)' sqErr_best     =', sqErr_best
             WRITE(*,*)' '
 
-          #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
           ! -------------------------------------------------------------------
           ! MAIN ITERATION LOOP
@@ -1246,7 +1246,7 @@ C***********************************************************************
             dxPt(:2) = xInt(:2) - xTarg(:2)               ! CALL DSUB(dxPt,xInt,xTarg,2)
             sqErr    = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)  ! Squared Error
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               !
               ! ITERATION DIAGNOSTICS
               !
@@ -1269,7 +1269,7 @@ C***********************************************************************
               END IF
               WRITE(*,*)' Perturbation: dthPt_fd =', dthPt_fd
 
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ! Save baseline state for this iteration (for gradient computation)
             baselineChfRayDir(1:3) = ChfRayDir(1:3)
@@ -1278,10 +1278,10 @@ C***********************************************************************
             ! Check for convergence
             IF (sqErr.LE.errTol) THEN
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' '
                 WRITE(*,*)' *** CONVERGED: sqErr <= errTol ***'
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               converged = .TRUE.
               EXIT  ! Exit main iteration loop
@@ -1293,13 +1293,13 @@ C***********************************************************************
             ! TOL_GEOM = EPS^(2/3) accounts for accumulated roundoff in geometric ops
             IF (sqErr <= errTol) THEN
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' '
                 WRITE(*,*)' *** LM CONVERGED: Reached numerical precision limit ***'
                 WRITE(*,*)' sqErr =', sqErr, ' (< Tol =', errTol, ')'
                 WRITE(*,*)' Position error ~', SQRT(sqErr), ' mm'
                 WRITE(*,*)' (Target errTol =', errTol, ' is beyond precision)'
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               converged = .TRUE.
               EXIT  ! Exit main iteration loop
@@ -1322,7 +1322,7 @@ C***********************************************************************
             !
             det_GPt = GPt(1,1)*GPt(2,2) - GPt(1,2)*GPt(2,1)
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' === JACOBIAN MATRIX ==='
               WRITE(*,*)' GPt = [', GPt(1,1), GPt(1,2), ']'
@@ -1330,7 +1330,7 @@ C***********************************************************************
               WRITE(*,*)' det(GPt) =', det_GPt
               WRITE(*,*)' |det(GPt)| =', ABS(det_GPt)
               WRITE(*,*)' det_GPt_min =', det_GPt_min
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ! -----------------------------------------------------------------
             ! GRADIENT QUALITY CHECK
@@ -1346,13 +1346,13 @@ C***********************************************************************
             grad_x_ok = (grad_x_mag > EPS)
             grad_y_ok = (grad_y_mag > EPS)
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' === GRADIENT QUALITY ==='
               WRITE(*,*)' X-gradient magnitude =', grad_x_mag, ' OK =', grad_x_ok
               WRITE(*,*)' Y-gradient magnitude =', grad_y_mag, ' OK =', grad_y_ok
               WRITE(*,*)' dthPt_fd (current)   =', dthPt_fd
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
 
             ! If gradients are insufficient and we haven't tried too many times
@@ -1362,12 +1362,12 @@ C***********************************************************************
               dthPt_fd = min(dthPt_fd_max, dthPt_fd * 10.0d0)
               n_grad_increase = n_grad_increase + 1
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' '
                 WRITE(*,*)' *** Gradients too small - increasing perturbation ***'
                 WRITE(*,*)' New dthPt_fd =', dthPt_fd
                 WRITE(*,*)' Will retry gradient computation...'
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               CYCLE  ! Retry this iteration with larger perturbation
             END IF
@@ -1375,7 +1375,7 @@ C***********************************************************************
             ! Reset counter if gradients are good
             IF (grad_x_ok .AND. grad_y_ok) n_grad_increase = 0
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               ! Check Jacobian conditioning (robustness safeguard)
               ! Only fail if EXTREMELY singular (more lenient than before)
               IF (ABS(det_GPt) < det_GPt_min) THEN
@@ -1385,7 +1385,7 @@ C***********************************************************************
                 WRITE(*,*)' Attempting to continue with regularization...'
                 ! Don't reduce dthPt_fd or cycle - let regularization handle it
               END IF
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ! -----------------------------------------------------------------
             ! LEVENBERG-MARQUARDT METHOD
@@ -1406,18 +1406,18 @@ C***********************************************************************
 
               det_lm = A_lm(1,1)*A_lm(2,2) - A_lm(1,2)*A_lm(2,1)
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' '
                 WRITE(*,*)' === LEVENBERG-MARQUARDT ==='
                 WRITE(*,*)' lambda (damping) =', lambda_lm
                 WRITE(*,*)' det(A_lm) =', det_lm
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               ! Solve using Cramer's rule: A_lm * step = -Jt_f
               thx = -( A_lm(2,2)*Jt_f(1) - A_lm(1,2)*Jt_f(2)) / det_lm
               thy = -(-A_lm(2,1)*Jt_f(1) + A_lm(1,1)*Jt_f(2)) / det_lm
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' thx (trial) =', thx
                 WRITE(*,*)' thy (trial) =', thy
                 WRITE(*,*)' step_norm =', SQRT(thx*thx + thy*thy)
@@ -1428,7 +1428,7 @@ C***********************************************************************
                 ELSE
                   WRITE(*,*)' baselineChfRayPos =', baselineChfRayPos(1:3)
                 END IF
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               ! Apply trial step from baseline state
               IF (ifPointSrc) THEN
@@ -1480,7 +1480,7 @@ C***********************************************************************
                 dxPt(2) = xInt(2) - xTarg(2)
                 sqErr_trial = dxPt(1)*dxPt(1) + dxPt(2)*dxPt(2)
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' '
                   WRITE(*,*)' === TRIAL STEP RESULT ==='
                   IF (ifPointSrc) THEN
@@ -1495,7 +1495,7 @@ C***********************************************************************
                   WRITE(*,*)' sqErr_trial       =', sqErr_trial
                   WRITE(*,*)' sqErr (current)   =', sqErr
                   WRITE(*,*)' Delta sqErr       =', sqErr_trial - sqErr
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 IF (sqErr_trial < sqErr) THEN
 
@@ -1513,31 +1513,31 @@ C***********************************************************************
                     n_stagnant = n_stagnant + 1
                   END IF
 
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' '
                     WRITE(*,*)' === LM STEP ACCEPTED ==='
                     WRITE(*,*)' sqErr: ', sqErr, ' -> ', sqErr_trial
                     WRITE(*,*)' Reduced lambda to', lambda_lm
-                  #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                   EXIT  ! Exit LM inner loop
 
                 ELSE
 
                   ! Reject step - error increased
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' '
                     WRITE(*,*)' === LM STEP REJECTED ==='
                     WRITE(*,*)' sqErr would increase: ', sqErr, ' -> ', sqErr_trial
-                  #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                   ! Check if we're at numerical precision limit
                   IF (sqErr < errTol) THEN
 
-                    #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                       WRITE(*,*)' Already at numerical precision (sqErr < errTol)'
                       WRITE(*,*)' Accepting current state as converged'
-                    #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                     step_accepted = .TRUE.
                     EXIT
@@ -1546,14 +1546,14 @@ C***********************************************************************
                   ! Increase damping
                   lambda_lm = lambda_lm * 10.0d0
 
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' Increased lambda to', lambda_lm
-                  #endif ChiefRayAiming_Debug
+#endif ChiefRayAiming_Debug
 
                   IF (lambda_lm > 1d10) THEN
-                    #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                       WRITE(*,*)' Lambda too large - convergence stalled'
-                    #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                     step_accepted = .FALSE.
                     EXIT
@@ -1572,45 +1572,45 @@ C***********************************************************************
                 ! ----------------------------------------------
                 n_ray_failures = n_ray_failures + 1
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' '
                   WRITE(*,*)' *** Ray trace failed with LM step ***'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 ! Check if we're at numerical precision limit
                 IF (sqErr < TOL_GEOM) THEN
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' Already at numerical precision (sqErr < TOL_GEOM)'
                     WRITE(*,*)' Accepting current state as converged'
-                  #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                   step_accepted = .TRUE.
                   EXIT
                 END IF
 
                 lambda_lm = lambda_lm * 10.0d0
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' Increased lambda to', lambda_lm
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 ! Abort if too many consecutive ray failures
                 IF (n_ray_failures >= 5) THEN
 
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' '
                     WRITE(*,*)' *** TOO MANY CONSECUTIVE RAY FAILURES ***'
                     WRITE(*,*)' Target position appears unreachable from current state'
                     WRITE(*,*)' sqErr =', sqErr, ' (best achieved: ', sqErr_best, ')'
-                  #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                   step_accepted = .FALSE.
                   EXIT
                 END IF
 
                 IF (lambda_lm > 1d10) THEN
-                  #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                     WRITE(*,*)' Lambda too large - cannot find valid step'
-                  #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                   step_accepted = .FALSE.
                   EXIT
@@ -1629,17 +1629,17 @@ C***********************************************************************
               ! Check if we failed due to numerical precision limits
               IF (sqErr < TOL_GEOM) THEN
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' '
                   WRITE(*,*)' LM reached numerical precision limit'
                   WRITE(*,*)' sqErr =', sqErr, ' (excellent convergence)'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 converged = .TRUE.
                 EXIT  ! Exit main iteration loop with success
 
               ELSE
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' '
                   WRITE(*,*)' ========================================'
                   WRITE(*,*)' ERROR: LM algorithm failed to find acceptable step'
@@ -1652,7 +1652,7 @@ C***********************************************************************
                   WRITE(*,*)' - Target position is beyond physical aperture limits'
                   WRITE(*,*)' - Ray encounters vignetting or TIR'
                   WRITE(*,*)' - Geometric constraints prevent reaching target'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 EXIT  ! Exit main iteration loop with failure
               END IF
@@ -1661,7 +1661,7 @@ C***********************************************************************
             ! Check for stagnation - too many iterations without progress
             IF (n_stagnant >= 10) THEN
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' '
                 WRITE(*,*)' ========================================'
                 WRITE(*,*)' WARNING: Algorithm stagnated'
@@ -1671,21 +1671,21 @@ C***********************************************************************
                 WRITE(*,*)' Best sqErr    =', sqErr_best
                 WRITE(*,*)' Target errTol =', errTol
                 WRITE(*,*)' '
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               IF (sqErr < TOL_GEOM) THEN
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' Accepting current state (within numerical precision)'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 converged = .TRUE.
 
               ELSE
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' Target may be unreachable - aborting'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
                 converged = .FALSE.
 
@@ -1706,10 +1706,10 @@ C***********************************************************************
               IF (ABS(norm_dir - 1.0d0) > 2d0*EPS_SQRT) THEN
                 ChfRayDir(1:3) = ChfRayDir(1:3) / sqrt(norm_dir)
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' WARNING: ChfRayDir not normalized! |ChfRayDir| =', norm_dir
                   WRITE(*,*)' Normalized ChfRayDir =', ChfRayDir(1:3)
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               END IF
               acceptedChfRayDir(:) = ChfRayDir(:)
@@ -1724,7 +1724,7 @@ C***********************************************************************
             xInt(1)       = DDOTC(xLocal, DV1)                   ! DOT_PRODUCT(xLocal, DV1)
             xInt(2)       = DDOTC(yLocal, DV1)                   ! DOT_PRODUCT(yLocal, DV1)
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               !
               ! CONVERGENCE METRICS AND ADAPTIVE CONTROL
               !
@@ -1732,7 +1732,7 @@ C***********************************************************************
               WRITE(*,*)' === CONVERGENCE METRICS ==='
               WRITE(*,*)' sqErr (new)  =', sqErr
               WRITE(*,*)' sqErr (prev) =', sqErr_prev
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
 
             ! LM handles adaptation internally - minimal post-processing
@@ -1746,15 +1746,15 @@ C***********************************************************************
           IF (converged) THEN
             ifBeamCentered = .TRUE.
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' SUCCESS: Stop calculation converged!'
               WRITE(*,*)' Final sqErr =', sqErr
               WRITE(*,*)' Iterations =', k-1
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
           ELSE
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' ========================================'
               WRITE(*,*)' *** CONVERGENCE FAILURE DIAGNOSTICS ***'
@@ -1791,7 +1791,7 @@ C***********************************************************************
                 WRITE(*,*)' - Max iterations reached: slow convergence'
               END IF
               WRITE(*,*)' '
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ! Restore original state
             ChfRayPos(:) = acceptedChfRayPos(:)
@@ -1877,16 +1877,16 @@ C***********************************************************************
               END IF
 
               ! Ray failed - reduce perturbation and retry
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' WARNING: Ray failed during ',axisName,'-gradient computation'
                 WRITE(*,*)' Reducing perturbation: dthPt_fd =', dthPt_fd, '->',dthPt_fd*0.5d0
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               dthPt_fd = dthPt_fd * 0.5d0
               IF (dthPt_fd < dthPt_min) THEN
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' Perturbation too small (< dthPt_min), giving up'
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
                 EXIT  ! Exit retry loop
               END IF
 
@@ -1897,9 +1897,9 @@ C***********************************************************************
             END DO  ! Retry loop
 
             IF (.NOT. ray_success) THEN
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' ERROR: ',axisName,'-gradient computation failed'
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
               RETURN
             END IF
 
@@ -1911,10 +1911,10 @@ C***********************************************************************
             GPt_col(1) = ddxPt(1)/dthPt_fd
             GPt_col(2) = ddxPt(2)/dthPt_fd
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' ',axisName,'-gradient: ddxPt =', ddxPt(1:2),
      &                 ' GPt(:,',gradCol,') =', GPt_col(1:2)
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ! Restore to baseline for next perturbation
             IF (ifPointSrc) ChfRayDir(1:3) = baselineChfRayDir(1:3)
@@ -1974,7 +1974,7 @@ C***********************************************************************
             Jt_f(1) = GPt(1,1)*dxPt(1) + GPt(2,1)*dxPt(2)
             Jt_f(2) = GPt(1,2)*dxPt(1) + GPt(2,2)*dxPt(2)
 
-            #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
               WRITE(*,*)' '
               WRITE(*,*)' === JACOBIAN & GRADIENT DEBUG ==='
               WRITE(*,*)' GPt (Jacobian) = [', GPt(1,1), GPt(1,2), ']'
@@ -1985,7 +1985,7 @@ C***********************************************************************
               WRITE(*,*)' JtJ(2,2) =', JtJ(2,2)
               WRITE(*,*)' Jt_f (gradient) = [', Jt_f(1), Jt_f(2), ']'
               WRITE(*,*)' scale =', scale
-            #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             IF (ifUseScaling) THEN
               ! ---------------------------------------------------------------
@@ -2029,9 +2029,9 @@ C***********************************************************************
                   cond_est = 1d20
                 END IF
 
-                #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                   WRITE(*,*)' cond_est =', cond_est
-                #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
               end if
 
@@ -2069,9 +2069,9 @@ C***********************************************************************
                 cond_est = 1d20  ! Essentially singular
               END IF
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' cond_est =', cond_est
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             END IF
 
@@ -2079,11 +2079,11 @@ C***********************************************************************
             IF (cond_est > 1d9) THEN
               reg_factor = SQRT(cond_est) * TOL_ZERO
 
-              #if ChiefRayAiming_Debug
+#if ChiefRayAiming_Debug
                 WRITE(*,*)' WARNING: Ill-conditioned Jacobian detected'
                 WRITE(*,*)' Condition estimate =', cond_est
                 WRITE(*,*)' Applying enhanced regularization =', reg_factor
-              #endif ! ChiefRayAiming_Debug
+#endif ! ChiefRayAiming_Debug
 
             ELSE IF (cond_est > 1d6) THEN
               ! Moderately ill-conditioned: apply regularization silently

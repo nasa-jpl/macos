@@ -19,8 +19,8 @@ dead code, replaced by `nls_optim_dvr` (Levenberg-Marquardt) in
 | `source ./makeall.sh` | macos + smacos + smacos_dvr + GMI (all four) |
 | `source ./makems.sh` | macos + libsmacos.a |
 | `source ./makesd.sh` | smacos_dvr (builds macos/smacos too if needed) |
-| `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first) |
-| `source ./makegfortran.sh` | macos + smacos + smacos_dvr via gfortran |
+| `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first; defaults to gfortran — see GMI build choice section) |
+| `source ./makegfortran.sh` | macos + smacos + smacos_dvr + GMI via gfortran (all four) |
 
 Build directory naming: `build_{release|debug}[_gfortran]`
 
@@ -460,6 +460,60 @@ re-prompt every time the layout changes. With giza the new PGBEGIN
 opens an additional window (it doesn't close the previous one);
 that's intentional and supports the multi-window-history workflow
 in CoroExample.jou-style scripts.
+
+## gfortran portability + GMI build choice
+- `source ./makegfortran.sh release` now builds macos + smacos + smacos_dvr
+  + GMI clean. The build was broken on release-candidate after the FreeForm /
+  ZernType / EltType-table work landed; restored 2026-05-24 by fixing a batch
+  of ifx-only constructs the gfortran compiler rejects:
+  - `CHARACTER,DIMENSION(:),ALLOCATABLE :: EltName*N` — VAX `name*length`
+    syntax. Use `CHARACTER(LEN=N), DIMENSION(:), ALLOCATABLE :: EltName`.
+  - `(/'foo','bar quux'/)` char array constructors with mixed-length literals.
+    Wrap with `[CHARACTER(LEN=Nmax) :: ...]` (Fortran 2003).
+  - 2D INTEGER PARAMETER built from `[[a,b],[c,d],...]` — ifx flattens, gfortran
+    sees rank-1. Use `RESHAPE([flat...], [rows,cols], ORDER=[2,1])` to preserve
+    visual row-major layout.
+  - `DO CONCURRENT` (forbidden by project convention anyway) — convert to
+    sequential `DO` (with `IF` guard for the mask form).
+  - Preprocessor directives indented past column 1 — `#define`, `#if`, `#else`,
+    `#endif` must start in column 1 for gfortran's cpp. ifx's fpp is lenient.
+    Bulk-fix with a `re.sub` to strip leading whitespace from these lines.
+  - `Function FOO` with no `()` for a parameterless function — add empty parens.
+  - `IF (LOGICAL == .TRUE.)` — use `.eqv.`.
+  - `derived.component` access — use `%`.
+  - REAL → LOGICAL implicit coercion (`logical_var = real_val`) — wrap with
+    `(INT(real_val).EQ.1)`.
+  - Slice assignment to an unallocated module-scope allocatable
+    (`arr(:) = 0` when `allocated(arr)` is .FALSE.) — ifx silently no-ops,
+    gfortran SIGSEGVs. Guard with `if (allocated(arr)) arr(:) = 0`. Caught in
+    `src_mod_init_vars` (ds1/ds2 are allocated lazily by sourcsub).
+- Build choice for GMI (`makegmi.sh` now defaults to gfortran):
+  - **gfortran (default):** `source ./makegmi.sh` (or `makegmi.sh release`).
+    Clean MATLAB exit, no SIGSEGV. Mex lands at
+    `~/dev/MACOS_resources/GMI/GMI.mexa64`. Requires
+    `build_release_gfortran/` populated by `makegfortran.sh release` first.
+  - **ifx (opt-in):** `source ./makegmi.sh ifx`. Mex SIGSEGVs in MATLAB's
+    process-exit teardown (suspected Fortran-module finalizer on second
+    mex unload). Results are correct — crash is after all work completes.
+    Requires `build_release/` populated by `makems.sh release` first.
+- Both compilers run the GMI regression suite green (6/6) with bit-identical
+  numeric results. They use the SAME source tree; the standalone
+  `MACOS_resources/GMI/Makefile` and the top-level `CMakeLists.txt` both
+  have per-compiler conditionals for the compile/link flags
+  (ifx: `-fpp -132 -gen-interfaces -fp-model strict -xHOST -lirc
+  -shared-intel`;
+  gfortran: `-cpp -ffixed-line-length-132 -march=native
+  -fallow-argument-mismatch -std=legacy`, no Intel runtime).
+- Makefile gotcha: gfortran's `ld` is stricter about lib-after-object
+  ordering than ifx's bundled linker. The Makefile splits compile flags
+  (`LDFLAGS`, before objects) from trailing `POST_LIBS` (`-l:libmx.so` etc.,
+  after objects/archives) so `--no-undefined` resolves under both. Also
+  links `libfitslib.a` when present — gfortran needs it for FITS-related
+  symbols; ifx is happy without.
+- Use gfortran when investigating "weird ifx-only" behavior — its stricter
+  rejection of latent bugs (uninitialized allocatables, etc.) surfaces
+  problems that ifx silently hides. The Zernike-apply zero-response bug
+  (see ZernType section) was caught exactly this way.
 
 ## Debug builds
 - `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)

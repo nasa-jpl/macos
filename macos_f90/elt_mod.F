@@ -26,7 +26,8 @@ C***********************************************************************
         REAL*8,   DIMENSION(:),    ALLOCATABLE :: fElt,eElt,zElt,KcElt,KrElt,KrRx,KcRx
         REAL*8,   DIMENSION(:,:,:),ALLOCATABLE :: TElt
         INTEGER,  DIMENSION(:),    ALLOCATABLE :: nECoord,SrfType,EltType,EltID
-        CHARACTER,DIMENSION(:),    ALLOCATABLE :: EltName*maxEltNameLength
+        CHARACTER(LEN=maxEltNameLength),
+     &            DIMENSION(:),    ALLOCATABLE :: EltName
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
 
       !                                         EltID
@@ -49,8 +50,9 @@ C***********************************************************************
      &                        DoeTrGratingElt =  17,
      &                        mEltTypes       =  17   ! defines available Element Types
 
-        CHARACTER(LEN=*),PARAMETER:: EltTypeName(mEltTypes)=
-     &                     (/'Reflector',         ! 1
+        CHARACTER(LEN=12),PARAMETER:: EltTypeName(mEltTypes)=
+     &                     [CHARACTER(LEN=12) ::
+     &                       'Reflector',         ! 1
      &                       'FocalPlane',        ! 2
      &                       'Reference',         ! 3
      &                       'HOE',               ! 4
@@ -66,7 +68,7 @@ C***********************************************************************
      &                       'RfPolarizer',       !14
      &                       'TrPolarizer',       !15
      &                       'CGHNullPlate',      !16
-     &                       'DoeTrGrating'/)     !17  Diffractive Optical Element (DOE)
+     &                       'DoeTrGrating']      !17  Diffractive Optical Element (DOE)
 
         INTEGER, PARAMETER :: SrfType_Flat              =  1,
      &                        SrfType_Conic             =  2,
@@ -112,8 +114,9 @@ C***********************************************************************
      &                                             SrfType_FreeForm,
      &                                             SrfType_Anamorphic]
 
-        CHARACTER(LEN=*),PARAMETER:: SrfTypeName(mSrfType)=
-     &                     (/'Flat',               ! 1
+        CHARACTER(LEN=12),PARAMETER:: SrfTypeName(mSrfType)=
+     &                     [CHARACTER(LEN=12) ::
+     &                       'Flat',               ! 1
      &                       'Conic',              ! 2
      &                       'Aspheric',           ! 3
      &                       'Monomial',           ! 4
@@ -126,37 +129,38 @@ C***********************************************************************
      &                       'AsGrData',           !11
      &                       'MonGrData',          !12
      &                       'ZrnGrData',          !13
-     &                       'FreeForm'/)          !14
+     &                       'FreeForm']           !14
 
         ! Old Element Definitions:
         INTEGER, PARAMETER, DIMENSION(26,2), PRIVATE:: EltType2EltIDSrfType=
                      !  EltType           SrfType                           EltID       Element                        EltType         SurfType
-     &               [[ReflectorElt,   SrfType_Conic],         ! [[ 1, 2], !  1   <==  Conic Mirror                  1 (Reflector)   |  2 (ConSrf)
-     &                [ReflectorElt,   SrfType_Flat],          !  [ 1, 1], !  2   <==  Flat Mirror                   1 (Reflector)   |  1 (FlatSrf)
-     &                [FocalPlaneElt,  SrfType_Flat],          !  [ 2, 1], !  3   <==  Focal Plane                   2 (FocalPln)    |  1 (FlatSrf)
-     &                [ReferenceElt,   SrfType_Conic],         !  [ 3, 2], !  4   <==  Reference Surface             3 (RefSrf)      |  2 (ConSrf)
-     &                [SegmentElt,     SrfType_Conic],         !  [11, 2], !  5   <==  Mirror Segment               11 (Segment)     |  2 (ConSrf)
-     &                [HOEElt,         SrfType_Conic],         !  [ 4, 2], !  6   <==  Holographic Optical Elmnt     4 (HOE)         |  2 (ConSrf)
-     &                [GratingElt,     SrfType_Conic],         !  [ 5, 2], !  7   <==  Straight-Ruled Grating        5 (Grating)     |  2 (ConSrf)
-     &                [RefractorElt,   SrfType_Conic],         !  [ 6, 2], !  8   <==  Conic Refractor               6 (Refractor)   |  2 (ConSrf)
-     &                [ObscuringElt,   SrfType_Conic],         !  [ 7, 2], !  9   <==  Obscuring Surface             7 (ObsSrf)      |  2 (ConSrf)
-     &                [ReturnElt,      SrfType_Conic],         !  [ 8, 2], ! 10   <==  Return Surface                8 (ReturnSrf)   |  2 (ConSrf)
-     &                [ReflectorElt,   SrfType_Conic],         !  [ 1, 2], ! 11   <==  General Conic Reflector       1 (Reflector)   |  2 (ConSrf)
-     &                [ReflectorElt,   SrfType_Aspheric],      !  [ 1, 3], ! 12   <==  Aspheric Reflector            1 (Reflector)   |  3 (AsphSrf)
-     &                [NSReflectorElt, SrfType_Conic],         !  [12, 2], ! 13   <==  Non-Sequential Reflector     12 (Reflector)   |  2 (ConSrf)
-     &                [ReflectorElt,   SrfType_Zernike],       !  [ 1, 8], ! 14   <==  Zernike Reflector             1 (Reflector)   |  8 (MonSrf)
-     &                [SegmentElt,     SrfType_Zernike],       !  [11, 8], ! 15   <==  Zernike Segment              11 (Segment)     |  8 (MonSrf)
-     &                [ReflectorElt,   SrfType_Monomial],      !  [ 1, 4], ! 16   <==  Monomial Reflector            1 (Reflector)   |  4 (MonSrf)
-     &                [SegmentElt,     SrfType_Monomial],      !  [11, 4], ! 17   <==  Monomial Segment             11 (Segment)     |  4 (MonSrf)
-     &                [ReflectorElt,   SrfType_Interpolated],  !  [ 1, 5], ! 18   <==  Interpolated Reflector        1 (Reflector)   |  5 (IntSrf)
-     &                [SegmentElt,     SrfType_Interpolated],  !  [11, 5], ! 19   <==  Interpolated Segment         11 (Segment)     |  5 (IntSrf)
-     &                [RefractorElt,   SrfType_Aspheric],      !  [ 6, 3], ! 20   <==  Aspheric Refractor            6 (Refractor)   |  3 (AsphSrf)
-     &                [RefractorElt,   SrfType_Zernike],       !  [ 6, 8], ! 21   <==  Zernike Refractor             6 (Refractor)   |  4 (MonSrf)
-     &                [LensArrayElt,   SrfType_Conic],         !  [10, 2], ! 22   <==  Conic Lens Array             10 (LensArray)   |  2 (ConSrf)
-     &                [LensArrayElt,   SrfType_Aspheric],      !  [10, 3], ! 23   <==  Aspheric Lens Array          10 (LensArray)   |  3 (AsphSrf)
-     &                [NSRefractorElt, SrfType_Conic],         !  [ 9, 2], ! 24   <==  Non-Sequential Refractor      9 (NSRefractor) |  2 (ConSrf)
-     &                [ReflectorElt,   SrfType_Anamorphic],    !  [ 1, 6], ! 25   <==  Anamorphic Reflector          1 (Reflector)   |  6 (AnaSrf)
-     &                [ReflectorElt,   SrfType_UserDefined]]   !  [ 1, 7]] ! 26   <==  User-Defined Reflector        1 (Reflector)   |  7 (UDSrf)
+     &      RESHAPE([ ReflectorElt,   SrfType_Conic,          ! [[ 1, 2], !  1   <==  Conic Mirror                  1 (Reflector)   |  2 (ConSrf)
+     &                ReflectorElt,   SrfType_Flat,           !  [ 1, 1], !  2   <==  Flat Mirror                   1 (Reflector)   |  1 (FlatSrf)
+     &                FocalPlaneElt,  SrfType_Flat,           !  [ 2, 1], !  3   <==  Focal Plane                   2 (FocalPln)    |  1 (FlatSrf)
+     &                ReferenceElt,   SrfType_Conic,          !  [ 3, 2], !  4   <==  Reference Surface             3 (RefSrf)      |  2 (ConSrf)
+     &                SegmentElt,     SrfType_Conic,          !  [11, 2], !  5   <==  Mirror Segment               11 (Segment)     |  2 (ConSrf)
+     &                HOEElt,         SrfType_Conic,          !  [ 4, 2], !  6   <==  Holographic Optical Elmnt     4 (HOE)         |  2 (ConSrf)
+     &                GratingElt,     SrfType_Conic,          !  [ 5, 2], !  7   <==  Straight-Ruled Grating        5 (Grating)     |  2 (ConSrf)
+     &                RefractorElt,   SrfType_Conic,          !  [ 6, 2], !  8   <==  Conic Refractor               6 (Refractor)   |  2 (ConSrf)
+     &                ObscuringElt,   SrfType_Conic,          !  [ 7, 2], !  9   <==  Obscuring Surface             7 (ObsSrf)      |  2 (ConSrf)
+     &                ReturnElt,      SrfType_Conic,          !  [ 8, 2], ! 10   <==  Return Surface                8 (ReturnSrf)   |  2 (ConSrf)
+     &                ReflectorElt,   SrfType_Conic,          !  [ 1, 2], ! 11   <==  General Conic Reflector       1 (Reflector)   |  2 (ConSrf)
+     &                ReflectorElt,   SrfType_Aspheric,       !  [ 1, 3], ! 12   <==  Aspheric Reflector            1 (Reflector)   |  3 (AsphSrf)
+     &                NSReflectorElt, SrfType_Conic,          !  [12, 2], ! 13   <==  Non-Sequential Reflector     12 (Reflector)   |  2 (ConSrf)
+     &                ReflectorElt,   SrfType_Zernike,        !  [ 1, 8], ! 14   <==  Zernike Reflector             1 (Reflector)   |  8 (MonSrf)
+     &                SegmentElt,     SrfType_Zernike,        !  [11, 8], ! 15   <==  Zernike Segment              11 (Segment)     |  8 (MonSrf)
+     &                ReflectorElt,   SrfType_Monomial,       !  [ 1, 4], ! 16   <==  Monomial Reflector            1 (Reflector)   |  4 (MonSrf)
+     &                SegmentElt,     SrfType_Monomial,       !  [11, 4], ! 17   <==  Monomial Segment             11 (Segment)     |  4 (MonSrf)
+     &                ReflectorElt,   SrfType_Interpolated,   !  [ 1, 5], ! 18   <==  Interpolated Reflector        1 (Reflector)   |  5 (IntSrf)
+     &                SegmentElt,     SrfType_Interpolated,   !  [11, 5], ! 19   <==  Interpolated Segment         11 (Segment)     |  5 (IntSrf)
+     &                RefractorElt,   SrfType_Aspheric,       !  [ 6, 3], ! 20   <==  Aspheric Refractor            6 (Refractor)   |  3 (AsphSrf)
+     &                RefractorElt,   SrfType_Zernike,        !  [ 6, 8], ! 21   <==  Zernike Refractor             6 (Refractor)   |  4 (MonSrf)
+     &                LensArrayElt,   SrfType_Conic,          !  [10, 2], ! 22   <==  Conic Lens Array             10 (LensArray)   |  2 (ConSrf)
+     &                LensArrayElt,   SrfType_Aspheric,       !  [10, 3], ! 23   <==  Aspheric Lens Array          10 (LensArray)   |  3 (AsphSrf)
+     &                NSRefractorElt, SrfType_Conic,          !  [ 9, 2], ! 24   <==  Non-Sequential Refractor      9 (NSRefractor) |  2 (ConSrf)
+     &                ReflectorElt,   SrfType_Anamorphic,     !  [ 1, 6], ! 25   <==  Anamorphic Reflector          1 (Reflector)   |  6 (AnaSrf)
+     &                ReflectorElt,   SrfType_UserDefined ],  !  [ 1, 7]] ! 26   <==  User-Defined Reflector        1 (Reflector)   |  7 (UDSrf)
+     &              [26,2], ORDER=[2,1])
 
 
         ! Surface types that require a Srf. Coord. Systems
@@ -267,8 +271,9 @@ C***********************************************************************
      &                                       ZernType_Noll,        ! 10,
      &                                       ZernType_ExtFringe/)  ! 11
 
-        CHARACTER(LEN=*), PARAMETER :: ZernTypeNameL(mZernType)=
-     &         (/'ANSI',             !  1   was Malacara
+        CHARACTER(LEN=15), PARAMETER :: ZernTypeNameL(mZernType)=
+     &         [CHARACTER(LEN=15) ::
+     &           'ANSI',             !  1   was Malacara
      &           'BornWolf',         !  2
      &           'Fringe',           !  3
      &           'NormANSI',         !  4   was Malacara
@@ -278,7 +283,7 @@ C***********************************************************************
      &           'NormNoll',         !  8
      &           'NormAnnularNoll',  !  9   Annular Zernike
      &           'Noll',             ! 10   Noll Ordering
-     &           'ExtFringe'/)       ! 11   Extended Fringe Ordering
+     &           'ExtFringe']        ! 11   Extended Fringe Ordering
 
         REAL(8), PARAMETER :: NORM_RMS_PARAM_ANSI(mZernModes) =
      &             (/    1d0,      2d0,      2d0,  SQRT_6,   SQRT_3,   SQRT_6,
@@ -314,8 +319,9 @@ C***********************************************************************
      &                                            5,    ! KINGSLAKE1_GLASS
      &                                            3]    ! CauchyGlass
 
-        CHARACTER(LEN=*), PARAMETER :: GlassTypeName(0:6) =
-     &                         ['Hartmann', 'Sellmeier',
+        CHARACTER(LEN=10), PARAMETER :: GlassTypeName(0:6) =
+     &                         [CHARACTER(LEN=10) ::
+     &                          'Hartmann', 'Sellmeier',
      &                          'Schott', 'Herzberger', 'Sellm2TA',
      &                          'Kingslake', 'Cauchy']
 

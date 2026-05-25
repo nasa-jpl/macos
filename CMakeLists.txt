@@ -405,10 +405,18 @@ if(BUILD_GMI)
       Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_gmi
   )
   target_compile_definitions(GMI PRIVATE MX_COMPAT_32)
-  target_compile_options(GMI PRIVATE
-      -fPIC -fpp -132 -gen-interfaces -fp-model strict
-      -fno-omit-frame-pointer -O2 -xHOST
-  )
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+    target_compile_options(GMI PRIVATE
+        -fPIC -fpp -132 -gen-interfaces -fp-model strict
+        -fno-omit-frame-pointer -O2 -xHOST
+    )
+  elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    target_compile_options(GMI PRIVATE
+        -fPIC -cpp -ffixed-line-length-132
+        -fno-omit-frame-pointer -O2 -march=native
+        -fallow-argument-mismatch -std=legacy
+    )
+  endif()
   target_include_directories(GMI PRIVATE
       ${smacos_src_dir}
       ${CMAKE_BINARY_DIR}/mod_smacos

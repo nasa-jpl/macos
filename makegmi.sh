@@ -2,16 +2,20 @@
 # makegmi.sh  — Build GMI.mexa64 via MACOS_resources/GMI/Makefile
 #
 # Usage:
-#   source ./makegmi.sh [debug|release] [gfortran]
+#   source ./makegmi.sh [debug|release] [ifx|gfortran]
 #
-# Options (order-independent, defaults: release, ifx):
+# Options (order-independent, defaults: release, gfortran):
 #   debug    — use debug build module files
 #   release  — use release build module files (default)
-#   gfortran — use build_*_gfortran module files
-#              (Note: GMI itself is always compiled with ifx)
+#   gfortran — compile GMI mex with gfortran (default).  Produces a
+#              mex that exits MATLAB cleanly.
+#   ifx      — compile GMI mex with ifx.  Mex SIGSEGVs at MATLAB
+#              process-exit teardown (cosmetic; results correct).
 #
-# Requires macos+smacos to be built first in the matching build directory.
-# MATLAB is auto-detected under /usr/local/MATLAB/.
+# Either compiler choice picks up libsmacos.a from the matching
+# build_release[_gfortran] tree, so build macos+smacos with the
+# same compiler first (makems.sh for ifx, makegfortran.sh for
+# gfortran).  MATLAB is auto-detected under /usr/local/MATLAB/.
 #
 # Output location:
 #   GMI.mexa64 : ~/dev/MACOS_resources/GMI/GMI.mexa64
@@ -23,7 +27,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Parse arguments ---
 BUILD_TYPE="Release"
-FC="ifx"
+FC="gfortran"
 
 for arg in "$@"; do
   case "$arg" in
@@ -46,10 +50,12 @@ BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
 echo "makegmi: BUILD_TYPE=${BUILD_TYPE}  FC=${FC}"
 echo "makegmi: MACOS_BUILD_DIR=${BUILD_DIR}"
 
-# --- Intel oneAPI environment (GMI Makefile uses ifx) ---
-ONEAPI_SETVARS="/opt/intel/oneapi/setvars.sh"
-if [ -f "${ONEAPI_SETVARS}" ]; then
-  source "${ONEAPI_SETVARS}" --force > /dev/null 2>&1
+# --- Intel oneAPI environment (only needed when FC=ifx) ---
+if [ "${FC}" = "ifx" ]; then
+  ONEAPI_SETVARS="/opt/intel/oneapi/setvars.sh"
+  if [ -f "${ONEAPI_SETVARS}" ]; then
+    source "${ONEAPI_SETVARS}" --force > /dev/null 2>&1
+  fi
 fi
 
 # --- Locate MACOS_resources/GMI ---
@@ -65,13 +71,18 @@ fi
 # --- Check that the cmake build dir exists ---
 if [ ! -d "${BUILD_DIR}/mod_smacos" ]; then
   echo "makegmi: ERROR — module directory not found: ${BUILD_DIR}/mod_smacos"
-  echo "  Build macos+smacos first: source ./makems.sh${FC:+ ${FC}} ${BUILD_TYPE,,}"
+  if [ "${FC}" = "gfortran" ]; then
+    echo "  Build macos+smacos first: source ./makegfortran.sh ${BUILD_TYPE,,}"
+  else
+    echo "  Build macos+smacos first: source ./makems.sh ${BUILD_TYPE,,}"
+  fi
   return 1 2>/dev/null || exit 1
 fi
 
 # --- Build ---
 echo "makegmi: building GMI via ${GMI_DIR}/Makefile ..."
 make -C "${GMI_DIR}" \
+  FC="${FC}" \
   macossrc_dir="${SCRIPT_DIR}/macos_f90" \
   MACOS_BUILD_DIR="${BUILD_DIR}" \
   || { echo "makegmi: GMI build FAILED"; return 1 2>/dev/null || exit 1; }
