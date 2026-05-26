@@ -28,6 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # --- Parse arguments ---
 BUILD_TYPE="Release"
 FC="gfortran"
+USE_NPSOL="OFF"
 
 for arg in "$@"; do
   case "$arg" in
@@ -35,19 +36,21 @@ for arg in "$@"; do
     release)  BUILD_TYPE="Release"  ;;
     ifx)      FC="ifx"              ;;
     gfortran) FC="gfortran"         ;;
+    npsol)    USE_NPSOL="ON"        ;;
     *)
       echo "makegmi.sh: unknown option '$arg'"
-      echo "Usage: source ./makegmi.sh [debug|release] [gfortran]"
+      echo "Usage: source ./makegmi.sh [debug|release] [ifx|gfortran] [npsol]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
 BUILD_TAG="$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
-[ "${FC}" = "gfortran" ] && BUILD_TAG="${BUILD_TAG}_gfortran"
+[ "${FC}" = "gfortran" ]    && BUILD_TAG="${BUILD_TAG}_gfortran"
+[ "${USE_NPSOL}" = "ON" ]   && BUILD_TAG="${BUILD_TAG}_npsol"
 BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
 
-echo "makegmi: BUILD_TYPE=${BUILD_TYPE}  FC=${FC}"
+echo "makegmi: BUILD_TYPE=${BUILD_TYPE}  FC=${FC}  USE_NPSOL=${USE_NPSOL}"
 echo "makegmi: MACOS_BUILD_DIR=${BUILD_DIR}"
 
 # --- Intel oneAPI environment (only needed when FC=ifx) ---

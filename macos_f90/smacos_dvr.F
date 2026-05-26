@@ -28,7 +28,9 @@ C
 	use dopt_mod
 	use zern_wf_mod
 	use design_optim_mod
-	!use design_cons_optim_mod   ! disabled with rem_npsol PR
+#ifdef USE_NPSOL
+	use design_cons_optim_mod
+#endif
         use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
 	use smacos_mod

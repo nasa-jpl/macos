@@ -2,12 +2,15 @@
 # makems.sh  — CMake build for macos + smacos (no smacos_dvr, no GMI)
 #
 # Usage:
-#   source ./makems.sh [debug|release] [gfortran]
+#   source ./makems.sh [debug|release] [gfortran] [npsol]
 #
-# Options (order-independent, defaults: release, ifx):
+# Options (order-independent, defaults: release, ifx, no-npsol):
 #   debug    — -O0 -check all
 #   release  — -O2 (default)
 #   gfortran — use gfortran instead of ifx
+#   npsol    — build with -DUSE_NPSOL=ON (constrained-optim path);
+#              requires macos_f90/npsol/ tree (only on opt-dev branch).
+#              Build dir gets _npsol suffix.
 #
 # Output locations (default build):
 #   macos executable  : ./build_release/bin/macos
@@ -21,6 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # --- Parse arguments ---
 BUILD_TYPE="Release"
 FC="ifx"
+USE_NPSOL="OFF"
 
 for arg in "$@"; do
   case "$arg" in
@@ -28,19 +32,21 @@ for arg in "$@"; do
     release)  BUILD_TYPE="Release"  ;;
     ifx)      FC="ifx"              ;;
     gfortran) FC="gfortran"         ;;
+    npsol)    USE_NPSOL="ON"        ;;
     *)
       echo "makems.sh: unknown option '$arg'"
-      echo "Usage: source ./makems.sh [debug|release] [gfortran]"
+      echo "Usage: source ./makems.sh [debug|release] [gfortran] [npsol]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
 BUILD_TAG="$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
-[ "${FC}" = "gfortran" ] && BUILD_TAG="${BUILD_TAG}_gfortran"
+[ "${FC}" = "gfortran" ]    && BUILD_TAG="${BUILD_TAG}_gfortran"
+[ "${USE_NPSOL}" = "ON" ]   && BUILD_TAG="${BUILD_TAG}_npsol"
 BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
 
-echo "makems: FC=${FC}  BUILD_TYPE=${BUILD_TYPE}"
+echo "makems: FC=${FC}  BUILD_TYPE=${BUILD_TYPE}  USE_NPSOL=${USE_NPSOL}"
 echo "makems: BUILD_DIR=${BUILD_DIR}"
 
 # --- Intel oneAPI environment (ifx builds) ---
@@ -61,6 +67,7 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
+  -DUSE_NPSOL="${USE_NPSOL}" \
   || { echo "makems: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build ---
