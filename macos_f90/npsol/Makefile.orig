@@ -1,0 +1,29 @@
+OBJ= \
+blaso.o \
+chsubs.o \
+cmsubs.o \
+lsmain.o \
+lssubs.o \
+mcsubs.o \
+npmain.o \
+npsubs.o \
+opsubs.o \
+srsubs.o 
+
+
+npsol.a: $(OBJ)
+	ar cr npsol.a $(OBJ) 
+	ranlib npsol.a
+
+# begin fortran depends
+blaso.o: blaso.f
+chsubs.o: chsubs.f
+cmsubs.o: cmsubs.f
+lsmain.o: lsmain.f
+lssubs.o: lssubs.f
+mcsubs.o: mcsubs.f
+npmain.o: npmain.f
+npsubs.o: npsubs.f
+opsubs.o: opsubs.f
+srsubs.o: srsubs.f
+# end fortran depends

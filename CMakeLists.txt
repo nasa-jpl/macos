@@ -18,6 +18,7 @@ option(BUILD_GMI         "Build the GMI Matlab mex interface"  OFF)
 # USE_GIZA removed on release-candidate: Giza is now the only
 # PGPLOT-API provider.  The legacy pre-built libpgplot.a path is
 # no longer supported.
+option(USE_NPSOL "Build NPSOL-backed constrained optimization (design_cons_optim + np_optim_dvr).  Default OFF; the unconstrained Levenberg-Marquardt path (nls_optim_dvr) is always available."  OFF)
 set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
@@ -92,10 +93,18 @@ endif()
 # 3. Source Directory Configuration
 # ==============================================================================
 set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
-# npsol_src_dir intentionally removed: the rem_npsol PR (main) deleted
-# the macos_f90/npsol/ tree.  Levenberg-Marquardt via nls_optim_dvr
-# (inside design_optim_mod) is the replacement for the NPSOL-based
-# constrained-optim path.
+# Levenberg-Marquardt via nls_optim_dvr (inside design_optim_mod) is
+# the default constrained-optim path.  The NPSOL-backed legacy path
+# (design_cons_optim + np_optim_dvr) is opt-in via -DUSE_NPSOL=ON;
+# enable for workflows that still rely on it.
+if(USE_NPSOL)
+  set(npsol_src_dir "${smacos_src_dir}/npsol")
+  if(NOT EXISTS "${npsol_src_dir}/CMakeLists.txt")
+    message(FATAL_ERROR "USE_NPSOL=ON requires macos_f90/npsol/ tree; "
+        "not present in this checkout.  Either switch to a branch that "
+        "has it (e.g. opt-dev) or build with -DUSE_NPSOL=OFF.")
+  endif()
+endif()
 set(fits_src_dir   "${smacos_src_dir}/fits_build")
 
 # ==============================================================================
@@ -116,10 +125,16 @@ set(FITS_SOURCES
     ${fits_src_dir}/fitsio.f90
 )
 
-# Numerical library sources removed with rem_npsol PR -- npsol/blas/
-# /lapack/ all deleted.  Targets blaslib, lapacklib, npsol below are
-# also dropped; downstream target_link_libraries() calls that used to
-# pull them in have been removed.
+# Numerical library sources — built only when USE_NPSOL=ON.  The NPSOL
+# tree ships its own BLAS / LAPACK subsets so users without a system
+# BLAS/LAPACK can still link.  Top-level macos / smacos targets only
+# pull these in via the NPSOL_LIBS variable below, which is empty when
+# USE_NPSOL=OFF.
+if(USE_NPSOL)
+  file(GLOB BLAS_SOURCES   "${npsol_src_dir}/blas/*.f")
+  file(GLOB LAPACK_SOURCES "${npsol_src_dir}/lapack/*.f")
+  file(GLOB NPSOL_SOURCES  "${npsol_src_dir}/*.f")
+endif()
 
 # ==============================================================================
 # 6. Source Lists
@@ -164,9 +179,6 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/utilsub.F
   ${smacos_src_dir}/zern_wf.F
   ${smacos_src_dir}/design_optim.F
-  # design_cons_optim.F removed by rem_npsol PR -- references npsol/
-  # npoptn which no longer link.  nls_optim_dvr (in design_optim.F)
-  # is the replacement.
   ${smacos_src_dir}/nls.F
   ${smacos_src_dir}/stop_set.F
   ${smacos_src_dir}/psesub.F
@@ -186,9 +198,11 @@ set(SMACOS_ONLY_SOURCES
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
 )
-if(BUILD_GMI)
-  list(APPEND SMACOS_ONLY_SOURCES ${smacos_src_dir}/fk.c)   # defines fkprocs_, needed by GMI mex link
-endif()
+# Always include fk.c in libsmacos.a -- it's one tiny C file that
+# defines fkprocs_, needed by the GMI mex link.  Even when BUILD_GMI=OFF
+# the standalone MACOS_resources/GMI/Makefile can link against the
+# resulting libsmacos.a without finding an undefined-reference.
+list(APPEND SMACOS_ONLY_SOURCES ${smacos_src_dir}/fk.c)
 
 # MACOS-only sources (macos-specific modules + C splicubi2)
 set(MACOS_ONLY_SOURCES
@@ -201,6 +215,13 @@ set(MACOS_ONLY_SOURCES
   ${smacos_src_dir}/splicubi2.c
   ${smacos_src_dir}/macos_signal.c
 )
+
+if(USE_NPSOL)
+  # design_cons_optim.F references npsol/np_optim_dvr; only build it
+  # when the NPSOL tree is being linked.  Same file feeds both targets.
+  list(APPEND SMACOS_ONLY_SOURCES ${smacos_src_dir}/design_cons_optim.F)
+  list(APPEND MACOS_ONLY_SOURCES  ${smacos_src_dir}/design_cons_optim.F)
+endif()
 
 # ==============================================================================
 # 7. Platform-specific system libraries
@@ -242,8 +263,18 @@ if(NOT BUILD_SMACOS_LEAN)
   endif()
 endif()
 
-# Numerical Libraries removed with rem_npsol PR.  No blaslib /
-# lapacklib / npsol targets here; SMACOS no longer needs them.
+# Numerical Libraries — built only when USE_NPSOL=ON.  When OFF,
+# NPSOL_LIBS expands to empty in every target_link_libraries() below
+# and the source-side #ifdef USE_NPSOL blocks compile out.
+if(USE_NPSOL)
+  add_library(blaslib   STATIC ${BLAS_SOURCES})
+  add_library(lapacklib STATIC ${LAPACK_SOURCES})
+  add_library(npsol     STATIC ${NPSOL_SOURCES})
+  set(NPSOL_LIBS npsol lapacklib blaslib)
+  add_compile_definitions(USE_NPSOL)
+else()
+  set(NPSOL_LIBS "")
+endif()
 
 # SMACOS Static Library
 if(BUILD_SMACOS_LEAN)
@@ -260,6 +291,7 @@ if(BUILD_SMACOS_LEAN)
   )
 
   target_link_libraries(smacos PRIVATE
+      ${NPSOL_LIBS}
       ${PLATFORM_LIBS}
   )
 endif()
@@ -283,6 +315,7 @@ if(BUILD_SMACOS)
 
   target_link_libraries(smacos PRIVATE
       fitslib
+      ${NPSOL_LIBS}
       ${PLATFORM_LIBS}
   )
 endif()
@@ -323,6 +356,7 @@ if(BUILD_MACOS)
 
   target_link_libraries(macos PRIVATE
       fitslib
+      ${NPSOL_LIBS}
       pgplot
       ${PLATFORM_LIBS}
       $<$<BOOL:${READLINE_LIB}>:${READLINE_LIB}>
@@ -365,6 +399,7 @@ if(BUILD_SMACOS_DVR)
   target_link_libraries(smacos_dvr PRIVATE
       smacos
       fitslib
+      ${NPSOL_LIBS}
       ${INTEL_LIBS}
       pgplot
       ${PLATFORM_LIBS}
@@ -425,6 +460,7 @@ if(BUILD_GMI)
   target_link_libraries(GMI PRIVATE
       smacos
       fitslib
+      ${NPSOL_LIBS}
       ${INTEL_LIBS}
       -L${MATLAB_ROOT}/bin/glnxa64
       -l:libmx.so -l:libmex.so -lmat

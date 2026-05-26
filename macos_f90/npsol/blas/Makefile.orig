@@ -1,0 +1,40 @@
+OBJ= \
+   ddot.o \
+   dswap.o \
+   dtrmv.o \
+   dtrsv.o \
+   dscal.o \
+   daxpy.o \
+   dgemv.o \
+   dnrm2.o \
+   dcopy.o \
+   idamax.o \
+   dger.o \
+   dsyr.o \
+   xerbla.o \
+   dgemm.o \
+   lsame.o \
+   dtrmm.o 
+
+blas.a: $(OBJ)
+	ar cr blas.a $(OBJ) 
+	ranlib blas.a
+
+# begin fortran depends
+daxpy.o: daxpy.f
+dcopy.o: dcopy.f
+ddot.o: ddot.f
+dgemm.o: dgemm.f
+dgemv.o: dgemv.f
+dger.o: dger.f
+dnrm2.o: dnrm2.f
+dscal.o: dscal.f
+dswap.o: dswap.f
+dsyr.o: dsyr.f
+dtrmm.o: dtrmm.f
+dtrmv.o: dtrmv.f
+dtrsv.o: dtrsv.f
+idamax.o: idamax.f
+lsame.o: lsame.f
+xerbla.o: xerbla.f
+# end fortran depends
