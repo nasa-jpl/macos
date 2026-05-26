@@ -25,21 +25,25 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Parse arguments ---
 BUILD_TYPE="Release"
+USE_NPSOL="OFF"
 
 for arg in "$@"; do
   case "$arg" in
     debug)   BUILD_TYPE="Debug"    ;;
     release) BUILD_TYPE="Release"  ;;
+    npsol)   USE_NPSOL="ON"        ;;
     *)
       echo "makegfortran.sh: unknown option '$arg'"
-      echo "Usage: source ./makegfortran.sh [debug|release]"
+      echo "Usage: source ./makegfortran.sh [debug|release] [npsol]"
       return 1 2>/dev/null || exit 1
       ;;
   esac
 done
 
-BUILD_DIR="${SCRIPT_DIR}/build_$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')_gfortran"
-echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}"
+BUILD_TAG="$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')_gfortran"
+[ "${USE_NPSOL}" = "ON" ] && BUILD_TAG="${BUILD_TAG}_npsol"
+BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
+echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}  USE_NPSOL=${USE_NPSOL}"
 echo "makegfortran: BUILD_DIR=${BUILD_DIR}"
 
 # --- LD_LIBRARY_PATH ---
@@ -55,6 +59,7 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \
   -DBUILD_GMI=ON \
+  -DUSE_NPSOL="${USE_NPSOL}" \
   || { echo "makegfortran: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build ---

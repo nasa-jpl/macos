@@ -64,7 +64,9 @@ C***********************************************************************
 	use dopt_mod
 	use zern_wf_mod
 	use design_optim_mod
-	!use design_cons_optim_mod
+#ifdef USE_NPSOL
+	use design_cons_optim_mod
+#endif
         use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
         use validate_prescription_mod, only: ValidatePrescription
@@ -105,8 +107,10 @@ C  Execution starts
 	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls
 	mOptZern_nls=mOptZern  ! are declared in design_optim_mod
 	mOptAsph_nls=mOptAsph
-	!mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
-        !mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
+#ifdef USE_NPSOL
+	mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
+        mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
+#endif
 
         ! Initialize MACOS
         Call macos_init_all(macos_model_size)

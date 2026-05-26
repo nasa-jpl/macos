@@ -4,6 +4,18 @@
 NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
+This file lives on the `opt-dev` branch — same source tree as
+`release-candidate` but with the NPSOL constrained-optimization path
+restored as an opt-in compile-time option (`-DUSE_NPSOL=ON`, OFF by
+default).  All build scripts accept a parallel `npsol` argument
+(e.g. `source ./makems.sh npsol`, `source ./makegfortran.sh release
+npsol`).  The NPSOL tree lives at `macos_f90/npsol/`; the
+`design_cons_optim.F` + `np_optim_dvr` driver compile only when
+USE_NPSOL=ON.  Companion branch on MACOS_resources is also `opt-dev`
+— GMI's Makefile auto-detects `libnpsol.a` / `liblapacklib.a` /
+`libblaslib.a` in the macos build dir and links them when present.
+Default builds (no `npsol` arg) stay bit-identical to release-candidate.
+
 ## Build
 CMake-based. All scripts live in `macos/` and accept `[debug|release] [gfortran]`
 in any order (defaults: release, ifx). Each combination gets its own build directory.
@@ -22,7 +34,12 @@ dead code, replaced by `nls_optim_dvr` (Levenberg-Marquardt) in
 | `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first; defaults to gfortran — see GMI build choice section) |
 | `source ./makegfortran.sh` | macos + smacos + smacos_dvr + GMI via gfortran (all four) |
 
-Build directory naming: `build_{release|debug}[_gfortran]`
+All build scripts accept `npsol` to enable `-DUSE_NPSOL=ON` (this
+branch only) — adds the NPSOL-backed constrained-optimization path
+and links `libnpsol.a` + `liblapacklib.a` + `libblaslib.a`.  Default
+OFF.
+
+Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 
 - CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources).
   (The legacy `macos_f90/npsol/CMakeLists.txt` is gone with rem_npsol.)
