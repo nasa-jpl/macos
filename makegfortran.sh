@@ -46,8 +46,18 @@ BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
 echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}  USE_NPSOL=${USE_NPSOL}"
 echo "makegfortran: BUILD_DIR=${BUILD_DIR}"
 
+# --- Readline bootstrap (one-time, on first clone) ---
+READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
+if [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
+  echo "makegfortran: bootstrapping bundled readline (one-time setup) ..."
+  ( cd "${READLINE_DIR}" && ./configure -q && make -j"$(nproc)" ) \
+    > /tmp/makegfortran_readline_bootstrap.log 2>&1 \
+    || { echo "makegfortran: readline bootstrap FAILED — see /tmp/makegfortran_readline_bootstrap.log"
+         return 1 2>/dev/null || exit 1; }
+fi
+
 # --- LD_LIBRARY_PATH ---
-READLINE_LIB="${SCRIPT_DIR}/macos_f90/readline-8.2/shlib"
+READLINE_LIB="${READLINE_DIR}/shlib"
 export LD_LIBRARY_PATH="${READLINE_LIB}:${LD_LIBRARY_PATH}"
 
 # --- Configure ---
