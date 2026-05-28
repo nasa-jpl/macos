@@ -1,0 +1,574 @@
+
+%  HCIT as built with updated propagation parameters 
+
+ChfRayDir=  0d0  0d0  1d0
+ChfRayPos=  0d0  0d0  1d2
+ zSource=  -1d2
+  IndRef=   1d0
+  Extinc=   0d0
+BaseUnits= mm              
+WaveUnits= mm              
+ Wavelen=   8.000000000D-04
+    Flux=   1d0
+GridType=   Square          
+Aperture=   1.100000000D-01
+Obscratn=   0d0
+nGridpts=   1024
+   xGrid=   1d0  0d0  0d0
+   yGrid=   0d0  1d0  0d0
+    nElt=   25
+
+    iElt=    1
+ EltName= OAP_1           
+ Element= Reflector   
+ Surface= GridSurf
+   KrElt=  -1.523140000D+03
+   KcElt=  -1d0
+nGridMat=   519
+GridFile=   none
+GridSrfdx=  0.15610905730129
+  psiElt=   0d0  2.462717051D-01 -9.692008292D-01
+  VptElt=   0.000000000D+00 -1.875531424D+02  7.381142755D+02
+  RptElt=   0.000000000D+00  0.000000000D+00  7.734812912D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0d0  0d0  7.734812912D+02
+    xMon=   -1d0  0d0  0d0
+    yMon=   0d0 -9.692008292D-01 -2.462717051D-01
+    zMon=   0d0 -2.462717051D-01  9.692008292D-01
+    lMon=   44.45d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.523140000D+03
+PropType=   Geometric       
+ nECoord=   6
+    TElt=   1d0  0.000000000D+00  0.000000000D+00 0d0 0d0 0d0
+            0d0  9.692008292D-01 -2.462717051D-01 0d0 0d0 0d0
+            0d0  2.462717051D-01  9.692008292D-01 0d0 0d0 0d0
+            0d0 0d0 0d0  1d0  0.000000000D+00  0.000000000D+00
+            0d0 0d0 0d0  0d0  9.692008292D-01 -2.462717051D-01
+            0d0 0d0 0d0  0d0  2.462717051D-01  9.692008292D-01
+
+    iElt=    2
+ EltName= Prop_1_start    
+ Element= Reference   
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0  2.462717052D-01 -9.692008292D-01
+  VptElt=   0d0  7.152141617D-09  7.734812912D+02
+  RptElt=   0d0  7.152141617D-09  7.734812912D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+    xObs=  -9.980477865D-01  6.053135151D-02  1.538087742D-02
+  ApType=   Circular
+   ApVec=   4.127500000D+01  0d0  0d0
+    zElt=  -7.734791928D+02
+PropType=   NFPlane
+ nECoord=   -6
+
+    iElt=    3
+ EltName= Prop_1_end      
+ Element= Reference   
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0  2.462717052D-01 -9.692008292D-01
+  VptElt=   0d0  1.904860397D+02  2.382461623D+01
+  RptElt=   0d0  1.904860397D+02  2.382461623D+01
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   0d0
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=    4
+ EltName= DM              
+ Element= Reflector   
+ Surface= GridSurf
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+nGridMat=   256
+GridFile=   none
+%GridSrfdx=  1.5686274509804D-01
+%When using the DM
+GridSrfdx=  1.25D-01
+%When using the DM surrgate surface
+%GridSrfdx=  2.096728971962617D-01
+  psiElt=   0d0 -3.787616906D-01  9.254942365D-01
+  VptElt=   0d0  1.904860397D+02  2.382461625D+01
+  RptElt=   0d0  1.904860397D+02  2.382461625D+01
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0d0  1.904860397D+02  2.382461625D+01
+    xMon=   1d0  0d0  0d0
+    yMon=   0d0  9.254942365D-01  3.787616906D-01
+    zMon=   0d0 -3.787616906D-01  9.254942365D-01
+    lMon=   1.5d1
+    nObs=    0
+    xObs=   1d0  0d0  0d0
+  ApType=   Circular        
+   ApVec=   1.5d1  0d0  0d0
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   6
+    TElt=   1.000000000D+00  0.000000000D+00  0.000000000D+00 0d0 0d0 0d0
+            0.000000000D+00 -9.254942365D-01  3.787616906D-01 0d0 0d0 0d0
+            0.000000000D+00 -3.787616906D-01 -9.254942365D-01 0d0 0d0 0d0
+            0d0 0d0 0d0 1.000000000D+00  0.000000000D+00  0.000000000D+00
+            0d0 0d0 0d0 0.000000000D+00 -9.254942365D-01  3.787616906D-01
+            0d0 0d0 0d0 0.000000000D+00 -3.787616906D-01 -9.254942365D-01
+
+    iElt=    5
+ EltName= Prop_2_start    
+ Element= Reference   
+ Surface= Flat
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0 -5.038795106D-01  8.637739512D-01
+  VptElt=   0d0  1.904860397D+02  2.382461625D+01
+  RptElt=   0d0  1.904860397D+02  2.382461625D+01
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=  -7.734782248D+02
+PropType=   NFPlane
+ nECoord=   -6
+
+    iElt=    6
+ EltName= Prop_2_end      
+ Element= Reference   
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0 -5.038795106D-01  8.637739512D-01
+  VptElt=   0d0 -1.992537896D+02  6.919349587D+02
+  RptElt=   0d0 -1.992537896D+02  6.919349587D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   0d0
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=    7
+ EltName= OAP_2           
+ Element= Reflector   
+% Surface= Conic
+ Surface= GridSurf  
+   KrElt=  -1.523140000D+03
+   KcElt=  -1d0
+nGridMat=   482
+GridFile=   none
+GridSrfdx=  0.16823705179283
+  psiElt=   0d0  5.038795107D-01 -8.637739512D-01
+  VptElt=   0.000000000D+00 -3.697929709D+02  6.062413489D+02
+  RptElt=   0.000000000D+00 -1.992537897D+02  6.919349587D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0.000000000D+00 -1.992537897D+02  6.919349587D+02
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0 -8.637739512D-01 -5.038795107D-01
+    zMon=   0d0 -5.038795107D-01  8.637739512D-01
+    lMon=   44.45d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.523140000D+03
+PropType=   Geometric       
+ nECoord=   6
+    TElt=   1D+00 0d0 0d0 0d0 0d0 0d0
+            0d0  8.637739512D-01 -5.038795107D-01 0d0 0d0 0d0
+            0d0  5.038795107D-01  8.637739512D-01 0d0 0d0 0d0
+            0d0 0d0 0d0 1d0 0d0 0d0
+            0d0 0d0 0d0 0d0  8.637739512D-01 -5.038795107D-01
+            0d0 0d0 0d0 0d0  5.038795107D-01  8.637739512D-01
+
+    iElt=    8
+ EltName= Prop_3_start    
+ Element= Reference   
+ Surface= Conic   
+   KrElt=  -7.734812912D+02
+   KcElt=   0d0
+  psiElt=   0d0  2.756373557D-01 -9.612616960D-01
+  VptElt=   0d0 -1.992537897D+02  6.919349587D+02
+  RptElt=   0d0 -1.992537897D+02  6.919349587D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+    xObs=   1d0  0d0  0d0
+%  ApType=   None            
+  ApType=   Circular
+   ApVec=   4.127500000D+01  0d0  0d0
+    zElt=   7.734812912D+02
+PropType=   NFSpherical
+ nECoord=   -6
+
+    iElt=    9
+ EltName= Prop_3_end      
+ Element= Reference   
+ Surface= Conic   
+   KrElt=  -3.220493179D+02
+   KcElt=   0d0
+  psiElt=   0d0  2.756373557D-01 -9.612616960D-01
+  VptElt=   0d0 -7.482227427D+01  2.579906945D+02
+  RptElt=   0d0 -7.482227427D+01  2.579906945D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   3.220493179D+02
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   10
+ EltName= Fold_flat       
+ Element= Reflector   
+% Surface= Flat    
+ Surface= GridSurf
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+nGridMat=   426
+GridFile=   none
+GridSrfdx=  0.10583333333333
+  psiElt=   0d0 -5.772449573D-01  8.165710375D-01
+  VptElt=   0d0 -7.454991676D+01  2.575007160D+02
+  RptElt=   0d0 -7.454991676D+01  2.575007160D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0.000000000D+00 -7.465955173D+01  2.574232136D+02
+    xMon=   -1d0  0d0  0d0
+    yMon=   0d0  8.165710375D-01  5.772449573D-01
+    zMon=   0d0  5.772449573D-01 -8.165710375D-01
+    lMon=   25.4d0
+    nObs=    0
+  ApType= None 
+    %ApVec = 7.5d0 0d0 0d0 
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   6
+    TElt=   1D+00 0d0 0d0 0d0 0d0 0d0
+            0d0 -8.165710375D-01  5.772449573D-01 0d0 0d0 0d0
+            0d0 -5.772449573D-01 -8.165710375D-01 0d0 0d0 0d0
+            0d0 0d0 0d0 1d0 0d0 0d0
+            0d0 0d0 0d0 0d0 -8.165710375D-01  5.772449573D-01
+            0d0 0d0 0d0 0d0 -5.772449573D-01 -8.165710375D-01
+
+    iElt=   11
+ EltName= Prop_4_start		 
+ Element= Reference      
+ Surface= Conic   
+   KrElt=  -3.214589678D+02
+   KcElt=   0d0
+  psiElt=   0d0 -8.142573866D-01  5.805040124D-01
+  VptElt=   0d0 -7.465955174D+01  2.574232136D+02
+  RptElt=   0d0 -7.465955174D+01  2.574232136D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   3.214589678D+02
+PropType=   NF1             
+ nECoord=   -6
+
+    iElt=   12
+ EltName= Mask
+ Element= Reference   
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0 -8.142573866D-01  5.805040124D-01
+  VptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  RptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   -1.000000000D+22
+PropType=   NF2             
+ nECoord=   -6
+
+    iElt=   13
+ EltName= Prop_4_end	   
+ Element= Return      
+ Surface= Conic   
+   KrElt=  -3.446231466D+05
+   KcElt=   0d0
+  psiElt=   0d0  8.142573866D-01 -5.805040124D-01
+  VptElt=   0d0 -2.809483526D+05  2.004991508D+05
+  RptElt=   0d0 -2.809483526D+05  2.004991508D+05
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=  -3.446231466D+05
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   14
+ EltName= Mask_Return_2		 
+ Element= Return      
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0  8.142573866D-01 -5.805040124D-01
+  VptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  RptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=  -1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   15
+ EltName= Mask_Substrate_1
+ Element= Refractor   
+ Surface= Conic   
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0  8.142573866D-01 -5.805040124D-01
+  VptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  RptElt=   0d0 -3.3640989076D+02  4.4403143423D+02
+  IndRef=   1.515082352D+00
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   16
+ EltName= Mask_Substrate_2
+ Element= Refractor   
+ Surface= Conic   
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0  8.142573866D-01 -5.805040124D-01
+  VptElt=   0d0 -3.382745403D+02  4.453607884D+02
+  RptElt=   0d0 -3.382745403D+02  4.453607884D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   17
+ EltName= Fold_2          
+ Element= Reflector   
+% Surface= Flat    
+ Surface= GridSurf
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+nGridMat=   411
+GridFile=   none
+GridSrfdx=  0.10955732122588
+  psiElt=   0d0 -4.579825256D-01  8.889611950D-01
+  VptElt=   0d0 -5.892914227D+02  6.239946675D+02
+  RptElt=   0d0 -5.892914227D+02  6.239946675D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0.000000000D+00 -5.890290708D+02  6.241298282D+02
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0 -8.889611950D-01 -4.579825256D-01
+    zMon=   0d0 -4.579825256D-01  8.889611950D-01
+    lMon=   25.4d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   18
+ EltName= OAP_3           
+ Element= Reflector   
+% Surface= Conic
+ Surface= GridSurf  
+   KrElt=  -1.523140000D+03
+   KcElt=  -1d0
+nGridMat=   496
+GridFile=   none
+GridSrfdx=  0.16430933852140
+  psiElt=   0d0 -2.462717051D-01  9.692008292D-01
+  VptElt=   0.000000000D+00 -4.014759284D+02  1.954804262D+02
+  RptElt=   0.000000000D+00 -5.890290708D+02  1.601134105D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0.000000000D+00 -5.890290708D+02  1.601134105D+02
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0  9.692008292D-01  2.462717051D-01
+    zMon=   0d0  2.462717051D-01 -9.692008292D-01
+    lMon=   44.45d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.523140000D+03
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   19
+ EltName= Lyot            
+ Element= Obscuring   
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   0d0 -2.462717051D-01  9.692008292D-01
+  VptElt=   0d0 -7.803373987D+02  9.130061953D+02
+  RptElt=   0d0 -7.803373987D+02  9.130061953D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+    xObs=   1d0  0d0  0d0
+  ApType=   Circular        
+   ApVec=   1.785000000D+02  0d0  0d0
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   6
+    TElt=   1d0  0d0  0d0  0d0  0d0  0d0
+            0d0  9.691949818D-01 -2.462947164D-01  0d0  0d0  0d0
+            0d0  2.462947164D-01  9.691949818D-01  0d0  0d0  0d0
+            0d0  0d0  0d0  1d0  0d0  0d0
+            0d0  0d0  0d0  0d0  9.691949818D-01 -2.462947164D-01
+            0d0  0d0  0d0  0d0  2.462947164D-01  9.691949818D-01  0d0  0d0  0d0
+
+    iElt=   20
+ EltName= OAP_4           
+ Element= Reflector   
+% Surface= Conic   
+ Surface= GridSurf
+   KrElt=  -1.523140000D+03
+   KcElt=  -1d0
+nGridMat=   491
+GridFile=   none
+GridSrfdx=  0.16527397260274
+  psiElt=   0d0  2.462717051D-01 -9.692008292D-01
+  VptElt=   0.000000000D+00 -1.157560729D+03  1.624057110D+03
+  RptElt=   0.000000000D+00 -9.700006997D+02  1.659424987D+03
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0.000000000D+00 -9.700006997D+02  1.659424987D+03
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0 -9.692008292D-01 -2.462717051D-01
+    zMon=   0d0 -2.462717051D-01  9.692008292D-01
+    lMon=   44.45d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.523140000D+03
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   21
+ EltName= OAP_5           
+ Element= Reflector   
+% Surface= Conic  
+ Surface= GridSurf
+   KrElt=  -3.056600000D+02
+   KcElt=  -1d0
+nGridMat=   226
+GridFile=   none
+GridSrfdx=  0.16933333333333
+  psiElt=   0d0 -3.540298852D-01  9.352341099D-01
+  VptElt=   0.000000000D+00 -9.159011994D+02  7.430110059D+02
+  RptElt=   0.000000000D+00 -9.700089930D+02  7.279978626D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0d0 -9.700089930D+02  7.279978626D+02
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0  9.352341099D-01  3.540298852D-01
+    zMon=   0d0  3.540298852D-01 -9.352341099D-01
+    lMon=   19.05
+    nObs=    0
+  ApType=   None            
+    zElt=   3.056600000D+02
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   22
+ EltName= OAP_6           
+ Element= Reflector   
+% Surface= Conic   
+ Surface= GridSurf
+   KrElt=  -9.149600000D+02
+   KcElt=  -1d0
+nGridMat=   200
+GridFile=   none
+GridSrfdx=  0.19145728643216
+  psiElt=   0d0  3.540298852D-01 -9.352341099D-01
+  VptElt=   0.000000000D+00 -1.374408083D+03  1.273054613D+03
+  RptElt=   0.000000000D+00 -1.194525249D+03  1.321098247D+03
+  IndRef=   1d0
+  Extinc=   0d0
+    pMon=   0d0 -1.194525249D+03  1.321098247D+03
+    xMon=  -1d0  0d0  0d0
+    yMon=   0d0 -9.352341099D-01 -3.540298852D-01
+    zMon=   0d0 -3.540298852D-01  9.352341099D-01
+    lMon=   19.05
+    nObs=    0
+  ApType=   None            
+    zElt=   9.149600000D+02
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   23
+ EltName= Detector_Return 
+ Element= Return      
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   1.398778788D-28  3.763133824D-02  9.992916903D-01
+  VptElt=  -7.625249241D-21 -1.212446469D+03  8.452037111D+02
+  RptElt=  -7.625249241D-21 -1.212446469D+03  8.452037111D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+    iElt=   24
+ EltName= ExitPupil       
+ Element= Return      
+ Surface= Conic   
+   KrElt=  -1.970097571D+05
+   KcElt=   0d0
+  psiElt=  -1.398778788D-28 -3.763133824D-02 -9.992916903D-01
+  VptElt=  -7.597691932D-21  6.201294809D+03  1.977154294D+05
+  RptElt=  -7.597691932D-21  6.201294809D+03  1.977154294D+05
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.970097571D+05
+PropType=   FarField        
+ nECoord=   -6
+
+    iElt=   25
+ EltName= Detector        
+ Element= FocalPlane  
+ Surface= Flat    
+   KrElt=  -1.000000000D+22
+   KcElt=   0d0
+  psiElt=   1.398778788D-28  3.763133824D-02  9.992916903D-01
+  VptElt=  -7.625249241D-21 -1.212446469D+03  8.452037111D+02
+  RptElt=  -7.625249241D-21 -1.212446469D+03  8.452037111D+02
+  IndRef=   1d0
+  Extinc=   0d0
+    nObs=    0
+  ApType=   None            
+    zElt=   1.000000000D+22
+PropType=   Geometric       
+ nECoord=   -6
+
+nOutCord=    5
+    Tout=   1d0  6.007550204D-08 -2.252831326D-09  0d0  0d0  0d0  0d0
+            6.011770824D-08 -9.993275090D-01  3.666783001D-02  0d0 0d0 0d0 0d0
+            0d0  0d0  0d0  1.000000000D+00  6.007550204D-08 -2.252831326D-09 0d0
+            0d0  0d0  0d0  6.011770824D-08 -9.993275090D-01  3.666783001D-02 0d0
+            0d0  0d0  0d0 -4.847802098D-11 -3.666783001D-02 -9.993275090D-01 0d0
