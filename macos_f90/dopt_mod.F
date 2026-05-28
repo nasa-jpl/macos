@@ -199,18 +199,20 @@ C***********************************************************************
           opt_wavelen(:)      = 0 ! max wavelens to optimize
 
           iVarElt             = 0
-          nitrs_dopt          = 0
           rtn_flag            = 0
           zern_off            = 0
           asph_off            = 0
 
           old_wfe(:,:)        = 0d0
           new_wfe(:,:)        = 0d0
-          dopt_tol            = 0d0
           eltRotations(:,:)   = 0d0
           consArr(:)          = 0d0
           OptSpotSize         = 0d0
-          SvdSvCut            = 0d0
+          ! nitrs_dopt, dopt_tol, SvdSvCut intentionally NOT re-zeroed
+          ! here: they were given meaningful non-zero defaults at the
+          ! top of this routine (=10, =1d-12, =EPS).  An earlier
+          ! re-init pass over-reached and zeroed them, capping the
+          ! optimizer at 0 iterations with no convergence test.
 
           OptTgtElt           = 0
           OptAlg              = 0
