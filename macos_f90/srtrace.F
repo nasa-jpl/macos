@@ -139,18 +139,30 @@ C Set index
           END IF
 C Set Zerns
           IF (SrfType(iElt).EQ.8) THEN
-            IF (ZernTypeL(iElt).EQ.1 .OR.
-     &          ZernTypeL(iElt).EQ.4) THEN
-C Malacara's
+            IF (ZernTypeL(iElt).EQ.ZernType_ANSI .OR.
+     &          ZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
               CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
-            ELSEIF (ZernTypeL(iElt).EQ.2 .OR.
-     &              ZernTypeL(iElt).EQ.5) THEN
-C Noll's
+            ELSEIF (ZernTypeL(iElt).EQ.ZernType_BornWolf .OR.
+     &              ZernTypeL(iElt).EQ.ZernType_NormBornWolf) THEN
               CALL ZerntoMon2(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
-            ELSEIF (ZernTypeL(iElt).EQ.3 .OR.
-     &              ZernTypeL(iElt).EQ.6) THEN
-C Fringe's
+            ELSEIF (ZernTypeL(iElt).EQ.ZernType_Fringe .OR.
+     &              ZernTypeL(iElt).EQ.ZernType_NormFringe) THEN
               CALL ZerntoMon3(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
+            ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormHex) THEN
+              CALL ZerntoMon4(ZernCoef(1,iElt),MonCoef(1,iElt))
+            ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
+     &              ZernTypeL(iElt).EQ.ZernType_Noll) THEN
+              CALL ZerntoMon6(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
+            ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
+              CALL ZerntoMon7(ZernCoef(1,iElt),MonCoef(1,iElt),
+     &                        ZernAnnuRatio(iElt))
+            ELSE
+              WRITE(*,*)'** srtrace CRTRACE: Elt ',iElt,
+     &           ' SrfType=8 (Zernike) but ZernTypeL=',ZernTypeL(iElt),
+     &           ' has no ZerntoMon implementation;',
+     &           ' Zernike coefficients are being silently ignored.',
+     &           ' Likely causes: ZernType= ExtFringe (no converter),',
+     &           ' or Rx did not specify ZernType for this element.'
             END IF
           END IF
 
@@ -173,6 +185,11 @@ C Set FF Zernike coefficients for FreeForm surface
             ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(FFZernCoef(1,iElt),FFCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
+            ELSE
+              WRITE(*,*)'** srtrace CRTRACE: Elt ',iElt,
+     &           ' SrfType=FreeForm but FFZernTypeL=',FFZernTypeL(iElt),
+     &           ' has no ZerntoMon implementation;',
+     &           ' FF Zernike coefficients are being silently ignored.'
             END IF
           END IF
 C Set Mon Zernike coefficients for FreeForm surface
@@ -194,6 +211,11 @@ C Set Mon Zernike coefficients for FreeForm surface
             ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(MonZernCoef(1,iElt),MonCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
+            ELSE
+              WRITE(*,*)'** srtrace CRTRACE: Elt ',iElt,
+     &        ' SrfType=FreeForm but MonZernTypeL=',MonZernTypeL(iElt),
+     &        ' has no ZerntoMon implementation;',
+     &        ' Mon Zernike coefficients are being silently ignored.'
             END IF
           END IF
 
