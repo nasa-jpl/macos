@@ -55,8 +55,18 @@ if [ "${FC}" = "ifx" ] && [ -f "${ONEAPI_SETVARS}" ]; then
   source "${ONEAPI_SETVARS}" --force > /dev/null 2>&1
 fi
 
+# --- Readline bootstrap (one-time, on first clone) ---
+READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
+if [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
+  echo "makems: bootstrapping bundled readline (one-time setup) ..."
+  ( cd "${READLINE_DIR}" && ./configure -q && make -j"$(nproc)" ) \
+    > /tmp/makems_readline_bootstrap.log 2>&1 \
+    || { echo "makems: readline bootstrap FAILED — see /tmp/makems_readline_bootstrap.log"
+         return 1 2>/dev/null || exit 1; }
+fi
+
 # --- LD_LIBRARY_PATH ---
-READLINE_LIB="${SCRIPT_DIR}/macos_f90/readline-8.2/shlib"
+READLINE_LIB="${READLINE_DIR}/shlib"
 INTEL_LIB="/opt/intel/oneapi/compiler/latest/lib"
 export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${LD_LIBRARY_PATH}"
 
