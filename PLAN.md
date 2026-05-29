@@ -373,9 +373,6 @@ The factoring that keeps maintenance cost bounded if both wrappers exist.
   - [x] **macos_api_mod promoted into libsmacos.a** — file moved from `MACOS_resources/pymacos/src/cmake/source/macos_api_mod.F90` to `macos/macos_f90/macos_api_mod.F90`; added to `SMACOS_ONLY_SOURCES` in top-level `CMakeLists.txt`. Both pymacos and mmacos now just link `libsmacos.a` and pull the `.mod` from `mod_smacos/`. Eliminates the cross-repo `API_MOD_SRC` Makefile path entirely. Inlined the only constant `mPix2` used from the dropped `pymacos.inc`. Verified clean rebuild of macos + pymacos + mmacos, pymacos pytest 6601/6601, PROPER-compare all phases green, mmacos smoke 11/11.
   - [x] **macos_api_mod ported to gfortran-clean idioms** — fixes applied: replaced `(/'m', 'cm', 'mm', ...'/)` with explicit `character(len=4)` arrays (gfortran rejects the implicit-length form for line-truncation reasons); converted 16 `do concurrent` constructs to plain `DO` loops (some inside `BLOCK` for index-decl scoping) per the project no-DO-CONCURRENT convention; bulk-replaced 50 `LOGICAL == PASS/FAIL` sites with `.eqv.`; per-site-patched 16 `INTEGER == PASS/FAIL` sites to integer equality (`var == 0` / `var /= 0`) where the variable was declared INTEGER not LOGICAL; rewrote `prb_elt_grp`'s `ifGlobal` LOGICAL-array tests (`ifGlobal==0`, `ifGlobal==1`, `ifGlobal(i)>0`) to use `.not.` / `.and.` / direct LOGICAL tests; rewrote `set_src_csys`'s `filter/=0` (LOGICAL) to bare `filter`. Verified clean compile + numerical parity under both ifx and gfortran.
   - [x] **mmacos `FC ?= gfortran` default flipped** (matches GMI); ifx still works via `make FC=ifx` and remains the GMI-style fallback. gfortran smoke test green at 11/11 with clean MATLAB teardown.
-- [ ] Build `MacosSession` MATLAB class
-  - [ ] OOP veneer over the mex
-  - [ ] Lifecycle management (init, destruction)
 - [ ] Side-by-side documentation
   - [ ] "Pymacos call → mmacos call → underlying Fortran" reference card
   - [ ] Helps users move between languages
@@ -383,6 +380,100 @@ The factoring that keeps maintenance cost bounded if both wrappers exist.
   - [ ] Survey existing GMI users
   - [ ] Plan a backward-compat shim if mmacos absorbs GMI workflows
   - [ ] Document migration path
+
+### 5.4 mmacos → pymacos feature parity (CodeV/PROPER regression + dw/dz, dw/dx)
+
+Goal: bring mmacos to the same user surface as pymacos so the CodeV and
+PROPER regression suites and the dw/dz_Zernike and dw/dx sensitivity
+drivers can be run from MATLAB with bit-identical numerics. Two layers
+exposed throughout — power users can call `mmacos('cmd', ...)` directly,
+casual users get the `MacosSession` class veneer. Phases ordered so each
+unlocks the next.
+
+- [x] **Phase 1 — Command-surface parity (codegen)**
+  - [x] Codegen script `MACOS_resources/mmacos/gen_mex_wrappers.py`
+    parses `macos_f90/macos_api_mod.F90`, emits `do_<name>` mex
+    helpers and a `gen_dispatch` fallback into `mmacos_gen.F`.
+    Picks up arg types (logical/integer/real/character), `intent`,
+    array dim symbols (including dim args read first so subsequent
+    allocations have sizes), local `integer, parameter` aliases for
+    elt_mod dim symbols, multi-line subroutine arg lists.
+  - [x] Generated dispatcher: 78 codegen routines + 13 hand-written
+    cases in `mmacos_mex.F`. Hand-written cases (init, load_rx,
+    save_rx, modified_rx, n_elt, opd, intensity, complex_field,
+    dx_at, base_unit_to_metres, apodize, perturb_elt, trace_rays)
+    keep their bespoke logic; everything else falls through to
+    `gen_dispatch`.
+  - [x] Smoke test extended: 15/15 pass under gfortran (R2026a),
+    incl. four codegen-routed commands (`get_src_sampling`,
+    `elt_grp_max_all`, `src_wvl` getter, `elt_vpt` getter).
+  - [x] Low-level surface: `mmacos('cmd', args...)` covering 91
+    commands total (was 13). Skipped: `elt_csys_get` (rank-3
+    array — hand-write if exercised), single-element `perturb_elt`
+    api (collides with hand-written array form; expose as a
+    distinct cmd later if needed).
+
+- [ ] **Phase 2 — `MacosSession` MATLAB class** (high-level layer)
+  - [ ] `MacosSession.m` classdef in `MACOS_resources/mmacos/+macos/`,
+    one method per public function in `macos.py`. Methods validate
+    args, delegate to `mmacos('cmd', ...)`.
+  - [ ] Mirror pymacos's `firstEntry` / `rxLoaded` guard pattern and
+    keyword-arg semantics via name-value pairs.
+  - [ ] Constructor calls `mmacos('init', model_size)`; lifecycle
+    otherwise trivial since libsmacos.a owns the state.
+  - [ ] **Both layers remain first-class.** The class is a thin handle
+    over the mex; power users drop to `mmacos('cmd', ...)` whenever
+    the class abstraction gets in the way (e.g. debugging, scripting
+    a non-standard command sequence).
+
+- [ ] **Phase 3 — Test infrastructure**
+  - [ ] `matlab.unittest` skeleton in `+test/` with shared utilities:
+    Rx fixtures, tolerance helpers, `.mat` reference loader.
+  - [ ] `run_mmacos_tests.sh` analog of `run_proper_tests.sh`.
+  - [ ] Tests written against `MacosSession`; a smoke layer also
+    exercises the raw `mmacos(...)` form so both surfaces are
+    regression-covered.
+
+- [ ] **Phase 4 — CodeV regression port**
+  - [ ] Port `test_api_rx_grating.py` + `test_masks.py` (6601 tests).
+  - [ ] Reference values reused from pymacos's expected outputs —
+    bit-identical pass expected since both call the same
+    `libsmacos.a`.
+
+- [ ] **Phase 5 — PROPER regression port**
+  - [ ] Install MATLAB PROPER (Krist's native release; PyPROPER3 is the
+    port, not the canonical).
+  - [ ] Port Phases 1–6a comparison scripts; same `compare_and_record`
+    harness pattern as `tests/proper_compare/`.
+  - [ ] Validate at the same RMS / max numeric tolerances pymacos hits.
+
+- [ ] **Phase 6 — `dw_dz_zernike` driver**
+  - [ ] `+macos/dw_dz_zernike.m` plus the `+channels/` submodule
+    (ZernikeCoefChannel only).
+  - [ ] Driver takes a `MacosSession` instance (mirrors pymacos's
+    `MacosModel` arg); a free-function form taking no session also
+    exposed for raw-mex users.
+  - [ ] Writes the same `.mat` format pymacos's `dw_dz_zernike` does
+    so downstream consumers don't fork.
+
+- [ ] **Phase 7 — `dw_dx` driver**
+  - [ ] `+macos/dw_dx.m` plus the full channel system as MATLAB
+    classdef: `RigidBodyChannel`, `FocalPlaneChannel`,
+    `GroupedRigidBodyChannel`, `SourceChannel`,
+    `predict_global_rigid_response`, `group_W` synthesis.
+  - [ ] Biggest port — channels carry real semantic content beyond a
+    thin mex wrapper.
+  - [ ] Same dual surface: `MacosSession`-driven default, raw-mex
+    constructor for power users.
+
+- [ ] **Phase 8 — Cross-language verification**
+  - [ ] Run identical Rx + perturb sequences through pymacos and
+    mmacos; assert numerical equality at machine precision.
+  - [ ] This is the actual proof of "same backend." Add to CI once a
+    CI substrate exists.
+
+Total estimate: 12–16 days, ordered so no back-pressure between phases.
+Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 
 ---
 
