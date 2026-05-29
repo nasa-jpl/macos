@@ -62,6 +62,7 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - macos_f90/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
 - macos_f90/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
 - macos_f90/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
+- macos_f90/macos_api_mod.F90: language-neutral SMACOS-call wrapper layer (`MODULE macos_api_mod`) — backbone for pymacos and mmacos; compiled into libsmacos.a
 
 ## Current work: SrfType_FreeForm = 14
 Composite surface: conic + Mon monomial + FF monomial + grid data.
@@ -668,7 +669,44 @@ in CoroExample.jou-style scripts.
   intensity-weighted center of mass is robust for both sharp Airy peaks
   (Phase 1) and flat-top NF pillars (Phase 2).
 
-## pymacos intensity() and complex_field() wrappers (pymacos.f90 + macos.py)
+## macos_api_mod: language-neutral wrapper layer for pymacos + mmacos
+
+`macos_f90/macos_api_mod.F90` (compiled into `libsmacos.a`) is the
+shared SMACOS-call wrapper that both `pymacos` (Python) and `mmacos`
+(MATLAB) bind into.  Lives in `MODULE macos_api_mod`; holds the SMACOS
+call-line buffer (`command`, `CARG/DARG/IARG/LARG/RARG`), the shared
+output arrays (`PixArray`, `OPDMat`, `RaySpot`, `OPD`, `SPOT`, `PIX`,
+`USER`), the package-level state flags (`firstEntry`, `rxLoaded`), and
+~96 wrapper subroutines covering init, load_rx, save_rx, modified_rx,
+n_elt, trace_rays, opd_val, spot_cmd/get, int_cmd/get, cfield_cmd/get,
+cfield_apodize, elt_dx_get, base_unit_to_metres, perturb_elt,
+prb_elt(_grp), the elt_* Rx-inspection/modification family, the
+source-side set_src_*/get_src_*, the elt_grp_* family, stop_info_*,
+xp_get/set/fnd, sxp_fnd, ors_run, srs_run, plus internal helpers
+(`SystemCheck`, `EltRangeChk`, `StatusChk1`, `translateSurfaceID`,
+`translateEltID`, `checkSurfaceID`, `checkEltID`).
+
+Promotion history: until §5.2 the file lived in
+`MACOS_resources/pymacos/src/cmake/source/macos_api_mod.F90` and was
+compiled separately by each binding's own CMake/Make build.  Now it
+lives in `macos_f90/` and the binding builds just link `libsmacos.a`
++ pull the `.mod` from `mod_smacos/`.  pymacos's `CMakeLists.txt`
+takes `MACOS_BUILD_DIR` as a cache var (default
+`~/dev/macos/build_release`); mmacos's Makefile takes the same.
+
+gfortran cleanliness: the file is portable across ifx and gfortran
+as of §5.2.  Notable porting fixes — replaced `(/'m','cm',...'/)`
+implicit-length char arrays with explicit `character(len=4)` forms;
+converted all `do concurrent` to plain `DO` loops (some inside
+`BLOCK` for index-decl scoping); 50× `LOGICAL == PASS/FAIL` sites
+swapped to `.eqv.`; 16× INTEGER-comparison sites switched to integer
+equality (`var == 0` / `var /= 0`) where the variable was INTEGER;
+LOGICAL-array `ifGlobal` tests rewritten in `prb_elt_grp`; bare
+LOGICAL `filter` test in `set_src_csys`.  pymacos pytest 6601/6601
++ PROPER-compare green under both compilers; mmacos 11/11 under
+both.
+
+## pymacos intensity() and complex_field() wrappers (macos_api_mod.F90 + pymacos_f2py.f90 + macos.py)
 - `intensity(srf, reset_trace=True) -> np.ndarray` runs the SMACOS 'INT'
   command at element `srf` and returns the (mdttl, mdttl) intensity buffer
   (`MWFFT` in elt_mod, widened from SREAL to float64).

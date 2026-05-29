@@ -189,6 +189,9 @@ set(COMMON_SOURCES
 # SMACOS-only sources (smacos-specific modules + Fortran splicubi2)
 # pgplotdummy.F is always included for smacos: the library is computational only
 # and needs MODULE pgplot_mod (stubs). Real graphics run in the driver (macos/smacos_dvr).
+# macos_api_mod.F90 is the language-neutral wrapper layer used by both
+# pymacos (via pymacos_f2py.f90) and mmacos (via mmacos_mex.F).  It lives
+# in libsmacos.a so neither binding needs to compile it itself.
 set(SMACOS_ONLY_SOURCES
   ${COMMON_SOURCES}
   ${smacos_src_dir}/smacos_vars_mod.F
@@ -197,6 +200,7 @@ set(SMACOS_ONLY_SOURCES
   ${smacos_src_dir}/pgplotdummy.F
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
+  ${smacos_src_dir}/macos_api_mod.F90
 )
 # Always include fk.c in libsmacos.a -- it's one tiny C file that
 # defines fkprocs_, needed by the GMI mex link.  Even when BUILD_GMI=OFF
