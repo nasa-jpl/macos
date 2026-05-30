@@ -391,6 +391,15 @@ exposed throughout — power users can call `mmacos('cmd', ...)` directly,
 casual users get the `MacosSession` class veneer. Phases ordered so each
 unlocks the next.
 
+**Standing rule (added 2026-05-30):** treat regression-suite growth as a
+side activity in every subsequent phase. When a new +macos wrapper,
+helper, or mex command lands, add a `tCodeV*` (or equivalent) test
+that exercises it — even if the immediate motivating task didn't
+require it. Goal is a continuously expanding `make unittest` covering
+the realistic mmacos surface, so by the time Phase 8 (cross-language
+verification) runs there's already substantial mmacos-side coverage
+to compare against pymacos.
+
 - [x] **Phase 1 — Command-surface parity (codegen)**
   - [x] Codegen script `MACOS_resources/mmacos/gen_mex_wrappers.py`
     parses `macos_f90/macos_api_mod.F90`, emits `do_<name>` mex
@@ -483,7 +492,8 @@ unlocks the next.
     but the declarations list them in `(ok, iElt, Diff_Order, Spacing, ...)`
     order, which had tricked a swap.  Audit of other +macos wrappers
     found no other ordering mismatches.
-  - [ ] **Slice 2**: `test_masks.py` (6584 tests) → `tests/tCodeVMasks.m`.
+  - [x] **Slice 2**: `test_masks.py` (8 classes, ~10K sub-cases) → 8
+    `tCodeV{Ape,Obs}Masks{Circ,Ellipse,Rect,Polygon}.m` classes.
     Surprise on review: this file does NOT consume `rx_data.py` fixtures
     (only the grating slice does).  Tests instead **mutate the .in text
     file directly** (overwriting specific lines with new `ApType=` /
@@ -491,34 +501,38 @@ unlocks the next.
     check that ray-fall geometry sits inside the analytic mask shape.
     So no `.mat` export pipeline needed; the .m transcription path
     continues to work.
-    Scope:
-    - 8 test classes: ApeMasks{Circ,Ellipse,Rect,Polygon} +
-      ObsMasks{Circ,Ellipse,Rect,Polygon}.  Each is heavily
-      parametrized (mask geometry × srf × Rx file); the 6584-test
-      count is dominated by the Polygon classes.
-    - **Two new +macos wrappers** are load-bearing:
-      - `macos.get_ray_info()` → struct with `.pos (3,N)`, `.dir (3,N)`,
-        `.opl (N)`, `.ok_trace (N)`, `.ok_pass (N)`.  api routine
-        `ray_info_get` is already codegen-wrapped.
-      - `macos.get_elt_csys(srf)` → struct with `.csys (6,6)`,
-        `.csys_lcs (bool)`, `.csys_upd (bool)`.  api routine
-        `elt_csys_get` was SKIPPED by the codegen (rank-3 `csys(6,6,N)`
-        array — codegen handles ≤2D).  Need a hand-written
-        `do_elt_csys_get` in `mmacos_mex.F` or extend codegen to rank 3.
-        Hand-write is faster.
-    - **MATLAB-side helpers** to port from test_masks.py:
-      `rectangular_polygon(wx, wy, dx, dy)`, `hexagon(s, dx, dy)`,
-      `poly_lines(verts)`, `chk_polygon_pts(pts, bounds)`,
-      `ray_pos_at_srf_in_tangent_plane(tmp_rx, lines, srf)`.  Pure
-      geometry / linear algebra; mechanical translation.
-    - **Test fixtures**: `RX_PARAMS` dict (in test_masks.py:42)
-      mapping `'parabola'`/`'parabola_glb'` to (`Rx_Mask_Parabolas[_glb].in`
-      path, `SrfInfo{dx_fact, line_id, line_id_obs}` for each Srf).
-      Transcribe to `tests/private/rx_mask_params.m`.
-    - Use `tempname()` for the per-test scratch .in file (analog of
-      pytest's `session_dir`).
-    - Bit-identical pass expected (same libsmacos.a, deterministic
-      trace, geometric assertion not numerical equality).
+    Pymacos's matrix counts 6584 sub-tests because pytest expands
+    each parametrize axis individually; mmacos collapses each
+    (Rx, srf, sub-test variant) into a single matlab.unittest method
+    that LOOPS over the geometric parameters, with per-iteration
+    diagnostics on failure.  62 methods total, ~10K assertions under
+    the hood, all green; full suite 129/129.
+    Landed:
+    - Hand-written `do_elt_csys_get` in `mmacos_mex.F` (rank-3
+      `csys(6,6,N)` is outside the codegen ≤2D ceiling; uses
+      `mxCreateNumericArray` for the 3D output).  Added to
+      `HAND_WRITTEN_CMDS` so the codegen inventory lists it.
+    - Two new +macos wrappers: `get_ray_info(N)` and
+      `get_elt_csys(srf)`, both returning structs.
+    - 5 geometry helpers in `tests/private/`: `rectangular_polygon`,
+      `hexagon`, `poly_lines`, `chk_polygon_pts`,
+      `ray_pos_at_srf_in_tangent_plane`.  The last writes a mutated
+      Rx text via MATLAB's `writelines`, loads it, runs two traces
+      (to FocalPlane then to srf), and projects rays into srf's
+      local 2D tangent plane via `csys_local^T · (ray_pos − vpt)`.
+    - `tests/private/rx_mask_params.m` transcribes
+      `test_masks.py:42`'s RX_PARAMS — but with **1-based** line
+      indices (pymacos stored 0-based slice indices).  Off-by-one
+      caught during port.
+    - `tests/private/tolerances.m` mirrors pymacos `_Tol` with named
+      fields (`.P`, `.r`, `.L`, `.v`, `.eps`).  Available for future
+      tests even though the mask suite uses geometric assertions.
+    Bug surfaced + fixed during port: the polygon-aperture global-
+    vertex variant (`run_hex_glb`) was using `pts - [dx, dy]` in the
+    inside-check, but pymacos uses `pts - [dx*dx_fact, dy]` because
+    the PolyApVec write applies `dx*dx_fact` to the shift.  For
+    `dx_fact = +1` the two expressions agree; for `dx_fact = -1`
+    (parabola_glb srf3) they don't.  Failed 3 cases, fixed to match.
   - [ ] Bit-identical pass expected: both languages drive the same
     `libsmacos.a`, so numerical equality at machine precision is the
     expected outcome (already met for Slice 1).
