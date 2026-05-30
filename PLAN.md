@@ -17,6 +17,27 @@ task.
 - [ ] `define_local_csys` follow-up from the `develop_STOP` branch head — small robustness / speed improvement not yet on release-candidate.
 - [ ] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.
 - [ ] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Treat as "not relevant in this mode" rather than "unparseable junk."
+- [ ] **Fix `init()` re-init heap corruption on model_size transitions.**
+  When `macos_init_all(new_size)` is called in a process that already
+  ran a trace at a different size, the next FFT-bearing trace aborts
+  in `malloc()` / `free()` (`invalid size (unsorted)`, `unaligned tcache
+  chunk`, `munmap_chunk: invalid pointer`).  Surfaced in mmacos's
+  matlab.unittest run when Phase 5 PROPER tests (model_size=512)
+  followed Phase 3/4 tests (model_size=128) in the same process.
+  Pymacos has the same bug; its `run_proper_tests.sh` works around
+  it by invoking a separate pytest process per phase.  mmacos's
+  `run_mmacos_tests.sh` does the analogous split into per-size matlab
+  -batch invocations (see §5.4 Phase 5 notes).  Workaround works but
+  is unsatisfying — the underlying engine reallocation in
+  `macos_init_all` (and the routines it cascades into:
+  `src_mod_init_vars`, `elt_mod_init_vars`, the FFT-buffer allocators
+  in `fftsub`, etc.) is leaving dangling pointers somewhere that get
+  freed at a wrong size on the next trace.  Likely candidates:
+  (a) module-level allocatables in some `*_mod_init_vars` that
+  `deallocate` based on the OLD size; (b) `iEltToiWF` / FFT plan
+  caches that key on size but free with `mFFT` from a stale module
+  param.  When fixed, drop the split in `run_mmacos_tests.sh` and
+  put the full suite back in one matlab -batch.
 - [ ] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350). Currently a round-trip `perturb(+θ) + perturb(-θ)` along a single axis leaves `psi` off by 1 ULP because `sin²(θ) + cos²(θ)` ≠ 1 exactly in IEEE 754 for some specific θ values (e.g. 1e-6, 3e-5). The artifact is at the eps × |coord| floor — invisible against any practical signal — but causes psi to drift slowly under many repeated perturbs and produces a ~3e-14 OPD round-trip residual that briefly confused the §5.4 Phase 2 +macos smoke-test author. One-line fix: `psi = psi / norm2(psi)` after the rotation. See `MACOS_resources/mmacos/test_state_after_roundtrip.m` for a regression probe.
 
 ---
@@ -549,11 +570,65 @@ to compare against pymacos.
       load it and `verifyEqual(pos_mm, pos_py)`).
 
 - [ ] **Phase 5 — PROPER regression port**
-  - [ ] Install MATLAB PROPER (Krist's native release; PyPROPER3 is the
-    port, not the canonical).
-  - [ ] Port Phases 1–6a comparison scripts; same `compare_and_record`
-    harness pattern as `tests/proper_compare/`.
-  - [ ] Validate at the same RMS / max numeric tolerances pymacos hits.
+  - [x] **MATLAB PROPER installed** at `~/dev/proper_matlab/`
+    (v3.3.1 from sourceforge.net/projects/proper-library, MATLAB
+    translation by Gary Gutt of Krist's IDL original).  Smoke-tested:
+    `prop_begin` returns a wavefront struct.
+  - [x] **Slice 1 — Phase 1 (Cass-FF)** ported.
+    `tests/proper_compare/tProperCompareCassFF.m` — 4 tests:
+    `test_proper_cass_ff_runs`, `test_macos_cass_ff_runs`,
+    `test_compare_cass_ff_psf` (analytical PROPER aperture; max|a-b|
+    aligned < 0.1), `test_compare_cass_ff_psf_with_opd` (macos OPD +
+    amplitude mask passed through to PROPER; max|a-b| ≈ 1.1e-11,
+    matching pymacos's reported precision).  All 4 pass.
+    Infrastructure:
+    - `tests/proper_compare/+geometries/cass_farfield.m` — geometry
+      params struct.
+    - `tests/proper_compare/proper_run_cass_ff.m` — PROPER driver
+      (supports macos_opd / macos_amplitude pass-through, opd_sign_flip
+      to reconcile macos's OPD convention with PROPER's prop_add_phase).
+    - `tests/proper_compare/macos_run_cass_ff.m` — mmacos driver.
+    - `tests/proper_compare/private/compare_and_record.m` — minimal
+      comparison harness with metrics struct + optional 3-panel PNG
+      (macos | PROPER | difference) written to `results/phase<N>/`.
+    - `tests/proper_compare/private/{centroid_loc, crop_center,
+      embed_macos_array_in_proper_grid}.m` — supporting helpers.
+    - `run_mmacos_tests.sh` adds PROPER + proper_compare/ to MATLAB
+      path, walks subfolders so `TestSuite.fromFolder` picks up the
+      new class.
+    - `.gitignore` excludes `tests/proper_compare/results/phase*/`
+      so per-run PNGs don't churn the repo (analog of pymacos's
+      gitignored results dir).
+    - **`run_mmacos_tests.sh` now splits the full-suite run into
+      per-model_size matlab -batch invocations** (§0 follow-up logs
+      the underlying macos engine bug).  Without the split, Phase 5
+      tests (model_size=512) running after Phase 3/4 tests
+      (model_size=128) in the same MATLAB session trigger
+      `malloc()` heap corruption on the next trace.  Same issue
+      pymacos works around via per-phase pytest processes.
+    - Named groups for dev-loop speed: `./run_mmacos_tests.sh fast`
+      (size=128 non-masks, ~10 s), `masks` (size=128 masks, ~10 min),
+      `proper` (size=512 PROPER, ~15 s).  Full `./run_mmacos_tests.sh`
+      runs everything (~11 min).  Iterating on a Phase 6+ slice that
+      doesn't touch masks should use `fast` between edits and reserve
+      the full suite for pre-commit.
+  - [ ] **Slice 2 — Phase 2 (Coro NF)**: port
+    `test_coro_nfprop.py` (near-field plane-to-plane propagation,
+    HCIT-style coronagraph, sum-normalised flux comparison).
+    Needs an additional geometry struct + driver + a Phase-2 results
+    dir.
+  - [ ] **Slices 3+** for the remaining phases in
+    `pymacos/tests/proper_compare/`:
+    - Phase 3 (`test_coro_nfprop_phase3.py`): 6 sub-tests in one file
+      (3a NFPlane, 3b sphere→plane, 4a/4b pupil→pupil, 5.1/5.2 ExitPupil
+      → FocalPlane with/without FPM+Lyot).
+    - Phase 6a (`test_coro_apodizer.py`): pupil apodisation via
+      external NxN mask (uses `macos.apodize`).
+    - PSF / DM-phase / aberration sweeps (PSF, DM-phase, aberrations,
+      band-limited mask, vortex) as separate slices.
+  - [x] Validate at the same RMS / max numeric tolerances pymacos hits
+    — met for Slice 1 (Cass-FF nominal_with_opd: 1.1e-11 vs pymacos's
+    reported ~1e-11).
 
 - [ ] **Phase 6 — `dw_dz_zernike` driver**
   - [ ] `+macos/dw_dz_zernike.m` plus the `+channels/` submodule
