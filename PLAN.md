@@ -469,10 +469,29 @@ unlocks the next.
     starts comparing numerically against pymacos reference outputs.
 
 - [ ] **Phase 4 — CodeV regression port**
-  - [ ] Port `test_api_rx_grating.py` + `test_masks.py` (6601 tests).
-  - [ ] Reference values reused from pymacos's expected outputs —
-    bit-identical pass expected since both call the same
-    `libsmacos.a`.
+  - [x] **Slice 1**: `test_api_rx_grating.py` (17 tests) → `tests/tCodeVGrating.m`.
+    Added 12 +macos grating wrappers (`elt_grating_any`,
+    `elt_grating_fnd`, `get/set_elt_grating_params`,
+    `get/set_elt_grating_order`, `get/set_elt_grating_rulewidth`,
+    `get/set_elt_grating_type`, `get/set_elt_grating_dir`).
+    Reference values transcribed from
+    `pymacos/tests/rx_data.py::Rx_Grating_001()` into
+    `tests/private/rx_grating_001_data.m` (single fixture; tiny).
+    17/17 pass; full suite now 67/67.  Surfaced and fixed one
+    arg-list-order bug in `set_elt_grating_params` — the api signature
+    is `(ok, iElt, Spacing, Diff_Order, h1HOE_, reflective, setter)`
+    but the declarations list them in `(ok, iElt, Diff_Order, Spacing, ...)`
+    order, which had tricked a swap.  Audit of other +macos wrappers
+    found no other ordering mismatches.
+  - [ ] **Slice 2**: `test_masks.py` (6584 tests) → `tests/tCodeVMasks.m`.
+    Substantially larger reference set; switch from `.m` transcription
+    to a Python-side `.mat` export so `pymacos/tests/rx_data.py` stays
+    the single source of truth.  Wrappers needed: aperture / obscuration
+    surface (predicates, finders, getters/setters for ApType, ObsType,
+    polygon vertex tables).
+  - [ ] Bit-identical pass expected: both languages drive the same
+    `libsmacos.a`, so numerical equality at machine precision is the
+    expected outcome (already met for Slice 1).
 
 - [ ] **Phase 5 — PROPER regression port**
   - [ ] Install MATLAB PROPER (Krist's native release; PyPROPER3 is the
