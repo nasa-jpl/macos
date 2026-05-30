@@ -612,23 +612,89 @@ to compare against pymacos.
       runs everything (~11 min).  Iterating on a Phase 6+ slice that
       doesn't touch masks should use `fast` between edits and reserve
       the full suite for pre-commit.
-  - [ ] **Slice 2 — Phase 2 (Coro NF)**: port
-    `test_coro_nfprop.py` (near-field plane-to-plane propagation,
-    HCIT-style coronagraph, sum-normalised flux comparison).
-    Needs an additional geometry struct + driver + a Phase-2 results
-    dir.
-  - [ ] **Slices 3+** for the remaining phases in
-    `pymacos/tests/proper_compare/`:
-    - Phase 3 (`test_coro_nfprop_phase3.py`): 6 sub-tests in one file
-      (3a NFPlane, 3b sphere→plane, 4a/4b pupil→pupil, 5.1/5.2 ExitPupil
-      → FocalPlane with/without FPM+Lyot).
-    - Phase 6a (`test_coro_apodizer.py`): pupil apodisation via
-      external NxN mask (uses `macos.apodize`).
-    - PSF / DM-phase / aberration sweeps (PSF, DM-phase, aberrations,
-      band-limited mask, vortex) as separate slices.
+  - [x] **Slice 2 — Phase 2 (Coro NF)** ported.
+    `tProperCompareCoroNFprop.m` — 3 tests covering NFPlane Elt 2→3
+    of Rx_Coro.in (774 mm Fresnel).  Both engines fed the same
+    `complex_field` at Elt 2; sum-norm comparison.  Pymacos hits
+    2.5e-10 max; mmacos hits **4.836e-13 max** — 500× tighter (see
+    FFT-backend curiosity below).  model_size=1024, new third group
+    in run_mmacos_tests.sh.
+  - [x] **Slice 3 — Phase 3** ported.
+    `tProperCompareCoroPhase3.m` — 6 tests covering the rest of the
+    Coro chain: 3a NFPlane (5→6), 3b sphere→plane (8→9), 4a pupil
+    →pupil through focus (8→10), 4b NFPlane (13→14, no Lyot),
+    5.1 ExitPupil→SciFP no mask, 5.2 ExitPupil→SciFP with FPM+Lyot.
+    All numerics match pymacos's reported bounds.  Added geometries
+    `coro_sphere_to_plane` + `coro_pupil_to_pupil` and the matching
+    macos_run / proper_run drivers.
+  - [x] **Slice 4 — Phase 6a (apodiser)** ported.
+    `tProperCompareCoroApodizer.m` — 1 test, soft Gaussian-edge
+    apodiser at Elt 5 of Rx_Coro_noLyot.in, then NFPlane to Elt 6.
+    Same mask handed to both engines (macos via `macos.apodize`,
+    PROPER via `prop_multiply`).  max=3.971e-08 — matches pymacos's
+    4e-8 exactly.  Added `+apodizer/` package
+    (`build_apodised_mask`, `circle`, `gaussian_edge_taper`).
+  - [x] **Slice 5 — Cass-FF aberrations** ported.
+    `tProperCompareCassFFAberrations.m` — 6 parametrized cases
+    (nominal + Tx/Ty/Tz ±1-5 µm perturbations to M2).  Each
+    perturbs macos, captures OPD at the exit pupil, hands it to
+    PROPER via prop_add_phase, compares focal-plane PSFs.  max=
+    9.337e-12 — same precision as the unperturbed Phase 1 result.
+  - [ ] **Slices 6+** for the remaining proper_compare files:
+    - `test_coro_aberrations.py` (2 parametrized tests; Coro chain
+      under SM tilts/translations).
+    - `test_coro_dm_phase.py` (1 parametrized; DM phase imprint).
+    - `test_coro_dm_grid_self.py` (1 parametrized; DM-grid
+      self-consistency).
+    - `test_band_limited_mask.py` (5 tests; band-limited FPM
+      construction).
+    - `test_psf.py` (1 real test, 1 skipped; PROPER-only baseline
+      that duplicates the Cass-FF sanity we already have — low
+      priority).
+    - `run_broadband_*.py` are not tests; they generate reports.
   - [x] Validate at the same RMS / max numeric tolerances pymacos hits
     — met for Slice 1 (Cass-FF nominal_with_opd: 1.1e-11 vs pymacos's
-    reported ~1e-11).
+    reported ~1e-11) and Slice 2 (Coro NF: 4.836e-13 sum-norm max —
+    500× TIGHTER than pymacos's 2.5e-10, see curiosity below).
+  - [ ] **Curiosity (logged 2026-05-30, defer):** mmacos's Phase-2
+    NF comparison hits 4.836e-13 sum-norm max vs pymacos's reported
+    2.5e-10 — same macos backend, same geometry.  Both PROPER
+    implementations are the same algorithm but different FFT
+    backends: MATLAB PROPER (Gutt's port) calls MATLAB's `fft2`,
+    which on R2026a dispatches to Intel MKL; PyPROPER3 (Krist's
+    Python port) uses NumPy's pocketfft by default.  Likely
+    explanation: MKL's accumulation strategy is more precise than
+    pocketfft on 1024² complex transforms.  Confirm by saving
+    `complex_field` at Elt 2 to .mat and feeding it through both
+    PROPER backends directly (strips the macos hand-off).  Practical
+    consequence: mmacos-side PROPER tolerances can be tighter than
+    pymacos's — better regression detection at the cost of
+    cross-language reproducibility.
+    **Remediation path (closes the 500× gap):** install `mkl_fft`
+    (`pip install mkl-fft` or `conda install -c conda-forge mkl_fft`)
+    and monkey-patch numpy.fft before importing PyPROPER3:
+    ```
+    import mkl_fft.interfaces.numpy_fft as _mkl
+    import numpy.fft as _np_fft
+    _np_fft.fft2  = _mkl.fft2
+    _np_fft.ifft2 = _mkl.ifft2
+    import proper  # picks up the MKL versions transparently
+    ```
+    PyPROPER3 imports `numpy.fft.fft2` / `ifft2` at module-load, so
+    the patch has to happen BEFORE the `import proper`.  Suggested
+    integration: an env flag (e.g. `PYMACOS_USE_MKL_FFT=1`) that
+    triggers the patch from pymacos's `tests/proper_compare/conftest.py`
+    before any test imports PROPER.  Default off so existing pymacos
+    numerical references don't shift; opt-in for tighter agreement.
+    Caveats: pin `MKL_NUM_THREADS=1` for the deterministic path
+    (multi-thread MKL reductions vary at the ~1-ULP level); literally
+    bit-identical to MATLAB requires matching MKL version + alignment
+    + thread count, but "comparable" (within a few ULP) is realistic.
+    Other options ranked: scipy.fft + MKL backend (same as mkl_fft,
+    newer API) > pyFFTW (FFTW3 — better than pocketfft, not quite
+    MKL's accumulation order).  Skipping for now: mmacos suite is
+    already at the FFT-precision limit; pymacos would need this for
+    its own tighter regression bars.
 
 - [ ] **Phase 6 — `dw_dz_zernike` driver**
   - [ ] `+macos/dw_dz_zernike.m` plus the `+channels/` submodule
