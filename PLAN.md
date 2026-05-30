@@ -640,18 +640,42 @@ to compare against pymacos.
     perturbs macos, captures OPD at the exit pupil, hands it to
     PROPER via prop_add_phase, compares focal-plane PSFs.  max=
     9.337e-12 — same precision as the unperturbed Phase 1 result.
-  - [ ] **Slices 6+** for the remaining proper_compare files:
-    - `test_coro_aberrations.py` (2 parametrized tests; Coro chain
-      under SM tilts/translations).
-    - `test_coro_dm_phase.py` (1 parametrized; DM phase imprint).
-    - `test_coro_dm_grid_self.py` (1 parametrized; DM-grid
-      self-consistency).
-    - `test_band_limited_mask.py` (5 tests; band-limited FPM
-      construction).
-    - `test_psf.py` (1 real test, 1 skipped; PROPER-only baseline
-      that duplicates the Cass-FF sanity we already have — low
-      priority).
-    - `run_broadband_*.py` are not tests; they generate reports.
+  - [x] **Slice 6 — band-limited masks + DM phase imprint** ported.
+    Two new test classes:
+    - `tBandLimitedMask.m` — 3 tests (pure math, no macos/PROPER):
+      BL disc integral equals area / dx² to 6+ digits; super-sampled
+      disc integral to ~1e-4; BL central peak + radial mean at r=r0
+      invariant across N ∈ {128,256,512,1024} to better than 1-2%.
+      New +apodizer helpers: `band_limited_circle`,
+      `build_band_limited_mask` (analytic FT of unit disc, ifft2 to
+      real space, fftshift).
+    - `tProperCompareCoroDMPhase.m` — 3 parametrized cases (Z4
+      defocus, 5-cycle sinusoid, filtered noise k=12) at λ/20 RMS
+      over a 16 mm support disk.  macos via `apodize_complex` (pure
+      phase imprint), PROPER via `prop_add_phase`.  All three hit
+      sum-norm RMS ~1.2e-9, max ~3.7e-8 — matches pymacos exactly.
+      New +macos wrapper: `apodize_complex` (splits MATLAB complex
+      mask into real+imag for the cfield_apodize_complex api).
+      Codegen now emits `do_cfield_apodize_complex` (removed from
+      the HAND_WRITTEN skip list).
+  - [ ] **Slices 7+** still pending:
+    - `test_coro_dm_grid_self.py` (6 parametrized = 3 shapes × 2
+      detectors; macos self-consistency between apodize_complex and
+      elt_grid).  Needs a +macos.elt_grid wrapper — non-trivial
+      because pymacos transposes the grid array for the Fortran
+      column-major API and MATLAB is already column-major (easy to
+      get wrong).  Test has no hard assertion, only a diagnostic
+      print — value is mostly in the wrapper + PNG artefacts.
+    - `test_coro_aberrations.py` (5 parametrized chain runs).
+      Needs ~500 LOC of port: `SystemState`/`CORO_LAYOUT`/
+      `run_chain_with_state` from pymacos's `aberrations.py`, plus
+      `lambda_over_D_pixels`/`plot_contrast_curves` from
+      `contrast.py`.  Mirrors the dw/dx state-vector model that
+      Phase 7 will build separately — defer until Phase 7 lands the
+      driver code, then both share the chain runner.
+    - `test_psf.py` (1 real, 1 skipped) — duplicates Cass-FF sanity,
+      low priority.
+    - `run_broadband_*.py` are not tests; report generators.
   - [x] Validate at the same RMS / max numeric tolerances pymacos hits
     — met for Slice 1 (Cass-FF nominal_with_opd: 1.1e-11 vs pymacos's
     reported ~1e-11) and Slice 2 (Coro NF: 4.836e-13 sum-norm max —
