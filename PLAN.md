@@ -533,9 +533,20 @@ to compare against pymacos.
     the PolyApVec write applies `dx*dx_fact` to the shift.  For
     `dx_fact = +1` the two expressions agree; for `dx_fact = -1`
     (parabola_glb srf3) they don't.  Failed 3 cases, fixed to match.
-  - [ ] Bit-identical pass expected: both languages drive the same
-    `libsmacos.a`, so numerical equality at machine precision is the
-    expected outcome (already met for Slice 1).
+  - [x] **Bit-identical pass — partial:**
+    - Slice 1 (grating) — **met directly**.  Reference values are
+      transcribed verbatim from `rx_data.Rx_Grating_001()`; tests
+      assert `verifyEqual(value, ref_value, AbsTol 1e-15)`.  Round-
+      trip setters return the set value at machine precision.
+    - Slice 2 (masks) — **met indirectly**.  Tests are geometric
+      (every ray lies inside/outside the analytic mask shape), same
+      assertion form pymacos uses.  Both languages drive the same
+      libsmacos.a, so the trace outputs ARE bit-identical, but the
+      tests don't directly compare the ray arrays — they assert the
+      geometric consequence.  Direct cross-language ray-position
+      comparison belongs in Phase 8 (export `ray_info.pos` from
+      pymacos to `.mat` for a canonical (Rx, srf) combo, have mmacos
+      load it and `verifyEqual(pos_mm, pos_py)`).
 
 - [ ] **Phase 5 — PROPER regression port**
   - [ ] Install MATLAB PROPER (Krist's native release; PyPROPER3 is the
@@ -566,6 +577,14 @@ to compare against pymacos.
 - [ ] **Phase 8 — Cross-language verification**
   - [ ] Run identical Rx + perturb sequences through pymacos and
     mmacos; assert numerical equality at machine precision.
+  - [ ] **Anchor cases to add first (called out by Phase 4 slice 2
+    deferral):** for a small canonical set of (Rx, srf, mask) combos
+    pulled from `tCodeVApe/ObsMasks*`, export the post-trace
+    `ray_info.pos` (and `.dir`, `.opl`) from pymacos to `.mat` and
+    have an mmacos test class `tCrossLangRayInfo` load + assert
+    bitwise equality.  Closes the gap between "both engines pass
+    geometric assertions on the same Rx" and "both engines produce
+    identical ray-trace arrays."
   - [ ] This is the actual proof of "same backend." Add to CI once a
     CI substrate exists.
 
