@@ -484,11 +484,41 @@ unlocks the next.
     order, which had tricked a swap.  Audit of other +macos wrappers
     found no other ordering mismatches.
   - [ ] **Slice 2**: `test_masks.py` (6584 tests) → `tests/tCodeVMasks.m`.
-    Substantially larger reference set; switch from `.m` transcription
-    to a Python-side `.mat` export so `pymacos/tests/rx_data.py` stays
-    the single source of truth.  Wrappers needed: aperture / obscuration
-    surface (predicates, finders, getters/setters for ApType, ObsType,
-    polygon vertex tables).
+    Surprise on review: this file does NOT consume `rx_data.py` fixtures
+    (only the grating slice does).  Tests instead **mutate the .in text
+    file directly** (overwriting specific lines with new `ApType=` /
+    `ApVec=` / `nObs=` values), reload via `macos.load_rx`, trace, and
+    check that ray-fall geometry sits inside the analytic mask shape.
+    So no `.mat` export pipeline needed; the .m transcription path
+    continues to work.
+    Scope:
+    - 8 test classes: ApeMasks{Circ,Ellipse,Rect,Polygon} +
+      ObsMasks{Circ,Ellipse,Rect,Polygon}.  Each is heavily
+      parametrized (mask geometry × srf × Rx file); the 6584-test
+      count is dominated by the Polygon classes.
+    - **Two new +macos wrappers** are load-bearing:
+      - `macos.get_ray_info()` → struct with `.pos (3,N)`, `.dir (3,N)`,
+        `.opl (N)`, `.ok_trace (N)`, `.ok_pass (N)`.  api routine
+        `ray_info_get` is already codegen-wrapped.
+      - `macos.get_elt_csys(srf)` → struct with `.csys (6,6)`,
+        `.csys_lcs (bool)`, `.csys_upd (bool)`.  api routine
+        `elt_csys_get` was SKIPPED by the codegen (rank-3 `csys(6,6,N)`
+        array — codegen handles ≤2D).  Need a hand-written
+        `do_elt_csys_get` in `mmacos_mex.F` or extend codegen to rank 3.
+        Hand-write is faster.
+    - **MATLAB-side helpers** to port from test_masks.py:
+      `rectangular_polygon(wx, wy, dx, dy)`, `hexagon(s, dx, dy)`,
+      `poly_lines(verts)`, `chk_polygon_pts(pts, bounds)`,
+      `ray_pos_at_srf_in_tangent_plane(tmp_rx, lines, srf)`.  Pure
+      geometry / linear algebra; mechanical translation.
+    - **Test fixtures**: `RX_PARAMS` dict (in test_masks.py:42)
+      mapping `'parabola'`/`'parabola_glb'` to (`Rx_Mask_Parabolas[_glb].in`
+      path, `SrfInfo{dx_fact, line_id, line_id_obs}` for each Srf).
+      Transcribe to `tests/private/rx_mask_params.m`.
+    - Use `tempname()` for the per-test scratch .in file (analog of
+      pytest's `session_dir`).
+    - Bit-identical pass expected (same libsmacos.a, deterministic
+      trace, geometric assertion not numerical equality).
   - [ ] Bit-identical pass expected: both languages drive the same
     `libsmacos.a`, so numerical equality at machine precision is the
     expected outcome (already met for Slice 1).
