@@ -413,18 +413,36 @@ unlocks the next.
     api (collides with hand-written array form; expose as a
     distinct cmd later if needed).
 
-- [ ] **Phase 2 — `MacosSession` MATLAB class** (high-level layer)
-  - [ ] `MacosSession.m` classdef in `MACOS_resources/mmacos/+macos/`,
-    one method per public function in `macos.py`. Methods validate
-    args, delegate to `mmacos('cmd', ...)`.
-  - [ ] Mirror pymacos's `firstEntry` / `rxLoaded` guard pattern and
-    keyword-arg semantics via name-value pairs.
-  - [ ] Constructor calls `mmacos('init', model_size)`; lifecycle
-    otherwise trivial since libsmacos.a owns the state.
-  - [ ] **Both layers remain first-class.** The class is a thin handle
-    over the mex; power users drop to `mmacos('cmd', ...)` whenever
-    the class abstraction gets in the way (e.g. debugging, scripting
-    a non-standard command sequence).
+- [x] **Phase 2 — `+macos/` package + `macos.Session` class** (high-level layer)
+  - [x] `+macos/` MATLAB package — one `.m` per public function.
+    Improvements over pymacos's surface (with user buy-in to "make it
+    better"): split getters/setters into `get_*` / `set_*` (MATLAB-
+    idiomatic, autocomplete-friendly), single-element vs array
+    perturbations split into `perturb` / `perturb_many` (was confusing
+    `perturb` vs `prb_elt` in pymacos), `trace` returns a struct
+    (`s.nRays`, `s.rmsWFE`), `dx_at(srf, unit)` does unit conversion
+    in MATLAB (`'m'` default, `'mm'`, `'cm'`, `'um'`, `'native'`).
+    Coverage v1: 23 functions — init / load_rx / save_rx / modify /
+    num_elt / has_rx / cbm / sys_units / get_src_sampling /
+    set_src_sampling / get_src_wvl / set_src_wvl / get_elt_vpt /
+    set_elt_vpt / get_elt_psi / set_elt_psi / get_elt_rpt /
+    set_elt_rpt / perturb / perturb_many / perturb_src / trace /
+    opd / intensity / complex_field / dx_at / apodize.
+  - [x] `macos.Session` classdef in the same package — thin handle
+    over the function layer.  Constructor takes `model_size`,
+    every method delegates to the same-named package function.  No
+    per-instance Fortran state (libsmacos.a owns it).
+  - [x] Mex layer cleanup: hand-written cmd `'perturb_elt'` renamed
+    to `'prb_elt'` (matches the api routine it actually calls —
+    the array form).  Codegen now emits cmd `'perturb_elt'` mapping
+    to the single-element api routine; surface is more discoverable.
+  - [x] Smoke test `test_macos_pkg.m`: 25/25 pass.  Three sections:
+    (A) function-style end-to-end, (B) Session-style end-to-end,
+    (C) cross-surface state coherence (function-set → class-get and
+    class-set → function-get both observe the same value).
+  - [x] **Both layers remain first-class.** Power users call
+    `mmacos('cmd', ...)` directly; routine work calls `macos.*`
+    functions; OO-flavor code uses `m = macos.Session()`.
 
 - [ ] **Phase 3 — Test infrastructure**
   - [ ] `matlab.unittest` skeleton in `+test/` with shared utilities:
