@@ -445,13 +445,28 @@ unlocks the next.
     `mmacos('cmd', ...)` directly; routine work calls `macos.*`
     functions; OO-flavor code uses `m = macos.Session()`.
 
-- [ ] **Phase 3 — Test infrastructure**
-  - [ ] `matlab.unittest` skeleton in `+test/` with shared utilities:
-    Rx fixtures, tolerance helpers, `.mat` reference loader.
-  - [ ] `run_mmacos_tests.sh` analog of `run_proper_tests.sh`.
-  - [ ] Tests written against `MacosSession`; a smoke layer also
-    exercises the raw `mmacos(...)` form so both surfaces are
-    regression-covered.
+- [x] **Phase 3 — Test infrastructure**
+  - [x] `matlab.unittest` skeleton in
+    `MACOS_resources/mmacos/tests/` with shared utility
+    `tests/private/rx_fixture_path.m` (pulls from the pymacos Rx
+    corpus so no duplication).  Five test classes:
+    `tMmacosCmd` (raw mex layer), `tMacosPkg` (+macos functions),
+    `tMacosSession` (class delegation), `tCrossSurface` (mutate via
+    one surface, observe via another — proves shared backend),
+    `tPerturbRoundtrip` (regression-pins the ULP residual finding
+    so a future psi-renormalize fix in CPERTURB_PROG doesn't break
+    cleanly — see §0 follow-up).
+    50 tests, all pass.  ~6 s cold + 5 s suite.
+  - [x] `run_mmacos_tests.sh` analog of `run_proper_tests.sh` — auto-
+    rebuilds mex if stale, supports `-k <substring>` and direct class-
+    name filter args.
+  - [x] Wired into `make unittest` alongside the existing `make test`
+    quick-smoke target.  Quick-smoke (`test_mmacos.m`,
+    `test_macos_pkg.m`) kept as readable `fprintf`-style diagnostics —
+    different intent from unittest (CI / assertion layer).
+  - [x] Tolerance / `.mat` reference loader deferred — not needed yet.
+    Phase 4 (CodeV regression port) will add them when the suite
+    starts comparing numerically against pymacos reference outputs.
 
 - [ ] **Phase 4 — CodeV regression port**
   - [ ] Port `test_api_rx_grating.py` + `test_masks.py` (6601 tests).
