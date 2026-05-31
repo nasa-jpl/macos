@@ -910,3 +910,179 @@ For every new capability:
 - **Wrappers strategy**: language-neutral Fortran API as single source of truth; Python and MATLAB bridges over it. Pays back the factoring cost after ~3 backports.
 - **FDTD**: out of scope for embedding in macos. Document handoff pattern with external tools.
 - **GMI build default**: `gfortran` (clean MATLAB exit). `ifx` available via `makegmi.sh ifx` with `-reentrancy=none` linking the single-threaded `libifcore.so.5`.
+
+---
+
+## 11. GMI replacement surface
+
+Inventory of what mmacos must cover to retire GMI as the de-facto
+sensitivity / sensing entry point.  Source: survey of
+`MACOS_resources/GMI/{GMI,GMIG}.F`, `GMI.inc`, `call_GMI.m`,
+`optiixInit_jzlou.m`, and the `test_ff/` driver scripts on 2026-05-31.
+
+GMI is monolithic: one MEX (`GMI.mexa64`), one work routine
+(`GMI_DVR`), 14 positional PRHS inputs, 9 named PLHS outputs, and
+~30 named behaviours toggled via a packed `pflg` flag array.  The
+mmacos equivalent doesn't have to mirror the call shape — it can
+expose the same capabilities via the existing `+macos.*` function-
+package idiom — but the **set of capabilities** below is what
+"retire GMI" means.
+
+### 11.1 Top-level invocation shape (today)
+
+```matlab
+[PIX, CE, OPD, OPDMask, SPOT, WFE, c, metMeas, USER] = ...
+    call_GMI(prb, pzern, pgrid, pdm, pfa, prad, pimg, ...
+             InfFcnZern, InfFcnGrid, param[, winfil])
+```
+
+`param` is a struct (~30 fields, table below).  Each call: snapshot
+nominal state → apply perturbations → trace → assemble outputs →
+restore.  Per-call cost is dominated by the trace; the snapshot/
+restore book-keeping is what makes a sensitivity loop coherent.
+
+### 11.2 Perturbation channels
+
+| Channel | Surface list | Coefficient vector | What it writes | Reset behavior |
+|---|---|---|---|---|
+| Zernike | `param.zernSrf` (Nx2: ids + pass-flag) | `pzern` (N·mzern) | `ZernCoef(4..nzern+3, iElt)`; **forces `SrfType=8`** | Idle ELSE zeros coefs + sets `SrfType=2` |
+| MonZern (FreeForm) | `param.monzernSrf` | `param.pmonzern` (N·nmonzern) | `MonZernCoef(4..nmonzern+3, iElt)`; caller must already have set SrfType=14 | Zeros coefs |
+| Rigid body (per-element) | `param.rbSrf` (Nx2: ids + global(0)/local(1) frame) | `prb` (mprb-vec) | `PERTURB`/`GPERTURB` via SMACOS — updates `TElt`, `psiElt`, `vptElt`, `pMon/xMon/yMon/zMon`, on FreeForm also `pFF/xFF/yFF/zFF`, `pData/xData/yData/zData` | `SetToNominalSettings` restores from snapshot |
+| Rigid body (group) | `rbSrf` last col == 1 → group via `EltGrp` | `prb` | `GPERTURB` propagates to every element in the group | as above |
+| Grid (surface deformation) | `param.gridSrf` | `pgrid` (N·mgrid²) | `GridMat(:,:, iEltToGridSrf(iElt))` per actuator pattern | Not snapshotted (overwritten each call) |
+| DM (poked actuators) | `param.dmSrf` | `pdm` (mpdm-vec) | Influence-function-weighted grid deformation per actuator | as above |
+| InfFcnZern | scoped by zernSrf | 15-vec Zernike influence function (input) | Scales the per-segment Zernike apply | — |
+| InfFcnGrid | scoped by gridSrf | `mgrid x mgrid` grid influence (input) | Scales the per-segment grid apply | — |
+
+Surface lists are 2-D matrices.  The **last column** is a flag (for
+`rbSrf` it's the global/local-frame switch); a 1-column list silently
+disables the channel.  This is the source of the common "wrote
+`[1:N]'` and got no perturbation" footgun.
+
+Compile-time sizes (`GMI.inc`): `numseg=7`, `mzern=45`, `mgrid=256`,
+`mprb=(numseg+55)·6`, `mpzern=numseg·mzern`,
+`mpgrid=mgrid²·((numseg+1)·2+numacf)`, `mpdm=(numseg+2)·2`, `mpfa=7`,
+`mprad=numseg`, `mpimg=100`, `mpflg=2000`.  mmacos can size
+dynamically — no recompile to grow.
+
+### 11.3 Outputs (PLHS array, 10 entries returned by the mex; `call_GMI.m` re-packs to 9)
+
+| Idx | Name | Shape | Meaning |
+|---|---|---|---|
+| 1 | `PIX` | nPix×nPix | Detector pixel array (after cPix rebin + jitter + shot/read noise + QE + bias + crosstalk) |
+| 2 | `RealEF` | nPix×nPix | Real part of pixel-plane complex EF |
+| 3 | `ImagEF` | nPix×nPix | Imag part — `CE = complex(RealEF, ImagEF)` MATLAB-side |
+| 4 | `OPD` | nGridPts×nGridPts | OPD map at `ifOPD` reference element |
+| 5 | `OPDMask` | nGridPts×nGridPts | Per-pixel mask (1 if traced, 0 if blocked) |
+| 6 | `SPOT` | 2×iSpot | Spot diagram (x,y per ray hit) |
+| 7 | `WFE` | 1×1 | RMS WFE in WaveUnits |
+| 8 | `cent` | 2×1 | Centroid (xcent, ycent) |
+| 9 | `metMeas` | nMetMeas×1 | Metrology sensor measurements (when `ifMetCalc`) |
+| 10 | `USER` | mElt×1 | User-defined per-element scratch (currently RptElt diagnostic) |
+
+### 11.4 Modes / flags (the `pflg` payload — parsed by `ExtractFlagParameters`)
+
+Fixed-position scalars (`pflg(1..29)`):
+
+| pos | param field | Meaning |
+|---|---|---|
+| 1 | `ifFEX(1)` | Find exit pupil; `==2` also writes XP geometry to pflg(31-37) |
+| 2 | `ifPupilImg` | Compute pupil image |
+| 3 | `cGrid` | Output grid sampling (≤ nGridpts) |
+| 4 | `cPix` | Output pixel-plane sampling |
+| 5 | `DMlim` | DM stroke clip |
+| 6 | `ifOPD` | Element id where OPD is reported (also drives mask) |
+| 7 | `ifShotNoise` | Add Poisson shot noise to PIX |
+| 8 | `sigReadNoise` | Gaussian read noise σ |
+| 9 | `sigJitterX` | Pixel jitter σ along x |
+| 10 | `sigJitterY` | Pixel jitter σ along y |
+| 11 | `sigCrosstalk` | Pixel-to-pixel crosstalk σ |
+| 12 | `StartSeed` | RNG seed |
+| 13 | `transMaskThreshold` | Translation-mask threshold |
+| 14 | `rotMaskThreshold` | Rotation-mask threshold |
+| 15 | `pixelSize` | Physical detector pixel pitch |
+| 16 | `mzern` | # Zernike modes per surface (must match `GMI.inc:mzern`) |
+| 17 | `QE` | Quantum efficiency |
+| 18 | `DBias` | Detector bias |
+| 19 | `wlens` | Wavelength selector |
+| 20 | `ifPIX` | Run PIX command (else PIX returned empty) |
+| 21 | `ifRetRefSrf` | Return reference-surface info |
+| 22 | `ifSPOT` | Element id for SPOT diagram (0=off) |
+| 23 | `ifPIXflip` | Flip PIX y-axis |
+| 24 | `ifPIXSpotDetCheck` | Spot-vs-pixel-plane consistency check |
+| 25 | `ifSysCalib` | Run `SystemCalib` pre-pass |
+| 26 | `ifPIXElt` | Element id where PIX is sampled |
+| 27 | `ifMetCalc` | Run `MetCalc` (metrology) |
+| 28 | `ifSpfCalc` | Run `SpfCalc` |
+| 29 | `ifRetUserSrf` | Populate `USER` array |
+
+Variable-length blocks (starting at `pflg(30)`, sentinel `9999` =
+absent): STOP(4) → iFSM+TFSM → iFDP → gridSrf → zernSrf → dmSrf →
+rbSrf → RptSrf+RptElt → ifFEX(2..8) tail → monzernSrf → RefSurfs →
+INTsrf.  Order is positional; adding fields without updating both
+sides shifts every later index.
+
+### 11.5 Internal work routines (the "what GMI does") — coverage status
+
+| Subroutine | Purpose | mmacos coverage today |
+|---|---|---|
+| `ReadDebugEnv` | Read `GMI_DEBUG` env var | trivial — env-based debug flag |
+| `GMI_DVR` | Top-level driver | what dw_dx (Phase 7) starts to replace |
+| `ObtainNominalSettings` | First-call snapshot of: Wavelen, Flux, zElt, ChfRayPos/Dir, xGrid/yGrid/zGrid, Tout; per-elt KrElt/KcElt/nObs/ObsType/ObsVec/psiElt/vptElt/rptElt/TElt/pMon-xMon-yMon-zMon/pFF-xFF-yFF-zFF/pData-xData-yData-zData/SrfMetPos | **MISSING** — need `+macos.snapshot()` / `+macos.restore()` |
+| `SetToNominalSettings` | Restore from snapshot at start of every later call | same |
+| `ExtractFlagParameters` | Unpack `pflg` into named locals | Absorbed by named-arg `+macos` API — the flag-packing layer goes away |
+| `ApplyPerturbationToOpticalSystem` | Loop the three channels (Zern, MonZern, rigid-body) | Channel-wise: `+macos.perturb`, `+macos.perturb_many`, `+macos.perturb_grp`, and `mmacos('elt_srf_zrn_coef', ...)` cover the apply; the loop+reset structure is what dw_dx builds |
+| `ApplyPerturbationToOpticalSystem_Prb` | Per-element rigid-body loop | `+macos.perturb_many` ✓ |
+| `SystemCalib` | Pre-pass calibration (when `ifSysCalib`) | **MISSING** — investigate what it actually does |
+| `MetCalc` | Metrology sensor calc | **MISSING** |
+| `SpfCalc` | "SPF" calc (what?) | **MISSING** — figure out scope |
+| `ExecFDPCmd` | Run FDP command | **MISSING** |
+| `ComposePIX` | Assemble PIX (cPix rebin + noise + jitter + QE + bias + crosstalk) | **MISSING** — substantial port; raw mex has the buffer but no noise pipeline |
+
+### 11.6 Capability coverage matrix
+
+| Capability | Status in mmacos |
+|---|---|
+| Perturbation channels: rigid-body | `+macos.perturb`, `+macos.perturb_many`, `+macos.perturb_src` ✓ |
+| Perturbation channels: Zernike | Raw `mmacos('elt_srf_zrn_coef', ...)` ✓; no `+macos.elt_zrn_*` veneer yet |
+| Perturbation channels: MonZern (FreeForm) | Raw `mmacos('elt_srf_mon_zrn_coef', ...)` ✓; no veneer |
+| Perturbation channels: grid surface | Raw `mmacos('elt_srf_grid_data', ...)` ✓; no `+macos.elt_grid` veneer (column-major transpose convention needs care) |
+| Perturbation channels: DM (influence-function-weighted grid) | **MISSING** — needs InfFcnGrid + per-actuator grid build helper |
+| Group perturbations (EltGrp) | `+macos.perturb_grp` planned — uses `prb_elt_grp` cmd that's already wired |
+| Nominal save/restore (sensitivity-loop coherence) | **MISSING** — top of Phase 7 list |
+| OPD output | `+macos.opd()` ✓ |
+| Complex EF output | `+macos.complex_field(srf)` ✓ |
+| OPD mask | Returnable via `macos.get_ray_info().ok_pass` reshape; no `macos.opd_mask()` shortcut yet |
+| Spot diagram | Raw `mmacos('spot_cmd', ...)` + `spot_get` ✓; no `+macos.spot()` veneer |
+| PIX output (raw) | Hand-written `mmacos('apodize', ...)` writes to WFElt; no PIX pull-back yet |
+| PIX with noise model (ComposePIX) | **MISSING** — port from GMI's ComposePIX (cPix rebin, shot/read noise, jitter, crosstalk, QE, bias) |
+| WFE | Returned by `+macos.trace()` as `.rmsWFE` ✓ |
+| Centroid | Computable from `get_ray_info`; no `+macos.centroid()` shortcut |
+| FEX / exit pupil | Raw `mmacos('xp_fnd', ...)` + `xp_get` ✓; no `+macos.xp()` veneer |
+| Metrology calc | **MISSING** |
+| FDP / FSM | **MISSING** |
+| System calibration | **MISSING** |
+| Reference-surface info return | partial — `ifRetRefSrf` triggers a structured output not yet exposed |
+| Per-element USER scratch | low priority |
+
+### 11.7 Phased roadmap to retire GMI
+
+| Phase | Delivers | GMI coverage |
+|---|---|---|
+| **Phase 7 (dw/dx) — must include:** | Nominal save/restore (`+macos.snapshot`/`+macos.restore`); Zern/MonZern/rb perturb channels (already exist as commands; build the loop+reset structure); OPD/CE pulls (exist); SystemState / chain-runner that doubles as the `test_coro_aberrations.py` infrastructure deferred from Phase 5 slice 7 | ~60% of GMI's everyday use (sensitivity loops, EFC inputs) |
+| **Phase 7+ slice A** | Spot veneer; PIX-with-noise (port ComposePIX); FEX wrapper; OPD mask veneer; centroid veneer | ~25% more |
+| **Phase 7+ slice B** | DM influence-function wrapper; grid-surface `elt_grid` veneer (with the column-major transpose convention pinned in tests) | ~5% more |
+| **Phase 7+ slice C** | SystemCalib, MetCalc, SpfCalc, FDP, FSM | Final ~10% — specialized (closed-loop calibration demos, metrology workflows) |
+
+At end of Phase 7 + slices A–C, mmacos covers GMI's full surface; the
+GMI mex can be deprecated.  Existing GMI callers either migrate to
+the `+macos` package directly or use a thin compatibility shim
+(callable `mmacos_gmi_compat(prb, pzern, ...)` that maps the 14-arg
+positional form to the modern `+macos` calls — useful for grandfathering
+the corpus of test_gmi*.m scripts).
+
+### 11.8 Open questions
+
+- `SpfCalc` purpose — comment in GMI.F is sparse.  Need to read the body or ask jzlou.
+- `SystemCalib` operating mode — is it a closed-form pre-pass or an iterative refinement?  Affects whether mmacos can do it inline or needs its own driver.
+- DM influence-function format — `InfFcnGrid` is `mgrid × mgrid`.  Single-actuator pattern that gets convolved per actuator?  Or per-actuator stack?  Affects the DM apply API shape.
