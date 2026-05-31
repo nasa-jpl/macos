@@ -349,6 +349,7 @@ c		 warning messages when you have nObs=0
 	use elt_mod
 	use loh_I2
         use macos_mod, only: ifStopSet
+        use Constants, only: INF
 
 	IMPLICIT NONE
 
@@ -1021,6 +1022,23 @@ C	  WRITE(*,112)'nObs',iElt
 	ELSE
 	  KcElt(iElt)=-eElt(iElt)*eElt(iElt)
 	  KrElt(iElt)=-(1.0 + eElt(iElt))*fElt(iElt)
+	END IF
+
+	! Defense in depth: a Flat is by definition zero-curvature, no
+	! conic.  Some older Rx files encode this as
+	! `KrElt= 0, KcElt= -1e38` which propagates through the formulas
+	! above to garbage (`eElt = sqrt(1e38) = 1e19`, `fElt = 0`),
+	! silently breaking SRS / FEX downstream.  Normalize after the
+	! main fElt/eElt fill so a buggy file can't poison the engine.
+	! Canonical Flat encoding is `KrElt= -1e22, KcElt= 0`; this
+	! block produces the same values regardless of the input.
+	! Logged on 2026-05-31 after the SRS-clobbers-Flat-zElt bug
+	! (PLAN.md §0 lists the wider follow-up).
+	IF (SrfType(iElt) .EQ. SrfType_Flat) THEN
+	  fElt(iElt)  =  INF
+	  eElt(iElt)  =  0d0
+	  KcElt(iElt) =  0d0
+	  KrElt(iElt) = -INF
 	END IF
 
 	RETURN

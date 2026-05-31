@@ -2254,20 +2254,27 @@ C
 	          DO i=1,3
 	            Vptp(i)=RayPos(i,1)+zElt(iSlv2)*RayDir(i,1)
 	          END DO
-	          zp=zElt(iSlv2)+CumRayL(1)-LSlv1
+	          ! Slave is Flat (e.g. FocalPlane): zElt encodes
+	          ! "propagate to next defined plane", not a physical
+	          ! distance.  Preserve the sentinel — pre-existing code
+	          ! overwrote it with `zElt(iSlv2)+CumRayL(1)-LSlv1`,
+	          ! clobbering FocalPlane's big z.  Matches the
+	          ! asymmetric-Returns branch (~line 2325).  Per Dave's
+	          ! spec 2026-05-31 ("Flat should always have big z").
+	          ! ChkDf2 was also hardened the same day to enforce
+	          ! fElt(Flat)=INF so this discriminator is reliable
+	          ! even for older Rx files with non-canonical KrElt=0.
+	          zp=zElt(iSlv1)
 	        ELSE
 	          IF ((zElt(iSlv1).GE.BIG).OR.(zElt(iSlv2).GE.BIG)) THEN
 	            WRITE(*,*) 'WARNING: Plane-to-plane propagation',
      &	            ' should be set up with zElt < INF'
 	          END IF
-	          IF (CumRayL(1).GT.LSlv1) THEN
-	            zp=zElt(iSlv2)+(CumRayL(1)-LSlv1)
-	          ELSE
-	            zp=zElt(iSlv2)-(CumRayL(1)-LSlv1)
-	          END IF
 	          DO i=1,3
 	            Vptp(i)=RayPos(i,1)+zElt(iSlv2)*RayDir(i,1)
 	          END DO
+	          ! Slave Flat, slave-to Flat: same preservation rule.
+	          zp=zElt(iSlv1)
 	          fp=INF
 	        END IF
 	      ELSE

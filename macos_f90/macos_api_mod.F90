@@ -1323,6 +1323,39 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Get / Set zElt at one or more elements.  zElt is the
+      !            propagation distance from the previous surface (for
+      !            Flat / FocalPlane elements, encodes a big sentinel
+      !            value meaning "next defined plane").
+      ! Call     : CALL elt_z(ok, iElt, Z, setter, N)
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_z(ok, iElt, Z, setter, n)
+
+        implicit none
+        logical,                intent(out)  :: ok       ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n), intent(in)   :: iElt     ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(n), intent(inout):: Z        ! propagation distance to / from element
+        logical,                intent(in)   :: setter   ! if PASS, set; otherwise, return values
+
+        integer,                intent(in)   :: n        ! # of Elements
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) Z(:) = 0d0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          zElt(iElt(:)) = Z(:)
+        else
+          Z(:) = zElt(iElt(:))
+        end if
+
+        ok = PASS
+      end subroutine elt_z
+
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Set local element coordinate frame (TElt). If not active, it will activate it.
       !
       ! Call     : CALL elt_csys_set(ok,iElt,xDir,yDir,zDir,Upd,M)
