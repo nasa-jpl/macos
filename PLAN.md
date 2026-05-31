@@ -721,8 +721,59 @@ to compare against pymacos.
     its own tighter regression bars.
 
 - [ ] **Phase 6 — `dw_dz_zernike` driver**
-  - [ ] `+macos/dw_dz_zernike.m` plus the `+channels/` submodule
-    (ZernikeCoefChannel only).
+  - **Build pymacos first, then port to mmacos.** pymacos already has
+    the single-field worker (`tests/sensitivities/dw_dz_zernike.py`,
+    346 LOC); we're only adding the multi-field supervisor + the
+    sensitivity-bundled `.mat` format.  mmacos backport is then a
+    mechanical translation of a validated design.
+  - **Risk to mitigate:** pymacos-first can leak Python idioms into
+    the mmacos port (dicts, list comprehensions, numpy fancy
+    indexing, Python-specific .mat field shapes).  Mitigation:
+    state the supervisor API contract in language-neutral form
+    BEFORE either implementation — name the field-set datatype
+    (Nx2 array, not list-of-tuples), the stack-output names
+    (`dwdxall`, `w0_stacked`, `indxall`, `field_table`), the
+    .mat layout, the worker→supervisor calling convention — then
+    implement the same shape in both.  The m2v idiom is already
+    shared; the worker/supervisor surface stays small.
+  - **Canonical output: `dwdxall`.**  The supervisor's bundled
+    output is the full state-vector control model
+    `wall = dwdxall * x + w0_stacked`, where `wall` stacks per-field
+    wavefronts, `x` is the channel coefficient vector, `w0_stacked`
+    is the per-field nominal-OPD baseline.  `dwdxall` is the
+    LOAD-BEARING output (not just "a convenience stack" — it's what
+    feeds future control-loop calcs).  The .mat must name it
+    `dwdxall` for downstream consumer scripts.
+  - **Dev-cycle speed: reduce rays.**  During development run
+    `macos.set_src_sampling(64)` (or smaller) so each per-field
+    trace finishes in ~0.5 s; full prescription sampling only for
+    the validation run.  Same trick saves ~10x wall time on the
+    multi-field iteration loops.
+  - **Multi-field design (worker + supervisor split):**
+    The same prescription is loaded once; the source is tilted to
+    each field point in turn via `set_src_fov` (or `perturb_src` of
+    Elt 0 by the y-field-angle).  Default field set is 5 points —
+    center + 4 corners (upper-left, upper-right, lower-left,
+    lower-right of the chief-ray FoV).  Variants: N×N grid (every
+    1/n step in field x and y) or 5-points-with-FSM-angle-tweak to
+    expose a wider field of regard.  One Rx for all field points.
+    Per-field workflow:
+    ```
+    load -> STOP+FEX -> single-field dw_d* -> perturb_src by next field -> repeat
+    ```
+    The dwdz/dwdx matrices stack vertically (one block per field):
+    `w_stacked = dwdx_stacked * x + w0_stacked`.  Use the same m2v
+    bookkeeping as the single-field case — build one big nominal-OPD
+    matrix `OPDall` with per-field tiles separated by `zeros(nsize)`
+    spacers, then `[wall, indxall] = m2v(OPDall)` gives the linear
+    index map that handles both the math (stacking) AND the display
+    (`plot(OPDall)` shows the spatial layout — center middle, corners
+    at corners — for free, no GridSpec / subplot positioning needed).
+  - **Phase 6 mmacos sub-tasks** (after pymacos lands):
+  - [ ] `+macos/dw_dz_zernike.m` (single-field worker) plus the
+    `+channels/` submodule (ZernikeCoefChannel only).
+  - [ ] `+macos/dw_dz_zernike_multi.m` (supervisor; takes field set,
+    loops worker + perturb_src, stacks dwdz + builds OPDall).
   - [ ] Driver takes a `MacosSession` instance (mirrors pymacos's
     `MacosModel` arg); a free-function form taking no session also
     exposed for raw-mex users.
@@ -730,6 +781,9 @@ to compare against pymacos.
     so downstream consumers don't fork.
 
 - [ ] **Phase 7 — `dw_dx` driver**
+  - **Same multi-field design as Phase 6** (worker + supervisor
+    split, m2v-based OPDall tiling).  Build pymacos first if it
+    doesn't already have the multi-field layer; mmacos port follows.
   - [ ] `+macos/dw_dx.m` plus the full channel system as MATLAB
     classdef: `RigidBodyChannel`, `FocalPlaneChannel`,
     `GroupedRigidBodyChannel`, `SourceChannel`,
