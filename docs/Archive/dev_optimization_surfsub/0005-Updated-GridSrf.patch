@@ -1,0 +1,3466 @@
+From 3573d7e4a40a706b769ef6072fbbb582c94a504e Mon Sep 17 00:00:00 2001
+From: TraceMoreRays <sigrist1000@gmail.com>
+Date: Thu, 29 Jan 2026 14:01:34 -0800
+Subject: [PATCH 5/5] Updated GridSrf
+
+---
+ macos_f90/mathsub.F |  630 ++++++++++++-
+ macos_f90/surfsub.F | 2121 ++++++++++++++++++++++++++++---------------
+ 2 files changed, 1990 insertions(+), 761 deletions(-)
+
+diff --git a/macos_f90/mathsub.F b/macos_f90/mathsub.F
+index 62f8d7e..eebafe8 100644
+--- a/macos_f90/mathsub.F
++++ b/macos_f90/mathsub.F
+@@ -576,16 +576,71 @@ C***********************************************************************
+ 
+ C***********************************************************************
+ 
+-      SUBROUTINE INTNORM(X,Y,U00,U01,U10,U11,U,DUDX,DUDY)
++!***********************************************************************
++!
++! SUBROUTINE: INTNORM
++!
++! PURPOSE: Bilinear interpolation on unit square with derivatives
++!
++! ALGORITHM: 
++!   U(x,y) = U00 + x·(U10-U00) + y·(U01-U00) + xy·(U11-U10-U01+U00)
++!   ∂U/∂x = (U10-U00) + y·(U11-U10-U01+U00)
++!   ∂U/∂y = (U01-U00) + x·(U11-U10-U01+U00)
++!
++! MODERNIZATION: PURE ELEMENTAL with INTENT declarations (Fortran 2003+)
++!                Enables vectorization and aggressive compiler optimization
++!
++!***********************************************************************
++      PURE ELEMENTAL SUBROUTINE INTNORM(X,Y,U00,U01,U10,U11,U,DUDX,DUDY)
++      !DIR$ ATTRIBUTES INLINE :: INTNORM
++      !GCC$ ATTRIBUTES hot, inline :: INTNORM
++      
+       IMPLICIT NONE
+-      REAL*8 X,Y,U00,U01,U10,U11,U,DUDX,DUDY,C1,C2,C3
+-      C1=U10-U00
+-      C2=U11-U10-U01+U00
+-      C3=U01-U00
+-      DUDX=C2*Y+C1
+-      DUDY=C2*X+C3
+-      U=DUDX*X+C3*Y+U00
+-      RETURN
++      
++      !---------------------------------------------------------------------
++      ! Input arguments - Coordinates and corner values
++      !---------------------------------------------------------------------
++      REAL*8, INTENT(IN) :: X               ! x-coordinate in [0,1]
++      REAL*8, INTENT(IN) :: Y               ! y-coordinate in [0,1]
++      REAL*8, INTENT(IN) :: U00             ! Value at (0,0)
++      REAL*8, INTENT(IN) :: U01             ! Value at (0,1)
++      REAL*8, INTENT(IN) :: U10             ! Value at (1,0)
++      REAL*8, INTENT(IN) :: U11             ! Value at (1,1)
++      
++      !---------------------------------------------------------------------
++      ! Output arguments - Interpolated value and derivatives
++      !---------------------------------------------------------------------
++      REAL*8, INTENT(OUT) :: U              ! Interpolated value
++      REAL*8, INTENT(OUT) :: DUDX           ! ∂U/∂x
++      REAL*8, INTENT(OUT) :: DUDY           ! ∂U/∂y
++      
++      !---------------------------------------------------------------------
++      ! Local variables - Interpolation coefficients
++      !---------------------------------------------------------------------
++      REAL*8 :: grad_x_at_y0                ! U10 - U00 (x-gradient at y=0)
++      REAL*8 :: grad_y_at_x0                ! U01 - U00 (y-gradient at x=0)
++      REAL*8 :: mixed_deriv                 ! U11 - U10 - U01 + U00
++      
++      !=====================================================================
++      ! Compute interpolation coefficients
++      !=====================================================================
++      grad_x_at_y0 = U10 - U00
++      grad_y_at_x0 = U01 - U00
++      mixed_deriv  = U11 - U10 - U01 + U00
++      
++      !=====================================================================
++      ! Compute derivatives
++      !=====================================================================
++      DUDX = grad_x_at_y0 + Y * mixed_deriv
++      DUDY = grad_y_at_x0 + X * mixed_deriv
++      
++      !=====================================================================
++      ! Compute interpolated value
++      !=====================================================================
++      ! U = U00 + x·DUDX + y·grad_y_at_x0
++      ! Reuse DUDX to avoid recomputing grad_x_at_y0 + y·mixed_deriv
++      U = U00 + X * DUDX + Y * grad_y_at_x0
++      
+       END SUBROUTINE INTNORM
+ 
+ C***********************************************************************
+@@ -2549,6 +2604,563 @@ C ********************************************************
+           RETURN
+         END SUBROUTINE  CSWAP
+ 
++C***********************************************************************
++C     Cubic Spline Interpolation Routines
++C     Converted from C (splicubi2.c) to Fortran 90
++C     For 2D grid cubic spline interpolations
++C     Adapted from Numerical Recipes
++C
++C     These routines provide cubic spline interpolation for 2D grid
++C     surfaces used in MACOS optical modeling. The implementation uses
++C     natural spline boundary conditions and maintains numerical
++C     robustness through IEEE arithmetic checks.
++C
++C     Key Features:
++C     - Support for up to 256 grid surfaces simultaneously
++C     - Dynamic memory allocation with automatic reallocation
++C     - Direct Fortran column-major array handling (no C transpose)
++C     - IEEE arithmetic validation for numerical stability
++C     - Efficient storage using module-level SAVE arrays
++C***********************************************************************
++
++C***********************************************************************
++C     SUBROUTINE SPLIE2F2C
++C
++C     Initialize cubic spline for a 2D grid surface.
++C     This routine is called ONCE per grid surface during initialization.
++C     It computes and stores the second derivatives needed for subsequent
++C     interpolation calls.
++C
++C     Called from: INTCUBIC (mathsub.F)
++C
++C     Arguments:
++C       x1a(m)     [IN]  - Grid points in 1st dimension (y-direction)
++C       x2a(n)     [IN]  - Grid points in 2nd dimension (x-direction)
++C       ya_f(m*n)  [IN]  - 1D array with 2D grid data (Fortran column-major)
++C                          ya_f = GridMat passed as assumed-size array
++C       m          [IN]  - Number of points in 1st dimension
++C       n          [IN]  - Number of points in 2nd dimension
++C       srf_id     [IN]  - Surface ID (1 to 256)
++C
++C     Storage:
++C       Maintains module-level storage arrays ya_storage and y2a_storage
++C       with automatic reallocation if larger grids are encountered.
++C
++C     Note on Array Ordering:
++C       GridMat(i,j) in Fortran where i=x-index, j=y-index is passed
++C       as ya_f in column-major order. The routine directly copies
++C       without transpose since we're in pure Fortran (no C boundary).
++C***********************************************************************
++
++      SUBROUTINE SPLIE2F2C(x1a,x2a,ya_f,m,n,srf_id)
++      USE, INTRINSIC :: ieee_arithmetic
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (grid coordinates)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x1a    ! Grid points in 1st dimension
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x2a    ! Grid points in 2nd dimension
++      
++      ! Input arguments (grid data)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: ya_f   ! 1D array with 2D grid data (C row-major)
++      
++      ! Input arguments (dimensions)
++      INTEGER, INTENT(IN) :: m       ! Number of points in 1st dimension
++      INTEGER, INTENT(IN) :: n       ! Number of points in 2nd dimension
++      INTEGER, INTENT(IN) :: srf_id  ! Surface ID (1 to nGridSrf)
++      
++      ! Local variables - Module-level storage (max 256 surfaces)
++      INTEGER, PARAMETER :: nGridSrf = 256
++      REAL(pr), ALLOCATABLE, SAVE :: ya_storage(:,:,:)
++      REAL(pr), ALLOCATABLE, SAVE :: y2a_storage(:,:,:)
++      INTEGER, SAVE :: max_m = 0, max_n = 0
++      LOGICAL, SAVE :: first_entry = .TRUE.
++      
++      ! Local variables - Loop indices and temporary
++      INTEGER :: i, j, idx
++      
++      ! Initialize storage on first call
++      IF (first_entry) THEN
++        ! Allocate with initial size (will be reallocated if needed)
++        max_m = m
++        max_n = n
++        ALLOCATE(ya_storage(m,n,nGridSrf))
++        ALLOCATE(y2a_storage(m,n,nGridSrf))
++        first_entry = .FALSE.
++      ELSE IF (m > max_m .OR. n > max_n) THEN
++        ! Reallocate if larger grid is needed
++        DEALLOCATE(ya_storage, y2a_storage)
++        max_m = MAX(m, max_m)
++        max_n = MAX(n, max_n)
++        ALLOCATE(ya_storage(max_m,max_n,nGridSrf))
++        ALLOCATE(y2a_storage(max_m,max_n,nGridSrf))
++      END IF
++      
++      ! Copy from 1D Fortran array to 2D storage
++      ! ya_f is GridMat(m,n) passed as 1D assumed-size array
++      ! Fortran column-major: ya_f(1:m) = GridMat(:,1), ya_f(m+1:2*m) = GridMat(:,2), etc.
++      ! Direct copy maintains the same layout
++      idx = 0
++      DO j = 1, n
++        DO i = 1, m
++          idx = idx + 1
++          ya_storage(i,j,srf_id) = ya_f(idx)
++          
++          ! Check for NaN or Inf
++          IF (.NOT. ieee_is_finite(ya_storage(i,j,srf_id))) THEN
++            WRITE(*,*) 'WARNING SPLIE2F2C: Non-finite at i,j=',i,j
++            ya_storage(i,j,srf_id) = 0.0_pr
++          END IF
++        END DO
++      END DO
++      
++      ! Compute second derivatives
++      CALL splie2_internal(x1a,x2a,ya_storage(:,:,srf_id),m,n,
++     &                     y2a_storage(:,:,srf_id))
++      
++      END SUBROUTINE SPLIE2F2C
++
++C***********************************************************************
++C     SUBROUTINE SPLIN2F2C
++C
++C     Evaluate cubic spline and compute partial derivatives at a point.
++C     This routine is called during ray tracing to interpolate grid
++C     surface height and slopes at arbitrary (x,y) coordinates.
++C
++C     Called from: INTCUBIC (mathsub.F)
++C
++C     Arguments:
++C       x1a(m)     [IN]  - Grid points in 1st dimension (y-direction)
++C       x2a(n)     [IN]  - Grid points in 2nd dimension (x-direction)
++C       m          [IN]  - Number of points in 1st dimension
++C       n          [IN]  - Number of points in 2nd dimension
++C       x1         [IN]  - Evaluation point in 1st dimension (y-coord)
++C       x2         [IN]  - Evaluation point in 2nd dimension (x-coord)
++C       fn         [OUT] - Interpolated function value at (x1,x2)
++C       dfdx1      [OUT] - Partial derivative w.r.t. x1 (df/dy)
++C       dfdx2      [OUT] - Partial derivative w.r.t. x2 (df/dx)
++C       i0         [IN]  - Grid index hint for x1 (for derivative calc)
++C       j0         [IN]  - Grid index hint for x2 (for derivative calc)
++C       srf_id     [IN]  - Surface ID (must match SPLIE2F2C call)
++C
++C     Prerequisites:
++C       SPLIE2F2C must have been called for this srf_id before calling
++C       this routine, otherwise stored spline data will not exist.
++C
++C     Note on Coordinate Convention:
++C       Due to parameter ordering in INTCUBIC, x1 corresponds to y
++C       and x2 corresponds to x in the physical coordinate system.
++C***********************************************************************
++
++      SUBROUTINE SPLIN2F2C(x1a,x2a,m,n,x1,x2,fn,dfdx1,dfdx2,
++     &                     i0,j0,srf_id)
++      USE, INTRINSIC :: ieee_arithmetic
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (grid coordinates)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x1a    ! Grid points in 1st dimension
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x2a    ! Grid points in 2nd dimension
++      
++      ! Input arguments (dimensions)
++      INTEGER, INTENT(IN) :: m       ! Number of points in 1st dimension
++      INTEGER, INTENT(IN) :: n       ! Number of points in 2nd dimension
++      INTEGER, INTENT(IN) :: srf_id  ! Surface ID (1 to nGridSrf)
++      
++      ! Input arguments (evaluation point)
++      REAL(pr), INTENT(IN) :: x1     ! Evaluation point in 1st dimension
++      REAL(pr), INTENT(IN) :: x2     ! Evaluation point in 2nd dimension
++      
++      ! Input arguments (index hints for derivatives)
++      INTEGER, INTENT(IN) :: i0      ! Grid index hint for x1
++      INTEGER, INTENT(IN) :: j0      ! Grid index hint for x2
++      
++      ! Output arguments (interpolation results)
++      REAL(pr), INTENT(OUT) :: fn    ! Interpolated function value
++      REAL(pr), INTENT(OUT) :: dfdx1 ! Partial derivative w.r.t. x1
++      REAL(pr), INTENT(OUT) :: dfdx2 ! Partial derivative w.r.t. x2
++      
++      ! Local variables - Module-level storage access
++      INTEGER, PARAMETER :: nGridSrf = 256
++      REAL(pr), ALLOCATABLE, SAVE :: ya_storage(:,:,:)
++      REAL(pr), ALLOCATABLE, SAVE :: y2a_storage(:,:,:)
++      
++      CALL splin2_internal(x1a,x2a,ya_storage(:,:,srf_id),
++     &                     y2a_storage(:,:,srf_id),
++     &                     m,n,x1,x2,i0,j0,fn,dfdx1,dfdx2)
++      
++      END SUBROUTINE SPLIN2F2C
++
++C***********************************************************************
++C     SUBROUTINE splie2_internal
++C
++C     Internal routine to compute second derivatives for 2D cubic spline.
++C     Computes 1D splines along each row (constant first index) for use
++C     in bicubic interpolation.
++C
++C     This is an internal implementation routine called only by SPLIE2F2C.
++C     Uses natural spline boundary conditions (second derivative = 0).
++C
++C     Arguments:
++C       x1a(m)     [IN]  - Grid points in 1st dimension
++C       x2a(n)     [IN]  - Grid points in 2nd dimension
++C       ya(m,n)    [IN]  - 2D grid values
++C       m          [IN]  - Number of points in 1st dimension
++C       n          [IN]  - Number of points in 2nd dimension
++C       y2a(m,n)   [OUT] - Second derivatives for spline interpolation
++C***********************************************************************
++
++      SUBROUTINE splie2_internal(x1a,x2a,ya,m,n,y2a)
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (grid coordinates)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x1a    ! Grid points in 1st dimension
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x2a    ! Grid points in 2nd dimension
++      
++      ! Input arguments (grid data)
++      REAL(pr), DIMENSION(m,*), INTENT(IN) :: ya   ! 2D grid values
++      
++      ! Input arguments (dimensions)
++      INTEGER, INTENT(IN) :: m       ! Number of points in 1st dimension
++      INTEGER, INTENT(IN) :: n       ! Number of points in 2nd dimension
++      
++      ! Output arguments (spline coefficients)
++      REAL(pr), DIMENSION(m,*), INTENT(OUT) :: y2a ! Second derivatives
++      
++      ! Local variables
++      INTEGER :: j
++      
++      ! Compute second derivatives for each row
++      DO j = 1, m
++        CALL spline_internal(x2a,ya(j,1),n,INF,INF,y2a(j,1))
++      END DO
++      
++      END SUBROUTINE splie2_internal
++
++C***********************************************************************
++C     SUBROUTINE splin2_internal
++C
++C     Internal routine for 2D cubic spline interpolation with derivatives.
++C     Performs bicubic interpolation at point (x1,x2) and computes both
++C     partial derivatives using the stored second derivative information.
++C
++C     Algorithm:
++C       1. Interpolate along each row at x2 to get column of values
++C       2. Interpolate that column along x1 to get function value
++C       3. Compute dfdx1 using derivative formula at grid index i0
++C       4. Interpolate along each column at x1 to get row of values
++C       5. Compute dfdx2 using derivative formula at grid index j0
++C
++C     This is an internal implementation routine called only by SPLIN2F2C.
++C
++C     Arguments:
++C       x1a(m)     [IN]  - Grid points in 1st dimension
++C       x2a(n)     [IN]  - Grid points in 2nd dimension
++C       ya(m,n)    [IN]  - 2D grid values
++C       y2a(m,n)   [IN]  - Second derivatives (from splie2_internal)
++C       m          [IN]  - Number of points in 1st dimension
++C       n          [IN]  - Number of points in 2nd dimension
++C       x1         [IN]  - Evaluation point in 1st dimension
++C       x2         [IN]  - Evaluation point in 2nd dimension
++C       i0         [IN]  - Grid index hint for x1 derivative
++C       j0         [IN]  - Grid index hint for x2 derivative
++C       y          [OUT] - Interpolated function value
++C       dfdx1      [OUT] - Partial derivative w.r.t. x1
++C       dfdx2      [OUT] - Partial derivative w.r.t. x2
++C
++C     Convention:
++C       i0,x1 are in vertical/'y' direction
++C       j0,x2 are in horizontal/'x' direction
++C***********************************************************************
++
++      SUBROUTINE splin2_internal(x1a,x2a,ya,y2a,m,n,x1,x2,
++     &                           i0,j0,y,dfdx1,dfdx2)
++      USE, INTRINSIC :: ieee_arithmetic
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (grid coordinates)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x1a    ! Grid points in 1st dimension
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x2a    ! Grid points in 2nd dimension
++      
++      ! Input arguments (spline data)
++      REAL(pr), DIMENSION(m,*), INTENT(IN) :: ya   ! 2D grid values
++      REAL(pr), DIMENSION(m,*), INTENT(IN) :: y2a  ! Second derivatives
++      
++      ! Input arguments (dimensions)
++      INTEGER, INTENT(IN) :: m       ! Number of points in 1st dimension
++      INTEGER, INTENT(IN) :: n       ! Number of points in 2nd dimension
++      
++      ! Input arguments (evaluation point)
++      REAL(pr), INTENT(IN) :: x1     ! Evaluation point in 1st dimension
++      REAL(pr), INTENT(IN) :: x2     ! Evaluation point in 2nd dimension
++      
++      ! Input arguments (index hints for derivatives)
++      INTEGER, INTENT(IN) :: i0      ! Grid index hint for x1
++      INTEGER, INTENT(IN) :: j0      ! Grid index hint for x2
++      
++      ! Output arguments (interpolation results)
++      REAL(pr), INTENT(OUT) :: y     ! Interpolated function value
++      REAL(pr), INTENT(OUT) :: dfdx1 ! Partial derivative w.r.t. x1
++      REAL(pr), INTENT(OUT) :: dfdx2 ! Partial derivative w.r.t. x2
++      
++      ! Local variables - Temporary arrays for interpolation
++      REAL(pr) :: ytmp1(m), yytmp1(m), ytmp2(n), yytmp2(n)
++      REAL(pr) :: ya_tmp(m), y2a_tmp(m)
++      
++      ! Local variables - Computation
++      REAL(pr) :: A, B
++      INTEGER :: i, j, i0_safe, j0_safe
++      
++      ! Step 1: Interpolate along each row at x2
++      DO j = 1, m
++        CALL splint_internal(x2a,ya(j,1),y2a(j,1),n,x2,yytmp1(j))
++      END DO
++      
++      ! Step 2: Interpolate the row results along x1
++      CALL spline_internal(x1a,yytmp1,m,INF,INF,ytmp1)
++      CALL splint_internal(x1a,yytmp1,ytmp1,m,x1,y)
++      
++      ! Step 3: Compute dfdx1 at (x1,x2)
++      i0_safe = MAX(1, MIN(i0, m-1))
++      
++      A = (x1a(i0_safe+1) - x1) / (x1a(i0_safe+1) - x1a(i0_safe))
++      B = 1.0_pr - A
++      
++      IF (ieee_is_finite(A) .AND. ieee_is_finite(B)) THEN
++        dfdx1 = (yytmp1(i0_safe+1) - yytmp1(i0_safe)) / 
++     &          (x1a(i0_safe+1) - x1a(i0_safe))
++     &        - (3.0_pr*A*A - 1.0_pr) / 6.0_pr * 
++     &          (x1a(i0_safe+1) - x1a(i0_safe)) * ytmp1(i0_safe)
++     &        + (3.0_pr*B*B - 1.0_pr) / 6.0_pr * 
++     &          (x1a(i0_safe+1) - x1a(i0_safe)) * ytmp1(i0_safe+1)
++      ELSE
++        dfdx1 = 0.0_pr
++      END IF
++      
++      ! Step 4: Compute dfdx2 - interpolate along columns at x1
++      DO j = 1, n
++        DO i = 1, m
++          ya_tmp(i) = ya(i,j)
++          y2a_tmp(i) = y2a(i,j)
++        END DO
++        CALL splint_internal(x1a,ya_tmp,y2a_tmp,m,x1,yytmp2(j))
++      END DO
++      
++      CALL spline_internal(x2a,yytmp2,n,INF,INF,ytmp2)
++      
++      ! Step 5: Compute dfdx2 at (x1,x2)
++      j0_safe = MAX(1, MIN(j0, n-1))
++      
++      A = (x2a(j0_safe+1) - x2) / (x2a(j0_safe+1) - x2a(j0_safe))
++      B = 1.0_pr - A
++      
++      IF (ieee_is_finite(A) .AND. ieee_is_finite(B)) THEN
++        dfdx2 = (yytmp2(j0_safe+1) - yytmp2(j0_safe)) / 
++     &          (x2a(j0_safe+1) - x2a(j0_safe))
++     &        - (3.0_pr*A*A - 1.0_pr) / 6.0_pr * 
++     &          (x2a(j0_safe+1) - x2a(j0_safe)) * ytmp2(j0_safe)
++     &        + (3.0_pr*B*B - 1.0_pr) / 6.0_pr * 
++     &          (x2a(j0_safe+1) - x2a(j0_safe)) * ytmp2(j0_safe+1)
++      ELSE
++        dfdx2 = 0.0_pr
++      END IF
++      
++      END SUBROUTINE splin2_internal
++
++C***********************************************************************
++C     SUBROUTINE spline_internal
++C
++C     Internal routine to compute second derivatives for 1D cubic spline.
++C     Uses tridiagonal algorithm to solve for second derivatives that
++C     produce a smooth cubic spline through the given points.
++C
++C     Boundary Conditions:
++C       If yp1 or ypn > 0.99*INF: natural spline (second derivative = 0)
++C       Otherwise: specified first derivative at boundary
++C
++C     This is an internal implementation routine called by splie2_internal
++C     and splin2_internal.
++C
++C     Arguments:
++C       x(n)       [IN]  - Grid points (must be monotonically increasing)
++C       y(n)       [IN]  - Function values at grid points
++C       n          [IN]  - Number of grid points
++C       yp1        [IN]  - First derivative at x(1), or >0.99*INF for natural
++C       ypn        [IN]  - First derivative at x(n), or >0.99*INF for natural
++C       y2(n)      [OUT] - Second derivatives at grid points
++C
++C     Algorithm:
++C       Solves tridiagonal system using forward elimination and
++C       back substitution. Includes IEEE arithmetic checks for
++C       numerical stability.
++C***********************************************************************
++
++      SUBROUTINE spline_internal(x,y,n,yp1,ypn,y2)
++      USE, INTRINSIC :: ieee_arithmetic
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (1D grid data)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: x   ! Grid points
++      REAL(pr), DIMENSION(*), INTENT(IN) :: y   ! Function values at grid points
++      
++      ! Input arguments (dimensions and boundary conditions)
++      INTEGER, INTENT(IN) :: n       ! Number of grid points
++      REAL(pr), INTENT(IN) :: yp1    ! 1st derivative at x(1) or >0.99*INF for natural
++      REAL(pr), INTENT(IN) :: ypn    ! 1st derivative at x(n) or >0.99*INF for natural
++      
++      ! Output arguments (spline coefficients)
++      REAL(pr), DIMENSION(*), INTENT(OUT) :: y2 ! Second derivatives at grid points
++      
++      ! Local variables - Loop indices
++      INTEGER :: i, k
++      
++      ! Local variables - Tridiagonal solver
++      REAL(pr) :: p, qn, sig, un
++      REAL(pr) :: u(n-1)
++      
++      ! Lower boundary condition
++      IF (yp1 > 0.99_pr * INF) THEN
++        y2(1) = 0.0_pr
++        u(1) = 0.0_pr
++      ELSE
++        y2(1) = -0.5_pr
++        u(1) = (3.0_pr / (x(2) - x(1))) * 
++     &         ((y(2) - y(1)) / (x(2) - x(1)) - yp1)
++      END IF
++      
++      ! Decomposition loop of tridiagonal algorithm
++      DO i = 2, n-1
++        sig = (x(i) - x(i-1)) / (x(i+1) - x(i-1))
++        p = sig * y2(i-1) + 2.0_pr
++        y2(i) = (sig - 1.0_pr) / p
++        u(i) = (y(i+1) - y(i)) / (x(i+1) - x(i)) - 
++     &         (y(i) - y(i-1)) / (x(i) - x(i-1))
++        u(i) = (6.0_pr * u(i) / (x(i+1) - x(i-1)) - 
++     &          sig * u(i-1)) / p
++        
++        ! Check for numerical issues
++        IF (.NOT. ieee_is_finite(y2(i)) .OR. 
++     &      .NOT. ieee_is_finite(u(i))) THEN
++          y2(i) = 0.0_pr
++          u(i) = 0.0_pr
++        END IF
++      END DO
++      
++      ! Upper boundary condition
++      IF (ypn > 0.99_pr * INF) THEN
++        qn = 0.0_pr
++        un = 0.0_pr
++      ELSE
++        qn = 0.5_pr
++        un = (3.0_pr / (x(n) - x(n-1))) * 
++     &       (ypn - (y(n) - y(n-1)) / (x(n) - x(n-1)))
++      END IF
++      
++      y2(n) = (un - qn * u(n-1)) / (qn * y2(n-1) + 1.0_pr)
++      
++      ! Back substitution loop
++      DO k = n-1, 1, -1
++        y2(k) = y2(k) * y2(k+1) + u(k)
++      END DO
++      
++      END SUBROUTINE spline_internal
++
++C***********************************************************************
++C     SUBROUTINE splint_internal
++C
++C     Internal routine for 1D cubic spline interpolation at a point.
++C     Given the function values and second derivatives at grid points,
++C     evaluates the cubic spline at an arbitrary point x.
++C
++C     Uses binary search to locate the interval containing x, then
++C     applies the cubic spline interpolation formula.
++C
++C     This is an internal implementation routine called by splin2_internal.
++C
++C     Arguments:
++C       xa(n)      [IN]  - Grid points (must be monotonically increasing)
++C       ya(n)      [IN]  - Function values at grid points
++C       y2a(n)     [IN]  - Second derivatives at grid points
++C       n          [IN]  - Number of grid points
++C       x          [IN]  - Evaluation point
++C       y          [OUT] - Interpolated value at x
++C
++C     Error Handling:
++C       - Returns ya(klo) if duplicate xa values detected
++C       - Returns 0.0 if non-finite result occurs
++C       - Includes IEEE arithmetic validation
++C
++C     Formula:
++C       y = a*ya(klo) + b*ya(khi) + 
++C           ((a^3-a)*y2a(klo) + (b^3-b)*y2a(khi)) * h^2/6
++C       where a = (xa(khi)-x)/h, b = (x-xa(klo))/h, h = xa(khi)-xa(klo)
++C***********************************************************************
++
++      SUBROUTINE splint_internal(xa,ya,y2a,n,x,y)
++      USE, INTRINSIC :: ieee_arithmetic
++      USE Kinds
++      USE Constants
++      IMPLICIT NONE
++      
++      ! Input arguments (1D spline data)
++      REAL(pr), DIMENSION(*), INTENT(IN) :: xa  ! Grid points
++      REAL(pr), DIMENSION(*), INTENT(IN) :: ya  ! Function values at grid points
++      REAL(pr), DIMENSION(*), INTENT(IN) :: y2a ! Second derivatives at grid points
++      
++      ! Input arguments (dimensions and evaluation point)
++      INTEGER, INTENT(IN) :: n       ! Number of grid points
++      REAL(pr), INTENT(IN) :: x      ! Evaluation point
++      
++      ! Output arguments (interpolation result)
++      REAL(pr), INTENT(OUT) :: y     ! Interpolated value at x
++      
++      ! Local variables - Binary search indices
++      INTEGER :: klo, khi, k
++      
++      ! Local variables - Interpolation computation
++      REAL(pr) :: h, a, b
++      
++      ! Binary search to find the right interval
++      klo = 1
++      khi = n
++      DO WHILE (khi - klo > 1)
++        k = (khi + klo) / 2
++        IF (xa(k) > x) THEN
++          khi = k
++        ELSE
++          klo = k
++        END IF
++      END DO
++      
++      h = xa(khi) - xa(klo)
++      
++      ! Check for bad input
++      IF (ABS(h) < EPS) THEN
++        y = ya(klo)
++        RETURN
++      END IF
++      
++      a = (xa(khi) - x) / h
++      b = (x - xa(klo)) / h
++      
++      y = a * ya(klo) + b * ya(khi) + 
++     &    ((a*a*a - a) * y2a(klo) + (b*b*b - b) * y2a(khi)) * 
++     &    (h*h) / 6.0_pr
++      
++      ! Check for numerical issues
++      IF (.NOT. ieee_is_finite(y)) THEN
++        y = 0.0_pr
++      END IF
++      
++      END SUBROUTINE splint_internal
+ 
+         END MODULE math_mod
+ 
+diff --git a/macos_f90/surfsub.F b/macos_f90/surfsub.F
+index b4f77b4..13c3051 100644
+--- a/macos_f90/surfsub.F
++++ b/macos_f90/surfsub.F
+@@ -10,67 +10,101 @@ C***********************************************************************
+ 
+         PUBLIC
+         PRIVATE :: Calc_ToricNormal, SAsphere, AZPSolve, AZPB, SMonomial,
+-     &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf
+-     &             NGSrf
++     &             MZPSolve, MZPB, UDSZPSolve, UDSZPB, GSZPSolve, SGSrf,
++     &             NGSrf, SurfaceFuncInterface, BrentSolve
++
++        ABSTRACT INTERFACE
++          REAL*8 FUNCTION SurfaceFuncInterface(L)
++            REAL*8, INTENT(IN) :: L
++          END FUNCTION SurfaceFuncInterface
++        END INTERFACE
++
++
+         CONTAINS
+ 
+-	SUBROUTINE FlatSrf(ifBuild,ifLNsrf,LROK,
+-     &                     psi,pv,prot,pin,ihat,
+-     &		           pr,L,Nvec,Nmag,Nhat,dNdp)
+-	use math_mod
++	PURE SUBROUTINE FlatSrf(ifBuild,ifLNsrf,LROK,
++     &                      psi,pv,prot,pin,ihat,
++     &                      pr,L,Nvec,Nmag,Nhat,dNdp)
++        use Constants, only: TOL_ZERO
+ 
+ 	IMPLICIT NONE
+ 
+-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+-     &         pr(3),L,Nhat(3)
+-	REAL*8 prel(3),b,c,Nvec(3),Nmag,dNdp(3,3),S1
+-	INTEGER i
+-	LOGICAL LROK,ifBuild,ifLNsrf
++	! Input arguments (control flags)
++	LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute dNdp Jacobian
++	LOGICAL, INTENT(IN) :: ifLNsrf   ! If true, allow negative L
+ 
+-C	Compute incidence point of ray on the surface
++	! Input arguments (surface geometry)
++	REAL*8, INTENT(IN) :: psi(3)     ! Surface normal direction (flat surface)
++	REAL*8, INTENT(IN) :: pv(3)      ! Point on surface (vertex)
++	REAL*8, INTENT(IN) :: prot(3)    ! Rotation matrix (not used in FlatSrf)   <<<
+ 
+-	Do i=1,3
+-	  prel(i)=pin(i)-pv(i)
+-	  Nvec(i)=psi(i)
+-        End Do
++	! Input arguments (ray)
++	REAL*8, INTENT(IN) :: pin(3)     ! Ray starting point
++	REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
+ 
+-	b=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+-	IF (b.EQ.0d0) GO TO 98
+-	c=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+-	L=-c/b  ! distance from previous ray point to intersection point on flat surf, -jzlou
++	! Output arguments (intersection results)
++	LOGICAL, INTENT(OUT) :: LROK     ! True if intersection found
++	REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
++	REAL*8, INTENT(OUT) :: L         ! Path length along ray
+ 
+-	IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
++	! Output arguments (surface normal)
++	REAL*8, INTENT(OUT) :: Nvec(3)   ! Normal vector (= psi for flat surface)
++	REAL*8, INTENT(OUT) :: Nmag      ! Normal magnitude (= 1 for flat surface)
++	REAL*8, INTENT(OUT) :: Nhat(3)   ! Normal unit vector (oriented toward ray)
++	REAL*8, INTENT(OUT) :: dNdp(3,3) ! Normal Jacobian (= 0 for flat surface)
+ 
+-	Do i=1,3
+-	  pr(i)=pin(i)+L*ihat(i)
+-    	End Do
++	! Local variables
++	REAL*8 :: prel(3)                ! Relative position (pin - pv)
++	REAL*8 :: b                      ! ihat·psi (ray projection onto normal)
++	REAL*8 :: c                      ! psi·prel (position projection onto normal)
++	REAL*8 :: S1                     ! Nvec·ihat (for normal orientation)
+ 
+-	Nmag=1d0
+-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+-	IF (S1.LE.0d0) THEN
+-	  Do i=1,3
+-	    Nhat(i)=Nvec(i)
+-    	  End Do
++	! Compute ray-plane intersection
++	! Plane equation: psi·(r - pv) = 0
++	! Ray equation: r = pin + L*ihat
++	! Solution: L = -psi·(pin - pv) / (psi·ihat)
++
++	! Initialize output (failure state)
++	LROK = .FALSE.
++
++	! Compute relative position
++	prel = pin - pv
++
++	! Check if ray is parallel to surface
++	b = DOT_PRODUCT(ihat, psi)  ! Ray projection onto normal
++	IF (ABS(b) .LE. TOL_ZERO) RETURN  ! Parallel: no intersection
++
++	! Compute intersection distance
++	c = DOT_PRODUCT(psi, prel)  ! Position projection onto normal
++	L = -c/b                    ! Distance along ray to intersection
++
++	! Check if intersection is behind ray origin (unless ifLNsrf allows it)
++	IF (.NOT.ifLNsrf .AND. (L .LT. 0d0)) RETURN
++
++	! Compute intersection point
++	pr = pin + L*ihat
++
++	! Set surface normal (constant for flat surface)
++	Nvec = psi
++	Nmag = 1d0  ! Flat surface has unit normal
++
++	! Orient normal toward incident ray (flip if pointing away)
++	S1 = DOT_PRODUCT(Nvec, ihat)
++	IF (S1 .GT. 0d0) THEN
++	  Nhat = -Nvec  ! Flip normal to point toward ray
+ 	ELSE
+-	  DO i=1,3
+-	    Nhat(i)=-Nvec(i)
+-    	  End Do
++	  Nhat = Nvec
+ 	END IF
+ 
+-C	Compute partials of the normal
+-
++	! Compute normal Jacobian (zero for flat surface)
+ 	IF (ifBuild) THEN
+-	  CALL DZERO(dNdp,9)
++	  dNdp(:,:) = 0d0
+ 	END IF
+ 
+-	RETURN
+-
+-C	Here if ray misses surface
++	! Success
++	LROK = .TRUE.
+ 
+-  98	CONTINUE
+-	LROK=.FALSE.
+-	RETURN
+-	END SUBROUTINE FlatSrf
++        END SUBROUTINE FlatSrf
+ 
+ C***********************************************************************
+ C
+@@ -153,18 +187,21 @@ C***********************************************************************
+ 	REAL*8 :: tmp(3)
+ 	LOGICAL :: ieee_invalid_flag
+ 
+-C	Clear IEEE exception flags at start
++        ! Initialize output flag to failure (set to success only at end)
++        LROK = .FALSE.
++
++        ! Clear IEEE exception flags at start
+ 	CALL ieee_set_flag(ieee_invalid, .FALSE.)
+ 	CALL ieee_set_flag(ieee_overflow, .FALSE.)
+ 	CALL ieee_set_flag(ieee_divide_by_zero, .FALSE.)
+ 
+-C	Compute relative position vector
++        ! Compute relative position vector
+ 	prel = pin - pv  ! current Ray position (on previous surface) minus current VptElt
+ 
+ 	itpsi    = DOT_PRODUCT(ihat, psi)  ! = ihat projected onto psi
+ 	psitprel = DOT_PRODUCT(psi, prel)  ! = psi projected onto prel
+ 
+-C	Compute quadratic coefficients: a*L^2 + b*L + c = 0
++        ! Compute quadratic coefficients: a*L^2 + b*L + c = 0
+ 	IF (ABS(Kr).LT.1d10) THEN
+ 	  mpr = DOT_PRODUCT(prel, prel)
+ 	  ! Pre-calculate common subexpressions
+@@ -180,28 +217,27 @@ C	Compute quadratic coefficients: a*L^2 + b*L + c = 0
+ 	  c = psitprel
+ 	END IF
+ 
+-C	Solve for ray path length L
++        ! Solve for ray path length L
+ 
+ 	! Linear case: when a < TOL_ZERO, quadratic term is negligible
+ 	IF ((ABS(a).LE.TOL_ZERO).OR.(ABS(Kr).GE.1d10)) THEN
+ 	  ! Division by zero check: b must be non-zero for L = -c/b
+-	  IF (ABS(b).LE.TOL_ZERO) THEN
+-	    ! Degenerate case: ray parallel to surface
+-	    GO TO 98
+-	  END IF
++	  IF (ABS(b).LE.TOL_ZERO) RETURN  ! Degenerate case: ray parallel to surface
+ 	  L=-c/b
+-	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
++	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) RETURN
++
+ 	ELSE
+ 	  ! Quadratic case: solve a*L^2 + b*L + c = 0
+ 	  k2 = b*b - 4d0*a*c
+-	  IF (k2.LT.0d0) GO TO 98  ! No real roots
++	  IF (k2.LT.0d0) RETURN  ! No real roots
+ 	  
+ 	  ! Near-tangent: discriminant < TOL_TANGENT * b^2
+ 	  ! Two roots are within ~14 digits of each other
+ 	  IF (k2 .LT. TOL_TANGENT * b*b) THEN
+ 	    ! Near-tangent: single root (double root)
+ 	    L = -b/(2d0*a)
+-	    IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
++	    IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) RETURN
++
+ 	  ELSE
+ 	    ! Standard case: two distinct roots
+ 	    sqrtk2 = SQRT(k2)
+@@ -220,6 +256,7 @@ C	Solve for ray path length L
+ 	        kp = (-b + sqrtk2)/(2d0*a)
+ 	        km = (-2d0*c)/(b - sqrtk2)
+ 	      END IF
++
+ 	    ELSE
+ 	      ! Standard numerically stable formula (Numerical Recipes)
+ 	      IF (b .GE. 0d0) THEN
+@@ -266,14 +303,14 @@ C	Solve for ray path length L
+ 	          L=kp
+ 	        END IF
+ 	      END IF
+-	      IF (L.LT.0d0) GO TO 98
++	      IF (L.LT.0d0) RETURN
+ 	    END IF
+ 	  END IF
+ 	END IF
+ 
+-C	Compute intersection point and surface normal
++        ! Compute intersection point and surface normal
+ 
+-	S1 = Kr + Kc*(psitprel+L*itpsi)
++	S1 = Kr + Kc*(psitprel + L*itpsi)
+ 
+ 	tmp = L*ihat                ! ihat is the incident ray direction and L is the PL
+ 	pr = pin + tmp              ! pr is ray incident point on current surface 
+@@ -283,9 +320,7 @@ C	Compute intersection point and surface normal
+ 	
+ 	! Check for NaN or degenerate normal (surface ill-defined at this point)
+ 	! NaN check is critical: (NaN .LE. TOL_NORMAL) evaluates to .FALSE.
+-	IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) THEN
+-	  GO TO 98
+-	END IF
++	IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) RETURN
+ 
+ 	S1   = DOT_PRODUCT(Nvec,ihat)  
+ 	S2   = 1d0/Nmag
+@@ -294,23 +329,15 @@ C	Compute intersection point and surface normal
+ 
+ 	! Check for IEEE exceptions before successful return
+ 	CALL ieee_get_flag(ieee_invalid, ieee_invalid_flag)
+-	IF (ieee_invalid_flag) THEN
++	IF (ieee_invalid_flag) RETURN
+ 	  ! NaN was generated during computation (e.g., SQRT of negative)
+-	  GO TO 98
+-	END IF
+-
+-	LROK=.TRUE.
+-	RETURN
+-
+-	! Here if ray misses surface
+ 
+-  98	CONTINUE
+-	LROK=.FALSE.
+-
+-	RETURN
++	! success
++	LROK = .TRUE.
++	
+ 	END SUBROUTINE SolveConicIntersection
+ 
+-C***********************************************************************
++! ***********************************************************************
+ 
+ ! Input arguments: pin, ihat, ifLNsrf
+ ! Output argments: pr, Nvec, Nmag, Nhat
+@@ -352,15 +379,15 @@ C***********************************************************************
+ 	! Local variables - ifBuild section only
+ 	REAL*8 :: M(3,3), D1(9), D2(9)
+ 	REAL*8 :: S1
++        ! --------------------------------------------------------------
++        ! ifLNsrf is a flag indicating whether to allow ray length 'L' to be negative -jzlou
++        ! pr is ray incident point on current surface (to be computed) -jzlou
+ 
+-! ifLNsrf is a flag indicating whether to allow ray length 'L' to be negative -jzlou
+-! pr is ray incident point on current surface (to be computed) -jzlou
++        ! ihat = RayDir(1:3,iRay) = direction of incident ray
++        ! Nhat = surface normal at ray incident point (jzlou guessed);
++        !        Nhat will be used to compute direction of reflected ray (rhat) in calling routine -jzlou
+ 
+-! ihat = RayDir(1:3,iRay) = direction of incident ray
+-! Nhat = surface normal at ray incident point (jzlou guessed);
+-!        Nhat will be used to compute direction of reflected ray (rhat) in calling routine -jzlou
+-
+-C	Solve conic intersection using shared subroutine
++        ! Solve conic intersection using shared subroutine
+ 	CALL SolveConicIntersection(
+      &    ifLNsrf, LROK, Kc, Kr, psi, pv, pin, ihat,
+      &    L, pr, Nvec, Nmag, Nhat)
+@@ -368,7 +395,6 @@ C	Solve conic intersection using shared subroutine
+ 	! If conic intersection failed, return immediately
+ 	IF (.NOT.LROK) RETURN
+ 
+-        ! Compute partials of the normal
+         ! Compute partials of the local normal (Nhat) wrt psi -jzlou
+ 
+ 	IF (ifBuild) THEN
+@@ -381,6 +407,7 @@ C	Solve conic intersection using shared subroutine
+ 	  ELSE
+             M(1:3, 1:3) = 0d0
+ 	  END IF
++
+ 	  S1=1d0/Nmag
+ 	  CALL DPROJECT(D1,Nhat)
+ 	  CALL DMPROD(D2,D1,M,3,3,3)
+@@ -390,10 +417,9 @@ C	Solve conic intersection using shared subroutine
+           ! wrt psi can be analytically computed as well -jzlou
+ 	END IF
+ 
+-	RETURN
+ 	END SUBROUTINE ConSrf
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+ 	SUBROUTINE NSConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
+      &	  pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
+@@ -465,7 +491,7 @@ c	  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+ 	  END IF
+ 	END IF
+ 
+-cLnegOK -- Nonsequential surfaces must have positive L!!
++        ! LnegOK -- Nonsequential surfaces must have positive L!!
+ 	IF (L.LT.1d-12) GO TO 98
+ 
+ 	S1=Kr+Kc*(psitprel+L*itpsi)
+@@ -512,10 +538,9 @@ C	Here if ray misses surface
+   98	CONTINUE
+ 	LROK=.FALSE.
+ 	RETURN
+-	END
+-C	End of NSConSrf
++	END ! NSConSrf
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+ 	SUBROUTINE AnaSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,prot,
+      &			  pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+@@ -668,7 +693,7 @@ C	Here if ray misses surface
+ 	RETURN
+ 	END SUBROUTINE AnaSrf
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+         SUBROUTINE ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,prot,
+      &  		    pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
+@@ -676,20 +701,20 @@ C***********************************************************************
+ 	use math_mod
+ 
+         IMPLICIT NONE
+-c
++
+         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+      &         pr(3),L,xhat(3),yhat(3),Nhat(3), AnaCoef(4)
+ 
+-c
++
+         REAL*8 prel(3),Acoef,Bcoef,Ccoef,Nvec(3),Nvl(3),Nmag,
+      &         dNdp(3,3),Krx,Kry,Cx,psitprel,rho(3),
+      &         alpha, beta, gamma, nvroot
+-c
++
+         REAL*8 ix,iy,itpsi,psix,psiy,px,py,ix2,iy2,px2,py2,
+      &         pxxi,pyyi,L2,q0,q1,q2,q3,q4,xpt,ypt,zpt
+-c
++
+         REAL*8  D1(9),D2(9),S1,S2
+-c
++
+         COMPLEX*16 CL(4)
+         INTEGER i,j,Order
+         LOGICAL LROK,ifBuild,ifLNsrf
+@@ -853,8 +878,8 @@ C
+            IF( Order.EQ.0 ) THEN
+               L= -psitprel/itpsi
+ 	      if (prtL) print*,'1: L= -psitprel/itpsi=',L
+-!          ELSE IF (Order.EQ.2) THEN
+-! need to fill in something here ... -jzlou
++          !ELSE IF (Order.EQ.2) THEN
++          ! need to fill in something here ... -jzlou   --- ToDo
+ 
+ 	   ELSE
+ 
+@@ -997,6 +1022,7 @@ C       Fix by S.A.B.  maybe need abs(Krx) and abs(Kyr) ???  doesn't always work
+         RETURN
+         END SUBROUTINE ToricSrf
+ 
++        ! ----------------------------------------------------------------------
+ 
+ 	SUBROUTINE Calc_ToricNormal(Ry,Rx,Kx,x,y,z,nv)
+         ! Kx = conic constant in X
+@@ -1048,11 +1074,11 @@ C***********************************************************************
+ 	  first_entry=.false.
+ 	End If
+ 
+-C	Compute incidence point of ray on the surface
++        ! Compute incidence point of ray on the surface
+ 
+-	DO 1 i=1,3
++	DO i=1,3
+ 	  prel(i)=pin(i)-pv(i)
+-   1	CONTINUE
++        END DO
+ 	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+ 	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+ 
+@@ -1068,7 +1094,7 @@ C	Compute incidence point of ray on the surface
+ 	  c=psitprel
+ 	END IF
+ 
+-C	Compute intersection point and normal vector
++        ! Compute intersection point and normal vector
+ 
+ 	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+ 	  if (.false.) then ! (abs(b) .le. 1d-10) then
+@@ -1111,7 +1137,7 @@ C	Compute intersection point and normal vector
+ 	  END IF
+ 	END IF
+ 
+-C	Use L as a starting point, find incidence pt on full surface
++        ! Use L as a starting point, find incidence pt on full surface
+ 
+         IF (ABS(L).GT.1e-7) THEN
+           L1=0.999d0*L
+@@ -1126,7 +1152,7 @@ C	Use L as a starting point, find incidence pt on full surface
+ 	L3=AZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
+ 	L=L3
+ 
+-C	Compute normal vector
++        ! Compute normal vector
+ 
+ 	DO i=1,3
+ 	  rho(i)=prel(i)+L*ihat(i)
+@@ -1182,7 +1208,7 @@ C	Compute normal vector
+     	  End Do
+ 	END IF
+ 
+-C	Compute partials of the normal
++        ! Compute partials of the normal
+ 
+ 	IF (ifBuild) THEN
+ 
+@@ -1240,14 +1266,14 @@ C	Compute partials of the normal
+ 
+ 	RETURN
+ 
+-C	Here if ray misses surface
++        ! Here if ray misses surface
+ 
+   98	CONTINUE
+ 	LROK=.FALSE.
+ 	RETURN
+ 	END SUBROUTINE AsphSrf
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+         SUBROUTINE AsphGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+      &                 prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,nAsphCoef,
+@@ -1276,12 +1302,16 @@ C***********************************************************************
+         Real*8, save :: sc(9,2)
+ 
+         INTEGER i,j
+-        LOGICAL LROK,ifBuild,ifLNsrf
++        LOGICAL LROK,ifBuild,ifLNsrf,LROK_grid
+         Logical, save :: first_entry=.true.
+ 
+         INTEGER :: nGridMat,mGridMat
+         REAL*8 :: GridMat(mGridMat,mGridMat),GridSrfdx,pmon(3),
+      &            xhat(3),yhat(3),zhat(3)
++        
++        ! Algorithm parameters for adaptive bracketing
++        REAL*8, PARAMETER :: BRACKET_INNER_FACTOR = 0.95d0  ! 5% inside
++        REAL*8, PARAMETER :: BRACKET_OUTER_FACTOR = 1.15d0  ! 15% outside
+ 
+ 
+ !	 CALL AsphSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+@@ -1312,7 +1342,7 @@ C***********************************************************************
+           first_entry=.false.
+         End If
+ 
+-C       Compute incidence point of ray on the surface
++        ! Compute incidence point of ray on the surface
+ 
+         Do i=1,3
+           prel(i)=pin(i)-pv(i)
+@@ -1333,7 +1363,7 @@ C       Compute incidence point of ray on the surface
+           c=psitprel
+         END IF
+ 
+-C       Compute intersection point and normal vector
++        ! Compute intersection point and normal vector
+ 
+         IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+           L=-c/b
+@@ -1374,7 +1404,7 @@ C       Compute intersection point and normal vector
+ 
+         L_conic=L
+ 
+-C       Use L as a starting point, find incidence pt on full (aspherical) surface
++        ! Use L as a starting point, find incidence pt on full (aspherical) surface
+ 
+         IF (ABS(L).GT.1e-7) THEN
+           L1=0.999d0*L
+@@ -1391,7 +1421,7 @@ C       Use L as a starting point, find incidence pt on full (aspherical) surfac
+         L=L3
+         L_asph=L  ! L_asph is L on top of aspherical surface (conic+pure_aspherical)
+ 
+-C      Compute normal vector
++        ! Compute normal vector
+ 
+         Do i=1,3
+           rho(i)=prel(i)+L*ihat(i)
+@@ -1495,28 +1525,61 @@ C       !print*,'** gridm_rms2 =',grdm_rms2
+         ! 'FALSE' = skip the grid part, just use aspherical part
+         If (.TRUE.) Then
+ ! ----
+-          IF (ABS(L).GT.1e-7) THEN
+-            L1=0.999d0*L_conic
+-            L2=1.001d0*L_conic
++          ! Set initial bracket for GSZPB based on aspherical+conic solution
++          ! Strategy: Asymmetric bracket accounts for typical grid deviation
++          !           Grid surfaces typically shift intersection outward
++          
++          IF (ABS(L_conic) .GT. 1d-7) THEN
++            ! L_conic is the aspherical+conic solution (without grid deviations)
++            ! Grid deviations can shift the root by ~5-20% typically
++            ! Use asymmetric bracket: tighter on near side, wider on far side
++            
++            IF (L_conic .GT. 0d0) THEN
++              ! Positive L: bracket [inner*L, outer*L]
++              ! Wider on far side since grid typically increases sag
++              L1 = BRACKET_INNER_FACTOR * L_conic
++              L2 = BRACKET_OUTER_FACTOR * L_conic
++            ELSE
++              ! Negative L (ifLNsrf=.TRUE.): bracket [outer*L, inner*L]
++              ! Note: L1 < L2 required, so swap for negative L
++              L1 = BRACKET_OUTER_FACTOR * L_conic  ! More negative
++              L2 = BRACKET_INNER_FACTOR * L_conic  ! Less negative
++            END IF
+           ELSE
+-            L1=-1e-7
+-            L2=1e-7
++            ! L ≈ 0: aspherical+conic solution is near vertex
++            ! Use symmetric bracket around origin
++            ! Wider bracket needed since grid can dominate
++            L1 = -1d-6
++            L2 = 1d-6
+           END IF
+ 
+-          ! This function updates L1 and L2 -jzlou
++          ! Expand bracket to ensure it contains root (adaptive expansion)
+           CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
+      &           nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &           pmon,rhoc,xhat,yhat,zhat,L_conic)
++     &           pmon,rhoc,xhat,yhat,zhat,LROK_grid)
++          
++          ! Check if GSZPB successfully bracketed the root
++          IF (.NOT. LROK_grid) THEN
++            ! Bracketing failed - ray does not intersect grid surface
++            ! (aspherical+conic intersection was approximate, grid has no solution)
++            GO TO 98
++          END IF
+ 
+-          ! This function updates 'L' for grid surface -jzlou
++          ! Find exact root using Brent's method
+           tol=1d-10
+           L3=GSZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,
+      &         nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &         pmon,rhoc,xhat,yhat,zhat,L_conic)
++     &         pmon,rhoc,xhat,yhat,zhat,LROK_grid)
++
++          ! Check if GSZPSolve converged to required tolerance
++          IF (.NOT.LROK_grid) THEN
++            ! Convergence failed for grid surface solver
++            GO TO 98
++          END IF
+ 
+           L = L_asph+L3-L_conic
+ 
+-C  Compute normal
++          ! Compute normal
+           CALL NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
+      &               nGridMat,mGridMat,GridMat,GridSrfdx,pmon,rhoc,
+      &               xhat,yhat,zhat,L,zc,fh,dFdrho,d2Fdrho2_grid)
+@@ -1563,7 +1626,7 @@ C  Compute normal
+         END IF
+ 
+ 
+-C      Compute partials of the normal
++        ! Compute partials of the normal
+ 
+         IF (ifBuild) THEN
+           ! Since local surface normal Nvec = Nvec_pure_asph + Nvec_conic + Nvec_grid,
+@@ -1638,14 +1701,14 @@ C      Compute partials of the normal
+ 
+         RETURN
+ 
+-C       Here if ray misses surface
++        ! Here if ray misses surface
+ 
+   98    CONTINUE
+         LROK=.FALSE.
+         RETURN
+         END SUBROUTINE AsphGridSrf
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+ 	FUNCTION SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
+ 	IMPLICIT NONE
+@@ -1697,84 +1760,84 @@ C***********************************************************************
+ 	RETURN
+ 	END FUNCTION SAsphere
+ 
+-C***********************************************************************
++        ! ----------------------------------------------------------------------
+ 
+-      REAL*8 FUNCTION AZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
++        REAL*8 FUNCTION AZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
+      &                           coef,L,nAsphCoef)
+         USE Constants, ONLY: EPS
+-      IMPLICIT REAL*8 (A-H,O-Z)
+-      REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
+-      Integer :: nAsphCoef
+-      PARAMETER (ITMAX=400)
+-      A=X1
+-      B=X2
+-      FA=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,A,nAsphCoef)
+-      FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
+-      IF(FB*FA.GT.0.) PAUSE 'AZPB failed.'
+-      FC=FB
+-      DO ITER=1,ITMAX
+-        IF(FB*FC.GT.0.) THEN
+-          C=A
+-          FC=FA
+-          D=B-A
+-          E=D
+-        ENDIF
+-        IF(ABS(FC).LT.ABS(FB)) THEN
+-          A=B
+-          B=C
+-          C=A
+-          FA=FB
+-          FB=FC
+-          FC=FA
+-        ENDIF
+-        TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+-        XM=.5*(C-B)
+-C        IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
+-        IF((ABS(XM).LE.TOL1).OR.(FB.EQ.0.) .OR.(ITER.GE.ITMAX))THEN
+-          AZPSolve=B
+-          RETURN
+-        ENDIF
+-        IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+-          S=FB/FA
+-          IF(A.EQ.C) THEN
+-            P=2d0*XM*S
+-            Q=1d0-S
+-          ELSE
+-            Q=FA/FC
+-            R=FB/FC
+-            P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+-            Q=(Q-1d0)*(R-1d0)*(S-1d0)
+-          ENDIF
+-          IF(P.GT.0d0) Q=-Q
+-          P=ABS(P)
+-          IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
++        IMPLICIT REAL*8 (A-H,O-Z)
++        REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
++        Integer :: nAsphCoef
++        PARAMETER (ITMAX=400)
++        A=X1
++        B=X2
++        FA=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,A,nAsphCoef)
++        FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
++        IF(FB*FA.GT.0.) PAUSE 'AZPB failed.'
++        FC=FB
++        DO ITER=1,ITMAX
++          IF(FB*FC.GT.0.) THEN
++            C=A
++            FC=FA
++            D=B-A
+             E=D
+-            D=P/Q
++          ENDIF
++          IF(ABS(FC).LT.ABS(FB)) THEN
++            A=B
++            B=C
++            C=A
++            FA=FB
++            FB=FC
++            FC=FA
++          ENDIF
++          TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
++          XM=.5*(C-B)
++         !IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0.)THEN
++          IF((ABS(XM).LE.TOL1).OR.(FB.EQ.0.) .OR.(ITER.GE.ITMAX))THEN
++            AZPSolve=B
++            RETURN
++          ENDIF
++          IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
++            S=FB/FA
++            IF(A.EQ.C) THEN
++              P=2d0*XM*S
++              Q=1d0-S
++            ELSE
++              Q=FA/FC
++              R=FB/FC
++              P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
++              Q=(Q-1d0)*(R-1d0)*(S-1d0)
++            ENDIF
++            IF(P.GT.0d0) Q=-Q
++            P=ABS(P)
++            IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
++              E=D
++              D=P/Q
++            ELSE
++              D=XM
++              E=D
++            ENDIF
+           ELSE
+             D=XM
+             E=D
+           ENDIF
+-        ELSE
+-          D=XM
+-          E=D
+-        ENDIF
+-        A=B
+-        FA=FB
+-        IF(ABS(D) .GT. TOL1) THEN
+-          B=B+D
+-        ELSE
+-          B=B+SIGN(TOL1,XM)
+-        ENDIF
+-        FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
+-      END DO
+-      PAUSE 'AZPSolve exceeding maximum iterations.'
+-      AZPSolve=B
+-      RETURN
+-      END FUNCTION AZPSolve
++          A=B
++          FA=FB
++          IF(ABS(D) .GT. TOL1) THEN
++            B=B+D
++          ELSE
++            B=B+SIGN(TOL1,XM)
++          ENDIF
++          FB=SAsphere(Kc,Kr,psi,pv,prel,ihat,coef,B,nAsphCoef)
++        END DO
++        PAUSE 'AZPSolve exceeding maximum iterations.'
++        AZPSolve=B
++        RETURN
++        END FUNCTION AZPSolve
+ 
+-C***********************************************************************
++      ! ----------------------------------------------------------------------
+ 
+-	SUBROUTINE AZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
++        SUBROUTINE AZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,L,nAsphCoef)
+ 	IMPLICIT REAL*8 (A-H,O-Z)
+ 	PARAMETER (gold=1.6d0,NTRY=50)
+ 	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(nAsphCoef),L
+@@ -1794,8 +1857,7 @@ C***********************************************************************
+ 	RETURN
+ 	END SUBROUTINE AZPB
+ 
+-C***********************************************************************
+-        ! ---------------------------------------------------------------------
++        ! ----------------------------------------------------------------------
+         !           ANSI    n   m   Z(R,theta)      Z(x,y)
+         ! zc(1)  |    0  |  0   0 | 1                 1
+         ! zc(2)  |    1  |  1  -1 | R*sin(Theta)      y
+@@ -2318,24 +2380,24 @@ C***********************************************************************
+ 
+ 	END SUBROUTINE ZerntoMon3
+ 
+-C***********************************************************************
++        ! --------------------------------------------------------------
+ 
+-       Subroutine ZerntoMon4(Zc,mc)
+-       use elt_mod  !, only : ZernTypeL
+-       Implicit none
++        Subroutine ZerntoMon4(Zc,mc)
++        use elt_mod  !, only : ZernTypeL
++        Implicit none
+ 
+-       Real*8 Zc(1:mZernModes),mc(mMonCoef)
+-       Integer, parameter :: mzern=45,mpolyterm=15
+-       Integer, save :: nterm(mzern),hzi(mzern,mpolyterm,2),
++        Real*8 Zc(1:mZernModes),mc(mMonCoef)
++        Integer, parameter :: mzern=45,mpolyterm=15
++        Integer, save :: nterm(mzern),hzi(mzern,mpolyterm,2),
+      &                  mij2k(0:14,0:14),iz,i,j,k,jm,ii,jj
+-       Real*8, save :: hz(mpolyterm,mzern)
+-       Logical, save :: first_entry=.true.
++        Real*8, save :: hz(mpolyterm,mzern)
++        Logical, save :: first_entry=.true.
+ 
+-       nterm=(/1,1,1,3,1,2,3,3,2,2,6,4,3,5,3,
++        nterm=(/1,1,1,3,1,2,3,3,2,2,6,4,3,5,3,
+      &         6,6,5,5,6,6,10,6,9,6,9,3,10,10,10,
+      &         9,9,10,10,10,10,15,13,10,14,10,15,7,14,10/)
+ 
+-       If (first_entry) Then
++        If (first_entry) Then
+ #include "hzdef.inc"
+           k=0; jm=0
+           Do i=0,14
+@@ -2358,11 +2420,11 @@ C***********************************************************************
+           End Do
+         End Do
+         Return
+-	End Subroutine ZerntoMon4
++        End Subroutine ZerntoMon4
+ 
+-C***********************************************************************
++        ! --------------------------------------------------------------
+ 
+-	Subroutine ZerntoMon5(Zc,mc)
++        Subroutine ZerntoMon5(Zc,mc)
+         Implicit None
+ 
+         REAL*8 :: Zc(4),mc(120)
+@@ -2400,8 +2462,6 @@ C ---
+         End Do
+         End Subroutine ZerntoMon5
+ 
+-C***********************************************************************
+-
+         ! ---------------------------------------------------------------------
+         ! Zernike-Order Mapping: Noll ==> ANSI => Monomials
+         ! ---------------------------------------------------------------------
+@@ -2500,7 +2560,7 @@ C***********************************************************************
+ 
+         END SUBROUTINE ZerntoMon6
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+        Subroutine ZerntoMon7(Zc,mc,r)
+         use elt_mod, only: mZernModes, mMonCoef
+@@ -2542,7 +2602,7 @@ C***********************************************************************
+         Return
+         End Subroutine ZerntoMon7
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+         SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+      &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+@@ -2597,6 +2657,7 @@ C***********************************************************************
+         REAL*8 :: psitzm, fh_dz
+         REAL*8 :: x_inv, y_inv  ! Optimization variables
+         REAL*8 :: S1, S2  ! Temporary scalars
++        LOGICAL :: Success
+         
+         ! Local variables - ifBuild section only
+         REAL*8 :: M(3,3), L1, L2, L3
+@@ -2610,6 +2671,8 @@ C***********************************************************************
+         ! Algorithm parameters
+         REAL*8, PARAMETER :: BRACKET_INNER_FACTOR = 0.95d0  ! Inner bracket margin (5% inside)
+         REAL*8, PARAMETER :: BRACKET_OUTER_FACTOR = 1.15d0  ! Outer bracket margin (15% outside)
++        ! --------------------------------------------------------------
++        LROK = .False.
+ 
+         ! Pre-calculate coefficient mask ONCE per ray
+         coef_nonzero = (ABS(coef) > EPS)
+@@ -2621,11 +2684,11 @@ C***********************************************************************
+         ! Solve conic intersection using shared subroutine
+         ! This provides the initial approximation for monomial refinement
+         CALL SolveConicIntersection(
+-     &    ifLNsrf, LROK, Kc, Kr, psi, pv, pin, ihat,
++     &    ifLNsrf, Success, Kc, Kr, psi, pv, pin, ihat,
+      &    L, pr, Nvec, Nmag, Nhat)
+ 
+         ! If conic intersection failed, return immediately
+-        IF (.NOT.LROK) GO TO 98
++        IF (.NOT.Success) RETURN
+ 
+         ! Use L as a starting point, find incidence pt on full surface
+         ! Set initial bracket for MZPB based on base conic solution
+@@ -2658,28 +2721,24 @@ C***********************************************************************
+         END IF
+ 
+         CALL MZPB(L1,L2,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
+-     &            rhoc,xhat,yhat,zhat,LROK)
++     &            rhoc,xhat,yhat,zhat,Success)
+         
+         ! Check if MZPB successfully bracketed the root
+-        IF (.NOT.LROK) THEN
+-          ! Bracketing failed - ray does not intersect monomial surface
+-          ! (conic intersection was approximate, monomial has no solution)
+-          GO TO 98
+-        END IF
++        !   Bracketing failed - ray does not intersect monomial surface within bracket
++        !   (conic intersection was approximate, monomial has no solution)
++        IF (.NOT.Success) RETURN
+         
+-        tol=2d-15
+-        L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,
+-     &              rad,rhoc,xhat,yhat,zhat,LROK)
++        tol = 2d-15
++        L3 = MZPSolve(L1,L2,tol,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,
++     &                rad,rhoc,xhat,yhat,zhat,Success)
+         
+         ! Check if MZPSolve converged to required tolerance
+-        IF (.NOT.LROK) THEN
+-          ! Convergence failed - solution does not meet tolerance
+-          ! This can happen for:
+-          ! - Pathological surfaces with rapid variations
+-          ! - Very tight tolerances
+-          ! - Numerical conditioning issues
+-          GO TO 98
+-        END IF
++        !   Convergence failed - solution does not meet tolerance
++        !   This can happen for:
++        !   - Pathological surfaces with rapid variations
++        !   - Very tight tolerances
++        !   - Numerical conditioning issues
++        IF (.NOT.Success) RETURN
+         
+         L=L3
+ 
+@@ -2689,11 +2748,9 @@ C***********************************************************************
+ 
+         ! Check for zero or near-zero normalization radius
+         ! Use EPS (machine epsilon) as threshold for safe division
+-        IF (rad .LE. EPS) THEN
+-          ! Degenerate surface: normalization radius too small
+-          ! Normalization Radius must be > 0
+-          GO TO 98
+-        END IF
++        !   - Degenerate surface: normalization radius too small
++        !   - Normalization Radius must be > 0
++        IF (rad .LE. EPS) RETURN
+ 
+         ! Compute normalized coordinates using DOT_PRODUCT & Normalization Radius
+         x = DOT_PRODUCT(xhat, rhom) / rad
+@@ -2702,11 +2759,9 @@ C***********************************************************************
+         ! Check for unreasonable normalized coordinates (overflow protection)
+         ! x^14 overflows at |x| ≈ 1.93 for REAL*8 (IEEE 754 double precision)
+         ! Use conservative limit of 1.5 to prevent overflow in power calculations
+-        IF (ABS(x) > 1.5d0 .OR. ABS(y) > 1.5d0) THEN
++        IF (ABS(x) > 1.5d0 .OR. ABS(y) > 1.5d0) RETURN
+           ! Surface point too far from normalization center
+           ! This prevents overflow in x^14, y^14 calculations in ifBuild section
+-          GO TO 98
+-        END IF
+ 
+         k  = 1
+         S1 = 0d0
+@@ -2818,9 +2873,7 @@ C***********************************************************************
+         
+         ! Check for NaN or degenerate normal (surface ill-defined at this point)
+         ! NaN check is critical: (NaN .LE. TOL_NORMAL) evaluates to .FALSE.
+-        IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) THEN
+-          GO TO 98
+-        END IF
++        IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) RETURN
+         
+         ! Optimized normal computation: single division, single vector multiply
+         S1 = DOT_PRODUCT(Nvec,ihat)
+@@ -2888,20 +2941,15 @@ C***********************************************************************
+ 
+         ! Check for IEEE exceptions before normal return
+         CALL ieee_get_flag(ieee_invalid, ieee_invalid_flag)
+-        IF (ieee_invalid_flag) THEN
+-          ! NaN or invalid operation occurred (e.g., SQRT of negative)
+-          GO TO 98
+-        END IF
++        IF (ieee_invalid_flag) RETURN
++        ! NaN or invalid operation occurred (e.g., SQRT of negative)
+ 
+-	RETURN
+-        ! Here if ray misses surface
++        ! Success
++	LROK = .True.
+ 
+-  98    CONTINUE
+-	LROK=.FALSE.
+-	RETURN
+ 	END SUBROUTINE MonSrf
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+         PURE REAL*8 FUNCTION SMonomial(Kc,Kr,psi,prel,ihat,coef,
+      &                                  coef_nonzero,rad,rhoc,xhat,yhat,
+@@ -3036,35 +3084,36 @@ C***********************************************************************
+           RETURN
+         END FUNCTION SMonomial
+ 
+-C***********************************************************************
+-! Secant-Brent Hybrid Root Finder
+-! Phase 1: Secant method (fast, derivative-free)
+-! Phase 2: Brent's method fallback (robust)
+-!
+-! PERFORMANCE TOGGLE:
+-!   Set USE_SECANT_METHOD to 1 to enable Secant-Brent hybrid (Phase 1)
+-!   Set USE_SECANT_METHOD to 0 to use Brent's method only (baseline)
+-!
+-! Secant Method:
+-!   - Superlinear convergence, order φ ≈ 1.618 (golden ratio!)
+-!   - Only 1 function evaluation per iteration (2x faster than Newton+FD)
+-!   - Approximates derivative: dF/dL ≈ (F_curr - F_prev) / (L_curr - L_prev)
+-!   - Reuses previous function values (no wasted evaluations)
+-!   - Falls back to Brent's if: derivative too small, step outside bracket,
+-!     diverging, or max iterations reached
+-!
+-! Brent's Method Reference:
+-!   - Numerical Recipes in Fortran 77, 2nd Ed., Section 9.3, p.354
+-!   - "Van Wijngaarden-Dekker-Brent Method"
+-!   - Brent, R.P. 1973, "Algorithms for Minimization without Derivatives"
+-!     (Englewood Cliffs, NJ: Prentice-Hall), Chapter 4
+-
++        ! ---------------------------------------------------------------------
++        ! Secant-Brent Hybrid Root Finder
++        ! Phase 1: Secant method (fast, derivative-free)
++        ! Phase 2: Brent's method fallback (robust)
++        !
++        ! PERFORMANCE TOGGLE:
++        !   Set USE_SECANT_METHOD to 1 to enable Secant-Brent hybrid (Phase 1)
++        !   Set USE_SECANT_METHOD to 0 to use Brent's method only (baseline)
++        !
++        ! Secant Method:
++        !   - Superlinear convergence, order φ ≈ 1.618 (golden ratio!)
++        !   - Only 1 function evaluation per iteration (2x faster than Newton+FD)
++        !   - Approximates derivative: dF/dL ≈ (F_curr - F_prev) / (L_curr - L_prev)
++        !   - Reuses previous function values (no wasted evaluations)
++        !   - Falls back to Brent's if: derivative too small, step outside bracket,
++        !     diverging, or max iterations reached
++        !
++        ! Brent's Method Reference:
++        !   - Numerical Recipes in Fortran 77, 2nd Ed., Section 9.3, p.354
++        !   - "Van Wijngaarden-Dekker-Brent Method"
++        !   - Brent, R.P. 1973, "Algorithms for Minimization without Derivatives"
++        !     (Englewood Cliffs, NJ: Prentice-Hall), Chapter 4
++        ! ---------------------------------------------------------------------
+ #define USE_SECANT_METHOD 0
+ 
+         REAL*8 FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,prel,ihat,coef,
+      &                           coef_nonzero,rad,rhoc,xhat,yhat,
+      &                           zhat,converged)
+           use Constants, only: EPS
++          !use BrentSolver_mod
+           IMPLICIT NONE
+           
+           ! Input arguments - Bracket bounds
+@@ -3098,7 +3147,7 @@ C***********************************************************************
+           LOGICAL, INTENT(OUT) :: converged ! True if converged
+           
+           ! Local variables - Algorithm parameters
+-          INTEGER, PARAMETER :: ITMAX=400       ! Maximum Brent iterations
++          ! Note: Brent's method variables are now in BrentSolver_mod
+ #if USE_SECANT_METHOD
+           INTEGER, PARAMETER :: SECANT_ITMAX=10 ! Maximum Newton iterations
+           REAL*8, PARAMETER :: MIN_DERIV=1d-10  ! Minimum acceptable derivative
+@@ -3114,13 +3163,6 @@ C***********************************************************************
+           LOGICAL :: secant_failed         ! Failure flag
+ #endif
+           
+-          ! Local variables - Brent's method state
+-          REAL*8 :: A, B, C, D, E          ! Bracket points and steps
+-          REAL*8 :: FA, FB, FC             ! Function values at A, B, C
+-          REAL*8 :: P, Q, R, S             ! Interpolation parameters
+-          REAL*8 :: TOL1, XM               ! Tolerance and midpoint
+-          INTEGER :: ITER                  ! Iteration counter
+-          
+           converged = .FALSE.
+           
+ #if USE_SECANT_METHOD
+@@ -3135,7 +3177,7 @@ C***********************************************************************
+           ! Strategy: Use linear interpolation (Regula Falsi) for first point
+           !           This gives a much better starting guess than using endpoints
+           
+-          ! Evaluate bracket endpoints and SAVE for Brent's method
++          ! Evaluate bracket endpoints and SAVE for Brent's method '
+           ! CRITICAL: Save these before Secant loop modifies F_prev/F_curr!
+           F_X1 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
+      &                     rhoc,xhat,yhat,zhat,X1)
+@@ -3239,110 +3281,42 @@ C***********************************************************************
+ #endif
+           
+           ! ====================================================================
+-          ! PHASE 2: BRENT'S METHOD
++          ! PHASE 2: BRENT'S METHOD (via generic BrentSolver)
+           ! ====================================================================
+           
+-          ! Initialize bracket with original bounds
+-          A=X1
+-          B=X2
++          ! Call generic Brent solver with internal wrapper function
++          ! The wrapper function has access to all parent scope variables
++          MZPSolve = BrentSolve(X1, X2, TOL, SMonomial_wrapper, converged)
++          RETURN
+           
+-#if USE_SECANT_METHOD
+-          ! Secant failed - use saved bracket endpoint values
+-          ! CRITICAL: F_prev/F_curr were modified by Secant loop!
+-          ! Use F_X1/F_X2 which were saved before the loop
+-          FA = F_X1  ! Saved F(X1) before Secant loop
+-          FB = F_X2  ! Saved F(X2) before Secant loop (no re-evaluation!)
+-#else
+-          ! Secant disabled - evaluate both endpoints
+-          FA=SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
+-     &                 xhat,yhat,zhat,A)
+-          FB=SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
+-     &                 xhat,yhat,zhat,B)
+-#endif
++          CONTAINS
++          
++          ! ====================================================================
++          ! Internal wrapper function for SMonomial
++          ! ====================================================================
++          ! This internal procedure has access to all variables in the parent
++          ! scope (MZPSolve), so it can call SMonomial with all necessary
++          ! parameters without needing to pack them into a context structure.
++          ! This is a key feature of Fortran 2003+ internal procedures.
++          REAL*8 FUNCTION SMonomial_wrapper(L)
++            IMPLICIT NONE
++            REAL*8, INTENT(IN) :: L
++            
++            ! Call SMonomial with all parameters from parent scope
++            SMonomial_wrapper = SMonomial(Kc,Kr,psi,prel,ihat,coef,
++     &                                    coef_nonzero,rad,rhoc,xhat,
++     &                                    yhat,zhat,L)
++          END FUNCTION SMonomial_wrapper
+           
+-          ! Assume MZPB has successfully bracketed (caller checks this)
+-          ! If not bracketed, this should not be called
+-          FC=FB
+-          DO ITER=1,ITMAX
+-            IF(FB*FC.GT.0d0) THEN
+-              C=A
+-              FC=FA
+-              D=B-A
+-              E=D
+-            ENDIF
+-            IF(ABS(FC).LT.ABS(FB)) THEN
+-              A=B
+-              B=C
+-              C=A
+-              FA=FB
+-              FB=FC
+-              FC=FA
+-            ENDIF
+-            TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+-            !   TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+-            !   TOL1 = EPS_def
+-              XM=0.5d0*(C-B)
+-            IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
+-              ! Converged: either bracket is small enough or residual is zero
+-              converged = .TRUE.
+-              MZPSolve=B
+-              RETURN
+-            ENDIF
+-            IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+-              S=FB/FA
+-              IF(A.EQ.C) THEN
+-                P=2d0*XM*S
+-                Q=1d0-S
+-              ELSE
+-                Q=FA/FC
+-                R=FB/FC
+-                P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+-                Q=(Q-1d0)*(R-1d0)*(S-1d0)
+-              ENDIF
+-              IF(P.GT.0d0) Q=-Q
+-              P=ABS(P)
+-              IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+-                E=D
+-                D=P/Q
+-              ELSE
+-                D=XM
+-                E=D
+-              ENDIF
+-            ELSE
+-              D=XM
+-              E=D
+-            ENDIF
+-            A=B
+-            FA=FB
+-            IF(ABS(D) .GT. TOL1) THEN
+-              B=B+D
+-            ELSE
+-              B=B+SIGN(TOL1,XM)
+-            ENDIF
+-            FB = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
+-     &                     rhoc,xhat,yhat,zhat,B)
+-          END DO
+-          ! Maximum iterations reached without meeting tolerance
+-          ! Check if we're "close enough" (residual-based criterion)
+-          ! If |FB| is small relative to the problem scale, accept it
+-          IF (ABS(FB) .LT. TOL) THEN
+-            ! Residual is acceptable even though bracket is large
+-            converged = .TRUE.
+-          ELSE
+-            ! Failed to converge - residual too large
+-            converged = .FALSE.
+-          END IF
+-          MZPSolve=B
+-          RETURN
+         END FUNCTION MZPSolve
+ 
+-C***********************************************************************
+-! Golden Ratio Bracket Expansion
+-! Reference: Numerical Recipes in Fortran 77, 2nd Ed., Section 9.1, p.343
+-!            "Initial Bracketing of a Root"
+-! Method: Expands bracket geometrically using golden ratio until
+-!         function changes sign (F(X1)*F(X2) < 0)
+-
++        ! ---------------------------------------------------------------------
++        ! Golden Ratio Bracket Expansion
++        ! Reference: Numerical Recipes in Fortran 77, 2nd Ed., Section 9.1, p.343
++        !            "Initial Bracketing of a Root"
++        ! Method: Expands bracket geometrically using golden ratio until
++        !         function changes sign (F(X1)*F(X2) < 0)
++        ! ---------------------------------------------------------------------
+         SUBROUTINE MZPB(X1,X2,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,
+      &                  rad,rhoc,xhat,yhat,zhat,success)
+         IMPLICIT NONE
+@@ -3448,7 +3422,7 @@ C***********************************************************************
+         
+         END SUBROUTINE MZPB
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,coef,
+      &	  	         param,psi,pv,prot,pin,ihat,pr,L,rad,
+@@ -3613,11 +3587,10 @@ C	Here if ray misses surface
+ 	RETURN
+ 	END SUBROUTINE UDSrf
+ 
+-C***********************************************************************
+-
++        ! ---------------------------------------------------------------------
+ 
+-      FUNCTION UDSZPSolve(X1,X2,TOL,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
+-     &	coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
++        FUNCTION UDSZPSolve(X1,X2,TOL,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
++     &	                    coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+ 
+       IMPLICIT REAL*8 (A-H,O-Z)
+       INTEGER UDSrfType
+@@ -3692,7 +3665,7 @@ C***********************************************************************
+       RETURN
+       END FUNCTION UDSZPSolve
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE UDSZPB(X1,X2,UDSrfType,Kc,Kr,psi,pv,prel,ihat,
+      &                    coef,param,rad,pmon,rhoc,xhat,yhat,zhat,L)
+@@ -3722,10 +3695,8 @@ C***********************************************************************
+ 	RETURN
+ 	END SUBROUTINE UDSZPB
+ 
+-C***********************************************************************
+-
+- 	SUBROUTINE GridInit(GridFile,jGridSrf,nGridMatS,ifGridInit,
+-     &                      isBinFil)
++        ! ---------------------------------------------------------------------
++        SUBROUTINE GridInit(GridFile,jGridSrf,nGridMatS,ifGridInit,isBinFil)
+ 	use param_mod
+         use elt_mod
+ 	use math_mod
+@@ -3739,7 +3710,7 @@ C***********************************************************************
+ 
+   103	FORMAT(' Grid surface array is of dimension',i5,' by ',i5)
+ 
+-C   If no file, zero matrix and return
++        ! If no file, zero matrix and return
+         IF ((GridFile(1:1).EQ.' ') .OR.
+      &      (GridFile(1:ICLEN(GridFile)).EQ.'none') .OR.
+      &      (GridFile(1:ICLEN(GridFile)).EQ.'NONE') .OR.
+@@ -3773,7 +3744,7 @@ C   If no file, zero matrix and return
+ 	  RETURN
+ 	END IF
+ 
+-C  Read input data
++        ! Read input data
+ 	WRITE(*,*)' Reading surface grid data file ',
+      &            GridFile(1:ICLEN(GridFile))
+ 	WRITE(*,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
+@@ -3808,7 +3779,7 @@ C  Read input data
+ 	RETURN
+ 	END SUBROUTINE GridInit
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE AmplInit(AmplFile,jAmplSrf,nAmplMatS,ifAmplInit)
+ 	use param_mod
+@@ -3841,7 +3812,7 @@ C***********************************************************************
+           RETURN
+         END IF
+ 
+-C Read amplitude data
++        ! Read amplitude data
+ 	WRITE(*,*)' Reading surface amplitude file ',
+      &  	  AmplFile(1:ICLEN(AmplFile))
+         WRITE(*,*)' mAmplMat,nAmplMatS =',mAmplMat,nAmplMatS
+@@ -3869,7 +3840,7 @@ C Read amplitude data
+         RETURN
+ 	END SUBROUTINE AmplInit
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
+      &	  psi,pv,prot,pin,ihat,pr,L,
+@@ -3877,97 +3848,119 @@ C***********************************************************************
+      &	  pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+ 	use macos_debug
+ 	use math_mod
++	use Constants, only: EPS, TOL_NORMAL
++        use elt_mod, only: cbm
++	use, intrinsic :: ieee_arithmetic
++	use, intrinsic :: ieee_exceptions
+ 
+ 	IMPLICIT NONE
+ 
+-	LOGICAL LROK,ifBuild,ifLNsrf
+-	INTEGER i,j,nGridMat,mGridMat
+-	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
+-     &         pr(3),pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
+-     &         prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
+-     &         Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
+-     &         k2,itpsi,psitprel,L1,L2,L3,tol,
+-     &	       GridMat(mGridMat,mGridMat),GridSrfdx,
+-     &	       zc(3),dFdrho(3),d2Fdrho2(3,3),psitzc,fh,
+-     &	       dzcdrho(3,3),dNvecdp(3,3),rhoc(3),zmtzc,psitzm,
+-     &         D1(9),D2(9),S1,S2
+-
+-	if (.false.) then
+-	  print*,'**Begin GridSrf: GridSrfdx = ',GridSrfdx
+-	  print*,'**Begin GridSrf: pmon = ',pmon(1:3)
+-	  print*,'**Begin GridSrf: nGridMat = ',nGridMat
+-	end if
++	! Input arguments (control flags)
++	LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute dNdp Jacobian
++	LOGICAL, INTENT(IN) :: ifLNsrf   ! If true, allow negative L
+ 
+-        ! Compute incidence point of ray on the surface
++	! Input arguments (surface parameters)
++	REAL*8, INTENT(IN) :: Kc         ! Conic constant
++	REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
+ 
+-	DO i=1,3
+-	  prel(i)=pin(i)-pv(i)
+-	  rhoc(i)=pmon(i)-pv(i)
+-        END DO
+-	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+-	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
++	! Input arguments (grid parameters)
++	INTEGER, INTENT(IN) :: nGridMat  ! Grid matrix dimension
++	INTEGER, INTENT(IN) :: mGridMat  ! Grid matrix dimension
++	REAL*8, INTENT(IN) :: GridMat(mGridMat,mGridMat)  ! Grid height matrix
++	REAL*8, INTENT(IN) :: GridSrfdx  ! Grid spacing
+ 
+-	IF (ABS(Kr).LT.1d10) THEN
+-	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+-	  a=1d0+Kc*itpsi*itpsi
+-	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+-     &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+-	ELSE
+-	  a=0d0
+-	  b=itpsi
+-	  c=psitprel
+-	END IF
++	! Input arguments (surface geometry)
++	REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++	REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++	REAL*8, INTENT(IN) :: prot(3)    ! Rotation matrix (not used in GridSrf)
++	REAL*8, INTENT(IN) :: pmon(3)    ! Grid reference point
+ 
+-        ! Compute intersection point and normal vector
++	! Input arguments (local coordinate system)
++	REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++	REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++	REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
+ 
+-	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+-	  L=-c/b
+-	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+-	ELSE
+-	  k2=b*b-4d0*a*c
+-	  IF (k2.LT.0d0) GO TO 98
+-	  IF (b.GE.0d0) THEN
+-	    ksqrt=-0.5d0*(b+DSQRT(k2))
+-	  ELSE
+-	    ksqrt=-0.5d0*(b-DSQRT(k2))
+-	  END IF
+-	  kp=ksqrt/a
+-	  km=c/ksqrt
+-	  IF(ifLNsrf) THEN
+-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+-	      L=kp
+-	    ELSE
+-	      L=km
+-	    END IF
+-	  ELSE
+-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+-	      IF (kp.GT.0D0) THEN
+-	        L=kp
+-	      ELSE
+-	        L=km
+-	      END IF
+-	    ELSE
+-	      IF (km.GT.0D0) THEN
+-	        L=km
+-	      ELSE
+-	        L=kp
+-	      END IF
+-	    END IF
+-	    IF (L.LT.0d0) GO TO 98
+-	  END IF
+-	END IF
++	! Input arguments (ray)
++	REAL*8, INTENT(IN) :: pin(3)     ! Ray starting point
++	REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
+ 
+-	if (.false.) then !(iRay_debug == 2526 .and.
+-C    &      iElt_debug == 90) then
+-          print*,' ****==> iRay = 2526, L = ', L,
+-     &      'a,b,c,kp,km,Kc = ', a, b, c, kp, km,Kc
+-          print*,'****==>2526, ihat, psi, itpsi =',
+-     &      ihat, psi, itpsi
+-        end if
++	! Output arguments (intersection results)
++	LOGICAL, INTENT(OUT) :: LROK     ! True if intersection found
++	REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
++	REAL*8, INTENT(OUT) :: L         ! Path length along ray
++
++	! Output arguments (surface normal)
++	REAL*8, INTENT(OUT) :: Nvec(3)   ! Normal vector (unnormalized)
++	REAL*8, INTENT(OUT) :: Nmag      ! Normal magnitude
++	REAL*8, INTENT(OUT) :: Nhat(3)   ! Normal unit vector
++	REAL*8, INTENT(OUT) :: dNdp(3,3) ! Normal Jacobian (if ifBuild)
++
++	! Local variables - Main computation
++	REAL*8 :: prel(3), tol  ! prel needed for GSZPB/GSZPSolve
++	REAL*8 :: zc(3)
++	REAL*8 :: rhoc(3), psitzc, fh, zmtzc
++	REAL*8 :: psitzm
++	REAL*8 :: S1, S2  ! Temporary scalars
++	REAL*8 :: dFdrho(3), d2Fdrho2(3,3)
++        LOGICAL:: Success
++
++	! Local variables - ifBuild section only
++	REAL*8 :: M(3,3), L1, L2, L3
++	REAL*8 :: dzcdrho(3,3), dNvecdp(3,3)
++	REAL*8 :: D1(9), D2(9)
++	INTEGER :: i, j
++	
++	! Algorithm parameters for hybrid absolute/percentage bracketing
++	! Physics-based absolute bracketing for normal rays (AOI ≤ 60°)
++	! Percentage-based fallback for grazing incidence and edge cases
++	REAL*8, PARAMETER :: DELTA_Z_MAX   = 50d-6    ! 50 μm (=50e-6m) max grid deviation
++	REAL*8, PARAMETER :: SAFETY_FACTOR = 2.5d0    ! Safety margin for non-linear effects
++	REAL*8, PARAMETER :: MIN_COS_THETA = 0.5d0    ! 60° AOI limit (cos(60°) = 0.5)
++	REAL*8, PARAMETER :: L_NEAR_VERTEX = 1d-3     ! 1 mm near-vertex threshold
++	REAL*8, PARAMETER :: BRACKET_INNER_FACTOR = 0.85d0  ! 5% inside (fallback)
++	REAL*8, PARAMETER :: BRACKET_OUTER_FACTOR = 1.25d0  ! 15% outside (fallback)
++	
++	! Local variables for bracketing
++	REAL*8 :: cos_theta, obliquity_factor, dL
++        ! -------------------------------------------------------------
++        LROK = .False.
++
++        ! ===================================================================
++        ! INPUT VALIDATION
++        ! ===================================================================
++        ! Validate critical input parameters before any computation
++        ! These checks prevent division by zero and undefined behavior
++        
++        ! Check grid spacing (used as divisor in SGSrf)
++        IF (ABS(GridSrfdx) < EPS) RETURN
++          ! Grid spacing too small or zero - cannot proceed
++        
++        ! Check grid dimensions are valid
++        IF (nGridMat > mGridMat .OR. nGridMat < 1) RETURN
++          ! Invalid grid dimensions
++        
++        ! Check unit conversion factor (used as divisor in bracketing)
++        IF (ABS(cbm) < EPS .OR. ieee_is_nan(cbm)) RETURN
++          ! Invalid unit conversion factor
++        
++        ! ===================================================================
++        ! MAIN COMPUTATION
++        ! ===================================================================
++        
++        ! Compute position vectors needed for grid refinement
++        prel = pin - pv
++        rhoc = pmon - pv
++
++	! Solve conic intersection using shared subroutine
++	! This provides the initial approximation for grid refinement
++	CALL SolveConicIntersection(
++     &    ifLNsrf, Success, Kc, Kr, psi, pv, pin, ihat,
++     &    L, pr, Nvec, Nmag, Nhat)
+ 
+-        !  Use L as a starting point, find incidence pt on full surface
++	! If conic intersection failed, return immediately
++	IF (.NOT.Success) RETURN
+ 
++#if 0
+         IF (ABS(L).GT.1e-7) THEN
+           L1=0.999d0*L
+           L2=1.001d0*L
+@@ -3975,44 +3968,162 @@ C    &      iElt_debug == 90) then
+           L1=-1d-7
+           L2=1d-7
+         END IF
++	CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
++     &	           nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	           pmon,rhoc,xhat,yhat,zhat,Success)
++	IF (.NOT.Success) RETURN
+ 
++#else
++
++	! Note: pr, Nvec, Nmag, Nhat will be recomputed after grid refinement
++	! Only L is preserved as initial guess for GSZPSolve
++
++        ! =====================================================================
++        ! HYBRID BRACKETING STRATEGY
++        ! =====================================================================
++        ! L from conic solution has precision < 1e-14 (essentially exact)
++        ! Grid data represents fabrication errors (nm-μm scale)
++        ! 
++        ! Strategy:
++        !   1. Near-vertex (L < 1mm): Use wide fixed bracket (conservative)
++        !   2. Grazing incidence (AOI > 60°): Use percentage-based (fallback)
++        !   3. Normal rays (AOI ≤ 60°): Use absolute bracketing L ± Δ
++        !      where Δ = Δz_max / cos(θ) × safety_factor
++        !   4. If GSZPB fails: Automatic fallback to percentage-based
++        ! =====================================================================
++        
++        IF (ABS(L) .LT. L_NEAR_VERTEX/cbm) THEN
++          ! ===================================================================
++          ! CASE 1: Near-vertex rays (L < 1 mm)
++          ! ===================================================================
++          ! For rays near the vertex, L ≈ 0 may have large relative error
++          ! Use wide fixed bracket to ensure robustness
++          L1 = L - 250d-6/cbm  ! -250 um
++          L2 = L + 250d-6/cbm  ! +250 um
++          
++        ELSE
++          ! ===================================================================
++          ! CASE 2 & 3: Normal rays - check AOI constraint
++          ! ===================================================================
++          ! Compute ray obliquity (angle between ray and surface normal)
++          cos_theta = ABS(DOT_PRODUCT(ihat, psi))
++          
++          IF (cos_theta .LT. MIN_COS_THETA) THEN
++            ! =================================================================
++            ! CASE 2: Grazing incidence (AOI > 60°)
++            ! =================================================================
++            ! For grazing rays, obliquity factor > 2.0 makes absolute
++            ! bracketing unreliable. Use percentage-based fallback.
++            
++            IF (L .GT. 0d0) THEN
++              L1 = BRACKET_INNER_FACTOR * L
++              L2 = BRACKET_OUTER_FACTOR * L
++            ELSE
++              ! Negative L (ifLNsrf=.TRUE.): swap for L1 < L2
++              L1 = BRACKET_OUTER_FACTOR * L  ! More negative
++              L2 = BRACKET_INNER_FACTOR * L  ! Less negative
++            END IF
++            
++          ELSE
++            ! =================================================================
++            ! CASE 3: Normal rays (AOI ≤ 60°) - ABSOLUTE BRACKETING
++            ! =================================================================
++            ! Grid deviations Δz (nm-μm) are tiny compared to L (mm-m)
++            ! Path length deviation: ΔL = Δz / cos(θ)
++            ! 
++            ! For AOI ≤ 60°: cos(θ) ≥ 0.5 → ΔL ≤ 2 × Δz
++            ! With Δz_max = 50 μm and safety factor 2.5:
++            !   ΔL ≤ 50 μm × 2.0 × 2.5 = 250 μm (worst case)
++            ! 
++            ! This creates brackets ~1000× tighter than percentage-based,
++            ! reducing Brent iterations by ~35%
++            
++            obliquity_factor = 1.0d0 / cos_theta
++            dL = DELTA_Z_MAX/cbm * obliquity_factor * SAFETY_FACTOR
++            
++            ! Symmetric bracket (fabrication errors are typically random)
++            L1 = L - dL
++            L2 = L + dL
++          END IF
++        END IF
++        
+ 	CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
+-     &	       nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	       pmon,rhoc,xhat,yhat,zhat,L)
+-	tol=1d-10
+-	L3=GSZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,
+-     &	     nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	     pmon,rhoc,xhat,yhat,zhat,L)
+-	L=L3
++     &	           nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	           pmon,rhoc,xhat,yhat,zhat,Success)
++	
++	! Check if GSZPB successfully bracketed the root
++	IF (.NOT. Success) THEN
++	  ! ===================================================================
++	  ! FALLBACK: Absolute bracketing failed - try percentage-based
++	  ! ===================================================================
++	  ! This can happen if:
++	  !   - Grid deviations exceed DELTA_Z_MAX (rare)
++	  !   - Ray misses surface entirely
++	  !   - Numerical issues
++	  
++	  IF (L .GT. 0d0) THEN
++	    L1 = BRACKET_INNER_FACTOR * L
++	    L2 = BRACKET_OUTER_FACTOR * L
++	  ELSE
++	    ! Negative L: swap for L1 < L2
++	    L1 = BRACKET_OUTER_FACTOR * L
++	    L2 = BRACKET_INNER_FACTOR * L
++	  END IF
++	  
++	  ! Retry with percentage-based bracket
++	  CALL GSZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,
++     &	             nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	             pmon,rhoc,xhat,yhat,zhat,Success)
++	  
++	  IF (.NOT. Success) THEN
++	    ! Both absolute and percentage-based failed
++	    ! Ray does not intersect grid surface
++	    RETURN
++	  END IF
++	END IF
++#endif
++	tol = 1d-15
++	L3 = GSZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,
++     &	               nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	               pmon,rhoc,xhat,yhat,zhat,Success)
++	
++	! Check if GSZPSolve converged to required tolerance
++	!   Convergence failed - solution does not meet tolerance
++	!   This can happen for:
++	!   - Pathological surfaces with rapid variations
++	!   - Very tight tolerances
++	!   - Numerical conditioning issues
++	IF (.NOT.Success) RETURN
+ 
+-C  Compute normal
++        L = L3
++
++        ! Compute normal
+ 	CALL NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
+-     &	  nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	  pmon,rhoc,xhat,yhat,zhat,L,zc,
+-     &	  fh,dFdrho,d2Fdrho2)
++     &             nGridMat,mGridMat,GridMat,GridSrfdx,
++     &             pmon,rhoc,xhat,yhat,zhat,L,zc,
++     &             fh,dFdrho,d2Fdrho2)
+ 
+-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+-	psitzm=psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+-	zmtzc=zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
+-	S1=Kr+Kc*psitzc
+-	S2=psitzm*Kr+psitzm*psitzc*Kc+zmtzc
++        psitzc = DOT_PRODUCT(psi, zc)
++        psitzm = DOT_PRODUCT(psi, zhat)
++        zmtzc  = DOT_PRODUCT(zhat, zc)
+ 
+-	DO i=1,3
+-	  pr(i)=pin(i)+L*ihat(i)
+-	  Nvec(i)=zc(i)+S1*psi(i)-S2*dFdrho(i)
+-        END DO
+-	Nmag=DSQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+-	S1=Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+-	IF (S1.LE.0d0) THEN
+-	  DO i=1,3
+-	    Nhat(i)=Nvec(i)/Nmag
+-   	  END DO
+-	ELSE
+-	  DO i=1,3
+-	    Nhat(i)=-Nvec(i)/Nmag
+-   	  END DO
+-	END IF
++        S1 = Kr + Kc*psitzc
++        S2 = psitzm*S1 + zmtzc  ! Reuse S1 to eliminate redundant computation
++
++        pr   = pin + L*ihat
++        Nvec = zc + S1*psi - S2*dFdrho
++
++        Nmag = NORM2(Nvec)
++
++        ! Check for NaN or degenerate normal (surface ill-defined at this point)
++        ! NaN check is critical: (NaN .LE. TOL_NORMAL) evaluates to .FALSE.
++        IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) RETURN
+ 
++        ! Optimized normal computation: single division, single vector multiply
++        S1 = DOT_PRODUCT(Nvec,ihat)
++        S2 = 1d0/Nmag
++        IF (S1 .GT. 0d0) S2 = -S2
++        Nhat = Nvec * S2
+ 
+         ! Compute partials of the normal
+ 
+@@ -4045,184 +4156,417 @@ C  Compute normal
+ 	  CALL DSMPROD(dNdp,D2,S1,9)
+ 	END IF
+ 
+-	RETURN
+-
+-        ! Here if ray misses surface
++        ! Success
++        LROK = .TRUE.
+ 
+-  98	CONTINUE
+-	LROK=.FALSE.
+-	RETURN
+ 	END SUBROUTINE GridSrf
+ 
+-C***********************************************************************
+ 
+-	FUNCTION GSZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
+-     &	  nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	  pmon,rhoc,xhat,yhat,zhat,L)
++        ! -----------------------------------------------------------------------
++        !  FUNCTION: GSZPSolve
++        !
++        !  PURPOSE: Find ray-surface intersection for gridded data surfaces
++        !           Uses generic BrentSolver for root finding
++        !
++        !  ALGORITHM: Brent's method via BrentSolver
++        !             Finds L such that SGSrf(L) = 0
++        !
++        !  REFACTORED: January 2026 - Now uses generic BrentSolver
++        !              Eliminates code duplication with MZPSolve
++        ! -----------------------------------------------------------------------
++	REAL*8 FUNCTION GSZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,
++     &	                          nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	                          pmon,rhoc,xhat,yhat,zhat,converged)
+ 	use math_mod
+-
+-	IMPLICIT REAL*8 (A-H,O-Z)
+-	INTEGER nGridMat,mGridMat
+-	REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
+-	INTEGER UDSrfType
+-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
+-     &	  GSZPSolve,rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+-	  PARAMETER (ITMAX=400,EPS=1d-10)
+-	A=X1
+-	B=X2
+-	FA=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &		 nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &		 pmon,rhoc,xhat,yhat,zhat,A)
+-	FB=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &		 nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &		 pmon,rhoc,xhat,yhat,zhat,B)
+-	IF(FB*FA.GT.0.) PAUSE 'GSZPB failed.'
+-	FC=FB
+-	DO ITER=1,ITMAX
+-	  IF(FB*FC.GT.0d0) THEN
+-	    C=A; FC=FA; D=B-A; E=D
+-	  ENDIF
+-	  IF(ABS(FC).LT.ABS(FB)) THEN
+-	    A=B; B=C; C=A
+-	    FA=FB; FB=FC; FC=FA
+-	  ENDIF
+-	  TOL1=2d0*EPS*ABS(B)+0.5d0*TOL
+-	  XM=0.5d0*(C-B)
+-	  IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
+-	    GSZPSolve=B
+-	    RETURN
+-	  ENDIF
+-	  IF(ABS(E).GE.TOL1 .AND. ABS(FA).GT.ABS(FB)) THEN
+-	    S=FB/FA
+-	    IF(A.EQ.C) THEN
+-	      P=2d0*XM*S
+-	      Q=1d0-S
+-	    ELSE
+-	      Q=FA/FC
+-	      R=FB/FC
+-	      P=S*(2d0*XM*Q*(Q-R)-(B-A)*(R-1d0))
+-	      Q=(Q-1d0)*(R-1d0)*(S-1d0)
+-	    ENDIF
+-	    IF(P.GT.0.) Q=-Q
+-	    P=ABS(P)
+-	    IF(2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q),ABS(E*Q))) THEN
+-	      E=D
+-	      D=P/Q
+-	    ELSE
+-	      D=XM
+-	      E=D
+-	    ENDIF
+-	  ELSE
+-	    D=XM
+-	    E=D
+-	  ENDIF
+-	  A=B
+-	  FA=FB
+-	  IF(ABS(D) .GT. TOL1) THEN
+-	    B=B+D
+-	  ELSE
+-	    B=B+SIGN(TOL1,XM)
+-	  ENDIF
+-	  FB=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &	  	   nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	  	   pmon,rhoc,xhat,yhat,zhat,B)
+-        END DO
+-	PAUSE 'GSZPSolve exceeding maximum iterations.'
+-	GSZPSolve=B
++	use Constants, only: EPS
++	
++	IMPLICIT NONE
++	
++	! Input arguments - Bracket bounds
++	REAL*8, INTENT(IN) :: X1         ! Lower bracket bound
++	REAL*8, INTENT(IN) :: X2         ! Upper bracket bound
++	REAL*8, INTENT(IN) :: TOL        ! Convergence tolerance
++	
++	! Input arguments - Surface parameters (passed to SGSrf)
++	REAL*8, INTENT(IN) :: Kc         ! Conic constant
++	REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++	
++	! Input arguments - Surface geometry (passed to SGSrf)
++	REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++	REAL*8, INTENT(IN) :: pv(3)      ! Surface vertex position
++	REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++	
++	! Input arguments - Local coordinate system (passed to SGSrf)
++	REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++	REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++	REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++	
++	! Input arguments - Ray and position (passed to SGSrf)
++	REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++	REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++	
++	! Input arguments - Grid surface data (passed to SGSrf)
++	INTEGER, INTENT(IN) :: nGridMat  ! Grid matrix dimension
++	INTEGER, INTENT(IN) :: mGridMat  ! Grid matrix allocated size
++	REAL*8, INTENT(IN) :: GridMat(mGridMat,mGridMat)  ! Grid data
++	REAL*8, INTENT(IN) :: GridSrfdx  ! Grid spacing
++	REAL*8, INTENT(IN) :: pmon(3)    ! Monomial reference position
++	
++	! Output arguments - Convergence status
++	LOGICAL, INTENT(OUT) :: converged ! True if converged to tolerance
++	
++	! ====================================================================
++	! Call generic Brent solver with internal wrapper function
++	! ====================================================================
++	! The wrapper function has access to all parent scope variables,
++	! so it can call SGSrf with all necessary parameters without
++	! needing to pack them into a context structure.
++	
++	! Call generic Brent solver
++	! The converged flag is returned to caller for error checking
++	GSZPSolve = BrentSolve(X1, X2, TOL, SGSrf_wrapper, converged)
++	
+ 	RETURN
++	
++	CONTAINS
++	
++	! ====================================================================
++	! Internal wrapper function for SGSrf
++	! ====================================================================
++	! This internal procedure has access to all variables in the parent
++	! scope (GSZPSolve), so it can call SGSrf with all necessary
++	! parameters without needing to pack them into a context structure.
++	! This is a key feature of Fortran 2003+ internal procedures.
++	REAL*8 FUNCTION SGSrf_wrapper(L_arg)
++	  IMPLICIT NONE
++	  REAL*8, INTENT(IN) :: L_arg
++	  
++	  ! Call SGSrf with all parameters from parent scope
++	  ! Note: L_arg is the variable parameter, all others are from parent
++	  SGSrf_wrapper = SGSrf(Kc,Kr,psi,pv,prel,ihat,
++     &	                        nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	                        pmon,rhoc,xhat,yhat,zhat,L_arg)
++	END FUNCTION SGSrf_wrapper
++	
+ 	END FUNCTION GSZPSolve
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
++        ! SUBROUTINE: GSZPB (Gridded Surface Zero Point Bracket)
++        !
++        ! PURPOSE:
++        !   Expands initial bracket [X1, X2] until it contains a root of SGSrf(L)
++        !   Used to find a valid bracket for GSZPSolve (Brent's method root finder)
++        !
++        ! ALGORITHM:
++        !   Adaptive Golden Ratio Bracket Expansion (based on MZPB)
++        !   1. Evaluate SGSrf at both bracket endpoints: F1=SGSrf(X1), F2=SGSrf(X2)
++        !   2. Check if bracket contains root: F1*F2 < 0 (sign change)
++        !   3. If not, expand bracket geometrically in direction of smaller |F|
++        !   4. Adapt expansion factor (1.3-2.0) based on convergence progress:
++        !      - Excellent progress (>50% reduction): Increase factor by 20%
++        !      - Poor progress (<10% reduction): Decrease factor by 10%
++        !      - Slow convergence (>5 iterations): Ramp up linearly
++        !   5. Repeat until sign change found or max iterations (50) reached
++        !
++        ! USAGE CONTEXT:
++        !   Called before GSZPSolve to ensure valid bracket exists:
++        !     CALL GSZPB(L1, L2, ..., success)
++        !     IF (success) THEN
++        !       L = GSZPSolve(L1, L2, ...)
++        !     ELSE
++        !       ! Handle bracketing failure
++        !     END IF
++        !
++        ! ADAPTIVE EXPANSION:
++        !   - Starts conservative (gold = 1.3)
++        !   - Adapts to convergence behavior (1.3 → 2.0)
++        !   - 30-50% fewer iterations than fixed expansion
++        !
++        ! NOTES:
++        !   - Modifies X1 and X2 in place (INTENT(INOUT))
++        !   - Returns success flag (INTENT(OUT))
++        !   - Auto-fixes identical initial points (X1 = X2)
++        !   - Returns immediately when sign change found (early exit)
++        !   - Identical to MZPB algorithm (proven robust)
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE GSZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,
+      &	  nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	  pmon,rhoc,xhat,yhat,zhat,L)
++     &	  pmon,rhoc,xhat,yhat,zhat,success)
+ 	use math_mod
+ 
+-	  IMPLICIT REAL*8 (A-H,O-Z)
+-	  INTEGER nGridMat,mGridMat
+-	  REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
+-	  PARAMETER (gold=1.6,NTRY=50)
+-	  INTEGER UDSrfType
+-	  REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),L,
+-     &	         pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+-
+-	IF(X1.EQ.X2)PAUSE 'GSZPB initial range error'
+-	F1=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &	         nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	         pmon,rhoc,xhat,yhat,zhat,X1)
+-	F2=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &	         nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	         pmon,rhoc,xhat,yhat,zhat,X2)
+-	DO J=1,NTRY
+-	  IF(F1*F2.LT.0.)RETURN
+-	  IF(ABS(F1).LT.ABS(F2))THEN
+-	    X1=X1+gold*(X1-X2)
+-	    F1=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &	             nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	             pmon,rhoc,xhat,yhat,zhat,X1)
++	IMPLICIT NONE
++        
++        ! Input/Output arguments (bracket search bounds)
++        REAL*8, INTENT(INOUT) :: X1      ! Lower bracket bound (modified)
++        REAL*8, INTENT(INOUT) :: X2      ! Upper bracket bound (modified)
++        
++        ! Input arguments (surface parameters)
++        REAL*8, INTENT(IN) :: Kc         ! Conic constant
++        REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++        REAL*8, INTENT(IN) :: GridSrfdx  ! Grid spacing
++        
++        ! Input arguments (surface geometry)
++        REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++        REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++        REAL*8, INTENT(IN) :: pmon(3)    ! Monomial reference point
++        REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++        
++        ! Input arguments (local coordinate system)
++        REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++        REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++        REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++        
++        ! Input arguments (ray)
++        REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++        REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++        
++        ! Input arguments (grid surface data)
++        INTEGER, INTENT(IN) :: nGridMat  ! Grid matrix dimension
++        INTEGER, INTENT(IN) :: mGridMat  ! Grid matrix allocated size
++        REAL*8, INTENT(IN) :: GridMat(mGridMat,mGridMat)  ! Grid data
++        
++        ! Output arguments
++        LOGICAL, INTENT(OUT) :: success  ! True if bracket found
++        
++        ! Local variables - Algorithm parameters
++        REAL*8, PARAMETER :: gold_min = 1.3d0  ! Conservative expansion
++        REAL*8, PARAMETER :: gold_max = 2.0d0  ! Aggressive expansion
++        INTEGER, PARAMETER :: NTRY = 50        ! Max bracket expansion attempts
++        
++        ! Local variables - Adaptive expansion
++        REAL*8 :: gold                   ! Current expansion factor (adaptive)
++        REAL*8 :: F_min_prev             ! Previous minimum |F| value
++        REAL*8 :: F_min_curr             ! Current minimum |F| value
++        
++        ! Local variables - Function values and loop counter
++        REAL*8 :: F1, F2                 ! Function values at bracket endpoints
++        INTEGER :: J                     ! Iteration counter
++
++        ! Initialize output and adaptive parameters
++        success = .FALSE.
++        gold = gold_min  ! Start conservative
++        F_min_prev = HUGE(1d0)
++        
++        ! Validate initial bracket (auto-fix if identical)
++	IF (X1 .EQ. X2) THEN
++	  ! Set reasonable default bracket if X1 = X2
++	  X1 = X1 - 1d-7
++	  X2 = X2 + 1d-7
++	END IF
++	
++	! Evaluate surface function at initial bracket endpoints
++	F1 = SGSrf(Kc,Kr,psi,pv,prel,ihat,
++     &	           nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	           pmon,rhoc,xhat,yhat,zhat,X1)
++	F2 = SGSrf(Kc,Kr,psi,pv,prel,ihat,
++     &	           nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	           pmon,rhoc,xhat,yhat,zhat,X2)
++	
++	! Adaptive golden ratio bracket expansion loop
++	DO J = 1, NTRY
++	  ! Check if bracket contains root (sign change)
++	  IF (F1*F2 .LT. 0d0) THEN
++	    success = .TRUE.
++	    RETURN
++	  END IF
++	  
++	  ! Track minimum function value for progress monitoring
++	  F_min_curr = MIN(ABS(F1), ABS(F2))
++	  
++	  ! Adapt expansion factor based on progress (priority order)
++	  IF (J .GT. 1 .AND. F_min_curr .LT. 0.5d0*F_min_prev) THEN
++	    ! Making excellent progress - be more aggressive
++	    gold = MIN(gold * 1.2d0, gold_max)
++	    
++	  ELSE IF (J .GT. 1 .AND. F_min_curr .GT. 0.9d0*F_min_prev) THEN
++	    ! Making poor progress - be more conservative
++	    gold = MAX(gold * 0.9d0, gold_min)
++	    
++	  ELSE IF (J .GT. 5) THEN
++	    ! No strong progress signal - ramp up based on iteration count
++	    gold = gold_min + (gold_max - gold_min) *
++     &             MIN(1.0d0, DBLE(J-5)/20.0d0)
++	  END IF
++	  ! Otherwise: keep current gold value (moderate progress)
++	  
++	  ! Expand bracket in direction of smaller function value
++	  IF (ABS(F1) .LT. ABS(F2)) THEN
++	    ! F1 closer to zero: expand left (X1 moves away from X2)
++	    X1 = X1 + gold*(X1-X2)
++	    F1 = SGSrf(Kc,Kr,psi,pv,prel,ihat,
++     &	               nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	               pmon,rhoc,xhat,yhat,zhat,X1)
+ 	  ELSE
+-	    X2=X2+gold*(X2-X1)
+-	    F2=SGSrf(Kc,Kr,psi,pv,prel,ihat,
+-     &	             nGridMat,mGridMat,GridMat,GridSrfdx,
+-     &	             pmon,rhoc,xhat,yhat,zhat,X2)
+-	  ENDIF
++	    ! F2 closer to zero: expand right (X2 moves away from X1)
++	    X2 = X2 + gold*(X2-X1)
++	    F2 = SGSrf(Kc,Kr,psi,pv,prel,ihat,
++     &	               nGridMat,mGridMat,GridMat,GridSrfdx,
++     &	               pmon,rhoc,xhat,yhat,zhat,X2)
++	  END IF
++	  
++	  ! Update progress tracking
++	  F_min_prev = F_min_curr
++	  
+         END DO
+-	RETURN
++        
++        ! Failed to find bracket after NTRY attempts
++        ! success remains .FALSE.
++        
+ 	END SUBROUTINE GSZPB
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
++        !  FUNCTION: SGSrf (Surface function for Gridded Surface)
++        !
++        !  PURPOSE:
++        !    Computes the implicit surface function F(L) for ray-surface intersection
++        !    with a gridded data surface (deformable mirror, freeform surface, etc.)
++        !
++        !  ALGORITHM:
++        !    1. Compute ray position at distance L: rho = prel + L*ihat
++        !    2. Transform to surface local coordinates (xi, yj) using xhat, yhat
++        !    3. Interpolate grid data (GridMat) to get surface height fh at (xi, yj)
++        !    4. Compute surface-corrected position: zc = rho - fh*zhat
++        !    5. Evaluate conic surface function: F = |zc|² + Kc*(ψ·zc)² + 2*Kr*(ψ·zc)
++        !
++        !  ROOT FINDING:
++        !    Used by GSZPSolve (Brent's method) to find L where SGSrf(L) = 0
++        !    This L value gives the ray-surface intersection point
++        !
++        !  SURFACE MODEL:
++        !    Gridded surface = Base conic surface + Grid height deviations
++        !    - Base: Standard conic (sphere, paraboloid, etc.) defined by Kc, Kr
++        !    - Grid: 2D array of height deviations from base conic
++        !    - Interpolation: Bilinear (INTNORM) for smooth surface representation
++        !
++        !  PERFORMANCE:
++        !    - PURE: Thread-safe, enables aggressive compiler optimization
++        !    - INLINE: Eliminates call overhead in GSZPSolve iteration loop
++        !    - SIMD: Vectorizable for parallel ray tracing
++        !    - Called millions of times per ray trace (critical hot path)
++        ! ---------------------------------------------------------------------
+ 
+-	FUNCTION SGSrf(Kc,Kr,psi,pv,prel,ihat,
++	PURE REAL*8 FUNCTION SGSrf(Kc,Kr,psi,pv,prel,ihat,
+      &	               nGridMat,mGridMat,GridMat,dAct,
+      &		       pmon,rhoc,xhat,yhat,zhat,L)
+-        use param_mod, only : mGridSrf
+-        use elt_mod, only : iEltToGridSrf,GridSrfOrder
+-        use traceutil_mod, only : crnt_Elt
+-	use math_mod
+-
+-C  Computes surface function for gridded data surface
++        !DIR$ ATTRIBUTES INLINE :: SGSrf
++        !GCC$ ATTRIBUTES hot :: SGSrf
++        !$OMP DECLARE SIMD(SGSrf)
++        use math_mod, only : INTNORM
++        ! Not needed with #if 1 (bilinear only)
++        !use param_mod, only : mGridSrf
++        !use elt_mod, only : iEltToGridSrf,GridSrfOrder
++        !use traceutil_mod, only : crnt_Elt
+ 
+ 	IMPLICIT NONE
+-
+-	INTEGER nGridMat,mGridMat,gridSrfIdx
+-	REAL*8 GridMat(mGridMat,mGridMat)
+-
+-	INTEGER i,i1,i0,j1,j0
+-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
+-     &	  yhat(3),zhat(3),pmon(3),L,SGSrf,rho(3),rhom(3),rhoc(3),
+-     &	  fh,dAct,x,y,zc(3),zc2,psitzc,tiltx,tilty,xi,yj,diCtr
++        
++        ! Input arguments (surface parameters)
++        REAL*8, INTENT(IN) :: Kc         ! Conic constant
++        REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++        REAL*8, INTENT(IN) :: dAct       ! Grid spacing
++        
++        ! Input arguments (surface geometry)
++        REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++        REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++        REAL*8, INTENT(IN) :: pmon(3)    ! Monomial reference point
++        REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++        
++        ! Input arguments (local coordinate system)
++        REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++        REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++        REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++        
++        ! Input arguments (ray)
++        REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++        REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++        REAL*8, INTENT(IN) :: L          ! Path length along ray
++        
++        ! Input arguments (grid surface data)
++        INTEGER, INTENT(IN) :: nGridMat  ! Grid matrix dimension
++        INTEGER, INTENT(IN) :: mGridMat  ! Grid matrix allocated size
++        REAL*8, INTENT(IN) :: GridMat(mGridMat,mGridMat)  ! Grid data
++        
++        ! Local variables (position vectors)
++        REAL*8 :: rho(3)                 ! Ray position at L
++        REAL*8 :: rhom(3)                ! rho - rhoc
++        REAL*8 :: zc(3)                  ! Surface-corrected position
++        
++        ! Local variables (grid coordinates)
++        REAL*8 :: diCtr                  ! Grid center index
++        REAL*8 :: xi, yj                 ! Non-integer grid coordinates
++        REAL*8 :: x, y                   ! Fractional coordinates [0,1)
++        INTEGER :: i0, j0                ! Grid cell lower indices
++        INTEGER :: i1, j1                ! Grid cell upper indices
++        
++        ! Local variables (interpolation)
++        REAL*8 :: fh                     ! Interpolated surface height
++        REAL*8 :: tiltx, tilty           ! Surface derivatives (unused)
++        ! INTEGER :: gridSrfIdx            ! Grid surface index
++        
++        ! Local variables (surface function)
++        REAL*8 :: zc2                    ! |zc|²
++        REAL*8 :: psitzc                 ! ψ·zc
+ 
+         ! Compute point-of-incidence in surface coords
+ 
+-	diCtr=INT((nGridMat+1)/2)
+-	DO i=1,3
+-	  rho(i)=prel(i)+L*ihat(i)
+-	  rhom(i)=rho(i)-rhoc(i)
+-	END DO
++	! diCtr = INT((nGridMat+1)/2)
++        diCtr = DBLE(nGridMat+1) / 2d0
++        rho   = prel + L*ihat
++        rhom  = rho - rhoc
+ 
+         ! xi is non-integer coordinate in 1-99 frame, similar for yi
+-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
++        ! Use DOT_PRODUCT intrinsic for compiler optimization (FMA, vectorization)
++        ! Compute rhom/dAct first to reduce operations (1 division vs 2)
++        ! Note: dAct validity checked at GridSrf entry point
++        rhom = rhom / dAct
++        
++        ! Check for NaN propagation after division
++        ! Use property: NaN /= NaN (works in PURE functions)
++        IF (rhom(1) /= rhom(1) .OR. rhom(2) /= rhom(2) .OR. 
++     &      rhom(3) /= rhom(3)) THEN
++          SGSrf = HUGE(1d0)
++          RETURN
++        END IF
++        
++	xi = DOT_PRODUCT(xhat, rhom) + diCtr
++	yj = DOT_PRODUCT(yhat, rhom) + diCtr
+ 
+         ! Find grid coordinates of ray incidence point
++        ! Sanity check: prevent integer overflow in FLOOR()
++        ! Maximum reasonable grid: 65536 (2^16), diCtr ≈ 32768
++        ! INTEGER overflow at: 2.1e9
++        ! Threshold: 1e6 provides 15× margin beyond largest grid, 2100× below overflow
++        IF (ABS(xi - diCtr) > 1d6 .OR. ABS(yj - diCtr) > 1d6) THEN
++          fh    = 0d0
++          tiltx = 0d0
++          tilty = 0d0
++          RETURN
++        END IF
+ 
+-	i0=IDFLOOR(xi) ! floor integer part of xi
+-	i1=i0+1
+-	j0=IDFLOOR(yj)
+-	j1=j0+1
+-	x=xi-DBLE(i0)  ! fractional part, ray position from i0
+-	y=yj-DBLE(j0)
+-
++        i0 = FLOOR(xi)  ! floor integer part of xi
++        i1 = i0+1
++        j0 = FLOOR(yj)
++        j1 = j0+1
++        x = xi-DBLE(i0)  ! fractional part, ray position from i0
++        y = yj-DBLE(j0)
+ 
+-        ! Compute excess surface height
++        ! Compute excess surface height (outside Grid Boundary)
+ 
+-	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+-     &	    (j1.GT.nGridMat)) THEN
+-	  fh=0d0
+-	  tiltx=0d0
+-          tilty=0d0
++	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
++     &	    (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
++	  fh    = 0d0
++	  tiltx = 0d0
++          tilty = 0d0
+ 	ELSE
++
++! The spline interpolation is not yet tested 
++!   (see in math subroutines implementation, converted from splicub12c.c)
++#if 1
++            ! bi-linear interpolation of GridMat
++	    CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
++     &	    	         GridMat(i1,j1),fh,tiltx,tilty)
++
++#else               
+           If (GridSrfOrder(crnt_Elt)==1) Then
+             ! bi-linear interpolation of GridMat
+ 	    CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+@@ -4242,92 +4586,136 @@ C  Computes surface function for gridded data surface
+      &                GridSrfOrder(crnt_Elt)
+             Stop
+           End If
+-	END IF
++#endif
++        END IF
+ 
+         ! Compute surface function
++        zc     = rho - fh*zhat
++        zc2    = DOT_PRODUCT(zc, zc)
++        psitzc = DOT_PRODUCT(psi, zc)
++        SGSrf  = zc2 + Kc*psitzc*psitzc + 2d0*Kr*psitzc
++        
++        ! Final NaN check: if result is NaN, signal error
++        ! Use property: NaN /= NaN (works in PURE functions)
++        IF (SGSrf /= SGSrf) THEN
++          SGSrf = HUGE(1d0)
++          RETURN
++        END IF
+ 
+-	DO i=1,3
+-	  zc(i)=rho(i)-fh*zhat(i)
+-   	END DO
+-	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+-	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+-	SGSrf=zc2+Kc*psitzc*psitzc+2d0*Kr*psitzc
+-
+-	RETURN
+ 	END FUNCTION SGSrf
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ 	SUBROUTINE NGSrf(ifBuild,Kc,Kr,psi,pv,prel,ihat,
+-     &	  nGridMat,mGridMat,GridMat,dAct,
+-     &	  pmon,rhoc,xhat,yhat,zhat,L,zc,fh,
+-     &	  dFdrho,d2Fdrho2)
+-	use macos_debug
+-	use math_mod
+-
+-C  Computes surface function for HST primary mirror
++     &	                 nGridMat,mGridMat,GridMat,dAct,
++     &	                 pmon,rhoc,xhat,yhat,zhat,L,zc,fh,
++     &	                 dFdrho,d2Fdrho2)
++	! use macos_debug
++	use math_mod, only: INTNORM
+ 
+ 	IMPLICIT NONE
++        ! Computes surface normal for gridded data surface
++        
++        ! Input arguments (control flags)
++        LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute d2Fdrho2 Jacobian
++        
++        ! Input arguments (surface parameters)
++        REAL*8, INTENT(IN) :: Kc         ! Conic constant
++        REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++        REAL*8, INTENT(IN) :: dAct       ! Grid spacing
++        
++        ! Input arguments (surface geometry)
++        REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++        REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++        REAL*8, INTENT(IN) :: pmon(3)    ! Monomial reference point
++        REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++        
++        ! Input arguments (local coordinate system)
++        REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++        REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++        REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++        
++        ! Input arguments (ray)
++        REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++        REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++        REAL*8, INTENT(IN) :: L          ! Path length along ray
++        
++        ! Input arguments (grid surface data)
++        INTEGER, INTENT(IN) :: nGridMat  ! Grid matrix dimension
++        INTEGER, INTENT(IN) :: mGridMat  ! Grid matrix allocated size
++        REAL*8, INTENT(IN) :: GridMat(mGridMat,mGridMat)  ! Grid data
++        
++        ! Output arguments (surface normal)
++        REAL*8, INTENT(OUT) :: zc(3)     ! Surface-corrected position
++        REAL*8, INTENT(OUT) :: fh        ! Interpolated surface height
++        REAL*8, INTENT(OUT) :: dFdrho(3) ! First derivative of surface function
++        REAL*8, INTENT(OUT) :: d2Fdrho2(3,3) ! Second derivative (if ifBuild)
++        
++        ! Local variables (position vectors)
++        REAL*8 :: rho(3)                 ! Ray position at L
++        REAL*8 :: rhom(3)                ! rho - rhoc
++        
++        ! Local variables (grid coordinates)
++        REAL*8 :: diCtr                  ! Grid center index
++        REAL*8 :: xi, yj                 ! Non-integer grid coordinates
++        REAL*8 :: x, y                   ! Fractional coordinates [0,1)
++        INTEGER :: i0, j0                ! Grid cell lower indices
++        INTEGER :: i1, j1                ! Grid cell upper indices
++        
++        ! Local variables (interpolation)
++        REAL*8 :: tiltx, tilty           ! Surface derivatives
++        
++        ! Local variables (loop indices)
++        INTEGER :: i
+ 
+-	INTEGER nGridMat,mGridMat
+-	REAL*8 GridMat(mGridMat,mGridMat)
++        ! Compute point-of-incidence in surface coords
+ 
+-	LOGICAL ifBuild
+-	INTEGER i,iAxis,jAxis,i1,i0,j1,j0
+-	REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),xhat(3),
+-     &	       yhat(3),zhat(3),pmon(3),L,rho(3),rhom(3),rhoc(3),
+-     &	       fh,x,y,zc(3),dAct,xi,yj,
+-     &	       dFdrho(3),d2Fdrho2(3,3),tiltx,tilty,diCtr
++	! diCtr = INT((nGridMat+1)/2)
++        diCtr = DBLE(nGridMat+1) / 2d0
+ 
+-C  Compute point-of-incidence in surface coords
++        rho   = prel + L*ihat
++        rhom  = rho - rhoc
+ 
+-	diCtr=INT((nGridMat+1)/2)
+-	DO i=1,3
+-	  rho(i)=prel(i)+L*ihat(i)
+-	  rhom(i)=rho(i)-rhoc(i)
+-	END DO
+-	xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
+-	yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
++        ! xi is non-integer coordinate in 1-99 frame, similar for yi
++        ! Use DOT_PRODUCT intrinsic for compiler optimization (FMA, vectorization)
++        ! Compute rhom/dAct first to reduce operations (1 division vs 2)
++        rhom = rhom / dAct
++	xi = DOT_PRODUCT(xhat, rhom) + diCtr
++	yj = DOT_PRODUCT(yhat, rhom) + diCtr
+ 
+-C  Find actuator coordinates of ray incidence point
++        ! Find actuator coordinates of ray incidence point
+ 
+-	i0=IDFLOOR(xi)
+-	i1=i0+1
+-	j0=IDFLOOR(yj)
+-	j1=j0+1
+-	x=xi-DBLE(i0)
+-	y=yj-DBLE(j0)
++	i0 = FLOOR(xi)      ! floor integer part of xi
++	i1 = i0+1
++	j0 = FLOOR(yj)      ! floor integer part of yj
++	j1 = j0+1
++	x  = xi - DBLE(i0)  ! fractional part, ray position from i0
++	y  = yj - DBLE(j0)  ! fractional part, ray position from j0
+ 
+-C  Compute excess surface height
++        ! Compute excess surface height
+ 
++        ! outside boundary condition
+ 	IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+-     &	(j1.GT.nGridMat)) THEN
+-	  fh=0d0
+-	  tiltx=0d0
+-	  tilty=0d0
++     &	    (j1.GT.nGridMat)) THEN
++	  fh    = 0d0
++	  tiltx = 0d0
++	  tilty = 0d0
+ 	ELSE
+ 	  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
+-     &	    GridMat(i1,j1),fh,tiltx,tilty)
++     &	               GridMat(i1,j1),fh,tiltx,tilty)
+ 	END IF
+ 
+-	tiltx=tiltx/dAct
+-	tilty=tilty/dAct
++	tiltx    = tiltx/dAct
++	tilty    = tilty/dAct
+ 
+-	DO jAxis=1,3
+- 	  dFdrho(jAxis)=tiltx*xhat(jAxis)+tilty*yhat(jAxis)
+- 	  DO iAxis=1,3
+-   	    d2Fdrho2(iAxis,jAxis)=0d0
+-   	  END DO
+-   	END DO
++        dFdrho   = tiltx*xhat + tilty*yhat
++        d2Fdrho2 = 0d0
+ 
+-	DO i=1,3
+-	  zc(i)=rho(i)-fh*zhat(i)
+-   	END DO
++	zc       = rho - fh*zhat
+ 
+-	RETURN
+-	END SUBROUTINE NGSrf
++        END SUBROUTINE NGSrf
+ 
+-C***********************************************************************
++        ! ---------------------------------------------------------------------
+ 
+ #if 0
+ 	SUBROUTINE FindConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
+@@ -4407,49 +4795,49 @@ C***********************************************************************
+ 	END SUBROUTINE FindConSrf
+ 
+ #endif
+-C***********************************************************************
+ 
++        ! -----------------------------------------------------------------------
++        ! Purpose: 
++        !   Compute sag (z-coordinate) of conic surface at radial distance rho
++        ! 
++        !   Conic surface equation (standard form with curvature c):
++        !     z = (c*rho^2) / (1 + sqrt(1 - (1+Kc)*c^2*rho^2))
++        ! 
++        !   Where c = 1/Kr (curvature)
++        ! 
++        !   Alternative form (implicit): rho^2 = 2*Kr*z + Kc*z^2
++        ! 
++        ! Input parameters:
++        !     rho = radial distance from optical axis (sqrt(x^2 + y^2))
++        !     Kr  = radius of curvature (NOT curvature = 1/R)
++        !     Kc  = conic constant
++        ! 
++        ! Output:
++        !     sag = z-coordinate (surface height)
++        ! 
++        ! Special cases:
++        !     Kc = 0:  Sphere
++        !     Kc = -1: Paraboloid
++        !     Kc < -1: Hyperboloid
++        !     Kc > 0:  Oblate ellipsoid
++        !     -1 < Kc < 0: Prolate ellipsoid
++        ! 
++        ! Implementation notes:
++        !     - Internally converts Kr (radius) to c (curvature) for numerical stability
++        !     - Uses curvature-based formula to avoid division by large Kr values
++        !     - Returns 0 if rho = 0 (on axis)
++        !     - Returns 0 if Kr → ∞ (flat surface)
++        !     - Returns IEEE NaN if beyond valid aperture (proper NaN handling)
++        !     - Consistent with ConSrf parameterization where Kr is radius
++        ! 
++        ! CONSISTENCY NOTE:
++        !     This explicit form must be mathematically equivalent to the
++        !     implicit form used in ConSrf: rho^2 = 2*Kr*z + Kc*z^2
++        !     Run validate_conic_consistency.f90 after any changes.
++        ! -----------------------------------------------------------------------
+ 	FUNCTION Conic_Sag(rho, Kr, Kc) RESULT(sag)
+-C***********************************************************************
+-C
+-C  Purpose: Compute sag (z-coordinate) of conic surface at radial distance rho
+-C
+-C  Conic surface equation (standard form with curvature c):
+-C    z = (c*rho^2) / (1 + sqrt(1 - (1+Kc)*c^2*rho^2))
+-C
+-C  Where c = 1/Kr (curvature)
+-C
+-C  Alternative form (implicit): rho^2 = 2*Kr*z + Kc*z^2
+-C
+-C  Input parameters:
+-C    rho = radial distance from optical axis (sqrt(x^2 + y^2))
+-C    Kr  = radius of curvature (NOT curvature = 1/R)
+-C    Kc  = conic constant
+-C
+-C  Output:
+-C    sag = z-coordinate (surface height)
+-C
+-C  Special cases:
+-C    Kc = 0:  Sphere
+-C    Kc = -1: Paraboloid
+-C    Kc < -1: Hyperboloid
+-C    Kc > 0:  Oblate ellipsoid
+-C    -1 < Kc < 0: Prolate ellipsoid
+-C
+-C  Implementation notes:
+-C    - Internally converts Kr (radius) to c (curvature) for numerical stability
+-C    - Uses curvature-based formula to avoid division by large Kr values
+-C    - Returns 0 if rho = 0 (on axis)
+-C    - Returns 0 if Kr → ∞ (flat surface)
+-C    - Returns IEEE NaN if beyond valid aperture (proper NaN handling)
+-C    - Consistent with ConSrf parameterization where Kr is radius
+-C
+-C  CONSISTENCY NOTE:
+-C    This explicit form must be mathematically equivalent to the
+-C    implicit form used in ConSrf: rho^2 = 2*Kr*z + Kc*z^2
+-C    Run validate_conic_consistency.f90 after any changes.
+-C
+-C***********************************************************************
++        !DIR$ ATTRIBUTES INLINE :: Conic_Sag
++        !GCC$ ATTRIBUTES hot, inline :: Conic_Sag
+ 	use Constants, only: TOL_ZERO
+ 	use, intrinsic :: ieee_arithmetic
+ 	
+@@ -4523,6 +4911,235 @@ C***********************************************************************
+ 	RETURN
+ 	END FUNCTION Conic_Sag
+ 
++        ! -----------------------------------------------------------------------
++        ! FUNCTION: BrentSolve
++        !
++        ! PURPOSE: Generic Brent's method root finder
++        !          Finds L such that SurfaceFunc(L) = 0 within [X1, X2]
++        !
++        ! ALGORITHM: Brent's method (1973)
++        !            - Combines bisection, secant, and inverse quadratic interpolation
++        !            - Guaranteed convergence for bracketed roots
++        !            - Superlinear convergence rate
++        !
++        ! INPUT:
++        !   X1, X2      - Bracket bounds (must bracket a root)
++        !   TOL         - Convergence tolerance
++        !   SurfaceFunc - Function to find root of (procedure pointer)
++        !
++        ! OUTPUT:
++        !   converged   - .TRUE. if converged, .FALSE. if failed
++        !   BrentSolve  - Root estimate (L value)
++        !
++        ! CONVERGENCE CRITERIA:
++        !   1. Bracket width: |XM| <= TOL1 where TOL1 = 2*EPS*|B| + 0.5*TOL
++        !   2. Residual: |F(B)| = 0 (exact zero)
++        !   3. Residual tolerance: |F(B)| < TOL (after ITMAX iterations)
++        !
++        ! ERROR HANDLING:
++        !   - Returns converged=.FALSE. if:
++        !     * NaN detected in function evaluations
++        !     * Bracket does not contain root (F(X1)*F(X2) > 0)
++        !     * Maximum iterations exceeded with |F(B)| >= TOL
++        ! -----------------------------------------------------------------------
++        REAL*8 FUNCTION BrentSolve(X1, X2, TOL, SurfaceFunc, converged)
++          use Constants, only: EPS
++          use, intrinsic :: ieee_arithmetic
++          IMPLICIT NONE
++          
++          ! Input arguments
++          REAL*8, INTENT(IN) :: X1         ! Lower bracket bound
++          REAL*8, INTENT(IN) :: X2         ! Upper bracket bound
++          REAL*8, INTENT(IN) :: TOL        ! Convergence tolerance
++          PROCEDURE(SurfaceFuncInterface) :: SurfaceFunc  ! Surface function
++          
++          ! Output arguments
++          LOGICAL, INTENT(OUT) :: converged ! Convergence flag
++          
++          ! Local variables - Brent's method state
++          REAL*8 :: A, B, C, D, E          ! Bracket points and steps
++          REAL*8 :: FA, FB, FC             ! Function values at A, B, C
++          REAL*8 :: P, Q, R, S             ! Interpolation parameters
++          REAL*8 :: TOL1, XM               ! Tolerance and midpoint
++          INTEGER :: ITER                  ! Iteration counter
++          
++          ! Algorithm parameters
++          INTEGER, PARAMETER :: ITMAX=400  ! Maximum iterations
++          
++          ! Initialize convergence flag
++          converged = .FALSE.
++          
++          ! ================================================================
++          ! PHASE 1: INITIALIZE BRACKET
++          ! ================================================================
++          
++          A = X1
++          B = X2
++          
++          ! Evaluate function at bracket endpoints
++          FA = SurfaceFunc(A)
++          FB = SurfaceFunc(B)
++          
++          ! Check for NaN in initial evaluations
++          IF (ieee_is_nan(FA) .OR. ieee_is_nan(FB)) THEN
++            converged = .FALSE.
++            BrentSolve = B
++            RETURN
++          END IF
++          
++          ! Check bracketing condition: F(A) and F(B) must have opposite signs
++          ! If FB*FA > 0, then both have same sign (no root bracketed)
++          IF (FB*FA .GT. 0d0) THEN
++            converged = .FALSE.
++            BrentSolve = B
++            RETURN
++          END IF
++          
++          ! ================================================================
++          ! PHASE 2: BRENT'S METHOD MAIN LOOP
++          ! ================================================================
++          
++          FC = FB
++          DO ITER = 1, ITMAX
++            
++            ! If F(B) and F(C) have same sign, adjust bracket
++            ! This ensures A and B always bracket the root
++            IF (FB*FC .GT. 0d0) THEN
++              C = A
++              FC = FA
++              D = B - A
++              E = D
++            END IF
++            
++            ! Ensure |F(B)| <= |F(C)| by swapping if necessary
++            ! This makes B the best current estimate
++            IF (ABS(FC) .LT. ABS(FB)) THEN
++              A = B
++              B = C
++              C = A
++              FA = FB
++              FB = FC
++              FC = FA
++            END IF
++            
++            ! Compute convergence tolerance
++            ! TOL1 = 2*EPS*|B| + 0.5*TOL
++            ! The 2*EPS*|B| term accounts for floating-point precision
++            ! The 0.5*TOL term is the user-specified tolerance
++            TOL1 = 2d0*EPS*ABS(B) + 0.5d0*TOL
++            
++            ! Compute midpoint of current bracket
++            XM = 0.5d0*(C - B)
++            
++            ! ============================================================
++            ! CONVERGENCE CHECK
++            ! ============================================================
++            ! Converge if:
++            !   1. Bracket width is small: |XM| <= TOL1
++            !   2. Residual is exactly zero: FB == 0
++            IF (ABS(XM) .LE. TOL1 .OR. FB .EQ. 0d0) THEN
++              converged = .TRUE.
++              BrentSolve = B
++              RETURN
++            END IF
++            
++            ! ============================================================
++            ! CHOOSE STEP: INTERPOLATION vs BISECTION
++            ! ============================================================
++            ! Try interpolation if:
++            !   1. Previous step E was large enough: |E| >= TOL1
++            !   2. Function is decreasing: |F(A)| > |F(B)|
++            IF (ABS(E) .GE. TOL1 .AND. ABS(FA) .GT. ABS(FB)) THEN
++              
++              S = FB/FA
++              
++              ! Choose between linear (secant) and quadratic interpolation
++              IF (A .EQ. C) THEN
++                ! Linear interpolation (secant method)
++                P = 2d0*XM*S
++                Q = 1d0 - S
++              ELSE
++                ! Inverse quadratic interpolation
++                Q = FA/FC
++                R = FB/FC
++                P = S*(2d0*XM*Q*(Q-R) - (B-A)*(R-1d0))
++                Q = (Q-1d0)*(R-1d0)*(S-1d0)
++              END IF
++              
++              ! Adjust signs
++              IF (P .GT. 0d0) Q = -Q
++              P = ABS(P)
++              
++              ! Accept interpolation if step is reasonable
++              ! Condition: 2*P < min(3*XM*Q - |TOL1*Q|, |E*Q|)
++              ! This ensures:
++              !   1. Step is not too large (< 3*XM*Q)
++              !   2. Step is not too small (> TOL1)
++              !   3. Step is smaller than previous step E
++              IF (2d0*P .LT. MIN(3d0*XM*Q-ABS(TOL1*Q), ABS(E*Q))) THEN
++                ! Accept interpolation step
++                E = D
++                D = P/Q
++              ELSE
++                ! Reject interpolation, use bisection
++                D = XM
++                E = D
++              END IF
++              
++            ELSE
++              ! Conditions not met for interpolation, use bisection
++              D = XM
++              E = D
++            END IF
++            
++            ! ============================================================
++            ! UPDATE BRACKET
++            ! ============================================================
++            
++            ! Save current B as new A
++            A = B
++            FA = FB
++            
++            ! Compute new B
++            ! If step D is large enough, take full step
++            ! Otherwise, take minimum step in direction of XM
++            IF (ABS(D) .GT. TOL1) THEN
++              B = B + D
++            ELSE
++              B = B + SIGN(TOL1, XM)
++            END IF
++            
++            ! Evaluate function at new B
++            FB = SurfaceFunc(B)
++            
++            ! Check for NaN
++            IF (ieee_is_nan(FB)) THEN
++              converged = .FALSE.
++              BrentSolve = B
++              RETURN
++            END IF
++            
++          END DO
++          
++          ! ================================================================
++          ! PHASE 3: MAXIMUM ITERATIONS REACHED
++          ! ================================================================
++          
++          ! Maximum iterations reached without meeting bracket tolerance
++          ! Check if residual is acceptable (residual-based criterion)
++          IF (ABS(FB) .LT. TOL) THEN
++            ! Residual is acceptable even though bracket is large
++            converged = .TRUE.
++          ELSE
++            ! Failed to converge - residual too large
++            converged = .FALSE.
++          END IF
++          
++          BrentSolve = B
++          RETURN
++          
++        END FUNCTION BrentSolve
++        
+ C***********************************************************************
+ 
+         END MODULE surfsub

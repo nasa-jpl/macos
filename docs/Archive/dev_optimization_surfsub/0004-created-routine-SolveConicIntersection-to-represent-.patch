@@ -1,0 +1,527 @@
+From a9e687ad43c18b165981c7bae0acf6c6293bc375 Mon Sep 17 00:00:00 2001
+From: TraceMoreRays <sigrist1000@gmail.com>
+Date: Sun, 25 Jan 2026 00:31:28 -0800
+Subject: [PATCH 4/5] created routine SolveConicIntersection to represent
+ common code in ConSrf and MonSrf. added inline instructions and compiler
+ directives to reduce calling overhead.
+
+---
+ cmake/CMakeLists.txt |   2 +
+ macos_f90/surfsub.F  | 345 ++++++++++++++++++++-----------------------
+ 2 files changed, 163 insertions(+), 184 deletions(-)
+
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 436b34f..72bb796 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -143,6 +143,7 @@ if (WINx64)
+   set(FFlags  "/4L132 /align /O2 /fpp /nologo")
+   set(FFlags  "${FFlags} /fp:strict /Qfp-speculation:strict")
+   set(FFlags  "${FFlags} /Qm64 /Qmkl /Qparallel /Qopt-mem-layout-trans /QxHost")
++  set(FFlags  "${FFlags} /Ob2 /Qinline-factor:200")  # Aggressive inlining for shared subroutines
+   set(FFlags  "${FFlags} /c /gen-interfaces") # /RTCu")
+ 
+   # Fortran Flags: SMACOS  (Debug / Development)
+@@ -158,6 +159,7 @@ else()
+   set(FFlags  "-c -132 -align -O2 -fpp -nologo -fPIC -gen-interfaces ")
+   set(FFlags  "${FFlags} -fp-model=strict -fp-speculation=strict")
+   set(FFlags  "${FFlags} -m64 -qmkl -qopt-matmul -qopt-mem-layout-trans")
++  set(FFlags  "${FFlags} -inline-factor=200")  # Aggressive inlining for shared subroutines
+ 
+   # Fortran Flags: SMACOS  (Debug)
+   set(FFlags_SMACOS "${FFlags}")
+diff --git a/macos_f90/surfsub.F b/macos_f90/surfsub.F
+index 3d577e2..b4f77b4 100644
+--- a/macos_f90/surfsub.F
++++ b/macos_f90/surfsub.F
+@@ -72,13 +72,41 @@ C	Here if ray misses surface
+ 	RETURN
+ 	END SUBROUTINE FlatSrf
+ 
++C***********************************************************************
++C
++C     SolveConicIntersection - Shared conic ray-surface intersection solver
++C
++C     Purpose:
++C       Solves ray-conic surface intersection with robust numerical methods.
++C       This is the common implementation used by ConSrf, MonSrf, AsphSrf, etc.
++C
++C     Algorithm:
++C       1. Compute quadratic coefficients a*L^2 + b*L + c = 0
++C       2. Handle linear case (a ≈ 0)
++C       3. Check discriminant for real roots
++C       4. Detect near-tangent rays (discriminant ≈ 0)
++C       5. Use catastrophic cancellation avoidance
++C       6. Select appropriate root based on ifLNsrf flag
++C       7. Compute intersection point and surface normal
++C       8. Validate normal with NaN detection
++C       9. Check IEEE exceptions
++C
++C     Numerical Stability Features:
++C       - Catastrophic cancellation avoidance (TOL_CANCEL)
++C       - Near-tangent detection (TOL_TANGENT)
++C       - Overflow-safe root selection metric
++C       - IEEE NaN detection
++C       - IEEE exception handling
++C
++C     Author: Extracted from ConSrf/MonSrf harmonization
++C     Date: January 24, 2026
++C
+ C***********************************************************************
+ 
+-! Input arguments: pin, ihat, ifLNsrf
+-! Output argments: pr, Nvec, Nmag, Nhat
++	SUBROUTINE SolveConicIntersection(
++     &    ifLNsrf, LROK, Kc, Kr, psi, pv, pin, ihat,
++     &    L, pr, Nvec, Nmag, Nhat)
+ 
+-	SUBROUTINE ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
+-     &		          pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
+ 	use math_mod
+ 	use Constants, only: TOL_TANGENT, TOL_CANCEL, TOL_ZERO, TOL_NORMAL
+ 	use, intrinsic :: ieee_arithmetic
+@@ -86,8 +114,12 @@ C***********************************************************************
+ 
+ 	IMPLICIT NONE
+ 
++	! Compiler directives for performance optimization
++	!DIR$ ATTRIBUTES INLINE :: SolveConicIntersection
++	!GCC$ ATTRIBUTES hot :: SolveConicIntersection
++	!$OMP DECLARE SIMD
++
+ 	! Input arguments (control flags)
+-	LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute dNdp Jacobian
+ 	LOGICAL, INTENT(IN) :: ifLNsrf   ! If true, allow negative L
+ 
+ 	! Input arguments (surface parameters)
+@@ -97,7 +129,6 @@ C***********************************************************************
+ 	! Input arguments (surface geometry)
+ 	REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
+ 	REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
+-	REAL*8, INTENT(IN) :: prot(3)    ! Rotation matrix (not used in ConSrf)
+ 
+ 	! Input arguments (ray)
+ 	REAL*8, INTENT(IN) :: pin(3)     ! Ray starting point
+@@ -105,47 +136,35 @@ C***********************************************************************
+ 
+ 	! Output arguments (intersection results)
+ 	LOGICAL, INTENT(OUT) :: LROK     ! True if intersection found
+-	REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
+ 	REAL*8, INTENT(OUT) :: L         ! Path length along ray
++	REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
+ 
+ 	! Output arguments (surface normal)
+ 	REAL*8, INTENT(OUT) :: Nvec(3)   ! Normal vector (unnormalized)
+ 	REAL*8, INTENT(OUT) :: Nmag      ! Normal magnitude
+ 	REAL*8, INTENT(OUT) :: Nhat(3)   ! Normal unit vector
+-	REAL*8, INTENT(OUT) :: dNdp(3,3) ! Normal Jacobian (if ifBuild)
+ 
+-	! Local variables - Main computation
++	! Local variables
+ 	REAL*8 :: prel(3), a, b, c, ksqrt, kp, km, mpr
+ 	REAL*8 :: k2, itpsi, psitprel
+ 	REAL*8 :: sqrtk2, abs_b_minus_sqrtk2, kp_metric, km_metric
+ 	REAL*8 :: sqrt_mpr  ! Optimization: compute once, reuse
+ 	REAL*8 :: S1, S2, Kc_itpsi, Kc_psitprel  ! Common subexpressions
+ 	REAL*8 :: tmp(3)
+-
+-	! Local variables - ifBuild section only
+-	REAL*8 :: M(3,3), D1(9), D2(9)
+-	INTEGER :: i
+ 	LOGICAL :: ieee_invalid_flag
+ 
+-! ifLNsrf is a flag indicating whether to allow ray length 'L' to be negative -jzlou
+-! pr is ray incident point on current surface (to be computed) -jzlou
+-
+-! ihat = RayDir(1:3,iRay) = direction of incident ray
+-! Nhat = surface normal at ray incident point (jzlou guessed);
+-!        Nhat will be used to compute direction of reflected ray (rhat) in calling routine -jzlou
+-
+-	! Clear IEEE exception flags at start
++C	Clear IEEE exception flags at start
+ 	CALL ieee_set_flag(ieee_invalid, .FALSE.)
+ 	CALL ieee_set_flag(ieee_overflow, .FALSE.)
+ 	CALL ieee_set_flag(ieee_divide_by_zero, .FALSE.)
+ 
+-C	Compute incidence point of ray on the surface
+-
++C	Compute relative position vector
+ 	prel = pin - pv  ! current Ray position (on previous surface) minus current VptElt
+ 
+ 	itpsi    = DOT_PRODUCT(ihat, psi)  ! = ihat projected onto psi
+ 	psitprel = DOT_PRODUCT(psi, prel)  ! = psi projected onto prel
+ 
++C	Compute quadratic coefficients: a*L^2 + b*L + c = 0
+ 	IF (ABS(Kr).LT.1d10) THEN
+ 	  mpr = DOT_PRODUCT(prel, prel)
+ 	  ! Pre-calculate common subexpressions
+@@ -153,17 +172,18 @@ C	Compute incidence point of ray on the surface
+ 	  Kc_psitprel = Kc*psitprel  ! Used in both b and c
+ 	  a = 1d0 + Kc_itpsi*itpsi
+ 	  b = 2d0*(Kr*itpsi + Kc_itpsi*psitprel + DOT_PRODUCT(ihat,prel))
+-	  c = 2d0*Kr*psitprel + Kc_psitprel*psitprel + mpr  ! Expand for better performance (ILP)
++	  c = 2d0*Kr*psitprel + Kc_psitprel*psitprel + mpr
+ 	ELSE
++	  ! Kr very large: planar approximation
+ 	  a = 0d0
+ 	  b = itpsi
+ 	  c = psitprel
+ 	END IF
+ 
+-C	Compute intersection point and normal vector
++C	Solve for ray path length L
+ 
+ 	! Linear case: when a < TOL_ZERO, quadratic term is negligible
+-        IF ((ABS(a).LE.TOL_ZERO).OR.(ABS(Kr).GE.1d10)) THEN
++	IF ((ABS(a).LE.TOL_ZERO).OR.(ABS(Kr).GE.1d10)) THEN
+ 	  ! Division by zero check: b must be non-zero for L = -c/b
+ 	  IF (ABS(b).LE.TOL_ZERO) THEN
+ 	    ! Degenerate case: ray parallel to surface
+@@ -204,11 +224,11 @@ C	Compute intersection point and normal vector
+ 	      ! Standard numerically stable formula (Numerical Recipes)
+ 	      IF (b .GE. 0d0) THEN
+ 	        ksqrt = -0.5d0*(b + sqrtk2)
+-	  ELSE
++	      ELSE
+ 	        ksqrt = -0.5d0*(b - sqrtk2)
+-	  END IF
+-	  kp = ksqrt/a
+-	  km = c/ksqrt
++	      END IF
++	      kp = ksqrt/a
++	      km = c/ksqrt
+ 	    END IF
+ 	    
+ 	    ! Root selection logic (for two distinct roots)
+@@ -224,36 +244,38 @@ C	Compute intersection point and normal vector
+ 	      km_metric = ABS(km)
+ 	    END IF
+ 	    
+-	  IF(ifLNsrf) THEN
++	    IF(ifLNsrf) THEN
+ 	      ! Allow negative L: choose root closer to origin
+ 	      IF (kp_metric .LE. km_metric) THEN
+-	      L=kp
+-	    ELSE
+-	      L=km
+-	    END IF
+-	  ELSE
+-	      ! Require positive L: choose positive root closer to origin
+-	      IF (kp_metric .LE. km_metric) THEN
+-	      IF (kp.GT.0D0) THEN
+ 	        L=kp
+ 	      ELSE
+ 	        L=km
+ 	      END IF
+ 	    ELSE
+-	      IF (km.GT.0D0) THEN
+-	        L=km
++	      ! Require positive L: choose positive root closer to origin
++	      IF (kp_metric .LE. km_metric) THEN
++	        IF (kp.GT.0D0) THEN
++	          L=kp
++	        ELSE
++	          L=km
++	        END IF
+ 	      ELSE
+-	        L=kp
++	        IF (km.GT.0D0) THEN
++	          L=km
++	        ELSE
++	          L=kp
++	        END IF
+ 	      END IF
++	      IF (L.LT.0d0) GO TO 98
+ 	    END IF
+-	    IF (L.LT.0d0) GO TO 98
+ 	  END IF
+ 	END IF
+-	END IF
++
++C	Compute intersection point and surface normal
+ 
+ 	S1 = Kr + Kc*(psitprel+L*itpsi)
+ 
+-        tmp = L*ihat                ! ihat is the incident ray direction and L is the PL
++	tmp = L*ihat                ! ihat is the incident ray direction and L is the PL
+ 	pr = pin + tmp              ! pr is ray incident point on current surface 
+ 	Nvec = S1*psi + prel + tmp  ! Nvec is direction of surface normal at ray incident point
+ 
+@@ -266,9 +288,85 @@ C	Compute intersection point and normal vector
+ 	END IF
+ 
+ 	S1   = DOT_PRODUCT(Nvec,ihat)  
+-        S2   = 1d0/Nmag
+-        IF (S1 .GT. 0d0) S2 = -S2
+-        Nhat = Nvec * S2
++	S2   = 1d0/Nmag
++	IF (S1 .GT. 0d0) S2 = -S2
++	Nhat = Nvec * S2
++
++	! Check for IEEE exceptions before successful return
++	CALL ieee_get_flag(ieee_invalid, ieee_invalid_flag)
++	IF (ieee_invalid_flag) THEN
++	  ! NaN was generated during computation (e.g., SQRT of negative)
++	  GO TO 98
++	END IF
++
++	LROK=.TRUE.
++	RETURN
++
++	! Here if ray misses surface
++
++  98	CONTINUE
++	LROK=.FALSE.
++
++	RETURN
++	END SUBROUTINE SolveConicIntersection
++
++C***********************************************************************
++
++! Input arguments: pin, ihat, ifLNsrf
++! Output argments: pr, Nvec, Nmag, Nhat
++
++	SUBROUTINE ConSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,
++     &		          pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
++	use math_mod
++
++	IMPLICIT NONE
++
++	! Input arguments (control flags)
++	LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute dNdp Jacobian
++	LOGICAL, INTENT(IN) :: ifLNsrf   ! If true, allow negative L
++
++	! Input arguments (surface parameters)
++	REAL*8, INTENT(IN) :: Kc         ! Conic constant
++	REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++
++	! Input arguments (surface geometry)
++	REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++	REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++	REAL*8, INTENT(IN) :: prot(3)    ! Rotation matrix (not used in ConSrf)
++
++	! Input arguments (ray)
++	REAL*8, INTENT(IN) :: pin(3)     ! Ray starting point
++	REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++
++	! Output arguments (intersection results)
++	LOGICAL, INTENT(OUT) :: LROK     ! True if intersection found
++	REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
++	REAL*8, INTENT(OUT) :: L         ! Path length along ray
++
++	! Output arguments (surface normal)
++	REAL*8, INTENT(OUT) :: Nvec(3)   ! Normal vector (unnormalized)
++	REAL*8, INTENT(OUT) :: Nmag      ! Normal magnitude
++	REAL*8, INTENT(OUT) :: Nhat(3)   ! Normal unit vector
++	REAL*8, INTENT(OUT) :: dNdp(3,3) ! Normal Jacobian (if ifBuild)
++
++	! Local variables - ifBuild section only
++	REAL*8 :: M(3,3), D1(9), D2(9)
++	REAL*8 :: S1
++
++! ifLNsrf is a flag indicating whether to allow ray length 'L' to be negative -jzlou
++! pr is ray incident point on current surface (to be computed) -jzlou
++
++! ihat = RayDir(1:3,iRay) = direction of incident ray
++! Nhat = surface normal at ray incident point (jzlou guessed);
++!        Nhat will be used to compute direction of reflected ray (rhat) in calling routine -jzlou
++
++C	Solve conic intersection using shared subroutine
++	CALL SolveConicIntersection(
++     &    ifLNsrf, LROK, Kc, Kr, psi, pv, pin, ihat,
++     &    L, pr, Nvec, Nmag, Nhat)
++
++	! If conic intersection failed, return immediately
++	IF (.NOT.LROK) RETURN
+ 
+         ! Compute partials of the normal
+         ! Compute partials of the local normal (Nhat) wrt psi -jzlou
+@@ -292,21 +390,6 @@ C	Compute intersection point and normal vector
+           ! wrt psi can be analytically computed as well -jzlou
+ 	END IF
+ 
+-	! Check for IEEE exceptions before successful return
+-	CALL ieee_get_flag(ieee_invalid, ieee_invalid_flag)
+-	IF (ieee_invalid_flag) THEN
+-	  ! NaN was generated during computation (e.g., SQRT of negative)
+-	  GO TO 98
+-	END IF
+-
+-	LROK=.TRUE.
+-	RETURN
+-
+-        ! Here if ray misses surface
+-
+-  98	CONTINUE
+-	LROK=.FALSE.
+-
+ 	RETURN
+ 	END SUBROUTINE ConSrf
+ 
+@@ -2464,8 +2547,7 @@ C***********************************************************************
+         SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+      &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+         use math_mod
+-        use Constants, only: EPS, TOL_TANGENT, TOL_CANCEL, TOL_ZERO, 
+-     &                        TOL_NORMAL
++        use Constants, only: EPS, TOL_NORMAL
+         use, intrinsic :: ieee_arithmetic
+         use, intrinsic :: ieee_exceptions
+ 
+@@ -2508,15 +2590,13 @@ C***********************************************************************
+         
+         ! Local variables - Main computation
+         REAL*8 :: yi, yimj, xj
+-        REAL*8 :: prel(3), a, b, c, ksqrt, kp, km, mpr
+-        REAL*8 :: k2, itpsi, psitprel, tol
++        REAL*8 :: prel(3), tol  ! prel needed for MZPB/MZPSolve
+         REAL*8 :: zc(3)
+         REAL*8 :: rho(3), psitzc, fh, x
+         REAL*8 :: y, dxdrho(3), dydrho(3), rhoc(3), rhom(3), zmtzc
+         REAL*8 :: psitzm, fh_dz
+-        REAL*8 :: sqrtk2, abs_b_minus_sqrtk2, kp_metric, km_metric
+-        REAL*8 :: sqrt_mpr, x_inv, y_inv  ! Optimization variables
+-        REAL*8 :: S1, S2, Kc_itpsi, Kc_psitprel  ! Common subexpressions
++        REAL*8 :: x_inv, y_inv  ! Optimization variables
++        REAL*8 :: S1, S2  ! Temporary scalars
+         
+         ! Local variables - ifBuild section only
+         REAL*8 :: M(3,3), L1, L2, L3
+@@ -2531,126 +2611,23 @@ C***********************************************************************
+         REAL*8, PARAMETER :: BRACKET_INNER_FACTOR = 0.95d0  ! Inner bracket margin (5% inside)
+         REAL*8, PARAMETER :: BRACKET_OUTER_FACTOR = 1.15d0  ! Outer bracket margin (15% outside)
+ 
+-        ! Clear IEEE exception flags at start
+-        CALL ieee_set_flag(ieee_invalid, .FALSE.)
+-        CALL ieee_set_flag(ieee_overflow, .FALSE.)
+-        CALL ieee_set_flag(ieee_divide_by_zero, .FALSE.)
+-
+         ! Pre-calculate coefficient mask ONCE per ray
+         coef_nonzero = (ABS(coef) > EPS)
+ 
+-        ! Compute incidence point of ray on the surface
++        ! Compute position vectors needed for monomial refinement
++        prel = pin - pv  ! Relative position (used by MZPB/MZPSolve)
++        rhoc = pmon - pv ! Monomial reference point offset
+ 
+-        prel     = pin - pv
+-        rhoc     = pmon - pv
+-        itpsi    = DOT_PRODUCT(ihat,psi)
+-        psitprel = DOT_PRODUCT(psi,prel)
+-
+-        IF (ABS(Kr).LT.1d10) THEN
+-          mpr = DOT_PRODUCT(prel,prel)
+-          ! Pre-calculate common subexpressions
+-          Kc_itpsi = Kc*itpsi        ! Used in both a and b
+-          Kc_psitprel = Kc*psitprel  ! Used in both b and c
+-          a = 1d0 + Kc_itpsi*itpsi
+-          b = 2d0*(Kr*itpsi + Kc_itpsi*psitprel + DOT_PRODUCT(ihat,prel))
+-          c = 2d0*Kr*psitprel + Kc_psitprel*psitprel + mpr
+-        ELSE
+-          a = 0d0
+-          b = itpsi
+-          c = psitprel
+-        END IF
++        ! Solve conic intersection using shared subroutine
++        ! This provides the initial approximation for monomial refinement
++        CALL SolveConicIntersection(
++     &    ifLNsrf, LROK, Kc, Kr, psi, pv, pin, ihat,
++     &    L, pr, Nvec, Nmag, Nhat)
+ 
+-        ! Compute intersection point and normal vector
++        ! If conic intersection failed, return immediately
++        IF (.NOT.LROK) GO TO 98
+ 
+-        IF ((ABS(a).LE.TOL_ZERO).OR.(ABS(Kr).GE.1d10)) THEN
+-          ! Division by zero check
+-          IF (ABS(b).LE.TOL_ZERO) THEN
+-            ! Degenerate case: ray parallel to surface
+-            GO TO 98
+-          END IF
+-          L=-c/b
+-          IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+-        ELSE
+-          ! Quadratic case: solve a*L^2 + b*L + c = 0
+-          k2=b*b-4d0*a*c
+-          ! Check discriminant (equivalent to conic radicand: 1-(1+k)r²/R² ≥ 0)
+-          IF (k2.LT.0d0) GO TO 98  ! No real roots - surface doesn't exist at this point
+-          
+-          ! Near-tangent detection: discriminant < TOL_TANGENT * b^2
+-          ! Two roots are within ~14 digits of each other
+-          IF (k2 .LT. TOL_TANGENT * b*b) THEN
+-            ! Near-tangent: single root (double root)
+-            L = -b/(2d0*a)
+-            IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+-          ELSE
+-            ! Standard case: two distinct roots
+-            sqrtk2 = SQRT(k2)
+-            
+-            ! Cancellation detection: when |b| ≈ sqrt(k2) within TOL_CANCEL
+-            abs_b_minus_sqrtk2 = ABS(ABS(b) - sqrtk2)
+-            
+-            IF (abs_b_minus_sqrtk2 .LT. TOL_CANCEL * ABS(b)) THEN
+-              ! b and sqrt(k2) are close - use alternative formula
+-              ! This avoids cancellation in the numerator
+-              IF (b .GT. 0d0) THEN
+-                kp = (-2d0*c)/(b + sqrtk2)
+-                km = (-b - sqrtk2)/(2d0*a)
+-              ELSE
+-                kp = (-b + sqrtk2)/(2d0*a)
+-                km = (-2d0*c)/(b - sqrtk2)
+-              END IF
+-            ELSE
+-              ! Standard numerically stable formula (Numerical Recipes)
+-              IF (b.GE.0d0) THEN
+-                ksqrt=-0.5d0*(b+sqrtk2)
+-              ELSE
+-                ksqrt=-0.5d0*(b-sqrtk2)
+-              END IF
+-              kp=ksqrt/a
+-              km=c/ksqrt
+-            END IF
+-            
+-            ! Root selection with safer metric: |L - sqrt(mpr)| instead of |(L*L) - mpr|
+-            ! This avoids overflow from squaring large values
+-            ! Note: mpr = DOT_PRODUCT(prel,prel) is always >= 0 (squared magnitude)
+-            IF (mpr .GT. 0d0) THEN
+-              sqrt_mpr = SQRT(mpr)  ! Calculate once, reuse
+-              kp_metric = ABS(kp - sqrt_mpr)
+-              km_metric = ABS(km - sqrt_mpr)
+-            ELSE
+-              ! mpr = 0: ray starts at vertex, use absolute values
+-              kp_metric = ABS(kp)
+-              km_metric = ABS(km)
+-            END IF
+-            
+-            IF(ifLNsrf) THEN
+-              ! Allow negative L: choose root closer to origin
+-              IF (kp_metric .LE. km_metric) THEN
+-                L=kp
+-              ELSE
+-                L=km
+-              END IF
+-            ELSE
+-              ! Require positive L: choose positive root closer to origin
+-              IF (kp_metric .LE. km_metric) THEN
+-                IF (kp.GT.0D0) THEN
+-                  L=kp
+-                ELSE
+-                  L=km
+-                END IF
+-              ELSE
+-                IF (km.GT.0D0) THEN
+-                  L=km
+-                ELSE
+-                  L=kp
+-                END IF
+-              END IF
+-              IF (L.LT.0d0) GO TO 98
+-            END IF
+-          END IF  ! End of near-tangent check
+-        END IF
+-
+-         ! Use L as a starting point, find incidence pt on full surface
++        ! Use L as a starting point, find incidence pt on full surface
+         ! Set initial bracket for MZPB based on base conic solution
+         ! Strategy: Bracket should be wide enough to account for monomial
+         !           deviation but tight enough to minimize MZPB iterations
