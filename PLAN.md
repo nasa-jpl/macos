@@ -14,7 +14,7 @@ task.
 - [x] `dopt_init_vars` stop clobbering meaningful defaults of `nitrs_dopt`, `dopt_tol`, `SvdSvCut`.
 - [x] Commit `ZGD_test_files/` consolidated corpus (joint-dev pickups + local additions, drop `macos_param.txt` symlink).
 - [x] Drop marker-based gate from `run_regression.sh`; trust MATLAB exit code now that `-reentrancy=none` is on the ifx mex link.
-- [ ] `define_local_csys` follow-up from the `develop_STOP` branch head — small robustness / speed improvement not yet on release-candidate.
+- [x] `define_local_csys` follow-up from the `develop_STOP` branch head — already on opt-dev + release-candidate via the IRIS STOP-rewrite merge; only `develop_STOP`-vs-rest delta is author-credit comments.
 - [ ] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.
 - [ ] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Treat as "not relevant in this mode" rather than "unparseable junk."
 - [ ] **Fix `init()` re-init heap corruption on model_size transitions.**
@@ -38,6 +38,25 @@ task.
   caches that key on size but free with `mFFT` from a stale module
   param.  When fixed, drop the split in `run_mmacos_tests.sh` and
   put the full suite back in one matlab -batch.
+- [ ] Port worth-keeping IEEE / accuracy patterns from
+  `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
+  The five archived patches (Sigrist, 2026-01) never merged; the
+  branch has been deleted from origin.  README.md in that directory
+  enumerates four bounded patterns worth lifting by hand:
+  (1) `ieee_arithmetic`/`ieee_exceptions` flag clear+check at ConSrf
+  and MonSrf boundaries — catches silent NaN propagation;
+  (2) discriminant pre-check before `SQRT(k2)` — distinct failure
+  mode from the bracket/max-iter cases the per-ray status work
+  already handles;
+  (3) cancellation-aware quadratic-root selection (conjugate form
+  when `|b| ≈ √k2`);
+  (4) near-tangent fallback `L=-b/(2a)` when `k2 < TOL_TANGENT·b²`.
+  Pull `TOL_TANGENT` / `TOL_CANCEL` / `TOL_GEOM` from patch 0003's
+  Constants prelude.  Skip the PAUSE-removal patch (already done on
+  opt-dev via 51bbf1f), the `SolveConicIntersection` extraction
+  (conflicts with FreeForm dispatch), and the GridSrf rewrite
+  (overlaps too much with the jGridSrf + FreeForm grid-component
+  work).
 - [ ] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350). Currently a round-trip `perturb(+θ) + perturb(-θ)` along a single axis leaves `psi` off by 1 ULP because `sin²(θ) + cos²(θ)` ≠ 1 exactly in IEEE 754 for some specific θ values (e.g. 1e-6, 3e-5). The artifact is at the eps × |coord| floor — invisible against any practical signal — but causes psi to drift slowly under many repeated perturbs and produces a ~3e-14 OPD round-trip residual that briefly confused the §5.4 Phase 2 +macos smoke-test author. One-line fix: `psi = psi / norm2(psi)` after the rotation. See `MACOS_resources/mmacos/test_state_after_roundtrip.m` for a regression probe.
 
 ---
