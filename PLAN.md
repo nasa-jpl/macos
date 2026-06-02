@@ -799,18 +799,44 @@ to compare against pymacos.
   - [ ] Writes the same `.mat` format pymacos's `dw_dz_zernike` does
     so downstream consumers don't fork.
 
-- [ ] **Phase 7 — `dw_dx` driver**
-  - **Same multi-field design as Phase 6** (worker + supervisor
-    split, m2v-based OPDall tiling).  Build pymacos first if it
-    doesn't already have the multi-field layer; mmacos port follows.
-  - [ ] `+macos/dw_dx.m` plus the full channel system as MATLAB
-    classdef: `RigidBodyChannel`, `FocalPlaneChannel`,
-    `GroupedRigidBodyChannel`, `SourceChannel`,
-    `predict_global_rigid_response`, `group_W` synthesis.
-  - [ ] Biggest port — channels carry real semantic content beyond a
-    thin mex wrapper.
-  - [ ] Same dual surface: `MacosSession`-driven default, raw-mex
-    constructor for power users.
+- [x] **Phase 7.a — `dw_dx` single + multi-field, per-element + source + FP**
+  - Per-element `RigidBodyChannel`, `SourceChannel`,
+    `FocalPlaneChannel` (fp_mode ∈ {track, srs, sxp, none}; fex
+    deferred — no Fortran wrapper).
+  - `+macos/dw_dx.m` single-field driver + `+macos/dw_dx_multi.m`
+    supervisor (same 5-field default / NxM grid / fields-file
+    pattern as Phase 6).
+  - Numerical agreement on e5hex1: BITWISE mmacos == pymacos for the
+    full 6 DOFs (60 non-FP channels were bitwise from the start; FP
+    rotation channels carried a 7e-7 m spatial residual root-caused
+    to MATLAB `norm()` vs NumPy `np.linalg.norm` differing by 1 ULP
+    on the EP-psi normalize in `FocalPlaneChannel.rotate_ep_about_fp_rpt`
+    — fixed by switching to `sqrt(sum(v.^2))`; commit 345dbe8).
+  - tDwDx 5/5 pass; `examples/sensitivities/e5hex1/run_dwdx.m` end-to-end.
+- [x] **Phase 7.b — Group channels (GPERTURB) + dw/dx integration**
+  - `GroupedRigidBodyChannel` (handle classdef), `prb_grp` /
+    `get_elt_grp` / `set_elt_grp` / `del_elt_grp` foundation,
+    `grouped_rigid_body_channels` builder, `parse_rx_groups`
+    EltGrp= parser, dw/dx driver `'groups'` + `'groups_auto'` opts.
+  - Numerical agreement on e5hex1 'Cam' group ([9,10,12,13]):
+    BITWISE mmacos == pymacos standalone (6 DOFs) and integrated
+    (33 per-elt Tx,Ty,Tz + 3 group Tx,Ty,Tz = 36 channels,
+    max|diff| = 0).
+  - tDwDxGroups 4/4 pass (commit 1a80e0e).
+  - Quirk preserved (mirrors pymacos): GroupedRigidBodyChannel
+    translation increment is passed straight to `prb_grp` in the
+    Rx's BaseUnits, NOT SI metres — per-element `RigidBodyChannel`
+    does the CBM conversion via `macos.perturb`, group does not.
+    Locked in for bit-identical output; if pymacos ever changes
+    this convention, mmacos follows in lockstep.
+- [ ] **Phase 7.b.2 — Group consistency tools (deferred)**
+  - Port `predict_global_rigid_response` (analytical prediction of
+    a global rigid-body group response from per-element local-frame
+    columns + the rigid-body kinematics) and `group_synthesis_matrix`
+    (the column-combination weights that test whether per-element
+    sensitivities correctly reconstruct the group column).  Cross-
+    check tool, not on the dw/dx hot path — defer until a user
+    workflow needs it.
 
 - [ ] **Phase 8 — Cross-language verification**
   - [ ] Run identical Rx + perturb sequences through pymacos and
