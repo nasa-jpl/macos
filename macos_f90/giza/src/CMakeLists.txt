@@ -40,9 +40,6 @@ set(zlib_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/subprojects/zlib)
 set(zlib_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/subprojects/zlib)
 
 # libpng — point it to the bundled zlib
-# The zlibstatic target output name differs by platform:
-#   Windows: zlibstatic.lib  (zlib CMakeLists uses OUTPUT_NAME zlibstatic on MSVC)
-#   Linux:   libz.a          (zlib CMakeLists uses OUTPUT_NAME z on non-MSVC)
 if(WIN32)
   set(_zlib_filename "${CMAKE_STATIC_LIBRARY_PREFIX}zlibstatic${CMAKE_STATIC_LIBRARY_SUFFIX}")
 else()
@@ -77,8 +74,6 @@ add_subdirectory(subprojects/cairo)
 
 # ==============================================================================
 # Create cairo/ forwarding headers
-# giza includes cairo headers as <cairo/cairo.h>, <cairo/cairo-ps.h> etc.
-# but cairo exposes them directly in src/. Create forwarding headers.
 # ==============================================================================
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cairo)
 foreach(_hdr
@@ -103,7 +98,6 @@ endforeach()
 
 # ==============================================================================
 # Windows compatibility — create unistd.h stub
-# giza sources use several POSIX functions not available on Windows
 # ==============================================================================
 if(WIN32)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/unistd.h
@@ -119,6 +113,13 @@ if(WIN32)
 #define getpid   _getpid
 #define sleep(x) Sleep((x)*1000)
 #define usleep(x) Sleep((x)/1000)
+
+/* POSIX file descriptors */
+#ifndef STDIN_FILENO
+#  define STDIN_FILENO  0
+#  define STDOUT_FILENO 1
+#  define STDERR_FILENO 2
+#endif
 
 /* strcasecmp / strncasecmp */
 #ifndef strcasecmp
@@ -180,8 +181,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config.h
 
 # ==============================================================================
 # Platform-specific driver selection
-# On Windows: giza-driver-win.c  (Win32 HWND via separate thread)
-# On Linux:   giza-driver-xw.c   (X11/Xlib)
 # ==============================================================================
 if(WIN32)
   set(GIZA_PLATFORM_DRIVER giza-driver-win.c)
@@ -271,6 +270,11 @@ set(GIZA_C_SOURCES
 
 add_library(giza STATIC ${GIZA_C_SOURCES})
 
+# MSVC needs /std:c11 for VLA support and C99/C11 features used in giza
+if(MSVC)
+  target_compile_options(giza PRIVATE /std:c11)
+endif()
+
 target_compile_definitions(giza PRIVATE
     HAVE_CONFIG_H
     _CRT_SECURE_NO_WARNINGS
@@ -298,6 +302,11 @@ target_link_libraries(giza PUBLIC cairo png_static ${GIZA_PLATFORM_LIBS})
 # libcpgplot - C PGPLOT interface
 # ==============================================================================
 add_library(cpgplot STATIC giza-cpgplot.c)
+
+# MSVC needs /std:c11 for C99/C11 features
+if(MSVC)
+  target_compile_options(cpgplot PRIVATE /std:c11)
+endif()
 
 target_compile_definitions(cpgplot PRIVATE
     HAVE_CONFIG_H
