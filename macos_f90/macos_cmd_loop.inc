@@ -1742,6 +1742,16 @@ C         ***Draw system layout and rays***
 	      END IF
 	      pgplotDrawPlane=k  ! used in DRAW routine
 
+C    Zero per-ray draw state so slots whose RayMap entry is 0
+C    (e.g., gaps between hex/pie segments along the chosen plane)
+C    don't inherit stale DrawRayVec/DrawEltVec data from a prior
+C    DRAW invocation -- which used to surface as "the OTHER plane
+C    leaks into this one" on segmented apertures with gaps along
+C    the centerline.
+	      nDrawElt(1:nDrawRay) = 0
+	      DrawEltVec(:, 1:nDrawRay) = 0
+	      DrawRayVec(:, :, 1:nDrawRay) = 0.0
+
 C    Trace up to first element to be drawn
 	      i=nDrawRay/2+1
 	      IF (iElt.NE.0) THEN
