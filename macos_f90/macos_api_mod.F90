@@ -4424,6 +4424,191 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! calib_set_var_elt -- mark element ``iElt`` as a CALIB variable
+      ! and specify which DOFs / Zernike modes are free.
+      !
+      ! Programmatic equivalent of the interactive AVAR command.
+      ! ``dofs`` is an 8-vector matching the DOF_NameList order:
+      ! [TIP, TILT, CLOCK, DX, DY, PIST, ROC, CONIC] -- nonzero = vary,
+      ! zero = freeze.  ``zern_modes`` is a list of Zernike mode
+      ! indices (1..45) for elements with Zernike-typed perturbations;
+      ! pass an empty list (n_zern = 0) for rigid-body-only optimization.
+      !
+      ! If iElt is already a variable element, this call MODIFIES the
+      ! DOF + Zernike configuration in place (matching MVAR behaviour).
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_var_elt(OK, iElt, dofs, zern_modes, n_zern)
+        use dopt_mod, only: isVarElt, nVarElt, varElts, varEltDOF,         &
+                            mVarDOF, nDOF_VarElt, DOF_VarElt,              &
+                            DOF_NameList, nOptEltZern, OptEltZernTerm,     &
+                            mOptZern
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt                          ! 1..nElt
+        integer, intent(in) :: dofs(mVarDOF)                 ! 8-vec; nonzero == vary
+        integer, intent(in) :: n_zern                        ! # entries in zern_modes
+        integer, intent(in) :: zern_modes(max(n_zern, 1))    ! Zernike modes (1..45)
+        !f2py integer intent(hide), depend(zern_modes):: n_zern=len(zern_modes)
+        integer :: i, iVarElt
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if ((iElt < 1) .or. (iElt > nElt))          return
+        ! Zernike-mode range validation (mOptZern is the dopt_mod cap)
+        if (n_zern > 0) then
+          if (any(zern_modes < 1) .or. any(zern_modes > mOptZern)) return
+        end if
+
+        ! Add to variable-element list (or find existing slot for modify)
+        if (.not. isVarElt(iElt)) then
+          isVarElt(iElt) = .true.
+          nVarElt = nVarElt + 1
+          varElts(nVarElt) = iElt
+          iVarElt = nVarElt
+        else
+          do iVarElt = 1, nVarElt
+            if (varElts(iVarElt) == iElt) exit
+          end do
+        end if
+
+        ! DOF mask + name list for the summary print
+        varEltDOF(1:mVarDOF, iElt) = dofs
+        nDOF_VarElt(iVarElt) = 0
+        do i = 1, mVarDOF
+          if (varEltDOF(i, iElt) /= 0) then
+            nDOF_VarElt(iVarElt) = nDOF_VarElt(iVarElt) + 1
+            DOF_VarElt(nDOF_VarElt(iVarElt), iVarElt) = DOF_NameList(i)
+          end if
+        end do
+
+        ! Zernike modes (optional)
+        if (n_zern > 0) then
+          nOptEltZern(iElt) = n_zern
+          OptEltZernTerm(1:n_zern, iElt) = zern_modes
+        else
+          nOptEltZern(iElt) = 0
+        end if
+
+        OK = PASS
+
+      end subroutine calib_set_var_elt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_clear_var_elts -- wipe all CALIB variable-element state.
+      ! Programmatic equivalent of running DVAR on every variable.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_clear_var_elts(OK)
+        use dopt_mod, only: isVarElt, nVarElt, varElts, varEltDOF,         &
+                            nDOF_VarElt, nOptEltZern, OptEltZernTerm
+
+        implicit none
+        logical, intent(out):: OK
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        isVarElt(:)         = .false.
+        nVarElt             = 0
+        varElts(:)          = 0
+        varEltDOF(:, :)     = 0
+        nDOF_VarElt(:)      = 0
+        nOptEltZern(:)      = 0
+        OptEltZernTerm(:,:) = 0
+
+        OK = PASS
+
+      end subroutine calib_clear_var_elts
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_iter -- set the optimizer iteration cap.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_iter(OK, n_iter)
+        use dopt_mod, only: nitrs_dopt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n_iter
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (n_iter < 1) return
+        nitrs_dopt = n_iter
+        OK = PASS
+
+      end subroutine calib_set_iter
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_tol -- set the convergence tolerance.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_tol(OK, tol)
+        use dopt_mod, only: dopt_tol
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: tol
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (tol <= 0d0) return
+        dopt_tol = tol
+        OK = PASS
+
+      end subroutine calib_set_tol
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_target -- set the optimization target type.
+      !
+      ! target_type values (from dopt_mod's *_TARGET constants):
+      !   1 = WFE         (RMS wavefront error)
+      !   2 = WFE_ZMODE   (specific Zernike modes only; requires WFZernMode)
+      !   3 = BEAM        (beam waist / position / divergence)
+      !   4 = SPOT        (RMS spot size)
+      !   5 = OPL         (optical path length)
+      !
+      ! For target_type=2 (WFE_ZMODE), caller supplies n_wf_zern + a
+      ! list of Zernike mode indices.  For all other targets,
+      ! n_wf_zern=0 and wf_zern_modes is unused.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_target(OK, target_type, wf_zern_modes, n_wf_zern)
+        use dopt_mod, only: OptTarget, nWFZern, WFZernMode,                &
+                            WFE_TARGET, WFE_ZMODE_TARGET, BEAM_TARGET,     &
+                            SPOT_TARGET, OPL_TARGET, mOptZern
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: target_type
+        integer, intent(in) :: n_wf_zern                       ! 0 unless ZMODE
+        integer, intent(in) :: wf_zern_modes(max(n_wf_zern,1)) ! Zernike modes for ZMODE
+        !f2py integer intent(hide), depend(wf_zern_modes):: n_wf_zern=len(wf_zern_modes)
+        ! ------------------------------------------------------
+        OK = FAIL
+        ! Validate target enum
+        if (target_type /= WFE_TARGET       .and.                          &
+            target_type /= WFE_ZMODE_TARGET .and.                          &
+            target_type /= BEAM_TARGET      .and.                          &
+            target_type /= SPOT_TARGET      .and.                          &
+            target_type /= OPL_TARGET) return
+
+        OptTarget = target_type
+
+        if (target_type == WFE_ZMODE_TARGET) then
+          if (n_wf_zern < 1) return
+          if (any(wf_zern_modes < 1) .or. any(wf_zern_modes > mOptZern))   &
+            return
+          nWFZern               = n_wf_zern
+          WFZernMode            = 0
+          WFZernMode(1:n_wf_zern) = wf_zern_modes
+        end if
+
+        OK = PASS
+
+      end subroutine calib_set_target
+
+
+      !---------------------------------------------------------------------------------------------
       ! Get Stop Information
       !---------------------------------------------------------------------------------------------
       subroutine stop_info_get(OK, iElt, VptOffset)
