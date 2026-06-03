@@ -4509,13 +4509,18 @@
         OK = FAIL
         if (.not. SystemCheck()) return
 
-        isVarElt(:)         = .false.
-        nVarElt             = 0
-        varElts(:)          = 0
-        varEltDOF(:, :)     = 0
-        nDOF_VarElt(:)      = 0
-        nOptEltZern(:)      = 0
-        OptEltZernTerm(:,:) = 0
+        ! Guard each slice write: ifx silently no-ops unallocated
+        ! allocatable assignments, gfortran/glibc detects them as
+        ! heap corruption.  Without these guards, mmacos's mex path
+        ! (matlab.unittest framework specifically) crashes here even
+        ! though pymacos's f2py path tolerates it.  See PLAN.md §0.
+        if (allocated(isVarElt))        isVarElt(:)         = .false.
+                                        nVarElt             = 0
+        if (allocated(varElts))         varElts(:)          = 0
+        if (allocated(varEltDOF))       varEltDOF(:, :)     = 0
+        if (allocated(nDOF_VarElt))     nDOF_VarElt(:)      = 0
+        if (allocated(nOptEltZern))     nOptEltZern(:)      = 0
+        if (allocated(OptEltZernTerm))  OptEltZernTerm(:,:) = 0
 
         OK = PASS
 
