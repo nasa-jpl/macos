@@ -17,13 +17,20 @@ task.
 - [x] `define_local_csys` follow-up from the `develop_STOP` branch head — already on opt-dev + release-candidate via the IRIS STOP-rewrite merge; only `develop_STOP`-vs-rest delta is author-credit comments.
 - [ ] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.
 - [ ] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Treat as "not relevant in this mode" rather than "unparseable junk."
-- [ ] **Fix `init()` re-init heap corruption on model_size transitions.**
-  When `macos_init_all(new_size)` is called in a process that already
-  ran a trace at a different size, the next FFT-bearing trace aborts
-  in `malloc()` / `free()` (`invalid size (unsorted)`, `unaligned tcache
-  chunk`, `munmap_chunk: invalid pointer`).  Surfaced in mmacos's
-  matlab.unittest run when Phase 5 PROPER tests (model_size=512)
-  followed Phase 3/4 tests (model_size=128) in the same process.
+- [ ] **Fix heap corruption in trace + perturb sequences (broader scope than init-reinit).**
+  Originally logged as `macos_init_all(new_size)` reinit at different
+  model sizes triggering `malloc()` / `free()` aborts (`invalid size
+  (unsorted)`, `unaligned tcache chunk`, `munmap_chunk: invalid
+  pointer`).  As of 2026-06-02 the bug is now known to trigger
+  in a broader pattern — **even at constant model_size, even on a
+  single load_rx**.  Reproduced with mmacos `tCalib` driving
+  `load_rx -> stop -> trace -> perturb` on `opt_example.in`: the
+  trace + OPD runs clean, then perturb crashes in `malloc`.  Same
+  sequence on `Rx_Cass_FarField.in` (in `tMacosSession`) works
+  fine, so the bug appears to be Rx-specific (something about
+  opt_example's geometry / element-count / Rx-keyword set triggers
+  it).  Original model_size-transition trigger is still real (Phase
+  5 PROPER tests); this is a SECOND triggering pattern.
   Pymacos has the same bug; its `run_proper_tests.sh` works around
   it by invoking a separate pytest process per phase.  mmacos's
   `run_mmacos_tests.sh` does the analogous split into per-size matlab
@@ -36,8 +43,14 @@ task.
   (a) module-level allocatables in some `*_mod_init_vars` that
   `deallocate` based on the OLD size; (b) `iEltToiWF` / FFT plan
   caches that key on size but free with `mFFT` from a stale module
-  param.  When fixed, drop the split in `run_mmacos_tests.sh` and
-  put the full suite back in one matlab -batch.
+  param; (c) `nls_optim_dvr` module-saved scratch arrays
+  (`aparams_nls_m`, `OPDm`, `ZCoefm`, `PIXm`, `SPOTm`, `OPDMat_m`)
+  whose lifecycle straddles CALIB invocations.  Diagnosis path:
+  run `tCalib` under valgrind (or AddressSanitizer if rebuilt with
+  `-fsanitize=address`) to identify the first invalid write.
+  When fixed, drop the split in `run_mmacos_tests.sh`, put the full
+  suite back in one matlab -batch, AND restore the `tCalib`
+  matlab.unittest class deferred at §3.5 Phase 1c.
 - [ ] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
   The five archived patches (Sigrist, 2026-01) never merged; the
@@ -269,9 +282,16 @@ Each function → regression test → manual entry → fix what surfaces. Order 
 - [ ] `WFE_TARGET` default to flat reference
   - [ ] Treat missing `OptTgtWF=` as `objfun_nom=0`, not a fatal file-open
   - [ ] Preserve file-load path when one is specified
-- [ ] Implement or remove `WFE_ZMODE_TARGET` and `OPL_TARGET`
+- [ ] **Implement or remove `WFE_ZMODE_TARGET` and `OPL_TARGET` — now urgent.**
+  As of §3.5 (CALIB wrappers), pymacos and mmacos users can pick these
+  targets programmatically (`m.calib_set_target('WFE_ZMODE', modes=...)`)
+  and the wrapper accepts the call without complaint.  Under the hood
+  the optimizer either no-ops or fails silently.  Before §3.5 these
+  paths were buried in `.jou` flows — now they're a documented part
+  of the binding API.  Resolve before §3.4 regression matrix lands.
   - [ ] Either wire up `objfun_nom` branches for both
   - [ ] Or remove from the enum + parser so users can't silently pick a non-functional mode
+  - [ ] Either way, document the resolution in pymacos's `m.calib_set_target` docstring and mmacos's `+macos/calib_set_target.m` help text
 - [ ] Diagnose `SPOT_TARGET` reporting 0 iterations even with `dopt_init_vars` fixed
   - [ ] Find the early-exit gate
   - [ ] Fix and add regression case
@@ -306,7 +326,14 @@ Each function → regression test → manual entry → fix what surfaces. Order 
 
 ### 3.4 Regression test matrix
 
-8-12 new tests, each becoming an `.in` / `.jou` pair in `ZGD_test_files/` and a regression entry. Covers every `OptTarget` × DOF-type combination.
+8-12 new tests covering every `OptTarget` × DOF-type combination.
+**Re-scoped (2026-06-02):** with §3.5 (CALIB wrappers) landed, these
+no longer need to be `.in` / `.jou` file pairs — pymacos's
+`tests/test_calib.py` and mmacos's future `tCalib` can express them
+as pytest / matlab.unittest methods that drive the optimizer
+programmatically.  Faster to author, easier to maintain, CI-ready.
+The `opt_example.in` style fixtures stay (as the loadable Rxes
+under test) but the test logic moves to Python / MATLAB.
 
 |  | rigid-body | Zernike | Aspheric | mixed |
 |---|---|---|---|---|
@@ -327,6 +354,63 @@ Each function → regression test → manual entry → fix what surfaces. Order 
 - [ ] WFE × Zernike (flat reference)
 - [ ] WFE × Aspheric (flat reference)
 - [ ] WFE × mixed (flat reference)
+
+### 3.5 Optimizer wrappers (pymacos + mmacos) — Phase 1
+
+Expose the CALIB optimizer through the language-neutral wrapper
+layer so Python / MATLAB users can drive it without `.jou` files.
+Single-pass thin wrap first; broader features (FOV list, multi-
+wavelength, NPSOL constraints, beam-target sub-config) layered
+on as needed.
+
+- [x] **Phase 1a — bare `m.calib()` invocation** (commits d9a874c
+  macos / 3ec2c28 MACOS_resources)
+  - [x] `macos_api_mod` adds `calib_run` (returns rtn_flag +
+    per-FOV/wavelength `old_wfe`/`new_wfe`) and `calib_buffer_dims`
+    (reports max_fov × max_wl from dopt_mod so callers can size
+    output buffers correctly)
+  - [x] pymacos's `m.calib() -> dict` wraps both via the f2py
+    forwarder.  3 pytest cases against `opt_example.in`: baseline,
+    perturbed (1 mrad on Elt 1), schema check.  All pass.
+  - [x] Full pymacos suite still 6604/6604; PROPER suite green.
+- [x] **Phase 1b — programmatic setters** (commits bce9dab macos /
+  d62b242 MACOS_resources)
+  - [x] `calib_clear_var_elts`, `calib_set_var_elt(iElt, dofs[8],
+    zern_modes[])`, `calib_set_iter`, `calib_set_tol`,
+    `calib_set_target(t, wf_zern_modes[])` -- programmatic AVAR /
+    MVAR / DVAR / SETC equivalents.
+  - [x] Pymacos wrapper accepts both 8-int positional masks AND
+    DOF name lists (TIP/TILT/CLOCK/DX/DY/PIST/ROC/CONIC); target
+    accepts integer enum AND name strings (WFE/WFE_ZMODE/ZWF/
+    BEAM/SPOT/OPL).  6 new pytest cases (total 9).
+  - [x] Pymacos suite 6610/6610.
+- [x] **Phase 1c — port to mmacos** (one commit on MACOS_resources)
+  - [x] All 7 calls in mmacos_gen_cmds.txt; codegen emits clean
+    dispatchers (with 3 codegen fixes: paren-aware namelist
+    splitter, decl-section line-continuation joiner, dim-symbol
+    use_only_map consultation).
+  - [x] `+macos/calib.m`, `+macos/calib_clear_var_elts.m`,
+    `+macos/calib_set_var_elt.m`, `+macos/calib_set_iter.m`,
+    `+macos/calib_set_tol.m`, `+macos/calib_set_target.m`.
+  - [x] `macos.Session` delegators added.
+  - [ ] `tCalib` matlab.unittest class deferred — blocked on §0
+    heap-corruption (the `load_rx -> stop -> trace -> perturb`
+    sequence trips it on opt_example.in).  Pymacos's 9 tests cover
+    the API contract via the shared backend; mmacos wrappers
+    smoke-tested manually.
+- [ ] **Phase 1d — FOV / wavelength / NPSOL setters** (deferred)
+  - [ ] `calib_add_fov(dir[3], pos[3], weight)` /
+    `calib_clear_fovs()` -- programmatic AFOV.
+  - [ ] `calib_set_wavelens([wl1, wl2, ...])`.
+  - [ ] `calib_set_constraints(...)` -- NPSOL path (opt-dev only;
+    ifdef-gated).
+  - [ ] `calib_set_beam_target(...)` -- sub-config for BEAM_TARGET
+    (beamPosElt, ifOptBeamPos, beamRefRayElt, etc.).
+- [ ] **Phase 1e — introspection** (deferred)
+  - [ ] `calib_get_var_elts() -> dict` -- list current variable
+    elements with their DOFs + Zernike modes.
+  - [ ] `calib_get_config() -> dict` -- snapshot of target, iter,
+    tol, FOV list, wavelength list.
 
 ---
 
@@ -1163,6 +1247,7 @@ sides shifts every later index.
 | System calibration | **MISSING** |
 | Reference-surface info return | partial — `ifRetRefSrf` triggers a structured output not yet exposed |
 | Per-element USER scratch | low priority |
+| **Design optimization (CALIB)** | **§3.5 Phase 1c ✓** — `+macos.calib` + `calib_set_*` family wraps `nls_optim_dvr` (the unconstrained LM path).  Constrained NPSOL path is opt-dev-only via macos's existing dispatch; surfacing it through wrappers is Phase 1d. |
 
 ### 11.7 Phased roadmap to retire GMI
 
