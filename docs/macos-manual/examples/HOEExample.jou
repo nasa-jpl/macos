@@ -1,0 +1,22 @@
+
+% A.2.3 HOEExample.jou
+% This macro generates example figures
+% for Section 4 of the MACOS User Manual
+
+old HOEExample
+stop elt 1 0,0
+fex 3 YES
+opd 3           % OPD is all confused, due to the HOE
+phase 3         % PHASE shows that the pupil is coherent at the design wavelength
+spot 4 Tout     % Spot shows good focus
+int 4           % Confirmed by good image quality
+draw;;;;        % Draw shows the diffracive effec
+                                                       
+mod Element(1)=reflector q % Now trace the reflected path
+ors 3 yes       % Align the exit pupil return with the reflected path
+srs 4 3 yes     % Reset the FP for the reflected path
+srs 2 3 yes     % Reset the FP return for the reflected path
+opd 3
+int 4
+draw;;;;                                                           
+
