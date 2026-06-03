@@ -4342,6 +4342,88 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! CALIB -- run the MACOS design optimizer.
+      !
+      ! Phase 1a: bare wrap around the SMACOS 'CALIB' command.  Reads
+      ! the optimization configuration from current state — variable
+      ! elements (isVarElt / varEltDOF / nOptEltZern), field-of-view
+      ! list (opt_fov / nOptFov), wavelength list (opt_wavelen /
+      ! nOptWavelen), target (OptTarget), iteration cap (nitrs_dopt),
+      ! tolerance (dopt_tol).  These are set either by the prescription
+      ! parser (OptTarget=, VarDOF=, OptWaveLen= keys in the .in file)
+      ! or by subsequent setter calls (Phase 1b — see calib_set_*).
+      !
+      ! On success returns rtn_flag=0; old_wfe / new_wfe filled with
+      ! the per-FOV per-wavelength RMS WFE before and after the
+      ! optimization (only meaningful for OptTarget == WFE_TARGET).
+      ! Caller-supplied buffer dims must equal max_fov × max_wl from
+      ! dopt_mod (currently 12 × 6).
+      !
+      ! NPSOL (constrained) path is invoked automatically when
+      ! LOptCons=.TRUE. AND macos was built with -DUSE_NPSOL=ON;
+      ! otherwise CALIB prints an error and returns rtn_flag/=0.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_run(OK, rtn_flag_out, nFov_out, nWl_out,            &
+                           old_wfe_out, new_wfe_out)
+        use dopt_mod, only: rtn_flag, old_wfe, new_wfe, nOptFov,           &
+                            nOptWavelen, nVarElt, max_fov, max_wl
+
+        implicit none
+        logical, intent(out):: OK                          ! PASS if call dispatched & rtn_flag==0
+        integer, intent(out):: rtn_flag_out                ! 0 = converged; nonzero = failure
+        integer, intent(out):: nFov_out                    ! # FOVs used (<= max_fov)
+        integer, intent(out):: nWl_out                     ! # wavelengths used (<= max_wl)
+        real(8), intent(out):: old_wfe_out(max_fov,max_wl) ! per-FOV/wavelength WFE before optim
+        real(8), intent(out):: new_wfe_out(max_fov,max_wl) ! per-FOV/wavelength WFE after  optim
+        ! ------------------------------------------------------
+        OK            = FAIL
+        rtn_flag_out  = -1
+        nFov_out      = 0
+        nWl_out       = 0
+        old_wfe_out   = 0d0
+        new_wfe_out   = 0d0
+
+        if (.not. SystemCheck()) return
+        if (nVarElt < 1)         return  ! No Variable Element for Optimization!
+        if (nOptFov < 1)         return  ! No Field of View for Optimization!
+
+        command = 'CALIB'
+        CALL SMACOS(command, CARG, DARG, IARG, LARG, RARG,                 &
+                    OPDMat, RaySpot, RMSWFE, PixArray)
+
+        ! dopt_mod publishes the optimizer's outputs as module state.
+        rtn_flag_out = rtn_flag
+        nFov_out     = nOptFov
+        nWl_out      = nOptWavelen
+        old_wfe_out  = old_wfe
+        new_wfe_out  = new_wfe
+
+        if (rtn_flag == 0) OK = PASS
+
+      end subroutine calib_run
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_buffer_dims -- report the (max_fov, max_wl) compile-time
+      ! dimensions used by calib_run's old_wfe_out / new_wfe_out
+      ! buffers.  Callers can use this to allocate correctly-shaped
+      ! arrays without hardcoding dopt_mod constants on the binding
+      ! side.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_buffer_dims(maxFov, maxWl)
+        use dopt_mod, only: max_fov, max_wl
+
+        implicit none
+        integer, intent(out):: maxFov
+        integer, intent(out):: maxWl
+        ! ------------------------------------------------------
+        maxFov = max_fov
+        maxWl  = max_wl
+
+      end subroutine calib_buffer_dims
+
+
+      !---------------------------------------------------------------------------------------------
       ! Get Stop Information
       !---------------------------------------------------------------------------------------------
       subroutine stop_info_get(OK, iElt, VptOffset)
