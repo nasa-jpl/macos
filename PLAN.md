@@ -47,32 +47,43 @@ task.
   similar bugs: this is the fastest diagnostic path -- skip
   valgrind, go straight to gdb on matlab.
   The ORIGINAL §0 bug (model_size transitions triggering malloc
-  aborts) is unrelated and still open -- see next entry.
-- [ ] **Original §0 bug: `init()` re-init heap corruption on
-  model_size transitions** (still open).
-  When `macos_init_all(new_size)` is called in a process that
-  already ran a trace at a different size, the next FFT-bearing
-  trace aborts in `malloc()` / `free()` (`invalid size
-  (unsorted)`, `unaligned tcache chunk`, `munmap_chunk: invalid
-  pointer`).  Surfaced in mmacos's matlab.unittest run when
-  Phase 5 PROPER tests (model_size=512) followed Phase 3/4 tests
-  (model_size=128) in the same process.  Pymacos has the same
-  bug; its `run_proper_tests.sh` works around it by invoking a
-  separate pytest process per phase.  mmacos's
-  `run_mmacos_tests.sh` does the analogous split into per-size
-  matlab -batch invocations.  Workaround works but is
-  unsatisfying — the underlying engine reallocation in
-  `macos_init_all` (and the routines it cascades into:
-  `src_mod_init_vars`, `elt_mod_init_vars`, the FFT-buffer
-  allocators in `fftsub`, etc.) is leaving dangling pointers
-  somewhere that get freed at a wrong size on the next trace.
-  Likely candidates:
-  (a) module-level allocatables in some `*_mod_init_vars` that
-  `deallocate` based on the OLD size; (b) `iEltToiWF` / FFT
-  plan caches that key on size but free with `mFFT` from a
-  stale module param.  When fixed, drop the split in
-  `run_mmacos_tests.sh` and put the full suite back in one
-  matlab -batch.
+  aborts) was separately fixed -- see next entry.
+- [x] **Original §0 bug: `init()` re-init heap corruption on
+  model_size transitions.**  Closed 2026-06-03 (opt-dev commit
+  e2e8bf6, release-candidate cherry-pick 1d54dd9).  Two
+  compounding causes:
+  (1) `macos_api_mod.init()` updated `curr_model_size` and called
+  `macos_init_all(new_size)` but never set
+  `macos_realloc = .true.` -- so SMACOS's module-saved scratch
+  buffers (L1, R1, R2, D2, DV1, DV2, CD1, CD2, DrawEltVec,
+  DrawRayVec, PertVec, DWF in smacos_vars_mod) stayed at the
+  OLD size on the next SMACOS dispatch.
+  (2) `sunsub.F`'s NR_FFT-branch `DFOURN` allocated its scratch
+  `DATA(:)` ONCE on first call (gated by `first_entry` SAVE'd
+  LOGICAL) and never grew it.  After init(new_larger_size),
+  `DFOURN` was called with bigger NN(:), `SzData = 2*NN(1)*NN(2)`
+  exceeded the existing allocation, and the inner FFT butterfly
+  wrote past the end of `DATA` -- crashing in the next process
+  malloc.
+  Diagnosis path: pymacos repro walked
+  `init(128) -> intensity -> init(512) -> intensity ->
+  init(1024) -> intensity`; gdb backtrace placed the SIGSEGV
+  inside `dswap2_ <- cpropagate_ <- int_cmd_`; tracing
+  `macos_realloc` + `first_enter` through SMACOS via temporary
+  printfs confirmed the SMACOS scratch buffers reallocated
+  (after the macos_api_mod fix), so the remaining write was
+  in a routine NOT in smacos_vars_mod's realloc list -- which
+  led to `DFOURN`'s `first_entry` gate.
+  Fix lands the macos_api_mod half on opt-dev only (the file
+  doesn't exist on release-candidate / main yet); the sunsub.F
+  half lands on both branches and is universally correct for
+  GMI / interactive macos / smacos_dvr too.
+  Followup cleanup: the per-size-group split in
+  `run_mmacos_tests.sh` and the per-phase pytest split in
+  `run_proper_tests.sh` can both be collapsed back to one
+  process now -- left for a separate commit so the fix can be
+  reviewed independently.  Also bring `main` along when it
+  next syncs.
 - [ ] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
   The five archived patches (Sigrist, 2026-01) never merged; the
