@@ -17,40 +17,62 @@ task.
 - [x] `define_local_csys` follow-up from the `develop_STOP` branch head — already on opt-dev + release-candidate via the IRIS STOP-rewrite merge; only `develop_STOP`-vs-rest delta is author-credit comments.
 - [ ] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.
 - [ ] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Treat as "not relevant in this mode" rather than "unparseable junk."
-- [ ] **Fix heap corruption in trace + perturb sequences (broader scope than init-reinit).**
-  Originally logged as `macos_init_all(new_size)` reinit at different
-  model sizes triggering `malloc()` / `free()` aborts (`invalid size
+- [x] **Heap corruption mistakenly attributed to engine — actually a codegen dim-arg ordering bug.**  Closed 2026-06-03 (commit 5890710 mmacos).
+  The "trace+perturb on opt_example crashes" pattern was NOT a
+  macos engine bug.  Root cause: the mmacos mex codegen's
+  `do_calib_set_var_elt` and `do_calib_set_target` dispatchers
+  allocated their variable-length array args BEFORE reading the
+  size scalar from prhs.  `n_zern` was uninitialized garbage at
+  the `allocate(zern_modes(max(n_zern,1)))` site, and the
+  subsequent `mxCopyPtrToReal8` read past the source array,
+  corrupting the next heap allocation.  Crash surfaced on the
+  next mex call (`load + calib_clear_var_elts + calib_set_var_elt`
+  was the minimal repro; the corruption tripped after `clear`
+  printed ok but the SIGSEGV was actually inside set_var_elt's
+  prologue).
+  The codegen intended to reorder reads so dim-scalar prhs args
+  come first, but its dim-name extractor used regex
+  `^[A-Za-z_]\w*$` -- only bare identifiers.  Dim expressions
+  like `max(n_zern, 1)` slipped through, so n_zern never got
+  added to dim_names and was read in declaration order (last),
+  AFTER zern_modes was allocated using it.
+  Fix: extract every bare identifier from each dim expression via
+  `re.findall(r'[A-Za-z_]\w*', d)` and exclude Fortran intrinsics
+  (max/min/size/kind/len).  Audited all 89 emitted dispatchers
+  with a verifier script; only the two CALIB setters had the
+  bug.  tCalib (9 tests) restored and green.
+  Diagnosis path: matlab -Dgdb with `handle SIGSEGV stop print`
+  caught the exact crashing function (`do_calib_set_var_elt`)
+  before the malloc arena even noticed the corruption.  Future
+  similar bugs: this is the fastest diagnostic path -- skip
+  valgrind, go straight to gdb on matlab.
+  The ORIGINAL §0 bug (model_size transitions triggering malloc
+  aborts) is unrelated and still open -- see next entry.
+- [ ] **Original §0 bug: `init()` re-init heap corruption on
+  model_size transitions** (still open).
+  When `macos_init_all(new_size)` is called in a process that
+  already ran a trace at a different size, the next FFT-bearing
+  trace aborts in `malloc()` / `free()` (`invalid size
   (unsorted)`, `unaligned tcache chunk`, `munmap_chunk: invalid
-  pointer`).  As of 2026-06-02 the bug is now known to trigger
-  in a broader pattern — **even at constant model_size, even on a
-  single load_rx**.  Reproduced with mmacos `tCalib` driving
-  `load_rx -> stop -> trace -> perturb` on `opt_example.in`: the
-  trace + OPD runs clean, then perturb crashes in `malloc`.  Same
-  sequence on `Rx_Cass_FarField.in` (in `tMacosSession`) works
-  fine, so the bug appears to be Rx-specific (something about
-  opt_example's geometry / element-count / Rx-keyword set triggers
-  it).  Original model_size-transition trigger is still real (Phase
-  5 PROPER tests); this is a SECOND triggering pattern.
-  Pymacos has the same bug; its `run_proper_tests.sh` works around
-  it by invoking a separate pytest process per phase.  mmacos's
-  `run_mmacos_tests.sh` does the analogous split into per-size matlab
-  -batch invocations (see §5.4 Phase 5 notes).  Workaround works but
-  is unsatisfying — the underlying engine reallocation in
+  pointer`).  Surfaced in mmacos's matlab.unittest run when
+  Phase 5 PROPER tests (model_size=512) followed Phase 3/4 tests
+  (model_size=128) in the same process.  Pymacos has the same
+  bug; its `run_proper_tests.sh` works around it by invoking a
+  separate pytest process per phase.  mmacos's
+  `run_mmacos_tests.sh` does the analogous split into per-size
+  matlab -batch invocations.  Workaround works but is
+  unsatisfying — the underlying engine reallocation in
   `macos_init_all` (and the routines it cascades into:
-  `src_mod_init_vars`, `elt_mod_init_vars`, the FFT-buffer allocators
-  in `fftsub`, etc.) is leaving dangling pointers somewhere that get
-  freed at a wrong size on the next trace.  Likely candidates:
+  `src_mod_init_vars`, `elt_mod_init_vars`, the FFT-buffer
+  allocators in `fftsub`, etc.) is leaving dangling pointers
+  somewhere that get freed at a wrong size on the next trace.
+  Likely candidates:
   (a) module-level allocatables in some `*_mod_init_vars` that
-  `deallocate` based on the OLD size; (b) `iEltToiWF` / FFT plan
-  caches that key on size but free with `mFFT` from a stale module
-  param; (c) `nls_optim_dvr` module-saved scratch arrays
-  (`aparams_nls_m`, `OPDm`, `ZCoefm`, `PIXm`, `SPOTm`, `OPDMat_m`)
-  whose lifecycle straddles CALIB invocations.  Diagnosis path:
-  run `tCalib` under valgrind (or AddressSanitizer if rebuilt with
-  `-fsanitize=address`) to identify the first invalid write.
-  When fixed, drop the split in `run_mmacos_tests.sh`, put the full
-  suite back in one matlab -batch, AND restore the `tCalib`
-  matlab.unittest class deferred at §3.5 Phase 1c.
+  `deallocate` based on the OLD size; (b) `iEltToiWF` / FFT
+  plan caches that key on size but free with `mFFT` from a
+  stale module param.  When fixed, drop the split in
+  `run_mmacos_tests.sh` and put the full suite back in one
+  matlab -batch.
 - [ ] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
   The five archived patches (Sigrist, 2026-01) never merged; the
@@ -393,11 +415,10 @@ on as needed.
     `+macos/calib_set_var_elt.m`, `+macos/calib_set_iter.m`,
     `+macos/calib_set_tol.m`, `+macos/calib_set_target.m`.
   - [x] `macos.Session` delegators added.
-  - [ ] `tCalib` matlab.unittest class deferred — blocked on §0
-    heap-corruption (the `load_rx -> stop -> trace -> perturb`
-    sequence trips it on opt_example.in).  Pymacos's 9 tests cover
-    the API contract via the shared backend; mmacos wrappers
-    smoke-tested manually.
+  - [x] `tCalib` matlab.unittest class (9 tests) -- restored
+    2026-06-03 after the codegen dim-arg ordering fix (commit
+    5890710) closed the "heap-corruption" attribution.  All
+    9 tests pass: 3 baseline (load+perturb+calib), 6 setters.
 - [ ] **Phase 1d — FOV / wavelength / NPSOL setters** (deferred)
   - [ ] `calib_add_fov(dir[3], pos[3], weight)` /
     `calib_clear_fovs()` -- programmatic AFOV.
