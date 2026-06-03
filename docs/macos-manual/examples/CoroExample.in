@@ -139,7 +139,7 @@
            RptElt=  0.0E+00  0.0E+00  1.5E+00
            IndRef=1.0E+00
            Extinc=1.0E+22
-            nCoat=  0
+           nCoat=  0
              xObs=  1.0E+00  0.0E+00  0.0E+00
              nObs=  3
           ObsType=  Circle
