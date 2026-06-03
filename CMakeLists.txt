@@ -178,6 +178,7 @@ set(SMACOS_ONLY_SOURCES
   ${smacos_src_dir}/pgplotdummy.F
   ${smacos_src_dir}/smacos.F
   ${smacos_src_dir}/splicubi2.f90
+  ${smacos_src_dir}/macos_api_mod.F90
   $<$<NOT:$<BOOL:${WIN32}>>:${smacos_src_dir}/fk.c>
 )
 
