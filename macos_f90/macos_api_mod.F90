@@ -4807,6 +4807,14 @@
         IF (firstEntry) THEN ! .OR. modelsize /= curr_model_size) THEN
           curr_model_size = modelsize
           CALL macos_init_all(curr_model_size)
+          ! Force SMACOS to reallocate its module-saved buffers (DWF,
+          ! R1, R2, D2, CD1, CD2 etc. in smacos_vars_mod) on the next
+          ! SMACOS dispatch.  macos_init_all updates the param_mod dim
+          ! params (mdttl, mElt, mRay, ...) but does NOT touch SMACOS's
+          ! own scratch state, so without this flag the SMACOS buffers
+          ! stay at the OLD size and NFPROP / DSWAP2 / DFOURN overrun
+          ! them when the model_size has grown.  See PLAN.md §0.
+          macos_realloc = .true.
 
           IF (ALLOCATED(PixArray)) THEN
             DEALLOCATE(PixArray,OPDMat, RaySpot, stat=m_err_pymacos)
