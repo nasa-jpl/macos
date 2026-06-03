@@ -3148,9 +3148,9 @@
             ! ----------------------------------
             ! do all checks BEFORE making changes
             ! ----------------------------------
-            GFM(1) = (ifGridTerm_ == PASS)
-            GFM(2) = (ifFF_ == PASS)
-            GFM(3) = (ifMon_ == PASS)
+            GFM(1) = (ifGridTerm_ .eqv. PASS)
+            GFM(2) = (ifFF_ .eqv. PASS)
+            GFM(3) = (ifMon_ .eqv. PASS)
 
             ! -------------------
             ! Grid Data
