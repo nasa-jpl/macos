@@ -347,7 +347,12 @@ C  1. Convert local-frame input to global if requested.
 C  2. Apply rotation+translation to the element's coordinate frame.
 	CALL Qform(Q, dQ, th)
 	CALL DMPROD(D1, Q, psiElt(1,iElt), 3, 3, 1)
-	CALL DEQUATE(psiElt(1,iElt), D1, 3)
+C	Renormalize psiElt: sin²(θ) + cos²(θ) ≠ 1 exactly in IEEE 754
+C	for some θ, so a round-trip perturb(+θ) + perturb(-θ) leaves
+C	psi off by 1 ULP and slowly drifts under many perturbs.
+C	Produces a ~3e-14 OPD round-trip residual without this guard.
+C	See PLAN.md §0 and MACOS_resources/mmacos/test_state_after_roundtrip.m
+	psiElt(1:3,iElt) = D1(1:3) / SQRT(D1(1)**2+D1(2)**2+D1(3)**2)
 
 	CALL DSUB(D1, VptElt(1,iElt), RptElt(1,iElt), 3)
 	CALL DMPROD(D2, dQ, D1, 3, 3, 1)

@@ -214,8 +214,16 @@ C***********************************************************************
           ! re-init pass over-reached and zeroed them, capping the
           ! optimizer at 0 iterations with no convergence test.
 
-          OptTgtElt           = 0
-          OptAlg              = 0
+          ! OptTgtElt and OptAlg use sentinel non-zero defaults matching
+          ! the macos_cmd_loop.inc LOAD path (line 348, 349).  Zeroing them
+          ! here used to be benign because dopt_init_vars only ran during
+          ! init -- but with macos_realloc=.true. now firing on every
+          ! size-change init (PLAN.md §0 fix), a re-init after a load
+          ! would silently clobber these to 0, leaving the
+          ! `OptTgtElt < 0 -> default = nElt-1` resolution at line 402
+          ! disabled, and OptAlg landing outside {Linear=1, NonLin=2}.
+          OptTgtElt           = -1     ! sentinel; resolved to nElt-1 in LOAD
+          OptAlg              = NonLin
           aparam_off          = 0
 
           LOptIfFEX           = .FALSE.
