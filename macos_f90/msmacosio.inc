@@ -1558,6 +1558,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      GO TO 61
 
             ! ------------------------------------------------------------------------------
+            ! Catch-all for OptBeam* keywords whose explicit
+            ! BEAM_TARGET-gated handlers (above) didn't fire because
+            ! OptTarget /= BEAM_TARGET.  The keys ARE valid syntax, just
+            ! not applicable under the current target -- skip silently
+            ! instead of emitting "MBFile6: Unidentified string" noise.
+            ! See PLAN.md §0.
+            ELSE IF (LCMP(VAR_NAM,'OptBeam',7)) THEN
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'OptZern',7) .OR.
      &               LCMP(VAR_NAM,'VarZern',7)) THEN
 	      If (.not. isVarElt(iElt) .and. LnkElt(iElt)<0) Then

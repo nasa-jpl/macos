@@ -83,6 +83,7 @@ C***********************************************************************
      &   pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp)
             use macos_debug
             use math_mod
+            use Constants, only: TOL_TANGENT
 
             IMPLICIT NONE
 
@@ -117,6 +118,18 @@ C***********************************************************************
             ELSE
                k2 = b*b - 4d0*a*c
                IF (k2.LT.0d0) GO TO 98
+               ! Near-tangent fallback: when |b·b - 4ac| <
+               ! TOL_TANGENT·b² the two roots are within ~7 digits
+               ! of each other and amplifying the spread via the
+               ! standard formula injects noise into L.  Use the
+               ! vertex of the parabola (the double-root limit).
+               ! See PLAN.md §0 and
+               ! docs/Archive/dev_optimization_surfsub/README.md.
+               IF (k2 .LT. TOL_TANGENT * b*b) THEN
+                  L = -b / (2d0*a)
+                  IF (.NOT.ifLNsrf .AND. (L.LT.0d0)) GO TO 98
+                  GO TO 49
+               END IF
                IF (b.GE.0d0) THEN
                   ksqrt = -0.5d0*(b+SQRT(k2))
                ELSE
@@ -150,6 +163,7 @@ C***********************************************************************
 
             IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
 
+   49       CONTINUE
             S1 = Kr + Kc*(psitprel+L*itpsi)
             DO i=1,3
                S2=L*ihat(i)
