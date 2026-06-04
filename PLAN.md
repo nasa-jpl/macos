@@ -15,8 +15,8 @@ task.
 - [x] Commit `ZGD_test_files/` consolidated corpus (joint-dev pickups + local additions, drop `macos_param.txt` symlink).
 - [x] Drop marker-based gate from `run_regression.sh`; trust MATLAB exit code now that `-reentrancy=none` is on the ifx mex link.
 - [x] `define_local_csys` follow-up from the `develop_STOP` branch head — already on opt-dev + release-candidate via the IRIS STOP-rewrite merge; only `develop_STOP`-vs-rest delta is author-credit comments.
-- [ ] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.
-- [ ] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Treat as "not relevant in this mode" rather than "unparseable junk."
+- [x] Audit `dopt_init_vars` for any other meaningful-default-clobbered-by-zeros collisions beyond the three found today.  Closed 2026-06-04 (commit 0ee4b23): `OptTgtElt` and `OptAlg` now initialize to the sentinel values the LOAD path expects (-1 and `NonLin`), not 0.  The pre-existing zeroing was benign when `dopt_init_vars` only ran during init, but with `macos_realloc=.true.` now firing on every size-change init (the §0 fix), a re-init after a load would clobber these, disabling the `OptTgtElt < 0 → nElt-1` resolution and landing OptAlg outside its enum.
+- [x] Quiet the `MBFile6: Unidentified string` warning when a parser hits a target-specific keyword (e.g. `OptBeamPos=`) under a non-matching `OptTarget`. Closed 2026-06-04 (commit 0ee4b23): added a 7-char `OptBeam` catch-all in `msmacosio.inc` immediately after the explicit BEAM_TARGET-gated handlers.  Keys recognized as valid syntax but silently skipped when OptTarget doesn't match.  Same pattern can be replicated for other target-specific keys if more surface.
 - [x] **Heap corruption mistakenly attributed to engine — actually a codegen dim-arg ordering bug.**  Closed 2026-06-03 (commit 5890710 mmacos).
   The "trace+perturb on opt_example crashes" pattern was NOT a
   macos engine bug.  Root cause: the mmacos mex codegen's
@@ -84,8 +84,21 @@ task.
   process now -- left for a separate commit so the fix can be
   reviewed independently.  Also bring `main` along when it
   next syncs.
-- [ ] Port worth-keeping IEEE / accuracy patterns from
+- [~] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
+  **Partial close 2026-06-04 (commit 0ee4b23):** Pattern 4
+  (near-tangent fallback) ported into `surfsub.F ConSrf` -- when
+  `k2 = b² - 4ac < TOL_TANGENT·b²` the standard two-root selection
+  amplifies noise into the spread between near-identical roots;
+  collapse to the vertex formula `L = -b/(2a)` instead.
+  `TOL_TANGENT` (~1d-14) already in `Constants` from the earlier
+  pull.  Patterns 2 (discriminant pre-check) and 3 (cancellation-
+  aware quadratic-root selection) already present in current
+  `ConSrf`.  **Still open:** pattern 1 (IEEE flag clear+check at
+  `ConSrf` and `MonSrf` boundaries) -- the most invasive of the
+  four (multiple sites, requires use of `ieee_arithmetic` and
+  `ieee_exceptions`); land separately when there's a concrete
+  silent-NaN report to test against.
   The five archived patches (Sigrist, 2026-01) never merged; the
   branch has been deleted from origin.  README.md in that directory
   enumerates four bounded patterns worth lifting by hand:
@@ -103,7 +116,7 @@ task.
   (conflicts with FreeForm dispatch), and the GridSrf rewrite
   (overlaps too much with the jGridSrf + FreeForm grid-component
   work).
-- [ ] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350). Currently a round-trip `perturb(+θ) + perturb(-θ)` along a single axis leaves `psi` off by 1 ULP because `sin²(θ) + cos²(θ)` ≠ 1 exactly in IEEE 754 for some specific θ values (e.g. 1e-6, 3e-5). The artifact is at the eps × |coord| floor — invisible against any practical signal — but causes psi to drift slowly under many repeated perturbs and produces a ~3e-14 OPD round-trip residual that briefly confused the §5.4 Phase 2 +macos smoke-test author. One-line fix: `psi = psi / norm2(psi)` after the rotation. See `MACOS_resources/mmacos/test_state_after_roundtrip.m` for a regression probe.
+- [x] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350).  Closed 2026-06-04 (commit 0ee4b23): one-line normalization after the matrix multiply.  `sin²(θ) + cos²(θ) ≠ 1` exactly in IEEE 754 for some θ (1e-6, 3e-5 notably) used to leave psi off by 1 ULP and drift slowly under repeated perturbs, producing a ~3e-14 OPD round-trip residual.  Regression probe at `MACOS_resources/mmacos/tests/tPerturbRoundtrip.m` was written defensively to allow both pre-fix (within 4*eps) and post-fix behaviour; now post-fix.
 
 ---
 
