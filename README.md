@@ -9,6 +9,12 @@ replacement for PGPLOT.
 > **PGPLOT removed on release-candidate.** Giza is now the only PGPLOT-API
 > provider. The `[giza|pgplot]` argument previously accepted by build scripts
 > is gone.
+>
+> **SLSQP is the default constrained-optimization back end** (Kraft 1988,
+> BSD-licensed, vendored under `macos_f90/slsqp/`). It builds and runs out
+> of the box — no extra source tree, no license. The legacy NPSOL path is
+> still available behind `-DUSE_NPSOL=ON` for sites that have the Stanford
+> SOL source; default builds do not require it.
 
 ---
 
@@ -96,7 +102,7 @@ All scripts run from `~/dev/macos/` and accept `[debug|release]` options (defaul
 cd ~/dev/macos
 source ./makeall.sh              # ifx, release (most common)
 source ./makeall.sh debug        # ifx, debug
-source ./makeall.sh npsol        # ifx, release, with NPSOL optimization
+source ./makeall.sh npsol        # ifx, release, NPSOL also (opt-in; SLSQP always on)
 source ./makegfortran.sh         # gfortran, release
 ```
 
@@ -149,7 +155,12 @@ cmake -B build_lean -DBUILD_SMACOS_LEAN=ON
 cmake --build build_lean -j$(nproc)
 ```
 
-#### Build with NPSOL constrained optimization
+#### Build with NPSOL constrained optimization (opt-in)
+SLSQP is the default constrained-optim back end and is always built in;
+you only need this if you also want NPSOL available for A/B comparison or
+to honor existing journals that hardwired the NPSOL code path.
+Requires a separately-licensed Stanford SOL NPSOL source tree at
+`macos_f90/npsol/`.
 ```bash
 rm -rf build_release_npsol
 cmake -B build_release_npsol -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_NPSOL=ON
@@ -292,7 +303,9 @@ cmake -B build_lean -DBUILD_SMACOS_LEAN=ON
 cmake --build build_lean
 ```
 
-#### Build with NPSOL constrained optimization
+#### Build with NPSOL constrained optimization (opt-in)
+SLSQP is the default and is always built; only enable NPSOL if you have
+the Stanford SOL source available at `macos_f90/npsol/`.
 ```cmd
 rmdir /s /q build_release_npsol
 cmake -B build_release_npsol -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_NPSOL=ON
@@ -336,7 +349,7 @@ Pass these to cmake with `-D<OPTION>=ON/OFF`:
 | `BUILD_SMACOS_LEAN` | OFF | Minimal smacos (no FITS, no graphics). Mutually exclusive with `BUILD_SMACOS` |
 | `BUILD_SMACOS_DVR` | OFF | Build the `smacos_dvr` test driver (Linux only) |
 | `BUILD_GMI` | OFF | Build the MATLAB GMI mex interface (Linux only) |
-| `USE_NPSOL` | OFF | Enable NPSOL-backed constrained optimization. Requires `macos_f90/npsol/` source tree |
+| `USE_NPSOL` | OFF | Also build the NPSOL constrained-optim back end (opt-in). SLSQP is always built and is the default. Requires `macos_f90/npsol/` source tree |
 | `MATLAB_ROOT` | `/usr/local/MATLAB/R2025b` | MATLAB installation path (for GMI build) |
 
 ---
