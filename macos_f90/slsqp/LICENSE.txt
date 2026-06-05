@@ -1,0 +1,21 @@
+slsqp_optmz.f — License notice
+
+Source: ACM Algorithm 733 (Kraft, D., "Algorithm 733: TOMP—Fortran
+modules for optimal control calculations", ACM Transactions on
+Mathematical Software, Vol. 20, No. 3, September 1994, pp. 262-281.
+https://doi.org/10.1145/192115.192124)
+
+This file was obtained from scipy/scipy v1.13.0
+(scipy/optimize/slsqp/slsqp_optmz.f), which carried the BSD-license
+release statement from ACM Publications reproduced in the file
+header.  In summary:
+
+    "the author consents to [the ACM] releasing the code currently
+    archived at http://www.netlib.org/toms/733 under the BSD license,
+    [and] the ACM hereby releases this code under the BSD license."
+        -- Deborah Cotton, Copyright & Permissions, ACM Publications,
+           2007-09-14
+
+Vendored into MACOS to replace the closed-source NPSOL back end for
+constrained optical-system optimization.  See slsqp/README.md and
+PLAN.md §3.5 / NPSOL-replacement track.

@@ -261,6 +261,21 @@ else()
   set(NPSOL_LIBS "")
 endif()
 
+# SLSQP -- Kraft's Sequential Least Squares Programming (ACM Alg 733,
+# BSD license).  Replacing NPSOL as MACOS's constrained-optim back end.
+# Always built; no opt-in needed since the source is BSD.  See
+# macos_f90/slsqp/LICENSE.txt.
+set(SLSQP_SOURCES ${smacos_src_dir}/slsqp/slsqp_optmz.f)
+add_library(slsqplib STATIC ${SLSQP_SOURCES})
+# Kraft's source predates IMPLICIT NONE -- relax the strict-implicit
+# warnings that the rest of macos uses, scoped to this target.
+if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
+  target_compile_options(slsqplib PRIVATE "SHELL:-warn nointerfaces"
+                                          "SHELL:-warn nounused")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  target_compile_options(slsqplib PRIVATE -w)
+endif()
+
 # SMACOS LEAN
 if(BUILD_SMACOS_LEAN)
   add_library(smacos STATIC ${SMACOS_ONLY_SOURCES})
