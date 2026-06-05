@@ -77,6 +77,7 @@ C***********************************************************************
 #ifdef USE_NPSOL
 	use design_cons_optim_mod
 #endif
+	use design_slsqp_optim_mod
 	use stop_set_mod
 	use pgplot_mod
 	use loh_I1, only : BaseUnits_FLG
