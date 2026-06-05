@@ -4,9 +4,9 @@
 % access121310 version 6   
 % Date Created: 12/15/10
 
-OptTarget= BeamOnly
+OptTarget= WFE
 OptWFElt= 21
-OptMxItrs=20
+OptMaxItrs=200
 OptFEX= No
 
 

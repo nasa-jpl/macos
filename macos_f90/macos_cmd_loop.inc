@@ -3657,10 +3657,14 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &                             OptTgtElt,LOptIfFEX,beamOpt)
 	        print*,'*** After nls_driver: ifStopSet =',ifStopSet
 	      Else
-                ! Constrained system optimization via SLSQP
-                ! (Kraft 1994; replaces NPSOL).  Bound-constrained
-                ! only.  See macos_f90/slsqp/README.md.
+                ! Constrained system optimization.  USE_NPSOL=ON
+                ! dispatches to the legacy NPSOL driver for A/B
+                ! comparison; default is Kraft SLSQP (BSD-licensed).
+#ifdef USE_NPSOL
+                Call np_optim_dvr(.true.,OptTarget,
+#else
                 Call slsqp_optim_dvr(.true.,OptTarget,
+#endif
      &                             nVarElt,varElts,varDOFs,
      &                             varEltCons,
      &                             nWFZern,WFZernMode,
@@ -3957,8 +3961,13 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
      &			 tgtWF_flg,tgtWF_fn,tgtWF_fmt,
      &                   OptTgtElt,LOptIfFEX,beamOpt)
 	        Else
-                  ! Constrained version (SLSQP)
+                  ! Constrained version (NPSOL under USE_NPSOL=ON
+                  ! for A/B; SLSQP otherwise)
+#ifdef USE_NPSOL
+                  Call np_optim_dvr(.false.,OptTarget,
+#else
                   Call slsqp_optim_dvr(.false.,OptTarget,
+#endif
      &                              nVarElt,varElts,varDOFs,
      &                              varEltCons,
      &                              nWFZern,WFZernMode,
