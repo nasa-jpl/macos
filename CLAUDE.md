@@ -129,6 +129,25 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - pymacos: `m.calib(...)` plus `m.calib_set_*(...)` setters in
   `macos.py`.  mmacos: `+macos/calib*.m` plus Session methods.
 
+## Branch model (as of 2026-06)
+- **`sls-dev`** — integration branch for new work.  Multi-person WIP
+  lands here.  All non-bug-fix commits go here first.
+- **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
+  to `main` for the public release (with NPSOL source tree removed
+  at promotion time).
+- **`release-candidate`** — **frozen** at `19bfbf8` (the mZern slice-
+  overrun cherry-pick).  No new commits.  Pre-existing references to
+  it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
+  over time.
+- **`main`** — public release surface.  Currently far behind opt-dev;
+  promoted from opt-dev at release time per the public-release
+  strategy below.
+
+Day-to-day: push new features to `sls-dev`; cherry-pick bug fixes
+to `opt-dev`; let `sls-dev` accumulate until a promotion gate
+(at which point it gets fast-forward-merged into `opt-dev` for
+the next release).
+
 ## Public-release strategy
 - Two-repo model (JPL's GitHub plan doesn't support branch-level
   visibility): internal `nasa-jpl/macos` (private) keeps all dev
