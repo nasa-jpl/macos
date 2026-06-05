@@ -198,6 +198,13 @@ if(USE_NPSOL)
   list(APPEND MACOS_ONLY_SOURCES  ${smacos_src_dir}/design_cons_optim.F)
 endif()
 
+# SLSQP driver -- always built; the constrained-optim path that
+# macos_cmd_loop.inc dispatches into for LOptCons=.TRUE. (Phase 3 of
+# the SLSQP migration; until then, design_cons_optim.F still owns the
+# call site under USE_NPSOL).
+list(APPEND SMACOS_ONLY_SOURCES ${smacos_src_dir}/design_slsqp_optim.F)
+list(APPEND MACOS_ONLY_SOURCES  ${smacos_src_dir}/design_slsqp_optim.F)
+
 # Windows stubs for Linux-only functions (readline + signal handling)
 if(WIN32)
   file(WRITE "${CMAKE_BINARY_DIR}/windows_stubs.c"
@@ -289,7 +296,7 @@ if(BUILD_SMACOS_LEAN)
       ${smacos_src_dir}
       ${CMAKE_BINARY_DIR}/mod
   )
-  target_link_libraries(smacos PRIVATE ${NPSOL_LIBS} ${PLATFORM_LIBS})
+  target_link_libraries(smacos PRIVATE ${NPSOL_LIBS} slsqplib ${PLATFORM_LIBS})
 endif()
 
 # SMACOS Static Library
@@ -308,7 +315,7 @@ if(BUILD_SMACOS)
   )
   target_link_libraries(smacos PRIVATE
       fitslib
-      ${NPSOL_LIBS}
+      ${NPSOL_LIBS} slsqplib
       ${PLATFORM_LIBS}
   )
 endif()
@@ -349,7 +356,7 @@ if(BUILD_MACOS)
   add_dependencies(macos pgplot)
   target_link_libraries(macos PRIVATE
       fitslib
-      ${NPSOL_LIBS}
+      ${NPSOL_LIBS} slsqplib
       pgplot
       ${PLATFORM_LIBS}
       $<$<BOOL:${READLINE_LIB}>:${READLINE_LIB}>
@@ -390,7 +397,7 @@ if(BUILD_SMACOS_DVR)
   target_link_libraries(smacos_dvr PRIVATE
       smacos
       fitslib
-      ${NPSOL_LIBS}
+      ${NPSOL_LIBS} slsqplib
       ${INTEL_LIBS}
       pgplot
       ${PLATFORM_LIBS}
@@ -451,7 +458,7 @@ if(BUILD_GMI)
     target_link_libraries(GMI PRIVATE
         smacos
         fitslib
-        ${NPSOL_LIBS}
+        ${NPSOL_LIBS} slsqplib
         ${INTEL_LIBS}
         -L${MATLAB_ROOT}/bin/glnxa64
         -l:libmx.so -l:libmex.so -lmat
