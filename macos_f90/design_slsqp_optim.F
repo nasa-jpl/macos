@@ -31,7 +31,7 @@ C
      &            mAsph=mAsphCoef       ! defined in elt_mod
         Integer :: opd_size, obj_size, tot_objfun_size,
      &             n_elts, nfov_m,nwls_m, nSpotRays_m,
-     &             mVarDOF_np, mOptZern_np,tgt_wf_funit, optElt_m,
+     &             mVarDOF_sls, mOptZern_sls,tgt_wf_funit, optElt_m,
      &             mBeamOff, opt_tgt_m, n_wf_zern_m
         Integer, dimension(:), allocatable :: elt_arr_m, dof_arr_m,
      &                         n_optZern_m,varZern_arr_m,
@@ -209,15 +209,29 @@ C ----------------------------------------------------------------------
      &      call macos_memory_failure
      &             ('nls_optim_dvr-2: allocate failed!')
         end if
+        if (.not. allocated(varZern_arr_m))
+     &      allocate(varZern_arr_m(1))    ! 1-elem dummy when j=0
         varZern_arr_m=varZern_arr
+
+        ! Aspheric arrays -- original design_cons_optim.F never
+        ! allocated these (bug); smacos_compute_perturbed_np indexes
+        ! n_optAsph_m and varAsph_arr_m so they need at least dummy
+        ! 1-elem allocations.  Until we expose aspheric optimization
+        ! through CALIB (Phase 5+), these stay zero.
+        if (.not. allocated(n_optAsph_m))
+     &      allocate(n_optAsph_m(n_elts))
+        n_optAsph_m = 0
+        if (.not. allocated(varAsph_arr_m))
+     &      allocate(varAsph_arr_m(1))
+        varAsph_arr_m = 0
 
         ! Find DOFs to calibrate and define da
         ! len_a = number of DOFs to calibrate
-        allocate(tmpda(n_varElt*(mVarDOF_np+mOptZern_np)))
+        allocate(tmpda(n_varElt*(mVarDOF_sls+mOptZern_sls)))
         len_a=0; k=1
         !
         Do iElt=1, n_elts
-          Do idof=1,mVarDOF_np
+          Do idof=1,mVarDOF_sls
             if (dof_arr(k)>0) then
               len_a=len_a+1
               if (idof==1 .or. idof==2) then
@@ -446,6 +460,8 @@ C ----------------------------------------------------------------------
      &             OPDm,ZCoefm,PIXm,SPOTm,OPDMat_m)
         if (allocated(n_optZern_m)) deallocate(n_optZern_m)
         if (allocated(varZern_arr_m)) deallocate(varZern_arr_m)
+        if (allocated(n_optAsph_m)) deallocate(n_optAsph_m)
+        if (allocated(varAsph_arr_m)) deallocate(varAsph_arr_m)
 	End Subroutine slsqp_optim_dvr
 
 C *********************************************************************************
@@ -608,7 +624,13 @@ C ******************************************************************************
 
 #undef NLS_OPT
 #define NP_OPT
+#define mVarDOF_np mVarDOF_sls
+#define mOptZern_np mOptZern_sls
+#define mOptAsph_np mOptAsph_sls
 #include "smacos_compute.inc"
+#undef mVarDOF_np
+#undef mOptZern_np
+#undef mOptAsph_np
 
 C *********************************************************************************
 C setbeam.inc currently calls NPSOL directly (Verify level / npoptn /
