@@ -105,9 +105,51 @@ end do
 * `MACOS_resources` companion: drop `libnpsol.a / liblapacklib.a /
   libblaslib.a` auto-detect from `GMI/Makefile`
 
-## Phase 4 — Regression
+## Phase 4 — Regression  ✓ CLOSED
 
-A/B vs NPSOL on every constrained Rx:
+**Phase 4a (wiring) ✓.**  `opt_example_constrained.in` (Elt 7 TIP+TILT,
+±0.5 mrad bounds, OptTarget=WFE) runs through `slsqp_optim_dvr` end-
+to-end without crash.  USE_NPSOL=ON build A/B comparison works too:
+both binaries run the same fixture cleanly after the latent-bug
+fixes (mZern slice overrun in `smacos_compute.inc`, uninitialized
+`mVarDOF_np`, never-allocated `n_optAsph_m`/`varAsph_arr_m`).
+
+**Phase 4b (numerical convergence) ✓.**  Root cause: SLSQP's internal
+QP solver returned a zero step on the first call.  The macos native
+finite-difference step `dtt = 1e-9` against tip/tilt bounds of order
+`5e-4` produced gradients of magnitude ~1e5 against bounds of order
+1e-4 -- ratio ~1e9, which underflowed inside SLSQP's least-squares
+QP routine.
+
+Fix: variable pre-scaling in `slsqp_optim_dvr` before each `slsqp()`
+call.  Per-DOF scale factor `s_i = 1 / max(|bl_i|, |bu_i|, eps)`
+maps bounds into O(1) and the gradient transforms as
+`g_scaled = g / s`.  User-visible aparams is recovered on every
+funcobj evaluation via `aparams = aparams_scaled / s`.  SLSQP is
+mathematically scale-invariant; this restores its numerical
+health.  See the comment block above the slsqp call in
+`design_slsqp_optim.F`.
+
+**A/B verification** on the fabricated `opt_example_constrained.in`
+(Elt 1 perturbed 1 mrad, Elt 7 TIP+TILT free, ±0.5 mrad bounds,
+WFE target, OptMaxItrs=200):
+
+| Metric            | NPSOL                      | SLSQP                      | abs diff |
+|-------------------|----------------------------|----------------------------|----------|
+| Initial RMS WFE   | 0.740868940195780          | 0.740868940195780          | 0        |
+| Final RMS WFE     | 0.738150965289645          | 0.738150965289561          | 8.4e-14  |
+| New PsiElt[0]     | 9.49825584e-05             | 9.50471000e-05             | 6.5e-9   |
+| New PsiElt[1]     | -0.998751441               | -0.998751441               | 0        |
+| New PsiElt[2]     | 0.0499554746               | 0.0499554746               | 0        |
+
+Both optimizers find the same constrained minimum; the PsiElt[0]
+diff is at the FD-gradient noise floor.  WFE agrees to 11+ digits.
+
+Phase 3 dispatch routes constrained CALIB to `slsqp_optim_dvr`
+when USE_NPSOL=OFF (default) and back to `np_optim_dvr` when ON
+(for ongoing A/B + grandfathered users).
+
+A/B targets when SLSQP is verified on more prescriptions:
 * `opt_example.in` (BeamOnly + bound-constrained rigid body)
 * Any prescription in `ZGD_test_files/` that exercises constrained
   optimization
