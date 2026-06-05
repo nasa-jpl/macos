@@ -115,6 +115,17 @@ C ----------------------------------------------------------------------
      &            cval_sls(la_sls),amat_sls(la_sls,MAXVAR+1),
      &            grad(MAXVAR+1),work(lenw)
         Real*8 :: objf
+        ! Per-DOF scaling so SLSQP sees bounds of order 1 and a
+        ! gradient with matching magnitude.  Without this, macos's
+        ! native scales (tip/tilt in radians, translations in mm,
+        ! etc.) combined with the 1e-9 finite-difference step produce
+        ! gradients of order 1e5 against bounds of order 1e-4, and
+        ! SLSQP's internal QP solver returns a zero step.  See
+        ! slsqp/README.md Phase 4b.
+        Real*8 :: scale_sls(MAXVAR),
+     &            bl_scl(MAXVAR), bu_scl(MAXVAR),
+     &            aparams_scl(MAXVAR), grad_scl(MAXVAR+1)
+        Integer :: i_sls
 
 	! Other local variables
 	Real*8, save :: dtt,dx,dp,dc,drc,dcc,dz,wfe_rms,wfe_rms_old(12,6)
@@ -409,20 +420,73 @@ C ----------------------------------------------------------------------
 	slsqp_iter = tot_itrs
 	cval_sls = 0d0
 	amat_sls = 0d0
+	! Internal state vars must start zero -- slsqp doesn't always
+	! initialize them on mode=0 entry, and convergence checks
+	! reference `f0` etc.  Uninitialized stack memory there can
+	! make the optimizer "converge" on the first call.
+	alpha = 0d0
+	f0 = 0d0
+	gs = 0d0
+	h1 = 0d0; h2 = 0d0; h3 = 0d0; h4 = 0d0
+	t = 0d0; t0 = 0d0; tol_sls = 0d0
+	iexact = 0
+	incons = 0
+	ireset = 0
+	itermx = 0
+	line = 0
+	n1_dyn = 0; n2_dyn = 0; n3_dyn = 0
+	work = 0d0
+	iw = 0
+	! Pre-fill f, g at the initial x.  SLSQP's mode=0 ENTRY
+	! contract is "F,G,C,A already evaluated"; without this the
+	! optimizer sees objf=0 on first call and returns immediately
+	! thinking it's converged.
+	Call slsqp_funcobj(0, len_a, aparams, objf, grad, 0)
+
+	! Build per-DOF scaling so the SLSQP-visible variables are O(1).
+	! Scale s_i = 1 / max(|bl_i|, |bu_i|, eps) makes bl_scl, bu_scl
+	! land in roughly [-1, 1].  Gradient transforms as
+	!   g_scl = g / s_i      (since d/d(x_scl) = d/dx * (1/s_i))
+	! and the user-visible aparams is recovered from
+	!   aparams = aparams_scl / s_i.
+	! Without this, macos's native scales (rad/mm/etc.) combined with
+	! the 1e-9 FD step give g of order 1e5 against bounds of order
+	! 1e-4 and SLSQP's QP solver returns s=0.
+	Do i_sls = 1, len_a
+	  scale_sls(i_sls) = 1d0 / MAX(ABS(bl(i_sls)),
+     &                                 ABS(bu(i_sls)), 1d-12)
+	  bl_scl(i_sls) = bl(i_sls) * scale_sls(i_sls)
+	  bu_scl(i_sls) = bu(i_sls) * scale_sls(i_sls)
+	  aparams_scl(i_sls) = aparams(i_sls) * scale_sls(i_sls)
+	  grad_scl(i_sls) = grad(i_sls) / scale_sls(i_sls)
+	End Do
+	! grad has one extra (augmented) slot at index n+1
+	grad_scl(len_a+1) = grad(len_a+1)
+
 	DO
 	  Call slsqp(m_sls, meq_sls, la_sls, len_a,
-     &               aparams, bl, bu, objf, cval_sls, grad, amat_sls,
+     &               aparams_scl, bl_scl, bu_scl,
+     &               objf, cval_sls, grad_scl, amat_sls,
      &               opt_tol, slsqp_iter, mode,
      &               work, lenw, iw, leniw,
      &               alpha, f0, gs, h1, h2, h3, h4, t, t0, tol_sls,
      &               iexact, incons, ireset, itermx, line,
      &               n1_dyn, n2_dyn, n3_dyn)
 
+	  ! Always unscale aparams_scl -> aparams for funcobj / final.
+	  Do i_sls = 1, len_a
+	    aparams(i_sls) = aparams_scl(i_sls) / scale_sls(i_sls)
+	  End Do
+
 	  IF (mode .EQ. 0) EXIT             ! converged
 	  IF (mode .EQ. 1 .OR. mode .EQ. -1) THEN
 	    ! mode=1 requests f (+c), mode=-1 requests g (+a).
-	    ! slsqp_funcobj computes both in one pass; pass mode through.
+	    ! slsqp_funcobj computes both in original units; rescale.
 	    Call slsqp_funcobj(mode, len_a, aparams, objf, grad, 0)
+	    Do i_sls = 1, len_a
+	      grad_scl(i_sls) = grad(i_sls) / scale_sls(i_sls)
+	    End Do
+	    grad_scl(len_a+1) = grad(len_a+1)
 	  ELSE IF (mode .GT. 1) THEN
 	    ! Failure code.  See SLSQP mode comments in slsqp_optmz.f.
 	    WRITE(*,*)' *** SLSQP returned failure mode =', mode
