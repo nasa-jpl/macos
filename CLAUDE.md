@@ -4,17 +4,20 @@
 NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
-This file lives on the `opt-dev` branch — same source tree as
-`release-candidate` but with the NPSOL constrained-optimization path
-restored as an opt-in compile-time option (`-DUSE_NPSOL=ON`, OFF by
-default).  All build scripts accept a parallel `npsol` argument
-(e.g. `source ./makems.sh npsol`, `source ./makegfortran.sh release
-npsol`).  The NPSOL tree lives at `macos_f90/npsol/`; the
-`design_cons_optim.F` + `np_optim_dvr` driver compile only when
-USE_NPSOL=ON.  Companion branch on MACOS_resources is also `opt-dev`
-— GMI's Makefile auto-detects `libnpsol.a` / `liblapacklib.a` /
-`libblaslib.a` in the macos build dir and links them when present.
-Default builds (no `npsol` arg) stay bit-identical to release-candidate.
+This file lives on the `opt-dev` branch.  Default builds ship SLSQP
+(Kraft 1988, BSD-licensed) as the constrained-optimization back end —
+no extra source tree, no license, ready out of the box.  NPSOL is
+preserved as an opt-in compile-time option (`-DUSE_NPSOL=ON`, OFF by
+default) for A/B comparison and grandfathered users; all build scripts
+accept a parallel `npsol` argument (e.g. `source ./makems.sh npsol`,
+`source ./makegfortran.sh release npsol`).  The NPSOL tree at
+`macos_f90/npsol/` and the `design_cons_optim.F` + `np_optim_dvr`
+driver compile only when USE_NPSOL=ON.  Companion branch on
+MACOS_resources is also `opt-dev` — GMI's Makefile auto-detects
+`libnpsol.a` / `liblapacklib.a` / `libblaslib.a` in the macos build
+dir and links them when present.  `sls-dev` is held in lockstep with
+`opt-dev` for now; the NPSOL source tree will be removed when
+`opt-dev` is promoted to the public release branch.
 
 ## Build
 CMake-based. All scripts live in `macos/` and accept `[debug|release] [gfortran]`
@@ -22,9 +25,10 @@ in any order (defaults: release, ifx). Each combination gets its own build direc
 
 PGPLOT was dropped on release-candidate: Giza is the only PGPLOT-API
 provider now, and the legacy `[giza|pgplot]` script argument is gone.
-NPSOL was also removed via main's PR #44; `design_cons_optim.F` is
-dead code, replaced by `nls_optim_dvr` (Levenberg-Marquardt) in
-`design_optim_mod`.
+NPSOL was removed on `main` (PR #44); the bound-constrained path is
+now provided by SLSQP on `opt-dev` (default) and `main`'s unconstrained
+LM (`nls_optim_dvr` in `design_optim_mod`) remains available for
+non-constrained problems.
 
 | Script | Targets |
 |---|---|
@@ -47,6 +51,96 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
 - GMI.mexa64 is built via the standalone `MACOS_resources/GMI/Makefile` (not cmake) — more robust across MATLAB versions. makeall.sh and makegmi.sh both call it with `MACOS_BUILD_DIR` pointing to the cmake build tree.
+
+## Constrained optimization (SLSQP default, NPSOL opt-in)
+- Default back end: `design_slsqp_optim.F` + vendored Kraft SLSQP under
+  `macos_f90/slsqp/` (BSD; see `slsqp/LICENSE.txt`).  Same external
+  signature as `np_optim_dvr` so call sites in `macos_cmd_loop.inc`
+  (start_optim ~3661, restore ~3964) don't change.
+- Dispatch (in `macos_cmd_loop.inc`): `#ifdef USE_NPSOL` calls
+  `np_optim_dvr`; `#else` calls `slsqp_optim_dvr`.  Both drivers exist
+  under USE_NPSOL=ON so the same binary can be A/B'd via prescription.
+- MACOS's "constrained" optimization is bound-constrained only
+  (`nclin=ncnln=0` historically in `design_cons_optim.F`); SLSQP runs
+  in its simplest regime — smooth objective + box bounds.
+- **Numerical gotcha: variable pre-scaling.**  SLSQP's QP solver
+  underflows when `|grad|/|bound|` is large (e.g. macos's native
+  `dtt=1e-9` FD step gives ~1e5 gradient against ~5e-4 tip/tilt
+  bounds → 1e9 ratio → zero step on first call, mode=0 silent
+  exit).  `slsqp_optim_dvr` rescales each DOF by
+  `s_i = 1/max(|bl_i|, |bu_i|, eps)` before every `slsqp()` call and
+  un-rescales `aparams` inside the funcobj evaluation — SLSQP is
+  mathematically scale-invariant so this is a pure numerical-health
+  fix.  Comment block above the slsqp call has the derivation.
+  Do not bump `dtt`: ray-trace linearity at large FD steps was the
+  reason the alternate fix was rejected.
+- A/B verification reference: `ZGD_test_files/opt_example_constrained.in`
+  (Elt 7 TIP+TILT, ±0.5 mrad bounds, WFE target, OptMaxItrs=200).
+  NPSOL and SLSQP agree to 11+ digits on final WFE.
+- Open work: setbeam.inc still uses `npoptn` + `npsol` directly
+  (Phase 3.1 — port deferred); `m.calib_set_algorithm(...)` setter
+  in pymacos/mmacos bindings (Phase 5).
+- See `macos_f90/slsqp/README.md` for the full NPSOL→SLSQP mapping,
+  reverse-comm protocol, and convergence story.
+
+## §0 hygiene cluster (latent bugs closed on opt-dev)
+- **`macos_realloc` after `macos_init_all`.**  Code paths that call
+  `macos_init_all(modelSize)` directly (smacos_dvr, pymacos init,
+  mmacos init) must set `macos_realloc = .true.` afterward so the
+  first `SMACOS()` call re-allocates its scratch buffers
+  (`L1, R1, R2, PertVec, DrawEltVec, DV1, DV2, D2, CD1, CD2, DWF`)
+  for the new `mdttl`.  Interactive macos.F gets this for free via
+  the main command-loop path.  Without it, model_size transitions
+  (512 ↔ 1024) silently corrupt the heap on the first plot.
+- **DFOURN scratch growth.**  `sunsub.F:DFOURN` had a SAVE'd
+  `first_entry` LOGICAL that allocated the scratch `DATA(:)` array
+  once and never grew it.  Pymacos's model_size transitions blow
+  past the original `SzData`.  Fixed: re-allocate when
+  `.not.allocated(DATA) .or. size(DATA) < SzData`.
+- **`psiElt` renormalization in `CPERTURB_PROG` (funcsub.F).**  After
+  `Q · psi_in → psi_out` the result drifts off unit-norm for large
+  rotations (≥ a few mrad cumulative).  Divide by
+  `sqrt(sum(D1**2))` after the DMPROD.  Caught by Src vs all-optics-
+  group equivalence test.
+- **`dopt_init_vars` sentinel defaults.**  `OptTgtElt=-1` and
+  `OptAlg=NonLin` initialized so prescriptions that omit them parse
+  cleanly through the new constrained-optim path (previously
+  uninitialized → silent garbage element index).
+- **`MBFile6` parser noise.**  Unknown-key catch-all for `OptBeam=`
+  added to `msmacosio.inc` so older prescriptions don't trip on it.
+- **ConSrf near-tangent fallback (`surfsub.F`).**  When
+  `k2 = b*b - 4*a*c < TOL_TANGENT * b*b` the quadratic is effectively
+  linear; fall back to `L = -b/(2*a)` instead of `sqrt(k2)` to avoid
+  loss-of-precision NaN.
+- **`smacos_compute.inc` slice overrun.**  Five `1:mZern` → `1:mZernModes`
+  fixes (mZern≠mZernModes when both Zern and FF aspheres are active).
+  Cherry-picked back to release-candidate.
+
+## CALIB wrappers in macos_api_mod (Phase 1a/1b/1c)
+- `calib_run` + `calib_buffer_dims` (Phase 1a): drive `'CALIB'`
+  end-to-end via SMACOS and expose result dims to pymacos/mmacos.
+- Programmatic setters (Phase 1b): `calib_set_var_elt`,
+  `calib_clear_var_elts`, `calib_set_iter`, `calib_set_tol`,
+  `calib_set_target` — let bindings configure a calibration run
+  without round-tripping through a `.in` prescription edit.
+- `calib_clear_var_elts` carries defensive `allocated()` guards
+  before deallocating optional arrays (Phase 1c) — silently no-ops
+  rather than SIGSEGVing on a fresh `macos_init_all` state.
+- pymacos: `m.calib(...)` plus `m.calib_set_*(...)` setters in
+  `macos.py`.  mmacos: `+macos/calib*.m` plus Session methods.
+
+## Public-release strategy
+- Two-repo model (JPL's GitHub plan doesn't support branch-level
+  visibility): internal `nasa-jpl/macos` (private) keeps all dev
+  branches and full history; a separate public repo (name TBD,
+  e.g. `nasa-jpl/macos-release`) gets a snapshot per release —
+  single commit + tag on its `main`, dev files stripped.
+- Sync via a not-yet-written `tools/prepare-public-release.sh`
+  driven by `tools/PUBLIC_EXCLUDE.txt` (CLAUDE.md, PLAN.md,
+  `.claude/`, `docs/Archive/`, internal ZGD test fixtures, etc.).
+- Before `opt-dev → main` promotion: remove the NPSOL source tree
+  from the public-bound snapshot (SLSQP stays as the default and
+  only constrained back end on the public side).
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
