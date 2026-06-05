@@ -112,6 +112,8 @@ C  Execution starts
 	mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
         mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
 #endif
+	mVarDOF_sls=mVarDOF    ! design_slsqp_optim_mod copies
+	mOptZern_sls=mOptZern
 
         ! Initialize MACOS
         Call macos_init_all(macos_model_size)
