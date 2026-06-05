@@ -153,6 +153,8 @@ C
 
 	  mVarDOF_nls   = mVarDOF    ! mVarDOF_nls and mOptZern_nls
 	  mOptZern_nls  = mOptZern  ! are defined in design_optim_mod
+	  mVarDOF_sls   = mVarDOF    ! design_slsqp_optim_mod copies
+	  mOptZern_sls  = mOptZern
 
 	  Call dopt_init
 	End If
