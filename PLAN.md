@@ -1122,12 +1122,13 @@ For every new capability:
 
 ---
 
-## 9. Branch / repo policy
+## 9. Branch / repo policy (revised 2026-06)
 
-- `release-candidate` is the slim public-facing branch (no NPSOL, no in-flight work)
-- `opt-dev` adds the USE_NPSOL constrained-optim path
-- New feature work lands on feature branches → merges into `release-candidate` after testing
-- `main` lags `release-candidate`; sync periodically
+- `sls-dev` — integration branch for new work; SLSQP default + NPSOL opt-in coexist here
+- `opt-dev` — release target; bug fixes only; NPSOL source tree gets removed at promotion to `main`
+- `release-candidate` — **frozen** at `19bfbf8` (mZern cherry-pick); no new commits
+- `main` — public release surface; promoted from `opt-dev` on each release
+- Promotion gate: `sls-dev` fast-forward-merges into `opt-dev` when ready; `opt-dev` strips NPSOL and promotes to `main` for public release
 - Test files duplicated where needed: not all macos users access `MACOS_resources`, but all `MACOS_resources` users see `macos`; manual examples and reader exercises must be in `macos` directly; some coronagraph Rxes remain private and stay in `MACOS_resources` only
 
 ---
