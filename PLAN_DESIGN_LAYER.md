@@ -79,7 +79,7 @@ Two nested loops:
 | Changes per… | Examples | Mechanism |
 |---|---|---|
 | outer step (geometry) | spacings, Kr/Kc, coefficients, mask radii | builder re-derives → re-emit `.in` → `load_rx` (once per step) |
-| inner trace (state) | wavelength, chief-ray direction (field point) | setters only: `set_wavelength`, `set_src_dir` — never re-emitted |
+| inner trace (state) | wavelength, chief-ray direction (field point) | setters only: `set_src_wvl`, `set_src_fov('src_dir',…)` — never re-emitted |
 
 ```
 ┌─ outer (fmincon over normalized design params) ───────────────┐
@@ -89,9 +89,9 @@ Two nested loops:
 │  m.load_rx(rx)                       % ONCE per outer step    │
 │  merit = 0                                                    │
 │  for λ in band:                                               │
-│    m.set_wavelength(λ)               % + dispersive-elt update│
+│    m.set_src_wvl(λ)                  % + dispersive-elt update│
 │    for f in field_points:                                     │
-│      m.set_src_dir(f)                                         │
+│      m.set_src_fov('src_dir', f)                              │
 │      [inner CALIB if in-instrument DOFs]                      │
 │      m.trace(); assert_no_ray_loss()                          │
 │      merit += w(λ,f) * user_merit(read_outputs(), λ, f)       │
@@ -474,7 +474,7 @@ MACOS resolves glass → n(λ) via a separate text-file catalog
   doublet vs CodeV.  Side benefit: the CodeV converter can start
   emitting glass names instead of baked numeric indices.
 - **Pre-flight check (Sprint 0):** when does the engine re-resolve
-  glass → n(λ)?  If at trace / wavelength-MOD time, `set_wavelength`
+  glass → n(λ)?  If at trace / wavelength-MOD time, `set_src_wvl`
   suffices; if at Rx-load only, the eval loop needs a per-λ index
   push or reload.  One glass element, two wavelengths in-session,
   compare against fresh loads.
@@ -611,9 +611,12 @@ Wrapper items:
       corpus specifically — README marks them MVP-wired, but at
       512-class grids on `Rx_Coro.in`, not just `Rx_Cass`.  Verify +
       regression-test.
-- [ ] Expose `set_wavelength` (verify `set_src_lambda` / `MOD WAVELEN=`
-      path) and `set_src_dir(θx, θy)` (likely via `set_src_csys`'s
-      field-angle path).
+- [x] **Already present in mmacos:** `set_src_wvl(λ)` (direct state
+      setter, no `modify()` round-trip) and `set_src_fov('src_dir',
+      DIR, …)` (absolute chief-ray pointing setter — docstring
+      specifically calls out "tip source pointing between field
+      points without round-tripping through perturb_src", which is
+      exactly the inner-loop need).  Verification only.
 - [ ] Expose a **ray-loss summary** (`nBadRays` + per-category counts
       from RayStatus) — backend for the §1.3 guard.
 - [ ] Verify CALIB wrappers handle DM-element variables on `Rx_Coro.in`.
@@ -643,7 +646,7 @@ short MATLAB script + a dated note in this file:
 - [ ] **E4 — λ-loop placement.**  Measure the load / trace / propagate
       cost split per wavelength to quantify what a future MACOS-side
       `spectral_run` amortization would actually buy over a MATLAB
-      loop of `set_wavelength` calls.
+      loop of `set_src_wvl` calls.
 
 Resolution principle: merit and control logic start MATLAB-side
 (flexible, zero Fortran risk); a capability moves into macos only
@@ -739,7 +742,7 @@ is written.
 | Sprint | macos / `macos_api_mod` change | Why |
 |---|---|---|
 | 0 | (none — experiments only) | design inputs |
-| 1 | `set_src_dir`, `set_wavelength` exposure; ray-loss summary.  E1–E4 experiments (no Fortran — their measurements scope Sprint 3) | FoV loop; §1.3 guard; macos↔MATLAB split |
+| 1 | `set_src_wvl` / `set_src_fov` already present in mmacos (verification only); ray-loss per-category breakdown (Q2 — small).  E1–E4 experiments (no other Fortran — measurements scope Sprint 3) | FoV loop; §1.3 guard; macos↔MATLAB split |
 | 2A | (none in Fortran) | builder + outer loop entirely MATLAB |
 | 2B | ZernTypeL dispatch ELSE-with-error | silent no-op guard |
 | 2C | catalog formula check (possibly parser extension); .agf converter (offline tool) | refractive components |
@@ -759,8 +762,8 @@ API shape → joint, after E1–E4.
 
 | # | Item | Acceptance |
 |---|---|---|
-| Q1 | `set_src_dir` + `set_wavelength` in `macos_api_mod` (programmatic equivalents of existing field-angle / WAVELEN paths) | pymacos pytest vs journal-driven references |
-| Q2 | Ray-loss summary getter (nBadRays + per-category RayStatus counts) | known-vignetting Rx → known counts |
+| Q1 | ~~`set_src_dir` + `set_wavelength` in `macos_api_mod`~~ — **already landed:** `set_src_fov` (absolute pointing) and `set_src_wvl` are in mmacos via the existing `macos_api_mod` setters.  Sprint 1 verifies only. | pymacos pytest vs journal-driven references |
+| Q2 | Per-category ray-status getter in `macos_api_mod` exposing `RayStatus(:)` (+ optionally `RayFailElt(:)`, `RayFailMsg`) verbatim from `elt_mod`.  mmacos surface: `get_ray_status(N)` returning the integer-coded category per ray (`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) — complements the existing binary `get_ray_info` (`ok_trace`, `ok_pass`).  Codegen Path A; ~30 min. | known-vignetting Rx → known per-category counts |
 | Q3 | ZernTypeL dispatch ELSE-with-error (propsub.F / srtrace.F) | `ZernType= Noll` errors loudly, no silent no-op |
 | Q4 | Glass catalog: formula-coverage audit → parser extension if needed → .agf converter + generated usual set | n(λ) vs published to 1e-6; one doublet vs CodeV |
 | Q5 | Endurance test (500× load/trace, one session) → fix findings | bit-identical rmsWFE each iter; flat memory |
