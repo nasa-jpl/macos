@@ -3460,6 +3460,7 @@
     ! [ ] trace_rays
     ! [ ] ray_info_get
     ! [ ] ray_info_set
+    ! [ ] ray_status_get
     ! [ ] opd_val
     ! [ ] xp_fnd / xp_set / xp_get
     ! [ ] stop_info_set / stop_info_get
@@ -3554,6 +3555,49 @@
         OK = PASS
 
       end subroutine ray_info_set
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Per-ray status (category code + element where failure was first recorded)
+      !            from previous call to trace_rays(...)
+      ! Call     : CALL ray_status_get(OK, RayStatus_, RayFailElt_, nRays)
+      ! Input    : nRays (=N)[1x1,I]: Number of traced rays (defined by previous trace_rays(...) call)
+      ! Output   : OK            [1x1,B]: = (True) if successful; (False) otherwise
+      !            RayStatus_    [1xN,I]: per-ray RayStat_* code:
+      !                                     0=OK, 1=Obscured, 2=Miss,
+      !                                     3=Bracket, 4=MaxIter, 5=Undef
+      !            RayFailElt_   [1xN,I]: element index where failure was recorded (0 if OK)
+      ! Require  : check if Rx loaded; trace_rays previously called
+      ! Note     : Complements ray_info_get's binary (RayOK, RayPass).  Sourced from
+      !            elt_mod's RayStatus(:) / RayFailElt(:) module arrays, populated
+      !            by SetRayFail() inside tracesub.F / propsub.F.
+      !---------------------------------------------------------------------------------------------
+      subroutine ray_status_get(OK, RayStatus_, RayFailElt_, nRays)
+
+        implicit none
+        logical,                   intent(out):: OK
+        integer, dimension(nRays), intent(out):: RayStatus_
+        integer, dimension(nRays), intent(out):: RayFailElt_
+        integer,                   intent(in) :: nRays
+
+        ! ------------------------------------------------------
+        OK           = FAIL
+        RayStatus_   = -1     ! sentinel: distinguish "never set" from any RayStat_* code
+        RayFailElt_  = 0
+
+        ! Rx loaded and Ray Size check
+        if ((.not. SystemCheck()) .or. (nRay /= nRays) .or. (nRays <= 0)) return
+
+        ! Defensive: backing arrays must be allocated.  They are allocated
+        ! alongside L1/LRayOK/LRayPass by alloc_perRay_buffers in elt_mod,
+        ! so this should never fire in practice — kept as a guard.
+        if (.not. allocated(RayStatus) .or. .not. allocated(RayFailElt)) return
+
+        RayStatus_(:)  = RayStatus(:nRay)
+        RayFailElt_(:) = RayFailElt(:nRay)
+
+        OK = PASS
+
+      end subroutine ray_status_get
 
       !---------------------------------------------------------------------------------------------
       ! Purpose  : Trace Wavefront from source to surface iElt with grid sampling NxN
