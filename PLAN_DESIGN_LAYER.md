@@ -1,4 +1,4 @@
-# Design Layer — Plan v2
+# Design Layer — Plan v3
 
 A high-level design surface on top of MACOS. The user expresses
 *design intent* (topology, free parameters, merit function); a builder
@@ -6,11 +6,13 @@ generates a concrete MACOS prescription directly (no CodeV step);
 MACOS handles ray trace, diffraction, and inner-loop alignment; an
 outer optimizer (MATLAB `fmincon`) explores the design space.
 
-Revised 2026-06 from the original draft + design review.  Companion
-to `PLAN.md`.  The evaluation surface is proven coronagraph-first on
-the existing Rx corpus (Sprint 1); the telescope is the first
-*builder* example (Sprint 2); a simple spectrograph (lens + grating)
-the third.
+Revised 2026-06 (v3) from the original draft + two design reviews.
+Companion to `PLAN.md`.  The analysis surface is **front-end-agnostic**
+(§1.0): the expected dominant user *imports* a CodeV/Zemax-converted
+Rx and runs sensitivities (Sprint 2A-i), and the de-novo *builder*
+(telescope first, Sprint 2A-ii; spectrograph third) populates the same
+surface.  The evaluation core is proven coronagraph-first on the
+existing Rx corpus (Sprint 1).
 **MATLAB-first** — the JPL user base is MATLAB-heavy.  The Python
 port stays cheap by construction (see §3 state-as-data rule).
 
@@ -47,9 +49,41 @@ Standing rules for any CC session working this plan:
 > **CC:** All work lands on `sls-dev` (macos) + companion `sls-dev`
 > (MACOS_resources).  Tag sprint completions (`design-sprint-N`).
 
+> **CC:** Each sprint tag ships with a **runnable worked-example
+> script** (e.g. `example_sensitivities_from_rx.m` at 2A-i) — that is
+> what turns an intermediate stage from "tagged" into "adoptable."
+> The example runs end-to-end against a committed fixture and ends in
+> `exit(0)`; it doubles as the sprint's smoke demo.
+
 ---
 
 ## 1. Architecture: three tiers, two loops
+
+### 1.0 Two front-ends, one analysis core
+
+The analysis surface — `vary`, `evaluate`, `sensitivities`,
+compensators, `optimize`, the ray-loss guard, parallel FD — is
+**front-end-agnostic**.  Two front-ends populate it:
+
+- **Import** (expected dominant entry point): `macos.design.System
+  .from_rx(path)` loads the Rx via SMACOS and reads element
+  parameters back through the existing getter surface (engine
+  readback — there is NO fixed-format text parser in MATLAB).  The
+  real-world user arrives with a CodeV/Zemax-converted prescription
+  and wants sensitivities, not a de-novo layout.  For imported
+  systems, design vars map to in-session perturbations and element
+  setters — no re-emit, no reload per outer step.
+- **Builder** (de-novo): the family / derivation path (§§4–7).
+  Emits an `.in`; reloads on geometry change.
+
+Converters (CodeV script, future Zemax) are **importers** that feed
+`from_rx`; `describe()` / `check_clipping()` / `ValidatePrescription`
+become the diagnostic surface those "crude" conversions never had
+(see §10 Made #10).
+
+Everything downstream of the front-end — §§1.1–1.3 mechanics, the
+merit/optimizer/sensitivity machinery — is shared.  The split below
+(§1.1) gains a third caching mode for the import path.
 
 **Tier 1 — MATLAB design layer** (`+macos/+design/` in
 MACOS_resources/mmacos).  Builder API + outer optimizer.  Owns design
@@ -78,7 +112,8 @@ Two nested loops:
 
 | Changes per… | Examples | Mechanism |
 |---|---|---|
-| outer step (geometry) | spacings, Kr/Kc, coefficients, mask radii | builder re-derives → re-emit `.in` → `load_rx` (once per step) |
+| outer step (builder geometry) | spacings, Kr/Kc, coefficients, mask radii | builder re-derives → re-emit `.in` → `load_rx` (once per step) |
+| outer step (imported geometry) | despace, tilt, conic, Zernike on an imported Rx | perturbation / element setters in-session — **no re-emit, no reload** |
 | inner trace (state) | wavelength, chief-ray direction (field point) | setters only: `set_src_wvl`, `set_src_fov('src_dir',…)` — never re-emitted |
 
 ```
@@ -121,7 +156,7 @@ Two nested loops:
   `evaluate_` must be worker-safe: takes the Rx *path* + parameters,
   performs its own load, relies on no desktop-session state.
 
-> **CC:** Design for worker-safety from Sprint 2A even if
+> **CC:** Design for worker-safety from Sprint 2A-i even if
 > UseParallel ships off by default.  Each worker pays one cold
 > init+load; wins when traces are slow (diffraction evals), not for
 > 10 ms geometric traces.
@@ -136,7 +171,7 @@ These are where outer-loop optimizations live or die:
    round-trip or gradients are quantization noise.
 2. **Variable normalization.**  Design vars span mm, mrad,
    dimensionless conics, 1e-12 asphere coefficients.
-   `declare_design_var` bounds are used to normalize internally to
+   `vary(...)` bounds are used to normalize internally to
    [0,1]; `builder.update` unnormalizes.  fmincon never sees raw
    units.
 3. **Inner-loop determinism.**  Inner CALIB runs with fixed
@@ -144,8 +179,11 @@ These are where outer-loop optimizations live or die:
    step's merit effect; warm-start the inner solution from the
    previous outer iterate (cost AND smoothness).  If gradient noise
    persists anyway, `patternsearch` is the fallback, not tighter
-   SQP knobs.
-4. **Ray-loss guard (Sprint 2A, not Sprint 4).**  RMS-WFE-over-
+   SQP knobs.  For multimodal landscapes — coronagraph
+   mask-parameter merits can have multiple basins where two-mirror
+   conics do not — `MultiStart` (wrapping fmincon over a set of
+   seeds) is the complementary fallback.
+4. **Ray-loss guard (Sprint 2A-i, not Sprint 4).**  RMS-WFE-over-
    surviving-rays *improves* when rays vignette, and nRays changing
    is a step discontinuity.  Every evaluation asserts nRays
    constant; lost rays → penalized merit (or `nonlcon` violation).
@@ -161,9 +199,10 @@ These are where outer-loop optimizations live or die:
    geometric merit); the λ loop turns on for refractive elements or
    diffraction merits.  Free 3× on telescope iteration speed.
 
-> **CC:** Items 1, 2, 4, 5 are Sprint 2A acceptance criteria.  Write
-> the FD-survivability test explicitly: emit Rx at x and x+1e-8·x,
-> diff the files, assert the parameter actually changed.
+> **CC:** Items 2, 4 are Sprint 2A-i acceptance criteria (analysis
+> core); items 1, 5 are Sprint 2A-ii (emitter).  Write the FD-
+> survivability test explicitly: emit Rx at x and x+1e-8·x, diff the
+> files, assert the parameter actually changed.
 
 ---
 
@@ -174,12 +213,12 @@ and cheap; stage 4 is the expensive loop; stages 5–6 close out.
 
 ```matlab
 %% Stage 1 — declare intent (seconds; no engine calls)
+% Fixed-topology families (Cass/RC/Gregorian/DK) auto-populate M1/M2/FP
+% with standard names — no add_* calls needed.  (N-mirror and
+% instruments use add_* explicitly; see §7.2.)
 t = macos.design.Telescope('family','RC', ...
         'aperture_diameter_mm', 6000, 'primary_fnum', 2.0, ...
         'system_fnum', 20.0, 'BFD_mm', 1000, 'model_size', 256);
-t.add_mirror('M1');
-t.add_mirror('M2');
-t.add_focal_plane('FP');
 t.set_field_points(macos.design.hexgrid(deg2rad(0.01), 1));
 t.set_bandwidth(632.8e-9);            % nλ=1; all-reflective default
 
@@ -194,9 +233,12 @@ s = t.evaluate();      % baseline merit + per-field/λ breakdown
 % user iterates 1↔3 until the baseline design makes sense
 
 %% Stage 4 — optimize
-t.declare_design_var('M2_despace_mm', 0, 'bounds',[-2 2]);
-t.declare_design_var('M2_conic',     [], 'bounds',[-1.2 -0.8]);
-t.set_outer_merit('RMSWFE_FoV_band_averaged');
+% vary(elt, param, ...) shares addressing with override(elt, param, value):
+% a design var IS an optimizer-driven override (§5.4).
+t.vary('M2','despace', 'bounds',[-2 2], 'unit','mm');
+t.vary('M2','conic',   'bounds',[-1.2 -0.8]);
+t.vary('M2','refocus', 'role','compensator');  % solved inner-loop, not by fmincon
+t.set_outer_merit('rms_wfe');        % per-(λ,field); loop owns the averaging
 [opt, hist] = t.optimize('algorithm','sqp', 'MaxIter',60, ...
                          'UseParallel',false);
 
@@ -313,8 +355,8 @@ a name, in propagation order.
 
 | Input | Status |
 |---|---|
-| design vars + bounds (+ natural units) | required for `optimize()` |
-| outer merit | default `RMSWFE_FoV_band_averaged`; callback override |
+| design vars + bounds (+ natural units) | required for `optimize()`; declared via `vary(elt, param, …)` (shares addressing with `override`) |
+| outer merit | per-(λ,field) built-in (`rms_wfe` / `rms_spot` / `contrast`); callback override; averaging owned by the λ×field loop + §4.2 weights |
 | inner target (DarkZone params) | required for coronagraph; absent for telescope |
 | constraints (clearance margins, ray-preservation) | defaults ON; thresholds overridable |
 | optimizer options (algorithm, MaxIter, UseParallel) | defaults |
@@ -373,7 +415,7 @@ can; the outer optimizer refines what closed-form can't pin down
 > trust any transcription — including this one — without the §5.3
 > raytrace test.
 
-### 5.3 Family validation tests (Sprint 2A acceptance)
+### 5.3 Family validation tests (Sprint 2A-ii acceptance)
 
 Per family: build the Rx, trace on-axis and at a small field, Zernike-
 decompose the WFE, assert:
@@ -394,15 +436,23 @@ against MACOS sign conventions (the classic 2-mirror failure mode).
   families both spacings can be derived.
 - `.build()` sanity checks: monotone non-negative spacing cascade;
   per-element clearance (full `check_clipping()` report deferred to
-  Sprint 4, but pass/fail margin check runs from Sprint 2A); BFD > 0;
+  Sprint 4, but pass/fail margin check runs from Sprint 2A-ii); BFD > 0;
   Cass-class FP reachable through the M1 hole; Gregorian intermediate
   focus exists (`d_M2 > f_M1`); N-mirror power sum consistent with
   f_sys; emitted Rx passes `ValidatePrescription`.
 - Override rule unchanged: any table entry is overridable by
   `t.override('<elt>','<param>',value)`; an override disables that
-  one derivation, everything else proceeds.  Design vars declared on
-  a derived quantity take precedence over the derivation (an
-  optimizer-driven override).
+  one derivation, everything else proceeds.
+- **`vary('<elt>','<param>', …)` is the same addressing as
+  `override`** — a design var IS an optimizer-driven override.
+  Declaring `vary` on a derived quantity takes precedence over the
+  derivation for the duration of `optimize()`.
+- **Compensators.**  `vary('<elt>','<param>', 'role','compensator')`
+  marks a DOF solved in the *inner* loop per outer iterate
+  (warm-started, §1.3.3) rather than driven by fmincon.  Rationale:
+  a despace design var without a refocus compensator lets defocus
+  dominate the merit and looks like a broken tool; the same concept
+  is what tolerancing needs (compensated-residual budgets).
 
 ---
 
@@ -434,7 +484,7 @@ keywords; DM → 1; mask / Lyot → 1 `Element= Obscuring`.
    loose per-surface moves.
 5. **Aperture derivation** — per-surface footprint via §5.1 rule.
 
-> **CC:** Implement the contract in Sprint 2A with Mirror, Mask,
+> **CC:** Implement the contract in Sprint 2A-ii with Mirror, Mask,
 > FocalPlane only (all trivial cases) — the point is the interface,
 > so Lens/Grating (Sprint 2C) slot in without re-architecting the
 > Vpt chain or the design-var mapper.
@@ -494,6 +544,51 @@ HOEs: parked behind the same component interface as an advanced
 pass-through (construction-point keywords supplied raw, no
 derivation) until a real design needs more.
 
+### 6.6 Metrology (three tiers)
+
+Optical metrology (edge sensors, laser gauges, fiducial truss) enters
+the design layer as a **measurement-space Jacobian** — `dMeasurement /
+dDOF` — that plugs into `sensitivities()` (Sprint 2A-i)
+alongside the merit-space Jacobian.  Three tiers, increasing trust
+required:
+
+1. **Interface (now).**  Measurement space in `sensitivities()` is a
+   Jacobian *contract*: any backend producing `dMeasurement/dDOF`
+   plugs in.  Backend #1 is the SegMirMaker `Hx.m` edge-sensor model
+   — MATLAB-native, trusted, no dependence on engine met functions.
+
+2. **Validation (separable — §9.1 Q8; VALIDATION/CHARACTERIZATION,
+   not implementation).**  John Lou's MACOS met functions have useful
+   outputs but are unvalidated, incomplete, and lack truss-
+   optimization support.  Acceptance tests are closed-form geometric
+   truths, not regressions against the code's own output:
+   - gauge change = projection of relative fiducial motion onto the
+     line of sight (analytic equality);
+   - perturbation orthogonal to LOS → zero reading (null test);
+   - launcher/target swap → reciprocal response;
+   - FD vs analytic consistency where a linearized path exists.
+   Deliverables: a pass/fail map per met function + an inventory of
+   missing capability (that inventory is the spec input for joint-
+   side completion work).
+
+   > **CC (guard):** the design layer must NOT consume the engine met
+   > functions for budget work before Q8 passes.  "Has produced
+   > useful outputs" is exactly the trust level at which a silent
+   > sign / frame error survives longest.
+
+3. **Truss optimization (Sprint 5+).**  Vars = fiducial / launcher
+   placement + beam topology; merit = observability of the DOF set
+   (min singular value / condition number of the restricted met
+   Jacobian; worst-case unobservable mode); constraints = launcher
+   count, mounting real estate, beam clearance.  First cut is **pure
+   MATLAB kinematics** (fiducial coordinates + LOS projections →
+   Jacobian → merit; no engine in the loop), per the logic-starts-
+   MATLAB-side principle.  MACOS's role: validate selected
+   configurations through the real gauge functions, and trace
+   met-beam clearance through structure + optical train.
+   Dependency chain: tier-1 interface (above) → Q8 → kinematic
+   optimizer → MACOS-backed refinement.
+
 ---
 
 ## 7. Builder API examples
@@ -501,16 +596,14 @@ derivation) until a real design needs more.
 ### 7.1 Classical 2-mirror Cassegrain-class
 
 ```matlab
+% Fixed-topology family: M1/M2/FP auto-populated by the constructor.
 t = macos.design.Telescope( ...
         'aperture_diameter_mm', 6000, 'primary_fnum', 2.0, ...
         'system_fnum', 20.0, 'BFD_mm', 1000, ...
         'optical_axis', [0 0 1], 'family', 'Cassegrain');
-t.add_mirror('M1');
-t.add_mirror('M2');
-t.add_focal_plane('FP');
-t.declare_design_var('M2_despace_mm',   0.0,  'bounds',[-2 2]);
-t.declare_design_var('M2_tilt_xy_mrad', [0 0],'bounds',[-1 1]);
-t.declare_design_var('M2_conic',        [],   'bounds',[-1.2 -0.8]);
+t.vary('M2','despace', 'bounds',[-2 2],  'unit','mm');
+t.vary('M2','tilt',    'bounds',[-1 1],  'unit','mrad');
+t.vary('M2','conic',   'bounds',[-1.2 -0.8]);
 ```
 
 ### 7.2 N-mirror — TMA / 4-mirror / freeform (wide FoV)
@@ -526,10 +619,10 @@ t.add_focal_plane('FP');
 t.set_surface('M1', 'type','conic');
 t.set_surface('M2', 'type','asphere_monomial', 'order',6);
 t.set_surface('M3', 'type','freeform_zernike', 'modes',4:15);
-t.declare_design_var('M2_asphere_coeffs', zeros(1,3), 'bounds',[-1 1]*1e-12);
-t.declare_design_var('M3_zern_coeffs',    zeros(1,12),'bounds',[-1 1]*1e-9);
+t.vary('M2','asphere_coeffs', 'bounds',[-1 1]*1e-12);
+t.vary('M3','zern_coeffs',    'bounds',[-1 1]*1e-9);
 t.set_field_points(macos.design.hexgrid(deg2rad(0.05), 2));
-t.set_outer_merit('RMSWFE_FoV_band_averaged');
+t.set_outer_merit('rms_wfe');        % per-(λ,field); loop owns the averaging
 ```
 
 ### 7.3 Coronagraph
@@ -546,11 +639,11 @@ c.add_OAP('OAP3', 'mirrors','OAP1');
 c.add_lyot('LS1');
 c.add_OAP('OAP4', 'recreates','focus');
 c.add_detector('SciCam');
-c.declare_design_var('FPMRadius',     4.0,  'bounds',[2 8],     'unit','lambdaD');
-c.declare_design_var('LyotUndersize', 0.85, 'bounds',[0.7 0.95]);
+c.vary('FPM','radius',     'bounds',[2 8], 'unit','lambdaD');
+c.vary('LS1','undersize',  'bounds',[0.7 0.95]);
 c.set_bandwidth([550 600 650]*1e-9);
 c.set_inner_target('DarkZone', 'inner_lamD',7, 'outer_lamD',10);
-c.set_outer_merit(@(I_stack, lam, f) my_avg_contrast(I_stack, 7, 10));
+c.set_outer_merit('contrast', 'inner_lamD',7, 'outer_lamD',10);  % built-in per-(λ,field)
 [opt, hist] = c.optimize();
 ```
 
@@ -569,7 +662,7 @@ s.add_lens   ('COL', 'material','N-BK7', 'focal_length_mm', 200);
 s.add_grating('GR',  'lines_per_mm', 600, 'order', 1);
 s.add_lens   ('CAM', 'material','N-BK7', 'focal_length_mm', 150);
 s.add_detector('DET');
-s.set_outer_merit('RMS_spot_lambda_field');
+s.set_outer_merit('rms_spot');       % per-(λ,field); loop owns the averaging
 ```
 
 Exercises in one example: 2-surface expansion, glass-name emission,
@@ -617,8 +710,10 @@ Wrapper items:
       specifically calls out "tip source pointing between field
       points without round-tripping through perturb_src", which is
       exactly the inner-loop need).  Verification only.
-- [ ] Expose a **ray-loss summary** (`nBadRays` + per-category counts
-      from RayStatus) — backend for the §1.3 guard.
+- [x] Expose a **ray-loss summary** (per-category counts from
+      RayStatus) — backend for the §1.3 guard.  **Landed 2026-06-11**
+      (Q2): `ray_status_get` in `macos_api_mod` + `get_ray_status(N)`
+      mmacos wrapper + tests.
 - [ ] Verify CALIB wrappers handle DM-element variables on `Rx_Coro.in`.
 - [ ] Tests: load `SegDemo3.in`, set field point, trace, read WFE;
       expected values from pymacos.
@@ -662,19 +757,44 @@ is written.
 > notes under this section; they are design inputs for Sprint 3, not
 > throwaway probes.
 
-### Sprint 2A — `macos.design.Telescope` 2-mirror MVP
+### Sprint 2A-i — import / analysis core (lands first)
+
+The front-end-agnostic analysis surface (§1.0), proven on an
+**imported** Rx — the deliverable the existing user base actually
+wants.  No family math, no emitter required.
 
 - [ ] New package `+macos/+design/` under `MACOS_resources/mmacos/`.
+- [ ] `macos.design.System.from_rx(path)` — load via SMACOS, read
+      element parameters back through the existing getter surface
+      (engine readback; no MATLAB text parser).
+- [ ] `vary(elt, param, …)` mapped to in-session perturbations /
+      element setters (no re-emit, no reload per outer step —
+      §1.1 imported-geometry row); compensators (§5.4) solved inner.
+- [ ] `evaluate_` with canonical call sequence, ray-loss guard
+      (uses the Q2 per-category ray-status getter), worker-safety;
+      internal [0,1] design-var normalization.
+- [ ] `sensitivities()` — FD Jacobian via worker-safe `evaluate_`
+      (parallel).  Prefer MACOS's native sensitivity / linear-model
+      machinery where it applies (segmented systems at hundreds of
+      DOFs); FD is the fallback, not the only path.  Output:
+      merit-space Jacobian now; measurement-space when a metrology
+      backend is attached (§6.6).
+- [ ] Outer fmincon loop, nested λ × field (nλ=1 default for
+      all-reflective); merit built-in (`rms_wfe` etc.) + callback.
+- [ ] First result: a **sensitivity table on a CodeV-converted Rx**.
+
+### Sprint 2A-ii — `macos.design.Telescope` 2-mirror builder
+
+The de-novo builder, landing onto an analysis core that already
+works (2A-i).
+
 - [ ] Spec struct + pure-function resolve/emit (§3); component
-      interface (§6.2) with Mirror / Mask / FocalPlane.
+      interface (§6.2) with Mirror / Mask / FocalPlane.  Fixed-
+      topology families auto-populate M1/M2/FP (§2, §7.1).
 - [ ] Closed-form layout for Cass / RC / Gregorian / DK with the §5.2
       corrected, β-dependent forms; §5.3 raytrace validation tests.
 - [ ] Full-precision `.in` emission + `ValidatePrescription` on every
       build; FD-survivability test (§1.3).
-- [ ] `evaluate_` with canonical call sequence, ray-loss guard,
-      worker-safety; internal [0,1] design-var normalization.
-- [ ] Outer fmincon loop, nested λ × field (nλ=1 default for
-      all-reflective); merit built-in + callback path.
 - [ ] `describe()` with provenance; `save_spec`/`load_spec`;
       golden-spec → byte-identical-Rx regression.
 - [ ] First result: M2 alignment minimizing FoV-averaged WFE vs a
@@ -699,12 +819,34 @@ is written.
 - [ ] Worked example: §7.4 spectrograph; chromatic merit exercises
       nλ>1 for real.
 
+### Sprint 2D — segmentation (SegMirMaker orchestration)
+
+> Sequenced here for readability; per the v3 review it may land
+> after 2A-ii / parallel to 2B at Dave's discretion.
+
+**Orchestrate, do not reimplement.**  The psi-flip detection, FF
+replication with ZerntoMon dispatch, and per-segment Mon-frame
+conventions are debugged logic that must not be duplicated in MATLAB.
+
+- [ ] **Q7 — SegMirMaker batch mode** (§9.1): the nine interactive
+      dialog answers driven from a control file or args; interactive
+      mode retained for standalone users.
+- [ ] Design-layer `segment('M1','rings',2,'gap',…,'dofs',6)`:
+      emit unsegmented Rx → run SegMirMaker batch naming the parent
+      element → splice `.presc` segment blocks in place of the parent
+      with downstream renumbering (the emitter owns numbering) →
+      ingest `Hx.m`.  Segments carry provenance
+      `derived(segmirmaker)`.
+- [ ] Post-splice validation: `ValidatePrescription` + the
+      SEGRAYTRACE center-ray check (segment-center trace endpoint vs
+      `RptElt`) run automatically.
+
 ### Sprint 3 — `macos.design.Coronagraph` + DarkZone target
 
 - [ ] `Coronagraph` class per §7.3; conjugate-recreating OAP solve.
 - [ ] **New CALIB target type `DarkZone`** — annular image-plane
       integral (`inner_lamD`, `outer_lamD` or absolute radii),
-      evaluated through the diffraction chain (per Sprint 0 timing).
+      evaluated through the diffraction chain (per E3).
 - [ ] `macos_api_mod` wrapper `calib_set_target_darkzone(...)` +
       mmacos surface + tests.
 - [ ] **Scope guard:** inner-loop DM control is MODAL (tens of
@@ -732,8 +874,13 @@ is written.
   contrast (the system-model schema makes this an emitter, §3).
 - Python port of the builder — struct translation + transliteration,
   parity = byte-identical Rx on golden specs.
-- Segmented-primary integration (SegMirMaker as an aperture-shape
-  provider for M1).
+- Segmented-primary integration is **no longer deferred** — see the
+  Sprint 2D slice (SegMirMaker orchestration).
+- **Truss / metrology optimization** (§6.6 tier 3): fiducial +
+  launcher placement and beam topology optimized for DOF
+  observability.  First cut pure-MATLAB kinematics; MACOS validates
+  selected configs through the real gauge functions + traces met-beam
+  clearance.  Gated on §9.1 Q8.
 
 ---
 
@@ -743,11 +890,14 @@ is written.
 |---|---|---|
 | 0 | (none — experiments only) | design inputs |
 | 1 | `set_src_wvl` / `set_src_fov` already present in mmacos (verification only); ray-loss per-category breakdown (Q2 — small).  E1–E4 experiments (no other Fortran — measurements scope Sprint 3) | FoV loop; §1.3 guard; macos↔MATLAB split |
-| 2A | (none in Fortran) | builder + outer loop entirely MATLAB |
+| 2A-i | (none in Fortran) | import / analysis core entirely MATLAB over existing getters |
+| 2A-ii | (none in Fortran) | builder + outer loop entirely MATLAB |
 | 2B | ZernTypeL dispatch ELSE-with-error | silent no-op guard |
 | 2C | catalog formula check (possibly parser extension); .agf converter (offline tool) | refractive components |
+| 2D | Q7 — SegMirMaker batch mode (control-file / arg-driven) | segmentation orchestration |
 | 3 | `DarkZone` CALIB target + wrapper | coronagraph inner loop |
 | 4 | (none) | docs + diagnostics |
+| (validation) | Q8 — met-function validation harness (closed-form geometric tests) | gate before metrology budget work (§6.6) |
 
 ### 9.1 Separable engine queue vs. joint development
 
@@ -763,11 +913,13 @@ API shape → joint, after E1–E4.
 | # | Item | Acceptance |
 |---|---|---|
 | Q1 | ~~`set_src_dir` + `set_wavelength` in `macos_api_mod`~~ — **already landed:** `set_src_fov` (absolute pointing) and `set_src_wvl` are in mmacos via the existing `macos_api_mod` setters.  Sprint 1 verifies only. | pymacos pytest vs journal-driven references |
-| Q2 | Per-category ray-status getter in `macos_api_mod` exposing `RayStatus(:)` (+ optionally `RayFailElt(:)`, `RayFailMsg`) verbatim from `elt_mod`.  mmacos surface: `get_ray_status(N)` returning the integer-coded category per ray (`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) — complements the existing binary `get_ray_info` (`ok_trace`, `ok_pass`).  Codegen Path A; ~30 min. | known-vignetting Rx → known per-category counts |
+| Q2 ✅ **landed 2026-06-11** | Per-category ray-status getter in `macos_api_mod` (`ray_status_get`) exposing `RayStatus(:)` + `RayFailElt(:)` verbatim from `elt_mod`.  mmacos surface `get_ray_status(N)` returns the integer-coded category per ray (`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) + per-category counters — complements the binary `get_ray_info`.  Codegen Path A.  (Also bundled the latent `libslsqplib.a` mmacos-link fix.) | **Met:** `tMacosPkg` pins Rx_Cass_FarField counts (12850 rays = 11484 OK + 1366 Obscured; matches engine "Obscured: 1366") + cross-check vs `get_ray_info` |
 | Q3 | ZernTypeL dispatch ELSE-with-error (propsub.F / srtrace.F) | `ZernType= Noll` errors loudly, no silent no-op |
 | Q4 | Glass catalog: formula-coverage audit → parser extension if needed → .agf converter + generated usual set | n(λ) vs published to 1e-6; one doublet vs CodeV |
 | Q5 | Endurance test (500× load/trace, one session) → fix findings | bit-identical rmsWFE each iter; flat memory |
 | Q6 | `Element= Apodizer` (independently motivated, PLAN.md §2.1 Thrust B) | participates in subsequent trace; PROPER cross-check |
+| Q7 | SegMirMaker batch mode — drive the nine interactive dialog answers from a control file / args; interactive mode retained for standalone users | batch run on `test_in/` parents reproduces interactive output byte-identically |
+| Q8 | Met-function validation harness (**VALIDATION/CHARACTERIZATION, not implementation**) — John Lou's gauge functions checked against closed-form geometric truths (LOS-projection equality, null test, launcher/target reciprocity, FD-vs-analytic) | pass/fail map per function + missing-capability inventory (spec input for joint completion) |
 
 **Held for joint development (spec depends on measurements / API):**
 
@@ -801,14 +953,33 @@ API shape → joint, after E1–E4.
 5. **Coronagraph-driven from Sprint 1** — the evaluation surface and
    the macos↔MATLAB split are proven on the existing coronagraph Rx
    corpus (no builder).  Telescope remains the first *builder*
-   example (Sprint 2A: layout math, no DMs); spectrograph third.
+   example (Sprint 2A-ii: layout math, no DMs); spectrograph third.
+   Import (`from_rx`) analysis lands even earlier, in Sprint 2A-i.
 6. **macos↔MATLAB division of labor is decided by measurement**
    (Sprint 1 E1–E4), not upfront.  Default: logic starts MATLAB-side;
    it moves into Fortran only for inner-loop speed (DarkZone) or to
    participate in propagation (Apodizer).
 7. **nλ=1 default** keyed to *all-reflective*, not to merit type.
-8. **Component as topology unit** from Sprint 2A.
+8. **Component as topology unit** from Sprint 2A-ii.
 9. **Modal inner-loop DM control**; actuator-level EFC → FALCO.
+10. **Two front-ends, one analysis core** (§1.0); **import
+    (`from_rx`) is the expected dominant entry point.**  Converters
+    are importers feeding `from_rx`; `describe()` / `check_clipping()`
+    / `ValidatePrescription` are the diagnostic surface crude
+    conversions never had.  Zemax completion stays deprioritized —
+    the future path (populate the component model directly + share
+    the emitter) is smaller than finishing a text-to-text script.
+11. **Units policy: bare SI canonical** at the user surface (matches
+    the `+macos/` convention).  `_<unit>` suffixed argument names and
+    `'unit',<name>` options accepted as documented sugar;
+    `'unit','lambdaD'` for mask radii.  Examples keep mm / mrad
+    sugar for readability; wavelengths bare SI.  *(Confirmed
+    2026-06-11.)*
+12. **Metrology measurement space = a Jacobian contract** (§6.6);
+    backends pluggable; SegMirMaker edge sensors (`Hx`) first; engine
+    met functions gated on Q8 validation.
+13. **Segmentation by SegMirMaker orchestration** (batch + splice,
+    Sprint 2D), never by reimplementation in MATLAB.
 
 ### Open
 
