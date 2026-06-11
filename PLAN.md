@@ -4,6 +4,15 @@ Working document. Tasks grouped by thrust; checkboxes track state. Items not
 yet started have empty `[ ]`; completed `[x]`. Discrete subtasks under each
 task.
 
+> **Related plans.**  This file owns **engine + wrapper** work
+> (Fortran, `macos_api_mod`, pymacos/mmacos surface).  The MATLAB
+> **design layer** (builder, importer, `vary`/`evaluate`/
+> `sensitivities`, metrology orchestration) is planned in
+> `PLAN_DESIGN_LAYER.md`.  Ownership rule: an item has exactly one
+> home and one checkbox; the other plan **cross-references by
+> section**, never duplicates the checkbox.  Engine items the design
+> layer depends on stay here; the design plan points at them.
+
 ---
 
 ## 0. Hygiene / quick fixes
@@ -223,6 +232,17 @@ Each function → regression test → manual entry → fix what surfaces. Order 
 
 ### 1.3 Sensitivity-matrix workflow (Thrust A headline)
 
+> **Design-layer convergence.**  The design layer's first deliverable
+> — a sensitivity table on an imported (CodeV-converted) Rx via
+> `from_rx` / `vary` / `sensitivities` (PLAN_DESIGN_LAYER Sprint 2A-i)
+> — **is** this Thrust A headline recipe at the package level.  Its
+> required runnable worked example (`example_sensitivities_from_rx.m`)
+> doubles as the headline example here; the underlying engine is the
+> bitwise-verified Phase 7 `dw_dx` channel machinery (§5.4).  Keep the
+> CLI/GMI/pymacos recipes below as the engine-level reference; the
+> `+macos` design-layer surface is the recommended user entry point
+> (see §11.7).
+
 - [ ] Document the workflow as a first-class user recipe
   - [ ] GMI path: `param.zernSrf` / `param.dmSrf` / `param.rbSrf` / `param.gridSrf` channels; multi-call pattern; output `OPD` / `WFE` / `SPOT`
   - [ ] Pymacos path: `dw_dx` centered-difference; group perturbations; SXP / SRS / ORS wrappers; source-vs-group cross-check pattern
@@ -267,7 +287,17 @@ Each function → regression test → manual entry → fix what surfaces. Order 
   - [ ] Polarization-resolved PSF at focal plane
   - [ ] Diattenuation / retardance maps
 - [ ] Multi-field-point metrics (also blocks Thrust C completion)
-  - [ ] Extend `design_optim_mod` to evaluate at a fan of source positions
+  - **Ownership update (2026-06-11):** the **outer-loop** field-of-view
+    sweep (evaluate a merit over a fan of source positions, aggregate
+    band-and-FoV) is now owned by the **design layer** — its λ×field
+    loop drives `set_src_fov` per field point with no engine change
+    (PLAN_DESIGN_LAYER §1.1, §4.2).  What remains engine-side here is
+    narrower: **multi-field awareness inside the inner CALIB solve**
+    (a single optimization that scores against several fields at once),
+    and that is **gated on E3/E4** (PLAN_DESIGN_LAYER §8 Sprint 1) —
+    don't build it until those measurements show the inner loop needs
+    it.  The subtasks below are scoped to that inner-CALIB case.
+  - [ ] Extend `design_optim_mod` to evaluate at a fan of source positions (inner-CALIB multi-field; gated on E3/E4)
   - [ ] Aggregation modes: RMS-of-RMS, worst-field-point, weighted sum
   - [ ] GMI channel for multi-field input
   - [ ] Pymacos wrapper
@@ -492,7 +522,16 @@ Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSr
   - [ ] `LnkEltCPERTURB` (lnk_pert.inc) — same; linked-element metrology silently wrong without this
   - [ ] Regression: per-path test pinging SrfMetPos before/after perturbation, verify they all match
 - [ ] `EdgeSensor` / `EdgeSensVec` parsed-but-unused dead path
-  - [ ] Decide: implement consumer (edge-sensor-distance measurement command, Hx-matrix output) OR remove the keyword to stop silently accepting data
+  - **Customer-of-record: the design-layer metrology tier**
+    (PLAN_DESIGN_LAYER §6.6).  Its backend #1 is the SegMirMaker
+    `Hx.m` edge-sensor model — MATLAB-native, trusted, and
+    independent of this engine path.  **Recommendation: remove (or
+    defer) the engine `EdgeSensor` keyword** rather than build a
+    consumer; the metrology Jacobian-contract interface (§6.6 tier 1)
+    has no need for it, and an unconsumed-but-parsed keyword is
+    exactly the silent-acceptance trap §6.6 tier-2 (Q8) is meant to
+    catch.  Revisit only if a non-design-layer consumer appears.
+  - [ ] Decide (per the above): remove the keyword to stop silently accepting data — recommended — OR implement consumer (edge-sensor-distance measurement command, Hx-matrix output)
   - [ ] If keep: define semantics matching SegMirMaker convention (position + two direction vectors → differential displacement)
   - [ ] Add output formatter if kept
 - [ ] `SPFcalc` dangling reference
@@ -1008,7 +1047,7 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 - [ ] Optimization: `nls_optim_dvr` (always available)
 - [ ] Optimization: `np_optim_dvr` (USE_NPSOL only, opt-dev branch)
 - [ ] Optimization: target types, DOF taxonomy, convergence controls (see §3)
-- [ ] Sensitivity-matrix workflow (Thrust A headline)
+- [ ] Sensitivity-matrix workflow (Thrust A headline) — engine-level recipes + the design-layer `from_rx`/`vary`/`sensitivities` surface (PLAN_DESIGN_LAYER Sprint 2A-i) as the recommended entry point
 - [ ] Polarization ray trace + metrics
 - [ ] Vector diffraction
 - [ ] Multi-field-point metrics
@@ -1310,6 +1349,16 @@ the `+macos` package directly or use a thin compatibility shim
 (callable `mmacos_gmi_compat(prb, pzern, ...)` that maps the 14-arg
 positional form to the modern `+macos` calls — useful for grandfathering
 the corpus of test_gmi*.m scripts).
+
+> **Recommended GMI-replacement user surface:** the design layer's
+> `System.from_rx` → `vary` → `sensitivities` flow
+> (PLAN_DESIGN_LAYER §1.0 / Sprint 2A-i) is the package-level
+> successor to the GMI sensitivity-loop workflow — import a
+> prescription, declare DOFs, get a Jacobian, all over the same
+> bitwise-verified `dw_dx` channel machinery the `+macos` package
+> already exposes.  The raw `+macos` channel calls and the
+> `mmacos_gmi_compat` shim remain for power users and grandfathered
+> scripts; new users get pointed at the design-layer surface.
 
 ### 11.8 Open questions
 

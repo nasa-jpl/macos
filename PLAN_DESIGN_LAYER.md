@@ -16,6 +16,16 @@ existing Rx corpus (Sprint 1).
 **MATLAB-first** — the JPL user base is MATLAB-heavy.  The Python
 port stays cheap by construction (see §3 state-as-data rule).
 
+> **Related plans.**  This file owns the MATLAB **design layer**
+> (builder, importer, `vary`/`evaluate`/`sensitivities`, compensators,
+> metrology orchestration).  **Engine + wrapper** work (Fortran,
+> `macos_api_mod`, pymacos/mmacos command surface) is owned by
+> `PLAN.md`.  Ownership rule: an item has exactly one home and one
+> checkbox; this plan **cross-references `PLAN.md` by section** for
+> engine dependencies and never duplicates their checkboxes.  The
+> §9.1 queue lists engine asks *motivated by* the design layer, each
+> pointing at its `PLAN.md` owner where one exists.
+
 ---
 
 ## 0. Conventions for Claude Code (CC) sessions
@@ -501,9 +511,11 @@ keywords; DM → 1; mask / Lyot → 1 `Element= Obscuring`.
   ExtFringe(11) parse but silently no-op in the propsub/srtrace
   chains.  The builder only emits handled types.
 
-> **CC (Fortran, Sprint 2B):** add the missing ELSE-with-error to the
-> propsub.F / srtrace.F ZernTypeL dispatch chains — the design layer
-> is about to become the first heavy user of SrfType 14 + FFZernType.
+> **CC:** the ELSE-with-error on the propsub.F / srtrace.F ZernTypeL
+> dispatch chains **already landed** (PLAN.md §0, commit b2c2eb8;
+> §9.1 Q3) — Noll is handled, unhandled types error loudly.  No
+> Fortran work remains even though the design layer is about to
+> become the first heavy user of SrfType 14 + FFZernType.
 
 ### 6.4 Glass catalog (refractive components)
 
@@ -770,15 +782,27 @@ wants.  No family math, no emitter required.
 - [ ] `vary(elt, param, …)` mapped to in-session perturbations /
       element setters (no re-emit, no reload per outer step —
       §1.1 imported-geometry row); compensators (§5.4) solved inner.
+      **Depends on nominal snapshot/restore** (§9.1 Q9 → PLAN.md
+      §11.7) to reset between outer iterates without a full reload;
+      until that lands, `evaluate_` restores via `load_rx` (correct
+      but slower — acceptable for the first sensitivity-table
+      deliverable).
 - [ ] `evaluate_` with canonical call sequence, ray-loss guard
       (uses the Q2 per-category ray-status getter), worker-safety;
       internal [0,1] design-var normalization.
-- [ ] `sensitivities()` — FD Jacobian via worker-safe `evaluate_`
-      (parallel).  Prefer MACOS's native sensitivity / linear-model
-      machinery where it applies (segmented systems at hundreds of
-      DOFs); FD is the fallback, not the only path.  Output:
-      merit-space Jacobian now; measurement-space when a metrology
-      backend is attached (§6.6).
+- [ ] `sensitivities()` — **build on the existing Phase 7 `dw_dx`
+      channel / supervisor machinery** (PLAN.md §5.4 Phase 7.a/7.b,
+      already bitwise mmacos==pymacos): `RigidBodyChannel`,
+      `SourceChannel`, `FocalPlaneChannel`, `GroupedRigidBodyChannel`,
+      driven by `dw_dx.m` / `dw_dx_multi.m` over a field set.  The
+      design layer's job is to map `vary(...)` DOFs onto those
+      channels and assemble the merit-space (and later measurement-
+      space, §6.6) Jacobian — NOT to re-derive FD from scratch.
+      FD-from-scratch via worker-safe `evaluate_` is the fallback
+      only for a var type no channel covers yet (e.g. conic / asphere
+      coefficients until a `ConicChannel` lands).  Output: merit-space
+      Jacobian now; measurement-space when a metrology backend is
+      attached (§6.6).
 - [ ] Outer fmincon loop, nested λ × field (nλ=1 default for
       all-reflective); merit built-in (`rms_wfe` etc.) + callback.
 - [ ] First result: a **sensitivity table on a CodeV-converted Rx**.
@@ -806,7 +830,8 @@ works (2A-i).
 - [ ] Equal-power split default; `override('Mk','fnum',…)`.
 - [ ] `set_surface` → SrfType 2 / 4 / 12 / 14 dispatch; design vars →
       MonCoef / FFZernCoef emission (sparse FFZernModes form).
-- [ ] ZernTypeL dispatch-chain ELSE-with-error (Fortran; §6.3).
+      (ZernTypeL dispatch ELSE-with-error already landed — §9.1 Q3 /
+      PLAN.md §0; no Fortran work remains here.)
 - [ ] First wide-FoV result: TMA, M2 monomial + M3 freeform-Zernike,
       band-and-FoV-averaged WFE over several arcmin.
 
@@ -892,7 +917,7 @@ conventions are debugged logic that must not be duplicated in MATLAB.
 | 1 | `set_src_wvl` / `set_src_fov` already present in mmacos (verification only); ray-loss per-category breakdown (Q2 — small).  E1–E4 experiments (no other Fortran — measurements scope Sprint 3) | FoV loop; §1.3 guard; macos↔MATLAB split |
 | 2A-i | (none in Fortran) | import / analysis core entirely MATLAB over existing getters |
 | 2A-ii | (none in Fortran) | builder + outer loop entirely MATLAB |
-| 2B | ZernTypeL dispatch ELSE-with-error | silent no-op guard |
+| 2B | (none — ZernTypeL dispatch ELSE-with-error already landed, §9.1 Q3 / PLAN.md §0) | silent no-op guard closed |
 | 2C | catalog formula check (possibly parser extension); .agf converter (offline tool) | refractive components |
 | 2D | Q7 — SegMirMaker batch mode (control-file / arg-driven) | segmentation orchestration |
 | 3 | `DarkZone` CALIB target + wrapper | coronagraph inner loop |
@@ -914,12 +939,13 @@ API shape → joint, after E1–E4.
 |---|---|---|
 | Q1 | ~~`set_src_dir` + `set_wavelength` in `macos_api_mod`~~ — **already landed:** `set_src_fov` (absolute pointing) and `set_src_wvl` are in mmacos via the existing `macos_api_mod` setters.  Sprint 1 verifies only. | pymacos pytest vs journal-driven references |
 | Q2 ✅ **landed 2026-06-11** | Per-category ray-status getter in `macos_api_mod` (`ray_status_get`) exposing `RayStatus(:)` + `RayFailElt(:)` verbatim from `elt_mod`.  mmacos surface `get_ray_status(N)` returns the integer-coded category per ray (`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) + per-category counters — complements the binary `get_ray_info`.  Codegen Path A.  (Also bundled the latent `libslsqplib.a` mmacos-link fix.) | **Met:** `tMacosPkg` pins Rx_Cass_FarField counts (12850 rays = 11484 OK + 1366 Obscured; matches engine "Obscured: 1366") + cross-check vs `get_ray_info` |
-| Q3 | ZernTypeL dispatch ELSE-with-error (propsub.F / srtrace.F) | `ZernType= Noll` errors loudly, no silent no-op |
+| Q3 ✅ **landed (verified 2026-06-11)** | ZernTypeL dispatch ELSE-with-error (propsub.F / srtrace.F / tracesub.F).  **Owned by PLAN.md §0** (commit b2c2eb8) — cross-ref, not a separate track.  Both propsub.F and srtrace.F now handle Noll (ZerntoMon6) + carry an ELSE-with-error for unhandled types. | **Met:** `ZernType= Noll` produces non-zero OPD response; unhandled types error loudly |
 | Q4 | Glass catalog: formula-coverage audit → parser extension if needed → .agf converter + generated usual set | n(λ) vs published to 1e-6; one doublet vs CodeV |
 | Q5 | Endurance test (500× load/trace, one session) → fix findings | bit-identical rmsWFE each iter; flat memory |
 | Q6 | `Element= Apodizer` (independently motivated, PLAN.md §2.1 Thrust B) | participates in subsequent trace; PROPER cross-check |
 | Q7 | SegMirMaker batch mode — drive the nine interactive dialog answers from a control file / args; interactive mode retained for standalone users | batch run on `test_in/` parents reproduces interactive output byte-identically |
-| Q8 | Met-function validation harness (**VALIDATION/CHARACTERIZATION, not implementation**) — John Lou's gauge functions checked against closed-form geometric truths (LOS-projection equality, null test, launcher/target reciprocity, FD-vs-analytic) | pass/fail map per function + missing-capability inventory (spec input for joint completion) |
+| Q8 | Met-function validation harness (**VALIDATION/CHARACTERIZATION, not implementation**) — John Lou's gauge functions checked against closed-form geometric truths (LOS-projection equality, null test, launcher/target reciprocity, FD-vs-analytic).  **The PLAN.md §4.5 PERTURB coverage gaps are expected Q8 failures** — `SrfMetPos` is updated by only 2 of 5 perturbation paths (`CPRead` / `CPERTURB_2` / `LnkEltCPERTURB` don't), so any Q8 test that perturbs through those paths reads stale metrology.  Q8 should surface them as known failures pointing at PLAN.md §4.5, not silently pass. | pass/fail map per function + missing-capability inventory (spec input for joint completion) |
+| Q9 → **PLAN.md** | Nominal snapshot/restore (`+macos.snapshot` / `+macos.restore`).  **Owned by PLAN.md §11.7 (Phase 7) / tracked MISSING in §11.6**; spec = GMI `ObtainNominalSettings` field list (PLAN.md §11.5).  Cross-ref only — no duplicate checkbox here.  **`evaluate_`'s `from_rx` setter path depends on it:** the §1.1 imported-geometry row ("no reload per outer step") needs a lightweight restore-to-nominal between outer iterates; without it, restore falls back to full `load_rx` (as `dw_dx.m`'s `reload_rx=true` does today), defeating the import-path caching win. | (acceptance owned by PLAN.md) |
 
 **Held for joint development (spec depends on measurements / API):**
 
