@@ -799,6 +799,22 @@ xp_get/set/fnd, sxp_fnd, ors_run, srs_run, plus internal helpers
 (`SystemCheck`, `EltRangeChk`, `StatusChk1`, `translateSurfaceID`,
 `translateEltID`, `checkSurfaceID`, `checkEltID`).
 
+`ray_status_get(OK, RayStatus_, RayFailElt_, nRays)` (added 2026-06-12,
+Q2) exposes `elt_mod`'s per-ray `RayStatus(:)` / `RayFailElt(:)`
+(`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) verbatim from the
+last trace — the per-category complement to `ray_info_get`'s binary
+LRayOK/LRayPass.  mmacos veneer: `get_ray_status(N)`.  Backs the design
+layer's ray-loss guard (`PLAN_DESIGN_LAYER.md` §1.3.4).
+
+The MATLAB **design layer** (`macos.design.System`,
+`MACOS_resources/mmacos/+macos/+design/`) is the first heavy consumer of
+this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the
+Phase 7 `dw_dx` channels) → `vary`/`evaluate`/`optimize`.  It adds no
+Fortran; it's a pure MATLAB layer over these routines.  Note: SLSQP
+objects live in `libslsqplib.a`, a separate archive from `libsmacos.a`
+— any binding that links libsmacos must also link slsqplib (the SLSQP
+back end references `slsqp_`).
+
 Promotion history: until §5.2 the file lived in
 `MACOS_resources/pymacos/src/cmake/source/macos_api_mod.F90` and was
 compiled separately by each binding's own CMake/Make build.  Now it

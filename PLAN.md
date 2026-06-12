@@ -1309,6 +1309,17 @@ sides shifts every later index.
 
 ### 11.6 Capability coverage matrix
 
+> **Parity audit 2026-06-12.**  mmacos has **full engine-level parity**
+> with pymacos: every implemented pymacos function maps to a shared
+> `macos_api_mod` routine that mmacos also exposes (the raw command
+> layer is 104 commands vs pymacos's ~90 implemented functions; the two
+> pymacos `*ActivePointSrc` functions are `#ToDo` stubs).  Remaining
+> gaps are **convenience `+macos` veneers over already-wired raw
+> commands**, not capability.  First batch closed 2026-06-12 (spot,
+> fex/xp, Kc/Kr — below).  Still veneer-only: grid-surface family
+> (`elt_srf_grid_*`), `src_size`/`src_csys`/`src_info`, surface-csys,
+> `elt_zrn_type`/`norm_rad`, `set_ray_info`, `elt_grp` query helpers.
+
 | Capability | Status in mmacos |
 |---|---|
 | Perturbation channels: rigid-body | `+macos.perturb`, `+macos.perturb_many`, `+macos.perturb_src` ✓ |
@@ -1321,12 +1332,13 @@ sides shifts every later index.
 | OPD output | `+macos.opd()` ✓ |
 | Complex EF output | `+macos.complex_field(srf)` ✓ |
 | OPD mask | Returnable via `macos.get_ray_info().ok_pass` reshape; no `macos.opd_mask()` shortcut yet |
-| Spot diagram | Raw `mmacos('spot_cmd', ...)` + `spot_get` ✓; no `+macos.spot()` veneer |
+| Spot diagram | `+macos.spot(srf)` ✓ (2026-06-12) — struct: pts/centroid/shift/csys/nSpot; over `spot_cmd`+`spot_get` |
 | PIX output (raw) | Hand-written `mmacos('apodize', ...)` writes to WFElt; no PIX pull-back yet |
 | PIX with noise model (ComposePIX) | **MISSING** — port from GMI's ComposePIX (cPix rebin, shot/read noise, jitter, crosstalk, QE, bias) |
 | WFE | Returned by `+macos.trace()` as `.rmsWFE` ✓ |
 | Centroid | Computable from `get_ray_info`; no `+macos.centroid()` shortcut |
-| FEX / exit pupil | Raw `mmacos('xp_fnd', ...)` + `xp_get` ✓; no `+macos.xp()` veneer |
+| FEX / exit pupil | `+macos.fex(mode)` + `+macos.get_xp` / `+macos.set_xp` ✓ (2026-06-12) over `xp_fnd`/`xp_get`/`xp_set` |
+| Conic / radius (Kc, Kr) | `+macos.get_elt_kc` / `set_elt_kc` / `get_elt_kr` / `set_elt_kr` ✓ (2026-06-12) |
 | Metrology calc | **MISSING** |
 | FDP / FSM | **MISSING** |
 | System calibration | **MISSING** |
