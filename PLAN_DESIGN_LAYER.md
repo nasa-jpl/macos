@@ -687,10 +687,17 @@ sizing, chromatic (nλ>1) merit.
 
 ### Sprint 0 — pre-flight experiments (hours each; do before 2A)
 
-- [ ] **Endurance test:** loop `load_rx` → `trace` 500× on Rx_Cass in
-      one session; assert bit-identical rmsWFE every iteration + flat
-      memory.  This is the design loop's exact load profile; no
-      current test exercises it.
+- [x] **Endurance test (Q5).**  **Landed + PASS 2026-06-12.**  Loop
+      `load_rx` → `trace` on Rx_Cass_FarField (model_size 128) in one
+      session.  Result over 500 iters: **rmsWFE bit-identical** (unique
+      = 1, max|diff| = 0 — zero state drift across repeated load); RSS
+      warms up through ~iter 175, takes one ~14 MB arena event, then
+      **+0 kB / 25-iter — flat steady state** (no linear leak; the
+      initial naive (end−start)/N "240 kB/iter" was a warm-up
+      artifact).  Load-only and trace-only in isolation are each ~flat
+      (1.5 / 0.5 kB/iter, allocator noise).  Test: `tEndurance.m`
+      (on-demand, `./run_mmacos_tests.sh tEndurance`, ~31 s; not in
+      fast/all).  **Foundation certified for the 2A-i evaluate_ loop.**
 - [ ] **Glass re-resolution test** (§6.4) — determines the eval
       loop's per-λ step on refractive systems.
 
@@ -941,7 +948,7 @@ API shape → joint, after E1–E4.
 | Q2 ✅ **landed 2026-06-11** | Per-category ray-status getter in `macos_api_mod` (`ray_status_get`) exposing `RayStatus(:)` + `RayFailElt(:)` verbatim from `elt_mod`.  mmacos surface `get_ray_status(N)` returns the integer-coded category per ray (`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) + per-category counters — complements the binary `get_ray_info`.  Codegen Path A.  (Also bundled the latent `libslsqplib.a` mmacos-link fix.) | **Met:** `tMacosPkg` pins Rx_Cass_FarField counts (12850 rays = 11484 OK + 1366 Obscured; matches engine "Obscured: 1366") + cross-check vs `get_ray_info` |
 | Q3 ✅ **landed (verified 2026-06-11)** | ZernTypeL dispatch ELSE-with-error (propsub.F / srtrace.F / tracesub.F).  **Owned by PLAN.md §0** (commit b2c2eb8) — cross-ref, not a separate track.  Both propsub.F and srtrace.F now handle Noll (ZerntoMon6) + carry an ELSE-with-error for unhandled types. | **Met:** `ZernType= Noll` produces non-zero OPD response; unhandled types error loudly |
 | Q4 | Glass catalog: formula-coverage audit → parser extension if needed → .agf converter + generated usual set | n(λ) vs published to 1e-6; one doublet vs CodeV |
-| Q5 | Endurance test (500× load/trace, one session) → fix findings | bit-identical rmsWFE each iter; flat memory |
+| Q5 ✅ **PASS 2026-06-12** | Endurance test (load/trace, one session) — `tEndurance.m`.  No findings to fix: rmsWFE bit-identical across 500 iters, memory plateaus (no linear leak). | **Met:** bit-identical rmsWFE each iter; flat steady-state memory |
 | Q6 | `Element= Apodizer` (independently motivated, PLAN.md §2.1 Thrust B) | participates in subsequent trace; PROPER cross-check |
 | Q7 | SegMirMaker batch mode — drive the nine interactive dialog answers from a control file / args; interactive mode retained for standalone users | batch run on `test_in/` parents reproduces interactive output byte-identically |
 | Q8 | Met-function validation harness (**VALIDATION/CHARACTERIZATION, not implementation**) — John Lou's gauge functions checked against closed-form geometric truths (LOS-projection equality, null test, launcher/target reciprocity, FD-vs-analytic).  **The PLAN.md §4.5 PERTURB coverage gaps are expected Q8 failures** — `SrfMetPos` is updated by only 2 of 5 perturbation paths (`CPRead` / `CPERTURB_2` / `LnkEltCPERTURB` don't), so any Q8 test that perturbs through those paths reads stale metrology.  Q8 should surface them as known failures pointing at PLAN.md §4.5, not silently pass. | pass/fail map per function + missing-capability inventory (spec input for joint completion) |
