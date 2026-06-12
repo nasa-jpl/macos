@@ -4562,7 +4562,9 @@ C	  Get local coordinates:
 	          CALL COMPACT(Tcompact,Tspot,5,7,7,7)
 	          CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
 	        ELSE
-	          GO TO 10
+	          WRITE(*,*)' SPOT: cannot compute local coords at elt',iElt,
+     &                  '; command aborted.'
+	          GO TO 1
 	        END IF
 	      END IF  ! xLocal/yLocal option
 
