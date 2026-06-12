@@ -782,37 +782,54 @@ The front-end-agnostic analysis surface (§1.0), proven on an
 **imported** Rx — the deliverable the existing user base actually
 wants.  No family math, no emitter required.
 
-- [ ] New package `+macos/+design/` under `MACOS_resources/mmacos/`.
-- [ ] `macos.design.System.from_rx(path)` — load via SMACOS, read
+> **CORE COMPLETE 2026-06-12** (tag `design-sprint-2A-i`).  Package
+> `+macos/+design/System` shipped over four slices on MACOS_resources
+> `sls-dev`: from_rx (fc61db6) → sensitivities (22d133a) → vary
+> (6be28b7) → evaluate/optimize (9240e55).  Tests tDesignSystem (5),
+> tDesignVary (12), tDesignSensitivities (2, bitwise vs standalone
+> drivers), tDesignOptimize (4) — all green in SUITE_FAST.  Examples
+> in `mmacos/examples/design/`.  End-to-end proof: import e5hex1 →
+> 0.1 mm despace (WFE 7.0e-2) → optimize → 3.1e-5 (~2000×), despace
+> recovered to −2.6e-5 mm.  **Deferred to follow-ons** (not blockers):
+> nested λ×field loop (single-field nλ=1 today); compensator
+> inner-loop *solve* (role is declarable; operationalizing it waits on
+> the compensator pass); worker-parallel validation; Zernike/surface
+> *optimization* (sensitivities cover Zernike; optimize() is rigid-MVP).
+
+- [x] New package `+macos/+design/` under `MACOS_resources/mmacos/`.
+- [x] `macos.design.System.from_rx(path)` — load via SMACOS, read
       element parameters back through the existing getter surface
       (engine readback; no MATLAB text parser).
-- [ ] `vary(elt, param, …)` mapped to in-session perturbations /
+- [x] `vary(elt, param, …)` mapped to in-session perturbations /
       element setters (no re-emit, no reload per outer step —
-      §1.1 imported-geometry row); compensators (§5.4) solved inner.
-      **Depends on nominal snapshot/restore** (§9.1 Q9 → PLAN.md
-      §11.7) to reset between outer iterates without a full reload;
-      until that lands, `evaluate_` restores via `load_rx` (correct
-      but slower — acceptable for the first sensitivity-table
-      deliverable).
-- [ ] `evaluate_` with canonical call sequence, ray-loss guard
-      (uses the Q2 per-category ray-status getter), worker-safety;
-      internal [0,1] design-var normalization.
-- [ ] `sensitivities()` — **build on the existing Phase 7 `dw_dx`
+      §1.1 imported-geometry row).  Name-based DOFs (no 0-based leak),
+      local/EltCoord frame, aliases (despace/tilt/decenter), Zernike,
+      `'role','compensator'` *declarable*.  Compensator inner-loop
+      *solve* + nominal snapshot/restore (§9.1 Q9 → PLAN.md §11.7) are
+      follow-ons; `evaluate` restores via `load_rx` today (Q5-certified
+      bit-stable).
+- [x] `evaluate_` with canonical call sequence, ray-loss guard
+      (nRays drop → penalised merit; the Q2 per-category getter is the
+      richer backend, wired when needed), internal [0,1] design-var
+      normalization.  Worker-safe by construction (own load); parallel
+      not yet exercised.
+- [x] `sensitivities()` — **builds on the existing Phase 7 `dw_dx`
       channel / supervisor machinery** (PLAN.md §5.4 Phase 7.a/7.b,
       already bitwise mmacos==pymacos): `RigidBodyChannel`,
       `SourceChannel`, `FocalPlaneChannel`, `GroupedRigidBodyChannel`,
-      driven by `dw_dx.m` / `dw_dx_multi.m` over a field set.  The
-      design layer's job is to map `vary(...)` DOFs onto those
-      channels and assemble the merit-space (and later measurement-
-      space, §6.6) Jacobian — NOT to re-derive FD from scratch.
-      FD-from-scratch via worker-safe `evaluate_` is the fallback
-      only for a var type no channel covers yet (e.g. conic / asphere
-      coefficients until a `ConicChannel` lands).  Output: merit-space
-      Jacobian now; measurement-space when a metrology backend is
-      attached (§6.6).
-- [ ] Outer fmincon loop, nested λ × field (nλ=1 default for
-      all-reflective); merit built-in (`rms_wfe` etc.) + callback.
-- [ ] First result: a **sensitivity table on a CodeV-converted Rx**.
+      driven by `dw_dx.m` / `dw_dx_multi.m` over a field set.  Maps
+      `vary(...)` DOFs onto those channels and returns the rigid +
+      Zernike Jacobians as separate matrices (bitwise vs standalone) —
+      NOT re-derived FD.  FD-from-scratch via `evaluate_` is the
+      fallback only for a var type no channel covers yet (conic /
+      asphere until a `ConicChannel` lands).  Measurement-space when a
+      metrology backend is attached (§6.6).
+- [x] Outer fmincon loop (single-field, nλ=1 default for
+      all-reflective); merit `rms_wfe`.  Nested λ×field + callback
+      merits are the follow-on.
+- [x] First result: align-and-recover on e5hex1 (`example_align_from_rx`)
+      — runs unchanged on a CodeV-converted Rx (the import path is
+      Rx-agnostic).
 
 ### Sprint 2A-ii — `macos.design.Telescope` 2-mirror builder
 
