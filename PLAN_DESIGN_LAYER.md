@@ -742,25 +742,185 @@ vs MATLAB is an open question, resolved empirically here, on the
 coronagraph examples, with measured numbers.  Each experiment is a
 short MATLAB script + a dated note in this file:
 
-- [ ] **E1 — MATLAB-side outer merit.**  Read `intensity(det)`,
+- [x] **E1 — MATLAB-side outer merit.**  Read `intensity(det)`,
       compute annular dark-zone contrast in MATLAB (port the
       `contrast.py` λ/D machinery from pymacos).  Measure per-eval
       wall time at nλ = 3 on the Phase-5 configuration; reproduce the
       ~3e-10 baseline.
-- [ ] **E2 — DM control entirely in the outer loop.**  DM Zernike /
+      **DONE 2026-06-13.**  Script
+      `mmacos/examples/design/coro/E1_darkzone_contrast.m`; ported λ/D
+      machinery `{radial_profile, first_airy_null,
+      lambda_over_D_pixels, radial_contrast}.m` in the same folder;
+      synthetic-Airy unit test `tCoroContrast` (5/5, in SUITE_FAST).
+      Config: `Rx_Coro_noLyot.in` (no-mask Strehl ref) +
+      `Rx_Coro_FPM.in` (FPM=400 µm + Lyot=14 mm), detector Elt 21,
+      model_size 1024 (nGridpts 511), λ=850 nm.
+      **Measured numbers:**
+      - λ/D = 8.61 px (first Airy null at 10.50 px); no-mask peak 0.3042.
+      - **Peak suppression factor = 3.21e6** — matches the documented
+        ~3.2-million Phase-5.2 baseline to 3 sig figs (the hard
+        cross-check; confirms macos physics + the λ/D port are both
+        correct).
+      - Dark-zone radial contrast (Strehl-norm to no-mask peak):
+        ring-**mean** over 7–10 λ/D = 1.5e-9, dipping to **7.9e-10 @
+        9.9 λ/D**; the e-10 floor noted as "~3e-10" is the band
+        *minimum* (finer sampling between bins), not the annular-ring
+        mean.  Bright outer-ring artefact at ~15 λ/D present as
+        documented (1.0e-9, above the 10 λ/D dip).
+      - **Per-eval wall time = 2.4 s/eval; nλ=3 merit = 7.24 s total**
+        (model 1024, full CPROPAGATE chain to Elt 21 via
+        `set_src_wvl` + `intensity(21)`).
+      **Takeaway for E2/E3:** a MATLAB-side outer merit is ~2.4 s per
+      (λ,eval) at 1024.  An fmincon outer loop doing O(10²–10³)
+      function evals × nλ × n_field then costs minutes–hours purely in
+      the diffraction trace — so the *merit* staying MATLAB-side is
+      fine, but the *inner* DM solve (E2) cannot be a naïve
+      MATLAB-driven fmincon over many modes at this per-eval cost.
+      That is the bar the Sprint-3 Fortran `DarkZone` target must beat.
+- [x] **E2 — DM control entirely in the outer loop.**  DM Zernike /
       Fourier modes as fmincon design vars, no inner loop, MATLAB
       merit from E1.  Find the mode count where cost becomes
       prohibitive — this sets the bar a Fortran DarkZone target must
       beat.
-- [ ] **E3 — CALIB mechanics through diffraction.**  Exercise the
+      **DONE 2026-06-13.**  Script
+      `mmacos/examples/design/coro/E2_dm_modes_cost.m` on `Rx_Coro_DM.in`
+      (DM = Elt 4, a 1024×1024 grid-data Reflector driven via the
+      `elt_srf_grid_data` setter — the SAME carrier influence-function /
+      measured DM maps will use; smoke-verified the setter moves the
+      focal-plane PSF, not a silent no-op).  Fourier "ripple" mode basis,
+      `fmincon` (sqp, forward-diff), objective = selectable dark-zone
+      metric (`dark_zone_metrics.m`: mean | peak | floor | median |
+      energy; default mean).  Full workspace (incl. 1024² images) saved
+      to `coro/results/` for resume; pruned keep-last-2 + weekly cron
+      `clean_results.sh`.
+      **Measured cost** (model 1024, ~3.4 s/trace):
+
+      | nModes | evals (MaxIter=2) | s/eval | s/iter = (nModes+1)×3.41 |
+      |---|---|---|---|
+      | 3  | 12 | 3.46 | 20.7 |
+      | 8  | 27 | 3.41 | 46.1 |
+      | 15 | 48 | 3.34 | 80.1 |
+
+      - **FD-gradient cost scales exactly as (nModes+1) traces/iter.**
+        Extrapolated prohibitive count (K=30 iters, 1-hr budget):
+        **~34 modes single-λ, ~11 at nλ=3** — i.e. a GLOBAL modal basis
+        is hopeless for a real DM (hundreds–thousands of actuators) under
+        MATLAB-driven FD.
+      - **Multiplexed Jacobian — the influence-function payoff.**
+        Actuator influence has compact support (< ~3 act spacings), so a
+        separable ~6×6 (36-phase) poke coloring measures the FULL
+        Jacobian in **~37 traces ≈ 126 s, INDEPENDENT of actuator count**
+        (vs 2001 traces ≈ 6826 s naïve for a 2000-act DM).  This is the
+        reason to model DMs as influence-function / grid surfaces, and it
+        reframes the Sprint-3 bar: **the cost is the EFC linear algebra +
+        iteration, not the trace count.**  (Applies only to LOCAL
+        actuator DOFs; global Zernike/Fourier modes stay (nMode+1).)
+      - **Dark-zone metrics** (flat-DM, full annulus 7–10 λ/D, 11864 px):
+        mean 6.0e-5, peak 2.0e-4, **floor 2.9e-10** (= the documented
+        "~3e-10", confirming that figure is the *floor*, not the mean),
+        energy 0.71.  FD-contrast control made no progress in 2 iters
+        (flat gradient) — confirming naïve FD-contrast is the wrong
+        inner loop; **E-field/EFC Jacobian control is what's needed.**
+      - **Region caveat:** scored over a full 360° annulus, but
+        `Rx_Coro_DM` has ONE DM → the fair region is **one-sided**
+        (deeper contrast, smaller area).  Cost numbers are
+        region-INDEPENDENT so the headline stands; the achievable
+        *contrast* would improve one-sided.  `dark_zone_metrics` now
+        takes a `'side'`/`'sector'` arg for this (Sprint-3 DarkZone
+        target must tie region geometry to DM count).
+      Tests: `tCoroContrast` (8/8, pure-math, in SUITE_FAST) pins the
+      ported λ/D machinery + `dark_zone_metrics` incl. the one-sided
+      region.
+- [x] **E3 — CALIB mechanics through diffraction.**  Exercise the
       existing CALIB targets on DM elements of `Rx_Coro.in`; time the
       objective evaluation when it must run the CPROPAGATE chain at
       nGridpts = 511.  (Absorbs the Sprint-0 CALIB-timing pre-flight.)
       Determines whether a Sprint-3 inner loop is seconds or hours.
-- [ ] **E4 — λ-loop placement.**  Measure the load / trace / propagate
+      **DONE 2026-06-13.**  Script
+      `mmacos/examples/design/coro/E3_calib_timing.m` on `Rx_Coro_DM.in`
+      (DM Elt 4), model 1024 / nGridpts 511.  Workspace saved to
+      `coro/results/`.
+      **Key finding — the shipping CALIB targets are all RAY-TRACE
+      objectives** (WFE / WFE_ZMODE / BEAM / SPOT / OPL compute from the
+      ray trace at the target element; none runs the diffraction FFT
+      chain).  Per-eval costs (forced real re-trace via modify()):
+      - ray-trace (modify+trace) = **1.03 s**
+      - diffraction-propagate (INT only) = **1.07 s**
+      - full diffraction objective (trace+INT) = **3.14 s** (ratio 3.1×
+        over ray-trace, *not* the 1000× a naïve no-op probe suggests).
+      - **Existing CALIB (WFE, 2-DOF DM tip/tilt recovery): 33 s,
+        converged** (WFE 6.3e-5 → 2.4e-12).  So the existing ray-trace
+        inner loop is **seconds**.
+      **Projected diffraction-scoring DarkZone inner loop** (3.14 s/eval,
+      K=30 iters):
+      - naïve FD: **0.3 h @ 12 DOF, 2.6 h @ 100, 52.4 h @ 2000 actuators**
+      - multiplexed/EFC Jacobian (E2 separable poke): **~116 s (37
+        traces), independent of actuator count.**
+      **Verdict:** a Sprint-3 DarkZone target driven by naïve FD is HOURS
+      at real DM scale and must instead use the multiplexed-poke / EFC
+      E-field Jacobian (then it's ~2 min).  The Fortran win is avoiding
+      the (nDOF+1)-trace FD penalty, not raw per-trace speed.
+- [x] **E4 — λ-loop placement.**  Measure the load / trace / propagate
       cost split per wavelength to quantify what a future MACOS-side
       `spectral_run` amortization would actually buy over a MATLAB
       loop of `set_src_wvl` calls.
+      **DONE 2026-06-13.**  Script
+      `mmacos/examples/design/coro/E4_lambda_loop_cost.m` on
+      `Rx_Coro_FPM.in`, model 1024, nλ=5.  Workspace saved to
+      `coro/results/`.  Cost split per wavelength:
+      - load_rx (one-time, amortized away) = 5.4 s
+      - set_src_wvl + modify = **0.001 s** (negligible)
+      - ray-trace = **0.62 s**;  diffraction-propagate = **2.77 s**
+        → **trace/propagate = 0.22** (propagate dominates).
+      - **MATLAB↔mex per-λ overhead = 0.5 ms** (negligible).
+      **What `spectral_run` would buy:** for nλ=5, a MATLAB
+      `set_src_wvl` loop (re-traces each λ) = 16.9 s vs a `spectral_run`
+      that traces ONCE (reflective → λ-independent geometry) and loops
+      only the diffraction = 14.5 s — **saves ~2.5 s (15%)**, and that
+      15% is the redundant re-trace, NOT mex overhead (which is ~0).
+      **Verdict: don't build `spectral_run` for reflective
+      coronagraphs** — the MATLAB loop is within 15% and the mex
+      round-trip is free.  It only pays off when trace >> propagate
+      (huge ray counts / cheap propagation) or for REFRACTIVE systems
+      where per-λ glass re-resolution makes the trace dominate (§6.4 /
+      Sprint-0 glass test).
+
+**Sprint 1 division-of-labor experiments E1–E4 COMPLETE (2026-06-13).**
+**Net architectural resolution: diffraction-based optimization is
+driven in the MATLAB layer; NO diffraction metric calcs or
+diffraction-scoring inner loop need to be added to the Fortran code.**
+What the measurements support:
+- The merit/metric calc (contrast from `|field|²`) is trivial → MATLAB
+  (E1; metrics selectable in `dark_zone_metrics`).
+- The expensive piece — the diffraction propagation — is *already* in
+  Fortran (`CPROPAGATE`); MATLAB reaches it via existing `intensity()`
+  / `complex_field()`.  Nothing new in Fortran.
+- MATLAB↔mex per-call overhead is **0.5 ms** (E4) → no performance case
+  for relocating the loop into Fortran.
+- The only real cost driver is the Jacobian trace count; the fix is the
+  multiplexed separable-poke / EFC **E-field** Jacobian (~37
+  `complex_field` evals, actuator-count-independent — E2/E3), which is
+  MATLAB orchestrating existing Fortran calls + linear algebra.
+- **This revises the earlier "Fortran `DarkZone` CALIB target"
+  assumption (Sprint 3):** a Fortran CALIB DarkZone target would still
+  use FD gradients → (nDOF+1) penalty → hours.  The right design is a
+  **MATLAB EFC controller over `complex_field`**, not new Fortran.
+- **One Fortran-side assembly primitive DOES belong in the loop:
+  `COMPOSE`.**  Each λ has a different native focal sampling
+  (focal dx ∝ λ); macos's `COMPOSE` + `ADD`/`DADD` (intensity) /
+  `CADD` (complex amplitude) assembles the per-λ PSFs onto a FIXED
+  pixel grid in Fortran — the natural broadband-PSF builder, so MATLAB
+  scores the composed broadband PSF instead of resampling each λ by
+  hand.  `COMPOSE` is **not yet wrapped** in mmacos/pymacos — candidate
+  wrapper (Sprint-1 wrapper items / §9.1 queue) if broadband dark-zone
+  scoring is pursued.
+- Residual Fortran-pull futures (only if they materialise): REFRACTIVE
+  systems (per-λ glass re-resolution makes the ray trace dominate —
+  E4 `spectral_run` regime), or letting macos skip the redundant
+  upstream re-trace per DM poke — both optimizations of *existing*
+  Fortran, not new diffraction-metric code.
+- Dark-zone region geometry (one-sided for 1 DM, annulus for 2; E2/Dave)
+  is a MATLAB-side scoring parameter (`dark_zone_metrics` 'side'/'sector').
 
 Resolution principle: merit and control logic start MATLAB-side
 (flexible, zero Fortran risk); a capability moves into macos only
