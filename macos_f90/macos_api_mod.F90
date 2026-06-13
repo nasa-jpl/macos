@@ -600,6 +600,36 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! Get/set the source FLUX.  sourcsub.F seeds each ray amplitude as
+      ! SQRT(Flux), so the propagated intensity scales linearly with
+      ! Flux.  Used (with set_src_fov pointing) to inject a fainter
+      ! off-axis "planet" alongside the on-axis star and COMPOSE them
+      ! onto one detector image.  Takes effect on the next MODIFY+trace.
+      !---------------------------------------------------------------------------------------------
+      subroutine src_flux(OK, FLX, setter)
+        implicit none
+        integer, intent(out)   :: OK       ! (PASS) if successful; (FAIL) otherwise
+        real(8), intent(inout) :: FLX      ! source flux (FLX >= 0); intensity ~ Flux
+        integer, intent(in)    :: setter   ! (PASS) to set & (FAIL) to get
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (setter == 0) FLX = 0d0
+
+        if (.not. SystemCheck()) return
+
+        if (setter /= 0) then
+          if (isnan(FLX)) return
+          if ((FLX < 0e0_pr) .or. .not.(abs(FLX) <= huge(FLX))) return
+          Flux = FLX
+        else
+          FLX = Flux
+        end if
+
+        OK = PASS
+      end subroutine src_flux
+
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Define active source information: shape, position & WL
       !
       !               zSrc: Distance from Src. Position to Spherical wavefront position (=zSource)
@@ -3839,6 +3869,101 @@
         OK = PASS
 
       end subroutine int_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! COMPOSE: initialise a composite (broadband / multi-field) image
+      ! accumulator on a FIXED pixel grid at element iElt.  Zeroes the
+      ! PixArray and sets the pixel count (npix) + pixel size (dxpix);
+      ! flips the engine's ifAdd flag so subsequent compose_add() calls
+      ! accumulate the current diffraction field onto this grid.
+      !
+      ! Workflow (incoherent intensity composition -- e.g. broadband PSF):
+      !   compose_start(iElt, npix, dxpix)
+      !   do over wavelengths / field points:
+      !     set_src_wvl(lam);  int_cmd(iElt, res_trace=PASS)   ! propagate
+      !     compose_add()                                      ! accumulate
+      !   compose_get(PIX, npix)                               ! read result
+      !
+      ! NOTE: the coherent complex-amplitude path (the engine's 'CADD'
+      ! command) is unimplemented in the engine, so only incoherent
+      ! INTENSITY composition is exposed here.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_start(OK, iElt, npix, dxpix)
+        implicit none
+        logical, intent(out):: OK       ! (PASS=1) success; (FAIL=0) otherwise
+        integer, intent(in) :: iElt     ! element where the image is composed
+        integer, intent(in) :: npix     ! pixels per side of the composite grid
+        real(8), intent(in) :: dxpix    ! pixel size (BaseUnits)
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if ((.not. SystemCheck()) .or.            &
+            (iElt<1) .or. (iElt>nElt) .or.        &
+            (npix<1) .or. (npix>mPix)  .or.       &
+            (dxpix<=0d0) .or.                     &
+            (EltID(iElt).EQ.SegmentElt).or.       &
+            (EltID(iElt).EQ.NSRefractorElt) .or.  &
+            (EltID(iElt).EQ.NSReflectorElt)) return
+
+        command = 'COMPOSE'
+        IARG(1) = iElt
+        IARG(2) = npix
+        RARG(1) = dxpix
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine compose_start
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Accumulate the CURRENT diffraction field at the compose element
+      ! onto the composite PixArray (the engine's 'ADD' command).  The
+      ! caller must have propagated to the compose element first (e.g.
+      ! int_cmd at iElt for the current wavelength).  do_plot=FAIL
+      ! suppresses the engine's "plot composed image?" prompt/draw.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_add(OK, do_plot)
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: do_plot  ! (PASS=1) plot after add; (FAIL=0) no plot
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'ADD'
+        if (do_plot .eqv. PASS) then
+          CARG(1) = 'YES'
+        else
+          CARG(1) = 'NO'      ! LoadStack maps 'NO' -> 'NOPLOT'
+        end if
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine compose_add
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Retrieve the composite image accumulated by compose_start/_add.
+      ! Caller passes npix (= the value given to compose_start); returns
+      ! the npix x npix composite from PixArray.  PixArray is the
+      ! module-level accumulator SMACOS writes COMPOSE/ADD into.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_get(OK, PIX_OUT, npix)
+        implicit none
+        logical,                       intent(out):: OK
+        integer,                       intent(in) :: npix
+        real(8), dimension(npix,npix), intent(out):: PIX_OUT
+        ! ------------------------------------------------------
+        OK      = FAIL
+        PIX_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (npix<1) .or. (npix>mPix)) return
+        if (.not. allocated(PixArray)) return
+
+        PIX_OUT(:,:) = PixArray(1:npix, 1:npix)
+        OK = PASS
+      end subroutine compose_get
 
 
       !---------------------------------------------------------------------------------------------
