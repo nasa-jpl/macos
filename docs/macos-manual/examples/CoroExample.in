@@ -143,7 +143,7 @@
              xObs=  1.0E+00  0.0E+00  0.0E+00
              nObs=  3
           ObsType=  Circle
-           ObsVec=  1.5E-05  0.0E+00  0.0E+00
+           ObsVec=  8.0E-06  0.0E+00  0.0E+00
          ObsType=  Rectangle
            ObsVec=  -2.5E-06  2.5E-06  -2.0E-03  2.0E-03
           ObsType=  Rectangle
