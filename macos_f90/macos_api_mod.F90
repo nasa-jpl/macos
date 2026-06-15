@@ -3763,6 +3763,36 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! Set the ray-trace obscuration option for spot diagrams (the OBS
+      ! command -> iObsOpt).  opt: 0=ALL (every ray, regardless of
+      ! obscuration), 1=POSITIVE (unobscured only, the default), 2=NEGATIVE
+      ! (obscured only).  Session state -- persists until changed.  Needed
+      ! to draw a spot at a focal plane where all rays are obscured (a
+      ! coronagraph FP): set 0 first, then spot_cmd.
+      !---------------------------------------------------------------------------------------------
+      subroutine obs_set(OK, opt)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: opt        ! 0=ALL, 1=POSITIVE (unobscured), 2=NEGATIVE
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'OBS'
+        if (opt==0) then
+          CARG(1) = 'ALL'
+        else if (opt==2) then
+          CARG(1) = 'NEGATIVE'
+        else
+          CARG(1) = 'POSITIVE'
+        end if
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine obs_set
+
+
+      !---------------------------------------------------------------------------------------------
       ! Execute SPOT cmd
       !---------------------------------------------------------------------------------------------
       subroutine spot_cmd(OK, nSpot, iElt, ref_csys, ref_pos, res_trace)
@@ -4031,6 +4061,132 @@
         PIX_OUT(:,:) = PixArray(1:npix, 1:npix)
         OK = PASS
       end subroutine compose_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! WINDOW (pixel-location ON): place diffraction images at their TRUE
+      ! sky position on the PIX/COMPOSE grid (via each source's chief-ray
+      ! offset) instead of re-centred on the grid.  Required to COMPOSE an
+      ! off-axis source (e.g. a planet) at its real offset from an
+      ! on-axis star.  Drives the engine 'WINDOW' command with the TOUT
+      ! output frame (needs a prior trace so Tout is set).
+      !   sizPix  : window pixel size (BaseUnits) -- match the COMPOSE dxpix
+      !   eltPix  : element reference pixel (x,y); winCen: window centre
+      !             pixel (x,y).  Equal (or both 0) = no fixed offset, so
+      !             placement comes purely from the chief-ray term.
+      !---------------------------------------------------------------------------------------------
+      ! frame selects the output coordinate frame the placement is
+      ! referenced to: 1 = TOUT (prescription output frame), 2 = BEAM
+      ! (local beam frame at the output element).  ENTER (custom xOut/
+      ! yOut) is not exposed -- the WINDOW LoadStack carries no vectors.
+      subroutine window_set(OK, frame, sizPix, eltPixX, eltPixY,        &
+                            winCenX, winCenY)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: frame
+        real(8), intent(in) :: sizPix
+        real(8), intent(in) :: eltPixX, eltPixY
+        real(8), intent(in) :: winCenX, winCenY
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (frame == 1) then
+          CARG(1) = 'TOUT'
+        else if (frame == 2) then
+          CARG(1) = 'BEAM'
+        else
+          return                 ! unsupported frame
+        end if
+
+        command = 'WINDOW'
+        DARG(1) = sizPix
+        DARG(2) = eltPixX
+        DARG(3) = eltPixY
+        DARG(4) = winCenX
+        DARG(5) = winCenY
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine window_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! NOPLOC (pixel-location OFF): images go back to the centre of the
+      ! pixel array (undo window_set).
+      !---------------------------------------------------------------------------------------------
+      subroutine window_off(OK)
+        implicit none
+        logical, intent(out):: OK
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'NOPLOC'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine window_off
+
+
+      !---------------------------------------------------------------------------------------------
+      ! FFP (move Focal/Field Point): tilt the source so the image at
+      ! element iElt lands at the off-axis field point (dx,dy) given as
+      ! DIRECTION COSINES (normalized; ~= field angle in rad for small
+      ! angles) -- i.e. place an off-axis "planet".  Requires the system
+      ! stop to be set first (stop_info_set / the STOP command); the source
+      ! pointing changes, so reset Return / exit-pupil reference surfaces
+      ! afterwards (ors_run, sxp_fnd/fex) as the CoroExample recipe does.
+      ! PFP is the focal-plane-pixel sibling; the two differ by the plate
+      ! scale (SYSPROP plate_px_rad).
+      !---------------------------------------------------------------------------------------------
+      subroutine ffp(OK, iElt, dx, dy)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt   ! plane at which to position the image
+        real(8), intent(in) :: dx, dy ! field offset, direction cosines
+        ! ------------------------------------------------------
+        OK = FAIL
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        command = 'FFP'
+        IARG(1) = iElt
+        DARG(1) = dx
+        DARG(2) = dy
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine ffp
+
+
+      !---------------------------------------------------------------------------------------------
+      ! PFP (Pixel Focal Point): the pixel-units sibling of FFP -- place
+      ! the image at element iElt at pixel position (dxPix,dyPix) on a
+      ! grid of pitch pixSize.  FFP (sky angle / global length) and PFP
+      ! (focal-plane pixels) differ by the plate scale = pixSize.
+      ! Requires the system stop set first (as FFP does).
+      !---------------------------------------------------------------------------------------------
+      subroutine pfp(OK, iElt, pixSize, dxPix, dyPix)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt      ! plane at which to position the image
+        real(8), intent(in) :: pixSize   ! pixel size (BaseUnits)
+        real(8), intent(in) :: dxPix, dyPix ! image position, pixel units
+        ! ------------------------------------------------------
+        OK = FAIL
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        command = 'PFP'
+        IARG(1) = iElt
+        DARG(1) = pixSize
+        DARG(2) = dxPix
+        DARG(3) = dyPix
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine pfp
 
 
       !---------------------------------------------------------------------------------------------

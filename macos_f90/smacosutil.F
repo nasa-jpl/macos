@@ -137,10 +137,10 @@ C  Load CARG(1) with obscuration option for OBS
 	  GO TO 110
 	END IF
 
-C  Load CARG(1) with coordinate type for PLOCate / WINdow
+C  Load CARG(1) (coordinate frame: TOUT/BEAM) for PLOCate / WINdow
 	IF (LCMP(command,'PLOCATE',4).OR.
      &	    LCMP(command,'WINDOW',3)) THEN
-	  CALL C2C('TOUT',ls,STACK,' ')
+	  CALL C2CW(CARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(2),ls,STACK,',')
 	  CALL D2C(DARG(3),ls,STACK,' ')
