@@ -14,6 +14,7 @@
     use elt_mod
     use macos_mod
     use smacos_mod
+    use sysprop_mod
 
     implicit none
 
@@ -627,6 +628,72 @@
 
         OK = PASS
       end subroutine src_flux
+
+
+      !---------------------------------------------------------------------------------------------
+      ! First-order system properties (the SYSPROP command, as a struct).
+      ! Runs the engine EFL analysis (chief + marginal ray -> focalRatio;
+      ! needs a source at infinity) then packages all first-order /
+      ! diffraction quantities via sysprop_mod%DeriveSysProps.  The
+      ! pixel-based outputs (lamD_px, plate_arcsec_px, plate_px_rad,
+      ! dx_focal_bu) require a prior propagation to iElt (INT) to have set
+      ! dxElt(iElt); they come back 0 otherwise.  The angular quantities
+      ! (lamD_rad, lamD_arcsec) and efl/fno/dpup need no propagation.
+      !
+      ! tilt-for-N-(lambda/D) = N * lamD_rad  (the source-pointing offset
+      ! to place an off-axis "planet" at N lambda/D).
+      !---------------------------------------------------------------------------------------------
+      subroutine sysprop(OK, iElt, efl, fno, dpup_m, obsc, lambda_m,    &
+                         lamD_rad, lamD_arcsec, lamD_px,                &
+                         plate_arcsec_px, plate_px_rad, nyquist_bu,     &
+                         dx_focal_bu)
+        implicit none
+        logical, intent(out):: OK            ! (PASS) success; (FAIL) otherwise
+        integer, intent(in) :: iElt          ! focal-plane element (detector)
+        real(8), intent(out):: efl           ! effective focal length (BaseUnits)
+        real(8), intent(out):: fno           ! F-number
+        real(8), intent(out):: dpup_m        ! entrance-pupil diameter (m)
+        real(8), intent(out):: obsc          ! central obscuration ratio
+        real(8), intent(out):: lambda_m      ! wavelength (m)
+        real(8), intent(out):: lamD_rad      ! lambda/D (radians)
+        real(8), intent(out):: lamD_arcsec   ! lambda/D (arcsec)
+        real(8), intent(out):: lamD_px       ! lambda/D (detector pixels)
+        real(8), intent(out):: plate_arcsec_px ! plate scale (arcsec/pixel)
+        real(8), intent(out):: plate_px_rad  ! source tilt -> shift (px/rad)
+        real(8), intent(out):: nyquist_bu    ! Nyquist focal sampling (BaseUnits)
+        real(8), intent(out):: dx_focal_bu   ! detector pixel pitch (BaseUnits)
+        ! ------------------------------------------------------
+        OK = FAIL
+        efl=0d0; fno=0d0; dpup_m=0d0; obsc=0d0; lambda_m=0d0
+        lamD_rad=0d0; lamD_arcsec=0d0; lamD_px=0d0
+        plate_arcsec_px=0d0; plate_px_rad=0d0; nyquist_bu=0d0; dx_focal_bu=0d0
+
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        ! EFL analysis sets focalRatio (and plateScale).  Source must be
+        ! at infinity; on failure focalRatio stays <=0 and DeriveSysProps
+        ! returns sp_valid=.false.
+        command = 'EFL'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        CALL DeriveSysProps(iElt)
+        if (.not. sp_valid) return
+
+        efl             = sp_vals(SP_EFL_BU)
+        fno             = sp_vals(SP_FNO)
+        dpup_m          = sp_vals(SP_DPUP_M)
+        obsc            = sp_vals(SP_OBSC)
+        lambda_m        = sp_vals(SP_LAMBDA_M)
+        lamD_rad        = sp_vals(SP_LAMD_RAD)
+        lamD_arcsec     = sp_vals(SP_LAMD_ARCSEC)
+        lamD_px         = sp_vals(SP_LAMD_PX)
+        plate_arcsec_px = sp_vals(SP_PLATE_ARCSEC_PX)
+        plate_px_rad    = sp_vals(SP_PLATE_PX_RAD)
+        nyquist_bu      = sp_vals(SP_NYQUIST_BU)
+        dx_focal_bu     = sp_vals(SP_DX_FOCAL_BU)
+
+        OK = PASS
+      end subroutine sysprop
 
 
       !---------------------------------------------------------------------------------------------

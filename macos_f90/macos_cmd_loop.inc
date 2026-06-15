@@ -1577,6 +1577,22 @@ C    &                    'the computed EFL could be inaccurate)'
 	      ifEFLCalc=.true.
 	    End If
 
+C         ***next command: First-order system properties (SYSPROP)***
+
+	  ELSE IF (LCMP(command,'SYSPROP',3)) THEN
+
+! Reuse the EFL chief/marginal-ray analysis (sets efl), then package all
+! first-order properties via sysprop_mod (shared with macos_api_mod).
+#include "efl.inc"
+	    If (ifLoad) Then
+	      If (abs(Aperture) > smallestReal) focalRatio=efl/Aperture
+	      CALL IACCEPT_S(iElt,nElt,1,
+     &	        'Enter focal-plane element for plate scale:')
+	      CALL DeriveSysProps(iElt)
+	      CALL PrintSysProps()
+	      ifEFLCalc=.true.
+	    End If
+
 C         ***next command: Print rays surface - to - surface***
 
 	  ELSE IF (LCMP(command,'SRAY',3)) THEN
