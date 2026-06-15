@@ -4,6 +4,14 @@
 NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
+> **Post-compaction / post-upgrade — re-read the docs first.** After a
+> context compaction or a tooling upgrade, before resuming build or engine
+> work, re-read the doc set across ALL working dirs (the conversation
+> summary drops mechanical how-to): this file + `PLAN.md`
+> (+ `PLAN_DESIGN_LAYER.md`); `MACOS_resources/{mmacos,pymacos,GMI}/CLAUDE.md`
+> + their `README.md`; and the agent `MEMORY.md` (esp. the build/test
+> workflow entries). This same directive heads each working-folder CLAUDE.md.
+
 This file lives on the `opt-dev` branch.  Default builds ship SLSQP
 (Kraft 1988, BSD-licensed) as the constrained-optimization back end —
 no extra source tree, no license, ready out of the box.  NPSOL is
