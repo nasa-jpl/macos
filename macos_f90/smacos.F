@@ -60,6 +60,7 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+	use sysprop_mod, only: DeriveSysProps, PrintSysProps
 	use plot_mode_mod
 
 	use math_mod

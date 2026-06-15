@@ -109,6 +109,12 @@ C  Load IARG(1) and coordinate type for SPOT
 	  GO TO 110
 	END IF
 
+C  Load IARG(1) (focal-plane elt for plate scale) for SYSPROP
+	IF (LCMP(command,'SYSPROP',3)) THEN
+	  CALL I2C(IARG(1),ls,STACK,' ')   ! iElt
+	  GO TO 110
+	END IF
+
 C  Load FDP command arguments
 	IF (LCMP(command,'FDP',3)) THEN
           CALL I2C(IARG(1),ls,STACK,' ')
