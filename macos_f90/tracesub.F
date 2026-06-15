@@ -4440,8 +4440,15 @@ C  3. Begin iRay loop to trace each ray from previous surface
 	RMSOPD=0d0
 	jRay=0
 	L1=CumRayL(1)+IndRef(iEm1)*L
+C  The chief ray (iRay=1) sets the reference-surface pose and the OPD
+C  baseline L1.  On an on-axis system / coronagraph it is normally
+C  OBSCURED (the FPM blocks it), but it is still geometrically traced,
+C  so include it here by LRayOK alone -- excluding it leaves L1 set
+C  from a stale pre-loop value and sends the reference-surface search
+C  off to |f|~1e40.  Data rays still require LRayOK.AND.LRayPass.
 	DO 14 iRay=1,nRay
-	  IF (LRayOK(iRay).AND.LRayPass(iRay)) THEN
+	  IF ( (LRayOK(iRay).AND.LRayPass(iRay)) .OR.
+     &         (iRay.EQ.1.AND.LRayOK(iRay)) ) THEN
 	    jRay=jRay+1
 	    IF (.NOT.ifRetSrf) THEN
 	      CALL RefSrf(noBuild,noPol,LNsrf,noObs,
