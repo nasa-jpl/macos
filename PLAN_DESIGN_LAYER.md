@@ -997,17 +997,50 @@ wants.  No family math, no emitter required.
 The de-novo builder, landing onto an analysis core that already
 works (2A-i).
 
-- [ ] Spec struct + pure-function resolve/emit (§3); component
-      interface (§6.2) with Mirror / Mask / FocalPlane.  Fixed-
-      topology families auto-populate M1/M2/FP (§2, §7.1).
-- [ ] Closed-form layout for Cass / RC / Gregorian / DK with the §5.2
-      corrected, β-dependent forms; §5.3 raytrace validation tests.
-- [ ] Full-precision `.in` emission + `ValidatePrescription` on every
-      build; FD-survivability test (§1.3).
-- [ ] `describe()` with provenance; `save_spec`/`load_spec`;
-      golden-spec → byte-identical-Rx regression.
-- [ ] First result: M2 alignment minimizing FoV-averaged WFE vs a
-      known-good Cass baseline (ZGD_test_files).
+> **CORE LANDED 2026-06-16** (MACOS_resources `sls-dev`: builder
+> `e61549b`, first result `771de28`; reference set `2b7ab06`).
+> `+macos/+design/Telescope.m` builds all four 2-mirror families →
+> emits a MACOS `.in` → validates by SMACOS load.  `tDesignTelescope`
+> 10/10 green (fast suite 143/0).  **The convention was de-risked in
+> the runnable (pymacos) path against the shared fixtures BEFORE
+> transcribing to MATLAB**: `KcElt=K`, `KrElt=-|R|`, `psiElt`→CoC
+> (one rule, all surfaces — concave M1 & convex Cass secondary -z,
+> concave Gregorian secondary +z), and the SMACOS-load-required
+> `nOutCord`/`Tout` block (interactive CLI defaults it; SMACOS does
+> not — `load_rx`→nElt=0 without it).  See the agent reference memory
+> `reference_macos_rx_emission_convention`.
+
+- [x] Spec struct + pure-function resolve/emit (§3); component model
+      with Mirror / FocalPlane (Mask is a coronagraph element — defer
+      to Sprint 3).  Fixed-topology families auto-populate M1/M2/FP.
+- [x] Closed-form layout for Cass / RC / Gregorian / DK with the §5.2
+      β-dependent forms; §5.3 raytrace validation.  Validated vs the
+      shared fixtures (`optical_design/fixtures/`): R/K to ~1e-5;
+      on-axis spherical-free (Cass & Gregorian machine-zero, the
+      latter exercising the concave-secondary psi-flip); RC aplanat
+      coma-squared signature (Cass/RC field-WFE ratio grows as
+      field→0); DK largest coma.  `make_fixtures.py` is the ported
+      closed-form source.
+- [x] Full-precision (`%.16E`) `.in` emission; validate-by-load through
+      SMACOS on every `build()`.  (Standalone `ValidatePrescription`
+      wrapper + the emit-at-x-vs-x+δ FD-survivability diff: deferred —
+      load-validation covers structural correctness today.)
+- [x] `describe()` with provenance; `save_spec`/`load_spec`;
+      deterministic-emit test (same spec → byte-identical `.in`, the
+      §3 parity property).  (Committed-golden cross-language anchor:
+      defer until the emitter stabilises in 2B/2C, when apertures /
+      obscurations / field handling land.)
+- [x] First result: a BUILT Cassegrain imported via `System` recovers
+      an M2 despace error through `optimize`
+      (`tDesignTelescope.test_built_telescope_feeds_alignment` +
+      `examples/design/example_telescope_align.m`) — closes the
+      builder→analysis loop.
+
+**Deferred to follow-ons** (not blockers): the `ValidatePrescription`
+standalone wrapper + FD-survivability diff; the committed-golden
+byte-identical-Rx anchor (emitter still grows in 2B/2C); arbitrary
+`optical_axis` (MVP is +z); `diagram()` + full `check_clipping()`
+(Sprint 4); nested λ×field evaluation (inherited from 2A-i).
 
 ### Sprint 2B — N-mirror (TMA / 4-mirror / freeform)
 
