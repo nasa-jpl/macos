@@ -911,9 +911,10 @@ What the measurements support:
   `CADD` (complex amplitude) assembles the per-λ PSFs onto a FIXED
   pixel grid in Fortran — the natural broadband-PSF builder, so MATLAB
   scores the composed broadband PSF instead of resampling each λ by
-  hand.  `COMPOSE` is **not yet wrapped** in mmacos/pymacos — candidate
-  wrapper (Sprint-1 wrapper items / §9.1 queue) if broadband dark-zone
-  scoring is pursued.
+  hand.  `COMPOSE` + `ADD` is **now wrapped** as `compose()` in pymacos +
+  mmacos (2026-06-13, macos `6cd1372` + MACOS_resources `1a3fc13`):
+  the incoherent-intensity path is live; coherent `CADD` is still a
+  Fortran stub.  Broadband dark-zone scoring can build on it directly.
 - Residual Fortran-pull futures (only if they materialise): REFRACTIVE
   systems (per-λ glass re-resolution makes the ray trace dominate —
   E4 `spectral_run` regime), or letting macos skip the redundant
