@@ -918,8 +918,10 @@ C         ***Modify optical description data***
 	      !print*,'b4 CALL Mod_Loh'
 	      CALL MOD_LOH(npts)
 #else
-   ! for SMACOS
-	      WRITE(*,*)' SMACOS MODIFY reset performed.'
+   ! for SMACOS: reset silently -- the per-MODIFY confirmation was
+   ! unconditional and spammed programmatic optimize loops
+   ! (pymacos/mmacos modified_rx in the FD inner loop); the flag
+   ! resets below are the actual work.
 #endif
 	      ifBuild=.FALSE.
 	      ifPropagate=.FALSE.
