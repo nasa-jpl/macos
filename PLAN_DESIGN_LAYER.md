@@ -1246,7 +1246,7 @@ API shape → joint, after E1–E4.
 
 - All work on **`sls-dev`** (macos) + companion `sls-dev`
   (MACOS_resources), per PLAN.md §9.
-- Design package: `MACOS_resources/mmacos/+macos/+design/`.
+- Design package: `MACOS_resources/mmacos/src/+macos/+design/`.
 - DarkZone target (Sprint 3) → `sls-dev`; fast-forward to `opt-dev`
   at release-worthy sprint ends.
 - Tags: `design-sprint-0` … `design-sprint-4`, `design-layer-v1`.
