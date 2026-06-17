@@ -815,7 +815,7 @@ LRayOK/LRayPass.  mmacos veneer: `get_ray_status(N)`.  Backs the design
 layer's ray-loss guard (`PLAN_DESIGN_LAYER.md` §1.3.4).
 
 The MATLAB **design layer** (`macos.design.System`,
-`MACOS_resources/mmacos/+macos/+design/`) is the first heavy consumer of
+`MACOS_resources/mmacos/src/+macos/+design/`) is the first heavy consumer of
 this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the
 Phase 7 `dw_dx` channels) → `vary`/`evaluate`/`optimize`.  It adds no
 Fortran; it's a pure MATLAB layer over these routines.  Note: SLSQP

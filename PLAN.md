@@ -613,7 +613,7 @@ verification) runs there's already substantial mmacos-side coverage
 to compare against pymacos.
 
 - [x] **Phase 1 — Command-surface parity (codegen)**
-  - [x] Codegen script `MACOS_resources/mmacos/gen_mex_wrappers.py`
+  - [x] Codegen script `MACOS_resources/mmacos/src/gen_mex_wrappers.py`
     parses `macos_f90/macos_api_mod.F90`, emits `do_<name>` mex
     helpers and a `gen_dispatch` fallback into `mmacos_gen.F`.
     Picks up arg types (logical/integer/real/character), `intent`,
