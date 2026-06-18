@@ -47,12 +47,24 @@ Replace `<username>` with your login name throughout.
 ```bash
 mkdir -p ~/dev && cd ~/dev
 
+# Use COMPANION branches — the SAME branch name in BOTH repositories.
+#   opt-dev = current release target (recommended)
+#   sls-dev = latest integration work
 git clone git@github.com:nasa-jpl/macos.git
-git -C macos checkout joint-dev
+git -C macos checkout opt-dev
 
 git clone git@github.com:nasa-jpl/MACOS_resources.git
-git -C MACOS_resources checkout dr-dev
+git -C MACOS_resources checkout opt-dev
 ```
+
+> **The two repositories must be on companion branches** (same branch name
+> in each). The bindings (pymacos / mmacos / GMI) compile against the
+> engine's Fortran module files in `build*/mod_smacos/`; an out-of-step
+> MACOS_resources branch points its build at the wrong module directory, so
+> the API appears to be missing — e.g. `init` and the other
+> `macos_api_mod` routines absent from the module layer, or unresolved
+> `macos_api_mod_mp_*` symbols at link. Do **not** mix old branches such as
+> `joint-dev` / `dr-dev`.
 
 ---
 
@@ -407,9 +419,16 @@ cd pymacos\src\cmake
 rmdir /s /q build
 mkdir build
 cd build
-cmake -G "NMake Makefiles" -S ..
+cmake -G "NMake Makefiles" -DMACOS_BUILD_DIR=%USERPROFILE%\dev\macos\build -S ..
 nmake
 ```
+
+> **`-DMACOS_BUILD_DIR` is required on Windows.** pymacos defaults it to
+> `~/dev/macos/build_release` (the Linux build-script output), but the
+> Windows CMake instructions above build SMACOS into `macos\build\`. Point
+> `MACOS_BUILD_DIR` at the directory that contains `mod_smacos\` and
+> `lib\smacos.lib`. (On Linux the default matches `makeall.sh`, so the flag
+> is optional there.)
 
 Output: `pymacos\src\pymacos\pymacosf90.cp314-win_amd64.pyd`
 
