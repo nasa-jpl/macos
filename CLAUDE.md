@@ -125,6 +125,16 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
   Cherry-picked back to release-candidate.
 
 ## CALIB wrappers in macos_api_mod (Phase 1a/1b/1c)
+- **CALIB *is* the native multi-field design optimizer** (`nls_optim_dvr`
+  LM + SLSQP/NPSOL in `design_optim.F`): multi-field × multi-λ,
+  FoV-weighted least-squares over per-element DOFs (8-DOF `VarElt` mask;
+  **DOF 7 = radius, DOF 8 = conic**), Zernike modes, aspheric coeffs;
+  targets WFE/SPOT/WFE_ZMODE (≤12 FOV × 6 λ).  `calib_run` returns
+  per-(FOV,λ) WFE before/after.  This is the **`native` engine** for the
+  design layer's multi-field `optimize()` (PLAN_DESIGN_LAYER §8 Sprint
+  2B).  FOV set + vars + target are configured via the `.in` Opt*
+  keywords today; programmatic field setters (`calib_add_fov`/
+  `calib_set_wavelens`) are the deferred Phase-1d gap.
 - `calib_run` + `calib_buffer_dims` (Phase 1a): drive `'CALIB'`
   end-to-end via SMACOS and expose result dims to pymacos/mmacos.
 - Programmatic setters (Phase 1b): `calib_set_var_elt`,

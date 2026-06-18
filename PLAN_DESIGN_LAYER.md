@@ -1044,14 +1044,118 @@ byte-identical-Rx anchor (emitter still grows in 2B/2C); arbitrary
 
 ### Sprint 2B — N-mirror (TMA / 4-mirror / freeform)
 
-- [ ] Generalized `add_mirror` + spacing resolution (single `'derive'`).
-- [ ] Equal-power split default; `override('Mk','fnum',…)`.
-- [ ] `set_surface` → SrfType 2 / 4 / 12 / 14 dispatch; design vars →
-      MonCoef / FFZernCoef emission (sparse FFZernModes form).
-      (ZernTypeL dispatch ELSE-with-error already landed — §9.1 Q3 /
-      PLAN.md §0; no Fortran work remains here.)
-- [ ] First wide-FoV result: TMA, M2 monomial + M3 freeform-Zernike,
-      band-and-FoV-averaged WFE over several arcmin.
+> **DE-RISK + PROOF COMPLETE 2026-06-17** (pymacos scratch in
+> `/tmp/{derisk_tma,korsch_search,proof_korsch}.py`; nothing built into
+> the design layer yet — that is the remaining BUILD).  Every *mechanism*
+> 2B needs is now proven; see [[project_design_layer]] +
+> [[reference_macos_rx_emission_convention]] in the agent memory and the
+> findings below.  Reason multi-mirror = WIDE FIELD: the value of each
+> added mirror only shows under MULTI-FIELD optimization.
+
+**Multi-field optimization — decided: MATLAB-driven, SELECTABLE engine**
+`optimize('engine','native'|'fmincon')` (Dave 2026-06-17):
+- **`native` (default fast path)** drives MACOS's *existing, mature*
+  multi-field optimizer via **`calib_run`** (the CALIB wrappers, already
+  in `macos_api_mod` + pymacos `m.calib`/mmacos `+macos/calib*`).
+  `nls_optim_dvr` (LM) + SLSQP/NPSOL do **multi-field × multi-λ,
+  FoV-weighted** least-squares over per-element DOFs (**DOF 7 = radius,
+  DOF 8 = conic**), Zernike modes, and aspheric coeffs, targeting
+  WFE/SPOT/WFE_ZMODE (up to 12 FOV × 6 λ).  `m.calib()` returns
+  per-(FOV,λ) WFE before/after.
+- **`fmincon` (flexible/research path)** = MATLAB field loop
+  (`set_src_fov` → trace → WFE) + FoV-weighted merit + `dw_dx` analytic
+  gradients; for multimodal freeform (MultiStart/patternsearch).
+- **Structure constraint (Dave):** conics/radii/spacings are ONE shared
+  physical system; only the chief ray (`OptChfRayDir`) varies per field.
+  The native optimizer enforces this (one `aparams` vector; the
+  `Do ifov` loop only changes the field).
+- **Engine gap:** programmatic field-set setters
+  `calib_add_fov`/`calib_set_wavelens` (Phase 1d, deferred).
+  Today the FOV set comes from the `.in` AFOV keywords.
+
+**Native-optim `.in` config keywords** (bake into the emitted Rx, then
+`m.calib()`): header `OptTarget= WFE`, `OptWFElt= <FP elt>`,
+`OptMaxItrs= N`, `OptFEX= No`; per-element `VarElt= 0 0 0 0 0 0 0 1`
+(8-DOF mask, here DOF 8 = conic); field set = repeated `OptChfRayDir=` /
+`OptChfRayPos=` + one `OptFOVWt=` of weights.  **GOTCHA:** the nominal
+`ChfRayDir=` SHARES the `OptChfRayDir` parse block, so it IS field 1 —
+emit `OptChfRayDir` for the OFF-axis fields only and size `OptFOVWt` to
+`1 + n_off`, else a list-directed-read EOF crash.
+
+**Emission convention (coaxial multi-mirror), validated:** all mirrors
+`psiElt=(0,0,-1)` (ONE shared axis, NOT alternating-toward-CoC),
+`KrElt=-|R|`, `KcElt=K`, vertices folded along z; matches the working
+on-axis TMA `optiixonaxisz1_v4.in`.  Free-form layouts are the exception
+(per-element psi — see `e5mono.in`).
+
+**Credible design + proof (the result that matters):** the
+`tma_fixture.json` is a 3rd-order-**Seidel regression toy** (R2=0.28,
+f/1.5 primary) — huge higher-order, NOT buildable; don't demo on it.  A
+**balanced Korsch** (R1=8,t1=3,R2=2,t2=4.5,R3=4,D=1, **f/8**), conics
+seidel-solved, traces **0.17λ on-axis** — proving the *emission* is
+correct.  `calib_run` over its 3 conics drove FoV-RMS WFE **1.4µm → 1.9nm
+(0.003λ)** across 0–2.4′ — diffraction-limited.  Acceptance bar (Dave):
+**WFE generally << 0.1λ AT THE EXIT PUPIL**, over a 2–20 arc-min field;
+the convincing "each mirror earns its keep" demo is the wider field
+where a 2-mirror hits its coma/astig wall and the TMA does not.
+
+**Optimization target = exit-pupil WFE; is `add_pupil` needed in the
+loop? (Dave's open question — likely NO):** MACOS's OPD at the focal
+plane, evaluated over the ray grid, IS the exit-pupil-referenced
+wavefront W(x,y) (each ray's OPD vs the reference sphere = the pupil
+aberration).  The proof optimized exactly that (`OptWFElt = FP`, no
+`add_pupil`) → 0.003λ.  So `add_pupil` is most likely for the
+**deliverable** (an explicit, accessible exit pupil for downstream
+instruments / coronagraph / Lyot), NOT a prerequisite of the
+optimization flow, which already minimizes exit-pupil WFE via the FP
+OPD.  CONFIRM during the build: compare the optimizer's FP-WFE against
+the WFE read at an explicit `ExitPupil` Return surface (should match);
+if MACOS's FP reference removes a term you need referenced to a SPECIFIC
+pupil, that's the case where `add_pupil` would enter the loop.
+
+**`add_pupil` (exit-pupil reference surfaces, wanted by Dave):** a 2-pass
+op — (1) emit optics→FP, trace at a field, `m.fex()` to find the exit
+pupil; (2) re-emit `Return@image → ExitPupil Return (= elt nElt-1) →
+Detector FocalPlane (= elt nElt)`; `m.sxp()`/`fex` sets the EP radius at
+trace time (positional convention: EP = nElt-1, FP = nElt).  Matches
+`Rx_Cass_FarField.in` (Return1@image → ExitPupil@-4.06 → Detector).
+
+**The BUILD — CORE SHIPPED 2026-06-18** (MACOS_resources `sls-dev`
+`dbbb21f`; fast suite 149/0; `tDesignTelescope` +4 = 14):
+- [x] N-mirror `Telescope`: `add_mirror`/`add_focal_plane` + spacing
+      resolution (last = `'derive'` paraxial focus); all-psi=−z fold
+      emission; **seidel-seed conics** — `macos.design.seidel_seed.m`
+      (ported from `optical_design/seidel.py`+`make_tma_fixture.py`,
+      validated: `seidel_seed([8 2 4],[3 4.5],1)`→`K=[-0.622 0.148
+      -3.904]`, EFL=8).  (Deferred: equal-power-split default +
+      `override('Mk','fnum',…)`; the builder takes explicit radii today.)
+- [x] `add_pupil` (FEX-located EP; flat image-Return + spherical EP-Return
+      before the FP, FP preserved; works for 2-mirror AND TMA).
+- [x] `optimize('engine','native')`: emits the `Opt*` block + per-mirror
+      `VarElt` conic DOF, runs `calib`, reads optimised conics back, emits
+      the clean design.  **Generalised to 2-mirror AND N-mirror.**  Drives
+      the Korsch seed 0.155λ → **0.003λ across 0–2.4′**.  (`fmincon` path
+      still the deferred alternate.)
+- [ ] `set_surface` → SrfType 2/4/12/14 dispatch; design vars →
+      MonCoef/FFZernCoef emission (sparse FFZernModes).  **DEFERRED** —
+      the freeform-surface vars; not needed for the conic-DOF TMA loop.
+      (ZernTypeL dispatch ELSE-with-error already landed — §9.1 Q3.)
+- [x] **Demo** `mmacos/examples/tma_widefield/example_tma_widefield.m`:
+      RC (2-mirror) vs Korsch TMA optimised over 0–20′ — the RC **walls
+      at 0.45–1.66λ** (2 conics can't null field astigmatism) while the
+      TMA holds **< 0.1λ to ~15′** (11–26× gain).  Saves `.in`+`.mat`+a
+      WFE-vs-field PNG, calls `add_pupil`, no `exit(0)`.  RC + align
+      examples retrofitted to the same rules.
+- [ ] First wide-FoV **freeform** result: TMA, M2 monomial + M3 freeform-
+      Zernike, band-and-FoV-averaged WFE — **DEFERRED** with `set_surface`
+      (the conic-DOF Korsch already proves the wide-field win).
+
+> **Example-building rules (Dave 2026-06-17, apply to ALL real examples
+> incl. the 2A-ii 2-mirror ones — retrofit them):** live in a
+> `mmacos/examples/<dir>/`; `save()` the `.in` + `save_spec()` the `.mat`
+> at the end; call `add_pupil` so the exit pupil is accessible; and do
+> **NOT** end in `exit(0)` (that batch-mode rule is only for the
+> `test_*.m` smoke scripts + matlab.unittest, never a user demo).
 
 ### Sprint 2C — refractive + dispersive components
 
