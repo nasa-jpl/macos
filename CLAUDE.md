@@ -280,6 +280,30 @@ new commands callable via SMACOS, add them to `macos_cmd_loop.inc`
 and to `smacosutil.F`'s LoadStack (so the args get on the STACK
 that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
 
+## draw_rays — DRAW's ray bundle as DATA (data-only mode)
+The design layer's MATLAB layout viewer needs DRAW's *real* ray bundle
+(`DrawRayVec`: per-ray, per-surface positions) WITHOUT opening a Giza
+device.  Mechanism (additive — `DrawDataOnly` defaults `.FALSE.`, so
+normal interactive DRAW is byte-unchanged):
+- `src_mod.F`: `DrawDataOnly` flag + capture arrays `DrawRayVec_save` /
+  `DrawEltVec_save` / `nDrawElt_save` + inputs `DrawDataPlane` /
+  `DrawDataStartElt` / `DrawDataEndElt`.
+- DRAW handler (`macos_cmd_loop.inc`): when `DrawDataOnly`, take the
+  plane (1=YZ/2=XZ/3=XY) + elt range from the module vars instead of
+  `IACCEPT_S`/`CACCEPT` (the SMACOS LoadStack pushes **3 ints + 1 char**
+  but the handler reads only 2 ints + 1 char — the plane CARG would be
+  misread off the stack, hence module vars).  After the trace it copies
+  the bundle into the save arrays, and the `GRAINI` + `DRAW`/`DRAWOUT`
+  render is guarded `.AND.(.NOT.DrawDataOnly)`.
+- `macos_api_mod.F90`: `draw_rays_cmd(OK,plane,iStart,iEnd,nDEmax,nRay)`
+  sets the module vars + `DrawDataOnly` + `CALL SMACOS('DRAW',…)` +
+  resets the flag; `draw_rays_get(OK,RayU,RayV,EltVec,nEltPerRay,nDE,nDR)`
+  copies the saved bundle out (codegen-friendly rank-2).
+DRAW natively supports plane (`pgplotDrawPlane`) + first/last-elt
+slicing, so off-axis "XY after the SM, PM hidden" deconfliction views
+come for free.  Landed 2026-06-19 (commit f3e98e5; see
+PLAN_DESIGN_LAYER §8 Sprint-4 layout realizability).
+
 ## Display polarity + plot annotations
 - `plot_mode_mod.F` (registered early in `COMMON_SOURCES`) holds session
   state:
