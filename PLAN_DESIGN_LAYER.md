@@ -1223,9 +1223,19 @@ nECoord=6/TElt frames).
       and `Telescope.view_layout(plane,opts)` -- real rays + conic-sag
       surfaces drawn to the actual beam FOOTPRINT, opts plane/istart/
       iend/hide/nrays.  Reveals the coaxial obscuration directly.
-- [ ] **`check_clipping()`** -- 3-D bundle vs element bodies (a 2-D
-      projection paints FALSE conflicts, so judge in 3-D); pass/fail per
-      element; wire into `build()`.
+- [x] **`check_clipping()`** (DONE, 2026-06-19) -- reconstructs the real
+      ray bundle in full 3-D from TWO orthogonal DRAW projections (YZ->Y,Z
+      ; XZ->X,Z ; shared Z = integrity check -- orthographic axis-pick
+      confirmed in `pgplotsub.F`, so 2 plane-calls suffice, not 3), then
+      tests each physical body (disk Vpt/psi/ap_r) for piercing a beam
+      segment between two OTHER elements.  Judged in 3-D (a 2-D projection
+      paints FALSE conflicts).  Per-element struct (name/kind/ap_r/foot_r/
+      margin/obstructs/ok); prints a table; wired into `build('check',true)`
+      as a warn-only gate.  Correctly flags the coaxial TMA (M1+FP in the
+      converging M2->M3 beam) and reports Cassegrain central obscuration
+      (secondary in the incoming beam).  2 tests in `tDesignTelescope`
+      (16/16 green).  Pure MATLAB -- rides the existing draw_rays getter,
+      no engine rebuild.
 - [ ] **Off-axis fold builder** (the actual fix) -- on-axis conic TMA ->
       decenter/tilt + fold flats (dmt6mono pattern); verify with
       view_layout + check_clipping.
