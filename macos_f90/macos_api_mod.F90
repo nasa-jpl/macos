@@ -4646,6 +4646,84 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! draw_rays -- expose DRAW's real ray bundle as DATA (no graphics).
+      ! Runs the SMACOS DRAW command in DATA-ONLY mode (DrawDataOnly): the
+      ! handler traces the draw-ray fan from iStartElt..iEndElt, projects
+      ! it onto the requested plane (1=YZ, 2=XZ, 3=XY) and leaves the bundle
+      ! in src_mod's DrawRayVec_save/DrawEltVec_save/nDrawElt_save -- NO Giza
+      ! device is opened and nothing renders.  The design-layer MATLAB/Python
+      ! viewer reads it back (real rays, any plane, element-sliced) and plots
+      ! it itself.  Two-call pattern (like spot_cmd/spot_get):
+      !   draw_rays_cmd(plane,iStart,iEnd) -> run DRAW, return buffer dims
+      !   draw_rays_get(...)               -> copy the saved bundle out
+      !---------------------------------------------------------------------------------------------
+      subroutine draw_rays_cmd(OK, plane, iStartElt, iEndElt, &
+                               nDrawElt_max, nDrawRay)
+        use param_mod, only: mDrawElt
+        use   src_mod, only: DrawDataOnly, DrawDataPlane, &
+                             DrawDataStartElt, DrawDataEndElt, nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: plane         ! 1=YZ, 2=XZ, 3=XY
+        integer, intent(in)  :: iStartElt     ! first elt to draw (0 = all)
+        integer, intent(in)  :: iEndElt       ! last elt to draw
+        integer, intent(out) :: nDrawElt_max  ! = mDrawElt (caller buffer dim)
+        integer, intent(out) :: nDrawRay      ! actual # of drawn rays
+        ! ------------------------------------------------------
+        OK = FAIL
+        nDrawElt_max = mDrawElt
+        nDrawRay     = 0
+        if (.not. SystemCheck()) return
+        if (plane < 1 .or. plane > 3) return
+
+        DrawDataPlane    = plane
+        DrawDataStartElt = iStartElt
+        DrawDataEndElt   = iEndElt
+        DrawDataOnly     = .TRUE.
+
+        IARG(1) = iStartElt        ! also load the stack for consistency
+        IARG(2) = iEndElt
+        IARG(3) = iEndElt
+        CARG(1) = 'XZ'
+        if (plane == 1) CARG(1) = 'YZ'
+        if (plane == 3) CARG(1) = 'XY'
+
+        command = 'DRAW'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        DrawDataOnly = .FALSE.
+        nDrawRay     = nDrawRay_save
+        OK = PASS
+      end subroutine draw_rays_cmd
+
+
+      subroutine draw_rays_get(OK, RayU, RayV, EltVec, nEltPerRay, nDE, nDR)
+        use src_mod, only: DrawRayVec_save, DrawEltVec_save, &
+                           nDrawElt_save, nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: nDE, nDR             ! caller buffer dims
+        real(8), intent(out) :: RayU(nDE,nDR)        ! projected x-coordinate
+        real(8), intent(out) :: RayV(nDE,nDR)        ! projected y-coordinate
+        integer, intent(out) :: EltVec(nDE,nDR)      ! elt index per crossing
+        integer, intent(out) :: nEltPerRay(nDR)      ! # crossings per ray
+        integer :: nr, ne
+        ! ------------------------------------------------------
+        OK = FAIL
+        RayU = 0d0; RayV = 0d0; EltVec = 0; nEltPerRay = 0
+        if (.not. allocated(DrawRayVec_save)) return
+        if (nDrawRay_save <= 0) return
+        nr = min(nDrawRay_save, nDR)
+        ne = min(size(DrawRayVec_save,2), nDE)
+        RayU(1:ne,1:nr)   = DrawRayVec_save(1,1:ne,1:nr)
+        RayV(1:ne,1:nr)   = DrawRayVec_save(2,1:ne,1:nr)
+        EltVec(1:ne,1:nr) = DrawEltVec_save(1:ne,1:nr)
+        nEltPerRay(1:nr)  = nDrawElt_save(1:nr)
+        OK = PASS
+      end subroutine draw_rays_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! ORS -- Optimize Reference Surface.
       ! Calls macos's interactive ORS command via SMACOS.  Traces the
       ! chief ray from the source to iElt-1 and then runs

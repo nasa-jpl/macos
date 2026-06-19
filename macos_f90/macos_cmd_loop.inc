@@ -1699,7 +1699,8 @@ C         ***Draw system layout and rays***
 	    IF (ifLoad) THEN
 	      IF ((iPloTyp.NE.0).AND.(iPloTyp.NE.5).AND.(iPloTyp.NE.6)
      &	          .AND.(iPloTyp.NE.8).AND.(iPloTyp.NE.9)
-     &	          .AND.(.NOT.ifPlot)) THEN
+     &	          .AND.(.NOT.ifPlot)
+     &	          .AND.(.NOT.DrawDataOnly)) THEN
 	        ifPlot=.TRUE.
 	        If (.not.IsOverDraw) CALL GRAINI
 	      END IF
@@ -1716,17 +1717,35 @@ C         ***Draw system layout and rays***
 
 	      iStartElt=0
 	      iEndElt=nElt
+	      IF (DrawDataOnly) THEN
+	        iElt = DrawDataStartElt
+	      ELSE
 	      CALL IACCEPT_S(iElt,0,1,
      &	                     'Enter first element to include:')
+	      END IF
 	      IF (iStartElt.LT.0) iStartElt=0
 	      IF (iStartElt.GT.nElt) iStartElt=nElt
+	      IF (DrawDataOnly) THEN
+	        iEndElt = DrawDataEndElt
+	      ELSE
 	      CALL IACCEPT_S(iEndElt,nElt,1,
      &	                     'Enter last element to include:')
+	      END IF
 	      IF (iEndElt.LT.iStartElt) iEndElt=iStartElt
 	      IF (iEndElt.GT.nElt) iEndElt=nElt
 
+	      IF (DrawDataOnly) THEN
+	        IF (DrawDataPlane.EQ.1) THEN
+	          ANS = 'YZ'
+	        ELSE IF (DrawDataPlane.EQ.3) THEN
+	          ANS = 'XY'
+	        ELSE
+	          ANS = 'XZ'
+	        END IF
+	      ELSE
 	      CALL CACCEPT(ANS,'XZ',
      &         'Enter drawing plane (XZ, YZ or XY in source coords): ')
+	      END IF
 	      IF (LCMP(ANS,'YZ',2)) THEN
 	        k=1; ANS='YZ'
 	        If (.not.LudDrawGrid) Then
@@ -1838,6 +1857,20 @@ C    Trace up to first element to be drawn
                 end if
  	      END DO
 
+C  --> Capture the draw-ray bundle for the design-layer draw_rays getter;
+C      in data-only mode skip the render below (no graphics device opened).
+	      nDrawRay_save = nDrawRay
+	      IF (.NOT.allocated(DrawRayVec_save)) THEN
+	        allocate(DrawRayVec_save(2,mDrawElt,mDrawRay))
+	        allocate(DrawEltVec_save(mDrawElt,mDrawRay))
+	        allocate(nDrawElt_save(mDrawRay))
+	      END IF
+	      DrawRayVec_save(:,:,1:nDrawRay) = DrawRayVec(:,:,1:nDrawRay)
+	      DrawEltVec_save(:,1:nDrawRay)   = DrawEltVec(:,1:nDrawRay)
+	      nDrawElt_save(1:nDrawRay)       = nDrawElt(1:nDrawRay)
+C  <--
+
+	      IF (.NOT.DrawDataOnly) THEN
 	      j=ICLEN(filnam)
 	      IF ((iPloTyp.EQ.5).OR.(iPloTyp.EQ.6).OR.(iPloTyp.EQ.8)
      &            .OR.(iPloTyp.EQ.9)) THEN
@@ -1864,6 +1897,7 @@ C 	Produce PGPLOT output  -jzlou
 	        CALL DRAW(CTITLE,nDrawElt,nDrawRay,
      &	                  DrawEltVec,DrawRayVec,XLabel,YLabel)
 	      END IF
+	      END IF  ! .NOT.DrawDataOnly
 
 	      ifBuild=.FALSE.
 	      ifTrace=.FALSE.
