@@ -1203,13 +1203,36 @@ conventions are debugged logic that must not be duplicated in MATLAB.
       accordingly.
 - [ ] Warm-started inner loop between outer iterates (§1.3.3).
 
-### Sprint 4 — diagnostics + docs
+### Sprint 4 — diagnostics + LAYOUT REALIZABILITY (pulled forward 2026-06-19)
 
-- [ ] Full `check_clipping()` (worst margin per element; the
-      pass/fail version ships in 2A) and `diagram()` (3-D side view,
-      names, distances, beam radii).
-- [ ] `plot_history`.
-- [ ] All three worked examples in the manual; tag `design-layer-v1`.
+The 2B coaxial TMA emit SELF-OBSCURES (all psiElt=(0,0,-1), vertices on
+the z-axis: M1@0, M2@-3, M3@+1.5, FP@-0.5 -> M1 and the FP sit ON the
+M2->M3 beam).  It "traces fine" only because MACOS walks elements in LIST
+order and never checks body-occults-beam.  So the layout tooling came
+early.  Off-axis reference: `~/dev/MACOS_sandbox/old_Rx/dmt6mono.in`
+(on-axis conic TMA -> decenter/tilt + flat FOLD mirrors -> beam clears;
+nECoord=6/TElt frames).
+
+- [x] **Real-ray viewer via a DATA-only DRAW path** (macos `f3e98e5`;
+      MACOS_resources `caf3b86`; both LOCAL/UNPUSHED).  Engine: `src_mod`
+      `DrawDataOnly` + capture arrays; DRAW handler copies its bundle +
+      skips render under the flag; `macos_api_mod` `draw_rays_cmd`/
+      `draw_rays_get` (real ray bundle as data, no Giza -- DRAW already
+      does plane YZ/XZ/XY + first/last-elt slicing).  mmacos:
+      `+macos/draw_rays.m`, `Telescope.diagram()` (cheap marginal pass)
+      and `Telescope.view_layout(plane,opts)` -- real rays + conic-sag
+      surfaces drawn to the actual beam FOOTPRINT, opts plane/istart/
+      iend/hide/nrays.  Reveals the coaxial obscuration directly.
+- [ ] **`check_clipping()`** -- 3-D bundle vs element bodies (a 2-D
+      projection paints FALSE conflicts, so judge in 3-D); pass/fail per
+      element; wire into `build()`.
+- [ ] **Off-axis fold builder** (the actual fix) -- on-axis conic TMA ->
+      decenter/tilt + fold flats (dmt6mono pattern); verify with
+      view_layout + check_clipping.
+- [ ] Examples reorg (DONE, `d9978d8`): `mmacos/examples/` ->
+      sensitivities / design / coronagraph.
+- [ ] `plot_history`; all worked examples in the manual; `diagram()` 3-D;
+      tag `design-layer-v1`.
 
 ### Sprint 5+ (deferred)
 
