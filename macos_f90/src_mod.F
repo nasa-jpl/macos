@@ -33,9 +33,22 @@ C***********************************************************************
 
         Save
 
-	Logical :: UDBeam_FLG, DrawMode, FSEG_CCAT_Flg
+	Logical :: UDBeam_FLG, DrawMode, FSEG_CCAT_Flg, DrawDataOnly
 	Logical, dimension(:), allocatable :: ObsType_FLG,
      &		 ObsVec_FLG
+
+	! DRAW-bundle capture for the design-layer draw_rays getter.  In
+	! data-only mode (DrawDataOnly=.TRUE.) the DRAW handler copies the
+	! ray bundle it already builds into these module arrays and SKIPS the
+	! Giza render; the getter reads them back -- real rays, no graphics
+	! device.  Sized lazily to (2,mDrawElt,mDrawRay) by the handler.
+	Real*8,  dimension(:,:,:), allocatable :: DrawRayVec_save
+	Integer, dimension(:,:),   allocatable :: DrawEltVec_save
+	Integer, dimension(:),     allocatable :: nDrawElt_save
+	Integer :: nDrawRay_save
+	! data-only DRAW inputs (set by the draw_rays getter; the handler
+	! reads these instead of prompting):  plane 1=YZ 2=XZ 3=XY
+	Integer :: DrawDataPlane, DrawDataStartElt, DrawDataEndElt
 
 	Integer, parameter :: mRing=20  ! max number flower rings allowed
 	Integer :: nGridPts,GridType,BeamType,nTestPts,nMinPts,
@@ -69,6 +82,11 @@ C***********************************************************************
             UDBeam_FLG    = .FALSE.
             DrawMode      = .FALSE.
             FSEG_CCAT_Flg = .False.
+            DrawDataOnly  = .FALSE.
+            nDrawRay_save = 0
+            DrawDataPlane    = 2
+            DrawDataStartElt = 0
+            DrawDataEndElt   = 0
 
             nGridPts     = 0
             GridType     = 0
