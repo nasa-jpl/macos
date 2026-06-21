@@ -1214,7 +1214,7 @@ early.  Off-axis reference: `~/dev/MACOS_sandbox/old_Rx/dmt6mono.in`
 nECoord=6/TElt frames).
 
 - [x] **Real-ray viewer via a DATA-only DRAW path** (macos `f3e98e5`;
-      MACOS_resources `caf3b86`; both LOCAL/UNPUSHED).  Engine: `src_mod`
+      MACOS_resources `caf3b86`; both PUSHED).  Engine: `src_mod`
       `DrawDataOnly` + capture arrays; DRAW handler copies its bundle +
       skips render under the flag; `macos_api_mod` `draw_rays_cmd`/
       `draw_rays_get` (real ray bundle as data, no Giza -- DRAW already
@@ -1256,15 +1256,48 @@ nECoord=6/TElt frames).
         using the off-axis footprint PATCH as the body (`da3af58`); a
         ~1/2-aperture decenter clears M2+FP.  ENGINE BUG noted (not fixed):
         `macos.save_rx` malformed-format crash `macos_IO.f90:200`.
-- [ ] **Off-axis SECTION via RptElt != VptElt** (Dave 2026-06-20, NEXT) --
-      M1 pole/stop at RptElt=(0,0,0) (fixed; the stop does NOT move with
-      downstream decenters -- so M1 foot_r fixed under decenter is CORRECT);
-      VptElt ~D/2 in +y, psi~(0,0,1) -> reflects sideways, M2 clears.
-      "Both knobs" (keep set_aperture_decenter).  emit_ today sets
-      RptElt=VptElt -- must support !=.  Then finish the `tma_offaxis`
-      worked example (uncommitted .m) + 3-plane (YZ/XZ/XY) view.
-      **NOTE: Dave has since "rethought how to handle off-axis design" --
-      await his new approach (may supersede this).**
+- [x] **Off-axis SECTION (RptElt != VptElt) + unobscured RC + AREA-mode
+      optimize + report views** (SHIPPED 2026-06-21, sls-dev `bc21082`).
+      Engine-true off-axis primitive: VptElt = parent figure VERTEX,
+      psiElt = parent AXIS, RptElt = section POLE (used sub-aperture center;
+      carries the TElt / perturbation center).  `ConSrf` takes the conic sag
+      from VptElt ONLY, so an off-axis section is just RptElt != VptElt on
+      the SAME parent figure (the j18sc segmented-PM pattern).
+      - `set_offaxis(clear,...)`: REQUIRED named target ('M3'|'all'|cellstr|
+        'none'); `clearance_solve_` bisects the decenter on `check_clipping`;
+        `resolve_section_poles_` sets poles + analytic section normals
+        (trace-neutral).  RC binding body = M1 (return beam), clears d=0.89D.
+      - `optimize('fields',(:,2))`: arbitrary 2-D (thx,thy) field set,
+        auto-drops the on-axis row (= implicit field 1); the +y
+        `fields_arcmin` path is byte-unchanged (direction cosines).
+        `macos.design.field_grid` / `field_cross` build the AREA + CROSS
+        field-set modes (CALIB's 12-FoV cap -> area-optimize practical to a
+        3x3 grid = 9 FoV; finer grids are evaluation-only).
+      - `view_field_map` (WFE contour/surf over the 2-D field) +
+        `view_orthoviews` (multi-plane layout report; view_layout core
+        refactored into a shared `draw_plane_` helper).  LAYOUT DEPTH FIX:
+        the conic sag uses the FULL transverse radius sqrt(h^2 + woff^2),
+        the out-of-plane center per element from an ORTHOGONAL DRAW fan
+        (`beam_offplane_`), so an off-axis section sits at the right depth in
+        the cross-plane view (the M1-in-XZ offset).  FP/EP/Return curves
+        drawn to the real beam FOOTPRINT; vertical label collision-avoidance.
+      - `realize_apertures` sizes clear apertures to the full-field 2-D
+        footprint (both fans); `add_pupil`'s flat image-Return renamed
+        `PupImg` -> `FP_return` (it sits at a focal plane, not a pupil image).
+      - Worked example `examples/design/rc_offaxis/example_rc_offaxis.m`:
+        ONE FoV input -> on-axis 0.0019lam -> set_offaxis('all') d=0.89D
+        0.75lam -> axial optimize(roc+conic) 0.0033lam -> 3x3 AREA optimize
+        (tip/tilt/dy+roc+conic) worst-field 0.49 -> 0.046lam diff-limited &
+        CLEAR -> 7x7 WFE map + x/y cross-sections + orthoviews.  Rigid DOFs
+        (not conics) correct the linear off-axis astigmatism.
+        `tDesignTelescope` 32/32, fast suite 167/0.
+- [ ] **Off-axis follow-ons** (NEXT thrust): OAP relay (FP -> collimating
+      OAP -> DM/filter space -> refocusing OAP -> FPM ...) -> JWST-style
+      field-bias TMA (reuse `set_offaxis` named-clearance + the field-bias
+      knob) -> `set_surface` freeform (SrfType 14 + FFZernCoef) -> fold flats
+      (TElt frames).  Everything downstream already runs on whatever `emit_`
+      produces.  (The old `examples/design/tma_offaxis/` is superseded by
+      rc_offaxis -- left untracked, pending delete.)
 - [x] Examples reorg (DONE, `d9978d8`): `mmacos/examples/` ->
       sensitivities / design / coronagraph.
 - [ ] `plot_history`; all worked examples in the manual; `diagram()` 3-D;
