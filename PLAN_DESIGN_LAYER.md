@@ -1236,10 +1236,36 @@ nECoord=6/TElt frames).
       (secondary in the incoming beam).  2 tests in `tDesignTelescope`
       (16/16 green).  Pure MATLAB -- rides the existing draw_rays getter,
       no engine rebuild.
-- [ ] **Off-axis fold builder** (the actual fix) -- on-axis conic TMA ->
-      decenter/tilt + fold flats (dmt6mono pattern); verify with
-      view_layout + check_clipping.
-- [ ] Examples reorg (DONE, `d9978d8`): `mmacos/examples/` ->
+- [x] **Off-axis design generation a+b** (DONE 2026-06-20, sls-dev,
+      pushed).  Take the on-axis TMA off-axis WITHOUT folds, vertices
+      pinned + axes aligned (e5mono/dmt6mono "design on-axis then move
+      off-axis" recipe):
+      - `set_field_bias(arcmin)` (tilt ChfRayDir; optimize() centers its
+        eval fields on the bias) `1ff9790`; `set_aperture_decenter(m)`
+        (off-axis used beam) `634a0bd`.  Off-axis mirrors emit `ApType=
+        None` (no clip); `aperture_full_field()` = per-elt clear aperture
+        (radius,xc,yc) over the FoV, emit-ready as Circular `ApVec=(r,xc,
+        yc)` `ba19f93`.
+      - `optimize('dofs',mask)` over `[TIP TILT CLOCK DX DY PIST ROC
+        CONIC]` (dopt_mod.F:43): CALIB tilt/decenter+conic, bakes into
+        psiElt/VptElt; clean re-emit reproduces (conics rot-sym so TElt
+        roll is trace-neutral).  +6' TMA 1.6e-6 -> 3e-9 diff-limited.
+        Sensible `TElt` emitted = local surface frame (Z=outward normal,
+        XY tangent; trace-neutral PERTURB/sensitivity interface) `2867370`.
+      - `check_clipping` clearance: signed clearance per elt (`d1664d4`)
+        using the off-axis footprint PATCH as the body (`da3af58`); a
+        ~1/2-aperture decenter clears M2+FP.  ENGINE BUG noted (not fixed):
+        `macos.save_rx` malformed-format crash `macos_IO.f90:200`.
+- [ ] **Off-axis SECTION via RptElt != VptElt** (Dave 2026-06-20, NEXT) --
+      M1 pole/stop at RptElt=(0,0,0) (fixed; the stop does NOT move with
+      downstream decenters -- so M1 foot_r fixed under decenter is CORRECT);
+      VptElt ~D/2 in +y, psi~(0,0,1) -> reflects sideways, M2 clears.
+      "Both knobs" (keep set_aperture_decenter).  emit_ today sets
+      RptElt=VptElt -- must support !=.  Then finish the `tma_offaxis`
+      worked example (uncommitted .m) + 3-plane (YZ/XZ/XY) view.
+      **NOTE: Dave has since "rethought how to handle off-axis design" --
+      await his new approach (may supersede this).**
+- [x] Examples reorg (DONE, `d9978d8`): `mmacos/examples/` ->
       sensitivities / design / coronagraph.
 - [ ] `plot_history`; all worked examples in the manual; `diagram()` 3-D;
       tag `design-layer-v1`.
