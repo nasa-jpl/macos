@@ -2110,10 +2110,11 @@
         ! set/get GridSrfdx
         if (setter .eqv. PASS) then
           GridSrfdx(iElt) = GridSrfdx_
+          CALL modified_rx(ok)   ! grid sampling changed -> invalidate the trace
         else
           GridSrfdx_ = GridSrfdx(iElt)
+          ok = PASS
         end if
-        ok = PASS
 
       end subroutine elt_srf_grid_spacing
 
@@ -2158,7 +2159,8 @@
           end associate
         end do
         end block
-        ok = PASS
+        ! grid data changed -> invalidate the trace (else a following trace is cached)
+        CALL modified_rx(ok)
 
       end subroutine elt_srf_grid_data_scale
 
@@ -2199,12 +2201,12 @@
                                  nGridMat(iElt)  = Nx
           GridMat(:,:,iEltToGridSrf(iElt))       = 0d0            ! reset first (just in case)
           GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) = GridMat_(:,:)  !Transpose(GridMat_(Ny:-1:1,:))
+          CALL modified_rx(ok)   ! grid data changed -> invalidate the trace
         else
           GridSrfdx_    = GridSrfdx(iElt)
           GridMat_(:,:) = GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt))
+          ok = PASS
         end if
-
-        ok = PASS
 
       end subroutine elt_srf_grid_data
 
@@ -2237,7 +2239,9 @@
           pgrid = pgrid + GridMat_(:,:)
         end associate
         ! GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) = GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) + GridMat_(:,:)  !Transpose(GridMat_(Ny:-1:1,:))
-        ok = PASS
+        ! grid data changed -> invalidate the trace so the next trace re-runs
+        ! (a grid edit alone does not dirty the trace -> cached OPD otherwise)
+        CALL modified_rx(ok)
 
       end subroutine elt_srf_grid_data_add
 
