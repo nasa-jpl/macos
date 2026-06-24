@@ -2222,6 +2222,11 @@
         real(8), dimension(Ny,Nx), intent(inout) :: GridMat_     ! displacement at node points from nominal shape (N x N) Grid
 
         integer,                   intent(in)    :: Nx,Ny
+        ! Orientation: the engine (surfsub.F NGSrf) reads GridMat(i,j) with the
+        ! FIRST index from xhat (i=+x) and the SECOND from yhat (j=+y).  Supply
+        ! the map with x along the first (row) index -- MATLAB callers build it
+        ! with ndgrid, NOT meshgrid (a meshgrid array is x<->y transposed, which
+        ! leaves even modes matching but silently flips odd (coma) modes).
         ! ------------------------------------------------------
         ok = FAIL
 
@@ -2231,8 +2236,22 @@
         ! check if SrfType /= Grid
         if (all(SrfType(iElt) /= GridTypeAll)) return
 
-        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt)
-        if ((Nx /= nGridMat(iElt)) .or. (Nx/=Ny) .or. (Nx<3)) return
+        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt).
+        ! Nx > mGridMat guards the case nGridMat(iElt) > the allocated GridMat
+        ! leading dim (e.g. a 256-grid Rx loaded at a 128 model): without it the
+        ! GridMat(1:Nx,1:Nx,slot) write runs off the slot into the next element's
+        ! grid -> cross-segment corruption.  Report loudly (not a silent no-op).
+        if ((Nx /= nGridMat(iElt)) .or. (Nx > mGridMat) .or. &
+            (Nx /= Ny) .or. (Nx < 3)) then
+          write(*,'(A,I0,A,I0,A,I0,A,I0)') &
+            ' ** elt_srf_grid_data_add: REJECTED for Elt ', iElt, &
+            ': got ', Nx, ' x ', Ny, ', need square == nGridMat=', &
+            nGridMat(iElt)
+          if (Nx > mGridMat) write(*,'(A,I0,A,I0,A)') &
+            '    Nx=', Nx, ' exceeds GridMat dim mGridMat=', mGridMat, &
+            ' -- use a larger model size'
+          return
+        end if
 
         ! add
         associate (pgrid=>GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)))
