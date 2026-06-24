@@ -2771,6 +2771,7 @@ C Set index
 C Set Zerns
 	  IF ((SrfType(iElt).EQ.SrfType_Zernike).OR.(SrfType(iElt).EQ.SrfType_ZrnGrData)) THEN
             ! Zernike: ANSI Ordering
+	    iZernTypeForNorm = ZernTypeL(iElt)
 	    IF (ZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          ZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
 	      CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
@@ -2811,6 +2812,7 @@ C Set Zerns
 C Set FF Zernike coefficients for FreeForm surface
 	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
             ! FF Zernike: ANSI Ordering
+	    iZernTypeForNorm = FFZernTypeL(iElt)
 	    IF (FFZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          FFZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
 	      CALL ZerntoMon1(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
@@ -2849,6 +2851,7 @@ C Set FF Zernike coefficients for FreeForm surface
 C Set Mon Zernike coefficients for FreeForm surface
 	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
             ! Mon Zernike: ANSI Ordering
+	    iZernTypeForNorm = MonZernTypeL(iElt)
 	    IF (MonZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          MonZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
 	      CALL ZerntoMon1(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
