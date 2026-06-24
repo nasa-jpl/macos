@@ -26,7 +26,7 @@ C *********************************************************************
 	use param_mod
         use elt_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
-     &                     LZPFailed
+     &                     LZPFailed, iZernTypeForNorm
 	use elemsub_mod
         use traceutil_mod
 	use tracesub_mod  ! for accessing getIndex() function
@@ -139,6 +139,7 @@ C Set index
           END IF
 C Set Zerns
           IF (SrfType(iElt).EQ.8) THEN
+            iZernTypeForNorm = ZernTypeL(iElt)
             IF (ZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          ZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
               CALL ZerntoMon1(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
@@ -168,6 +169,7 @@ C Set Zerns
 
 C Set FF Zernike coefficients for FreeForm surface
           IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            iZernTypeForNorm = FFZernTypeL(iElt)
             IF (FFZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          FFZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
               CALL ZerntoMon1(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
@@ -194,6 +196,7 @@ C Set FF Zernike coefficients for FreeForm surface
           END IF
 C Set Mon Zernike coefficients for FreeForm surface
           IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            iZernTypeForNorm = MonZernTypeL(iElt)
             IF (MonZernTypeL(iElt).EQ.ZernType_ANSI .OR.
      &          MonZernTypeL(iElt).EQ.ZernType_NormANSI) THEN
               CALL ZerntoMon1(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)

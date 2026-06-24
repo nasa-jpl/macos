@@ -20,6 +20,14 @@ C***********************************************************************
          INTEGER :: nZPFailMsg = 0
          INTEGER, PARAMETER :: mZPFailMsg = 20
 !<--
+!-->  ZernType to gate ZerntoMon1's RMS normalisation on.  ZerntoMon1 is
+!     shared by the element-Zern, FF and Mon coefficient paths, so it cannot
+!     infer the governing type from the element id alone.  Each dispatch path
+!     sets this just before its ZerntoMon* call (element-Zern -> ZernTypeL,
+!     FF -> FFZernTypeL, Mon -> MonZernTypeL); ZerntoMon1 consumes it and
+!     resets to -1.  -1 = fall back to ZernTypeL(ie) (legacy element-Zern path).
+         INTEGER :: iZernTypeForNorm = -1
+!<--
 
       CONTAINS
 
@@ -1778,6 +1786,10 @@ C  Computes surface function for gridded data surface
             END DO
 
             ! xi is non-integer coordinate in 1-99 frame, similar for yi
+            ! Orientation: xi (xhat) -> 1st index, yj (yhat) -> 2nd, so
+            ! GridMat(i,j) is i=+x, j=+y.  Callers must put x along
+            ! the 1st index (ndgrid, not meshgrid), else odd (coma) modes
+            ! arrive x<->y transposed.  See elt_srf_grid_data_add.
             xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
             yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
 
@@ -2825,6 +2837,10 @@ C***********************************************************************
                rho(i)=prel(i)+L*ihat(i)
                rhom(i)=rho(i)-rhoc(i)
             END DO
+            ! Orientation: xi (xhat) -> 1st index, yj (yhat) -> 2nd, so
+            ! GridMat(i,j) is i=+x, j=+y.  Callers must put x along
+            ! the 1st index (ndgrid, not meshgrid), else odd (coma) modes
+            ! arrive x<->y transposed.  See elt_srf_grid_data_add.
             xi=(xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/dAct+diCtr
             yj=(yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/dAct+diCtr
 
@@ -3374,11 +3390,20 @@ C***********************************************************************
             INTEGER             :: ie                  ! Element ID
 
             REAL*8  :: zc(mZernModes)
+            INTEGER :: iNT
             ! ----------------------------------------
             zc = zc_in
 
-            ! Apply rms Normalisation Factor
-            IF (ANY(ZernType_rms_normalised == ZernTypeL(ie))) zc = zc * NORM_RMS_PARAM_ANSI
+            ! Apply rms Normalisation Factor.  Gate on the type of the
+            ! coefficients being converted (iZernTypeForNorm, set by the
+            ! dispatch); -1 = legacy element-Zernike path (use ZernTypeL).
+            IF (iZernTypeForNorm >= 0) THEN
+               iNT = iZernTypeForNorm
+            ELSE
+               iNT = ZernTypeL(ie)
+            END IF
+            iZernTypeForNorm = -1     ! consume (reset for the next call)
+            IF (ANY(ZernType_rms_normalised == iNT)) zc = zc * NORM_RMS_PARAM_ANSI
 
 
             ! ANSI Zernike (index shifted by 1) to Monomials

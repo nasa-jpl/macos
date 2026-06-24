@@ -619,9 +619,9 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: FFZernCoefs(mFFCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 FFZernCoefs(:) = 0d0
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,nFFZernCoef)
-                ELSE
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernCoefs(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
@@ -757,9 +757,9 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: MonZernCoefs(mMonCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 MonZernCoefs(:) = 0d0
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,nMonZernCoef)
-                ELSE
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernCoefs(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
@@ -2205,9 +2205,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: FFZernCoefs(mFFCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 FFZernCoefs(:) = 0d0
-                IF (nFFZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,nFFZernCoef)
-                ELSE
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernCoefs(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
@@ -2321,9 +2321,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: MonZernCoefs(mMonCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 MonZernCoefs(:) = 0d0
-                IF (nMonZernCoef.LE.Grp) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,nMonZernCoef)
-                ELSE
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernCoefs(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
                   READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
