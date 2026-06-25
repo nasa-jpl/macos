@@ -18,7 +18,37 @@ replacement for PGPLOT.
 
 ---
 
+## Quick Start (Linux)
+
+**New here? → [HOW_TO_COMPILE.md](HOW_TO_COMPILE.md) is the annotated,
+copy-paste, step-by-step walkthrough.** The whole build is three steps:
+
+```bash
+# 1. PULL — two repos, side by side under one parent, on the SAME branch name
+mkdir -p ~/dev && cd ~/dev
+git clone git@github.com:nasa-jpl/macos.git
+git clone git@github.com:nasa-jpl/MACOS_resources.git
+git -C macos checkout opt-dev && git -C MACOS_resources checkout opt-dev
+
+# 2. BUILD — one command builds everything.  Use `source`, NOT `./`.
+cd ~/dev/macos
+source ./makeall.sh          # ifx (Intel oneAPI).  No Intel? → source ./makegfortran.sh
+
+# 3. RUN
+./build_release/bin/macos
+```
+
+A fresh clone ships **no pre-compiled libraries**: the first `makeall.sh` also
+builds the bundled graphics stack (Cairo / libpng / zlib / pixman + Giza),
+readline, and the SLSQP solver from source — so the first build takes a few
+minutes, and rebuilds after that are incremental. The step-by-step in
+[HOW_TO_COMPILE.md](HOW_TO_COMPILE.md) explains each line, every build script
+and its options, and the common failure modes.
+
+---
+
 ## Table of Contents
+- [Quick Start (Linux)](#quick-start-linux) — **start here**
 - [Directory Layout](#directory-layout)
 - [Clone the Repositories](#clone-the-repositories)
 - [Linux](#linux)
@@ -97,7 +127,10 @@ For a gfortran build use `makegfortran.sh` instead — Intel oneAPI is not requi
    source /opt/intel/oneapi/setvars.sh
    ```
 
-3. Build the bundled readline library (enables arrow-key history in macos):
+3. *(Automatic — skip unless you invoke CMake directly.)* The `make*.sh`
+   scripts build the bundled readline library for you on the first run
+   (arrow-key history at the `MACOS>` prompt). Only build it by hand if you
+   bypass the scripts and call CMake yourself:
    ```bash
    cd macos_f90/readline-8.2
    ./configure && make
