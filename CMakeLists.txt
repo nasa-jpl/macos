@@ -20,6 +20,21 @@ if(WIN32 AND NOT DEFINED CMAKE_C_COMPILER)
   endif()
 endif()
 
+# ==============================================================================
+# Workaround: CMake 3.28.x, 4.2.x, and 4.3.x fail to set
+# CMAKE_Fortran_PREPROCESS_SOURCE for Intel ifx 2026.x on Windows.
+# Must be set BEFORE project() is called.
+# ==============================================================================
+if(WIN32)
+  # Marked as a CACHE variable (not a plain set()) so it survives into
+  # the isolated try_compile sub-build that CMakeTestFortranCompiler.cmake
+  # spawns during ABI detection -- a plain set() before project() is not
+  # reliably propagated into that sub-process across CMake versions.
+  set(CMAKE_Fortran_PREPROCESS_SOURCE
+    "<CMAKE_Fortran_COMPILER> <DEFINES> <INCLUDES> <FLAGS> /fpp /E <SOURCE> > <PREPROCESSED_SOURCE>"
+    CACHE STRING "" FORCE)
+endif()
+
 project(SMACOS LANGUAGES Fortran C)
 
 option(BUILD_MACOS       "Build the MACOS executable"          ON)
@@ -27,6 +42,9 @@ option(BUILD_SMACOS      "Build the SMACOS static library"     ON)
 option(BUILD_SMACOS_LEAN "Build the SMACOS static library"     OFF)
 option(BUILD_SMACOS_DVR  "Build the smacos_dvr test driver"    OFF)
 option(BUILD_GMI         "Build the GMI Matlab mex interface"  OFF)
+option(BUILD_MMACOS      "Build the mmacos MATLAB MEX interface" OFF)
+set(MMACOS_FC "" CACHE STRING
+    "Fortran compiler for mmacos (gfortran or ifx). Empty = inherit parent compiler.")
 option(USE_NPSOL         "Build NPSOL-backed constrained optimization" OFF)
 set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
 
@@ -44,6 +62,7 @@ if(BUILD_SMACOS_LEAN)
   set(BUILD_SMACOS     OFF)
   set(BUILD_SMACOS_DVR OFF)
   set(BUILD_GMI        OFF)
+  set(BUILD_MMACOS     OFF)
   set(CMAKE_BUILD_TYPE Debug)
   message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
@@ -60,14 +79,22 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
       set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /QxHost")
       set(CMAKE_Fortran_FLAGS_DEBUG   "/debug:full /traceback /check:bounds /warn:interfaces /warn:unused")
       set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
+      # /arch:SSE2 fixes a clang-cl/icx divergence from MSVC where mmintrin.h
+      # intrinsics (used by Giza/Cairo) fail with "must be vectors" errors
+      # unless an explicit SIMD target is set. MSVC cl.exe doesn't need this;
+      # clang-cl-based icx does. See README Troubleshooting for details.
+      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN /arch:SSE2")
       set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
     else()
       set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
       set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
       set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
       set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN")
+      # /arch:SSE2 fixes a clang-cl/icx divergence from MSVC where mmintrin.h
+      # intrinsics (used by Giza/Cairo) fail with "must be vectors" errors
+      # unless an explicit SIMD target is set. MSVC cl.exe doesn't need this;
+      # clang-cl-based icx does. See README Troubleshooting for details.
+      set(CMAKE_C_FLAGS "/nologo /D_CRT_SECURE_NO_WARNINGS /DMSWIN /arch:SSE2")
     endif()
   else()
     # Linux Intel oneAPI (ifx/gcc)
@@ -136,8 +163,8 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/mathsub.F
   ${smacos_src_dir}/macos_debug.F
   ${smacos_src_dir}/src_mod.F
-  ${smacos_src_dir}/sysprop_mod.F
   ${smacos_src_dir}/cfiles_mod.F
+  ${smacos_src_dir}/sysprop_mod.F
   ${smacos_src_dir}/validate_prescription.F90
   ${smacos_src_dir}/usersub.F
   ${smacos_src_dir}/lsq.F
@@ -270,13 +297,10 @@ else()
 endif()
 
 # SLSQP -- Kraft's Sequential Least Squares Programming (ACM Alg 733,
-# BSD license).  Replacing NPSOL as MACOS's constrained-optim back end.
-# Always built; no opt-in needed since the source is BSD.  See
-# macos_f90/slsqp/LICENSE.txt.
+# BSD license). Replacing NPSOL as MACOS's constrained-optim back end.
+# Always built; no opt-in needed since the source is BSD.
 set(SLSQP_SOURCES ${smacos_src_dir}/slsqp/slsqp_optmz.f)
 add_library(slsqplib STATIC ${SLSQP_SOURCES})
-# Kraft's source predates IMPLICIT NONE -- relax the strict-implicit
-# warnings that the rest of macos uses, scoped to this target.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   target_compile_options(slsqplib PRIVATE "SHELL:-warn nointerfaces"
                                           "SHELL:-warn nounused")
@@ -418,70 +442,60 @@ if(BUILD_SMACOS_DVR)
   endif()
 endif()
 
-# GMI Matlab mex interface (Linux only)
+# ==============================================================================
+# GMI MATLAB mex interface (Linux + Windows)
+# Build logic lives in GMI/CMakeLists.txt — cross-platform, auto-detects MATLAB.
+# ==============================================================================
 if(BUILD_GMI)
-  if(WIN32)
-    message(WARNING "BUILD_GMI is not supported on Windows — skipping.")
-  else()
-    set(GMI_SRC_DIR "$ENV{HOME}/dev/MACOS_resources/GMI" CACHE PATH
-        "Directory containing GMI.F and GMIG.F")
-    if(NOT EXISTS ${GMI_SRC_DIR}/GMI.F)
-      message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}")
-    endif()
-    add_library(GMI SHARED
-        ${GMI_SRC_DIR}/GMI.F
-        ${GMI_SRC_DIR}/GMIG.F
-    )
-    set_target_properties(GMI PROPERTIES
-        OUTPUT_NAME GMI
-        SUFFIX ".mexa64"
-        PREFIX ""
-        Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_gmi
-    )
-    target_compile_definitions(GMI PRIVATE MX_COMPAT_32)
-    if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-      target_compile_options(GMI PRIVATE
-          -fPIC -fpp -132 -gen-interfaces -fp-model strict
-          -fno-omit-frame-pointer -O2 -xHOST
-      )
-    elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-      target_compile_options(GMI PRIVATE
-          -fPIC -cpp -ffixed-line-length-132
-          -fno-omit-frame-pointer -O2 -march=native
-          -fallow-argument-mismatch -std=legacy
-      )
-    endif()
-    target_include_directories(GMI PRIVATE
-        ${smacos_src_dir}
-        ${CMAKE_BINARY_DIR}/mod_smacos
-        ${MATLAB_ROOT}/extern/include
-    )
-    target_link_libraries(GMI PRIVATE
-        smacos
-        fitslib
-        ${NPSOL_LIBS} slsqplib
-        ${INTEL_LIBS}
-        -L${MATLAB_ROOT}/bin/glnxa64
-        -l:libmx.so -l:libmex.so -lmat
-        -lm -lstdc++
-    )
-    target_link_options(GMI PRIVATE
-        -Wl,--version-script,${MATLAB_ROOT}/extern/lib/glnxa64/fexport.map
-        -Wl,--no-undefined
-        -Wl,-rpath-link,${MATLAB_ROOT}/bin/glnxa64
-    )
-    if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
-      set_target_properties(GMI PROPERTIES
-          BUILD_RPATH   "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-          INSTALL_RPATH "${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib"
-      )
-      target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
-    elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-      set_target_properties(GMI PROPERTIES
-          BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-          INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-      )
-      target_link_options(GMI PRIVATE -Wl,--disable-new-dtags)
-    endif()
+  # GMI/ lives three levels up from pymacos/src/macos/ (this file's
+  # directory), at the MACOS_resources repo root -- same relative
+  # layout on Linux and Windows, so no platform split is needed.
+  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/../../../GMI")
+  set(GMI_SRC_DIR "${_gmi_default}" CACHE PATH
+      "Directory containing GMI.F, GMIG.F and CMakeLists.txt")
+  if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")
+    message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}
+Set -DGMI_SRC_DIR=<path> on the cmake command line.")
   endif()
+  add_subdirectory("${GMI_SRC_DIR}" "${CMAKE_BINARY_DIR}/gmi")
+endif()
+
+# ==============================================================================
+# mmacos MATLAB MEX interface (Linux + Windows)
+# Build logic lives in mmacos/CMakeLists.txt — cross-platform, auto-detects
+# MATLAB.  gfortran default; override with -DCMAKE_Fortran_COMPILER=ifx.
+# ==============================================================================
+if(BUILD_MMACOS)
+  # mmacos/ lives three levels up from pymacos/src/macos/ (this file's
+  # directory), at the MACOS_resources repo root -- same relative
+  # layout on Linux and Windows, so no platform split is needed.
+  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/../../../mmacos")
+  set(MMACOS_SRC_DIR "${_mmacos_default}" CACHE PATH
+      "Directory containing mmacos's CMakeLists.txt (mmacos_mex.F may be directly here or under src/)")
+  # Newer mmacos checkouts (with their own mmacos/CMakeLists.txt) keep
+  # Fortran sources under mmacos/src/ rather than directly in mmacos/.
+  # Check both locations so this works against older and newer layouts.
+  if(NOT EXISTS "${MMACOS_SRC_DIR}/src/mmacos_mex.F" AND
+     NOT EXISTS "${MMACOS_SRC_DIR}/mmacos_mex.F")
+    message(FATAL_ERROR "mmacos_mex.F not found in ${MMACOS_SRC_DIR} or ${MMACOS_SRC_DIR}/src
+Set -DMMACOS_SRC_DIR=<path> on the cmake command line.")
+  endif()
+
+  # Point mmacos at the current build tree so it picks up the freshly
+  # built libsmacos.a / mod_smacos without requiring a separate
+  # MACOS_BUILD_DIR on the command line.
+  set(MACOS_BUILD_DIR "${CMAKE_BINARY_DIR}" CACHE PATH
+      "Pre-built macos CMake tree consumed by mmacos (defaults to this build)" FORCE)
+
+  # Compiler override for mmacos — allows gfortran for mmacos while the
+  # parent build uses ifx (or vice versa).  Empty = inherit parent compiler.
+  # Usage: -DMMACOS_FC=gfortran  or  -DMMACOS_FC=ifx
+  if(NOT MMACOS_FC STREQUAL "")
+    find_program(_mmacos_fc_path "${MMACOS_FC}" REQUIRED)
+    set(CMAKE_Fortran_COMPILER "${_mmacos_fc_path}" CACHE FILEPATH
+        "Fortran compiler for mmacos (overridden by MMACOS_FC)" FORCE)
+    message(STATUS "mmacos: forcing Fortran compiler to ${_mmacos_fc_path} (MMACOS_FC=${MMACOS_FC})")
+  endif()
+
+  add_subdirectory("${MMACOS_SRC_DIR}" "${CMAKE_BINARY_DIR}/mmacos")
 endif()
