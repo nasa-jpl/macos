@@ -77,6 +77,9 @@ sudo apt install build-essential cmake gfortran git libx11-dev
 - `libx11-dev` — the interactive graphics window. This is the **only**
   graphics dev package you need; Cairo/libpng/zlib/pixman are bundled and built
   from source, so do **not** apt-install them.
+- **Optional: `ninja-build`** — a faster parallel build tool. The scripts use
+  it automatically when it's installed and fall back to `make` (from
+  `build-essential`) when it isn't, so it is **not** required.
 - MATLAB is **optional** — needed only for `GMI.mexa64` (auto-detected under
   `/usr/local/MATLAB/`; the build just skips GMI if it's missing).
 
@@ -258,6 +261,11 @@ source ~/dev/macos/makeall.sh
 5. **X11 / graphics build error** — install the dev headers:
    `sudo apt install libx11-dev`. (Cairo/png/zlib are bundled — don't go
    hunting for those packages.)
+6. **`CMake was unable to find a build program corresponding to "Ninja"`** —
+   your CMake defaults to the Ninja generator but ninja isn't installed. The
+   scripts now auto-fall back to `make`, so just `git pull` and re-run. To stay
+   on Ninja instead: `sudo apt install ninja-build`. If a half-configured
+   `build_*` directory was left behind, `rm -rf` it before retrying.
 
 For more (Windows, CMake-direct, lean/NPSOL builds, pymacos, and the full
 troubleshooting list) see [README.md](README.md).

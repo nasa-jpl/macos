@@ -70,8 +70,18 @@ READLINE_LIB="${READLINE_DIR}/shlib"
 INTEL_LIB="/opt/intel/oneapi/compiler/latest/lib"
 export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${LD_LIBRARY_PATH}"
 
+# --- Generator: prefer Ninja if installed, else Unix Makefiles.  On a
+# --- re-configure, reuse the existing cache's generator (avoids a mismatch). ---
+if [ -f "${BUILD_DIR}/CMakeCache.txt" ]; then
+  GEN_ARG=()
+elif command -v ninja >/dev/null 2>&1 || command -v ninja-build >/dev/null 2>&1; then
+  GEN_ARG=(-G Ninja)
+else
+  GEN_ARG=(-G "Unix Makefiles")
+fi
+
 # --- Configure ---
-cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
+cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" "${GEN_ARG[@]}" \
   -DCMAKE_Fortran_COMPILER="${FC}" \
   -DCMAKE_C_COMPILER=gcc \
   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \

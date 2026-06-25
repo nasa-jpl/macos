@@ -478,6 +478,12 @@ python -m pytest ..\tests\ -v
 
 ## Troubleshooting
 
+**`CMake was unable to find a build program corresponding to "Ninja"` (Linux)**
+Your CMake defaults to the Ninja generator but `ninja` isn't installed. The
+`make*.sh` scripts auto-select Make when ninja is absent, so `git pull` and
+re-run. To use Ninja instead: `sudo apt install ninja-build`. Delete any
+half-written `build_*` directory before retrying.
+
 **`CMAKE_Fortran_PREPROCESS_SOURCE` error on Windows**
 Caused by CMake 4.2.x + ifx 2025.3.x incompatibility. Update Intel oneAPI
 to 2026.0 or later. CMake 4.1.1 + ifx 2026.0 is confirmed working.
