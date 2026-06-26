@@ -2645,6 +2645,53 @@ C         *** same EP-element updates.  See tracesub.F SUBROUTINE SXP.
 	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
 	    END IF
 
+C         *** eXit-Pupil Surface (XPS) -- FEX over the full grid:
+C         *** returns the per-ray exit-pupil crossing cloud (the pupil
+C         *** SURFACE) in the ray buffer for ray_info_get.  See
+C         *** tracesub.F SUBROUTINE XPS.
+
+      ELSE IF (LCMP(command,'XPS',3)) THEN
+            IF (ifLoad) THEN
+ 8074       CALL IACCEPT_S(iElt,(nElt-1),1,
+     &        'Enter number of exit pupil return surface:')
+            iEm1=iElt-1
+            IF (iElt.LE.0) THEN
+              GO TO 1
+            ELSE IF (iElt.GT.nElt) THEN
+              WRITE (*,*)'XPS: Invalid element number: ',iElt
+              GO TO 8074
+            ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
+              WRITE(*,*)'Invalid element type =',EltID(iElt)
+              GO TO 8074
+            END IF
+          ELSE
+            WRITE(*,*)' Must load optical data first: use NEW or OLD.'
+            GO TO 1
+          END IF
+
+          IF (.NOT.ifStopSet) THEN
+            WRITE(*,*)
+     &        ' Must set stop before finding pupil. Use STOP command.'
+            GO TO 1
+          END IF
+
+          ifGrid=.FALSE.
+          ifPropagate=.FALSE.
+          ifTrace=.FALSE.
+          ifBuild=.FALSE.
+          ifOPDCalc=.FALSE.
+
+          CALL XPS(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &      ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &      iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &      nBadRays,StartIndRef,StartExtinc,
+     &      Cmatrix,DrawRayVec,DrawEltVec,
+     &      iElt,zp,psip,CrossPt,ifCentroid,
+     &      CRSpot,CentroidSpot,dCRCentroid)
+
+          WRITE(*,*)' XPS: exit-pupil surface computed; crossings in',
+     &      ' the ray buffer (ray_info_get).'
+
 C         ***Find Field Point using global or pixel coordinates***
 C         -- adjust source for chief ray to go through specified point on
 C         -- a given surface  -jzlou
