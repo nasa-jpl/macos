@@ -58,7 +58,7 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
 - C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
-- GMI.mexa64 is built via the standalone `MACOS_resources/GMI/Makefile` (not cmake) — more robust across MATLAB versions. makeall.sh and makegmi.sh both call it with `MACOS_BUILD_DIR` pointing to the cmake build tree.
+- GMI.mexa64 has two build paths: (1) the standalone `MACOS_resources/GMI/Makefile` — more robust across MATLAB versions — which `makeall.sh`/`makegmi.sh` invoke with `MACOS_BUILD_DIR` pointing at the cmake build tree; and (2) a cross-platform cmake path (`add_subdirectory(MACOS_resources/GMI/CMakeLists.txt)`, Luis 2026-06) gated on `-DBUILD_GMI=ON`, used by `makegfortran.sh`, Windows, and opt-in Linux. **`makeall.sh` deliberately keeps `-DBUILD_GMI=OFF`** so the Makefile is its sole GMI builder (no double build). New `-DBUILD_MMACOS=ON` builds the mmacos mex the same way (`MMACOS_FC` selects its compiler). **Path gotcha:** the cmake `GMI_SRC_DIR`/`MMACOS_SRC_DIR` defaults must be `${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/{GMI,mmacos}`, NOT `../../../{GMI,mmacos}` — the latter is correct only for pymacos's `src/macos/CMakeLists.txt`; in the top-level macos `CMakeLists.txt` it resolves to `/home/GMI` and FATAL-breaks `makeall`/`makegfortran` configure on Linux.
 
 ## Constrained optimization (SLSQP default, NPSOL opt-in)
 - Default back end: `design_slsqp_optim.F` + vendored Kraft SLSQP under
@@ -745,8 +745,10 @@ in CoroExample.jou-style scripts.
   cmake recompiles only changed files; delete the build directory for a clean rebuild.
 - macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
 - GMI (Matlab mex): built via standalone MACOS_resources/GMI/Makefile (invoked by
-  makeall.sh and makegmi.sh). MATLAB auto-detected under /usr/local/MATLAB/R*.
-  ifx 2025.3 quirk: -C flag implies -fsanitize=memory; use -check all instead.
+  makeall.sh — its sole GMI builder — and makegmi.sh), OR via the cross-platform
+  cmake add_subdirectory path (`-DBUILD_GMI=ON`; makegfortran.sh / Windows). MATLAB
+  auto-detected under /usr/local/MATLAB/R*. ifx 2025.3 quirk: -C flag implies
+  -fsanitize=memory; use -check all instead.
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
 

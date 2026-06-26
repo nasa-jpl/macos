@@ -87,7 +87,7 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" "${GEN_ARG[@]}" \
   -DBUILD_MACOS=ON \
   -DBUILD_SMACOS=ON \
   -DBUILD_SMACOS_DVR=ON \
-  -DBUILD_GMI=ON \
+  -DBUILD_GMI=OFF \
   -DUSE_NPSOL="${USE_NPSOL}" \
   || { echo "makeall: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
@@ -95,7 +95,9 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" "${GEN_ARG[@]}" \
 cmake --build "${BUILD_DIR}" -j"$(nproc)" \
   || { echo "makeall: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
 
-# --- Build GMI via its own Makefile (handles MATLAB detection itself) ---
+# --- Build GMI via its own Makefile — the single GMI builder here
+#     (cmake BUILD_GMI is OFF above to avoid a duplicate mex build; the
+#     Makefile handles MATLAB detection + ifx -reentrancy=none itself) ---
 GMI_DIR="$(realpath "${SCRIPT_DIR}/../MACOS_resources/GMI" 2>/dev/null || (cd "${SCRIPT_DIR}/../MACOS_resources/GMI" && pwd))"
 GMI_MEX="${GMI_DIR}/GMI.mexa64"
 if [ -f "${GMI_DIR}/Makefile" ]; then

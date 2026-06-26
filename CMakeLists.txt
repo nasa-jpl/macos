@@ -447,10 +447,10 @@ endif()
 # Build logic lives in GMI/CMakeLists.txt — cross-platform, auto-detects MATLAB.
 # ==============================================================================
 if(BUILD_GMI)
-  # GMI/ lives three levels up from pymacos/src/macos/ (this file's
-  # directory), at the MACOS_resources repo root -- same relative
-  # layout on Linux and Windows, so no platform split is needed.
-  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/../../../GMI")
+  # GMI/ is at the MACOS_resources repo root, a sibling of this macos repo:
+  #   <parent>/macos/CMakeLists.txt  ->  <parent>/MACOS_resources/GMI
+  # Same relative layout on Linux and Windows, so no platform split is needed.
+  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/GMI")
   set(GMI_SRC_DIR "${_gmi_default}" CACHE PATH
       "Directory containing GMI.F, GMIG.F and CMakeLists.txt")
   if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")
@@ -466,10 +466,10 @@ endif()
 # MATLAB.  gfortran default; override with -DCMAKE_Fortran_COMPILER=ifx.
 # ==============================================================================
 if(BUILD_MMACOS)
-  # mmacos/ lives three levels up from pymacos/src/macos/ (this file's
-  # directory), at the MACOS_resources repo root -- same relative
-  # layout on Linux and Windows, so no platform split is needed.
-  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/../../../mmacos")
+  # mmacos/ is at the MACOS_resources repo root, a sibling of this macos repo:
+  #   <parent>/macos/CMakeLists.txt  ->  <parent>/MACOS_resources/mmacos
+  # Same relative layout on Linux and Windows, so no platform split is needed.
+  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/mmacos")
   set(MMACOS_SRC_DIR "${_mmacos_default}" CACHE PATH
       "Directory containing mmacos's CMakeLists.txt (mmacos_mex.F may be directly here or under src/)")
   # Newer mmacos checkouts (with their own mmacos/CMakeLists.txt) keep
