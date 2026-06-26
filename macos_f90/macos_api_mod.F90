@@ -4667,6 +4667,29 @@
 
       end subroutine sxp_fnd
 
+      subroutine xps_cmd(OK, iElt)
+        use macos_mod, only: ifStopSet
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt
+
+        ! Run XPS (eXit-Pupil Surface): generalizes FEX to the whole
+        ! grid, leaving the per-ray exit-pupil crossing cloud in the ray
+        ! buffer (RayPos), which ray_info_get then exposes.  Unlike
+        ! sxp_fnd we do NOT MODIFY/re-trace afterward -- that would wipe
+        ! the crossings.  The grid is left in the differential-field
+        ! state; the caller re-traces (trace/modify) for normal use.
+        OK = FAIL
+        if (.not. (SystemCheck() .and. ifStopSet)) return
+
+        command = 'XPS'
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        OK = PASS
+
+      end subroutine xps_cmd
+
 
       !---------------------------------------------------------------------------------------------
       ! draw_rays -- expose DRAW's real ray bundle as DATA (no graphics).

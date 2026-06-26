@@ -614,6 +614,117 @@ C       Centroid / chief-ray option -- unchanged from FEX.
 
 
 C***********************************************************************
+C       eXit-Pupil Surface (XPS) -- FEX generalized to the full grid.
+C
+C       FEX finds the exit-pupil VERTEX by crossing the chief ray with a
+C       tiny field-rotated chief ray (RotChfRay, th = xGrid*5d-6).  XPS
+C       does the SAME differential for EVERY ray: trace the grid at the
+C       nominal field and at the rotated field, then per ray FindCrossPt
+C       the index-matched exit-ray pair.  Ray i keeps the same entrance-
+C       pupil zone at both fields (a collimated tilt holds the entrance
+C       position -- per the field<->aperture dual), so its crossing is
+C       the exit-pupil image of that zone; the cloud of crossings is the
+C       exit-pupil SURFACE (vertex = ray-1 crossing = FEX).  Pure
+C       geometry, no OPD.
+C
+C       Crossings are returned in RayPos(:,i) and the per-ray exit
+C       direction in RayDir(:,i), so the existing ray_info_get exposes
+C       the surface to the bindings.  A low-order Zernike fit (defocus/
+C       astig/coma) + reference-element placement are the next
+C       increment.  Companion to FEX/SXP.
+C***********************************************************************
+      SUBROUTINE XPS(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     & ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     & iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     & nBadRays,StartIndRef,StartExtinc,
+     & Cmatrix,DrawRayVec,DrawEltVec,
+     & iElt,zp,psip,CrossPt,ifCentroid,
+     & CRSpot,CentroidSpot,dCRCentroid)
+
+      use param_mod
+      use src_mod
+      use cfiles_mod
+      use elt_mod
+      use sourcsub_mod
+
+      IMPLICIT NONE
+
+      LOGICAL ifPol,ifGrid,ifPropagate,ifRayPrint,ifLNegOK,
+     & ifBuild,ifTrace,ifRegrid(mElt),ifIntSrfSet(mElt),ifDMBuild,
+     & ifDraw,ifCentroid
+
+      INTEGER iRay,npts,iCurWFElt,iCurRayElt,nBadRays,iStartElt,
+     & iEndElt,iObsOpt,iStartRay,iEndRay,nDrawElt,
+     & DrawEltVec(mDrawElt,mDrawRay),iElt,iEm1
+
+      SREAL Cmatrix(7,mCm,bRay),DrawRayVec(2,mDrawElt,mDrawRay)
+
+      REAL*8 Dicr,Djcr,dxSource,StartIndRef,StartExtinc,
+     & xDraw(3),yDraw(3),CentroidSpot(3),dCRCentroid(3),CRSpot(3),
+     & zp,psip(3),CrossPt(3),cr1d(3),cr1p(3),cr2d(3),cr2p(3),
+     & CrossDist,th(3),svDir(3),svPos(3),zpi
+      REAL*8, ALLOCATABLE :: cr1G(:,:),cr1dG(:,:)
+
+C       --- nominal field: build + trace the FULL grid to iEm1 ---
+      iEm1      = iElt-1
+      iStartElt = 0
+      iEndElt   = iEm1
+      CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     & ifPropagate,ifGrid)
+      iStartRay = 1
+      iEndRay   = nRay
+      CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     & Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     & ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     & StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+      ALLOCATE(cr1G(3,nRay),cr1dG(3,nRay))
+      DO iRay=1,nRay
+        CALL DEQUATE(cr1G(1,iRay),RayPos(1,iRay),3)
+        CALL DEQUATE(cr1dG(1,iRay),RayDir(1,iRay),3)
+      END DO
+
+C       --- differential field: rotate ChfRayDir by th, re-grid, trace -
+      CALL DSMPROD(th,xGrid,5d-6,3)
+      CALL DEQUATE(svDir,ChfRayDir,3)
+      CALL DEQUATE(svPos,ChfRayPos,3)
+      CALL RotChfRay(th,ChfRayDir,ChfRayPos,StopPos)
+      CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     & ifPropagate,ifGrid)
+      iStartRay = 1
+      iEndRay   = nRay
+      CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     & Cmatrix,iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     & ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     & StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+
+C       --- per-ray crossing -> exit-pupil surface point/zone ---
+      DO iRay=1,nRay
+        CALL DEQUATE(cr1p,cr1G(1,iRay),3)
+        CALL DEQUATE(cr1d,cr1dG(1,iRay),3)
+        CALL DEQUATE(cr2p,RayPos(1,iRay),3)
+        CALL DEQUATE(cr2d,RayDir(1,iRay),3)
+        CALL FindCrossPt(cr1p,cr1d,cr2p,cr2d,zpi,CrossDist,CrossPt)
+        CALL DEQUATE(RayPos(1,iRay),CrossPt,3)
+        CALL DEQUATE(RayDir(1,iRay),cr1d,3)
+        IF (iRay.EQ.1) THEN
+          zp = zpi
+          CALL DNEGATE(psip,cr1dG(1,1),3)
+        END IF
+      END DO
+
+      CALL DEQUATE(CrossPt,RayPos(1,1),3)
+      print*,'***** XPS: vertex =',CrossPt
+      print*,'***** XPS: zp(chief) =',zp
+
+C       --- restore nominal field ---
+      CALL DEQUATE(ChfRayDir,svDir,3)
+      CALL DEQUATE(ChfRayPos,svPos,3)
+      DEALLOCATE(cr1G,cr1dG)
+      END SUBROUTINE XPS
+
+
+C***********************************************************************
         ! Find Detector (Focal) Plane Position and Orientation
 
 	SUBROUTINE FDPN(dpElt,npts,ifPol,ifGrid,ifPropagate,ifDraw,
