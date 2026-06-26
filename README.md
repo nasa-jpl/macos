@@ -379,7 +379,9 @@ cmake --build build
 | `macos.exe` executable | `build\bin\macos.exe` |
 | `smacos.lib` static library | `build\lib\smacos.lib` |
 
-> **Note:** GMI and smacos_dvr are not supported on Windows.
+> **Note:** GMI now builds on Windows (`GMI.mexw64`) via the cmake path
+> (`-DBUILD_GMI=ON`); the mmacos mex likewise (`-DBUILD_MMACOS=ON`).
+> `smacos_dvr` remains Linux-only.
 
 ---
 
@@ -393,9 +395,11 @@ Pass these to cmake with `-D<OPTION>=ON/OFF`:
 | `BUILD_SMACOS` | ON | Build the `libsmacos.a` static library |
 | `BUILD_SMACOS_LEAN` | OFF | Minimal smacos (no FITS, no graphics). Mutually exclusive with `BUILD_SMACOS` |
 | `BUILD_SMACOS_DVR` | OFF | Build the `smacos_dvr` test driver (Linux only) |
-| `BUILD_GMI` | OFF | Build the MATLAB GMI mex interface (Linux only) |
+| `BUILD_GMI` | OFF | Build the MATLAB GMI mex interface (Linux + Windows). Delegates to `MACOS_resources/GMI/CMakeLists.txt`; override its location with `-DGMI_SRC_DIR=<path>` |
+| `BUILD_MMACOS` | OFF | Build the MATLAB mmacos mex interface (Linux + Windows). Delegates to `MACOS_resources/mmacos/CMakeLists.txt`; override with `-DMMACOS_SRC_DIR=<path>` |
+| `MMACOS_FC` | *(empty)* | Fortran compiler for the mmacos mex (`gfortran` or `ifx`); empty = inherit the parent build's compiler |
 | `USE_NPSOL` | OFF | Also build the NPSOL constrained-optim back end (opt-in). SLSQP is always built and is the default. Requires `macos_f90/npsol/` source tree |
-| `MATLAB_ROOT` | `/usr/local/MATLAB/R2025b` | MATLAB installation path (for GMI build) |
+| `MATLAB_ROOT` | `/usr/local/MATLAB/R2025b` | MATLAB installation path (for GMI / mmacos build) |
 
 ---
 
@@ -408,7 +412,8 @@ Pass these to cmake with `-D<OPTION>=ON/OFF`:
 | `build_release/lib/libsmacos.a` | Linux | SMACOS static library |
 | `build/lib/smacos.lib` | Windows | SMACOS static library |
 | `build_release/bin/smacos_dvr` | Linux | SMACOS test driver |
-| `~/dev/MACOS_resources/GMI/GMI.mexa64` | Linux | MATLAB mex interface |
+| `~/dev/MACOS_resources/GMI/GMI.mexa64` | Linux | MATLAB GMI mex (standalone Makefile / makeall) |
+| `build\bin\GMI.mexw64` | Windows | MATLAB GMI mex (cmake `-DBUILD_GMI=ON` path) |
 
 ---
 
@@ -485,12 +490,16 @@ re-run. To use Ninja instead: `sudo apt install ninja-build`. Delete any
 half-written `build_*` directory before retrying.
 
 **`CMAKE_Fortran_PREPROCESS_SOURCE` error on Windows**
-Caused by CMake 4.2.x + ifx 2025.3.x incompatibility. Update Intel oneAPI
-to 2026.0 or later. CMake 4.1.1 + ifx 2026.0 is confirmed working.
+The top-level `CMakeLists.txt` now sets this variable explicitly before
+`project()`, so current checkouts build through the CMake 4.2.x/4.3.x + ifx
+2026.x incompatibility. If you still hit it on an older checkout, update Intel
+oneAPI to 2026.0 or later (CMake 4.1.1 + ifx 2026.0 is confirmed working).
 
 **`mmintrin.h` errors when building Cairo/Giza on Windows**
-Caused by icx version incompatibility with the Windows SDK. Update Intel
-oneAPI to 2026.0 or later and ensure Visual Studio 2022 or 2026 is installed.
+The Windows C flags now include `/arch:SSE2`, which fixes the clang-cl/icx
+`mmintrin.h` "must be vectors" failures on current checkouts. If you still see
+it, update Intel oneAPI to 2026.0 or later and ensure Visual Studio 2022 or
+2026 is installed.
 
 **`pgplot_mod` not found**
 `pgplotdummy.F` must be present in the `macos_f90/` directory. It provides
