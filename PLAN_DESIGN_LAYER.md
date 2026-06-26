@@ -1146,9 +1146,38 @@ trace time (positional convention: EP = nElt-1, FP = nElt).  Matches
       TMA holds **< 0.1λ to ~15′** (11–26× gain).  Saves `.in`+`.mat`+a
       WFE-vs-field PNG, calls `add_pupil`, no `exit(0)`.  RC + align
       examples retrofitted to the same rules.
-- [ ] First wide-FoV **freeform** result: TMA, M2 monomial + M3 freeform-
-      Zernike, band-and-FoV-averaged WFE — **DEFERRED** with `set_surface`
-      (the conic-DOF Korsch already proves the wide-field win).
+- [x] First wide-FoV **freeform** result — **LANDED 2026-06-24** as
+      `mmacos/design/sz_tma/` (sphere+Zernike unobscured TMA, e5mono-derived,
+      f/21). Builder gained `set_base_sphere` (Kc=0) + `add_mirror`'s `convex`
+      flag (psi→downstream CoC) + convex-aware `paraxial_focus_` + a ZernModes
+      single-line emit fix; `set_freeform`/`optimize_freeform` (CALIB OptZern)
+      do the staged center→field correction. On-axis diffraction-limited
+      (0.044λ from a 35700λ all-sphere start); 2-D ±2′ is field-limited (0.78λ
+      area-wtd — narrow-field e5mono geometry + 15 modes). See
+      `mmacos/design/README.md` + agent memory `project_sz_tma`. NOTE: Seidel
+      mis-models a convex secondary's focus AND conics — focus fixed
+      (paraxial_focus_, gated on any-convex; fixtures untouched), the conic fix
+      is the approved follow-on (`project_seidel_convex_bug`). HELD/uncommitted.
+      Next: pupil-referenced `optimize_freeform('engine','jacobian')` (linear
+      dW/dZern solve, reuses the GMI `dw_dz_zernike` sensitivity) + widen the
+      2-D field (M2 closer to input beam / intermediate focus closer to M2).
+- [x] **Exit-pupil-surface evaluator** — **LANDED 2026-06-26.**  New
+      engine command `XPS` (`tracesub.F`: FEX generalized to the whole
+      grid — per-ray field-differential `FindCrossPt`; vertex = FEX to
+      0 m) + `macos.pupil_quality()` (mmacos) fit the pupil SURFACE as
+      low-order Zernikes in the FLAT entrance-pupil coordinate.  Pure
+      geometry, no OPD (the field↔aperture dual of image-surface finding:
+      hold the entrance position, vary direction — per Dave).  On
+      `sz_tma` the 3-mirror exit pupil is **+1.67 mm defocus + 1.77 mm
+      astig** — the curved+astigmatic pupil a **+1 near-focus field
+      mirror** must null for a flat Lyot/DM/apodizer conjugate.  This is
+      the measurement substrate for **simultaneous focal+pupil
+      optimization** (pupil residuals stack into the same weighted vector
+      as the focal OPD).  Engine: sls-dev `5bd1804`; tool: mmacos sls-dev
+      `80645af`.  Next: in-engine Zernike fit + reference-element
+      placement (the "place a pupil" capability for the FSM/EP/apodizer/
+      Lyot stations), then feed pupil residuals to the jacobian/lsqnonlin
+      engine.
 
 > **Example-building rules (Dave 2026-06-17, apply to ALL real examples
 > incl. the 2A-ii 2-mirror ones — retrofit them):** live in a
