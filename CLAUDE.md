@@ -1,31 +1,45 @@
 # MACOS Source Tree
 
-
 NASA/JPL optical ray tracing code. Legacy Fortran, some files date to the 1980s.
 Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
-> context compaction or a tooling upgrade, before resuming build or engine
-> work, re-read the doc set across ALL working dirs (the conversation
-> summary drops mechanical how-to): this file + `PLAN.md`
-> (+ `PLAN_DESIGN_LAYER.md`); `MACOS_resources/{mmacos,pymacos,GMI}/CLAUDE.md`
-> + their `README.md`; and the agent `MEMORY.md` (esp. the build/test
-> workflow entries). This same directive heads each working-folder CLAUDE.md.
+> context compaction or a tooling upgrade, before resuming build or
+> engine work, re-read: **this file**, `PLAN.md`, `PLAN_DESIGN_LAYER.md`,
+> `CURRENT_SLICE.md` (in-flight state), and the agent `MEMORY.md`
+> (build/test workflow entries).
+>
+> **THEN re-read the nested `CLAUDE.md` for whatever subsystem you are
+> resuming** — see the index below. Nested CLAUDE.md files load on demand
+> when CC reads a file in their directory and are **NOT auto-re-injected
+> after compaction**; if you resume a giza / optimizer / engine-core task
+> without first opening a file there, that subsystem's gotchas are not in
+> context. Re-read the matching nested file explicitly. This directive
+> heads each working-folder CLAUDE.md.
 
-This file lives on the `opt-dev` branch.  Default builds ship SLSQP
-(Kraft 1988, BSD-licensed) as the constrained-optimization back end —
-no extra source tree, no license, ready out of the box.  NPSOL is
-preserved as an opt-in compile-time option (`-DUSE_NPSOL=ON`, OFF by
-default) for A/B comparison and grandfathered users; all build scripts
-accept a parallel `npsol` argument (e.g. `source ./makems.sh npsol`,
-`source ./makegfortran.sh release npsol`).  The NPSOL tree at
-`macos_f90/npsol/` and the `design_cons_optim.F` + `np_optim_dvr`
-driver compile only when USE_NPSOL=ON.  Companion branch on
-MACOS_resources is also `opt-dev` — GMI's Makefile auto-detects
-`libnpsol.a` / `liblapacklib.a` / `libblaslib.a` in the macos build
-dir and links them when present.  `sls-dev` is held in lockstep with
-`opt-dev` for now; the NPSOL source tree will be removed when
-`opt-dev` is promoted to the public release branch.
+> **Why this file is short.** Subsystem gotchas live next to their source
+> (load-on-demand, lower per-session context cost, higher adherence than
+> one long file). Only genuinely cross-cutting, every-session rules stay
+> here. When you add a gotcha, put it in the nested file for its subtree,
+> not here — unless it applies tree-wide.
+
+---
+
+## Subsystem cheatsheets — load on demand (and re-read after compaction)
+
+| Working in… | Read | Covers |
+|---|---|---|
+| `macos_f90/giza/`, `pgplotsub.F`, any plot/display path | `macos_f90/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
+| `macos_f90/slsqp/`, `design_slsqp_optim.F`, constrained optim | `macos_f90/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
+| engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` | §0 closed-hygiene bugs, CALIB wrappers, FreeForm=14 + user input, per-ray status, PERTURB, SXP, ZernType parse + apply-dispatch, deferred PolyObsVec, MOD crash guard, prescription validator, CLI sub-prompts, LOG cleanup, name-collision traps, macos_api_mod wrapper layer + buffer-wrapper template |
+| pymacos wrappers / regression | `../MACOS_resources/pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
+| coronagraph test prescriptions | `../MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
+
+> **CC:** If a gotcha spans two subtrees (e.g. a wrapper that touches both
+> `macos_api_mod` and pymacos), put the engine-side detail in the nested
+> file nearest the Fortran and leave a one-line pointer in the other.
+
+---
 
 ## Build
 CMake-based. All scripts live in `macos/` and accept `[debug|release] [gfortran]`
@@ -60,353 +74,6 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
 - GMI.mexa64 has two build paths: (1) the standalone `MACOS_resources/GMI/Makefile` — more robust across MATLAB versions — which `makeall.sh`/`makegmi.sh` invoke with `MACOS_BUILD_DIR` pointing at the cmake build tree; and (2) a cross-platform cmake path (`add_subdirectory(MACOS_resources/GMI/CMakeLists.txt)`, Luis 2026-06) gated on `-DBUILD_GMI=ON`, used by `makegfortran.sh`, Windows, and opt-in Linux. **`makeall.sh` deliberately keeps `-DBUILD_GMI=OFF`** so the Makefile is its sole GMI builder (no double build). New `-DBUILD_MMACOS=ON` builds the mmacos mex the same way (`MMACOS_FC` selects its compiler). **Path gotcha:** the cmake `GMI_SRC_DIR`/`MMACOS_SRC_DIR` defaults must be `${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/{GMI,mmacos}`, NOT `../../../{GMI,mmacos}` — the latter is correct only for pymacos's `src/macos/CMakeLists.txt`; in the top-level macos `CMakeLists.txt` it resolves to `/home/GMI` and FATAL-breaks `makeall`/`makegfortran` configure on Linux.
 
-## Constrained optimization (SLSQP default, NPSOL opt-in)
-- Default back end: `design_slsqp_optim.F` + vendored Kraft SLSQP under
-  `macos_f90/slsqp/` (BSD; see `slsqp/LICENSE.txt`).  Same external
-  signature as `np_optim_dvr` so call sites in `macos_cmd_loop.inc`
-  (start_optim ~3661, restore ~3964) don't change.
-- Dispatch (in `macos_cmd_loop.inc`): `#ifdef USE_NPSOL` calls
-  `np_optim_dvr`; `#else` calls `slsqp_optim_dvr`.  Both drivers exist
-  under USE_NPSOL=ON so the same binary can be A/B'd via prescription.
-- MACOS's "constrained" optimization is bound-constrained only
-  (`nclin=ncnln=0` historically in `design_cons_optim.F`); SLSQP runs
-  in its simplest regime — smooth objective + box bounds.
-- **Numerical gotcha: variable pre-scaling.**  SLSQP's QP solver
-  underflows when `|grad|/|bound|` is large (e.g. macos's native
-  `dtt=1e-9` FD step gives ~1e5 gradient against ~5e-4 tip/tilt
-  bounds → 1e9 ratio → zero step on first call, mode=0 silent
-  exit).  `slsqp_optim_dvr` rescales each DOF by
-  `s_i = 1/max(|bl_i|, |bu_i|, eps)` before every `slsqp()` call and
-  un-rescales `aparams` inside the funcobj evaluation — SLSQP is
-  mathematically scale-invariant so this is a pure numerical-health
-  fix.  Comment block above the slsqp call has the derivation.
-  Do not bump `dtt`: ray-trace linearity at large FD steps was the
-  reason the alternate fix was rejected.
-- A/B verification reference: `ZGD_test_files/opt_example_constrained.in`
-  (Elt 7 TIP+TILT, ±0.5 mrad bounds, WFE target, OptMaxItrs=200).
-  NPSOL and SLSQP agree to 11+ digits on final WFE.
-- Open work: setbeam.inc still uses `npoptn` + `npsol` directly
-  (Phase 3.1 — port deferred); `m.calib_set_algorithm(...)` setter
-  in pymacos/mmacos bindings (Phase 5).
-- See `macos_f90/slsqp/README.md` for the full NPSOL→SLSQP mapping,
-  reverse-comm protocol, and convergence story.
-
-## §0 hygiene cluster (latent bugs closed on opt-dev)
-- **`macos_realloc` after `macos_init_all`.**  Code paths that call
-  `macos_init_all(modelSize)` directly (smacos_dvr, pymacos init,
-  mmacos init) must set `macos_realloc = .true.` afterward so the
-  first `SMACOS()` call re-allocates its scratch buffers
-  (`L1, R1, R2, PertVec, DrawEltVec, DV1, DV2, D2, CD1, CD2, DWF`)
-  for the new `mdttl`.  Interactive macos.F gets this for free via
-  the main command-loop path.  Without it, model_size transitions
-  (512 ↔ 1024) silently corrupt the heap on the first plot.
-- **DFOURN scratch growth.**  `sunsub.F:DFOURN` had a SAVE'd
-  `first_entry` LOGICAL that allocated the scratch `DATA(:)` array
-  once and never grew it.  Pymacos's model_size transitions blow
-  past the original `SzData`.  Fixed: re-allocate when
-  `.not.allocated(DATA) .or. size(DATA) < SzData`.
-- **`psiElt` renormalization in `CPERTURB_PROG` (funcsub.F).**  After
-  `Q · psi_in → psi_out` the result drifts off unit-norm for large
-  rotations (≥ a few mrad cumulative).  Divide by
-  `sqrt(sum(D1**2))` after the DMPROD.  Caught by Src vs all-optics-
-  group equivalence test.
-- **`dopt_init_vars` sentinel defaults.**  `OptTgtElt=-1` and
-  `OptAlg=NonLin` initialized so prescriptions that omit them parse
-  cleanly through the new constrained-optim path (previously
-  uninitialized → silent garbage element index).
-- **`MBFile6` parser noise.**  Unknown-key catch-all for `OptBeam=`
-  added to `msmacosio.inc` so older prescriptions don't trip on it.
-- **ConSrf near-tangent fallback (`surfsub.F`).**  When
-  `k2 = b*b - 4*a*c < TOL_TANGENT * b*b` the quadratic is effectively
-  linear; fall back to `L = -b/(2*a)` instead of `sqrt(k2)` to avoid
-  loss-of-precision NaN.
-- **`smacos_compute.inc` slice overrun.**  Five `1:mZern` → `1:mZernModes`
-  fixes (mZern≠mZernModes when both Zern and FF aspheres are active).
-  Cherry-picked back to release-candidate.
-
-## CALIB wrappers in macos_api_mod (Phase 1a/1b/1c)
-- **CALIB *is* the native multi-field design optimizer** (`nls_optim_dvr`
-  LM + SLSQP/NPSOL in `design_optim.F`): multi-field × multi-λ,
-  FoV-weighted least-squares over per-element DOFs (8-DOF `VarElt` mask;
-  **DOF 7 = radius, DOF 8 = conic**), Zernike modes, aspheric coeffs;
-  targets WFE/SPOT/WFE_ZMODE (≤12 FOV × 6 λ).  `calib_run` returns
-  per-(FOV,λ) WFE before/after.  This is the **`native` engine** for the
-  design layer's multi-field `optimize()` (PLAN_DESIGN_LAYER §8 Sprint
-  2B).  FOV set + vars + target are configured via the `.in` Opt*
-  keywords today; programmatic field setters (`calib_add_fov`/
-  `calib_set_wavelens`) are the deferred Phase-1d gap.
-- `calib_run` + `calib_buffer_dims` (Phase 1a): drive `'CALIB'`
-  end-to-end via SMACOS and expose result dims to pymacos/mmacos.
-- Programmatic setters (Phase 1b): `calib_set_var_elt`,
-  `calib_clear_var_elts`, `calib_set_iter`, `calib_set_tol`,
-  `calib_set_target` — let bindings configure a calibration run
-  without round-tripping through a `.in` prescription edit.
-- `calib_clear_var_elts` carries defensive `allocated()` guards
-  before deallocating optional arrays (Phase 1c) — silently no-ops
-  rather than SIGSEGVing on a fresh `macos_init_all` state.
-- pymacos: `m.calib(...)` plus `m.calib_set_*(...)` setters in
-  `macos.py`.  mmacos: `+macos/calib*.m` plus Session methods.
-
-## Branch model (as of 2026-06)
-- **`sls-dev`** — integration branch for new work.  Multi-person WIP
-  lands here.  All non-bug-fix commits go here first.
-- **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
-  to `main` for the public release (with NPSOL source tree removed
-  at promotion time).
-- **`release-candidate`** — **frozen** at `19bfbf8` (the mZern slice-
-  overrun cherry-pick).  No new commits.  Pre-existing references to
-  it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
-  over time.
-- **`main`** — public release surface.  Currently far behind opt-dev;
-  promoted from opt-dev at release time per the public-release
-  strategy below.
-
-Day-to-day: push new features to `sls-dev`; cherry-pick bug fixes
-to `opt-dev`; let `sls-dev` accumulate until a promotion gate
-(at which point it gets fast-forward-merged into `opt-dev` for
-the next release).
-
-## Public-release strategy
-- Two-repo model (JPL's GitHub plan doesn't support branch-level
-  visibility): internal `nasa-jpl/macos` (private) keeps all dev
-  branches and full history; a separate public repo (name TBD,
-  e.g. `nasa-jpl/macos-release`) gets a snapshot per release —
-  single commit + tag on its `main`, dev files stripped.
-- Sync via a not-yet-written `tools/prepare-public-release.sh`
-  driven by `tools/PUBLIC_EXCLUDE.txt` (CLAUDE.md, PLAN.md,
-  `.claude/`, `docs/Archive/`, internal ZGD test fixtures, etc.).
-- Before `opt-dev → main` promotion: remove the NPSOL source tree
-  from the public-bound snapshot (SLSQP stays as the default and
-  only constrained back end on the public side).
-
-## Key files for current work
-- macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
-- macos_f90/surfsub.F        : all surface intersection routines
-- macos_f90/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector, Refractor)
-- macos_f90/param_mod.F      : array dimension parameters (mElt, mGridMat, etc.)
-- macos_f90/iosub.inc        : ChkDf2 defaults, PrtSingleEltInfo output (included by macosio.F)
-- macos_f90/msmacosio.inc    : prescription file reader (included by macosio.F and smacosio.F)
-- macos_f90/macosio.F        : interactive UI dialog for element entry
-- macos_f90/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
-- macos_f90/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
-- macos_f90/srtrace.F        : single-ray trace (Reflector call sites)
-- macos_f90/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
-- macos_f90/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
-- macos_f90/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
-- macos_f90/macos_api_mod.F90: language-neutral SMACOS-call wrapper layer (`MODULE macos_api_mod`) — backbone for pymacos and mmacos; compiled into libsmacos.a
-
-## Current work: SrfType_FreeForm = 14
-Composite surface: conic + Mon monomial + FF monomial + grid data.
-- FreeFormSrf() and helpers (MonomialEval, MonomialD2, ConicDeltaS)
-  now in surfsub.F as module procedures inside MODULE surfsub.
-- MonSrf, GridSrf, MonGridSrf are thin wrappers calling FreeFormSrf.
-- SetFreeFormFlags(ie) in elt_mod.F sets ifMon/ifFF/ifGridTerm at
-  prescription-read time based on lMon, lFF, nGridMat sentinels.
-- New elt_mod.F arrays: lFF(mElt), pFF/xFF/yFF/zFF(3,mElt),
-  FFCoef(mFFCoef,mElt), ifMon/ifFF/ifGridTerm(mElt),
-  FFZernCoef(mFFCoef,mElt), FFZernTypeL(mElt),
-  MonZernCoef(mMonCoef,mElt), MonZernTypeL(mElt).
-
-## FreeForm user input design
-- Mon component: user enters MonZernCoef/MonZernTypeL (Zernike).
-  Converted to MonCoef at trace time via ZerntoMon in tracesub/propsub/srtrace.
-- FF component: user enters FFZernCoef/FFZernTypeL (Zernike).
-  Converted to FFCoef at trace time via ZerntoMon.
-- Both support sparse input (nXxxZernCoef/XxxZernModes/XxxZernCoef).
-- Interactive dialog: mode-index + value pair loop (0=done).
-- Prescription output: MonZernType/MonZernCoef + FFZernType/FFZernCoef (dense).
-- SrfType 4 (Monomial) and 12 (MonGrData): still use direct MonCoef input.
-
-
-## Per-ray status tracking
-- RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
-- Per-ray arrays: RayStatus(mRay), RayFailElt(mRay), RayFailMsg(mRay) — allocated in elt_mod.
-- `LOGICAL FUNCTION SetRayFail(iRay, iStat, iElt, cMsg)` records first failure only (avoids
-  overwriting root cause) and returns .TRUE. iff it actually recorded a status this call.
-  All six `nBadRays = nBadRays + 1` sites in tracesub.F and propsub.F are gated on the return:
-  `IF (SetRayFail(...)) nBadRays = nBadRays + 1`. This prevents an obscured ray being counted
-  once per propagation pass — the bug that produced the "26076 rays were lost / Obscured: 4346"
-  diagnostic where 4346 × N_elements gave the inflated headline number.
-- LZPFailed module variable in MODULE surfsub: set by *ZPSolve on bracket/max-iter failure,
-  checked by surface routine callers (IF (LZPFailed) GO TO 98), reset after recording status.
-- All STOP statements in surfsub.F converted: AZPSolve, GSZPSolve, GSZPB, SFFZPSolve, UDSZPSolve.
-- All PAUSE statements converted: DZPSolve (didesub.F), ZPSolve (tracesub.F).
-- Status recorded at nBadRays increment points in CTRACE (tracesub.F) and CPROPAGATE (propsub.F).
-- Obscuration recorded at end of iRay loop (L1/LRayPass check).
-- RayStatus/nZPFailMsg reset at trace start (alongside nBadRays=0).
-- WARN subroutine enhanced with per-category breakdown (miss/obscured/bracket/other).
-- Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
-  First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.
-
-## PERTURB notes
-- 5 routines perturb coordinate frames: CPERTURB, CPRead, CPERTURB_GRP (funcsub.F),
-  CPERTURB_2 (macos_ops.F), LnkEltCPERTURB (lnk_pert.inc).
-- All now handle pFF/xFF/yFF/zFF for SrfType_FreeForm (position translates+rotates
-  relative to RptElt; orientation vectors rotate only).
-- pMon condition: funcsub.F uses SrfType>=4 .AND. !=10 .AND. !=11 (correct for all
-  Mon-using types including FreeForm). macos_ops.F and lnk_pert.inc were <=9,
-  now fixed to match funcsub.F pattern.
-- pData condition: includes FreeForm so grid coord frame perturbs when nGridMat>0.
-- pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
-  now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
-
-## SXP command (Set eXit Pupil)
-FEX clone with one geometry fix: the EP focal length / radius is set
-to the chief-ray distance from the EP (CrossPt) to the FP (assumed
-iElt+1, the standard imager Rx ... -> EP -> FP) instead of FEX's
-legacy distance from iEm1 to the EP.  Captures FP-Tz perturbations
-through the EP radius and -- as an opt-in -- catches EP shifts when
-upstream optics are perturbed (use case: sensitivity / dw/dx loops).
-FEX itself is unchanged to avoid breaking the many existing
-prescriptions / GMI workflows / journals that depend on its behavior.
-- `SUBROUTINE SXP` in `tracesub.F` — cloned from FEX; after
-  `FindCrossPt` replaces zp with `t_FP = -((FP_vpt - CrossPt) · psi_FP)
-  / (cr1dir · psi_FP)`, i.e. the chief-ray distance from CrossPt to
-  the FP plane (chief ray reverses at EP, so post-EP direction is
-  `-cr1dir`).  Falls back to `zp_iEm1` if iElt+1 is out of range.
-- Dispatch added in `macos_cmd_loop.inc` alongside FEXIT (uses label
-  8073 to avoid the existing 73 collision) — reachable from both
-  interactive macos AND SMACOS, since SMACOS `#include`s
-  `macos_cmd_loop.inc` from `smacos.F:210`.
-- `LoadStack` entry in `smacosutil.F` — one IARG (iElt) + one CARG
-  (YES/NO), same signature as FEXIT.
-- pymacos wrapper `m.sxp(mode=1)` (in MACOS_resources/pymacos/dr-dev2).
-
-Pre-existing dispatch puzzle worth knowing: `macos_ops.F:MACOS_OPS`
-is NOT the SMACOS dispatcher — it's only called from the inner
-optimization loop (`smacos_compute.inc`).  SMACOS proper dispatches
-via `#include "macos_cmd_loop.inc"` from `smacos.F`.  When adding
-new commands callable via SMACOS, add them to `macos_cmd_loop.inc`
-and to `smacosutil.F`'s LoadStack (so the args get on the STACK
-that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
-
-## draw_rays — DRAW's ray bundle as DATA (data-only mode)
-The design layer's MATLAB layout viewer needs DRAW's *real* ray bundle
-(`DrawRayVec`: per-ray, per-surface positions) WITHOUT opening a Giza
-device.  Mechanism (additive — `DrawDataOnly` defaults `.FALSE.`, so
-normal interactive DRAW is byte-unchanged):
-- `src_mod.F`: `DrawDataOnly` flag + capture arrays `DrawRayVec_save` /
-  `DrawEltVec_save` / `nDrawElt_save` + inputs `DrawDataPlane` /
-  `DrawDataStartElt` / `DrawDataEndElt`.
-- DRAW handler (`macos_cmd_loop.inc`): when `DrawDataOnly`, take the
-  plane (1=YZ/2=XZ/3=XY) + elt range from the module vars instead of
-  `IACCEPT_S`/`CACCEPT` (the SMACOS LoadStack pushes **3 ints + 1 char**
-  but the handler reads only 2 ints + 1 char — the plane CARG would be
-  misread off the stack, hence module vars).  After the trace it copies
-  the bundle into the save arrays, and the `GRAINI` + `DRAW`/`DRAWOUT`
-  render is guarded `.AND.(.NOT.DrawDataOnly)`.
-- `macos_api_mod.F90`: `draw_rays_cmd(OK,plane,iStart,iEnd,nDEmax,nRay)`
-  sets the module vars + `DrawDataOnly` + `CALL SMACOS('DRAW',…)` +
-  resets the flag; `draw_rays_get(OK,RayU,RayV,EltVec,nEltPerRay,nDE,nDR)`
-  copies the saved bundle out (codegen-friendly rank-2).
-DRAW natively supports plane (`pgplotDrawPlane`) + first/last-elt
-slicing, so off-axis "XY after the SM, PM hidden" deconfliction views
-come for free.  Landed 2026-06-19 (commit f3e98e5; see
-PLAN_DESIGN_LAYER §8 Sprint-4 layout realizability).
-
-## Display polarity + plot annotations
-- `plot_mode_mod.F` (registered early in `COMMON_SOURCES`) holds session
-  state:
-  - `ifAstroMode` (default `.TRUE.` = astronomy / negative polarity,
-    large→dark — matches legacy PGPlot users' expectation)
-  - Bottom-of-plot annotation: `annotOn`, `annotLine1`, `annotLine2`
-  - `wedgeLabel` (default `'pixel value'`) — text under the color wedge
-  - `ClearAnnot()` resets all three (annotOn + both lines + wedgeLabel)
-    after the draw routine emits them.
-- `IMGMODE` command toggles polarity interactively (prompts `NEG|POS`,
-  accepts `ASTRO|CONV` as synonyms). Must be dispatched BEFORE the
-  `LCMP(command,'IMG',3)` branch in `macos_cmd_loop.inc` — placed at
-  ~line 4362 for that reason (otherwise "IMGMODE" is absorbed by the
-  3-char 'IMG' match and treated as a plot command requiring `ifLoad`).
-
-### Raster inversion — the key Giza gotcha
-Giza's `giza_render_gray` (backing `PGGRAY`) internally calls
-`giza_set_colour_table_gray()` and forcibly resets its own ramp,
-**ignoring any `PGSCR` setup the caller does** (see
-`macos_f90/giza/src/giza-render.c:368`). You cannot use `PGGRAY` for
-polarity control. The fix in `pgplotsub.F:GRAY`:
-- Render the image via `PGIMAG` + a 2-point `PGCTAB` we build ourselves
-  (both the color and gray paths).
-- For gray: `CTAB_R/G/B = [1.0, 0.0]` (white→black) under astro mode,
-  `[0.0, 1.0]` under POS.
-- For color: walk `CInd` in reverse under astro mode (palette flipped
-  end-to-end; hue order preserved).
-
-### The second Giza gotcha: `PGCTAB` clobbers CI 0 and 1
-`giza_set_colour_table` (called by `PGCTAB`) ends with
-`_giza_set_range_from_colour_table(_giza_colour_index_min,
-_giza_colour_index_max)` — that range starts at **0**. A 2-point ramp
-written with `L=[0,1]` overwrites CI 0 and CI 1 with the ramp endpoints,
-clobbering the bg=white / fg=black that axes, tick labels, wedge axis,
-and `PGMTXT` rely on. Symptoms (all debugged this way): axis-label text
-invisible on first plot, annotation visible but axes ticks gone on a
-second plot, etc.
-- Fix: **reserve CI 0=white and CI 1=black** via explicit `PGSCR` at
-  start of GRAY, then `PGSCIR(16, 255)` pushes the image ramp into CI
-  16..255 so `PGCTAB` can't touch CI 0/1. Always use `PGSCI(1)` (never
-  `PGSCI(ICILO)`) for axes/box/labels/wedge/annotation.
-- Re-assert `PGSCI(1)` before `PGWEDG` and before `PGMTXT` — the
-  intervening `PGCTAB`/`PGIMAG` may shift the current CI.
-
-### Non-raster plots — always black ink on white
-`CONTOUR`, `SLICE`, `WIRE`, `SPOTDIAG`, `PLOTCOL` all set
-`PGSCR(0,1,1,1); PGSCR(1,0,0,0); PGSCI(1)` at entry — overrides any
-`IMGMODE` setup. Harmless under PGPlot (same as its default).
-
-### Labels, titles, wedge
-- `PGLABEL(' ', ' ', CTITLE)` in GRAY suppresses the placeholder
-  `'X-Axis'` / `'Y-Axis'` arg strings (the 76 callers that pass those
-  literals are untouched — GRAY just ignores them). Only the title
-  survives above the plot.
-- `PGMTXT('B', 3.5, 0.5, 0.5, line)` centers the annotation under
-  the x-axis (coord=0.5 is middle, fjust=0.5 is center-justify).
-- Tick numeric labels come from `PGENV(...,axis=0)` → internally
-  `PGBOX('BCNST', ...)` — the `N` option prints numeric values at
-  each major tick. Keep as-is; for OPD the tick values are projected
-  dimensions on the reference surface (usually the OPD reference,
-  e.g. Elt 9 in SegDemo3) which is sometimes meaningful.
-- Titles:
-  - OPD → `'OPD, Surface N'` (no `File=` suffix)
-  - INT / PIX → `'<kind>, Surface N, File=<filnam>'` (via `SrfOut`
-    and `PixOut` in `utilsub.F`; `File=` kept because the in-file
-    stretch variant — `LOG10 Intensity` etc. — can distinguish runs)
-- Wedge labels (`wedgeLabel` in `plot_mode_mod`):
-  - OPD with BaseUnits → `'OPD (<cUnit>)'` (e.g., `OPD (m)`)
-  - OPD without BaseUnits → `'OPD'`
-  - INT → `'Intensity'`
-  - PIX → `'Pixel value'`
-  - Others → default `'pixel value'`
-
-### Annotation lines (bottom of plot)
-Command handler sets `annotLine1/2` + `annotOn=.TRUE.` before the draw
-call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
-`ClearAnnot()`.
-- OPD → `OPD=<rms> <cUnit> RMS, <pv> <cUnit> P-V` (from `RMSWFE`,
-  `WFEPV`, `cUnit`; falls back to no-unit form if `.NOT.BaseUnits_FLG`)
-- SPOT → `RMS spot radius=<r> <cUnit>` — computed from `RaySpot`
-  about the centroid in the SPOT handler (not a pre-existing var).
-- INT → `Peak pixel=<MaxInt>` (from `Ca2Int` output).
-- PIX → `Peak pixel=<maxval(PixArray)>`.
-- Phase/Amplitude/etc. intentionally left unannotated.
-
-## Giza plot improvements (macos_f90/giza/)
-- Supersampling: off-screen image surface is 2× (GIZA_XW_SUPERSAMPLE) in giza-driver-xw.c;
-  `cairo_surface_set_device_scale(surface, 2, 2)` keeps MACOS logical coordinates at 1×
-  while rendering at 2× physical pixels.  Downsample to 1× pixmap on flush, then XCopyArea
-  or cairo-scale to the window (handles user resize).  Text/font antialiasing: GRAY hinting
-  enabled in giza-drivers.c; image data uses CAIRO_FILTER_NEAREST in giza-render.c
-  (sharp pixel boundaries for OPD/PIX/INT raster arrays).
-- Idle window responsiveness: mhist.c sets rl_event_hook to `_macos_rl_event_hook` which
-  (via weak `giza_process_events`) calls `_giza_process_events_xw` — drains ConfigureNotify,
-  Expose, and WM_DELETE_WINDOW while readline blocks at the prompt.
-- Close button (WM_DELETE_WINDOW): unmaps the window and sets XW[id].window_hidden=1;
-  the next `_giza_flush_device_xw` re-maps it.  Does NOT call `giza_close_device()` —
-  MACOS tracks its own `ifPlot` flag and skips `GRAINI`/`PGBEGIN` after first plot.
-  Closing the device would strand MACOS with spam of "No device open" errors.
-- `giza_set_colour_representation` (giza-colour-index.c) no longer requires an open
-  device — `colourIndex[]` is static global, matching PGPLOT's pgscr semantics.
-  `giza_set_colour_index(ci)` is still guarded (uses Cairo context).
-
 ## Intel RPATH (self-contained ifx binary + smacos_dvr + GMI mex)
 - Top-level CMakeLists.txt embeds RPATH for ifx builds so `/opt/intel/oneapi/...` libs
   are found without sourcing setvars.sh. Applies to macos executable, smacos_dvr, and
@@ -415,252 +82,6 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
   libimf → libintlc transitive dep requires DT_RPATH.
 - For gfortran builds: `CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES` (auto-set by CMake) used
   as RPATH so libgfortran/libquadmath are found without a module file.
-
-## smacos_dvr graphics initialization
-- smacos_dvr.F calls `SMACOS()` directly; unlike the interactive macos.F command loop
-  it never opens a Giza device. Any plot-producing SMACOS command (OPD, SPOT, INT, ...)
-  then emits "No device open" for every Giza call. Fix: after `macos_init_all(modelSize)`,
-  set `nPgPanel = 1` and call `GRAINI` (opens device via `PGBEGIN(0,'?',1,1)`).
-- `macos_init_all` does NOT include `macos_init.inc`, so `nPgPanel` is not defaulted to 1
-  — it stays at 0 and `GRAINI`'s panel-layout if/elseif (1/2/3/4) silently skips
-  `PGBEGIN`. Consumers outside the interactive path must set `nPgPanel` themselves.
-
-## Giza GRAY CR/CG/CB array bounds
-- macos_f90/pgplotsub.F GRAY subroutine caches default color representations for
-  restoration when exiting color mode. It calls `PGQCIR(ICILO,ICIHI)` then loops
-  `Do J=ICILO,ICIHI; CALL PGQCR(J,CR(J),CG(J),CB(J))`. Under Giza, `PGQCIR` returns
-  ICILO=0 (GIZA_COLOUR_INDEX_MIN), whereas classic PGPLOT starts at 1 — so CR/CG/CB
-  must be declared 0-based: `REAL, Save :: CR(0:511),CG(0:511),CB(0:511)`. Same total
-  size (512), but bounds now cover index 0. Otherwise the first-entry gray image crashes
-  on CR(0) out-of-bounds write (hard to debug inside giza since graphics libs are
-  typically stripped).
-
-## mathsub.F modernization
-- `DMPROD(A,B,C,NA,NB,NC)` in `mathsub.F` is now a thin wrapper over
-  `MATMUL(B,C)` with explicit `A(NA,NC) / B(NA,NB) / C(NB,NC)` shapes
-  and `IMPLICIT NONE`. 287 call sites unchanged — the wrapper preserves
-  the old flat-indexing contract (caller's physical leading dim == NA,
-  which all existing call sites satisfy since the dominant shapes are
-  3×3, 3×1, 1×3). Do not inline `MATMUL` at call sites: many callers
-  pass flat scratch buffers (`D1(100)`, `D2(100)`) where MATMUL would
-  force awkward `RESHAPE` noise, and keeping one chokepoint means a
-  future DGEMM swap is a single edit. Aliasing is undefined for both
-  old and new (old code zeros `A(NAPTR)` before accumulating, which
-  corrupts B or C if aliased), so no regression.
-
-## Reference
-- macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
-- macos_f90/Archive/ : obsolete source files (sourcsub variants, test programs, etc.)
-
-## Name collision warnings
-- macos_mod exports scalar LOGICAL ifGrid (ray-grid-established flag, used everywhere).
-  Do not reuse ifGrid for any new per-element logical in elt_mod — rename to avoid
-  ambiguity (e.g., ifGridTerm for the FreeForm grid-component flag).
-- Inside MODULE surfsub, do not redeclare sibling functions in a local REAL*8 list.
-  That overrides host association and produces an undefined reference at link time.
-  Just call module-sibling functions directly without redeclaring them.
-
-## elemsub.F call interface notes
-- FindSrf, Reflector, and Refractor signatures now include FreeForm arrays
-  as explicit args: pData,xData,yData,zData (grid coord frame) and
-  lFF,pFF,xFF,yFF,zFF,FFCoef.
-- All call sites updated: tracesub.F (3 Reflector + 1 FindSrf + 1 Refractor),
-  propsub.F (3 Reflector + 1 FindSrf + 1 Refractor), srtrace.F (2 Reflector).
-- FindSrf uses `use elt_mod, only:` with explicit list; Reflector and Refractor
-  use only: with mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm.
-- Refractor also has MonGrData (12/13) dispatch calling MonGridSrf.
-
-## Prescription I/O notes (msmacosio.inc / iosub.inc)
-- The parser has two chains: label 50 (header/global) and label 61 (per-element).
-  FreeForm keywords must be in BOTH chains. The element chain (61) now includes:
-  lData, lFF, pFF, xFF, yFF, zFF, FFZernType, nFFZernCoef, FFZernModes, FFZernCoef,
-  MonZernType, nMonZernCoef, MonZernModes, MonZernCoef.
-- nFFZernCoef/FFZernModes/nMonZernCoef/MonZernModes reset per-element at loop start
-  (before LOHIN2 call).
-- Output (PrtSingleEltInfo in iosub.inc): pData/xData/yData/zData written for
-  FreeForm only when nGridMat > 0.
-- ChkDf2: FreeForm with nGridMat=0 silently satisfies pData/xData/yData/zData/lData
-  (no spurious "Default used" warnings).
-
-## ZernType parsing (ParseZernType in elt_mod.F)
-- All eight ZernType / FFZernType / MonZernType parser sites — three in
-  msmacosio.inc (load) and three MOD-dialog sites in macosio.F — go through the
-  shared `ParseZernType(value, typeL, found, annuRatio, hasRatio)` helper in
-  elt_mod.F. Don't add a new local copy; extend the helper.
-- Norm-prefixed names (NormANSI, NormBornWolf, NormFringe, NormHex, NormNoll,
-  NormAnnularNoll) match by 7 chars; un-normalized names (ANSI, BornWolf,
-  Fringe, Noll, ExtFringe) by 3. NormAnnularNoll (typeL=9) parses an annular
-  ratio from the trailing token.
-- Historical bug: a "Noll → NormNoll" rewrite shim existed at one site only,
-  and the un-normalized loop ran indices 1..3 (omitting 10=Noll, 11=ExtFringe),
-  so `MOD ZernType=Noll` silently became NormNoll. Both fixed in the helper.
-- Legacy alias: "Malacara" (pre-modernization name for ANSI) maps to typeL=1
-  via a `Mala`-prefix check at the bottom of the un-normalized branch. Older
-  JPL Rx files (optiix etc.) still use it; without the alias the parser
-  silently dropped the field and ZernTypeL stayed 0 — which then silently
-  broke the Zernike-apply trace path (see next section).
-
-## Zernike-apply trace dispatch requires ZernTypeL ≠ 0
-- `propsub.F:230-249` (and the parallel `srtrace.F:145-153`) dispatches
-  `ZerntoMon1/2/3/4/6/7` based on `ZernTypeL(iElt)`. The chain has NO `ELSE`
-  branch — if ZernTypeL is 0 (the elt_mod.F:944 initial value), the IF/ELSEIF
-  falls through, ZerntoMon is never called, MonCoef stays zero, and the
-  surface intersection (which uses MonCoef, not ZernCoef) sees no perturbation.
-  Result: silent zero-response.
-- ChkDf2 defaults ZernTypeL to 1 (ANSI) for elements whose parse path visited
-  the ZernType default block. **NSReflector+Conic elements don't visit that
-  block** — their ZernTypeL stays 0 unless explicitly set in the Rx.
-- GMI workaround at `GMI.F:1066`: when forcing `SrfType(iElt)=8` to apply a
-  Zernike perturbation to an arbitrary element, also force `ZernTypeL=1` if
-  currently 0. Without this, GMI's pzern channel silently no-ops when applied
-  to a Conic-typed element. Caught by `test03_zern_response_optiix` (had been
-  masked under ifx because the same broken path also corrupted memory and
-  triggered an exit-time SIGSEGV — gfortran exposed the actual zero-response
-  bug cleanly).
-- Latent gap (not yet fixed): the propsub/srtrace IF/ELSEIF chains don't
-  handle ZernTypeL=10 (Noll) or =11 (ExtFringe). A user Rx with
-  `ZernType= Noll` parses correctly and sets ZernTypeL=10, then the trace
-  dispatch silently no-ops. Add ELSE-with-error or extend the chain when this
-  surfaces. (We didn't extend it now because no current test exercises it.)
-
-## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
-- For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
-  used to require xObs to be parsed BEFORE the polygon line, because
-  `SetCvxPolyObsVtx` projects the 3D vertices to element-local 2D at parse
-  time and needs xObs/yObs to do so. Wrong order produced a hard error.
-- Now the order doesn't matter. On a 3D-vertex polygon line:
-  - If `xObs_FLG` is true, project immediately (legacy behaviour).
-  - Else, stash raw 3D vertices into `PolyObsVtx3DPending(3, mPolySide, mObs,
-    mElt)` and the count into `nPolyObsVtx3DPending(mObs, mElt)` (both in
-    elt_mod), defer the projection.
-- xObs parser, after setting xObs_FLG, walks the pending-list for the
-  current element and runs `SetCvxPolyObsVtx + SetCvxPolyObsBound` on any
-  stashed vertices.
-- ChkDf2 (iosub.inc): after the existing psiElt-based xObs default kicks in
-  for elements that need it, runs the same pending-resolution pass. If
-  xObs is still unavailable for an element with pending vertices, ELEM_OK
-  is set false with a targeted message naming iElt and iObs.
-- Error message text now references both accepted keyword names —
-  `PolyObsVec/Poly3DObsVec` — not the never-implemented `PolyObs3DVec`.
-- Note: `PolyApVec=`/`Poly3DApVec=` have the same xObs-ordering wrinkle
-  but were left as-is (still error on bad order). Same deferral pattern
-  would extend to them if needed.
-
-## MOD command: empty-value crash guard (macosio.F MOD_LOH)
-- `mod ngridpts = 33` (spaces around `=`) used to crash with
-  `forrtl: severe (24): end-of-file during read, unit -5`. CACCEPT in
-  MOD_LOH only consumes the first whitespace-separated token, so VALUE
-  ends up empty and the subsequent `READ(VALUE,*) nGridpts` (which has
-  no ERR=/END= label) hits EOF on the empty string.
-- Guard added right after GET_EQ: if `LEN_TRIM(VALUE) == 0` and the
-  command isn't HELP, print a clear warning ("assignment must be
-  \"<var>=<value>\" with no spaces around \"=\"") and drain remaining
-  buffered tokens (`read_len(pstack)=0, read_cur(pstack)=0`) so the
-  leftover `=` and `33` tokens don't cascade into more bogus commands.
-- Smaller scope than fixing the parser to slurp multi-token assignments.
-  Users get one targeted message and prompt continues. `mod ngridpts=33`
-  (no spaces) still works as before.
-- Also dropped the cosmetic `WRITE(*,*)` blank line in the QUIT branch
-  of MOD_LOH — left a stray empty line between the MOD prompt and
-  `MACOS>` on every exit.
-
-## Prescription validator (validate_prescription.F90)
-- Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
-  (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
-  I/O: catches missing values after `Key=` (inline or continuation), bad keys,
-  file-not-found, and open errors. Also catches blank lines inside multi-row
-  continuation blocks (e.g. a stray blank in the middle of a `Tout=` matrix),
-  which trip msmacosio.inc's fixed-format READ even when every individual
-  line is well-formed. Returns ios=0 on success; ios/=0 with a
-  bare `msg` (no filename prefix — caller adds context).
-- Per-key empty-value exceptions (KeyEq helper inside the module): `EltName`,
-  `BaseUnits`, `WaveUnits` may have empty values. Older prescriptions leave
-  these blank and the parser tolerates it. Add more keys to the `.OR.` chain
-  in `ValidatePrescription` if Norbert flags additional ones.
-- Wired into MBFile6 in macosio.F (interactive: re-prompt on failure via
-  `GO TO 43`) and smacosio.F (SMACOS: clean abort with LOAD_SUCCESS=.FALSE.,
-  `GO TO 99`). Both paths run the validator only when iopt=1 (existing file
-  being loaded).
-- Top-level `VALIDATE` command added in macos_cmd_loop.inc — same subroutine,
-  no state change, just prints `<file>: OK` or `<file>: <msg>`.
-- Phase 2 (deferred): IOSTAT-armoring of msmacosio.inc parser internals;
-  enum-value validation against the type tables.
-
-## CLI sub-prompts via mhist cache (macosio.F + mhist.c)
-The old fragile pattern was: Fortran ACCEPT routine WRITE-s a prompt
-(no trailing newline), then calls READ_LOH which goes through MHIST →
-`readline(empty)` for the input. readline couldn't see the prompt and
-mis-managed cursor state, producing the recurring "MACOS> the new
-element data?" overwrite class of bugs.
-
-Replaced with a small cache in mhist.c:
-- `sub_prompt_buf[256]` (file-scope, OUTSIDE the READLINE_LIBRARY
-  guard so non-readline builds still link)
-- `set_sub_prompt_(s, slen)` / `clear_sub_prompt_()` — Fortran-callable
-- `mhist_` for sub-prompts (mp[0]==' ') passes `sub_prompt_buf` to
-  readline, so readline renders the prompt itself and owns cursor
-  state authoritatively. Setter appends one trailing space to match
-  the legacy `' ',A,' [',A,']: '` format the old WRITE produced.
-
-CACCEPT, IACCEPT, DACCEPT, RACCEPT in macosio.F (NOT in smacosio.F —
-that one has no readline) now:
-1. Build the full prompt string from TEXT + `[default]:`.
-2. If `read_len(pstack) > 0` (token will come from the existing
-   buffer, no MHIST call), WRITE the prompt directly with format
-   `(A,$)` — matches legacy behavior for multi-token lines like
-   `stop elt 1 0,0`.
-3. Else `CALL set_sub_prompt(...)` then `CALL READ_LOH(...)` and
-   `CALL clear_sub_prompt` afterwards.
-
-Use `LEN_TRIM(prompt_str)` for the slice length, NOT `ICLEN` —
-`ICLEN` returns the length of the first *non-blank* prefix (length
-of the first word), which gives 4 for ` Enter...` etc. That bug ate
-several debug cycles; don't repeat.
-
-When adding new ACCEPT-style prompt routines, follow the same
-pattern. New top-level commands that need their own prompt should
-either reuse the existing ACCEPT routines or push their prompt
-through `set_sub_prompt` directly.
-
-## Plot routine viewport (pgplotsub.F PANEL_ENV)
-All raster/contour/spot plot routines in pgplotsub.F (CONTOUR,
-SPOTDIAG, LINSPOTDIAG, SLICE, GRAY, WIRE, PLOTCOL) call `PANEL_ENV`
-instead of `PGENV` directly. The helper:
-
-- In single-panel mode (`nPgPanel <= 1`) calls `PGENV` unchanged.
-- In multi-panel mode (`pgp 2/3/4`) expands PGENV into the explicit
-  sequence `PGPAGE + PGVSTD + PGQVP + PGSVP + PGSWIN/PGWNAD + PGBOX`
-  with the viewport's horizontal extent shrunk to 78% of the standard
-  panel viewport. The 22% remaining width inside the panel is where
-  PGWEDG (the colorbar in GRAY) lives without crashing into the next
-  panel's left tick labels.
-- Subtle bug found during development: `PGENV` implicitly calls
-  `PGPAGE` to advance to the next panel. Custom replacements MUST
-  include the explicit `CALL PGPAGE`; without it, every plot lands
-  in the same panel.
-- Sanity-checks the input bounds (`SaneBounds` contained function)
-  for NaN, reversed (x1 >= x2), and overflow (|x2-x1| > 1e30) — emits
-  `** Error: inconsistent propagation parameters` then lets the plot
-  proceed with the original bounds so the historical giza
-  `giza_set_window: Invalid arguments` is still produced. Catches the
-  pathology where a FarField reference surface has `zElt = INF` and
-  the propagation math returns garbage extents.
-
-DRAW (system-layout sketch) still uses `PGENV` directly — it's a
-single-plot routine, no multi-panel concern.
-
-## GRAINI graphics-device caching (pgplotsub.F)
-`GRAINI` is called once per `ifPlot=.FALSE.` event (e.g. on the
-first plot after `PGP` changes layout, or after `NEWPAGE`). The
-first call passes `'?'` to `PGBEGIN` so the user is prompted for
-the graphics device (`/xw`, `/png`, etc.). After PGBEGIN returns,
-`PGQINF('DEV/TYPE', dev_str, dlen)` queries the user's choice and
-caches it in a `SAVE`'d local. Subsequent GRAINI calls pass the
-cached `dev_str` to PGBEGIN instead of `'?'`, so giza doesn't
-re-prompt every time the layout changes. With giza the new PGBEGIN
-opens an additional window (it doesn't close the previous one);
-that's intentional and supports the multi-window-history workflow
-in CoroExample.jou-style scripts.
 
 ## gfortran portability + GMI build choice
 - `source ./makegfortran.sh release` now builds macos + smacos + smacos_dvr
@@ -752,221 +173,53 @@ in CoroExample.jou-style scripts.
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
 
-## Test prescriptions (ZGD_test_files/)
-- All FreeForm test prescriptions use nGridpts=11 (gives 89 rays for Circular grid).
-  Reason: model 256 has bRay=500 (BUILD limit) and mDrawRay=101 (nDrawElt array size);
-  nGridpts=11 gives 89 rays which is under both limits.
-  Grid-using prescriptions (tst_FF_g/mg/fg/refl) also need model 256 for mGridMat=256.
-- Obscured rays now increment nBadRays so WARN fires: tracesub.F and propsub.F both
-  have `nBadRays=nBadRays+1` inside the `IF (.NOT.L1(iRay))` / `IF (.NOT.LRayPass(iRay))`
-  blocks that call SetRayFail(RayStat_Obscured).
+## Branch model (as of 2026-06)
+- **`sls-dev`** — integration branch for new work.  Multi-person WIP
+  lands here.  All non-bug-fix commits go here first.
+- **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
+  to `main` for the public release (with NPSOL source tree removed
+  at promotion time).
+- **`release-candidate`** — **frozen** at `19bfbf8` (the mZern slice-
+  overrun cherry-pick).  No new commits.  Pre-existing references to
+  it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
+  over time.
+- **`main`** — public release surface.  Currently far behind opt-dev;
+  promoted from opt-dev at release time per the public-release
+  strategy below.
 
-## Regression tests via pymacos (~/dev/MACOS_resources/pymacos/)
-- CodeV-comparison tests in `tests/test_api_rx_grating.py` and `tests/test_masks.py`
-  cover the geometric / ray-trace paths (6601 tests, all passing).
-- PROPER-comparison tests in `tests/proper_compare/` cover the physical-optics paths
-  (INT/PIX/DFT-propagation) that CodeV can't validate. Organised by phase:
-  - **Phase 1** (`test_cass_ff*.py`, results in `results_phase1/`): far-field
-    image-plane PSF comparison on `Rx_Cass_FarField.in`. Nominal + SM Tx/Ty/Tz
-    perturbations.  Peak-normalised agreement at 1e-11 with OPD pass-through.
-  - **Phase 2** (`test_coro_nfprop.py`, results in `results_phase2/`):
-    near-field plane-to-plane propagation between Elt 2 and Elt 3 of
-    `Rx_Coro.in` (HCIT-style coronagraph, simplified-conic version).
-    Sum-normalised agreement at 2.4e-14 RMS, 4.8e-13 max -- at
-    double-precision FFT round-off (needs the runtime `dx_at()` query
-    described below + odd `nGridpts=511`).
-  - **Phase 3 + 4 + 5** (`test_coro_nfprop_phase3.py`, results in
-    `results_phase3/`): six additional Coro steps:
-      - 3a NFPlane 5→6 (sampling-limited 3.7e-8)
-      - 3b sphere→plane 8→9 (4.2e-11)
-      - 4a pupil→pupil 8→10 through focus (5.9e-13)
-      - 4b NFPlane 13→14 (7.4e-5; localized post-focus diffraction ring)
-      - 5.1 ExitPupil 20→FocalPlane 21, no mask (2.3e-9)
-      - 5.2 same with FPM=400 um + Lyot=14 mm coronagraph
-        (2.6e-6 Strehl-norm against a peak suppressed by 3.2 million
-        relative to the un-coronagraphed baseline).
-  - **Phase 6a** (`test_coro_apodizer.py` + `apodizer.py` + new
-    `pymacos.apodize` wrapper): pupil apodisation via a user-supplied
-    NxN amplitude mask, multiplied into macos's WFElt and PROPER's
-    wavefront via the same numpy array.  Apodiser construction uses
-    KxK super-sampling for sub-pixel area-weighted aperture edges so
-    low-N results converge to high-N as the same physical shape.
-    First test (Gaussian-edge pupil at Elt 5, NFPlane to Elt 6):
-    4.0e-8 max, 1.1e-9 RMS (same sampling-limited regime as 3a,
-    confirms the wrapper integrates correctly with downstream
-    propagation).
-  - **Contrast scoring** (`test_coro_contrast_curve.py` +
-    `contrast.py`): radial dark-zone contrast vs lambda/D at the
-    science focal plane.  lambda/D derived empirically from the
-    no-mask PSF's first Airy null (1.22 lambda/D with a fractional-
-    depth guard).  Phase 5.2 dark-zone contrast hits ~3e-10 in the
-    7-10 lambda/D range; bright outer-ring artefact at ~15 lambda/D
-    (Lyot edge diffraction).  Baseline for Phase 6b/c apodised
-    designs to score against.
-- Run via `./run_proper_tests.sh` at the pymacos root.  It rebuilds pymacosf90
-  (if needed) and invokes each phase in its own pytest process to dodge a
-  pymacos state-leak across model_size transitions (512 ↔ 1024).  Artefacts
-  go into per-phase `results_phaseN/` directories.
-- The pymacos<->PROPER coupling needs three reconciliations to reach the
-  observed agreement:
-  - **Aperture match.** PROPER takes amplitude DIRECTLY from macos's mask
-    via `prop_multiply`, NOT from an analytical circular_aperture +
-    obscurations model.  Mismatched apertures put light where macos has
-    zeroed it out, breaking the wavefront tilt and halving the apparent
-    PSF shift under perturbation.
-  - **Sign flip.** macos OPD sign convention is opposite to PROPER's
-    `prop_add_phase` input.  Default `opd_sign_flip=True` reconciles them.
-  - **Normalisation choice.** `compare_and_record` takes `norm_kind=`
-    `'peak'` (Strehl-norm, default; right for image-plane PSFs) or `'sum'`
-    (flux-norm; right for pupil-plane / near-field intensities).  Peak-norm
-    inflates the residual on flat-top NF PSFs (where peak position inside
-    a uniform region is noise-dominated); sum-norm gives the physically-
-    meaningful flux-conservation precision.
-- Centroid-based (not peak-based) alignment in `compare_and_record`:
-  intensity-weighted center of mass is robust for both sharp Airy peaks
-  (Phase 1) and flat-top NF pillars (Phase 2).
+Day-to-day: push new features to `sls-dev`; cherry-pick bug fixes
+to `opt-dev`; let `sls-dev` accumulate until a promotion gate
+(at which point it gets fast-forward-merged into `opt-dev` for
+the next release).
 
-## macos_api_mod: language-neutral wrapper layer for pymacos + mmacos
+## Public-release strategy
+- Two-repo model (JPL's GitHub plan doesn't support branch-level
+  visibility): internal `nasa-jpl/macos` (private) keeps all dev
+  branches and full history; a separate public repo (name TBD,
+  e.g. `nasa-jpl/macos-release`) gets a snapshot per release —
+  single commit + tag on its `main`, dev files stripped.
+- Sync via a not-yet-written `tools/prepare-public-release.sh`
+  driven by `tools/PUBLIC_EXCLUDE.txt` (CLAUDE.md, PLAN.md,
+  `.claude/`, `docs/Archive/`, internal ZGD test fixtures, etc.).
+- Before `opt-dev → main` promotion: remove the NPSOL source tree
+  from the public-bound snapshot (SLSQP stays as the default and
+  only constrained back end on the public side).
 
-`macos_f90/macos_api_mod.F90` (compiled into `libsmacos.a`) is the
-shared SMACOS-call wrapper that both `pymacos` (Python) and `mmacos`
-(MATLAB) bind into.  Lives in `MODULE macos_api_mod`; holds the SMACOS
-call-line buffer (`command`, `CARG/DARG/IARG/LARG/RARG`), the shared
-output arrays (`PixArray`, `OPDMat`, `RaySpot`, `OPD`, `SPOT`, `PIX`,
-`USER`), the package-level state flags (`firstEntry`, `rxLoaded`), and
-~96 wrapper subroutines covering init, load_rx, save_rx, modified_rx,
-n_elt, trace_rays, opd_val, spot_cmd/get, int_cmd/get, cfield_cmd/get,
-cfield_apodize, elt_dx_get, base_unit_to_metres, perturb_elt,
-prb_elt(_grp), the elt_* Rx-inspection/modification family, the
-source-side set_src_*/get_src_*, the elt_grp_* family, stop_info_*,
-xp_get/set/fnd, sxp_fnd, ors_run, srs_run, plus internal helpers
-(`SystemCheck`, `EltRangeChk`, `StatusChk1`, `translateSurfaceID`,
-`translateEltID`, `checkSurfaceID`, `checkEltID`).
-
-`ray_status_get(OK, RayStatus_, RayFailElt_, nRays)` (added 2026-06-12,
-Q2) exposes `elt_mod`'s per-ray `RayStatus(:)` / `RayFailElt(:)`
-(`RayStat_OK/Obscured/Miss/Bracket/MaxIter/Undef`) verbatim from the
-last trace — the per-category complement to `ray_info_get`'s binary
-LRayOK/LRayPass.  mmacos veneer: `get_ray_status(N)`.  Backs the design
-layer's ray-loss guard (`PLAN_DESIGN_LAYER.md` §1.3.4).
-
-The MATLAB **design layer** (`macos.design.System`,
-`MACOS_resources/mmacos/src/+macos/+design/`) is the first heavy consumer of
-this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the
-Phase 7 `dw_dx` channels) → `vary`/`evaluate`/`optimize`.  It adds no
-Fortran; it's a pure MATLAB layer over these routines.  Note: SLSQP
-objects live in `libslsqplib.a`, a separate archive from `libsmacos.a`
-— any binding that links libsmacos must also link slsqplib (the SLSQP
-back end references `slsqp_`).
-
-Promotion history: until §5.2 the file lived in
-`MACOS_resources/pymacos/src/cmake/source/macos_api_mod.F90` and was
-compiled separately by each binding's own CMake/Make build.  Now it
-lives in `macos_f90/` and the binding builds just link `libsmacos.a`
-+ pull the `.mod` from `mod_smacos/`.  pymacos's `CMakeLists.txt`
-takes `MACOS_BUILD_DIR` as a cache var (default
-`~/dev/macos/build_release`); mmacos's Makefile takes the same.
-
-gfortran cleanliness: the file is portable across ifx and gfortran
-as of §5.2.  Notable porting fixes — replaced `(/'m','cm',...'/)`
-implicit-length char arrays with explicit `character(len=4)` forms;
-converted all `do concurrent` to plain `DO` loops (some inside
-`BLOCK` for index-decl scoping); 50× `LOGICAL == PASS/FAIL` sites
-swapped to `.eqv.`; 16× INTEGER-comparison sites switched to integer
-equality (`var == 0` / `var /= 0`) where the variable was INTEGER;
-LOGICAL-array `ifGlobal` tests rewritten in `prb_elt_grp`; bare
-LOGICAL `filter` test in `set_src_csys`.  pymacos pytest 6601/6601
-+ PROPER-compare green under both compilers; mmacos 11/11 under
-both.
-
-## pymacos intensity() and complex_field() wrappers (macos_api_mod.F90 + pymacos_f2py.f90 + macos.py)
-- `intensity(srf, reset_trace=True) -> np.ndarray` runs the SMACOS 'INT'
-  command at element `srf` and returns the (mdttl, mdttl) intensity buffer
-  (`MWFFT` in elt_mod, widened from SREAL to float64).
-- `complex_field(srf, reset_trace=True) -> np.complex128 ndarray` exposes
-  `WFElt(:,:, iEltToiWF(srf))` on the diffraction grid -- macos's actual
-  internal complex amplitude that its own propagation routines operate on.
-  `|complex_field|^2` matches `intensity()` to numerical precision.  Used
-  for faithful macos→PROPER wavefront pass-through in the Phase 2 comparison
-  harness (`prop_multiply(|cfield|) + prop_add_phase(angle(cfield) * λ /
-  2π)`).
-- `dx_at(srf, unit='m'|'mm'|'native') -> float` exposes
-  `dxElt(srf) * CBM` (converted to SI metres by default).  macos's
-  per-element pitch is in the prescription's BaseUnits (mm for
-  Rx_Coro.in, m for Rx_Cass_FarField.in); the Fortran wrapper
-  multiplies by `CBM` so callers get a uniform unit regardless of the
-  loaded prescription.  Companion `base_unit_to_metres()` exposes CBM
-  for the `'native'` path.  Critical for matching macos's kernel dx
-  to better than 5 sig figs -- the diagnostic output truncates at
-  display precision, and hardcoded values cap macos↔PROPER agreement
-  at ~1e-7.
-- `apodize(srf, mask) -> None` multiplies macos's
-  `WFElt(:,:, iEltToiWF(srf))` by a user-supplied real NxN mask
-  IN PLACE.  Companion to PROPER's `prop_multiply` -- pass the same
-  numpy array to both engines and the apodisation is bit-identical
-  (no parametric drift, no FITS round-tripping).  Underlying Fortran
-  wrapper is `cfield_apodize(MASK, iElt)`.  Caller must already have
-  propagated to `srf`; subsequent intensity/cfield calls with
-  `reset_trace=False` see the apodised wavefront.  (Default
-  `reset_trace=True` runs MODIFY and wipes the mask -- bites first-
-  time users; the wrapper docstring warns about it.)
-  **Limitation:** modifies only WFElt, not the ray channel.
-  Macos's prescription aperture stops (Element=Reference +
-  ApType=Circular etc.) clip rays too, and those ray clips
-  propagate through geometric props to the next diffractive plane
-  where WFElt is reconstructed.  External `apodize` for a hard-
-  edged Lyot at Elt 14 of `Rx_Coro.in` achieves only ~factor 17
-  of Phase 5.2's 3.2-million suppression because the un-clipped
-  rays carry flux through the 6 geometric props between Elt 14
-  and Elt 20 (the FarField input).  Use this wrapper for smooth
-  apodisers, or for hard-edge masks immediately before a
-  diffractive prop with no following geometric chain.  For hard
-  apertures in a real chain, use prescription-driven `ApType=` --
-  that's what Phase 5.2 does correctly.
-- Template for extending pymacos to cover commands that fill a buffer:
-  - `<thing>_cmd` Fortran subroutine: sets CARG/DARG/IARG, calls SMACOS,
-    returns the output array dim.
-  - `<thing>_get` Fortran subroutine: copies the module-level buffer into a
-    caller-allocated output array (REAL(8) widened from SREAL where needed;
-    complex arrays split into real + imag pairs because f2py handles real-
-    valued arrays more robustly).
-  - Python wrapper in macos.py: input validation + lib.api.<thing>_cmd +
-    lib.api.<thing>_get + return ndarray.
-- The pattern mirrors the existing spot_cmd/spot_get pair.  Use for future
-  PIX, FFP, PFP, etc. wrappers.
-
-## Coronagraph mask element type (silent failure mode)
-Circular obscurations declared in a prescription (`nObs`, `ObsType=Circle`,
-`ObsVec=...`) are **only applied to the diffraction-grid wavefront when the
-element is `Element= Obscuring`**.  If the element is `Element= Reference`
-(or any non-Obscuring type), macos still parses the obscuration metadata
-and applies it to geometric rays during ray tracing, but the
-diffraction-grid `WFElt` array sails through untouched -- a hard-edge
-"mask" that's invisible to the diffraction propagation.
-
-Caught while building the Phase 5 coronagraph test
-(`tests/proper_compare/test_coro_nfprop_phase3.py`).  Original
-`Rx_Coro_FPM.in` had Elt 9 (the FPM) as `Element= Reference` with a
-132 um circular obscuration -- it looked like a working coronagraph
-in the prescription, but `complex_field(9)` and `intensity(9)` were
-byte-identical with and without the mask.  Suppression at the science
-focal plane was ~17%, all of which came from flux trimming at the
-Lyot stop (Elt 14) -- not the FPM.  After changing to
-`Element= Obscuring`, the FPM finally bites: on-axis suppression at
-Elt 21 became factor ~1e5 from FPM alone, factor ~3e6 with the Lyot.
-
-The right model to follow is `MACOS_resources/docs/macos-manual/examples/CoroExample.in`
-Elt 6 (the working CoroMask).  Any new coronagraph test prescription
-should use `Element= Obscuring` for the mask element.
-
-## LOG command cleanup (macos_cmd_loop.inc)
-- The `LOG` interactive command (log10-intensity wavefront display, not
-  transcript logging -- which is `JOU`/`JOURNAL`) previously dumped an
-  always-on debug print (`*****B4 SrfOut: mdttl=`) plus a 5 MB ASCII file
-  (`IntLog.txt`) to the cwd on every invocation, gated by an `#if 1`.
-  Both removed; diagnostic block gated `#if 0`.  `LOG` syntax and 3-char
-  min-match unchanged -- existing `.jou` scripts using `log <iElt>` keep
-  working.
+## Key files for current work
+- macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
+- macos_f90/surfsub.F        : all surface intersection routines
+- macos_f90/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector, Refractor)
+- macos_f90/param_mod.F      : array dimension parameters (mElt, mGridMat, etc.)
+- macos_f90/iosub.inc        : ChkDf2 defaults, PrtSingleEltInfo output (included by macosio.F)
+- macos_f90/msmacosio.inc    : prescription file reader (included by macosio.F and smacosio.F)
+- macos_f90/macosio.F        : interactive UI dialog for element entry
+- macos_f90/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
+- macos_f90/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
+- macos_f90/srtrace.F        : single-ray trace (Reflector call sites)
+- macos_f90/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
+- macos_f90/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
+- macos_f90/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
+- macos_f90/macos_api_mod.F90: language-neutral SMACOS-call wrapper layer (`MODULE macos_api_mod`) — backbone for pymacos and mmacos; compiled into libsmacos.a
 
 ## Conventions (new code)
 - IMPLICIT NONE throughout
@@ -983,9 +236,14 @@ should use `Element= Obscuring` for the mask element.
   Fixed-form is column-sensitive so bulk retabbing risks introducing subtle bugs and
   destroys git blame. Leave indentation as-is.
 - When the Edit tool fails due to whitespace ambiguity (tab vs spaces mismatch),
-  use a Python script with exact string replacement instead:
-    python3 -c "
-    with open('file.F','r') as f: c=f.read()
-    c=c.replace(old,new)
-    with open('file.F','w') as f: f.write(c)
-    "
+  use a Python script with exact string replacement instead.
+
+---
+
+> **Migration note (delete after the split lands):** sections not shown
+> above moved to nested files per the index. Move text verbatim — do not
+> paraphrase engine gotchas. After moving, each nested file gets the same
+> post-compaction directive header pointing back here. Target lengths:
+> root ≤ ~180 lines; each nested file holds its cluster. Verify with the
+> doc test: give CC three representative prompts per subsystem against
+> old vs. split, confirm equal-or-better rule-following.
