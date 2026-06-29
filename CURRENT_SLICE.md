@@ -24,35 +24,33 @@
 
 ## Active slice
 
-- **Sprint / item:** <e.g. Sprint 2A-ii — `macos.design.Telescope` 2-mirror builder>
-- **Plan anchor:** <PLAN_DESIGN_LAYER.md §8 Sprint 2A-ii ; §5.2 ; §6.2>
-- **Branch / worktree:** sls-dev (macos) + sls-dev (MACOS_resources) @ <short-sha>
-- **Definition of done (honest):** <the checkbox is only tickable when ALL of these are true>
-  - [ ] <e.g. Mirror component contract (§6.2) implemented>
-  - [ ] <e.g. closed-form Kr/Kc for Cassegrain-class (§5.2) matches fixture>
-  - [ ] <e.g. emitted .in passes ValidatePrescription>
-  - [ ] <test(s) green in SUITE_FAST>
-  - [ ] <worked-example script runs end-to-end, exit(0)>
+- **Sprint / item:** GridData (SrfType-9) grid-frame engine fix + the dw/dgrid SegDemo example (mmacos sensitivities)
+- **Plan anchor:** macos PLAN.md §0 (GridData closed item); MACOS_resources/mmacos/CLAUDE.md "dw/d(grid) segment example"; memory [[project-dwdgrid-seg-example]]
+- **Branch / worktree:** sls-dev (macos) + sls-dev (MACOS_resources). Engine + build fixes LANDED on sls-dev AND opt-dev.
+- **Definition of done (honest):**
+  - [x] Engine GridSrf null-frame fix — sls-dev `03db580`, opt-dev `1b535a5` (cherry-pick), pushed
+  - [x] GMI Makefile slsqplib link — sls-dev `af68528`, opt-dev `de85fa0`, pushed; GMI regression 6/6 bit-identical
+  - [x] SegDemo3conic dw/dgrid images localized (GridSrfdx=0.01); generic `plot_dw_per_element` (center+multi) wired into all run_dwd*_multi examples
+  - [ ] Examples committed (UNCOMMITTED — pending curation)
+  - [ ] Cleanup items (Next step below)
 
 ## In-session state NOT yet committed
-> What exists only in this conversation / working tree right now and would
-> be lost at compaction. Keep terse; this is a ledger, not prose.
-- <file:line — what changed, why, committed? Y/N>
-- <decision reached this session, not yet in §10 — e.g. "power-split sign:
-  using concave-M1 alternate per Open #5; revisit if layout fights it">
+> Engine + GMI-build fixes are COMMITTED + PUSHED (both branches, both repos). Uncommitted = mmacos example feature work + this session's doc edits:
+- `mmacos/mmacos_setup.m` (new), `mmacos/sensitivities/plot_dw_per_element.m` (new) — uncommitted
+- `mmacos/sensitivities/examples/` tree (run_dwd*_multi self-contained examples + SegDemo3conic + run_dwdgrid_multi_SegDemo3; SegDemo3conic.in @ GridSrfdx=0.01) — uncommitted; HAS CRUFT to prune: stray `SD3ff.in`, experimental `run_dwd{x,z}_multi_SegDemo/` dirs
+- Doc edits (uncommitted in working trees): `macos_f90/CLAUDE.md`, `GMI/CLAUDE.md`, `mmacos/CLAUDE.md`, `sensitivities/README.md`, `PLAN.md` (+ Dave's new ApStop SAVE to-do, §0), `MEMORY.md` + the project memory
 
 ## Just tried / ruled out (with why)
-> The expensive-to-rediscover cul-de-sacs. Stops the post-compaction redo loop.
-- <approach → outcome → why abandoned. e.g. "tightened SQP tol to chase
-  gradient noise → no help → fall back to patternsearch per §1.3(3), NOT
-  tighter knobs">
+- GridData piston root cause: NOT EP-conjugate, NOT grid→EP offset, NOT fex-vs-sxp, NOT basis (GS vs circular) — ALL ruled out across a long debug. It WAS the engine `GridSrf` null grid frame (center-pixel-only). DON'T re-chase the wrong hypotheses.
+- Decisive test = the FAITHFUL `dw_dgrid` pipeline (FreeForm == GridData at matched GridSrfdx); one-off `m.trace()`+`m.opd()` probes gave setup-dependent artifacts — use the real pipeline, not hand-rolled traces.
+- `zern41em5z155em3` figure diverges at GridSrfdx=0.0071 for FreeForm too → figure-scale, NOT a GridData bug; 0.01 is the figure's design scale. Flat segments rejected (Dave: unusable in a real telescope).
 
 ## Next concrete step
-- <the single next action, specific enough to resume cold>
+- Curate + commit the mmacos examples: prune experimental `run_dwd*_SegDemo` dirs + stray `SD3ff.in`, then commit `mmacos_setup.m` + `plot_dw_per_element.m` + `sensitivities/examples/` to MACOS_resources sls-dev (feature work, NO opt-dev cherry-pick). Then deferred cleanup: co-locate the GridFile, retire the bespoke `mimg`+band-aid loop / consolidate the two SegDemo drivers, standalone G-S generator (saves GridMat).
 
 ## Open micro-questions (slice-local)
-> Not §10 Open items (those are durable). These die when the slice lands.
-- <e.g. "does e5hex1 fixture already carry a BFD>0 case or add one?">
+- Consolidate the two SegDemo grid drivers (generic `run_dwdgrid_multi_SegDemo3` vs bespoke GS `run_dwdgrid_multi_SegDemo`) into one, or keep both?
+- GridFile co-location: copy the 917 KB `zern41em5z155em3.txt` into each example dir, or a shared fixtures path?
 
 ## Promote-on-land  →  then CLEAR this file
 > Same commit as the `design-sprint-N` tag: move each item to its

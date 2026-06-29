@@ -189,6 +189,28 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   use only: with mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm.
 - Refractor also has MonGrData (12/13) dispatch calling MonGridSrf.
 
+## GridSrf (SrfType-9) passed a NULL grid frame — CLOSED (sls-dev 03db580, opt-dev 1b535a5)
+- `GridSrf` (the SrfType-9 thin wrapper over `FreeFormSrf` in surfsub.F)
+  forwarded an all-zero grid coordinate frame (`pData_null/xData_null/
+  yData_null/zData_null = 0`) to FreeFormSrf.  FreeFormSrf maps each ray into
+  grid-pixel space via `xi=(xData·rhom)/dAct+diCtr`, `yj=(yData·rhom)/...`;
+  with xData=yData=0 those collapse to the **center pixel for every ray**, so a
+  GridData grid contributed `GridMat(center)` uniformly = a pure **piston** and
+  the spatial figure was discarded.  Symptom: a GridData segment grid-figure
+  poke imaged as a per-segment piston (whole-pupil staircase), not localized.
+- Introduced by the FreeForm refactor (when GridSrf became a FreeFormSrf
+  wrapper) — SrfType-9 grid figures were silently piston-only since.
+  `MonGridSrf` (12/13) and `FreeFormSrf` (14) always forwarded the real frame,
+  so FreeForm/MonGrData segments imaged clean (this is why the symptom looked
+  like "FreeForm vs GridData" — it's the SrfType-9 dispatch dropping the frame).
+- Fix: thread the element's real `pData/xData/yData/zData` through `GridSrf`
+  (signature + decls + the FreeFormSrf call) and its FindSrf/Reflector/Refractor
+  call sites in elemsub.F.  GMI regression 6/6 bit-identical (its prescriptions
+  use FreeForm/Conic, not SrfType-9), confirming the change is isolated.
+- **Deferred:** `NSRefractor` (non-sequential) doesn't carry the element grid
+  frame, so its `GridSrf` call still passes a local null frame — its GridData
+  path stays piston-only until threaded.  Noted in-line at the NSRefractor decl.
+
 ## Prescription I/O notes (msmacosio.inc / iosub.inc)
 - The parser has two chains: label 50 (header/global) and label 61 (per-element).
   FreeForm keywords must be in BOTH chains. The element chain (61) now includes:
