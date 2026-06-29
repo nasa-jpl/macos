@@ -1895,7 +1895,8 @@ C***********************************************************************
          SUBROUTINE GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &     psi,pv,prot,pin,ihat,pr,L,
      &     nGridMat,mGridMat,GridMat,GridSrfdx,
-     &     pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &     pmon,xhat,yhat,zhat,pData,xData,yData,zData,
+     &     Nvec,Nmag,Nhat,dNdp)
             use macos_debug
             use math_mod
 
@@ -1906,7 +1907,8 @@ C***********************************************************************
             REAL*8  pv(3),prot(3),pin(3),ihat(3),psi(3),
      &              pr(3),pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),
      &              Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
-     &              GridMat(mGridMat,mGridMat),GridSrfdx
+     &              GridMat(mGridMat,mGridMat),GridSrfdx,
+     &              pData(3),xData(3),yData(3),zData(3)
 
             REAL*8  :: rad_null         = 0d0
             REAL*8  :: coef_null(120)   = 0d0
@@ -1916,16 +1918,16 @@ C***********************************************************************
             REAL*8  :: yFF_null(3)      = 0d0
             REAL*8  :: zFF_null(3)      = 0d0
             REAL*8  :: coefFF_null(120) = 0d0
-            REAL*8  :: pData_null(3)    = 0d0
-            REAL*8  :: xData_null(3)    = 0d0
-            REAL*8  :: yData_null(3)    = 0d0
-            REAL*8  :: zData_null(3)    = 0d0
 
             CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef_null,
      &        psi,pv,prot,pin,ihat,pr,L,rad_null,
      &        nGridMat,mGridMat,GridMat,GridSrfdx,
      &        pmon,xhat,yhat,zhat,
-     &        pData_null,xData_null,yData_null,zData_null,
+!--> GridData(9): forward the REAL grid coord frame (as FreeFormSrf and
+!    MonGridSrf do).  The old all-zero _null frame collapsed the grid
+!    index to the center pixel for every ray -> grid acted as a piston.
+     &        pData,xData,yData,zData,
+!<--
      &        LFF_null,pFF_null,xFF_null,yFF_null,zFF_null,coefFF_null,
      &        Nvec,Nmag,Nhat,dNdp)
 

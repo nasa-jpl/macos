@@ -126,7 +126,8 @@ C***********************************************************************
           CASE (SrfType_GridData) ! (9)
             CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
      &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
-     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &                   pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 
           CASE (SrfType_Toric) ! (10)
             CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -310,7 +311,8 @@ cides
 	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &	    psi,pv,prot,pin,ihat,pr,L,
      &	    nGridMat,mGridMat,GridMat,GridSrfdx,
-     &	    pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &	    pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &	         prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
@@ -819,7 +821,8 @@ C  Compute incidence point of ray
           CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &      psi,pv,prot,pin,ihat,pr,L,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
-     &      pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &      pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -1344,6 +1347,11 @@ C  for a general lens surface
 
 	INTEGER nGridMat,mGridMat
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
+!     NSRefractor (non-sequential) lacks the element grid frame; its
+!     GridData(9) path keeps the prior null frame (the sequential
+!     FindSrf/Reflector/Refractor routines get the real pData -- see the
+!     GridSrf fix).  Threading it here is a deferred follow-on.
+        REAL*8 :: pData(3)=0d0,xData(3)=0d0,yData(3)=0d0,zData(3)=0d0
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,
      &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
@@ -1403,7 +1411,8 @@ C  Compute incidence point of ray
           CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &    psi,pv,prot,pin,ihat,pr,L,
      &    nGridMat,mGridMat,GridMat,GridSrfdx,
-     &    pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &    pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
