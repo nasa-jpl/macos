@@ -39,7 +39,7 @@
 % Element Definitions
 % ---------------------------------------------------------------------------------------
 
-             nElt=  10
+             nElt=  11
 
 
              iElt=  1
@@ -80,7 +80,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  flat.txt		% zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon=  6.12499733D-01  -1.060881274D+00  2.569563356D-01
              xMon=  4.61069737D-01  -7.985966745D-01  3.868566261D-01
              yMon=  8.660255296D-01  4.999997821D-01 -1.885624059D-18
@@ -120,7 +120,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  flat.txt		% zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon=  1.225D+00 -3.699397078D-07  2.569563356D-01
              xMon=  9.22139876D-01  -2.784784949D-07  3.868566261D-01
              yMon=  3.019915982D-07  1.0D+00          3.238991466D-24
@@ -160,7 +160,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  flat.txt		% zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon=  6.125003738D-01  1.060880904D+00  2.569563356D-01
              xMon=  4.610702194D-01  7.98596396D-01   3.868566261D-01
              yMon= -8.660252276D-01  5.000003051D-01  2.2704678D-17 
@@ -200,7 +200,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon= -6.124995728D-01  1.060881366D+00  2.569563356D-01
              xMon= -4.610696164D-01  7.985967441D-01  3.868566261D-01
              yMon= -8.660256051D-01 -4.999996513D-01 -2.095137844D-19
@@ -240,7 +240,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon= -1.225D+00  5.549095617D-07  2.569563356D-01
              xMon= -9.22139876D-01   4.177177424D-07  3.868566261D-01
              yMon= -4.529873973D-07 -1.0D+00         -1.071601397D-23
@@ -280,7 +280,7 @@
              lMon=  0.92D+00
          nGridMat=  256
          GridFile=  zern41em5z155em3.txt
-        GridSrfdx=  1.0D-02
+        GridSrfdx=0.0063e0
              pMon= -6.12500534D-01  -1.060880811D+00  2.569563356D-01
              xMon= -4.610703399D-01 -7.985963264D-01  3.868566261D-01
              yMon=  8.660251521D-01 -5.000004359D-01 -1.153428518D-17
@@ -322,40 +322,57 @@
              zElt=  1.07D-01
           nECoord= -6
 
-             iElt=  9
-          EltName=  RefSurf
-          Element=  Reference
+          iElt=  9
+          EltName=  FclPlaneReturn
+          Element=  Return
+          Surface=  Flat
+          KrElt=-1.0E+22
+          KcElt=0.0E+00
+          psiElt=  0.0E+00  0.0E+00  -1.0E+00
+          VptElt=  0.0E+00  0.0E+00  -1.309E+00
+          RptElt=  0.0E+00  0.0E+00  -1.309E+00
+          IndRef=1.0E+00
+          Extinc=1.0E+22
+          nCoat=  0
+          nObs=  0
+          ApType=  None
+          PropType=  Geometric
+          zElt=1.0E+19
+
+             iElt= 10
+          EltName=  ExitPupil
+          Element=  Return
           Surface=  Conic
-            KrElt= -2.60D+00
-            KcElt=  0.0D+00
-           psiElt=  0.0D+00  0.0D+00 -1.0D+00
-           VptElt=  0.0D+00  0.0D+00  1.291D+00
-           RptElt=  0.0D+00  0.0D+00  1.291D+00
-           IndRef=  1.0D+00
-           Extinc=  1.0D+22
+            KrElt=-2.764994723079989E+00
+            KcElt=0.0E+00
+           psiElt=  7.248145081663631E-16  2.619236398626602E-16  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  1.455994723079989E+00
+           RptElt=  0.0E+00  0.0E+00  1.455994723079989E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
             nCoat=  0
              nObs=  0
            ApType=  None
          PropType=  FarField
-             zElt=  2.60D+00
+             zElt=-2.764994723079989E+00
           nECoord= -6
 
-             iElt=  10
+             iElt=  11
           EltName=  FclPlane
           Element=  FocalPlane
           Surface=  Flat
-                        KrElt= -1.0D+22
-            KcElt=  0.0D+00
-           psiElt=  0.0D+00  0.0D+00 -1.0D+00
-           VptElt=  0.0D+00  0.0D+00 -1.309D+00
-           RptElt=  0.0D+00  0.0D+00 -1.309D+00
-           IndRef=  1.0D+00
-           Extinc=  1.0D+22
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -1.309E+00
+           RptElt=  0.0E+00  0.0E+00  -1.309E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
             nCoat=  0
              nObs=  0
            ApType=  None
          PropType=  Geometric
-             zElt=  1.0D+19
+             zElt=1.0E+19
           nECoord= -6
 
 % ---------------------------------------------------------------------------------------
@@ -363,8 +380,8 @@
 % ---------------------------------------------------------------------------------------
 
          nOutCord=  5
-             Tout=  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00
+             Tout=  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00

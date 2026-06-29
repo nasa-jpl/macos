@@ -660,8 +660,13 @@ C        linear rather than arc lengths!
           IF (l.GT.2) THEN
             !dxRef=(dxAvg-dxMin-dxMax)/DBLE(l-2)
 	    dxRef = med(dx,l)
-          ELSE
+          ELSE IF (l.GE.1) THEN
             dxRef=dx(l)
+          ELSE
+            dxRef=1d0   ! l==0 degenerate beam: avoid dx(0).  The DO-3
+                        ! loop below is empty (i=1,0), so j stays 0 and
+                        ! dxElt=1d10 (graceful -- matches the l==0
+                        ! warning above instead of SIGSEGV-ing).
           END IF
 
 
