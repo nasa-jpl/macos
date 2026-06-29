@@ -4583,7 +4583,8 @@
         ! ------------------------------------------------------
         OK    = FAIL
         XP(:) = 0e0_pr
-        if (.not. (SystemCheck() .and. ifStopSet)) return
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
 
         ! fix: SMACOS "FEX" does not correctly reset nGridPts
         nGridPtsSave = nGridPts
@@ -4640,7 +4641,8 @@
         ! ------------------------------------------------------
         OK    = FAIL
         XP(:) = 0e0_pr
-        if (.not. (SystemCheck() .and. ifStopSet)) return
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
 
         nGridPtsSave = nGridPts
         ifCentroidSave = ifCentroid
@@ -4680,7 +4682,8 @@
         ! the crossings.  The grid is left in the differential-field
         ! state; the caller re-traces (trace/modify) for normal use.
         OK = FAIL
-        if (.not. (SystemCheck() .and. ifStopSet)) return
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
 
         command = 'XPS'
         IARG(1) = iElt
@@ -5488,6 +5491,26 @@
         end if
 
       end function SystemCheck
+
+
+      ! .TRUE. iff an aperture stop is set.  Otherwise prints an
+      ! actionable message and returns .FALSE.  The exit-pupil finders
+      ! (FEX/SXP/XPS) are undefined without a stop -- they used to return
+      ! silently, leaving the caller with a zeroed (bogus) pupil and no
+      ! hint why.  Callers do: if (.not. SystemCheck()) return ;
+      !                        if (.not. StopSetOrWarn()) return
+      logical function StopSetOrWarn()
+        use macos_mod, only: ifStopSet
+        implicit none
+
+        StopSetOrWarn = ifStopSet
+        if (.not. ifStopSet) then
+          write(*,*) '** No aperture stop set; the exit pupil is undefined.'
+          write(*,*) '   Add "ApStop= 0 0 0" to the Rx header (stop at PM),'
+          write(*,*) '   or use the STOP command, before FEX/SXP/XPS.'
+        end if
+
+      end function StopSetOrWarn
 
 
       !---------------------------------------------------------------------------------------------

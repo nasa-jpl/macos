@@ -39,7 +39,7 @@
 % Element Definitions
 % ---------------------------------------------------------------------------------------
 
-             nElt=  10
+             nElt=  11
 
 
              iElt=  1
@@ -322,40 +322,58 @@
              zElt=  1.07D-01
           nECoord= -6
 
-             iElt=  9
-          EltName=  RefSurf
-          Element=  Reference
+
+          iElt=  9
+          EltName=  FclPlaneReturn
+          Element=  Return
+          Surface=  Flat
+          KrElt=-1.0E+22
+          KcElt=0.0E+00
+          psiElt=  0.0E+00  0.0E+00  -1.0E+00
+          VptElt=  0.0E+00  0.0E+00  -1.309E+00
+          RptElt=  0.0E+00  0.0E+00  -1.309E+00
+          IndRef=1.0E+00
+          Extinc=1.0E+22
+          nCoat=  0
+          nObs=  0
+          ApType=  None
+          PropType=  Geometric
+          zElt=1.0E+19
+
+             iElt= 10
+          EltName=  ExitPupil
+          Element=  Return
           Surface=  Conic
-            KrElt= -2.60D+00
-            KcElt=  0.0D+00
-           psiElt=  0.0D+00  0.0D+00 -1.0D+00
-           VptElt=  0.0D+00  0.0D+00  1.291D+00
-           RptElt=  0.0D+00  0.0D+00  1.291D+00
-           IndRef=  1.0D+00
-           Extinc=  1.0D+22
+            KrElt=-2.764994723079989E+00
+            KcElt=0.0E+00
+           psiElt=  7.248145081663631E-16  2.619236398626602E-16  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  1.455994723079989E+00
+           RptElt=  0.0E+00  0.0E+00  1.455994723079989E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
             nCoat=  0
              nObs=  0
            ApType=  None
          PropType=  FarField
-             zElt=  2.60D+00
+             zElt=-2.764994723079989E+00
           nECoord= -6
 
-             iElt=  10
+             iElt=  11
           EltName=  FclPlane
           Element=  FocalPlane
           Surface=  Flat
-                        KrElt= -1.0D+22
-            KcElt=  0.0D+00
-           psiElt=  0.0D+00  0.0D+00 -1.0D+00
-           VptElt=  0.0D+00  0.0D+00 -1.309D+00
-           RptElt=  0.0D+00  0.0D+00 -1.309D+00
-           IndRef=  1.0D+00
-           Extinc=  1.0D+22
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -1.309E+00
+           RptElt=  0.0E+00  0.0E+00  -1.309E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
             nCoat=  0
              nObs=  0
            ApType=  None
          PropType=  Geometric
-             zElt=  1.0D+19
+             zElt=1.0E+19
           nECoord= -6
 
 % ---------------------------------------------------------------------------------------
@@ -363,8 +381,8 @@
 % ---------------------------------------------------------------------------------------
 
          nOutCord=  5
-             Tout=  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00  0.0D+00  0.0D+00
-                    0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  0.0D+00  1.0D+00
+             Tout=  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00
