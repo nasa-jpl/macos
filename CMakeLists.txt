@@ -406,11 +406,19 @@ if(BUILD_SMACOS_DVR)
       ${smacos_src_dir}/pgplotsub.F
   )
   target_compile_definitions(smacos_dvr PRIVATE $<$<BOOL:${WIN32}>:MSWIN> CMACOS)
+  # smacos_dvr re-compiles macos_mod.F / macos_vars_mod.F / macosio.F /
+  # pgplotsub.F (the -DCMACOS variants) as its OWN objects, so it must emit
+  # its .mod files into its OWN module directory.  Sharing mod_macos with the
+  # `macos` target makes two build rules generate the same
+  # mod_macos/macos_mod.mod; the Ninja generator's Fortran dyndep then aborts
+  # with "multiple rules generate mod_macos/macos_mod.mod" (issue #56).
+  # Unix Makefiles tolerated the duplicate, which is why it stayed latent.
   set_target_properties(smacos_dvr PROPERTIES
-      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_macos)
+      Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_smacos_dvr)
   target_include_directories(smacos_dvr PRIVATE
       ${smacos_src_dir}
       ${fits_src_dir}
+      ${CMAKE_BINARY_DIR}/mod_smacos_dvr
       ${CMAKE_BINARY_DIR}/mod_macos
       ${CMAKE_BINARY_DIR}/mod_smacos
       ${CMAKE_BINARY_DIR}/mod
