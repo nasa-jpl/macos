@@ -4,14 +4,31 @@ A short, copy-paste walkthrough that takes you from **nothing** to a
 **running `macos`** in three steps. Everything compiles from one command;
 you do **not** need to learn CMake.
 
-> Busy? The whole thing is:
+> Busy? Two copy-paste flavors below — they differ by exactly one word
+> (whether you install **Ninja**). The build command is identical either way:
+> `makeall.sh` uses Ninja when it's installed and falls back to plain `make`
+> when it isn't.
+>
+> **With Ninja** (faster parallel builds):
 > ```bash
-> mkdir -p ~/dev && cd ~/dev                                  # 1. make a parent dir
-> git clone git@github.com:nasa-jpl/macos.git                 #    pull both repos
-> git clone git@github.com:nasa-jpl/MACOS_resources.git       #    (side by side)
+> sudo apt install build-essential cmake gfortran git libx11-dev ninja-build
+> mkdir -p ~/dev && cd ~/dev                              # parent dir
+> git clone git@github.com:nasa-jpl/macos.git             # pull both repos
+> git clone git@github.com:nasa-jpl/MACOS_resources.git   # (side by side)
 > git -C macos checkout opt-dev && git -C MACOS_resources checkout opt-dev
-> cd macos && source ./makeall.sh                             # 2. build everything
-> ./build_release/bin/macos                                   # 3. run it
+> cd macos && source ./makeall.sh                         # configures with Ninja
+> ./build_release/bin/macos                               # run it
+> ```
+>
+> **Without Ninja** (nothing extra to install — uses `make`):
+> ```bash
+> sudo apt install build-essential cmake gfortran git libx11-dev
+> mkdir -p ~/dev && cd ~/dev
+> git clone git@github.com:nasa-jpl/macos.git
+> git clone git@github.com:nasa-jpl/MACOS_resources.git
+> git -C macos checkout opt-dev && git -C MACOS_resources checkout opt-dev
+> cd macos && source ./makeall.sh                         # falls back to Unix Makefiles
+> ./build_release/bin/macos
 > ```
 > The rest of this file just explains each line. For the full option matrix
 > (Windows, CMake-direct, lean/NPSOL/pymacos builds) see [README.md](README.md).
@@ -77,9 +94,11 @@ sudo apt install build-essential cmake gfortran git libx11-dev
 - `libx11-dev` — the interactive graphics window. This is the **only**
   graphics dev package you need; Cairo/libpng/zlib/pixman are bundled and built
   from source, so do **not** apt-install them.
-- **Optional: `ninja-build`** — a faster parallel build tool. The scripts use
-  it automatically when it's installed and fall back to `make` (from
-  `build-essential`) when it isn't, so it is **not** required.
+- **Optional: `ninja-build`** — a faster parallel build tool, and the **only**
+  "helper" you might add. The scripts pick it up automatically when it's
+  installed and **fall back to plain `make`** (from `build-essential`) when it
+  isn't, so Ninja is genuinely **not** required — `cmake` + `make` is the whole
+  build toolchain.
 - MATLAB is **optional** — needed only for `GMI.mexa64` (auto-detected under
   `/usr/local/MATLAB/`; the build just skips GMI if it's missing).
 
@@ -111,6 +130,11 @@ git clone git@github.com:nasa-jpl/MACOS_resources.git
 git -C macos            checkout opt-dev
 git -C MACOS_resources  checkout opt-dev
 ```
+
+> **Which branch?** `opt-dev` is the **stable release target** — use it unless
+> you have a reason not to. `sls-dev` is the integration branch (newest fixes
+> and features, less settled). Whichever you pick, **both repos must be on the
+> same one**.
 
 ### Already cloned (just get the latest)
 
@@ -208,14 +232,22 @@ when you only need part of the tree (faster rebuilds):
 | `source ./makegmi.sh` | GMI.mexa64 | you only need to relink the MATLAB mex |
 | `source ./makegfortran.sh` | all four, via gfortran | you don't have Intel oneAPI (or are debugging an ifx-only issue) |
 
-Every script takes the same options, in any order:
+Options are order-independent. The four common ones:
 
 | Option | Effect | Build directory |
 |--------|--------|-----------------|
-| *(none)* | `ifx`, optimized | `build_release/` |
+| *(none)* | optimized release | `build_release/` |
 | `debug` | `-O0 -check all` | `build_debug/` |
-| `gfortran` | use gfortran (`makems`/`makesd` only) | `…_gfortran/` |
+| `gfortran` | compile with gfortran instead of ifx | `…_gfortran/` |
 | `npsol` | also build the opt-in NPSOL solver (SLSQP is always on) | `…_npsol/` |
+
+Not every script takes a **compiler** switch, though:
+
+- `makeall.sh` (ifx) and `makegfortran.sh` (gfortran) each build the whole
+  tree with **one fixed compiler**, so they accept `debug`/`release` and
+  `npsol` but not a compiler name.
+- `makems.sh` / `makesd.sh` / `makegmi.sh` take an explicit `ifx` or
+  `gfortran` (`makems`/`makesd` default to ifx, `makegmi` to gfortran).
 
 Examples: `source ./makems.sh debug` · `source ./makems.sh release gfortran`
 

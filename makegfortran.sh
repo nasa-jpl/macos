@@ -16,7 +16,7 @@
 #   macos executable  : ./build_release_gfortran/bin/macos
 #   smacos library    : ./build_release_gfortran/lib/libsmacos.a
 #   smacos_dvr        : ./build_release_gfortran/bin/smacos_dvr
-#   GMI mex           : ./build_release_gfortran/lib/GMI.mexa64
+#   GMI mex           : ./build_release_gfortran/bin/GMI.mexa64
 #
 # Note: PGPLOT support was removed on release-candidate; Giza is now
 # the only PGPLOT-API provider.
@@ -94,6 +94,6 @@ echo "  smacos     : ${BUILD_DIR}/lib/libsmacos.a"
 if [ -f "${BUILD_DIR}/bin/smacos_dvr" ]; then
   echo "  smacos_dvr : ${BUILD_DIR}/bin/smacos_dvr"
 fi
-if ls "${BUILD_DIR}"/lib/GMI.mexa64 > /dev/null 2>&1; then
-  echo "  GMI        : ${BUILD_DIR}/lib/GMI.mexa64"
+if [ -f "${BUILD_DIR}/bin/GMI.mexa64" ]; then
+  echo "  GMI        : ${BUILD_DIR}/bin/GMI.mexa64"
 fi
