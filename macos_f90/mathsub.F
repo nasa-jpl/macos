@@ -515,14 +515,14 @@ C
       END SUBROUTINE DTRPOS
 C
       SUBROUTINE DZERO(A,N)
-      REAL*8 A(1)
-      Integer :: N
+      REAL*8 A(*)      ! assumed-size (was A(1), a -fcheck=bounds false
+      Integer :: N     ! positive for A(1:N) with N>1)
       A(1:N)=0D0
       RETURN
       END SUBROUTINE DZERO
 C
       SUBROUTINE IZERO(A,N)
-      INTEGER A(1)
+      INTEGER A(*)     ! assumed-size (was A(1); see DZERO)
       Integer :: N
       A(1:N)=0
       RETURN
