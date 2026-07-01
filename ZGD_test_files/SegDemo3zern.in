@@ -18,6 +18,8 @@
          Aperture=  3.65D+00
          Obscratn=  3.0D-01
 
+           ApStop=  0.0D+00  0.0D+00  0.0D+00
+
          GridType=  Pie
          nGridpts=  256
             xGrid=  1.0D+00  0.0D+00  0.0D+00
