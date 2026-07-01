@@ -24,33 +24,46 @@
 
 ## Active slice
 
-- **Sprint / item:** Per-segment GridMat generator + per-segment influence path (mmacos sensitivities) **and** build-system fixes (issue #56) — both LANDED + pushed.
-- **Plan anchor:** PLAN.md §0 (Surface=Zernike-Reference TODO; ApStop SAVE; GridData closed); memories [[project-gridmat-generator]], [[project-build-fixes-issue56]]; MACOS_resources/mmacos/CLAUDE.md.
-- **Branch / worktree:** sls-dev (both repos). Build-break + GMI-build fixes ALSO on opt-dev (cherry-pick).
-- **Definition of done (honest):**
-  - [x] Issue #56 (smacos_dvr own `Fortran_MODULE_DIRECTORY`) — sls-dev `84f0b9c`, opt-dev `cf01617`; GMI FC-stamp `5c729f0`/`c2f3c19`; 4 dead `makefile_*.sh` deleted + makegfortran GMI report + HOW_TO_COMPILE cleanup `7041420`. Pushed.
-  - [x] iElt fix (dw_dx_multi / dw_dz_zernike_multi propagate canonical `out.iElt`) — sls-dev `0f071f2`, pushed
-  - [x] GridMat generator (`segment_grid_basis` + `write_grid_file` + per-segment `influence` path in grid_channels/dw_dgrid[_multi] + `gen_segment_gridmat` example) — sls-dev `245af94`, pushed; validated
-  - [x] PLAN.md §0 `Surface=Zernike` for `Element=Reference` engine TODO — macos sls-dev `d8dd5b8`
-  - [ ] Deferred follow-ons (Next step below)
+**No slice in flight** — the dwdgrid-examples + GMI-build-fix slice landed and
+pushed 2026-07-01 (promoted to the memories below + CLAUDE.md).  Pick the next
+item from the loose ends or the plan.
+
+### Last landed (2026-07-01) — pointers for the next session
+- **dwdgrid segmented examples** (MACOS_resources sls-dev `c07ed65` + `8beb774`,
+  pushed): `run_dwdgrid_multi_multisegbasis` (per-segment `segment_grid_basis`
+  struct fed as `dw_dgrid_multi` `influence`; verified 72 chan / 0.0% inter-seg
+  overlap / 92px spread) + `run_dwdgrid_multi_singlesegbasis` (single shared
+  `gs_zernike_segment_basis`) + generic `run_dwdgrid_multi` + `run_dwd{x,z,surf}
+  _multi`; both segmented library drivers (generic RX='' flavor) +
+  `plot_dw_per_element` + `gs_zernike_segment_basis` committed.  Experimental
+  SegDemo scratch dirs deleted; unique FreeForm/Zernike fixtures preserved in
+  `~/dev/MACOS_sandbox/segdemo_fixtures/`.  [[project-gridmat-generator]]
+- **GMI build fix** (macos opt-dev `796dc51` + sls-dev `2f4948e`, pushed): opt-dev
+  `makeall` `-DBUILD_GMI=ON`→`OFF` (Makefile is sole GMI builder) + MATLAB_ROOT
+  autodetect (both branches, was hardcoded R2025b) — fixes Scott's GMIG.F
+  `fintrf.h` fail (opt-dev double-build).  [[project-build-fixes-issue56]]
+- **iElt fix** cherry-picked to MACOS_resources opt-dev (`0f071f2`→`15603a8`).
+- All four branch-refs (both repos × sls-dev/opt-dev) in sync with origin.
+
+### Open loose ends (next candidates)
+- Deferred engine: `Surface=Zernike` for `Element=Reference` (PLAN.md §0);
+  Rx-collapse (modes×coefs in the engine); more Zernike types.
+- (Pre-existing) `tma_onaxis` designer + the convex-secondary REVERT question
+  ([[project-design-drivers]]); `test7.in` / `zmode_end` rename
+  ([[project-engine-fixes-lega-shipped]]); layout realizability
+  ([[project-layout-realizability]], local unpushed commits).
 
 ## In-session state NOT yet committed
-> Everything above is COMMITTED + PUSHED. Remaining uncommitted (deferred):
-- The OTHER `run_dwd*_multi` self-contained examples + `plot_dw_per_element.m` (mmacos/sensitivities) — STILL uncommitted (only the `gen_segment_gridmat` example + `mmacos_setup.m` shipped, in 245af94). Prune cruft (stray `SD3ff.in`, experimental `run_dwd{x,z}_multi_SegDemo/`) before committing.
-- These compaction doc edits (CLAUDE / MEMORY / CURRENT_SLICE / PLAN).
+—
 
 ## Just tried / ruled out (with why)
-- Per-segment GridMat SINGLE-vs-PERSEG **94%** on SegDemo3conic was NOT a bug — bases ~98% congruent (3-fold tilt pattern, opposite segments identical); 94% = the **max** at ~100 mask-EDGE pixels (one mask has the pixel, the other doesn't → full poke vs zero). Per-segment matters for clipped EDGE segments. [[project-gridmat-generator]]
-- Masks render as Voronoi **WEDGES** (not hexes) — correct: `ApType=None` segments → engine assigns each ray to the nearest centre. DON'T "fix" them.
-- masks.png rendered **grayscale** (headless imagesc-of-binary + colormap trap) → DROPPED it; the basis montage already shows the mask shapes. [[feedback-headless-png-grayscale]]
-- **DON'T push generated figures into the Rx** — Dave: the generator makes the per-segment mode BASIS for `run_dwdgrid*`; the Rx-collapse (modes×coefs in the engine) is a deferred bigger task.
+—
 
 ## Next concrete step
-- Wire the `run_dwdgrid*` examples to consume the per-segment `.mat` (grid_channels now takes the `segment_grid_basis` struct directly); curate + commit the remaining `run_dwd*_multi` examples + `plot_dw_per_element` (prune cruft, sls-dev). Deferred engine: `Surface=Zernike` for `Element=Reference` (FreeForm-segmented apertures); Rx-collapse; more Zernike types.
+—
 
 ## Open micro-questions (slice-local)
-- opt-dev cherry-pick the iElt fix (`0f071f2`)? It's a bug fix; the generator is sls-dev feature work.
-- Consolidate the bespoke `run_dwdgrid_multi_SegDemo` (gs single-basis) with the new per-segment generator path?
+—
 
 ## Promote-on-land  →  then CLEAR this file
 > Same commit as the `design-sprint-N` tag: move each item to its
