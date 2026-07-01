@@ -1957,6 +1957,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 iEltToGridSrf(iElt)=jGridSrf
               END IF
               GridFile(iElt)=VALUE
+!-->          Trim trailing blanks + TABS: an Rx inline comment leaves tab(s)
+!             on VALUE (GridFile= name<TAB><TAB>% ...) and ICLEN counts a tab
+!             as non-blank, so GridInit would open "name<TAB>..." and report
+!             it "does not exist".  Blank the trailing whitespace + tabs.
+              DO k=LEN(GridFile(iElt)),1,-1
+                IF (GridFile(iElt)(k:k).NE.' ' .AND.
+     &              GridFile(iElt)(k:k).NE.CHAR(9)) EXIT
+                GridFile(iElt)(k:k)=' '
+              END DO
+!<--
 
 	      k=ICLEN(GridFile(iElt))
 
