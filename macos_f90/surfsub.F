@@ -3210,6 +3210,15 @@ C   If no file, zero matrix and return
 
             !print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))
 
+!-->        Tolerate stray trailing tabs on the file name (an Rx inline
+!           comment can leave them; a tab is not a blank so INQUIRE/OPEN
+!           fail).  Defensive -- the msmacosio parser also strips them.
+            DO i=LEN(GridFile),1,-1
+              IF (GridFile(i:i).NE.' ' .AND.
+     &            GridFile(i:i).NE.CHAR(9)) EXIT
+              GridFile(i:i)=' '
+            END DO
+!<--
             INQUIRE (FILE=GridFile,EXIST=exist)
             IF (exist) THEN
                if (.not.isBinFil) then
