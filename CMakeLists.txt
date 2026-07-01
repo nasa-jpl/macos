@@ -46,7 +46,26 @@ option(BUILD_MMACOS      "Build the mmacos MATLAB MEX interface" OFF)
 set(MMACOS_FC "" CACHE STRING
     "Fortran compiler for mmacos (gfortran or ifx). Empty = inherit parent compiler.")
 option(USE_NPSOL         "Build NPSOL-backed constrained optimization" OFF)
-set(MATLAB_ROOT "/usr/local/MATLAB/R2025b" CACHE PATH "Matlab installation root")
+# Matlab installation root.  Auto-detect the latest installed MATLAB (mirrors
+# the GMI Makefile's `ls .../R[0-9]*[ab] | sort -V | tail -1`) rather than
+# hard-coding a release -- a hard-coded path breaks the GMI/mmacos cmake builds
+# on any machine lacking that exact version.  Override with -DMATLAB_ROOT=...
+if(NOT MATLAB_ROOT)
+  if(WIN32)
+    file(GLOB _matlab_roots "C:/Program Files/MATLAB/R[0-9][0-9][0-9][0-9][ab]")
+  else()
+    file(GLOB _matlab_roots "/usr/local/MATLAB/R[0-9][0-9][0-9][0-9][ab]")
+  endif()
+  list(SORT _matlab_roots)
+  if(_matlab_roots)
+    list(GET _matlab_roots -1 _matlab_latest)
+  else()
+    set(_matlab_latest "/usr/local/MATLAB/R2025b")   # last-resort fallback
+  endif()
+  set(MATLAB_ROOT "${_matlab_latest}" CACHE PATH "Matlab installation root")
+  unset(_matlab_roots)
+  unset(_matlab_latest)
+endif()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
