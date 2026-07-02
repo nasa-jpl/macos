@@ -3711,7 +3711,7 @@ C	Here when element number is determined...
      &	               RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	               lMon(imin),pMon(1,imin),
      &	               xMon(1,imin),yMon(1,imin),zMon(1,imin),
-     &	               pData(1,iElt),xData(1,iElt),yData(1,iElt),zData(1,iElt),
+     &	               pData(1,imin),xData(1,imin),yData(1,imin),zData(1,imin),
      &	               lFF(imin),pFF(1,imin),xFF(1,imin),yFF(1,imin),
      &	               zFF(1,imin),FFCoef(1,imin),
      &	               CurIndRef,IndRef(imin),
