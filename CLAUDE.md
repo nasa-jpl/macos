@@ -154,10 +154,12 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
 - `source ./makeall.sh debug` — all four targets, debug
 - CMake debug uses -check all,noarg_temp_created (suppresses harmless array temporary warnings).
-- VS Code: F5 launches debug session; builds automatically via preLaunchTask.
-  launch.json points to build_debug_giza/macos and build_debug_giza/smacos_dvr.
-  tasks.json runs cmake -S/-B with debug flags. Requires ms-vscode.cpptools extension.
-  `debug.allowBreakpointsEverywhere: true` in settings.json enables breakpoints in .F files.
+- VS Code: no `.vscode/` config exists currently (the old launch.json/tasks.json
+  pointing at the retired `build_debug_giza` tree is gone; that tree and the other
+  legacy build dirs — giza/pgplot/joint/smoke variants — were deleted 2026-07-02).
+  If recreated, point launch targets at `build_debug[_gfortran]/` and set
+  `debug.allowBreakpointsEverywhere: true` for breakpoints in .F files
+  (requires ms-vscode.cpptools).
 - smacos_dvr: compiles smacos_dvr.F with -DCMACOS, links against smacos_lib.a
   plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
 
