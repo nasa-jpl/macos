@@ -24,11 +24,31 @@
 
 ## Active slice
 
-**No slice in flight** — the conforming-Reference slice landed and pushed
-2026-07-02 (promoted to [[project-conforming-reference]]).  Pick the next item
-from the loose ends or the plan.
+**No slice in flight** — the NS grid-frame slice landed and pushed
+2026-07-02 pm.  **NEXT (Dave, 2026-07-03 am): pick from PLAN §0 items 1–5**
+(FEX→SXP radius; SAVE ApStop + Lou-UpdateNotes vars; SAVE whole-line
+comments; baked-in glass tables; opd all-rays-lost SIGSEGV).  Suggested
+pairing: #2+#3 are one SAVE-path slice; #5 is small/self-contained.
 
-### Last landed (2026-07-02) — conforming Reference (PASSIVE)
+### Last landed (2026-07-02 pm) — NS grid-frame fix + ns_griddata decomposition
+- **Grid figures on NSReflector segments collapsed to a center-pixel
+  per-segment piston**: the NS-block Reflector call sites passed the grid
+  frame `pData/xData/yData/zData` indexed by `iElt` (NS-group entry elt,
+  frameless → zeros) instead of `imin` (elt actually hit).  Two-line fix,
+  tracesub.F:3714 + propsub.F:983.  **macos sls-dev `60f886d`** (pushed;
+  **opt-dev cherry-pick NOT yet done** — it has the same slip via 1b535a5).
+- **ns_griddata example redone as a 5-variant decomposition** (Luis Q&A):
+  Conic/Zernike/GridData/ZrnGrData+flat/ZrnGrData variants; superposition
+  3e-8 rms (real 2nd-order slope-resampling cross-term, mostly double-pass);
+  flat grid bit-identical to none.  GridSrfdx=1.1 (=280/255 — grid span is
+  (nGridMat−1)·dx centered on pData; Luis's 0.2 covered only ±25 of the
+  140-radius segment).  **MACOS_resources sls-dev `e6f4f17`** (pushed).
+- mmacos regression: 30 classes, 0 failures; tProperCompareCassFF heap
+  crash pre-existing/known.  Both release builds + mmacos mex rebuilt.
+- Remaining NS gap: the `NSRefractor` ROUTINE (refractive NS) still
+  null-frames GridData — iris (all-reflective) unaffected.
+
+### Landed earlier 2026-07-02 — conforming Reference (PASSIVE)
 - **`Element=Reference` now accepts `Surface=Zernike`/`Aspheric`** so a
   conforming Reference CARRIES a Zernike basis definition (segment shapes) for
   GS-basis dev, but has **no effect on the light** (RefSrf unchanged; coeffs
