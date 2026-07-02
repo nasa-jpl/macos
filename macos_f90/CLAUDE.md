@@ -207,9 +207,24 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   (signature + decls + the FreeFormSrf call) and its FindSrf/Reflector/Refractor
   call sites in elemsub.F.  GMI regression 6/6 bit-identical (its prescriptions
   use FreeForm/Conic, not SrfType-9), confirming the change is isolated.
-- **Deferred:** `NSRefractor` (non-sequential) doesn't carry the element grid
-  frame, so its `GridSrf` call still passes a local null frame — its GridData
-  path stays piston-only until threaded.  Noted in-line at the NSRefractor decl.
+- **NS follow-on CLOSED (sls-dev 60f886d, 2026-07-02):** the frame-threading
+  fix above used `iElt` at all ten call sites — correct at the eight
+  sequential ones, WRONG at the two non-sequential Reflector sites
+  (tracesub.F:3714, propsub.F:983) where the intersected element is `imin`
+  and `iElt` is the frameless NS-group entry (vectors all zero → every ray
+  → center pixel → per-segment piston).  Caught by the `ns_griddata`
+  5-variant decomposition (mmacos examples; Luis's iris_dp NSReflector
+  segments).  NSReflector elements dispatch through `Reflector` in the NS
+  block, NOT the `NSRefractor` routine.  **Not yet cherry-picked to opt-dev**
+  (which has the same slip via 1b535a5).
+- **Deferred:** the `NSRefractor` ROUTINE (refractive non-sequential only)
+  doesn't carry the element grid frame — its `GridSrf` call still passes a
+  local null frame; that GridData path stays piston-only until threaded.
+  Noted in-line at the NSRefractor decl.
+- **GridSrfdx semantics (user-facing):** grid span = `(nGridMat−1)·GridSrfdx`
+  base units, centered on `pData`; rays outside the span get `fh=0` (no
+  figure).  256-grid across a 280-diameter segment → `GridSrfdx = 280/255
+  ≈ 1.1`.  Too-small dx = figure only near segment center (looks piston-ish).
 
 ## Prescription I/O notes (msmacosio.inc / iosub.inc)
 - The parser has two chains: label 50 (header/global) and label 61 (per-element).
