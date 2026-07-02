@@ -588,7 +588,7 @@ required:
    > useful outputs" is exactly the trust level at which a silent
    > sign / frame error survives longest.
 
-3. **Truss optimization (Sprint 5+).**  Vars = fiducial / launcher
+3. **Truss optimization (Sprint 6+).**  Vars = fiducial / launcher
    placement + beam topology; merit = observability of the DOF set
    (min singular value / condition number of the restricted met
    Jacobian; worst-case unobservable mode); constraints = launcher
@@ -1332,7 +1332,91 @@ nECoord=6/TElt frames).
 - [ ] `plot_history`; all worked examples in the manual; `diagram()` 3-D;
       tag `design-layer-v1`.
 
-### Sprint 5+ (deferred)
+### Sprint 5 — simultaneous focal + pupil optimization (added 2026-07-02)
+
+**Goal (Dave):** n-mirror telescopes with diffraction-limited multi-field
+WFE at an ACCESSIBLE focus AND a flat, well-imaged, field-stable,
+ACCESSIBLE exit pupil (a flat DM/Lyot/apodizer/FSM conjugate).
+
+**Structural insight (proven by sz_tma):** Zernike departures don't move
+chief-ray geometry, so the pupil objectives are functions of the
+0th-order layout alone (sphere radii, spacings, tilts, stop) while
+focal WFE is recoverable by the Zernike layer for any packaging-feasible
+layout.  → nested optimization: OUTER loop over layout knobs scores
+pupil + accessibility, INNER CALIB Zernike polish supplies best-achievable
+WFE per layout.  **The lever that decouples the two:** a +1 field mirror
+at/near the real intermediate focus (3+1 config) — power at an image
+plane has ~zero first-order effect on focal WFE but full authority over
+pupil curvature; its astigmatic figure controls pupil astig.  sz_tma's
+baseline error to null: **+1.67 mm pupil defocus + 1.77 mm astig**
+(`macos.pupil_quality`, landed 2026-06-26 — see Sprint 2B tail).
+
+**Objective set** (each → a measurable; weights carry unit conversion,
+focal residuals in waves, pupil residuals in mm):
+
+| # | Objective | Measurement | Status |
+|---|---|---|---|
+| J1 | Area-weighted multi-field RMS WFE (+ worst-field check) | CALIB / `optimize_freeform` staged S0→S1→S2 | exists |
+| J2 | Pupil surface flatness: pupil defocus Z4 + astig (or `sag_rms`, piston/tilt removed) | `pupil_quality` | exists |
+| J3 | Pupil image sharpness: crossing-cloud thinness | `pq.fit_resid` | exists |
+| J4 | Pupil mapping linearity: RMS nonlinear residual of (U,V)→transverse-crossing linear fit | data in `pq.uv`+cloud; metric NOT coded | slice 1 |
+| J5 | Pupil stability over field: vertex walk + sag-coef spread across the field set | needs multi-field loop | slice 2 |
+| C1 | Accessibility constraints: pupil vertex real/external w/ clearance margin; FP out of beam; unobscured; 100% ray pass | `check_clipping` + ray-loss guard; pupil-station body NOT wired | slice 3 |
+
+**Slices (all MATLAB over existing engine commands — no Fortran):**
+
+- [ ] **Slice 1 — distortion metric.**  Extend `pupil_quality`:
+      fit the best linear map (U,V)→transverse crossing position;
+      return `pq.distortion_rms` (fraction of pupil radius), `pq.mag`,
+      anamorphism.  Pin sz_tma values in a `tPupilQuality` test.
+- [ ] **Slice 2 — `pupil_quality_multi`.**  Loop `set_src_fov` →
+      `pupil_quality` → restore nominal (mirror the `dw_*_multi`
+      supervisor pattern).  Returns per-field struct array + variation
+      stats (lateral/axial vertex walk, per-coef spread).  Test on
+      sz_tma over the S2 field set.
+- [ ] **Slice 3 — pupil-station accessibility.**  Add the pupil
+      vertex + a placeholder flat as a body in `check_clipping`
+      (reuse the off-axis footprint-patch machinery); signed clearance
+      → outer-loop constraint.
+- [ ] **Slice 4 — objective wiring.**  Stack pupil residuals into the
+      outer optimizer as ONE weighted least-squares vector
+      `[w_f·OPD(fields); w_p·(Z4,astig)_pupil; w_d·distortion;
+      w_s·field-stability]` (the "pupil residuals stack into the same
+      weighted vector as the focal OPD" intent recorded in the 2B
+      tail).  Default architecture = nested (outer fmincon/SLSQP over
+      layout knobs, inner CALIB Zernike); single-vector jacobian/
+      lsqnonlin engine as the follow-on.  Weights from PHYSICAL
+      tolerances, not tuning: WFE 0.07 waves; pupil sag from the
+      Talbot/Fresnel phase→amplitude budget (coronagraph) or
+      registration blur ≪ actuator pitch (metrology); distortion as
+      pitch fraction.
+- [ ] **Slice 5 — 3+1 builder support.**  `add_mirror` placement at/
+      near the intermediate focus (`'recreates','pupil'`-style
+      conjugate solve, §7.3 keyword) so the +1 field mirror is a
+      first-class design variable (radius → pupil defocus; Zernike
+      astig figure → pupil astig).
+- [ ] **Slice 6 — worked example `design/tma_3plus1/`.**  Extend
+      sz_tma with the +1 field mirror; staged run; before/after
+      `pupil_quality` (1.67 mm defocus / 1.77 mm astig → ~0) with WFE
+      held diffraction-limited; per example rules (save .in + .mat,
+      `add_pupil`, figures, no `exit(0)`).  (An untracked
+      `design/tma_3plus1/tma_3plus1.m` stub exists — absorb it.)
+- [ ] Tests grow alongside each slice (standing rule).
+
+**Acceptance:** a 3+1 derived from sz_tma with worst-field WFE
+< 0.07 waves over ±2′, pupil sag (piston/tilt removed) reduced ≥10×
+vs the sz_tma baseline, distortion + field-stability reported, pupil
+AND focus accessible per `check_clipping`, committed with tests.
+
+**Open questions (record answers in §10):** (a) pupil-sag tolerance
+normalization — Talbot budget vs registration budget, per use case;
+(b) do pupil terms ever enter the CALIB inner loop (engine work) or
+stay outer-only (default: outer-only until measured to matter);
+(c) in-engine pupil-Zernike fit + "place a pupil" reference-element
+placement (already queued in the 2B tail "Next") — pull only when
+slice 4 wants speed.
+
+### Sprint 6+ (deferred)
 
 - Polychromatic CALIB (broadband inner-loop merit in one solve).
 - `spectral_run(λ_list, …)` amortization convenience.
