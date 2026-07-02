@@ -46,6 +46,14 @@ item from the loose ends or the plan.
 - All four branch-refs (both repos × sls-dev/opt-dev) in sync with origin.
 
 ### Open loose ends (next candidates)
+- **Design layer NEXT (planned 2026-07-02): Sprint 5 — simultaneous
+  focal + pupil optimization** (`PLAN_DESIGN_LAYER.md` §8 Sprint 5).
+  Six slices, all MATLAB over existing XPS/`pupil_quality`/
+  `check_clipping`: distortion metric → `pupil_quality_multi` →
+  pupil-station clearance → stacked-residual objective wiring →
+  3+1 field-mirror builder support → `design/tma_3plus1/` worked
+  example (null sz_tma's +1.67 mm pupil defocus / 1.77 mm astig while
+  holding WFE diffraction-limited).
 - Deferred engine: `Surface=Zernike` for `Element=Reference` (PLAN.md §0);
   Rx-collapse (modes×coefs in the engine); more Zernike types.
 - (Pre-existing) `tma_onaxis` designer + the convex-secondary REVERT question
