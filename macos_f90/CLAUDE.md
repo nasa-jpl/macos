@@ -264,6 +264,29 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   dispatch silently no-ops. Add ELSE-with-error or extend the chain when this
   surfaces. (We didn't extend it now because no current test exercises it.)
 
+## Conforming Reference: Surface=Zernike/Aspheric is PASSIVE (sls-dev c9fa767)
+- `Element=Reference` accepts `Surface=Zernike` (8) and `Surface=Aspheric` (3)
+  so a reference can CARRY a Zernike basis definition (modes/coeffs/lMon/
+  aperture = "segment shapes") for GS-basis dev.  Gate: `EltSurfCompat`
+  (iosub.inc) allows SrfType 3/8 for EltID=3 (was ≤2 or =9).
+- **It has NO effect on the light.**  A Reference passes rays straight through
+  (RefSrf sets rout=ihat; total path to the next real elt unchanged).  RefSrf
+  is UNCHANGED — the Zernike/aspheric coeffs are parsed and stored but NEVER
+  injected.  (Do NOT mirror `Reference`+`GridData`'s `ifOPDModGrid` `L=L+figure`
+  — that's a deliberate ACTIVE phase grid, the exception.  I did that first;
+  it broke Dave's "references have no effect" invariant.  Verified passive:
+  with-ref == no-ref OPD to 9e-12.)
+- Two SHARED-parser fixes shipped alongside (CLI/mmacos/pymacos share
+  msmacosio.inc): (1) **`ZernModes=` now reads single-line OR wrapped**
+  (`READ(VALUE,*,IOSTAT=ios)` all modes; only if short do the Grp-per-line
+  read) — >Grp modes on one line previously pulled phantom continuation rows →
+  ate the next keyword → "Bad integer".  (2) the "Invalid Element/Surface
+  Combination" warning printed `SrfTypeName(EltID)` — fixed to
+  `SrfTypeName(SrfType)` (2 sites msmacosio.inc + 1 macosio.F).
+- Rx GOTCHA (mmacos-side, not engine): a grid/FreeForm segment's grid frame
+  `pData/xData/yData/zData` must equal its clocked `pMon/xMon/yMon/zMon` or a
+  per-segment poke won't localize (dW→central dot).
+
 ## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
 - For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
   used to require xObs to be parsed BEFORE the polygon line, because

@@ -24,11 +24,29 @@
 
 ## Active slice
 
-**No slice in flight** — the dwdgrid-examples + GMI-build-fix slice landed and
-pushed 2026-07-01 (promoted to the memories below + CLAUDE.md).  Pick the next
-item from the loose ends or the plan.
+**No slice in flight** — the conforming-Reference slice landed and pushed
+2026-07-02 (promoted to [[project-conforming-reference]]).  Pick the next item
+from the loose ends or the plan.
 
-### Last landed (2026-07-01) — pointers for the next session
+### Last landed (2026-07-02) — conforming Reference (PASSIVE)
+- **`Element=Reference` now accepts `Surface=Zernike`/`Aspheric`** so a
+  conforming Reference CARRIES a Zernike basis definition (segment shapes) for
+  GS-basis dev, but has **no effect on the light** (RefSrf unchanged; coeffs
+  stored, never injected — I first built it ACTIVE = WRONG, Dave caught it,
+  reverted; verified with-ref==no-ref OPD 9e-12).  Engine = 3 files
+  (`EltSurfCompat` gate + 2 shared-parser fixes: `ZernModes` single-vs-wrapped
+  IOSTAT read; `SrfTypeName(EltID→SrfType)` warning mislabel).  **macos sls-dev
+  `c9fa767`** (pushed).  Example `e5hex2_refzern` (passivity + `make_gs_basis`
+  + `run_dwdgrid_multi` split + `verifyall`) + `segment_grid_basis`/
+  `grid_channels` exclude refs/non-segments: **MACOS_resources sls-dev
+  `52d688d`** (pushed).  Other-session fixes: `b0d044c`.  **Rx GOTCHA: segment
+  grid frame `pData/xData/yData/zData` must = clocked `pMon/xMon/yMon/zMon` or
+  pokes don't localize.**  [[project-conforming-reference]]
+- **NOT run:** pymacos regression (needs ifx build_release + pymacos rebuild;
+  mmacos suite was green for the change).  Dave's `macos` alias (ifx
+  build_release) rebuilt to current/passive.
+
+### Landed 2026-07-01 — pointers for the next session
 - **dwdgrid segmented examples** (MACOS_resources sls-dev `c07ed65` + `8beb774`,
   pushed): `run_dwdgrid_multi_multisegbasis` (per-segment `segment_grid_basis`
   struct fed as `dw_dgrid_multi` `influence`; verified 72 chan / 0.0% inter-seg
@@ -54,7 +72,8 @@ item from the loose ends or the plan.
   3+1 field-mirror builder support → `design/tma_3plus1/` worked
   example (null sz_tma's +1.67 mm pupil defocus / 1.77 mm astig while
   holding WFE diffraction-limited).
-- Deferred engine: `Surface=Zernike` for `Element=Reference` (PLAN.md §0);
+- ~~Deferred engine: `Surface=Zernike` for `Element=Reference`~~ DONE
+  2026-07-02 (passive), see above.  Remaining:
   Rx-collapse (modes×coefs in the engine); more Zernike types.
 - (Pre-existing) `tma_onaxis` designer + the convex-secondary REVERT question
   ([[project-design-drivers]]); `test7.in` / `zmode_end` rename
