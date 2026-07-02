@@ -1191,7 +1191,7 @@ C       Set entrance condition flags to .FALSE.
                   EltType_FLG=.TRUE.
                 ELSE
                   WRITE(*,131)EltTypeName(EltID(iElt)),
-     &            SrfTypeName(EltID(iElt))
+     &            SrfTypeName(SrfType(iElt))
                 END IF
               END IF
               GO TO 61
@@ -1376,7 +1376,7 @@ C       Set entrance condition flags to .FALSE.
                   EltType_FLG=.TRUE.
                 ELSE
                   WRITE(*,131)EltTypeName(EltID(iElt)),
-     &            SrfTypeName(EltID(iElt))
+     &            SrfTypeName(SrfType(iElt))
                 END IF
               END IF
               GO TO 61
@@ -1730,7 +1730,31 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 GOTO 99
               END IF
               ZernModes(:) = 0
-              READ(VALUE,*)(ZernModes(j),j=1,nZernCoef)
+              ! ZernModes may be all on one line OR wrapped (Grp per line,
+              ! like ZernCoef below).  Try a single-line read first; only if
+              ! VALUE is short (a machine-generated Rx that wraps at Grp) do
+              ! we pull the extra rows from RX_FID.  Guarding on IOSTAT (not
+              ! nZernCoef>Grp) is essential: some Rx put >Grp modes on one
+              ! line, and reading phantom continuation rows then swallows the
+              ! next keyword line. -CC 2026-07
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER            :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)(ZernModes(j),j=1,nZernCoef)
+                IF (ios /= 0) THEN
+                  READ(VALUE,*)(ZernModes(j),j=1,Grp)
+                  DO iZ=1, nZernCoef/Grp-1
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nZernCoef,Grp)
+                  iZ = nZernCoef/Grp
+                  IF (nZ>0) THEN
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
               IF (ANY(ZernModes(:nZernCoef)<1) .OR.
      &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
                 PRINT *, "Ensure that: 0 < ZernModes <= max Zrn Mode"

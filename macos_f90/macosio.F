@@ -577,7 +577,7 @@ C  Check to make sure no Element/Surface incompatability exists
 	      EltType_FLG=.TRUE.
 	    ELSE
 	      WRITE(*,131) EltTypeName(EltID(iElt)),
-     &                     SrfTypeName(EltID(iElt))
+     &                     SrfTypeName(SrfType(iElt))
 	      GO TO 11
 	    END IF
 

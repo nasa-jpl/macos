@@ -2822,7 +2822,13 @@ C***********************************************************************
 	  END IF
 	ELSE IF (EltID(iElt).EQ.3) THEN
 	  ! extended to allow reference to have GridData, 04/2009, -jzlou
-	  IF ((SrfType(iElt).GT.2) .AND. (SrfType(iElt)/=9)) THEN
+	  ! Also allow Aspheric (3) and Zernike (8): a conforming Reference
+	  ! carries the figure as an OPD phase-screen in RefSrf (rays are not
+	  ! bent), the analytic complement of the GridData OPD map -- used for
+	  ! GS Zernike basis development. -CC 2026-07
+	  IF ((SrfType(iElt).GT.2) .AND. (SrfType(iElt)/=9)
+     &      .AND. (SrfType(iElt)/=SrfType_Aspheric)
+     &      .AND. (SrfType(iElt)/=SrfType_Zernike)) THEN
 	    EltID_FLG=.FALSE.
 	    SrfType_FLG=.FALSE.
 	  END IF
