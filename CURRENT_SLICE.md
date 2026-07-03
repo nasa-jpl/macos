@@ -24,11 +24,47 @@
 
 ## Active slice
 
-**No slice in flight** — the NS grid-frame slice landed and pushed
-2026-07-02 pm.  **NEXT (Dave, 2026-07-03 am): pick from PLAN §0 items 1–5**
-(FEX→SXP radius; SAVE ApStop + Lou-UpdateNotes vars; SAVE whole-line
-comments; baked-in glass tables; opd all-rays-lost SIGSEGV).  Suggested
-pairing: #2+#3 are one SAVE-path slice; #5 is small/self-contained.
+**No slice in flight** — the FEX EP-radius rework landed 2026-07-03
+(see below).  **NEXT: PLAN §0 item 2 — SAVE round-trips `ApStop=` +
+the Lou-UpdateNotes.txt not-saved variables** (Dave 2026-07-03:
+"ApStop was a late add to the Rx, as being derivative.  It and others
+need to be preserved through SAVE").  Then #3 (whole-line comments
+through SAVE — natural same-slice pairing), #5 (opd all-rays-lost
+SIGSEGV), #4 (baked-in glass tables).
+
+### Last landed (2026-07-03) — FEX EP-radius rework + guards (§0 item 1)
+- **FEX EP radius = chief-ray distance EP→(iElt+1) plane, ALWAYS** —
+  whatever iElt+1 is (FP, coronagraph mask, ZWFS…): the far-field
+  propagation distance for physical optics (Dave's spec).  Sign per EP
+  EltID (Return −cr1dir / Reference +cr1dir).  Legacy `zp_iEm1` =
+  fallback + autoswitch alternative.  Guards (all noisy): telecentric
+  (parallel probe chief rays → FindCrossPt 0/0; keep station, radius =
+  station→iElt+1, FLAT 1d22 fallback); beam-footprint sanity
+  autoswitch; Rx-order flag (Return before EP return should usually be
+  a Reference — fires on most legacy Rx, deliberate nudge).
+  `tracesub.F` FEX block + decls; SXP/XPS untouched (SXP redundant now).
+- **Compat pass green:** conforming double-pass Rx → legs equal by
+  construction (pre-EP Return AT the focus) → round-off no-op.
+  `Cassegrain.in` −1.2295 → +6.7907 == CassWithExitPupil exactly
+  (right answer where legacy was degenerate).  **`eac2_7seg` −289.7 →
+  +52597.6 — material shift, Dave to review.**  GMI all-pass; mmacos
+  30 classes / 0 verification failures (tProperCompareCassFF crash
+  pre-existing); pymacos has no FEX tests.
+- **fex_sweep tool** saved at `MACOS_resources/mmacos/tools/fex_sweep/`
+  (per-Rx process isolation; corpus = old_Rx sandbox + manual
+  examples).  Corpus notes: ape.in trips a legacy loader parse bug
+  ("Bad real number", segfaults under ifx build — pre-existing);
+  several old Rx fail load (SegDemo/FFSegDemoAll/Luneberg/eac1/…)
+  or the sweep's heuristic stop (j18sa/j18sc/6MST_segV3/dmt6seg).
+- **Not yet exercised:** the footprint-autoswitch arm (no corpus Rx
+  has a degenerate DEFAULT leg).  Journals not regressed.
+- Negative-L answer (Dave's Q): ordinary train rejects L<0 (GO TO 98
+  → miss); near Reference/Obscuring/Return/LensArray ifLNsrf=TRUE
+  allows it and ConSrf picks the root by |L²−mpr| PROXIMITY to the
+  ray's vertex distance (surfsub.F:~148) — no flow-of-light sense.
+  That heuristic is WHY a too-small reference sphere fails silently.
+
+opt-dev cherry-pick of 60f886d still pending.
 
 ### Last landed (2026-07-02 pm) — NS grid-frame fix + ns_griddata decomposition
 - **Grid figures on NSReflector segments collapsed to a center-pixel
