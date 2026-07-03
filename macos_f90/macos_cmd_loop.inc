@@ -2585,6 +2585,13 @@ C         *** perturbations through the EP radius (which FEX misses,
 C         *** because it uses upstream-only chief-ray geometry).
 C         *** Otherwise identical to FEX -- same interactive prompts,
 C         *** same EP-element updates.  See tracesub.F SUBROUTINE SXP.
+C         ***
+C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
+C         *** EP -> next-element radius (the far-field propagation
+C         *** distance), with the legacy leg as fallback plus
+C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** rework block in tracesub.F.  SXP is retained as-is for
+C         *** compatibility; it is now largely redundant with FEX.
 
 	  ELSE IF (LCMP(command,'SXP',3)) THEN
             IF (ifLoad) THEN

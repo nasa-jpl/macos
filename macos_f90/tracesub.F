@@ -286,6 +286,12 @@ C***********************************************************************
      &	  DV1(9),S1,th(3),
      &	  zp,psip(3),CrossPt(3),cr1dir(3),cr1pos(3),cr2dir(3),cr2pos(3),
      &	  cr2indir(3),cr2inpos(3),CrossDist
+!-->
+	REAL*8 fexcrs(3),fexsin,fexR,fexT,fexden,fexdot,fexvec(3),
+     &	  fexdir(3),fexS,fexL,zpLeg
+	INTEGER nBadSv,nFtRays,iFPnxt
+	LOGICAL LTelec,LFPLeg
+!<--
 
 C         ***Find exit pupil (with option to minimize tilt)***
 
@@ -328,11 +334,157 @@ c	th(3)=3.5355d-6
         !print*,' ** FEX at focal-return: cr2pos =', cr2pos
         !print*,' ** FEX at focal-return: cr2dir =', cr2dir
 
-	CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zp,
-     &		         CrossDist,CrossPt)
+!--> FEX EP-radius rework + robustness guards (Dave 2026-07-03):
+!    the EP Return radius is ALWAYS the chief-ray distance from
+!    the EP to the next element's plane (iElt+1, whatever it is:
+!    FP, coronagraph mask, ZWFS...) -- that is the far-field
+!    propagation distance for physical optics.  The legacy
+!    iEm1->EP distance is the fallback when there is no next
+!    element or its plane is degenerate.  Guards: telecentric
+!    detection (parallel probe chief rays -> FindCrossPt would
+!    return 0/0); beam-footprint sanity check with autoswitch;
+!    Return-order Rx flag.
+
+	! Telecentric detection: sine of the angle between the two
+	! probe-field chief rays.  Probe rotation is 5d-6 rad, so
+	! sin < 1d-12 means the crossing is beyond ~1e6 system
+	! lengths -- effectively at infinity.
+	fexcrs(1)=cr1dir(2)*cr2dir(3)-cr1dir(3)*cr2dir(2)
+	fexcrs(2)=cr1dir(3)*cr2dir(1)-cr1dir(1)*cr2dir(3)
+	fexcrs(3)=cr1dir(1)*cr2dir(2)-cr1dir(2)*cr2dir(1)
+	fexsin=SQRT(DDOTC(fexcrs,fexcrs))
+	LTelec=(fexsin.LT.1d-12)
+	zpLeg=0d0
+	IF (LTelec) THEN
+	  WRITE(*,*)'***** FEX WARNING: probe-field chief rays'
+	  WRITE(*,*)'***** are PARALLEL -- system appears'
+	  WRITE(*,*)'***** TELECENTRIC (exit pupil at infinity).'
+	  WRITE(*,*)'***** Keeping current element station; radius'
+	  WRITE(*,*)'***** set from station to next-element plane.'
+	  CALL DEQUATE(CrossPt,VptElt(1,iElt),3)
+	  CrossDist=0d0
+	ELSE
+	  CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zpLeg,
+     &		           CrossDist,CrossPt)
+	END IF
+
+	! Beam footprint at the EP plane: trace the nMinPts grid
+	! (rays 2..nRay, still at the nominal field) to iEm1 and
+	! project each ray onto the plane through CrossPt normal
+	! to the chief direction.  Diagnostic only -- nBadRays is
+	! restored.
+	nBadSv=nBadRays
+	iStartRay=2
+	iEndRay=nRay
+	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	  ifLNegOK,Cmatrix,
+     &	  iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &	  ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &	  StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+	nBadRays=nBadSv
+	fexR=0d0
+	nFtRays=0
+	DO iRay=2,nRay
+	  IF (LRayOK(iRay)) THEN
+	    fexS=DDOTC(RayDir(1,iRay),cr1dir)
+	    IF (ABS(fexS).GT.1d-12) THEN
+	      DO i=1,3
+	        fexvec(i)=CrossPt(i)-RayPos(i,iRay)
+	      END DO
+	      fexL=DDOTC(fexvec,cr1dir)/fexS
+	      DO i=1,3
+	        fexvec(i)=RayPos(i,iRay)+fexL*RayDir(i,iRay)
+     &	                 -CrossPt(i)
+	      END DO
+	      fexS=DDOTC(fexvec,cr1dir)
+	      DO i=1,3
+	        fexvec(i)=fexvec(i)-fexS*cr1dir(i)
+	      END DO
+	      fexS=SQRT(DDOTC(fexvec,fexvec))
+	      IF (fexS.GT.fexR) fexR=fexS
+	      nFtRays=nFtRays+1
+	    END IF
+	  END IF
+	END DO
+
+	! EP -> next-element-plane distance (sign per the EP
+	! element type: Return reverses the beam, Reference does
+	! not).  No element-type scan on iElt+1 -- an intermediate-
+	! focus pupil may have a mask/WFS there, and its plane is
+	! the propagation target regardless.
+	LFPLeg=.FALSE.
+	fexT=0d0
+	iFPnxt=iElt+1
+	IF (iFPnxt.LE.nElt) THEN
+	  IF (EltID(iElt).EQ.ReturnElt) THEN
+	    CALL DNEGATE(fexdir,cr1dir,3)
+	  ELSE
+	    CALL DEQUATE(fexdir,cr1dir,3)
+	  END IF
+	  fexden=DDOTC(fexdir,psiElt(1,iFPnxt))
+	  IF (ABS(fexden).GT.1d-15) THEN
+	    DO i=1,3
+	      fexvec(i)=VptElt(i,iFPnxt)-CrossPt(i)
+	    END DO
+	    fexdot=DDOTC(fexvec,psiElt(1,iFPnxt))
+	    fexT=fexdot/fexden
+	    LFPLeg=.TRUE.
+	  END IF
+	END IF
+
+	! Radius choice: EP->next-element plane is the DEFAULT.
+	IF (LFPLeg) THEN
+	  zp=fexT
+	ELSE IF (LTelec) THEN
+	  zp=1d22
+	  WRITE(*,*)'***** FEX WARNING: no next-element plane;'
+	  WRITE(*,*)'***** reference left FLAT (radius 1d22).'
+	ELSE
+	  zp=zpLeg
+	  WRITE(*,*)'***** FEX WARNING: no next-element plane;'
+	  WRITE(*,*)'***** falling back to legacy iEm1->EP radius.'
+	END IF
+
+	! Beam-footprint sanity: a reference sphere smaller than
+	! the beam cannot intersect the marginal rays (k2<0 in the
+	! surface solve) -- they all go "surface miss".
+	IF ((.NOT.LTelec).AND.(nFtRays.GT.0).AND.
+     &	    (ABS(zp).LT.fexR)) THEN
+	  WRITE(*,*)'***** FEX WARNING: EP radius',ABS(zp)
+	  WRITE(*,*)'***** is SMALLER than the beam footprint at'
+	  WRITE(*,*)'***** the EP (',fexR,') -- rays would miss'
+	  WRITE(*,*)'***** the reference sphere.'
+	  IF (LFPLeg.AND.(ABS(zpLeg).GE.fexR)) THEN
+	    WRITE(*,*)'***** FEX: AUTOSWITCHING to the legacy'
+	    WRITE(*,*)'***** iEm1->EP radius:',ABS(zpLeg)
+	    zp=zpLeg
+	  ELSE IF (.NOT.LFPLeg) THEN
+	    WRITE(*,*)'***** FEX WARNING: no alternative radius'
+	    WRITE(*,*)'***** available; keeping this value.'
+	  ELSE
+	    WRITE(*,*)'***** FEX WARNING: legacy iEm1->EP radius'
+	    WRITE(*,*)'***** unusable too; keeping EP->next value.'
+	  END IF
+	END IF
+
+	! Rx-order flag: a Return immediately before the EP return
+	! usually means a Return sits at an intermediate focus that
+	! should be a passive Reference.  Correct pattern when the
+	! beam reaches the focus before the pupil:
+	!   Reference (at FP), Return (EP), Return (FP).
+	IF (iEm1.GE.1) THEN
+	  IF (EltID(iEm1).EQ.ReturnElt) THEN
+	    WRITE(*,*)'***** FEX WARNING: element',iEm1
+	    WRITE(*,*)'***** (preceding the EP return) is a Return.'
+	    WRITE(*,*)'***** If it marks a focus it should be a'
+	    WRITE(*,*)'***** Reference -- pattern: Reference (FP),'
+	    WRITE(*,*)'***** Return (EP), Return (FP).'
+	  END IF
+	END IF
+!<--
 
 	print*,'***** FEX: CrossPt =',CrossPt
-        print*,'***** FEX: zp =',zp
+	print*,'***** FEX: zp_iEm1 =',zpLeg,'  zp =',zp
 
 	! Rx_FEXCentrFlg below is controlled in optical Rx, which is defaulted
         ! to TRUE if FEXCentroid flag is not referenced in Rx.  -jzlou

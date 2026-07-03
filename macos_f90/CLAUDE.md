@@ -123,15 +123,45 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
   now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
 
-## SXP command (Set eXit Pupil)
-FEX clone with one geometry fix: the EP focal length / radius is set
-to the chief-ray distance from the EP (CrossPt) to the FP (assumed
-iElt+1, the standard imager Rx ... -> EP -> FP) instead of FEX's
-legacy distance from iEm1 to the EP.  Captures FP-Tz perturbations
-through the EP radius and -- as an opt-in -- catches EP shifts when
-upstream optics are perturbed (use case: sensitivity / dw/dx loops).
-FEX itself is unchanged to avoid breaking the many existing
-prescriptions / GMI workflows / journals that depend on its behavior.
+## FEX EP-radius rework (2026-07-03) + SXP command (Set eXit Pupil)
+**FEX now defaults to the EP→next-element radius** (Dave's spec): the
+EP Return radius is ALWAYS the chief-ray distance from the EP
+(CrossPt) to the **iElt+1 plane — whatever iElt+1 is** (FP,
+coronagraph mask, ZWFS…) — because that is the far-field propagation
+distance for physical optics.  No element-type scan.  Sign per EP
+EltID (Return reverses the beam → −cr1dir; Reference passes →
++cr1dir).  Legacy `zp_iEm1` = fallback (no iElt+1 / degenerate plane)
+and the footprint-autoswitch alternative.  Guards, all noisy:
+(1) **telecentric** — parallel probe chief rays make FindCrossPt
+divide 0/0 (Cp2→0, NO guard there); FEX detects sin<1d-12, keeps the
+element station, radius = station→iElt+1 plane, FLAT 1d22 fallback;
+(2) **beam-footprint sanity** — a reference sphere smaller than the
+beam footprint at the EP guarantees k2<0 "surface miss" for marginal
+rays (the SegDemo3 failure); autoswitches to the other leg if usable;
+(3) **Rx-order flag** — a Return immediately preceding the EP return
+usually marks an intermediate focus that should be a passive
+Reference (pattern: Reference@FP, Return@EP, Return@FP); fires on
+most legacy Rx (corpus predates the convention — deliberate nudge).
+**Compatibility (fex_sweep 2026-07-03):** conforming double-pass Rx
+have the pre-EP Return AT the focus, so both legs are equal by
+construction → round-off-level no-op (e5hex1, 6MST, iris, j18*,
+dmt6mono, CoroExample, HOEExample, lst3zern, CassWithExitPupil).
+Divergent: manual `Cassegrain.in` (EP Reference right after SM)
+legacy −1.2295 → new +6.7907 == exactly CassWithExitPupil's value —
+the rework computes the right answer where legacy was degenerate;
+`eac2_7seg` −289.7 → +52597.6.  GMI regression all-pass.  Sweep tool:
+`MACOS_resources/mmacos/tools/fex_sweep/`.  Negative-L background
+(why small spheres fail SILENTLY): ordinary train rejects L<0 (GO TO
+98 → miss); near Reference/Obscuring/Return/LensArray
+`ifLNsrf=.TRUE.` allows it and ConSrf picks the quadratic root by
+|L²−mpr| PROXIMITY to the ray's current vertex distance
+(surfsub.F:~148) — no flow-of-light sense.
+
+SXP (retained, now largely redundant with FEX): FEX clone whose EP
+radius is the chief-ray distance EP→FP (assumed iElt+1) — the
+geometry FEX now uses by default.  Captures FP-Tz perturbations
+through the EP radius and catches EP shifts when upstream optics are
+perturbed (use case: sensitivity / dw/dx loops).
 - `SUBROUTINE SXP` in `tracesub.F` — cloned from FEX; after
   `FindCrossPt` replaces zp with `t_FP = -((FP_vpt - CrossPt) · psi_FP)
   / (cr1dir · psi_FP)`, i.e. the chief-ray distance from CrossPt to
