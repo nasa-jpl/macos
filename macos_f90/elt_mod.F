@@ -354,6 +354,20 @@ C***********************************************************************
         Character(len=40), dimension(:), allocatable :: RayFailMsg
 !<--
 
+!-->  Whole-line Rx comment round-trip (PLAN section 0 item 3):
+!     comment LINES are captured at load time (GET_EQ) and re-emitted
+!     by SAVE (ViewData writers).  Anchor = element context at
+!     capture: 0 = header, iElt = within that element's block.
+!     LRxCommentCapture gates capture to Rx loads only -- GET_EQ is
+!     also called by the MOD dialog and must not capture there.
+        Integer, parameter :: mRxComment = 500
+        Character(len=MacosCharLen) :: RxCommentLine(mRxComment)
+        Integer :: RxCommentAnchor(mRxComment)
+        Integer :: nRxComment = 0
+        Integer :: RxCommentCtx = 0
+        Logical :: LRxCommentCapture = .FALSE.
+!<--
+
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
      &                  PropTypeName(15),
      &                  BaseUnits,WaveUnits
@@ -848,6 +862,11 @@ C***********************************************************************
           RayStatus(:)         = RayStat_OK
           RayFailElt(:)        = 0
           RayFailMsg(:)        = ' '
+!<--
+!-->  Rx comment round-trip reset
+          nRxComment           = 0
+          RxCommentCtx         = 0
+          LRxCommentCapture    = .FALSE.
 !<--
           LEltObs(:)           = .FALSE.
           ifComputeDZ(:)       = .FALSE.

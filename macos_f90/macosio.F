@@ -345,6 +345,11 @@ C
 
    80 	  CONTINUE
 
+!--> Rx fully parsed -- stop capturing comment lines (GET_EQ is
+!    also used by the MOD dialog, which must not capture)
+	  LRxCommentCapture = .FALSE.
+!<--
+
 	  CALL SumData(GridType,npts)
 
 	  IF (nGridpts.GT.mpts) THEN
@@ -1349,6 +1354,9 @@ C	Specify output coordinates
         !
    99   CONTINUE
         LOAD_SUCCESS = .FALSE.
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)

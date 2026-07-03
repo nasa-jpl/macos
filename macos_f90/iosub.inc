@@ -1229,8 +1229,19 @@ C***********************************************************************
           CALL PrintFmt('zSource', "1PD23.15", zSource)
           CALL PrintMsg('')
 
-          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
-          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
+!--> skip the unset-units placeholder: "(default-unit)" is not
+!    parseable on reload (GET_EQ treats parentheses as array-index
+!    markers, so the value comes back EMPTY) -- writing it made a
+!    load->SAVE->load->SAVE cycle non-idempotent.
+          IF ((LEN_TRIM(BaseUnits).GT.0) .AND.
+     &        (BaseUnits(1:1).NE.'(')) THEN
+            CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
+          END IF
+          IF ((LEN_TRIM(WaveUnits).GT.0) .AND.
+     &        (WaveUnits(1:1).NE.'(')) THEN
+            CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
+          END IF
+!<--
           CALL PrintMsg('')
 
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
@@ -1294,6 +1305,10 @@ C***********************************************************************
             CALL PrintMsg('')
             CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
           END IF
+!<--
+
+!--> captured whole-line Rx comments from the header section
+          CALL RxCommentEmit(0)
 !<--
 
         END SUBROUTINE PrtSourceInfo
@@ -1610,6 +1625,13 @@ C***********************************************************************
           CALL PrintFmt('nECoord', "i3", nECoord(iElt))
           IF (nECoord(iElt).GT.0) CALL PrintFmtArray('TElt','1PD23.15',nECoord(iElt),
      &                                          PACK(TRANSPOSE(TElt(:,1:nECoord(iElt),iElt)),MASK=.TRUE.))
+
+!--> captured whole-line Rx comments from this element's block
+!    (a comment preceding "iElt= k+1" in the file is read while
+!    element k's block is being parsed, so emitting at the end of
+!    block k reproduces its original position)
+          CALL RxCommentEmit(iElt)
+!<--
 
           ! ----------------------------------------------------------
           CONTAINS
@@ -2225,6 +2247,9 @@ C       BEGIN PARSING THE STRING
 	  ELSE IF (STRING(I:I) .EQ. '%') THEN
 	    in_tok=.false.
 	    IF (NO_LET) THEN
+!--> whole-line comment: keep it for the SAVE round-trip
+	      CALL RxCommentCapture(STRING)
+!<--
 	      SP_FLG=.TRUE.
 	      GO TO 20
 	    ELSE
@@ -2302,6 +2327,63 @@ C       BEGIN PARSING THE STRING
 
 	RETURN
 	END SUBROUTINE GET_EQ
+
+!--> Whole-line Rx comment round-trip (PLAN section 0 item 3)
+
+	SUBROUTINE RxCommentCapture(line)
+C     Store a whole-line '%' comment read during an Rx load so SAVE
+C     can re-emit it.  Skips SAVE's own banner furniture ('%' plus
+C     dashes-only lines and the three section-banner titles) so a
+C     load(SAVE'd Rx) -> SAVE cycle stays idempotent.  Inline
+C     comments (key= value % note) are deliberately NOT preserved --
+C     that is the fragile case behind the GridFile-tab bug.
+	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture
+	IMPLICIT NONE
+	CHARACTER(len=*) :: line
+	INTEGER :: L,i
+	LOGICAL :: furniture
+
+	IF (.NOT.LRxCommentCapture) RETURN
+	IF (nRxComment.GE.mRxComment) RETURN
+	L=LEN_TRIM(line)
+	IF (L.EQ.0) RETURN
+	furniture=.TRUE.
+	DO i=1,L
+	  IF ((line(i:i).NE.'%').AND.(line(i:i).NE.'-').AND.
+     &	      (line(i:i).NE.' ')) THEN
+	    furniture=.FALSE.
+	    EXIT
+	  END IF
+	END DO
+	IF (furniture) RETURN
+	IF ((INDEX(line,'Source Definition').GT.0) .OR.
+     &	    (INDEX(line,'Element Definitions').GT.0) .OR.
+     &	    (INDEX(line,'Output Coordinate System Definition')
+     &	     .GT.0)) RETURN
+
+	nRxComment=nRxComment+1
+	RxCommentLine(nRxComment)=line
+	RxCommentAnchor(nRxComment)=RxCommentCtx
+	END SUBROUTINE RxCommentCapture
+
+
+	SUBROUTINE RxCommentEmit(ctx)
+C     Re-emit the captured whole-line comments anchored to ctx
+C     (0 = header/source section, iElt = that element's block).
+C     Called by PrtSourceInfo (ctx=0) and PrtSingleEltInfo (iElt).
+	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor
+	use macos_IO, only: PrintMsg
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: ctx
+	INTEGER :: i
+
+	DO i=1,nRxComment
+	  IF (RxCommentAnchor(i).EQ.ctx)
+     &	    CALL PrintMsg(TRIM(RxCommentLine(i)))
+	END DO
+	END SUBROUTINE RxCommentEmit
+!<--
 
 C***********************************************************************
 

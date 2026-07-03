@@ -5,6 +5,12 @@ C       Set entrance condition flags to .FALSE.
 
           CALL LOHIN1()
 
+!--> arm whole-line comment capture for this load (PLAN sec.0 item 3)
+          nRxComment        = 0
+          RxCommentCtx      = 0
+          LRxCommentCapture = .TRUE.
+!<--
+
   50      CONTINUE   ! This section is for header part of Rx
 
           READ(RX_FID, 123, END=99) STRING
@@ -1093,6 +1099,9 @@ C       Set entrance condition flags to .FALSE.
             ! prep for next Element reading
             iElt       = iElt + 1
 	    DupElt_FLG = .FALSE.
+!--> comments read from here anchor to this element's block
+            RxCommentCtx = iElt
+!<--
 
             nFFZernCoef    = mFFCoef   ! reset per-element sparse count defaults
             FFZernModes(:) = 0
