@@ -1215,6 +1215,10 @@ C***********************************************************************
           use src_mod
           use elt_mod
           use param_mod
+!-->
+          use macos_mod, only: ifStopSet
+          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG
+!<--
 
           IMPLICIT NONE
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1270,6 +1274,27 @@ C***********************************************************************
             CALL PrintFmtArray('SegCoord', '2x,i3', 2, PACK(SegCoord(1:2,1:nSeg),MASK=.TRUE.))
 
           END IF
+
+!--> SAVE round-trip of derivative state (PLAN section 0, Dave
+!    2026-07-03): ApStop was a late add to the Rx and SAVE dropped
+!    it -- the re-saved Rx then silently lost its stop (FEX/SXP and
+!    the dw/d* machinery need one).  Same for OPDRefRayLen and the
+!    RxNoStopSet flag.  An ELEMENT-BOUND stop (per-element ApStop=
+!    dx dy) is written inside its element block by PrtSingleEltInfo
+!    instead, so exactly one form is emitted.
+          IF (RxNoStopSet_Flg) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('RxNoStopSet', "2x,A", 'Y')
+          END IF
+          IF (ifStopSet .AND. .NOT.EltStopSet) THEN
+            CALL PrintMsg('')
+            CALL PrintFmtArray('ApStop', '1PD23.15', 3, StopPos)
+          END IF
+          IF (OPDRefRayLen_FLG) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
+          END IF
+!<--
 
         END SUBROUTINE PrtSourceInfo
 
@@ -1553,6 +1578,20 @@ C***********************************************************************
           ! Aperture
           ! --------------------------------------------
           CALL Define_Aperture()
+
+!--> Element-bound aperture stop (per-element "ApStop= dx dy
+!    [auto]") -- round-trip through SAVE (PLAN section 0).  The
+!    header-form stop is written by PrtSourceInfo instead.
+          IF (EltStopSet .AND. (iElt.EQ.StopElt)) THEN
+            IF (LStopAtEltAutoSet) THEN
+              CALL PrintFmtArray('ApStop', "1PD23.15", 3,
+     &             (/StopOffset(1),StopOffset(2),1d0/))
+            ELSE
+              CALL PrintFmtArray('ApStop', "1PD23.15", 2,
+     &             StopOffset)
+            END IF
+          END IF
+!<--
 
           ! --------------------------------------------
           ! Propagation
