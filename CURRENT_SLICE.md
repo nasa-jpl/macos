@@ -24,13 +24,30 @@
 
 ## Active slice
 
-**No slice in flight** — the FEX EP-radius rework landed 2026-07-03
-(see below).  **NEXT: PLAN §0 item 2 — SAVE round-trips `ApStop=` +
-the Lou-UpdateNotes.txt not-saved variables** (Dave 2026-07-03:
-"ApStop was a late add to the Rx, as being derivative.  It and others
-need to be preserved through SAVE").  Then #3 (whole-line comments
-through SAVE — natural same-slice pairing), #5 (opd all-rays-lost
-SIGSEGV), #4 (baked-in glass tables).
+- Sprint / item: **PLAN §0 item 2 — SAVE round-trips ApStop + friends**
+  (started 2026-07-03 pm on Dave's "Go!")
+- Landed in working tree, PENDING commit (suite running):
+  - `iosub.inc`: header `ApStop=` (`StopPos`, `ifStopSet.AND..NOT.
+    EltStopSet`) + `OPDRefRayLen` + `RxNoStopSet` in `PrtSourceInfo`;
+    element-bound `ApStop= dx dy [auto]` in `PrtSingleEltInfo`.
+  - `macos_IO.f90`: **pre-existing SAVE crasher fixed** — the 6 `cmd`
+    format-assembly sites emitted `(A17,'=',,` (double comma); ifx
+    tolerated, gfortran runtime-errored → every gfortran SAVE (CLI +
+    mmacos save_rx) died at the first `PrintFmtArray`.  One-char fix
+    (drop the redundant trailing `,` literal).  ifx/gfortran SAVE now
+    byte-identical (e5hex1).
+  - `macos_f90/SAVE_KEYWORD_AUDIT.md`: 101 unwritten keys categorized
+    (element-data bucket = possible real data loss; Opt* = policy).
+- Verified: 3-case round-trip green (eac2 header full-precision;
+  iris OPDRefRayLen exact; Cass `macos.stop(2)`+save→reload→fex ==
+  sweep value).  GMI regression all-pass.  Full mmacos suite RUNNING.
+- Tools: `scratchpad/drive_macos_save.py` + `drive_macos_gdb.py`
+  (pexpect pty drivers; gdb inside `matlab -Dgdb` is blocked by
+  MATLAB's bundled libstdc++ — drive the CLI under system gdb instead).
+- **NEXT after commit: #3 whole-line comments through SAVE** (same
+  slice family), then #5 (opd all-rays-lost SIGSEGV), #4 (glass
+  tables).  Also: work SAVE_KEYWORD_AUDIT element-data bucket (Dave
+  review), eac2/obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5.
 
 ### Last landed (2026-07-03) — FEX EP-radius rework + guards (§0 item 1)
 - **FEX EP radius = chief-ray distance EP→(iElt+1) plane, ALWAYS** —
