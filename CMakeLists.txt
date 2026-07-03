@@ -175,6 +175,7 @@ set(COMMON_SOURCES
   ${smacos_src_dir}/dftsub.F
   ${smacos_src_dir}/lohpars_mod.F
   ${smacos_src_dir}/macos_IO.f90
+  ${smacos_src_dir}/glass_builtin.f90
   ${smacos_src_dir}/param_mod.F
   ${smacos_src_dir}/elt_mod.F
   ${smacos_src_dir}/plot_mode_mod.F
