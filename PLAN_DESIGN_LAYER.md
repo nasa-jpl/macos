@@ -1338,6 +1338,19 @@ nECoord=6/TElt frames).
 WFE at an ACCESSIBLE focus AND a flat, well-imaged, field-stable,
 ACCESSIBLE exit pupil (a flat DM/Lyot/apodizer/FSM conjugate).
 
+> **Deferred here from the engine FEX rework (Dave, 2026-07-03):**
+> *should the pupil finders (FEX/XPS/pupil_quality) include OBSCURED
+> rays?*  Raised by `eac2_7seg` (coronagraph whose mask obscures all
+> rays; its FEX legs disagree −289.7 vs +52597.6).  Engine state when
+> parked: FEX's chief-pair vertex/radius and the new beam-footprint
+> guard already use obscured rays (geometric trace continues past
+> obscuration, `LRayOK` gating); FEX's CENTROID mode honors `iObsOpt`
+> (default = unobscured only) and, when every ray is obscured, builds
+> `psip` from an uninitialized `CentroidSpot` — latent garbage-normal
+> path, same family as the §0 ORS chief-ray bug.  Needs more work —
+> take up alongside J2–J5 pupil metrics, where coronagraph pupils
+> (annular/occulted beams) are first-class.
+
 **Structural insight (proven by sz_tma):** Zernike departures don't move
 chief-ray geometry, so the pupil objectives are functions of the
 0th-order layout alone (sphere radii, spacings, tilts, stop) while

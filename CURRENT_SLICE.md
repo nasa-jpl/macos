@@ -58,6 +58,13 @@ SIGSEGV), #4 (baked-in glass tables).
   or the sweep's heuristic stop (j18sa/j18sc/6MST_segV3/dmt6seg).
 - **Not yet exercised:** the footprint-autoswitch arm (no corpus Rx
   has a degenerate DEFAULT leg).  Journals not regressed.
+- **Parked → design layer (Dave 2026-07-03):** the eac2_7seg leg
+  discrepancy (−289.7 vs +52597.6; coronagraph, mask obscures all
+  rays) and the "should FEX include obscured rays?" question — see
+  the deferral note at PLAN_DESIGN_LAYER §8 Sprint 5 head (FEX
+  centroid mode's all-obscured path builds psip from uninitialized
+  CentroidSpot — latent; vertex/radius/footprint already use
+  obscured rays).  Do NOT chase eac2 further in the engine for now.
 - Negative-L answer (Dave's Q): ordinary train rejects L<0 (GO TO 98
   → miss); near Reference/Obscuring/Return/LensArray ifLNsrf=TRUE
   allows it and ConSrf picks the root by |L²−mpr| PROXIMITY to the
