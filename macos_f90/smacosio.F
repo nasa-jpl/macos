@@ -316,12 +316,18 @@ C       Create new input file
 	end if
 
 	LOAD_SUCCESS = .TRUE.
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
         RETURN
 
         !
         ! Rx loading failed
         !
    99   CONTINUE
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)

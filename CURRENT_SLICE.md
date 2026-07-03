@@ -24,30 +24,33 @@
 
 ## Active slice
 
-- Sprint / item: **PLAN §0 item 2 — SAVE round-trips ApStop + friends**
-  (started 2026-07-03 pm on Dave's "Go!")
+- Sprint / item: **PLAN §0 item 3 — whole-line comments through SAVE**
+  (follows item 2, committed `96696fa`+pushed earlier today)
 - Landed in working tree, PENDING commit (suite running):
-  - `iosub.inc`: header `ApStop=` (`StopPos`, `ifStopSet.AND..NOT.
-    EltStopSet`) + `OPDRefRayLen` + `RxNoStopSet` in `PrtSourceInfo`;
-    element-bound `ApStop= dx dy [auto]` in `PrtSingleEltInfo`.
-  - `macos_IO.f90`: **pre-existing SAVE crasher fixed** — the 6 `cmd`
-    format-assembly sites emitted `(A17,'=',,` (double comma); ifx
-    tolerated, gfortran runtime-errored → every gfortran SAVE (CLI +
-    mmacos save_rx) died at the first `PrintFmtArray`.  One-char fix
-    (drop the redundant trailing `,` literal).  ifx/gfortran SAVE now
-    byte-identical (e5hex1).
-  - `macos_f90/SAVE_KEYWORD_AUDIT.md`: 101 unwritten keys categorized
-    (element-data bucket = possible real data loss; Opt* = policy).
-- Verified: 3-case round-trip green (eac2 header full-precision;
-  iris OPDRefRayLen exact; Cass `macos.stop(2)`+save→reload→fex ==
-  sweep value).  GMI regression all-pass.  Full mmacos suite RUNNING.
-- Tools: `scratchpad/drive_macos_save.py` + `drive_macos_gdb.py`
-  (pexpect pty drivers; gdb inside `matlab -Dgdb` is blocked by
-  MATLAB's bundled libstdc++ — drive the CLI under system gdb instead).
-- **NEXT after commit: #3 whole-line comments through SAVE** (same
-  slice family), then #5 (opd all-rays-lost SIGSEGV), #4 (glass
-  tables).  Also: work SAVE_KEYWORD_AUDIT element-data bucket (Dave
-  review), eac2/obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5.
+  - Capture: `GET_EQ` whole-line-'%' branch → `RxCommentCapture`
+    (iosub.inc; banner-furniture filter for idempotency); storage in
+    `elt_mod` (`RxCommentLine/Anchor`, cap 500, `RxCommentCtx`,
+    `LRxCommentCapture` gate — MOD dialog also calls GET_EQ and must
+    not capture; disarmed at both hosts' MBFile6 exits).
+  - Anchor: `RxCommentCtx` = 0 in header, iElt per element block
+    (set in msmacosio.inc's element DO loop).
+  - Emit: `RxCommentEmit(0)` at `PrtSourceInfo` end, `(iElt)` at
+    `PrtSingleEltInfo` end — comment before `iElt= k+1` is read in
+    block k → end-of-block-k emission reproduces position (verified:
+    "%Verify fElt, eElt for the following…" lands right before its
+    ellipsoid element).
+  - Rode along: `FmtD` 16→**17 sig digits** (bit-exact real reload);
+    skip `BaseUnits/WaveUnits= (default-unit)` placeholder (GET_EQ
+    eats parens on reload → came back empty; idempotency breaker).
+- Verified: eac2 (14 comments) all survive at correct positions;
+  pass2==pass3 byte-identical EXCEPT pre-existing 2-ulp `ChfRayPos`
+  re-aim oscillation (ApStop-driven recompute each load — NOT a SAVE
+  defect, out of scope).  ifx/gfortran CLI SAVE byte-identical.  GMI
+  all-pass.  Full mmacos suite RUNNING (commit+push on green — Dave
+  gave advance permission).
+- **NEXT: #5 (opd all-rays-lost SIGSEGV), #4 (glass tables)**; work
+  SAVE_KEYWORD_AUDIT element-data bucket (Dave review); eac2/
+  obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5.
 
 ### Last landed (2026-07-03) — FEX EP-radius rework + guards (§0 item 1)
 - **FEX EP radius = chief-ray distance EP→(iElt+1) plane, ALWAYS** —
