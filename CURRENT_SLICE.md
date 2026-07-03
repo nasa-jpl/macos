@@ -24,9 +24,46 @@
 
 ## Active slice
 
-- Sprint / item: **PLAN §0 item 3 — whole-line comments through SAVE**
-  (follows item 2, committed `96696fa`+pushed earlier today)
-- Landed in working tree, PENDING commit (suite running):
+- Sprint / item: **PLAN §0 items 5 + 4 — BOTH FIXED + VERIFIED,
+  COMMITS HELD for Dave's return** (2026-07-03 pm).  Items 2
+  (`96696fa`) + 3 (`d2da3cc`) both PUSHED.  §0 is now fully [x]
+  except item 2's audit-list follow-through (SAVE_KEYWORD_AUDIT).
+- **Item 4 (glass tables)**: `tools/gen_glass_builtin.py` (new) →
+  generated `macos_f90/glass_builtin.f90` (`LoadBuiltinGlass`, 200
+  glasses from the canonical macos_glass_list.txt; verified
+  programmatically identical, all 200×6).  All THREE loader
+  fallbacks (macos_glass / smacos_glass / rl_macos_glass .inc) call
+  it instead of hardcoded Air/BK7/LAK9; a found file still
+  overrides.  CMakeLists: glass_builtin.f90 in COMMON_SOURCES.
+  Tested both branches (file present → unchanged; file hidden →
+  "using built-in catalog: 200 glasses").  NOTE: no Rx anywhere uses
+  `Glass=` — zero test coverage for glass-by-name refraction; a
+  BK7-refractor fixture is a worthwhile follow-on.
+- Pending gate: final combined full mmacos suite RUNNING (GMI
+  already all-pass; ifx+gfortran builds + mex rebuilt with both
+  fixes).  On green: ready to commit as two commits (#5 utilsub
+  DXCALC guard; #4 glass bake-in + codegen + CMake) — awaiting Dave.
+- **Root cause (gdb, ifx build): `DXCALC` (utilsub.F) — when EVERY
+  pupil slice has zero valid rays, the slice-search loop never
+  assigns `iimax` (only set when `l>lmax`, and all l=0), and the
+  second pass indexes `LRayOK` from `j=(iimax-1)*npts+1` =
+  uninitialized garbage.**  ifx stack garbage → wild index → SIGSEGV
+  (`forrtl severe(174)`, Dave's repro); gfortran's garbage happened
+  benign (CLI survived) — why it looked ifx-only.  The earlier
+  `dxRef=1d0` l==0 guard was necessary but not sufficient.
+- Fix: `lmax=0; iimax=1` init + skip the second slice pass entirely
+  when `lmax==0` (l stays 0 → existing warning + degenerate-beam
+  guards take over).  Repro Rx: `scratchpad/optiix_badstop.in`
+  (optiix_dp_conic with ApStop moved to 1e6 → all rays obscured at
+  elt 1); driver `scratchpad/drive_macos_opd.py` (pty+gdb, answers
+  the giza device prompt with /null).
+- Verified: ifx CLI `OPD 55` → "All rays are obscured or lost" +
+  9.9999e36 sentinel + prompt returns (was SIGSEGV); mmacos opd on
+  the same Rx leaves MATLAB alive (wrapper returns non-struct on the
+  sentinel — optional mmacos-veneer polish, not engine).  GMI
+  all-pass.  Full mmacos suite RUNNING.  Both builds + mex rebuilt.
+
+### Item 3 as landed (d2da3cc):
   - Capture: `GET_EQ` whole-line-'%' branch → `RxCommentCapture`
     (iosub.inc; banner-furniture filter for idempotency); storage in
     `elt_mod` (`RxCommentLine/Anchor`, cap 500, `RxCommentCtx`,
