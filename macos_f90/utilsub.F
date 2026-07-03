@@ -617,7 +617,7 @@ C        linear rather than arc lengths!
 	    ! so try to search all line slices to find the slice with the
             ! most valid rays. -jzlou
 
-	    lmax=0
+	    lmax=0; iimax=1
 	    Do ii=1,npts
               j=(ii-1)*npts+1; nd2=j+npts-1
 	      l=0
@@ -629,6 +629,13 @@ C        linear rather than arc lengths!
 	      End If
 	    END DO
 
+!--> When EVERY slice has zero valid rays (all rays obscured/lost),
+!    iimax was never assigned above -- the second pass then indexed
+!    LRayOK from an uninitialized j and SIGSEGVed under ifx (the
+!    PLAN section-0 "opd on all-lost rays" crash).  Skip the second
+!    pass instead: l stays 0, the warning below fires, and the
+!    dxRef/dxElt degenerate-beam guards take over gracefully.
+	    If (lmax.GT.0) Then
 	    j=(iimax-1)*npts+1; nd2=j+npts-1
             dxMin=1d10; dxMax=0d0; dxAvg=0d0
 	    l=0
@@ -646,6 +653,11 @@ C        linear rather than arc lengths!
 	      END IF
 	    End Do ! loop i
 	    !if (l.GE.10) exit
+	    Else
+	      l=0
+	      dxMin=1d10; dxMax=0d0; dxAvg=0d0
+	    End If
+!<--
 	  End If
 
 	  !print*,'** l =', l
