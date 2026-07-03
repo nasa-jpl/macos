@@ -95,17 +95,19 @@ MODULE macos_IO
 
 
     ! ------------------------------------------------------------------
-    ! FmtD -- compact REAL*8 formatter: up to 16 sig digits, trailing
+    ! FmtD -- compact REAL*8 formatter: up to 17 sig digits, trailing
     ! zeros stripped from mantissa.  1.2d0 -> '1.2E+00', etc.
+    ! 17 digits (not 16) so a load->SAVE->load round-trip reproduces
+    ! every REAL*8 bit-exactly (16 is not always sufficient).
     !
     FUNCTION FmtD(x) RESULT(s)
       USE Kinds
       IMPLICIT NONE
       REAL(pr),         INTENT(IN) :: x
-      CHARACTER(LEN=24)            :: s
-      CHARACTER(LEN=24)            :: buf
+      CHARACTER(LEN=25)            :: s
+      CHARACTER(LEN=25)            :: buf
       INTEGER                      :: ie, i
-      WRITE(buf,'(1P,ES23.15E2)') x
+      WRITE(buf,'(1P,ES24.16E2)') x
       buf = ADJUSTL(buf)
       ie  = INDEX(buf,'E')
       IF (ie == 0) THEN; s = TRIM(buf); RETURN; END IF
@@ -125,7 +127,7 @@ MODULE macos_IO
       IMPLICIT NONE
       CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
       REAL(pr),         INTENT(IN):: PrtScalar
-      CHARACTER(LEN=24)           :: valStr
+      CHARACTER(LEN=25)           :: valStr
       ! - - - - - - - - - - - - - - - - - - -
       WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
