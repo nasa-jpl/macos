@@ -24,10 +24,17 @@
 
 ## Active slice
 
-- Sprint / item: **PLAN §0 items 5 + 4 — BOTH FIXED + VERIFIED,
-  COMMITS HELD for Dave's return** (2026-07-03 pm).  Items 2
-  (`96696fa`) + 3 (`d2da3cc`) both PUSHED.  §0 is now fully [x]
-  except item 2's audit-list follow-through (SAVE_KEYWORD_AUDIT).
+**No slice in flight** — PLAN §0 items 1–5 ALL LANDED + PUSHED
+2026-07-03: #1 FEX `1139f78`, #2 SAVE/ApStop `96696fa`, #3 comments
+`d2da3cc`, #5 DXCALC `65a9c7f`, #4 glass `65b2a67` (all macos
+sls-dev).  Dave: NO opt-dev cherry-picks for now (incl. the older
+60f886d).  Open follow-ons: SAVE_KEYWORD_AUDIT element-data bucket +
+Opt* policy (Dave review); `Glass=` BK7 fixture (zero coverage);
+mmacos opd-veneer clean error on the 9.9999e36 sentinel; FEX
+footprint-autoswitch arm unexercised / journals unregressed; eac2 +
+obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5 head.
+
+### Items 5 + 4 as landed (2026-07-03 pm)
 - **Item 4 (glass tables)**: `tools/gen_glass_builtin.py` (new) →
   generated `macos_f90/glass_builtin.f90` (`LoadBuiltinGlass`, 200
   glasses from the canonical macos_glass_list.txt; verified
