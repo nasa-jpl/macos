@@ -127,7 +127,7 @@ MODULE macos_IO
       REAL(pr),         INTENT(IN):: PrtScalar
       CHARACTER(LEN=24)           :: valStr
       ! - - - - - - - - - - - - - - - - - - -
-      WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+      WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
       valStr = FmtD(PrtScalar)
       WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//"A)") TRIM(NameStr), TRIM(valStr)
@@ -142,7 +142,7 @@ MODULE macos_IO
       CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
       INTEGER,          INTENT(IN):: PrtScalar
       ! - - - - - - - - - - - - - - - - - - -
-      WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+      WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
       WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), PrtScalar
       CALL PrintMsg(PrtMsgStr)
@@ -156,7 +156,7 @@ MODULE macos_IO
         CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
         CHARACTER*(*),    INTENT(IN):: PrtStr
         ! - - - - - - - - - - - - - - - - - - -
-        WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+        WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
         WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), TRIM(PrtStr)
         CALL PrintMsg(PrtMsgStr)
@@ -185,9 +185,9 @@ MODULE macos_IO
         IF (nVec==0) RETURN
 
         IF (LEN_TRIM(NameStr)==0) THEN
-          WRITE(cmd,"('(A',i0,A,',')")PrtCmdIndent,",' ',"    ! "(Axx,' ',"
+          WRITE(cmd,"('(A',i0,A)")PrtCmdIndent,",' ',"    ! "(Axx,' ',"
         ELSE
-          WRITE(cmd,"('(A',i0,A,',')")PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+          WRITE(cmd,"('(A',i0,A)")PrtCmdIndent,",'=',"    ! "(Axx,'=',"
         END IF
         u = PrtCmdIndent+2
 
@@ -237,7 +237,7 @@ MODULE macos_IO
         nVec  = SIZE(PrtVec)
         IF (nVec==0) RETURN
 
-        WRITE(cmd, "('(A',i0,A,',')")PrtCmdIndent,",'=',";    u = LEN_TRIM(cmd)  ! "(Axx,'=',"
+        WRITE(cmd, "('(A',i0,A)")PrtCmdIndent,",'=',";    u = LEN_TRIM(cmd)  ! "(Axx,'=',"
 
         IF (nVec<=nCols) THEN
             WRITE(FmtStr,"(i0,a)") nVec,'('//TRIM(DigitFmtStr)//'))'   ! eg: "(3(1PD23.15))"
