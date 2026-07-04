@@ -24,16 +24,18 @@
 
 ## Active slice
 
-**SAVE audit element-data bucket (PLAN §0 item 2 follow-through)** —
-2026-07-04, engine work COMPLETE, gates: GMI 6/6 PASS, mmacos full
-suite RUNNING (mex relinked).  On green: commit macos sls-dev
-(iosub.inc + macos_IO.f90 + msmacosio.inc + utilsub.F +
-lensarr_indexes.inc + SAVE_KEYWORD_AUDIT.md + PLAN.md + fixture
-tst_save_keys.in/tst_save_ampl.dat) — Dave steering interactively,
-ask before push unless he pre-authorizes.
+**No slice in flight — 2026-07-04 landed TWO thrusts, ALL COMMITS
+LOCAL (Dave has NOT said push; four commits pending his word):**
+- **macos sls-dev `662e86e`** — SAVE audit element-data bucket
+  (PLAN §0 item 2 follow-through).  All gates green (mmacos 30/0,
+  GMI 6/6, e5hex1 legacy SAVE byte-identical, fixture
+  `ZGD_test_files/tst_save_keys.in` round-trips byte-identical under
+  ifx AND gfortran AND ifx==gfortran).
+- **MACOS_resources sls-dev `bcccea6` + `f817f61` + `04295fa`** —
+  the design-layer day (details below).
 
-What shipped in the working tree (all emission gated on
-value-set-in-memory; e5hex1 legacy SAVE byte-identical):
+### SAVE element-data bucket (macos `662e86e`) — as landed
+All emission gated on value-set-in-memory:
 - All 18 element-data keys round-trip: Coating (thickness un-scaled
   ×IndRef/Wavelen), Grad*, Doe*+OrderHOE (new DoeTrGrating CASE),
   Ampl*, LensArrayIndRef (covers XYIndRefFile), ArrIndRef +
@@ -45,23 +47,69 @@ value-set-in-memory; e5hex1 legacy SAVE byte-identical):
   nGridMat/GridFile/GridSrfdx emitted for grids on NON-grid SrfTypes
   (iris_dp_ZGD Conic NSReflector segments lost their whole grid).
 - **lensarr_indexes.inc heap stomp fixed**: 107×107 rec table vs
-  mLenslet=250 → LensArrayIndRef/XYIndRefFile parse corrupted memory
-  (symptom: garbage nObs/ApType/PropType/nECoord on OTHER elements,
-  SAVE "output statement overflows record"); table now sized from
-  mLenslet (ndim=15) + clamp in InitLensletIndexAndCtr + count guard
-  at the parse site.
+  mLenslet=250 → LensArrayIndRef/XYIndRefFile parse corrupted memory;
+  table now sized from mLenslet + clamp + parse-site count guard.
 - FmtD: '-0.0E+00' → '0.0E+00' (cross-compiler byte-identity).
-- Verified: tst_save_keys.in load→SAVE→reload→SAVE byte-identical
-  ifx AND gfortran, ifx==gfortran; iris converges after known 1-ulp
-  psiElt DUNITIZE settle (pre-existing class, like ChfRayPos re-aim).
 - REMAINING for Dave: Opt*/CALIB-family + trace-state singles SAVE
   policy; Lou-UpdateNotes cross-check.
 
-Other open follow-ons: `Glass=` BK7 fixture (zero coverage); mmacos
-opd-veneer clean error on the 9.9999e36 sentinel; FEX
-footprint-autoswitch arm unexercised / journals unregressed; eac2 +
-obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5 head.  Dave: NO
-opt-dev cherry-picks for now (incl. the older 60f886d).
+### Design-layer day (MACOS_resources, 3 commits) — as landed
+Dave's product frame: **utilities + adaptable examples**; progression
+2-mirror → 3-mirror → 3+1 → N-mirror, then instruments.  Layout:
+`design/src/` utilities, `design/examples/` examples.
+- `bcccea6` restructure: all 8 driver dirs → `design/examples/`
+  (git mv), progression README.
+- `f817f61` both TMA families: `tma_conic_recipe` + `wfe_field_diag`
+  (design/src), `field_ring` + `Telescope.trace_at_field` (package),
+  `examples/tma_centered` — the **j18 A/B answer**: same parent, 5′
+  circular field @1µm → CENTERED 0.065λ (DL, symmetry intact) vs
+  SECTION 0.098λ (excess = induced binodal field astig; freeform
+  M2+M3 can't fix field-varying orientation).  Field ladder: conic
+  wall 3′ square / 4′ circular DL; 5′ circular 0.095λ.
+- `04295fa` **the 3+1 coronagraph front end**, three files per Dave:
+  `tma_3plus1.m` (j18 DEMO: 0.84D compact section, 30″ patch 0.034λ,
+  pupil relayed ~10× flatter −0.13/0.20mm, 5/5 clear; AOI spread
+  21/24° on M1/M2 documented OUT of the 15° preference),
+  `tma_3plus1_aoi_search.m` (constraint finder: steps PM–SM via
+  tma_layout, verifies the FULL 4-mirror chain — AOI spread +
+  clearance + shroud; **f/2.0, t1=11.8m=1.7×j18 MEETS 15°, but
+  decenter grows 0.71→1.50D → shroud 1.6→3.2×D — AOI-safe eccentric
+  sections are SHROUD-EXPENSIVE**), `tma_3plus1_optimize.m` (polsafe
+  deliverable: 0.061λ patch, 5/5 clear, AOI 14.2°).
+- Builder capabilities (each tested; tDesignTelescope 48/48):
+  **psi parity ≥4th mirror** (mirrors 1-3 keep legacy all-(0,0,−1);
+  a 4th mirror concave-to-a-−z-beam needs +1 — it traced CONVEX
+  before, diverging the relay), `add_mirror(...,'conic',K)` explicit
+  seeds (seidel can't seed a relay-past-focus chain),
+  `optimize(...,'elts',SET)` subset (image vs field-mirror DOF split).
+- Standing design rules recorded (Dave, all 2026-07-04): product =
+  utilities+examples; packaging = fit a CYLINDRICAL LAUNCH SHROUD
+  (keep M2 near the incoming beam as PM–SM grows); coronagraph
+  polarization = per-mirror **AOI SPREAD across the beam** < 15°
+  (not chief-ray absolute); the wide field (HWO 10×20′) needs a 4th
+  POWERED imaging mirror, not more freeform on three; relays serve
+  small per-instrument patches, the shared field lives at the TMA
+  focus.
+
+### Follow-on candidates (next session picks with Dave)
+- **Tilted-fold 3+1**: Bauer folds hug the incoming beam → the
+  shroud-cheap alternative to the eccentric section (the fold path
+  `resolve_nmirror_fold_` already exists); the natural resolution of
+  the packaging↔AOI trade the finder quantified.
+- Pupil fine-tune: K4 / M4-conjugate scan against `pupil_quality`
+  (current polsafe pupil −0.29mm defocus / 0.37mm astig).
+- **Refit the 2-mirror examples onto the utilities structure**
+  (Dave's note, recorded in design/README roadmap).
+- Sprint 2D: segment the 3+1's M1 (SegMirMaker orchestration) — the
+  reference parent now exists.
+- N-mirror stage / HWO 10×20′ shared field (4th powered imaging
+  mirror); instrument-building sequence.
+- SAVE follow-ons: Opt*/trace-state SAVE policy (Dave); `Glass=` BK7
+  fixture (zero coverage); mmacos opd-veneer clean error on the
+  9.9999e36 sentinel; FEX footprint-autoswitch arm unexercised /
+  journals unregressed; eac2 + obscured-rays parked at
+  PLAN_DESIGN_LAYER Sprint 5 head.  Dave: NO opt-dev cherry-picks
+  for now (incl. the older 60f886d).
 
 ### Previous state (2026-07-03, all pushed)
 PLAN §0 items 1–5 ALL LANDED + PUSHED: #1 FEX `1139f78`, #2
