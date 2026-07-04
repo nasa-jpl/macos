@@ -117,6 +117,10 @@ MODULE macos_IO
       END DO
       IF (buf(i:i) == '.') i = i + 1
       s = buf(1:i) // buf(ie:LEN_TRIM(buf))
+      ! normalize negative zero: computed frame defaults can carry
+      ! -0.0 under one compiler and +0.0 under the other, breaking
+      ! byte-identical SAVE output across ifx/gfortran
+      IF (s == '-0.0E+00') s = '0.0E+00'
     END FUNCTION FmtD
 
     ! ------------------------------------------------------------------

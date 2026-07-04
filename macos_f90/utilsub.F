@@ -1368,7 +1368,7 @@ C Several routines supporting LensArray and Refractor with variable IndRef
 
 	Subroutine InitLensletIndexAndCtr(type,width,iElt)
 	use traceutil_mod, only : LensletStrArray,nHexLenlets,nRecLenlets,
-     &                      HexLensletIdx,RecLensletIdx
+     &                      HexLensletIdx,RecLensletIdx,mLenslet
 	Implicit none
 	Real*8, parameter :: tan30=5.773502691896257d-01
 	Real*8 :: width,w2,xhat(2),yhat(2),xseg,yseg
@@ -1380,6 +1380,16 @@ C Several routines supporting LensArray and Refractor with variable IndRef
 #include "lensarr_indexes.inc"
 	  first_entry=.false.
 	End If
+
+!--> defense in depth (SAVE-audit fix): never copy more lenslets
+!    than LensletStrArray can hold
+	If (nHexLenlets.GT.mLenslet .OR. nRecLenlets.GT.mLenslet) Then
+	  WRITE(*,*)' **InitLensletIndexAndCtr: lenslet table larger',
+     &      ' than mLenslet =',mLenslet,' -- clamped'
+	  nHexLenlets=MIN(nHexLenlets,mLenslet)
+	  nRecLenlets=MIN(nRecLenlets,mLenslet)
+	End If
+!<--
 
 	w2=0.5*width
 	k=1
