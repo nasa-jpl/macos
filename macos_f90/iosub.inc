@@ -1216,8 +1216,9 @@ C***********************************************************************
           use elt_mod
           use param_mod
 !-->
-          use macos_mod, only: ifStopSet
+          use macos_mod, only: ifStopSet,zcoType,ZernAnnular,ZernHex
           use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG
+          use dopt_mod, only: nOptWavelen,opt_wavelen,max_wl
 !<--
 
           IMPLICIT NONE
@@ -1247,6 +1248,16 @@ C***********************************************************************
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
           CALL PrintFmt('Extinc',  "1PD23.15", Extinc(0))
           CALL PrintFmt('Wavelen', "1PD23.15", Wavelen)
+!--> multi-wavelength round-trip (SAVE audit, element-data pass):
+!    each Wavelen= line appends to opt_wavelen at load, so the
+!    single Wavelen= above restores slot 1 and ArrWaveLen= appends
+!    the rest.  Writing all of opt_wavelen here would double-count
+!    slot 1 on reload.
+          IF (nOptWavelen.GT.1) THEN
+            CALL PrintFmtArray('ArrWaveLen', '1PD23.15', max_wl,
+     &           opt_wavelen(2:nOptWavelen))
+          END IF
+!<--
           CALL PrintFmt('Flux',    "1PD23.15", Flux)
           CALL PrintMsg('')
 
@@ -1269,6 +1280,15 @@ C***********************************************************************
             CALL PrintFmt('gap',   "1PD23.15", gap)
             CALL PrintFmtArray('SegXgrid', '1PD23.15', 3, SegXgrid)
             CALL PrintFmtArray('SegCoord', '2x,i2', 3, PACK(SegCoord(1:3,1:nSeg),MASK=.TRUE.))
+
+!--> segment aperture round-trip (SAVE audit): the parser requires
+!    SegCoord before SegApType, so emit here at the end of the
+!    Hex/Pie branch.  Only the hex form (SegApType=6) exists.
+            IF (SegApType.EQ.6) THEN
+              CALL PrintFmt('SegApType', "2x,A", 'Hex')
+              CALL PrintFmtArray('SegApVec', '2x,i0', 2, SegApVec(1:2))
+            END IF
+!<--
 
           ELSE IF (GridType .EQ. GridType_Flower) THEN
 
@@ -1305,6 +1325,15 @@ C***********************************************************************
             CALL PrintMsg('')
             CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
           END IF
+          ! ZCO wavefront-decomposition basis (default ZernCircular
+          ! is implied; only the non-default settings are parsed)
+          IF (zcoType.EQ.ZernAnnular) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('ZCOZernType', "2x,A", 'NormAnnular')
+          ELSE IF (zcoType.EQ.ZernHex) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('ZCOZernType', "2x,A", 'NormHex')
+          END IF
 !<--
 
 !--> captured whole-line Rx comments from the header section
@@ -1339,11 +1368,20 @@ C***********************************************************************
           use src_mod
           use cfiles_mod
           use elt_mod
-          use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,ifSave3DApVec
+          use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,
+     &         ifSave3DApVec,IsVarIndRefElt,IsGrinRefElt,GrinRefArr,
+     &         LensletStrArray,TotalLensletsArray
+          use macos_mod, only : zernUsrOpt
+          use dopt_mod, only : nOptWavelen
           use macos_IO
 
           IMPLICIT NONE
           INTEGER, INTENT(IN):: iElt
+!--> locals for the guarded element-data emissions (SAVE audit)
+          INTEGER :: i, k
+          REAL(pr) :: thk
+          CHARACTER(LEN=256) :: EltMsgStr
+!<--
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
           ! --------------------------------------------
@@ -1485,6 +1523,15 @@ C***********************************************************************
               CALL PrintFmt('lFF', "1PD23.15", lFF(iElt))
               CALL Srf_MonZernike()
               CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+!--> the per-element annular ratio is shared by the FF and Mon
+!    Zernike components; the FFZernType/MonZernType lines above are
+!    written without their optional trailing ratio, so restore it
+!    via the explicit key (parsed into the same ZernAnnuRatio slot)
+              IF ((FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll).OR.
+     &            (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll))
+     &          CALL PrintFmt('ZernAnnularRatio', "1PD23.15",
+     &               ZernAnnuRatio(iElt))
+!<--
               IF (nGridMat(iElt).GT.0) THEN
                 CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
                 CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
@@ -1495,6 +1542,23 @@ C***********************************************************************
             CASE DEFAULT
 
           END SELECT
+
+!--> grid data attached to a non-grid SrfType (SAVE audit): e.g.
+!    Conic NSReflector segments carrying GridData figures
+!    (iris_dp_ZGD).  The trace keys off nGridMat>0, not SrfType,
+!    but the SELECT above only writes the grid keys for the grid
+!    surface types -- so these grids were silently dropped by SAVE.
+          IF ((nGridMat(iElt).GT.0).AND..NOT.
+     &        ((SrfType(iElt).EQ.SrfType_GridData).OR.
+     &         (SrfType(iElt).EQ.SrfType_AsGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_MonGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_FreeForm))) THEN
+            CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+            CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+          END IF
+!<--
 
           ! --------------------------------------------------------
           ! Special Srf. Coord. Parameters: Position and orientation
@@ -1511,15 +1575,55 @@ C***********************************************************************
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
             CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
           END IF
+!--> grid frame widened to ANY grid-carrying element (SAVE audit):
+!    SrfType 9/11 use the same pData/xData/yData/zData frame in the
+!    trace (GridSrf null-frame fix), so dropping it on SAVE moved
+!    the grid figure to the ChkDf2 default frame on reload
           IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
      &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
-     &        (SrfType(iElt).EQ.SrfType_FreeForm.AND.
-     &         nGridMat(iElt).GT.0)) THEN
+     &        (nGridMat(iElt).GT.0)) THEN
             CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
             CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
             CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
             CALL PrintFmtArray('zData', "1PD23.15", 3, zData(:,iElt))
           END IF
+
+!--> element-data keys the SAVE path used to drop (SAVE audit
+!    element-data bucket, PLAN section 0 item 2 follow-through).
+!    Every emission is gated on the value actually being set in
+!    memory, so prescriptions that never used the key are unchanged.
+
+          ! grid-frame length scale (parse-and-store; default 0)
+          IF (lData(iElt).NE.0e0_pr)
+     &      CALL PrintFmt('lData', "1PD23.15", lData(iElt))
+
+          ! grid interpolator order (default 1 = bi-linear; only the
+          ! bi-cubic setting needs to survive)
+          IF ((nGridMat(iElt).GT.0).AND.(GridSrfOrder(iElt).EQ.3))
+     &      CALL PrintFmt('GridSrfOrder', "2x,i0", GridSrfOrder(iElt))
+
+          ! amplitude (apodization) grid attached to this element;
+          ! nAmplMat must precede AmplFile (AmplInit needs the size)
+          IF (ifAmplSrf(iElt)) THEN
+            CALL PrintFmt('nAmplMat', "2x,i0", nAmplMat(iElt))
+            CALL PrintFmt('AmplFile', "2x,A", TRIM(AmplFile(iElt)))
+            IF (AmplSrfdx(iElt).NE.0e0_pr)
+     &        CALL PrintFmt('AmplSrfdx', "1PD23.15", AmplSrfdx(iElt))
+          END IF
+
+          ! user override of the Zernike evaluation frame (parser
+          ! defaults ZernCent to VptElt, which is written above, so
+          ! reload order is safe: default first, override after)
+          IF (zernUsrOpt(iElt)) THEN
+            CALL PrintFmtArray('ZernCenter', "1PD23.15", 3,
+     &           ZernCent(:,iElt))
+            CALL PrintFmtArray('ZernXDir', "1PD23.15", 3,
+     &           ZernXGrid(:,iElt))
+            CALL PrintFmtArray('ZernYDir', "1PD23.15", 3,
+     &           ZernYGrid(:,iElt))
+            CALL PrintFmt('ZernRad', "1PD23.15", ZernRad(iElt))
+          END IF
+!<--
 
           ! -----------------------------------------------------
           ! Special Element: HOE, Grating & Lens Array Parameters
@@ -1546,6 +1650,37 @@ C***********************************************************************
 
               CALL PrintFmt('LensArrayType', "i2", LensArrayType(iElt))
               CALL PrintFmt('LensArrayWidth', "1PD23.15", LensArrayWidth(iElt))
+!--> per-lenslet refractive indices (SAVE audit): written in the
+!    canonical explicit-value LensArrayIndRef form, which also
+!    round-trips prescriptions that used XYIndRefFile= (the file
+!    name is not retained; the values are).  Must follow
+!    LensArrayType/Width -- the parser inits the lenslet grid from
+!    them before reading the values.
+              IF (IsVarIndRefElt(iElt).AND.
+     &            (TotalLensletsArray(iElt).GT.0)) THEN
+                WRITE(EltMsgStr,"(i0,1x,i0)")
+     &               TotalLensletsArray(iElt), 5
+                CALL PrintFmt('LensArrayIndRef', "A", TRIM(EltMsgStr))
+                CALL PrintFmtArray('', "1PD23.15", 5,
+     &               LensletStrArray(1:TotalLensletsArray(iElt),
+     &                               iElt)%IndRef)
+              END IF
+!<--
+
+!--> ------------------------ Diffractive Optical Element (DOE)
+!    (SAVE audit: the DOE keys had no writer at all)
+            CASE (DoeTrGratingElt)
+
+              CALL PrintFmt('OrderHOE', "1PD23.15", OrderHOE(iElt))
+              IF (DoeId(iElt).GT.0) THEN
+                CALL PrintFmt('DoeWL', "1PD23.15",
+     &               DoeWL(DoeId(iElt)))
+                CALL PrintFmtArray('DoePhase', "1PD23.15", 6,
+     &               DoePhProf(1:6,DoeId(iElt)))
+                CALL PrintFmt('DoeFl', "1PD23.15",
+     &               DoeFl(DoeId(iElt)))
+              END IF
+!<--
 
           END SELECT
 
@@ -1568,6 +1703,37 @@ C***********************************************************************
             CALL PrintFmt('Extinc', "1PD23.15", Extinc(iElt))
           END IF
 
+!--> per-wavelength refractive indices (SAVE audit).  Written after
+!    IndRef= -- on reload ArrIndRef resets IndRef(iElt) to its first
+!    entry, which is how the original load left it.  Values must fit
+!    one line: the parser reads them from the single VALUE string.
+          IF ((nOptWavelen.GT.1).AND.
+     &        ANY(ArrIndRef(1:MIN(nOptWavelen,mIndRef),iElt)
+     &            .NE.0e0_pr)) THEN
+            CALL PrintFmtArray('ArrIndRef', "1PD23.15", mIndRef,
+     &           ArrIndRef(1:MIN(nOptWavelen,mIndRef),iElt))
+          END IF
+
+          ! gradient-index model (SAVE audit).  GradInd (modelType)
+          ! must precede GradCoef -- the parser branches its READ on
+          ! it.  Only modelTypes 1/6 (3 coefs) and 7 (5 coefs) load
+          ! successfully, so only those forms can exist in memory.
+          IF (IsGrinRefElt(iElt)) THEN
+            CALL PrintFmt('GradInd', "2x,i0",
+     &           GrinRefArr(iElt)%modelType)
+            IF ((GrinRefArr(iElt)%modelType.EQ.1).OR.
+     &          (GrinRefArr(iElt)%modelType.EQ.6)) THEN
+              CALL PrintFmtArray('GradCoef', "1PD23.15", 8,
+     &             GrinRefArr(iElt)%modelCoef(1:3))
+            ELSE IF (GrinRefArr(iElt)%modelType.EQ.7) THEN
+              CALL PrintFmtArray('GradCoef', "1PD23.15", 8,
+     &             GrinRefArr(iElt)%modelCoef(1:5))
+            END IF
+            CALL PrintFmt('GradLensZ', "1PD23.15",
+     &           GrinRefArr(iElt)%lensDepth)
+          END IF
+!<--
+
           ! --------------------------------------------
           ! Coating
           ! --------------------------------------------
@@ -1577,6 +1743,64 @@ C***********************************************************************
             CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))
             CALL PrintFmtArray( 'CoatThk','1PD23.15',5,CoatThkElt(1:nCoatElt(iElt),iElt))
           END IF
+
+!--> Coating= layer stack (SAVE audit) -- the OTHER coating model
+!    (complex index + thickness per layer, used by the polarization
+!    path).  The parser scales the stored thickness by
+!    Wavelen/IndRef at load, so invert that here to write back the
+!    Rx form (thickness in wavelengths).  Must follow the IndRef=
+!    line above: the parser snapshots IndRef(iElt) for the stack's
+!    exit boundary layer when it reads Coating=.
+          IF (EltCoat(iElt).GT.0) THEN
+            CALL PrintFmt('Coating', "2x,i0", EltCoat(iElt))
+            DO k=1,EltCoat(iElt)
+              IF ((IndRefArr(k,iElt).NE.0e0_pr).AND.
+     &            (Wavelen.NE.0e0_pr)) THEN
+                thk = EltCoatThk(k,iElt)*IndRefArr(k,iElt)/Wavelen
+              ELSE
+                thk = EltCoatThk(k,iElt)
+              END IF
+              CALL PrintFmtArray('', "1PD23.15", 3,
+     &             (/IndRefArr(k,iElt),ExtincArr(k,iElt),thk/))
+            END DO
+          END IF
+
+          ! surface-metrology definition (SAVE audit): nMetPos must
+          ! precede tMetElt (the parser STOPs otherwise); beam-flag
+          ! rows are only read when tMetSrf > 0
+          IF ((nMetPos(iElt).GT.0).AND.
+     &        (iEltToMetSrf(iElt).GT.0)) THEN
+            CALL PrintFmt('nMetPos', "2x,i0", nMetPos(iElt))
+            DO i=1,nMetPos(iElt)
+              CALL PrintFmtArray('', "1PD23.15", 3,
+     &             SrfMetPos(1:3,i,iEltToMetSrf(iElt)))
+            END DO
+            IF (tMetSrf(iElt).NE.0) THEN
+              WRITE(EltMsgStr,"(i0,1x,i0)") tMetSrf(iElt),
+     &             ntMetPos(iElt)
+              CALL PrintFmt('tMetElt', "A", TRIM(EltMsgStr))
+              IF (tMetSrf(iElt).GT.0) THEN
+                DO i=1,nMetPos(iElt)
+                  WRITE(EltMsgStr,"(*(1x,i0))")
+     &                 metBeamFlg(1:ntMetPos(iElt),i,
+     &                            iEltToMetSrf(iElt))
+                  CALL PrintMsg(REPEAT(' ',PrtCmdIndent+1)//
+     &                 TRIM(EltMsgStr))
+                END DO
+              END IF
+            END IF
+          END IF
+
+          ! edge sensors (SAVE audit): one 9-value row per sensor
+          ! (position + two measuring directions, global frame)
+          IF (EdgeSensor(iElt).GT.0) THEN
+            CALL PrintFmt('EdgeSensors', "2x,i0", EdgeSensor(iElt))
+            DO k=1,EdgeSensor(iElt)
+              CALL PrintFmtArray('', "1PD23.15", 9,
+     &             EdgeSensVec(1:9,k,iElt))
+            END DO
+          END IF
+!<--
 
           ! --------------------------------------------
           ! Obscuration & Aperture Orientation
@@ -1736,8 +1960,13 @@ C***********************************************************************
             ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
             CALL PrintFmt('ZernType', "2x,A", TRIM(ZernTypeNameL(ZernTypeL(iElt))))
+!--> was written misspelled ('ZernAnnualRatio') since the writer was
+!    born -- the parser key is 'ZernAnnularRatio', so the ratio was
+!    silently LOST on every reload of a SAVEd annular-Zernike Rx
             IF (ZernTypeL(iElt)==ZernType_NormAnnularNoll)
-     &        CALL PrintFmt('ZernAnnualRatio', "1PD23.15", ZernAnnuRatio(iElt))
+     &        CALL PrintFmt('ZernAnnularRatio', "1PD23.15",
+     &             ZernAnnuRatio(iElt))
+!<--
 
             mCoef = ZernType_MaxMode(ZernTypeL(iElt))
             WHERE (ZernCoef(:mCoef,iElt)/=0e0_pr)

@@ -24,15 +24,49 @@
 
 ## Active slice
 
-**No slice in flight** — PLAN §0 items 1–5 ALL LANDED + PUSHED
-2026-07-03: #1 FEX `1139f78`, #2 SAVE/ApStop `96696fa`, #3 comments
-`d2da3cc`, #5 DXCALC `65a9c7f`, #4 glass `65b2a67` (all macos
-sls-dev).  Dave: NO opt-dev cherry-picks for now (incl. the older
-60f886d).  Open follow-ons: SAVE_KEYWORD_AUDIT element-data bucket +
-Opt* policy (Dave review); `Glass=` BK7 fixture (zero coverage);
-mmacos opd-veneer clean error on the 9.9999e36 sentinel; FEX
+**SAVE audit element-data bucket (PLAN §0 item 2 follow-through)** —
+2026-07-04, engine work COMPLETE, gates: GMI 6/6 PASS, mmacos full
+suite RUNNING (mex relinked).  On green: commit macos sls-dev
+(iosub.inc + macos_IO.f90 + msmacosio.inc + utilsub.F +
+lensarr_indexes.inc + SAVE_KEYWORD_AUDIT.md + PLAN.md + fixture
+tst_save_keys.in/tst_save_ampl.dat) — Dave steering interactively,
+ask before push unless he pre-authorizes.
+
+What shipped in the working tree (all emission gated on
+value-set-in-memory; e5hex1 legacy SAVE byte-identical):
+- All 18 element-data keys round-trip: Coating (thickness un-scaled
+  ×IndRef/Wavelen), Grad*, Doe*+OrderHOE (new DoeTrGrating CASE),
+  Ampl*, LensArrayIndRef (covers XYIndRefFile), ArrIndRef +
+  ArrWaveLen (λ2..λn), SegAp*, ZernCenter/XDir/YDir/Rad,
+  ZernAnnularRatio (**writer misspelled `ZernAnnualRatio` since
+  birth — ratio silently lost every reload**; + FF/Mon emission),
+  ZCOZernType, GridSrfOrder, lData, nMetPos/tMetElt, EdgeSensors.
+- Structural: pData..zData widened to any nGridMat>0 (SrfType 9/11);
+  nGridMat/GridFile/GridSrfdx emitted for grids on NON-grid SrfTypes
+  (iris_dp_ZGD Conic NSReflector segments lost their whole grid).
+- **lensarr_indexes.inc heap stomp fixed**: 107×107 rec table vs
+  mLenslet=250 → LensArrayIndRef/XYIndRefFile parse corrupted memory
+  (symptom: garbage nObs/ApType/PropType/nECoord on OTHER elements,
+  SAVE "output statement overflows record"); table now sized from
+  mLenslet (ndim=15) + clamp in InitLensletIndexAndCtr + count guard
+  at the parse site.
+- FmtD: '-0.0E+00' → '0.0E+00' (cross-compiler byte-identity).
+- Verified: tst_save_keys.in load→SAVE→reload→SAVE byte-identical
+  ifx AND gfortran, ifx==gfortran; iris converges after known 1-ulp
+  psiElt DUNITIZE settle (pre-existing class, like ChfRayPos re-aim).
+- REMAINING for Dave: Opt*/CALIB-family + trace-state singles SAVE
+  policy; Lou-UpdateNotes cross-check.
+
+Other open follow-ons: `Glass=` BK7 fixture (zero coverage); mmacos
+opd-veneer clean error on the 9.9999e36 sentinel; FEX
 footprint-autoswitch arm unexercised / journals unregressed; eac2 +
-obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5 head.
+obscured-rays parked at PLAN_DESIGN_LAYER Sprint 5 head.  Dave: NO
+opt-dev cherry-picks for now (incl. the older 60f886d).
+
+### Previous state (2026-07-03, all pushed)
+PLAN §0 items 1–5 ALL LANDED + PUSHED: #1 FEX `1139f78`, #2
+SAVE/ApStop `96696fa`, #3 comments `d2da3cc`, #5 DXCALC `65a9c7f`,
+#4 glass `65b2a67` (all macos sls-dev).
 
 ### Items 5 + 4 as landed (2026-07-03 pm)
 - **Item 4 (glass tables)**: `tools/gen_glass_builtin.py` (new) →
