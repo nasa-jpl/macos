@@ -1186,6 +1186,52 @@ trace time (positional convention: EP = nElt-1, FP = nElt).  Matches
 > **NOT** end in `exit(0)` (that batch-mode rule is only for the
 > `test_*.m` smoke scripts + matlab.unittest, never a user demo).
 
+### Sprint 2B+ — the 3+1 coronagraph front end (SHIPPED 2026-07-04)
+
+> **PRODUCT FRAME (Dave 2026-07-04, standing):** the real product of
+> the design layer is **utilities and examples users adapt** for
+> related design studies, in a telescope PROGRESSION — 2-mirror →
+> 3-mirror → **3+1** → N-mirror — then an INSTRUMENT-building
+> sequence.  Layout: `mmacos/design/src/` (script-level utilities) +
+> `mmacos/design/examples/` (all drivers moved there, `bcccea6`).
+> Future: refit the 2-mirror examples onto the utilities structure.
+
+**Standing design constraints (Dave 2026-07-04):** (1) *packaging* —
+the telescope must fit a **cylindrical launch shroud**; keep M2 close
+to the incoming beam as PM–SM grows (`packaging_report` measures the
+shroud envelope + train length); (2) *coronagraph polarization* — the
+per-mirror **AOI SPREAD across the rays of the beam** < 15° preferred
+(`aoi_report`; the spread at M1 is the primary's own convergence
+≈ D/R1, so the knob is a slower primary = longer PM–SM — directly
+against packaging); (3) relays serve small per-instrument patches;
+the shared wide field lives at the TMA focus (a near-focus relay
+cannot carry ±2.5′ — the image walks ±96 mm across M4); (4) the HWO
+wide field (10×20′, multi-instrument) needs a 4th POWERED imaging
+mirror — field-quadratic astigmatism is what walls the 3-mirror
+(measured: conic wall 3′-square/4′-circular DL @1µm, 5′-circular
+0.095λ; freeform M2+M3 buys only 1.4× because the astig orientation
+varies over the field; per-field astig removal → 0.036λ = the proof).
+
+Shipped (`MACOS_resources` sls-dev `f817f61` + `04295fa`, tests
+48/48): `examples/tma_centered` (obscured-vs-unobscured A/B — the
+"why does j18 do better" answer: symmetry intact 0.065λ vs section
+0.098λ on the 5′ circular field @1µm, + the 2.3µm yardstick);
+`examples/tma_3plus1` per Dave's 3-file structure — the j18 DEMO
+(0.84D compact, 30″ patch 0.034λ, pupil relayed ~10× flatter, AOI
+spread 21/24° documented out-of-preference), the **AOI constraint
+finder** (steps PM–SM, verifies the FULL 4-mirror chain: f/2.0 =
+1.7×j18 separation MEETS 15°, but decenter grows 0.71→1.50D →
+**shroud 1.6→3.2×D: AOI-safe eccentric sections are
+shroud-expensive**), and the polsafe optimize (0.061λ patch, 5/5
+clear, AOI 14.2°).  Utilities: `tma_conic_recipe`, `wfe_field_diag`,
+`aoi_report`, `packaging_report` (design/src); `field_ring`,
+`Telescope.trace_at_field`, `add_mirror 'conic'` seeds,
+`optimize 'elts'` subset, psi parity ≥4th mirror (package).
+**Next in this thread:** the tilted-fold 3+1 (Bauer folds hug the
+incoming beam — the shroud-cheap unobscuring; fold path exists);
+pupil fine-tune (K4 scan vs `pupil_quality`); then Sprint 2D
+segments this parent's M1.
+
 ### Sprint 2C — refractive + dispersive components
 
 - [ ] Lens (2-surface expansion, glass names, group perturbation) and
