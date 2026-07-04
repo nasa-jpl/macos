@@ -2454,6 +2454,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
 
 	      READ(VALUE,*)TotalLensletsArray(iElt),nValsPerRow
+!--> guard the user-supplied count against the LensletStrArray
+!    bound (SAVE-audit fix): an oversized count stomped memory
+	      If (TotalLensletsArray(iElt)<1 .OR.
+     &            TotalLensletsArray(iElt)>mLenslet) Then
+	        WRITE(*,*)' **LensArrayIndRef: lenslet count must be',
+     &            ' between 1 and',mLenslet,' -- got',
+     &            TotalLensletsArray(iElt)
+	        GO TO 99
+	      End If
+!<--
 	      If (nValsPerRow>0) Then
 	        k=TotalLensletsArray(iElt); i=1
 	        Do
