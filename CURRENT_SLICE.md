@@ -24,8 +24,38 @@
 
 ## Active slice
 
-**No slice in flight — 2026-07-04 landed TWO thrusts, ALL COMMITS
-LOCAL (Dave has NOT said push; four commits pending his word):**
+**2026-07-05: centered-TMA FP EXTRACTION day (MACOS_resources only, no
+engine change) — see [[project-fold-extraction]] memory.**  Dave's
+recipe, all real-ray verified: the coaxial Korsch FP (on axis at
+z=−4.07, swallowing the M2→M3 science beam) is extracted by (1) FIELD
+BIAS = source tilt (10′ clears the honest 0.25 m FP body off the
+science beam; 5′ doesn't), (2) a FLAT FOLD **in the M2→M3 FEED** behind
+the PM, 90° into +x with psi in the X-Z plane → M3 + image + FP on a
+**flat X-Y bench** at z≈0.87 behind the primary, (3) M3 back 2 m (j18's
+own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
+- Builder (Telescope.m): `add_fold` (reflect-downstream isometry,
+  WFE-neutral 6e-16), `set_hole` (perforated-primary clearance),
+  `center_focal_plane`, `add_focal_plane('ap_r')`, ApType=None policy
+  for folds+FP (ap_r = check_clipping BODY not a stop — honest FP as a
+  stop made CALIB rigid trials lose all rays), optimize writes conics/R
+  back to the mirror list (re-resolve keeps them), powered-only DOF
+  enrollment, `view_orthoviews` 'zoom' detail panel + XY cross-plane
+  ray reconstruction (both fans via fan_pt_ — beam extents measurable),
+  tighter emit_ source standoff.  design/src: `fold_station_report`.
+- Examples (Dave's finder/optimize pattern): `tma_centered_fold_search`
+  (bias×dM3 ladders; placement rules M1_KEEPOUT 0.6 m / ARM_MIN 0.4 m /
+  shortest backbone; CHOSE dM3=2, 15′, fold z=0.871, gap 0.221, shroud
+  0.99×D, all-clear but M2's own shadow) + `tma_centered_foldfp`
+  (ROC+conic ring balance — rigid DOFs re-point INTO the bias and eat
+  the clearance, check_clipping catches it; −tilt 1.87 waves @2.3 µm =
+  the honest extraction price; buy-downs noted).  6 new tests.
+- OPEN with Dave: 10′ bias misses the 0.10 m fold mount by 7 mm (gap
+  0.093 @ dM3=2) — shave FM_MARGIN to 8 cm and halve the WFE price?
+  Weak-POWER fold option = requested follow-on (seam noted in add_fold).
+- Commits pending on suite green (LOCAL, no push until Dave says).
+
+**Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
+NOT said push; four commits pending his word):**
 - **macos sls-dev `662e86e`** — SAVE audit element-data bucket
   (PLAN §0 item 2 follow-through).  All gates green (mmacos 30/0,
   GMI 6/6, e5hex1 legacy SAVE byte-identical, fixture
