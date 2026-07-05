@@ -49,21 +49,49 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
   (ROC+conic ring balance — rigid DOFs re-point INTO the bias and eat
   the clearance, check_clipping catches it; −tilt 1.87 waves @2.3 µm =
   the honest extraction price; buy-downs noted).  6 new tests.
-- **Astig round (pm, MACOS_resources `382a3d6`):** margin→0.08 (Dave
-  OK) → **10′ bias** geometry; the astig Dave saw after FEX = axis-
-  solved conics evaluated at the bias; **fix = conics+ROC solved AT
-  the bias field only (annular anastigmat): 30.6 → 0.061 waves @1 µm
-  (0.026 @2.3 µm)**; freeform after it = honest near-no-op, and the
-  example prints all three freeform traps (ring-balance trades the
-  center; 2-mirror single-field over-fit; **lMon must be the BEAM
-  footprint, not body ap_r — `'lmon'` option added**).  FOV: blur
-  (−tilt) DL @2.3 µm over ~0.5′-dia core; raw at rings = calibratable
-  distortion.  **`Telescope.ray_bundle`** = Dave's DRAW rethink with
-  NO engine change (trace+get_ray_info full-grid positions, pupil
-  slice masks, multi-field); XY panels take 'zoom_fans' (bench = the
-  in-plane x-fan).  Suite 192/192.
+- **Astig round (pm, `382a3d6`):** margin→0.08 (Dave OK) → **10′ bias**
+  geometry; the astig Dave saw after FEX = axis-solved conics evaluated
+  at the bias; **fix = conics+ROC solved AT the bias field only
+  (annular anastigmat): 30.6 → 0.061 waves @1 µm**; then **M1 stop-
+  surface freeform (Dave OK'd M1 Zernike), modes 5:15 → 0.046 @1 µm /
+  0.020 @2.3 µm, FOV unchanged** (`91d47af`).  Freeform traps printed
+  in the example: ring-balance trades the center; 2-mirror single-field
+  over-fit; **lMon must be the BEAM footprint, not body ap_r —
+  `'lmon'` option**.  FOV: blur (−tilt) DL @2.3 µm over ~0.5′-dia core.
+- **Plot rounds (`91d47af` + `4f422a9`):** Return retro verified exact
+  (dir·−dir = 1.0; rhat=−ihat per Dave) — the XY "separation" was the
+  beam-center fan reconstruction → XY panels now render TRUE positions
+  from **`Telescope.ray_bundle`** (Dave's DRAW rethink, NO engine
+  change).  Slice physics: the fold preserves y → **pupil-Y slice
+  shows bench beam width** (pupil-X spread maps into z, invisible);
+  slices = grid column within one pitch, evenly subsampled (nearest-N
+  → gap); XY panels of folded designs start AT the fold.  **Figures
+  saved in the example dir = usual practice.**  Suite 192/192.
+  **ALL PUSHED (both repos sls-dev @ macos 9809af2 / MACOS_res
+  4f422a9).**
+- **NEXT TIME (Dave, pre-compaction — NOT done exploring this case):**
+  1. **The saved tma_centered_foldfp.in is BROKEN in the CLI: `ray 1`
+     traces M1→M2→FM→M3 then "Ray 1 becomes undefined after element
+     4".**  Prime suspect from the morning probe: the emitted **FP psi
+     = (0,0,1)** (unfolded axial convention) while the bench beam
+     arrives along −x → ray ∥ plane, degenerate intersection.  The
+     fold maps FP psi correctly at resolve; **suspect add_pupil
+     clobbers the FP orientation with a z-facing assumption** (latent
+     until a folded design).  Puzzle: the earlier standalone mmacos
+     verify traced 1304 pts OK on an earlier save — re-verify which
+     .in vintage broke, then fix add_pupil for folded chains.
+  2. The plots suggest a **DEFOCUSSED spot** at the FP — check best
+     focus vs the FP station after the bias solve.
+  3. **FEX doesn't produce good results on this Rx; ORS either** —
+     "nice to have a degenerate example!"  Keep this Rx as the FEX/ORS
+     robustness test case (likely same folded-geometry assumptions).
+  4. Design-metric question (Dave): **spot radius vs OPD at the
+     pupil?**
+  5. The TRUE focal plane is TILTED for a biased field — **trace
+     multiple FOVs to set the correct FP angle** (center_focal_plane
+     translates only; aim/tilt-from-multi-field-foci = next builder
+     piece).
 - Weak-POWER fold option = requested follow-on (seam noted in add_fold).
-- Commits LOCAL, no push until Dave says.
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
 NOT said push; four commits pending his word):**
