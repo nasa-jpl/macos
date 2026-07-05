@@ -49,10 +49,21 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
   (ROC+conic ring balance — rigid DOFs re-point INTO the bias and eat
   the clearance, check_clipping catches it; −tilt 1.87 waves @2.3 µm =
   the honest extraction price; buy-downs noted).  6 new tests.
-- OPEN with Dave: 10′ bias misses the 0.10 m fold mount by 7 mm (gap
-  0.093 @ dM3=2) — shave FM_MARGIN to 8 cm and halve the WFE price?
-  Weak-POWER fold option = requested follow-on (seam noted in add_fold).
-- Commits pending on suite green (LOCAL, no push until Dave says).
+- **Astig round (pm, MACOS_resources `382a3d6`):** margin→0.08 (Dave
+  OK) → **10′ bias** geometry; the astig Dave saw after FEX = axis-
+  solved conics evaluated at the bias; **fix = conics+ROC solved AT
+  the bias field only (annular anastigmat): 30.6 → 0.061 waves @1 µm
+  (0.026 @2.3 µm)**; freeform after it = honest near-no-op, and the
+  example prints all three freeform traps (ring-balance trades the
+  center; 2-mirror single-field over-fit; **lMon must be the BEAM
+  footprint, not body ap_r — `'lmon'` option added**).  FOV: blur
+  (−tilt) DL @2.3 µm over ~0.5′-dia core; raw at rings = calibratable
+  distortion.  **`Telescope.ray_bundle`** = Dave's DRAW rethink with
+  NO engine change (trace+get_ray_info full-grid positions, pupil
+  slice masks, multi-field); XY panels take 'zoom_fans' (bench = the
+  in-plane x-fan).  Suite 192/192.
+- Weak-POWER fold option = requested follow-on (seam noted in add_fold).
+- Commits LOCAL, no push until Dave says.
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
 NOT said push; four commits pending his word):**
