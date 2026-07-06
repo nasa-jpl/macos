@@ -135,6 +135,32 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
     all-sphere base + Zernike departures, real intermediate focus;
     plus n relay/imaging mirrors — the 3+1 progression), targeting
     the visible coronagraph + imager + spectrometer front end.
+- **2026-07-06 eve — the pivot slice (MACOS_res `afce4a0`, LOCAL,
+  suite 196/196): `design/examples/freeform_unobscured/`** (name =
+  Dave's) — sphere+Zernike at 500 nm on sz_tma's e5mono tilted-fold
+  geometry, full toolkit (staged S0/S1/S2 → align_focal_plane →
+  add_pupil FarField → **standalone reload verification as a stage,
+  1305/1305 VERIFIED** → design_report).
+  - **S0 centers DL at the visible bar (0.030 waves)** — the strategy
+    holds at 500 nm; the ±1′ S2 field solve trades the center away
+    (center 0.16 −tilt / worst 0.54 waves; Strehl 0.38 center).
+    **NEXT design conversation: mode depth / staging weights / field
+    size / the +1 mirror.**  Packaging: UNOBSCURED, **shroud 1.86×D
+    (half the eccentric section's 3.6×D)**, AOI spreads
+    8.9/10.2/0.9° all under 15°, EP 1.02 m from the image, FP tilt
+    1.95°, 15 mm defocus removed by align.
+  - **Dave's staging rule: NO apertures in the first design steps** —
+    add them when the design approaches objectives.
+  - **REAL BUG exposed (pre-existing, queued): `realize_apertures`
+    measures footprint centers in GLOBAL XY (draw_rays) but emits
+    them as LOCAL ApVec offsets** — correct only while the element
+    origin sits at the global origin (coaxial/eccentric-section
+    parents); saved TILTED-FOLD designs lose EVERY ray on reload.
+    **`sz_tma.in` carries this latent** (verified: 0/1305 pass on
+    standalone reload), tma_offaxis.in likely too.  Stopgap
+    `Telescope.clear_realized_apertures` documents it; proper fix =
+    ray_bundle 3-D footprints projected into the engine's aperture
+    frame, when apertures re-enter the flow.
 - Weak-POWER fold option = requested follow-on (seam noted in add_fold).
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
