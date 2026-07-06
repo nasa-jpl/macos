@@ -69,28 +69,36 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
   saved in the example dir = usual practice.**  Suite 192/192.
   **ALL PUSHED (both repos sls-dev @ macos 9809af2 / MACOS_res
   4f422a9).**
-- **NEXT TIME (Dave, pre-compaction — NOT done exploring this case):**
-  1. **The saved tma_centered_foldfp.in is BROKEN in the CLI: `ray 1`
-     traces M1→M2→FM→M3 then "Ray 1 becomes undefined after element
-     4".**  Prime suspect from the morning probe: the emitted **FP psi
-     = (0,0,1)** (unfolded axial convention) while the bench beam
-     arrives along −x → ray ∥ plane, degenerate intersection.  The
-     fold maps FP psi correctly at resolve; **suspect add_pupil
-     clobbers the FP orientation with a z-facing assumption** (latent
-     until a folded design).  Puzzle: the earlier standalone mmacos
-     verify traced 1304 pts OK on an earlier save — re-verify which
-     .in vintage broke, then fix add_pupil for folded chains.
-  2. The plots suggest a **DEFOCUSSED spot** at the FP — check best
-     focus vs the FP station after the bias solve.
-  3. **FEX doesn't produce good results on this Rx; ORS either** —
-     "nice to have a degenerate example!"  Keep this Rx as the FEX/ORS
-     robustness test case (likely same folded-geometry assumptions).
-  4. Design-metric question (Dave): **spot radius vs OPD at the
-     pupil?**
-  5. The TRUE focal plane is TILTED for a biased field — **trace
-     multiple FOVs to set the correct FP angle** (center_focal_plane
-     translates only; aim/tilt-from-multi-field-foci = next builder
-     piece).
+- **2026-07-06 follow-up day (MACOS_res sls-dev `be03e49`, LOCAL —
+  suite 194/194): next-time items 1+2+5 CLOSED, 3 half-answered.**
+  1. ~~Broken saved .in~~ **FIXED**: `add_pupil` seeded BOTH inserted
+     Returns with literal z-facing psi `[0 0 1]` and probed FEX about
+     the unbiased +z axis; on the fold-in-feed bench the FP_return
+     flat was ray-parallel → chief died.  Seeds now derive from the
+     chief line prev→FP (identical to legacy on axial trains); probe
+     offsets from the biased chief.  CLI `ray 1` traces the full
+     7-elt train, retro legs equal to 7e-9.  **Vintage puzzle**: the
+     earlier verify that traced OK was the RETURN-LEG-fold topology
+     (axial beam at FP) — z-assumption only fatal for fold-in-feed.
+     **FEX EP placement was RIGHT all along**: independent two-field
+     chief-crossing = 0.616 m from image (0.5 mm agreement); the
+     "paraxial 1.5–1.7 m" estimate was wrong.
+  2. ~~Defocused spot~~ **REAL and FIXED**: FP station was 0.227 mm
+     off best focus; removed by [2d] below.
+  5. ~~FP tilt~~ **`Telescope.align_focal_plane`** (Dave: grid of
+     foci, 2×2 prelim → 5×5/7×7 final): maps best-focus points (3-D
+     closed-form LSQ point per field, no scan) over an N×N field
+     grid + center anchor, fits the detector plane, sets FP Vpt+psi,
+     returns tilt/defocus/sag map (`.map` ready-to-plot).  Guarded
+     to run BEFORE add_pupil.  **Folded TMA: FP tilt 7.32° wrt
+     chief, field-curvature sag ±1.1 µm over ±0.25′ (≪ f/20 DoF) —
+     and the −tilt FOV ladder extends DL @2.3 µm from the ~0.5′ core
+     to the FULL 2′-dia mapped field (0.25′ 0.016 / 0.5′ 0.018 /
+     1.0′ 0.027 waves).**  Demo [2d] stage + fpmap figure; 2 tests.
+  - STILL OPEN: 3. ORS on this Rx unverified (FEX half is resolved);
+    4. Dave's metric question (spot radius vs pupil OPD) — today's
+    evidence: the geometric-focus move bought the field that OPD-only
+    correction left on the table.
 - Weak-POWER fold option = requested follow-on (seam noted in add_fold).
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
