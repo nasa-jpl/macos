@@ -446,16 +446,25 @@ sampling as a user parameter across the sensitivity utilities.**
   size); README knob paragraph.  VERIFIED: tDwDx 8/8, tDwDzZernike/
   tDwDsurf/tDesignSensitivities 11/11, run_dwdx_multi example
   end-to-end at 63 (OPDall 189×189 = 3×3 tiles of 63).
-- **Full-suite flake observed (PRE-EXISTING, not this change):** one
-  no-arg suite run died `free(): invalid size` entering
-  tProperCompareCassFF test 2 — the FIRST `macos.init(512)` after the
-  whole 128-model marathon = the documented `macos_init_all`
-  model-transition heap bug (mmacos/CLAUDE.md; PLAN §0 — the
-  2026-06-04 "§0 closed" single-process merge made it rare, not
-  impossible).  Exoneration probes: PROPER batch alone 23/23;
-  [tDwDx incl. the 3 ngridpts tests → CassFF@512] one process 12/12.
-  Reproducibility rerun of the full suite queued; if it recurs,
-  REOPEN PLAN §0 model-transition item.
+- **Full-suite 512-transition crash: REPRODUCIBLE + PRE-EXISTING
+  (reopens the PLAN §0 model-transition item).**  The no-arg full
+  suite dies `free(): invalid size` at tProperCompareCassFF test 2 —
+  the first `macos.init(512)` after the whole 128-model marathon —
+  DETERMINISTICALLY (2/2 runs, same test, same signature = the
+  documented `macos_init_all` transition heap bug,
+  mmacos/CLAUDE.md).  NOT today's change and NOT a flake:
+  (a) [tDwDx incl. the 3 ngridpts tests → CassFF@512] one process =
+  12/12; (b) [tFreeFormComposite+tCalib → CassFF@512] = 23/23;
+  (c) PROPER batch alone = 23/23 — arming needs the LONG 128 session
+  (most likely the tCodeV*Masks* marathon); (d) **the full no-arg
+  suite hasn't actually run since ~2026-06-04** — no
+  proper_compare/results PNG has an mtime between May 30 and today,
+  and the suite totals 308 tests, so the "196/196 green at every
+  commit" runs were the FAST (128-only) subset.  Follow-ons: bisect
+  the arming class ([MASKS → CassFF] probe), engine fix in the
+  macos_init_all/SMACOS-realloc path; near-term, consider restoring
+  the per-model-size batch split in run_mmacos_tests.sh so full runs
+  are green again.
 
 ## Just tried / ruled out (with why)
 —
