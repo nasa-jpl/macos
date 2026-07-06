@@ -95,10 +95,46 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
      and the −tilt FOV ladder extends DL @2.3 µm from the ~0.5′ core
      to the FULL 2′-dia mapped field (0.25′ 0.016 / 0.5′ 0.018 /
      1.0′ 0.027 waves).**  Demo [2d] stage + fpmap figure; 2 tests.
-  - STILL OPEN: 3. ORS on this Rx unverified (FEX half is resolved);
-    4. Dave's metric question (spot radius vs pupil OPD) — today's
-    evidence: the geometric-focus move bought the field that OPD-only
-    correction left on the table.
+  - Item 3 CLOSED by item 1 (Dave: "ORS is resolved by Item 1").
+    Item 4 (metric) deferred; PSF metrics now available (below).
+- **2026-07-06 pm (MACOS_res sls-dev `11ff118` + `7f54151`, LOCAL,
+  suite 196/196):**
+  - **`design_report`** (design/src) — Dave's one-page report: mirror
+    list, first-order (EFL/f/#-at-M1/f/#-at-FP/plate scale/λD — **EFL
+    measured LIVE from chief displacement per field angle**;
+    spec.derived.EFL is the Seidel seed and was 4× off on the folded
+    j18: the M3 pushback changed the relay — the folded design is
+    actually EFL 34.4 m f/5.2), WFE ladder **with Strehl**, FP tilt,
+    EP handle, shroud/clearance/AOI.  **Strehl = exact coherent sum
+    over the de-tilted EP-referenced OPD** — NOT the INT pixel peak:
+    an off-axis PSF walks across the FarField window and the pixel
+    ratio measures sampling (1′ ring 0.98 exact vs 0.28 INT).
+    **add_pupil now emits `PropType=FarField` on the EP ONLY** (Dave:
+    everything else Geometric) → INT at the FP = the PSF (metric hook).
+    FP-vs-own-retrace-legs excluded from the clearance verdict.
+    tma_centered README (step-by-step adaptation guide) + demo [6]
+    report stage.  Folded TMA: Strehl 0.954/0.860@1′/0.106@2.5′.
+  - **`tma_unobscured` example** (Dave: visible 500 nm coronagraph +
+    imager + spectrometer front end, slower M1, M2 close to the
+    source–M1 beam): finder walks the slower-M1 ladder at **CONSTANT
+    feed f/# (f1·m2 = 10)** — holding m2 fixed drives the feed toward
+    the system f/# as M1 slows, the M3 relay degenerates to 1:1 and
+    the decenter blows past 2.5·D (first failure mode).  **Design
+    point f/2.5 (Dave)**: decenter 1.66·D, AOI spread 13° < 15,
+    all-clear, shroud 3.64×D.  Demo: 7.66 → 0.011 waves ([2b] off-axis
+    refigure!) → 0.030 field-balanced → freeform → align (FP tilt
+    4.77°, defocus 0.605 mm) → **EFL 132.1 / f/20.01, Strehl 0.954
+    center / 0.852 @0.5′ @500 nm, UNOBSCURED**.  Robustness: all-lost
+    sentinel (9.9999e36) now NaNs wfe_field_diag/Strehl rows instead
+    of crashing (a ring outside the realize_apertures envelope).
+  - **VERDICT (Dave 2026-07-06): this design approach — the conic
+    eccentric-pupil section — will NOT meet our requirements.  Closed
+    out; the example stays as the recorded trade study (constant-feed
+    ladder, AOI-vs-shroud price).  DIRECTION: return to the
+    SPHERE+ZERNIKE approach for 3+n mirrors** (the sz_tma lineage:
+    all-sphere base + Zernike departures, real intermediate focus;
+    plus n relay/imaging mirrors — the 3+1 progression), targeting
+    the visible coronagraph + imager + spectrometer front end.
 - Weak-POWER fold option = requested follow-on (seam noted in add_fold).
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
