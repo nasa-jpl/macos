@@ -1,0 +1,190 @@
+==============================================================================
+MACOS Manual — Structural Audit
+==============================================================================
+Source: /home/dcr/dev/macos/docs/macos-manual/working
+Total paragraphs: 12384
+
+Style counts:
+   4600  TableParagraph
+   2908  CodeBlock
+   2827  BodyText
+   1249  Normal
+    453  ListParagraph
+    148  Heading4
+     83  FigureCaption
+     60  Heading3
+     36  FrameContents
+     13  Heading2
+      2  TOC2
+      1  Title
+      1  Heading1
+      1  TOC3
+      1  TOC1
+      1  TOC4
+
+------------------------------------------------------------------------------
+SECTION BREAKS (<w:sectPr>): 327 total
+------------------------------------------------------------------------------
+  body-final (keep):    1
+  intermediate (strip): 326
+
+First 20 intermediate sectPr locations (by paragraph index):
+  para#   10  H2#8: Modeling and Analysis for Controlled Optical Systems
+  para#   29  H2#8: Modeling and Analysis for Controlled Optical Systems  H4#28: Installation
+  para#   75  H2#33: Table of Contents
+  para#  133  H2#33: Table of Contents
+  para#  187  H2#33: Table of Contents
+  para#  285  H2#33: Table of Contents
+  para#  412  H2#33: Table of Contents
+  para#  430  H2#415: SECTION 1: Introduction  H3#420: Modeling and Analysis for Controlled Optical Systems
+  para#  501  H2#415: SECTION 1: Introduction  H3#459: 
+  para#  519  H2#504: SECTION 2: Technical Overview  H3#509: Geometry and Coordinate Systems  H4#513: Global Coordinates
+  para#  586  H2#504: SECTION 2: Technical Overview  H3#509: Geometry and Coordinate Systems  H4#513: Global Coordinates
+  para#  618  H2#504: SECTION 2: Technical Overview  H3#588: Geometry and Coordinate Systems  H4#611: Local coordinates
+  para#  626  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  629  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  634  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  645  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  649  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  657  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  para#  696  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  para#  707  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  ... and 306 more
+
+------------------------------------------------------------------------------
+COLUMN BREAKS: 101 total
+------------------------------------------------------------------------------
+First 20 column-break locations:
+  para#  628  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  647  H2#504: SECTION 2: Technical Overview  H3#621: Geometric Optics: Tracing Rays
+  para#  668  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  para#  686  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  para#  739  H2#504: SECTION 2: Technical Overview  H3#655: Physical Optics: Diffraction
+  para#  952  H2#923: SECTION 3: User Interface  H3#929: Starting and Stopping MACOS
+  para# 1007  H2#923: SECTION 3: User Interface  H3#996: Entering Commands
+  para# 1102  H2#923: SECTION 3: User Interface  H3#996: Entering Commands
+  para# 1336  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1324: Source Position and Orientation
+  para# 1380  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1369: Aperture
+  para# 1395  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1369: Aperture
+  para# 1396  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1369: Aperture
+  para# 1438  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1422: Ray Grids
+  para# 1440  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1422: Ray Grids
+  para# 1446  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1422: Ray Grids
+  para# 1447  H2#1297: SECTION 4: Describing Optical Systems  H3#1307: Specifying the Light Source  H4#1422: Ray Grids
+  para# 1471  H2#1297: SECTION 4: Describing Optical Systems  H3#1456: Example Light Source
+  para# 1546  H2#1297: SECTION 4: Describing Optical Systems  H3#1456: Example Light Source
+  para# 1549  H2#1297: SECTION 4: Describing Optical Systems  H3#1456: Example Light Source
+  para# 1552  H2#1297: SECTION 4: Describing Optical Systems  H3#1456: Example Light Source
+  ... and 81 more
+
+------------------------------------------------------------------------------
+TableParagraph: 4600 paragraphs
+------------------------------------------------------------------------------
+  inside <w:tbl>:  4600   <- legitimate, keep as 'TableCell'
+  outside tables: 0   <- needs reclassification
+
+  30 samples (every 153-th occurrence):
+  [T] para#  196  font=Times New Roman sz= 24  b=1  | SECTION 7
+  [T] para#  395  font=Times New Roman sz= 20  b=0  | A.7
+  [T] para# 1629  font=<none>         sz=     b=0  | 
+  [T] para# 2197  font=<none>         sz= 18  b=0  | None
+  [T] para# 2581  font=Helvetica      sz= 14  b=0  | 2
+  [T] para# 2734  font=Helvetica      sz= 14  b=0  | 77
+  [T] para# 3317  font=<none>         sz= 18  b=0  | 0.000000000D+00
+  [T] para# 3483  font=Times New Roman sz= 18  b=0  | 29
+  [T] para# 3859  font=<none>         sz= 18  b=0  | HOE
+  [T] para# 4190  font=Times New Roman sz= 18  b=0  | Focal Plane
+  [T] para# 4483  font=<none>         sz= 18  b=0  | 0.000000000D+00
+  [T] para# 4828  font=<none>         sz= 18  b=0  | Flux
+  [T] para# 4993  font=Times New Roman sz= 18  b=0  | element principal axis vec-tor
+  [T] para# 5280  font=<none>         sz= 18  b=0  | 0
+  [T] para# 5459  font=<none>         sz= 18  b=0  | 433
+  [T] para# 5612  font=<none>         sz= 18  b=0  | 0
+  [T] para# 5765  font=<none>         sz= 18  b=0  | 6
+  [T] para# 5919  font=<none>         sz= 18  b=0  | 661
+  [T] para# 6072  font=<none>         sz= 18  b=0  | 97
+  [T] para# 6225  font=<none>         sz= 18  b=0  | 4
+  [T] para# 6378  font=<none>         sz= 18  b=0  | 0
+  [T] para# 7672  font=<none>         sz= 18  b=0  | 0.000000000D+00
+  [T] para#10009  font=<none>         sz= 18  b=0  | IndRef=1d0
+  [T] para#10491  font=<none>         sz= 18  b=0  | KcElt=
+  [T] para#10699  font=<none>         sz= 18  b=0  | Reflector Flat
+  [T] para#10858  font=<none>         sz= 18  b=0  | 2.150594855D+01
+  [T] para#11061  font=<none>         sz= 18  b=0  | 0d0 0
+  [T] para#11233  font=<none>         sz= 18  b=0  | 1.0600000e+02
+  [T] para#11390  font=<none>         sz= 18  b=0  | 4e-05
+  [T] para#11735  font=<none>         sz= 18  b=0  | nObs(6)=0
+
+------------------------------------------------------------------------------
+Normal: 1249 paragraphs
+------------------------------------------------------------------------------
+  30 samples (every 41-th occurrence):
+  [.] para#    0  font=<none>         sz=     b=0  | 
+  [.] para#  644  font=<none>         sz=     b=0  | 
+  [T] para# 1052  font=<none>         sz=     b=0  | 
+  [.] para# 1427  font=Helvetica      sz= 18  b=1  | Example Light Source
+  [.] para# 2006  font=Helvetica      sz= 18  b=1  | Element Types
+  [.] para# 2407  font=<none>         sz= 20  b=0  | S7
+  [.] para# 3197  font=<none>         sz=     b=0  | 
+  [.] para# 3585  font=<none>         sz=     b=0  | 
+  [.] para# 4510  font=<none>         sz=     b=0  | 
+  [.] para# 6467  font=<none>         sz=     b=0  | 
+  [.] para# 6930  font=<none>         sz=     b=0  | 
+  [.] para# 7284  font=<none>         sz=     b=0  | 
+  [.] para# 7819  font=<none>         sz=     b=0  | 
+  [.] para# 8052  font=<none>         sz= 18  b=0  | ASCII 32
+  [.] para# 8093  font=<none>         sz= 18  b=0  | layer thickness 88 number of layers 88
+  [.] para# 8135  font=<none>         sz= 18  b=0  | electric field vector 87 element
+  [.] para# 8176  font=Helvetica      sz= 18  b=1  | G
+  [.] para# 8217  font=<none>         sz= 18  b=0  | iZern 87
+  [.] para# 8259  font=<none>         sz= 18  b=0  | macos.glass 32, 46, 47
+  [.] para# 8300  font=<none>         sz= 18  b=0  | NOREGrid 27
+  [.] para# 8341  font=<none>         sz= 18  b=0  | PinHole 88
+  [.] para# 8383  font=<none>         sz= 18  b=0  | RayIndex 92
+  [.] para# 8424  font=<none>         sz= 18  b=0  | number 87
+  [.] para# 8466  font=<none>         sz= 18  b=0  | UDSrfType 89
+  [.] para# 8547  font=Helvetica      sz= 16  b=1  | (8.1)
+  [.] para# 8661  font=<none>         sz=     b=0  | 
+  [.] para# 8718  font=<none>         sz=     b=0  | 
+  [.] para# 8841  font=<none>         sz=     b=0  | 
+  [.] para# 8941  font=<none>         sz=     b=0  | 
+  [.] para# 9974  font=<none>         sz=     b=0  | 
+
+------------------------------------------------------------------------------
+FrameContents: 36 paragraphs
+------------------------------------------------------------------------------
+  30 samples (every 1-th occurrence):
+  [.] para# 1557  font=<none>         sz=     b=0  | 
+  [.] para# 1561  font=<none>         sz=     b=0  | 
+  [.] para# 2384  font=<none>         sz=     b=0  | 
+  [.] para# 2390  font=<none>         sz=     b=0  | 
+  [.] para# 2400  font=<none>         sz=     b=0  | 
+  [.] para# 2406  font=<none>         sz=     b=0  | 
+  [.] para# 2427  font=Helvetica      sz= 10  b=0  | 22,22,22
+  [.] para# 2428  font=Helvetica      sz= 10  b=0  | 22,22,22
+  [.] para# 3013  font=<none>         sz=     b=0  | 
+  [.] para# 3014  font=<none>         sz=     b=0  | 
+  [.] para# 3015  font=<none>         sz=     b=0  | 
+  [.] para# 3016  font=<none>         sz=     b=0  | 
+  [.] para# 3017  font=<none>         sz=     b=0  | 
+  [.] para# 3018  font=<none>         sz=     b=0  | 
+  [.] para# 3019  font=<none>         sz=     b=0  | 
+  [.] para# 3020  font=<none>         sz=     b=0  | 
+  [.] para# 3021  font=<none>         sz=     b=0  | 
+  [.] para# 3022  font=<none>         sz=     b=0  | 
+  [.] para# 3023  font=<none>         sz=     b=0  | 
+  [.] para# 3024  font=<none>         sz=     b=0  | 
+  [.] para# 3025  font=<none>         sz=     b=0  | 
+  [.] para# 3026  font=<none>         sz=     b=0  | 
+  [.] para# 3216  font=<none>         sz= 20  b=0  | h
+  [.] para# 3217  font=<none>         sz= 20  b=0  | h
+  [.] para# 7109  font=Helvetica      sz= 14  b=0  | 8 C
+  [.] para# 7110  font=Helvetica      sz= 14  b=0  | 8 C
+  [.] para# 7119  font=<none>         sz=     b=0  | 
+  [.] para# 7120  font=<none>         sz=     b=0  | 
+  [.] para# 7220  font=<none>         sz= 18  b=0  | D
+  [.] para# 7221  font=<none>         sz= 18  b=0  | D
+
+==============================================================================
+End of audit.
+==============================================================================

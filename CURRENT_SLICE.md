@@ -69,28 +69,98 @@ own spacings put the exit pupil 1 m in FRONT of the PM — no fold fits).
   saved in the example dir = usual practice.**  Suite 192/192.
   **ALL PUSHED (both repos sls-dev @ macos 9809af2 / MACOS_res
   4f422a9).**
-- **NEXT TIME (Dave, pre-compaction — NOT done exploring this case):**
-  1. **The saved tma_centered_foldfp.in is BROKEN in the CLI: `ray 1`
-     traces M1→M2→FM→M3 then "Ray 1 becomes undefined after element
-     4".**  Prime suspect from the morning probe: the emitted **FP psi
-     = (0,0,1)** (unfolded axial convention) while the bench beam
-     arrives along −x → ray ∥ plane, degenerate intersection.  The
-     fold maps FP psi correctly at resolve; **suspect add_pupil
-     clobbers the FP orientation with a z-facing assumption** (latent
-     until a folded design).  Puzzle: the earlier standalone mmacos
-     verify traced 1304 pts OK on an earlier save — re-verify which
-     .in vintage broke, then fix add_pupil for folded chains.
-  2. The plots suggest a **DEFOCUSSED spot** at the FP — check best
-     focus vs the FP station after the bias solve.
-  3. **FEX doesn't produce good results on this Rx; ORS either** —
-     "nice to have a degenerate example!"  Keep this Rx as the FEX/ORS
-     robustness test case (likely same folded-geometry assumptions).
-  4. Design-metric question (Dave): **spot radius vs OPD at the
-     pupil?**
-  5. The TRUE focal plane is TILTED for a biased field — **trace
-     multiple FOVs to set the correct FP angle** (center_focal_plane
-     translates only; aim/tilt-from-multi-field-foci = next builder
-     piece).
+- **2026-07-06 follow-up day (MACOS_res sls-dev `be03e49`, LOCAL —
+  suite 194/194): next-time items 1+2+5 CLOSED, 3 half-answered.**
+  1. ~~Broken saved .in~~ **FIXED**: `add_pupil` seeded BOTH inserted
+     Returns with literal z-facing psi `[0 0 1]` and probed FEX about
+     the unbiased +z axis; on the fold-in-feed bench the FP_return
+     flat was ray-parallel → chief died.  Seeds now derive from the
+     chief line prev→FP (identical to legacy on axial trains); probe
+     offsets from the biased chief.  CLI `ray 1` traces the full
+     7-elt train, retro legs equal to 7e-9.  **Vintage puzzle**: the
+     earlier verify that traced OK was the RETURN-LEG-fold topology
+     (axial beam at FP) — z-assumption only fatal for fold-in-feed.
+     **FEX EP placement was RIGHT all along**: independent two-field
+     chief-crossing = 0.616 m from image (0.5 mm agreement); the
+     "paraxial 1.5–1.7 m" estimate was wrong.
+  2. ~~Defocused spot~~ **REAL and FIXED**: FP station was 0.227 mm
+     off best focus; removed by [2d] below.
+  5. ~~FP tilt~~ **`Telescope.align_focal_plane`** (Dave: grid of
+     foci, 2×2 prelim → 5×5/7×7 final): maps best-focus points (3-D
+     closed-form LSQ point per field, no scan) over an N×N field
+     grid + center anchor, fits the detector plane, sets FP Vpt+psi,
+     returns tilt/defocus/sag map (`.map` ready-to-plot).  Guarded
+     to run BEFORE add_pupil.  **Folded TMA: FP tilt 7.32° wrt
+     chief, field-curvature sag ±1.1 µm over ±0.25′ (≪ f/20 DoF) —
+     and the −tilt FOV ladder extends DL @2.3 µm from the ~0.5′ core
+     to the FULL 2′-dia mapped field (0.25′ 0.016 / 0.5′ 0.018 /
+     1.0′ 0.027 waves).**  Demo [2d] stage + fpmap figure; 2 tests.
+  - Item 3 CLOSED by item 1 (Dave: "ORS is resolved by Item 1").
+    Item 4 (metric) deferred; PSF metrics now available (below).
+- **2026-07-06 pm (MACOS_res sls-dev `11ff118` + `7f54151`, LOCAL,
+  suite 196/196):**
+  - **`design_report`** (design/src) — Dave's one-page report: mirror
+    list, first-order (EFL/f/#-at-M1/f/#-at-FP/plate scale/λD — **EFL
+    measured LIVE from chief displacement per field angle**;
+    spec.derived.EFL is the Seidel seed and was 4× off on the folded
+    j18: the M3 pushback changed the relay — the folded design is
+    actually EFL 34.4 m f/5.2), WFE ladder **with Strehl**, FP tilt,
+    EP handle, shroud/clearance/AOI.  **Strehl = exact coherent sum
+    over the de-tilted EP-referenced OPD** — NOT the INT pixel peak:
+    an off-axis PSF walks across the FarField window and the pixel
+    ratio measures sampling (1′ ring 0.98 exact vs 0.28 INT).
+    **add_pupil now emits `PropType=FarField` on the EP ONLY** (Dave:
+    everything else Geometric) → INT at the FP = the PSF (metric hook).
+    FP-vs-own-retrace-legs excluded from the clearance verdict.
+    tma_centered README (step-by-step adaptation guide) + demo [6]
+    report stage.  Folded TMA: Strehl 0.954/0.860@1′/0.106@2.5′.
+  - **`tma_unobscured` example** (Dave: visible 500 nm coronagraph +
+    imager + spectrometer front end, slower M1, M2 close to the
+    source–M1 beam): finder walks the slower-M1 ladder at **CONSTANT
+    feed f/# (f1·m2 = 10)** — holding m2 fixed drives the feed toward
+    the system f/# as M1 slows, the M3 relay degenerates to 1:1 and
+    the decenter blows past 2.5·D (first failure mode).  **Design
+    point f/2.5 (Dave)**: decenter 1.66·D, AOI spread 13° < 15,
+    all-clear, shroud 3.64×D.  Demo: 7.66 → 0.011 waves ([2b] off-axis
+    refigure!) → 0.030 field-balanced → freeform → align (FP tilt
+    4.77°, defocus 0.605 mm) → **EFL 132.1 / f/20.01, Strehl 0.954
+    center / 0.852 @0.5′ @500 nm, UNOBSCURED**.  Robustness: all-lost
+    sentinel (9.9999e36) now NaNs wfe_field_diag/Strehl rows instead
+    of crashing (a ring outside the realize_apertures envelope).
+  - **VERDICT (Dave 2026-07-06): this design approach — the conic
+    eccentric-pupil section — will NOT meet our requirements.  Closed
+    out; the example stays as the recorded trade study (constant-feed
+    ladder, AOI-vs-shroud price).  DIRECTION: return to the
+    SPHERE+ZERNIKE approach for 3+n mirrors** (the sz_tma lineage:
+    all-sphere base + Zernike departures, real intermediate focus;
+    plus n relay/imaging mirrors — the 3+1 progression), targeting
+    the visible coronagraph + imager + spectrometer front end.
+- **2026-07-06 eve — the pivot slice (MACOS_res `afce4a0`, LOCAL,
+  suite 196/196): `design/examples/freeform_unobscured/`** (name =
+  Dave's) — sphere+Zernike at 500 nm on sz_tma's e5mono tilted-fold
+  geometry, full toolkit (staged S0/S1/S2 → align_focal_plane →
+  add_pupil FarField → **standalone reload verification as a stage,
+  1305/1305 VERIFIED** → design_report).
+  - **S0 centers DL at the visible bar (0.030 waves)** — the strategy
+    holds at 500 nm; the ±1′ S2 field solve trades the center away
+    (center 0.16 −tilt / worst 0.54 waves; Strehl 0.38 center).
+    **NEXT design conversation: mode depth / staging weights / field
+    size / the +1 mirror.**  Packaging: UNOBSCURED, **shroud 1.86×D
+    (half the eccentric section's 3.6×D)**, AOI spreads
+    8.9/10.2/0.9° all under 15°, EP 1.02 m from the image, FP tilt
+    1.95°, 15 mm defocus removed by align.
+  - **Dave's staging rule: NO apertures in the first design steps** —
+    add them when the design approaches objectives.
+  - **REAL BUG exposed (pre-existing, queued): `realize_apertures`
+    measures footprint centers in GLOBAL XY (draw_rays) but emits
+    them as LOCAL ApVec offsets** — correct only while the element
+    origin sits at the global origin (coaxial/eccentric-section
+    parents); saved TILTED-FOLD designs lose EVERY ray on reload.
+    **`sz_tma.in` carries this latent** (verified: 0/1305 pass on
+    standalone reload), tma_offaxis.in likely too.  Stopgap
+    `Telescope.clear_realized_apertures` documents it; proper fix =
+    ray_bundle 3-D footprints projected into the engine's aperture
+    frame, when apertures re-enter the flow.
 - Weak-POWER fold option = requested follow-on (seam noted in add_fold).
 
 **Previously (2026-07-04): TWO thrusts, ALL COMMITS LOCAL (Dave has
@@ -359,7 +429,42 @@ opt-dev cherry-pick of 60f886d still pending.
   ([[project-layout-realizability]], local unpushed commits).
 
 ## In-session state NOT yet committed
-—
+**2026-07-06 (post-compaction): Luis's NGRIDPTS request — ray-grid
+sampling as a user parameter across the sensitivity utilities.**
+- All 8 dw_d* drivers (`dw_dx/dz_zernike/dsurf/dgrid` + `_multi`)
+  gained `'ngridpts'` (default [] = keep the .in value), applied via
+  new shared `src/+macos/private/apply_ngridpts.m` right after
+  `load_rx` (engine `set_src_sampling` clamps to [3,mpts] + runs
+  MODIFY itself; the multi supervisors apply once — persists across
+  per-field calls since those run reload_rx=false).  Clamp warns.
+- `macos.design.System.sensitivities` forwards `'ngridpts'` too.
+- All 13 runner scripts got the `NGRIDPTS` CONFIG knob: generic
+  `sensitivities/run_dwd*_multi.m` default `[]`; the self-contained
+  `examples/*` copies default `63` (Dave's requested instance —
+  e5hex1.in asks nGridpts=256, clamped by MODEL before; now honest).
+- tDwDx +3 tests (override 31×31 canvas, clamp warning, multi-tile
+  size); README knob paragraph.  VERIFIED: tDwDx 8/8, tDwDzZernike/
+  tDwDsurf/tDesignSensitivities 11/11, run_dwdx_multi example
+  end-to-end at 63 (OPDall 189×189 = 3×3 tiles of 63).
+- **Full-suite 512-transition crash: REPRODUCIBLE + PRE-EXISTING
+  (reopens the PLAN §0 model-transition item).**  The no-arg full
+  suite dies `free(): invalid size` at tProperCompareCassFF test 2 —
+  the first `macos.init(512)` after the whole 128-model marathon —
+  DETERMINISTICALLY (2/2 runs, same test, same signature = the
+  documented `macos_init_all` transition heap bug,
+  mmacos/CLAUDE.md).  NOT today's change and NOT a flake:
+  (a) [tDwDx incl. the 3 ngridpts tests → CassFF@512] one process =
+  12/12; (b) [tFreeFormComposite+tCalib → CassFF@512] = 23/23;
+  (c) PROPER batch alone = 23/23 — arming needs the LONG 128 session
+  (most likely the tCodeV*Masks* marathon); (d) **the full no-arg
+  suite hasn't actually run since ~2026-06-04** — no
+  proper_compare/results PNG has an mtime between May 30 and today,
+  and the suite totals 308 tests, so the "196/196 green at every
+  commit" runs were the FAST (128-only) subset.  Follow-ons: bisect
+  the arming class ([MASKS → CassFF] probe), engine fix in the
+  macos_init_all/SMACOS-realloc path; near-term, consider restoring
+  the per-model-size batch split in run_mmacos_tests.sh so full runs
+  are green again.
 
 ## Just tried / ruled out (with why)
 —
