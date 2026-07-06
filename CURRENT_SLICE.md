@@ -429,7 +429,33 @@ opt-dev cherry-pick of 60f886d still pending.
   ([[project-layout-realizability]], local unpushed commits).
 
 ## In-session state NOT yet committed
-—
+**2026-07-06 (post-compaction): Luis's NGRIDPTS request — ray-grid
+sampling as a user parameter across the sensitivity utilities.**
+- All 8 dw_d* drivers (`dw_dx/dz_zernike/dsurf/dgrid` + `_multi`)
+  gained `'ngridpts'` (default [] = keep the .in value), applied via
+  new shared `src/+macos/private/apply_ngridpts.m` right after
+  `load_rx` (engine `set_src_sampling` clamps to [3,mpts] + runs
+  MODIFY itself; the multi supervisors apply once — persists across
+  per-field calls since those run reload_rx=false).  Clamp warns.
+- `macos.design.System.sensitivities` forwards `'ngridpts'` too.
+- All 13 runner scripts got the `NGRIDPTS` CONFIG knob: generic
+  `sensitivities/run_dwd*_multi.m` default `[]`; the self-contained
+  `examples/*` copies default `63` (Dave's requested instance —
+  e5hex1.in asks nGridpts=256, clamped by MODEL before; now honest).
+- tDwDx +3 tests (override 31×31 canvas, clamp warning, multi-tile
+  size); README knob paragraph.  VERIFIED: tDwDx 8/8, tDwDzZernike/
+  tDwDsurf/tDesignSensitivities 11/11, run_dwdx_multi example
+  end-to-end at 63 (OPDall 189×189 = 3×3 tiles of 63).
+- **Full-suite flake observed (PRE-EXISTING, not this change):** one
+  no-arg suite run died `free(): invalid size` entering
+  tProperCompareCassFF test 2 — the FIRST `macos.init(512)` after the
+  whole 128-model marathon = the documented `macos_init_all`
+  model-transition heap bug (mmacos/CLAUDE.md; PLAN §0 — the
+  2026-06-04 "§0 closed" single-process merge made it rare, not
+  impossible).  Exoneration probes: PROPER batch alone 23/23;
+  [tDwDx incl. the 3 ngridpts tests → CassFF@512] one process 12/12.
+  Reproducibility rerun of the full suite queued; if it recurs,
+  REOPEN PLAN §0 model-transition item.
 
 ## Just tried / ruled out (with why)
 —
