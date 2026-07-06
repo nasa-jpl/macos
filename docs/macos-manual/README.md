@@ -1,74 +1,179 @@
-# MACOS Manual — Development Project
+# MACOS Manual
 
-## Structure
+The manual is maintained as **Markdown source** in `src/` — one file per
+section, figures in `src/media/`.  PDF, HTML, and DOCX are build
+products.  **Edit the Markdown; never edit the outputs.**
 
 ```
 macos-manual/
-├── macosMan3_2_styled.docx     ← working document (open in LibreOffice)
-├── scripts/
-│   ├── unpack.py               ← extract docx → working/
-│   ├── pack.py                 ← repack working/ → docx
-│   ├── docx_helpers.py         ← shared XML utilities (import this)
-│   ├── inspect.py              ← explore document without changing it
-│   └── transform_template.py  ← copy this to start a new transform
-└── working/                    ← unpacked XML (git-ignore this)
+├── src/                            ← THE manual (edit these)
+│   ├── 00_frontmatter.md           ← title page, contact, authorship
+│   ├── 01_introduction.md          ← incl. "New Features" per release
+│   ├── 02_technical_overview.md
+│   ├── 03_user_interface.md
+│   ├── 04_describing_optical_systems.md
+│   ├── 05_ray_trace_analysis.md
+│   ├── 06_diffraction_analysis.md
+│   ├── 07_beam_propagation_imaging.md
+│   ├── 08_differential_ray_tracing.md
+│   ├── 09_subroutine_macos.md
+│   ├── 90_references.md
+│   ├── 91_appendix_a_examples.md
+│   ├── 93_appendix_c_commands.md   ← GENERATED — never hand-edit
+│   └── media/                      ← figures (PNG/JPEG)
+├── Makefile                        ← build driver
+├── build/                          ← outputs (gitignored)
+├── reference.docx                  ← Word/PDF styling (see Gotchas)
+├── tools/                          ← build + one-time migration scripts
+├── examples/                       ← .in/.jou files shown in Appendix A
+├── FIGURE_RESCUE_LOG.md            ← figure-migration status + audit
+├── RECONCILE_4_01.md               ← how the Writer fork was folded in
+└── (legacy: macosMan*.docx, patches/, scripts/ — frozen provenance)
 ```
 
-## Workflow
-
-Every edit cycle follows the same three steps:
+## Building
 
 ```bash
-python scripts/unpack.py          # 1. unpack docx into working/
-# ... edit working/word/document.xml, or run a transform script ...
-python scripts/pack.py            # 2. repack into macosMan3_2_styled.docx
-# open in LibreOffice to verify   # 3. check result visually
+cd docs/macos-manual
+make            # build/macosMan.docx + build/macosMan.html
+make pdf        # build/macosMan.pdf (via headless LibreOffice)
+make appendix-c # regenerate Appendix C from macos_f90/macos_help.inc
+make clean
 ```
 
-## Exploring the document
+Requirements: `pandoc`, GNU `make`, `python3`; LibreOffice only for the
+PDF leg.  Section order is simply the lexical order of `src/[0-9]*.md`.
+The Table of Contents is generated at build time (`--toc`) — there is
+no TOC in the source, and no index (PDF bookmarks + HTML search
+replace it).
 
-```bash
-python scripts/inspect.py                    # paragraph style counts
-python scripts/inspect.py headings           # full heading tree
-python scripts/inspect.py sample CodeBlock   # sample paragraphs of a style
-python scripts/inspect.py search "MACOS>"   # find paragraphs by content
-```
+For a quick preview while writing, build the HTML — it's the fastest
+target and self-contained (open `build/macosMan.html` in a browser).
 
-## Writing a new transform
+## How to add or edit content
 
-```bash
-cp scripts/transform_template.py scripts/my_change.py
-# edit my_change.py — fill in the transform() function
-python scripts/unpack.py
-python scripts/my_change.py
-python scripts/pack.py
-```
+### Everyday edits
 
-## Current document style inventory
+Open the `src/` file for the section, edit, `make`, look at the HTML
+(or `make pdf` for final pagination).  The building blocks:
 
-| Style          | Count | Meaning                                    |
-|----------------|-------|--------------------------------------------|
-| TableParagraph | 4604  | Content inside tables                      |
-| BodyText       | 2954  | Main prose paragraphs                      |
-| CodeBlock      | 2917  | MACOS terminal output & command examples   |
-| Normal         | ~1354 | Mixed: diagram fragments, math, misc       |
-| ListParagraph  | 403   | Bulleted/numbered lists                    |
-| Heading4       | 124   | Command-level headings (e.g. INTENSITY)    |
-| FigureCaption  | 83    | FIGURE x and TABLE x labels                |
-| Heading3       | 59    | Sub-section headings                       |
-| Heading2       | 12    | Section headings (SECTION 1–9, APPENDIX)   |
-| Heading1       | 1     | Document title                             |
+- **Prose** — plain Markdown paragraphs.  Blank line between
+  paragraphs.  `*italics*`, `**bold**`, `` `inline code` `` for
+  keywords like `VptElt`.
+- **Headings** — `##` is a SECTION/APPENDIX, `###` a subsection,
+  `####` a command or sub-topic.  Follow the numbering style already
+  in the file.
+- **Terminal transcripts / .in file excerpts** — fenced code blocks:
 
-## Known issues requiring manual attention
+  ````markdown
+  ```
+  MACOS>spot
+  Enter element number: 11
+  ```
+  ````
 
-- **73 Symbol-font paragraphs** — math equations rendered in Symbol charset.
-  These need to be rewritten using LibreOffice's equation editor (Insert → Object → Formula).
-  Find them with:  `python scripts/inspect.py sample Normal`
-  (look for entries with `font='Symbol'`)
+- **Figures** — put a PNG in `src/media/`, reference it inline where
+  the figure belongs, with the caption paragraph directly below:
 
-- **7 large-font diagram fragments** — label text orphaned from FrameMaker figures.
-  They sit near images; decide whether to delete or reformat as captions.
+  ```markdown
+  ![](media/my_new_figure.png)
 
-- **~1274 remaining Normal paragraphs** — includes diagram coordinate labels,
-  section-TOC remnants, and inline notes. Worth a visual scroll in LibreOffice
-  using the Navigator (F5) to catch anything structural.
+  **FIGURE 67** One-line caption text.
+  ```
+
+  Renumber ONLY if inserting between existing figures (grep for the
+  neighbors first).  Optional sizing: `![](media/x.png){width="4in"}`.
+- **Tables** — pipe tables are easiest to type:
+
+  ```markdown
+  | Location  | Frame A | Frame B |
+  |-----------|---------|---------|
+  | VptElt(1) | 2.5     | 0.0     |
+  ```
+
+  (The migrated grid tables `+---+` work too; no need to convert.)
+- **Math** — LaTeX between dollar signs: `$W(x,y) = \sum a_j Z_j$` or
+  `$$...$$` for display equations.  Renders natively in HTML and
+  converts to Word equations in the docx.  This is the preferred
+  replacement for the ~73 legacy equation images (see Open items).
+
+### Adding a new command or feature
+
+1. Write the description in the matching section file (e.g. a new
+   `####` under Section 5 for a ray-trace command), following the
+   pattern of the neighboring commands: short prose, then a transcript
+   code block showing the dialog.
+2. Add a bullet to **"New Features of Version X"** in
+   `src/01_introduction.md`.
+3. If the command was added to `macos_help.inc`, run `make appendix-c`
+   so the command reference picks it up.  Never edit
+   `src/93_appendix_c_commands.md` by hand — it is overwritten.
+4. `make` and check the HTML.
+
+### Adding a new section or appendix
+
+Create a new numbered file — the number prefix sets its position
+(e.g. `92_appendix_b_papers.md`).  Start it with a `##` heading.  No
+registration needed; the Makefile globs `src/[0-9]*.md`.
+
+### Updating the Appendix A examples
+
+The `.in`/`.jou` files live in `examples/`.  When an example changes,
+re-run it through the engine and paste the fresh transcript into
+`91_appendix_a_examples.md`.  (Automating this — regenerating all
+transcripts from `examples/*.jou` at build time, like Appendix C — is
+a planned improvement.)
+
+## Gotchas
+
+- **`reference.docx` controls Word/PDF styling** (pandoc-default
+  styles, restyled: Arial headings, Times body).  To restyle the
+  manual, edit the styles *in that file*; don't touch `src/`.  Do
+  **not** substitute `macosMan4_0_styled.docx` — it is defective as a
+  reference-doc and collapses every table to a single column.
+- **PDF TOC**: a plain `soffice --convert-to pdf` leaves the TOC field
+  empty.  `make pdf` uses `tools/docx2pdf.py` (LibreOffice UNO:
+  refresh indexes, then export) — always build the PDF through make.
+- **Do not re-run `tools/convert_from_docx.sh`** — it was the one-time
+  docx→Markdown migration and would overwrite all `src/` edits.
+- Legacy image sizes appear as `{width="0.1055…in"}` — fractional
+  inches from the docx; harmless, leave unless intentionally resizing.
+
+## History
+
+The manual originated in FrameMaker (source lost), survived as
+`docs/macosMan3.2.pdf`, was Acrobat-converted to docx, restyled, and
+maintained 2026-04/05 as a chain of Python XML patches (`patches/`,
+`scripts/`) producing `macosMan4_0_styled.docx` → `macosMan4.2beta.docx`.
+On 2026-07-06 that endpoint was converted to the Markdown source in
+`src/` (`tools/convert_from_docx.sh` = pandoc `docx+styles` +
+`tools/style_map.lua` + `tools/split_sections.py`) and **Markdown
+became canonical**.  The patch chain and docx snapshots are retained
+for provenance only.
+
+Two clean-ups happened at migration:
+
+- **Writer fork folded in** — the parallel LibreOffice edit
+  `macosMan4_01.docx` was diffed against the baseline;
+  `RECONCILE_4_01.md` records what each side contributed (its
+  "(historical)" version-notes sections now end
+  `src/01_introduction.md`).
+- **Composite figures rescued** — 34 FrameMaker line-art figures
+  existed in the docx only as exploded fragments; each was rasterized
+  from the vector-clean `macosMan3.2.pdf` into a single
+  `src/media/fig_rescued_NN.png` (`tools/rescue_figures.py`; status
+  and debris audit in `FIGURE_RESCUE_LOG.md`).
+
+## Open items
+
+1. **Equations**: ~73 remain as low-resolution images or Symbol-font
+   fragments inherited from the PDF extraction; re-enter as LaTeX
+   math (they were broken in every docx generation too — this is the
+   one manual-labor item left).
+2. **Figures 31, 56, 59** need hand-tightened crops (see
+   `FIGURE_RESCUE_LOG.md`).
+3. **New-feature content**: FreeForm details, SLSQP optimization, XPS,
+   COMPOSE/broadband, giza graphics, design layer, etc. still need
+   sections written.
+4. **Appendix A automation**: regenerate example transcripts from
+   `examples/*.jou` via the live engine at build time.
