@@ -1,74 +1,60 @@
-# MACOS Manual — Development Project
+# MACOS Manual
 
-## Structure
+The manual is maintained as **Markdown source** in `src/` — one file
+per section, figures in `src/media/`.  PDF, HTML, and DOCX are build
+products; edit the Markdown, never the outputs.
 
 ```
 macos-manual/
-├── macosMan3_2_styled.docx     ← working document (open in LibreOffice)
-├── scripts/
-│   ├── unpack.py               ← extract docx → working/
-│   ├── pack.py                 ← repack working/ → docx
-│   ├── docx_helpers.py         ← shared XML utilities (import this)
-│   ├── inspect.py              ← explore document without changing it
-│   └── transform_template.py  ← copy this to start a new transform
-└── working/                    ← unpacked XML (git-ignore this)
+├── src/                        ← THE manual (edit these)
+│   ├── 00_frontmatter.md
+│   ├── 01_introduction.md
+│   ├── ...
+│   ├── 91_appendix_a_examples.md
+│   ├── 93_appendix_c_commands.md   ← GENERATED from macos_help.inc
+│   └── media/                  ← figures (PNG)
+├── Makefile                    ← build driver
+├── build/                      ← outputs (gitignored)
+├── tools/                      ← build + migration scripts
+├── examples/                   ← .in/.jou files shown in Appendix A
+└── (legacy .docx/.pdf, patches/, scripts/ — see below)
 ```
 
-## Workflow
-
-Every edit cycle follows the same three steps:
+## Building
 
 ```bash
-python scripts/unpack.py          # 1. unpack docx into working/
-# ... edit working/word/document.xml, or run a transform script ...
-python scripts/pack.py            # 2. repack into macosMan3_2_styled.docx
-# open in LibreOffice to verify   # 3. check result visually
+make            # build/macosMan.docx + build/macosMan.html
+make pdf        # build/macosMan.pdf (docx -> LibreOffice headless,
+                #  TOC page numbers refreshed via tools/docx2pdf.py)
+make appendix-c # regenerate src/93_appendix_c_commands.md from
+                #  macos_f90/macos_help.inc  (never hand-edit it)
 ```
 
-## Exploring the document
+Requirements: pandoc, GNU make, LibreOffice (PDF only), python3.
+Section order = lexical order of `src/[0-9]*.md`.  The Table of
+Contents is generated at build time (`--toc`) — there is no TOC in the
+source.  Word styling comes from `--reference-doc=reference.docx` (pandoc default restyled: Arial headings, Times body). NOTE: do NOT use macosMan4_0_styled.docx as reference-doc — it collapses all tables to single-column.
 
-```bash
-python scripts/inspect.py                    # paragraph style counts
-python scripts/inspect.py headings           # full heading tree
-python scripts/inspect.py sample CodeBlock   # sample paragraphs of a style
-python scripts/inspect.py search "MACOS>"   # find paragraphs by content
-```
+## Editing guidelines
 
-## Writing a new transform
+- Prose: plain Markdown paragraphs.  Terminal transcripts and .in file
+  excerpts: fenced code blocks.  Figures: `![](media/imageNN.png)`
+  placed inline where they belong; keep the `**FIGURE n** caption`
+  paragraph next to the image.
+- `src/93_appendix_c_commands.md` is generated — run `make appendix-c`
+  after adding a command to `macos_help.inc`.
+- Known debt inherited from the PDF extraction: ~73 equations are
+  low-resolution images or Symbol-font fragments awaiting re-entry as
+  LaTeX math; some diagram label fragments remain near figures.
 
-```bash
-cp scripts/transform_template.py scripts/my_change.py
-# edit my_change.py — fill in the transform() function
-python scripts/unpack.py
-python scripts/my_change.py
-python scripts/pack.py
-```
+## History / legacy files
 
-## Current document style inventory
-
-| Style          | Count | Meaning                                    |
-|----------------|-------|--------------------------------------------|
-| TableParagraph | 4604  | Content inside tables                      |
-| BodyText       | 2954  | Main prose paragraphs                      |
-| CodeBlock      | 2917  | MACOS terminal output & command examples   |
-| Normal         | ~1354 | Mixed: diagram fragments, math, misc       |
-| ListParagraph  | 403   | Bulleted/numbered lists                    |
-| Heading4       | 124   | Command-level headings (e.g. INTENSITY)    |
-| FigureCaption  | 83    | FIGURE x and TABLE x labels                |
-| Heading3       | 59    | Sub-section headings                       |
-| Heading2       | 12    | Section headings (SECTION 1–9, APPENDIX)   |
-| Heading1       | 1     | Document title                             |
-
-## Known issues requiring manual attention
-
-- **73 Symbol-font paragraphs** — math equations rendered in Symbol charset.
-  These need to be rewritten using LibreOffice's equation editor (Insert → Object → Formula).
-  Find them with:  `python scripts/inspect.py sample Normal`
-  (look for entries with `font='Symbol'`)
-
-- **7 large-font diagram fragments** — label text orphaned from FrameMaker figures.
-  They sit near images; decide whether to delete or reformat as captions.
-
-- **~1274 remaining Normal paragraphs** — includes diagram coordinate labels,
-  section-TOC remnants, and inline notes. Worth a visual scroll in LibreOffice
-  using the Navigator (F5) to catch anything structural.
+The manual originated in FrameMaker (source lost), survived as
+`docs/macosMan3.2.pdf`, was Acrobat-converted to docx, restyled, and
+then maintained 2026-04/05 as a chain of Python XML patches
+(`patches/`, `scripts/`) producing `macosMan4_0_styled.docx` →
+`macosMan4.2beta.docx`.  On 2026-07-06 that endpoint was converted to
+the Markdown source in `src/` (see `tools/convert_from_docx.sh`) and
+Markdown became canonical.  The patch chain and docx snapshots are
+retained for provenance only.  `RECONCILE_4_01.md` records how the
+parallel Writer fork `macosMan4_01.docx` was folded in.
