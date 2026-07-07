@@ -74,6 +74,21 @@ underlying routine, which is the ground truth for argument meanings.
 | mmacos | `MACOS_resources/mmacos/` | see its README (MEX build against libsmacos) |
 | pymacos | `MACOS_resources/pymacos/` | see its README (f2py build) |
 
+## Where the examples are
+
+Worked examples are not enumerated in this reference; they live with
+each surface:
+
+- **CLI / engine** — `docs/macos-manual/examples/`: the manual's
+  Appendix A prescriptions, each `<name>.in` paired with a
+  `<name>.jou` journal that drives a complete analysis
+  (`EXEcute <name>` after loading).
+- **mmacos** — `MACOS_resources/mmacos/examples/`; further runnable
+  demos sit in `mmacos/design/` (telescope design layer) and
+  `mmacos/sensitivities/` (Jacobian / dw_* drivers).
+- **pymacos** — `MACOS_resources/pymacos/tests/`: the test suite
+  doubles as usage examples.
+
 ## Prerequisite tags used throughout
 
 - **\[Rx\]** — needs a loaded prescription (`OLD` or `NEW` first).
