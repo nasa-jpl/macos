@@ -74,6 +74,23 @@ underlying routine, which is the ground truth for argument meanings.
 | mmacos | `MACOS_resources/mmacos/` | see its README (MEX build against libsmacos) |
 | pymacos | `MACOS_resources/pymacos/` | see its README (f2py build) |
 
+## Related tools
+
+Two companions ship alongside the four surfaces:
+
+- **SegMirMaker** (`MACOS_resources/segmirmaker/`) — standalone
+  utility for converting a monolithic primary mirror into a
+  many-segment one: it generates the segmented-mirror prescription
+  (`.presc`) and segment-influence (`Hx.m`) files from a parent-mirror
+  description, including FreeForm parents.  Use it before hand-editing
+  segment entries into a prescription.  See manual §4.4.11.
+- **GMI** (`MACOS_resources/GMI/`) — a MATLAB MEX front end built
+  directly on SMACOS: a complete forward simulator (multi-channel
+  sensitivities, detector images) in one gateway.  Beyond being a
+  tool in its own right, `GMI.F` is the reference example of a real
+  SMACOS application — the minimal driver of the SMACOS chapter,
+  grown to production size.
+
 ## Where the examples are
 
 Worked examples are not enumerated in this reference; they live with

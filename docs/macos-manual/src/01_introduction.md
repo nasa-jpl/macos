@@ -44,6 +44,8 @@ Several example problems are worked in the manual to illustrate specific feature
 
 This manual is the *learning* document; its companion, the **MACOS Command Reference** (`macosCmdRef.pdf`, source in `docs/macos-manual/cmdref/`), is the *lookup* document: every interactive command, and every function of the MATLAB (mmacos) and Python (pymacos) programming interfaces, cataloged one at a time with its syntax. Appendix C of this manual lists the commands in summary form; the Command Reference is the full per-command catalog and the place to start if you are driving MACOS from MATLAB or Python.
 
+Two companion tools are worth knowing from the outset. **SegMirMaker** (`MACOS_resources/segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11). **GMI** (`MACOS_resources/GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9).
+
 ### New Features of Version 4.00
 
 MACOS 4.00 (April 2026) is a feature release built on the Fortran 90 / SMACOS infrastructure introduced in v3.2. It adds a new general-purpose composite surface (FreeForm), adds multiple different forms of Zernike polynomials describing for optical surfaces, modernizes the graphics layer, expands the SMACOS / GMI MATLAB interface, and adds new utility commands plus a separate segmented-mirror prescription generator.
