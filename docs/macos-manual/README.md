@@ -28,7 +28,7 @@ macos-manual/
 ├── examples/                       ← .in/.jou files shown in Appendix A
 ├── FIGURE_RESCUE_LOG.md            ← figure-migration status + audit
 ├── RECONCILE_4_01.md               ← how the Writer fork was folded in
-└── (legacy: macosMan*.docx, patches/, scripts/ — frozen provenance)
+└── (legacy: macosMan*.docx snapshots — frozen provenance)
 ```
 
 This directory also produces a second document, the **MACOS Command
@@ -169,8 +169,10 @@ maintained 2026-04/05 as a chain of Python XML patches (`patches/`,
 On 2026-07-06 that endpoint was converted to the Markdown source in
 `src/` (`tools/convert_from_docx.sh` = pandoc `docx+styles` +
 `tools/style_map.lua` + `tools/split_sections.py`) and **Markdown
-became canonical**.  The patch chain and docx snapshots are retained
-for provenance only.
+became canonical**.  The patch chain (`patches/`, `scripts/`) was
+removed from HEAD on 2026-07-07 — it was unreferenced by the build
+and carried static-analysis findings; recover from git history if
+needed.  The docx snapshots are retained for provenance.
 
 Two clean-ups happened at migration:
 

@@ -22,7 +22,7 @@ endif
 export PROJ_SVN_REV := $(shell svn info | awk '/Rev:/{print $$4}')
 export PROJ_DATE := $(shell date '+%Y-%m-%d')
 
-all: gfortran 
+all: npsol
 
 clean:
 	rm -f *.so *.pyf *.mexa64 pymacos_mod.mod
@@ -47,8 +47,5 @@ macos_f90: npsol
 ifneq ($(PYTHON_CMD),nomacos)
 	$(MAKE) -w -C $(MACOS_DIR) -f Makefile_Intel PWD=$(MACOS_DIR)
 endif
-
-gfortran: make.py
-	$(PYTHON) make.py $(PYTHON_CMD)
 
 ifort: npsol
