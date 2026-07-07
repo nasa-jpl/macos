@@ -32,7 +32,7 @@ docx: $(BUILD)/macosMan.docx
 html: $(BUILD)/macosMan.html
 pdf:  $(BUILD)/macosMan.pdf
 
-$(BUILD)/macosMan.docx: $(SRC) | $(BUILD)
+$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
 $(BUILD)/macosMan.html: $(SRC) | $(BUILD)
@@ -56,7 +56,7 @@ cmdref-pdf: $(BUILD)/macosCmdRef.pdf
 cmdref-regen:
 	python3 tools/gen_cmdref.py
 
-$(BUILD)/macosCmdRef.docx: $(CMDSRC) | $(BUILD)
+$(BUILD)/macosCmdRef.docx: $(CMDSRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)
 
 $(BUILD)/macosCmdRef.html: $(CMDSRC) | $(BUILD)
