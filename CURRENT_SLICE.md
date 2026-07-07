@@ -429,48 +429,144 @@ opt-dev cherry-pick of 60f886d still pending.
   ([[project-layout-realizability]], local unpushed commits).
 
 ## In-session state NOT yet committed
-**2026-07-06 (post-compaction): Luis's NGRIDPTS request — ray-grid
-sampling as a user parameter across the sensitivity utilities.**
-- All 8 dw_d* drivers (`dw_dx/dz_zernike/dsurf/dgrid` + `_multi`)
-  gained `'ngridpts'` (default [] = keep the .in value), applied via
-  new shared `src/+macos/private/apply_ngridpts.m` right after
-  `load_rx` (engine `set_src_sampling` clamps to [3,mpts] + runs
-  MODIFY itself; the multi supervisors apply once — persists across
-  per-field calls since those run reload_rx=false).  Clamp warns.
-- `macos.design.System.sensitivities` forwards `'ngridpts'` too.
-- All 13 runner scripts got the `NGRIDPTS` CONFIG knob: generic
-  `sensitivities/run_dwd*_multi.m` default `[]`; the self-contained
-  `examples/*` copies default `63` (Dave's requested instance —
-  e5hex1.in asks nGridpts=256, clamped by MODEL before; now honest).
-- tDwDx +3 tests (override 31×31 canvas, clamp warning, multi-tile
-  size); README knob paragraph.  VERIFIED: tDwDx 8/8, tDwDzZernike/
-  tDwDsurf/tDesignSensitivities 11/11, run_dwdx_multi example
-  end-to-end at 63 (OPDall 189×189 = 3×3 tiles of 63).
-- **Full-suite 512-transition crash: REPRODUCIBLE + PRE-EXISTING
-  (reopens the PLAN §0 model-transition item).**  The no-arg full
-  suite dies `free(): invalid size` at tProperCompareCassFF test 2 —
-  the first `macos.init(512)` after the whole 128-model marathon —
-  DETERMINISTICALLY (2/2 runs, same test, same signature = the
-  documented `macos_init_all` transition heap bug,
-  mmacos/CLAUDE.md).  NOT today's change and NOT a flake:
-  (a) [tDwDx incl. the 3 ngridpts tests → CassFF@512] one process =
-  12/12; (b) [tFreeFormComposite+tCalib → CassFF@512] = 23/23;
-  (c) PROPER batch alone = 23/23 — arming needs the LONG 128 session
-  (most likely the tCodeV*Masks* marathon); (d) **the full no-arg
-  suite hasn't actually run since ~2026-06-04** — no
-  proper_compare/results PNG has an mtime between May 30 and today,
-  and the suite totals 308 tests, so the "196/196 green at every
-  commit" runs were the FAST (128-only) subset.  Follow-ons: bisect
-  the arming class ([MASKS → CassFF] probe), engine fix in the
-  macos_init_all/SMACOS-realloc path; near-term, consider restoring
-  the per-model-size batch split in run_mmacos_tests.sh so full runs
-  are green again.
+**2026-07-07: freeform_unobscured "+1" — add M4 (sphere+Zernike
+relay/field mirror) for a wider DL FOV + an accessible flat pupil
+(Dave: "add mirrors … then work layout details. Then add
+instruments").**
+- Geometry PROVEN (probe A): 4-mirror folded chain builds/traces via
+  `add_mirror` ×4 + `'derive'` (seidel any-convex signed-curvature
+  path is N-general); M4 1.0 m past the TMA focus, R4=2·m·d4/(1+m)
+  (m=1.6 → R4=1.2308, final ~f/20-34); `add_pupil` relays the EP to
+  ~0.80 m past M4 on the 1.6 m M4→FP leg (mid-leg, accessible,
+  ~36 mm — DM-scale).  tilt4=−12° keeps AOI ~12° and the back end
+  compact behind M1.
+- Builder edit (LOCAL): `optimize_freeform` `'lmon'` accepts a
+  VECTOR (one per ELTS entry; scalar broadcasts; stable-unique
+  pairing) — a near-focus M4 needs lMon ~0.09 m vs the 4 m body
+  default (100× — fatal degeneracy).  +1 test
+  `test_optimize_freeform_lmon_vector_validates` (tDesignTelescope).
+- **Staging laws learned (probes A-D; engine-crash class confirmed):**
+  (1) joint multi-mirror Zernike solves at a SINGLE field are
+  DEGENERATE (surfaces near-redundant at one field) — CALIB lmlsq
+  "DOFs correlated" then SIGSEGV on the diverged coefficients.
+  (2) **center-only solves cannot pin the physical focus**: the OPD
+  reference sphere absorbs pure defocus, so with modes 3/4 (BornWolf
+  tilt/defocus) in the set CALIB parks the REAL focus anywhere (331 m
+  measured) while reporting 0.03-wave "DL"; align_focal_plane then
+  shows tilt≈90° + metres of "defocus" (foci strung along the axis).
+  (3) dropping modes 3/4 does NOT fix it: the all-sphere start
+  focuses at 20.5 m (not the paraxial 3.0 m!) — **e5mono's mm-scale
+  Z3/Z4 terms are LOAD-BEARING power that pulls the focus to the FP;
+  only MULTI-FIELD stages pin it honestly** (shipped 3M S2 → −15 mm).
+  (4) M1-M3 modes cannot null the center THROUGH an uncorrected M4
+  (stalls 1.1-1.3 waves — M4's term maps to the pupil distorted,
+  beyond the mode set).
+  → Correct flow: **full 3M staged solve (S0/S1/S2) → align (honest
+  focus) → save_spec → fresh 4M build with M3 spacing = measured
+  focus + d4 → carry M1-M3 freeform (capture spec.elt(k).freeform,
+  re-apply set_freeform) → M4-alone FIELD solve (multi-field pins
+  M4's power) → joint 4-mirror FIELD refine.**  Fix M4's lMon ONCE
+  (field zone: 1.05×(walk+foot)) before any M4 solve — changing lMon
+  rescales coefficient meaning.
+- **ROOT CAUSE FOUND (probes E2–E7, 2026-07-07): the SHIPPED 3M
+  solve is pathological — metre-scale canceling Zernike coefficients
+  on M3 (mode 3 = +1.171 m! modes 10/11/21/22 = ±3.2–5.9 m) from the
+  lMon ill-conditioning trap (M3's 0.12 m footprint on the 4-m body
+  normalization = 3% of the disk), PLUS BornWolf mode 3 (tilt) is a
+  pure GAUGE for CALIB's chief-referenced OPD metric (the chief
+  follows the wedge — tilt is never pinned at ANY field count).**
+  The 3M chain is self-consistent (OPD/align follow the wedged
+  chief) but the real beam axis leaves the geometric chief: the M4
+  append (placed on the resolve chief) saw the beam 0.6 m off-vertex
+  → wrong shell conjugates → "relay image at 0.946 m vs paraxial
+  1.6" → every M4 solve diverged (SFFZP bracketing, all rays lost).
+  Chain of evidence: e6 (feed identical 3M vs 4M, .in diff = only
+  nElt+zElt), python independent sphere trace (image at 1.5998 ✓
+  textbook), e7 dir-free two-point waist + |hit−V4| = 0.55–0.64 m,
+  coefficient dump (the smoking gun).  **Fix (probe E8, iterated): per-mirror lMon = the FIELD-ZONE
+  radius (footprint + field walk), fixed ONCE before S0 — center-
+  footprint lMon ([4.2 0.70 0.10]) fixes S0 (0.34 waves, sane
+  coefficients) but stalls S1 at 23 waves: fields walk ~58 mm/′ on
+  M3 (chief pivots at the M1 stop), outside a center-sized disk →
+  [4.2, 0.70, 0.20] for ±1′.  Tilt mode 3 STAYS — dropping it
+  stalls S0 at ~10 waves (it is the merit's tilt-removal channel);
+  with a well-conditioned basis LM grows no wedges, and the flow
+  VERIFIES that (solved max|coef| print + the focus' lateral offset
+  from the geometric chief).  Mode 4 = real power (the all-sphere
+  start does NOT focus at the paraxial station), pinned by the
+  multi-field stages.  lMon changes between solves are FORBIDDEN
+  (coefficients are tied to their normalization radius — the
+  read-back now stores lmon and re-solves inherit it).**  Also fixed en route: optimize_freeform read-back now
+  stores lmon with the solved figure + inherits stored lmon on
+  re-solves (was silently re-emitting solved coefficients on the
+  body radius = a different surface).
+- 3M reference to beat: center 0.29 raw/0.164 −tilt, 1′ ring
+  0.56/0.457 waves, Strehl 0.376 (shipped report) — likely partly
+  ARTIFACTS of the pathology; e8 re-solves the 3M under the
+  corrected doctrine before appending M4.
+- **e8/e9 verdicts:** honest 3M closes S0 0.46 / S1(±0.5′) 3.95
+  waves with mm-scale coefficients (M3 max 1.3 cm ✓) and small
+  chief wedge (lat 41 mm); a 3M S2 at ±1′ dives into a bad basin
+  (21/58 waves — the outer ring is beyond the honest 3-mirror
+  basis; the pathological 0.54 was bought with the insane terms).
+  M4 append on the honest state is geometrically CLEAN at last
+  (beam 7.7 mm off-vertex; exit waist 1.563 vs paraxial 1.600) —
+  BUT the M4-ALONE ±1′ field solve stalls (130/346): in the honest
+  state the exit pupil hugs the image (chief pivots ~0.1 m out →
+  M4 field walk 258 mm/′ vs 9 mm footprint = DISJOINT per-field
+  patches; 11 fields × local DOFs ≫ 15 modes on the union zone =
+  underdetermined in M4's favor... against).  **Architecture fix
+  (e10): solve the 3+1 as ONE system — S0 center M1-M3 (through
+  the M4 sphere) → S1/S2 JOINT all-four FIELD solves.**
+- **e10 verdict (the third architecture, same wall): S0 1.41 /
+  S1 joint 7.2 / S2 joint ±1′ = 23.5 center / 36.9 worst — all
+  coefficients mm-scale (sane).  Across append/M4-alone,
+  append/joint, and single-system joint: the 15-mode e5mono basis
+  does NOT reach the ±1′ ring at 500 nm on this geometry.  Levers:
+  mode depth (BornWolf extends only to ~23 via indices 26-33 —
+  ZerntoMon3's permutation table ends there; ANSI reaches 45),
+  pupil-aware re-layout (Sprint 5), or field/λ spec.**
+- **Optimizer thread (Dave's question 2026-07-07): CALIB's FD-LM
+  isn't the root problem but is the wrong engine for figure solves
+  — no bounds (trial steps SIGSEGV the engine), no degeneracy
+  visibility ("DOFs correlated" aborts), scalar merit with gauge
+  modes, 200 iterations × FD-Jacobian cost.  Built
+  `design/src/zern_jacobian_solve.m` (Dave's 2026-06-24 idea):
+  poke-per-mode OPD Jacobian (engine setters, no re-emit per poke)
+  → per-field piston/tilt PROJECTED out of residual+columns (kills
+  the tilt gauge by construction; merit = tilt-removed WFE = the
+  blur metric) → truncated-SVD minimum-norm solve (spectrum
+  printed — degeneracy visible; canceling-coefficient null-space
+  solutions excluded by construction) → apply, re-emit, iterate
+  2×.  ~100× cheaper than a CALIB run.  probe_jac1 (running) =
+  first live test on e10's S2 state.**
+- Diagnostic toolkit built (scratchpad probes): dir-free two-point
+  waist (LSQ of ray lines), feed/exit crossing checks, coefficient
+  dumps, independent python sphere trace.  `get_ray_info` after
+  `trace(k)`: `.dir` = OUTGOING at elt k (doc says incoming — fooled
+  E5(a)).
+- NEXT after probe: worked example (same dir, staged script per the
+  finder/optimize pattern) + README + fast suite; then layout
+  details (clearance/AOI/shroud/fold stations); then instruments.
 
 ## Just tried / ruled out (with why)
-—
+- lMon policy alone as the S0 stall cause — RULED OUT (probe B:
+  default lMon also stalls at 1.10 waves, but footprints collapse
+  clean, so the relay seed geometry is right).
+- Joint M1-M4 center solve — RULED OUT (degenerate → lmlsq fail →
+  engine SIGSEGV; probe B).
 
 ## Next concrete step
-—
+Commit the shippable set (Telescope.m lmon fixes + 4 tests +
+design/src/zern_jacobian_solve.m) on fast-suite green; then the
+design fork is DAVE'S CALL: (a) mode-depth test — one ANSI-45
+jacobian assembly + column-space projection answers "does depth
+reach ±1′?" in ~15 min; (b) pupil-aware re-layout (Sprint 5
+simultaneous focal+pupil); (c) re-scope field/λ.  The 3M example
+also needs re-solving under the doctrine (its shipped numbers rest
+on pathological surfaces) — Dave to confirm before his example's
+recorded results change.  The drafted 4M example is parked in the
+scratchpad (freeform_unobscured_4m_DRAFT.m) until the fork closes.
 
 ## Open micro-questions (slice-local)
 —
