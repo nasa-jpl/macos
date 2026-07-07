@@ -7,24 +7,15 @@ Commands below are available from the interactive CLI and, with few exceptions, 
 
 ### Session & Files
 
-#### QUit, END
+#### Quit, EXIT, BYE
 
-*Minimum match:* `QUit`
+*Minimum match:* `Quit`
 
 Exit MACOS.
 
-<!-- BEGIN NOTES cmd-QUit -->
-```
-MACOS>quit
-```
-`EXIT` and `BYE` are accepted aliases; the minimum match is a
-single `Q`.  Closes the graphics window and open I/O units; an
-open journal file is closed and kept.  Under SMACOS, QUIT (like
-the SMACOS-only RETURN) returns control to the calling program.
-Note: HELP lists `END`, but the dispatcher does not accept it.
-Ctrl-C at the `MACOS>` prompt also exits cleanly.
-*Related:* JOUrnal.
-<!-- END NOTES cmd-QUit -->
+<!-- BEGIN NOTES cmd-Quit -->
+<!-- END NOTES cmd-Quit -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### HELP
 
@@ -427,7 +418,7 @@ only marks the Rx modified and resets those flags.
 
 *Minimum match:* `CHIefray`
 
-Set chief-ray position/direction.
+Use chief ray (not centroid) as the FEX reference point.
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 ```
@@ -446,7 +437,7 @@ PERturb 0, STOp, FFP or PFP for that.
 
 *Minimum match:* `WLENS`
 
-Set wavelength list.
+List Rx optimization wavelengths.
 
 <!-- BEGIN NOTES cmd-WLENS -->
 ```
@@ -466,7 +457,7 @@ active wavelength.
 
 *Minimum match:* `SWL`
 
-Sweep / step wavelength.
+Select wavelength by index.
 
 <!-- BEGIN NOTES cmd-SWL -->
 ```
@@ -513,7 +504,7 @@ size.
 
 *Minimum match:* `NFIlt`
 
-Narrow / regular / spectral filter.
+Load / read / save MULtispec filter data.
 
 <!-- BEGIN NOTES cmd-NFIlt -->
 ```
@@ -542,7 +533,7 @@ file name in CARG(1).
 
 *Minimum match:* `ATMosphere`
 
-Turbulence model on/off.
+Apply atmospheric phase screen.
 
 <!-- BEGIN NOTES cmd-ATMosphere -->
 ```
@@ -563,11 +554,11 @@ CARG(1)=grid option, DARG(1)=grid spacing (non-RAY only).
 *Related:* OPD, SEEd.
 <!-- END NOTES cmd-ATMosphere -->
 
-#### SETC, SAOpt
+#### SETC
 
 *Minimum match:* `SETC`
 
-Stop-aperture options.
+Set design-optimization params.
 
 <!-- BEGIN NOTES cmd-SETC -->
 ```
@@ -597,6 +588,16 @@ POs translates ChfRayPos.  SMACOS: SAOpt option in CARG(1).
 *Related:* CALib, VARS, WLENS, STOp.
 <!-- END NOTES cmd-SETC -->
 
+#### SAOpt
+
+*Minimum match:* `SAOpt`
+
+Source-adjustment mode.
+
+<!-- BEGIN NOTES cmd-SAOpt -->
+<!-- END NOTES cmd-SAOpt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
 ### Ray Tracing
 
 #### RAY <i>
@@ -625,35 +626,21 @@ in IARG(1).
 *Related:* MAP, SEGraytrace, SRAy, PRAy.
 <!-- END NOTES cmd-RAY-i -->
 
-#### SEGraytrace <i>
+#### SEGRAYTrace <i>
 
-*Minimum match:* `SEGraytrace <i>` — *needs:* [Rx]
+*Minimum match:* `SEGRAYTrace <i>` — *needs:* [Rx]
 
 Trace a ray through segment i s center (uses RptElt).
 
-<!-- BEGIN NOTES cmd-SEGraytrace-i -->
-```
-MACOS>segrayt
-Enter segment number (0=quit): [0]: 5
- Ray 1 segment from Element 0 (InputRay) to Element 5 (Seg5):
- ...
-Enter segment number (0=quit): [0]: 0
-```
-Traces one ray forced through the design center (RptElt) of the
-chosen Segment element, printing the ray state at each surface;
-loops until 0.  Non-Segment elements print "Element N is not a
-Segment." and re-prompt.  The trace endpoint should match
-RptElt to ~1e-11; larger mismatches diagnose segment-generator
-errors (see Section 5).  Minimum match is SEGRAYT (7 chars),
-not the 3 implied by the help capitalization.
-*Related:* RAY, MAP.
-<!-- END NOTES cmd-SEGraytrace-i -->
+<!-- BEGIN NOTES cmd-SEGRAYTrace-i -->
+<!-- END NOTES cmd-SEGRAYTrace-i -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
-#### PRAy, RRAy, TPR
+#### PRAy, RRAy
 
 *Minimum match:* `PRAy`
 
-Alternate ray-state printers.
+Find pupil / marginal rays.
 
 <!-- BEGIN NOTES cmd-PRAy -->
 ```
@@ -674,6 +661,16 @@ ray requests normalized position (9.0,0), apparently intended
 as (0.9,0).
 *Related:* FSR, RAY, MAP.
 <!-- END NOTES cmd-PRAy -->
+
+#### TPR
+
+*Minimum match:* `TPR`
+
+Trace the PRAy/RRAy rays.
+
+<!-- BEGIN NOTES cmd-TPR -->
+<!-- END NOTES cmd-TPR -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MAP
 
@@ -726,7 +723,7 @@ SMACOS: element number in IARG(1).
 
 *Minimum match:* `ACOor`
 
-Anchor coordinates.
+All-element coords (xyzLocal.txt).
 
 <!-- BEGIN NOTES cmd-ACOor -->
 ```
@@ -742,6 +739,16 @@ each run) instead of the screen.  Non-optical element types in
 the range are skipped with a warning; last must be >= first.
 *Related:* COOrd.
 <!-- END NOTES cmd-ACOor -->
+
+#### SYSprop
+
+*Minimum match:* `SYSprop` — *needs:* [Rx]
+
+First-order system properties.
+
+<!-- BEGIN NOTES cmd-SYSprop -->
+<!-- END NOTES cmd-SYSprop -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### EFL
 
@@ -818,11 +825,31 @@ grid).
 *Related:* STOp, CENTRoid, ORS, FDP.
 <!-- END NOTES cmd-FEXit -->
 
+#### SXP
+
+*Minimum match:* `SXP` — *needs:* [Rx]
+
+Set exit pupil at an element.
+
+<!-- BEGIN NOTES cmd-SXP -->
+<!-- END NOTES cmd-SXP -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
+#### XPS
+
+*Minimum match:* `XPS` — *needs:* [Rx]
+
+Exit-pupil surface fit over the full ray grid.
+
+<!-- BEGIN NOTES cmd-XPS -->
+<!-- END NOTES cmd-XPS -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
 #### FSR
 
-*Minimum match:* `FSR`
+*Minimum match:* `FSR` — *needs:* [Rx]
 
-Free spectral range.
+Find source ray nearest an aperture position.
 
 <!-- BEGIN NOTES cmd-FSR -->
 ```

@@ -19,7 +19,7 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 #### SESSION & FILES
 
 ```
-   QUit, END   - exit MACOS
+   Quit, EXIT, BYE - exit MACOS
    HELP        - this command list
    REset       - reset options & defaults to startup
    STatus      - what is loaded / built / propagated
@@ -53,14 +53,16 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 #### SOURCE & WAVELENGTH
 
 ```
-   CHIefray    - set chief-ray position/direction
-   WLENS       - set wavelength list
-   SWL         - sweep / step wavelength
+   CHIefray    - use chief ray (not centroid) as
+                 the FEX reference point
+   WLENS       - list Rx optimization wavelengths
+   SWL         - select wavelength by index
    MULtispec   - multi-color image stacking
-   NFIlt, RFIlt, SFIlt - narrow / regular / spectral
-                         filter
-   ATMosphere  - turbulence model on/off
-   SETC, SAOpt - stop-aperture options
+   NFIlt, RFIlt, SFIlt - load / read / save
+                 MULtispec filter data
+   ATMosphere  - apply atmospheric phase screen
+   SETC        - set design-optimization params
+   SAOpt       - source-adjustment mode
 ```
 
 #### RAY TRACING
@@ -68,17 +70,23 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 ```
    RAY <i>     - trace ray i; print state at each
                  surface                       [Rx]
-   SEGraytrace <i> - trace a ray through segment i s
+   SEGRAYTrace <i> - trace a ray through segment i s
                  center (uses RptElt)          [Rx]
-   PRAy, RRAy, TPR - alternate ray-state printers
+   PRAy, RRAy  - find pupil / marginal rays
+   TPR         - trace the PRAy/RRAy rays
    MAP         - print ray-to-segment map
    COOrd <elt> - beam coordinates at element    [Rx]
-   ACOor       - anchor coordinates
+   ACOor       - all-element coords (xyzLocal.txt)
+   SYSprop     - first-order system properties  [Rx]
    EFL         - system effective focal length /
                  f-ratio / plate scale          [Rx]
    BWK         - chief-ray walk vs nominal      [Rx]
    FEXit       - find exit pupil
-   FSR         - free spectral range
+   SXP         - set exit pupil at an element [Rx]
+   XPS         - exit-pupil surface fit over the
+                 full ray grid              [Rx]
+   FSR         - find source ray nearest an
+                 aperture position         [Rx]
    CENter      - center beam in system stop
    STOp        - define system stop element
    CENTRoid    - use centroid as ref point for FEX
