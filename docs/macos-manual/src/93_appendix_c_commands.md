@@ -133,7 +133,7 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
    BUild       - build linear model from chief-ray
                  ray partials                     [Rx]
    DMBuild     - build with deformable mirror     [Rx]
-   PARtials <i>- print partial derivatives, ray i [BLD]
+   PARtials <i> - print partial derivs, ray i    [BLD]
    LPErturb    - linear-model perturb              [BLD]
    LPRead      - linear perturb from file          [BLD]
    LREset      - zero linear perturbations         [BLD]

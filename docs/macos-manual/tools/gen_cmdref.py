@@ -41,7 +41,9 @@ def load_notes(path):
         r"<!-- BEGIN NOTES (\S+) -->\n(.*?)<!-- END NOTES \1 -->",
         re.S)
     for m in pat.finditer(path.read_text()):
-        notes[m.group(1)] = m.group(2).rstrip("\n")
+        body = m.group(2).rstrip("\n")
+        if body.strip():          # empty block = unfilled; keep its TODO
+            notes[m.group(1)] = body
     return notes
 
 
