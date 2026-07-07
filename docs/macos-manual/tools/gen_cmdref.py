@@ -43,12 +43,14 @@ def load_notes(path):
     for m in pat.finditer(path.read_text()):
         body = m.group(2).rstrip("\n")
         if body.strip():          # empty block = unfilled; keep its TODO
-            notes[m.group(1)] = body
+            # keys are matched case-insensitively so a capitalization
+            # fix in macos_help.inc can't orphan an entry's notes
+            notes[m.group(1).lower()] = body
     return notes
 
 
 def notes_block(key, notes):
-    body = notes.get(key, "")
+    body = notes.get(key.lower(), "")
     return (f"<!-- BEGIN NOTES {key} -->\n{body}\n"
             f"<!-- END NOTES {key} -->" if body else
             f"<!-- BEGIN NOTES {key} -->\n<!-- END NOTES {key} -->")
@@ -137,7 +139,7 @@ def gen_engine(notes):
             out.append("")
             nb = notes_block(key, notes)
             out.append(nb)
-            if key not in notes:
+            if key.lower() not in notes:
                 out.append(TODO)
             out.append("")
     (CMDREF / "10_engine_commands.md").write_text("\n".join(out))
@@ -344,7 +346,7 @@ def gen_bindings(notes):
                 out.append(desc)
                 out.append("")
             out.append(notes_block(key, notes))
-            if key not in notes and not desc:
+            if key.lower() not in notes and not desc:
                 out.append(TODO)
             out.append("")
     (CMDREF / "20_bindings.md").write_text("\n".join(out))
@@ -397,7 +399,7 @@ def gen_higher(notes):
                 out.append(h)
                 out.append("")
             out.append(notes_block(key, notes))
-            if key not in notes and not helplines:
+            if key.lower() not in notes and not helplines:
                 out.append(TODO)
             out.append("")
     (CMDREF / "30_higher_level.md").write_text("\n".join(out))
