@@ -35,7 +35,7 @@ A typical first session:
 $ macos
 Enter model size: 256
 MACOS>old
-Enter prescription file name: Cassegrain
+Enter file name: Cassegrain
 MACOS>summarize
 MACOS>spot
  ...
