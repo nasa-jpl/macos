@@ -111,8 +111,9 @@ def gen_engine(notes):
            "The **capitalized prefix** of each name is the "
            "minimum-match abbreviation.  Prerequisite tags: \\[Rx\\] "
            "needs a loaded prescription (OLD/NEW), \\[BLD\\] a built "
-           "linear model (BUILD), \\[DIFF\\] a propagated wavefront "
-           "(PROpagate).",
+           "linear model (BUILD), \\[DIFF\\] a diffraction output "
+           "(the command itself propagates the wavefront; there is no "
+           "separate PROpagate command).",
            ""]
     n = 0
     for cat, items in cats:

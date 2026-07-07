@@ -3,7 +3,7 @@
 
 ## Part I — Engine command catalog
 
-Commands below are available from the interactive CLI and, with few exceptions, from a `CALL SMACOS(command, ...)` invocation (see the SMACOS chapter for the argument convention; purely interactive conveniences — shell/file utilities like `!`, PWD, CD, RX/LS/LL, VI/EMAcs, and a few others noted per entry — exist only in the CLI build).  The **capitalized prefix** of each name is the minimum-match abbreviation.  Prerequisite tags: \[Rx\] needs a loaded prescription (OLD/NEW), \[BLD\] a built linear model (BUILD), \[DIFF\] a propagated wavefront (PROpagate).
+Commands below are available from the interactive CLI and, with few exceptions, from a `CALL SMACOS(command, ...)` invocation (see the SMACOS chapter for the argument convention; purely interactive conveniences — shell/file utilities like `!`, PWD, CD, RX/LS/LL, VI/EMAcs, and a few others noted per entry — exist only in the CLI build).  The **capitalized prefix** of each name is the minimum-match abbreviation.  Prerequisite tags: \[Rx\] needs a loaded prescription (OLD/NEW), \[BLD\] a built linear model (BUILD), \[DIFF\] a diffraction output (the command itself propagates the wavefront; there is no separate PROpagate command).
 
 ### Session & Files
 
@@ -1455,11 +1455,9 @@ element cannot be a Segment or a non-sequential element
 ("Invalid element type"); mid-train reference/obscuring
 surfaces are ignored and return surfaces are not supported
 (Section 8.5.1).  Ray count is limited to bRay ("BUILD
-limited to N rays.  MOD npts and recompute.").  PARtials
-(no cmdref entry of its own) then prints individual per-ray
-sensitivity blocks, in global or actuator/sensor coordinates.
+limited to N rays.  MOD npts and recompute.").
 SMACOS: IARG(1)=terminal element.
-*Related:* DMBuild, LPErturb, LPRead, EXPort.
+*Related:* DMBuild, PARtials, LPErturb, LPRead, EXPort.
 <!-- END NOTES cmd-BUild -->
 
 #### DMBuild
@@ -1493,8 +1491,34 @@ SMACOS: IARG(1)=terminal element.
 Print partial derivs, ray i.
 
 <!-- BEGIN NOTES cmd-PARtials-i -->
+```
+MACOS>partials
+Enter ray number for partials (0=done, 1=chief ray): [0]: 1
+Print partials in actuator/sensor coordinates? [YES]:
+ Partial of ray    1 at Element    4 (...) to ray at Element
+    0 (...)
+ ...7x7 sensitivity block...
+ Partial of ray    1 at Element    4 (...) to Element    1
+ (...) perturbations
+ ...7x6 blocks, one per element the ray reaches...
+```
+Prints one ray's rows of the BUild C-matrix: the sensitivity
+of the ray state (direction, position, pathlength) at the
+BUild terminal element, first to source (Element 0) motion,
+then to the 6-DOF perturbations of each element the ray
+reaches.  Answering YES compacts the blocks through the Tout
+output matrix and each element's actuator/sensor transform
+(only elements with nECoord/=0 print); NO prints the raw
+global-coordinate partials.  Requires BUild ("Must BUILD
+first."); a bad or lost ray gets "Invalid ray number."
+Despite the "0=done" wording, control returns to the MACOS
+prompt after ONE ray — the loop-back is commented out.
+SMACOS: IARG(1)=ray number; the coordinate question falls
+back to its default (YES) because LoadStack's generic branch
+consumes PARTIALS before the dedicated branch that would pass
+CARG(1) is reached.
+*Related:* BUild, DMBuild, EXPort, LPErturb.
 <!-- END NOTES cmd-PARtials-i -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LPErturb
 
@@ -1633,13 +1657,32 @@ defaults.
 
 #### PROpagate
 
-*Minimum match:* `PROpagate` — *needs:* [Rx]
+*Minimum match:* `PROpagate` — *needs:* [DIFF]
 
-Propagate diffraction wavefront.
+Note: NOT a command; propagation runs automatically inside any output command.
 
 <!-- BEGIN NOTES cmd-PROpagate -->
+```
+MACOS>propagate
+** Unknown command = PROPAGATE
+```
+Listed in HELp but NOT implemented: the command dispatcher
+(macos_cmd_loop.inc) has no PROPAGATE branch, so the keyword
+falls through to the unknown-command handler.  Diffraction
+propagation is instead performed implicitly by the wavefront
+output commands — INTensity, PIXel, AMPlitude, PHAse, REAl,
+LOG, MTF, IMG, ADD and friends all call RunProp, which traces
+the beam and advances the complex-amplitude matrices to the
+requested element per each element's PropType (" Tracing N
+rays and propagating M grid points...").  The [DIFF] tag on
+those commands ("needs PROpagate") therefore means "needs a
+propagated wavefront", which they establish themselves;
+results live in WFElt and re-propagation is skipped when the
+wavefront is already at the requested element.  Discrepancy:
+help lists PROpagate as a command; the manual (Section 6)
+describes propagation only via the output commands.
+*Related:* INTensity, PIXel, BEAm, VECtor, SCAlar.
 <!-- END NOTES cmd-PROpagate -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BEAm
 
@@ -1648,8 +1691,28 @@ Propagate diffraction wavefront.
 Set beam type (Gauss, plane, ...).
 
 <!-- BEGIN NOTES cmd-BEAm -->
+```
+MACOS>beam
+Enter beam type (UNIFORM, GAUSSIAN, COS**POWER, DIPOLE): [UNIFORM]: gauss
+Enter x beam waist radius: [...]: 0.3
+Enter y beam waist radius: [...]: 0.3
+```
+Sets the source-beam amplitude profile used when the
+wavefront grid is initialized (default UNIFORM).  GAUSSIAN
+prompts for x and y waist radii (default Aperture/4);
+COS**POWER prompts 'Enter cosine beam radius:' (default
+Aperture/2) and 'Enter cosine exponent:' (default 1); DIPOLE
+takes no further input.  Types may also be entered as 1-4;
+anything else prints " Unknown beam type." and leaves the
+profile unchanged.  Clears the propagate state so the next
+[DIFF] command re-propagates with the new profile.  Requires
+a loaded Rx despite carrying no [Rx] tag in help.  Manual
+Section 6.3.6 calls the Gaussian inputs "diameter ... the
+standard deviation"; the prompts say waist radius.
+SMACOS: CARG(1)=type; DARG(1:2)=x/y waist radii (GAUSSIAN) or
+radius/exponent (COS**POWER); omitted for UNIFORM.
+*Related:* INTensity, POLarization, VECtor, SCAlar.
 <!-- END NOTES cmd-BEAm -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### VECtor, SCAlar
 
@@ -1658,8 +1721,25 @@ Set beam type (Gauss, plane, ...).
 Vector vs scalar diffraction (with POLarized).
 
 <!-- BEGIN NOTES cmd-VECtor -->
+```
+MACOS>vector
+ Vector diffraction enabled
+MACOS>scalar
+ Scalar diffraction enabled
+```
+Toggle between vector and scalar diffraction for the
+propagation commands.  VECtor requires polarization ray
+tracing to be on first (" Must turn on POLarization first");
+POLarization itself enables vector diffraction automatically
+when the build supports it (mWF>=3), so VECtor is mainly for
+re-enabling after SCAlar.  Scalar is the default and the only
+mode with polarization off (Section 6.3.4/6.3.5).  Both
+commands clear the propagate state so the next [DIFF] command
+recomputes the wavefront; neither takes arguments.  In vector
+mode AMPlitude/PHAse plot X, Y, Z field components and IMG
+imaging is unavailable.  SMACOS: no arguments.
+*Related:* POLarization, NOPolarization, AMPlitude, PHAse.
 <!-- END NOTES cmd-VECtor -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### COMpose
 
@@ -1668,8 +1748,26 @@ Vector vs scalar diffraction (with POLarized).
 Start a multi-object/color image.
 
 <!-- BEGIN NOTES cmd-COMpose -->
+```
+MACOS>compose
+Enter element where image is to be composed: [16]: 16
+Enter number of pixels per side: [512]: 64
+Enter size of pixel: [...]: 1.392542E-06
+```
+Defines a detector pixel grid (npix per side, capped at mPix;
+pixel size default 1e-3 base units) at the chosen element and
+zeroes PixArray, arming the accumulate mode: each subsequent
+ADD propagates the current beam, pixelates its intensity onto
+this grid and sums it in — the mechanism for multi-object /
+multi-wavelength (multi-color) composite images (change
+source, Flux, wavelength, field via MOD/FFP/PFP/PERturb
+between ADDs).  Also the prerequisite for NOIse and GBLur.
+Segment / non-sequential elements are rejected ("COMPOSE:
+Invalid element type"); re-issuing prints " Overwriting
+previous COMPOSED image..."  SMACOS: IARG(1)=element,
+IARG(2)=pixels per side, RARG(1)=pixel size.
+*Related:* ADD, DAdd, CADD, NOIse, PIXel.
 <!-- END NOTES cmd-COMpose -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ADD, DAdd
 
@@ -1678,8 +1776,31 @@ Start a multi-object/color image.
 Add to / display composed image.
 
 <!-- BEGIN NOTES cmd-ADD -->
+```
+MACOS>add
+ Tracing ... rays and propagating ... grid points...
+ Wavefront Propagation Data Summary:
+ Wavelength= ...;  Source Flux= ...
+ u-v plane diam= ...  du= ...
+ x-y plane diam= ...  dx= ...
+ Peak intensity= ...; Peak occurs at i= ..., j= ...
+ Sum of intensity= ...
+Image added. Plot composed image? [YES]:
+```
+ADD propagates the current beam to the COMpose element (no
+element prompt), converts the complex amplitude to intensity,
+pixelates it onto the COMpose grid and accumulates it into
+PixArray; requires COMpose first ("Must COMpose before ADDing
+images").  Repeated ADDs under different source/wavelength/
+field settings build up composite images (Section 7.2.5).
+DAdd just re-displays the composed PixArray — e.g. after a
+STRetch or plot-type change — with no accumulation ("No data
+to display" if nothing has been pixelated yet).  SMACOS:
+CARG(1)=YES/NO plot flag for ADD; DAdd's LoadStack pushes the
+same flag but the display path never reads it (the fresh
+stack per call makes this harmless).
+*Related:* COMpose, CADD, NOIse, STRetch, PIXel.
 <!-- END NOTES cmd-ADD -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CADD
 
@@ -1688,8 +1809,25 @@ Add to / display composed image.
 Add current intensity to composed.
 
 <!-- BEGIN NOTES cmd-CADD -->
+```
+MACOS>cadd
+Enter number of element where data is to be generated: [...]: 16
+ Tracing ... rays and propagating ... grid points...
+ Wavefront Propagation Data Summary: ...
+Complex amplitude added. Plot composed image? [YES]:
+```
+Coherent add — intended to resample and sum complex
+amplitudes (fields, not intensities) onto a common grid, the
+coherent counterpart of ADD.  It is a STUB in this version:
+the dialog runs and the beam is propagated to the chosen
+element, but the regrid/resample-and-accumulate calls
+(CAReGrid / ResampAddCa) are commented out in the dispatcher,
+so nothing is added and nothing is plotted; only internal
+bookkeeping flags toggle.  Confirmed against
+macos_cmd_loop.inc.  Use ADD for incoherent accumulation.
+SMACOS: no LoadStack entry — prompts take their defaults.
+*Related:* COMpose, ADD, DAdd.
 <!-- END NOTES cmd-CADD -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### NOIse, SEEd
 
@@ -1698,8 +1836,31 @@ Add current intensity to composed.
 Image noise + RNG seed.
 
 <!-- BEGIN NOTES cmd-NOIse -->
+```
+MACOS>noise
+Enter noise type (PHOton, BACkground, REAd, GAUssian): [PHOTON]:
+MACOS>seed
+Enter noise seed (any integer 1 to 32,700): [12345]:
+```
+NOIse adds detector noise to the composed PixArray in place
+(requires COMpose/ADD first: "Must COMpose before adding
+noise.").  PHOton replaces each pixel by a Poisson deviate of
+its value; BACkground adds Poisson background ('Enter
+expected number of background noise photons per pixel:');
+REAd adds Gaussian read noise ('Enter standard deviation of
+noise (photo-electrons):' + 'Enter detector quantum
+efficiency:'); GAUssian adds zero-mean Gaussian flux noise
+('Enter flux standard deviation:').  A fifth type, POIsson
+(expected photo-electrons + quantum efficiency), is accepted
+though not offered in the prompt.  Repeat NOIse to stack
+effects.  SEEd re-seeds the random-number generator used by
+the noise deviates (default 12345); re-issuing the same seed
+reproduces a noise realization.  SMACOS: NOISE CARG(1)=type,
+then GAUSS: DARG(1)=sigma; READ: DARG(1)=sigma, DARG(2)=QE;
+POISSON: RARG(1)=expected, DARG(1)=QE; BACKGROUND:
+RARG(1)=expected.  SEED: IARG(1)=seed.
+*Related:* COMpose, ADD, DAdd, PIXel.
 <!-- END NOTES cmd-NOIse -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### STRetch
 
@@ -1708,8 +1869,22 @@ Image noise + RNG seed.
 LIN / LOG / SQRT display stretch.
 
 <!-- BEGIN NOTES cmd-STRetch -->
+```
+MACOS>stretch
+Enter image stretch type (LINEAR, LOG10, SQRT): [LINEAR]: log10
+```
+Sets the display stretch (intensity scaling) applied to
+intensity-type rasters — INTensity, PIXel and the composed
+image (ADD/DAdd/BLUr/GBLur) — to expand dynamic range for
+faint detail such as PSF wings.  Plot titles and colorbar
+wedge labels follow the setting ('LOG10 Intensity', 'SQRT
+Pixel value', ...).  OPD maps are unaffected (always linear),
+and the LOG command is a fixed log10-intensity display
+independent of STRetch.  Unrecognized input silently selects
+LINEAR.  The setting persists until changed or RESet.
+SMACOS: CARG(1)=type.
+*Related:* INTensity, PIXel, LOG, IMGmode.
 <!-- END NOTES cmd-STRetch -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Outputs (Ray-Trace & Diffraction)
 
@@ -1720,8 +1895,31 @@ LIN / LOG / SQRT display stretch.
 Wavefront error map.
 
 <!-- BEGIN NOTES cmd-OPD -->
+```
+MACOS>opd
+Enter element where OPD is to be evaluated: [0]: 3
+ Tracing       150 rays...
+ Compute time was    0.1445 sec
+ RMS OPD error is ...
+ P-V OPD error is ...
+ Average OPD is   ...
+```
+Traces the full ray bundle to the element and plots the beam
+OPD map: per-ray pathlength minus chief-ray pathlength
+(positive = travelled farther), in BaseUnits.  The map is
+always the square aperture ray grid (see MAP) — use SPOt for
+true ray locations; obscured-ray plotting follows OBS.  The
+map represents system wavefront error only at an exit pupil
+or proper reference surface; in a caustic, use a diffraction
+propagation plus PHAse instead (Section 5.2.2).  Segment and
+non-sequential elements are rejected ("Invalid element
+type").  Raster plots are annotated with RMS/P-V; STRetch
+does not apply (OPD is always linear).  TEXt/BINary/FITs/MAT
+plot types write `filnam.OPDn`.  Prerequisite for ZCOef,
+ZABerr, ZRM and DOPD.  SMACOS: IARG(1)=element; the map is
+returned in OPDMat.
+*Related:* SPOt, ZCOef, ZABerr, OBS, MAP.
 <!-- END NOTES cmd-OPD -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SPOt
 
@@ -1730,8 +1928,32 @@ Wavefront error map.
 Spot diagram.
 
 <!-- BEGIN NOTES cmd-SPOt -->
+```
+MACOS>spot
+Enter element where spot diagram is to be computed: [0]: 4
+Enter output coordinate option (Tout, Enter, TElt or Beam): [Tout]:
+ STOP cmd: Tracing      150 rays...
+ Compute time was ...
+        Chief ray location: x= ... y= ...
+  Centroid of spot diagram: x= ... y= ...
+```
+Traces the full bundle and scatter-plots the ray pierce
+points projected onto an x-y frame at the element.
+Coordinate options: Tout (the 5x7 output matrix) and TElt
+(the element's local frame) are offered only when nOutCord=5
+— otherwise the prompt reads '(Enter or Beam)' with default
+Beam; Enter lets you type xOut/yOut vectors; Beam computes a
+chief-ray local frame on the fly (aborts if that fails).
+Spot offsets are referenced to the element vertex or to the
+chief ray per SPCenter; obscured-ray selection follows OBS.
+The plot is annotated with the RMS spot radius about the
+centroid.  TEXt/BINary/MAT write `filnam.spotN`.  Quirk: the
+trace banner prints " STOP cmd: Tracing N rays..." (shared
+with the STOP handler).  Segment and non-sequential elements
+are rejected.  SMACOS: IARG(1)=element, CARG(1)=coordinate
+option; spot data in RaySpot.
+*Related:* OPD, OBS, SPCenter, MAP, LSPot.
 <!-- END NOTES cmd-SPOt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ZABerr
 
@@ -1740,8 +1962,28 @@ Spot diagram.
 Zernike OPD aberration.
 
 <!-- BEGIN NOTES cmd-ZABerr -->
+```
+MACOS>zaberr
+ ** Computing OPD with selected Zernike modes (Noll ordered)
+Enter number of Zernike modes: [1]: 3
+Enter Zernike indexes: [no default]: 4,5,6
+  RMS WFE (after ZAB) = ...
+Save new OPD (no,yes): [no]:
+```
+Extracts the Zernike-aberration content of the current OPD:
+least-squares fits the OPDMat from the last OPD command
+("Must run OPD command first") over the beam mask, sums the
+selected modes only, plots that modal OPD map and prints its
+RMS.  Modes are Noll-ordered; entering a NEGATIVE count -N
+instead prompts 'Enter starting Zernike mode index: ' and
+uses N consecutive modes.  Answering yes to "Save new OPD"
+replaces OPDMat with the modal map (and invalidates the
+trace/build state).  Complement of ZRM, which removes the
+fitted modes.  Uses the element's user-defined Zernike frame
+(center/axes/radius) when the Rx provides one, else the beam
+grid.  Interactive CLI only.
+*Related:* ZCOef, OPD, ZRM.
 <!-- END NOTES cmd-ZABerr -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ZCOef
 
@@ -1750,8 +1992,27 @@ Zernike OPD aberration.
 Zernike coefficient extraction.
 
 <!-- BEGIN NOTES cmd-ZCOef -->
+```
+MACOS>zcoef
+ ** Computing OPD Zernike fit coeffs (Noll ordered) **
+Enter number of Zernike modes: [1]: 6
+Enter Zernike indexes: [no default]: 1,2,3,4,5,6
+ Zernike mode coeffs (OPD best fit):
+  ...mode names / indices...
+  ...coefficients...
+```
+Least-squares fits the selected Zernike modes to the current
+OPDMat (from the last OPD command — "Must run OPD command
+first") over the beam mask and prints the coefficient table
+(named low-order modes, numeric indices above); the OPD
+itself is not modified and nothing is plotted.  Same
+mode-selection dialog as ZABerr: Noll-ordered indices, or a
+NEGATIVE count -N followed by 'Enter starting Zernike mode
+index: ' for N consecutive modes.  Uses the element's
+user-defined Zernike frame when the Rx provides one, else the
+beam grid.  Interactive CLI only.
+*Related:* ZABerr, OPD, ZRM.
 <!-- END NOTES cmd-ZCOef -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LOS
 
@@ -1760,8 +2021,30 @@ Zernike coefficient extraction.
 Line-of-sight output.
 
 <!-- BEGIN NOTES cmd-LOS -->
+```
+MACOS>los
+Enter element where LOS is to be evaluated: [...]:
+ Tracing ... rays and propagating ... grid points...
+ Compute time was ...
+  System Line of Sight (X-tilt, Y-tilt (radian)) = ...
+  System Line of Sight (PSF centroid at detector (m ... )) = ...
+```
+Computes the system line of sight from the wavefront at the
+chosen element (default nElt-1, nominally the exit pupil;
+out-of-range input silently reverts to it), per Mahajan's
+"Line of Sight of an Aberrated Optical System" pupil-function
+formulation: the amplitude-weighted mean OPD gradient gives
+the LOS tilt (radians), which scaled by the propagation
+distance zElt gives the PSF-centroid displacement at the
+detector (base units).  Propagates the beam first if needed
+(RunProp).  Code quirks: the x-gradient loop omits the
+amplitude weighting the y-loop applies, and the angular line
+prints its two components in the opposite order (losAng(2),
+losAng(1)) to the centroid line — take the axis labels with
+caution.  SMACOS: no LoadStack entry — the element prompt
+takes its default.
+*Related:* OPD, INTensity, FEXit, CENTroid.
 <!-- END NOTES cmd-LOS -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### METcalc
 
@@ -1770,8 +2053,23 @@ Line-of-sight output.
 Metrology beam output.
 
 <!-- BEGIN NOTES cmd-METcalc -->
+```
+MACOS>metcalc
+ ** All metrology beam lengths updated
+```
+Computes the lengths of all defined metrology beams: the
+straight-line distances between metrology points on each
+instrumented surface and the corresponding points on its
+target surface, as defined in the Rx (per-element nMetPos=
+point list plus tMetSrf= target element).  Results go to the
+metMeasBuf array for programmatic retrieval (GMI/bindings).
+With `ShowMetData= YES` in the Rx each beam prints
+individually (' Met beam I length from Elt .. Pos .. to Elt
+.. Pos .. = ...'); otherwise only the summary line above.
+Run after PERturb to simulate a metrology-gauge reading of
+element motions.  No arguments; requires only a loaded Rx.
+*Related:* PERturb, SUMmarize.
 <!-- END NOTES cmd-METcalc -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### INTensity
 
@@ -1780,8 +2078,33 @@ Metrology beam output.
 Wavefront intensity.
 
 <!-- BEGIN NOTES cmd-INTensity -->
+```
+MACOS>int
+Enter number of element where data is to be generated: [...]: 6
+ Tracing ... rays and propagating ... grid points...
+ Compute time was ...
+ Wavefront Propagation Data Summary:
+ Wavelength= ...;  Source Flux= ...
+ u-v plane diam= ...  du= ...
+ x-y plane diam= ...  dx= ...
+ Peak intensity= ...; Peak occurs at i= ..., j= ...
+ Sum of intensity= ...
+```
+Propagates the beam to the element — combined ray trace plus
+diffraction per each element's PropType, re-using the stored
+wavefront when it is already at or upstream of the target —
+and plots the intensity |CA|^2.  There is no separate
+propagate step: INTensity (like all [DIFF] commands) performs
+the propagation itself via RunProp.  The summary gives start
+(u-v) and end (x-y) grid diameter/spacing; the Fresnel
+propagators also print per-leg "lin=" ray-grid linearity
+percentages.  Segment and non-sequential elements are
+rejected.  STRetch selects linear/log10/sqrt display, IMGmode
+the raster polarity; the plot is annotated with the peak
+pixel.  TEXt/BINary/FITs/MAT write `filnam.intN`.  SMACOS:
+IARG(1)=element; intensity available programmatically.
+*Related:* PIXel, LOG, AMPlitude, PHAse, STRetch, BEAm.
 <!-- END NOTES cmd-INTensity -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PIXel
 
@@ -1790,8 +2113,31 @@ Wavefront intensity.
 Pixelated intensity output.
 
 <!-- BEGIN NOTES cmd-PIXel -->
+```
+MACOS>pix
+Enter number of element where data is to be generated: [...]: 6
+ ...ray-trace / propagation summary as for INTensity...
+Enter number of pixels per side: [...]: 64
+Enter size of pixel: [...]:
+ Peak intensity= ...; Peak occurs at i= ..., j= ...
+ Sum of intensity= ...
+```
+Simulates a pixel-array detector (CCD): propagates like
+INTensity, then area-averages the intensity onto an
+npix-by-npix grid of square pixels.  Default pixel size is
+the wavefront grid spacing dx at the element ("WARNING:
+PIXELS TOO SMALL" below dx/2); npix is capped at mPix.  The
+pixel grid is centered on the chief ray unless WINdow /
+PLOcate has fixed it in detector coordinates.  The result
+replaces PixArray and clears any COMposed image
+(" Overwriting previous COMPOSED image...").  The plot is
+annotated with the peak pixel; STRetch applies.
+TEXt/BINary write `filnam.pixN`.  SMACOS (LoadStack keyword
+PIXILATE): IARG(1)=element, IARG(2)=pixels per side,
+RARG(1)=pixel size.
+*Related:* INTensity, COMpose, ADD, WINdow, STRetch,
+LPIxilate.
 <!-- END NOTES cmd-PIXel -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### AMPlitude
 
@@ -1800,8 +2146,21 @@ Pixelated intensity output.
 Amplitude output.
 
 <!-- BEGIN NOTES cmd-AMPlitude -->
+```
+MACOS>amp
+Enter number of element where data is to be generated: [...]: 5
+ ...propagation summary...
+ Peak amplitude= ...; Peak occurs at i= ..., j= ...
+```
+Plots the modulus of the complex amplitude at the element,
+propagating there first if needed (see INTensity for the
+shared dialog and summary).  In vector-diffraction mode the
+X, Y and Z field components are plotted in turn (file tags
+.ampX/.ampY/.ampZ); scalar mode gives one plot (.amp).
+TEXt/BINary/FITs/MAT write `filnam.ampN`.  SMACOS:
+IARG(1)=element.
+*Related:* PHAse, REAl, INTensity, VECtor.
 <!-- END NOTES cmd-AMPlitude -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PHAse, PH
 
@@ -1810,8 +2169,23 @@ Amplitude output.
 Phase output.
 
 <!-- BEGIN NOTES cmd-PHAse -->
+```
+MACOS>phase
+Enter number of element where data is to be generated: [...]: 5
+ ...propagation summary...
+```
+Plots the phase (argument) of the complex amplitude at the
+element, propagating there first if needed.  In
+vector-diffraction mode the X, Y and Z components plot in
+turn (.phaseX/.phaseY/.phaseZ); scalar mode one plot
+(.phase).  Phase at a well-chosen reference surface after a
+diffraction propagation is the recommended alternative to a
+geometric OPD map in caustic regions (Section 5.2.2 note).
+SMACOS: no LoadStack entry — the element prompt takes its
+default (the current wavefront element, else the last
+element).
+*Related:* AMPlitude, REAl, OPD, VECtor.
 <!-- END NOTES cmd-PHAse -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### REAl
 
@@ -1820,8 +2194,20 @@ Phase output.
 Real & imaginary wavefront.
 
 <!-- BEGIN NOTES cmd-REAl -->
+```
+MACOS>real
+Enter number of element where data is to be generated: [...]: 5
+ ...propagation summary...
+```
+Plots the real part and then the imaginary part of the
+complex amplitude at the element (two plots per invocation;
+file tags .real and .imag), propagating there first if
+needed.  The manual (Section 7.2.12) refers to a separate
+IMAGINARY command, but no such command exists in the
+dispatcher — REAl produces both components.  SMACOS:
+IARG(1)=element.
+*Related:* AMPlitude, PHAse, INTensity.
 <!-- END NOTES cmd-REAl -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LOG
 
@@ -1830,8 +2216,23 @@ Real & imaginary wavefront.
 Log10 intensity.
 
 <!-- BEGIN NOTES cmd-LOG -->
+```
+MACOS>log
+Enter number of element where data is to be generated: [...]: 16
+ ...propagation summary...
+ Peak intensity= ...; Peak occurs at i= ..., j= ...
+ Sum of intensity= ...
+```
+Log10-intensity display of the wavefront at the element
+(title 'Log10 Wavefront Intensity'), propagating there first
+if needed — a fixed log stretch independent of the STRetch
+setting, useful for PSF wings and dark zones.  Do not read
+LOG as "start logging": the session transcript command is
+JOUrnal.  TEXt/BINary write `filnam.logN`.  The linear-model
+counterpart is the undocumented LLO command (see LPIxilate).
+SMACOS: IARG(1)=element.
+*Related:* INTensity, STRetch, JOUrnal.
 <!-- END NOTES cmd-LOG -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MTF, CMTF
 
@@ -1840,18 +2241,56 @@ Log10 intensity.
 Modulation transfer function.
 
 <!-- BEGIN NOTES cmd-MTF -->
+```
+MACOS>mtf
+Enter number of element where data is to be generated: [...]: 16
+ ...propagation summary...
+Use ROW or COL command to plot 1D MTF in each dimension
+```
+MTF propagates to the element, computes the intensity and
+Fourier-transforms it into the modulation transfer function,
+plotted against spatial frequency in cycles per BaseUnit.  A
+GRAy plot type is switched to SLIce for the display (no gray
+image for MTF); use ROW/COLumn for 1-D cuts.  The CLI branch
+also derives the system EFL/focal ratio for sampling checks.
+CMTF (all four characters required) computes the 2-D MTF the
+other way — autocorrelating the complex field at the LAST
+element (no element prompt, " Computing 2D MTF ...") into the
+MTFMat2 array — and produces no plot or file; retrieval is
+programmatic.  SMACOS: MTF has no LoadStack entry (element
+prompt takes its default) and its plot stage is CLI-only —
+the MTF data is computed into the shared display buffer.
+*Related:* INTensity, ROW, COLumn, EFL.
 <!-- END NOTES cmd-MTF -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### IMG
 
-*Minimum match:* `IMG`
+*Minimum match:* `IMG` — *needs:* [DIFF]
 
-Load saved image data.
+Simulate imaging of the ObjFile object map.
 
 <!-- BEGIN NOTES cmd-IMG -->
+```
+MACOS>img
+Enter number of element where data is to be generated: [...]: 16
+ ...propagation summary...
+ Simulating incoherent or coherent imaging ...
+INCoherent or COHerent imaging? [INC]:
+```
+Simulates extended-object imaging: combines the propagated
+focal-plane field/PSF with a user-supplied object intensity
+map, incoherently (default) or coherently, and displays the
+result ('Incoherent Imaging' / 'Coherent Imaging', file tag
+.intensity).  The object map is loaded via the `ObjFile=` Rx
+keyword — without it "* Object intensity input not
+available".  Must be evaluated at the LAST element ("Imaging
+must be on focal plane!") and is unavailable in
+vector-diffraction mode.  Discrepancy: the help one-liner
+("load saved image data") does not describe what the command
+does.  SMACOS: no LoadStack entry — prompts take their
+defaults (last element, incoherent).
+*Related:* INTensity, PIXel, COMpose.
 <!-- END NOTES cmd-IMG -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Plot Style
 
