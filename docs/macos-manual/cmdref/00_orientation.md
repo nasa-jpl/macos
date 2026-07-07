@@ -3,9 +3,25 @@
 *One optical engine, four ways to drive it.*
 
 This document is the command-level reference for the MACOS optical
-modeling system and its programming interfaces.  It complements the
-MACOS Manual (concepts, modeling guidance, worked examples) with a
-catalog: every command and function, one at a time, with its syntax.
+modeling system and its programming interfaces: a catalog of every
+command and function, one at a time, with its syntax.
+
+## Companion document: the MACOS Manual
+
+This reference is a lookup document; the **MACOS Manual** is the
+learning document.  The Manual covers the concepts this catalog only
+names — geometry and coordinate conventions (VptElt, PsiElt, the
+global frame), prescription structure, ray-grid and source setup,
+reference surfaces and diffraction modeling, linear optical models,
+and SMACOS integration — and works complete examples end to end
+(Appendix A pairs each example prescription with a journal file that
+drives a full analysis).
+
+The Manual lives beside this document in the repo
+(`docs/macos-manual/`, built as `macosMan.pdf` — see the README there)
+and is referenced throughout this catalog as "manual §N".  If you are
+new to MACOS: read Manual Sections 1–4 first, run one Appendix A
+example, and use this reference from then on.
 
 ## The four surfaces
 

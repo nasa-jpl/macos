@@ -23,7 +23,10 @@ INTRO = (
     "tail\\> — the uppercase part is the minimum-match abbreviation "
     "tested by the dispatcher.  Tags: \\[Rx\\] needs a loaded "
     "prescription; \\[BLD\\] needs a built linear model; \\[DIFF\\] "
-    "needs a propagated wavefront.")
+    "needs a propagated wavefront.  For a full per-command catalog — "
+    "dialogs, behavior notes, and the mmacos/pymacos programming "
+    "interfaces — see the companion **MACOS Command Reference** "
+    "(macosCmdRef.pdf; source in docs/macos-manual/cmdref/).")
 
 CATEGORY_BANNERS = {
     "SESSION & FILES",

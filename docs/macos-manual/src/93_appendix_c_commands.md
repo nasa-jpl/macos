@@ -1,10 +1,10 @@
 <!-- GENERATED FILE — do not edit by hand.
      Regenerate with: python tools/gen_appendix_c.py
-     Source: /home/dcr/dev/macos/macos_f90/macos_help.inc  -->
+     Source: macos_f90/macos_help.inc  -->
 
 ## APPENDIX C: Complete Command Reference
 
-The following is the complete command list as printed by the HELP command, regenerated from macos_f90/macos_help.inc (single source of truth).  Casing convention: \<UPPER prefix\>\<lower tail\> — the uppercase part is the minimum-match abbreviation tested by the dispatcher.  Tags: \[Rx\] needs a loaded prescription; \[BLD\] needs a built linear model; \[DIFF\] needs a propagated wavefront.
+The following is the complete command list as printed by the HELP command, regenerated from macos_f90/macos_help.inc (single source of truth).  Casing convention: \<UPPER prefix\>\<lower tail\> — the uppercase part is the minimum-match abbreviation tested by the dispatcher.  Tags: \[Rx\] needs a loaded prescription; \[BLD\] needs a built linear model; \[DIFF\] needs a propagated wavefront.  For a full per-command catalog — dialogs, behavior notes, and the mmacos/pymacos programming interfaces — see the companion **MACOS Command Reference** (macosCmdRef.pdf; source in docs/macos-manual/cmdref/).
 
 MACOS command summary
 
