@@ -100,10 +100,13 @@ def gen_engine(notes):
            "",
            "## Part I — Engine command catalog",
            "",
-           "Every command below is available identically from the "
-           "interactive CLI and from a `CALL SMACOS(command, ...)` "
+           "Commands below are available from the interactive CLI and, "
+           "with few exceptions, from a `CALL SMACOS(command, ...)` "
            "invocation (see the SMACOS chapter for the argument "
-           "convention).  The **capitalized prefix** of each name is the "
+           "convention; purely interactive conveniences — shell/file "
+           "utilities like `!`, PWD, CD, RX/LS/LL, VI/EMAcs, and a few "
+           "others noted per entry — exist only in the CLI build).  "
+           "The **capitalized prefix** of each name is the "
            "minimum-match abbreviation.  Prerequisite tags: \\[Rx\\] "
            "needs a loaded prescription (OLD/NEW), \\[BLD\\] a built "
            "linear model (BUILD), \\[DIFF\\] a propagated wavefront "

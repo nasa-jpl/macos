@@ -30,7 +30,7 @@ Type \<RETURN\> for next page:
 
 ### Help
 
-Type HELP (or ?) at the MACOS\> prompt to see the list of all commands. The output is paginated: hit return to advance to the next screen. Commands are grouped into 15 categories:
+Type HELP (or H) at the MACOS\> prompt to see the list of all commands. The output is paginated: hit return to advance to the next screen. Commands are grouped into 15 categories:
 
 -   Session & files: QUit, END, HELP, REset, STatus, SUMmarize, ELTS, EXEcute, JOUrnal, MREset, !, PWD, CD, RX/LS/LL, VI/EMAcs
 
@@ -362,12 +362,12 @@ MACOS\>**build ;**
     Enter terminal element number: [1]:
     Tracing 12669 rays but not BUILDing linear model. BUILD limited to 500 rays. MOD npts and recompute. MACOS>export
     Current element is 1
-    Enter EXPORT mode (BINary, TEXt, MFIle, ISM, H or Quit): [BINARY]: tex
+    Enter EXPORT mode (BINary, TEXt, MFIle, NAStran, H or Quit): [BINARY]: tex
     Exporting data to lens_array.txt
     Export data for CHFRay only, ALLRays, or NOChfray? [CHFRay]: chfr
-    EXPORT (CMAtrix, CmDM, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: raypos
+    EXPORT (CMAtrix, RayIndex, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: raypos
     % RayPos 3-vectors for 1 rays at Element 1
-    EXPORT (CMAtrix, CmDM, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: q MACOS>
+    EXPORT (CMAtrix, RayIndex, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: q MACOS>
 
 ### Using Macros
 

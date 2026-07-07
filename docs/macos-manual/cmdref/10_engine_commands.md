@@ -3,7 +3,7 @@
 
 ## Part I — Engine command catalog
 
-Every command below is available identically from the interactive CLI and from a `CALL SMACOS(command, ...)` invocation (see the SMACOS chapter for the argument convention).  The **capitalized prefix** of each name is the minimum-match abbreviation.  Prerequisite tags: \[Rx\] needs a loaded prescription (OLD/NEW), \[BLD\] a built linear model (BUILD), \[DIFF\] a propagated wavefront (PROpagate).
+Commands below are available from the interactive CLI and, with few exceptions, from a `CALL SMACOS(command, ...)` invocation (see the SMACOS chapter for the argument convention; purely interactive conveniences — shell/file utilities like `!`, PWD, CD, RX/LS/LL, VI/EMAcs, and a few others noted per entry — exist only in the CLI build).  The **capitalized prefix** of each name is the minimum-match abbreviation.  Prerequisite tags: \[Rx\] needs a loaded prescription (OLD/NEW), \[BLD\] a built linear model (BUILD), \[DIFF\] a propagated wavefront (PROpagate).
 
 ### Session & Files
 
@@ -14,6 +14,16 @@ Every command below is available identically from the interactive CLI and from a
 Exit MACOS.
 
 <!-- BEGIN NOTES cmd-QUit -->
+```
+MACOS>quit
+```
+`EXIT` and `BYE` are accepted aliases; the minimum match is a
+single `Q`.  Closes the graphics window and open I/O units; an
+open journal file is closed and kept.  Under SMACOS, QUIT (like
+the SMACOS-only RETURN) returns control to the calling program.
+Note: HELP lists `END`, but the dispatcher does not accept it.
+Ctrl-C at the `MACOS>` prompt also exits cleanly.
+*Related:* JOUrnal.
 <!-- END NOTES cmd-QUit -->
 
 #### HELP
@@ -23,6 +33,18 @@ Exit MACOS.
 This command list.
 
 <!-- BEGIN NOTES cmd-HELP -->
+```
+MACOS>help
+ MACOS command summary
+ ...
+ Hit return to continue... [0]:
+```
+Paginated: hit return at each `Hit return to continue...` prompt.
+Lists every dispatched command in 15 categories, with the
+minimum-match casing and the \[Rx\]/\[BLD\]/\[DIFF\] prerequisite
+tags.  The text is `macos_help.inc` — the same single source this
+catalog is generated from.  The dispatcher accepts `HEL`.
+*Related:* STatus.
 <!-- END NOTES cmd-HELP -->
 
 #### REset
@@ -32,6 +54,12 @@ This command list.
 Reset options & defaults to startup.
 
 <!-- BEGIN NOTES cmd-REset -->
+No dialog.  Resets analysis state and options to startup
+defaults: clears the trace/build/propagate/perturb flags, the
+obscuration option, plot and stretch types, beam type, and pixel
+settings.  The loaded prescription is NOT unloaded, and a STOP
+that was preset in the Rx is preserved.
+*Related:* MREset, STatus, LREset.
 <!-- END NOTES cmd-REset -->
 
 #### STatus
@@ -41,6 +69,13 @@ Reset options & defaults to startup.
 What is loaded / built / propagated.
 
 <!-- BEGIN NOTES cmd-STatus -->
+Needs a loaded Rx.  Prints one screen of session state: the
+loaded file name, current element for OPD calculations, current
+element for WF/spot calculations, the ray-trace obscuration
+option, the current WF plot type (SLICE/GRAY/CONTOUR/...), and
+the composed-image, pixel-locate and polarization flags.  No
+side effects.
+*Related:* SUMmarize, ELTS, REset.
 <!-- END NOTES cmd-STatus -->
 
 #### SUMmarize
@@ -50,6 +85,18 @@ What is loaded / built / propagated.
 Pretty-print the optical system.
 
 <!-- BEGIN NOTES cmd-SUMmarize -->
+```
+MACOS>summarize
+ Optical Train Summary:
+  Tracing rays past   4 elements.
+  Aperture grid type = Circular  with  513 grid points.
+  Elt   1: Reflector   : Conic    with Kc=-1.0000D+00, ...
+```
+One line per element: element type, surface type, conic constant
+KcElt, vertex radius KrElt, and nECoord; ends with the number of
+output coordinates.  The same summary is printed automatically
+after every successful OLD/NEW load.
+*Related:* ELTS, SHOw, STatus.
 <!-- END NOTES cmd-SUMmarize -->
 
 #### ELTS
@@ -59,6 +106,15 @@ Pretty-print the optical system.
 List elements (type, surface).
 
 <!-- BEGIN NOTES cmd-ELTS -->
+```
+MACOS>elts
+ Elements in optical prescription:
+ Element name = PM          ID =   1
+ Element name = SM          ID =   2
+```
+Needs a loaded Rx.  Quick way to map element names to the
+numeric element ids used by SHOw, PERturb, COOrd, etc.
+*Related:* SHOw, SUMmarize.
 <!-- END NOTES cmd-ELTS -->
 
 #### EXEcute
@@ -68,6 +124,17 @@ List elements (type, surface).
 Run a .jou journal file.
 
 <!-- BEGIN NOTES cmd-EXEcute -->
+```
+MACOS>execute
+Enter file name: run1
+Reading from journal file (run1.jou)
+```
+`.jou` is appended automatically.  Commands are read until end
+of file; journal files may EXEcute other journal files (up to
+10 deep).  `%` comments and blank lines are ignored.  `LQW` is
+an accepted alias.  A missing file prints a warning and returns
+to the prompt.  SMACOS: file name in CARG(1).
+*Related:* JOUrnal, ECHo.
 <!-- END NOTES cmd-EXEcute -->
 
 #### JOUrnal
@@ -77,6 +144,19 @@ Run a .jou journal file.
 Generate a .jou journal file.
 
 <!-- BEGIN NOTES cmd-JOUrnal -->
+```
+MACOS>journal
+Enter journal file name: run1
+Writing journal file run1.jou...
+ ...
+MACOS>journal
+Closing journal file run1.jou.
+```
+A toggle: the first call starts recording every command (an
+existing file of the same name is deleted first), the second
+call stops.  Defaults accepted by hitting return are written to
+the journal too, so a replay reproduces the session.
+*Related:* EXEcute, ECHo.
 <!-- END NOTES cmd-JOUrnal -->
 
 #### ECHo <text>
@@ -86,6 +166,15 @@ Generate a .jou journal file.
 Print <text> to stdout (annotate console / journal output).
 
 <!-- BEGIN NOTES cmd-ECHo-text -->
+```
+MACOS>echo starting perturbation study
+starting perturbation study
+```
+Prints the rest of the line verbatim; a bare `echo` prints a
+blank line.  Remaining tokens on the line are consumed so they
+are not re-dispatched as commands.  Useful for marking phases
+in journal-driven runs.
+*Related:* JOUrnal, EXEcute.
 <!-- END NOTES cmd-ECHo-text -->
 
 #### MREset
@@ -95,6 +184,18 @@ Print <text> to stdout (annotate console / journal output).
 Reset MACOS model size (128..8192).
 
 <!-- BEGIN NOTES cmd-MREset -->
+```
+MACOS>mreset
+Enter new size (128, 256, 512, 1024, 2048, 4096, 8192): [128]: 512
+ Resetting MACOS model size...
+```
+The size may be given inline (`mreset 512`); invalid sizes
+re-prompt.  Re-allocates all model arrays, reprints the
+run-limits banner, reloads the glass table, and re-initializes
+session state INCLUDING the loaded-prescription flag — re-load
+the Rx (OLD) afterwards.  Interactive CLI only (bindings size
+the model at init).
+*Related:* REset, OLD.
 <!-- END NOTES cmd-MREset -->
 
 #### ! <cmd>
@@ -104,6 +205,13 @@ Reset MACOS model size (128..8192).
 Run a shell command.
 
 <!-- BEGIN NOTES cmd-cmd -->
+```
+MACOS>! ls -l *.jou
+```
+Passes the rest of the line to the system shell; remaining
+tokens belong to the shell command and are not re-dispatched.
+Interactive CLI only.
+*Related:* PWD, CD, RX.
 <!-- END NOTES cmd-cmd -->
 
 #### PWD, CD
@@ -113,6 +221,17 @@ Run a shell command.
 Working directory shell helpers.
 
 <!-- BEGIN NOTES cmd-PWD -->
+```
+MACOS>cd
+Enter folder path [no default]: ../examples
+  Current Folder:
+  /home/user/examples
+```
+PWD prints the current folder with no dialog.  CD prompts for a
+path (also accepted inline: `cd ../examples`), changes
+directory, and echoes the new folder; failures print a system
+error.  Interactive CLI only.
+*Related:* RX, ! <cmd>.
 <!-- END NOTES cmd-PWD -->
 
 #### RX, LS, LL
@@ -122,6 +241,17 @@ Working directory shell helpers.
 List .in files / current directory.
 
 <!-- BEGIN NOTES cmd-RX -->
+```
+MACOS>rx
+  Listing Files in: /home/user/examples
+    1  Cassegrain.in     2  CoroExample.in     3  eltest.in
+ The number next to a Rx filename is file_id.
+ Use FID command to load a Rx file. Syntax: FID file_id
+```
+RX lists only `.in` prescription files, numbered for FID.  LS
+and LL list every file in the current directory (`DIr` is also
+accepted).  Interactive CLI only.
+*Related:* FID, OLD, CD.
 <!-- END NOTES cmd-RX -->
 
 #### VI, EMAcs
@@ -131,6 +261,15 @@ List .in files / current directory.
 Open file in editor.
 
 <!-- BEGIN NOTES cmd-VI -->
+```
+MACOS>vi
+Enter filename [no default]: Cassegrain.in
+```
+Launches the editor on the file via the system shell and waits
+for it to exit.  The command as typed becomes the editor
+command, so type `emacs` in full.  Handy for touching up a
+prescription before OLD/VALidate.  Interactive CLI only.
+*Related:* OLD, VALidate, RX.
 <!-- END NOTES cmd-VI -->
 
 ### Prescription I/O
@@ -142,6 +281,17 @@ Open file in editor.
 Start a new optical system.
 
 <!-- BEGIN NOTES cmd-NEW -->
+```
+MACOS>new
+Enter file name: MyLens
+```
+Starts the interactive prescription-definition dialog: source
+questions first, then each element in turn (see Section 4 of
+the manual).  The name must be unused — an existing `.in` file
+prints "already exists. Please use a new name or use OLD." and
+re-prompts.  On completion the new system is written to
+`<name>.in` and loaded.  `q` at the name prompt aborts.
+*Related:* OLD, SAVe, MODify.
 <!-- END NOTES cmd-NEW -->
 
 #### OLD <file>
@@ -151,6 +301,18 @@ Start a new optical system.
 Load a .in prescription.
 
 <!-- BEGIN NOTES cmd-OLD-file -->
+```
+MACOS>old
+Enter file name: Cassegrain
+ Input file Cassegrain.in being loaded.
+```
+The name may be given inline (`old Cassegrain`); `.in` is
+appended if absent, and `LOAd` is an identical alias.  The file
+is pre-validated (same check as VALidate) before parsing; a bad
+file aborts the load and re-prompts (`q` aborts).  A successful
+load prints the Optical Train Summary and resets trace/build/
+propagate state.  SMACOS: file name in CARG(1).
+*Related:* NEW, FID, VALidate, RX.
 <!-- END NOTES cmd-OLD-file -->
 
 #### FID <id>
@@ -160,6 +322,15 @@ Load a .in prescription.
 Load by file id (from RX listing).
 
 <!-- BEGIN NOTES cmd-FID-id -->
+```
+MACOS>fid
+Enter file id: [1]: 3
+```
+Loads the prescription numbered <id> in the RX listing; if RX
+has not been run yet, FID prints the listing first.  `q`
+aborts; a bad id prints "** Invalid file id; can not load
+file".  Interactive CLI shortcut for OLD.
+*Related:* RX, OLD.
 <!-- END NOTES cmd-FID-id -->
 
 #### VALidate <file>
@@ -169,6 +340,16 @@ Load by file id (from RX listing).
 Syntax-check a .in prescription without loading it.
 
 <!-- BEGIN NOTES cmd-VALidate-file -->
+```
+MACOS>validate
+Enter file name (.in optional): Cassegrain
+ Cassegrain.in: OK
+```
+Pure check, no state change.  On failure the message names the
+offending line and key, e.g. `line 76: key "ZernType" has no
+value`.  The same validation runs automatically at the start of
+every OLD/LOAD.  Interactive CLI only.
+*Related:* OLD, NEW.
 <!-- END NOTES cmd-VALidate-file -->
 
 #### SAVe
@@ -178,6 +359,17 @@ Syntax-check a .in prescription without loading it.
 Write current system to .in.
 
 <!-- BEGIN NOTES cmd-SAVe -->
+```
+MACOS>save
+Enter new input file name: MyCass
+ File MyCass.in being created.
+```
+Needs a loaded Rx.  Writes the current in-memory prescription —
+including MODify and PERturb changes — to `<name>.in`.  If the
+file exists: `Input file MyCass.in exists.  Replace? [YES]:`
+(answer `n` to be re-prompted for another name).  SMACOS:
+CARG(1)=file name, CARG(2)=replace answer.
+*Related:* NEW, MODify, PERturb.
 <!-- END NOTES cmd-SAVe -->
 
 #### EXPort
@@ -187,6 +379,20 @@ Write current system to .in.
 Write select results to file.
 
 <!-- BEGIN NOTES cmd-EXPort -->
+```
+MACOS>export
+ Current element is 1
+Enter EXPORT mode (BINary, TEXt, MFIle, NAStran, H or Quit): [BINARY]: tex
+ Exporting data to Cassegrain.txt
+Export data for CHFRay only, ALLRays, or NOChfray? [CHFRay]:
+EXPORT (CMAtrix, RayIndex, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: raypos
+```
+Needs traced, built, or propagated data, else "No data has been
+generated yet."  The output file is named after the loaded
+prescription plus the mode extension (.bin/.txt/.m).  Exported
+ray sets honor the OBS obscuration option.  `H` prints help; `Q`
+ends the loop.  SMACOS: CARG(1..5) supply the dialog answers.
+*Related:* OBS, BUild, TEXt, BINary, MAT.
 <!-- END NOTES cmd-EXPort -->
 
 #### SHOw <elt>
@@ -196,6 +402,23 @@ Write select results to file.
 Print all data for one element MODify <elt>- interactively edit one element.
 
 <!-- BEGIN NOTES cmd-SHOw-elt -->
+```
+MACOS>show
+Enter number of element (0=aperture): [0]: 2
+```
+SHOw prints every stored parameter of one element; 0 prints the
+source/aperture data.  SMACOS: element number in IARG(1).
+MODify (minimum match `MOD`) opens an assignment sub-prompt:
+```
+MACOS>mod
+MOD: [q]: KrElt(2)=-2.842
+```
+Assignments are `<var>=<value>` with no spaces around `=`;
+successful mods echo back, `h` shows syntax help, `q` quits.
+MODify invalidates trace/build/propagate state; changes live in
+memory until SAVe.  Under SMACOS, MODIFY runs no dialog — it
+only marks the Rx modified and resets those flags.
+*Related:* ELTS, SAVe, PERturb.
 <!-- END NOTES cmd-SHOw-elt -->
 
 ### Source & Wavelength
