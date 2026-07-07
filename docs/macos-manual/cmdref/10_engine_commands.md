@@ -430,6 +430,16 @@ only marks the Rx modified and resets those flags.
 Set chief-ray position/direction.
 
 <!-- BEGIN NOTES cmd-CHIefray -->
+```
+MACOS>chiefray
+ Image referenced to chief ray
+```
+No input.  Clears the CENTRoid option, so FEXit and other
+image-referencing computations use the chief-ray intercept
+rather than the spot centroid.  Despite the help one-liner,
+CHIefray does NOT set the chief-ray position/direction — use
+PERturb 0, STOp, FFP or PFP for that.
+*Related:* CENTRoid, FEXit.
 <!-- END NOTES cmd-CHIefray -->
 
 #### WLENS
@@ -439,6 +449,17 @@ Set chief-ray position/direction.
 Set wavelength list.
 
 <!-- BEGIN NOTES cmd-WLENS -->
+```
+MACOS>wlens
+ Number of wavelengths used for design optimization = 2
+ Wavelength  1 =  6.328000000D-07
+ Wavelength  2 =  5.500000000D-07
+```
+Read-only, no input: lists the design-optimization wavelength
+list loaded from the prescription (nOptWavelen/opt_wavelen).
+It does not set anything; use SWL to make one of them the
+active wavelength.
+*Related:* SWL, SETC, CALIB.
 <!-- END NOTES cmd-WLENS -->
 
 #### SWL
@@ -448,6 +469,19 @@ Set wavelength list.
 Sweep / step wavelength.
 
 <!-- BEGIN NOTES cmd-SWL -->
+```
+MACOS>swl
+ 2 wavelengths available:
+   6.328000000E-07  5.500000000E-07
+Enter ID of wavelength to use [1]: 2
+  Wavelength set to  5.500000000E-07
+```
+Selects (not sweeps) one wavelength by index from the
+prescription's optimization wavelength list: sets Wavelen,
+updates refractor indices for the new wavelength, and
+invalidates trace/build/propagate state.  A bad ID prints
+"** Invalid wavelength ID".  Interactive CLI only.
+*Related:* WLENS, SFOV (select field of view, also CLI only).
 <!-- END NOTES cmd-SWL -->
 
 #### MULtispec
@@ -457,6 +491,22 @@ Sweep / step wavelength.
 Multi-color image stacking.
 
 <!-- BEGIN NOTES cmd-MULtispec -->
+```
+MACOS>multispec
+Enter number of element where data is to be generated: [5]: 5
+Enter StarType (1-2): [1]: 1
+Enter number of pixels per side: [1024]: 256
+Enter size of pixel: [1.E-3]: 1e-3
+```
+For each wavelength in the loaded filter data, propagates to
+the element and accumulates the flux-weighted image into the
+pixel array (a COMPOSE/ADD loop over the filter passband,
+scaled by the star type's flux curve).  Requires filter data
+(RFIlt/NFIlt), else "Load filter data first."; overwrites any
+previous COMPOSEd image.  SMACOS: IARG(1)=element,
+IARG(2)=star type, IARG(3)=pixels per side, RARG(1)=pixel
+size.
+*Related:* RFIlt, NFIlt, SFIlt, COMpose.
 <!-- END NOTES cmd-MULtispec -->
 
 #### NFIlt, RFIlt, SFIlt
@@ -466,6 +516,26 @@ Multi-color image stacking.
 Narrow / regular / spectral filter.
 
 <!-- BEGIN NOTES cmd-NFIlt -->
+```
+MACOS>rfilt
+Enter filter file name: myfilt
+ Filter includes information for  10 wavelengths and  2 star types.
+MACOS>nfilt
+Enter filter name: [Cassegrain]: myfilt
+Enter next wavelength in base units (0 when done): [0.]: 5e-7
+Enter flux value at this wavelength: [0.]: 1.0
+MACOS>sfilt
+Enter new filter file name: [Cassegrain]: myfilt
+ Filter file created.
+```
+These manage MULtispec filter data (the help one-liner
+"narrow / regular / spectral filter" is a misnomer): RFIlt
+reads a `.filt` file, NFIlt enters wavelength/flux pairs
+interactively (one star type; 0 ends the loop), SFIlt writes
+the data to `.filt`, silently overwriting.  `.filt` is
+appended to the given name.  SMACOS: RFIlt/SFIlt take the
+file name in CARG(1).
+*Related:* MULtispec.
 <!-- END NOTES cmd-NFIlt -->
 
 #### ATMosphere
@@ -475,6 +545,22 @@ Narrow / regular / spectral filter.
 Turbulence model on/off.
 
 <!-- BEGIN NOTES cmd-ATMosphere -->
+```
+MACOS>atm
+Enter number of atmosphere phase screen element: [0]: 3
+Enter atmosphere r0: [0.25]: 0.25
+Enter atmosphere wavelength: [6.328E-7]:
+Enter atmosphere tilt participation (0-1): [1.]:
+Use RAY grid or separate ATMospheric grid? [RAY]:
+```
+Not an on/off toggle: traces the beam to the element, then adds
+an atmospheric-turbulence phase screen there once.  r0 defaults
+to Aperture/16; the ATM-grid option adds an "Enter grid
+spacing:" prompt (clamped to >= dxElt).  r0, wavelength and
+tilt are read single precision.  SMACOS: IARG(1)=element,
+RARG(1)=r0, RARG(2)=wavelength, RARG(3)=tilt participation,
+CARG(1)=grid option, DARG(1)=grid spacing (non-RAY only).
+*Related:* OPD, SEEd.
 <!-- END NOTES cmd-ATMosphere -->
 
 #### SETC, SAOpt
@@ -484,6 +570,31 @@ Turbulence model on/off.
 Stop-aperture options.
 
 <!-- BEGIN NOTES cmd-SETC -->
+```
+MACOS>setc
+ Setting options for MACOS design optimization ...
+Set target of design optimization (WFE,ZWF,Beam): [WFE]:
+Set maximum iterations for optimization: [20]:
+Set convergence tolerance for optimization: [1.E-6]:
+Set number of field of view: [1]:
+Set field of view weights: [1.]:
+Set target wavefront file for optimization (no/yes): [no]:
+```
+SETC (undocumented alias: SETP) sets design-optimization
+(CALIB) parameters, not stop-aperture options.  ZWF adds
+"Enter number of Zernike modes:" / "Enter Zernike modes"
+prompts; answering yes to the target-wavefront question adds
+format (bin/ascii) and file-name prompts.  Under SMACOS the
+dialog is compiled out — set parameters one at a time via
+SMACOS_SetOptParam (see dopt_mod.F).  SAOpt chooses how
+source-adjusting commands (STOp etc.) move the source:
+```
+MACOS>saopt
+Choose a source adjustment option, DIr or POs? [DIr]:
+```
+DIr re-points ChfRayDir (refused for a collimated source);
+POs translates ChfRayPos.  SMACOS: SAOpt option in CARG(1).
+*Related:* CALib, VARS, WLENS, STOp.
 <!-- END NOTES cmd-SETC -->
 
 ### Ray Tracing
@@ -495,6 +606,23 @@ Stop-aperture options.
 Trace ray i; print state at each surface.
 
 <!-- BEGIN NOTES cmd-RAY-i -->
+```
+MACOS>ray
+Enter number of ray (1=chief ray, 0=quit): [0]: 1
+ Ray 1 is the chief ray.
+ Ray 1 segment from Element 0 (InputRay) to Element 1 (...):
+  Starting point= ...  End point= ...  Direction= ...
+  Segment Length= ...  Total Length= ...
+  Index(i-1)= ...      Index(i)= ...
+```
+Prints start/end point, direction, geometric segment length,
+index-scaled running total and refractive indices for every
+surface-to-surface segment; obscured/undefined rays are called
+out per element.  For non-chief rays the header adds aperture
+and WF grid coordinates plus adjacent-ray numbers (see MAP).
+Invalidates build/trace/propagate state.  SMACOS: ray number
+in IARG(1).
+*Related:* MAP, SEGraytrace, SRAy, PRAy.
 <!-- END NOTES cmd-RAY-i -->
 
 #### SEGraytrace <i>
@@ -504,6 +632,21 @@ Trace ray i; print state at each surface.
 Trace a ray through segment i s center (uses RptElt).
 
 <!-- BEGIN NOTES cmd-SEGraytrace-i -->
+```
+MACOS>segrayt
+Enter segment number (0=quit): [0]: 5
+ Ray 1 segment from Element 0 (InputRay) to Element 5 (Seg5):
+ ...
+Enter segment number (0=quit): [0]: 0
+```
+Traces one ray forced through the design center (RptElt) of the
+chosen Segment element, printing the ray state at each surface;
+loops until 0.  Non-Segment elements print "Element N is not a
+Segment." and re-prompt.  The trace endpoint should match
+RptElt to ~1e-11; larger mismatches diagnose segment-generator
+errors (see Section 5).  Minimum match is SEGRAYT (7 chars),
+not the 3 implied by the help capitalization.
+*Related:* RAY, MAP.
 <!-- END NOTES cmd-SEGraytrace-i -->
 
 #### PRAy, RRAy, TPR
@@ -513,6 +656,23 @@ Trace a ray through segment i s center (uses RptElt).
 Alternate ray-state printers.
 
 <!-- BEGIN NOTES cmd-PRAy -->
+```
+MACOS>rray
+  Source aperture diameter =      4.0000 m
+ At source aperture:
+   Ref. ray XY offsets from chief ray: ...,  ID = ...
+  Reference ray indices (chief + 4 marginal) =  1 ...
+```
+Ray finders, not printers.  RRAy finds the chief + 4 marginal
+ray indices at the +/-x, +/-y edges of the source aperture;
+PRAy finds 8 "pupil" rays on a 0.9-radius ring.  TPR then
+traces each found ray to the final (or RayTgtElt) element and
+prints its position there; it requires RRAy or PRAy first
+("** Need to run RRAY command before executing TRR command" —
+sic).  None take arguments.  Engine quirk: PRAy's first ring
+ray requests normalized position (9.0,0), apparently intended
+as (0.9,0).
+*Related:* FSR, RAY, MAP.
 <!-- END NOTES cmd-PRAy -->
 
 #### MAP
@@ -522,6 +682,21 @@ Alternate ray-state printers.
 Print ray-to-segment map.
 
 <!-- BEGIN NOTES cmd-MAP -->
+```
+MACOS>map
+ Map of rays at input aperture:
+   ...ray numbers on the source grid...
+Hit return to continue  [0]:
+ Map of segments at input aperture:
+```
+Prints ray numbers laid out on the source-aperture grid,
+tracing the grid first if needed.  The chief ray (1) is not
+shown; with more than ~15 rays across, only a subset is
+labelled.  Segmented systems (GridType>=3) get a second map of
+segment numbers.  After OPD/SPOt etc., rays that became
+undefined disappear from the map.  SMACOS: nothing is printed —
+the srcMap ray/segment map structure is filled instead.
+*Related:* RAY, OBS, SPOt.
 <!-- END NOTES cmd-MAP -->
 
 #### COOrd <elt>
@@ -531,6 +706,20 @@ Print ray-to-segment map.
 Beam coordinates at element.
 
 <!-- BEGIN NOTES cmd-COOrd-elt -->
+```
+MACOS>coord
+Enter element number: [1]: 5
+ Computed xLocal= ...
+ Computed yLocal= ...
+ Computed zLocal= ...
+```
+Prints the beam coordinate axes at the element: projections of
+the source xGrid/yGrid axes, computed from four differential
+chief rays (angle offsets cover the near field, position
+offsets the far field).  Signs may flip abruptly near a focus
+(Section 5.3.3).  Invalidates trace/build/propagate state.
+SMACOS: element number in IARG(1).
+*Related:* ACOor, SPOt, STOp.
 <!-- END NOTES cmd-COOrd-elt -->
 
 #### ACOor
@@ -540,6 +729,18 @@ Beam coordinates at element.
 Anchor coordinates.
 
 <!-- BEGIN NOTES cmd-ACOor -->
+```
+MACOS>acoor
+Enter first element number: [1]: 1
+Enter last element number: [1]: 6
+ Result is saved in file xyzLocal.txt
+```
+"All COOrdinates", not anchor coordinates: runs the COOrd
+computation for every element in the range and writes
+xLocal/yLocal/zLocal per element to `xyzLocal.txt` (replaced
+each run) instead of the screen.  Non-optical element types in
+the range are skipped with a warning; last must be >= first.
+*Related:* COOrd.
 <!-- END NOTES cmd-ACOor -->
 
 #### EFL
@@ -549,6 +750,20 @@ Anchor coordinates.
 System effective focal length / f-ratio / plate scale.
 
 <!-- BEGIN NOTES cmd-EFL -->
+```
+MACOS>efl
+  Estimated system effective focal length = 12.0000 m
+  Estimated system focal ratio = 6.0000
+  Estimated system plate scale = 2.8648 arcsec/mm
+```
+No input.  Differential chief-ray estimate (efl.inc); focal
+ratio = EFL/Aperture, plate scale = 206265/(Aperture*F#)
+arcsec/mm (base unit assumed mm when BaseUnits is none).  The
+estimate can be inaccurate for decentered systems; the
+(undocumented) SYSPROP command gives the fuller first-order
+report.  Works in SMACOS (the printout is CLI-only; results
+are kept internally).
+*Related:* FEXit.
 <!-- END NOTES cmd-EFL -->
 
 #### BWK
@@ -558,6 +773,18 @@ System effective focal length / f-ratio / plate scale.
 Chief-ray walk vs nominal.
 
 <!-- BEGIN NOTES cmd-BWK -->
+```
+MACOS>bwk
+ iElt=  1   ChfRayWalk =   0.000012345 ...
+```
+No input.  Requires `CalBWk= Y` in the prescription (else
+"** Need set CalBWk= Y in prescription").  Traces the chief
+ray, then prints for every element the walk of the chief-ray
+incidence point from its nominal (unperturbed) position,
+projected onto element-local (x, y, surface-normal) axes.
+Typically used after PERturb to quantify beam walk.
+Interactive CLI only.
+*Related:* PERturb, RAY.
 <!-- END NOTES cmd-BWK -->
 
 #### FEXit
@@ -567,6 +794,28 @@ Chief-ray walk vs nominal.
 Find exit pupil.
 
 <!-- BEGIN NOTES cmd-FEXit -->
+```
+MACOS>fex
+Enter number of exit pupil return surface: [5]: 6
+ ...chief ray / centroid locations...
+ Exit pupil finder results:
+   Old f= ...          New f= ...
+   (z, psi, Vpt likewise)
+Accept the new element? [YES]:
+```
+Locates the exit pupil from the chief plus a differential chief
+ray and refits the chosen Return/Reference element there as the
+reference sphere for far-field propagation (eElt=0, fElt=|z|,
+KrElt=-fElt, KcElt=0, psi, Vpt/Rpt updated).  Requires STOp
+first.  The EP radius is the chief-ray distance from the EP to
+the next element (the far-field propagation distance); the
+legacy previous-element leg is the fallback.  CENTRoid /
+CHIefray select the reference point.  Rerun after any PERturb.
+SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
+Dispatcher also has undocumented siblings SXP (legacy variant,
+now largely redundant) and XPS (pupil solve over the full ray
+grid).
+*Related:* STOp, CENTRoid, ORS, FDP.
 <!-- END NOTES cmd-FEXit -->
 
 #### FSR
@@ -576,6 +825,18 @@ Find exit pupil.
 Free spectral range.
 
 <!-- BEGIN NOTES cmd-FSR -->
+```
+MACOS>fsr
+Enter ray position in source aperture: [0.,0.]: 0.5,0
+   Ref. ray XY offsets from chief ray: ...,  ID = ...
+ Ray id:  1234
+```
+Find Source Ray — not free spectral range: returns the index
+of the ray whose source-aperture position best matches the
+given fractional (x,y) coordinates (1.0 = aperture edge along
++x/+y).  Candidate rays are test-traced through the system;
+rays that fail to pass are skipped.
+*Related:* RRAy, PRAy, RAY, MAP.
 <!-- END NOTES cmd-FSR -->
 
 #### CENter
@@ -585,6 +846,18 @@ Free spectral range.
 Center beam in system stop.
 
 <!-- BEGIN NOTES cmd-CENter -->
+```
+MACOS>center
+Enter system stop element number: [1]: 2
+Enter offset vector (dx,dy): [0.,0.]: 0,0
+ Beam centered in   2 iterations, error= 3.231486333D-15
+```
+Iteratively solves for a source position that centers the beam
+at the element (plus a local x/y offset from its vertex); it
+changes ChfRayPos, not the field angle.  Unlike STOp, CENter
+actually moves the beam.  SMACOS: IARG(1)=element,
+DARG(1:2)=offset.
+*Related:* STOp, FFP, PFP.
 <!-- END NOTES cmd-CENter -->
 
 #### STOp
@@ -594,6 +867,25 @@ Center beam in system stop.
 Define system stop element.
 
 <!-- BEGIN NOTES cmd-STOp -->
+```
+MACOS>stop
+Stop at ELT or OBJect point? [OBJ]: elt
+Enter system stop element number: [1]: 3
+Enter offset vector (dx,dy): [0.,0.]: 0,0
+  Computed StopPos =  0.0...  0.0...  1.637981902D+01
+```
+Defines the system stop; it does not center the beam (use
+CENter).  OBJ instead prompts "Enter stop (entrance pupil)
+position in object space (x,y,z):".  ELT re-centers the chief
+ray on the element and computes the equivalent object-space
+StopPos.  Sets the stop-set flag required by PERturb 0, FFP,
+PFP and FEXit.  Source adjustment follows SAOpt (default:
+collimated source translates ChfRayPos; point source re-aims
+ChfRayDir).  If the Rx declared ApStop, the first STOp run
+substitutes that element/offset for the typed values.
+SMACOS: CARG(1)='ELT'|'OBJ'; ELT: IARG(1)=element,
+DARG(1:2)=offset; OBJ: DARG(1:3)=position.
+*Related:* CENter, SAOpt, FEXit, FFP, PFP.
 <!-- END NOTES cmd-STOp -->
 
 #### CENTRoid
@@ -603,6 +895,15 @@ Define system stop element.
 Use centroid as ref point for FEX.
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
+```
+MACOS>centroid
+ Image referenced to ray centroid
+```
+No input.  Makes FEXit (and other image-referencing
+computations) use the full-beam spot centroid rather than the
+chief-ray intercept as the reference point.  CHIefray restores
+the default chief-ray referencing.
+*Related:* CHIefray, FEXit.
 <!-- END NOTES cmd-CENTRoid -->
 
 #### FFP <x,y>
@@ -612,6 +913,24 @@ Use centroid as ref point for FEX.
 Find field point that places chief ray at element coordinate.
 
 <!-- BEGIN NOTES cmd-FFP-x -->
+```
+MACOS>ffp
+Enter element number: [6]:
+Enter offset vector in global units (dx,dy): [0.,0.]: 1e-3,-2e-3
+ Field angle finder results:
+ Did    1 iterations, error= 6.936774704D-11
+ ...old/new dx, crd, crp table...
+Accept the new chief ray? [YES]:
+```
+Newton search (max 100 iterations, differential chief rays
+pinned to the stop) for the source field that places the chief
+ray at the target point on the element — offset from its
+vertex, resolved on the beam-local axes, in global units.
+Requires STOp first.  Accepting resets ChfRayPos/ChfRayDir.
+A chief ray that reaches the element but is obscured there is
+tolerated.  SMACOS: IARG(1)=element, DARG(1:2)=offset,
+CARG(1)=accept answer.
+*Related:* PFP, STOp, CENter.
 <!-- END NOTES cmd-FFP-x -->
 
 #### PFP <x,y>
@@ -621,6 +940,22 @@ Find field point that places chief ray at element coordinate.
 Find field point that places chief ray at pixel coordinate.
 
 <!-- BEGIN NOTES cmd-PFP-x -->
+```
+MACOS>pfp
+Enter element number: [6]: 6
+Enter pixel size for placing image on pixel array: [0.]: 15e-4
+Enter image position in pixel units (dx,dy): [0.,0.]: 20,-100
+ Field angle finder results:
+ ...
+Accept the new chief ray? [YES]:
+```
+Same solver as FFP, with the target given in pixels: target =
+(pixel - EltPix) * pixel size, where EltPix and the default
+pixel size come from WINdow/PLOCate.  Requires STOp first;
+accepting resets ChfRayPos/ChfRayDir.  SMACOS: IARG(1)=element,
+DARG(1)=pixel size, DARG(2:3)=pixel position, CARG(1)=accept
+answer.
+*Related:* FFP, PLOcate, STOp.
 <!-- END NOTES cmd-PFP-x -->
 
 #### FDP
@@ -630,6 +965,22 @@ Find field point that places chief ray at pixel coordinate.
 Find detector plane orientation.
 
 <!-- BEGIN NOTES cmd-FDP -->
+```
+MACOS>fdp
+Enter detector element number: [6]: 6
+ New Detector Position = ...
+ New Detector Normal   = ...
+Accept the New Detector Position? [YES]:
+  --Detector Element Position ( Elt 6) Updated!
+```
+Finds the focal-plane location/orientation: traces the chief
+ray plus two differential chief rays and averages their
+sagittal and tangential crossing points; the outgoing chief-ray
+direction gives the plane normal.  Accepting updates the
+element's Vpt/Rpt and psi (keeping psi's sign) and, when
+element-2 is a Return surface linked to the detector, moves it
+too.  SMACOS: IARG(1)=element, CARG(1)=accept answer.
+*Related:* FEXit, FFP, CENter.
 <!-- END NOTES cmd-FDP -->
 
 #### SPCenter
@@ -639,6 +990,15 @@ Find detector plane orientation.
 Spot-diagram centering option.
 
 <!-- BEGIN NOTES cmd-SPCenter -->
+```
+MACOS>spcenter
+Enter spot diagram centering option (elt,chfray): [elt]:
+```
+Chooses the spot-diagram origin for subsequent SPOt plots:
+`elt` (default) plots ray positions relative to the element
+reference point; `chfray` plots them relative to the chief-ray
+spot.  SMACOS: option in CARG(1).
+*Related:* SPOt, OBS, CENTRoid.
 <!-- END NOTES cmd-SPCenter -->
 
 ### Behavior Toggles
