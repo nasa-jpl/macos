@@ -747,8 +747,33 @@ the range are skipped with a warning; last must be >= first.
 First-order system properties.
 
 <!-- BEGIN NOTES cmd-SYSprop -->
+```
+MACOS>sysprop
+Enter focal-plane element for plate scale: [6]:
+
+ First-order system properties:
+  Entrance pupil diameter (m)        =  ...
+  Central obscuration ratio          =  ...
+  Wavelength (m)                     =  ...
+  lambda/D (arcsec)                  =  ...
+  lambda/D (rad)                     =  ...
+  Effective focal length (BaseUnits) =  ...
+  F-number                           =  ...
+  Nyquist focal sampling (BaseUnits) =  ...
+```
+Runs the EFL chief+marginal-ray analysis, then derives and
+prints the full first-order report (sysprop_mod, shared with
+the pymacos/mmacos bindings).  Requires a source at infinity
+("**Need source at infinity to run EFL command!" aborts).  The
+aperture/wavelength quantities always print; the EFL block
+needs the marginal-ray trace to succeed (it can vignette on
+complex relays).  The pixel-based lines (lambda/D per px,
+plate scale arcsec/px, pixel pitch) appear only after a
+diffraction propagation (OPD, INT or PIX) has set the pixel
+scale at the chosen element — a hint prints otherwise.
+SMACOS: IARG(1)=focal-plane element.
+*Related:* EFL, OPD, PIXel, FEXit.
 <!-- END NOTES cmd-SYSprop -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### EFL
 
@@ -832,8 +857,27 @@ grid).
 Set exit pupil at an element.
 
 <!-- BEGIN NOTES cmd-SXP -->
+```
+MACOS>sxp
+Enter number of exit pupil return surface: [5]: 6
+ ...chief ray / centroid locations...
+ Exit pupil finder results:
+   Old f= ...          New f= ...
+   (z, psi, Vpt likewise)
+Accept the new element? [YES]:
+```
+Set eXit Pupil: an FEXit clone (same prompts, same EP-element
+refit) whose EP radius is the chief-ray distance from the EP
+to the next element (the focal plane at iElt+1) instead of the
+legacy previous-element-to-EP leg, making the radius sensitive
+to focal-plane despace (Tz); lateral FP motion and rotations
+are still not captured.  Requires STOp first; the element must
+be a Return or Reference surface.  Since the FEX rework made
+the EP-to-next-element radius FEX's own default, SXP is
+retained for compatibility and is now largely redundant.
+SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
+*Related:* FEXit, XPS, STOp, CENTRoid.
 <!-- END NOTES cmd-SXP -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### XPS
 
@@ -842,8 +886,28 @@ Set exit pupil at an element.
 Exit-pupil surface fit over the full ray grid.
 
 <!-- BEGIN NOTES cmd-XPS -->
+```
+MACOS>xps
+Enter number of exit pupil return surface: [5]: 6
+ ***** XPS: vertex = ...
+ ***** XPS: zp(chief) = ...
+ XPS: exit-pupil surface computed; crossings in the ray
+ buffer (ray_info_get).
+```
+FEXit generalized to the full ray grid: traces the grid at the
+nominal field and at a tiny rotated field, then per ray finds
+the crossing point of the index-matched exit-ray pair.  The
+cloud of crossings is the exit-pupil SURFACE (the ray-1
+crossing = the FEX vertex); it is left in the ray buffer
+(positions, plus exit directions) for ray_info_get and the
+bindings.  Pure geometry, no OPD; unlike FEXit/SXP no element
+is modified and there is no accept prompt.  Requires STOp
+first; the element must be a Return or Reference surface.
+mmacos pupil_quality() fits pupil-surface Zernikes
+(defocus/astigmatism/coma) from the result.  SMACOS:
+IARG(1)=EP element.
+*Related:* FEXit, SXP, STOp.
 <!-- END NOTES cmd-XPS -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### FSR
 
@@ -1037,6 +1101,19 @@ spot.  SMACOS: option in CARG(1).
 Allow/disallow negative pathlengths.
 
 <!-- BEGIN NOTES cmd-LNEg-NOLNeg -->
+```
+MACOS>lneg
+ Negative-length rays OK at reference surfaces
+MACOS>nolneg
+ No negative-length rays allowed
+```
+No input.  Sets/clears the trace flag permitting a ray segment
+of negative length at a reference surface (the surface lies
+behind the ray, e.g. a reference sphere placed just past focus
+or double-pass layouts).  Contrary to what "allow/disallow"
+might suggest, the initialized state is ALLOWED (LNEg); use
+NOLNeg to forbid negative lengths.
+*Related:* ORS, SRS, FEXit.
 <!-- END NOTES cmd-LNEg-NOLNeg -->
 
 #### POLarized
@@ -1046,6 +1123,21 @@ Allow/disallow negative pathlengths.
 Polarization tracing on.
 
 <!-- BEGIN NOTES cmd-POLarized -->
+```
+MACOS>pol
+ Polarization turned on
+ Vector diffraction enabled
+Enter Ex0 (real,imag): [0.,0.]: 1,0
+Enter Ey0 (real,imag): [0.,0.]: 0,0
+```
+Turns on polarization ray tracing (off by default) and prompts
+for the complex input field components Ex0/Ey0.  When the code
+is built with vector-diffraction support (mWF>=3) it also
+enables vector diffraction ("Vector diffraction enabled");
+SCAlar/VECtor toggle that separately.  Invalidates propagate
+state.  SMACOS: DARG(1:2)=Ex0, DARG(3:4)=Ey0 (real,imag
+pairs).
+*Related:* NOPolarization, VECtor, SCAlar.
 <!-- END NOTES cmd-POLarized -->
 
 #### NOPolarization
@@ -1055,6 +1147,14 @@ Polarization tracing on.
 Polarization off.
 
 <!-- BEGIN NOTES cmd-NOPolarization -->
+```
+MACOS>nopol
+ Polarization turned off
+```
+No input.  Turns polarization ray tracing off (the default
+state) and disables vector diffraction; invalidates propagate
+state if polarization was on.
+*Related:* POLarized, SCAlar, VECtor.
 <!-- END NOTES cmd-NOPolarization -->
 
 #### OBS
@@ -1064,6 +1164,18 @@ Polarization off.
 Spot-diagram obscuration option.
 
 <!-- BEGIN NOTES cmd-OBS -->
+```
+MACOS>obs
+ Enter ray-trace obscuration option (ALL, POSITIVE, NEGATIVE): [POSITIVE]: all
+ All rays plotted on spot diagrams
+```
+Chooses which rays SPOt and OPD plot (Section 5.2.7):
+POSITIVE (default) plots only rays unobscured on the current
+and all previous elements; ALL plots every ray, even obscured
+ones; NEGATIVE plots only rays that are obscured somewhere.
+Numeric answers 0/1/2 are also accepted.  SMACOS: option in
+CARG(1).
+*Related:* SPOt, OPD, MAP, SPCenter.
 <!-- END NOTES cmd-OBS -->
 
 #### REGrid/NOREGrid
@@ -1073,6 +1185,24 @@ Spot-diagram obscuration option.
 Resample wavefront at element during propagation.
 
 <!-- BEGIN NOTES cmd-REGrid-NOREGrid -->
+```
+MACOS>regrid
+Enter element number: [0]: 5
+ Rays will be regridded at element  5
+MACOS>noregrid
+Enter element number: [0]: 5
+ Rays will not be regridded at element  5
+```
+Per-element toggle marking the element for resampling of the
+rays/wavefront onto a regular grid during diffraction
+propagation — aberrated systems can lose ray-grid regularity,
+especially near focus (Section 6.2).  REGrid also clears the
+wavefront buffer and propagate state.  Section 6.3.3 states
+the regridding feature is "undergoing revision and not
+currently supported", but the toggle remains live in the
+code.  SMACOS: LoadStack passes no element argument, so the
+command is effectively interactive-CLI only.
+*Related:* PROpagate, OPD.
 <!-- END NOTES cmd-REGrid-NOREGrid -->
 
 #### ORS
@@ -1082,6 +1212,27 @@ Resample wavefront at element during propagation.
 Optimize reference surface.
 
 <!-- BEGIN NOTES cmd-ORS -->
+```
+MACOS>ors
+Enter number of element to be optimized: [1]: 12
+ Reference surface optimization results:
+ TTL OPD= ...          nCalls= ...
+   Old f= ...          New f= ...
+   (z, psi, Vpt likewise)
+Accept the new element data? [YES]:
+```
+Optimize Reference Surface for near-field diffraction (Section
+6.3): the element must be a Reference, Obscuring or Return
+surface.  Traces a small test ray grid to the preceding
+element, then bracket-minimizes the RMS OPD over the reference
+radius fElt (tolerance lambda/100), re-centering the vertex on
+the chief ray and aligning psi with it.  Accepting updates
+fElt, KrElt=-(1+e)fElt, zElt, psi, Vpt and Rpt (SAVe to keep);
+a flat reference (f>=1e21) keeps its f and z.  May converge
+off-optimum in systems with strong odd aberrations (coma); if
+it misbehaves, the surface may be in backwards — flip psiElt.
+SMACOS: IARG(1)=element, CARG(1)=accept answer.
+*Related:* SRS, FEXit, LNEg, SAVe.
 <!-- END NOTES cmd-ORS -->
 
 #### SRS
@@ -1091,6 +1242,31 @@ Optimize reference surface.
 Slave one ref surface to another.
 
 <!-- BEGIN NOTES cmd-SRS -->
+```
+MACOS>srs
+Enter number of element to be slaved: [1]: 13
+Enter number of element to slave to: [1]: 12
+ Reference surface recalculation results:
+   Old f= ...          New f= ...
+   (z, psi, Vpt likewise)
+Accept the new element? [YES]:
+```
+Slave Reference Surface: solves the location, orientation,
+radius and propagation distance zElt of one reference surface
+of a diffraction-propagation pair from the other's parameters
+plus the chief-ray path between them; run ORS on the first
+surface, then SRS on the second (Section 6.3).  Both elements
+must be FocalPlane, Reference, Obscuring or Return surfaces.
+Flats keep f=INF regardless of the propagation distance, and
+a slaved-to FocalPlane's big zElt sentinel is preserved.
+Return-surface parity between the two elements selects among
+plane/sphere geometry cases; the asymmetric sphere-slaved-to-
+plane case is unimplemented (warning).  Code bug: the accept
+test uses .OR. where FEXit/ORS use .AND., so the new element
+data is applied regardless of the answer.  SMACOS:
+IARG(1)=slaved element, IARG(2)=slave-to element,
+CARG(1)=accept answer.
+*Related:* ORS, FEXit, PROpagate.
 <!-- END NOTES cmd-SRS -->
 
 #### NONe
@@ -1100,6 +1276,14 @@ Slave one ref surface to another.
 Turn off plotting (no PGPLOT calls).
 
 <!-- BEGIN NOTES cmd-NONe -->
+```
+MACOS>none
+```
+No input, no output: sets the surface-plot type to 0, so
+plotting commands produce no graphics (numeric summaries still
+print).  NULL is an undocumented synonym.  This is the plot
+type of choice for journals/scripts that must run headless.
+*Related:* GRAy, SLIce, CONtour, WIRe, TEXt, BINary.
 <!-- END NOTES cmd-NONe -->
 
 ### Surface Data
@@ -1111,6 +1295,24 @@ Turn off plotting (no PGPLOT calls).
 Set up interpolated-surface data.
 
 <!-- BEGIN NOTES cmd-SINt -->
+```
+MACOS>sint
+ Computing interpolated surface data...
+ Compute time was    5.7871 sec
+```
+Surface INTerpolate: reads the data files for every
+Interpolated (SrfType=5) surface in the prescription and
+precomputes the triangular-interpolation coefficients used by
+the ray trace (Section 4.4).  Per element it expects
+`filnam.srfN.bin` (binary) with `.txt` fallback; if neither
+exists it prompts "Enter new .srf-file root name or QUIT to
+exit:".  File format: header `nDP iComputeDZ`, then one
+`x y z [dz/dx dz/dy]` row per data point (slopes computed by
+the DIDES code when iComputeDZ=1).  Until SINt runs,
+interpolated surfaces trace as their base conic.  Invalidates
+trace/build/propagate/perturb state.  SMACOS: no arguments —
+the data files must exist under the loaded Rx root name.
+*Related:* UDSinit, MODify.
 <!-- END NOTES cmd-SINt -->
 
 #### UDSinit
@@ -1120,6 +1322,23 @@ Set up interpolated-surface data.
 Set up user-defined-surface data.
 
 <!-- BEGIN NOTES cmd-UDSinit -->
+```
+MACOS>udsinit
+Enter number of element (0=aperture): [0]: 3
+ Enter user-defined surface file name  [none]: dm349.coef
+```
+Initializes UserDefined (SrfType=7) surface data for the
+element, dispatching on its UDSrfType: the built-in types are
+deformable-mirror influence-function models (1313-, 349- and
+397-actuator arrays plus squared-out, bilinear, radial and
+damped-sine square-array variants) whose files list
+actuator-number/coefficient pairs, the Hubble primary and
+secondary x-y grid maps, and a general grid surface.  On
+success the trace/build/propagate state is invalidated;
+"Unknown user-defined surface type." otherwise.  SMACOS:
+IARG(1)=element, CARG(1)=file name (an SMACOS caller can also
+poke UDSrfCoef directly, Section 4.4.10).
+*Related:* SINt, MODify.
 <!-- END NOTES cmd-UDSinit -->
 
 ### Perturbation
@@ -1131,6 +1350,33 @@ Set up user-defined-surface data.
 Apply 6-DOF perturbation.
 
 <!-- BEGIN NOTES cmd-PERturb-elt -->
+```
+MACOS>perturb
+Enter element to be perturbed: [0]: 3
+Enter coordinate system for perturbation (ELEMENT or GLOBAL): [GLOBAL]:
+Enter rotational perturbation vector (x,y,z): [0.,0.,0.]: 0,0,0
+Enter translational perturbation vector (x,y,z): [0.,0.,0.]: 0,0,1e-6
+```
+Applies a rigid-body perturbation directly to the prescription:
+rotation as an Euler axis/angle 3-vector (direction=axis,
+magnitude=angle in radians) about the rotation point RptElt,
+translation in base units; not limited to small motions.
+Element 0 perturbs the source (requires STOp unless the Rx set
+RxNoStopSet; rotates ChfRayDir and the grid axes about
+StopPos).  Answering ELEMENT prompts instead for one vector of
+length nECoord in element coordinates ("No local DOF
+available!" when nECoord=0).  All attached data move with the
+element: apertures, HOE points, Mon/grid/FreeForm frames,
+metrology points, and one linked element (LnkElt).  If the Rx
+declared ApStop at or after the element, the stop is re-set
+automatically afterwards.  To undo, reverse the perturbation
+or reload the Rx (preferred after multiple rotations).
+Invalidates trace/build/propagate/grid state.  SMACOS:
+IARG(1)=element; element>0: CARG(1)='YES' (element coords,
+DARG(1:6)) or 'NO'/'GLObal' (DARG(1:3)=rotation,
+DARG(4:6)=translation); element 0: DARG(1:6) as
+rotation+translation.
+*Related:* GPERturb, PREad, MODify, STOp, BWK, LPErturb.
 <!-- END NOTES cmd-PERturb-elt -->
 
 #### GPERturb <grp>
@@ -1140,6 +1386,23 @@ Apply 6-DOF perturbation.
 Perturb an element group.
 
 <!-- BEGIN NOTES cmd-GPERturb-grp -->
+```
+MACOS>gperturb
+Enter element to be perturbed: [0]: 5
+Enter coordinate system for perturbation (ELEMENT or GLOBAL): [GLOBAL]:
+Enter rotational perturbation vector (x,y,z): [0.,0.,0.]:
+Enter translational perturbation vector (x,y,z): [0.,0.,0.]:
+```
+Group PERturb: rigid-body perturbs every member of the element
+group defined at the element (the `EltGrp=` list in the Rx),
+rotating all members about the group element's rotation point
+so the group moves as one body; prints " No element group
+defined at element N" otherwise.  Same coordinate conventions
+and prompts as PERturb (element coordinates use the group
+element's nECoord/TElt).  Invalidates trace/build/propagate/
+grid state.  SMACOS: same argument mapping as PERturb
+(IARG(1), CARG(1), DARG(1:6)).
+*Related:* PERturb, PREad.
 <!-- END NOTES cmd-GPERturb-grp -->
 
 #### PREad <file>
@@ -1149,6 +1412,22 @@ Perturb an element group.
 Apply perturbations from file.
 
 <!-- BEGIN NOTES cmd-PREad-file -->
+```
+MACOS>pread
+Enter new .pert-file name: [Cassegrain.pert]:
+ File Cassegrain.pert read.
+```
+Reads a `.pert` file — one all-numeric 6-vector per line
+(3 rotations then 3 translations, space-separated, GLOBAL
+coordinates), line 1 = element 1 and so on; every element
+through the last must have a row (zeros if unperturbed) — and
+applies each row exactly as a PERturb of that element
+(rotation about RptElt, attached frames updated).  The default
+name is the Rx root + `.pert`; if the file is missing, PREad
+re-prompts (answer `q` to give up).  A short or malformed file
+prints " Input file ... not compatible with current system".
+SMACOS: file name in CARG(1).
+*Related:* PERturb, LPRead.
 <!-- END NOTES cmd-PREad-file -->
 
 ### Linear Model
@@ -1160,16 +1439,62 @@ Apply perturbations from file.
 Build linear model from chief-ray ray partials.
 
 <!-- BEGIN NOTES cmd-BUild -->
+```
+MACOS>build
+Enter terminal element number: [1]: 4
+ Tracing    150 rays and BUILDing linear model...
+ Compute time was    0.4141 sec
+```
+Traces every ray to the terminal element while assembling the
+C-matrix: per-ray differential sensitivities of ray direction,
+position and pathlength at that element to source and per-
+element 6-DOF perturbations (Section 8).  Prerequisite for
+PARtials, LPErturb, LPRead, LSPot, LOPd, LPIxilate and
+EXPort; zeroes the linear perturbation vector.  The terminal
+element cannot be a Segment or a non-sequential element
+("Invalid element type"); mid-train reference/obscuring
+surfaces are ignored and return surfaces are not supported
+(Section 8.5.1).  Ray count is limited to bRay ("BUILD
+limited to N rays.  MOD npts and recompute.").  PARtials
+(no cmdref entry of its own) then prints individual per-ray
+sensitivity blocks, in global or actuator/sensor coordinates.
+SMACOS: IARG(1)=terminal element.
+*Related:* DMBuild, LPErturb, LPRead, EXPort.
 <!-- END NOTES cmd-BUild -->
 
 #### DMBuild
 
-*Minimum match:* `DMBuild` — *needs:* [Rx] [BLD]
+*Minimum match:* `DMBuild` — *needs:* [Rx]
 
-Build with deformable mirror PARtials <i>- print partial derivatives, ray i.
+Build with deformable mirror.
 
 <!-- BEGIN NOTES cmd-DMBuild -->
+```
+MACOS>dmbuild
+Enter terminal element number: [1]: 4
+ Tracing    150 rays and BUILDing linear model...
+```
+Same dialog and trace as BUild, additionally raising the
+DM-build flag intended to add deformable-mirror (user-defined
+surface) actuator partials to the linear model — but the code
+paths that consume the flag are commented out, so DMBuild
+currently behaves exactly like BUild, consistent with Section
+8.5.2: "The DMBuild command is not used in this version."
+(The summary line above is a generator artifact — the help
+text's PARtials one-liner is merged into it; see BUild.)
+SMACOS: IARG(1)=terminal element.
+*Related:* BUild.
 <!-- END NOTES cmd-DMBuild -->
+
+#### PARtials <i>
+
+*Minimum match:* `PARtials <i>` — *needs:* [BLD]
+
+Print partial derivs, ray i.
+
+<!-- BEGIN NOTES cmd-PARtials-i -->
+<!-- END NOTES cmd-PARtials-i -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LPErturb
 
@@ -1178,6 +1503,31 @@ Build with deformable mirror PARtials <i>- print partial derivatives, ray i.
 Linear-model perturb.
 
 <!-- BEGIN NOTES cmd-LPErturb -->
+```
+MACOS>lperturb
+Enter element to be perturbed: [0]: 3
+Use element coordinates? [NO]:
+Enter rotational perturbation vector (x,y,z): [0.,0.,0.]: 0,0,0
+Enter translational perturbation vector (x,y,z): [0.,0.,0.]: 0,0,1e-6
+
+ Element    1 Linear Perturbations:
+   Rotational= ...
+Translational= ...
+```
+Sets the linear-model perturbation for an element (the Rx
+itself is untouched); requires BUild first, and element 0
+(the source) is not allowed.  The linear model requires
+nOutCord=5 in the order direction (2) / beamwalk (2) / OPD
+(1), else "PERTURB expects 5 output coordinates..." (sic).
+Answering YES reads one 6-vector in element coordinates.  The
+full per-element perturbation table prints afterwards.  Two
+deviations from Section 8.5.3: the entry for the chosen
+element is REPLACED, not summed (accumulation is only across
+different elements), and the element-coordinate vector is
+always read as 6 components regardless of nECoord.  Reset
+with LREset.  SMACOS: IARG(1)=element, CARG(1)=YES/NO
+(element coords), DARG(1:6)=perturbation.
+*Related:* LPRead, LREset, LSPot, LOPd, BUild, PERturb.
 <!-- END NOTES cmd-LPErturb -->
 
 #### LPRead
@@ -1187,6 +1537,20 @@ Linear-model perturb.
 Linear perturb from file.
 
 <!-- BEGIN NOTES cmd-LPRead -->
+```
+MACOS>lpread
+Enter .pert-file name: [Cassegrain.pert]:
+ FileCassegrain.pert read.
+```
+(Missing space after "File" — sic.)  Reads a `.pert` file
+(same all-numeric global-coordinate format as PREad, one row
+per element up to the BUild terminal element) into the
+linear-model perturbation vector; the prescription is NOT
+changed.  Requires BUild first ("Must BUILD first."); on
+success sets the perturbed flag so LSPot/LOPd/LPIxilate can
+run.  Missing file re-prompts (`q` gives up).  SMACOS: file
+name in CARG(1).
+*Related:* PREad, LPErturb, LREset, BUild.
 <!-- END NOTES cmd-LPRead -->
 
 #### LREset
@@ -1196,6 +1560,14 @@ Linear perturb from file.
 Zero linear perturbations.
 
 <!-- BEGIN NOTES cmd-LREset -->
+```
+MACOS>lreset
+```
+No input, no output: zeroes the linear-model perturbation
+vector for all elements.  Use it between LPErturb cases.  It
+does not clear the "perturbed" flag, so a following LSPot/LOPd
+shows the unperturbed linear result.  SMACOS: no arguments.
+*Related:* LPErturb, LPRead.
 <!-- END NOTES cmd-LREset -->
 
 #### LSPot, LOPd
@@ -1205,6 +1577,24 @@ Zero linear perturbations.
 Linear-model spot / OPD.
 
 <!-- BEGIN NOTES cmd-LSPot -->
+```
+MACOS>lspot
+ Tracing perturbed system
+ Average OPD is ...
+ RMS OPD including piston is ...
+```
+Evaluates the linear model — nominal ray state at the BUild
+element plus C-matrix times the current perturbation vector —
+and plots the result: LSPot a spot diagram ("Spot Diagram"),
+LOPd a square OPD map ("LinMod OPD Map"), each preceded by
+the average/RMS OPD summary above.  Both require a prior
+LPErturb or LPRead ("Must LPERTURB before plotting linear
+model results.") and the nOutCord=5 output-coordinate setup
+(see LPErturb).  They parallel the exact SPOt and OPD commands
+— comparing linear vs exact results over the expected
+perturbation range is the standard linearity check (Section
+8.1).  SMACOS: no arguments.
+*Related:* LPErturb, LPIxilate, SPOt, OPD.
 <!-- END NOTES cmd-LSPot -->
 
 #### LPIxilate
@@ -1214,6 +1604,29 @@ Linear-model spot / OPD.
 Linear-model pixelated image.
 
 <!-- BEGIN NOTES cmd-LPIxilate -->
+```
+MACOS>lpix
+ Tracing perturbed system
+ Average OPD is ...
+ RMS OPD including piston is ...
+ FFT/Point Spread Function Data Summary:
+ Wavelength= ...;  Transmission Distance= ...
+ u-v plane diam= ...  du= ...
+ x-y plane diam= ...  dx= ...
+Enter number of pixels per side: [64]:
+Enter size of pixel: [...]:
+```
+Computes the linear-model wavefront at the BUild element,
+performs a single far-field FFT propagation over transmission
+distance zElt(iElt), and pixelates the image onto the
+requested grid — the linear parallel of PIXel (Section 8.5).
+Requires LPErturb/LPRead first and nOutCord=5.  The same
+dispatcher branch also serves the undocumented siblings
+LINtensity (point-image intensity) and LLO (log10 intensity).
+TEXt/BINary plot types write `filnam.lpxN`.  SMACOS: LoadStack
+passes no pixel arguments, so the pixel prompts take their
+defaults.
+*Related:* LSPot, LOPd, PIXel, INTensity.
 <!-- END NOTES cmd-LPIxilate -->
 
 ### Diffraction
@@ -1226,6 +1639,7 @@ Propagate diffraction wavefront.
 
 <!-- BEGIN NOTES cmd-PROpagate -->
 <!-- END NOTES cmd-PROpagate -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BEAm
 
@@ -1235,6 +1649,7 @@ Set beam type (Gauss, plane, ...).
 
 <!-- BEGIN NOTES cmd-BEAm -->
 <!-- END NOTES cmd-BEAm -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### VECtor, SCAlar
 
@@ -1244,6 +1659,7 @@ Vector vs scalar diffraction (with POLarized).
 
 <!-- BEGIN NOTES cmd-VECtor -->
 <!-- END NOTES cmd-VECtor -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### COMpose
 
@@ -1253,6 +1669,7 @@ Start a multi-object/color image.
 
 <!-- BEGIN NOTES cmd-COMpose -->
 <!-- END NOTES cmd-COMpose -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ADD, DAdd
 
@@ -1262,6 +1679,7 @@ Add to / display composed image.
 
 <!-- BEGIN NOTES cmd-ADD -->
 <!-- END NOTES cmd-ADD -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CADD
 
@@ -1271,6 +1689,7 @@ Add current intensity to composed.
 
 <!-- BEGIN NOTES cmd-CADD -->
 <!-- END NOTES cmd-CADD -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### NOIse, SEEd
 
@@ -1280,6 +1699,7 @@ Image noise + RNG seed.
 
 <!-- BEGIN NOTES cmd-NOIse -->
 <!-- END NOTES cmd-NOIse -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### STRetch
 
@@ -1289,6 +1709,7 @@ LIN / LOG / SQRT display stretch.
 
 <!-- BEGIN NOTES cmd-STRetch -->
 <!-- END NOTES cmd-STRetch -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Outputs (Ray-Trace & Diffraction)
 
@@ -1300,6 +1721,7 @@ Wavefront error map.
 
 <!-- BEGIN NOTES cmd-OPD -->
 <!-- END NOTES cmd-OPD -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SPOt
 
@@ -1309,6 +1731,7 @@ Spot diagram.
 
 <!-- BEGIN NOTES cmd-SPOt -->
 <!-- END NOTES cmd-SPOt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ZABerr
 
@@ -1318,6 +1741,7 @@ Zernike OPD aberration.
 
 <!-- BEGIN NOTES cmd-ZABerr -->
 <!-- END NOTES cmd-ZABerr -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ZCOef
 
@@ -1327,6 +1751,7 @@ Zernike coefficient extraction.
 
 <!-- BEGIN NOTES cmd-ZCOef -->
 <!-- END NOTES cmd-ZCOef -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LOS
 
@@ -1336,6 +1761,7 @@ Line-of-sight output.
 
 <!-- BEGIN NOTES cmd-LOS -->
 <!-- END NOTES cmd-LOS -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### METcalc
 
@@ -1345,6 +1771,7 @@ Metrology beam output.
 
 <!-- BEGIN NOTES cmd-METcalc -->
 <!-- END NOTES cmd-METcalc -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### INTensity
 
@@ -1354,6 +1781,7 @@ Wavefront intensity.
 
 <!-- BEGIN NOTES cmd-INTensity -->
 <!-- END NOTES cmd-INTensity -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PIXel
 
@@ -1363,6 +1791,7 @@ Pixelated intensity output.
 
 <!-- BEGIN NOTES cmd-PIXel -->
 <!-- END NOTES cmd-PIXel -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### AMPlitude
 
@@ -1372,6 +1801,7 @@ Amplitude output.
 
 <!-- BEGIN NOTES cmd-AMPlitude -->
 <!-- END NOTES cmd-AMPlitude -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PHAse, PH
 
@@ -1381,6 +1811,7 @@ Phase output.
 
 <!-- BEGIN NOTES cmd-PHAse -->
 <!-- END NOTES cmd-PHAse -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### REAl
 
@@ -1390,6 +1821,7 @@ Real & imaginary wavefront.
 
 <!-- BEGIN NOTES cmd-REAl -->
 <!-- END NOTES cmd-REAl -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### LOG
 
@@ -1399,6 +1831,7 @@ Log10 intensity.
 
 <!-- BEGIN NOTES cmd-LOG -->
 <!-- END NOTES cmd-LOG -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MTF, CMTF
 
@@ -1408,6 +1841,7 @@ Modulation transfer function.
 
 <!-- BEGIN NOTES cmd-MTF -->
 <!-- END NOTES cmd-MTF -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### IMG
 
@@ -1417,6 +1851,7 @@ Load saved image data.
 
 <!-- BEGIN NOTES cmd-IMG -->
 <!-- END NOTES cmd-IMG -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Plot Style
 
@@ -1428,6 +1863,7 @@ Gray-scale surface plot.
 
 <!-- BEGIN NOTES cmd-GRAy -->
 <!-- END NOTES cmd-GRAy -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### WIRe
 
@@ -1437,6 +1873,7 @@ Wireframe plot.
 
 <!-- BEGIN NOTES cmd-WIRe -->
 <!-- END NOTES cmd-WIRe -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SLIce
 
@@ -1446,6 +1883,7 @@ Slice surface plot.
 
 <!-- BEGIN NOTES cmd-SLIce -->
 <!-- END NOTES cmd-SLIce -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### COLumn
 
@@ -1455,6 +1893,7 @@ Column line plot.
 
 <!-- BEGIN NOTES cmd-COLumn -->
 <!-- END NOTES cmd-COLumn -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CONtour
 
@@ -1464,6 +1903,7 @@ Contour surface plot.
 
 <!-- BEGIN NOTES cmd-CONtour -->
 <!-- END NOTES cmd-CONtour -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### IMGmode
 
@@ -1473,6 +1913,7 @@ Toggle image polarity (NEG=astro, POS=conventional).
 
 <!-- BEGIN NOTES cmd-IMGmode -->
 <!-- END NOTES cmd-IMGmode -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CIR, GIR
 
@@ -1482,6 +1923,7 @@ Color / gray image rendering.
 
 <!-- BEGIN NOTES cmd-CIR -->
 <!-- END NOTES cmd-CIR -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PGP
 
@@ -1491,6 +1933,7 @@ PGPLOT panel layout (1,2,3,4,9).
 
 <!-- BEGIN NOTES cmd-PGP -->
 <!-- END NOTES cmd-PGP -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### File Output
 
@@ -1502,6 +1945,7 @@ ASCII print output.
 
 <!-- BEGIN NOTES cmd-TEXt -->
 <!-- END NOTES cmd-TEXt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BINary
 
@@ -1511,6 +1955,7 @@ Binary image file.
 
 <!-- BEGIN NOTES cmd-BINary -->
 <!-- END NOTES cmd-BINary -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### FITs, WFIts
 
@@ -1520,6 +1965,7 @@ FITS / wide-FITS image file.
 
 <!-- BEGIN NOTES cmd-FITs -->
 <!-- END NOTES cmd-FITs -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MAT
 
@@ -1529,6 +1975,7 @@ MATLAB .mat file.
 
 <!-- BEGIN NOTES cmd-MAT -->
 <!-- END NOTES cmd-MAT -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GETMatlabmatrix
 
@@ -1538,6 +1985,7 @@ Fetch named matrix into MATLAB (smacos only).
 
 <!-- BEGIN NOTES cmd-GETMatlabmatrix -->
 <!-- END NOTES cmd-GETMatlabmatrix -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Window & Post-Processing
 
@@ -1549,6 +1997,7 @@ Set plot pixel-array location.
 
 <!-- BEGIN NOTES cmd-PLOcate -->
 <!-- END NOTES cmd-PLOcate -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### NOPLOC
 
@@ -1558,6 +2007,7 @@ Clear plot location.
 
 <!-- BEGIN NOTES cmd-NOPLOC -->
 <!-- END NOTES cmd-NOPLOC -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PWIn
 
@@ -1567,6 +2017,7 @@ Plot window definition.
 
 <!-- BEGIN NOTES cmd-PWIn -->
 <!-- END NOTES cmd-PWIn -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SZCo
 
@@ -1576,6 +2027,7 @@ Sizing / coordinate options.
 
 <!-- BEGIN NOTES cmd-SZCo -->
 <!-- END NOTES cmd-SZCo -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GBS
 
@@ -1585,6 +2037,7 @@ Gaussian beam-size post-processing.
 
 <!-- BEGIN NOTES cmd-GBS -->
 <!-- END NOTES cmd-GBS -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BLUr, GBLur
 
@@ -1594,6 +2047,7 @@ Blur / Gaussian blur.
 
 <!-- BEGIN NOTES cmd-BLUr -->
 <!-- END NOTES cmd-BLUr -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GAIn
 
@@ -1603,6 +2057,7 @@ Apply gain map to intensity.
 
 <!-- BEGIN NOTES cmd-GAIn -->
 <!-- END NOTES cmd-GAIn -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ODRaw, PGD
 
@@ -1612,6 +2067,7 @@ Outline drawing / PGPLOT diagnostics.
 
 <!-- BEGIN NOTES cmd-ODRaw -->
 <!-- END NOTES cmd-ODRaw -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ROW
 
@@ -1621,6 +2077,7 @@ Extract / plot row from image.
 
 <!-- BEGIN NOTES cmd-ROW -->
 <!-- END NOTES cmd-ROW -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### System Optimization
 
@@ -1632,6 +2089,7 @@ Add a variable element.
 
 <!-- BEGIN NOTES cmd-AVAR-elt -->
 <!-- END NOTES cmd-AVAR-elt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MVAR <elt>
 
@@ -1641,6 +2099,7 @@ Modify a variable element.
 
 <!-- BEGIN NOTES cmd-MVAR-elt -->
 <!-- END NOTES cmd-MVAR-elt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DVAR <elt>
 
@@ -1650,6 +2109,7 @@ Delete a variable element.
 
 <!-- BEGIN NOTES cmd-DVAR-elt -->
 <!-- END NOTES cmd-DVAR-elt -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### VARS
 
@@ -1659,6 +2119,7 @@ List all variable elements.
 
 <!-- BEGIN NOTES cmd-VARS -->
 <!-- END NOTES cmd-VARS -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### AFOV <fov>
 
@@ -1668,6 +2129,7 @@ Add a field of view.
 
 <!-- BEGIN NOTES cmd-AFOV-fov -->
 <!-- END NOTES cmd-AFOV-fov -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DFOV <fov>
 
@@ -1677,6 +2139,7 @@ Delete a field of view.
 
 <!-- BEGIN NOTES cmd-DFOV-fov -->
 <!-- END NOTES cmd-DFOV-fov -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### FOVS
 
@@ -1686,6 +2149,7 @@ List all fields of view.
 
 <!-- BEGIN NOTES cmd-FOVS -->
 <!-- END NOTES cmd-FOVS -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CALib
 
@@ -1695,6 +2159,7 @@ Run system optimization.
 
 <!-- BEGIN NOTES cmd-CALib -->
 <!-- END NOTES cmd-CALib -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SFOV
 
@@ -1704,6 +2169,7 @@ Select field of view.
 
 <!-- BEGIN NOTES cmd-SFOV -->
 <!-- END NOTES cmd-SFOV -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Misc / Debug
 
@@ -1715,6 +2181,7 @@ Older single-ray variants (use RAY).
 
 <!-- BEGIN NOTES cmd-SRAy -->
 <!-- END NOTES cmd-SRAy -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DOPD, DOPL, ZRM
 
@@ -1724,6 +2191,7 @@ Debug / diagnostic prints.
 
 <!-- BEGIN NOTES cmd-DOPD -->
 <!-- END NOTES cmd-DOPD -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### JWST_v3d, Vis3d
 
@@ -1733,3 +2201,4 @@ Debug / diagnostic prints.
 
 <!-- BEGIN NOTES cmd-JWST-v3d -->
 <!-- END NOTES cmd-JWST-v3d -->
+*TODO: expand — dialog details, behavior notes, related commands.*

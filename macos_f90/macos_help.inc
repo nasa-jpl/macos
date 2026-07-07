@@ -120,7 +120,7 @@ C***********************************************************************
       WRITE(*,*)'   BUild       - build linear model from chief-ray'
       WRITE(*,*)'                 ray partials                     [Rx]'
       WRITE(*,*)'   DMBuild     - build with deformable mirror     [Rx]'
-      WRITE(*,*)'   PARtials <i>- print partial derivatives, ray i [BLD]'
+      WRITE(*,*)'   PARtials <i> - print partial derivs, ray i    [BLD]'
       WRITE(*,*)'   LPErturb    - linear-model perturb              [BLD]'
       WRITE(*,*)'   LPRead      - linear perturb from file          [BLD]'
       WRITE(*,*)'   LREset      - zero linear perturbations         [BLD]'
