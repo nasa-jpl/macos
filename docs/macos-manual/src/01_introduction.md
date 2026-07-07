@@ -42,6 +42,8 @@ Section 2 of this manual briefly summarizes the technical areas covered by MACOS
 
 Several example problems are worked in the manual to illustrate specific features of the code. Appendix A contains the prescriptions and journal files for the examples. Appendix B contains selected technical papers.
 
+This manual is the *learning* document; its companion, the **MACOS Command Reference** (`macosCmdRef.pdf`, source in `docs/macos-manual/cmdref/`), is the *lookup* document: every interactive command, and every function of the MATLAB (mmacos) and Python (pymacos) programming interfaces, cataloged one at a time with its syntax. Appendix C of this manual lists the commands in summary form; the Command Reference is the full per-command catalog and the place to start if you are driving MACOS from MATLAB or Python.
+
 ### New Features of Version 4.00
 
 MACOS 4.00 (April 2026) is a feature release built on the Fortran 90 / SMACOS infrastructure introduced in v3.2. It adds a new general-purpose composite surface (FreeForm), adds multiple different forms of Zernike polynomials describing for optical surfaces, modernizes the graphics layer, expands the SMACOS / GMI MATLAB interface, and adds new utility commands plus a separate segmented-mirror prescription generator.
