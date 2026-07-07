@@ -5,9 +5,12 @@
 > the root `CLAUDE.md`, and `README.md` here.
 
 **As of 2026-07-06 the manual is Markdown-first.**  Canonical source:
-`src/*.md` + `src/media/`.  The docx patch chain (`patches/`,
-`scripts/`, the `macosMan*.docx` snapshots) is FROZEN provenance — do
-not extend it; new manual work edits `src/` only.
+`src/*.md` + `src/media/`.  The 2026-04/05 docx patch chain
+(`patches/`, `scripts/`) was REMOVED from HEAD on 2026-07-07 (it was
+frozen provenance, unreferenced by the build, and its files carried
+AppScan findings) — recover it from git history if ever needed.  The
+`macosMan*.docx` snapshots remain as provenance.  New manual work
+edits `src/` only.
 
 ## Cycle
 
