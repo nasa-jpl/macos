@@ -19,7 +19,12 @@ TITLE      := MACOS Manual
 PANDOC_OPTS := --resource-path=src --toc --toc-depth=3 \
                --metadata title="$(TITLE)"
 
-.PHONY: all docx html pdf appendix-c clean
+CMDSRC     := $(sort $(wildcard cmdref/[0-9]*.md))
+CMDREF_OPTS := --resource-path=cmdref --toc --toc-depth=2 \
+               --metadata title="MACOS Command Reference"
+
+.PHONY: all docx html pdf appendix-c clean \
+        cmdref cmdref-pdf cmdref-regen
 
 all: docx html
 
@@ -42,6 +47,24 @@ $(BUILD)/macosMan.pdf: $(BUILD)/macosMan.docx
 
 appendix-c:
 	python3 tools/gen_appendix_c.py
+
+# ---- MACOS Command Reference (cmdref/) ------------------------------
+cmdref: $(BUILD)/macosCmdRef.docx $(BUILD)/macosCmdRef.html
+cmdref-pdf: $(BUILD)/macosCmdRef.pdf
+
+# regenerate the auto-skeleton catalogs from engine + binding sources
+cmdref-regen:
+	python3 tools/gen_cmdref.py
+
+$(BUILD)/macosCmdRef.docx: $(CMDSRC) | $(BUILD)
+	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)
+
+$(BUILD)/macosCmdRef.html: $(CMDSRC) | $(BUILD)
+	$(PANDOC) $(CMDREF_OPTS) --standalone --embed-resources \
+	  -o $@ $(CMDSRC)
+
+$(BUILD)/macosCmdRef.pdf: $(BUILD)/macosCmdRef.docx
+	python3 tools/docx2pdf.py $< $@
 
 $(BUILD):
 	mkdir -p $(BUILD)
