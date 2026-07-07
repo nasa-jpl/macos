@@ -13,7 +13,8 @@ Casing: UPPER part is the minimum-match abbreviation.
 Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 
 ```
-       [DIFF]=needs PROpagate
+       [DIFF]=diffraction output (propagation runs
+              automatically inside the command)
 ```
 
 #### SESSION & FILES
@@ -144,7 +145,9 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 #### DIFFRACTION
 
 ```
-   PROpagate   - propagate diffraction wavefront [Rx]
+   PROpagate   - note: NOT a command; propagation
+                 runs automatically inside any
+                 [DIFF] output command
    BEAm        - set beam type (Gauss, plane, ...)
    VECtor, SCAlar - vector vs scalar diffraction
                     (with POLarized)
@@ -171,7 +174,8 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
    REAl        - real & imaginary wavefront     [DIFF]
    LOG         - log10 intensity                [DIFF]
    MTF, CMTF   - modulation transfer function   [DIFF]
-   IMG         - load saved image data
+   IMG         - simulate imaging of the ObjFile
+                 object map            [DIFF]
 ```
 
 #### PLOT STYLE

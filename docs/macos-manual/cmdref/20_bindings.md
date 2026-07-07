@@ -110,6 +110,7 @@ Return a struct of unit identifiers for the loaded Rx. s = macos.sys_units() ret
 
 <!-- BEGIN NOTES fn-dwdx-for-current-source -->
 <!-- END NOTES fn-dwdx-for-current-source -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### dwdz_for_current_source
 
@@ -118,6 +119,7 @@ Return a struct of unit identifiers for the loaded Rx. s = macos.sys_units() ret
 
 <!-- BEGIN NOTES fn-dwdz-for-current-source -->
 <!-- END NOTES fn-dwdz-for-current-source -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### perturb_src
 
@@ -449,6 +451,7 @@ Find all elements where element Grps. are defined.
 
 <!-- BEGIN NOTES fn-elt-grp-max-size -->
 <!-- END NOTES fn-elt-grp-max-size -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### elt_grp_wipe
 
@@ -1203,6 +1206,7 @@ Reset ray-tracing state
 
 <!-- BEGIN NOTES fn-setActivePointSrc -->
 <!-- END NOTES fn-setActivePointSrc -->
+*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### setEltSrfFFZern
 

@@ -11,14 +11,15 @@ C  the abbreviation that LCMP() actually tests against the user input.
 C  Tags after the description:
 C     [Rx]   needs a loaded prescription (OLD/NEW first)
 C     [BLD]  needs a built linear model (BUILD first)
-C     [DIFF] needs a propagated wavefront (PROpagate first)
+C     [DIFF] diffraction output (propagates the wavefront itself)
 C***********************************************************************
 
       WRITE(*,*)' '
       WRITE(*,*)' MACOS command summary'
       WRITE(*,*)' Casing: UPPER part is the minimum-match abbreviation.'
       WRITE(*,*)' Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,'
-      WRITE(*,*)'       [DIFF]=needs PROpagate'
+      WRITE(*,*)'       [DIFF]=diffraction output (propagation runs'
+      WRITE(*,*)'              automatically inside the command)'
       WRITE(*,*)' '
       WRITE(*,*)' SESSION & FILES'
       WRITE(*,*)'   Quit, EXIT, BYE - exit MACOS'
@@ -131,7 +132,9 @@ C***********************************************************************
 
       WRITE(*,*)' '
       WRITE(*,*)' DIFFRACTION'
-      WRITE(*,*)'   PROpagate   - propagate diffraction wavefront [Rx]'
+      WRITE(*,*)'   PROpagate   - note: NOT a command; propagation'
+      WRITE(*,*)'                 runs automatically inside any'
+      WRITE(*,*)'                 [DIFF] output command'
       WRITE(*,*)'   BEAm        - set beam type (Gauss, plane, ...)'
       WRITE(*,*)'   VECtor, SCAlar - vector vs scalar diffraction'
       WRITE(*,*)'                    (with POLarized)'
@@ -155,7 +158,8 @@ C***********************************************************************
       WRITE(*,*)'   REAl        - real & imaginary wavefront     [DIFF]'
       WRITE(*,*)'   LOG         - log10 intensity                [DIFF]'
       WRITE(*,*)'   MTF, CMTF   - modulation transfer function   [DIFF]'
-      WRITE(*,*)'   IMG         - load saved image data'
+      WRITE(*,*)'   IMG         - simulate imaging of the ObjFile'
+      WRITE(*,*)'                 object map            [DIFF]'
       WRITE(*,*)' '
       WRITE(*,*)' PLOT STYLE'
       WRITE(*,*)'   GRAy        - gray-scale surface plot'
