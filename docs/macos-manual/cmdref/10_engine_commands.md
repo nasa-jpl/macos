@@ -14,8 +14,14 @@ Commands below are available from the interactive CLI and, with few exceptions, 
 Exit MACOS.
 
 <!-- BEGIN NOTES cmd-Quit -->
+No dialog.  Closes the graphics device and any open output
+and journal files, then stops the process.  The dispatcher
+accepts a single `Q`; EXIT and BYE need all their letters.
+Under SMACOS only QUIT is matched, and it RETURNs control to
+the calling program instead of stopping — like the RETURN
+command, plus the file/graphics cleanup.
+*Related:* JOUrnal, EXEcute.
 <!-- END NOTES cmd-Quit -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### HELP
 
@@ -595,8 +601,23 @@ POs translates ChfRayPos.  SMACOS: SAOpt option in CARG(1).
 Source-adjustment mode.
 
 <!-- BEGIN NOTES cmd-SAOpt -->
+```
+MACOS>saopt
+Choose a source adjustment option, DIr or POs? [DIr]:
+ - Source direction changes when ajusting source
+```
+Chooses which source property the source-adjusting commands
+(STOp chief-ray aiming, source optimization in CALib) move:
+DIr re-points ChfRayDir, POs translates ChfRayPos.  DIr is
+refused for a collimated source ("** Can not change source
+direction for collimated source").  Until SAOpt is run the
+default is direction-fixed for a collimated source and
+position-fixed for a point source.  Unrecognized input
+leaves the mode unchanged and reports the current one.  The
+confirmation line's "ajusting" typo is in the code.  SMACOS:
+option in CARG(1).
+*Related:* STOp, SETC, CALib.
 <!-- END NOTES cmd-SAOpt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Ray Tracing
 
@@ -633,8 +654,24 @@ in IARG(1).
 Trace a ray through segment i s center (uses RptElt).
 
 <!-- BEGIN NOTES cmd-SEGRAYTrace-i -->
+```
+MACOS>segraytrace
+Enter segment number (0=quit): [0]: 3
+ Ray 1 segment from Element 0 (InputRay) to Element 1 (...):
+  ...per-surface printout as for RAY...
+Enter segment number (0=quit): [0]:
+```
+Loops until 0.  The element must be a Segment element
+("Element N is not a Segment.").  Re-aims the chief-ray slot
+at the segment's reference point RptElt — a lateral offset
+for a collimated source, a new ray direction for a point
+source — and traces that single ray to the last element (or
+RayTgtElt) with the full per-surface printout of RAY.
+Invalidates the build/trace/propagate state.  SMACOS: no
+LoadStack entry — the segment prompt takes its default
+(0 = quit immediately).
+*Related:* RAY, SRAy, MAP.
 <!-- END NOTES cmd-SEGRAYTrace-i -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PRAy, RRAy
 
@@ -669,8 +706,17 @@ as (0.9,0).
 Trace the PRAy/RRAy rays.
 
 <!-- BEGIN NOTES cmd-TPR -->
+No dialog.  Traces each reference ray found by the last RRAy
+or PRAy (chief + 4 marginal, or the 0.9-radius pupil ring)
+to the final element (or RayTgtElt) and prints a debug-style
+"**CTRACE iRay = ..." line per ray with its end-element
+position (RayPosHist); the footprints are also stored for
+later use.  Without a prior RRAy/PRAy it aborts with
+"** Need to run RRAY command before executing TRR command"
+(sic).  See PRAy for the finder half of the pair.  SMACOS:
+no LoadStack entry.
+*Related:* PRAy, RRAy, RAY.
 <!-- END NOTES cmd-TPR -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MAP
 
@@ -1283,7 +1329,7 @@ No input, no output: sets the surface-plot type to 0, so
 plotting commands produce no graphics (numeric summaries still
 print).  NULL is an undocumented synonym.  This is the plot
 type of choice for journals/scripts that must run headless.
-*Related:* GRAy, SLIce, CONtour, WIRe, TEXt, BINary.
+*Related:* GRay, SLIce, CONtour, WIRe, TEXt, BINary.
 <!-- END NOTES cmd-NONe -->
 
 ### Surface Data
@@ -2250,7 +2296,7 @@ Use ROW or COL command to plot 1D MTF in each dimension
 MTF propagates to the element, computes the intensity and
 Fourier-transforms it into the modulation transfer function,
 plotted against spatial frequency in cycles per BaseUnit.  A
-GRAy plot type is switched to SLIce for the display (no gray
+GRay plot type is switched to SLIce for the display (no gray
 image for MTF); use ROW/COLumn for 1-D cuts.  The CLI branch
 also derives the system EFL/focal ratio for sampling checks.
 CMTF (all four characters required) computes the 2-D MTF the
@@ -2294,15 +2340,26 @@ defaults (last element, incoherent).
 
 ### Plot Style
 
-#### GRAy
+#### GRay
 
-*Minimum match:* `GRAy`
+*Minimum match:* `GRay`
 
 Gray-scale surface plot.
 
-<!-- BEGIN NOTES cmd-GRAy -->
-<!-- END NOTES cmd-GRAy -->
-*TODO: expand — dialog details, behavior notes, related commands.*
+<!-- BEGIN NOTES cmd-GRay -->
+```
+MACOS>gray
+ Plot type set to GRAY
+```
+No further dialog.  Selects gray-scale raster rendering for
+subsequent surface-data plots (OPD, INTensity, SPOt, ...) —
+the startup default plot type.  IMGmode sets the raster
+polarity, STRetch the intensity scaling, and CIR/GIR the
+color-vs-gray palette.  The setting persists until another
+plot type (or NONe) is chosen.  The minimum match is the
+two-letter `GR`.
+*Related:* WIRe, SLIce, CONtour, NONe, IMGmode, CIR.
+<!-- END NOTES cmd-GRay -->
 
 #### WIRe
 
@@ -2311,8 +2368,18 @@ Gray-scale surface plot.
 Wireframe plot.
 
 <!-- BEGIN NOTES cmd-WIRe -->
+```
+MACOS>wire
+ Plot type set to WIRE
+```
+Selects the wireframe plot type: the data array is plotted
+as a 3-D surface — nearest-neighbor grid points joined,
+perspective added, hidden lines removed (manual Section
+7.4).  There is no axis scale; use SLIce for a scaled
+surface view.  Applies to subsequent surface-data plots
+until changed.
+*Related:* SLIce, GRay, CONtour, COLumn.
 <!-- END NOTES cmd-WIRe -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SLIce
 
@@ -2321,8 +2388,16 @@ Wireframe plot.
 Slice surface plot.
 
 <!-- BEGIN NOTES cmd-SLIce -->
+```
+MACOS>slice
+ Plot type set to SLICE
+```
+Selects the slice plot type: a 3-D surface rendering like
+WIRe but with axis scales, so data values can be read
+directly from the plot (manual Section 7.4).  Applies to
+subsequent surface-data plots until changed.
+*Related:* WIRe, GRay, CONtour, ROW.
 <!-- END NOTES cmd-SLIce -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### COLumn
 
@@ -2331,8 +2406,21 @@ Slice surface plot.
 Column line plot.
 
 <!-- BEGIN NOTES cmd-COLumn -->
+```
+MACOS>column
+ Plot type set to COLUMN
+MACOS>opd
+ ...
+Enter number of column to be plotted: [...]:
+```
+Selects the column plot type: a line plot along one column
+of the data matrix.  The column number is prompted when a
+plot is actually produced (default = the center column);
+out-of-range input skips the plot.  SMACOS: LoadStack queues
+IARG(1) and a literal 0, but the command itself reads
+nothing — the column prompt happens at plot time.
+*Related:* ROW, SLIce, MTF.
 <!-- END NOTES cmd-COLumn -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CONtour
 
@@ -2341,8 +2429,16 @@ Column line plot.
 Contour surface plot.
 
 <!-- BEGIN NOTES cmd-CONtour -->
+```
+MACOS>contour
+ Plot type set to CONTOUR
+```
+Selects the contour-map plot type: 16 contour levels connect
+points of equal value, an elevation-map view of the data
+(manual Section 7.4).  Applies to subsequent surface-data
+plots until changed.
+*Related:* GRay, WIRe, SLIce.
 <!-- END NOTES cmd-CONtour -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### IMGmode
 
@@ -2351,8 +2447,21 @@ Contour surface plot.
 Toggle image polarity (NEG=astro, POS=conventional).
 
 <!-- BEGIN NOTES cmd-IMGmode -->
+```
+MACOS>imgmode
+Raster polarity (NEG=astro/POS=conventional): [POS]: neg
+ IMGMODE = NEG (astronomy: large -> dark)
+```
+Sets the polarity of raster (GRay-type) image displays: NEG
+(or ASTRO) renders large values dark, astronomy-style; POS
+(or CONV) renders large values bright.  The prompt default
+is the current setting.  Non-raster plot types (SLIce, WIRe,
+CONtour, COLumn, ROW, SPOt) are unaffected, and unrecognized
+input changes nothing ("IMGMODE: unrecognized option, no
+change").  SMACOS: no LoadStack entry — the prompt takes its
+default, leaving the mode as-is.
+*Related:* GRay, STRetch, CIR.
 <!-- END NOTES cmd-IMGmode -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CIR, GIR
 
@@ -2361,8 +2470,12 @@ Toggle image polarity (NEG=astro, POS=conventional).
 Color / gray image rendering.
 
 <!-- BEGIN NOTES cmd-CIR -->
+No dialog.  CIR turns color image rendering on (" Color
+image rendering is on"); GIR reverts to gray-scale (" Gray
+image rendering is on").  Affects raster image displays
+(GRay plot type).  Interactive CLI only.
+*Related:* GRay, IMGmode, PGP.
 <!-- END NOTES cmd-CIR -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PGP
 
@@ -2371,8 +2484,18 @@ Color / gray image rendering.
 PGPLOT panel layout (1,2,3,4,9).
 
 <!-- BEGIN NOTES cmd-PGP -->
+```
+MACOS>pgp
+Enter PGPLOT display panel option (1,2,3 or 4): [1]: 4
+  Use 2 x 2 PGPLOT panels
+```
+Splits the graphics window into panels: 1 (single), 2 (1x2),
+3 (1x3), 4 (2x2) or 9 (3x3) — 9 is accepted although the
+prompt text doesn't offer it (the HELP line does).  Invalid
+input reverts to a single panel.  Forces the graphics device
+to reinitialize on the next plot.  Interactive CLI only.
+*Related:* PGD, CIR, GRay.
 <!-- END NOTES cmd-PGP -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### File Output
 
@@ -2383,8 +2506,24 @@ PGPLOT panel layout (1,2,3,4,9).
 ASCII print output.
 
 <!-- BEGIN NOTES cmd-TEXt -->
+```
+MACOS>text
+ Plot type set to TEXT
+MACOS>intensity
+ ...
+ Writing Wavefront Intensity, Elt=5
+ FORMATTED File=CassWithExitPupil.int5.txt
+```
+Redirects subsequent data outputs to formatted ASCII files
+instead of screen plots: single-precision values, one line
+per grid row, named `filnam.<tag><elt>.txt` where the tag
+identifies the data (.int, .amp, .phase, .real/.imag, .spot,
+.OPD, ...).  An existing file prompts "Image file ...
+exists.  Overwrite?" (default YES; answering no prompts
+'Enter new file name:').  Persists until another plot type
+is chosen.
+*Related:* BINary, FITs, MAT, NONe, GRay.
 <!-- END NOTES cmd-TEXt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BINary
 
@@ -2393,8 +2532,18 @@ ASCII print output.
 Binary image file.
 
 <!-- BEGIN NOTES cmd-BINary -->
+```
+MACOS>binary
+ Plot type set to BINARY
+```
+Redirects subsequent data outputs to flat binary files
+(direct-access records, one per grid row, 4 bytes per value)
+named `filnam.<tag><elt>` with no added extension, for
+import into other image/signal-processing software.  Same
+overwrite dialog as TEXt.  Persists until another plot type
+is chosen.
+*Related:* TEXt, FITs, MAT.
 <!-- END NOTES cmd-BINary -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### FITs, WFIts
 
@@ -2403,8 +2552,21 @@ Binary image file.
 FITS / wide-FITS image file.
 
 <!-- BEGIN NOTES cmd-FITs -->
+```
+MACOS>fits
+ Plot type set to FITS
+MACOS>wfits
+Save OPD or Intensity (OPD,INT): [OPD]:
+  Dumping current OPD into FITS file Opd.fits
+```
+FITs redirects subsequent data outputs to FITS files named
+`filnam.<tag><elt>.fit`.  WFIts (interactive CLI only) is
+instead a one-shot dump of the CURRENT data: OPD writes
+OPDMat to `Opd.fits`, INT writes the intensity to
+`Int.fits`; it requires a prior OPD or INt command ("OPD
+data is not available, run OPD command").
+*Related:* TEXt, BINary, MAT, OPD, INTensity.
 <!-- END NOTES cmd-FITs -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MAT
 
@@ -2413,18 +2575,33 @@ FITS / wide-FITS image file.
 MATLAB .mat file.
 
 <!-- BEGIN NOTES cmd-MAT -->
+```
+MACOS>mat
+ Plot type set to MAT
+```
+Redirects subsequent data outputs to MATLAB-readable files
+named `filnam.<tag><elt>.mat` (the manual's ".dat" is stale
+— the code appends ".mat").  Same overwrite dialog as TEXt.
+Persists until another plot type is chosen.
+*Related:* TEXt, BINary, FITs, GETMatlabmatrix.
 <!-- END NOTES cmd-MAT -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GETMatlabmatrix
 
 *Minimum match:* `GETMatlabmatrix`
 
-Fetch named matrix into MATLAB (smacos only).
+(currently disabled: handler is a no-op stub) (smacos only).
 
 <!-- BEGIN NOTES cmd-GETMatlabmatrix -->
+SMACOS builds only (#ifdef SMACOS_CMD) — the CLI does not
+dispatch it.  The handler body is entirely commented out, so
+the command is currently a no-op stub: it matches, does
+nothing, and returns to the prompt.  Discrepancy: the help
+line promises fetching a named matrix into MATLAB; no such
+transfer is implemented — data exchange happens through the
+SMACOS call-line arguments instead.
+*Related:* MAT, EXPort.
 <!-- END NOTES cmd-GETMatlabmatrix -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Window & Post-Processing
 
@@ -2435,8 +2612,29 @@ Fetch named matrix into MATLAB (smacos only).
 Set plot pixel-array location.
 
 <!-- BEGIN NOTES cmd-PLOcate -->
+```
+MACOS>window
+Enter output coordinate option (Tout, Enter or Beam): [Tout]:
+Enter pixel size for placing window: [0.]: 1.392542d-6
+Enter pixel coords of element vertex (x,y): [0.,0.]:
+Enter window location in pixel coords (x,y): [0.,0.]:
+```
+PLOcate and WINdow are the same command (one dispatcher
+branch).  Turns on the pixel-locate option: the PIXel /
+COMposed detector array is fixed in detector coordinates
+(element-vertex origin, window center, pixel size), so
+field-angle changes move the image across the array instead
+of the image always landing centered.  The Tout option is
+offered only when nOutCord=5 — otherwise the prompt reads
+'(Enter or Beam)' with default Beam; Enter prompts for
+explicit 'Enter xOut (x,y,z) ' / 'Enter yOut (x,y,z) ' axis
+vectors, Beam derives a chief-ray local frame at the last
+element.  A pixel size of 0 (the default) zeroes all the
+offsets.  Cleared by NOPLOC.  SMACOS (keyword PLOCATE or
+WINDOW): CARG(1)=coordinate option, DARG(1)=pixel size,
+DARG(2:3)=element vertex, DARG(4:5)=window center.
+*Related:* NOPLOC, PIXel, COMpose, SPOt, FEXit.
 <!-- END NOTES cmd-PLOcate -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### NOPLOC
 
@@ -2445,38 +2643,80 @@ Set plot pixel-array location.
 Clear plot location.
 
 <!-- BEGIN NOTES cmd-NOPLOC -->
+```
+MACOS>noploc
+ Images will be placed at center of pixel array
+```
+No dialog.  Turns the pixel-locate option back off, undoing
+PLOcate / WINdow.
+*Related:* PLOcate, PIXel, COMpose.
 <!-- END NOTES cmd-NOPLOC -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### PWIn
 
 *Minimum match:* `PWIn`
 
-Plot window definition.
+Launch external he.py plot GUI.
 
 <!-- BEGIN NOTES cmd-PWIn -->
+Interactive CLI only.  No dialog: spawns an external
+Python/Tcl-Tk GUI script ("he.py") in the background through
+the shell — a vestigial hook; nothing useful happens unless
+an executable he.py is on the PATH.  Discrepancy: the help
+line "plot window definition" describes the PLOcate/WINdow
+dialog, not this command.
+*Related:* PLOcate, PGD.
 <!-- END NOTES cmd-PWIn -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SZCo
 
 *Minimum match:* `SZCo`
 
-Sizing / coordinate options.
+Select ZCOef Zernike basis (Cir / Ann / Hex).
 
 <!-- BEGIN NOTES cmd-SZCo -->
+```
+MACOS>szco
+Choose Zernike type for ZCO command (Cir,Ann,Hex): [Cir]:
+ -- Set to using NormNoll
+```
+Needs a loaded Rx.  Selects the Zernike basis family used by
+the ZCOef fit: Cir (Noll-normalized circular), Ann (annular)
+or Hex (hexagonal), confirmed as NormNoll / NormAnnular /
+NormHex.  Unknown input: "** Unknown Zernike type".
+Discrepancy: the help line calls SZCo "sizing / coordinate
+options"; the code sets the ZCOef Zernike type.  SMACOS: no
+LoadStack entry.
+*Related:* ZCOef, ZABerr.
 <!-- END NOTES cmd-SZCo -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GBS
 
-*Minimum match:* `GBS`
+*Minimum match:* `GBS` — *needs:* [Rx]
 
-Gaussian beam-size post-processing.
+Geometric beam footprint at an element.
 
 <!-- BEGIN NOTES cmd-GBS -->
+```
+MACOS>gbs
+Enter first element number: [1]: 0
+Enter last element number: [1]: 4
+ iElt =  0, Source aperture = ...
+ iElt = 1 (PM, Reflector)  Beam diameter = ...
+ ==> Result is saved in file beamSize.txt
+```
+Reports the geometric beam footprint at element surfaces:
+traces the bundle and takes twice the largest ray distance
+from the surviving-ray centroid as the beam diameter
+(element 0 = the source aperture).  Equal first/last element
+prints a single "Optical beam diameter" line to the screen;
+a range also writes name/type/diameter per element to
+`beamSize.txt`.  Despite the help line, nothing Gaussian is
+involved.  SMACOS: LoadStack queues IARG(1) plus a literal 0
+for the last-element prompt, so only element 0 passes the
+first<=last check — ranges are effectively CLI-only.
+*Related:* SUMmarize, SHOw, FEXit.
 <!-- END NOTES cmd-GBS -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### BLUr, GBLur
 
@@ -2485,8 +2725,29 @@ Gaussian beam-size post-processing.
 Blur / Gaussian blur.
 
 <!-- BEGIN NOTES cmd-BLUr -->
+```
+MACOS>blur
+Enter blur kernel peak (1e0): [1.]:
+MACOS>gblur
+ ...propagation summary...
+Enter Gaussian blur kernel width in base units (0,0): [0.,0.]: 300d-6,300d-6
+```
+Image-blur post-processing on the COMposed pixel array.
+BLUr convolves the existing PixArray with a fixed kernel
+scaled by the requested peak and re-displays it ("No data to
+display" without a composed image).  GBLur simulates
+long-exposure jitter and similar smooth image spreading:
+propagates the beam to the COMpose element, convolves the
+intensity with a Gaussian of the given x/y widths at the
+wavefront sampling density (generally more accurate than
+blurring after pixelization), adds the result to PixArray
+and displays it.  GBLur requires COMpose first ("Must
+COMpose before GBLURing images") and warns "WARNING: PIXELS
+TOO SMALL" below half the WF grid spacing.  Plot titles
+follow STRetch.  SMACOS: BLUR RARG(1)=kernel peak; GBLUR
+RARG(1:2)=x,y widths; CARG(1)='NO' suppresses the plot.
+*Related:* COMpose, ADD, NOIse, PIXel, STRetch.
 <!-- END NOTES cmd-BLUr -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### GAIn
 
@@ -2495,8 +2756,23 @@ Blur / Gaussian blur.
 Apply gain map to intensity.
 
 <!-- BEGIN NOTES cmd-GAIn -->
+```
+MACOS>gain
+Enter number of element where data is to be generated: [...]: 16
+ ...propagation summary...
+ (2)Peak intensity= ...; Peak occurs at i= ..., j= ...
+ Sum of intensity= ...
+ Maximum gain= ...
+```
+Far-field gain map: propagates the beam to the element (as
+INTensity) and converts the intensity to gain — the ratio of
+the diffracted intensity to a uniformly radiating point
+source of the same power — plotting it (title 'Gain', file
+tag .gain) and printing the maximum.  Used mainly to
+evaluate radio-frequency antennas (manual Section 7.2.14,
+Luneberg lens example).  SMACOS: IARG(1)=element.
+*Related:* INTensity, LOG, BEAm.
 <!-- END NOTES cmd-GAIn -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ODRaw, PGD
 
@@ -2505,8 +2781,24 @@ Apply gain map to intensity.
 Outline drawing / PGPLOT diagnostics.
 
 <!-- BEGIN NOTES cmd-ODRaw -->
+```
+MACOS>odraw
+Enter first element to include: [0]:
+Enter last element to include: [nElt]:
+Enter drawing plane (XZ, YZ or XY in source coords): [XZ]:
+```
+ODRaw is overdraw: the same handler as DRAW (which HELP does
+not list) — trace a reduced ray fan and draw the system
+layout plus rays projected onto the chosen source-coordinate
+plane — but drawn on top of the existing plot without
+erasing it, for before/after geometry comparisons.
+Invalidates the trace/build/propagate state.  PGD takes no
+input and simply reinitializes the graphics device — use it
+when the plot window was closed or the display is corrupted;
+PGD is interactive CLI only.  SMACOS: no LoadStack entry
+for ODRaw (only DRAW has one: IARG(1:3), CARG(1)).
+*Related:* PGP, SPOt.
 <!-- END NOTES cmd-ODRaw -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### ROW
 
@@ -2515,8 +2807,22 @@ Outline drawing / PGPLOT diagnostics.
 Extract / plot row from image.
 
 <!-- BEGIN NOTES cmd-ROW -->
+```
+MACOS>row
+ Plot type set to ROW
+MACOS>intensity
+ ...
+Enter number of row to be plotted: [...]:
+```
+Selects the row plot type — the COLumn line plot taken along
+a row of the data matrix instead of a column.  The row
+number is prompted when a plot is actually produced (default
+= the center row); out-of-range input skips the plot.  MTF
+recommends exactly this for 1-D MTF cuts.  SMACOS: LoadStack
+queues IARG(1), but the command itself reads nothing — the
+row prompt happens at plot time.
+*Related:* COLumn, SLIce, MTF.
 <!-- END NOTES cmd-ROW -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### System Optimization
 
@@ -2527,8 +2833,25 @@ Extract / plot row from image.
 Add a variable element.
 
 <!-- BEGIN NOTES cmd-AVAR-elt -->
+```
+MACOS>avar
+Enter variable element id for optimization: [...]: 1
+Enter variable degree of freedom: [0,0,0,0,0,0,0,0]: 0,0,0,0,0,0,1,1
+Enter range of Zernike terms: [1,45]: 0,0
+```
+Declares an element variable for CALib.  The 8-integer mask
+(nonzero = vary) follows the DOF_NameList order: TIP, TILT,
+CLOCK, DX, DY, PIST, ROC (radius of curvature), CONIC.  The
+Zernike range additionally frees a run of surface Zernike
+terms (1-45); answer 0,0 for none.  Element 0 makes the
+SOURCE variable (its position DOFs require a STOP).  An
+already-variable element is refused ("Variable element N
+already defined!").  Constraint bounds for the constrained
+(SLSQP/NPSOL) path come from the Rx Opt* keywords, not this
+dialog.  SMACOS: IARG(1)=element, IARG(2:9)=DOF mask; the
+Zernike-range step is skipped (no Zernike terms).
+*Related:* MVAR, DVAR, VARS, CALib, SETC.
 <!-- END NOTES cmd-AVAR-elt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### MVAR <elt>
 
@@ -2537,8 +2860,17 @@ Add a variable element.
 Modify a variable element.
 
 <!-- BEGIN NOTES cmd-MVAR-elt -->
+```
+MACOS>mvar
+Enter variable element ID for optimization: [...]: 1
+Enter variable degree of freedom: [...]:
+```
+Redefines the 8-DOF mask of an element previously declared
+with AVAR ("Element N is not a variable" otherwise); the
+Zernike term range is not re-prompted — DVAR then AVAR again
+to change that.  SMACOS: no LoadStack entry.
+*Related:* AVAR, DVAR, VARS, CALib.
 <!-- END NOTES cmd-MVAR-elt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DVAR <elt>
 
@@ -2547,8 +2879,15 @@ Modify a variable element.
 Delete a variable element.
 
 <!-- BEGIN NOTES cmd-DVAR-elt -->
+```
+MACOS>dvar
+Enter element ID to remove from optimization: [...]: 1
+```
+Removes an element from the CALib variable set, clearing its
+DOF mask and Zernike terms ("Element N is not a variable
+element!" otherwise).  SMACOS: IARG(1)=element.
+*Related:* AVAR, MVAR, VARS.
 <!-- END NOTES cmd-DVAR-elt -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### VARS
 
@@ -2557,8 +2896,17 @@ Delete a variable element.
 List all variable elements.
 
 <!-- BEGIN NOTES cmd-VARS -->
+```
+MACOS>vars
+ Variable elements defined for optimization:
+ Elt Name= PM, Elt ID= 1, Variable DOF= ROC CONIC ...
+```
+No dialog.  Lists each variable element: name, element ID
+(plus the IDs of any linked elements that move with it, per
+LnkElt), the variable DOF names and any Zernike terms; " No
+Variable Element for Optimization!" when the set is empty.
+*Related:* AVAR, FOVS, WLENS, CALib, ELTS.
 <!-- END NOTES cmd-VARS -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### AFOV <fov>
 
@@ -2567,8 +2915,21 @@ List all variable elements.
 Add a field of view.
 
 <!-- BEGIN NOTES cmd-AFOV-fov -->
+```
+MACOS>afov
+ Add FOV for design optimization ...
+Enter Chief Ray Direction [...]:
+Enter Chief Ray Position [...]:
+```
+Appends a field of view — a chief-ray direction/position
+pair — to the optimization FOV list.  FOVs can also be
+declared in the Rx by repeating the ChfRayDir/ChfRayPos (or
+OptChfRayDir/OptChfRayPos) keywords; the first pair is the
+nominal field.  Per-FOV weights are set via SETC.  Code
+quirk: the position prompt's default is the direction vector
+just entered.  SMACOS: no LoadStack entry.
+*Related:* DFOV, FOVS, SFOV, SETC, CALib.
 <!-- END NOTES cmd-AFOV-fov -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DFOV <fov>
 
@@ -2577,8 +2938,15 @@ Add a field of view.
 Delete a field of view.
 
 <!-- BEGIN NOTES cmd-DFOV-fov -->
+```
+MACOS>dfov
+Enter ID of FOV to delete [...]: 2
+```
+Deletes the given field of view from the optimization list,
+shifting later entries down ("DFOV: Invalid FOV ID" when out
+of range).  SMACOS: no LoadStack entry.
+*Related:* AFOV, FOVS, CALib.
 <!-- END NOTES cmd-DFOV-fov -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### FOVS
 
@@ -2587,8 +2955,20 @@ Delete a field of view.
 List all fields of view.
 
 <!-- BEGIN NOTES cmd-FOVS -->
+```
+MACOS>fovs
+ Number of field of view used for design optimization = 2
+ FOV ID = 1, Weight = ...
+    ChfRayPos = [ ... ]
+    ChfRayDir = [ ... ]
+```
+No dialog.  Lists the optimization fields of view with their
+weights.  Code quirk: the two vector labels are swapped —
+the line labelled ChfRayPos prints the chief-ray DIRECTION
+and vice versa (AFOV and SFOV store and read the array
+consistently; only this listing mislabels it).
+*Related:* AFOV, DFOV, SFOV, WLENS, VARS.
 <!-- END NOTES cmd-FOVS -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### CALib
 
@@ -2597,8 +2977,36 @@ List all fields of view.
 Run system optimization.
 
 <!-- BEGIN NOTES cmd-CALib -->
+```
+MACOS>calib
+ ...optimizer iteration output...
+Display optimization summary (yes,no): [yes]:
+     ===============================================
+     ***    MACOS System Optimization Summary    ***
+     ===============================================
+  Optimization Scheme: Nonlinear Unconstrained
+  Optimization Target =  RMS Wavefront Error at Element ...
+  * RMS WFE at FOVs BEFORE Optimization: ...
+  * RMS WFE at FOVs AFTER  Optimization: ...
+```
+Runs the native multi-field design optimizer over the AVAR
+variable elements and the FOV list.  Unconstrained problems
+use the Levenberg-Marquardt least-squares driver; when the
+Rx declares Opt* variable constraints the run dispatches to
+the bound-constrained SLSQP driver (NPSOL in USE_NPSOL
+builds).  Target per SETC or the Rx OptTarget keyword: WFE
+(default), ZWF (WFE Zernike modes), Beam — plus SPOT and OPL
+selectable from the Rx only.  Optional CLI arguments
+restrict a run to a subset of the variables (`calib 2 3`;
+each is read back with 'Enter element to be calibrated:' and
+must already be AVAR'd).  Preconditions: at least one
+variable element and one FOV; STOP must be set when
+optimizing with FEX or moving the source.  The summary
+reports scheme, target, rays / FOVs / wavelengths and
+per-wavelength before/after figures.  SMACOS: no LoadStack
+arguments; the summary always prints.
+*Related:* AVAR, VARS, AFOV, FOVS, SETC, SAOpt, STOp.
 <!-- END NOTES cmd-CALib -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### SFOV
 
@@ -2607,8 +3015,21 @@ Run system optimization.
 Select field of view.
 
 <!-- BEGIN NOTES cmd-SFOV -->
+```
+MACOS>sfov
+ Total FOV available:  3
+Enter ID of FOV to use: [1]: 2
+   Set ChfRayDir = ...
+   Set ChfRayPos = ...
+```
+Switches the active chief ray to one of the fields declared
+in the Rx (repeated ChfRayDir/ChfRayPos keyword pairs — the
+count is the Rx pair count, not fields added later with
+AFOV) and invalidates the grid/trace/build/propagate state
+so subsequent analyses run at the new field.  Interactive
+CLI only.
+*Related:* AFOV, FOVS, SWL, CHIefray.
 <!-- END NOTES cmd-SFOV -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 ### Misc / Debug
 
@@ -2619,8 +3040,32 @@ Select field of view.
 Older single-ray variants (use RAY).
 
 <!-- BEGIN NOTES cmd-SRAy -->
+```
+MACOS>sray
+Enter number of ray (1=chief ray, 0=quit): [0]: 1
+Enter starting element: [...]:
+Enter end element: [...]:
+```
+SRAy prints one ray's per-surface trace over an element
+range, silently pre-tracing from the source when the range
+starts downstream.  The source flags it "buggy, doesn't
+work" (it also prints a stray 'iElt,iCurRayElt =' debug
+line) — prefer RAY.  SMACOS: IARG(1)=ray, IARG(2)=start,
+IARG(3)=end element.  SRT (interactive CLI only) traces a
+single ray launched from a designated NORMALIZED
+source-aperture position:
+```
+MACOS>srt
+Enter last element to trace to: [nElt]:
+Enter ray position in normalized source aperture: [...]: 0.25,0
+```
+positions outside +/-0.5 are refused.  SRT's LoadStack
+mapping (IARG(1), DARG(1:2)) is vestigial — the SMACOS build
+does not dispatch SRT.  SRTrace exists only as a
+compiled-out (#if 0) test hook for srtrace.F and is not
+available.
+*Related:* RAY, SEGRAYTrace, PRAy.
 <!-- END NOTES cmd-SRAy -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### DOPD, DOPL, ZRM
 
@@ -2629,8 +3074,30 @@ Older single-ray variants (use RAY).
 Debug / diagnostic prints.
 
 <!-- BEGIN NOTES cmd-DOPD -->
+DOPD (no dialog; interactive CLI only) plots a DIFFERENTIAL
+OPD map — the current OPDMat minus the previous OPD run —
+and prints its RMS and P-V.  It requires OPD run at least
+twice ("Before run DOPD command, load Rx and run OPD command
+at least twice!") and warns "**Warning: OPDs are not on same
+element!" when the two runs targeted different elements.
+ZRM (interactive CLI only) removes fitted Zernike modes from
+the current OPD:
+```
+MACOS>zrm
+ ** Removing Zernike modes from OPD (Noll ordered) **
+Enter number of Zernike modes: [1]: 3
+Enter Zernike indexes: [...]: 1,2,3
+  RMS WFE (after ZRM) = ...
+Save new OPD (no,yes): [no]:
+```
+same mode dialog as ZCOef/ZABerr (a NEGATIVE count -N
+prompts 'Enter starting Zernike mode index: ' for N
+consecutive modes; basis family per SZCo); answering yes
+replaces OPDMat and invalidates the trace/build state.
+DOPL (differential OPL between two prescriptions) is
+commented out of the dispatcher and NOT available.
+*Related:* OPD, ZCOef, ZABerr, SZCo.
 <!-- END NOTES cmd-DOPD -->
-*TODO: expand — dialog details, behavior notes, related commands.*
 
 #### JWST_v3d, Vis3d
 
@@ -2639,5 +3106,9 @@ Debug / diagnostic prints.
 3D rendering demo.
 
 <!-- BEGIN NOTES cmd-JWST-v3d -->
+No dialog.  Starts the JWST 3-D rendering demo as a child
+process — available only in builds compiled with VIS3D_DEMO;
+standard builds print " **JWST 3D rendering demo not
+included in MACOS!".
+*Related:* ODRaw.
 <!-- END NOTES cmd-JWST-v3d -->
-*TODO: expand — dialog details, behavior notes, related commands.*

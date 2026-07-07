@@ -181,7 +181,7 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 #### PLOT STYLE
 
 ```
-   GRAy        - gray-scale surface plot
+   GRay        - gray-scale surface plot
    WIRe        - wireframe plot
    SLIce       - slice surface plot
    COLumn      - column line plot
@@ -199,7 +199,8 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
    BINary      - binary image file
    FITs, WFIts - FITS / wide-FITS image file
    MAT         - MATLAB .mat file
-   GETMatlabmatrix - fetch named matrix into MATLAB
+   GETMatlabmatrix - (currently disabled: handler
+                 is a no-op stub)
                      (smacos only)
 ```
 
@@ -208,9 +209,11 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 ```
    PLOcate     - set plot pixel-array location
    NOPLOC      - clear plot location
-   PWIn        - plot window definition
-   SZCo        - sizing / coordinate options
-   GBS         - Gaussian beam-size post-processing
+   PWIn        - launch external he.py plot GUI
+   SZCo        - select ZCOef Zernike basis
+                 (Cir / Ann / Hex)
+   GBS         - geometric beam footprint at an
+                 element                     [Rx]
    BLUr, GBLur - blur / Gaussian blur
    GAIn        - apply gain map to intensity
    ODRaw, PGD  - outline drawing / PGPLOT diagnostics
