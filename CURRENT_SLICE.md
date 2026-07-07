@@ -556,6 +556,28 @@ instruments").**
 - Joint M1-M4 center solve — RULED OUT (degenerate → lmlsq fail →
   engine SIGSEGV; probe B).
 
+- **eac5 thread (Dave 2026-07-07, STOPPED mid-stream — resume here):**
+  Dave: e5mono's back end is refractive but a REFLECTIVE version
+  exists — it's the **EAC family**: `~/dev/tst_dir/eac5mono.in`
+  (35-elt monolithic, λ=632.8 nm, "broken but interesting"; also
+  eac5_macos/eac5_zern = NS-segmented 142-elt variants;
+  old_Rx/eac2_7seg = the 6-m segmented observatory).  **The vetted
+  reflective back end = m3 (R=0.328 m, lMon 20 mm) + m4 (R=0.407 m,
+  lMon 30 mm): a compact TWO-mirror mini-relay ~0.2 m past the f/21
+  intermediate focus, 98 mm apart** — the reflective field lens; a
+  PAIR (not one M4 a metre out) owns image AND pupil.  Same e5 M1/M2
+  up front; per-element footprint lMon everywhere (doctrine
+  confirmed in the vetted files).  Load attempt: the Phase-1
+  validator rejects it — "blank line inside TElt block (line 149)";
+  file has CRLF endings, TABS inside a TElt row (l.146), and
+  C-style `/* ... */` comment blocks (l.151+) hiding an alternate
+  TElt — was checking whether the parser knows `/*` when stopped.
+  NEXT: (1) determine `/*`-support / clean a working copy (CRLF +
+  tabs + comment blocks), load + trace, diagnose remaining breakage;
+  (2) extract m3/m4 relay conjugates as the reference for the
+  freeform_unobscured "+2" (supersedes the single-M4 probe design);
+  (3) then the ±1′ fork (ANSI-45 jacobian column test / re-layout).
+
 ## Next concrete step
 Commit the shippable set (Telescope.m lmon fixes + 4 tests +
 design/src/zern_jacobian_solve.m) on fast-suite green; then the
