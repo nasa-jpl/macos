@@ -31,6 +31,11 @@ macos-manual/
 └── (legacy: macosMan*.docx, patches/, scripts/ — frozen provenance)
 ```
 
+This directory also produces a second document, the **MACOS Command
+Reference** (`cmdref/`) — a standalone catalog of every engine command
+and every mmacos/pymacos function, written to guide new users of the
+public repo.  See "Command Reference" below.
+
 ## Building
 
 ```bash
@@ -38,6 +43,8 @@ cd docs/macos-manual
 make            # build/macosMan.docx + build/macosMan.html
 make pdf        # build/macosMan.pdf (via headless LibreOffice)
 make appendix-c # regenerate Appendix C from macos_f90/macos_help.inc
+make cmdref     # build/macosCmdRef.docx + .html
+make cmdref-pdf # build/macosCmdRef.pdf
 make clean
 ```
 
@@ -123,6 +130,30 @@ re-run it through the engine and paste the fresh transcript into
 `91_appendix_a_examples.md`.  (Automating this — regenerating all
 transcripts from `examples/*.jou` at build time, like Appendix C — is
 a planned improvement.)
+
+## Command Reference (cmdref/)
+
+`cmdref/` holds the MACOS Command Reference: an orientation chapter
+(what MACOS / SMACOS / mmacos / pymacos are and how they relate), a
+syntax-conventions chapter per surface with a quickstart, and three
+catalogs:
+
+- **Part I** — all ~120 engine commands by HELP category (CLI and
+  SMACOS share this catalog; only argument delivery differs).
+- **Part II** — all mmacos/pymacos functions, MATLAB and Python
+  signatures side by side, keyed to the underlying `macos_api_mod`
+  routine; coverage gaps between the two languages are flagged.
+- **Part III** — the higher-level MATLAB layers (`macos.design`,
+  `macos.channels`) in their current state.
+
+Parts I–III are **generated skeletons**: `make cmdref-regen`
+(`tools/gen_cmdref.py`) rebuilds them from `macos_help.inc`, the
+mmacos `.m` help headers, and the pymacos docstrings, so the catalog
+tracks the code.  Hand-written prose goes ONLY inside the
+`<!-- BEGIN NOTES x --> ... <!-- END NOTES x -->` markers in the
+generated files (it survives regeneration) or in the hand-maintained
+chapters `cmdref/00_`–`04_`.  Entries not yet expanded carry a
+*TODO* marker.
 
 ## Gotchas
 
