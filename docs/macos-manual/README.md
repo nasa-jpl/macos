@@ -136,24 +136,14 @@ a planned improvement.)
 `cmdref/` holds the MACOS Command Reference: an orientation chapter
 (what MACOS / SMACOS / mmacos / pymacos are and how they relate), a
 syntax-conventions chapter per surface with a quickstart, and three
-catalogs:
+catalogs — Part I engine commands, Part II mmacos/pymacos functions
+side by side, Part III the higher-level MATLAB layers.
 
-- **Part I** — all ~120 engine commands by HELP category (CLI and
-  SMACOS share this catalog; only argument delivery differs).
-- **Part II** — all mmacos/pymacos functions, MATLAB and Python
-  signatures side by side, keyed to the underlying `macos_api_mod`
-  routine; coverage gaps between the two languages are flagged.
-- **Part III** — the higher-level MATLAB layers (`macos.design`,
-  `macos.channels`) in their current state.
-
-Parts I–III are **generated skeletons**: `make cmdref-regen`
-(`tools/gen_cmdref.py`) rebuilds them from `macos_help.inc`, the
-mmacos `.m` help headers, and the pymacos docstrings, so the catalog
-tracks the code.  Hand-written prose goes ONLY inside the
-`<!-- BEGIN NOTES x --> ... <!-- END NOTES x -->` markers in the
-generated files (it survives regeneration) or in the hand-maintained
-chapters `cmdref/00_`–`04_`.  Entries not yet expanded carry a
-*TODO* marker.
+Parts I–III are generated from the engine and binding sources
+(`make cmdref-regen`), so the catalog tracks the code; hand-written
+enrichment survives regeneration only inside the entry NOTES markers.
+**See [`cmdref/README.md`](cmdref/README.md)** for the file map,
+editing rules, and status.
 
 ## Gotchas
 
