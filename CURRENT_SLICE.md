@@ -223,6 +223,23 @@ mode saturates; (5) engine-FD validation of the final layout.  BUILT 2026-07-12:
 - Others' actions on the AppScan response: Luis closes #61 + deletes
   ft-dev (both repos); IT rescans + dispositions the 2 conftest FPs.
 
+### Tier-3 AS LANDED (e06c254) + NEXT SESSION (Dave 2026-07-12)
+Constrained optimizer SHIPPED: launchers ON the segment hex boundary
+offset OUTWARD by EDGE_OFF=5 mm (clearance off the reflecting surface,
+by construction; sign-flip for inside-the-rim), 3 MIRROR PAIRS about
+each segment's radial centerline, free pair angles (center seg = xhat
+line).  add_met 'launch_pts' override realizes any winner.  Hex run:
+54400 layouts/34.7 s; edge ring 3.857 -> 2.973 nm rms (worst 215.8 ->
+155.9); angular spread [30 90 150] CONFIRMED optimal by search; the
+gain came from the HUB FIDUCIAL geometry (rfid 300->150, fclock 105);
+engine-FD validation 0.00%.  e5_seg now GRID='Hex'.
+**NEXT SESSION (Dave): (1) annotation + graphics for the e5_seg
+example (layout views of the truss/launchers/fiducials, metric
+figures); (2) more examples.  Queued: hub/extra bodies in analytic
+rows (TElt/RptElt parse); fiducials on M2 back side; beam clearance;
+full fast suite ran only per-class today (Dave deferred); PLAN
+promote-on-land pass.**
+
 ## Next concrete step
 Fast suite green → commit S0 (MACOS_resources + this file on macos)
 → S1 `segment()` splice: decide splice host (Telescope method vs
@@ -287,6 +304,23 @@ mode saturates; (5) engine-FD validation of the final layout.  BUILT 2026-07-12:
 
 ## Just tried / ruled out (with why)
 —
+
+### Tier-3 AS LANDED (e06c254) + NEXT SESSION (Dave 2026-07-12)
+Constrained optimizer SHIPPED: launchers ON the segment hex boundary
+offset OUTWARD by EDGE_OFF=5 mm (clearance off the reflecting surface,
+by construction; sign-flip for inside-the-rim), 3 MIRROR PAIRS about
+each segment's radial centerline, free pair angles (center seg = xhat
+line).  add_met 'launch_pts' override realizes any winner.  Hex run:
+54400 layouts/34.7 s; edge ring 3.857 -> 2.973 nm rms (worst 215.8 ->
+155.9); angular spread [30 90 150] CONFIRMED optimal by search; the
+gain came from the HUB FIDUCIAL geometry (rfid 300->150, fclock 105);
+engine-FD validation 0.00%.  e5_seg now GRID='Hex'.
+**NEXT SESSION (Dave): (1) annotation + graphics for the e5_seg
+example (layout views of the truss/launchers/fiducials, metric
+figures); (2) more examples.  Queued: hub/extra bodies in analytic
+rows (TElt/RptElt parse); fiducials on M2 back side; beam clearance;
+full fast suite ran only per-class today (Dave deferred); PLAN
+promote-on-land pass.**
 
 ## Next concrete step
 —
