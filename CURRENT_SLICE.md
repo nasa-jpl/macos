@@ -79,7 +79,23 @@ outputs.
   + `tSegMirMaker` (3/3: pie + hex2 byte-identity, size-args error)
   wired into SUITE_FAST.  GOTCHA: rerunning in a used dir trips the
   overwrite prompt and shifts the answer stream — always fresh dir.
-- [ ] **S1 — `segment('M1',…)` splice.**  Emit parent Rx → S0 driver →
+- [x] **S1 — `segment_rx` splice.  DONE 2026-07-12** (`macos.design.
+  segment_rx` + `tSegmentRx` 4/4).  As-built: engine numbers elements
+  by READ ORDER (`iElt=`/stale `nElt=` are cosmetic — e5hex2.in loads
+  25 blocks despite nElt=24); splice replaces the parent's source
+  GridType with the segment tiling + inserts nSeg/width/gap/SegXgrid/
+  SegCoord after yGrid; nElt from BLOCK COUNT; downstream iElt
+  renumbered cosmetically.  **ApStop never renumbers** (header form =
+  3-vector StopPos POSITION msmacosio.inc:90; element form = 2-vector
+  offset inside the stop element's own block :2887, last-wins) — but
+  if the SEGMENTED element carried the element-form stop it drops
+  with the block → warning + out.dropped_apstop.  OptTgtElt/RefElt/
+  tMetElt refused pre-run.  Validation = load + trace parity (seg
+  0 lost rays, rms 3.564e-5 vs parent 3.920e-5 mm = sampling) +
+  frames orthonormal.  **FF-parent gotcha: ring centers are NOT
+  3-D-equidistant (mm-scale astig figure) — tiling-plane invariants
+  only.**  Original plan line: [ ] Telescope.segment() builder method
+  — deferred to the 3M showcase.
   splice .presc blocks in place of the parent elt + downstream
   renumbering (emitter owns numbering; watch ApStop/element-index
   refs) → reload → validate (ValidatePrescription + segment-center
@@ -89,12 +105,33 @@ outputs.
   triad (SEGMENT = full parent surface: same conic/FF/psi/Vpt every
   segment; Mon slot zeroed = reserved per-segment figure channel;
   DOF columns = [rot·x̂ rot·ŷ rot·ẑ | trans·x̂ ŷ ẑ] in the triad).
-- [ ] **S2 — edge sensors (dedx).**  Ingest Hx.m + MeasToSeg (nMeas ×
-  nState, nState=6·nSeg; row 1 = master-segment absolute piston);
-  map columns onto the design-layer DOF ordering; VALIDATE with an
-  independent MATLAB kinematic recompute (normhat·Tb + moment-arm
-  crossmat at edge midpoints) — catches frame/order slips.
-- [ ] **S3 — MET emission + engine wrappers.**  Builder `add_met(...)`:
+- [x] **S2 — edge sensors (dedx).  DONE 2026-07-12** (`macos.design.
+  edge_sensors` + `tEdgeSensors` 3/3).  Ingests Hx.m via isolated-
+  workspace run(); pads row-sparse assignments to nMeas×nState; per-
+  segment columns [rot_xyz | trans_xyz] IN THAT SEGMENT'S TRIAD;
+  row 1 = master piston.  Validation WITHOUT surface re-eval, from
+  the generator's algebra (SegMirMaker.f:588-645): translation
+  triplet = normhatᵀ·T → unit norm + T_i·del_i' == −T_j·del_j'
+  (same world normal both ways); rotation rows = shared-ρ cross
+  terms (the generator uses rhoi for BOTH segments) → [del]ₓρ=th'
+  solves ρ = pSeg_i − pr, pr lands on the shared-edge midpoint
+  (lateral < 0.05 width; residual limited by Hx TEXT precision
+  ~5e-10 — tolerances 1e-8/1e-6, not 1e-12).  Frame-mixing quirk
+  noted: Fortran multiplies triad-component rows by world [ρ]ₓ —
+  mirror the code, don't "fix" it silently (model review with Dave
+  if it matters downstream).
+- [~] **S3 — ENGINE LEG DONE 2026-07-12** (`met_calc`/`met_get` in
+  macos_api_mod after ray_status_get; capacity mMetSrf 20→64 /
+  mSysMetBeam 128→512 in elt_mod; codegen Path A → `macos.met()`
+  veneer with SI/native units; `tMet` 3/3 = Q8 closed-form gate:
+  exact baseline lengths on a hand-inserted m2→fpa 2-beam fixture,
+  gauge Δ == −û·d LOS projection under global perturb (5e-6), ⊥-null
+  < 1e-7).  Both engine trees + mex rebuilt.  **Build gotcha: makems
+  must run from ~/dev/macos (repo root) — a bad cwd 'succeeds' via
+  stale logs; mmacos make needs explicit
+  MACOS_BUILD_DIR=~/dev/macos/build_release_gfortran with
+  FC=gfortran (its default is still build_release_giza — fix
+  sometime).**  REMAINING: builder `add_met(...)`:
   Stewart trusses per decision 3 (fiducial/launcher placement in the
   segment triad → global; emits nMetPos/SrfMetPos rows + tMetElt +
   metBeamFlg).  Engine (small): `met_calc` + `met_get` wrappers in
