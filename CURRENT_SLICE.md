@@ -187,7 +187,7 @@ small symmetric set (affordable analytically); (3) STEP-AND-EVALUATE /
 patternsearch polish of the continuous knobs (radii, angles, standoff,
 nf) on the shortlist; (4) worst-mode check (max eig of P_w, not just
 trace) + a symmetry-BREAKING perturbation stage if a symmetric blind
-mode saturates; (5) engine-FD validation of the final layout.
+mode saturates; (5) engine-FD validation of the final layout.  BUILT 2026-07-12: dldx_analytic + e5_seg_metopt.m -- 20160 layouts/12.8 s, as-built 5.156 -> 3.732 nm, engine validation 0.00% off analytic.  Queued: hub/extra bodies in the analytic rows need engine TElt/RptElt frame parse; fid ring on M2 BACK side; beam-clearance check.
 
 ## In-session state NOT yet committed
 - MACOS_resources: segmirmaker CMakeLists/makesegmirmaker.sh/README/
@@ -280,7 +280,7 @@ small symmetric set (affordable analytically); (3) STEP-AND-EVALUATE /
 patternsearch polish of the continuous knobs (radii, angles, standoff,
 nf) on the shortlist; (4) worst-mode check (max eig of P_w, not just
 trace) + a symmetry-BREAKING perturbation stage if a symmetric blind
-mode saturates; (5) engine-FD validation of the final layout.
+mode saturates; (5) engine-FD validation of the final layout.  BUILT 2026-07-12: dldx_analytic + e5_seg_metopt.m -- 20160 layouts/12.8 s, as-built 5.156 -> 3.732 nm, engine validation 0.00% off analytic.  Queued: hub/extra bodies in the analytic rows need engine TElt/RptElt frame parse; fid ring on M2 BACK side; beam-clearance check.
 
 ## In-session state NOT yet committed
 —
