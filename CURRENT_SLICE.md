@@ -240,6 +240,31 @@ rows (TElt/RptElt parse); fiducials on M2 back side; beam clearance;
 full fast suite ran only per-class today (Dave deferred); PLAN
 promote-on-land pass.**
 
+### RESUME RECIPE (written for a fresh session/model — Opus next)
+1. Read THIS file + memory `project_sprint2d_segmentation.md` +
+   `mmacos/CLAUDE.md` (+ root CLAUDE.md per directive).  All Sprint-2D
+   code is PUSHED (macos f740cf6 / MACOS_res e06c254 tips).
+2. Regenerate working state (~8 min):
+   `cd ~/dev/MACOS_resources/mmacos && matlab -batch "run('mmacos_setup.m'); run('design/examples/e5_seg/e5_seg.m'); run('design/examples/e5_seg/e5_seg_metopt.m'); exit(0)"`
+   Expect: edge+MET 5.978 nm, MC ~2.3%; optimizer 3.857→2.973 nm,
+   engine validation 0.00%.  Tests: `./run_mmacos_tests.sh tMet` (and
+   tSegMirMaker/tSegmentRx/tEdgeSensors), 19 green.
+3. NEXT TASK (Dave): annotation + graphics for e5_seg, then more
+   examples.  Graphics hooks that already exist: `macos.draw_rays` /
+   `Telescope.view_layout` (real ray bundle), `am.src_pts/tgt_pts`
+   (3xN global truss endpoints — plot3 beams launcher→fiducial),
+   `seg.frames` (segment centers/triads for hex outlines + labels),
+   `e5_seg.mat`/`e5_seg_metopt.mat` (all Jacobians + metric tables).
+   Figures land in the example dir (house rule; no exit(0) in
+   examples — the -batch wrapper above supplies it).
+4. TRAPS a fresh model WILL hit: macos.modify() after every poke
+   (cached OPD); macos.opd() = no args, N×N, WaveUnits; run makems
+   from ~/dev/macos ROOT; mmacos mex: make FC=gfortran
+   MACOS_BUILD_DIR=~/dev/macos/build_release_gfortran; SegMirMaker
+   scratch dirs must be FRESH (overwrite prompt shifts stdin answers);
+   engine numbers elements by read order; ad-hoc triads for hub/fpa
+   DON'T match engine TElt/RptElt (why analytic rows are seg-only).
+
 ## Next concrete step
 Fast suite green → commit S0 (MACOS_resources + this file on macos)
 → S1 `segment()` splice: decide splice host (Telescope method vs
@@ -321,6 +346,31 @@ figures); (2) more examples.  Queued: hub/extra bodies in analytic
 rows (TElt/RptElt parse); fiducials on M2 back side; beam clearance;
 full fast suite ran only per-class today (Dave deferred); PLAN
 promote-on-land pass.**
+
+### RESUME RECIPE (written for a fresh session/model — Opus next)
+1. Read THIS file + memory `project_sprint2d_segmentation.md` +
+   `mmacos/CLAUDE.md` (+ root CLAUDE.md per directive).  All Sprint-2D
+   code is PUSHED (macos f740cf6 / MACOS_res e06c254 tips).
+2. Regenerate working state (~8 min):
+   `cd ~/dev/MACOS_resources/mmacos && matlab -batch "run('mmacos_setup.m'); run('design/examples/e5_seg/e5_seg.m'); run('design/examples/e5_seg/e5_seg_metopt.m'); exit(0)"`
+   Expect: edge+MET 5.978 nm, MC ~2.3%; optimizer 3.857→2.973 nm,
+   engine validation 0.00%.  Tests: `./run_mmacos_tests.sh tMet` (and
+   tSegMirMaker/tSegmentRx/tEdgeSensors), 19 green.
+3. NEXT TASK (Dave): annotation + graphics for e5_seg, then more
+   examples.  Graphics hooks that already exist: `macos.draw_rays` /
+   `Telescope.view_layout` (real ray bundle), `am.src_pts/tgt_pts`
+   (3xN global truss endpoints — plot3 beams launcher→fiducial),
+   `seg.frames` (segment centers/triads for hex outlines + labels),
+   `e5_seg.mat`/`e5_seg_metopt.mat` (all Jacobians + metric tables).
+   Figures land in the example dir (house rule; no exit(0) in
+   examples — the -batch wrapper above supplies it).
+4. TRAPS a fresh model WILL hit: macos.modify() after every poke
+   (cached OPD); macos.opd() = no args, N×N, WaveUnits; run makems
+   from ~/dev/macos ROOT; mmacos mex: make FC=gfortran
+   MACOS_BUILD_DIR=~/dev/macos/build_release_gfortran; SegMirMaker
+   scratch dirs must be FRESH (overwrite prompt shifts stdin answers);
+   engine numbers elements by read order; ad-hoc triads for hub/fpa
+   DON'T match engine TElt/RptElt (why analytic rows are seg-only).
 
 ## Next concrete step
 —
