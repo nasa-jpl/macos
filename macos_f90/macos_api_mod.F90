@@ -3720,6 +3720,60 @@
       end subroutine ray_status_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Run the METcalc laser-metrology compute (SrfMetCalc, utilsub.F):
+      !            straight-line length of every declared met beam (the Rx's
+      !            nMetPos / tMetElt / metBeamFlg data), filling the flat
+      !            system buffer metMeasBuf.  nMetMeas_ returns the system
+      !            beam count (0 when the Rx declares no metrology — that is
+      !            not an error).  Met points ride their element under the
+      !            programmatic perturb path (CPERTURB_PROG), so a
+      !            perturb -> met_calc -> met_get loop yields FD Jacobians.
+      subroutine met_calc(OK, nMetMeas_)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: nMetMeas_
+
+        external :: SrfMetCalc
+
+        ! ------------------------------------------------------
+        OK        = FAIL
+        nMetMeas_ = 0
+
+        if (.not. SystemCheck()) return
+
+        call SrfMetCalc(nElt, iEltToMetSrf, nMetPos, tMetSrf, &
+                        SrfMetPos, SrfMetMea)
+        nMetMeas_ = nMetMeas
+
+        OK = PASS
+
+      end subroutine met_calc
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the flat system metrology-measurement buffer filled by
+      !            the last met_calc.  n must equal that call's nMetMeas_.
+      subroutine met_get(OK, metMeas_, n)
+
+        implicit none
+        logical,                   intent(out):: OK
+        real(8), dimension(n),     intent(out):: metMeas_
+        integer,                   intent(in) :: n
+
+        ! ------------------------------------------------------
+        OK         = FAIL
+        metMeas_   = 0d0
+
+        if (.not. SystemCheck()) return
+        if ((n <= 0) .or. (n /= nMetMeas)) return
+
+        metMeas_(:) = metMeasBuf(1:n)
+
+        OK = PASS
+
+      end subroutine met_get
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Trace Wavefront from source to surface iElt with grid sampling NxN
       ! Call     : CALL trace_rays(OK, WFE, nRays, N, iElt)
       ! Input    : iElt      [1x1,I]: Elt.ID      (Range: 0 < iElt <= nElt)

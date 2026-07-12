@@ -330,10 +330,14 @@ C***********************************************************************
      &                        mPrvGlassEntry=20, ! max wavlen/index entries for
 					 	 ! each glass in catalog
      &                        mES=10  ! max edge-sensors per element
-        Integer, parameter :: mMetSrf=20,  ! max surfaces with metrology
+!-->  2026-07-12 Sprint 2D S3: segmented-primary met trusses need a met
+!     surface on EVERY segment (19 segs + M2 + M3 = 21 > 20) and 6
+!     beams/segment (2-ring 19*6+6 = 126 ~ 128; 3-ring 228 > 128).
+        Integer, parameter :: mMetSrf=64,  ! max surfaces with metrology
      &                        mMetBeam=48, ! max met beams on each met srf.
      &                        mMetPos=mMetBeam,  ! max metrology points on each met srf.
-     &                        mSysMetBeam=128,    ! max total system met measurements
+     &                        mSysMetBeam=512,    ! max total system met measurements
+!<--
      &                        mRefRay=5,   ! max # reference rays, chief + 4 marginal
      &                        mPupRay=9,   ! max # pupil rays, chief + 8 marginal
      &                        mIndRef=5,   !
