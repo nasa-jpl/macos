@@ -120,7 +120,7 @@ outputs.
   noted: Fortran multiplies triad-component rows by world [ρ]ₓ —
   mirror the code, don't "fix" it silently (model review with Dave
   if it matters downstream).
-- [~] **S3 — ENGINE LEG DONE 2026-07-12** (`met_calc`/`met_get` in
+- [x] **S3 — DONE 2026-07-12 (engine leg + add_met Stewart emitter, tMet 4/4; 48-beam truss == geometry to 1e-12)** (`met_calc`/`met_get` in
   macos_api_mod after ray_status_get; capacity mMetSrf 20→64 /
   mSysMetBeam 128→512 in elt_mod; codegen Path A → `macos.met()`
   veneer with SI/native units; `tMet` 3/3 = Q8 closed-form gate:
