@@ -143,7 +143,7 @@ outputs.
   motion; orthogonal-motion null; reciprocity) = the §6.6 tier-2 gate
   for SrfMetCalc.  Document limitation: straight-line lengths, NO
   LOS/obscuration check (PLAN §4.5 ShowMetObscur deferred).
-- [ ] **S4 — `dmet_dx` channel + `forward_model()` + demo.**  FD
+- [ ] **S4 — SHAPE PER DAVE 2026-07-12: `design/examples/e5_seg/` — a MODIFIABLE runner: e5mono.in -> segmented .in INCLUDING the MET points (segment_rx + add_met) -> dedx (edge_sensors) + dldx (dmet_dx FD channel) -> MET metric performance = trace(dwdx*P_dx*dwdx') vs prior W=dwdx*X*dwdx' ratio.  Example rules: save .in+.mat, figures in dir, README, NO exit(0).  Underlying pieces: `dmet_dx` channel + `forward_model()` + demo.**  FD
   Jacobian via perturb→METcalc→read (dw_dx supervisor pattern; the
   API perturb path CPERTURB_PROG DOES move SrfMetPos).
   `forward_model()` = {dwdx, dedx, dldx, w0,e0,l0} on ONE x ordering
