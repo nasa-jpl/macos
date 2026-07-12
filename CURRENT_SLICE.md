@@ -173,6 +173,22 @@ outputs.
   (needs macos_param.txt + GridFile data in cwd);
   `SEGRAYTRACE` = engine-side QA command (macos_cmd_loop.inc:1391).
 
+### Tier-3 MET-layout optimization plan (Dave's Q 2026-07-12, answered)
+Merit evaluation is ANALYTIC once frames are known: dldx rows are
+closed-form LOS projections + moment arms (validated FD==analytic in
+tMet), dedx fixed, dwdx fixed per optical design -> thousands of
+layouts/sec of pure linear algebra, NO engine in the loop (engine FD
+only validates the winner).  Approach = HIERARCHICAL, not raw
+combinatorics: (1) SYMMETRY first -- one launcher pattern per segment,
+mirror-symmetric about the segment centerline, replicated by the hex
+rotation group -> collapses the discrete space to one segment's
+pattern x global ring params; (2) COMBINATORIC enumeration of that
+small symmetric set (affordable analytically); (3) STEP-AND-EVALUATE /
+patternsearch polish of the continuous knobs (radii, angles, standoff,
+nf) on the shortlist; (4) worst-mode check (max eig of P_w, not just
+trace) + a symmetry-BREAKING perturbation stage if a symmetric blind
+mode saturates; (5) engine-FD validation of the final layout.
+
 ## In-session state NOT yet committed
 - MACOS_resources: segmirmaker CMakeLists/makesegmirmaker.sh/README/
   CLAUDE.md edits + test_in/*.stdin + mmacos segmirmaker_run.m +
@@ -249,6 +265,22 @@ segment-center ray check via mmacos trace.
 - Plan anchor: —
 - Branch / worktree: sls-dev + sls-dev @ —
 - Definition of done (honest): —
+
+### Tier-3 MET-layout optimization plan (Dave's Q 2026-07-12, answered)
+Merit evaluation is ANALYTIC once frames are known: dldx rows are
+closed-form LOS projections + moment arms (validated FD==analytic in
+tMet), dedx fixed, dwdx fixed per optical design -> thousands of
+layouts/sec of pure linear algebra, NO engine in the loop (engine FD
+only validates the winner).  Approach = HIERARCHICAL, not raw
+combinatorics: (1) SYMMETRY first -- one launcher pattern per segment,
+mirror-symmetric about the segment centerline, replicated by the hex
+rotation group -> collapses the discrete space to one segment's
+pattern x global ring params; (2) COMBINATORIC enumeration of that
+small symmetric set (affordable analytically); (3) STEP-AND-EVALUATE /
+patternsearch polish of the continuous knobs (radii, angles, standoff,
+nf) on the shortlist; (4) worst-mode check (max eig of P_w, not just
+trace) + a symmetry-BREAKING perturbation stage if a symmetric blind
+mode saturates; (5) engine-FD validation of the final layout.
 
 ## In-session state NOT yet committed
 —
