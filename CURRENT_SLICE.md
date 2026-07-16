@@ -94,14 +94,46 @@ record (chronological):
    FreeForm→today, categorized, presentation arcs).  MEMORY.md index
    compacted 22→10 KB (no content loss).
 
-**PUSHED: macos → f82f55d, MACOS_resources → 6391b00 (+ f52ba4c
-local, unpushed: e5_pie center polygon + ray-loss resolution).  NEXT
-(priority order): (a) rxpoly reader + segment_rx emit_apertures +
-parity test (UNGATED — elt-14 was gap rays, closed by Dave's OPD
-review); (b) hub/aft DOFs into the analytic dldx rows (the 232 nm
-bottleneck; needs engine TElt/RptElt frames); (c) IACCEPT_S
-reprompt-loop sweep.  Full record + gotchas: memory
-`project_met_visualizer.md`.**
+**2026-07-16 (second session): the whole NEXT queue LANDED (all
+local/unpushed on sls-dev — macos d09adc0+19d2c08, MACOS_resources
+f52ba4c+10a955c+1dde42b+1dd4a64):**
+1. **e5_pie manual example + aperture productization** (`10a955c` +
+   `1dd4a64`): Dave's OPD review closed elt-14 (gap rays, correct
+   clipping).  Center pie segment = HEXAGON from the traced footprint
+   (poke-diff, NOT a disc/24-gon; corners at k·60°); ring-1 wedges
+   abut it along straight CHORDS (flat (w−g)/2 + gap → chord (w+g)/2;
+   obscuration = apex TRIANGLE, no inner arc — Dave's "circle around
+   Seg 1").  `design.seg_apertures` (hex corners exact / pie hexagon +
+   chorded sectors; xObs from psiElt NOT zMon) + `segment_rx
+   emit_apertures/ap_pad/ap_obs` + `seg_boundary source=rxpoly`
+   (auto when every segment declares PolyApVec; boundary = polygon
+   minus obscuration via polyshape, LARGEST region — %.10E rounding
+   leaves slivers, boundary #1 blind-take lost a tile).  Manual-grade
+   runner `design/examples/e5_pie/e5_pie.m`, figure per step; pupil
+   overlay needs affine centroid calibration (OPD grid transposed +
+   mirrored; xGrid=(−1,0,0)).  met_view M2-M3 inset got axis labels.
+   tSegmentRx 8 checks green.
+2. **hub/aft DOFs in the analytic MET merit** (`1dde42b`):
+   `design.met_bodies` = engine-truth frames (RptElt pivot + TElt
+   rotation block via elt_rpt/elt_csys_get; segment triads reproduced
+   EXACTLY).  metopt v3 merit = full 54 DOFs; fiducials RIDE the hub,
+   aft ring rides the aft body.  Winner FLIPS to CLUSTER pairs at the
+   corners (pmap [6 3 1 4 2 5], rim fiducials): rms 3.429 nm,
+   engine-FD 0.00%; worst-mode 184 nm exposes the weakly-observed aft
+   direction the 42-DOF merit hid.  tMet pins the 54-col identity.
+3. **IACCEPT_S reprompt-loop sweep** (macos `19d2c08`): 21 sites in
+   macos_cmd_loop.inc (BUILD/ORS/SRS/FEXIT/SXP/XPS/SPOT/MVAR/DVAR/
+   GPERTURB/LPERTURB + AVAR's host-killing `stop`) now abort to the
+   main loop; kept the 0=quit loops/MRESET/zernRange (self-
+   terminating).  Both engines rebuilt, mmacos relinked, fast suite
+   25 classes + tSegmentRx + tMet green; BUILD/SPOT at a Segment now
+   abort in 0.01 s.
+
+**NEXT: GMI mex not relinked against the swept engine (rebuild at
+next makeall); rxpoly for IMPORTED (non-SegMirMaker) segmented Rx
+untested on a real external fixture; PLAN_DESIGN_LAYER promote-on-
+land.  Full record + gotchas: memory `project_met_visualizer.md` +
+`project_e5pie_apertures.md`.**
 
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
