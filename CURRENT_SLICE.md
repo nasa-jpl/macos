@@ -61,17 +61,43 @@ record (chronological):
    disc now drawn at REAL hub radius (was fiducial-fit — masked the
    rim violation).  metopt v2: spread + CLUSTER-PAIR families,
    per-beam fiducial assignment enumeration (add_met `pair_map`),
-   rim-zone RFID, MIN_SEP gate, hierarchical passes.  RE-RUN IN FLIGHT
-   at compaction risk — results land in e5_seg_metopt.mat.
-4. **QUEUED (Dave)**: seg_boundary **'rxpoly'** source — segmentations
-   defined as .in poly apertures; launchers on Rx-declared edges (seam
-   note in seg_boundary.m docstring).  Also: pie boundary validated
-   only synthetically so far (tMet Stewart test runs Pie edge
-   placement); is-Stewart-optimal → answer with v2 family results.
+   rim-zone RFID, MIN_SEP gate, hierarchical passes.  **DONE
+   (3bdcda1+1103de0+369de7a)**: MIN_SEP killed the v1 corner ring
+   (3 segments' launchers within 10 mm at every corner junction =
+   INFEASIBLE); physical as-built prior 9577 → edge 3641 → MET 450 →
+   edge+MET **232 nm** (MC 1.3%) — **aft/M3 ring at its physical
+   100 mm = THE bottleneck**; optimizer (42-DOF SEGMENT sub-merit)
+   → **3.358 nm**, winner spread [30 80 160]° + opposite-jump 6-fid
+   map [1 4 2 5 3 6] at the rim (rfid=615), engine-FD 0.00%; the
+   cluster family (64,800 layouts; kept FIRST-CLASS — deformation/
+   rigid decoupling, Dave) lost to spread on rigid DOFs.
+   PATTERN_FRAME 'radial'|'segment' knob (ring-uniform builder
+   parts).  met_view readable views: face-on projected beams +
+   color=segment association + **M2-M3 face-on inset** under the
+   legend.
+4. **e5_pie POLY-APERTURE ASSESSMENT DONE** (design/examples/e5_pie,
+   6391b00; supersedes the sandbox copy): verdict YES — PolyApVec +
+   explicit xObs emission loads clean; segments clip ZERO rays at
+   nominal (fail_elt histogram); round-trip 6e-8 mm → 'rxpoly' reader
+   trivial; pie seg_boundary/edge placement validated on the REAL
+   fixture.  **OPEN ENGINE BUG: 456/12520 outermost-ring rays lost at
+   RayFailElt=14 on the 13-elt train (virtual/return-leg index;
+   Returns at 11/12) ONLY with segment poly apertures — reproducer in
+   the example; ROOT-CAUSE before productizing emit_apertures.**
+   Gotchas: macos.trace().nRays = SOURCE count (use ok_pass/fail_elt
+   for parity); .presc segment blocks carry no ApType/nObs (append).
 5. **Census for Dave's presentation**:
    `~/dev/MACOS_sandbox/improvements_census_draft.md` (~500 commits
    FreeForm→today, categorized, presentation arcs).  MEMORY.md index
    compacted 22→10 KB (no content loss).
+
+**ALL PUSHED: macos → f82f55d, MACOS_resources → 6391b00.  NEXT
+(fresh sessions, priority order): (a) elt-14 root-cause (engine);
+(b) hub/aft DOFs into the analytic dldx rows (the 232 nm bottleneck;
+needs engine TElt/RptElt frames); (c) rxpoly reader + segment_rx
+emit_apertures + parity test (gated on a); (d) IACCEPT_S
+reprompt-loop sweep.  Full record + gotchas: memory
+`project_met_visualizer.md`.**
 
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
