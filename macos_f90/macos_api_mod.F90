@@ -3774,6 +3774,72 @@
       end subroutine met_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the GEOMETRY of the system metrology beams: global source and
+      !            target endpoint of every gauge, plus the owning element indices --
+      !            in EXACTLY the order SrfMetCalc/met_get emit the lengths (source
+      !            elements in element order, then per source point j, per target
+      !            point i, gated on metBeamFlg(i,j)>0).  Backs prescription-level
+      !            visualization (macos.view_rx / met_view): MET paths can be drawn
+      !            for ANY loaded Rx, not just ones built by a design-layer emitter.
+      ! Call     : CALL met_geom_get(OK, src_, tgt_, srcElt_, tgtElt_, n)
+      ! Input    : n        [1x1,I]: beam count from the preceding met_calc (nMetMeas_)
+      ! Output   : OK       [1x1,B]: = (True) if successful; (False) otherwise
+      !            src_     [3xn,D]: gauge source points (launchers), global BaseUnits
+      !            tgt_     [3xn,D]: gauge target points (fiducials), global BaseUnits
+      !            srcElt_  [n,I]  : element carrying each source point
+      !            tgtElt_  [n,I]  : element carrying each target point
+      ! Require  : Rx loaded; met_calc called first (n must equal its nMetMeas_)
+      ! Note     : Points reflect the CURRENT (perturbed) state -- SrfMetPos moves
+      !            under the API perturb path.
+      !---------------------------------------------------------------------------------------------
+      subroutine met_geom_get(OK, src_, tgt_, srcElt_, tgtElt_, n)
+
+        implicit none
+        logical,                   intent(out):: OK
+        real(8), dimension(3,n),   intent(out):: src_
+        real(8), dimension(3,n),   intent(out):: tgt_
+        integer, dimension(n),     intent(out):: srcElt_
+        integer, dimension(n),     intent(out):: tgtElt_
+        integer,                   intent(in) :: n
+
+        integer :: iElt, i, j, k
+
+        ! ------------------------------------------------------
+        OK      = FAIL
+        src_    = 0d0
+        tgt_    = 0d0
+        srcElt_ = 0
+        tgtElt_ = 0
+
+        if (.not. SystemCheck()) return
+        if ((n <= 0) .or. (n /= nMetMeas)) return
+
+        ! Mirror SrfMetCalc's enumeration (utilsub.F) so beam k here is
+        ! gauge k in met_get's length buffer.
+        k = 0
+        do iElt = 1, nElt
+          if ((iEltToMetSrf(iElt) > 0) .and. (tMetSrf(iElt) > 0)) then
+            do j = 1, nMetPos(iElt)
+              do i = 1, ntMetPos(iElt)
+                if (metBeamFlg(i,j,iEltToMetSrf(iElt)) > 0) then
+                  k = k + 1
+                  if (k > n) return               ! Rx changed since met_calc
+                  src_(1:3,k) = SrfMetPos(1:3,j,iEltToMetSrf(iElt))
+                  tgt_(1:3,k) = SrfMetPos(1:3,i,iEltToMetSrf(tMetSrf(iElt)))
+                  srcElt_(k)  = iElt
+                  tgtElt_(k)  = tMetSrf(iElt)
+                end if
+              end do
+            end do
+          end if
+        end do
+        if (k /= n) return
+
+        OK = PASS
+
+      end subroutine met_geom_get
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Trace Wavefront from source to surface iElt with grid sampling NxN
       ! Call     : CALL trace_rays(OK, WFE, nRays, N, iElt)
       ! Input    : iElt      [1x1,I]: Elt.ID      (Range: 0 < iElt <= nElt)
@@ -4784,13 +4850,11 @@
         DrawDataEndElt   = iEndElt
         DrawDataOnly     = .TRUE.
 
-        IARG(1) = iStartElt        ! also load the stack for consistency
-        IARG(2) = iEndElt
-        IARG(3) = iEndElt
-        CARG(1) = 'XZ'
-        if (plane == 1) CARG(1) = 'YZ'
-        if (plane == 3) CARG(1) = 'XY'
-
+        ! NOTE: parameters travel via the DrawData* module variables only.
+        ! (An earlier version also pushed them onto the SMACOS arg stack
+        ! "for consistency" -- but the data-only DRAW handler bypasses the
+        ! dialog, so the tokens were never consumed and spilled into the
+        ! command loop as "** Unknown command" noise after every call.)
         command = 'DRAW'
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
 
@@ -4824,6 +4888,45 @@
         nEltPerRay(1:nr)  = nDrawElt_save(1:nr)
         OK = PASS
       end subroutine draw_rays_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the 3-D (global x,y,z) surface crossings of the draw-ray fan
+      !            captured by the LAST draw_rays_cmd -- the unprojected companion of
+      !            draw_rays_get (same ray/crossing enumeration: crossing c of ray r
+      !            here is crossing c of ray r there; use draw_rays_get for the elt
+      !            indices and per-ray crossing counts).  Works for ANY loaded Rx and
+      !            every element type the DRAW trace crosses (Segment/NS included) --
+      !            the substrate for the general 3-D prescription visualizer
+      !            (macos.view_rx / macos.draw_rays3d).
+      ! Call     : CALL draw_rays3d_get(OK, Px, Py, Pz, nDE, nDR)
+      ! Input    : nDE      [1x1,I]: crossing-buffer dim (from draw_rays_cmd)
+      !            nDR      [1x1,I]: ray-buffer dim      (from draw_rays_cmd)
+      ! Output   : OK       [1x1,B]: = (True) if successful; (False) otherwise
+      !            Px,Py,Pz [nDExnDR,D]: global coords of crossing (c, ray r), BaseUnits
+      ! Require  : draw_rays_cmd called first (fills traceutil_mod Draw3DVec via CTRACE)
+      !---------------------------------------------------------------------------------------------
+      subroutine draw_rays3d_get(OK, Px, Py, Pz, nDE, nDR)
+        use traceutil_mod, only: Draw3DVec
+        use src_mod,       only: nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: nDE, nDR             ! caller buffer dims
+        real(8), intent(out) :: Px(nDE,nDR)          ! global x per crossing
+        real(8), intent(out) :: Py(nDE,nDR)          ! global y per crossing
+        real(8), intent(out) :: Pz(nDE,nDR)          ! global z per crossing
+        integer :: nr, ne
+        ! ------------------------------------------------------
+        OK = FAIL
+        Px = 0d0; Py = 0d0; Pz = 0d0
+        if (.not. allocated(Draw3DVec)) return
+        if (nDrawRay_save <= 0) return
+        nr = min(nDrawRay_save, nDR)
+        ne = min(size(Draw3DVec,2), nDE)
+        Px(1:ne,1:nr) = Draw3DVec(1,1:ne,1:nr)
+        Py(1:ne,1:nr) = Draw3DVec(2,1:ne,1:nr)
+        Pz(1:ne,1:nr) = Draw3DVec(3,1:ne,1:nr)
+        OK = PASS
+      end subroutine draw_rays3d_get
 
 
       !---------------------------------------------------------------------------------------------
