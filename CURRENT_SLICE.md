@@ -80,10 +80,13 @@ record (chronological):
    explicit xObs emission loads clean; segments clip ZERO rays at
    nominal (fail_elt histogram); round-trip 6e-8 mm → 'rxpoly' reader
    trivial; pie seg_boundary/edge placement validated on the REAL
-   fixture.  **OPEN ENGINE BUG: 456/12520 outermost-ring rays lost at
-   RayFailElt=14 on the 13-elt train (virtual/return-leg index;
-   Returns at 11/12) ONLY with segment poly apertures — reproducer in
-   the example; ROOT-CAUSE before productizing emit_apertures.**
+   fixture.  **Ray-loss question RESOLVED (Dave OPD review, MACOS_res
+   f52ba4c): the RayFailElt=14 rays fall into the inter-segment GAPS —
+   correct physical clipping, NOT an engine bug (elt-14 = cosmetic
+   return-leg attribution).  Same commit: center segment (Elt 1) now
+   emits a generated circumscribed 24-gon PolyApVec (Polygonal, no
+   Circular special case); loss 456→442; all 7 polygons round-trip
+   6e-8 mm.  rxpoly productization UNGATED.**
    Gotchas: macos.trace().nRays = SOURCE count (use ok_pass/fail_elt
    for parity); .presc segment blocks carry no ApType/nObs (append).
 5. **Census for Dave's presentation**:
@@ -91,11 +94,12 @@ record (chronological):
    FreeForm→today, categorized, presentation arcs).  MEMORY.md index
    compacted 22→10 KB (no content loss).
 
-**ALL PUSHED: macos → f82f55d, MACOS_resources → 6391b00.  NEXT
-(fresh sessions, priority order): (a) elt-14 root-cause (engine);
-(b) hub/aft DOFs into the analytic dldx rows (the 232 nm bottleneck;
-needs engine TElt/RptElt frames); (c) rxpoly reader + segment_rx
-emit_apertures + parity test (gated on a); (d) IACCEPT_S
+**PUSHED: macos → f82f55d, MACOS_resources → 6391b00 (+ f52ba4c
+local, unpushed: e5_pie center polygon + ray-loss resolution).  NEXT
+(priority order): (a) rxpoly reader + segment_rx emit_apertures +
+parity test (UNGATED — elt-14 was gap rays, closed by Dave's OPD
+review); (b) hub/aft DOFs into the analytic dldx rows (the 232 nm
+bottleneck; needs engine TElt/RptElt frames); (c) IACCEPT_S
 reprompt-loop sweep.  Full record + gotchas: memory
 `project_met_visualizer.md`.**
 
