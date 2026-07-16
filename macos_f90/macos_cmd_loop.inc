@@ -2065,11 +2065,23 @@ C         ***Compute linear models***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'BUILD: Invalid element number: ',iElt
-	        GO TO 26
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'BUILD: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF ((EltID(iElt).EQ.9).OR.
      &	      (EltID(iElt).EQ.11).OR.(EltID(iElt).EQ.12)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 26
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'BUILD: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	      iStartElt=0
 	      iEndElt=iElt
@@ -2211,11 +2223,23 @@ C         ***Optimize reference surface***
 	      GO TO 1
 	    ELSE IF (iElt.GT.nElt) THEN
 	      WRITE (*,*)'ORS: Invalid element number: ',iElt
-	      GO TO 29
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'ORS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iElt).NE.3).AND.(EltID(iElt).NE.7)
      &	             .AND.(EltID(iElt).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 29
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'ORS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 	    iStartElt=0
 	    iEndElt=iElt-1
@@ -2258,11 +2282,23 @@ C
 	      GO TO 1
 	    ELSE IF (iSlv1.GT.nElt) THEN
 	      WRITE (*,*)'SRS: Invalid element number: ',iElt
-	      GO TO 57
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iSlv1).NE.2).AND.(EltID(iSlv1).NE.3)
      &	    .AND.(EltID(iSlv1).NE.7).AND.(EltID(iSlv1).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 57
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 
  58	    CALL IACCEPT_S(iSlv2,1,1,
@@ -2271,11 +2307,23 @@ C
 	      GO TO 1
 	    ELSE IF ((iSlv2.GT.nElt).OR.(iSlv2.EQ.iSlv1)) THEN
 	      WRITE (*,*)'SRS-2: Invalid element number: ', iElt
-	      GO TO 58
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iSlv2).NE.2).AND.(EltID(iSlv2).NE.3)
      &	    .AND.(EltID(iSlv2).NE.7).AND.(EltID(iSlv2).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 58
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 
 	    ifGrid=.FALSE.
@@ -2540,11 +2588,23 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'FEXIT: Invalid element number: ',iElt
-	        GO TO 54
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'FEXIT: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
                                                                ! or Reference surface
-	        GO TO 54
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'FEXIT: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	    ELSE
 	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
@@ -2614,11 +2674,23 @@ C         *** compatibility; it is now largely redundant with FEX.
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'SXP: Invalid element number: ',iElt
-	        GO TO 8073
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SXP: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
                                                                ! or Reference surface
-	        GO TO 8073
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SXP: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	    ELSE
 	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
@@ -2678,10 +2750,22 @@ C         *** tracesub.F SUBROUTINE XPS.
               GO TO 1
             ELSE IF (iElt.GT.nElt) THEN
               WRITE (*,*)'XPS: Invalid element number: ',iElt
-              GO TO 8074
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+              WRITE (*,*)'XPS: command aborted.'
+              GO TO 1
+!<--
             ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
               WRITE(*,*)'Invalid element type =',EltID(iElt)
-              GO TO 8074
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+              WRITE (*,*)'XPS: command aborted.'
+              GO TO 1
+!<--
             END IF
           ELSE
             WRITE(*,*)' Must load optical data first: use NEW or OLD.'
@@ -3287,12 +3371,13 @@ C         *** Add a variable element, supported in both MACOS and SMACOS
      &               'Enter variable element id for optimization:')
 	      IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)'AVAR: Invalid element number: ',iElt
-#ifdef MACOS_CMD
-                GO TO 21
-#else
-	        WRITE(*,*)'SMACOS quit ...'
-	        stop
-#endif
+!-->  Abort in BOTH builds: the interactive reprompt loops forever in
+!     SMACOS batch mode (IACCEPT_S re-reads the exhausted stack) and
+!     the old SMACOS branch STOPped the whole host process -- fatal
+!     when the engine is a mex/library.  OPD-fix class (032ddb8).
+                WRITE (*,*)'AVAR: command aborted.'
+                GO TO 1
+!<--
 
 C	      ELSE IF (EltId(iElt)==3) THEN
 C	        WRITE(*,*)' '
@@ -3357,7 +3442,13 @@ C	  *** Modify a defined variable element
      &               'Enter variable element ID for optimization:')
               IF ((iElt.LT.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)' MVAR: Invalid element ID: ',iElt
-                GO TO 25
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'MVAR: command aborted.'
+                GO TO 1
+!<--
 	      ELSE
 	        ! Search
 	        if (.not.isVarElt(iElt)) then
@@ -3393,7 +3484,13 @@ C             SMACOS
 #ifdef MACOS_CMD
               IF ((iElt.LT.0).OR.(iElt.GT.nElt)) THEN
 	        WRITE (*,*)'DVAR: Invalid element ID: ',iElt
-                GO TO 23
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'DVAR: command aborted.'
+                GO TO 1
+!<--
 	      END IF
 #endif
 	      IF ((iElt.GE.0) .AND. (iElt.LE.nElt)) THEN
@@ -4587,13 +4684,25 @@ C         ***Plot spot diagram***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'SPOT: Invalid element number: ',iElt
-	        GO TO 10
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SPOT: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF
      &        ((EltID(iElt).EQ.NSRefractorElt).OR.
      &         (EltID(iElt).EQ.SegmentElt).OR.
      &	       (EltID(iElt).EQ.NSReflectorElt)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 10
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SPOT: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 
 C	  Get local coordinates:
@@ -5901,7 +6010,13 @@ C        *** Group PERTURB, supported in both MACOS and SMACOS
      &                       'Enter element to be perturbed:')
               IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)'GPERTURB: Invalid element number: ',iElt
-                GO TO 63
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'GPERTURB: command aborted.'
+                GO TO 1
+!<--
               END IF
 
 	      If (EltGrp(0,iElt)>0) Then
@@ -5959,7 +6074,13 @@ C         ***Perturb linear model***
      &	      'Enter element to be perturbed:')
 	      IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
 	        WRITE (*,*)'LPERTURB: Invalid element number.'
-	        GO TO 62
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'LPERTURB: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 
 	      CALL CLPERTURB(PertVec,RaySpot,

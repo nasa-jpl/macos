@@ -590,6 +590,24 @@ The right model to follow is `MACOS_resources/docs/macos-manual/examples/CoroExa
 Elt 6 (the working CoroMask).  Any new coronagraph test prescription
 should use `Element= Obscuring` for the mask element.
 
+## IACCEPT_S reprompt-loop sweep (macos_cmd_loop.inc, 2026-07-16)
+Interactive commands that validated an element/ray id and jumped BACK
+to their ACCEPT prompt on failure (`GO TO <prompt label>`) hang or
+misbehave under SMACOS batch: IACCEPT_S reads the exhausted stack and
+returns the DEFAULT, so a sticky default (`IACCEPT_S(iElt, iElt, ...)`
+— the OPD case) spins forever, and a fixed default (1, iCurWFElt,
+nElt−1) silently substitutes the wrong element.  ALL such validation
+reprompts now abort with `'<CMD>: command aborted.'` + `GO TO 1`:
+BUILD, ORS, SRS (both prompts), FEXIT, SXP, XPS, SPOT, MVAR, DVAR,
+GPERTURB, LPERTURB, and AVAR — whose old SMACOS branch called `stop`,
+killing the host process when the engine is a mex/library.
+Deliberately KEPT as loops: CTRACE / SEGRAYTRACE "0=quit" multi-entry
+prompts (default 0 self-terminates on an exhausted stack), the
+`#ifdef MACOS_CMD` MRESET size prompt (interactive-only), and the
+Zernike-range prompt (sets valid defaults before looping, so it
+self-heals).  When adding a NEW command prompt, never re-enter the
+ACCEPT on validation failure — abort to label 1.
+
 ## LOG command cleanup (macos_cmd_loop.inc)
 - The `LOG` interactive command (log10-intensity wavefront display, not
   transcript logging -- which is `JOU`/`JOURNAL`) previously dumped an
