@@ -3233,6 +3233,10 @@ C	Begin iRay loop to trace each ray and compute its partials
 	    DrawElt(nDrawElt)=iStartElt
 	    DrawRay(1,nDrawElt)=DDOTC(xDraw,RayPos(1,iRay))
 	    DrawRay(2,nDrawElt)=DDOTC(yDraw,RayPos(1,iRay))
+!-->        3-D capture of the same crossing (DRAW only)
+	    IF (iDrawRay_global.GT.0 .AND. allocated(Draw3DVec))
+     &	      Draw3DVec(1:3,nDrawElt,iDrawRay_global)=RayPos(1:3,iRay)
+!<--
 	  ELSE
 	    nDrawElt=0
 	  END IF
@@ -3955,6 +3959,11 @@ C	Here when element number is determined...
 	                DrawElt(nDrawElt)=imin
 	                DrawRay(1,nDrawElt)=DDOTC(xDraw,RayPos(1,iRay))
 	                DrawRay(2,nDrawElt)=DDOTC(yDraw,RayPos(1,iRay))
+!-->                    3-D capture of the same crossing (DRAW only)
+	                IF (iDrawRay_global.GT.0 .AND.
+     &	                    allocated(Draw3DVec)) Draw3DVec(1:3,
+     &	                    nDrawElt,iDrawRay_global)=RayPos(1:3,iRay)
+!<--
 	              END IF
 
                       ! Save incident chief ray state:
@@ -4227,6 +4236,10 @@ C  End of element section
 	      DrawElt(nDrawElt)=iElt
 	      DrawRay(1,nDrawElt)=DDOTC(xDraw,RayPos(1,iRay))
 	      DrawRay(2,nDrawElt)=DDOTC(yDraw,RayPos(1,iRay))
+!-->        3-D capture of the same crossing (DRAW only)
+	      IF (iDrawRay_global.GT.0 .AND. allocated(Draw3DVec))
+     &	        Draw3DVec(1:3,nDrawElt,iDrawRay_global)=RayPos(1:3,iRay)
+!<--
 	    END IF
 
 	    ! Save incident chief ray state:
