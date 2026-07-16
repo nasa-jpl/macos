@@ -1788,6 +1788,18 @@ C    the centerline.
 	      nDrawElt(1:nDrawRay) = 0
 	      DrawEltVec(:, 1:nDrawRay) = 0
 	      DrawRayVec(:, :, 1:nDrawRay) = 0.0
+!-->  3-D crossing capture buffer (traceutil_mod; filled by CTRACE via
+!     iDrawRay_global; read back by draw_rays3d_get).  Re-sized here so
+!     a model-size change can't leave a stale-shaped buffer.
+	      IF (allocated(Draw3DVec)) THEN
+	        IF ((SIZE(Draw3DVec,2).NE.mDrawElt) .OR.
+     &	            (SIZE(Draw3DVec,3).LT.nDrawRay))
+     &	          deallocate(Draw3DVec)
+	      END IF
+	      IF (.NOT.allocated(Draw3DVec))
+     &	        allocate(Draw3DVec(3,mDrawElt,mDrawRay))
+	      Draw3DVec(:, :, 1:nDrawRay) = 0d0
+!<--
 
 C    Trace up to first element to be drawn
 	      i=nDrawRay/2+1
@@ -4132,12 +4144,19 @@ C         ***Plot OPD map***
 	      IF (iElt.LE.0) THEN
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
-	        WRITE (*,*)'OPD: Invalid element number: ', iElt
-	        GO TO 6
+!-->  Abort instead of GO TO 6: the reprompt loops forever in SMACOS
+!     batch mode (IACCEPT_S re-reads the exhausted stack) -- same
+!     infinite-loop class as the SPOT fix (ed48d4f).
+	        WRITE (*,*)'OPD: Invalid element number: ', iElt,
+     &	                   '; command aborted.'
+	        GO TO 1
 	      ELSE IF ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.11).OR.
      &	      (EltID(iElt).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 6
+	        WRITE(*,*)'OPD: cannot evaluate at a ',
+     &	          TRIM(EltTypeName(EltID(iElt))),
+     &	          ' element (elt',iElt,'); command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	      iEndElt=iElt
 
