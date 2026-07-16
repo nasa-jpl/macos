@@ -24,6 +24,55 @@
 
 ## Active slice
 
+**2026-07-16: VISUALIZATION + MET-layout physicality/v2.** Session
+record (chronological):
+1. **Luis GridData transpose — DONE+PUSHED** (MACOS_res `17f1239`):
+   `macos.read_grid_file`; engine GridInit reads file line=COLUMN;
+   mmacos `elt_grid_add`=[x,y] vs pymacos=[y,x] OPPOSITE (memory
+   `reference_grid_orientation_convention`).
+2. **General visualizer — DONE, COMMITTED NOT PUSHED** (macos
+   `032ddb8` + MACOS_res `d8011c6`): Dave: "work with any prescription
+   — beam, optics, MET paths if present" (Lou's unfinished 3-D
+   visualizer, modernized).  Engine: `Draw3DVec` 3-D DRAW capture
+   (traceutil_mod; CTRACE fills at the 3 DrawRay sites via
+   iDrawRay_global) + `draw_rays3d_get` + `met_geom_get` (endpoints ==
+   met_get order; ride perturbations) + **OPD batch-hang fix: GO TO 6
+   reprompt → abort — `trace(k)` on a Segment/NS elt spun FOREVER in
+   SMACOS (same class as SPOT ed48d4f; sweep of remaining IACCEPT_S
+   reprompt sites still OPEN)** + draw_rays_cmd vestigial stack args
+   removed ("Unknown command" noise; load_rx still emits some —
+   pre-existing).  mmacos: `view_rx` (DRAW-fan harvest, NOT per-elt
+   trace(k)) / `draw_rays3d` / `met_geom`; design layer: `met_view`
+   (3-D + face-on panels) / `hex_tile` / `seg_boundary` (hex + PIE
+   wedges, arc-length `sample`); `segment_rx` exposes width/gap/grid.
+   Examples: `examples/view_rx_demo` (Cass/Coro/e5mono+met) + e5_seg
+   figures.  Tests: tMet 6/6, tMetView 4/4 (**findall can't reach
+   sgtitle Text — title mirrored to fig.Name**), tSegmentRx 4/4,
+   tReadGridFile 5/5.
+3. **Dave's design-review constraints (figures drove these — the
+   PURPOSE of the viz)**: boundary-true tiles (width/2 apothem, ONE
+   global clocking per manual §segments — NOT per-seg face frames);
+   launchers AT segment edges + edge_off 5 mm (add_met DEFAULT; edge
+   placement alone: e5_seg edge+MET 5.98→4.34 nm); **MIN_SEP 50 mm
+   between ANY two launchers (corner junctions!)**; **fiducials must
+   MOUNT ON M2 ≤~25 mm inside its ApVec rim (615 mm here; r_fid≈590)**;
+   **nf ≥3, likely 6**; **extra/M3 launcher ring hugs that element's
+   physical radius + edge_off (was floating at r_fid)**; met_view hub
+   disc now drawn at REAL hub radius (was fiducial-fit — masked the
+   rim violation).  metopt v2: spread + CLUSTER-PAIR families,
+   per-beam fiducial assignment enumeration (add_met `pair_map`),
+   rim-zone RFID, MIN_SEP gate, hierarchical passes.  RE-RUN IN FLIGHT
+   at compaction risk — results land in e5_seg_metopt.mat.
+4. **QUEUED (Dave)**: seg_boundary **'rxpoly'** source — segmentations
+   defined as .in poly apertures; launchers on Rx-declared edges (seam
+   note in seg_boundary.m docstring).  Also: pie boundary validated
+   only synthetically so far (tMet Stewart test runs Pie edge
+   placement); is-Stewart-optimal → answer with v2 family results.
+5. **Census for Dave's presentation**:
+   `~/dev/MACOS_sandbox/improvements_census_draft.md` (~500 commits
+   FreeForm→today, categorized, presentation arcs).  MEMORY.md index
+   compacted 22→10 KB (no content loss).
+
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
 coordinate systems, edge sensors, laser metrology; MET truss from M2
