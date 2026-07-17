@@ -155,23 +155,31 @@ ac57bf4+b7c4c4b, all LOCAL):**
 - Demo: 4 cases incl. e5hex1 via view_std; tViewRx 5/5 (SUITE_FREEFORM
   256), tMetView 4/4, tMet 6/6, quick 67/0.
 
-**NEXT SESSION (Dave's objective, 2026-07-17): assemble a COMPLETE
-END-TO-END worked example — design → segmentation → MET → linear-model
-generation → simulator — for one of our telescope cases, built from
-the parameterized runners/utilities (Telescope builder or e5 import,
-segment_rx + emit_apertures, add_met + metopt, dmet_dx/dldx_analytic/
-met_bodies + edge_sensors + dwdx harvest, post-control MC evaluate),
-packaged for users to hack for their own systems.  view_std/view_rx
-figures at each stage.  Candidate spine: e5_seg + e5_seg_metopt +
-e5_pie pieces already do most stages — consolidate into ONE
-design/examples/end_to_end runner.
+**NEXT SESSION (Dave's objective, 2026-07-17): COMPLETE END-TO-END
+worked example for users to hack, built from the parameterized
+runners/utilities.  Dave's SEQUENCE (verbatim):
+1. telescope design (TMA+FF feeding back end), with views and
+   performance report;
+2. add imaging instrument (3-4 mirrors to widen the field), new views
+   and performance report;
+3. segmentation, new views;
+4. generate dwdx, dwdz, dwdgrid;
+5. MET, MET-optimized performance report, dxdl, dxde, dwdl, dwde; new
+   views with MET;
+6. a SIMULATOR that generates PSFs using mmacos OR the linear model
+   (user switch), driven by an x, z, grid TIME HISTORY.
+Building blocks already shipped: Telescope/sz_tma builders +
+design_report (1-2), segment_rx + emit_apertures (3), dw_d*_multi
+harvests (4), add_met + metopt v3 + dmet_dx/dldx_analytic/met_bodies
++ edge_sensors (5; dxdl/dxde = the estimator gains from H, dwdl/dwde
+= dwdx·gains), COMPOSE/psf + linear w = dwdx·x + dwdz·z + dwdgrid·g
+(6).  view_std/view_rx figures at every stage.
 
-Smaller queue: exact PIE tiles in view_rx (wedges currently footprint
-hulls; hex-only exact path); GMI mex not relinked against the new
-engine (next makeall); pymacos export of the 4 new api routines
-deferred; rxpoly for IMPORTED segmented Rx untested on an external
-fixture; PLAN_DESIGN_LAYER promote-on-land.  Full record + gotchas:
-memory `project_met_visualizer.md` + `project_e5pie_apertures.md`.**
+Smaller queue: GMI mex not relinked against the new engine (next
+makeall); pymacos export of the 4 new api routines deferred; rxpoly
+for IMPORTED segmented Rx untested on an external fixture;
+PLAN_DESIGN_LAYER promote-on-land.  Full record + gotchas: memory
+`project_met_visualizer.md` + `project_e5pie_apertures.md`.**
 
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
