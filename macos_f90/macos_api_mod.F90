@@ -3720,6 +3720,125 @@
       end subroutine ray_status_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Enable/disable the per-trace ray-position history capture
+      !            (traceutil_mod's RayPosHist(3,mRay,0:nElt) + LRayOKHist,
+      !            John Lou's Vis3D substrate): when on, EVERY trace records
+      !            every ray's global 3-D crossing at every element (source
+      !            plane at slot 0; sequential AND non-sequential fill sites).
+      !            Costs one 3-vector store per ray-surface hit; default off.
+      !            Read back with ray_pos_hist_get after macos.trace.
+      subroutine ray_hist_set(OK, enable)
+
+        use traceutil_mod, only: SaveRayPosHist_Flg
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: enable
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        SaveRayPosHist_Flg = enable
+        OK = PASS
+
+      end subroutine ray_hist_set
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Read back the ray-position history of the LAST trace
+      !            (requires ray_hist_set(.true.) BEFORE that trace).
+      !            Buffers are (nRays, nElt1) with nElt1 = nElt+1: column j
+      !            holds the crossing at element j-1 (column 1 = the source
+      !            plane).  LOK_ is 1.0 where the ray reached that element
+      !            (LRayOKHist), else 0.0 -- positions there are stale.
+      subroutine ray_pos_hist_get(OK, Px_, Py_, Pz_, LOK_, nRays, nElt1)
+
+        use traceutil_mod, only: RayPosHist, LRayOKHist
+
+        implicit none
+        logical,                          intent(out)  :: OK
+        real(8), dimension(nRays, nElt1), intent(inout):: Px_
+        real(8), dimension(nRays, nElt1), intent(inout):: Py_
+        real(8), dimension(nRays, nElt1), intent(inout):: Pz_
+        real(8), dimension(nRays, nElt1), intent(inout):: LOK_
+        integer,                          intent(in)   :: nRays
+        integer,                          intent(in)   :: nElt1
+
+        integer :: j
+        ! ------------------------------------------------------
+        OK = FAIL
+        Px_ = 0e0_pr;  Py_ = 0e0_pr;  Pz_ = 0e0_pr;  LOK_ = 0e0_pr
+
+        if (.not. SystemCheck()) return
+        if ((nRays /= nRay) .or. (nElt1 /= nElt + 1)) return
+        if (.not. allocated(RayPosHist)) return
+
+        do j = 1, nElt1
+          Px_(:, j) = RayPosHist(1, 1:nRay, j-1)
+          Py_(:, j) = RayPosHist(2, 1:nRay, j-1)
+          Pz_(:, j) = RayPosHist(3, 1:nRay, j-1)
+          where (LRayOKHist(1:nRay, j-1)) LOK_(:, j) = 1e0_pr
+        end do
+
+        OK = PASS
+
+      end subroutine ray_pos_hist_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : One-stop element metadata for layout drawing: element
+      !            type id (elt_mod EltID constants), aperture declaration
+      !            (ApType / ApVec / xObs, plus the projected polygon
+      !            vertices PolyApVtx -- 2-D, aperture-frame, centroid-
+      !            relative -- when ApType is Polygonal), and the surface
+      !            half-size lMon.  nPolyVtx = 0 when no polygon.  PolyVtx_
+      !            is a caller-sized (2, mside) buffer (mside >= mPolySide
+      !            slots need not be filled; engine max is mPolySide).
+      subroutine elt_info_get(OK, EltID_, ApType_, ApVec_, xObs_, lMon_, &
+                              nPolyVtx, PolyVtx_, iElt, mside)
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(out)  :: EltID_
+        integer,                       intent(out)  :: ApType_
+        real(8), dimension(6),         intent(inout):: ApVec_
+        real(8), dimension(3),         intent(inout):: xObs_
+        real(8),                       intent(out)  :: lMon_
+        integer,                       intent(out)  :: nPolyVtx
+        real(8), dimension(2, mside),  intent(inout):: PolyVtx_
+        integer,                       intent(in)   :: iElt
+        integer,                       intent(in)   :: mside
+
+        ! ------------------------------------------------------
+        OK       = FAIL
+        EltID_   = 0
+        ApType_  = 0
+        ApVec_   = 0e0_pr
+        xObs_    = 0e0_pr
+        lMon_    = 0e0_pr
+        nPolyVtx = 0
+        PolyVtx_ = 0e0_pr
+
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if (mside < 1)                     return
+
+        EltID_  = EltID(iElt)
+        ApType_ = ApType(iElt)
+        ApVec_  = ApVec(1:6, iElt)
+        xObs_   = xObs(1:3, iElt)
+        lMon_   = lMon(iElt)
+        if ((ApType(iElt) == 7) .or. (ApType(iElt) == 8)) then
+          ! Polygonal / Tapered_Polygonal: nSides in ApVec(3)
+          nPolyVtx = min(int(ApVec(3, iElt)), mside, mPolySide)
+          if (nPolyVtx > 0) then
+            PolyVtx_(1:2, 1:nPolyVtx) = PolyApVtx(1:2, 1:nPolyVtx, iElt)
+          end if
+        end if
+
+        OK = PASS
+
+      end subroutine elt_info_get
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Run the METcalc laser-metrology compute (SrfMetCalc, utilsub.F):
       !            straight-line length of every declared met beam (the Rx's
       !            nMetPos / tMetElt / metBeamFlg data), filling the flat
