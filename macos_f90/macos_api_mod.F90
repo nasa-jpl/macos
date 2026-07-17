@@ -3839,6 +3839,38 @@
       end subroutine elt_info_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Source segmentation tiling metadata: GridType id
+      !            (src_mod GridType_* codes: 1 Circular, 2 Square, 3 Hex,
+      !            4 Pie, 5 Flower, 6 UDG), segment count, and the tiling
+      !            width (flat-to-flat) / gap keywords -- the truth needed
+      !            to draw Segment elements as exact tiles (manual 4.x:
+      !            neighbor center distance = width + gap).
+      subroutine src_seg_get(OK, GridTypeID, nSeg_, width_, gap_)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: GridTypeID
+        integer, intent(out):: nSeg_
+        real(8), intent(out):: width_
+        real(8), intent(out):: gap_
+        ! ------------------------------------------------------
+        OK         = FAIL
+        GridTypeID = 0
+        nSeg_      = 0
+        width_     = 0e0_pr
+        gap_       = 0e0_pr
+
+        if (.not. SystemCheck()) return
+
+        GridTypeID = GridType
+        nSeg_      = nSeg
+        width_     = width
+        gap_       = gap
+        OK = PASS
+
+      end subroutine src_seg_get
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Run the METcalc laser-metrology compute (SrfMetCalc, utilsub.F):
       !            straight-line length of every declared met beam (the Rx's
       !            nMetPos / tMetElt / metBeamFlg data), filling the flat
