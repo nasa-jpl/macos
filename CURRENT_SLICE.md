@@ -157,7 +157,13 @@ ac57bf4+b7c4c4b, all LOCAL):**
 
 **NEXT SESSION (Dave's objective, 2026-07-17): COMPLETE END-TO-END
 worked example for users to hack, built from the parameterized
-runners/utilities.  Dave's SEQUENCE (verbatim):
+runners/utilities.  Dave 2026-07-17: EVERY stage runner must produce a
+THOROUGH design report (saved text alongside the artifacts — identity,
+first-order, field performance, and the stage's own metrics: Jacobian
+condition/rank for stage 4, MET observability + post-control residual
+for stage 5, time-history stats for stage 6) AS WELL AS graphics
+(view_std/view_rx + the stage's metric figures).  Dave's SEQUENCE
+(verbatim):
 1. telescope design (TMA+FF feeding back end), with views and
    performance report;
 2. add imaging instrument (3-4 mirrors to widen the field), new views
@@ -180,6 +186,33 @@ makeall); pymacos export of the 4 new api routines deferred; rxpoly
 for IMPORTED segmented Rx untested on an external fixture;
 PLAN_DESIGN_LAYER promote-on-land.  Full record + gotchas: memory
 `project_met_visualizer.md` + `project_e5pie_apertures.md`.**
+
+**2026-07-17 (e2e session): STAGE 1 LANDED (MACOS_res `e20d6b1`,
+LOCAL).  `design/examples/e2e/` = the 6-stage worked example; all
+knobs in `e2e_params.m`.  Dave's decisions this session: (a) user
+specifies BASIC telescope parameters, f/# a FREE input (tma_layout,
+NOT D-scaling); (b) the case = D=4 m, primary f/1.25, system f/18,
+ON-AXIS Korsch taken SLIGHTLY OFF-AXIS; (c) 90-deg FOLD after M2
+moves M3 + image + FP BEHIND M1; (d) every stage runner emits a
+THOROUGH design report + graphics; (e) stage 2 = JOINT refinement:
+as instrument optics are added, keep refining M1-M3 (M2/M3 apertures
+may GROW, Zernike terms deepen) to improve field performance.
+Stage-1 as-built: m2=16 -> f/20 int focus in front of M1 (met
+injection), near-unit M3 relay, ~6% M2 obscuration, fold at z=0.3,
+bench M3 [2.1 0 0.3] / FP [-0.5 -0.12 0.3], M1 hole r=0.182, bias
+sweep -> 5' (least that fully clears; only M2 obstructs, by design);
+solve ladder (each step was a debugged lesson): conics AT the bias
+point with FP align FIRST (align between two solves; else -2 mm
+field-curvature defocus = 1.6 waves poisons the conic solve) -> joint
+FF field solve (1.07 worst) -> M1 stop common-mode null (bias point
+0.0024 waves, Strehl 0.97; corners pay: worst +-1' = 1.58 raw/0.97
+-tilt = the pure field DIFFERENTIAL stage 2 corrects).  ORDER
+MATTERS: static-null-then-joint lands WORSE (1.48) than
+joint-then-null -- LM basin path dependence.  NEW
+`design/src/field_zone_lmon.m` (doctrine field-zone lMon; tested in
+tDesignTelescope).  Reload 1305/1305; fast suite 225/0.
+NEXT: s2_instrument (3-4 mirror relay widening toward +-2', joint
+M1-M3 re-solve per (e)), then s3..s6 per the sequence below.**
 
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
