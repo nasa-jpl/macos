@@ -129,11 +129,37 @@ f52ba4c+10a955c+1dde42b+1dd4a64):**
    25 classes + tSegmentRx + tMet green; BUILD/SPOT at a Segment now
    abort in 0.01 s.
 
-**NEXT: GMI mex not relinked against the swept engine (rebuild at
-next makeall); rxpoly for IMPORTED (non-SegMirMaker) segmented Rx
-untested on a real external fixture; PLAN_DESIGN_LAYER promote-on-
-land.  Full record + gotchas: memory `project_met_visualizer.md` +
-`project_e5pie_apertures.md`.**
+**2026-07-16/17 (third session): view_rx v2 — SOLID layout viewer
+(Dave-planned + 6 review rounds; macos 30f4125+0c05406, MACOS_res
+ac57bf4+b7c4c4b, all LOCAL):**
+- Engine api: `ray_hist_set`/`ray_pos_hist_get` (traceutil RayPosHist
+  — Lou's Vis3D substrate, now API-visible; slot 1 = source),
+  `elt_info_get` (EltID/ApType/ApVec/xObs/lMon/PolyApVtx — IN-PLANE
+  about VptElt, 5e-8 mm round-trip), `src_seg_get` (GridType/nSeg/
+  width/gap).
+- view_rx: rings-and-spokes FILLED bundle from the full traced grid
+  (polylines connect the slots each ray REACHED — segmented ok is
+  sparse), THIN flat two-tone sag-following shells (LightTools ref
+  deck; no lighting), meridian profile curves both faces, sag sign
+  calibrated vs crossings, consecutive-Refractor lens JOIN, EXACT hex
+  Segment tiles (src_seg_get truth — no overlap, gaps read),
+  source-plane ring (collimated-source cue), 'show'
+  beam|beam+met|met, per-channel ray colors.
+- macos.view_std (NEW): standard beam-aligned 4-panel figure (front
+  from behind the SOURCE at the optic's face / back / iso / side),
+  SOURCE AT LEFT, light → right, per-panel [az el] fine-tune;
+  manual campos + camva('auto') + axis-off panels (hand-computed
+  CameraViewAngle misframes; labels collide otherwise).
+- Gotchas: ray_hist('on') must macos.modify() (grid-setter-retrace
+  class); DRAW fan resamples its own rays (validate to grid pitch).
+- Demo: 4 cases incl. e5hex1 via view_std; tViewRx 5/5 (SUITE_FREEFORM
+  256), tMetView 4/4, tMet 6/6, quick 67/0.
+
+**NEXT: GMI mex not relinked against the new engine (rebuild at next
+makeall); pymacos export of the 4 new api routines deferred; rxpoly
+for IMPORTED segmented Rx untested on a real external fixture;
+PLAN_DESIGN_LAYER promote-on-land.  Full record + gotchas: memory
+`project_met_visualizer.md` + `project_e5pie_apertures.md`.**
 
 **2026-07-12: PLAN_DESIGN_LAYER Sprint 2D — SEGMENTATION + SENSING
 (Dave's objective): segment the design flow incl. per-segment local
