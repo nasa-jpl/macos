@@ -187,6 +187,31 @@ for IMPORTED segmented Rx untested on an external fixture;
 PLAN_DESIGN_LAYER promote-on-land.  Full record + gotchas: memory
 `project_met_visualizer.md` + `project_e5pie_apertures.md`.**
 
+**2026-07-17/18 (e2e sessions 2-3): STAGES 1+2 LANDED + VIS REDESIGN
+(MACOS_res `e20d6b1` -> `5e94320` (s2 v1) -> `cbbb7c9` (VIS), all
+PUSHED except cbbb7c9 LOCAL).  ARC: s1 v1 (f/1.25, m2=16, fold, bias
+5') was NOT a VIS imager (Dave ran the .in) -- bias was the killer
+(~bias^2).  VIS design point (Dave): f/1.75, m2=8, M3 EXTRACTION TILT
+1.2 deg (return off the feed axis -> fold clears at bias 2').  s1 =
+DL telescope (+-1' 0.0157 -tilt waves @500nm); s2 = 3-mirror bench
+relay (M4 corrector/M5 collimator/M6 camera, radii DERIVED from the
+collimator condition), +-2' at 0.26 -tilt, distortion 0.28" (M4
+blur-guarded distortion stage stands down).  PROCEDURE (Dave: record
+everything) = README 'design procedure' section, 11 rules each from a
+failed run: WFE-based bias pick (small-bias conic basin K3->-3..-4 is
+repeatable, continuation does NOT rescue), guarded M1 common-mode
+null, SVD engine for degenerate bases (CALIB SIGSEGVs), joint-then-
+null order, detector-plane re-fit last, distortion!=blur (M4 near
+focus = the reflective distortion corrector; affine-projected chief
+metric; blur-guarded).  DEAD ENDS on record: per-field Zernike patch
+corrector (rank collapse), 4th near-pupil mirror (common-mode), full
+BornWolf 3:25 (+13% only), relay tilts 6 deg (in/out beams overlap).
+m2=12 A/B in ~/dev/MACOS_sandbox/e2e_m2_12 (bias 4', 0.25 waves).
+NEXT: s2 floor 0.15-0.26 = relay 8-deg tilt astig (levers: longer
+legs+smaller tilt, ANSI relay re-solve, 2nd re-imaging stage); then
+s3 segmentation.**
+
+**(superseded record of session 2 below)**
 **2026-07-17 (e2e session): STAGE 1 LANDED (MACOS_res `e20d6b1`,
 LOCAL).  `design/examples/e2e/` = the 6-stage worked example; all
 knobs in `e2e_params.m`.  Dave's decisions this session: (a) user
