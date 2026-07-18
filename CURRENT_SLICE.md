@@ -207,9 +207,12 @@ metric; blur-guarded).  DEAD ENDS on record: per-field Zernike patch
 corrector (rank collapse), 4th near-pupil mirror (common-mode), full
 BornWolf 3:25 (+13% only), relay tilts 6 deg (in/out beams overlap).
 m2=12 A/B in ~/dev/MACOS_sandbox/e2e_m2_12 (bias 4', 0.25 waves).
-NEXT: s2 floor 0.15-0.26 = relay 8-deg tilt astig (levers: longer
-legs+smaller tilt, ANSI relay re-solve, 2nd re-imaging stage); then
-s3 segmentation.**
+OFFNER RELAY SHIPPED (MACOS_res 4ab5229): DL over the FULL +-2'
+(Strehl 0.99->0.93, -tilt 0.015-0.043, pure spheres) via NEW
+design/src/offner_layout.m (concentric chief solve -> Bauer chain;
+spheres held, convex stop mirror out of solves, M4 = flat routing
+fold).  Zigzag variant kept selectable (DL to 1.5', a7ed2f6).
+NEXT: s3 segmentation (the pipeline resumes).**
 
 **(superseded record of session 2 below)**
 **2026-07-17 (e2e session): STAGE 1 LANDED (MACOS_res `e20d6b1`,
