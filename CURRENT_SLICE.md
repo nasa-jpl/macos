@@ -212,7 +212,19 @@ OFFNER RELAY SHIPPED (MACOS_res 4ab5229): DL over the FULL +-2'
 design/src/offner_layout.m (concentric chief solve -> Bauer chain;
 spheres held, convex stop mirror out of solves, M4 = flat routing
 fold).  Zigzag variant kept selectable (DL to 1.5', a7ed2f6).
-NEXT: s3 segmentation (the pipeline resumes).**
+NEXT: s3 segmentation (the pipeline resumes).
+RESUME RECIPE (post-compaction): (1) re-read root+nested CLAUDE.md,
+MEMORY.md (project_e2e_example), this file; (2) artifacts live in
+mmacos/design/examples/e2e/ (s1_telescope.in/.mat = DL telescope,
+s2_instrument.in/.mat = Offner system, reports+PNGs beside them;
+e2e_params.m = every knob; README = 12-rule design procedure);
+(3) s3_segmentation.m = NEW runner: segment M1 of the e2e system
+(segment_rx parent = s2_instrument.in, elt 1, P.seg block: Hex,
+rings 1, gap 25 mm, emit_apertures, model 512 -- the e5_seg pattern,
+watch the FF-parent + ApStop notes in project_sprint2d_segmentation);
+then s4 dwdx/dwdz/dwdgrid (dw_d*_multi), s5 MET (add_met + metopt v3
++ met_bodies), s6 simulator (COMPOSE/psf + linear model switch).
+Views + THOROUGH report at every stage (Dave's standing rule).**
 
 **(superseded record of session 2 below)**
 **2026-07-17 (e2e session): STAGE 1 LANDED (MACOS_res `e20d6b1`,
