@@ -212,7 +212,41 @@ OFFNER RELAY SHIPPED (MACOS_res 4ab5229): DL over the FULL +-2'
 design/src/offner_layout.m (concentric chief solve -> Bauer chain;
 spheres held, convex stop mirror out of solves, M4 = flat routing
 fold).  Zigzag variant kept selectable (DL to 1.5', a7ed2f6).
-NEXT: s3 segmentation (the pipeline resumes).
+
+**2026-07-18 (e2e session 4): FIELD SHIFT + HOLE CHAIN + s3 LANDED.**
+(1) Field center -0.7' off the s1 bias (Dave read the s2 WFE map;
+P.inst.field_dy_arcmin applied to set_field_bias -> artifact chief =
+science center, s3-s6 inherit): worst +-2' 0.043 -> 0.0231 -tilt,
+Strehl floor 0.965; [4f] center scan in runner+report; full -1.05'
+re-solve = flatter interior / worse 2' edge, BOTH kept in
+s2_variants/dy-0.70|dy-1.05 (Dave: keep both).  (2) M1-hole chain
+(Dave: show the hole in all layout views): set_hole EMITS a real
+ObsType=Circle obscuration (trace clips the 5 central rays); NEW
+engine api elt_obs_get (macos_api_mod, codegen'd; pymacos export
+deferred); view_rx renders circular obscurations (view_std inherits);
+segment_rx carry_obs -> center segment.  (3) s3_segmentation.m: pie
+(7, e2e_pie.in) + hex2 (19, e2e_hex2.in), physical apertures, 128-pt
+grid (Dave: 41 too coarse), P.seg.variant="pie" feeds s4-s6; pie
+12090/12520 pass (392 gap/rim), hex2 9838/9876 (hex tiling has no gap
+rays); both VERIFIED.  TWO segment_rx product bugs fixed (tests
+green): Surface=Zernike parent FIGURE dropped by SegMirMaker (15 um!)
+-> carried into each segment's FF channel; SegMirMaker<->engine
+tiling contract needs xGrid=(-1,0,0) AND SegXgrid=(-1,0,0) in the
+merged Rx (design-layer (+1,0,0) left ray->segment 180 deg off the
+frames; PSEG ignores SegXgrid = dead code, HSEG anchors to it).
+**LATENT e5 FINDING for Dave: the e5 hex corpus has the SAME 180 deg
+frames<->tiling offset (ray_hist-verified) — invisible bare, but
+e5_seg's forward model pairs dwdx (tiling identity) with dedx/dldx
+(frame identity) point-reflected; fix = SegXgrid -1 / regenerate,
+touches committed Sprint-2D references — Dave's call.**
+center_focal_plane now engine-truth (trace+get_ray_info; was
+draw_rays plot-projection, U-sign follows grid handedness — why the
+emitter KEEPS +1 and only segment_rx's output flips).  Fast suite
+229/0; tSegmentRx 8/0 (+figure/obs-carry tests), tDesignTelescope
+67/0 (+hole test).
+NEXT: s4_jacobians.m — dwdx/dwdz/dwdgrid on e2e_pie.in (dw_d*_multi
+harvests; per-segment 6-DOF x ordering per Sprint-2D), then s5 MET,
+s6 simulator.  Views + THOROUGH report every stage.
 RESUME RECIPE (post-compaction): (1) re-read root+nested CLAUDE.md,
 MEMORY.md (project_e2e_example), this file; (2) artifacts live in
 mmacos/design/examples/e2e/ (s1_telescope.in/.mat = DL telescope,

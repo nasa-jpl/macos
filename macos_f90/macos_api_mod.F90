@@ -3839,6 +3839,48 @@
       end subroutine elt_info_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : Element obscuration declarations, for layout drawing
+      !            (e.g. a perforated primary's central hole): the count
+      !            plus per-obscuration type code (elt_mod ObsType codes;
+      !            +/-1 Circle/NegCircle, +/-2 Rectangle, ...) and the
+      !            6-slot ObsVec (Circle: radius, xc, yc in the element's
+      !            xObs frame).  ObsType_/ObsVec_ are caller-sized (mobs)
+      !            buffers; engine max is mObs.  nObs_ reports the true
+      !            count even when it exceeds mobs.
+      subroutine elt_obs_get(OK, nObs_, ObsType_, ObsVec_, iElt, mobs)
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(out)  :: nObs_
+        integer, dimension(mobs),      intent(inout):: ObsType_
+        real(8), dimension(6, mobs),   intent(inout):: ObsVec_
+        integer,                       intent(in)   :: iElt
+        integer,                       intent(in)   :: mobs
+
+        integer :: n
+
+        ! ------------------------------------------------------
+        OK       = FAIL
+        nObs_    = 0
+        ObsType_ = 0
+        ObsVec_  = 0e0_pr
+
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if (mobs < 1)                      return
+
+        nObs_ = nObs(iElt)
+        n = min(nObs(iElt), mobs, mObs)
+        if (n > 0) then
+          ObsType_(1:n)     = ObsType(1:n, iElt)
+          ObsVec_(1:6, 1:n) = ObsVec(1:6, 1:n, iElt)
+        end if
+
+        OK = PASS
+
+      end subroutine elt_obs_get
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Source segmentation tiling metadata: GridType id
       !            (src_mod GridType_* codes: 1 Circular, 2 Square, 3 Hex,
       !            4 Pie, 5 Flower, 6 UDG), segment count, and the tiling
