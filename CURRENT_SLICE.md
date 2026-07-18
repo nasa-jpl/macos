@@ -244,9 +244,38 @@ draw_rays plot-projection, U-sign follows grid handedness — why the
 emitter KEEPS +1 and only segment_rx's output flips).  Fast suite
 229/0; tSegmentRx 8/0 (+figure/obs-carry tests), tDesignTelescope
 67/0 (+hole test).
+**2026-07-18 (cont.): GENERAL FIX LANDED IN THE GENERATOR (Dave:
+"fix it in e5 -- preferably in a general way").**  SegMirMaker.f, two
+fixes (MACOS_res d54405f): (1) header SegXgrid now emits the in-plane
+basis ACTUALLY USED — the back-facing-mirror 180-deg basis flip
+(segment-numbering convention) negated xs/ys for frames+SegCoord but
+the header kept the pre-negation vector → engine HSEG tiled rays
+point-reflected from the frames (EVERY back-facing fixture, e5
+included).  (2) Zernike-aware LoadParent: Surface=Zernike parent
+figure merged into the FF channel (segments present the as-designed
+surface; RptElt placement sees the figure sag).  Byte-identity refs
+regenerated (delta = SegXgrid line only; Hx identical).  NEW
+tSegmentRx gate test_state_consistency_rays_on_frames (ray_hist truth
+vs frames, Pie+Hex, every off-center segment) = THE invariant: seg
+k's DOFs move seg k's w/e/l only.  e5 corpus REGENERATED consistent:
+e5_seg edge+MET 229.5 nm (was 232), metopt 3.421 nm (was 3.429),
+engine-FD 0.00%; e5_pie unchanged behavior.  segment_rx text-carry
+stands down when SMM already carried the figure.  Suites: tSegMirMaker
+3/0, tSegmentRx 9/0, tMet 6/0, tEdgeSensors 3/0, tMetView 4/0, fast
+230/0.
+
+**s5 DESIGN CONSTRAINT (Dave 2026-07-18): MET-configuration
+optimization solves ONE launcher pattern per segment SHAPE CLASS,
+expressed in the segment frame, replicated to all same-shape segments
+(pie: hexagon class + wedge class; hex2: one hexagon class) — the
+tier-3 symmetry-first collapse, now shape-class-aware.  add_met
+'launch_pts' + seg_boundary/rxpoly polygons are the realization
+hooks.**
+
 NEXT: s4_jacobians.m — dwdx/dwdz/dwdgrid on e2e_pie.in (dw_d*_multi
-harvests; per-segment 6-DOF x ordering per Sprint-2D), then s5 MET,
-s6 simulator.  Views + THOROUGH report every stage.
+harvests; per-segment 6-DOF x ordering per Sprint-2D), then s5 MET
+(shape-class patterns per above), s6 simulator.  Views + THOROUGH
+report every stage.
 RESUME RECIPE (post-compaction): (1) re-read root+nested CLAUDE.md,
 MEMORY.md (project_e2e_example), this file; (2) artifacts live in
 mmacos/design/examples/e2e/ (s1_telescope.in/.mat = DL telescope,
