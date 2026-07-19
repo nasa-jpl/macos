@@ -264,6 +264,78 @@ stands down when SMM already carried the figure.  Suites: tSegMirMaker
 3/0, tSegmentRx 9/0, tMet 6/0, tEdgeSensors 3/0, tMetView 4/0, fast
 230/0.
 
+**s3 GRAPHICS + PIE-GEOMETRY FIXES (Dave review, 2026-07-18).**
+Dave flagged the s3 views (EP dashed circles E15/E16, unclear pie
+center segment) — pulling the thread found TWO real geometry bugs in
+the pie aperture emission, not just rendering:
+- **view_rx polish:** Return elements HIDDEN by default (`'returns',
+  true` restores; tViewRx test); Segment plates draw with alternating
+  face tints, center cell (Seg1, carries the hole) distinctly darker,
+  and NO per-tile profile curves (7–19 overlapping meridian-curve
+  sets were the spoke mush hiding the center segment).
+- **Pie wedge apertures were apex SECTORS to r=0** (+ triangle
+  obscuration faking the chord): every declared-polygon consumer
+  (view_rx plates, step-3 figures) drew wedges COVERING the center
+  hexagon with edges converging at the center.  A ring-1 wedge is
+  CONVEX (disc ∩ 3 half-planes) → now emitted as the TRUE chorded
+  polygon, no obscuration.  **Gaps are uniform-width slots** (side
+  edges PARALLEL to the sector rays at ±g/2, not angular offsets that
+  converge at the center — Dave).  New shared helper
+  `macos.design.pie_wedge_geom` used by seg_apertures + seg_boundary
+  + view_rx (ONE geometry source, no third desync).
+- **pie_rings classification robustness:** e2e's Zernike-figured
+  parent scatters ring-1 wedge radii ~5 µm (frame-tilt leak in the
+  tiling-plane projection); the old 1e-6·max(rc) tolerance split the
+  6 wedges into degenerate 1–2 member "rings" → 2π/nnz sector spans +
+  go/sin(π) 1e14-vertex blowups in the emitted .in (the broken
+  s3_footprints_pie Dave saw).  New `macos.design.pie_rings`
+  (width-scaled tolerance, shared by all three sites) + jitter test.
+  e5 never tripped it (exact symmetry) — the e2e example did its job.
+- Regenerated: e5_pie (wedges 15 verts, 502 clips, no obscurations)
+  + e2e s3 (pie 12106/12520, 376 gap/rim clips ≈ prior 392; hex2
+  unchanged 9838/9876; both VERIFIED).  tSegmentRx 11/0 (+2 geometry
+  tests), tViewRx 6/0 (+returns test).
+- MET is NOT in s3 by design — metrology config + optimization is s5.
+
+**s3 GRAPHICS REVIEW → PIE GEOMETRY FIXES + HELPER HOIST (Dave,
+2026-07-18).**  Dave's s3-view flags exposed real emission bugs:
+- **view_rx:** Return elements HIDDEN by default (E15/E16 EP dashed
+  circles; `'returns',true` restores, tViewRx test); Segment plates
+  alternate face tints (center cell darkest, carries the hole), NO
+  per-tile profile curves (the spoke mush).
+- **Pie wedges were apex sectors to r=0 + triangle obscuration** →
+  declared-polygon consumers drew wedges covering the center hexagon.
+  Ring-1 wedge is CONVEX → emitted as the TRUE chorded polygon, no
+  obscuration; **gaps = uniform-width slots** (side edges PARALLEL to
+  sector rays at ±g/2 — angular offsets converge at the center,
+  Dave's rule).  Shared `macos.design.pie_wedge_geom` (seg_apertures
+  + seg_boundary + view_rx = one geometry source).
+- **`macos.design.pie_rings`:** ring classification needs a
+  WIDTH-scaled tolerance — the e2e Zernike-figured parent scatters
+  ring-1 wedge radii ~5 µm (frame-tilt leak in the tiling-plane
+  projection); the old 1e-6·max(rc) split them into 1–2 member
+  "rings" → 2π/nnz spans + go/sin(π) 1e14 vertices in the .in.  e5's
+  exact symmetry never trips it — the second consumer found it.
+- **Hoist (Dave: general-purpose runners):** `macos.design.
+  seg_footprints` (poke-diff engine-truth footprint measurement) +
+  `seg_footprint_view` (calibrated overlay figure) — e5_pie.m and
+  s3_segmentation.m now thin narratives over them; duplicated
+  pupil_axes_ copies deleted.  Regens BEHAVIOR-IDENTICAL pre/post.
+- Regenerated: e5_pie (15-vert wedges, no obs, 502 clips) + e2e s3
+  (pie 12106/12520, 376 gap/rim clips; hex2 9838/9876; both
+  VERIFIED).  Suites: tSegmentRx 12/0 (3 new tests), tViewRx 6/0,
+  tMet 6/0, tMetView 4/0, **fast 232/0**.
+- **PLAN §0 model-transition heap crash REOPENED** (Dave asked; the
+  full no-arg mmacos suite SIGSEGVs at tViewRx setup after ~26
+  classes in one process — evidence + repro + suspects recorded in
+  PLAN.md; `fast` subset is the green signal until refixed).
+- MET is NOT in s3 by design — metrology config + optimization = s5.
+- **IN FLIGHT (Dave, next): s2 field-map ±3′ axes + auto field
+  center** — compute the centroid of the −tilt-WFE<0.02-waves region
+  from the ±3′ map and point the nominal chief there (replaces the
+  hand-picked −0.7′; point→re-solve→re-map once, [4f] scan verifies),
+  then rerun s2→s3, then s4_jacobians.
+
 **s5 DESIGN CONSTRAINT (Dave 2026-07-18): MET-configuration
 optimization solves ONE launcher pattern per segment SHAPE CLASS,
 expressed in the segment frame, replicated to all same-shape segments
