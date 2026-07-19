@@ -330,11 +330,21 @@ the pie aperture emission, not just rendering:
   classes in one process — evidence + repro + suspects recorded in
   PLAN.md; `fast` subset is the green signal until refixed).
 - MET is NOT in s3 by design — metrology config + optimization = s5.
-- **IN FLIGHT (Dave, next): s2 field-map ±3′ axes + auto field
-  center** — compute the centroid of the −tilt-WFE<0.02-waves region
-  from the ±3′ map and point the nominal chief there (replaces the
-  hand-picked −0.7′; point→re-solve→re-map once, [4f] scan verifies),
-  then rerun s2→s3, then s4_jacobians.
+- **s2 AUTO FIELD CENTER LANDED (Dave's ask):** sections [2]–[4e] now
+  run in a 2-pass loop; [4g] maps ±3′ (13×13), finds the centroid of
+  the raw-WFE<0.02 region, and if the chief is >0.15′ off it, pass 2
+  re-solves there.  Result: chief moved another −0.71′ (bias 1.3′ →
+  **0.59′ total**), worst ±2′ −tilt **0.0231 → 0.0215**, <0.02-region
+  31→52/169 pts, centroid residual +0.03′; [4f] scan confirms the new
+  center is the optimum (both ±0.35′ neighbors worse).  Clearance
+  UNCHANGED by engine-truth ray-to-body margins (M2 −230 mm input-on-
+  M2-back obscuration + FM mm-graze, both documented; M7 physical
+  +126 mm — the report's new M7 flag is pupil-retrace bookkeeping,
+  not light).  s2_wfe_field.png now ±3′ with the 0.02 contour +
+  science patch + chief/centroid markers.  s3 rerun on the new
+  parent: pie 12098/12520 (376 gap clips), hex2 9830/9876, both
+  VERIFIED.  Old hand-picked variants preserved in s2_variants/.
+  NEXT: s4_jacobians.
 
 **s5 DESIGN CONSTRAINT (Dave 2026-07-18): MET-configuration
 optimization solves ONE launcher pattern per segment SHAPE CLASS,
