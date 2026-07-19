@@ -353,6 +353,7 @@ the pie aperture emission, not just rendering:
   supervisors over C+4 corners at ±2′.  Per-segment column-norm table
   (piston dominant, clocking ~null) in s4_report.txt; s4_jacobians.mat
   carries the three outputs for s5/s6.
+  POST-s4 FIXES (Dave review, e701f87): SMM pie frames = axis of symmetry (wedge bisector / center flat-normal; hex heritage unchanged; refs regen, tSegMirMaker 3/0); s4 dwdz = monzern (segment-LOCAL, cond 438→5.4; ffzern = parent-aperture basis, wrong channel); s4 dwdgrid = segment_grid_basis G-S (cond 1.26); segment_grid_basis ray-hist fallback for Segment pm_ref_elt; LESSON = copy the tested sensitivities runners CONFIGURATION (run_dwdz, run_dwdgrid_multi_multisegbasis), not just the API.
   NEXT: s5_met.m — MET config with the SHAPE-CLASS launcher constraint
   (below) + dedx/dldx joining s4's dwdx; then s6 simulator.
 
