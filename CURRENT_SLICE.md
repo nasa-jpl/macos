@@ -357,6 +357,119 @@ the pie aperture emission, not just rendering:
   NEXT: s5_met.m — MET config with the SHAPE-CLASS launcher constraint
   (below) + dedx/dldx joining s4's dwdx; then s6 simulator.
 
+**2026-07-19: RUNNERS DOCTRINE (Dave) + s5 BUILT AS THE GENERAL
+run_met RUNNER.**  Dave: the PRODUCT is a small set of reusable stage
+runners handing the .in from stage to stage — design → segmentation →
+sensitivities → met → **compare** (NEW stage: step x/z/grid states,
+emit w/e/l from mmacos AND the linear model) → simulate (needs an
+ESTIMATOR/CONTROLLER; uncontrolled + controlled outputs).  Decision:
+build s5/s6 as general runners from day one; recast s1–s4 into
+run_design/run_segmentation/run_sensitivities in ONE pass after s6
+(interfaces settle when the last consumer exists), then rethink the
+mmacos file structure for new users + DELETE obsolete code/examples.
+Also queued: run_dwdgrid_multi should adopt the ray-history footprint
+approach.  Landed this session (mmacos, LOCAL until suites green):
+- `design/runners/` (on the mmacos_setup path) + README (pipeline
+  table, handoff contract = .in + declared sidecars) + **run_met.m**:
+  as-built add_met → trace parity + aft-beam HOLE-margin table → dedx
+  (Hx→SI: rot cols ×cbm ONLY) → dldx engine-FD vs analytic GATE →
+  merit table → gains dxde/dxdl/dwde/dwdl → met_layout_opt →
+  realized winner + engine-FD validation → MC acceptance → report +
+  met_view/view_rx/metric figures + <name>_met.mat.
+- `macos.design.met_layout_opt` = e5_seg_metopt v3 hoisted, SHAPE-
+  CLASS aware: classes by boundary CONGRUENCE (vert count + edge
+  lengths of seg_boundary polygons — pie → hexagon+wedge, hex → one,
+  rxpoly imports classify free), one pattern per class about each
+  member's own frame-x (pattern_frame 'segment'; 'radial' = e5
+  heritage), coordinate-descent sweeps + top-K cross refinement.
+  e5_seg_metopt.m is now a thin consumer — regen reproduces the v3
+  winner EXACTLY (3.421 nm, FD 0.00%, same cluster angles; pmap/fclock
+  differ by the fiducial-ring rotation symmetry; v3 baseline was
+  ALREADY Inf — infeasible 10 mm corner sep, not a regression).
+- `macos.design.seg_from_rx`: rehydrates the seg struct from the
+  segmented .in ALONE (elt-type scan + met_bodies triads + lMon +
+  src_seg_get tiling) so runners take files, not in-memory structs.
+- `dldx_analytic` grew optional `unit_to_m` (default 1e-3 mm
+  heritage): **e2e BaseUnits = METRES — the hard-coded mm arm scale
+  would have squashed rotation rows 1000×.**  e2e Hx needs NO scaling
+  (readings already metres); general rule in run_met: rot cols ×cbm.
+- e2e s5 driver `s5_met.m` (thin): hub=M2 (elt 8), **aft ring on the
+  FOLD FM (elt 9), NOT M3 — M3 is 2.1 m off-axis, its beams cross the
+  M1 plane at ~2 m radius; FM is the on-axis bench body whose 0.10 m
+  ring reaches the M2 rim fiducials THROUGH the 0.1225 m hole (run
+  verified: crossing radii 0.079–0.10, margin 22 mm CLEAR)**.  54
+  DOFs = 7 segs + M2 + FM.  Verified before the OOM (below): trace
+  parity exact, FD gate 1.1e-7 PASS, 54 cols found.
+- **OOM lesson (the two "VS Code crashed" reports = THIS)**:
+  run_met's first merit form trace(Dk·P·Dk') with Dk 60412×54 built a
+  29 GB dense → killed the 30 GB box twice.  Fixed to trace(P·G),
+  G=D'D (memory feedback_trace_gram_not_outer); long MATLAB runs now
+  caged via systemd-run MemoryMax.
+- Tests: tMet +test_dldx_analytic_unit_to_m; NEW tRunMet (seg_from_rx
+  rehydration identity; shape-class discovery [1 6] + WEDGE-PATTERN
+  CONGRUENCE in segment frames; run_met end-to-end on the e5 pie
+  fixture with synthetic jac + trimmed grids).  tRunMet added to
+  SUITE_FAST.
+- IN FLIGHT at session edge: caged s5 e2e run + tMet/tRunMet batch;
+  then fast suite → commit both repos.
+
+**DAVE'S s5 DESIGN REVIEW (2026-07-19, mid-session — supersedes the
+first s5 numbers):** the first optimized layout (tight ±5° clusters,
+WEM 4.9) "scores far worse than others we have evaluated" — it
+maximizes neither beam angles nor outer-edge coverage.  Directives,
+ALL IMPLEMENTED in run_met/met_layout_opt (rerun pending):
+1. HEADLINE METRICS DIMENSIONLESS (WEM = wavefront per unit gauge
+   noise, suite ratios held; floor as fraction of prior) — absolute
+   nm at arbitrary priors "invites panic" (HWO context).  MET tracks
+   the post-WFSC DRIFT state (≪1 nm class), gauge roadmap ~1 pm →
+   e2e scenario sigmas now 1e-10 prior / 1e-11 edge / 1e-12 met.
+2. Report WEM full / TILT / NON-TILT for MET-only AND edge+MET (tilt
+   control absorbs tilt; orthogonal split via per-field piston+tilt
+   projection of the s4 per-field blocks — Gram-only, no row order).
+3. OPTIMIZE THE TRUSS WITHOUT EDGE SENSORS (must stand alone) on the
+   NON-TILT Gram; edge sensors stay in the reported cases + estimator
+   products.  Edge-sensor PLACEMENT is never optimized — SMM Hx as-is
+   (the figures' open gray circles were the as-built LAUNCHER overlay;
+   real sensor midpoints now drawn as gray dots via met_view
+   'sensor_pts').
+4. MANUAL BENCHMARK (auto 'corner_pairs' extra in met_layout_opt):
+   launcher pairs at each class's two outermost boundary corners + a
+   pair on the inside edge; evaluated GATE-BYPASSED with its true
+   min-sep reported (adjacent-wedge corner pairs sit ~gap apart vs
+   the 50 mm rule — a design datum, not hidden).
+5. AFT STRUCTURE TO THE SM RADIUS (0.232 m ring on the fold/bench;
+   'hole_r' override = SM shadow radius for the clearance check;
+   "the hole will be that large anyway").  QUEUED (Dave's call):
+   enlarge the REAL Rx hole via P.tel → full s1→s5 chain rerun.
+6. AFT LEG SOLVED FIRST (Dave: "solve the simpler M3-SM truss first,
+   fix it"): the aft ring's clocking + ITS OWN fiducial map = the
+   first coordinate block in the descent, frozen for the class
+   sweeps, revisited once.  add_met grew extra_clock/extra_pair_map.
+7. PRESET LAYER (Dave: "save the optimized configuration as a new
+   as-built for future PIE builds"): met_layout_opt exports every
+   winner SCALE-FREE (class pattern angles, fiducial RIM INSET, aft
+   block) + 'apply' mode realizes a preset on any same-tiling build;
+   run_met 'preset' option makes it the as-built; s5 driver promotes
+   to design/runners/presets/pie_met.mat; tRunMet round-trip test.
+8. SYMMETRIC (ROTATIONAL) FIDUCIAL ASSIGNMENT + nf=6 (Dave: "with 6
+   [fiducials] the segments can be ~interchangeable"): sym_assign
+   (default ON) shifts each member's fiducial map by its clocking →
+   congruent beam geometry per member; add_met accepts nseg×6
+   pair_map; e2e forces nf_grid=6 (the nf=3 raw-merit winner broke
+   the 60° symmetry).
+FINAL RESULTS (s5 v3, nf=6 + sym assignment + solved aft block):
+as-built WEM 15.6 MET-only / 10.8 edge+MET → **optimized 3.77 /
+4.59, floor 0.28% of prior** — the SYMMETRIC nf=6 config BEATS the
+asymmetric nf=3 raw-merit winner (4.86) outright: interchangeability
+AND merit.  Dave's corner_pairs: 3.97 (ties the machine) but min-sep
+15 mm violates the 50 mm rule at wedge-corner junctions.  WEM_tilt ≡
+0 by CONVENTION: s4 dw_dx channels are fp_mode='track' harvested →
+global tilt out at the source (prior tilt split 8e-13 nm);
+per-segment tilt fully in the merit.  MC 0.7%, FD 0.00%.  Preset
+promoted: design/runners/presets/pie_met.mat.  e5 regen under the
+new optimizer: **3.421 → 3.255 nm, worst-mode 184 → 171 nm, FD
+0.00%** (aft block + sym assignment — improvement, documented).
+
 **s5 DESIGN CONSTRAINT (Dave 2026-07-18): MET-configuration
 optimization solves ONE launcher pattern per segment SHAPE CLASS,
 expressed in the segment frame, replicated to all same-shape segments
