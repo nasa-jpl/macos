@@ -104,6 +104,36 @@ task.
   process now -- left for a separate commit so the fix can be
   reviewed independently.  Also bring `main` along when it
   next syncs.
+- [ ] **REOPENED (2026-07-16, reconfirmed 2026-07-18): model_size-
+  transition heap crash is back.**  The e2e8bf6 fix (previous
+  entry) held for a while, but the crash has returned:
+  - 2026-07-16: deterministic 128→512 `macos_init_all` crash
+    (project memory; full no-arg mmacos suite affected, the
+    "fast" subset green).
+  - 2026-07-18: full no-arg `run_mmacos_tests.sh` (one MATLAB
+    process, ~26 classes at mixed model sizes) SIGSEGVs at
+    tViewRx SETUP -- `macos.init(256)` + `load_rx` after the
+    256-size tCalib/tReadGridFile block -- engine prints
+    `*** Setting aperture stop failed!` then MATLAB fatal
+    (crash dump `~/matlab_crash_dump.2303329-1`).  tViewRx
+    standalone (fresh process) is green, so the corruption is
+    seeded by an earlier size transition and detonates at the
+    next init/load -- same signature class as the original bug.
+  - Suspect surface: a module-saved buffer added/changed since
+    e2e8bf6 that is not in the `macos_realloc` re-allocation
+    list (the original bug's mechanism, new member), or a
+    lazily-allocated array gated by a SAVE'd first-entry flag
+    (the DFOURN mechanism, new member).  Candidates from the
+    recent slices: RayPosHist (ray_hist), Draw3DVec/met_geom
+    buffers, edge-sensor arrays, seg-tiling scratch.
+  - Repro recipe: `./run_mmacos_tests.sh` (no args); or the
+    2026-07-16 pymacos-style walk init(128)→trace→init(512).
+    Diagnosis path per the closed entry: gdb on MATLAB, break
+    at the SIGSEGV, then audit which module-saved allocation
+    the crashing write belongs to.
+  - Until fixed: run per-class / `fast` subset (each class gets
+    its own MATLAB); keep the run_mmacos_tests.sh size-group
+    split (do NOT do the "followup cleanup" collapse above).
 - [~] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
   **Partial close 2026-06-04 (commit 0ee4b23):** Pattern 4
