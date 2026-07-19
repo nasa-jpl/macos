@@ -457,6 +457,22 @@ ALL IMPLEMENTED in run_met/met_layout_opt (rerun pending):
    congruent beam geometry per member; add_met accepts nseg×6
    pair_map; e2e forces nf_grid=6 (the nf=3 raw-merit winner broke
    the 60° symmetry).
+**SESSION CLOSE-OUT (Dave 2026-07-19): pushed (MACOS_res 51c2f77 /
+macos 5669ffe).  Decisions: (a) hole→SM-radius CHAIN APPROVED but
+DEFERRED — P.hole_min_r_m floor is COMMITTED in s1/s2 [5], artifacts
+NOT yet regenerated; run the chain (one MATLAB per stage — the §0
+model-transition bug punishes mixed-size single processes; script
+pattern in the transcript) AFTER the s3/s4 cleanup.  (b) NO corner
+hardware sharing (corner_pairs stays a benchmark).  NEXT SESSION =
+RECAST: s1–s4 → run_design/run_segmentation/run_sensitivities +
+sensitivities/examples/* onto robust runners + file-structure rethink
++ obsolete deletion + run_dwdgrid_multi ray-history; AND investigate
+Dave's flag: "improve the pie sensitivity results — they don't
+compare well to the e5 examples" (pie dwdx/dwdz/dwdgrid quality vs
+the e5 fixtures — start by diffing s4's spectra/conditioning and maps
+against run_dwdx/dwdz/dwdgrid_multi outputs on e5).  Then s6
+(run_compare first, then run_simulator w/ estimator/controller).**
+
 FINAL RESULTS (s5 v3, nf=6 + sym assignment + solved aft block):
 as-built WEM 15.6 MET-only / 10.8 edge+MET → **optimized 3.77 /
 4.59, floor 0.28% of prior** — the SYMMETRIC nf=6 config BEATS the
