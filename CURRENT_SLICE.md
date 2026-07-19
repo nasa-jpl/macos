@@ -344,7 +344,17 @@ the pie aperture emission, not just rendering:
   science patch + chief/centroid markers.  s3 rerun on the new
   parent: pie 12098/12520 (376 gap clips), hex2 9830/9876, both
   VERIFIED.  Old hand-picked variants preserved in s2_variants/.
-  NEXT: s4_jacobians.
+- **s4 LANDED (MACOS_res 89f06f8): `s4_jacobians.m`** — dwdx (60412×90,
+  rank 90; spectrum shows EXACTLY 21 strong modes = 7 segs ×
+  piston/tip/tilt then a 2-decade cliff), dwdz (×56, FFZern 4..11 per
+  seg, cond 4.4e2), dwdgrid (×42, 6 aperture-confined pokes/seg on
+  grid-augmented `e2e_pie_grid.in` — flat 256 grids in each segment's
+  CLOCKED Mon frame; cond 1.7), all via the production dw_d*_multi
+  supervisors over C+4 corners at ±2′.  Per-segment column-norm table
+  (piston dominant, clocking ~null) in s4_report.txt; s4_jacobians.mat
+  carries the three outputs for s5/s6.
+  NEXT: s5_met.m — MET config with the SHAPE-CLASS launcher constraint
+  (below) + dedx/dldx joining s4's dwdx; then s6 simulator.
 
 **s5 DESIGN CONSTRAINT (Dave 2026-07-18): MET-configuration
 optimization solves ONE launcher pattern per segment SHAPE CLASS,
