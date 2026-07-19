@@ -357,6 +357,98 @@ the pie aperture emission, not just rendering:
   NEXT: s5_met.m — MET config with the SHAPE-CLASS launcher constraint
   (below) + dedx/dldx joining s4's dwdx; then s6 simulator.
 
+**2026-07-19 (RECAST SESSION, post-compact resume point): the
+sensitivity diagnostic + runner recast + SMM EDGE-SENSOR REWORK all
+LANDED (local, commit pending fast-suite gate).**
+
+DIAGNOSTIC (Dave's four questions, all closed):
+- s4 == the runners BIT-IDENTICAL (same dw_d*_multi supervisors).
+- Segment coordinates CORRECT (engine-truth poke footprints match
+  frames on e2e AND e5pie; apparent reflection = canvas convention).
+- Nominal subtraction CORRECT (reference frozen per field; median
+  col-vs-w0 corr 1-3%; top col Elt 17 Rx 0.63 = physical FP signature).
+- "e5 doesn't compare": the E5 CORPUS is the trap, not s4 --
+  SegMirMaker replicates the PARENT's grid channel (pData=0, full-
+  aperture span) into every segment block; segment-frame bases poked
+  against those paint a CENTRAL DOT and rank-collapse (e5pie dwdgrid
+  rank 15/42 cond 1e7 vs healthy 42/1.26).  ALSO: SMM corpus ships NO
+  ApStop (exit-pupil machinery fails).  Last-key-wins parsing means
+  appending correct grid lines cannot fix stale ones.
+
+RECAST LANDED (MACOS_resources, all local):
+- macos.design.grid_augment_rx: per-segment grid channels in the
+  CLOCKED Mon frames, REPLACING stale lines.  Span default = the
+  dxGrid convention (Dave): GridSrfdx = Aperture/(ng-1) (span = the
+  beam; e5mono heritage 31.25 = 8000/256).  NEVER size from lMon:
+  pie-wedge lMon is the hex 'length', not a circumscribing radius --
+  a 2.2*lMon span clipped wedge corners and made s4 dwdgrid
+  non-physical (Dave caught it; segment_grid_basis now WARNS when
+  footprint rays fall outside the grid span).
+- design/runners/run_sensitivities.m: general stage runner (dwdx/
+  dwdz/dwdgrid + dwdsurf opt-in; grid_basis multi|single; influence
+  passthrough for DM maps; ApStop injection preflight 'stop' opt;
+  zkinds; segment-only conditioning; per-segment column norms).
+- design/runners/run_segmentation.m: parent .in -> verified segmented
+  .in (parity, engine-truth footprints, apertures, reload gate).
+- s3/s4 = thin drivers; regen VALIDATED (e2e_pie.in/e2e_hex2.in
+  byte-identical; s4 dwdx/dwdz numerics unchanged, dwdgrid healthy).
+- PLOT CONVENTIONS (Dave): piston removed in the shared
+  plot_dw_per_element/plot_dw_channels (parula stays); per-element
+  pages center+multi in <name>_pages/ subfolder (page flood).
+- sensitivities/run_dwd*_multi.m x6: PRESERVED as same-name,
+  same-CONFIG thin wrappers over run_sensitivities (Dave: people use
+  them -- do NOT delete); examples/run_* dirs = thin drivers too.
+- Tests: tRunSensitivities (full-rank + poke-localization regression
+  gates on the SMM trap corpus) + tRunSegmentation; both in
+  SUITE_FAST.
+
+SMM EDGE-SENSOR REWORK (Dave's spec, landed + validated):
+- Per SHARED EDGE: 2 sensor locations at +/-SensorOff (new prompt,
+  default 0.25*width; new stdin answer BEFORE the final Y --
+  fixtures + segmirmaker_run 'sensor_off' updated) x 3 axes:
+  1 piston = surface normal, 2 gap = in-plane PERP to edge, 3 shear =
+  in-plane ALONG edge.  NO absolute-piston anchor row (not a
+  measurement -- Dave).  Pie = 72 rows = 24 locations x 3 axes; hex2
+  config-2 = 252 (42 edges x 6).  Prescriptions BYTE-IDENTICAL.
+- QUIRKS FIXED (flagged for Dave): legacy rows reused rhoi for BOTH
+  segments + projected triad-before-cross; new rows use each
+  segment's OWN arm: dm/d(del_s)=+/-a'T_s, dm/d(th_s)=+/-(rho_s x
+  a)'T_s.
+- Hx.m now carries MeasAxis/MeasLoc/SensorPos; edge_sensors ingests
+  (axis/loc/sensor_pos/has_anchor; legacy files still parse).
+- tEdgeSensors REWRITTEN (axis recovery both sides, per-segment
+  sensor-point coincidence, on-edge at +/-SensorOff; rows determine
+  the point only PERP to the axis -- all checks project the axis
+  out; in-plane axes are point-local).  tSegMirMaker refs
+  regenerated.  3/0 + 3/0.
+- s5 RERUN with 72-row dedx: as-built edge+MET WEM 10.81 -> 3.918,
+  optimized 4.59 -> 1.777 (in-plane DOFs now edge-observable);
+  MET-only optimized 3.766 unchanged (truss stands alone).  dldx FD
+  1.1e-7 PASS, merit FD 0.00%.  (Hx radhat/tanhat->gap/shear relabel
+  afterward leaves WEM invariant -- same rowspace, isotropic noise;
+  e2e sidecar regenerated with final semantics.)
+
+DAVE'S s6/s7 SPEC (VERBATIM INTENT, next to build):
+- Linear model: w = dwdx*x + dwdz*z + dwdgrid*grid + dwdu*u + w0;
+  u = control = SEGMENT + SM rigid-body DOFs (dwdu = those dwdx
+  columns).  Measurement m = dmdx*x + m0, m = [l; e], dmdx = [dldx;
+  dedx].
+- s6 = run_compare: poke each DOF in turn (default 100 nm / 100
+  nrad), display 2 graphics -- mmacos vs linear -- EACH = OPD map
+  above stacked bar charts of l, e_piston, e_gap, e_shear; settable
+  dwell (default 0.25 s); + saved frames + per-poke agreement report.
+  Engine side: reuse dw_dx/met_calc paths for w/l; e engine-truth
+  from finite rotations at es.sensor_pos.  s7 = run_simulator
+  (estimator/controller, uncontrolled + controlled).
+
+COMMIT GATE IN FLIGHT: s3 final Hx regen + fast suite running; on
+green commit BOTH repos (macos: SegMirMaker untouched -- SMM lives in
+MACOS_resources).  NO PUSH until Dave asks.  DEFERRED: hole->SM
+chain rerun; run_design (s1/s2 recast); deletions list (inventory in
+hand: freeform_unobscured retired-candidate, examples/design/oatma
+orphan, e5hex1 old runners -- Dave must sign off; NEVER
+coro_planet_demo); GMI mex relink; pymacos api exports.
+
 **2026-07-19: RUNNERS DOCTRINE (Dave) + s5 BUILT AS THE GENERAL
 run_met RUNNER.**  Dave: the PRODUCT is a small set of reusable stage
 runners handing the .in from stage to stage — design → segmentation →
