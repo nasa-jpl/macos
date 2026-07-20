@@ -357,9 +357,139 @@ the pie aperture emission, not just rendering:
   NEXT: s5_met.m — MET config with the SHAPE-CLASS launcher constraint
   (below) + dedx/dldx joining s4's dwdx; then s6 simulator.
 
-**2026-07-19 (RECAST SESSION, post-compact resume point): the
+**2026-07-19 (s6 SESSION, post-compact resume point): run_compare
+SHIPPED — the compare stage runner + s6 driver + tRunCompare.**
+
+- `design/runners/run_compare.m` (Dave's spec): pokes each rigid DOF
+  of the sensed bodies (100 nrad / 100 nm) on the optimized met Rx;
+  per poke TWO graphics — mmacos ENGINE | LINEAR MODEL — each the
+  center-field OPD change (parula, shared clim) above stacked bars of
+  l / e_piston / e_gap / e_shear (shared ylims); dwell 1.6 s (Dave:
+  0.25 read too fast — runner default + driver + GIF DelayTime all
+  1.6); frames in <name>_frames/ + <name>_compare.gif + agreement
+  report + <name>_compare.mat (exports dwdu = segments+SM columns for
+  s7; ~7 MB, committable).
+- Engine truth per channel: w = RigidBodyChannel apply → trace(nElt−1)
+  → OPD delta (same convention as the s4 harvest; plain bodies need no
+  FP tracking); l = macos.met() (met points ride the element under
+  programmatic perturb); e = FINITE-ROTATION kinematics at the Hx
+  SensorPos points — axis recovered from the row's own translation
+  block (a_w = T_s·blkᵀ), arm = SensorPos − rpt_s, full Rodrigues;
+  first order == the dedx row, difference = true linearization error.
+- **STALE-dedx catch (the debugging story):** first run showed e
+  disagreeing O(1) on in-plane DOFs while translations are
+  algebraically forced to agree → the s5 e2e_pie_met.mat dedx was ONE
+  Hx GENERATION BEHIND (s5 ran before the gap/shear axis-relabel
+  regen; piston rows agreed, in-plane pair rotated).  run_compare now
+  builds dedx FROM THE Hx SIDECAR (pad + rot cols ×cbm, same as
+  run_met) and only cross-checks the met .mat, warning
+  'run_compare:stale_dedx'.  s5 rerun queued/in-flight to refresh the
+  .mat estimator products (dxde/dwde) for s7 — WEM numbers are
+  rowspace-invariant, layout unchanged.
+- **s6 RESULT (e2e pie, 54 DOFs): engine == linear to ≤9.1e-5 (w),
+  ≤1.2e-6 (l), ≤6e-8 (e rot; translations to machine 1e-16).**
+  Null-response DOFs get a floor (opts.w_floor 1e-12 m): segment Rz
+  (clocking through the near-flat parent leaves ~0.01 nm — REAL, above
+  floor; true nulls are the flat fold's in-plane DOFs + FPA-class
+  bodies at ~5e-15 m FD noise) → reported 'null', not a noise ratio.
+- Bodies without dwdx channels (aft ring riding the FPA in the e5
+  fixture) get ZERO linear columns — matching the engine's null plain-
+  trace response; control bodies are asserted actuatable.
+- tRunCompare (SUITE_FAST): e5 pie fixture, REAL single-field coarse
+  harvest ('grid','1x1', ngridpts 15, fp_mode none — no ApStop in the
+  SMM corpus) + run_met-with-no-jac met struct; gates = the physics
+  (w<5%, l<1%, e<1e-3, FPA null, dwdu 48 cols).  36 s.  PASSES.
+- **s7 NOTES (Dave, this session): single-step STATIC estimator** —
+  the OSE form x̂ = x̄ + K(m−m̄), converged steady-state gains (= the
+  dxde/dxdl MMSE partitions run_met exports), m = [l; e]; OSC
+  controller u = −[c_wu·I + (DwDu)ᵀDwDu]⁻¹(DwDu)ᵀ·dwdx·x̂.
+  Background papers: MACOS_sandbox/Documents/OSE_Eqns_2019.pdf +
+  2025_JATIS_HWO_Special_Issue-2.pdf (read OSE; JATIS pending).
+- s5 rerun DONE: e2e_pie_met.mat refreshed on the current Hx — WEMs
+  reproduce EXACTLY (as-built 15.57/3.918, optimized 3.766/1.777, FD
+  0.00%, MC 1.9%) confirming rowspace invariance of the relabel.
+
+**z + grid EXTENSION + FIGURE SENSING (Dave, same session):** "add
+dwdz and dwdgrid visualization to s6 — keep going after dwdx, z then
+grid" and "evaluate the effect of grid and z DOFs at each sensor
+location (l and episton) → generate dmdz and dmdgrid":
+- run_compare now phases x → z (MonZernChannel pokes on the met Rx) →
+  grid (GridChannel pokes on og.rx_path, basis REBUILT via the same
+  segment_grid_basis call — mismatch fails the agreement gate).  One
+  GIF, frames p%03d, per-channel worst summary.
+- **macos.design.dmet_dfig** (+ macos.design.zern_seg_eval): dmdz /
+  dmdgrid = mode shape at each Hx SensorPos + met_geom launcher point
+  (src_elt gives the launcher→segment map engine-truth), projected on
+  the measurement axis: dl = −û·n̂·f(p_src), de = (â·n̂)·f(p_q).
+  Piston + l rows carry it; gap/shear are SLOPE-ORDER small (~2-3% on
+  the e5 f/1.75 parent), NOT zero — in-plane axes are ⊥ the LOCAL
+  normal, Mon sag displaces along the FACE normal zMon (real model
+  response; flagged for Dave's model review).  Exported in
+  s6_compare.mat as [l;e]-ordered dmdz/dmdgrid for the s7 H.
+- **zern_seg_eval convention PINNED BY ENGINE GATE** (tRunCompare
+  test_zern_grid_engine_equivalence): the same MonZern mode sampled
+  onto a grid channel + poked via elt_grid_add reproduces the
+  MonZernCoef poke's OPD (scale within 2%, corr 0.998 = grid
+  discretization) → lMon-normalized, UN-normalized ANSI (MonZernType=
+  ANSI; NORM_RMS gates to Norm* types only — the E1 fix), Mon frame =
+  clocked face frame.
+- **UNIT GOTCHA (found via 999×≈1/cbm mismatch on the mm fixture):**
+  the dwdz/dwdgrid supervisors (dwdz_for_current_source) return
+  OPD-BaseUnits per coef-BaseUnits — NO cbm scale, UNLIKE dwdx's
+  OPD-metres convention.  run_compare ×cbm on the figure-poke linear
+  maps; invisible on e2e (m), 1000× on e5 (mm).
+- The engine METcalc/Hx hold met + sensor points RIGID → z/grid
+  engine bars read zero vs the dmdz/dmdgrid linear bars — the movie
+  shows the model-vs-engine gap explicitly (labeled 'l mdl'/'e_pist
+  mdl' in the report; natural follow-up = engine met points riding
+  figure, Dave's call).
+- tRunCompare EXTENDED (z leg with a real monzern mini-harvest — the
+  e5 FreeForm REFRACTOR elt 9 legitimately sweeps in, counts dynamic
+  — + the engine equivalence gate): 2/2 green, ~60 s.
+- **.doc REPORTS (Dave):** MACOS_sandbox/e2e_reports/make_reports.py
+  (pandoc) → s1–s6_report.docx: front matter + stage summary + stage
+  figures + verbatim report; s5 carries the MET-OPTIMIZER DEEP DIVE
+  (merit/WEM algorithms, shape-class search flow, code flow, results
+  tables — s5_met_optimizer_deepdive.md).  s1–s5 built; s6 after its
+  rerun.
+- **GRID-BASIS PERSISTENCE (the deep find):** run_compare's grid
+  agreement exposed that the s4 og dwdgrid block could NOT be
+  reproduced by a rebuilt basis — modes 1–5 bit-exact, but each
+  segment's LAST G-S mode came out ORTHOGONAL across sessions (|Δ|=√2;
+  in-session double-builds bit-identical; raw detrended modes well-
+  conditioned sv≥0.19 — a discrete tie-break below the G-S waterline,
+  root cause unchased).  Fix = ARCHITECTURAL: the influence basis is
+  PART OF THE JACOBIAN'S DEFINITION → run_sensitivities persists it
+  (og.sgb) and run_compare/dmet_dfig consume it VERBATIM (rebuild
+  path kept with a loud warning).  Also: run_compare must RELOAD the
+  grid Rx after any segment_grid_basis call (it traces/ray-hist-pokes;
+  leftover state biased grid FDs ~20% — the harvest supervisor
+  reloads, manual loops must too).
+- **FINAL s6 (persisted basis): x ≤2.8e-3, z ≤1.8e-3, grid ≤0.235.**
+  The grid residual is an **OPEN ENGINE QUESTION for Dave**: the
+  engine's grid-surface response is NOT proportional across sub-µm
+  amplitudes on METRE-based Rx — central FD at the harvest delta
+  (1e-6 BU) reproduces the Jacobian to 1.7e-5, but forward pokes give
+  dW(h)/h drifting 0.15→0.24→0.42→0.98 over h=1e-8..1e-6 and BLOWING
+  UP 84× at h=1e-5 (10 µm figure → ~570 µm OPD response?!); fex
+  referencing ruled out; the mm fixture at the same physical poke
+  agrees <5% → units-dependent (absolute-EPS class?) behavior in the
+  FreeForm grid intersection path (GSZPSolve/SFFZPSolve suspects).
+  x/z channels are clean at the same amplitudes (z fwd 1e-7 vs 1e-6
+  agree to 1.5e-3).  run_compare report carries the note.
+- Fast suite FINAL: **242/0** (tRunCompare = 2 tests, x/z/grid legs +
+  engine convention gate).
+- .doc reports (Dave): s4 doc gained the SENSITIVITIES GENERATION
+  STORY deep dive (channels/referencing/grid substrate/basis
+  persistence/unit conventions/validation); standalone CONCISE
+  met_optimizer_concise.docx (with the optimizers-used note: discrete
+  block coordinate descent + exhaustive per-class enumeration +
+  top-K refinement, closed-form MMSE inside, no NLP solver).
+  All in ~/dev/MACOS_sandbox/e2e_reports/ (make_reports.py).
+
+**2026-07-19 (RECAST SESSION, earlier): the
 sensitivity diagnostic + runner recast + SMM EDGE-SENSOR REWORK all
-LANDED (local, commit pending fast-suite gate).**
+LANDED (pushed: MACOS_res 20d7f03+b41503d, macos 3a89432).**
 
 DIAGNOSTIC (Dave's four questions, all closed):
 - s4 == the runners BIT-IDENTICAL (same dw_d*_multi supervisors).
