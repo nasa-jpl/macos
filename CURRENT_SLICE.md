@@ -24,6 +24,36 @@
 
 ## Active slice
 
+> **CURRENT STATE (2026-07-21) — READ THIS FIRST.**  The active thread
+> is the **end-to-end worked-example series** `MACOS_resources/mmacos/
+> design/examples/e2e/` (s1 design → s2 relay → s3 segmentation →
+> s4 sensitivities → s5 MET → s6 compare → **s7 closed-loop sim**).
+> Everything through **s7 is SHIPPED + COMMITTED** on `sls-dev`
+> (MACOS_resources `224891b`, macos `e3905ec`; both PUSHED 2026-07-21).
+> The s7 design + physics + numbers are recorded in the "2026-07-20 /
+> -21 (s7 SIMULATOR SESSION)" block further down this file.
+>
+> **NEXT = s7b:** upgrade the RBCS pose estimator from the static
+> weighted-LS/BLUE form to the **steady-state Kalman filter** (Tesch
+> *RBCS Algorithms* §2.3.3 eq 12-14, predict/update with the Riccati
+> gain) and add **figure states** to the measurement model via the
+> `dmdz`/`dmdgrid` blocks (macos.design.dmet_dfig) so the loop can
+> SENSE and CORRECT the figure floor itself — not just the periodic
+> image-based WFC.  The OSE single-step static estimator is this with
+> converged gains.  Background PDFs in `MACOS_sandbox/Documents/`:
+> `Tesch_RBCS_algorithms.pdf` (read), `OSE_Eqns_2019.pdf` (read),
+> `2025_JATIS_HWO_Special_Issue-2.pdf` (PENDING — read before s7b).
+>
+> **Resume protocol:** read root+nested `CLAUDE.md`, then memories
+> `[[project_recast_runners]]` (runners + RBCS loop + s7),
+> `[[project_e2e_example]]` (s1–s6 heritage),
+> `[[feedback_demo_plot_conventions]]` (movie plot rules), then the s7
+> block below.  Runner = `design/runners/run_simulator.m`; driver =
+> `examples/e2e/s7_simulate.m`; test =
+> `tRunCompare/test_run_simulator_time_history` (SUITE_FAST).
+> Everything OLDER than the s7 block (below, from 2026-07-16 on) is
+> LANDED HISTORY — context, not in-flight work.
+
 **2026-07-16: VISUALIZATION + MET-layout physicality/v2.** Session
 record (chronological):
 1. **Luis GridData transpose — DONE+PUSHED** (MACOS_res `17f1239`):
