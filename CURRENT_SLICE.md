@@ -487,6 +487,153 @@ location (l and episton) → generate dmdz and dmdgrid":
   top-K refinement, closed-form MMSE inside, no NLP solver).
   All in ~/dev/MACOS_sandbox/e2e_reports/ (make_reports.py).
 
+**2026-07-20 (s7 SIMULATOR SESSION): run_simulator SHIPPED (Dave's
+two-part spec) + the grid non-proportionality question ANSWERED
+(numerical, not small-angle).**
+- **Q2 answered (Dave asked if the grid rel 0.235 is just too-large-
+  poke nonlinearity): NO — three discriminators.** (1) 100 nm on the
+  8 m aperture is ~12 ppb sag and the z path is proportional to
+  1.5e-3 at the same amplitudes; (2) the FD ratio does NOT converge
+  as h→0 (0.15 at 1e-8 → 0.98 at 1e-6) — real nonlinearity improves
+  as h shrinks, a granularity/EPS floor doesn't; (3) the mm fixture
+  at the SAME PHYSICAL poke is clean <5% — physics can't see the Rx
+  units, an absolute solver tolerance can.  Engine investigation
+  still open (GSZPSolve/SFFZPSolve).
+- **run_simulator (design/runners/, SHIPPED): time-series x/z/grid →
+  movie, UNCORRECTED + CORRECTED legs** (Dave 2026-07-20: history
+  opens with µm-to-mm misalignments; initial image-based WFC
+  u = −pinv(dwdu)·w(frame 1) solved from the ENGINE wavefront and
+  HELD; then nm-to-µm random-walk steps; 1000 s at 1–10 s steps).
+  Frames: OPD unc | OPD corr | PIX psf | COMPOSE broadband psf +
+  m=[l;e] bars (piston/gap/shear colors) + ACCUMULATING rms-WFE
+  (log, both legs) and Strehl curves (unc λ0/corr λ0/corr bb, peak
+  ratio to nominal).  m bars = the validated linear model
+  [dldx;dedx]·(x+u) + dmdz·z + dmdgrid·g (dedx rebuilt from Hx;
+  dmet_dfig blocks; grid Rx has no metrology — engine-l cross-check
+  runs when the history has no grid states).  Per-frame corrected-leg
+  engine-vs-linear w_rel = the s6 gate extended to MIXED states,
+  computed on the DRIFT INCREMENT (frame t − frame 1): the absolute
+  frame-1 state is deliberately nonlinear at µm-mm amplitudes and the
+  control compensates it, so an absolute comparison would only
+  re-measure that compensation.
+- **WFC ITERATES (wfc_iters, default 3):** one linear solve at 202 µm
+  left an ENGINE residual of 1.3 µm vs 40 nm predicted — the ~0.5%
+  per-column nonlinearity of µm-mm states, not a solve error.  Real
+  image-based WFC iterates; each Gauss–Newton refinement re-measures
+  the engine wavefront at the corrected state and ridge-solves the
+  update (monotone state path — never toggles back, respecting the
+  two-pass non-closure rule).
+- **TWO-PASS ENGINE SCHEDULE (correctness find):** toggling ±u per
+  frame through the incremental perturb path does NOT close — fixed-
+  order single-axis rotation increments leave a SYSTEMATIC ~|u_rot|²
+  non-closure per cycle that accumulates LINEARLY (~µrad phantom over
+  100 frames at 50 µrad u).  run_simulator plays the whole
+  uncorrected history (storing per-frame OPD + psf peak), reloads the
+  Rx, then plays the corrected history — within a pass the large
+  state applies once and increments are nm-scale.
+- **WFC SOLVE = TIKHONOV RIDGE (both failure modes hit, fixture +
+  e2e):** plain pinv (tol 1e-6) noise-amplified near-degenerate dwdu
+  combos (piston-like Tz directions) into huge canceling commands —
+  engine honors them only to first order → WORSE psf (0.72→0.21)
+  despite lower fitted rms; a hard SVD cutoff at 1e-2 over-truncated
+  (624 nm of the 202 µm e2e initial error uncorrected → corr Strehl
+  0.25 at 500 nm).  Ridge u = −V·(sv/(sv²+λ²))·Uᵀw, λ = wfc_tol·s1
+  (default 1e-3; e2e driver tunes 3e-4 → predicted residual ~30 nm)
+  corrects every direction sv ≫ λ and bounds each command by
+  |w|/(2λ).  This IS the OSC controller form — carries straight into
+  the estimator/controller loop.
+- tRunCompare/test_run_simulator_time_history (SUITE_FAST, fixture
+  reuse): µm-scale opening state + drift + z + g; gates = control
+  collapse (corr < 0.2×unc), Strehl improvement, mixed-state w_rel
+  <0.15, artifacts/m_hist/dmdz/dmdgrid dims.  3/3 green.
+- **METROLOGY LOOP = RBCS estimator/controller (Tesch "RBCS
+  Algorithms" ch 2.3 + 3.3; several live-review corrections):**
+  `met_loop` (default on): the post-WFC state IS the control TARGET;
+  each frame the sensed drift δm = m − m_ref drives a POSE ESTIMATOR
+  then a CONTROLLER (Dave: "estimate the state without weighting the
+  WF impact").
+  - **Estimator = weighted-LS / BLUE (Tesch §2.3.2 eq 11):**
+    δx̂ = R_meas·δm, R_meas = (Hᵀ N⁻¹ H + R_x⁻¹)⁻¹ Hᵀ N⁻¹, H = dmdx,
+    N = sensor-noise cov (default [1 pm laser truss, 1 nm edge]),
+    R_x = state/disturbance prior (default "auto" from the drift
+    std, PTT ≫ lateral ≫ pinned-aft).
+  - **Controller = min pose error (Tesch §3.3.1 eq 16-17):**
+    u_t = u_{t−1} − k_p·δx̂(control DOFs), k_p 0.5 (<1 for margin;
+    the TCE integrator makes the loop robust to gain error).
+  - **THE BUG (Dave: "MET control is not correctly implemented" →
+    pointed at Tesch):** my first loop used a RAW pinv(dmdx) = the
+    basic-LS estimator (Tesch §2.3.1 eq 10).  It amplifies un-modelled
+    δm content (figure drift, linearization residual) by 1/σ_min in
+    the weakly-observed rigid directions; the integrating loop RAN
+    AWAY — the engine e2e went 0.02 nm at t=10 → 2e5 nm at t=20 →
+    5.3e6 nm.  Standalone linear reproduction: basic-LS max 5.6e6 nm
+    WF residual / 34 mm commands vs BLUE max 6.98 nm / 74 nm commands
+    on the identical drift (open-loop drift was 81.6 nm).  The R_x
+    prior is the fix: weak/pinned DOFs fall back to prior-0 instead of
+    being inverted.  This is STATE weighting (noise + disturbance
+    stats), NOT wavefront-impact weighting (Tesch §3.3.2 eq 19,
+    deliberately unused per Dave).
+  - Bars show the SENSED DRIFT δm, not absolute m (µm-scale post-WFC
+    offsets swamped the nm drift — Dave's "MET results not changing").
+    Figure drift ALIASES into x̂ via the l/e_piston rows (no figure
+    states in the simple estimator) — negligible at realistic figure
+    drift; s7b's H adds dmdz/dmdgrid.
+  - Loop-STABILITY gate added to tRunCompare: corrected rms ≤
+    uncorrected rms every frame (the old pinv went 100× above).
+- **DOF-class statistics (Dave):** support structure puts 10× more
+  error in PTT (local Tz/Rx/Ry — the class MET+edge find and correct)
+  than lateral (Tx/Ty/Rz); equal allocation had loaded the ridge-
+  dropped weak directions and left a pessimistic ~40 nm one-shot
+  residual.  **Figure drift = few nm TOTAL** (1 nm/step had the 98
+  coefs each walking to ~10 nm → >100 nm rigid-uncontrollable figure
+  dominating the corrected leg's drift-away).
+- e2e driver s7_simulate.m (final): ~1 µm PTT initial (0.25 µrad
+  tip/tilt, 1 µm piston; lateral /10), drift 4 nrad-nm/step (5×
+  reduced; lateral /10), figure 0.004 nm/step, T=100 @ 10 s; M3→FPA
+  + aft ring pinned (truly stable structure, Dave).  Running WFE
+  printed in the OPD panels' xlabels (Dave).  Stale-frame cleanup
+  built into the runner (s6 lesson).
+- **WF-MAINTENANCE RECONTROL + TWO SCENARIOS (Dave 2026-07-21):**
+  `wfc_reset_times` re-runs the image-based WFC mid-history (Tesch's
+  WF Maintenance Activity) + `wfc_on_frame` delays the initial WFC so
+  the movie opens uninitialised ("no system starts perfect" — first
+  two data points at the as-deployed ~100 µm, then control turns on).
+  Two 500s runs, reset@400s, one GIF each (s7A/s7B):
+  - **s7A metrology-bias:** the metrology zero-point drifts; the loop
+    holds the BIASED reading so the true wavefront walks off UNSEEN
+    (`meas_bias = −dmdx·p(t)`); the 400s image-based reset
+    re-references and knocks it back.  ENGINE: corr holds ~1 nm →
+    **44 nm by 390s → reset → 1.0 nm** → 12 nm by 500s.
+  - **s7B focus/astig figure:** per-segment focus(5)+astig(4,6) trend
+    (60 nm, 2× for visibility per Dave); the truss reads RIGID POSE
+    only (`loop_senses_figure=false`) so figure accumulates unseen; the
+    tight-ridge reset (`wfc_reset_tol=1e-5`) engages the LATERAL DOFs.
+    ENGINE: 20 nm → **45.6 nm by 390s → reset → 24.4 nm** → 31 nm.
+  - **PLOT conventions (Dave, [[feedback_demo_plot_conventions]]):**
+    delayed init (first 2 pts at as-deployed 100 µm); Strehl EXACT from
+    OPD `|<exp(i2πW/λ)>|²` (≤1, not psf-peak >1); autoscale the
+    corrected OPD panel (shared 100 µm scale hid the nm structure);
+    broadband Strehl trace dropped; legends non-obscuring (hide the
+    reset-marker auto-legend entry); running WFE in the OPD xlabels.
+  - **KEY PHYSICS (Dave, corrects my earlier error):** RB control CAN
+    counter SEGMENT focus/astig on a parabolic parent — a segment x
+    move changes its local best-fit radius (focus + a bit astig),
+    y/twist add astig.  Verified on the s4 dwdx: **focus RB-residual
+    0.017, astig 0.31–0.49 (via lateral DOFs), higher order 0.6–0.98
+    (uncorrectable)**; the reset needs tol 1e-5 to reach the weak
+    lateral DOFs (3e-4 leaves astig 0.78).  My earlier per-segment
+    reset failed 24→24 because the loop sensed+pre-consumed the figure
+    AND the loose reset tol missed the lateral DOFs.
+  - There is NO wavefront error BOTH MET-invisible AND rigid-
+    correctable in a well-instrumented segmented system (rigid-
+    correctable ⟹ segment pose ⟹ MET-visible); the WFC reset earns its
+    keep against (A) MET bias drift and (B) figure the MET is DEFINED
+    not to sense.
+- NEXT (s7b): upgrade the estimator to the STEADY-STATE KALMAN form
+  (Tesch §2.3.3 eq 12-14, predict/update with the Riccati gain) +
+  figure states via dmdz/dmdgrid in H + sensor noise; the OSE
+  single-step static estimator is this with converged gains.
+
 **2026-07-19 (RECAST SESSION, earlier): the
 sensitivity diagnostic + runner recast + SMM EDGE-SENSOR REWORK all
 LANDED (pushed: MACOS_res 20d7f03+b41503d, macos 3a89432).**
