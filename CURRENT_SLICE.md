@@ -24,14 +24,32 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-07-21) — READ THIS FIRST.**  The active thread
-> is the **end-to-end worked-example series** `MACOS_resources/mmacos/
-> design/examples/e2e/` (s1 design → s2 relay → s3 segmentation →
-> s4 sensitivities → s5 MET → s6 compare → **s7 closed-loop sim**).
-> Everything through **s7 is SHIPPED + COMMITTED** on `sls-dev`
-> (MACOS_resources `224891b`, macos `e3905ec`; both PUSHED 2026-07-21).
-> The s7 design + physics + numbers are recorded in the "2026-07-20 /
-> -21 (s7 SIMULATOR SESSION)" block further down this file.
+> **CURRENT STATE (2026-07-22) — READ THIS FIRST.**  No half-done slice
+> is in flight — everything below is LANDED + PUSHED.
+>
+> **⚠ FRIDAY (~2026-07-24) PUBLIC-RELEASE HISTORY REWRITE.**  `nasa-jpl/
+> macos` goes public with history SCRUBBED of NPSOL / pgplot / etc.;
+> `main` ← sls-dev functionality; a public `dev` branch keeps the
+> developer files (stripped from `main`); users RE-CLONE.  Do NOT push
+> from a stale pre-rewrite clone afterward (reintroduces scrubbed
+> history).  Full-history safeguard taken: `~/macos-archive-20260722/`
+> (bundles `git bundle verify`'d + clone-tested).  See root CLAUDE.md
+> "Public-release strategy" + `[[project_branch_model]]`.
+>
+> **This session (2026-07-22) — all SHIPPED + COMMITTED + PUSHED:**
+> (1) Luis's 3 mmacos gaps — SPOT `'beam'` obscured-chief-ray ENGINE fix
+> (`tracesub.F` LocalCoord) + 25 `elt_srf_*` surface-inspection veneers +
+> ~50 Session query methods (`[[project_spot_beam_veneer_sync]]`);
+> (2) OPTIIX purge → `e2e_pie` fixture, GMI regression repointed 6/6,
+> zero optiix refs (`[[project_optiix_removal]]`); (3) cmdref regenerated
+> (`gen_cmdref.py`) + spot NOTES; (4) ifx `build_release` rebuilt (spot
+> fix for pymacos).  Tips: macos `dae015e`, MACOS_resources `455fe26`.
+>
+> **The e2e worked-example series (s1–s7) remains the active design
+> thread; NEXT substantive item is still s7b** (unless Friday
+> reprioritizes).  s1–s7 SHIPPED + COMMITTED on `sls-dev`; the s7 design
+> + physics + numbers are in the "2026-07-20 / -21 (s7 SIMULATOR
+> SESSION)" block further down this file.
 >
 > **NEXT = s7b:** upgrade the RBCS pose estimator from the static
 > weighted-LS/BLUE form to the **steady-state Kalman filter** (Tesch
