@@ -121,6 +121,16 @@ Return a struct of unit identifiers for the loaded Rx. s = macos.sys_units() ret
 <!-- END NOTES fn-dwdz-for-current-source -->
 *TODO: expand — dialog details, behavior notes, related commands.*
 
+#### is_point_source
+
+- **mmacos:** `tf = macos.is_point_source()`
+- **pymacos:** *not available*
+
+True iff the loaded Rx has a finite (point) source. tf = macos.is_point_source() returns true for a point (finite-distance) source, false for a collimated source.  See also: macos.get_src_size.
+
+<!-- BEGIN NOTES fn-is-point-source -->
+<!-- END NOTES fn-is-point-source -->
+
 #### perturb_src
 
 - **mmacos:** `macos.perturb_src(opts)`
@@ -134,10 +144,11 @@ Rigid-body perturbation of the source (iElt=0). Name-value pairs: 'rotation'    
 
 #### src_csys
 
+- **mmacos:** `s = macos.get_src_csys()`
 - **pymacos:** `pymacos.src_csys(x_dir, y_dir, z_rot, threshold)`
-- **mmacos:** *not available*
+- **engine API:** `macos_api_mod::get_src_csys`
 
-set / get Source Coordinate Frame
+Source coordinate-frame axes. s = macos.get_src_csys() returns a struct: .xDir  3×1   source frame x-axis (unit vector) .yDir  3×1   source frame y-axis .zDir  3×1   source frame z-axis (chief-ray / propagation direction) 
 
 <!-- BEGIN NOTES fn-src-csys -->
 <!-- END NOTES fn-src-csys -->
@@ -202,11 +213,12 @@ Source-grid sampling (nGridPts).
 
 #### src_size
 
+- **mmacos:** `s = macos.get_src_size()`
+- **mmacos:** `macos.set_src_size(aperture, obscuration)`
 - **pymacos:** `pymacos.src_size(ape, obs)`
-- **mmacos:** *not available*
-- **engine API:** `macos_api_mod::src_size`
+- **engine API:** `macos_api_mod::get_src_size`
 
-Set / get Source Aperture and/or Source Obscuration
+Source aperture and obscuration. s = macos.get_src_size() returns a struct: .aperture     scalar   beam N.A. (point source) or diameter (collimated) .obscuration  scalar   central obscuration, same units as .aperture  Collimated diameters are in BaseUnits; point-source values are numerical
 
 <!-- BEGIN NOTES fn-src-size -->
 <!-- END NOTES fn-src-size -->
@@ -248,12 +260,23 @@ Remove the EltGrp from element(s) IELT. macos.del_elt_grp(IELT) clears the EltGr
 #### elt_csys
 
 - **mmacos:** `s = macos.get_elt_csys(srfs)`
+- **mmacos:** `macos.set_elt_csys(srf, xDir, yDir, zDir, opts)`
 - **pymacos:** `pymacos.elt_csys(srf, xdir, ydir, zdir, upd, glb)`
 
 Local coordinate-system matrices for elements. s = macos.get_elt_csys(SRFS) returns a struct with fields: .csys      6×6×N double  — TElt frame matrix for each element .csys_lcs  N×1 logical   — true if a local CSYS is defined .csys_upd  N×1 logical   — true if the LCS updates with perturbations 
 
 <!-- BEGIN NOTES fn-elt-csys -->
 <!-- END NOTES fn-elt-csys -->
+
+#### elt_ff_any
+
+- **mmacos:** `tf = macos.elt_ff_any()`
+- **pymacos:** *not available*
+
+True iff the loaded Rx has any FreeForm (SrfType 14) surfaces. See also: macos.find_freeform_elts, macos.get_elt_ff_zrn_coef.
+
+<!-- BEGIN NOTES fn-elt-ff-any -->
+<!-- END NOTES fn-elt-ff-any -->
 
 #### elt_ff_zrn_coef
 
@@ -343,10 +366,11 @@ Reflective (true) vs transmissive (false).
 
 #### elt_grid
 
+- **mmacos:** `s = macos.get_elt_grid(srf)`
+- **mmacos:** `macos.set_elt_grid(srf, dx, mat)`
 - **pymacos:** `pymacos.elt_grid(srf, sampling_spacing, grid_dz)`
-- **mmacos:** *not available*
 
-Get / Set element grid (sampling and displacement)
+Read the grid-data surface figure at element SRF. s = macos.get_elt_grid(SRF) returns a struct: .size  scalar   grid dimension nGridMat (square) .dx    scalar   node spacing GridSrfdx (BaseUnits, dx==dy) .mat   size×size grid displacements from the nominal shape (BaseUnits) 
 
 <!-- BEGIN NOTES fn-elt-grid -->
 <!-- END NOTES fn-elt-grid -->
@@ -363,10 +387,10 @@ Add a z-displacement grid to a grid surface. macos.elt_grid_add(SRF, GRID_DZ) AD
 
 #### elt_grid_any
 
+- **mmacos:** `tf = macos.elt_grid_any()`
 - **pymacos:** `pymacos.elt_grid_any()`
-- **mmacos:** *not available*
 
-Checks if Grid Srfs. are defined in Rx
+True iff the loaded Rx has any grid-data surfaces. Covers every GridData-bearing SrfType (GridData(9), AsGrData(11), MonGrData(12), ZrnGridData(13), FreeForm(14) -- the engine's GridTypeAll set).  See also: macos.find_grid_elts, macos.get_elt_grid.
 
 <!-- BEGIN NOTES fn-elt-grid-any -->
 <!-- END NOTES fn-elt-grid-any -->
@@ -410,6 +434,27 @@ Scales element surface grid data.
 
 <!-- BEGIN NOTES fn-elt-grid-scale -->
 <!-- END NOTES fn-elt-grid-scale -->
+
+#### elt_grid_size
+
+- **mmacos:** `n = macos.get_elt_grid_size(srf)`
+- **pymacos:** *not available*
+
+Grid sampling (nGridMat) at element SRF. n = macos.get_elt_grid_size(SRF) returns the square grid dimension for a grid-bearing surface, or -1 if SRF carries no grid.  See also: macos.get_elt_grid, macos.find_grid_elts.
+
+<!-- BEGIN NOTES fn-elt-grid-size -->
+<!-- END NOTES fn-elt-grid-size -->
+
+#### elt_grid_spacing
+
+- **mmacos:** `dx = macos.get_elt_grid_spacing(srf)`
+- **mmacos:** `macos.set_elt_grid_spacing(srf, dx)`
+- **pymacos:** *not available*
+
+Grid node spacing GridSrfdx (dx==dy) at elt SRF. dx = macos.get_elt_grid_spacing(SRF) returns the grid sampling spacing in BaseUnits.  The grid spans (nGridMat-1)*dx centred on the surface.  Errors if SRF is not a grid surface.  See also: macos.set_elt_grid_spacing.
+
+<!-- BEGIN NOTES fn-elt-grid-spacing -->
+<!-- END NOTES fn-elt-grid-spacing -->
 
 #### elt_grp
 
@@ -463,6 +508,16 @@ Wipes out all Element-Grp. Settings from Rx
 <!-- BEGIN NOTES fn-elt-grp-wipe -->
 <!-- END NOTES fn-elt-grp-wipe -->
 
+#### elt_info
+
+- **mmacos:** `info = macos.get_elt_info(k)`
+- **pymacos:** *not available*
+
+Element metadata for layout drawing. info = macos.get_elt_info(K) queries element K of the loaded Rx: .elt_id     engine EltID code (see .type for the name) .type       element type name ('Reflector', 'Refractor', ...) .ap_type    aperture type code (0 None, 1 Circular, 2 Elliptical, 6 Hexagonal, 7 Polygonal, 8 Tapered_Polygonal, ...)
+
+<!-- BEGIN NOTES fn-elt-info -->
+<!-- END NOTES fn-elt-info -->
+
 #### elt_kc
 
 - **mmacos:** `kc = macos.get_elt_kc(srf)`
@@ -498,6 +553,16 @@ Read MonZern coefficients on a FreeForm element. coefs = macos.get_elt_mon_zrn_c
 <!-- BEGIN NOTES fn-elt-mon-zrn-coef -->
 <!-- END NOTES fn-elt-mon-zrn-coef -->
 
+#### elt_obs
+
+- **mmacos:** `obs = macos.get_elt_obs(k)`
+- **pymacos:** *not available*
+
+Obscuration declarations of element K (loaded Rx). obs = macos.get_elt_obs(K) returns the element's declared obscurations (a perforated primary's central hole, a coronagraph mask, a spider blade, ...): .n      declared count (engine nObs; may exceed the returned N) .type   1xN ObsType codes as stored (+/-1 Circle/NegCircle,
+
+<!-- BEGIN NOTES fn-elt-obs -->
+<!-- END NOTES fn-elt-obs -->
+
 #### elt_psi
 
 - **mmacos:** `psi = macos.get_elt_psi(srf)`
@@ -524,11 +589,12 @@ Reference point of element SRF (3-vector, BaseUnits).
 
 #### elt_srf_csys
 
+- **mmacos:** `s = macos.get_elt_srf_csys(srfs)`
+- **mmacos:** `macos.set_elt_srf_csys(srf, pMon, xMon, yMon, zMon)`
 - **pymacos:** `pymacos.elt_srf_csys(srf, origin, xdir, ydir, zdir)`
-- **mmacos:** *not available*
 - **engine API:** `macos_api_mod::elt_srf_csys`
 
-Set / Get Local Surface Coordinate System (LCS) on Element
+Surface (monomial/Zernike/grid) coordinate frame. s = macos.get_elt_srf_csys(SRFS) returns the surface-figure coordinate frame (pMon/xMon/yMon/zMon) for each element in SRFS -- the frame in which monomial, Zernike and grid figures are defined: .pMon  3×N   frame origin (vertex position) .xMon  3×N   x-axis (each column a unit vector)
 
 <!-- BEGIN NOTES fn-elt-srf-csys -->
 <!-- END NOTES fn-elt-srf-csys -->
@@ -556,12 +622,22 @@ Propagation distance zElt at element SRF. For Flat / FocalPlane elements this is
 <!-- BEGIN NOTES fn-elt-z -->
 <!-- END NOTES fn-elt-z -->
 
+#### elt_zrn
+
+- **mmacos:** `s = macos.get_elt_zrn(srf)`
+- **pymacos:** *not available*
+
+Read the Zernike-surface definition at element SRF. s = macos.get_elt_zrn(SRF) returns a struct for a SrfType=Zernike surface: .norm_radius   scalar   Zernike normalisation radius (lMon, BaseUnits) .type          scalar   ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4-6 Norm variants, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll)
+
+<!-- BEGIN NOTES fn-elt-zrn -->
+<!-- END NOTES fn-elt-zrn -->
+
 #### elt_zrn_any
 
+- **mmacos:** `tf = macos.elt_zrn_any()`
 - **pymacos:** `pymacos.elt_zrn_any()`
-- **mmacos:** *not available*
 
-Checks if Zernike Srfs. are defined in Rx
+True iff the loaded Rx has any Zernike (SrfType 8) surfaces. See also: macos.get_elt_zrn, macos.find_zern_elts.
 
 <!-- BEGIN NOTES fn-elt-zrn-any -->
 <!-- END NOTES fn-elt-zrn-any -->
@@ -587,12 +663,24 @@ Set/Get Zernike Normalisation Radius for specified Surface.
 <!-- BEGIN NOTES fn-elt-zrn-norm-rad -->
 <!-- END NOTES fn-elt-zrn-norm-rad -->
 
+#### elt_zrn_norm_radius
+
+- **mmacos:** `r = macos.get_elt_zrn_norm_radius(srf)`
+- **mmacos:** `macos.set_elt_zrn_norm_radius(srf, norm_radius)`
+- **pymacos:** *not available*
+
+Zernike normalisation radius (lMon) at SRF. r = macos.get_elt_zrn_norm_radius(SRF) returns the Zernike normalisation radius in BaseUnits, or -1 if SRF is not a Zernike surface. See also: macos.set_elt_zrn_norm_radius, macos.get_elt_zrn.
+
+<!-- BEGIN NOTES fn-elt-zrn-norm-radius -->
+<!-- END NOTES fn-elt-zrn-norm-radius -->
+
 #### elt_zrn_type
 
+- **mmacos:** `t = macos.get_elt_zrn_type(srf)`
+- **mmacos:** `macos.set_elt_zrn_type(srf, zern_type, opts)`
 - **pymacos:** `pymacos.elt_zrn_type(srf, zrn_type, reset)`
-- **mmacos:** *not available*
 
-Set/Get Zernike Type for specified Surface
+Zernike normalisation type id at element SRF. t = macos.get_elt_zrn_type(SRF) returns the ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4-6 Norm variants, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll), or -1 if SRF is not a Zernike surface. See also: macos.set_elt_zrn_type, macos.get_elt_zrn.
 
 <!-- BEGIN NOTES fn-elt-zrn-type -->
 <!-- END NOTES fn-elt-zrn-type -->
@@ -699,6 +787,16 @@ Real DRAW ray bundle as data (no graphics device). b = macos.draw_rays(PLANE, IS
 <!-- BEGIN NOTES fn-draw-rays -->
 <!-- END NOTES fn-draw-rays -->
 
+#### draw_rays3d
+
+- **mmacos:** `b = macos.draw_rays3d(plane, iStart, iEnd)`
+- **pymacos:** *not available*
+
+Real DRAW ray fan as 3-D data (no graphics device). b = macos.draw_rays3d(PLANE, ISTART, IEND) runs the engine DRAW command in DATA-ONLY mode and returns the traced fan's surface crossings in GLOBAL 3-D coordinates (BaseUnits) — the unprojected companion of macos.draw_rays.  PLANE ('YZ' | 'XZ') selects WHICH meridian fan the engine traces (DRAW draws the middle fan of that plane); the returned
+
+<!-- BEGIN NOTES fn-draw-rays3d -->
+<!-- END NOTES fn-draw-rays3d -->
+
 #### dx_at
 
 - **mmacos:** `dx = macos.dx_at(srf, unit)`
@@ -799,6 +897,16 @@ Exit-pupil SURFACE quality of the loaded system. pq = macos.pupil_quality(EP_ELT
 Ray-surface intersection (spot) at element SRF. s = macos.spot(SRF) returns a struct: .pts       nSpot×2  intersection points in the spot coord frame .centroid  1×2      centroid (x,y) .shift     1×4      shift from the projected reference position .csys      3×3      spot coordinate-frame orientation
 
 <!-- BEGIN NOTES fn-spot -->
+The `'ref'` option selects the coordinate frame the spot is expressed in —
+`'beam'` (default), `'tout'`, or `'telt'`; `'at'` selects the reference
+position (`'chief'` ray, default, or element `'elt'` vertex).  The `'beam'`
+frame is derived from a chief-ray trace, so it is well-defined **even when
+the chief ray is vignetted** — e.g. the on-axis chief ray of a centrally-
+obscured telescope, which the secondary/central obscuration blocks.
+(Obscuration sets only the flux flag, not the geometric intersection, so the
+beam frame is still valid; earlier engine versions aborted the beam frame in
+that case, fixed in `tracesub.F` `LocalCoord`.)  `'tout'` / `'telt'` instead
+use the element's stored output / element frame and never trace the chief ray.
 <!-- END NOTES fn-spot -->
 
 #### srs
@@ -820,6 +928,16 @@ Set the system aperture stop to an element. macos.stop(IELT) declares element IE
 
 <!-- BEGIN NOTES fn-stop -->
 <!-- END NOTES fn-stop -->
+
+#### stop_info
+
+- **mmacos:** `s = macos.get_stop_info()`
+- **pymacos:** *not available*
+
+Element and vertex offset of the system stop. s = macos.get_stop_info() returns a struct: .elt     scalar   element id at which the aperture stop is defined .offset  1×2      [dx,dy] offset from that surface's vertex  Errors (mmacos raises) if no stop is currently set.  See also:
+
+<!-- BEGIN NOTES fn-stop-info -->
+<!-- END NOTES fn-stop-info -->
 
 #### stop_obj
 
@@ -1108,6 +1226,16 @@ ToDo
 <!-- BEGIN NOTES fn-getEltSrfZernMode -->
 <!-- END NOTES fn-getEltSrfZernMode -->
 
+#### grid_size_max
+
+- **mmacos:** `n = macos.grid_size_max()`
+- **pymacos:** *not available*
+
+Max permitted grid sampling for the current model size. n = macos.grid_size_max() returns mGridMat -- the largest square grid a surface may carry at the initialised model size.  A grid larger than this cannot be loaded/set (see macos.set_elt_grid).
+
+<!-- BEGIN NOTES fn-grid-size-max -->
+<!-- END NOTES fn-grid-size-max -->
+
 #### gs_zernike_segment_basis
 
 - **mmacos:** `[B, mask, info] = macos.gs_zernike_segment_basis(session, rx_path, opts)`
@@ -1128,6 +1256,26 @@ Vectorise a 2D OPD matrix preserving non-zero index map. [vec, indx] = macos.m2v
 <!-- BEGIN NOTES fn-m2v -->
 <!-- END NOTES fn-m2v -->
 
+#### met
+
+- **mmacos:** `out = macos.met(unit)`
+- **pymacos:** *not available*
+
+Laser-metrology beam lengths (engine METcalc). out = macos.met() runs the engine metrology compute over the loaded Rx's declared met beams (the nMetPos / tMetElt / metBeamFlg element keywords) and returns out.l   n-by-1 beam lengths, SI metres (default) out.n   system beam count (0 when the Rx declares no metrology)
+
+<!-- BEGIN NOTES fn-met -->
+<!-- END NOTES fn-met -->
+
+#### met_geom
+
+- **mmacos:** `g = macos.met_geom()`
+- **pymacos:** *not available*
+
+Geometry of the loaded Rx's laser-metrology beams. g = macos.met_geom() runs the engine metrology compute (METcalc) and returns the global endpoints of every gauge beam declared by the prescription's nMetPos / tMetElt / metBeamFlg keywords: g.src_pts  3 x n  gauge source points (launchers), BaseUnits g.tgt_pts  3 x n  gauge target points (fiducials), BaseUnits
+
+<!-- BEGIN NOTES fn-met-geom -->
+<!-- END NOTES fn-met-geom -->
+
 #### model_size
 
 - **pymacos:** `pymacos.model_size()`
@@ -1137,6 +1285,16 @@ Returns the MACOS model size
 
 <!-- BEGIN NOTES fn-model-size -->
 <!-- END NOTES fn-model-size -->
+
+#### mon_zrn_max_modes
+
+- **mmacos:** `n = macos.mon_zrn_max_modes()`
+- **pymacos:** *not available*
+
+Number of monomial-Zernike coefficient slots per elt. n = macos.mon_zrn_max_modes() returns mMonCoef -- the max Mon-Zernike mode index a FreeForm surface can carry.  Use to size mode arrays without hard-coding.  See also: macos.get_elt_mon_zrn_coef.
+
+<!-- BEGIN NOTES fn-mon-zrn-max-modes -->
+<!-- END NOTES fn-mon-zrn-max-modes -->
 
 #### obs_set
 
@@ -1159,6 +1317,16 @@ ORS -- Optimize Reference Surface.
 <!-- BEGIN NOTES fn-ors -->
 <!-- END NOTES fn-ors -->
 
+#### ray_hist
+
+- **mmacos:** `out = macos.ray_hist(arg)`
+- **pymacos:** *not available*
+
+Per-trace ray-position history (engine RayPosHist). The engine can record EVERY ray's global 3-D crossing at EVERY element during a trace (traceutil_mod RayPosHist/LRayOKHist -- the Vis3D substrate).  Capture is off by default:  macos.ray_hist('on')      enable capture (then run macos.trace)
+
+<!-- BEGIN NOTES fn-ray-hist -->
+<!-- END NOTES fn-ray-hist -->
+
 #### ray_info
 
 - **mmacos:** `r = macos.get_ray_info(n_rays)`
@@ -1179,6 +1347,26 @@ Per-category ray-status codes after the most recent trace. r = macos.get_ray_sta
 <!-- BEGIN NOTES fn-ray-status -->
 <!-- END NOTES fn-ray-status -->
 
+#### read_grid_file
+
+- **mmacos:** `M = macos.read_grid_file(path)`
+- **pymacos:** *not available*
+
+Read a MACOS GridFile (ASCII) into GridMat orientation. M = macos.read_grid_file(PATH) reads an N x N grid-data file the SAME way the engine's GridInit (surfsub.F) does -- text line j fills GridMat COLUMN j -- and returns M in the engine's GridMat(i,j) convention (first index = +x, second index = +y).  It is the exact inverse of macos.write_grid_file, and pairs with macos.elt_grid_add:
+
+<!-- BEGIN NOTES fn-read-grid-file -->
+<!-- END NOTES fn-read-grid-file -->
+
+#### rm_elt_csys
+
+- **mmacos:** `macos.rm_elt_csys(srfs)`
+- **pymacos:** *not available*
+
+Remove the element output local coordinate frame (TElt). macos.rm_elt_csys(SRFS) clears any local output coordinate system on the given elements (resets TElt to identity, nECoord=-6), so their output reverts to the global/beam frame.  See also: macos.set_elt_csys, macos.get_elt_csys.
+
+<!-- BEGIN NOTES fn-rm-elt-csys -->
+<!-- END NOTES fn-rm-elt-csys -->
+
 #### rm_srf_from_rx
 
 - **pymacos:** `pymacos.rm_srf_from_rx(rx_in, srf_idx, rx_out)`
@@ -1198,6 +1386,16 @@ Reset ray-tracing state
 
 <!-- BEGIN NOTES fn-rx-modified -->
 <!-- END NOTES fn-rx-modified -->
+
+#### scale_elt_grid
+
+- **mmacos:** `macos.scale_elt_grid(srf, factor)`
+- **pymacos:** *not available*
+
+Scale the grid-data figure at element SRF in place. macos.scale_elt_grid(SRF, FACTOR) multiplies every grid node value by the scalar FACTOR and invalidates the cached trace.  Errors if SRF is not a grid surface.  See also: macos.get_elt_grid, macos.set_elt_grid.
+
+<!-- BEGIN NOTES fn-scale-elt-grid -->
+<!-- END NOTES fn-scale-elt-grid -->
 
 #### setActivePointSrc
 
@@ -1257,6 +1455,26 @@ Reconstruct a 2D matrix from m2v's compressed vec + indx. mat = macos.v2m(vec, i
 
 <!-- BEGIN NOTES fn-v2m -->
 <!-- END NOTES fn-v2m -->
+
+#### view_rx
+
+- **mmacos:** `fig = macos.view_rx(opts)`
+- **pymacos:** *not available*
+
+3-D visualization of the LOADED prescription: beam, optics, and MET paths if present.  Works for ANY Rx -- no design-layer structs required; everything is read back from the engine (the modern equivalent of the old MACOS 3-D model visualizer):  beam    a sparse-but-FILLED ray bundle from the engine's per-trace
+
+<!-- BEGIN NOTES fn-view-rx -->
+<!-- END NOTES fn-view-rx -->
+
+#### view_std
+
+- **mmacos:** `fig = macos.view_std(opts)`
+- **pymacos:** *not available*
+
+Standard 3-view layout figure for the LOADED prescription. fig = macos.view_std() draws four beam-aligned panels via macos.view_rx -- FRONT (POV behind the SOURCE, angled, looking at the first optic's reflective face), BACK (POV behind the first optic), ISO (angled), SIDE (elevation) -- with the optical-layout convention: the LIGHT SOURCE IS AT THE LEFT and light travels to
+
+<!-- BEGIN NOTES fn-view-std -->
+<!-- END NOTES fn-view-std -->
 
 #### xp
 

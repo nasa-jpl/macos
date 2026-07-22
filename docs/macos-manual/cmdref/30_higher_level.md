@@ -27,6 +27,51 @@ MACOS.DESIGN.TELESCOPE  De-novo two-mirror telescope builder (Sprint 2A-ii). The
 <!-- BEGIN NOTES hl-Telescope -->
 <!-- END NOTES hl-Telescope -->
 
+#### design.add_met
+
+`macos.design.out = add_met(in_path, seg, opts)`
+
+ADD_MET  Emit Stewart-truss laser metrology into a segmented Rx.  out = macos.design.add_met(in_path, seg, 'hub', k, 'r_fid', r) appends engine met blocks (nMetPos/tMetElt/metBeamFlg) to the prescription: 6 launchers on EACH segment (at the segment edge by
+
+<!-- BEGIN NOTES hl-add-met -->
+<!-- END NOTES hl-add-met -->
+
+#### design.dldx_analytic
+
+`macos.design.dldx = dldx_analytic(bodies, src_pts, tgt_pts, src_body, tgt_body, unit_to_m)`
+
+DLDX_ANALYTIC  Closed-form MET Jacobian for straight-line gauges.  dldx = macos.design.dldx_analytic(BODIES, SRC, TGT, SB, TB) returns the nbeam x 6*numel(BODIES) sensitivity of each gauge length l = |s - t| to the rigid DOFs of the bodies carrying its
+
+<!-- BEGIN NOTES hl-dldx-analytic -->
+<!-- END NOTES hl-dldx-analytic -->
+
+#### design.dmet_dfig
+
+`macos.design.out = dmet_dfig(seg, es, gm, opts)`
+
+DMET_DFIG  Figure-state measurement Jacobians dmdz / dmdgrid.  out = macos.design.dmet_dfig(SEG, ES, GM, 'z_names', CN, ...) builds the measurement-model sensitivity of the laser gauges l and the edge sensors e to the FIGURE states of the segmented forward model
+
+<!-- BEGIN NOTES hl-dmet-dfig -->
+<!-- END NOTES hl-dmet-dfig -->
+
+#### design.dmet_dx
+
+`macos.design.out = dmet_dx(elts, opts)`
+
+DMET_DX  FD metrology Jacobian dl/dx over per-element rigid DOFs.  out = macos.design.dmet_dx(ELTS) pokes each element in ELTS through its six rigid-body DOFs and finite-differences the engine metrology readings (macos.met): the dldx block of the segmented forward model
+
+<!-- BEGIN NOTES hl-dmet-dx -->
+<!-- END NOTES hl-dmet-dx -->
+
+#### design.edge_sensors
+
+`macos.design.out = edge_sensors(hx_path)`
+
+EDGE_SENSORS  Ingest a SegMirMaker Hx.m edge-sensor model (dedx).  out = macos.design.edge_sensors(hx_path) loads the MATLAB-loadable edge-sensor measurement matrix SegMirMaker writes alongside the .presc (see macos.design.segment_rx: out.hx) and returns it as the
+
+<!-- BEGIN NOTES hl-edge-sensors -->
+<!-- END NOTES hl-edge-sensors -->
+
 #### design.field_cross
 
 `macos.design.F = field_cross(fov, n, opts)`
@@ -54,6 +99,132 @@ FIELD_RING  Ring field set -- the CIRCULAR-field spec. F = macos.design.field_ri
 <!-- BEGIN NOTES hl-field-ring -->
 <!-- END NOTES hl-field-ring -->
 
+#### design.grid_augment_rx
+
+`macos.design.out = grid_augment_rx(rx_in, rx_out, opts)`
+
+GRID_AUGMENT_RX  Add per-segment grid channels in the CLOCKED Mon frames.  out = macos.design.grid_augment_rx(RX_IN, RX_OUT) rewrites every Element= Segment block of RX_IN with a flat grid-data channel whose coordinate frame is that segment's OWN clocked Mon frame
+
+<!-- BEGIN NOTES hl-grid-augment-rx -->
+<!-- END NOTES hl-grid-augment-rx -->
+
+#### design.hex_tile
+
+`macos.design.T = hex_tile(seg, off)`
+
+HEX_TILE  Boundary-true hex tile geometry for a segmented primary. T = macos.design.hex_tile(SEG) reconstructs each segment's ACTUAL hex boundary from the tiling itself (SEG = macos.design.segment_rx output):  - apothem a = width/2 (manual: width = flat-to-flat, gap = the
+
+<!-- BEGIN NOTES hl-hex-tile -->
+<!-- END NOTES hl-hex-tile -->
+
+#### design.met_bodies
+
+`macos.design.bodies = met_bodies(elts)`
+
+MET_BODIES  Rigid-body frames for dldx_analytic, from the ENGINE state. bodies = macos.design.met_bodies(ELTS) queries the loaded Rx for each element's perturbation frame -- RptElt (the rotation pivot CPERTURB_PROG rotates points about) and TElt (the 6x6 local->global perturbation map macos.perturb applies in 'local' frame) -- and
+
+<!-- BEGIN NOTES hl-met-bodies -->
+<!-- END NOTES hl-met-bodies -->
+
+#### design.met_layout_opt
+
+`macos.design.out = met_layout_opt(seg, D, E, X, opts)`
+
+MET_LAYOUT_OPT  Tier-3 MET-layout optimization with SHAPE-CLASS patterns.  out = macos.design.met_layout_opt(SEG, D, E, X, 'hub', h, ...) minimizes the post-control wavefront residual trace(dwdx * P_dx * dwdx'),
+
+<!-- BEGIN NOTES hl-met-layout-opt -->
+<!-- END NOTES hl-met-layout-opt -->
+
+#### design.met_view
+
+`macos.design.fig = met_view(seg, am, opts)`
+
+MET_VIEW  3-D visualization of a segmented-primary laser-MET setup. fig = macos.design.met_view(SEG, AM) draws the MET configuration built by macos.design.add_met on the segmentation from macos.design.segment_rx:  LEFT  - 3-D scene: segment hex tiles (face triads), launchers (green),
+
+<!-- BEGIN NOTES hl-met-view -->
+<!-- END NOTES hl-met-view -->
+
+#### design.pie_rings
+
+`macos.design.R = pie_rings(C2, w)`
+
+PIE_RINGS  Robust ring classification for the pie tiling. R = macos.design.pie_rings(C2, W) clusters segment centers (2 x n, tiling-plane coordinates about the tiling center) into the center cell + concentric wedge rings.  Single source of truth shared by macos.design.seg_apertures, macos.design.seg_boundary, and
+
+<!-- BEGIN NOTES hl-pie-rings -->
+<!-- END NOTES hl-pie-rings -->
+
+#### design.pie_wedge_geom
+
+`macos.design.W = pie_wedge_geom(a0, dth, rc, w, g, off, has_outer, has_center_hex)`
+
+PIE_WEDGE_GEOM  Physical pie-wedge edge geometry with UNIFORM gaps. W = macos.design.pie_wedge_geom(A0, DTH, RC, W_, G, OFF, HAS_OUTER, HAS_CENTER_HEX) is the single source of truth for the pie-tiling wedge boundary shared by macos.design.seg_boundary (tiling overlay), macos.design.seg_apertures (emitted PolyApVec), and
+
+<!-- BEGIN NOTES hl-pie-wedge-geom -->
+<!-- END NOTES hl-pie-wedge-geom -->
+
+#### design.seg_apertures
+
+`macos.design.ap = seg_apertures(seg, opts)`
+
+SEG_APERTURES  Per-segment polygonal aperture blocks from the tiling truth. ap = macos.design.seg_apertures(SEG, Name=Value) generates, for every segment of SEG (= macos.design.segment_rx output), the prescription lines that declare its PHYSICAL boundary as a polygonal aperture: ApType=Polygonal + an explicit xObs (the engine ChkDf2 default
+
+<!-- BEGIN NOTES hl-seg-apertures -->
+<!-- END NOTES hl-seg-apertures -->
+
+#### design.seg_boundary
+
+`macos.design.B = seg_boundary(seg, off, opts)`
+
+SEG_BOUNDARY  True per-segment boundary polylines for a segmented primary. B = macos.design.seg_boundary(SEG, OFF) reconstructs each segment's ACTUAL boundary in the tiling plane (SEG = macos.design.segment_rx output), grown outward by OFF (same units; e.g. a launcher edge clearance).  Three sources:
+
+<!-- BEGIN NOTES hl-seg-boundary -->
+<!-- END NOTES hl-seg-boundary -->
+
+#### design.seg_footprint_view
+
+`macos.design.[fig, xun, yun, toimg] = seg_footprint_view(labels, B, seg, opts)`
+
+SEG_FOOTPRINT_VIEW  Footprint map + tiling/aperture overlay figure. [FIG, XUN, YUN, TOIMG] = macos.design.seg_footprint_view(LABELS, B, SEG) renders the per-segment footprint map (LABELS from macos.design.seg_footprints) in PUPIL coordinates, with the tiling boundary (B from macos.design.seg_boundary) and optionally the
+
+<!-- BEGIN NOTES hl-seg-footprint-view -->
+<!-- END NOTES hl-seg-footprint-view -->
+
+#### design.seg_footprints
+
+`macos.design.labels = seg_footprints(seg, w0, opts)`
+
+SEG_FOOTPRINTS  Per-segment TRUE ray footprints from the trace. LABELS = macos.design.seg_footprints(SEG, W0) measures which OPD pixels each segment of SEG (= macos.design.segment_rx output) actually owns, by ENGINE TRUTH rather than geometry: poke one segment at a time (local +z translation), re-trace, and mark the
+
+<!-- BEGIN NOTES hl-seg-footprints -->
+<!-- END NOTES hl-seg-footprints -->
+
+#### design.seg_from_rx
+
+`macos.design.seg = seg_from_rx(in_path, opts)`
+
+SEG_FROM_RX  Rehydrate a segment_rx-style struct from a segmented .in.  seg = macos.design.seg_from_rx(IN_PATH) rebuilds the struct that macos.design.segment_rx returns -- frames, seg_elts, tiling metadata -- from the prescription file ALONE, so downstream stage
+
+<!-- BEGIN NOTES hl-seg-from-rx -->
+<!-- END NOTES hl-seg-from-rx -->
+
+#### design.segment_rx
+
+`macos.design.out = segment_rx(parent_in, opts)`
+
+SEGMENT_RX  Segment one element of a MACOS prescription (SegMirMaker splice).  out = macos.design.segment_rx(parent_in, Name=Value) replaces element `elt` of the parent prescription with SegMirMaker-generated segment blocks and returns the merged, load-ready `.in`.  Sprint 2D S1:
+
+<!-- BEGIN NOTES hl-segment-rx -->
+<!-- END NOTES hl-segment-rx -->
+
+#### design.segmirmaker_run
+
+`macos.design.out = segmirmaker_run(parent_in, opts)`
+
+SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the standalone SegMirMaker binary (segmirmaker/) on a parent MACOS prescription by scripting its interactive dialog over stdin, in a
+
+<!-- BEGIN NOTES hl-segmirmaker-run -->
+<!-- END NOTES hl-segmirmaker-run -->
+
 #### design.seidel_seed
 
 `macos.design.[K, t_focus, EFL] = seidel_seed(R, t_between, D, convex)`
@@ -71,6 +242,15 @@ TMA_LAYOUT  Generic on-axis Korsch TMA first-order layout (j18 / JWST form), wit
 
 <!-- BEGIN NOTES hl-tma-layout -->
 <!-- END NOTES hl-tma-layout -->
+
+#### design.zern_seg_eval
+
+`macos.design.z = zern_seg_eval(frame, mode, P)`
+
+ZERN_SEG_EVAL  Engine-exact segment MonZernike mode value at world points.  z = macos.design.zern_seg_eval(FRAME, MODE, P) evaluates the surface sag contribution of a unit MonZernCoef(MODE) poke at the 3 x n world points P on the segment whose face frame is FRAME (a segment_rx /
+
+<!-- BEGIN NOTES hl-zern-seg-eval -->
+<!-- END NOTES hl-zern-seg-eval -->
 
 ### macos.channels — +channels
 
