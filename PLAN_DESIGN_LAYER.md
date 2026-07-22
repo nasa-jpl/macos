@@ -1085,7 +1085,7 @@ emit `OptChfRayDir` for the OFF-axis fields only and size `OptFOVWt` to
 **Emission convention (coaxial multi-mirror), validated:** all mirrors
 `psiElt=(0,0,-1)` (ONE shared axis, NOT alternating-toward-CoC),
 `KrElt=-|R|`, `KcElt=K`, vertices folded along z; matches the working
-on-axis TMA `optiixonaxisz1_v4.in`.  Free-form layouts are the exception
+segmented TMA `e2e_pie.in`.  Free-form layouts are the exception
 (per-element psi — see `e5mono.in`).
 
 **Credible design + proof (the result that matters):** the
