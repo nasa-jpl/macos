@@ -1544,8 +1544,8 @@ C***********************************************************************
           END SELECT
 
 !--> grid data attached to a non-grid SrfType (SAVE audit): e.g.
-!    Conic NSReflector segments carrying GridData figures
-!    (iris_dp_ZGD).  The trace keys off nGridMat>0, not SrfType,
+!    Conic NSReflector segments carrying GridData figures.
+!    The trace keys off nGridMat>0, not SrfType,
 !    but the SELECT above only writes the grid keys for the grid
 !    surface types -- so these grids were silently dropped by SAVE.
           IF ((nGridMat(iElt).GT.0).AND..NOT.
