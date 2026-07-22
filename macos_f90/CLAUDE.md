@@ -91,6 +91,27 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - SrfType 4 (Monomial) and 12 (MonGrData): still use direct MonCoef input.
 
 
+## SPOT BEAM reference frame: obscured chief ray (tracesub.F LocalCoord)
+- `SPOT ... beam` (and `WINDOW/PLOCATE ... beam`) build the beam coordinate
+  frame from a **chief-ray trace** in `LocalCoord` (tracesub.F ~2612): a
+  nominal chief ray + two differential rays (x/y translate/rotate), each via
+  `CRTrace` (single ray, `SetSourceRayGrid(nMinPts=3)`).  Each `CRTrace`
+  result was gated on `IF (nBadRays.NE.0)` → "chief ray becomes undefined" →
+  abort.  **The on-axis chief ray of any centrally-obscured telescope is
+  VIGNETTED**, so `nBadRays≥1` from obscuration alone, and beam-frame SPOT
+  failed at **every** element of every obscured Rx (reproduced identically in
+  the CLI; TOUT/TELT work because they use the stored `Tout`/`TElt` frame, no
+  chief-ray trace).  Obscuration sets only the flux flag (`L1`/`LRayPass`),
+  NOT the geometric intersection `RayPos` (CTRACE comment ~4189), so the frame
+  is well-defined.  Fix: the 5 `LocalCoord` failure checks now read
+  `nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured` — tolerate a
+  vignetted-but-geometrically-valid chief ray, fail only on a genuine
+  geometric miss/bracket.  Do **not** try to fix this by toggling `iObsOpt`:
+  the obscuration `nBadRays` bump (tracesub.F ~4364) is unconditional
+  (`obs_set 0` does not suppress it), and it MUST stay that way so WARN's
+  per-category loss accounting fires.  mmacos regression: `tSpot` (obscured
+  Cass, beam ray count == tout).
+
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
 - Per-ray arrays: RayStatus(mRay), RayFailElt(mRay), RayFailMsg(mRay) — allocated in elt_mod.
@@ -282,7 +303,7 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   so `MOD ZernType=Noll` silently became NormNoll. Both fixed in the helper.
 - Legacy alias: "Malacara" (pre-modernization name for ANSI) maps to typeL=1
   via a `Mala`-prefix check at the bottom of the un-normalized branch. Older
-  JPL Rx files (optiix etc.) still use it; without the alias the parser
+  JPL Rx files still use it; without the alias the parser
   silently dropped the field and ZernTypeL stayed 0 — which then silently
   broke the Zernike-apply trace path (see next section).
 
@@ -299,7 +320,7 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
 - GMI workaround at `GMI.F:1066`: when forcing `SrfType(iElt)=8` to apply a
   Zernike perturbation to an arbitrary element, also force `ZernTypeL=1` if
   currently 0. Without this, GMI's pzern channel silently no-ops when applied
-  to a Conic-typed element. Caught by `test03_zern_response_optiix` (had been
+  to a Conic-typed element. Caught by `test03_zern_response_e2e_pie` (had been
   masked under ifx because the same broken path also corrupted memory and
   triggered an exit-time SIGSEGV — gfortran exposed the actual zero-response
   bug cleanly).
