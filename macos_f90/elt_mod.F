@@ -571,7 +571,7 @@ C***********************************************************************
             END IF
           END DO
           ! Legacy alias: "Malacara" was the pre-modernization name
-          ! for ANSI (index 1).  Old Rx files (e.g. optiix) still
+          ! for ANSI (index 1).  Old JPL Rx files still
           ! use it; honour the user's intent rather than silently
           ! dropping the field and falling back to ZernTypeL=0.
           IF (.NOT.found .AND. LCMP(value, 'Mala', 4)) THEN
