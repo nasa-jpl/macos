@@ -2615,13 +2615,20 @@ C  Find nominal incidence point
      &	  iCurRayElt,iEndElt,Dicr,Djcr,dxSource,
      &	  nBadRays,StartIndRef,StartExtinc,
      &	  Cmatrix,DrawRayVec,DrawEltVec)
-	IF (nBadRays.NE.0) THEN
+!-->  A vignetted/obscured chief ray still has a valid GEOMETRIC path
+!     (obscuration sets the flux flag L1, not the intersection RayPos --
+!     see CTRACE ~4189), and the beam coordinate frame is defined purely
+!     by that geometry.  So tolerate a chief ray whose only failure is
+!     obscuration (the on-axis chief ray of any centrally-obscured
+!     telescope); fail only on a genuine geometric miss/bracket.
+	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
 	  WRITE(*,*)'Nominal chief ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
           ChfRayPos(:) = oldChfRayPos(:)
           return
 	END IF
+!<--
 
 	CALL DEQUATE(crLocalPos,RayPos,3)
 
@@ -2638,7 +2645,7 @@ C    First try translating differential ray:
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0) THEN
+	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
 	  WRITE(*,*)'Differential ray (x-t) becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -2660,7 +2667,7 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0) THEN
+	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
 	    WRITE(*,*)'Differential ray (x-r) becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
@@ -2689,7 +2696,7 @@ C    First try translating differential ray:
      &	  nBadRays,StartIndRef,StartExtinc,
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0) THEN
+	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
 	  WRITE(*,*)'Tilted differential ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -2711,7 +2718,7 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0) THEN
+	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
 	    WRITE(*,*)'Rotated differential ray becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
