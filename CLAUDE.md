@@ -196,18 +196,24 @@ to `opt-dev`; let `sls-dev` accumulate until a promotion gate
 (at which point it gets fast-forward-merged into `opt-dev` for
 the next release).
 
-## Public-release strategy
-- Two-repo model (JPL's GitHub plan doesn't support branch-level
-  visibility): internal `nasa-jpl/macos` (private) keeps all dev
-  branches and full history; a separate public repo (name TBD,
-  e.g. `nasa-jpl/macos-release`) gets a snapshot per release —
-  single commit + tag on its `main`, dev files stripped.
-- Sync via a not-yet-written `tools/prepare-public-release.sh`
-  driven by `tools/PUBLIC_EXCLUDE.txt` (CLAUDE.md, PLAN.md,
-  `.claude/`, `docs/Archive/`, internal ZGD test fixtures, etc.).
-- Before `opt-dev → main` promotion: remove the NPSOL source tree
-  from the public-bound snapshot (SLSQP stays as the default and
-  only constrained back end on the public side).
+## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
+- **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public
+  again** with its **history REWRITTEN to erase all presence of
+  non-public code — especially NPSOL, but also pgplot, etc.** (scrubbed
+  from history, not just deleted at HEAD).  This SUPERSEDES the earlier
+  two-repo snapshot model.
+- **Branches:** `main` is updated to **sls-dev functionality**; a public
+  **`dev`** branch is retained.  All developer-facing files (CLAUDE.md,
+  PLAN*.md, `.claude/`, internal ZGD fixtures, `docs/Archive/`) **stay on
+  `dev` but are stripped from `main`**.  **Both branches are public.**
+- **Users re-clone.**  Andy wants everyone to delete their local clones
+  and re-clone (the history rewrite makes old clones diverge).  Do NOT
+  push from a stale pre-rewrite clone afterward — it would reintroduce
+  scrubbed history.
+- Pre-rewrite full-history safeguard: `~/macos-archive-YYYYMMDD/`
+  (`git bundle --all` per repo + worktree snapshots; e.g. the 2026-07-22
+  archive taken before this rewrite).  See the agent MEMORY branch-model
+  entry for the current tips.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
