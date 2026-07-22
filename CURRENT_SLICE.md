@@ -45,6 +45,18 @@
 > (`gen_cmdref.py`) + spot NOTES; (4) ifx `build_release` rebuilt (spot
 > fix for pymacos).  Tips: macos `dae015e`, MACOS_resources `455fe26`.
 >
+> **This session, later (2026-07-22) — EVEN-GRID CENTER FIX SHIPPED**
+> (`[[project_even_grid_center_fix]]`): captured upstream `ff85575`
+> (half-pixel figure center for EVEN `nGridMat`) — bug lived at 4
+> surfsub.F sites (SGSrf + FreeForm-refactor clones), fix
+> `DBLE(nGridMat+1)/2d0`.  macos `708460f`; GMI/pymacos unaffected, grid
+> test suites green.  Lightweight baselines regen'd + pushed
+> (MACOS_res `78dc065` view_rx + `57a0965` e2e s4 dwdgrid).  **DEFERRED
+> to after Friday:** e2e s6/s7 + e5_seg metopt regen.  **⚠ FLAG for
+> Dave:** e5_pie committed baseline is STALE vs the e701f87 pie-frame
+> convention (re-run reclocks xMon/yMon ~30°, unrelated to the grid
+> fix) — regen as a separate reviewed step.
+>
 > **The e2e worked-example series (s1–s7) remains the active design
 > thread; NEXT substantive item is still s7b** (unless Friday
 > reprioritizes).  s1–s7 SHIPPED + COMMITTED on `sls-dev`; the s7 design
