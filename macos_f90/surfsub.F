@@ -1779,7 +1779,7 @@ C  Computes surface function for gridded data surface
 
             ! Compute point-of-incidence in surface coords
 
-            diCtr=INT((nGridMat+1)/2)
+            diCtr=DBLE(nGridMat+1)/2d0
             DO i=1,3
                rho(i)=prel(i)+L*ihat(i)
                rhom(i)=rho(i)-rhoc(i)
@@ -2195,7 +2195,7 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
                   rhom(i) = rho(i)-rhod(i)
                END DO
 
-               diCtr=INT((nGridMat+1)/2)
+               diCtr=DBLE(nGridMat+1)/2d0
                xi=(xData(1)*rhom(1)+xData(2)*rhom(2)+
      &             xData(3)*rhom(3))/dAct+diCtr
                yj=(yData(1)*rhom(1)+yData(2)*rhom(2)+
@@ -2418,7 +2418,7 @@ C  Compute dSgrid (if active)
 
             dSgrid = 0d0
             IF (ifGridTerm) THEN
-               diCtr=INT((nGridMat+1)/2)
+               diCtr=DBLE(nGridMat+1)/2d0
                DO i=1,3
                   rhom(i)=rho(i)-rhod(i)
                END DO
@@ -2834,7 +2834,7 @@ C***********************************************************************
      &      fh,x,y,zc(3),dAct,xi,yj,
      &      dFdrho(3),d2Fdrho2(3,3),tiltx,tilty,diCtr
 
-            diCtr=INT((nGridMat+1)/2)
+            diCtr=DBLE(nGridMat+1)/2d0
             DO i=1,3
                rho(i)=prel(i)+L*ihat(i)
                rhom(i)=rho(i)-rhoc(i)
