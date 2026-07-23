@@ -173,3 +173,111 @@ work entirely** — decide up front whether Mac == mmacos or pymacos-first.
    (seat-check already opt-in via MM_SEAT_CHECK).
 5. lldb a deliberate fault to confirm the debug workflow.
 6. (later) Giza/XQuartz for the interactive `macos` CLI.
+
+## VALIDATED ON HARDWARE — 2026-07-22 (Apple M-series, macOS 26.5, MATLAB R2024a)
+
+**Everything below actually built + ran on Dave's Mac.** The guide above was
+mostly right; the deltas are recorded here.
+
+### Toolchain actually installed
+- `brew install gcc cmake ninja` → **GCC 16** (so `gfortran-16`, and Homebrew
+  *does* provide a bare `gfortran` symlink → gcc 16). cmake 4.4.0, ninja 1.13.2.
+- MATLAB **R2024a is arm64** (`bin/maca64/*.dylib`, `extern/lib/maca64/fexport.map`).
+  Uses **JPL network license** (`cae-lm-mlm*.jpl.nasa.gov:7282`) — first `matlab`
+  launch is slow (ServiceHost init); not a hang.
+- pymacos needs **Python ≥3.13** (`find_package(Python 3.13 REQUIRED)`): installed
+  `brew install python@3.13` → venv `~/.venv/pymacos` + `numpy 2.5.1`.
+- `~/dev` is case-INSENSITIVE; no `.f`/`.F` collisions today, built fine as-is.
+
+### Build files edited (all `if(APPLE)` / `Darwin`-guarded — Linux/Win unchanged)
+- **`macos/CMakeLists.txt`**: GNU flag block — `if(APPLE)` adds
+  `-Wno-implicit-function-declaration -Wno-implicit-int` to `CMAKE_C_FLAGS`.
+  smacos_dvr GNU RPATH arm — `-Wl,--disable-new-dtags` wrapped in `if(NOT APPLE)`.
+  (Compiler id is now **`IntelLLVM`**, not `Intel`; GNU block ~L128; giza
+  `add_subdirectory` is unconditional but **XQuartz is present** so it configures
+  fine, and the `smacos` LIBRARY links only pgplotdummy — no giza edit needed.)
+- **`mmacos/CMakeLists.txt`**: `elseif(APPLE)` platform arm (maca64 / `.mexmaca64`
+  / plain `-lmx -lmex -lmat`); `add_library(mmacos MODULE …)` on APPLE (MODULE =
+  `-bundle` automatically); Apple link opts = `-Wl,-undefined,dynamic_lookup` +
+  MATLAB rpath (drop version-script/no-undefined/dtags); `-mcpu=native` on arm64.
+- **`mmacos/Makefile`** (the path `run_mmacos_tests.sh` actually drives): Darwin
+  MATLAB location (`/Applications/MATLAB_R*.app`), `uname -m` arch → maca64/mexmaca64,
+  `MACOS_BUILD_DIR` default → `build_release_gfortran`, a Darwin gfortran arm
+  (bundle+dynamic_lookup, `-lc++`, `-mcpu=native`, libgfortran on rpath), and
+  `FC` default via `ifeq ($(origin FC),default)` (GNU make's built-in `FC=f77`
+  otherwise defeats `?=`). Added a `print-mextag` helper target.
+- **`mmacos/run_mmacos_tests.sh`**: Darwin MATLAB detection; ext-aware mex path
+  via `make print-mextag`; and **`export MACOS_HOME=…/macos_f90`** (see gotcha).
+- **`pymacos/src/cmake/CMakeLists.txt`**: `elseif(APPLE)`→MACOS64; gfortran
+  compiler arm; a gfortran `FFlags` arm (`-ffree-form -O2 -fPIC -cpp
+  -fallow-argument-mismatch -std=legacy -mcpu=native` — the Intel arm's
+  `-fpp/-qmkl/-names/-assume` are invalid); and the preprocess custom-command
+  uses `-E -cpp -P -o <out>` on Mac (bare `-P` makes gfortran *compile*, needing
+  kinds.mod — Intel's `-P` preprocesses-only).
+- **`pymacos/src/cmake/source/pymacos_f2py.f90`**: two mixed-length char-array
+  constructors (`(/'m','cm',…/)`) → `[character(len=4):: …]` (gfortran rejects
+  mixed lengths; ifx tolerated).
+
+### THE load-bearing gotcha (cost the most time): `macos_param.txt` + MEX = SIGSEGV
+`init` (→`macos_init_all`) loads `macos_param.txt`, searched in: cwd, exe dir,
+`$MACOS_HOME`, then a compile-time `build_loc` (literal `'BUILD_LOC'` — never
+resolves). `matlab -batch` runs from the mmacos root, which has no
+`macos_param.txt`. **A MISSING param file makes the engine abort fatally, and
+inside the MEX host that abort is a hard SIGSEGV** (crash dump on the MCR
+thread, empty fault stack — looks like a codegen bug, is not). Fix: point
+`MACOS_HOME` at `macos_f90/`. A standalone Fortran driver shows a clean
+"could not be found, bye!" for the same condition — only the MEX turns it into
+a segfault. First engine call (`init`) is where it dies, so it masquerades as
+"the whole mex is broken."
+
+### Results
+- **libsmacos.a**: clean build, gfortran-16 + Apple clang, 155 `macos_api_mod`
+  symbols, 42 `.mod`. `build_release_gfortran/` (release) + `build_debug_gfortran/`
+  (`-fcheck=all`, used to diagnose the param-file issue).
+- **mmacos**: `src/mmacos.mexmaca64` (Mach-O arm64 bundle, exports `_mexfunction_`
+  = exactly what maca64 `fexport.map` wants). `./run_mmacos_tests.sh fast` =
+  **226 pass, 0 real fail, 3 skipped** (tRunCompare assumes `SegMirMaker` built
+  under `build_release_ifx/` — impossible on arm64; not a port defect).
+- **pymacos**: `pymacosf90.cpython-313-darwin.so` builds; import + init + load +
+  trace + opd on `Rx_Cass_FarField.in` → RMS OPD 1.29e-12 m, 47084 rays. Full
+  `pytest` not run this pass.
+- Debugger: `lldb` (not gdb) is the Mac tool; a debug libsmacos + tiny standalone
+  driver is the fastest way to isolate engine faults *outside* MATLAB.
+
+### macos INTERACTIVE CLI — also built (2026-07-22, one fix)
+The full `macos` exe (needs giza→cairo→pixman graphics) builds + runs on arm64.
+Only ONE fix was needed beyond the library: the vendored **pixman** was hardcoded
+x86-64 (`pixman-x86.c` carries x86 inline asm; `%eax`/`=a` constraints clang
+rejects on arm64). Fix in `macos_f90/giza/src/subprojects/pixman/CMakeLists.txt`:
+arch-gate via `CMAKE_SYSTEM_PROCESSOR` — on non-x86, don't `#define USE_SSE2/
+USE_SSSE3` in the generated config.h and drop `pixman-sse2.c`/`pixman-ssse3.c`
+from the sources. `pixman-x86.c` is fully `#if`-guarded on those macros, so it
+compiles to an empty TU; pixman falls back to its generic C paths (correct, just
+no SIMD accel — ARM NEON left off, fine for occasional CLI plotting). cairo/giza/
+pgplot then compiled clean. **XQuartz must be installed** (it is) for the X11
+window; giza's `find_package(X11 REQUIRED)` resolves against `/opt/X11`.
+Verified: `bin/macos` (Mach-O arm64) loads Rx_Cass_FarField, traces, OPD RMS
+1.286e-12 m (== pymacos), reaches the giza `/xw` device prompt.
+Build: add `-DBUILD_MACOS=ON` to the library configure below, `--target macos`.
+(Bundled `libreadline.a` is absent → arrow-key history disabled, non-fatal.)
+
+### Build commands (copy-paste, verified)
+```sh
+# library (release)
+cd ~/dev/macos && cmake -B build_release_gfortran -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_Fortran_COMPILER=gfortran-16 \
+  -DBUILD_SMACOS=ON -DBUILD_MACOS=OFF -DBUILD_GMI=OFF -DBUILD_MMACOS=OFF -DBUILD_SMACOS_DVR=OFF
+cmake --build build_release_gfortran --target smacos
+
+# mmacos mex (Makefile path — outputs src/mmacos.mexmaca64)
+cd ~/dev/MACOS_resources/mmacos && make FC=gfortran        # MACOS_BUILD_DIR defaults to build_release_gfortran
+MACOS_HOME=~/dev/macos/macos_f90 ./run_mmacos_tests.sh fast # (runner exports MACOS_HOME itself)
+
+# pymacos (into ~/.venv/pymacos with numpy>=2.2)
+cd ~/dev/MACOS_resources/pymacos/src/cmake
+PATH="$HOME/.venv/pymacos/bin:$PATH" cmake -B build_mac -S . \
+  -DCMAKE_Fortran_COMPILER=gfortran-16 \
+  -DMACOS_BUILD_DIR=$HOME/dev/macos/build_release_gfortran \
+  -DPython_EXECUTABLE=$HOME/.venv/pymacos/bin/python
+PATH="$HOME/.venv/pymacos/bin:$PATH" cmake --build build_mac
+```
