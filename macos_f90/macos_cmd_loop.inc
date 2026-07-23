@@ -1881,11 +1881,22 @@ C    Trace up to first element to be drawn
 C  --> Capture the draw-ray bundle for the design-layer draw_rays getter;
 C      in data-only mode skip the render below (no graphics device opened).
 	      nDrawRay_save = nDrawRay
+!-->  These 3 are model-sized (mDrawRay/mDrawElt) and never freed, so a
+!     lazy allocate-once leaves them at the OLD model's size after a
+!     model-size transition and the section writes below overrun them
+!     (the §0 allocate-once heap-corruption class; the sibling Draw3DVec
+!     above already regrows for the same reason).  Regrow when too small.
+	      IF (allocated(DrawRayVec_save)) THEN
+	        IF (SIZE(DrawRayVec_save,3).LT.mDrawRay .OR.
+     &	            SIZE(DrawRayVec_save,2).LT.mDrawElt)
+     &	          deallocate(DrawRayVec_save,DrawEltVec_save,nDrawElt_save)
+	      END IF
 	      IF (.NOT.allocated(DrawRayVec_save)) THEN
 	        allocate(DrawRayVec_save(2,mDrawElt,mDrawRay))
 	        allocate(DrawEltVec_save(mDrawElt,mDrawRay))
 	        allocate(nDrawElt_save(mDrawRay))
 	      END IF
+!<--
 	      DrawRayVec_save(:,:,1:nDrawRay) = DrawRayVec(:,:,1:nDrawRay)
 	      DrawEltVec_save(:,1:nDrawRay)   = DrawEltVec(:,1:nDrawRay)
 	      nDrawElt_save(1:nDrawRay)       = nDrawElt(1:nDrawRay)
