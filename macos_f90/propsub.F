@@ -161,7 +161,19 @@ cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 
 	! DATA ifUseBaseSrf/.FALSE./
 
-	If (.not.allocated(CumLStart)) allocate(CumLStart(mRay))
+!--> CumLStart is model-sized (mRay=mpts**2+1) and SAVE'd, so a lazy
+!    allocate-once leaves it at the OLD model's size after a model-size
+!    transition (macos_init_all): the next fresh trace's reset loop
+!    (DO 3 iRay=1,nRay) then writes past the end -> heap corruption that
+!    detonates at a later malloc (the §0 model-transition crash class,
+!    same as sunsub.F:DFOURN).  Re-grow when too small; at fixed model
+!    size size(CumLStart)==mRay so the SAVE'd re-entrant contents survive.
+	If (.not.allocated(CumLStart)) Then
+	  allocate(CumLStart(mRay))
+	Else If (size(CumLStart).LT.mRay) Then
+	  deallocate(CumLStart); allocate(CumLStart(mRay))
+	End If
+!<--
 
 ! format stmts
 #include "propsub.inc"

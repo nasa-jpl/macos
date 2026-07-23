@@ -1283,6 +1283,12 @@ C         ***Print ray maps***
               END DO
 #else
    ! SMACOS
+	      ! k=npts+1 is model-sized; srcMap is smacos_vars_mod-persistent
+	      ! and never freed, so regrow on a model-size transition (§0
+	      ! allocate-once class) — it is rebuilt from RayMap each call.
+	      if (allocated(srcMap%rayMap)) then
+	        if (size(srcMap%rayMap,1).LT.k) deallocate(srcMap%rayMap)
+	      end if
 	      if (.not.allocated(srcMap%rayMap)) allocate(srcMap%rayMap(k,k))
               j1=1
 	      DO j=k,1,-iSkip
@@ -1314,6 +1320,9 @@ C         ***Print ray maps***
                 END DO
 #else
    ! SMACOS
+	        if (allocated(srcMap%segMap)) then
+	          if (size(srcMap%segMap,1).LT.k) deallocate(srcMap%segMap)
+	        end if
 	        if (.not.allocated(srcMap%segMap)) allocate(srcMap%segMap(k,k))
                 j1=1
 	        DO j=k,1,-iSkip
