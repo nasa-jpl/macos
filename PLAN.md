@@ -134,6 +134,40 @@ task.
   - Until fixed: run per-class / `fast` subset (each class gets
     its own MATLAB); keep the run_mmacos_tests.sh size-group
     split (do NOT do the "followup cleanup" collapse above).
+  - **[Mac-CC 2026-07-23] Re-tested against CCL's partial fix
+    `54270af`** (the 3 allocate-once regrows: CumLStart/propsub,
+    srcMap%rayMap|segMap/macos_cmd_loop, ds1|ds2|dsc|DWF_loc/
+    sourcsub).  On Apple-Silicon gfortran-16, MATLAB R2024a:
+    - The partial fix **advanced the detonation point** — it did
+      NOT close the crash.  Full no-arg `run_mmacos_tests.sh`
+      (single process) still SIGSEGVs at the **same tViewRx SETUP**
+      (`init(256)`+`load_rx('CassWithExitPupil.in')` after the
+      256-size tCalib/tReadGridFile block).  BUT: (a) `tRunCompare`
+      at 512 now runs to completion (3 pass — a 128→512 transition
+      that used to crash); (b) tViewRx got 3 sub-tests in before the
+      fault (was setup-immediate on 2026-07-18); (c) **no
+      `*** Setting aperture stop failed!`** preceded it this time.
+      So CCL's 3 buffers were real contributors; ≥1 source remains.
+    - Fault stack is 100% MATLAB interpreter (libmwm_lxe
+      SelectVariantConstantWithCaching → libmwmcos_impl MCOS
+      dispatch), NO mmacos/libsmacos/Fortran frames — i.e. the
+      classic "corruption seeded earlier, detonates at the next
+      allocator" signature (crash header's Metal/graphics lines are
+      incidental, not causal: tViewRx renders `'visible',false`, and
+      the crash is at class SETUP before any figure call).
+    - **Could NOT reproduce with engine-only calls.**  A headless
+      `matlab -nodisplay -nojvm` walk — 7 transitions incl.
+      128→512→1024, then 5× `init(256)`+`load(CassWithExitPupil.in)`
+      + trace/opd/intensity — SURVIVED cleanly (rms 1.174e-12 stable).
+      So the trigger needs the **full unittest harness state**
+      (accumulated MCOS objects + prior figures from tMetView/mask
+      classes + the specific fixtures), not just a size-transition
+      sequence.  A pure init/trace ladder is NOT a sufficient repro
+      on this platform — narrows the suspect to a buffer touched by
+      the design-layer/viewer classes (RayPosHist/Draw3DVec/met_geom/
+      seg-tiling per the candidate list above), consistent with CCL's
+      remaining source.  Logs: `/tmp/full.log` (crash),
+      `/tmp/heap_probe*.log` (survived).  gdb→lldb on this Mac.
 - [~] Port worth-keeping IEEE / accuracy patterns from
   `docs/Archive/dev_optimization_surfsub/` into opt-dev's surfsub.
   **Partial close 2026-06-04 (commit 0ee4b23):** Pattern 4
