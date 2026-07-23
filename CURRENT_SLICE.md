@@ -24,8 +24,24 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-07-22) — READ THIS FIRST.**  No half-done slice
+> **CURRENT STATE (2026-07-23) — READ THIS FIRST.**  No half-done slice
 > is in flight — everything below is LANDED + PUSHED.
+>
+> **§0 MODEL-TRANSITION HEAP CRASH — RESOLVED (macos `0b07046`).**  The
+> reopened §0 crash (SIGSEGV at tViewRx setup after a 128→256 transition)
+> is FIXED: 4 model-sized allocate-once buffers, never regrown on
+> `macos_init_all(larger)` — `CumLStart`/`srcMap`/`ds1-ds2` (`54270af`)
+> then the actual tViewRx culprit **`DrawRayVec_save`/`DrawEltVec_save`/
+> `nDrawElt_save`** (the DRAW buffers `view_rx` harvests; `0b07046`).
+> Found via `-fcheck=bounds` on a standalone `smacos_dvr` — **ASan
+> structurally could not** (overflow clears its redzone into another live
+> allocation).  CCMac converged on the diagnosis + split the no-arg
+> runner per-model-size-group as a workaround (`bc5e8e1`); to VALIDATE
+> the engine fix you must run ONE MATLAB process spanning model sizes
+> (the split sidesteps it).  Full trail: `[[project_model_transition_crash]]`.
+> Also this session: even-grid center fix (`[[project_even_grid_center_fix]]`),
+> iris scrub, opt_example/test_calib/vsg adds, ASan/-fcheck infra
+> (`build_asan`, `scratchpad/heartbeat.sh` liveness monitor).
 >
 > **⚠ FRIDAY (~2026-07-24) PUBLIC-RELEASE HISTORY REWRITE.**  `nasa-jpl/
 > macos` goes public with history SCRUBBED of NPSOL / pgplot / etc.;
