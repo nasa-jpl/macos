@@ -124,12 +124,21 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
     set(CMAKE_C_FLAGS "-D_CRT_SECURE_NO_WARNINGS -DLNXOS -fPIC")
   endif()
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  # Linux gfortran / gcc
+  # Linux + macOS gfortran / gcc.  macOS/Apple-Silicon: gfortran is the only
+  # Fortran path (ifx has no arm64) and is MathWorks' supported Linux compiler.
+  # -DLNXOS is KEPT on macOS: the LNXOS sites (sunsub.F:117, utilsub_c.c:24,189)
+  # are POSIX and Mac shares them (the C ones already co-guard __linux__).
   set(BASE_FFLAGS "-cpp -ffixed-line-length-132 -fd-lines-as-comments -fallow-argument-mismatch -std=legacy -DPGPLOT -DLNXOS -fPIC")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
   set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbounds-check -fcheck=all")
   set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
   set(CMAKE_C_FLAGS "-DLNXOS -fPIC")
+  if(APPLE)
+    # Apple clang ERRORS (not warns) on the legacy C's implicit function
+    # declarations / implicit int -> downgrade to warnings so utilsub_c.c,
+    # mhist.c, fk.c compile.  gfortran+clang is the standard Mac sci-computing mix.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-implicit-function-declaration -Wno-implicit-int")
+  endif()
 endif()
 
 # ==============================================================================
@@ -365,8 +374,27 @@ if(BUILD_SMACOS)
   )
 endif()
 
-# Readline (Linux only)
-if(NOT WIN32)
+# Readline (Linux + macOS)
+if(APPLE)
+  # The bundled readline-8.2 tree isn't pre-built on macOS; use Homebrew's
+  # readline (arm64 static lib + headers).  Headers live under
+  # <prefix>/include/readline/, and mhist.c does #include "readline.h" when
+  # READLINE_LIBRARY is defined, so the include dir must be that subdir.
+  # WITHOUT readline the engine's sub-prompt path (mhist.c set_sub_prompt) is
+  # inactive and interactive prompts render blank — so this is load-bearing
+  # for a usable CLI, not just arrow-key history.
+  execute_process(COMMAND brew --prefix readline
+                  OUTPUT_VARIABLE _brew_readline
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ERROR_QUIET)
+  if(_brew_readline AND EXISTS "${_brew_readline}/lib/libreadline.a")
+    set(READLINE_ROOT "${_brew_readline}/include/readline")
+    set(READLINE_LIB  "${_brew_readline}/lib/libreadline.a")
+  else()
+    message(WARNING "Homebrew readline not found (brew install readline) — interactive CLI prompts will render blank.")
+    set(READLINE_LIB "")
+  endif()
+elseif(NOT WIN32)
   set(READLINE_ROOT "${smacos_src_dir}/readline-8.2")
   set(READLINE_LIB  "${READLINE_ROOT}/libreadline.a")
   if(NOT EXISTS "${READLINE_LIB}")
@@ -466,7 +494,11 @@ if(BUILD_SMACOS_DVR)
         BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
         INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
     )
-    target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
+    # --disable-new-dtags is GNU ld only; macOS ld64 rejects it.  INSTALL_RPATH
+    # above becomes @rpath on macOS automatically, so no extra flag is needed.
+    if(NOT APPLE)
+      target_link_options(smacos_dvr PRIVATE -Wl,--disable-new-dtags)
+    endif()
   endif()
 endif()
 
