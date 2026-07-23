@@ -1,0 +1,22 @@
+% Asphere-DOF optimization example (Luis-recipe variant).
+%
+% Variable element: M2 (iElt=2), first 5 aspheric coefficients
+%   - VarElt= 0 0 0 0 0 0 0 0       (no rigid-body / curvature DOFs)
+%   - OptAsphCoef= 5 1 2 3 4 5      (first 5 aspheric terms variable)
+%   - Surface= Aspheric with KcElt= 0 (spheric base)
+% Target: WFE at iElt=11 (ImagePlane)
+% Perturbation: small Rx tilt of primary mirror
+% STOP: at iElt=7 (FSM), same as opt_example
+%
+% Note: asphere coefficients can shape the wavefront but cannot
+%   steer beam direction.  A pure tilt perturbation is therefore
+%   not fully correctable by this variable set; expect residual
+%   WFE.  The point of this example is to exercise the OptAsphCoef
+%   path in CALIB, not to produce a converged-to-zero result.
+old opt_example_asph
+perturb 1 GLOBAL 1d-4,0,0
+0,0,0
+stop elt 7 0,0
+calib
+quit
+no
