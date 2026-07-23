@@ -104,9 +104,27 @@ task.
   process now -- left for a separate commit so the fix can be
   reviewed independently.  Also bring `main` along when it
   next syncs.
-- [ ] **REOPENED (2026-07-16, reconfirmed 2026-07-18): model_size-
-  transition heap crash is back.**  The e2e8bf6 fix (previous
-  entry) held for a while, but the crash has returned:
+- [x] **REOPENED (2026-07-16, reconfirmed 2026-07-18) — CLOSED
+  2026-07-23 (`0b07046`, `DrawRayVec_save`).**  The reopened
+  model_size-transition heap crash is FIXED: `DrawRayVec_save` /
+  `DrawEltVec_save` / `nDrawElt_save` (src_mod, the DRAW-capture
+  buffers view_rx harvests) were model-sized allocate-once, never
+  regrown after `macos_init_all(larger)` → the section writes
+  overran them → heap corruption detonating at the next malloc
+  (the tViewRx crash below).  CCL's `54270af` fixed 3 sibling
+  buffers (CumLStart/srcMap/ds1-ds2) — real but different; this
+  4th (found via `-fcheck=bounds` in a standalone smacos_dvr, ASan
+  MISSED it — overflow clears the redzone into a live alloc) is the
+  one that hit tViewRx.  **Verified on the Mac (gfortran-16, R2024a):
+  the ORIGINAL single-process full `run_mmacos_tests.sh` config —
+  the whole `tests/` folder in ONE MATLAB process, 128→256→512→1024
+  back-to-back incl. tViewRx + PROPER — now runs 367 pass / 0 fail,
+  no SIGSEGV** (was the deterministic tViewRx-setup crash).  Followup:
+  the per-group split restored in `run_mmacos_tests.sh` (bc5e8e1) can
+  now be recollapsed to one process — LEFT split for a separate
+  reviewed commit (same note as the original close).  Historical
+  detail of the reopened crash retained below.
+- [x] ~~REOPENED~~ (superseded by the close above; detail retained):
   - 2026-07-16: deterministic 128→512 `macos_init_all` crash
     (project memory; full no-arg mmacos suite affected, the
     "fast" subset green).
