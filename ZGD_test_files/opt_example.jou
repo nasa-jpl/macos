@@ -1,0 +1,7 @@
+old opt_example
+perturb 1 GLOBAL 1d-3,0,0
+0,0,0
+stop elt 7 0,0
+calib
+quit
+no
