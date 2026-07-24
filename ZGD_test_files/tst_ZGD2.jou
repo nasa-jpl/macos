@@ -1,0 +1,23 @@
+ old tst_ZGDzern2
+ gray
+ opd 2
+ text
+ opd 2 no tst_ZGDzern2_ZGD.txt yes
+ gray
+ mod surface(1)=Zernike q
+ opd 2
+ text
+ opd 2 no tst_ZGDzern2_zern.txt yes
+ gray
+ % 
+ old tst_ZGDdata2
+ gray
+ opd 2
+ text
+ opd 2 no tst_ZGDdata2_ZGD.txt yes
+ gray
+ mod surface(1)=GridData q
+ opd 2
+ text
+ opd 2 no tst_ZGDdata2_grid.txt yes
+ gray

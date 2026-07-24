@@ -38,7 +38,9 @@ C***********************************************************************
      &  LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &  UDSrfParam,nGridMat,mGridMat,GridMat,GridSrfdx,
      &  psi,pv,prot,pin,ihat,
-     &  rad,pmon,xhat,yhat,zhat,
+     &  lMon,pmon,xhat,yhat,zhat,
+     &  pData,xData,yData,zData,
+     &  lFF,pFF,xFF,yFF,zFF,FFCoef,
      &  ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &  pout,L,SrfType,
      &  XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,nAsphCoef)
@@ -46,7 +48,7 @@ C***********************************************************************
         use traceutil_mod
         use didesub, only: IntSrf
         use math_mod
-        use elt_mod, only: mMonCoef,mAnaCoef,
+        use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,
      &                     SrfType_Flat,
      &                     SrfType_Conic,
      &                     SrfType_Aspheric,
@@ -57,7 +59,10 @@ C***********************************************************************
      &                     SrfType_Zernike,
      &                     SrfType_GridData,
      &                     SrfType_Toric,
-     &                     SrfType_AsGrData
+     &                     SrfType_AsGrData,
+     &                     SrfType_MonGrData,
+     &                     SrfType_ZrnGrData,
+     &                     SrfType_FreeForm
 
         ! Compute reflection point, normal, reflection and transition
         ! matrices for a reflecting surface
@@ -79,7 +84,9 @@ C***********************************************************************
      &   AsphCoef(nAsphCoef)
 
         REAL*8 XYZSRF(3,NDP),DZSRF(2,NDP),Nvec(3),Nmag,dNdp(3,3),wVec(3)
-        REAL*8 Kc,Kr,rad,pmon(3),xhat(3),yhat(3),zhat(3)
+        REAL*8 Kc,Kr,lMon,pmon(3),xhat(3),yhat(3),zhat(3)
+        REAL*8 pData(3),xData(3),yData(3),zData(3)
+        REAL*8 lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef)
 
         ! Compute incidence point of ray
 
@@ -99,7 +106,7 @@ C***********************************************************************
 
           CASE (SrfType_Monomial, SrfType_Zernike)! (4,8)
             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &                  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &                  Nvec,Nmag,Nhat,dNdp)
 
           CASE (SrfType_Interpolated) ! (5)
@@ -113,13 +120,14 @@ C***********************************************************************
 
           CASE (SrfType_UserDefined) ! (7)
             CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,
      &                 pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 
           CASE (SrfType_GridData) ! (9)
             CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
      &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
-     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &                   pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 
           CASE (SrfType_Toric) ! (10)
             CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -130,6 +138,29 @@ C***********************************************************************
      &                       prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,
      &                       nAsphCoef,nGridMat,mGridMat,GridMat,
      &                       GridSrfdx,pmon,xhat,yhat,zhat)
+	!-->
+          CASE (SrfType_MonGrData, SrfType_ZrnGrData) ! (12,13)
+!            CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &                  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
+!     &                  Nvec,Nmag,Nhat,dNdp)
+!            CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,
+!     &                   ihat,pr,L,nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &                   pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+	  	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    			 psi,pv,prot,pin,ihat,pr,L,lMon,
+     &	    			 nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    			 pmon,xhat,yhat,zhat,
+     &	    			 pData,xData,yData,zData,
+     &	    			 Nvec,Nmag,Nhat,dNdp)
+	!<--
+          CASE (SrfType_FreeForm) ! (14)
+            CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &                       psi,pv,prot,pin,ihat,pr,L,lMon,
+     &                       nGridMat,mGridMat,GridMat,GridSrfdx,
+     &                       pmon,xhat,yhat,zhat,
+     &                       pData,xData,yData,zData,
+     &                       lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &                       Nvec,Nmag,Nhat,dNdp)
 
           CASE DEFAULT
             LROK = .FALSE.
@@ -173,8 +204,10 @@ C***********************************************************************
      &    GridMat,GridSrfdx,
      &	  psi,pv,prot,
      &    pin,ihat,Evec, ! RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay)
-     &    rad,pmon,
+     &    lMon,pmon,		  ! LMon, pMon
      &    xhat,yhat,zhat, ! xMon,yMon,zMon
+     &	  pData,xData,yData,zData,
+     &    lFF,pFF,xFF,yFF,zFF,FFCoef,
      &	  na,nb,
      &    kxa,kxb,lambda,
      &	  ApType,ApVec,nObs,ObsType,
@@ -193,7 +226,7 @@ C***********************************************************************
 	use macos_debug
 	use traceutil_mod
 	use didesub, only: IntSrf
-        use elt_mod, only: mMonCoef,mAnaCoef
+        use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm
 
 C  ierror,iwork,ndp,wvec,anacoef,udsrftype,udsrfcoef + intsrf stuff
 
@@ -221,6 +254,8 @@ C  matrices for a reflecting surface
      &    MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
      &	  na,nb,kxa,kxb,AnaCoef(mAnaCoef),UDSrfCoef(*),DWORK(*),
      &	  xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &	  pData(3),xData(3),yData(3),zData(3),
+     &    lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef),
      &    UDSrfParam(6),dd
 	REAL*8, dimension(:) :: AsphCoef
 
@@ -232,7 +267,7 @@ C  matrices for a reflecting surface
      &    drdth(3,3),
      &    drdi(3,3),drda(3,3),dgda(3,3),dgdi(3,3),dgdd(3,3),dldd(3),
      &    dprot(3),dddth(3,3),dgdth(3,3),dldth(3),Kc,Kr,
-     &    NoidNdi(3,3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &    NoidNdi(3,3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &	  svec(3),shat(3),prhat(3),pihat(3),sfa
 
 	REAL*8 D1(3,3),D2(3,3),D3(3,3),S1
@@ -257,7 +292,7 @@ C  Compute incidence point of ray
      &	    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &	    prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &	    Nvec,Nmag,Nhat,dNdp)
 cides
 	ELSE IF (SrfType.EQ.5) THEN
@@ -270,13 +305,14 @@ cides
      &	    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.7) THEN
 	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &	    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,
      &	    pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.9) THEN
 	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &	    psi,pv,prot,pin,ihat,pr,L,
      &	    nGridMat,mGridMat,GridMat,GridSrfdx,
-     &	    pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &	    pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &	         prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
@@ -289,6 +325,29 @@ cides
      &      ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
+	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
+	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,lMon,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    Nvec,Nmag,Nhat,dNdp)
+!	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+!     &	    prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
+!     &	    Nvec,Nmag,Nhat,dNdp)
+!	  CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
+!     &	    psi,pv,prot,pin,ihat,pr,L,
+!     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+!     &	    pData,xData,yData,zData,
+!     &	    Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.SrfType_FreeForm) THEN
+	  CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,lMon,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &	    Nvec,Nmag,Nhat,dNdp)
 	ELSE
 	  WRITE(*,*)'Reflector: Unknown surface type. Aborting trace.'
 	END IF
@@ -647,7 +706,9 @@ C***********************************************************************
      &   UDSrfCoef,UDSrfType,UDSrfParam,
      &   nGridMat,mGridMat,GridMat,GridSrfdx,
      &   psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,
+     &	 lMon,pmon,xhat,yhat,zhat,
+     &	 pData,xData,yData,zData,
+     &	 lFF,pFF,xFF,yFF,zFF,FFCoef,
      &	 na,nb,ifnc,nc,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
@@ -658,7 +719,7 @@ C***********************************************************************
 	 use Constants, only: PI, TWOPI
 	 use traceutil_mod
 	 use didesub, only: IntSrf
-         use elt_mod, only: mMonCoef,mAnaCoef
+         use elt_mod, only: mMonCoef,mAnaCoef,mFFCoef,SrfType_FreeForm
 
 	 IMPLICIT NONE
 
@@ -698,7 +759,9 @@ C  for a general lens surface
      &	 rho(3),wVec(3),xGrid(3),yGrid(3),zGrid(3),ApVec(6),
      &   ObsVec(6,nObs),UDSrfParam(6),dd,dpface(3),dt,thkZ,pcrnt(3),
      &   Tcrnt(3),
-     &   A_(3),B_(3),C_(3),pcrnt_prev(3),zdir(3)
+     &   A_(3),B_(3),C_(3),pcrnt_prev(3),zdir(3),
+     &   pData(3),xData(3),yData(3),zData(3),
+     &   lFF,pFF(3),xFF(3),yFF(3),zFF(3),FFCoef(mFFCoef)
 	REAL*8, dimension(:) :: AsphCoef
 
 	REAL*8 :: Nvec(3),Nmag,dNdp(3,3),dpdd(3,3),dNdd(3,3),dNdi(3,3),
@@ -710,7 +773,7 @@ C  for a general lens surface
 
 	REAL*8 :: mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	 Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
-     &	 rad,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
+     &	 lMon,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
      &	 svec(3),shat(3),prhat(3),pihat(3),sfa,
      &	 evpha(3),espha(3),eopha(3),dpha,dtr
 
@@ -738,7 +801,7 @@ C  Compute incidence point of ray
      &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &	  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &	  Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.5) THEN
 	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
@@ -750,7 +813,7 @@ C  Compute incidence point of ray
      &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.7) THEN
 	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	  UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &	  UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,
      &	  pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 
         ! Added by J.Lou, 11-16-03
@@ -758,7 +821,8 @@ C  Compute incidence point of ray
           CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &      psi,pv,prot,pin,ihat,pr,L,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,
-     &      pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &      pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -770,8 +834,25 @@ C  Compute incidence point of ray
      &      ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef,
      &      nGridMat,mGridMat,GridMat,GridSrfdx,pmon,
      &      xhat,yhat,zhat)
+!-->
+	ELSE IF ((SrfType.EQ.12).OR.(SrfType.EQ.13)) THEN
+	  CALL MonGridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,lMon,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    Nvec,Nmag,Nhat,dNdp)
+	ELSE IF (SrfType.EQ.SrfType_FreeForm) THEN
+	  CALL FreeFormSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,
+     &	    psi,pv,prot,pin,ihat,pr,L,lMon,
+     &	    nGridMat,mGridMat,GridMat,GridSrfdx,
+     &	    pmon,xhat,yhat,zhat,
+     &	    pData,xData,yData,zData,
+     &	    lFF,pFF,xFF,yFF,zFF,FFCoef,
+     &	    Nvec,Nmag,Nhat,dNdp)
+!<--
 	ELSE
-	  WRITE(*,*)'2: Unknown surface type. Aborting trace.'
+	  WRITE(*,*)'Refractor: Unknown surface type. Aborting trace.'
 	  RETURN
 	END IF
 
@@ -1238,7 +1319,7 @@ C***********************************************************************
      &	 UDSrfParam,
      &   nGridMat,mGridMat,GridMat,GridSrfdx,
      &   psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,
+     &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb,kxa,kxb,lambda,
      &	 nCoat,CoatIndx,CoatThk,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
@@ -1266,6 +1347,11 @@ C  for a general lens surface
 
 	INTEGER nGridMat,mGridMat
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
+!     NSRefractor (non-sequential) lacks the element grid frame; its
+!     GridData(9) path keeps the prior null frame (the sequential
+!     FindSrf/Reflector/Refractor routines get the real pData -- see the
+!     GridSrf fix).  Threading it here is a deferred follow-on.
+        REAL*8 :: pData(3)=0d0,xData(3)=0d0,yData(3)=0d0,zData(3)=0d0
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,
      &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
@@ -1283,7 +1369,7 @@ C  for a general lens surface
 
 	REAL*8 mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
-     &	rad,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
+     &	lMon,pmon(3),xhat(3),yhat(3),zhat(3),muNdi,cfa,cfb,
      &	svec(3),shat(3),prhat(3),pihat(3),sfa
 
 	COMPLEX*16 Evec(3),Esrf(3),Eout(3),TP,TS,Epi,Esi,Epr,Esr,
@@ -1307,7 +1393,7 @@ C  Compute incidence point of ray
      &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &	  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &	  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &	  Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.5) THEN
 	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
@@ -1319,13 +1405,14 @@ C  Compute incidence point of ray
      &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.7) THEN
 	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	  UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &	  UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,
      &	  pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.9) THEN
           CALL GridSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,
      &    psi,pv,prot,pin,ihat,pr,L,
      &    nGridMat,mGridMat,GridMat,GridSrfdx,
-     &    pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+     &    pmon,xhat,yhat,zhat,
+     &      pData,xData,yData,zData,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
      &	  prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
@@ -1652,7 +1739,7 @@ C***********************************************************************
 	SUBROUTINE LensArray(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,
+     &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb, ! na,nb = CurIndRef,IndRef(iElt) in calling routine
      &   ifnc,nc,
      &   kxa,kxb,lambda,
@@ -1695,7 +1782,7 @@ C***********************************************************************
 	REAL*8 mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),cfb,Nxix(3,3),
      &	  Perpr(3,3),D1(9),D2(9),D3(3,3),S1,width,tan30,
      &    sin30,cos30,
-     &	  rad,pmon(3),xhat(3),yhat(3),zhat(3),vptL(3),pface(3),
+     &	  lMon,pmon(3),xhat(3),yhat(3),zhat(3),vptL(3),pface(3),
      &    dpface(3),xseg,yseg,Lhat(3),ARhat(3),w2,dd(2),ds
 
 	COMPLEX*16 Evec(3),Eout(3)
@@ -1875,7 +1962,7 @@ C  Compute incidence point of ray on lenslet
      &	         prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.7) THEN
 	  CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &	         UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,
+     &	         UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,
      &	         pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 	ELSE IF (SrfType.EQ.10) THEN
 	  CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -3343,7 +3430,7 @@ C***********************************************************************
 	SUBROUTINE HOE(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,
      &	 UDSrfType,UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,na,nb,kxa,kxb,lambda,
+     &	 lMon,pmon,xhat,yhat,zhat,na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
      &	 hi,hr,Order,NomWavelength,
@@ -3365,7 +3452,7 @@ C***********************************************************************
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),MonCoef(mMonCoef),
-     & 	 rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     & 	 lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &	 na,nb,kxa,kxb,lambda,
      &	 AnaCoef(mAnaCoef),UDSrfCoef(*),XYZSRF(3,NDP),DZSRF(2,NDP),DWORK(*),
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),
@@ -3906,7 +3993,7 @@ C  Set output values for ray position, direction
         SUBROUTINE Grating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,
+     &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
@@ -3941,7 +4028,7 @@ C  Set output values for ray position, direction
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &         pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
      &	       na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
-     &	       RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &	       RuleWidth,RuleDir(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &	       xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &	       UDSrfCoef(*),UDSrfParam(6)
         REAL*8, dimension(:) :: AsphCoef
@@ -3991,7 +4078,7 @@ cdebug
           ! --------------------------------
           case (SrfType_Monomial, SrfType_Zernike)
             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &                  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &                  Nvec,Nmag,Nhat,dNdp)
           ! --------------------------------
           case (SrfType_Interpolated)
@@ -4006,7 +4093,7 @@ cdebug
           ! --------------------------------
           case (SrfType_UserDefined)
             CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,
+     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,pmon,
      &                 xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
           ! --------------------------------
           case (SrfType_Toric)
@@ -4098,7 +4185,7 @@ cdebug
         SUBROUTINE TrGrating(ifBuild,ifDMBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &	 rad,pmon,xhat,yhat,zhat,
+     &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb,kxa,kxb,lambda,
      &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &	 pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
@@ -4136,7 +4223,7 @@ cdebug
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
      &	 na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
-     &	 RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &	 RuleWidth,RuleDir(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &	 UDSrfCoef(*),UDSrfParam(6)
 	REAL*8, dimension(:) :: AsphCoef
@@ -4186,7 +4273,7 @@ C  Compute incidence point of ray
           ! --------------------------------
           case (SrfType_Monomial, SrfType_Zernike)
             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &                  prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &                  Nvec,Nmag,Nhat,dNdp)
           ! --------------------------------
           case (SrfType_Interpolated)
@@ -4201,7 +4288,7 @@ C  Compute incidence point of ray
           ! --------------------------------
           case (SrfType_UserDefined)
             CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,
+     &                 UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,pmon,
      &                 xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
           ! --------------------------------
           case (SrfType_Toric)
@@ -4294,7 +4381,7 @@ C***********************************************************************
 	SUBROUTINE FzpTrGrating_(ifBuild,ifDMBuild,ifPol,
      &   ifLNsrf,ifObs,LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,
      &   UDSrfCoef,UDSrfType,UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &   rad,pmon,xhat,yhat,zhat,
+     &   lMon,pmon,xhat,yhat,zhat,
      &   na,nb,kxa,kxb,lambda,
      &   ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &   pout,rout,L,Eout,dxidxim1,dxidui,SrfType,
@@ -4322,7 +4409,7 @@ C***********************************************************************
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
      &   na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
-     &   RuleWidth,RuleDir(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &   RuleWidth,RuleDir(3),lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &   xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &   UDSrfCoef(*),UDSrfParam(6)
         REAL*8, dimension(:) :: AsphCoef
@@ -4368,7 +4455,7 @@ C  Compute incidence point of ray
      &    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
         ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
           CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &    prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &    Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.5) THEN
           CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
@@ -4380,7 +4467,7 @@ C  Compute incidence point of ray
      &    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.7) THEN
           CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &    Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.10) THEN
           CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,
@@ -4587,7 +4674,7 @@ C the DOE element. -jzlou, 07/2011
 	SUBROUTINE DoeTrGrating(ifBuild,ifDMBuild,ifPol,
      &   ifLNsrf,ifObs,LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,
      &   UDSrfCoef,UDSrfType,UDSrfParam,psi,pv,prot,pin,ihat,Evec,
-     &   rad,pmon,xhat,yhat,zhat,na,nb,kxa,kxb,lambda,
+     &   lMon,pmon,xhat,yhat,zhat,na,nb,kxa,kxb,lambda,
      &   ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
      &   pout,rout,L,Eout,dxidxim1,dxidui,SrfType,Order,
      &   XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP)
@@ -4612,7 +4699,7 @@ C the DOE element. -jzlou, 07/2011
         REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &   pr(3),rhat(3),L,Nhat(3),pout(3),rout(3),lambda,
      &   na,nb,kxa,kxb,AnaCoef(mAnaCoef),MonCoef(mMonCoef),
-     &   rad,pmon(3),xhat(3),yhat(3),zhat(3),
+     &   lMon,pmon(3),xhat(3),yhat(3),zhat(3),
      &   xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
      &   UDSrfCoef(*),UDSrfParam(6),thisDoeWL
         REAL*8, dimension(:) :: AsphCoef
@@ -4662,7 +4749,7 @@ C  Compute incidence point of ray
      &    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
         ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
           CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
-     &    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &    prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &    Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.5) THEN
           CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
@@ -4674,7 +4761,7 @@ C  Compute incidence point of ray
      &    prot,pin,ihat,pr,L,xhat,Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.7) THEN
           CALL UDSrf(ifBuild,ifLNsrf,LROK,UDSrfType,Kc,Kr,UDSrfCoef,
-     &    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+     &    UDSrfParam,psi,pv,prot,pin,ihat,pr,L,lMon,pmon,xhat,yhat,zhat,
      &    Nvec,Nmag,Nhat,dNdp)
         ELSE IF (SrfType.EQ.10) THEN
           CALL ToricSrf(ifBuild,ifLNsrf,LROK,AnaCoef,psi,pv,

@@ -20,7 +20,9 @@ C  *** Begin MACOS top-level command loop ***
 
 	  CALL PROMPT(command,'MACOS> ')
 
-	  IF (LCMP(command,'QUIT',3) .OR.
+	  IF (ICLEN(command).EQ.0) GO TO 1
+
+	  IF (LCMP(command,'QUIT',1) .OR.
      &        LCMP(command,'EXIT',4) .OR.
      &        LCMP(command,'BYE',3)) THEN
 	    CALL GRAEND
@@ -58,17 +60,51 @@ c***loh
 #endif
 
 
-C         *** print help message***
+C         *** print help message ***
+C
+C  HELP text lives in macos_help.inc -- single source of truth for the
+C  user-facing command list.  When you add a new ELSE IF (LCMP...)
+C  branch elsewhere in this file, also add a one-line entry to
+C  macos_help.inc under the right category.
 
 	  ELSE IF (LCMP(command,'HELP',3)) THEN
-	    WRITE(*,300)
-	    WRITE(*,307)
-	    WRITE(*,304)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,305)
-	    WRITE(*,306)
-	    CALL IACCEPT_S(i,0,1,' Hit return to continue...')
-	    WRITE(*,321)
+#include "macos_help.inc"
+
+C         *** Echo a comment line to stdout (and journal) ***
+C         Useful for marking phases when running interactively or
+C         from a .jou file.  Prints everything on the line after the
+C         ECHO keyword, then discards remaining tokens so they aren't
+C         re-interpreted as commands.
+
+	  ELSE IF (LCMP(command,'ECHO',3)) THEN
+	    BLOCK
+	      INTEGER :: ichar_i, ichar_n
+	      ichar_n = LEN_TRIM(cmdline)
+	      ichar_i = 1
+	      ! skip leading blanks
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).EQ.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      ! skip the ECHO keyword itself
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).NE.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      ! skip whitespace separating keyword from message
+	      DO WHILE (ichar_i.LE.ichar_n .AND.
+     &                  cmdline(ichar_i:ichar_i).EQ.' ')
+	        ichar_i = ichar_i + 1
+	      END DO
+	      IF (ichar_i.LE.ichar_n) THEN
+	        WRITE(*,'(A)') cmdline(ichar_i:ichar_n)
+	      ELSE
+	        WRITE(*,*)   ! bare 'echo' -> blank line
+	      END IF
+	    END BLOCK
+	    ! Drop any remaining tokens so we don't re-dispatch them
+	    read_len(pstack) = 0
+	    read_cur(pstack) = 0
 
 
 ! For command-line MACOS only
@@ -233,8 +269,40 @@ C         *** A few OS shell utility commands ***
 	    CALL CACCEPT(ANS,'no default', 'Enter filename ')
             Call StartEditor(command,ICLEN(command),ANS,ICLEN(ANS))
 	    WRITE(*,*)' '
-#endif
 
+
+C         ***next command: Validate a .in prescription file***
+
+	  ELSE IF (LCMP(command,'VALIDATE',3)) THEN
+	    CALL CACCEPT(ANS,' ','Enter file name (.in optional): ')
+	    BLOCK
+	      INTEGER :: vios, vlen
+	      CHARACTER(LEN=256) :: vmsg
+	      CHARACTER(LEN=MacosCharLen) :: vfile
+	      vfile = ANS
+	      vlen = ICLEN(vfile)
+	      IF (vlen.GE.3) THEN
+	        IF (.NOT.LCMP(vfile(vlen-2:vlen),'.in',3)) THEN
+	          vfile(vlen+1:vlen+3)='.in'
+	          vlen = vlen + 3
+	        END IF
+	      ELSE IF (vlen.GT.0) THEN
+	        vfile(vlen+1:vlen+3)='.in'
+	        vlen = vlen + 3
+	      END IF
+	      IF (vlen.EQ.0) THEN
+	        WRITE(*,*)' ** No file name given.'
+	      ELSE
+	        CALL ValidatePrescription(vfile(1:vlen),vios,vmsg)
+	        IF (vios.EQ.0) THEN
+	          WRITE(*,*)' ',vfile(1:vlen),': OK'
+	        ELSE
+	          WRITE(*,*)' ',vfile(1:vlen),': ',TRIM(vmsg)
+	        END IF
+	      END IF
+	    END BLOCK
+
+#endif
 
 C         ***next command: Load optical description data***
 
@@ -767,7 +835,7 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
 	        End If
                 ! Trace a ray
                 iStartElt=0
-	        If (LRayTgtElt==.TRUE.) Then
+	        If (LRayTgtElt.eqv..TRUE.) Then
                   iEndElt=RayTgtElt
                 Else
                   iEndElt=nElt
@@ -850,8 +918,10 @@ C         ***Modify optical description data***
 	      !print*,'b4 CALL Mod_Loh'
 	      CALL MOD_LOH(npts)
 #else
-   ! for SMACOS
-	      WRITE(*,*)' SMACOS MODIFY reset performed.'
+   ! for SMACOS: reset silently -- the per-MODIFY confirmation was
+   ! unconditional and spammed programmatic optimize loops
+   ! (pymacos/mmacos modified_rx in the FD inner loop); the flag
+   ! resets below are the actual work.
 #endif
 	      ifBuild=.FALSE.
 	      ifPropagate=.FALSE.
@@ -1213,6 +1283,12 @@ C         ***Print ray maps***
               END DO
 #else
    ! SMACOS
+	      ! k=npts+1 is model-sized; srcMap is smacos_vars_mod-persistent
+	      ! and never freed, so regrow on a model-size transition (§0
+	      ! allocate-once class) — it is rebuilt from RayMap each call.
+	      if (allocated(srcMap%rayMap)) then
+	        if (size(srcMap%rayMap,1).LT.k) deallocate(srcMap%rayMap)
+	      end if
 	      if (.not.allocated(srcMap%rayMap)) allocate(srcMap%rayMap(k,k))
               j1=1
 	      DO j=k,1,-iSkip
@@ -1244,12 +1320,15 @@ C         ***Print ray maps***
                 END DO
 #else
    ! SMACOS
+	        if (allocated(srcMap%segMap)) then
+	          if (size(srcMap%segMap,1).LT.k) deallocate(srcMap%segMap)
+	        end if
 	        if (.not.allocated(srcMap%segMap)) allocate(srcMap%segMap(k,k))
                 j1=1
 	        DO j=k,1,-iSkip
 	          i1=1
 	          DO i=k,1,-iSkip
-                    srcMap.segMap(i1,j1)=SegMap(i,j); i1=i1+1
+                    srcMap%segMap(i1,j1)=SegMap(i,j); i1=i1+1
 		  END DO
 	          j1=j1+1
 	        END DO
@@ -1316,6 +1395,100 @@ C	        GO TO 4
      &          CRNhat(1:3,iElt)
 	    End Do
 #endif
+
+
+C         *** 'SEGRAYTRACE' command ***
+C         Trace a single ray that passes through the geometric center
+C         (RptElt) of a chosen Segment element, printing the ray state
+C         at every surface.  Mirrors RAY's loop / output structure but
+C         skips the source-grid setup and forces the ray onto the
+C         requested segment via RayToSegMap.
+C
+C         Notes:
+C           - RptElt is the design segment center as written by
+C             SegMirMaker (= pr from SurfCoordFF).  PERTURB does not
+C             modify RptElt, so this remains the design-time location
+C             across perturbations.
+C           - For a collimated source (|zSource| > MaxPntSrcDist) the
+C             ray's source position is offset from ChfRayPos so the
+C             ray (parallel to ChfRayDir) lands on RptElt.
+C           - For a point source the ray starts at ChfRayPos and aims
+C             directly at RptElt.
+
+	  ELSE IF (LCMP(command,'SEGRAYTRACE',7)) THEN
+	    IF (ifLoad) THEN
+	      ifRayPrint = .TRUE.
+	      ifBuild     = .FALSE.
+	      ifTrace     = .FALSE.
+	      ifPropagate = .FALSE.
+ 11	      CONTINUE
+	        CALL IACCEPT_S(iSeg, 0, 1,
+     &            'Enter segment number (0=quit):')
+	        IF (iSeg .EQ. 0) GO TO 12
+
+	        IF ((iSeg .LT. 1) .OR. (iSeg .GT. nElt)) THEN
+	          WRITE(*,*) ' Invalid element number.'
+	          GO TO 11
+	        END IF
+	        IF (EltID(iSeg) .NE. SegmentElt) THEN
+	          WRITE(*,*) ' Element ', iSeg,
+     &              ' is not a Segment.'
+	          GO TO 11
+	        END IF
+
+C           Initialize the source ray grid first (this sets up shared
+C           state -- RayMap/SegMap/Pol/etc -- that CTRACE expects).
+	        CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
+     &                                ifPropagate)
+
+C           Override the chief-ray slot to land on RptElt(:,iSeg).
+	        DV1(1:3) = RptElt(1:3,iSeg) - ChfRayPos(1:3)
+	        IF (isCollimatedSource()) THEN
+	          S1 = DV1(1)*ChfRayDir(1)
+     &               + DV1(2)*ChfRayDir(2)
+     &               + DV1(3)*ChfRayDir(3)
+	          DV2(1:3) = DV1(1:3) - S1*ChfRayDir(1:3)
+	          RayPos(1:3,1) = ChfRayPos(1:3) + DV2(1:3)
+	          RayDir(1:3,1) = ChfRayDir(1:3)
+	        ELSE
+	          RayPos(1:3,1) = ChfRayPos(1:3)
+	          S1 = DSQRT(DV1(1)**2 + DV1(2)**2 + DV1(3)**2)
+	          IF (S1 .LE. 0d0) THEN
+	            WRITE(*,*)
+     &              ' Segment center coincides with source position.'
+	            GO TO 11
+	          END IF
+	          RayDir(1:3,1) = DV1(1:3) / S1
+	        END IF
+
+C           Force this ray onto the requested segment in CTRACE's
+C           segment-dispatch path (tracesub.F:1669-1716).  Use the
+C           segment number (= EltToSegMap(iSeg)), not the element
+C           index, since that is what CTRACE compares against.
+	        nRayToSeg(1)        = 1
+	        RayToSegMap(1,1)    = EltToSegMap(iSeg)
+
+	        iStartRay = 1; iEndRay = 1
+	        iStartElt = 0
+	        IF (.NOT. LRayTgtElt) THEN
+	          iEndElt = nElt
+	        ELSE
+	          iEndElt = RayTgtElt
+	        END IF
+
+	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
+     &	               iStartRay,iEndRay,RayMap,SegMap,
+     &	               ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,
+     &                 StartIndRef,StartExtinc,
+     &                 DrawRayVec,DrawEltVec,nDrawElt(1),
+     &		       xDraw,yDraw)
+	        GO TO 11
+ 12	      CONTINUE
+	      ifRayPrint = .FALSE.
+	    ELSE
+	      WRITE(*,150)
+	    END IF
 
 
 #ifdef MACOS_CMD
@@ -1412,6 +1585,22 @@ C	  ***next command: Calculate system effective focal length***
 	      End If
 C               WRITE(*,*)'(** Warning: for decentered system, '//
 C    &                    'the computed EFL could be inaccurate)'
+	      ifEFLCalc=.true.
+	    End If
+
+C         ***next command: First-order system properties (SYSPROP)***
+
+	  ELSE IF (LCMP(command,'SYSPROP',3)) THEN
+
+! Reuse the EFL chief/marginal-ray analysis (sets efl), then package all
+! first-order properties via sysprop_mod (shared with macos_api_mod).
+#include "efl.inc"
+	    If (ifLoad) Then
+	      If (abs(Aperture) > smallestReal) focalRatio=efl/Aperture
+	      CALL IACCEPT_S(iElt,nElt,1,
+     &	        'Enter focal-plane element for plate scale:')
+	      CALL DeriveSysProps(iElt)
+	      CALL PrintSysProps()
 	      ifEFLCalc=.true.
 	    End If
 
@@ -1519,7 +1708,8 @@ C         ***Draw system layout and rays***
 	    IF (ifLoad) THEN
 	      IF ((iPloTyp.NE.0).AND.(iPloTyp.NE.5).AND.(iPloTyp.NE.6)
      &	          .AND.(iPloTyp.NE.8).AND.(iPloTyp.NE.9)
-     &	          .AND.(.NOT.ifPlot)) THEN
+     &	          .AND.(.NOT.ifPlot)
+     &	          .AND.(.NOT.DrawDataOnly)) THEN
 	        ifPlot=.TRUE.
 	        If (.not.IsOverDraw) CALL GRAINI
 	      END IF
@@ -1536,17 +1726,35 @@ C         ***Draw system layout and rays***
 
 	      iStartElt=0
 	      iEndElt=nElt
+	      IF (DrawDataOnly) THEN
+	        iElt = DrawDataStartElt
+	      ELSE
 	      CALL IACCEPT_S(iElt,0,1,
      &	                     'Enter first element to include:')
+	      END IF
 	      IF (iStartElt.LT.0) iStartElt=0
 	      IF (iStartElt.GT.nElt) iStartElt=nElt
+	      IF (DrawDataOnly) THEN
+	        iEndElt = DrawDataEndElt
+	      ELSE
 	      CALL IACCEPT_S(iEndElt,nElt,1,
      &	                     'Enter last element to include:')
+	      END IF
 	      IF (iEndElt.LT.iStartElt) iEndElt=iStartElt
 	      IF (iEndElt.GT.nElt) iEndElt=nElt
 
+	      IF (DrawDataOnly) THEN
+	        IF (DrawDataPlane.EQ.1) THEN
+	          ANS = 'YZ'
+	        ELSE IF (DrawDataPlane.EQ.3) THEN
+	          ANS = 'XY'
+	        ELSE
+	          ANS = 'XZ'
+	        END IF
+	      ELSE
 	      CALL CACCEPT(ANS,'XZ',
      &         'Enter drawing plane (XZ, YZ or XY in source coords): ')
+	      END IF
 	      IF (LCMP(ANS,'YZ',2)) THEN
 	        k=1; ANS='YZ'
 	        If (.not.LudDrawGrid) Then
@@ -1579,6 +1787,28 @@ C         ***Draw system layout and rays***
 	        XLabel='Z Axis'; YLabel='X Axis'
 	      END IF
 	      pgplotDrawPlane=k  ! used in DRAW routine
+
+C    Zero per-ray draw state so slots whose RayMap entry is 0
+C    (e.g., gaps between hex/pie segments along the chosen plane)
+C    don't inherit stale DrawRayVec/DrawEltVec data from a prior
+C    DRAW invocation -- which used to surface as "the OTHER plane
+C    leaks into this one" on segmented apertures with gaps along
+C    the centerline.
+	      nDrawElt(1:nDrawRay) = 0
+	      DrawEltVec(:, 1:nDrawRay) = 0
+	      DrawRayVec(:, :, 1:nDrawRay) = 0.0
+!-->  3-D crossing capture buffer (traceutil_mod; filled by CTRACE via
+!     iDrawRay_global; read back by draw_rays3d_get).  Re-sized here so
+!     a model-size change can't leave a stale-shaped buffer.
+	      IF (allocated(Draw3DVec)) THEN
+	        IF ((SIZE(Draw3DVec,2).NE.mDrawElt) .OR.
+     &	            (SIZE(Draw3DVec,3).LT.nDrawRay))
+     &	          deallocate(Draw3DVec)
+	      END IF
+	      IF (.NOT.allocated(Draw3DVec))
+     &	        allocate(Draw3DVec(3,mDrawElt,mDrawRay))
+	      Draw3DVec(:, :, 1:nDrawRay) = 0d0
+!<--
 
 C    Trace up to first element to be drawn
 	      i=nDrawRay/2+1
@@ -1648,6 +1878,31 @@ C    Trace up to first element to be drawn
                 end if
  	      END DO
 
+C  --> Capture the draw-ray bundle for the design-layer draw_rays getter;
+C      in data-only mode skip the render below (no graphics device opened).
+	      nDrawRay_save = nDrawRay
+!-->  These 3 are model-sized (mDrawRay/mDrawElt) and never freed, so a
+!     lazy allocate-once leaves them at the OLD model's size after a
+!     model-size transition and the section writes below overrun them
+!     (the §0 allocate-once heap-corruption class; the sibling Draw3DVec
+!     above already regrows for the same reason).  Regrow when too small.
+	      IF (allocated(DrawRayVec_save)) THEN
+	        IF (SIZE(DrawRayVec_save,3).LT.mDrawRay .OR.
+     &	            SIZE(DrawRayVec_save,2).LT.mDrawElt)
+     &	          deallocate(DrawRayVec_save,DrawEltVec_save,nDrawElt_save)
+	      END IF
+	      IF (.NOT.allocated(DrawRayVec_save)) THEN
+	        allocate(DrawRayVec_save(2,mDrawElt,mDrawRay))
+	        allocate(DrawEltVec_save(mDrawElt,mDrawRay))
+	        allocate(nDrawElt_save(mDrawRay))
+	      END IF
+!<--
+	      DrawRayVec_save(:,:,1:nDrawRay) = DrawRayVec(:,:,1:nDrawRay)
+	      DrawEltVec_save(:,1:nDrawRay)   = DrawEltVec(:,1:nDrawRay)
+	      nDrawElt_save(1:nDrawRay)       = nDrawElt(1:nDrawRay)
+C  <--
+
+	      IF (.NOT.DrawDataOnly) THEN
 	      j=ICLEN(filnam)
 	      IF ((iPloTyp.EQ.5).OR.(iPloTyp.EQ.6).OR.(iPloTyp.EQ.8)
      &            .OR.(iPloTyp.EQ.9)) THEN
@@ -1674,6 +1929,7 @@ C 	Produce PGPLOT output  -jzlou
 	        CALL DRAW(CTITLE,nDrawElt,nDrawRay,
      &	                  DrawEltVec,DrawRayVec,XLabel,YLabel)
 	      END IF
+	      END IF  ! .NOT.DrawDataOnly
 
 	      ifBuild=.FALSE.
 	      ifTrace=.FALSE.
@@ -1829,11 +2085,23 @@ C         ***Compute linear models***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'BUILD: Invalid element number: ',iElt
-	        GO TO 26
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'BUILD: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF ((EltID(iElt).EQ.9).OR.
      &	      (EltID(iElt).EQ.11).OR.(EltID(iElt).EQ.12)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 26
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'BUILD: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	      iStartElt=0
 	      iEndElt=iElt
@@ -1975,11 +2243,23 @@ C         ***Optimize reference surface***
 	      GO TO 1
 	    ELSE IF (iElt.GT.nElt) THEN
 	      WRITE (*,*)'ORS: Invalid element number: ',iElt
-	      GO TO 29
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'ORS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iElt).NE.3).AND.(EltID(iElt).NE.7)
      &	             .AND.(EltID(iElt).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 29
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'ORS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 	    iStartElt=0
 	    iEndElt=iElt-1
@@ -2022,11 +2302,23 @@ C
 	      GO TO 1
 	    ELSE IF (iSlv1.GT.nElt) THEN
 	      WRITE (*,*)'SRS: Invalid element number: ',iElt
-	      GO TO 57
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iSlv1).NE.2).AND.(EltID(iSlv1).NE.3)
      &	    .AND.(EltID(iSlv1).NE.7).AND.(EltID(iSlv1).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 57
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 
  58	    CALL IACCEPT_S(iSlv2,1,1,
@@ -2035,11 +2327,23 @@ C
 	      GO TO 1
 	    ELSE IF ((iSlv2.GT.nElt).OR.(iSlv2.EQ.iSlv1)) THEN
 	      WRITE (*,*)'SRS-2: Invalid element number: ', iElt
-	      GO TO 58
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    ELSE IF ((EltID(iSlv2).NE.2).AND.(EltID(iSlv2).NE.3)
      &	    .AND.(EltID(iSlv2).NE.7).AND.(EltID(iSlv2).NE.8)) THEN
 	      WRITE(*,*)'Invalid element type =',EltID(iElt)
-	      GO TO 58
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	      WRITE (*,*)'SRS: command aborted.'
+	      GO TO 1
+!<--
 	    END IF
 
 	    ifGrid=.FALSE.
@@ -2092,20 +2396,27 @@ C
 	          DO i=1,3
 	            Vptp(i)=RayPos(i,1)+zElt(iSlv2)*RayDir(i,1)
 	          END DO
-	          zp=zElt(iSlv2)+CumRayL(1)-LSlv1
+	          ! Slave is Flat (e.g. FocalPlane): zElt encodes
+	          ! "propagate to next defined plane", not a physical
+	          ! distance.  Preserve the sentinel — pre-existing code
+	          ! overwrote it with `zElt(iSlv2)+CumRayL(1)-LSlv1`,
+	          ! clobbering FocalPlane's big z.  Matches the
+	          ! asymmetric-Returns branch (~line 2325).  Per Dave's
+	          ! spec 2026-05-31 ("Flat should always have big z").
+	          ! ChkDf2 was also hardened the same day to enforce
+	          ! fElt(Flat)=INF so this discriminator is reliable
+	          ! even for older Rx files with non-canonical KrElt=0.
+	          zp=zElt(iSlv1)
 	        ELSE
 	          IF ((zElt(iSlv1).GE.BIG).OR.(zElt(iSlv2).GE.BIG)) THEN
 	            WRITE(*,*) 'WARNING: Plane-to-plane propagation',
      &	            ' should be set up with zElt < INF'
 	          END IF
-	          IF (CumRayL(1).GT.LSlv1) THEN
-	            zp=zElt(iSlv2)+(CumRayL(1)-LSlv1)
-	          ELSE
-	            zp=zElt(iSlv2)-(CumRayL(1)-LSlv1)
-	          END IF
 	          DO i=1,3
 	            Vptp(i)=RayPos(i,1)+zElt(iSlv2)*RayDir(i,1)
 	          END DO
+	          ! Slave Flat, slave-to Flat: same preservation rule.
+	          zp=zElt(iSlv1)
 	          fp=INF
 	        END IF
 	      ELSE
@@ -2136,9 +2447,62 @@ C
 	      fp=ABS(zp)
 
 	    ELSE
-	      WRITE(*,*)' WARNING: SRS is confused about return status'
-	      !fp=fElt(iSlv1)
-	      !zp=zElt(iSlv1)
+	      ! Asymmetric Returns case: ifReturn1 and ifReturn2 differ.
+	      ! The chief ray crosses one extra Return between iSlv1 and
+	      ! iSlv2, so its direction at iSlv1 is sign-flipped relative
+	      ! to iSlv2's frame.  Work directly from iSlv2's prescription
+	      ! quantities (VptElt, psiElt, zElt) instead of from the
+	      ! ray-trace, per Dave's spec (2026-05-07).  Three subcases:
+	      !   (a) plane <- sphere : plane sits at sphere center,
+	      !                         f = zElt(iSlv2)
+	      !   (b) plane <- plane  : both planes share psi, slave plane
+	      !                         shifted by zElt(iSlv2)*psi
+	      !   (c) sphere <- sphere: both spheres share the same center;
+	      !                         slave's vertex unchanged, psi
+	      !                         points toward shared center,
+	      !                         radius = distance to it.
+	      ! sphere <- plane is uncommon and not yet specified -- warn.
+	      IF (fElt(iSlv1).GE.BIG) THEN
+	        ! Slave is a plane.  Geometric placement: at the slave-to's
+	        ! center of curvature (or shifted by zElt for plane<-plane).
+	        ! fp stays at INF -- a Flat surface always has infinite
+	        ! curvature regardless of the propagation distance.
+	        DO i=1,3
+	          psip(i) = psiElt(i,iSlv2)
+	          Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	        END DO
+	        zp = zElt(iSlv1)              ! plane stays a plane
+	        fp = INF                      ! Flat: big f, big Kr
+	      ELSE
+	        ! Slave is a sphere.
+	        IF (fElt(iSlv2).LT.BIG) THEN
+	          ! sphere <- sphere: shared center.
+	          ! Keep slave's user-supplied vertex; compute psip toward
+	          ! the slave-to's center; radius = distance.
+	          DO i=1,3
+	            Vptp(i) = VptElt(i,iSlv1)
+	            psip(i) = (VptElt(i,iSlv2)
+     &                       + zElt(iSlv2)*psiElt(i,iSlv2))
+     &                      - Vptp(i)
+	          END DO
+	          zp = SQRT(psip(1)**2 + psip(2)**2 + psip(3)**2)
+	          IF (zp.GT.0d0) THEN
+	            DO i=1,3
+	              psip(i) = psip(i)/zp
+	            END DO
+	          END IF
+	          fp = zp
+	        ELSE
+	          WRITE(*,*)
+     &        ' WARNING: SRS asymmetric sphere<-plane not implemented'
+	          fp = fElt(iSlv1)            ! preserve old values
+	          zp = zElt(iSlv1)
+	          DO i=1,3
+	            psip(i) = psiElt(i,iSlv1)
+	            Vptp(i) = VptElt(i,iSlv1)
+	          END DO
+	        END IF
+	      END IF
 	    END IF
 
 	    WRITE(*,109)fElt(iSlv1),fp,zElt(iSlv1),zp,psiElt(1,iSlv1),
@@ -2149,10 +2513,20 @@ C
      &      'Accept the new element? ')
 	    IF ((ANS(1:1).NE.'n').OR.(ANS(1:1).NE.'N')) THEN
 	      eElt(iSlv1)=0d0
-	      fElt(iSlv1)=fp
 	      KcElt(iSlv1)=0d0
-	      KrElt(iSlv1)=-fp
 	      zElt(iSlv1)=zp
+	      ! For a Flat surface, curvature is intrinsically infinite --
+	      ! preserve KrElt and fElt at their big-magnitude values
+	      ! regardless of the propagation distance fp computed above.
+	      ! Per Dave's note (2026-05-07): "Flat should always have
+	      ! big Kr or f".
+	      IF (SrfType(iSlv1).EQ.SrfType_Flat) THEN
+	        fElt(iSlv1) = INF
+	        KrElt(iSlv1) = -INF
+	      ELSE
+	        fElt(iSlv1) = fp
+	        KrElt(iSlv1) = -fp
+	      END IF
 	      DO 59 i=1,3
 	        psiElt(i,iSlv1)=psip(i)
 	        VptElt(i,iSlv1)=Vptp(i)
@@ -2234,11 +2608,23 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'FEXIT: Invalid element number: ',iElt
-	        GO TO 54
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'FEXIT: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
                                                                ! or Reference surface
-	        GO TO 54
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'FEXIT: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	    ELSE
 	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
@@ -2283,6 +2669,151 @@ C         *** Find exit pupil (with option to minimize tilt) ***
 	      CALL DEQUATE(VptElt(1,iElt),CrossPt,3)
 	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
 	    END IF
+
+C         *** Set eXit Pupil (SXP) -- FEX variant with EP radius set
+C         *** to chief-ray distance from EP to FP (iElt+1) instead of
+C         *** the legacy "iEm1 to EP" distance.  Captures FP-Tz
+C         *** perturbations through the EP radius (which FEX misses,
+C         *** because it uses upstream-only chief-ray geometry).
+C         *** Otherwise identical to FEX -- same interactive prompts,
+C         *** same EP-element updates.  See tracesub.F SUBROUTINE SXP.
+C         ***
+C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
+C         *** EP -> next-element radius (the far-field propagation
+C         *** distance), with the legacy leg as fallback plus
+C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** rework block in tracesub.F.  SXP is retained as-is for
+C         *** compatibility; it is now largely redundant with FEX.
+
+	  ELSE IF (LCMP(command,'SXP',3)) THEN
+            IF (ifLoad) THEN
+ 8073	      CALL IACCEPT_S(iElt,(nElt-1),1,
+     &	        'Enter number of exit pupil return surface:')
+	      iEm1=iElt-1
+	      IF (iElt.LE.0) THEN
+	        GO TO 1
+	      ELSE IF (iElt.GT.nElt) THEN
+	        WRITE (*,*)'SXP: Invalid element number: ',iElt
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SXP: command aborted.'
+	        GO TO 1
+!<--
+	      ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
+	        WRITE(*,*)'Invalid element type =',EltID(iElt) ! must be Return
+                                                               ! or Reference surface
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SXP: command aborted.'
+	        GO TO 1
+!<--
+	      END IF
+	    ELSE
+	      WRITE(*,*)' Must load optical data first: use NEW or OLD.'
+	      GO TO 1
+	    END IF
+
+	    IF (.NOT.ifStopSet) THEN
+	      WRITE(*,*)
+     &	      ' Must set stop before finding pupil. Use STOP command.'
+	      GO TO 1
+	    END IF
+
+	    ifGrid=.FALSE.
+	    ifPropagate=.FALSE.
+	    ifTrace=.FALSE.
+	    ifBuild=.FALSE.
+	    ifOPDCalc=.FALSE.
+
+	    CALL SXP(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &	      ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &	      iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &	      nBadRays,StartIndRef,StartExtinc,
+     &	      Cmatrix,DrawRayVec,DrawEltVec,
+     &	      iElt,zp,psip,CrossPt,ifCentroid,
+     &	      CRSpot,CentroidSpot,dCRCentroid)
+
+	    WRITE(*,407)CRSpot,CentroidSpot,dCRCentroid
+
+	    WRITE(*,107)fElt(iElt),ABS(zp),zElt(iElt),zp,psiElt(1,iElt),
+     &	      psip(1),psiElt(2,iElt),psip(2),psiElt(3,iElt),psip(3),
+     &	      VptElt(1,iElt),CrossPt(1),VptElt(2,iElt),CrossPt(2),
+     &	      VptElt(3,iElt),CrossPt(3)
+	    CALL CACCEPT(ANS,'YES',
+     &                   'Accept the new element? ')
+	    IF ((ANS(1:1).NE.'n').AND.(ANS(1:1).NE.'N')) THEN
+	      eElt(iElt)=0d0
+	      fElt(iElt)=ABS(zp)
+	      KcElt(iElt)=0d0
+	      KrElt(iElt)=-fElt(iElt)
+	      zElt(iElt)=zp
+	      CALL DEQUATE(psiElt(1,iElt),psip,3)
+	      CALL DEQUATE(VptElt(1,iElt),CrossPt,3)
+	      CALL DEQUATE(RptElt(1,iElt),CrossPt,3)
+	    END IF
+
+C         *** eXit-Pupil Surface (XPS) -- FEX over the full grid:
+C         *** returns the per-ray exit-pupil crossing cloud (the pupil
+C         *** SURFACE) in the ray buffer for ray_info_get.  See
+C         *** tracesub.F SUBROUTINE XPS.
+
+      ELSE IF (LCMP(command,'XPS',3)) THEN
+            IF (ifLoad) THEN
+ 8074       CALL IACCEPT_S(iElt,(nElt-1),1,
+     &        'Enter number of exit pupil return surface:')
+            iEm1=iElt-1
+            IF (iElt.LE.0) THEN
+              GO TO 1
+            ELSE IF (iElt.GT.nElt) THEN
+              WRITE (*,*)'XPS: Invalid element number: ',iElt
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+              WRITE (*,*)'XPS: command aborted.'
+              GO TO 1
+!<--
+            ELSE IF ((EltID(iElt).NE.8).AND.(EltID(iElt).NE.3)) THEN
+              WRITE(*,*)'Invalid element type =',EltID(iElt)
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+              WRITE (*,*)'XPS: command aborted.'
+              GO TO 1
+!<--
+            END IF
+          ELSE
+            WRITE(*,*)' Must load optical data first: use NEW or OLD.'
+            GO TO 1
+          END IF
+
+          IF (.NOT.ifStopSet) THEN
+            WRITE(*,*)
+     &        ' Must set stop before finding pupil. Use STOP command.'
+            GO TO 1
+          END IF
+
+          ifGrid=.FALSE.
+          ifPropagate=.FALSE.
+          ifTrace=.FALSE.
+          ifBuild=.FALSE.
+          ifOPDCalc=.FALSE.
+
+          CALL XPS(npts,ifPol,ifGrid,ifPropagate,ifDraw,ifLNegOK,
+     &      ifBuild,ifDMBuild,ifTrace,ifRegrid,ifIntSrfSet,ifRayPrint,
+     &      iObsOpt,iEndElt,iCurWFElt,iCurRayElt,Dicr,Djcr,dxSource,
+     &      nBadRays,StartIndRef,StartExtinc,
+     &      Cmatrix,DrawRayVec,DrawEltVec,
+     &      iElt,zp,psip,CrossPt,ifCentroid,
+     &      CRSpot,CentroidSpot,dCRCentroid)
+
+          WRITE(*,*)' XPS: exit-pupil surface computed; crossings in',
+     &      ' the ray buffer (ray_info_get).'
 
 C         ***Find Field Point using global or pixel coordinates***
 C         -- adjust source for chief ray to go through specified point on
@@ -2343,9 +2874,18 @@ c--Nominal incidence point
      &	      StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(1),
      &	          xDraw,yDraw)
 	    CALL DEQUATE(crPos,RayPos,3)
+c--Allow chief-ray obscuration: the geometric path still reaches
+c  the target element, just blocked by an obscuration mask, so
+c  FFP/PFP can still compute the source adjustment.  Bail only on
+c  miss/bracket/iter failures (chief ray didn't reach iSlv1).
 	    IF (nBadRays.NE.0) THEN
-	      WRITE(*,*)'Nominal chief ray becomes undefined'
-	      GO TO 385
+	      IF (RayStatus(1) .EQ. RayStat_Obscured) THEN
+	        WRITE(*,*)' Chief ray obscured at element ',iSlv1,
+     &	                  '; proceeding with FFP/PFP calculation.'
+	      ELSE
+	        WRITE(*,*)'Nominal chief ray becomes undefined'
+	        GO TO 385
+	      END IF
 	    END IF
 c--Define elt coords
 	    IF ((iSlv1.EQ.nElt).AND.(nOutCord.EQ.5)) THEN
@@ -2455,7 +2995,11 @@ c----Compute next step
      &	       ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	       StartExtinc,DrawRayVec,DrawEltVec,nDrawElt(1),
      &	       xDraw,yDraw)
-	      IF (nBadRays.NE.0) THEN
+c--Same obscuration tolerance as for the nominal trace above:
+c  obscured chief ray still reached iSlv1 geometrically, only
+c  miss/bracket/iter failures abort the search.
+	      IF (nBadRays.NE.0 .AND.
+     &	          RayStatus(1) .NE. RayStat_Obscured) THEN
 	        WRITE(*,*)'Chief ray becomes undefined during search'
 	        GO TO 385
 	      END IF
@@ -2514,10 +3058,10 @@ C         ***Center Beam in System Stop***
      &	        iCurRayElt,Dicr,Djcr,dxSource,
      &	        nBadRays,StartIndRef,StartExtinc,
      &	        Cmatrix,DrawRayVec,DrawEltVec,
-     &	        iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	        iStop,xTarg,sqErr,ifBeamCentered)
 
 	      IF (ifBeamCentered) THEN
-	        WRITE(*,309)k,DSQRT(sqErr)
+	        WRITE(*,309) 0,SQRT(sqErr)
 	      END IF
 
 	    END IF
@@ -2726,25 +3270,25 @@ C         *** Set System Stop ***
 	        ifBuild=.FALSE.
 	        ifOPDCalc=.FALSE.
 
-                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
-		  ! With point source (source at finite distance) and
-		  ! when SAOpt is set to SAPos, enforce ChfRay
-                  ! thru STOP position at element by tip/tilt
-                  ! chief ray in source plane. -jzlou
-	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
-     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
-     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
-     &              iCurRayElt,Dicr,Djcr,dxSource,
-     &              nBadRays,StartIndRef,StartExtinc,
-     &              Cmatrix,DrawRayVec,DrawEltVec,
-     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
-     &              xTarg,sqErr,ifBeamCentered)
-
-	          !WRITE(*,310) StopPos
-                   ! The "Computed StopPos" is actually system entrance pupil
-                  ifStopSet=.TRUE.
-	          GO TO 1
-	        END IF
+!                IF (ABS(zSource).LE.1d10 .AND. SAOpt==SADir) THEN
+!		  ! With point source (source at finite distance) and
+!		  ! when SAOpt is set to SAPos, enforce ChfRay
+!                  ! thru STOP position at element by tip/tilt
+!                  ! chief ray in source plane. -jzlou
+!	          CALL SetStop(npts,ifPol,ifGrid,ifPropagate,ifDraw,
+!     &              ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
+!     &              ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
+!     &              iCurRayElt,Dicr,Djcr,dxSource,
+!     &              nBadRays,StartIndRef,StartExtinc,
+!     &              Cmatrix,DrawRayVec,DrawEltVec,
+!     &              iStop,TElt(1:3,1,iStop),TElt(1:3,2,iStop),
+!     &              xTarg,sqErr,ifBeamCentered)
+!
+!	          !WRITE(*,310) StopPos
+!                   ! The "Computed StopPos" is actually system entrance pupil
+!                  ifStopSet=.TRUE.
+!	          GO TO 1
+!	        END IF
 
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
@@ -2755,7 +3299,7 @@ C         *** Set System Stop ***
      &	            iCurRayElt,Dicr,Djcr,dxSource,
      &	            nBadRays,StartIndRef,StartExtinc,
      &	            Cmatrix,DrawRayVec,DrawEltVec,
-     &	            iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	            iStop,xTarg,sqErr,ifBeamCentered)
 
 	        CALL DEQUATE(cr1indir,ChfRayDir,3)
 	        CALL DEQUATE(cr1inpos,ChfRayPos,3)
@@ -2800,7 +3344,7 @@ c	        th(3)=3.5355d-6
      &	          iCurRayElt,Dicr,Djcr,dxSource,
      &	          nBadRays,StartIndRef,StartExtinc,
      &	          Cmatrix,DrawRayVec,DrawEltVec,
-     &	          iStop,xTarg,k,sqErr,ifBeamCentered)
+     &	          iStop,xTarg,sqErr,ifBeamCentered)
 	        xGrid=xGrid_sv; yGrid=yGrid_sv
 
 	        !print*,' **Aft 2nd STOP , yGrid =',yGrid
@@ -2811,7 +3355,6 @@ C         Find crossing point of the 2 chief rays:
      &	               ChfRayPos,ChfRayDir,zp,CrossDist,StopPos)
 
 	        WRITE(*,310) StopPos
-	        WRITE(*,*)' '
 	          ! The "Computed" StopPos is actually the entrance pupil,
                   ! which is different from the user specified position
 	          ! on the element where system STOP is set. -jzlou
@@ -2848,12 +3391,13 @@ C         *** Add a variable element, supported in both MACOS and SMACOS
      &               'Enter variable element id for optimization:')
 	      IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)'AVAR: Invalid element number: ',iElt
-#ifdef MACOS_CMD
-                GO TO 21
-#else
-	        WRITE(*,*)'SMACOS quit ...'
-	        stop
-#endif
+!-->  Abort in BOTH builds: the interactive reprompt loops forever in
+!     SMACOS batch mode (IACCEPT_S re-reads the exhausted stack) and
+!     the old SMACOS branch STOPped the whole host process -- fatal
+!     when the engine is a mex/library.  OPD-fix class (032ddb8).
+                WRITE (*,*)'AVAR: command aborted.'
+                GO TO 1
+!<--
 
 C	      ELSE IF (EltId(iElt)==3) THEN
 C	        WRITE(*,*)' '
@@ -2918,7 +3462,13 @@ C	  *** Modify a defined variable element
      &               'Enter variable element ID for optimization:')
               IF ((iElt.LT.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)' MVAR: Invalid element ID: ',iElt
-                GO TO 25
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'MVAR: command aborted.'
+                GO TO 1
+!<--
 	      ELSE
 	        ! Search
 	        if (.not.isVarElt(iElt)) then
@@ -2954,7 +3504,13 @@ C             SMACOS
 #ifdef MACOS_CMD
               IF ((iElt.LT.0).OR.(iElt.GT.nElt)) THEN
 	        WRITE (*,*)'DVAR: Invalid element ID: ',iElt
-                GO TO 23
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'DVAR: command aborted.'
+                GO TO 1
+!<--
 	      END IF
 #endif
 	      IF ((iElt.GE.0) .AND. (iElt.LE.nElt)) THEN
@@ -3336,18 +3892,24 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
      &                             OptTgtElt,LOptIfFEX,beamOpt)
 	        print*,'*** After nls_driver: ifStopSet =',ifStopSet
 	      Else
-                ! Constrained system optimization
-!                Call np_optim_dvr(.true.,OptTarget,
-!     &                             nVarElt,varElts,varDOFs,
-!     &                             varEltCons,
-!     &                             nWFZern,WFZernMode,
-!     &                             zernElt(1:nVarElt),varZerns,
-!     &                             opt_fov,nOptFov,fov_weight,
-!     &                             opt_wavelen,nOptWavelen,
-!     &                             dopt_tol,nitrs_dopt,
-!     &                             old_wfe,new_wfe,rtn_flag,
-!     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-!     &                             OptTgtElt,LOptIfFEX,beamOpt)
+                ! Constrained system optimization.  USE_NPSOL=ON
+                ! dispatches to the legacy NPSOL driver for A/B
+                ! comparison; default is Kraft SLSQP (BSD-licensed).
+#ifdef USE_NPSOL
+                Call np_optim_dvr(.true.,OptTarget,
+#else
+                Call slsqp_optim_dvr(.true.,OptTarget,
+#endif
+     &                             nVarElt,varElts,varDOFs,
+     &                             varEltCons,
+     &                             nWFZern,WFZernMode,
+     &                             zernElt(1:nVarElt),varZerns,
+     &                             opt_fov,nOptFov,fov_weight,
+     &                             opt_wavelen,nOptWavelen,
+     &                             dopt_tol,nitrs_dopt,
+     &                             old_wfe,new_wfe,rtn_flag,
+     &                             tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+     &                             OptTgtElt,LOptIfFEX,beamOpt)
               End If
 
 	      npts=npts_Rx; nGridPts=npts+1
@@ -3538,7 +4100,9 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 		      Do i=1,mVarDOF
 		        if (varEltDOF(i,varElts(iElt))>0) then
 		 	  j=j+1
-                          !WRITE(*,166) aparams_nls_m(aparam_off+j)
+#ifdef USE_NPSOL
+                          WRITE(*,166) aparams_nls_m(aparam_off+j)
+#endif
 	                end if
 		      End Do
 		      WRITE(*,'(x)')
@@ -3632,18 +4196,23 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
      &			 tgtWF_flg,tgtWF_fn,tgtWF_fmt,
      &                   OptTgtElt,LOptIfFEX,beamOpt)
 	        Else
-                  ! Constrained version
-!                  Call np_optim_dvr(.false.,OptTarget,
-!     &                              nVarElt,varElts,varDOFs,
-!     &                              varEltCons,
-!     &                              nWFZern,WFZernMode,
-!     &                              zernElt(1:nVarElt),varZerns,
-!     &                              opt_fov,nOptFov,fov_weight,
-!     &                              opt_wavelen,nOptWavelen,
-!     &                              dopt_tol,nitrs_dopt,
-!     &                              old_wfe,new_wfe,rtn_flag,
-!     &                              tgtWF_flg,tgtWF_fn,tgtWF_fmt,
-!     &                              OptTgtElt,LOptIfFEX,beamOpt)
+                  ! Constrained version (NPSOL under USE_NPSOL=ON
+                  ! for A/B; SLSQP otherwise)
+#ifdef USE_NPSOL
+                  Call np_optim_dvr(.false.,OptTarget,
+#else
+                  Call slsqp_optim_dvr(.false.,OptTarget,
+#endif
+     &                              nVarElt,varElts,varDOFs,
+     &                              varEltCons,
+     &                              nWFZern,WFZernMode,
+     &                              zernElt(1:nVarElt),varZerns,
+     &                              opt_fov,nOptFov,fov_weight,
+     &                              opt_wavelen,nOptWavelen,
+     &                              dopt_tol,nitrs_dopt,
+     &                              old_wfe,new_wfe,rtn_flag,
+     &                              tgtWF_flg,tgtWF_fn,tgtWF_fmt,
+     &                              OptTgtElt,LOptIfFEX,beamOpt)
                 End If
 	        npts=npts_Rx
                 WRITE(*,*)'* Optimized optical state NOT saved!'
@@ -3692,12 +4261,19 @@ C         ***Plot OPD map***
 	      IF (iElt.LE.0) THEN
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
-	        WRITE (*,*)'OPD: Invalid element number: ', iElt
-	        GO TO 6
+!-->  Abort instead of GO TO 6: the reprompt loops forever in SMACOS
+!     batch mode (IACCEPT_S re-reads the exhausted stack) -- same
+!     infinite-loop class as the SPOT fix (ed48d4f).
+	        WRITE (*,*)'OPD: Invalid element number: ', iElt,
+     &	                   '; command aborted.'
+	        GO TO 1
 	      ELSE IF ((EltID(iElt).EQ.9).OR.(EltID(iElt).EQ.11).OR.
      &	      (EltID(iElt).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 6
+	        WRITE(*,*)'OPD: cannot evaluate at a ',
+     &	          TRIM(EltTypeName(EltID(iElt))),
+     &	          ' element (elt',iElt,'); command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 	      iEndElt=iElt
 
@@ -3787,6 +4363,23 @@ C         ***Plot OPD map***
 	        WRITE(*,442) RMSWFE,WFEPV,DAvgl
 	      End If
 
+	      ! Arm annotation for bottom of raster plot:
+	      !   "OPD=<rms> <cUnit> RMS, <pv> <cUnit> P-V"
+	      ! and wedge label "OPD (<cUnit>)".
+	      If (BaseUnits_FLG) Then
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," ",A," RMS, ",E12.5," ",A," P-V")')
+     &	          RMSWFE,TRIM(cUnit),WFEPV,TRIM(cUnit)
+	        wedgeLabel = 'OPD ('//TRIM(cUnit)//')'
+	      Else
+	        WRITE(annotLine1,
+     &	          '("OPD=",1P,E12.5," RMS, ",E12.5," P-V")')
+     &	          RMSWFE,WFEPV
+	        wedgeLabel = 'OPD'
+	      End If
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+
 	      !iEm1=iElt-1
 
 	      IF ((iPloTyp.NE.0).AND.(iPloTyp.NE.5).AND.(iPloTyp.NE.6)
@@ -3819,13 +4412,13 @@ C         ***Plot OPD map***
      &            .OR.(iPloTyp.EQ.9)) THEN
 	        j=ICLEN(filnam)
 	        imgfil=filnam(1:j)//'.OPD'//Cinteger(1:i)
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DBINOUT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	        	mpts,mpts,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                  dxElt(iElt),dxElt(iElt),iElt,R1)
 	      ELSE IF (iPloTyp.NE.0) THEN
 	        ! Render in pgplot window, XFP and YFP are grid coord vectors
-	        CTITLE='OPD Map, Elt='//Cinteger(1:i)//', File='//filnam
+	        CTITLE='OPD, Surface '//Cinteger(1:i)
 	        CALL DSRFPLT(iPloTyp,XFP,YFP,OPDMat,nGridPts,nGridPts,
      &	               mpts,mpts,'X-Axis','Y-Axis',CTITLE,R1,R2,1)
 	      END IF
@@ -4111,13 +4704,25 @@ C         ***Plot spot diagram***
 	        GO TO 1
 	      ELSE IF (iElt.GT.nElt) THEN
 	        WRITE (*,*)'SPOT: Invalid element number: ',iElt
-	        GO TO 10
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SPOT: command aborted.'
+	        GO TO 1
+!<--
 	      ELSE IF
      &        ((EltID(iElt).EQ.NSRefractorElt).OR.
      &         (EltID(iElt).EQ.SegmentElt).OR.
      &	       (EltID(iElt).EQ.NSReflectorElt)) THEN
 	        WRITE(*,*)'Invalid element type =',EltID(iElt)
-	        GO TO 10
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'SPOT: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 
 C	  Get local coordinates:
@@ -4166,12 +4771,15 @@ C	  Get local coordinates:
                 CALL DUNITIZE(DDEF)
                 CALL DZERO(Tspot(1,1),49)
 
-                DO CONCURRENT (integer::iCoord_=1:3)
-                  Tspot(1,iCoord_)   = invec7(iCoord_)
-                  Tspot(3,3+iCoord_) = invec7(iCoord_)
-                  Tspot(2,iCoord_)   = DDEF(iCoord_)
-                  Tspot(4,3+iCoord_) = DDEF(iCoord_)
-                END DO
+                BLOCK
+                  INTEGER :: iCoord_
+                  DO iCoord_ = 1, 3
+                    Tspot(1,iCoord_)   = invec7(iCoord_)
+                    Tspot(3,3+iCoord_) = invec7(iCoord_)
+                    Tspot(2,iCoord_)   = DDEF(iCoord_)
+                    Tspot(4,3+iCoord_) = DDEF(iCoord_)
+                  END DO
+                END BLOCK
                 Tspot(5,7)=1d0
                 CALL COMPACT(Tcompact,Tspot,5,7,7,7)
                 CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
@@ -4208,7 +4816,9 @@ C	  Get local coordinates:
 	          CALL COMPACT(Tcompact,Tspot,5,7,7,7)
 	          CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
 	        ELSE
-	          GO TO 10
+	          WRITE(*,*)' SPOT: cannot compute local coords at elt',iElt,
+     &                  '; command aborted.'
+	          GO TO 1
 	        END IF
 	      END IF  ! xLocal/yLocal option
 
@@ -4305,6 +4915,24 @@ C	      Compute spot diagram data from ray trace and plot:
 	        ycent=ycent/DBLE(iSpot)
 	        WRITE(*,408)(CntrSpot(1)-RefSpot(1)),
      &	          (CntrSpot(2)-RefSpot(2)),xcent,ycent
+
+	        ! RMS spot radius about centroid, for plot annotation.
+	        S1=0d0
+	        Do i=1,iSpot
+	          S1 = S1 + (RaySpot(i,1)-xcent)**2
+     &	                 + (RaySpot(i,2)-ycent)**2
+	        End Do
+	        S1 = DSQRT(S1/DBLE(iSpot))
+	        If (BaseUnits_FLG) Then
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5," ",A)')
+     &	            S1, TRIM(cUnit)
+	        Else
+	          WRITE(annotLine1,
+     &	            '("RMS spot radius=",1P,E12.5)') S1
+	        End If
+	        annotLine2 = ' '
+	        annotOn    = .TRUE.
 	      ELSE
 	        WRITE(*,*)' All rays were obscured or lost'
 	      END IF
@@ -4358,6 +4986,29 @@ C         ***Export data***
 C         ***next command: Plot wavefront stuff***
 C                          -- original comment, doesn't make sense -jzlou
 C         *** Should perform ray trace and diffraction here -- jzlou
+
+	  ELSE IF (LCMP(command,'IMGMODE',4)) THEN
+	    ! Raster display polarity for OPD / INT / PIX / GRAY etc.
+	    ! NEG = astronomy (large -> dark), POS = conventional.
+	    ! Non-raster plots (SLICE, WIRE, CONTOUR, COLUMN, ROW, SPOT)
+	    ! are unaffected.
+	    ! Must dispatch BEFORE 'IMG' branch below (LCMP 3-char match).
+	    IF (ifAstroMode) THEN
+	      CALL CACCEPT(ANS,'NEG',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    ELSE
+	      CALL CACCEPT(ANS,'POS',
+     &	        'Raster polarity (NEG=astro/POS=conventional):')
+	    END IF
+	    IF (LCMP(ANS,'NEG',3).OR.LCMP(ANS,'ASTRO',3)) THEN
+	      ifAstroMode = .TRUE.
+	      WRITE(*,*)' IMGMODE = NEG (astronomy: large -> dark)'
+	    ELSE IF (LCMP(ANS,'POS',3).OR.LCMP(ANS,'CONV',3)) THEN
+	      ifAstroMode = .FALSE.
+	      WRITE(*,*)' IMGMODE = POS (conventional: large -> bright)'
+	    ELSE
+	      WRITE(*,*)' IMGMODE: unrecognized option, no change'
+	    END IF
 
 	  ELSE IF (LCMP(command,'IN',2).OR.LCMP(command,'PH',2).OR.
      &      LCMP(command,'AMPL',3).OR.LCMP(command,'REAL',3).OR.
@@ -4505,6 +5156,17 @@ C         *** Should perform ray trace and diffraction here -- jzlou
 	        ANS='SQRT Intensity#%'
 	      ELSE
 	        ANS='Intensity#%'
+	      END IF
+
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') MaxInt
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Intensity'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Intensity'
+	      ELSE
+	        wedgeLabel = 'Intensity'
 	      END IF
 
 	      CALL SrfOut(iElt,iPloTyp,ANS,
@@ -4668,16 +5330,18 @@ C         *** Should perform ray trace and diffraction here -- jzlou
      &	      'X-Axis','Y-Axis','.gain',mdttl,mdttl,R1,R2,1)
 
 	    ELSE IF (LCMP(command,'LOG',3)) THEN
+	      ! LOG -- log10 intensity wavefront display.  Don't read this
+	      ! as "start logging"; transcript/journal is JOU/JOURNAL.
 	      CALL Ca2Log(ifVecDif3,Power,MaxInt,imax,jmax)
 	      WRITE(*,418)MaxInt,imax,jmax,Power
-
-	      print*,'*****B4 SrfOut: mdttl =',mdttl
 
 	      CALL SrfOut(iElt,iPloTyp,'Log10 Wavefront Intensity#%',
      &	                  'X-Axis','Y-Axis','.log',mdttl,mdttl,R1,R2,1)
 
-#if 1
-   ! Dump intensity for debugging
+#if 0
+   ! Debug-only: dump intensity to IntLog.txt.  Leave disabled
+   ! (was accidentally left on).  Enable temporarily during
+   ! diagnostic runs only.
                Open(Unit=15,File='IntLog.txt')
                Do j=1,mdttl
                  Write(15,*) MWFFT(1:mdttl,j)
@@ -4772,6 +5436,18 @@ C     &	          psiElt(1,iElt),VptElt(1,iElt),LRayOK,ifPixLoc,ifAdd)
 	        pixMax=maxval(PixArray); pixMin=minval(PixArray)
 	        print*,'PIX: pixMax, pixMin=', pixMax,pixMin
 	      end if
+
+	      pixMax = MAXVAL(PixArray(1:npix,1:npix))
+	      WRITE(annotLine1,'("Peak pixel=",1P,E12.5)') pixMax
+	      annotLine2 = ' '
+	      annotOn    = .TRUE.
+	      IF (StretchType.EQ.2) THEN
+	        wedgeLabel = 'LOG10 Pixel value'
+	      ELSE IF (StretchType.EQ.3) THEN
+	        wedgeLabel = 'SQRT Pixel value'
+	      ELSE
+	        wedgeLabel = 'Pixel value'
+	      END IF
 
 	      CALL PixOut(PixArray,iElt,iPloTyp,ANS,
      &	        'X-Axis','Y-Axis','.pix',npix,mpix,R1,R2,StretchType)
@@ -5354,7 +6030,13 @@ C        *** Group PERTURB, supported in both MACOS and SMACOS
      &                       'Enter element to be perturbed:')
               IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
                 WRITE (*,*)'GPERTURB: Invalid element number: ',iElt
-                GO TO 63
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+                WRITE (*,*)'GPERTURB: command aborted.'
+                GO TO 1
+!<--
               END IF
 
 	      If (EltGrp(0,iElt)>0) Then
@@ -5412,7 +6094,13 @@ C         ***Perturb linear model***
      &	      'Enter element to be perturbed:')
 	      IF ((iElt.LE.0).OR.(iElt.GT.nElt)) THEN
 	        WRITE (*,*)'LPERTURB: Invalid element number.'
-	        GO TO 62
+!-->  Abort instead of the reprompt: in SMACOS batch mode IACCEPT_S
+!     re-reads the exhausted stack, so the loop either spins forever
+!     (sticky default) or silently substitutes the default element.
+!     Same class as the OPD fix (032ddb8) / SPOT (ed48d4f).
+	        WRITE (*,*)'LPERTURB: command aborted.'
+	        GO TO 1
+!<--
 	      END IF
 
 	      CALL CLPERTURB(PertVec,RaySpot,
@@ -5621,7 +6309,7 @@ C         ***Here if no match***
 #else
 	    IF (ifEcho) WRITE(*,302)
 #endif
-	    print*,'** Unknown command = ', command
+	    WRITE(*,'(A,A)') '** Unknown command = ', TRIM(command)
 	  END IF
 	GO TO 1
 

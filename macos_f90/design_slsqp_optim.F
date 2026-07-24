@@ -1,0 +1,708 @@
+C***********************************************************************
+C       File design_cons_optim.F
+C    +----------------------------------------------------------------+
+C    |  Copyright (C) 1995-2007, California Institute of Technology.  |
+C    |  U.S. Government Sponsorship Is Acknowledged.                  |
+C    +----------------------------------------------------------------+
+C***********************************************************************
+C
+C  SLSQP-based constrained optical systems optimization
+C  John Z. Lou, Jet Propulsion Laboratory
+C  Last modified: 04/2007
+C
+
+#include "realtype.h"
+
+ 	Module design_slsqp_optim_mod
+ 	use param_mod
+        use src_mod
+	use elt_mod
+	use macos_mod
+	use math_mod
+ 	use dopt_mod, only : WFE_TARGET,WFE_ZMODE_TARGET,SPOT_TARGET,
+     &                       BEAM_TARGET,OptAlg,NonLin,isVarElt
+	use zern_wf_mod
+
+	Implicit none
+	Save
+
+	Integer, parameter :: MAXVAR=100, ! max # variables constrained optimizer allows
+     &            mZern=max_zern_modes, ! defined in zern_wf_mod
+     &            mAsph=mAsphCoef       ! defined in elt_mod
+        Integer :: opd_size, obj_size, tot_objfun_size,
+     &             n_elts, nfov_m,nwls_m, nSpotRays_m,
+     &             mVarDOF_sls, mOptZern_sls,tgt_wf_funit, optElt_m,
+     &             mBeamOff, opt_tgt_m, n_wf_zern_m
+        Integer, dimension(:), allocatable :: elt_arr_m, dof_arr_m,
+     &                         n_optZern_m,varZern_arr_m,
+     &                         n_optAsph_m,varAsph_arr_m
+        Real*8, dimension(:), allocatable :: OPDm,ZCoefm,PIXm
+        Real*8, dimension(:,:), allocatable :: SPOTm
+        Real*8 :: StopVec(3), fovs_m(3,2,12),wls_m(6),
+     &            beamDir_m(3),beamPos_m(3),beamSize_m,
+     &            beamRefRayDir_m(3,mRefRay),SpotSizem
+        Integer :: wf_zern_mode_m(max_zern_modes)
+        Real*8, dimension(:), allocatable :: objfun_nom,da
+        Logical :: start_curr_optim,ifCalcOPD,ifFEX_m,lmlsq_success
+        Type(OptBeamStr) :: OptBeam_m
+        Real*8, dimension(:,:), allocatable :: OPDMat_m  ! 2D array
+
+C ----------------------------------------------------------------------
+#include "setbeam_vars.inc"
+C ----------------------------------------------------------------------
+
+ 	Contains
+
+	Subroutine slsqp_optim_dvr(start_optim,
+     &                 opt_target,  ! controls whether do (what type) optimization
+     &                 n_varElt,elts,dof_arr,
+     &                 cons_arr,  ! cons_arr(2,:) provides constraints for each dof
+     &                 n_wf_zern,wf_zern_mode, ! for optimizing WF Zernike modes
+     &                 n_optZern,varZern_arr,  ! for adjusting element Zernike modes,
+     &                                         ! has no effect when n_optZern(:)=0
+     &                 fovs,nfov,fov_wt,
+     &                 wls,nwls,
+     &                 opt_tol,tot_itrs,
+     &                 old_wfe,new_wfe,rtn_flg,
+     &                 tgt_wf_flag,tgt_wf_filename,tgt_wf_format,
+     &                 optElt,ifFEX,OptBeam)
+
+	Save
+
+	! Subroutine arguments
+        Integer :: opt_target  ! for entire WFE (WFE_TARGET), or
+                               ! for WFE Zernike modes (WFE_ZMODE_TARGET)
+	Integer :: n_wf_zern
+        Integer, dimension(:) :: wf_zern_mode
+        Logical :: start_optim
+        Integer :: n_varElt   ! number of elements to optimize
+        Integer :: tot_itrs, rtn_flg, nfov, nwls
+        Integer, dimension(:) :: elts  ! ids of elements to optimize
+        Integer, dimension(:) :: dof_arr  ! DOF to optimize, each element
+                                   ! has 8 DOFs, 0 for fixed, 1 for variable
+        Integer, dimension(:) :: n_optZern  ! no. of Zern terms of for each varElt
+        Integer, dimension(:) :: varZern_arr ! Zern term ids for each varElt
+	Real*8, dimension(:,:) :: cons_arr
+        Real*8, dimension(:,:,:) :: fovs
+        Real*8 :: fov_wt(:), wls(:), old_wfe(:,:), new_wfe(:,:)
+        Real*8 :: opt_tol
+        Integer :: optElt  ! Element id at which WF to be computed
+        Character(len=*) :: tgt_wf_filename,tgt_wf_format
+        Logical :: tgt_wf_flag,ifFEX,LCMP
+        Type(OptBeamStr) :: OptBeam
+
+	! SLSQP related local variables (bound-constrained only:
+	! m=0 nonlinear/linear constraints, meq=0 equality).  Workspace
+	! sizing follows the formula in slsqp_optmz.f comment header
+	! with N1=MAXVAR+1, MINEQ=2*N1.
+	Integer, parameter :: m_sls=0, meq_sls=0, la_sls=1,
+     &                        N1_sls=MAXVAR+1, MINEQ_sls=2*N1_sls,
+     &                        lenw=(3*N1_sls+m_sls)*(N1_sls+1)
+     &                             + (N1_sls-meq_sls+1)*(MINEQ_sls+2)
+     &                             + 2*MINEQ_sls
+     &                             + (N1_sls+MINEQ_sls)*(N1_sls-meq_sls)
+     &                             + 2*meq_sls + N1_sls
+     &                             + N1_sls*MAXVAR/2
+     &                             + 2*m_sls + 3*MAXVAR + 3*N1_sls + 1,
+     &                        leniw=MAX(MINEQ_sls, N1_sls)
+	Integer :: len_a,iw(leniw),mode,slsqp_iter
+	Real*8 :: C2MM
+	! SLSQP internal-state vars (must be allocated by caller; opaque)
+	Real*8 :: alpha,f0,gs,h1,h2,h3,h4,t,t0,tol_sls
+	Integer :: iexact,incons,ireset,itermx,line,n1_dyn,n2_dyn,n3_dyn
+	! Bounds + dummies for c, a (unused since m=0)
+	Real*8 :: bl(MAXVAR),bu(MAXVAR),
+     &            cval_sls(la_sls),amat_sls(la_sls,MAXVAR+1),
+     &            grad(MAXVAR+1),work(lenw)
+        Real*8 :: objf
+        ! Per-DOF scaling so SLSQP sees bounds of order 1 and a
+        ! gradient with matching magnitude.  Without this, macos's
+        ! native scales (tip/tilt in radians, translations in mm,
+        ! etc.) combined with the 1e-9 finite-difference step produce
+        ! gradients of order 1e5 against bounds of order 1e-4, and
+        ! SLSQP's internal QP solver returns a zero step.  See
+        ! slsqp/README.md Phase 4b.
+        Real*8 :: scale_sls(MAXVAR),
+     &            bl_scl(MAXVAR), bu_scl(MAXVAR),
+     &            aparams_scl(MAXVAR), grad_scl(MAXVAR+1)
+        Integer :: i_sls
+
+	! Other local variables
+	Real*8, save :: dtt,dx,dp,dc,drc,dcc,dz,wfe_rms,wfe_rms_old(12,6)
+	Real*8, dimension(:), allocatable :: aparams,tmpda,sig
+	Integer :: i,j,k,iElt,idof,off,ios,ifov,iwl,m_err_rtn
+	Logical, save :: first_entry = .true.
+
+	! ---------  Execution starts  -----------
+	If (n_varElt .le. 0) Then
+          WRITE(*,*)'** Error in slsqp_optim_dvr: n_varElt=',n_varElt
+          stop
+        End If
+
+	rtn_flg=0  ! default value, indicating normal return
+        tgt_wf_funit=10  ! default WF file unit
+
+        opt_tgt_m=opt_target
+        if (opt_tgt_m==WFE_ZMODE_TARGET) then
+          n_wf_zern_m=n_wf_zern
+          wf_zern_mode_m(1:n_wf_zern)=wf_zern_mode(1:n_wf_zern)
+        end if
+        nfov_m=nfov; fovs_m= fovs
+        nwls_m=nwls; wls_m(1:6)=wls(1:6)
+        optElt_m=optElt; ifFEX_m=ifFEX
+
+	If (ifFEX) Then
+          if (ifStopSet) then
+            StopVec = StopPos
+          else
+            ! Must compute system stop before design optimization
+            WRITE(*,*)' '
+            WRITE(*,*) ' ** Must set System Stop before optimization.'
+            rtn_flg=1
+            return
+          end if
+        End If
+
+	! At the beginning of each design optimization, the current
+        ! optical state will be saved as sort of "nominal" state, and
+        ! the calibrated parameter array "aparams" (which in fact is the
+        ! deviation amounts from initial optical state) will be initialized
+        ! to zero. The following statement makes sure the initial optical
+        ! state is saved in smacos_compute_perturbed routine.
+        start_curr_optim=start_optim
+
+	If (first_entry) Then
+	  C2MM=CBM*1d3  ! C2MM=conversion_factor to mm, CBM defined in elt_mod.F
+          dtt = 1e-9       ! 1 nrad, differential for tip and tilt
+          dx = 1d-5/C2MM   ! 10 nm, differential for dx and dy
+          dp = 2d-5/C2MM   ! 20 nm, differential for piston
+          dc = 1d-4        ! 0.1 mrad, differential for clock
+          drc = 1d-4/C2MM  ! 0.1 um, differential for ROC
+          dcc = 1d-04      ! differential for conic constant
+          dz = 2d-6/C2MM   ! 2 nm, differential for Zernike coeff
+          first_entry=.false.
+        End If  ! first_entry
+
+        opd_size = (mdttl/2)*(mdttl/2)
+
+	If (opt_tgt_m==WFE_TARGET) Then
+          obj_size=opd_size
+          tot_objfun_size = (opd_size+mBeamOff)*nfov*nwls
+        Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
+          obj_size=n_wf_zern_m
+          tot_objfun_size=(n_wf_zern_m+mBeamOff)*nfov*nwls
+        Else
+          obj_size=0
+          tot_objfun_size=mBeamOff*nfov*nwls
+          !print*,'np_: tot_objfun_size=',tot_objfun_size
+        End If
+
+	allocate(objfun_nom(tot_objfun_size),
+     &           elt_arr_m(size(elts)),dof_arr_m(size(dof_arr)),
+     &           OPDm(opd_size),ZCoefm(n_wf_zern),PIXm(mPix*mPix),
+!    &           SPOTm(2,nRay),OPDMat_m(mpts/2,mpts/2),
+     &           SPOTm(2,nRay),OPDMat_m(mpts,mpts),
+     &           stat=m_err_rtn)
+        if (m_err_rtn /= 0)
+     &      call macos_memory_failure
+     &             ('slsqp_optim_dvr-1: allocate failed!')
+        n_elts = n_varElt; elt_arr_m = elts; dof_arr_m = dof_arr
+
+	allocate(n_optZern_m(n_elts))
+        n_optZern_m=n_optZern
+        j=0
+        Do iElt=1,n_elts
+          j=j+n_optZern(iElt)
+        End Do
+        if (j>0) then
+          allocate(varZern_arr_m(j),stat=m_err_rtn)
+          if (m_err_rtn /= 0)
+     &      call macos_memory_failure
+     &             ('nls_optim_dvr-2: allocate failed!')
+        end if
+        if (.not. allocated(varZern_arr_m))
+     &      allocate(varZern_arr_m(1))    ! 1-elem dummy when j=0
+        varZern_arr_m=varZern_arr
+
+        ! Aspheric arrays -- original design_cons_optim.F never
+        ! allocated these (bug); smacos_compute_perturbed_np indexes
+        ! n_optAsph_m and varAsph_arr_m so they need at least dummy
+        ! 1-elem allocations.  Until we expose aspheric optimization
+        ! through CALIB (Phase 5+), these stay zero.
+        if (.not. allocated(n_optAsph_m))
+     &      allocate(n_optAsph_m(n_elts))
+        n_optAsph_m = 0
+        if (.not. allocated(varAsph_arr_m))
+     &      allocate(varAsph_arr_m(1))
+        varAsph_arr_m = 0
+
+        ! Find DOFs to calibrate and define da
+        ! len_a = number of DOFs to calibrate
+        allocate(tmpda(n_varElt*(mVarDOF_sls+mOptZern_sls)))
+        len_a=0; k=1
+        !
+        Do iElt=1, n_elts
+          Do idof=1,mVarDOF_sls
+            if (dof_arr(k)>0) then
+              len_a=len_a+1
+              if (idof==1 .or. idof==2) then
+                tmpda(len_a) = dtt
+              else if (idof==3) then
+                tmpda(len_a) = dc
+              else if (idof==4 .or. idof==5) then
+                tmpda(len_a) = dx
+              else if (idof==6) then
+                tmpda(len_a) = dp
+              else if (idof==7) then
+                tmpda(len_a) = drc  ! ROC
+              else
+                tmpda(len_a) = dcc  ! Conic
+              end if
+            end if
+
+	    ! Set bl, bu from cons_arr
+	    bl(k)=cons_arr(1,k); bu(k)=cons_arr(2,k)
+            k=k+1
+          End Do
+          ! add zern for this varElt
+          Do idof=1,n_optZern(iElt)
+            len_a=len_a+1
+            tmpda(len_a)=dz
+          End Do
+        End Do
+	If (len_a>MAXVAR) Then
+	  WRITE(*,*)'**slsqp_optim_dvr: Number of variables exceeds limit (100)'
+	  WRITE(*,*)'  Optimizer quiting ...'
+    	  rtn_flg=1
+          return
+	End If
+	!
+	allocate(aparams(len_a),da(len_a),sig(tot_objfun_size),
+     &           stat=m_err_rtn)
+        if (m_err_rtn /= 0)
+     &      call macos_memory_failure
+     &             ('slsqp_optim_dvr-3: allocate failed!')
+	da=tmpda(1:len_a)
+
+	! Define nominal target values
+        If (.not. tgt_wf_flag) Then
+          objfun_nom = 0d0 ! for design optimization, target WF default to 0
+
+          ! OptBeam currently only for single FOV and wavelength
+          off=1
+          if (OptBeam_m%ifOptBeamDir) then
+            ! initialize nominal beam direction for beamDirElt
+            objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamDir
+            off=off+3
+          end if
+          if (OptBeam_m%ifOptBeamPos) then
+            ! initialize nominal beam position for beamPosElt
+            objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamPos
+!           print*,'nls_: OptBeam_m%nomBeamPos(1:3)=',
+!    &          OptBeam_m%nomBeamPos(1:3)
+!           print*,'objfun_nom(1:3)=',objfun_nom(1:3)
+          end if
+        Else
+	  if (nwls>1) then
+            ! tgt_wf currently not supported for multiple wavelengths
+            WRITE(*,*) ' User-specified target WF not supported'//
+     &                 ' yet for multiple wavelengths'
+            return
+          end if
+          ! Use user provided target WF
+          If (LCMP(tgt_wf_format,'B',1)) Then
+            ! binary format
+            Open(Unit=tgt_wf_funit,
+     &           File=tgt_wf_filename,form='unformatted',
+     &           status='OLD',iostat=ios)
+            if (ios /= 0) then
+              WRITE(*,*)' Open binary WF file failed, filename= ',
+     &                  tgt_wf_filename
+              rtn_flg=1
+              go to 100
+            end if
+            Do ifov=1,nfov
+              Do j=1,mdttl/2
+                READ(tgt_wf_funit)
+     &            (objfun_nom((ifov-1)*opd_size+(j-1)*mdttl/2+i),
+     &             i=1,mdttl/2)
+              End Do
+            End Do
+          Else
+            ! ascii format
+            Open(Unit=tgt_wf_funit,
+     &           File=tgt_wf_filename,form='formatted',
+     &           status='OLD',iostat=ios)
+            if (ios /= 0) then
+              WRITE(*,*)' Open ascii WF file failed, filename= ',
+     &                  tgt_wf_filename
+              rtn_flg=1
+              go to 100
+            end if
+            Do ifov=1,nfov
+              Do j=1,mdttl/2
+                READ(tgt_wf_funit,*)
+     &            (objfun_nom((ifov-1)*opd_size+(j-1)*mdttl/2+i),
+     &             i=1,mdttl/2)
+              End Do
+            End Do
+          End If
+	  close(tgt_wf_funit)
+        End If  ! target WF
+
+	! Define weighting for fov: sig=1/sqrt(fov_weight)
+        j=1  ! sig=1d0
+        Do iwl=1,nwls
+          Do ifov=1,nfov
+            if (abs(fov_wt(ifov))<1d-10) then
+              sig(j:j+(obj_size+mBeamOff)-1)=1d0/sqrt(1d-10)
+            else
+              sig(j:j+(obj_size+mBeamOff)-1)=1d0/sqrt(abs(fov_wt(ifov)))
+            end if
+            j=j+obj_size+mBeamOff
+          End Do
+        End Do
+
+	aparams=0d0   ! default initial values for calibrated paramtersa
+
+	If (tot_itrs.ge.0) then
+          ifCalcOPD=.true.
+        Else
+          ifCalcOPD=.false.  ! restoring pre-optimization state only
+          ifov=1; iwl=1
+          Call smacos_compute_perturbed_np(OPDm,ZCoefm,SPOTm,
+     &      SpotSizem,PIXm,
+     &      wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &      n_optZern,varZern_arr_m,n_optAsph_m,varAsph_arr_m,
+     &      fovs(:,:,ifov),wls(iwl),aparams)
+          goto 100
+          ! tot_itrs negative means this round is for restoring the
+          ! state prior to optimization, by calling smacos_compute_perturbed()
+          ! with a=0.
+        End If
+
+        WRITE(*,*)' '
+        WRITE(*,*)'Starting MACOS Constrained System Optimization  ...'
+        WRITE(*,*)
+     &    'Number of rays used for optimization =',opt_npts*opt_npts
+        WRITE(*,*)' '
+
+	! Compute WFE with initial state
+        old_wfe=0d0
+        Do iwl=1,nwls
+          Do ifov=1,nfov
+            Call smacos_compute_perturbed_np(OPDm,ZCoefm,SPOTm,
+     &        SpotSizem,PIXm,
+     &        wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &        n_optZern,varZern_arr_m,n_optAsph_m,varAsph_arr_m,
+     &        fovs(:,:,ifov),wls(iwl),aparams)
+            old_wfe(ifov,iwl)=wfe_rms
+            wfe_rms_old(ifov,iwl)=wfe_rms
+          End Do
+          WRITE(*,*)'Initial RMS WFE =', old_wfe(1:nfov,iwl)
+          WRITE(*,*)' '
+        End Do
+
+	! Debugging only
+	if (.false.) then
+  	  print*,'len_a =',len_a
+	  print*,'bl =',bl(1:len_a)
+	  print*,'bu =',bu(1:len_a)
+	  print*,'leniw, lenw =',leniw,lenw
+	  stop
+	end if
+
+        ! --------------------- Call SLSQP ----------------------------
+	! Reverse-communication loop: SLSQP returns with mode telling
+	! caller what to compute (function/gradient).  See slsqp_optmz.f
+	! header for the mode protocol.
+	mode = 0          ! initialization
+	slsqp_iter = tot_itrs
+	cval_sls = 0d0
+	amat_sls = 0d0
+	! Internal state vars must start zero -- slsqp doesn't always
+	! initialize them on mode=0 entry, and convergence checks
+	! reference `f0` etc.  Uninitialized stack memory there can
+	! make the optimizer "converge" on the first call.
+	alpha = 0d0
+	f0 = 0d0
+	gs = 0d0
+	h1 = 0d0; h2 = 0d0; h3 = 0d0; h4 = 0d0
+	t = 0d0; t0 = 0d0; tol_sls = 0d0
+	iexact = 0
+	incons = 0
+	ireset = 0
+	itermx = 0
+	line = 0
+	n1_dyn = 0; n2_dyn = 0; n3_dyn = 0
+	work = 0d0
+	iw = 0
+	! Pre-fill f, g at the initial x.  SLSQP's mode=0 ENTRY
+	! contract is "F,G,C,A already evaluated"; without this the
+	! optimizer sees objf=0 on first call and returns immediately
+	! thinking it's converged.
+	Call slsqp_funcobj(0, len_a, aparams, objf, grad, 0)
+
+	! Build per-DOF scaling so the SLSQP-visible variables are O(1).
+	! Scale s_i = 1 / max(|bl_i|, |bu_i|, eps) makes bl_scl, bu_scl
+	! land in roughly [-1, 1].  Gradient transforms as
+	!   g_scl = g / s_i      (since d/d(x_scl) = d/dx * (1/s_i))
+	! and the user-visible aparams is recovered from
+	!   aparams = aparams_scl / s_i.
+	! Without this, macos's native scales (rad/mm/etc.) combined with
+	! the 1e-9 FD step give g of order 1e5 against bounds of order
+	! 1e-4 and SLSQP's QP solver returns s=0.
+	Do i_sls = 1, len_a
+	  scale_sls(i_sls) = 1d0 / MAX(ABS(bl(i_sls)),
+     &                                 ABS(bu(i_sls)), 1d-12)
+	  bl_scl(i_sls) = bl(i_sls) * scale_sls(i_sls)
+	  bu_scl(i_sls) = bu(i_sls) * scale_sls(i_sls)
+	  aparams_scl(i_sls) = aparams(i_sls) * scale_sls(i_sls)
+	  grad_scl(i_sls) = grad(i_sls) / scale_sls(i_sls)
+	End Do
+	! grad has one extra (augmented) slot at index n+1
+	grad_scl(len_a+1) = grad(len_a+1)
+
+	DO
+	  Call slsqp(m_sls, meq_sls, la_sls, len_a,
+     &               aparams_scl, bl_scl, bu_scl,
+     &               objf, cval_sls, grad_scl, amat_sls,
+     &               opt_tol, slsqp_iter, mode,
+     &               work, lenw, iw, leniw,
+     &               alpha, f0, gs, h1, h2, h3, h4, t, t0, tol_sls,
+     &               iexact, incons, ireset, itermx, line,
+     &               n1_dyn, n2_dyn, n3_dyn)
+
+	  ! Always unscale aparams_scl -> aparams for funcobj / final.
+	  Do i_sls = 1, len_a
+	    aparams(i_sls) = aparams_scl(i_sls) / scale_sls(i_sls)
+	  End Do
+
+	  IF (mode .EQ. 0) EXIT             ! converged
+	  IF (mode .EQ. 1 .OR. mode .EQ. -1) THEN
+	    ! mode=1 requests f (+c), mode=-1 requests g (+a).
+	    ! slsqp_funcobj computes both in original units; rescale.
+	    Call slsqp_funcobj(mode, len_a, aparams, objf, grad, 0)
+	    Do i_sls = 1, len_a
+	      grad_scl(i_sls) = grad(i_sls) / scale_sls(i_sls)
+	    End Do
+	    grad_scl(len_a+1) = grad(len_a+1)
+	  ELSE IF (mode .GT. 1) THEN
+	    ! Failure code.  See SLSQP mode comments in slsqp_optmz.f.
+	    WRITE(*,*)' *** SLSQP returned failure mode =', mode
+	    rtn_flg = mode
+	    EXIT
+	  END IF
+	END DO
+	tot_itrs = slsqp_iter
+	WRITE(*,*)' '
+        ! -------------------------------------------------------------
+
+	! Apply optimized state to current system and get OPD
+        Do iwl=1,nwls
+          Do ifov=1,nFov
+            Call smacos_compute_perturbed_np(OPDm,ZCoefm,SPOTm,
+     &              SpotSizem,PIXm,
+     &              wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &              n_optZern,varZern_arr_m,n_optAsph_m,varAsph_arr_m,
+     &              fovs(:,:,ifov),wls(iwl),aparams)
+            new_wfe(ifov,iwl)=wfe_rms
+            !WRITE(*,*)'ifov=',ifov,' Optimized WFE = ', new_wfe(ifov,iwl)
+          End Do
+        End Do
+
+	If (opt_tgt_m==WFE_ZMode_TARGET) Then
+          WRITE(*,*)' '
+          WRITE(*,*)'Final Zernike modes:'
+          Call zern_modes_coef(OPDMat_m,wf_zern_mode(1:n_wf_zern),
+     &                         ZCoefm,4)
+        End If
+
+ 100	continue
+
+	deallocate(objfun_nom,elt_arr_m,dof_arr_m,aparams,da,tmpda,
+     &             OPDm,ZCoefm,PIXm,SPOTm,OPDMat_m)
+        if (allocated(n_optZern_m)) deallocate(n_optZern_m)
+        if (allocated(varZern_arr_m)) deallocate(varZern_arr_m)
+        if (allocated(n_optAsph_m)) deallocate(n_optAsph_m)
+        if (allocated(varAsph_arr_m)) deallocate(varAsph_arr_m)
+	End Subroutine slsqp_optim_dvr
+
+C *********************************************************************************
+
+	! Calc objective function and gradient vector for npsol
+	Subroutine slsqp_funcobj(mode,n,a,obf,grd,nstat)
+	Integer :: mode,n,nstat
+	Real*8 :: a(n),obf,grd(n) ! n=size(a)
+
+! obf = objective function
+!       For WFE_TARGET, its value is the 2-norm of difference between
+!       current WF and target WF.
+!       For WFE_ZMODE_TARGET, its value is the 2-norm of Zernike coefs
+!       being optimized.
+!       For BEAM_TARGET, its value is the 2-norm of difference between
+!       current beam dir/pos and target beam dir/pos values.
+!       When optimizing on both WF and BEAM, obf is combination of each target obf.
+!
+! grd = gradient vector of objective function
+!       Its dimension is n by 1, where n is size(a), a = vector of calibrated
+!       parameters. The i-th element of grd = d(obf)/d(a_i), computed with
+!       finite difference.
+
+	! Local variables
+	Real*8, dimension(size(a)) :: a2
+        Real*8 :: wfe_rms,yfit(size(objfun_nom)),obfp
+        Integer :: size_a,ifov,iwl,off,off2,i
+
+	size_a = size(a)
+
+	! Compute obf - objective function
+	obf=0d0; off=1
+	Do iwl=1,nwls_m
+          Do ifov=1,nfov_m
+            Call smacos_compute_perturbed_np(OPDm,ZCoefm,SPOTm,
+     &             SpotSizem,PIXm,
+     &             wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &             n_optZern_m,varZern_arr_m,n_optAsph_m,varAsph_arr_m,
+     &             fovs_m(:,1:2,ifov),wls_m(iwl),a)
+
+	    If (opt_tgt_m==WFE_TARGET) Then
+              yfit(off:off+opd_size-1)=OPDm(1:opd_size)
+	      if (.not. OptBeam_m%ifOptBeamDir) then
+                off=off+opd_size
+              else
+                off=off+opd_size; off2=1
+                if (OptBeam_m%ifOptBeamDir) then
+                  yfit(off+off2:off+off2+2)=beamDir_m(1:3)
+                  off2=off2+3
+                end if
+                if (OptBeam_m%ifOptBeamPos) then
+                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
+                end if
+                off=off+mBeamOff
+              end if
+	    Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
+              yfit(off:off+n_wf_zern_m-1)=ZCoefm(1:n_wf_zern_m)
+              if (.not. OptBeam_m%ifOptBeamDir) then
+                off=off+obj_size
+              else
+                off=off+obj_size; off2=1
+                if (OptBeam_m%ifOptBeamDir) then
+                  yfit(off+off2:off+off2+2)=beamDir_m(1:3)
+                  off2=off2+3
+                end if
+                if (OptBeam_m%ifOptBeamPos) then
+                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
+                end if
+                off=off+mBeamOff
+              end if
+	    Else
+	      off=1
+              if (OptBeam_m%ifOptBeamDir) then
+                yfit(off:off+2)=beamDir_m(1:3)
+                off=off+3
+              end if
+              if (OptBeam_m%ifOptBeamPos) then
+                yfit(off:off+2)=beamPos_m(1:3)
+                off=off+3
+              end if
+	    End If
+	  End Do
+	End Do
+	!
+	! Calc scalar obf
+        yfit=yfit-objfun_nom
+        obf=DDOTN(yfit,yfit,size(yfit))
+
+	! Now compute grd ( = d(obf)/da )
+        Do i=1, size_a
+	  a2=a; a2(i)=a2(i)+da(i)
+          off=1
+          Do iwl=1,nwls_m
+            Do ifov=1,nfov_m
+	      Call smacos_compute_perturbed_np(OPDm,ZCoefm,SPOTm,
+     &          SpotSizem,PIXm,
+     &          wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &          n_optZern_m,varZern_arr_m,n_optAsph_m,varAsph_arr_m,
+     &          fovs_m(:,1:2,ifov),wls_m(iwl),a2)
+
+	      If (opt_tgt_m==WFE_TARGET) Then
+                yfit(off:off+opd_size-1)=OPDm(1:opd_size)
+                if (.not. OptBeam_m%ifOptBeamDir) then
+                  off=off+opd_size
+                else
+                  off=off+opd_size; off2=1
+                  if (OptBeam_m%ifOptBeamDir) then
+                    yfit(off+off2:off+off2+2)=beamDir_m(1:3)
+                    off2=off2+3
+                  end if
+                  if (OptBeam_m%ifOptBeamPos) then
+                    yfit(off+off2:off+off2+2)=beamPos_m(1:3)
+                  end if
+                  off=off+mBeamOff
+                end if
+	      Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
+	        yfit(off:off+obj_size-1)=ZCoefm(1:obj_size-1)
+                if (.not. OptBeam_m%ifOptBeamDir) then
+                  off=off+obj_size
+                else
+                  off=off+opd_size; off2=1
+                  if (OptBeam_m%ifOptBeamDir) then
+                    yfit(off+off2:off+off2+2)=beamDir_m(1:3)
+                    off2=off2+3
+                  end if
+                  if (OptBeam_m%ifOptBeamPos) then
+                    yfit(off+off2:off+off2+2)=beamPos_m(1:3)
+                  end if
+                  off=off+mBeamOff
+                end if
+	      Else
+		off=1
+                if (OptBeam_m%ifOptBeamDir) then
+                  yfit(off:off+2)=beamDir_m(1:3)
+                  off=off+3
+                end if
+                if (OptBeam_m%ifOptBeamPos) then
+                  yfit(off:off+2)=beamPos_m(1:3)
+                  off=off+3
+                end if
+	      End If
+	    End Do
+	  End Do
+
+	  ! Calc grd
+          yfit=yfit-objfun_nom
+          obfp=DDOTN(yfit,yfit,size(yfit)) ! perturbed obf
+          grd(i)=(obfp-obf)/da(i)
+	End Do  ! do size_a
+	End Subroutine slsqp_funcobj
+
+
+	! (NPSOL's npsol_funcon stub dropped -- SLSQP doesn't take a
+	! constraint callback in the reverse-comm interface; constraint
+	! values for nonlinear constraints would be filled directly into
+	! cval_sls / amat_sls in the driver loop.  m=0 here so unused.)
+
+
+C *********************************************************************************
+
+#undef NLS_OPT
+#define NP_OPT
+#define mVarDOF_np mVarDOF_sls
+#define mOptZern_np mOptZern_sls
+#define mOptAsph_np mOptAsph_sls
+#include "smacos_compute.inc"
+#undef mVarDOF_np
+#undef mOptZern_np
+#undef mOptAsph_np
+
+C *********************************************************************************
+C setbeam.inc currently calls NPSOL directly (Verify level / npoptn /
+C npsol).  Rewriting it for SLSQP reverse-comm is Phase 3 follow-up
+C work -- left out of the SLSQP variant for now so the main constrained
+C path compiles standalone.  Until then, BEAM_TARGET CALIB still works,
+C it just skips the initial source-alignment refinement that setbeam
+C provides on the NPSOL path.
+C #include "setbeam.inc"
+
+ 	End Module design_slsqp_optim_mod

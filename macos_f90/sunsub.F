@@ -153,13 +153,19 @@ C
       Integer :: NTOT,N,NREM,IP1,IP2,IP3,I2REV,I3REV,
      &           I1,I2,I3,IBIT,IFP1,IFP2,K1,K2,IDIM,NPREV
       Integer :: SzData,m_err_rtn,i,j,k
-      Logical, save :: first_entry=.true.
 
-      If (first_entry) Then
-	SzData=2
-	Do i=1,NDIM
-	  SzData=SzData*NN(i)
-	End Do
+      ! Always compute the required size for THIS call -- DATA gets
+      ! reallocated whenever the buffer is missing or too small.
+      ! Previous logic gated on a `first_entry` SAVE'd LOGICAL, which
+      ! kept the buffer at its FIRST-CALL size forever; subsequent
+      ! init(new_size) calls then drove DSWAP2/DFOURN past the end
+      ! of that buffer.  See PLAN.md §0.
+      SzData=2
+      Do i=1,NDIM
+        SzData=SzData*NN(i)
+      End Do
+      If (.not. allocated(DATA) .or.
+     &    (allocated(DATA) .and. size(DATA) < SzData)) Then
 	if (allocated(DATA)) then
 	  deallocate(DATA,stat=m_err_rtn)
 	  if (m_err_rtn /= 0)
@@ -170,7 +176,6 @@ C
 	if (m_err_rtn /= 0)
      &    call macos_memory_failure
      &               ('DFOURN: allocate failed!')
-	first_entry=.false.
       End If
 
       k=1; DATA=0d0
@@ -822,8 +827,9 @@ C On-screen display
         use smacosio_mod
 #else
         use macosio_mod
-	use pgplot_mod
+	
 #endif
+        use pgplot_mod
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE
 	CHARACTER*1 TAB
 	CHARACTER*82 SCR
@@ -921,9 +927,9 @@ C Render in pgplot window
         use smacosio_mod
 #else
         use macosio_mod
-	use pgplot_mod
+	
 #endif
-
+        use pgplot_mod
 	!CHARACTER*(*) CXLABL,CYLABL,CTITLE
 	CHARACTER(len=*) :: CXLABL,CYLABL,CTITLE
 	CHARACTER*1 TAB

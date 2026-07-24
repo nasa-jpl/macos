@@ -1,0 +1,5929 @@
+! macos_api_mod.F -- language-neutral pymacos backbone
+!
+! Auto-derived from pymacos.f90 by /tmp/gen_pymacos_refactor.py.
+! Strips f2py annotation comments and renames the module from `api`
+! to `macos_api_mod`.  The Python-facing wrapper module lives in
+! pymacos_f2py.f90 and re-exports these routines under `module api`
+! so the f2py import path `pymacos.lib.api.*` is preserved.
+
+  module macos_api_mod
+    use Kinds
+    use math_mod
+    use param_mod
+    use src_mod
+    use elt_mod
+    use macos_mod
+    use smacos_mod
+    use sysprop_mod
+
+    implicit none
+
+    logical, parameter :: PASS = 1    ! logic Python / Fortran
+    logical, parameter :: FAIL = 0
+
+    real(8), dimension(:,:), allocatable, save :: PixArray, OPDMat, RaySpot, SPOT
+    real(8), dimension(:),   allocatable, save :: OPD, PIX, USER
+
+    logical, save      :: firstEntry=.true.
+    logical, save      :: rxLoaded=.false.
+
+    ! These are the SMACOS call-line variables:
+    ! TODO: change len=256 to len=max_cmd_len
+    character(len=256)  :: command
+    integer,parameter   :: MARG=9
+    character(len=256)  :: CARG(MARG)
+    real(8)             :: DARG(MARG)
+    integer             :: IARG(MARG)
+    logical             :: LARG
+    real(8)             :: RARG(MARG),RMSWFE
+
+    ! Pt. Source
+    real(8), parameter  :: zSourceMax = 1d10
+
+    contains
+
+      integer function currrent_macos_model_size()
+        implicit none
+        if (firstEntry) then
+          currrent_macos_model_size = -1
+        else
+          currrent_macos_model_size = macos_model_size
+        end if
+      end function currrent_macos_model_size
+
+
+    !=============================================================================================
+    !
+    ! Model & Optical System Setup
+    !
+    !---------------------------------------------------------------------------------------------
+    !      [SMACOS]: modified_rx
+    ! --------------------------------------------------------------------------------------------
+    !      [Source]: set/get_src_info
+    !      [Source]: set/get_src_sampling
+    !      [OptSys]: stop_info_get
+    !      [OptSys]: stop_info_set
+    !      [OptSys]: xp_fnd
+    !      [ ] prb_elt
+    !      [ ] prb_elt_grp
+    !=============================================================================================
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Submit a Rx modified cmd. to SMACOS to reset ray-trace dependent parameters, which
+      !            is recommended after a Rx modification, i.e., perturbElt, setVptElt, ...
+      ! Call     : CALL modified_rx(OK,XP)
+      ! Input    : ---
+      ! Output   : ok   [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      ! Require  : Rx loaded
+      !---------------------------------------------------------------------------------------------
+      subroutine modified_rx(ok)
+
+        implicit none
+        logical, intent(out):: ok
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'MODIFY'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ok = PASS
+
+      end subroutine modified_rx
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Apply 6-DoF rigid body perturbation to selected elements defined by iElt
+      !---------------------------------------------------------------------------------------------
+      !   ifGlobal [Nx1]: (1=True ):Global Coordinate Frame
+      !                   (0=False):Local Element Coordinate Frame  (must be defined in Rx)
+      !   prb      [6xN]: Rigid Body Perturbation Matrix
+      !                   = [[Rx,Ry,Rz,Tx,Ty,Tz]_1;...;[Rx,Ry,Rz,Tx,Ty,Tz]_N]
+      !                   Rotation    Vector: R = [Rx,Ry,Rz]_i
+      !                   Translation Vector: T = [Tx,Ty,Tz]_i
+      !---------------------------------------------------------------------------------------------
+      subroutine prb_elt(OK,iElt,prb,ifGlobal,n)
+
+        implicit none
+        logical,                 intent(out):: OK        ! (True) if successful; (False) otherwise
+        integer, dimension(n),   intent(in) :: iElt      ! ID (Range: -nElt < iElt[i,j] <= nElt)
+        real(8), dimension(6,n), intent(in) :: prb
+        integer, dimension(n),   intent(in) :: ifGlobal
+
+        integer,                 intent(in) :: n         ! Number of different elements to be updated
+
+        integer :: i
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check: if local coordinate frame selected -- is it defined?
+        if (.not. all(((ifGlobal==0) .and. (nECoord(iElt)>0)) .or. (ifGlobal==1))) return
+
+        ! loop over different perturbation settings
+        do i=1,n
+
+          command = 'PERTURB'
+          IARG(1) = iElt(i)
+          if (ifGlobal(i)>0) then  ! define coordinate frame: (0):Element, (1):Global
+            CARG(1) = 'GLOBAL'
+          else
+            CARG(1) = 'ELEMENT'
+          end if
+          DARG(1:6) = prb(:,i)
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        end do
+
+        OK = PASS
+
+      end subroutine prb_elt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Apply 6-DoF rigid body perturbation to selected elements identified by "EltGrp" keyword
+      ! at a given element.
+      !---------------------------------------------------------------------------------------------
+      !   ifGlobal [Nx1]: (1=True ):Global Coordinate Frame
+      !                   (0=False):Local Element Coordinate Frame  (must be defined in Rx)
+      !   prb      [6xN]: Rigid Body Perturbation Matrix
+      !                   = [[Rx,Ry,Rz,Tx,Ty,Tz]_1;...;[Rx,Ry,Rz,Tx,Ty,Tz]_N]
+      !                   Rotation    Vector: R = [Rx,Ry,Rz]_i
+      !                   Translation Vector: T = [Tx,Ty,Tz]_i
+      !---------------------------------------------------------------------------------------------
+      subroutine prb_elt_grp(OK,iElt,prb,ifGlobal,n)
+
+        implicit none
+        logical,                 intent(out):: OK        ! (True) if successful; (False) otherwise
+        integer, dimension(n),   intent(in) :: iElt      ! ID (Range: -nElt < iElt[i,j] <= nElt)
+        real(8), dimension(6,n), intent(in) :: prb
+        logical, dimension(n),   intent(in) :: ifGlobal
+
+        integer,                 intent(in) :: n         ! Number of different elements to be updated
+
+        integer :: i
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check: if local coordinate frame selected -- is it defined?
+        if (.not. all(((.not. ifGlobal) .and. (nECoord(iElt)>0)) .or. ifGlobal)) return
+
+        ! check: if Element Group(s) are defined at all defined element(s)
+        if (any(EltGrp(0, iElt)==0)) return
+
+        ! loop over different perturbation settings
+        do i=1,n
+
+          ! loop over identical perturbation settings
+          command   = 'GPERTURB'
+          IARG(1)   = iElt(i)
+          if (ifGlobal(i)) then  ! define coordinate frame: (0):Element, (1):Global
+            CARG(1) = 'GLOBAL'
+          else
+            CARG(1) = 'ELEMENT'
+          end if
+          DARG(1:6) = prb(:,i)
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        end do
+
+        OK = PASS
+
+      end subroutine prb_elt_grp
+
+
+
+    !=============================================================================================
+    !
+    ! Source
+    !
+    !=============================================================================================
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Set Source Coordinate Frame with Chf. Ray Direction as z-Axis.
+      !
+      ! Call     : CALL set_src_csys(ok,xDir,yDir,zDir,Axis,xAxis,Rz,filter)
+      ! Input    : Axis   [3x1,D   ]: = [L,M,N] => x- or y-Axis expressed in GCF (1 = L^2+M^2+N^2 )
+      !            xAxis  [1x1,I(1)]: if set (/=0), Axis == x-Axis; otherwise, y-Axis
+      !            Rz     [1x1,D   ]: [rad] Rot. mag. for post. rot. about zDir = zGrid = ChfRayDir
+      !            filter [1x1,I(1)]: if set (/=0), set to 0 if -eps < axis dir. cosine values  < eps
+      ! Output   : ok     [1x1,B   ]: = (True) if successful; (False) otherwise
+      !            xDir   [3x1,D]: = [Lx,Ly,Lz] => Src. Coord. Frame:  x-axis expressed in GCF
+      !            yDir   [3x1,D]: = [Mx,My,Mz] => Src. Coord. Frame:  y-axis expressed in GCF
+      !            zDir   [3x1,D]: = [Nx,Ny,Nz] => Src. Coord. Frame:  z-axis expressed in GCF
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- GCF => Global Coordinate Frame
+      !            -- zDir <= ChfRayDir
+      !            -- will orthonormalize:
+      !                 if xAxis yDir <= cross(zDir,xDir)   else   xDir <= cross(yDir,zDir)
+      !                          xDir <= cross(yDir,zDir)          yDir <= cross(zDir,xDir)
+      !            -- rotation will be applied afterwards about zGrid = ChfRayDir, i.e.,
+      !                          xDir <= Rot(Rz)*xDir   and
+      !                          yDir <= Rot(Rz)*yDir
+      !---------------------------------------------------------------------------------------------
+      subroutine set_src_csys(ok,xDir,yDir,zDir,Axis,xAxis,Rz,filter)
+        use Constants, only: eps
+        use   src_mod, only: xGrid, yGrid, zGrid, ChfRayDir
+
+        implicit none
+        logical, intent(out):: ok
+        real(8), intent(out):: xDir(3),yDir(3),zDir(3)
+        real(8), intent(in) :: Axis(3)
+        logical, intent(in) :: xAxis
+        real(8), intent(in) :: Rz
+        logical, intent(in) :: filter
+
+        real(8)  :: Q(3,3), dQ(3,3)
+        logical  :: LQ
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status chk:
+        if (.not. SystemCheck()) return
+
+        ! check for null-vector
+        if (norm2(Axis)<=eps) return
+
+        ! define Src. Coord. Frame
+        zDir = ChfRayDir
+
+        ! setup Post-Rotation about zDir = zGrid = ChfRayDir
+        LQ = abs(Rz)>eps
+        if (LQ) CALL Qform(Q,dQ,zDir*Rz)   ! rot. matrix
+
+        ! set Source Coordinate Frame:
+        if (xAxis .eqv. PASS) then
+          !
+          ! xDir provided
+          !
+          xDir = Axis
+          CALL DUNITIZE(xDir)
+
+          ! yGrid <= cross(zGrid,xGrid)
+          CALL DXPROD(yDir,zDir,xDir)
+          if (norm2(yDir)<=eps) return
+
+          ! apply post rot.
+          if (LQ) yDir = matmul(Q,yDir)
+
+          ! xGrid <= cross(yGrid,zGrid)
+          if (filter) where (abs(yDir)<eps) yDir = 0e0_pr
+          CALL DUNITIZE(yDir)
+          CALL DXPROD(xDir,yDir,zDir)
+
+        else
+          !
+          ! yDir provided
+          !
+          yDir = Axis
+          CALL DUNITIZE(yDir)
+
+          ! xGrid <= cross(yGrid,zGrid)
+          CALL DXPROD(xDir,yDir,zDir)
+          if (norm2(xDir)<=eps) return
+
+          ! apply post rot.
+          if (LQ) xDir = matmul(Q,xDir)
+
+          ! yGrid <= cross(zGrid,xGrid)
+          if (filter) where (abs(xDir)<eps) xDir = 0e0_pr
+          CALL DUNITIZE(xDir)
+          CALL DXPROD(yDir,zDir,xDir)
+
+        end if
+
+        ! update actual Src. Grid
+        xGrid = xDir
+        yGrid = yDir
+        zGrid = zDir
+
+        ! return
+        ok = PASS
+
+      end subroutine set_src_csys
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Get current setting of Source Coordinate Frame (xGrid,yGrid,zGrid)
+      !
+      ! Call     : CALL get_src_csys(ok,xDir,yDir,zDir)
+      ! Input    : ---
+      ! Output   : ok     [1x1,B]: = (True) if successful; (False) otherwise
+      !            xDir   [3x1,D]: = [Lx,Ly,Lz] => x-axis expressed in GCF
+      !            yDir   [3x1,D]: = [Mx,My,Mz] => y-axis expressed in GCF
+      !            zDir   [3x1,D]: = [Nx,Ny,Nz] => z-axis expressed in GCF
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- GCF => Global Coordinate Frame
+      !---------------------------------------------------------------------------------------------
+      subroutine get_src_csys(ok,xDir,yDir,zDir)
+        use src_mod, only: xGrid,yGrid,zGrid
+
+        implicit none
+        logical,               intent(out):: ok
+        real(8), dimension(3), intent(out):: xDir, yDir, zDir
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status chk:
+        if (.not. SystemCheck()) return
+
+        ! get Src. Coord. Frame Info
+        xDir = xGrid
+        yDir = yGrid
+        zDir = zGrid
+
+        ! return
+        ok = PASS
+
+      end subroutine get_src_csys
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Set Sampling of Source, i.e., nGridPts, where nGridPts <= ModelSize   (will be limited)
+      ! Call     : CALL set_src_sampling(OK,nGridPts)
+      ! Input    : N         [1x1,I]: Source Sampling -> N = nGridPts (Sampling => nGridPts x nGridPts)
+      ! Output   : OK        [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : check if Rx is loaded
+      ! Note     : - 3 <= nGridPts <= mpts ---> limit nGridPts to (3,mpts)
+      !---------------------------------------------------------------------------------------------
+      subroutine set_src_sampling(OK,N)
+        use smacos_vars_mod, only: npts
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: N
+        ! ------------------------------------------------------
+        ! initialisation
+        OK = FAIL
+
+        ! Rx loaded
+        if (.not. SystemCheck()) return
+
+        ! Change # of Rays to be traced (wavefront sampling)
+        if (N>mpts) then
+          nGridPts = mpts
+        elseif (N<3) then
+          nGridPts = 3
+        else
+          nGridPts = N
+        end if
+        npts = nGridPts-1
+
+        command = 'MODIFY'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! return
+        OK = PASS
+
+      end subroutine set_src_sampling
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return Source Sampling setting, i.e., nGridPts.
+      ! Call     : CALL get_src_sampling(OK,nGridPts)
+      ! Input    : ---
+      ! Output   : OK    [1x1,B]: = (True) if successful; (False) otherwise
+      !            N     [1x1,I]: Source Sampling -> N = nGridPts (Sampling = N x N)
+      ! Require  : check if Rx is loaded
+      ! Note     :
+      !---------------------------------------------------------------------------------------------
+      subroutine get_src_sampling(OK,N)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: N
+
+        ! ------------------------------------------------------
+        ! initialisation
+        OK = FAIL
+        N  = 0
+
+        ! Rx loaded
+        if (.not. SystemCheck()) return
+
+        ! Change # of Rays to be traced (wavefront sampling)
+        N = nGridPts
+
+        ! return
+        OK = PASS
+
+      end subroutine get_src_sampling
+
+
+      !-------------------------------------------------------------------------------------------------------------
+      ! Purpose  : Get BaseUnit and WaveUnit
+      !------------------------------------------------------------------------------------------------------------
+      subroutine sys_units(OK, BaseUnitID, WaveUnitID)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: BaseUnitID    ! (1) 'm', (2) 'cm', (3) 'mm', (4) 'in', (0) 'none' = not set
+        integer, intent(out):: WaveUnitID    ! (1) 'm', (2) 'cm', (3) 'mm', (4) 'um', (5) 'nm', (6) 'A', (7) 'in', (9) 'none'= not set
+
+        integer, parameter :: MaxBaseUnit = 10, &
+                              MaxWaveUnit = 16
+        character(len=4), dimension(MaxBaseUnit), parameter:: BaseUnits_ = &
+            (/'m   ', 'cm  ', 'mm  ', 'in  ', 'none', &
+              'M   ', 'CM  ', 'MM  ', 'IN  ', 'NONE'/)
+        character(len=4), dimension(MaxWaveUnit), parameter:: WaveUnits_ = &
+            (/'m   ', 'cm  ', 'mm  ', 'um  ', 'nm  ', 'A   ', 'in  ', 'none', &
+              'M   ', 'CM  ', 'MM  ', 'UM  ', 'NM  ', 'A   ', 'IN  ', 'NONE'/)
+        ! ------------------------------------------------------
+        ! initialisation
+        OK         = FAIL
+        BaseUnitID = -1
+        WaveUnitID = -1
+
+        if (.not. SystemCheck()) return
+
+        do BaseUnitID=1,MaxBaseUnit
+          if (trim(BaseUnits) == trim(BaseUnits_(BaseUnitID))) exit
+        end do
+        BaseUnitID = modulo(BaseUnitID, MaxBaseUnit/2)
+
+        do WaveUnitID=1,MaxWaveUnit
+          if (trim(WaveUnits) == trim(WaveUnits_(WaveUnitID))) exit
+        end do
+        WaveUnitID = modulo(WaveUnitID, MaxWaveUnit/2)
+
+        OK = PASS
+
+      end subroutine sys_units
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Retrieve active source information: shape, position & WL
+      !
+      !               zSrc: Distance from Src. Position to Spherical wavefront position (=zSource)
+      !                     0 < |zSrc| <= 1d10: Pt. Src.: if zSrc<0 -> converging wave (to   Pt. Src.)
+      !                                                   if zSrc>0 -> diverging  wave (from Pt. Src.)
+      !                         |zSrc|  > 1d10: Col.Src.
+      !             SrcPos: if Pt. Src.: SrcPos <= ChfRayPos + zSource*SrcDir
+      !                     if Col.Src.: SrcPos <= ChfRayPos
+      !             SrcDir: Centre Beam Direction  (= ChfRayDir)
+      !            IsPtSrc: (true) if |zSource| <= 1d10; otherwise, (false)
+      !                 WL: Source Wavelength in WaveUnits
+      !           Aperture: if Pt. Src. => N.A. of beam
+      !                     if Col.Src. => Beam Diameter in BaseUnits
+      !           Obscratn: if Pt. Src. => N.A. of beam
+      !                     if Col.Src. => Beam Diameter in BaseUnits
+      !         BaseUnitID: (0) m, (1) cm, (2) mm, (3) in, (4) none  (-1) Error
+      !
+      ! Call     : CALL src_info(OK,zSource,SrcPos,SrcDir,IsPtSrcWL,SrcApe,SrcObs,BaseUnit)
+      ! Input    : ---
+      ! Output   : OK            [1x1,B]: = (True) if successful; (False) otherwise
+      !            zSrc          [1x1,D]: Distance from Src. Position to Spherical wavefront position
+      !            SrcPos        [1x3,D]: Src. Position  if Col.Src, SrcPos = ChfRayPos
+      !            SrcDir        [1x3,D]: Centre Beam Direction (= ChfRayDir)
+      !            IsPtSrc       [1x1,B]: (true=1) if |zSource| <= 1d10; otherwise, returns (false=0)
+      !            WL            [1x1,D]: Wavelength in WaveUnits
+      !            SrcApe        [1x1,D]: Ape. Beam N.A. for Pt.Src.;otherwise, Apt. == Beam Diameter
+      !            SrcObs        [1x1,D]: Obs. Beam N.A. for Pt.Src.;otherwise, Obs. == Beam Diameter
+      ! Require  : Rx loaded
+      !---------------------------------------------------------------------------------------------
+      subroutine src_info(OK,zSrc,SrcPos,SrcDir,IsPtSrc,WL,SrcApe,SrcObs,BaseUnitID,WaveUnitID)
+
+        implicit none
+        logical,               intent(out):: OK
+        real(8),               intent(out):: zSrc
+        real(8), dimension(3), intent(out):: SrcPos,SrcDir
+        logical,               intent(out):: IsPtSrc
+        real(8),               intent(out):: WL,SrcApe,SrcObs
+        integer,               intent(out):: BaseUnitID         ! (1) 'm', (2) 'cm', (3) 'mm', (4) 'in', (0) 'none' = not set
+        integer,               intent(out):: WaveUnitID         ! (1) 'm', (2) 'cm', (3) 'mm', (4) 'um', (5) 'nm', (6) 'A', (7) 'in', (9) 'none'= not set
+        ! ------------------------------------------------------
+
+        OK         = FAIL
+        zSrc       = 0e0_pr
+        SrcPos     = 0e0_pr
+        SrcDir     = 0e0_pr
+        IsPtSrc    = .false.
+        WL         = 0e0_pr
+        SrcApe     = 0e0_pr
+        SrcObs     = 0e0_pr
+        BaseUnitID = -1
+        WaveUnitID = -1
+
+        if (.not. SystemCheck()) return
+
+        ! get partial Src. Info.
+        WL      = Wavelen
+        zSrc    = zSource
+        call src_finite(OK, IsPtSrc) ! abs(zSource) <= zSourceMax
+        SrcApe  = Aperture
+        SrcObs  = Obscratn
+        SrcDir  = ChfRayDir
+        SrcPos  = ChfRayPos
+
+        if (IsPtSrc .eqv. PASS) SrcPos = SrcPos + zSource*ChfRayDir
+
+        CALL sys_units(OK, BaseUnitID, WaveUnitID)
+
+        ! return
+        OK = PASS
+
+      end subroutine src_info
+
+
+      !-------------------------------------------------------------------------------------------------------------
+      ! Retrieve active source Field-of-View (FoV) Position & Direction
+      !------------------------------------------------------------------------------------------------------------
+      subroutine get_src_fov(OK, zSrc, SrcPos, SrcDir, IsPtSrc)
+        use sourcsub_mod, only: SourcePos
+        use dopt_mod
+
+        implicit none
+        logical,               intent(out):: OK         ! PASS = if successful; (FAIL) otherwise
+        logical,               intent(out):: IsPtSrc    ! PASS if |zSource| <= 1d10; otherwise, FAIL
+        real(8),               intent(out):: zSrc       ! Distance from wavefront position to Src. Pos. (= zSource)
+        real(8), dimension(3), intent(out):: SrcPos     ! if Point Src: SrcPos = ChfRayPos + zSource*ChfRayDir
+                                                        !     Inf. Src: SrcPos = ChfRayPos
+        real(8), dimension(3), intent(out):: SrcDir     ! Centre Beam Direction (= ChfRayDir) -> will be normalized
+        ! ------------------------------------------------------
+        OK      = FAIL
+        zSrc    = 0e0_pr
+        SrcPos  = 0e0_pr
+        SrcDir  = 0e0_pr
+        IsPtSrc = FAIL
+
+        if (.not. SystemCheck()) return
+
+        ! Get FoV.
+        zSrc    = zSource
+        call src_finite(OK, IsPtSrc) ! abs(zSource) <= zSourceMax
+        SrcDir  = ChfRayDir
+        SrcPos  = ChfRayPos
+        if (IsPtSrc) SrcPos = SourcePos()  ! SrcPos + zSource*ChfRayDir
+
+        ! Return
+        OK = PASS
+
+        ! needed because python interprets Fortran(True) = -1 and Fortran(False) = 0
+        if (IsPtSrc) then
+        	 IsPtSrc = PASS
+        else
+        	 IsPtSrc = FAIL
+        end if
+      end subroutine get_src_fov
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set / Get Source Wavelength (WVL) in units of Rx defined WaveUnits
+      !---------------------------------------------------------------------------------------------
+      subroutine src_wvl(OK, WVL, setter)
+        implicit none
+        integer, intent(out)   :: OK       ! (PASS) if successful; (FAIL) otherwise
+        real(8), intent(inout) :: WVL      ! Wavelength in WaveUnits (WVL > 0)
+        integer, intent(in)    :: setter   ! (PASS) to set & (FAIL) to get
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (setter == 0) WVL = 0d0
+
+        if (.not. SystemCheck()) return
+
+        if (setter /= 0) then
+
+          if (isnan(WVL)) return
+          if ((WVL<=0e0_pr).or. .not.(abs(WVL)<=huge(WVL))) return    ! valid input - hmm, check range?
+
+          Wavelen = WVL         ! in WaveUnits
+          WaveBU  = CWB*WVL     ! in internal units <= CWB = CWM/CBM (CWM = WaveUnits, CBM = BaseUnits)
+
+        else
+          WVL = Wavelen
+        end if
+
+        OK = PASS
+      end subroutine src_wvl
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Get/set the source FLUX.  sourcsub.F seeds each ray amplitude as
+      ! SQRT(Flux), so the propagated intensity scales linearly with
+      ! Flux.  Used (with set_src_fov pointing) to inject a fainter
+      ! off-axis "planet" alongside the on-axis star and COMPOSE them
+      ! onto one detector image.  Takes effect on the next MODIFY+trace.
+      !---------------------------------------------------------------------------------------------
+      subroutine src_flux(OK, FLX, setter)
+        implicit none
+        integer, intent(out)   :: OK       ! (PASS) if successful; (FAIL) otherwise
+        real(8), intent(inout) :: FLX      ! source flux (FLX >= 0); intensity ~ Flux
+        integer, intent(in)    :: setter   ! (PASS) to set & (FAIL) to get
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (setter == 0) FLX = 0d0
+
+        if (.not. SystemCheck()) return
+
+        if (setter /= 0) then
+          if (isnan(FLX)) return
+          if ((FLX < 0e0_pr) .or. .not.(abs(FLX) <= huge(FLX))) return
+          Flux = FLX
+        else
+          FLX = Flux
+        end if
+
+        OK = PASS
+      end subroutine src_flux
+
+
+      !---------------------------------------------------------------------------------------------
+      ! First-order system properties (the SYSPROP command, as a struct).
+      ! Runs the engine EFL analysis (chief + marginal ray -> focalRatio;
+      ! needs a source at infinity) then packages all first-order /
+      ! diffraction quantities via sysprop_mod%DeriveSysProps.  The
+      ! pixel-based outputs (lamD_px, plate_arcsec_px, plate_px_rad,
+      ! dx_focal_bu) require a prior propagation to iElt (INT) to have set
+      ! dxElt(iElt); they come back 0 otherwise.  The angular quantities
+      ! (lamD_rad, lamD_arcsec) and efl/fno/dpup need no propagation.
+      !
+      ! tilt-for-N-(lambda/D) = N * lamD_rad  (the source-pointing offset
+      ! to place an off-axis "planet" at N lambda/D).
+      !---------------------------------------------------------------------------------------------
+      subroutine sysprop(OK, iElt, efl, fno, dpup_m, obsc, lambda_m,    &
+                         lamD_rad, lamD_arcsec, lamD_px,                &
+                         plate_arcsec_px, plate_px_rad, nyquist_bu,     &
+                         dx_focal_bu)
+        implicit none
+        logical, intent(out):: OK            ! (PASS) success; (FAIL) otherwise
+        integer, intent(in) :: iElt          ! focal-plane element (detector)
+        real(8), intent(out):: efl           ! effective focal length (BaseUnits)
+        real(8), intent(out):: fno           ! F-number
+        real(8), intent(out):: dpup_m        ! entrance-pupil diameter (m)
+        real(8), intent(out):: obsc          ! central obscuration ratio
+        real(8), intent(out):: lambda_m      ! wavelength (m)
+        real(8), intent(out):: lamD_rad      ! lambda/D (radians)
+        real(8), intent(out):: lamD_arcsec   ! lambda/D (arcsec)
+        real(8), intent(out):: lamD_px       ! lambda/D (detector pixels)
+        real(8), intent(out):: plate_arcsec_px ! plate scale (arcsec/pixel)
+        real(8), intent(out):: plate_px_rad  ! source tilt -> shift (px/rad)
+        real(8), intent(out):: nyquist_bu    ! Nyquist focal sampling (BaseUnits)
+        real(8), intent(out):: dx_focal_bu   ! detector pixel pitch (BaseUnits)
+        ! ------------------------------------------------------
+        OK = FAIL
+        efl=0d0; fno=0d0; dpup_m=0d0; obsc=0d0; lambda_m=0d0
+        lamD_rad=0d0; lamD_arcsec=0d0; lamD_px=0d0
+        plate_arcsec_px=0d0; plate_px_rad=0d0; nyquist_bu=0d0; dx_focal_bu=0d0
+
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        ! EFL analysis sets focalRatio (and plateScale).  Source must be
+        ! at infinity; on failure focalRatio stays <=0 and DeriveSysProps
+        ! returns sp_valid=.false.
+        command = 'EFL'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        CALL DeriveSysProps(iElt)
+        if (.not. sp_valid) return
+
+        efl             = sp_vals(SP_EFL_BU)
+        fno             = sp_vals(SP_FNO)
+        dpup_m          = sp_vals(SP_DPUP_M)
+        obsc            = sp_vals(SP_OBSC)
+        lambda_m        = sp_vals(SP_LAMBDA_M)
+        lamD_rad        = sp_vals(SP_LAMD_RAD)
+        lamD_arcsec     = sp_vals(SP_LAMD_ARCSEC)
+        lamD_px         = sp_vals(SP_LAMD_PX)
+        plate_arcsec_px = sp_vals(SP_PLATE_ARCSEC_PX)
+        plate_px_rad    = sp_vals(SP_PLATE_PX_RAD)
+        nyquist_bu      = sp_vals(SP_NYQUIST_BU)
+        dx_focal_bu     = sp_vals(SP_DX_FOCAL_BU)
+
+        OK = PASS
+      end subroutine sysprop
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Define active source information: shape, position & WL
+      !
+      !               zSrc: Distance from Src. Position to Spherical wavefront position (=zSource)
+      !                     0 < |zSrc| <= 1d10: Pt. Src.: if zSrc<0 -> converging wave (to   Pt. Src.)
+      !                                                   if zSrc>0 -> diverging  wave (from Pt. Src.)
+      !                         |zSrc|  > 1d10: Col.Src.
+      !             SrcPos: if Pt. Src.: SrcPos <= ChfRayPos + zSource*SrcDir (ChfRayDir if SrcDir not defined)
+      !                     if Col.Src.: SrcPos <= ChfRayPos
+      !             SrcDir: Centre Beam Direction  (= ChfRayDir)
+      !            IsPtSrc: (true) if |zSource| <= 1d10; otherwise, returns (false)
+      !                 WL: Source Wavelength in WaveUnits
+      !           Aperture: if Pt. Src. => N.A. of beam
+      !                     if Col.Src. => Beam Diameter in BaseUnits
+      !           Obscratn: if Pt. Src. => N.A. of beam
+      !                     if Col.Src. => Beam Diameter in BaseUnits
+      !
+      ! Call     : CALL set_src_info(OK,zSrc,SrcPos,SrcDir,WL,SrcApe,SrcObs)
+      ! Input    : zSrc          [1x1,D]: Distance from Src. Position to Spherical wavefront position (=zSource)
+      !            SrcPos        [1x3,D]: Src. Position  if Col.Src, SrcPos = ChfRayPos
+      !            SrcDir        [1x3,D]: Centre Beam Direction (= ChfRayDir) -> will be normalized
+      !            WL            [1x1,D]: Wavelength in WaveUnits
+      !            SrcApe        [1x1,D]: Ape. Beam N.A. for Pt.Src.;otherwise, Apt. == Beam Diameter
+      !            SrcObs        [1x1,D]: Obs. Beam N.A. for Pt.Src.;otherwise, Obs. == Beam Diameter
+      ! Output   : OK            [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : check if Rx is loaded
+      ! Note     : - if abs(zSource)>1d10 ==> Col. Src.; otherwise, Pt.Src.
+      !            - for NAN values, parameters will not be updated
+      !            - if SrcPos<>NAN then require zSrc<>NAN
+      !            - if defined: require WL<>0, SrcApe>0, SrcObs<SrcApe, SrcObs>=0
+      !---------------------------------------------------------------------------------------------
+      subroutine set_src_info(OK,zSrc,SrcPos,SrcDir,WL,SrcApe,SrcObs)
+        use Constants, only: eps
+
+        implicit none
+        logical,               intent(out):: OK
+        real(8),               intent(in) :: zSrc
+        real(8), dimension(3), intent(in) :: SrcPos,SrcDir
+        real(8),               intent(in) :: WL,SrcApe,SrcObs
+
+        integer :: tmp
+        ! ------------------------------------------------------
+        ! initialisation
+        OK = FAIL
+
+        ! Rx Loaded?
+        if (.not. SystemCheck()) return
+
+        ! updated Src. parameters
+        if (.not. isnan(WL)) then
+          if (WL<=eps) return
+          Wavelen = WL
+        end if
+
+        if (count(isnan((/SrcApe,SrcObs/)))==0) then
+          if ((abs(SrcApe)<=abs(SrcObs)).or.(SrcApe<=eps).or.(SrcObs<0e0_pr)) return
+          Aperture = SrcApe
+          Obscratn = SrcObs
+        else
+          if (.not. isnan(SrcApe)) then
+            if ((SrcApe<=eps).or.(SrcApe<=Obscratn)) return
+            Aperture = SrcApe
+          end if
+
+          if (.not. isnan(SrcObs)) then
+            if ((abs(SrcObs)>=Aperture).or.(SrcObs<0e0_pr)) return
+            Obscratn = SrcObs
+          end if
+        end if
+
+        if (.not. any(isnan(SrcDir))) then
+          if (.not. any(abs(SrcDir)>eps)) return
+          ChfRayDir = SrcDir/sqrt(sum(SrcDir**2))
+        end if
+
+        tmp = count((/isnan(zSrc),(count(isnan(SrcPos))/=0)/)) ! maybe better to write out
+        if (tmp==1) return
+        if (tmp==0) then
+          zSource   = zSrc
+          ChfRayPos = SrcPos
+          if (abs(zSource) <= zSourceMax) &
+            ChfRayPos = ChfRayPos - zSource*ChfRayDir
+        end if
+
+        ! return
+        OK = PASS
+
+      end subroutine set_src_info
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose: Define active source Field-of-View (FoV) Position
+      ! Call   : CALL set_src_fov(OK,zSrc,SrcPos,SrcDir)
+      ! Input  : zSrc   [1x1,D]: Distance from wavefront position to Src. Pos. (= zSource)
+      !          SrcPos [1x3,D]: Src. Position:  if Col.Src, SrcPos = ChfRayPos
+      !          SrcDir [1x3,D]: Centre Beam Direction (= ChfRayDir) -> will be normalized
+      ! Output : OK     [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      ! Require  : check if Rx is loaded
+      ! Note     : -zSrc    0 < |zSrc| <= 1d10: Pt. Src.: if zSrc<0 -> converging wave (to   Pt. Src.)
+      !                                                   if zSrc>0 -> diverging  wave (from Pt. Src.)
+      !                         |zSrc|  > 1d10: Col.Src.
+      !            - SrcPos: if Pt. Src.: SrcPos = ChfRayPos + zSource*SrcDir (ChfRayDir if SrcDir not defined)
+      !                      if Col.Src.: SrcPos = ChfRayPos
+      !            - ChfRayDir <= SrcDir
+      !            - ChfRayPos <= SrcPos - zSource*SrcDir
+      !---------------------------------------------------------------------------------------------
+      subroutine set_src_fov(OK,zSrc,SrcPos,SrcDir)
+        use Constants, only: EPS
+
+        implicit none
+        logical,               intent(out):: OK
+        real(8),               intent(in) :: zSrc
+        real(8), dimension(3), intent(in) :: SrcPos,SrcDir
+
+        real(8) :: tmp(7)
+        ! ------------------------------------------------------
+        ! initialisation
+        OK  = FAIL
+        tmp = (/zSrc,SrcPos,SrcDir/)
+
+        ! Rx Loaded?
+        if (.not. SystemCheck()) return
+
+        ! input check
+        if (any(isnan(tmp))) return                     ! check NaN
+        if (any(.not.(abs(tmp)<=huge(zSrc)))) return    ! check inf
+        if (.not. any(SrcDir/=0e0_pr)) return           ! check validity
+        if (abs(zSrc) <= EPS) return                    ! zSrc cannot be 0
+
+        ! set values
+        zSource   = zSrc
+        ChfRayDir = SrcDir/sqrt(sum(SrcDir**2))
+        ChfRayPos = SrcPos
+        if (abs(zSource) <= zSourceMax) ChfRayPos = ChfRayPos - zSource*ChfRayDir
+
+        ! return
+        OK = PASS
+
+      end subroutine set_src_fov
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set/Get Source Size, i.e., Beam Extend (Aperture) & Beam Obscuration
+      !
+      !  SrcApe  [1x1]: if |zSource|<=1e10 (Pt. Src.) ==> Ape. Beam N.A.
+      !                    |zSource| >1e10 (Col.Src.) ==> Apt. Beam Diameter (BaseUnits)
+      !
+      !  SrcObs  [1x1]: if |zSource|<=1e10 (Pt. Src.) ==> Obs. Beam N.A.
+      !                    |zSource| >1e10 (Col.Src.) ==> Obs. Beam Diameter (BaseUnits)
+      !
+      !  Ignore value (when set) if
+      !    SrcApe <= 0
+      !    SrcObs <  0
+      !---------------------------------------------------------------------------------------------
+      subroutine src_size(OK, SrcApe, SrcObs, Setter)
+        implicit none
+        logical, intent(out)  :: OK      ! (PASS) if successful; (FAIL) otherwise
+        real(8), intent(inout):: SrcApe  ! Ape. Beam N.A. for Pt.Src.;otherwise, Apt. Beam Diameter
+        real(8), intent(inout):: SrcObs  ! Obs. Beam N.A. for Pt.Src.;otherwise, Obs. Beam Diameter
+        integer, intent(in)   :: Setter  ! (PASS) to set & (FAIL) to get
+
+        logical :: set_ape, set_obs
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (Setter == 0) then
+          SrcApe = 0e0_pr
+          SrcObs = 0e0_pr
+        end if
+        if (.not. SystemCheck()) return
+
+        if (Setter /= 0) then
+
+          if (isnan(SrcApe).or.isnan(SrcObs)) return                                           ! NaN   check (non standard)
+          if (.not.(abs(SrcApe)<=huge(SrcApe)) .or. .not.(abs(SrcObs)<=huge(SrcObs))) return   ! inf   check
+
+          set_ape = (SrcApe >  0e0_pr)
+          set_obs = (SrcObs >= 0e0_pr)
+
+          if (set_ape .and. set_obs) then
+            if (SrcApe<=SrcObs) return   ! range check
+
+            Aperture = SrcApe
+            Obscratn = SrcObs
+
+          else if (set_ape) then
+            if (SrcApe<=Obscratn) return   ! range check
+
+            Aperture = SrcApe
+
+          else if (set_obs) then
+            if (Aperture<=SrcObs) return   ! range check
+
+            Obscratn = SrcObs
+
+          else
+            return   ! no values to be updated
+          end if
+
+        else
+
+          SrcApe  = Aperture
+          SrcObs  = Obscratn
+
+        end if
+
+        OK = PASS
+      end subroutine src_size
+
+
+      !------------------------------------------------------------------------------------------------------------
+      ! Purpose  : Retrieve active source size, i.e., Beam Extend (Aperture) & Beam Obscuration
+      !
+      !     Call     : CALL get_src_size(OK,SrcApe,SrcObs)
+      !     Output   : OK      [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      !                SrcApe  [1x1,D]: if |zSource|<=1e10 (Pt. Src.) ==> Ape. Beam N.A.
+      !                                  |zSource| >1e10 (Col.Src.) ==> Apt. Beam Diameter (BaseUnits)
+      !              SrcObs  [1x1,D]: if |zSource|<=1e10 (Pt. Src.) ==> Obs. Beam N.A.
+      !                                  |zSource| >1e10 (Col.Src.) ==> Obs. Beam Diameter (BaseUnits)
+      !     Require  : check if Rx is loaded
+
+      !------------------------------------------------------------------------------------------------------------
+      subroutine get_src_size(OK, SrcApe, SrcObs)
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(out):: SrcApe,SrcObs
+
+        ! ------------------------------------------------------
+        OK     = FAIL
+        SrcApe = 0e0_pr
+        SrcObs = 0e0_pr
+
+        if (.not. SystemCheck()) return
+
+        SrcApe  = Aperture
+        SrcObs  = Obscratn
+        OK      = PASS
+
+      end subroutine get_src_size
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Define active source size, i.e., Aperture & Obscuration
+      !
+      !              Aperture: if Pt. Src. => N.A. of beam
+      !                        if Col.Src. => Beam Diameter in BaseUnits
+      !              Obscratn: if Pt. Src. => N.A. of beam
+      !                        if Col.Src. => Beam Diameter in BaseUnits
+      !
+      ! Call     : CALL set_src_size(OK,SrcApe,SrcObs)
+      ! Input    : SrcApe  [1x1,D]: Ape. Beam N.A. for Pt.Src.;otherwise, Apt. Beam Diameter (BaseUnits)
+      !            SrcObs  [1x1,D]: Obs. Beam N.A. for Pt.Src.;otherwise, Obs. Beam Diameter (BaseUnits)
+      ! Output   : OK      [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      ! Require  : check if Rx is loaded
+      ! Note     : -- require SrcApe>0, SrcApe>SrcObs, SrcObs>=0
+      !---------------------------------------------------------------------------------------------
+      subroutine set_src_size(OK,SrcApe,SrcObs)
+        !use,intrinsic :: ieee_arithmetic  -- not working with gcc to use with ieee_is_nan(), ieee_is_finite(x)
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: SrcApe,SrcObs
+        ! ------------------------------------------------------
+        ! initialisation
+        OK = FAIL
+
+        ! Rx Loaded?
+        if (.not. SystemCheck()) return
+
+        ! input check
+        if (isnan(SrcApe).or.isnan(SrcObs)) return                                           ! NaN   check (non standard)
+        if (.not.(abs(SrcApe)<=huge(SrcApe)) .or. .not.(abs(SrcObs)<=huge(SrcObs))) return   ! inf   check
+        if ((SrcApe<=0e0_pr).or.(SrcApe<=SrcObs).or.(SrcObs<0e0_pr)) return                  ! range check
+
+        ! set values
+        Aperture = SrcApe
+        Obscratn = SrcObs
+
+        ! return
+        OK = PASS
+
+      end subroutine set_src_size
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return if Source is Finite
+      ! Call     : CALL src_finite(OK, IsPtSrc)
+      ! Output   : OK       [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      !            IsPtSrc) [1x1,B]: = (True,1) if zSource <= zSourceMax
+      ! Require  : Rx loaded
+      !---------------------------------------------------------------------------------------------
+      subroutine src_finite(OK, IsPtSrc)
+        use sourcsub_mod, only: isPointSource
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: IsPtSrc
+        ! ------------------------------------------------------
+
+        if (SystemCheck()) then
+
+          OK = PASS
+          if (isPointSource()) then
+            IsPtSrc = PASS
+          else
+            IsPtSrc = FAIL
+          end if
+
+        else
+
+          OK      = FAIL  ! .False.
+          IsPtSrc = FAIL  ! .False.
+
+        end if
+
+      end subroutine src_finite
+
+
+    !=============================================================================================
+    !
+    ! Element Properties
+    !
+    !---------------------------------------------------------------------------------------------
+    ! [ ] Group
+    !      [x] elt_grp_max_all    Get max. Number of Srfs. defined in Element-Grp. over all Elements.
+    !      [x] elt_grp_max        Get max. Number of Srfs defined in Element-Grp. at def. Element(s).
+    !      [x] elt_grp_any        Get if at least one Element-Grp. is defined in Rx
+    !      [x] elt_grp_fnd        Determine if a Element-Grps. are defined at specified Element(s).
+    !      [x] elt_grp_del        Remove Element-Grp. Settings at specified Element(s)
+    !      [x] elt_grp_del_all    Wipes all Element-Grp. Settings from Rx
+    !      [x] elt_grp_set        Set Element Grp. Definitions
+    !      [x] elt_grp_get        Get Element Grp. Definitions
+    !=============================================================================================
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine max. Number of Srfs. defined in Element-Grp. over all Elements.
+      ! => no system check
+      ! => intention is to support data exchange
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_max_all(maxGrpSize)
+
+        implicit none
+        integer, intent(out):: maxGrpSize ! max. defined Grp. Size
+        ! ------------------------------------------------------
+
+        maxGrpSize = maxval(EltGrp(0, :nElt))
+
+      end subroutine elt_grp_max_all
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine max. Number of Srfs defined in Element-Grp. at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_max(ok,maxGrpSize,iElt,N)
+
+        implicit none
+        logical,               intent(out):: ok         ! success (1) or Fail (0)
+        integer,               intent(out):: maxGrpSize ! max. defined Grp. Size
+        integer, dimension(N), intent(in) :: iElt       ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,               intent(in) :: N
+        ! ------------------------------------------------------
+        ok         = FAIL
+        maxGrpSize = 0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! find Grp. Members at Element(s) iElt
+        maxGrpSize = maxval(EltGrp(0, iElt(:)))
+
+        ok = PASS
+
+      end subroutine elt_grp_max
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if at least one Element-Grp. is defined in Rx
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_any(any_elt_grp)
+
+        implicit none
+        logical, intent(out):: any_elt_grp
+        ! ------------------------------------------------------
+        any_elt_grp = FAIL
+
+        ! SMACOS and Rx status & nElt > 0
+        if (.not. (SystemCheck() .and. nElt>0)) return
+
+        ! check all surfaces if Elt. Grp. is defined
+        if (maxval(EltGrp(0, :nElt)) > 0) any_elt_grp = PASS
+
+      end subroutine elt_grp_any
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if a Element-Grps. are defined at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_fnd(ok,nGrp,iElt,N)
+
+        implicit none
+        logical,                     intent(out):: ok    ! success (1) or Fail (0)
+        logical, dimension(N),       intent(out):: nGrp  ! 1 (Grp defined) or 0 (not defined)
+        integer, dimension(N),       intent(in) :: iElt  ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,                     intent(in) :: N
+        ! ------------------------------------------------------
+        ok      = FAIL
+        nGrp(:) = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! find Grp. Members at Element(s) iElt
+        where (EltGrp(0, iElt(:)) > 0) nGrp(iElt(:)) = PASS
+        ok = PASS
+
+      end subroutine elt_grp_fnd
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Delete Element-Grp. at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_del(ok,iElt,N)
+
+        implicit none
+        logical,                     intent(out):: ok     ! (True,1) if successful; (False,0) otherwise
+        integer, dimension(N),       intent(in) :: iElt   ! Elt. ID ( -nElt < iElt[i] <= nElt )
+
+        integer,                     intent(in) :: N      ! # of Elements in iElt
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! reset Grp. Members at Element(s) iElt
+        EltGrp(:,iElt) = 0
+        ok = PASS
+
+      end subroutine elt_grp_del
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Remove Element-Grp. Perturbation Settings on ALL Elements.
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_grp_del_all(ok)
+
+        implicit none
+        logical, intent(out):: ok  ! (True,1) if successful; (False,0) otherwise
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! SMACOS and Rx status
+        if (.not. SystemCheck()) return
+
+        ! remove Grp. Members on ALL Elements
+        EltGrp = 0
+        ok = PASS
+
+      end subroutine elt_grp_del_all
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Define Element-Grp. Perturbation Members at specified Element(s).
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_grp_set(ok,iElt,jEltGrp,nEltGrp)
+
+        implicit none
+        logical,                     intent(out):: ok       ! (True,1) if successful; (False,0) otherwise
+        integer,                     intent(in) :: iElt     ! Elt. ID  (1 <= iElt[i]    <= nElt )
+        integer, dimension(nEltGrp), intent(in) :: jEltGrp  ! Grp. Members where (0 <= jEltGrp[i] <= nElt )
+
+        integer,                     intent(in) :: nEltGrp  ! # of Grp. Members (= length(jEltGrp) <= mElt)
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! input check:
+        if ((nEltGrp > mElt .or. nEltGrp < 1) .or. &   ! Range: 1 <= nEltGrp <= mElt    (defined in elt_mod.F)
+            (.not. EltRangeChk(jEltGrp,0))    .or. &   ! Range: 0 <= jEltGrp(j) <= nElt
+            (iElt<0) .or. (iElt>nElt)         .or. &   ! Range: 1 <= iElt       <= nElt
+            (.not. SystemCheck()))                 &   ! SMACOS and Rx status
+           return
+
+        ! set Grp. Members at Element iElt
+        EltGrp(        :,iElt) = 0           ! erase previous settings
+        EltGrp(        0,iElt) = nEltGrp
+        EltGrp(1:nEltGrp,iElt) = jEltGrp
+
+        ok = PASS
+
+      end subroutine elt_grp_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Retrieve Element-Grp. Perturbation Settings at specified Element(s).
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_grp_get(ok,jEltGrp,nEltGrp,iElt,N,mElt_)
+
+        implicit none
+        logical,                     intent(out):: ok       ! (True,1) if successful; (False,0) otherwise
+        integer, dimension(mElt_,N), intent(out):: jEltGrp  ! Grp. Members where K = mElt (value set to -1 for not used)
+        integer, dimension(N),       intent(out):: nEltGrp  ! # of Grp. Members defined in jEltGrp
+        integer, dimension(N),       intent(in) :: iElt     ! Elt. ID  (1 <= iElt[i]    <= nElt )
+
+        integer,                     intent(in) :: N        ! # of Elements where to retrieve Grp. IDs
+        integer,                     intent(in) :: mElt_    ! Max. # of Elements permitted (for Python = mElt (SMACOS var))
+        ! ------------------------------------------------------
+        ok           = FAIL
+        jEltGrp(:,:) = -1       ! identifier for value not in use
+        nEltGrp(:)   =  0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! get Grp. Members at Element(s) iElt
+        nEltGrp(:) = EltGrp(0,iElt)
+        block
+          integer :: K
+          do K = 1, N
+            if (nEltGrp(K) /= 0) then
+              jEltGrp(1:nEltGrp(K),K) = EltGrp(1:nEltGrp(K),iElt(K))
+            end if
+          end do
+        end block
+
+        ok = PASS
+
+      end subroutine elt_grp_get
+
+
+
+    !=============================================================================================
+    !
+    ! Element Surface Properties
+    !
+    !---------------------------------------------------------------------------------------------
+    ! [ ] Pose
+    !     [x] elt_vpt     : set/get Element Vertex   Point
+    !     [x] elt_rpt     : set/get Element Rotation Point
+    !     [x] elt_psi     : set/get Element Surface Normal
+    !
+    ! [ ] Base Srf. Shape
+    !     [x] elt_kc      : set/get Element Conic Constant
+    !     [x] elt_kr      : set/get Element Base Radius
+    !
+    ! [ ] Material
+    !     [ ] IndRef_     : set/get Refractive Index
+    !     [ ] Glass_      : set/get Material Specification and read data from Glass Tbl.
+    !     [ ] GlassModel_ : set/get Material Specification based on Glass Properties
+    !
+    ! [ ] Local CSYS (TElt)
+    !     [ ] elt_csys_set
+    !     [ ] elt_csys_get
+    !     [ ] elt_csys_rm
+    !
+    ! [Srf. Shape] elt_srf_csys_set   : set Srf. Coordinate Frame
+    ! [Srf. Shape] getEltGridInfo    : get Grid Srf. Settings
+    ! [Srf. Shape] setEltGrid        : set element surface grid data
+    !  [Pos/Shape] xp_set             : set XP parameters (Kr, Psi, Vpt, Rpt & zElt)
+    !=============================================================================================
+
+      ! ------------------------------------------------------------------------
+      ! set/get Vertex Positions of defined Elements
+      ! ------------------------------------------------------------------------
+      subroutine elt_vpt(ok, iElt, Vpt, setter, n)
+
+        implicit none
+        logical,                  intent(out)  :: ok        ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n),   intent(in)   :: iElt      ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(3,n), intent(inout):: Vpt       ! Vertex Position [3 x N]
+        logical,                  intent(in)   :: setter    ! =PASS for set; =FAIL for get
+
+        integer,                  intent(in)   :: n         ! # of Elements
+        ! ------------------------------------------------------
+        ok  = FAIL
+        if (setter .eqv. FAIL) Vpt = 0e0_pr
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          VptElt(:,iElt) = Vpt(:,:)
+        else
+          Vpt(:,:) = VptElt(:,iElt)
+        end if
+
+        ok = PASS
+
+      end subroutine elt_vpt
+
+
+      ! ------------------------------------------------------------------------
+      ! set/get Vertex Surface Normals of defined Elements
+      ! ------------------------------------------------------------------------
+      subroutine elt_psi(ok, iElt, Psi, setter, n)
+        use Constants, only: EPS
+
+        implicit none
+        logical,                  intent(out)  :: ok        ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n),   intent(in)   :: iElt      ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(3,n), intent(inout):: Psi       ! Surface Normal @ VptElt
+        logical,                  intent(in)   :: setter    ! =PASS for set; =FAIL for get
+
+        integer,                  intent(in)   :: n         ! # of Elements
+
+        real(8), dimension(n) :: norm_val
+        ! ------------------------------------------------------
+        ok  = FAIL
+        if (setter .eqv. FAIL) Psi = 0e0_pr
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+
+          ! ensure Psi magnitudes are non-zero
+          norm_val = norm2(Psi, dim=1)
+          if (any(norm_val<=EPS)) return
+
+          ! Set PsiElt values
+          block
+            integer :: j
+            do j = 1, n
+            PsiElt(:,iElt(j)) = Psi(:,j)/norm_val(j)
+            end do
+          end block
+
+        else
+          Psi(:,:) = PsiElt(:,iElt)
+        end if
+
+        ok = PASS
+      end subroutine elt_psi
+
+
+      ! ------------------------------------------------------------------------
+      ! set/get Rotation Positions of defined Elements
+      ! ------------------------------------------------------------------------
+      subroutine elt_rpt(ok, iElt, Rpt, setter, n)
+
+        implicit none
+        logical,                  intent(out)  :: ok        ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n),   intent(in)   :: iElt      ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(3,n), intent(inout):: Rpt       ! Rotation Position [3 x N]
+        logical,                  intent(in)   :: setter    ! =PASS for set; =FAIL for get
+
+        integer,                  intent(in)   :: n         ! # of Elements
+        ! ------------------------------------------------------
+        ok  = FAIL
+        if (setter .eqv. FAIL) Rpt = 0e0_pr
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          RptElt(:,iElt) = Rpt(:,:)
+        else
+          Rpt(:,:) = RptElt(:,iElt)
+        end if
+
+        ok = PASS
+
+      end subroutine elt_rpt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set/Get element Conic Constant for element(s) defined in vector iElt
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_kc(ok, iElt, Kc, setter, n)
+
+        implicit none
+        logical,                intent(out)  :: ok       ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n), intent(in)   :: iElt     ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(n), intent(inout):: Kc       ! Base Radii of elements
+        logical,                intent(in)   :: setter   ! if PASS, set; otherwise, return values
+
+        integer,                intent(in)   :: n        ! # of Elements
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) Kc(:) = 0d0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          KcElt(iElt(:)) = Kc(:)
+        else
+          Kc(:) = KcElt(iElt(:))
+        end if
+
+        ok = PASS
+      end subroutine elt_kc
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set/Get element Base Radius/Radii for element(s) defined in vector iElt
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_kr(ok, iElt, Kr, setter, n)
+
+        implicit none
+        logical,                intent(out)  :: ok       ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n), intent(in)   :: iElt     ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(n), intent(inout):: Kr       ! Base Radii of elements
+        logical,                intent(in)   :: setter   ! if PASS, set; otherwise, return values
+
+        integer,                intent(in)   :: n        ! # of Elements
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) Kr(:) = 0d0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          KrElt(iElt(:)) = Kr(:)
+        else
+          Kr(:) = KrElt(iElt(:))
+        end if
+
+        ok = PASS
+      end subroutine elt_kr
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Get / Set zElt at one or more elements.  zElt is the
+      !            propagation distance from the previous surface (for
+      !            Flat / FocalPlane elements, encodes a big sentinel
+      !            value meaning "next defined plane").
+      ! Call     : CALL elt_z(ok, iElt, Z, setter, N)
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_z(ok, iElt, Z, setter, n)
+
+        implicit none
+        logical,                intent(out)  :: ok       ! (PASS) if successful; (FAIL) otherwise
+        integer,  dimension(n), intent(in)   :: iElt     ! Surface ID: 0 < iElt <= nElt
+        real(8),  dimension(n), intent(inout):: Z        ! propagation distance to / from element
+        logical,                intent(in)   :: setter   ! if PASS, set; otherwise, return values
+
+        integer,                intent(in)   :: n        ! # of Elements
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) Z(:) = 0d0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i,j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        if (setter .eqv. PASS) then
+          zElt(iElt(:)) = Z(:)
+        else
+          Z(:) = zElt(iElt(:))
+        end if
+
+        ok = PASS
+      end subroutine elt_z
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Set local element coordinate frame (TElt). If not active, it will activate it.
+      !
+      ! Call     : CALL elt_csys_set(ok,iElt,xDir,yDir,zDir,Upd,M)
+      ! Input    : iElt   [Mx1,I]: Elt.ID   (Range: -nElt < iElt[j] <= nElt )
+      !                            Identical elements to be defined simultaneously,
+      !                            e.g., iElt = [1;-5]  => Element [1;nElt-5] have same TElt
+      !            xDir   [3x1,D]: = [Lx,Ly,Lz] => x-axis expressed in GCF
+      !            yDir   [3x1,D]: = [Mx,My,Mz] => y-axis expressed in GCF
+      !            zDir   [3x1,D]: = [Nx,Ny,Nz] => z-axis expressed in GCF
+      !            Upd    [1x1,I]: if set (=1), update TElt with element perturbations
+      !            M      [1x1,I]: Number of equal elements to be updated
+      ! Output   : ok     [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- M of iElt defines identical elements
+      !            -- GCF => Global Coordinate Frame
+      !            -- will orthonormalize if not: zDir <= cross(xDir,yDir)
+      !                                           yDir <= cross(zDir,xDir)
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_csys_set(ok,iElt,xDir,yDir,zDir,Upd,m)
+        use Constants, only: EPS
+        use math_mod,  only: dorthoganalize
+
+        implicit none
+        logical,                intent(out):: ok
+        integer,  dimension(m), intent(in) :: iElt
+        real(8),  dimension(3), intent(in) :: xDir,yDir,zDir
+        integer,                intent(in) :: Upd
+        integer,                intent(in) :: m
+
+        integer :: j
+        real(8) :: A(3,3)
+        logical :: updTElt
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i) <= nElt
+        ! if (.not. StatusChk1(iElt) .or. any(iElt>(nElt-3))) return
+        if (.not. StatusChk1(iElt)) return
+
+        ! check for null-vector
+        A(:,1) = xDir
+        A(:,2) = yDir
+        A(:,3) = zDir
+        if (any(norm2(A,DIM=1)<=EPS)) return
+
+        ! if CF is not orthonormal, orthonormalize it
+        if (abs(-A(3,1)*A(2,2) + A(2,1)*A(3,2) - A(1,3))>EPS .or. &
+            abs( A(3,1)*A(1,2) - A(1,1)*A(3,2) - A(2,3))>EPS .or. &
+            abs(-A(2,1)*A(1,2) + A(1,1)*A(2,2) - A(3,3))>EPS)     &
+            call dorthoganalize(A(:,1),A(:,2),A(:,3))
+
+        ! Set Position values (loop over identical elements)
+        TElt(:,:,iElt) = 0e0_pr
+        do j = 1, m
+            TElt(1:3,1:3,iElt(j)) = A
+            TElt(4:6,4:6,iElt(j)) = A
+        end do
+
+        ! update TElt flag
+        nECoord(iElt) = 6
+
+        ! Update flag for modifying TElt with perturbations
+        LUpdateTElt_FLG(iElt) = (Upd /= 0)
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_csys_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Returns TElt of local element-coordinate-frame if set
+      !
+      ! Call     : CALL elt_csys_get(ok,TElt,Upd,iElt,N)
+      ! Input    : iElt      [1xN,I]: Elt.ID   (Range: 0 < iElt[j] <= nElt )
+      !            N         [1x1,I]: Number of elements from which to retrieve
+      ! Output   : ok        [1x1,B]: = (True) if successful; (False) otherwise
+      !            TElt    [6x6xN,D]: = Local-coordinate-frame matrix
+      !            csys_lcs    [1xN,L]: set (=1,true), if not nECoord/=0 or -6
+      !            csys_upd  [1xN,L]: set (=1,true), TElt is updated with element perturbations
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- will check if Element is correct Srf. Type
+      !            -- GCF => Global Coordinate Frame
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_csys_get(ok, iElt, csys, csys_lcs, csys_upd, N)
+
+        implicit none
+        logical,                   intent(out)  :: ok
+        integer, dimension(N),     intent(in)   :: iElt
+        real(8), dimension(6,6,N), intent(inout):: csys
+        logical, dimension(N),     intent(inout):: csys_lcs    ! Local CS defined if True
+        logical, dimension(N),     intent(inout):: csys_upd
+        integer,                   intent(in)   :: N
+        !   integer intent(hide), depend(iElt,csys_lcs,csys_upd), check(len(iElt)==len(csys_lcs), len(iElt)==len(csys_upd), len(iElt)==shape(csys,2)):: N=len(iElt)
+        !   integer intent(hide), depend(iElt), check(len(iElt)==len(csys_lcs), len(iElt)==len(csys_upd), len(iElt)==shape(csys,2)):: N=len(iElt)
+
+        integer :: j
+        ! ------------------------------------------------------
+        ok          = FAIL
+        csys(:,:,:) = 0e0_pr
+        csys_lcs    = FAIL
+        csys_upd    = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! query information
+        csys = TElt(:, :, iElt)
+        where (LUpdateTElt_FLG(iElt)) csys_upd = PASS
+        where (nECoord(iElt).EQ.6)    csys_lcs = PASS
+
+        ! completed
+        ok = PASS
+
+      end subroutine elt_csys_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Removes Local Coordinate System (LCS) Definitions on the defined surfaces
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_csys_rm(ok,iElt,N)
+
+        implicit none
+        logical,               intent(out):: ok
+        integer, dimension(N), intent(in) :: iElt    ! Surfaces where to remove LCS
+        integer,               intent(in) :: N
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! remove LCS
+        TElt(:,:,iElt) = 0e0_pr          ! delete LCS infos and define matrix as eye(6)
+        block
+          integer :: j
+          do j = 1, 6
+          TElt(j,j,iElt) = 1e0_pr
+          end do
+        end block
+
+        LUpdateTElt_FLG(iElt) = .false.  ! set values to default (update LCS with perturbations)
+        nECoord(iElt)         = -6       ! set tag defining that no LCS is defined
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_csys_rm
+
+
+      ! ---------------------------------------------------------------------------------------------
+      ! Set element surface coordinate frame for elements with Surface type where identical
+      ! elements can be defined simultaneously,
+      ! ---------------------------------------------------------------------------------------------
+      subroutine elt_srf_csys(ok, pMon_, xMon_, yMon_, zMon_, iElt, setter, N)
+        use Constants, only: EPS
+        use  math_mod, only: dorthoganalize
+
+        implicit none
+        logical,                  intent(out)  :: ok
+        real(8),  dimension(3,N), intent(inout):: pMon_,xMon_,yMon_,zMon_
+        integer,  dimension(N),   intent(in)   :: iElt
+        integer,                  intent(in)   :: setter
+        integer,                  intent(in)   :: N
+
+        integer :: j
+        real(8) :: A(3,3)
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter == 0) then
+          pMon_ = 0e0_pr
+          xMon_ = 0e0_pr
+          yMon_ = 0e0_pr
+          zMon_ = 0e0_pr
+        end if
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType require a Srf. Coord. Frame
+        do j=1,N
+          if (.not. any(SrfType(iElt(j)) == SrfType_RequireSrfCSYS)) return
+        end do
+
+        if (setter /= 0) then
+
+          ! check for null-vector
+          if ((any(norm2(xMon_, DIM=1)<=EPS)) .or. &
+              (any(norm2(yMon_, DIM=1)<=EPS)) .or. &
+              (any(norm2(zMon_, DIM=1)<=EPS))) return
+
+          do j = 1, N
+
+            A(:,1) = xMon_(:,j)
+            A(:,2) = yMon_(:,j)
+            A(:,3) = zMon_(:,j)
+
+            ! if CF is not orthonormal, orthonormalize it
+            !
+            ! cross(Vx,Vy) = [-a22*a31 + a21*a32,  a12*a31 - a11*a32, -a12*a21 + a11*a22]
+            ! cross(Vy,Vz) = [-a23*a32 + a22*a33,  a13*a32 - a12*a33, -a13*a22 + a12*a23]
+            ! cross(Vz,Vx) = [ a23*a31 - a21*a33, -a13*a31 + a11*a33,  a13*a21 - a11*a23]
+            !
+            ! check:  | cross(xMon,yMon) - zMon | < EPS
+            if (abs(-A(3,1)*A(2,2) + A(2,1)*A(3,2) - A(1,3))>EPS .or. &
+                abs( A(3,1)*A(1,2) - A(1,1)*A(3,2) - A(2,3))>EPS .or. &
+                abs(-A(2,1)*A(1,2) + A(1,1)*A(2,2) - A(3,3))>EPS)     &
+              call dorthoganalize(A(:,1),A(:,2),A(:,3))
+
+            ! Set Position values (loop over identical elements)
+            xMon(:,iElt(j)) = A(:,1)
+            yMon(:,iElt(j)) = A(:,2)
+            zMon(:,iElt(j)) = A(:,3)
+            pMon(:,iElt(j)) = pMon_(:,j)
+
+          end do
+
+        else
+
+          xMon_(:,:N) = xMon(:,iElt)
+          yMon_(:,:N) = yMon(:,iElt)
+          zMon_(:,:N) = zMon(:,iElt)
+          pMon_(:,:N) = pMon(:,iElt)
+
+        end if
+
+        ok = PASS
+
+      end subroutine elt_srf_csys
+
+
+      ! ---------------------------------------------------------------------------------------------
+      ! Set element surface coordinate frame position for elements with Surface type where identical
+      ! elements can be defined simultaneously,
+      ! ---------------------------------------------------------------------------------------------
+      subroutine elt_srf_csys_pos(ok, pMon_, iElt, setter, N)
+        use Constants, only: EPS
+
+        implicit none
+        logical,                  intent(out)  :: ok
+        real(8),  dimension(3,N), intent(inout):: pMon_
+        integer,  dimension(N),   intent(in)   :: iElt
+        integer,                  intent(in)   :: setter
+        integer,                  intent(in)   :: N
+
+        integer :: i
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter == 0) pMon_ = 0e0_pr
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType = Monomial (#4), Zernike (#8), GridData (#9), ...
+        do i=1,N
+          if (.not. any(SrfType(iElt(i)) == SrfType_RequireSrfCSYS)) return
+        end do
+
+        ! check shape: 3 x N
+        if (size(pMon_,1) /= 3 .or. size(pMon_,2) /= N) return
+
+        ! set/get
+        if (setter /= 0) then
+          pMon(:,iElt) = pMon_(:,:)
+        else
+          pMon_(:,:) = pMon(:,iElt)
+        end if
+
+        ok = PASS
+
+      end subroutine elt_srf_csys_pos
+
+
+      ! ---------------------------------------------------------------------------------------------
+      ! Set element surface coordinate frame orientation for elements with Surface type where identical
+      ! elements can be defined simultaneously,
+      ! ---------------------------------------------------------------------------------------------
+      subroutine elt_srf_csys_dir(ok, xMon_, yMon_, zMon_, iElt, setter, N)
+        use Constants, only: EPS
+        use  math_mod, only: dorthoganalize
+
+        implicit none
+        logical,                  intent(out)  :: ok
+        real(8),  dimension(3,N), intent(inout):: xMon_,yMon_,zMon_
+        integer,  dimension(N),   intent(in)   :: iElt
+        integer,                  intent(in)   :: setter
+        integer,                  intent(in)   :: N
+
+        integer :: j
+        real(8) :: A(3,3)
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter == 0) then
+          xMon_ = 0e0_pr
+          yMon_ = 0e0_pr
+          zMon_ = 0e0_pr
+        end if
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType require a Srf. Coord. Frame
+        do j=1,N
+          if (.not. any(SrfType(iElt(j)) == SrfType_RequireSrfCSYS)) return
+        end do
+
+        ! check shape: 3 x N
+        if (size(xMon_,1) /= 3 .or. size(xMon_,2) /= N .or.  &
+            size(yMon_,1) /= 3 .or. size(yMon_,2) /= N .or.  &
+            size(zMon_,1) /= 3 .or. size(zMon_,2) /= N) return
+
+        if (setter /= 0) then
+
+          ! check for null-vector
+          if ((any(norm2(xMon_, DIM=1)<=EPS)) .or. &
+              (any(norm2(yMon_, DIM=1)<=EPS)) .or. &
+              (any(norm2(zMon_, DIM=1)<=EPS))) return
+
+          do j = 1, N
+            A(:,1) = xMon_(:,j)
+            A(:,2) = yMon_(:,j)
+            A(:,3) = zMon_(:,j)
+
+            ! if CSYS is not orthonormal, orthonormalize it
+            !
+            ! cross(Vx,Vy) = [-a22*a31 + a21*a32,  a12*a31 - a11*a32, -a12*a21 + a11*a22]
+            ! cross(Vy,Vz) = [-a23*a32 + a22*a33,  a13*a32 - a12*a33, -a13*a22 + a12*a23]
+            ! cross(Vz,Vx) = [ a23*a31 - a21*a33, -a13*a31 + a11*a33,  a13*a21 - a11*a23]
+            !
+            ! check:  | cross(xMon,yMon) - zMon | < EPS
+            if (abs(-A(3,1)*A(2,2) + A(2,1)*A(3,2) - A(1,3))>EPS .or. &
+                abs( A(3,1)*A(1,2) - A(1,1)*A(3,2) - A(2,3))>EPS .or. &
+                abs(-A(2,1)*A(1,2) + A(1,1)*A(2,2) - A(3,3))>EPS)     &
+              call dorthoganalize(A(:,1),A(:,2),A(:,3))
+
+            ! assign
+            xMon(:,iElt(j)) = A(:,1)
+            yMon(:,iElt(j)) = A(:,2)
+            zMon(:,iElt(j)) = A(:,3)
+          end do
+
+        else
+
+            xMon_(:,:N) = xMon(:,iElt)
+            yMon_(:,:N) = yMon(:,iElt)
+            zMon_(:,:N) = zMon(:,iElt)
+
+        end if
+
+        ok = PASS
+
+      end subroutine elt_srf_csys_dir
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Set element surface coordinate frame for elements with Surface type.
+      !            Identical elements to be defined simultaneously,
+      !               e.g., iElt = [1;-5]  => Element [1;nElt-5] have the same grid data
+      !
+      ! Call     : CALL elt_srf_csys_set(ok,iElt,pMon,xMon,yMon,zMon,M)
+      ! Input    : iElt   [Mx1,I]: Elt.ID   (Range: -nElt < iElt[j] <= nElt )
+      !            pMon   [3x1,D]: = [x,y,z]    => origin of grid coord. frame (GCF)
+      !            xMon   [3x1,D]: = [Lx,Ly,Lz] => x-axis of grid coord. frame (GCF)
+      !            yMon   [3x1,D]: = [Mx,My,Mz] => y-axis of grid coord. frame (GCF)
+      !            zMon   [3x1,D]: = [Nx,Ny,Nz] => z-axis of grid coord. frame (GCF)
+      !            M      [1x1,I]: Number of equal elements to be updated
+      ! Output   : ok     [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- M of iElt defines identical elements
+      !            -- will check if Element is Grid Srf.
+      !            -- GCF => Global Coordinate Frame
+      !            -- will orthonormalize if not: zMon <= cross(xMon,yMon)
+      !                                           yMon <= cross(zMon,xMon)
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_srf_csys_set(ok,iElt,pMon_,xMon_,yMon_,zMon_,N)
+        use Constants, only: EPS
+        use  math_mod, only: dorthoganalize
+
+        implicit none
+        logical,                intent(out):: ok
+        integer,  dimension(N), intent(in) :: iElt
+        real(8),  dimension(3), intent(in) :: pMon_,xMon_,yMon_,zMon_
+        integer,                intent(in) :: N
+
+        integer :: j
+        real(8) :: A(3,3)
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(i) <= nElt
+        ! if (.not. StatusChk1(iElt) .or. any(iElt>(nElt-3))) return
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType =  Monomial (#4), Zernike (#8), GridData (#9)
+        do j=1,N
+          if (.not. any(SrfType(iElt(j)) == SrfType_RequireSrfCSYS)) return
+        end do
+
+        ! check for null-vector
+        A(:,1) = xMon_
+        A(:,2) = yMon_
+        A(:,3) = zMon_
+        if (any(norm2(A,DIM=1)<=EPS)) return
+
+        ! if CF is not orthonormal, orthonormalize it
+        if (abs(-A(3,1)*A(2,2) + A(2,1)*A(3,2) - A(1,3))>EPS .or. &
+            abs( A(3,1)*A(1,2) - A(1,1)*A(3,2) - A(2,3))>EPS .or. &
+            abs(-A(2,1)*A(1,2) + A(1,1)*A(2,2) - A(3,3))>EPS)     &
+            call dorthoganalize(A(:,1),A(:,2),A(:,3))
+
+        ! Set Position values (loop over identical elements)
+        do j = 1, N
+            xMon(:,iElt(j)) = A(:,1)
+            yMon(:,iElt(j)) = A(:,2)
+            zMon(:,iElt(j)) = A(:,3)
+            pMon(:,iElt(j)) = pMon_
+        end do
+
+        ok = PASS
+
+      end subroutine elt_srf_csys_set
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Returns element surface coordinate frame for elements where surface orientation
+      !            definition is required, i.e., GridData, Zernike, etc.
+      !
+      !            Identical elements simultaneously retrieved, e.g.:
+      !               iElt = [1,-5]   =>  get data from Elements [1,nElt-5]
+      !
+      ! Call     : CALL elt_srf_csys_get(ok,pMon,xMon,yMon,zMon,iElt,N)
+      ! Input    : iElt   [1xN,I]: Elt.ID   (Range: 0 < iElt[j] <= nElt )
+      !            N      [1x1,I]: Number of elements from which to retrieve
+      ! Output   : ok     [1x1,B]: = (True) if successful; (False) otherwise
+      !            pMon   [3xN,D]: = [x,y,z]    => origin of grid coord. frame (GCF)
+      !            xMon   [3xN,D]: = [Lx,Ly,Lz] => x-axis of grid coord. frame (GCF)
+      !            yMon   [3xN,D]: = [Mx,My,Mz] => y-axis of grid coord. frame (GCF)
+      !            zMon   [3xN,D]: = [Nx,Ny,Nz] => z-axis of grid coord. frame (GCF)
+      ! Require  : check if pymacos is initialized & Rx loaded
+      ! Note     : -- will check if Element is correct Srf. Type
+      !            -- GCF => Global Coordinate Frame
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_srf_csys_get(ok,pMon_,xMon_,yMon_,zMon_,iElt,N)
+
+        implicit none
+        logical,                  intent(out):: ok
+        real(8),  dimension(3,N), intent(out):: pMon_,xMon_,yMon_,zMon_
+        integer,  dimension(N),   intent(in) :: iElt
+        integer,                  intent(in) :: N
+
+        integer :: j
+        ! ------------------------------------------------------
+        ok    = FAIL
+
+        pMon_ = 0e0_pr
+        xMon_ = 0e0_pr
+        yMon_ = 0e0_pr
+        zMon_ = 0e0_pr
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType =  Monomial (#4), Zernike (#8), GridData (#9)
+        do j=1,N
+          if (.not. any(SrfType(iElt(j)) == SrfType_RequireSrfCSYS)) return
+        end do
+
+        do j = 1, N
+            xMon_(:,j) = xMon(:,iElt(j))
+            yMon_(:,j) = yMon(:,iElt(j))
+            zMon_(:,j) = zMon(:,iElt(j))
+            pMon_(:,j) = pMon(:,iElt(j))
+        end do
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_csys_get
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: Grid Type
+    !
+    ! ============================================================================================
+    ! [x] elt_srf_grid_any        Determine if any Grid Srf. is defined in Rx
+    ! [x] elt_srf_grid_fnd        Return Srf. IDs where a Grid Srf. is defined
+    ! [x] elt_srf_grid_fnd_type   Return Srf. IDs where a Grid Srf. with def. Type is defined (AsGrData, GridData, ...)
+    ! [x] elt_srf_grid_size       Return Grid Data Size at def. Surfaces
+    ! [x] elt_srf_grid_size_max   Return Max. Permitted Grid Sampling (model dependent).
+    ! [x] elt_srf_grid_spacing    Set / get Grid Sampling Spacing dx (dx==dy)
+    ! [x] elt_srf_grid_data       Set / get Grid Data
+    ! [x] elt_srf_grid_data_scale Scales    Grid Data
+    ! [x] elt_srf_grid_data_add   Add       Grid Data to existing Grid Data Values
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if at least one Element has a Grid Srf. defined in Rx
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_any(any_elt)
+
+        implicit none
+        logical, intent(out):: any_elt   ! success (1) or Fail (0)
+        ! ------------------------------------------------------
+        any_elt = FAIL
+
+        ! SMACOS and Rx status & nElt > 0
+        if (.not. (SystemCheck() .and. nElt>0)) return
+
+        ! check all surfaces if a Grid-Type Srf is defined
+        block
+          integer :: j
+          do j = 1, size(GridTypeAll)
+          if (any(SrfType(:nElt) == GridTypeAll(j))) any_elt = PASS
+        end do
+        end block
+
+      end subroutine elt_srf_grid_any
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if a Grid Srf. is/are defined at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_fnd(ok, IsGridSrf, iElt, N)
+
+        implicit none
+        logical,                     intent(out):: ok         ! success (1) or Fail (0)
+        logical, dimension(N),       intent(out):: IsGridSrf  ! 1 (Grp defined) or 0 (not defined)
+        integer, dimension(N),       intent(in) :: iElt       ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,                     intent(in) :: N
+        ! ------------------------------------------------------
+        ok           = FAIL
+        IsGridSrf(:) = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! find Grid Srfs. at Element(s) iElt
+        block
+          integer :: j
+          do j = 1, size(GridTypeAll)
+          where ((SrfType(iElt) == GridTypeAll(j))) IsGridSrf = PASS
+        end do
+        end block
+        ok = PASS
+
+      end subroutine elt_srf_grid_fnd
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if a Grid Srf. with specific Type is/are defined at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_fnd_type(ok, IsGridSrf, iElt, GridTypeID, N)
+        implicit none
+        logical,                     intent(out):: ok         ! success (1) or Fail (0)
+        logical, dimension(N),       intent(out):: IsGridSrf  ! 1 (defined) or 0 (not defined)
+        integer, dimension(N),       intent(in) :: iElt       ! Elt ID: (0 < iElt[i] <= nElt)
+        integer,                     intent(in) :: GridTypeID ! Specify SyrfaceType of Type Grid
+
+        integer,                     intent(in) :: N
+        ! ------------------------------------------------------
+        ok           = FAIL
+        IsGridSrf(:) = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! chk if ID is a valid Grid Srf.
+        if (all(GridTypeID /= GridTypeAll)) return
+
+        ! find Grid Srfs. at Element(s) iElt
+        where (SrfType(iElt) == GridTypeID) IsGridSrf(iElt) = PASS
+        ok = PASS
+
+      end subroutine elt_srf_grid_fnd_type
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Get Max. Permitted Grid Sampling (model dependent).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_size_max(MaxGridSize)
+
+        implicit none
+        integer, intent(out):: MaxGridSize ! Max Sampling Grid Size
+        ! ------------------------------------------------------
+
+        MaxGridSize = mGridMat
+
+      end subroutine elt_srf_grid_size_max
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Get Grid Sampling at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_size(ok,GridSize, iElt, N)
+
+        implicit none
+        logical,               intent(out):: ok         ! success (1) or Fail (0)
+        integer, dimension(N), intent(out):: GridSize   ! Grid Value (= -1 Not defined at Srf.)
+        integer, dimension(N), intent(in) :: iElt       ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,               intent(in) :: N
+        ! ------------------------------------------------------
+        ok = FAIL
+        GridSize(:) = -1
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! extract data for each Grid Srf. Type
+        block
+          integer :: j
+          do j = 1, size(GridTypeAll)
+          where (SrfType(iElt) == GridTypeAll(j)) GridSize = nGridMat(iElt)
+        end do
+        end block
+        ok = PASS
+
+      end subroutine elt_srf_grid_size
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/Get Grid Srf. Sampling at specified Grid Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_spacing(ok,iElt,GridSrfdx_,setter,N)
+
+        implicit none
+        logical,               intent(out)   :: ok           ! success (1) or Fail (0)
+        integer, dimension(N), intent(in)    :: iElt         ! Elt ID: (0 < iElt[i] <= nElt)
+        real(8), dimension(N), intent(inout) :: GridSrfdx_   ! grid data sampling spacing dx==dy
+        logical,               intent(in)    :: setter       ! if PASS, define new values
+
+        integer,               intent(in) :: N
+
+        logical, dimension(N) :: chk
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) GridSrfdx_ = 0d0
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType /= Grid
+        chk(:) = .false.
+        block
+          integer :: j
+          do j = 1, size(GridTypeAll)
+          where (SrfType(iElt) == GridTypeAll(j)) chk = .true.
+        end do
+        end block
+        if (any(.not. chk)) return
+
+        ! set/get GridSrfdx
+        if (setter .eqv. PASS) then
+          GridSrfdx(iElt) = GridSrfdx_
+          CALL modified_rx(ok)   ! grid sampling changed -> invalidate the trace
+        else
+          GridSrfdx_ = GridSrfdx(iElt)
+          ok = PASS
+        end if
+
+      end subroutine elt_srf_grid_spacing
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Scale Surface Grid for specified Grid Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_data_scale(ok,iElt,scalar,N)
+
+        implicit none
+        logical,               intent(out):: ok       ! success (1) or Fail (0)
+        integer, dimension(N), intent(in) :: iElt     ! Elt ID: (0 < iElt[i] <= nElt)
+        real(8), dimension(N), intent(in) :: scalar   ! grid scaling factor
+
+        integer,               intent(in) :: N
+
+        logical, dimension(N) :: chk
+        integer :: npts
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if SrfType /= Grid
+        chk(:) = .false.
+        block
+          integer :: j
+          do j = 1, size(GridTypeAll)
+          where (SrfType(iElt) == GridTypeAll(j)) chk = .true.
+        end do
+        end block
+        if (any(.not. chk)) return
+
+        ! scale grid data
+        block
+          integer :: j
+          do j = 1, SIZE(iElt)
+          npts = nGridMat(iElt(j))
+          associate (pgrid=>GridMat(1:npts, 1:npts, iEltToGridSrf(iElt(j))))
+            pgrid = scalar(j)*pgrid
+          end associate
+        end do
+        end block
+        ! grid data changed -> invalidate the trace (else a following trace is cached)
+        CALL modified_rx(ok)
+
+      end subroutine elt_srf_grid_data_scale
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/Get Grid Srf. Sampling at specified Grid Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_data(ok,iElt,GridSrfdx_,GridMat_,setter,Nx,Ny)
+
+        implicit none
+        logical,                   intent(out)   :: ok           ! success (1) or Fail (0)
+        integer,                   intent(in)    :: iElt         ! Elt ID: (0 < iElt[i] <= nElt)
+        real(8),                   intent(inout) :: GridSrfdx_   ! grid data sampling spacing dx==dy
+        real(8), dimension(Ny,Nx), intent(inout) :: GridMat_     ! displacement at node points from nominal shape (N x N) Grid
+        logical,                   intent(in)    :: setter       ! if PASS, define new values
+
+        integer,                   intent(in) :: Nx,Ny
+        ! ------------------------------------------------------
+        ok = FAIL
+        if (setter .eqv. FAIL) then
+          GridSrfdx_    = 0d0
+          GridMat_(:,:) = 0d0
+        end if
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+        ! if (.not. StatusChk1(iElt)) return
+
+        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt)
+        if ((Nx > mGridMat) .or. (Nx/=Ny) .or. (Nx<3)) return
+
+        ! check if SrfType /= Grid
+        if (all(SrfType(iElt) /= GridTypeAll)) return
+
+        ! set/get
+        if (setter .eqv. PASS) then
+                                 GridSrfdx(iElt) = GridSrfdx_
+                                 nGridMat(iElt)  = Nx
+          GridMat(:,:,iEltToGridSrf(iElt))       = 0d0            ! reset first (just in case)
+          GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) = GridMat_(:,:)  !Transpose(GridMat_(Ny:-1:1,:))
+          CALL modified_rx(ok)   ! grid data changed -> invalidate the trace
+        else
+          GridSrfdx_    = GridSrfdx(iElt)
+          GridMat_(:,:) = GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt))
+          ok = PASS
+        end if
+
+      end subroutine elt_srf_grid_data
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Add Grid Srf. Sampling to Existing Values at specified Grid Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_grid_data_add(ok,iElt,GridMat_,Nx,Ny)
+
+        implicit none
+        logical,                   intent(out)   :: ok           ! success (1) or Fail (0)
+        integer,                   intent(in)    :: iElt         ! Elt ID: (0 < iElt[i] <= nElt)
+        real(8), dimension(Ny,Nx), intent(inout) :: GridMat_     ! displacement at node points from nominal shape (N x N) Grid
+
+        integer,                   intent(in)    :: Nx,Ny
+        ! Orientation: the engine (surfsub.F NGSrf) reads GridMat(i,j) with the
+        ! FIRST index from xhat (i=+x) and the SECOND from yhat (j=+y).  Supply
+        ! the map with x along the first (row) index -- MATLAB callers build it
+        ! with ndgrid, NOT meshgrid (a meshgrid array is x<->y transposed, which
+        ! leaves even modes matching but silently flips odd (coma) modes).
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        ! check if SrfType /= Grid
+        if (all(SrfType(iElt) /= GridTypeAll)) return
+
+        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt).
+        ! Nx > mGridMat guards the case nGridMat(iElt) > the allocated GridMat
+        ! leading dim (e.g. a 256-grid Rx loaded at a 128 model): without it the
+        ! GridMat(1:Nx,1:Nx,slot) write runs off the slot into the next element's
+        ! grid -> cross-segment corruption.  Report loudly (not a silent no-op).
+        if ((Nx /= nGridMat(iElt)) .or. (Nx > mGridMat) .or. &
+            (Nx /= Ny) .or. (Nx < 3)) then
+          write(*,'(A,I0,A,I0,A,I0,A,I0)') &
+            ' ** elt_srf_grid_data_add: REJECTED for Elt ', iElt, &
+            ': got ', Nx, ' x ', Ny, ', need square == nGridMat=', &
+            nGridMat(iElt)
+          if (Nx > mGridMat) write(*,'(A,I0,A,I0,A)') &
+            '    Nx=', Nx, ' exceeds GridMat dim mGridMat=', mGridMat, &
+            ' -- use a larger model size'
+          return
+        end if
+
+        ! add
+        associate (pgrid=>GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)))
+          pgrid = pgrid + GridMat_(:,:)
+        end associate
+        ! GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) = GridMat(1:Ny,1:Nx,iEltToGridSrf(iElt)) + GridMat_(:,:)  !Transpose(GridMat_(Ny:-1:1,:))
+        ! grid data changed -> invalidate the trace so the next trace re-runs
+        ! (a grid edit alone does not dirty the trace -> cached OPD otherwise)
+        CALL modified_rx(ok)
+
+      end subroutine elt_srf_grid_data_add
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: Reflective & Transmission Grating
+    !
+    ! ============================================================================================
+    ! [x] elt_srf_grating_any        =>  elt_grating_any       Checks if any Grating Srfs. are defined in Rx
+    ! [x] elt_srf_grating_fnd        =>  elt_grating_fnd       Find all elements with Grating Srfs. types
+    ! [x] elt_srf_grating_params     =>  elt_grating_params    Linear grating (h1HOE, RuleWidth, Transmission or Reflective)
+    ! [x] elt_srf_grating_type       =>  elt_grating_type      Transmission or Reflective Grating
+    ! [x] elt_srf_grating_order      =>  elt_grating_order     Linear Grating Order (OrderHOE)
+    ! [x] elt_srf_grating_rule_width =>  elt_grating_spacing   RuleWidth
+    ! [x] elt_srf_grating_rule_dir   =>  elt_grating_h1HOE     h1HOE vector perpendicular to the ruling dir and psiElt vector.
+    ! --------------------------------------------------------------------------------------------
+
+    ! --------------------------------------------------------------------------------------------
+    ! Determine if at least one Srf has a Grating defined on Srf.
+    ! --------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_any(Any_Elt_With_Grating)
+
+      implicit none
+      logical, intent(out):: Any_Elt_With_Grating
+      ! ------------------------------------------------------
+      Any_Elt_With_Grating = FAIL
+
+      ! SMACOS and Rx status & nElt > 0
+      if (.not. (SystemCheck() .and. nElt>0)) return
+
+      ! print *, "=============>", GratingElt, TrGratingElt
+      ! print *, "===> EltType: ", EltType(:nElt)
+      ! print *, "===> SrfType: ", SrfType(:nElt)
+      ! print *, "===>   EltID: ", EltID(:nElt)
+      ! print *, "===>   EltID: ", EltID(1:nElt)
+      ! check all surfaces if a Zernike Srf is defined
+      if (any((EltID(1:nElt) == GratingElt).or. &
+              (EltID(1:nElt) == TrGratingElt))) Any_Elt_With_Grating = PASS
+
+    end subroutine elt_srf_grating_any
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Determine if a Grating is defined over a Srf at specified Element(s).
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_fnd(ok, Grating, iElt, N)
+
+      implicit none
+      logical,               intent(out):: ok       ! success (1) or Fail (0)
+      integer, dimension(N), intent(out):: Grating  ! 0) No, (1) Refl.  (2) Trans.
+      integer, dimension(N), intent(in) :: iElt     ! Elt ID: (0 < iElt[i] <= nElt)
+
+      integer,               intent(in) :: N
+
+      ! ------------------------------------------------------
+      ok         = FAIL
+      Grating(:) = FAIL
+
+      ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+      if (.not. StatusChk1(iElt)) return
+
+      ! find Zernike Srfs. at Element(s) iElt
+      where (EltID(iElt) == GratingElt)   Grating(iElt) = 1  ! Reflective   Grating
+      where (EltID(iElt) == TrGratingElt) Grating(iElt) = 2  ! Transmission Grating
+      ok = PASS
+
+    end subroutine elt_srf_grating_fnd
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Set/Get Grating Rule Width
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_rule_width(ok, iElt, Spacing, setter)
+      logical, intent(out)   :: ok         ! success status (0/1)
+      integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+      real(8), intent(inout) :: Spacing    ! RuleWidth (0 < Spacing < Inf)
+      logical, intent(in)    :: setter     ! if PASS, define new values
+      ! ------------------------------------------------------
+      ok = FAIL
+
+      ! SMACOS and Rx status &
+      if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+          (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+         ) return
+
+      ! check if valid Srf.
+      if (.not.((EltID(iElt) == GratingElt).or. &
+                (EltID(iElt) == TrGratingElt))) return
+
+      ! set/get values
+      if (setter .eqv. PASS) then
+        RuleWidth(iElt) = Spacing
+      else
+        Spacing = RuleWidth(iElt)
+      end if
+
+      ! return
+      ok = PASS
+
+    end subroutine elt_srf_grating_rule_width
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Set/Get Grating Order
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_order(ok, iElt, Order, setter, N)
+      logical, intent(out)                :: ok         ! success status (0/1)
+      integer, dimension(N), intent(in)   :: iElt       ! Surface 0 <= iElt <= nElt
+      integer, dimension(N), intent(inout):: Order      ! Diffraction Order
+      logical,               intent(in)   :: setter     ! if PASS, define new values
+
+      integer,               intent(in)   :: N          ! # of Elements
+      logical :: chk(N)
+
+      ! ------------------------------------------------------
+      ok = FAIL
+
+      ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+      if (.not. StatusChk1(iElt(:))) return
+
+      ! all listed surfaces must be Gratings
+      if (.not.all((EltID(iElt) == GratingElt).or.(EltID(iElt) == TrGratingElt))) return
+
+      ! set/get values
+      if (setter .eqv. PASS) then
+        OrderHOE(iElt(:)) = Order(:)
+      else
+        Order(:) = OrderHOE(iElt(:))
+      end if
+
+      ! return
+      ok = PASS
+
+    end subroutine elt_srf_grating_order
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Set/Get Grating Type
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_type(ok, iElt, reflective, setter)
+      logical, intent(out)   :: ok         ! success status (0/1)
+      integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+      logical, intent(inout) :: reflective ! (1) Refl. (0) Trans.
+      logical, intent(in)    :: setter     ! if PASS, define new values
+      ! ------------------------------------------------------
+      ok = FAIL
+
+      ! SMACOS and Rx status &
+      if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+          (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+         ) return
+
+      ! check if valid Srf.
+      if (.not.((EltID(iElt) == GratingElt).or. &
+                (EltID(iElt) == TrGratingElt))) return
+
+      ! set/get values
+      if (setter .eqv. PASS) then
+
+        if (reflective .eqv. PASS) then
+          EltID(iElt) = GratingElt    ! Reflective Grating
+        else
+          EltID(iElt) = TrGratingElt  ! Transmissive Grating
+        end if
+
+      else
+
+        if (EltID(iElt) == GratingElt) then
+          reflective = PASS           ! Reflective Grating
+        else
+          reflective = FAIL           ! Transmissive Grating
+        end if
+
+      end if
+
+      ! return
+      ok = PASS
+
+    end subroutine elt_srf_grating_type
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Set/Get Grating h1HOE -- defines ruling direction (vector perpend. to its direction and PsiElt)
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_rule_dir(ok, iElt, h1HOE_, setter)
+      logical, intent(out)   :: ok         ! success status (0/1)
+      integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+      real(8), intent(inout) :: h1HOE_(3)  ! h1HOE => perpendicular to the ruling direction and psiElt vector.
+      logical, intent(in)    :: setter     ! if PASS, define new values
+      ! ------------------------------------------------------
+      ok = FAIL
+
+      ! SMACOS and Rx status &
+      if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+          (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+         ) return
+
+      ! check if valid Srf.
+      if (.not.((EltID(iElt) == GratingElt).or. &
+                (EltID(iElt) == TrGratingElt))) return
+
+      ! set/get values
+      if (setter .eqv. PASS) then
+        h1HOE(:, iElt) = h1HOE_(:)
+      else
+        h1HOE_(:) = h1HOE(:, iElt)
+      end if
+
+      ! return
+      ok = PASS
+
+    end subroutine elt_srf_grating_rule_dir
+
+
+    !-------------------------------------------------------------------------------------------
+    ! Set/Get Grating Parameters
+    !-------------------------------------------------------------------------------------------
+    subroutine elt_srf_grating_params(ok, iElt, Spacing, Diff_Order, h1HOE_, reflective, setter)
+      logical, intent(out)   :: ok         ! success status (0/1)
+      integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+      integer, intent(inout) :: Diff_Order ! Diffraction Order
+      real(8), intent(inout) :: Spacing    ! RuleWidth (0 < Spacing < Inf)
+      real(8), intent(inout) :: h1HOE_(3)  ! h1HOE => perpendicular to the ruling direction and psiElt vector.
+      logical, intent(inout) :: reflective ! (1) Refl. (0) Trans.
+      logical, intent(in)    :: setter     ! if PASS, define new values
+      ! ------------------------------------------------------
+      ok = FAIL
+      if (.not.setter) then
+        Diff_Order = -999
+        Spacing    = -999d0
+        h1HOE_(:)  = -999d0
+        reflective = -1
+      end if
+
+      ! SMACOS and Rx status &
+      if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+          (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+         ) return
+
+      ! check if valid Srf.
+      if (.not.((EltID(iElt) == GratingElt).or. &
+                (EltID(iElt) == TrGratingElt))) return
+
+      ! set/get values
+      if (setter .eqv. PASS) then
+
+        if (reflective .eqv. PASS) then
+          EltID(iElt) = GratingElt    ! Reflective Grating
+        else
+          EltID(iElt) = TrGratingElt  ! Transmissive Grating
+        end if
+
+        OrderHOE(iElt)  = real(Diff_Order, kind=8) ! Diffraction Order
+        RuleWidth(iElt) = Spacing                  ! Rule Width Lin. Grating
+        h1HOE(:, iElt)  = h1HOE_(:)                ! orientation vector
+
+      else
+
+        if (EltID(iElt) == GratingElt) then
+          reflective = PASS                    ! Reflective Grating
+        else
+          reflective = FAIL                    ! Transmissive Grating
+        end if
+
+        Diff_Order = int(OrderHOE(iElt)) ! Diffraction Order
+        Spacing    = RuleWidth(iElt)     ! Rule Width Lin. Grating
+        h1HOE_(:)  = h1HOE(:, iElt)      ! orientation vector
+
+      end if
+
+      ! return
+      ok = PASS
+
+    end subroutine elt_srf_grating_params
+
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: Zernike
+    !
+    ! ============================================================================================
+    ! [ ] elt_srf_zrn_any
+    ! [ ] elt_srf_zrn_fnd
+    ! [ ] elt_srf_zrn_coef
+    ! [ ] elt_srf_zrn_type
+    ! [ ] elt_srf_zrn_norm_radius
+    !
+    ! ToDo: simplify
+    !   [ ] elt_srf_zrn_set         Define Zernike Srf. params of equal Zernike Srf. element(s)
+    !   [ ] elt_srf_zrn_get         Return Zernike Srf. params of equal Zernike Srf. element(s)
+    !   [ ] elt_srf_zrn_mode_set    Define Zernike Srf. params of equal Zernike Srf. element(s)
+    ! ============================================================================================
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if at least one Element has a Zernike defined in Rx
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_any(any_elt_Zrn)
+
+        implicit none
+        logical, intent(out):: any_elt_Zrn
+        ! ------------------------------------------------------
+        any_elt_Zrn = FAIL
+
+        ! SMACOS and Rx status & nElt > 0
+        if (.not. (SystemCheck() .and. nElt>0)) return
+
+        ! check all surfaces if a Zernike Srf is defined
+        if (any(SrfType(:nElt) == SrfType_Zernike)) any_elt_Zrn = PASS
+
+      end subroutine elt_srf_zrn_any
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if a Zernike are defined at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_fnd(ok, nZrn, iElt, N)
+
+        implicit none
+        logical,                     intent(out):: ok    ! success (1) or Fail (0)
+        logical, dimension(N),       intent(out):: nZrn  ! 1 (Grp defined) or 0 (not defined)
+        integer, dimension(N),       intent(in) :: iElt  ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,                     intent(in) :: N
+
+        ! ------------------------------------------------------
+        ok      = FAIL
+        nZrn(:) = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt(j) <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! find Zernike Srfs. at Element(s) iElt
+        where (SrfType(iElt) == SrfType_Zernike) nZrn(iElt) = PASS
+        ok = PASS
+
+      end subroutine elt_srf_zrn_fnd
+
+
+      !ToDo: check max mode depending on Zernike Type
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/get Zernike Coefficients
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_coef(ok, iElt, ZernMode, ZernCoef_, setter, reset, N)
+        use elt_mod,   only: mZernModes
+
+        implicit none
+        logical,               intent(out)   :: ok
+        integer,               intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+        integer, dimension(N), intent(inout) :: ZernMode   ! [Z_1,Z_2,...,Z_Nm] Zernike Modes
+        real(8), dimension(N), intent(inout) :: ZernCoef_  ! [C_1,C_2,...,C_Nc] Zernike Coefficients
+        logical,               intent(in)    :: setter     ! if PASS, define new values
+        logical,               intent(in)    :: reset      ! if PASS, reset all modes first (only for setter)
+        integer,               intent(in)    :: N
+
+        integer            :: j
+        integer, parameter :: mZernCoef = mZernModes             ! hardcoded value taken from module "elt_mod"
+        ! ------------------------------------------------------
+        ! Note: - tracesub.F: in CTRACE(...)
+        !              ZernTypeL = {1,4} => ZernToMon1    Norm/ Malacara
+        !                        = {2,5} => ZernToMon2    Norm/ Born & Wolf   => calls ZernToMon1
+        !                        = {3,6} => ZernToMon3    Norm/ Fringe        => calls ZernToMon1
+        !                        = {  7} => ZernToMon4    NormHex
+        !                        = {  8} => ZernToMon6    NormNoll            => calls ZernToMon1
+        !                        = {  9} => ZernToMon7    NormAnnularNoll
+        !       - surfsub.F
+        !              "ZernToMon1" => ZernType = {4,5,6,8} uses var. "ZnNmFac_m" defined via "SetZernNormCoef"
+
+        ! call SetZernNormCoef(0)  ! just in case (def. in elt_mod.F)
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+        ! if (.not. StatusChk1(iElt)) return
+
+        ! Accept SrfType=Zernike (pure Zernike) or ZrnGrData (Zernike+grid
+        ! composite); both store their Zernike component in ZernCoef(:,iElt).
+        if ((SrfType(iElt) /= SrfType_Zernike) .and.                       &
+            (SrfType(iElt) /= SrfType_ZrnGrData)) return
+
+        ! check mode range: Fringe is limited to 37 Modes
+        if (((ZernTypeL(iElt) == ZernType_Fringe) .or.       &
+            (ZernTypeL(iElt) == ZernType_NormFringe)) .and. &
+              (any(ZernMode > 37))) then
+          return
+        else
+          if (any(ZernMode< 1 .or. ZernMode>mZernCoef)) return
+        end if
+
+        if (setter .eqv. PASS) then
+          if (reset .eqv. PASS) ZernCoef(:, iElt) = 0d0
+          ZernCoef(ZernMode(:), iElt) = ZernCoef_(:)
+        else
+          ZernCoef_(:) = ZernCoef(ZernMode(:), iElt)
+        end if
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_coef
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/get Zernike Type on a Surface
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_type(ok, iElt, ZernType, setter, reset)
+        use elt_mod,   only: mZernType
+
+        implicit none
+        logical, intent(out)   :: ok         ! success status (0/1)
+        integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+        integer, intent(inout) :: ZernType   ! Zernike Type
+        logical, intent(in)    :: setter     ! if PASS, define new values
+        logical, intent(in)    :: reset      ! if PASS, reset all coefs first (only for setter)
+
+        ! ------------------------------------------------------
+        ! Note: - tracesub.F: in CTRACE(...)
+        !
+        !          ZernTypeL = {1,4} => ZernToMon1    Norm/ ANSI
+        !                    = {2,5} => ZernToMon2    Norm/ Born & Wolf   => calls ZernToMon1
+        !                    = {3,6} => ZernToMon3    Norm/ Fringe        => calls ZernToMon1
+        !                    = {  7} => ZernToMon4    NormHex
+        !                    = {  8} => ZernToMon6    NormNoll            => calls ZernToMon1
+        !                    = {  9} => ZernToMon7    NormAnnularNoll
+        !       - surfsub.F
+        !              "ZernToMon1" => ZernType = {4,5,6,8} uses var. "ZnNmFac_m" defined via "SetZernNormCoef"
+        ! ------------------------------------------------------
+
+        ! initialisation
+        ok = FAIL
+
+        ! SMACOS and Rx status &
+        if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+            (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+            ) return
+
+        if (setter .eqv. PASS) then
+
+          if ((ZernType < 1) .or. (ZernType > mZernType) .or. & ! Check Range
+              (SrfType(iElt) /= SrfType_Zernike)) return         ! SrfType /= Zernike
+
+          if (reset .eqv. PASS) ZernCoef(:, iElt) = 0d0
+          ZernTypeL(iElt) = ZernType
+
+        else
+
+          if (SrfType(iElt) /= SrfType_Zernike) then   ! check if SrfType /= Zernike
+            ZernType = -1
+          else
+            ZernType = ZernTypeL(iElt)
+          end if
+        end if
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_type
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/Get Zernike Norm. Radius
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_norm_radius(ok, iElt, NormRad, setter)
+        logical, intent(out)   :: ok         ! success status (0/1)
+        integer, intent(in)    :: iElt       ! Surface 0 <= iElt <= nElt
+        real(8), intent(inout) :: NormRad    ! Zernike Norm. Radius (0 < lMon < Inf)
+        logical, intent(in)    :: setter     ! if PASS, define new values
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        ! SMACOS and Rx status &
+        if ((.not. SystemCheck())      .or. &  ! SMACOS and Rx status
+            (iElt<1) .or. (iElt>nElt)       &  ! range chk: 0 < iElt <= nElt
+           ) return
+
+        ! set/get values
+        if (setter .eqv. PASS) then
+          if ((SrfType(iElt) /= SrfType_Zernike)) return     ! SrfType /= Zernike
+
+          lMon(iElt) = NormRad
+
+        else
+
+          if (SrfType(iElt) /= SrfType_Zernike) then   ! check if SrfType /= Zernike
+            NormRad = -1d0
+          else
+            NormRad = lMon(iElt)
+          end if
+
+        end if
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_norm_radius
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Purpose  : Define Zernike Srf. settings of equal Zernike Srf. element(s)
+      ! Call     : CALL elt_srf_zrn_set(ok,iElt,lMon,ZernType,ZernMode,ZernCoef,ZernAnnularRatio,M)
+      ! Input    : iElt             [Mx1,I]: Elt. ID ( -nElt < iElt[i] <= nElt )
+      !            lMon             [1x1,D]: = Zernike Radius
+      !            ZernType         [1x1,I]: 1) Malacara  4) NormMalacara  7) NormHex
+      !                                      2) BornWolf  5) NormBornWolf  8) NormNoll
+      !                                      3) Fringe    6) NormFringe    9) NormAnnularNoll
+      !            ZernMode        [1xNm,I]: = [Z_1,Z_2,...,Z_Nm] Zernike Modes
+      !            ZernCoef        [1xNc,D]: = [C_1,C_2,...,C_Nc] Zernike Coefficients
+      !            ZernAnnularRatio [1x1,D]: = inner/outer radius ratio (0,...,1)
+      !                                        (only for ZernType = NormAnnularNoll(#9))
+      !            M                [1x1,I]: Number of equal elements
+      !            Nm               [1x1,I]: Number of elements in "ZernMode"
+      !            Nc               [1x1,I]: Number of elements in "ZernCoef"
+      ! Output   : ok               [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      ! Require  : PyMACOS initialized & Rx loaded
+      ! Note     : -- ZCF => Zernike Coord. Frame: defined via calling elt_srf_csys_set(...)
+      !            -- M of iElt defines identical elements, e.g., iElt = [1;-5]
+      !               => Element [1;nElt-5] have the same Zernike settings:
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_set(ok,iElt,lMon_,ZernType,ZernMode,ZernCoef_,ZernAnnularRatio,M,Nm,Nc)
+        !use Constants, only: eps
+        use elt_mod,   only: mZernType, mZernModes
+
+        implicit none
+        logical,                   intent(out):: ok
+        integer, dimension(M),     intent(in) :: iElt
+        real(8),                   intent(in) :: lMon_
+        integer,                   intent(in) :: ZernType
+        integer, dimension(Nm),    intent(in) :: ZernMode
+        real(8), dimension(Nc),    intent(in) :: ZernCoef_
+        real(8),                   intent(in) :: ZernAnnularRatio
+        integer,                   intent(in) :: M, Nm, Nc
+
+        integer :: j
+        ! ------------------------------------------------------
+        ! Note: - tracesub.F: in CTRACE(...)
+        !              ZernTypeL = {1,4} => ZernToMon1    Norm/ Malacara
+        !                        = {2,5} => ZernToMon2    Norm/ Born & Wolf   => calls ZernToMon1
+        !                        = {3,6} => ZernToMon3    Norm/ Fringe        => calls ZernToMon1
+        !                        = {  7} => ZernToMon4    NormHex
+        !                        = {  8} => ZernToMon6    NormNoll            => calls ZernToMon1
+        !                        = {  9} => ZernToMon7    NormAnnularNoll
+        !       - surfsub.F
+        !              "ZernToMon1" => ZernType = {4,5,6,8} uses var. "ZnNmFac_m" defined via "SetZernNormCoef"
+
+        ! call SetZernNormCoef(0)  ! just in case (def. in elt_mod.F)
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! out-of-boundary & shape check BUT not yet checked: multiple occurances of the same modes (issue with parallelisation)
+        if (ZernType<1 .or. ZernType>mZernType .or. Nc/=Nm .or. &
+            any(ZernMode<0 .or. ZernMode>mZernModes) .or. lMon_ <= 0e0_pr .or. &
+            (ZernAnnularRatio < 0e0_pr .or. ZernAnnularRatio > 1e0_pr)) return
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if EltType /= Zernike
+        if (any(SrfType(iElt(:)) /= SrfType_Zernike)) return
+
+        ! set Zernike values
+
+          ! Zernike Modes & corresponding coefficients (incl. Normalisation factor updates)
+          ZernCoef(:,iElt(:)) = 0e0_pr
+          do j = 1, M
+            ZernCoef(ZernMode(:),iElt(j)) = ZernCoef_(:)
+          end do
+
+          ! Zernike Type
+          ZernTypeL(iElt(:)) = ZernType
+
+          ! Zernike Normalisation Radius
+          lMon(iElt(:)) = lMon_
+
+          ! Zernike Radii Ratio = inner/outer radius
+          if (ZernType==ZernType_NormAnnularNoll) ZernAnnuRatio(iElt(:)) = ZernAnnularRatio
+
+        ! set Srf. Coordinate Frame if not already set to default values (xMon,yMon,zMon,pMon)
+        ! ==> done in switchEltSrfType(...)
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Define Zernike Srf. settings of equal Zernike Srf. element(s)
+      ! Call     : CALL elt_srf_zrn_mode_set(ok,iElt,lMon,ZernType,ZernMode,ZernCoef,ZernAnnularRatio,M)
+      ! Input    : iElt             [Mx1,I]: Elt. ID ( -nElt < iElt[i] <= nElt )
+      !            lMon             [1x1,D]: = Zernike Radius
+      !            ZernType         [1x1,I]: 1) Malacara  4) NormMalacara  7) NormHex
+      !                                      2) BornWolf  5) NormBornWolf  8) NormNoll
+      !                                      3) Fringe    6) NormFringe    9) NormAnnularNoll
+      !            ZernMode        [1xNm,I]: = [Z_1,Z_2,...,Z_Nm] Zernike Modes
+      !            ZernCoef        [1xNc,D]: = [C_1,C_2,...,C_Nc] Zernike Coefficients
+      !            ZernAnnularRatio [1x1,D]: = inner/outer radius ratio (0,...,1)
+      !                                        (only for ZernType = NormAnnularNoll(#9))
+      !            M                [1x1,I]: Number of equal elements
+      !            Nm               [1x1,I]: Number of elements in "ZernMode"
+      !            Nc               [1x1,I]: Number of elements in "ZernCoef"
+      ! Output   : ok               [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      ! Require  : PyMACOS initialized & Rx loaded
+      ! Note     : -- ZCF => Zernike Coord. Frame: defined via calling elt_srf_csys_set(...)
+      !            -- M of iElt defines identical elements, e.g., iElt = [1;-5]
+      !               => Element [1;nElt-5] have the same Zernike settings:
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_mode_set(ok,iElt,ZernMode,ZernCoef_,M,N)
+        !use Constants, only: eps
+        use elt_mod,   only: mZernType, mZernModes
+
+        implicit none
+        logical,               intent(out):: ok
+        integer, dimension(M), intent(in) :: iElt
+        integer, dimension(N), intent(in) :: ZernMode
+        real(8), dimension(N), intent(in) :: ZernCoef_
+        integer,               intent(in) :: M, N
+
+
+        ! ------------------------------------------------------
+        ! Note: - tracesub.F: in CTRACE(...)
+        !              ZernTypeL = {1,4} => ZernToMon1    Norm/ ANSI
+        !                        = {2,5} => ZernToMon2    Norm/ Born & Wolf   => calls ZernToMon1
+        !                        = {3,6} => ZernToMon3    Norm/ Fringe        => calls ZernToMon1
+        !                        = {  7} => ZernToMon4    NormHex
+        !                        = {  8} => ZernToMon6    NormNoll            => calls ZernToMon1
+        !                        = {  9} => ZernToMon7    NormAnnularNoll
+        !       - surfsub.F
+        !              "ZernToMon1" => ZernType = {4,5,6,8} uses var. "ZnNmFac_m" defined via "SetZernNormCoef"
+
+        ! call SetZernNormCoef(0)  ! just in case (def. in elt_mod.F)
+        ! ------------------------------------------------------
+        ! initialisation
+        ok = FAIL
+
+        ! out-of-boundary & shape check BUT not yet checked: multiple occurances of the same modes (issue with parallelisation)
+        if (any(ZernMode<0 .or. ZernMode>mZernModes)) return
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt)) return
+
+        ! check if EltType /= Zernike
+        if (any(SrfType(iElt(:)) /= 8)) return
+
+        ! Zernike Modes & corresponding coefficients (incl. Normalisation factor updates)
+        ZernCoef(:,iElt(:)) = 0e0_pr
+
+        block
+          integer :: j
+          do j = 1, M
+          ZernCoef(ZernMode(:),iElt(j)) = ZernCoef_(:)
+          end do
+        end block
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_mode_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Retrieve Zernike Srf. settings of Zernike Srf. element(s)
+      ! Call     : CALL elt_srf_zrn_get(ok,lMon,ZernType,ZernCoef,ZernAnnularRatio,iElt)
+      ! Input    : iElt             [1xN,I]: Elt. ID ( -nElt < iElt[i] <= nElt )
+      !            N                [1x1,I]: Number of elements to query
+      ! Output   : ok               [1x1,B]: = (True,1) if successful; (False,0) otherwise
+      !            lMon             [1xN,D]: = Zernike Radius
+      !            ZernType         [1xN,I]: 1) Malacara  4) NormMalacara  7) NormHex
+      !                                      2) BornWolf  5) NormBornWolf  8) NormNoll
+      !                                      3) Fringe    6) NormFringe    9) NormAnnularNoll
+      !            ZernCoef         [MxN,D]: = [C_1,C_2,...,C_N] Zernike Coefficients  (M=45)
+      !            ZernAnnularRatio [1xN,D]: = inner/outer radius ratio (0,...,1)
+      !                                        only important for ZernType = NormAnnularNoll (9)
+      ! Require  : PyMACOS initialized & Rx loaded
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_srf_zrn_get(ok,lMon_,ZernType,ZernCoef_,ZernAnnularRatio,iElt,N)
+        use elt_mod, only: mZernModes
+        implicit none
+        integer, parameter :: mZernCoef = 66             ! hardcoded value taken from module "elt_mod" (issues with parameter from elt_mod)
+
+        logical,                         intent(out):: ok
+        real(8), dimension(N),           intent(out):: lMon_
+        integer, dimension(N),           intent(out):: ZernType
+        real(8), dimension(mZernCoef,N), intent(out):: ZernCoef_
+        real(8), dimension(N),           intent(out):: ZernAnnularRatio
+        integer, dimension(N),           intent(in) :: iElt
+        integer,                         intent(in) :: N
+
+
+        ! ------------------------------------------------------
+        ! initialize in case of failure
+        ok = FAIL
+
+        lMon_(:)         = 0e0_pr
+        ZernType(:)      = 0
+        ZernCoef_(:,:)   = 0e0_pr
+        ZernAnnularRatio = 0e0_pr
+
+        !check shape of array
+
+
+        ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
+        if (.not. StatusChk1(iElt(:))) return
+
+        ! check if EltType /= Zernike
+        if (any(SrfType(iElt(:)) /= SrfType_Zernike)) return
+
+        ! get Zernike values
+        if (SIZE(ZernCoef_, 1) /= mZernModes) return
+
+
+        lMon_(:)       = lMon(iElt(:))                 ! Zernike Normalisation Radius
+        ZernType(:)    = ZernTypeL(iElt(:))            ! Zernike Type
+        ZernCoef_(:,:) = ZernCoef(:mZernModes,iElt(:)) ! coefficients    ToDo: check => (incl. Normalisation factor updates)
+
+        ! Zernike Radii Ratio = inner/outer radius
+        block
+          integer :: j
+          do j = 1, N
+          if (ZernType(j)==ZernType_NormAnnularNoll) then
+            ZernAnnularRatio(j) = ZernAnnuRatio(iElt(j))
+          else
+            ZernAnnularRatio(j) = 0e0_pr
+          end if
+          end do
+        end block
+
+        ! return
+        ok = PASS
+
+      end subroutine elt_srf_zrn_get
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: FreeForm Mon-Zernike Coefficients
+    !
+    ! MonZernCoef(:, iElt) is the Zernike-form representation of the
+    ! perturbable "Mon" component of a FreeForm surface (SrfType=14).
+    ! At trace time, ZerntoMon converts MonZernCoef into the MonCoef
+    ! monomial coefficients that FreeFormSrf evaluates.  Writing
+    ! MonZernCoef directly here is the wavefront-control / sensitivity-
+    ! matrix channel for FreeForm optics (mirrors what GMI does via
+    ! pmonzern; see GMI.F:ApplyPerturbationToOpticalSystem).
+    !
+    ! ============================================================================================
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if at least one Element is a FreeForm surface
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_ff_any(any_elt_FF)
+
+        implicit none
+        logical, intent(out):: any_elt_FF
+        ! ------------------------------------------------------
+        any_elt_FF = FAIL
+
+        if (.not. (SystemCheck() .and. nElt>0)) return
+
+        if (any(SrfType(:nElt) == SrfType_FreeForm)) any_elt_FF = PASS
+
+      end subroutine elt_srf_ff_any
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Determine if FreeForm surfaces are defined at specified Element(s).
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_ff_fnd(ok, nFF, iElt, N)
+
+        implicit none
+        logical,                     intent(out):: ok    ! success (1) or Fail (0)
+        logical, dimension(N),       intent(out):: nFF   ! 1 (FreeForm at this elt) or 0
+        integer, dimension(N),       intent(in) :: iElt  ! Elt ID: (0 < iElt[i] <= nElt)
+
+        integer,                     intent(in) :: N
+        ! ------------------------------------------------------
+        ok     = FAIL
+        nFF(:) = FAIL
+
+        if (.not. StatusChk1(iElt)) return
+
+        where (SrfType(iElt) == SrfType_FreeForm) nFF(iElt) = PASS
+        ok = PASS
+
+      end subroutine elt_srf_ff_fnd
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Get the number of Mon-Zernike coefficient slots allocated per element
+      ! (mMonCoef from elt_mod).  Lets the Python side size its mode arrays
+      ! without hard-coding 120.
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_mon_zrn_max_modes(n_max)
+        use elt_mod, only: mMonCoef
+
+        implicit none
+        integer, intent(out) :: n_max
+        ! ------------------------------------------------------
+        n_max = mMonCoef
+      end subroutine elt_srf_mon_zrn_max_modes
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/get Mon-Zernike Coefficients on a FreeForm surface.
+      ! Mirrors elt_srf_zrn_coef but writes/reads MonZernCoef(:, iElt)
+      ! and gates on SrfType_FreeForm instead of SrfType_Zernike.
+      ! On set, the perturbed coefficients persist until the next overwrite
+      ! or load; the next trace picks them up via ZerntoMon in tracesub.F.
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_mon_zrn_coef(ok, iElt, ZernMode, MonZernCoef_,    &
+                                      setter, reset, N)
+        use elt_mod, only: mMonCoef, MonZernCoef, MonZernTypeL,             &
+                           ZernType_Fringe, ZernType_NormFringe
+
+        implicit none
+        logical,               intent(out)   :: ok
+        integer,               intent(in)    :: iElt          ! 0 < iElt <= nElt
+        integer, dimension(N), intent(inout) :: ZernMode      ! mode indices
+        real(8), dimension(N), intent(inout) :: MonZernCoef_  ! coefficients
+        logical,               intent(in)    :: setter        ! PASS = set, else get
+        logical,               intent(in)    :: reset         ! PASS = zero all modes first (setter only)
+        integer,               intent(in)    :: N
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        if (SrfType(iElt) /= SrfType_FreeForm) return
+
+        ! Fringe Zernike is limited to 37 modes; other types up to mMonCoef
+        if (((MonZernTypeL(iElt) == ZernType_Fringe) .or.                  &
+             (MonZernTypeL(iElt) == ZernType_NormFringe)) .and.            &
+            (any(ZernMode > 37))) then
+          return
+        else
+          if (any(ZernMode < 1 .or. ZernMode > mMonCoef)) return
+        end if
+
+        if (setter .eqv. PASS) then
+          if (reset .eqv. PASS) MonZernCoef(:, iElt) = 0d0
+          MonZernCoef(ZernMode(:), iElt) = MonZernCoef_(:)
+        else
+          MonZernCoef_(:) = MonZernCoef(ZernMode(:), iElt)
+        end if
+
+        ok = PASS
+
+      end subroutine elt_srf_mon_zrn_coef
+
+
+      !-------------------------------------------------------------------------------------------
+      ! Set/get FF-Zernike Coefficients on a FreeForm surface.
+      ! Same pattern as elt_srf_mon_zrn_coef, but writes/reads
+      ! FFZernCoef(:, iElt) -- the FreeForm surface's figure-description
+      ! Zernike-form coefficients (distinct from the perturbation overlay
+      ! held in MonZernCoef).  Both arrays are evaluated at trace time
+      ! by ZerntoMon and feed FreeFormSrf.
+      !-------------------------------------------------------------------------------------------
+      subroutine elt_srf_ff_zrn_coef(ok, iElt, ZernMode, FFZernCoef_,      &
+                                     setter, reset, N)
+        use elt_mod, only: mFFCoef, FFZernCoef, FFZernTypeL,                &
+                           ZernType_Fringe, ZernType_NormFringe
+
+        implicit none
+        logical,               intent(out)   :: ok
+        integer,               intent(in)    :: iElt
+        integer, dimension(N), intent(inout) :: ZernMode
+        real(8), dimension(N), intent(inout) :: FFZernCoef_
+        logical,               intent(in)    :: setter
+        logical,               intent(in)    :: reset
+        integer,               intent(in)    :: N
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        if (SrfType(iElt) /= SrfType_FreeForm) return
+
+        if (((FFZernTypeL(iElt) == ZernType_Fringe) .or.                   &
+             (FFZernTypeL(iElt) == ZernType_NormFringe)) .and.             &
+            (any(ZernMode > 37))) then
+          return
+        else
+          if (any(ZernMode < 1 .or. ZernMode > mFFCoef)) return
+        end if
+
+        if (setter .eqv. PASS) then
+          if (reset .eqv. PASS) FFZernCoef(:, iElt) = 0d0
+          FFZernCoef(ZernMode(:), iElt) = FFZernCoef_(:)
+        else
+          FFZernCoef_(:) = FFZernCoef(ZernMode(:), iElt)
+        end if
+
+        ok = PASS
+
+      end subroutine elt_srf_ff_zrn_coef
+
+
+
+      ! ============================================================================================
+      !
+      ! Element Surface Properties: Multiple Zernike Srf.
+      !
+      ! ============================================================================================
+      subroutine elt_srf_zrn_FreeForm(ok, srf,&
+                ifFF_, FFZernType_, FFZernModes_, FFZernCoef_, &
+                lFF_, pFF_, xFF_, yFF_, zFF_, &
+                ifMon_, MonZernType_, MonZernModes_, MonZernCoef_, &
+                lMon_, pMon_, xMon_, yMon_, zMon_, &
+                ifGridTerm_, GridSrfdx_, GridMat_, &
+                pData_, xData_, yData_, zData_, setter,&
+                Nx, Ny, nFF, nMon)
+
+        use elt_mod, only: mZernModes, mZernType
+        use, intrinsic :: IEEE_ARITHMETIC
+
+        implicit none
+        integer, parameter :: mZernCoef = 66             ! hardcoded value taken from module "elt_mod" (issues with parameter from elt_mod)
+
+        logical,                  intent(out)  :: ok
+        integer,                  intent(in)   :: srf
+        ! ----------- "FF" Data
+        logical,                  intent(inout):: ifFF_          ! (1) active / (0) inactive
+        integer,                  intent(inout):: FFZernType_    ! BornWolf
+        integer, dimension(nFF),  intent(inout):: FFZernModes_
+        real(8), dimension(nFF),  intent(inout):: FFZernCoef_
+        real(8),                  intent(inout):: lFF_
+        real(8), dimension(3),    intent(inout):: pFF_          ! CSYS Pos
+        real(8), dimension(3),    intent(inout):: xFF_          ! CSYS x-dir
+        real(8), dimension(3),    intent(inout):: yFF_          ! CSYS y-dir
+        real(8), dimension(3),    intent(inout):: zFF_          ! CSYS z-dir
+
+        ! ----------- "Mon" Data
+        logical,                  intent(inout):: ifMon_        ! (1) active / (0) inactive
+        integer,                  intent(inout):: MonZernType_  ! Type: BornWolf, ...
+        integer, dimension(nMon), intent(inout):: MonZernModes_ ! # of Modes
+        real(8), dimension(nMon), intent(inout):: MonZernCoef_  ! Zern Modes
+        real(8),                  intent(inout):: lMon_
+        real(8), dimension(3),    intent(inout):: pMon_         ! CSYS Pos
+        real(8), dimension(3),    intent(inout):: xMon_         ! CSYS x-dir
+        real(8), dimension(3),    intent(inout):: yMon_         ! CSYS y-dir
+        real(8), dimension(3),    intent(inout):: zMon_         ! CSYS z-dir
+
+        ! ----------- "Grid Data" Data
+        logical,                  intent(inout):: ifGridTerm_   ! (1) active / (0) inactive
+        real(8),                  intent(inout):: GridSrfdx_    ! grid data sampling spacing dx==dy
+        real(8), dimension(Ny,Nx),intent(inout):: GridMat_      ! displacement at node points from nominal shape (N x N) Grid
+        real(8), dimension(3),    intent(inout):: pData_        ! CSYS Pos
+        real(8), dimension(3),    intent(inout):: xData_        ! CSYS x-dir
+        real(8), dimension(3),    intent(inout):: yData_        ! CSYS y-dir
+        real(8), dimension(3),    intent(inout):: zData_        ! CSYS z-dir
+
+        integer,                  intent(in) :: setter
+        integer,                  intent(in) :: Nx,Ny,nFF,nMon
+        !f2py  integer intent(hide), depend(GridMat_), check(shape(GridMat_,0)>0, shape(GridMat_,1)>0):: Ny=shape(GridMat_,0), Nx=shape(GridMat_,1)
+        !f2py  integer intent(hide), depend(FFZernModes_,FFZernCoef_):: nFF=len(FFZernModes_)
+        !f2py  integer intent(hide), depend(MonZernModes_,MonZernCoef_):: nMon=len(MonZernModes_)
+
+        real(pr) :: A(3, 3)
+        logical :: GFM(3)    ! ifGridTerm, ifFF, ifMon
+
+        real(pr), parameter :: NormRadius_max = 1e5_pr
+        ! ------------------------------------------------------
+        ! initialize in case of failure
+        ok = FAIL
+
+        if (setter==0) then
+
+            ! Zernike Def #1
+            FFZernType_     = 0
+            FFZernModes_(:) = 0;
+            FFZernCoef_(:)  = 0e0_pr
+            lFF_ = 0e0_pr
+            pFF_(:) = 0e0_pr; xFF_(:) = 0e0_pr; yFF_(:) = 0e0_pr; zFF_(:) = 0e0_pr
+
+            ! Zernike Def #2
+            MonZernType_     = 0
+            MonZernModes_(:) = 0
+            MonZernCoef_(:)  = 0e0_pr
+            lMon_ = 0e0_pr
+            pMon_(:) = 0e0_pr; xMon_(:) = 0e0_pr; yMon_(:) = 0e0_pr; zMon_(:) = 0e0_pr
+
+            ! Grid Data Def
+            GridSrfdx_    = 0e0_pr
+            GridMat_(:,:) = 0e0_pr
+            pData_(:) = 0e0_pr; xData_(:) = 0e0_pr; yData_(:) = 0e0_pr; zData_(:) = 0e0_pr
+
+        end if
+
+        ! SMACOS and Rx status & range chk: 0 < srf <= nElt
+        if ((.not. SystemCheck()) .or. (srf<1) .or. (srf>nElt)) return
+
+        ! check SrfType
+        if (SrfType(srf) /= SrfType_FreeForm) return
+
+        if (setter>0) then
+          ! ------------------------------------
+          ! set
+          ! ------------------------------------
+
+            ! ----------------------------------
+            ! do all checks BEFORE making changes
+            ! ----------------------------------
+            GFM(1) = (ifGridTerm_ .eqv. PASS)
+            GFM(2) = (ifFF_ .eqv. PASS)
+            GFM(3) = (ifMon_ .eqv. PASS)
+
+            ! -------------------
+            ! Grid Data
+            ! -------------------
+            if (GFM(1)) then
+              ! out-of-boundary & shape check (mGridMat defined in macos_param.txt)
+              if ((Nx > mGridMat) .or. (Nx/=Ny) .or. (Nx<3)) return
+
+              if (any(.not.IEEE_IS_FINITE(GridMat_(:,:))) .or. &
+                  any(.not.IEEE_IS_FINITE(xData_))        .or. &
+                  any(.not.IEEE_IS_FINITE(yData_))        .or. &
+                  any(.not.IEEE_IS_FINITE(zData_))        .or. &
+                     (.not.IEEE_IS_FINITE(GridSrfdx_))) return
+
+              ! check: CSYS
+              if (.not.valid_csys(xData_, yData_, zData_)) return
+            end if
+
+            ! ---------------------------
+            ! Zernike Def #1 (FF - Terms)
+            ! ---------------------------
+            if (GFM(2)) then
+
+              if (.not.validate_Zrn_Data(FFZernCoef_, FFZernType_, &
+                            FFZernModes_, lFF_, pFF_, xFF_, yFF_, zFF_)) return
+
+            end if
+
+            ! ---------------------------
+            ! Zernike Def #2 (Mon - Terms)
+            ! ---------------------------
+            if (GFM(3)) then
+
+              if (.not.validate_Zrn_Data(MonZernCoef_, MonZernType_, &
+                      MonZernModes_, lMon_, pMon_, xMon_, yMon_, zMon_)) return
+
+            end if
+
+            ! proceed
+            ifGridTerm(srf) = GFM(1)
+            ifFF(srf)       = GFM(2)
+            ifMon(srf)      = GFM(3)
+
+          ! -----------------------
+          ! Grid Data:
+          ! -----------------------
+          if (ifGridTerm(srf)) then
+
+            ! Grid Data: Nodes
+                                   GridSrfdx(srf) = GridSrfdx_
+                                    nGridMat(srf) = Nx
+            GridMat(:,:,iEltToGridSrf(srf))       = 0e0_pr         ! reset first (just in case)
+            GridMat(1:Ny,1:Nx,iEltToGridSrf(srf)) = GridMat_(:,:)  !Transpose(GridMat_(Ny:-1:1,:))
+
+            ! Grid Data: CSYS
+            xData(:, srf) = xData_(:)
+            yData(:, srf) = yData_(:)
+            zData(:, srf) = zData_(:)
+            pData(:, srf) = pData_(:)
+
+          else
+            ! reset
+                             GridSrfdx(srf) = 0e0_pr
+                              nGridMat(srf) = 0
+            GridMat(:,:,iEltToGridSrf(srf)) = 0e0_pr
+
+            ! Mirror the FF/Mon reset pattern: clear the per-srf
+            ! module CSYS arrays (not just the temporary input args)
+            ! so the next trace doesn't inherit stale Grid CSYS.
+            pData(:, srf) = 0e0_pr
+            xData(:, srf) = 0e0_pr
+            yData(:, srf) = 0e0_pr
+            zData(:, srf) = 0e0_pr
+          end if
+
+          ! -----------------------
+          ! Zernike Def #1
+          ! -----------------------
+          if (ifFF(srf)) then
+
+                       FFZernCoef(:, srf) = 0e0_pr         ! Zrn Coefs: reset
+            FFZernCoef(FFZernModes_, srf) = FFZernCoef_    ! Zrn Coefs
+                         FFZernTypeL(srf) = FFZernType_    ! Zern Type
+                                 lFF(srf) = lFF_           ! NormRad
+
+            ! CSYS
+            pFF(:, srf) = pFF_(:)
+            xFF(:, srf) = xFF_(:)
+            yFF(:, srf) = yFF_(:)
+            zFF(:, srf) = zFF_(:)
+
+          else
+            ! reset
+
+            FFZernCoef(:, srf) = 0e0_pr   ! Zrn Coefs: reset
+              FFZernTypeL(srf) = 0        ! Zern Type
+                      lFF(srf) = 0e0_pr   ! NormRad
+
+            ! CSYS
+            pFF(:, srf) = 0e0_pr
+            xFF(:, srf) = 0e0_pr
+            yFF(:, srf) = 0e0_pr
+            zFF(:, srf) = 0e0_pr
+
+          end if
+
+          ! -----------------------
+          ! Zernike Def #2
+          ! -----------------------
+          if (ifMon(srf)) then
+
+                        MonZernCoef(:, srf) = 0e0_pr         ! Zrn Coefs: reset
+            MonZernCoef(MonZernModes_, srf) = MonZernCoef_   ! Zrn Coefs
+                          MonZernTypeL(srf) = MonZernType_   ! Zern Type
+                                  lMon(srf) = lMon_          ! NormRad
+
+            ! CSYS
+            pMon(:, srf) = pMon_(:)
+            xMon(:, srf) = xMon_(:)
+            yMon(:, srf) = yMon_(:)
+            zMon(:, srf) = zMon_(:)
+
+          else
+            ! reset
+
+            MonZernCoef(:, srf) = 0e0_pr   ! Zrn Coefs: reset
+              MonZernTypeL(srf) = 0        ! Zern Type
+                      lMon(srf) = 0e0_pr   ! NormRad
+
+            ! CSYS
+            pMon(:, srf) = 0e0_pr
+            xMon(:, srf) = 0e0_pr
+            yMon(:, srf) = 0e0_pr
+            zMon(:, srf) = 0e0_pr
+
+          end if
+
+        else
+          ! ------------------------------------
+          ! getter
+          ! ------------------------------------
+
+          ! -----------------------
+          ! Grid Data
+          ! -----------------------
+          if (ifGridTerm(srf)) then
+            ifGridTerm_ = PASS
+            ! Grid Data: Nodes & CSYS
+            if (nGridMat(srf)<3) then  ! no valid Grid Data: should not happen
+              ! reset
+              GridMat(:,:,iEltToGridSrf(srf)) = 0e0_pr
+                               GridSrfdx(srf) = huge(1d0)
+              ! return
+              GridMat_(:,:) = 0e0_pr
+              GridSrfdx_    = GridSrfdx(srf)
+
+            else
+              ! return
+              GridSrfdx_    = GridSrfdx(srf)
+              GridMat_(:,:) = GridMat(:Ny,:Nx,iEltToGridSrf(srf))
+            end if
+
+            ! Grid Data: CSYS
+            xData_(:) = xData(:, srf)
+            yData_(:) = yData(:, srf)
+            zData_(:) = zData(:, srf)
+            pData_(:) = pData(:, srf)
+          else
+            ifGridTerm_ = FAIL
+          end if
+
+          ! -----------------------
+          ! Zernike Def #1
+          ! -----------------------
+          if (ifFF(srf)) then
+            ifFF_ = PASS
+
+            FFZernType_         = FFZernTypeL(srf)
+            FFZernCoef_(:nFF)   = FFZernCoef(:nFF, srf)
+            lFF_                = lFF(srf)
+
+            pFF_(:) = pFF(:, srf)
+            xFF_(:) = xFF(:, srf)
+            yFF_(:) = yFF(:, srf)
+            zFF_(:) = zFF(:, srf)
+          else
+            ifFF_ = FAIL
+          end if
+
+          ! -----------------------
+          ! Zernike Def #2
+          ! -----------------------
+          if (ifMon(srf)) then
+            ifMon_ = PASS
+
+            MonZernType_        = MonZernTypeL(srf)
+            MonZernCoef_(:nMon) = MonZernCoef(:nMon, srf)
+            lMon_               = lMon(srf)
+
+            pMon_(:) = pMon(:, srf)
+            xMon_(:) = xMon(:, srf)
+            yMon_(:) = yMon(:, srf)
+            zMon_(:) = zMon(:, srf)
+
+          else
+           ifMon_ = FAIL
+          end if
+
+
+        end if
+
+        ok = PASS
+
+        contains
+
+          logical function validate_Zrn_Data(zCoefs, zType, zModes, rad, &
+                                             Pos, xDir, yDir, zDir)
+            implicit none
+            real(pr), intent(in)    :: zCoefs(:)
+            integer,  intent(in)    :: zType
+            integer,  intent(in)    :: zModes(:)
+            real(pr), intent(in)    :: rad, Pos(3)
+            real(pr), intent(inout) :: xDir(3), yDir(3), zDir(3)
+
+            real(pr), parameter :: NORMRADIUS_MAX = 1e5_pr
+            ! -----------------------------------------
+            validate_Zrn_Data = .False.
+
+            if (any(.not.IEEE_IS_FINITE(zCoefs(:))) .or. &
+                any(.not.IEEE_IS_FINITE(xDir))      .or. &
+                any(.not.IEEE_IS_FINITE(yDir))      .or. &
+                any(.not.IEEE_IS_FINITE(zDir))      .or. &
+                any(.not.IEEE_IS_FINITE(Pos))       .or. &
+                   (.not.IEEE_IS_FINITE(rad))) return
+
+            ! Normalization Radius
+            if ((rad < 0e0_pr) .or. (rad > NORMRADIUS_MAX)) return
+
+            ! Zernite Types
+            if ((zType < 1) .or. (zType > mZernType)) return
+
+            ! check mode range: Fringe is limited to 37 Modes
+            if (((zType == ZernType_Fringe) .or.       &
+                 (zType == ZernType_NormFringe)) .and. &
+                 (any(zModes > 37))) return
+
+            if (any(zModes< 1 .or. zModes>mZernCoef)) return
+
+            ! check: CSYS
+            if (.not.valid_csys(xDir, yDir, zDir)) return
+
+            ! pass
+            validate_Zrn_Data = .True.
+
+          end function validate_Zrn_Data
+
+
+          logical function valid_csys(xDir, yDir, zDir)
+            use Constants, only: EPS
+            use  math_mod, only: dorthoganalize
+
+            implicit none
+            real(8), intent(inout) :: xDir(3), yDir(3), zDir(3)
+            ! real(8), intent(out):: A(3, 3)
+
+            real(8) :: A(3, 3)
+            ! ----------------------------------------
+            ! check for null-vector
+            A(:,1) = xDir
+            A(:,2) = yDir
+            A(:,3) = zDir
+            valid_csys = (.not. (any(norm2(A, DIM=1)<=EPS)))
+
+            if (valid_csys) then
+              ! if CF is not orthonormal, orthonormalize it
+              if (abs(-A(3,1)*A(2,2) + A(2,1)*A(3,2) - A(1,3))>EPS .or. &
+                  abs( A(3,1)*A(1,2) - A(1,1)*A(3,2) - A(2,3))>EPS .or. &
+                  abs(-A(2,1)*A(1,2) + A(1,1)*A(2,2) - A(3,3))>EPS)     &
+                  call dorthoganalize(A(:,1), A(:,2), A(:,3))
+
+              xDir = A(:,1)
+              yDir = A(:,2)
+              zDir = A(:,3)
+
+            end if
+
+          end function valid_csys
+
+
+      end subroutine elt_srf_zrn_FreeForm
+
+
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: Asphere Type
+    !
+    ! ============================================================================================
+
+
+    !=============================================================================================
+    !
+    ! Optical System Analysis / Settings / ...
+    !
+    !---------------------------------------------------------------------------------------------
+    ! [ ] trace_rays
+    ! [ ] ray_info_get
+    ! [ ] ray_info_set
+    ! [ ] ray_status_get
+    ! [ ] opd_val
+    ! [ ] xp_fnd / xp_set / xp_get
+    ! [ ] stop_info_set / stop_info_get
+    !
+    !  getEFL
+    !  traceChiefRay
+    !=============================================================================================
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Retrieve Ray-Trace Data (Pos & Dir) from previous call to trace_rays(...)
+      ! Call     : CALL ray_info_get(OK, Pos, Dir, RayOK, nRays)
+      ! Input    : nRays (=N)[1x1,I]: Number of traced rays (defined by previous trace_rays(...) call)
+      ! Output   : OK        [1x1,B]: = (True) if successful; (False) otherwise
+      !            Pos       [3xN,D]: = [[x1,y1,z1],...] global position of ray-surface intersection point
+      !            Dir       [3xN,D]: = [[L1,M1,N1],...] direction cosine of ray direction (before Srf)
+      !            OPL       [1xN,D]: Optical Path Length from Src. Srf to last traced Srf. (trace_rays)
+      !            RayOK     [1xN,L]: (True) if ray is successfully traced; (False) otherwise
+      !            RayPass   [1xN,L]: (True) if ray is not blocked; (False) otherwise
+      ! Require  : check if Rx loaded
+      ! Note     :
+      !---------------------------------------------------------------------------------------------
+      subroutine ray_info_get(OK, Pos, Dir, OPL, RayOK, RayPass, nRays)
+
+        implicit none
+        logical,                     intent(out):: OK
+        real(8), dimension(3,nRays), intent(out):: Pos,Dir
+        real(8), dimension(nRays),   intent(out):: OPL
+        logical, dimension(nRays),   intent(out):: RayOK      ! successfully traced
+        logical, dimension(nRays),   intent(out):: RayPass    ! not blocked
+        integer,                     intent(in) :: nRays
+
+        ! ------------------------------------------------------
+        OK      = FAIL
+        RayOK   = FAIL       ! Ray Status: trace failures
+        RayPass = FAIL       ! Ray Status: blocked
+        Pos     = 0e0_pr
+        Dir     = 0e0_pr
+
+        ! Rx loaded and Ray Size check
+        if ((.not. SystemCheck()).or.(nRay/=nRays).or.(nRays<=0)) return
+
+        ! Obtain data from last trace
+        Pos(:,:) = RayPos(:,:nRay)            ! intersection point with iElt's Srf.
+        Dir(:,:) = RayDir(:,:nRay)            ! direction before Srf.
+        OPL(:)   = CumRayL(:nRay)             ! OPL from Src. Srf. to last trace srf.
+        where (LRayOK(:nRay))   RayOK=PASS    ! note: Fortran/python returs -1 (True) and 0 (False)
+        where (LRayPass(:nRay)) RayPass=PASS  !       => ensures (1) for .TRUE.  and  (0) for .FALSE.
+
+        ! return
+        OK = PASS
+
+      end subroutine ray_info_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  :  Replace Ray-Trace Data at current trace location
+      ! Call     : CALL ray_info_set(OK, nRays, Pos, Dir, RayOK)
+      ! Input    : nRays (=K)[1x1,I]: Number of traced rays (defined by previous trace_rays(...) call)
+      !            Pos       [3xK,D]: = [[x1,y1,z1],...] global position of ray-surface intersection point
+      !            Dir       [3xK,D]: = [[L1,M1,N1],...] direction cosine of ray direction (before Srf)
+      !            OPL       [1xK,D]: Optical Path Length from Src. Srf to last traced Srf.
+      !            RayOK     [1xK,I]: (True) if ray is successfully traced; (False) otherwise
+      ! Output   : OK        [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : check if Rx loaded
+      ! Note     : K => # of rays to be traced  (== nRays)
+      !            WARNING -- you really must understand how to use this functionality correctly
+      !---------------------------------------------------------------------------------------------
+      subroutine ray_info_set(OK, Pos, Dir, OPL, RayOK, nRays)
+        use smacos_vars_mod, only: npts
+
+        implicit none
+        logical,                     intent(out):: OK
+        integer,                     intent(in) :: nRays
+        real(8), dimension(3,nRays), intent(in) :: Pos, Dir
+        real(8), dimension(nRays),   intent(in) :: OPL
+        integer, dimension(nRays),   intent(in) :: RayOK
+
+        ! ------------------------------------------------------
+
+        OK = FAIL
+        ! Rx loaded and Ray Size check
+        if ((.not. SystemCheck()).or. npts*npts<nRays) return
+
+        ! Set data at last trace, assuming trace was performed
+        nRay            = nRays
+        RayPos(:,:nRay) = Pos(:,:)        ! intersection point with iElt's Srf.
+        RayDir(:,:nRay) = Dir(:,:)        ! direction before Srf.
+        CumRayL(:nRay)  = OPL(:)          ! OPL from Src. Srf. to last trace srf.
+        LRayOK(:nRay)   = .true.
+        where (RayOK==0) LRayOK(:nRay)=.false.
+
+        ! return
+        OK = PASS
+
+      end subroutine ray_info_set
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Per-ray status (category code + element where failure was first recorded)
+      !            from previous call to trace_rays(...)
+      ! Call     : CALL ray_status_get(OK, RayStatus_, RayFailElt_, nRays)
+      ! Input    : nRays (=N)[1x1,I]: Number of traced rays (defined by previous trace_rays(...) call)
+      ! Output   : OK            [1x1,B]: = (True) if successful; (False) otherwise
+      !            RayStatus_    [1xN,I]: per-ray RayStat_* code:
+      !                                     0=OK, 1=Obscured, 2=Miss,
+      !                                     3=Bracket, 4=MaxIter, 5=Undef
+      !            RayFailElt_   [1xN,I]: element index where failure was recorded (0 if OK)
+      ! Require  : check if Rx loaded; trace_rays previously called
+      ! Note     : Complements ray_info_get's binary (RayOK, RayPass).  Sourced from
+      !            elt_mod's RayStatus(:) / RayFailElt(:) module arrays, populated
+      !            by SetRayFail() inside tracesub.F / propsub.F.
+      !---------------------------------------------------------------------------------------------
+      subroutine ray_status_get(OK, RayStatus_, RayFailElt_, nRays)
+
+        implicit none
+        logical,                   intent(out):: OK
+        integer, dimension(nRays), intent(out):: RayStatus_
+        integer, dimension(nRays), intent(out):: RayFailElt_
+        integer,                   intent(in) :: nRays
+
+        ! ------------------------------------------------------
+        OK           = FAIL
+        RayStatus_   = -1     ! sentinel: distinguish "never set" from any RayStat_* code
+        RayFailElt_  = 0
+
+        ! Rx loaded and Ray Size check
+        if ((.not. SystemCheck()) .or. (nRay /= nRays) .or. (nRays <= 0)) return
+
+        ! Defensive: backing arrays must be allocated.  They are allocated
+        ! alongside L1/LRayOK/LRayPass by alloc_perRay_buffers in elt_mod,
+        ! so this should never fire in practice — kept as a guard.
+        if (.not. allocated(RayStatus) .or. .not. allocated(RayFailElt)) return
+
+        RayStatus_(:)  = RayStatus(:nRay)
+        RayFailElt_(:) = RayFailElt(:nRay)
+
+        OK = PASS
+
+      end subroutine ray_status_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Enable/disable the per-trace ray-position history capture
+      !            (traceutil_mod's RayPosHist(3,mRay,0:nElt) + LRayOKHist,
+      !            John Lou's Vis3D substrate): when on, EVERY trace records
+      !            every ray's global 3-D crossing at every element (source
+      !            plane at slot 0; sequential AND non-sequential fill sites).
+      !            Costs one 3-vector store per ray-surface hit; default off.
+      !            Read back with ray_pos_hist_get after macos.trace.
+      subroutine ray_hist_set(OK, enable)
+
+        use traceutil_mod, only: SaveRayPosHist_Flg
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: enable
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        SaveRayPosHist_Flg = enable
+        OK = PASS
+
+      end subroutine ray_hist_set
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Read back the ray-position history of the LAST trace
+      !            (requires ray_hist_set(.true.) BEFORE that trace).
+      !            Buffers are (nRays, nElt1) with nElt1 = nElt+1: column j
+      !            holds the crossing at element j-1 (column 1 = the source
+      !            plane).  LOK_ is 1.0 where the ray reached that element
+      !            (LRayOKHist), else 0.0 -- positions there are stale.
+      subroutine ray_pos_hist_get(OK, Px_, Py_, Pz_, LOK_, nRays, nElt1)
+
+        use traceutil_mod, only: RayPosHist, LRayOKHist
+
+        implicit none
+        logical,                          intent(out)  :: OK
+        real(8), dimension(nRays, nElt1), intent(inout):: Px_
+        real(8), dimension(nRays, nElt1), intent(inout):: Py_
+        real(8), dimension(nRays, nElt1), intent(inout):: Pz_
+        real(8), dimension(nRays, nElt1), intent(inout):: LOK_
+        integer,                          intent(in)   :: nRays
+        integer,                          intent(in)   :: nElt1
+
+        integer :: j
+        ! ------------------------------------------------------
+        OK = FAIL
+        Px_ = 0e0_pr;  Py_ = 0e0_pr;  Pz_ = 0e0_pr;  LOK_ = 0e0_pr
+
+        if (.not. SystemCheck()) return
+        if ((nRays /= nRay) .or. (nElt1 /= nElt + 1)) return
+        if (.not. allocated(RayPosHist)) return
+
+        do j = 1, nElt1
+          Px_(:, j) = RayPosHist(1, 1:nRay, j-1)
+          Py_(:, j) = RayPosHist(2, 1:nRay, j-1)
+          Pz_(:, j) = RayPosHist(3, 1:nRay, j-1)
+          where (LRayOKHist(1:nRay, j-1)) LOK_(:, j) = 1e0_pr
+        end do
+
+        OK = PASS
+
+      end subroutine ray_pos_hist_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : One-stop element metadata for layout drawing: element
+      !            type id (elt_mod EltID constants), aperture declaration
+      !            (ApType / ApVec / xObs, plus the projected polygon
+      !            vertices PolyApVtx -- 2-D, aperture-frame, centroid-
+      !            relative -- when ApType is Polygonal), and the surface
+      !            half-size lMon.  nPolyVtx = 0 when no polygon.  PolyVtx_
+      !            is a caller-sized (2, mside) buffer (mside >= mPolySide
+      !            slots need not be filled; engine max is mPolySide).
+      subroutine elt_info_get(OK, EltID_, ApType_, ApVec_, xObs_, lMon_, &
+                              nPolyVtx, PolyVtx_, iElt, mside)
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(out)  :: EltID_
+        integer,                       intent(out)  :: ApType_
+        real(8), dimension(6),         intent(inout):: ApVec_
+        real(8), dimension(3),         intent(inout):: xObs_
+        real(8),                       intent(out)  :: lMon_
+        integer,                       intent(out)  :: nPolyVtx
+        real(8), dimension(2, mside),  intent(inout):: PolyVtx_
+        integer,                       intent(in)   :: iElt
+        integer,                       intent(in)   :: mside
+
+        ! ------------------------------------------------------
+        OK       = FAIL
+        EltID_   = 0
+        ApType_  = 0
+        ApVec_   = 0e0_pr
+        xObs_    = 0e0_pr
+        lMon_    = 0e0_pr
+        nPolyVtx = 0
+        PolyVtx_ = 0e0_pr
+
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if (mside < 1)                     return
+
+        EltID_  = EltID(iElt)
+        ApType_ = ApType(iElt)
+        ApVec_  = ApVec(1:6, iElt)
+        xObs_   = xObs(1:3, iElt)
+        lMon_   = lMon(iElt)
+        if ((ApType(iElt) == 7) .or. (ApType(iElt) == 8)) then
+          ! Polygonal / Tapered_Polygonal: nSides in ApVec(3)
+          nPolyVtx = min(int(ApVec(3, iElt)), mside, mPolySide)
+          if (nPolyVtx > 0) then
+            PolyVtx_(1:2, 1:nPolyVtx) = PolyApVtx(1:2, 1:nPolyVtx, iElt)
+          end if
+        end if
+
+        OK = PASS
+
+      end subroutine elt_info_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Element obscuration declarations, for layout drawing
+      !            (e.g. a perforated primary's central hole): the count
+      !            plus per-obscuration type code (elt_mod ObsType codes;
+      !            +/-1 Circle/NegCircle, +/-2 Rectangle, ...) and the
+      !            6-slot ObsVec (Circle: radius, xc, yc in the element's
+      !            xObs frame).  ObsType_/ObsVec_ are caller-sized (mobs)
+      !            buffers; engine max is mObs.  nObs_ reports the true
+      !            count even when it exceeds mobs.
+      subroutine elt_obs_get(OK, nObs_, ObsType_, ObsVec_, iElt, mobs)
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(out)  :: nObs_
+        integer, dimension(mobs),      intent(inout):: ObsType_
+        real(8), dimension(6, mobs),   intent(inout):: ObsVec_
+        integer,                       intent(in)   :: iElt
+        integer,                       intent(in)   :: mobs
+
+        integer :: n
+
+        ! ------------------------------------------------------
+        OK       = FAIL
+        nObs_    = 0
+        ObsType_ = 0
+        ObsVec_  = 0e0_pr
+
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if (mobs < 1)                      return
+
+        nObs_ = nObs(iElt)
+        n = min(nObs(iElt), mobs, mObs)
+        if (n > 0) then
+          ObsType_(1:n)     = ObsType(1:n, iElt)
+          ObsVec_(1:6, 1:n) = ObsVec(1:6, 1:n, iElt)
+        end if
+
+        OK = PASS
+
+      end subroutine elt_obs_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Source segmentation tiling metadata: GridType id
+      !            (src_mod GridType_* codes: 1 Circular, 2 Square, 3 Hex,
+      !            4 Pie, 5 Flower, 6 UDG), segment count, and the tiling
+      !            width (flat-to-flat) / gap keywords -- the truth needed
+      !            to draw Segment elements as exact tiles (manual 4.x:
+      !            neighbor center distance = width + gap).
+      subroutine src_seg_get(OK, GridTypeID, nSeg_, width_, gap_)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: GridTypeID
+        integer, intent(out):: nSeg_
+        real(8), intent(out):: width_
+        real(8), intent(out):: gap_
+        ! ------------------------------------------------------
+        OK         = FAIL
+        GridTypeID = 0
+        nSeg_      = 0
+        width_     = 0e0_pr
+        gap_       = 0e0_pr
+
+        if (.not. SystemCheck()) return
+
+        GridTypeID = GridType
+        nSeg_      = nSeg
+        width_     = width
+        gap_       = gap
+        OK = PASS
+
+      end subroutine src_seg_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Run the METcalc laser-metrology compute (SrfMetCalc, utilsub.F):
+      !            straight-line length of every declared met beam (the Rx's
+      !            nMetPos / tMetElt / metBeamFlg data), filling the flat
+      !            system buffer metMeasBuf.  nMetMeas_ returns the system
+      !            beam count (0 when the Rx declares no metrology — that is
+      !            not an error).  Met points ride their element under the
+      !            programmatic perturb path (CPERTURB_PROG), so a
+      !            perturb -> met_calc -> met_get loop yields FD Jacobians.
+      subroutine met_calc(OK, nMetMeas_)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: nMetMeas_
+
+        external :: SrfMetCalc
+
+        ! ------------------------------------------------------
+        OK        = FAIL
+        nMetMeas_ = 0
+
+        if (.not. SystemCheck()) return
+
+        call SrfMetCalc(nElt, iEltToMetSrf, nMetPos, tMetSrf, &
+                        SrfMetPos, SrfMetMea)
+        nMetMeas_ = nMetMeas
+
+        OK = PASS
+
+      end subroutine met_calc
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the flat system metrology-measurement buffer filled by
+      !            the last met_calc.  n must equal that call's nMetMeas_.
+      subroutine met_get(OK, metMeas_, n)
+
+        implicit none
+        logical,                   intent(out):: OK
+        real(8), dimension(n),     intent(out):: metMeas_
+        integer,                   intent(in) :: n
+
+        ! ------------------------------------------------------
+        OK         = FAIL
+        metMeas_   = 0d0
+
+        if (.not. SystemCheck()) return
+        if ((n <= 0) .or. (n /= nMetMeas)) return
+
+        metMeas_(:) = metMeasBuf(1:n)
+
+        OK = PASS
+
+      end subroutine met_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the GEOMETRY of the system metrology beams: global source and
+      !            target endpoint of every gauge, plus the owning element indices --
+      !            in EXACTLY the order SrfMetCalc/met_get emit the lengths (source
+      !            elements in element order, then per source point j, per target
+      !            point i, gated on metBeamFlg(i,j)>0).  Backs prescription-level
+      !            visualization (macos.view_rx / met_view): MET paths can be drawn
+      !            for ANY loaded Rx, not just ones built by a design-layer emitter.
+      ! Call     : CALL met_geom_get(OK, src_, tgt_, srcElt_, tgtElt_, n)
+      ! Input    : n        [1x1,I]: beam count from the preceding met_calc (nMetMeas_)
+      ! Output   : OK       [1x1,B]: = (True) if successful; (False) otherwise
+      !            src_     [3xn,D]: gauge source points (launchers), global BaseUnits
+      !            tgt_     [3xn,D]: gauge target points (fiducials), global BaseUnits
+      !            srcElt_  [n,I]  : element carrying each source point
+      !            tgtElt_  [n,I]  : element carrying each target point
+      ! Require  : Rx loaded; met_calc called first (n must equal its nMetMeas_)
+      ! Note     : Points reflect the CURRENT (perturbed) state -- SrfMetPos moves
+      !            under the API perturb path.
+      !---------------------------------------------------------------------------------------------
+      subroutine met_geom_get(OK, src_, tgt_, srcElt_, tgtElt_, n)
+
+        implicit none
+        logical,                   intent(out):: OK
+        real(8), dimension(3,n),   intent(out):: src_
+        real(8), dimension(3,n),   intent(out):: tgt_
+        integer, dimension(n),     intent(out):: srcElt_
+        integer, dimension(n),     intent(out):: tgtElt_
+        integer,                   intent(in) :: n
+
+        integer :: iElt, i, j, k
+
+        ! ------------------------------------------------------
+        OK      = FAIL
+        src_    = 0d0
+        tgt_    = 0d0
+        srcElt_ = 0
+        tgtElt_ = 0
+
+        if (.not. SystemCheck()) return
+        if ((n <= 0) .or. (n /= nMetMeas)) return
+
+        ! Mirror SrfMetCalc's enumeration (utilsub.F) so beam k here is
+        ! gauge k in met_get's length buffer.
+        k = 0
+        do iElt = 1, nElt
+          if ((iEltToMetSrf(iElt) > 0) .and. (tMetSrf(iElt) > 0)) then
+            do j = 1, nMetPos(iElt)
+              do i = 1, ntMetPos(iElt)
+                if (metBeamFlg(i,j,iEltToMetSrf(iElt)) > 0) then
+                  k = k + 1
+                  if (k > n) return               ! Rx changed since met_calc
+                  src_(1:3,k) = SrfMetPos(1:3,j,iEltToMetSrf(iElt))
+                  tgt_(1:3,k) = SrfMetPos(1:3,i,iEltToMetSrf(tMetSrf(iElt)))
+                  srcElt_(k)  = iElt
+                  tgtElt_(k)  = tMetSrf(iElt)
+                end if
+              end do
+            end do
+          end if
+        end do
+        if (k /= n) return
+
+        OK = PASS
+
+      end subroutine met_geom_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Trace Wavefront from source to surface iElt with grid sampling NxN
+      ! Call     : CALL trace_rays(OK, WFE, nRays, N, iElt)
+      ! Input    : iElt      [1x1,I]: Elt.ID      (Range: 0 < iElt <= nElt)
+      ! Output   : OK        [1x1,B]: = (True) if successful; (False) otherwise
+      !            rmsWFE    [1x1,D]: rms Wavefront Error
+      !            nRays     [1x1,I]: Number of traced rays
+      !            nGridPts  [1x1,I]: Wavefront sampling: nGridPts x nGridPts   ( N = nGridPts )
+      ! Require  : check if Rx loaded
+      ! Note     : --
+      !---------------------------------------------------------------------------------------------
+      subroutine trace_rays(OK, rms_WFE, nRays, N, iElt)
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(out):: rms_WFE
+        integer, intent(out):: nRays, N
+        integer, intent(in) :: iElt
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        ! Rx loaded and  0 < iElt <= nElt
+        if ((.not. SystemCheck()).or.(iElt<1).or.(iElt>nElt)) return
+
+        ! trace rays
+        command = 'OPD'
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! return
+        nRays   = nRay
+        N       = nGridPts
+        rms_WFE = RMSWFE
+        if (nRay==0) return   ! all rays are lost
+
+        OK = PASS
+
+      end subroutine trace_rays
+
+
+      !---------------------------------------------------------------------------------------------
+      ! retrieve Optical Path Difference Matrix
+      !---------------------------------------------------------------------------------------------
+      subroutine opd_val(OK, OPD, N)
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: OPD
+        integer,                 intent(in) :: N      ! = nGridPts
+
+        ! ------------------------------------------------------
+        OK  = FAIL
+        OPD = 0e0_pr
+
+        ! Rx loaded and Ray Size check
+        if ((.not. SystemCheck()).or.(nGridPts/=N)) return
+
+        ! Obtain data from last trace
+        OPD(:,:) = OPDMat(:N,:N)
+
+        ! return
+        OK = PASS
+
+      end subroutine opd_val
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set the ray-trace obscuration option for spot diagrams (the OBS
+      ! command -> iObsOpt).  opt: 0=ALL (every ray, regardless of
+      ! obscuration), 1=POSITIVE (unobscured only, the default), 2=NEGATIVE
+      ! (obscured only).  Session state -- persists until changed.  Needed
+      ! to draw a spot at a focal plane where all rays are obscured (a
+      ! coronagraph FP): set 0 first, then spot_cmd.
+      !---------------------------------------------------------------------------------------------
+      subroutine obs_set(OK, opt)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: opt        ! 0=ALL, 1=POSITIVE (unobscured), 2=NEGATIVE
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'OBS'
+        if (opt==0) then
+          CARG(1) = 'ALL'
+        else if (opt==2) then
+          CARG(1) = 'NEGATIVE'
+        else
+          CARG(1) = 'POSITIVE'
+        end if
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine obs_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Execute SPOT cmd
+      !---------------------------------------------------------------------------------------------
+      subroutine spot_cmd(OK, nSpot, iElt, ref_csys, ref_pos, res_trace)
+        use smacos_vars_mod, only: iSpot
+        implicit none
+        logical, intent(out):: OK         ! (PASS=1) if successful; (FAIL=0) otherwise
+        integer, intent(out):: nSpot      ! # of successfully traced rays for Spot
+        integer, intent(in) :: iElt       ! Element at which spot to be determined
+        integer, intent(in) :: ref_csys   ! (1) BEAM, (2) TOUT, (3) TElt
+        logical, intent(in) :: ref_pos    ! (PASS=1) @ 'ELT' or (FAIL=0) @ "CHFRAY'
+        logical, intent(in) :: res_trace  ! (PASS=1) apply a MODIFY cmd. first or (FAIL=0) not
+
+        character(len=*), parameter :: str_ref_csys(3) = ['BEAM', 'TOUT', 'TELT']
+        ! ------------------------------------------------------
+        OK    = FAIL
+        nSpot = 0
+
+        if ((.not. SystemCheck()) .or.            &
+            (iElt<1) .or. (iElt>nElt) .or.        &
+            (EltID(iElt).EQ.SegmentElt).or.       &
+            (EltID(iElt).EQ.NSRefractorElt) .or.  &
+     	      (EltID(iElt).EQ.NSReflectorElt) .or.  &
+            (ref_csys<1).or.(ref_csys>3)) return
+
+        if (res_trace .eqv. PASS) then
+          ! reset trace to start at source
+          command = 'MODIFY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        ! 'SPCENTER': Set spot centering option: ELT or ChfRay
+        command = 'SPC'
+        if (ref_pos .eqv. PASS) then
+          CARG(1) = 'ELT'
+        else
+          CARG(1) = 'CHFRAY'
+        end if
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! Spot
+        command = 'SPOT'
+        CARG(1) = str_ref_csys(ref_csys)   ! CSYS: Beam, TOUT, or TELT  (not working: ENTER (user))
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! Success
+        nSpot = iSpot            ! note: 0 <= nSpot <= nRay
+        if (nSpot>0) OK = PASS
+
+      end subroutine spot_cmd
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Obtain SPOT Data
+      !---------------------------------------------------------------------------------------------
+      ! Note:
+      !      if SPCENTER == 'ChfRay' => CntrSpot
+      !                  == 'Elt'    => RefSpot
+      !
+      !      ChfRay Location <= CntrSpot-RefSpot
+      !
+      !   where
+      !      RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
+      !      RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
+      !
+      !      IF (spcOption.EQ.1) THEN                   ! SPCENTER: ELT
+      !        RaySpot(iSpot,1)=xnom(3)-RefSpot(1)
+      !        RaySpot(iSpot,2)=xnom(4)-RefSpot(2)
+      !      ELSE                                       ! SPCENTER: ChfRay
+      !        RaySpot(iSpot,1)=xnom(3)-CntrSpot(1)
+      !        RaySpot(iSpot,2)=xnom(4)-CntrSpot(2)
+      !---------------------------------------------------------------------------------------------
+      subroutine spot_get(OK, SPOT, shift, centroid, csys, N)
+        use smacos_vars_mod, only: CntrSpot, RefSpot, xLocal,yLocal,zLocal  ! xcent, ycent
+
+        implicit none
+        logical,                 intent(out):: OK           ! (PASS=1) if successful; (FAIL=0) otherwise
+        real(8), dimension(N,2), intent(out):: SPOT         ! ray-surface intersection points
+        real(8), dimension(4),   intent(out):: shift        ! shift from projected Ref. position
+        real(8), dimension(2),   intent(out):: centroid     ! centroid position
+        real(8), dimension(3,3), intent(out):: csys         ! Coord. Frame orientation
+
+        integer,                 intent(in) :: N            ! = nSpot = successfully traced rays
+        ! ------------------------------------------------------
+        if (.not. SystemCheck() .or. (N>nRay) .or. (N<1)) then
+
+          OK          = FAIL
+          SPOT(:,:)   = 0e0_pr
+          centroid(:) = 0e0_pr
+          shift(:)    = 0e0_pr
+          csys(:,:)   = 0e0_pr
+
+        else
+
+          OK        = PASS
+          SPOT      = RaySpot(1:N,1:2)                      ! ... RaySpot(mRay,2)  N=nSpot
+          shift     = (/CntrSpot(:2), &                     ! Chief-Ray Position in selected CSYS
+                        RefSpot(:2)/)                       ! VptElt    Position in selected CSYS
+          centroid  = sum(RaySpot, dim=1)/real(N, kind=pr)  ! w.r.t. to Reference Position
+          csys(:,1) = xLocal
+          csys(:,2) = yLocal
+          csys(:,3) = zLocal
+
+        end if
+
+      end subroutine spot_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Execute INT (Intensity) cmd at element iElt
+      !
+      ! Drives MACOS's 'INT' interactive command:  fires Ca2Int() which
+      ! fills MWFFT(1:mdttl,1:mdttl) with intensity at the wavefront's
+      ! native (diffraction-grid) sampling.  Returns the matrix size N
+      ! (= mdttl) so the caller knows what to ask int_get for.
+      !---------------------------------------------------------------------------------------------
+      subroutine int_cmd(OK, N, iElt, res_trace)
+        implicit none
+        logical, intent(out):: OK        ! (PASS=1) if successful; (FAIL=0) otherwise
+        integer, intent(out):: N         ! intensity matrix size per side (= mdttl)
+        integer, intent(in) :: iElt      ! element where intensity is to be computed
+        logical, intent(in) :: res_trace ! (PASS=1) apply a MODIFY first; (FAIL=0) keep prior trace state
+        ! ------------------------------------------------------
+        OK = FAIL
+        N  = 0
+
+        if ((.not. SystemCheck()) .or.            &
+            (iElt<1) .or. (iElt>nElt) .or.        &
+            (EltID(iElt).EQ.SegmentElt).or.       &
+            (EltID(iElt).EQ.NSRefractorElt) .or.  &
+            (EltID(iElt).EQ.NSReflectorElt)) return
+
+        if (res_trace .eqv. PASS) then
+          command = 'MODIFY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        command = 'INT'
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        N  = mdttl
+        OK = PASS
+
+      end subroutine int_cmd
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Retrieve intensity array filled by the most recent int_cmd
+      !
+      ! Caller passes N = mdttl (returned by int_cmd) and gets back a
+      ! REAL*8 N x N array.  MWFFT is held in single precision in
+      ! elt_mod; we widen on the copy.
+      !---------------------------------------------------------------------------------------------
+      subroutine int_get(OK, INT_OUT, N)
+        use elt_mod, only: MWFFT
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: INT_OUT
+        integer,                 intent(in) :: N      ! = mdttl
+
+        ! ------------------------------------------------------
+        OK      = FAIL
+        INT_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if (.not. allocated(MWFFT)) return
+
+        INT_OUT(:,:) = dble(MWFFT(:N, :N))
+        OK = PASS
+
+      end subroutine int_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! COMPOSE: initialise a composite (broadband / multi-field) image
+      ! accumulator on a FIXED pixel grid at element iElt.  Zeroes the
+      ! PixArray and sets the pixel count (npix) + pixel size (dxpix);
+      ! flips the engine's ifAdd flag so subsequent compose_add() calls
+      ! accumulate the current diffraction field onto this grid.
+      !
+      ! Workflow (incoherent intensity composition -- e.g. broadband PSF):
+      !   compose_start(iElt, npix, dxpix)
+      !   do over wavelengths / field points:
+      !     set_src_wvl(lam);  int_cmd(iElt, res_trace=PASS)   ! propagate
+      !     compose_add()                                      ! accumulate
+      !   compose_get(PIX, npix)                               ! read result
+      !
+      ! NOTE: the coherent complex-amplitude path (the engine's 'CADD'
+      ! command) is unimplemented in the engine, so only incoherent
+      ! INTENSITY composition is exposed here.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_start(OK, iElt, npix, dxpix)
+        implicit none
+        logical, intent(out):: OK       ! (PASS=1) success; (FAIL=0) otherwise
+        integer, intent(in) :: iElt     ! element where the image is composed
+        integer, intent(in) :: npix     ! pixels per side of the composite grid
+        real(8), intent(in) :: dxpix    ! pixel size (BaseUnits)
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if ((.not. SystemCheck()) .or.            &
+            (iElt<1) .or. (iElt>nElt) .or.        &
+            (npix<1) .or. (npix>mPix)  .or.       &
+            (dxpix<=0d0) .or.                     &
+            (EltID(iElt).EQ.SegmentElt).or.       &
+            (EltID(iElt).EQ.NSRefractorElt) .or.  &
+            (EltID(iElt).EQ.NSReflectorElt)) return
+
+        command = 'COMPOSE'
+        IARG(1) = iElt
+        IARG(2) = npix
+        RARG(1) = dxpix
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine compose_start
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Accumulate the CURRENT diffraction field at the compose element
+      ! onto the composite PixArray (the engine's 'ADD' command).  The
+      ! caller must have propagated to the compose element first (e.g.
+      ! int_cmd at iElt for the current wavelength).  do_plot=FAIL
+      ! suppresses the engine's "plot composed image?" prompt/draw.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_add(OK, do_plot)
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: do_plot  ! (PASS=1) plot after add; (FAIL=0) no plot
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'ADD'
+        if (do_plot .eqv. PASS) then
+          CARG(1) = 'YES'
+        else
+          CARG(1) = 'NO'      ! LoadStack maps 'NO' -> 'NOPLOT'
+        end if
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine compose_add
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Retrieve the composite image accumulated by compose_start/_add.
+      ! Caller passes npix (= the value given to compose_start); returns
+      ! the npix x npix composite from PixArray.  PixArray is the
+      ! module-level accumulator SMACOS writes COMPOSE/ADD into.
+      !---------------------------------------------------------------------------------------------
+      subroutine compose_get(OK, PIX_OUT, npix)
+        implicit none
+        logical,                       intent(out):: OK
+        integer,                       intent(in) :: npix
+        real(8), dimension(npix,npix), intent(out):: PIX_OUT
+        ! ------------------------------------------------------
+        OK      = FAIL
+        PIX_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (npix<1) .or. (npix>mPix)) return
+        if (.not. allocated(PixArray)) return
+
+        PIX_OUT(:,:) = PixArray(1:npix, 1:npix)
+        OK = PASS
+      end subroutine compose_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! WINDOW (pixel-location ON): place diffraction images at their TRUE
+      ! sky position on the PIX/COMPOSE grid (via each source's chief-ray
+      ! offset) instead of re-centred on the grid.  Required to COMPOSE an
+      ! off-axis source (e.g. a planet) at its real offset from an
+      ! on-axis star.  Drives the engine 'WINDOW' command with the TOUT
+      ! output frame (needs a prior trace so Tout is set).
+      !   sizPix  : window pixel size (BaseUnits) -- match the COMPOSE dxpix
+      !   eltPix  : element reference pixel (x,y); winCen: window centre
+      !             pixel (x,y).  Equal (or both 0) = no fixed offset, so
+      !             placement comes purely from the chief-ray term.
+      !---------------------------------------------------------------------------------------------
+      ! frame selects the output coordinate frame the placement is
+      ! referenced to: 1 = TOUT (prescription output frame), 2 = BEAM
+      ! (local beam frame at the output element).  ENTER (custom xOut/
+      ! yOut) is not exposed -- the WINDOW LoadStack carries no vectors.
+      subroutine window_set(OK, frame, sizPix, eltPixX, eltPixY,        &
+                            winCenX, winCenY)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: frame
+        real(8), intent(in) :: sizPix
+        real(8), intent(in) :: eltPixX, eltPixY
+        real(8), intent(in) :: winCenX, winCenY
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (frame == 1) then
+          CARG(1) = 'TOUT'
+        else if (frame == 2) then
+          CARG(1) = 'BEAM'
+        else
+          return                 ! unsupported frame
+        end if
+
+        command = 'WINDOW'
+        DARG(1) = sizPix
+        DARG(2) = eltPixX
+        DARG(3) = eltPixY
+        DARG(4) = winCenX
+        DARG(5) = winCenY
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine window_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! NOPLOC (pixel-location OFF): images go back to the centre of the
+      ! pixel array (undo window_set).
+      !---------------------------------------------------------------------------------------------
+      subroutine window_off(OK)
+        implicit none
+        logical, intent(out):: OK
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command = 'NOPLOC'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine window_off
+
+
+      !---------------------------------------------------------------------------------------------
+      ! FFP (move Focal/Field Point): tilt the source so the image at
+      ! element iElt lands at the off-axis field point (dx,dy) given as
+      ! DIRECTION COSINES (normalized; ~= field angle in rad for small
+      ! angles) -- i.e. place an off-axis "planet".  Requires the system
+      ! stop to be set first (stop_info_set / the STOP command); the source
+      ! pointing changes, so reset Return / exit-pupil reference surfaces
+      ! afterwards (ors_run, sxp_fnd/fex) as the CoroExample recipe does.
+      ! PFP is the focal-plane-pixel sibling; the two differ by the plate
+      ! scale (SYSPROP plate_px_rad).
+      !---------------------------------------------------------------------------------------------
+      subroutine ffp(OK, iElt, dx, dy)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt   ! plane at which to position the image
+        real(8), intent(in) :: dx, dy ! field offset, direction cosines
+        ! ------------------------------------------------------
+        OK = FAIL
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        command = 'FFP'
+        IARG(1) = iElt
+        DARG(1) = dx
+        DARG(2) = dy
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine ffp
+
+
+      !---------------------------------------------------------------------------------------------
+      ! PFP (Pixel Focal Point): the pixel-units sibling of FFP -- place
+      ! the image at element iElt at pixel position (dxPix,dyPix) on a
+      ! grid of pitch pixSize.  FFP (sky angle / global length) and PFP
+      ! (focal-plane pixels) differ by the plate scale = pixSize.
+      ! Requires the system stop set first (as FFP does).
+      !---------------------------------------------------------------------------------------------
+      subroutine pfp(OK, iElt, pixSize, dxPix, dyPix)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt      ! plane at which to position the image
+        real(8), intent(in) :: pixSize   ! pixel size (BaseUnits)
+        real(8), intent(in) :: dxPix, dyPix ! image position, pixel units
+        ! ------------------------------------------------------
+        OK = FAIL
+        if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
+
+        command = 'PFP'
+        IARG(1) = iElt
+        DARG(1) = pixSize
+        DARG(2) = dxPix
+        DARG(3) = dyPix
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine pfp
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Execute a propagation to element iElt so the diffraction-grid
+      ! complex field is populated in WFElt(:,:, iEltToiWF(iElt)).
+      !
+      ! Drives MACOS's 'INT' command -- INT triggers the full ray-trace +
+      ! propagation chain which populates WFElt at every element along
+      ! the way.  After this, cfield_get retrieves the complex field at
+      ! iElt for ingestion by an external physical-optics engine (e.g.
+      ! PROPER's prop_multiply + prop_add_phase).
+      !---------------------------------------------------------------------------------------------
+      subroutine cfield_cmd(OK, N, iElt, res_trace)
+        implicit none
+        logical, intent(out):: OK        ! (PASS=1) if successful
+        integer, intent(out):: N         ! WFElt's leading dim (= mdttl)
+        integer, intent(in) :: iElt      ! element at which complex field
+                                         ! is wanted
+        logical, intent(in) :: res_trace ! (PASS=1) apply a MODIFY first
+        ! ------------------------------------------------------
+        OK = FAIL
+        N  = 0
+
+        if ((.not. SystemCheck()) .or.            &
+            (iElt<1) .or. (iElt>nElt) .or.        &
+            (EltID(iElt).EQ.SegmentElt).or.       &
+            (EltID(iElt).EQ.NSRefractorElt) .or.  &
+            (EltID(iElt).EQ.NSReflectorElt)) return
+
+        if (res_trace .eqv. PASS) then
+          command = 'MODIFY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        command = 'INT'
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        N  = mdttl
+        OK = PASS
+
+      end subroutine cfield_cmd
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Retrieve diffraction-grid complex field at element iElt filled
+      ! by the most recent cfield_cmd (or any preceding propagation).
+      !
+      ! WFElt is COMPLEX*16; we split into REAL and IMAG output arrays
+      ! because f2py wraps real-valued arrays more robustly than complex
+      ! ones.  The Python wrapper (macos.py) recombines them into a
+      ! complex128 ndarray.
+      !
+      ! iElt -> WF slot mapping comes from iEltToiWF (set by macos's
+      ! propagation routines as the wavefront moves through the optical
+      ! train).  An iElt whose slot is 0 has no diffraction wavefront
+      ! computed (purely geometric path) and yields OK=FAIL.
+      !---------------------------------------------------------------------------------------------
+      !---------------------------------------------------------------------------------------------
+      ! Retrieve per-element diffraction-grid pixel pitch (dxElt(iElt))
+      ! after a propagation has populated it.  Returns 0 if Rx not loaded
+      ! or iElt out of range.  Used by Python tests that need to set up
+      ! their own grids (e.g. PROPER's prop_begin) at the EXACT macos
+      ! dx, avoiding 5-sig-fig precision losses from hardcoded values.
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_dx_get(OK, dx_out, iElt)
+        use elt_mod, only: dxElt, CBM
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(out):: dx_out
+        integer, intent(in) :: iElt
+        ! ------------------------------------------------------
+        ! dxElt is stored in the prescription's BaseUnits (mm, cm, m,
+        ! in, ...). CBM is the conversion factor BaseUnits -> metres,
+        ! set at prescription load time (msmacosio.inc / macosio.F).
+        ! Returning SI metres so cross-engine code (PROPER) doesn't
+        ! need to know the prescription's unit choice.
+        OK     = FAIL
+        dx_out = 0d0
+
+        if ((.not. SystemCheck())) return
+        if ((iElt < 0) .or. (iElt > nElt)) return
+        if (.not. allocated(dxElt)) return
+
+        dx_out = dxElt(iElt) * CBM
+        OK = PASS
+
+      end subroutine elt_dx_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Expose the prescription's BaseUnits -> metres conversion factor
+      ! (macos's internal `CBM`).  Used by the Python dx_at(unit='native')
+      ! path to reconstruct the raw dxElt value in whatever units the
+      ! prescription declared (mm/cm/m/in).  CBM is set at prescription
+      ! load time; reads as 0 until then.
+      !---------------------------------------------------------------------------------------------
+      subroutine base_unit_to_metres(OK, cbm_out)
+        use elt_mod, only: CBM
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(out):: cbm_out
+        ! ------------------------------------------------------
+        OK      = FAIL
+        cbm_out = 0d0
+
+        if (.not. SystemCheck()) return
+
+        cbm_out = CBM
+        OK = PASS
+
+      end subroutine base_unit_to_metres
+
+
+      subroutine cfield_get(OK, REAL_OUT, IMAG_OUT, N, iElt)
+        use elt_mod, only: WFElt, iEltToiWF
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: REAL_OUT
+        real(8), dimension(N,N), intent(out):: IMAG_OUT
+        integer,                 intent(in) :: N      ! = mdttl
+        integer,                 intent(in) :: iElt   ! element
+
+
+        integer :: iWF
+        ! ------------------------------------------------------
+        OK       = FAIL
+        REAL_OUT = 0d0
+        IMAG_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(WFElt))                  return
+
+        iWF = iEltToiWF(iElt)
+        if (iWF .LE. 0) return   ! no diffraction wavefront at this element
+
+        REAL_OUT(:,:) = dble(WFElt(:N, :N, iWF))
+        IMAG_OUT(:,:) = dimag(WFElt(:N, :N, iWF))
+        OK = PASS
+
+      end subroutine cfield_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Multiply macos's diffraction-grid complex field WFElt(:,:, iEltToiWF(iElt))
+      ! by a user-supplied real-valued NxN mask, in place.  Used by Python-side
+      ! apodization helpers to inject an arbitrary amplitude transmission map
+      ! into macos's wavefront on the diffraction grid, so the same mask can be
+      ! handed to PROPER (prop_multiply) and both engines see bit-identical
+      ! apodization.
+      !
+      ! Apply order is the caller's responsibility: macos must have already
+      ! propagated to iElt (i.e. WFElt(:,:, iEltToiWF(iElt)) must be populated)
+      ! BEFORE this call, and subsequent propagations (intensity, complex_field,
+      ! ...) will see the apodized wavefront.
+      !
+      ! Real-valued mask only.  Complex (amplitude+phase) apodisers would need
+      ! a sibling cfield_apodize(REAL_MASK, IMAG_MASK) -- defer until needed
+      ! (vortex / PIAA tests).
+      !---------------------------------------------------------------------------------------------
+      subroutine cfield_apodize(OK, MASK, N, iElt)
+        use elt_mod, only: WFElt, iEltToiWF
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(in) :: MASK
+        integer,                 intent(in) :: N      ! = mdttl
+        integer,                 intent(in) :: iElt
+
+        integer :: iWF
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(WFElt))                  return
+
+        iWF = iEltToiWF(iElt)
+        if (iWF .LE. 0) return   ! no diffraction wavefront at this element
+
+        WFElt(:N, :N, iWF) = WFElt(:N, :N, iWF) * cmplx(MASK, 0d0, kind=8)
+        OK = PASS
+
+      end subroutine cfield_apodize
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Complex-valued apodization: multiply WFElt(:,:, iEltToiWF(iElt))
+      ! by a user-supplied COMPLEX NxN mask, in place.  Like
+      ! cfield_apodize but accepts amplitude + phase per pixel (mask
+      ! provided as separate real/imag NxN arrays, since f2py handles
+      ! real arrays more robustly than complex).
+      !
+      ! Used by Python-side phase-mask helpers (vortex coronagraph,
+      ! PIAA-like apodisers, sub-wavelength gratings, etc.) where the
+      ! mask carries both transmission and phase information.
+      !---------------------------------------------------------------------------------------------
+      subroutine cfield_apodize_complex(OK, MASK_RE, MASK_IM, N, iElt)
+        use elt_mod, only: WFElt, iEltToiWF
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(in) :: MASK_RE, MASK_IM
+        integer,                 intent(in) :: N      ! = mdttl
+        integer,                 intent(in) :: iElt
+
+        integer :: iWF
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(WFElt))                  return
+
+        iWF = iEltToiWF(iElt)
+        if (iWF .LE. 0) return
+
+        WFElt(:N, :N, iWF) = WFElt(:N, :N, iWF) &
+                            * cmplx(MASK_RE, MASK_IM, kind=8)
+        OK = PASS
+
+      end subroutine cfield_apodize_complex
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Programmatic rigid-body coordinate-frame perturbation of one
+      ! element.  Wraps macos's CPERTURB_PROG (funcsub.F), the
+      ! non-interactive sibling of the interactive CPERTURB command.
+      !
+      ! Unlike a direct elt_vpt setter, this routine performs the full
+      ! macos PERTURB bookkeeping: position + orientation, the
+      ! element's local TElt frame matrix, the aperture vector xObs,
+      ! HOE points, the Mon / pData / FF figure-error coordinate
+      ! frames, metrology surface points, and any linked-element
+      ! children.  This is the correct path for moving a real optic
+      ! (instead of just shifting its vertex while leaving figure
+      ! errors stuck at the original location).
+      !
+      ! Args:
+      !   iElt          : element index (1..nElt)
+      !   th(3)         : rotation perturbation vector (x, y, z), radians
+      !   del(3)        : translation perturbation vector (x, y, z),
+      !                   in prescription BaseUnits (mm for Rx_Coro.in)
+      !   useLocalCoord : .true. -> (th, del) are in element-local
+      !                   coords; .false. -> already in global coords
+      !---------------------------------------------------------------------------------------------
+      subroutine perturb_elt(OK, iElt, th, del, useLocalCoord)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt
+        real(8), intent(in) :: th(3), del(3)
+        logical, intent(in) :: useLocalCoord
+        external :: CPERTURB_PROG
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if (.not. SystemCheck())          return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        call CPERTURB_PROG(iElt, th, del, useLocalCoord)
+        OK = PASS
+
+      end subroutine perturb_elt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Source rigid-body perturbation -- the iElt=0 branch of macos's
+      ! CPERTURB.  Dispatched through SMACOS so the existing PERTURB
+      ! LoadStack (smacosutil.F:401-408 handles IARG(1)==0) feeds the
+      ! 6-vector into CPERTURB's source-perturb branch (funcsub.F:41-92).
+      !
+      ! Coordinate frame for (th, del) matches macos's source-perturb
+      ! semantics: GLOBAL by default; LOCAL when the Rx declares
+      ! source local frames (SrcLF_FLG set by SrcXAxis/SrcYAxis/...).
+      ! There is no per-call useLocalCoord switch because macos itself
+      ! has none -- the choice is baked into the prescription.
+      !
+      ! Args:
+      !   th(3)  : rotation perturbation vector (rad), GLOBAL or LOCAL
+      !            per SrcLF_FLG
+      !   del(3) : translation perturbation vector, in prescription
+      !            BaseUnits
+      !---------------------------------------------------------------------------------------------
+      subroutine perturb_src(OK, th, del)
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: th(3), del(3)
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if (.not. SystemCheck()) return
+
+        command   = 'PERTURB'
+        IARG(1)   = 0          ! source-perturb branch
+        DARG(1:3) = th
+        DARG(4:6) = del
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+
+      end subroutine perturb_src
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set Exit Pupil (XP) information
+      !---------------------------------------------------------------------------------------------
+      subroutine xp_set(ok, vpt, psi, rad)
+        implicit none
+        logical,               intent(out):: ok    ! (PASS=1) if successful; (FAIL=0) otherwise
+        real(8), dimension(3), intent(in) :: vpt   ! (x,y,z) Srf. position     in global CSYS
+        real(8), dimension(3), intent(in) :: psi   ! (L,M,N) Srf. orientation. in global CSYS
+        real(8),               intent(in) :: rad   ! ref. sphere radius
+        ! ------------------------------------------------------
+
+        ok = FAIL
+        if (.not. SystemCheck() .or. (nElt<=3)) return
+
+        VptElt(:, nElt-1) = vpt
+        PsiElt(:, nElt-1) = psi
+        KrElt(nElt-1)     = rad
+
+        ok = PASS
+      end subroutine xp_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Get Exit Pupil (XP) information
+      !---------------------------------------------------------------------------------------------
+      subroutine xp_get(ok, vpt, psi, rad)
+        implicit none
+        logical,               intent(out) :: ok    ! (PASS=1) if successful; (FAIL=0) otherwise
+        real(8), dimension(3), intent(out) :: vpt   ! (x,y,z) Srf. position     in global CSYS
+        real(8), dimension(3), intent(out) :: psi   ! (L,M,N) Srf. orientation. in global CSYS
+        real(8),               intent(out) :: rad   ! ref. sphere radius
+        ! ------------------------------------------------------
+
+        ok = FAIL
+        if (.not. SystemCheck()) return
+
+        vpt = VptElt(:, nElt-1)
+        psi = PsiElt(:, nElt-1)
+        rad = KrElt(nElt-1)
+
+        ok = PASS
+      end subroutine xp_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Find Exit Pupil (XP) -- FEX cmd
+      !---------------------------------------------------------------------------------------------
+      ! Note     : assume XP Srf is Element nElt-1 & Stop is set
+      !---------------------------------------------------------------------------------------------
+      subroutine xp_fnd(OK, XP, mode)
+        use       macos_mod, only: ifStopSet
+        use smacos_vars_mod, only: npts
+        use         src_mod, only: nGridPts
+
+        implicit none
+        logical, intent(out):: OK        ! (PASS=1) if successful; (FAIL=0) otherwise
+        real(8), intent(out):: XP(7)     ! [Kr, Psi(L,M,N), Vpt(x,y,z)] @ XP Srf. (= nElt-1)
+        integer, intent(in) :: mode      ! (PASS=1): Chief Ray, (FAIL=0): Centroid
+
+        logical :: ifCentroidSave
+        integer :: nGridPtsSave
+        ! ------------------------------------------------------
+        OK    = FAIL
+        XP(:) = 0e0_pr
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
+
+        ! fix: SMACOS "FEX" does not correctly reset nGridPts
+        nGridPtsSave = nGridPts
+
+        ! define ref. srf. centering approach
+        ifCentroidSave = ifCentroid
+        ifCentroid     = (mode == 0)  ! INTEGER mode==0 means FAIL
+
+        command = 'FEX'
+        IARG(1) = nElt-1
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! fix: SMACOS "FEX" does not correctly reset nGridPts & npts
+        if (nGridPtsSave/=nGridPts .or. npts/=nGridPtsSave-1) then
+
+          nGridPts = nGridPtsSave
+          npts     = nGridPts-1
+
+          command = 'MODIFY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        end if
+
+        ! restore
+        ifCentroid = ifCentroidSave
+
+        ! return
+        XP = (/KrElt(nElt-1), PsiElt(:,nElt-1), VptElt(:,nElt-1)/)
+        OK = PASS
+
+      end subroutine xp_fnd
+
+
+      !---------------------------------------------------------------------------------------------
+      ! SXP -- Set eXit Pupil.  FEX variant that sets the EP radius to
+      ! the chief-ray distance from the EP to the FP (iElt+1), so the
+      ! EP geometry tracks FP perturbations.  Same dispatch path as
+      ! FEX (SMACOS('SXP', ...)); the underlying Fortran subroutine
+      ! SXP lives in tracesub.F.
+      !---------------------------------------------------------------------------------------------
+      subroutine sxp_fnd(OK, XP, mode)
+        use       macos_mod, only: ifStopSet
+        use smacos_vars_mod, only: npts
+        use         src_mod, only: nGridPts
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(out):: XP(7)
+        integer, intent(in) :: mode
+
+        logical :: ifCentroidSave
+        integer :: nGridPtsSave
+        ! ------------------------------------------------------
+        OK    = FAIL
+        XP(:) = 0e0_pr
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
+
+        nGridPtsSave = nGridPts
+        ifCentroidSave = ifCentroid
+        ifCentroid     = (mode == 0)
+
+        command = 'SXP'
+        IARG(1) = nElt-1
+        CARG(1) = 'YES'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                      &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+
+        if (nGridPtsSave/=nGridPts .or. npts/=nGridPtsSave-1) then
+          nGridPts = nGridPtsSave
+          npts     = nGridPts-1
+          command = 'MODIFY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                    &
+                      OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        ifCentroid = ifCentroidSave
+
+        XP = (/KrElt(nElt-1), PsiElt(:,nElt-1), VptElt(:,nElt-1)/)
+        OK = PASS
+
+      end subroutine sxp_fnd
+
+      subroutine xps_cmd(OK, iElt)
+        use macos_mod, only: ifStopSet
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt
+
+        ! Run XPS (eXit-Pupil Surface): generalizes FEX to the whole
+        ! grid, leaving the per-ray exit-pupil crossing cloud in the ray
+        ! buffer (RayPos), which ray_info_get then exposes.  Unlike
+        ! sxp_fnd we do NOT MODIFY/re-trace afterward -- that would wipe
+        ! the crossings.  The grid is left in the differential-field
+        ! state; the caller re-traces (trace/modify) for normal use.
+        OK = FAIL
+        if (.not. SystemCheck())   return
+        if (.not. StopSetOrWarn()) return
+
+        command = 'XPS'
+        IARG(1) = iElt
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        OK = PASS
+
+      end subroutine xps_cmd
+
+
+      !---------------------------------------------------------------------------------------------
+      ! draw_rays -- expose DRAW's real ray bundle as DATA (no graphics).
+      ! Runs the SMACOS DRAW command in DATA-ONLY mode (DrawDataOnly): the
+      ! handler traces the draw-ray fan from iStartElt..iEndElt, projects
+      ! it onto the requested plane (1=YZ, 2=XZ, 3=XY) and leaves the bundle
+      ! in src_mod's DrawRayVec_save/DrawEltVec_save/nDrawElt_save -- NO Giza
+      ! device is opened and nothing renders.  The design-layer MATLAB/Python
+      ! viewer reads it back (real rays, any plane, element-sliced) and plots
+      ! it itself.  Two-call pattern (like spot_cmd/spot_get):
+      !   draw_rays_cmd(plane,iStart,iEnd) -> run DRAW, return buffer dims
+      !   draw_rays_get(...)               -> copy the saved bundle out
+      !---------------------------------------------------------------------------------------------
+      subroutine draw_rays_cmd(OK, plane, iStartElt, iEndElt, &
+                               nDrawElt_max, nDrawRay)
+        use param_mod, only: mDrawElt
+        use   src_mod, only: DrawDataOnly, DrawDataPlane, &
+                             DrawDataStartElt, DrawDataEndElt, nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: plane         ! 1=YZ, 2=XZ, 3=XY
+        integer, intent(in)  :: iStartElt     ! first elt to draw (0 = all)
+        integer, intent(in)  :: iEndElt       ! last elt to draw
+        integer, intent(out) :: nDrawElt_max  ! = mDrawElt (caller buffer dim)
+        integer, intent(out) :: nDrawRay      ! actual # of drawn rays
+        ! ------------------------------------------------------
+        OK = FAIL
+        nDrawElt_max = mDrawElt
+        nDrawRay     = 0
+        if (.not. SystemCheck()) return
+        if (plane < 1 .or. plane > 3) return
+
+        DrawDataPlane    = plane
+        DrawDataStartElt = iStartElt
+        DrawDataEndElt   = iEndElt
+        DrawDataOnly     = .TRUE.
+
+        ! NOTE: parameters travel via the DrawData* module variables only.
+        ! (An earlier version also pushed them onto the SMACOS arg stack
+        ! "for consistency" -- but the data-only DRAW handler bypasses the
+        ! dialog, so the tokens were never consumed and spilled into the
+        ! command loop as "** Unknown command" noise after every call.)
+        command = 'DRAW'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        DrawDataOnly = .FALSE.
+        nDrawRay     = nDrawRay_save
+        OK = PASS
+      end subroutine draw_rays_cmd
+
+
+      subroutine draw_rays_get(OK, RayU, RayV, EltVec, nEltPerRay, nDE, nDR)
+        use src_mod, only: DrawRayVec_save, DrawEltVec_save, &
+                           nDrawElt_save, nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: nDE, nDR             ! caller buffer dims
+        real(8), intent(out) :: RayU(nDE,nDR)        ! projected x-coordinate
+        real(8), intent(out) :: RayV(nDE,nDR)        ! projected y-coordinate
+        integer, intent(out) :: EltVec(nDE,nDR)      ! elt index per crossing
+        integer, intent(out) :: nEltPerRay(nDR)      ! # crossings per ray
+        integer :: nr, ne
+        ! ------------------------------------------------------
+        OK = FAIL
+        RayU = 0d0; RayV = 0d0; EltVec = 0; nEltPerRay = 0
+        if (.not. allocated(DrawRayVec_save)) return
+        if (nDrawRay_save <= 0) return
+        nr = min(nDrawRay_save, nDR)
+        ne = min(size(DrawRayVec_save,2), nDE)
+        RayU(1:ne,1:nr)   = DrawRayVec_save(1,1:ne,1:nr)
+        RayV(1:ne,1:nr)   = DrawRayVec_save(2,1:ne,1:nr)
+        EltVec(1:ne,1:nr) = DrawEltVec_save(1:ne,1:nr)
+        nEltPerRay(1:nr)  = nDrawElt_save(1:nr)
+        OK = PASS
+      end subroutine draw_rays_get
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Return the 3-D (global x,y,z) surface crossings of the draw-ray fan
+      !            captured by the LAST draw_rays_cmd -- the unprojected companion of
+      !            draw_rays_get (same ray/crossing enumeration: crossing c of ray r
+      !            here is crossing c of ray r there; use draw_rays_get for the elt
+      !            indices and per-ray crossing counts).  Works for ANY loaded Rx and
+      !            every element type the DRAW trace crosses (Segment/NS included) --
+      !            the substrate for the general 3-D prescription visualizer
+      !            (macos.view_rx / macos.draw_rays3d).
+      ! Call     : CALL draw_rays3d_get(OK, Px, Py, Pz, nDE, nDR)
+      ! Input    : nDE      [1x1,I]: crossing-buffer dim (from draw_rays_cmd)
+      !            nDR      [1x1,I]: ray-buffer dim      (from draw_rays_cmd)
+      ! Output   : OK       [1x1,B]: = (True) if successful; (False) otherwise
+      !            Px,Py,Pz [nDExnDR,D]: global coords of crossing (c, ray r), BaseUnits
+      ! Require  : draw_rays_cmd called first (fills traceutil_mod Draw3DVec via CTRACE)
+      !---------------------------------------------------------------------------------------------
+      subroutine draw_rays3d_get(OK, Px, Py, Pz, nDE, nDR)
+        use traceutil_mod, only: Draw3DVec
+        use src_mod,       only: nDrawRay_save
+        implicit none
+        logical, intent(out) :: OK
+        integer, intent(in)  :: nDE, nDR             ! caller buffer dims
+        real(8), intent(out) :: Px(nDE,nDR)          ! global x per crossing
+        real(8), intent(out) :: Py(nDE,nDR)          ! global y per crossing
+        real(8), intent(out) :: Pz(nDE,nDR)          ! global z per crossing
+        integer :: nr, ne
+        ! ------------------------------------------------------
+        OK = FAIL
+        Px = 0d0; Py = 0d0; Pz = 0d0
+        if (.not. allocated(Draw3DVec)) return
+        if (nDrawRay_save <= 0) return
+        nr = min(nDrawRay_save, nDR)
+        ne = min(size(Draw3DVec,2), nDE)
+        Px(1:ne,1:nr) = Draw3DVec(1,1:ne,1:nr)
+        Py(1:ne,1:nr) = Draw3DVec(2,1:ne,1:nr)
+        Pz(1:ne,1:nr) = Draw3DVec(3,1:ne,1:nr)
+        OK = PASS
+      end subroutine draw_rays3d_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! ORS -- Optimize Reference Surface.
+      ! Calls macos's interactive ORS command via SMACOS.  Traces the
+      ! chief ray from the source to iElt-1 and then runs
+      ! CRSOPTIMIZE(iElt) to fit an optimal reference sphere at iElt
+      ! against the current ray geometry.
+      !
+      ! Typical setup pattern (from an unperturbed design):
+      !   FEX  -> find pupil location
+      !   ORS  -> set the EP element to that pupil
+      !   SRS FP-to-EP -> lock FP behind EP
+      !
+      ! NOT typically part of a sensitivity / dw/dx loop -- ORS would
+      ! re-optimize away from the perturbation we're trying to
+      ! measure.  Use it before the sweep to set up the EP/FP
+      ! geometry from the unperturbed design.
+      !---------------------------------------------------------------------------------------------
+      subroutine ors_run(OK, iElt)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if (.not. SystemCheck())                       return
+        if ((iElt < 1) .or. (iElt > nElt))             return
+
+        command = 'ORS'
+        IARG(1) = iElt
+        CARG(1) = 'YES'
+        CALL SMACOS(command, CARG, DARG, IARG, LARG, RARG,                 &
+                    OPDMat, RaySpot, RMSWFE, PixArray)
+
+        OK = PASS
+
+      end subroutine ors_run
+
+
+      !---------------------------------------------------------------------------------------------
+      ! SRS -- Slave Reference Surface.
+      ! Recomputes the pose of element ``iSlv1`` from the chief ray
+      ! traced through ``iSlv2`` (the master).  Used to lock one
+      ! optical surface to another so it tracks across traces.
+      !
+      ! Typical setup pattern (from an unperturbed design):
+      !   FEX  -> find pupil
+      !   ORS  -> set the EP element to that pupil
+      !   SRS FP-to-EP  -> lock FP behind EP
+      ! And for the dw/dx FocalPlaneChannel "srs" mode: each FP
+      ! perturbation is followed by SRS EP-to-FP, recomputing the EP
+      ! pose against the new chief-ray geometry from the moved FP.
+      !
+      ! ``link`` (PASS = link / 'YES') vs not (FAIL = 'NO') maps to
+      ! CARG(1) per smacosutil.F:174.  link=PASS is what slaves the
+      ! pose; link=FAIL is the "compute once, don't track" variant.
+      !---------------------------------------------------------------------------------------------
+      subroutine srs_run(OK, iSlv1, iSlv2, link)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iSlv1
+        integer, intent(in) :: iSlv2
+        logical, intent(in) :: link
+        ! ------------------------------------------------------
+        OK = FAIL
+
+        if (.not. SystemCheck())                       return
+        if ((iSlv1 < 1) .or. (iSlv1 > nElt))           return
+        if ((iSlv2 < 1) .or. (iSlv2 > nElt))           return
+        if (iSlv1 == iSlv2)                            return
+
+        command = 'SRS'
+        IARG(1) = iSlv1
+        IARG(2) = iSlv2
+        if (link .eqv. PASS) then
+          CARG(1) = 'YES'
+        else
+          CARG(1) = 'NO'
+        end if
+        CALL SMACOS(command, CARG, DARG, IARG, LARG, RARG,                 &
+                    OPDMat, RaySpot, RMSWFE, PixArray)
+
+        OK = PASS
+
+      end subroutine srs_run
+
+
+      !---------------------------------------------------------------------------------------------
+      ! CALIB -- run the MACOS design optimizer.
+      !
+      ! Phase 1a: bare wrap around the SMACOS 'CALIB' command.  Reads
+      ! the optimization configuration from current state — variable
+      ! elements (isVarElt / varEltDOF / nOptEltZern), field-of-view
+      ! list (opt_fov / nOptFov), wavelength list (opt_wavelen /
+      ! nOptWavelen), target (OptTarget), iteration cap (nitrs_dopt),
+      ! tolerance (dopt_tol).  These are set either by the prescription
+      ! parser (OptTarget=, VarDOF=, OptWaveLen= keys in the .in file)
+      ! or by subsequent setter calls (Phase 1b — see calib_set_*).
+      !
+      ! On success returns rtn_flag=0; old_wfe / new_wfe filled with
+      ! the per-FOV per-wavelength RMS WFE before and after the
+      ! optimization (only meaningful for OptTarget == WFE_TARGET).
+      ! Caller-supplied buffer dims must equal max_fov × max_wl from
+      ! dopt_mod (currently 12 × 6).
+      !
+      ! NPSOL (constrained) path is invoked automatically when
+      ! LOptCons=.TRUE. AND macos was built with -DUSE_NPSOL=ON;
+      ! otherwise CALIB prints an error and returns rtn_flag/=0.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_run(OK, rtn_flag_out, nFov_out, nWl_out,            &
+                           old_wfe_out, new_wfe_out)
+        use dopt_mod, only: rtn_flag, old_wfe, new_wfe, nOptFov,           &
+                            nOptWavelen, nVarElt, max_fov, max_wl
+
+        implicit none
+        logical, intent(out):: OK                          ! PASS if call dispatched & rtn_flag==0
+        integer, intent(out):: rtn_flag_out                ! 0 = converged; nonzero = failure
+        integer, intent(out):: nFov_out                    ! # FOVs used (<= max_fov)
+        integer, intent(out):: nWl_out                     ! # wavelengths used (<= max_wl)
+        real(8), intent(out):: old_wfe_out(max_fov,max_wl) ! per-FOV/wavelength WFE before optim
+        real(8), intent(out):: new_wfe_out(max_fov,max_wl) ! per-FOV/wavelength WFE after  optim
+        ! ------------------------------------------------------
+        OK            = FAIL
+        rtn_flag_out  = -1
+        nFov_out      = 0
+        nWl_out       = 0
+        old_wfe_out   = 0d0
+        new_wfe_out   = 0d0
+
+        if (.not. SystemCheck()) return
+        if (nVarElt < 1)         return  ! No Variable Element for Optimization!
+        if (nOptFov < 1)         return  ! No Field of View for Optimization!
+
+        command = 'CALIB'
+        CALL SMACOS(command, CARG, DARG, IARG, LARG, RARG,                 &
+                    OPDMat, RaySpot, RMSWFE, PixArray)
+
+        ! dopt_mod publishes the optimizer's outputs as module state.
+        rtn_flag_out = rtn_flag
+        nFov_out     = nOptFov
+        nWl_out      = nOptWavelen
+        old_wfe_out  = old_wfe
+        new_wfe_out  = new_wfe
+
+        if (rtn_flag == 0) OK = PASS
+
+      end subroutine calib_run
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_buffer_dims -- report the (max_fov, max_wl) compile-time
+      ! dimensions used by calib_run's old_wfe_out / new_wfe_out
+      ! buffers.  Callers can use this to allocate correctly-shaped
+      ! arrays without hardcoding dopt_mod constants on the binding
+      ! side.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_buffer_dims(maxFov, maxWl)
+        use dopt_mod, only: max_fov, max_wl
+
+        implicit none
+        integer, intent(out):: maxFov
+        integer, intent(out):: maxWl
+        ! ------------------------------------------------------
+        maxFov = max_fov
+        maxWl  = max_wl
+
+      end subroutine calib_buffer_dims
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_var_elt -- mark element ``iElt`` as a CALIB variable
+      ! and specify which DOFs / Zernike modes are free.
+      !
+      ! Programmatic equivalent of the interactive AVAR command.
+      ! ``dofs`` is an 8-vector matching the DOF_NameList order:
+      ! [TIP, TILT, CLOCK, DX, DY, PIST, ROC, CONIC] -- nonzero = vary,
+      ! zero = freeze.  ``zern_modes`` is a list of Zernike mode
+      ! indices (1..45) for elements with Zernike-typed perturbations;
+      ! pass an empty list (n_zern = 0) for rigid-body-only optimization.
+      !
+      ! If iElt is already a variable element, this call MODIFIES the
+      ! DOF + Zernike configuration in place (matching MVAR behaviour).
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_var_elt(OK, iElt, dofs, zern_modes, n_zern)
+        use dopt_mod, only: isVarElt, nVarElt, varElts, varEltDOF,         &
+                            mVarDOF, nDOF_VarElt, DOF_VarElt,              &
+                            DOF_NameList, nOptEltZern, OptEltZernTerm,     &
+                            mOptZern
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: iElt                          ! 1..nElt
+        integer, intent(in) :: dofs(mVarDOF)                 ! 8-vec; nonzero == vary
+        integer, intent(in) :: n_zern                        ! # entries in zern_modes
+        integer, intent(in) :: zern_modes(max(n_zern, 1))    ! Zernike modes (1..45)
+        !f2py integer intent(hide), depend(zern_modes):: n_zern=len(zern_modes)
+        integer :: i, iVarElt
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if ((iElt < 1) .or. (iElt > nElt))          return
+        ! Zernike-mode range validation (mOptZern is the dopt_mod cap)
+        if (n_zern > 0) then
+          if (any(zern_modes < 1) .or. any(zern_modes > mOptZern)) return
+        end if
+
+        ! Add to variable-element list (or find existing slot for modify)
+        if (.not. isVarElt(iElt)) then
+          isVarElt(iElt) = .true.
+          nVarElt = nVarElt + 1
+          varElts(nVarElt) = iElt
+          iVarElt = nVarElt
+        else
+          do iVarElt = 1, nVarElt
+            if (varElts(iVarElt) == iElt) exit
+          end do
+        end if
+
+        ! DOF mask + name list for the summary print
+        varEltDOF(1:mVarDOF, iElt) = dofs
+        nDOF_VarElt(iVarElt) = 0
+        do i = 1, mVarDOF
+          if (varEltDOF(i, iElt) /= 0) then
+            nDOF_VarElt(iVarElt) = nDOF_VarElt(iVarElt) + 1
+            DOF_VarElt(nDOF_VarElt(iVarElt), iVarElt) = DOF_NameList(i)
+          end if
+        end do
+
+        ! Zernike modes (optional)
+        if (n_zern > 0) then
+          nOptEltZern(iElt) = n_zern
+          OptEltZernTerm(1:n_zern, iElt) = zern_modes
+        else
+          nOptEltZern(iElt) = 0
+        end if
+
+        OK = PASS
+
+      end subroutine calib_set_var_elt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_clear_var_elts -- wipe all CALIB variable-element state.
+      ! Programmatic equivalent of running DVAR on every variable.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_clear_var_elts(OK)
+        use dopt_mod, only: isVarElt, nVarElt, varElts, varEltDOF,         &
+                            nDOF_VarElt, nOptEltZern, OptEltZernTerm
+
+        implicit none
+        logical, intent(out):: OK
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        ! Guard each slice write: ifx silently no-ops unallocated
+        ! allocatable assignments, gfortran/glibc detects them as
+        ! heap corruption.  Without these guards, mmacos's mex path
+        ! (matlab.unittest framework specifically) crashes here even
+        ! though pymacos's f2py path tolerates it.  See PLAN.md §0.
+        if (allocated(isVarElt))        isVarElt(:)         = .false.
+                                        nVarElt             = 0
+        if (allocated(varElts))         varElts(:)          = 0
+        if (allocated(varEltDOF))       varEltDOF(:, :)     = 0
+        if (allocated(nDOF_VarElt))     nDOF_VarElt(:)      = 0
+        if (allocated(nOptEltZern))     nOptEltZern(:)      = 0
+        if (allocated(OptEltZernTerm))  OptEltZernTerm(:,:) = 0
+
+        OK = PASS
+
+      end subroutine calib_clear_var_elts
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_iter -- set the optimizer iteration cap.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_iter(OK, n_iter)
+        use dopt_mod, only: nitrs_dopt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n_iter
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (n_iter < 1) return
+        nitrs_dopt = n_iter
+        OK = PASS
+
+      end subroutine calib_set_iter
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_tol -- set the convergence tolerance.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_tol(OK, tol)
+        use dopt_mod, only: dopt_tol
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: tol
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (tol <= 0d0) return
+        dopt_tol = tol
+        OK = PASS
+
+      end subroutine calib_set_tol
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_target -- set the optimization target type.
+      !
+      ! target_type values (from dopt_mod's *_TARGET constants):
+      !   1 = WFE         (RMS wavefront error)
+      !   2 = WFE_ZMODE   (specific Zernike modes only; requires WFZernMode)
+      !   3 = BEAM        (beam waist / position / divergence)
+      !   4 = SPOT        (RMS spot size)
+      !   5 = OPL         (optical path length)
+      !
+      ! For target_type=2 (WFE_ZMODE), caller supplies n_wf_zern + a
+      ! list of Zernike mode indices.  For all other targets,
+      ! n_wf_zern=0 and wf_zern_modes is unused.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_target(OK, target_type, wf_zern_modes, n_wf_zern)
+        use dopt_mod, only: OptTarget, nWFZern, WFZernMode,                &
+                            WFE_TARGET, WFE_ZMODE_TARGET, BEAM_TARGET,     &
+                            SPOT_TARGET, OPL_TARGET, mOptZern
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: target_type
+        integer, intent(in) :: n_wf_zern                       ! 0 unless ZMODE
+        integer, intent(in) :: wf_zern_modes(max(n_wf_zern,1)) ! Zernike modes for ZMODE
+        !f2py integer intent(hide), depend(wf_zern_modes):: n_wf_zern=len(wf_zern_modes)
+        ! ------------------------------------------------------
+        OK = FAIL
+        ! Validate target enum
+        if (target_type /= WFE_TARGET       .and.                          &
+            target_type /= WFE_ZMODE_TARGET .and.                          &
+            target_type /= BEAM_TARGET      .and.                          &
+            target_type /= SPOT_TARGET      .and.                          &
+            target_type /= OPL_TARGET) return
+
+        OptTarget = target_type
+
+        if (target_type == WFE_ZMODE_TARGET) then
+          if (n_wf_zern < 1) return
+          if (any(wf_zern_modes < 1) .or. any(wf_zern_modes > mOptZern))   &
+            return
+          nWFZern               = n_wf_zern
+          WFZernMode            = 0
+          WFZernMode(1:n_wf_zern) = wf_zern_modes
+        end if
+
+        OK = PASS
+
+      end subroutine calib_set_target
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Get Stop Information
+      !---------------------------------------------------------------------------------------------
+      subroutine stop_info_get(OK, iElt, VptOffset)
+        use Kinds
+        use smacosio_mod, only: StopOffset, EltStopSet
+        use    macos_mod, only: ifStopSet
+
+        implicit none
+        logical, intent(out):: OK            ! (PASS=1) if successful; (FAIL=0) otherwise
+        integer, intent(out):: iElt          ! Element at which Optical System Stop is defined
+        real(8), intent(out):: VptOffset(2)  ! [dx,dy]: Offset from Srf. Vertex Position
+        ! ------------------------------------------------------
+
+        if (.not. (SystemCheck() .and. ifStopSet .and. EltStopSet)) then
+          iElt      = 0
+          VptOffset = (/0e0_pr, 0e0_pr/)
+          OK        = FAIL
+        else
+          iElt      = StopElt
+          VptOffset = StopOffset
+          OK        = PASS
+        end if
+
+      end subroutine stop_info_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! set Element Stop
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Define Optical System Stop Position & update source to ensure Chief Ray goes
+      !            through Stop position. Option exist to use current stop definition if already set.
+      ! Call     : CALL stop_info_set(OK,iElt,Offset)
+      ! Input    : iElt    [1x1,I]: Element at which Optical System Stop to define (0 < iElt <= nElt)
+      !
+      !            Offset  [2x1,D]: = [dx,dy]: Offset from Srf. Vertex Position
+      !                             Special:if iElt<0, Offset data ignored
+      ! Output   : OK      [1x1,B]: = (True) if successful; (False) otherwise
+      ! Require  : Rx loaded
+      ! Note     : -- Stop cannot be set at elements of type NSRefractor,NSReflector or Segment
+      !            -- MACOS bug: reading a new Rx does NOT reset Stop information flags, i.e., info
+      !                          from previous Rx are retained.
+      !            -- if iElt<0 and Element Stop is not set, it will fail, i.e., OK = False
+      !---------------------------------------------------------------------------------------------
+      subroutine stop_info_set(OK,iElt,VptOffset)
+        use smacos_vars_mod, only: npts
+        use    smacosio_mod, only: RxStopSet, EltStopSet, StopOffset
+        use         src_mod, only: StopElt
+        use       macos_mod, only: ifStopSet
+        use         elt_mod, only: EltID,NSRefractorElt,NSReflectorElt,SegmentElt
+
+        implicit none
+        logical, intent(out):: OK            ! (PASS=1) if successful; (FAIL=0) otherwise
+        integer, intent(in) :: iElt          ! Element at which Optical System Stop to be defined (0 < iElt < nElt-2)
+        real(8), intent(in) :: VptOffset(2)  ! [dx,dy]: Offset from Srf. Vertex Position
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck() .or. nElt <=3 .or. iElt<1 .or. iElt>=nElt-2) return
+
+        ! cannot set stop at element of type NSRefractor,NSReflector or Segment
+        if ((EltID(iElt)==NSRefractorElt).or. &
+            (EltID(iElt)==NSReflectorElt).or. &
+            (EltID(iElt)==SegmentElt)) return
+
+        ! chk Offset
+        if (isnan(VptOffset(1)) .or. isnan(VptOffset(2))) return
+
+        ! update
+        StopElt    = iElt
+        StopOffset = VptOffset
+
+        RxStopSet  = .true.
+        EltStopSet = .true.
+
+        ! set Stop and enforce Chief Ray passing through Stop position
+        command   = 'STOP'
+        CARG(1)   = 'ELT'
+        IARG(1)   = iElt          ! define Stop at Srf. iElt
+        DARG(1:2) = VptOffset     ! Offset
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! MACOS Bug: After running STOP, nGridPts is not updated/restored
+        if ((nGridPts-1)/=npts) nGridPts = npts + 1
+
+        if (.not. ifStopSet) return
+
+        OK = PASS
+
+      end subroutine stop_info_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! set Object-space Stop -- the OBJ branch of macos's STOP
+      ! command (macos_cmd_loop.inc:2957-3005).  Aims the chief ray
+      ! from the current source position through the given point in
+      ! object space (StopPos).  Cheap and deterministic: no
+      ! optimization, just the geometric "redirect ChfRayDir" math
+      ! for point sources (or "translate ChfRayPos" for collimated
+      ! sources).  Use this to re-enforce the stop after a source
+      ! perturbation when the prescription declares an object-space
+      ! stop (ApStop= x y z) instead of an element stop.
+      !---------------------------------------------------------------------------------------------
+      subroutine stop_obj_set(OK, x, y, z)
+        use smacos_vars_mod, only: npts
+        use       macos_mod, only: ifStopSet
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: x, y, z
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        command   = 'STOP'
+        CARG(1)   = 'OBJ'
+        DARG(1)   = x
+        DARG(2)   = y
+        DARG(3)   = z
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! Same nGridPts/npts re-sync as the ELT path (same macos quirk).
+        if ((nGridPts-1)/=npts) nGridPts = npts + 1
+
+        if (.not. ifStopSet) return
+        OK = PASS
+
+      end subroutine stop_obj_set
+
+
+    ! ============================================================================================
+    !
+    ! Element Surface Properties: Tools
+    !
+    ! ============================================================================================
+
+      !---------------------------------------------------------------------------------------------
+      ! return number of defined Elements
+      !---------------------------------------------------------------------------------------------
+      subroutine n_elt(nElt_out)
+        implicit none
+        integer, intent(out) :: nElt_out   ! returns # of Elements
+        ! ------------------------------------------------------
+        nElt_out = 0
+
+        ! Check if system is initialized.
+        if (.not. SystemCheck()) return
+
+        nElt_out = nElt
+      end subroutine n_elt
+
+
+    ! ============================================================================================
+    !
+    ! SMACOS
+    !
+    ! ============================================================================================
+
+
+      !---------------------------------------------------------------------------------------------
+      !    Purpose : initialize smacos
+      !    Call    : call init(ok, modelSize)
+      !    Input   : modelSize [1x1,I]: SMACOS model size
+      !    Output  : OK        [Logical]: OK = PASS if macos was initialized
+      !                                   OK = FAIL otherwise
+      !    Require : PyMACOS not be initialized
+      !    Note    : This will set PyMACOS package internal setting to
+      !                initialized
+      !---------------------------------------------------------------------------------------------
+      subroutine init(ok, modelsize)
+        implicit none
+        logical, intent(out) :: ok
+        integer, intent(in) :: modelsize
+        ! ------------------------------------------------------
+
+        LOGICAL :: ifInitOptics
+        INTEGER :: m_err_pymacos
+        INTEGER :: curr_model_size = -1   ! automatic save
+        INTEGER :: mPix2                  ! formerly from pymacos.inc
+
+        SAVE   ! it's necessary but which variables need to be saved?
+
+        ok = FAIL
+        ! -----------------------------------------------------------------------
+        ! Initialize flags
+        ! -----------------------------------------------------------------------
+
+        DATA ifInitOptics/.FALSE./
+
+        ! Initialize or reset SMACOS model
+        firstEntry = modelsize /= curr_model_size
+
+        IF (firstEntry) THEN ! .OR. modelsize /= curr_model_size) THEN
+          curr_model_size = modelsize
+          CALL macos_init_all(curr_model_size)
+          ! Force SMACOS to reallocate its module-saved buffers (DWF,
+          ! R1, R2, D2, CD1, CD2 etc. in smacos_vars_mod) on the next
+          ! SMACOS dispatch.  macos_init_all updates the param_mod dim
+          ! params (mdttl, mElt, mRay, ...) but does NOT touch SMACOS's
+          ! own scratch state, so without this flag the SMACOS buffers
+          ! stay at the OLD size and NFPROP / DSWAP2 / DFOURN overrun
+          ! them when the model_size has grown.  See PLAN.md §0.
+          macos_realloc = .true.
+
+          IF (ALLOCATED(PixArray)) THEN
+            DEALLOCATE(PixArray,OPDMat, RaySpot, stat=m_err_pymacos)
+            IF (m_err_pymacos /= 0) THEN
+              CALL macos_memory_failure('init: de-allocate failed.')
+              return
+            END IF
+          END IF
+          allocate(PixArray(mPix,mPix), OPDMat(mpts, mpts), RaySpot(mRay,2), &
+                    stat=m_err_pymacos)
+          IF (m_err_pymacos /= 0) THEN
+            call macos_memory_failure('init: allocate failed!')
+            stop "*** Memory allocation failed ***"
+            return
+          END IF
+
+          mPix2=mPix*mPix
+
+          IF (ALLOCATED(OPD)) THEN
+            DEALLOCATE(OPD,SPOT,PIX,USER,STAT=m_err_pymacos)
+            IF (m_err_pymacos /= 0) THEN
+              CALL macos_memory_failure('init: de-allocate failed!')
+              return
+            END IF
+          END IF
+
+          ! Parameters have been defined after init call
+          ALLOCATE(OPD(mRay),SPOT(2,mRay), PIX(mPix*mPix),USER(mElt), &
+                    STAT=m_err_pymacos)
+          IF (m_err_pymacos /= 0) THEN
+            CALL macos_memory_failure('init: allocate failed!')
+            return
+          END IF
+        END IF
+
+        OPD(:)=0d0; SPOT(:,:)=0d0;  PIX(:)=0d0;  USER(:)=0d0
+        firstEntry = .false.
+        ok = PASS
+
+      end subroutine init
+
+
+      !---------------------------------------------------------------------------------------------
+      !
+      ! --- load_rx Rx ---
+      !    Purpose  : load optical prescription (Rx)
+      !    Call     : call load_rx(ok, nElt, rxName)
+      !    Input    : rxName     File Name of Rx file
+      !    Output   : OK         [Logical]: OK = PASS  if file was loaded
+      !                                     OK = FAIL  otherwise
+      !               nElt         [1x1,I]: Number of Elements loaded
+      !    Require  : PyMACOS initialized
+      !    Note     : Will set package internal setting to "Rx loaded"
+      !---------------------------------------------------------------------------------------------
+      subroutine load_rx(ok, nElt_out, rx)
+        implicit none
+        logical,            intent(out):: ok
+        integer,            intent(out):: nElt_out
+        character(len=250), intent(in) :: rx
+        ! ------------------------------------------------------
+        ok       = FAIL
+        nElt_out = 0
+
+        if (firstEntry) then
+          print *, 'load_rx: pymacos is not initialized.'
+          return
+        end if
+
+        if (len_trim(rx) > 256) return
+
+        command = 'OLD'
+        CARG(1) = trim(rx)
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        rxLoaded = (nElt > 0)
+        if (.not. rxLoaded) return
+
+        ! success
+        ok = PASS
+        nElt_out = nElt
+
+      end subroutine load_rx
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Save optical prescription
+      !---------------------------------------------------------------------------------------------
+      ! Warning:
+      !    -- volatile operation -- Python needs to check file path existance
+      !    -- not all parameters are saved (was not updated for a long time)
+      !---------------------------------------------------------------------------------------------
+      subroutine save_rx(ok, rx)
+        implicit none
+        logical,          intent(out):: ok
+        character(len=*), intent(in) :: rx
+        ! ------------------------------------------------------
+        ok = FAIL
+
+        if (.not. SystemCheck() .or. (len_trim(rx) > 256)) return  ! ToDo: update with actual parameter
+
+        command = 'SAVE'
+        CARG(1) = trim(rx)
+        CARG(2) = 'YES'      ! overwrite if file exists
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ok = PASS
+      end subroutine save_rx
+
+
+      ! ============================================================================================
+      !
+      ! Utilities
+      !
+      ! ============================================================================================
+
+      !---------------------------------------------------------------------------------------------
+      ! Check: -nElt < iElt <= nElt
+      !---------------------------------------------------------------------------------------------
+      logical function checkEltID(elt, n, m)
+        implicit none
+        integer, dimension(n,m), intent(in) :: elt
+        integer, intent(in) :: n, m
+        ! ------------------------------------------------------
+        checkEltID = (all(-nElt < elt(:,:)).and.all(elt(:,:) <= nElt))
+
+      end function checkEltID
+
+
+      !---------------------------------------------------------------------------------------------
+      logical function checkSurfaceID(elt)
+        implicit none
+        integer, intent(in) :: elt
+        ! ------------------------------------------------------
+        if (-nElt < elt .and. elt <= nElt) then
+          checkSurfaceID = PASS
+        else
+          checkSurfaceID = FAIL
+        end if
+
+      end function checkSurfaceID
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : check status
+      ! Input    : ----
+      ! Output   : (T) if SMACOS loaded and Rx loaded; (F) otherwise
+      !---------------------------------------------------------------------------------------------
+      logical function SystemCheck()
+        implicit none
+
+        if (.not. firstEntry .and. rxLoaded) then
+          SystemCheck = PASS
+        else
+          SystemCheck = FAIL
+        end if
+
+      end function SystemCheck
+
+
+      ! .TRUE. iff an aperture stop is set.  Otherwise prints an
+      ! actionable message and returns .FALSE.  The exit-pupil finders
+      ! (FEX/SXP/XPS) are undefined without a stop -- they used to return
+      ! silently, leaving the caller with a zeroed (bogus) pupil and no
+      ! hint why.  Callers do: if (.not. SystemCheck()) return ;
+      !                        if (.not. StopSetOrWarn()) return
+      logical function StopSetOrWarn()
+        use macos_mod, only: ifStopSet
+        implicit none
+
+        StopSetOrWarn = ifStopSet
+        if (.not. ifStopSet) then
+          write(*,*) '** No aperture stop set; the exit pupil is undefined.'
+          write(*,*) '   Add "ApStop= 0 0 0" to the Rx header (stop at PM),'
+          write(*,*) '   or use the STOP command, before FEX/SXP/XPS.'
+        end if
+
+      end function StopSetOrWarn
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : check if elements are in range:  0 < iElt(i,j) <= nElt
+      ! Input    : iElt  [NxM,I]: matrix containing element IDs
+      ! Output   : (T) if within range; (F) otherwise
+      !---------------------------------------------------------------------------------------------
+      logical function EltRangeChk(iElt,LowerLimit)
+
+        implicit none
+        integer, dimension(:), intent(in):: iElt
+        integer,               intent(in):: LowerLimit
+        ! ------------------------------------------------------
+
+        EltRangeChk = .not. any((iElt<LowerLimit).OR.(iElt>nElt))
+
+      end function EltRangeChk
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : Combine EltRangeChk & SystemCheck
+      ! Input    : iElt  [Nx1,I]: matrix containing element IDs
+      ! Output   : (T) if within range; (F) otherwise
+      !---------------------------------------------------------------------------------------------
+      logical function StatusChk1(iElt)
+
+        implicit none
+        integer, dimension(:), intent(in):: iElt
+        ! ------------------------------------------------------
+
+        StatusChk1 = (SystemCheck() .and. &    ! SMACOS and Rx status check
+                      EltRangeChk(iElt,1))     ! valid range: 0 < iElt(i,j) <= nElt
+
+      end function StatusChk1
+      !---------------------------------------------------------------------------------------------
+
+
+      !---------------------------------------------------------------------------------------------
+      ! map scalar element ID from  [-nElt < iElt <= nElt]   to   [0 < iElt <= nElt]
+      !---------------------------------------------------------------------------------------------
+      subroutine translateSurfaceID(iElt)
+        implicit none
+        integer, intent(inout) :: iElt
+        ! ------------------------------------------------------
+        if ( iElt .le. 0 ) then
+            iElt = nElt + iElt
+        end if
+
+      end subroutine translateSurfaceID
+
+
+      !---------------------------------------------------------------------------------------------
+      ! map array element ID from  [-nElt < iElt <= nElt]   to   [0 < iElt <= nElt]
+      !---------------------------------------------------------------------------------------------
+      subroutine translateEltID(iElt, n, m)
+        implicit none
+        integer, dimension(n,m), intent(inout):: iElt
+        integer,                 intent(in)   :: n, m
+        ! ------------------------------------------------------
+
+        where (iElt(:n, :m) <= 0) iElt(:n, :m) = nElt + iElt(:n, :m)
+
+      end subroutine translateEltID
+
+
+  end module macos_api_mod

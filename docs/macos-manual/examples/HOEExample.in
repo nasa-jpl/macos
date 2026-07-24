@@ -1,0 +1,96 @@
+    
+% A.2.4 HOEExample.in
+
+      ChfRayDir=   0d0 0d0 1d0
+      ChfRayPos=   0d0 0d0 -4d0
+       zSource=    1d22
+        IndRef=    1d0
+        Extinc=    0d0
+       Wavelen=    6.d-07
+          Flux=    1d0
+      GridType=    Circular
+      Aperture=    5.d-01
+      Obscratn=    0d0
+      nGridpts=    64
+         xGrid=    1d0 0d0 0d0
+         yGrid=    0d0 1d0 0d0
+          nElt=     4
+
+          iElt=    1
+       EltName= HOEonMirror
+       Element= HOE
+       Surface= Conic
+         KrElt= -6d0
+         KcElt= -1d0
+        psiElt=   0d0 0d0 -1d0
+        VptElt=   0d0 0d0 0d0
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   1d22
+         h1HOE=   0d0 0d0 -1d22
+         h2HOE=   1d0 0d0 -3d0
+      OrderHOE=   1d0
+       WaveHOE=   6.d-07
+          nObs=    0
+        ApType=   None
+          zElt=   1d22
+      PropType=   Geometric
+       nECoord=   -6
+
+          iElt=    2
+       EltName= FP_return
+       Element= Return
+       Surface= Flat
+         KrElt= -1d22
+         KcElt=   0d0
+         psiElt=  -3.16227766016838D-01  0D+00 9.48683298050514D-01
+        VptElt=   1.00000000000000D+00  0.00000000000000D+00 -3.00000000000000D+00
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   0d0
+          nObs=    0
+        ApType=   None
+          zElt=   1d22
+      PropType=   Geometric
+       nECoord=   -6
+
+          iElt=    3
+       EltName= Pupil_return
+       Element= Return
+       Surface= Conic
+         KrElt= -3.16227766016838D+00
+         KcElt=   0d0
+        psiElt=   3.16227766016838D-01  0D+00 -9.48683298050514D-01
+        VptElt=   0d0 0d0 0d0
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   0d0
+          nObs=    0
+        ApType=   None
+          zElt=   3.16227766016838D+00
+      PropType=   FarField
+       nECoord=   -6
+
+          iElt=    4
+       EltName= FP
+       Element= FocalPlane
+       Surface= Flat
+         KrElt= -1d22
+         KcElt=   0d0
+        psiElt=  -3.16227766016838D-01  0D+00 9.48683298050514D-01
+        VptElt=   1.00000000000000D+00  0.00000000000000D+00 -3.00000000000000D+00
+        RptElt=   0d0 0d0 0d0
+        IndRef=   1d0
+        Extinc=   0d0
+          nObs=    0
+        ApType=   None
+          zElt=   1d22
+      PropType=   Geometric
+       nECoord=   -6
+
+      nOutCord=     5
+          Tout=    1d0   0d0   0d0   0d0   0d0   0d0    0d0
+                   0d0   1d0   0d0   0d0   0d0   0d0    0d0
+                   0d0   0d0   0d0   1d0   0d0   0d0    0d0
+                   0d0   0d0   0d0   0d0   1d0   0d0    0d0
+                   0d0   0d0   0d0   0d0   0d0   0d0    1d0

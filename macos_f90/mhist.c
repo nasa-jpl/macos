@@ -7,10 +7,57 @@
 ***********************************************************************/
 
 //
-// Utility functions for MACOS command history and recall 
+// Utility functions for MACOS command history and recall
 // John Z. Lou, Jet Propulsion Laboratory
-// Last updated: 08/2008 
+// Last updated: 08/2008
 //
+
+/* ------------------------------------------------------------------
+ * Sub-prompt cache (always built, regardless of READLINE_LIBRARY).
+ *
+ * Lets Fortran ACCEPT routines pass the actual prompt text down to
+ * readline (when present) so readline renders it and manages cursor
+ * state authoritatively.  Replaces the old fragile pattern of
+ * Fortran-side WRITE for the prompt + readline-with-empty-prompt for
+ * input, which was a recurring source of overwrite/blank-line bugs.
+ *
+ *   Fortran: CALL set_sub_prompt(promptStr)   [sets cache]
+ *            CALL READ_LOH(...)                [normal sub-prompt read]
+ *            -- mhist_ sees mp[0]==' ' and uses the cached string --
+ *
+ * Defined OUTSIDE the READLINE_LIBRARY guard so non-readline builds
+ * (smacos / smacos_dvr) still have the symbol.  In those builds the
+ * cache is set by Fortran but never consulted; harmless.
+ * ------------------------------------------------------------------ */
+
+#include <string.h>      /* memcpy, for the setter below */
+
+char sub_prompt_buf[256] = "";
+
+void
+set_sub_prompt_ (const char *s, int slen)
+{
+  int n = (slen > 0 && slen < (int)sizeof(sub_prompt_buf) - 2)
+              ? slen
+              : (int)sizeof(sub_prompt_buf) - 2;
+  /* Trim trailing blanks (Fortran strings are blank-padded, plus our
+   * caller may have used ICLEN which strips trailing spaces). */
+  while (n > 0 && s[n-1] == ' ') n--;
+  if (n < 0) n = 0;
+  memcpy(sub_prompt_buf, s, n);
+  /* Always append a single trailing space so readline's cursor sits
+   * one column right of the prompt, matching the legacy
+   * ' ',A,'[',A,']: ' format that the old WRITE-the-prompt code
+   * produced. */
+  sub_prompt_buf[n] = ' ';
+  sub_prompt_buf[n+1] = '\0';
+}
+
+void
+clear_sub_prompt_ (void)
+{
+  sub_prompt_buf[0] = '\0';
+}
 
 #ifdef READLINE_LIBRARY
 
@@ -21,6 +68,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>      /* isatty(), STDIN_FILENO */
 
 #ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -40,6 +88,18 @@ extern HIST_ENTRY **history_list();
 extern void fntprint();
 void show_history(HIST_ENTRY**);
 
+/* Weak reference to giza_process_events — resolved at link time only when
+ * the Giza library is linked (pgplot target with USE_GIZA=ON).  When linked
+ * against classic PGPLOT, the symbol is NULL and the hook becomes a no-op. */
+extern void giza_process_events(void) __attribute__((weak));
+
+static int
+_macos_rl_event_hook (void)
+{
+  if (giza_process_events) giza_process_events();
+  return 0;
+}
+
 int tot_hist=0;
 
 void
@@ -52,8 +112,12 @@ mhist_(char* mp, char *cmd)
   // Test Calling a Fortran routine
   //fntprint_();  // works!
 
-  if (mp[0]==' ') 
-    prompt = (char*) NULL;
+  if (mp[0]==' ') {
+    /* Sub-prompt.  Use the cached prompt string set by the Fortran
+     * caller via set_sub_prompt_().  Empty string fallback if the
+     * caller forgot to set it (should not normally happen). */
+    prompt = (sub_prompt_buf[0] != '\0') ? sub_prompt_buf : "";
+  }
   else {
     cbuf[0] = ' ';
     strncpy(&cbuf[1],mp,5); cbuf[6]='\0';
@@ -62,16 +126,41 @@ mhist_(char* mp, char *cmd)
   temp = (char *) NULL;
   done = 0;
 
+  /* Let Giza repaint plot windows while we wait at the prompt */
+  rl_event_hook = _macos_rl_event_hook;
+
   while (!done) {
       register int i, j, k;
       char *temp2;
       done = 1;
       temp = readline(prompt);
 
-      // Test for EOF. 
+      // Test for EOF.
       if (!temp) {
 	fprintf (stderr,"  **mhist: Invalid command input, quit!\n");
 	exit (1);
+      }
+
+      /* Non-TTY transcript echo.
+       *
+       * On piped/redirected stdin the kernel doesn't echo, and
+       * readline's own non-TTY echo path is uneven.  When this was a
+       * sub-prompt (cache was set), echo "<resp>\n" so the transcript
+       * records what was typed and the next prompt starts on a fresh
+       * line.  No-op on TTY -- readline owns rendering and the
+       * cached prompt lets it manage cursor authoritatively, so no
+       * manual newline is needed (was the source of cosmetic blank
+       * lines in earlier iterations).
+       *
+       * After this, clear the sub-prompt cache so a stale entry
+       * doesn't leak into the next call.
+       */
+      if (mp[0] == ' ') {
+        if (!isatty(STDIN_FILENO)) {
+          printf("%s\n", temp);
+          fflush(stdout);
+        }
+        sub_prompt_buf[0] = '\0';
       }
 
       non_empty = 0;
@@ -223,6 +312,5 @@ maddh_(char *cmd)
     if (!in_his) { add_history(cmd); ++tot_hist; }
   }
 }  // maddh_
- 
-#endif
- 
+
+#endif  /* READLINE_LIBRARY */

@@ -8,8 +8,8 @@
 
         Contains
 
-        Real*8 Function PSE
-        use param_mod 
+        Real*8 Function PSE()
+        use param_mod
 #ifdef CMACOS
         use macos_mod, only : RaySpot
 #endif

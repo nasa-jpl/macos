@@ -1,0 +1,1257 @@
+From b1b167ff48814c53f76376b2f934d6ef8f2ce860 Mon Sep 17 00:00:00 2001
+From: TraceMoreRays <sigrist1000@gmail.com>
+Date: Sat, 24 Jan 2026 18:31:53 -0800
+Subject: [PATCH 1/5] Optimization of MonSrf w.r.t. robustness, accuracy,
+ precision & speed. Removed critical issues causing failures incl. PAUSE
+ statements, reduced multiple re-calculations of the same parameters, checked
+ if Newton or Secant method applied before Brent's method would speed up (no
+ Brent's method implementation is very well optimized), tested for potential
+ numerical failures, included IEEE numerical module for INF and NaN handling,
+ improved interface definition (removed unused variables), ...
+
+---
+ macos_f90/constants.f90 |  17 +
+ macos_f90/elemsub.F     |  16 +-
+ macos_f90/surfsub.F     | 858 ++++++++++++++++++++++++++++++++--------
+ 3 files changed, 720 insertions(+), 171 deletions(-)
+
+diff --git a/macos_f90/constants.f90 b/macos_f90/constants.f90
+index bf2a536..adace5c 100644
+--- a/macos_f90/constants.f90
++++ b/macos_f90/constants.f90
+@@ -34,5 +34,22 @@ MODULE Constants
+       SQRT_20 = 4.472135954999579392818347337462552470881236719223051448541794491_pr, &
+       SQRT_22 = 4.690415759823429554565630113544466280588228353411737153605701891_pr
+ 
++  ! Epsilon-based derived constants for numerical analysis
++  ! These scale automatically with the precision (pr)
++  REAL(pr), PARAMETER :: &
++      EPS_SQRT      = SQRT(EPS),              & ! ~1.49d-8  (for sqrt operations)
++      EPS_CBRT      = EPS**(1.0_pr/3.0_pr),   & ! ~6.04d-6  (for cubic operations)
++      EPS_2_3       = EPS**(2.0_pr/3.0_pr),   & ! ~1.64d-11 (for accumulated errors)
++      EPS_SQ        = EPS*EPS                   ! ~4.93d-32 (for double precision)
++
++  ! Ray tracing numerical tolerances (based on machine epsilon)
++  ! These provide consistent, precision-aware thresholds for surface intersection
++  REAL(pr), PARAMETER :: &
++      TOL_LINEAR    = EPS_CBRT,               & ! ~6d-6  Linear case threshold
++      TOL_TANGENT   = EPS_SQRT * 1e-6_pr,     & ! ~1d-14 Near-tangent detection
++      TOL_CANCEL    = 1e-4_pr,                & ! 0.01%  Cancellation detection
++      TOL_GEOM      = EPS_2_3,                & ! ~1d-11 Geometric validation
++      TOL_NORMAL    = EPS_SQ * 1e2_pr,        & ! ~1d-30 Normal magnitude threshold
++      TOL_ZERO      = EPS_CBRT * 1e-14_pr       ! ~1d-20 Near-zero threshold
+ 
+ END MODULE Constants
+diff --git a/macos_f90/elemsub.F b/macos_f90/elemsub.F
+index 6348fc9..3498d81 100644
+--- a/macos_f90/elemsub.F
++++ b/macos_f90/elemsub.F
+@@ -99,7 +99,7 @@ C***********************************************************************
+ 
+           CASE (SrfType_Monomial, SrfType_Zernike)! (4,8)
+             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &                  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &                  Nvec,Nmag,Nhat,dNdp)
+ 
+           CASE (SrfType_Interpolated) ! (5)
+@@ -257,7 +257,7 @@ C  Compute incidence point of ray
+      &	    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+ 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+ 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &	    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &	    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &	    Nvec,Nmag,Nhat,dNdp)
+ cides
+ 	ELSE IF (SrfType.EQ.5) THEN
+@@ -738,7 +738,7 @@ C  Compute incidence point of ray
+      &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+ 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+ 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &	  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &	  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &	  Nvec,Nmag,Nhat,dNdp)
+ 	ELSE IF (SrfType.EQ.5) THEN
+ 	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+@@ -1307,7 +1307,7 @@ C  Compute incidence point of ray
+      &	  prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+ 	ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+ 	  CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &	  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &	  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &	  Nvec,Nmag,Nhat,dNdp)
+ 	ELSE IF (SrfType.EQ.5) THEN
+ 	  CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+@@ -3991,7 +3991,7 @@ cdebug
+           ! --------------------------------
+           case (SrfType_Monomial, SrfType_Zernike)
+             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &                  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &                  Nvec,Nmag,Nhat,dNdp)
+           ! --------------------------------
+           case (SrfType_Interpolated)
+@@ -4186,7 +4186,7 @@ C  Compute incidence point of ray
+           ! --------------------------------
+           case (SrfType_Monomial, SrfType_Zernike)
+             CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &                  prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &                  pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &                  Nvec,Nmag,Nhat,dNdp)
+           ! --------------------------------
+           case (SrfType_Interpolated)
+@@ -4368,7 +4368,7 @@ C  Compute incidence point of ray
+      &    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+         ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+           CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &    Nvec,Nmag,Nhat,dNdp)
+         ELSE IF (SrfType.EQ.5) THEN
+           CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+@@ -4662,7 +4662,7 @@ C  Compute incidence point of ray
+      &    prot,pin,ihat,pr,L,Nvec,Nmag,Nhat,dNdp,tAsphCoef)
+         ELSE IF ((SrfType.EQ.4).OR.(SrfType.EQ.8)) THEN
+           CALL MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,MonCoef,psi,pv,
+-     &    prot,pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
++     &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,
+      &    Nvec,Nmag,Nhat,dNdp)
+         ELSE IF (SrfType.EQ.5) THEN
+           CALL IntSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,psi,pv,prot,pin,ihat,
+diff --git a/macos_f90/surfsub.F b/macos_f90/surfsub.F
+index 88d9744..b66a728 100644
+--- a/macos_f90/surfsub.F
++++ b/macos_f90/surfsub.F
+@@ -112,7 +112,7 @@ C	Compute incidence point of ray on the surface
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel
+      &	    +ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a = 0d0
+ 	  b = itpsi
+@@ -242,7 +242,7 @@ C	Compute incidence point of ray on the surface
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a=0d0
+ 	  b=itpsi
+@@ -881,7 +881,7 @@ C	Compute incidence point of ray on the surface
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a=0d0
+ 	  b=itpsi
+@@ -1146,7 +1146,7 @@ C       Compute incidence point of ray on the surface
+           a=1d0+Kc*itpsi*itpsi
+           b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &    ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-          c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++          c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+         ELSE
+           a=0d0
+           b=itpsi
+@@ -2364,112 +2364,277 @@ C***********************************************************************
+ 
+ C***********************************************************************
+ 
+-        SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,prot,
++        SUBROUTINE MonSrf(ifBuild,ifLNsrf,LROK,Kc,Kr,coef,psi,pv,
+      &    pin,ihat,pr,L,rad,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
+         use math_mod
+-        use Constants, only: EPS
++        use Constants, only: EPS, TOL_TANGENT, TOL_CANCEL, TOL_ZERO, 
++     &                        TOL_NORMAL
++        use, intrinsic :: ieee_arithmetic
++        use, intrinsic :: ieee_exceptions
+ 
+         IMPLICIT NONE
+-
+-        REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),coef(120),
+-     &  pr(3),rad,pmon(3),xhat(3),yhat(3),zhat(3),L,Nhat(3),yi,yimj,xj
+-
+-        REAL*8 prel(3),M(3,3),a,b,c,ksqrt,kp,km,mpr,
+-     &  Nvec(3),Nmag,dNdp(3,3),Kc,Kr,
+-     &  k2,itpsi,psitprel,L1,L2,L3,tol,
+-     &  zc(3),dfdrho(3),d2fdrho2(3,3),
+-     &  rho(3),psitzc,fh,dzcdrho(3,3),dNvecdp(3,3),x,
+-     &  y,dxdrho(3),dydrho(3),rhoc(3),rhom(3),zmtzc,psitzm, fh_dz
+-
+-        REAL*8 D1(9),D2(9),S1,S2,S3
+-
+-        INTEGER i,j,k
+-
+-        LOGICAL LROK,ifBuild,ifLNsrf
++        
++        ! Input arguments (control flags)
++        LOGICAL, INTENT(IN) :: ifBuild   ! If true, compute dNdp Jacobian
++        LOGICAL, INTENT(IN) :: ifLNsrf   ! If true, allow negative L
++        
++        ! Input arguments (surface parameters)
++        REAL*8, INTENT(IN) :: Kc         ! Conic constant
++        REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++        REAL*8, INTENT(IN) :: coef(120)  ! Monomial coefficients
++        REAL*8, INTENT(IN) :: rad        ! Normalization radius
++        
++        ! Input arguments (surface geometry)
++        REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++        REAL*8, INTENT(IN) :: pv(3)      ! Vertex position
++        REAL*8, INTENT(IN) :: pmon(3)    ! Monomial reference point
++        
++        ! Input arguments (local coordinate system)
++        REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++        REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++        REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++        
++        ! Input arguments (ray)
++        REAL*8, INTENT(IN) :: pin(3)     ! Ray starting point
++        REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++        
++        ! Output arguments (intersection results)
++        LOGICAL, INTENT(OUT) :: LROK     ! True if intersection found
++        REAL*8, INTENT(OUT) :: pr(3)     ! Ray intersection point
++        REAL*8, INTENT(OUT) :: L         ! Path length along ray
++        
++        ! Output arguments (surface normal)
++        REAL*8, INTENT(OUT) :: Nvec(3)   ! Normal vector (unnormalized)
++        REAL*8, INTENT(OUT) :: Nmag      ! Normal magnitude
++        REAL*8, INTENT(OUT) :: Nhat(3)   ! Normal unit vector
++        REAL*8, INTENT(OUT) :: dNdp(3,3) ! Normal Jacobian (if ifBuild)
++        
++        ! Local variables - Main computation
++        REAL*8 :: yi, yimj, xj
++        REAL*8 :: prel(3), a, b, c, ksqrt, kp, km, mpr
++        REAL*8 :: k2, itpsi, psitprel, tol
++        REAL*8 :: zc(3)
++        REAL*8 :: rho(3), psitzc, fh, x
++        REAL*8 :: y, dxdrho(3), dydrho(3), rhoc(3), rhom(3), zmtzc
++        REAL*8 :: psitzm, fh_dz
++        REAL*8 :: sqrtk2, abs_b_minus_sqrtk2, kp_metric, km_metric
++        REAL*8 :: sqrt_mpr, x_inv, y_inv  ! Optimization variables
++        REAL*8 :: S1, S2, Kc_itpsi, Kc_psitprel  ! Common subexpressions
++        
++        ! Local variables - ifBuild section only
++        REAL*8 :: M(3,3), L1, L2, L3
++        REAL*8 :: dfdrho(3), d2fdrho2(3,3)
++        REAL*8 :: dzcdrho(3,3), dNvecdp(3,3)
++        REAL*8 :: D1(9), D2(9), S3
++        INTEGER :: i, j, k
++        LOGICAL :: ieee_invalid_flag
++        LOGICAL :: coef_nonzero(120)  ! Pre-calculated coefficient mask
++        
++        ! Algorithm parameters
++        REAL*8, PARAMETER :: BRACKET_INNER_FACTOR = 0.95d0  ! Inner bracket margin (5% inside)
++        REAL*8, PARAMETER :: BRACKET_OUTER_FACTOR = 1.15d0  ! Outer bracket margin (15% outside)
++
++        ! Clear IEEE exception flags at start
++        CALL ieee_set_flag(ieee_invalid, .FALSE.)
++        CALL ieee_set_flag(ieee_overflow, .FALSE.)
++        CALL ieee_set_flag(ieee_divide_by_zero, .FALSE.)
++
++        ! Pre-calculate coefficient mask ONCE per ray (vectorized!)
++        ! This eliminates 2,040 ABS() operations per ray (17 calls × 120)
++        ! Compiler hint: vectorize this operation for SIMD performance
++!DIR$ SIMD
++        coef_nonzero = (ABS(coef) > EPS)
+ 
+         ! Compute incidence point of ray on the surface
+ 
+-        DO i=1,3
+-          prel(i)=pin(i)-pv(i)
+-          rhoc(i)=pmon(i)-pv(i)
+-        END DO
+-        itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+-        psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
++        prel     = pin - pv
++        rhoc     = pmon - pv
++        itpsi    = DOT_PRODUCT(ihat,psi)
++        psitprel = DOT_PRODUCT(psi,prel)
+ 
+         IF (ABS(Kr).LT.1d10) THEN
+-          mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+-          a=1d0+Kc*itpsi*itpsi
+-          b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+-     &      ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-          c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++          mpr = DOT_PRODUCT(prel,prel)
++          ! Pre-calculate common subexpressions
++          Kc_itpsi = Kc*itpsi        ! Used in both a and b
++          Kc_psitprel = Kc*psitprel  ! Used in both b and c
++          a = 1d0 + Kc_itpsi*itpsi
++          b = 2d0*(Kr*itpsi + Kc_itpsi*psitprel + DOT_PRODUCT(ihat,prel))
++          c = 2d0*Kr*psitprel + Kc_psitprel*psitprel + mpr
+         ELSE
+-          a=0d0
+-          b=itpsi
+-          c=psitprel
++          a = 0d0
++          b = itpsi
++          c = psitprel
+         END IF
+ 
+         ! Compute intersection point and normal vector
+ 
+-        IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
++        IF ((ABS(a).LE.TOL_ZERO).OR.(ABS(Kr).GE.1d10)) THEN
++          ! Division by zero check
++          IF (ABS(b).LE.TOL_ZERO) THEN
++            ! Degenerate case: ray parallel to surface
++            GO TO 98
++          END IF
+           L=-c/b
+           IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+         ELSE
++          ! Quadratic case: solve a*L^2 + b*L + c = 0
+           k2=b*b-4d0*a*c
+-          IF (k2.LT.0d0) GO TO 98
+-          IF (b.GE.0d0) THEN
+-            ksqrt=-0.5d0*(b+SQRT(k2))
++          IF (k2.LT.0d0) GO TO 98  ! No real roots
++          
++          ! Near-tangent detection: discriminant < TOL_TANGENT * b^2
++          ! Two roots are within ~14 digits of each other
++          IF (k2 .LT. TOL_TANGENT * b*b) THEN
++            ! Near-tangent: single root (double root)
++            L = -b/(2d0*a)
++            IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+           ELSE
+-            ksqrt=-0.5d0*(b-SQRT(k2))
+-          END IF
+-          kp=ksqrt/a
+-          km=c/ksqrt
+-          IF(ifLNsrf) THEN
+-            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+-              L=kp
++            ! Standard case: two distinct roots
++            sqrtk2 = SQRT(k2)
++            
++            ! Cancellation detection: when |b| ≈ sqrt(k2) within TOL_CANCEL
++            abs_b_minus_sqrtk2 = ABS(ABS(b) - sqrtk2)
++            
++            IF (abs_b_minus_sqrtk2 .LT. TOL_CANCEL * ABS(b)) THEN
++              ! b and sqrt(k2) are close - use alternative formula
++              ! This avoids cancellation in the numerator
++              IF (b .GT. 0d0) THEN
++                kp = (-2d0*c)/(b + sqrtk2)
++                km = (-b - sqrtk2)/(2d0*a)
++              ELSE
++                kp = (-b + sqrtk2)/(2d0*a)
++                km = (-2d0*c)/(b - sqrtk2)
++              END IF
+             ELSE
+-              L=km
++              ! Standard numerically stable formula (Numerical Recipes)
++              IF (b.GE.0d0) THEN
++                ksqrt=-0.5d0*(b+sqrtk2)
++              ELSE
++                ksqrt=-0.5d0*(b-sqrtk2)
++              END IF
++              kp=ksqrt/a
++              km=c/ksqrt
+             END IF
+-          ELSE
+-            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+-              IF (kp.GT.0D0) THEN
++            
++            ! Root selection with safer metric: |L - sqrt(mpr)| instead of |(L*L) - mpr|
++            ! This avoids overflow from squaring large values
++            ! Note: mpr = DOT_PRODUCT(prel,prel) is always >= 0 (squared magnitude)
++            IF (mpr .GT. 0d0) THEN
++              sqrt_mpr = SQRT(mpr)  ! Calculate once, reuse
++              kp_metric = ABS(kp - sqrt_mpr)
++              km_metric = ABS(km - sqrt_mpr)
++            ELSE
++              ! mpr = 0: ray starts at vertex, use absolute values
++              kp_metric = ABS(kp)
++              km_metric = ABS(km)
++            END IF
++            
++            IF(ifLNsrf) THEN
++              ! Allow negative L: choose root closer to origin
++              IF (kp_metric .LE. km_metric) THEN
+                 L=kp
+               ELSE
+                 L=km
+               END IF
+             ELSE
+-              IF (km.GT.0D0) THEN
+-                L=km
++              ! Require positive L: choose positive root closer to origin
++              IF (kp_metric .LE. km_metric) THEN
++                IF (kp.GT.0D0) THEN
++                  L=kp
++                ELSE
++                  L=km
++                END IF
+               ELSE
+-                L=kp
++                IF (km.GT.0D0) THEN
++                  L=km
++                ELSE
++                  L=kp
++                END IF
+               END IF
++              IF (L.LT.0d0) GO TO 98
+             END IF
+-            IF (L.LT.0d0) GO TO 98
+-          END IF
++          END IF  ! End of near-tangent check
+         END IF
+ 
+          ! Use L as a starting point, find incidence pt on full surface
++        ! Set initial bracket for MZPB based on base conic solution
++        ! Strategy: Bracket should be wide enough to account for monomial
++        !           deviation but tight enough to minimize MZPB iterations
+ 
+         IF (ABS(L).GT.1d-7) THEN
+-          L1=0.999d0*L
+-          L2=1.001d0*L
++          ! L is the base conic solution (without monomial terms)
++          ! Monomial terms can shift the root by ~5-20% typically
++          ! Use asymmetric bracket: tighter on near side, wider on far side
++          ! This accounts for typical monomial behavior (shifts outward)
++          
++          IF (L .GT. 0d0) THEN
++            ! Positive L: bracket [inner*L, outer*L]
++            ! Wider on far side since monomials typically increase sag
++            L1 = BRACKET_INNER_FACTOR*L
++            L2 = BRACKET_OUTER_FACTOR*L
++          ELSE
++            ! Negative L (ifLNsrf=.TRUE.): bracket [outer*L, inner*L]
++            ! Note: L1 < L2 required, so swap for negative L
++            L1 = BRACKET_OUTER_FACTOR*L  ! More negative
++            L2 = BRACKET_INNER_FACTOR*L  ! Less negative
++          END IF
+         ELSE
+-          L1=-1d-7
+-          L2=1d-7
++          ! L ≈ 0: base conic solution is near vertex
++          ! Use symmetric bracket around origin
++          ! Wider bracket needed since monomial can dominate
++          L1 = -1d-6
++          L2 = 1d-6
+         END IF
+ 
+-        CALL MZPB(L1,L2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+-     &            pmon,rhoc,xhat,yhat,zhat,L)
++        CALL MZPB(L1,L2,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &            rhoc,xhat,yhat,zhat,LROK)
++        
++        ! Check if MZPB successfully bracketed the root
++        IF (.NOT.LROK) THEN
++          ! Bracketing failed - ray does not intersect monomial surface
++          ! (conic intersection was approximate, monomial has no solution)
++          GO TO 98
++        END IF
++        
+         tol=2d-15
+-        L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,pv,prel,ihat,coef,
+-     &              rad,pmon,rhoc,xhat,yhat,zhat,L)
++        L3=MZPSolve(L1,L2,tol,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,
++     &              rad,rhoc,xhat,yhat,zhat,LROK)
++        
++        ! Check if MZPSolve converged to required tolerance
++        IF (.NOT.LROK) THEN
++          ! Convergence failed - solution does not meet tolerance
++          ! This can happen for:
++          ! - Pathological surfaces with rapid variations
++          ! - Very tight tolerances
++          ! - Numerical conditioning issues
++          GO TO 98
++        END IF
++        
+         L=L3
+ 
+         ! Compute normal vector
+         rho  = prel + L*ihat
+         rhom = rho - rhoc
+ 
+-        x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+-        y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
++        ! Check for zero or near-zero normalization radius
++        ! Use EPS (machine epsilon) as threshold for safe division
++        IF (rad .LE. EPS) THEN
++          ! Degenerate surface: normalization radius too small
++          ! Normalization Radius must be > 0
++          GO TO 98
++        END IF
++
++        ! Compute normalized coordinates using DOT_PRODUCT & Normalization Radius
++        x = DOT_PRODUCT(xhat, rhom) / rad
++        y = DOT_PRODUCT(yhat, rhom) / rad
++
++        ! Check for unreasonable normalized coordinates (overflow protection)
++        ! x^14 overflows at |x| ≈ 1.93 for REAL*8 (IEEE 754 double precision)
++        ! Use conservative limit of 1.5 to prevent overflow in power calculations
++        IF (ABS(x) > 1.5d0 .OR. ABS(y) > 1.5d0) THEN
++          ! Surface point too far from normalization center
++          ! This prevents overflow in x^14, y^14 calculations in ifBuild section
++          GO TO 98
++        END IF
+ 
+         k  = 1
+         S1 = 0d0
+@@ -2484,13 +2649,13 @@ C***********************************************************************
+         ELSE IF (ABS(x) <= EPS) THEN
+ 
+             yi=y
+-            DO CONCURRENT (i=1:14)
+-              DO CONCURRENT (j=0:i)
++            DO i=1,14
++              DO j=0,i
+ 
+                 k=k+1
+                 IF (j>1) CYCLE
+ 
+-              IF (ABS(COEF(k)) > EPS) THEN
++                IF (coef_nonzero(k)) THEN
+ 
+                   IF (j.EQ.0) THEN
+                     fh_dz = coef(k)*yi
+@@ -2498,29 +2663,29 @@ C***********************************************************************
+                     S2    = S2 + DBLE(i)*fh_dz/y
+                   END IF
+ 
+-                IF (j.EQ.1) S1 = S1 + coef(k)*yi/y
++                  IF (j.EQ.1) S1 = S1 + coef(k)*yi/y
+ 
+                 END IF
+-                END DO
++              END DO
+               yi=yi*y
+             END DO
+ 
+           ELSE IF (ABS(y) <= EPS) THEN
+ 
+-            DO CONCURRENT (i=1:14)
++            DO i=1,14
+               xj=1d0
+-              DO CONCURRENT (j=0:i)
++              DO j=0,i
+                 k=k+1
+ 
+-              IF (ABS(COEF(k)) > EPS) THEN
++                IF (coef_nonzero(k)) THEN
+ 
+-                IF (i.EQ.j) THEN
+-                  fh_dz = coef(k)*xj
+-                  fh    = fh + fh_dz
+-                  S1    = S1 + DBLE(j)*fh_dz/x
+-                END IF
++                  IF (i.EQ.j) THEN
++                    fh_dz = coef(k)*xj
++                    fh    = fh + fh_dz
++                    S1    = S1 + DBLE(j)*fh_dz/x
++                  END IF
+ 
+-                IF (i-j.EQ.1) S2 = S2 + coef(k)*xj
++                  IF (i-j.EQ.1) S2 = S2 + coef(k)*xj
+ 
+                 END IF
+                 xj=xj*x
+@@ -2529,29 +2694,33 @@ C***********************************************************************
+ 
+           ELSE
+ 
++            ! Precompute reciprocals to replace division with multiplication
++            x_inv = 1d0 / x
++            y_inv = 1d0 / y
++            
+             yi=y
+-            DO CONCURRENT (i=1:14)
++            DO i=1,14
+               xj=1d0
+               yimj=yi
+-              DO CONCURRENT (j=0:i)
++              DO j=0,i
+                 k=k+1
+-                IF (ABS(COEF(k)) > EPS) THEN
++                IF (coef_nonzero(k)) THEN
+                   IF (j.EQ.0) THEN
+                     fh_dz = coef(k)*yi
+-                  fh    = fh + fh_dz
+-                    S2    = S2 + DBLE(i)*fh_dz/y
++                    fh    = fh + fh_dz
++                    S2    = S2 + DBLE(i)*fh_dz*y_inv
+                   ELSE IF (i.EQ.j) THEN
+                     fh_dz = coef(k)*xj
+-                  fh    = fh + fh_dz
+-                    S1    = S1 + DBLE(j)*fh_dz/x
++                    fh    = fh + fh_dz
++                    S1    = S1 + DBLE(j)*fh_dz*x_inv
+                   ELSE
+                     fh_dz = coef(k)*xj*yimj
+-                  fh    = fh + fh_dz
+-                    S1    = S1 + DBLE(j)*fh_dz/x
+-                    S2    = S2 + DBLE(i-j)*fh_dz/y
++                    fh    = fh + fh_dz
++                    S1    = S1 + DBLE(j)*fh_dz*x_inv
++                    S2    = S2 + DBLE(i-j)*fh_dz*y_inv
+                   END IF
+                 END IF
+-                yimj=yimj/y
++                yimj=yimj*y_inv  ! Multiplication instead of division
+                 xj=xj*x
+               END DO
+               yi=yi*y
+@@ -2563,23 +2732,29 @@ C***********************************************************************
+         dFdrho  = S1*dxdrho + S2*dydrho
+         zc      = rho - fh*zhat
+ 
+-        psitzc = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+-        psitzm = psi(1)*zhat(1)+psi(2)*zhat(2)+psi(3)*zhat(3)
+-        zmtzc  = zhat(1)*zc(1)+zhat(2)*zc(2)+zhat(3)*zc(3)
++        psitzc = DOT_PRODUCT(psi,zc)
++        psitzm = DOT_PRODUCT(psi,zhat)
++        zmtzc  = DOT_PRODUCT(zhat,zc)
+ 
+         S1 = Kr + Kc*psitzc
+-        S2 = psitzm*Kr + psitzm*psitzc*Kc + zmtzc
++        S2 = psitzm*S1 + zmtzc  ! Reuse S1 to eliminate redundant computation
+ 
+         pr   = pin + L*ihat
+         Nvec = zc + S1*psi - S2*dFdrho
+ 
+-        Nmag = SQRT(Nvec(1)*Nvec(1)+Nvec(2)*Nvec(2)+Nvec(3)*Nvec(3))
+-        S1   = Nvec(1)*ihat(1)+Nvec(2)*ihat(2)+Nvec(3)*ihat(3)
+-        IF (S1.LE.0d0) THEN
+-          Nhat = Nvec/Nmag
+-        ELSE
+-          Nhat = -Nvec/Nmag
++        Nmag = NORM2(Nvec)
++        
++        ! Check for NaN or degenerate normal (surface ill-defined at this point)
++        ! NaN check is critical: (NaN .LE. TOL_NORMAL) evaluates to .FALSE.
++        IF (ieee_is_nan(Nmag) .OR. (Nmag .LE. TOL_NORMAL)) THEN
++          GO TO 98
+         END IF
++        
++        ! Optimized normal computation: single division, single vector multiply
++        S1 = DOT_PRODUCT(Nvec,ihat)
++        S2 = 1d0/Nmag
++        IF (S1 .GT. 0d0) S2 = -S2
++        Nhat = Nvec * S2
+ 
+         ! Compute partials of the normal
+ 
+@@ -2594,6 +2769,9 @@ C***********************************************************************
+             CALL DZERO(M,9)
+           END IF
+ 
++          ! Compute second derivatives of polynomial surface
++          ! Note: x, y are checked to be < 1.5 (line 2623) to prevent overflow
++          ! x^14 overflows at |x| ≈ 1.93, so 1.5 provides safe margin
+           k=1
+           S1=0d0
+           S2=0d0
+@@ -2601,7 +2779,7 @@ C***********************************************************************
+           DO i=2,14
+             DO j=0,i
+               k=k+1
+-              IF (coef(k).NE.0d0) THEN
++              IF (coef_nonzero(k)) THEN
+                 IF (j.GT.1) THEN
+                   S1=S1+coef(k)*DBLE(j*(j-1))*(x**(j-2))*(y**(i-j))
+                 END IF
+@@ -2636,6 +2814,13 @@ C***********************************************************************
+           CALL DSMPROD(dNdp,D2,S1,9)
+         END IF
+ 
++        ! Check for IEEE exceptions before normal return
++        CALL ieee_get_flag(ieee_invalid, ieee_invalid_flag)
++        IF (ieee_invalid_flag) THEN
++          ! NaN or invalid operation occurred (e.g., SQRT of negative)
++          GO TO 98
++        END IF
++
+ 	RETURN
+         ! Here if ray misses surface
+ 
+@@ -2646,15 +2831,43 @@ C***********************************************************************
+ 
+ C***********************************************************************
+ 
+-        REAL*8 FUNCTION SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,
+-     &                            rhoc,xhat,yhat,zhat,L)
++        PURE REAL*8 FUNCTION SMonomial(Kc,Kr,psi,prel,ihat,coef,
++     &                                  coef_nonzero,rad,rhoc,xhat,yhat,
++     &                                  zhat,L)
+           use Constants, only: EPS
+           IMPLICIT NONE
+-          REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),xhat(3),
+-     &           yhat(3),zhat(3),rad,pmon(3),L,x,y,yi,yimj,xj
+-          REAL*8 rho(3),rhom(3),rhoc(3),fh,zc(3),zc2,psitzc
+-
+-          INTEGER i,j,k
++          
++          ! Input arguments - Surface parameters (all INTENT(IN) for PURE)
++          REAL*8, INTENT(IN) :: Kc         ! Conic constant
++          REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++          REAL*8, INTENT(IN) :: rad        ! Normalization radius
++          
++          ! Input arguments - Surface geometry
++          REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++          REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++          
++          ! Input arguments - Local coordinate system
++          REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++          REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++          REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++          
++          ! Input arguments - Ray and position
++          REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++          REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++          REAL*8, INTENT(IN) :: L          ! Path length along ray
++          
++          ! Input arguments - Monomial coefficients
++          REAL*8, INTENT(IN) :: coef(120)  ! Polynomial coefficients
++          LOGICAL, INTENT(IN) :: coef_nonzero(120)  ! Pre-calculated mask
++          
++          ! Local variables - Computation
++          REAL*8 :: x, y                   ! Normalized coordinates
++          REAL*8 :: yi, yimj, xj           ! Polynomial evaluation temps
++          REAL*8 :: y_inv                  ! Reciprocal of y (optimization)
++          REAL*8 :: rho(3), rhom(3)        ! Position vectors
++          REAL*8 :: fh                     ! Surface height function
++          REAL*8 :: zc(3), zc2, psitzc     ! Surface function terms
++          INTEGER :: i, j, k               ! Loop indices
+ 
+           ! Compute normalized point-of-incidence coordinates
+ 
+@@ -2679,8 +2892,16 @@ C***********************************************************************
+           rho  = prel + L*ihat
+           rhom = rho - rhoc
+ 
+-          x = (xhat(1)*rhom(1)+xhat(2)*rhom(2)+xhat(3)*rhom(3))/rad
+-          y = (yhat(1)*rhom(1)+yhat(2)*rhom(2)+yhat(3)*rhom(3))/rad
++          ! Note: rad should never be zero (checked by caller MonSrf)
++          ! But for PURE function robustness, handle gracefully
++          ! If rad ≈ 0, set x=y=0 (vertex case)
++          IF (ABS(rad) > EPS) THEN
++            x = DOT_PRODUCT(xhat, rhom) / rad
++            y = DOT_PRODUCT(yhat, rhom) / rad
++          ELSE
++            x = 0d0
++            y = 0d0
++          END IF
+ 
+           k  = 0
+           fh = 0d0
+@@ -2692,67 +2913,283 @@ C***********************************************************************
+           ELSE IF (ABS(x) <= EPS) THEN
+ 
+             yi=1d0
+-            DO CONCURRENT (i=0:14)
+-              DO CONCURRENT (j=0:i)
++            DO i=0,14
++              DO j=0,i
+                 k=k+1
+-                IF ((j.EQ.0).AND.(ABS(COEF(k)) > EPS)) fh=fh+coef(k)*yi
++                ! Use pre-calculated mask (faster than ABS check)
++                IF ((j.EQ.0).AND.coef_nonzero(k)) fh=fh+coef(k)*yi
+               END DO
+               yi=yi*y
+             END DO
+ 
+           ELSE IF (ABS(y) <= EPS) THEN
+ 
+-            DO CONCURRENT (i=0:14)
++            DO i=0,14
+               xj=1d0
+-              DO CONCURRENT (j=0:i)
++              DO j=0,i
+                 k=k+1
+-                IF ((ABS(coef(k)) > EPS).AND.(i.EQ.j)) fh=fh+coef(k)*xj
++                ! Use pre-calculated mask (faster than ABS check)
++                IF (coef_nonzero(k).AND.(i.EQ.j)) fh=fh+coef(k)*xj
+                 xj=xj*x
+               END DO
+             END DO
+ 
+           ELSE
+ 
++            ! Precompute 1/y to replace division with multiplication
++            y_inv = 1d0 / y
++            
+             yi=1d0
+-            DO CONCURRENT (i=0:14)
++            DO i=0,14
+               xj=1d0
+               yimj=yi
+-              DO CONCURRENT (j=0:i)
++              DO j=0,i
+                 k=k+1
+-                fh=fh+coef(k)*xj*yimj
++                ! Use pre-calculated mask (faster than ABS check!)
++                IF (coef_nonzero(k)) THEN
++                  fh=fh+coef(k)*xj*yimj
++                END IF
+                 xj=xj*x
+-                yimj=yimj/y
++                yimj=yimj*y_inv  ! Multiplication instead of division
+               END DO
+               yi=yi*y
+             END DO
+           END IF
+ 
+           zc        = rho - fh*zhat
+-          zc2       = zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+-          psitzc    = psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+-          SMonomial = zc2 + (Kc*psitzc + 2d0*Kr)*psitzc
++          zc2       = DOT_PRODUCT(zc, zc)
++          psitzc    = DOT_PRODUCT(psi, zc)
++          SMonomial = zc2 + Kc*psitzc*psitzc + 2d0*Kr*psitzc
+ 
+           RETURN
+         END FUNCTION SMonomial
+ 
+ C***********************************************************************
+-! Check: Numerical Recipies: pg 404
++! Secant-Brent Hybrid Root Finder
++! Phase 1: Secant method (fast, derivative-free)
++! Phase 2: Brent's method fallback (robust)
++!
++! PERFORMANCE TOGGLE:
++!   Set USE_SECANT_METHOD to 1 to enable Secant-Brent hybrid (Phase 1)
++!   Set USE_SECANT_METHOD to 0 to use Brent's method only (baseline)
++!
++! Secant Method:
++!   - Superlinear convergence, order φ ≈ 1.618 (golden ratio!)
++!   - Only 1 function evaluation per iteration (2x faster than Newton+FD)
++!   - Approximates derivative: dF/dL ≈ (F_curr - F_prev) / (L_curr - L_prev)
++!   - Reuses previous function values (no wasted evaluations)
++!   - Falls back to Brent's if: derivative too small, step outside bracket,
++!     diverging, or max iterations reached
++!
++! Brent's Method Reference:
++!   - Numerical Recipes in Fortran 77, 2nd Ed., Section 9.3, p.354
++!   - "Van Wijngaarden-Dekker-Brent Method"
++!   - Brent, R.P. 1973, "Algorithms for Minimization without Derivatives"
++!     (Englewood Cliffs, NJ: Prentice-Hall), Chapter 4
+ 
+-        REAL*8 FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,pv,prel,ihat,coef,
+-     &                           rad,pmon,rhoc,xhat,yhat,zhat,L)
+-          use Constants, only: EPS
++#define USE_SECANT_METHOD 0
+ 
+-          IMPLICIT REAL*8 (A-H,O-Z)
+-          REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
+-     &           rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+-          PARAMETER (ITMAX=400) !,EPS=1d-14)
++        REAL*8 FUNCTION MZPSolve(X1,X2,TOL,Kc,Kr,psi,prel,ihat,coef,
++     &                           coef_nonzero,rad,rhoc,xhat,yhat,
++     &                           zhat,converged)
++          use Constants, only: EPS
++          IMPLICIT NONE
++          
++          ! Input arguments - Bracket bounds
++          REAL*8, INTENT(IN) :: X1         ! Lower bracket bound
++          REAL*8, INTENT(IN) :: X2         ! Upper bracket bound
++          REAL*8, INTENT(IN) :: TOL        ! Convergence tolerance
++          
++          ! Input arguments - Surface parameters (passed to SMonomial)
++          REAL*8, INTENT(IN) :: Kc         ! Conic constant
++          REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++          REAL*8, INTENT(IN) :: rad        ! Normalization radius
++          
++          ! Input arguments - Surface geometry (passed to SMonomial)
++          REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++          REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++          
++          ! Input arguments - Local coordinate system (passed to SMonomial)
++          REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++          REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++          REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++          
++          ! Input arguments - Ray and position (passed to SMonomial)
++          REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++          REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++          
++          ! Input arguments - Monomial coefficients (passed to SMonomial)
++          REAL*8, INTENT(IN) :: coef(120)  ! Polynomial coefficients
++          LOGICAL, INTENT(IN) :: coef_nonzero(120)  ! Pre-calculated mask
++          
++          ! Output arguments - Convergence status
++          LOGICAL, INTENT(OUT) :: converged ! True if converged
++          
++          ! Local variables - Algorithm parameters
++          INTEGER, PARAMETER :: ITMAX=400       ! Maximum Brent iterations
++#if USE_SECANT_METHOD
++          INTEGER, PARAMETER :: SECANT_ITMAX=10 ! Maximum Newton iterations
++          REAL*8, PARAMETER :: MIN_DERIV=1d-10  ! Minimum acceptable derivative
++          REAL*8, PARAMETER :: DIVERG_FACTOR=2d0 ! Divergence detection factor
++          
++          ! Local variables - Secant method (Newton-like but more efficient)
++          REAL*8 :: L_curr, L_prev         ! Current and previous iterates
++          REAL*8 :: F_curr, F_prev         ! Function values at current and previous
++          REAL*8 :: F_X1, F_X2             ! Saved bracket endpoint values for Brent
++          REAL*8 :: dFdL                   ! Secant slope approximation
++          REAL*8 :: step, prev_step        ! Step sizes for divergence check
++          INTEGER :: secant_iter           ! Iteration counter
++          LOGICAL :: secant_failed         ! Failure flag
++#endif
++          
++          ! Local variables - Brent's method state
++          REAL*8 :: A, B, C, D, E          ! Bracket points and steps
++          REAL*8 :: FA, FB, FC             ! Function values at A, B, C
++          REAL*8 :: P, Q, R, S             ! Interpolation parameters
++          REAL*8 :: TOL1, XM               ! Tolerance and midpoint
++          INTEGER :: ITER                  ! Iteration counter
++          
++          converged = .FALSE.
++          
++#if USE_SECANT_METHOD
++          ! ====================================================================
++          ! PHASE 1: SECANT METHOD (derivative-free, 1 eval/iter)
++          ! ====================================================================
++          
++          secant_failed = .FALSE.
++          prev_step = HUGE(1d0)       ! Initialize for divergence detection
++          
++          ! Initialize Secant with smart starting points
++          ! Strategy: Use linear interpolation (Regula Falsi) for first point
++          !           This gives a much better starting guess than using endpoints
++          
++          ! Evaluate bracket endpoints and SAVE for Brent's method
++          ! CRITICAL: Save these before Secant loop modifies F_prev/F_curr!
++          F_X1 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &                     rhoc,xhat,yhat,zhat,X1)
++          F_X2 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &                     rhoc,xhat,yhat,zhat,X2)
++          
++          ! Use linear interpolation to get a better starting point
++          ! L_interp = X1 - F1 * (X2 - X1) / (F2 - F1)
++          ! This is the Regula Falsi (False Position) step
++          IF (ABS(F_X2 - F_X1) > EPS) THEN
++            L_curr = X1 - F_X1 * (X2 - X1) / (F_X2 - F_X1)
++            ! Clamp to bracket (safety)
++            L_curr = MAX(X1, MIN(X2, L_curr))
++          ELSE
++            ! Degenerate case: use midpoint
++            L_curr = 0.5d0 * (X1 + X2)
++          END IF
++          
++          ! Set up for Secant: prev = endpoint, curr = interpolated
++          L_prev = X1
++          F_prev = F_X1  ! Use saved value
++          ! Evaluate F_curr at interpolated point
++          F_curr = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &                       rhoc,xhat,yhat,zhat,L_curr)
++          
++          ! Check if we got lucky with initial points
++          IF (ABS(F_prev) < TOL) THEN
++            converged = .TRUE.
++            MZPSolve = L_prev
++            RETURN
++          END IF
++          IF (ABS(F_curr) < TOL) THEN
++            converged = .TRUE.
++            MZPSolve = L_curr
++            RETURN
++          END IF
++          
++          DO secant_iter = 1, SECANT_ITMAX
++            ! Secant method: approximate derivative from last two points
++            ! dF/dL ≈ (F_curr - F_prev) / (L_curr - L_prev)
++            ! This reuses function values - only 1 new evaluation per iteration!
++            
++            ! Safety check: points too close together
++            IF (ABS(L_curr - L_prev) < EPS) THEN
++              secant_failed = .TRUE.
++              EXIT
++            END IF
++            
++            dFdL = (F_curr - F_prev) / (L_curr - L_prev)
++            
++            ! Safety check: derivative too small
++            IF (ABS(dFdL) < MIN_DERIV) THEN
++              secant_failed = .TRUE.
++              EXIT
++            END IF
++            
++            ! Compute secant step: L_new = L_curr - F_curr / (dF/dL)
++            step = F_curr / dFdL
++            
++            ! Update for next iteration: prev <- curr, curr <- new
++            L_prev = L_curr
++            F_prev = F_curr
++            L_curr = L_curr - step
++            
++            ! Safety check: bracket containment
++            IF (L_curr < X1 .OR. L_curr > X2) THEN
++              secant_failed = .TRUE.
++              EXIT
++            END IF
++            
++            ! Evaluate function at new point (only 1 evaluation per iteration!)
++            F_curr = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &                         rhoc,xhat,yhat,zhat,L_curr)
++            
++            ! Check convergence (residual-based)
++            IF (ABS(F_curr) < TOL) THEN
++              ! Secant converged successfully!
++              converged = .TRUE.
++              MZPSolve = L_curr
++              RETURN
++            END IF
++            
++            ! Safety check: divergence detection
++            IF (secant_iter > 1) THEN
++              IF (ABS(step) > DIVERG_FACTOR*ABS(prev_step)) THEN
++                secant_failed = .TRUE.
++                EXIT
++              END IF
++            END IF
++            
++            ! Check if step is small enough (converged in L)
++            IF (ABS(step) < TOL) THEN
++              ! Step-based convergence
++              converged = .TRUE.
++              MZPSolve = L_curr
++              RETURN
++            END IF
++            
++            prev_step = step
++          END DO
++#endif
++          
++          ! ====================================================================
++          ! PHASE 2: BRENT'S METHOD
++          ! ====================================================================
++          
++          ! Initialize bracket with original bounds
+           A=X1
+           B=X2
+-          FA=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
++          
++#if USE_SECANT_METHOD
++          ! Secant failed - use saved bracket endpoint values
++          ! CRITICAL: F_prev/F_curr were modified by Secant loop!
++          ! Use F_X1/F_X2 which were saved before the loop
++          FA = F_X1  ! Saved F(X1) before Secant loop
++          FB = F_X2  ! Saved F(X2) before Secant loop (no re-evaluation!)
++#else
++          ! Secant disabled - evaluate both endpoints
++          FA=SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
+      &                 xhat,yhat,zhat,A)
+-          FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
++          FB=SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
+      &                 xhat,yhat,zhat,B)
+-          IF(FB*FA.GT.0d0) PAUSE 'MZPB failed.'
++#endif
++          
++          ! Assume MZPB has successfully bracketed (caller checks this)
++          ! If not bracketed, this should not be called
+           FC=FB
+           DO ITER=1,ITMAX
+             IF(FB*FC.GT.0d0) THEN
+@@ -2774,6 +3211,8 @@ C***********************************************************************
+             !   TOL1 = EPS_def
+               XM=0.5d0*(C-B)
+             IF(ABS(XM).LE.TOL1 .OR. FB.EQ.0d0) THEN
++              ! Converged: either bracket is small enough or residual is zero
++              converged = .TRUE.
+               MZPSolve=B
+               RETURN
+             ENDIF
+@@ -2808,40 +3247,133 @@ C***********************************************************************
+             ELSE
+               B=B+SIGN(TOL1,XM)
+             ENDIF
+-            FB=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+-     &                   xhat,yhat,zhat,B)
++            FB = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,
++     &                     rhoc,xhat,yhat,zhat,B)
+           END DO
+-          PAUSE 'MZPSolve exceeding maximum iterations.'
++          ! Maximum iterations reached without meeting tolerance
++          ! Check if we're "close enough" (residual-based criterion)
++          ! If |FB| is small relative to the problem scale, accept it
++          IF (ABS(FB) .LT. TOL) THEN
++            ! Residual is acceptable even though bracket is large
++            converged = .TRUE.
++          ELSE
++            ! Failed to converge - residual too large
++            converged = .FALSE.
++          END IF
+           MZPSolve=B
+           RETURN
+         END FUNCTION MZPSolve
+ 
+ C***********************************************************************
+-
+-        SUBROUTINE MZPB(X1,X2,Kc,Kr,psi,pv,prel,ihat,coef,rad,
+-     &                  pmon,rhoc,xhat,yhat,zhat,L)
+-        IMPLICIT REAL*8 (A-H,O-Z)
+-        PARAMETER (gold=1.6d0,NTRY=50)
+-        REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),coef(120),L,
+-     &         rad,pmon(3),xhat(3),yhat(3),zhat(3),rhoc(3)
+-        IF(X1.EQ.X2)PAUSE 'You have to guess an initial range'
+-        F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+-     &               xhat,yhat,zhat,X1)
+-        F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+-     &               xhat,yhat,zhat,X2)
++! Golden Ratio Bracket Expansion
++! Reference: Numerical Recipes in Fortran 77, 2nd Ed., Section 9.1, p.343
++!            "Initial Bracketing of a Root"
++! Method: Expands bracket geometrically using golden ratio until
++!         function changes sign (F(X1)*F(X2) < 0)
++
++        SUBROUTINE MZPB(X1,X2,Kc,Kr,psi,prel,ihat,coef,coef_nonzero,
++     &                  rad,rhoc,xhat,yhat,zhat,success)
++        IMPLICIT NONE
++        
++        ! Input/Output arguments - Bracket bounds (modified by expansion)
++        REAL*8, INTENT(INOUT) :: X1      ! Lower bound (expanded if needed)
++        REAL*8, INTENT(INOUT) :: X2      ! Upper bound (expanded if needed)
++        
++        ! Input arguments - Surface parameters (passed to SMonomial)
++        REAL*8, INTENT(IN) :: Kc         ! Conic constant
++        REAL*8, INTENT(IN) :: Kr         ! Radius of curvature
++        REAL*8, INTENT(IN) :: rad        ! Normalization radius
++        
++        ! Input arguments - Surface geometry (passed to SMonomial)
++        REAL*8, INTENT(IN) :: psi(3)     ! Surface axis direction
++        REAL*8, INTENT(IN) :: rhoc(3)    ! Reference position (pmon-pv)
++        
++        ! Input arguments - Local coordinate system (passed to SMonomial)
++        REAL*8, INTENT(IN) :: xhat(3)    ! Local x-axis direction
++        REAL*8, INTENT(IN) :: yhat(3)    ! Local y-axis direction
++        REAL*8, INTENT(IN) :: zhat(3)    ! Local z-axis (= psi)
++        
++        ! Input arguments - Ray and position (passed to SMonomial)
++        REAL*8, INTENT(IN) :: prel(3)    ! Relative position (pin-pv)
++        REAL*8, INTENT(IN) :: ihat(3)    ! Ray direction (unit vector)
++        
++        ! Input arguments - Monomial coefficients (passed to SMonomial)
++        REAL*8, INTENT(IN) :: coef(120)  ! Polynomial coefficients
++        LOGICAL, INTENT(IN) :: coef_nonzero(120)  ! Pre-calculated mask
++        
++        ! Output arguments - Success status
++        LOGICAL, INTENT(OUT) :: success  ! True if bracket found
++        
++        ! Local variables - Algorithm parameters
++        REAL*8, PARAMETER :: gold_min=1.3d0  ! Conservative expansion
++        REAL*8, PARAMETER :: gold_max=2.0d0  ! Aggressive expansion
++        INTEGER, PARAMETER :: NTRY=50        ! Maximum expansion attempts
++        
++        ! Local variables - Adaptive expansion
++        REAL*8 :: gold                   ! Current expansion factor (adaptive)
++        REAL*8 :: F_min_prev             ! Previous minimum |F| value
++        REAL*8 :: F_min_curr             ! Current minimum |F| value
++        
++        ! Local variables - Function values and loop counter
++        REAL*8 :: F1, F2                 ! Function values at X1, X2
++        INTEGER :: J                     ! Iteration counter
++        
++        success = .FALSE.
++        gold = gold_min  ! Start conservative
++        F_min_prev = HUGE(1d0)
++        
++        IF(X1.EQ.X2) THEN
++          ! Set reasonable default bracket if X1 = X2
++          X1 = X1 - 1d-7
++          X2 = X2 + 1d-7
++        END IF
++        F1 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
++     &                 xhat,yhat,zhat,X1)
++        F2 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
++     &                 xhat,yhat,zhat,X2)
+         DO J=1,NTRY
+-          IF(F1*F2.LT.0d0)RETURN
+-          IF(ABS(F1).LT.ABS(F2))THEN
+-            X1=X1+gold*(X1-X2)
+-            F1=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+-     &                   xhat,yhat,zhat,X1)
++          IF(F1*F2.LT.0d0) THEN
++            success = .TRUE.
++            RETURN
++          END IF
++          
++          ! Track minimum function value for progress monitoring
++          F_min_curr = MIN(ABS(F1), ABS(F2))
++          
++          ! Adapt expansion factor based on progress (priority order)
++          IF (J > 1 .AND. F_min_curr < 0.5d0*F_min_prev) THEN
++            ! Making excellent progress - be more aggressive
++            gold = MIN(gold * 1.2d0, gold_max)
++
++          ELSE IF (J > 1 .AND. F_min_curr > 0.9d0*F_min_prev) THEN
++            ! Making poor progress - be more conservative
++            gold = MAX(gold * 0.9d0, gold_min)
++
++          ELSE IF (J > 5) THEN
++            ! No strong progress signal - ramp up based on iteration count
++            gold = gold_min + (gold_max - gold_min) * 
++     &             MIN(1.0d0, DBLE(J-5)/20.0d0)
++          END IF
++          ! Otherwise: keep current gold value (moderate progress)
++          
++          ! Expand toward side with smaller |F|
++          IF (ABS(F1).LT.ABS(F2)) THEN
++            X1 = X1 + gold*(X1-X2)
++            F1 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
++     &                     xhat,yhat,zhat,X1)
+           ELSE
+-            X2=X2+gold*(X2-X1)
+-            F2=SMonomial(Kc,Kr,psi,pv,prel,ihat,coef,rad,pmon,rhoc,
+-     &                   xhat,yhat,zhat,X2)
++            X2 = X2 + gold*(X2-X1)
++            F2 = SMonomial(Kc,Kr,psi,prel,ihat,coef,coef_nonzero,rad,rhoc,
++     &                     xhat,yhat,zhat,X2)
+           ENDIF
++          
++          ! Update progress tracking
++          F_min_prev = F_min_curr
++
+         END DO
+-        RETURN
++        ! Failed to bracket after NTRY attempts
++        ! success remains .FALSE.
++        
+         END SUBROUTINE MZPB
+ 
+ C***********************************************************************
+@@ -2878,7 +3410,7 @@ C	Compute incidence point of ray on the surface
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a=0d0
+ 	  b=itpsi
+@@ -3308,7 +3840,7 @@ C***********************************************************************
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &	  ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a=0d0
+ 	  b=itpsi
+@@ -3647,7 +4179,7 @@ C  Computes surface function for gridded data surface
+    	END DO
+ 	zc2=zc(1)*zc(1)+zc(2)*zc(2)+zc(3)*zc(3)
+ 	psitzc=psi(1)*zc(1)+psi(2)*zc(2)+psi(3)*zc(3)
+-	SGSrf=zc2+(Kc*psitzc+2d0*Kr)*psitzc
++	SGSrf=zc2+Kc*psitzc*psitzc+2d0*Kr*psitzc
+ 
+ 	RETURN
+ 	END FUNCTION SGSrf
+@@ -3752,7 +4284,7 @@ C***********************************************************************
+ 	  a=1d0+Kc*itpsi*itpsi
+ 	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+      &    ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+-	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
++	  c=2d0*Kr*psitprel+Kc*psitprel*psitprel+mpr
+ 	ELSE
+ 	  a=0d0
+ 	  b=itpsi

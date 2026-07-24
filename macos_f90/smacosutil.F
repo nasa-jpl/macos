@@ -109,6 +109,12 @@ C  Load IARG(1) and coordinate type for SPOT
 	  GO TO 110
 	END IF
 
+C  Load IARG(1) (focal-plane elt for plate scale) for SYSPROP
+	IF (LCMP(command,'SYSPROP',3)) THEN
+	  CALL I2C(IARG(1),ls,STACK,' ')   ! iElt
+	  GO TO 110
+	END IF
+
 C  Load FDP command arguments
 	IF (LCMP(command,'FDP',3)) THEN
           CALL I2C(IARG(1),ls,STACK,' ')
@@ -131,10 +137,10 @@ C  Load CARG(1) with obscuration option for OBS
 	  GO TO 110
 	END IF
 
-C  Load CARG(1) with coordinate type for PLOCate / WINdow
+C  Load CARG(1) (coordinate frame: TOUT/BEAM) for PLOCate / WINdow
 	IF (LCMP(command,'PLOCATE',4).OR.
      &	    LCMP(command,'WINDOW',3)) THEN
-	  CALL C2C('TOUT',ls,STACK,' ')
+	  CALL C2CW(CARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(2),ls,STACK,',')
 	  CALL D2C(DARG(3),ls,STACK,' ')
@@ -198,6 +204,19 @@ c	  CALL D2C(DARG(1),ls,STACK,',')
 c	  CALL D2C(DARG(2),ls,STACK,',')
 c	  CALL D2C(DARG(3),ls,STACK,' ')
 	  CALL C2CW(CARG(1),ls,STACK,' ')
+	  GO TO 110
+	END IF
+
+C  Load SXP  (FEX variant -- see tracesub.F SUBROUTINE SXP)
+	IF (LCMP(command,'SXP',3)) THEN
+	  CALL I2C(IARG(1),ls,STACK,' ')
+	  CALL C2CW(CARG(1),ls,STACK,' ')
+	  GO TO 110
+	END IF
+
+C  Load XPS  (FEX over the full grid -- see tracesub.F SUBROUTINE XPS)
+	IF (LCMP(command,'XPS',3)) THEN
+	  CALL I2C(IARG(1),ls,STACK,' ')
 	  GO TO 110
 	END IF
 

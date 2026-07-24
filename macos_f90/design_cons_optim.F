@@ -195,7 +195,20 @@ C ----------------------------------------------------------------------
      &      call macos_memory_failure
      &             ('nls_optim_dvr-2: allocate failed!')
         end if
+        if (.not. allocated(varZern_arr_m))
+     &      allocate(varZern_arr_m(1))    ! 1-elem dummy when j=0
         varZern_arr_m=varZern_arr
+
+        ! n_optAsph_m / varAsph_arr_m never allocated by original
+        ! NPSOL code; smacos_compute_perturbed_np indexes both, so
+        ! they need at least 1-elem dummies.  See PLAN.md sls-dev
+        ! Phase 4 notes.
+        if (.not. allocated(n_optAsph_m))
+     &      allocate(n_optAsph_m(n_elts))
+        n_optAsph_m = 0
+        if (.not. allocated(varAsph_arr_m))
+     &      allocate(varAsph_arr_m(1))
+        varAsph_arr_m = 0
 
         ! Find DOFs to calibrate and define da
         ! len_a = number of DOFs to calibrate
@@ -414,6 +427,8 @@ C ----------------------------------------------------------------------
      &             OPDm,ZCoefm,PIXm,SPOTm,OPDMat_m)
         if (allocated(n_optZern_m)) deallocate(n_optZern_m)
         if (allocated(varZern_arr_m)) deallocate(varZern_arr_m)
+        if (allocated(n_optAsph_m)) deallocate(n_optAsph_m)
+        if (allocated(varAsph_arr_m)) deallocate(varAsph_arr_m)
 	End Subroutine np_optim_dvr
 
 C *********************************************************************************

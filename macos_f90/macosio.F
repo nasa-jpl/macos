@@ -46,6 +46,7 @@ C***********************************************************************
 	use loh_I3
 	use dopt_mod
         use macos_IO, only: SetPrtToFileID
+        use validate_prescription_mod, only: ValidatePrescription
 ! --------------------------------------
         IMPLICIT NONE
 
@@ -59,7 +60,7 @@ C***********************************************************************
 	INTEGER i,j,k,l,g,iaxis,iElt,npts,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
-     &          dupElt,nTok,GetNumToken
+     &          dupElt,nTok,GetNumToken,ios
 	REAL*8 invec6(6),invec7(7),DDEF(7)
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
 
@@ -71,7 +72,7 @@ C       Setup for new input scheme
         CHARACTER(len=MacosValLen) :: VALUE
 !	CHARACTER*160 VALUE
 	LOGICAL ARR_FLG,opt_npts_flg
-	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, ApInputErr
+	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, found, ApInputErr
 	INTEGER ians, nVertex,StrLen
 
 	REAL*8 D1(9)
@@ -79,6 +80,11 @@ C       Setup for new input scheme
         INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
         INTEGER :: nZernCoef              ! Ditto
         INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
+        INTEGER :: nFFZernCoef            ! # of FF Zernike coefs to read (sparse)
+        INTEGER :: FFZernModes(mFFCoef)   ! FF Zernike mode index mapping (sparse)
+        INTEGER :: nMonZernCoef           ! # of Mon Zernike coefs to read (sparse)
+        INTEGER :: MonZernModes(mMonCoef) ! Mon Zernike mode index mapping (sparse)
+        INTEGER :: iZMode                 ! loop variable: Zernike mode index
 
 
 c***loh<
@@ -127,7 +133,8 @@ C	File setup and initial conditions read
      &	' |   Flat           Conic          Aspheric   |'/
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
-     &	' |   Toric          InfluenceFcn              |'/
+     &	' |   Toric          InfluenceFcn   AsphGrid   |'/
+     &	' |   FreeForm       MonGrData      ZrnGrData  |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -154,9 +161,13 @@ C	File setup and initial conditions read
      &	' | Aperture types:                            |'/
      &	' |   Circular       Rectangular               |'/
      &	' +--------------------------------------------+')
+
  146	FORMAT(' +--------------------------------------------+'/
      &	' | Zernike types:                             |'/
-     &	' |   Malacara       Noll           Fringe     |'/
+     &	' |   ANSI          NormANSI       NormHex     |'/
+     &	' |   BornWolf      NormBornWolf               |'/
+     &	' |   Noll          NormNoll                   |'/
+     &	' |   Fringe        NormFringe     ExtFringe   |'/
      &	' +--------------------------------------------+')
 
         ! Flags
@@ -183,7 +194,23 @@ C	Get file name
 	    Call LSFILES(0,cmdArg,0)
             RX_Flg=.TRUE.
 	  end if
-	  CALL IACCEPT_S(fid,1,1,'Enter file id: ')
+	  ! Read the file id as a string first so we can honor 'q'/'Q'
+	  ! to abort, matching the CACCEPT path above.  IACCEPT_S would
+	  ! parse 'q' as a bad integer and silently re-prompt, then
+	  ! eventually accept the default (1) on a blank line -- which
+	  ! used to load whatever was first in the listing without the
+	  ! user's intent.
+	  ANS=' '
+	  CALL CACCEPT(ANS,'1','Enter file id: ')
+	  L=ICLEN(ANS)
+	  IF ((L.EQ.1).AND.((ANS.EQ.'q').OR.(ANS.EQ.'Q'))) THEN
+	    LOAD_SUCCESS=.FALSE.; RETURN
+	  END IF
+	  READ(ANS,*,IOSTAT=ios) fid
+	  IF (ios /= 0) THEN
+	    WRITE(*,*)' ** Invalid file id; can not load file'
+	    LOAD_SUCCESS=.FALSE.; RETURN
+	  END IF
 	  filnam(:)=' '
 	  CALL GETRXFN(fid,filnam,status)
 	  if (status==0) then
@@ -203,9 +230,11 @@ C	Get file name
 	pertfil=filnam
 
         ! Updated so will accept '.in' file extension -jzlou
-	if (.not.LCMP(infil(l-2:l),'.in',3)) then
-	  infil(l+1:l+4)='.in '
-        end if
+	if (l.GE.3) then
+	  if (LCMP(infil(l-2:l),'.in',3)) go to 44
+	end if
+	infil(l+1:l+4)='.in '
+   44	continue
 	outfil(l+1:l+5)='.out '
 	cmatfil(l+1:l+6)='.cmat '
 	plotfil(l+1:l+6)='.plot '
@@ -244,6 +273,23 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
+	  ! Pre-validate the .in file before the parser opens it.  Catches
+	  ! obvious file-level breakage (missing values, etc.) and lets
+	  ! the user pick a different file (or 'q' to abort) instead of
+	  ! letting the parser walk into the breakage and leave the model
+	  ! half-initialized.
+	  BLOCK
+	    INTEGER :: vios
+	    CHARACTER(LEN=256) :: vmsg
+	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg)
+	    IF (vios /= 0) THEN
+	      WRITE(*,*)' ** Prescription validation failed:'
+	      WRITE(*,*)'    ',TRIM(vmsg)
+	      WRITE(*,*)'    Pick a different file (or "q" to abort).'
+	      LOAD_SUCCESS = .FALSE.
+	      GO TO 43
+	    END IF
+	  END BLOCK
 	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
 	  REWIND(RX_FID)
 
@@ -298,6 +344,11 @@ C
 	  END IF
 
    80 	  CONTINUE
+
+!--> Rx fully parsed -- stop capturing comment lines (GET_EQ is
+!    also used by the MOD dialog, which must not capture)
+	  LRxCommentCapture = .FALSE.
+!<--
 
 	  CALL SumData(GridType,npts)
 
@@ -514,7 +565,7 @@ C  Assign SrfType
 
 	    WRITE(*,141)
 	    CALL CACCEPT(TypeString,' ','Enter surface type :')
-	    DO i=1,10
+	    DO i=1,mSrfType
 	      IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 	        SrfType(iElt)=i
 	        SrfType_FLG=.TRUE.
@@ -531,7 +582,7 @@ C  Check to make sure no Element/Surface incompatability exists
 	      EltType_FLG=.TRUE.
 	    ELSE
 	      WRITE(*,131) EltTypeName(EltID(iElt)),
-     &                     SrfTypeName(EltID(iElt))
+     &                     SrfTypeName(SrfType(iElt))
 	      GO TO 11
 	    END IF
 
@@ -834,7 +885,7 @@ C  Get Optical Parameters
 C  End Optical Parameters
 C  Get Aspheric Parameters
 
-	    IF (SrfType(iElt).EQ.3) THEN
+	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.11)) THEN
 	      If (maxAsphCoef==4) then
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
@@ -851,8 +902,104 @@ C  Get Aspheric Parameters
 C  End Aspheric Parameters
 C  Get Monomial Parameters
 
+C  Get FF Zernike and Mon Zernike coefficients for FreeForm surface
+
 	    CALL DZERO(DDEF,7)
-	    IF (SrfType(iElt).EQ.4) THEN
+
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      WRITE(*,146)
+	      CALL CACCEPT(TypeString,'ANSI',
+     &	             'Enter FF Zernike Type :')
+	      if (LCMP(TypeString,'Norm',4)) then
+	        DO i=4,6
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            FFZernTypeL(iElt)=i
+	            FFZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      else
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            FFZernTypeL(iElt)=i
+	            FFZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      end if
+	      IF (.NOT.FFZernTypeL_FLG) THEN
+	        WRITE(*,*)' Unknown FF Zernike type'
+	        FFZernTypeL(iElt)=ZernType_ANSI
+	      END IF
+	    ELSE
+	      FFZernTypeL(iElt)=ZernType_ANSI
+	      FFZernTypeL_FLG=.TRUE.
+	    END IF
+
+	!--> FF Zernike sparse input
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      FFZernCoef(:,iElt) = 0d0
+	      CALL IACCEPT_S(nFFZernCoef,0,1,
+     &	        'Enter # of FF Zern coefs (mode-value pairs, 0=none) ')
+	      DO i=1, nFFZernCoef
+	        CALL IACCEPT_S(iZMode,0,1,'  FF Zern mode index ')
+	        IF ((iZMode.GE.1).AND.(iZMode.LE.mFFCoef)) THEN
+	          CALL DACCEPT_S(FFZernCoef(iZMode,iElt),0d0,1,
+     &	              '  FF Zernike coefficient ')
+	        END IF
+	      END DO
+	    ELSE
+	      FFZernCoef(:,iElt) = 0d0
+	    END IF
+	!<-- FF Zernike
+
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      CALL DACCEPT_S(lFF(iElt),Aperture,1,
+     &	      'Enter FF scale length ')
+	    ELSE
+	      lFF(iElt)=1d0
+	    END IF
+
+	!--> Mon Zernike sparse input (FreeForm only; SrfType 4/12 use direct MonCoef below)
+	    IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	      WRITE(*,146)
+	      CALL CACCEPT(TypeString,'ANSI',
+     &	             'Enter Mon Zernike Type :')
+	      if (LCMP(TypeString,'Norm',4)) then
+	        DO i=4,6
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            MonZernTypeL(iElt)=i
+	            MonZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      else
+	        DO i=1,3
+	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
+	            MonZernTypeL(iElt)=i
+	            MonZernTypeL_FLG=.TRUE.
+	          END IF
+	        END DO
+	      end if
+	      IF (.NOT.MonZernTypeL_FLG) THEN
+	        WRITE(*,*)' Unknown Mon Zernike type'
+	        MonZernTypeL(iElt)=ZernType_ANSI
+	      END IF
+	      MonZernCoef(:,iElt) = 0d0
+	      CALL IACCEPT_S(nMonZernCoef,0,1,
+     &	        'Enter # of Mon Zern coefs (mode-value pairs, 0=none) ')
+	      DO i=1, nMonZernCoef
+	        CALL IACCEPT_S(iZMode,0,1,'  Mon Zern mode index ')
+	        IF ((iZMode.GE.1).AND.(iZMode.LE.mMonCoef)) THEN
+	          CALL DACCEPT_S(MonZernCoef(iZMode,iElt),0d0,1,
+     &	              '  Mon Zernike coefficient ')
+	        END IF
+	      END DO
+	    ELSE
+	      MonZernTypeL(iElt) = ZernType_ANSI
+	      MonZernTypeL_FLG   = .TRUE.
+	      MonZernCoef(:,iElt) = 0d0
+	    END IF
+	!<-- Mon Zernike
+
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.12)) THEN
 	      CALL DACCEPT(MonCoef(1:6,iElt),DDEF,6,
      &	      'Enter monomial coefficients 1-6 ')
 	      CALL DACCEPT(MonCoef(7:12,iElt),DDEF,6,
@@ -874,6 +1021,15 @@ C  Get Monomial Parameters
 	      END DO
 	    END IF
 
+	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8).OR.
+     &		(SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13).OR.
+     &		(SrfType(iElt).EQ.SrfType_FreeForm)) THEN
+	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
+     &	      'Enter Mon scale length ')
+	    ELSE
+	      lMon(iElt)=1d0
+	    END IF
+
 C  End Monomial Parameters
 C  Get Anamorph Parameters
 
@@ -892,9 +1048,10 @@ C  Get Anamorph Parameters
 C  End Anamorph Parameters
 
 C  Get Zernike Parameters
-	    IF (SrfType(iElt).EQ.8) THEN
+
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      WRITE(*,146)
-	      CALL CACCEPT(TypeString,'Malacara',
+	      CALL CACCEPT(TypeString,'ANSI',
      &	             'Enter Zernike Type :')
 	      if (LCMP(TypeString,'Norm',4)) then
                 ! normalized Zernike coeff
@@ -924,7 +1081,7 @@ C  Get Zernike Parameters
 
 	    ! This part is for entering Zernike coeff in command-lind
 	    ! mode. -jzlou
-	    IF (SrfType(iElt).EQ.8) THEN
+	    IF ((SrfType(iElt).EQ.8).OR.(SrfType(iElt).EQ.13)) THEN
 	      CALL DACCEPT(ZernCoef(1:6,iElt),DDEF,6,
      &	        'Enter Zernike coefficients 1-6 ')
 	      CALL DACCEPT(ZernCoef(7:12,iElt),DDEF,6,
@@ -1003,7 +1160,7 @@ C	Param order = beta,dact or drad,dq,minrad
 C  End User-defined Parameters & Data
 
 C  Get GridSurf Parameters & Data
-	    IF (SrfType(iElt).EQ.9) THEN
+	    IF ((SrfType(iElt).EQ.9).OR.(SrfType(iElt).GE.11)) THEN
 	      CALL IACCEPT_S(nGridMat(iElt),mGridMat,1,
      &	        'Enter dimension of gridded data matrix ')
 	      CALL DACCEPT_S(GridSrfdx(iElt),1d0,1,
@@ -1025,6 +1182,28 @@ C  Get Surface Coordinate Parameters
 	    ! (see prop_defs.inc). -jzlou
 	    !
 	    IF ((SrfType(iElt).GE.4).OR.(EltID(iElt).EQ.10)) THEN
+
+	!--> FreeForm FF coordinate frame (asked first for FreeForm)
+	      IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	        CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
+	        CALL DACCEPT(pFF(:,iElt),pFF(:,iElt),3,
+     &	          'Enter FF coord origin pFF (x,y,z) ')
+	        xFF(1,iElt)=psiElt(3,iElt)
+	        xFF(2,iElt)=psiElt(1,iElt)
+	        xFF(3,iElt)=psiElt(2,iElt)
+	        CALL DACCEPT(xFF(:,iElt),xFF(:,iElt),3,
+     &	          'Enter FF x-axis unit vector (x,y,z) ')
+	        CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
+	        CALL DACCEPT(yFF(:,iElt),yFF(:,iElt),3,
+     &	          'Enter FF y-axis unit vector (x,y,z) ')
+	        CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
+	        CALL DACCEPT(zFF(:,iElt),zFF(:,iElt),3,
+     &	          'Enter FF z-axis unit vector (x,y,z) ')
+	        CALL DORTHOGANALIZE(xFF(1,iElt),yFF(1,iElt),zFF(1,iElt))
+	        WRITE(*,*)' Orthoganalized zFF=',(zFF(i,iElt),i=1,3)
+	      END IF
+	!<--
+
 	      CALL DEQUATE(pMon(1,iElt),VptElt(1,iElt),3)
 	      CALL DACCEPT(pMon(:,iElt),pMon(:,iElt),3,
      &	        'Enter surface reference point location (x,y,z) ')
@@ -1043,6 +1222,30 @@ C  Get Surface Coordinate Parameters
      &	        ZMon(1,iElt))
 	      WRITE(*,*)' Orthoganalized zMon=',(zMon(i,iElt),i=1,3)
 
+	!--> Mod for MonGrData, ZrnGrData, and FreeForm (with grid) Grid coords
+	      IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13).OR.
+     &	        (SrfType(iElt).EQ.SrfType_FreeForm.AND.
+     &	         nGridMat(iElt).GT.0)) THEN
+	        CALL DEQUATE(pData(1,iElt),pMon(1,iElt),3)
+	        CALL DEQUATE(xData(1,iElt),xMon(1,iElt),3)
+	        CALL DEQUATE(yData(1,iElt),yMon(1,iElt),3)
+	        CALL DEQUATE(zData(1,iElt),zMon(1,iElt),3)
+	        CALL DACCEPT(pData(:,iElt),pData(:,iElt),3,
+     &	          'Enter data origin pData (x,y,z) ')
+	        CALL DACCEPT(xData(:,iElt),xData(:,iElt),3,
+     &	          'Enter data x-axis unit vector (x,y,z) ')
+	        CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData(1,iElt))
+	        CALL DACCEPT(yData(:,iElt),yData(:,iElt),3,
+     &	          'Enter data y-axis unit vector (x,y,z) ')
+	        CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
+	        CALL DACCEPT(zData(:,iElt),zData(:,iElt),3,
+     &	          'Enter data z-axis unit vector (x,y,z) ')
+	        CALL DORTHOGANALIZE(xData(1,iElt),yData(1,iElt),
+     &	          ZData(1,iElt))
+	        WRITE(*,*)' Orthoganalized zData=',(zData(i,iElt),i=1,3)
+	      END IF
+	!<--
+
 	      if (.false.) then
 	        print*,'iElt=',iElt
 	        print*,'In computing xMon,yMon,zMon ...'
@@ -1050,12 +1253,6 @@ C  Get Surface Coordinate Parameters
 	      end if
 	    END IF
 
-	    IF ((SrfType(iElt).EQ.4).OR.(SrfType(iElt).EQ.8)) THEN
-	      CALL DACCEPT_S(lMon(iElt),Aperture,1,
-     &	      'Enter scale length ')
-	    ELSE
-	      lMon(iElt)=1d0
-	    END IF
 C  End Surface Coordinate Parameters
 
 C  Get HOE/Grating Parameters
@@ -1157,6 +1354,9 @@ C	Specify output coordinates
         !
    99   CONTINUE
         LOAD_SUCCESS = .FALSE.
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
@@ -1235,6 +1435,7 @@ C***********************************************************************
 	use elt_mod
 	use cfiles_mod
         use surfsub, only: GridInit
+        use lohpars_mod, only: pstack, read_len, read_cur
 
 	implicit none
 
@@ -1252,6 +1453,12 @@ c  24Jul97 loh:  Added flag to indicate zernike type
 	REAL*8 S1,S2
 
 	CHARACTER(len=MacosCharLen) :: TypeString
+!-->  FreeForm sparse Zernike locals
+	INTEGER :: nFFZernCoef
+	INTEGER :: FFZernModes(mFFCoef)
+	INTEGER :: nMonZernCoef
+	INTEGER :: MonZernModes(mMonCoef)
+!<--
 
   10	FORMAT(1P,A,' = ',3D17.9)
   11	FORMAT(1P,A,' = ',D17.9)
@@ -1308,6 +1515,21 @@ C       parse the statement
 
 
 	CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,0)  ! String parsing and not parsing from a Rx file: RX_FID=0
+
+C       Catch the "mod var = val" case (spaces around '=' on the MACOS>
+C       line).  CACCEPT only consumed the first whitespace-separated
+C       token, so VALUE is empty here.  Some field handlers below have
+C       READ(VALUE,*) without ERR=/END= labels and would crash on the
+C       empty value (forrtl severe (24)).  Warn and drain leftover
+C       tokens so the user gets one message instead of one per token.
+	IF (LEN_TRIM(VALUE) .EQ. 0 .AND.
+     &      .NOT. LCMP(STRING,'HELP',2)) THEN
+	  WRITE(*,*) ' ** MOD: assignment must be "<var>=<value>"'//
+     &               ' with no spaces around "=" (e.g. "ngridpts=33")'
+	  read_len(pstack) = 0
+	  read_cur(pstack) = 0
+	  GO TO 998
+	END IF
 
 	IF (LCMP(VAR_NAM,'A',1)) THEN
 	    IF (LCMP(VAR_NAM,'Aperture',8)) THEN
@@ -1457,7 +1679,36 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 
 	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN
 	    print*,'Debug: VAR_NAM = ', VAR_NAM
-	    IF (LCMP(VAR_NAM,'FLUX',4)) THEN
+	    IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	      READ(VALUE,*,ERR=999,END=999)FFZernCoef(MB_I(1),MB_I(2))
+	      WRITE(*,22)' FFZernCoef',MB_I(2),
+     &	        (FFZernCoef(MB_J,MB_I(2)),MB_J=1,6)
+	    ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(VALUE, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          FFZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	        END IF
+	      END BLOCK
+	      TypeString = VALUE
+	      WRITE(*,*)' FFZernType',MB_I(1),
+     &	        ZernTypeNameL(FFZernTypeL(MB_I(1)))
+!-->  FFZernModes: set mode index for sparse FF Zernike
+	    ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)FFZernModes(MB_I(1))
+	      WRITE(*,19)' FFZernModes',MB_I(1),FFZernModes(MB_I(1))
+!<--
+	    ELSE IF (LCMP(VAR_NAM,'FLUX',4)) THEN
 	      print*,'Debug: VALUE = ', VALUE
 	      READ(VALUE,*)Flux
  	      WRITE(*,11)' Flux',Flux
@@ -1511,13 +1762,13 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'gap',3)) THEN
 	    READ(VALUE,*)gap
  	    WRITE(*,11)' gap',gap
-	  ELSE IF (LCMP(VAR_NAM,'GridFile',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'GridFile',8)) THEN
 	    READ(IND(1),*,ERR=999,END=999) MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999) GridFile(MB_I(1))
 	    WRITE(*,*)' GridFile(',MB_I(1),')=',GridFile(MB_I(1))
 	    CALL GridInit(GridFile(MB_I(1)),iEltToGridSrf(MB_I(1)),
      &	    	   nGridMat(MB_I(1)),ifGridInit,.FALSE.)
-	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',8)) THEN
 	    READ(VALUE,*) GridSrfdx
  	    WRITE(*,11)' GridSrfdx',GridSrfdx
 	  END IF
@@ -1589,6 +1840,10 @@ c	    READ(VALUE,*)GridType
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)lMon(MB_I(1))
  	    WRITE(*,18)' lMon',MB_I(1),lMon(MB_I(1))
+ 	  ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)lFF(MB_I(1))
+	    WRITE(*,18)' lFF',MB_I(1),lFF(MB_I(1))
  	  ELSE IF (LCMP(VAR_NAM,'LensArrayType',12)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)LensArrayType(MB_I(1))
@@ -1600,7 +1855,36 @@ c	    READ(VALUE,*)GridType
  	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'M',1)) THEN
-	    IF (LCMP(VAR_NAM,'MonCoef',8)) THEN
+	    IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	      READ(VALUE,*,ERR=999,END=999)MonZernCoef(MB_I(1),MB_I(2))
+	      WRITE(*,22)' MonZernCoef',MB_I(2),
+     &	        (MonZernCoef(MB_J,MB_I(2)),MB_J=1,6)
+	    ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(VALUE, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          MonZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	        END IF
+	      END BLOCK
+	      TypeString = VALUE
+	      WRITE(*,*)' MonZernType',MB_I(1),
+     &	        ZernTypeNameL(MonZernTypeL(MB_I(1)))
+!-->  MonZernModes: set mode index for sparse Mon Zernike
+	    ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
+	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	      READ(VALUE,*,ERR=999,END=999)MonZernModes(MB_I(1))
+	      WRITE(*,19)' MonZernModes',MB_I(1),MonZernModes(MB_I(1))
+!<--
+	    ELSE IF (LCMP(VAR_NAM,'MonCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 	      READ(VALUE,*,ERR=999,END=999)MonCoef(MB_I(1),MB_I(2))
@@ -1705,6 +1989,14 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'nOutCord',8)) THEN
 	    READ(VALUE,*)nOutCord
   	    WRITE(*,12)' nOutCord',nOutCord
+!-->  FreeForm sparse Zernike counts
+	  ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
+	    READ(VALUE,*,ERR=999,END=999)nFFZernCoef
+	    WRITE(*,12)' nFFZernCoef',nFFZernCoef
+	  ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
+	    READ(VALUE,*,ERR=999,END=999)nMonZernCoef
+	    WRITE(*,12)' nMonZernCoef',nMonZernCoef
+!<--
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'O',1)) THEN
@@ -1782,6 +2074,32 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
      &	        psiElt(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' psiElt',MB_I(2),(psiElt(MB_J,MB_I(2)),MB_J=1,3)
+	    ! -->
+	    ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (pData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        pData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' pData',MB_I(2),(pData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (pFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        pFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' pFF',MB_I(2),(pFF(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
 	    ELSE IF (LCMP(VAR_NAM,'pMon',4)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -1861,7 +2179,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'Surface',7)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      DO i=1,8
+	      DO i=1,mSrfType
 	        IF (LCMP(TypeString,SrfTypeName(i),3)) THEN
 		  SrfType(MB_I(1))=i
 	          LNOTSET=.FALSE.
@@ -1928,7 +2246,7 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(VALUE,*,ERR=999,END=999)
      &	      UDSrfParam(MB_I(1),MB_I(2))
 	    END IF
-	    WRITE(*,10)' UDSrfParam',(xGrid(MB_J),MB_J=1,6)
+	    WRITE(*,10)' UDSrfParam',(UDSrfParam(MB_J,MB_I(2)),MB_J=1,6)
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'VptElt',6)) THEN
@@ -1958,7 +2276,33 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'X',1)) THEN
-	    IF (LCMP(VAR_NAM,'xGrid',5)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'xData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (xData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        xData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' xData',MB_I(2),(xData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (xFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        xFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' xFF',MB_I(2),(xFF(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(xGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -1993,7 +2337,33 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'Y',1)) THEN
-	    IF (LCMP(VAR_NAM,'yGrid',5)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'yData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (yData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        yData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' yData',MB_I(2),(yData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (yFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        yFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' yFF',MB_I(2),(yFF(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(VALUE,*,ERR=999,END=999)(yGrid(MB_J),MB_J=1,3)
 	    ELSE
@@ -2016,7 +2386,33 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'Z',1)) THEN
-	    IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
+	    !-->
+	    IF (LCMP(VAR_NAM,'zData',4)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (zData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        zData(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' zData',MB_I(2),(zData(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (zFF(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        zFF(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' zFF',MB_I(2),(zFF(MB_J,MB_I(2)),MB_J=1,3)
+	    !<--
+	    ELSE IF (LCMP(VAR_NAM,'ZernCoef',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 
@@ -2074,22 +2470,22 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(VALUE,*,ERR=999,END=999)TypeString
-	      if (LCMP(TypeString,'Norm',4)) then
-	        ! normalized Zernike coeff
-	        DO i=4,6
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    ZernTypeL(MB_I(1))=i
-                    LNOTSET=.FALSE.
-                  END IF
-                END DO
-	      else
-	        DO i=1,3
-	          IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-		    ZernTypeL(MB_I(1))=i
-	            LNOTSET=.FALSE.
-	          END IF
-	        END DO
-	      end if
+	      ! Centralized parser -- see ParseZernType in elt_mod.F.
+	      ! This is the site that triggered the consolidation
+	      ! (MOD ZernType(N)=Noll formerly resolved to NormNoll due
+	      ! to a backward-compatibility shim and an under-sized loop).
+	      BLOCK
+	        INTEGER :: ptypeL
+	        LOGICAL :: pfound, phasRatio
+	        REAL*8  :: pratio
+	        CALL ParseZernType(TypeString, ptypeL, pfound,
+     &	                           pratio, phasRatio)
+	        IF (pfound) THEN
+	          ZernTypeL(MB_I(1)) = ptypeL
+	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
+	          LNOTSET = .FALSE.
+	        END IF
+	      END BLOCK
 	      IF (LNOTSET) THEN
 		WRITE(*,133) TypeString
 	      ELSE
@@ -2139,11 +2535,18 @@ c   Only do this if we got something
 	IF (read_len(pstack) .NE. 0) THEN
 	   CVAR = var_store(read_cur(pstack),pstack)
 
-C          Write to screen
+C          Write to screen.  Skip the keyword echo when consuming the
+C          first token of an ECHO command -- the cmd_loop's ECHO
+C          branch will print just the message.  Without this skip,
+C          journal-mode runs would print a stray "echo" line above
+C          every comment.
 	   IF ( (read_cur(pstack) .GT. 1) .OR. (bat_task .EQ. 2) )THEN
-	      L=ICLEN(CVAR)
-	      IF (L.LE.0) L=1
-	      WRITE(*,6) CVAR(1:L)
+	      IF (.NOT. (read_cur(pstack).EQ.1
+     &                   .AND. LCMP(CVAR,'ECHO',3))) THEN
+	        L=ICLEN(CVAR)
+	        IF (L.LE.0) L=1
+	        WRITE(*,6) CVAR(1:L)
+	      END IF
 	   END IF
 
 C  Write out journal data to file, if in journal mode
@@ -2345,7 +2748,10 @@ c sws    error RETURN in reading input
  300    CONTINUE
         WRITE(*,*) '[parse_loh]',
      &     ' file error during READ, bat_task = ',bat_task
-        RETURN
+c       Treat the read error as end-of-file: pop the journal stack and
+c       return to the console.  Without this, the cmd loop would call
+c       PARSE_LOH again, hit the same broken READ, and spin forever.
+        GO TO 100
         END SUBROUTINE PARSE_LOH
 
 #endif
@@ -2493,7 +2899,8 @@ c sws    error RETURN in reading input
  300    CONTINUE
 	  WRITE(*,*) '[parse_loh]',
      &	     ' file error during READ, bat_task = ',bat_task
-	  RETURN
+c       Treat the read error as end-of-file (see PARSE_LOH for context).
+	  GO TO 100
 
 	END SUBROUTINE PARSE_LOH_SAVE
 
@@ -2544,35 +2951,56 @@ C       CHARACTER INPUT ROUTINE CACCEPT
 C       TYPES OUT TEXT
 C       IF INPUT IS CR, CVAR=CDEF
 C       OTHERWISE, CVAR=INPUT
+C
+C  Note (2026-05-06): the prompt is no longer printed via Fortran WRITE.
+C  Instead it's built as a string and pushed to mhist's sub-prompt
+C  cache via set_sub_prompt(); readline then renders it itself and
+C  handles cursor state correctly.  This eliminated a recurring class
+C  of "MACOS> the new element data?" overwrite bugs and the cosmetic
+C  blank-line band-aids around them.
 
 	CHARACTER*(*) TEXT,CDEF
 	CHARACTER(len=*) COUT
 	INTEGER ICLEN
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
- 1	FORMAT(' ',A,' [',A,']: ',$)
+ 1	FORMAT(A,$)
  4	FORMAT(9A)
- 5	FORMAT(' ',A,$)
 
  100	CONTINUE
 	CVAR=' '
 	COUT=' '
 
-c if cdef is blank, read till we get something
+c Build the prompt string.  Two cases:
+c   - read buffer is non-empty: the next READ_LOH will consume a
+c     buffered token without going through MHIST/readline, so we WRITE
+c     the prompt directly (legacy path).
+c   - read buffer is empty: READ_LOH will trigger PARSE_LOH -> MHIST
+c     and readline will render the prompt; push it to the cache so
+c     readline knows what to display and can manage cursor state.
 	IF (CDEF.EQ.' ')THEN
-	   WRITE(*,5) TEXT
-	   CALL READ_LOH(1)
-	   IF(CVAR.EQ.' ') GO TO 100
+	  prompt_str = ' '//TRIM(TEXT)//' '
 	ELSE
-c show default, use it if we get a blank
-	   WRITE(*,1)TEXT,CDEF
-	   CALL READ_LOH(1)
-	   IF(CVAR.EQ.' ') THEN
-	      CVAR=CDEF
-	      IF (JOU_TASK .EQ. 2) THEN
+	  prompt_str = ' '//TRIM(TEXT)//' ['//TRIM(CDEF)//']: '
+	END IF
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,1) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
+	CALL READ_LOH(1)
+	CALL clear_sub_prompt
+
+	IF (CDEF.EQ.' ') THEN
+	  IF (CVAR.EQ.' ') GO TO 100
+	ELSE
+	  IF (CVAR.EQ.' ') THEN
+	    CVAR=CDEF
+	    IF (JOU_TASK .EQ. 2) THEN
 c we're building a journal file, write out the default
-	         WRITE(27,*) '   ',CDEF
-	      END IF
-	   END IF
+	      WRITE(27,*) '   ',CDEF
+	    END IF
+	  END IF
 	END IF
 	COUT(1:ICLEN(CVAR))=CVAR(1:ICLEN(CVAR))
 
@@ -2588,29 +3016,50 @@ C       DOUBLE-PRECISION N-VECTOR INPUT ROUTINE DACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
 C       OTHERWISE, VAR=NPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I,N,ABSN
+	INTEGER I,N,ABSN,LEN
+	INTEGER ICLEN
 	REAL*8 DVAR(N),DDEF(N)
+	CHARACTER*23 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
- 100	FORMAT(' ',A,$)
+ 100	FORMAT(A,$)
  101	FORMAT(1P,6D18.10)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100)TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL DScreenDef(DDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL D2Screen(DDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']:'
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
+	END IF
+c Buffered tokens: direct WRITE; fresh read: cache for readline.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
 	END IF
 
 C  Read response:
 	CALL READ_LOH(2)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
 	   READ(CVAR,*,ERR=1)(DVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
@@ -2740,36 +3189,56 @@ C  Write to character output
 C***********************************************************************
 
 	SUBROUTINE RACCEPT(RVAR,RDEF,N,TEXT)
-C       DOUBLE-PRECISION N-VECTOR INPUT ROUTINE DACCEPT
+C       SINGLE-PRECISION N-VECTOR INPUT ROUTINE RACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
-C       OTHERWISE, VAR=NPUT
+C       OTHERWISE, VAR=INPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 
 	use lohpars_mod
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I,N,ABSN
+	INTEGER I,N,ABSN,LEN
+	INTEGER ICLEN
 	SREAL RVAR(N),RDEF(N)
+	CHARACTER*23 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
-
- 100	FORMAT(' ',A,$)
+ 100	FORMAT(A,$)
  101	FORMAT(1P,6E16.8)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100)TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL RScreenDef(RDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL R2Screen(RDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']:'
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
+	END IF
+c Buffered tokens: direct WRITE; fresh read: cache for readline.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
 	END IF
 
 C  Read response:
 	CALL READ_LOH(3)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
 	   READ(CVAR,*,ERR=1)(RVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
@@ -2901,43 +3370,61 @@ C       INTEGER N-VECTOR INPUT ROUTINE IACCEPT
 C       TYPES OUT TEXT AND DEFAULT VALUES IN PROMPT LINE
 C       IF INPUT IS CR, VAR=DEF
 C       OTHERWISE, VAR=INPUT
+C
+C  Note (2026-05-06): prompt is built as a string and pushed to mhist's
+C  sub-prompt cache via set_sub_prompt(), instead of being written
+C  with Fortran WRITE.  See CACCEPT for the rationale.
 
 	use lohpars_mod
 
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
-	INTEGER I, N, ABSN, IVAR(N), IDEF(N)
+	INTEGER I, N, ABSN, LEN, IVAR(N), IDEF(N)
+	INTEGER ICLEN
+	CHARACTER*16 CNUM
+	CHARACTER(len=MacosCharLen) :: prompt_str
 
-
- 100	FORMAT(' ',A,$)
+ 100	FORMAT(A,$)
  101	FORMAT(8I6)
 
-C  Write prompt line:
+C  Build prompt line:
  1	CONTINUE
-	WRITE(*,100) TEXT
 	ABSN=ABS(N)
+	prompt_str = ' '//TRIM(TEXT)
 	IF (N.LT.0) THEN
-	  WRITE(*,100)'[no default]: '
+	  prompt_str = TRIM(prompt_str)//'[no default]: '
 	  ifDefault=.FALSE.
 	ELSE
-	  CALL IScreenDef(IDEF,ABSN)
+	  prompt_str = TRIM(prompt_str)//' ['
+	  DO I=1,ABSN
+	    CALL I2Screen(IDEF(I),CNUM,LEN)
+	    IF (I.LT.ABSN) THEN
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//','
+	    ELSE
+	      prompt_str = TRIM(prompt_str)//CNUM(1:LEN)//']: '
+	    END IF
+	  END DO
 	  ifDefault=.TRUE.
 	END IF
-
-	!print*,'IACCEPT: ifDefault=',ifDefault
+c Buffered tokens take the legacy path (direct WRITE); fresh-read
+c goes via the cache so readline can render and own cursor state.
+	IF (read_len(pstack) .GT. 0) THEN
+	  WRITE(*,100) prompt_str(1:LEN_TRIM(prompt_str))
+	ELSE
+	  CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	END IF
 
 C  Read response:
 	CALL READ_LOH(4)
+	CALL clear_sub_prompt
 	IF (CVAR.NE.' ') THEN
 	   READ(CVAR,*,ERR=1)(IVAR(I),I=1,ABSN)
 	ELSE IF (ifDefault) THEN
      	   ! No data entered, use the default
-	   !print*,'**** IACCEPT: use default ...'
 	   DO 9 I=1,ABSN
 	      IVAR(I)=IDEF(I)
  9	   CONTINUE
      	   ! Write to read buffer
-	   !print*,'B4 WRITE to CVAR Buffer'
 	   WRITE(CVAR,101,ERR=1)(IDEF(I),I=1,ABSN)
      	   ! If building a journal file, write out the default
 	   IF (JOU_TASK .EQ. 2) THEN

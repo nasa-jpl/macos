@@ -34,21 +34,12 @@ C  ***For Re-Load glass tables***
  477      CONTINUE
           WRITE(*,312)glassFile(1:ICLEN(glassFile)),k
         ELSE
-          WRITE(*,314)
-          GlassName(2)='BK7'
-          GlassTable(1,2)=1.03961212
-          GlassTable(2,2)=2.31792344e-1
-          GlassTable(3,2)=1.01046945
-          GlassTable(4,2)=6.00069867e-3
-          GlassTable(5,2)=2.00179144e-2
-          GlassTable(6,2)=1.0350653e+2
-          GlassName(3)='LAK9'
-          GlassTable(1,3)=1.46231905d0
-          GlassTable(2,3)=3.44399589d-1
-          GlassTable(3,3)=1.15508372d0
-          GlassTable(4,3)=7.24270156d-3
-          GlassTable(5,3)=2.43353131d-2
-          GlassTable(6,3)=8.54686868d1
+!--> Built-in catalog fallback (PLAN section 0) -- generated
+!    glass_builtin.f90; a found glass file still overrides.
+          CALL LoadBuiltinGlass(GlassName, GlassTable, mGlass, k)
+          WRITE(*,*)' No glass table file found;',
+     &              ' using built-in catalog:',k,' glasses.'
+!<--
         END IF
 
 

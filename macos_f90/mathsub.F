@@ -15,6 +15,138 @@ C***********************************************************************
       PRIVATE :: CSWAP, DROTG, DDOTLP, CNRM2, zrhqr, balanc, hqr
       CONTAINS
 
+        !-------------------------------------------------------------
+        ! Compute norm of a 3D vector (fully unrolled) => less overhead than intrinsic norm2(...)
+        !-------------------------------------------------------------
+        pure function norm3(v) result(n)
+          real(8), intent(in) :: v(3)
+          real(8) :: n
+          ! - - - - - - - - - - - - - - - - - - - - -
+          n = sqrt(v(1)*v(1) + v(2)*v(2) + v(3)*v(3))
+        end function norm3
+
+        !-------------------------------------------------------------
+        ! Cross product of two 3D vectors
+        !-------------------------------------------------------------
+        pure function cross(a,b) result(c)
+          real(8), intent(in) :: a(3), b(3)
+          real(8) :: c(3)
+          ! - - - - - - - - - - - - - - - - - - - - -
+          c(1) = a(2)*b(3) - a(3)*b(2)
+          c(2) = a(3)*b(1) - a(1)*b(3)
+          c(3) = a(1)*b(2) - a(2)*b(1)
+        end function cross
+
+        !-------------------------------------------------------------
+        ! Build robust sequential CSYS from Psi
+        ! Optionally aligns Y-axis to previous CSYS
+        !
+        ! ALGORITHM:
+        !   1. Normalize psi -> z_axis (optical axis)
+        !   2. Try y_prev projection (if provided and valid)
+        !      - Project y_prev onto plane perpendicular to z_axis
+        !      - If successful: compute x_axis = y_axis × z_axis, return
+        !   3. Fallback: select reference axis most perpendicular to z_axis
+        !      - Use minloc(abs(z_axis)) to find smallest component
+        !      - Project that axis onto plane perpendicular to z_axis
+        !      - Compute x_axis = y_axis × z_axis
+        !   Result: Right-handed orthonormal CSYS (x, y, z)
+        !-------------------------------------------------------------
+        pure subroutine define_local_csys(psi, x_axis, y_axis, z_axis, ok, y_prev)
+          use Constants, only: TOL_GEOM
+          implicit none
+          real(8), intent(in)            :: psi(3)                           ! local surface normal
+          real(8), intent(out)           :: x_axis(3), y_axis(3), z_axis(3)  ! local CSYS
+          logical, intent(out)           :: ok                               ! success Flag
+          real(8), intent(in), optional  :: y_prev(3)                        ! CSYS of previous Ele (align to that)
+
+          real(8) :: ref(3), tmp(3)
+          real(8) :: psi_norm, tmp_norm, dot_zref
+          integer :: min_idx
+          ! - - - - - - - - - - - - - - - - - - - - -
+          ok = .true.
+
+          !
+          ! Define Z-axis (local optical axis)
+          !
+          psi_norm = norm3(psi)
+          if (psi_norm > TOL_GEOM) then
+            z_axis = psi / psi_norm
+          else
+            ! Degenerate psi - use fallback and exit early
+            z_axis = [0d0, 0d0, 1d0]
+            x_axis = [1d0, 0d0, 0d0]
+            y_axis = [0d0, 1d0, 0d0]
+            ok = .false.
+            return
+          end if
+
+          !
+          ! Choose reference vector for Y-axis
+          ! Priority: 1) y_prev (if valid), 2) axis most perpendicular to z_axis
+          !
+          if (present(y_prev)) then
+            tmp_norm = norm3(y_prev)
+            if (tmp_norm > TOL_GEOM) then
+              ! Project y_prev onto plane perpendicular to z_axis (Gram-Schmidt)
+              dot_zref = dot_product(y_prev, z_axis)
+              tmp = y_prev - dot_zref * z_axis
+              tmp_norm = norm3(tmp)
+
+              if (tmp_norm > TOL_GEOM) then
+                ! Success - use y_prev projection
+                y_axis = tmp / tmp_norm
+                x_axis = cross(y_axis, z_axis)
+                call normalize3(x_axis)
+                return  ! Early exit on success
+              end if
+            end if
+          end if
+
+          !
+          ! Fallback: choose reference axis most perpendicular to z_axis
+          ! This minimizes numerical error and guarantees success (unless z_axis degenerate)
+          !
+          min_idx = minloc(abs(z_axis), dim=1)  ! Find smallest component
+
+          ref = 0d0
+          ref(min_idx) = 1d0  ! Use axis most perpendicular to z_axis
+
+          ! Project reference onto plane perpendicular to z_axis (Gram-Schmidt)
+          dot_zref = dot_product(ref, z_axis)
+          tmp = ref - dot_zref * z_axis
+          tmp_norm = norm3(tmp)
+
+          if (tmp_norm > TOL_GEOM) then
+            y_axis = tmp / tmp_norm
+            x_axis = cross(y_axis, z_axis)
+            call normalize3(x_axis)
+          else
+            ! Catastrophic failure - z_axis is degenerate or numerical issues
+            ok = .false.
+            x_axis = 0d0
+            y_axis = 0d0
+            z_axis = 0d0
+          end if
+
+          contains
+
+            ! Normalize a 3D vector (caller must ensure non-zero)
+            pure subroutine normalize3(v)
+              real(8), intent(inout) :: v(3)
+              real(8) :: n
+              ! - - - - - - - - - - - - - - - - - - - - -
+              n = norm3(v)
+              if (n > TOL_GEOM) then
+                v = v / n
+              else
+                v = 0d0
+              end if
+            end subroutine normalize3
+
+      end subroutine define_local_csys
+
+      !-------------------------------------------------------------
       SUBROUTINE RZERO(A,N)
       SREAL A(1)
       Integer :: N
@@ -166,10 +298,10 @@ C
       RETURN
       END FUNCTION DMAG
 C
-      FUNCTION DDOTC(X,Y)
-      REAL*8 X(3),Y(3),DDOTC
-      DDOTC=X(1)*Y(1)+X(2)*Y(2)+X(3)*Y(3)
-      RETURN
+      pure real(8) FUNCTION DDOTC(X,Y)
+        implicit none
+        REAL(8), intent(in) :: X(3),Y(3)
+        DDOTC = X(1)*Y(1) + X(2)*Y(2) + X(3)*Y(3)
       END FUNCTION DDOTC
 
       FUNCTION DDOTC2(X,Y)
@@ -216,27 +348,38 @@ C jzlou - compute matrix product A = B*C,
 C         where B is NAxNB, C is NBxNC
 C         and A is NAxNC
 
-      SUBROUTINE DMPROD(A,B,C,NA,NB,NC)
-      REAL*8 A(1),B(1),C(1)
-      Integer :: NA,NB,NC,NAMAX,NBMAX,I,J,K,
-     &           NAPTR,NBPTR,NCPTR
-      NAMAX=NA*NC
-      NBMAX=NA*NB
-      DO I=1,NA
-        J=-NB
-        DO NAPTR=I,NAMAX,NA
-          J=J+NB
-          K=0
-          A(NAPTR)=0D0
-          DO NBPTR=I,NBMAX,NA
-            K=K+1
-            NCPTR=J+K
-            A(NAPTR)=A(NAPTR)+B(NBPTR)*C(NCPTR)
-          END DO
-        END DO
-      END DO
-      RETURN
-      END SUBROUTINE DMPROD
+  !    SUBROUTINE DMPROD(A,B,C,NA,NB,NC)
+  !    REAL*8 A(1),B(1),C(1)
+  !    Integer :: NA,NB,NC,NAMAX,NBMAX,I,J,K,
+  !   &           NAPTR,NBPTR,NCPTR
+  !    NAMAX=NA*NC
+  !    NBMAX=NA*NB
+  !    DO I=1,NA
+  !      J=-NB
+  !      DO NAPTR=I,NAMAX,NA
+  !        J=J+NB
+  !        K=0
+  !        A(NAPTR)=0D0
+  !        DO NBPTR=I,NBMAX,NA
+  !          K=K+1
+  !          NCPTR=J+K
+  !          A(NAPTR)=A(NAPTR)+B(NBPTR)*C(NCPTR)
+  !        END DO
+  !      END DO
+  !    END DO
+  !    RETURN
+  !    END SUBROUTINE DMPROD
+
+      SUBROUTINE DMPROD(A, B, C, NA, NB, NC)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN)    :: NA, NB, NC
+        REAL*8,  INTENT(OUT)   :: A(NA, NC)
+        REAL*8,  INTENT(IN)    :: B(NA, NB)
+        REAL*8,  INTENT(IN)    :: C(NB, NC)
+
+        A = MATMUL(B, C)
+
+        END SUBROUTINE DMPROD
 
 C
         SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
@@ -372,14 +515,14 @@ C
       END SUBROUTINE DTRPOS
 C
       SUBROUTINE DZERO(A,N)
-      REAL*8 A(1)
-      Integer :: N
+      REAL*8 A(*)      ! assumed-size (was A(1), a -fcheck=bounds false
+      Integer :: N     ! positive for A(1:N) with N>1)
       A(1:N)=0D0
       RETURN
       END SUBROUTINE DZERO
 C
       SUBROUTINE IZERO(A,N)
-      INTEGER A(1)
+      INTEGER A(*)     ! assumed-size (was A(1); see DZERO)
       Integer :: N
       A(1:N)=0
       RETURN

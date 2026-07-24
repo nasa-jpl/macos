@@ -37,18 +37,26 @@ C
 
 
 #if 1
-	! Define a 51x51 square lens array
-	ndim=107; nn=(ndim-1)/2; k=1
-	!ndim=5; nn=(ndim-1)/2; k=1
-	Do r=-nn,nn 	
-	  Do c=-nn,nn 	
+!--> square lens array sized from mLenslet (SAVE-audit fix,
+!    2026-07-04).  This block used to hardwire ndim=107 -> 11449
+!    lenslets, but RecLensletIdx is allocated mLenslet*2 (=500) and
+!    LensletStrArray mLenslet (=250) -- the fill loop below and the
+!    copy loop in InitLensletIndexAndCtr stomped memory the moment
+!    any Rx used LensArrayIndRef= or XYIndRefFile= (zero corpus
+!    coverage; broken since the 107x107 table replaced the 5x5).
+!    ndim = largest odd integer with ndim**2 <= mLenslet.
+	ndim=INT(SQRT(DBLE(mLenslet)))
+	If (MOD(ndim,2).EQ.0) ndim=ndim-1
+	nn=(ndim-1)/2; k=1
+	Do r=-nn,nn
+	  Do c=-nn,nn
 	    RecLensletIdx(k)=2*r;
 	    RecLensletIdx(k+1)=2*c;
-	    !print*,'2*r, 2*c =',2*r,2*c
 	    k=k+2
 	  End Do
 	End Do
 	nRecLenlets=ndim*ndim
+!<--
 #endif
 
       

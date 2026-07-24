@@ -217,7 +217,8 @@ C fixed by Gopal Vasudevan:
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
+        IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).NE.10)
+     &	    .AND.(SrfType(iElt).NE.11)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -229,6 +230,35 @@ C fixed by Gopal Vasudevan:
 	    CALL DMPROD(D1,Q,zMon(1,iElt),3,3,1)
 	    CALL DEQUATE(zMon(1,iElt),D1,3)
 	  END IF
+
+	  IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)
+     &      .OR.(SrfType(iElt).EQ.SrfType_FreeForm)) THEN
+	    CALL DSUB(D1,pData(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,iElt),D2,3)
+	    CALL DADD(pData(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,iElt),3,3,1)
+	    CALL DEQUATE(xData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,iElt),3,3,1)
+	    CALL DEQUATE(yData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,iElt),3,3,1)
+	    CALL DEQUATE(zData(1,iElt),D1,3)
+	  END IF
+
+!-->  FreeForm FF coordinate frame
+	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	    CALL DSUB(D1,pFF(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pFF(1,iElt),D2,3)
+	    CALL DADD(pFF(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xFF(1,iElt),3,3,1)
+	    CALL DEQUATE(xFF(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yFF(1,iElt),3,3,1)
+	    CALL DEQUATE(yFF(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zFF(1,iElt),3,3,1)
+	    CALL DEQUATE(zFF(1,iElt),D1,3)
+	  END IF
+!<--
 	END IF
 
 	If (LLocCoord .and. LUpdateTElt_FLG(iElt)) Then
@@ -257,6 +287,182 @@ C fixed by Gopal Vasudevan:
 
 C***********************************************************************
 #include "lnk_pert.inc"
+C***********************************************************************
+
+C  ---------------------------------------------------------------------
+C  Programmatic (non-interactive) variant of CPERTURB for one element.
+C
+C  Identical math to CPERTURB's element-perturbation branch (iElt > 0;
+C  source perturbations not supported here -- iElt=0 returns silently),
+C  but takes the perturbation vectors as input args instead of
+C  prompting via DACCEPT.  Intended for programmatic callers (pymacos,
+C  smacos drivers); CPERTURB remains the interactive entry point.
+C
+C  Args:
+C    iElt          : element index (1..nElt).  iElt <= 0 is a no-op.
+C    th(3)         : rotation perturbation vector (x, y, z), radians
+C    del(3)        : translation perturbation vector (x, y, z),
+C                    in prescription BaseUnits
+C    useLocalCoord : .true.  -> (th, del) are in element-local coords
+C                               (converted to global via TElt)
+C                    .false. -> already in global coords
+C  ---------------------------------------------------------------------
+	SUBROUTINE CPERTURB_PROG(iElt, th_in, del_in, useLocalCoord)
+	use param_mod
+	use src_mod
+	use elt_mod
+	use math_mod
+	use traceutil_mod, only : CRIncidPosNom
+
+	IMPLICIT NONE
+
+	INTEGER, INTENT(IN) :: iElt
+	REAL*8,  INTENT(IN) :: th_in(3), del_in(3)
+	LOGICAL, INTENT(IN) :: useLocalCoord
+
+	INTEGER i, j, k
+	LOGICAL LLocCoord
+	REAL*8  th(3), del(3), Q(3,3), dQ(3,3), D1(9), D2(9), PV(6)
+
+	IF (iElt .LE. 0) RETURN  ! source-perturb path not supported here
+
+C  1. Convert local-frame input to global if requested.
+	IF (useLocalCoord .AND. nECoord(iElt) .GT. 0) THEN
+	  k = nECoord(iElt)
+	  DO i=1,3
+	    D1(i) = th_in(i); D1(i+3) = del_in(i)
+	  END DO
+	  CALL DMPROD(PV, TElt(1,1,iElt), D1, 6, k, 1)
+	  DO i=1,3
+	    th(i) = PV(i); del(i) = PV(i+3)
+	  END DO
+	  LLocCoord = .TRUE.
+	ELSE
+	  DO i=1,3
+	    th(i) = th_in(i); del(i) = del_in(i)
+	  END DO
+	  LLocCoord = .FALSE.
+	END IF
+
+C  2. Apply rotation+translation to the element's coordinate frame.
+	CALL Qform(Q, dQ, th)
+	CALL DMPROD(D1, Q, psiElt(1,iElt), 3, 3, 1)
+C	Renormalize psiElt: sin²(θ) + cos²(θ) ≠ 1 exactly in IEEE 754
+C	for some θ, so a round-trip perturb(+θ) + perturb(-θ) leaves
+C	psi off by 1 ULP and slowly drifts under many perturbs.
+C	Produces a ~3e-14 OPD round-trip residual without this guard.
+C	See PLAN.md §0 and MACOS_resources/mmacos/test_state_after_roundtrip.m
+	psiElt(1:3,iElt) = D1(1:3) / SQRT(D1(1)**2+D1(2)**2+D1(3)**2)
+
+	CALL DSUB(D1, VptElt(1,iElt), RptElt(1,iElt), 3)
+	CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	CALL DADD(D1, VptElt(1,iElt), D2, 3)
+	CALL DADD(VptElt(1,iElt), D1, del, 3)
+
+	CALL DADD(D1, RptElt(1,iElt), del, 3)
+	CALL DEQUATE(RptElt(1,iElt), D1, 3)
+
+C  3. CRIncidPosNom (chief-ray nominal incidence position) moves with element
+	CALL DSUB(D1, CRIncidPosNom(1,iElt), RptElt(1,iElt), 3)
+	CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	CALL DADD(D1, CRIncidPosNom(1,iElt), D2, 3)
+	CALL DADD(CRIncidPosNom(1,iElt), D1, del, 3)
+
+C  4. Metrology surface points (if any)
+	IF (nMetPos(iElt) .GT. 0) THEN
+	  DO j=1,nMetPos(iElt)
+	    CALL DSUB(D1, SrfMetPos(1,j,iEltToMetSrf(iElt)),
+     &                RptElt(1,iElt), 3)
+	    CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	    CALL DADD(D1, SrfMetPos(1,j,iEltToMetSrf(iElt)), D2, 3)
+	    CALL DADD(SrfMetPos(1,j,iEltToMetSrf(iElt)), D1, del, 3)
+	  END DO
+	END IF
+
+C  5. Aperture (xObs) rotates with the element (translation already in VptElt)
+	CALL DMPROD(D1, Q, xObs(1,iElt), 3, 3, 1)
+	CALL DEQUATE(xObs(1,iElt), D1, 3)
+
+C  6. HOE points (EltID 4, 5, 13)
+	IF ((EltID(iElt).EQ.4).OR.(EltID(iElt).EQ.5).OR.
+     &      (EltID(iElt).EQ.13)) THEN
+	  CALL DSUB(D1, h1HOE(1,iElt), RptElt(1,iElt), 3)
+	  CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	  CALL DADD(D1, h1HOE(1,iElt), D2, 3)
+	  CALL DADD(h1HOE(1,iElt), D1, del, 3)
+	  CALL DSUB(D1, h2HOE(1,iElt), RptElt(1,iElt), 3)
+	  CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	  CALL DADD(D1, h2HOE(1,iElt), D2, 3)
+	  CALL DADD(h2HOE(1,iElt), D1, del, 3)
+	END IF
+
+C  7. Mon coordinate frame (SrfType>=4 .and. /=10 .and. /=11 -- all
+C     Mon-using element types incl. FreeForm)
+	IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).NE.10)
+     &      .AND.(SrfType(iElt).NE.11)) THEN
+	  CALL DSUB(D1, pMon(1,iElt), RptElt(1,iElt), 3)
+	  CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	  CALL DADD(D1, pMon(1,iElt), D2, 3)
+	  CALL DADD(pMon(1,iElt), D1, del, 3)
+	  CALL DMPROD(D1, Q, xMon(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(xMon(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, yMon(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(yMon(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, zMon(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(zMon(1,iElt), D1, 3)
+	END IF
+
+C  8. pData / grid coordinate frame (SrfType 12, 13, FreeForm)
+	IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)
+     &      .OR.(SrfType(iElt).EQ.SrfType_FreeForm)) THEN
+	  CALL DSUB(D1, pData(1,iElt), RptElt(1,iElt), 3)
+	  CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	  CALL DADD(D1, pData(1,iElt), D2, 3)
+	  CALL DADD(pData(1,iElt), D1, del, 3)
+	  CALL DMPROD(D1, Q, xData(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(xData(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, yData(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(yData(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, zData(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(zData(1,iElt), D1, 3)
+	END IF
+
+C  9. FreeForm FF coordinate frame
+	IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	  CALL DSUB(D1, pFF(1,iElt), RptElt(1,iElt), 3)
+	  CALL DMPROD(D2, dQ, D1, 3, 3, 1)
+	  CALL DADD(D1, pFF(1,iElt), D2, 3)
+	  CALL DADD(pFF(1,iElt), D1, del, 3)
+	  CALL DMPROD(D1, Q, xFF(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(xFF(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, yFF(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(yFF(1,iElt), D1, 3)
+	  CALL DMPROD(D1, Q, zFF(1,iElt), 3, 3, 1)
+	  CALL DEQUATE(zFF(1,iElt), D1, 3)
+	END IF
+
+C 10. TElt frame matrix update (only in local-coord mode)
+	IF (LLocCoord .AND. LUpdateTElt_FLG(iElt)) THEN
+	  DO j=1,3
+	    CALL DMPROD(D1, Q, TElt(1:3,j,iElt), 3, 3, 1)
+	    CALL DEQUATE(TElt(1:3,j,iElt), D1, 3)
+	    CALL DMPROD(D1, Q, TElt(4:6,3+j,iElt), 3, 3, 1)
+	    CALL DEQUATE(TElt(4:6,3+j,iElt), D1, 3)
+	  END DO
+	END IF
+
+C 11. Linked element (if any) -- recurse via LnkEltCPERTURB
+	DO i=1, nElt
+	  IF (LnkElt(i) .EQ. iElt) THEN
+	    CALL LnkEltCPERTURB(i, th, del, LLocCoord,
+     &                          LUpdateTElt_FLG(iElt))
+	    EXIT
+	  END IF
+	END DO
+
+	END SUBROUTINE CPERTURB_PROG
+
+
 C***********************************************************************
 
 	SUBROUTINE CPRead(PertVec,ifPertRead,iPertElt)
@@ -347,7 +553,8 @@ C  Apply perturbations to each element
 	    CALL DADD(h2HOE(1,iElt),D1,del,3)
 	  END IF
 
-	  IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).LE.9)) THEN
+        IF ((SrfType(iElt).GE.4).AND.(SrfType(iElt).NE.10)
+     &	    .AND.(SrfType(iElt).NE.11)) THEN
 	    CALL DSUB(D1,pMon(1,iElt),RptElt(1,iElt),3)
 	    CALL DMPROD(D2,dQ,D1,3,3,1)
 	    CALL DADD(D1,pMon(1,iElt),D2,3)
@@ -359,6 +566,35 @@ C  Apply perturbations to each element
 	    CALL DMPROD(D1,Q,zMon(1,iElt),3,3,1)
 	    CALL DEQUATE(zMon(1,iElt),D1,3)
 	  END IF
+
+	  IF ((SrfType(iElt).EQ.12).OR.(SrfType(iElt).EQ.13)
+     &      .OR.(SrfType(iElt).EQ.SrfType_FreeForm)) THEN
+	    CALL DSUB(D1,pData(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,iElt),D2,3)
+	    CALL DADD(pData(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,iElt),3,3,1)
+	    CALL DEQUATE(xData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,iElt),3,3,1)
+	    CALL DEQUATE(yData(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,iElt),3,3,1)
+	    CALL DEQUATE(zData(1,iElt),D1,3)
+	  END IF
+
+!-->  FreeForm FF coordinate frame
+	  IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	    CALL DSUB(D1,pFF(1,iElt),RptElt(1,iElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pFF(1,iElt),D2,3)
+	    CALL DADD(pFF(1,iElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xFF(1,iElt),3,3,1)
+	    CALL DEQUATE(xFF(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,yFF(1,iElt),3,3,1)
+	    CALL DEQUATE(yFF(1,iElt),D1,3)
+	    CALL DMPROD(D1,Q,zFF(1,iElt),3,3,1)
+	    CALL DEQUATE(zFF(1,iElt),D1,3)
+	  END IF
+!<--
   6	CONTINUE
 	RETURN
 
@@ -1055,7 +1291,8 @@ C fixed by Gopal Vasudevan:
           CALL DADD(h2HOE(1,jElt),D1,del,3)
         END IF
 
-        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).LE.9)) THEN
+        IF ((SrfType(jElt).GE.4).AND.(SrfType(jElt).NE.10)
+     &	    .AND.(SrfType(jElt).NE.11)) THEN
           ! update pMon(*,jElt)
           CALL DSUB(D1,pMon(1,jElt),rptVec,3)
           CALL DMPROD(D2,dQ,D1,3,3,1)
@@ -1074,6 +1311,35 @@ C fixed by Gopal Vasudevan:
           CALL DMPROD(D1,Q,zMon(1,jElt),3,3,1)
           CALL DEQUATE(zMon(1,jElt),D1,3)
         END IF
+
+	IF ((SrfType(jElt).EQ.12).OR.(SrfType(jElt).EQ.13)
+     &      .OR.(SrfType(jElt).EQ.SrfType_FreeForm)) THEN
+	    CALL DSUB(D1,pData(1,jElt),RptElt(1,jElt),3)
+	    CALL DMPROD(D2,dQ,D1,3,3,1)
+	    CALL DADD(D1,pData(1,jElt),D2,3)
+	    CALL DADD(pData(1,jElt),D1,del,3)
+	    CALL DMPROD(D1,Q,xData(1,jElt),3,3,1)
+	    CALL DEQUATE(xData(1,jElt),D1,3)
+	    CALL DMPROD(D1,Q,yData(1,jElt),3,3,1)
+	    CALL DEQUATE(yData(1,jElt),D1,3)
+	    CALL DMPROD(D1,Q,zData(1,jElt),3,3,1)
+	    CALL DEQUATE(zData(1,jElt),D1,3)
+	END IF
+
+!-->  FreeForm FF coordinate frame
+        IF (SrfType(jElt).EQ.SrfType_FreeForm) THEN
+          CALL DSUB(D1,pFF(1,jElt),rptVec,3)
+          CALL DMPROD(D2,dQ,D1,3,3,1)
+          CALL DADD(D1,pFF(1,jElt),D2,3)
+          CALL DADD(pFF(1,jElt),D1,del,3)
+          CALL DMPROD(D1,Q,xFF(1,jElt),3,3,1)
+          CALL DEQUATE(xFF(1,jElt),D1,3)
+          CALL DMPROD(D1,Q,yFF(1,jElt),3,3,1)
+          CALL DEQUATE(yFF(1,jElt),D1,3)
+          CALL DMPROD(D1,Q,zFF(1,jElt),3,3,1)
+          CALL DEQUATE(zFF(1,jElt),D1,3)
+        END IF
+!<--
 
         If (lloc .and. LUpdateTElt_FLG(jElt)) Then
           ! TElt(1:6,1:6,jElt) is updated here

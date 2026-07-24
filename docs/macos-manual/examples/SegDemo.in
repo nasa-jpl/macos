@@ -1,0 +1,248 @@
+% SegmentDemo.in -- prescription file for SegmentDemo.jou, a MACOS demon-
+stration
+%   macro.
+
+ChfRayDir=    0d0 0d0 -1d0
+ChfRayPos=    0d0 0d0 1.5d+00
+ zSource=     1.d+19
+  IndRef=     1d0
+  Extinc=     0d0
+ Wavelen=     1.d-04
+    Flux=     1d0
+GridType=     Pie
+Aperture=     3.65d+00
+Obscratn=     3.d-01
+nGridpts=     25
+   xGrid=     1d0 0d0 0d0
+   yGrid=     0d0 1d0 0d0
+    nElt=     10
+    nSeg=      7
+   width=     1.2d+00
+     gap=     0d0
+SegXgrid=     1d0    0d0    0d0
+SegCoord=       0         0             0
+                1        -1            -2
+                2         1            -1
+                1         2             1
+               -1         1             2
+               -2        -1             1
+               -1        -2            -1
+
+    iElt=    1
+ EltName= S1
+ Element= Segment
+ Surface= Conic
+   KrElt= -2.92d+00
+   KcElt= -1d0
+  psiElt=   0d0 0d0 1d0
+  VptElt=   0d0 0d0 0d0
+  RptElt=   0d0 0d0 0d0
+  IndRef=   1d0
+  Extinc=   1d22
+    nObs=    0
+  ApType=   None
+    zElt=   1.46d+00
+PropType=   Geometric
+
+      nECoord=   -6
+
+          iElt=    2
+       EltName= S2
+       Element= Segment
+       Surface= Conic
+         KrElt= -2.92d+00
+         KcElt= -1d0
+        psiElt=   0d0 0d0 1d0
+        VptElt=   0d0 0d0 0d0
+        RptElt=   6.124997330D-01 -1.060881274D+00 2.569563356D-01
+        IndRef=   1d0
+        Extinc=   1d22
+          nObs=    0
+        ApType=   None
+          zElt=   1.46d+00
+      PropType=   Geometric
+       nECoord=    6
+          TElt=   4.610697370D-01 8.660255296D-01 -1.934282287D-01 0d0 0d0 0d0
+                 -7.985966745D-01 4.999997821D-01 3.350277145D-01 0d0 0d0 0d0
+                  3.868566261D-01 -1.885624059D-18 9.221398760D-01 0d0 0d0 0d0
+                  0d0 0d0 0d0 4.610697370D-01 8.660255296D-01 -1.934282287D-01
+                  0d0 0d0 0d0 -7.985966745D-01 4.999997821D-01 3.350277145D-01
+                  0d0 0d0 0d0 3.868566261D-01 -1.885624059D-18 9.221398760D-01
+
+          iElt=    3
+       EltName= S3
+       Element= Segment
+       Surface= Conic
+         KrElt= -2.92d+00
+         KcElt= -1d0
+        psiElt=   0d0 0d0 1d0
+        VptElt=   0d0 0d0 0d0
+        RptElt=   1.225d+00 -3.699397078D-07 2.569563356D-01
+        IndRef=   1d0
+        Extinc=   1d22
+          nObs=    0
+        ApType=   None
+          zElt=   1.46d+00
+      PropType=   Geometric
+       nECoord=    6
+          TElt=   9.221398760D-01 3.019915982D-07 -3.868566261D-01 0d0 0d0 0d0
+                 -2.784784949D-07 1d0 1.168274508D-07 0d0 0d0 0d0
+                  3.868566261D-01 3.238991466D-24 9.221398760D-01 0d0 0d0 0d0
+                  0d0 0d0 0d0 9.221398760D-01 3.019915982D-07 -3.868566261D-01
+                  0d0 0d0 0d0 -2.784784949D-07 1d0 1.168274508D-07
+                  0d0 0d0 0d0 3.868566261D-01 3.238991466D-24 9.221398760D-01
+
+          iElt=    4
+       EltName= S4
+       Element= Segment
+       Surface= Conic
+         KrElt= -2.92d+00
+         KcElt= -1d0
+        psiElt=   0d0 0d0 1d0
+        VptElt=   0d0 0d0 0d0
+        RptElt=   6.125003738D-01     1.060880904D+00       2.569563356D-01
+        IndRef=   1d0
+        Extinc=   1d22
+          nObs=    0
+        ApType=   None
+          zElt=   1.46d+00
+      PropType=   Geometric
+       nECoord=    6
+
+   TElt=   4.610702194D-01 -8.660252276D-01 -1.934284311D-01 0d0 0d0 0d0
+           7.985963960D-01 5.000003051D-01 -3.350275976D-01 0d0 0d0 0d0
+           3.868566261D-01 2.270467800D-17 9.221398760D-01 0d0 0d0 0d0
+           0d0 0d0 0d0 4.610702194D-01 -8.660252276D-01 -1.934284311D-01
+           0d0 0d0 0d0 7.985963960D-01 5.000003051D-01 -3.350275976D-01
+           0d0 0d0 0d0 3.868566261D-01 2.270467800D-17 9.221398760D-01
+
+    iElt=    5
+ EltName= S5
+ Element= Segment
+ Surface= Conic
+   KrElt= -2.92d+00
+   KcElt= -1d0
+  psiElt=   0d0 0d0 1d0
+  VptElt=   0d0 0d0 0d0
+  RptElt= -6.124995728D-01 1.060881366D+00 2.569563356D-01
+  IndRef=   1d0
+  Extinc=   1d22
+    nObs=    0
+  ApType=   None
+    zElt=   1.46d+00
+PropType=   Geometric
+ nECoord=    6
+    TElt= -4.610696164D-01 -8.660256051D-01 1.934281781D-01 0d0 0d0 0d0
+            7.985967441D-01 -4.999996513D-01 -3.350277437D-01 0d0 0d0 0d0
+            3.868566261D-01 -2.095137844D-19 9.221398760D-01 0d0 0d0 0d0
+            0d0 0d0 0d0 -4.610696164D-01 -8.660256051D-01 1.934281781D-01
+            0d0 0d0 0d0 7.985967441D-01 -4.999996513D-01 -3.350277437D-01
+            0d0 0d0 0d0 3.868566261D-01 -2.095137844D-19 9.221398760D-01
+
+    iElt=    6
+ EltName= S6
+ Element= Segment
+ Surface= Conic
+   KrElt= -2.92d+00
+   KcElt= -1d0
+  psiElt=   0d0 0d0 1d0
+  VptElt=   0d0 0d0 0d0
+  RptElt= -1.225d+00 5.549095617D-07 2.569563356D-01
+  IndRef=   1d0
+  Extinc=   1d22
+    nObs=    0
+  ApType=   None
+    zElt=   1.46d+00
+PropType=   Geometric
+ nECoord=    6
+    TElt= -9.221398760D-01 -4.529873973D-07 3.868566261D-01 0d0 0d0 0d0
+            4.177177424D-07 -1d0 -1.752411762D-07 0d0 0d0 0d0
+            3.868566261D-01 -1.071601397D-23 9.221398760D-01 0d0 0d0 0d0
+            0d0 0d0 0d0 -9.221398760D-01 -4.529873973D-07 3.868566261D-01
+            0d0 0d0 0d0 4.177177424D-07 -1d0 -1.752411762D-07
+            0d0 0d0 0d0 3.868566261D-01 -1.071601397D-23 9.221398760D-01
+
+   iElt=    7
+EltName= S7
+Element= Segment
+Surface= Conic
+  KrElt= -2.92d+00
+  KcElt= -1d0
+
+        psiElt=    0d0 0d0 1d0
+        VptElt=    0d0 0d0 0d0
+        RptElt=   -6.125005340D-01 -1.060880811D+00 2.569563356D-01
+        IndRef=    1d0
+        Extinc=    1d22
+          nObs=     0
+        ApType=    None
+          zElt=    1.46d+00
+      PropType=    Geometric
+       nECoord=     6
+          TElt=   -4.610703399D-01 8.660251521D-01 1.934284817D-01 0d0 0d0 0d0
+                  -7.985963264D-01 -5.000004359D-01 3.350275684D-01 0d0 0d0 0d0
+                   3.868566261D-01 -1.153428518D-17 9.221398760D-01 0d0 0d0 0d0
+                   0d0 0d0 0d0 -4.610703399D-01 8.660251521D-01 1.934284817D-01
+                   0d0 0d0 0d0 -7.985963264D-01 -5.000004359D-01 3.350275684D-01
+                   0d0 0d0 0d0 3.868566261D-01 -1.153428518D-17 9.221398760D-01
+
+          iElt=    8
+       EltName= SecMir
+       Element= Reflector
+       Surface= Conic
+         KrElt= -2.229620353D-01
+         KcElt= -1.174529970D+00
+        psiElt=   0d0 0d0 1d0
+        VptElt=   0d0 0d0 1.353d+00
+        RptElt=   0d0 0d0 1.353d+00
+        IndRef=   1d0
+        Extinc=   1d22
+          nObs=    0
+        ApType=   None
+          zElt=   1.07d-01
+      PropType=   Geometric
+       nECoord=   -6
+
+          iElt=    9
+       EltName= RefSurf
+       Element= Reference
+       Surface= Conic
+         KrElt= -2.6d+00
+         KcElt=   0d0
+        psiElt=   0d0 0d0 -1d0
+        VptElt=   0d0 0d0 1.291d+00
+        RptElt=   0d0 0d0 1.291d+00
+        IndRef=   1d0
+        Extinc=   1d22
+          nObs=    0
+        ApType=   None
+          zElt=   2.6d+00
+      PropType=   FarField
+       nECoord=   -6
+
+         iElt=   10
+      EltName= FclPlane
+      Element= FocalPlane
+      Surface= Flat
+        KrElt=   0d0
+        KcElt= -1.d+38
+       psiElt=   0d0 0d0 -1d0
+       VptElt=   0d0 0d0 -1.309d+00
+       RptElt=   0d0 0d0 -1.309d+00
+       IndRef=   1d0
+       Extinc=   1d22
+         nObs=    0
+       ApType=   None
+
+    zElt=   1.d+19
+PropType=   Geometric
+ nECoord=   -6
+
+nOutCord=    5
+    Tout=   1d0   0d0   0d0    0d0   0d0   0d0    0d0
+            0d0   1d0   0d0    0d0   0d0   0d0    0d0
+            0d0   0d0   0d0    1d0   0d0   0d0    0d0
+            0d0   0d0   0d0    0d0   1d0   0d0    0d0
+            0d0   0d0   0d0    0d0   0d0   0d0    1d0
+
+        A.6 Near-Field Propagation Example

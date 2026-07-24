@@ -1,0 +1,20 @@
+% This macro generates more example figures
+% for Section 2 of the MACOS User Manual
+
+old CassWithExitPupil
+modify ngridpts=128 q
+perturb 3 global 0,0,0 0,0,1e-4
+stop obj 0,0,0
+fex 5 yes
+opd 5 Tout                                                         % Fig 6a
+perturb 2 global 0,1e-4,0 0,0,0
+opd 5 Tout                                                         % Fig 6b
+
+old CassWithExitPupil
+modify ngridpts=64 q
+stop obj 0,0,0
+fex 5 yes
+intensity 6                                                        % Fig 10a
+perturb 2 global 0,1e-4,0 0,0,0
+fex 5 yes
+intensity 6                                                        % Fig 10b
