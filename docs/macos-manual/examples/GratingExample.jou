@@ -1,0 +1,19 @@
+% This macro generates example figures
+% for Section 4 of the MACOS User Manual
+
+old GratingExample
+
+mod OrderHOE(1)=0 q
+draw;;;;
+
+mod OrderHOE(1)=1 q
+draw;;;;                                                            % Fig ??
+
+mod OrderHOE(1)=2 q
+draw;;;;
+
+mod OrderHOE(1)=-1 q
+draw;;;;
+
+mod OrderHOE(1)=-2 q
+draw;;;;                                                            % Fig ??

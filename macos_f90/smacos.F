@@ -60,6 +60,8 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+	use sysprop_mod, only: DeriveSysProps, PrintSysProps
+	use plot_mode_mod
 
 	use math_mod
 	use smacosio_mod
@@ -73,9 +75,14 @@ C***********************************************************************
 	use dopt_mod
 	use smacos_vars_mod
  	use design_optim_mod
-	!use design_cons_optim_mod
+#ifdef USE_NPSOL
+	use design_cons_optim_mod
+#endif
+	use design_slsqp_optim_mod
 	use stop_set_mod
+	use pgplot_mod
 	use loh_I1, only : BaseUnits_FLG
+        use validate_prescription_mod, only: ValidatePrescription
 
 	IMPLICIT NONE
 
@@ -95,9 +102,8 @@ C***********************************************************************
 	SREAL, intent(out), dimension(:,:) :: PixArray
         Real*8, intent(out), dimension(:,:) :: OPDMat,RaySpot
 
-	INTEGER :: ICLEN,STRLEN
-	LOGICAL :: LCMP
-
+        INTEGER, EXTERNAL :: ICLEN,STRLEN
+        LOGICAL, EXTERNAL :: LCMP
 
 c***loh	Declares for journal and batch files
 	! INTEGER row_sz,col_sz
@@ -148,6 +154,8 @@ C
 
 	  mVarDOF_nls   = mVarDOF    ! mVarDOF_nls and mOptZern_nls
 	  mOptZern_nls  = mOptZern  ! are defined in design_optim_mod
+	  mVarDOF_sls   = mVarDOF    ! design_slsqp_optim_mod copies
+	  mOptZern_sls  = mOptZern
 
 	  Call dopt_init
 	End If

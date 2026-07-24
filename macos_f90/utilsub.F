@@ -468,8 +468,8 @@ C***********************************************************************
      &	              na,na,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                dxElt(iElt),dxElt(iElt), iElt)
 	ELSE IF (iPloTyp.NE.0) THEN
-	  ! Screen output
-	  CTITLE=CTEXT(1:k)//', Elt='//CEltNum(1:i)//', File='//filnam
+	  ! Screen output.  Title style matches OPD: "<kind>, Surface N".
+	  CTITLE=CTEXT(1:k)//', Surface '//CEltNum(1:i)//', File='//filnam
 	  CALL SRFPLT(iPloTyp,XFP,YFP,MWFFT,
      &	    np,np,na,na,CXLABL,CYLABL,CTITLE,R1,R2,StretchType)
 C    &	    np,np,na,na,'X-Axis','Y-Axis',CTITLE,R1,R2,StretchType)
@@ -505,7 +505,7 @@ C***********************************************************************
      &	              na,na,'X-Axis','Y-Axis',CTITLE,imgfil,
      &                dxElt(iElt), dxElt(iElt), iElt)
 	ELSE IF (iPloTyp.NE.0) THEN
-	  CTITLE=CTEXT(1:k)//', Elt='//CEltNum(1:i)//', File='//filnam
+	  CTITLE=CTEXT(1:k)//', Surface '//CEltNum(1:i)//', File='//filnam
 	  CALL SRFPLT(iPloTyp,XFP,YFP,PixArray,
      &	  np,np,na,na,'X-Axis','Y-Axis',CTITLE,R1,R2,StretchType)
 	END IF
@@ -617,7 +617,7 @@ C        linear rather than arc lengths!
 	    ! so try to search all line slices to find the slice with the
             ! most valid rays. -jzlou
 
-	    lmax=0
+	    lmax=0; iimax=1
 	    Do ii=1,npts
               j=(ii-1)*npts+1; nd2=j+npts-1
 	      l=0
@@ -629,6 +629,13 @@ C        linear rather than arc lengths!
 	      End If
 	    END DO
 
+!--> When EVERY slice has zero valid rays (all rays obscured/lost),
+!    iimax was never assigned above -- the second pass then indexed
+!    LRayOK from an uninitialized j and SIGSEGVed under ifx (the
+!    PLAN section-0 "opd on all-lost rays" crash).  Skip the second
+!    pass instead: l stays 0, the warning below fires, and the
+!    dxRef/dxElt degenerate-beam guards take over gracefully.
+	    If (lmax.GT.0) Then
 	    j=(iimax-1)*npts+1; nd2=j+npts-1
             dxMin=1d10; dxMax=0d0; dxAvg=0d0
 	    l=0
@@ -646,6 +653,11 @@ C        linear rather than arc lengths!
 	      END IF
 	    End Do ! loop i
 	    !if (l.GE.10) exit
+	    Else
+	      l=0
+	      dxMin=1d10; dxMax=0d0; dxAvg=0d0
+	    End If
+!<--
 	  End If
 
 	  !print*,'** l =', l
@@ -660,8 +672,13 @@ C        linear rather than arc lengths!
           IF (l.GT.2) THEN
             !dxRef=(dxAvg-dxMin-dxMax)/DBLE(l-2)
 	    dxRef = med(dx,l)
-          ELSE
+          ELSE IF (l.GE.1) THEN
             dxRef=dx(l)
+          ELSE
+            dxRef=1d0   ! l==0 degenerate beam: avoid dx(0).  The DO-3
+                        ! loop below is empty (i=1,0), so j stays 0 and
+                        ! dxElt=1d10 (graceful -- matches the l==0
+                        ! warning above instead of SIGSEGV-ing).
           END IF
 
 
@@ -1351,7 +1368,7 @@ C Several routines supporting LensArray and Refractor with variable IndRef
 
 	Subroutine InitLensletIndexAndCtr(type,width,iElt)
 	use traceutil_mod, only : LensletStrArray,nHexLenlets,nRecLenlets,
-     &                      HexLensletIdx,RecLensletIdx
+     &                      HexLensletIdx,RecLensletIdx,mLenslet
 	Implicit none
 	Real*8, parameter :: tan30=5.773502691896257d-01
 	Real*8 :: width,w2,xhat(2),yhat(2),xseg,yseg
@@ -1363,6 +1380,16 @@ C Several routines supporting LensArray and Refractor with variable IndRef
 #include "lensarr_indexes.inc"
 	  first_entry=.false.
 	End If
+
+!--> defense in depth (SAVE-audit fix): never copy more lenslets
+!    than LensletStrArray can hold
+	If (nHexLenlets.GT.mLenslet .OR. nRecLenlets.GT.mLenslet) Then
+	  WRITE(*,*)' **InitLensletIndexAndCtr: lenslet table larger',
+     &      ' than mLenslet =',mLenslet,' -- clamped'
+	  nHexLenlets=MIN(nHexLenlets,mLenslet)
+	  nRecLenlets=MIN(nRecLenlets,mLenslet)
+	End If
+!<--
 
 	w2=0.5*width
 	k=1

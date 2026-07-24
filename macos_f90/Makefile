@@ -16,41 +16,41 @@ export SRC_DIR := "$(PWD)"
 export BUILD_LOC := $(SRC_DIR)
 
 # Current Revision:
-export SVN_REV := $(shell svnversion)
+# export SVN_REV := $(shell svnversion)
 
 # Determine our platform and 32-bit vs. 64-bit
 OS := $(shell uname -s)
 ifeq ($(OS),Darwin)
-    PLATFORM := $(shell uname -p)
-    ARCH     := $(OS)-$(PLATFORM)
-    Make.T   := Make-$(ARCH).T
-    FFT_LIB  := NR_FFT
+	PLATFORM := $(shell uname -p)
+	ARCH     := $(OS)-$(PLATFORM)
+	Make.T   := Make-$(ARCH).T
+	FFT_LIB  := NR_FFT
 else
-    PLATFORM := $(shell uname -i)
-    ifeq ($(PLATFORM),x86_64)
-	OS      := LNXOS64
-	ARCH    := Linux-x86_64
-	Make.T  := Make-$(ARCH).T
-	FFT_LIB := NR_FFT
-	# FFT_LIB = INTEL_FFT_LIB
-	# FFT_LIB = FFTW_LIB
-    endif
+	PLATFORM := $(shell uname -i)
+	ifeq ($(PLATFORM),x86_64)
+		OS      := LNXOS64
+		ARCH    := Linux-x86_64
+		Make.T  := Make-$(ARCH).T
+		FFT_LIB := NR_FFT
+		# FFT_LIB = INTEL_FFT_LIB
+		# FFT_LIB = FFTW_LIB
+	endif
 
-    ifeq ($(PLATFORM),i386)
-	OS      := LNXOS32
-	ARCH    := Linux-i386
-	Make.T  := Make-$(ARCH).T
-	FFT_LIB := NR_FFT
-	# FFT_LIB = INTEL_FFT_LIB
-	# FFT_LIB = FFTW_LIB
-    endif
+	ifeq ($(PLATFORM),i386)
+		OS      := LNXOS32
+		ARCH    := Linux-i386
+		Make.T  := Make-$(ARCH).T
+		FFT_LIB := NR_FFT
+		# FFT_LIB = INTEL_FFT_LIB
+		# FFT_LIB = FFTW_LIB
+	endif
 
-    ifeq ($(findstring SUNW,$(PLATFORM)),SUNW)
+	ifeq ($(findstring SUNW,$(PLATFORM)),SUNW)
 	OS     := SUNOS
 	ARCH   := SUNW-$(shell uname -p)
 	Make.T := Make-Sun.T
 	MACOSDIR := /home/jzlou/macos-vY/macos-v3.2b
-    endif
+	endif
 endif
 
 export M_OBJS_DIR    := MACOS_OBJS/$(ARCH)
@@ -65,7 +65,8 @@ export smacoslib     := smacos_lib
 #### Compilers:
 #export FC = f95
 #export FC = ifx -Ofast -xhost -fPIC -132 -traceback -check bounds,stack
-export FC = ifx -Ofast -xhost -fPIC -132 -traceback
+export OPT ?= -Ofast
+export FC = ifx $(OPT) -xhost -fPIC -132 -traceback
 
 #export FC = gfortran -fPIC
 export CC = gcc -fPIC
@@ -169,8 +170,16 @@ macosv3d: $(MV3D_OBJS_DIR)_Makefile rm_macos rm_macosv3d make-obj-dirs
 smacos: $(SM_OBJS_DIR)_Makefile rm_smacos make-obj-dirs
 	(cd $(SM_OBJS_DIR); $(MAKE) DEFINES="$(DEFINES) -DCSMACOS" $(smacoslib).o)
 
-smacosdvr: $(SM_OBJS_DIR)_Makefile rm_smacos_dvr
-	(cd $(SM_OBJS_DIR); $(MAKE) DEFINES="$(DEFINES) -DCSMACOS" smacos_dvr)
+smacos_dvr: $(M_OBJS_DIR)_Makefile make-obj-dirs
+	$(FC) -g $(DEFINES) -DCMACOS -DBUILD_LOC="'$(macossrc_dir)'" \
+	  -I$(M_OBJS_DIR) -I$(SM_OBJS_DIR) -c smacos_dvr.F -o $(M_OBJS_DIR)/smacos_dvr.o
+	$(FC) -o smacos_dvr $(M_OBJS_DIR)/smacos_dvr.o \
+	  $(M_OBJS_DIR)/macosio.o $(M_OBJS_DIR)/pgplotsub.o \
+	  $(M_OBJS_DIR)/macos_vars_mod.o $(M_OBJS_DIR)/macos_mod.o \
+	  $(SM_OBJS_DIR)/smacos_lib.a \
+	  -L$(intel64_lib) -limf -lintlc -lifport -lifcore \
+	  -L/usr/lib64 -lX11 \
+	  -L$(macossrc_dir)/pgplot -lpgplot
 
 $(M_OBJS_DIR)_Makefile: $(Make.T)
 	if [ ! -d $(M_OBJS_DIR) ]; then mkdir -p $(M_OBJS_DIR); fi;
@@ -185,6 +194,9 @@ $(SM_OBJS_DIR)_Makefile: $(Make.T)
 	cp $(Make.T) $(SM_OBJS_DIR)/Makefile
 
 rm_macos:
+	-rm -f macos
+	-rm -f "macos-$(ARCH)"
+
 rm_macosv3d:
 	rm -f macos-$(ARCH) $(M_OBJS_DIR)/macos macosv3d-$(ARCH) $(M_OBJS_DIRS)/macosv3d
 

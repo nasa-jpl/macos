@@ -119,6 +119,19 @@ C***********************************************************************
         END SUBROUTINE SetSourceRay
         !
         ! --------------------------------------------------------------
+        ! Src. zGrid is in direction of ChfRayDir and yGrid from
+        ! previous Src. definition
+        logical function UpdSrcGrid() result(ok)
+          use src_mod,  only: ChfRayDir, xGrid, yGrid, zGrid
+          use math_mod, only: define_local_csys
+          implicit none
+          ! - - - - - - - - - - - - - - -
+
+          call define_local_csys(ChfRayDir, xGrid, yGrid, zGrid, ok, yGrid)
+
+	end function UpdSrcGrid
+        !
+        ! --------------------------------------------------------------
         !
 
 ! Argument npts is declared in macos.F, and read in from Rx
@@ -1087,6 +1100,19 @@ C  Dipole beam...
 
 
 	  ELSE IF (BeamType.EQ.5) THEN
+	    ! ds1/ds2 (src_mod) + dsc/DWF_loc are model-sized (mpts/mdttl);
+	    ! src_mod_init_vars only ZEROS ds1/ds2, so a model-size transition
+	    ! (macos_init_all) leaves this group at the OLD size and the writes
+	    ! below overflow -> heap corruption (§0 allocate-once class).
+	    ! Regrow when too small; the beam is rebuilt from scratch here.
+	    If (allocated(ds1)) Then
+	      If (size(ds1,1).LT.mpts) Then
+	        if (allocated(ds1))     deallocate(ds1)
+	        if (allocated(ds2))     deallocate(ds2)
+	        if (allocated(dsc))     deallocate(dsc)
+	        if (allocated(DWF_loc)) deallocate(DWF_loc)
+	      End If
+	    End If
 	    If (.not. allocated(ds1)) Then
 	      allocate(ds1(mpts,mpts),ds2(mpts,mpts),
      &               dsc(mdttl,mdttl),DWF_loc(mdttl,mdttl),

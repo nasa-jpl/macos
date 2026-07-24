@@ -5,6 +5,12 @@ C       Set entrance condition flags to .FALSE.
 
           CALL LOHIN1()
 
+!--> arm whole-line comment capture for this load (PLAN sec.0 item 3)
+          nRxComment        = 0
+          RxCommentCtx      = 0
+          LRxCommentCapture = .TRUE.
+!<--
+
   50      CONTINUE   ! This section is for header part of Rx
 
           READ(RX_FID, 123, END=99) STRING
@@ -549,6 +555,303 @@ C       Set entrance condition flags to .FALSE.
             nGridpts_FLG=.TRUE.
             GO TO 50
 
+          !<--
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              pData_FLG=.TRUE.
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
+              READ(VALUE,*)lData(iElt)
+              lData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
+              READ(VALUE,*)lFF(iElt)
+              lFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
+              READ(VALUE,*)(pFF(j,iElt),j=1,3)
+              pFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
+              READ(VALUE,*)(xFF(j,iElt),j=1,3)
+              xFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
+              READ(VALUE,*)(yFF(j,iElt),j=1,3)
+              yFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
+              READ(VALUE,*)(zFF(j,iElt),j=1,3)
+              zFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
+              BLOCK
+                INTEGER :: iZ, nZ, ios
+                REAL*8  :: FFZernCoefs(mFFCoef)
+                INTEGER, PARAMETER :: Grp = 6
+                FFZernCoefs(:) = 0d0
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernCoefs(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
+                  DO iZ=1, nFFZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** FFZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END DO
+                  nZ = MOD(nFFZernCoef,Grp)
+                  iZ = nFFZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** FFZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END IF
+                END IF
+                IF (FFZernModes_FLG) THEN
+                  FFZernCoef(:,iElt) = 0d0
+                  FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
+     &                    FFZernCoefs(:nFFZernCoef)
+                ELSE
+                  FFZernCoef(:,iElt) = FFZernCoefs
+                END IF
+                nFFZernCoef = mFFCoef
+              END BLOCK
+              FFZernCoef_FLG=.TRUE.
+              GO TO 61
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  FFZernTypeL(iElt) = ptypeL
+                  FFZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
+              IF (.NOT.FFZernTypeL_FLG) THEN
+                WRITE(*,133) TypeString(1:ICLEN(TypeString))
+                WRITE(*,*)'Check and reload Rx!'
+                GO TO 99
+              END IF
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  MonZernTypeL(iElt) = ptypeL
+                  MonZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
+              IF (.NOT.MonZernTypeL_FLG) THEN
+                WRITE(*,133) TypeString(1:ICLEN(TypeString))
+                WRITE(*,*)'Check and reload Rx!'
+                GO TO 99
+              END IF
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
+              READ(VALUE,*) nMonZernCoef
+              IF ((nMonZernCoef.LT.1).OR.
+     &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
+              nMonZernCoef_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
+              IF (.NOT.nMonZernCoef_FLG) THEN
+                PRINT *, "must define nMonZernCoef before MonZernModes"
+                GO TO 99
+              END IF
+              MonZernModes(:) = 0
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernModes(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
+                  DO iZ=1, nMonZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nMonZernCoef,Grp)
+                  iZ = nMonZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
+              MonZernModes_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
+              BLOCK
+                INTEGER :: iZ, nZ, nGrp, ios
+                REAL*8  :: MonZernCoefs(mMonCoef)
+                INTEGER, PARAMETER :: Grp = 6
+                MonZernCoefs(:) = 0d0
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernCoefs(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
+                  DO iZ=1, nMonZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** MonZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END DO
+                  nZ = MOD(nMonZernCoef,Grp)
+                  iZ = nMonZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** MonZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END IF
+                END IF
+                IF (MonZernModes_FLG) THEN
+                  MonZernCoef(:,iElt) = 0d0
+                  MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
+     &                    MonZernCoefs(:nMonZernCoef)
+                ELSE
+                  MonZernCoef(:,iElt) = MonZernCoefs
+                END IF
+                nMonZernCoef = mMonCoef
+              END BLOCK
+              MonZernCoef_FLG = .TRUE.
+              MonCoef_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
+              READ(VALUE,*) nFFZernCoef
+              IF ((nFFZernCoef.LT.1).OR.
+     &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
+              nFFZernCoef_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
+              IF (.NOT.nFFZernCoef_FLG) THEN
+                PRINT *, "must define nFFZernCoef before FFZernModes"
+                GO TO 99
+              END IF
+              FFZernModes(:) = 0
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernModes(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
+                  DO iZ=1, nFFZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nFFZernCoef,Grp)
+                  iZ = nFFZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
+              FFZernModes_FLG = .TRUE.
+              GO TO 61
+
+	!-->
+
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
             READ(VALUE,*)(xGrid(i),i=1,3)
@@ -781,6 +1084,11 @@ C       Set entrance condition flags to .FALSE.
           nZernCoef     = nZernModes_Default  ! Default # of Zernike Coefficients to read in
           ZernCoef(:,:) = 0d0
 
+          nFFZernCoef   = mFFCoef   ! Default: read all FF Zernike coefs
+          FFZernModes(:)= 0
+          nMonZernCoef  = mMonCoef  ! Default: read all Mon Zernike coefs
+          MonZernModes(:)= 0
+
 	  iElt=0
           DO   ! this is a "DO ... END DO" loop
 
@@ -791,6 +1099,14 @@ C       Set entrance condition flags to .FALSE.
             ! prep for next Element reading
             iElt       = iElt + 1
 	    DupElt_FLG = .FALSE.
+!--> comments read from here anchor to this element's block
+            RxCommentCtx = iElt
+!<--
+
+            nFFZernCoef    = mFFCoef   ! reset per-element sparse count defaults
+            FFZernModes(:) = 0
+            nMonZernCoef   = mMonCoef
+            MonZernModes(:)= 0
 
             CALL LOHIN2()  ! set all elt flags to false. -jzlou
 
@@ -836,8 +1152,13 @@ C       Set entrance condition flags to .FALSE.
 
               ! Set flags that aren't needed
 
-	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
-     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
+              IF (any(EltID(iElt) == [FocalPlaneElt, ! 2
+     &                                ReferenceElt,  ! 3,
+     &                                ObscuringElt   ! 7,
+    !&                                NSRefractorElt ! 9  WHY set ??? ToDo Check
+     &                              ]))  then
+!	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
+!     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
                 IndRef_FLG=.TRUE.
                 Extinc_FLG=.TRUE.
                 GlassCoef_FLG=.TRUE.
@@ -879,7 +1200,7 @@ C       Set entrance condition flags to .FALSE.
                   EltType_FLG=.TRUE.
                 ELSE
                   WRITE(*,131)EltTypeName(EltID(iElt)),
-     &            SrfTypeName(EltID(iElt))
+     &            SrfTypeName(SrfType(iElt))
                 END IF
               END IF
               GO TO 61
@@ -956,8 +1277,9 @@ C       Set entrance condition flags to .FALSE.
                   ! Phase Grid
                   !   a reference (EltID=3) and GridData surface, a surface grid
                   !   data array will be defined to modulate wavefront. -jzlou
+
                   ifOPDModGrid(iElt) = (EltID(iElt)==ReferenceElt .AND.
-     &                                 SrfType(iElt)==SrfType_GridData)
+     &                                 (SrfType(iElt)==SrfType_GridData))
 
                 END IF
               END DO
@@ -989,7 +1311,9 @@ C       Set entrance condition flags to .FALSE.
                 AsphCoef_FLG=.TRUE.
               END IF
 
-              IF (SrfType(iElt).NE.SrfType_Monomial) THEN
+              IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
                 MonCoef_FLG=.TRUE.
               END IF
 
@@ -997,36 +1321,60 @@ C       Set entrance condition flags to .FALSE.
      &            (SrfType(iElt).NE.SrfType_Toric)) THEN
                 AnaCoef_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_UserDefined) THEN
                 UDSrfCoef_FLG=.TRUE.
                 UDSrfType_FLG=.TRUE.
                 UDSrfParam_FLG=.TRUE.
               END IF
-
               IF (SrfType(iElt).NE.SrfType_Zernike) THEN
                 ZernCoef_FLG=.TRUE.
                 ZernTypeL_FLG=.TRUE.
               END IF
-
-              IF (SrfType(iElt).NE.SrfType_GridData) THEN
+              IF ((SrfType(iElt).NE.SrfType_GridData).AND.
+     &            (SrfType(iElt).NE.SrfType_AsGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
                 nGridMat_FLG=.TRUE.
                 GridMat_FLG=.TRUE.
                 GridSrfdx_FLG=.TRUE.
               END IF
-
               IF ((SrfType(iElt).LT.SrfType_Monomial).AND.
      &            (EltID(iElt).NE.SrfType_Toric).AND.
-     &            (EltID(iElt).NE.SrfType_AsGrData)) THEN
+     &            (EltID(iElt).NE.SrfType_AsGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData)) THEN
                 pMon_FLG=.TRUE.
                 xMon_FLG=.TRUE.
                 yMon_FLG=.TRUE.
                 zMon_FLG=.TRUE.
               END IF
-
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+                lData_FLG=.TRUE.
+                pData_FLG=.TRUE.
+                xData_FLG=.TRUE.
+                yData_FLG=.TRUE.
+                zData_FLG=.TRUE.
+              END IF
               IF ((SrfType(iElt).NE.SrfType_Monomial).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm).AND.
      &            (SrfType(iElt).LT.SrfType_Zernike)) THEN
                 lMon_FLG=.TRUE.
+              END IF
+
+              ! Mark FF and Mon Zernike flags as done for non-FreeForm surfaces
+              IF (SrfType(iElt).NE.SrfType_FreeForm) THEN
+                lFF_FLG          = .TRUE.
+                pFF_FLG          = .TRUE.
+                xFF_FLG          = .TRUE.
+                yFF_FLG          = .TRUE.
+                zFF_FLG          = .TRUE.
+                FFZernCoef_FLG   = .TRUE.
+                FFZernTypeL_FLG  = .TRUE.
+                MonZernCoef_FLG  = .TRUE.
+                MonZernTypeL_FLG = .TRUE.
               END IF
 
               ! Check to make sure no Element/Surface incompatibility exists
@@ -1037,7 +1385,7 @@ C       Set entrance condition flags to .FALSE.
                   EltType_FLG=.TRUE.
                 ELSE
                   WRITE(*,131)EltTypeName(EltID(iElt)),
-     &            SrfTypeName(EltID(iElt))
+     &            SrfTypeName(SrfType(iElt))
                 END IF
               END IF
               GO TO 61
@@ -1219,6 +1567,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      GO TO 61
 
             ! ------------------------------------------------------------------------------
+            ! Catch-all for OptBeam* keywords whose explicit
+            ! BEAM_TARGET-gated handlers (above) didn't fire because
+            ! OptTarget /= BEAM_TARGET.  The keys ARE valid syntax, just
+            ! not applicable under the current target -- skip silently
+            ! instead of emitting "MBFile6: Unidentified string" noise.
+            ! See PLAN.md §0.
+            ELSE IF (LCMP(VAR_NAM,'OptBeam',7)) THEN
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'OptZern',7) .OR.
      &               LCMP(VAR_NAM,'VarZern',7)) THEN
 	      If (.not. isVarElt(iElt) .and. LnkElt(iElt)<0) Then
@@ -1336,49 +1694,23 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ ZernType
             ELSE IF (LCMP(VAR_NAM,'ZernType',8)) THEN
-              TypeString=VALUE
-              If (LCMP(TypeString,'Noll',4))
-     &          TypeString='NormNoll'  ! backward compatibility
-
-              ! Assign ZernTypeL
-              If (LCMP(TypeString,'Norm',4)) Then
-                ! normalized Zernike coeff
-                DO i=4,9
-                  IF (LCMP(TypeString,ZernTypeNameL(i),7)) THEN
-                    ZernTypeL(iElt)=i
-                    ZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-                If (ZernTypeL(iElt)==9) Then
-                  ! Annual
-                  i=1
-                  Do ! find first ' ' in VALUE
-                    If (VALUE(i:i) == ' ') exit
-                    i=i+1
-                  End Do
-                  Do ! skip all leading ' '
-                    If (VALUE(i:i) /= ' '.OR.(i==MacosValLen)) exit
-                    i=i+1
-                  End Do
-                  If (i<MacosValLen)
-     &              READ(VALUE(i:),*) ZernAnnuRatio(iElt)
-                End If
-              Else
-                ! un-normalized Zernike coeff
-                DO i=1,3
-                  IF (LCMP(TypeString,ZernTypeNameL(i),3)) THEN
-                    ZernTypeL(iElt)=i
-                    ZernTypeL_FLG=.TRUE.
-                  END IF
-                END DO
-!#if 0
-!	        IF (LCMP(TypeString,ZernTypeNameL(7),7)) THEN
-!                  ! Hex zernike
-!                  ZernTypeL(iElt)=7
-!                  ZernTypeL_FLG=.TRUE.
-!                END IF
-!#endif
-              End If
+              ! Centralized parser -- maps the user-supplied typename
+              ! to a ZernType_* index, correctly distinguishing 'Noll'
+              ! (index 10) from 'NormNoll' (index 8).  See ParseZernType
+              ! in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  ZernTypeL(iElt) = ptypeL
+                  ZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
               IF (.NOT.ZernTypeL_FLG) THEN
                 WRITE(*,133) TypeString(1:ICLEN(TypeString))
 		WRITE(*,*)'Check and reload Rx!'
@@ -1407,7 +1739,31 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 GOTO 99
               END IF
               ZernModes(:) = 0
-              READ(VALUE,*)(ZernModes(j),j=1,nZernCoef)
+              ! ZernModes may be all on one line OR wrapped (Grp per line,
+              ! like ZernCoef below).  Try a single-line read first; only if
+              ! VALUE is short (a machine-generated Rx that wraps at Grp) do
+              ! we pull the extra rows from RX_FID.  Guarding on IOSTAT (not
+              ! nZernCoef>Grp) is essential: some Rx put >Grp modes on one
+              ! line, and reading phantom continuation rows then swallows the
+              ! next keyword line. -CC 2026-07
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER            :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)(ZernModes(j),j=1,nZernCoef)
+                IF (ios /= 0) THEN
+                  READ(VALUE,*)(ZernModes(j),j=1,Grp)
+                  DO iZ=1, nZernCoef/Grp-1
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nZernCoef,Grp)
+                  iZ = nZernCoef/Grp
+                  IF (nZ>0) THEN
+                    READ(RX_FID, 123, END=99)STRING
+                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
               IF (ANY(ZernModes(:nZernCoef)<1) .OR.
      &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
                 PRINT *, "Ensure that: 0 < ZernModes <= max Zrn Mode"
@@ -1634,6 +1990,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 iEltToGridSrf(iElt)=jGridSrf
               END IF
               GridFile(iElt)=VALUE
+!-->          Trim trailing blanks + TABS: an Rx inline comment leaves tab(s)
+!             on VALUE (GridFile= name<TAB><TAB>% ...) and ICLEN counts a tab
+!             as non-blank, so GridInit would open "name<TAB>..." and report
+!             it "does not exist".  Blank the trailing whitespace + tabs.
+              DO k=LEN(GridFile(iElt)),1,-1
+                IF (GridFile(iElt)(k:k).NE.' ' .AND.
+     &              GridFile(iElt)(k:k).NE.CHAR(9)) EXIT
+                GridFile(iElt)(k:k)=' '
+              END DO
+!<--
 
 	      k=ICLEN(GridFile(iElt))
 
@@ -1750,6 +2116,303 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               zMon_FLG=.TRUE.
               GO TO 61
 
+	!-->
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              pData_FLG=.TRUE.
+	      if (.not.ZernCent_FLG)
+     &          ZernCent(1:3,iElt)=pData(1:3,iElt)
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              xData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              yData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              zData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
+              READ(VALUE,*)lData(iElt)
+              lData_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
+              READ(VALUE,*)lFF(iElt)
+              lFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
+              READ(VALUE,*)(pFF(j,iElt),j=1,3)
+              pFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
+              READ(VALUE,*)(xFF(j,iElt),j=1,3)
+              xFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
+              READ(VALUE,*)(yFF(j,iElt),j=1,3)
+              yFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
+              READ(VALUE,*)(zFF(j,iElt),j=1,3)
+              zFF_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  FFZernTypeL(iElt) = ptypeL
+                  FFZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
+              IF (.NOT.FFZernTypeL_FLG) THEN
+                WRITE(*,133) TypeString(1:ICLEN(TypeString))
+                WRITE(*,*)'Check and reload Rx!'
+                GO TO 99
+              END IF
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
+              READ(VALUE,*) nFFZernCoef
+              IF ((nFFZernCoef.LT.1).OR.
+     &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
+              nFFZernCoef_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
+              IF (.NOT.nFFZernCoef_FLG) THEN
+                PRINT *, "must define nFFZernCoef before FFZernModes"
+                GO TO 99
+              END IF
+              FFZernModes(:) = 0
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernModes(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
+                  DO iZ=1, nFFZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nFFZernCoef,Grp)
+                  iZ = nFFZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
+              FFZernModes_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
+              BLOCK
+                INTEGER :: iZ, nZ, ios
+                REAL*8  :: FFZernCoefs(mFFCoef)
+                INTEGER, PARAMETER :: Grp = 6
+                FFZernCoefs(:) = 0d0
+                READ(VALUE,*,IOSTAT=ios)
+     &            (FFZernCoefs(j),j=1,nFFZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
+                  DO iZ=1, nFFZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** FFZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END DO
+                  nZ = MOD(nFFZernCoef,Grp)
+                  iZ = nFFZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** FFZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END IF
+                END IF
+                IF (FFZernModes_FLG) THEN
+                  FFZernCoef(:,iElt) = 0d0
+                  FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
+     &                    FFZernCoefs(:nFFZernCoef)
+                ELSE
+                  FFZernCoef(:,iElt) = FFZernCoefs
+                END IF
+                nFFZernCoef = mFFCoef
+              END BLOCK
+              FFZernCoef_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
+              ! Centralized parser -- see ParseZernType in elt_mod.F.
+              BLOCK
+                INTEGER :: ptypeL
+                LOGICAL :: pfound, phasRatio
+                REAL*8  :: pratio
+                CALL ParseZernType(VALUE, ptypeL, pfound,
+     &                             pratio, phasRatio)
+                IF (pfound) THEN
+                  MonZernTypeL(iElt) = ptypeL
+                  MonZernTypeL_FLG  = .TRUE.
+                  IF (phasRatio) ZernAnnuRatio(iElt) = pratio
+                END IF
+              END BLOCK
+              TypeString = VALUE
+              IF (.NOT.MonZernTypeL_FLG) THEN
+                WRITE(*,133) TypeString(1:ICLEN(TypeString))
+                WRITE(*,*)'Check and reload Rx!'
+                GO TO 99
+              END IF
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
+              READ(VALUE,*) nMonZernCoef
+              IF ((nMonZernCoef.LT.1).OR.
+     &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
+              nMonZernCoef_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
+              IF (.NOT.nMonZernCoef_FLG) THEN
+                PRINT *, "must define nMonZernCoef before MonZernModes"
+                GO TO 99
+              END IF
+              MonZernModes(:) = 0
+              BLOCK
+                INTEGER, PARAMETER :: Grp = 6
+                INTEGER :: iZ, nZ, ios
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernModes(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
+                  DO iZ=1, nMonZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                  END DO
+                  nZ = MOD(nMonZernCoef,Grp)
+                  iZ = nMonZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*)
+     &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                  END IF
+                END IF
+              END BLOCK
+              MonZernModes_FLG = .TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+            ELSE IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
+              BLOCK
+                INTEGER :: iZ, nZ, nGrp, ios
+                REAL*8  :: MonZernCoefs(mMonCoef)
+                INTEGER, PARAMETER :: Grp = 6
+                MonZernCoefs(:) = 0d0
+                READ(VALUE,*,IOSTAT=ios)
+     &            (MonZernCoefs(j),j=1,nMonZernCoef)
+                IF (ios.NE.0) THEN
+                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
+                  DO iZ=1, nMonZernCoef/Grp-1
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** MonZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END DO
+                  nZ = MOD(nMonZernCoef,Grp)
+                  iZ = nMonZernCoef/Grp
+                  IF (nZ.GT.0) THEN
+                    READ(RX_FID,123,END=99)STRING
+                    READ(STRING,*,IOSTAT=ios)
+     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (ios.NE.0) THEN
+                      WRITE(*,*)' ** MonZernCoef: expected',
+     &                  ' continuation data, got: ',
+     &                  TRIM(STRING)
+                      WRITE(*,*)' ** Values must be in',
+     &                  ' groups of',Grp,' per line'
+                      BACKSPACE(RX_FID)
+                      GO TO 99
+                    END IF
+                  END IF
+                END IF
+                IF (MonZernModes_FLG) THEN
+                  MonZernCoef(:,iElt) = 0d0
+                  MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
+     &                    MonZernCoefs(:nMonZernCoef)
+                ELSE
+                  MonZernCoef(:,iElt) = MonZernCoefs
+                END IF
+                nMonZernCoef = mMonCoef
+              END BLOCK
+              MonZernCoef_FLG = .TRUE.
+              MonCoef_FLG = .TRUE.
+              GO TO 61
+	!<--
+
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lMon',4)) THEN
               READ(VALUE,*)lMon(iElt)
@@ -1791,6 +2454,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
 
 	      READ(VALUE,*)TotalLensletsArray(iElt),nValsPerRow
+!--> guard the user-supplied count against the LensletStrArray
+!    bound (SAVE-audit fix): an oversized count stomped memory
+	      If (TotalLensletsArray(iElt)<1 .OR.
+     &            TotalLensletsArray(iElt)>mLenslet) Then
+	        WRITE(*,*)' **LensArrayIndRef: lenslet count must be',
+     &            ' between 1 and',mLenslet,' -- got',
+     &            TotalLensletsArray(iElt)
+	        GO TO 99
+	      End If
+!<--
 	      If (nValsPerRow>0) Then
 	        k=TotalLensletsArray(iElt); i=1
 	        Do
@@ -2009,9 +2682,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GlassElt(iElt) = VALUE
               IndRefE_FLG    = .TRUE.
               GlassElt_FLG   = .TRUE.
+
               ! Assume Sellmeier glass by default
-              GlassType(iElt)=SellmeierGlass
-              LGlass(iElt)=.FALSE.
+              GlassType(iElt) = SellmeierGlass
+              LGlass(iElt)    = .FALSE.
               i=1
               DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
                 IF (LCMP(GlassElt(iElt),GlassName(i),
@@ -2029,23 +2703,76 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
+            ! GlassTypeName(1:6) = ['Sellmeier', 'Schott', 'Herzberger',
+            !                       'Sellm2TA', 'Kingslake', 'Cauchy']
+            !
+            !  SellmeierGlass      = 1,  ! Schott's definition (SELLMEIER3TA)
+            !  SchottGlass         = 2,  ! Schott = Laurent model   ("Old Schott" Model)
+            !  HerzbergerGlass     = 3,  ! HERZBRGR4X2
+            !  SELLMEIER_2TA_GLASS = 4,  ! Sellmeier, 2 Terms with Constant A (5 Parameters)
+            !  KINGSLAKE1_GLASS    = 5,  ! Kingslake with 2 Terms (5 Parameters)
+            !  CauchyGlass         = 6,  ! Cauchy
+
             ELSE IF (LCMP(VAR_NAM,'GlassType',7)) THEN
-              IF (LCMP(VALUE,'Scho',4)) THEN
-                GlassType(iElt)=SchottGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-	      ELSE IF (LCMP(VALUE,'Sell',4)) THEN
-                GlassType(iElt)=SellmeierGlass
-                LGlass(iElt)=.TRUE.
-                GlassCoef_FLG=.TRUE.
-              END IF
-              GO TO 61
+
+              do i=1,MAX_GLASS_MODELS
+                found = (LCMP(VALUE,GlassTypeName(i),len(GlassTypeName(i))))
+                if (found) then
+                  GlassType(iElt) = i
+                  LGlass(iElt)    = .TRUE.
+                  GlassCoef_FLG   = .FALSE.
+                  exit
+                end if
+              end do
+              if (.not. found) then
+                write(*,*) '** Unknown glass type at Elt ',iElt
+                goto 99
+              else
+                goto 61
+              end if
+
+
+              !IF (LCMP(VALUE,'Sellmeier',9)) THEN
+              !  GlassType(iElt) = SellmeierGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Scho',4)) THEN
+              !  GlassType(iElt) = SchottGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Cauchy',6)) THEN
+              !  GlassType(iElt) = CauchyGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Sellmeier2TA',12)) THEN
+              !  GlassType(iElt) = SELLMEIER_2TA_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'KINGSLAKE',9)) THEN
+              !  GlassType(iElt) = KINGSLAKE1_GLASS
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE IF (LCMP(VALUE,'Herzberg',8)) THEN
+              !  GlassType(iElt) = HerzbergerGlass
+              !  LGlass(iElt)    = .TRUE.
+              !  GlassCoef_FLG   = .FALSE.
+
+              !ELSE
+              !  WRITE(*,*) '** Unknown glass type at Elt ',iElt
+              !  GO TO 99
+              !END IF
+              !GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'GlassCoef',6)) THEN
-              READ(VALUE,*)(GlassCoef(j,iElt),j=1,6)
-              GlassCoef_FLG=.TRUE.
-              LGlass(iElt)=.TRUE.
+              READ(VALUE,*)(GlassCoef(j,iElt),j=1,nGLASS_COEF(GlassType(iElt)))
+              GlassCoef_FLG = .TRUE.
+              LGlass(iElt)  = .TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2158,24 +2885,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ApStop',6)) THEN
-              RxStopSet=.TRUE.
-              IF (EltID(iElt)==0 .OR.
-     &          EltID(iElt)==NSRefractorElt .OR.
-     &          EltID(iElt)==NSReflectorElt .OR.
-     &          EltID(iElt)==SegmentElt) THEN
-                  ifStopSet=.FALSE.
-                  EltStopSet=.FALSE.
-              ELSE
-                StopElt=iElt
-                READ(VALUE,*) StopOffset(1:2)
-                EltStopSet=.TRUE.
-	        nTok = GetNumToken(VALUE)
-                LStopAtEltAutoSet = (nTok > 2)
-                !IF (nTok > 2) THEN
-                !  !print*,' ** STOP at element will be auto-reset!'
-	        !  LStopAtEltAutoSet=.TRUE.
-                !END IF
-              END IF
+              ! if multiple ApStop statements are found, it will pick the last
+              RxStopSet  = .TRUE.
+              StopElt    = iElt
+              EltStopSet = .TRUE.
+              READ(VALUE,*) StopOffset(1:2)
+
+              nTok = GetNumToken(VALUE)
+              LStopAtEltAutoSet = (nTok > 2)
+
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2481,21 +3199,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          ! Check whether ObsVec are 3D vertices
 	          If (LCMP(VAR_NAM,'PolyObsVec',10).OR.
      &                LCMP(VAR_NAM,'Poly3DObsVec',12)) THEN
-                    ! 3D vertices in global frame
-                    IF (.not.xObs_FLG) THEN
-                     WRITE(*,*)
-     &               ' Must specify xObs before PolyObs3DVec, iElt=',
-     &                         iElt
-	              LOAD_SUCCESS=.false.; GO TO 70
-	            ELSE IF (.not.ObsType_FLG(iObs)) THEN
+                    ! 3D vertices in global frame.  Projection to the
+                    ! element-local 2D plane requires xObs; if xObs has
+                    ! not yet been parsed for this element, stash the
+                    ! raw vertices and defer the projection until xObs
+                    ! is set (or until ChkDf2 catches it as missing).
+                    IF (.not.ObsType_FLG(iObs)) THEN
                       WRITE(*,*)
-     &                ' Must specify ObsType before PolyObsVec'
+     &                ' Must specify ObsType before '//
+     &                'PolyObsVec/Poly3DObsVec, iElt=', iElt
                       LOAD_SUCCESS=.false.; GO TO 70
                     END IF
 
                     IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-                      !READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,4)
-                      !nVertex=ObsVec(4,iObs,iElt) ! # of vertices of polygon
                       READ(VALUE,*) ObsVec(1,iObs,iElt)
                       nVertex=ObsVec(1,iObs,iElt) ! # of vertices of polygon
                       If (nVertex < 3) Then
@@ -2508,15 +3224,20 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                         READ(RX_FID, 123, END=99) STRING
                         READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
                       End Do
-                      Call SetCvxPolyObsVtx(iElt,nVertex,
+                      IF (xObs_FLG) THEN
+                        Call SetCvxPolyObsVtx(iElt,nVertex,
      &                                      PolyVtx3D(:,1:nVertex),iObs)
-                      Call SetCvxPolyObsBound(iObs,iElt)
-	              !print*,' *** msmacosio: iObs,nVertex =',iObs,nVertex
-	              !do i=1,nVertex
-	              ! print*,' ** PolyVtx3D(1:3,i) =',PolyVtx3D(1:3,i)
-	              !end do
+                        Call SetCvxPolyObsBound(iObs,iElt)
+                      ELSE
+                        ! Defer: xObs not seen yet for this element
+                        PolyObsVtx3DPending(:,1:nVertex,iObs,iElt) =
+     &                                          PolyVtx3D(:,1:nVertex)
+                        nPolyObsVtx3DPending(iObs,iElt) = nVertex
+                      END IF
                     ELSE
-                      WRITE(*,*)' **Incorrect ObsType for PolyObs3DVec'
+                      WRITE(*,*)
+     &                ' **Incorrect ObsType for '//
+     &                'PolyObsVec/Poly3DObsVec'
                       GO TO 99
                     END IF
                     ObsVec_FLG(iObs)=.TRUE.
@@ -2579,6 +3300,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 WRITE(*,124)' xObs'
               ELSE
                 xObs_FLG = .TRUE.; LxObsDef(iElt)=.TRUE.
+                ! Resolve any PolyObsVec/Poly3DObsVec stashed before
+                ! xObs was set: project 3D vertices into element-local
+                ! 2D coords now that xObs is known.
+                DO i=1,mObs
+                  IF (nPolyObsVtx3DPending(i,iElt).GT.0) THEN
+                    Call SetCvxPolyObsVtx(iElt,
+     &                  nPolyObsVtx3DPending(i,iElt),
+     &                  PolyObsVtx3DPending(:,
+     &                      1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
+                    Call SetCvxPolyObsBound(i,iElt)
+                    nPolyObsVtx3DPending(i,iElt) = 0
+                  END IF
+                END DO
               END IF
               GO TO 61
 

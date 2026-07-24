@@ -1,0 +1,302 @@
+================================================================================
+Changes required to macos_f90/giza/src/giza-drivers.c
+================================================================================
+Five precise changes. Search for the exact string shown and replace/insert.
+
+--------------------------------------------------------------------------------
+CHANGE 1: Add Win driver include after xw include (line ~26)
+--------------------------------------------------------------------------------
+FIND:
+  #include "giza-driver-xw-private.h"
+
+REPLACE WITH:
+  #include "giza-driver-xw-private.h"
+  #include "giza-driver-win-private.h"
+
+--------------------------------------------------------------------------------
+CHANGE 2: Add WIN case to open switch (after EPS case, ~line 223)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_EPS
+    case GIZA_DEVICE_EPS:
+      success = _giza_open_device_eps (width, height, units, 0);
+      break;
+#endif
+    case GIZA_DEVICE_IV:
+    default:
+      _giza_error ("giza_open_device", "Unknown device, device not opened");
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_EPS
+    case GIZA_DEVICE_EPS:
+      success = _giza_open_device_eps (width, height, units, 0);
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      success = _giza_open_device_win (width, height, units);
+      break;
+#endif
+    case GIZA_DEVICE_IV:
+    default:
+      _giza_error ("giza_open_device", "Unknown device, device not opened");
+
+--------------------------------------------------------------------------------
+CHANGE 3: Add WIN case to flush switch (~line 444)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+       case GIZA_DEVICE_XW:
+         _giza_flush_device_xw ();
+         break;
+#endif
+       default:
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+       case GIZA_DEVICE_XW:
+         _giza_flush_device_xw ();
+         break;
+#endif
+#ifdef _GIZA_HAS_WIN
+       case GIZA_DEVICE_WIN:
+         _giza_flush_device_win ();
+         break;
+#endif
+       default:
+
+--------------------------------------------------------------------------------
+CHANGE 4: Add WIN case to change_page switch (~line 449)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_change_page_xw ();
+      break;
+#endif
+    case GIZA_DEVICE_PNG:
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_change_page_xw ();
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      _giza_change_page_win ();
+      break;
+#endif
+    case GIZA_DEVICE_PNG:
+
+--------------------------------------------------------------------------------
+CHANGE 5: Add WIN case to close switch (~line 571)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_close_device_xw ();
+      break;
+#endif
+    case GIZA_DEVICE_PNG:
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_close_device_xw ();
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      _giza_close_device_win ();
+      break;
+#endif
+    case GIZA_DEVICE_PNG:
+
+--------------------------------------------------------------------------------
+CHANGE 6: Add WIN case to get_key_press switch (~line 766)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_get_key_press_xw (mode, moveCurs, nanc, xanch, yanch, x, y, ch);
+      return 0;
+      break;
+#endif
+    case GIZA_DEVICE_IV:
+    default:
+      _giza_error ("giza_get_key_press", "Unknown device");
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_get_key_press_xw (mode, moveCurs, nanc, xanch, yanch, x, y, ch);
+      return 0;
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      _giza_get_key_press_win (mode, moveCurs, nanc, xanch, yanch, x, y, ch);
+      return 0;
+      break;
+#endif
+    case GIZA_DEVICE_IV:
+    default:
+      _giza_error ("giza_get_key_press", "Unknown device");
+
+--------------------------------------------------------------------------------
+CHANGE 7: Add WIN to _giza_device_to_int (~line 840)
+--------------------------------------------------------------------------------
+FIND:
+  if (!strcmp (devName, "/null"))
+    newDevice = GIZA_DEVICE_NULL;
+#ifdef _GIZA_HAS_XW
+  else if (!strcmp (devName, "/xw")
+        || !strcmp (devName, "/xs")
+        || !strcmp (devName, "/xserve")
+        || !strcmp (devName, "/xwindow")
+        || !strcmp (devName, "/xwin"))
+    newDevice = GIZA_DEVICE_XW;
+#endif
+
+REPLACE WITH:
+  if (!strcmp (devName, "/null"))
+    newDevice = GIZA_DEVICE_NULL;
+#ifdef _GIZA_HAS_XW
+  else if (!strcmp (devName, "/xw")
+        || !strcmp (devName, "/xs")
+        || !strcmp (devName, "/xserve")
+        || !strcmp (devName, "/xwindow")
+        || !strcmp (devName, "/xwin"))
+    newDevice = GIZA_DEVICE_XW;
+#endif
+#ifdef _GIZA_HAS_WIN
+  else if (!strcmp (devName, "/xw")
+        || !strcmp (devName, "/xs")
+        || !strcmp (devName, "/xserve")
+        || !strcmp (devName, "/xwindow")
+        || !strcmp (devName, "/xwin")
+        || !strcmp (devName, "/win"))
+    newDevice = GIZA_DEVICE_WIN;
+#endif
+
+--------------------------------------------------------------------------------
+CHANGE 8: Add WIN to _giza_int_to_device (~line 925)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      strncpy(DeviceName,"/xw",max_chars);
+      break;
+#endif
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      strncpy(DeviceName,"/xw",max_chars);
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      strncpy(DeviceName,"/xw",max_chars);
+      break;
+#endif
+
+--------------------------------------------------------------------------------
+CHANGE 9: Add WIN to _giza_init_norm (~line 1009)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_init_norm_xw ();
+      break;
+#endif
+    default:
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_init_norm_xw ();
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      /* Win device uses same margin-based norm as XW */
+      _giza_init_norm_xw_compat ();
+      break;
+#endif
+    default:
+
+NOTE: For CHANGE 9, since we don't have _giza_init_norm_xw available on Windows,
+use the default case instead. Replace CHANGE 9 with:
+
+FIND:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_init_norm_xw ();
+      break;
+#endif
+    default:
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+    case GIZA_DEVICE_XW:
+      _giza_init_norm_xw ();
+      break;
+#endif
+#ifdef _GIZA_HAS_WIN
+    case GIZA_DEVICE_WIN:
+      /* Fall through to default margin calculation */
+#endif
+    default:
+
+--------------------------------------------------------------------------------
+CHANGE 10: Add WIN to _giza_init_device_list (~line 963)
+--------------------------------------------------------------------------------
+FIND:
+#ifdef _GIZA_HAS_XW
+  strcat (*deviceList, "Interactive devices:\n\t/xw\t(X Window)\n");
+#endif
+
+REPLACE WITH:
+#ifdef _GIZA_HAS_XW
+  strcat (*deviceList, "Interactive devices:\n\t/xw\t(X Window)\n");
+#endif
+#ifdef _GIZA_HAS_WIN
+  strcat (*deviceList, "Interactive devices:\n\t/xw\t(Win32 Window)\n");
+#endif
+
+================================================================================
+Changes required to macos_f90/giza/src/CMakeLists.txt
+================================================================================
+Add giza-driver-win.c to GIZA_C_SOURCES list.
+
+FIND:
+    giza.c
+    lex.yy.c
+
+REPLACE WITH:
+    giza.c
+    lex.yy.c
+    giza-driver-win.c
+
+Also add HAVE_WIN32_WINDOW define when on Windows:
+
+FIND:
+    $<$<BOOL:${WIN32}>:WIN32 _WINDOWS _CRT_NONSTDC_NO_DEPRECATE strcasecmp=_stricmp strncasecmp=_strnicmp CAIRO_WIN32_STATIC_BUILD>
+
+REPLACE WITH:
+    $<$<BOOL:${WIN32}>:WIN32 _WINDOWS _CRT_NONSTDC_NO_DEPRECATE strcasecmp=_stricmp strncasecmp=_strnicmp CAIRO_WIN32_STATIC_BUILD _GIZA_HAS_WIN>
+
+================================================================================
+New files to place in macos_f90/giza/src/
+================================================================================
+  giza-driver-win.c          (provided)
+  giza-driver-win-private.h  (provided)
+
+Replace in macos_f90/giza/src/:
+  giza-drivers-private.h     (provided — adds GIZA_DEVICE_WIN = 10)
+
+================================================================================
+END OF CHANGES
+================================================================================

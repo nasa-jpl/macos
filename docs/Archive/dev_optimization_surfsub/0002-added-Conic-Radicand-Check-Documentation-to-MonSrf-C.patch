@@ -1,0 +1,34 @@
+From ebcdc22dbf2d39d5e523923711d98f3204d977b0 Mon Sep 17 00:00:00 2001
+From: TraceMoreRays <sigrist1000@gmail.com>
+Date: Sat, 24 Jan 2026 19:20:12 -0800
+Subject: [PATCH 2/5] added Conic Radicand-Check Documentation to MonSrf &
+ ConSrf
+
+---
+ macos_f90/surfsub.F | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/macos_f90/surfsub.F b/macos_f90/surfsub.F
+index b66a728..c6ac826 100644
+--- a/macos_f90/surfsub.F
++++ b/macos_f90/surfsub.F
+@@ -126,7 +126,8 @@ C	Compute intersection point and normal vector
+ 	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+ 	ELSE
+ 	  k2 = b*b - 4d0*a*c
+-	  IF (k2.LT.0d0) GO TO 98
++	  ! Check discriminant (equivalent to conic radicand: 1-(1+k)r²/R² ≥ 0)
++	  IF (k2.LT.0d0) GO TO 98  ! No real roots - surface doesn't exist at this point
+ 	  IF (b.GE.0d0) THEN
+ 	    ksqrt = -0.5d0*(b+SQRT(k2))
+ 	  ELSE
+@@ -2479,7 +2480,8 @@ C***********************************************************************
+         ELSE
+           ! Quadratic case: solve a*L^2 + b*L + c = 0
+           k2=b*b-4d0*a*c
+-          IF (k2.LT.0d0) GO TO 98  ! No real roots
++          ! Check discriminant (equivalent to conic radicand: 1-(1+k)r²/R² ≥ 0)
++          IF (k2.LT.0d0) GO TO 98  ! No real roots - surface doesn't exist at this point
+           
+           ! Near-tangent detection: discriminant < TOL_TANGENT * b^2
+           ! Two roots are within ~14 digits of each other

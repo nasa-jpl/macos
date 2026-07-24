@@ -124,7 +124,7 @@ C
                 ObsVecNom(1:3,1:nObs(id),id)
      &            =ObsVec(1:3,1:nObs(id),id)
 	      end if
-              ZernCoefNom(1:mZern,id)=ZernCoef(1:mZern,id)
+              ZernCoefNom(1:mZernModes,id)=ZernCoef(1:mZernModes,id)
 	      AsphCoefNom(1:mAsph,id)=AsphCoef(1:mAsph,id)
               CALL DEQUATE(TEltNom(1,1,id),TElt(1,1,id),36)
 	    End If
@@ -147,7 +147,7 @@ C
                   ObsVecNom(1:3,1:nObs(je),je)
      &              =ObsVec(1:3,1:nObs(je),je)
 	        end if
-                ZernCoefNom(1:mZern,je)=ZernCoef(1:mZern,je)
+                ZernCoefNom(1:mZernModes,je)=ZernCoef(1:mZernModes,je)
 	        AsphCoefNom(1:mAsph,je)=AsphCoef(1:mAsph,je)
                 CALL DEQUATE(TEltNom(1,1,je),TElt(1,1,je),36)
               end if
@@ -174,7 +174,7 @@ C
                     ObsVecNom(1:3,1:nObs(je),je)
      &		      =ObsVec(1:3,1:nObs(je),je)
 	  	  end if
-                  ZernCoefNom(1:mZern,je)=ZernCoef(1:mZern,je)
+                  ZernCoefNom(1:mZernModes,je)=ZernCoef(1:mZernModes,je)
 	          AsphCoefNom(1:mAsph,je)=AsphCoef(1:mAsph,je)
                   CALL DEQUATE(TEltNom(1,1,je),TElt(1,1,je),36)
                 end if
@@ -208,7 +208,7 @@ C
                 ObsVec(1:3,1:nObs(id),id)
      &    	  =ObsVecNom(1:3,1:nObs(id),id)
 	      end if
-              ZernCoef(1:mZern,id)=ZernCoefNom(1:mZern,id)
+              ZernCoef(1:mZernModes,id)=ZernCoefNom(1:mZernModes,id)
 	      AsphCoef(1:mAsph,id)=AsphCoefNom(1:mAsph,id)
               CALL DEQUATE(TElt(1,1,id),TEltNom(1,1,id),36)
 	    End If
@@ -231,7 +231,7 @@ C
                   ObsVec(1:3,1:nObs(je),je)
      &		    =ObsVecNom(1:3,1:nObs(je),je)
 	        end if
-                ZernCoef(1:mZern,je)=ZernCoefNom(1:mZern,je)
+                ZernCoef(1:mZernModes,je)=ZernCoefNom(1:mZernModes,je)
 	        AsphCoef(1:mAsph,je)=AsphCoefNom(1:mAsph,je)
                 CALL DEQUATE(TElt(1,1,je),TEltNom(1,1,je),36)
               end if
@@ -258,7 +258,7 @@ C
                     ObsVec(1:3,1:nObs(je),je)
      &			=ObsVecNom(1:3,1:nObs(je),je)
 		  end if
-                  ZernCoef(1:mZern,je)=ZernCoefNom(1:mZern,je)
+                  ZernCoef(1:mZernModes,je)=ZernCoefNom(1:mZernModes,je)
 	          AsphCoef(1:mAsph,je)=AsphCoefNom(1:mAsph,je)
                   CALL DEQUATE(TElt(1,1,je),TEltNom(1,1,je),36)
                 end if

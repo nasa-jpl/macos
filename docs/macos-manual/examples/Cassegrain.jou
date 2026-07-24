@@ -1,0 +1,27 @@
+% This macro generates example figures
+% for Section 2 of the MACOS User Manual
+echo 
+echo Load prescription file Cassegrain.in
+echo 
+old Cassegrain
+echo 
+echo Change ray grid size for intelligibility
+echo 
+modify ngridpts=51 q
+echo 
+echo Show spot diagram at the obscuration plane
+echo 
+spot 1 Tout                                                                            % Fig 3a
+echo 
+echo Draw the ray trace
+echo 
+draw;;;;                                                                               % Fig 3b
+echo 
+echo Show spot diagram at the focal plane: note spot size!
+echo 
+spot 5 Tout                                                                            % Fig 4a
+echo 
+echo Perturb the primary mirror, then show spot diagram at the focal plane
+echo 
+perturb 2 global 0,1e-4,0 0,0,0
+spot 5 Tout                                                                            % Fig 4b

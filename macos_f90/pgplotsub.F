@@ -18,30 +18,130 @@ C***********************************************************************
 
         SUBROUTINE GRAEND
 C       Use this routine to terminate graphic output
-
-        CALL PGEND
-
+        use macos_mod, only: ifPlot
+        IF (ifPlot) CALL PGEND
         RETURN
         END SUBROUTINE GRAEND
 
 C***********************************************************************
+C  PANEL_ENV: PGENV equivalent with a tighter viewport in multi-panel
+C             layouts (pgp 2/3/4).
+C
+C  PGENV's standard panel viewport leaves only ~5% of panel width on
+C  each side -- in 2x2 layout the remaining margin is too small for
+C  axis labels (and, in GRAY, also the right-side colorbar) before
+C  bumping into the next panel.  In nPgPanel > 1 mode we explicitly
+C  expand PGENV into PGPAGE + PGVSTD + PGSWIN/PGWNAD + PGBOX, then
+C  shrink the viewport's width to 78% to recover the missing margin.
+C
+C  AXIS argument follows PGENV's convention; we honor:
+C     -2  : no box drawn (used by WIRE)
+C     -1  : box only, no labels
+C      0  : box + labels (default for most callers)
+C      1  : box + labels + zero-axis lines
+C  Other values (log scales etc.) fall through to plain PGBOX BCNST.
+C***********************************************************************
+
+        SUBROUTINE PANEL_ENV(X1, X2, Y1, Y2, JUST, AXIS)
+        use macos_vars_mod, only: nPgPanel
+        IMPLICIT NONE
+        REAL,    INTENT(IN) :: X1, X2, Y1, Y2
+        INTEGER, INTENT(IN) :: JUST, AXIS
+        REAL :: vx1, vx2, vy1, vy2
+
+c       Sanity-check the bounds.  Upstream pathology (e.g. an
+c       ill-configured prop where zElt is INF for a FarField sphere
+c       reference surface) can produce NaN, +/-Inf, degenerate
+c       (x1 >= x2), or overflow ranges.  giza will then reject the
+c       PGSWIN call below with a cryptic "giza_set_window: Invalid
+c       arguments" message.  Print a clearer diagnostic here and let
+c       the plot proceed as before -- the user gets the cryptic giza
+c       warning AND the meaningful one, telling them where to look.
+        IF (.NOT.SaneBounds(X1, X2, Y1, Y2)) THEN
+          WRITE(*,*) ' ** Error: inconsistent propagation parameters'
+          WRITE(*,*) '    plot bounds are degenerate, infinite, or '//
+     &               'NaN; check the prescription'
+        END IF
+
+        IF (nPgPanel .LE. 1) THEN
+          CALL PGENV(X1, X2, Y1, Y2, JUST, AXIS)
+          RETURN
+        END IF
+
+        CALL PGPAGE
+        CALL PGVSTD                          ! panel-relative std vp
+        CALL PGQVP(0, vx1, vx2, vy1, vy2)    ! query in NDC
+        vx2 = vx1 + 0.78*(vx2 - vx1)         ! keep 78% of width
+        CALL PGSVP(vx1, vx2, vy1, vy2)
+        IF (JUST .EQ. 1) THEN
+          CALL PGWNAD(X1, X2, Y1, Y2)
+        ELSE
+          CALL PGSWIN(X1, X2, Y1, Y2)
+        END IF
+        IF (AXIS .EQ. -2) THEN
+          ! no box
+        ELSE IF (AXIS .EQ. -1) THEN
+          CALL PGBOX('BC', 0.0, 0, 'BC', 0.0, 0)
+        ELSE IF (AXIS .EQ. 1) THEN
+          CALL PGBOX('ABCNST', 0.0, 0, 'ABCNST', 0.0, 0)
+        ELSE
+          CALL PGBOX('BCNST', 0.0, 0, 'BCNST', 0.0, 0)
+        END IF
+        RETURN
+
+        CONTAINS
+          LOGICAL FUNCTION SaneBounds(x1, x2, y1, y2)
+            REAL, INTENT(IN) :: x1, x2, y1, y2
+            REAL, PARAMETER  :: maxRange = 1.0E30
+            ! Reject NaN (x /= x), reversed/degenerate (x1 >= x2),
+            ! and over-large ranges (likely overflow from upstream).
+            IF (x1 /= x1 .OR. x2 /= x2 .OR.
+     &          y1 /= y1 .OR. y2 /= y2) THEN
+              SaneBounds = .FALSE.
+            ELSE IF (x1 .GE. x2 .OR. y1 .GE. y2) THEN
+              SaneBounds = .FALSE.
+            ELSE IF (ABS(x2-x1) .GT. maxRange .OR.
+     &               ABS(y2-y1) .GT. maxRange) THEN
+              SaneBounds = .FALSE.
+            ELSE
+              SaneBounds = .TRUE.
+            END IF
+          END FUNCTION SaneBounds
+        END SUBROUTINE PANEL_ENV
+
+C***********************************************************************
 
 C  Use this routine to initialize graphic output - such as '/xw' or '/gif'
+C  The user is prompted for the graphics device only on the FIRST call;
+C  subsequent calls (e.g. when PGP changes panel layout, or after
+C  ifPlot=.FALSE. forces a new window) silently reuse the cached
+C  choice so the user doesn't have to re-Enter past the device prompt
+C  every time.
         SUBROUTINE GRAINI
 	use macos_vars_mod, only: nPgPanel
+	CHARACTER(LEN=64), SAVE :: dev_str = '?'
+	INTEGER :: dlen
 
 	if (nPgPanel==1) then
-          CALL PGBEGIN(0,'?',1,1)
+          CALL PGBEGIN(0,dev_str,1,1)
 	else if (nPgPanel==2) then
-          CALL PGBEGIN(0,'?',2,1) ! 1x2 horizontal panels
+          CALL PGBEGIN(0,dev_str,2,1) ! 1x2 horizontal panels
 	  CALL PGPAP(9.0,0.4)
 	else if (nPgPanel==3) then
-          CALL PGBEGIN(0,'?',3,1) ! 1x3 horizontal panels
+          CALL PGBEGIN(0,dev_str,3,1) ! 1x3 horizontal panels
           CALL PGPAP(13.0,0.4)
 	else if (nPgPanel==4) then
-          CALL PGBEGIN(0,'?',2,2) ! 2x2 panels
+          CALL PGBEGIN(0,dev_str,2,2) ! 2x2 panels
 	  CALL PGPAP(7.5,1.0)
 	end if
+
+c       Cache the user's device choice after the first PGBEGIN so
+c       subsequent calls bypass the "Graphics device/type" prompt.
+c       PGQINF('DEV/TYPE',...) returns the full device string ready
+c       to feed back to PGBEGIN.
+	IF (dev_str(1:1) .EQ. '?') THEN
+	  CALL PGQINF('DEV/TYPE', dev_str, dlen)
+	END IF
 	!print*,'*** nPgPanel =',nPgPanel
 
         !CALL PGSVP(0.0,2.0,0.0,1.0)
@@ -68,6 +168,10 @@ C***********************************************************************
 	X=X_in; Y=Y_in; Z=Z_in
 
         CALL PGBBUF
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
 
         DX=(X(NROW)-X(1))/FLOAT(NROW)
         DY=(Y(NCOL)-Y(1))/FLOAT(NCOL)
@@ -96,7 +200,7 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
+        CALL PANEL_ENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGCONT(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &  CONTOURS,NCONTOURS,TRCONT)
@@ -113,6 +217,8 @@ C***********************************************************************
         SUBROUTINE SPOTDIAG(DXYMAT,NROW,NCOL,NDROW,NDCOL,NBEAMS,
      &  		    CXLABL,CZLABL,CTITLE)
 
+	use plot_mode_mod, only : annotOn, annotLine1, annotLine2,
+     &	                          ClearAnnot
         IMPLICIT NONE
 
         CHARACTER*(*) CXLABL,CZLABL,CTITLE
@@ -122,9 +228,13 @@ C***********************************************************************
         DATA ISYM/20,5,8,16/
 
         CALL PGBBUF
+C       Spot diagram: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
 
-C       XYMAT = XYMAT(n_pts,2), storing corrds of points in 
-C       the spot diagram. -jzlou	
+C       XYMAT = XYMAT(n_pts,2), storing corrds of points in
+C       the spot diagram. -jzlou
 	XYMAT(1:NROW,1:NCOL) = DXYMAT(1:NROW,1:NCOL)
 
 
@@ -163,13 +273,22 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(XMIN,XMAX,YMIN,YMAX,1,0)
+        CALL PANEL_ENV(XMIN,XMAX,YMIN,YMAX,1,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGQCI(CI)
 
-C       When nbeams=1, j=1 and k=2; when nbeams == 2, j=3 and k=4 
+C       When nbeams=1, j=1 and k=2; when nbeams == 2, j=3 and k=4
         I=NBEAMS; K=2*I; J=K-1
         CALL PGPOINT(NROW,XYMAT(1,J),XYMAT(1,K),ISYM(I))
+
+        ! Bottom-of-plot annotation (e.g., "RMS spot radius=...")
+        If (annotOn) Then
+          If (LEN_TRIM(annotLine1) > 0)
+     &      CALL PGMTXT('B',3.5,0.0,0.0,TRIM(annotLine1))
+          If (LEN_TRIM(annotLine2) > 0)
+     &      CALL PGMTXT('B',4.7,0.0,0.0,TRIM(annotLine2))
+          CALL ClearAnnot()
+        End If
 
         CALL PGEBUF
 
@@ -225,7 +344,7 @@ C       SET PLOT DIMENSIONS
 C       CALL PLOT ROUTINES
 
         !CALL PGENV(XMIN,XMAX,YMIN,YMAX,1,0)
-        CALL PGENV(XMIN,XMAX,YMIN,YMAX,0,0)
+        CALL PANEL_ENV(XMIN,XMAX,YMIN,YMAX,0,0)
         CALL PGLABEL(CXLABL,CZLABL,CTITLE)
         CALL PGQCI(CI)
         DO 5 I=1,NBEAMS
@@ -257,6 +376,11 @@ C***********************************************************************
      &           PX(NROW),PZ(NROW),DX,DZ,ZMIN
         REAL*4 ZMAX,XSKEW,ZSKEW,XBMIN,XBMAX,ZBMIN,ZBMAX
 
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
+
 C       SET PLOT DIMENSIONS
 
         XSKEW=0.35E0
@@ -279,7 +403,7 @@ C       SET PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(XBMIN,XBMAX,ZBMIN,ZBMAX,0,0)
+        CALL PANEL_ENV(XBMIN,XBMAX,ZBMIN,ZBMAX,0,0)
         CALL PGLABEL(CXLABL,CYLABL,CTITLE)
         CALL PGSFS(1)
         CALL PGSCI(1)
@@ -348,10 +472,14 @@ C***********************************************************************
 
         SUBROUTINE GRAY(X_in,Y_in,Z_in,NROW,NCOL,NDROW,NDCOL,
      &  	        CXLABL,CZLABL,CTITLE)
-	use macos_mod, only : ifPGColor
+	use macos_mod,     only : ifPGColor
+	use macos_vars_mod,only : nPgPanel
+	use plot_mode_mod, only : ifAstroMode, annotOn,
+     &	                          annotLine1, annotLine2, wedgeLabel,
+     &	                          ClearAnnot
         IMPLICIT NONE
 
-        INTEGER :: NROW,NCOL,NDROW,NDCOL,I,J
+        INTEGER :: NROW,NCOL,NDROW,NDCOL,I,J,K
         !CHARACTER*(*) CXLABL,CZLABL,CTITLE
 	REAL*8 :: X_in(NDROW),Y_in(NDCOL),Z_in(NDROW,NDCOL)
         CHARACTER(len=*) :: CXLABL,CZLABL,CTITLE
@@ -368,8 +496,10 @@ C***********************************************************************
 #endif
 	INTEGER, PARAMETER :: mColor=64
 	Integer, Save :: ICILO,ICIHI,NDROW_sv
-        REAL, Save :: CInd(3,mColor),CR(512),CG(512),CB(512)
+        REAL, Save :: CInd(3,mColor),CR(0:511),CG(0:511),CB(0:511)
 	LOGICAL, Save :: first_entry=.true.
+        REAL*4 :: CTAB_L(mColor),CTAB_R(mColor),
+     &            CTAB_G(mColor),CTAB_B(mColor)
 
 !	print*,'*** In GRAY: NROW,NCOL,NDROW,NDCOL =',
 !    &    NROW,NCOL,NDROW,NDCOL
@@ -396,22 +526,18 @@ C***********************************************************************
 	  first_entry=.false.
 	End If
 
+	! Reserve CI 0=white (background) and CI 1=black (foreground) for
+	! axes, labels, wedge axis, and bottom annotation.  The image ramp
+	! lives in CI 16..255 so PGCTAB won't clobber CI 0/1.
+	CALL PGSCR(0, 1.0, 1.0, 1.0)
+	CALL PGSCR(1, 0.0, 0.0, 0.0)
+	CALL PGSCIR(16, 255)
 	If (ifPGColor) Then
-	  ! Set color representation
+	  ! Color CInd is used as the table source for PGCTAB below.
 	  Do J=1,mColor
 	    Call PGSCR(J-1+16,CInd(1,J),CInd(2,J),CInd(3,J))
 	  End Do
-	  ! Set color range
-	  !CALL PGSCIR(0,mColor-1)
-	  CALL PGSCIR(16,(mColor-1)+16)
-	Else
-	  ! Set default color representation for gray image
-	  Do J=ICILO,ICIHI
-            Call PGSCR(J,CR(J),CG(J),CB(J))
-          End Do
-	  ! Set color range
-          CALL PGSCIR(ICILO,ICIHI) 
-	End If	
+	End If
 
 	X(1:NROW)=X_in(1:NROW); Y(1:NCOL)=Y_in(1:NCOL)
         Z(1:NROW,1:NCOL)=Z_in(1:NROW,1:NCOL)
@@ -463,25 +589,72 @@ C       CALL PLOT ROUTINES
 !    &    NROW,NCOL,NDROW,NDCOL
 !        print*,'TRCONT =',TRCONT
 
-	If (ifPGColor) Then
-	  CALL PGSCI(1)
-	Else
-	  CALL PGSCI(ICILO)
-	End If
-	
-        CALL PGENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
-        CALL PGLABEL(CXLABL,CZLABL,CTITLE)
+	! Axes / box / labels in foreground black.  Per-plot CXLABL/CZLABL
+	! are placeholder 'X-Axis' / 'Y-Axis' strings that add no info on
+	! a raster image; suppress them and keep only the title.
+	CALL PGSCI(1)
+	! Routes through PANEL_ENV which tightens the viewport in
+	! multi-panel layouts so PGWEDG (drawn below) fits without
+	! crashing into the next panel's labels.
+	CALL PANEL_ENV(X(1),X(NROW),Y(1),Y(NCOL),1,0)
+        CALL PGLABEL(' ',' ',CTITLE)
 
 	If (ifPGColor) Then
+	  ! Build PGCTAB arrays from CInd.  Under astro mode walk CInd in
+	  ! reverse so the palette is flipped end-to-end (dark first).
+	  Do J=1,mColor
+	    CTAB_L(J) = FLOAT(J-1)/FLOAT(mColor-1)
+	    If (ifAstroMode) Then
+	      K = mColor + 1 - J
+	    Else
+	      K = J
+	    End If
+	    CTAB_R(J) = CInd(1,K)
+	    CTAB_G(J) = CInd(2,K)
+	    CTAB_B(J) = CInd(3,K)
+	  End Do
+	  CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,mColor,1.0,0.5)
  	  CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &                ZMIN,ZMAX,TRCONT)
-	  CALL PGWEDG('RI',2.2,5.0,ZMIN,ZMAX,'pixel value')
 	Else
-          CALL PGGRAY(Z,NDROW,NDCOL,1,NROW,1,NCOL,
+	  ! Render grayscale via PGIMAG + a 2-point gray PGCTAB we control.
+	  ! PGGRAY cannot be used for polarity control -- Giza's internal
+	  ! giza_render_gray forcibly calls giza_set_colour_table_gray,
+	  ! bypassing any caller-set PGSCR/PGCTAB.
+	  CTAB_L(1) = 0.0; CTAB_L(2) = 1.0
+	  If (ifAstroMode) Then
+	    ! white -> black: large values render dark
+	    CTAB_R(1) = 1.0; CTAB_R(2) = 0.0
+	    CTAB_G(1) = 1.0; CTAB_G(2) = 0.0
+	    CTAB_B(1) = 1.0; CTAB_B(2) = 0.0
+	  Else
+	    ! black -> white: large values render bright
+	    CTAB_R(1) = 0.0; CTAB_R(2) = 1.0
+	    CTAB_G(1) = 0.0; CTAB_G(2) = 1.0
+	    CTAB_B(1) = 0.0; CTAB_B(2) = 1.0
+	  End If
+	  CALL PGCTAB(CTAB_L,CTAB_R,CTAB_G,CTAB_B,2,1.0,0.5)
+	  CALL PGIMAG(Z,NDROW,NDCOL,1,NROW,1,NCOL,
      &                ZMIN,ZMAX,TRCONT)
-	  CALL PGWEDG('RG',2.2,5.0,ZMIN,ZMAX,'pixel value')
 	End If
+
+	! Wedge axis + label in foreground black.
+	CALL PGSCI(1)
+	CALL PGWEDG('RI',2.2,5.0,ZMIN,ZMAX,TRIM(wedgeLabel))
 	CALL PGSCH(1.0)
+
+	! Bottom-of-plot annotation, centered under the x-axis.
+	! PGMTXT(side, disp, coord, fjust, text):
+	!   coord=0.5 anchors at the middle of the bottom edge,
+	!   fjust=0.5 centers the text on that anchor.
+	CALL PGSCI(1)
+	If (annotOn) Then
+	  If (LEN_TRIM(annotLine1) > 0)
+     &	    CALL PGMTXT('B',3.5,0.5,0.5,TRIM(annotLine1))
+	  If (LEN_TRIM(annotLine2) > 0)
+     &	    CALL PGMTXT('B',4.7,0.5,0.5,TRIM(annotLine2))
+	  CALL ClearAnnot()
+	End If
 
         CALL PGEBUF
 !#endif
@@ -785,6 +958,11 @@ C***********************************************************************
 
 	X=X_in; Y=Y_in; Z=Z_in; ZVEC=ZVEC_in
 
+C       Non-raster plots: force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
+
 C       SET PLOT DIMENSIONS
 
         ZMIN=1E31
@@ -810,7 +988,7 @@ C       SET PLOT DIMENSIONS
 C       CALL PLOT ROUTINES
 
         SIZE=X(NROW)
-        CALL PGENV(0., SIZE, 0., SIZE, 1, -2)
+        CALL PANEL_ENV(0., SIZE, 0., SIZE, 1, -2)
         CALL FREDDY(ZVEC,NROW,NROW,SIZE,25.0)
 
         RETURN
@@ -832,6 +1010,10 @@ C***********************************************************************
 	X=X_in; Y=Y_in; Z=Z_in
 
         CALL PGBBUF
+C       Non-raster plot (COLUMN/ROW): force white background, black ink.
+        CALL PGSCR(0, 1.0, 1.0, 1.0)
+        CALL PGSCR(1, 0.0, 0.0, 0.0)
+        CALL PGSCI(1)
         CALL PGQCI(CI)
 
 C       FIND PLOT DIMENSIONS
@@ -845,7 +1027,7 @@ C       FIND PLOT DIMENSIONS
 
 C       CALL PLOT ROUTINES
 
-        CALL PGENV(X(1),X(NROW),ZMIN,ZMAX,0,0)
+        CALL PANEL_ENV(X(1),X(NROW),ZMIN,ZMAX,0,0)
         CALL PGLABEL(CXLABL,CYLABL,CTITLE)
         CALL PGSCI(1)
         CALL PGLINE(NROW,X,Z)

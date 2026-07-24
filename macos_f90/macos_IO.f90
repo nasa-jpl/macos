@@ -95,6 +95,35 @@ MODULE macos_IO
 
 
     ! ------------------------------------------------------------------
+    ! FmtD -- compact REAL*8 formatter: up to 17 sig digits, trailing
+    ! zeros stripped from mantissa.  1.2d0 -> '1.2E+00', etc.
+    ! 17 digits (not 16) so a load->SAVE->load round-trip reproduces
+    ! every REAL*8 bit-exactly (16 is not always sufficient).
+    !
+    FUNCTION FmtD(x) RESULT(s)
+      USE Kinds
+      IMPLICIT NONE
+      REAL(pr),         INTENT(IN) :: x
+      CHARACTER(LEN=25)            :: s
+      CHARACTER(LEN=25)            :: buf
+      INTEGER                      :: ie, i
+      WRITE(buf,'(1P,ES24.16E2)') x
+      buf = ADJUSTL(buf)
+      ie  = INDEX(buf,'E')
+      IF (ie == 0) THEN; s = TRIM(buf); RETURN; END IF
+      i = ie - 1
+      DO WHILE (i > 1 .AND. buf(i:i) == '0')
+        i = i - 1
+      END DO
+      IF (buf(i:i) == '.') i = i + 1
+      s = buf(1:i) // buf(ie:LEN_TRIM(buf))
+      ! normalize negative zero: computed frame defaults can carry
+      ! -0.0 under one compiler and +0.0 under the other, breaking
+      ! byte-identical SAVE output across ifx/gfortran
+      IF (s == '-0.0E+00') s = '0.0E+00'
+    END FUNCTION FmtD
+
+    ! ------------------------------------------------------------------
     !
     SUBROUTINE PrtFmtScalar_dbl(NameStr,DigitFmtStr,PrtScalar)
       USE Kinds
@@ -102,10 +131,12 @@ MODULE macos_IO
       IMPLICIT NONE
       CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
       REAL(pr),         INTENT(IN):: PrtScalar
+      CHARACTER(LEN=25)           :: valStr
       ! - - - - - - - - - - - - - - - - - - -
-      WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+      WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
-      WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), PrtScalar
+      valStr = FmtD(PrtScalar)
+      WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//"A)") TRIM(NameStr), TRIM(valStr)
       CALL PrintMsg(PrtMsgStr)
 
     END SUBROUTINE PrtFmtScalar_dbl
@@ -117,7 +148,7 @@ MODULE macos_IO
       CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
       INTEGER,          INTENT(IN):: PrtScalar
       ! - - - - - - - - - - - - - - - - - - -
-      WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+      WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
       WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), PrtScalar
       CALL PrintMsg(PrtMsgStr)
@@ -131,7 +162,7 @@ MODULE macos_IO
         CHARACTER(LEN=*), INTENT(IN):: DigitFmtStr, NameStr
         CHARACTER*(*),    INTENT(IN):: PrtStr
         ! - - - - - - - - - - - - - - - - - - -
-        WRITE(cmd, "('(A',i0,A,',')") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+        WRITE(cmd, "('(A',i0,A)") PrtCmdIndent,",'=',"    ! "(Axx,'=',"
 
         WRITE(PrtMsgStr,cmd(1:LEN_TRIM(cmd))//TRIM(DigitFmtStr)//")") TRIM(NameStr), TRIM(PrtStr)
         CALL PrintMsg(PrtMsgStr)
@@ -150,54 +181,43 @@ MODULE macos_IO
         INTEGER,                  INTENT(IN):: nCols
         REAL(pr),                 INTENT(IN):: PrtVec(:)
 
-        CHARACTER(LEN=255) :: PrtMsgStr
-        INTEGER            :: nVec,k,j,u
-        CHARACTER(LEN=40)  :: FmtStr
-        CHARACTER(LEN=20)  :: cmd, cmdE
-
-        INTEGER            :: iZ, nZ
+        CHARACTER(LEN=510) :: PrtMsgStr, rowStr
+        INTEGER            :: nVec, j, iStart, iEnd
+        CHARACTER(LEN=20)  :: cmd
+        INTEGER            :: u
         ! - - - - - - - - - - - - - - - - - - -
 
-        nVec  = SIZE(PrtVec)
+        nVec = SIZE(PrtVec)
         IF (nVec==0) RETURN
 
-
-        if (LEN_TRIM(NameStr)==0) then
-          WRITE(cmd,"('(A',i0,A,',')")PrtCmdIndent,",' ',"    ! "(Axx,' ',"
-        else
-          WRITE(cmd, "('(A',i0,A,',')")PrtCmdIndent,",'=',"   ! "(Axx,'=',"
-        end if
+        IF (LEN_TRIM(NameStr)==0) THEN
+          WRITE(cmd,"('(A',i0,A)")PrtCmdIndent,",' ',"    ! "(Axx,' ',"
+        ELSE
+          WRITE(cmd,"('(A',i0,A)")PrtCmdIndent,",'=',"    ! "(Axx,'=',"
+        END IF
         u = PrtCmdIndent+2
 
+        ! First row: name= followed by up to nCols values
+        iEnd = MIN(nCols, nVec)
+        rowStr = ' '
+        DO j = 1, iEnd
+          rowStr = TRIM(rowStr)//'  '//TRIM(FmtD(PrtVec(j)))
+        END DO
+        WRITE(PrtMsgStr, cmd(1:u)//"A)") TRIM(NameStr), TRIM(rowStr)
+        CALL PrintMsg(PrtMsgStr)
 
-        IF (nVec<=nCols) THEN
-          WRITE(FmtStr,"(i0,a)") nVec,'('//TRIM(DigitFmtStr)//'))'   ! eg: "(3(1PD23.15))"
-          WRITE(PrtMsgStr,cmd(1:u)//FmtStr) TRIM(NameStr),PrtVec(:)  !     "   cmd = (3(1PD23.15))"
-          CALL PrintMsg(PrtMsgStr)
-
-        ELSE
-          ! write 1st row with 'nCols' columns
-          WRITE(FmtStr,"(i0,a)") nCols,'('//TRIM(DigitFmtStr)//'))'   ! eg: "(3(1PD23.15))"
-          WRITE(PrtMsgStr,cmd(1:u)//FmtStr) TRIM(NameStr),PrtVec(:nCols)   !     "   cmd = (3(1PD23.15))"
-          CALL PrintMsg(PrtMsgStr)
-
-          ! write complete rows with 'nCols' columns
-          WRITE(FmtStr,"(a,i0,a,i0,a)") '(',PrtCmdIndent+1,'x,',nCols,'('//TRIM(DigitFmtStr)//'))'
-          DO j=2, nVec/nCols
-            WRITE(PrtMsgStr,FmtStr)PrtVec((j-1)*nCols+1:j*nCols)
-            CALL PrintMsg(PrtMsgStr)
+        ! Continuation rows: indented to align with first row's values
+        iStart = nCols + 1
+        DO WHILE (iStart <= nVec)
+          iEnd   = MIN(iStart+nCols-1, nVec)
+          rowStr = ' '
+          DO j = iStart, iEnd
+            rowStr = TRIM(rowStr)//'  '//TRIM(FmtD(PrtVec(j)))
           END DO
-
-          ! write incomplete rows
-          nZ = MOD(nVec, nCols)
-          iZ = nVec/nCols
-          IF (nZ>0) THEN
-            WRITE(FmtStr,"(a,i0,a,i0,a)") '(',PrtCmdIndent+1,'x,',nZ,'('//TRIM(DigitFmtStr)//'))'
-            WRITE(PrtMsgStr,FmtStr)PrtVec(iZ*nCols+1:nVec)
-            CALL PrintMsg(PrtMsgStr)
-          END IF
-
-        END IF
+          WRITE(PrtMsgStr,"(A,A)") REPEAT(' ',PrtCmdIndent+1), TRIM(rowStr)
+          CALL PrintMsg(PrtMsgStr)
+          iStart = iEnd + 1
+        END DO
 
       END SUBROUTINE PrtFmtArray_dbl
       !
@@ -223,7 +243,7 @@ MODULE macos_IO
         nVec  = SIZE(PrtVec)
         IF (nVec==0) RETURN
 
-        WRITE(cmd, "('(A',i0,A,',')")PrtCmdIndent,",'=',";    u = LEN_TRIM(cmd)  ! "(Axx,'=',"
+        WRITE(cmd, "('(A',i0,A)")PrtCmdIndent,",'=',";    u = LEN_TRIM(cmd)  ! "(Axx,'=',"
 
         IF (nVec<=nCols) THEN
             WRITE(FmtStr,"(i0,a)") nVec,'('//TRIM(DigitFmtStr)//'))'   ! eg: "(3(1PD23.15))"

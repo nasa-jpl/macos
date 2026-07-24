@@ -1,0 +1,8 @@
+*.o
+*.lo
+*.la
+*.mod
+*.a
+*.dylib
+include/*
+lib/*

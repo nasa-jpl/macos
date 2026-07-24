@@ -3,7 +3,7 @@ C  File macos.F
 C  MACOS main program
 C
 C    +----------------------------------------------------------------+
-C    |  Copyright (C) 1995-2012, California Institute of Technology.  |
+C    |  Copyright (C) 1995-2026, California Institute of Technology.  |
 C    |  ALL RIGHTS RESERVED. United State Government Sponsorship Is   |
 C    |  Acknowledged. Any commercial use must be negotiated with the  |
 C    !  Office of Technology Transfer at the California Institute of  |
@@ -21,27 +21,23 @@ C***********************************************************************
 
 C***********************************************************************
 C       Modeling and Analysis for Controlled Optical Systems (MACOS)
-C       MACOS Version 3.34 	               Last updated: 11/2011
-C       (Based on MACOS Versions 3.31, 3.2 and 2.86)
-C
-C       Contact:     John Z. Lou
-C       Address:     Jet Propulsion Laboratory
-C                    MS 306-451
-C                    4800 Oak Grove Dr., Pasadena CA 91109
-C       Email:       John.Z.Lou@jpl.nasa.gov
-C       Phone:       (818)354-4870
+C	MACOS Version 4.00		       Work in progress
 C***********************************************************************
-
-C***********************************************************************
-C       ** History **
-C       MACOS Version 2.86		           08/2001
 C
-C       Contact:     David C. Redding
-C       Address:     Jet Propulsion Laboratory
-C                    MS 306-451
-C                    4800 Oak Grove Dr., Pasadena CA 91109
-C       Email:       dcr@huey.jpl.nasa.gov
-C       Phone:       (818)354-3696
+C       MACOS Version 4.00 	               Last updated: 4/2026
+C       Contacts:    Scott Basinger, Scott.A.Basinger@jpl.nasa.gov
+C                    John Lou, John.Z.Lou@jpl.nasa.gov
+C                    Luis Marchen, Luis.F.Marchen@jpl.nasa.gov
+C                    Carl Nissly, Carl.R.Nissly@jpl.nasa.gov
+C                    David C. Redding, david.c.redding@gmail.com
+C                    Norbert Sigrist, Norbert.Sigrist@jpl.nasa.gov
+C
+C       Based on MACOS Versions 3.31, 3.2 and 2.86, and COMP, the
+C       Controlled Optics Modeling Program
+C       Authors:     David C. Redding, Laura Needels, Sam Sirlin,
+C                    Scott Basinger, John Lou, Luis Marchen, Carl 
+C                    Nissly, and Norbert Sigrist
+C
 C***********************************************************************
 
 #include "realtype.h"
@@ -52,6 +48,8 @@ C***********************************************************************
 	use src_mod
 	use cfiles_mod
 	use macos_mod
+	use sysprop_mod, only: DeriveSysProps, PrintSysProps
+	use plot_mode_mod
         use surfsub
 
 	use macosio_mod
@@ -67,9 +65,13 @@ C***********************************************************************
 	use dopt_mod
 	use zern_wf_mod
 	use design_optim_mod
-	!use design_cons_optim_mod
+#ifdef USE_NPSOL
+	use design_cons_optim_mod
+#endif
+	use design_slsqp_optim_mod
         use stop_set_mod
 	use loh_I1, only : BaseUnits_FLG
+        use validate_prescription_mod, only: ValidatePrescription
 
 	Implicit None
 
@@ -78,6 +80,9 @@ C***********************************************************************
           implicit none
           integer, optional :: psize
           End Subroutine macos_init_all
+          Subroutine install_sigint_handler() bind(C,name='install_sigint_handler')
+          use iso_c_binding
+          End Subroutine install_sigint_handler
         End Interface
 
 C  FORMAT statements
@@ -98,13 +103,18 @@ C  Execution starts
         ! Scene pthread defined in C
 	!Call startpthread
 
+	Call install_sigint_handler()
 	Call set_macos_problem_size(macos_model_size)
 
 	mVarDOF_nls=mVarDOF    ! mVarDOF_nls, mOptZern_nls and mOptAsph_nls
 	mOptZern_nls=mOptZern  ! are declared in design_optim_mod
 	mOptAsph_nls=mOptAsph
-	!mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
-        !mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
+#ifdef USE_NPSOL
+	mVarDOF_np=mVarDOF     ! mVarDOF_np and mOptZern_np
+        mOptZern_np=mOptZern   ! are declared in design_cons_optim_mod
+#endif
+	mVarDOF_sls=mVarDOF    ! design_slsqp_optim_mod copies
+	mOptZern_sls=mOptZern
 
         ! Initialize MACOS
         Call macos_init_all(macos_model_size)

@@ -40,6 +40,14 @@ C***********************************************************************
 	Real*8, dimension(:,:), allocatable :: CRIncidDir,CROutgoDir,
      &       CRIncidPosNom,CRIncidPos,CRIncidSurfN,CRXLoc,CRYLoc,CRNhat
 	Real*8, dimension(:,:,:), allocatable :: PolyVtx3DSav,RayPosHist
+!-->    3-D DRAW capture: global (x,y,z) of each draw-ray surface
+!       crossing, filled by CTRACE alongside the projected DrawRay
+!       (gated on iDrawRay_global>0, i.e. only during DRAW).  Shape
+!       (3, mDrawElt, mDrawRay); allocated lazily by the DRAW handler.
+!       Read back by macos_api_mod draw_rays3d_get (macos.draw_rays3d)
+!       -- the general 3-D visualizer substrate (any Rx, any elt type).
+	Real*8, dimension(:,:,:), allocatable :: Draw3DVec
+!<--
         Real*8, dimension(:,:,:,:), allocatable :: gradIndRayPath
 	  ! note that gradIndRayPath now only supports two gradInd elems
 	  ! see allocate for gradIndRayPath below

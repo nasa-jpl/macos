@@ -65,6 +65,11 @@ C***********************************************************************
           UDSrfCoef_FLG       = .FALSE.
           UDSrfType_FLG       = .FALSE.
           UDSrfParam_FLG      = .FALSE.
+          pData_FLG           = .FALSE.
+          xData_FLG           = .FALSE.
+          yData_FLG           = .FALSE.
+          zData_FLG           = .FALSE.
+          lData_FLG           = .FALSE.
           pMon_FLG            = .FALSE.
           xMon_FLG            = .FALSE.
           yMon_FLG            = .FALSE.
@@ -106,6 +111,20 @@ C***********************************************************************
           GridSrfdx_FLG       = .FALSE.
 
           ZernCent_FLG        = .FALSE.
+
+          lFF_FLG             = .FALSE.
+          pFF_FLG             = .FALSE.
+          xFF_FLG             = .FALSE.
+          yFF_FLG             = .FALSE.
+          zFF_FLG             = .FALSE.
+          FFZernCoef_FLG      = .FALSE.
+          FFZernTypeL_FLG     = .FALSE.
+          nFFZernCoef_FLG     = .FALSE.
+          FFZernModes_FLG     = .FALSE.
+          MonZernCoef_FLG     = .FALSE.
+          MonZernTypeL_FLG    = .FALSE.
+          nMonZernCoef_FLG    = .FALSE.
+          MonZernModes_FLG    = .FALSE.
 
         END SUBROUTINE LOHIN2
 
@@ -329,6 +348,8 @@ c		 warning messages when you have nObs=0
 	use src_mod
 	use elt_mod
 	use loh_I2
+        use macos_mod, only: ifStopSet
+        use Constants, only: INF
 
 	IMPLICIT NONE
 
@@ -346,6 +367,17 @@ C   Setup for new input scheme
 	ELEM_OK = .TRUE.
 
 C       Set defaults, if necessary
+
+        ! ApStop -- cannot be placed at NS-Surfaces or at the Object Location
+        if (RxStopSet .and. EltStopSet) then
+          if (EltID(iElt)==0 .OR.
+     &          EltID(iElt) == NSRefractorElt .OR.
+     &          EltID(iElt) == NSReflectorElt .OR.
+     &          EltID(iElt) == SegmentElt) THEN
+                  ifStopSet  =.FALSE.
+                  EltStopSet =.FALSE.
+          end if
+        end if
 
 	IF (EltName_FLG) THEN
 	  CONTINUE
@@ -538,6 +570,69 @@ C	Param order = beta,dact or drad,dq,minrad
 	  END IF
 	END IF
 
+	!<--
+	! FreeForm: lData is unused; pData/xData/yData/zData only needed with grid
+	IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+	  lData_FLG=.TRUE.
+	  IF (nGridMat(iElt).EQ.0) THEN
+	    pData_FLG=.TRUE.
+	    xData_FLG=.TRUE.
+	    yData_FLG=.TRUE.
+	    zData_FLG=.TRUE.
+	  END IF
+	END IF
+
+	IF (pData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (VptElt_FLG) THEN
+	    CALL DEQUATE(pData(1,iElt),VptElt(1,iElt),3)
+	    pData_FLG=.TRUE.
+	    WRITE(*,112)'pData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (xData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  xData(1,iElt)=psiElt(3,iElt)
+	  xData(2,iElt)=psiElt(1,iElt)
+	  xData(3,iElt)=psiElt(2,iElt)
+	  xData_FLG=.TRUE.
+	  WRITE(*,112)'xData',iElt
+	END IF
+
+	IF (yData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData)
+	  yData_FLG=.TRUE.
+	  WRITE(*,112)'yData',iElt
+	END IF
+
+	IF (zData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  IF (psiElt_FLG) THEN
+	    CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
+	    zData_FLG=.TRUE.
+	    WRITE(*,112)'zData',iElt
+	  ELSE
+	    ELEM_OK=.FALSE.
+	  END IF
+	END IF
+
+	IF (lData_FLG) THEN
+	  CONTINUE
+	ELSE
+	  lData(iElt)=Aperture
+	  lData_FLG=.TRUE.
+	  WRITE(*,112)'lData',iElt
+	END IF
+	!-->
+
 	IF (xMon_FLG) THEN
 	  CONTINUE
 	ELSE
@@ -574,6 +669,69 @@ C	Param order = beta,dact or drad,dq,minrad
 	  lMon(iElt)=Aperture
 	  lMon_FLG=.TRUE.
 	  WRITE(*,112)'lMon',iElt
+	END IF
+
+C  FreeForm surface: set FF coordinate frame defaults; mark FF flags
+C  as satisfied for all other surface types.
+	IF (SrfType(iElt) .EQ. SrfType_FreeForm) THEN
+	  IF (.NOT.lFF_FLG) THEN
+	    lFF(iElt) = 0d0
+	    lFF_FLG = .TRUE.
+	    WRITE(*,112)'lFF',iElt
+	  END IF
+	  IF (.NOT.pFF_FLG) THEN
+	    CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
+	    pFF_FLG = .TRUE.
+	    WRITE(*,112)'pFF',iElt
+	  END IF
+	  IF (.NOT.xFF_FLG) THEN
+	    xFF(1,iElt) = psiElt(3,iElt)
+	    xFF(2,iElt) = psiElt(1,iElt)
+	    xFF(3,iElt) = psiElt(2,iElt)
+	    xFF_FLG = .TRUE.
+	    WRITE(*,112)'xFF',iElt
+	  END IF
+	  IF (.NOT.yFF_FLG) THEN
+	    CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
+	    yFF_FLG = .TRUE.
+	    WRITE(*,112)'yFF',iElt
+	  END IF
+	  IF (.NOT.zFF_FLG) THEN
+	    CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
+	    zFF_FLG = .TRUE.
+	    WRITE(*,112)'zFF',iElt
+	  END IF
+	  IF (.NOT.FFZernTypeL_FLG) THEN
+	    FFZernTypeL(iElt) = ZernType_ANSI
+	    FFZernTypeL_FLG = .TRUE.
+	    WRITE(*,112)'FFZernTypeL',iElt
+	  END IF
+	  IF (.NOT.FFZernCoef_FLG) THEN
+	    FFZernCoef(:,iElt) = 0d0
+	    FFZernCoef_FLG = .TRUE.
+	    WRITE(*,112)'FFZernCoef',iElt
+	  END IF
+	  IF (.NOT.MonZernTypeL_FLG) THEN
+	    MonZernTypeL(iElt) = ZernType_ANSI
+	    MonZernTypeL_FLG = .TRUE.
+	    WRITE(*,112)'MonZernTypeL',iElt
+	  END IF
+	  IF (.NOT.MonZernCoef_FLG) THEN
+	    MonZernCoef(:,iElt) = 0d0
+	    MonZernCoef_FLG = .TRUE.
+	    WRITE(*,112)'MonZernCoef',iElt
+	  END IF
+	  CALL SetFreeFormFlags(iElt)
+	ELSE
+	  lFF_FLG          = .TRUE.
+	  pFF_FLG          = .TRUE.
+	  xFF_FLG          = .TRUE.
+	  yFF_FLG          = .TRUE.
+	  zFF_FLG          = .TRUE.
+	  FFZernCoef_FLG   = .TRUE.
+	  FFZernTypeL_FLG  = .TRUE.
+	  MonZernCoef_FLG  = .TRUE.
+	  MonZernTypeL_FLG = .TRUE.
 	END IF
 
 	IF (LensArrayType_FLG) THEN
@@ -821,6 +979,27 @@ C	  WRITE(*,112)'nObs',iElt
 	  END IF
 	END IF
 
+	! Resolve any PolyObsVec/Poly3DObsVec entries that were parsed
+	! before xObs was set.  xObs may have just been defaulted above,
+	! so this is the last chance to project.  If xObs is still
+	! unavailable, fail the element with a targeted message.
+	DO i=1,mObs
+	  IF (nPolyObsVtx3DPending(i,iElt).GT.0) THEN
+	    IF (xObs_FLG) THEN
+	      Call SetCvxPolyObsVtx(iElt,
+     &            nPolyObsVtx3DPending(i,iElt),
+     &            PolyObsVtx3DPending(:,
+     &                1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
+	      Call SetCvxPolyObsBound(i,iElt)
+	    ELSE
+	      WRITE(*,*)' xObs missing for PolyObsVec/Poly3DObsVec',
+     &                 ', iElt=',iElt,', iObs=',i
+	      ELEM_OK=.FALSE.
+	    END IF
+	    nPolyObsVtx3DPending(i,iElt) = 0
+	  END IF
+	END DO
+
 	IF (TElt_FLG) THEN
 	  CONTINUE
 	ELSE
@@ -843,6 +1022,23 @@ C	  WRITE(*,112)'nObs',iElt
 	ELSE
 	  KcElt(iElt)=-eElt(iElt)*eElt(iElt)
 	  KrElt(iElt)=-(1.0 + eElt(iElt))*fElt(iElt)
+	END IF
+
+	! Defense in depth: a Flat is by definition zero-curvature, no
+	! conic.  Some older Rx files encode this as
+	! `KrElt= 0, KcElt= -1e38` which propagates through the formulas
+	! above to garbage (`eElt = sqrt(1e38) = 1e19`, `fElt = 0`),
+	! silently breaking SRS / FEX downstream.  Normalize after the
+	! main fElt/eElt fill so a buggy file can't poison the engine.
+	! Canonical Flat encoding is `KrElt= -1e22, KcElt= 0`; this
+	! block produces the same values regardless of the input.
+	! Logged on 2026-05-31 after the SRS-clobbers-Flat-zElt bug
+	! (PLAN.md §0 lists the wider follow-up).
+	IF (SrfType(iElt) .EQ. SrfType_Flat) THEN
+	  fElt(iElt)  =  INF
+	  eElt(iElt)  =  0d0
+	  KcElt(iElt) =  0d0
+	  KrElt(iElt) = -INF
 	END IF
 
 	RETURN
@@ -990,7 +1186,7 @@ C***********************************************************************
             ! --------------------------------------------
             ! Global Coord. Output
             ! --------------------------------------------
-            CALL PrintBanner('Lin. Model Coordinate System Definition')
+            CALL PrintBanner('Output Coordinate System Definition')
 
             CALL PrintFmt('nOutCord', "i3", nOutCord)
             CALL PrintFmtArray('Tout','1PD23.15',7,PACK(TRANSPOSE(Tout(1:nOutCord,:)),MASK=.TRUE.))
@@ -1019,22 +1215,49 @@ C***********************************************************************
           use src_mod
           use elt_mod
           use param_mod
+!-->
+          use macos_mod, only: ifStopSet,zcoType,ZernAnnular,ZernHex
+          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG
+          use dopt_mod, only: nOptWavelen,opt_wavelen,max_wl
+!<--
 
           IMPLICIT NONE
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
-          CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
-          CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
-
-          CALL PrintBanner('Element Definitions')
+          CALL PrintBanner('Source Definition')
 
           CALL PrintFmtArray('ChfRayDir', '1PD23.15', 3, ChfRayDir)
           CALL PrintFmtArray('ChfRayPos', '1PD23.15', 3, ChfRayPos)
           CALL PrintFmt('zSource', "1PD23.15", zSource)
           CALL PrintMsg('')
 
+!--> skip the unset-units placeholder: "(default-unit)" is not
+!    parseable on reload (GET_EQ treats parentheses as array-index
+!    markers, so the value comes back EMPTY) -- writing it made a
+!    load->SAVE->load->SAVE cycle non-idempotent.
+          IF ((LEN_TRIM(BaseUnits).GT.0) .AND.
+     &        (BaseUnits(1:1).NE.'(')) THEN
+            CALL PrintFmt('BaseUnits', "2x,A", TRIM(BaseUnits))
+          END IF
+          IF ((LEN_TRIM(WaveUnits).GT.0) .AND.
+     &        (WaveUnits(1:1).NE.'(')) THEN
+            CALL PrintFmt('WaveUnits', "2x,A", TRIM(WaveUnits))
+          END IF
+!<--
+          CALL PrintMsg('')
+
           CALL PrintFmt('IndRef',  "1PD23.15", IndRef(0))
           CALL PrintFmt('Extinc',  "1PD23.15", Extinc(0))
           CALL PrintFmt('Wavelen', "1PD23.15", Wavelen)
+!--> multi-wavelength round-trip (SAVE audit, element-data pass):
+!    each Wavelen= line appends to opt_wavelen at load, so the
+!    single Wavelen= above restores slot 1 and ArrWaveLen= appends
+!    the rest.  Writing all of opt_wavelen here would double-count
+!    slot 1 on reload.
+          IF (nOptWavelen.GT.1) THEN
+            CALL PrintFmtArray('ArrWaveLen', '1PD23.15', max_wl,
+     &           opt_wavelen(2:nOptWavelen))
+          END IF
+!<--
           CALL PrintFmt('Flux',    "1PD23.15", Flux)
           CALL PrintMsg('')
 
@@ -1058,6 +1281,15 @@ C***********************************************************************
             CALL PrintFmtArray('SegXgrid', '1PD23.15', 3, SegXgrid)
             CALL PrintFmtArray('SegCoord', '2x,i2', 3, PACK(SegCoord(1:3,1:nSeg),MASK=.TRUE.))
 
+!--> segment aperture round-trip (SAVE audit): the parser requires
+!    SegCoord before SegApType, so emit here at the end of the
+!    Hex/Pie branch.  Only the hex form (SegApType=6) exists.
+            IF (SegApType.EQ.6) THEN
+              CALL PrintFmt('SegApType', "2x,A", 'Hex')
+              CALL PrintFmtArray('SegApVec', '2x,i0', 2, SegApVec(1:2))
+            END IF
+!<--
+
           ELSE IF (GridType .EQ. GridType_Flower) THEN
 
             CALL PrintMsg('')
@@ -1073,6 +1305,40 @@ C***********************************************************************
             CALL PrintFmtArray('SegCoord', '2x,i3', 2, PACK(SegCoord(1:2,1:nSeg),MASK=.TRUE.))
 
           END IF
+
+!--> SAVE round-trip of derivative state (PLAN section 0, Dave
+!    2026-07-03): ApStop was a late add to the Rx and SAVE dropped
+!    it -- the re-saved Rx then silently lost its stop (FEX/SXP and
+!    the dw/d* machinery need one).  Same for OPDRefRayLen and the
+!    RxNoStopSet flag.  An ELEMENT-BOUND stop (per-element ApStop=
+!    dx dy) is written inside its element block by PrtSingleEltInfo
+!    instead, so exactly one form is emitted.
+          IF (RxNoStopSet_Flg) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('RxNoStopSet', "2x,A", 'Y')
+          END IF
+          IF (ifStopSet .AND. .NOT.EltStopSet) THEN
+            CALL PrintMsg('')
+            CALL PrintFmtArray('ApStop', '1PD23.15', 3, StopPos)
+          END IF
+          IF (OPDRefRayLen_FLG) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
+          END IF
+          ! ZCO wavefront-decomposition basis (default ZernCircular
+          ! is implied; only the non-default settings are parsed)
+          IF (zcoType.EQ.ZernAnnular) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('ZCOZernType', "2x,A", 'NormAnnular')
+          ELSE IF (zcoType.EQ.ZernHex) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('ZCOZernType', "2x,A", 'NormHex')
+          END IF
+!<--
+
+!--> captured whole-line Rx comments from the header section
+          CALL RxCommentEmit(0)
+!<--
 
         END SUBROUTINE PrtSourceInfo
 
@@ -1102,11 +1368,20 @@ C***********************************************************************
           use src_mod
           use cfiles_mod
           use elt_mod
-          use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,ifSave3DApVec
+          use traceutil_mod, only : PolyVtx3DSav,Poly3DApVecL,
+     &         ifSave3DApVec,IsVarIndRefElt,IsGrinRefElt,GrinRefArr,
+     &         LensletStrArray,TotalLensletsArray
+          use macos_mod, only : zernUsrOpt
+          use dopt_mod, only : nOptWavelen
           use macos_IO
 
           IMPLICIT NONE
           INTEGER, INTENT(IN):: iElt
+!--> locals for the guarded element-data emissions (SAVE audit)
+          INTEGER :: i, k
+          REAL(pr) :: thk
+          CHARACTER(LEN=256) :: EltMsgStr
+!<--
           ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
           ! --------------------------------------------
@@ -1197,28 +1472,158 @@ C***********************************************************************
 
             ! ---------------------------- Grid Type Srf (9)
             CASE (SrfType_GridData)
-              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
             ! ---------------------------- Toric (10)  ToDo
             CASE (SrfType_Toric)
               CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
 
+            ! ---------------------------- AsGrData Srf (11)
+            CASE (SrfType_AsGrData)
+              BLOCK
+                INTEGER  :: nCoef
+                LOGICAL  :: nonzero(mAsphCoef)
+
+                nonzero(:) = .FALSE.
+                WHERE (AsphCoef(:,iElt)/=0e0_pr) nonzero = .TRUE.
+                nCoef = FINDLOC(nonzero, VALUE=.true., DIM=1, BACK=.true.)
+
+                IF (nCoef==0) THEN
+                  CALL PrintFmt('nAsphCoef', "2x,i0", 1)
+                  CALL PrintFmt('AsphCoef',  "1PD23.15", 0e0_pr)
+                ELSE
+                  CALL PrintFmt('nAsphCoef', "2x,i0", nCoef)
+                  CALL PrintFmtArray('AsphCoef','1PD23.15', 4, AsphCoef(1:nCoef, iElt))
+                END IF
+              END BLOCK
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- MonGrData Srf. (12)
+            CASE (SrfType_MonGrData)
+              CALL PrintFmtArray('MonCoef','1PD23.15', 6, MonCoef(:,iElt))
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- ZrnGrData Srf. (13)
+            CASE (SrfType_ZrnGrData)
+              CALL Srf_Zernike()
+              CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+              CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+
+            ! ---------------------------- FreeForm Srf. (14)
+            CASE (SrfType_FreeForm)
+              CALL Srf_FFZernike()
+              CALL PrintFmt('lFF', "1PD23.15", lFF(iElt))
+              CALL Srf_MonZernike()
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+!--> the per-element annular ratio is shared by the FF and Mon
+!    Zernike components; the FFZernType/MonZernType lines above are
+!    written without their optional trailing ratio, so restore it
+!    via the explicit key (parsed into the same ZernAnnuRatio slot)
+              IF ((FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll).OR.
+     &            (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll))
+     &          CALL PrintFmt('ZernAnnularRatio', "1PD23.15",
+     &               ZernAnnuRatio(iElt))
+!<--
+              IF (nGridMat(iElt).GT.0) THEN
+                CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+                CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+                CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+              END IF
+
             ! ---------------------------- undefined Special Srf.
             CASE DEFAULT
 
           END SELECT
 
+!--> grid data attached to a non-grid SrfType (SAVE audit): e.g.
+!    Conic NSReflector segments carrying GridData figures.
+!    The trace keys off nGridMat>0, not SrfType,
+!    but the SELECT above only writes the grid keys for the grid
+!    surface types -- so these grids were silently dropped by SAVE.
+          IF ((nGridMat(iElt).GT.0).AND..NOT.
+     &        ((SrfType(iElt).EQ.SrfType_GridData).OR.
+     &         (SrfType(iElt).EQ.SrfType_AsGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_MonGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
+     &         (SrfType(iElt).EQ.SrfType_FreeForm))) THEN
+            CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
+            CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+          END IF
+!<--
+
           ! --------------------------------------------------------
           ! Special Srf. Coord. Parameters: Position and orientation
           ! --------------------------------------------------------
+          IF (SrfType(iElt).EQ.SrfType_FreeForm) THEN
+            CALL PrintFmtArray('pFF', "1PD23.15", 3, pFF(:,iElt))
+            CALL PrintFmtArray('xFF', "1PD23.15", 3, xFF(:,iElt))
+            CALL PrintFmtArray('yFF', "1PD23.15", 3, yFF(:,iElt))
+            CALL PrintFmtArray('zFF', "1PD23.15", 3, zFF(:,iElt))
+          END IF
           IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)) THEN
             CALL PrintFmtArray('pMon', "1PD23.15", 3, pMon(:,iElt))
             CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
             CALL PrintFmtArray('zMon', "1PD23.15", 3, zMon(:,iElt))
           END IF
+!--> grid frame widened to ANY grid-carrying element (SAVE audit):
+!    SrfType 9/11 use the same pData/xData/yData/zData frame in the
+!    trace (GridSrf null-frame fix), so dropping it on SAVE moved
+!    the grid figure to the ChkDf2 default frame on reload
+          IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
+     &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
+     &        (nGridMat(iElt).GT.0)) THEN
+            CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
+            CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
+            CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
+            CALL PrintFmtArray('zData', "1PD23.15", 3, zData(:,iElt))
+          END IF
+
+!--> element-data keys the SAVE path used to drop (SAVE audit
+!    element-data bucket, PLAN section 0 item 2 follow-through).
+!    Every emission is gated on the value actually being set in
+!    memory, so prescriptions that never used the key are unchanged.
+
+          ! grid-frame length scale (parse-and-store; default 0)
+          IF (lData(iElt).NE.0e0_pr)
+     &      CALL PrintFmt('lData', "1PD23.15", lData(iElt))
+
+          ! grid interpolator order (default 1 = bi-linear; only the
+          ! bi-cubic setting needs to survive)
+          IF ((nGridMat(iElt).GT.0).AND.(GridSrfOrder(iElt).EQ.3))
+     &      CALL PrintFmt('GridSrfOrder', "2x,i0", GridSrfOrder(iElt))
+
+          ! amplitude (apodization) grid attached to this element;
+          ! nAmplMat must precede AmplFile (AmplInit needs the size)
+          IF (ifAmplSrf(iElt)) THEN
+            CALL PrintFmt('nAmplMat', "2x,i0", nAmplMat(iElt))
+            CALL PrintFmt('AmplFile', "2x,A", TRIM(AmplFile(iElt)))
+            IF (AmplSrfdx(iElt).NE.0e0_pr)
+     &        CALL PrintFmt('AmplSrfdx', "1PD23.15", AmplSrfdx(iElt))
+          END IF
+
+          ! user override of the Zernike evaluation frame (parser
+          ! defaults ZernCent to VptElt, which is written above, so
+          ! reload order is safe: default first, override after)
+          IF (zernUsrOpt(iElt)) THEN
+            CALL PrintFmtArray('ZernCenter', "1PD23.15", 3,
+     &           ZernCent(:,iElt))
+            CALL PrintFmtArray('ZernXDir', "1PD23.15", 3,
+     &           ZernXGrid(:,iElt))
+            CALL PrintFmtArray('ZernYDir', "1PD23.15", 3,
+     &           ZernYGrid(:,iElt))
+            CALL PrintFmt('ZernRad', "1PD23.15", ZernRad(iElt))
+          END IF
+!<--
 
           ! -----------------------------------------------------
           ! Special Element: HOE, Grating & Lens Array Parameters
@@ -1245,6 +1650,37 @@ C***********************************************************************
 
               CALL PrintFmt('LensArrayType', "i2", LensArrayType(iElt))
               CALL PrintFmt('LensArrayWidth', "1PD23.15", LensArrayWidth(iElt))
+!--> per-lenslet refractive indices (SAVE audit): written in the
+!    canonical explicit-value LensArrayIndRef form, which also
+!    round-trips prescriptions that used XYIndRefFile= (the file
+!    name is not retained; the values are).  Must follow
+!    LensArrayType/Width -- the parser inits the lenslet grid from
+!    them before reading the values.
+              IF (IsVarIndRefElt(iElt).AND.
+     &            (TotalLensletsArray(iElt).GT.0)) THEN
+                WRITE(EltMsgStr,"(i0,1x,i0)")
+     &               TotalLensletsArray(iElt), 5
+                CALL PrintFmt('LensArrayIndRef', "A", TRIM(EltMsgStr))
+                CALL PrintFmtArray('', "1PD23.15", 5,
+     &               LensletStrArray(1:TotalLensletsArray(iElt),
+     &                               iElt)%IndRef)
+              END IF
+!<--
+
+!--> ------------------------ Diffractive Optical Element (DOE)
+!    (SAVE audit: the DOE keys had no writer at all)
+            CASE (DoeTrGratingElt)
+
+              CALL PrintFmt('OrderHOE', "1PD23.15", OrderHOE(iElt))
+              IF (DoeId(iElt).GT.0) THEN
+                CALL PrintFmt('DoeWL', "1PD23.15",
+     &               DoeWL(DoeId(iElt)))
+                CALL PrintFmtArray('DoePhase', "1PD23.15", 6,
+     &               DoePhProf(1:6,DoeId(iElt)))
+                CALL PrintFmt('DoeFl', "1PD23.15",
+     &               DoeFl(DoeId(iElt)))
+              END IF
+!<--
 
           END SELECT
 
@@ -1267,6 +1703,37 @@ C***********************************************************************
             CALL PrintFmt('Extinc', "1PD23.15", Extinc(iElt))
           END IF
 
+!--> per-wavelength refractive indices (SAVE audit).  Written after
+!    IndRef= -- on reload ArrIndRef resets IndRef(iElt) to its first
+!    entry, which is how the original load left it.  Values must fit
+!    one line: the parser reads them from the single VALUE string.
+          IF ((nOptWavelen.GT.1).AND.
+     &        ANY(ArrIndRef(1:MIN(nOptWavelen,mIndRef),iElt)
+     &            .NE.0e0_pr)) THEN
+            CALL PrintFmtArray('ArrIndRef', "1PD23.15", mIndRef,
+     &           ArrIndRef(1:MIN(nOptWavelen,mIndRef),iElt))
+          END IF
+
+          ! gradient-index model (SAVE audit).  GradInd (modelType)
+          ! must precede GradCoef -- the parser branches its READ on
+          ! it.  Only modelTypes 1/6 (3 coefs) and 7 (5 coefs) load
+          ! successfully, so only those forms can exist in memory.
+          IF (IsGrinRefElt(iElt)) THEN
+            CALL PrintFmt('GradInd', "2x,i0",
+     &           GrinRefArr(iElt)%modelType)
+            IF ((GrinRefArr(iElt)%modelType.EQ.1).OR.
+     &          (GrinRefArr(iElt)%modelType.EQ.6)) THEN
+              CALL PrintFmtArray('GradCoef', "1PD23.15", 8,
+     &             GrinRefArr(iElt)%modelCoef(1:3))
+            ELSE IF (GrinRefArr(iElt)%modelType.EQ.7) THEN
+              CALL PrintFmtArray('GradCoef', "1PD23.15", 8,
+     &             GrinRefArr(iElt)%modelCoef(1:5))
+            END IF
+            CALL PrintFmt('GradLensZ', "1PD23.15",
+     &           GrinRefArr(iElt)%lensDepth)
+          END IF
+!<--
+
           ! --------------------------------------------
           ! Coating
           ! --------------------------------------------
@@ -1276,6 +1743,64 @@ C***********************************************************************
             CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))
             CALL PrintFmtArray( 'CoatThk','1PD23.15',5,CoatThkElt(1:nCoatElt(iElt),iElt))
           END IF
+
+!--> Coating= layer stack (SAVE audit) -- the OTHER coating model
+!    (complex index + thickness per layer, used by the polarization
+!    path).  The parser scales the stored thickness by
+!    Wavelen/IndRef at load, so invert that here to write back the
+!    Rx form (thickness in wavelengths).  Must follow the IndRef=
+!    line above: the parser snapshots IndRef(iElt) for the stack's
+!    exit boundary layer when it reads Coating=.
+          IF (EltCoat(iElt).GT.0) THEN
+            CALL PrintFmt('Coating', "2x,i0", EltCoat(iElt))
+            DO k=1,EltCoat(iElt)
+              IF ((IndRefArr(k,iElt).NE.0e0_pr).AND.
+     &            (Wavelen.NE.0e0_pr)) THEN
+                thk = EltCoatThk(k,iElt)*IndRefArr(k,iElt)/Wavelen
+              ELSE
+                thk = EltCoatThk(k,iElt)
+              END IF
+              CALL PrintFmtArray('', "1PD23.15", 3,
+     &             (/IndRefArr(k,iElt),ExtincArr(k,iElt),thk/))
+            END DO
+          END IF
+
+          ! surface-metrology definition (SAVE audit): nMetPos must
+          ! precede tMetElt (the parser STOPs otherwise); beam-flag
+          ! rows are only read when tMetSrf > 0
+          IF ((nMetPos(iElt).GT.0).AND.
+     &        (iEltToMetSrf(iElt).GT.0)) THEN
+            CALL PrintFmt('nMetPos', "2x,i0", nMetPos(iElt))
+            DO i=1,nMetPos(iElt)
+              CALL PrintFmtArray('', "1PD23.15", 3,
+     &             SrfMetPos(1:3,i,iEltToMetSrf(iElt)))
+            END DO
+            IF (tMetSrf(iElt).NE.0) THEN
+              WRITE(EltMsgStr,"(i0,1x,i0)") tMetSrf(iElt),
+     &             ntMetPos(iElt)
+              CALL PrintFmt('tMetElt', "A", TRIM(EltMsgStr))
+              IF (tMetSrf(iElt).GT.0) THEN
+                DO i=1,nMetPos(iElt)
+                  WRITE(EltMsgStr,"(*(1x,i0))")
+     &                 metBeamFlg(1:ntMetPos(iElt),i,
+     &                            iEltToMetSrf(iElt))
+                  CALL PrintMsg(REPEAT(' ',PrtCmdIndent+1)//
+     &                 TRIM(EltMsgStr))
+                END DO
+              END IF
+            END IF
+          END IF
+
+          ! edge sensors (SAVE audit): one 9-value row per sensor
+          ! (position + two measuring directions, global frame)
+          IF (EdgeSensor(iElt).GT.0) THEN
+            CALL PrintFmt('EdgeSensors', "2x,i0", EdgeSensor(iElt))
+            DO k=1,EdgeSensor(iElt)
+              CALL PrintFmtArray('', "1PD23.15", 9,
+     &             EdgeSensVec(1:9,k,iElt))
+            END DO
+          END IF
+!<--
 
           ! --------------------------------------------
           ! Obscuration & Aperture Orientation
@@ -1292,6 +1817,20 @@ C***********************************************************************
           ! Aperture
           ! --------------------------------------------
           CALL Define_Aperture()
+
+!--> Element-bound aperture stop (per-element "ApStop= dx dy
+!    [auto]") -- round-trip through SAVE (PLAN section 0).  The
+!    header-form stop is written by PrtSourceInfo instead.
+          IF (EltStopSet .AND. (iElt.EQ.StopElt)) THEN
+            IF (LStopAtEltAutoSet) THEN
+              CALL PrintFmtArray('ApStop', "1PD23.15", 3,
+     &             (/StopOffset(1),StopOffset(2),1d0/))
+            ELSE
+              CALL PrintFmtArray('ApStop', "1PD23.15", 2,
+     &             StopOffset)
+            END IF
+          END IF
+!<--
 
           ! --------------------------------------------
           ! Propagation
@@ -1311,8 +1850,104 @@ C***********************************************************************
           IF (nECoord(iElt).GT.0) CALL PrintFmtArray('TElt','1PD23.15',nECoord(iElt),
      &                                          PACK(TRANSPOSE(TElt(:,1:nECoord(iElt),iElt)),MASK=.TRUE.))
 
+!--> captured whole-line Rx comments from this element's block
+!    (a comment preceding "iElt= k+1" in the file is read while
+!    element k's block is being parsed, so emitting at the end of
+!    block k reproduces its original position)
+          CALL RxCommentEmit(iElt)
+!<--
+
           ! ----------------------------------------------------------
           CONTAINS
+
+          SUBROUTINE Srf_MonZernike()
+            USE Kinds
+            IMPLICIT NONE
+            INTEGER, PARAMETER :: nCol = 6
+            INTEGER  :: i, k, nCoef, mCoef, nModes
+            INTEGER  :: modes(mMonCoef)
+            LOGICAL  :: nonzero(mMonCoef)
+            REAL(pr) :: Coefs(mMonCoef)
+            ! - - - - - - - - - - - - - - - - - - - - - - -
+            CALL PrintFmt('MonZernType', "2x,A",
+     &           TRIM(ZernTypeNameL(MonZernTypeL(iElt))))
+            mCoef = MIN(ZernType_MaxMode(MonZernTypeL(iElt)), mMonCoef)
+            nonzero(:) = .FALSE.
+            DO i = 1, mCoef
+              nonzero(i) = (MonZernCoef(i,iElt) /= 0e0_pr)
+            END DO
+            nCoef = COUNT(nonzero)
+            nModes = 0
+            DO i = mCoef, 1, -1
+              IF (nonzero(i)) THEN; nModes = i; EXIT; END IF
+            END DO
+            SELECT CASE (nCoef)
+              CASE (0)
+                CALL PrintFmt('nMonZernCoef', "i4", 1)
+                CALL PrintFmt('MonZernCoef',  "1PD23.15", 0e0_pr)
+              CASE (1:20)
+                k = 0
+                DO i = 1, mCoef
+                  IF (nonzero(i)) THEN
+                    k = k + 1
+                    modes(k) = i
+                    Coefs(k) = MonZernCoef(i, iElt)
+                  END IF
+                END DO
+                CALL PrintFmt(     'nMonZernCoef', "i4",    nCoef)
+                CALL PrintFmtArray('MonZernModes', "I3",    nCol, modes(:nCoef))
+                CALL PrintFmtArray('MonZernCoef',  "1PD23.15", nCol, Coefs(:nCoef))
+              CASE DEFAULT
+                CALL PrintFmt(     'nMonZernCoef', "i4",    nModes)
+                CALL PrintFmtArray('MonZernCoef',  "1PD23.15", nCol,
+     &               MonZernCoef(:nModes,iElt))
+            END SELECT
+          END SUBROUTINE Srf_MonZernike
+
+          SUBROUTINE Srf_FFZernike()
+            USE Kinds
+            IMPLICIT NONE
+            INTEGER, PARAMETER :: nCol = 6
+            INTEGER  :: i, k, nCoef, mCoef, nModes
+            INTEGER  :: modes(mFFCoef)
+            LOGICAL  :: nonzero(mFFCoef)
+            REAL(pr) :: Coefs(mFFCoef)
+            ! - - - - - - - - - - - - - - - - - - - - - - -
+            CALL PrintFmt('FFZernType', "2x,A",
+     &           TRIM(ZernTypeNameL(FFZernTypeL(iElt))))
+            mCoef = MIN(ZernType_MaxMode(FFZernTypeL(iElt)), mFFCoef)
+            nonzero(:) = .FALSE.
+            DO i = 1, mCoef
+              nonzero(i) = (FFZernCoef(i,iElt) /= 0e0_pr)
+            END DO
+            nCoef = COUNT(nonzero)
+            nModes = 0
+            DO i = mCoef, 1, -1
+              IF (nonzero(i)) THEN; nModes = i; EXIT; END IF
+            END DO
+            SELECT CASE (nCoef)
+              CASE (0)
+                CALL PrintFmt('nFFZernCoef', "i4", 1)
+                CALL PrintFmt('FFZernCoef',  "1PD23.15", 0e0_pr)
+              CASE (1:20)
+                k = 0
+                DO i = 1, mCoef
+                  IF (nonzero(i)) THEN
+                    k = k + 1
+                    modes(k) = i
+                    Coefs(k) = FFZernCoef(i, iElt)
+                  END IF
+                END DO
+                CALL PrintFmt(     'nFFZernCoef', "i4",    nCoef)
+                CALL PrintFmtArray('FFZernModes', "I3",    nCol, modes(:nCoef))
+                CALL PrintFmtArray('FFZernCoef',  "1PD23.15", nCol, Coefs(:nCoef))
+              CASE DEFAULT
+                CALL PrintFmt(     'nFFZernCoef', "i4",    nModes)
+                CALL PrintFmtArray('FFZernCoef',  "1PD23.15", nCol,
+     &               FFZernCoef(:nModes,iElt))
+            END SELECT
+          END SUBROUTINE Srf_FFZernike
+
 
           SUBROUTINE Srf_Zernike()
             USE Kinds
@@ -1325,8 +1960,13 @@ C***********************************************************************
             ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
             CALL PrintFmt('ZernType', "2x,A", TRIM(ZernTypeNameL(ZernTypeL(iElt))))
+!--> was written misspelled ('ZernAnnualRatio') since the writer was
+!    born -- the parser key is 'ZernAnnularRatio', so the ratio was
+!    silently LOST on every reload of a SAVEd annular-Zernike Rx
             IF (ZernTypeL(iElt)==ZernType_NormAnnularNoll)
-     &        CALL PrintFmt('ZernAnnualRatio', "1PD23.15", ZernAnnuRatio(iElt))
+     &        CALL PrintFmt('ZernAnnularRatio', "1PD23.15",
+     &             ZernAnnuRatio(iElt))
+!<--
 
             mCoef = ZernType_MaxMode(ZernTypeL(iElt))
             WHERE (ZernCoef(:mCoef,iElt)/=0e0_pr)
@@ -1346,11 +1986,16 @@ C***********************************************************************
               ! ------------------------------- up to 20 Modes -- write individual modes
               CASE (1:20)
                 k = 0
-                DO CONCURRENT (INTEGER::i=1:mCoef, nonzero(i))
-                  k = k+1
-                  modes(k) = i
-                  Coefs(k) = ZernCoef(i, iElt)
-                END DO
+                BLOCK
+                  INTEGER :: i
+                  DO i = 1, mCoef
+                    IF (nonzero(i)) THEN
+                      k = k+1
+                      modes(k) = i
+                      Coefs(k) = ZernCoef(i, iElt)
+                    END IF
+                  END DO
+                END BLOCK
                 CALL PrintFmt('nZernCoef', "i4", nCoef)
                 CALL PrintFmtArray('ZernModes','I3', nCoef, modes(:nCoef))
                 CALL PrintFmtArray('ZernCoef','1PD23.15', nCol, Coefs(:nCoef))
@@ -1831,6 +2476,9 @@ C       BEGIN PARSING THE STRING
 	  ELSE IF (STRING(I:I) .EQ. '%') THEN
 	    in_tok=.false.
 	    IF (NO_LET) THEN
+!--> whole-line comment: keep it for the SAVE round-trip
+	      CALL RxCommentCapture(STRING)
+!<--
 	      SP_FLG=.TRUE.
 	      GO TO 20
 	    ELSE
@@ -1908,6 +2556,63 @@ C       BEGIN PARSING THE STRING
 
 	RETURN
 	END SUBROUTINE GET_EQ
+
+!--> Whole-line Rx comment round-trip (PLAN section 0 item 3)
+
+	SUBROUTINE RxCommentCapture(line)
+C     Store a whole-line '%' comment read during an Rx load so SAVE
+C     can re-emit it.  Skips SAVE's own banner furniture ('%' plus
+C     dashes-only lines and the three section-banner titles) so a
+C     load(SAVE'd Rx) -> SAVE cycle stays idempotent.  Inline
+C     comments (key= value % note) are deliberately NOT preserved --
+C     that is the fragile case behind the GridFile-tab bug.
+	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture
+	IMPLICIT NONE
+	CHARACTER(len=*) :: line
+	INTEGER :: L,i
+	LOGICAL :: furniture
+
+	IF (.NOT.LRxCommentCapture) RETURN
+	IF (nRxComment.GE.mRxComment) RETURN
+	L=LEN_TRIM(line)
+	IF (L.EQ.0) RETURN
+	furniture=.TRUE.
+	DO i=1,L
+	  IF ((line(i:i).NE.'%').AND.(line(i:i).NE.'-').AND.
+     &	      (line(i:i).NE.' ')) THEN
+	    furniture=.FALSE.
+	    EXIT
+	  END IF
+	END DO
+	IF (furniture) RETURN
+	IF ((INDEX(line,'Source Definition').GT.0) .OR.
+     &	    (INDEX(line,'Element Definitions').GT.0) .OR.
+     &	    (INDEX(line,'Output Coordinate System Definition')
+     &	     .GT.0)) RETURN
+
+	nRxComment=nRxComment+1
+	RxCommentLine(nRxComment)=line
+	RxCommentAnchor(nRxComment)=RxCommentCtx
+	END SUBROUTINE RxCommentCapture
+
+
+	SUBROUTINE RxCommentEmit(ctx)
+C     Re-emit the captured whole-line comments anchored to ctx
+C     (0 = header/source section, iElt = that element's block).
+C     Called by PrtSourceInfo (ctx=0) and PrtSingleEltInfo (iElt).
+	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor
+	use macos_IO, only: PrintMsg
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: ctx
+	INTEGER :: i
+
+	DO i=1,nRxComment
+	  IF (RxCommentAnchor(i).EQ.ctx)
+     &	    CALL PrintMsg(TRIM(RxCommentLine(i)))
+	END DO
+	END SUBROUTINE RxCommentEmit
+!<--
 
 C***********************************************************************
 
@@ -2467,7 +3172,13 @@ C***********************************************************************
 	  END IF
 	ELSE IF (EltID(iElt).EQ.3) THEN
 	  ! extended to allow reference to have GridData, 04/2009, -jzlou
-	  IF ((SrfType(iElt).GT.2) .AND. (SrfType(iElt)/=9)) THEN
+	  ! Also allow Aspheric (3) and Zernike (8): a conforming Reference
+	  ! carries the figure as an OPD phase-screen in RefSrf (rays are not
+	  ! bent), the analytic complement of the GridData OPD map -- used for
+	  ! GS Zernike basis development. -CC 2026-07
+	  IF ((SrfType(iElt).GT.2) .AND. (SrfType(iElt)/=9)
+     &      .AND. (SrfType(iElt)/=SrfType_Aspheric)
+     &      .AND. (SrfType(iElt)/=SrfType_Zernike)) THEN
 	    EltID_FLG=.FALSE.
 	    SrfType_FLG=.FALSE.
 	  END IF

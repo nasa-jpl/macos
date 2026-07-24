@@ -13,7 +13,7 @@ C***********************************************************************
 
 	Implicit none
 
-	Logical :: RxStopSet, EltStopSet,RxNoStopSet_Flg
+	Logical :: RxStopSet, EltStopSet, PrtPrinRots, RxNoStopSet_Flg
         REAL*8 :: StopOffset(2)
 
         Contains
@@ -26,13 +26,14 @@ C***********************************************************************
         use surfsub, only: GridInit, AMPLINIT
         use cfiles_mod
         use macos_mod, only: ifStopSet,ifObjImgSet,ObjIntFn,zernUsrOpt,
-     &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
-     &                       cUnit,ifRegrid
+     &                   zcoType,ZernCircular,ZernAnnular,ZernHex,
+     &                   cUnit,ifRegrid
 	use traceutil_mod
 	use loh_I1
 	use loh_I2
 	use loh_I3
 	use dopt_mod
+        use validate_prescription_mod, only: ValidatePrescription
         ! --------------------------------------
         IMPLICIT NONE
 
@@ -57,12 +58,17 @@ C       Setup for new input scheme
         CHARACTER(MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
 	LOGICAL ARR_FLG, opt_npts_flg
-	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK
+	LOGICAL ENTR_OK, ELEM_OK, EXIT_OK, found
 	INTEGER nVertex
 
         INTEGER :: nAsphCoef              ! Set to Default when reading in values to make it backwards compatible
         INTEGER :: nZernCoef              ! Ditto
         INTEGER :: ZernModes(mZernModes)  ! need a temp space for Zernike Single-Index mapping (hash-tbl)
+        INTEGER :: nFFZernCoef            ! # of FF Zernike coefs to read (sparse)
+        INTEGER :: FFZernModes(mFFCoef)   ! FF Zernike mode index mapping (sparse)
+        INTEGER :: nMonZernCoef           ! # of Mon Zernike coefs to read (sparse)
+        INTEGER :: MonZernModes(mMonCoef) ! Mon Zernike mode index mapping (sparse)
+        INTEGER :: iZMode                 ! loop variable: Zernike mode index
 
 c***loh<
 C	File setup and initial conditions read
@@ -110,7 +116,8 @@ C	File setup and initial conditions read
      &	' |   Flat           Conic          Aspheric   |'/
      &	' |   Anamorphic     Zernike        Monomial   |'/
      &	' |   Interpolated   UserDefined    Grid data  |'/
-     &	' |   Toric          InfluenceFcn              |'/
+     &	' |   Toric          InfluenceFcn   AsphGrid   |'/
+     &	' |         MonGrData        ZrnGrData         |'/
      &	' +--------------------------------------------+')
  142	FORMAT(' +--------------------------------------------+'/
      &	' | Propagation types:                         |'/
@@ -206,6 +213,20 @@ C
 C	Read existing input file
 C
 	IF (IOPT.EQ.1) THEN
+	  ! Pre-validate the .in file before the parser opens it; on failure
+	  ! abort cleanly with LOAD_SUCCESS=.FALSE. so callers get a clear
+	  ! error instead of a half-initialized model.
+	  BLOCK
+	    INTEGER :: vios
+	    CHARACTER(LEN=256) :: vmsg
+	    CALL ValidatePrescription(infil(1:L),vios,vmsg)
+	    IF (vios /= 0) THEN
+	      WRITE(*,*)' ** Prescription validation failed:'
+	      WRITE(*,*)'    ',TRIM(vmsg)
+	      LOAD_SUCCESS = .FALSE.
+	      GO TO 99
+	    END IF
+	  END BLOCK
 	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
 	  REWIND(RX_FID)
 
@@ -295,12 +316,18 @@ C       Create new input file
 	end if
 
 	LOAD_SUCCESS = .TRUE.
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
         RETURN
 
         !
         ! Rx loading failed
         !
    99   CONTINUE
+!-->
+        LRxCommentCapture = .FALSE.
+!<--
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
@@ -608,7 +635,10 @@ c sws    error RETURN in reading input
  300	CONTINUE
 	WRITE(*,*) '[parse_loh]',
      &	' file error during READ, bat_task = ',bat_task
-	RETURN
+c       Treat the read error as end-of-file: pop the journal stack and
+c       return to the console.  Without this, the cmd loop would call
+c       PARSE_LOH again, hit the same broken READ, and spin forever.
+	GO TO 100
 
 	END SUBROUTINE PARSE_LOH
 
