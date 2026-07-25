@@ -55,10 +55,8 @@ MACOS_resources/                   (top-level resources repo)
 mkdir -p ~/dev && cd ~/dev
 
 git clone git@github.com:nasa-jpl/macos.git
-git -C macos checkout joint-dev
 
 git clone git@github.com:nasa-jpl/MACOS_resources.git
-git -C MACOS_resources checkout dr-dev
 ```
 
 ---
