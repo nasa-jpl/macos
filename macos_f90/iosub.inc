@@ -1259,6 +1259,15 @@ C***********************************************************************
           END IF
 !<--
           CALL PrintFmt('Flux',    "1PD23.15", Flux)
+!--> source polarization state (SAVE audit): Ex0Ey0= ExRe ExIm EyRe EyIm.
+!    Carries the source Jones vector so a polarized Rx round-trips; on/off
+!    stays with the API/CLI.  Gated on a non-default (non-zero) state so
+!    polarization-free Rx SAVE output is byte-identical.
+          IF ((Ex0.NE.(0d0,0d0)) .OR. (Ey0.NE.(0d0,0d0))) THEN
+            CALL PrintFmtArray('Ex0Ey0', '1PD23.15', 4,
+     &           (/dble(Ex0),dimag(Ex0),dble(Ey0),dimag(Ey0)/))
+          END IF
+!<--
           CALL PrintMsg('')
 
           CALL PrintFmt('Aperture', "1PD23.15", Aperture)

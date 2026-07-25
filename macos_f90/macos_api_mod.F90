@@ -4542,6 +4542,257 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! POLARIZATION on/off + source polarization state.  Drives the engine
+      ! 'POLARIZATION' / 'NOPOLARIZATION' command (macos_cmd_loop.inc:1072-1095),
+      ! which enables polarized ray tracing (ifPol) and, when mWF>=3, vector
+      ! diffraction (ifVecDif3).  The source Jones state (Ex0,Ey0) rides on the
+      ! same command line as DARG(1..4) (LoadStack 'POLARIZATION', smacosutil.F:160).
+      !   on   : .TRUE.  -> POLARIZATION   (sets Ex0/Ey0 from the args below)
+      !          .FALSE. -> NOPOLARIZATION (Ex0/Ey0 ignored)
+      !   ExRe,ExIm : source Ex amplitude (real,imag), source BaseUnits.
+      !   EyRe,EyIm : source Ey amplitude (real,imag).
+      ! Both the polarized ray trace and vector diffraction require mWF>=3; all
+      ! stock macos_param model sizes have mWF=3, but a custom param file may not,
+      ! so 'on' with mWF<3 is rejected (OK=FAIL) rather than silently degraded.
+      !---------------------------------------------------------------------------------------------
+      subroutine pol_set(OK, on, ExRe, ExIm, EyRe, EyIm)
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        real(8), intent(in) :: ExRe, ExIm, EyRe, EyIm
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (on .eqv. PASS) then
+          if (mWF < 3) return          ! vector diffraction needs mWF>=3
+          DARG(1) = ExRe
+          DARG(2) = ExIm
+          DARG(3) = EyRe
+          DARG(4) = EyIm
+          command = 'POLARIZATION'
+        else
+          command = 'NOPOLARIZATION'
+        end if
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine pol_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! POLARIZATION query: report the polarization trace state.
+      !   on      : ifPol       (polarized ray trace active)
+      !   vecDif  : ifVecDif3   (vector diffraction active)
+      !   ExRe,ExIm,EyRe,EyIm : current source Jones state (src_mod Ex0,Ey0).
+      !---------------------------------------------------------------------------------------------
+      subroutine pol_get(OK, on, vecDif, ExRe, ExIm, EyRe, EyIm)
+        use macos_mod, only: ifPol, ifVecDif3
+        use src_mod,   only: Ex0, Ey0
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: on, vecDif
+        real(8), intent(out):: ExRe, ExIm, EyRe, EyIm
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        on     = ifPol
+        vecDif = ifVecDif3
+        ExRe   = dble(Ex0)
+        ExIm   = dimag(Ex0)
+        EyRe   = dble(Ey0)
+        EyIm   = dimag(Ey0)
+
+        OK = PASS
+      end subroutine pol_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! VECTOR / SCALAR diffraction toggle (macos_cmd_loop.inc:1099-1114).
+      ! VECTOR requires polarization already ON (ifPol) and mWF>=3; the CLI
+      ! silently resets ifVecDif3=.FALSE. when ifPol is off -- here we instead
+      ! return OK=FAIL so a binding caller gets a clear error.
+      !   on : .TRUE.  -> VECTOR ; .FALSE. -> SCALAR
+      !---------------------------------------------------------------------------------------------
+      subroutine vecdif_set(OK, on)
+        use macos_mod, only: ifPol
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (on .eqv. PASS) then
+          if ((ifPol .eqv. FAIL) .or. (mWF < 3)) return  ! precondition not met
+          command = 'VECTOR'
+        else
+          command = 'SCALAR'
+        end if
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine vecdif_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set the multilayer thin-film coating stack on element iElt (Model A --
+      ! the polarization-path coating: elt_mod EltCoat/IndRefArr/ExtincArr/
+      ! EltCoatThk, applied by Reflector/Refractor when ifPol is on,
+      ! elemsub.F:452-547).  Layers ordered OUTERMOST -> INNERMOST, matching the
+      ! 'Coating=' prescription order (msmacosio.inc:2648).
+      !   nLayer     : number of coating layers (1..mCoat).
+      !   IndRef(:)  : real refractive index n of each layer.
+      !   Extinc(:)  : extinction coefficient kappa of each layer (n - i*kappa).
+      !   Thk(:)     : PHYSICAL layer thickness in element length (BaseUnits) --
+      !                NOT waves; the API is wavelength-agnostic on set, unlike the
+      !                Rx keyword which stores waves-at-parse-lambda (see the
+      !                Phase-0 audit).  The trace applies phase 2*(2pi/lambda)*d*N
+      !                at the current wavelength.
+      ! Boundary media IndRefArr(0,·)/(nLayer+1,·) are taken from the adjacent
+      ! elements' IndRef/Extinc exactly as the parser does (the recursion reads
+      ! them).  Sets modified_rx so the cached trace re-runs.
+      !---------------------------------------------------------------------------------------------
+      subroutine coat_set(OK, iElt, nLayer, IndRef_, Extinc_, Thk_)
+        use elt_mod, only: EltCoat, IndRefArr, ExtincArr, EltCoatThk,     &
+                           IndRef, Extinc, mCoat
+        implicit none
+        logical,                      intent(out):: OK
+        integer,                      intent(in) :: iElt
+        integer,                      intent(in) :: nLayer
+        real(8), dimension(nLayer),   intent(in) :: IndRef_, Extinc_, Thk_
+        integer :: k
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())               return
+        if ((iElt < 1) .or. (iElt > nElt))     return
+        if ((nLayer < 1) .or. (nLayer > mCoat)) return
+
+        EltCoat(iElt) = nLayer
+        do k = 1, nLayer
+          IndRefArr(k,iElt) = IndRef_(k)
+          ExtincArr(k,iElt) = Extinc_(k)
+          EltCoatThk(k,iElt) = Thk_(k)      ! physical thickness (BaseUnits)
+        end do
+        ! Boundary media: index 0 = medium before the stack (elt iElt-1),
+        ! index nLayer+1 = substrate (elt iElt) -- mirrors msmacosio.inc:2663-2666.
+        IndRefArr(0,iElt)        = IndRef(iElt-1)
+        ExtincArr(0,iElt)        = Extinc(iElt-1)
+        IndRefArr(nLayer+1,iElt) = IndRef(iElt)
+        ExtincArr(nLayer+1,iElt) = Extinc(iElt)
+
+        CALL modified_rx(OK)   ! invalidate the cached trace
+        OK = PASS
+      end subroutine coat_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Query the Model-A coating stack on element iElt.  Inverse of coat_set:
+      ! returns PHYSICAL thickness (BaseUnits), so coat_get o coat_set == identity.
+      !   nLayer    : number of layers (0 if none).
+      !   IndRef(:) : real index per layer (1..nLayer filled).
+      !   Extinc(:) : extinction per layer.
+      !   Thk(:)    : physical thickness per layer.
+      ! maxL is the caller's buffer length (>= mCoat recommended).
+      !---------------------------------------------------------------------------------------------
+      subroutine coat_get(OK, iElt, nLayer, IndRef_, Extinc_, Thk_, maxL)
+        use elt_mod, only: EltCoat, IndRefArr, ExtincArr, EltCoatThk
+        implicit none
+        logical,                    intent(out):: OK
+        integer,                    intent(in) :: iElt
+        integer,                    intent(out):: nLayer
+        integer,                    intent(in) :: maxL
+        real(8), dimension(maxL),   intent(out):: IndRef_, Extinc_, Thk_
+        integer :: k
+        ! ------------------------------------------------------
+        OK       = FAIL
+        nLayer   = 0
+        IndRef_  = 0d0
+        Extinc_  = 0d0
+        Thk_     = 0d0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        nLayer = EltCoat(iElt)
+        if (nLayer < 0) nLayer = 0
+        if (nLayer > maxL) return          ! caller buffer too small
+        do k = 1, nLayer
+          IndRef_(k) = IndRefArr(k,iElt)
+          Extinc_(k) = ExtincArr(k,iElt)
+          Thk_(k)    = EltCoatThk(k,iElt)
+        end do
+
+        OK = PASS
+      end subroutine coat_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Harvest the per-ray complex electric field RayE(3,:) at element iElt onto
+      ! the ray grid, PLUS the ray geometry (direction cosines, surface normal)
+      ! and the per-ray OK/fail status -- everything Phase 2 (Jones pupil) needs
+      ! to build a correct transverse basis and honest statistics.  Requires a
+      ! polarized trace (ifPol) to have run.
+      !
+      ! Buffers are NxN (N=mdttl); the ray at grid (i,j) is RayID(i,j).  Complex
+      ! fields are split into real/imag (f2py-friendly, per cfield_get).  Vignetted
+      ! / invalid grid points return status=RayStat_* and zero field.
+      !
+      !   ExRe..EzIm : RayE(1:3, iRay) split real/imag on the grid.
+      !   kx,ky,kz   : ray direction cosines (RayDir) on the grid.
+      !   nx,ny,nz   : element iElt surface-normal components (from psiElt) --
+      !                a single per-element vector broadcast to the grid (the
+      !                local surface normal for the transverse-basis build).
+      !   status     : per-ray RayStatus (0=OK..5=Undef); RayStat_Undef where no ray.
+      !---------------------------------------------------------------------------------------------
+      subroutine rayfield_get(OK, ExRe, ExIm, EyRe, EyIm, EzRe, EzIm,     &
+                              kx, ky, kz, nx, ny, nz, status, N, iElt)
+        use elt_mod, only: RayE, RayDir, RayID, RayStatus, RayStat_Undef, &
+                           psiElt, nRay
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: ExRe, ExIm, EyRe, EyIm,    &
+                                               EzRe, EzIm, kx, ky, kz,    &
+                                               nx, ny, nz
+        integer, dimension(N,N), intent(out):: status
+        integer,                 intent(in) :: N       ! = mdttl
+        integer,                 intent(in) :: iElt
+        integer :: i, j, iRay
+        ! ------------------------------------------------------
+        OK     = FAIL
+        ExRe = 0d0; ExIm = 0d0; EyRe = 0d0; EyIm = 0d0
+        EzRe = 0d0; EzIm = 0d0; kx = 0d0; ky = 0d0; kz = 0d0
+        nx = 0d0; ny = 0d0; nz = 0d0
+        status = RayStat_Undef
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(RayE))                   return
+
+        do j = 1, N
+          do i = 1, N
+            iRay = RayID(i,j)
+            if ((iRay <= 0) .or. (iRay > nRay)) cycle
+            ExRe(i,j) = dble(RayE(1,iRay)); ExIm(i,j) = dimag(RayE(1,iRay))
+            EyRe(i,j) = dble(RayE(2,iRay)); EyIm(i,j) = dimag(RayE(2,iRay))
+            EzRe(i,j) = dble(RayE(3,iRay)); EzIm(i,j) = dimag(RayE(3,iRay))
+            kx(i,j) = RayDir(1,iRay)
+            ky(i,j) = RayDir(2,iRay)
+            kz(i,j) = RayDir(3,iRay)
+            nx(i,j) = psiElt(1,iElt)
+            ny(i,j) = psiElt(2,iElt)
+            nz(i,j) = psiElt(3,iElt)
+            if (allocated(RayStatus)) status(i,j) = RayStatus(iRay)
+          end do
+        end do
+
+        OK = PASS
+      end subroutine rayfield_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! FFP (move Focal/Field Point): tilt the source so the image at
       ! element iElt lands at the off-axis field point (dx,dy) given as
       ! DIRECTION COSINES (normalized; ~= field angle in rad for small

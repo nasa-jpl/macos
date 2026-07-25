@@ -48,9 +48,17 @@ a policy call (they round-trip a *workflow*, not the optical system).
 
 ## Trace / OPD reference state — review individually (like ApStop)
 `FEXCentroid` (`Rx_FEXCentrFlg`), `UseChfRay4OPD` (`LUseChfRayIfOK`),
-`RayTgtElt`, `DpElt`, `Ex0Ey0`, `PolSrc`, `PolBeam`, `UDBeam`,
+`RayTgtElt`, `DpElt`, `PolSrc`, `PolBeam`, `UDBeam`,
 `UDSrcProf`, `xFrame`/`yFrame`/`zFrame` (source local frame — flagged
 `SrcLF_FLG`), `ObjFile`.
+
+**`Ex0Ey0` — RESOLVED (polarization Phase 1, 2026-07-25).** The source
+polarization state (`Ex0`,`Ey0`) now parses (`msmacosio.inc`, four reals
+`ExRe ExIm EyRe EyIm`) and round-trips through SAVE (`PrtSourceInfo`,
+after `Flux=`), gated on a non-zero state so polarization-free Rx SAVE
+output stays byte-identical.  Carries STATE only; polarization on/off is
+an API/CLI concern (`pol_set` / `POLARIZATION`), not an Rx keyword.
+`PolSrc`/`PolBeam` remain unrevived (commented block in `msmacosio.inc`).
 
 ## Element data — RESOLVED 2026-07-04 (all keys now round-trip)
 Every key below is now written by SAVE, gated on the value actually

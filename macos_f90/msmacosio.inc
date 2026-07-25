@@ -173,7 +173,16 @@ C       Set entrance condition flags to .FALSE.
 !             GO TO 50
 
           ! --------------------------------------------------------------------------------
+          ! Source polarization state (Ex0,Ey0) as four reals:
+          !   Ex0Ey0= ExRe ExIm EyRe EyIm
+          ! Carries the source Jones vector ONLY; polarization on/off stays with
+          ! the API/CLI (pol_set / POLARIZATION), per the Phase-0 decision.  Was
+          ! a silent GO TO 50 swallow -- a user setting this in a .in previously
+          ! got no error and no effect.
           ELSE IF (LCMP(VAR_NAM,'Ex0Ey0',6)) THEN
+            READ(VALUE,*) DDEF(1),DDEF(2),DDEF(3),DDEF(4)
+            Ex0 = DCMPLX(DDEF(1),DDEF(2))
+            Ey0 = DCMPLX(DDEF(3),DDEF(4))
             GO TO 50
 
 #ifdef CMACOS
