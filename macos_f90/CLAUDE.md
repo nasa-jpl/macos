@@ -638,3 +638,55 @@ ACCEPT on validation failure — abort to label 1.
   min-match unchanged -- existing `.jou` scripts using `log <iElt>` keep
   working.
 
+## Polarization physics (PLAN_POLARIZATION, Phase 0/1)
+See `PLAN_POLARIZATION.md` (root) + `POLARIZATION_PHASE0_AUDIT.md` for the
+full audit.  Quick map of what the engine has and the conventions to hold.
+
+**What exists (all gated on `ifPol`):**
+- **Per-ray vector E-field** `RayE(3,mRay)` (`Complex*16`, `elt_mod.F`) --
+  the polarization state carrier, s/p-decomposed at each surface in
+  `Reflector`/`Refractor` (`elemsub.F`).  Source state is `Ex0/Ey0`
+  (`src_mod`), mapped onto each ray's local x̂/ŷ in `sourcsub.F`/`ssrcray.inc`.
+- **Fresnel + recursive multilayer thin-film coatings** with complex index
+  in `Reflector`/`Refractor` (`elemsub.F:432-547`).  `Reflector`'s TP/TS
+  transmittance sub-blocks are `if(.false.)` dead code (mirrors return R only).
+- **Vector diffraction** = 3 independent FFTs of Ex/Ey/Ez (`PFFPROP`), gated
+  `ifVecDif3`.  **ONLY the far-field sphere→plane leg (PropType 3) is
+  vector-capable** -- every near-field / plane-to-plane / DFT leg operates on
+  a single `WFElt(:,:,iWF)` plane, and `FFObscure` zeroes one plane.  A
+  coronagraph chain (pupil→FPM→Lyot→focal) does NOT preserve the vector field
+  across legs; "vectorize the chain" is the plan's Phase 3a.  (Track-A IFO PSI
+  needs only the single far-field hop and is unaffected.)
+- CLI: `POLARIZATION`/`NOPOLARIZATION` (sets `ifPol`; enables `ifVecDif3`
+  when `mWF≥3` -- all stock model sizes have `mWF=3`), `VECTOR`/`SCALAR`.
+  `POLARIZATION` is SMACOS-dispatchable (LoadStack packs `Ex0/Ey0` as
+  `DARG(1..4)`, `smacosutil.F:160`).
+
+**Stubs / gaps (do not assume these work):**
+- `RfPolarizerElt(14)`/`TrPolarizerElt(15)` are **name-table-only** -- no
+  trace dispatch anywhere.  `JmatElt(2,2,mElt)` is allocated/zeroed and
+  otherwise dead.  No Jones/Stokes/Mueller math, no waveplate, no VVC.
+- `srtrace.F`'s `ifPol=.false.` is a **local `parameter` in the dead
+  `SRTRACE_Test` driver only** (its caller is under `#if 0`).  The production
+  single-ray paths (`SRTrace`/`CRTrace`, tracesub.F) thread `ifPol` as an
+  argument -- so there is nothing to "lift" here.
+
+**Conventions (pinned in Phase 0 -- assert in tests, do not relegislate):**
+| Convention | Value |
+|---|---|
+| Time-harmonic | `exp(+iωt)`; spatial propagator `exp(−ikz)`.  Derived from `elemsub.F:387` (`C1=exp(−i·2π·L·N/λ)`, phase decreases as `L` grows) + the coating recursion `elemsub.F:512-516`, consistent with the 2026-07-25 IFO finding (field phase advances as OPL shortens) and the pymacos↔PROPER `opd_sign_flip=True`. |
+| Absorbing index | `N = n − iκ`, κ>0 = loss (as stored in `IndRefArr`/`ExtincArr`, applied `DCMPLX(n,−κ)`). |
+| Jones storage basis | Linear (x,y); circular via a unitary change of basis (Phase 2 decision). |
+| Coating thickness | Rx `Coating=` layer thickness is **waves at parse-time `Wavelen`**, converted to physical (`·Wavelen/IndRef`) at load (`msmacosio.inc:2660`); the trace applies phase at the *current* λ so broadband sweeps are already correct.  `Coating=` must follow `IndRef=` (boundary media snapshot).  **`coat_set` takes PHYSICAL thickness** and sidesteps all of this. |
+
+**Two coating subsystems** (do not conflate): Model A = `Coating`/`EltCoat`/
+`IndRefArr`/`ExtincArr`/`EltCoatThk` (complex index, drives the polarization
+path, `coat_set`/`coat_get` target this).  Model B = `nCoatElt`/`CoatIndxElt`/
+`CoatThkElt` + `AirGap` (real index, non-sequential refractive path only).
+Extend A, leave B (Dave 2026-07-25).
+
+**Phase-1 API surface** (`macos_api_mod.F90`, `beam_set`/`beam_get` template):
+`pol_set`/`pol_get`, `vecdif_set`, `coat_set`/`coat_get`, `rayfield_get`.
+`Ex0Ey0=` Rx keyword now parses (4 reals `ExRe ExIm EyRe EyIm`) + round-trips
+through SAVE (STATE only; on/off is API/CLI).  See `SAVE_KEYWORD_AUDIT.md`.
+
