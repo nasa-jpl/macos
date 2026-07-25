@@ -41,13 +41,17 @@ Phase 3 first; segmented-primary coating non-uniformity → Phase 4 first).
 **Branches — split at the consumer boundary** (single-issue rules; stacked-branch
 pattern per bench-builder/expose-beam):
 
-1. **`pol-core`** — single-issue branch off the integration branch in **both repos**
-   (macos: engine API + `Ex0Ey0` fix; MACOS_resources: mmacos/pymacos bindings +
-   tests). Scope: Phases 0–1 plus the application-neutral part of Phase 2 (Jones
-   pupil, `pol_maps`, unitarity/2θ tests). Reviewable standalone — its acceptance
-   tests (Fresnel analytic, unitarity, GMI 6/6 no-op) need nothing from Bench. Later
-   phases (elements, spatial coatings) become their own follow-on single-issue
-   branches/PRs; the phase boundaries are PR-sized on purpose.
+1. **`pol-core`** — single-issue branch in **both repos** (macos: engine API +
+   `Ex0Ey0` fix; MACOS_resources: mmacos/pymacos bindings + tests). Scope: Phases
+   0–1 plus the application-neutral part of Phase 2 (Jones pupil, `pol_maps`,
+   unitarity/2θ tests). **CUT 2026-07-25 and pushed:** macos `pol-core` off
+   `expose-beam` (742ce29 — carries the `beam_set` template the plan cites; same
+   commit as macos bench-builder), MACOS_resources `pol-core` off **`bench-builder`**
+   (cea3d60 — Dave's call: Phase 1's track-A smoke test drives
+   `macos.design.twyman_green`, which lives there, and bench-builder ⊇ expose-beam).
+   Stacked PRs reduce as parents merge. Later phases (elements, spatial coatings)
+   become their own follow-on single-issue branches/PRs; the phase boundaries are
+   PR-sized on purpose.
 2. **`pol-ifo`** — thin consumer branch **stacked on `bench-builder`**: Phase 2d, the
    Bench coating emission, `add_polarizer`/`add_waveplate` wiring, the
    `bench_ifo_pol` example. Needs both parents; lands after bench-builder and
