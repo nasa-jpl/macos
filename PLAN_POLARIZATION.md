@@ -505,7 +505,7 @@ without a circular analyzer built from polarizer + waveplate.
 > |---|---|
 > | Ladder 1 — energy per leg | vector total == scalar total, 0…2.2e-16 |
 > | Ladder 2 — x-pol ≡ scalar | 4.5e-16 … 6.8e-16 on `Rx_VecChain` (also 45°, circular) |
-> | Ladder 3 — polarized PROPER re-run | scalar + pol-scalar reproduce the committed 4.836e-13 macos↔PROPER residual exactly; vector differs 1.3e-2 from scalar, consistent with that geometry's `\|Ez\|/\|E\|≈2.7e-2`, at identical total power |
+> | Ladder 3 — polarized PROPER re-run | scalar + pol-scalar reproduce the committed 4.836e-13 macos↔PROPER residual exactly; vector differs 1.3e-2 from scalar at identical total power (attribution **unverified** — see below) |
 > | Ladder 4 — chain closure | two-leg mask chain, vector ≡ scalar at round-off; mask throughput identical to 1e-14 |
 > | Ladder 5 — single-hop A/B | vector far-field total 8.9377e-01 → 1.8155e+06 == scalar total (2.03e6 in intensity) |
 > | mmacos full suite | 412 pass, 0 fail (fast 281 / masks 62 / freeform 46 / proper-512 10 / proper-1024 13) |
@@ -517,7 +517,25 @@ without a circular analyzer built from polarizer + waveplate.
 > (`vector_diffraction` NOTES, regenerated), both binding docstrings, and
 > the `macos_f90/CLAUDE.md` Phase-3a section.
 >
-> **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.
+> **UNVERIFIED ATTRIBUTION — carried forward as an open item.**  Where the
+> vector run legitimately differs from the scalar one (2.6e-3 on the
+> Cass-FF single hop, 1.3e-2 on the Coro NF leg), the difference is
+> *believed* to be the off-normal train's out-of-plane content —
+> `\|Ez\|/\|Ex\|` measures ~8.8e-2 at the Cass-FF exit pupil through
+> `ray_field`, the right order — but it has NOT been verified, because
+> there is no plane-selectable complex-field getter and the per-plane
+> contribution to the propagated intensity is therefore not measurable.
+> The gates bound the difference; they do not explain it.  **A
+> plane-selectable `cfield` getter (`complex_field(srf, 'plane', k)`)
+> would close this out and is worth a small slice** — it is also what
+> Phase 2c's co/cross-pol decomposition will want, so it should probably
+> land there.  Marked in `tVecChain` / `test_vec_chain.py` headers.
+>
+> **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.  Nor the
+> validation-report evidence section — the standing rule that adds it to
+> every item's definition of done (worklist item 7 / the Validation
+> document section) postdates this landing; Tranche 1's evidence needs
+> back-filling when the `polval/` skeleton exists.
 
 **Goal:** promote the near-field propagators (sphere→plane, sphere→sphere,
 plane→plane, and the DFT legs) from scalar-only to vector, propagating each
