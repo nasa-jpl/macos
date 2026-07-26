@@ -97,8 +97,14 @@ way — CCMac is gfortran-only.)
      pass-through, visibility-budget driver.
   6. **Phase 4 spatial coatings** (§4): zone-map model per the AmplMat
      template + the two stated departures.
+  7. **Validation-report skeleton + Phase 0–2b evidence** (see the
+     Validation document deliverable): `docs/macos-manual/polval/` doc +
+     `make polval` target + the figure-regeneration driver, with the
+     already-landed gates as the first evidence sections.  Independent of
+     items 1–6 — good interleave work whenever another item blocks.
   Per the new standing rule, every item above ships its cmdref + manual
-  entries as part of its definition of done.
+  entries **and its validation-report evidence section** as part of its
+  definition of done.
 - **Fable lane — scarce; keep to short, judgment-critical sessions:**
   phase-gate reviews of the Opus items (line-review the diff, run the ifx
   smoke + both-compiler suites, check the gates weren't satisfied
@@ -646,6 +652,53 @@ dependence on map sampling.
 
 ---
 
+## Validation document (deliverable — Dave 2026-07-26)
+
+When the polarization work completes, we deliver a **validation report** with
+PNG evidence from the validation suite — the reviewer-facing companion to the
+test code.  Requirements:
+
+- **Home & build:** `docs/macos-manual/polval/POLARIZATION_VALIDATION.md` +
+  `polval/media/*.png`, built by the existing pandoc toolchain (`make polval`
+  → docx/HTML/PDF alongside the manual and cmdref).  Committed media, like
+  the manual's.
+- **Regenerable by one command:** every figure and every quoted number comes
+  from a driver (`mmacos/tools/pol_validation_report/`) that re-runs the
+  validation cases and rewrites `media/` + a generated numbers include.  No
+  hand-copied numbers — a stale figure must be impossible to ship silently.
+  (Follow the demo-plot conventions: exact Strehl from OPD where used,
+  autoscaled panels, non-obscuring legends.)
+- **Structure mirrors the validation ladders.**  One evidence section per
+  gate, each with: the claim, the figure(s), the measured number vs the
+  analytic/reference truth, and the test that pins it in CI.
+  - *Phase 0–2b (evidence exists TODAY):* unitarity-gate D/retardance maps
+    on the conductor Cass (round-off); Fresnel-analytic fold — measured vs
+    closed-form RS/RP and D across the AOI spread, residual panel (1e-14);
+    2θ-symmetry diattenuation orientation map (quiver over the pupil) +
+    azimuth-lock residual; double-pole vs local-sp retardance maps (the
+    basis-artifact figure); conventions table + the three engine-fix
+    provenance notes (NaCmplx, incident medium, signed cosine) with the
+    tests that pin them.
+  - *Phase 3a:* per-leg energy-conservation table; x-pol ≡ scalar residual
+    maps per leg; polarized PROPER cross-check residuals at the committed
+    tolerances (reuse the proper_compare artifact machinery); CoroExample
+    chain-closure contrast curves (vector x-pol vs scalar overlay); the
+    single-hop A/B for the normalization change.
+  - *Phase 3:* crossed-polarizer extinction, QWP linear→circular Stokes
+    check, VVC null depth vs retardance-error ε against the analytic
+    (ε/2)² curve.
+  - *Track A / pol-ifo:* visibility budget (predicted vs simulated fringe
+    visibility), PSI polarization systematic vs input state, the AOI trade
+    figures.
+  - *Phase 4:* per-segment/radial-grade Jones-pupil maps + the
+    grid-resolution speckle-floor sweep.
+- **Lanes:** the report skeleton + the Phase 0–2b evidence sections and
+  their figure driver are **Opus-lane work, addable now** (the gates and
+  numbers are landed; specs above).  Each later phase appends its evidence
+  section as part of its definition-of-done — this extends the standing
+  docs rule (cmdref + manual + **validation-report section**).  Fable
+  reviews the claims/interpretation before the document ships.
+
 ## Validation ladder (polarization ground truth)
 
 Reconciling with PROPER only proves the scalar path is intact. In increasing effort:
@@ -669,9 +722,11 @@ Reconciling with PROPER only proves the scalar path is intact. In increasing eff
 pymacos pytest pre-commit; every `matlab -batch` ends `exit(0)`. **Every phase's
 definition-of-done includes its user documentation**: cmdref entries (run
 `make cmdref-regen` so new binding functions are cataloged, then fill their
-NOTES blocks) and the matching manual section (`docs/macos-manual/src/04` for
-new Rx keywords, `src/05`–`06` for trace/diffraction behavior). The Phase 0–2b
-docs landed 2026-07-26; do not let the gap re-open at Phase 3. Build both compilers
+NOTES blocks), the matching manual section (`docs/macos-manual/src/04` for
+new Rx keywords, `src/05`–`06` for trace/diffraction behavior), **and its
+evidence section in the validation report** (see the Validation document
+deliverable below). The Phase 0–2b docs landed 2026-07-26; do not let the
+gap re-open at Phase 3. Build both compilers
 (`makems.sh release` + `makems.sh release gfortran`) — new fixed-form code passes
 gfortran's stricter checks (LOGICAL `.eqv.`, ≤72-col, cpp `//` gotcha per
 `mmacos/CLAUDE.md`). GMI regression stays 6/6 (its Rx are polarization-off; Phase-1
