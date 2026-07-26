@@ -384,6 +384,14 @@ C  Polarization calcs
 	! applicable to both non-coated and coated surfaces
 	If (ifPol) Then
           cone=1d0
+!-->      incident-medium complex index: was used UNINITIALIZED in the
+!         phase factor below (first assignment was in the nCoat==0
+!         branch, after this use).  ifx stack garbage NaN'd every
+!         polarized trace; gfortran's zeroed stack made C1=1, silently
+!         dropping the propagation phase from RayE.  Mirrors Refractor,
+!         which sets it before use (elemsub.F:1022).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           S1=-TWOPI*L/lambda
           C2=DCMPLX(0d0,S1)*NaCmplx
           C1=CDEXP(C2)
