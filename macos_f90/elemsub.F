@@ -461,13 +461,29 @@ C  Polarization calcs
 	IF (ifPol .and. nCoat/=0) THEN
 
 	  ! First calc refraction angles for each layer, from outmost inward
-          NaCmplx=DCMPLX(nb_arr(0),(-kxb_arr(0)))
+!-->        incident medium = the medium the ray is actually in (na,kxa
+!           = CurIndRef/CurExtinc), NOT the stored boundary slot
+!           nb_arr(0)/kxb_arr(0) = IndRef(iElt-1): for a coated mirror
+!           following another mirror that slot holds the previous
+!           mirror's conductor-idiom substrate (Extinc=1e22), modeling
+!           light as arriving from inside a perfect conductor.  The
+!           uncoated branch already uses (na,kxa).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           NbCmplx=DCMPLX(nb_arr(1),(-kxb_arr(1)))
 
 	  !print*,'Reflector/coatings: nb_arr(3)=',nb_arr(3)
           !print*,'Reflector/coatings: kxb_arr(3)=',kxb_arr(3)
 
-	  ccfb_arr(0)=DDOTC(ihat,Nhat) ! cosine of incident ray angle
+!-->      incident cosine must be POSITIVE in the Fresnel forms below --
+!         ihat.Nhat is NEGATIVE when the normal faces the beam (the
+!         psi convention), and a signed cosine turns every interface
+!         coefficient into its RECIPROCAL (1/r): |R|>1, s/p roles
+!         swapped, retardance sign flipped (|D| happens to survive,
+!         which is why intensity-level tests never caught it).  The
+!         uncoated branch already takes ABS (ccfa, elemsub.F:451).
+	  ccfb_arr(0)=DABS(DDOTC(ihat,Nhat)) ! cosine of incident ray angle
+!<--
           cmu=NaCmplx/NbCmplx
           cNdi=ihat(1)*Nhat(1)+ihat(2)*Nhat(2)+ihat(3)*Nhat(3)
           C1=cone-cmu*cmu*(cone-cNdi*cNdi)
@@ -513,7 +529,14 @@ C  Polarization calcs
 	  ! For each coating layer going outward, use thin film
           ! reflectance eqn,
           Do ic=nCoat,1,-1
-            NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+!-->        outermost interface (ic=1): incident medium is (na,kxa),
+!           not the stored slot 0 -- see the branch-entry comment.
+            If (ic == 1) Then
+              NaCmplx=DCMPLX(na,(-kxa))
+            Else
+              NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+            End If
+!<--
             NbCmplx=DCMPLX(nb_arr(ic),(-kxb_arr(ic)))
 
             ! Calc phase delay due to pass thru coating
@@ -1102,10 +1125,26 @@ C    Compute refracted ray cosine
 	! Applicable to surface with thin-film coating layers
         IF (ifPol .and. nCoat/=0) THEN
 	  ! First calc refraction angles for each layer, from outmost inward
-          NaCmplx=DCMPLX(nb_arr(0),(-kxb_arr(0)))
+!-->        incident medium = the medium the ray is actually in (na,kxa
+!           = CurIndRef/CurExtinc), NOT the stored boundary slot
+!           nb_arr(0)/kxb_arr(0) = IndRef(iElt-1): for a coated mirror
+!           following another mirror that slot holds the previous
+!           mirror's conductor-idiom substrate (Extinc=1e22), modeling
+!           light as arriving from inside a perfect conductor.  The
+!           uncoated branch already uses (na,kxa).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           NbCmplx=DCMPLX(nb_arr(1),(-kxb_arr(1)))
 
-	  ccfb_arr(0)=DDOTC(ihat,Nhat) ! cosine of incident ray angle
+!-->      incident cosine must be POSITIVE in the Fresnel forms below --
+!         ihat.Nhat is NEGATIVE when the normal faces the beam (the
+!         psi convention), and a signed cosine turns every interface
+!         coefficient into its RECIPROCAL (1/r): |R|>1, s/p roles
+!         swapped, retardance sign flipped (|D| happens to survive,
+!         which is why intensity-level tests never caught it).  The
+!         uncoated branch already takes ABS (ccfa, elemsub.F:451).
+	  ccfb_arr(0)=DABS(DDOTC(ihat,Nhat)) ! cosine of incident ray angle
+!<--
           cmu=NaCmplx/NbCmplx
           cNdi=ihat(1)*Nhat(1)+ihat(2)*Nhat(2)+ihat(3)*Nhat(3)
           C1=cone-cmu*cmu*(cone-cNdi*cNdi)
@@ -1140,7 +1179,14 @@ C    Compute refracted ray cosine
 	  ! For each coating layer going outward, use thin film
           ! reflectance eqn,
           Do ic=nCoat,1,-1
-            NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+!-->        outermost interface (ic=1): incident medium is (na,kxa),
+!           not the stored slot 0 -- see the branch-entry comment.
+            If (ic == 1) Then
+              NaCmplx=DCMPLX(na,(-kxa))
+            Else
+              NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+            End If
+!<--
             NbCmplx=DCMPLX(nb_arr(ic),(-kxb_arr(ic)))
 
             ! Calc phase delay due to pass thru coating
