@@ -2057,6 +2057,73 @@ Example. Conic + Mon + FF + grid:
     yData= 0 1 0
     zData= 0 0 1
 
+### Coatings and Polarization Data
+
+The polarization ray trace (Section 5, *Polarized Ray Tracing*) reads
+three kinds of prescription data beyond the scalar trace: the complex
+index of each element, an optional thin-film coating stack per element,
+and the source polarization state.
+
+**Element index and extinction.** Every element carries `IndRef=` and
+`Extinc=`, forming the complex index N = n − iκ (κ > 0 is loss, under
+the engine's exp(+iωt) time convention). In the scalar trace only the
+real index of refractors matters; with polarization on, a bare
+(uncoated) surface applies the Fresnel s/p coefficients computed from
+its complex index. The standard mirror idiom
+
+    IndRef=   1.0E+00
+    Extinc=   1.0E+22
+
+is a perfect conductor: it reflects with RP = RS = −1 and is
+polarization-neutral (no diattenuation, no retardance). To model a real
+metal mirror, either give the element the metal's complex index
+directly, or (preferred) add a coating stack whose outer layer is an
+optically thick metal film — thickness much greater than the skin depth
+reproduces the bare metal's Fresnel coefficients regardless of
+substrate.
+
+**Thin-film coating stacks (`Coating=`).** An element may carry a
+multilayer coating, applied by a recursive thin-film calculation at
+each ray's actual angle of incidence when polarization is on. The
+keyword gives the layer count, followed by one line per layer, ordered
+**outermost to innermost**, each line holding the layer's real index,
+extinction coefficient, and thickness:
+
+    IndRef=   1.0E+00
+    Extinc=   1.0E+22
+    Coating=  2
+      1.38  0.0   0.25
+      2.30  0.10  0.125
+
+Two rules deserve emphasis:
+
+- **Layer thickness in the prescription is in units of waves** — waves
+  of the `Wavelen=` value current at the point the parser reaches the
+  `Coating=` line. It is converted to physical thickness
+  (thickness·Wavelen/IndRef) at load time, so the loaded stack is
+  physically fixed and wavelength sweeps after loading are handled
+  correctly. (The programmatic interface, `coating`/`coat_set` in the
+  bindings, takes **physical** thickness in BaseUnits directly and has
+  no wavelength coupling.)
+- **`Coating=` must appear after the element's `IndRef=`/`Extinc=`
+  lines** — the parser snapshots the boundary media when it reads the
+  coating block.
+
+The incident medium for the coating calculation is the medium the ray
+is actually traveling in when it reaches the surface (the running
+index, e.g. air), and the substrate is the element's own complex index.
+
+**Source polarization state (`Ex0Ey0=`).** The complex source field
+amplitudes can be carried in the prescription:
+
+    Ex0Ey0=   1.0  0.0  0.0  0.0
+
+giving Ex real, Ex imaginary, Ey real, Ey imaginary, in the source grid
+frame. This sets the *state* only; turning polarization tracing on
+remains a command/API decision (POLarization, or `polarization('on')`
+in the bindings, which also prompt for or accept the state directly).
+The keyword round-trips through SAVE.
+
 ### Obscurations and Apertures
 
 Apertures are the areas through which light can pass. MACOS supports circular and rectangular apertures as shown in Figure 28. When a wavefront is propagated, the intensity that does not go through the hole is set to zero. Likewise, obscurations block light that falls within their interior. Figure 29 shows the types of obscurations implemented in MACOS: circular, rectangular, annular, and triangular. Geometrical rays are unaffected by the obscurations; the rays are traced through the optical system regardless. However, the OBScuration command will allow one to view only the unobscured rays in the spot diagram.

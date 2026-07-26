@@ -304,6 +304,8 @@ The VECtor command sets a toggle to use vector formula when calculating single-p
 
 Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 5.3.11). Vector diffraction is the default with polarization on.
 
+Scope caveat: vector diffraction currently applies to the far-field (Fraunhofer) propagation leg only, where the three field components Ex, Ey, Ez are propagated as independent scalar fields. Near-field and plane-to-plane legs propagate a single scalar plane, so a multi-leg diffraction chain does not yet preserve the vector field between legs. In vector mode the three wavefront storage planes are repurposed as Ex/Ey/Ez, so only a single wavefront can be active.
+
 #### Propagation commands
 
 Several commands, such as INT, LOG, ADD, etc. cause the beam to be propagated to the specified element using MACOS combined ray-trace and diffraction computations.

@@ -760,7 +760,7 @@ Here the “tilt participation” regulates the percentage of the Kolmogorov tha
 
 10. **POLARIZATION**
 
-The POLarization command turns on polarization ray tracing. The default is no polarization ray tracing.
+The POLarization command turns on polarization ray tracing. The default is no polarization ray tracing. The command prompts for the complex source field components Ex0 and Ey0, and (when the model supports it) also enables vector diffraction. See the *Polarized Ray Tracing* subsection below for the physics, conventions and analysis tools.
 
 11. **NOPOLARIZATION**
 
@@ -775,3 +775,56 @@ MACOS\>**SINT**
     Computing interpolated surface data... Compute time was 5.7871 sec
 
 MACOS\>
+
+### Polarized Ray Tracing
+
+With polarization on (POLarization command, or the `polarization`
+function in the mmacos/pymacos bindings), every ray carries a complex
+3-vector electric field in addition to its geometry. The trace then
+models three effects the scalar trace ignores:
+
+- **Source polarization state.** Rays launch with field
+  E = Ex0·xGrid + Ey0·yGrid, where (Ex0, Ey0) are the complex source
+  amplitudes entered at the POLarization prompt (or carried in the
+  prescription by the `Ex0Ey0=` keyword, Section 4). For a collimated
+  source this launch frame is the source grid frame, uniform across the
+  beam; for a point source each ray uses a local frame
+  (y = unit(RayDir × xGrid), x = y × RayDir) that reduces to the grid
+  frame on the chief ray.
+
+- **Surface polarization effects.** At each reflector and refractor the
+  field is decomposed into s and p components in the local plane of
+  incidence, and the surface's complex Fresnel coefficients are
+  applied — from the element's own complex index (`IndRef=`/`Extinc=`,
+  Section 4) for a bare surface, or from the multilayer thin-film
+  recursion when the element carries a `Coating=` stack (Section 4).
+  The propagation phase of each leg, including any absorption in the
+  medium, is accumulated in the field as well.
+
+- **Vector diffraction.** With polarization on, the diffraction
+  commands can propagate the three field components independently
+  (VECtor/SCAlar, Section 6). Note the current scope limit described
+  there: only the far-field (Fraunhofer) leg is vector-capable.
+
+Conventions, fixed throughout the engine: the absorbing refractive
+index is N = n − iκ with κ > 0 meaning loss, under the time-harmonic
+convention exp(+iωt); coating layer indices follow the same rule. A
+mirror described by the standard perfect-conductor idiom
+(`IndRef= 1.0`, `Extinc= 1.0E+22`) reflects with RP = RS = −1 and is
+therefore polarization-neutral: it changes ray geometry but introduces
+no diattenuation or retardance. Real coated mirrors are modeled with a
+metal coating stack (an optically thick metal layer reproduces the bare
+metal's Fresnel coefficients regardless of substrate).
+
+**Polarization analysis.** The per-ray field at any element can be
+harvested through the bindings (`ray_field`), and the standard
+polarization-aberration analysis is built on top of it: `jones_pupil`
+assembles the 2×2 Jones matrix at every pupil point from two traces
+with orthogonal source states, and `pol_maps` decomposes it into
+diattenuation and retardance maps (with the pupil mean — a state
+change — separated from the spatially varying part that drives error
+budgets). These functions and their conventions, including the choice
+of pupil reference basis (double-pole by default), are documented in
+the MACOS Command Reference, Part II. The interactive CLI exposes the
+underlying trace and coating machinery; the Jones-pupil analysis layer
+is binding-only.

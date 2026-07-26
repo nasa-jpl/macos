@@ -603,7 +603,12 @@ Reconciling with PROPER only proves the scalar path is intact. In increasing eff
    reachable** — the only item here that satisfies an outside reviewer on its own.
 
 **Per-phase mechanics:** `run_mmacos_tests.sh fast` between edits; full suite +
-pymacos pytest pre-commit; every `matlab -batch` ends `exit(0)`. Build both compilers
+pymacos pytest pre-commit; every `matlab -batch` ends `exit(0)`. **Every phase's
+definition-of-done includes its user documentation**: cmdref entries (run
+`make cmdref-regen` so new binding functions are cataloged, then fill their
+NOTES blocks) and the matching manual section (`docs/macos-manual/src/04` for
+new Rx keywords, `src/05`–`06` for trace/diffraction behavior). The Phase 0–2b
+docs landed 2026-07-26; do not let the gap re-open at Phase 3. Build both compilers
 (`makems.sh release` + `makems.sh release gfortran`) — new fixed-form code passes
 gfortran's stricter checks (LOGICAL `.eqv.`, ≤72-col, cpp `//` gotcha per
 `mmacos/CLAUDE.md`). GMI regression stays 6/6 (its Rx are polarization-off; Phase-1

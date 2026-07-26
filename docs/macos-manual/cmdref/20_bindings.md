@@ -1216,6 +1216,43 @@ Get or set the composite description of a FreeForm element. out = macos.zrn_free
 
 ### Other utilities
 
+#### beam
+
+- **mmacos:** `out = macos.beam(type, opts)`
+- **pymacos:** `pymacos.beam(kind, waist, radius, power)`
+
+Shape the source amplitude (apodization) profile. macos.beam(TYPE, ...) sets the source beam profile that macos applies to the aperture amplitude before tracing.  Setting the beam resets the trace, so re-trace afterwards.  TYPE (case-insensitive):
+
+<!-- BEGIN NOTES fn-beam -->
+<!-- END NOTES fn-beam -->
+
+#### coating
+
+- **mmacos:** `out = macos.coating(srf, opts)`
+- **pymacos:** `pymacos.coating(srf, index, extinc, thickness)`
+
+Set or query the thin-film coating stack on an element. macos.coating(SRF, 'index', N, 'extinc', K, 'thickness', T) sets a multilayer coating on element SRF (the polarization-path coating, active only when macos.polarization('on') is set).  Layers are ordered OUTERMOST -> INNERMOST (matching the 'Coating=' Rx keyword). N, K, T are equal-length vectors (one entry per layer):
+
+<!-- BEGIN NOTES fn-coating -->
+This drives the polarization-path ("Model A") coating stack:
+`EltCoat/IndRefArr/ExtincArr/EltCoatThk`, applied by the s/p
+Fresnel recursion in Reflector/Refractor when polarization is
+on.  Thickness here is PHYSICAL, in the Rx BaseUnits -- unlike
+the `Coating=` Rx keyword, whose per-layer thickness is in
+WAVES at the Wavelen current at parse time (converted to
+physical at load).  `coating(srf)` with no layer args queries;
+set followed by query round-trips exactly.  The incident
+medium is the medium the ray actually travels in (CurIndRef),
+not the previous element's substrate.  An optically thick
+absorbing layer (thickness >> skin depth) reproduces the bare
+metal's Fresnel coefficients regardless of substrate -- the
+standard way to model a bare-metal mirror.  Query returns
+`n_layer=0` for an uncoated element; `load_rx` clears all
+coating state.
+*Related:* polarization, jones_pupil; Rx keywords `Coating=`,
+`IndRef=`, `Extinc=`.
+<!-- END NOTES fn-coating -->
+
 #### getEltSrfZernMode
 
 - **pymacos:** `pymacos.setEltSrfZernMode(iElt, izernMode, zernCoef)`
@@ -1245,6 +1282,35 @@ Gram-Schmidt-orthonormalized Zernike basis over a segment's TRUE (irregular) ape
 
 <!-- BEGIN NOTES fn-gs-zernike-segment-basis -->
 <!-- END NOTES fn-gs-zernike-segment-basis -->
+
+#### jones_pupil
+
+- **mmacos:** `jp = macos.jones_pupil(srf, opts)`
+- **pymacos:** `pymacos.jones_pupil(srf, basis, axis, xref)`
+
+2x2 Jones pupil at an element from two polarized traces. jp = macos.jones_pupil(SRF) traces the loaded prescription twice with orthogonal source polarization states, (Ex0,Ey0) = (1,0) and (0,1), harvests the per-ray vector E-field at element SRF (macos.ray_field), and assembles the 2x2 complex Jones matrix at every ray-grid point: 
+
+<!-- BEGIN NOTES fn-jones-pupil -->
+The INPUT basis is the engine launch frame: collimated sources
+launch every ray with E = S*(Ex0*xGrid + Ey0*yGrid) (uniform
+over the grid); point sources use a per-ray frame yray =
+unit(RayDir x xGrid), xray = yray x RayDir, which reduces to
+the global frame on the chief ray.  S is the engine flux
+normalization (~1/sqrt(nRays)), a common real scalar carried by
+J -- ratios and all pol_maps metrics are unaffected.  The
+OUTPUT basis options: 'double-pole' (default; Chipman
+double-pole coordinates, smooth over any physical pupil -- use
+for budget numbers), 'local-sp' (per-ray s/p about the exit
+axis; coordinate-singular on axis, DIAGNOSTIC ONLY -- the
+singularity imprints spurious tilt/astig-like retardance), and
+'global' (project onto a fixed pair; near-collimated
+diagnostics).  Vignetted points are NaN, never zero-filled.
+The two traces are geometry-identical by construction
+(asserted); the pre-call polarization state is restored on
+exit.  A stock conductor-mirror Rx (IndRef=1, Extinc=1e22)
+yields a unitary Jones pupil -- a free end-to-end sanity gate.
+*Related:* pol_maps, ray_field, polarization, coating.
+<!-- END NOTES fn-jones-pupil -->
 
 #### m2v
 
@@ -1316,6 +1382,72 @@ ORS -- Optimize Reference Surface.
 
 <!-- BEGIN NOTES fn-ors -->
 <!-- END NOTES fn-ors -->
+
+#### pol_maps
+
+- **mmacos:** `pm = macos.pol_maps(jp)`
+- **pymacos:** `pymacos.pol_maps(jp)`
+
+Polarization-aberration decomposition of a Jones pupil. pm = macos.pol_maps(JP) decomposes the Jones pupil JP (the struct returned by macos.jones_pupil, or any struct with fields .J [N x N x 2 x 2 complex, NaN where invalid] and .mask [N x N logical]) into the standard polarization-aberration maps via the per-point polar decomposition J = H * W (H hermitian >= 0, W unitary).
+
+<!-- BEGIN NOTES fn-pol-maps -->
+All algebra is closed-form 2x2 Pauli (vectorized; no per-point
+SVD).  Pauli ordering: s1 = 0/90 linear, s2 = +/-45 linear,
+s3 = circular.  Key outputs: `T` intensity transmission
+(carries the source normalization -- ratios only), `D`/`Dvec`
+diattenuation, `ret`/`retvec` retardance (canonical [0, pi];
+points within 0.2 rad of pi are flagged `ambiguous` -- the
+branch is unresolved there, never silently chosen), `phase`
+(unitary global phase, mod pi).  The pupil MEAN and the RMS
+VARIATION are reported separately and must not be conflated:
+uniform retardance/diattenuation is a state change (and, after
+fold mirrors, includes the system's geometric rotation), not an
+aberration -- only the variation drives a contrast floor or a
+PSI systematic.  `D` and `T` are singular-value invariants
+(identical in any output basis); `ret`/`retvec` are
+basis-dependent -- exactly what the double-pole basis exists to
+make artifact-free.
+*Related:* jones_pupil.
+<!-- END NOTES fn-pol-maps -->
+
+#### polarization
+
+- **mmacos:** `out = macos.polarization(state, opts)`
+- **pymacos:** `pymacos.polarization(state, Ex, Ey)`
+
+Turn polarized ray tracing on/off + set source state. macos.polarization('on', ...) enables polarized ray tracing (the engine POLARIZATION command): rays carry a complex 3-vector E-field, surface coatings become active, and vector diffraction is enabled when the model supports it (mWF>=3, true for all stock model sizes). macos.polarization('off') restores scalar tracing (NOPOLARIZATION).
+
+<!-- BEGIN NOTES fn-polarization -->
+Query form (`macos.polarization()` with no args / `state=None`)
+returns the current state: `.on`, `.vector`, `.Ex`, `.Ey`.
+Setting the state dirties the cached trace (the engine re-seeds
+every ray's E-field on the next trace) -- re-trace before
+harvesting.  Enabling requires mWF>=3 (all stock model sizes);
+the call errors rather than silently degrading.
+*Related:* vector_diffraction, coating, ray_field, jones_pupil;
+CLI POLarized/NOPolarization.
+<!-- END NOTES fn-polarization -->
+
+#### ray_field
+
+- **mmacos:** `rf = macos.ray_field(srf)`
+- **pymacos:** `pymacos.ray_field(srf)`
+
+Per-ray complex E-field + geometry at an element. rf = macos.ray_field(SRF) returns, on the N x N ray grid at element SRF (N = model size), the per-ray complex electric field RayE(3,:) plus the ray direction cosines, the element surface normal, and the per-ray status.  Requires a polarized trace: call macos.polarization('on') and trace before this.
+
+<!-- BEGIN NOTES fn-ray-field -->
+Returns NaN-free zero fields with `status~=0` at vignetted /
+failed grid points -- always mask on `status==0` before
+statistics.  The surface normal returned is the per-element
+`psiElt` broadcast to the grid (exact for flats; for curved
+elements it is the nominal element normal, not the local
+surface normal at each intersection).  The field at an element
+is the field AFTER that element's reflection/refraction,
+including the propagation phase of the leg arriving at it.
+mmacos returns separate `.Ex/.Ey/.Ez/.kx../.nx..` arrays;
+pymacos stacks them as `E/k/n` with shape (N, N, 3).
+*Related:* polarization, jones_pupil, trace_rays.
+<!-- END NOTES fn-ray-field -->
 
 #### ray_hist
 
@@ -1455,6 +1587,23 @@ Reconstruct a 2D matrix from m2v's compressed vec + indx. mat = macos.v2m(vec, i
 
 <!-- BEGIN NOTES fn-v2m -->
 <!-- END NOTES fn-v2m -->
+
+#### vector_diffraction
+
+- **mmacos:** `macos.vector_diffraction(on)`
+- **pymacos:** `pymacos.vector_diffraction(on)`
+
+Toggle vector (3-component) diffraction. macos.vector_diffraction(true)  -> VECTOR: propagate Ex/Ey/Ez as three independent fields (far-field FFT leg only; see the engine polarization notes -- near-field/DFT legs remain scalar). macos.vector_diffraction(false) -> SCALAR: single-field diffraction. 
+
+<!-- BEGIN NOTES fn-vector-diffraction -->
+Requires polarization ON first; errors otherwise (the CLI
+VECtor silently reverts instead).  Scope caveat: vector
+diffraction currently applies to the far-field (Fraunhofer FFT)
+leg only; near-field / plane-to-plane legs propagate a single
+scalar plane, and in vector mode the three wavefront planes are
+repurposed as Ex/Ey/Ez (single wavefront only).
+*Related:* polarization; CLI VECtor/SCAlar.
+<!-- END NOTES fn-vector-diffraction -->
 
 #### view_rx
 
