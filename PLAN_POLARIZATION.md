@@ -266,6 +266,22 @@ to the API/CLI only.
 
 ## Phase 2 — Jones pupil, polarization metrics, and the two application deliverables
 
+> **STATUS 2026-07-26: 2a + 2b core LANDED on pol-core** (mmacos
+> `jones_pupil`/`pol_maps` + pymacos ports + `tJonesPupil`/`test_jones_pupil.py`).
+> Gates green at round-off: unitarity (stock conductor Cass, D/ret < 3e-15),
+> Fresnel-analytic fold (Bench rig + thick Al, RS/RP and D vs closed form at
+> 1e-14), 2θ symmetry (orientation locks azimuth to 5e-14), D basis-invariance,
+> synthetic polar-decomposition identity.  En route, THREE engine fixes (see
+> `macos_f90/CLAUDE.md` polarization section): `pol_set`/`vecdif_set` now dirty
+> the trace (stale-`RayE` on state change); coated-branch incident medium
+> (conductor bleed via `IndRefArr(0)`); coated-branch signed incident cosine
+> (reciprocal 1/r coefficients, |R|>1 — |D| survived, which is why intensity
+> tests never saw it).  The "no engine change beyond Phase 1" premise below
+> did not survive contact with the coated branches — the exposure work was
+> exactly how these were found.  Remaining in Phase 2: the 2b low-order
+> polarization-aberration expansion (optional), 2c contrast floor, 2d IFO
+> deliverable.
+
 The engine has no Jones matrix. Build it the standard PRT way **in the binding layer**
 (no engine change beyond Phase 1). This is where the physics can go quietly wrong, so
 it is specified in more detail.

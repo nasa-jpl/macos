@@ -689,4 +689,52 @@ Extend A, leave B (Dave 2026-07-25).
 `pol_set`/`pol_get`, `vecdif_set`, `coat_set`/`coat_get`, `rayfield_get`.
 `Ex0Ey0=` Rx keyword now parses (4 reals `ExRe ExIm EyRe EyIm`) + round-trips
 through SAVE (STATE only; on/off is API/CLI).  See `SAVE_KEYWORD_AUDIT.md`.
+`pol_set`/`vecdif_set` call `modified_rx` (Phase-2 fix): the POLARIZATION
+command changes trace-relevant state (`Ex0/Ey0` seed `RayE` at source-grid
+setup) but does NOT reset the cached trace -- without the dirty, a pol-state
+change + re-trace harvests the PREVIOUS state's `RayE` (verified stale).
+
+**Coated-branch fixes (Phase 2, this box).**  Two latent bugs in the
+`ifPol`+`nCoat/=0` recursion, both in `Reflector` AND `Refractor`
+(`elemsub.F`), both invisible to intensity-level tests and fatal to Jones
+work; found by the Fresnel-analytic gate (`tJonesPupil`), which now pins
+them at 1e-12:
+1. **Incident medium**: the recursion read `nb_arr(0)` = the parser's
+   `IndRefArr(0,iElt) = IndRef(iElt-1)` -- for a coated mirror FOLLOWING
+   another mirror that slot holds the previous mirror's conductor-idiom
+   substrate (`Extinc=1e22`), i.e. light modeled as arriving from inside a
+   perfect conductor.  Fixed: the coated branch now uses `na,kxa`
+   (= `CurIndRef/CurExtinc`, the medium the ray actually travels in --
+   what the uncoated branch always used).  The stored slot 0 is now unused
+   by the trace; the parser convention is unchanged.
+2. **Signed incident cosine**: `ccfb_arr(0)=DDOTC(ihat,Nhat)` is NEGATIVE
+   when the normal faces the beam (psi convention), which turns every
+   interface coefficient into its RECIPROCAL (1/r): |R|>1, s/p roles
+   swapped, retardance sign flipped -- while |D| survives (the sneaky
+   part).  Fixed with `DABS` (mirrors the uncoated branch's `ccfa`).
+   Diagnostic signature if it ever returns: measured/analytic RS/RP ratio
+   = (RP/RS)^2 exactly.
+
+**Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
+sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
+source-frame pair, UNIFORM over the grid.  Point sources use a PER-RAY
+frame: `yray = unit(RayDir x xGrid)`, `xray = yray x RayDir` (reduces to
+the global frame on the chief).  `S` = flux normalization (~1/sqrt(nRays))
+-- a common real scalar carried by the Jones pupil.  ColSource re-
+orthogonalizes the Rx frame as `z=+-Chf; y=unit(z x x); x=y x z`.  The
+perfect-conductor mirror idiom (`IndRef=1, Extinc=1e22`) gives RP=RS=-1
++O(1e-22): polarization-neutral, which makes any stock conductor Rx a
+unitarity gate for free.
+
+**Phase-2 binding layer** (mmacos `+macos/jones_pupil.m` + `pol_maps.m`,
+pymacos `macos.py` same names): two-trace Jones pupil (double-pole default
+basis / local-sp / global) + closed-form 2x2 Pauli polar decomposition
+(D/Dvec, ret/retvec in [0,pi] w/ near-pi ambiguity FLAG, T, phase; pupil
+mean and variation reported SEPARATELY -- the mean absorbs the system's
+geometric rotation and is a state change, not an aberration).  D/T are
+singular-value invariants (basis-independent); ret is exactly what
+double-pole makes artifact-free (local-sp inflates ret var ~10-250x --
+asserted in tests as the documented artifact).  Gates: `tJonesPupil`
+(mmacos, incl. the Bench fold Fresnel gate) + `test_jones_pupil.py`
+(pymacos, ifx-linked = the standing ifx smoke).
 
