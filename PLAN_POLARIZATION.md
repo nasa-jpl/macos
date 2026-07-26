@@ -478,14 +478,19 @@ without a circular analyzer built from polarizer + waveplate.
 >   rays.  Both polarized branches now gate the seed on `LRayPass`.  With
 >   that, **polarization-ON/vector-OFF is bit-identical to
 >   polarization-OFF** — it was wrong by 21% after one leg, 38% after two.
-> - **The seed applies NO phase-convention bridge**, and the reason is
->   measured, not derived.  Reading `elemsub.F:395` suggests `RayE` is in
->   the conjugate convention to `WFElt`; a `c`-scan of
->   `RayE*exp(i*c*TPL*CumRayL)` (far-field centroid shift = `(c+1)x` the
->   scalar tilt shift) and the `Rx_VecChain` gate both say `c=0` is right.
->   **This tension is unresolved and is the one thing in the diff that
->   wants a physicist's eye** — see the Phase-3a section of
->   `macos_f90/CLAUDE.md` for the full statement.
+> - **The seed applies NO phase-convention bridge** — CONFIRMED CORRECT by
+>   the Fable review (2026-07-26), with the mechanism now understood: the
+>   Return-leg `RayL=-RayL` flip makes `CumRayL` (subtracts return legs)
+>   and `RayE`'s C1 phases (add them) diverge structurally, so the
+>   RayE-vs-scalar phase relation is TRAIN-DEPENDENT — same-convention on
+>   the Return-terminated far-field train (measured: EP-field circular
+>   concentration 0.994 same / 0.002 conjugate; signed tilt response
+>   equal), conjugate on the plain trace-to-detector flow (measured slope
+>   −0.9995 vs the OPD map).  No universal bridge exists; the behavioral
+>   gates carry the correctness claim, and **Tranche 2's `J_run` must
+>   track phases explicitly against the `CumRayL` bookkeeping** rather
+>   than assume a sign.  Full statement + debug gotchas in the Phase-3a
+>   section of `macos_f90/CLAUDE.md`.
 > - **Non-vacuity was checked explicitly** (the pre-fix engine was rebuilt
 >   and re-run): it fails the new gates at 0.21…0.38 relative error and
 >   mis-states total power by 4–7%.  The 45°/circular input states are

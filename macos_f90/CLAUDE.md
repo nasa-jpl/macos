@@ -795,11 +795,30 @@ and scanning `c` over `{-2,-1,0,1,2}` on a tilted Cassegrain moves the
 far-field centroid by exactly `(c+1)x` the scalar tilt shift, so `c=0`
 reproduces the scalar pupil phase; (b) on `Rx_VecChain.in` the `c=0` seed
 reproduces the scalar intensity to 4.5e-16 at every leg for x-polarized,
-45° and circular input.  **The residual sign question is unresolved and
-flagged in PLAN_POLARIZATION §3a for review** -- the tests are the
-authority; re-run `tVecChain` before changing anything here.  Note the
-scalar-pol branch cannot serve as the vector seed regardless: it rebuilds
-from `|RayE|` and throws away the per-component phases.
+45° and circular input.  **RESOLVED by the Fable review (2026-07-26):**
+no bridge at the seed is CORRECT, but the reason is structural, not "RayE
+happens to share WFElt's convention".  The Return-leg sign flip
+(`IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)`, applied AFTER the
+surface call) makes the two phase bookkeepings diverge by construction:
+`CumRayL` SUBTRACTS return legs (physical OPD bookkeeping, equalized at a
+proper reference sphere) while `RayE`'s per-surface
+`C1=exp(-i*2pi*L*N/lambda)` phases ADD them (`L` pre-negation).  So the
+RayE-vs-CumRayL phase relation is **TRAIN-DEPENDENT**: on the
+Return-terminated Cass FF the assembled vector EP field matches the
+scalar field's convention (measured: circular-concentration same=0.994 /
+conjugate=0.002; signed far-field tilt response equal at +0.94x), while
+plain trace-to-detector `RayE` measures CONJUGATE to the OPD map (slope
+-0.9995, corr -0.9995).  There is NO universal convention bridge to
+apply -- correctness rests on the behavioral gates (exact on the
+mask-type/normal-incidence class Tranche 1 claims), and **Tranche 2's
+J_run must carry phases explicitly relative to the CumRayL bookkeeping**
+rather than assuming either sign.  The tests are the authority; re-run
+`tVecChain` before changing anything here.  Note the scalar-pol branch
+cannot serve as the vector seed regardless: it rebuilds from `|RayE|` and
+throws away the per-component phases.
+Debug gotcha that cost this review an hour: obscured rays carry
+`RayE=0`, and `ATAN2(0,0)=0` reads as "zero phase, zero Ez" -- gate ANY
+per-ray probe on `LRayPass` before interpreting phases.
 
 **Gate prescription.**  `mmacos/tests/Rx/Rx_VecChain.in` (copied to
 `pymacos/tests/Rx/`) -- collimated on-axis source, flat normal-incidence
