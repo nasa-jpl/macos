@@ -4577,6 +4577,12 @@
 
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
 
+        ! The POLARIZATION command changes trace-relevant state (ifPol,
+        ! Ex0/Ey0 seed RayE at source-grid setup) but does NOT reset the
+        ! cached trace -- without this a pol-state change followed by a
+        ! re-trace harvests the PREVIOUS state's RayE (verified stale).
+        ! Same dirty-the-trace convention as coat_set / the grid setters.
+        CALL modified_rx(OK)
         OK = PASS
       end subroutine pol_set
 
@@ -4634,6 +4640,7 @@
 
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
 
+        CALL modified_rx(OK)   ! VECTOR/SCALAR changes propagation state
         OK = PASS
       end subroutine vecdif_set
 
