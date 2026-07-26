@@ -61,27 +61,63 @@ pattern per bench-builder/expose-beam):
 name (`dev` vs `sls-dev`) before cutting branches, and cut only from a fresh
 post-rewrite clone (never push from a stale pre-rewrite clone).
 
-**Execution — split at the judgment boundary, not the phase boundary:**
+**Execution — split at the judgment boundary, not the phase boundary.
+REVISED 2026-07-26** (Dave): CCMac is out of tokens for the month, and Fable
+time is the scarce resource — **anything Opus-executable is handed to Opus**.
+The Opus lane is defined by the *model*, not the machine: it runs on CCMac
+when its tokens reset, or as an Opus session on this Linux box in the
+meantime.  (The standing ifx-smoke gate can only run on the Linux box either
+way — CCMac is gfortran-only.)
 
-- **CCMac (Opus 4.8): Phases 0 and 1, later Phase 4, and the polarizer/waveplate
-  half of Phase 3.** Template-following with objective, machine-checkable gates
-  (`beam_set`/`beam_get` pattern, `gen_mex_wrappers.py` codegen, AmplMat model,
-  Reflector s/p projection to copy; round-trip identity, geometry invariance,
-  crossed-polarizer extinction, GMI 6/6). Delegation is safe where passing the gate
-  *is* the definition of done. The Phase-0 audit note doubles as CCMac's onboarding
-  vehicle for the engine polarization internals.
-- **Claude 5 (this environment): Phase 2's physics core, the VVC, and any Phase 3a.**
-  Where the plan itself warns things go quietly wrong: double-pole basis
-  construction, retardance branch handling, mean-vs-variation separation, convention
-  arbitration, and un-templated engine surgery (vectorizing propagation legs). The
-  2026-07-25 bench_ifo_dm diagnosis (a plausible "9 nm algorithm floor" that
-  decomposed into a branch-cut artifact + a sign convention + real retrace physics)
-  is the reference case for why these stay with the stronger model: an executor that
-  stops at "tests pass, plausible number" ships a wrong budget.
+- **Opus lane — template-following with objective, machine-checkable gates.**
+  Delegation is safe where passing the gate *is* the definition of done.
+  Worklist, in priority order (each item's spec + gates are already written
+  in this document; the executor should need no new decisions):
+  1. **Phase 3a Tranche 1** (§3a.2 — all call sites line-mapped): K=1,3
+     kernel loops, 3-plane `FFObscure`, validation-ladder tests 1/2/4/5.
+     Includes implementing the two §3a.1 fixes **to spec** (assembly
+     seed-once-then-update; `PFFPROP`→`FFPROP`×3 unification) — revised
+     from "written here": the spec is now detailed enough that a Fable
+     line-review of the finished diff is cheaper than Fable authorship.
+  2. **Phase 2b low-order expansion** (the optional item): Zernike-basis
+     fits of the Dvec/retvec maps over the mask.  Gate: recovers synthetic
+     low-order inputs exactly; regression vs the two-mirror literature
+     patterns.
+  3. **Phase 2c contrast floor** (§2c): co/cross-pol decomposition +
+     independent propagation + incoherent sum.  Gates: x-pol reduces to the
+     scalar contrast curve at round-off; energy bookkeeping; floor reported
+     by component.
+  4. **Phase 3 polarizer + waveplate** (NOT the VVC): dispatch + surface
+     routines modeled on `Reflector`'s s/p projection; keywords/SAVE/API
+     per the Phase-1 template.  Gates: crossed-polarizer extinction, QWP
+     linear→circular Stokes check, GMI 6/6 untouched.
+  5. **Phase 2d mechanical half** (on `pol-ifo` once parents merge): Bench
+     coating emission (`add_mirror`/`add_bs_reflect` coating options,
+     `Coating=` block ordering handled), `twyman_green('coating',...)`
+     pass-through, visibility-budget driver.
+  6. **Phase 4 spatial coatings** (§4): zone-map model per the AmplMat
+     template + the two stated departures.
+  Per the new standing rule, every item above ships its cmdref + manual
+  entries as part of its definition of done.
+- **Fable lane — scarce; keep to short, judgment-critical sessions:**
+  phase-gate reviews of the Opus items (line-review the diff, run the ifx
+  smoke + both-compiler suites, check the gates weren't satisfied
+  vacuously); the **VVC** (retardance/handedness conventions, broadband
+  leakage); **Phase 3a Tranche 2** (per-ray `J_run` engine surgery) when
+  IFO `DO_NEARFIELD` needs it; the **Phase 2d interpretation half** (PSI
+  polarization systematic, the AOI-trade conclusions — error-budget
+  numbers, where "tests pass, plausible number" is not enough).  The
+  2026-07-25 bench_ifo_dm diagnosis (a plausible "9 nm algorithm floor"
+  that decomposed into a branch-cut artifact + a sign convention + real
+  retrace physics) remains the reference case for what stays here — as
+  does Phase 2a/2b itself, where building the Jones-pupil layer exposed
+  three latent engine bugs the templates would have built on top of.
 
-**Sequence:** CCMac starts Phase 0+1 on `pol-core` now → review at the phase gate
-here → Phase 2 lands on top of their Phase 1 → `pol-ifo` follows here (the
-bench_ifo machinery and its 3e-5 pm validation history live in this environment).
+**Sequence:** Phases 0–2b are DONE (gate-passed, pushed, documented).  The
+Opus lane works its list top-down on `pol-core` (Tranche 1 first — it
+unblocks the Phase-3 VVC acceptance test and the polarized PROPER re-runs);
+Fable gates each landing.  `pol-ifo` (2d) follows after `bench-builder` and
+`pol-core` merge.
 
 ---
 
@@ -541,15 +577,19 @@ chains) — Tranche 1 remains as the fast path and the regression anchor.
 
 ### 3a.5 Execution split & sequencing
 
-- Tranche 1 kernel loops + FFObscure + tests 1/2/4/5 are template-mechanical
-  → **CCMac lane**, with this section as the spec.  The assembly-semantics
-  change (3a.1 item 2) and the far-field unification touch trace bookkeeping
-  → written or line-reviewed **here** before merge; test 3 runs on the Linux
-  box (ifx + gfortran, standing gate step).
+- Tranche 1 — kernel loops + FFObscure + tests 1/2/4/5, AND the two §3a.1
+  fixes implemented to spec — is **Opus-lane item 1** (see the revised
+  execution split above; CCMac when tokens allow, or an Opus session on the
+  Linux box).  This section is the spec.  The §3a.1 diffs (assembly
+  seed-once; far-field unification) get a **Fable line review** at the
+  gate before merge; test 3 (polarized PROPER re-runs) and the ifx smoke
+  run on the Linux box regardless.
 - Slots after Phase 2 exposure work is stable (Jones-pupil machinery is the
-  main consumer of correct chain phases); must land before the Phase-3 VVC
+  main consumer of correct chain phases) — Phase 2a/2b landed 2026-07-26,
+  so Tranche 1 is now unblocked; must land before the Phase-3 VVC
   acceptance test.  Track A phase 1 (single far-field hop) is unaffected
-  either way; Track A `DO_NEARFIELD` additionally wants Tranche 2.
+  either way; Track A `DO_NEARFIELD` additionally wants Tranche 2
+  (Fable lane, deferred until needed).
 
 ---
 
