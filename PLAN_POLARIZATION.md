@@ -517,11 +517,28 @@ Phase-0 audit's leg table is the coverage map.
    prior diffraction.  So polarized multi-leg diffraction is broken by
    *bookkeeping*, independent of kernel coverage: leg 2 erases leg 1's
    diffraction.  Fix (vector mode): **seed once, then update** — on the
-   FIRST physical-leg assembly of a trace, seed the 3 planes from `RayE`
-   (correct phases now depend on the `NaCmplx` fix, e2f680a); on subsequent
-   assemblies multiply all 3 planes by the per-ray incremental geometric
-   phase (one factor shared by k=1..3) and maintain `CumLStart` exactly as
-   the non-pol branch does.  A `LOGICAL` seeded-flag reset at trace start.
+   FIRST physical-leg assembly of a trace, seed the 3 planes from `RayE`;
+   on subsequent assemblies multiply all 3 planes by the per-ray
+   incremental geometric phase (one factor shared by k=1..3) and maintain
+   `CumLStart` exactly as the non-pol branch does.  A `LOGICAL`
+   seeded-flag reset at trace start.
+   Post-Phase-2 amendments (2026-07-26 review):
+   - Correct seeded phases/amplitudes now depend on THREE engine fixes:
+     `NaCmplx` (e2f680a) AND the coated-branch incident-medium +
+     signed-cosine fixes (d137a97) — without the latter two, any coated
+     surface upstream of the seed leg poisons the seeded field.  All are
+     on pol-core.
+   - `pol_set` now calls `modified_rx` (bef4598), so a pol-state change
+     forces a full re-trace — key the seeded-flag reset off the same
+     trace-start path and the lifecycle is automatic.
+   - **Scope decision for the ifPol-SCALAR branch** (propsub.F:1397-1414,
+     same erase-diffraction class): Tranche 1 fixes BOTH branches with the
+     same incremental-multiply update.  Note the scalar-pol branch's
+     |RayE| amplitude reload is only load-bearing when surfaces BETWEEN
+     legs change ray amplitudes — excluded by the Tranche-1 mask-type
+     validity condition, and handled by `J_run` in Tranche 2 — so the
+     incremental-multiply form is exact within each tranche's stated
+     scope.
 
 ### 3a.2 Tranche 1 — mask-type chains (the coronagraph case)
 
@@ -564,6 +581,12 @@ chains) — Tranche 1 remains as the fast path and the regression anchor.
 2. **x-pol ≡ scalar equivalence**: near-normal-incidence train (Cass FF Rx),
    no coatings, Ex-only source: vector-chain Σk|Ek|² must equal the scalar
    run's intensity to round-off at every leg (Ey/Ez ≈ 0 ride along).
+   Frame note (2026-07-26): "Ex-only" means the ENGINE launch frame —
+   uniform (xGrid,yGrid) for collimated sources, the per-ray
+   yray=unit(RayDir×xGrid) frame for point sources (ssrcray.inc; see the
+   engine-pol section of macos_f90/CLAUDE.md).  Energy sums are
+   frame-independent, so the gate is unaffected — but don't be surprised
+   when per-component maps on point-source rigs aren't globally aligned.
 3. **PROPER cross-checks re-run polarized**: pymacos proper_compare Phases
    2/3 (NF plane-to-plane + sphere legs) with `pol_set` on, x-pol — must
    reproduce the committed scalar↔PROPER tolerances (2.4e-14 … 4e-8 class).
