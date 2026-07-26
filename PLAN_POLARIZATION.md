@@ -460,6 +460,60 @@ without a circular analyzer built from polarizer + waveplate.
 
 ## Phase 3a — Vector near-field propagation (chain closure)
 
+> **STATUS 2026-07-26: TRANCHE 1 LANDED on `pol-core`** (Opus lane item 1;
+> awaiting the Fable line review).  All of §3a.2 plus both §3a.1 fixes are
+> implemented in `propsub.F`; ladder tests 1/2/4/5 ship as `tVecChain`
+> (mmacos) + `test_vec_chain.py` (pymacos), and ladder test 3 was run.
+> Engine-side detail lives in the new Phase-3a section of
+> `macos_f90/CLAUDE.md`.  Summary of what a reviewer should check:
+>
+> - **Coverage** went beyond the enumerated call sites by two items, both
+>   deliberate: `SPH2PL`/`PL2SPH` (PropType 10/11) got the same K-loop —
+>   they are the same scalar-only class and leaving them out is a silent
+>   hole; and the 13 ray-side clip sites + 2 taper sites now extinguish /
+>   scale all three planes (via new `WFZeroPt`/`WFScalePt` helpers), which
+>   the seed-once fix makes load-bearing.
+> - **A THIRD defect of the §3a.1 class was found and fixed**: `RayE`
+>   carries no aperture clipping, so seeding from it resurrected vignetted
+>   rays.  Both polarized branches now gate the seed on `LRayPass`.  With
+>   that, **polarization-ON/vector-OFF is bit-identical to
+>   polarization-OFF** — it was wrong by 21% after one leg, 38% after two.
+> - **The seed applies NO phase-convention bridge**, and the reason is
+>   measured, not derived.  Reading `elemsub.F:395` suggests `RayE` is in
+>   the conjugate convention to `WFElt`; a `c`-scan of
+>   `RayE*exp(i*c*TPL*CumRayL)` (far-field centroid shift = `(c+1)x` the
+>   scalar tilt shift) and the `Rx_VecChain` gate both say `c=0` is right.
+>   **This tension is unresolved and is the one thing in the diff that
+>   wants a physicist's eye** — see the Phase-3a section of
+>   `macos_f90/CLAUDE.md` for the full statement.
+> - **Non-vacuity was checked explicitly** (the pre-fix engine was rebuilt
+>   and re-run): it fails the new gates at 0.21…0.38 relative error and
+>   mis-states total power by 4–7%.  The 45°/circular input states are
+>   load-bearing — an x-pol-only gate passes vacuously because all the
+>   energy sits in plane 1, which the old single-plane propagator carried
+>   correctly.
+>
+> **Gate results** (both compilers built; gfortran for mmacos/GMI, ifx for
+> pymacos = the standing ifx smoke):
+>
+> | Gate | Result |
+> |---|---|
+> | Ladder 1 — energy per leg | vector total == scalar total, 0…2.2e-16 |
+> | Ladder 2 — x-pol ≡ scalar | 4.5e-16 … 6.8e-16 on `Rx_VecChain` (also 45°, circular) |
+> | Ladder 3 — polarized PROPER re-run | scalar + pol-scalar reproduce the committed 4.836e-13 macos↔PROPER residual exactly; vector differs 1.3e-2 from scalar, consistent with that geometry's `\|Ez\|/\|E\|≈2.7e-2`, at identical total power |
+> | Ladder 4 — chain closure | two-leg mask chain, vector ≡ scalar at round-off; mask throughput identical to 1e-14 |
+> | Ladder 5 — single-hop A/B | vector far-field total 8.9377e-01 → 1.8155e+06 == scalar total (2.03e6 in intensity) |
+> | mmacos full suite | 412 pass, 0 fail (fast 281 / masks 62 / freeform 46 / proper-512 10 / proper-1024 13) |
+> | pymacos suite | 6645 pass; PROPER-compare 26/26 |
+> | GMI regression | 6/6, bit-identical (`vs-ref = 0.000e+00`) |
+>
+> Docs shipped with it: manual §6 (VECTOR/SCALAR scope rewritten), cmdref
+> `10_engine_commands.md` (VECtor/SCAlar NOTES) + `20_bindings.md`
+> (`vector_diffraction` NOTES, regenerated), both binding docstrings, and
+> the `macos_f90/CLAUDE.md` Phase-3a section.
+>
+> **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.
+
 **Goal:** promote the near-field propagators (sphere→plane, sphere→sphere,
 plane→plane, and the DFT legs) from scalar-only to vector, propagating each
 Cartesian field component separately on the model of the far-field `PFFPROP`

@@ -1593,15 +1593,26 @@ Reconstruct a 2D matrix from m2v's compressed vec + indx. mat = macos.v2m(vec, i
 - **mmacos:** `macos.vector_diffraction(on)`
 - **pymacos:** `pymacos.vector_diffraction(on)`
 
-Toggle vector (3-component) diffraction. macos.vector_diffraction(true)  -> VECTOR: propagate Ex/Ey/Ez as three independent fields (far-field FFT leg only; see the engine polarization notes -- near-field/DFT legs remain scalar). macos.vector_diffraction(false) -> SCALAR: single-field diffraction. 
+Toggle vector (3-component) diffraction. macos.vector_diffraction(true)  -> VECTOR: propagate Ex/Ey/Ez as three independent fields.  Since PLAN_POLARIZATION Phase 3a Tranche 1 this covers the WHOLE chain -- every near-field, plane-to-plane, spherical, Fresnel and DFT leg, plus FFObscure and the ray-side aperture masking -- not just the far-field FFT
 
 <!-- BEGIN NOTES fn-vector-diffraction -->
 Requires polarization ON first; errors otherwise (the CLI
-VECtor silently reverts instead).  Scope caveat: vector
-diffraction currently applies to the far-field (Fraunhofer FFT)
-leg only; near-field / plane-to-plane legs propagate a single
-scalar plane, and in vector mode the three wavefront planes are
-repurposed as Ex/Ey/Ez (single wavefront only).
+VECtor silently reverts instead).  Since Phase 3a Tranche 1
+every propagation leg is vectorized -- far-field, near-field
+sphere/plane, plane-to-plane, spatial-filter, Fresnel and the
+DFT legs -- along with the diffraction-grid obscuration apply
+and the ray-side aperture/apodization masking, so a multi-leg
+chain preserves the vector field.  Intensity sums the three
+components.
+Two limits to know.  (1) Vector mode repurposes the three
+wavefront planes as Ex/Ey/Ez, so only ONE wavefront can be in
+flight -- not usable with multi-WF / COMPOSE.  (2) Between two
+physical legs the grid field is advanced by a scalar phase,
+exact only when the intervening elements are non-polarizing
+(Obscuring / Reference / FocalPlane -- the coronagraph
+pupil->FPM->Lyot->focal case).  A COATED or reflecting surface
+BETWEEN legs needs the per-ray running-Jones work of Tranche 2,
+which is not implemented.
 *Related:* polarization; CLI VECtor/SCAlar.
 <!-- END NOTES fn-vector-diffraction -->
 

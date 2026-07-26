@@ -1795,13 +1795,21 @@ when the build supports it (mWF>=3), so VECtor is mainly for
 re-enabling after SCAlar.  Scalar is the default and the only
 mode with polarization off (Section 6.3.4/6.3.5).  Both
 commands clear the propagate state so the next [DIFF] command
-recomputes the wavefront; neither takes arguments.  Scope
-caveat: vector diffraction currently applies to the far-field
-(Fraunhofer FFT) propagation leg only -- near-field /
-plane-to-plane legs propagate a single scalar plane, so a
-multi-leg diffraction chain does not yet preserve the vector
-field between legs.  In vector mode the three wavefront planes
-are repurposed as Ex/Ey/Ez (single wavefront only).  In vector
+recomputes the wavefront; neither takes arguments.  Scope:
+since Phase 3a Tranche 1 vector diffraction covers EVERY
+propagation leg -- far-field, near-field sphere/plane,
+plane-to-plane, spatial-filter, Fresnel and the DFT legs --
+plus the diffraction-grid obscuration apply and the ray-side
+aperture/apodization masking, so a multi-leg chain preserves
+the vector field between legs.  Two limits: the three
+wavefront planes are repurposed as Ex/Ey/Ez, so only ONE
+wavefront can be in flight (no multi-WF / COMPOSE); and
+between two physical legs the grid field is advanced by a
+scalar phase, which is exact only when the intervening
+elements are non-polarizing (Obscuring / Reference /
+FocalPlane -- the coronagraph pupil->FPM->Lyot->focal case).
+A COATED or reflecting surface BETWEEN legs needs the per-ray
+running-Jones work of Tranche 2, not yet implemented.  In vector
 mode AMPlitude/PHAse plot X, Y, Z field components and IMG
 imaging is unavailable.  SMACOS: no arguments.
 *Related:* POLarization, NOPolarization, AMPlitude, PHAse.

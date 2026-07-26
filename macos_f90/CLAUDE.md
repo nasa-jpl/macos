@@ -650,13 +650,10 @@ full audit.  Quick map of what the engine has and the conventions to hold.
 - **Fresnel + recursive multilayer thin-film coatings** with complex index
   in `Reflector`/`Refractor` (`elemsub.F:432-547`).  `Reflector`'s TP/TS
   transmittance sub-blocks are `if(.false.)` dead code (mirrors return R only).
-- **Vector diffraction** = 3 independent FFTs of Ex/Ey/Ez (`PFFPROP`), gated
-  `ifVecDif3`.  **ONLY the far-field sphere→plane leg (PropType 3) is
-  vector-capable** -- every near-field / plane-to-plane / DFT leg operates on
-  a single `WFElt(:,:,iWF)` plane, and `FFObscure` zeroes one plane.  A
-  coronagraph chain (pupil→FPM→Lyot→focal) does NOT preserve the vector field
-  across legs; "vectorize the chain" is the plan's Phase 3a.  (Track-A IFO PSI
-  needs only the single far-field hop and is unaffected.)
+- **Vector diffraction** = the 3 Cartesian components Ex/Ey/Ez propagated as
+  independent scalar fields, gated `ifVecDif3`.  Since **Phase 3a Tranche 1**
+  this covers EVERY leg (see the Phase 3a section below); before it, only the
+  far-field sphere→plane leg (PropType 3, via `PFFPROP`) was vectorized.
 - CLI: `POLARIZATION`/`NOPOLARIZATION` (sets `ifPol`; enables `ifVecDif3`
   when `mWF≥3` -- all stock model sizes have `mWF=3`), `VECTOR`/`SCALAR`.
   `POLARIZATION` is SMACOS-dispatchable (LoadStack packs `Ex0/Ey0` as
@@ -737,4 +734,99 @@ double-pole makes artifact-free (local-sp inflates ret var ~10-250x --
 asserted in tests as the documented artifact).  Gates: `tJonesPupil`
 (mmacos, incl. the Bench fold Fresnel gate) + `test_jones_pupil.py`
 (pymacos, ifx-linked = the standing ifx smoke).
+
+## Phase 3a Tranche 1 -- vector propagation across the whole chain
+
+All in `propsub.F` (`CPROPAGATE` + two new module helpers).  Vector mode
+now closes a multi-leg chain; the coronagraph case (pupil→FPM→Lyot→focal)
+works, the VVC acceptance test is unblocked.
+
+**What changed.**
+- **Every leg loops the SAME scalar kernel over the 3 component planes.**
+  One `kWF1..kWF2` range is computed once before the leg dispatch
+  (`1..3` under `ifVecDif3`, else `iWF..iWF`), so every `DO kWF=kWF1,kWF2`
+  degenerates to the original single call in scalar mode -- those paths
+  stay **bit-identical**.  Covered: `NFPROP` (PropType 2, 5), `PPPROP`
+  (4, 6), `SFPROP` (7, 8), `SPH2PL`/`PL2SPH` (10, 11 -- NOT in the plan's
+  list, added for coverage completeness), `FRPROP` (12), `NFPropDFT`
+  (13, 14), `FFPropDFT` (15).  Leg dx/z bookkeeping stays OUTSIDE the loop;
+  the `DWF` scratch is reusable across planes.
+- **`PFFPROP` retired** (3a.1(1)).  It was a bare per-component FFT that
+  omitted the Fresnel output factors `FFPROP` applies via `applyfac2`
+  (`1/(i·λ·dz)·dx1²` + the output quadratic phase).  The far-field leg now
+  runs `FFPROP` per plane.  The routine survives in the file, uncalled,
+  with a deprecation banner.  **A/B (Rx_Cass_FarField, model 128):** vector
+  total power was `8.9377e-01`, is now `1.8155e+06` == the scalar total
+  exactly (Parseval).  Factor 2.03e6 in intensity, 1.43e3 in amplitude.
+- **Assembly: seed once, then update** (3a.1(2)).  Both `ifPol` branches
+  used to RELOAD the grid from `RayE` at every physical-leg assembly,
+  erasing earlier legs' diffraction (the non-pol branch always MULTIPLIED
+  by the incremental geometric phase).  A SAVE'd `LWFSeeded`, reset with
+  `CumLStart` at trace start (`iStartElt==0`), now seeds on the first
+  assembly and multiplies thereafter, advancing `CumLStart` identically in
+  both branches.
+- **Vignetting at the seed** (found while implementing, not in the plan).
+  `RayE` carries NO aperture clipping -- the surface routines report it via
+  `LRayTrans` and never zero `Evec` -- so a seed straight from `RayE`
+  resurrected rays the ray-side zeroing had already extinguished.  Both
+  polarized branches now gate the seed on `LRayPass(iRay).OR.(iRay.EQ.1)`
+  (the `.OR.` mirrors the `iRay.GT.1` guard the zero sites carry for the
+  chief ray).  Consequence worth knowing: **polarization-ON / vector-OFF is
+  now BIT-IDENTICAL to polarization-OFF** -- it was wrong by 21% after one
+  leg and 38% after two.
+- **Masks are 3-plane.**  A 0/1 transmittance is a diagonal Jones `t·I`.
+  `FFObscure` is called per plane under `ifVecDif3`, each call handed a
+  FRESH copy of `xObs` (it re-orthogonalizes its `xGrid` argument IN PLACE,
+  so reusing the mutated vector could move an edge pixel by a ULP between
+  components); the scalar call is untouched.  The 13 ray-side clip sites
+  and the 2 taper sites go through new module helpers `WFZeroPt` /
+  `WFScalePt`, which are the original single-plane statement in scalar
+  mode.
+
+**PHASE CONVENTION AT THE SEED -- read before "fixing" it.**  The seed is
+`WFElt(i,j,k)=RayE(k,iRay)` with **no** phase correction, and that is a
+MEASURED result.  Reading `elemsub.F:395` alone (`S1=-TWOPI*L/lambda`,
+`C1=exp(i*S1*Na)` applied to `Evec` at every surface) suggests `RayE`
+advances phase OPPOSITE to `WFElt`, whose non-pol assembly uses
+`exp(+i*TPL*Cphi)` and whose kernels carry `exp(-i*pi*lambda*dz*f**2)`
+(paraxial forward `exp(+ikz)`).  Two independent experiments say `RayE` is
+already in `WFElt`'s convention: (a) seeding `RayE*exp(i*c*TPL*CumRayL)`
+and scanning `c` over `{-2,-1,0,1,2}` on a tilted Cassegrain moves the
+far-field centroid by exactly `(c+1)x` the scalar tilt shift, so `c=0`
+reproduces the scalar pupil phase; (b) on `Rx_VecChain.in` the `c=0` seed
+reproduces the scalar intensity to 4.5e-16 at every leg for x-polarized,
+45° and circular input.  **The residual sign question is unresolved and
+flagged in PLAN_POLARIZATION §3a for review** -- the tests are the
+authority; re-run `tVecChain` before changing anything here.  Note the
+scalar-pol branch cannot serve as the vector seed regardless: it rebuilds
+from `|RayE|` and throws away the per-component phases.
+
+**Gate prescription.**  `mmacos/tests/Rx/Rx_VecChain.in` (copied to
+`pymacos/tests/Rx/`) -- collimated on-axis source, flat normal-incidence
+uncoated planes, TWO bracketed near-field legs (`NFPlane`→`Geometric`, the
+`Rx_Coro.in` idiom; consecutive same-PropType elements MERGE into one leg,
+which silently defeats a multi-leg test), aperture + central obscuration.
+The ray E-field direction is a CONSTANT unit vector, so `E_k = e_k·u(x,y)`
+and the vector sum `Σ|E_k|²` must equal the scalar intensity EXACTLY.  On a
+real off-normal train it cannot: `Rx_Cass_FarField` carries `|Ez|/|Ex| ≈
+8.8e-2` at the exit pupil and vector/scalar legitimately differ ~2.6e-3.
+**Run the gate at 45° and circular input, not just x-pol** -- with an x-only
+source all the energy sits in plane 1, which the OLD single-plane
+propagator carried correctly, so an x-pol-only gate passes VACUOUSLY.
+
+**Constraint (document, don't work around):** vector mode repurposes the
+`mWF=3` planes as Ex/Ey/Ez of ONE wavefront -- no multi-WF / COMPOSE
+concurrently.
+
+**Still open -- Tranche 2.** Between physical legs the grid field is
+advanced by a scalar phase, exact only when the intervening elements are
+non-polarizing (Obscuring / Reference / FocalPlane).  A COATED or
+reflecting surface BETWEEN legs (IFO recomb→detector with folds under
+`DO_NEARFIELD`; VVC layouts with an OAP between masks) needs the per-ray
+running Jones `J_run(3,3,mRay)` design in PLAN_POLARIZATION §3a.3.
+
+**Gates:** `tVecChain` (mmacos, SUITE_FAST) + `test_vec_chain.py`
+(pymacos, ifx-linked).  Both are non-vacuous -- checked 2026-07-26 against
+the pre-fix engine, which fails them at 0.21..0.38 relative error and
+mis-states total power by 4-7%.
 
