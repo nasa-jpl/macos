@@ -97,11 +97,13 @@ way — CCMac is gfortran-only.)
      pass-through, visibility-budget driver.
   6. **Phase 4 spatial coatings** (§4): zone-map model per the AmplMat
      template + the two stated departures.
-  7. **Validation-report skeleton + Phase 0–2b evidence** (see the
-     Validation document deliverable): `docs/macos-manual/polval/` doc +
-     `make polval` target + the figure-regeneration driver, with the
-     already-landed gates as the first evidence sections.  Independent of
-     items 1–6 — good interleave work whenever another item blocks.
+  7. ~~**Validation-report skeleton + Phase 0–2b evidence**~~ — **DONE
+     2026-07-26** (see the STATUS block in the Validation document
+     section below).  Shipped the `polval/` report, the `make polval` /
+     `polval-pdf` / `polval-regen` / `polval-check` targets, the
+     regeneration driver, AND — beyond the stated scope — the Phase 3a
+     Tranche 1 evidence sections, which back-fills the gap Tranche 1
+     left open.
   Per the new standing rule, every item above ships its cmdref + manual
   entries **and its validation-report evidence section** as part of its
   definition of done.
@@ -531,11 +533,13 @@ without a circular analyzer built from polarizer + waveplate.
 > Phase 2c's co/cross-pol decomposition will want, so it should probably
 > land there.  Marked in `tVecChain` / `test_vec_chain.py` headers.
 >
-> **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.  Nor the
-> validation-report evidence section — the standing rule that adds it to
-> every item's definition of done (worklist item 7 / the Validation
-> document section) postdates this landing; Tranche 1's evidence needs
-> back-filling when the `polval/` skeleton exists.
+> **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.  ~~Nor the
+> validation-report evidence section~~ — **back-filled 2026-07-26** with
+> worklist item 7: Tranche 1's evidence is now §3.1–§3.6 of the `polval/`
+> report (per-leg energy, x-pol≡scalar residual maps, mask throughput,
+> the single-hop A/B including the pre-fix number, and the polarized
+> PROPER cross-check), with the unverified attribution carried into the
+> report's own open-items list.
 
 **Goal:** promote the near-field propagators (sphere→plane, sphere→sphere,
 plane→plane, and the DFT legs) from scalar-only to vector, propagating each
@@ -730,6 +734,51 @@ dependence on map sampling.
 ---
 
 ## Validation document (deliverable — Dave 2026-07-26)
+
+> **STATUS 2026-07-26: SKELETON + PHASE 0–2b + PHASE 3a EVIDENCE LANDED**
+> (Opus lane item 7).  `macos/docs/macos-manual/polval/` — six sections
+> (frontmatter/provenance, conventions + engine-fix provenance, Phase 1
+> exposure, Phase 2a/2b Jones pupil, Phase 3a Tranche 1, gate index +
+> coverage/gaps), six generated figures, `make polval` / `polval-pdf` /
+> `polval-regen` / `polval-check`.  Driver:
+> `MACOS_resources/mmacos/tools/pol_validation_report/`.
+>
+> **The no-hand-copied-numbers requirement is enforced, not aspirational.**
+> Prose lives in `polval/*.md.in` and contains no numeric literals — only
+> `@@TOKEN@@` placeholders.  `render_polval.py` resolves every token
+> before writing anything (so a failed render leaves no half-updated
+> `.md`); `tools/check_polval.py` runs as a prerequisite of `make polval`
+> and refuses to build if a template was edited without re-rendering, a
+> figure is newer than `numbers.json`, or a placeholder survives.  The
+> report stamps engine + binding SHA, branch, model size, MATLAB and host.
+> **The driver also asserts 19 gate thresholds mirroring the CI tests and
+> ABORTS on a regression** — the report cannot document a broken gate as
+> round-off (guard verified non-vacuous against degraded values for all
+> three comparison operators and the missing-measurement path).
+>
+> Numbers the driver cannot produce (pymacos/ifx suite, PROPER compare,
+> GMI, and the HISTORICAL pre-fix engine A/Bs) are in `external.json`
+> with their producing command and capture date, and are labelled
+> *(external, captured DATE)* in the report — not silently omitted, not
+> presented as regenerated.
+>
+> **Finding, made while writing the unitarity section.** The
+> transmission-uniformity gate reports `std/mean` ≈ 5.1e-14, but the true
+> spread of that map is 6.1e-15 p-v (only 30 distinct doubles): `mean()`
+> over 11484 points accumulates 5.1e-14 of summation error, *larger than
+> the quantity being measured*.  The gate is a valid upper bound and is
+> unchanged; the report now publishes the honest median-referenced spread
+> and RMS alongside it, plus the summation floor itself, and the figure
+> panel is referenced to the median (which was otherwise painting a
+> spurious uniform offset across the whole pupil).  Left `tJonesPupil` as
+> Fable reviewed it — flagging rather than silently editing a landed gate
+> — but a tighter median-referenced assertion would be a small
+> improvement if anyone touches it.
+>
+> **Still to append** (each phase's definition of done): Phase 2b
+> low-order expansion, 2c, 2d, Phase 3, Tranche 2, Phase 4.  Ladder rungs
+> 4/5/6 are enumerated as not-yet-climbed in the report's own
+> coverage-and-gaps section rather than left implicit.
 
 When the polarization work completes, we deliver a **validation report** with
 PNG evidence from the validation suite — the reviewer-facing companion to the

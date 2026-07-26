@@ -1,0 +1,408 @@
+{
+  "provenance": {
+    "generated": "2026-07-26 16:01:25",
+    "engine_sha": "d85d281",
+    "engine_branch": "pol-core",
+    "engine_dirty": true,
+    "resources_sha": "11cf054",
+    "resources_branch": "pol-core",
+    "resources_dirty": true,
+    "matlab": "2026a",
+    "model_size": 128,
+    "host": "red-river"
+  },
+  "values": {
+    "G11_OPD_DIFF": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "waves",
+      "gate": "geometry invariance under ifPol",
+      "test": "tPolarization/test_pol_on_off_roundtrip (state); this driver (OPD)",
+      "source": "driver"
+    },
+    "G11_STATUS_DIFF": {
+      "value": 0,
+      "text": "0",
+      "units": "rays",
+      "gate": "ray-status invariance under ifPol",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G11_BITWISE": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "OPD bitwise equality under ifPol",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G12_COAT_ROUNDTRIP": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "coat_get o coat_set identity",
+      "test": "tPolarization/test_coat_roundtrip_identity",
+      "source": "driver"
+    },
+    "G12_NLAYER": {
+      "value": 2,
+      "text": "2",
+      "units": "layers",
+      "gate": "round-trip stack depth",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G21_NPTS": {
+      "value": 11484,
+      "text": "11484",
+      "units": "points",
+      "gate": "unvignetted pupil points",
+      "test": "tJonesPupil/test_unitarity_gate",
+      "source": "driver"
+    },
+    "G21_MAXD": {
+      "value": 2.5268920339152054E-15,
+      "text": "2.53e-15",
+      "units": "",
+      "gate": "max diattenuation, perfect conductors",
+      "test": "tJonesPupil/test_unitarity_gate",
+      "source": "driver"
+    },
+    "G21_MAXRET": {
+      "value": 2.45652018591285E-15,
+      "text": "2.46e-15",
+      "units": "rad",
+      "gate": "max retardance, perfect conductors",
+      "test": "tJonesPupil/test_unitarity_gate",
+      "source": "driver"
+    },
+    "G21_TNONUNIF": {
+      "value": 5.062596853699351E-14,
+      "text": "5.06e-14",
+      "units": "",
+      "gate": "transmission non-uniformity, std/mean (the CI-gate statistic)",
+      "test": "tJonesPupil/test_unitarity_gate",
+      "source": "driver"
+    },
+    "G21_TSPREAD": {
+      "value": 6.0947747499914813E-15,
+      "text": "6.09e-15",
+      "units": "",
+      "gate": "transmission peak-to-valley about the median",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G21_TRMS": {
+      "value": 9.2105535107606E-16,
+      "text": "9.21e-16",
+      "units": "",
+      "gate": "transmission RMS non-uniformity about the median",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G21_TMEANFLOOR": {
+      "value": 5.0626169922907138E-14,
+      "text": "5.06e-14",
+      "units": "",
+      "gate": "summation-error floor of mean() over the pupil",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G21_TNUNIQ": {
+      "value": 30,
+      "text": "30",
+      "units": "values",
+      "gate": "distinct doubles in the transmission map",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G21_LEAK": {
+      "value": 5.250206340471859E-17,
+      "text": "5.25e-17",
+      "units": "",
+      "gate": "longitudinal leak max |E.k|/|E|",
+      "test": "tJonesPupil/test_unitarity_gate",
+      "source": "driver"
+    },
+    "G22_NRAYS": {
+      "value": 1257,
+      "text": "1257",
+      "units": "rays",
+      "gate": "unvignetted rays on the fold",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_AOI_MIN": {
+      "value": 43.281126614607508,
+      "text": "43.28",
+      "units": "deg",
+      "gate": "min AOI over the footprint",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_AOI_MAX": {
+      "value": 46.718873385392421,
+      "text": "46.72",
+      "units": "deg",
+      "gate": "max AOI over the footprint",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_DMAG": {
+      "value": 1.1990408665951691E-14,
+      "text": "1.20e-14",
+      "units": "",
+      "gate": "max |RS/RP| residual vs Fresnel",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_DPHASE": {
+      "value": 3.1799074405866169E-14,
+      "text": "3.18e-14",
+      "units": "rad",
+      "gate": "max arg(RS/RP) residual vs Fresnel",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_DRESID": {
+      "value": 1.1060596882828122E-14,
+      "text": "1.11e-14",
+      "units": "",
+      "gate": "max per-ray diattenuation residual vs Fresnel",
+      "test": "tJonesPupil/test_fold_fresnel_analytic",
+      "source": "driver"
+    },
+    "G22_DMEAN": {
+      "value": 0.034114329479628107,
+      "text": "0.0341",
+      "units": "",
+      "gate": "mean diattenuation of the Al fold at 45 deg",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G23_AZ_RESID": {
+      "value": 2.62234678416462E-13,
+      "text": "2.62e-13",
+      "units": "rad",
+      "gate": "azimuth-lock residual of the diattenuation axis",
+      "test": "tJonesPupil/test_2theta_symmetry",
+      "source": "driver"
+    },
+    "G23_CIRC": {
+      "value": 3.85944623707347E-16,
+      "text": "3.86e-16",
+      "units": "",
+      "gate": "max circular diattenuation component",
+      "test": "tJonesPupil/test_2theta_symmetry",
+      "source": "driver"
+    },
+    "G23_RING_RATIO": {
+      "value": 4.11682128136415,
+      "text": "4.12",
+      "units": "x",
+      "gate": "D(outer ring) / D(inner ring)",
+      "test": "tJonesPupil/test_2theta_symmetry",
+      "source": "driver"
+    },
+    "G23_DMEAN": {
+      "value": 0.0022584333844363276,
+      "text": "2.258e-03",
+      "units": "",
+      "gate": "pupil-mean diattenuation, Al Cass",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G23_DVAR": {
+      "value": 0.0011397910669975718,
+      "text": "1.140e-03",
+      "units": "",
+      "gate": "pupil-VARIATION (RMS) diattenuation, Al Cass",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G24_DINV": {
+      "value": 5.98777754809432E-16,
+      "text": "5.99e-16",
+      "units": "",
+      "gate": "D basis-invariance residual",
+      "test": "tJonesPupil/test_basis_invariance_and_sp_artifact",
+      "source": "driver"
+    },
+    "G24_RET_DP": {
+      "value": 0.0036067288258413988,
+      "text": "3.607e-03",
+      "units": "rad",
+      "gate": "retardance variation, double-pole basis",
+      "test": "tJonesPupil/test_basis_invariance_and_sp_artifact",
+      "source": "driver"
+    },
+    "G24_RET_SP": {
+      "value": 0.89131921003045433,
+      "text": "8.913e-01",
+      "units": "rad",
+      "gate": "retardance variation, local-sp basis",
+      "test": "tJonesPupil/test_basis_invariance_and_sp_artifact",
+      "source": "driver"
+    },
+    "G24_RATIO": {
+      "value": 247.12676030544719,
+      "text": "247.1",
+      "units": "x",
+      "gate": "local-sp retardance artifact inflation",
+      "test": "tJonesPupil/test_basis_invariance_and_sp_artifact",
+      "source": "driver"
+    },
+    "G31_BITWISE": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "pol-ON/vector-OFF bitwise equal to pol-OFF at both legs",
+      "test": "tVecChain/test_polarized_scalar_is_bit_identical",
+      "source": "driver"
+    },
+    "G32_X_LEG1": {
+      "value": 4.5028735736997378E-16,
+      "text": "4.50e-16",
+      "units": "",
+      "gate": "vector(vec_x) vs scalar, leg 1",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_X_LEG2": {
+      "value": 6.4202135527807306E-16,
+      "text": "6.42e-16",
+      "units": "",
+      "gate": "vector(vec_x) vs scalar, leg 2",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_L45_LEG1": {
+      "value": 4.5028735736997378E-16,
+      "text": "4.50e-16",
+      "units": "",
+      "gate": "vector(vec_45) vs scalar, leg 1",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_L45_LEG2": {
+      "value": 6.4202135527807306E-16,
+      "text": "6.42e-16",
+      "units": "",
+      "gate": "vector(vec_45) vs scalar, leg 2",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_CIRC_LEG1": {
+      "value": 4.5028735736997378E-16,
+      "text": "4.50e-16",
+      "units": "",
+      "gate": "vector(vec_circ) vs scalar, leg 1",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_CIRC_LEG2": {
+      "value": 6.4202135527807306E-16,
+      "text": "6.42e-16",
+      "units": "",
+      "gate": "vector(vec_circ) vs scalar, leg 2",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G32_WORST": {
+      "value": 6.4202135527807306E-16,
+      "text": "6.42e-16",
+      "units": "",
+      "gate": "worst vector-vs-scalar residual over all states and legs",
+      "test": "tVecChain/test_vector_equals_scalar_every_state",
+      "source": "driver"
+    },
+    "G33_ELEG1": {
+      "value": 0,
+      "text": "0.00e+00",
+      "units": "relative",
+      "gate": "total-power residual, vector vs scalar, leg 1",
+      "test": "tVecChain/test_energy_conserved_per_leg",
+      "source": "driver"
+    },
+    "G33_ELEG2": {
+      "value": 1.2304820138252375E-16,
+      "text": "1.23e-16",
+      "units": "relative",
+      "gate": "total-power residual, vector vs scalar, leg 2",
+      "test": "tVecChain/test_energy_conserved_per_leg",
+      "source": "driver"
+    },
+    "G34_THRU_SCALAR": {
+      "value": 0.96965754843414087,
+      "text": "0.969658",
+      "units": "",
+      "gate": "leg2/leg1 throughput, scalar (MidStop obscuration)",
+      "test": "tVecChain/test_mask_throughput_identical_on_vector_path",
+      "source": "driver"
+    },
+    "G34_THRU_RESID": {
+      "value": 1.1449640405708271E-16,
+      "text": "1.14e-16",
+      "units": "relative",
+      "gate": "worst mask-throughput mismatch on the vector path",
+      "test": "tVecChain/test_mask_throughput_identical_on_vector_path",
+      "source": "driver"
+    },
+    "G35_SCALAR_TOT": {
+      "value": 1.8154952807724294E+6,
+      "text": "1.815495e+06",
+      "units": "",
+      "gate": "scalar far-field total power",
+      "test": "tVecChain/test_far_field_vector_matches_scalar_normalization",
+      "source": "driver"
+    },
+    "G35_VECTOR_TOT": {
+      "value": 1.8154952807724266E+6,
+      "text": "1.815495e+06",
+      "units": "",
+      "gate": "vector far-field total power (post-fix)",
+      "test": "tVecChain/test_far_field_vector_matches_scalar_normalization",
+      "source": "driver"
+    },
+    "G35_TOT_RESID": {
+      "value": 1.5389562029914506E-15,
+      "text": "1.54e-15",
+      "units": "relative",
+      "gate": "vector-vs-scalar total-power residual",
+      "test": "tVecChain/test_far_field_vector_matches_scalar_normalization",
+      "source": "driver"
+    },
+    "G35_MAP_DIFF": {
+      "value": 0.0025637652277176346,
+      "text": "2.56e-03",
+      "units": "",
+      "gate": "vector-vs-scalar far-field map difference (off-normal train)",
+      "test": "tVecChain/test_far_field_vector_matches_scalar_normalization",
+      "source": "driver"
+    },
+    "G35_EZ_RATIO": {
+      "value": 0.038224168400067246,
+      "text": "3.82e-02",
+      "units": "",
+      "gate": "median |Ez|/|Ex| at the exit pupil (UNVERIFIED attribution)",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G35_EZ_MAX": {
+      "value": 0.0879210742206505,
+      "text": "8.79e-02",
+      "units": "",
+      "gate": "max |Ez|/|Ex| at the exit pupil (UNVERIFIED attribution)",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G35_EZ_NRAYS": {
+      "value": 11484,
+      "text": "11484",
+      "units": "rays",
+      "gate": "unvignetted rays in the |Ez|/|Ex| probe",
+      "test": "this driver",
+      "source": "driver"
+    }
+  }
+}

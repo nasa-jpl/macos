@@ -23,8 +23,17 @@ CMDSRC     := $(sort $(wildcard cmdref/[0-9]*.md))
 CMDREF_OPTS := --resource-path=cmdref --toc --toc-depth=2 \
                --metadata title="MACOS Command Reference"
 
+# Polarization validation report.  Sources are polval/*.md.in templates;
+# the .md are GENERATED (numbers substituted from the driver's measurements).
+POLVALSRC  := $(sort $(wildcard polval/[0-9]*.md))
+POLVALIN   := $(sort $(wildcard polval/[0-9]*.md.in))
+POLVAL_OPTS := --resource-path=polval --toc --toc-depth=2 \
+               --metadata title="MACOS Polarization Validation Report"
+POLVAL_TOOL := $(HOME)/dev/MACOS_resources/mmacos/tools/pol_validation_report
+
 .PHONY: all docx html pdf appendix-c clean \
-        cmdref cmdref-pdf cmdref-regen
+        cmdref cmdref-pdf cmdref-regen \
+        polval polval-pdf polval-regen polval-check
 
 all: docx html
 
@@ -64,6 +73,33 @@ $(BUILD)/macosCmdRef.html: $(CMDSRC) | $(BUILD)
 	  -o $@ $(CMDSRC)
 
 $(BUILD)/macosCmdRef.pdf: $(BUILD)/macosCmdRef.docx
+	python3 tools/docx2pdf.py $< $@
+
+# ---- Polarization validation report (polval/) -----------------------
+# Every figure and every number is generated -- the .md.in prose carries
+# @@TOKEN@@ placeholders only, so a stale figure cannot ship beside a fresh
+# number.  polval-regen re-measures (MATLAB) and re-renders; polval builds.
+polval: polval-check $(BUILD)/macosPolVal.docx $(BUILD)/macosPolVal.html
+polval-pdf: $(BUILD)/macosPolVal.pdf
+
+# re-run every validation case, rewrite media/ + generated/numbers.json,
+# then substitute into polval/*.md.  Needs MATLAB and a built mmacos mex.
+polval-regen:
+	$(POLVAL_TOOL)/make_polval.sh $(CURDIR)/polval
+
+# refuse to build a report that is out of date with respect to its own
+# templates, or that still carries unresolved substitution tokens.
+polval-check:
+	@python3 tools/check_polval.py polval
+
+$(BUILD)/macosPolVal.docx: $(POLVALSRC) $(REFDOC) | $(BUILD)
+	$(PANDOC) $(POLVAL_OPTS) --reference-doc=$(REFDOC) -o $@ $(POLVALSRC)
+
+$(BUILD)/macosPolVal.html: $(POLVALSRC) | $(BUILD)
+	$(PANDOC) $(POLVAL_OPTS) --standalone --embed-resources \
+	  -o $@ $(POLVALSRC)
+
+$(BUILD)/macosPolVal.pdf: $(BUILD)/macosPolVal.docx
 	python3 tools/docx2pdf.py $< $@
 
 $(BUILD):
