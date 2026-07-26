@@ -400,6 +400,143 @@ without a circular analyzer built from polarizer + waveplate.
 
 ---
 
+## Phase 3a — Vector near-field propagation (chain closure)
+
+**Goal:** promote the near-field propagators (sphere→plane, sphere→sphere,
+plane→plane, and the DFT legs) from scalar-only to vector, propagating each
+Cartesian field component separately on the model of the far-field `PFFPROP`
+(K=1,3 loop of the identical scalar kernel), so a physical-optics **chain**
+(pupil→FPM→Lyot→focal; IFO recomb→detector under `DO_NEARFIELD`) preserves the
+vector field.  Planned 2026-07-25 from a code+math review on pol-core; the
+Phase-0 audit's leg table is the coverage map.
+
+### 3a.0 Mathematical basis (checked — cite, don't re-derive)
+
+- **Per-component propagation is rigorous.**  In a homogeneous isotropic
+  medium each Cartesian component of a monochromatic E-field independently
+  satisfies the scalar Helmholtz equation (∇·E-coupling enters only through
+  boundary data).  The angular-spectrum propagator is a solution operator for
+  scalar Helmholtz with planar data, so applying the SAME scalar kernel to
+  Ex, Ey, Ez separately introduces **no vector-specific approximation**.  The
+  implemented kernels use the Fresnel (quadratic) transfer function
+  `exp(-iπλΔz(fx²+fy²))` (`NFPROP`/`PPPROP`, propsub.F:1955/2013) — paraxial;
+  the vector legs inherit exactly the scalar legs' F/# validity envelope,
+  no better and no worse.
+- **Component coupling lives at surfaces, not in free space.**  Maxwell's
+  inter-component coupling is (i) surface boundary conditions — already
+  handled per-ray by the s/p machinery in `elemsub.F` (RayE transport), and
+  (ii) the divergence constraint, spectrally
+  `Ez(fx,fy) = −(fx·Ex + fy·Ey)/fz`.  The engine samples Ez from rays
+  (`RayE(3,:)`) rather than enforcing it spectrally — consistent to paraxial
+  order (fz ≈ 1/λ).  Optional diagnostic (cheap, worth adding): report the
+  spectral-divergence residual of the seeded field as a fidelity meter.
+- **Sziklas–Siegman reference-sphere legs** (`NFPROP`'s `(Z1/Z2)` factors,
+  PropType 2/5): the S-S transform is a scalar conformal rescale + quadratic
+  phase, polarization-independent, applied identically per component — valid
+  per component to the same paraxial order.  True high-NA vector focusing
+  (Richards–Wolf basis rotation across a fast sphere) is carried only through
+  the ray-sampled boundary data; at high NA the error is O(NA²) relative —
+  the SAME order at which the scalar Fresnel kernel itself degrades.  Record
+  this envelope in the VVC acceptance tolerances; a Richards–Wolf integrator
+  is out of scope.
+- **Amplitude masks are scalar.**  `FFObscure` is a 0/1 transmittance =
+  diagonal Jones t·I ⇒ apply the identical mask to all 3 planes.  (A future
+  Jones-valued mask — VVC — is a per-pixel 2×2 in the transverse basis;
+  Phase 3 applies it at the mask element via the same 3-plane hook.)
+
+### 3a.1 Two defects found in the existing vector path (fix first)
+
+1. **`PFFPROP` omits the Fresnel-integral output factors.**  Scalar `FFPROP`
+   applies `1/(iλΔz)·dx1²` and the output-plane quadratic phase via
+   `applyfac2` (propsub.F:2054-2056); `PFFPROP` (2273-2297) applies only the
+   bare per-component FFT.  Harmless for a terminal intensity hop (global
+   scale + curvature nobody reads), **fatal for a chain** — the output
+   curvature is the input to the next leg.  Fix: replace `PFFPROP` with a
+   K=1,3 loop over scalar `FFPROP` at the call site (propsub.F:1611), so
+   vector and scalar far-field legs share one kernel by construction.
+   **This changes existing vector-run intensity normalization** — intended;
+   A/B the single-hop case and note it.
+2. **The `ifPol` field assembly discards diffracted fields.**  At every
+   physical-leg assembly the vector branch RELOADS the grid from rays
+   (`WFElt(i,j,k)=RayE(k,iRay)`, propsub.F:1389-1395; the scalar-pol branch
+   1397-1414 likewise rebuilds from |RayE| + CumL phase), whereas the
+   non-pol branch (1456-1474) MULTIPLIES the existing `WFElt` by the
+   incremental geometric phase `exp(i·TPL·(CumRayL−CumLStart))`, preserving
+   prior diffraction.  So polarized multi-leg diffraction is broken by
+   *bookkeeping*, independent of kernel coverage: leg 2 erases leg 1's
+   diffraction.  Fix (vector mode): **seed once, then update** — on the
+   FIRST physical-leg assembly of a trace, seed the 3 planes from `RayE`
+   (correct phases now depend on the `NaCmplx` fix, e2f680a); on subsequent
+   assemblies multiply all 3 planes by the per-ray incremental geometric
+   phase (one factor shared by k=1..3) and maintain `CumLStart` exactly as
+   the non-pol branch does.  A `LOGICAL` seeded-flag reset at trace start.
+
+### 3a.2 Tranche 1 — mask-type chains (the coronagraph case)
+
+Valid when the elements BETWEEN physical legs are non-polarizing (Obscuring /
+Reference / FocalPlane — true for pupil→FPM→Lyot→focal): between legs the
+per-ray transfer is a scalar phase, so per-plane scalar update is exact.
+
+- Call-site K=1,3 loops (kernels already single-plane; compute the leg's
+  dx/z bookkeeping ONCE outside the loop): `NFPROP` at propsub.F:1592
+  (PropType 2) and :1669 (5); `PPPROP` at :1650 (4) and :1691 (6); `SFPROP`
+  at :1722/:1742 (7/8); `FRPROP` at :1804 (12); `NFPropDFT` at :1820/:1841
+  (13/14); `FFPropDFT` at :1852 (15).  `DWF` scratch is per-call, reusable
+  across k.
+- `FFObscure` (:1635-1639): loop the call over the 3 planes under
+  `ifVecDif3`.
+- Assembly fix + far-field unification per 3a.1.
+- `Ca2Int`/`Ca2Log`/`Ca2Gain` (utilsub.F) already sum 3 planes ✓; `ReGrid`
+  is ray-side only, no change ✓.
+- **Constraint to document:** vector mode repurposes the `mWF=3` planes as
+  Ex/Ey/Ez — one wavefront only (no multi-WF/COMPOSE concurrently).
+
+### 3a.3 Tranche 2 — Jones-through-chain (deferred until needed)
+
+Chains with COATED/reflective surfaces between physical legs (IFO
+recomb→detector with folds under `DO_NEARFIELD`; VVC layouts with an OAP
+between masks) need the surface Jones applied to the GRID field mid-chain,
+not only to rays.  Design: maintain a per-ray running 3×3 complex transfer
+`J_run(3,3,mRay)` — reset to identity at each assembly, left-multiplied in
+`elemsub.F` at every point where `RayE` is transformed (the C1 propagation
+factor, s/p projections, RP/RS) so `RayE = J_run·E_prev_assembly` by
+construction; the assembly update becomes
+`WFElt(i,j,:) ← J_run(:,:,iRay)·WFElt(i,j,:)`.  ~7 MB at model 256.  This
+subsumes the Tranche-1 scalar-phase update (J_run diagonal for mask-type
+chains) — Tranche 1 remains as the fast path and the regression anchor.
+
+### 3a.4 Validation ladder
+
+1. **Energy conservation per leg**: Σ|E|² preserved by each vectorized
+   kernel (unitary FFT core) to round-off.
+2. **x-pol ≡ scalar equivalence**: near-normal-incidence train (Cass FF Rx),
+   no coatings, Ex-only source: vector-chain Σk|Ek|² must equal the scalar
+   run's intensity to round-off at every leg (Ey/Ez ≈ 0 ride along).
+3. **PROPER cross-checks re-run polarized**: pymacos proper_compare Phases
+   2/3 (NF plane-to-plane + sphere legs) with `pol_set` on, x-pol — must
+   reproduce the committed scalar↔PROPER tolerances (2.4e-14 … 4e-8 class).
+   The strongest gate: vectorization must not perturb validated scalar
+   physics.
+4. **Chain closure**: CoroExample-class pupil→FPM→Lyot→focal, vector x-pol
+   vs scalar baseline — contrast curves equal to round-off (masks are
+   scalar; any difference is a Tranche-1 bug).
+5. **Single-hop A/B** for the `PFFPROP`→`FFPROP`×3 unification (intended
+   normalization change, documented magnitude).
+
+### 3a.5 Execution split & sequencing
+
+- Tranche 1 kernel loops + FFObscure + tests 1/2/4/5 are template-mechanical
+  → **CCMac lane**, with this section as the spec.  The assembly-semantics
+  change (3a.1 item 2) and the far-field unification touch trace bookkeeping
+  → written or line-reviewed **here** before merge; test 3 runs on the Linux
+  box (ifx + gfortran, standing gate step).
+- Slots after Phase 2 exposure work is stable (Jones-pupil machinery is the
+  main consumer of correct chain phases); must land before the Phase-3 VVC
+  acceptance test.  Track A phase 1 (single far-field hop) is unaffected
+  either way; Track A `DO_NEARFIELD` additionally wants Tranche 2.
+
+---
+
 ## Phase 4 — Spatially-variable coatings
 
 Extend per-element uniform coatings to spatially varying, modeled on the `AmplMat`
@@ -503,5 +640,9 @@ gating must be a no-op there).
 - **Phase 3 vs Phase 4 priority after 1+2** — PBS/QWP + VVC trades (Ph3) vs segmented
   coating non-uniformity (Ph4). Note track A gives Phase 3 a customer immediately
   (polarization phase-shifting IFO).
-- **Scope of Phase 3a** (vector propagation through the full coronagraph chain),
-  pending the Phase 0 audit — the plan's largest schedule unknown.
+- ~~**Scope of Phase 3a**~~ — RESOLVED 2026-07-25: scoped in the Phase 3a
+  section above (two tranches; two pre-existing defects found: PFFPROP's
+  missing Fresnel output factors, and the ifPol assembly reloading RayE at
+  every physical leg, which erases prior diffraction).  Tranche 1 closes
+  mask-type chains (coronagraph); Tranche 2 (running per-ray Jones) covers
+  chains with coated/reflective surfaces between legs.
