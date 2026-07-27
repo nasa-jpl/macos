@@ -2777,6 +2777,301 @@ C	Here if ray misses surface
 	END SUBROUTINE RefSrf
 
 C***********************************************************************
+C
+C  PolElt -- ideal transmissive polarizing elements (PLAN_POLARIZATION
+C  Phase 3, worklist item 4).  Serves EltID = TrPolarizerElt (ideal
+C  linear polarizer) and WavePlateElt (linear retarder).
+C
+C  GEOMETRY is exactly RefSrf's: a conic-of-revolution surface is
+C  intersected, the ray passes STRAIGHT THROUGH (rout=ihat), and the
+C  path length L feeds the usual CumRayL bookkeeping.  With ifPol
+C  .FALSE. this routine IS RefSrf -- no field is touched, so an
+C  unpolarized trace through a WavePlate is bit-identical to the same
+C  trace through a Reference surface.  That equivalence is a gate.
+C
+C  CONVENTIONS (derived from the engine's own, not newly legislated --
+C  see macos_f90/CLAUDE.md "Polarization physics"):
+C
+C  1. AXIS.  PolAxis is the element's reference axis as a 3-vector in
+C     global coordinates: the TRANSMISSION axis of a polarizer, the
+C     FAST axis of a waveplate.  A vector (rather than an angle in some
+C     element frame) is used so that no "which in-plane direction is
+C     zero degrees" convention has to be invented.
+C
+C  2. TRANSVERSE BASIS.  Per ray: ahat = unit(PolAxis - (PolAxis.rhat)
+C     rhat), bhat = rhat x ahat.  Orthonormalizing bhat off ahat --
+C     rather than projecting a separately-specified second axis -- is
+C     FORCED, not chosen: a lossless retarder must be unitary, and only
+C     an orthonormal eigenbasis makes diag(1,exp(-i.delta)) unitary.
+C     At normal incidence ahat is the axis itself and the construction
+C     is exact.
+C
+C  3. RETARDANCE SIGN.  The engine propagates a field through index N
+C     over length L with C1 = exp(-i.2pi.L.N/lambda) (elemsub.F:395),
+C     i.e. exp(+i.omega.t) time convention.  The SLOW axis (larger n)
+C     therefore accumulates the MORE NEGATIVE phase, so with the fast
+C     axis as ahat the element Jones is diag(1, exp(-i.delta)),
+C     delta = 2pi.PolRetOPD/lambda > 0.  "Fast axis leads" as pinned in
+C     the conventions table -- read off the engine, not chosen.
+C
+C  4. CHROMATICITY.  PolRetOPD is the PHYSICAL retardance
+C     (n_slow-n_fast).d in BaseUnits; the Rx keyword is in waves at the
+C     parse-time Wavelen and is scaled by Wavelen on load.  Same
+C     treatment the Coating= stack already gets, so a plate is a fixed
+C     piece of glass and a wavelength sweep is chromatic.
+C
+C  SCOPE / IDEALIZATIONS (stated, not worked around):
+C
+C  a. These are THIN, NON-RAY-SPLITTING idealizations: no o/e walk-off,
+C     no Fresnel losses at the plate faces, no substrate thickness.
+C     The rejected port of a polarizer is not produced -- a PBS needs
+C     two traces (or, better at 45 degrees, a coated Reflector, where
+C     the s/p basis is physically meaningful and already gated).
+C  b. The output is purely TRANSVERSE: any longitudinal component
+C     present in Evec at the surface is discarded.  That is what a 2x2
+C     Jones element means.  It is exactly zero for a collimated normal-
+C     incidence beam and O(NA) otherwise.
+C  c. OFF-NORMAL INCIDENCE CARRIES AN OPEN CONVENTION QUESTION.  For an
+C     ideal polarizer, projecting the specified PASS axis is NOT the
+C     same as projecting a specified BLOCK axis and transmitting the
+C     complement -- the two differ at O(sin^2 AOI) because projection
+C     does not preserve orthogonality.  This routine takes the
+C     specified axis as exact and orthonormalizes its partner (rule 2).
+C     At normal incidence -- the case every gate covers, and the case
+C     polarization phase-shifting actually needs -- the ambiguity is
+C     identically zero.  The choice is REPORTED, not settled here; see
+C     the packet REVIEW_POL_ELEMENTS_2026-07-27.md.  RfPolarizerElt is
+C     deliberately still a stub for the same reason: it is inherently
+C     off-normal, so it cannot be landed before that decision.
+C
+C***********************************************************************
+
+	SUBROUTINE PolElt(ifBuild,ifPol,ifLNsrf,ifObs,
+     &	 LROK,LRT,Kc,Kr,
+     &	 psi,pv,prot,pin,ihat,Evec,
+     &	 na,nb,kxa,kxb,lambda,
+     &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
+     &	 pout,rout,L,Eout,dxidxim1,dxidui,
+     &	 EltType,PolAxis,PolRetOPD,Jmat)
+
+	USE Constants, ONLY: TWOPI
+	use elt_mod, only : TrPolarizerElt, WavePlateElt
+	use traceutil_mod
+
+	IMPLICIT NONE
+
+	INTEGER i,j,ApType,nObs,ObsType(nObs),EltType
+
+	LOGICAL LROK,ifBuild,ifPol,ifLNsrf,ifObs,LRT
+
+	SREAL :: dxidxim1(7,7),dxidui(7,6)
+
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),pr(3),rhat(3),L,
+     &   pout(3),rout(3),na,nb,kxa,kxb,lambda,rho(3),
+     &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &   PolAxis(3),PolRetOPD
+
+	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,S1,
+     &   Kc,Kr,k2,itpsi,psitprel,ahat(3),bhat(3),adotr,amag,delta
+
+	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx,Jmat(2,2),
+     &   Ea,Eb,Ja,Jb
+
+C	Surface intersection -- identical to RefSrf
+
+	DO 1 i=1,3
+	  prel(i)=pin(i)-pv(i)
+   1	CONTINUE
+	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+
+	IF (ABS(Kr).LT.1d10) THEN
+	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+	  a=1d0+Kc*itpsi*itpsi
+	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &	    ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+	ELSE
+	  a=0d0
+	  b=itpsi
+	  c=psitprel
+	END IF
+
+	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+	  L=-c/b
+	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+	ELSE
+	  k2=b*b-4d0*a*c
+	  IF (k2.LT.0d0) GO TO 98
+	  IF (b.GE.0d0) THEN
+	    ksqrt=-0.5d0*(b+DSQRT(k2))
+	  ELSE
+	    ksqrt=-0.5d0*(b-DSQRT(k2))
+	  END IF
+	  kp=ksqrt/a
+	  km=c/ksqrt
+	  IF(ifLNsrf) THEN
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      L=kp
+	    ELSE
+	      L=km
+	    END IF
+	  ELSE
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      IF (kp.GT.0D0) THEN
+	        L=kp
+	      ELSE
+	        L=km
+	      END IF
+	    ELSE
+	      IF (km.GT.0D0) THEN
+	        L=km
+	      ELSE
+	        L=kp
+	      END IF
+	    END IF
+	    IF (L.LT.0d0) GO TO 98
+	  END IF
+	END IF
+
+	DO 2 i=1,3
+	  pr(i)=pin(i)+L*ihat(i)
+	  rhat(i)=ihat(i)
+   2	CONTINUE
+
+C  Polarization calcs
+
+	Jmat(1,1)=DCMPLX(1d0,0d0)
+	Jmat(1,2)=DCMPLX(0d0,0d0)
+	Jmat(2,1)=DCMPLX(0d0,0d0)
+	Jmat(2,2)=DCMPLX(1d0,0d0)
+
+	IF (ifPol) THEN
+	  NaCmplx=DCMPLX(na,(-kxa))
+
+C    Propagation through isotropic medium a to the element
+
+	  S1=-TWOPI*L/lambda
+	  C2=DCMPLX(0d0,S1)*NaCmplx
+	  C1=CDEXP(C2)
+	  Eout(1)=C1*Evec(1)
+	  Eout(2)=C1*Evec(2)
+	  Eout(3)=C1*Evec(3)
+
+C    Transverse eigenbasis: ahat = the declared axis projected into the
+C    plane normal to the ray; bhat = rhat x ahat (orthonormal by
+C    construction -- see convention 2 in the header).
+
+	  adotr=PolAxis(1)*rhat(1)+PolAxis(2)*rhat(2)+PolAxis(3)*rhat(3)
+	  DO 3 i=1,3
+	    ahat(i)=PolAxis(i)-adotr*rhat(i)
+   3	  CONTINUE
+	  amag=DSQRT(ahat(1)*ahat(1)+ahat(2)*ahat(2)+ahat(3)*ahat(3))
+
+	  IF (amag.LT.1d-10) THEN
+C      Axis is parallel to the ray: the element has no transverse axis
+C      for this ray.  A prescription error, not a physical state --
+C      extinguish rather than pick an arbitrary basis.
+	    Eout(1)=DCMPLX(0d0,0d0)
+	    Eout(2)=DCMPLX(0d0,0d0)
+	    Eout(3)=DCMPLX(0d0,0d0)
+	    Jmat(1,1)=DCMPLX(0d0,0d0)
+	    Jmat(2,2)=DCMPLX(0d0,0d0)
+	    GO TO 20
+	  END IF
+
+	  DO 4 i=1,3
+	    ahat(i)=ahat(i)/amag
+   4	  CONTINUE
+	  CALL DXPROD(bhat,rhat,ahat)
+	  CALL DUNITIZE(bhat)
+
+	  Ea=DCMPLX(ahat(1))*Eout(1)+DCMPLX(ahat(2))*Eout(2)+
+     &	     DCMPLX(ahat(3))*Eout(3)
+	  Eb=DCMPLX(bhat(1))*Eout(1)+DCMPLX(bhat(2))*Eout(2)+
+     &	     DCMPLX(bhat(3))*Eout(3)
+
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+	    Ja=DCMPLX(1d0,0d0)
+	    Jb=DCMPLX(0d0,0d0)
+	  ELSE
+C      WavePlate: fast axis is ahat, so the slow axis picks up the
+C      engine's more-negative propagation phase (convention 3).
+	    delta=TWOPI*PolRetOPD/lambda
+	    Ja=DCMPLX(1d0,0d0)
+	    Jb=CDEXP(DCMPLX(0d0,-delta))
+	  END IF
+
+	  Jmat(1,1)=Ja
+	  Jmat(1,2)=DCMPLX(0d0,0d0)
+	  Jmat(2,1)=DCMPLX(0d0,0d0)
+	  Jmat(2,2)=Jb
+
+C    Reassemble.  The result is transverse by construction; any
+C    longitudinal content of the incident field is dropped (scope note
+C    (b) in the header).
+
+	  Ea=Ja*Ea
+	  Eb=Jb*Eb
+	  DO 5 i=1,3
+	    Eout(i)=DCMPLX(ahat(i))*Ea+DCMPLX(bhat(i))*Eb
+   5	  CONTINUE
+
+  20	  CONTINUE
+	END IF
+
+	IF (ifBuild) THEN
+
+C	  Combined partial matrices -- straight-through, so identity
+C	  exactly as RefSrf
+
+	  DO 7 j=1,7
+	    DO 6 i=1,7
+	      dxidxim1(i,j)=0e0
+    6	    CONTINUE
+	    dxidxim1(j,j)=1e0
+    7	  CONTINUE
+	  DO 9 j=1,6
+	    DO 8 i=1,7
+	      dxidui(i,j)=0e0
+    8	    CONTINUE
+    9	  CONTINUE
+	END IF
+
+C  Check if ray is obscured
+
+	IF (ifObs) THEN
+	  DO i=1,3
+	    rho(i)=pin(i)-pv(i)+L*ihat(i)
+	  END DO
+	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
+     &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
+     &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
+	  IF (.NOT.LRT) THEN
+	    Eout(1)=0d0
+	    Eout(2)=0d0
+	    Eout(3)=0d0
+	  END IF
+	ELSE
+	  LRT=.TRUE.
+	END IF
+
+	DO 10 i=1,3
+	  rout(i)=rhat(i)
+	  pout(i)=pr(i)
+  10	CONTINUE
+
+	RETURN
+
+C	Here if ray misses surface
+
+  98	CONTINUE
+	LROK=.FALSE.
+	NhatP(1:3)=psi(1:3)
+	RETURN
+	END SUBROUTINE PolElt
+
+C***********************************************************************
 
 	SUBROUTINE ObsSrf(ifBuild,ifPol,ifLNsrf,ifObs,
      &	 LROK,LRT,Kc,Kr,

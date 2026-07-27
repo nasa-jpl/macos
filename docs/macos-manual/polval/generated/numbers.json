@@ -1,12 +1,12 @@
 {
   "provenance": {
-    "generated": "2026-07-27 12:59:53",
-    "engine_sha": "b726125",
+    "generated": "2026-07-27 14:43:18",
+    "engine_sha": "9e2bb68",
     "engine_branch": "pol-core",
     "engine_dirty": true,
     "resources_sha": "848245d",
     "resources_branch": "pol-core",
-    "resources_dirty": false,
+    "resources_dirty": true,
     "matlab": "2026a",
     "model_size": "128 / 256 / 512",
     "host": "red-river"
@@ -658,6 +658,142 @@
       "units": "",
       "gate": "log-log slope of cross-pol vs pupil radius (physics requires 2)",
       "test": "tPolarization/test_odd_mirror_crosspol_rho2_law",
+      "source": "driver"
+    },
+    "G57_BITWISE": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "pol-off trace bit-identical to the Reference-surface twin",
+      "test": "tPolElement/test_unpolarized_bit_identical_to_reference_twin",
+      "source": "driver"
+    },
+    "G51_MALUS": {
+      "value": 1.0790870325295239e-13,
+      "text": "1.079e-13",
+      "units": "relative",
+      "gate": "Malus law vs analyzer angle",
+      "test": "tPolElement/test_malus_law",
+      "source": "driver"
+    },
+    "G51_DYNRANGE": {
+      "value": 3.749399456654456e-33,
+      "text": "3.749e-33",
+      "units": "relative",
+      "gate": "Malus curve dynamic range (non-vacuity: a pass-everything element is flat)",
+      "test": "tPolElement/test_malus_law",
+      "source": "driver"
+    },
+    "G52_CROSSED": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "crossed-polarizer extinction is exactly zero",
+      "test": "tPolElement/test_crossed_polarizer_extinction",
+      "source": "driver"
+    },
+    "G53_S3": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "QWP linear->circular: signed S3/S0 = -1",
+      "test": "tPolElement/test_qwp_linear_to_circular",
+      "source": "driver"
+    },
+    "G53_S12": {
+      "value": 1.7413642142831807e-16,
+      "text": "1.741e-16",
+      "units": "relative",
+      "gate": "QWP linear->circular: residual linear Stokes",
+      "test": "tPolElement/test_qwp_linear_to_circular",
+      "source": "driver"
+    },
+    "G53_AB_S3": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "A/B -- the same rig at zero retardance leaves the state linear",
+      "test": "tPolElement/test_qwp_linear_to_circular",
+      "source": "driver"
+    },
+    "G54_SLOPE_RESID": {
+      "value": 8.881784197001252e-16,
+      "text": "8.882e-16",
+      "units": "absolute",
+      "gate": "HWP output orientation slope vs plate angle (theory 2)",
+      "test": "tPolElement/test_hwp_rotates_by_2theta",
+      "source": "driver"
+    },
+    "G54_AB_SLOPE": {
+      "value": 9.204625744102442e-19,
+      "text": "9.205e-19",
+      "units": "absolute",
+      "gate": "A/B -- at zero retardance, rotating the plate does nothing (slope 0)",
+      "test": "tPolElement/test_hwp_rotates_by_2theta",
+      "source": "driver"
+    },
+    "G55_COMPOSE": {
+      "value": 1.4643499134203146e-16,
+      "text": "1.464e-16",
+      "units": "relative",
+      "gate": "two quarter-wave plates on a common axis reproduce one half-wave plate",
+      "test": "tPolElement/test_two_qwp_equal_one_hwp",
+      "source": "driver"
+    },
+    "G55_AB_SINGLE": {
+      "value": 0.3078206936028475,
+      "text": "3.078e-01",
+      "units": "relative",
+      "gate": "A/B -- a SINGLE quarter-wave plate at the same axis differs grossly",
+      "test": "tPolElement/test_two_qwp_equal_one_hwp",
+      "source": "driver"
+    },
+    "G56_UNITARY": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "retarder conserves power, linear and circular input",
+      "test": "tPolElement/test_waveplate_is_unitary",
+      "source": "driver"
+    },
+    "G56_JUNITARY": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "absolute",
+      "gate": "retarder Jones satisfies J^H J = I",
+      "test": "tPolElement/test_waveplate_is_unitary",
+      "source": "driver"
+    },
+    "G56_AB_POL": {
+      "value": 1,
+      "text": "1.000e+00",
+      "units": "absolute",
+      "gate": "A/B -- the POLARIZER Jones must FAIL unitarity, so the test can fail",
+      "test": "tPolElement/test_waveplate_is_unitary",
+      "source": "driver"
+    },
+    "G58_GRID_MALUS": {
+      "value": 1.8328442166107617e-15,
+      "text": "1.833e-15",
+      "units": "relative",
+      "gate": "detector-plane intensity obeys Malus (grid sees the train)",
+      "test": "tPolElement/test_grid_carries_the_polarizing_train",
+      "source": "driver"
+    },
+    "G59_AMBIG20": {
+      "value": 3.561642212571668,
+      "text": "3.56",
+      "units": "degrees",
+      "gate": "off-normal pass-vs-block axis ambiguity at 20 deg AOI, 45 deg azimuth",
+      "test": "tPolElement/test_offnormal_convention_magnitude",
+      "source": "driver"
+    },
+    "G59_AMBIG20_INPLANE": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "degrees",
+      "gate": "the same ambiguity with the axis IN the plane of incidence (vanishes)",
+      "test": "tPolElement/test_offnormal_convention_magnitude",
       "source": "driver"
     },
     "C21_VC_CROSS": {

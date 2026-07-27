@@ -1037,6 +1037,91 @@ This dialog produced the following prescription data:
 
 **Element Types**
 
+#### Polarizers and Waveplates
+
+Two element types apply a polarization transformation to the beam without
+bending it: `TrPolarizer`, an ideal linear polarizer, and `WavePlate`, a
+linear retarder. Both are transmissive and both are active only when
+polarization is enabled (the `POLARIZATION` command, or `macos.polarization`
+/ `pymacos` equivalents). With polarization off they behave exactly as
+`Reference` surfaces, so adding one to a prescription cannot change a
+scalar result.
+
+Geometrically they are `Reference` surfaces: the surface may be `Flat` or
+`Conic`, the ray is intersected and its path length accumulated in the usual
+way, and the ray direction is unchanged. What they add is a 2×2 Jones matrix
+applied to the ray's electric field in the plane transverse to the ray.
+
+Two new keywords describe them:
+
+| Keyword | Applies to | Meaning |
+|---|---|---|
+| `PolAxis=` | `TrPolarizer`, `WavePlate` | Reference axis as a 3-vector in global coordinates: the TRANSMISSION axis of a polarizer, the FAST axis of a waveplate. Required. |
+| `Retardance=` | `WavePlate` | Retardance in waves at the prescription `Wavelen`. Required for a waveplate; 0.25 is a quarter-wave plate, 0.5 a half-wave plate. |
+
+`PolAxis=` is a direction, not a position, and it does not have to lie in the
+element's surface — MACOS projects it into each ray's transverse plane and
+normalizes it. It must only be non-parallel to the ray; an axis along the
+propagation direction leaves the element with no transverse axis, and MACOS
+extinguishes the ray rather than choosing an arbitrary basis. Both keywords
+are required on the element types that use them: a defaulted axis would
+orient a polarizer arbitrarily, and a defaulted retardance would make a
+waveplate a silent no-op.
+
+`Retardance=` follows the same convention as `Coating=` layer thickness. The
+prescription value is in waves at the `Wavelen` current when the file is
+parsed, and MACOS converts it to a physical retardance
+(*n*<sub>slow</sub> − *n*<sub>fast</sub>)·*d* at load. The trace then divides
+by the wavelength in force at the time. A plate is therefore a fixed piece of
+glass and a wavelength sweep is chromatic, as a real plate is: a quarter-wave
+plate at 1 µm is an eighth-wave plate at 2 µm.
+
+The retardance sign follows MACOS's propagation convention
+(`exp(+iωt)` time dependence, so a field accumulates
+`exp(−i·2π·L·N/λ)` through a medium). The slow axis therefore takes the more
+negative phase, and the element's Jones matrix in its own (fast, slow)
+eigenbasis is diag(1, exp(−iδ)) with δ = 2π·`Retardance`. Fast axis leads.
+
+Both elements are thin idealizations. There is no ray splitting, no
+walk-off, no Fresnel loss at the plate faces and no substrate thickness, and
+the output field is purely transverse. In particular a polarizer discards the
+rejected component rather than emitting it, so a polarizing beamsplitter
+needs two traces — one per output port. For a beamsplitter at a substantial
+angle of incidence, a coated `Reflector` is usually the better model: there
+the s and p directions are set by the physical plane of incidence, and the
+thin-film recursion gives real diattenuation and retardance rather than an
+idealization.
+
+For the same reason, these elements are intended for use at or near normal
+incidence, which is where a polarization phase-shifting interferometer uses
+them. Well off normal, an *ideal* polarizer becomes ambiguous at order
+sin²(AOI): declaring the pass axis and projecting it is not the same as
+declaring the block axis and transmitting the complement, because projection
+does not preserve orthogonality. MACOS declares the pass axis. The reflective
+polarizer type `RfPolarizer` is reserved but not implemented, pending that
+convention decision.
+
+    iElt= 3
+    EltName= QuarterWavePlate
+    Element= WavePlate
+    Surface= Flat
+    KrElt= -1.000000000D+20 KcElt= 0.000000000D+00
+    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00
+    VptElt= 0.000000000D+00 0.000000000D+00 2.000000000D-01
+    RptElt= 0.000000000D+00 0.000000000D+00 2.000000000D-01
+    PolAxis= 1.000000000D+00 1.000000000D+00 0.000000000D+00
+    Retardance= 2.500000000D-01
+    IndRef= 1.000000000D+00
+    Extinc= 0.000000000D+00
+    nCoat= 0
+    nObs= 0
+    ApType= None
+    PropType= Geometric
+    zElt= 2.000000000D-01
+    nECoord= -6
+
+**Element Types**
+
 #### Hex and Pie Segmented Mirrors
 
 Segmented systems (e.g. telescopes with segmented primary mirrors) are defined at the light source using GridType=hex or GridType=pie. This section describes entering the segmented surfaces. Figures 22 and 23 show the geometry for a segmented pie-shaped aperture and a large array of hexagonal segments, respectively. In both cases, the pannel coordinates are given by three variables (X,L,R). The segments must be entered in as elements in the same order they are listed in SegCoord. Segmented surfaces also require

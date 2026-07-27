@@ -1,0 +1,241 @@
+# Review packet — Phase 3 polarizing elements (polarizer + waveplate)
+
+**Date:** 2026-07-27 · **Branch:** `pol-core` (both repos) · **Lane:** Opus
+(worklist item 4) · **Reviewer ask:** one convention decision, plus a normal
+line review of the diff.
+
+---
+
+## What landed
+
+`TrPolarizerElt(15)` — an ideal linear polarizer, finished from a
+name-table-only stub — and `WavePlateElt(18)`, a new linear retarder
+(`mEltTypes` 17 → 18). Both are transmissive, both ride a new `PolElt`
+routine in `elemsub.F`, both are gated on `ifPol`.
+
+| Layer | What |
+|---|---|
+| Engine physics | `PolElt` (`elemsub.F`), modelled on `RefSrf` verbatim for geometry |
+| Trace dispatch | `tracesub.F` **and** `propsub.F` (see the finding below) |
+| Storage | `PolAxisElt(3,mElt)`, `PolRetElt(mElt)`, and `JmatElt(2,2,mElt)` — previously dead — now filled |
+| Rx keywords | `PolAxis=`, `Retardance=` in the `msmacosio.inc` element chain + the `macosio.F` MOD chain |
+| Defaults | `ChkDf2` requires both on the element types that use them (strict, on purpose) |
+| SAVE | writer inverts the load-time `Wavelen` scaling, like the `Coating=` writer |
+| API | `polelt_set` / `polelt_get` / `jmat_elt_get`, all codegen Path A |
+| mmacos | `macos.polarizer`, `macos.waveplate`, `macos.elt_jones` + `Session` methods |
+| Gates | `tPolElement`, 23 tests, SUITE_FAST; fixtures `Rx_PolElt.in` + `Rx_PolElt_Ref.in` |
+| Docs | manual §4 "Polarizers and Waveplates", cmdref NOTES ×3, both `CLAUDE.md`s |
+
+`RfPolarizerElt(14)` is deliberately **still a stub** — see the decision
+request.
+
+---
+
+## THE DECISION REQUEST — the off-normal axis convention
+
+This is the one item I stopped short of settling, per the standing rule that
+convention arbitration in the polarization core goes to the Fable lane.
+
+**The question.** An ideal polarizer is defined by one axis in the plane
+transverse to the ray. The element's axis, however, is declared in global
+coordinates and must be *projected* into that plane. Off normal incidence,
+two constructions that agree exactly at normal incidence diverge:
+
+* **(A) — what I implemented.** Declare the PASS axis; project it
+  orthographically, `â = unit(a − (a·r̂)r̂)`; the blocked direction is
+  `b̂ = r̂ × â`.
+* **(B) — the alternative.** Declare the BLOCK axis (the wire direction of a
+  wire-grid polarizer, say); project *that*; transmit the complement.
+
+They differ because orthographic projection does not preserve orthogonality.
+
+**Measured size.** With the ray tilted by `a` and the declared axis at
+azimuth `φ` from the plane of incidence, the angle between the two candidate
+pass axes has the closed form, at `φ = 45°`,
+
+```
+Δ = acos( 2 cos a / (1 + cos² a) )
+```
+
+which is `0.90°` at 10° AOI, **`3.56°` at 20°**, and `7.9°` at 30°; bounded
+above by `sin² a` throughout. It is **identically zero** at normal
+incidence, and — the part worth flagging — **also identically zero when the
+declared axis lies in, or perpendicular to, the plane of incidence.** The
+obvious way to test this (axis along x, tilt in the x–z plane) is exactly
+that degenerate case; my first version of the gate did precisely that and
+reported a clean zero, which is how I noticed. `Δ(aoi, φ)` is now pinned in
+`tPolElement/test_offnormal_convention_magnitude`, including the two
+vanishing cases, so the number is on the record either way the decision goes.
+
+**What I did NOT do.** I did not pick (A) as settled physics. Everything
+gated in this landing is at strict normal incidence, where the two
+constructions coincide exactly and no choice is being exercised. The
+docstring, cmdref NOTES, manual section and engine `CLAUDE.md` all state
+which construction the code uses and that it is provisional.
+
+**Be clear about what the gate measures.** `test_offnormal_convention_magnitude`
+computes both constructions in MATLAB from the geometry; it does **not** drive
+the engine off normal. That is deliberate — it is a statement about the size of
+the ambiguity, not a measurement of the engine — but it means the off-normal
+code path is **unvalidated as well as unsettled**. No fixture in the suite
+sends an off-normal ray through a polarizing element at all. Whichever way the
+convention goes, landing it should come with a fixture that actually tilts the
+beam (a converging source, or an off-axis field point — tilting the *element*
+does not tilt the ray in a collimated on-axis bundle, which is why the existing
+fixture cannot be adapted).
+
+**Why `RfPolarizer` is still a stub.** A reflective polarizer is *inherently*
+off-normal — at normal incidence it would send light back along the input
+ray. So it cannot be implemented at all without first settling the above.
+Implementing it "for completeness" would have meant landing exactly the guess
+the rule exists to prevent.
+
+**My read, offered as input, not as a decision.** (A) is the better default:
+it makes the keyword mean the same thing for a polarizer and a waveplate (the
+transmitted / fast axis), and the physically-motivated case for (B) — a wire
+grid — is arguably not what an "ideal polarizer" element should be modelling
+anyway. But there is a real argument that a tilted ideal polarizer should not
+be offered at all, and that anything at a substantial AOI belongs on a coated
+`Reflector`/`Refractor`, where s and p are set by the physical plane of
+incidence and the thin-film recursion is already gated against Fresnel. If
+that is the call, the right change is to make `PolElt` *refuse* rays beyond a
+small AOI rather than silently apply rule (A) — a small edit, and I would
+rather do it than have the rule quietly become precedent.
+
+---
+
+## THE FINDING — there are two element dispatch chains, and I only wired one
+
+Worth a paragraph because it is a general trap, not a detail of this slice.
+
+`tracesub.F` dispatches elements for the ray trace. `propsub.F`
+(`CPROPAGATE`) **re-traces the rays that seed the diffraction grid through
+its own, separate `ELSE IF (EltID(iElt).EQ.n)` chain.** I wired only
+`tracesub.F` first. The result passed every ray-level gate — Malus, crossed
+extinction, QWP, HWP, composition, unitarity, all of it — and was
+**invisible to `intensity` / `complex_field`**.
+
+Measured, before the fix: with crossed polarizers, the ray power at the
+detector was `3.6e-33` while the detector *plane* held the full `9.69e-01`.
+That is the failure mode to be afraid of: it does not look like a crash or a
+wrong number, it looks like "polarization has no effect on the image", which
+is a plausible thing for a reviewer to believe.
+
+Caught only because I wrote `test_grid_carries_the_polarizing_train` as a
+*scope* claim about Tranche 1 — I expected it to pass and was checking that
+the element ordering in the fixture was right. It is now the tripwire; any
+future field-touching element needs both chains.
+
+(`srtrace.F` has a third chain, but it is inside `SRTRACE_Test` under
+`#if 0` — dead, consistent with the Phase-0 finding. Nothing to add there.)
+
+---
+
+## Conventions — all four extend the pinned set; none is new law
+
+1. **Axis as a 3-vector**, not an angle in an element frame. Sidesteps
+   inventing a "which in-plane direction is zero degrees" convention. Follows
+   the plan's own wording ("keyword for the transmission-axis vector").
+2. **Orthonormalize the partner axis** (`b̂ = r̂ × â`) rather than projecting a
+   second declared axis. This one is **forced, not chosen**: a lossless
+   retarder must be unitary, and only an orthonormal eigenbasis makes
+   `diag(1, e^{-iδ})` unitary. Projecting two axes independently gives a
+   non-orthogonal pair and a non-unitary "retarder".
+3. **Retardance sign read off the engine.** `C1 = exp(−i·2πLN/λ)`
+   (`elemsub.F:395`) ⇒ the slow axis takes the more negative phase ⇒ with the
+   declared axis as FAST, `J = diag(1, e^{-iδ})`. Not legislated; derived
+   from the same line the conventions table already cites.
+4. **Retardance stored physically** as `(n_slow−n_fast)·d`; the Rx value is in
+   waves at parse-time `Wavelen` and is scaled at load, the trace divides by
+   the current λ. Identical treatment to `Coating=` thickness — a plate is
+   fixed glass, and a wavelength sweep is chromatic.
+
+---
+
+## Gates — 23, and how each avoids being vacuous
+
+Every physics prediction is written from the Jones algebra in the test
+comments, **not transcribed from the engine**. That is the standing lesson
+from the `r_p` sign defect: the Fresnel fold gate could not catch a sign
+error because its "analytic" came from the engine's own expression.
+
+| Gate | Claim | Result |
+|---|---|---|
+| `malus_law` | `I(θ) = I₀cos²θ`, 13 angles | 1e-12 of `I₀` |
+| `crossed_polarizer_extinction` | exactly-orthogonal axes → **exactly 0** | `0` (all three components) |
+| `qwp_linear_to_circular` | `S1 = S2 = 0`, **`S3/S0 = −1`** | 1e-14 |
+| `qwp_circular_to_linear` | QWP→QWP: DoLP 1, DoCP 0, *and* the intermediate really circular | 1e-14 |
+| `hwp_rotates_by_2theta` | orientation `= 2θ`, fitted slope | slope `2` to 1e-10 |
+| `two_qwp_equal_one_hwp` | cascade identity, field for field | 1e-15 |
+| `waveplate_is_unitary` | power conserved, `J′J = I`, linear ×3 + circular | 1e-14 / 1e-15 |
+| `zero_retardance_is_identity` | `e^{-i0} = 1` exactly | 1e-17 |
+| `retardance_sign_matches_engine` | `arg(Ey/Ex) = −2πR` | 1e-12 |
+| `retardance_is_chromatic` | R halves when λ doubles | 1e-12 rel |
+| `unpolarized_bit_identical_to_reference_twin` | pol-off ≡ `Reference` surfaces | **bit-identical** (OPD, intensity, ray status) |
+| `grid_carries_the_polarizing_train` | detector plane obeys Malus too | 1e-10 |
+| `offnormal_convention_magnitude` | the ambiguity above, incl. both zero cases | closed form to 1e-12 |
+| + 10 plumbing gates | keywords, round-trip, SAVE, guards, dirty-trace | — |
+
+**Non-vacuity is measured in-suite, not argued**, on the principle that the
+pre-Phase-3 behaviour of these EltIDs was "silently do nothing" — an element
+that still did nothing would pass a badly-built suite:
+
+* Malus: `std(I)/mean(I) > 0.5` and `min/max < 1e-25` — a pass-everything
+  element gives a flat curve and fails both.
+* QWP: the same rig at `R = 0` gives `S3/S0 = 0` and `S1/S0 = 1`.
+* HWP: at `R = 0`, rotating the plate gives fitted slope `0`, not `2`.
+* Composition: a *single* QWP at the same axis differs from the pair by >10%.
+* Unitarity: the polarizer's Jones is checked to **fail** `‖J′J − I‖ > 0.5`,
+  so the unitarity test cannot pass on an engine that stopped applying
+  anything.
+
+**Circular input states are load-bearing**, for the reason `tPolContrast` and
+`tVecChain` established: linear-only suites are blind to conjugation and
+retardance-sign errors. The signed `S3/S0 = −1` is the sharpest of these —
+it flips outright if the retardance convention flips, where a `|S3|` gate
+would accept either.
+
+---
+
+## Scope stated honestly
+
+* **Normal incidence** is the gated regime, for the convention reason above.
+* **Tranche 1 still applies.** A polarizing element placed *after* the first
+  physical-optics leg transforms rays and never reaches the diffraction grid.
+  `Rx_PolElt.in` therefore puts all four polarizing elements before its single
+  `NFPlane`→`Geometric` leg, and its header says why. `Rx_Coro`-style layouts
+  with a polarizer between legs need Tranche 2 (`J_run`), unchanged.
+* **Idealizations:** no ray splitting (a PBS is two traces, or better a coated
+  `Reflector` at 45°), no walk-off, no face Fresnel loss, no substrate. The
+  output is purely transverse — any longitudinal component at the surface is
+  discarded, which is what a 2×2 Jones element means (exactly zero for the
+  collimated normal-incidence fixture, O(NA) otherwise).
+* **Not attempted:** VVC, `RfPolarizer`, the polarization phase-shifting
+  Twyman-Green example (that is Phase 2d / `pol-ifo`, and needs the Bench
+  `add_polarizer`/`add_waveplate` emitters, which are on the other branch).
+
+---
+
+## Regression
+
+| Gate | Result |
+|---|---|
+| `tPolElement` | **23 pass, 0 fail** |
+| mmacos full suite (gfortran) | **463 pass, 0 fail** — fast 312 / masks 62 / freeform 60 / proper-512 10 / pol-512 6 / proper-1024 13 (was 440; +23 new) |
+| ifx build (`makems.sh release`) | **SUCCEEDED** — the standing ifx smoke on new fixed-form code |
+| pymacos suite (ifx-linked) | **6652 pass, 0 fail** |
+| pymacos PROPER comparison | **all phases passed**; committed residuals reproduced |
+| GMI regression | **6/6, `vs-ref = 0.000e+00`** — bit-identical, as required for an ifPol-off consumer |
+| polval regen | all gate thresholds pass, including the 15 new ones at model 128 |
+
+**The polval regen is itself a no-op proof.** Regenerating the whole report
+across this change moved **no existing number**: 119 → 136 tokens, 17 added,
+none removed, **none changed**; and all ten pre-existing figures are
+pixel-identical (byte differences are PNG metadata only). Every published
+Phase 0–2c result stands.
+
+pymacos bindings for the three new API routines are **not** in this landing
+(mmacos-only, as with the `view_rx` engine leg). The routines are in
+`macos_api_mod`, so the pymacos side is a shim addition whenever it is wanted.
+The pymacos suite above is therefore a regression check that the engine change
+is inert for that binding, not coverage of the new elements.

@@ -598,6 +598,50 @@ c	        PrevElt=PrevNonSeg(iRay)
     	        END IF
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
+C						! Transmissive polarizer / waveplate
+!--> PLAN_POLARIZATION Phase 3.  This dispatch is NOT redundant with the
+!    one in tracesub.F: CPROPAGATE re-traces the rays that SEED the
+!    diffraction grid through its own element chain, so an element wired
+!    only into tracesub.F transforms RayE for ray-level queries and is
+!    invisible to intensity/complex_field.  Measured before this was
+!    added: crossed polarizers took the ray power to 3.6e-33 while the
+!    detector plane held the full 9.69e-01, i.e. the grid reported that
+!    polarization had no effect.  Any future element that touches the
+!    field needs BOTH chains.
+	      ELSE IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
+     &	               (EltID(iElt).EQ.WavePlateElt)) THEN
+	        PrevNonSeg(iRay)=iElt
+	        CALL PolElt(ifBuild,ifPol,ifLNsrf,LEltObs(iElt),
+     &	        LRayOK(iRay),LRayTrans,KcElt(iElt),KrElt(iElt),
+     &	        psiElt(1,iElt),VptElt(1,iElt),RptElt(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
+     &	        CurIndRef,IndRef(iElt),
+     &	        CurExtinc,Extinc(iElt),WaveBU,
+     &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
+     &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),Evec,
+     &	        dxdx,dxdu,
+     &	        EltID(iElt),PolAxisElt(1,iElt),PolRetElt(iElt),
+     &	        JmatElt(1,1,iElt))
+	        IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)
+	        IF (.NOT.LRayTrans) THEN
+	          LRayPass(iRay)=.FALSE.
+	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
+     &	          (PropType(PrevElt(iElt)).NE.10).AND.
+     &	          (PropType(PrevElt(iElt)).NE.12))
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
+	        END IF
+	        IF (ifAccumOPD) THEN
+	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	          IF (ifPol) THEN
+	            RayE(1,iRay)=Evec(1)
+	            RayE(2,iRay)=Evec(2)
+	            RayE(3,iRay)=Evec(3)
+	          END IF
+	        END IF
+	        PrevIndRef=CurIndRef
+	        PrevExtinc=CurExtinc
 C						! Conic Mirror Segment
 	      ELSE IF (EltID(iElt).EQ.11) THEN
 	        ifRayToSeg=.FALSE.

@@ -4737,6 +4737,118 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! Set the parameters of a polarizing element (PLAN_POLARIZATION Phase 3):
+      ! EltID 15 = TrPolarizer (ideal linear polarizer), 18 = WavePlate (linear
+      ! retarder).  Applied per ray by PolElt (elemsub.F) when ifPol is on.
+      !   axis(3)  : reference axis as a 3-vector in GLOBAL coordinates -- the
+      !              transmission axis of a polarizer, the FAST axis of a
+      !              waveplate.  Need not be unit length or perpendicular to
+      !              psiElt; PolElt projects it into each ray's transverse plane
+      !              and normalizes.  Rejected only if parallel to the ray.
+      !   retWaves : retardance in WAVES at the CURRENT Wavelen.  Stored as the
+      !              physical retardance (n_slow-n_fast)*d = retWaves*Wavelen, so
+      !              the plate stays physically fixed under a wavelength sweep --
+      !              the same treatment coat_set's stack gets.  Ignored for a
+      !              TrPolarizer.
+      ! Sets modified_rx (the grid-setter dirty-the-trace convention): the element
+      ! Jones changes RayE, so a cached trace must re-run.
+      !---------------------------------------------------------------------------------------------
+      subroutine polelt_set(OK, iElt, axis, retWaves)
+        use elt_mod, only: PolAxisElt, PolRetElt, EltID,                  &
+                           TrPolarizerElt, WavePlateElt, Wavelen
+        implicit none
+        logical,               intent(out):: OK
+        integer,               intent(in) :: iElt
+        real(8), dimension(3), intent(in) :: axis
+        real(8),               intent(in) :: retWaves
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if ((EltID(iElt) /= TrPolarizerElt) .and.                         &
+            (EltID(iElt) /= WavePlateElt))  return   ! wrong element type
+        if (dot_product(axis,axis) <= 0d0)  return   ! degenerate axis
+
+        PolAxisElt(1:3,iElt) = axis
+        PolRetElt(iElt)      = retWaves * Wavelen
+
+        CALL modified_rx(OK)   ! invalidate the cached trace
+        OK = PASS
+      end subroutine polelt_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Query a polarizing element.  Inverse of polelt_set: retWaves comes back in
+      ! waves at the CURRENT Wavelen, so polelt_get o polelt_set == identity at a
+      ! fixed wavelength (and correctly reports the changed retardance after a
+      ! wavelength change -- that is the physics, not a round-trip failure).
+      !   eltType : the element's EltID (15 = TrPolarizer, 18 = WavePlate).
+      !---------------------------------------------------------------------------------------------
+      subroutine polelt_get(OK, iElt, axis, retWaves, eltType)
+        use elt_mod, only: PolAxisElt, PolRetElt, EltID,                  &
+                           TrPolarizerElt, WavePlateElt, Wavelen
+        implicit none
+        logical,               intent(out):: OK
+        integer,               intent(in) :: iElt
+        real(8), dimension(3), intent(out):: axis
+        real(8),               intent(out):: retWaves
+        integer,               intent(out):: eltType
+        ! ------------------------------------------------------
+        OK       = FAIL
+        axis     = 0d0
+        retWaves = 0d0
+        eltType  = 0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        eltType = EltID(iElt)
+        if ((eltType /= TrPolarizerElt) .and.                             &
+            (eltType /= WavePlateElt))     return   ! wrong element type
+
+        axis = PolAxisElt(1:3,iElt)
+        if (Wavelen /= 0d0) then
+          retWaves = PolRetElt(iElt) / Wavelen
+        else
+          retWaves = PolRetElt(iElt)
+        end if
+
+        OK = PASS
+      end subroutine polelt_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Read back the 2x2 Jones matrix a polarizing element actually applied, in
+      ! its OWN transverse eigenbasis (ahat = the declared axis projected into the
+      ! ray's transverse plane, bhat = rhat x ahat).  This is elt_mod's JmatElt,
+      ! which PolElt fills during the trace -- previously allocated and dead.
+      !
+      ! Diagonal by construction: diag(1,0) for a polarizer, diag(1,exp(-i.delta))
+      ! for a waveplate.  It is per ELEMENT, not per ray, which is exact here
+      ! because the element Jones in its own eigenbasis is ray-independent -- the
+      ! ray dependence lives entirely in the basis, not in the coefficients.
+      ! Requires a trace to have run with ifPol on; zero otherwise.
+      !---------------------------------------------------------------------------------------------
+      subroutine jmat_elt_get(OK, JRe, JIm, iElt)
+        use elt_mod, only: JmatElt
+        implicit none
+        logical,                    intent(out):: OK
+        integer,                    intent(in) :: iElt
+        real(8), dimension(2,2),    intent(out):: JRe, JIm
+        ! ------------------------------------------------------
+        OK  = FAIL
+        JRe = 0d0
+        JIm = 0d0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        JRe = dble(JmatElt(1:2,1:2,iElt))
+        JIm = dimag(JmatElt(1:2,1:2,iElt))
+
+        OK = PASS
+      end subroutine jmat_elt_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Harvest the per-ray complex electric field RayE(3,:) at element iElt onto
       ! the ray grid, PLUS the ray geometry (direction cosines, surface normal)
       ! and the per-ray OK/fail status -- everything Phase 2 (Jones pupil) needs

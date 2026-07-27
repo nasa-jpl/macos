@@ -106,6 +106,8 @@ C***********************************************************************
           OrderHOE_FLG        = .FALSE.
           WaveHOE_FLG         = .FALSE.
           RuleWidth_FLG       = .FALSE.
+          PolAxis_FLG         = .FALSE.
+          PolRet_FLG          = .FALSE.
           nGridMat_FLG        = .FALSE.
           GridMat_FLG         = .FALSE.
           GridSrfdx_FLG       = .FALSE.
@@ -363,6 +365,10 @@ C   Setup for new input scheme
   111	FORMAT(A,'(',i3,') must be specified by user')
   112	FORMAT(' Default used for ',A,'(',i4,')')
   113	FORMAT(' Too many obscurations specified -- truncated to',i3)
+  115	FORMAT(' RfPolarizer (element',i4,') is not implemented -- it has',
+     &	       ' no trace dispatch.'/
+     &	       ' Use TrPolarizer, or a coated Reflector for a',
+     &	       ' beamsplitter at angle.')
 
 	ELEM_OK = .TRUE.
 
@@ -779,6 +785,40 @@ C  as satisfied for all other surface types.
 	  RuleWidth_FLG=.TRUE.
 	  WRITE(*,112)'RuleWidth',iElt
 	END IF
+
+!--> polarizing elements (PLAN_POLARIZATION Phase 3).  Both keywords
+!    are REQUIRED on the element types that use them and ignored
+!    elsewhere -- deliberately strict.  A silently-defaulted axis would
+!    orient a polarizer arbitrarily, and a silently-zero retardance
+!    would make a waveplate a no-op that still traces and still looks
+!    plausible; both are exactly the failure mode this subsystem keeps
+!    producing.
+	IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
+     &	    (EltID(iElt).EQ.WavePlateElt)) THEN
+	  IF (.NOT.PolAxis_FLG) THEN
+	    WRITE(*,111)' PolAxis',iElt
+	    ELEM_OK = .FALSE.
+	  END IF
+	END IF
+
+	IF (EltID(iElt).EQ.WavePlateElt) THEN
+	  IF (.NOT.PolRet_FLG) THEN
+	    WRITE(*,111)' Retardance',iElt
+	    ELEM_OK = .FALSE.
+	  END IF
+	END IF
+
+!    RfPolarizer is still a name-table entry with NO trace dispatch in
+!    either chain, so a prescription using it would load cleanly and
+!    then trace as if the element were not there.  Reject it instead of
+!    tracing silently wrong.  It is blocked on the off-normal axis
+!    convention (a reflective polarizer is inherently off-normal) --
+!    see REVIEW_POL_ELEMENTS_2026-07-27.md.
+	IF (EltID(iElt).EQ.RfPolarizerElt) THEN
+	  WRITE(*,115) iElt
+	  ELEM_OK = .FALSE.
+	END IF
+!<--
 
 	IF (WaveHOE_FLG) THEN
 	  CONTINUE
@@ -1435,6 +1475,26 @@ C***********************************************************************
           CALL PrintFmtArray('psiElt','1PD23.15',3,psiElt(:,iElt))
           CALL PrintFmtArray('VptElt','1PD23.15',3,VptElt(:,iElt))
           CALL PrintFmtArray('RptElt','1PD23.15',3,RptElt(:,iElt))
+
+!--> polarizing-element parameters (PLAN_POLARIZATION Phase 3).
+!    Retardance is stored physically, so invert the load-time
+!    Wavelen scaling to write back the Rx form (waves) -- the same
+!    inversion the Coating= writer does below.
+          IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
+     &        (EltID(iElt).EQ.WavePlateElt)) THEN
+            CALL PrintFmtArray('PolAxis','1PD23.15',3,
+     &           PolAxisElt(:,iElt))
+          END IF
+          IF (EltID(iElt).EQ.WavePlateElt) THEN
+            IF (Wavelen.NE.0e0_pr) THEN
+              CALL PrintFmt('Retardance', "1PD23.15",
+     &             PolRetElt(iElt)/Wavelen)
+            ELSE
+              CALL PrintFmt('Retardance', "1PD23.15",
+     &             PolRetElt(iElt))
+            END IF
+          END IF
+!<--
 
           ! --------------------------------------------
           ! Special Srf. Type Parameters

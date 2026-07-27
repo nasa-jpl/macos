@@ -12,26 +12,28 @@ that pins it in CI. It covers the work described in `PLAN_POLARIZATION.md`
 Phases 0–2b (exposure of the engine's existing polarization physics, the
 Jones-pupil layer and the polarization-aberration maps), Phase 3a Tranche 1
 (vector propagation across a multi-leg chain), the `Reflector` s/p sign
-correction, and Phase 2c (the polarization contrast floor).
+correction, Phase 2c (the polarization contrast floor), and the Phase 3
+polarizing elements (linear polarizer and waveplate).
 
-It does **not** cover Phase 2d (the interferometer track), Phase 3
-(polarizer / waveplate / vector vortex), Phase 3a Tranche 2
-(Jones-through-chain), or Phase 4 (spatially variable coatings). Those phases
-append their own evidence sections as they land — see *Coverage and gaps* at
-the end. Section 5.6 states precisely what Tranche 2's absence costs the
-contrast floor on a real coronagraph chain.
+It does **not** cover Phase 2d (the interferometer track), the vector vortex
+or the reflective polarizer, Phase 3a Tranche 2 (Jones-through-chain), or
+Phase 4 (spatially variable coatings). Those append their own evidence
+sections as they land — see *Coverage and gaps* at the end. Section 5.6
+states precisely what Tranche 2's absence costs the contrast floor on a real
+coronagraph chain, and section 6.7 states the one convention question that
+keeps the polarizing elements at normal incidence for now.
 
 ## Provenance
 
 | | |
 |---|---|
-| Generated | 2026-07-27 12:59:53 |
-| Engine (`macos`) | `b726125` on `pol-core` |
+| Generated | 2026-07-27 14:43:18 |
+| Engine (`macos`) | `9e2bb68` on `pol-core` |
 | Bindings (`MACOS_resources`) | `848245d` on `pol-core` |
 | MATLAB | R2026a |
 | Model size(s) | 128 / 256 / 512 |
 | Host | red-river |
-| Figure / number consistency | consistent (10 figures, all older than numbers.json) |
+| Figure / number consistency | consistent (11 figures, all older than numbers.json) |
 
 ## How this document is produced
 

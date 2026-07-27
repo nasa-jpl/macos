@@ -660,9 +660,13 @@ full audit.  Quick map of what the engine has and the conventions to hold.
   `DARG(1..4)`, `smacosutil.F:160`).
 
 **Stubs / gaps (do not assume these work):**
-- `RfPolarizerElt(14)`/`TrPolarizerElt(15)` are **name-table-only** -- no
-  trace dispatch anywhere.  `JmatElt(2,2,mElt)` is allocated/zeroed and
-  otherwise dead.  No Jones/Stokes/Mueller math, no waveplate, no VVC.
+- ~~`RfPolarizerElt(14)`/`TrPolarizerElt(15)` are **name-table-only**~~ --
+  **PARTLY CLOSED 2026-07-27, see the Phase-3 elements section below.**
+  `TrPolarizerElt(15)` and the NEW `WavePlateElt(18)` are implemented and
+  gated; `JmatElt(2,2,mElt)` is no longer dead (PolElt fills it).
+  `RfPolarizerElt(14)` is STILL a name-table-only stub, deliberately --
+  it is inherently off-normal and blocked on the axis convention below.
+  No VVC; no Mueller math in the engine.
 - `srtrace.F`'s `ifPol=.false.` is a **local `parameter` in the dead
   `SRTRACE_Test` driver only** (its caller is under `#if 0`).  The production
   single-ray paths (`SRTrace`/`CRTrace`, tracesub.F) thread `ifPol` as an
@@ -840,6 +844,84 @@ not just the map.  Residual asymmetries are DISCRETIZATION, verified by
 scaling (astig-pair mismatch 1.9e-7 at model 128 -> 5.8e-8 at 256; the
 symmetry-breaking magnitude term is quadrafoil-X, aligned with the pixel
 grid's own axes, while quadrafoil-Y stays at 1e-17).
+
+## Phase 3 polarizing elements -- TrPolarizer + WavePlate (2026-07-27)
+
+`PolElt` in `elemsub.F` serves `TrPolarizerElt(15)` (ideal linear polarizer,
+finished from a name-table-only stub) and the NEW `WavePlateElt(18)` (linear
+retarder; `mEltTypes` 17 -> 18).  Rx keywords `PolAxis=` (3-vector) and
+`Retardance=` (waves at parse-time Wavelen), `ChkDf2` requires both on the
+types that use them, SAVE writer inverts the Wavelen scaling.  API
+`polelt_set`/`polelt_get`/`jmat_elt_get`; mmacos `macos.polarizer` /
+`macos.waveplate` / `macos.elt_jones`.  Gates: `tPolElement` (23, SUITE_FAST).
+
+**Geometry is RefSrf's, verbatim** -- conic intersection, `rout=ihat`, the
+same `C1=exp(-i*2pi*L*N/lambda)` propagation phase, the same ChkRayTrans
+block.  So with `ifPol` off the elements ARE Reference surfaces; that is
+gated against a twin fixture (`Rx_PolElt_Ref.in`) rather than argued from
+the source.
+
+**`JmatElt` is now live and its per-ELEMENT shape is exact, not a
+shortcut.**  The element Jones in its OWN eigenbasis -- `diag(1,0)` for a
+polarizer, `diag(1,exp(-i*delta))` for a retarder -- carries no ray
+dependence; ALL of it lives in the basis (`ahat` = declared axis projected
+into the ray's transverse plane, `bhat = rhat x ahat`).
+
+**Conventions -- all three EXTEND the pinned set, none is new law:**
+1. *Axis as a 3-VECTOR*, not an angle in some element frame, so no
+   "which in-plane direction is zero degrees" convention has to be invented.
+2. *Orthonormalize the partner axis* rather than projecting a second
+   declared axis.  FORCED, not chosen: a lossless retarder must be unitary,
+   and only an orthonormal eigenbasis makes `diag(1,exp(-i*delta))` unitary.
+3. *Retardance sign read off the engine.*  `C1=exp(-i*2pi*L*N/lambda)` means
+   the slow axis takes the more negative phase, so fast-axis-declared gives
+   `diag(1,exp(-i*delta))`.  Pinned by the SIGNED circular Stokes parameter
+   (`S3/S0 = -1` for linear-in / QWP at 45 deg), which flips if the
+   convention flips -- a `|S3|` gate would accept either.
+4. *Retardance is stored PHYSICALLY* ((n_s-n_f)*d), Rx value scaled by
+   Wavelen at load, divided by the current lambda at trace -- the same
+   treatment `Coating=` thickness gets, so a plate is fixed glass and sweeps
+   are chromatic.
+
+**THE TRAP THAT COST THIS SLICE A REBUILD: there are TWO element dispatch
+chains.**  `tracesub.F` traces rays for ray-level queries; `propsub.F`
+(`CPROPAGATE`) RE-TRACES the rays that seed the diffraction grid, through
+its own `ELSE IF (EltID(iElt).EQ.n)` chain.  Wiring only `tracesub.F` gives
+an element that works perfectly in `ray_field` and is INVISIBLE to
+`intensity`/`complex_field`.  Measured before the fix: crossed polarizers
+took the ray power to 3.6e-33 while the detector plane sat at the full
+9.69e-01 -- i.e. the grid reported that polarization had no effect, which
+reads as "no polarization aberration" rather than as a bug.  Any future
+element that touches the field needs BOTH chains.  (`srtrace.F` has a third
+chain but it is inside `SRTRACE_Test`, under `#if 0` -- dead, nothing to
+add.)  `tPolElement/test_grid_carries_the_polarizing_train` is the tripwire.
+
+**OPEN, referred to the Fable lane -- the off-normal axis convention.**
+For an ideal polarizer away from normal incidence, projecting the declared
+PASS axis is NOT equivalent to projecting a declared BLOCK axis and
+transmitting the complement: orthographic projection does not preserve
+orthogonality.  `PolElt` declares the PASS axis.  Measured size of the
+disagreement: **3.56 deg of axis orientation at 20 deg AOI**, closed form
+`acos(2 cos a/(1+cos^2 a))` at 45 deg azimuth, bounded by `sin^2 a`, and
+**identically zero when the axis lies in or perpendicular to the plane of
+incidence** -- so the obvious test tilt (axis along x, tilt in x-z) is
+degenerate and reports a reassuring zero that means nothing.  Every physics
+gate is at strict normal incidence, where the ambiguity vanishes exactly.
+`RfPolarizerElt(14)` is left a stub because it is inherently off-normal and
+cannot be landed before this is settled.  Packet:
+`macos/REVIEW_POL_ELEMENTS_2026-07-27.md`.
+
+**Idealizations (documented, not worked around):** no ray splitting (a PBS
+is two traces, or better a coated `Reflector` at 45 deg where s/p is
+physical), no walk-off, no face Fresnel loss, no substrate; the output is
+purely transverse, so any longitudinal component at the surface is dropped
+(exactly zero for a collimated normal-incidence beam, O(NA) otherwise).
+
+**Tranche-1 interaction to respect when building fixtures:** a polarizing
+element placed AFTER the first physical-optics leg transforms rays but never
+reaches the grid (the seed already happened).  `Rx_PolElt.in` puts all four
+polarizing elements BEFORE its single `NFPlane`->`Geometric` leg for exactly
+that reason, and says so in its header.
 
 ## Phase 3a Tranche 1 -- vector propagation across the whole chain
 

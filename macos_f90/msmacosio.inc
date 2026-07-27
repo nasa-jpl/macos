@@ -2573,6 +2573,32 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
+!--> polarizing-element keywords (PLAN_POLARIZATION Phase 3).
+!    PolAxis= is the reference axis of a TrPolarizer (transmission
+!    axis) or WavePlate (FAST axis), given as a 3-vector in global
+!    coordinates.  It is projected into each ray's transverse plane at
+!    trace time, so it need not be perpendicular to psiElt -- only
+!    non-parallel to the ray.
+            ELSE IF (LCMP(VAR_NAM,'PolAxis',7)) THEN
+              READ(VALUE,*)(PolAxisElt(j,iElt),j=1,3)
+              CALL DUNITIZE(PolAxisElt(1,iElt))
+              PolAxis_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+!    Retardance= is in WAVES at the header Wavelen and is converted
+!    here to the physical retardance (n_slow-n_fast)*d, exactly the way
+!    Coating= layer thicknesses are handled above.  The trace divides
+!    by the CURRENT lambda, so a plate stays physically fixed across a
+!    wavelength sweep.  Needs no intra-element ordering (unlike
+!    Coating=, which snapshots IndRef): only the header Wavelen.
+            ELSE IF (LCMP(VAR_NAM,'Retardance',10)) THEN
+              READ(VALUE,*)PolRetElt(iElt)
+              PolRetElt(iElt)=PolRetElt(iElt)*Wavelen
+              PolRet_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'VptElt',6)) THEN
               READ(VALUE,*)(VptElt(j,iElt),j=1,3)
               VptElt_FLG=.TRUE.

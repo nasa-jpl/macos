@@ -245,10 +245,44 @@ way — CCMac is gfortran-only.)
        `mmacos/CLAUDE.md`).  So a 2c evidence section either uses the
        weaker chain at 128 or the driver must split into per-model-size
        batch invocations.
-  4. **Phase 3 polarizer + waveplate** (NOT the VVC): dispatch + surface
-     routines modeled on `Reflector`'s s/p projection; keywords/SAVE/API
-     per the Phase-1 template.  Gates: crossed-polarizer extinction, QWP
-     linear→circular Stokes check, GMI 6/6 untouched.
+  4. ~~**Phase 3 polarizer + waveplate**~~ — **LANDED 2026-07-27, ONE
+     CONVENTION DECISION OPEN.**  `TrPolarizerElt(15)` finished from its
+     name-table-only stub and `WavePlateElt(18)` added (`mEltTypes`
+     17→18), both served by a new `PolElt` in `elemsub.F`; `PolAxis=` /
+     `Retardance=` keywords in both parse chains + SAVE; `polelt_set`/
+     `polelt_get`/`jmat_elt_get` (codegen Path A) → `macos.polarizer` /
+     `macos.waveplate` / `macos.elt_jones`.  `JmatElt(2,2,mElt)` is no
+     longer dead.  Gates: `tPolElement`, **23 pass**, all closed-form and
+     written from the textbook — Malus 1e-12, crossed extinction EXACTLY
+     0, QWP `S3/S0 = −1` (signed, so it pins the retardance convention),
+     HWP 2θ slope 2 to 1e-10, two-QWP≡HWP 1e-15, unitarity 1e-14 for
+     linear AND circular states, and pol-off BIT-IDENTICAL to a
+     Reference-surface twin fixture.  Each mechanism has an in-suite
+     non-vacuity A/B (R=0 collapses the QWP and the 2θ law; the polarizer
+     is checked to FAIL unitarity).
+     **Deliberately NOT landed: `RfPolarizerElt(14)`.**  A reflective
+     polarizer is inherently off-normal, and off normal an ideal polarizer
+     carries a real O(sin²AOI) convention question — declaring the PASS
+     axis and projecting it is not equivalent to declaring the BLOCK axis
+     and transmitting the complement.  Measured: **3.56° of axis
+     orientation at 20° AOI**, closed form `acos(2cos a/(1+cos²a))` at 45°
+     azimuth, and **identically zero when the axis lies in or
+     perpendicular to the plane of incidence** (so the obvious test tilt
+     is degenerate and reports a meaningless zero).  Every gate is at
+     strict normal incidence where the ambiguity vanishes exactly.
+     Decision packet: `REVIEW_POL_ELEMENTS_2026-07-27.md`.
+     **Finding worth propagating: there are TWO element dispatch chains.**
+     `propsub.F`'s `CPROPAGATE` re-traces the rays that seed the
+     diffraction grid through its own `EltID` chain, so an element wired
+     only into `tracesub.F` works perfectly in `ray_field` and is INVISIBLE
+     to `intensity`/`complex_field` — measured at 3.6e-33 ray power against
+     a full 9.69e-01 detector plane, which reads as "polarization has no
+     effect on the image" rather than as a bug.  Both chains are now wired;
+     `test_grid_carries_the_polarizing_train` is the tripwire.
+     Not attempted here: VVC, and the polarization phase-shifting
+     Twyman-Green example (Phase 2d, needs the Bench emitters on
+     `pol-ifo`).  pymacos shims for the three new api routines are
+     deferred — mmacos-only, as with the `view_rx` engine leg.
   5. **Phase 2d mechanical half** (on `pol-ifo` once parents merge): Bench
      coating emission (`add_mirror`/`add_bs_reflect` coating options,
      `Coating=` block ordering handled), `twyman_green('coating',...)`
@@ -669,10 +703,23 @@ a surface routine in `elemsub.F` transforming `Eout` from `Evec`, keywords in
 `msmacosio.inc` + defaults in `iosub.inc`, SAVE writer, Phase-1-style API/binding
 exposure — and, for track A, a Bench `add_*` emitter.
 
-- **Ideal linear polarizer** — finish `RfPolarizerElt(14)`/`TrPolarizerElt(15)`.
+> **STATUS 2026-07-27: the polarizer and the waveplate LANDED** (Opus
+> worklist item 4).  `PolElt` in `elemsub.F`, dispatched from BOTH
+> `tracesub.F` and `propsub.F`; gates in `tPolElement` (23).  The VVC is
+> untouched and remains Fable-lane.  `RfPolarizer` is held pending the
+> off-normal axis convention — see `REVIEW_POL_ELEMENTS_2026-07-27.md`
+> and the worklist entry above.  Text below is the original spec; the
+> two deltas from it are recorded in the worklist entry.
+
+- **Ideal linear polarizer** — ~~finish `RfPolarizerElt(14)`/~~`TrPolarizerElt(15)`.
   Keyword for the transmission-axis vector; `Eout` = projection onto the axis, reflect
-  variant sends the rejected component. Model on the s/p projection in `Reflector`
-  (`elemsub.F:385-428`). **Document:** sequential tracing yields one output port per
+  variant sends the rejected component. ~~Model on the s/p projection in `Reflector`
+  (`elemsub.F:385-428`).~~  **Modelled on `RefSrf` instead** — the s/p basis is
+  DEGENERATE at normal incidence (`Reflector` falls back to an arbitrary
+  `svec` when `|ihat x Nhat| < 1e-10`), which is precisely the regime a
+  polarizer or waveplate is used in, so the transverse basis is built from
+  the element's declared axis rather than from the plane of incidence.
+  **Document:** sequential tracing yields one output port per
   run — a **PBS requires two traces** (the Twyman-Green driver already runs per-arm
   traces, so this fits the existing example structure exactly).
 - **Waveplate / retarder** — new element type (extend `mEltTypes`): settable retardance
@@ -680,6 +727,10 @@ exposure — and, for track A, a Bench `add_*` emitter.
   **Documented as a thin, non-ray-splitting idealization** — no o/e walk-off. Also the
   primitive for bounding **stress birefringence** in transmissive elements (e.g. the
   wedged Fresnel plate upstream of DM1).
+  Landed as `WavePlateElt = 18`.  Retardance is stored PHYSICALLY
+  ((n_slow−n_fast)·d) with the Rx keyword in waves at parse-time
+  `Wavelen` — the same treatment `Coating=` thickness gets, so a plate is
+  fixed glass and a wavelength sweep is chromatic.
 - **Vector vortex (VVC)** — charge-l geometric-phase mask coupling circular states
   with exp(±i·l·θ). **Retardance is a first-class parameter, not idealized away:**
 

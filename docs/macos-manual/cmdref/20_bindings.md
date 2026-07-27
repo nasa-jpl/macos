@@ -518,6 +518,32 @@ Element metadata for layout drawing. info = macos.get_elt_info(K) queries elemen
 <!-- BEGIN NOTES fn-elt-info -->
 <!-- END NOTES fn-elt-info -->
 
+#### elt_jones
+
+- **mmacos:** `J = macos.elt_jones(srf)`
+- **pymacos:** *not available*
+
+The 2x2 Jones matrix a polarizing element applied. J = macos.elt_jones(SRF) returns the complex 2x2 Jones matrix that the polarizing element at SRF applied during the last trace, expressed in the element's OWN transverse eigenbasis: column/row 1 is the declared axis projected into the ray's transverse plane, 2 is its orthogonal partner (rhat x ahat).
+
+<!-- BEGIN NOTES fn-elt-jones -->
+
+**Reads a formerly dead array.** `JmatElt(2,2,mElt)` was allocated,
+zeroed and deallocated by `elt_mod` and never otherwise touched. Phase 3
+fills it in `PolElt` and exposes it here.
+
+**Per element, not per ray -- and that is exact.** The coefficients of an
+ideal polarizer or retarder in its OWN eigenbasis do not depend on the ray;
+all the ray dependence lives in the basis (the declared axis projected into
+each ray's transverse plane). So this is not a substitute for `jones_pupil`,
+which is the pupil-referenced Jones and is what any polarization-aberration
+analysis wants.
+
+**Diagonal by construction:** `diag(1,0)` for an ideal polarizer,
+`diag(1, exp(-i*2*pi*R))` for a waveplate. Returns zeros if no polarized
+trace has run.
+
+<!-- END NOTES fn-elt-jones -->
+
 #### elt_kc
 
 - **mmacos:** `kc = macos.get_elt_kc(srf)`
@@ -1545,6 +1571,50 @@ the call errors rather than silently degrading.
 CLI POLarized/NOPolarization.
 <!-- END NOTES fn-polarization -->
 
+#### polarizer
+
+- **mmacos:** `out = macos.polarizer(srf, opts)`
+- **pymacos:** *not available*
+
+Set or query an ideal linear polarizer element. macos.polarizer(SRF, 'axis', A) sets the TRANSMISSION axis of the TrPolarizer element at SRF.  A is a 3-vector in GLOBAL coordinates; it need not be unit length, and it need not lie in the element's surface. The engine projects it into each ray's transverse plane and normalizes (see PolElt in elemsub.F).
+
+<!-- BEGIN NOTES fn-polarizer -->
+
+**Element type.** Requires the element at `srf` to be declared
+`Element= TrPolarizer` (EltID 15) in the prescription; any other type is
+refused rather than silently ignored. Before PLAN_POLARIZATION Phase 3 this
+EltID existed in the name table only and had no trace dispatch at all, so a
+prescription naming it loaded cleanly and did nothing.
+
+**Ideal, and one-port.** Transmission is 1 along the axis and 0 across it --
+no Fresnel loss at the plate faces, no substrate, no wavelength dependence.
+The REJECTED component is discarded, not emitted, so a polarizing
+beamsplitter needs two traces. At 45 degrees a coated `Reflector` is the
+better model: there the s/p basis is physically meaningful and the coating
+recursion is already gated against the Fresnel closed form.
+
+**Requires `polarization('on')`.** With polarization off the element is a
+plain geometric surface and the axis is inert -- a trace through it is
+bit-identical to the same train with a `Reference` surface in its place
+(gated by `tPolElement/test_unpolarized_bit_identical_to_reference_twin`).
+
+**Normal incidence is the gated regime.** Off normal, declaring the PASS
+axis and projecting it is not equivalent to declaring the BLOCK axis and
+transmitting the complement: orthographic projection does not preserve
+orthogonality, and the two constructions differ by 3.56 degrees of axis
+orientation at 20 degrees AOI (identically zero when the axis lies in, or
+perpendicular to, the plane of incidence). This function declares the PASS
+axis. The choice is reported, not settled -- see
+`REVIEW_POL_ELEMENTS_2026-07-27.md`. `RfPolarizer` (EltID 14) remains a stub
+for the same reason: it is inherently off-normal.
+
+**Axis storage.** The API stores the axis as given, so a query returns what
+was written; the Rx parser UNITIZES on load (matching `psiElt=`), so a
+non-unit axis comes back normalized after a save/reload round trip. Either
+way it is a direction -- `PolElt` normalizes per ray.
+
+<!-- END NOTES fn-polarizer -->
+
 #### ray_field
 
 - **mmacos:** `rf = macos.ray_field(srf)`
@@ -1752,6 +1822,48 @@ Standard 3-view layout figure for the LOADED prescription. fig = macos.view_std(
 
 <!-- BEGIN NOTES fn-view-std -->
 <!-- END NOTES fn-view-std -->
+
+#### waveplate
+
+- **mmacos:** `out = macos.waveplate(srf, opts)`
+- **pymacos:** *not available*
+
+Set or query a linear retarder (waveplate) element. macos.waveplate(SRF, 'axis', A, 'retardance', R) configures the WavePlate element at SRF.  A is the FAST axis as a 3-vector in GLOBAL coordinates (projected into each ray's transverse plane by the engine). R is the retardance in WAVES at the CURRENT wavelength: 0.25 for a quarter-wave plate, 0.5 for a half-wave plate.
+
+<!-- BEGIN NOTES fn-waveplate -->
+
+**Element type.** Requires `Element= WavePlate` (EltID 18, added in
+PLAN_POLARIZATION Phase 3, extending `mEltTypes` to 18). Any other type is
+refused.
+
+**Retardance sign is derived from the engine, not chosen.** MACOS propagates
+a field as `exp(-i*2*pi*L*N/lambda)` (`elemsub.F:395`), i.e.
+`exp(+i*omega*t)` time dependence, so the slow axis accumulates the more
+negative phase. With the declared axis as FAST, the element Jones in its own
+eigenbasis is `diag(1, exp(-i*delta))`, `delta = 2*pi*R`. Pinned by
+`tPolElement/test_retardance_sign_matches_engine_convention` and, more
+sharply, by the SIGNED circular Stokes parameter in
+`test_qwp_linear_to_circular` -- a suite that only checked `|S3|` would
+accept either convention.
+
+**Chromatic by construction.** The stored quantity is the physical
+retardance `(n_slow - n_fast)*d = R*lambda`, so a plate set to 0.25 waves at
+1 um is 0.125 waves at 2 um. This is the same treatment `Coating=` layer
+thickness already receives, and it means a query after a wavelength change
+returns a different R than was set -- physics, not a round-trip failure.
+
+**Thin idealization.** No o/e walk-off, no ray splitting, no Fresnel loss at
+the faces, no substrate thickness. The output is purely transverse: any
+longitudinal component present at the surface is discarded, which is what a
+2x2 Jones element means (exactly zero for a collimated normal-incidence
+beam, O(NA) otherwise). The element is also the primitive for bounding
+stress birefringence in a transmissive optic.
+
+**Unitary.** Gated for linear and circular input states, both against the
+field power and against `J'*J == I` from `elt_jones`, with the (non-unitary)
+polarizer as the non-vacuity companion.
+
+<!-- END NOTES fn-waveplate -->
 
 #### xp
 

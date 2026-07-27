@@ -35,6 +35,12 @@ against, and the test that pins it in continuous integration.
 | 5.5 | floor moves with coating choice | 27.9× (Al), 151.3× (MgF₂/Al) | monotone, ≫1 | `tPolContrast/test_coating_sensitivity` |
 | 5.6 | Tranche-1 shortfall is detected, not hidden | carried 0.8412 bare, 0.5653 coated | 1 (would be) | `tPolContrastCoro/test_tranche1_shortfall_is_detected` |
 | 5.7 | coronagraph floor, lower bound | 5.787e-13 mean contrast | — | `tPolContrastCoro/test_floor_reported_by_component` |
+| 6.1 | polarization-off ≡ Reference surfaces | bitwise 1 | true | `tPolElement/test_unpolarized_bit_identical_to_reference_twin` |
+| 6.2 | Malus's law; exact crossed extinction | 1.079e-13 of I₀; crossed exactly zero 1 | cos²θ; 0 | `tPolElement/test_malus_law`, `test_crossed_polarizer_extinction` |
+| 6.3 | retarder Stokes, with the SIGN of S₃ | 0.000e+00 (signed S₃/S₀ = −1), linear residual 1.741e-16 | closed form | `tPolElement/test_qwp_linear_to_circular` |
+| 6.4 | half-wave 2θ law; two QWPs ≡ one HWP | slope residual 8.882e-16; cascade 1.464e-16 | 2; 0 | `tPolElement/test_hwp_rotates_by_2theta`, `test_two_qwp_equal_one_hwp` |
+| 6.5 | retarder is unitary, linear and circular in | 0.000e+00; JᴴJ−I 0.000e+00 | 0 | `tPolElement/test_waveplate_is_unitary` |
+| 6.6 | the diffraction grid carries the train | 1.833e-15 | cos²θ | `tPolElement/test_grid_carries_the_polarizing_train` |
 
 # Coverage and gaps
 
@@ -87,6 +93,15 @@ was checked.
 * **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
   handles one wavefront only — no multi-wavefront composition concurrently.
   This is a documented constraint, not a defect to work around.
+* **The reflective polarizer `RfPolarizer` is not implemented**, and the
+  transmissive polarizer's behaviour away from normal incidence rests on an
+  unsettled convention (§6.7). Every polarizing-element number in section 6
+  is taken at normal incidence, where the ambiguity vanishes exactly.
+* **The polarizer and waveplate are thin idealizations** — no ray splitting,
+  walk-off, face reflections or substrate — so a polarizing beamsplitter is
+  modelled as two traces, or better as a coated `Reflector` at its working
+  angle. Their outputs are purely transverse; a longitudinal component at
+  the surface is discarded rather than tracked.
 
 ## Phases not yet represented
 
@@ -96,7 +111,7 @@ outstanding work, not a disclaimer.
 | Phase | Deliverable | Evidence it will add |
 |---|---|---|
 | 2d | interferometer polarization metrology | visibility budget predicted vs simulated; phase-shifting systematic vs input state; the angle-of-incidence trade |
-| 3 | polarizer, waveplate, vector vortex | crossed-polarizer extinction; quarter-wave linear→circular Stokes check; vortex null depth vs retardance error against the analytic curve |
+| 3 | vector vortex; reflective polarizer | vortex null depth vs retardance error against the analytic curve. The polarizer and waveplate landed — section 6. `RfPolarizer` is held pending the off-normal axis convention of §6.7, and the vortex is a separate design question (retardance and handedness conventions, broadband leakage) |
 | 3a Tranche 2 | Jones-through-chain | chains with coated surfaces between legs |
 | 4 | spatially variable coatings | per-segment and radial-grade Jones pupils; grid-resolution speckle-floor sweep |
 
