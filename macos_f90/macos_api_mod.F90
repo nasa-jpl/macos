@@ -5055,6 +5055,11 @@
           if ((iPlane < 1) .or. (iPlane > 3))        return
           if (iPlane > mWF)                          return
           if (.not. ifVecDif3)                       return  ! not a component
+          ! Same ownership rule as iPlane=0: refuse an element the trace
+          ! did not assemble a wavefront at.  iPlane selects the storage
+          ! slot directly, so without this check ANY in-range iElt would
+          ! silently return the field from wherever it actually lives.
+          if (iEltToiWF(iElt) .LE. 0)                return
           iWF = iPlane
         end if
 

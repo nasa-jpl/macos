@@ -27,7 +27,14 @@ glance:
   tree the run CREATED rather than the one it measured.  A validation
   document whose thesis is reproducibility should not ship saying its
   numbers came from uncommitted code.  Captured up front now; the
-  published report stamps `dd8f5dd` / `f10b234`, both clean.
+  published report stamps `dd8f5dd` / `9f2eed4`, both clean.
+  *(Fable correction 2026-07-27: the report originally stamped `f10b234`
+  — a commit DESTROYED by the payload-strip reset, existing only in this
+  box's reflog. A reproducibility stamp pointing at an unfetchable commit
+  defeats its own purpose. Re-stamped to the pushed `9f2eed4`, whose
+  code content is identical for everything the run consumed — verified:
+  the only code diff vs the dangling tree is the unrelated, accidentally
+  swept `Rx_e5hex1.in`.)*
 * **A near-miss worth knowing about, not a physics issue.**  One commit
   used `git add -A pymacos/tests` and swept in ~740 MiB of untracked
   working-tree material (`results_cycle4/` PROPER `.npy` artifacts at
@@ -249,3 +256,43 @@ the external.json labelled-provenance choice are right; the §3
 attribution closure (two mechanisms, measured, naive expectation wrong
 by 2x, residue labelled not-further-verified) is the standard applied
 correctly; parking 2c WIP off the MATLAB path was the right instinct.
+
+---
+
+## Fable post-landing review (2026-07-27) — the end-of-session slice
+
+Dave reported end-of-session degradation (a self-watching watcher, the
+740 MiB near-miss), so the last landings got a second pass. Two findings,
+both fixed and gated this morning:
+
+1. **Dangling provenance stamp (fixed above in the late-additions note).**
+   The published polval report stamped `resources f10b234` — a commit the
+   payload-strip reset DESTROYED. It exists only in this box's reflog; a
+   reader running `git show f10b234` against the pushed branch gets
+   nothing, which defeats the report's reproducibility thesis. Re-stamped
+   to the pushed `9f2eed4` (code content identical for everything the run
+   consumed; verified — the only diff vs the dangling tree is the
+   unrelated swept `Rx_e5hex1.in`), re-rendered, `check_polval` clean.
+   *Lesson for the loop: after any commit rewrite, grep the tree for the
+   OLD SHAs — a stamp/packet/doc written minutes earlier may cite a
+   commit that no longer exists.*
+
+2. **`cfield_plane_get` vector branch skipped the ownership rule.** The
+   scalar path refuses an element with `iEltToiWF(iElt) <= 0`; the vector
+   branch selected the storage slot from `iPlane` alone, so a direct API
+   caller querying before any propagation got the untraced `WFElt` buffer
+   back as a "field" — exactly the plausible-and-wrong read the routine's
+   own comment promises to prevent. Severity LOW: through the shipped
+   bindings it is unreachable (`complex_field` always propagates to the
+   queried element before fetching — measured, not assumed). Guard added
+   (engine, 5 lines incl. comment), both compilers rebuilt, mex + f2py
+   relinked; pinned at the raw-API level by
+   `test_component_plane_refused_before_any_trace` (binding-level tests
+   CANNOT reach it — the first attempt proved that by failing).
+   Post-fix: tVecChain 8/8, test_vec_chain 18/18, test_jones_pupil green.
+
+Everything else in the three landings held up: the engine getter's other
+refusal paths, both binding halves, the mex arg plumbing, the polval
+regen mechanics, and the recovery from the payload incident itself
+(reset before push, no history damage, provenance fix re-landed
+byte-identical, hazard recorded in mmacos/CLAUDE.md).
