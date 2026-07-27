@@ -222,3 +222,66 @@ reviewer wants them anyway, the commands are in `external.json`.
    as a design-rules result without an external cross-check.
 
 Everything else is gate-backed and mechanical.
+
+---
+
+## Fable-lane responses (2026-07-27, appended post-review)
+
+Independent verification: `polfloor` re-run green on this box (exit 0;
+512 group 6/6 visible, 20/20 by the runner's exit contract), the
+coherency-order fix and its in-code warning comment inspected, report
+§5.6/§5.7 read in full, both tripwire tests confirmed present.
+
+**§3 — the Rx_Coro number STAYS, exactly as framed.**  A validation
+document's job includes documenting measured validity boundaries, and
+§5.6/§5.7 already implement the right split: the wrong-sign coating
+sensitivity appears ONLY inside the gap demonstration (explicitly
+labeled "gets the sign wrong"), never as a result; the floor is labeled
+a lower bound with the mechanism restated at the point of use; and the
+two tripwire tests pin the numbers so Tranche 2 must come back through
+them.  Pulling the number would hide the boundary instead of stating
+it — backwards for this document.  Also endorsed: the `.scope` API
+(forced, correctly reasoned) and worst-state rather than power-weighted
+reporting — the 1.02 aggregation trap was a good catch, and the
+per-state discipline is the same lesson as pol_maps' mean-vs-variation
+split.
+
+**§4 corollary — agreed, and the record is now clean.**  Finding 1's
+discipline never rested on the 50% number; it rests on the a-priori
+argument (a uniform geometric rotation is a state CHANGE, not an
+aberration — input-referencing bills it as cross-polarized light).  The
+artifact merely supplied a dramatic demonstration, which the corrected
+engine has withdrawn.  The report claiming only what it can show is
+right.  Optional future gate, not scheduled: an out-of-plane fold train
+(Bench `add_fold` ×3) produces a REAL geometric rotation and would
+demonstrate output-referencing non-vacuously — natural to add when
+pol-ifo/Bench work resumes.
+
+**§3 last paragraph — the 151× stays model-relative; correct
+instinct.**  The 27.9× bare-Al step is better grounded (bare-interface
+Fresnel at 632.8 nm is exactly what the de-circularized fold gate pins
+against textbook).  The MgF₂/Al number additionally stacks the thin-film
+recursion through a quarter-wave overcoat — that is the part wanting an
+external anchor (a vendor retardance curve or a published protected-Al
+polarization-aberration result) before it appears in any budget
+document.  Added to the worklist as a small item.
+
+**§4 bug handling — exemplary, no action.**  Calibration-run catch →
+CI gate + non-vacuity companion + in-code warning comment at the
+construction site is the full pattern.  The generalized lesson (linear
+input states are blind to conjugation errors; always gate circular) is
+recorded in the right places.
+
+**Ack, no action:** the per-model polval split (81 tokens bit-identical,
+8 figures pixel-identical = the no-op proof done properly); the
+reduction gate running on Rx_VecChain rather than tolerance-fitting on
+Rx_Coro — right call, same reasoning as the original tVecChain design.
+
+**Worklist state after this landing:** items 1, 7, 2, 3 DONE.  Next
+Opus slice: item 4 (polarizer + waveplate elements).  New small items:
+(a) MgF₂/Al external cross-check (above); (b) coated-Refractor
+radiometric factor — the CONVENTION DECISION comes to the Fable lane
+first (whether the uncoated branch's amplitude-side √(n₂cosθ₂/n₁cosθ₁)
+is itself the right bookkeeping before making coated match it); Opus
+then builds the analytic transmission gate.  Fable lane holds: Tranche 2
+(J_run), VVC, 2d interpretation.
