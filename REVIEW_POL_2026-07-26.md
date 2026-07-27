@@ -11,11 +11,33 @@ Commits (both repos, branch `pol-core`):
 |---|---|---|
 | item 7 — validation report | `5a5b018`, `b19e7a6` | `ebbad76`, `3c9a42b` |
 | item 2 — Phase 2b expansion | `5a5b018` | `ebbad76` |
-| field-plane getter + attribution closure | `b3e0322` | `aa730b0` |
+| field-plane getter + attribution closure | `b3e0322` | `9f2eed4` |
+| provenance-stamp fix + regen | `dd8f5dd`, `3721dde` | (folded into `9f2eed4`) |
 
 Suite status at the last landing: mmacos fast 287/0, pymacos 6651,
 PROPER-compare 26/26, GMI 6/6 bit-identical (`vs-ref = 0.000e+00`), both
-compilers built.
+compilers built.  **Pushed:** macos `3721dde`, MACOS_resources `9f2eed4`.
+
+Two late additions after the sections below were written, both worth a
+glance:
+
+* **Provenance-stamp fix.**  The report's provenance block was sampled at
+  the END of the driver run -- after it had written its own figures into
+  the macos repo -- so it always reported that tree dirty, describing the
+  tree the run CREATED rather than the one it measured.  A validation
+  document whose thesis is reproducibility should not ship saying its
+  numbers came from uncommitted code.  Captured up front now; the
+  published report stamps `dd8f5dd` / `f10b234`, both clean.
+* **A near-miss worth knowing about, not a physics issue.**  One commit
+  used `git add -A pymacos/tests` and swept in ~740 MiB of untracked
+  working-tree material (`results_cycle4/` PROPER `.npy` artifacts at
+  56 MiB each, `results_cycle5/`, `IntLog.txt`, `sensitivities/`
+  outputs).  Caught by the push stalling, fixed before it left the
+  machine -- payload 741 MiB -> 1.09 MiB, and the commit was rewritten
+  while still unpushed so there is no history damage.  **Those directories
+  are NOT gitignored** (`results/phase<N>/` is; the cycle dirs are not),
+  so the trap is live for anyone using `git add -A` under
+  `pymacos/tests`.  Recorded in `mmacos/CLAUDE.md`.
 
 ---
 
