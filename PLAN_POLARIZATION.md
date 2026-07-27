@@ -191,6 +191,37 @@ unblocks the Phase-3 VVC acceptance test and the polarized PROPER re-runs);
 Fable gates each landing.  `pol-ifo` (2d) follows after `bench-builder` and
 `pol-core` merge.
 
+**Opus-lane session discipline (added 2026-07-27, after the end-of-session
+error cluster on 2026-07-26).**  The 26th's session landed items 7 + 2 +
+the plane getter + the review packet + started 2c in ONE continuous run;
+the errors (a 740 MiB `git add -A` sweep, a provenance stamp citing a
+commit its own reset had destroyed, a watcher script that matched its own
+process) all clustered at the END.  That is a session-length failure mode,
+not a competence one — the same session's early work was clean.  Rules:
+
+1. **One worklist item per session.**  Land it (code + gates + packet
+   entry + push), then END the session.  Start the next item with fresh
+   context.  Do not "start the next item while the suite runs."
+2. **Stage by explicit path, never `git add -A`/`git add <dir>`.**  Run
+   `git diff --cached --stat | tail -3` before every commit; anything
+   over ~2 MB staged needs a stated reason in the commit message.
+   (The gitignore now blocks the known artifact trees — MACOS_resources
+   `cfe2fbb` — but the rule stands for trees it can't foresee.)
+3. **After any commit rewrite (reset/amend/rebase), grep the worktree
+   for the old SHAs** before pushing: `git grep -I <oldsha>` plus a
+   plain `grep -rn` over untracked docs.  A stamp, packet, or doc
+   written minutes earlier may cite a commit that no longer exists
+   (the f10b234 dangling-stamp bug, fixed in macos `f8c0f34`).
+4. **Watchers/pollers must watch external state** (a file mtime, a PID
+   captured at spawn, a log line count) — never a `pgrep -f`/`grep`
+   pattern that appears in their own command line.  Prefer foreground
+   waits; if polling, print what changed each tick so a self-watching
+   loop is visible in the first two lines of its output.
+5. **When a gate needs more than two fix attempts, or a push takes
+   minutes instead of seconds, STOP and write the state down** for the
+   next session instead of pushing through — both 26th incidents would
+   have been caught at this tripwire.
+
 ---
 
 ### What already exists in the engine (verified 2026-07-25, line-checked)
