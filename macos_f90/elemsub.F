@@ -1192,8 +1192,20 @@ C    Compute refracted ray cosine
           ! reflectance eqn
           NaCmplx=DCMPLX(nb_arr(nCoat),(-kxb_arr(nCoat)))
           NbCmplx=DCMPLX(nb_arr(nCoat+1),(-kxb_arr(nCoat+1)))
-          RP=(NaCmplx*ccfb_arr(nCoat+1)-NbCmplx*ccfb_arr(nCoat))
+!-->      standard Born&Wolf r_p, normalized 2026-07-27 to match the
+!         Reflector fix (macos cb29ea5).  This copy of the recursion
+!         carried the same negated form; here it is INTERNAL ONLY --
+!         Refractor emits TP/TS (transmission), and RP enters the
+!         transmitted result only through the products RP1*RP in the
+!         Airy denominators, which are invariant under a CONSISTENT
+!         flip of RP and RP1.  So this restores the convention without
+!         changing any transmitted field: verified bit-identical on a
+!         3-layer coated singlet (45-deg linear and circular input).
+!         Left flipped it would be a trap for the reflected branch a
+!         future beamsplitter/PBS element would want to use.
+          RP=(NbCmplx*ccfb_arr(nCoat)-NaCmplx*ccfb_arr(nCoat+1))
      &       /(NbCmplx*ccfb_arr(nCoat)+NaCmplx*ccfb_arr(nCoat+1))
+!<--
           RS=(NaCmplx*ccfb_arr(nCoat)-NbCmplx*ccfb_arr(nCoat+1))
      &       /(NaCmplx*ccfb_arr(nCoat)+NbCmplx*ccfb_arr(nCoat+1))
 
@@ -1224,9 +1236,12 @@ C    Compute refracted ray cosine
             C1=CDEXP(-C2)
 
             ! Reflectance
-            RP1=(NaCmplx*ccfb_arr(ic)-NbCmplx*ccfb_arr(ic-1))
+!-->        standard Born&Wolf r_p (see the innermost-interface note
+!           above); flipping RP1 with RP keeps every RP1*RP product,
+!           hence TP, bit-identical.
+            RP1=(NbCmplx*ccfb_arr(ic-1)-NaCmplx*ccfb_arr(ic))
      &          /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
-            !RP1=-RP1 ! testing
+!<--
             RPnew=(RP1+RP*C1)/(1d0+RP1*RP*C1)
 
             RS1=(NaCmplx*ccfb_arr(ic-1)-NbCmplx*ccfb_arr(ic))
