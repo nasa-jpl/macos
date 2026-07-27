@@ -5005,6 +5005,67 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! Plane-selectable sibling of cfield_get.
+      !
+      ! In VECTOR diffraction mode (ifVecDif3) the three WFElt storage planes are
+      ! repurposed as the Cartesian field components Ex/Ey/Ez of ONE wavefront
+      ! (see the mWF=3 constraint documented with VECTOR/SCALAR).  cfield_get
+      ! returns only iEltToiWF(iElt), so the per-component field was not
+      ! reachable from the bindings at all: the caller could see the summed
+      ! intensity but never how the three components contributed to it.  That is
+      ! what left the "the vector/scalar difference on an off-normal train is the
+      ! out-of-plane content" attribution UNVERIFIABLE in Phase 3a Tranche 1, and
+      ! it is what a co/cross-polarized contrast decomposition (Phase 2c) needs.
+      !
+      !   iPlane = 0     : the element's own wavefront (identical to cfield_get)
+      !   iPlane = 1,2,3 : the Ex, Ey, Ez component plane -- VECTOR MODE ONLY
+      !
+      ! Requesting a component plane while vector diffraction is off returns FAIL
+      ! rather than a plane of whatever else happens to live in that slot: in
+      ! scalar mode plane k is an unrelated wavefront, not a field component, and
+      ! silently handing it back would invite exactly the misreading this routine
+      ! exists to prevent.
+      !---------------------------------------------------------------------------------------------
+      subroutine cfield_plane_get(OK, REAL_OUT, IMAG_OUT, N, iElt, iPlane)
+        use elt_mod,   only: WFElt, iEltToiWF
+        use macos_mod, only: ifVecDif3
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: REAL_OUT
+        real(8), dimension(N,N), intent(out):: IMAG_OUT
+        integer,                 intent(in) :: N       ! = mdttl
+        integer,                 intent(in) :: iElt    ! element
+        integer,                 intent(in) :: iPlane  ! 0 = own WF; 1..3 = Ex/Ey/Ez
+
+        integer :: iWF
+        ! ------------------------------------------------------
+        OK       = FAIL
+        REAL_OUT = 0d0
+        IMAG_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(WFElt))                  return
+
+        if (iPlane .EQ. 0) then
+          iWF = iEltToiWF(iElt)
+          if (iWF .LE. 0) return   ! no diffraction wavefront at this element
+        else
+          if ((iPlane < 1) .or. (iPlane > 3))        return
+          if (iPlane > mWF)                          return
+          if (.not. ifVecDif3)                       return  ! not a component
+          iWF = iPlane
+        end if
+
+        REAL_OUT(:,:) = dble(WFElt(:N, :N, iWF))
+        IMAG_OUT(:,:) = dimag(WFElt(:N, :N, iWF))
+        OK = PASS
+
+      end subroutine cfield_plane_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Multiply macos's diffraction-grid complex field WFElt(:,:, iEltToiWF(iElt))
       ! by a user-supplied real-valued NxN mask, in place.  Used by Python-side
       ! apodization helpers to inject an arbitrary amplitude transmission map

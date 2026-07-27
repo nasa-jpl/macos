@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-26 16:58:55",
-    "engine_sha": "b19e7a6",
+    "generated": "2026-07-26 17:56:12",
+    "engine_sha": "5a5b018",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "3c9a42b",
+    "resources_sha": "ebbad76",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
@@ -480,7 +480,7 @@
       "value": 0.038224168400067246,
       "text": "3.82e-02",
       "units": "",
-      "gate": "median |Ez|/|Ex| at the exit pupil (UNVERIFIED attribution)",
+      "gate": "median |Ez|/|Ex| at the exit pupil",
       "test": "this driver",
       "source": "driver"
     },
@@ -488,7 +488,7 @@
       "value": 0.0879210742206505,
       "text": "8.79e-02",
       "units": "",
-      "gate": "max |Ez|/|Ex| at the exit pupil (UNVERIFIED attribution)",
+      "gate": "max |Ez|/|Ex| at the exit pupil",
       "test": "this driver",
       "source": "driver"
     },
@@ -498,6 +498,54 @@
       "units": "rays",
       "gate": "unvignetted rays in the |Ez|/|Ex| probe",
       "test": "this driver",
+      "source": "driver"
+    },
+    "G36_F": {
+      "value": 0.99788994332589065,
+      "text": "0.997890",
+      "units": "",
+      "gate": "in-plane (Ex) power fraction",
+      "test": "tVecChain/test_vector_scalar_difference_decomposition",
+      "source": "driver"
+    },
+    "G36_OUTFRAC": {
+      "value": 0.0021100566741093507,
+      "text": "2.1101e-03",
+      "units": "",
+      "gate": "out-of-plane (Ey+Ez) power fraction",
+      "test": "tVecChain/test_vector_scalar_difference_decomposition",
+      "source": "driver"
+    },
+    "G36_RAW": {
+      "value": 0.0025637652277176346,
+      "text": "2.5638e-03",
+      "units": "",
+      "gate": "vector-vs-scalar map difference being explained",
+      "test": "tVecChain/test_vector_scalar_difference_decomposition",
+      "source": "driver"
+    },
+    "G36_RESID": {
+      "value": 0.00028982635481004156,
+      "text": "2.8983e-04",
+      "units": "",
+      "gate": "residual of the two-term decomposition f*Is + Iy + Iz",
+      "test": "tVecChain/test_vector_scalar_difference_decomposition",
+      "source": "driver"
+    },
+    "G36_DECORR": {
+      "value": 4.2008801326431922E-8,
+      "text": "4.20e-08",
+      "units": "",
+      "gate": "1 - corr(Ex, scalar map): mechanism 1 is a near-pure rescale",
+      "test": "tVecChain/test_vector_scalar_difference_decomposition",
+      "source": "driver"
+    },
+    "G36_PLANESUM": {
+      "value": 9.5881419921887025E-18,
+      "text": "9.59e-18",
+      "units": "",
+      "gate": "component planes summed vs intensity()",
+      "test": "tVecChain/test_component_planes_sum_to_intensity",
       "source": "driver"
     }
   }

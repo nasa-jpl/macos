@@ -310,6 +310,8 @@ Scope: vector diffraction covers the whole propagation chain — the far-field (
 
 In vector mode the three wavefront storage planes are repurposed as Ex/Ey/Ez, so only a single wavefront can be active — do not combine vector diffraction with multi-wavefront work such as COMPOSE.
 
+The individual components are readable through the bindings: `complex_field` takes a `plane` selector, where 1, 2 and 3 return Ex, Ey and Ez and the default 0 returns the element's own wavefront. The three add in intensity, not amplitude, and their sum reproduces the ordinary intensity map. Requesting a component plane while vector diffraction is off is refused rather than answered, because in scalar mode that storage plane holds an unrelated wavefront and not a field component.
+
 One limitation remains. Between two physical propagation legs the grid field is advanced by a scalar phase, which is exact when the intervening elements are non-polarizing — Obscuring, Reference and FocalPlane elements, which covers the standard coronagraph chain of pupil, focal-plane mask, Lyot stop and focal plane. A chain that places a COATED or reflecting surface between two physical legs needs the surface Jones matrix applied to the grid field as well as to the rays, which is not yet implemented; in that configuration the polarization transfer at the intervening surface is not carried into the diffracted field.
 
 #### Propagation commands

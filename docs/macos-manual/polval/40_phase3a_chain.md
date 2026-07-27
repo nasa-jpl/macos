@@ -167,24 +167,45 @@ a bare per-component transform, omitting the Fresnel output factors.
 
 **Pinned by** `tVecChain/test_far_field_vector_matches_scalar_normalization`.
 
-### An unverified attribution, carried forward
+### The attribution, now measured
 
 This prescription is a real off-normal train, so vector and scalar
 intensities are *not* expected to agree pointwise — only in total power. The
 measured map difference is 2.56e-03.
 
-That difference is *believed* to be the train's out-of-plane field content.
-The order is right: at the exit pupil the ratio |Ez|/|Ex| has median
-3.82e-02 and maximum 8.79e-02 over 11484 unvignetted
-rays. **But it is not verified.** There is no plane-selectable complex-field
-getter, so the per-plane contribution to the propagated intensity cannot be
-isolated and the attribution cannot be tested. It is a plausible explanation,
-not a validated one.
+Tranche 1 could only *guess* at the cause: the per-plane contribution to a
+propagated intensity was not reachable from the bindings, so "it is the
+out-of-plane content" was an unverified attribution. A plane-selectable
+complex-field getter now exists (`complex_field(srf, 'plane', k)`), and the
+question is settled — with a correction. The one-line story was **half
+right**. Two mechanisms contribute, both driven by the out-of-plane content:
 
-Nothing in this document depends on it: the assertions *bound* the difference,
-they do not explain it. A plane-selectable complex-field getter would close it
-out, and Phase 2c's co/cross-polarized decomposition needs the same
-capability, so it should probably land there.
+| | Measured |
+|---|---|
+| in-plane power fraction `f` = Ex / total | 0.997890 |
+| out-of-plane power fraction (Ey + Ez) | 2.1101e-03 |
+| the difference being explained, ‖Iᵥ−Iₛ‖/‖Iₛ‖ | 2.5638e-03 |
+| residual of the two-term model | 2.8983e-04 |
+| 1 − corr(Ex, scalar map) | 4.20e-08 |
+
+1. **Power redistribution — the dominant term.** The scalar run seeds from
+   the ray-field *magnitude*, so **all** the power, including what is
+   physically out-of-plane, propagates in one plane. The vector run leaves
+   only the fraction 0.997890 in Ex. That is a near-pure rescale of the same
+   map — Ex departs from the scalar result in shape by only
+   4.20e-08 in correlation.
+2. **The out-of-plane components diffract to their own pattern**, adding
+   Iy + Iz.
+
+So the prediction is `Iᵥ ≈ f·Iₛ + Iy + Iz`, and it holds: the difference
+drops from 2.5638e-03 to 2.8983e-04, explaining most of it. Note that
+the *naive* expectation — that the difference should simply equal the
+out-of-plane intensity — is wrong by about a factor of two, which is why
+this needed measuring rather than asserting.
+
+What remains at 2.8983e-04 is a residual shape difference between the
+scalar field and Ex, consistent with their different seeds. That part is
+**not** further verified, and is not relied on by anything here.
 
 *(When probing per-ray fields for this kind of check: gate on the ray-pass
 status first. Obscured rays carry a zero field, and `atan2(0,0)` returns 0,
@@ -200,8 +221,8 @@ Re-running the pymacos PROPER-comparison suite with polarization on
 reproduces the committed scalar-to-PROPER residual of 4.836e-13
 exactly, for both polarization-off and polarization-on/vector-off. With
 vector diffraction on, the near-field leg differs by 1.3e-2 at
-identical total power — the same unverified out-of-plane attribution
-discussed above applies, and is likewise not relied upon.
+identical total power — the same two-mechanism account given above applies
+in kind, though it has been quantified only on the far-field case.
 
 Suite status at the landing: 26/26 PROPER comparisons,
 6645 pass in the pymacos suite, 412 pass, 0 fail in the mmacos

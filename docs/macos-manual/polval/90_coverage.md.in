@@ -30,12 +30,13 @@ was checked.
 
 ## Open items in the work this document covers
 
-* **The out-of-plane attribution in §3.5 and §3.6 is unverified.** Where the
-  vector run legitimately differs from the scalar one on off-normal trains,
-  the difference is attributed to out-of-plane field content on order-of-
-  magnitude grounds only. Closing it needs a plane-selectable complex-field
-  getter, which does not exist. The gates bound the difference; they do not
-  explain it.
+* ~~The out-of-plane attribution is unverified.~~ **CLOSED** (§3.5). The
+  plane-selectable complex-field getter now exists, the per-plane
+  contributions are measurable, and the difference decomposes into two
+  mechanisms rather than the one originally assumed. What remains
+  unexplained is the @@G36_RESID@@ residual of that decomposition — a shape
+  difference between the scalar field and Ex, consistent with their
+  different seeds, not further verified and not relied upon.
 * **Tranche 1's validity condition is a real restriction, not a formality.**
   It holds for chains whose elements between physical legs are non-polarizing.
   A chain with a coated or reflective surface between legs — an off-axis

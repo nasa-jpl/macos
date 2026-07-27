@@ -853,6 +853,27 @@ propagator carried correctly, so an x-pol-only gate passes VACUOUSLY.
 `mWF=3` planes as Ex/Ey/Ez of ONE wavefront -- no multi-WF / COMPOSE
 concurrently.
 
+**`cfield_plane_get` (2026-07-26) -- reaching the component planes.**
+`cfield_get` only ever returned `iEltToiWF(iElt)`, so in vector mode the
+per-component field was unreachable from the bindings: callers could see
+the summed intensity and never how Ex/Ey/Ez made it.  New sibling
+`cfield_plane_get(OK, RE, IM, N, iElt, iPlane)`: `iPlane=0` is
+`cfield_get` exactly (bit-identical, and that is what the bindings pass by
+default); `iPlane=1..3` are Ex/Ey/Ez and are REFUSED unless `ifVecDif3` --
+in scalar mode plane k is an unrelated wavefront, not a component, and
+handing it back would look plausible and be wrong.  Surfaced as
+`macos.complex_field(srf,'plane',k)` (mex cmd gained an optional 4th arg)
+and `pymacos.complex_field(srf, plane=k)`.
+
+This is what CLOSED the Tranche-1 attribution, and it corrected it: the
+vector/scalar difference on an off-normal train is NOT simply the
+out-of-plane intensity (that guess is off by ~2x).  Two mechanisms --
+(1) the scalar seed `|RayE|` puts ALL the power, including the
+out-of-plane part, into ONE propagating plane while the vector run leaves
+only f=0.9979 in Ex (a near-pure rescale, 1-corr = 4e-8), and (2) Ey/Ez
+diffract to their own pattern.  `Iv ~ f*Is + Iy + Iz` takes 2.56e-3 down
+to 2.90e-4.  Pinned by `tVecChain/test_vector_scalar_difference_decomposition`.
+
 **Still open -- Tranche 2.** Between physical legs the grid field is
 advanced by a scalar phase, exact only when the intervening elements are
 non-polarizing (Obscuring / Reference / FocalPlane).  A COATED or

@@ -104,6 +104,53 @@ way — CCMac is gfortran-only.)
      independent propagation + incoherent sum.  Gates: x-pol reduces to the
      scalar contrast curve at round-off; energy bookkeeping; floor reported
      by component.
+     **STARTED 2026-07-26, NOT LANDED — two design findings, both from a
+     FAILING gate rather than from reasoning, worth having before the next
+     attempt.  WIP parked at `~/dev/MACOS_sandbox/pol_2c_wip/` (moved OFF
+     the MATLAB path deliberately: a half-working `+macos/` function is
+     reachable by users).**
+     - `macos.pupil_propagator(pupilElt,detElt)` WORKS and its contract
+       gate is exact: `p(ones)` is BIT-IDENTICAL to the plain scalar run
+       (intensity→apodize_complex→intensity with `reset_trace=false`;
+       passing the default `true` silently discards the imprint and
+       returns the nominal PSF, which reads as "polarization has no
+       effect" rather than as a bug).
+     - **FINDING 1 — "co-polarized" must be defined against the MEAN
+       OUTPUT state, not the input state.**  A real train rotates
+       polarization geometrically with zero diattenuation and zero
+       retardance; projecting on the input bills that uniform rotation as
+       cross-polarized light.  It is neither an aberration (a perfectly
+       unitary system produces it) nor a floor (you would orient the
+       analyzer to it).  On the stock conductor `Rx_Coro.in` chain that
+       error reports a ~50% cross fraction on a system whose measured
+       diattenuation is 1.2e-15.  Same mean/variation discipline
+       `pol_maps` already enforces.
+     - **FINDING 2 (the blocker) — the Jones pupil CANNOT be used
+       directly as a pupil multiplier.**  `jones_pupil` is built from
+       `RayE`, so it carries the accumulated OPL phase: measured
+       `|mean J11| / median|J11| = 3e-4` at the Rx_Coro pupil, i.e. the
+       phase is fully scrambled across the pupil (many waves of
+       wavefront).  Multiplying `WFElt` by it DOUBLE-COUNTS the
+       wavefront the engine already applied.  Worse, the RayE↔WFElt
+       phase relation is TRAIN-DEPENDENT (the Tranche-1 finding), so
+       there is no fixed conjugation to divide out.
+       *Refuted along the way:* it is NOT a ray-grid vs diffraction-grid
+       mismatch — the masks match exactly (3176/3176, same centroid and
+       extent), so do not spend time there.
+     - **Next attempt should build the multiplier entirely inside
+       `WFElt`**, using the NEW plane getter: per-component pupil fields
+       `complex_field(pupilElt,'plane',k)` divided by the scalar-run
+       `complex_field(pupilElt)`.  All four quantities then share one
+       phase convention and RayE never enters, which sidesteps the
+       train-dependence completely.  That deviates from this section's
+       `pol_contrast_floor(jones, stokes_in, coronagraph_fn)` signature —
+       deliberately, and for the reason above.
+     - Fixture note: `Rx_Coro.in` and `Rx_Coro_noLyot.in` both run at
+       model 128; `Rx_Coro_FPM.in` returns an ALL-ZERO intensity there
+       (it SIGSEGVs at 256 and is only usable at 1024 — pre-existing, see
+       `mmacos/CLAUDE.md`).  So a 2c evidence section either uses the
+       weaker chain at 128 or the driver must split into per-model-size
+       batch invocations.
   4. **Phase 3 polarizer + waveplate** (NOT the VVC): dispatch + surface
      routines modeled on `Reflector`'s s/p projection; keywords/SAVE/API
      per the Phase-1 template.  Gates: crossed-polarizer extinction, QWP
@@ -524,7 +571,7 @@ without a circular analyzer built from polarizer + waveplate.
 > |---|---|
 > | Ladder 1 — energy per leg | vector total == scalar total, 0…2.2e-16 |
 > | Ladder 2 — x-pol ≡ scalar | 4.5e-16 … 6.8e-16 on `Rx_VecChain` (also 45°, circular) |
-> | Ladder 3 — polarized PROPER re-run | scalar + pol-scalar reproduce the committed 4.836e-13 macos↔PROPER residual exactly; vector differs 1.3e-2 from scalar at identical total power (attribution **unverified** — see below) |
+> | Ladder 3 — polarized PROPER re-run | scalar + pol-scalar reproduce the committed 4.836e-13 macos↔PROPER residual exactly; vector differs 1.3e-2 from scalar at identical total power (attribution **closed 2026-07-26** — see below) |
 > | Ladder 4 — chain closure | two-leg mask chain, vector ≡ scalar at round-off; mask throughput identical to 1e-14 |
 > | Ladder 5 — single-hop A/B | vector far-field total 8.9377e-01 → 1.8155e+06 == scalar total (2.03e6 in intensity) |
 > | mmacos full suite | 412 pass, 0 fail (fast 281 / masks 62 / freeform 46 / proper-512 10 / proper-1024 13) |
@@ -536,27 +583,37 @@ without a circular analyzer built from polarizer + waveplate.
 > (`vector_diffraction` NOTES, regenerated), both binding docstrings, and
 > the `macos_f90/CLAUDE.md` Phase-3a section.
 >
-> **UNVERIFIED ATTRIBUTION — carried forward as an open item.**  Where the
-> vector run legitimately differs from the scalar one (2.6e-3 on the
-> Cass-FF single hop, 1.3e-2 on the Coro NF leg), the difference is
-> *believed* to be the off-normal train's out-of-plane content —
-> `\|Ez\|/\|Ex\|` measures ~8.8e-2 at the Cass-FF exit pupil through
-> `ray_field`, the right order — but it has NOT been verified, because
-> there is no plane-selectable complex-field getter and the per-plane
-> contribution to the propagated intensity is therefore not measurable.
-> The gates bound the difference; they do not explain it.  **A
-> plane-selectable `cfield` getter (`complex_field(srf, 'plane', k)`)
-> would close this out and is worth a small slice** — it is also what
-> Phase 2c's co/cross-pol decomposition will want, so it should probably
-> land there.  Marked in `tVecChain` / `test_vec_chain.py` headers.
+> **ATTRIBUTION — CLOSED 2026-07-26** (was carried as an open item).  A
+> plane-selectable getter now exists: `cfield_plane_get` in
+> `macos_api_mod` → `macos.complex_field(srf,'plane',k)` /
+> `pymacos.complex_field(srf, plane=k)`, k=1..3 = Ex/Ey/Ez, k=0 = the
+> element's own wavefront (the historical behaviour, bit-identical).
+> Requesting a component plane with vector diffraction OFF is REFUSED —
+> in scalar mode plane k is an unrelated wavefront, not a component.
+>
+> With it, the vector/scalar difference on the off-normal Cass-FF train
+> is measured rather than guessed, and **the original one-line
+> attribution was half wrong**.  Two mechanisms, both driven by the
+> out-of-plane content: (1) POWER REDISTRIBUTION, dominant — the scalar
+> run seeds from `|RayE|`, so ALL the power including the out-of-plane
+> part propagates in ONE plane, while the vector run leaves only
+> f = 0.997890 in Ex; that is a near-pure rescale (1−corr = 4e-8).
+> (2) Ey/Ez diffract to their own pattern.  So `Iv ≈ f·Is + Iy + Iz`,
+> which drops the difference from 2.5638e-3 to 2.8983e-4.  The naive
+> expectation (difference == out-of-plane intensity, 2.11e-3) is wrong
+> by ~2×.  The 2.9e-4 that remains is a shape difference between the
+> scalar field and Ex, consistent with their different seeds, and is NOT
+> further verified.  Gates: `tVecChain` (3 new) + `test_vec_chain.py`
+> (3 new); report §3.5.
 >
 > **Not done here:** Tranche 2 (§3a.3) is untouched, as scoped.  ~~Nor the
 > validation-report evidence section~~ — **back-filled 2026-07-26** with
 > worklist item 7: Tranche 1's evidence is now §3.1–§3.6 of the `polval/`
 > report (per-leg energy, x-pol≡scalar residual maps, mask throughput,
 > the single-hop A/B including the pre-fix number, and the polarized
-> PROPER cross-check), with the unverified attribution carried into the
-> report's own open-items list.
+> PROPER cross-check).  The attribution that section carried as an open
+> item was CLOSED 2026-07-26 by the plane-selectable field getter — see
+> the Tranche-1 status block above.
 
 **Goal:** promote the near-field propagators (sphere→plane, sphere→sphere,
 plane→plane, and the DFT legs) from scalar-only to vector, propagating each

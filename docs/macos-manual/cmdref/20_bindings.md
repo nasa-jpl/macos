@@ -760,11 +760,27 @@ Multiply WFElt(:,:, iEltToiWF(srf)) by a complex mask. Companion to macos.apodiz
 #### complex_field
 
 - **mmacos:** `cf = macos.complex_field(srf, opts)`
-- **pymacos:** `pymacos.complex_field(srf, reset_trace)`
+- **pymacos:** `pymacos.complex_field(srf, reset_trace, plane)`
 
-WFElt at element SRF (N x N complex double). cf = macos.complex_field(SRF) propagates to SRF and returns the complex wavefront on the diffraction grid.  |cf|^2 matches macos.intensity(SRF) to numerical precision.  Name-value pairs:
+WFElt at element SRF (N x N complex double). cf = macos.complex_field(SRF) propagates to SRF and returns the complex wavefront on the diffraction grid.  |cf|^2 matches macos.intensity(SRF) to numerical precision.  cf = macos.complex_field(SRF, 'plane', K) returns a single Cartesian
 
 <!-- BEGIN NOTES fn-complex-field -->
+`plane` selects a single Cartesian FIELD COMPONENT.  In
+vector-diffraction mode the three wavefront storage planes are
+repurposed as Ex/Ey/Ez of one wavefront, so `plane` = 1, 2, 3 returns
+Ex, Ey, Ez.  `plane` = 0 (the default) returns the element's own
+wavefront and is bit-identical to omitting the option.
+
+This is the only way to see how the three components contribute to a
+propagated intensity — `intensity` sums them.  The planes add in
+INTENSITY, not amplitude:
+`sum_k |complex_field(s, plane=k)|^2 == intensity(s)`.
+
+Requesting `plane` 1..3 with vector diffraction OFF is an ERROR, not a
+silent fallback: in scalar mode plane k is an unrelated wavefront, not
+a field component, and returning it would look plausible and be wrong.
+Enable with `polarization('on')` + `vector_diffraction(true)`.
+*Related:* intensity, vector_diffraction, ray_field.
 <!-- END NOTES fn-complex-field -->
 
 #### compose
@@ -1383,6 +1399,16 @@ ORS -- Optimize Reference Surface.
 <!-- BEGIN NOTES fn-ors -->
 <!-- END NOTES fn-ors -->
 
+#### pol_contrast_floor
+
+- **mmacos:** `out = macos.pol_contrast_floor(jp, propagate, opts)`
+- **pymacos:** *not available*
+
+Polarization-limited contrast floor of a coronagraph. out = macos.pol_contrast_floor(JP, PROPAGATE) decomposes the Jones pupil JP into its co-polarized and cross-polarized parts for a given input state, propagates each INDEPENDENTLY through the coronagraph, and sums the focal-plane intensities INCOHERENTLY. 
+
+<!-- BEGIN NOTES fn-pol-contrast-floor -->
+<!-- END NOTES fn-pol-contrast-floor -->
+
 #### pol_maps
 
 - **mmacos:** `pm = macos.pol_maps(jp)`
@@ -1473,6 +1499,16 @@ the call errors rather than silently degrading.
 *Related:* vector_diffraction, coating, ray_field, jones_pupil;
 CLI POLarized/NOPolarization.
 <!-- END NOTES fn-polarization -->
+
+#### pupil_propagator
+
+- **mmacos:** `p = macos.pupil_propagator(pupil_elt, det_elt)`
+- **pymacos:** *not available*
+
+Engine-backed propagator for pol_contrast_floor. p = macos.pupil_propagator(PUPIL_ELT, DET_ELT) returns a function handle p(E) that imprints the complex pupil multiplier E at element PUPIL_ELT of the currently loaded prescription and returns the intensity map at DET_ELT. 
+
+<!-- BEGIN NOTES fn-pupil-propagator -->
+<!-- END NOTES fn-pupil-propagator -->
 
 #### ray_field
 
