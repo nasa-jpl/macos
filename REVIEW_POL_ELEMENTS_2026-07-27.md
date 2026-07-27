@@ -488,3 +488,44 @@ resolves `src/` as `Path(".").absolute().parent/'src'`, so pytest **must** be
 invoked from `tests/`. From the repo root every test errors on
 `ModuleNotFoundError: No module named 'pymacos'` — 6584 "failures" that are
 entirely the invocation. `external.json`'s command string now says so.
+
+---
+
+## Fable-lane review of the material-axis landing (2026-07-28)
+
+macos `216c56c`/`dc35768`, resources `a3417ce`.  **PASS, no findings.**
+Verified independently: tPolElement re-run 27/27 on this box; the PolElt
+flip diff line-read; polval §6.7 wording flip + dual citation checked.
+
+Highlights worth the record:
+
+* **The Fainman & Shamir attribution upgrades the decision record.**
+  Both constructions are published physics (pass-axis: Appl. Opt. 23,
+  3188 (1984); material-axis: Korger et al. Eq. (5)-(6), decided by
+  their Fig. 2(c) Mueller measurement).  The rejected option was a
+  defensible model, not a slip — which is exactly why the arbitration
+  was worth a packet.  Both citations now live in external.json, the
+  engine header, and §6.7.
+* **The grid-side gate design is right.**  Using the crossed-analyzer
+  null (7.11° apart under the two rules, separable on total intensity
+  alone) avoids importing a component-plane frame question that a
+  component-ratio check would have smuggled in.
+* **The engine-level A/B is the full non-vacuity pattern**: pass-axis
+  engine rebuilt, both new gates fail by the predicted amounts
+  (3.5616°; null/leak swap at cos² = 1.526e-02), and the
+  degenerate-azimuth guard passes on BOTH engines — demonstrated as a
+  vacuity trap, not asserted.
+* **The deliberate DUNITIZE omission + its in-code justification** (a
+  redundant normalization would perturb an already-unit vector by an
+  ULP and break the 17-digit normal-incidence bit-identity capture) is
+  the right call, and commenting WHY is what keeps a future cleanup
+  from "fixing" it.
+* Scope flags accepted: PolElt unreachable from pymacos/GMI (checked,
+  so those suites prove inertness, not coverage — shims remain the
+  deferred item); psiElt-vs-local-normal on a hypothetical CURVED
+  polarizing surface is flagged in the header for whoever first needs
+  one.
+
+The off-normal polarizer convention is now settled, implemented,
+engine-gated, and anchored to the literature.  Worklist item 4 is fully
+CLOSED, including its follow-on.
