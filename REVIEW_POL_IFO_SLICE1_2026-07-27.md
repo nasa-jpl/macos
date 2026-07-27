@@ -160,3 +160,68 @@ clean).
 
 (The Bench `Extinc` policy from finding 1 is now settled and fixed in
 `Bench.m`, not deferred.)
+
+---
+
+## Fable-lane review (2026-07-28) — PASS, with an exact independent check
+
+**The headline numbers are independently CONFIRMED to all printed
+digits.**  A from-scratch textbook Fresnel computation of the actual
+emitted trains (test: external air→Al reflect × three 45° transit
+pairs; ref: two transit pairs × internal glass→Al reflect; n_g = 1.5,
+N_Al = 1.45−7.54i) gives D_diff = 0.0721, ret_diff = 0.0835 rad —
+matching the harness's 7.21e-02 / 8.35e-02 exactly.  (A naive
+one-reflection-per-arm model gives D = 0.103 and the same retardance;
+the D difference is the net extra transit pair on the test side —
+worth knowing when sanity-checking future variants.)  This is the
+engine + jones_pupil + pol_maps + harness composing to the closed-form
+prediction on a seven-surface differential train: the strongest
+verification this slice could have.
+
+**Finding 1 (Bench Extinc) — the fix is right and complete.**
+1. `Extinc=0` IS the correct transparent-glass default.  Optical glass
+   at visible wavelengths has κ ~ 1e-8..1e-7 (a negligible intensity
+   effect over bench path lengths) and a REAL index contributes exactly
+   zero retardance; stamping a fake small κ would inject arbitrary
+   unphysical numbers into every Jones result with no measurement
+   behind them.  Absorbing glass, if ever needed, is a per-design
+   property, not a builder default.  The fix also makes Bench
+   self-consistent with `blank()`/`add_lens`, which always used 0.
+2. Sweep performed: every remaining `extinc = 1e22` stamp in the design
+   layer sits on a Reflector (`add_bs_reflect`, `add_mirror`, the
+   internal-reflect face of `add_bs_reflect_return`, `add_oap`,
+   `add_relay`) — the conductor idiom where it belongs.  No other
+   method carries the leaked idiom.  The scalar-invisibility point is
+   worth its place in the record: scalar tracing ignores Extinc
+   entirely, so this class of error is detectable ONLY under ifPol —
+   one more reason the polarization-honest baseline was worth building
+   before the trades.
+
+**Finding 2 — endorsed, and the diagnostic is the keeper.**  The
+magnitude-residual-with-round-off-phase split (1.3e-3 vs 3e-14) is
+precisely the signature of an upstream REAL-index transit
+(diattenuation without retardance), and reading it that way is what
+turned a "gate tolerance problem" into "use the measured incident
+field."  General rule, now on the record: a single-surface Fresnel
+gate downstream of ANY optic must reference the measured incident
+field, not the launch state.
+
+**The interpretation ("correct for a collimated common-path null") —
+endorsed.**  The means are real (external vs internal reflection +
+unequal transit counts are genuinely different Jones) but common-mode:
+they cost fringe VISIBILITY (~(1−cos 0.0835)/2 ≈ 0.2% modulation, plus
+an amplitude-imbalance term ~D²/2 ≈ 0.3%) and shift the null piston —
+neither is a PSI phase error.  The variation IS the PSI error term and
+sits at round-off because a collimated planar bench gives every ray
+the same 45.000° and the same plane of incidence.  2.3e-6 nm RMS is
+the right answer for this configuration.
+
+**One instruction for slice 2 (BS AOI vs clearance):** score BOTH
+terms — the pupil-variation PSI error (which will stay small while
+collimated) AND the visibility cost of the arm-differential MEANS
+(which is what the AOI sweep actually moves at this bench's
+f-numbers).  A trade scored on variation alone would conclude "AOI
+doesn't matter," which is true only of the term that was already
+negligible.
+
+Slices 2 and 3 may proceed.
