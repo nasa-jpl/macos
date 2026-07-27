@@ -27,7 +27,7 @@ against, and the test that pins it in continuous integration.
 | 3.5 | far-field normalization unified | 1.67e-15 | 0 | `tVecChain/test_far_field_vector_matches_scalar_normalization` |
 | 3.6 | scalar physics undisturbed | 4.836e-13 reproduced exactly | committed residual | pymacos PROPER suite *(external)* |
 | 4.1 | one mirror matches the perfect-conductor closed form | 6.39e-14 (transverse), 5.03e-14 (longitudinal), retardance 1.07e-16 | closed form | `tPolarization/test_odd_mirror_crosspol_pec_analytic` |
-| 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope 1.871, 1.034 of the bound | 2; ≤ 1 | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
+| 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope 1.871, 1.034 × the bound | ρ²; O(sin² AOI) | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
 
 # Coverage and gaps
 
