@@ -239,3 +239,66 @@ O(1).
   * incidental: `complex_field(..., 'reset_trace', false)` returns
     bit-identical planes ~100× faster (0.01 s vs 0.83 s at model 512), so
     reading three component planes costs one propagation, not three.
+
+---
+
+## Fable-lane decision (2026-07-27, appended at landing)
+
+**YES — the standard `+r_p` is restored in BOTH `Reflector` branches.
+Landed by the Fable lane** (this is the convention-arbitration case the
+lane split exists for), with the mechanical tail left for Opus below.
+
+**Independent verification beyond the packet:**
+
+1. **Line-verified the algebra.**  Line 456's `RS` is textbook r_s; the
+   commented 454 is textbook Born&Wolf r_p (ray-following p̂); active 455
+   is its exact negation.  With `prhat = ŝ×r̂` (431) the assembly (592)
+   requires +r_p: PEC at normal incidence then gives `E_out = −E_in`.
+2. **The coated branch's flip propagates EXACTLY.**  Substituting −r at
+   every interface into the Airy recursion `(r₁+r·C)/(1+r₁·r·C)` negates
+   the output while the denominator's double sign cancels — final coated
+   `RP` was exactly −(standard multilayer r_p), |RP| unchanged.  So the
+   coated fix is the same clean sign restoration (innermost `RP` +
+   per-layer `RP1`), and the magnitude/ratio fold gate could never see it.
+3. **Internal-inconsistency evidence:** the same file's (dead)
+   transmittance code (`TP1`, ~568) is ALREADY in the standard
+   convention — the file disagreed with itself; "dcr's original" is the
+   self-consistent version.
+4. **Probe reproduced bit-for-bit** pre-fix (1.0163 / 7.0612e-07) and
+   post-fix (2.0724e-04 / 7.0612e-07 bit-identical).  Post-fix bonus the
+   scratch run couldn't show: the radial profile now GROWS as ρ²
+   (1.63e-3 → 6.2e-3 → 1.38e-2 → 2.39e-2 at ρ = 32/64/96/128 px; ratios
+   3.8/8.5/14.7 vs ρ² = 4/9/16) — slope-driven AOI physics restored.
+
+**One packet conclusion is CORRECTED — the suite prediction §5.**  The
+scratch patch touched only the UNCOATED branch, so the Al-coated
+secondary stayed flipped: the "two bases now agree to 8%" numbers
+describe a HALF-BROKEN system (one fixed mirror + one flipped), not the
+fix.  With BOTH branches fixed, the local-sp artifact is real and large
+on the correct engine: var_rms ret = 0.8913 (sp) vs 3.6067e-3 (dp) —
+ratio **247×**, at the top of the documented 10–250× range, with the sp
+mean retardance parking at π/2 (the coordinate artifact in person).
+**The two basis-artifact assertions are therefore KEPT UNCHANGED** and
+pass non-vacuously; the only test change needed is the fold gate's
+analytic `RPa`/`RP2`, transcribed to the textbook form so the phase
+comparison stops being circular in this sign (packet §"blind" item 4).
+
+**Refractor is deliberately untouched** (confirming the packet's scope
+call): its transmitted output contains only r·r products, which are
+invariant under the consistent flip, and its `TP1` is already standard.
+Its internal `RP` convention should still be normalized in the audit for
+consistency.
+
+**Left for Opus (one session-slice each, per the discipline rules):**
+1. Odd-mirror ρ² gate (the probe's radial table is the template; a
+   fixture with 1 or 3 mirrors, assert cross-pol grows as ρ² and stays
+   under O(sin²β)).
+2. Refractor audit (normalize its internal RP/RP1 to standard; verify
+   transmitted output bit-identical, which the algebra above predicts).
+3. polval regen + re-run PROPER/GMI/masks/freeform (two-mirror numbers
+   should be unchanged — that is itself a check; GMI is ifPol-off and
+   must be bit-identical).
+4. §2c unblocks: proceed with the analyzer-at-detector design (endorsed
+   — the linearity measurement at 4e-16 justifies commuting a uniform
+   analyzer past the chain, and it retires both pupil-multiplier
+   sketches; amend §2c's text accordingly as part of that landing).

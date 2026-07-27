@@ -745,6 +745,30 @@ longitudinal component along the outgoing ray.  Full analysis, suite
 impact and the open decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
 Reproducer: `MACOS_resources/mmacos/tools/pol_sp_sign_probe/`.
 
+**Reflected-p̂ / r_p sign fix (2026-07-27).**  `Reflector` assembles
+`Eout` on `prhat = shat x rhat` (p̂ follows the OUTGOING ray) but the
+2022 bulk import ("fixed by jzlou") negated the standard Born&Wolf r_p
+in BOTH branches (uncoated `RP`; coated innermost `RP` + per-layer
+`RP1` -- the Airy recursion propagates the flip exactly, |RP|
+unchanged).  Effect: the transverse field was REFLECTED ABOUT the local
+p̂ instead of negated -- an involution (cancels EXACTLY on mirror
+pairs) and unitary, so every two-mirror/unitarity/ratio gate passed
+while a single near-normal mirror turned x-pol into Py/Px ≈ 1 (physical
+bound O(sin²β) ≈ 1e-3).  Post-fix the single-mirror cross-pol is 2.07e-4
+in power AND grows as ρ² (slope-driven, as physics requires; pre-fix it
+was FLAT in radius).  Two-mirror results bit-identical -- all published
+2a/2b/polval two-mirror evidence survives.  The commented `! dcr's
+original` line was correct all along; the same file's (dead)
+transmittance code was already in the standard convention.  Diagnosis:
+Opus, `REVIEW_POL_SP_SIGN_2026-07-27.md` + reproducer
+`mmacos/tools/pol_sp_sign_probe/`.  Refractor's copy of the coated
+recursion is deliberately UNTOUCHED (its transmitted output contains
+only r·r products -- invariant under the consistent flip); Refractor
+audit + odd-mirror ρ² gate = scoped follow-on.  Gate-blindness lesson:
+an "analytic" reference transcribed from the engine's own expression is
+circular in exactly the sign it should check -- write gates' analytics
+from the textbook form.
+
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
 source-frame pair, UNIFORM over the grid.  Point sources use a PER-RAY
@@ -752,9 +776,14 @@ frame: `yray = unit(RayDir x xGrid)`, `xray = yray x RayDir` (reduces to
 the global frame on the chief).  `S` = flux normalization (~1/sqrt(nRays))
 -- a common real scalar carried by the Jones pupil.  ColSource re-
 orthogonalizes the Rx frame as `z=+-Chf; y=unit(z x x); x=y x z`.  The
-perfect-conductor mirror idiom (`IndRef=1, Extinc=1e22`) gives RP=RS=-1
-+O(1e-22): polarization-neutral, which makes any stock conductor Rx a
-unitarity gate for free.
+perfect-conductor mirror idiom (`IndRef=1, Extinc=1e22`) gives RS=-1,
+RP=+1 +O(1e-22) in the engine's ray-following basis (prhat = shat x
+rhat): polarization-neutral (E_out = -E_in at normal incidence), which
+makes any stock conductor Rx a unitarity gate for free.  **RP=RS=-1 at
+normal incidence is the signature of the 2022-import sign DEFECT**
+(elemsub.F "fixed by jzlou" negated the standard r_p; fixed 2026-07-27,
+see the s/p sign section below) -- neutral only in a fixed-transverse
+basis, which is NOT the basis the assembly uses.
 
 **Phase-2 binding layer** (mmacos `+macos/jones_pupil.m` + `pol_maps.m`,
 pymacos `macos.py` same names): two-trace Jones pupil (double-pole default

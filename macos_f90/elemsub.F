@@ -451,8 +451,22 @@ C  Polarization calcs
 	  ccfa=ABS(cNdi) ! = cos(theta1), -jzlou
 
 	  ! RP=Reflectance in P pol, RS=Reflectance in S pol, -jzlou
-	  !RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
-	  RP=(NaCmplx*ccfb-NbCmplx*ccfa)/(NbCmplx*ccfa+NaCmplx*ccfb) ! fixed by jzlou
+!-->      standard Born&Wolf r_p (ray-following p-hat convention).  The
+!         assembly below uses prhat = shat x rhat (p-hat follows the
+!         OUTGOING ray), which REQUIRES this sign: at normal incidence a
+!         perfect conductor must give E_out = -E_in, i.e. RS=-1, RP=+1
+!         in this basis.  The negated form that replaced it ("fixed by
+!         jzlou", 2022 import) made RP=RS at normal incidence -- the
+!         signature of the fixed-transverse-basis convention -- which
+!         with a ray-following p-hat reflects the transverse field about
+!         the local p-hat instead of negating it.  That error is an
+!         involution (cancels exactly on mirror PAIRS) and unitary, so
+!         every two-mirror/unitarity gate passed; a SINGLE near-normal
+!         mirror turned x-pol into Py/Px ~ 1 (physical bound O(sin^2
+!         beta) ~ 1e-3).  See REVIEW_POL_SP_SIGN_2026-07-27.md.
+	  RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
+	  !RP=(NaCmplx*ccfb-NbCmplx*ccfa)/(NbCmplx*ccfa+NaCmplx*ccfb) ! fixed by jzlou -- WRONG, see above
+!<--
 	  RS=(NaCmplx*ccfa-NbCmplx*ccfb)/(NaCmplx*ccfa+NbCmplx*ccfb)
 	END IF ! ifPol & nCoat=0
 
@@ -510,8 +524,19 @@ C  Polarization calcs
           ! reflectance eqn
           NaCmplx=DCMPLX(nb_arr(nCoat),(-kxb_arr(nCoat)))
           NbCmplx=DCMPLX(nb_arr(nCoat+1),(-kxb_arr(nCoat+1)))
-          RP=(NaCmplx*ccfb_arr(nCoat+1)-NbCmplx*ccfb_arr(nCoat))
+!-->      standard r_p, matching the uncoated branch (see comment there).
+!         This innermost interface and the per-layer RP1 below carried
+!         the negated r_p; the Airy recursion (RP1+RP*C1)/(1+RP1*RP*C1)
+!         propagates that flip EXACTLY (the denominator's double sign
+!         cancels), so the final coated RP was exactly -(standard
+!         multilayer r_p) with |RP| unchanged -- why the ratio-based
+!         fold gate never saw it.  Refractor's copy of this recursion is
+!         deliberately NOT changed here: its transmitted output contains
+!         only r*r products and is invariant under the consistent flip;
+!         it is covered by the scoped audit (REVIEW_POL_SP_SIGN).
+          RP=(NbCmplx*ccfb_arr(nCoat)-NaCmplx*ccfb_arr(nCoat+1))
      &       /(NbCmplx*ccfb_arr(nCoat)+NaCmplx*ccfb_arr(nCoat+1))
+!<--
           RS=(NaCmplx*ccfb_arr(nCoat)-NbCmplx*ccfb_arr(nCoat+1))
      &       /(NaCmplx*ccfb_arr(nCoat)+NbCmplx*ccfb_arr(nCoat+1))
 
@@ -547,8 +572,10 @@ C  Polarization calcs
             C1=CDEXP(-C2)
 
             ! Reflectance
-            RP1=(NaCmplx*ccfb_arr(ic)-NbCmplx*ccfb_arr(ic-1))
+!-->        standard r_p per interface (see innermost-RP comment)
+            RP1=(NbCmplx*ccfb_arr(ic-1)-NaCmplx*ccfb_arr(ic))
      &          /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
+!<--
             !RP1=-RP1 ! testing
 
 C       print*,'layer: NaCmplx,NbCmplx,ccfb_arr(ic),ccfb_arr(ic-1)=',

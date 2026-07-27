@@ -104,7 +104,18 @@ way — CCMac is gfortran-only.)
      independent propagation + incoherent sum.  Gates: x-pol reduces to the
      scalar contrast curve at round-off; energy bookkeeping; floor reported
      by component.
-     **BLOCKED 2026-07-27 on an ENGINE DEFECT, not on the 2c design.**
+     **UNBLOCKED 2026-07-27 pm — the s/p sign fix is LANDED (Fable lane):
+     standard `+r_p` restored in BOTH `Reflector` branches (uncoated RP;
+     coated innermost RP + per-layer RP1 — the Airy recursion propagates
+     the flip exactly, so the coated fix is the same clean restoration).
+     Decision + verification + the one packet correction (the scratch
+     suite prediction came from a HALF-patched engine; the local-sp
+     artifact assertions are KEPT — measured 247× on the corrected
+     engine) are appended to `REVIEW_POL_SP_SIGN_2026-07-27.md`.
+     Remaining tail (Opus, one slice each): odd-mirror ρ² gate, Refractor
+     audit, polval regen + PROPER/GMI re-runs.  2c may proceed on the
+     analyzer-at-detector design below.**
+     ~~BLOCKED 2026-07-27 on an ENGINE DEFECT, not on the 2c design.~~
      Second attempt (2026-07-27) got as far as validating the machinery and
      then found that the pupil polarization state itself is untrustworthy on
      any train with an ODD number of mirrors: `Reflector` assembles the
