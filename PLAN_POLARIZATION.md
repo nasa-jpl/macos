@@ -79,10 +79,27 @@ way — CCMac is gfortran-only.)
      seed-once-then-update; `PFFPROP`→`FFPROP`×3 unification) — revised
      from "written here": the spec is now detailed enough that a Fable
      line-review of the finished diff is cheaper than Fable authorship.
-  2. **Phase 2b low-order expansion** (the optional item): Zernike-basis
-     fits of the Dvec/retvec maps over the mask.  Gate: recovers synthetic
-     low-order inputs exactly; regression vs the two-mirror literature
-     patterns.
+  2. ~~**Phase 2b low-order expansion**~~ — **DONE 2026-07-26.**
+     `macos.pol_zernike` / `pymacos.pol_zernike` (pure binding-layer,
+     no engine change) + 3 gates each side + report §2.5 + cmdref
+     NOTES + manual §5.  Result: the Al Cassegrain reduces to pure
+     **polarization astigmatism** exactly as the literature form
+     predicts — astig0 in s1, astig45 in s2, equal to 1.9e-7
+     (discretization, verified by grid scaling), every forbidden term
+     (piston/tilt/defocus/coma/trefoil/spherical AND the whole
+     circular component) at ~1e-15 of it, the rho^4 companion
+     sub-dominant at 2.6e-3, and the rho^2 radial law's extrapolated
+     on-axis diattenuation vanishing to 1e-4 — which nothing in the
+     fit arranges.  Ladder rung 5 moves to PARTLY DONE: form matches,
+     a numeric regression against a specific published system still
+     wants that system set up here.
+     Two side-findings, both recorded: (a) the shared ANSI evaluator
+     now lives in `+macos/private/ansi_zernike_eval.m` so influence-
+     basis and aberration-report mode indices cannot drift; (b) a
+     **units trap** in `tJonesPupil` — `coating` takes BaseUnits and
+     the class's two fixtures differ (`Rx_Cass_FarField`=m, Bench fold
+     rig=mm), so one shared Al thickness silently meant 200 um on the
+     Cassegrain.  Split; the bindings now agree to 11 digits.
   3. **Phase 2c contrast floor** (§2c): co/cross-pol decomposition +
      independent propagation + incoherent sum.  Gates: x-pol reduces to the
      scalar contrast curve at round-off; energy bookkeeping; floor reported

@@ -1410,6 +1410,52 @@ make artifact-free.
 *Related:* jones_pupil.
 <!-- END NOTES fn-pol-maps -->
 
+#### pol_zernike
+
+- **mmacos:** `pz = macos.pol_zernike(pm, opts)`
+- **pymacos:** `pymacos.pol_zernike(pm, modes, center, radius, orthonormalize)`
+
+Low-order Zernike expansion of polarization-aberration maps. pz = macos.pol_zernike(PM) expands the diattenuation and retardance maps in PM (the struct returned by macos.pol_maps) onto a Zernike basis over the unvignetted pupil, giving the standard polarization-aberration terms -- piston, tilt, defocus, astigmatism and up -- in each Pauli component.
+
+<!-- BEGIN NOTES fn-pol-zernike -->
+Turns the maps from `pol_maps` into the aberration terms the
+polarization-aberration literature is written in, so a MACOS result
+can be compared term-by-term instead of map-shape by map-shape.
+
+Mode indices are the MACOS ANSI 1-based numbers you write in
+`MonZernModes=` (1 piston, 2 tilt-y, 3 tilt-x, 4 astig45, 5 defocus,
+6 astig0, 13 spherical, ...) -- the same convention as
+`zernike_grid_basis`, deliberately, and the two share one evaluator
+so they cannot drift apart.  Default `modes` is 1..15.
+
+The fit is LEAST SQUARES, not a projection: circular Zernikes are not
+orthogonal over an obscured (annular) pupil, so a projection would
+cross-talk between terms.  `.cond` reports the conditioning over the
+actual mask.  `orthonormalize=true` Gram-Schmidts the basis over that
+mask first -- coefficients then become mutually independent but are no
+longer standard Zernike coefficients, so use it for energy bookkeeping
+and NOT for literature comparison.
+
+Mode 1 (piston) is the pupil MEAN; everything else is variation about
+it.  Keep them apart -- a uniform diattenuation or retardance is a
+state change (after folds it also absorbs the system's geometric
+rotation), not an aberration, and only the variation drives a
+contrast floor or a PSI systematic.
+
+Expected answer for an on-axis rotationally symmetric two-mirror
+system: POLARIZATION ASTIGMATISM and nothing else -- astig0 in the
+s1 component, astig45 in s2, equal magnitude, no circular (s3)
+content, no defocus.  If you get piston, tilt, coma or a circular
+term above round-off on such a system, suspect the reference frame
+before the optics.
+
+Retardance caveat: points flagged `pm.ambiguous` (retardance within
+0.2 rad of pi, where the branch is unresolved) are EXCLUDED from the
+retardance fits; compare `.npts_ret` against `.npts` before reading a
+retardance expansion.
+*Related:* pol_maps, jones_pupil, zernike_grid_basis.
+<!-- END NOTES fn-pol-zernike -->
+
 #### polarization
 
 - **mmacos:** `out = macos.polarization(state, opts)`

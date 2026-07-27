@@ -102,8 +102,8 @@ traces is the signature being tested.
 
 | Quantity | Measured | Truth |
 |---|---|---|
-| azimuth-lock residual, max | 2.62e-13 rad | 0 |
-| max circular diattenuation component | 3.86e-16 | 0 |
+| azimuth-lock residual, max | 2.66e-13 rad | 0 |
+| max circular diattenuation component | 4.43e-16 | 0 |
 | D(outer ring) / D(inner ring) | 4.12 | > 1, grows with AOI |
 
 Reported separately, per the convention stated in the frontmatter:
@@ -137,7 +137,7 @@ the physics — which is why the default basis is double-pole and why
 
 | Quantity | Measured | Expected |
 |---|---|---|
-| D basis-invariance residual | 5.99e-16 | 0 (singular-value invariant) |
+| D basis-invariance residual | 6.43e-16 | 0 (singular-value invariant) |
 | retardance variation, double-pole | 3.607e-03 rad | the physics |
 | retardance variation, local s/p | 8.913e-01 rad | physics + artifact |
 | artifact inflation factor | 247.1× | ≫ 1 |
@@ -146,11 +146,87 @@ The left and centre panels are the argument in one picture: the double-pole
 retardance is a smooth radial map at the 3.607e-03 rad level, while the
 same system in the local s/p basis shows a full-scale azimuthal pattern
 spanning most of [0, π]. The right panel confirms that diattenuation, being a
-singular-value invariant, is unmoved at 5.99e-16.
+singular-value invariant, is unmoved at 6.43e-16.
 
 **Pinned by** `tJonesPupil/test_basis_invariance_and_sp_artifact`.
 
-## 2.5 Decomposition algebra
+## 2.5 Low-order expansion — the two-mirror literature form
+
+**Claim.** Expanded onto a Zernike basis, an on-axis rotationally symmetric
+two-mirror system reduces to **polarization astigmatism** and nothing else.
+
+This is the gate that makes MACOS results comparable with the published
+polarization-aberration literature, which is written in aberration terms
+rather than as maps. `macos.pol_zernike` performs the expansion (a
+least-squares fit — on an obscured pupil circular Zernikes are not
+orthogonal, so a projection would cross-talk).
+
+The prediction from standard theory is sharp. Diattenuation at a metal
+mirror grows as the square of the angle of incidence, the angle of incidence
+grows linearly with pupil radius, and the axis is locked to the pupil
+azimuth. So the maps go as ρ²·cos2θ and ρ²·sin2θ — which in the Pauli
+representation is *exactly* astigmatism: `astig0` in s₁, `astig45` in s₂,
+equal magnitude, with no circular content and no defocus.
+
+![Low-order expansion of the diattenuation maps: coefficient bar chart on linear and log scales, and the measured map beside its Zernike reconstruction and residual.](media/polval_zernike.png)
+
+| Quantity | Measured | Truth from theory |
+|---|---|---|
+| astig0 coefficient, s₁ | -1.7294e-03 | — |
+| astig45 coefficient, s₂ | -1.7294e-03 | equal to astig0 |
+| astig pair mismatch | 1.89e-07 | 0 |
+| retardance astig0, s₁ | 8.9982e-03 rad | — |
+| largest **other** linear coefficient | 8.64e-15 | 0 |
+| largest **circular** (s₃) coefficient | 8.64e-16 | 0 |
+| ρ⁴ astigmatism companion | 2.60e-03 | present, sub-dominant |
+
+Every term the theory forbids — piston, tilt, defocus, coma, trefoil,
+spherical, and the entire circular component — sits at 8.64e-15 of the
+astigmatic term, which is round-off. The one additional term theory *does*
+allow, the ρ⁴ companion arising because the angle of incidence is not
+exactly linear in pupil radius across a real conic pair, is present at
+2.60e-03 — sub-dominant, as it should be.
+
+**The radial law, checked independently.** The diattenuation *magnitude* map
+is rotationally symmetric to 1.04e-07, so it expands into piston and
+defocus alone — which is precisely what a ρ² profile looks like in a Zernike
+basis. Extrapolating that fit to the centre of the pupil gives
+3.21e-05 of the edge value. That is a real prediction being met: at
+normal incidence there is no diattenuation, the pupil centre is obscured so
+no data constrains it, and nothing in the fit was told to arrange it.
+
+Modes 1–15 leave 2.97e-10 of the linear maps' variance uncaptured —
+a residual RMS of 1.80e-05 relative to the astigmatic term
+(condition number 1.357 over this annulus). That remainder is real
+higher-order content, visible as a smooth pattern in the residual panel of
+the figure, not noise: worth stating, because a fit that captured everything
+would more likely mean the basis was fitting itself than that the physics
+had exactly 15 terms.
+
+**Scope of the comparison.** This is a match against the *analytic form*
+predicted by the literature — the 2θ azimuthal structure, the quadratic
+radial law, the vanishing circular component. It is **not** a numeric
+regression against a specific published two-mirror system; no such system is
+set up here, and rung 5 of the validation ladder stays partly open for that
+reason. What the expansion buys is that such a comparison is now a
+term-by-term exercise rather than a map-shape argument.
+
+**Pinned by** `tJonesPupil/test_pol_zernike_two_mirror_form` and
+`test_pol_zernike_synthetic_recovery` (mmacos), with the same two gates
+mirrored in `test_jones_pupil.py` (pymacos). The synthetic gate builds the
+maps *from* known coefficients on an annulus and requires them back exactly,
+which is what pins the fit itself rather than the physics.
+
+*Sampling note.* The astigmatic pair matches to 1.89e-07 rather
+than to round-off. That residual is pupil discretization, not physics:
+measured 1.9e-7 at model size 128 and 5.8e-8 at 256, identical for
+diattenuation and for retardance. The related non-symmetric term in the
+magnitude map is quadrafoil-**x** (cos4θ) while quadrafoil-**y** (sin4θ)
+stays at 1e-17 — a square pixel grid is four-fold symmetric about its own
+axes, and physics on a rotationally symmetric system has no way to prefer
+them.
+
+## 2.6 Decomposition algebra
 
 `macos.pol_maps` is pure MATLAB/NumPy and is gated independently of the
 engine against a synthetic diattenuator-times-retarder product, whose

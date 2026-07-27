@@ -803,8 +803,10 @@ models three effects the scalar trace ignores:
 
 - **Vector diffraction.** With polarization on, the diffraction
   commands can propagate the three field components independently
-  (VECtor/SCAlar, Section 6). Note the current scope limit described
-  there: only the far-field (Fraunhofer) leg is vector-capable.
+  (VECtor/SCAlar, Section 6). Vector diffraction covers every
+  propagation leg, so a multi-leg chain preserves the vector field;
+  see Section 6 for the one remaining limitation, which concerns
+  coated or reflecting surfaces placed *between* two propagation legs.
 
 Conventions, fixed throughout the engine: the absorbing refractive
 index is N = n − iκ with κ > 0 meaning loss, under the time-harmonic
@@ -823,8 +825,17 @@ assembles the 2×2 Jones matrix at every pupil point from two traces
 with orthogonal source states, and `pol_maps` decomposes it into
 diattenuation and retardance maps (with the pupil mean — a state
 change — separated from the spatially varying part that drives error
-budgets). These functions and their conventions, including the choice
-of pupil reference basis (double-pole by default), are documented in
-the MACOS Command Reference, Part II. The interactive CLI exposes the
-underlying trace and coating machinery; the Jones-pupil analysis layer
-is binding-only.
+budgets). `pol_zernike` then expands those maps onto a Zernike basis,
+giving the standard polarization-aberration terms — piston, tilt,
+defocus, astigmatism and up — so that a MACOS result can be compared
+with the published literature term by term rather than by map shape.
+For an on-axis rotationally symmetric two-mirror system the expansion
+reduces, as the theory requires, to pure *polarization astigmatism*:
+diattenuation and retardance grow as the square of the pupil radius
+with an axis locked to the pupil azimuth, and every other term —
+including the entire circular component — sits at round-off. These
+functions and their conventions, including the choice of pupil
+reference basis (double-pole by default), are documented in the MACOS
+Command Reference, Part II. The interactive CLI exposes the underlying
+trace and coating machinery; the Jones-pupil analysis layer is
+binding-only.

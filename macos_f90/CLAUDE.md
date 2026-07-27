@@ -735,6 +735,22 @@ asserted in tests as the documented artifact).  Gates: `tJonesPupil`
 (mmacos, incl. the Bench fold Fresnel gate) + `test_jones_pupil.py`
 (pymacos, ifx-linked = the standing ifx smoke).
 
+**Phase 2b low-order expansion** (`pol_zernike`, 2026-07-26, binding-side
+only -- no engine change).  Expands the Dvec/retvec maps onto ANSI
+Zernikes so results are comparable with the polarization-aberration
+literature term-by-term.  The engine-relevant fact: an on-axis
+rotationally symmetric two-mirror system MUST reduce to pure
+**polarization astigmatism** -- astig0 in Pauli s1, astig45 in s2, equal
+magnitude, no circular component, no defocus, and a rho^2 radial law
+whose on-axis extrapolation vanishes (measured: forbidden terms at 1e-15
+of the astigmatic term, D(rho=0)/D(rho=1) ~ 1e-4).  This is now the
+sharpest cheap check that the coating/s-p machinery and the pupil
+reference frame are both right: a broken frame breaks the mode pattern,
+not just the map.  Residual asymmetries are DISCRETIZATION, verified by
+scaling (astig-pair mismatch 1.9e-7 at model 128 -> 5.8e-8 at 256; the
+symmetry-breaking magnitude term is quadrafoil-X, aligned with the pixel
+grid's own axes, while quadrafoil-Y stays at 1e-17).
+
 ## Phase 3a Tranche 1 -- vector propagation across the whole chain
 
 All in `propsub.F` (`CPROPAGATE` + two new module helpers).  Vector mode

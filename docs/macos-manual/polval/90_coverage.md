@@ -15,9 +15,11 @@ against, and the test that pins it in continuous integration.
 | 1.3 | polarization-off is a no-op | 6/6, bit-identical (vs-ref = 0.000e+00) | bit-identical | GMI regression *(external)* |
 | 2.1 | lossless Jones pupil is unitary | D 2.53e-15, δ 2.46e-15 rad | 0 | `tJonesPupil/test_unitarity_gate` |
 | 2.2 | per-ray coefficients match Fresnel | 1.20e-14 (mag), 3.18e-14 rad (phase) | closed form | `tJonesPupil/test_fold_fresnel_analytic` |
-| 2.3 | 2θ symmetry on a symmetric system | azimuth lock 2.62e-13 rad | 0 | `tJonesPupil/test_2theta_symmetry` |
-| 2.4 | D basis-invariant; s/p retardance is artifact | 5.99e-16; 247.1× inflation | 0; ≫1 | `tJonesPupil/test_basis_invariance_and_sp_artifact` |
-| 2.5 | decomposition algebra exact | synthetic recovery to 1e-12 | exact | `tJonesPupil/test_pol_maps_synthetic_identity` |
+| 2.3 | 2θ symmetry on a symmetric system | azimuth lock 2.66e-13 rad | 0 | `tJonesPupil/test_2theta_symmetry` |
+| 2.4 | D basis-invariant; s/p retardance is artifact | 6.43e-16; 247.1× inflation | 0; ≫1 | `tJonesPupil/test_basis_invariance_and_sp_artifact` |
+| 2.5 | two-mirror reduces to polarization astigmatism | other terms 8.64e-15, circular 8.64e-16 | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
+| 2.5 | on-axis diattenuation extrapolates to zero | 3.21e-05 | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
+| 2.6 | decomposition algebra exact | synthetic recovery to 1e-12 | exact | `tJonesPupil/test_pol_maps_synthetic_identity` |
 | 3.1 | polarized-scalar ≡ scalar | bitwise 1 | true | `tVecChain/test_polarized_scalar_is_bit_identical` |
 | 3.2 | vector ≡ scalar, every leg and state | 6.42e-16 worst case | 0 | `tVecChain/test_vector_equals_scalar_every_state` |
 | 3.3 | energy conserved per leg | 0.00e+00, 1.23e-16 | 0 | `tVecChain/test_energy_conserved_per_leg` |
@@ -65,7 +67,6 @@ outstanding work, not a disclaimer.
 
 | Phase | Deliverable | Evidence it will add |
 |---|---|---|
-| 2b (optional) | low-order expansion of the diattenuation/retardance maps | recovery of synthetic low-order inputs; regression against published two-mirror patterns |
 | 2c | coronagraph contrast floor | co/cross-polarized decomposition; x-polarized reduces to the scalar contrast curve at round-off; floor broken out by component |
 | 2d | interferometer polarization metrology | visibility budget predicted vs simulated; phase-shifting systematic vs input state; the angle-of-incidence trade |
 | 3 | polarizer, waveplate, vector vortex | crossed-polarizer extinction; quarter-wave linear→circular Stokes check; vortex null depth vs retardance error against the analytic curve |
@@ -85,8 +86,13 @@ effort and increasing independence:
    *measures* its retardance with the phase-shifting pipeline, then compares
    against both the Fresnel analytic and the Jones-pupil decomposition —
    three independent paths to one number, entirely in-house.
-5. published two-mirror polarization-aberration results — **not done**; needs
-   the 2b low-order expansion to make the comparison direct.
+5. published two-mirror polarization-aberration results — **partly done**
+   (§2.5). The low-order expansion exists and the measured system matches
+   the *analytic form* the literature predicts: 2θ azimuthal structure,
+   quadratic radial law, no circular component, everything else at
+   round-off. What is still missing is a numeric regression against a
+   specific published system, which needs that system set up here rather
+   than more machinery.
 6. cross-check against a commercial polarization-ray-trace code — **not
    done**. This is the only rung that satisfies an outside reviewer on its
    own, and it depends on license access rather than on effort here.

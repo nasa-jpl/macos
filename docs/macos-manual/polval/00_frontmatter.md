@@ -23,13 +23,13 @@ see *Coverage and gaps* at the end.
 
 | | |
 |---|---|
-| Generated | 2026-07-26 16:01:25 |
-| Engine (`macos`) | `d85d281` on `pol-core` |
-| Bindings (`MACOS_resources`) | `11cf054` on `pol-core` |
+| Generated | 2026-07-26 16:58:55 |
+| Engine (`macos`) | `b19e7a6` on `pol-core` |
+| Bindings (`MACOS_resources`) | `3c9a42b` on `pol-core` |
 | MATLAB | R2026a |
 | Model size | 128 |
 | Host | red-river |
-| Figure / number consistency | consistent (6 figures, all older than numbers.json) |
+| Figure / number consistency | consistent (7 figures, all older than numbers.json) |
 
 ## How this document is produced
 

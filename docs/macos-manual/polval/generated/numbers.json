@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-26 16:01:25",
-    "engine_sha": "d85d281",
+    "generated": "2026-07-26 16:58:55",
+    "engine_sha": "b19e7a6",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "11cf054",
+    "resources_sha": "3c9a42b",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
@@ -181,23 +181,23 @@
       "source": "driver"
     },
     "G23_AZ_RESID": {
-      "value": 2.62234678416462E-13,
-      "text": "2.62e-13",
+      "value": 2.6556534749033744E-13,
+      "text": "2.66e-13",
       "units": "rad",
       "gate": "azimuth-lock residual of the diattenuation axis",
       "test": "tJonesPupil/test_2theta_symmetry",
       "source": "driver"
     },
     "G23_CIRC": {
-      "value": 3.85944623707347E-16,
-      "text": "3.86e-16",
+      "value": 4.4250457372927155E-16,
+      "text": "4.43e-16",
       "units": "",
       "gate": "max circular diattenuation component",
       "test": "tJonesPupil/test_2theta_symmetry",
       "source": "driver"
     },
     "G23_RING_RATIO": {
-      "value": 4.11682128136415,
+      "value": 4.1168212811161089,
       "text": "4.12",
       "units": "x",
       "gate": "D(outer ring) / D(inner ring)",
@@ -205,7 +205,7 @@
       "source": "driver"
     },
     "G23_DMEAN": {
-      "value": 0.0022584333844363276,
+      "value": 0.0022584334700127581,
       "text": "2.258e-03",
       "units": "",
       "gate": "pupil-mean diattenuation, Al Cass",
@@ -213,23 +213,119 @@
       "source": "driver"
     },
     "G23_DVAR": {
-      "value": 0.0011397910669975718,
+      "value": 0.0011397911101103538,
       "text": "1.140e-03",
       "units": "",
       "gate": "pupil-VARIATION (RMS) diattenuation, Al Cass",
       "test": "this driver",
       "source": "driver"
     },
+    "G25_D_ASTIG0": {
+      "value": -0.0017294275161875449,
+      "text": "-1.7294e-03",
+      "units": "",
+      "gate": "diattenuation astig0 coefficient (Pauli s1)",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_D_ASTIG45": {
+      "value": -0.0017294278422448294,
+      "text": "-1.7294e-03",
+      "units": "",
+      "gate": "diattenuation astig45 coefficient (Pauli s2)",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_PAIR_RESID": {
+      "value": 1.8853480785913244E-7,
+      "text": "1.89e-07",
+      "units": "relative",
+      "gate": "astig0/astig45 magnitude mismatch (pupil discretization)",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_RET_ASTIG0": {
+      "value": 0.0089982401777978921,
+      "text": "8.9982e-03",
+      "units": "rad",
+      "gate": "retardance astig0 coefficient (Pauli s1)",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_OTHER": {
+      "value": 8.6380210367171929E-15,
+      "text": "8.64e-15",
+      "units": "",
+      "gate": "largest non-astigmatic linear coefficient, relative",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_CIRC": {
+      "value": 8.6371381029142444E-16,
+      "text": "8.64e-16",
+      "units": "",
+      "gate": "largest circular (s3) coefficient, relative",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_RHO4": {
+      "value": 0.0026011014091426956,
+      "text": "2.60e-03",
+      "units": "",
+      "gate": "rho^4 astigmatism companion, relative to the primary term",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_RADSYM": {
+      "value": 1.043642287248507E-7,
+      "text": "1.04e-07",
+      "units": "",
+      "gate": "largest non-rotationally-symmetric term in |D|, relative",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_DZERO": {
+      "value": 3.2110265242433061E-5,
+      "text": "3.21e-05",
+      "units": "relative",
+      "gate": "extrapolated on-axis diattenuation (physics requires 0)",
+      "test": "tJonesPupil/test_pol_zernike_two_mirror_form",
+      "source": "driver"
+    },
+    "G25_FIT_MISS": {
+      "value": 2.9722380112673363E-10,
+      "text": "2.97e-10",
+      "units": "",
+      "gate": "fraction of the linear Dvec maps NOT captured by modes 1-15",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G25_RESID_REL": {
+      "value": 1.7968121446066435E-5,
+      "text": "1.80e-05",
+      "units": "",
+      "gate": "fit residual RMS relative to the astigmatic term",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "G25_COND": {
+      "value": 1.3570361405763136,
+      "text": "1.357",
+      "units": "",
+      "gate": "condition number of the fit over this annular pupil",
+      "test": "this driver",
+      "source": "driver"
+    },
     "G24_DINV": {
-      "value": 5.98777754809432E-16,
-      "text": "5.99e-16",
+      "value": 6.4336556915289833E-16,
+      "text": "6.43e-16",
       "units": "",
       "gate": "D basis-invariance residual",
       "test": "tJonesPupil/test_basis_invariance_and_sp_artifact",
       "source": "driver"
     },
     "G24_RET_DP": {
-      "value": 0.0036067288258413988,
+      "value": 0.0036067288581349811,
       "text": "3.607e-03",
       "units": "rad",
       "gate": "retardance variation, double-pole basis",
@@ -237,7 +333,7 @@
       "source": "driver"
     },
     "G24_RET_SP": {
-      "value": 0.89131921003045433,
+      "value": 0.89131921002945735,
       "text": "8.913e-01",
       "units": "rad",
       "gate": "retardance variation, local-sp basis",
@@ -245,7 +341,7 @@
       "source": "driver"
     },
     "G24_RATIO": {
-      "value": 247.12676030544719,
+      "value": 247.12675809247094,
       "text": "247.1",
       "units": "x",
       "gate": "local-sp retardance artifact inflation",
