@@ -23,9 +23,9 @@ see *Coverage and gaps* at the end.
 
 | | |
 |---|---|
-| Generated | 2026-07-26 19:49:14 |
-| Engine (`macos`) | `3d91d6c` on `pol-core` |
-| Bindings (`MACOS_resources`) | `aa730b0` on `pol-core` |
+| Generated | 2026-07-26 19:50:15 |
+| Engine (`macos`) | `dd8f5dd` on `pol-core` |
+| Bindings (`MACOS_resources`) | `f10b234` on `pol-core` |
 | MATLAB | R2026a |
 | Model size | 128 |
 | Host | red-river |

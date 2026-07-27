@@ -1,12 +1,12 @@
 {
   "provenance": {
-    "generated": "2026-07-26 19:49:14",
-    "engine_sha": "3d91d6c",
+    "generated": "2026-07-26 19:50:15",
+    "engine_sha": "dd8f5dd",
     "engine_branch": "pol-core",
-    "engine_dirty": true,
-    "resources_sha": "aa730b0",
+    "engine_dirty": false,
+    "resources_sha": "f10b234",
     "resources_branch": "pol-core",
-    "resources_dirty": true,
+    "resources_dirty": false,
     "matlab": "2026a",
     "model_size": 128,
     "host": "red-river"
