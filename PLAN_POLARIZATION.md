@@ -292,7 +292,8 @@ way — CCMac is gfortran-only.)
      engine gates fail (3.5616°, and the null/leak values swap).  The
      degenerate-azimuth gate passes on BOTH engines, which is exactly its
      job.  Decision packet: `REVIEW_POL_ELEMENTS_2026-07-27.md`;
-     evidence: polval §6.7.
+     evidence: polval §6.7.  Landed as macos `216c56c` +
+     MACOS_resources `a3417ce`.
      **Still NOT landed: `RfPolarizerElt(14)`.**  The convention no longer
      blocks it; a reflective wire grid simply carries more physics (grid
      reflection efficiency, the substrate's own s/p response) and nothing

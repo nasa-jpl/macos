@@ -334,6 +334,7 @@ correctly scoped as regression-only.
 
 ## Landing — the material-axis rule, implemented and gated (2026-07-27 pm, Opus)
 
+**macos `216c56c` + MACOS_resources `a3417ce`, both on `pol-core`, pushed.**
 All five points of the landing spec are in. The decision itself was not
 re-opened.
 
