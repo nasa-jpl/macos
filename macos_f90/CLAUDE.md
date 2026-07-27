@@ -712,6 +712,39 @@ them at 1e-12:
    Diagnostic signature if it ever returns: measured/analytic RS/RP ratio
    = (RP/RS)^2 exactly.
 
+**OPEN (2026-07-27) -- reflected-p-hat vs Fresnel-r_p sign conflict.  READ
+BEFORE TRUSTING ANY ODD-MIRROR-COUNT POLARIZED RESULT.**  `Reflector`
+assembles `Eout = prhat*Epr + shat*Esr` (elemsub.F:592) with
+`prhat = shat x rhat` (:431) -- p-hat follows the OUTGOING ray -- but
+line :455 uses `RP = (Na*ccfb-Nb*ccfa)/(Nb*ccfa+Na*ccfb)`, which is
+**-r_p** in that convention (at normal incidence it gives `RP = RS`, the
+signature of the p-hat-held-fixed convention).  The standard `+r_p` sits
+commented out one line above as `! dcr's original`; the flip arrived in
+the 2022 bulk import `e1fa721` with no recorded rationale.  Net effect:
+near normal incidence the transverse field is REFLECTED about the local
+p-hat instead of negated.  Measured on `Rx_Cass_FarField`, x-polarized,
+perfect conductors: after ONE mirror `Py/Px = 1.0163` (a 50/50 x/y
+mixture, at <2 deg AOI, where physics allows `O(sin^2 beta)` ~ 1e-3);
+with `+r_p` restored it is `2.07e-4`.  Two things make it near-invisible:
+a reflection is an INVOLUTION, so a mirror PAIR cancels it exactly (the
+two-mirror number is BIT-IDENTICAL either way, 7.0612e-07), and it is
+UNITARY, so the unitarity gate cannot see it.  `Rx_Cass_FarField` has
+exactly two mirrors, `Rx_VecChain` has none, and the Fresnel gate builds
+its "analytic" RPa from the engine's own expression (`tJonesPupil.m:166`)
+and compares a RATIO -- circular in this sign.  Second, fixture-free
+tell: the effect is FLAT IN PUPIL RADIUS (median |Ey/Ex| = 1.014 / 1.016
+/ 1.010 / 1.005 at rho = 32/64/96/128 px), and any real isotropic-surface
+effect must vanish on axis and grow as rho^2.  NOT the point-source
+launch frame -- that contributes `~NA^2/2` (measured 1.02e-5 at NA
+0.0045).  The same `-r_p` form is in the COATED branch (innermost `RP`,
+per-layer `RP1`) and `Refractor` (:1102-1103, :1226-1228) -- unaudited;
+transmission (`TP`/`TS`) is a separate question since p-hat does not flip
+there.  Assembling with `pihat` instead is NOT an admissible alternative
+fix: `pihat` is perpendicular to the INCIDENT ray, so it emits a
+longitudinal component along the outgoing ray.  Full analysis, suite
+impact and the open decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
+Reproducer: `MACOS_resources/mmacos/tools/pol_sp_sign_probe/`.
+
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
 source-frame pair, UNIFORM over the grid.  Point sources use a PER-RAY

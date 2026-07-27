@@ -104,11 +104,59 @@ way — CCMac is gfortran-only.)
      independent propagation + incoherent sum.  Gates: x-pol reduces to the
      scalar contrast curve at round-off; energy bookkeeping; floor reported
      by component.
-     **STARTED 2026-07-26, NOT LANDED — two design findings, both from a
-     FAILING gate rather than from reasoning, worth having before the next
-     attempt.  WIP parked at `~/dev/MACOS_sandbox/pol_2c_wip/` (moved OFF
-     the MATLAB path deliberately: a half-working `+macos/` function is
-     reachable by users).**
+     **BLOCKED 2026-07-27 on an ENGINE DEFECT, not on the 2c design.**
+     Second attempt (2026-07-27) got as far as validating the machinery and
+     then found that the pupil polarization state itself is untrustworthy on
+     any train with an ODD number of mirrors: `Reflector` assembles the
+     reflected field in a p̂-follows-the-outgoing-ray basis but multiplies by
+     `−r_p`, so near normal incidence the transverse field is REFLECTED about
+     the local p̂ instead of negated.  One on-axis mirror turns x-polarized
+     light into a 50/50 x/y mixture (`Py/Px = 1.0163` on `Rx_Cass_FarField`
+     at <2° AOI, where physics allows ~1e-3); a mirror PAIR cancels it
+     exactly, which is why every Phase-1/2/3a gate passed.  Diagnosed,
+     verified by scratch build (restoring `+r_p` gives `2.07e-4` for one
+     mirror and a BIT-IDENTICAL number for two), reverted, nothing landed.
+     **Decision packet: `REVIEW_POL_SP_SIGN_2026-07-27.md` (Fable lane — it
+     is a convention change in the Fresnel core).  Reproducer:
+     `MACOS_resources/mmacos/tools/pol_sp_sign_probe/`.  Engine-side summary
+     in the polarization section of `macos_f90/CLAUDE.md`.**  2c cannot
+     produce an honest floor until this is settled: the co/cross split would
+     be dominated by the artifact.
+     **The 2c DESIGN is, however, now settled and simpler than either
+     previous sketch** (both superseded — do not resume from them):
+     - The chain is **linear in the input Jones state** — measured
+       4.2e-16 (45°) / 5.8e-16 (circular) on `Rx_Coro` at model 512.
+     - Therefore a spatially uniform analyzer **commutes with propagation**
+       (Tranche 1 propagates every component with the identical kernel), so
+       the co/cross split is taken **at the detector** on the engine's own
+       component planes: `complex_field(det,'plane',1..2)`, projected on the
+       analyzer and its complement.  Parseval on that split is exact
+       (3.0e-16 … 4.5e-16), and the incoherent sum is automatic.
+     - **No pupil multiplier is needed at all**, which retires BOTH the
+       Jones-pupil-multiplier design (Finding 2 below) and its "divide by the
+       scalar run" successor.  `pupil_propagator` / `apodize_complex` are not
+       in the loop.
+     - Analyzer choice: the dominant eigenvector of the 2×2 **pupil
+       coherency matrix** `C_ij = Σ E_i E_j*`.  Phase-insensitive (the common
+       wavefront cancels), so unlike a plain pupil mean it does not collapse
+       on an aberrated pupil, and it is by construction the analyzer that
+       minimizes cross-polarized power — which is the operational definition
+       of "co-polarized" that Finding 1 demands.
+     - Incidental: `complex_field(..., 'reset_trace', false)` returns
+       bit-identical planes ~100× faster (0.01 s vs 0.83 s at model 512), so
+       three component planes cost ONE propagation.
+     **Fixture correction:** `Rx_Coro.in` declares `nGridpts=511` and must be
+     run at model **≥ 512** (Dave: grid size ≤ model size, or `MREset`).
+     Below that the engine prints `Too many grid points. Resetting npts to N`
+     and then intermittently SIGSEGVs in `intensity` (~30–50% of runs at 128;
+     deterministically under `trace`).  This supersedes the "runs at model
+     128" note below.  Separately, `macos.trace(e)` on `Rx_Coro` loses every
+     ray past element 7 while `intensity`/`complex_field` propagate fine —
+     unrelated to polarization, not chased.
+     **First-attempt findings (2026-07-26), retained for the record.  WIP
+     parked at `~/dev/MACOS_sandbox/pol_2c_wip/` (moved OFF the MATLAB path
+     deliberately: a half-working `+macos/` function is reachable by users);
+     it is now superseded by the design above.**
      - `macos.pupil_propagator(pupilElt,detElt)` WORKS and its contract
        gate is exact: `p(ones)` is BIT-IDENTICAL to the plain scalar run
        (intensity→apodize_complex→intensity with `reset_trace=false`;
@@ -137,16 +185,19 @@ way — CCMac is gfortran-only.)
        *Refuted along the way:* it is NOT a ray-grid vs diffraction-grid
        mismatch — the masks match exactly (3176/3176, same centroid and
        extent), so do not spend time there.
-     - **Next attempt should build the multiplier entirely inside
+     - ~~**Next attempt should build the multiplier entirely inside
        `WFElt`**, using the NEW plane getter: per-component pupil fields
        `complex_field(pupilElt,'plane',k)` divided by the scalar-run
-       `complex_field(pupilElt)`.  All four quantities then share one
-       phase convention and RayE never enters, which sidesteps the
-       train-dependence completely.  That deviates from this section's
-       `pol_contrast_floor(jones, stokes_in, coronagraph_fn)` signature —
-       deliberately, and for the reason above.
-     - Fixture note: `Rx_Coro.in` and `Rx_Coro_noLyot.in` both run at
-       model 128; `Rx_Coro_FPM.in` returns an ALL-ZERO intensity there
+       `complex_field(pupilElt)`.~~  **SUPERSEDED 2026-07-27** — no pupil
+       multiplier of any kind is needed, because a uniform analyzer
+       commutes with propagation (see the settled design above).  The
+       division would also have re-imported the train-dependent RayE↔WFElt
+       phase relation through the vector run's seed, so it was not the
+       clean sidestep it looked like.
+     - Fixture note (**CORRECTED 2026-07-27, see above — `Rx_Coro.in`
+       needs model ≥ 512; it only appears to run at 128**): the original
+       note read "`Rx_Coro.in` and `Rx_Coro_noLyot.in` both run at
+       model 128"; `Rx_Coro_FPM.in` returns an ALL-ZERO intensity there
        (it SIGSEGVs at 256 and is only usable at 1024 — pre-existing, see
        `mmacos/CLAUDE.md`).  So a 2c evidence section either uses the
        weaker chain at 128 or the driver must split into per-model-size
