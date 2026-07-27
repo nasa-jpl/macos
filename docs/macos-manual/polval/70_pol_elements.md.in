@@ -154,7 +154,7 @@ ray field at the first physical leg, so a polarizing element placed after that
 leg would transform rays and never reach the grid — the same limitation
 quantified for the coronagraph chain in section 5.
 
-## 6.7 Scope: normal incidence, and one convention left open
+## 6.7 Scope: normal incidence, and the off-normal convention (now settled)
 
 Every gate above is at strict normal incidence. That is not a convenience.
 
@@ -163,10 +163,27 @@ question. The element's axis is declared in global coordinates and must be
 projected into the plane transverse to the ray, and orthographic projection
 does not preserve orthogonality — so declaring the **pass** axis and
 projecting it is not the same operation as declaring the **block** axis,
-projecting that, and transmitting the complement. MACOS declares the pass
-axis. The two constructions disagree by **@@G59_AMBIG20@@°** of axis
-orientation at 20° of incidence (at 45° of azimuth, where the effect is
-largest; the closed form is `acos(2cos a/(1+cos²a))`, bounded by `sin²a`).
+projecting that, and transmitting the complement. The two constructions
+disagree by **@@G59_AMBIG20@@°** of axis orientation at 20° of incidence
+(at 45° of azimuth, where the effect is largest; the closed form is
+`acos(2cos a/(1+cos²a))`, bounded by `sin²a`).
+
+**The convention is settled (2026-07-27): project the *material* axis.**
+The invariant object in a tilted element is the material direction fixed in
+it — the absorbing direction (the wires of a wire grid, the dipole chains of
+a dichroic sheet) for a polarizer, the crystal fast axis for a waveplate.
+This is the *dipole model*, and it is not a modelling taste: exactly this
+ambiguity was adjudicated experimentally for a tilted dichroic polarizer by
+Korger et al., *Opt. Express* **21**, 27032 (2013), in the dipole model's
+favour. For the waveplate the declared (fast) axis *is* the material axis,
+so the implementation above is already the settled rule. For the polarizer
+the material axis is the block direction — the in-plane complement of the
+declared pass axis — and the implementation currently projects the pass axis
+instead: **identical at the normal incidence gated here, pending the flip
+off normal**, which lands with an off-normal fixture and an engine-driven
+gate against the closed form above. Until then the off-normal polarizer
+path is unvalidated as well as un-flipped, and this section's numbers are
+unaffected either way.
 
 The disagreement vanishes identically at normal incidence, which is why every
 number in this section is unaffected by the choice. It **also** vanishes when
@@ -176,9 +193,12 @@ worth naming — the most natural way to probe the effect (axis along *x*, tilt
 in the *x*–*z* plane) is exactly the degenerate case, and reports a reassuring
 zero that means nothing.
 
-Consequently `RfPolarizer` — a *reflective* polarizer, which is inherently
-off-normal — is still not implemented. It cannot be, without settling this
-first. For a beamsplitter at a substantial angle, a coated `Reflector` is in
+`RfPolarizer` — a *reflective* polarizer, which is inherently off-normal —
+is still not implemented. The settled convention no longer blocks it, but a
+reflective wire grid carries additional physics (grid reflection efficiency,
+the substrate's own s/p response) beyond the axis rule, and nothing requires
+it yet; it fails loudly at load rather than tracing as absent. For a
+beamsplitter at a substantial angle, a coated `Reflector` is in
 any case the better model: there the s and p directions are set by the
 physical plane of incidence and the thin-film recursion produces real
 diattenuation and retardance, gated against the Fresnel closed form in
