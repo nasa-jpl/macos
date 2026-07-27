@@ -219,9 +219,9 @@ vector diffraction on, the near-field leg differs by @@X_PROPER_VECDIFF@@ at
 identical total power — the same two-mechanism account given above applies
 in kind, though it has been quantified only on the far-field case.
 
-Suite status at the landing: @@X_PROPER_COMPARE@@ PROPER comparisons,
-@@X_PYMACOS_SUITE@@ in the pymacos suite, @@X_MMACOS_SUITE@@ in the mmacos
-suite. *(All external, captured 2026-07-26.)*
+Suite status when these gates were last re-run: @@X_PROPER_COMPARE@@ PROPER
+comparisons, @@X_PYMACOS_SUITE@@ in the pymacos suite, @@X_MMACOS_SUITE@@ in
+the mmacos suite. *(All external, captured @@X_SUITES_CAPTURED@@.)*
 
 This is rung 3 of the validation ladder, and the only rung on this page that
 involves a second implementation.
