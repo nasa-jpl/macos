@@ -387,7 +387,9 @@ Fresnel gate covers `Reflector` only.
 
 | Gate | Result |
 |---|---|
-| mmacos full suite (gfortran) | see the run recorded in the commit below |
+| mmacos full suite (gfortran) | **420 pass, 0 fail** (fast 289 / masks 62 / freeform 46 / proper-512 10 / proper-1024 13) |
+| pymacos suite (ifx = the standing ifx smoke) | **6694 pass, 1 skipped** |
+| pymacos PROPER-compare | **26/26**; the committed 4.836e-13 residual unchanged |
 | GMI regression | **6/6, `vs-ref = 0.000e+00`** — bit-identical, as required for an ifPol-off consumer |
 | polval regen | all gate thresholds pass, including 5 new ones |
 
