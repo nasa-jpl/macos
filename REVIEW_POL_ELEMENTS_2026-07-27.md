@@ -239,3 +239,93 @@ pymacos bindings for the three new API routines are **not** in this landing
 `macos_api_mod`, so the pymacos side is a shim addition whenever it is wanted.
 The pymacos suite above is therefore a regression check that the engine change
 is inert for that binding, not coverage of the new elements.
+
+---
+
+## Fable-lane decision (2026-07-27 pm, appended post-review)
+
+Independent verification: tPolElement re-run 23/23 on this box; PolElt
+engine block line-read (geometry, the four conventions, both dispatch
+chains); packet cross-checked against the diff.  Line review: PASS, no
+findings.  The four conventions are correctly derived rather than
+legislated — (2) unitarity-forced orthonormalization and (3) the
+retardance sign read off elemsub.F:395 are exactly right.
+
+**THE DECISION — neither (A) as landed nor refusal.  The rule is:
+PROJECT THE MATERIAL AXIS.**
+
+The invariant physical object in a tilted polarizing element is the
+material direction fixed in the element — the absorbing direction (wire
+grid: the wires; dichroic sheet: the dipole chains) for a polarizer, the
+crystal fast axis for a waveplate.  The transverse-plane behaviour
+follows by projecting THAT vector:
+
+* **Waveplate: the landed implementation is CORRECT as is.**  The
+  declared axis IS the material (fast) axis, so projecting the declared
+  axis — construction (A) — is the material-axis rule for this element.
+  No change.
+* **Polarizer: flip to the block-axis projection, keyword semantics
+  UNCHANGED.**  `PolAxis=` keeps declaring the transmission axis (the
+  natural user handle, and Opus's uniformity argument survives intact).
+  The material absorbing direction is its in-element-plane complement,
+  `ŵ = unit(ψ̂ × â_pass)`; per ray, project ŵ into the transverse plane,
+  extinguish it, transmit `r̂ × ŵ_proj`.  At normal incidence this is
+  identical to (A), so every gate in this landing stands bit-for-bit.
+
+This is not a taste call — the exact ambiguity has been adjudicated by
+experiment: Korger et al., *"The polarization properties of a tilted
+polarizer,"* Opt. Express **21**, 27032 (2013), measured a tilted
+dichroic polarizer and found it follows the dipole (material-axis)
+model, not the geometric pass-axis projection.  Pull the paper during
+the landing and anchor the polval section on it (external.json entry,
+same pattern as the other external anchors).
+
+**Refusal (the packet's option C) is rejected**: a polarizer in a
+converging beam legitimately sees a few degrees of AOI (f/10 → ~3°,
+Δ ≲ 0.1°), and refusing would break those layouts to guard against an
+ambiguity that is now settled.  The coated-Reflector recommendation for
+LARGE deliberate AOI (45° PBS-style) stays as written in the scope
+notes — that advice is right regardless.
+
+**Landing spec (next Opus slice — now fully templated):**
+1. Flip `PolElt`'s polarizer branch to the block-axis projection above
+   (waveplate branch untouched).
+2. An off-normal fixture that actually tilts the BEAM (converging
+   source or off-axis field — the packet is right that tilting the
+   element does nothing in a collimated on-axis bundle).
+3. Engine-driven A/B gate: the Δ(aoi,φ) closed form already pinned in
+   `test_offnormal_convention_magnitude` becomes an engine-vs-closed-form
+   assertion (drive the engine at 20° AOI, φ = 45°, assert the
+   transmitted axis matches the material-axis prediction and differs
+   from (A) by the predicted 3.56°).  Include the two degenerate-zero
+   cases as vacuity guards, as the MATLAB-side gate already does.
+4. Normal-incidence gates must stay bit-identical (they should by
+   construction — assert it).
+5. Docs flip from "provisional (A)" to the settled material-axis rule,
+   everywhere the provisional flag is currently visible.
+
+**`RfPolarizer` stays a stub** — the convention no longer blocks it,
+but a reflective wire grid carries additional physics (grid reflection
+efficiency, s/p of the substrate) beyond the axis rule, and nothing
+needs it yet.  The loud load failure stays; do not build it for
+completeness.
+
+**The dual-dispatch-chain finding — endorsed, and it is the session's
+most valuable output.**  "Passes every ray-level gate, invisible to the
+image, reads as 'polarization has no effect'" is the exact failure
+shape the r_p defect taught us to fear, caught this time by a scope
+claim written to PASS — which is the review methodology working.  The
+tripwire test + both-CLAUDE.md recording is the right durable form; any
+future field-touching element needs tracesub AND propsub, and now the
+record says so.
+
+**Idealization note to add at the waveplate (one line, ride the next
+landing):** the ideal retarder ignores the AOI-dependence of retardance
+in a real crystal plate (field-of-view effects); anyone needing that
+needs a birefringent-plate model, out of scope.
+
+**Ack, no action:** the signed S3/S0 = −1 gate (a |S3| gate would
+certify a conjugated retarder — same lesson as the coherency bug, now
+applied preemptively); the Reference-twin bit-identity gate; non-vacuity
+A/Bs against the "silently do nothing" prior; pymacos shim deferral
+correctly scoped as regression-only.
