@@ -111,14 +111,18 @@ compensator face and is zero everywhere downstream. Scalar tracing
 ignores extinction entirely, so this is **invisible without
 polarization** and every prior (scalar) Bench IFO result is unaffected.
 
-*Fix used here:* set `Extinc=0` (transparent glass) on the transmitting
-Refractors of the in-memory bench before `emit` — a few lines in the
-example, Reflectors keep 1e22. **Deliberately not changed in `Bench.m`**:
-the right home for this is a Bench-level decision (should `add_lens` /
-`add_bs_transmit` stamp a physical `Extinc=0` on glass by default, gated
-so the scalar path stays bit-identical?), which I'd rather you rule on
-than smuggle into a design-layer file inside an IFO slice. Flagging for
-that call.
+*Fixed in `Bench.m` (Dave's call, 2026-07-27):* the four transmitting
+Refractor sites in `add_bs_transmit` and `add_bs_reflect_return` now stamp
+`Extinc=0` (transparent glass); the Reflector in `add_bs_reflect_return`
+keeps `1e22`. `blank()` already defaulted `extinc=0`, so `add_lens` was
+always fine — this was purely the Reflector idiom copied onto the BS
+transmit/return faces. **Verified scalar-path bit-identical:** the scalar
+`bench_ifo` example, regenerated with vs without this change, produces
+identical output (the only field that moved, `R_hat` = the recovered
+2e7 mm ≈ flat radius, drifts 4e-2 mm = 2e-9 relative between ANY two runs
+— an ill-conditioned-fit artifact present with the change reverted too).
+`tBench` 5/5 green. The polarization gates are unchanged from the
+example-workaround version (bit-identical numbers).
 
 **Finding 2 — Gate 1 must use the field incident *on the BS*, not the
 source launch state.** My first Gate-1 pass built the reference input
@@ -153,4 +157,6 @@ clean).
   arm-differential D/retardance and their pupil variation grow).
 - **Slice 3** — a polarizing-PSI variant (ideal polarizer/waveplate in the
   collimated normal-incidence legs) + comparison against this baseline.
-- **Bench `Extinc` policy** — Dave's call per finding 1.
+
+(The Bench `Extinc` policy from finding 1 is now settled and fixed in
+`Bench.m`, not deferred.)
