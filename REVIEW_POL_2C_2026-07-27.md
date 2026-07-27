@@ -5,9 +5,9 @@ in `PLAN_POLARIZATION.md`. Built to the §2c analyzer-at-detector spec as the
 Fable lane endorsed it (`REVIEW_POL_SP_SIGN_2026-07-27.md`, "Left for Opus"
 item 4); both pupil-multiplier sketches stayed retired.
 
-**Commits:** MACOS_resources `<resources-sha>`, macos `<macos-sha>` (docs +
-plan) and `<macos-polval-sha>` (regenerated report). Session A (the r_p sign
-fix tail) was not touched.
+**Commits:** MACOS_resources `848245d`, macos `b726125` (docs + plan) and
+`3bdb531` (regenerated report). Session A (the r_p sign fix tail) was not
+touched.
 
 ---
 
@@ -198,8 +198,9 @@ values).
 | Gate | Result |
 |---|---|
 | `run_mmacos_tests.sh polfloor` | 20 pass, 0 fail (256: 14, 512: 6) |
-| mmacos full suite | *(filled in below at commit time)* |
-| polval regen | 48 gate thresholds pass across the three sizes (33 + 10 + 5); 119 tokens merged; `check_polval` clean |
+| mmacos full suite | **440 pass, 0 fail** (fast 289 / masks 62 / freeform 60 / proper-512 10 / **pol-contrast-512 6** / proper-1024 13) — was 420 before the 20 new tests |
+| polval regen | 48 gate thresholds pass across the three sizes (33 + 10 + 5); 119 tokens merged; `check_polval` clean; `make polval` builds docx + HTML |
+| polval split is a no-op | all **81** pre-existing tokens bit-identical to the committed values; the eight pre-existing figures pixel-identical |
 
 Not re-run this session, and stated as such: pymacos/ifx, PROPER-compare and
 GMI. **Nothing in this session touches the engine** — `pol_contrast_floor` is
