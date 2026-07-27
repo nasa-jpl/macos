@@ -1060,10 +1060,11 @@ Two new keywords describe them:
 | `Retardance=` | `WavePlate` | Retardance in waves at the prescription `Wavelen`. Required for a waveplate; 0.25 is a quarter-wave plate, 0.5 a half-wave plate. |
 
 `PolAxis=` is a direction, not a position, and it does not have to lie in the
-element's surface — MACOS projects it into each ray's transverse plane and
-normalizes it. It must only be non-parallel to the ray; an axis along the
-propagation direction leaves the element with no transverse axis, and MACOS
-extinguishes the ray rather than choosing an arbitrary basis. Both keywords
+element's surface — MACOS derives the element's material axis from it (see
+below) and projects that into each ray's transverse plane, normalizing as it
+goes. The projection must not degenerate: an axis that leaves the element with
+no transverse direction extinguishes the ray rather than having MACOS choose
+an arbitrary basis. Both keywords
 are required on the element types that use them: a defaulted axis would
 orient a polarizer arbitrarily, and a defaulted retardance would make a
 waveplate a silent no-op.
@@ -1092,14 +1093,32 @@ the s and p directions are set by the physical plane of incidence, and the
 thin-film recursion gives real diattenuation and retardance rather than an
 idealization.
 
-For the same reason, these elements are intended for use at or near normal
-incidence, which is where a polarization phase-shifting interferometer uses
-them. Well off normal, an *ideal* polarizer becomes ambiguous at order
-sin²(AOI): declaring the pass axis and projecting it is not the same as
-declaring the block axis and transmitting the complement, because projection
-does not preserve orthogonality. MACOS declares the pass axis. The reflective
-polarizer type `RfPolarizer` is reserved but not implemented, pending that
-convention decision.
+A waveplate's retardance is likewise independent of the angle of incidence,
+where a real crystal plate's is not — the field-of-view effect that drives
+compound and Pancharatnam designs. Bounding that needs a birefringent-plate
+model with ordinary and extraordinary indices and a thickness, which MACOS
+does not provide.
+
+Off normal incidence, what MACOS projects into the transverse plane is the
+element's *material* axis — the direction fixed in the substance of the
+element. This matters because projection does not preserve orthogonality, so
+projecting the declared pass axis is not the same operation as projecting the
+block axis and transmitting the complement; the two differ by
+acos(2 cos *a*/(1 + cos² *a*)) of transmitted-axis orientation, which is 3.56°
+at 20° of incidence and identically zero at normal incidence. For a waveplate
+the material axis is the declared (fast) axis. For a polarizer it is the
+*absorbing* direction — the wires of a wire grid, the aligned dipole chains of
+a dichroic sheet — which is the in-element complement of the declared pass
+axis; MACOS forms it, projects it, extinguishes it, and transmits its
+orthogonal partner. The keyword still declares the pass axis, so only its
+component perpendicular to the element normal has any effect, and a pass axis
+parallel to the normal extinguishes the ray. This is the dipole model, which
+Korger et al. (*Opt. Express* **21**, 27032, 2013) measured on a tilted
+dichroic polarizer.
+
+The reflective polarizer type `RfPolarizer` is reserved but not implemented:
+a reflective wire grid carries grid reflection efficiency and the substrate's
+own s/p response beyond the axis rule.
 
     iElt= 3
     EltName= QuarterWavePlate

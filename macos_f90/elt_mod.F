@@ -426,8 +426,12 @@ C***********************************************************************
 !--> polarizing-element reference axis (PLAN_POLARIZATION Phase 3).
 !    PolAxisElt(1:3,iElt) is the axis AS GIVEN in the prescription: the
 !    transmission axis of a TrPolarizer, the FAST axis of a WavePlate.
-!    Unnormalized 3-vector in global coordinates; the trace projects it
-!    into each ray's transverse plane.  See PolElt() in elemsub.F.
+!    Unnormalized 3-vector in global coordinates.  The trace projects the
+!    element's MATERIAL axis into each ray's transverse plane -- which IS
+!    this axis for a WavePlate (the fast axis) but is its in-element
+!    complement psi x PolAxis for a TrPolarizer (the absorbing
+!    direction), the two differing only off normal incidence.  See
+!    PolElt() in elemsub.F.
      &        PolAxisElt
 	! IndRefArr is for coating layers, ArrIndRef is for lens element
 	! having several IndRef for different wavelengths

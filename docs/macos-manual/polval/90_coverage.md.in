@@ -88,15 +88,20 @@ was checked.
 * **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
   handles one wavefront only — no multi-wavefront composition concurrently.
   This is a documented constraint, not a defect to work around.
-* **The reflective polarizer `RfPolarizer` is not implemented**, and the
-  transmissive polarizer's behaviour away from normal incidence rests on an
-  unsettled convention (§6.7). Every polarizing-element number in section 6
-  is taken at normal incidence, where the ambiguity vanishes exactly.
+* **The reflective polarizer `RfPolarizer` is not implemented.** The
+  off-normal axis convention no longer blocks it (§6.7 settles it and gates
+  it at 20° of incidence); what remains is the physics a reflective wire grid
+  carries beyond the axis rule — grid reflection efficiency and the
+  substrate's own s/p response.
 * **The polarizer and waveplate are thin idealizations** — no ray splitting,
   walk-off, face reflections or substrate — so a polarizing beamsplitter is
   modelled as two traces, or better as a coated `Reflector` at its working
   angle. Their outputs are purely transverse; a longitudinal component at
-  the surface is discarded rather than tracked.
+  the surface is discarded rather than tracked. The waveplate's retardance
+  is also independent of incidence angle, where a real crystal plate's is
+  not — the field-of-view effect behind compound and Pancharatnam designs,
+  which would need a birefringent-plate model with o/e indices and a
+  thickness.
 
 ## Phases not yet represented
 
@@ -106,7 +111,7 @@ outstanding work, not a disclaimer.
 | Phase | Deliverable | Evidence it will add |
 |---|---|---|
 | 2d | interferometer polarization metrology | visibility budget predicted vs simulated; phase-shifting systematic vs input state; the angle-of-incidence trade |
-| 3 | vector vortex; reflective polarizer | vortex null depth vs retardance error against the analytic curve. The polarizer and waveplate landed — section 6. `RfPolarizer` is held pending the off-normal axis convention of §6.7, and the vortex is a separate design question (retardance and handedness conventions, broadband leakage) |
+| 3 | vector vortex; reflective polarizer | vortex null depth vs retardance error against the analytic curve. The polarizer and waveplate landed — section 6. `RfPolarizer` is held for grid-efficiency and substrate s/p physics, not for the axis convention, which §6.7 settles and gates; the vortex is a separate design question (retardance and handedness conventions, broadband leakage) |
 | 3a Tranche 2 | Jones-through-chain | chains with coated surfaces between legs |
 | 4 | spatially variable coatings | per-segment and radial-grade Jones pupils; grid-resolution speckle-floor sweep |
 

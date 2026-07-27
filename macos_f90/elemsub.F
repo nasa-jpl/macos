@@ -2798,13 +2798,52 @@ C     FAST axis of a waveplate.  A vector (rather than an angle in some
 C     element frame) is used so that no "which in-plane direction is
 C     zero degrees" convention has to be invented.
 C
-C  2. TRANSVERSE BASIS.  Per ray: ahat = unit(PolAxis - (PolAxis.rhat)
-C     rhat), bhat = rhat x ahat.  Orthonormalizing bhat off ahat --
-C     rather than projecting a separately-specified second axis -- is
-C     FORCED, not chosen: a lossless retarder must be unitary, and only
-C     an orthonormal eigenbasis makes diag(1,exp(-i.delta)) unitary.
-C     At normal incidence ahat is the axis itself and the construction
-C     is exact.
+C  2. TRANSVERSE BASIS -- PROJECT THE MATERIAL AXIS.  Off normal the
+C     declared axis has to be brought into the plane transverse to the
+C     ray, and orthographic projection does not preserve orthogonality,
+C     so WHICH of the element's two in-plane directions is projected is
+C     a physical question, not a bookkeeping one.  The answer is the
+C     MATERIAL direction -- the one fixed in the substance of the
+C     element:
+C
+C       polarizer:  the ABSORBING direction (the wires of a wire grid,
+C                   the aligned dipole chains of a dichroic sheet).
+C                   That is the in-element complement of the declared
+C                   pass axis, mvec = psi x PolAxis.  It is projected
+C                   into the transverse plane and EXTINGUISHED; the
+C                   transmitted direction is its orthogonal partner.
+C       waveplate:  the crystal FAST axis, which IS the declared axis,
+C                   so mvec = PolAxis and the declared axis is what
+C                   gets projected.
+C
+C     This is the dipole model, and it is settled by experiment rather
+C     than by taste.  BOTH constructions are in the literature: the
+C     pass-axis projection is Fainman & Shamir, Appl. Opt. 23, 3188
+C     (1984); the material-axis one is Eq. (5)-(6) of Korger et al.,
+C     "The polarization properties of a tilted polarizer", Opt. Express
+C     21, 27032 (2013), who measured the Mueller matrix of a tilted
+C     dichroic polarizer and found only the absorbing model reproduces
+C     it.  They coincide at normal incidence.
+C
+C     psi here is the ELEMENT's axis (psiElt), so on a conic polarizing
+C     surface the material frame is the element's, not the local
+C     surface normal at the intersection.  These elements are flat in
+C     every use so far; a curved one would want that revisited.
+C
+C     Per ray, with mvec the material axis: pvec = unit(mvec -
+C     (mvec.rhat) rhat), and the partner is completed by a cross
+C     product with rhat -- ahat = pvec x rhat for a polarizer (pvec is
+C     the blocked direction, ahat the transmitted one), bhat = rhat x
+C     ahat for a waveplate (pvec = ahat is the fast axis, bhat the
+C     slow).  Orthonormalizing the partner -- rather than projecting a
+C     separately-specified second axis -- is FORCED, not chosen: a
+C     lossless retarder must be unitary, and only an orthonormal
+C     eigenbasis makes diag(1,exp(-i.delta)) unitary.
+C     At normal incidence the two constructions coincide identically
+C     (pvec x rhat returns the declared axis to the last bit, up to an
+C     overall sign that a projector cannot see), so the flip to the
+C     material-axis rule left every normal-incidence result bit-for-bit
+C     unchanged -- gated in tPolElement.
 C
 C  3. RETARDANCE SIGN.  The engine propagates a field through index N
 C     over length L with C1 = exp(-i.2pi.L.N/lambda) (elemsub.F:395),
@@ -2831,18 +2870,28 @@ C  b. The output is purely TRANSVERSE: any longitudinal component
 C     present in Evec at the surface is discarded.  That is what a 2x2
 C     Jones element means.  It is exactly zero for a collimated normal-
 C     incidence beam and O(NA) otherwise.
-C  c. OFF-NORMAL INCIDENCE CARRIES AN OPEN CONVENTION QUESTION.  For an
-C     ideal polarizer, projecting the specified PASS axis is NOT the
-C     same as projecting a specified BLOCK axis and transmitting the
-C     complement -- the two differ at O(sin^2 AOI) because projection
-C     does not preserve orthogonality.  This routine takes the
-C     specified axis as exact and orthonormalizes its partner (rule 2).
-C     At normal incidence -- the case every gate covers, and the case
-C     polarization phase-shifting actually needs -- the ambiguity is
-C     identically zero.  The choice is REPORTED, not settled here; see
-C     the packet REVIEW_POL_ELEMENTS_2026-07-27.md.  RfPolarizerElt is
-C     deliberately still a stub for the same reason: it is inherently
-C     off-normal, so it cannot be landed before that decision.
+C  c. OFF-NORMAL INCIDENCE follows the material-axis rule of convention
+C     2, which is SETTLED (2026-07-27, packet
+C     REVIEW_POL_ELEMENTS_2026-07-27.md).  The size of what is being
+C     decided is on the record: the two candidate constructions differ
+C     by acos(2 cos a/(1+cos^2 a)) of pass-axis orientation at azimuth
+C     45 degrees -- 3.56 degrees at 20 degrees of incidence, bounded by
+C     sin^2 a -- and identically zero both at normal incidence and when
+C     the declared axis lies in, or perpendicular to, the plane of
+C     incidence.  That second zero is a trap for anyone building a test
+C     here: the obvious tilt (axis along x, tilt in the x-z plane) is
+C     exactly the degenerate case and reports a meaningless zero.
+C     Gated engine-side at 20 degrees AOI / 45 degrees azimuth in
+C     tPolElement.
+C  d. The waveplate is an IDEAL retarder: the retardance it applies does
+C     not depend on incidence angle, whereas a real crystal plate's does
+C     (the field-of-view effect that drives compound and Pancharatnam
+C     designs).  Anyone who needs that needs a birefringent-plate model
+C     with o/e indices and thickness -- out of scope here.
+C  e. RfPolarizerElt remains a stub.  The axis convention no longer
+C     blocks it, but a reflective wire grid carries physics beyond the
+C     axis rule (grid reflection efficiency, the substrate's own s/p
+C     response), and nothing needs it yet; it fails loudly at load.
 C
 C***********************************************************************
 
@@ -2872,7 +2921,8 @@ C***********************************************************************
      &   PolAxis(3),PolRetOPD
 
 	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,S1,
-     &   Kc,Kr,k2,itpsi,psitprel,ahat(3),bhat(3),adotr,amag,delta
+     &   Kc,Kr,k2,itpsi,psitprel,ahat(3),bhat(3),adotr,amag,delta,
+     &   mvec(3),pvec(3)
 
 	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx,Jmat(2,2),
      &   Ea,Eb,Ja,Jb
@@ -2958,20 +3008,36 @@ C    Propagation through isotropic medium a to the element
 	  Eout(2)=C1*Evec(2)
 	  Eout(3)=C1*Evec(3)
 
-C    Transverse eigenbasis: ahat = the declared axis projected into the
-C    plane normal to the ray; bhat = rhat x ahat (orthonormal by
-C    construction -- see convention 2 in the header).
+C    Transverse eigenbasis.  The vector that gets projected is the
+C    element's MATERIAL axis (convention 2): the ABSORBING direction
+C    for a polarizer -- the in-element complement psi x PolAxis of the
+C    declared pass axis -- and the declared FAST axis itself for a
+C    waveplate.  Off normal these are different operations; at normal
+C    incidence they coincide exactly.
 
-	  adotr=PolAxis(1)*rhat(1)+PolAxis(2)*rhat(2)+PolAxis(3)*rhat(3)
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+	    CALL DXPROD(mvec,psi,PolAxis)
+	  ELSE
+	    DO i=1,3
+	      mvec(i)=PolAxis(i)
+	    END DO
+	  END IF
+
+	  adotr=mvec(1)*rhat(1)+mvec(2)*rhat(2)+mvec(3)*rhat(3)
 	  DO 3 i=1,3
-	    ahat(i)=PolAxis(i)-adotr*rhat(i)
+	    pvec(i)=mvec(i)-adotr*rhat(i)
    3	  CONTINUE
-	  amag=DSQRT(ahat(1)*ahat(1)+ahat(2)*ahat(2)+ahat(3)*ahat(3))
+	  amag=DSQRT(pvec(1)*pvec(1)+pvec(2)*pvec(2)+pvec(3)*pvec(3))
 
 	  IF (amag.LT.1d-10) THEN
-C      Axis is parallel to the ray: the element has no transverse axis
-C      for this ray.  A prescription error, not a physical state --
-C      extinguish rather than pick an arbitrary basis.
+C      The element has no usable transverse axis for this ray: the
+C      material axis is parallel to the ray (a waveplate whose fast
+C      axis lies along the propagation direction, or a polarizer whose
+C      absorbing direction does), or -- polarizer only -- the declared
+C      pass axis is parallel to the element normal, so psi x PolAxis
+C      vanishes and no in-element blocked direction exists at all.
+C      Both are prescription errors, not physical states: extinguish
+C      rather than pick an arbitrary basis.
 	    Eout(1)=DCMPLX(0d0,0d0)
 	    Eout(2)=DCMPLX(0d0,0d0)
 	    Eout(3)=DCMPLX(0d0,0d0)
@@ -2981,10 +3047,29 @@ C      extinguish rather than pick an arbitrary basis.
 	  END IF
 
 	  DO 4 i=1,3
-	    ahat(i)=ahat(i)/amag
+	    pvec(i)=pvec(i)/amag
    4	  CONTINUE
-	  CALL DXPROD(bhat,rhat,ahat)
-	  CALL DUNITIZE(bhat)
+
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+C      pvec is the projected ABSORBING direction, so it is bhat (the
+C      extinguished axis) and the transmitted axis is its partner.
+C      NOTE: no DUNITIZE on ahat.  It is unit to a rounding error
+C      already (a cross product of two unit, orthogonal vectors), and
+C      leaving the redundant normalization out is what makes the
+C      material-axis rule return the declared axis BIT-for-bit at
+C      normal incidence -- see convention 2.
+	    DO i=1,3
+	      bhat(i)=pvec(i)
+	    END DO
+	    CALL DXPROD(ahat,bhat,rhat)
+	  ELSE
+C      pvec is the projected FAST axis; the slow axis completes it.
+	    DO i=1,3
+	      ahat(i)=pvec(i)
+	    END DO
+	    CALL DXPROD(bhat,rhat,ahat)
+	    CALL DUNITIZE(bhat)
+	  END IF
 
 	  Ea=DCMPLX(ahat(1))*Eout(1)+DCMPLX(ahat(2))*Eout(2)+
      &	     DCMPLX(ahat(3))*Eout(3)
@@ -2992,6 +3077,9 @@ C      extinguish rather than pick an arbitrary basis.
      &	     DCMPLX(bhat(3))*Eout(3)
 
 	  IF (EltType.EQ.TrPolarizerElt) THEN
+C      Polarizer: ahat is the transmitted axis, bhat the projected
+C      material (absorbing) direction, so Jmat is the projector
+C      diag(1,0) in that basis.
 	    Ja=DCMPLX(1d0,0d0)
 	    Jb=DCMPLX(0d0,0d0)
 	  ELSE

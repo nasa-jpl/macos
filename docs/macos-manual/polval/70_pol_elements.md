@@ -159,44 +159,109 @@ ray field at the first physical leg, so a polarizing element placed after that
 leg would transform rays and never reach the grid — the same limitation
 quantified for the coronagraph chain in section 5.
 
-## 6.7 Scope: normal incidence, and the off-normal convention (now settled)
+## 6.7 Off normal: the material-axis convention, and its gate
 
-Every gate above is at strict normal incidence. That is not a convenience.
+Every gate above is at strict normal incidence. That is not a convenience:
+it is the regime in which the element Jones is the only thing that can move
+the answer. Away from it, an *ideal* polarizer carries a genuine convention
+question, and this section is that question, its answer, and the engine
+measurement that holds MACOS to it.
 
-Away from normal incidence an *ideal* polarizer carries a genuine convention
-question. The element's axis is declared in global coordinates and must be
-projected into the plane transverse to the ray, and orthographic projection
-does not preserve orthogonality — so declaring the **pass** axis and
-projecting it is not the same operation as declaring the **block** axis,
-projecting that, and transmitting the complement. The two constructions
-disagree by **3.56°** of axis orientation at 20° of incidence
-(at 45° of azimuth, where the effect is largest; the closed form is
+The element's axis is declared in global coordinates and must be projected
+into the plane transverse to the ray. Orthographic projection does not
+preserve orthogonality — so declaring the **pass** axis and projecting it is
+not the same operation as declaring the **block** axis, projecting that, and
+transmitting the complement. The two constructions disagree by
+**3.56°** of transmitted-axis orientation at 20° of incidence (at
+45° of azimuth, where the effect is largest; the closed form is
 `acos(2cos a/(1+cos²a))`, bounded by `sin²a`).
 
 **The convention is settled (2026-07-27): project the *material* axis.**
 The invariant object in a tilted element is the material direction fixed in
 it — the absorbing direction (the wires of a wire grid, the dipole chains of
 a dichroic sheet) for a polarizer, the crystal fast axis for a waveplate.
-This is the *dipole model*, and it is not a modelling taste: exactly this
-ambiguity was adjudicated experimentally for a tilted dichroic polarizer by
-Korger et al., *Opt. Express* **21**, 27032 (2013), in the dipole model's
-favour. For the waveplate the declared (fast) axis *is* the material axis,
-so the implementation above is already the settled rule. For the polarizer
-the material axis is the block direction — the in-plane complement of the
-declared pass axis — and the implementation currently projects the pass axis
-instead: **identical at the normal incidence gated here, pending the flip
-off normal**, which lands with an off-normal fixture and an engine-driven
-gate against the closed form above. Until then the off-normal polarizer
-path is unvalidated as well as un-flipped, and this section's numbers are
-unaffected either way.
+This is the *dipole model*, and it is not a modelling taste. Both candidate
+constructions are in the literature — the pass-axis projection is Fainman
+and Shamir's (*Appl. Opt.* **23**, 3188, 1984) and the absorbing-axis one is
+Eq. (5)–(6) of J. Korger, T. Kolb, P. Banzer, A. Aiello, C. Wittmann, C. Marquardt and G. Leuchs, "The polarization properties of a tilted polarizer," Opt. Express 21(22), 27032-27042 (2013) *(external, captured 2026-07-27)* —
+and Korger et al. decided between them experimentally, measuring the Mueller
+matrix of a commercial nano-particle polarizer tilted to near grazing:
+*only the absorbing model explains the drastic change of the transmitted
+state of polarization observed when the polarizer is tilted.* MACOS now
+implements their Eq. (6): form the absorbing direction, project it,
+extinguish it, transmit its orthogonal partner. For the waveplate the
+declared (fast) axis already *is* the material axis, so that element was
+unchanged.
 
-The disagreement vanishes identically at normal incidence, which is why every
-number in this section is unaffected by the choice. It **also** vanishes when
-the declared axis lies in, or perpendicular to, the plane of incidence:
-`0.000e+00°` at the same 20° tilt. That second zero is a trap
-worth naming — the most natural way to probe the effect (axis along *x*, tilt
-in the *x*–*z* plane) is exactly the degenerate case, and reports a reassuring
-zero that means nothing.
+`PolAxis=` still declares the *transmission* axis for a polarizer; what
+changed is what MACOS derives from it. Two consequences follow from the
+element normal entering the construction: only the component of the declared
+axis perpendicular to that normal has any effect, and an axis parallel to it
+extinguishes.
+
+### Gated in the engine, at 20° of incidence
+
+The rule is exercised on `Rx_PolElt_Tilt.in`, which tilts the **beam** — a
+collimated on-axis bundle does not care whether the *element* is tilted, so
+tilting the element would have measured nothing. The chief ray runs at 20° to
+the polarizers' normal and every ray in the bundle does the same, measured
+out of the engine's own direction cosines and surface normal rather than
+assumed: **7.1e-15°** of residual from 20° across all rays.
+
+The transmitted axis is read from the field itself — a polarizer's output is
+its transmitted axis times a complex scalar — and both candidate axes are
+constructed independently from the geometry:
+
+| Claim | Result |
+|---|---|
+| engine transmitted axis **is** the material-axis rule | 1.2e-16 rad |
+| and **misses** the pass-axis projection by | 3.5616° |
+| that miss equals the closed form to | 1.3e-14° |
+
+The second row is what makes the first a measurement rather than a
+coincidence: the engine is required both to land on one construction and to
+miss the other by a predicted amount.
+
+The same discrimination is repeated on the **detector plane**, because
+`propsub`'s `CPROPAGATE` re-traces the seed rays through its own dispatch
+chain (§6.6) and a basis change has to be gated on both. Off normal the
+crossed-analyzer null sits at a *different azimuth* under each rule —
+**7.11°** apart — so pointing the engine at each in turn
+separates them using total intensity alone, with no assumption about the
+component planes' frame:
+
+| Analyzer set to the null predicted by | Detector power |
+|---|---|
+| the material-axis rule | 9.1e-33 of the aligned value |
+| the pass-axis projection | 1.526e-02 |
+
+and that leak is the predicted `cos²` of the residual axis mismatch to
+4.5e-16 — a number, not a "greater than zero". Rebuilding the
+engine with the pass-axis basis restored moves both: the transmitted axis
+misses the material rule by the full 3.5616° and the
+detector power at the material-rule null rises to
+1.526e-02 *(external, captured 2026-07-27;
+that engine no longer exists in the tree)*. The null moves rather than
+blurring, so the two rules are some thirty orders of magnitude apart on the
+detector plane.
+
+### Where the choice is invisible — and the trap in that
+
+The disagreement vanishes identically at normal incidence, which is why
+every number in §6.1–6.6 is unaffected by the rule and why the flip left
+them **bit-for-bit** unchanged (the partner axis is completed by a cross
+product with the ray direction, which returns the declared axis to the last
+bit, up to a sign a projector cannot see).
+
+It **also** vanishes when the declared axis lies in, or perpendicular to,
+the plane of incidence: `0.000e+00°` at the same 20° tilt.
+That second zero is worth naming as a trap, because the most natural way to
+probe the effect — axis along *x*, tilt in the *x*–*z* plane — is exactly the
+degenerate case and reports a reassuring zero that means nothing. Measured in
+the engine at those two azimuths: the two constructions agree to
+7.6e-18 rad and MACOS sits on **both** of them to
+5.6e-17 rad. A gate written there passes whichever rule is
+implemented, which is why the gates above are at 45° of azimuth.
 
 `RfPolarizer` — a *reflective* polarizer, which is inherently off-normal —
 is still not implemented. The settled convention no longer blocks it, but a
@@ -215,7 +280,12 @@ polarizing beamsplitter is two traces), no walk-off, no Fresnel loss at the
 plate faces, no substrate thickness. The output field is purely transverse,
 so any longitudinal component present at the surface is discarded — which is
 what a 2×2 Jones element means, and which is exactly zero for the collimated
-normal-incidence fixture used here.
+normal-incidence fixture used here. One more belongs on that list now that
+the polarizer's off-normal behaviour is settled: the waveplate's retardance
+does **not** vary with angle of incidence, where a real crystal plate's does
+— the field-of-view effect behind compound and Pancharatnam designs. Bounding
+that needs a birefringent-plate model with ordinary and extraordinary indices
+and a thickness, which is out of scope here.
 
 ![Figure 7 — Polarizing elements against their closed forms. Left: Malus's
 law across 25 analyzer angles. Centre: the Stokes parameters of linear input

@@ -245,8 +245,9 @@ way — CCMac is gfortran-only.)
        `mmacos/CLAUDE.md`).  So a 2c evidence section either uses the
        weaker chain at 128 or the driver must split into per-model-size
        batch invocations.
-  4. ~~**Phase 3 polarizer + waveplate**~~ — **LANDED 2026-07-27, ONE
-     CONVENTION DECISION OPEN.**  `TrPolarizerElt(15)` finished from its
+  4. ~~**Phase 3 polarizer + waveplate**~~ — **LANDED 2026-07-27; the one
+     convention decision it raised is now SETTLED AND GATED (see the
+     material-axis block at the end of this item).**  `TrPolarizerElt(15)` finished from its
      name-table-only stub and `WavePlateElt(18)` added (`mEltTypes`
      17→18), both served by a new `PolElt` in `elemsub.F`; `PolAxis=` /
      `Retardance=` keywords in both parse chains + SAVE; `polelt_set`/
@@ -260,17 +261,42 @@ way — CCMac is gfortran-only.)
      Reference-surface twin fixture.  Each mechanism has an in-suite
      non-vacuity A/B (R=0 collapses the QWP and the 2θ law; the polarizer
      is checked to FAIL unitarity).
-     **Deliberately NOT landed: `RfPolarizerElt(14)`.**  A reflective
-     polarizer is inherently off-normal, and off normal an ideal polarizer
-     carries a real O(sin²AOI) convention question — declaring the PASS
-     axis and projecting it is not equivalent to declaring the BLOCK axis
-     and transmitting the complement.  Measured: **3.56° of axis
+     **The off-normal axis convention — SETTLED AND GATED 2026-07-27
+     (Fable decision, Opus landing).**  Off normal an ideal polarizer
+     carries a real O(sin²AOI) question: declaring the PASS axis and
+     projecting it is not equivalent to declaring the BLOCK axis and
+     transmitting the complement.  Size: **3.56° of transmitted-axis
      orientation at 20° AOI**, closed form `acos(2cos a/(1+cos²a))` at 45°
-     azimuth, and **identically zero when the axis lies in or
-     perpendicular to the plane of incidence** (so the obvious test tilt
-     is degenerate and reports a meaningless zero).  Every gate is at
-     strict normal incidence where the ambiguity vanishes exactly.
-     Decision packet: `REVIEW_POL_ELEMENTS_2026-07-27.md`.
+     azimuth, **identically zero at normal incidence and when the axis
+     lies in or perpendicular to the plane of incidence** (so the obvious
+     test tilt is degenerate and reports a meaningless zero).  **The rule
+     is PROJECT THE MATERIAL AXIS** — the absorbing direction for a
+     polarizer, the crystal fast axis for a waveplate.  Not a taste call:
+     both constructions are in the literature (pass-axis = Fainman &
+     Shamir, *Appl. Opt.* **23**, 3188 (1984); material-axis = Korger et
+     al., *Opt. Express* **21**, 27032 (2013) Eq. (5)–(6)) and Korger et
+     al. decided between them by measuring the Mueller matrix of a tilted
+     dichroic polarizer.  `PolElt`'s polarizer branch was flipped
+     accordingly (keyword semantics unchanged, `PolAxis=` still declares
+     the pass axis); the waveplate branch was already the settled rule.
+     **Normal incidence is bit-identical across the flip** — verified
+     against pre-flip captures, and `PolElt` deliberately omits a
+     redundant `DUNITIZE` to keep it so.  New fixture
+     `Rx_PolElt_Tilt.in` tilts the BEAM (tilting the element does nothing
+     to a collimated on-axis bundle); gates in `tPolElement` section F,
+     both dispatch chains: transmitted axis on the material rule to
+     6e-17 rad and missing the pass-axis one by the closed form to 1e-13°,
+     and — grid side — the crossed-analyzer null moves 7.11° between the
+     rules, giving 9.1e-33 vs 1.53e-2 of relative detector power.
+     Non-vacuity measured by rebuilding the pass-axis engine: both new
+     engine gates fail (3.5616°, and the null/leak values swap).  The
+     degenerate-azimuth gate passes on BOTH engines, which is exactly its
+     job.  Decision packet: `REVIEW_POL_ELEMENTS_2026-07-27.md`;
+     evidence: polval §6.7.
+     **Still NOT landed: `RfPolarizerElt(14)`.**  The convention no longer
+     blocks it; a reflective wire grid simply carries more physics (grid
+     reflection efficiency, the substrate's own s/p response) and nothing
+     needs it yet.
      **Finding worth propagating: there are TWO element dispatch chains.**
      `propsub.F`'s `CPROPAGATE` re-traces the rays that seed the
      diffraction grid through its own `EltID` chain, so an element wired
@@ -704,12 +730,16 @@ a surface routine in `elemsub.F` transforming `Eout` from `Evec`, keywords in
 exposure — and, for track A, a Bench `add_*` emitter.
 
 > **STATUS 2026-07-27: the polarizer and the waveplate LANDED** (Opus
-> worklist item 4).  `PolElt` in `elemsub.F`, dispatched from BOTH
-> `tracesub.F` and `propsub.F`; gates in `tPolElement` (23).  The VVC is
-> untouched and remains Fable-lane.  `RfPolarizer` is held pending the
-> off-normal axis convention — see `REVIEW_POL_ELEMENTS_2026-07-27.md`
-> and the worklist entry above.  Text below is the original spec; the
-> two deltas from it are recorded in the worklist entry.
+> worklist item 4), and the off-normal axis convention they raised is
+> **settled and gated** — project the MATERIAL axis (the second landing,
+> same day).  `PolElt` in `elemsub.F`, dispatched from BOTH `tracesub.F`
+> and `propsub.F`; gates in `tPolElement` (27), including section F on the
+> tilted-beam fixture `Rx_PolElt_Tilt.in`.  The VVC is untouched and
+> remains Fable-lane.  `RfPolarizer` is still a stub, now only because a
+> reflective wire grid carries grid-efficiency and substrate s/p physics
+> beyond the axis rule — see `REVIEW_POL_ELEMENTS_2026-07-27.md` and the
+> worklist entry above.  Text below is the original spec; the deltas from
+> it are recorded in the worklist entry.
 
 - **Ideal linear polarizer** — ~~finish `RfPolarizerElt(14)`/~~`TrPolarizerElt(15)`.
   Keyword for the transmission-axis vector; `Eout` = projection onto the axis, reflect

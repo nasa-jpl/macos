@@ -329,3 +329,161 @@ certify a conjugated retarder — same lesson as the coherency bug, now
 applied preemptively); the Reference-twin bit-identity gate; non-vacuity
 A/Bs against the "silently do nothing" prior; pymacos shim deferral
 correctly scoped as regression-only.
+
+---
+
+## Landing — the material-axis rule, implemented and gated (2026-07-27 pm, Opus)
+
+All five points of the landing spec are in. The decision itself was not
+re-opened.
+
+### 1. The flip
+
+`PolElt`'s basis construction now selects the vector to project by element
+type. For a `WavePlate` it is the declared (fast) axis — unchanged, since
+that IS the material axis. For a `TrPolarizer` it is `mvec = psi x
+PolAxis`, the absorbing direction; that is projected into the transverse
+plane, becomes `bhat` (extinguished), and the transmitted `ahat = bhat x
+rhat` completes it. Keyword semantics are untouched: `PolAxis=` still
+declares the transmission axis.
+
+This is exactly Eq. (5)–(6) of Korger et al. — `â = unit(P_A − (P_A·ẑ)ẑ)`,
+`E_out = E_in − (E_in·â)â`, i.e. `T_A = 1 − ââᵀ = t̂t̂ᵀ` with `t̂ = ẑ × â`.
+Worth recording from reading the paper: **both** constructions are in the
+literature, and the one that shipped first is Fainman and Shamir's
+transmitting-axis projection (*Appl. Opt.* **23**, 3188, 1984), which
+Korger et al. cite as the model they are testing against. Their §3 states
+the two "coincide only for normal incidence" and their Fig. 2(c) is the
+measurement: *only the absorbing model explains the drastic change of the
+transmitted state of polarization observed when the polarizer is tilted*.
+So the rejected option was a defensible published model, not a slip — which
+is the reason the ambiguity was real enough to need arbitration.
+
+Two consequences of `psi` entering the construction, both documented at
+every surface: a polarizer's declared axis is now taken **modulo its
+component along the element normal**, and a pass axis **parallel** to the
+normal extinguishes (it leaves no in-element blocked direction). The
+pre-existing degenerate case — material axis along the ray — is unchanged
+and shares the same guard.
+
+### 2–3. The fixture, and the engine-driven A/B
+
+`tests/Rx/Rx_PolElt_Tilt.in` tilts the **beam**: `ChfRayDir = (sin20, 0,
+cos20)`, source frame following it, two `TrPolarizer` elements left at
+`psiElt = −z` so they see exactly 20° while every other element stays
+normal to the beam. The packet's warning was right — tilting the element
+would have measured nothing.
+
+Section F of `tPolElement`, four new gates (23 → 27):
+
+| Gate | Result |
+|---|---|
+| AOI is 20° ray by ray, from the engine's own direction cosines and normal | 7.1e-15° residual |
+| transmitted axis **is** the material rule (all 12453 rays) | 1.2e-16 rad |
+| and **misses** the pass-axis projection by the closed form | 3.5616°, matching to 1.3e-14° |
+| detector-plane power at the material-rule crossed null | 9.1e-33 relative |
+| detector-plane power at the pass-axis crossed null | 1.526e-02, = the predicted cos² to 4.5e-16 |
+| degenerate azimuths (0°, 90°): constructions agree, engine on both | 7.6e-18 / 5.6e-17 rad |
+
+(the numbers are the polval driver's, which re-measures all of it
+independently of the test class; the test class's own tolerances are looser
+by design)
+
+Two remarks on how these were built. First, the transmitted axis is read
+**from the field** (a polarizer's output is `t̂` times a complex scalar) with
+the ray direction and surface normal taken from `rayfield_get`, so nothing
+assumes the fixture's declared numbers — the discipline the odd-mirror PEC
+gate established. Second, the angle is computed as `atan2(|cross|,|dot|)`,
+not `acos(dot)`: the first version used `acos` and reported 8.5e-7 rad for a
+residual that was really 1e-16, which would have forced a meaninglessly loose
+tolerance.
+
+**The grid-side gate needed a different idea than the ray-side one.** A
+component-ratio comparison on the detector planes would have imported a
+question about their frame. Instead it uses the crossed-analyzer null: off
+normal, the analyzer azimuth that extinguishes is a *different number* under
+the two rules — 131.445° vs 138.555°, 7.11° apart — so pointing the engine at
+each in turn discriminates them with **total intensity alone**. The
+separation is ~30 orders of magnitude, and the leak at the wrong setting is
+asserted against its predicted `cos²`, so it is a number rather than a
+"greater than zero".
+
+**Non-vacuity, measured not argued.** The pass-axis engine was rebuilt (both
+`EltType.EQ.TrPolarizerElt` basis branches made unreachable, full
+`makems.sh` + mex relink) and the suite re-run: the two new engine gates
+**fail** — transmitted axis off by the full 3.5616°, and the null/leak
+values swap to 1.53e-2 / 1.86e-32. All 23 original gates pass on **both**
+engines, as does the degenerate-azimuth gate — which is precisely its job.
+Captured in `external.json` as `X_MATAXIS_PREFIX_*`.
+
+### 4. Normal incidence is bit-identical, and now asserted
+
+Values were captured from the pre-flip engine *before* the flip (macos
+`52c7669`) and are asserted literally in
+`test_normal_incidence_unchanged_by_the_material_flip`: the per-ray complex
+field after polarizer→two waveplates→analyzer at generic axes, and a
+four-point Malus curve at the **detector** — all matching to all 17
+significant digits, ray side and grid side.
+
+That is not automatic. `ahat = bhat x rhat` returns the declared axis to the
+last bit only if nothing renormalizes it afterwards, so `PolElt` deliberately
+omits the `DUNITIZE` that the waveplate branch applies to its partner axis
+(the vector is already unit to a rounding error; the redundant division would
+perturb it by an ULP). The reason is now a comment in the routine, because it
+looks like an oversight.
+
+### 5. Docs
+
+Every provisional flag is gone: engine `PolElt` header + `elt_mod.F`,
+`macos_f90/CLAUDE.md` (conventions list renumbered to five, the OPEN block
+replaced by the settled rule), `mmacos/CLAUDE.md`, `PLAN_POLARIZATION.md`
+(worklist item 4 and the Phase 3 status block), the two veneer docstrings,
+cmdref NOTES ×2 (regenerated), manual §4, `tests/README.md`, and polval §6.7
+— rewritten from "the one convention question" to the settled rule plus its
+engine gate, with the frontmatter and coverage sections following. The
+waveplate idealization note (retardance does not vary with AOI; a real
+crystal plate's does — the field-of-view effect) is added at the engine
+header, the veneer, cmdref, the manual, and the polval idealization list.
+Korger et al. is in `external.json` as `X_KORGER`, with the Fainman–Shamir
+citation recorded alongside it as the rejected construction.
+
+`RfPolarizer` stays a stub, and its *reason* changed: no longer the axis
+convention, now grid reflection efficiency and the substrate's own s/p
+response. Stated that way in all five places that mentioned it.
+
+### Regression
+
+| Gate | Result |
+|---|---|
+| `tPolElement` | **27 pass, 0 fail** (23 → 27) |
+| mmacos full suite (gfortran) | **467 pass, 0 fail** — fast 316 / masks 62 / freeform 60 / proper-512 10 / pol-512 6 / proper-1024 13 |
+| ifx build (`makems.sh release ifx`) | **SUCCEEDED** — the standing ifx smoke |
+| GMI regression | **6/6, `vs-ref = 0.000e+00`** |
+| pymacos suite (ifx-linked) | **6694 passed, 1 skipped** — identical to the pre-flip capture |
+| polval regen | all gate thresholds pass, including the 10 new ones at model 128 |
+
+**The polval regen is again a no-op proof, and this time it is the
+bit-identity claim at report scale**: 136 → 146 tokens, 10 added, **none
+removed, none changed**. Every published Phase 0–3 number is untouched by the
+flip, which is what "identical at normal incidence" has to mean if it means
+anything.
+
+The engine was rebuilt for both compilers after the last (comment-only) edit
+and `tPolElement` re-run on that final binary, so the shipped mex and the
+committed source are the same code.
+
+**What the cross-binding suites do and do not cover here.** No fixture in
+pymacos or GMI instantiates `TrPolarizer` or `WavePlate` — checked, not
+assumed — so `PolElt` is unreachable from either and this change cannot
+affect their results. Both were re-run anyway and are unchanged; they confirm
+inertness rather than covering the new behaviour, and the pymacos bindings for
+the three polarizing-element API routines are still deferred as in the first
+landing. The **PROPER-comparison driver** (`run_proper_tests.sh`) was *not*
+re-run separately this time, for the same reachability reason; its committed
+residuals are the ones captured at the `r_p` landing earlier today.
+
+One process note, since it cost a wasted 9-minute run: `pymacos/tests/context.py`
+resolves `src/` as `Path(".").absolute().parent/'src'`, so pytest **must** be
+invoked from `tests/`. From the repo root every test errors on
+`ModuleNotFoundError: No module named 'pymacos'` — 6584 "failures" that are
+entirely the invocation. `external.json`'s command string now says so.

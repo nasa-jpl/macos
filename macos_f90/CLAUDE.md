@@ -665,7 +665,9 @@ full audit.  Quick map of what the engine has and the conventions to hold.
   `TrPolarizerElt(15)` and the NEW `WavePlateElt(18)` are implemented and
   gated; `JmatElt(2,2,mElt)` is no longer dead (PolElt fills it).
   `RfPolarizerElt(14)` is STILL a name-table-only stub, deliberately --
-  it is inherently off-normal and blocked on the axis convention below.
+  a reflective wire grid carries grid reflection efficiency and the
+  substrate's own s/p response beyond the (now settled) axis rule, and
+  nothing needs it yet.
   No VVC; no Mueller math in the engine.
 - `srtrace.F`'s `ifPol=.false.` is a **local `parameter` in the dead
   `SRTRACE_Test` driver only** (its caller is under `#if 0`).  The production
@@ -853,7 +855,7 @@ retarder; `mEltTypes` 17 -> 18).  Rx keywords `PolAxis=` (3-vector) and
 `Retardance=` (waves at parse-time Wavelen), `ChkDf2` requires both on the
 types that use them, SAVE writer inverts the Wavelen scaling.  API
 `polelt_set`/`polelt_get`/`jmat_elt_get`; mmacos `macos.polarizer` /
-`macos.waveplate` / `macos.elt_jones`.  Gates: `tPolElement` (23, SUITE_FAST).
+`macos.waveplate` / `macos.elt_jones`.  Gates: `tPolElement` (27, SUITE_FAST).
 
 **Geometry is RefSrf's, verbatim** -- conic intersection, `rout=ihat`, the
 same `C1=exp(-i*2pi*L*N/lambda)` propagation phase, the same ChkRayTrans
@@ -864,21 +866,27 @@ the source.
 **`JmatElt` is now live and its per-ELEMENT shape is exact, not a
 shortcut.**  The element Jones in its OWN eigenbasis -- `diag(1,0)` for a
 polarizer, `diag(1,exp(-i*delta))` for a retarder -- carries no ray
-dependence; ALL of it lives in the basis (`ahat` = declared axis projected
-into the ray's transverse plane, `bhat = rhat x ahat`).
+dependence; ALL of it lives in the basis (`ahat` = transmitted / fast axis,
+`bhat` = blocked / slow axis, built per ray by convention 2 below).
 
-**Conventions -- all three EXTEND the pinned set, none is new law:**
+**Conventions -- all five EXTEND the pinned set, none is new law:**
 1. *Axis as a 3-VECTOR*, not an angle in some element frame, so no
    "which in-plane direction is zero degrees" convention has to be invented.
-2. *Orthonormalize the partner axis* rather than projecting a second
+2. *Project the MATERIAL axis* into the ray's transverse plane -- see the
+   off-normal section below for why this is a physical statement and not
+   bookkeeping.  For a WavePlate the material axis is the declared (fast)
+   axis; for a TrPolarizer it is the ABSORBING direction, the in-element
+   complement `psi x PolAxis` of the declared pass axis, which is projected
+   and extinguished while its partner is transmitted.
+3. *Orthonormalize the partner axis* rather than projecting a second
    declared axis.  FORCED, not chosen: a lossless retarder must be unitary,
    and only an orthonormal eigenbasis makes `diag(1,exp(-i*delta))` unitary.
-3. *Retardance sign read off the engine.*  `C1=exp(-i*2pi*L*N/lambda)` means
+4. *Retardance sign read off the engine.*  `C1=exp(-i*2pi*L*N/lambda)` means
    the slow axis takes the more negative phase, so fast-axis-declared gives
    `diag(1,exp(-i*delta))`.  Pinned by the SIGNED circular Stokes parameter
    (`S3/S0 = -1` for linear-in / QWP at 45 deg), which flips if the
    convention flips -- a `|S3|` gate would accept either.
-4. *Retardance is stored PHYSICALLY* ((n_s-n_f)*d), Rx value scaled by
+5. *Retardance is stored PHYSICALLY* ((n_s-n_f)*d), Rx value scaled by
    Wavelen at load, divided by the current lambda at trace -- the same
    treatment `Coating=` thickness gets, so a plate is fixed glass and sweeps
    are chromatic.
@@ -896,26 +904,58 @@ element that touches the field needs BOTH chains.  (`srtrace.F` has a third
 chain but it is inside `SRTRACE_Test`, under `#if 0` -- dead, nothing to
 add.)  `tPolElement/test_grid_carries_the_polarizing_train` is the tripwire.
 
-**OPEN, referred to the Fable lane -- the off-normal axis convention.**
-For an ideal polarizer away from normal incidence, projecting the declared
-PASS axis is NOT equivalent to projecting a declared BLOCK axis and
-transmitting the complement: orthographic projection does not preserve
-orthogonality.  `PolElt` declares the PASS axis.  Measured size of the
-disagreement: **3.56 deg of axis orientation at 20 deg AOI**, closed form
-`acos(2 cos a/(1+cos^2 a))` at 45 deg azimuth, bounded by `sin^2 a`, and
-**identically zero when the axis lies in or perpendicular to the plane of
-incidence** -- so the obvious test tilt (axis along x, tilt in x-z) is
-degenerate and reports a reassuring zero that means nothing.  Every physics
-gate is at strict normal incidence, where the ambiguity vanishes exactly.
-`RfPolarizerElt(14)` is left a stub because it is inherently off-normal and
-cannot be landed before this is settled.  Packet:
-`macos/REVIEW_POL_ELEMENTS_2026-07-27.md`.
+**SETTLED 2026-07-27 -- the off-normal axis convention: PROJECT THE
+MATERIAL AXIS.**  Away from normal incidence the declared axis has to be
+brought into the plane transverse to the ray, and orthographic projection
+does not preserve orthogonality, so projecting the declared PASS axis is
+NOT equivalent to projecting the BLOCK axis and transmitting the
+complement.  The invariant object is the direction fixed in the SUBSTANCE
+of the element -- the absorbing direction (a wire grid's wires, a dichroic
+sheet's dipole chains) for a polarizer, the crystal fast axis for a
+waveplate -- so that is what gets projected.  Not a taste call: the same
+ambiguity was adjudicated experimentally for a tilted dichroic polarizer by
+**Korger et al., Opt. Express 21, 27032 (2013)**, in the dipole model's
+favour.
+
+The waveplate branch was already the settled rule (its declared axis IS the
+material axis); the polarizer branch was flipped, keyword semantics
+unchanged -- `PolAxis=` still declares the TRANSMISSION axis, and the
+absorbing direction `psi x PolAxis` is derived from it.  Size of the
+change: **3.56 deg of transmitted-axis orientation at 20 deg AOI**, closed
+form `acos(2 cos a/(1+cos^2 a))` at 45 deg azimuth, bounded by `sin^2 a`,
+and **identically zero at normal incidence AND when the axis lies in or
+perpendicular to the plane of incidence** -- so the obvious test tilt (axis
+along x, tilt in x-z) is degenerate and reports a reassuring zero that
+means nothing.  Two consequences worth knowing:
+
+* **Normal incidence is bit-identical across the flip**, by construction
+  and verified: the partner axis is completed by a cross product with the
+  ray direction, which returns the declared axis to the last bit up to an
+  overall sign a projector cannot see.  `PolElt` deliberately does NOT
+  `DUNITIZE` the polarizer's transmitted axis -- normalizing an already-unit
+  vector would perturb it by an ULP and break exactly that.
+* **A polarizer's declared axis is now taken modulo its component along the
+  element normal** (only `psi x PolAxis` enters), and a pass axis PARALLEL
+  to the normal is a prescription error that extinguishes, alongside the
+  pre-existing material-axis-along-the-ray case.
+
+Gated engine-side at 20 deg AOI / 45 deg azimuth on BOTH dispatch chains by
+`tPolElement` section F, on the tilted-BEAM fixture `Rx_PolElt_Tilt.in`
+(tilting the ELEMENT does nothing to a collimated on-axis bundle).
+`RfPolarizerElt(14)` is still a stub -- the convention no longer blocks it,
+but a reflective wire grid carries grid reflection efficiency and the
+substrate's own s/p response beyond the axis rule, and nothing needs it.
+Packet: `macos/REVIEW_POL_ELEMENTS_2026-07-27.md`.
 
 **Idealizations (documented, not worked around):** no ray splitting (a PBS
 is two traces, or better a coated `Reflector` at 45 deg where s/p is
 physical), no walk-off, no face Fresnel loss, no substrate; the output is
 purely transverse, so any longitudinal component at the surface is dropped
 (exactly zero for a collimated normal-incidence beam, O(NA) otherwise).
+The waveplate is an IDEAL retarder: its retardance does not vary with
+incidence angle, where a real crystal plate's does (the field-of-view
+effect behind compound and Pancharatnam designs).  Anyone needing that
+needs a birefringent-plate model with o/e indices and thickness.
 
 **Tranche-1 interaction to respect when building fixtures:** a polarizing
 element placed AFTER the first physical-optics leg transforms rays but never

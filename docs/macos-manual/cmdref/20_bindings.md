@@ -541,7 +541,6 @@ analysis wants.
 **Diagonal by construction:** `diag(1,0)` for an ideal polarizer,
 `diag(1, exp(-i*2*pi*R))` for a waveplate. Returns zeros if no polarized
 trace has run.
-
 <!-- END NOTES fn-elt-jones -->
 
 #### elt_kc
@@ -1576,7 +1575,7 @@ CLI POLarized/NOPolarization.
 - **mmacos:** `out = macos.polarizer(srf, opts)`
 - **pymacos:** *not available*
 
-Set or query an ideal linear polarizer element. macos.polarizer(SRF, 'axis', A) sets the TRANSMISSION axis of the TrPolarizer element at SRF.  A is a 3-vector in GLOBAL coordinates; it need not be unit length, and it need not lie in the element's surface. The engine projects it into each ray's transverse plane and normalizes (see PolElt in elemsub.F).
+Set or query an ideal linear polarizer element. macos.polarizer(SRF, 'axis', A) sets the TRANSMISSION axis of the TrPolarizer element at SRF. A is a 3-vector in GLOBAL coordinates; it need not be unit length, and it need not lie in the element's surface. The engine projects it into each ray's transverse plane and normalizes (see PolElt in elemsub.F).
 
 <!-- BEGIN NOTES fn-polarizer -->
 
@@ -1598,21 +1597,28 @@ plain geometric surface and the axis is inert -- a trace through it is
 bit-identical to the same train with a `Reference` surface in its place
 (gated by `tPolElement/test_unpolarized_bit_identical_to_reference_twin`).
 
-**Normal incidence is the gated regime.** Off normal, declaring the PASS
-axis and projecting it is not equivalent to declaring the BLOCK axis and
-transmitting the complement: orthographic projection does not preserve
-orthogonality, and the two constructions differ by 3.56 degrees of axis
-orientation at 20 degrees AOI (identically zero when the axis lies in, or
-perpendicular to, the plane of incidence). This function declares the PASS
-axis. The choice is reported, not settled -- see
-`REVIEW_POL_ELEMENTS_2026-07-27.md`. `RfPolarizer` (EltID 14) remains a stub
-for the same reason: it is inherently off-normal.
+**Off normal, the MATERIAL axis is what gets projected.** The declared
+axis has to be brought into the plane transverse to the ray, and
+orthographic projection does not preserve orthogonality, so projecting the
+declared PASS axis is not the same operation as projecting the BLOCK axis
+and transmitting the complement -- the two differ by
+`acos(2cos a/(1+cos^2 a))`, 3.56 degrees of transmitted-axis orientation at
+20 degrees AOI, and identically zero at normal incidence or when the axis
+lies in, or perpendicular to, the plane of incidence. The engine projects
+the material (absorbing) direction `psi x axis`, extinguishes it, and
+transmits its orthogonal partner: the dipole rule, measured for a tilted
+dichroic polarizer by Korger et al., *Opt. Express* **21**, 27032 (2013).
+The keyword still declares the PASS axis; only the component perpendicular
+to the element normal matters, and an axis parallel to the normal
+extinguishes. Gated at 20 degrees AOI on both dispatch chains by
+`tPolElement` section F. `RfPolarizer` (EltID 14) remains a stub, now for a
+different reason: a reflective wire grid carries grid efficiency and
+substrate s/p physics beyond the axis rule.
 
 **Axis storage.** The API stores the axis as given, so a query returns what
 was written; the Rx parser UNITIZES on load (matching `psiElt=`), so a
 non-unit axis comes back normalized after a save/reload round trip. Either
 way it is a direction -- `PolElt` normalizes per ray.
-
 <!-- END NOTES fn-polarizer -->
 
 #### ray_field
@@ -1828,7 +1834,7 @@ Standard 3-view layout figure for the LOADED prescription. fig = macos.view_std(
 - **mmacos:** `out = macos.waveplate(srf, opts)`
 - **pymacos:** *not available*
 
-Set or query a linear retarder (waveplate) element. macos.waveplate(SRF, 'axis', A, 'retardance', R) configures the WavePlate element at SRF.  A is the FAST axis as a 3-vector in GLOBAL coordinates (projected into each ray's transverse plane by the engine). R is the retardance in WAVES at the CURRENT wavelength: 0.25 for a quarter-wave plate, 0.5 for a half-wave plate.
+Set or query a linear retarder (waveplate) element. macos.waveplate(SRF, 'axis', A, 'retardance', R) configures the WavePlate element at SRF. A is the FAST axis as a 3-vector in GLOBAL coordinates (projected into each ray's transverse plane by the engine). R is the retardance in WAVES at the CURRENT wavelength: 0.25 for a quarter-wave plate, 0.5 for a half-wave plate.
 
 <!-- BEGIN NOTES fn-waveplate -->
 
@@ -1853,16 +1859,26 @@ thickness already receives, and it means a query after a wavelength change
 returns a different R than was set -- physics, not a round-trip failure.
 
 **Thin idealization.** No o/e walk-off, no ray splitting, no Fresnel loss at
-the faces, no substrate thickness. The output is purely transverse: any
-longitudinal component present at the surface is discarded, which is what a
-2x2 Jones element means (exactly zero for a collimated normal-incidence
-beam, O(NA) otherwise). The element is also the primitive for bounding
-stress birefringence in a transmissive optic.
+the faces, no substrate thickness. The retardance is also independent of
+incidence angle, where a real crystal plate's is not (the field-of-view
+effect behind compound and Pancharatnam designs); bounding that needs a
+birefringent-plate model with o/e indices and thickness. The output is
+purely transverse: any longitudinal component present at the surface is
+discarded, which is what a 2x2 Jones element means (exactly zero for a
+collimated normal-incidence beam, O(NA) otherwise). The element is also the
+primitive for bounding stress birefringence in a transmissive optic.
+
+**Off normal, the declared axis is the material axis.** The crystal fast
+axis is the direction fixed in the substance of the plate, so it is what
+the engine projects into the ray's transverse plane -- the material-axis
+rule, which for a waveplate is just the declared axis. `macos.polarizer`
+projects a *different* vector from the same keyword (its material axis is
+the absorbing direction), so the two elements are not interchangeable off
+normal.
 
 **Unitary.** Gated for linear and circular input states, both against the
 field power and against `J'*J == I` from `elt_jones`, with the (non-unitary)
 polarizer as the non-vacuity companion.
-
 <!-- END NOTES fn-waveplate -->
 
 #### xp

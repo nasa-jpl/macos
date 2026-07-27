@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-27 14:43:18",
-    "engine_sha": "9e2bb68",
+    "generated": "2026-07-27 16:02:43",
+    "engine_sha": "52c7669",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "848245d",
+    "resources_sha": "3aec734",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
@@ -781,10 +781,10 @@
       "source": "driver"
     },
     "G59_AMBIG20": {
-      "value": 3.561642212571668,
+      "value": 3.5616422125716563,
       "text": "3.56",
       "units": "degrees",
-      "gate": "off-normal pass-vs-block axis ambiguity at 20 deg AOI, 45 deg azimuth",
+      "gate": "off-normal pass-vs-material axis difference at 20 deg AOI, 45 deg azimuth",
       "test": "tPolElement/test_offnormal_convention_magnitude",
       "source": "driver"
     },
@@ -792,8 +792,88 @@
       "value": 0,
       "text": "0.000e+00",
       "units": "degrees",
-      "gate": "the same ambiguity with the axis IN the plane of incidence (vanishes)",
+      "gate": "the same difference with the axis IN the plane of incidence (vanishes)",
       "test": "tPolElement/test_offnormal_convention_magnitude",
+      "source": "driver"
+    },
+    "G60_AOI_RESID": {
+      "value": 7.105427357601002e-15,
+      "text": "7.1e-15",
+      "units": "degrees",
+      "gate": "measured AOI at the tilted polarizer, residual from 20 deg (all rays)",
+      "test": "tPolElement/test_offnormal_transmitted_axis_is_the_material_rule",
+      "source": "driver"
+    },
+    "G60_MATAXIS": {
+      "value": 1.2412670766236366e-16,
+      "text": "1.2e-16",
+      "units": "radians",
+      "gate": "engine transmitted axis vs the MATERIAL-axis closed form, 20 deg AOI / 45 deg azimuth",
+      "test": "tPolElement/test_offnormal_transmitted_axis_is_the_material_rule",
+      "source": "driver"
+    },
+    "G60_VS_PASSAXIS": {
+      "value": 3.561642212571465,
+      "text": "3.5616",
+      "units": "degrees",
+      "gate": "engine transmitted axis vs the REJECTED pass-axis projection -- the full ambiguity",
+      "test": "tPolElement/test_offnormal_transmitted_axis_is_the_material_rule",
+      "source": "driver"
+    },
+    "G60_VS_PASSAXIS_RESID": {
+      "value": 1.2878587085651816e-14,
+      "text": "1.3e-14",
+      "units": "degrees",
+      "gate": "and that miss equals the closed form acos(2cos a/(1+cos^2 a)) to",
+      "test": "tPolElement/test_offnormal_transmitted_axis_is_the_material_rule",
+      "source": "driver"
+    },
+    "G61_DEGEN_SPREAD": {
+      "value": 7.622517127926792e-18,
+      "text": "7.6e-18",
+      "units": "radians",
+      "gate": "at azimuth 0 and 90 the two constructions coincide (the vacuity trap)",
+      "test": "tPolElement/test_offnormal_degenerate_azimuths_are_blind",
+      "source": "driver"
+    },
+    "G61_DEGEN_ENGINE": {
+      "value": 5.551115123125783e-17,
+      "text": "5.6e-17",
+      "units": "radians",
+      "gate": "and the engine sits on both of them there, so such a gate proves nothing",
+      "test": "tPolElement/test_offnormal_degenerate_azimuths_are_blind",
+      "source": "driver"
+    },
+    "G62_NULL_SEP": {
+      "value": 7.109561407538756,
+      "text": "7.11",
+      "units": "degrees",
+      "gate": "separation of the crossed-analyzer null predicted by the two rules",
+      "test": "tPolElement/test_offnormal_grid_crossed_null",
+      "source": "driver"
+    },
+    "G62_GRID_NULL": {
+      "value": 9.059039977846824e-33,
+      "text": "9.1e-33",
+      "units": "relative",
+      "gate": "detector-plane power at the MATERIAL-rule crossed setting (extinguishes)",
+      "test": "tPolElement/test_offnormal_grid_crossed_null",
+      "source": "driver"
+    },
+    "G62_GRID_LEAK": {
+      "value": 0.015260074439087001,
+      "text": "1.526e-02",
+      "units": "relative",
+      "gate": "detector-plane power at the PASS-axis crossed setting (does not)",
+      "test": "tPolElement/test_offnormal_grid_crossed_null",
+      "source": "driver"
+    },
+    "G62_LEAK_RESID": {
+      "value": 4.547090469056965e-16,
+      "text": "4.5e-16",
+      "units": "relative",
+      "gate": "and that leak is the predicted cos^2 of the residual axis mismatch, to",
+      "test": "tPolElement/test_offnormal_grid_crossed_null",
       "source": "driver"
     },
     "C21_VC_CROSS": {
