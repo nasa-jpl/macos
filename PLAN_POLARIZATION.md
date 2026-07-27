@@ -100,10 +100,20 @@ way — CCMac is gfortran-only.)
      the class's two fixtures differ (`Rx_Cass_FarField`=m, Bench fold
      rig=mm), so one shared Al thickness silently meant 200 um on the
      Cassegrain.  Split; the bindings now agree to 11 digits.
-  3. **Phase 2c contrast floor** (§2c): co/cross-pol decomposition +
-     independent propagation + incoherent sum.  Gates: x-pol reduces to the
-     scalar contrast curve at round-off; energy bookkeeping; floor reported
-     by component.
+  3. ~~**Phase 2c contrast floor**~~ — **DONE 2026-07-27.**  Landed on the
+     analyzer-at-detector design: `macos.pol_contrast_floor` + `tPolContrast`
+     (256) + `tPolContrastCoro` (512) + report §5 + cmdref/manual, and §2c's
+     plan text amended to the shipped signature.  All four gates pass —
+     x-pol reduces to the scalar contrast curve at round-off (cross exactly
+     0, curve 2.4e-15), Parseval on the split 1.3e-24, energy closure
+     1.8e-16, floor reported by component.  Deliverable numbers and the
+     Tranche-1 scope finding (the grid carries 0.84 / 0.57 of the ray-level
+     cross-pol on `Rx_Coro`, and reports the coating sensitivity with the
+     WRONG SIGN) are in §2c.  Two side-effects: the polval driver is now
+     split into per-model-size batches (128 / 256 / 512) with a
+     `merge_numbers.py` stage, since 2c cannot run at 128; and the coherency
+     matrix's conjugation order needed a circular-input gate to catch.
+     *History of how it got unblocked, kept for the record:*
      **UNBLOCKED 2026-07-27 pm — the s/p sign fix is LANDED (Fable lane):
      standard `+r_p` restored in BOTH `Reflector` branches (uncoated RP;
      coated innermost RP + per-layer RP1 — the Airy recursion propagates
@@ -153,7 +163,10 @@ way — CCMac is gfortran-only.)
      produce an honest floor until this is settled: the co/cross split would
      be dominated by the artifact.
      **The 2c DESIGN is, however, now settled and simpler than either
-     previous sketch** (both superseded — do not resume from them):
+     previous sketch** (both superseded — do not resume from them).  This
+     is the design that shipped; §2c below is the authority on what the
+     code actually does, and these bullets are the reasoning that led to
+     it:
      - The chain is **linear in the input Jones state** — measured
        4.2e-16 (45°) / 5.8e-16 (circular) on `Rx_Coro` at model 512.
      - Therefore a spatially uniform analyzer **commutes with propagation**
@@ -547,18 +560,69 @@ path.
 
 ### 2c. Coronagraph contrast floor (track B deliverable)
 
-`macos.pol_contrast_floor(jones, stokes_in, coronagraph_fn)`:
+> **LANDED 2026-07-27** (Opus lane item 3) — `macos.pol_contrast_floor(pupil,
+> det, ...)` + `tPolContrast` (model 256, 14 tests) + `tPolContrastCoro`
+> (model 512, 6 tests) + report §5 + cmdref/manual.  The signature below is
+> the SHIPPED one; the original `pol_contrast_floor(jones, stokes_in,
+> coronagraph_fn)` is retired — the Jones pupil cannot be a pupil multiplier
+> (Finding 2, endorsed by the Fable lane 2026-07-26) and no multiplier of any
+> kind is needed once the split is taken at the detector.  Headline numbers
+> and the scope caveat are in the closing block of this section.
 
-1. Decompose the Jones pupil into co-polarized (J_xx, J_yy) and cross-polarized
-   (J_xy, J_yx) components — the cross terms are the ones scalar DM control cannot
-   touch.
-2. Propagate each component independently through the coronagraph.
-3. Sum intensities **incoherently** across orthogonal output states.
-4. Return the floor **broken out by component**, plus its sensitivity to the coating
-   parameters.
+`macos.pol_contrast_floor(pupil, det, 'input', ..., 'coatings', ..., 'dark_zone', ...)`:
 
-The answer becomes *"polarization sets the floor at N×10⁻¹¹ and here is how it moves
-with coating choice"* — the design-rules line item.
+1. Trace with vector diffraction on and read the detector's **own component
+   planes** `complex_field(det,'plane',1..3)`.  No pupil multiplier: the chain
+   is linear in the input Jones state (4.2e-16) and Tranche 1 propagates all
+   three planes with the identical kernel, so a spatially uniform analyzer
+   **commutes with propagation** and the split may be taken at the end.
+2. Project on an **analyzer derived from the pupil coherency matrix**
+   `C_ij = Σ E_i conj(E_j)` (dominant eigenvector) and on its orthogonal
+   complement → co-polarized / cross-polarized; `|Ez|²` is the third,
+   longitudinal channel.  Referencing to the MEAN OUTPUT state rather than the
+   input is Finding 1; coherency is used because it is phase-insensitive, so
+   it does not collapse on an aberrated pupil.
+3. Sum intensities **incoherently** across the run set — an unpolarized source
+   is TWO traces (x-in, y-in), each with its own analyzer; the second state is
+   never synthesized from the first.
+4. Return the floor **broken out by component** (`.floor.co/.cross/.long`,
+   `.contrast_cross`, `.floor.dark_zone`), plus `.sweep` — the coating
+   sensitivity, one full recomputation per coating set.
+5. **Report the scope, measured.**  `.scope` compares the pupil cross-polarized
+   fraction seen by the GRID against the same quantity from `RayE`, per input
+   state; `macos:pol_contrast_floor:tranche1` warns when they disagree.  Ratio
+   maps NaN-mask small denominators; they are never zero-filled.
+
+**Measured (2026-07-27).**  `Rx_VecChain` — a polarization-neutral train — gives
+cross **exactly 0**, and the co-polarized channel reproduces the scalar run to
+1.33e-15 of peak and its contrast curve to 2.36e-15: the decomposition invents
+no floor.  `Rx_Cass_FarField` (both mirrors before its single far-field leg, so
+the grid carries the whole train): Parseval on the split 1.3e-24, energy
+closure 1.8e-16, uncoated floor 7.0612e-07 of the co-polarized power — the same
+number §4's ray-level probe reports, reached through the grid planes instead.
+Coating sensitivity, annulus-mean cross contrast: bare 9.59e-12 → bare Al
+3.34e-10 (27.9× the cross power) → MgF₂/Al 1.99e-09 (151.3×).  **The coating,
+not the geometry, sets the floor on that train.**
+
+**Scope — and a Tranche-2 finding this produced.**  `Rx_Coro` puts six of its
+seven mirrors AFTER the first physical-optics leg, which is outside Tranche 1's
+validity condition, so its floor (peak cross contrast 1.27e-09; 20–80 px annulus
+mean 5.79e-13) is a **lower bound**.  The cost is now quantified rather than
+qualitative: the grid carries **0.8412** of the ray-level cross-polarized
+fraction bare and **0.5653** with the mirrors coated, and the coating
+sensitivity it reports there comes out at **−3.2%** while the ray-level
+fraction RISES **+59%** — the wrong *sign*, not merely the wrong size, because
+only the first mirror's coating precedes the seed leg.  That is the sharpest
+argument yet for §3a.3 Tranche 2, and `tPolContrastCoro`'s last two tests pin
+these numbers so Tranche 2 has to come back and change them.
+
+**One bug worth remembering.**  The coherency matrix was first written with
+MATLAB's `'` on the wrong operand, building `conj(C)` — whose dominant
+eigenvector is the CONJUGATE analyzer.  Identical for any linear input state
+(real eigenvector), and exactly ORTHOGONAL to the truth for a circular one:
+reported cross/co jumped from 1.4e-6 to 7.1e+05.  x / y / 45° all passed
+vacuously.  The circular input state is load-bearing in `tPolContrast`, for the
+same reason the 45°/circular states are load-bearing in `tVecChain`.
 
 ### 2d. IFO polarization metrology (track A deliverable — NEW)
 

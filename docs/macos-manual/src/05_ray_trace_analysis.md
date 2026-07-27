@@ -839,3 +839,36 @@ reference basis (double-pole by default), are documented in the MACOS
 Command Reference, Part II. The interactive CLI exposes the underlying
 trace and coating machinery; the Jones-pupil analysis layer is
 binding-only.
+
+**Polarization contrast floor.** For a coronagraph the question is not
+the shape of the aberration but how much light it puts where the dark
+zone should be. `pol_contrast_floor` answers it directly: it propagates
+with vector diffraction on and splits the detector field into a
+co-polarized, a cross-polarized and a longitudinal channel. The
+cross-polarized channel is the part no scalar deformable-mirror control
+can remove, so its peak-normalized level is the polarization-limited
+contrast floor, and the function also reports how that floor moves with
+the coating choice.
+
+Two points of method matter. First, the split is taken at the detector
+rather than in the pupil. Because the chain is linear in the input
+polarization state and all three components propagate with the same
+kernel, a spatially uniform analyzer commutes with propagation, so
+projecting after the propagation gives the same answer as projecting
+before it — and it avoids the Jones pupil, which cannot serve as a
+pupil multiplier because it carries the accumulated optical path
+length. Second, "co-polarized" is defined against the *mean output*
+state, not the input state. A train may rotate the polarization
+geometrically while introducing neither diattenuation nor retardance;
+charging that rotation to the cross-polarized channel would report an
+aberration where there is none, since an observer would simply align
+the analyzer to the output. The analyzer used is therefore the dominant
+eigenvector of the pupil coherency matrix, which is insensitive to the
+common wavefront and by construction minimizes cross-polarized power.
+
+An unpolarized source is modeled as two traces with orthogonal input
+states summed in intensity, never as one trace with the second state
+inferred from it. The floor reported on a chain that places coated or
+reflecting surfaces between two propagation legs is a lower bound, for
+the reason given in Section 6; the function measures the shortfall and
+warns rather than leaving it to the reader.

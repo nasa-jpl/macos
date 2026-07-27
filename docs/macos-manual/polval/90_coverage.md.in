@@ -23,6 +23,13 @@ against, and the test that pins it in continuous integration.
 | 3.6 | scalar physics undisturbed | @@X_PROPER_RESIDUAL@@ reproduced exactly | committed residual | pymacos PROPER suite *(external)* |
 | 4.1 | one mirror matches the perfect-conductor closed form | @@G41_RESID_MAX@@ (transverse), @@G41_RESIDZ_MAX@@ (longitudinal), retardance @@G41_RET@@ | closed form | `tPolarization/test_odd_mirror_crosspol_pec_analytic` |
 | 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope @@G42_SLOPE@@, @@G42_BOUNDRATIO@@ × the bound | ρ²; O(sin² AOI) | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
+| 5.1 | the decomposition invents no floor | cross @@C21_VC_CROSS@@; contrast curve @@C21_VC_CURVE@@ | 0 | `tPolContrast/test_reduction_to_scalar_contrast_curve` |
+| 5.2 | co/cross split is a unitary basis change | @@C22_PARSEVAL@@; closure @@C22_CLOSURE@@ | 0 | `tPolContrast/test_parseval_on_the_split`, `test_energy_bookkeeping` |
+| 5.3 | uncoated two-mirror floor | @@C23_CROSS_OVER_CO@@ of co-polarized power | §4 ray-level value | `tPolContrast/test_floor_reported_by_component` |
+| 5.4 | analyzer is derived, circular state included | @@C23_ANALYZER@@; conjugate analyzer @@C23_CIRC_ORTHO@@ | 0; ≫1 | `tPolContrast/test_analyzer_tracks_input_state`, `test_analyzer_would_be_wrong_if_conjugated` |
+| 5.5 | floor moves with coating choice | @@C25_AL_REL@@× (Al), @@C25_MGF2_REL@@× (MgF₂/Al) | monotone, ≫1 | `tPolContrast/test_coating_sensitivity` |
+| 5.6 | Tranche-1 shortfall is detected, not hidden | carried @@C33_CARRIED@@ bare, @@C33_CARRIED_COAT@@ coated | 1 (would be) | `tPolContrastCoro/test_tranche1_shortfall_is_detected` |
+| 5.7 | coronagraph floor, lower bound | @@C31_DZ_CROSS@@ mean contrast | — | `tPolContrastCoro/test_floor_reported_by_component` |
 
 # Coverage and gaps
 
@@ -44,7 +51,16 @@ was checked.
   A chain with a coated or reflective surface between legs — an off-axis
   paraboloid between coronagraph masks, or an interferometer recombiner
   followed by folds under near-field propagation — needs Tranche 2 and is
-  **not** validated by anything on this page.
+  **not** validated by anything on this page.  §5.6 now quantifies the cost
+  on such a chain rather than leaving it qualitative: the diffraction grid
+  carries @@C33_CARRIED@@ of the ray-level cross-polarized fraction on
+  `Rx_Coro`, @@C33_CARRIED_COAT@@ once its mirrors are coated, and the
+  coating sensitivity it reports there has the wrong **sign**.
+* **The coronagraph floor in §5.7 is a lower bound on that chain**, and the
+  chain is a coaxial model with uncoated normal-incidence mirrors — so the
+  number is the numerical-aperture term alone, not the floor of a built
+  instrument.  The coating sensitivity that *is* trustworthy is §5.5's, on
+  the single-leg two-mirror fixture.
 * **The phase relation between the per-ray field and the diffraction grid is
   train-dependent.** The assembly applies no convention bridge at the seed,
   which is correct, but the reason is structural rather than a fixed
@@ -74,7 +90,6 @@ outstanding work, not a disclaimer.
 
 | Phase | Deliverable | Evidence it will add |
 |---|---|---|
-| 2c | coronagraph contrast floor | co/cross-polarized decomposition; x-polarized reduces to the scalar contrast curve at round-off; floor broken out by component |
 | 2d | interferometer polarization metrology | visibility budget predicted vs simulated; phase-shifting systematic vs input state; the angle-of-incidence trade |
 | 3 | polarizer, waveplate, vector vortex | crossed-polarizer extinction; quarter-wave linear→circular Stokes check; vortex null depth vs retardance error against the analytic curve |
 | 3a Tranche 2 | Jones-through-chain | chains with coated surfaces between legs |

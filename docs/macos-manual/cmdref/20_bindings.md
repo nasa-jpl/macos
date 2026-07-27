@@ -1401,12 +1401,57 @@ ORS -- Optimize Reference Surface.
 
 #### pol_contrast_floor
 
-- **mmacos:** `out = macos.pol_contrast_floor(jp, propagate, opts)`
+- **mmacos:** `out = macos.pol_contrast_floor(pupil, det, opts)`
 - **pymacos:** *not available*
 
-Polarization-limited contrast floor of a coronagraph. out = macos.pol_contrast_floor(JP, PROPAGATE) decomposes the Jones pupil JP into its co-polarized and cross-polarized parts for a given input state, propagates each INDEPENDENTLY through the coronagraph, and sums the focal-plane intensities INCOHERENTLY. 
+Polarization-limited contrast floor at a detector. OUT = macos.pol_contrast_floor(PUPIL, DET) propagates the loaded prescription with vector diffraction on and splits the detector field into CO-polarized, CROSS-polarized and LONGITUDINAL channels.  The cross-polarized channel is the part of the light no scalar DM control can touch, so its peak-normalized level IS the polarization contrast
 
 <!-- BEGIN NOTES fn-pol-contrast-floor -->
+The split is taken AT THE DETECTOR, on the engine's own Ex/Ey/Ez
+component planes (`complex_field(det,'plane',k)`), not through a
+pupil multiplier.  That is legitimate because the chain is linear in
+the input Jones state and Tranche 1 propagates all three planes with
+the identical scalar kernel, so a spatially uniform analyzer commutes
+with propagation.  It also sidesteps the reason the two earlier
+designs failed: the Jones pupil is assembled from `RayE` and carries
+the accumulated OPL phase, so it can never be used as a `WFElt`
+multiplier.
+
+"Co-polarized" is referenced to the MEAN OUTPUT state, never to the
+input state.  A train can rotate polarization geometrically with zero
+diattenuation and zero retardance; billing that uniform rotation as
+cross-polarized light reports an aberration where there is none.  The
+analyzer is the dominant eigenvector of the 2x2 pupil COHERENCY
+matrix `C_ij = sum E_i conj(E_j)`, which is phase-insensitive (the
+common wavefront cancels in the product) and by construction
+minimizes cross-polarized power.  `.per_state.dop` reports how
+polarized the pupil actually is; below `dop_min` no analyzer is well
+defined and the run is flagged.
+
+`input='unpolarized'` is TWO traces, x-in and y-in, summed in
+intensity -- the second state is never synthesized from the first --
+and each run gets its own analyzer.
+
+SCOPE.  Tranche 1 seeds the component planes from `RayE` at the FIRST
+physical-optics leg and thereafter applies only a common scalar
+phase, so a polarizing surface AFTER that leg transforms the rays but
+not the diffraction grid.  On such a chain the floor is a LOWER
+BOUND.  This is measured rather than assumed: `.scope` compares the
+pupil cross-polarized fraction computed from the grid planes against
+the same quantity from `RayE`, per input state, and a
+`macos:pol_contrast_floor:tranche1` warning fires when they disagree.
+Rx_Cass_FarField (two mirrors, then one far-field hop) carries the
+full train; Rx_Coro carries 0.84 of it bare and 0.57 coated, and
+there its coating sensitivity even comes out with the wrong sign.
+Closing that is Tranche 2.
+
+`frac_cross` NaN-masks pixels whose denominator falls below
+`floor_tol` -- zero-filling would seed statistics with a ring of
+perfect nulls.  Coating sets in a `coatings` sweep must all cover the
+same elements (a coating can be overwritten but not cleared) and the
+sweep leaves the last set applied.
+*Related:* jones_pupil, pol_maps, complex_field, vector_diffraction,
+coating.
 <!-- END NOTES fn-pol-contrast-floor -->
 
 #### pol_maps
@@ -1499,16 +1544,6 @@ the call errors rather than silently degrading.
 *Related:* vector_diffraction, coating, ray_field, jones_pupil;
 CLI POLarized/NOPolarization.
 <!-- END NOTES fn-polarization -->
-
-#### pupil_propagator
-
-- **mmacos:** `p = macos.pupil_propagator(pupil_elt, det_elt)`
-- **pymacos:** *not available*
-
-Engine-backed propagator for pol_contrast_floor. p = macos.pupil_propagator(PUPIL_ELT, DET_ELT) returns a function handle p(E) that imprints the complex pupil multiplier E at element PUPIL_ELT of the currently loaded prescription and returns the intensity map at DET_ELT. 
-
-<!-- BEGIN NOTES fn-pupil-propagator -->
-<!-- END NOTES fn-pupil-propagator -->
 
 #### ray_field
 
