@@ -60,5 +60,21 @@ why intensity-level tests never caught it. Fixed with an absolute value,
 mirroring the uncoated branch. Diagnostic signature if it ever returns: the
 measured-to-analytic `RS/RP` ratio becomes exactly `(RP/RS)²`.
 
+**4. Reflected p̂ versus the Fresnel `r_p` sign.** `Reflector` assembled the
+reflected field on a p̂ that follows the *outgoing* ray while multiplying the
+p-component by `−r_p`, so near normal incidence the transverse field was
+reflected about the local p̂ rather than negated. Because that operation is an
+involution it cancelled exactly across a mirror pair, and because it is
+unitary the unitarity gate could not see it — every fixture in this report
+before §4 has an even number of mirrors or none. Restored to the Born & Wolf
+form in both the uncoated and the coated branch, and in `Refractor`'s
+internal copy of the same recursion. Evidence, including the pre-fix A/B, is
+§4; the diagnostic tell is that pre-fix the single-mirror cross-polarization
+was *flat in pupil radius* instead of growing as ρ².
+
 Defects 2 and 3 are both pinned by the Fresnel-analytic fold gate below, at
-the 1.20e-14 level. Defect 1 is pinned by the Phase-1 state tests.
+the 1.20e-14 level. Defect 1 is pinned by the Phase-1 state tests. Defect
+4 is pinned by the two odd-mirror gates of §4 — and note that the fold gate
+of §2.2 could *not* have caught it, because its "analytic" reference was
+originally transcribed from the engine's own expression and so was circular
+in precisely this sign. It is written from the textbook form now.

@@ -32,14 +32,14 @@ prescription is a unitarity gate for free.
 | Quantity | Measured | Truth |
 |---|---|---|
 | unvignetted pupil points | 11484 | — |
-| max diattenuation `D` | 2.53e-15 | 0 |
-| max retardance `δ` | 2.46e-15 rad | 0 |
+| max diattenuation `D` | 2.61e-15 | 0 |
+| max retardance `δ` | 5.79e-16 rad | 0 |
 | longitudinal leak, max &#124;E·k̂&#124;/&#124;E&#124; | 5.25e-17 | 0 |
 
 **Transmission uniformity — a worked case of the statistic exceeding the
-physics.** The transmission map takes only 30 distinct
+physics.** The transmission map takes only 32 distinct
 double-precision values across the whole pupil; its true peak-to-valley
-spread about the median is 6.09e-15 and its RMS is 9.21e-16. But
+spread about the median is 6.09e-15 and its RMS is 9.26e-16. But
 `mean()` over 11484 points accumulates its own summation error of
 5.06e-14 — *larger than the spread it is being used to measure*. So
 the `std/mean` statistic that the CI gate asserts, 5.06e-14, is
@@ -71,8 +71,8 @@ to argue about.
 | unvignetted rays | 1257 | — |
 | AOI spread over the footprint | 43.28° … 46.72° | — |
 | max &#124;RS/RP&#124; residual | 1.20e-14 | 0 |
-| max arg(RS/RP) residual | 3.18e-14 rad | 0 |
-| max per-ray diattenuation residual | 1.11e-14 | 0 |
+| max arg(RS/RP) residual | 3.16e-14 rad | 0 |
+| max per-ray diattenuation residual | 1.12e-14 | 0 |
 | mean diattenuation of the Al fold | 0.0341 | closed form |
 
 The AOI spread matters: the gate is not a single-angle coincidence but a
@@ -102,8 +102,8 @@ traces is the signature being tested.
 
 | Quantity | Measured | Truth |
 |---|---|---|
-| azimuth-lock residual, max | 2.66e-13 rad | 0 |
-| max circular diattenuation component | 4.43e-16 | 0 |
+| azimuth-lock residual, max | 2.18e-13 rad | 0 |
+| max circular diattenuation component | 3.15e-16 | 0 |
 | D(outer ring) / D(inner ring) | 4.12 | > 1, grows with AOI |
 
 Reported separately, per the convention stated in the frontmatter:
@@ -137,7 +137,7 @@ the physics — which is why the default basis is double-pole and why
 
 | Quantity | Measured | Expected |
 |---|---|---|
-| D basis-invariance residual | 6.43e-16 | 0 (singular-value invariant) |
+| D basis-invariance residual | 6.70e-16 | 0 (singular-value invariant) |
 | retardance variation, double-pole | 3.607e-03 rad | the physics |
 | retardance variation, local s/p | 8.913e-01 rad | physics + artifact |
 | artifact inflation factor | 247.1× | ≫ 1 |
@@ -146,7 +146,7 @@ The left and centre panels are the argument in one picture: the double-pole
 retardance is a smooth radial map at the 3.607e-03 rad level, while the
 same system in the local s/p basis shows a full-scale azimuthal pattern
 spanning most of [0, π]. The right panel confirms that diattenuation, being a
-singular-value invariant, is unmoved at 6.43e-16.
+singular-value invariant, is unmoved at 6.70e-16.
 
 **Pinned by** `tJonesPupil/test_basis_invariance_and_sp_artifact`.
 
@@ -176,12 +176,12 @@ equal magnitude, with no circular content and no defocus.
 | astig45 coefficient, s₂ | -1.7294e-03 | equal to astig0 |
 | astig pair mismatch | 1.89e-07 | 0 |
 | retardance astig0, s₁ | 8.9982e-03 rad | — |
-| largest **other** linear coefficient | 8.64e-15 | 0 |
-| largest **circular** (s₃) coefficient | 8.64e-16 | 0 |
+| largest **other** linear coefficient | 7.18e-15 | 0 |
+| largest **circular** (s₃) coefficient | 8.86e-16 | 0 |
 | ρ⁴ astigmatism companion | 2.60e-03 | present, sub-dominant |
 
 Every term the theory forbids — piston, tilt, defocus, coma, trefoil,
-spherical, and the entire circular component — sits at 8.64e-15 of the
+spherical, and the entire circular component — sits at 7.18e-15 of the
 astigmatic term, which is round-off. The one additional term theory *does*
 allow, the ρ⁴ companion arising because the angle of incidence is not
 exactly linear in pupil radius across a real conic pair, is present at

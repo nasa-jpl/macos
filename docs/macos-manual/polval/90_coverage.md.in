@@ -21,6 +21,8 @@ against, and the test that pins it in continuous integration.
 | 3.4 | masks act on the vector path | @@G34_THRU_RESID@@ | 0 | `tVecChain/test_mask_throughput_identical_on_vector_path` |
 | 3.5 | far-field normalization unified | @@G35_TOT_RESID@@ | 0 | `tVecChain/test_far_field_vector_matches_scalar_normalization` |
 | 3.6 | scalar physics undisturbed | @@X_PROPER_RESIDUAL@@ reproduced exactly | committed residual | pymacos PROPER suite *(external)* |
+| 4.1 | one mirror matches the perfect-conductor closed form | @@G41_RESID_MAX@@ (transverse), @@G41_RESIDZ_MAX@@ (longitudinal), retardance @@G41_RET@@ | closed form | `tPolarization/test_odd_mirror_crosspol_pec_analytic` |
+| 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope @@G42_SLOPE@@, @@G42_BOUNDRATIO@@ of the bound | 2; ≤ 1 | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
 
 # Coverage and gaps
 
@@ -52,6 +54,15 @@ was checked.
   carry phases explicitly against the path bookkeeping rather than assume a
   sign. The behavioural gates above, not a convention argument, are what carry
   the correctness claim.
+* **The coated `Refractor` branch has no analytic gate**, before or after the
+  §4 normalization, and it carries a normalization discrepancy against its
+  own uncoated branch: the uncoated path multiplies transmission by the
+  radiometric factor √(n₂cos θ₂ / n₁cos θ₁) and the coated path omits it.
+  Measured with an index-matched single layer (optically a bare interface):
+  coated/uncoated |Eₓ| = 0.816442 at normal incidence, exactly 1/√1.5 for
+  that substrate. A coated lens therefore under-transmits by ~18% in
+  amplitude relative to the same surface uncoated. Recorded rather than
+  fixed — it changes results and wants its own decision and gate.
 * **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
   handles one wavefront only — no multi-wavefront composition concurrently.
   This is a documented constraint, not a defect to work around.

@@ -112,9 +112,28 @@ way — CCMac is gfortran-only.)
      suite prediction came from a HALF-patched engine; the local-sp
      artifact assertions are KEPT — measured 247× on the corrected
      engine) are appended to `REVIEW_POL_SP_SIGN_2026-07-27.md`.
-     Remaining tail (Opus, one slice each): odd-mirror ρ² gate, Refractor
-     audit, polval regen + PROPER/GMI re-runs.  2c may proceed on the
-     analyzer-at-detector design below.**
+     **TAIL CLOSED 2026-07-27 pm (Opus)** — all three follow-on items
+     landed: (1) the odd-mirror gates, which turned out to support more
+     than the bound the spec asked for — on the perfect-conductor idiom
+     the WHOLE single-reflection Jones has a closed form, and the engine
+     matches it at median 2.1e-15 / max 5.9e-14, with AOI and azimuth
+     taken from ray DIRECTIONS so no pupil-grid mapping is assumed
+     (`tPolarization/test_odd_mirror_crosspol_{pec_analytic,rho2_law}`,
+     mmacos `fc2e22e`; non-vacuity measured by rebuilding the flipped
+     engine — 7 of 8 assertions fail, residual median 1.14e+02, radial
+     slope 0.033); (2) `Refractor` normalized (macos `25c4386`) with the
+     transmitted field verified BIT-IDENTICAL and the inconsistent flip
+     built to prove that A/B non-vacuous (−3.2% power); (3) polval
+     regenerated with a new §4 evidence section, GMI 6/6 bit-identical,
+     full mmacos suite re-run.  **New engine finding, open:** coated and
+     uncoated `Refractor` transmission use different amplitude
+     normalizations (the coated branch omits the radiometric
+     `sqrt(n2 cos02/(n1 cos01))` factor — measured coated/uncoated |Ex| =
+     0.816442 = 1/sqrt(1.5) at normal incidence on an index-matched
+     layer, i.e. a coated lens under-transmits ~18% in amplitude), and
+     the coated Refractor branch has no analytic gate at all.  Its own
+     Opus-lane slice; see `macos_f90/CLAUDE.md`.
+     2c may proceed on the analyzer-at-detector design below.**
      ~~BLOCKED 2026-07-27 on an ENGINE DEFECT, not on the 2c design.~~
      Second attempt (2026-07-27) got as far as validating the machinery and
      then found that the pupil polarization state itself is untrustworthy on

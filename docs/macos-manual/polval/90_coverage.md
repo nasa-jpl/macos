@@ -13,19 +13,21 @@ against, and the test that pins it in continuous integration.
 | 1.1 | geometry invariant under `ifPol` | 0.000e+00 waves, bitwise 1 | 0 / true | `tPolarization`, this driver |
 | 1.2 | coating round-trip identity | 0.000e+00 | 0 | `tPolarization/test_coat_roundtrip_identity` |
 | 1.3 | polarization-off is a no-op | 6/6, bit-identical (vs-ref = 0.000e+00) | bit-identical | GMI regression *(external)* |
-| 2.1 | lossless Jones pupil is unitary | D 2.53e-15, δ 2.46e-15 rad | 0 | `tJonesPupil/test_unitarity_gate` |
-| 2.2 | per-ray coefficients match Fresnel | 1.20e-14 (mag), 3.18e-14 rad (phase) | closed form | `tJonesPupil/test_fold_fresnel_analytic` |
-| 2.3 | 2θ symmetry on a symmetric system | azimuth lock 2.66e-13 rad | 0 | `tJonesPupil/test_2theta_symmetry` |
-| 2.4 | D basis-invariant; s/p retardance is artifact | 6.43e-16; 247.1× inflation | 0; ≫1 | `tJonesPupil/test_basis_invariance_and_sp_artifact` |
-| 2.5 | two-mirror reduces to polarization astigmatism | other terms 8.64e-15, circular 8.64e-16 | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
+| 2.1 | lossless Jones pupil is unitary | D 2.61e-15, δ 5.79e-16 rad | 0 | `tJonesPupil/test_unitarity_gate` |
+| 2.2 | per-ray coefficients match Fresnel | 1.20e-14 (mag), 3.16e-14 rad (phase) | closed form | `tJonesPupil/test_fold_fresnel_analytic` |
+| 2.3 | 2θ symmetry on a symmetric system | azimuth lock 2.18e-13 rad | 0 | `tJonesPupil/test_2theta_symmetry` |
+| 2.4 | D basis-invariant; s/p retardance is artifact | 6.70e-16; 247.1× inflation | 0; ≫1 | `tJonesPupil/test_basis_invariance_and_sp_artifact` |
+| 2.5 | two-mirror reduces to polarization astigmatism | other terms 7.18e-15, circular 8.86e-16 | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
 | 2.5 | on-axis diattenuation extrapolates to zero | 3.21e-05 | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
 | 2.6 | decomposition algebra exact | synthetic recovery to 1e-12 | exact | `tJonesPupil/test_pol_maps_synthetic_identity` |
 | 3.1 | polarized-scalar ≡ scalar | bitwise 1 | true | `tVecChain/test_polarized_scalar_is_bit_identical` |
 | 3.2 | vector ≡ scalar, every leg and state | 6.42e-16 worst case | 0 | `tVecChain/test_vector_equals_scalar_every_state` |
 | 3.3 | energy conserved per leg | 0.00e+00, 1.23e-16 | 0 | `tVecChain/test_energy_conserved_per_leg` |
 | 3.4 | masks act on the vector path | 1.14e-16 | 0 | `tVecChain/test_mask_throughput_identical_on_vector_path` |
-| 3.5 | far-field normalization unified | 1.54e-15 | 0 | `tVecChain/test_far_field_vector_matches_scalar_normalization` |
+| 3.5 | far-field normalization unified | 1.67e-15 | 0 | `tVecChain/test_far_field_vector_matches_scalar_normalization` |
 | 3.6 | scalar physics undisturbed | 4.836e-13 reproduced exactly | committed residual | pymacos PROPER suite *(external)* |
+| 4.1 | one mirror matches the perfect-conductor closed form | 6.39e-14 (transverse), 5.03e-14 (longitudinal), retardance 1.07e-16 | closed form | `tPolarization/test_odd_mirror_crosspol_pec_analytic` |
+| 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope 1.871, 1.034 of the bound | 2; ≤ 1 | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
 
 # Coverage and gaps
 
@@ -57,6 +59,15 @@ was checked.
   carry phases explicitly against the path bookkeeping rather than assume a
   sign. The behavioural gates above, not a convention argument, are what carry
   the correctness claim.
+* **The coated `Refractor` branch has no analytic gate**, before or after the
+  §4 normalization, and it carries a normalization discrepancy against its
+  own uncoated branch: the uncoated path multiplies transmission by the
+  radiometric factor √(n₂cos θ₂ / n₁cos θ₁) and the coated path omits it.
+  Measured with an index-matched single layer (optically a bare interface):
+  coated/uncoated |Eₓ| = 0.816442 at normal incidence, exactly 1/√1.5 for
+  that substrate. A coated lens therefore under-transmits by ~18% in
+  amplitude relative to the same surface uncoated. Recorded rather than
+  fixed — it changes results and wants its own decision and gate.
 * **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
   handles one wavefront only — no multi-wavefront composition concurrently.
   This is a documented constraint, not a defect to work around.

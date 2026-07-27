@@ -712,9 +712,12 @@ them at 1e-12:
    Diagnostic signature if it ever returns: measured/analytic RS/RP ratio
    = (RP/RS)^2 exactly.
 
-**OPEN (2026-07-27) -- reflected-p-hat vs Fresnel-r_p sign conflict.  READ
-BEFORE TRUSTING ANY ODD-MIRROR-COUNT POLARIZED RESULT.**  `Reflector`
-assembles `Eout = prhat*Epr + shat*Esr` (elemsub.F:592) with
+**CLOSED 2026-07-27 (macos cb29ea5 + 25c4386) -- reflected-p-hat vs
+Fresnel-r_p sign conflict.**  The diagnosis is kept below because it is
+the reference case for how a whole gate set can be structurally blind;
+the FIX and its evidence are in the next block.  Odd-mirror polarized
+results are trustworthy again as of cb29ea5.  Original text:
+`Reflector` assembles `Eout = prhat*Epr + shat*Esr` (elemsub.F:592) with
 `prhat = shat x rhat` (:431) -- p-hat follows the OUTGOING ray -- but
 line :455 uses `RP = (Na*ccfb-Nb*ccfa)/(Nb*ccfa+Na*ccfb)`, which is
 **-r_p** in that convention (at normal incidence it gives `RP = RS`, the
@@ -742,7 +745,7 @@ transmission (`TP`/`TS`) is a separate question since p-hat does not flip
 there.  Assembling with `pihat` instead is NOT an admissible alternative
 fix: `pihat` is perpendicular to the INCIDENT ray, so it emits a
 longitudinal component along the outgoing ray.  Full analysis, suite
-impact and the open decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
+impact and the decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
 Reproducer: `MACOS_resources/mmacos/tools/pol_sp_sign_probe/`.
 
 **Reflected-p̂ / r_p sign fix (2026-07-27).**  `Reflector` assembles
@@ -768,6 +771,31 @@ audit + odd-mirror ρ² gate = scoped follow-on.  Gate-blindness lesson:
 an "analytic" reference transcribed from the engine's own expression is
 circular in exactly the sign it should check -- write gates' analytics
 from the textbook form.
+**Tail landed 2026-07-27 (Opus):** (1) the odd-mirror gates
+`tPolarization/test_odd_mirror_crosspol_{pec_analytic,rho2_law}` --
+after ONE mirror the whole PEC single-reflection Jones is pinned to a
+closed form written from Born&Wolf (`Ey/Ex = -sin2phi sin^2 a / den`,
+`Ez/Ex = -sin2a cos phi / den`, `den = 1-2 sin^2 a cos^2 phi`), AOI and
+azimuth taken from RAY DIRECTIONS so no pupil-grid mapping is assumed;
+measured median 2.1e-15 / max 5.9e-14, radial slope 1.87, and the
+pre-fix engine (rebuilt) fails 7 of 8 assertions (residual median
+1.1e+02, slope 0.033).  (2) **`Refractor` normalized too** (25c4386,
+innermost `RP` + per-layer `RP1`): there the flip was INTERNAL -- the
+element emits TP/TS, and RP reaches the transmitted field only via the
+`RP1*RP` products in the Airy denominators, invariant under a
+CONSISTENT flip -- verified bit-identical on a coated singlet, with an
+INCONSISTENT flip built and measured (-3.2% transmitted power) so the
+invariance is not an untested path.  (3) Report section
+`polval/50_sp_sign.md.in`.
+**AUDIT FINDING, open** -- coated and uncoated `Refractor` transmission
+use DIFFERENT amplitude normalizations: the uncoated branch multiplies
+by the radiometric factor `sqrt(n2 cos02/(n1 cos01))` (the `S1` at
+elemsub.F ~:1147), the coated branch omits it.  Measured with an
+index-matched single layer (optically a bare interface):
+coated/uncoated |Ex| = 0.816442 at normal incidence = 1/sqrt(1.5)
+exactly, 0.804789 off-axis -- a coated lens under-transmits by ~18% in
+amplitude.  The coated Refractor branch also has NO analytic gate at
+all.  Not fixed: it changes results and wants its own decision + gate.
 
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the

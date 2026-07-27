@@ -163,7 +163,7 @@ a bare per-component transform, omitting the Fresnel output factors.
 | scalar total power | 1.815495e+06 | |
 | vector total power, **before** the fix | 8.937660518e-01 | *(external, historical)* |
 | vector total power, after | 1.815495e+06 | |
-| vector-vs-scalar total residual | 1.54e-15 | truth 0 |
+| vector-vs-scalar total residual | 1.67e-15 | truth 0 |
 
 **Pinned by** `tVecChain/test_far_field_vector_matches_scalar_normalization`.
 

@@ -302,3 +302,111 @@ consistency.
    — the linearity measurement at 4e-16 justifies commuting a uniform
    analyzer past the chain, and it retires both pupil-multiplier
    sketches; amend §2c's text accordingly as part of that landing).
+
+---
+
+## Closeout — items 1–3 landed (2026-07-27, Opus lane)
+
+Commits: mmacos `fc2e22e` (odd-mirror gates), macos `25c4386`
+(Refractor normalization), plus the polval section and doc updates below.
+Item 4 (§2c) is explicitly NOT in this session.
+
+### 1. Odd-mirror gate — stronger than the spec asked for
+
+The spec was "assert cross-pol grows as ρ² and stays under O(sin²β)".
+Both are asserted, but the fixture turned out to support something much
+sharper: on the perfect-conductor idiom (`IndRef=1`, `Extinc=1e22`) the
+ENTIRE single-reflection Jones is fixed by geometry, so the engine can be
+compared to a closed form rather than to a bound.  With `a` = AOI and
+`φ` = pupil azimuth, exactly (no small-angle expansion):
+
+```
+Ey/Ex = -sin(2φ) sin²(a) / den      Ez/Ex = -sin(2a) cos(φ) / den
+den   = 1 - 2 sin²(a) cos²(φ)
+```
+
+derived from `E_out = (E·p̂_i) p̂_r - (E·ŝ) ŝ` with `r_s = -1, r_p = +1`.
+**Measured agreement: median 2.1e-15, max 5.9e-14 relative** over 10188
+rays spanning AOI up to 10.5° (longitudinal component 2.7e-15 / 5.0e-14).
+Retardance from a perfect conductor: 1.1e-16.
+
+Two properties make this non-circular in exactly the way §"blind" item 4
+demands: the expression is written from Born & Wolf, not transcribed from
+the engine; and BOTH `a` and `φ` come from the engine's RAY DIRECTIONS
+(`a` from the stop→mirror deflection, `φ` from the outgoing transverse
+direction), so no pixel-grid-to-pupil mapping is assumed — a transposed
+or mirrored grid convention cannot make it pass.
+
+The fixture-free half is asserted too: max cross-pol = 1.03× the
+O(sin²AOI) bound, cross-pol power fraction 2.09e-4, radial medians
+1.81e-3 / 6.26e-3 / 1.41e-2 / 2.41e-2 at ρ = 0.25/0.50/0.75/1.00,
+log-log slope **1.871**.  No new fixture was needed: `Rx_Cass_FarField`
+element 2 IS the one-mirror state (RayE/RayDir are the current trace
+state, not a per-element history, so `trace(2)` then `ray_field(2)`
+gives it — the two-mirror value only appears if you trace to 3 first).
+
+**Non-vacuity, measured rather than argued.**  The engine was rebuilt
+with the uncoated `RP` flipped back, at model 128 on the same fixture,
+and both tests fail on 7 of their 8 assertions: closed-form residual
+median **1.14e+02** / max 1.61e+05 (asserted < 1e-11); radial profile
+flat at 0.988/1.038/1.029/1.035 with slope **0.033** (asserted > 1.7);
+cross-pol power fraction 3384 (asserted < 1e-3); retardance 3.9e-10
+(asserted < 1e-14).  Tree restored and re-verified afterwards: the probe
+reproduces 2.0724e-04 / 7.0612e-07 bit-for-bit.
+
+### 2. Refractor — normalized, and the algebra's prediction confirmed
+
+Innermost `RP` and per-layer `RP1` restored to Born & Wolf; the stale
+`!RP1=-RP1 ! testing` line dropped.  The packet's r·r argument holds
+exactly: the transmitted Ex/Ey/Ez are **BIT-IDENTICAL** before and after,
+on a Bench-emitted singlet with a 3-layer absorbing stack on the powered
+face, 209 rays, for BOTH 45° linear and circular input.
+
+That A/B could have been vacuous (if the coated branch never ran, or if
+`RP` never reached the output), so the inconsistent flip was built too —
+`RP1` flipped while `RP` stayed standard, which is what a careless edit
+produces.  It moves transmitted x-power by **−3.24%**, max per-ray
+|ΔEx|/|Ex| = 1.87e-2.  So the path is live and the invariance is a
+result, not an absence.
+
+**New finding, recorded not fixed.**  Coated and uncoated `Refractor`
+transmission are on DIFFERENT amplitude normalizations: the uncoated
+branch applies the radiometric factor `sqrt(n₂cosθ₂/(n₁cosθ₁))` (the
+`S1` at elemsub.F ~:1147), the coated branch omits it entirely.  Measured
+with an index-matched single layer (n=1.5 on an n=1.5 substrate —
+optically a bare interface): coated/uncoated |Ex| = **0.816442** at
+normal incidence, exactly 1/√1.5, falling to 0.804789 off-axis.  A coated
+lens under-transmits by ~18% in amplitude (~33% in power) relative to the
+same surface uncoated.  Fixing it changes results and deserves its own
+decision + gate, so it is logged in `PLAN_POLARIZATION`, the engine
+`CLAUDE.md`, and the report's coverage section instead.  Related gap:
+the coated Refractor branch has **no analytic gate at all** — the
+Fresnel gate covers `Reflector` only.
+
+### 3. Re-runs and the report
+
+| Gate | Result |
+|---|---|
+| mmacos full suite (gfortran) | see the run recorded in the commit below |
+| GMI regression | **6/6, `vs-ref = 0.000e+00`** — bit-identical, as required for an ifPol-off consumer |
+| polval regen | all gate thresholds pass, including 5 new ones |
+
+The two-mirror numbers ARE unchanged, which was the point of running
+them: every published 2a/2b/polval result stands.
+
+Report: new section `polval/50_sp_sign.md.in` (§4) with the closed-form
+comparison, the radial law, the pre-fix A/B table, and the Refractor
+scope note; gate-index rows 4.1/4.2; engine-defect entry #4 in the
+conventions section, including the note that the §2.2 fold gate could
+not have caught this because its analytic was transcribed from the
+engine (now textbook).  The pre-fix numbers went to `external.json` as
+historical, with the command that reproduces them.
+
+### Corrections to earlier text in this packet
+
+* §5's suite prediction was already corrected in the Fable-lane section
+  (the scratch patch was half-applied); the basis-artifact assertions in
+  `tJonesPupil` are KEPT and were not touched here.
+* The scope list said the coated `Reflector` branch and `Refractor` were
+  "unaudited".  Both are now audited: `Reflector` fixed in cb29ea5,
+  `Refractor` normalized in 25c4386 with the transmitted-field A/B above.
