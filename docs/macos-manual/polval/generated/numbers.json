@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-26 17:56:12",
-    "engine_sha": "5a5b018",
+    "generated": "2026-07-26 19:49:14",
+    "engine_sha": "3d91d6c",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "ebbad76",
+    "resources_sha": "aa730b0",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
