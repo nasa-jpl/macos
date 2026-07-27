@@ -11,7 +11,7 @@ Commits (both repos, branch `pol-core`):
 |---|---|---|
 | item 7 — validation report | `5a5b018`, `b19e7a6` | `ebbad76`, `3c9a42b` |
 | item 2 — Phase 2b expansion | `5a5b018` | `ebbad76` |
-| field-plane getter + attribution closure | *this landing* | *this landing* |
+| field-plane getter + attribution closure | `b3e0322` | `aa730b0` |
 
 Suite status at the last landing: mmacos fast 287/0, pymacos 6651,
 PROPER-compare 26/26, GMI 6/6 bit-identical (`vs-ref = 0.000e+00`), both
