@@ -1,14 +1,14 @@
 {
   "provenance": {
-    "generated": "2026-07-27 09:45:41",
-    "engine_sha": "25c4386",
+    "generated": "2026-07-27 12:59:53",
+    "engine_sha": "b726125",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "fc2e22e",
+    "resources_sha": "848245d",
     "resources_branch": "pol-core",
-    "resources_dirty": true,
+    "resources_dirty": false,
     "matlab": "2026a",
-    "model_size": 128,
+    "model_size": "128 / 256 / 512",
     "host": "red-river"
   },
   "values": {
@@ -61,7 +61,7 @@
       "source": "driver"
     },
     "G21_MAXD": {
-      "value": 2.6132189631850934E-15,
+      "value": 2.6132189631850934e-15,
       "text": "2.61e-15",
       "units": "",
       "gate": "max diattenuation, perfect conductors",
@@ -69,7 +69,7 @@
       "source": "driver"
     },
     "G21_MAXRET": {
-      "value": 5.7926167114157429E-16,
+      "value": 5.792616711415743e-16,
       "text": "5.79e-16",
       "units": "rad",
       "gate": "max retardance, perfect conductors",
@@ -77,7 +77,7 @@
       "source": "driver"
     },
     "G21_TNONUNIF": {
-      "value": 5.0630597115620169E-14,
+      "value": 5.063059711562017e-14,
       "text": "5.06e-14",
       "units": "",
       "gate": "transmission non-uniformity, std/mean (the CI-gate statistic)",
@@ -85,7 +85,7 @@
       "source": "driver"
     },
     "G21_TSPREAD": {
-      "value": 6.0947747499914813E-15,
+      "value": 6.094774749991481e-15,
       "text": "6.09e-15",
       "units": "",
       "gate": "transmission peak-to-valley about the median",
@@ -93,7 +93,7 @@
       "source": "driver"
     },
     "G21_TRMS": {
-      "value": 9.2626528438467787E-16,
+      "value": 9.262652843846779e-16,
       "text": "9.26e-16",
       "units": "",
       "gate": "transmission RMS non-uniformity about the median",
@@ -101,7 +101,7 @@
       "source": "driver"
     },
     "G21_TMEANFLOOR": {
-      "value": 5.0626169922907138E-14,
+      "value": 5.062616992290714e-14,
       "text": "5.06e-14",
       "units": "",
       "gate": "summation-error floor of mean() over the pupil",
@@ -117,7 +117,7 @@
       "source": "driver"
     },
     "G21_LEAK": {
-      "value": 5.2502063404718658E-17,
+      "value": 5.250206340471866e-17,
       "text": "5.25e-17",
       "units": "",
       "gate": "longitudinal leak max |E.k|/|E|",
@@ -133,7 +133,7 @@
       "source": "driver"
     },
     "G22_AOI_MIN": {
-      "value": 43.281126614607508,
+      "value": 43.28112661460751,
       "text": "43.28",
       "units": "deg",
       "gate": "min AOI over the footprint",
@@ -141,7 +141,7 @@
       "source": "driver"
     },
     "G22_AOI_MAX": {
-      "value": 46.718873385392421,
+      "value": 46.71887338539242,
       "text": "46.72",
       "units": "deg",
       "gate": "max AOI over the footprint",
@@ -149,7 +149,7 @@
       "source": "driver"
     },
     "G22_DMAG": {
-      "value": 1.1990408665951691E-14,
+      "value": 1.199040866595169e-14,
       "text": "1.20e-14",
       "units": "",
       "gate": "max |RS/RP| residual vs Fresnel",
@@ -157,7 +157,7 @@
       "source": "driver"
     },
     "G22_DPHASE": {
-      "value": 3.161541638537024E-14,
+      "value": 3.161541638537024e-14,
       "text": "3.16e-14",
       "units": "rad",
       "gate": "max arg(RS/RP) residual vs Fresnel",
@@ -165,7 +165,7 @@
       "source": "driver"
     },
     "G22_DRESID": {
-      "value": 1.1213252548714081E-14,
+      "value": 1.1213252548714081e-14,
       "text": "1.12e-14",
       "units": "",
       "gate": "max per-ray diattenuation residual vs Fresnel",
@@ -173,7 +173,7 @@
       "source": "driver"
     },
     "G22_DMEAN": {
-      "value": 0.034114329479628107,
+      "value": 0.03411432947962811,
       "text": "0.0341",
       "units": "",
       "gate": "mean diattenuation of the Al fold at 45 deg",
@@ -181,7 +181,7 @@
       "source": "driver"
     },
     "G23_AZ_RESID": {
-      "value": 2.1782575743145571E-13,
+      "value": 2.1782575743145571e-13,
       "text": "2.18e-13",
       "units": "rad",
       "gate": "azimuth-lock residual of the diattenuation axis",
@@ -189,7 +189,7 @@
       "source": "driver"
     },
     "G23_CIRC": {
-      "value": 3.1536706560556308E-16,
+      "value": 3.153670656055631e-16,
       "text": "3.15e-16",
       "units": "",
       "gate": "max circular diattenuation component",
@@ -237,7 +237,7 @@
       "source": "driver"
     },
     "G25_PAIR_RESID": {
-      "value": 1.8853481024140573E-7,
+      "value": 1.8853481024140573e-07,
       "text": "1.89e-07",
       "units": "relative",
       "gate": "astig0/astig45 magnitude mismatch (pupil discretization)",
@@ -253,7 +253,7 @@
       "source": "driver"
     },
     "G25_OTHER": {
-      "value": 7.1841225034045265E-15,
+      "value": 7.184122503404526e-15,
       "text": "7.18e-15",
       "units": "",
       "gate": "largest non-astigmatic linear coefficient, relative",
@@ -261,7 +261,7 @@
       "source": "driver"
     },
     "G25_CIRC": {
-      "value": 8.85505046661065E-16,
+      "value": 8.85505046661065e-16,
       "text": "8.86e-16",
       "units": "",
       "gate": "largest circular (s3) coefficient, relative",
@@ -277,7 +277,7 @@
       "source": "driver"
     },
     "G25_RADSYM": {
-      "value": 1.0436422986242468E-7,
+      "value": 1.0436422986242468e-07,
       "text": "1.04e-07",
       "units": "",
       "gate": "largest non-rotationally-symmetric term in |D|, relative",
@@ -285,7 +285,7 @@
       "source": "driver"
     },
     "G25_DZERO": {
-      "value": 3.211026524211726E-5,
+      "value": 3.211026524211726e-05,
       "text": "3.21e-05",
       "units": "relative",
       "gate": "extrapolated on-axis diattenuation (physics requires 0)",
@@ -293,7 +293,7 @@
       "source": "driver"
     },
     "G25_FIT_MISS": {
-      "value": 2.9722380112673363E-10,
+      "value": 2.9722380112673363e-10,
       "text": "2.97e-10",
       "units": "",
       "gate": "fraction of the linear Dvec maps NOT captured by modes 1-15",
@@ -301,7 +301,7 @@
       "source": "driver"
     },
     "G25_RESID_REL": {
-      "value": 1.7968121446225057E-5,
+      "value": 1.7968121446225057e-05,
       "text": "1.80e-05",
       "units": "",
       "gate": "fit residual RMS relative to the astigmatic term",
@@ -317,7 +317,7 @@
       "source": "driver"
     },
     "G24_DINV": {
-      "value": 6.6960326172704754E-16,
+      "value": 6.696032617270475e-16,
       "text": "6.70e-16",
       "units": "",
       "gate": "D basis-invariance residual",
@@ -325,7 +325,7 @@
       "source": "driver"
     },
     "G24_RET_DP": {
-      "value": 0.0036067288581349828,
+      "value": 0.003606728858134983,
       "text": "3.607e-03",
       "units": "rad",
       "gate": "retardance variation, double-pole basis",
@@ -333,7 +333,7 @@
       "source": "driver"
     },
     "G24_RET_SP": {
-      "value": 0.89131921002945735,
+      "value": 0.8913192100294574,
       "text": "8.913e-01",
       "units": "rad",
       "gate": "retardance variation, local-sp basis",
@@ -341,7 +341,7 @@
       "source": "driver"
     },
     "G24_RATIO": {
-      "value": 247.12675809247079,
+      "value": 247.1267580924708,
       "text": "247.1",
       "units": "x",
       "gate": "local-sp retardance artifact inflation",
@@ -357,7 +357,7 @@
       "source": "driver"
     },
     "G32_X_LEG1": {
-      "value": 4.5028735736997378E-16,
+      "value": 4.502873573699738e-16,
       "text": "4.50e-16",
       "units": "",
       "gate": "vector(vec_x) vs scalar, leg 1",
@@ -365,7 +365,7 @@
       "source": "driver"
     },
     "G32_X_LEG2": {
-      "value": 6.4202135527807306E-16,
+      "value": 6.420213552780731e-16,
       "text": "6.42e-16",
       "units": "",
       "gate": "vector(vec_x) vs scalar, leg 2",
@@ -373,7 +373,7 @@
       "source": "driver"
     },
     "G32_L45_LEG1": {
-      "value": 4.5028735736997378E-16,
+      "value": 4.502873573699738e-16,
       "text": "4.50e-16",
       "units": "",
       "gate": "vector(vec_45) vs scalar, leg 1",
@@ -381,7 +381,7 @@
       "source": "driver"
     },
     "G32_L45_LEG2": {
-      "value": 6.4202135527807306E-16,
+      "value": 6.420213552780731e-16,
       "text": "6.42e-16",
       "units": "",
       "gate": "vector(vec_45) vs scalar, leg 2",
@@ -389,7 +389,7 @@
       "source": "driver"
     },
     "G32_CIRC_LEG1": {
-      "value": 4.5028735736997378E-16,
+      "value": 4.502873573699738e-16,
       "text": "4.50e-16",
       "units": "",
       "gate": "vector(vec_circ) vs scalar, leg 1",
@@ -397,7 +397,7 @@
       "source": "driver"
     },
     "G32_CIRC_LEG2": {
-      "value": 6.4202135527807306E-16,
+      "value": 6.420213552780731e-16,
       "text": "6.42e-16",
       "units": "",
       "gate": "vector(vec_circ) vs scalar, leg 2",
@@ -405,7 +405,7 @@
       "source": "driver"
     },
     "G32_WORST": {
-      "value": 6.4202135527807306E-16,
+      "value": 6.420213552780731e-16,
       "text": "6.42e-16",
       "units": "",
       "gate": "worst vector-vs-scalar residual over all states and legs",
@@ -421,7 +421,7 @@
       "source": "driver"
     },
     "G33_ELEG2": {
-      "value": 1.2304820138252375E-16,
+      "value": 1.2304820138252375e-16,
       "text": "1.23e-16",
       "units": "relative",
       "gate": "total-power residual, vector vs scalar, leg 2",
@@ -429,7 +429,7 @@
       "source": "driver"
     },
     "G34_THRU_SCALAR": {
-      "value": 0.96965754843414087,
+      "value": 0.9696575484341409,
       "text": "0.969658",
       "units": "",
       "gate": "leg2/leg1 throughput, scalar (MidStop obscuration)",
@@ -437,7 +437,7 @@
       "source": "driver"
     },
     "G34_THRU_RESID": {
-      "value": 1.1449640405708271E-16,
+      "value": 1.1449640405708271e-16,
       "text": "1.14e-16",
       "units": "relative",
       "gate": "worst mask-throughput mismatch on the vector path",
@@ -445,7 +445,7 @@
       "source": "driver"
     },
     "G35_SCALAR_TOT": {
-      "value": 1.8154952807724294E+6,
+      "value": 1815495.2807724294,
       "text": "1.815495e+06",
       "units": "",
       "gate": "scalar far-field total power",
@@ -453,7 +453,7 @@
       "source": "driver"
     },
     "G35_VECTOR_TOT": {
-      "value": 1.8154952807724264E+6,
+      "value": 1815495.2807724264,
       "text": "1.815495e+06",
       "units": "",
       "gate": "vector far-field total power (post-fix)",
@@ -461,7 +461,7 @@
       "source": "driver"
     },
     "G35_TOT_RESID": {
-      "value": 1.6672025532407381E-15,
+      "value": 1.6672025532407381e-15,
       "text": "1.67e-15",
       "units": "relative",
       "gate": "vector-vs-scalar total-power residual",
@@ -477,7 +477,7 @@
       "source": "driver"
     },
     "G35_EZ_RATIO": {
-      "value": 0.038224168400067253,
+      "value": 0.03822416840006725,
       "text": "3.82e-02",
       "units": "",
       "gate": "median |Ez|/|Ex| at the exit pupil",
@@ -485,7 +485,7 @@
       "source": "driver"
     },
     "G35_EZ_MAX": {
-      "value": 0.087921074220650514,
+      "value": 0.08792107422065051,
       "text": "8.79e-02",
       "units": "",
       "gate": "max |Ez|/|Ex| at the exit pupil",
@@ -501,7 +501,7 @@
       "source": "driver"
     },
     "G36_F": {
-      "value": 0.99788994332589054,
+      "value": 0.9978899433258905,
       "text": "0.997890",
       "units": "",
       "gate": "in-plane (Ex) power fraction",
@@ -525,7 +525,7 @@
       "source": "driver"
     },
     "G36_RESID": {
-      "value": 0.00028982635481004541,
+      "value": 0.0002898263548100454,
       "text": "2.8983e-04",
       "units": "",
       "gate": "residual of the two-term decomposition f*Is + Iy + Iz",
@@ -533,7 +533,7 @@
       "source": "driver"
     },
     "G36_DECORR": {
-      "value": 4.2008801326431922E-8,
+      "value": 4.200880132643192e-08,
       "text": "4.20e-08",
       "units": "",
       "gate": "1 - corr(Ex, scalar map): mechanism 1 is a near-pure rescale",
@@ -541,7 +541,7 @@
       "source": "driver"
     },
     "G36_PLANESUM": {
-      "value": 1.2236021631033905E-17,
+      "value": 1.2236021631033905e-17,
       "text": "1.22e-17",
       "units": "",
       "gate": "component planes summed vs intensity()",
@@ -565,7 +565,7 @@
       "source": "driver"
     },
     "G41_RESID_MED": {
-      "value": 2.549539583860388E-15,
+      "value": 2.549539583860388e-15,
       "text": "2.55e-15",
       "units": "",
       "gate": "median relative residual, cross-pol vs closed form",
@@ -573,7 +573,7 @@
       "source": "driver"
     },
     "G41_RESID_MAX": {
-      "value": 6.3946989450338364E-14,
+      "value": 6.394698945033836e-14,
       "text": "6.39e-14",
       "units": "",
       "gate": "max relative residual, cross-pol vs closed form",
@@ -581,7 +581,7 @@
       "source": "driver"
     },
     "G41_RESIDZ_MAX": {
-      "value": 5.02993277105596E-14,
+      "value": 5.02993277105596e-14,
       "text": "5.03e-14",
       "units": "",
       "gate": "max relative residual, longitudinal component vs closed form",
@@ -589,7 +589,7 @@
       "source": "driver"
     },
     "G41_RET": {
-      "value": 1.0741491298602017E-16,
+      "value": 1.0741491298602017e-16,
       "text": "1.07e-16",
       "units": "",
       "gate": "retardance introduced by a perfect conductor",
@@ -613,7 +613,7 @@
       "source": "driver"
     },
     "G42_PYPX2": {
-      "value": 7.1321981415642516E-7,
+      "value": 7.132198141564252e-07,
       "text": "7.1322e-07",
       "units": "",
       "gate": "cross-polarized power fraction after TWO mirrors (unchanged by the fix)",
@@ -629,7 +629,7 @@
       "source": "driver"
     },
     "G42_R2": {
-      "value": 0.0062619564230451379,
+      "value": 0.006261956423045138,
       "text": "6.262e-03",
       "units": "",
       "gate": "median |Ey/Ex| at rho = 0.50 of the pupil edge",
@@ -658,6 +658,310 @@
       "units": "",
       "gate": "log-log slope of cross-pol vs pupil radius (physics requires 2)",
       "test": "tPolarization/test_odd_mirror_crosspol_rho2_law",
+      "source": "driver"
+    },
+    "C21_VC_CROSS": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "cross-polarized power on a polarization-neutral train",
+      "test": "tPolContrast/test_reduction_to_scalar_contrast_curve",
+      "source": "driver"
+    },
+    "C21_VC_SCALAR": {
+      "value": 1.331479260818401e-15,
+      "text": "1.331e-15",
+      "units": "relative to peak",
+      "gate": "co-polarized channel == the scalar run",
+      "test": "tPolContrast/test_reduction_to_scalar_contrast_curve",
+      "source": "driver"
+    },
+    "C21_VC_CURVE": {
+      "value": 2.5252003114214674e-15,
+      "text": "2.525e-15",
+      "units": "relative",
+      "gate": "co-polarized contrast curve == the scalar contrast curve",
+      "test": "tPolContrast/test_reduction_to_scalar_contrast_curve",
+      "source": "driver"
+    },
+    "C21_VC_BINS": {
+      "value": 180,
+      "text": "180",
+      "units": "radial bins",
+      "gate": "contrast-curve bins compared",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "C22_PARSEVAL": {
+      "value": 1.3429297872650314e-24,
+      "text": "1.343e-24",
+      "units": "relative to peak",
+      "gate": "co + cross == |Ex|^2 + |Ey|^2 pointwise",
+      "test": "tPolContrast/test_parseval_on_the_split",
+      "source": "driver"
+    },
+    "C22_CLOSURE": {
+      "value": 1.8024498491023585e-16,
+      "text": "1.802e-16",
+      "units": "relative to peak",
+      "gate": "co + cross + longitudinal == the engine intensity",
+      "test": "tPolContrast/test_energy_bookkeeping",
+      "source": "driver"
+    },
+    "C23_CROSS_OVER_CO": {
+      "value": 7.061169943520389e-07,
+      "text": "7.0612e-07",
+      "units": "relative",
+      "gate": "cross-polarized fraction, uncoated Cassegrain",
+      "test": "tPolContrast/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C23_LONG_FRAC": {
+      "value": 0.002106468100096699,
+      "text": "2.1065e-03",
+      "units": "relative",
+      "gate": "longitudinal fraction (compare the Tranche-1 out-of-plane 1-f)",
+      "test": "tPolContrast/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C23_DZ_BARE": {
+      "value": 9.592508258270722e-12,
+      "text": "9.593e-12",
+      "units": "contrast",
+      "gate": "mean peak-normalized cross-polarized contrast, 10-40 px annulus",
+      "test": "tPolContrast/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C23_ANALYZER": {
+      "value": 1.1102230246251565e-16,
+      "text": "1.110e-16",
+      "units": "relative",
+      "gate": "derived analyzer tracks an arbitrary input state",
+      "test": "tPolContrast/test_analyzer_tracks_input_state",
+      "source": "driver"
+    },
+    "C23_CIRC_ORTHO": {
+      "value": 712983.6677442901,
+      "text": "7.130e+05",
+      "units": "relative",
+      "gate": "a conjugated analyzer reports the whole beam as cross-polarized",
+      "test": "tPolContrast/test_analyzer_would_be_wrong_if_conjugated",
+      "source": "driver"
+    },
+    "C23_CIRC_TRUE": {
+      "value": 1.4025566716889651e-06,
+      "text": "1.403e-06",
+      "units": "relative",
+      "gate": "true cross fraction for a circular input",
+      "test": "tPolContrast/test_analyzer_tracks_input_state",
+      "source": "driver"
+    },
+    "C24_CARRIED": {
+      "value": 1,
+      "text": "1.000000",
+      "units": "ratio",
+      "gate": "grid / ray cross-polarized fraction (full carry)",
+      "test": "tPolContrast/test_scope_reports_full_carry_on_a_single_leg_train",
+      "source": "driver"
+    },
+    "C24_CARRIED_LO": {
+      "value": 1,
+      "text": "1.000000",
+      "units": "ratio",
+      "gate": "same, lower bound",
+      "test": "tPolContrast/test_scope_reports_full_carry_on_a_single_leg_train",
+      "source": "driver"
+    },
+    "C24_RAYFRAC": {
+      "value": 7.061164957511768e-07,
+      "text": "7.0612e-07",
+      "units": "relative",
+      "gate": "ray-level cross fraction (non-vacuity of the carry check)",
+      "test": "tPolContrast/test_scope_reports_full_carry_on_a_single_leg_train",
+      "source": "driver"
+    },
+    "C25_AL_REL": {
+      "value": 27.89768838081219,
+      "text": "27.9",
+      "units": "x baseline",
+      "gate": "cross-polarized power, bare Al vs uncoated",
+      "test": "tPolContrast/test_coating_sensitivity",
+      "source": "driver"
+    },
+    "C25_MGF2_REL": {
+      "value": 151.31118834295498,
+      "text": "151.3",
+      "units": "x baseline",
+      "gate": "cross-polarized power, MgF2/Al vs uncoated",
+      "test": "tPolContrast/test_coating_sensitivity",
+      "source": "driver"
+    },
+    "C25_DZ_AL": {
+      "value": 3.344650513635502e-10,
+      "text": "3.345e-10",
+      "units": "contrast",
+      "gate": "mean cross contrast in the annulus, bare Al",
+      "test": "tPolContrast/test_coating_sensitivity",
+      "source": "driver"
+    },
+    "C25_DZ_MGF2": {
+      "value": 1.9921578023666212e-09,
+      "text": "1.992e-09",
+      "units": "contrast",
+      "gate": "mean cross contrast in the annulus, MgF2/Al",
+      "test": "tPolContrast/test_coating_sensitivity",
+      "source": "driver"
+    },
+    "C25_SWEEP_MONO": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "floor rises monotonically bare -> Al -> MgF2/Al",
+      "test": "tPolContrast/test_coating_sensitivity",
+      "source": "driver"
+    },
+    "C25_THKAL": {
+      "value": 200,
+      "text": "200",
+      "units": "nm",
+      "gate": "Al layer thickness used",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "C25_THKMGF2": {
+      "value": 110,
+      "text": "110",
+      "units": "nm",
+      "gate": "MgF2 overcoat thickness used",
+      "test": "this driver",
+      "source": "driver"
+    },
+    "C31_CROSS_OVER_CO": {
+      "value": 4.789727141877536e-09,
+      "text": "4.7897e-09",
+      "units": "relative",
+      "gate": "cross-polarized fraction, coaxial coronagraph chain",
+      "test": "tPolContrastCoro/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C31_PEAKCONTRAST": {
+      "value": 1.270518383031015e-09,
+      "text": "1.2705e-09",
+      "units": "contrast",
+      "gate": "peak cross-polarized contrast at the focal plane",
+      "test": "tPolContrastCoro/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C31_DZ_CROSS": {
+      "value": 5.786635808798766e-13,
+      "text": "5.787e-13",
+      "units": "contrast",
+      "gate": "mean cross-polarized contrast, 20-80 px annulus",
+      "test": "tPolContrastCoro/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C31_DZ_CROSS_MED": {
+      "value": 1.4345344396841898e-13,
+      "text": "1.435e-13",
+      "units": "contrast",
+      "gate": "median cross-polarized contrast, same annulus",
+      "test": "tPolContrastCoro/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C31_DZ_CO": {
+      "value": 4.164423014446299e-05,
+      "text": "4.164e-05",
+      "units": "contrast",
+      "gate": "mean co-polarized contrast, same annulus",
+      "test": "tPolContrastCoro/test_floor_reported_by_component",
+      "source": "driver"
+    },
+    "C31_PARSEVAL": {
+      "value": 2.6824928792985104e-20,
+      "text": "2.682e-20",
+      "units": "relative to peak",
+      "gate": "Parseval on the split at model 512",
+      "test": "tPolContrastCoro/test_parseval_and_closure_at_scale",
+      "source": "driver"
+    },
+    "C31_CLOSURE": {
+      "value": 2.1974981667213397e-16,
+      "text": "2.197e-16",
+      "units": "relative to peak",
+      "gate": "energy closure at model 512",
+      "test": "tPolContrastCoro/test_parseval_and_closure_at_scale",
+      "source": "driver"
+    },
+    "C32_DOP": {
+      "value": 0.9999999904205457,
+      "text": "0.99999999",
+      "units": "ratio",
+      "gate": "pupil degree of polarization (the analyzer is well defined)",
+      "test": "tPolContrastCoro/test_analyzer_is_fully_polarized_and_axis_aligned",
+      "source": "driver"
+    },
+    "C33_GRIDFRAC": {
+      "value": 4.789727118934141e-09,
+      "text": "4.7897e-09",
+      "units": "relative",
+      "gate": "cross-polarized fraction the diffraction grid carries",
+      "test": "tPolContrastCoro/test_tranche1_shortfall_is_detected",
+      "source": "driver"
+    },
+    "C33_RAYFRAC": {
+      "value": 5.6940275868929395e-09,
+      "text": "5.6940e-09",
+      "units": "relative",
+      "gate": "cross-polarized fraction the RAYS carry (the full train)",
+      "test": "tPolContrastCoro/test_tranche1_shortfall_is_detected",
+      "source": "driver"
+    },
+    "C33_CARRIED": {
+      "value": 0.8411843894047152,
+      "text": "0.8412",
+      "units": "ratio",
+      "gate": "carried fraction, uncoated",
+      "test": "tPolContrastCoro/test_tranche1_shortfall_is_detected",
+      "source": "driver"
+    },
+    "C33_CARRIED_COAT": {
+      "value": 0.5652844915951312,
+      "text": "0.5653",
+      "units": "ratio",
+      "gate": "carried fraction with all seven mirrors coated",
+      "test": "tPolContrastCoro/test_coating_sensitivity_is_not_trustworthy_here",
+      "source": "driver"
+    },
+    "C33_GRID_DREL": {
+      "value": -0.0322332917285171,
+      "text": "-0.0322",
+      "units": "x baseline",
+      "gate": "coating sensitivity the GRID reports (wrong sign)",
+      "test": "tPolContrastCoro/test_coating_sensitivity_is_not_trustworthy_here",
+      "source": "driver"
+    },
+    "C33_RAY_COAT": {
+      "value": 9.033605806726113e-09,
+      "text": "9.0336e-09",
+      "units": "relative",
+      "gate": "ray-level cross fraction with the mirrors coated",
+      "test": "tPolContrastCoro/test_coating_sensitivity_is_not_trustworthy_here",
+      "source": "driver"
+    },
+    "C33_RAY_DREL": {
+      "value": 0.5865054513470458,
+      "text": "+0.587",
+      "units": "x baseline",
+      "gate": "coating sensitivity the RAYS report (the truth the grid misses)",
+      "test": "tPolContrastCoro/test_coating_sensitivity_is_not_trustworthy_here",
+      "source": "driver"
+    },
+    "C33_NMIRROR": {
+      "value": 7,
+      "text": "7",
+      "units": "mirrors",
+      "gate": "reflectors in the chain",
+      "test": "this driver",
       "source": "driver"
     }
   }
