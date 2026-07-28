@@ -199,10 +199,14 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 
 Day-to-day: push new features to `dev`; cherry-pick bug fixes to
 `opt-dev`; let `dev` accumulate until a promotion gate.  The two repos
-(`~/dev/macos` + `~/dev/MACOS_resources`) are kept branch-symmetric —
-as of 2026-07-28 both carry the same set (`dev`, `main`, `opt-dev`,
-`bench-builder`, `pol-core`, `pol-ifo`, `release-candidate`, …) and
-neither has `sls-dev`.
+(`~/dev/macos` + `~/dev/MACOS_resources`) are NOT branch-identical —
+`nasa-jpl/macos` is slimmed (as of 2026-07-28 remote heads:
+`bench-builder`, `dev`, `fixREADME`, `main`, `pol-core`) while
+`MACOS_resources` still carries the wider working set (`dev`, `main`,
+`opt-dev`, `bench-builder`, `pol-core`, `pol-ifo`, `release-candidate`,
+`develop`, `dr-dev`, `dr-dev2`, `ifo-l2`).  The shared, deliberate fact
+is that **neither repo has `sls-dev`** — retired 2026-07-28.  Always
+`git ls-remote --heads` to see the live set before assuming.
 
 ## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
 - **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public
