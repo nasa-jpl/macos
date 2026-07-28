@@ -801,7 +801,17 @@ index-matched single layer (optically a bare interface):
 coated/uncoated |Ex| = 0.816442 at normal incidence = 1/sqrt(1.5)
 exactly, 0.804789 off-axis -- a coated lens under-transmits by ~18% in
 amplitude.  The coated Refractor branch also has NO analytic gate at
-all.  Not fixed: it changes results and wants its own decision + gate.
+all.  **DECIDED 2026-07-28 (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`):**
+keep the incumbent power-amplitude convention (uncoated `|TP|²` = power
+transmittance, confirmed by line-read of the `S1` factor); bring the
+coated branch to it with ONE factor `sqrt(Re(n_sub)*cos_sub/(na*
+cos_inc))` applied ONCE after the Airy recursion — never per interface
+(interior-layer factors cancel identically in the multilayer theorem;
+per-layer factors would double-count).  Reflected quantities untouched.
+Metal-substrate Refractor transmission has no meaningful power
+convention — out of scope, note at the site.  Implementation + gates =
+an Opus slice per the packet's landing spec; until it lands the coated
+branch still under-transmits.
 
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
