@@ -858,6 +858,45 @@ seeding is an open audit question -- the uncoated branch has always
 carried the factor, and the PROPER comparisons are mirror trains that
 never exercised it hard.
 
+**Coated REFLECTOR anchored to publication (2026-07-28) -- no engine
+change.**  The coated `Reflector` recursion is now checked against an
+OUTSIDE source on a DIELECTRIC-ON-METAL stack (a protected mirror), the
+one configuration class our own gates never covered: `tJonesPupil`'s
+Fresnel gate is an optically THICK SINGLE layer (algebraically a bare
+interface) and `tPolRadiometric` is TRANSMISSION.  Method: reproduce the
+publication's own configuration via `coat_set` -- their indices, their
+4.12 nm Al2O3 on 220 nm Al, their 500/550/600/650 nm, their 6-70 deg --
+and compare curve-on-curve with their model (van Harten, Snik & Keller,
+PASP 121, 377 (2009), arXiv:0903.2740v1).  **Result: 2.828e-14
+(diattenuation) / 4.937e-14 (retardance) against their stated +-0.01 per
+normalized Mueller element.**  Driving it with THEIR indices is the
+point: aluminium index tables genuinely disagree (the paper says so and
+FITS k), and an index-table difference is NOT a machinery error.
+Their index convention `N = n - ik`, k>=0, is IDENTICAL to ours, so
+nothing translates -- and it is load-bearing, since they report the
+opposite sign made their fitted oxide come out ~50 nm instead of ~4 nm.
+Tool `mmacos/tools/pol_external_anchor/`, gate `tPolExternal`, polval
+section 8, packet `macos/REVIEW_POL_EXTERNAL_2026-07-28.md`.
+**Two measurement traps this exposed, both of which are self-cancelling
+at exactly 45 deg -- the one angle the pre-existing Fresnel gate runs
+at, so the suite could not have caught either:**
+(1) a fold mirror's DEVIATION is `180 - 2*AOI`, NOT `2*AOI`; building a
+rig the other way sweeps the COMPLEMENT of the intended angles.
+(2) the single-trace s/p extraction divides out the input state's
+projection on the s/p axes and therefore needs the engine's per-ray
+LAUNCH FRAME, in practice a hard-coded `xGrid` -- wrong elsewhere, and
+the symptom is diattenuation FLAT in AOI where an isotropic surface must
+give `D ~ theta^2` (the same "flat where physics demands a power law"
+tell that exposed the r_p sign defect).  Use the frame-free TWO-trace
+form instead: `M = diag(r_s,r_p) R(phi)` so `r_s/r_p = M11/M22 =
+-M12/M21`, with `phi` cancelling and the two estimates cross-checking.
+**p-hat bridge, MEASURED:** on the perfect-conductor idiom the engine
+returns `r_s/r_p = +1` exactly (imag part 0) at every AOI, so the ratio
+measured in the `(s, p_r)` basis is already in the publication's
+fixed-transverse frame -- bridge ZERO.  Assuming the `pi` the
+ray-following doctrine suggests is wrong by exactly 180 deg everywhere;
+`tPolExternal/test_phat_convention_bridge_is_zero` pins it.
+
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
 source-frame pair, UNIFORM over the grid.  Point sources use a PER-RAY

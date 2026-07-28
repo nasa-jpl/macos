@@ -225,7 +225,7 @@ identical total power — the same two-mechanism account given above applies
 in kind, though it has been quantified only on the far-field case.
 
 Suite status when these gates were last re-run: 26/26 PROPER
-comparisons, 6694 pass, 1 skipped in the pymacos suite, 480 pass, 0 fail in
+comparisons, 6694 pass, 1 skipped in the pymacos suite, 488 pass, 0 fail in
 the mmacos suite. *(All external, captured 2026-07-28.)*
 
 This is rung 3 of the validation ladder, and the only rung on this page that

@@ -324,6 +324,46 @@ way — CCMac is gfortran-only.)
      pass-through, visibility-budget driver.
   6. **Phase 4 spatial coatings** (§4): zone-map model per the AmplMat
      template + the two stated departures.
+  6b. ~~**MgF₂/Al external cross-check**~~ — **DONE 2026-07-28.**  The
+     small item Fable added in `REVIEW_POL_2C_2026-07-27.md` ("the 151×
+     stays model-relative"), closed by reproducing a PUBLISHED
+     protected-aluminium configuration in the engine rather than by
+     comparing against a published number: van Harten, Snik & Keller,
+     PASP 121, 377 (2009) (arXiv:0903.2740v1), driving `coat_set` with
+     THEIR indices, their 4.12 nm oxide, their 500/550/600/650 nm and
+     their 6–70° — which isolates the machinery from index-table
+     disagreement (their own words: aluminium k "varies widely
+     throughout the literature", and they FIT it).  **Machinery result:
+     2.828e-14 (diattenuation) / 4.937e-14 (retardance) against their
+     stated ±0.01 per normalized Mueller element.**  Non-vacuous: both
+     omitting the 4.12 nm oxide and substituting the historical 50 nm
+     value exceed their accuracy — which independently reproduces the
+     paper's own central claim.  Shipped
+     `mmacos/tools/pol_external_anchor/` + `tPolExternal` (8 gates,
+     SUITE_FAST) + 16 `external.json` entries + polval **§8**.
+     **NO ENGINE CHANGE.**
+     **Finding, and it is not the one this item expected —
+     `REVIEW_POL_EXTERNAL_2026-07-28.md`:** the 151× is *arithmetically
+     correct* (the independent analytic gives 6.35, the engine's own
+     Jones pupil 6.42, `pol_contrast_floor` 5.42 for MgF₂/Al ÷ bare Al),
+     but the configuration is **mislabelled and the design rule drawn
+     from it has the wrong sign**.  `Rx_Cass_FarField` runs at
+     `Wavelen = 1.0E-06` m while the 2c coating constants are commented
+     "Al at 632.8 nm" and "~quarter wave at 632.8 nm"; at 1 µm the
+     110 nm MgF₂ film is **0.607** quarter-waves.  The overcoat trade
+     REVERSES across the quarter-wave condition — the same film gives
+     0.18× at 632.8 nm, 6.35× at 1 µm, and a TRUE quarter wave (181.2 nm
+     at 1 µm) gives **0.0157×**, i.e. a real protected-Al overcoat
+     *suppresses* the floor by ~1.8 decades rather than costing a
+     decade.  polval §5.5 keeps its measured numbers and gains a
+     correction notice; §8.3 states the reversal; `tPolContrast`'s
+     asserted 27.898/151.31 were deliberately NOT touched (they are
+     correct measurements of the fixture as built).
+     **Open, for the Fable lane:** whether to re-run the 2c coating
+     ladder on a self-consistent configuration (aluminium indices at the
+     fixture's own wavelength + a genuine quarter-wave overcoat), or move
+     `Rx_Cass_FarField` to 632.8 nm.  Either moves gated numbers, so it
+     is a judgment call, not a mechanical one.
   7. ~~**Validation-report skeleton + Phase 0–2b evidence**~~ — **DONE
      2026-07-26** (see the STATUS block in the Validation document
      section below).  Shipped the `polval/` report, the `make polval` /

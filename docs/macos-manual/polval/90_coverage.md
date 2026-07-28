@@ -50,6 +50,13 @@ against, and the test that pins it in continuous integration.
 | 7.5 | polarization state untouched (common real scalar) | 4.441e-16 | factor-free t_p/t_s | `tPolRadiometric/test_scalar_factor_leaves_the_polarization_state_alone` |
 | 7.5 | the factor lives inside `ifPol` | 1 | bit-identical | `tPolRadiometric/test_pol_off_is_untouched_by_the_coating` |
 | 7.6 | quarter-wave structure survives the scalar | 5.551e-16; ratio flat to 9.992e-16 | characteristic-matrix T(λ) | `tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor` |
+| 8.1 | dielectric-on-metal matches a PUBLISHED model | D 2.828e-14, retardance 4.937e-14 | G. van Harten, F. Snik and C. U. Keller, "Polarization properties of real aluminum mirrors I. Influence of the aluminum oxide layer," PASP 121(878), 377-383 (2009), ±0.01 *(external)* | `tPolExternal/test_vanharten_machinery` |
+| 8.1 | p̂ bridge measured, not assumed | PEC r_s/r_p = +1 exactly | +1 | `tPolExternal/test_phat_convention_bridge_is_zero` |
+| 8.1 | the ratio estimator is frame-free | M11/M22 vs −M12/M21 | 0 | `tPolExternal/test_ratio_estimator_self_consistency` |
+| 8.2 | the 4 nm oxide is distinguishable | exceeds 0.01 | > publication accuracy | `tPolExternal/test_omitting_the_oxide_exceeds_published_accuracy` |
+| 8.2 | 4.12 nm vs the rejected 50 nm | exceeds 0.01 | > publication accuracy | `tPolExternal/test_rejected_50nm_oxide_is_excluded` |
+| 8.2 | admittance assignment pinned by [1,2] sign | D > 0 and < 0.15 at 70° | published Fig. 1a axis | `tPolExternal/test_admittance_assignment_sign` |
+| 8.3 | overcoat trade reverses across the quarter wave | 0.18 vs 6.35 vs 0.0157 | sign reversal | `tPolExternal/test_overcoat_trade_reverses_with_optical_thickness` |
 
 # Coverage and gaps
 
