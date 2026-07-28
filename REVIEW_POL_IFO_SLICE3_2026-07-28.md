@@ -231,3 +231,56 @@ Both are now in `REVIEW_POL_IFO_SLICE2_2026-07-27.md`:
   the settled material-axis flip. Slice 3 is unaffected (strict normal
   incidence), but the veneer docs and PLAN claim a landing that is not in
   this branch.
+
+---
+
+## Fable-lane review (2026-07-28) — PASS; the arc is complete
+
+**The aliasing headline is independently confirmed in mechanism and
+order.**  A from-scratch Jones model of the four-step rotating-analyzer
+estimator with slice-1's differential (D = 0.0721, ret = 0.0835 split
+symmetrically) gives an OPD-dependent ripple of peak 8.4 nm and
+5.95 nm rms over a UNIFORM full fringe; the harness's 2.38 nm is the
+rms over the rig's actual sub-fringe piston-removed OPD span, which is
+consistently smaller.  The ~10⁶× amplification over the scalar-PSI
+common-mode figure stands regardless of the rms weighting — in
+polarization PSI the arm polarization differential enters the READOUT,
+which mechanical stepping is blind to.  The configuration conclusion
+(PZT stepping preferred wherever a moving mirror is acceptable; the
+pol PSI demands < ~0.01 wave / < ~0.1° waveplate control) is endorsed
+as measured.
+
+**Gate discipline: right things pinned, right things reported.**
+A(i)/(iii) pin the closed-form estimator property (1.8e-16, which is
+what "no harmonic above 2θ" must give); A(ii)'s 0.40 nm and Gate B's
+small-ε excess are correctly REPORTED as the rig's own coated-BS
+aberration (pinning them would have required a polarization-neutral BS
+that does not exist).  B's two invariant marks — the 2ω twice-fringe
+signature and the large-ε ε²/4 amplitude — are the aberration-
+independent facts, and that is exactly the split slices 1–2 taught.
+
+**The double-passed-retarder trap is a keeper**: deriving the return-
+pass fast axis from the element's own psi (which flips at the retro)
+silently breaks the net half-wave for any non-0/90° arm angle; one
+global fast-axis vector per double-passed element.  Now on the record
+for anyone adding double-passed retarders.
+
+**The version-skew flag is CLOSED** (this review): resources
+`origin/pol-core` merged into `pol-ifo` (`7a268a9`; one conflict in
+`run_mmacos_tests.sh`, resolved as the union of both suite additions),
+bringing the material-axis veneer docs, `Rx_PolElt_Tilt.in`, and the
+off-normal engine gates onto the branch.  Verified on the merged tree
+with the mex rebuilt: tBench 7/7, tPolElement 27/27 (including the
+tilt gates).  Pushed.
+
+**Slice-2 riders: delivered as specified** (the D²/8 vs ret²/8 budget
+rows are the decomposition the review asked for).
+
+With slices 1–3 landed and reviewed, the pol-ifo IFO arc is COMPLETE:
+polarization-honest baseline → BS-angle trade with clearance → a
+polarizing-PSI variant with a measured error budget and a
+measurement-backed configuration verdict.  The two Bench emitters
+(add_polarizer/add_waveplate) close the IFO prerequisite the
+pol-elements packet flagged.  This is the design layer consuming the
+whole polarization stack end-to-end — the convergence the lane split
+was building toward.
