@@ -164,3 +164,48 @@ Polarizing-PSI variant (ideal polarizer / waveplate in the collimated
 normal-incidence legs) + comparison against this baseline. That slice is
 where the PSI pupil-variation (score 2) is designed to grow above
 round-off.
+
+---
+
+## Fable-lane review (2026-07-28) — PASS; the judgment call is RIGHT with two riders
+
+**The trade curve is independently CONFIRMED at every table point.**  My
+slice-1 full-train construction, swept over 45/30/17.5/15°, reproduces
+BOTH columns to all printed digits: D = 0.0721/0.0285/0.0091/0.0066 and
+1−V = 1.52e-3/2.03e-4/1.94e-5/1.02e-5 (normalized state-overlap,
+both-components-lit input — the same construction the harness scores).
+The curve gate's non-vacuity (one-reflection model off by 358%) matches
+the 40%-in-D error class my slice-1 review documented, now measured as
+a gate failure.  The knee's honest labelling ("a worked datum on this
+rig, not a universal prior" — it scales with beam radius) is the right
+epistemics for a design-rules number.
+
+**The flagged judgment — excluding the scalar throughput-imbalance
+term — is CORRECT for a polarization trade**, for the reason CCMac
+gave plus one more: the scalar imbalance is trimmed by conventional
+means (split-ratio choice, ND trim) and including it would bury the
+polarization signal the sweep exists to measure.  Two riders, one
+paragraph each, ride slice 3:
+
+1. **Context row, not a swept metric:** report the TOTAL fringe-contrast
+   budget once at 45° and once at the knee — scalar-throughput
+   imbalance and polarization-differential terms side by side — so no
+   reader mistakes the swept metric for the whole budget.
+2. **Record the input-state dependence.**  The scored metric assumes
+   both s and p lit (the harness's 45°-ish input).  For input ALIGNED
+   with s or p the differential Jones is diagonal: the state overlap
+   reads ~1 and the entire polarization cost migrates into the
+   amplitude-imbalance term the metric excludes — the metric would read
+   "no cost" while the cost is real.  One sentence in the report
+   prevents that misreading; a worst-case-over-input-states variant is
+   the future-proof form if slice 3 wants it.
+
+Also noted with approval: the Python-prototype-before-MATLAB step
+(construction verified against slice-1's numbers before any harness
+code), the per-angle trace-clean + Fresnel gates rather than
+endpoint-only, and the BS_AOI builder default pinned to the exact
+legacy literal with bit-identity verified both arms.
+
+Slice 3 (polarizing-PSI variant) may proceed, with the two riders and
+the slice-1 review's placement rule (ideal polarizer/waveplate in
+collimated normal-incidence legs) as standing constraints.
