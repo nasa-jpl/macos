@@ -41,6 +41,15 @@ against, and the test that pins it in continuous integration.
 | 6.4 | half-wave 2θ law; two QWPs ≡ one HWP | slope residual 8.882e-16; cascade 1.464e-16 | 2; 0 | `tPolElement/test_hwp_rotates_by_2theta`, `test_two_qwp_equal_one_hwp` |
 | 6.5 | retarder is unitary, linear and circular in | 0.000e+00; JᴴJ−I 0.000e+00 | 0 | `tPolElement/test_waveplate_is_unitary` |
 | 6.6 | the diffraction grid carries the train | 1.833e-15 | cos²θ | `tPolElement/test_grid_carries_the_polarizing_train` |
+| 7.1 | uncoated transmission IS the power transmittance | 2.220e-16 normal; 2.220e-16 p, 0.000e+00 s at 45° | characteristic-matrix T | `tPolRadiometric/test_uncoated_transmission_is_the_power_transmittance`, `test_uncoated_transmission_oblique_s_and_p` |
+| 7.2 | index-matched layer ≡ bare interface | 0.000e+00 normal; 2.220e-16 p, 2.220e-16 s at 45° | 0 | `tPolRadiometric/test_index_matched_layer_equals_bare_interface_normal`, `..._oblique` |
+| 7.2 | and on the diffraction grid | 0.000e+00 | 0 | `tPolRadiometric/test_index_matched_layer_at_the_detector_plane` |
+| 7.3 | MgF₂ quarter-wave vs the textbook multilayer | 2.220e-16 normal; 1.332e-15 p, 1.110e-16 s at 45° | characteristic-matrix T | `tPolRadiometric/test_mgf2_quarterwave_normal_incidence`, `..._45deg_s_and_p` |
+| 7.4 | air-to-air power closure, mixed plate | 2.220e-16 | T₁·T₂ | `tPolRadiometric/test_air_to_air_power_closure_mixed_plate` |
+| 7.4 | radiometric factors telescope across a plate | 2.220e-16 | 0 | `tPolRadiometric/test_air_to_air_factors_telescope` |
+| 7.5 | polarization state untouched (common real scalar) | 4.441e-16 | factor-free t_p/t_s | `tPolRadiometric/test_scalar_factor_leaves_the_polarization_state_alone` |
+| 7.5 | the factor lives inside `ifPol` | 1 | bit-identical | `tPolRadiometric/test_pol_off_is_untouched_by_the_coating` |
+| 7.6 | quarter-wave structure survives the scalar | 5.551e-16; ratio flat to 9.992e-16 | characteristic-matrix T(λ) | `tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor` |
 
 # Coverage and gaps
 
@@ -81,15 +90,25 @@ was checked.
   carry phases explicitly against the path bookkeeping rather than assume a
   sign. The behavioural gates above, not a convention argument, are what carry
   the correctness claim.
-* **The coated `Refractor` branch has no analytic gate**, before or after the
-  §4 normalization, and it carries a normalization discrepancy against its
-  own uncoated branch: the uncoated path multiplies transmission by the
-  radiometric factor √(n₂cos θ₂ / n₁cos θ₁) and the coated path omits it.
-  Measured with an index-matched single layer (optically a bare interface):
-  coated/uncoated |Eₓ| = 0.816442 at normal incidence, exactly 1/√1.5 for
-  that substrate. A coated lens therefore under-transmits by ~18% in
-  amplitude relative to the same surface uncoated. Recorded rather than
-  fixed — it changes results and wants its own decision and gate.
+* ~~The coated `Refractor` branch has no analytic gate, and carries a
+  normalization discrepancy against its own uncoated branch.~~ **CLOSED**
+  (§7). The convention was decided
+  (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`) in favour of the incumbent
+  power-amplitude rule, the coated branch was brought to it with a single
+  factor applied once after the recursion, and the branch now has thirteen
+  gates against the Abeles characteristic matrix — seven of which fail
+  against the pre-fix engine. What remains open is narrower and stated
+  there: transmission into an **absorbing substrate** has no meaningful
+  power convention and is deliberately ungated, and the `Reflector`
+  transmittance blocks are still `if(.false.)` dead code, so a coated mirror
+  reports no transmitted leakage.
+* **The cos θ term in the radiometric factor overlaps conceptually with
+  beam-area bookkeeping that ray *density* also carries** when the grid is
+  seeded for diffraction. Whether that is a double-count in oblique
+  refractive seeding is an open audit question that **predates** §7 — the
+  uncoated branch has always carried the factor, and the PROPER comparisons
+  are mirror trains that never exercised it hard. Recorded here, deliberately
+  uncoupled from the §7 landing, which changed nothing about it.
 * **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
   handles one wavefront only — no multi-wavefront composition concurrently.
   This is a documented constraint, not a defect to work around.

@@ -793,25 +793,70 @@ CONSISTENT flip -- verified bit-identical on a coated singlet, with an
 INCONSISTENT flip built and measured (-3.2% transmitted power) so the
 invariance is not an untested path.  (3) Report section
 `polval/50_sp_sign.md.in`.
-**AUDIT FINDING, open** -- coated and uncoated `Refractor` transmission
-use DIFFERENT amplitude normalizations: the uncoated branch multiplies
-by the radiometric factor `sqrt(n2 cos02/(n1 cos01))` (the `S1` at
-elemsub.F ~:1147), the coated branch omits it.  Measured with an
-index-matched single layer (optically a bare interface):
-coated/uncoated |Ex| = 0.816442 at normal incidence = 1/sqrt(1.5)
-exactly, 0.804789 off-axis -- a coated lens under-transmits by ~18% in
-amplitude.  The coated Refractor branch also has NO analytic gate at
-all.  **DECIDED 2026-07-28 (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`):**
-keep the incumbent power-amplitude convention (uncoated `|TP|²` = power
-transmittance, confirmed by line-read of the `S1` factor); bring the
-coated branch to it with ONE factor `sqrt(Re(n_sub)*cos_sub/(na*
-cos_inc))` applied ONCE after the Airy recursion — never per interface
-(interior-layer factors cancel identically in the multilayer theorem;
-per-layer factors would double-count).  Reflected quantities untouched.
-Metal-substrate Refractor transmission has no meaningful power
-convention — out of scope, note at the site.  Implementation + gates =
-an Opus slice per the packet's landing spec; until it lands the coated
-branch still under-transmits.
+
+**Coated-`Refractor` transmission radiometry -- FIXED 2026-07-28 (macos
+`a5e4288`).**  Coated and uncoated `Refractor` transmission used
+DIFFERENT amplitude normalizations: the uncoated branch multiplies by the
+radiometric factor `sqrt(n2 cos02/(n1 cos01))` (the `S1` at elemsub.F
+~:1146), so `|TP|**2` IS the POWER transmittance; the coated branch
+composed plain Fresnel FIELD coefficients through the Airy recursion and
+omitted it.  Measured with an index-matched single layer (optically a
+bare interface): coated/uncoated amplitude **0.8164965809 = 1/sqrt(1.5)
+exactly** at normal incidence, **0.7311104457** for BOTH s and p at 45
+deg (`= 1/sqrt(1.5*cos28.13/cos45)` -- the equality across s and p is the
+tell that a COMMON scalar was missing, since a Fresnel error would
+separate them), and **0.6666666667 = 1/1.5 in INTENSITY at the detector
+plane** -- propsub's `CPROPAGATE` chain inherited it, so the image
+under-reported flux by a third.  A coated lens under-transmitted by ~18%
+in amplitude.
+**Decision (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`, Fable lane):** keep
+the incumbent power-amplitude convention; bring the coated branch to it
+with ONE factor `sqrt(Re(n_sub)*cos_sub/(na*cos_inc))` applied ONCE
+after the Airy recursion, to `TP` and `TS`, using `na` (the medium the
+ray is actually in -- the Phase-2 incident-medium fix) and not the
+stale `nb_arr(0)` slot.
+**NEVER per interface.**  The conversion is boundary-to-boundary and the
+interior-layer factors cancel identically.  Do not be talked into the
+per-interface form by noticing that a plain chain's per-interface factors
+telescope to the same number: that holds only while every interface is
+present, in order, and paired with the RIGHT media -- and this branch has
+already been bitten there once, by `nb_arr(0)`.  The site comment carries
+the argument.
+**What did NOT move**, and is gated: `RP`/`RS` and the `RP1*RP` Airy
+denominators are untouched, so nothing REFLECTED changes; and the factor
+is a common real scalar, so it cancels in `t_p/t_s` -- the transmitted
+polarization STATE (D, retardance, every Jones-pupil quantity) is
+unchanged, which is what lets the Phase 2a/2b coated results stand.
+Only the absolute transmitted amplitude moved.
+**Scope, deliberately ungated:** transmission into an ABSORBING (metal)
+substrate has no meaningful power convention -- the transmitted wave is
+evanescent and carries no propagating power.  Coated LENSES (dielectric
+substrate) are the use case.  `Reflector`'s transmittance blocks stay
+`if(.false.)` dead code -- untouched.
+**Gates:** `tPolRadiometric` (mmacos, SUITE_FAST, 13 tests) on two new
+fixtures, `Rx_Refract.in` (normal-incidence air/glass/air plate with a
+physical-optics leg, so BOTH dispatch chains are covered) and
+`Rx_Refract45.in` (45 deg AOI -- load-bearing: at normal incidence both
+cosines are 1, so a normal-only suite gates the INDEX half of the factor
+and is blind to the cosine half).  Every analytic is the Abeles
+characteristic matrix written from Macleod ch. 2, NOT transcribed from
+`elemsub.F` -- the r_p-sign lesson.  Non-vacuity: 7 of the 13 fail
+against the rebuilt pre-fix engine.  Report section `polval/80_radiometric`.
+**Analytic gotcha that cost this slice a cycle:** Macleod's
+`2*eta0/(eta0*B+C)` is the TANGENTIAL amplitude coefficient; for p the
+tangential component is `E*cos(theta)`, so it exceeds the ordinary
+Fresnel `t_p` by `cos_sub/cos_inc` (1.2472 at 45 deg into n=1.5) --
+exactly the size of a plausible radiometric error, so it reads as a
+failed gate rather than a units slip.  `T` is unaffected either way,
+which is why every transmittance gate passed while the amplitude-ratio
+one did not.
+**Still open (predates this landing, deliberately uncoupled):** the
+`cos` term in the radiometric factor overlaps conceptually with the
+beam-area bookkeeping ray DENSITY also carries when the grid is seeded
+for diffraction.  Whether that double-counts in oblique refractive
+seeding is an open audit question -- the uncoated branch has always
+carried the factor, and the PROPER comparisons are mirror trains that
+never exercised it hard.
 
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the

@@ -1,7 +1,8 @@
 # Decision packet — coated-Refractor transmission radiometric convention
 
 **Date:** 2026-07-28 · **Lane:** Fable (convention decision) · **Status:**
-DECIDED — implementation + gates are an Opus slice (spec below).
+**LANDED** 2026-07-28 (Opus). Engine `a5e4288`; gates, fixtures and report
+section in the same push. Landing record at the bottom.
 
 ## The finding (session A audit, 2026-07-27)
 
@@ -91,3 +92,76 @@ oblique refractive seeding is an open audit question that predates this
 decision (the uncoated branch has always carried it, and the PROPER
 comparisons — mostly mirror trains — never exercised it hard). Left
 open deliberately; do not couple it to this fix.
+
+---
+
+# Landing record (Opus, 2026-07-28)
+
+**Engine:** macos `a5e4288` — `elemsub.F`, one block inside the
+`ifPol .and. nCoat/=0` branch, immediately after the `ic` loop. `S2` was a
+declared-but-unused `REAL*8` in `Refractor`; nothing else in the routine
+moved. Guarded `IF (S2.GT.0d0)` so a pathological argument leaves `TP/TS`
+untouched rather than producing a NaN.
+
+**The pre-fix A/B, captured before the engine was touched** (rebuilt
+gfortran engine + relinked mex; the numbers are in `external.json` as
+`X_RAD_PREFIX_*`):
+
+| | uncoated | coated (index-matched) | coated/uncoated |
+|---|---|---|---|
+| normal | 0.9797958971 = √0.96 | 0.8000000000 = 2n₁/(n₁+n₂) | **0.8164965809 = 1/√1.5** |
+| 45°, p | 0.9957577723 | 0.7280089087 | **0.7311104457** |
+| 45°, s | 0.9528833281 | 0.6966629547 | **0.7311104457** |
+| detector I | 8.9319673126e-01 | 5.9546448751e-01 | **0.6666666667 = 1/1.5** |
+
+All four are 1.0 post-fix. Two things the capture settled beyond the
+headline: the uncoated column matches the textbook power transmittance
+exactly (√0.96 at normal incidence, and the 45° pair), so the incumbent
+convention was confirmed by measurement and not only by line-read; and the
+coated column matches the plain composed Fresnel field coefficient exactly,
+so the branch was *internally* correct and missing precisely one scalar.
+
+**Gates:** `tPolRadiometric` (mmacos, 13 tests, added to `SUITE_FAST`), on
+two new fixtures `Rx_Refract.in` and `Rx_Refract45.in`. Every analytic is
+the Abeles characteristic matrix typed from Macleod ch. 2. Non-vacuity:
+**6 pass / 7 fail** against the rebuilt pre-fix engine.
+
+**Two corrections to the spec above, both worth recording:**
+
+1. **"Per-layer factors would double-count" is not quite the right
+   argument.** In a plain chain the per-interface factors
+   `√(nⱼcθⱼ/nⱼ₋₁cθⱼ₋₁)` *telescope* to exactly the boundary-to-boundary
+   factor, so a per-interface implementation would give the same number
+   here. The decision stands unchanged — one factor, one place — but the
+   engine comment now carries the argument that actually holds: the
+   telescoping identity is contingent on every interface being present, in
+   order, and paired with the *right* media, and this branch has already
+   been bitten there once by the stale `nb_arr(0)` boundary slot. A
+   per-interface factor built on that slot would telescope to
+   `√(n_sub·c_sub/(nb_arr(0)·c₀))` and be silently wrong for a coated
+   element following another refractor.
+2. **The air-to-air closure gate, as specified, cannot see this defect.**
+   For a parallel plate the two faces' factors multiply to
+   `√(cosθ_out/cosθ_in) = 1`, so a fully coated plate is air-to-air
+   invariant under the landing — verified: it passes against the pre-fix
+   engine. The gate was rebuilt as a **mixed** plate (front face coated,
+   back face bare), which breaks the cancellation and does discriminate.
+   The both-coated case is retained as the composition identity it is
+   (decision ground 3, measured rather than argued) and labelled in the
+   test and in the report so its green is not mistaken for coverage.
+
+**Analytic gotcha, recorded because it looked exactly like a failed gate:**
+Macleod's `t = 2η₀/(η₀B + C)` is the *tangential* amplitude coefficient. For
+p-polarization the tangential component is `E·cosθ`, so it exceeds the
+ordinary Fresnel `t_p` by `cosθ_sub/cosθ_inc` — 1.2472 at 45° into n=1.5,
+i.e. the size of a plausible radiometric error. `T` is unaffected either
+way, which is why every transmittance gate passed while the one
+amplitude-ratio gate did not.
+
+**Docs:** `polval/80_radiometric.md.in` (section 7) + gate-index rows; the
+coverage open item is closed and replaced by the two narrower ones that
+remain (absorbing substrate ungated; `Reflector`'s transmittance blocks
+still dead code). The "deeper audit question" above is carried into the
+coverage section verbatim as an open item that predates this landing.
+
+**Engine `CLAUDE.md`** flipped from open AUDIT FINDING to FIXED with the SHA.

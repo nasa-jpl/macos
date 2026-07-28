@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-27 16:02:43",
-    "engine_sha": "52c7669",
+    "generated": "2026-07-27 17:58:33",
+    "engine_sha": "a5e4288",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "3aec734",
+    "resources_sha": "a3417ce",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
@@ -874,6 +874,166 @@
       "units": "relative",
       "gate": "and that leak is the predicted cos^2 of the residual axis mismatch, to",
       "test": "tPolElement/test_offnormal_grid_crossed_null",
+      "source": "driver"
+    },
+    "G71_UNC_NORMAL": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "uncoated transmission is the power transmittance (normal incidence)",
+      "test": "tPolRadiometric/test_uncoated_transmission_is_the_power_transmittance",
+      "source": "driver"
+    },
+    "G71_UNC_P": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "uncoated p transmittance at 45 deg",
+      "test": "tPolRadiometric/test_uncoated_transmission_oblique_s_and_p",
+      "source": "driver"
+    },
+    "G71_UNC_S": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "uncoated s transmittance at 45 deg",
+      "test": "tPolRadiometric/test_uncoated_transmission_oblique_s_and_p",
+      "source": "driver"
+    },
+    "G71_SP_SPLIT": {
+      "value": 0.08354690406657683,
+      "text": "0.0835",
+      "units": "absolute",
+      "gate": "non-vacuity: s and p transmittances are genuinely split at 45 deg",
+      "test": "tPolRadiometric/test_uncoated_transmission_oblique_s_and_p",
+      "source": "driver"
+    },
+    "G72_IDX_NORMAL": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "index-matched layer reproduces the bare interface (normal incidence)",
+      "test": "tPolRadiometric/test_index_matched_layer_equals_bare_interface_normal",
+      "source": "driver"
+    },
+    "G72_IDX_P": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "index-matched layer, p at 45 deg (the cos_sub/cos_inc half of the factor)",
+      "test": "tPolRadiometric/test_index_matched_layer_equals_bare_interface_oblique",
+      "source": "driver"
+    },
+    "G72_IDX_S": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "index-matched layer, s at 45 deg",
+      "test": "tPolRadiometric/test_index_matched_layer_equals_bare_interface_oblique",
+      "source": "driver"
+    },
+    "G72_GRID": {
+      "value": 0,
+      "text": "0.000e+00",
+      "units": "relative",
+      "gate": "index-matched layer at the detector plane (second dispatch chain)",
+      "test": "tPolRadiometric/test_index_matched_layer_at_the_detector_plane",
+      "source": "driver"
+    },
+    "G73_MGF2_NORMAL": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "MgF2 quarter-wave on glass vs the characteristic-matrix T (normal)",
+      "test": "tPolRadiometric/test_mgf2_quarterwave_normal_incidence",
+      "source": "driver"
+    },
+    "G73_MGF2_GAIN": {
+      "value": 0.985889541358221,
+      "text": "0.9859",
+      "units": "transmittance",
+      "gate": "non-vacuity: the AR stack really transmits (bare glass is 0.96)",
+      "test": "tPolRadiometric/test_mgf2_quarterwave_normal_incidence",
+      "source": "driver"
+    },
+    "G73_MGF2_P": {
+      "value": 1.3322676295501878e-15,
+      "text": "1.332e-15",
+      "units": "relative",
+      "gate": "MgF2 stack, p at 45 deg -- both halves of the factor at once",
+      "test": "tPolRadiometric/test_mgf2_quarterwave_45deg_s_and_p",
+      "source": "driver"
+    },
+    "G73_MGF2_S": {
+      "value": 1.1102230246251565e-16,
+      "text": "1.110e-16",
+      "units": "relative",
+      "gate": "MgF2 stack, s at 45 deg",
+      "test": "tPolRadiometric/test_mgf2_quarterwave_45deg_s_and_p",
+      "source": "driver"
+    },
+    "G74_CLOSURE": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "air-to-air power closure, coated front face + bare back face",
+      "test": "tPolRadiometric/test_air_to_air_power_closure_mixed_plate",
+      "source": "driver"
+    },
+    "G74_TELESCOPE": {
+      "value": 2.220446049250313e-16,
+      "text": "2.220e-16",
+      "units": "relative",
+      "gate": "fully coated plate: the two radiometric factors cancel air-to-air",
+      "test": "tPolRadiometric/test_air_to_air_factors_telescope",
+      "source": "driver"
+    },
+    "G75_STATE": {
+      "value": 4.440892098500626e-16,
+      "text": "4.441e-16",
+      "units": "relative",
+      "gate": "transmitted p/s ratio equals the factor-FREE Fresnel ratio",
+      "test": "tPolRadiometric/test_scalar_factor_leaves_the_polarization_state_alone",
+      "source": "driver"
+    },
+    "G75_STATE_SPLIT": {
+      "value": 0.021299873959106153,
+      "text": "0.0213",
+      "units": "absolute",
+      "gate": "non-vacuity: that ratio is not 1",
+      "test": "tPolRadiometric/test_scalar_factor_leaves_the_polarization_state_alone",
+      "source": "driver"
+    },
+    "G76_POLOFF": {
+      "value": 1,
+      "text": "1",
+      "units": "bool",
+      "gate": "polarization-off is bit-identical with and without a coating",
+      "test": "tPolRadiometric/test_pol_off_is_untouched_by_the_coating",
+      "source": "driver"
+    },
+    "G77_LAMBDA": {
+      "value": 5.551115123125783e-16,
+      "text": "5.551e-16",
+      "units": "relative",
+      "gate": "T(lambda) tracks the characteristic-matrix T across the sweep",
+      "test": "tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor",
+      "source": "driver"
+    },
+    "G77_FLATNESS": {
+      "value": 9.992007221626409e-16,
+      "text": "9.992e-16",
+      "units": "relative",
+      "gate": "engine/analytic ratio is wavelength-INDEPENDENT, as a real scalar must be",
+      "test": "tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor",
+      "source": "driver"
+    },
+    "G77_CONTRAST": {
+      "value": 0.01954547245173921,
+      "text": "0.0195",
+      "units": "transmittance",
+      "gate": "non-vacuity: there IS quarter-wave structure to preserve",
+      "test": "tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor",
       "source": "driver"
     },
     "C21_VC_CROSS": {

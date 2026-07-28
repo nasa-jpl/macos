@@ -135,14 +135,22 @@ way — CCMac is gfortran-only.)
      transmitted field verified BIT-IDENTICAL and the inconsistent flip
      built to prove that A/B non-vacuous (−3.2% power); (3) polval
      regenerated with a new §4 evidence section, GMI 6/6 bit-identical,
-     full mmacos suite re-run.  **New engine finding, open:** coated and
-     uncoated `Refractor` transmission use different amplitude
-     normalizations (the coated branch omits the radiometric
-     `sqrt(n2 cos02/(n1 cos01))` factor — measured coated/uncoated |Ex| =
-     0.816442 = 1/sqrt(1.5) at normal incidence on an index-matched
-     layer, i.e. a coated lens under-transmits ~18% in amplitude), and
-     the coated Refractor branch has no analytic gate at all.  Its own
-     Opus-lane slice; see `macos_f90/CLAUDE.md`.
+     full mmacos suite re-run.  **New engine finding — since CLOSED
+     2026-07-28 (macos `a5e4288`):** coated and uncoated `Refractor`
+     transmission used different amplitude normalizations (the coated
+     branch omitted the radiometric `sqrt(n2 cos02/(n1 cos01))` factor —
+     coated/uncoated amplitude 0.8164965809 = 1/sqrt(1.5) at normal
+     incidence on an index-matched layer, 0.7311104457 for BOTH s and p
+     at 45°, and 1/1.5 in INTENSITY at the detector plane, i.e. a coated
+     lens under-transmitted ~18% in amplitude and the image under-reported
+     flux by a third), and the branch had no analytic gate at all.
+     Decided in the Fable lane
+     (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`): keep the incumbent
+     power-amplitude convention, bring the coated branch to it with ONE
+     factor applied ONCE after the recursion.  Landed with 13
+     characteristic-matrix gates (`tPolRadiometric`, 7 of them failing
+     against the rebuilt pre-fix engine) on two new fixtures, and polval
+     §7.  Nothing reflected and no transmitted polarization STATE moved.
      2c may proceed on the analyzer-at-detector design below.**
      ~~BLOCKED 2026-07-27 on an ENGINE DEFECT, not on the 2c design.~~
      Second attempt (2026-07-27) got as far as validating the machinery and

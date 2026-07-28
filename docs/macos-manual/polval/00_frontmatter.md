@@ -12,8 +12,9 @@ that pins it in CI. It covers the work described in `PLAN_POLARIZATION.md`
 Phases 0–2b (exposure of the engine's existing polarization physics, the
 Jones-pupil layer and the polarization-aberration maps), Phase 3a Tranche 1
 (vector propagation across a multi-leg chain), the `Reflector` s/p sign
-correction, Phase 2c (the polarization contrast floor), and the Phase 3
-polarizing elements (linear polarizer and waveplate).
+correction, Phase 2c (the polarization contrast floor), the Phase 3
+polarizing elements (linear polarizer and waveplate), and the
+coated-`Refractor` transmission radiometry correction.
 
 It does **not** cover Phase 2d (the interferometer track), the vector vortex
 or the reflective polarizer, Phase 3a Tranche 2 (Jones-through-chain), or
@@ -22,15 +23,16 @@ sections as they land — see *Coverage and gaps* at the end. Section 5.6
 states precisely what Tranche 2's absence costs the contrast floor on a real
 coronagraph chain, and section 6.7 settles — and gates in the engine — the
 one convention question the polarizing elements raise away from normal
-incidence.
+incidence. Section 7 does the same for the coated transmission path, which
+until that landing had no analytic gate of any kind.
 
 ## Provenance
 
 | | |
 |---|---|
-| Generated | 2026-07-27 16:02:43 |
-| Engine (`macos`) | `52c7669` on `pol-core` |
-| Bindings (`MACOS_resources`) | `3aec734` on `pol-core` |
+| Generated | 2026-07-27 17:58:33 |
+| Engine (`macos`) | `a5e4288` on `pol-core` |
+| Bindings (`MACOS_resources`) | `a3417ce` on `pol-core` |
 | MATLAB | R2026a |
 | Model size(s) | 128 / 256 / 512 |
 | Host | red-river |

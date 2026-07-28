@@ -382,6 +382,15 @@ decision + gate, so it is logged in `PLAN_POLARIZATION`, the engine
 `CLAUDE.md`, and the report's coverage section instead.  Related gap:
 the coated Refractor branch has **no analytic gate at all** — the
 Fresnel gate covers `Reflector` only.
+> **CLOSED 2026-07-28** — decided in `REVIEW_POL_RADIOMETRIC_2026-07-28.md`
+> and landed as macos `a5e4288`: keep the incumbent power-amplitude
+> convention, bring the coated branch to it with one factor applied once
+> after the recursion.  The branch now has 13 characteristic-matrix gates
+> (`tPolRadiometric`) and polval §7.  Two numbers above are superseded by
+> the landing's own capture, which used a Reference-probed incident field
+> rather than an assumed source amplitude: **0.8164965809** at normal
+> incidence (same 1/√1.5), and at 45° **0.7311104457** for BOTH s and p
+> rather than the 0.804789 recorded here.
 
 ### 3. Re-runs and the report
 
