@@ -177,9 +177,16 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
 
-## Branch model (as of 2026-06)
-- **`sls-dev`** — integration branch for new work.  Multi-person WIP
-  lands here.  All non-bug-fix commits go here first.
+## Branch model (UPDATED 2026-07-28 — `sls-dev` retired, `dev` is integration)
+- **`dev`** — **integration + public developer branch for new work**
+  (the role `sls-dev` used to hold).  Multi-person WIP lands here; all
+  developer-facing files (CLAUDE.md, PLAN*.md, `.claude/`, internal
+  fixtures) live here and are stripped from `main`.  **Both `dev` and
+  `main` are public** per the public-release strategy below.
+- **`sls-dev`** — **RETIRED 2026-07-28, deleted in BOTH repos.**  Andy
+  deleted it on `nasa-jpl/macos`; matched on `MACOS_resources` the same
+  day (`dev` fully contained it — `dev` = old `sls-dev` + the
+  expose-beam beam-API commits).  Do not recreate it; new work → `dev`.
 - **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
   to `main` for the public release (with NPSOL source tree removed
   at promotion time).
@@ -187,14 +194,15 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
   overrun cherry-pick).  No new commits.  Pre-existing references to
   it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
   over time.
-- **`main`** — public release surface.  Currently far behind opt-dev;
-  promoted from opt-dev at release time per the public-release
-  strategy below.
+- **`main`** — public release surface; promoted from `opt-dev`/`dev` at
+  release time per the public-release strategy below.
 
-Day-to-day: push new features to `sls-dev`; cherry-pick bug fixes
-to `opt-dev`; let `sls-dev` accumulate until a promotion gate
-(at which point it gets fast-forward-merged into `opt-dev` for
-the next release).
+Day-to-day: push new features to `dev`; cherry-pick bug fixes to
+`opt-dev`; let `dev` accumulate until a promotion gate.  The two repos
+(`~/dev/macos` + `~/dev/MACOS_resources`) are kept branch-symmetric —
+as of 2026-07-28 both carry the same set (`dev`, `main`, `opt-dev`,
+`bench-builder`, `pol-core`, `pol-ifo`, `release-candidate`, …) and
+neither has `sls-dev`.
 
 ## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
 - **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public
