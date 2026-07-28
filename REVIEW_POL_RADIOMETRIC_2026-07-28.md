@@ -165,3 +165,48 @@ still dead code). The "deeper audit question" above is carried into the
 coverage section verbatim as an open item that predates this landing.
 
 **Engine `CLAUDE.md`** flipped from open AUDIT FINDING to FIXED with the SHA.
+
+---
+
+## Fable-lane review of the landing (2026-07-28) — PASS, and both spec corrections ACCEPTED
+
+Verified independently on this box: tPolRadiometric re-run 13/13; the
+engine block line-read (factor, S2>0 guard — which also handles the
+TIR/evanescent edge sensibly by leaving TP/TS untouched — and the
+corrected comment); and three numerical checks:
+
+1. **Correction 1 is right and my spec's argument was wrong.**  The
+   per-interface factors DO telescope (∏√(nⱼcⱼ/nⱼ₋₁cⱼ₋₁) =
+   √(n_sub·c_sub/(n₀c₀)), verified numerically on a 2-layer stack) — a
+   correctly-paired per-interface implementation would give the same
+   number, so "double-count" was not the hazard.  The hazard that IS
+   real, and that the engine comment now carries, is the media-pairing
+   contingency: a per-interface factor built on the parser's stale
+   `nb_arr(0)` slot telescopes to the WRONG boundary ratio for a coated
+   element following another refractor — the exact trap this branch
+   already fell into once.  The decision (one factor, one place, from
+   `na`) survives with a better justification than it was issued with.
+2. **Correction 2 is right and important.**  The both-coated
+   parallel-plate closure I specified is exactly invariant
+   (entry × exit factors = √(c_out/c_in) = 1, verified) — it passes the
+   PRE-FIX engine, i.e. it was a vacuous gate for this defect, and TO
+   measured that rather than arguing it.  The mixed-plate rebuild
+   (front coated, back bare) breaks the cancellation and
+   discriminates; keeping the both-coated case labelled as a
+   composition identity is the right disposition.
+3. **The pre-fix capture is independently confirmed**: the 45°
+   coated/uncoated ratio must equal the inverse radiometric factor
+   1/√(n_g·c_g/c_i) = 0.7311104457, polarization-independent — matching
+   TO's measured value (both s and p) to all printed digits, and the
+   uncoated column's √0.96 confirms the incumbent power convention by
+   measurement.
+
+Also endorsed: the merge-not-rebase call (a5e4288 stamped across six
+files; a rebase would have dangled every reference — the f10b234 lesson
+applied correctly in the opposite direction), and dropping the 2.6 MB of
+metadata-only PNG regenerations after hash-verifying pixel identity.
+
+Reviewer's note for the record: both corrections were to MY spec.  This
+is the review loop working in both directions — the implementer
+gate-checked the reviewer's arguments, found one wrong and one blind,
+and recorded why with measurements.  That standard is now the bar.
