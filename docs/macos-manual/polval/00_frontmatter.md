@@ -30,9 +30,9 @@ until that landing had no analytic gate of any kind.
 
 | | |
 |---|---|
-| Generated | 2026-07-27 17:58:33 |
-| Engine (`macos`) | `a5e4288` on `pol-core` |
-| Bindings (`MACOS_resources`) | `a3417ce` on `pol-core` |
+| Generated | 2026-07-28 07:59:06 |
+| Engine (`macos`) | `aaa9ece` on `pol-core` |
+| Bindings (`MACOS_resources`) | `a89b077` on `pol-core` |
 | MATLAB | R2026a |
 | Model size(s) | 128 / 256 / 512 |
 | Host | red-river |

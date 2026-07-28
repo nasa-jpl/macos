@@ -1,10 +1,10 @@
 {
   "provenance": {
-    "generated": "2026-07-27 17:58:33",
-    "engine_sha": "a5e4288",
+    "generated": "2026-07-28 07:59:06",
+    "engine_sha": "aaa9ece",
     "engine_branch": "pol-core",
     "engine_dirty": true,
-    "resources_sha": "a3417ce",
+    "resources_sha": "a89b077",
     "resources_branch": "pol-core",
     "resources_dirty": true,
     "matlab": "2026a",
@@ -1210,6 +1210,134 @@
       "units": "nm",
       "gate": "MgF2 overcoat thickness used",
       "test": "this driver",
+      "source": "driver"
+    },
+    "C26_LAM_CMP": {
+      "value": 632.8,
+      "text": "632.8",
+      "units": "nm",
+      "gate": "companion wavelength, applied at runtime (the fixture stays at 1 um)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_QW_FRAC_1000": {
+      "value": 0.6072000000000001,
+      "text": "0.6072",
+      "units": "quarter-waves",
+      "gate": "the 110 nm MgF2 film, in quarter-waves at the fixture's own 1 um",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_QW_FRAC_633": {
+      "value": 0.9595448798988622,
+      "text": "0.9595",
+      "units": "quarter-waves",
+      "gate": "the same film, in quarter-waves at 632.8 nm",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_RATIO_1000": {
+      "value": 5.270704920608399,
+      "text": "5.2707",
+      "units": "x",
+      "gate": "ENGINE cross-polarized power, MgF2/Al over bare Al, at 1 um (COSTS)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_RATIO_633": {
+      "value": 0.20351035134510184,
+      "text": "0.2035",
+      "units": "x",
+      "gate": "ENGINE cross-polarized power, same film, at 632.8 nm (SUPPRESSES)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_REVERSAL": {
+      "value": 25.898952489500754,
+      "text": "25.90",
+      "units": "x",
+      "gate": "the reversal itself: the 1 um ratio over the 632.8 nm ratio",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_EXCESS_1000": {
+      "value": 5.423789465188292,
+      "text": "5.4238",
+      "units": "x",
+      "gate": "same ratio formed from the coating EXCESS over uncoated (compares with the pure-Fresnel analytic)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_EXCESS_633": {
+      "value": 0.17495996937661723,
+      "text": "0.1750",
+      "units": "x",
+      "gate": "coating-excess ratio at 632.8 nm",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_EXCESS_QW": {
+      "value": 0.019269155096120642,
+      "text": "0.0193",
+      "units": "x",
+      "gate": "coating-excess ratio for a TRUE quarter-wave overcoat (the column that compares with the pure-Fresnel analytic)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_QW_RATIO": {
+      "value": 0.05320719304503409,
+      "text": "0.0532",
+      "units": "x",
+      "gate": "ENGINE cross-polarized power, a TRUE quarter-wave MgF2 overcoat over bare Al",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_QW_FLOOR": {
+      "value": 1.5375648842331129,
+      "text": "1.5376",
+      "units": "x",
+      "gate": "the true-quarter-wave total, over the UNCOATED geometric floor -- why it cannot follow the coating-only analytic down",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_QW_INVAR": {
+      "value": 1.945462835273304e-08,
+      "text": "1.9e-08",
+      "units": "relative",
+      "gate": "the quarter-wave condition is wavelength-invariant (181.2 nm at 1 um vs 114.6 nm at 632.8 nm, same answer)",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_THK_ACHROM": {
+      "value": 69.608,
+      "text": "69.6",
+      "units": "nm",
+      "gate": "the achromatic control film: same optical thickness in WAVES at 632.8 nm that 110 nm has at 1 um",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_ACHROM": {
+      "value": 5.270705028910663,
+      "text": "5.2707",
+      "units": "x",
+      "gate": "NON-VACUITY -- the control shows NO reversal, so the reversal is the film's optical thickness and nothing else about changing lambda",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_ACHROM_RESID": {
+      "value": 2.0547965773332066e-08,
+      "text": "2.1e-08",
+      "units": "relative",
+      "gate": "the control lands back on the 1 um answer",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
+      "source": "driver"
+    },
+    "C26_METAL_INVAR": {
+      "value": 1.2914578739753324e-08,
+      "text": "1.3e-08",
+      "units": "relative",
+      "gate": "the metal-only leg (no film, fixed indices) does not move with wavelength",
+      "test": "tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition",
       "source": "driver"
     },
     "C31_CROSS_OVER_CO": {

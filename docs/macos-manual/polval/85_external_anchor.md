@@ -115,16 +115,80 @@ That distinction decides the sign of the design rule, because the overcoat
 trade reverses across the quarter-wave condition. The same 110 nm film, the
 same aluminium, the same few-degree incidence:
 
-| film | optical thickness | cross power vs bare Al |
-|---|---|---|
-| 110 nm MgF₂ at 632.8 nm | 0.96 quarter-waves | 0.18 |
-| 110 nm MgF₂ at 1 µm *(the fixture)* | 0.607 quarter-waves | 6.35 |
-| **true quarter wave** (181.2 nm at 1 µm) | 1.00 quarter-waves | 0.0157 |
+| film | optical thickness | cross power vs bare Al — **engine**, coating excess | independent analytic |
+|---|---|---|---|
+| 110 nm MgF₂ at 632.8 nm | 0.9595 quarter-waves | **0.1750** | 0.18 |
+| 110 nm MgF₂ at 1 µm *(the fixture)* | 0.6072 quarter-waves | **5.4238** | 6.35 |
+| **true quarter wave** (181.2 nm at 1 µm) | 1.00 quarter-waves | **0.0193** | 0.0157 |
 
 A genuine quarter-wave overcoat **suppresses** the polarization floor by
 about 1.8 decades. §5.5's sentence — that the protective overcoat "costs most
 of another" decade — is therefore withdrawn: it is true of the film as
 configured, and false of the recipe that film was described as.
+
+### 8.3.1 Both sides of the reversal, measured by the engine
+
+The correction above was first carried by the independent analytic alone. It
+is now a **measurement on both sides**. Rx_Cass_FarField does **not** move —
+it underpins gates across every suite and stays at
+`Wavelen = 1.0E-06` — so the companion wavelength is applied
+at **runtime** with `macos.set_src_wvl` after `load_rx`. Nothing on disk
+changes and no gated number moves.
+
+This is a real measurement, not a unit conversion: `macos.coating` takes
+**physical** thickness and the engine divides by the **current** `Wavelen`
+when it applies the layer phase, so a film is fixed glass under a wavelength
+change and its optical thickness moves. That is the entire mechanism.
+
+Cross-polarized **total power** (never an annulus mean — a fixed pixel
+annulus subtends a different λ/D range at the two wavelengths and would mix
+the coating effect with the diffraction scale):
+
+| run | film, in quarter-waves | MgF₂/Al ÷ bare Al |
+|---|---|---|
+| 1 µm — the fixture's own wavelength | 0.6072 | **5.2707×** — costs |
+| 632.8 nm — the companion run | 0.9595 | **0.2035×** — suppresses |
+| a **true quarter wave**, either wavelength | 1.00 | **0.0532×** |
+
+The reversal, as one number, is **25.90×**. The 1 µm side
+reproduces §5.5's recorded 27.9 and 151.3 in the same
+harness, which is what makes the companion run comparable rather than a
+separate measurement that happens to sit nearby.
+
+Three structural identities localise the effect in the film and nowhere else,
+and each is exact by construction — the coating coefficients depend on λ only
+through `n·d/λ`, and the indices are held fixed — so each is pinned at
+round-off rather than at the 2% measurement tolerance:
+
+- **The metal-only leg does not move.** Bare Al over uncoated is the same at
+  both wavelengths to 1.3e-08.
+- **The quarter-wave condition is wavelength-invariant.** 181.2 nm at 1 µm
+  and 114.6 nm at 632.8 nm are different pieces of glass and give
+  the same answer to 1.9e-08.
+- **The non-vacuity control.** An engine that pinned thickness in *waves*
+  rather than in metres — evaluating the "632.8 nm" coating constants
+  achromatically — would at 632.8 nm be tracing
+  69.6 nm of MgF₂, the film with the same optical thickness in
+  waves that 110 nm has at 1 µm. Measured, that control gives
+  **5.2707×** — it lands back on the 1 µm answer to
+  2.1e-08 and shows **no reversal at all**. Every one of the
+  gate's 632.8 nm assertions fails against it.
+
+The engine's true-quarter-wave ratio (0.0532×) does not follow the
+coating-only analytic's 0.0157× all the way down, and should
+not: at that point the coating term is nearly extinguished and what remains
+is the **irreducible geometric** cross term, which no coating removes. The
+true-quarter-wave total sits at 1.5376× the *uncoated* floor — i.e.
+the overcoat has taken the coating contribution down to the geometry. The
+engine's *coating-excess* ratios, which subtract that floor, are the column
+that compares with the analytic directly, and they agree on all three points.
+
+**The design rule, restated chromatically.** A protective overcoat is not
+inherently a polarization cost or a polarization benefit; the sign is set by
+its optical thickness **at the working wavelength**. Specify protective
+overcoats at λ/4 of the wavelength the instrument works at — a quarter-wave
+film buys roughly 0.0193× on the coating term, while the same film
+at 0.6072 quarter-waves costs 5.4238×.
 
 The conclusion does not rest on pinning the fixture's exact incidence angles:
 the ratio is flat at **6.34 .. 6.36** across the whole plausible

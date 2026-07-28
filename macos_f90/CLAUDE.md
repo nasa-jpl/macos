@@ -897,6 +897,59 @@ fixed-transverse frame -- bridge ZERO.  Assuming the `pi` the
 ray-following doctrine suggests is wrong by exactly 180 deg everywhere;
 `tPolExternal/test_phat_convention_bridge_is_zero` pins it.
 
+**Overcoat quarter-wave reversal, engine-measured on BOTH sides
+(2026-07-28) -- no engine change, no fixture change.**  The external
+anchor above also found that the 110 nm MgF2 overcoat the Phase-2c ladder
+applies is **0.607 quarter-waves at `Rx_Cass_FarField`'s own 1 um**, not
+the 0.96 its `% ~quarter wave at 632.8 nm` comment describes -- and that
+the overcoat polarization trade **REVERSES** across the quarter-wave
+condition, inverting the §5.5 design rule.  That correction rested on an
+independent analytic; it now has engine numbers on both sides.
+**Ruling that shaped the fix: gated fixtures do not move.**
+`Rx_Cass_FarField` stays at `Wavelen=1.0E-06` and `tPolContrast`'s
+27.898/151.31 stay asserted; the companion wavelength is applied at
+RUNTIME with `macos.set_src_wvl` AFTER `load_rx`.  Nothing on disk moves.
+**Why that is a real measurement and not a unit conversion:**
+`macos.coating`/`coat_set` take PHYSICAL thickness and the trace divides
+by the CURRENT `Wavelen` when applying the layer phase, so a film is
+fixed glass under a wavelength change and its optical thickness moves --
+the same treatment `Retardance=` gets.  Measured (model 256, x-pol, both
+mirrors coated, cross-polarized TOTAL power): MgF2/bare = **5.2707x at
+1 um (costs)**, **0.2035x at 632.8 nm (suppresses)**, reversal
+**25.899x**; a TRUE quarter wave gives **0.0532x** at either wavelength.
+The 1 um leg reproduces the recorded 27.8977/151.311 exactly, in the same
+harness.
+**Report TWO ratios, they answer different questions:** the TOTAL power
+ratio (what a designer sees -- carries the irreducible GEOMETRIC cross
+term) and the coating-EXCESS ratio over the uncoated baseline (== the
+ratio of the two `d_cross_rel`; the coating-only quantity, and the only
+one comparable with a pure-Fresnel analytic).  They diverge most at the
+true quarter wave, where the coating term is nearly extinguished and the
+total sits at 1.5376x the UNCOATED floor -- which is why the engine's
+total (0.0532) cannot follow the analytic (0.0157) down and is not a
+disagreement.
+**NON-VACUITY, and the pattern worth reusing:** the counterfactual is an
+engine that pinned thickness in WAVES (achromatic) -- reachable from the
+REAL engine by asking for 110 nm x (632.8/1000) = 69.6 nm at 632.8 nm,
+the film with the same optical thickness in waves.  It lands back on the
+1 um answer to 2.1e-8 and shows NO reversal; 3 of 3 of the gate's
+632.8 nm assertions fail against it.  Three further identities localise
+the effect IN THE FILM: the metal-only leg is lambda-invariant (1.3e-8),
+the quarter-wave condition is lambda-invariant (1.9e-8, and 181.2 nm at
+1 um vs 114.6 nm at 632.8 nm is DIFFERENT GLASS giving the same answer),
+and the uncoated geometric floor is lambda-invariant (1.6e-15).
+**Measure TOTAL POWER, never a fixed-pixel annulus mean, when comparing
+across wavelengths** -- the annulus subtends a different lambda/D range
+at each lambda and would mix the coating effect with the diffraction
+scale.  Tool `mmacos/tools/pol_overcoat_chromatic/` (`oc_ladder` +
+`oc_nonvacuity`), gate `tPolContrast/
+test_overcoat_trade_reverses_across_the_quarter_wave_condition`, polval
+section 8.3.1, packet `macos/REVIEW_POL_OVERCOAT_CHROMATIC_2026-07-28.md`.
+**Design rule, chromatic form:** a protective overcoat is neither
+inherently a polarization cost nor a benefit -- the sign is its optical
+thickness AT THE WORKING WAVELENGTH.  Specify overcoats at lambda/4 of
+the working wavelength.
+
 **Jones input basis (engine launch frames, `ssrcray.inc`).**  Collimated
 sources launch every ray with `E = S*(Ex0*xGrid + Ey0*yGrid)` -- the
 source-frame pair, UNIFORM over the grid.  Point sources use a PER-RAY

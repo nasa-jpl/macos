@@ -359,11 +359,34 @@ way — CCMac is gfortran-only.)
      correction notice; §8.3 states the reversal; `tPolContrast`'s
      asserted 27.898/151.31 were deliberately NOT touched (they are
      correct measurements of the fixture as built).
-     **Open, for the Fable lane:** whether to re-run the 2c coating
+     ~~**Open, for the Fable lane:** whether to re-run the 2c coating
      ladder on a self-consistent configuration (aluminium indices at the
      fixture's own wavelength + a genuine quarter-wave overcoat), or move
      `Rx_Cass_FarField` to 632.8 nm.  Either moves gated numbers, so it
-     is a judgment call, not a mechanical one.
+     is a judgment call, not a mechanical one.~~ — **RULED and CLOSED
+     2026-07-28: neither.  Gated fixtures do not move.**  The corrected
+     physics instead gets gated numbers on **both** sides of the
+     quarter-wave condition via a companion evidence run — same unmoved
+     `Rx_Cass_FarField`, the companion wavelength applied at RUNTIME with
+     `macos.set_src_wvl` after `load_rx`.  Shipped
+     `mmacos/tools/pol_overcoat_chromatic/` (`oc_ladder` +
+     `oc_nonvacuity`), `tPolContrast/
+     test_overcoat_trade_reverses_across_the_quarter_wave_condition`
+     (13 assertions, 3.7 s), 16 `C26_*` tokens + 8 gate thresholds in the
+     model-256 polval group, polval **§8.3.1**, packet
+     `REVIEW_POL_OVERCOAT_CHROMATIC_2026-07-28.md`.  **NO ENGINE CHANGE,
+     NO FIXTURE CHANGE, and `tPolContrast`'s 27.898/151.31 still stand.**
+     Engine-measured, cross-polarized TOTAL power, MgF₂/bare:
+     **5.2707× at 1 µm (costs)**, **0.2035× at 632.8 nm (suppresses)**,
+     reversal **25.899×**; a true quarter wave gives **0.0532×** at
+     either wavelength.  The 1 µm leg reproduces 27.8977/151.311 in the
+     same harness.  Non-vacuity is a physical counterfactual reached from
+     the real engine — an achromatic film (110 nm × 632.8/1000 =
+     69.6 nm at 632.8 nm) lands back on the 1 µm answer to 2.1e-8 and
+     shows no reversal; 3 of 3 of the gate's 632.8 nm assertions fail
+     against it.  **Design rule, chromatic form:** specify protective
+     overcoats at λ/4 of the *working* wavelength — the sign of the trade
+     is the film's optical thickness there, not a property of overcoats.
   7. ~~**Validation-report skeleton + Phase 0–2b evidence**~~ — **DONE
      2026-07-26** (see the STATUS block in the Validation document
      section below).  Shipped the `polval/` report, the `make polval` /

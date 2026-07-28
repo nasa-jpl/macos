@@ -56,7 +56,10 @@ against, and the test that pins it in continuous integration.
 | 8.2 | the 4 nm oxide is distinguishable | exceeds 0.01 | > publication accuracy | `tPolExternal/test_omitting_the_oxide_exceeds_published_accuracy` |
 | 8.2 | 4.12 nm vs the rejected 50 nm | exceeds 0.01 | > publication accuracy | `tPolExternal/test_rejected_50nm_oxide_is_excluded` |
 | 8.2 | admittance assignment pinned by [1,2] sign | D > 0 and < 0.15 at 70° | published Fig. 1a axis | `tPolExternal/test_admittance_assignment_sign` |
-| 8.3 | overcoat trade reverses across the quarter wave | 0.18 vs 6.35 vs 0.0157 | sign reversal | `tPolExternal/test_overcoat_trade_reverses_with_optical_thickness` |
+| 8.3 | overcoat trade reverses across the quarter wave *(analytic)* | 0.18 vs 6.35 vs 0.0157 | sign reversal | `tPolExternal/test_overcoat_trade_reverses_with_optical_thickness` |
+| 8.3.1 | the same reversal, measured by the **engine** | 0.2035× at 632.8 nm vs 5.2707× at 1 µm | sign reversal, 25.90× | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
+| 8.3.1 | the reversal is the film's optical thickness, nothing else | achromatic control 5.2707×, lands on the 1 µm answer to 2.1e-08 | no reversal | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
+| 8.3.1 | the quarter-wave condition is wavelength-invariant | 1.9e-08; metal-only leg 1.3e-08 | 0 | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
 
 # Coverage and gaps
 

@@ -119,23 +119,34 @@ uncoated baseline, taking the annulus mean contrast from 9.593e-12 to
 **151.3×** of baseline, to **1.992e-09**.
 
 So on this train the coating, not the geometry, sets the floor: the bare
-metal costs about a decade and a half over the geometric term, and this
-overcoat costs most of another. That is the shape of answer the coronagraph
-design rules ask for — the floor is a coating decision before it is an
-optical-prescription decision.
+metal costs about a decade and a half over the geometric term, and *this*
+specific film costs most of another. That is the shape of answer the
+coronagraph design rules ask for — the floor is a coating decision before it
+is an optical-prescription decision. What that film costs, however, is a
+**chromatic** statement and not a property of protective overcoats; read the
+correction below before generalising it.
 
 > **Corrected 2026-07-28 — read §8.3 before quoting these numbers.** This
 > subsection previously described the 110 nm MgF₂ film as "a
 > quarter wave, an ordinary protected-aluminium recipe". It is not. This
 > fixture runs at `Wavelen = 1.0E-06` m, at which 110 nm of
-> MgF₂ is **0.607** quarter-waves; the "632.8 nm" in the coating
-> constants' own comments is not this fixture's wavelength. The measured
-> **151.3×** is arithmetically right for the film as configured —
-> §8.3 reproduces it from the engine's Jones pupil and from an independent
-> analytic — but the *generalisation* was backwards: a true quarter-wave
-> overcoat **suppresses** the floor to 0.0157× of bare
-> aluminium rather than raising it. Treat the number above as a datum for one
-> specific sub-quarter-wave film, not as a protected-aluminium design rule.
+> MgF₂ is **0.6072** quarter-waves; the "632.8 nm" in the
+> coating constants' own comments is not this fixture's wavelength. The
+> measured **151.3×** is arithmetically right for the film as
+> configured — §8.3 reproduces it from the engine's Jones pupil and from an
+> independent analytic — but the *generalisation* was backwards.
+>
+> The overcoat polarization trade **reverses across the quarter-wave
+> condition**, and §8.3.1 now measures both sides in this same engine and on
+> this same unmoved fixture: the identical film raises cross-polarized power
+> by **5.2707×** at 1 µm and *lowers* it to
+> **0.2035×** at 632.8 nm, a reversal of
+> **25.90×**; a true quarter-wave overcoat suppresses it to
+> **0.0532×** of bare aluminium. Treat the number above as a datum
+> for one specific sub-quarter-wave film. The design rule is: **specify a
+> protective overcoat at λ/4 of the working wavelength**, at which it buys
+> roughly 0.0193× on the coating term instead of costing
+> 5.4238×.
 
 ## 5.6 What this cannot yet measure — the Tranche-1 gap on a real chain
 
