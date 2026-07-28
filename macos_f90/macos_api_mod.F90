@@ -4466,6 +4466,82 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! BEAM (shape the source amplitude): drive the engine 'BEAM'
+      ! command, which sets the source beam apodization profile.  Resets
+      ! the trace (iCurWFElt=0, ifPropagate=.FALSE.) so the next trace
+      ! rebuilds with the new profile.
+      !   beamType : 1 = UNIFORM   (no params)
+      !              2 = GAUSSIAN  (p1 = x waist radius, p2 = y waist radius)
+      !              3 = COS**POWER(p1 = cosine radius, p2 = cosine exponent)
+      !              4 = DIPOLE    (no params)
+      !   p1, p2   : profile parameters in source BaseUnits (ignored for
+      !              UNIFORM / DIPOLE).
+      ! The LoadStack protocol (smacosutil.F 'BEAM') carries CARG(1) plus,
+      ! for the non-uniform types, DARG(1)/DARG(2).
+      !---------------------------------------------------------------------------------------------
+      subroutine beam_set(OK, beamType, p1, p2)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: beamType
+        real(8), intent(in) :: p1, p2
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (beamType == 1) then
+          CARG(1) = 'UNIFORM'
+        else if (beamType == 2) then
+          CARG(1) = 'GAUSSIAN'
+          DARG(1) = p1
+          DARG(2) = p2
+        else if (beamType == 3) then
+          CARG(1) = 'COS'
+          DARG(1) = p1
+          DARG(2) = p2
+        else if (beamType == 4) then
+          CARG(1) = 'DIPOLE'
+        else
+          return                 ! unsupported beam type
+        end if
+
+        command = 'BEAM'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        OK = PASS
+      end subroutine beam_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! BEAM query: return the current source beam profile from src_mod.
+      !   beamType : 1=UNIFORM, 2=GAUSSIAN, 3=COS**POWER, 4=DIPOLE
+      !              (0 if never set / uninitialised).
+      !   rx, ry   : Gaussian waist radii (BaseUnits); rx also carries the
+      !              COS**POWER cosine radius.
+      !   cosPwr   : COS**POWER exponent.
+      ! Parameters not relevant to the current type are returned as stored
+      ! (typically 0); the veneer selects by beamType.
+      !---------------------------------------------------------------------------------------------
+      subroutine beam_get(OK, beamType, rx, ry, cosPwr)
+        use src_mod, only: src_BeamType => BeamType, rxBeam, ryBeam,    &
+                           CosPower
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: beamType
+        real(8), intent(out):: rx, ry, cosPwr
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        beamType = src_BeamType
+        rx       = rxBeam
+        ry       = ryBeam
+        cosPwr   = CosPower
+
+        OK = PASS
+      end subroutine beam_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! FFP (move Focal/Field Point): tilt the source so the image at
       ! element iElt lands at the off-axis field point (dx,dy) given as
       ! DIRECTION COSINES (normalized; ~= field angle in rad for small
