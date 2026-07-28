@@ -1260,6 +1260,57 @@ C    Compute refracted ray cosine
 
             RP=RPnew; RS=RSnew
 	  End Do
+
+!-->      RADIOMETRIC NORMALIZATION -- join the incumbent convention.
+!         The recursion above composes plain Fresnel FIELD coefficients,
+!         but the UNCOATED branch (:1146) folds in sqrt(nb*cos_t/(na*
+!         cos_i)) via S1, so that |TP|**2 IS the POWER transmittance.
+!         That is the engine-wide convention every polarized result and
+!         gate sits on, and an index-matched coating layer is optically
+!         a BARE INTERFACE, so it MUST reproduce the uncoated number.
+!         Before this it was low by 1/sqrt(n_sub) at normal incidence
+!         (measured 0.8164965809 = 1/sqrt(1.5)) -- a coated lens
+!         under-transmitted by ~18% in amplitude.
+!         Decision packet: REVIEW_POL_RADIOMETRIC_2026-07-28.md.
+!
+!         ONCE, AFTER THE RECURSION -- NEVER PER INTERFACE.  The
+!         standard multilayer result is
+!             T = (n_sub*cos_sub)/(n_inc*cos_inc) * |t_composed|**2,
+!         i.e. the radiometric conversion is BOUNDARY TO BOUNDARY and
+!         the interior-layer factors CANCEL IDENTICALLY -- |t_composed|
+!         already carries the whole stack.  Do not be talked into the
+!         per-interface form by the observation that, for a plain chain,
+!         prod_j sqrt(n_j*c_j/(n_{j-1}*c_{j-1})) telescopes to the same
+!         number: that identity holds only while every interface is
+!         present, in order, and paired with the RIGHT media.  This
+!         branch has already been bitten there once -- slot nb_arr(0) is
+!         the PARSER's boundary medium, not the medium the ray is in
+!         (see the branch-entry comment); a per-interface factor built
+!         on it would telescope to sqrt(n_sub*c_sub/(nb_arr(0)*c_0)) and
+!         be silently wrong for a coated element following another
+!         refractor.  One factor, one place, from na.
+!         The same cancellation is why nothing REFLECTED can move here:
+!         RP/RS and the RP1*RP / RS1*RS Airy denominators are untouched,
+!         so a coated surface's reflected field -- and the transmitted
+!         polarization STATE, since a common real scalar cancels in
+!         TP/TS -- are bit-identical across this change.  Only the
+!         absolute transmitted amplitude moves.
+!
+!         SCOPE -- transmission into an ABSORBING (metal) substrate has
+!         NO meaningful power convention: the transmitted wave is
+!         evanescent and carries no propagating power, so no scalar
+!         factor is right there.  The real parts used below are power
+!         bookkeeping for a DIELECTRIC substrate -- coated LENSES, which
+!         is the use case.  A metal-substrate Refractor transmission is
+!         out of scope and ungated by design.
+          S2=nb_arr(nCoat+1)*DBLE(ccfb_arr(nCoat+1))
+     &      /(na*DBLE(ccfb_arr(0)))
+          IF (S2.GT.0d0) THEN
+            S2=DSQRT(S2)
+            TP=TP*DCMPLX(S2,0d0)
+            TS=TS*DCMPLX(S2,0d0)
+          END IF
+!<--
 	END IF
 
 	IF (ifPol) THEN
