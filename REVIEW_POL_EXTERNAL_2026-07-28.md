@@ -267,3 +267,58 @@ was "stop and check the configuration before believing a contradiction".
 3. **§1's p̂ bridge** — measured as 0 where the ray-following doctrine
    predicts π. That is worth an independent look; the machinery agreement is
    exact either way for diattenuation, but retardance depends on it.
+
+---
+
+## Fable-lane review (2026-07-28) — PASS; the correction is accepted; the judgment call is ruled
+
+Verified independently: tPolExternal re-run 8/8 on this box; packet
+read in full.  The van Harten reproduction is the anchor this plan
+needed — engine vs their published configuration at 2.8e-14/4.9e-14
+against their ±0.01 stated accuracy, with non-vacuity supplied by their
+own physics (omitting the 4.12 nm oxide, or using the historical 50 nm
+value, both exceed their accuracy — reproducing the paper's central
+claim as a side effect).  Machinery: anchored.
+
+**The 151× correction is accepted, and it is the more valuable
+deliverable.**  The number was arithmetically correct and physically
+mislabeled: a 110 nm film billed as "quarter wave at 632.8 nm" traced
+at the fixture's 1 µm is 0.607 quarter-waves, and the overcoat trade
+REVERSES across the quarter-wave condition (0.18× at 632.8 nm, 6.35×
+at 1 µm, 0.0157× at a true λ/4).  The design-rules conclusion inverts:
+a properly specified protective overcoat SUPPRESSES the polarization
+floor by ~1.8 decades; bare metal remains the decade-and-a-half cost.
+
+**The judgment call — neither option as posed.  Ruling:**
+1. **Gated fixtures do not move.**  Rx_Cass_FarField at 1 µm underpins
+   gates across every suite; re-wavelengthing it to fix a LABEL would
+   churn dozens of correct measurements.  tPolContrast's asserted
+   27.898/151.31 stay, as TO already concluded — they are correct
+   measurements of the fixture as built.
+2. **The corrected physics gets gated numbers at BOTH sides of the
+   quarter-wave condition** via a companion evidence run — same Rx,
+   wavelength set to 632.8 nm (the engine's chromatic coating treatment
+   is exactly what makes this meaningful) — pinning the 0.18×/6.35×
+   pair and the true-λ/4 0.0157× point as polval evidence with gates.
+3. **The design-rules line is rewritten** to the chromatic statement:
+   the overcoat polarization trade reverses at the quarter-wave
+   condition; specify protective overcoats at λ/4 of the WORKING
+   wavelength.  §5.5's correction notice + §8.3 already carry the
+   physics; the companion run turns the statement into measurement.
+That is one small Opus slice (evidence + report edit, no fixture
+moves, no engine change).
+
+**The near-miss narrative is exemplary and is now part of the
+methodology record**: two self-cancelling harness bugs at exactly the
+one angle the existing gate runs at produced a coherent story in which
+the engine contradicted the literature — broken not by a test but by a
+units check (the trace log's 1e-6 against constants saying 632.8 nm).
+"The first coherent explanation was the wrong one" is the sentence to
+remember; both traps gated, both in CLAUDE.md.
+
+Also right: stopping at two failed attempts to measure the per-element
+AOI and DROPPING the claim rather than publishing a third guess (the
+ratio is flat at 6.34–6.36 across the plausible range, so nothing
+depended on it).  The underlying gap — ray_field exposes the element
+axis normal, not the per-ray surface normal at intersection — is
+recorded as a candidate API item, no action now.
