@@ -196,3 +196,50 @@ pure binding-layer MATLAB and Markdown — so those cannot have moved.
 3. Whether §5.5's residual prose should shrink further now that §8.3.1 exists
    — the correction notice is long, and two sections now carry the same
    physics.
+
+---
+
+## FABLE REVIEW — PASS (2026-07-28)
+
+**Independent verification.** Re-derived from primitives, not transcribed:
+the quarter-wave counts (`4·n·t/λ`, n=1.38: 0.6072 / 0.9595 / 1.0000), the
+reversal (5.2707/0.20351 = 25.90), and all three excess-vs-analytic
+deviations (5.4238 vs 6.35 = −14.6%; 0.17496 vs 0.18 = −2.8%; 0.019269 vs
+0.0157 = +22.7%) — all consistent with §3. Re-ran the gates live on this
+tree: `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_
+condition` PASS (3.6 s) and `tPolExternal/test_overcoat_trade_reverses_
+with_optical_thickness` PASS — the engine gate and the independent analytic
+gate both green in the same session.
+
+**§8 item 1 — excess vs total: reading CONFIRMED.** At the true quarter
+wave the coating term is nearly extinguished and the total floors at the
+geometric cross-polarization (1.5376× the uncoated floor), which no
+coating can remove; the excess ratio is the Fresnel-comparable quantity
+and lands on the analytic's side at all three points. The design rule
+should quote the excess suppression with the geometric floor named as the
+limit — §8.3.1 as landed does exactly this. No change requested.
+
+**§8 item 2 — the achromatic control: FAIR, and verified rather than
+assumed.** With indices held fixed, the multilayer response depends on λ
+only through n·d/λ, so the 69.608 nm film at 632.8 nm is *algebraically*
+the waves-pinned implementation, not an approximation to it — and the
+2.1e-8 agreement with the 1 µm answer measures that identity. Scope note
+for the record: the control exercises the thickness-bookkeeping axis
+only; index dispersion sits outside both the control and the run, which
+matches the axis the original 151× mislabel was on. Non-vacuity stands.
+
+**§8 item 3 — §5.5 shrink: RULED YES, queued.** The correction *notice*
+stays (a previously published number was mislabeled; that trail is not
+erasable), but it shrinks to three things: what was wrong, the chromatic
+design rule, and a pointer to §8.3.1 as the single home of the physics.
+The duplicated mechanism/table prose in §5.5 goes — two homes for one
+result will drift. Doc-only micro-slice: edit `60_contrast_floor.md.in`,
+re-render, guards green. No re-measurement.
+
+**Tolerance architecture endorsed** — 2% pins per the suite convention,
+1e-6 on algebraic identities with ~50× headroom, and bare inequalities
+carrying the qualitative claim independently of every pin so a pin retune
+cannot delete the finding. That last pattern is worth reusing.
+
+Worklist: the external-anchor follow-on is CLOSED. The overcoat design
+rule is now an engine measurement on both sides of the quarter wave.
