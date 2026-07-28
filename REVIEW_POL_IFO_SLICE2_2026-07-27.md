@@ -131,6 +131,52 @@ pushes the knee lower and buys more polarization payoff.
 
 ---
 
+## Riders from the slice-2 review (binding on slice 3, recorded here)
+
+**(1) Total fringe-contrast budget at 45° and at the 17.5° knee — the
+swept metric is one term, not the whole budget.** The slice-2 sweep
+reports the polarization-differential contrast term (`1−V`, driven by the
+arm-differential retardance). The full worst-case contrast budget also
+carries a *scalar throughput-imbalance* term from the arm-differential
+diattenuation `D` (unequal arm amplitudes reduce fringe modulation
+independently of polarization). Written side by side, with `V =
+sqrt((1+sqrt(1−D²)·cos ret)/2)` decomposed into its amplitude-imbalance
+piece (`≈ D²/8` in `1−V`) and its polarization-differential piece
+(`≈ (1−cos ret)/2 · ½ ≈ ret²/8` in `1−V`):
+
+| AOI | D | ret (rad) | throughput-imbalance `≈D²/8` | polarization-diff `≈ret²/8` | total `1−V` (reported) |
+|---|---|---|---|---|---|
+| 45.0° | 0.07213 | 0.08352 | 6.5e-04 | 8.7e-04 | 1.52e-03 |
+| 17.5° (knee) | 0.00912 | 0.00851 | 1.04e-05 | 9.1e-06 | 1.94e-05 |
+
+At 45° the two terms are comparable (the diattenuation contributes ~40% of
+the contrast loss, not a negligible remainder); at the knee both have
+fallen ~2 decades and remain comparable. The reported `1−V` is their sum
+to leading order — so the AOI sweep moves the *whole* contrast budget, but
+a reader must not attribute all of `1−V` to the polarization-differential
+retardance alone. (Both terms are common-mode state changes, not PSI phase
+errors — see slice 1; the phase error is the pupil *variation*, score 2,
+which stays at round-off across the sweep.)
+
+**(2) The visibility metric assumes both s and p are lit.** `V` above is
+the worst-case contrast for an input at 45° to the fold's s/p axes, i.e.
+both eigen-polarizations equally illuminated — the condition under which
+the arm-differential Jones `M = J_test·inv(J_ref)` has off-diagonal
+consequence. For an input aligned with the pure s or pure p eigenstate the
+differential Jones is *diagonal* (the planar fold's s and p never mix), so
+there is no polarization contrast loss at all: `V = 1` in that eigenstate,
+and the entire cost migrates into the *excluded* amplitude term — the
+suppressed orthogonal component, which simply carries less returned flux
+(`|M_ss|` vs `|M_pp|`) and never reaches the detector as a contrast
+penalty. The 45°-input worst case is therefore the correct figure to quote
+for a general (unpolarized or arbitrarily-polarized) source; an s- or
+p-polarized source sees only the throughput asymmetry, not the contrast
+loss. Slice 3, which deliberately lights both axes through a 45° input
+polarizer, is where this differential becomes a *measured phase* rather
+than a contrast term.
+
+---
+
 ## Figure
 
 `bench_ifo_pol_slice2_trade.png` — two stacked panels, AOI axis reversed
