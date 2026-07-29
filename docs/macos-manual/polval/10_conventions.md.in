@@ -6,6 +6,7 @@ the engine source*, not by legislating them, and they are asserted in the
 tests. They are reproduced here because no measured number below is
 interpretable without them.
 
+<!-- CONVENTIONS-TABLE:BEGIN -->
 | Convention | Value | Where it comes from |
 |---|---|---|
 | Time-harmonic phase | `exp(+iωt)`; spatial propagator `exp(−ikz)` | `elemsub.F:387` (`C1 = exp(−i·2π·L·N/λ)`, phase decreases as path grows) and the coating recursion at `elemsub.F:512-516`. Consistent with the independently established interferometer result that field phase advances as optical path shortens, and with the `opd_sign_flip` the pymacos↔PROPER comparison already carries. |
@@ -15,6 +16,7 @@ interpretable without them.
 | Retardance sign | Fast axis leads | Stated so that vector-vortex handedness (Phase 3) has a fixed reference. |
 | Diattenuation | Intensity-based, `D = (T_max − T_min)/(T_max + T_min)` ∈ [0,1] | |
 | Coating thickness | Rx `Coating=` layer thickness is **waves at parse-time `Wavelen`**, converted to physical at load; the trace applies phase at the *current* wavelength | `msmacosio.inc:2660`. Broadband sweeps are therefore already correct. `Coating=` must follow `IndRef=` in the file (the parser snapshots the boundary media). The `coat_set` API takes **physical** thickness and sidesteps all of this. |
+<!-- CONVENTIONS-TABLE:END -->
 
 Two coating subsystems exist in the engine and must not be conflated. Model A
 (`Coating`/`EltCoat`/`IndRefArr`/`ExtincArr`/`EltCoatThk`, complex index) is

@@ -69,7 +69,7 @@ here rather than as a plausible-looking floor.
 ## 5.3 The floor of an uncoated two-mirror train
 
 `Rx_Cass_FarField.in` puts both its mirrors before its single far-field leg,
-so the diffraction grid carries the whole train (§5.5) and the number is
+so the diffraction grid carries the whole train (§5.6) and the number is
 physics rather than a bound. With bare perfect-conductor mirrors the floor is
 purely geometric — the NA-driven cross-polarization of §4 — and comes to
 **7.0612e-07** of the co-polarized power, in a
@@ -119,34 +119,31 @@ uncoated baseline, taking the annulus mean contrast from 9.593e-12 to
 **151.3×** of baseline, to **1.992e-09**.
 
 So on this train the coating, not the geometry, sets the floor: the bare
-metal costs about a decade and a half over the geometric term, and *this*
-specific film costs most of another. That is the shape of answer the
-coronagraph design rules ask for — the floor is a coating decision before it
-is an optical-prescription decision. What that film costs, however, is a
-**chromatic** statement and not a property of protective overcoats; read the
-correction below before generalising it.
+metal costs about a decade and a half over the geometric term. That is the
+shape of answer the coronagraph design rules ask for — the floor is a
+coating decision before it is an optical-prescription decision. What the
+*overcoat* costs, however, is a chromatic statement and not a property of
+protective overcoats; read the correction below before generalising it.
 
-> **Corrected 2026-07-28 — read §8.3 before quoting these numbers.** This
-> subsection previously described the 110 nm MgF₂ film as "a
-> quarter wave, an ordinary protected-aluminium recipe". It is not. This
-> fixture runs at `Wavelen = 1.0E-06` m, at which 110 nm of
-> MgF₂ is **0.6072** quarter-waves; the "632.8 nm" in the
-> coating constants' own comments is not this fixture's wavelength. The
-> measured **151.3×** is arithmetically right for the film as
-> configured — §8.3 reproduces it from the engine's Jones pupil and from an
-> independent analytic — but the *generalisation* was backwards.
+> **Corrected 2026-07-28.** This subsection previously described the
+> 110 nm MgF₂ film as "a quarter wave, an ordinary
+> protected-aluminium recipe", and generalised from it that a protective
+> overcoat costs polarization contrast. The film is
+> **0.6072** quarter-waves at this fixture's own
+> `Wavelen = 1.0E-06` m, and the overcoat trade *reverses*
+> across the quarter-wave condition — so the measured **151.3×**
+> above is arithmetically right for the film as configured and stands
+> unchanged, while the generalisation drawn from it was backwards.
 >
-> The overcoat polarization trade **reverses across the quarter-wave
-> condition**, and §8.3.1 now measures both sides in this same engine and on
-> this same unmoved fixture: the identical film raises cross-polarized power
-> by **5.2707×** at 1 µm and *lowers* it to
-> **0.2035×** at 632.8 nm, a reversal of
-> **25.90×**; a true quarter-wave overcoat suppresses it to
-> **0.0532×** of bare aluminium. Treat the number above as a datum
-> for one specific sub-quarter-wave film. The design rule is: **specify a
-> protective overcoat at λ/4 of the working wavelength**, at which it buys
-> roughly 0.0193× on the coating term instead of costing
-> 5.4238×.
+> **The design rule is: specify a protective overcoat at λ/4 of the working
+> wavelength.** A protective overcoat is neither inherently a polarization
+> cost nor a benefit; the sign is set by its optical thickness at the
+> wavelength the instrument works at.
+>
+> **§8.3.1 is the single home of this physics** — both sides of the
+> reversal measured in this same engine on this same unmoved fixture, the
+> mechanism, the magnitudes, and the non-vacuity control. Do not quote or
+> generalise the number above without reading it.
 
 ## 5.6 What this cannot yet measure — the Tranche-1 gap on a real chain
 

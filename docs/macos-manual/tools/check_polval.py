@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Refuse to build a polarization validation report that is out of date.
 
-Three failure modes this catches, all of which would otherwise produce a
+Four failure modes this catches, all of which would otherwise produce a
 document that LOOKS authoritative:
 
   1. an unresolved @@TOKEN@@ in a rendered .md -- the renderer failed or was
@@ -11,7 +11,11 @@ document that LOOKS authoritative:
      did not re-render, so the text and the numbers disagree;
   3. a figure newer than generated/numbers.json -- the figures were
      regenerated but the numbers were not (or vice versa), so the panels and
-     the tables describe different runs.
+     the tables describe different runs;
+  4. the conventions table drifting between its two homes.  The executive
+     summary reproduces it verbatim because it is review priority 1 and the
+     summary is handed out alone; two copies of one table is exactly the
+     arrangement that drifts, so the copies are compared byte for byte.
 
 Usage:  check_polval.py <polvalDir>
 Exit 0 = consistent.  Nonzero = do not build; run `make polval-regen`.
@@ -23,6 +27,29 @@ import re
 import sys
 
 TOKEN = re.compile(r"@@([A-Za-z0-9_]+)@@")
+
+# A block bracketed by these markers must be byte-identical everywhere it
+# appears.  Used for the conventions table, which the executive summary
+# reproduces verbatim.
+MIRROR = re.compile(
+    r"<!-- ([A-Z0-9-]+):BEGIN -->\n(.*?)<!-- \1:END -->", re.S
+)
+
+
+def check_mirrored_blocks(polval: pathlib.Path) -> list[str]:
+    """Every marker-bracketed block with the same tag must match exactly."""
+    seen: dict[str, tuple[str, str]] = {}   # tag -> (body, first file seen in)
+    problems: list[str] = []
+    for tpl in sorted(polval.glob("*.md.in")):
+        for tag, body in MIRROR.findall(tpl.read_text()):
+            if tag not in seen:
+                seen[tag] = (body, tpl.name)
+            elif seen[tag][0] != body:
+                problems.append(
+                    f"{tpl.name}: block {tag} has drifted from the copy in "
+                    f"{seen[tag][1]} -- the two must be byte-identical"
+                )
+    return problems
 
 
 def main() -> int:
@@ -51,6 +78,8 @@ def main() -> int:
             problems.append(
                 f"{md.name} carries unresolved tokens: " + ", ".join(left)
             )
+
+    problems.extend(check_mirrored_blocks(polval))
 
     numbers = polval / "generated" / "numbers.json"
     if not numbers.exists():

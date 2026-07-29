@@ -31,9 +31,16 @@ POLVAL_OPTS := --resource-path=polval --toc --toc-depth=2 \
                --metadata title="MACOS Polarization Validation Report"
 POLVAL_TOOL := $(HOME)/dev/MACOS_resources/mmacos/tools/pol_validation_report
 
+# The executive summary is section 05 of the report AND a stand-alone
+# hand-out: the primary reviewer will not read 60 pages.  Same generated
+# file, built twice -- no TOC on a three-pager.
+POLVALSUM  := polval/05_summary.md
+POLVALSUM_OPTS := --resource-path=polval \
+               --metadata title="MACOS Polarization Validation — Executive Summary"
+
 .PHONY: all docx html pdf appendix-c clean \
         cmdref cmdref-pdf cmdref-regen \
-        polval polval-pdf polval-regen polval-check
+        polval polval-pdf polval-regen polval-check polval-summary
 
 all: docx html
 
@@ -100,6 +107,20 @@ $(BUILD)/macosPolVal.html: $(POLVALSRC) | $(BUILD)
 	  -o $@ $(POLVALSRC)
 
 $(BUILD)/macosPolVal.pdf: $(BUILD)/macosPolVal.docx
+	python3 tools/docx2pdf.py $< $@
+
+# stand-alone three-page hand-out (same source as the report's section 05)
+polval-summary: polval-check $(BUILD)/macosPolVal_summary.pdf \
+                $(BUILD)/macosPolVal_summary.html
+
+$(BUILD)/macosPolVal_summary.docx: $(POLVALSUM) $(REFDOC) | $(BUILD)
+	$(PANDOC) $(POLVALSUM_OPTS) --reference-doc=$(REFDOC) -o $@ $(POLVALSUM)
+
+$(BUILD)/macosPolVal_summary.html: $(POLVALSUM) | $(BUILD)
+	$(PANDOC) $(POLVALSUM_OPTS) --standalone --embed-resources \
+	  -o $@ $(POLVALSUM)
+
+$(BUILD)/macosPolVal_summary.pdf: $(BUILD)/macosPolVal_summary.docx
 	python3 tools/docx2pdf.py $< $@
 
 $(BUILD):
