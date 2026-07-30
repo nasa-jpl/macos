@@ -200,13 +200,41 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 Day-to-day: push new features to `dev`; cherry-pick bug fixes to
 `opt-dev`; let `dev` accumulate until a promotion gate.  The two repos
 (`~/dev/macos` + `~/dev/MACOS_resources`) are NOT branch-identical —
-`nasa-jpl/macos` is slimmed (as of 2026-07-28 remote heads:
-`bench-builder`, `dev`, `fixREADME`, `main`, `pol-core`) while
-`MACOS_resources` still carries the wider working set (`dev`, `main`,
-`opt-dev`, `bench-builder`, `pol-core`, `pol-ifo`, `release-candidate`,
-`develop`, `dr-dev`, `dr-dev2`, `ifo-l2`).  The shared, deliberate fact
-is that **neither repo has `sls-dev`** — retired 2026-07-28.  Always
+`nasa-jpl/macos` is slimmed (as of 2026-07-28 remote heads: `dev`,
+`fixREADME`, `main`, `pol-core`) while `MACOS_resources` still carries
+the wider working set (`dev`, `main`, `opt-dev`, `pol-core`, `pol-ifo`,
+`release-candidate`, `develop`, `dr-dev`, `dr-dev2`, `ifo-l2`).  The
+shared, deliberate facts are that **neither repo has `sls-dev` or
+`bench-builder`** — both retired 2026-07-28.  Always
 `git ls-remote --heads` to see the live set before assuming.
+
+### Merge ordering: engine first, resources second (Dave 2026-07-28)
+`MACOS_resources` may be updated **without review**, but as a best
+practice **do not merge a resources branch to `dev` until the engine is
+updated to match.**  Engine (`macos`) lands first or in the same beat;
+resources follows.
+
+**Why it matters:** a veneer promoted ahead of its engine support fails
+at **prescription-load time, not at build time** — so the resources test
+suite can be fully green while the paired `dev` engine cannot parse the
+Rx keywords that veneer emits.  Nothing on the resources side catches it.
+
+**How to apply.** Before merging a resources branch, ask what engine
+features its new emitters/wrappers depend on and confirm those are
+already on macos `dev`.  Purely additive, engine-independent work
+(examples, plotting, docs, pure-MATLAB layers) is exempt.
+
+Worked example — the 2026-07-28 promotions, which followed the rule:
+- **PR #10** (`bench-builder` → resources `dev`) was safe: its only
+  engine dependency, the BEAM API (`beam_set`/`beam_get`), was already
+  on macos `dev` via **PR #64**.
+- The pol emitters (`Bench.add_polarizer` / `add_waveplate`, which emit
+  `PolAxis=` / `Retardance=` and need Phase-3 `TrPolarizerElt(15)` /
+  `WavePlateElt(18)`) were correctly **left on `pol-ifo`**, because that
+  engine support is on macos `pol-core`, not macos `dev`.
+- Consequence for the in-flight arc: resources `pol-ifo` → `dev` is
+  **gated on** macos `pol-core` → `dev`.  Promote the engine first; the
+  two are sequenced, not independent.
 
 ## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
 - **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public
