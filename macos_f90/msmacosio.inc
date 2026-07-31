@@ -316,7 +316,20 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'OptFEX',6)) THEN
-            If (LCMP(VALUE,'N',1)) LOptIfFEX=.FALSE.
+!-->  OptFEX had only the 'No' branch, so a prescription could turn the
+!     per-field FEX OFF and never ON -- `OptFEX= Yes` was silently a
+!     no-op.  Without FEX, CALIB's WFE merit is the OPD to a reference
+!     surface that never moves off the nominal field, which on an
+!     off-axis design measures image-displacement TILT (measured
+!     1.8e-3..2.6e-3 m across a 12' box, vs 1.1e-7..4.3e-7 m with FEX)
+!     and drives the solve away from the design.  Evidence + gates:
+!     MACOS_resources/mmacos/design/rodgers1/PACKET.md Addendum 5.
+            IF (LCMP(VALUE,'N',1)) THEN
+              LOptIfFEX=.FALSE.
+            ELSE IF (LCMP(VALUE,'Y',1)) THEN
+              LOptIfFEX=.TRUE.
+            END IF
+!<--
             GO TO 50
 
           ! --------------------------------------------------------------------------------
