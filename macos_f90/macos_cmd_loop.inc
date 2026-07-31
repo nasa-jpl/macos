@@ -344,7 +344,21 @@ C         ***next command: Load optical description data***
 	    nOptEltAsph=0; OptEltAsphTerm=-1
 
 	    isSrcOpt=.FALSE.   ! source optimization, default to false
-	    LOptIfFEX=.TRUE.   ! default
+!-->  LOptIfFEX default UNIFIED to .FALSE. (was .TRUE. here and .FALSE. in
+!     dopt_init_vars -- the effective default was path-dependent, and on
+!     the SMACOS/load_rx path this line was in any case clobbered back to
+!     .FALSE. by the dopt_init_vars re-init, the same hazard the
+!     OptTgtElt/OptAlg comment in dopt_mod.F:218-224 describes).
+!     .FALSE. is forced by the MEASURED failure mode: CALIB's FEX call is
+!     hard-wired to element nElt-1 (smacos_compute.inc:391-397), and on a
+!     deck that ends [.. mirror, FocalPlane] that target is a Reflector.
+!     FEX then does NOT corrupt it (M3 verified bit-unchanged) but CALIB
+!     ABORTS -- a hard failure, not a fall-back to the plain-OPD merit.
+!     Defaulting .TRUE. would therefore stop every existing optimisation
+!     deck from optimising at all.  Opt in per deck with `OptFEX= Yes`,
+!     which needs a Return/Reference at nElt-1 (see add_pupil).
+	    LOptIfFEX=.FALSE.  ! default; opt in with OptFEX= Yes
+!<--
 	    OptTgtElt=-1  ! init value
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value

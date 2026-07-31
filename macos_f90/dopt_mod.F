@@ -226,6 +226,10 @@ C***********************************************************************
           OptAlg              = NonLin
           aparam_off          = 0
 
+          ! LOptIfFEX default is .FALSE. HERE AND AT macos_cmd_loop.inc's
+          ! LOAD path -- one explicit default, both paths.  Opt in per
+          ! prescription with `OptFEX= Yes`.  See the block comment at the
+          ! LOAD site for the measured failure mode that forces .FALSE.
           LOptIfFEX           = .FALSE.
           isSrcOpt            = .FALSE.
           LOptCons            = .FALSE.
