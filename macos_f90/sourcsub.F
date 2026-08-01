@@ -214,11 +214,16 @@ C  Find the segment for the chief ray
 	  O2=0d0
 	END IF
 
-!ToDo: defining aperture for the sake of plotting is wrong => what is the correct physics
-
-	!A2=(Aperture/2d0)**2  ! original
-	A2= (Aperture/2d0 + Aperture/DBLE(npts))**2  ! for plotting a 'bottom' ray
-	!A2=(Aperture*0.5001)**2  ! original
+! Circular-grid acceptance radius = Aperture/2, plus a relative epsilon.
+! The epsilon is load-bearing, and 1d-9 at the r2<=A2 test is not enough:
+! the lattice below starts at -Aperture/2 and steps by ds=Aperture/(npts-1),
+! so its edge rows land at EXACTLY +-Aperture/2 -- on the acceptance circle.
+! 'y' gets there by repeated addition, so r2 can exceed A2 by an ulp and the
+! whole edge row (the 'bottom' ray) drops out.  A relative epsilon admits it
+! at any aperture scale, where an absolute one does not.  Same form PtSource
+! uses (see A2 in that routine) so a collimated and a point source trace the
+! SAME pupil for the same Aperture=.
+	A2=(Aperture*0.50001d0)**2
 
 ! nRayToSeg(iRay) - given iRay, (nRayToSeg(iRay)-1) gives the number of
 ! rays that have hit iSeg before iRay does. -jzlou
