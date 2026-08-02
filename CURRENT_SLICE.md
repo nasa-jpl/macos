@@ -24,7 +24,143 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-07-23) — READ THIS FIRST.**  No half-done slice
+> **CURRENT STATE (2026-08-02) — e2e2 TELESCOPE FLOW COMPLETE.**
+> Report: `MACOS_res_dev/mmacos/design/examples/e2e2/E2E2_REPORT.md` (for
+> Dave + CCL Fable).  Brief `macos/BRIEF_e2e2_implementation.md`; plan
+> `MACOS_res_dev/mmacos/design/PLAN_TMA_E2E2.md`.  **8 commits, LOCAL on
+> `MACOS_res_dev` `dev`, NOT PUSHED**, on top of the 4 pupil-fix ones:
+>   `f7c6fd7` hoist the strict-WFE kernel rodgers1 → design/src
+>   `5daaef7` fix the best-focus rung (it lost to the rung below it)
+>   `f145d4e` e2e2 S0+S1
+>   `87ad634` field widened to 0.6 deg (later narrowed)
+>   `06c4b5f` fold before bias; price the two knobs together
+>   `5f48f68` carry both frontier branches; why freeform cannot help
+>   `0442d31` 0.4 deg box finishes the telescope; relay needs its own design
+>   `d54e7f5` telescope closed at S2, relay parked, final score
+>
+> **ENGINE (2026-08-02, after CCLF's repo cleanup + PR #70 merge):**
+> `~/dev/macos` is the PRIMARY tree and is now on **`dev` `ba23d93`**.
+> The throwaway `macos_dev` pairing-check worktree is removed and the
+> merged `colsource-pupil-fix` branch deleted; `macos_polfix` (pol-core)
+> stays for polval.  NO Makefile/alias changes -- everything durable
+> (shell aliases, both binding Makefiles' MACOS_BUILD_DIR, pymacos cmake,
+> the CC project config) already anchors on `~/dev/macos`, so the
+> physical build dir every e2e2 number came from is unchanged and is now
+> correctly labelled.  Pairing is carried by the BUILD WIRING, not by
+> directory names: `~/dev/macos` (dev) <-> `MACOS_res_dev` (dev),
+> `macos_polfix` (pol-core) <-> `MACOS_resources` (pol-core).
+> **`MACOS_res_polifo` still needs a macos counterpart decision when
+> pol-ifo revives -- that question returns after PR #67.**
+> RE-VERIFIED after the move: rebuilt release gfortran, mex relinked,
+> `tStrictKernel` 4/0, `tE2E2Axial` 7/0, and **`s3_report.txt` re-scored
+> BYTE-IDENTICAL** -- the 36a5f5a->ba23d93 delta is comment-only, checked
+> rather than assumed.
+>
+> **FLOW (3 stages + scoring):** `e2e2_params` → `s1_axial` → `s2_fold`
+> (the delivered telescope) → `s3_score` (designs nothing).  The relay is
+> PARKED in `relay_followon/`.  Two stage reorders on Dave's call: fold
+> BEFORE bias (geometry is free, bias costs ^1.80), then the off-axis
+> stage folded into the relay stage, then the relay parked entirely.
+>
+> **DELIVERED**, uniform 13x13 over the 0.4 deg box, D=3 m f/20 500 nm,
+> bias 13', M1 hole 0.2331 m (2.4% of the area, measured):
+>   strict-chief      49.220 nm  Strehl 0.679  FAIL
+>   strict-centroid   30.001     0.867         PASS   <- primary
+>   + best focus      29.380     0.872         PASS
+>   + LS tip/tilt     20.380     0.936         PASS
+> Bar 35.71 nm / Strehl 0.80.  DL at the primary reference and everything
+> more permissive; missed at the strictest.  Coma 0.11-5.33 um; mapping
+> f.theta to -0.0075%, 630 um rms departure, 522 um nonlinear.
+>
+> **TESTS:** fast 236/0, tE2E2Axial 7/0, tStrictKernel 4/0.
+>
+> **FINDINGS, all recorded in-source, none fixed silently:**
+> 1. Brief's hoist gate is STALE (baseline predates PR #70); replaced by a
+>    same-engine A/B, 0.000e+00.  Baseline NOT regenerated.
+> 2. rung-3 fix moves rodgers1 rung-3/4 artifacts by 2-3e-4; rungs 1-2
+>    (incl. the centroid ruling) unchanged.  **Regen = a reviewed step,
+>    NOT DONE** — `rodgers1_pupil_audit.mat`, `rodgers1_dense_field.mat`,
+>    PACKET Addendum 10's rung-3/4 columns.
+> 3. The offset does NOT scale with the field (RMS ~ bias^1.80 measured).
+> 4. Freeform on pupil-conjugate mirrors cannot reach a field-VARYING
+>    residual (astig reverses across the field, spread/mean 4.48).
+> 5. A relay is sized by the IMAGE, not the aperture.
+> 6. Bias beat extraction tilt ~100x here — the REVERSE of e2e VIS.
+>
+> **OPEN:** (a) `s3_score.m`'s `distortion_` had THREE successive errors
+> (wrong quantity, forced parity, transposed scale) — all caught, the
+> third now asserted, but the section wants fresh eyes before its numbers
+> are quoted externally.  (b) The relay's field-corrector hypothesis is
+> UNTESTED (see `relay_followon/README.md`).  (c) Nothing pushed.
+>
+> **RESUME:** `E2E2_REPORT.md`, then `examples/e2e2/README.md` (design
+> point, FOV sweep, the numbered solve-order rules each with the failed
+> run that earned it), then `s2_report.txt` / `s3_report.txt`.
+>
+> **TRAPS PAID FOR:** don't edit `run_mmacos_tests.sh` while a suite runs;
+> `strict_ladder_deck`/`stage_score` need `macos.init` first; `pupil_gate`
+> projects along the INCOMING chief (`get_src_fov`), not `get_ray_info`'s
+> outgoing `.dir`; gate AOI **spread** on **powered** surfaces only
+> (`aoi_report` includes the flat fold at its 45 deg); judge clearance
+> BEFORE `add_pupil`; more DOFs must never make a reported design worse
+> (take min per branch).
+
+> **PRIOR STATE — ColSource pupil fix, LANDED.**
+> macos **PR #70** open (`36a5f5a`, branch `colsource-pupil-fix`):
+> collimated traces now use the DECLARED `Aperture=` (was
+> `1+2/(nGridpts-1)` oversize — diagonal corner lobes only, which is
+> why it hid; full diagnosis rodgers1 `PACKET.md` Addendum 10).
+> Verification COMPLETE across three sessions (Terminal Opus pre-crash
+> A/B + this session's completion runs): the ONLY test fallout is 3
+> pinned-baseline tests + the uncommitted `tPupilAperture.m` gates.
+> Wrap-up work list = **`macos/BRIEF_pupil_test_wrapup.md`** (re-pins
+> with measured values, gate-class commit/registration, ordering:
+> resources commits land AFTER #70 merges, no push until Dave).
+> **WRAP-UP DONE 2026-08-01, committed LOCALLY on `MACOS_res_dev` `dev`,
+> NOT pushed** — `851e33c` re-pins (tMacosPkg 12850→12454 / 1366→970
+> launched+obscured, n_ok unchanged; CassFF peak/sum +1.6% = the pupil
+> AREA change, mmacos + pymacos twin), `32f39d9` tDesignTelescope
+> ray_bundle Y-slice made pitch-aware (the old `|x|<0.05` window passed
+> only BECAUSE the oversize corner ray shrank the normalization; real
+> cause = half-integer column lattice + the lone off-lattice chief ray),
+> `8d3af7c` `tPupilAperture.m` gate class + its own 512 batch line in
+> `run_mmacos_tests.sh` (all probes pinned to 512 so the class never
+> transitions model size in-process).  Verified post-fix: tMacosPkg
+> 25/0, tDesignTelescope 70/0, tProperCompareCassFF 4/0, tPupilAperture
+> 5/0, pymacos `test_cass_ff.py` 4 passed; A/B against the preserved
+> pre-fix mex gives tPupilAperture 1/4 (all of section A red).
+> **Remaining: merge PR #70, then push the resources commits (Dave's
+> call).**  Durable A/B evidence copied out of the volatile session
+> scratchpads to `~/dev/MACOS_sandbox/pupil_fix_ab_20260801/`
+> (pre/post mexes, probe `.mat`s, full-suite logs).
+> Also committed: `26a1151` `rodgers1/dense_field_check.m` — run to
+> completion (it never was pre-crash) and it ANSWERS the open average
+> residual: max unchanged on all three designs (0.991/1.003/1.000× his)
+> while the S3 average walks 1.082× → 1.000× on a uniform 9×9 grid.  The
+> avg gap was the .seq quincunx's edge weighting, not the optics.
+> **Untouched by me:** a CONCURRENT MATLAB run (not this session — my
+> `-batch` log shows only the dense-field banner) rewrote a batch of
+> committed `rodgers1_seq_*` decks/PNGs/`.mat`s plus
+> `rodgers1_pupil_audit.mat` between 07:46–07:58, and wrote
+> `rodgers1_dense_field.mat`.  Left MODIFIED and uncommitted — someone
+> else's in-flight regen, and regens are a reviewed step anyway.
+> **Second fallout surface — worked-example artifacts:** every
+> committed e2e/e5 regen count and metric derived from a collimated
+> trace (s3 "12106/12520, 376 gap clips" class counts, WEM tables,
+> probe footprints) shifts slightly post-fix (~0.1–4% where corner
+> rays reach the detector; point-source decks bit-identical).  Treat
+> shifted counts on regen as EXPECTED, not regressions; regens are a
+> separate reviewed step (same policy as the e5_pie stale-baseline
+> flag).  Durable record: memory `project_pupil_oversize.md`.
+>
+> **QUEUED (Dave 2026-08-01): e2e2 — the improved TMA design-flow
+> worked example** (params → Korsch axial → off-axis → fold → relay+FP,
+> Rodgers doctrine folded in: joint solve, stated references, solve
+> set ≠ scoring set, pupil gate, parameter provenance per stage).
+> Full plan: `MACOS_res_dev/mmacos/design/PLAN_TMA_E2E2.md` — written
+> for cold implementation by Opus/Sonnet/users.
+>
+> **PRIOR STATE (2026-07-23) below.**  No other half-done slice
 > is in flight — everything below is LANDED + PUSHED.
 >
 > **§0 MODEL-TRANSITION HEAP CRASH — RESOLVED (macos `0b07046`).**  The
