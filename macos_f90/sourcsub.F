@@ -214,15 +214,11 @@ C  Find the segment for the chief ray
 	  O2=0d0
 	END IF
 
-! Circular-grid acceptance radius = Aperture/2, plus a relative epsilon.
-! The epsilon is load-bearing, and 1d-9 at the r2<=A2 test is not enough:
-! the lattice below starts at -Aperture/2 and steps by ds=Aperture/(npts-1),
-! so its edge rows land at EXACTLY +-Aperture/2 -- on the acceptance circle.
-! 'y' gets there by repeated addition, so r2 can exceed A2 by an ulp and the
-! whole edge row (the 'bottom' ray) drops out.  A relative epsilon admits it
-! at any aperture scale, where an absolute one does not.  Same form PtSource
-! uses (see A2 in that routine) so a collimated and a point source trace the
-! SAME pupil for the same Aperture=.
+! Acceptance radius = Aperture/2 plus a small RELATIVE margin, the same
+! form PtSource uses.  The lattice edge rows land exactly on this circle
+! and y accumulates rounding, so r2 can exceed A2 by a unit in the last
+! place (ULP); the relative margin admits the edge row at any aperture
+! scale, where the absolute 1d-9 slack at the r2<=A2 test does not.
 	A2=(Aperture*0.50001d0)**2
 
 ! nRayToSeg(iRay) - given iRay, (nRayToSeg(iRay)-1) gives the number of
