@@ -4973,6 +4973,10 @@
         OK    = FAIL
         XP(:) = 0e0_pr
         if (.not. SystemCheck())   return
+        ! structural check first (does the Rx carry a pupil element at all?),
+        ! then the state check -- so this routine's stdout diagnostic and the
+        ! binding's error identifier always name the same cause.
+        if (.not. XpEltOrWarn())   return
         if (.not. StopSetOrWarn()) return
 
         ! fix: SMACOS "FEX" does not correctly reset nGridPts
@@ -5937,6 +5941,47 @@
         end if
 
       end function StopSetOrWarn
+
+
+      ! .TRUE. iff element nElt-1 can hold the exit pupil, i.e. it is a
+      ! Return(8) or Reference(3) surface.  Otherwise prints an actionable
+      ! message and returns .FALSE.
+      !
+      ! FEX writes nElt-1 ONLY for those two element types: the FEXIT
+      ! handler in macos_cmd_loop.inc prints 'Invalid element type' and
+      ! GO TO 1 for anything else, with no status returned to the caller.
+      ! xp_fnd therefore used to report PASS on a deck whose penultimate
+      ! element is a powered optic, having written nothing -- the caller
+      ! kept whatever stale pupil the Rx carried and had no hint why.
+      ! (sxp_fnd dispatches SXP, a FEXIT clone with the same element-type
+      ! check, so it has the same gap; left as-is pending its own go.)
+      logical function XpEltOrWarn()
+        implicit none
+        integer :: iEP
+        ! ------------------------------------------------------
+
+        XpEltOrWarn = .false.
+        iEP = nElt-1
+
+        if (iEP < 1) then
+          write(*,*) '** Too few elements to carry an exit pupil.'
+          return
+        end if
+
+        if ((EltID(iEP) /= ReturnElt) .and. &
+            (EltID(iEP) /= ReferenceElt)) then
+          write(*,*) '** Element', iEP, 'has EltID', EltID(iEP), &
+                     '- not a Return/Reference surface,'
+          write(*,*) '   so it cannot hold the exit pupil.'
+          write(*,*) '   This Rx has no exit-pupil element: add one'
+          write(*,*) '   (add_pupil, or the FP-Return-before-ExitPupil'
+          write(*,*) '   recipe) before calling FEX/XPS.'
+          return
+        end if
+
+        XpEltOrWarn = .true.
+
+      end function XpEltOrWarn
 
 
       !---------------------------------------------------------------------------------------------
