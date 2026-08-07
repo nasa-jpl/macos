@@ -452,6 +452,17 @@ pattern. New top-level commands that need their own prompt should
 either reuse the existing ACCEPT routines or push their prompt
 through `set_sub_prompt` directly.
 
+Non-readline builds (Windows always; any clone whose
+`readline-8.2/libreadline.a` isn't built) do NOT render readline
+prompts: PARSE_LOH's `#else` branch is a bare `READ(*)`, so the
+cached sub-prompt must be printed explicitly — `print_sub_prompt_`
+(mhist.c, outside the guard) called before that READ (e81b235).
+Without it, `pert` <ENTER> blocks on invisible input ("pert freezes",
+Luis 2026-08-06); full one-line commands still work, which disguises
+it. cmake now auto-builds the bundled readline when the .a is
+missing; `-DMACOS_FORCE_NO_READLINE=ON` is the test hook for the
+fallback path.
+
 ## Test prescriptions (ZGD_test_files/)
 - All FreeForm test prescriptions use nGridpts=11 (gives 89 rays for Circular grid).
   Reason: model 256 has bRay=500 (BUILD limit) and mDrawRay=101 (nDrawElt array size);

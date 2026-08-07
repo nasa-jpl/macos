@@ -273,8 +273,10 @@ void install_sigint_handler(void) {}\n\
 /* mhist.c defines the lowercase versions; these forward to them */\n\
 extern void set_sub_prompt_(const char *s, int slen);\n\
 extern void clear_sub_prompt_(void);\n\
+extern void print_sub_prompt_(void);\n\
 void SET_SUB_PROMPT_(const char *s, int slen) { set_sub_prompt_(s, slen); }\n\
 void CLEAR_SUB_PROMPT_(void) { clear_sub_prompt_(); }\n\
+void PRINT_SUB_PROMPT_(void) { print_sub_prompt_(); }\n\
 "
   )
   list(APPEND MACOS_ONLY_SOURCES "${CMAKE_BINARY_DIR}/windows_stubs.c")
@@ -398,10 +400,34 @@ elseif(NOT WIN32)
   set(READLINE_ROOT "${smacos_src_dir}/readline-8.2")
   set(READLINE_LIB  "${READLINE_ROOT}/libreadline.a")
   if(NOT EXISTS "${READLINE_LIB}")
-    message(WARNING "Bundled libreadline.a not found — arrow-key/history support disabled.")
-    set(READLINE_LIB "")
+    # Fresh clones carry the readline-8.2 SOURCES but not the built .a —
+    # build it once, in-tree, so the interactive CLI keeps its prompts
+    # and history without a manual pre-build step.
+    message(STATUS "Bundled libreadline.a not found — building readline-8.2 (one-time)...")
+    execute_process(COMMAND sh configure --disable-shared
+                    WORKING_DIRECTORY "${READLINE_ROOT}"
+                    RESULT_VARIABLE _rl_cfg OUTPUT_QUIET ERROR_QUIET)
+    if(_rl_cfg EQUAL 0)
+      execute_process(COMMAND make -j4
+                      WORKING_DIRECTORY "${READLINE_ROOT}"
+                      RESULT_VARIABLE _rl_make OUTPUT_QUIET ERROR_QUIET)
+    endif()
+    if(NOT EXISTS "${READLINE_LIB}")
+      message(WARNING "readline-8.2 auto-build FAILED — macos builds WITHOUT "
+        "readline: arrow-key history is disabled and interactive sub-prompts "
+        "fall back to plain printed prompts.  To restore readline: "
+        "cd macos_f90/readline-8.2 && ./configure --disable-shared && make, "
+        "then re-run cmake.")
+      set(READLINE_LIB "")
+    endif()
   endif()
 else()
+  set(READLINE_LIB "")
+endif()
+# Test hook: force the non-readline fallback path on any platform
+# (-DMACOS_FORCE_NO_READLINE=ON) to exercise the printed-prompt fallback.
+option(MACOS_FORCE_NO_READLINE "Build without readline (test the fallback prompt path)" OFF)
+if(MACOS_FORCE_NO_READLINE)
   set(READLINE_LIB "")
 endif()
 
