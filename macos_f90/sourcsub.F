@@ -1286,15 +1286,20 @@ C  ***  end rotate segemnt frame of reference
 	L2=w2*1.154700538d0
 	xBctr=DBLE(S(2)-S(3))*w2
 	dxB=w2-gap/2d0
-	slopex=x*0.5773502692d0
+!-->  use the SegXgrid-rotated coordinates, as HSEG does.  xt/yt were
+!     computed above but never used, so GridType=Pie silently ignored
+!     SegXgrid while Hex honoured it (180-deg ray<->element permutation
+!     whenever xGrid.SegXgrid < 0).
+	slopex=xt*0.5773502692d0
 	bLctr=DBLE(S(2))*L2
-	bL=y+slopex
+	bL=yt+slopex
 	bRctr=DBLE(S(3))*L2
-	bR=y-slopex
+	bR=yt-slopex
 	db=L2-gap*0.5773502692d0
 	PSEG=.TRUE.
-	IF (S(1).GE.0) PSEG=PSEG.AND.(x.GE.(xBctr-dxB))
-	IF (S(1).LE.0) PSEG=PSEG.AND.(x.LT.(xBctr+dxB))
+	IF (S(1).GE.0) PSEG=PSEG.AND.(xt.GE.(xBctr-dxB))
+	IF (S(1).LE.0) PSEG=PSEG.AND.(xt.LT.(xBctr+dxB))
+!<--
 	IF (S(2).GE.0) PSEG=PSEG.AND.(bL.GE.(bLctr-db))
 	IF (S(2).LE.0) PSEG=PSEG.AND.(bL.LT.(bLctr+db))
 	IF (S(3).GE.0) PSEG=PSEG.AND.(bR.GE.(bRctr-db))
