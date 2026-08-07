@@ -2626,6 +2626,10 @@ C       Read new statement to be parsed
 	     Call MHIST('MACOS',VAR)
 	   End If
 #else
+!-->      Non-readline build: render any cached sub-prompt before the
+!         bare READ, or the program blocks on invisible input.
+           CALL print_sub_prompt
+!<--
            READ(*,6,END=200, ERR=300) VAR
 #endif
         ELSE
