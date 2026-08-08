@@ -1943,6 +1943,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
               READ(VALUE,*) nGridMat(iElt)
               nGridMat_FLG=.TRUE.
+!-->          A GridFile= that arrived BEFORE this line was deferred
+!             (it had no size to read with); the size is known now.
+              IF (GridFilePending(iElt) .AND.
+     &            nGridMat(iElt).GT.0) THEN
+                CALL GridInit(GridFile(iElt),iEltToGridSrf(iElt),
+     &                        nGridMat(iElt),ifGridInit,
+     &                        GridFileBin(iElt))
+                ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
+                GridFilePending(iElt) = .FALSE.
+                IF (.NOT.ifGridInit) THEN
+                  WRITE(*,*)' GridFile not loaded correctly, iELT=',
+     &                      iElt
+                END IF
+              END IF
+!<--
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2015,8 +2030,26 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !<--
 
 	      k=ICLEN(GridFile(iElt))
+	      GridFileBin(iElt) = LCMP(GridFile(iElt)(k-2:k),'bin',3)
 
-	      If (.not.LCMP(GridFile(iElt)(k-2:k),'bin',3)) Then
+!-->          DEFER when nGridMat= has not been seen yet for this
+!             element.  GridInit sizes its read with DO j=1,nGridMat, so
+!             with nGridMat still 0 it reads ZERO rows, prints
+!             "dimension 0 by 0" and returns .TRUE. -- the trace then
+!             samples an all-zero grid and the surface is SILENTLY FLAT
+!             whenever GridFile= precedes nGridMat= in the element block
+!             (or nGridMat= is missing).  Stash instead; the nGridMat=
+!             handler resolves it, and ChkDf2 sweeps anything still
+!             pending at the end of the block and fails there.  Same
+!             deferral pattern as PolyObsVec/xObs.  Binary grids cannot
+!             self-size, so reading to EOF would not fix this.
+	      IF (nGridMat(iElt).LE.0) THEN
+	        GridFilePending(iElt) = .TRUE.
+	        GridMat_FLG=.TRUE.
+	        GO TO 61
+	      END IF
+!<--
+	      If (.not.GridFileBin(iElt)) Then
 	        ! ascii
                 CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
      &                        ifGridInit,.false.)
