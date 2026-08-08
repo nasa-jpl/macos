@@ -1765,7 +1765,8 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'GridFile',8)) THEN
 	    READ(IND(1),*,ERR=999,END=999) MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999) GridFile(MB_I(1))
-	    WRITE(*,*)' GridFile(',MB_I(1),')=',GridFile(MB_I(1))
+	    WRITE(*,*)' GridFile(',MB_I(1),')=',
+     &                TRIM(GridFile(MB_I(1)))
 	    CALL GridInit(GridFile(MB_I(1)),iEltToGridSrf(MB_I(1)),
      &	    	   nGridMat(MB_I(1)),ifGridInit,.FALSE.)
 	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',8)) THEN
