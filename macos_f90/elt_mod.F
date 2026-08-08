@@ -350,7 +350,13 @@ C***********************************************************************
      &                  LRayPass,LEltObs,LGlass,
      &                  LTaperedElt,LApTypeDefined,LApVecDefined,
      &                  LEltMRP_FLG,LUpdateTElt_FLG,LxObsDef,
-     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
+     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined,
+!-->  GridFile= parsed before nGridMat= for this element: the grid read
+!     is DEFERRED (GridInit sizes its read from nGridMat) and resolved
+!     by the nGridMat= handler or by ChkDf2.  GridFileBin remembers the
+!     ascii/binary dispatch decided at parse time.
+     &                  GridFilePending,GridFileBin
+!<--
         Logical, dimension(:,:), allocatable :: LRayToElt
 
 !-->  Per-ray status tracking arrays
@@ -592,6 +598,7 @@ C***********************************************************************
      &               ifComputeDZ,LGlass,LTaperedElt,LFastRayTrace,
      &               LApTypeDefined,LApVecDefined,
      &               ifGridDataDefined,
+     &               GridFilePending,GridFileBin,
      &               ifMon,ifFF,ifGridTerm,
      &               stat=m_err_elt)
           if (m_err_elt /= 0)
@@ -701,6 +708,7 @@ C***********************************************************************
      &           LApTypeDefined(mElt),LApVecDefined(mElt),
      &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay),
      &           ifGridDataDefined(mGridSrf),
+     &           GridFilePending(mElt),GridFileBin(mElt),
      &           ifMon(mElt),ifFF(mElt),ifGridTerm(mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
@@ -885,6 +893,8 @@ C***********************************************************************
           ifOPDModGrid(:)      = .FALSE.
           LFastRayTrace(:)     = .FALSE.
           ifGridDataDefined(:) = .FALSE.
+          GridFilePending(:)   = .FALSE.
+          GridFileBin(:)       = .FALSE.
 
           ! FreeForm activity flags -- set at prescription-read time
           ! via SetFreeFormFlags(ie) based on SrfType and sentinels

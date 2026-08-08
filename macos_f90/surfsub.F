@@ -3206,6 +3206,25 @@ C   If no file, zero matrix and return
                RETURN
             END IF
 
+!-->        A zero-sized read is NEVER a success.  GridInit sizes its
+!           read with DO j=1,nGridMatS, so nGridMatS<=0 reads no rows,
+!           falls through to label 1 and reports "dimension 0 by 0"
+!           with ifGridInit=.TRUE. -- the caller then traces an all-zero
+!           grid and the surface is silently flat.  Callers must set
+!           nGridMat BEFORE the grid is read (the prescription parser
+!           defers GridFile= until it has).  Backstop only.
+            IF (nGridMatS.LE.0) THEN
+               WRITE(*,*)' GridInit: nGridMat =',nGridMatS,
+     &           ' for grid file ',GridFile(1:ICLEN(GridFile))
+               WRITE(*,*)' nGridMat must be set BEFORE the grid is',
+     &           ' read -- grid NOT loaded.'
+               IF (jGridSrf.GE.1)
+     &           CALL DZERO(GridMat(1,1,jGridSrf),mGridMat*mGridMat)
+               ifGridInit=.FALSE.
+               RETURN
+            END IF
+!<--
+
             ! Check file existence
 
             !print*,'B4 INQ: GridFile=',GridFile(1:ICLEN(GridFile))

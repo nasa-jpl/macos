@@ -350,10 +350,13 @@ c		 warning messages when you have nObs=0
 	use loh_I2
         use macos_mod, only: ifStopSet
         use Constants, only: INF
+        use surfsub, only: GridInit
+        use cfiles_mod, only: GridFile
 
 	IMPLICIT NONE
 
 	INTEGER i,iElt
+	LOGICAL ifGridInitL
 
 C   Check for things user must specify
 C   Setup for new input scheme
@@ -999,6 +1002,29 @@ C	  WRITE(*,112)'nObs',iElt
 	    nPolyObsVtx3DPending(i,iElt) = 0
 	  END IF
 	END DO
+
+!-->  Resolve a GridFile= that was parsed before nGridMat= was known.
+!     GridInit sizes its read from nGridMat, so the read was deferred;
+!     this is the last chance.  If nGridMat= never arrived, FAIL -- a
+!     zero-sized read would otherwise be announced as a successful
+!     "dimension 0 by 0" load and leave the surface silently flat.
+	IF (GridFilePending(iElt)) THEN
+	  IF (nGridMat(iElt).GT.0) THEN
+	    CALL GridInit(GridFile(iElt),iEltToGridSrf(iElt),
+     &                    nGridMat(iElt),ifGridInitL,
+     &                    GridFileBin(iElt))
+	    ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInitL
+	    IF (.NOT.ifGridInitL) THEN
+	      WRITE(*,*)' GridFile not loaded correctly, iELT=',iElt
+	    END IF
+	  ELSE
+	    WRITE(*,*)' GridFile= given but nGridMat= never set,',
+     &                ' iElt=',iElt
+	    ELEM_OK=.FALSE.
+	  END IF
+	  GridFilePending(iElt) = .FALSE.
+	END IF
+!<--
 
 	IF (TElt_FLG) THEN
 	  CONTINUE
