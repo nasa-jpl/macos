@@ -33,6 +33,7 @@ C
      &    nObs_FLG,xObs_FLG,TElt_FLG,SegApType_FLG,ZernCent_FLG,
      &    KrElt_FLG,KcElt_FLG,LensArrayType_FLG,LensArrayWidth_FLG,
      &    h1HOE_FLG,h2HOE_FLG,OrderHOE_FLG,WaveHOE_FLG,PinHole_FLG,
+     &    PolAxis_FLG,PolRet_FLG,
      &    ExtincE_FLG,nCoat_FLG,CoatIndx_FLG,CoatThk_FLG,AnaCoef_FLG,
      &    MonCoef_FLG,RuleWidth_FLG,UDSrfCoef_FLG,UDSrfType_FLG,
      &    EltID_FLG,SrfType_FLG,UDSrfParam_FLG,ZernTypeL_FLG,

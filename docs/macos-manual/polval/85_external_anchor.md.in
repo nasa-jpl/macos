@@ -1,0 +1,213 @@
+# External anchor — protected metal, against publication
+
+Every gate before this one compared the engine against **our own** analytic.
+That is the right first move, and it caught real defects — but it cannot
+detect a shared misunderstanding, and it leaves the reader with no reason to
+believe the numbers outside this document. This section closes that gap for
+the configuration class the coronagraph results actually depend on: a
+**dielectric film on metal**, i.e. a protected mirror.
+
+The gap was specific. `tJonesPupil`'s Fresnel gate covers an optically
+**thick single layer** — algebraically a bare interface. `tPolRadiometric`
+covers the Abeles matrix in **transmission**. Neither exercises a real
+dielectric-on-metal stack, which is exactly what §5.5's coating ladder is
+made of.
+
+## 8.1 The method — reproduce someone else's configuration
+
+The anchor is @@X_VANHARTEN@@ *(external, captured @@X_VH_CAPTURED@@)*.
+
+It was chosen because it states **both** halves: a full Mueller matrix
+measured by ellipsometry at 14 incidence angles over 6–70° and four
+wavelengths, **and** every model input numerically — both indices, the film
+thickness, and the film model itself.
+
+The engine is then driven with **their** indices, **their** film thickness,
+**their** wavelengths and **their** incidence angles, and compared
+curve-on-curve against **their** model. That construction is deliberate.
+Aluminium index tables genuinely disagree with one another — the publication
+says so itself, and *fits* the imaginary index rather than adopting a table.
+A disagreement traceable to index tables is **not** a machinery error, and
+this comparison cannot confuse the two.
+
+`macos.coating` takes arbitrary n, κ and physical thickness, so reproducing a
+published stack needs no engine change and no fixture surgery.
+
+Two conventions had to be settled rather than assumed:
+
+- **Index sign.** The publication uses `N = n − ik`, k ≥ 0 = loss — the same
+  convention the engine stores. This is load-bearing, not cosmetic: the paper
+  reports that the opposite sign made their fitted oxide come out at ~50 nm
+  instead of ~4 nm.
+- **p̂ frame.** Measured, not derived, on the perfect-conductor case, whose
+  answer is known exactly: the engine's r_s/r_p ratio comes back at **+1**
+  with zero imaginary part at every angle, so the bridge to the publication's
+  frame is **zero**. An earlier version of this harness *assumed* a π bridge
+  from the ray-following doctrine and was wrong by exactly 180° everywhere.
+
+The analytic is written from Macleod ch. 2 and the publication's stated
+equations, **never transcribed from `elemsub.F`** — an "analytic" copied out
+of the engine is circular in exactly the coefficient it is meant to check,
+which is how the r_p sign defect of §4 survived four years of gates.
+
+## 8.2 Result — the machinery is anchored
+
+Over the publication's four wavelengths and six incidence angles inside
+their measured range, comparing **per ray** at each ray's own incidence
+cosine:
+
+| quantity | worst deviation | publication's own accuracy |
+|---|---|---|
+| diattenuation (the [1,2] Mueller element) | @@X_VH_DEV_D@@ | @@X_VH_ACC@@ |
+| retardance, in the same Mueller units | @@X_VH_DEV_RET@@ | @@X_VH_ACC@@ |
+
+The engine sits inside the published measurement bar by a factor of
+**@@X_VH_HEADROOM@@**. Both sides implement the same thin-film theory, so
+round-off agreement is the expected result; the publication's ±@@X_VH_ACC@@
+is what the comparison would have had to beat to mean anything, not the
+achieved figure.
+
+**Non-vacuity.** The comparison can fail, and the two ways it can are the
+publication's own physics:
+
+- Omitting the 4.12 nm oxide — comparing the engine's oxidized mirror against
+  a *bare* analytic — disagrees by **@@X_VH_NOOXIDE@@**, more than their
+  measurement accuracy. That independently reproduces the paper's central
+  claim, that a ~4 nm oxide must be modelled at all.
+- The historical ~50 nm oxide, which the paper attributes to a sign error on
+  the imaginary index, is separable from 4.12 nm by **@@X_VH_50NM@@**.
+
+## 8.3 What this changes about §5.5 — the overcoat trade reverses
+
+With the machinery anchored, §5.5's coating ladder becomes checkable
+*internally*: the per-mirror coefficients can now be trusted, so the
+cross-polarized power they imply can be predicted and compared with what
+`macos.pol_contrast_floor` reported.
+
+For an on-axis rotationally symmetric train the mirrors' s/p axes share one
+azimuth, so their Jones matrices commute into
+`J = c₀I + c₂·[cos2φ, sin2φ; sin2φ, −cos2φ]`, and the cross-polarized
+amplitude is set entirely by `ε_tot = c₂/c₀`. The cross **power** ratio
+between two coatings is therefore |ε_tot|² between them.
+
+| source | MgF₂/Al ÷ bare Al, cross power |
+|---|---|
+| independent analytic at the fixture's own wavelength | @@X_2C_POWER_1000@@ |
+| the engine's own Jones pupil | @@X_2C_PRED_JONES@@ |
+| `macos.pol_contrast_floor`, as reported in §5.5 | @@X_2C_MEAS_FLOOR@@ |
+
+So **the §5.5 number is arithmetically correct.** The three agree; the
+residual spread is dark-zone annulus weighting against a pupil mean.
+
+What is *not* correct is the description attached to it. `Rx_Cass_FarField`
+runs at `Wavelen = @@X_2C_FIXTURE_LAMBDA@@` m, while the coating constants
+are labelled "Al at 632.8 nm" and the MgF₂ thickness "a quarter wave". At the
+fixture's actual wavelength, 110 nm of MgF₂ is **@@X_2C_QW_FRAC@@**
+quarter-waves — not a quarter wave, and not an ordinary protected-aluminium
+recipe.
+
+That distinction decides the sign of the design rule, because the overcoat
+trade reverses across the quarter-wave condition. The same 110 nm film, the
+same aluminium, the same few-degree incidence:
+
+| film | optical thickness | cross power vs bare Al — **engine**, coating excess | independent analytic |
+|---|---|---|---|
+| 110 nm MgF₂ at @@C26_LAM_CMP@@ nm | @@C26_QW_FRAC_633@@ quarter-waves | **@@C26_EXCESS_633@@** | @@X_2C_POWER_633@@ |
+| 110 nm MgF₂ at 1 µm *(the fixture)* | @@C26_QW_FRAC_1000@@ quarter-waves | **@@C26_EXCESS_1000@@** | @@X_2C_POWER_1000@@ |
+| **true quarter wave** (181.2 nm at 1 µm) | 1.00 quarter-waves | **@@C26_EXCESS_QW@@** | @@X_2C_POWER_TRUEQW@@ |
+
+A genuine quarter-wave overcoat **suppresses** the polarization floor by
+about 1.8 decades. §5.5's sentence — that the protective overcoat "costs most
+of another" decade — is therefore withdrawn: it is true of the film as
+configured, and false of the recipe that film was described as.
+
+### 8.3.1 Both sides of the reversal, measured by the engine
+
+The correction above was first carried by the independent analytic alone. It
+is now a **measurement on both sides**. Rx_Cass_FarField does **not** move —
+it underpins gates across every suite and stays at
+`Wavelen = @@X_2C_FIXTURE_LAMBDA@@` — so the companion wavelength is applied
+at **runtime** with `macos.set_src_wvl` after `load_rx`. Nothing on disk
+changes and no gated number moves.
+
+This is a real measurement, not a unit conversion: `macos.coating` takes
+**physical** thickness and the engine divides by the **current** `Wavelen`
+when it applies the layer phase, so a film is fixed glass under a wavelength
+change and its optical thickness moves. That is the entire mechanism.
+
+Cross-polarized **total power** (never an annulus mean — a fixed pixel
+annulus subtends a different λ/D range at the two wavelengths and would mix
+the coating effect with the diffraction scale):
+
+| run | film, in quarter-waves | MgF₂/Al ÷ bare Al |
+|---|---|---|
+| 1 µm — the fixture's own wavelength | @@C26_QW_FRAC_1000@@ | **@@C26_RATIO_1000@@×** — costs |
+| @@C26_LAM_CMP@@ nm — the companion run | @@C26_QW_FRAC_633@@ | **@@C26_RATIO_633@@×** — suppresses |
+| a **true quarter wave**, either wavelength | 1.00 | **@@C26_QW_RATIO@@×** |
+
+The reversal, as one number, is **@@C26_REVERSAL@@×**. The 1 µm side
+reproduces §5.5's recorded @@C25_AL_REL@@ and @@C25_MGF2_REL@@ in the same
+harness, which is what makes the companion run comparable rather than a
+separate measurement that happens to sit nearby.
+
+Three structural identities localise the effect in the film and nowhere else,
+and each is exact by construction — the coating coefficients depend on λ only
+through `n·d/λ`, and the indices are held fixed — so each is pinned at
+round-off rather than at the 2% measurement tolerance:
+
+- **The metal-only leg does not move.** Bare Al over uncoated is the same at
+  both wavelengths to @@C26_METAL_INVAR@@.
+- **The quarter-wave condition is wavelength-invariant.** 181.2 nm at 1 µm
+  and 114.6 nm at @@C26_LAM_CMP@@ nm are different pieces of glass and give
+  the same answer to @@C26_QW_INVAR@@.
+- **The non-vacuity control.** An engine that pinned thickness in *waves*
+  rather than in metres — evaluating the "632.8 nm" coating constants
+  achromatically — would at @@C26_LAM_CMP@@ nm be tracing
+  @@C26_THK_ACHROM@@ nm of MgF₂, the film with the same optical thickness in
+  waves that 110 nm has at 1 µm. Measured, that control gives
+  **@@C26_ACHROM@@×** — it lands back on the 1 µm answer to
+  @@C26_ACHROM_RESID@@ and shows **no reversal at all**. Every one of the
+  gate's 632.8 nm assertions fails against it.
+
+The engine's true-quarter-wave ratio (@@C26_QW_RATIO@@×) does not follow the
+coating-only analytic's @@X_2C_POWER_TRUEQW@@× all the way down, and should
+not: at that point the coating term is nearly extinguished and what remains
+is the **irreducible geometric** cross term, which no coating removes. The
+true-quarter-wave total sits at @@C26_QW_FLOOR@@× the *uncoated* floor — i.e.
+the overcoat has taken the coating contribution down to the geometry. The
+engine's *coating-excess* ratios, which subtract that floor, are the column
+that compares with the analytic directly, and they agree on all three points.
+
+**The design rule, restated chromatically.** A protective overcoat is not
+inherently a polarization cost or a polarization benefit; the sign is set by
+its optical thickness **at the working wavelength**. Specify protective
+overcoats at λ/4 of the wavelength the instrument works at — a quarter-wave
+film buys roughly @@C26_EXCESS_QW@@× on the coating term, while the same film
+at @@C26_QW_FRAC_1000@@ quarter-waves costs @@C26_EXCESS_1000@@×.
+
+The conclusion does not rest on pinning the fixture's exact incidence angles:
+the ratio is flat at **@@X_2C_RATIO_FLATNESS@@** across the whole plausible
+near-normal range. (A per-element AOI was deliberately *not* quoted — the
+two routes available through this binding are both unusable, and the tool
+records why.) The crossover where a quarter-wave overcoat stops helping and
+starts hurting sits near 35°, so the conclusion is specific to near-normal
+trains and must be re-derived for a fold-heavy layout.
+
+**No engine change follows from any of this.** The thin-film machinery
+reproduced a published protected-metal measurement to @@X_VH_DEV_D@@; what
+moved is a fixture's configuration and the prose describing it.
+
+## 8.4 What this section does not claim
+
+- It compares against the publication's **model**, evaluated at the
+  publication's stated inputs. Their measured Mueller matrices are published
+  as figures, not tables, and digitising a figure would add a transcription
+  error larger than anything being measured. The publication's own
+  model-to-measurement agreement (±@@X_VH_ACC@@ per element) is the outer
+  envelope, and it is quoted as such.
+- One wavelength region, one metal, one dielectric. It anchors the
+  characteristic-matrix recursion on dielectric-on-metal; it says nothing
+  about absorbing overcoats, many-layer stacks, or the transmission side
+  (§7 covers that separately).
+- The aluminium indices used in §5.5 remain a **model choice**, not an
+  anchored one. This section pins the machinery, not the material data.

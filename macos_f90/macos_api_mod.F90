@@ -4542,6 +4542,376 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! POLARIZATION on/off + source polarization state.  Drives the engine
+      ! 'POLARIZATION' / 'NOPOLARIZATION' command (macos_cmd_loop.inc:1072-1095),
+      ! which enables polarized ray tracing (ifPol) and, when mWF>=3, vector
+      ! diffraction (ifVecDif3).  The source Jones state (Ex0,Ey0) rides on the
+      ! same command line as DARG(1..4) (LoadStack 'POLARIZATION', smacosutil.F:160).
+      !   on   : .TRUE.  -> POLARIZATION   (sets Ex0/Ey0 from the args below)
+      !          .FALSE. -> NOPOLARIZATION (Ex0/Ey0 ignored)
+      !   ExRe,ExIm : source Ex amplitude (real,imag), source BaseUnits.
+      !   EyRe,EyIm : source Ey amplitude (real,imag).
+      ! Both the polarized ray trace and vector diffraction require mWF>=3; all
+      ! stock macos_param model sizes have mWF=3, but a custom param file may not,
+      ! so 'on' with mWF<3 is rejected (OK=FAIL) rather than silently degraded.
+      !---------------------------------------------------------------------------------------------
+      subroutine pol_set(OK, on, ExRe, ExIm, EyRe, EyIm)
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        real(8), intent(in) :: ExRe, ExIm, EyRe, EyIm
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (on .eqv. PASS) then
+          if (mWF < 3) return          ! vector diffraction needs mWF>=3
+          DARG(1) = ExRe
+          DARG(2) = ExIm
+          DARG(3) = EyRe
+          DARG(4) = EyIm
+          command = 'POLARIZATION'
+        else
+          command = 'NOPOLARIZATION'
+        end if
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        ! The POLARIZATION command changes trace-relevant state (ifPol,
+        ! Ex0/Ey0 seed RayE at source-grid setup) but does NOT reset the
+        ! cached trace -- without this a pol-state change followed by a
+        ! re-trace harvests the PREVIOUS state's RayE (verified stale).
+        ! Same dirty-the-trace convention as coat_set / the grid setters.
+        CALL modified_rx(OK)
+        OK = PASS
+      end subroutine pol_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! POLARIZATION query: report the polarization trace state.
+      !   on      : ifPol       (polarized ray trace active)
+      !   vecDif  : ifVecDif3   (vector diffraction active)
+      !   ExRe,ExIm,EyRe,EyIm : current source Jones state (src_mod Ex0,Ey0).
+      !---------------------------------------------------------------------------------------------
+      subroutine pol_get(OK, on, vecDif, ExRe, ExIm, EyRe, EyIm)
+        use macos_mod, only: ifPol, ifVecDif3
+        use src_mod,   only: Ex0, Ey0
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: on, vecDif
+        real(8), intent(out):: ExRe, ExIm, EyRe, EyIm
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        on     = ifPol
+        vecDif = ifVecDif3
+        ExRe   = dble(Ex0)
+        ExIm   = dimag(Ex0)
+        EyRe   = dble(Ey0)
+        EyIm   = dimag(Ey0)
+
+        OK = PASS
+      end subroutine pol_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! VECTOR / SCALAR diffraction toggle (macos_cmd_loop.inc:1099-1114).
+      ! VECTOR requires polarization already ON (ifPol) and mWF>=3; the CLI
+      ! silently resets ifVecDif3=.FALSE. when ifPol is off -- here we instead
+      ! return OK=FAIL so a binding caller gets a clear error.
+      !   on : .TRUE.  -> VECTOR ; .FALSE. -> SCALAR
+      !---------------------------------------------------------------------------------------------
+      subroutine vecdif_set(OK, on)
+        use macos_mod, only: ifPol
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        if (on .eqv. PASS) then
+          if ((ifPol .eqv. FAIL) .or. (mWF < 3)) return  ! precondition not met
+          command = 'VECTOR'
+        else
+          command = 'SCALAR'
+        end if
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+
+        CALL modified_rx(OK)   ! VECTOR/SCALAR changes propagation state
+        OK = PASS
+      end subroutine vecdif_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set the multilayer thin-film coating stack on element iElt (Model A --
+      ! the polarization-path coating: elt_mod EltCoat/IndRefArr/ExtincArr/
+      ! EltCoatThk, applied by Reflector/Refractor when ifPol is on,
+      ! elemsub.F:452-547).  Layers ordered OUTERMOST -> INNERMOST, matching the
+      ! 'Coating=' prescription order (msmacosio.inc:2648).
+      !   nLayer     : number of coating layers (1..mCoat).
+      !   IndRef(:)  : real refractive index n of each layer.
+      !   Extinc(:)  : extinction coefficient kappa of each layer (n - i*kappa).
+      !   Thk(:)     : PHYSICAL layer thickness in element length (BaseUnits) --
+      !                NOT waves; the API is wavelength-agnostic on set, unlike the
+      !                Rx keyword which stores waves-at-parse-lambda (see the
+      !                Phase-0 audit).  The trace applies phase 2*(2pi/lambda)*d*N
+      !                at the current wavelength.
+      ! Boundary media IndRefArr(0,·)/(nLayer+1,·) are taken from the adjacent
+      ! elements' IndRef/Extinc exactly as the parser does (the recursion reads
+      ! them).  Sets modified_rx so the cached trace re-runs.
+      !---------------------------------------------------------------------------------------------
+      subroutine coat_set(OK, iElt, nLayer, IndRef_, Extinc_, Thk_)
+        use elt_mod, only: EltCoat, IndRefArr, ExtincArr, EltCoatThk,     &
+                           IndRef, Extinc, mCoat
+        implicit none
+        logical,                      intent(out):: OK
+        integer,                      intent(in) :: iElt
+        integer,                      intent(in) :: nLayer
+        real(8), dimension(nLayer),   intent(in) :: IndRef_, Extinc_, Thk_
+        integer :: k
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())               return
+        if ((iElt < 1) .or. (iElt > nElt))     return
+        if ((nLayer < 1) .or. (nLayer > mCoat)) return
+
+        EltCoat(iElt) = nLayer
+        do k = 1, nLayer
+          IndRefArr(k,iElt) = IndRef_(k)
+          ExtincArr(k,iElt) = Extinc_(k)
+          EltCoatThk(k,iElt) = Thk_(k)      ! physical thickness (BaseUnits)
+        end do
+        ! Boundary media: index 0 = medium before the stack (elt iElt-1),
+        ! index nLayer+1 = substrate (elt iElt) -- mirrors msmacosio.inc:2663-2666.
+        IndRefArr(0,iElt)        = IndRef(iElt-1)
+        ExtincArr(0,iElt)        = Extinc(iElt-1)
+        IndRefArr(nLayer+1,iElt) = IndRef(iElt)
+        ExtincArr(nLayer+1,iElt) = Extinc(iElt)
+
+        CALL modified_rx(OK)   ! invalidate the cached trace
+        OK = PASS
+      end subroutine coat_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Query the Model-A coating stack on element iElt.  Inverse of coat_set:
+      ! returns PHYSICAL thickness (BaseUnits), so coat_get o coat_set == identity.
+      !   nLayer    : number of layers (0 if none).
+      !   IndRef(:) : real index per layer (1..nLayer filled).
+      !   Extinc(:) : extinction per layer.
+      !   Thk(:)    : physical thickness per layer.
+      ! maxL is the caller's buffer length (>= mCoat recommended).
+      !---------------------------------------------------------------------------------------------
+      subroutine coat_get(OK, iElt, nLayer, IndRef_, Extinc_, Thk_, maxL)
+        use elt_mod, only: EltCoat, IndRefArr, ExtincArr, EltCoatThk
+        implicit none
+        logical,                    intent(out):: OK
+        integer,                    intent(in) :: iElt
+        integer,                    intent(out):: nLayer
+        integer,                    intent(in) :: maxL
+        real(8), dimension(maxL),   intent(out):: IndRef_, Extinc_, Thk_
+        integer :: k
+        ! ------------------------------------------------------
+        OK       = FAIL
+        nLayer   = 0
+        IndRef_  = 0d0
+        Extinc_  = 0d0
+        Thk_     = 0d0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        nLayer = EltCoat(iElt)
+        if (nLayer < 0) nLayer = 0
+        if (nLayer > maxL) return          ! caller buffer too small
+        do k = 1, nLayer
+          IndRef_(k) = IndRefArr(k,iElt)
+          Extinc_(k) = ExtincArr(k,iElt)
+          Thk_(k)    = EltCoatThk(k,iElt)
+        end do
+
+        OK = PASS
+      end subroutine coat_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Set the parameters of a polarizing element (PLAN_POLARIZATION Phase 3):
+      ! EltID 15 = TrPolarizer (ideal linear polarizer), 18 = WavePlate (linear
+      ! retarder).  Applied per ray by PolElt (elemsub.F) when ifPol is on.
+      !   axis(3)  : reference axis as a 3-vector in GLOBAL coordinates -- the
+      !              transmission axis of a polarizer, the FAST axis of a
+      !              waveplate.  Need not be unit length or perpendicular to
+      !              psiElt; PolElt projects it into each ray's transverse plane
+      !              and normalizes.  Rejected only if parallel to the ray.
+      !   retWaves : retardance in WAVES at the CURRENT Wavelen.  Stored as the
+      !              physical retardance (n_slow-n_fast)*d = retWaves*Wavelen, so
+      !              the plate stays physically fixed under a wavelength sweep --
+      !              the same treatment coat_set's stack gets.  Ignored for a
+      !              TrPolarizer.
+      ! Sets modified_rx (the grid-setter dirty-the-trace convention): the element
+      ! Jones changes RayE, so a cached trace must re-run.
+      !---------------------------------------------------------------------------------------------
+      subroutine polelt_set(OK, iElt, axis, retWaves)
+        use elt_mod, only: PolAxisElt, PolRetElt, EltID,                  &
+                           TrPolarizerElt, WavePlateElt, Wavelen
+        implicit none
+        logical,               intent(out):: OK
+        integer,               intent(in) :: iElt
+        real(8), dimension(3), intent(in) :: axis
+        real(8),               intent(in) :: retWaves
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+        if ((EltID(iElt) /= TrPolarizerElt) .and.                         &
+            (EltID(iElt) /= WavePlateElt))  return   ! wrong element type
+        if (dot_product(axis,axis) <= 0d0)  return   ! degenerate axis
+
+        PolAxisElt(1:3,iElt) = axis
+        PolRetElt(iElt)      = retWaves * Wavelen
+
+        CALL modified_rx(OK)   ! invalidate the cached trace
+        OK = PASS
+      end subroutine polelt_set
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Query a polarizing element.  Inverse of polelt_set: retWaves comes back in
+      ! waves at the CURRENT Wavelen, so polelt_get o polelt_set == identity at a
+      ! fixed wavelength (and correctly reports the changed retardance after a
+      ! wavelength change -- that is the physics, not a round-trip failure).
+      !   eltType : the element's EltID (15 = TrPolarizer, 18 = WavePlate).
+      !---------------------------------------------------------------------------------------------
+      subroutine polelt_get(OK, iElt, axis, retWaves, eltType)
+        use elt_mod, only: PolAxisElt, PolRetElt, EltID,                  &
+                           TrPolarizerElt, WavePlateElt, Wavelen
+        implicit none
+        logical,               intent(out):: OK
+        integer,               intent(in) :: iElt
+        real(8), dimension(3), intent(out):: axis
+        real(8),               intent(out):: retWaves
+        integer,               intent(out):: eltType
+        ! ------------------------------------------------------
+        OK       = FAIL
+        axis     = 0d0
+        retWaves = 0d0
+        eltType  = 0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        eltType = EltID(iElt)
+        if ((eltType /= TrPolarizerElt) .and.                             &
+            (eltType /= WavePlateElt))     return   ! wrong element type
+
+        axis = PolAxisElt(1:3,iElt)
+        if (Wavelen /= 0d0) then
+          retWaves = PolRetElt(iElt) / Wavelen
+        else
+          retWaves = PolRetElt(iElt)
+        end if
+
+        OK = PASS
+      end subroutine polelt_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Read back the 2x2 Jones matrix a polarizing element actually applied, in
+      ! its OWN transverse eigenbasis (ahat = the declared axis projected into the
+      ! ray's transverse plane, bhat = rhat x ahat).  This is elt_mod's JmatElt,
+      ! which PolElt fills during the trace -- previously allocated and dead.
+      !
+      ! Diagonal by construction: diag(1,0) for a polarizer, diag(1,exp(-i.delta))
+      ! for a waveplate.  It is per ELEMENT, not per ray, which is exact here
+      ! because the element Jones in its own eigenbasis is ray-independent -- the
+      ! ray dependence lives entirely in the basis, not in the coefficients.
+      ! Requires a trace to have run with ifPol on; zero otherwise.
+      !---------------------------------------------------------------------------------------------
+      subroutine jmat_elt_get(OK, JRe, JIm, iElt)
+        use elt_mod, only: JmatElt
+        implicit none
+        logical,                    intent(out):: OK
+        integer,                    intent(in) :: iElt
+        real(8), dimension(2,2),    intent(out):: JRe, JIm
+        ! ------------------------------------------------------
+        OK  = FAIL
+        JRe = 0d0
+        JIm = 0d0
+        if (.not. SystemCheck())           return
+        if ((iElt < 1) .or. (iElt > nElt)) return
+
+        JRe = dble(JmatElt(1:2,1:2,iElt))
+        JIm = dimag(JmatElt(1:2,1:2,iElt))
+
+        OK = PASS
+      end subroutine jmat_elt_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Harvest the per-ray complex electric field RayE(3,:) at element iElt onto
+      ! the ray grid, PLUS the ray geometry (direction cosines, surface normal)
+      ! and the per-ray OK/fail status -- everything Phase 2 (Jones pupil) needs
+      ! to build a correct transverse basis and honest statistics.  Requires a
+      ! polarized trace (ifPol) to have run.
+      !
+      ! Buffers are NxN (N=mdttl); the ray at grid (i,j) is RayID(i,j).  Complex
+      ! fields are split into real/imag (f2py-friendly, per cfield_get).  Vignetted
+      ! / invalid grid points return status=RayStat_* and zero field.
+      !
+      !   ExRe..EzIm : RayE(1:3, iRay) split real/imag on the grid.
+      !   kx,ky,kz   : ray direction cosines (RayDir) on the grid.
+      !   nx,ny,nz   : element iElt surface-normal components (from psiElt) --
+      !                a single per-element vector broadcast to the grid (the
+      !                local surface normal for the transverse-basis build).
+      !   status     : per-ray RayStatus (0=OK..5=Undef); RayStat_Undef where no ray.
+      !---------------------------------------------------------------------------------------------
+      subroutine rayfield_get(OK, ExRe, ExIm, EyRe, EyIm, EzRe, EzIm,     &
+                              kx, ky, kz, nx, ny, nz, status, N, iElt)
+        use elt_mod, only: RayE, RayDir, RayID, RayStatus, RayStat_Undef, &
+                           psiElt, nRay
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: ExRe, ExIm, EyRe, EyIm,    &
+                                               EzRe, EzIm, kx, ky, kz,    &
+                                               nx, ny, nz
+        integer, dimension(N,N), intent(out):: status
+        integer,                 intent(in) :: N       ! = mdttl
+        integer,                 intent(in) :: iElt
+        integer :: i, j, iRay
+        ! ------------------------------------------------------
+        OK     = FAIL
+        ExRe = 0d0; ExIm = 0d0; EyRe = 0d0; EyIm = 0d0
+        EzRe = 0d0; EzIm = 0d0; kx = 0d0; ky = 0d0; kz = 0d0
+        nx = 0d0; ny = 0d0; nz = 0d0
+        status = RayStat_Undef
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(RayE))                   return
+
+        do j = 1, N
+          do i = 1, N
+            iRay = RayID(i,j)
+            if ((iRay <= 0) .or. (iRay > nRay)) cycle
+            ExRe(i,j) = dble(RayE(1,iRay)); ExIm(i,j) = dimag(RayE(1,iRay))
+            EyRe(i,j) = dble(RayE(2,iRay)); EyIm(i,j) = dimag(RayE(2,iRay))
+            EzRe(i,j) = dble(RayE(3,iRay)); EzIm(i,j) = dimag(RayE(3,iRay))
+            kx(i,j) = RayDir(1,iRay)
+            ky(i,j) = RayDir(2,iRay)
+            kz(i,j) = RayDir(3,iRay)
+            nx(i,j) = psiElt(1,iElt)
+            ny(i,j) = psiElt(2,iElt)
+            nz(i,j) = psiElt(3,iElt)
+            if (allocated(RayStatus)) status(i,j) = RayStatus(iRay)
+          end do
+        end do
+
+        OK = PASS
+      end subroutine rayfield_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! FFP (move Focal/Field Point): tilt the source so the image at
       ! element iElt lands at the off-axis field point (dx,dy) given as
       ! DIRECTION COSINES (normalized; ~= field angle in rad for small
@@ -4744,6 +5114,72 @@
         OK = PASS
 
       end subroutine cfield_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! Plane-selectable sibling of cfield_get.
+      !
+      ! In VECTOR diffraction mode (ifVecDif3) the three WFElt storage planes are
+      ! repurposed as the Cartesian field components Ex/Ey/Ez of ONE wavefront
+      ! (see the mWF=3 constraint documented with VECTOR/SCALAR).  cfield_get
+      ! returns only iEltToiWF(iElt), so the per-component field was not
+      ! reachable from the bindings at all: the caller could see the summed
+      ! intensity but never how the three components contributed to it.  That is
+      ! what left the "the vector/scalar difference on an off-normal train is the
+      ! out-of-plane content" attribution UNVERIFIABLE in Phase 3a Tranche 1, and
+      ! it is what a co/cross-polarized contrast decomposition (Phase 2c) needs.
+      !
+      !   iPlane = 0     : the element's own wavefront (identical to cfield_get)
+      !   iPlane = 1,2,3 : the Ex, Ey, Ez component plane -- VECTOR MODE ONLY
+      !
+      ! Requesting a component plane while vector diffraction is off returns FAIL
+      ! rather than a plane of whatever else happens to live in that slot: in
+      ! scalar mode plane k is an unrelated wavefront, not a field component, and
+      ! silently handing it back would invite exactly the misreading this routine
+      ! exists to prevent.
+      !---------------------------------------------------------------------------------------------
+      subroutine cfield_plane_get(OK, REAL_OUT, IMAG_OUT, N, iElt, iPlane)
+        use elt_mod,   only: WFElt, iEltToiWF
+        use macos_mod, only: ifVecDif3
+
+        implicit none
+        logical,                 intent(out):: OK
+        real(8), dimension(N,N), intent(out):: REAL_OUT
+        real(8), dimension(N,N), intent(out):: IMAG_OUT
+        integer,                 intent(in) :: N       ! = mdttl
+        integer,                 intent(in) :: iElt    ! element
+        integer,                 intent(in) :: iPlane  ! 0 = own WF; 1..3 = Ex/Ey/Ez
+
+        integer :: iWF
+        ! ------------------------------------------------------
+        OK       = FAIL
+        REAL_OUT = 0d0
+        IMAG_OUT = 0d0
+
+        if ((.not. SystemCheck()) .or. (N /= mdttl)) return
+        if ((iElt < 1) .or. (iElt > nElt))           return
+        if (.not. allocated(WFElt))                  return
+
+        if (iPlane .EQ. 0) then
+          iWF = iEltToiWF(iElt)
+          if (iWF .LE. 0) return   ! no diffraction wavefront at this element
+        else
+          if ((iPlane < 1) .or. (iPlane > 3))        return
+          if (iPlane > mWF)                          return
+          if (.not. ifVecDif3)                       return  ! not a component
+          ! Same ownership rule as iPlane=0: refuse an element the trace
+          ! did not assemble a wavefront at.  iPlane selects the storage
+          ! slot directly, so without this check ANY in-range iElt would
+          ! silently return the field from wherever it actually lives.
+          if (iEltToiWF(iElt) .LE. 0)                return
+          iWF = iPlane
+        end if
+
+        REAL_OUT(:,:) = dble(WFElt(:N, :N, iWF))
+        IMAG_OUT(:,:) = dimag(WFElt(:N, :N, iWF))
+        OK = PASS
+
+      end subroutine cfield_plane_get
 
 
       !---------------------------------------------------------------------------------------------

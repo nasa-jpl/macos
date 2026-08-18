@@ -1,0 +1,57 @@
+# Phase 1 — exposure gates
+
+Phase 1 made the engine's existing polarization physics reachable from the
+bindings: `pol_set`/`pol_get`, `vecdif_set`, `coat_set`/`coat_get` and
+`rayfield_get` in `macos_api_mod`, surfaced as `macos.polarization`,
+`macos.vector_diffraction`, `macos.coating` and `macos.ray_field` in both
+mmacos and pymacos. The gates here are state, round-trip and invariance
+checks; the physics gates start in Phase 2.
+
+## 1.1 Geometry invariance under `ifPol`
+
+**Claim.** Turning polarization on does not perturb the ray geometry.
+
+This is a *prerequisite*, not a nicety. The Jones pupil is assembled by
+pairing rays across two traces taken with different input polarization
+states. That pairing is only meaningful if the two traces agree ray-for-ray,
+so this gate is what makes the whole Phase-2 construction safe.
+
+**Measurement.** `Rx_Cass_FarField.in` traced to the focal plane with
+polarization off and then on, comparing the OPD map and the per-ray status
+array.
+
+| Quantity | Measured | Expected |
+|---|---|---|
+| max &#124;ΔOPD&#124; | @@G11_OPD_DIFF@@ waves | 0 |
+| OPD bitwise equal | @@G11_BITWISE@@ | 1 (true) |
+| max ray-status difference | @@G11_STATUS_DIFF@@ | 0 |
+
+**Pinned by** `tPolarization` (state and round-trip) plus this driver for the
+OPD and status comparison.
+
+## 1.2 Coating round-trip
+
+**Claim.** `coat_get ∘ coat_set` is the identity in physical thickness units.
+
+The waves-at-parse-wavelength normalization described in *Conventions* is an
+internal storage detail: it is applied on set and inverted on get, so a user
+of the API never sees it. This gate is what makes that claim checkable.
+
+| Quantity | Measured | Expected |
+|---|---|---|
+| max relative round-trip error, @@G12_NLAYER@@-layer stack | @@G12_COAT_ROUNDTRIP@@ | 0 |
+
+**Pinned by** `tPolarization/test_coat_roundtrip_identity`.
+
+## 1.3 Polarization-off is a no-op
+
+**Claim.** None of the polarization work perturbs a polarization-off
+prescription.
+
+**Measurement.** The GMI regression suite, whose prescriptions are all
+polarization-off: @@X_GMI@@ *(external, captured 2026-07-26 — see
+`external.json`)*.
+
+This is the guard that lets polarization land on a shared engine branch
+without a compatibility argument: the results are bit-identical, not merely
+close.

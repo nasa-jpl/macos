@@ -177,9 +177,16 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
   (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
 
-## Branch model (as of 2026-06)
-- **`sls-dev`** — integration branch for new work.  Multi-person WIP
-  lands here.  All non-bug-fix commits go here first.
+## Branch model (UPDATED 2026-07-28 — `sls-dev` retired, `dev` is integration)
+- **`dev`** — **integration + public developer branch for new work**
+  (the role `sls-dev` used to hold).  Multi-person WIP lands here; all
+  developer-facing files (CLAUDE.md, PLAN*.md, `.claude/`, internal
+  fixtures) live here and are stripped from `main`.  **Both `dev` and
+  `main` are public** per the public-release strategy below.
+- **`sls-dev`** — **RETIRED 2026-07-28, deleted in BOTH repos.**  Andy
+  deleted it on `nasa-jpl/macos`; matched on `MACOS_resources` the same
+  day (`dev` fully contained it — `dev` = old `sls-dev` + the
+  expose-beam beam-API commits).  Do not recreate it; new work → `dev`.
 - **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
   to `main` for the public release (with NPSOL source tree removed
   at promotion time).
@@ -187,14 +194,47 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
   overrun cherry-pick).  No new commits.  Pre-existing references to
   it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
   over time.
-- **`main`** — public release surface.  Currently far behind opt-dev;
-  promoted from opt-dev at release time per the public-release
-  strategy below.
+- **`main`** — public release surface; promoted from `opt-dev`/`dev` at
+  release time per the public-release strategy below.
 
-Day-to-day: push new features to `sls-dev`; cherry-pick bug fixes
-to `opt-dev`; let `sls-dev` accumulate until a promotion gate
-(at which point it gets fast-forward-merged into `opt-dev` for
-the next release).
+Day-to-day: push new features to `dev`; cherry-pick bug fixes to
+`opt-dev`; let `dev` accumulate until a promotion gate.  The two repos
+(`~/dev/macos` + `~/dev/MACOS_resources`) are NOT branch-identical —
+`nasa-jpl/macos` is slimmed (as of 2026-07-28 remote heads: `dev`,
+`fixREADME`, `main`, `pol-core`) while `MACOS_resources` still carries
+the wider working set (`dev`, `main`, `opt-dev`, `pol-core`, `pol-ifo`,
+`release-candidate`, `develop`, `dr-dev`, `dr-dev2`, `ifo-l2`).  The
+shared, deliberate facts are that **neither repo has `sls-dev` or
+`bench-builder`** — both retired 2026-07-28.  Always
+`git ls-remote --heads` to see the live set before assuming.
+
+### Merge ordering: engine first, resources second (Dave 2026-07-28)
+`MACOS_resources` may be updated **without review**, but as a best
+practice **do not merge a resources branch to `dev` until the engine is
+updated to match.**  Engine (`macos`) lands first or in the same beat;
+resources follows.
+
+**Why it matters:** a veneer promoted ahead of its engine support fails
+at **prescription-load time, not at build time** — so the resources test
+suite can be fully green while the paired `dev` engine cannot parse the
+Rx keywords that veneer emits.  Nothing on the resources side catches it.
+
+**How to apply.** Before merging a resources branch, ask what engine
+features its new emitters/wrappers depend on and confirm those are
+already on macos `dev`.  Purely additive, engine-independent work
+(examples, plotting, docs, pure-MATLAB layers) is exempt.
+
+Worked example — the 2026-07-28 promotions, which followed the rule:
+- **PR #10** (`bench-builder` → resources `dev`) was safe: its only
+  engine dependency, the BEAM API (`beam_set`/`beam_get`), was already
+  on macos `dev` via **PR #64**.
+- The pol emitters (`Bench.add_polarizer` / `add_waveplate`, which emit
+  `PolAxis=` / `Retardance=` and need Phase-3 `TrPolarizerElt(15)` /
+  `WavePlateElt(18)`) were correctly **left on `pol-ifo`**, because that
+  engine support is on macos `pol-core`, not macos `dev`.
+- Consequence for the in-flight arc: resources `pol-ifo` → `dev` is
+  **gated on** macos `pol-core` → `dev`.  Promote the engine first; the
+  two are sequenced, not independent.
 
 ## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
 - **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public

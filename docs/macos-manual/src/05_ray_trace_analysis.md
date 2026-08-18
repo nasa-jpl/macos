@@ -760,7 +760,7 @@ Here the “tilt participation” regulates the percentage of the Kolmogorov tha
 
 10. **POLARIZATION**
 
-The POLarization command turns on polarization ray tracing. The default is no polarization ray tracing.
+The POLarization command turns on polarization ray tracing. The default is no polarization ray tracing. The command prompts for the complex source field components Ex0 and Ey0, and (when the model supports it) also enables vector diffraction. See the *Polarized Ray Tracing* subsection below for the physics, conventions and analysis tools.
 
 11. **NOPOLARIZATION**
 
@@ -775,3 +775,100 @@ MACOS\>**SINT**
     Computing interpolated surface data... Compute time was 5.7871 sec
 
 MACOS\>
+
+### Polarized Ray Tracing
+
+With polarization on (POLarization command, or the `polarization`
+function in the mmacos/pymacos bindings), every ray carries a complex
+3-vector electric field in addition to its geometry. The trace then
+models three effects the scalar trace ignores:
+
+- **Source polarization state.** Rays launch with field
+  E = Ex0·xGrid + Ey0·yGrid, where (Ex0, Ey0) are the complex source
+  amplitudes entered at the POLarization prompt (or carried in the
+  prescription by the `Ex0Ey0=` keyword, Section 4). For a collimated
+  source this launch frame is the source grid frame, uniform across the
+  beam; for a point source each ray uses a local frame
+  (y = unit(RayDir × xGrid), x = y × RayDir) that reduces to the grid
+  frame on the chief ray.
+
+- **Surface polarization effects.** At each reflector and refractor the
+  field is decomposed into s and p components in the local plane of
+  incidence, and the surface's complex Fresnel coefficients are
+  applied — from the element's own complex index (`IndRef=`/`Extinc=`,
+  Section 4) for a bare surface, or from the multilayer thin-film
+  recursion when the element carries a `Coating=` stack (Section 4).
+  The propagation phase of each leg, including any absorption in the
+  medium, is accumulated in the field as well.
+
+- **Vector diffraction.** With polarization on, the diffraction
+  commands can propagate the three field components independently
+  (VECtor/SCAlar, Section 6). Vector diffraction covers every
+  propagation leg, so a multi-leg chain preserves the vector field;
+  see Section 6 for the one remaining limitation, which concerns
+  coated or reflecting surfaces placed *between* two propagation legs.
+
+Conventions, fixed throughout the engine: the absorbing refractive
+index is N = n − iκ with κ > 0 meaning loss, under the time-harmonic
+convention exp(+iωt); coating layer indices follow the same rule. A
+mirror described by the standard perfect-conductor idiom
+(`IndRef= 1.0`, `Extinc= 1.0E+22`) reflects with RP = RS = −1 and is
+therefore polarization-neutral: it changes ray geometry but introduces
+no diattenuation or retardance. Real coated mirrors are modeled with a
+metal coating stack (an optically thick metal layer reproduces the bare
+metal's Fresnel coefficients regardless of substrate).
+
+**Polarization analysis.** The per-ray field at any element can be
+harvested through the bindings (`ray_field`), and the standard
+polarization-aberration analysis is built on top of it: `jones_pupil`
+assembles the 2×2 Jones matrix at every pupil point from two traces
+with orthogonal source states, and `pol_maps` decomposes it into
+diattenuation and retardance maps (with the pupil mean — a state
+change — separated from the spatially varying part that drives error
+budgets). `pol_zernike` then expands those maps onto a Zernike basis,
+giving the standard polarization-aberration terms — piston, tilt,
+defocus, astigmatism and up — so that a MACOS result can be compared
+with the published literature term by term rather than by map shape.
+For an on-axis rotationally symmetric two-mirror system the expansion
+reduces, as the theory requires, to pure *polarization astigmatism*:
+diattenuation and retardance grow as the square of the pupil radius
+with an axis locked to the pupil azimuth, and every other term —
+including the entire circular component — sits at round-off. These
+functions and their conventions, including the choice of pupil
+reference basis (double-pole by default), are documented in the MACOS
+Command Reference, Part II. The interactive CLI exposes the underlying
+trace and coating machinery; the Jones-pupil analysis layer is
+binding-only.
+
+**Polarization contrast floor.** For a coronagraph the question is not
+the shape of the aberration but how much light it puts where the dark
+zone should be. `pol_contrast_floor` answers it directly: it propagates
+with vector diffraction on and splits the detector field into a
+co-polarized, a cross-polarized and a longitudinal channel. The
+cross-polarized channel is the part no scalar deformable-mirror control
+can remove, so its peak-normalized level is the polarization-limited
+contrast floor, and the function also reports how that floor moves with
+the coating choice.
+
+Two points of method matter. First, the split is taken at the detector
+rather than in the pupil. Because the chain is linear in the input
+polarization state and all three components propagate with the same
+kernel, a spatially uniform analyzer commutes with propagation, so
+projecting after the propagation gives the same answer as projecting
+before it — and it avoids the Jones pupil, which cannot serve as a
+pupil multiplier because it carries the accumulated optical path
+length. Second, "co-polarized" is defined against the *mean output*
+state, not the input state. A train may rotate the polarization
+geometrically while introducing neither diattenuation nor retardance;
+charging that rotation to the cross-polarized channel would report an
+aberration where there is none, since an observer would simply align
+the analyzer to the output. The analyzer used is therefore the dominant
+eigenvector of the pupil coherency matrix, which is insensitive to the
+common wavefront and by construction minimizes cross-polarized power.
+
+An unpolarized source is modeled as two traces with orthogonal input
+states summed in intensity, never as one trace with the second state
+inferred from it. The floor reported on a chain that places coated or
+reflecting surfaces between two propagation legs is a lower bound, for
+the reason given in Section 6; the function measures the shortfall and
+warns rather than leaving it to the reader.

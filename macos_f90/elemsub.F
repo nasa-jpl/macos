@@ -384,6 +384,14 @@ C  Polarization calcs
 	! applicable to both non-coated and coated surfaces
 	If (ifPol) Then
           cone=1d0
+!-->      incident-medium complex index: was used UNINITIALIZED in the
+!         phase factor below (first assignment was in the nCoat==0
+!         branch, after this use).  ifx stack garbage NaN'd every
+!         polarized trace; gfortran's zeroed stack made C1=1, silently
+!         dropping the propagation phase from RayE.  Mirrors Refractor,
+!         which sets it before use (elemsub.F:1022).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           S1=-TWOPI*L/lambda
           C2=DCMPLX(0d0,S1)*NaCmplx
           C1=CDEXP(C2)
@@ -443,8 +451,22 @@ C  Polarization calcs
 	  ccfa=ABS(cNdi) ! = cos(theta1), -jzlou
 
 	  ! RP=Reflectance in P pol, RS=Reflectance in S pol, -jzlou
-	  !RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
-	  RP=(NaCmplx*ccfb-NbCmplx*ccfa)/(NbCmplx*ccfa+NaCmplx*ccfb) ! fixed by jzlou
+!-->      standard Born&Wolf r_p (ray-following p-hat convention).  The
+!         assembly below uses prhat = shat x rhat (p-hat follows the
+!         OUTGOING ray), which REQUIRES this sign: at normal incidence a
+!         perfect conductor must give E_out = -E_in, i.e. RS=-1, RP=+1
+!         in this basis.  The negated form that replaced it ("fixed by
+!         jzlou", 2022 import) made RP=RS at normal incidence -- the
+!         signature of the fixed-transverse-basis convention -- which
+!         with a ray-following p-hat reflects the transverse field about
+!         the local p-hat instead of negating it.  That error is an
+!         involution (cancels exactly on mirror PAIRS) and unitary, so
+!         every two-mirror/unitarity gate passed; a SINGLE near-normal
+!         mirror turned x-pol into Py/Px ~ 1 (physical bound O(sin^2
+!         beta) ~ 1e-3).  See REVIEW_POL_SP_SIGN_2026-07-27.md.
+	  RP=(NbCmplx*ccfa-NaCmplx*ccfb)/(NbCmplx*ccfa+NaCmplx*ccfb) ! dcr's original
+	  !RP=(NaCmplx*ccfb-NbCmplx*ccfa)/(NbCmplx*ccfa+NaCmplx*ccfb) ! fixed by jzlou -- WRONG, see above
+!<--
 	  RS=(NaCmplx*ccfa-NbCmplx*ccfb)/(NaCmplx*ccfa+NbCmplx*ccfb)
 	END IF ! ifPol & nCoat=0
 
@@ -453,13 +475,29 @@ C  Polarization calcs
 	IF (ifPol .and. nCoat/=0) THEN
 
 	  ! First calc refraction angles for each layer, from outmost inward
-          NaCmplx=DCMPLX(nb_arr(0),(-kxb_arr(0)))
+!-->        incident medium = the medium the ray is actually in (na,kxa
+!           = CurIndRef/CurExtinc), NOT the stored boundary slot
+!           nb_arr(0)/kxb_arr(0) = IndRef(iElt-1): for a coated mirror
+!           following another mirror that slot holds the previous
+!           mirror's conductor-idiom substrate (Extinc=1e22), modeling
+!           light as arriving from inside a perfect conductor.  The
+!           uncoated branch already uses (na,kxa).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           NbCmplx=DCMPLX(nb_arr(1),(-kxb_arr(1)))
 
 	  !print*,'Reflector/coatings: nb_arr(3)=',nb_arr(3)
           !print*,'Reflector/coatings: kxb_arr(3)=',kxb_arr(3)
 
-	  ccfb_arr(0)=DDOTC(ihat,Nhat) ! cosine of incident ray angle
+!-->      incident cosine must be POSITIVE in the Fresnel forms below --
+!         ihat.Nhat is NEGATIVE when the normal faces the beam (the
+!         psi convention), and a signed cosine turns every interface
+!         coefficient into its RECIPROCAL (1/r): |R|>1, s/p roles
+!         swapped, retardance sign flipped (|D| happens to survive,
+!         which is why intensity-level tests never caught it).  The
+!         uncoated branch already takes ABS (ccfa, elemsub.F:451).
+	  ccfb_arr(0)=DABS(DDOTC(ihat,Nhat)) ! cosine of incident ray angle
+!<--
           cmu=NaCmplx/NbCmplx
           cNdi=ihat(1)*Nhat(1)+ihat(2)*Nhat(2)+ihat(3)*Nhat(3)
           C1=cone-cmu*cmu*(cone-cNdi*cNdi)
@@ -486,8 +524,19 @@ C  Polarization calcs
           ! reflectance eqn
           NaCmplx=DCMPLX(nb_arr(nCoat),(-kxb_arr(nCoat)))
           NbCmplx=DCMPLX(nb_arr(nCoat+1),(-kxb_arr(nCoat+1)))
-          RP=(NaCmplx*ccfb_arr(nCoat+1)-NbCmplx*ccfb_arr(nCoat))
+!-->      standard r_p, matching the uncoated branch (see comment there).
+!         This innermost interface and the per-layer RP1 below carried
+!         the negated r_p; the Airy recursion (RP1+RP*C1)/(1+RP1*RP*C1)
+!         propagates that flip EXACTLY (the denominator's double sign
+!         cancels), so the final coated RP was exactly -(standard
+!         multilayer r_p) with |RP| unchanged -- why the ratio-based
+!         fold gate never saw it.  Refractor's copy of this recursion is
+!         deliberately NOT changed here: its transmitted output contains
+!         only r*r products and is invariant under the consistent flip;
+!         it is covered by the scoped audit (REVIEW_POL_SP_SIGN).
+          RP=(NbCmplx*ccfb_arr(nCoat)-NaCmplx*ccfb_arr(nCoat+1))
      &       /(NbCmplx*ccfb_arr(nCoat)+NaCmplx*ccfb_arr(nCoat+1))
+!<--
           RS=(NaCmplx*ccfb_arr(nCoat)-NbCmplx*ccfb_arr(nCoat+1))
      &       /(NaCmplx*ccfb_arr(nCoat)+NbCmplx*ccfb_arr(nCoat+1))
 
@@ -505,7 +554,14 @@ C  Polarization calcs
 	  ! For each coating layer going outward, use thin film
           ! reflectance eqn,
           Do ic=nCoat,1,-1
-            NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+!-->        outermost interface (ic=1): incident medium is (na,kxa),
+!           not the stored slot 0 -- see the branch-entry comment.
+            If (ic == 1) Then
+              NaCmplx=DCMPLX(na,(-kxa))
+            Else
+              NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+            End If
+!<--
             NbCmplx=DCMPLX(nb_arr(ic),(-kxb_arr(ic)))
 
             ! Calc phase delay due to pass thru coating
@@ -516,8 +572,10 @@ C  Polarization calcs
             C1=CDEXP(-C2)
 
             ! Reflectance
-            RP1=(NaCmplx*ccfb_arr(ic)-NbCmplx*ccfb_arr(ic-1))
+!-->        standard r_p per interface (see innermost-RP comment)
+            RP1=(NbCmplx*ccfb_arr(ic-1)-NaCmplx*ccfb_arr(ic))
      &          /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
+!<--
             !RP1=-RP1 ! testing
 
 C       print*,'layer: NaCmplx,NbCmplx,ccfb_arr(ic),ccfb_arr(ic-1)=',
@@ -1094,10 +1152,26 @@ C    Compute refracted ray cosine
 	! Applicable to surface with thin-film coating layers
         IF (ifPol .and. nCoat/=0) THEN
 	  ! First calc refraction angles for each layer, from outmost inward
-          NaCmplx=DCMPLX(nb_arr(0),(-kxb_arr(0)))
+!-->        incident medium = the medium the ray is actually in (na,kxa
+!           = CurIndRef/CurExtinc), NOT the stored boundary slot
+!           nb_arr(0)/kxb_arr(0) = IndRef(iElt-1): for a coated mirror
+!           following another mirror that slot holds the previous
+!           mirror's conductor-idiom substrate (Extinc=1e22), modeling
+!           light as arriving from inside a perfect conductor.  The
+!           uncoated branch already uses (na,kxa).
+          NaCmplx=DCMPLX(na,(-kxa))
+!<--
           NbCmplx=DCMPLX(nb_arr(1),(-kxb_arr(1)))
 
-	  ccfb_arr(0)=DDOTC(ihat,Nhat) ! cosine of incident ray angle
+!-->      incident cosine must be POSITIVE in the Fresnel forms below --
+!         ihat.Nhat is NEGATIVE when the normal faces the beam (the
+!         psi convention), and a signed cosine turns every interface
+!         coefficient into its RECIPROCAL (1/r): |R|>1, s/p roles
+!         swapped, retardance sign flipped (|D| happens to survive,
+!         which is why intensity-level tests never caught it).  The
+!         uncoated branch already takes ABS (ccfa, elemsub.F:451).
+	  ccfb_arr(0)=DABS(DDOTC(ihat,Nhat)) ! cosine of incident ray angle
+!<--
           cmu=NaCmplx/NbCmplx
           cNdi=ihat(1)*Nhat(1)+ihat(2)*Nhat(2)+ihat(3)*Nhat(3)
           C1=cone-cmu*cmu*(cone-cNdi*cNdi)
@@ -1118,8 +1192,20 @@ C    Compute refracted ray cosine
           ! reflectance eqn
           NaCmplx=DCMPLX(nb_arr(nCoat),(-kxb_arr(nCoat)))
           NbCmplx=DCMPLX(nb_arr(nCoat+1),(-kxb_arr(nCoat+1)))
-          RP=(NaCmplx*ccfb_arr(nCoat+1)-NbCmplx*ccfb_arr(nCoat))
+!-->      standard Born&Wolf r_p, normalized 2026-07-27 to match the
+!         Reflector fix (macos cb29ea5).  This copy of the recursion
+!         carried the same negated form; here it is INTERNAL ONLY --
+!         Refractor emits TP/TS (transmission), and RP enters the
+!         transmitted result only through the products RP1*RP in the
+!         Airy denominators, which are invariant under a CONSISTENT
+!         flip of RP and RP1.  So this restores the convention without
+!         changing any transmitted field: verified bit-identical on a
+!         3-layer coated singlet (45-deg linear and circular input).
+!         Left flipped it would be a trap for the reflected branch a
+!         future beamsplitter/PBS element would want to use.
+          RP=(NbCmplx*ccfb_arr(nCoat)-NaCmplx*ccfb_arr(nCoat+1))
      &       /(NbCmplx*ccfb_arr(nCoat)+NaCmplx*ccfb_arr(nCoat+1))
+!<--
           RS=(NaCmplx*ccfb_arr(nCoat)-NbCmplx*ccfb_arr(nCoat+1))
      &       /(NaCmplx*ccfb_arr(nCoat)+NbCmplx*ccfb_arr(nCoat+1))
 
@@ -1132,7 +1218,14 @@ C    Compute refracted ray cosine
 	  ! For each coating layer going outward, use thin film
           ! reflectance eqn,
           Do ic=nCoat,1,-1
-            NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+!-->        outermost interface (ic=1): incident medium is (na,kxa),
+!           not the stored slot 0 -- see the branch-entry comment.
+            If (ic == 1) Then
+              NaCmplx=DCMPLX(na,(-kxa))
+            Else
+              NaCmplx=DCMPLX(nb_arr(ic-1),(-kxb_arr(ic-1)))
+            End If
+!<--
             NbCmplx=DCMPLX(nb_arr(ic),(-kxb_arr(ic)))
 
             ! Calc phase delay due to pass thru coating
@@ -1143,9 +1236,12 @@ C    Compute refracted ray cosine
             C1=CDEXP(-C2)
 
             ! Reflectance
-            RP1=(NaCmplx*ccfb_arr(ic)-NbCmplx*ccfb_arr(ic-1))
+!-->        standard Born&Wolf r_p (see the innermost-interface note
+!           above); flipping RP1 with RP keeps every RP1*RP product,
+!           hence TP, bit-identical.
+            RP1=(NbCmplx*ccfb_arr(ic-1)-NaCmplx*ccfb_arr(ic))
      &          /(NbCmplx*ccfb_arr(ic-1)+NaCmplx*ccfb_arr(ic))
-            !RP1=-RP1 ! testing
+!<--
             RPnew=(RP1+RP*C1)/(1d0+RP1*RP*C1)
 
             RS1=(NaCmplx*ccfb_arr(ic-1)-NbCmplx*ccfb_arr(ic))
@@ -1164,6 +1260,57 @@ C    Compute refracted ray cosine
 
             RP=RPnew; RS=RSnew
 	  End Do
+
+!-->      RADIOMETRIC NORMALIZATION -- join the incumbent convention.
+!         The recursion above composes plain Fresnel FIELD coefficients,
+!         but the UNCOATED branch (:1146) folds in sqrt(nb*cos_t/(na*
+!         cos_i)) via S1, so that |TP|**2 IS the POWER transmittance.
+!         That is the engine-wide convention every polarized result and
+!         gate sits on, and an index-matched coating layer is optically
+!         a BARE INTERFACE, so it MUST reproduce the uncoated number.
+!         Before this it was low by 1/sqrt(n_sub) at normal incidence
+!         (measured 0.8164965809 = 1/sqrt(1.5)) -- a coated lens
+!         under-transmitted by ~18% in amplitude.
+!         Decision packet: REVIEW_POL_RADIOMETRIC_2026-07-28.md.
+!
+!         ONCE, AFTER THE RECURSION -- NEVER PER INTERFACE.  The
+!         standard multilayer result is
+!             T = (n_sub*cos_sub)/(n_inc*cos_inc) * |t_composed|**2,
+!         i.e. the radiometric conversion is BOUNDARY TO BOUNDARY and
+!         the interior-layer factors CANCEL IDENTICALLY -- |t_composed|
+!         already carries the whole stack.  Do not be talked into the
+!         per-interface form by the observation that, for a plain chain,
+!         prod_j sqrt(n_j*c_j/(n_{j-1}*c_{j-1})) telescopes to the same
+!         number: that identity holds only while every interface is
+!         present, in order, and paired with the RIGHT media.  This
+!         branch has already been bitten there once -- slot nb_arr(0) is
+!         the PARSER's boundary medium, not the medium the ray is in
+!         (see the branch-entry comment); a per-interface factor built
+!         on it would telescope to sqrt(n_sub*c_sub/(nb_arr(0)*c_0)) and
+!         be silently wrong for a coated element following another
+!         refractor.  One factor, one place, from na.
+!         The same cancellation is why nothing REFLECTED can move here:
+!         RP/RS and the RP1*RP / RS1*RS Airy denominators are untouched,
+!         so a coated surface's reflected field -- and the transmitted
+!         polarization STATE, since a common real scalar cancels in
+!         TP/TS -- are bit-identical across this change.  Only the
+!         absolute transmitted amplitude moves.
+!
+!         SCOPE -- transmission into an ABSORBING (metal) substrate has
+!         NO meaningful power convention: the transmitted wave is
+!         evanescent and carries no propagating power, so no scalar
+!         factor is right there.  The real parts used below are power
+!         bookkeeping for a DIELECTRIC substrate -- coated LENSES, which
+!         is the use case.  A metal-substrate Refractor transmission is
+!         out of scope and ungated by design.
+          S2=nb_arr(nCoat+1)*DBLE(ccfb_arr(nCoat+1))
+     &      /(na*DBLE(ccfb_arr(0)))
+          IF (S2.GT.0d0) THEN
+            S2=DSQRT(S2)
+            TP=TP*DCMPLX(S2,0d0)
+            TS=TS*DCMPLX(S2,0d0)
+          END IF
+!<--
 	END IF
 
 	IF (ifPol) THEN
@@ -2679,6 +2826,389 @@ C	Here if ray misses surface
 
 	RETURN
 	END SUBROUTINE RefSrf
+
+C***********************************************************************
+C
+C  PolElt -- ideal transmissive polarizing elements (PLAN_POLARIZATION
+C  Phase 3, worklist item 4).  Serves EltID = TrPolarizerElt (ideal
+C  linear polarizer) and WavePlateElt (linear retarder).
+C
+C  GEOMETRY is exactly RefSrf's: a conic-of-revolution surface is
+C  intersected, the ray passes STRAIGHT THROUGH (rout=ihat), and the
+C  path length L feeds the usual CumRayL bookkeeping.  With ifPol
+C  .FALSE. this routine IS RefSrf -- no field is touched, so an
+C  unpolarized trace through a WavePlate is bit-identical to the same
+C  trace through a Reference surface.  That equivalence is a gate.
+C
+C  CONVENTIONS (derived from the engine's own, not newly legislated --
+C  see macos_f90/CLAUDE.md "Polarization physics"):
+C
+C  1. AXIS.  PolAxis is the element's reference axis as a 3-vector in
+C     global coordinates: the TRANSMISSION axis of a polarizer, the
+C     FAST axis of a waveplate.  A vector (rather than an angle in some
+C     element frame) is used so that no "which in-plane direction is
+C     zero degrees" convention has to be invented.
+C
+C  2. TRANSVERSE BASIS -- PROJECT THE MATERIAL AXIS.  Off normal the
+C     declared axis has to be brought into the plane transverse to the
+C     ray, and orthographic projection does not preserve orthogonality,
+C     so WHICH of the element's two in-plane directions is projected is
+C     a physical question, not a bookkeeping one.  The answer is the
+C     MATERIAL direction -- the one fixed in the substance of the
+C     element:
+C
+C       polarizer:  the ABSORBING direction (the wires of a wire grid,
+C                   the aligned dipole chains of a dichroic sheet).
+C                   That is the in-element complement of the declared
+C                   pass axis, mvec = psi x PolAxis.  It is projected
+C                   into the transverse plane and EXTINGUISHED; the
+C                   transmitted direction is its orthogonal partner.
+C       waveplate:  the crystal FAST axis, which IS the declared axis,
+C                   so mvec = PolAxis and the declared axis is what
+C                   gets projected.
+C
+C     This is the dipole model, and it is settled by experiment rather
+C     than by taste.  BOTH constructions are in the literature: the
+C     pass-axis projection is Fainman & Shamir, Appl. Opt. 23, 3188
+C     (1984); the material-axis one is Eq. (5)-(6) of Korger et al.,
+C     "The polarization properties of a tilted polarizer", Opt. Express
+C     21, 27032 (2013), who measured the Mueller matrix of a tilted
+C     dichroic polarizer and found only the absorbing model reproduces
+C     it.  They coincide at normal incidence.
+C
+C     psi here is the ELEMENT's axis (psiElt), so on a conic polarizing
+C     surface the material frame is the element's, not the local
+C     surface normal at the intersection.  These elements are flat in
+C     every use so far; a curved one would want that revisited.
+C
+C     Per ray, with mvec the material axis: pvec = unit(mvec -
+C     (mvec.rhat) rhat), and the partner is completed by a cross
+C     product with rhat -- ahat = pvec x rhat for a polarizer (pvec is
+C     the blocked direction, ahat the transmitted one), bhat = rhat x
+C     ahat for a waveplate (pvec = ahat is the fast axis, bhat the
+C     slow).  Orthonormalizing the partner -- rather than projecting a
+C     separately-specified second axis -- is FORCED, not chosen: a
+C     lossless retarder must be unitary, and only an orthonormal
+C     eigenbasis makes diag(1,exp(-i.delta)) unitary.
+C     At normal incidence the two constructions coincide identically
+C     (pvec x rhat returns the declared axis to the last bit, up to an
+C     overall sign that a projector cannot see), so the flip to the
+C     material-axis rule left every normal-incidence result bit-for-bit
+C     unchanged -- gated in tPolElement.
+C
+C  3. RETARDANCE SIGN.  The engine propagates a field through index N
+C     over length L with C1 = exp(-i.2pi.L.N/lambda) (elemsub.F:395),
+C     i.e. exp(+i.omega.t) time convention.  The SLOW axis (larger n)
+C     therefore accumulates the MORE NEGATIVE phase, so with the fast
+C     axis as ahat the element Jones is diag(1, exp(-i.delta)),
+C     delta = 2pi.PolRetOPD/lambda > 0.  "Fast axis leads" as pinned in
+C     the conventions table -- read off the engine, not chosen.
+C
+C  4. CHROMATICITY.  PolRetOPD is the PHYSICAL retardance
+C     (n_slow-n_fast).d in BaseUnits; the Rx keyword is in waves at the
+C     parse-time Wavelen and is scaled by Wavelen on load.  Same
+C     treatment the Coating= stack already gets, so a plate is a fixed
+C     piece of glass and a wavelength sweep is chromatic.
+C
+C  SCOPE / IDEALIZATIONS (stated, not worked around):
+C
+C  a. These are THIN, NON-RAY-SPLITTING idealizations: no o/e walk-off,
+C     no Fresnel losses at the plate faces, no substrate thickness.
+C     The rejected port of a polarizer is not produced -- a PBS needs
+C     two traces (or, better at 45 degrees, a coated Reflector, where
+C     the s/p basis is physically meaningful and already gated).
+C  b. The output is purely TRANSVERSE: any longitudinal component
+C     present in Evec at the surface is discarded.  That is what a 2x2
+C     Jones element means.  It is exactly zero for a collimated normal-
+C     incidence beam and O(NA) otherwise.
+C  c. OFF-NORMAL INCIDENCE follows the material-axis rule of convention
+C     2, which is SETTLED (2026-07-27, packet
+C     REVIEW_POL_ELEMENTS_2026-07-27.md).  The size of what is being
+C     decided is on the record: the two candidate constructions differ
+C     by acos(2 cos a/(1+cos^2 a)) of pass-axis orientation at azimuth
+C     45 degrees -- 3.56 degrees at 20 degrees of incidence, bounded by
+C     sin^2 a -- and identically zero both at normal incidence and when
+C     the declared axis lies in, or perpendicular to, the plane of
+C     incidence.  That second zero is a trap for anyone building a test
+C     here: the obvious tilt (axis along x, tilt in the x-z plane) is
+C     exactly the degenerate case and reports a meaningless zero.
+C     Gated engine-side at 20 degrees AOI / 45 degrees azimuth in
+C     tPolElement.
+C  d. The waveplate is an IDEAL retarder: the retardance it applies does
+C     not depend on incidence angle, whereas a real crystal plate's does
+C     (the field-of-view effect that drives compound and Pancharatnam
+C     designs).  Anyone who needs that needs a birefringent-plate model
+C     with o/e indices and thickness -- out of scope here.
+C  e. RfPolarizerElt remains a stub.  The axis convention no longer
+C     blocks it, but a reflective wire grid carries physics beyond the
+C     axis rule (grid reflection efficiency, the substrate's own s/p
+C     response), and nothing needs it yet; it fails loudly at load.
+C
+C***********************************************************************
+
+	SUBROUTINE PolElt(ifBuild,ifPol,ifLNsrf,ifObs,
+     &	 LROK,LRT,Kc,Kr,
+     &	 psi,pv,prot,pin,ihat,Evec,
+     &	 na,nb,kxa,kxb,lambda,
+     &	 ApType,ApVec,nObs,ObsType,ObsVec,xGrid,yGrid,zGrid,
+     &	 pout,rout,L,Eout,dxidxim1,dxidui,
+     &	 EltType,PolAxis,PolRetOPD,Jmat)
+
+	USE Constants, ONLY: TWOPI
+	use elt_mod, only : TrPolarizerElt, WavePlateElt
+	use traceutil_mod
+
+	IMPLICIT NONE
+
+	INTEGER i,j,ApType,nObs,ObsType(nObs),EltType
+
+	LOGICAL LROK,ifBuild,ifPol,ifLNsrf,ifObs,LRT
+
+	SREAL :: dxidxim1(7,7),dxidui(7,6)
+
+	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),pr(3),rhat(3),L,
+     &   pout(3),rout(3),na,nb,kxa,kxb,lambda,rho(3),
+     &	 xGrid(3),yGrid(3),zGrid(3),ApVec(6),ObsVec(6,nObs),
+     &   PolAxis(3),PolRetOPD
+
+	REAL*8 prel(3),a,b,c,ksqrt,kp,km,mpr,S1,
+     &   Kc,Kr,k2,itpsi,psitprel,ahat(3),bhat(3),adotr,amag,delta,
+     &   mvec(3),pvec(3)
+
+	COMPLEX*16 Evec(3),Eout(3),C1,C2,NaCmplx,Jmat(2,2),
+     &   Ea,Eb,Ja,Jb
+
+C	Surface intersection -- identical to RefSrf
+
+	DO 1 i=1,3
+	  prel(i)=pin(i)-pv(i)
+   1	CONTINUE
+	itpsi=ihat(1)*psi(1)+ihat(2)*psi(2)+ihat(3)*psi(3)
+	psitprel=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
+
+	IF (ABS(Kr).LT.1d10) THEN
+	  mpr=prel(1)*prel(1)+prel(2)*prel(2)+prel(3)*prel(3)
+	  a=1d0+Kc*itpsi*itpsi
+	  b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+
+     &	    ihat(1)*prel(1)+ihat(2)*prel(2)+ihat(3)*prel(3))
+	  c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+	ELSE
+	  a=0d0
+	  b=itpsi
+	  c=psitprel
+	END IF
+
+	IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
+	  L=-c/b
+	  IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+	ELSE
+	  k2=b*b-4d0*a*c
+	  IF (k2.LT.0d0) GO TO 98
+	  IF (b.GE.0d0) THEN
+	    ksqrt=-0.5d0*(b+DSQRT(k2))
+	  ELSE
+	    ksqrt=-0.5d0*(b-DSQRT(k2))
+	  END IF
+	  kp=ksqrt/a
+	  km=c/ksqrt
+	  IF(ifLNsrf) THEN
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      L=kp
+	    ELSE
+	      L=km
+	    END IF
+	  ELSE
+	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+	      IF (kp.GT.0D0) THEN
+	        L=kp
+	      ELSE
+	        L=km
+	      END IF
+	    ELSE
+	      IF (km.GT.0D0) THEN
+	        L=km
+	      ELSE
+	        L=kp
+	      END IF
+	    END IF
+	    IF (L.LT.0d0) GO TO 98
+	  END IF
+	END IF
+
+	DO 2 i=1,3
+	  pr(i)=pin(i)+L*ihat(i)
+	  rhat(i)=ihat(i)
+   2	CONTINUE
+
+C  Polarization calcs
+
+	Jmat(1,1)=DCMPLX(1d0,0d0)
+	Jmat(1,2)=DCMPLX(0d0,0d0)
+	Jmat(2,1)=DCMPLX(0d0,0d0)
+	Jmat(2,2)=DCMPLX(1d0,0d0)
+
+	IF (ifPol) THEN
+	  NaCmplx=DCMPLX(na,(-kxa))
+
+C    Propagation through isotropic medium a to the element
+
+	  S1=-TWOPI*L/lambda
+	  C2=DCMPLX(0d0,S1)*NaCmplx
+	  C1=CDEXP(C2)
+	  Eout(1)=C1*Evec(1)
+	  Eout(2)=C1*Evec(2)
+	  Eout(3)=C1*Evec(3)
+
+C    Transverse eigenbasis.  The vector that gets projected is the
+C    element's MATERIAL axis (convention 2): the ABSORBING direction
+C    for a polarizer -- the in-element complement psi x PolAxis of the
+C    declared pass axis -- and the declared FAST axis itself for a
+C    waveplate.  Off normal these are different operations; at normal
+C    incidence they coincide exactly.
+
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+	    CALL DXPROD(mvec,psi,PolAxis)
+	  ELSE
+	    DO i=1,3
+	      mvec(i)=PolAxis(i)
+	    END DO
+	  END IF
+
+	  adotr=mvec(1)*rhat(1)+mvec(2)*rhat(2)+mvec(3)*rhat(3)
+	  DO 3 i=1,3
+	    pvec(i)=mvec(i)-adotr*rhat(i)
+   3	  CONTINUE
+	  amag=DSQRT(pvec(1)*pvec(1)+pvec(2)*pvec(2)+pvec(3)*pvec(3))
+
+	  IF (amag.LT.1d-10) THEN
+C      The element has no usable transverse axis for this ray: the
+C      material axis is parallel to the ray (a waveplate whose fast
+C      axis lies along the propagation direction, or a polarizer whose
+C      absorbing direction does), or -- polarizer only -- the declared
+C      pass axis is parallel to the element normal, so psi x PolAxis
+C      vanishes and no in-element blocked direction exists at all.
+C      Both are prescription errors, not physical states: extinguish
+C      rather than pick an arbitrary basis.
+	    Eout(1)=DCMPLX(0d0,0d0)
+	    Eout(2)=DCMPLX(0d0,0d0)
+	    Eout(3)=DCMPLX(0d0,0d0)
+	    Jmat(1,1)=DCMPLX(0d0,0d0)
+	    Jmat(2,2)=DCMPLX(0d0,0d0)
+	    GO TO 20
+	  END IF
+
+	  DO 4 i=1,3
+	    pvec(i)=pvec(i)/amag
+   4	  CONTINUE
+
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+C      pvec is the projected ABSORBING direction, so it is bhat (the
+C      extinguished axis) and the transmitted axis is its partner.
+C      NOTE: no DUNITIZE on ahat.  It is unit to a rounding error
+C      already (a cross product of two unit, orthogonal vectors), and
+C      leaving the redundant normalization out is what makes the
+C      material-axis rule return the declared axis BIT-for-bit at
+C      normal incidence -- see convention 2.
+	    DO i=1,3
+	      bhat(i)=pvec(i)
+	    END DO
+	    CALL DXPROD(ahat,bhat,rhat)
+	  ELSE
+C      pvec is the projected FAST axis; the slow axis completes it.
+	    DO i=1,3
+	      ahat(i)=pvec(i)
+	    END DO
+	    CALL DXPROD(bhat,rhat,ahat)
+	    CALL DUNITIZE(bhat)
+	  END IF
+
+	  Ea=DCMPLX(ahat(1))*Eout(1)+DCMPLX(ahat(2))*Eout(2)+
+     &	     DCMPLX(ahat(3))*Eout(3)
+	  Eb=DCMPLX(bhat(1))*Eout(1)+DCMPLX(bhat(2))*Eout(2)+
+     &	     DCMPLX(bhat(3))*Eout(3)
+
+	  IF (EltType.EQ.TrPolarizerElt) THEN
+C      Polarizer: ahat is the transmitted axis, bhat the projected
+C      material (absorbing) direction, so Jmat is the projector
+C      diag(1,0) in that basis.
+	    Ja=DCMPLX(1d0,0d0)
+	    Jb=DCMPLX(0d0,0d0)
+	  ELSE
+C      WavePlate: fast axis is ahat, so the slow axis picks up the
+C      engine's more-negative propagation phase (convention 3).
+	    delta=TWOPI*PolRetOPD/lambda
+	    Ja=DCMPLX(1d0,0d0)
+	    Jb=CDEXP(DCMPLX(0d0,-delta))
+	  END IF
+
+	  Jmat(1,1)=Ja
+	  Jmat(1,2)=DCMPLX(0d0,0d0)
+	  Jmat(2,1)=DCMPLX(0d0,0d0)
+	  Jmat(2,2)=Jb
+
+C    Reassemble.  The result is transverse by construction; any
+C    longitudinal content of the incident field is dropped (scope note
+C    (b) in the header).
+
+	  Ea=Ja*Ea
+	  Eb=Jb*Eb
+	  DO 5 i=1,3
+	    Eout(i)=DCMPLX(ahat(i))*Ea+DCMPLX(bhat(i))*Eb
+   5	  CONTINUE
+
+  20	  CONTINUE
+	END IF
+
+	IF (ifBuild) THEN
+
+C	  Combined partial matrices -- straight-through, so identity
+C	  exactly as RefSrf
+
+	  DO 7 j=1,7
+	    DO 6 i=1,7
+	      dxidxim1(i,j)=0e0
+    6	    CONTINUE
+	    dxidxim1(j,j)=1e0
+    7	  CONTINUE
+	  DO 9 j=1,6
+	    DO 8 i=1,7
+	      dxidui(i,j)=0e0
+    8	    CONTINUE
+    9	  CONTINUE
+	END IF
+
+C  Check if ray is obscured
+
+	IF (ifObs) THEN
+	  DO i=1,3
+	    rho(i)=pin(i)-pv(i)+L*ihat(i)
+	  END DO
+	  LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
+     &	         psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
+     &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
+	  IF (.NOT.LRT) THEN
+	    Eout(1)=0d0
+	    Eout(2)=0d0
+	    Eout(3)=0d0
+	  END IF
+	ELSE
+	  LRT=.TRUE.
+	END IF
+
+	DO 10 i=1,3
+	  rout(i)=rhat(i)
+	  pout(i)=pr(i)
+  10	CONTINUE
+
+	RETURN
+
+C	Here if ray misses surface
+
+  98	CONTINUE
+	LROK=.FALSE.
+	NhatP(1:3)=psi(1:3)
+	RETURN
+	END SUBROUTINE PolElt
 
 C***********************************************************************
 

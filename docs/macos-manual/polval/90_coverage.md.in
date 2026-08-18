@@ -1,0 +1,175 @@
+# Gate index
+
+Every claim on this page, its measured value, the truth it is compared
+against, and the test that pins it in continuous integration.
+
+| Gate | Claim | Measured | Truth | Pinned by |
+|---|---|---|---|---|
+| 1.1 | geometry invariant under `ifPol` | @@G11_OPD_DIFF@@ waves, bitwise @@G11_BITWISE@@ | 0 / true | `tPolarization`, this driver |
+| 1.2 | coating round-trip identity | @@G12_COAT_ROUNDTRIP@@ | 0 | `tPolarization/test_coat_roundtrip_identity` |
+| 1.3 | polarization-off is a no-op | @@X_GMI@@ | bit-identical | GMI regression *(external)* |
+| 2.1 | lossless Jones pupil is unitary | D @@G21_MAXD@@, δ @@G21_MAXRET@@ rad | 0 | `tJonesPupil/test_unitarity_gate` |
+| 2.2 | per-ray coefficients match Fresnel | @@G22_DMAG@@ (mag), @@G22_DPHASE@@ rad (phase) | closed form | `tJonesPupil/test_fold_fresnel_analytic` |
+| 2.3 | 2θ symmetry on a symmetric system | azimuth lock @@G23_AZ_RESID@@ rad | 0 | `tJonesPupil/test_2theta_symmetry` |
+| 2.4 | D basis-invariant; s/p retardance is artifact | @@G24_DINV@@; @@G24_RATIO@@× inflation | 0; ≫1 | `tJonesPupil/test_basis_invariance_and_sp_artifact` |
+| 2.5 | two-mirror reduces to polarization astigmatism | other terms @@G25_OTHER@@, circular @@G25_CIRC@@ | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
+| 2.5 | on-axis diattenuation extrapolates to zero | @@G25_DZERO@@ | 0 | `tJonesPupil/test_pol_zernike_two_mirror_form` |
+| 2.6 | decomposition algebra exact | synthetic recovery to 1e-12 | exact | `tJonesPupil/test_pol_maps_synthetic_identity` |
+| 3.1 | polarized-scalar ≡ scalar | bitwise @@G31_BITWISE@@ | true | `tVecChain/test_polarized_scalar_is_bit_identical` |
+| 3.2 | vector ≡ scalar, every leg and state | @@G32_WORST@@ worst case | 0 | `tVecChain/test_vector_equals_scalar_every_state` |
+| 3.3 | energy conserved per leg | @@G33_ELEG1@@, @@G33_ELEG2@@ | 0 | `tVecChain/test_energy_conserved_per_leg` |
+| 3.4 | masks act on the vector path | @@G34_THRU_RESID@@ | 0 | `tVecChain/test_mask_throughput_identical_on_vector_path` |
+| 3.5 | far-field normalization unified | @@G35_TOT_RESID@@ | 0 | `tVecChain/test_far_field_vector_matches_scalar_normalization` |
+| 3.6 | scalar physics undisturbed | @@X_PROPER_RESIDUAL@@ reproduced exactly | committed residual | pymacos PROPER suite *(external)* |
+| 4.1 | one mirror matches the perfect-conductor closed form | @@G41_RESID_MAX@@ (transverse), @@G41_RESIDZ_MAX@@ (longitudinal), retardance @@G41_RET@@ | closed form | `tPolarization/test_odd_mirror_crosspol_pec_analytic` |
+| 4.2 | odd-mirror cross-pol is slope-driven and bounded | slope @@G42_SLOPE@@, @@G42_BOUNDRATIO@@ × the bound | ρ²; O(sin² AOI) | `tPolarization/test_odd_mirror_crosspol_rho2_law` |
+| 5.1 | the decomposition invents no floor | cross @@C21_VC_CROSS@@; contrast curve @@C21_VC_CURVE@@ | 0 | `tPolContrast/test_reduction_to_scalar_contrast_curve` |
+| 5.2 | co/cross split is a unitary basis change | @@C22_PARSEVAL@@; closure @@C22_CLOSURE@@ | 0 | `tPolContrast/test_parseval_on_the_split`, `test_energy_bookkeeping` |
+| 5.3 | uncoated two-mirror floor | @@C23_CROSS_OVER_CO@@ of co-polarized power | §4 ray-level value | `tPolContrast/test_floor_reported_by_component` |
+| 5.4 | analyzer is derived, circular state included | @@C23_ANALYZER@@; conjugate analyzer @@C23_CIRC_ORTHO@@ | 0; ≫1 | `tPolContrast/test_analyzer_tracks_input_state`, `test_analyzer_would_be_wrong_if_conjugated` |
+| 5.5 | floor moves with coating choice | @@C25_AL_REL@@× (Al), @@C25_MGF2_REL@@× (MgF₂/Al) | monotone, ≫1 | `tPolContrast/test_coating_sensitivity` |
+| 5.6 | Tranche-1 shortfall is detected, not hidden | carried @@C33_CARRIED@@ bare, @@C33_CARRIED_COAT@@ coated | 1 (would be) | `tPolContrastCoro/test_tranche1_shortfall_is_detected` |
+| 5.7 | coronagraph floor, lower bound | @@C31_DZ_CROSS@@ mean contrast | — | `tPolContrastCoro/test_floor_reported_by_component` |
+| 6.1 | polarization-off ≡ Reference surfaces | bitwise @@G57_BITWISE@@ | true | `tPolElement/test_unpolarized_bit_identical_to_reference_twin` |
+| 6.2 | Malus's law; exact crossed extinction | @@G51_MALUS@@ of I₀; crossed exactly zero @@G52_CROSSED@@ | cos²θ; 0 | `tPolElement/test_malus_law`, `test_crossed_polarizer_extinction` |
+| 6.3 | retarder Stokes, with the SIGN of S₃ | @@G53_S3@@ (signed S₃/S₀ = −1), linear residual @@G53_S12@@ | closed form | `tPolElement/test_qwp_linear_to_circular` |
+| 6.4 | half-wave 2θ law; two QWPs ≡ one HWP | slope residual @@G54_SLOPE_RESID@@; cascade @@G55_COMPOSE@@ | 2; 0 | `tPolElement/test_hwp_rotates_by_2theta`, `test_two_qwp_equal_one_hwp` |
+| 6.5 | retarder is unitary, linear and circular in | @@G56_UNITARY@@; JᴴJ−I @@G56_JUNITARY@@ | 0 | `tPolElement/test_waveplate_is_unitary` |
+| 6.6 | the diffraction grid carries the train | @@G58_GRID_MALUS@@ | cos²θ | `tPolElement/test_grid_carries_the_polarizing_train` |
+| 7.1 | uncoated transmission IS the power transmittance | @@G71_UNC_NORMAL@@ normal; @@G71_UNC_P@@ p, @@G71_UNC_S@@ s at 45° | characteristic-matrix T | `tPolRadiometric/test_uncoated_transmission_is_the_power_transmittance`, `test_uncoated_transmission_oblique_s_and_p` |
+| 7.2 | index-matched layer ≡ bare interface | @@G72_IDX_NORMAL@@ normal; @@G72_IDX_P@@ p, @@G72_IDX_S@@ s at 45° | 0 | `tPolRadiometric/test_index_matched_layer_equals_bare_interface_normal`, `..._oblique` |
+| 7.2 | and on the diffraction grid | @@G72_GRID@@ | 0 | `tPolRadiometric/test_index_matched_layer_at_the_detector_plane` |
+| 7.3 | MgF₂ quarter-wave vs the textbook multilayer | @@G73_MGF2_NORMAL@@ normal; @@G73_MGF2_P@@ p, @@G73_MGF2_S@@ s at 45° | characteristic-matrix T | `tPolRadiometric/test_mgf2_quarterwave_normal_incidence`, `..._45deg_s_and_p` |
+| 7.4 | air-to-air power closure, mixed plate | @@G74_CLOSURE@@ | T₁·T₂ | `tPolRadiometric/test_air_to_air_power_closure_mixed_plate` |
+| 7.4 | radiometric factors telescope across a plate | @@G74_TELESCOPE@@ | 0 | `tPolRadiometric/test_air_to_air_factors_telescope` |
+| 7.5 | polarization state untouched (common real scalar) | @@G75_STATE@@ | factor-free t_p/t_s | `tPolRadiometric/test_scalar_factor_leaves_the_polarization_state_alone` |
+| 7.5 | the factor lives inside `ifPol` | @@G76_POLOFF@@ | bit-identical | `tPolRadiometric/test_pol_off_is_untouched_by_the_coating` |
+| 7.6 | quarter-wave structure survives the scalar | @@G77_LAMBDA@@; ratio flat to @@G77_FLATNESS@@ | characteristic-matrix T(λ) | `tPolRadiometric/test_quarterwave_structure_survives_the_scalar_factor` |
+| 8.1 | dielectric-on-metal matches a PUBLISHED model | D @@X_VH_DEV_D@@, retardance @@X_VH_DEV_RET@@ | @@X_VANHARTEN@@, ±@@X_VH_ACC@@ *(external)* | `tPolExternal/test_vanharten_machinery` |
+| 8.1 | p̂ bridge measured, not assumed | PEC r_s/r_p = +1 exactly | +1 | `tPolExternal/test_phat_convention_bridge_is_zero` |
+| 8.1 | the ratio estimator is frame-free | M11/M22 vs −M12/M21 | 0 | `tPolExternal/test_ratio_estimator_self_consistency` |
+| 8.2 | the 4 nm oxide is distinguishable | @@X_VH_NOOXIDE@@ | > publication accuracy | `tPolExternal/test_omitting_the_oxide_exceeds_published_accuracy` |
+| 8.2 | 4.12 nm vs the rejected 50 nm | @@X_VH_50NM@@ | > publication accuracy | `tPolExternal/test_rejected_50nm_oxide_is_excluded` |
+| 8.2 | admittance assignment pinned by [1,2] sign | D > 0 and < 0.15 at 70° | published Fig. 1a axis | `tPolExternal/test_admittance_assignment_sign` |
+| 8.3 | overcoat trade reverses across the quarter wave *(analytic)* | @@X_2C_POWER_633@@ vs @@X_2C_POWER_1000@@ vs @@X_2C_POWER_TRUEQW@@ | sign reversal | `tPolExternal/test_overcoat_trade_reverses_with_optical_thickness` |
+| 8.3.1 | the same reversal, measured by the **engine** | @@C26_RATIO_633@@× at @@C26_LAM_CMP@@ nm vs @@C26_RATIO_1000@@× at 1 µm | sign reversal, @@C26_REVERSAL@@× | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
+| 8.3.1 | the reversal is the film's optical thickness, nothing else | achromatic control @@C26_ACHROM@@×, lands on the 1 µm answer to @@C26_ACHROM_RESID@@ | no reversal | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
+| 8.3.1 | the quarter-wave condition is wavelength-invariant | @@C26_QW_INVAR@@; metal-only leg @@C26_METAL_INVAR@@ | 0 | `tPolContrast/test_overcoat_trade_reverses_across_the_quarter_wave_condition` |
+
+# Coverage and gaps
+
+Stating what is *not* here is part of the report. A validation document that
+only lists passing gates invites the reader to assume the uncovered ground
+was checked.
+
+## Open items in the work this document covers
+
+* ~~The out-of-plane attribution is unverified.~~ **CLOSED** (§3.5). The
+  plane-selectable complex-field getter now exists, the per-plane
+  contributions are measurable, and the difference decomposes into two
+  mechanisms rather than the one originally assumed. What remains
+  unexplained is the @@G36_RESID@@ residual of that decomposition — a shape
+  difference between the scalar field and Ex, consistent with their
+  different seeds, not further verified and not relied upon.
+* **Tranche 1's validity condition is a real restriction, not a formality.**
+  It holds for chains whose elements between physical legs are non-polarizing.
+  A chain with a coated or reflective surface between legs — an off-axis
+  paraboloid between coronagraph masks, or an interferometer recombiner
+  followed by folds under near-field propagation — needs Tranche 2 and is
+  **not** validated by anything on this page.  §5.6 now quantifies the cost
+  on such a chain rather than leaving it qualitative: the diffraction grid
+  carries @@C33_CARRIED@@ of the ray-level cross-polarized fraction on
+  `Rx_Coro`, @@C33_CARRIED_COAT@@ once its mirrors are coated, and the
+  coating sensitivity it reports there has the wrong **sign**.
+* **The coronagraph floor in §5.7 is a lower bound on that chain**, and the
+  chain is a coaxial model with uncoated normal-incidence mirrors — so the
+  number is the numerical-aperture term alone, not the floor of a built
+  instrument.  The coating sensitivity that *is* trustworthy is §5.5's, on
+  the single-leg two-mirror fixture.
+* **The phase relation between the per-ray field and the diffraction grid is
+  train-dependent.** The assembly applies no convention bridge at the seed,
+  which is correct, but the reason is structural rather than a fixed
+  convention: return legs are subtracted by the cumulative-path bookkeeping
+  and added by the per-surface field phases, so the relation differs between a
+  return-terminated train and a plain trace-to-detector flow. Tranche 2 must
+  carry phases explicitly against the path bookkeeping rather than assume a
+  sign. The behavioural gates above, not a convention argument, are what carry
+  the correctness claim.
+* ~~The coated `Refractor` branch has no analytic gate, and carries a
+  normalization discrepancy against its own uncoated branch.~~ **CLOSED**
+  (§7). The convention was decided
+  (`REVIEW_POL_RADIOMETRIC_2026-07-28.md`) in favour of the incumbent
+  power-amplitude rule, the coated branch was brought to it with a single
+  factor applied once after the recursion, and the branch now has thirteen
+  gates against the Abeles characteristic matrix — seven of which fail
+  against the pre-fix engine. What remains open is narrower and stated
+  there: transmission into an **absorbing substrate** has no meaningful
+  power convention and is deliberately ungated, and the `Reflector`
+  transmittance blocks are still `if(.false.)` dead code, so a coated mirror
+  reports no transmitted leakage.
+* **The cos θ term in the radiometric factor overlaps conceptually with
+  beam-area bookkeeping that ray *density* also carries** when the grid is
+  seeded for diffraction. Whether that is a double-count in oblique
+  refractive seeding is an open audit question that **predates** §7 — the
+  uncoated branch has always carried the factor, and the PROPER comparisons
+  are mirror trains that never exercised it hard. Recorded here, deliberately
+  uncoupled from the §7 landing, which changed nothing about it.
+* **Vector mode repurposes the three wavefront planes as Ex/Ey/Ez**, so it
+  handles one wavefront only — no multi-wavefront composition concurrently.
+  This is a documented constraint, not a defect to work around.
+* **The reflective polarizer `RfPolarizer` is not implemented.** The
+  off-normal axis convention no longer blocks it (§6.7 settles it and gates
+  it at 20° of incidence); what remains is the physics a reflective wire grid
+  carries beyond the axis rule — grid reflection efficiency and the
+  substrate's own s/p response.
+* **The polarizer and waveplate are thin idealizations** — no ray splitting,
+  walk-off, face reflections or substrate — so a polarizing beamsplitter is
+  modelled as two traces, or better as a coated `Reflector` at its working
+  angle. Their outputs are purely transverse; a longitudinal component at
+  the surface is discarded rather than tracked. The waveplate's retardance
+  is also independent of incidence angle, where a real crystal plate's is
+  not — the field-of-view effect behind compound and Pancharatnam designs,
+  which would need a birefringent-plate model with o/e indices and a
+  thickness.
+
+## Phases not yet represented
+
+Each appends its own evidence section here as it lands; the list is the
+outstanding work, not a disclaimer.
+
+| Phase | Deliverable | Evidence it will add |
+|---|---|---|
+| 2d | interferometer polarization metrology | visibility budget predicted vs simulated; phase-shifting systematic vs input state; the angle-of-incidence trade |
+| 3 | vector vortex; reflective polarizer | vortex null depth vs retardance error against the analytic curve. The polarizer and waveplate landed — section 6. `RfPolarizer` is held for grid-efficiency and substrate s/p physics, not for the axis convention, which §6.7 settles and gates; the vortex is a separate design question (retardance and handedness conventions, broadband leakage) |
+| 3a Tranche 2 | Jones-through-chain | chains with coated surfaces between legs |
+| 4 | spatially variable coatings | per-segment and radial-grade Jones pupils; grid-resolution speckle-floor sweep |
+
+## Ladder rungs not yet climbed
+
+The validation ladder for polarization ground truth runs, in increasing
+effort and increasing independence:
+
+1. analytic single-surface Fresnel — **done** (§2.2)
+2. unitarity of a lossless Jones pupil — **done** (§2.1)
+3. rotational-symmetry 2θ invariant — **done** (§2.3)
+4. interferometer self-measurement cross-check — **not done**; needs Phase 2d.
+   Puts a known coating in the test arm of a simulated Twyman-Green and
+   *measures* its retardance with the phase-shifting pipeline, then compares
+   against both the Fresnel analytic and the Jones-pupil decomposition —
+   three independent paths to one number, entirely in-house.
+5. published two-mirror polarization-aberration results — **partly done**
+   (§2.5). The low-order expansion exists and the measured system matches
+   the *analytic form* the literature predicts: 2θ azimuthal structure,
+   quadratic radial law, no circular component, everything else at
+   round-off. What is still missing is a numeric regression against a
+   specific published system, which needs that system set up here rather
+   than more machinery.
+6. cross-check against a commercial polarization-ray-trace code — **not
+   done**. This is the only rung that satisfies an outside reviewer on its
+   own, and it depends on license access rather than on effort here.
+
+Rungs 1–3 are exact analytic or invariant checks and are the strongest
+evidence available without a second implementation. Rung 3 in the *scalar*
+sense is already met by the PROPER comparison (§3.6), which is why that gate
+is worth as much as it is: it is the one number on this page produced by code
+that shares nothing with MACOS.

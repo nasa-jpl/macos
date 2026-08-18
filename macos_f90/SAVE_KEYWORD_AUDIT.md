@@ -48,9 +48,17 @@ a policy call (they round-trip a *workflow*, not the optical system).
 
 ## Trace / OPD reference state — review individually (like ApStop)
 `FEXCentroid` (`Rx_FEXCentrFlg`), `UseChfRay4OPD` (`LUseChfRayIfOK`),
-`RayTgtElt`, `DpElt`, `Ex0Ey0`, `PolSrc`, `PolBeam`, `UDBeam`,
+`RayTgtElt`, `DpElt`, `PolSrc`, `PolBeam`, `UDBeam`,
 `UDSrcProf`, `xFrame`/`yFrame`/`zFrame` (source local frame — flagged
 `SrcLF_FLG`), `ObjFile`.
+
+**`Ex0Ey0` — RESOLVED (polarization Phase 1, 2026-07-25).** The source
+polarization state (`Ex0`,`Ey0`) now parses (`msmacosio.inc`, four reals
+`ExRe ExIm EyRe EyIm`) and round-trips through SAVE (`PrtSourceInfo`,
+after `Flux=`), gated on a non-zero state so polarization-free Rx SAVE
+output stays byte-identical.  Carries STATE only; polarization on/off is
+an API/CLI concern (`pol_set` / `POLARIZATION`), not an Rx keyword.
+`PolSrc`/`PolBeam` remain unrevived (commented block in `msmacosio.inc`).
 
 ## Element data — RESOLVED 2026-07-04 (all keys now round-trip)
 Every key below is now written by SAVE, gated on the value actually
@@ -79,6 +87,7 @@ is byte-identical under ifx AND gfortran, and ifx==gfortran.
 | `nGridMat GridFile GridSrfdx` on NON-grid SrfTypes | `nGridMat>0` outside grid-surface CASEs | **Conic NSReflector segments with GridData figures (iris_dp_ZGD) lost their whole grid on SAVE** |
 | `nMetPos tMetElt` | `nMetPos>0` | nMetPos precedes tMetElt (parser STOPs otherwise) |
 | `EdgeSensors` | `EdgeSensor>0` | 9-value row per sensor |
+| `PolAxis Retardance` | `EltID` is `TrPolarizer`/`WavePlate` (Retardance: `WavePlate` only) | polarizing elements, PLAN_POLARIZATION Phase 3. `Retardance` is UN-scaled by ÷Wavelen, inverting the parse-time ×Wavelen exactly as `Coating` thickness does — the stored quantity is the physical (n_slow−n_fast)·d, the keyword is in waves. Written after `RptElt`; no intra-element ordering constraint (unlike `Coating`, which snapshots `IndRef`). Round-trip gated by `tPolElement/test_save_roundtrip`. **Note the deliberate asymmetry with the API:** the parser UNITIZES `PolAxis` on load (matching `psiElt`), while `polelt_set` stores it as given — so a non-unit axis set through the API comes back normalized after a SAVE/reload. Either form is a direction; the trace normalizes per ray. |
 
 No action (already canonical): `MrEltGrp` (saved as `EltGrp`),
 `PolyApVec PolyObsVec Poly3DObsVec` (2D projections saved as
