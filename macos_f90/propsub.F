@@ -135,6 +135,7 @@ cdebug     &	,ifRayPrint
      &	  iLastNonSeq,iWF,nEstart,iLstart,iIntSrf,iminPrev,iObsOpt,
      &	  iLend,RayMap(mpts,mpts),SegMap(mpts,mpts),PrevElt(0:mElt),
      &	  iCurRayElt,iStartElt,iEndElt,iSecondElt,iEltLoop,IERROR,
+     &	  kWF,kWF1,kWF2,
      &	  BeamType,iNextSeq,npts,nBadRays,iNextElt,NextElt(0:mElt),
      &	  iPrevNonSeg,jGridSrf(mElt),CrntNSCnt,nPassRays
 cdebug  &, pRay
@@ -142,11 +143,21 @@ cdebug  &, pRay
 	SREAL dxdx(7,7),dxdu(7,6),spot(3)
 
 	REAL*8 dxMin(0:mElt),dxMax(0:mElt),dxAvg(0:mElt),
-     &         dxDev(0:mElt),OPDMat(mpts,mpts)
+     &         dxDev(0:mElt),OPDMat(mpts,mpts),xObsWk(3)
 
 	! CumLStart needs be saved so when iStartElt /= 0 upon re-entering
 	! this routine, its previous values can be used. -jzlou
 	REAL*8, dimension(:), allocatable, save :: CumLStart
+
+!--> PLAN_POLARIZATION 3a.1(2).  The polarized field assembly seeds the
+!    WFElt component plane(s) from RayE on the FIRST assembly of a trace
+!    and UPDATEs them with the incremental geometric phase afterwards
+!    (what the non-polarized branch has always done).  SAVE'd for the
+!    same reason CumLStart is: CPROPAGATE is re-entered with
+!    iStartElt /= 0 to extend a propagation, and the seed must not be
+!    redone then.  Reset with CumLStart at trace start (iStartElt==0).
+	LOGICAL, save :: LWFSeeded = .FALSE.
+!<--
 
 	REAL*8 Lmin,TPL,DPHI,Dicr,Djcr,dxSource,
      &	       Cphi, Lin1,Lin2,RayPosTst(3),RayLTst,dxsf,xa,xb,
@@ -222,6 +233,7 @@ C	Initialize input beam if first element is source
 	    CumLStart(iRay)=0d0
 	    LRayPass(iRay)=.TRUE.
  3        CONTINUE
+	  LWFSeeded=.FALSE.  ! PLAN_POLARIZATION 3a.1(2), see decl above
 	END IF
 
 C	Set wavelength in base units; set index of refraction for Glass;
@@ -499,7 +511,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	             (PropType(PrevElt(iElt)).NE.10).AND.
      &	             (PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
     	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -539,7 +552,8 @@ c	        END IF
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	          (PropType(PrevElt(iElt)).NE.10).AND.
      &	          (PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -571,7 +585,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
      &	          (PropType(PrevElt(iElt)).NE.10).AND.
      &	          (PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -581,6 +596,50 @@ c	        PrevElt=PrevNonSeg(iRay)
     	            RayE(3,iRay)=Evec(3)
     	          END IF
     	        END IF
+	        PrevIndRef=CurIndRef
+	        PrevExtinc=CurExtinc
+C						! Transmissive polarizer / waveplate
+!--> PLAN_POLARIZATION Phase 3.  This dispatch is NOT redundant with the
+!    one in tracesub.F: CPROPAGATE re-traces the rays that SEED the
+!    diffraction grid through its own element chain, so an element wired
+!    only into tracesub.F transforms RayE for ray-level queries and is
+!    invisible to intensity/complex_field.  Measured before this was
+!    added: crossed polarizers took the ray power to 3.6e-33 while the
+!    detector plane held the full 9.69e-01, i.e. the grid reported that
+!    polarization had no effect.  Any future element that touches the
+!    field needs BOTH chains.
+	      ELSE IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
+     &	               (EltID(iElt).EQ.WavePlateElt)) THEN
+	        PrevNonSeg(iRay)=iElt
+	        CALL PolElt(ifBuild,ifPol,ifLNsrf,LEltObs(iElt),
+     &	        LRayOK(iRay),LRayTrans,KcElt(iElt),KrElt(iElt),
+     &	        psiElt(1,iElt),VptElt(1,iElt),RptElt(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
+     &	        CurIndRef,IndRef(iElt),
+     &	        CurExtinc,Extinc(iElt),WaveBU,
+     &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
+     &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),Evec,
+     &	        dxdx,dxdu,
+     &	        EltID(iElt),PolAxisElt(1,iElt),PolRetElt(iElt),
+     &	        JmatElt(1,1,iElt))
+	        IF (ifReturnElt(iElt)) RayL(iRay)=-RayL(iRay)
+	        IF (.NOT.LRayTrans) THEN
+	          LRayPass(iRay)=.FALSE.
+	          IF((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3).AND.
+     &	          (PropType(PrevElt(iElt)).NE.10).AND.
+     &	          (PropType(PrevElt(iElt)).NE.12))
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
+	        END IF
+	        IF (ifAccumOPD) THEN
+	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	          IF (ifPol) THEN
+	            RayE(1,iRay)=Evec(1)
+	            RayE(2,iRay)=Evec(2)
+	            RayE(3,iRay)=Evec(3)
+	          END IF
+	        END IF
 	        PrevIndRef=CurIndRef
 	        PrevExtinc=CurExtinc
 C						! Conic Mirror Segment
@@ -624,7 +683,8 @@ c		  PrevElt=PrevNonSeg(iRay)
 	            IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	            .AND.(PropType(PrevElt(iElt)).NE.10)
      &	            .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	              WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	              CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                            RayWFMap(2,iRay),iWF,ifVecDif3)
 	          END IF
 	          IF (ifAccumOPD) THEN
 	            CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -669,7 +729,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -704,7 +765,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
@@ -739,7 +801,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        ! IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	        IF (ifAccumOPD) CumRayL(iRay)=CumRayL(iRay)+RayL(iRay)
@@ -774,7 +837,8 @@ c               PrevElt=PrevNonSeg(iRay)
                   IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &            .AND.(PropType(PrevElt(iElt)).NE.10)
      &            .AND.(PropType(PrevElt(iElt)).NE.12))
-     &              WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &              CALL WFZeroPt(RayWFMap(1,iRay),
+     &                            RayWFMap(2,iRay),iWF,ifVecDif3)
                 END IF
                 IF (ifAccumOPD)
      &            CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -820,7 +884,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
 	          If (.not. IsGrinRefElt(iElt)) Then
@@ -857,7 +922,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -892,7 +958,8 @@ c	        END IF
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD) THEN
 	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -1066,7 +1133,8 @@ C	Here when element number is determined...
 	                IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt))
      &	                  .NE.3).AND.(PropType(PrevElt(iElt)).NE.10)
      &	                  .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	                WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	                CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                              RayWFMap(2,iRay),iWF,ifVecDif3)
 	              END IF
 	              IF (.NOT.LROKdummy) THEN
 	                LRayOK(iRay)=.FALSE.
@@ -1142,7 +1210,7 @@ cdebug
                     !i=i+(mdttl-npts)/2+1; j=j+(mdttl-npts)/2+1
                     i=RayWFMap(1,iRay); j=RayWFMap(2,iRay)
 	            !print*,'*** Ray ',iRay,' is tapered by ',taperFactor(iRay)
-                    WFElt(i,j,iWF)=taperFactor(iRay)*WFElt(i,j,iWF)
+                    CALL WFScalePt(i,j,iWF,ifVecDif3,taperFactor(iRay))
                   End if
 #endif
 
@@ -1188,7 +1256,8 @@ c	        PrevElt=PrevNonSeg(iRay)
 	          IF ((iRay.GT.1).AND.(PropType(PrevElt(iElt)).NE.3)
      &	          .AND.(PropType(PrevElt(iElt)).NE.10)
      &	          .AND.(PropType(PrevElt(iElt)).NE.12))
-     &	            WFElt(RayWFMap(1,iRay),RayWFMap(2,iRay),iWF)=0d0
+     &	            CALL WFZeroPt(RayWFMap(1,iRay),
+     &	                          RayWFMap(2,iRay),iWF,ifVecDif3)
 	        END IF
 	        IF (ifAccumOPD)
      &	          CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
@@ -1291,7 +1360,7 @@ cdebug
             Do i=1,mdttl
               iRay=RayID(i,j)
               ! Scale WFElt(i,j,iWF) by tapering factor
-              WFElt(i,j,iWF)=taperFactor(iRay)*WFElt(i,j,iWF)
+              CALL WFScalePt(i,j,iWF,ifVecDif3,taperFactor(iRay))
             End Do
           End Do
         End If
@@ -1386,13 +1455,69 @@ cscale	    z1z2=dxElt(nEstart)/dxElt(iElt)
 	                ENDIF
 	              ENDIF
 	            ELSE IF (LRayOK(iRay)) THEN
+!--> PLAN_POLARIZATION 3a.1(2): SEED ONCE, THEN UPDATE.
+!    Both polarized branches used to RELOAD the grid from RayE at EVERY
+!    physical-leg assembly, which erases the diffraction accumulated by
+!    earlier legs -- the non-polarized branch below instead MULTIPLIES the
+!    existing WFElt by the incremental geometric phase.  So polarized
+!    multi-leg diffraction was broken by bookkeeping, independently of
+!    kernel coverage.  Now the FIRST assembly of a trace seeds the
+!    plane(s) from RayE and every later assembly applies exactly the
+!    non-polarized branch's incremental update, maintaining CumLStart the
+!    same way.
+!
+!    NO PHASE CONVENTION BRIDGE IS APPLIED AT THE SEED, and that is a
+!    MEASURED result, not an assumption.  Reading elemsub.F:395 alone
+!    (S1=-TWOPI*L/lambda, C1=exp(i*S1*Na) applied to Evec at every surface)
+!    suggests RayE advances phase OPPOSITE to WFElt, whose non-polarized
+!    assembly uses exp(+i*TPL*Cphi) and whose angular-spectrum kernels
+!    carry exp(-i*pi*lambda*dz*f**2) (paraxial forward exp(+ikz)).  Two
+!    independent experiments say otherwise -- RayE is already in WFElt's
+!    convention:
+!      (a) seeding WFElt=RayE*exp(i*c*TPL*CumRayL) and scanning c over
+!          {-2,-1,0,1,2} on a tilted Cassegrain moves the far-field
+!          centroid by exactly (c+1) x the scalar run's tilt shift, so
+!          c=0 reproduces the scalar pupil phase;
+!      (b) on the polarization-neutral chain tests/Rx/Rx_VecChain.in the
+!          c=0 seed reproduces the scalar intensity to 4.5e-16 at every
+!          leg, for x-polarized, 45-degree and circular input states.
+!    Do not 'fix' this to match the elemsub.F sign reading without first
+!    re-running tVecChain -- the tests are the authority here, and the
+!    residual sign question is flagged for review in PLAN_POLARIZATION.
+!    The scalar-polarization branch cannot be used as the vector seed even
+!    so: it rebuilds from |RayE| and therefore throws away the per-
+!    component phases the Jones/vector work needs.
+!
+!    VIGNETTING AT THE SEED.  RayE carries no aperture clipping (the
+!    surface routines report it through LRayTrans, they do not zero Evec),
+!    so a seed taken straight from RayE resurrects rays the ray-side
+!    zeroing had already extinguished -- a pre-existing defect in BOTH
+!    polarized branches.  LRayPass is exactly 'transmitted by every
+!    aperture so far'; the .OR.(iRay.EQ.1) mirrors the iRay.GT.1 guard the
+!    ray-side zero sites carry for the chief ray.  With this in place a
+!    polarization-ON / vector-OFF run is now BIT-IDENTICAL to a
+!    polarization-OFF run on the same prescription.
+!<--
+
+	              Cphi=CumRayL(iRay)-CumLStart(iRay)
+	              ! in the following,
+	              ! TPL*Cphi = (2*pi/lambda)*OPL -jzlou
+	              DPHI=MOD((TPL*Cphi),6.28318530717959D0)
 	              IF (ifVecDif3) THEN
-	                DO k=1,3
-	                  ! For vector diffraction, E fields in X,Y and Z directions
-			  ! diffracted separately. -jzlou
-	                  WFElt(i,j,k)=RayE(k,iRay)
-cscale	                  WFElt(i,j,k)=-z1z2*RayE(k,iRay)
-     	                END DO
+	                IF (LWFSeeded) THEN
+	                  C1=EXP(DCMPLX(0D0,DPHI))
+	                  DO k=1,3
+	                    ! For vector diffraction, E fields in X,Y and Z
+			    ! directions diffracted separately. -jzlou
+	                    WFElt(i,j,k)=C1*WFElt(i,j,k)
+	                  END DO
+	                ELSE IF (LRayPass(iRay).OR.(iRay.EQ.1)) THEN
+	                  DO k=1,3
+	                    WFElt(i,j,k)=RayE(k,iRay)
+	                  END DO
+	                ELSE
+	                  WFElt(i,j,1:3)=0D0
+	                END IF
 	              ELSE
 	                ! Polarization case:
 	                ! Here a complex optical field is formed in
@@ -1401,18 +1526,20 @@ cscale	                  WFElt(i,j,k)=-z1z2*RayE(k,iRay)
 			! of RayE. WFElt array is used in a diffraction
                         ! propagation below. For a more complete picture, read
 	                ! comments in the non-polarization section, -jzlou
-	                Cphi=CumRayL(iRay)-CumLStart(iRay)
-	                ! in the following,
-	                ! TPL*Cphi = (2*pi/lambda)*OPL -jzlou
-	                DPHI=MOD((TPL*Cphi),6.28318530717959D0)
-cscale	                C1=z1z2*SQRT(DBLE(...))
-	                C1=SQRT(DBLE(
+	                IF (LWFSeeded) THEN
+	                  WFElt(i,j,iWF)=EXP(DCMPLX(0D0,DPHI))
+     &	                                 *WFElt(i,j,iWF)
+	                ELSE IF (LRayPass(iRay).OR.(iRay.EQ.1)) THEN
+	                  C1=SQRT(DBLE(
      &	                	RayE(1,iRay)*DCONJG(RayE(1,iRay))+
      &	                	RayE(2,iRay)*DCONJG(RayE(2,iRay))+
      &	                	RayE(3,iRay)*DCONJG(RayE(3,iRay))))
-	                WFElt(i,j,iWF)=C1*EXP(DCMPLX(0D0,DPHI))
-	                CumLStart(iRay)=CumRayL(iRay)
+	                  WFElt(i,j,iWF)=C1*EXP(DCMPLX(0D0,DPHI))
+	                ELSE
+	                  WFElt(i,j,iWF)=0D0
+	                END IF
 	              END IF
+	              CumLStart(iRay)=CumRayL(iRay)
 	            ELSE
 	              IF (ifVecDif3) THEN
 	                WFElt(i,j,1:3)=0D0
@@ -1424,6 +1551,10 @@ cscale	                C1=z1z2*SQRT(DBLE(...))
 	            END IF
   210	          CONTINUE
   211	        CONTINUE
+!-->    The plane(s) now hold a physical-optics field; every later
+!       assembly of this trace UPDATEs it instead of reloading RayE.
+	        LWFSeeded=.TRUE.
+!<--
 	      END IF
 	    ELSE
 !	      print*,'***** 2: After DO 9 loop in propsub, iElt,iEndElt =',
@@ -1579,6 +1710,29 @@ C       propagation from (iElt-1) to iElt, unless ReGrid is called. -jzlou
 
 	    iLstart=iElt
 
+!--> PLAN_POLARIZATION 3a.2 (Tranche 1).  Vector diffraction repurposes
+!    the mWF=3 wavefront planes as the Cartesian components (Ex,Ey,Ez)
+!    of ONE wavefront, so every physical leg below runs the IDENTICAL
+!    scalar kernel once per component.  That is rigorous, not an
+!    approximation: in a homogeneous isotropic medium each Cartesian
+!    component independently satisfies the scalar Helmholtz equation,
+!    and the angular-spectrum propagator is its solution operator, so
+!    the vector legs inherit exactly the scalar legs' paraxial validity
+!    envelope -- no better, no worse.  Component coupling lives at
+!    surfaces (the s/p machinery in elemsub.F, per ray) and in the
+!    divergence constraint (sampled from the rays as RayE(3,:)).
+!    In scalar mode the loop degenerates to the single plane iWF, so
+!    those paths stay bit-identical.  The leg's dx/z bookkeeping is
+!    computed ONCE, outside the loop.
+	    IF (ifVecDif3) THEN
+	      kWF1=1
+	      kWF2=3
+	    ELSE
+	      kWF1=iWF
+	      kWF2=iWF
+	    END IF
+!<--
+
 C					Near-field sphere-to-sphere
 	    IF (PropType(iEm1).EQ.2) THEN
 	      dxElt(nEstart)=ABS(dxElt(iElt)*zElt(nEstart)/zElt(iElt))
@@ -1589,9 +1743,11 @@ C					Near-field sphere-to-sphere
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL NFPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	        dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	        WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL NFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	          WaveBU,mdttl,DWF)
+	      END DO
 
 	      WRITE(*,502)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
      &	       zElt(iElt),dxElt(iElt),dxMin(iElt),dxMax(iElt),
@@ -1604,26 +1760,35 @@ C					Far-field sphere-to-plane
 	      IF (ifVecDif3) THEN
                 print*,
      &  '==> 1: Far-field (vector) sphere-to-plane diffraction ...'
-		If (ifFnCalc)
-     &            Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
+	      ELSE
+                print*,
+     &     '===> 2: Far-field sphere-to-plane diffraction ...'
+	      END IF
+	      If (ifFnCalc)
+     &          Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
 
-	        ! Far-field diffraction for polarized light,
-	        CALL PFFPROP(WFElt(1,1,1),dxElt(iElt),
-     &	               dxElt(nEstart),zElt(nEstart),WaveBU,mdttl)
-
+!--> PLAN_POLARIZATION 3a.1(1).  The vector far-field leg used to call
+!    PFFPROP, a bare per-component FFT that OMITS the Fresnel-integral
+!    output factors scalar FFPROP applies through applyfac2 --
+!    1/(i*lambda*dz)*dx1**2 and the output-plane quadratic phase.  That
+!    is harmless for a TERMINAL intensity hop (a global scale plus a
+!    curvature nobody reads) and fatal in a CHAIN, where the missing
+!    output curvature is the next leg's input.  Vector and scalar
+!    far-field legs now share ONE kernel by construction.  This CHANGES
+!    existing vector-run intensity normalization -- intended; see the
+!    single-hop A/B in the Phase 3a validation ladder.  PFFPROP is kept
+!    below for reference but is no longer called from anywhere.
+	      DO kWF=kWF1,kWF2
+	        CALL FFPROP(WFElt(1,1,kWF),dxElt(iElt),
+     &	          WFElt(1,1,kWF),dxElt(nEstart),zElt(nEstart),
+     &	          WaveBU,mdttl,DWF)
+	      END DO
+!<--
+	      IF (ifVecDif3) THEN
 	        WRITE(*,509)nEstart,iElt,iWF,zElt(nEstart),
      &	          dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
      &	          dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
 	      ELSE
-                print*,
-     &     '===> 2: Far-field sphere-to-plane diffraction ...'
-	        If (ifFnCalc)
-     &            Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
-
-	        CALL FFPROP(WFElt(1,1,iWF),dxElt(iElt),
-     &	          WFElt(1,1,iWF),dxElt(nEstart),zElt(nEstart),
-     &	          WaveBU,mdttl,DWF)
-
 	        WRITE(*,503)nEstart,iElt,iWF,zElt(nEstart),
      &	          dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
      &	          dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
@@ -1632,11 +1797,29 @@ C					Far-field sphere-to-plane
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
 
 C    Now compute obscurations in diffracted light
-	      IF (EltID(iElt).EQ.7)  ! 'Obscuring' element
-     & 	        CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
+	      IF (EltID(iElt).EQ.7) THEN  ! 'Obscuring' element
+!--> PLAN_POLARIZATION 3a.2: an amplitude mask is a 0/1 transmittance,
+!    i.e. a diagonal Jones t*I, so the IDENTICAL mask applies to all three
+!    component planes.  xObsWk is a FRESH copy per plane because FFObscure
+!    re-orthogonalizes its xGrid argument in place; reusing the mutated
+!    vector could shift a mask edge pixel by a ULP between components.
+!    The scalar call below is left exactly as it was (bit-identical).
+	        IF (ifVecDif3) THEN
+	          DO kWF=1,3
+	            CALL DEQUATE(xObsWk,xObs(1,iElt),3)
+	            CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
+     &	   RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
+     &	   ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
+     &	   ObsVec(1,1,iElt),xObsWk,WFElt(1,1,kWF),mdttl)
+	          END DO
+	        ELSE
+	          CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
      &	   RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
      &	   ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	   ObsVec(1,1,iElt),xObs(1,iElt),WFElt(1,1,iWF),mdttl)
+	        END IF
+!<--
+	      END IF
 
 C					Near-field plane-to-plane
 	    ELSE IF (PropType(iEm1).EQ.4) THEN
@@ -1647,9 +1830,11 @@ C					Near-field plane-to-plane
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL PPPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	             dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	             WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL PPPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	               dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	               WaveBU,mdttl,DWF)
+	      END DO
 
 	      WRITE(*,504)
      &          nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
@@ -1666,9 +1851,11 @@ C					Near-field using 2 RS
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL NFPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	        	  dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	        	  WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL NFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	        	    dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	        	    WaveBU,mdttl,DWF)
+	      END DO
 
 	      WRITE(*,505)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
      &	       dxMin(nEstart),dxMax(nEstart),dxDev(nEstart),Lin1,
@@ -1688,9 +1875,11 @@ C				Near-field plane-to-plane using 2 RS
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL PPPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	                  dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	                  WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL PPPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	                    dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	                    WaveBU,mdttl,DWF)
+	      END DO
 
 	      WRITE(*,504)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
      &	       zElt(iElt),dxElt(iElt),dxMin(iElt),dxMax(iElt),
@@ -1719,9 +1908,11 @@ C		Near-field sphere-to-sphere with pin-hole spatial filter
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL SFPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	        dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	        WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+	      DO kWF=kWF1,kWF2
+	        CALL SFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	          WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+	      END DO
 
 	      WRITE(*,507)nEstart,iElt,iWF,PinHole(nEstart),dxsf,
      &	       zElt(nEstart),dxElt(nEstart),
@@ -1739,9 +1930,11 @@ C		Near-field sphere-to-sphere with pin-hole spatial filter
     	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL SFPROP(WFElt(1,1,iWF),dxElt(iElt),WFElt(1,1,iWF),
-     &	        dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	        WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+	      DO kWF=kWF1,kWF2
+	        CALL SFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
+     &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
+     &	          WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+	      END DO
 
 
 	      WRITE(*,508)nEstart,iElt,iWF,PinHole(nEstart),dxsf,
@@ -1762,9 +1955,11 @@ C    NOTE: set dx, z according to nf prop surfaces!!!
 	      If (ifFnCalc)
      &          Fn = FnCalc_DZ(zStart-zEnd,WaveBU,1)
 
-	      CALL SPH2PL(WFElt(1,1,iWF),WFElt(1,1,iWF),
-     &	                  dxElt(nEstart),zEnd,zStart,
-     &	                  WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL SPH2PL(WFElt(1,1,kWF),WFElt(1,1,kWF),
+     &	                    dxElt(nEstart),zEnd,zStart,
+     &	                    WaveBU,mdttl,DWF)
+	      END DO
 
 
 	      WRITE(*,510)nEstart,iElt,iWF,
@@ -1774,18 +1969,38 @@ C    NOTE: set dx, z according to nf prop surfaces!!!
 	      IF (ifRegrid(iElt)) CALL ReGrid(iElt)
 
 C    Now compute obscurations in diffracted light
-	      IF (EltID(iElt).EQ.7)
-     & 	        CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
+	      IF (EltID(iElt).EQ.7) THEN
+!--> PLAN_POLARIZATION 3a.2: an amplitude mask is a 0/1 transmittance,
+!    i.e. a diagonal Jones t*I, so the IDENTICAL mask applies to all three
+!    component planes.  xObsWk is a FRESH copy per plane because FFObscure
+!    re-orthogonalizes its xGrid argument in place; reusing the mutated
+!    vector could shift a mask edge pixel by a ULP between components.
+!    The scalar call below is left exactly as it was (bit-identical).
+	        IF (ifVecDif3) THEN
+	          DO kWF=1,3
+	            CALL DEQUATE(xObsWk,xObs(1,iElt),3)
+	            CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
+     &	         RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
+     &	         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
+     &	         ObsVec(1,1,iElt),xObsWk,WFElt(1,1,kWF),mdttl)
+	          END DO
+	        ELSE
+	          CALL FFObscure(psiElt(1,iElt),VptElt(1,iElt),
      &	         RptElt(1,iElt),RayPos(1,1),dxElt(iElt),(npts+1),
      &	         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	         ObsVec(1,1,iElt),xObs(1,iElt),WFElt(1,1,iWF),mdttl)
+	        END IF
+!<--
+	      END IF
 
 C  Far-field plane-to-sphere: second part of S2S calc
 	    ELSE IF (PropType(iEm1).EQ.11) THEN
 C    NOTE: set dx, z according to nf prop surfaces!!!
 	      Lin2=1d2*(dxElt(iElt)-dxDev(iElt))/dxElt(iElt)
 
-	      CALL PL2SPH(WFElt(1,1,iWF),WFElt(1,1,iWF),mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL PL2SPH(WFElt(1,1,kWF),WFElt(1,1,kWF),mdttl,DWF)
+	      END DO
 
 	      WRITE(*,511)nEstart,iElt,iWF,
      &	      zElt(nEstart),dxElt(nEstart),
@@ -1801,9 +2016,11 @@ C					Fresnel sphere-to-sphere
 	      If (ifFnCalc)
      &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
 
-	      CALL FRPROP(WFElt(1,1,iWF),dxElt(iElt),
-     &	        WFElt(1,1,iWF),dxElt(nEstart),zElt(iElt),
-     &	        zElt(nEstart),WaveBU,mdttl,DWF)
+	      DO kWF=kWF1,kWF2
+	        CALL FRPROP(WFElt(1,1,kWF),dxElt(iElt),
+     &	          WFElt(1,1,kWF),dxElt(nEstart),zElt(iElt),
+     &	          zElt(nEstart),WaveBU,mdttl,DWF)
+	      END DO
 
 	      WRITE(*,512)nEstart,iElt,iWF,zElt(nEstart),
      &	       dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
@@ -1817,9 +2034,11 @@ C					NF DFT plane-to-plane
 c	      CALL nfpropdft(uin,npt,dx1,utst,npt,dx2,lambda,z)
 Cmore efficient	-- CALL WFrepack(DWF,WFElt(1,1,iWF),nGridPts)
 
-	      CALL NFPropDFT(WFElt(1,1,iWF),mdttl,dxElt(nEstart),
-     &	             WFElt(1,1,iWF),mdttl,dxElt(iElt),WaveBU,
-     &	             zElt(nEstart)-zElt(iElt))
+	      DO kWF=kWF1,kWF2
+	        CALL NFPropDFT(WFElt(1,1,kWF),mdttl,dxElt(nEstart),
+     &	               WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveBU,
+     &	               zElt(nEstart)-zElt(iElt))
+	      END DO
 
 	      WRITE(*,513)nEstart,iElt,iWF,zElt(nEstart),
      &	       dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
@@ -1838,8 +2057,10 @@ C  Siegman-Sziklas coord xform:
 	      dx2p=alpha*dxElt(nEstart)
 	      dzp=alpha**2*(z2-z1)*z1/z2
 
-	      CALL NFPropDFT(WFElt(1,1,iWF),mdttl,dx1p,
-     &               WFElt(1,1,iWF),mdttl,dx2p,WaveBU,dzp)
+	      DO kWF=kWF1,kWF2
+	        CALL NFPropDFT(WFElt(1,1,kWF),mdttl,dx1p,
+     &                 WFElt(1,1,kWF),mdttl,dx2p,WaveBU,dzp)
+	      END DO
 
 	      WRITE(*,514)nEstart,iElt,iWF,zElt(nEstart),
      &	       dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
@@ -1849,9 +2070,11 @@ C  Siegman-Sziklas coord xform:
 C					FF DFT
 	    ELSE IF (PropType(iEm1).EQ.15) THEN
 	      Lin1=1d2*(dxElt(nEstart)-dxDev(nEstart))/dxElt(nEstart)
-	      CALL FFPropDFT(WFElt(1,1,iWF),mdttl,dxElt(nEstart),
-     &	        WFElt(1,1,iWF),mdttl,dxElt(iElt),WaveBU,
-     &	        zElt(nEstart)-zElt(iElt))
+	      DO kWF=kWF1,kWF2
+	        CALL FFPropDFT(WFElt(1,1,kWF),mdttl,dxElt(nEstart),
+     &	          WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveBU,
+     &	          zElt(nEstart)-zElt(iElt))
+	      END DO
 	      WRITE(*,515)nEstart,iElt,iWF,zElt(nEstart),
      &	       dxElt(nEstart),dxMin(nEstart),dxMax(nEstart),
      &	       dxDev(nEstart),Lin1,zElt(iElt),dxElt(iElt)
@@ -1905,6 +2128,53 @@ c	  END IF
  15	CONTINUE
 	RETURN
 	END SUBROUTINE CPROPAGATE
+
+
+C***********************************************************************
+!	Extinguish one wavefront grid point.  In vector-diffraction mode
+!	the mWF=3 planes are the Cartesian components (Ex,Ey,Ez) of ONE
+!	wavefront, so a ray blocked by an aperture must be extinguished in
+!	ALL of them -- a scalar 0/1 mask is a diagonal Jones t*I.  In
+!	scalar mode this is the single-plane assignment it replaced, so
+!	those paths stay bit-identical.  PLAN_POLARIZATION 3a.2.
+C***********************************************************************
+
+	SUBROUTINE WFZeroPt(i,j,iWF,ifVecDif3)
+	use elt_mod, only: WFElt
+	IMPLICIT NONE
+	INTEGER i,j,iWF
+	LOGICAL ifVecDif3
+
+	IF (ifVecDif3) THEN
+	  WFElt(i,j,1:3)=0d0
+	ELSE
+	  WFElt(i,j,iWF)=0d0
+	END IF
+
+	RETURN
+	END SUBROUTINE WFZeroPt
+
+C***********************************************************************
+!	Scale one wavefront grid point by a REAL apodization/taper factor.
+!	Same 3-plane rule as WFZeroPt: a real transmittance is a diagonal
+!	Jones t*I and applies identically to every component.
+C***********************************************************************
+
+	SUBROUTINE WFScalePt(i,j,iWF,ifVecDif3,fac)
+	use elt_mod, only: WFElt
+	IMPLICIT NONE
+	INTEGER i,j,iWF
+	LOGICAL ifVecDif3
+	REAL*8 fac
+
+	IF (ifVecDif3) THEN
+	  WFElt(i,j,1:3)=fac*WFElt(i,j,1:3)
+	ELSE
+	  WFElt(i,j,iWF)=fac*WFElt(i,j,iWF)
+	END IF
+
+	RETURN
+	END SUBROUTINE WFScalePt
 
 
 
@@ -2270,6 +2540,11 @@ C***********************************************************************
 
 C***********************************************************************
 
+!--> NO LONGER CALLED (PLAN_POLARIZATION 3a.1(1)).  The vector far-field
+!    leg now runs scalar FFPROP once per component plane, so it picks up
+!    the Fresnel-integral output factors this routine omits.  Retained
+!    for reference / A-B comparison only.
+!<--
 	SUBROUTINE PFFPROP(WF,DX1,DX2,DZ,LAMBDA,NFFT)
 	IMPLICIT NONE
 	INTEGER I,J,K,NN(2),NFFT

@@ -1,0 +1,82 @@
+# MACOS Polarization — Validation Report
+
+**Scope.** This is the reviewer-facing companion to the polarization test
+code: one evidence section per validation gate, each stating the claim, the
+figure, the measured number, the truth it is measured against, and the test
+that pins it in CI. It covers the work described in `PLAN_POLARIZATION.md`
+Phases 0–2b (exposure of the engine's existing polarization physics, the
+Jones-pupil layer and the polarization-aberration maps), Phase 3a Tranche 1
+(vector propagation across a multi-leg chain), the `Reflector` s/p sign
+correction, Phase 2c (the polarization contrast floor), the Phase 3
+polarizing elements (linear polarizer and waveplate), and the
+coated-`Refractor` transmission radiometry correction.
+
+It does **not** cover Phase 2d (the interferometer track), the vector vortex
+or the reflective polarizer, Phase 3a Tranche 2 (Jones-through-chain), or
+Phase 4 (spatially variable coatings). Those append their own evidence
+sections as they land — see *Coverage and gaps* at the end. Section 5.6
+states precisely what Tranche 2's absence costs the contrast floor on a real
+coronagraph chain, and section 6.7 settles — and gates in the engine — the
+one convention question the polarizing elements raise away from normal
+incidence. Section 7 does the same for the coated transmission path, which
+until that landing had no analytic gate of any kind.
+
+## Provenance
+
+| | |
+|---|---|
+| Generated | @@PROV_GENERATED@@ |
+| Engine (`macos`) | `@@PROV_ENGINE_SHA@@` on `@@PROV_ENGINE_BRANCH@@` |
+| Bindings (`MACOS_resources`) | `@@PROV_RESOURCES_SHA@@` on `@@PROV_RESOURCES_BRANCH@@` |
+| MATLAB | R@@PROV_MATLAB@@ |
+| Model size(s) | @@PROV_MODEL_SIZE@@ |
+| Host | @@PROV_HOST@@ |
+| Figure / number consistency | @@PROV_FRESHNESS@@ |
+
+## How this document is produced
+
+Every figure and every number below is generated. The prose sources
+(`polval/*.md.in`) contain no numeric literals at all — only substitution
+placeholders of the form `@@`*NAME*`@@`. One command refreshes the lot:
+
+```
+cd docs/macos-manual && make polval-regen   # measure + render
+make polval                                 # build docx / HTML
+make polval-pdf                             # and PDF
+```
+
+`polval-regen` runs the MATLAB driver
+(`MACOS_resources/mmacos/tools/pol_validation_report/`), which re-runs every
+validation case, writes `media/*.png` and `generated/numbers.json`, and then
+substitutes those numbers into the prose. Rendering **fails** if any token is
+unresolved, so a half-updated report cannot be built, and the provenance row
+above stamps the exact engine and binding commits the numbers came from. A
+stale figure beside a fresh number is not something a reader has to catch by
+eye.
+
+### Numbers this driver cannot measure
+
+Some gates run in another language binding, under another compiler, in
+another repository, or against a pre-fix engine binary that no longer exists
+in the tree. They are **not** omitted, and they are **not** quietly presented
+as if they were regenerated: each is marked *(external, captured DATE)* and
+its producing command is recorded in `external.json` beside the driver.
+Everything else on this page was measured by the run stamped above.
+
+### Reading the numbers
+
+Two conventions matter for interpreting round-off-level results:
+
+* **Mean and variation are reported separately, never conflated.** A uniform
+  diattenuation or retardance across the pupil is a state change — after
+  folds it also absorbs the system's geometric rotation — and is not an
+  aberration. Only the *variation* drives a contrast floor or a phase-shifting
+  interferometry systematic. Conflating the two into one RMS is the most
+  likely way to produce a plausible-looking wrong number.
+* **At round-off, the statistic can be louder than the physics.** Where a
+  quantity is uniform to a few times machine epsilon, an ordinary `mean()`
+  over ~10⁴ pupil points accumulates more summation error than the spread
+  being measured. Where that happens it is called out explicitly and the
+  floor itself is published alongside the result, so the reader can see which
+  of the two a number is reporting. The transmission-uniformity result in the
+  unitarity gate is the worked case.

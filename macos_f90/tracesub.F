@@ -3446,6 +3446,40 @@ c	      IndRef(iElt)=IndRef(PrevElt(iElt))
 	      ifRayElt(iElt)=.TRUE.
 
             ! ----------------------------------
+            ! (15/18) Transmissive polarizer / waveplate
+            !         PLAN_POLARIZATION Phase 3.  Straight-through
+            !         geometry (RefSrf's), a 2x2 Jones applied to RayE
+            !         in the ray's transverse plane.  With ifPol off
+            !         PolElt touches no field, so these trace exactly
+            !         like a Reference surface.
+            ! ----------------------------------
+
+	    ELSE IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
+     &	             (EltID(iElt).EQ.WavePlateElt)) THEN
+	      PrevNonSeg=iElt
+
+	      CALL PolElt(ifBuild,ifPol,ifLNsrf,LEltObs(iElt),
+     &	        LRayOK(iRay),LRayTrans,KcElt(iElt),KrElt(iElt),
+     &	        psiElt(1,iElt),VptElt(1,iElt),RptElt(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
+     &	        CurIndRef,IndRef(iElt),
+     &	        CurExtinc,Extinc(iElt),WaveBU,
+     &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
+     &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),
+     &          zObs(1,iElt),
+     &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),
+     &          EltID(iElt),PolAxisElt(1,iElt),PolRetElt(iElt),
+     &          JmatElt(1,1,iElt))
+
+	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
+	      IF (ifReturn) RayL(iRay)=-RayL(iRay)
+	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
+	      PrevIndRef=CurIndRef
+	      PrevExtinc=CurExtinc
+	      ifRayElt(iElt)=.TRUE.
+
+            ! ----------------------------------
             ! (11) Reflector Segment
             ! ----------------------------------
 
