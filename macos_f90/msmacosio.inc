@@ -173,7 +173,16 @@ C       Set entrance condition flags to .FALSE.
 !             GO TO 50
 
           ! --------------------------------------------------------------------------------
+          ! Source polarization state (Ex0,Ey0) as four reals:
+          !   Ex0Ey0= ExRe ExIm EyRe EyIm
+          ! Carries the source Jones vector ONLY; polarization on/off stays with
+          ! the API/CLI (pol_set / POLARIZATION), per the Phase-0 decision.  Was
+          ! a silent GO TO 50 swallow -- a user setting this in a .in previously
+          ! got no error and no effect.
           ELSE IF (LCMP(VAR_NAM,'Ex0Ey0',6)) THEN
+            READ(VALUE,*) DDEF(1),DDEF(2),DDEF(3),DDEF(4)
+            Ex0 = DCMPLX(DDEF(1),DDEF(2))
+            Ey0 = DCMPLX(DDEF(3),DDEF(4))
             GO TO 50
 
 #ifdef CMACOS
@@ -2607,6 +2616,32 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*)(psiElt(j,iElt),j=1,3)
               CALL DUNITIZE(psiElt(1,iElt))
               psiElt_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+!--> polarizing-element keywords (PLAN_POLARIZATION Phase 3).
+!    PolAxis= is the reference axis of a TrPolarizer (transmission
+!    axis) or WavePlate (FAST axis), given as a 3-vector in global
+!    coordinates.  It is projected into each ray's transverse plane at
+!    trace time, so it need not be perpendicular to psiElt -- only
+!    non-parallel to the ray.
+            ELSE IF (LCMP(VAR_NAM,'PolAxis',7)) THEN
+              READ(VALUE,*)(PolAxisElt(j,iElt),j=1,3)
+              CALL DUNITIZE(PolAxisElt(1,iElt))
+              PolAxis_FLG=.TRUE.
+              GO TO 61
+
+            ! ------------------------------------------------------------------------------
+!    Retardance= is in WAVES at the header Wavelen and is converted
+!    here to the physical retardance (n_slow-n_fast)*d, exactly the way
+!    Coating= layer thicknesses are handled above.  The trace divides
+!    by the CURRENT lambda, so a plate stays physically fixed across a
+!    wavelength sweep.  Needs no intra-element ordering (unlike
+!    Coating=, which snapshots IndRef): only the header Wavelen.
+            ELSE IF (LCMP(VAR_NAM,'Retardance',10)) THEN
+              READ(VALUE,*)PolRetElt(iElt)
+              PolRetElt(iElt)=PolRetElt(iElt)*Wavelen
+              PolRet_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
