@@ -304,6 +304,16 @@ The VECtor command sets a toggle to use vector formula when calculating single-p
 
 Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 5.3.11). Vector diffraction is the default with polarization on.
 
+In vector mode the three field components Ex, Ey, Ez are propagated as independent scalar fields. This is rigorous rather than approximate: in a homogeneous isotropic medium each Cartesian component independently satisfies the scalar Helmholtz equation, and the angular-spectrum propagator is its solution operator, so the vector legs inherit exactly the scalar legs' paraxial validity envelope — no better and no worse. Component coupling enters at surfaces, where it is handled per ray by the s/p machinery of the polarized trace.
+
+Scope: vector diffraction covers the whole propagation chain — the far-field (Fraunhofer) leg, every near-field, plane-to-plane, spherical, Fresnel and DFT leg, the diffraction-grid obscuration apply, and the ray-side aperture and apodization masking. A multi-leg chain therefore preserves the vector field between legs. (Before MACOS 4.1 only the far-field leg was vectorized; the other legs carried the two off-plane components without propagating them.)
+
+In vector mode the three wavefront storage planes are repurposed as Ex/Ey/Ez, so only a single wavefront can be active — do not combine vector diffraction with multi-wavefront work such as COMPOSE.
+
+The individual components are readable through the bindings: `complex_field` takes a `plane` selector, where 1, 2 and 3 return Ex, Ey and Ez and the default 0 returns the element's own wavefront. The three add in intensity, not amplitude, and their sum reproduces the ordinary intensity map. Requesting a component plane while vector diffraction is off is refused rather than answered, because in scalar mode that storage plane holds an unrelated wavefront and not a field component.
+
+One limitation remains. Between two physical propagation legs the grid field is advanced by a scalar phase, which is exact when the intervening elements are non-polarizing — Obscuring, Reference and FocalPlane elements, which covers the standard coronagraph chain of pupil, focal-plane mask, Lyot stop and focal plane. A chain that places a COATED or reflecting surface between two physical legs needs the surface Jones matrix applied to the grid field as well as to the rays, which is not yet implemented; in that configuration the polarization transfer at the intervening surface is not carried into the diffracted field.
+
 #### Propagation commands
 
 Several commands, such as INT, LOG, ADD, etc. cause the beam to be propagated to the specified element using MACOS combined ray-trace and diffraction computations.

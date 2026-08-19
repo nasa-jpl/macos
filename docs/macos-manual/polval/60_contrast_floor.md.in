@@ -1,0 +1,194 @@
+# The polarization contrast floor
+
+The coronagraph question is not what shape the polarization aberration has
+but how much light it puts where the dark zone should be. `pol_contrast_floor`
+answers it by splitting the detector field into three channels —
+**co-polarized**, **cross-polarized** and **longitudinal** — and reporting
+the cross-polarized channel, the part no scalar deformable-mirror control can
+remove, in peak-normalized contrast.
+
+Two design choices carry most of the risk, and both are gated below.
+
+**The split is taken at the detector, on the engine's own Ex/Ey/Ez component
+planes, not through a pupil multiplier.** The chain is linear in the input
+Jones state and Tranche 1 propagates all three planes with the identical
+scalar kernel, so a spatially uniform analyzer commutes with propagation:
+projecting after the propagation is the same operation as projecting before
+it. This also avoids the obstacle that stopped two earlier designs — the
+Jones pupil is assembled from `RayE` and carries the accumulated optical path
+length, so it can never be used as a `WFElt` multiplier, and there is no
+fixed conjugation to divide out because the `RayE`↔`WFElt` phase relation is
+train-dependent (§3).
+
+**"Co-polarized" is referenced to the mean *output* state, not to the input
+state.** A train can rotate polarization geometrically with zero
+diattenuation and zero retardance; charging that rotation to the
+cross-polarized channel reports an aberration where there is none, since an
+observer would simply align the analyzer to the output. The analyzer used is
+the dominant eigenvector of the 2×2 pupil coherency matrix
+`C_ij = Σ E_i conj(E_j)`, which is phase-insensitive — the common wavefront
+cancels inside the product, so unlike a plain pupil mean it does not collapse
+on an aberrated pupil — and which by construction minimizes cross-polarized
+power. An unpolarized source is two traces with orthogonal input states
+summed in intensity, each with its own analyzer; the second state is never
+synthesized from the first.
+
+## 5.1 The decomposition invents no floor
+
+The first thing to establish is the negative one. On a train where
+polarization does nothing, the machinery must report *nothing* — otherwise
+every floor it produces afterwards is partly its own reference-frame
+choices.
+
+`Rx_VecChain.in` is that train: collimated, on-axis, flat uncoated planes, so
+the ray field direction is a constant unit vector. With an x-polarized input
+the cross-polarized channel comes out at @@C21_VC_CROSS@@ of the co-polarized
+power — **exactly zero**, not merely small — the longitudinal channel with
+it, and the co-polarized channel reproduces the scalar (polarization-off) run
+to @@C21_VC_SCALAR@@ of the detector peak. Taken as a contrast curve, the
+quantity a coronagraph budget actually reads, the two agree to
+@@C21_VC_CURVE@@ relative across @@C21_VC_BINS@@ radial bins.
+
+## 5.2 The split is a unitary change of basis
+
+The analyzer and its complement form an orthonormal pair, so the two
+transverse channels must account for the transverse intensity pointwise, with
+nothing lost between them and nothing double-counted. Measured on
+`Rx_Cass_FarField.in`: co + cross equals |Eₓ|² + |E_y|² to
+@@C22_PARSEVAL@@ of the detector peak, and the three channels together
+reproduce the engine's own intensity to @@C22_CLOSURE@@. Both are round-off
+on quantities that are equal by construction — which is the point: an error
+in the projection, the complement, or the channel bookkeeping would show up
+here rather than as a plausible-looking floor.
+
+## 5.3 The floor of an uncoated two-mirror train
+
+`Rx_Cass_FarField.in` puts both its mirrors before its single far-field leg,
+so the diffraction grid carries the whole train (§5.6) and the number is
+physics rather than a bound. With bare perfect-conductor mirrors the floor is
+purely geometric — the NA-driven cross-polarization of §4 — and comes to
+**@@C23_CROSS_OVER_CO@@** of the co-polarized power, in a
+peak-normalized mean contrast of **@@C23_DZ_BARE@@** over a 10–40 pixel
+annulus.
+
+That number arrives here through a completely different path from §4: from
+the propagated grid planes rather than from `RayE`, through a diffraction
+leg, with the analyzer derived rather than assumed. It agrees with the
+ray-level two-mirror cross-polarized fraction of §4 to the digits printed.
+
+The **longitudinal** channel is not negligible and is reported separately
+rather than folded into either transverse one: it carries
+@@C23_LONG_FRAC@@ of the total on this train. Tranche 1's out-of-plane
+attribution (§3.5) independently measured the same prescription's
+out-of-plane fraction as 1 − f = 2.110e-3, from the pupil rather than the
+detector and at a different model size; the two agree to better than a
+percent.
+
+![Co-polarized and cross-polarized channels at the detector, and the
+cross-polarized contrast curve for three coating choices.](media/polval_2c_channels.png)
+
+## 5.4 The analyzer is derived — and the circular state is what proves it
+
+On a train that does not rotate polarization the mean output state *is* the
+input state, so the derived analyzer must track an arbitrary input. It does,
+to @@C23_ANALYZER@@ for a circular input.
+
+That gate is not decoration. The coherency matrix is
+`C_ij = Σ E_i conj(E_j)`; building it with the conjugation on the wrong
+operand yields `conj(C)`, whose dominant eigenvector is the **conjugate**
+analyzer. For any *linear* input state the analyzer is real and the two are
+identical, so x, y and 45° cases all pass vacuously — while for a circular
+state the conjugate analyzer is exactly *orthogonal* to the truth. Projecting
+the same detector field on it reports a cross-to-co ratio of
+@@C23_CIRC_ORTHO@@ against the true @@C23_CIRC_TRUE@@. That error was live in
+the first draft of this function and this is the gate that found it, which is
+why the circular state is in the CI test and not only here.
+
+## 5.5 Coating sensitivity
+
+The §2c deliverable is the floor *and* how it moves with coating choice. On
+the two-mirror fixture, coating both mirrors with @@C25_THKAL@@ nm of
+aluminium raises the cross-polarized power by **@@C25_AL_REL@@×** over the
+uncoated baseline, taking the annulus mean contrast from @@C23_DZ_BARE@@ to
+**@@C25_DZ_AL@@**. Adding a @@C25_THKMGF2@@ nm MgF₂ overcoat raises it by
+**@@C25_MGF2_REL@@×** of baseline, to **@@C25_DZ_MGF2@@**.
+
+So on this train the coating, not the geometry, sets the floor: the bare
+metal costs about a decade and a half over the geometric term. That is the
+shape of answer the coronagraph design rules ask for — the floor is a
+coating decision before it is an optical-prescription decision. What the
+*overcoat* costs, however, is a chromatic statement and not a property of
+protective overcoats; read the correction below before generalising it.
+
+> **Corrected 2026-07-28.** This subsection previously described the
+> @@C25_THKMGF2@@ nm MgF₂ film as "a quarter wave, an ordinary
+> protected-aluminium recipe", and generalised from it that a protective
+> overcoat costs polarization contrast. The film is
+> **@@C26_QW_FRAC_1000@@** quarter-waves at this fixture's own
+> `Wavelen = @@X_2C_FIXTURE_LAMBDA@@` m, and the overcoat trade *reverses*
+> across the quarter-wave condition — so the measured **@@C25_MGF2_REL@@×**
+> above is arithmetically right for the film as configured and stands
+> unchanged, while the generalisation drawn from it was backwards.
+>
+> **The design rule is: specify a protective overcoat at λ/4 of the working
+> wavelength.** A protective overcoat is neither inherently a polarization
+> cost nor a benefit; the sign is set by its optical thickness at the
+> wavelength the instrument works at.
+>
+> **§8.3.1 is the single home of this physics** — both sides of the
+> reversal measured in this same engine on this same unmoved fixture, the
+> mechanism, the magnitudes, and the non-vacuity control. Do not quote or
+> generalise the number above without reading it.
+
+## 5.6 What this cannot yet measure — the Tranche-1 gap on a real chain
+
+Tranche 1 seeds the three component planes from `RayE` at the **first**
+physical-optics leg of a trace and thereafter advances them with a common
+scalar phase. A polarizing surface *after* that leg therefore transforms the
+rays but not the diffraction grid. `Rx_Cass_FarField` is unaffected — both
+its mirrors precede its only leg — but `Rx_Coro.in`, a coaxial chain of
+@@C33_NMIRROR@@ reflectors with propagation legs interleaved between them,
+is not.
+
+This is measured rather than assumed. The function computes the pupil
+cross-polarized fraction twice, once from the grid planes and once from
+`RayE` at the same element, and reports the ratio per input state. On
+`Rx_Cass_FarField` it is @@C24_CARRIED@@ against a ray-level fraction of
+@@C24_RAYFRAC@@ — full carry, and non-vacuous, since there is real
+cross-polarized light to fail to carry. On `Rx_Coro` the grid carries
+@@C33_GRIDFRAC@@ against the rays' @@C33_RAYFRAC@@, a carried fraction of
+**@@C33_CARRIED@@**, and a `macos:pol_contrast_floor:tranche1` warning fires.
+
+Coating the chain makes it worse in the way that matters most. With all
+@@C33_NMIRROR@@ mirrors aluminised the carried fraction falls to
+**@@C33_CARRIED_COAT@@**, and the reported coating sensitivity comes out at
+@@C33_GRID_DREL@@× baseline — while the ray-level cross-polarized fraction
+rises from @@C33_RAYFRAC@@ to @@C33_RAY_COAT@@, i.e. @@C33_RAY_DREL@@×. The
+grid does not merely understate the coating's effect on this chain; it gets
+the **sign** wrong, because only the first mirror's coating precedes the seed
+leg. Closing this is Phase 3a Tranche 2 (per-ray running Jones applied to the
+grid field), and the two tests that pin these numbers are written so that
+Tranche 2 has to come back and change them.
+
+## 5.7 The coronagraph number, and how to read it
+
+With that stated, the chain floor itself. `Rx_Coro.in` declares
+`nGridpts=511` and is run at model size 512 — below that the engine resets the
+grid and then intermittently faults, so the fixture is not usable at 128
+despite appearing to run there. With an x-polarized input the focal-plane
+cross-polarized channel peaks at **@@C31_PEAKCONTRAST@@** peak-normalized
+contrast, and over a 20–80 pixel annulus averages **@@C31_DZ_CROSS@@**
+(median @@C31_DZ_CROSS_MED@@) against a co-polarized @@C31_DZ_CO@@ — a
+cross-polarized power fraction of @@C31_CROSS_OVER_CO@@. Parseval and energy
+closure hold at model 512 exactly as at 256 (@@C31_PARSEVAL@@,
+@@C31_CLOSURE@@), and the pupil remains fully polarized to
+@@C32_DOP@@, so the analyzer is well conditioned.
+
+**Read that as a lower bound on the uncoated chain, not as the floor of a
+built coronagraph.** Six of its seven mirrors sit past the seed leg (§5.6),
+and the model's mirrors are all at normal incidence and uncoated, so the
+number reflects the numerical aperture alone. The machinery is validated; the
+physics it is allowed to see on *this* chain is not yet the whole train.
+
+![Co-polarized and cross-polarized focal-plane channels on the coronagraph
+chain, and their contrast curves.](media/polval_2c_coro.png)

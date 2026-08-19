@@ -1177,12 +1177,26 @@ Enter Ex0 (real,imag): [0.,0.]: 1,0
 Enter Ey0 (real,imag): [0.,0.]: 0,0
 ```
 Turns on polarization ray tracing (off by default) and prompts
-for the complex input field components Ex0/Ey0.  When the code
-is built with vector-diffraction support (mWF>=3) it also
-enables vector diffraction ("Vector diffraction enabled");
-SCAlar/VECtor toggle that separately.  Invalidates propagate
-state.  SMACOS: DARG(1:2)=Ex0, DARG(3:4)=Ey0 (real,imag
-pairs).
+for the complex input field components Ex0/Ey0.  When the model
+supports vector diffraction (mWF>=3, true for all stock model
+sizes) it also enables vector diffraction ("Vector diffraction
+enabled"); SCAlar/VECtor toggle that separately.  Invalidates
+propagate state.  SMACOS: DARG(1:2)=Ex0, DARG(3:4)=Ey0
+(real,imag pairs).
+
+With polarization on, every ray carries a complex 3-vector
+E-field: rays launch as E = Ex0*xGrid + Ey0*yGrid in the source
+frame (point sources use a per-ray frame that reduces to
+xGrid/yGrid on the chief ray), and each Reflector/Refractor
+applies its s/p Fresnel or multilayer-coating coefficients (see
+the `Coating=`, `IndRef=`/`Extinc=` Rx keywords).  Conventions:
+absorbing index N = n - i*kappa, time-harmonic exp(+i*omega*t).
+A mirror with the standard `IndRef=1, Extinc=1e22` idiom is a
+perfect conductor (RP=RS=-1): polarization-neutral.  The source
+state can also be carried in the Rx via `Ex0Ey0= ExRe ExIm EyRe
+EyIm` (state only; on/off remains a command/API decision).
+Bindings: `macos.polarization` / `pymacos.polarization`; see
+also `macos.jones_pupil` for polarization-aberration analysis.
 *Related:* NOPolarization, VECtor, SCAlar.
 <!-- END NOTES cmd-POLarized -->
 
@@ -1781,7 +1795,21 @@ when the build supports it (mWF>=3), so VECtor is mainly for
 re-enabling after SCAlar.  Scalar is the default and the only
 mode with polarization off (Section 6.3.4/6.3.5).  Both
 commands clear the propagate state so the next [DIFF] command
-recomputes the wavefront; neither takes arguments.  In vector
+recomputes the wavefront; neither takes arguments.  Scope:
+since Phase 3a Tranche 1 vector diffraction covers EVERY
+propagation leg -- far-field, near-field sphere/plane,
+plane-to-plane, spatial-filter, Fresnel and the DFT legs --
+plus the diffraction-grid obscuration apply and the ray-side
+aperture/apodization masking, so a multi-leg chain preserves
+the vector field between legs.  Two limits: the three
+wavefront planes are repurposed as Ex/Ey/Ez, so only ONE
+wavefront can be in flight (no multi-WF / COMPOSE); and
+between two physical legs the grid field is advanced by a
+scalar phase, which is exact only when the intervening
+elements are non-polarizing (Obscuring / Reference /
+FocalPlane -- the coronagraph pupil->FPM->Lyot->focal case).
+A COATED or reflecting surface BETWEEN legs needs the per-ray
+running-Jones work of Tranche 2, not yet implemented.  In vector
 mode AMPlitude/PHAse plot X, Y, Z field components and IMG
 imaging is unavailable.  SMACOS: no arguments.
 *Related:* POLarization, NOPolarization, AMPlitude, PHAse.

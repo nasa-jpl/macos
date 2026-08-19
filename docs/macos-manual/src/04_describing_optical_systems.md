@@ -1037,6 +1037,110 @@ This dialog produced the following prescription data:
 
 **Element Types**
 
+#### Polarizers and Waveplates
+
+Two element types apply a polarization transformation to the beam without
+bending it: `TrPolarizer`, an ideal linear polarizer, and `WavePlate`, a
+linear retarder. Both are transmissive and both are active only when
+polarization is enabled (the `POLARIZATION` command, or `macos.polarization`
+/ `pymacos` equivalents). With polarization off they behave exactly as
+`Reference` surfaces, so adding one to a prescription cannot change a
+scalar result.
+
+Geometrically they are `Reference` surfaces: the surface may be `Flat` or
+`Conic`, the ray is intersected and its path length accumulated in the usual
+way, and the ray direction is unchanged. What they add is a 2×2 Jones matrix
+applied to the ray's electric field in the plane transverse to the ray.
+
+Two new keywords describe them:
+
+| Keyword | Applies to | Meaning |
+|---|---|---|
+| `PolAxis=` | `TrPolarizer`, `WavePlate` | Reference axis as a 3-vector in global coordinates: the TRANSMISSION axis of a polarizer, the FAST axis of a waveplate. Required. |
+| `Retardance=` | `WavePlate` | Retardance in waves at the prescription `Wavelen`. Required for a waveplate; 0.25 is a quarter-wave plate, 0.5 a half-wave plate. |
+
+`PolAxis=` is a direction, not a position, and it does not have to lie in the
+element's surface — MACOS derives the element's material axis from it (see
+below) and projects that into each ray's transverse plane, normalizing as it
+goes. The projection must not degenerate: an axis that leaves the element with
+no transverse direction extinguishes the ray rather than having MACOS choose
+an arbitrary basis. Both keywords
+are required on the element types that use them: a defaulted axis would
+orient a polarizer arbitrarily, and a defaulted retardance would make a
+waveplate a silent no-op.
+
+`Retardance=` follows the same convention as `Coating=` layer thickness. The
+prescription value is in waves at the `Wavelen` current when the file is
+parsed, and MACOS converts it to a physical retardance
+(*n*<sub>slow</sub> − *n*<sub>fast</sub>)·*d* at load. The trace then divides
+by the wavelength in force at the time. A plate is therefore a fixed piece of
+glass and a wavelength sweep is chromatic, as a real plate is: a quarter-wave
+plate at 1 µm is an eighth-wave plate at 2 µm.
+
+The retardance sign follows MACOS's propagation convention
+(`exp(+iωt)` time dependence, so a field accumulates
+`exp(−i·2π·L·N/λ)` through a medium). The slow axis therefore takes the more
+negative phase, and the element's Jones matrix in its own (fast, slow)
+eigenbasis is diag(1, exp(−iδ)) with δ = 2π·`Retardance`. Fast axis leads.
+
+Both elements are thin idealizations. There is no ray splitting, no
+walk-off, no Fresnel loss at the plate faces and no substrate thickness, and
+the output field is purely transverse. In particular a polarizer discards the
+rejected component rather than emitting it, so a polarizing beamsplitter
+needs two traces — one per output port. For a beamsplitter at a substantial
+angle of incidence, a coated `Reflector` is usually the better model: there
+the s and p directions are set by the physical plane of incidence, and the
+thin-film recursion gives real diattenuation and retardance rather than an
+idealization.
+
+A waveplate's retardance is likewise independent of the angle of incidence,
+where a real crystal plate's is not — the field-of-view effect that drives
+compound and Pancharatnam designs. Bounding that needs a birefringent-plate
+model with ordinary and extraordinary indices and a thickness, which MACOS
+does not provide.
+
+Off normal incidence, what MACOS projects into the transverse plane is the
+element's *material* axis — the direction fixed in the substance of the
+element. This matters because projection does not preserve orthogonality, so
+projecting the declared pass axis is not the same operation as projecting the
+block axis and transmitting the complement; the two differ by
+acos(2 cos *a*/(1 + cos² *a*)) of transmitted-axis orientation, which is 3.56°
+at 20° of incidence and identically zero at normal incidence. For a waveplate
+the material axis is the declared (fast) axis. For a polarizer it is the
+*absorbing* direction — the wires of a wire grid, the aligned dipole chains of
+a dichroic sheet — which is the in-element complement of the declared pass
+axis; MACOS forms it, projects it, extinguishes it, and transmits its
+orthogonal partner. The keyword still declares the pass axis, so only its
+component perpendicular to the element normal has any effect, and a pass axis
+parallel to the normal extinguishes the ray. This is the dipole model, which
+Korger et al. (*Opt. Express* **21**, 27032, 2013) measured on a tilted
+dichroic polarizer.
+
+The reflective polarizer type `RfPolarizer` is reserved but not implemented:
+a reflective wire grid carries grid reflection efficiency and the substrate's
+own s/p response beyond the axis rule.
+
+    iElt= 3
+    EltName= QuarterWavePlate
+    Element= WavePlate
+    Surface= Flat
+    KrElt= -1.000000000D+20 KcElt= 0.000000000D+00
+    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00
+    VptElt= 0.000000000D+00 0.000000000D+00 2.000000000D-01
+    RptElt= 0.000000000D+00 0.000000000D+00 2.000000000D-01
+    PolAxis= 1.000000000D+00 1.000000000D+00 0.000000000D+00
+    Retardance= 2.500000000D-01
+    IndRef= 1.000000000D+00
+    Extinc= 0.000000000D+00
+    nCoat= 0
+    nObs= 0
+    ApType= None
+    PropType= Geometric
+    zElt= 2.000000000D-01
+    nECoord= -6
+
+**Element Types**
+
 #### Hex and Pie Segmented Mirrors
 
 Segmented systems (e.g. telescopes with segmented primary mirrors) are defined at the light source using GridType=hex or GridType=pie. This section describes entering the segmented surfaces. Figures 22 and 23 show the geometry for a segmented pie-shaped aperture and a large array of hexagonal segments, respectively. In both cases, the pannel coordinates are given by three variables (X,L,R). The segments must be entered in as elements in the same order they are listed in SegCoord. Segmented surfaces also require
@@ -2056,6 +2160,73 @@ Example. Conic + Mon + FF + grid:
     xData= 1 0 0
     yData= 0 1 0
     zData= 0 0 1
+
+### Coatings and Polarization Data
+
+The polarization ray trace (Section 5, *Polarized Ray Tracing*) reads
+three kinds of prescription data beyond the scalar trace: the complex
+index of each element, an optional thin-film coating stack per element,
+and the source polarization state.
+
+**Element index and extinction.** Every element carries `IndRef=` and
+`Extinc=`, forming the complex index N = n − iκ (κ > 0 is loss, under
+the engine's exp(+iωt) time convention). In the scalar trace only the
+real index of refractors matters; with polarization on, a bare
+(uncoated) surface applies the Fresnel s/p coefficients computed from
+its complex index. The standard mirror idiom
+
+    IndRef=   1.0E+00
+    Extinc=   1.0E+22
+
+is a perfect conductor: it reflects with RP = RS = −1 and is
+polarization-neutral (no diattenuation, no retardance). To model a real
+metal mirror, either give the element the metal's complex index
+directly, or (preferred) add a coating stack whose outer layer is an
+optically thick metal film — thickness much greater than the skin depth
+reproduces the bare metal's Fresnel coefficients regardless of
+substrate.
+
+**Thin-film coating stacks (`Coating=`).** An element may carry a
+multilayer coating, applied by a recursive thin-film calculation at
+each ray's actual angle of incidence when polarization is on. The
+keyword gives the layer count, followed by one line per layer, ordered
+**outermost to innermost**, each line holding the layer's real index,
+extinction coefficient, and thickness:
+
+    IndRef=   1.0E+00
+    Extinc=   1.0E+22
+    Coating=  2
+      1.38  0.0   0.25
+      2.30  0.10  0.125
+
+Two rules deserve emphasis:
+
+- **Layer thickness in the prescription is in units of waves** — waves
+  of the `Wavelen=` value current at the point the parser reaches the
+  `Coating=` line. It is converted to physical thickness
+  (thickness·Wavelen/IndRef) at load time, so the loaded stack is
+  physically fixed and wavelength sweeps after loading are handled
+  correctly. (The programmatic interface, `coating`/`coat_set` in the
+  bindings, takes **physical** thickness in BaseUnits directly and has
+  no wavelength coupling.)
+- **`Coating=` must appear after the element's `IndRef=`/`Extinc=`
+  lines** — the parser snapshots the boundary media when it reads the
+  coating block.
+
+The incident medium for the coating calculation is the medium the ray
+is actually traveling in when it reaches the surface (the running
+index, e.g. air), and the substrate is the element's own complex index.
+
+**Source polarization state (`Ex0Ey0=`).** The complex source field
+amplitudes can be carried in the prescription:
+
+    Ex0Ey0=   1.0  0.0  0.0  0.0
+
+giving Ex real, Ex imaginary, Ey real, Ey imaginary, in the source grid
+frame. This sets the *state* only; turning polarization tracing on
+remains a command/API decision (POLarization, or `polarization('on')`
+in the bindings, which also prompt for or accept the state directly).
+The keyword round-trips through SAVE.
 
 ### Obscurations and Apertures
 

@@ -48,7 +48,8 @@ C***********************************************************************
      &                        TrPolarizerElt  =  15,
      &                        CGHNullPlateElt =  16,
      &                        DoeTrGratingElt =  17,
-     &                        mEltTypes       =  17   ! defines available Element Types
+     &                        WavePlateElt    =  18,
+     &                        mEltTypes       =  18   ! defines available Element Types
 
         CHARACTER(LEN=12),PARAMETER:: EltTypeName(mEltTypes)=
      &                     [CHARACTER(LEN=12) ::
@@ -68,7 +69,8 @@ C***********************************************************************
      &                       'RfPolarizer',       !14
      &                       'TrPolarizer',       !15
      &                       'CGHNullPlate',      !16
-     &                       'DoeTrGrating']      !17  Diffractive Optical Element (DOE)
+     &                       'DoeTrGrating',      !17  Diffractive Optical Element (DOE)
+     &                       'WavePlate']         !18  linear retarder (PLAN_POLARIZATION Ph3)
 
         INTEGER, PARAMETER :: SrfType_Flat              =  1,
      &                        SrfType_Conic             =  2,
@@ -426,7 +428,17 @@ C***********************************************************************
      &        yObs, zObs,DWORK,
      &        GlassCoef, GlassTable,MTFMat,MTFMat2,
      &        IndRefArr,ExtincArr,EltCoatThk,
-     &	      ArrIndRef,SrfMetMea
+     &	      ArrIndRef,SrfMetMea,
+!--> polarizing-element reference axis (PLAN_POLARIZATION Phase 3).
+!    PolAxisElt(1:3,iElt) is the axis AS GIVEN in the prescription: the
+!    transmission axis of a TrPolarizer, the FAST axis of a WavePlate.
+!    Unnormalized 3-vector in global coordinates.  The trace projects the
+!    element's MATERIAL axis into each ray's transverse plane -- which IS
+!    this axis for a WavePlate (the fast axis) but is its in-element
+!    complement psi x PolAxis for a TrPolarizer (the absorbing
+!    direction), the two differing only off normal incidence.  See
+!    PolElt() in elemsub.F.
+     &        PolAxisElt
 	! IndRefArr is for coating layers, ArrIndRef is for lens element
 	! having several IndRef for different wavelengths
 
@@ -434,7 +446,15 @@ C***********************************************************************
      &          RayL,dxElt,IndRef,CumRayL,CumCRL,
      &          LensArrayWidth, OrderHOE,WaveHOE,PinHole,
      &          Extinc,RuleWidth,AmplSrfdx,
-     &          CumRayLsav,metMeasBuf
+     &          CumRayLsav,metMeasBuf,
+!--> WavePlate retardance, STORED as the physical optical path
+!    difference (n_slow-n_fast)*d in BaseUnits -- NOT in waves.  The Rx
+!    'Retardance=' keyword is in waves at the parse-time Wavelen and is
+!    multiplied by Wavelen on load; the trace divides by the CURRENT
+!    lambda.  Exactly the convention the Coating= stack already uses
+!    (msmacosio.inc:2660), so a plate is physically fixed and broadband
+!    sweeps are chromatic the way a real plate is.  SAVE inverts it.
+     &          PolRetElt
 
         Real*8 :: Fn,  ! Fresnel number
      &	          OPDdx, OPDdy, ! exit pupil OPD grid spacing
@@ -658,7 +678,8 @@ C***********************************************************************
      &               pMon,xMon,yMon,zMon,pMonRx,xMonRx,yMonRx,
      &               pData,xData,yData,zData,pDataRx,xDataRx,
      &               yDataRx,zDataRx,lData,
-     &               zMonRx, h1HOE,h2HOE, CoatIndxElt, CoatThkElt,
+     &               zMonRx, h1HOE,h2HOE, PolAxisElt,
+     &               CoatIndxElt, CoatThkElt,
      &               PolyApVtx,PolyApEqn,PolyObsVtx,PolyObsEqn,
      &               PolyObsVtx3DPending,nPolyObsVtx3DPending,
      &               ObsHexBound,DoeId,DoePhProf,stat=m_err_elt)
@@ -676,7 +697,8 @@ C***********************************************************************
      &             ('elt_mod_init(real*8): deallocate failed!')
 
           deallocate(lMon,LensArrayWidth,OrderHOE,WaveHOE,PinHole,
-     &               Extinc,RuleWidth,GridSrfdx,GlassType,EltGrp,
+     &               Extinc,RuleWidth,PolRetElt,GridSrfdx,
+     &               GlassType,EltGrp,
      &               EltCoat,IndRefArr,ExtincArr,EltCoatThk,
      &               AmplSrfdx,SrfMetPos,SrfMetMea,
      &               ArrIndRef,DoeFl,stat=m_err_elt)
@@ -810,7 +832,7 @@ C***********************************************************************
      &           xMonRx(3,mElt),yMonRx(3,mElt),zMonRx(3,mElt),
      &           xData(3,mElt),yData(3,mElt),zData(3,mElt),
      &           xDataRx(3,mElt),yDataRx(3,mElt),zDataRx(3,mElt),
-     &           h1HOE(3,mElt),h2HOE(3,mElt),
+     &           h1HOE(3,mElt),h2HOE(3,mElt),PolAxisElt(3,mElt),
      &           CoatIndxElt(20,mElt),CoatThkElt(20,mElt),
      &           AnaCoef(4,mElt),
      &           UDSrfCoef(mUDScoef,mElt),yObs(3,mElt),
@@ -828,7 +850,8 @@ C***********************************************************************
      &        KrElt(mElt),lMon(mElt), lData(mElt), LensArrayWidth(mElt),
      &        OrderHOE(mElt),WaveHOE(mElt),KrRx(mElt),KcRx(mElt),
      &        PinHole(mElt),Extinc(0:mElt),AmplSrfdx(mGridSrf),
-     &        RuleWidth(mElt),GridSrfdx(mGridSrf),ZernAnnuRatio(mElt),
+     &        RuleWidth(mElt),PolRetElt(mElt),
+     &        GridSrfdx(mGridSrf),ZernAnnuRatio(mElt),
      &        IndRefArr(0:mCoat,mElt),ExtincArr(0:mCoat,mElt),
      &        EltCoatThk(mCoat,mElt),SrfMetPos(3,mMetPos,mMetSrf),
      &        SrfMetMea(mMetBeam,mMetSrf),CumRayLsav(mElt),
@@ -1057,6 +1080,7 @@ C***********************************************************************
           ZernYGrid(:,:)       =  0e0_pr
           h1HOE(:,:)           =  0e0_pr
           h2HOE(:,:)           =  0e0_pr
+          PolAxisElt(:,:)      =  0e0_pr
           CoatIndxElt(:,:)     =  0e0_pr
           CoatThkElt(:,:)      =  0e0_pr
           AnaCoef(:,:)         =  0e0_pr
@@ -1105,6 +1129,7 @@ C***********************************************************************
           PinHole(:)           =  0e0_pr
           Extinc(:)            =  0e0_pr
           RuleWidth(:)         =  0e0_pr
+          PolRetElt(:)         =  0e0_pr
           GridSrfdx(:)         =  0e0_pr
           KrRx(:)              =  0e0_pr
           KcRx(:)              =  0e0_pr

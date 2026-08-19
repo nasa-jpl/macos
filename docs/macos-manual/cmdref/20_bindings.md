@@ -518,6 +518,31 @@ Element metadata for layout drawing. info = macos.get_elt_info(K) queries elemen
 <!-- BEGIN NOTES fn-elt-info -->
 <!-- END NOTES fn-elt-info -->
 
+#### elt_jones
+
+- **mmacos:** `J = macos.elt_jones(srf)`
+- **pymacos:** *not available*
+
+The 2x2 Jones matrix a polarizing element applied. J = macos.elt_jones(SRF) returns the complex 2x2 Jones matrix that the polarizing element at SRF applied during the last trace, expressed in the element's OWN transverse eigenbasis: column/row 1 is the declared axis projected into the ray's transverse plane, 2 is its orthogonal partner (rhat x ahat).
+
+<!-- BEGIN NOTES fn-elt-jones -->
+
+**Reads a formerly dead array.** `JmatElt(2,2,mElt)` was allocated,
+zeroed and deallocated by `elt_mod` and never otherwise touched. Phase 3
+fills it in `PolElt` and exposes it here.
+
+**Per element, not per ray -- and that is exact.** The coefficients of an
+ideal polarizer or retarder in its OWN eigenbasis do not depend on the ray;
+all the ray dependence lives in the basis (the declared axis projected into
+each ray's transverse plane). So this is not a substitute for `jones_pupil`,
+which is the pupil-referenced Jones and is what any polarization-aberration
+analysis wants.
+
+**Diagonal by construction:** `diag(1,0)` for an ideal polarizer,
+`diag(1, exp(-i*2*pi*R))` for a waveplate. Returns zeros if no polarized
+trace has run.
+<!-- END NOTES fn-elt-jones -->
+
 #### elt_kc
 
 - **mmacos:** `kc = macos.get_elt_kc(srf)`
@@ -760,11 +785,27 @@ Multiply WFElt(:,:, iEltToiWF(srf)) by a complex mask. Companion to macos.apodiz
 #### complex_field
 
 - **mmacos:** `cf = macos.complex_field(srf, opts)`
-- **pymacos:** `pymacos.complex_field(srf, reset_trace)`
+- **pymacos:** `pymacos.complex_field(srf, reset_trace, plane)`
 
-WFElt at element SRF (N x N complex double). cf = macos.complex_field(SRF) propagates to SRF and returns the complex wavefront on the diffraction grid.  |cf|^2 matches macos.intensity(SRF) to numerical precision.  Name-value pairs:
+WFElt at element SRF (N x N complex double). cf = macos.complex_field(SRF) propagates to SRF and returns the complex wavefront on the diffraction grid.  |cf|^2 matches macos.intensity(SRF) to numerical precision.  cf = macos.complex_field(SRF, 'plane', K) returns a single Cartesian
 
 <!-- BEGIN NOTES fn-complex-field -->
+`plane` selects a single Cartesian FIELD COMPONENT.  In
+vector-diffraction mode the three wavefront storage planes are
+repurposed as Ex/Ey/Ez of one wavefront, so `plane` = 1, 2, 3 returns
+Ex, Ey, Ez.  `plane` = 0 (the default) returns the element's own
+wavefront and is bit-identical to omitting the option.
+
+This is the only way to see how the three components contribute to a
+propagated intensity — `intensity` sums them.  The planes add in
+INTENSITY, not amplitude:
+`sum_k |complex_field(s, plane=k)|^2 == intensity(s)`.
+
+Requesting `plane` 1..3 with vector diffraction OFF is an ERROR, not a
+silent fallback: in scalar mode plane k is an unrelated wavefront, not
+a field component, and returning it would look plausible and be wrong.
+Enable with `polarization('on')` + `vector_diffraction(true)`.
+*Related:* intensity, vector_diffraction, ray_field.
 <!-- END NOTES fn-complex-field -->
 
 #### compose
@@ -1216,6 +1257,43 @@ Get or set the composite description of a FreeForm element. out = macos.zrn_free
 
 ### Other utilities
 
+#### beam
+
+- **mmacos:** `out = macos.beam(type, opts)`
+- **pymacos:** `pymacos.beam(kind, waist, radius, power)`
+
+Shape the source amplitude (apodization) profile. macos.beam(TYPE, ...) sets the source beam profile that macos applies to the aperture amplitude before tracing.  Setting the beam resets the trace, so re-trace afterwards.  TYPE (case-insensitive):
+
+<!-- BEGIN NOTES fn-beam -->
+<!-- END NOTES fn-beam -->
+
+#### coating
+
+- **mmacos:** `out = macos.coating(srf, opts)`
+- **pymacos:** `pymacos.coating(srf, index, extinc, thickness)`
+
+Set or query the thin-film coating stack on an element. macos.coating(SRF, 'index', N, 'extinc', K, 'thickness', T) sets a multilayer coating on element SRF (the polarization-path coating, active only when macos.polarization('on') is set).  Layers are ordered OUTERMOST -> INNERMOST (matching the 'Coating=' Rx keyword). N, K, T are equal-length vectors (one entry per layer):
+
+<!-- BEGIN NOTES fn-coating -->
+This drives the polarization-path ("Model A") coating stack:
+`EltCoat/IndRefArr/ExtincArr/EltCoatThk`, applied by the s/p
+Fresnel recursion in Reflector/Refractor when polarization is
+on.  Thickness here is PHYSICAL, in the Rx BaseUnits -- unlike
+the `Coating=` Rx keyword, whose per-layer thickness is in
+WAVES at the Wavelen current at parse time (converted to
+physical at load).  `coating(srf)` with no layer args queries;
+set followed by query round-trips exactly.  The incident
+medium is the medium the ray actually travels in (CurIndRef),
+not the previous element's substrate.  An optically thick
+absorbing layer (thickness >> skin depth) reproduces the bare
+metal's Fresnel coefficients regardless of substrate -- the
+standard way to model a bare-metal mirror.  Query returns
+`n_layer=0` for an uncoated element; `load_rx` clears all
+coating state.
+*Related:* polarization, jones_pupil; Rx keywords `Coating=`,
+`IndRef=`, `Extinc=`.
+<!-- END NOTES fn-coating -->
+
 #### getEltSrfZernMode
 
 - **pymacos:** `pymacos.setEltSrfZernMode(iElt, izernMode, zernCoef)`
@@ -1245,6 +1323,35 @@ Gram-Schmidt-orthonormalized Zernike basis over a segment's TRUE (irregular) ape
 
 <!-- BEGIN NOTES fn-gs-zernike-segment-basis -->
 <!-- END NOTES fn-gs-zernike-segment-basis -->
+
+#### jones_pupil
+
+- **mmacos:** `jp = macos.jones_pupil(srf, opts)`
+- **pymacos:** `pymacos.jones_pupil(srf, basis, axis, xref)`
+
+2x2 Jones pupil at an element from two polarized traces. jp = macos.jones_pupil(SRF) traces the loaded prescription twice with orthogonal source polarization states, (Ex0,Ey0) = (1,0) and (0,1), harvests the per-ray vector E-field at element SRF (macos.ray_field), and assembles the 2x2 complex Jones matrix at every ray-grid point: 
+
+<!-- BEGIN NOTES fn-jones-pupil -->
+The INPUT basis is the engine launch frame: collimated sources
+launch every ray with E = S*(Ex0*xGrid + Ey0*yGrid) (uniform
+over the grid); point sources use a per-ray frame yray =
+unit(RayDir x xGrid), xray = yray x RayDir, which reduces to
+the global frame on the chief ray.  S is the engine flux
+normalization (~1/sqrt(nRays)), a common real scalar carried by
+J -- ratios and all pol_maps metrics are unaffected.  The
+OUTPUT basis options: 'double-pole' (default; Chipman
+double-pole coordinates, smooth over any physical pupil -- use
+for budget numbers), 'local-sp' (per-ray s/p about the exit
+axis; coordinate-singular on axis, DIAGNOSTIC ONLY -- the
+singularity imprints spurious tilt/astig-like retardance), and
+'global' (project onto a fixed pair; near-collimated
+diagnostics).  Vignetted points are NaN, never zero-filled.
+The two traces are geometry-identical by construction
+(asserted); the pre-call polarization state is restored on
+exit.  A stock conductor-mirror Rx (IndRef=1, Extinc=1e22)
+yields a unitary Jones pupil -- a free end-to-end sanity gate.
+*Related:* pol_maps, ray_field, polarization, coating.
+<!-- END NOTES fn-jones-pupil -->
 
 #### m2v
 
@@ -1316,6 +1423,224 @@ ORS -- Optimize Reference Surface.
 
 <!-- BEGIN NOTES fn-ors -->
 <!-- END NOTES fn-ors -->
+
+#### pol_contrast_floor
+
+- **mmacos:** `out = macos.pol_contrast_floor(pupil, det, opts)`
+- **pymacos:** *not available*
+
+Polarization-limited contrast floor at a detector. OUT = macos.pol_contrast_floor(PUPIL, DET) propagates the loaded prescription with vector diffraction on and splits the detector field into CO-polarized, CROSS-polarized and LONGITUDINAL channels.  The cross-polarized channel is the part of the light no scalar DM control can touch, so its peak-normalized level IS the polarization contrast
+
+<!-- BEGIN NOTES fn-pol-contrast-floor -->
+The split is taken AT THE DETECTOR, on the engine's own Ex/Ey/Ez
+component planes (`complex_field(det,'plane',k)`), not through a
+pupil multiplier.  That is legitimate because the chain is linear in
+the input Jones state and Tranche 1 propagates all three planes with
+the identical scalar kernel, so a spatially uniform analyzer commutes
+with propagation.  It also sidesteps the reason the two earlier
+designs failed: the Jones pupil is assembled from `RayE` and carries
+the accumulated OPL phase, so it can never be used as a `WFElt`
+multiplier.
+
+"Co-polarized" is referenced to the MEAN OUTPUT state, never to the
+input state.  A train can rotate polarization geometrically with zero
+diattenuation and zero retardance; billing that uniform rotation as
+cross-polarized light reports an aberration where there is none.  The
+analyzer is the dominant eigenvector of the 2x2 pupil COHERENCY
+matrix `C_ij = sum E_i conj(E_j)`, which is phase-insensitive (the
+common wavefront cancels in the product) and by construction
+minimizes cross-polarized power.  `.per_state.dop` reports how
+polarized the pupil actually is; below `dop_min` no analyzer is well
+defined and the run is flagged.
+
+`input='unpolarized'` is TWO traces, x-in and y-in, summed in
+intensity -- the second state is never synthesized from the first --
+and each run gets its own analyzer.
+
+SCOPE.  Tranche 1 seeds the component planes from `RayE` at the FIRST
+physical-optics leg and thereafter applies only a common scalar
+phase, so a polarizing surface AFTER that leg transforms the rays but
+not the diffraction grid.  On such a chain the floor is a LOWER
+BOUND.  This is measured rather than assumed: `.scope` compares the
+pupil cross-polarized fraction computed from the grid planes against
+the same quantity from `RayE`, per input state, and a
+`macos:pol_contrast_floor:tranche1` warning fires when they disagree.
+Rx_Cass_FarField (two mirrors, then one far-field hop) carries the
+full train; Rx_Coro carries 0.84 of it bare and 0.57 coated, and
+there its coating sensitivity even comes out with the wrong sign.
+Closing that is Tranche 2.
+
+`frac_cross` NaN-masks pixels whose denominator falls below
+`floor_tol` -- zero-filling would seed statistics with a ring of
+perfect nulls.  Coating sets in a `coatings` sweep must all cover the
+same elements (a coating can be overwritten but not cleared) and the
+sweep leaves the last set applied.
+*Related:* jones_pupil, pol_maps, complex_field, vector_diffraction,
+coating.
+<!-- END NOTES fn-pol-contrast-floor -->
+
+#### pol_maps
+
+- **mmacos:** `pm = macos.pol_maps(jp)`
+- **pymacos:** `pymacos.pol_maps(jp)`
+
+Polarization-aberration decomposition of a Jones pupil. pm = macos.pol_maps(JP) decomposes the Jones pupil JP (the struct returned by macos.jones_pupil, or any struct with fields .J [N x N x 2 x 2 complex, NaN where invalid] and .mask [N x N logical]) into the standard polarization-aberration maps via the per-point polar decomposition J = H * W (H hermitian >= 0, W unitary).
+
+<!-- BEGIN NOTES fn-pol-maps -->
+All algebra is closed-form 2x2 Pauli (vectorized; no per-point
+SVD).  Pauli ordering: s1 = 0/90 linear, s2 = +/-45 linear,
+s3 = circular.  Key outputs: `T` intensity transmission
+(carries the source normalization -- ratios only), `D`/`Dvec`
+diattenuation, `ret`/`retvec` retardance (canonical [0, pi];
+points within 0.2 rad of pi are flagged `ambiguous` -- the
+branch is unresolved there, never silently chosen), `phase`
+(unitary global phase, mod pi).  The pupil MEAN and the RMS
+VARIATION are reported separately and must not be conflated:
+uniform retardance/diattenuation is a state change (and, after
+fold mirrors, includes the system's geometric rotation), not an
+aberration -- only the variation drives a contrast floor or a
+PSI systematic.  `D` and `T` are singular-value invariants
+(identical in any output basis); `ret`/`retvec` are
+basis-dependent -- exactly what the double-pole basis exists to
+make artifact-free.
+*Related:* jones_pupil.
+<!-- END NOTES fn-pol-maps -->
+
+#### pol_zernike
+
+- **mmacos:** `pz = macos.pol_zernike(pm, opts)`
+- **pymacos:** `pymacos.pol_zernike(pm, modes, center, radius, orthonormalize)`
+
+Low-order Zernike expansion of polarization-aberration maps. pz = macos.pol_zernike(PM) expands the diattenuation and retardance maps in PM (the struct returned by macos.pol_maps) onto a Zernike basis over the unvignetted pupil, giving the standard polarization-aberration terms -- piston, tilt, defocus, astigmatism and up -- in each Pauli component.
+
+<!-- BEGIN NOTES fn-pol-zernike -->
+Turns the maps from `pol_maps` into the aberration terms the
+polarization-aberration literature is written in, so a MACOS result
+can be compared term-by-term instead of map-shape by map-shape.
+
+Mode indices are the MACOS ANSI 1-based numbers you write in
+`MonZernModes=` (1 piston, 2 tilt-y, 3 tilt-x, 4 astig45, 5 defocus,
+6 astig0, 13 spherical, ...) -- the same convention as
+`zernike_grid_basis`, deliberately, and the two share one evaluator
+so they cannot drift apart.  Default `modes` is 1..15.
+
+The fit is LEAST SQUARES, not a projection: circular Zernikes are not
+orthogonal over an obscured (annular) pupil, so a projection would
+cross-talk between terms.  `.cond` reports the conditioning over the
+actual mask.  `orthonormalize=true` Gram-Schmidts the basis over that
+mask first -- coefficients then become mutually independent but are no
+longer standard Zernike coefficients, so use it for energy bookkeeping
+and NOT for literature comparison.
+
+Mode 1 (piston) is the pupil MEAN; everything else is variation about
+it.  Keep them apart -- a uniform diattenuation or retardance is a
+state change (after folds it also absorbs the system's geometric
+rotation), not an aberration, and only the variation drives a
+contrast floor or a PSI systematic.
+
+Expected answer for an on-axis rotationally symmetric two-mirror
+system: POLARIZATION ASTIGMATISM and nothing else -- astig0 in the
+s1 component, astig45 in s2, equal magnitude, no circular (s3)
+content, no defocus.  If you get piston, tilt, coma or a circular
+term above round-off on such a system, suspect the reference frame
+before the optics.
+
+Retardance caveat: points flagged `pm.ambiguous` (retardance within
+0.2 rad of pi, where the branch is unresolved) are EXCLUDED from the
+retardance fits; compare `.npts_ret` against `.npts` before reading a
+retardance expansion.
+*Related:* pol_maps, jones_pupil, zernike_grid_basis.
+<!-- END NOTES fn-pol-zernike -->
+
+#### polarization
+
+- **mmacos:** `out = macos.polarization(state, opts)`
+- **pymacos:** `pymacos.polarization(state, Ex, Ey)`
+
+Turn polarized ray tracing on/off + set source state. macos.polarization('on', ...) enables polarized ray tracing (the engine POLARIZATION command): rays carry a complex 3-vector E-field, surface coatings become active, and vector diffraction is enabled when the model supports it (mWF>=3, true for all stock model sizes). macos.polarization('off') restores scalar tracing (NOPOLARIZATION).
+
+<!-- BEGIN NOTES fn-polarization -->
+Query form (`macos.polarization()` with no args / `state=None`)
+returns the current state: `.on`, `.vector`, `.Ex`, `.Ey`.
+Setting the state dirties the cached trace (the engine re-seeds
+every ray's E-field on the next trace) -- re-trace before
+harvesting.  Enabling requires mWF>=3 (all stock model sizes);
+the call errors rather than silently degrading.
+*Related:* vector_diffraction, coating, ray_field, jones_pupil;
+CLI POLarized/NOPolarization.
+<!-- END NOTES fn-polarization -->
+
+#### polarizer
+
+- **mmacos:** `out = macos.polarizer(srf, opts)`
+- **pymacos:** *not available*
+
+Set or query an ideal linear polarizer element. macos.polarizer(SRF, 'axis', A) sets the TRANSMISSION axis of the TrPolarizer element at SRF. A is a 3-vector in GLOBAL coordinates; it need not be unit length, and it need not lie in the element's surface. The engine projects it into each ray's transverse plane and normalizes (see PolElt in elemsub.F).
+
+<!-- BEGIN NOTES fn-polarizer -->
+
+**Element type.** Requires the element at `srf` to be declared
+`Element= TrPolarizer` (EltID 15) in the prescription; any other type is
+refused rather than silently ignored. Before PLAN_POLARIZATION Phase 3 this
+EltID existed in the name table only and had no trace dispatch at all, so a
+prescription naming it loaded cleanly and did nothing.
+
+**Ideal, and one-port.** Transmission is 1 along the axis and 0 across it --
+no Fresnel loss at the plate faces, no substrate, no wavelength dependence.
+The REJECTED component is discarded, not emitted, so a polarizing
+beamsplitter needs two traces. At 45 degrees a coated `Reflector` is the
+better model: there the s/p basis is physically meaningful and the coating
+recursion is already gated against the Fresnel closed form.
+
+**Requires `polarization('on')`.** With polarization off the element is a
+plain geometric surface and the axis is inert -- a trace through it is
+bit-identical to the same train with a `Reference` surface in its place
+(gated by `tPolElement/test_unpolarized_bit_identical_to_reference_twin`).
+
+**Off normal, the MATERIAL axis is what gets projected.** The declared
+axis has to be brought into the plane transverse to the ray, and
+orthographic projection does not preserve orthogonality, so projecting the
+declared PASS axis is not the same operation as projecting the BLOCK axis
+and transmitting the complement -- the two differ by
+`acos(2cos a/(1+cos^2 a))`, 3.56 degrees of transmitted-axis orientation at
+20 degrees AOI, and identically zero at normal incidence or when the axis
+lies in, or perpendicular to, the plane of incidence. The engine projects
+the material (absorbing) direction `psi x axis`, extinguishes it, and
+transmits its orthogonal partner: the dipole rule, measured for a tilted
+dichroic polarizer by Korger et al., *Opt. Express* **21**, 27032 (2013).
+The keyword still declares the PASS axis; only the component perpendicular
+to the element normal matters, and an axis parallel to the normal
+extinguishes. Gated at 20 degrees AOI on both dispatch chains by
+`tPolElement` section F. `RfPolarizer` (EltID 14) remains a stub, now for a
+different reason: a reflective wire grid carries grid efficiency and
+substrate s/p physics beyond the axis rule.
+
+**Axis storage.** The API stores the axis as given, so a query returns what
+was written; the Rx parser UNITIZES on load (matching `psiElt=`), so a
+non-unit axis comes back normalized after a save/reload round trip. Either
+way it is a direction -- `PolElt` normalizes per ray.
+<!-- END NOTES fn-polarizer -->
+
+#### ray_field
+
+- **mmacos:** `rf = macos.ray_field(srf)`
+- **pymacos:** `pymacos.ray_field(srf)`
+
+Per-ray complex E-field + geometry at an element. rf = macos.ray_field(SRF) returns, on the N x N ray grid at element SRF (N = model size), the per-ray complex electric field RayE(3,:) plus the ray direction cosines, the element surface normal, and the per-ray status.  Requires a polarized trace: call macos.polarization('on') and trace before this.
+
+<!-- BEGIN NOTES fn-ray-field -->
+Returns NaN-free zero fields with `status~=0` at vignetted /
+failed grid points -- always mask on `status==0` before
+statistics.  The surface normal returned is the per-element
+`psiElt` broadcast to the grid (exact for flats; for curved
+elements it is the nominal element normal, not the local
+surface normal at each intersection).  The field at an element
+is the field AFTER that element's reflection/refraction,
+including the propagation phase of the leg arriving at it.
+mmacos returns separate `.Ex/.Ey/.Ez/.kx../.nx..` arrays;
+pymacos stacks them as `E/k/n` with shape (N, N, 3).
+*Related:* polarization, jones_pupil, trace_rays.
+<!-- END NOTES fn-ray-field -->
 
 #### ray_hist
 
@@ -1456,6 +1781,34 @@ Reconstruct a 2D matrix from m2v's compressed vec + indx. mat = macos.v2m(vec, i
 <!-- BEGIN NOTES fn-v2m -->
 <!-- END NOTES fn-v2m -->
 
+#### vector_diffraction
+
+- **mmacos:** `macos.vector_diffraction(on)`
+- **pymacos:** `pymacos.vector_diffraction(on)`
+
+Toggle vector (3-component) diffraction. macos.vector_diffraction(true)  -> VECTOR: propagate Ex/Ey/Ez as three independent fields.  Since PLAN_POLARIZATION Phase 3a Tranche 1 this covers the WHOLE chain -- every near-field, plane-to-plane, spherical, Fresnel and DFT leg, plus FFObscure and the ray-side aperture masking -- not just the far-field FFT
+
+<!-- BEGIN NOTES fn-vector-diffraction -->
+Requires polarization ON first; errors otherwise (the CLI
+VECtor silently reverts instead).  Since Phase 3a Tranche 1
+every propagation leg is vectorized -- far-field, near-field
+sphere/plane, plane-to-plane, spatial-filter, Fresnel and the
+DFT legs -- along with the diffraction-grid obscuration apply
+and the ray-side aperture/apodization masking, so a multi-leg
+chain preserves the vector field.  Intensity sums the three
+components.
+Two limits to know.  (1) Vector mode repurposes the three
+wavefront planes as Ex/Ey/Ez, so only ONE wavefront can be in
+flight -- not usable with multi-WF / COMPOSE.  (2) Between two
+physical legs the grid field is advanced by a scalar phase,
+exact only when the intervening elements are non-polarizing
+(Obscuring / Reference / FocalPlane -- the coronagraph
+pupil->FPM->Lyot->focal case).  A COATED or reflecting surface
+BETWEEN legs needs the per-ray running-Jones work of Tranche 2,
+which is not implemented.
+*Related:* polarization; CLI VECtor/SCAlar.
+<!-- END NOTES fn-vector-diffraction -->
+
 #### view_rx
 
 - **mmacos:** `fig = macos.view_rx(opts)`
@@ -1475,6 +1828,58 @@ Standard 3-view layout figure for the LOADED prescription. fig = macos.view_std(
 
 <!-- BEGIN NOTES fn-view-std -->
 <!-- END NOTES fn-view-std -->
+
+#### waveplate
+
+- **mmacos:** `out = macos.waveplate(srf, opts)`
+- **pymacos:** *not available*
+
+Set or query a linear retarder (waveplate) element. macos.waveplate(SRF, 'axis', A, 'retardance', R) configures the WavePlate element at SRF. A is the FAST axis as a 3-vector in GLOBAL coordinates (projected into each ray's transverse plane by the engine). R is the retardance in WAVES at the CURRENT wavelength: 0.25 for a quarter-wave plate, 0.5 for a half-wave plate.
+
+<!-- BEGIN NOTES fn-waveplate -->
+
+**Element type.** Requires `Element= WavePlate` (EltID 18, added in
+PLAN_POLARIZATION Phase 3, extending `mEltTypes` to 18). Any other type is
+refused.
+
+**Retardance sign is derived from the engine, not chosen.** MACOS propagates
+a field as `exp(-i*2*pi*L*N/lambda)` (`elemsub.F:395`), i.e.
+`exp(+i*omega*t)` time dependence, so the slow axis accumulates the more
+negative phase. With the declared axis as FAST, the element Jones in its own
+eigenbasis is `diag(1, exp(-i*delta))`, `delta = 2*pi*R`. Pinned by
+`tPolElement/test_retardance_sign_matches_engine_convention` and, more
+sharply, by the SIGNED circular Stokes parameter in
+`test_qwp_linear_to_circular` -- a suite that only checked `|S3|` would
+accept either convention.
+
+**Chromatic by construction.** The stored quantity is the physical
+retardance `(n_slow - n_fast)*d = R*lambda`, so a plate set to 0.25 waves at
+1 um is 0.125 waves at 2 um. This is the same treatment `Coating=` layer
+thickness already receives, and it means a query after a wavelength change
+returns a different R than was set -- physics, not a round-trip failure.
+
+**Thin idealization.** No o/e walk-off, no ray splitting, no Fresnel loss at
+the faces, no substrate thickness. The retardance is also independent of
+incidence angle, where a real crystal plate's is not (the field-of-view
+effect behind compound and Pancharatnam designs); bounding that needs a
+birefringent-plate model with o/e indices and thickness. The output is
+purely transverse: any longitudinal component present at the surface is
+discarded, which is what a 2x2 Jones element means (exactly zero for a
+collimated normal-incidence beam, O(NA) otherwise). The element is also the
+primitive for bounding stress birefringence in a transmissive optic.
+
+**Off normal, the declared axis is the material axis.** The crystal fast
+axis is the direction fixed in the substance of the plate, so it is what
+the engine projects into the ray's transverse plane -- the material-axis
+rule, which for a waveplate is just the declared axis. `macos.polarizer`
+projects a *different* vector from the same keyword (its material axis is
+the absorbing direction), so the two elements are not interchangeable off
+normal.
+
+**Unitary.** Gated for linear and circular input states, both against the
+field power and against `J'*J == I` from `elt_jones`, with the (non-unitary)
+polarizer as the non-vacuity companion.
+<!-- END NOTES fn-waveplate -->
 
 #### xp
 

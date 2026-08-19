@@ -9,6 +9,15 @@ These packages sit on top of the Part II bindings.  They are under active develo
 
 Parametric telescope design layer: build a System from first-order parameters, add mirrors, solve conics/Zernikes against multi-field wavefront targets, and emit a MACOS .in prescription.
 
+#### design.Bench
+
+`classdef Bench < handle`
+
+MACOS.DESIGN.BENCH  Sequential optical-bench builder (add-optic utilities). B = macos.design.Bench(NAME, ...) starts a bench layout at a point source and lets you append optics ONE AT A TIME, each placed a given DISTANCE along the current chief ray.  The builder tracks the chief ray analytically as it goes -- reflecting it at mirrors and Snell-
+
+<!-- BEGIN NOTES hl-Bench -->
+<!-- END NOTES hl-Bench -->
+
 #### design.System
 
 `classdef System < handle`
@@ -116,6 +125,24 @@ HEX_TILE  Boundary-true hex tile geometry for a segmented primary. T = macos.des
 
 <!-- BEGIN NOTES hl-hex-tile -->
 <!-- END NOTES hl-hex-tile -->
+
+#### design.ideal_lens
+
+`macos.design.L = ideal_lens(f, D, opts)`
+
+MACOS.DESIGN.IDEAL_LENS  Ideal focusing-lens primitive (2-surface singlet). L = macos.design.ideal_lens(F, D) returns a spec for a singlet of effective focal length F and clear diameter D that images the INFINITE conjugate.  MACOS has no paraxial/ideal-lens engine primitive, so an ideal lens is realized as a refractive singlet
+
+<!-- BEGIN NOTES hl-ideal-lens -->
+<!-- END NOTES hl-ideal-lens -->
+
+#### design.ideal_lens_emit
+
+`macos.design.txt = ideal_lens_emit(L, iElt0, vpt_front, psi, opts)`
+
+MACOS.DESIGN.IDEAL_LENS_EMIT  Render an ideal_lens spec to Rx element text. txt = macos.design.ideal_lens_emit(L, IELT0, VPT_FRONT, PSI) returns the two Refractor element blocks (front + powered, in light order) for the lens spec L (from macos.design.ideal_lens), numbered starting at IELT0, with the FRONT vertex at VPT_FRONT (1x3) and optical axis
+
+<!-- BEGIN NOTES hl-ideal-lens-emit -->
+<!-- END NOTES hl-ideal-lens-emit -->
 
 #### design.met_bodies
 
@@ -242,6 +269,15 @@ TMA_LAYOUT  Generic on-axis Korsch TMA first-order layout (j18 / JWST form), wit
 
 <!-- BEGIN NOTES hl-tma-layout -->
 <!-- END NOTES hl-tma-layout -->
+
+#### design.twyman_green
+
+`macos.design.G = twyman_green(opts)`
+
+MACOS.DESIGN.TWYMAN_GREEN  Build a compensated Twyman-Green IFO rig. G = macos.design.twyman_green(...) builds BOTH arms of the generic Twyman-Green interferometer (the examples/design/bench_ifo layout) with the Bench add-optic utilities and returns them ready to emit: 
+
+<!-- BEGIN NOTES hl-twyman-green -->
+<!-- END NOTES hl-twyman-green -->
 
 #### design.zern_seg_eval
 

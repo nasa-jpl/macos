@@ -126,7 +126,7 @@ C	File setup and initial conditions read
      &	' |   Refractor      NSRefractor    LensArray  |'/
      &	' |   FocalPlane     Reference      Return     |'/
      &	' |   HOE            Grating        TrGrating  |'/
-     &	' |   RfPolarizer    TrPolarizer    Obscuring  |'/
+     &	' |   TrPolarizer    WavePlate      Obscuring  |'/
      &	' +--------------------------------------------+')
  141	FORMAT(' +--------------------------------------------+'/
      &	' | Surface types:                             |'/
@@ -2076,6 +2076,24 @@ c	      READ(VALUE,*,ERR=999,END=999)ObsType(MB_I(1),MB_I(2))
 	    END IF
 	    WRITE(*,17)' psiElt',MB_I(2),(psiElt(MB_J,MB_I(2)),MB_J=1,3)
 	    ! -->
+!--> polarizing-element axis (PLAN_POLARIZATION Phase 3).  Unlike the
+!    Rx parser this does NOT unitize -- MOD sets one component at a
+!    time, and normalizing after each would silently rescale the other
+!    two.  PolElt normalizes per ray anyway.
+	    ELSE IF (LCMP(VAR_NAM,'PolAxis',7)) THEN
+	    IF (ARR_FLG) THEN
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        (PolAxisElt(MB_J,MB_I(2)),MB_J=1,3)
+	    ELSE
+	        READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
+	        READ(VALUE,*,ERR=999,END=999)
+     &	        PolAxisElt(MB_I(1),MB_I(2))
+	    END IF
+	    WRITE(*,17)' PolAxis',MB_I(2),
+     &	      (PolAxisElt(MB_J,MB_I(2)),MB_J=1,3)
+!<--
 	    ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
 	    IF (ARR_FLG) THEN
 	        READ(IND(2),*,ERR=999,END=999)MB_I(2)
@@ -2144,6 +2162,16 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	    READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999)RuleWidth(MB_I(1))
  	    WRITE(*,18)' RuleWidth',MB_I(1),RuleWidth(MB_I(1))
+!--> WavePlate retardance (PLAN_POLARIZATION Phase 3).  MOD takes and
+!    reports WAVES at the current Wavelen, matching the Rx keyword;
+!    storage is the physical (n_slow-n_fast)*d.
+ 	  ELSE IF (LCMP(VAR_NAM,'Retardance',10)) THEN
+	    READ(IND(1),*,ERR=999,END=999)MB_I(1)
+	    READ(VALUE,*,ERR=999,END=999)PolRetElt(MB_I(1))
+	    PolRetElt(MB_I(1))=PolRetElt(MB_I(1))*Wavelen
+ 	    WRITE(*,18)' Retardance',MB_I(1),
+     &	      PolRetElt(MB_I(1))/Wavelen
+!<--
  	  ELSE IF (LCMP(VAR_NAM,'RadCtr',5)) THEN
 	    READ(VALUE,*)RadCtr
  	    WRITE(*,11)' RadCtr',RadCtr
