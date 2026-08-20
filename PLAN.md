@@ -220,6 +220,88 @@ task.
   work).
 - [x] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350).  Closed 2026-06-04 (commit 0ee4b23): one-line normalization after the matrix multiply.  `sin²(θ) + cos²(θ) ≠ 1` exactly in IEEE 754 for some θ (1e-6, 3e-5 notably) used to leave psi off by 1 ULP and drift slowly under repeated perturbs, producing a ~3e-14 OPD round-trip residual.  Regression probe at `MACOS_resources/mmacos/tests/tPerturbRoundtrip.m` was written defensively to allow both pre-fix (within 4*eps) and post-fix behaviour; now post-fix.
 
+### 0.x OPD reference — chief ray vs whole-aperture mean (2026-08-19)
+
+Diagnosis: **Luis Marchen**; measurement, fix and gates: this tree.
+
+- [x] **`UseChfRay4OPD= Y` now parses** (`msmacosio.inc`).  The keyword
+  had a branch only for `N` — the value already in force — so the
+  chief-ray OPD reference was unreachable from a prescription.
+- [x] **`opd_ref_set` / `opd_ref_get`** (`macos_api_mod.F90`), surfaced as
+  `macos.opd_ref('chief'|'mean')` + a Session method.  Bit-identical to
+  the Rx keyword (`mmacos/tests/tOpdRef.m`).
+- [x] **`init` resets `rxLoaded`** when it rebuilds the engine.  It did
+  not, so after a model-size change `SystemCheck()` kept passing on a
+  wiped model instead of reporting "no Rx".
+- [x] **`macos_cmd_loop.inc:366` annotated as dead** — it sets
+  `LUseChfRayIfOK=.TRUE.` *before* `MBFile6`, whose first statement
+  (both `macosio.F` and `smacosio.F`) is `reinitialise_variables()`,
+  which puts it back to `.FALSE.`.
+
+**Measured** (`e5hex1.in`, 7 hex segments, model 128, OPD at the exit
+pupil): the chief ray is ALIVE at all five `dw_dx_multi` fields
+(`LRayOK(1)=1`) and the map is mean-referenced anyway — the flag was the
+gate, not the chief ray.  Poking one segment by `Tz = 1e-8 m` pistons the
+other six by `+2.849e-06` (16.7% of the peak response); under the
+chief-ray reference that piston is **exactly zero** and the poked
+segment's own peak recovers by exactly the same constant
+(`1.711e-05 → 1.996e-05`).
+
+**OPEN — the global default.**  The 2008 documented intent
+(`Lou-UpdateNotes.txt` item 45) is chief-ray-by-default, and
+`macos_cmd_loop.inc:366` is a fossil of that intent.  Flipping it means
+moving that assignment after `MBFile6` (or initialising
+`LUseChfRayIfOK=.TRUE.` in `ray_mod_init_vars`).  **Not done here** — it
+changes the absolute piston of every OPD map in the corpus on decks
+whose chief survives, which needs the same compatibility sweep the FEX
+EP-radius rework got:
+- CLI/binding sweep over the Rx corpus recording `RMS`, `P-V`, map mean
+  and `nPassRays` before/after, flagging every deck whose map MEAN moves
+  (RMS/P-V cannot move — the two maps differ by a constant);
+- GMI regression 6/6 (its references carry absolute OPD);
+- every committed sensitivity baseline (see the regen list below);
+- the pymacos PROPER-compare phases, which feed OPD into
+  `prop_add_phase` — a constant piston is harmless to intensity but the
+  comparison harnesses do their own referencing and must be re-checked,
+  not assumed.
+
+**DEFERRED, and LOWER priority than first scoped — a stable reference
+that survives a geometrically dead chief.**  The branch gates on
+`LRayOK(1)`, the GEOMETRIC flag, not `LRayPass(1)`: an OBSCURED chief
+still serves.  Measured at the exit pupil, `CassWithExitPupil` and
+`Rx_Cass_FarField` run `LRayOK(1)=1, LRayPass(1)=0, RayStatus=Obscured`
+and the chief reference is available on both; `e5pie`, `e5pie_polyap`
+and `e5hex1` have a fully unobscured chief.  **No deck checked has a
+geometrically dead chief**, so the fallback is not the live problem it
+was first written up as (that write-up misread the structural
+`nPassRays = nRay − 1` — OPD loops from `iRay=2` — as a lost chief).
+What remains true: the fallback is SILENT, so a deck that does miss
+geometrically gets the coupling back with no warning.  A reference that
+does not depend on one ray tracing would close the class: candidates are
+(a) a designated surviving ray, chosen once on the NOMINAL trace and
+reused for every poke — cheap, but the choice must be recorded in the
+output or the map is not reproducible; (b) an Rx-declared
+`OPDRefRayLen`, which ALREADY EXISTS as branch 2 of `SUBROUTINE OPD`
+and is the cheapest path to a stable reference today — the missing piece
+is a way to *capture* the nominal value into it (`opd_ref_len_set`, one
+more api wrapper); (c) a nominal-trace-anchored reference maintained by
+the engine across pokes, which is the cleanest and the largest change.
+**(b) is the recommended next step** — it reuses a tested branch and is
+a wrapper, not new trace physics.
+
+**REGEN IMPACT (nothing regenerated here — a reviewed step).**  Adopting
+the chief reference anywhere it currently is not changes the PISTON
+CONTENT of Jacobian columns and therefore these committed artifacts:
+`mmacos/templates/50_sensitivities/**/*_sens.mat` and their
+`_sens_report.txt` / `_opdall` / `_dwdx_channels` figures (e5hex1 +
+e5hex1_grid, all four `run_dwd*` runners), `mmacos/examples/sensitivities/e5hex1/*`,
+and anything downstream that consumed them (`run_compare`, `run_simulator`
+stage `.mat`s, the e2e s4–s7 pages).  Mean-removed statistics (RMS WFE,
+P-V, conditioning, singular-value spectra) do NOT move; per-segment
+piston columns DO.  `macos.opd_ref` defaults to `'mean'`, so **no
+baseline moves unless a caller opts in.**
+
+
 ---
 
 ## 1. Thrust A — Test + document, sensitivity workflow as headline

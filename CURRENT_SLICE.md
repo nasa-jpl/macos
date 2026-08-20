@@ -24,7 +24,60 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-08-02) — e2e2 TELESCOPE FLOW COMPLETE.**
+> **CURRENT STATE (2026-08-19 eve).  NEXT STEP = execute
+> `BRIEF_rodgers3_s1.md`** (the offset_imager template + the
+> challenges/rodgers3 instance; Stage 0 is DONE — all 5 rungs of
+> Mike's ladder gate, artifacts in `~/dev/MACOS_sandbox/Design/
+> Rodgers3/s0/`, conventions in memory `[[project_rodgers3]]` +
+> `[[reference_codev_zrn_convention]]`).
+>
+> Board as of tonight (each item's record in the named file/memory):
+> - **dev-candidate = the consolidated, validated pair, PUSHED**:
+>   macos `136f353`, resources `052ef30` (includes #67 pol arc,
+>   GridFile fixes, rodgers1 regen, pol-ifo + pol-core(res) merges,
+>   the examples reorg templates/+challenges/ tree, 594/0 suite,
+>   pymacos 6694/0 + PROPER 26/26).  `[[project_branch_model]]`,
+>   `[[project_segmirmaker_audit]]`.
+> - **Andy**: fast-forward both `dev` to dev-candidate tips, then
+>   handoff steps 3–4 with fresh dry-runs (MERGE_HANDOFF_ANDY.md has
+>   the status note).  pol-core/pol-ifo/develop deletable
+>   (archive-tag develop first).
+> - **`BRIEF_luis_round2.md` EXECUTED (2026-08-19 night), LOCAL,
+>   unpushed.**  Report: `~/dev/MACOS_sandbox/notes_luis_08-19-2026/`
+>   (`REPLY_luis_round2.md` = the three drafts for Dave to send).
+>   Headline: **the brief's own correction of Luis was WRONG and his
+>   diagnosis was right.**  `macos_cmd_loop.inc:366` does set
+>   `LUseChfRayIfOK=.TRUE.` on every load, but ~40 lines BEFORE
+>   `MBFile6`, whose first statement (macosio.F AND smacosio.F) is
+>   `reinitialise_variables()` → `ray_mod_init_vars` → `.FALSE.`.
+>   So the flag is FALSE on every path, the chief branch was
+>   unreachable, and his missing-`'Y'` patch is the fix — adopted,
+>   credited.  Nor is "chief dies on segmented decks" the mechanism
+>   on e5hex1: `LRayOK(1)=1` at all five dw_dx_multi fields and the
+>   map is mean-referenced anyway.  Measured piston on the 6 unpoked
+>   segments: `+2.849e-06` (16.7% of peak) → `0.000e+00` exactly
+>   under the chief reference; the poked segment's peak recovers by
+>   the same constant.  Landed: `UseChfRay4OPD= Y` parses;
+>   `opd_ref_set/get` + `macos.opd_ref` + Session method; `init`
+>   resets `rxLoaded` (SystemCheck was passing on a wiped model);
+>   `macos.init` screens model size (the engine's `stop` kills
+>   MATLAB); `macos.unload()`; Session `opd(...)` now forwards
+>   'orient'/'sign'; 25 new Session delegators + a coverage GATE;
+>   tOpdRef (8) + tEngineMemory (4) + 2 tReadGridFile cases.
+>   Item 2 verdict: the two grid paths are BIT-IDENTICAL on
+>   dev-candidate — stale-version artifact (a bare readmatrix is the
+>   transpose); now permanently gated.  Item 4: no steady-state
+>   leak, but `clear mmacos` LEAKS ~720 MB/cycle — do not use it.
+>   Item 5: API sketch only (`mmacos/design/PLAN_CONFIGURATIONS.md`),
+>   awaiting Dave's review + a j18 deck (none exists in either repo).
+>   OPEN for Dave: flip the global OPD default?  (PLAN.md §0.x has
+>   the compatibility sweep + the regen list; nothing regenerated.)
+> - **Keysight demo ~2026-09-01** (`[[project_keysight_demo]]`):
+>   Week-1 reorg DONE; Week-2 rewalk of all design examples PENDING
+>   (carry-overs listed in mmacos/PLAN_EXAMPLES_REORG.md); rodgers3
+>   Stage 1 is demo material.
+>
+> **PRIOR STATE (2026-08-02) below — e2e2 TELESCOPE FLOW COMPLETE.**
 > Report: `MACOS_res_dev/mmacos/design/examples/e2e2/E2E2_REPORT.md` (for
 > Dave + CCL Fable).  Brief `macos/BRIEF_e2e2_implementation.md`; plan
 > `MACOS_res_dev/mmacos/design/PLAN_TMA_E2E2.md`.  **8 commits, LOCAL on

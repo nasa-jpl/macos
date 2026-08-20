@@ -363,7 +363,20 @@ C         ***next command: Load optical description data***
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
+!-->  DEAD LINE, kept for the record -- do NOT reason from it.
+!     MBFile6 is called ~40 lines below, and its FIRST statement (in
+!     BOTH macosio.F and smacosio.F) is reinitialise_variables(), which
+!     runs ray_mod_init_vars and sets LUseChfRayIfOK back to .FALSE.
+!     So this assignment never survives to a trace, on ANY path -- CLI,
+!     SMACOS, or any binding -- and OPD always takes the whole-aperture
+!     average-OPL branch (tracesub.F).  The Rx keyword `UseChfRay4OPD=`
+!     and the API opd_ref_set (macos_api_mod) run AFTER the reset and
+!     are the only working ways to select the chief-ray reference.
+!     Moving this line after the MBFile6 call WOULD flip the global
+!     default and needs the FEX-class compatibility sweep -- see PLAN.md
+!     "OPD reference".  Diagnosis: Luis Marchen, 2026-08-19.
 	    LUseChfRayIfOK=.TRUE.
+!<--
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
 	    beamOpt%ifOptBeamSize=.FALSE.

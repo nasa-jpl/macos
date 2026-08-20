@@ -435,9 +435,30 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'UseChfRay4OPD',10)) THEN
+!-->        The 'Y' branch was missing, so the keyword could only ever
+!           turn chief-ray referencing OFF -- and it is ALREADY off.
+!           The stale "default to TRUE" comment below was wrong twice
+!           over: ray_mod_init_vars (traceutil_mod.F) inits
+!           LUseChfRayIfOK=.FALSE., and although the LOAD/OLD/NEW
+!           handler (macos_cmd_loop.inc, inside #ifdef DESIGN_OPTIM)
+!           sets it .TRUE., that assignment is made BEFORE MBFile6 is
+!           called and MBFile6's first act -- in BOTH macosio.F (CLI)
+!           and smacosio.F (SMACOS/bindings) -- is
+!           reinitialise_variables(), which runs ray_mod_init_vars and
+!           puts it back to .FALSE.  Net: every OPD, on every path,
+!           takes the whole-aperture average-OPL branch (tracesub.F
+!           OPD, the DAvgl ELSE), whose global mean couples segments:
+!           poking ONE segment shifts DAvgl and therefore pistons
+!           EVERY ray in the map.  With this branch, UseChfRay4OPD= Y
+!           opts a prescription back into the chief-ray reference
+!           (used only when LRayOK(1), i.e. the chief survives to the
+!           evaluation element).  Diagnosis: Luis Marchen, 2026-08-19.
             If (LCMP(VALUE,'N',1)) Then
-              LUseChfRayIfOK=.FALSE.  ! default to TRUE
+              LUseChfRayIfOK=.FALSE.
+            Else If (LCMP(VALUE,'Y',1)) Then
+              LUseChfRayIfOK=.TRUE.
             End If
+!<--
             GO TO 50
 
           ! --------------------------------------------------------------------------------
