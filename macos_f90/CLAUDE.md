@@ -170,10 +170,22 @@ recovers by that same constant (`1.711e-05 → 1.996e-05`).  **The chief
 ray is ALIVE at all five `dw_dx_multi` fields on that deck**
 (`LRayOK(1)=1`) — the gate was the flag, not the chief ray, so do not
 reach for the "chief dies on segmented decks" explanation without
-measuring `ray_info_get`'s `ok_trace(1)` first.  (It IS the explanation
-on `CassWithExitPupil` / `e5pie`, where the chief really is lost — there
-the engine falls back to the mean branch regardless of the flag, and
-neither the keyword nor the API can help.  See PLAN.md §0.x.)
+measuring `ray_info_get`'s `ok_trace(1)` first.
+
+**An OBSCURED chief ray still serves.**  The branch gates on `LRayOK(1)`
+— GEOMETRIC — not `LRayPass(1)`.  `LRayOK` is cleared only by a surface
+miss / bracket failure (`CTRACE`'s `GO TO 98`) or a non-sequential
+dispatch failure; obscuration sets `L1`/`LRayPass` and leaves the
+intersection valid (same principle as the SPOT `LocalCoord` fix above).
+Measured at the exit pupil: `CassWithExitPupil` and `Rx_Cass_FarField`
+have `LRayOK(1)=1, LRayPass(1)=0, RayStatus=Obscured` and the chief
+reference IS available (map shifts by an exact constant, std 4.06e-28);
+`e5pie` / `e5pie_polyap` / `e5hex1` have a fully unobscured chief.  No
+deck checked has a geometrically dead chief.  A pre-fix note claimed
+`e5pie` "loses exactly one ray — the chief"; that was the STRUCTURAL
+`nPassRays = nRay − 1` (OPD loops `DO iRay=2,nRay`, so the chief is never
+written into `OPDMat`) misread as a lost ray.  Gate:
+`tOpdRef/test_an_obscured_chief_ray_still_serves`.
 
 `api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`.  Session state, reset
 by every load (call it AFTER `load_rx`), and it dirties the cached trace
