@@ -132,6 +132,63 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
   First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.
 
+## OPD reference: `LUseChfRayIfOK` is FALSE on every path (closed 2026-08-19)
+
+`tracesub.F`'s `SUBROUTINE OPD` (and the `propsub.F:1653` twin) has two
+ways to reference each ray: the CHIEF ray's own OPL (`LUseChfRayIfOK`
+.AND. `LRayOK(1)`), or `- DAvgl`, the mean over EVERY valid ray in the
+aperture.  **The mean branch is what always ran.**
+
+The trap, and why reading `macos_cmd_loop.inc` alone gives the WRONG
+answer: `macos_cmd_loop.inc:366` (inside `#ifdef DESIGN_OPTIM`, which
+BOTH `macos.F:158` and `smacos.F:214` define ahead of the include) sets
+`LUseChfRayIfOK=.TRUE.` on every LOAD/OLD/NEW — but it does so ~40 lines
+BEFORE the `CALL MBFile6`, and `MBFile6`'s first statement, in **both**
+`macosio.F:176` and `smacosio.F:155`, is `reinitialise_variables()` →
+`ray_mod_init(mElt,mRay)` → `ray_mod_init_vars()` →
+`LUseChfRayIfOK=.FALSE.` (`traceutil_mod.F:278`).  The `.TRUE.` never
+survives.  The line is now annotated as dead in place.
+
+Only two things run AFTER that reset and can therefore select the chief
+reference: the Rx keyword `UseChfRay4OPD=` (parsed inside MBFile6) and
+the new `opd_ref_set` API.  The keyword's `'Y'` branch **did not exist**
+— it had only `'N'`, i.e. the value already in force — so the chief
+branch was unreachable from a prescription.  Fixed in `msmacosio.inc`
+(Luis Marchen's diagnosis).  `design_optim.F:659-664/880` deliberately
+forces the flag `.FALSE.` inside optimisation loops and restores it
+after — do not disturb that.
+
+**Why it matters (segmented pupils).**  `DAvgl` is one scalar over the
+whole aperture, so perturbing ONE segment shifts it by
+`(N_k/N_total)*(mean local response)` and that constant is subtracted
+from every ray: unperturbed segments report a spurious piston and the
+perturbed one is biased by the same amount.  Measured on `e5hex1`
+(7 hex segments, model 128, OPD at the exit-pupil Return, `Tz=1e-8 m` on
+one segment): unpoked segments piston by `+2.849e-06` (16.7% of peak);
+under the chief reference, exactly `0`, and the poked segment's peak
+recovers by that same constant (`1.711e-05 → 1.996e-05`).  **The chief
+ray is ALIVE at all five `dw_dx_multi` fields on that deck**
+(`LRayOK(1)=1`) — the gate was the flag, not the chief ray, so do not
+reach for the "chief dies on segmented decks" explanation without
+measuring `ray_info_get`'s `ok_trace(1)` first.  (It IS the explanation
+on `CassWithExitPupil` / `e5pie`, where the chief really is lost — there
+the engine falls back to the mean branch regardless of the flag, and
+neither the keyword nor the API can help.  See PLAN.md §0.x.)
+
+`api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`.  Session state, reset
+by every load (call it AFTER `load_rx`), and it dirties the cached trace
+via `modified_rx` because OPDMat is filled DURING the trace.  Gates:
+`mmacos/tests/tOpdRef.m` (8).
+
+Related `init` fix: `macos_api_mod`'s `init` rebuilt the engine
+(`macos_init_all`, which zeroes `nElt`) without clearing the package
+flag `rxLoaded`, so `SystemCheck()` — the guard every wrapper opens with
+— kept passing on a wiped model.  Now reset in the rebuild branch only
+(an unchanged model size is a no-op and the Rx genuinely survives).
+`param_mod_init` answers an unsupported model size with `stop`, which
+kills the HOST process when the engine is a mex — `macos.init` now
+screens against `macos.model_sizes()` first.
+
 ## PERTURB notes
 - 5 routines perturb coordinate frames: CPERTURB, CPRead, CPERTURB_GRP (funcsub.F),
   CPERTURB_2 (macos_ops.F), LnkEltCPERTURB (lnk_pert.inc).
