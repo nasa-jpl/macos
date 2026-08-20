@@ -265,11 +265,19 @@ EP-radius rework got:
   comparison harnesses do their own referencing and must be re-checked,
   not assumed.
 
-**DEFERRED, larger — a stable reference that survives a dead chief.**
-When the chief ray is lost (obscured/segmented decks: `CassWithExitPupil`,
-`e5pie`) the engine falls back to the aperture mean *regardless* of the
-flag, and the cross-segment coupling returns.  A reference that does not
-depend on one ray surviving would close the class: candidates are
+**DEFERRED, and LOWER priority than first scoped — a stable reference
+that survives a geometrically dead chief.**  The branch gates on
+`LRayOK(1)`, the GEOMETRIC flag, not `LRayPass(1)`: an OBSCURED chief
+still serves.  Measured at the exit pupil, `CassWithExitPupil` and
+`Rx_Cass_FarField` run `LRayOK(1)=1, LRayPass(1)=0, RayStatus=Obscured`
+and the chief reference is available on both; `e5pie`, `e5pie_polyap`
+and `e5hex1` have a fully unobscured chief.  **No deck checked has a
+geometrically dead chief**, so the fallback is not the live problem it
+was first written up as (that write-up misread the structural
+`nPassRays = nRay − 1` — OPD loops from `iRay=2` — as a lost chief).
+What remains true: the fallback is SILENT, so a deck that does miss
+geometrically gets the coupling back with no warning.  A reference that
+does not depend on one ray tracing would close the class: candidates are
 (a) a designated surviving ray, chosen once on the NOMINAL trace and
 reused for every poke — cheap, but the choice must be recorded in the
 output or the map is not reproducible; (b) an Rx-declared
