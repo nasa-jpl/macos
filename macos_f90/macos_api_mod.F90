@@ -4099,6 +4099,67 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! OPD reference selection (LUseChfRayIfOK, traceutil_mod).
+      !
+      ! tracesub.F's OPD fills OPDMat one of two ways:
+      !   use_chief .TRUE.  and the chief ray survives (LRayOK(1)) ->
+      !       OPD = CumRayL(iRay) - CumRayL(1).  A per-ray reference; no
+      !       coupling between rays.
+      !   otherwise ->
+      !       OPD = (CumRayL(iRay) - Ref) - DAvgl, with Ref the chief's OPL
+      !       when it survived and 0 when it did not, and DAvgl the mean of
+      !       (CumRayL - Ref) over EVERY valid ray.  On a SEGMENTED
+      !       pupil that mean couples the segments: perturbing one segment
+      !       moves DAvgl by (N_k/N_total)*(mean local response) and that
+      !       constant is then subtracted from every ray, so UNPERTURBED
+      !       segments report a spurious piston and the perturbed one is
+      !       biased by the same amount.  Measured on e5hex1 (7 hex
+      !       segments, Tz = 1e-8 m on one segment): the unperturbed
+      !       segments piston by 16.7% of the peak response; with the
+      !       chief-ray reference it is exactly zero.
+      !
+      ! The engine default is .FALSE. -- macos_cmd_loop.inc's LOAD handler
+      ! sets it .TRUE., but MBFile6 (both macosio.F and smacosio.F) opens
+      ! with reinitialise_variables(), which runs ray_mod_init_vars and
+      ! puts it back.  The Rx keyword `UseChfRay4OPD= Y` and this setter
+      ! are the two ways to select the chief-ray reference; both act after
+      ! that reset.  Diagnosis: Luis Marchen, 2026-08-19.
+      !
+      ! Call AFTER load_rx (a load resets the flag), and re-trace: the OPD
+      ! map is built during the trace, so this dirties the cached one.
+      !---------------------------------------------------------------------------------------------
+      subroutine opd_ref_set(OK, use_chief)
+        use traceutil_mod, only: LUseChfRayIfOK
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: use_chief   ! .TRUE. = chief ray, .FALSE. = aperture mean
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        LUseChfRayIfOK = use_chief
+
+        CALL modified_rx(OK)   ! OPDMat is filled by the trace -> re-trace
+        OK = PASS
+      end subroutine opd_ref_set
+
+
+      subroutine opd_ref_get(OK, use_chief)
+        use traceutil_mod, only: LUseChfRayIfOK
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: use_chief
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        use_chief = LUseChfRayIfOK
+
+        OK = PASS
+      end subroutine opd_ref_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Set the ray-trace obscuration option for spot diagrams (the OBS
       ! command -> iObsOpt).  opt: 0=ALL (every ray, regardless of
       ! obscuration), 1=POSITIVE (unobscured only, the default), 2=NEGATIVE
@@ -6233,6 +6294,15 @@
             CALL macos_memory_failure('init: allocate failed!')
             return
           END IF
+
+          ! macos_init_all has just wiped the model (nElt=0 etc.), so any
+          ! prescription that was loaded is GONE.  Without this reset
+          ! rxLoaded stayed .true. from the previous model size and
+          ! SystemCheck() -- the guard every wrapper opens with -- kept
+          ! passing, so callers operated on an empty model instead of
+          ! being told there is no Rx.  Only in the rebuild branch: when
+          ! the size is unchanged init is a no-op and the Rx survives.
+          rxLoaded = .false.
         END IF
 
         OPD(:)=0d0; SPOT(:,:)=0d0;  PIX(:)=0d0;  USER(:)=0d0
