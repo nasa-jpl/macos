@@ -390,6 +390,11 @@ C         ***next command: Load optical description data***
             SaveVis3d_dat_Flg=.FALSE.  ! default
 	    EltGrp(0,0:mElt)=0
 	    RxStopSet=.FALSE.; ifStopSet=.FALSE.
+!-->	    ! api stop_info_set state must not outlive the LOAD: a
+	    ! stale EltStopSet trips ChkDf2's NS/Segment stop guard
+	    ! mid-parse and cancels the NEW deck's own ApStop.
+	    EltStopSet=.FALSE.; StopElt=0; StopOffset=0.0D0
+!<--
             RxNoStopSet_Flg=.FALSE.
 	    IsVarIndRefElt=.FALSE.; IsGrinRefElt=.FALSE.
 	    TotalLensletsArray=0
