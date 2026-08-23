@@ -378,7 +378,9 @@ C   Setup for new input scheme
 C       Set defaults, if necessary
 
         ! ApStop -- cannot be placed at NS-Surfaces or at the Object Location
-        if (RxStopSet .and. EltStopSet) then
+        ! (guard the STOP element only: unscoped, any Segment/NS elt
+        ! ANYWHERE in the deck cancelled a valid element stop)
+        if (RxStopSet .and. EltStopSet .and. iElt==StopElt) then
           if (EltID(iElt)==0 .OR.
      &          EltID(iElt) == NSRefractorElt .OR.
      &          EltID(iElt) == NSReflectorElt .OR.
