@@ -64,6 +64,9 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'FEXCentroid',11)) THEN
+!  Rx-level VETO of the FEX/SXP centroid axis: 'N' forbids it for this
+!  deck even if the CENTROID command / api mode 0 requested it.  Since
+!  the 2026-08-27 chief-ray default this is belt-and-suspenders only.
             IF (.NOT.LCMP(VALUE,'Y',1)) Rx_FEXCentrFlg=.False.
             GO TO 50
 

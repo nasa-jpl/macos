@@ -559,9 +559,11 @@ C  Centroid or chief ray option tested
 
 	  CALL DSUB(psip,CentroidSpot,CrossPt,3)
 	  CALL DUNITIZE(psip)
+	  WRITE(*,*)' FEX axis: beam CENTROID (opt-in; a tilted axis',
+     &	            ' leaves tip/tilt in the OPD -- CHIEFRAY resets)'
 	ELSE
 	  CALL DNEGATE(psip,cr1dir,3)
-	  !   print*,'***** FEX: Centroid NOT used!'
+	  WRITE(*,*)' FEX axis: CHIEF RAY (default)'
 	END IF
 	END SUBROUTINE FEX
 
@@ -759,8 +761,11 @@ C       Centroid / chief-ray option -- unchanged from FEX.
 
 	  CALL DSUB(psip,CentroidSpot,CrossPt,3)
 	  CALL DUNITIZE(psip)
+	  WRITE(*,*)' SXP axis: beam CENTROID (opt-in; a tilted axis',
+     &	            ' leaves tip/tilt in the OPD -- CHIEFRAY resets)'
 	ELSE
 	  CALL DNEGATE(psip,cr1dir,3)
+	  WRITE(*,*)' SXP axis: CHIEF RAY (default)'
 	END IF
 	END SUBROUTINE SXP
 

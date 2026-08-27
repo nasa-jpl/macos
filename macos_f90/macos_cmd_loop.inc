@@ -450,7 +450,7 @@ C         ***next command: Load optical description data***
             ifPixArray       = .FALSE.
             ifCmt            = .FALSE.
             ifEFLCalc        = .FALSE.
-            ifCentroid       = .TRUE.
+            ifCentroid       = .FALSE. ! chief-ray default (Dave 2026-08-27)
             ifFilterData     = .FALSE.
             ifDMBuild        = .FALSE.
             ifLNegOK         = .TRUE.
@@ -1149,13 +1149,14 @@ C         ***Set centroid option***
 
 	  ELSE IF (LCMP(command,'CENTROID',5)) THEN
 	    ifCentroid=.TRUE.
-	    WRITE(*,*)' Image referenced to ray centroid'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: beam CENTROID',
+     &	              ' (opt-in; chief ray is the default)'
 
 C         ***Set chief ray option***
 
 	  ELSE IF (LCMP(command,'CHIEFRAY',3)) THEN
 	    ifCentroid=.FALSE.
-	    WRITE(*,*)' Image referenced to chief ray'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: CHIEF RAY (default)'
 
 C         ***Set regridding on for specified element***
 
