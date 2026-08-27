@@ -192,7 +192,8 @@ C
           ifAdd           = .FALSE.
           ifPixArray      = .FALSE.
           ifDMBuild       = .FALSE.
-          ifCentroid      = .TRUE.   ! default: Centroid and not ChiefRay
+          ifCentroid      = .FALSE.  ! default: CHIEF RAY (Dave 2026-08-27);
+                                     ! centroid = opt-in (CENTROID cmd / api mode 0)
           ifLNegOK        = .TRUE.   ! default: incl. Neg. Ray Lengths
           ifFilterData    = .FALSE.
           ifUDSinit       = .FALSE.

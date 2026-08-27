@@ -213,6 +213,28 @@ screens against `macos.model_sizes()` first.
 - pData condition bug fixed: was SrfType<=13 (fired for all 1-13),
   now ==12 .OR. ==13 .OR. ==SrfType_FreeForm.
 
+## FEX/SXP axis convention: CHIEF-RAY DEFAULT on all platforms (Dave 2026-08-27)
+`ifCentroid` governs ONLY the FEX/SXP pupil-sphere AXIS (nothing else
+consumes it): chief (`psi=-cr1dir`) vs centroid (`psi=unit(centroid@
+iElt+1 - CrossPt)`).  On obscured/segmented/comatic beams the centroid
+walks off the chief -> tilted sphere -> PURE TIP/TILT (+piston vs a
+chief OPD reference) in the OPD -- frame terms, zero aberration (Luis's
+2026-08-27 report; same physics as the pupil_find fit_chief ruling).
+Historic trap: the CLI defaulted to CENTROID (`ifCentroid=.TRUE.` in 5
+init sites) while the api (`xp_fnd(mode)`, save/set/restore per call)
+defaulted to chief -- t/t/p appeared interactively but never in
+supervisor runs.  FLIPPED to `.FALSE.` at all 5 sites (macos_mod,
+macos_init.inc, smacos_glass.inc, macos_ops.F, macos_cmd_loop.inc).
+Opt-in: `CENTROID` cmd (match-5; `CHIEFRAY` restores), api mode 0, and
+the Rx keyword `FEXCentroid= N` remains a per-deck VETO.  Every FEX/SXP
+run now PRINTS its axis.  SXP radius = plane intersection with
+iElt+1's vertex/normal -- TYPE-AGNOSTIC (mask/Reference/Obscuring at
+iElt+1 handled right despite the "FP" name); FEX and SXP are
+geometrically identical, FEX adds the guards.  Gate: pty-driven CLI
+(scratchpad fex_cli_gate.py pattern -- readline needs a tty; the
+model-size prompt comes FIRST).  cmdref FEXit/SXP/CHIefray/CENTRoid
+entries carry the convention table.
+
 ## FEX EP-radius rework (2026-07-03) + SXP command (Set eXit Pupil)
 **FEX now defaults to the EP→next-element radius** (Dave's spec): the
 EP Return radius is ALWAYS the chief-ray distance from the EP

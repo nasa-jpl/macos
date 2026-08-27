@@ -363,7 +363,7 @@ C  FORMAT statements
             ifPixArray=.FALSE.
 #endif
             ifDMBuild=.FALSE.
-            ifCentroid=.TRUE.
+            ifCentroid=.FALSE. ! chief-ray default (Dave 2026-08-27)
             ifFilterData=.FALSE.
             ifLNegOK=.TRUE.
             ifUDSinit=.FALSE.
