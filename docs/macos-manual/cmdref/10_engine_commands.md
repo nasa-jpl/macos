@@ -424,16 +424,32 @@ only marks the Rx modified and resets those flags.
 
 *Minimum match:* `CHIefray`
 
-Use chief ray (not centroid) as the FEX reference point.
+Use the chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 ```
 MACOS>chiefray
- Image referenced to chief ray
+ FEX/SXP pupil-sphere axis: CHIEF RAY (default)
 ```
-No input.  Clears the CENTRoid option, so FEXit and other
-image-referencing computations use the chief-ray intercept
-rather than the spot centroid.  Despite the help one-liner,
+No input.  This pair (CHIefray / CENTRoid) selects the AXIS of the
+exit-pupil reference sphere FEXit/SXP write:
+  chief    psi = -(chief direction)          -- THE DEFAULT
+           (all platforms since 2026-08-27; the API always chose
+           per call: xp_fnd mode 1 = chief, 0 = centroid)
+  centroid psi = unit(beam centroid at the next plane - EP crossing)
+On an obscured, segmented, or aberrated beam the downstream centroid
+walks off the chief, so the centroid axis TILTS the reference sphere
+and leaves pure tip/tilt (plus piston against a chief-type OPD
+reference) in the OPD -- frame terms with no aberration content.
+Every FEX/SXP run prints which axis it used.  The Rx keyword
+`FEXCentroid= N` additionally VETOES the centroid axis for a deck.
+The doctrine extends to the mmacos pupil_find layer: the written
+pupil reference is ALWAYS chief-tied (pupil_find calls fex mode 1
+internally and writes the fit-surface/chief-ray crossing);
+beam-collective quantities -- the centroid axis here, the cone-bundle
+vertex and cone-fit normal there -- are DIAGNOSTICS, never references
+(writing them was measured to inject pure tilt or make the reference
+tilt-blind).
 CHIefray does NOT set the chief-ray position/direction — use
 PERturb 0, STOp, FFP or PFP for that.
 *Related:* CENTRoid, FEXit.
