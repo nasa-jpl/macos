@@ -450,6 +450,10 @@ beam-collective quantities -- the centroid axis here, the cone-bundle
 vertex and cone-fit normal there -- are DIAGNOSTICS, never references
 (writing them was measured to inject pure tilt or make the reference
 tilt-blind).
+The mmacos supervisors surface this same toggle: the dw_d*_multi
+family and run_sensitivities take `'fex_axis' 'chief'|'centroid'`
+for the FEX per-field reset (chief default; refused when combined
+with reset_xp_method='pupil_find', which is chief-tied by doctrine).
 CHIefray does NOT set the chief-ray position/direction — use
 PERturb 0, STOp, FFP or PFP for that.
 *Related:* CENTRoid, FEXit.
