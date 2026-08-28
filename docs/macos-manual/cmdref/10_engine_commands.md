@@ -907,7 +907,17 @@ reference sphere for far-field propagation (eElt=0, fElt=|z|,
 KrElt=-fElt, KcElt=0, psi, Vpt/Rpt updated).  Requires STOp
 first.  The EP radius is the chief-ray distance from the EP to
 the next element (the far-field propagation distance); the
-legacy previous-element leg is the fallback.  The sphere AXIS
+legacy previous-element leg is the fallback.  When that next
+element is CURVED the radius runs to its SURFACE, not to its
+tangent plane (2026-08-28) — on a curved focal surface the plane
+sits the sag h**2/2R beyond it at image height h and the miss
+lands in the OFF-AXIS OPD as pure defocus (4.3e-5 -> 7.3e-6 mm
+at 1' on the JWST OTE deck; identically zero on axis).  Flat
+next elements are bit-identical to the old behaviour, and each
+curved run prints the element, its Kr and the plane-surface gap.
+Only the base conic is used, so a grid/FreeForm figure at the
+next element is ignored (um-class against a sub-mm sag).  The
+sphere AXIS
 is the CHIEF RAY by default (2026-08-27, all platforms); CENTRoid
 opts into the beam-centroid axis and CHIefray restores — see the
 CHIefray entry for why the centroid axis leaves tip/tilt in the
@@ -942,10 +952,12 @@ to the next element (the focal plane at iElt+1) instead of the
 legacy previous-element-to-EP leg, making the radius sensitive
 to focal-plane despace (Tz); lateral FP motion and rotations
 are still not captured.  Requires STOp first; the element must
-be a Return or Reference surface.  The radius math is a pure
-plane intersection with element iElt+1's vertex and normal —
-type-agnostic, so a mask/Reference/Obscuring plane there is
-handled correctly despite the "FP" naming.  Since the FEX
+be a Return or Reference surface.  The radius math intersects
+element iElt+1's vertex/normal plane when that element is flat
+and its actual conic SURFACE when it is curved (2026-08-28, the
+same rule and the same shared solver as FEX) — type-agnostic
+either way, so a mask/Reference/Obscuring at iElt+1 is handled
+correctly despite the "FP" naming.  Since the FEX
 rework made the EP-to-next-element radius FEX's own default,
 FEX and SXP are geometrically identical on every deck; FEX adds
 the telecentric/footprint/Return-order guards.  The sphere AXIS

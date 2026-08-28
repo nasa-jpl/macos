@@ -249,6 +249,142 @@ cendscottfix
 	END IF
 	END SUBROUTINE OPD
 
+C***********************************************************************
+C       FEXConicLeg -- refine the FEX/SXP exit-pupil radius from the
+C       TANGENT PLANE of element iNxt to its actual conic SURFACE.
+C
+C       The 2026-07-03 EP-radius rework sets the reference-sphere radius
+C       to the chief-ray distance from the EP crossing to element
+C       iElt+1's plane (VptElt/psiElt).  That is exact only when iElt+1
+C       is FLAT.  On a CURVED next element (a real focal SURFACE) the
+C       plane sits h**2/(2*Kr) beyond the surface at image height h, and
+C       the EP reference sphere inherits that as PURE DEFOCUS in the
+C       off-axis OPD -- identically zero on axis, which is why it went
+C       unnoticed for a year.  Dave ruled the fix 2026-08-28; mechanism,
+C       measured numbers and blast radius in macos_f90/CLAUDE.md.
+C
+C       The chief/conic intersection is solved LOCALLY here, and
+C       deliberately NOT through ConSrf: ConSrf picks its quadratic root
+C       by |L**2-mpr| PROXIMITY, with no flow-of-light sense (the trap
+C       behind the FEX CENTROID branch's far-root garbage).  Here the
+C       right root is unambiguous -- the sag correction is h**2/2R, far
+C       smaller than the ~2R separating the two roots -- so the root
+C       NEAREST the plane leg is taken.
+C
+C       Handles the general conic (Kc /= 0).  Any grid / FreeForm figure
+C       on iNxt is IGNORED: only its base conic is used.  Figure terms at
+C       a focal surface are um-class against a sub-mm sag.
+C
+C       Gated on iNxt's SURFACE TYPE, not on Kr alone.  A `Surface= Flat`
+C       element may legally declare `KrElt= 0d0` (docs/.../SegDemo.in
+C       does), and Kr=0 is a degenerate POINT in the conic form, so a
+C       Kr-only test would mis-read a plain flat detector as curved.
+C       Only the conic-BASE family is refined -- Conic/Aspheric/
+C       Monomial/Zernike/the grid composites -- since those are exactly
+C       the types whose Kc/Kr are the base conic.  Toric, Anamorphic,
+C       Interpolated and UserDefined give Kr other meanings; they keep
+C       the plane leg and say so.
+C
+C       In:  o(3)    ray origin (the EP crossing point)
+C            d(3)    UNIT ray direction leaving the EP
+C            iNxt    the next element (iElt+1)
+C            tPlane  the plane-leg distance already computed
+C       Out: tSrf    the surface-leg distance
+C            LOK     .TRUE. iff the surface leg was used.  When iNxt is
+C                    FLAT (SrfType_Flat, or |Kr| >= the 1d20 sentinel
+C                    ConSrf itself uses) or the chief misses the
+C                    surface, LOK is .FALSE. and tSrf is returned ==
+C                    tPlane, so flat-next-element decks are
+C                    bit-identical BY CONSTRUCTION.
+C            LTyp    .TRUE. iff iNxt is a curved surface of a type this
+C                    routine does not solve (caller may warn).
+C***********************************************************************
+
+	SUBROUTINE FEXConicLeg(o,d,iNxt,tPlane,tSrf,LOK,LTyp)
+
+	use param_mod
+	use elt_mod
+
+	IMPLICIT NONE
+
+	INTEGER iNxt,i,iSt
+	REAL*8 o(3),d(3),tPlane,tSrf,Kc,Kr,prel(3),itpsi,psitprel,
+     &	  mpr,a,b,c,k2,sq,ksq,kp,km
+	LOGICAL LOK,LTyp
+
+	tSrf=tPlane
+	LOK=.FALSE.
+	LTyp=.FALSE.
+	IF ((iNxt.LT.1).OR.(iNxt.GT.nElt)) RETURN
+	iSt=SrfType(iNxt)
+	IF (iSt.EQ.SrfType_Flat) RETURN
+	Kr=KrElt(iNxt)
+	Kc=KcElt(iNxt)
+	IF (ABS(Kr).GE.1d20) RETURN
+	! Kr = 0 is a degenerate POINT in the conic form, not a
+	! surface -- ConSrf kills every ray on such an element.
+	! Keep the plane leg rather than returning the foot of the
+	! perpendicular from the vertex, which is what the tangent
+	! root would give.
+	IF (Kr.EQ.0d0) RETURN
+	! Conic-base family only (see the header note).
+	IF (.NOT.((iSt.EQ.SrfType_Conic).OR.
+     &	    (iSt.EQ.SrfType_Aspheric).OR.
+     &	    (iSt.EQ.SrfType_Monomial).OR.
+     &	    (iSt.EQ.SrfType_Zernike).OR.
+     &	    (iSt.EQ.SrfType_GridData).OR.
+     &	    (iSt.EQ.SrfType_AsGrData).OR.
+     &	    (iSt.EQ.SrfType_MonGrData).OR.
+     &	    (iSt.EQ.SrfType_ZrnGrData).OR.
+     &	    (iSt.EQ.SrfType_FreeForm))) THEN
+	  LTyp=.TRUE.
+	  RETURN
+	END IF
+
+	DO i=1,3
+	  prel(i)=o(i)-VptElt(i,iNxt)
+	END DO
+	itpsi=DDOTC(d,psiElt(1,iNxt))
+	psitprel=DDOTC(prel,psiElt(1,iNxt))
+	mpr=DDOTC(prel,prel)
+	a=1d0+Kc*itpsi*itpsi
+	b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+DDOTC(d,prel))
+	c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+
+	IF (ABS(a).LE.1d-20) THEN
+	  ! Degenerate conic (1+Kc*(d.psi)**2 = 0): the quadratic
+	  ! collapses to a linear equation.
+	  IF (ABS(b).LE.1d-20) RETURN
+	  tSrf=-c/b
+	  LOK=.TRUE.
+	  RETURN
+	END IF
+
+	k2=b*b-4d0*a*c
+	IF (k2.LT.0d0) RETURN
+	IF (k2.EQ.0d0) THEN
+	  tSrf=-0.5d0*b/a
+	  LOK=.TRUE.
+	  RETURN
+	END IF
+	sq=SQRT(k2)
+	IF (b.GE.0d0) THEN
+	  ksq=-0.5d0*(b+sq)
+	ELSE
+	  ksq=-0.5d0*(b-sq)
+	END IF
+	kp=ksq/a
+	km=c/ksq
+	IF (ABS(kp-tPlane).LE.ABS(km-tPlane)) THEN
+	  tSrf=kp
+	ELSE
+	  tSrf=km
+	END IF
+	LOK=.TRUE.
+	END SUBROUTINE FEXConicLeg
+
+
+
 
 C***********************************************************************
 
@@ -288,9 +424,9 @@ C***********************************************************************
      &	  cr2indir(3),cr2inpos(3),CrossDist
 !-->
 	REAL*8 fexcrs(3),fexsin,fexR,fexT,fexden,fexdot,fexvec(3),
-     &	  fexdir(3),fexS,fexL,zpLeg
+     &	  fexdir(3),fexS,fexL,zpLeg,fexTs
 	INTEGER nBadSv,nFtRays,iFPnxt
-	LOGICAL LTelec,LFPLeg
+	LOGICAL LTelec,LFPLeg,LFPSrf,LFPTyp
 !<--
 
 C         ***Find exit pupil (with option to minimize tilt)***
@@ -429,6 +565,31 @@ c	th(3)=3.5355d-6
 	    fexdot=DDOTC(fexvec,psiElt(1,iFPnxt))
 	    fexT=fexdot/fexden
 	    LFPLeg=.TRUE.
+	    ! A CURVED iElt+1 is a focal SURFACE, not a plane:
+	    ! its tangent plane sits h**2/(2*Kr) beyond it at
+	    ! image height h, and that lands in the off-axis OPD
+	    ! as pure defocus.  Take the radius to the SURFACE
+	    ! (Dave 2026-08-28); flat iElt+1 is untouched.
+	    CALL FEXConicLeg(CrossPt,fexdir,iFPnxt,fexT,fexTs,
+     &	                     LFPSrf,LFPTyp)
+	    IF (LFPSrf) THEN
+	      WRITE(*,*)'***** FEX: element',iFPnxt,'is CURVED'
+	      WRITE(*,*)'***** (Kr=',KrElt(iFPnxt),') -- EP radius'
+	      WRITE(*,*)'***** taken to its SURFACE.  Plane leg',
+     &	        fexT,' surface leg',fexTs,' gap',fexT-fexTs
+	      fexT=fexTs
+	    ELSE IF (LFPTyp) THEN
+	      WRITE(*,*)'***** FEX WARNING: element',iFPnxt,
+     &	        'is a curved',SrfTypeName(SrfType(iFPnxt))
+	      WRITE(*,*)'***** surface whose Kr is not a base-conic'
+	      WRITE(*,*)'***** radius; keeping the tangent plane.'
+	    ELSE IF ((SrfType(iFPnxt).NE.SrfType_Flat).AND.
+     &	       (ABS(KrElt(iFPnxt)).LT.1d20)) THEN
+	      WRITE(*,*)'***** FEX WARNING: element',iFPnxt,
+     &	        'is curved (Kr=',KrElt(iFPnxt),') but the'
+	      WRITE(*,*)'***** chief ray does not meet its surface;'
+	      WRITE(*,*)'***** keeping the tangent-plane radius.'
+	    END IF
 	  END IF
 	END IF
 
@@ -622,7 +783,8 @@ C***********************************************************************
      &	  DV1(9),S1,th(3),
      &	  zp,psip(3),CrossPt(3),cr1dir(3),cr1pos(3),cr2dir(3),cr2pos(3),
      &	  cr2indir(3),cr2inpos(3),CrossDist,
-     &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1
+     &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1,sxpdir(3),t_Srf
+	LOGICAL LFPSrf,LFPTyp
 
 C       Standard FEX chief-ray pair trace (source -> iEm1) and find
 C       the two-ray crossing point -- that's the EP location.
@@ -680,6 +842,30 @@ C       r(t) = CrossPt - t * cr1dir; intersect with FP plane.
      &                 dvec(2)*psiElt(2,iFP_loc) +
      &                 dvec(3)*psiElt(3,iFP_loc)
 	    t_FP = -dot_dvec / denom
+C           Curved iElt+1: refine the plane leg to the actual
+C           surface -- same rule as FEX (Dave 2026-08-28).  The
+C           post-EP chief direction here is -cr1dir (see above).
+	    CALL DNEGATE(sxpdir,cr1dir,3)
+	    CALL FEXConicLeg(CrossPt,sxpdir,iFP_loc,t_FP,t_Srf,
+     &                       LFPSrf,LFPTyp)
+	    IF (LFPSrf) THEN
+	      WRITE(*,*)'***** SXP: element',iFP_loc,'is CURVED'
+	      WRITE(*,*)'***** (Kr=',KrElt(iFP_loc),') -- EP radius'
+	      WRITE(*,*)'***** taken to its SURFACE.  Plane leg',
+     &	        t_FP,' surface leg',t_Srf,' gap',t_FP-t_Srf
+	      t_FP = t_Srf
+	    ELSE IF (LFPTyp) THEN
+	      WRITE(*,*)'***** SXP WARNING: element',iFP_loc,
+     &	        'is a curved',SrfTypeName(SrfType(iFP_loc))
+	      WRITE(*,*)'***** surface whose Kr is not a base-conic'
+	      WRITE(*,*)'***** radius; keeping the tangent plane.'
+	    ELSE IF ((SrfType(iFP_loc).NE.SrfType_Flat).AND.
+     &	       (ABS(KrElt(iFP_loc)).LT.1d20)) THEN
+	      WRITE(*,*)'***** SXP WARNING: element',iFP_loc,
+     &	        'is curved (Kr=',KrElt(iFP_loc),') but the'
+	      WRITE(*,*)'***** chief ray does not meet its surface;'
+	      WRITE(*,*)'***** keeping the tangent-plane radius.'
+	    END IF
 	    zp = t_FP
 	  ELSE
 	    zp = zp_iEm1

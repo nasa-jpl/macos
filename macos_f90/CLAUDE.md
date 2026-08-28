@@ -235,6 +235,79 @@ geometrically identical, FEX adds the guards.  Gate: pty-driven CLI
 model-size prompt comes FIRST).  cmdref FEXit/SXP/CHIefray/CENTRoid
 entries carry the convention table.
 
+## FEX/SXP radius on a CURVED iElt+1: intersect the SURFACE (2026-08-28)
+
+The 2026-07-03 rework below made the EP radius the chief-ray distance
+from the EP crossing to element iElt+1's **tangent PLANE**
+(`VptElt`/`psiElt`).  Its note says "type-agnostic" -- right about the
+element TYPE, but it drops CURVATURE.  When iElt+1 is a real focal
+SURFACE and the chief lands at image height `h` off its vertex, the
+plane sits `h**2/(2*Kr)` beyond the surface, and the EP sphere carries
+that as **pure DEFOCUS in the OFF-AXIS OPD**: `a4 = r0^2 h^2 /
+(8 R_ep^2 R_next)`.  **Identically zero on axis**, which is why every
+gate missed it for a year (found running `BRIEF_wnom_cli_ab.md`;
+`macos/REPORT_wnom_cli_ab.md` + `REPORT_focal_surface.md`).
+
+`FEXConicLeg` (tracesub.F, module procedure, called by BOTH `FEX` and
+`SXP`) refines the plane leg to the conic intersection.  Four things
+about it are load-bearing:
+
+1. **It does NOT go through ConSrf.**  ConSrf picks its quadratic root
+   by `|L**2-mpr|` PROXIMITY with no flow-of-light sense -- the trap
+   that produced the CENTROID branch's far-root garbage.  Here the root
+   NEAREST the plane leg is taken, which is well posed: the sag
+   correction is `h**2/2R` while the roots are ~`2R` apart.
+2. **It gates on SrfType, NOT on Kr alone.**  A `Surface= Flat` element
+   may legally declare a small `KrElt` -- `docs/.../SegDemo.in` declares
+   `KrElt= 0d0` -- so a Kr-only test mis-reads a flat detector as a
+   curved one.  Measured: with Kr-only gating, `set_elt_kr(13,-100)` on
+   e5hex1's Flat FocalPlane moves the FEX radius `-2548.0018521245 ->
+   -2570.2492488727`; with the SrfType gate it does not move at all.
+   Note the **Rx path cannot reach this** -- `msmacosio.inc:1338` AND
+   `ChkDf2` (`iosub.inc:1105`) both force `KrElt=-1d22` whenever
+   `Surface= Flat`, so a hand-edited .in is normalised before FEX sees
+   it.  The API's `elt_kr` setter writes `KrElt` directly and leaves
+   `SrfType` alone -- and that is exactly the path the design layer
+   uses, so the gate earns its keep.
+3. **Only the conic-BASE family is refined** (Conic/Aspheric/Monomial/
+   Zernike/the grid composites).  Toric, Anamorphic, Interpolated and
+   UserDefined give `Kr` other meanings; they keep the plane leg and say
+   so.  A grid/FreeForm FIGURE on iElt+1 is ignored -- um-class against
+   a sub-mm sag.  `Kr = 0` is a degenerate POINT, not a surface (ConSrf
+   kills every ray on such an element), so it keeps the plane leg too.
+4. **Flat-next decks are bit-identical BY CONSTRUCTION** (the plane form
+   IS the `|Kr| -> inf` limit) and that is ASSERTED, not assumed:
+   e5hex1 / SegDemo3conic / iris_dp / keckFF / eac2_7seg all give
+   `|drad| = |dvpt| = |dpsi| = max|dW| = 0.000e+00` pre vs post.
+
+**Measured on the zoom fixture** (`templates/50_sensitivities/zoom_5x5/
+jwst_ote_designc`, model 128, ng 63, stop 25, OPD at 27, +-2.90888e-4
+rad; elt 28 = curved focal surface `Kr=-3017.560611`, h = 54.2 mm,
+sag 0.487 mm): corner nominals `4.26/4.37/3.09/3.23e-5` ->
+`7.33/7.96/11.47/9.92e-6` mm (5.8x/5.5x/2.7x/3.3x), center unchanged to
+1.4e-9 relative.  FEX == SXP to 0.000e+00 on every deck checked.
+
+**Blast radius, from an ENGINE-truth scan** (`fs_fix/scan_engine.csv`;
+396 decks loaded, 208 with a FEX-writable EP at nElt-1): **11 move, all
+of them the JWST OTE focal sphere `Kr=-3017.56`** -- the zoom deck + its
+grid sibling, `j18dcWithStop`, `j18mono`, `j18sc`, plus the A/B run's
+generated copies.  197 are flat there and are bit-unchanged.  **Do NOT
+text-parse .in files to reproduce this count**: several decks declare an
+`nElt` that disagrees with their `Element=` block count (e5hex2 declares
+24, the engine reports 25; eac2_7seg declares 47 with 48 blocks), which
+shifts the indexing and attributes the WRONG element's Kr.  That error
+is what put keckFF (`Kr=-0.0200`), iris_dp (`-2516.07`) and eac2_7seg
+(`-306`) on the earlier affected list -- the engine reports `Kr=-1e22`
+(flat) for element nElt on all three, and none of them moves.
+
+**Still open, deliberately:** the FEX radius doubles as the far-field
+PROPAGATION distance, where a tangent PLANE target is genuinely the
+right thing.  This slice moved the OPD reference; if a physical-optics
+leg ever needs the plane distance separately, the two uses have to be
+split.  And the legacy `zp_iEm1` leg is NOT a general substitute -- it
+equals the surface leg on the jwst deck only because elt 26 is
+coincident with elt 28.
+
 ## FEX EP-radius rework (2026-07-03) + SXP command (Set eXit Pupil)
 **FEX now defaults to the EP→next-element radius** (Dave's spec): the
 EP Return radius is ALWAYS the chief-ray distance from the EP
