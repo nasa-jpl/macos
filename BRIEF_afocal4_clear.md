@@ -56,10 +56,23 @@ packaging one.
    the feed geometrically; it puts power on tilted surfaces, so it is
    priced in WFE and pupil metrics by a joint re-solve — report the
    price, do not eyeball it.
-4. **The family knob (M2 speed / internal-focus position)** — the
-   biggest lever and the most expensive: it re-opens the family-2
-   trade.  Touch it only if 1–3 cannot clear, and then re-report the
-   FULL trade row (WFE, pupil blur, wander, magnification variation,
+4. **A FIFTH mirror (Dave's addition, 2026-08-30).**  Add a powered
+   element rather than contorting four: the natural form is a small
+   powered mirror near the internal focus that does the extraction
+   AND shares the collimation/pupil work — taking the body-in-beam
+   conflict away geometrically while ADDING the freedom the pupil
+   metrics currently pay for (the 4th mirror bought the pupil at a
+   factor-39 image cost; a 5th may re-balance that exchange).  Costs
+   to state: one more reflection and alignment, a re-opened element
+   count (the "what a 4th mirror buys" story becomes "what a 5th
+   buys" — a NEW trade row with the full pupil set), and the
+   packaging re-run.  Try it when 1–3 clear only at an ugly price, or
+   pursue it in PARALLEL as the counter-design if the station scan
+   (2) shows the 4-mirror topology is fundamentally pinched.
+5. **The family knob (M2 speed / internal-focus position)** — the
+   most expensive lever: it re-opens the family-2 trade at its base.
+   Touch it only if 1–4 cannot clear, and then re-report the FULL
+   trade row (WFE, pupil blur, wander, magnification variation,
    pupil distance ↔ instrument diameter).
 
 ## Where the problem is constrained (hold these fixed)
