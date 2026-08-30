@@ -161,12 +161,12 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 | magnification variation | ±3.6% | 0.12% |
 | wavefront error — the price paid | 119 nm | 10.4 µm |
 - **The two qualities pull opposite ways:** the fourth mirror's power serves the pupil and costs the image — a factor-39 exchange.  Declining the power (a flat fourth mirror) keeps 266 nm and the three-mirror pupil.
-- **The trade, packaged:** with the last mirror held behind the primary, the solutions split into two families; pupil distances under 220 mm leave no room for an instrument after the fold — 343 mm admits a 464 mm diameter.
+- **The trade, constrained:** with the last mirror held behind the primary, the solutions split into two families; pupil distances under 220 mm leave no room for an instrument after the fold — 343 mm admits a 464 mm diameter.
 ![A point of M1 imaged at the pupil: the convergence clouds behind the pupil-blur metric, traced across the field.](figs/rodgers2_S1_onaxis_pupil.png){h=1.35}
 ::: right
-![The constrained design, folded: the instrument volume behind the primary.](figs/rodgers2_final_folded.png){h=2.3}
+![The constrained design at the 343 mm point — a packaging screen, not a completed layout.](figs/rodgers2_final_folded.png){h=2.3}
 ![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=2.1}
-~ "3 mirrors" = the best delivered variant.  Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Per-point trade table: the design/rodgers2 record.
+~ "3 mirrors" = the best delivered variant.  Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Packaging was not driven to completion: the back focal path still exceeds the M1–M2 spacing, and folding it down is queued work — the TRADE is the result, not the layout.  Per-point trade table: the design/rodgers2 record.
 
 ## A Twyman–Green interferometer for measuring DM surfaces | Phase-shifting with no moving parts: the analyzer angle is the phase step
 ::: left
