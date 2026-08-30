@@ -56,7 +56,10 @@ quality bar is ~15.2 min (measured):
   TG live beat, the CTB trio, the e2e6m observatory trio) —
   ~26–32 min against the 15.2-min solve.  COMFORTABLE.
 - **Slide 22: the reveal** — map + layout + gates beside the stated
-  prediction, right before the closing discussion.
+  prediction, right before the closing discussion.  The reveal
+  windows AUTO-POP in the solve MATLAB at completion (2026-08-30):
+  live-traced layout + WFE map + fields; `oi_demo_show(OUT)`
+  re-renders, `oi_demo_show()` no-arg = newest run on disk.
 - Refusal path in RESERVE (scripted in `demo_adjacent/REHEARSAL.md`,
   not demonstrated).  NARRATION NOTE: a wide ask (13–15°) now
   PASSES both gates — the committed walk line understates the
