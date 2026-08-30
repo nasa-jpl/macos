@@ -166,9 +166,15 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 - **The trade, constrained:** with the last mirror held behind the primary, the solutions split into two families; pupil distances under 220 mm leave no room for an instrument after the fold — 343 mm admits a 464 mm diameter.
 ![A point of M1 imaged at the pupil: the convergence clouds behind the pupil-blur metric, traced across the field.](figs/rodgers2_S1_onaxis_pupil.png){h=1.35}
 ::: right
-![Packaging, driven to a measured answer: as committed the deepest optic sits 1.887 m behind the primary — 1.81× the M1–M2 span (left); four folds in the feed leg bring it to 0.893 m, 0.86×, inside the telescope's own envelope, with the fold null asserted at 3×10⁻⁸ nm (right).](figs/afocal4_pack_compare.png){h=2.6}
-![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=1.9}
-~ Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above the floors.  Packaging costs are stated, not smoothed (+5.8 mm flat clearance, ~300 mm decentred flats, four 45° folds = an unopened polarization budget) — and the same measurement found a REAL buildability item no fold can fix: the collimator stands in the union of its own feed beams (−55 mm against bare glass); redesign queued.  Records: design/rodgers2 + challenges/afocal4/packaging.
+![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=2.6}
+~ Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Per-point trade table: the design/rodgers2 record.  Packaging the 343 mm point: next slide.
+
+## Challenge 2: packaging behind the primary | As committed, the deepest optic overhangs the M1–M2 span 1.81× — four folds bring it to 0.86×
+::: full
+![Engine-truth packaging, three ways: as committed, the deepest optic sits 1.887 m behind the primary against a 1.042 m M1–M2 span (left); the recorded single-fold recipe touches no depth and throws the instrument radially (middle); four folds in the feed leg bring the deepest optic to 0.893 m — inside the telescope's own envelope — at Ø1.120 × 2.832 m (right).](figs/afocal4_pack_compare.png){h=3.3}
+- **The fix is real and priced:** zero rays lost, fold null asserted at 3×10⁻⁸ nm; costs stated, not smoothed — the new flats clear by +5.8 mm, are ~300 mm across and decentred 100–146 mm, and four 45° folds are an unopened polarization budget.
+- **The measurement found what no fold can fix:** over the field box, the collimator stands in the union of its own feed beams — −55 mm against bare glass with no allowance at all.  A fold is an isometry and carries it across unchanged; the redesign is queued.
+~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  Record: challenges/afocal4/packaging.
 
 ## A Twyman–Green interferometer for measuring DM surfaces | Phase-shifting with no moving parts: the analyzer angle is the phase step
 ::: left
