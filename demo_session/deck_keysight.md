@@ -29,7 +29,11 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 -- ***Testbeds validated the models, and the validated models proved the space system.***
 - **TMT, Keck and many space missions:** Observatory modeling, including segmented-aperture systems, testbeds, instrument studies.
 -- ***Validated against testbed and flight data across those programs.***
-- **We are modernizing and extending the capabilities of our modeling to meet new challenges.**
+- **We are now modernizing and extending the capabilities of our modeling to meet new challenges.**
+-- ***New elements: Freeforms with aberrations, polarizers, complex masks and apodizers, completely general surfaces added through the API***
+-- ***The same functionality, streamlined: linear model generation, simulation, multi-path, metrology and edge sensors***
+-- ***New capabilities: design layer***
+-- ***Code cleanup: improved robustness, automated testing, updating documentation***
 
 ## One engine, four surfaces | The same Fortran core answers a terminal, a library call, MATLAB, and Python
 ::: full
