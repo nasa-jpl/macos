@@ -52,10 +52,10 @@ quality bar is ~15.2 min (measured):
   verdict verbatim on the right.  **DAVE switches to MATLAB here and
   kicks off `oi_demo_step(<width>)` himself** — the without-AI half
   of slide 5's objective, running live.
-- **Slides 10–21 are the cover** (C1, C2 ×2, the IFO block incl. the
-  TG live beat, the CTB trio, the e2e6m observatory trio) —
-  ~26–32 min against the 15.2-min solve.  COMFORTABLE.
-- **Slide 22: the reveal** — map + layout + gates beside the stated
+- **Slides 10–22 are the cover** (C1, C2 ×3 incl. packaging, the IFO
+  block incl. the TG live beat, the CTB trio, the e2e6m observatory
+  trio) — ~27–33 min against the 15.2-min solve.  COMFORTABLE.
+- **Slide 23: the reveal** — map + layout + gates beside the stated
   prediction, right before the closing discussion.  The reveal
   windows AUTO-POP in the solve MATLAB at completion (2026-08-30):
   live-traced layout + WFE map + fields; `oi_demo_show(OUT)`
@@ -93,44 +93,47 @@ KEEP; your dry-run call).
 11. Challenge 2 reproduced: variant table 0.95–1.02×.
 12. Challenge 2 extended: pupil metrics (+ convergence-cloud strip)
     + the 4th-mirror trade.
+13. Challenge 2 packaging (NEW 2026-08-30, the r2-packaging
+    delivery): 1.81× overhang → 0.86× via four folds; costs stated;
+    the collimator self-interference finding (redesign queued).
 
 **The IFO demo (rehearsed with TO 2026-08-29 — good to go)**
-13. Measuring a surface with polarized light — the PRINCIPLE (why
+14. Measuring a surface with polarized light — the PRINCIPLE (why
     TG, analyzer angle = phase step, factor 2; sweep-frames figure).
-14. The rig, built + calibrated — bilinear sweep + the 11.7% catch.
-15. **LIVE: Dave measures the DM** (7 steps with timings, solo,
+15. The rig, built + calibrated — bilinear sweep + the 11.7% catch.
+16. **LIVE: Dave measures the DM** (7 steps with timings, solo,
     desktop MATLAB; poke + recovery figures on the slide).
 
 **The coronagraph testbed (highlights from deck_ctb v5)**
-16. CTB end to end: layout sketch + mask families head-to-head +
+17. CTB end to end: layout sketch + mask families head-to-head +
     PROPER external validation (correlation 1.000000).
-17. The vortex against the Lyot stop — THE CHARGE-4 CONCLUSION
+18. The vortex against the Lyot stop — THE CHARGE-4 CONCLUSION
     (8.8e-11 at the band-limited mask's own 36%).
-18. The mirrors close the loop: 1.7e-8 → 6.8e-15 (numerical floor);
+19. The mirrors close the loop: 1.7e-8 → 6.8e-15 (numerical floor);
     physics vs arithmetic floors; pol/bandwidth/vector-vortex
     verdicts.
 
 **The observatory (e2e6m — testbed proves the models, the same
 modeling builds the flight-like system)**
-19. From the testbed to an observatory: light-order sketch + shroud
+20. From the testbed to an observatory: light-order sketch + shroud
     packing (7.451 m vs the 8.0 m gate).
-20. Segmentation, metrology, controls at 6 m scale (114 MET beams).
-21. A randomly disturbed observatory, simulated: 2.5e-7 held vs
+21. Segmentation, metrology, controls at 6 m scale (114 MET beams).
+22. A randomly disturbed observatory, simulated: 2.5e-7 held vs
     1.7e-6 open — ready to ingest dynamical/thermal time histories.
     WORK IN PROGRESS, declared on the slide.
-22. **LIVE REVEAL** — prediction vs the just-solved design.
+23. **LIVE REVEAL** — prediction vs the just-solved design.
 
 **Close**
-23. AI in design + analysis — the working questions.
-24. Summary + public code.
+24. AI in design + analysis — the working questions.
+25. Summary + public code.
 
-**Backup** (after a plain divider, slide 25)
-26. What MACOS does today (moved from main, Dave 2026-08-29 pm).
-27. The MATLAB toolbox + design layer (moved from main).
-28. Validation anchors (honest PROPER spans).
-29. Adjacent-design rehearsal bundle (7/12/14° table).
-30. IFO demo backups (one PNG per live step).
-31–33. The e2e worked example trio (design / segmentation+MET /
+**Backup** (after a plain divider, slide 26)
+27. What MACOS does today (moved from main, Dave 2026-08-29 pm).
+28. The MATLAB toolbox + design layer (moved from main).
+29. Validation anchors (honest PROPER spans).
+30. Adjacent-design rehearsal bundle (7/12/14° table).
+31. IFO demo backups (one PNG per live step).
+32–34. The e2e worked example trio (design / segmentation+MET /
     compare+simulate) — moved from main when e2e6m became the
     featured example.
 
