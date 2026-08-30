@@ -40,6 +40,11 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 - **CODE V and PROPER provide independent cross-checks.**
 - **One source tree: github nasa-jpl/macos and MACOS_resources contain it all.**
 
+## Inside the toolbox | Five areas, organized the way the work flows — veneer, sensitivities, design, runners, worked examples
+::: full
+![](figs/fig_mmacos.png){h=4.7}
+~ Counts as of 2026-08.  Every area is exercised by the committed test suites and by the worked examples beside it — the same templates this talk's studies live in.  Rebuild the figure: make_mmacos_fig.py.
+
 ## Three design challenges, one method | CODE V benchmark studies reproduced first, then extended
 ::: full
 | | challenge 1 (July) | challenge 2 (August) | challenge 3 (August) |
