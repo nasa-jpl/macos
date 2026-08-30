@@ -34,17 +34,17 @@ WITH the frontier on screen, CC visibly predicts + launches, and the
 reveal lands at slide 13, right after the TG beat.  A solve at the
 quality bar is ~15.2 min (measured):
 
-- **Slide 7 (design family / frontier):** the frontier table on
+- **Slide 8 (design family / frontier):** the frontier table on
   screen — the context for the ask.
-- **Slide 8 (demo intro, NEW 2026-08-29):** explains the beat (ask,
-  prediction-first, no-AI-in-this-loop, what the reveal shows) with
-  the rehearsal verdict verbatim on the right.  **DAVE switches to
-  MATLAB here and kicks off `oi_demo_step(<width>)` himself** —
-  the without-AI half of slide 4's objective, running live.
-- **Slides 9–20 are the cover** (C1, C2 ×2, the IFO block incl. the
+- **Slide 9 (demo intro):** explains the beat (ask, prediction-first,
+  no-AI-in-this-loop, what the reveal shows) with the rehearsal
+  verdict verbatim on the right.  **DAVE switches to MATLAB here and
+  kicks off `oi_demo_step(<width>)` himself** — the without-AI half
+  of slide 5's objective, running live.
+- **Slides 10–21 are the cover** (C1, C2 ×2, the IFO block incl. the
   TG live beat, the CTB trio, the e2e6m observatory trio) —
   ~26–32 min against the 15.2-min solve.  COMFORTABLE.
-- **Slide 21: the reveal** — map + layout + gates beside the stated
+- **Slide 22: the reveal** — map + layout + gates beside the stated
   prediction, right before the closing discussion.
 - Refusal path in RESERVE (scripted in `demo_adjacent/REHEARSAL.md`,
   not demonstrated).  NARRATION NOTE: a wide ask (13–15°) now
@@ -64,58 +64,59 @@ KEEP; your dry-run call).
 1. Title / agenda.  *(the beat-(b) spec ask + VISIBLE launch happen here)*
 2. History — one slide (Dave's imagery + sign-off PENDING).
 3. One engine, four surfaces.
+4. Inside the toolbox — the mmacos directory map (veneer,
+   sensitivities, design layer, runners, templates/tests; NEW
+   2026-08-30, fig_mmacos / make_mmacos_fig.py).
 
 **AI-driven design (Rodgers arc — themes per the rodgers3 deck)**
-4. Three challenges, one method — tasks quoted as posed + ladders.
-5. Challenge 3: the problem + all five steps reproduced (the license).
-6. Challenge 3: the numbers — 113.6 @ 34.1 mm (0.97×); 45.4 vs 53
+5. Three challenges, one method — tasks quoted as posed + ladders.
+6. Challenge 3: the problem + all five steps reproduced (the license).
+7. Challenge 3: the numbers — 113.6 @ 34.1 mm (0.97×); 45.4 vs 53
    (0.86× at a floor 1.6 mm shy), the solve-field diagnosis.
-7. Design family: walk + frontier (the ask's context).
-8. **Demo intro — Dave switches to MATLAB, KICKS OFF the solve.**
-9. Challenge 1: design-vs-design table (0.97×) + findings.
-10. Challenge 2 reproduced: variant table 0.95–1.02×.
-11. Challenge 2 extended: pupil metrics (+ convergence-cloud strip)
+8. Design family: walk + frontier (the ask's context).
+9. **Demo intro — Dave switches to MATLAB, KICKS OFF the solve.**
+10. Challenge 1: design-vs-design table (0.97×) + findings.
+11. Challenge 2 reproduced: variant table 0.95–1.02×.
+12. Challenge 2 extended: pupil metrics (+ convergence-cloud strip)
     + the 4th-mirror trade.
 
-**The IFO demo (expanded 2026-08-29 pm)**
-12. Measuring a surface with polarized light — the PRINCIPLE (why
+**The IFO demo (rehearsed with TO 2026-08-29 — good to go)**
+13. Measuring a surface with polarized light — the PRINCIPLE (why
     TG, analyzer angle = phase step, factor 2; sweep-frames figure).
-13. The rig, built + calibrated — bilinear sweep + the 11.7% catch.
-14. **LIVE: Dave measures the DM** (7 steps with timings, solo,
+14. The rig, built + calibrated — bilinear sweep + the 11.7% catch.
+15. **LIVE: Dave measures the DM** (7 steps with timings, solo,
     desktop MATLAB; poke + recovery figures on the slide).
 
-**The coronagraph testbed (REDONE 2026-08-29 pm, before the e2e
-story — highlights from deck_ctb v5, measured results)**
-15. CTB end to end: mask families head-to-head table + PROPER
-    external validation (correlation 1.000000).
-16. The vortex against the Lyot stop — THE CHARGE-4 CONCLUSION
+**The coronagraph testbed (highlights from deck_ctb v5)**
+16. CTB end to end: layout sketch + mask families head-to-head +
+    PROPER external validation (correlation 1.000000).
+17. The vortex against the Lyot stop — THE CHARGE-4 CONCLUSION
     (8.8e-11 at the band-limited mask's own 36%).
-17. The mirrors close the loop: 1.7e-8 → 6.8e-15 (numerical floor);
+18. The mirrors close the loop: 1.7e-8 → 6.8e-15 (numerical floor);
     physics vs arithmetic floors; pol/bandwidth/vector-vortex
     verdicts.
 
-**The observatory (e2e6m — the coronagraph-bearing design; REDONE
-2026-08-29 pm per Dave: testbed proves the models, then the same
+**The observatory (e2e6m — testbed proves the models, the same
 modeling builds the flight-like system)**
-18. From the testbed to an observatory: light-order sketch + shroud
+19. From the testbed to an observatory: light-order sketch + shroud
     packing (7.451 m vs the 8.0 m gate).
-19. Segmentation, metrology, controls at 6 m scale (114 MET beams).
-20. A randomly disturbed observatory, simulated: 2.5e-7 held vs
+20. Segmentation, metrology, controls at 6 m scale (114 MET beams).
+21. A randomly disturbed observatory, simulated: 2.5e-7 held vs
     1.7e-6 open — ready to ingest dynamical/thermal time histories.
     WORK IN PROGRESS, declared on the slide.
-21. **LIVE REVEAL** — prediction vs the just-solved design.
+22. **LIVE REVEAL** — prediction vs the just-solved design.
 
 **Close**
-22. AI in design + analysis — the working questions.
-23. Summary + public code.
+23. AI in design + analysis — the working questions.
+24. Summary + public code.
 
-**Backup** (after a plain divider, slide 24)
-25. What MACOS does today (moved from main, Dave 2026-08-29 pm).
-26. The MATLAB toolbox + design layer (moved from main).
-27. Validation anchors (honest PROPER spans).
-28. Adjacent-design rehearsal bundle (7/12/14° table).
-29. IFO demo backups (one PNG per live step).
-30–32. The e2e worked example trio (design / segmentation+MET /
+**Backup** (after a plain divider, slide 25)
+26. What MACOS does today (moved from main, Dave 2026-08-29 pm).
+27. The MATLAB toolbox + design layer (moved from main).
+28. Validation anchors (honest PROPER spans).
+29. Adjacent-design rehearsal bundle (7/12/14° table).
+30. IFO demo backups (one PNG per live step).
+31–33. The e2e worked example trio (design / segmentation+MET /
     compare+simulate) — moved from main when e2e6m became the
     featured example.
 
@@ -124,9 +125,9 @@ carries the v1-vs-v2 table + the error-budget-inversion figure;
 either rig runs the same 7 demo steps (v1 49.8 s / v2 47.0 s) — RIG
 CHOICE = Dave's dry-run call; v1 stays the rehearsed default.
 
-**Timing note:** kickoff at slide 8 ≈ 14–16 min in; cover = slides
-9–19 including the TG beat ≈ 25–30 min vs the 15.2-min solve —
-COMFORTABLE (reveal moved before the discussion).  The
+**Timing note:** kickoff at slide 9 ≈ 15–17 min in; cover = slides
+10–21 including the TG beat ≈ 26–32 min vs the 15.2-min solve —
+COMFORTABLE (reveal at 22, before the discussion).  The
 rehearsal-bundle backup slide covers a hard failure.  MATLAB
 session for the kickoff must be a SEPARATE process from the TG
 session — the solve BLOCKS its session for ~15 min, and the TG
