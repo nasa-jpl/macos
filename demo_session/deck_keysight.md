@@ -1,5 +1,11 @@
 <!-- Keysight/CodeV demo deck — DRAFT source (Dave edits here; rebuild:
-     python3 /home/dcr/dev/MACOS_sandbox/slides/make_brief_slides.py deck_keysight.md
+     python3 make_brief_slides.py deck_keysight.md   (the LOCAL copy —
+     it applies the geometry sidecar; the MACOS_sandbox/slides copy is
+     synced from here)
+     Layout: deck_keysight.geo.json carries Dave's manual pptx
+     repositioning (pass 2) and is applied at every rebuild — recover
+     future pptx edits with pptx_text_diff.py (text) + pptx_geo_diff.py
+     (geometry, vs baseline_pass2.pptx), fold them into the md/sidecar.
      Render altered slides after every rebuild (standing rule, Dave 2026-08-29):
      soffice --headless --convert-to pdf deck_keysight.pptx --outdir renders/
      pdftoppm -png -f <first> -l <last> -r 100 renders/deck_keysight.pdf renders/v<N>
@@ -124,6 +130,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 >> type(OUT.files.verdict)    % the verdict block
 ```
 ~ The literal demo-day sequence ($ = shell, >> = MATLAB); the rehearsal at 12° solved 33.6 nm against the ~33.7 prediction, and the 14° rehearsal beat its predict too.
+~ In the mean time, continuing...
 
 ## Challenge 1: MACOS matches or beats the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
 ::: full
