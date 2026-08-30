@@ -18,16 +18,16 @@ GRAY = "#6E6E6E"
 LIGHT = "#ECF1F6"
 RULE = "#B8C6D4"
 
-W, H = 15.0, 6.6
+W, H = 17.6, 6.6
 fig, ax = plt.subplots(figsize=(W, H), dpi=200)
 ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
 
 # ---- root band -----------------------------------------------------------
-root = FancyBboxPatch((0.5, 5.8), 14.0, 0.62,
+root = FancyBboxPatch((0.5, 5.8), 16.6, 0.62,
                       boxstyle="round,pad=0.02,rounding_size=0.08",
                       linewidth=1.6, edgecolor=ACCENT, facecolor=ACCENT)
 ax.add_patch(root)
-ax.text(7.5, 6.11, "mmacos/  —  the MATLAB toolbox over the MACOS engine",
+ax.text(8.8, 6.11, "mmacos/  —  the MATLAB toolbox over the MACOS engine",
         ha="center", va="center", fontsize=15, fontweight="bold",
         color="white")
 
@@ -81,7 +81,7 @@ COLS = [
     ]),
 ]
 
-cw, gap, x0 = 2.72, 0.14, 0.5
+cw, gap, x0 = 3.24, 0.10, 0.5
 for i, (path, sub, items) in enumerate(COLS):
     x = x0 + i * (cw + gap)
     bx = FancyBboxPatch((x, 0.35), cw, 4.9,
