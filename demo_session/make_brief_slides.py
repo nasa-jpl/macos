@@ -229,6 +229,18 @@ def place_table(sl, rows, x, y, w):
                for c in range(nc)]
     tot = float(sum(maxlens))
     cw = [w * (m / tot) for m in maxlens]
+    # Naturally-narrow columns get their full unwrapped width when there is
+    # room; long-text columns wrap anyway, so they absorb the difference.
+    # (Otherwise a short label column beside paragraph cells is squeezed
+    # into wrapping -- the proportional share is the fallback.)
+    need = [m * 0.52 * size / 72.0 + 0.16 for m in maxlens]
+    small = [c for c in range(nc) if need[c] <= 0.22 * w]
+    if small and len(small) < nc and sum(need[c] for c in small) < 0.5 * w:
+        rem = w - sum(need[c] for c in small)
+        tot2 = float(sum(maxlens[c] for c in range(nc)
+                         if c not in small)) or 1.0
+        cw = [need[c] if c in small else rem * maxlens[c] / tot2
+              for c in range(nc)]
     # per-row height from the worst wrapped cell (cpl mirrors est_text_h)
     rhs = []
     for r in rows:

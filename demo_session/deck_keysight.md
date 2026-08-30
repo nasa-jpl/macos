@@ -49,6 +49,7 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 ::: full
 | | challenge 1 (July) | challenge 2 (August) | challenge 3 (August) |
 | the task, as posed | a three-mirror telescope, f/20, 5 m aperture: a 0.2°×0.2° field box offset 0.5° off axis | a three-mirror afocal telescope, 30×, 1 m aperture: a 0.5°×0.5° field offset 0.6°, a tilted cold stop the interface to the instrument | a three-mirror imager, f/4, 75 mm aperture: a 20°×20° field box centered 22° off axis, exit beam horizontal, hard beam–mirror clearances |
+| the ladder, in steps | on-axis → offset, frozen → re-solved → tilt/decenter | on-axis → offset, frozen → re-solved → tilt/decenter | on-axis → offset, frozen → re-solved → + clearance constraints → + Zernike freedom |
 | reported ladder (max RMS WFE) | 2 → 375 → 92 → 40 nm | 15 → 430 → 160 → 119 nm | 159 → 8810 → 168 → 117 → 53 nm |
 | reproduction | 0.83–1.11× | 0.95–1.02× | 0.99–1.10× (all five steps) |
 - Objective: meet the challenge, and use the solution to establish a design family. 
