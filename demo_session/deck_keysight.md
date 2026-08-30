@@ -23,7 +23,7 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 ::: full
 - **Late 1980s:** the engine originates in NASA telescope technology development
 -- ***Used for Star Wars control-system development and NASA SubMM telescope analysis.***
-- **1991:** Hubble — the prescription recovery that diagnosed the aberration from flight imagery
+- **1991:** Hubble — prescription recovery correctly diagnosed the aberration from flight imagery
 -- ***Prescription retrieval from image data has served other missions as well.***
 - **JWST:** integrated observatory modeling and wavefront sensing and control development
 -- ***Testbeds validated the models, and the validated models proved the space system.***
@@ -34,11 +34,11 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 ## One engine, four surfaces | The same Fortran core answers a terminal, a library call, MATLAB, and Python
 ::: full
 ![](figs/fig_ecosystem.png){h=3.7}
-- **A capability added to the engine is everywhere at once:**
+- **Physics lives in the engine: a capability added there is everywhere at once**
 - **One shared library layer serves the MATLAB and Python toolboxes.**
 - **The prescription generators and the CODE V converter feed the same Rx language.**
 - **CODE V and PROPER provide independent cross-checks.**
-- **One source tree: github nasa-jpl/macos and MACOS_resources contain it all.**
+- **One source tree: github nasa-jpl/macos and /MACOS_resources contain it all.**
 
 ## Inside the toolbox | Five areas, organized the way the work flows — veneer, sensitivities, design, runners, worked examples
 ::: full
@@ -52,18 +52,27 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 | the ladder, in steps | on-axis → offset, frozen → re-solved → tilt/decenter | on-axis → offset, frozen → re-solved → tilt/decenter | on-axis → offset, frozen → re-solved → + clearance constraints → + Zernike freedom |
 | reported ladder (max RMS WFE) | 2 → 375 → 92 → 40 nm | 15 → 430 → 160 → 119 nm | 159 → 8810 → 168 → 117 → 53 nm |
 | reproduction | 0.83–1.11× | 0.95–1.02× | 0.99–1.10× (all five steps) |
+| the feature it proved | the field widened without freeforms — joint optics + focal-plane solves | pupil image quality, measured: metrics + the fourth-mirror trade | a super-wide-field imager family: the continuation walk + its frontier |
 - Objective: meet the challenge, and use the solution to establish a design family. 
 -- Build a solution code for each particular problem, using AI assistance.
 -- Build another code to rapidly generate adjacent solutions, without AI assistance.
+- Each challenge left a reusable template behind — the whole study re-runs at new parameters in one call.
 - MACOS solves each problem with its own optimizer and the same degrees of freedom.
 - MACOS separately re-traces the delivered prescriptions to compare design against design under one decoded metric.
 - Challenges and solution prompts provided by Mike Rodgers (thanks Mike!).
 
-## Challenge 3: a 20°×20° field, 22° off axis | All five reported steps reproduce from the lens sequences before any extension is claimed
+## Challenge 3: moving a 20°×20° field 22° off axis | All five reported steps reproduce from the lens sequences before any extension is claimed
 ::: left
 - The hardest of the three: a wide field box far off axis, an exit-beam pointing constraint, and hard clearance requirements between beam and mirrors.
 - **Reproduction first:** all five reported design steps rebuild from the delivered lens sequences inside 0.8–1.25× — nothing tuned toward the reported numbers.
 - **The study became a template:** one parameterized five-stage flow (solve on axis, map the offset, re-solve at the used field, add buildability constraints, add surface freedom) — re-running the whole study at new parameters is one call.
+- **Every design passes the same gate sequence:**
+-- 1 · traceability — every solve field reaches the detector (screened before solving)
+-- 2 · map validity — all 121 dense-map fields present, none lost
+-- 3 · exit-beam direction — the chief within tolerance of the horizontal pin
+-- 4 · clearance — the signed beam–mirror floor at or above spec
+-- 5 · score — strict RMS WFE against the reported ladder
+-- pinned by regression checks with negative controls (the control reads 2989× the gate)
 ::: right
 ![The offset imager as traced in MACOS at the stage-1 configuration (iso + side views).](figs/pair_r3t_s1_layout.png){h=3.0}
 ~ Record: challenges/rodgers3 — packet, per-step prescriptions, regression checks with negative controls.
