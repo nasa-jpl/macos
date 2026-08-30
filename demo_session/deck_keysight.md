@@ -110,18 +110,20 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 ::: right
 
 ```
->> oi_demo_step(12)      % the room's width goes here
+$ matlab &                    % a fresh MATLAB, just for this solve
 
- warm start     : committed walk step 3 (11 x 11 deg)
- solve          : S5 full freedom (conics+Zernike
-                  +tilt/dec+radii+stop_y)
- ...  ~15 min ...
+>> cd ~/dev/MACOS_resources/mmacos/templates/10_telescopes/offset_imager
+>> OUT = oi_demo_step(12)     % <-- the room's width goes here (5-15 deg)
 
- DENSE MAP MAX  : 33.6 nm   predicted ~33.7  (1.00x)
- clearance floor: 24.9 mm   exit err 0.012 deg
- gates          : exit PASS / clear PASS
+ warm start : committed walk step 3  (11 x 11 deg)
+ predicted  : ~33.7 nm, ~24.8 mm floor  (frontier rows 11/13 deg)
+ solving    : one full-freedom step ...  ~15 min
+
+ ... at the reveal, the windows are already up; if needed:
+>> oi_demo_show(OUT)          % live layout + WF map + fields
+>> type(OUT.files.verdict)    % the verdict block
 ```
-~ The rehearsal run's verdict (12° ask), abbreviated verbatim; the live run prints the same block for the room's width.
+~ The literal demo-day sequence ($ = shell, >> = MATLAB); the rehearsal at 12° solved 33.6 nm against the ~33.7 prediction, and the 14° rehearsal beat its predict too.
 
 ## Challenge 1: MACOS matches or beats the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
 ::: full
@@ -164,9 +166,9 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 - **The trade, constrained:** with the last mirror held behind the primary, the solutions split into two families; pupil distances under 220 mm leave no room for an instrument after the fold — 343 mm admits a 464 mm diameter.
 ![A point of M1 imaged at the pupil: the convergence clouds behind the pupil-blur metric, traced across the field.](figs/rodgers2_S1_onaxis_pupil.png){h=1.35}
 ::: right
-![The constrained design at the 343 mm point — a packaging screen, not a completed layout.](figs/rodgers2_final_folded.png){h=2.3}
-![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=2.1}
-~ "3 mirrors" = the best delivered variant.  Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Packaging was not driven to completion: the back focal path still exceeds the M1–M2 spacing, and folding it down is queued work — the TRADE is the result, not the layout.  Per-point trade table: the design/rodgers2 record.
+![Packaging, driven to a measured answer: as committed the deepest optic sits 1.887 m behind the primary — 1.81× the M1–M2 span (left); four folds in the feed leg bring it to 0.893 m, 0.86×, inside the telescope's own envelope, with the fold null asserted at 3×10⁻⁸ nm (right).](figs/afocal4_pack_compare.png){h=2.6}
+![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=1.9}
+~ Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above the floors.  Packaging costs are stated, not smoothed (+5.8 mm flat clearance, ~300 mm decentred flats, four 45° folds = an unopened polarization budget) — and the same measurement found a REAL buildability item no fold can fix: the collimator stands in the union of its own feed beams (−55 mm against bare glass); redesign queued.  Records: design/rodgers2 + challenges/afocal4/packaging.
 
 ## A Twyman–Green interferometer for measuring DM surfaces | Phase-shifting with no moving parts: the analyzer angle is the phase step
 ::: left
