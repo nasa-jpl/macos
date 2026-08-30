@@ -186,6 +186,11 @@ def est_text_h(text, w_in, size):
 
 
 def body_size(w_in):
+    # Full-width bullet blocks read at 15 pt (Dave's 2026-08-30 edit pass:
+    # 12 pt full-width reads as report text at room scale); columns keep
+    # the tighter sizes.
+    if w_in >= 10:
+        return 15
     return 12 if w_in >= 5.5 else (11.5 if w_in >= 4.5 else 11)
 
 
@@ -312,10 +317,11 @@ def render_slide(spec):
             tf = tb(sl, x, y, w, 0.3)
             for j, it in enumerate(items):
                 if typ == "bullets" and it.startswith("\x01"):
+                    ss = size - (2 if size >= 15 else 1.5)
                     txt = "        –  " + it[1:]
-                    para(tf, txt, size=size - 1.5, color=GRAY,
+                    para(tf, txt, size=ss, color=GRAY,
                          first=(j == 0), space_after=5)
-                    y += est_text_h(txt, w, size - 1.5) + 5 / 72.0
+                    y += est_text_h(txt, w, ss) + 5 / 72.0
                     continue
                 txt = ("•  " + it) if typ == "bullets" else it
                 para(tf, txt, size=size, color=color, first=(j == 0),
