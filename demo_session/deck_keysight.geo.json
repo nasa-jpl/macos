@@ -1,0 +1,104 @@
+{
+  "_comment": "Dave's pass-2 layout edits (recovered from deck_keysight_edit.pptx via pptx_geo_diff.py, 2026-08-30). Applied by make_brief_slides.py on every rebuild. Inches; keys are block-key prefixes -- see the sidecar note in make_brief_slides.py.",
+  "One engine, four surfaces": {
+    "img:fig_ecosystem.png": {
+      "x": 2.25,
+      "y": 1.35,
+      "w": 8.95,
+      "h": 4.12
+    },
+    "txt:Physics lives in the engine": {
+      "x": 2.25,
+      "y": 5.5,
+      "w": 10.63
+    }
+  },
+  "Challenge 3: moving a 20°×20° field 22° off axis": {
+    "img:pair_r3t_s1_layout.png": {
+      "x": 6.3,
+      "y": 1.75,
+      "w": 6.83,
+      "h": 3.42,
+      "cx": 7.01,
+      "cy": 5.25,
+      "cw": 5.9
+    },
+    "txt:Record: challenges/rodgers3": {
+      "x": 7.25,
+      "y": 5.55,
+      "w": 5.9
+    },
+    "txt:The hardest of the three": {
+      "w": 5.7
+    }
+  },
+  "Challenge 3: the numbers": {
+    "img:pair_r3t_s4_layout.png": {
+      "x": 0.29,
+      "y": 3.0,
+      "w": 7.73,
+      "h": 3.75,
+      "cx": 0.45,
+      "cy": 6.7,
+      "cw": 6.35
+    }
+  },
+  "From one design to a design family": {
+    "img:pair_t5_walk_k05_layout.png": {
+      "x": 0.0,
+      "y": 2.51,
+      "w": 7.04,
+      "h": 4.24,
+      "cx": 0.45,
+      "cy": 6.76,
+      "cw": 6.35
+    },
+    "txt:This frontier is the basis": {
+      "x": 7.59,
+      "y": 6.48,
+      "w": 5.15
+    }
+  },
+  "The live demonstration: an adjacent instrument, designed during this talk": {
+    "txt:The ask: name a field-box": {
+      "w": 5.3
+    },
+    "code:1": {
+      "x": 6.0,
+      "y": 1.5,
+      "w": 7.33
+    },
+    "txt:The literal demo-day sequence": {
+      "x": 6.36,
+      "y": 5.22
+    },
+    "txt:In the mean time": {
+      "x": 9.75,
+      "y": 6.48,
+      "w": 3.15
+    }
+  },
+  "Challenge 2, extended: the pupil measured — and what a fourth mirror buys": {
+    "img:rodgers2_S1_onaxis_pupil.png": {
+      "x": 0.25,
+      "y": 4.76,
+      "w": 6.75,
+      "h": 1.49,
+      "cx": 0.45,
+      "cy": 6.52,
+      "cw": 6.35
+    },
+    "img:rodgers2_final_trade.png": {
+      "x": 8.8,
+      "w": 3.04,
+      "h": 2.08,
+      "cx": 8.0,
+      "cy": 5.86,
+      "cw": 4.9
+    },
+    "txt:Yardsticks: pupil imaging": {
+      "x": 8.0,
+      "w": 4.9
+    }
+  }
+}

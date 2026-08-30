@@ -17,6 +17,7 @@ additions: markdown pipe-tables render as native pptx tables, and
   | a | b |          -> table (header row + body; --- separator dropped)
 Needs python-pptx + Pillow.
 """
+import json
 import os
 import re
 import sys
@@ -25,7 +26,7 @@ from math import ceil
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from PIL import Image
 
@@ -33,6 +34,23 @@ MD = os.path.abspath(sys.argv[1])
 HERE = os.path.dirname(MD)
 OUT = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else \
     os.path.splitext(MD)[0] + ".pptx"
+
+# Geometry-override sidecar (<md stem>.geo.json): carries manual layout
+# edits (Dave's pptx repositioning passes) across rebuilds, since the md
+# holds no per-shape geometry.  Structure:
+#   { "<slide title>": { "<block key>": {"x":in,"y":in,"w":in,"h":in,
+#                                        "cx":in,"cy":in,"cw":in}, ... } }
+# Block keys: "img:<fig basename>", "txt:<leading text of the block>",
+# "code:N" / "table:N" (Nth code/table block on the slide, 1-based).
+# JSON keys match as PREFIXES of the computed block key.  x/y/w place the
+# block (y pins the flow cursor); w+h on an img place the picture EXACTLY
+# (no fit-and-center); cx/cy/cw place its caption independently.
+# Recover new edits with pptx_geo_diff.py (text edits: pptx_text_diff.py).
+GEO_PATH = os.path.splitext(MD)[0] + ".geo.json"
+GEO = {}
+if os.path.exists(GEO_PATH):
+    with open(GEO_PATH, encoding="utf-8") as f:
+        GEO = json.load(f)
 
 INK = RGBColor(0x28, 0x28, 0x28)
 ACCENT = RGBColor(0x1F, 0x4E, 0x79)
@@ -207,22 +225,38 @@ def add_title(sl, text, sub):
     return y + 0.18
 
 
-def place_img(sl, path, x_in, y_in, w_in, h_in, caption):
+def place_img(sl, path, x_in, y_in, w_in, h_in, caption, exact=False,
+              cap_ov=None):
     full = os.path.join(HERE, path)
-    iw, ih = Image.open(full).size
-    cap_h = est_text_h(caption, w_in, 10) if caption else 0.0
-    box_h = max(0.4, h_in - cap_h)
-    # fit box (w_in x box_h) preserving aspect
-    sc = min(w_in / iw, box_h / ih)
-    w, h = iw * sc, ih * sc
-    px = x_in + (w_in - w) / 2.0
-    sl.shapes.add_picture(full, Inches(px), Inches(y_in), Inches(w), Inches(h))
-    yy = y_in + h
+    if exact:
+        # sidecar-pinned geometry: draw at (x,y) w x h verbatim
+        sl.shapes.add_picture(full, Inches(x_in), Inches(y_in),
+                              Inches(w_in), Inches(h_in))
+        yy = y_in + h_in
+        cx, cw = x_in, w_in
+    else:
+        iw, ih = Image.open(full).size
+        cap_h0 = est_text_h(caption, w_in, 10) if caption else 0.0
+        box_h = max(0.4, h_in - cap_h0)
+        # fit box (w_in x box_h) preserving aspect
+        sc = min(w_in / iw, box_h / ih)
+        w, h = iw * sc, ih * sc
+        px = x_in + (w_in - w) / 2.0
+        sl.shapes.add_picture(full, Inches(px), Inches(y_in),
+                              Inches(w), Inches(h))
+        yy = y_in + h
+        cx, cw = x_in, w_in
     if caption:
-        tf = tb(sl, x_in, yy + 0.02, w_in, cap_h)
+        cy = yy + 0.02
+        if cap_ov:
+            cx = cap_ov.get("cx", cx)
+            cy = cap_ov.get("cy", cy)
+            cw = cap_ov.get("cw", cw)
+        cap_h = est_text_h(caption, cw, 10)
+        tf = tb(sl, cx, cy, cw, cap_h)
         para(tf, caption, size=10, color=GRAY, first=True,
              align=PP_ALIGN.CENTER, space_after=0)
-        yy += cap_h + 0.06
+        yy = cy + cap_h + 0.04
     return yy
 
 
@@ -282,6 +316,19 @@ def place_table(sl, rows, x, y, w):
     return y + sum(rhs) + 0.16
 
 
+def block_key(typ, payload, counters):
+    if typ == "img":
+        return "img:" + os.path.basename(payload[1])
+    if typ in ("code", "table", "stack", "cards"):
+        counters[typ] = counters.get(typ, 0) + 1
+        return "%s:%d" % (typ, counters[typ])
+    if typ == "bullets":
+        return "txt:" + payload[0].lstrip("\x01")
+    if typ in ("para", "note", "h3"):
+        return "txt:" + str(payload)
+    return typ
+
+
 def render_slide(spec):
     sl = prs.slides.add_slide(BLANK)
     top = add_title(sl, spec["title"], spec["sub"])
@@ -293,6 +340,8 @@ def render_slide(spec):
         cols = {"left": (0.45, 6.35), "right": (7.0, 5.9),
                 "full": (0.45, SW_IN - 0.9)}
     cur = {c: top for c in cols}
+    sov = GEO.get(spec["title"], {})
+    counters = {}
 
     def sync_full():
         y = max(cur.values())
@@ -305,6 +354,12 @@ def render_slide(spec):
             sync_full()
         x, w = cols[colname]
         y = cur[colname]
+        bk = block_key(typ, payload, counters)
+        ov = next((v for k, v in sov.items() if bk.startswith(k)), None)
+        if ov:
+            x = ov.get("x", x)
+            w = ov.get("w", w)
+            y = ov.get("y", y)
         if typ == "h3":
             tf = tb(sl, x, y, w, 0.35)
             para(tf, payload, size=13.5, bold=True, color=ACCENT,
@@ -318,10 +373,14 @@ def render_slide(spec):
             for j, it in enumerate(items):
                 if typ == "bullets" and it.startswith("\x01"):
                     ss = size - (2 if size >= 15 else 1.5)
-                    txt = "        –  " + it[1:]
-                    para(tf, txt, size=ss, color=GRAY,
-                         first=(j == 0), space_after=5)
-                    y += est_text_h(txt, w, ss) + 5 / 72.0
+                    txt = "–  " + it[1:]
+                    p = para(tf, txt, size=ss, color=GRAY,
+                             first=(j == 0), space_after=5)
+                    # hanging indent so wrapped lines align after the dash
+                    pPr = p._p.get_or_add_pPr()
+                    pPr.set("marL", "594360")   # 0.65" left margin
+                    pPr.set("indent", "-137160")  # dash hangs 0.15"
+                    y += est_text_h(txt, w - 0.6, ss) + 5 / 72.0
                     continue
                 txt = ("•  " + it) if typ == "bullets" else it
                 para(tf, txt, size=size, color=color, first=(j == 0),
@@ -331,17 +390,32 @@ def render_slide(spec):
         elif typ == "table":
             y = place_table(sl, payload, x, y, w)
         elif typ == "code":
+            # framed terminal panel (white fill, thin accent border) --
+            # matches Dave's hand-framed slide-9 code box, pass 2
             maxlen = max(len(l) for l in payload) or 1
             size = min(11.5, max(8, w * 72.0 / (0.62 * maxlen)))
-            tf = tb(sl, x, y, w, 0.3)
+            hgt = len(payload) * size * 1.32 / 72.0 + 0.18
+            sh = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x),
+                                     Inches(y), Inches(w), Inches(hgt))
+            sh.fill.solid(); sh.fill.fore_color.rgb = WHITE
+            sh.line.color.rgb = ACCENT; sh.line.width = Pt(0.75)
+            sh.shadow.inherit = False
+            tf = sh.text_frame
+            tf.word_wrap = True
+            tf.vertical_anchor = MSO_ANCHOR.TOP
+            tf.margin_left = tf.margin_right = Inches(0.10)
+            tf.margin_top = tf.margin_bottom = Inches(0.05)
             for j, l in enumerate(payload):
                 para(tf, l if l else " ", size=size, mono=True,
                      first=(j == 0), space_after=1)
-            y += len(payload) * size * 1.32 / 72.0 + 0.14
+            y += hgt + 0.12
         elif typ == "img":
             cap, path, h = payload
-            avail = min(h, BOTTOM - y) if h else (BOTTOM - y)
-            y = place_img(sl, path, x, y, w, avail, cap)
+            exact = bool(ov and "w" in ov and "h" in ov)
+            avail = ov["h"] if exact else \
+                (min(h, BOTTOM - y) if h else (BOTTOM - y))
+            y = place_img(sl, path, x, y, w, avail, cap, exact=exact,
+                          cap_ov=ov)
         elif typ == "stack":
             n = len(payload)
             bh, gap = 0.78, 0.14
