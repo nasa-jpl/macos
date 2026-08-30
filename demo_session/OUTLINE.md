@@ -17,6 +17,17 @@ tell CC and the brief gets synced.  Demo ~2026-09-01._
 
 ## Session-day checklist (before the room fills)
 
+0. **Both demo MATLABs run from `~/dev/MACOS_resources`** — the
+   checkout named like the public repo, held DETACHED at
+   origin/dev-candidate (it shares one git with MACOS_res_dev, which
+   keeps the dev-candidate branch; 2026-08-30).  Refresh procedure
+   after any push:
+   `git -C ~/dev/MACOS_resources fetch origin`
+   `git -C ~/dev/MACOS_resources checkout --detach origin/dev-candidate`
+   `make -C ~/dev/MACOS_resources/mmacos`   (mex; no-op when current)
+   Verified 2026-08-30: mex built (gfortran engine), tTgPol 9/9 +
+   tTgPol2 9/9 + tBench 7/7 from this tree.
+
 1. Desktop MATLAB session #1 — for the TG beat.  Fresh process
    (model 256; one model size per process).  `cd` into `tg_psi_dm/`.
 2. CC terminal session — visible on the projector for beat (b).
