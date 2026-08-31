@@ -13,9 +13,11 @@
      Slide-3 ecosystem figure: make_ecosystem_fig.py (pymacos venv python).
      Cropped figures (crop_*.png): crop_figs.py — white-trim only, never content.
      Figures are symlinks in figs/ to committed artifacts — never regenerated.
-     Order per Dave 2026-08-29 pm: intro, C3-first Rodgers arc (kickoff slide 8),
-     C1/C2, IFO block (principle + rig + live), modeling-sequence trio, CTB,
-     e2e6m, REVEAL, discussion, summary; capability + anchors in backup.
+     Order per Dave 2026-08-29 pm (amended 2026-08-30: IFO block = live-demo
+     intro slide 14 [schematic + terminal prompt panel], then two recap
+     slides shown AFTER the run): intro, C3-first Rodgers arc, C1/C2,
+     IFO block, CTB, e2e6m, REVEAL, discussion, summary; capability +
+     anchors + e2e trio in backup.  IFO schematic: make_ifo_schematic_fig.py.
      Sources: deck_rodgers_status.md (r1/r2), challenges/rodgers3 records (r3),
      tg_psi_dm README + BRIEF_tg_demo.md foot (IFO), e2e s6/s7A frames,
      BRIEF_r3_adjacent_demo.md delivery log, bench_ctb / e2e6m_r2 reports. -->
@@ -183,17 +185,30 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 - **The measurement found what no fold can fix:** over the field box, the collimator stands in the union of its own feed beams — −55 mm against bare glass with no allowance at all.  A fold is an isometry and carries it across unchanged; the redesign is queued.
 ~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  Record: challenges/afocal4/packaging.
 
-## A Twyman–Green interferometer for measuring DM surfaces | Phase-shifting with no moving parts: the analyzer angle is the phase step
+## The second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
-- **Why a Twyman–Green for a DM:** normal incidence (double pass, 2× sensitivity), a natural null against the flat reference, the fewest reference surfaces of any two-beam layout.  A Mach–Zehnder buys arm isolation, two ports and transmission testing — dynamics, not figure.
-- **The polarization trick:** the two arms carry orthogonal polarizations, so they cannot interfere until projected; an output quarter-wave plate makes them opposite circular, and an analyzer at angle θ then writes fringe phase 2θ.
-- **Four analyzer angles — 0 / 45 / 90 / 135° — are the four phase steps** of standard PSI, with nothing in the interferometer moving: the vibration immunity of polarization phase shifting.
-- **The factor of two:** DM surface height h enters the optical path as 2h at normal incidence; the recovery closes against the injected map with exactly that factor.
+- **Why a Twyman–Green for a DM:** normal incidence, double pass (height counts twice), a natural null against the flat reference — the fewest reference surfaces of any two-beam layout.  A Mach–Zehnder buys isolated arms and two ports: dynamics and transmission, not figure.
+- **Phase shifting with no moving parts:** the arms carry orthogonal polarizations; a quarter-wave plate makes them opposite circular, and the analyzer angle θ writes fringe phase 2θ — four angles are the four PSI steps.
+- **Cube against plate:** the plate rig's diattenuation rotates one arm 7.5° and the gauge reads 11.7% high; the MacNeille cube parks each arm on a coating eigenaxis.  Both are built — the cube runs today.
 ::: right
-![The analyzer sweep on the poked DM: phase-stepped fringe frames — the phase walks, the rig stands still.](figs/demo_beat6_sweep.png){h=3.3}
-~ Topology ruling and full physics: the template README, templates/90_polarization/tg_psi_dm.
 
-## The interferometer, built and calibrated in the model | The plate rig's 11.7% error, caught and fixed — then designed out by a real MacNeille cube
+```
+$ claude                      % a fresh AI session, in the terminal
+
+> Let's run the IFO demo.  Runbook is demo_session/RUNBOOK_ifo_demo.md
+  — arm it and wait for my cue.
+
+  Armed — v2, eight beats, beat 1 computed and waiting.  Say the word.
+
+> tell us about the next step ...          > run it
+  BUILD → LAYOUT → COATING → NULL → POKE → SWEEP → RECOVER → CALIBRATE
+  (~45 s of compute across the run — the rest is conversation)
+```
+~ The dialog is the demonstration: the AI narrates each beat, runs it on the cue, pastes the real output, and answers the room's questions from the live session — figures open on the desktop as they draw.  Every beat has a committed fallback figure.
+::: full
+![Two-beam topologies, and the splitter that decides the error budget.](figs/fig_ifo_topologies.png){h=2.5}
+
+## Recap: the interferometer, built and calibrated in the model | The plate rig's 11.7% error, caught and fixed — then designed out by a real MacNeille cube
 ::: left
 - **The rig:** a polarizing Twyman–Green with a 16×16-actuator deformable mirror as the test optic — polarizers, waveplates, splitter and coatings are engine surfaces, not a Jones model appended after the trace.  Two builds: the v1 plate rig, and a v2 with a real cemented MacNeille cube — one coated 45° interface (engine vs textbook thin-film at 10⁻¹⁰; R+T = 1.000000000000 measured).
 - **v1's catch:** splitter diattenuation rotates the test arm 7.5° from orthogonal — the gauge reads 11.7% high while fringe contrast moves 0.17% (a 69× blind spot); fixed by re-clocking one waveplate 3.77°, solved in 5 traces.
@@ -206,19 +221,19 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 | delivered power | 0.169 | 0.384 (2.27×) |
 | DM closure residual | 0.304 nm | 0.183 nm |
 ::: right
-![The rig as built (iso + side): source in from the left, the polarizing splitter at the cross, reference and test arms, shared detector leg.](figs/pair_tg_psi_dm_layout.png){h=2.0}
+![The analyzer sweep, from the run: phase-stepped fringes over the poked actuator — the phase walks, nothing in the rig moves.](figs/demo2_beat6_sweep.png){h=2.0}
 ![Who cleans an alignment error: the plate's arm rotation walks with waveplate error; the cube's arms stay put — the error emerges as contrast, not scale.](figs/tg_psi_dm_v2_sensitivity.png){h=1.85}
-~ Records: templates/90_polarization/tg_psi_dm (v1, the rehearsed demo default) + tg_psi_dm_v2; 18 regression checks across the pair.  A PBS converts an invisible systematic into a visible one — a better reason to buy one than throughput.
+~ Records: templates/90_polarization/tg_psi_dm (v1) + tg_psi_dm_v2 (the demo rig); 18 regression checks across the pair.  A PBS converts an invisible systematic into a visible one — a better reason to buy one than throughput.
 
-## Live: measuring the deformable mirror | Seven steps, each seconds-fast — 0.30 nm rms residual on 6.35 nm of figure
+## Recap: the measurement the room just watched | Eight beats, ~45 s of compute — 0.18 nm rms residual on 6.35 nm of figure
 ::: left
-- **The seven steps, from the MATLAB command line:** build the bench in one visible call → layout view → align (solve the waveplate re-clock, 7 traces) → null fringes (the analyzer basis, 6 traces) → poke one actuator live (3 traces) → sweep the analyzer, 36 frames with zero traces → full DM map, four-step PSI, closure.
-- **What to watch:** the fringes bend exactly over the poked actuator; the sweep walks the fringes with the rig standing still; the recovered map lands beside the injected truth at 0.304 nm rms interior residual.
-- **Nothing takes long enough to lose a room:** the longest step is ~5 s; the 36-frame sweep costs 0.036 s.
+- **The eight beats, replayed:** build (the design condition hands back a dense flint, n = 1.6555 — why real polarizing cubes are not BK7) → layout → coating (R+T = 1.000000000000 measured; one termination choice moves R_p from 4×10⁻¹² to 2.1%) → null → poke → sweep → recover → calibrate.
+- **The numbers that landed:** the null reads 73 pm with nothing aligned; the poked actuator recovers 146 nm against 150 injected — the bullseye's own half-fringe arithmetic; the full map lands 6.26 nm against 6.35 truth, 0.183 nm rms residual.
+- **The calibration question:** gain 0.9912 ± 0.0020, linear to 0.00% — almost nothing to calibrate, and the two correlations say where the leftover error lives.
 ::: right
-![One actuator poked: the fringes bend over it.](figs/demo_beat5_poke.png){h=2.15}
-![The recovery beside the injected truth map.](figs/tg_psi_dm_recovery.png){h=2.35}
-~ Timings measured, in the template README; every step has a pre-rendered backup image — a live hang costs ten seconds, not the demonstration.  Either rig runs the same seven steps (whole-demo v1 49.8 s, v2 47.0 s) — the rig choice is the presenter's.
+![Beat 5 — one actuator poked: the fringes bend over it.](figs/demo2_beat5_poke.png){h=2.15}
+![Beat 7 — the recovery beside the injected truth map.](figs/demo2_beat7_recovery.png){h=2.35}
+~ Every number above is printed by the run itself; the sweep costs 36 frames and zero ray traces.  Both rigs run the same demo (v1 49.8 s, v2 47.0 s wall) — the committed beat figures stand in if a live beat stalls.
 
 ## A coronagraph testbed, end to end | Six mask families from the literature, scored on one footing — validated against PROPER station by station
 ::: left
@@ -303,7 +318,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 ## Summary | One engine, validated; a toolbox that designs; an AI that drives it — all public
 ::: full
 - One validated engine behind four language surfaces; a MATLAB design layer that took three CODE V benchmark studies from reproduction to extension.
-- Two things happened live: a telescope designed to the audience's field specification in one warm-started step, and a polarization interferometer measuring a deformable mirror to 0.30 nm.
+- Two things happened live: a telescope designed to the audience's field specification in one warm-started step, and a polarization interferometer measuring a deformable mirror to 0.18 nm.
 - The code is public: github.com/nasa-jpl/macos.
 ~ Contact and records: all studies cited are committed with packets and regression checks.
 
@@ -346,12 +361,12 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 - Wide asks pass: the committed frontier line understates the envelope (its widest rows stopped early on a wavefront-only criterion while the clearance penalty was still improving).
 ~ Bundle: templates/10_telescopes/offset_imager/demo_adjacent — figures, verdict text, prescriptions, run records.
 
-## Interferometer demonstration backups | One pre-rendered image per live step
+## Interferometer demonstration backups | One committed image per live beat
 ::: full
-![Step 5 — one actuator poked: the fringes bend over it.](figs/demo_beat5_poke.png){h=2.2}
-![Step 6 — the analyzer sweep: four phase-stepped frames, no re-trace.](figs/demo_beat6_sweep.png){h=2.2}
-![Step 7 — the recovery beside the truth map.](figs/demo_beat7_recovery.png){h=2.2}
-~ All seven steps have backups in templates/90_polarization/tg_psi_dm.
+![Beat 5 — one actuator poked: the fringes bend over it.](figs/demo2_beat5_poke.png){h=2.2}
+![Beat 6 — the analyzer sweep: phase-stepped frames, no re-trace.](figs/demo2_beat6_sweep.png){h=2.2}
+![Beat 7 — the recovery beside the truth map.](figs/demo2_beat7_recovery.png){h=2.2}
+~ All eight beats have committed figures in templates/90_polarization/tg_psi_dm_v2 (v1 likewise); the driver opens them on the desktop as each beat runs.
 
 ## The e2e worked example: specification to design | A 4 m f/18 visible-band telescope from a closed-form seed — no starting prescription
 ::: left
