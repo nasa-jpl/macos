@@ -136,5 +136,35 @@
       "y": 1.5,
       "w": 7.33
     }
+  },
+  "Recap: the interferometer, built and calibrated in the model": {
+    "txt:The rig: a polarizing Twyman–Green": {
+      "fs": 14
+    },
+    "table:1": {
+      "y": 4.84
+    },
+    "img:demo2_beat6_sweep.png": {
+      "x": 7.5,
+      "y": 1.0,
+      "w": 4.75,
+      "h": 2.36,
+      "cx": 7.0,
+      "cy": 3.36,
+      "cw": 5.9
+    },
+    "img:tg_psi_dm_v2_sensitivity.png": {
+      "x": 7.21,
+      "y": 3.91,
+      "w": 5.61,
+      "h": 2.27,
+      "cx": 7.0,
+      "cy": 6.22,
+      "cw": 5.9
+    },
+    "txt:Records: templates/90_polarization": {
+      "x": 7.0,
+      "y": 6.69
+    }
   }
 }
