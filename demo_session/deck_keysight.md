@@ -5,7 +5,8 @@
      Layout: deck_keysight.geo.json carries Dave's manual pptx
      repositioning (pass 2) and is applied at every rebuild — recover
      future pptx edits with pptx_text_diff.py (text) + pptx_geo_diff.py
-     (geometry, vs baseline_pass2.pptx), fold them into the md/sidecar.
+     (geometry, vs baseline_pass3.pptx = the build the edit deck was
+     refreshed from 2026-08-30 pm), fold them into the md/sidecar.
      Render altered slides after every rebuild (standing rule, Dave 2026-08-29):
      soffice --headless --convert-to pdf deck_keysight.pptx --outdir renders/
      pdftoppm -png -f <first> -l <last> -r 100 renders/deck_keysight.pdf renders/v<N>
@@ -176,14 +177,14 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 ![A point of M1 imaged at the pupil: the convergence clouds behind the pupil-blur metric, traced across the field.](figs/rodgers2_S1_onaxis_pupil.png){h=1.35}
 ::: right
 ![Both solution families beside the retracted unconstrained curve; the instrument-diameter column selects the 343 mm point.](figs/rodgers2_final_trade.png){h=2.6}
-~ Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Per-point trade table: the design/rodgers2 record.  Packaging the 343 mm point: next slide.
+~ Yardsticks: pupil imaging resolves 2.7 µm across the 33 mm pupil, depth of focus ~30 µm — the measured defects sit 50–350× above these floors.  Per-point trade table: the design/rodgers2 record.  Buildability re-prices this trade — next slide.
 
-## Challenge 2: packaging behind the primary | As committed, the deepest optic overhangs the M1–M2 span 1.81× — four folds bring it to 0.86×
+## Challenge 2: packaging — and the defect no fold could fix | The collimator stood in its own feed beam by −80 mm; a −10° extraction tilt clears it at +38 mm — wavefront 14% better
 ::: full
-![Engine-truth packaging, three ways: as committed, the deepest optic sits 1.887 m behind the primary against a 1.042 m M1–M2 span (left); the recorded single-fold recipe touches no depth and throws the instrument radially (middle); four folds in the feed leg bring the deepest optic to 0.893 m — inside the telescope's own envelope — at Ø1.120 × 2.832 m (right).](figs/afocal4_pack_compare.png){h=3.3}
-- **The fix is real and priced:** zero rays lost, fold null asserted at 3×10⁻⁸ nm; costs stated, not smoothed — the new flats clear by +5.8 mm, are ~300 mm across and decentred 100–146 mm, and four 45° folds are an unopened polarization budget.
-- **The measurement found what no fold can fix:** over the field box, the collimator stands in the union of its own feed beams — −55 mm against bare glass with no allowance at all.  A fold is an isometry and carries it across unchanged; the redesign is queued.
-~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  Record: challenges/afocal4/packaging.
+![Engine truth, three ways: the committed 343 mm deck (deepest optic 1.887 m behind the 1.042 m M1–M2 span, the feed beam through the collimator by −79.9 mm over the field box); the four-flat fold recipe (0.893 m deep — but a fold is an isometry, and the interference rides across unchanged); the cleared −10° extraction-tilt deck: +37.8 mm of daylight, deepest optic 1.287 m, zero flats.](figs/afocal4_clear_layouts_tight.png){h=3.1}
+- **Why no fold could ever fix it:** a part's union footprint and a beam's at one station are scaled copies of the same off-axis field box — they separate only if their scales differ by 2.43×, and the measured ratio is 1.30, one scale pinned by the customer interface.  The best flat placement anywhere reproduces −79.9 mm to the last digit; every point of the committed trade curve fails the same gate.
+- **The fix is optical, and priced:** tilt the field mirror −10° and re-solve around it.  Clears at +37.8 mm with zero rays lost; wavefront 8993 vs 10407 nm; the interface holds (30.015×, 33.57 mm exit beam).  It packages itself — deepest optic 1.81× → 1.24× the M1–M2 spacing, with zero fold flats.  The price is the fourth mirror's pupil control: blur 157 → 553 µm, breathing 0.12 → 0.82% — still 4× steadier than three mirrors.
+~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  The union-footprint check is now a standing gate: it fails the committed deck and passes the cleared one.  Record: challenges/afocal4/{packaging,clearing}.
 
 ## The second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
