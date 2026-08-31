@@ -276,12 +276,13 @@ $ claude                      % a fresh AI session, in the terminal
 
 ## From the testbed to an observatory | The proven coronagraph modeling, carried onto a telescope designed for it
 ::: full
-- **The testbed is where the models are built and proven; the same modeling then builds the flight-like system:** an unobscured 6 m telescope from the design-layer templates — imaging leg and coronagraph leg, with the same DMs, apodizer, focal-plane mask and Lyot machinery — packaged to an 8 m launch shroud, drawn and checked.
+- **The testbed is where the models are built and proven; the same modeling then builds the flight-like system:** an unobscured 6 m telescope from the design-layer templates — imaging leg and coronagraph leg, with the same DMs, apodizer, focal-plane mask and Lyot machinery — the telescope packaged to an 8 m launch shroud.
+- **The coronagraph bench still needs packaging work:** the body-in-beam gate built for challenge 2, run on this train, finds the bench nicking the M1–M2 beam and the DM pocket's folded legs overlapping.  In the days ahead: the gate joins the template's standing checks; the bench clocks and drops out of the trunk beam by re-posing its pickoff fold — an optical null; the pocket's fold angles open with a small re-solve, priced in wavefront; the train re-verifies end to end.
 ::: left
-![The full train, traced: the segmented 6 m primary feeding the DM-bearing back end — 37 elements across the two instrument legs.](figs/crop_r2_train_iso.png){h=4.3}
+![The full train, traced: the segmented 6 m primary feeding the DM-bearing back end — 37 elements across the two instrument legs.](figs/crop_r2_train_iso.png){h=3.0}
+~ The telescope is diffraction-limited at 500 nm (imaging-leg Strehl 0.9993).  Record: templates/80_end_to_end/e2e6m_r2.
 ::: right
-![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=3.7}
-~ The telescope is one of the design-layer templates, diffraction-limited at 500 nm (imaging-leg Strehl 0.9993); the two-leg light-order chart is in the record.  Record: templates/80_end_to_end/e2e6m_r2.
+![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=3.1}
 
 ## Segmentation, metrology, controls — on the observatory | The same segmentation and metrology machinery the smaller studies proved, at 6 m scale
 ::: left
