@@ -295,19 +295,19 @@ $ claude                      % a fresh AI session, in the terminal
 
 ## The control basis I: rigid-body channels — dw/dx | Runner: macos.dw_dx_multi, harvested by run_sensitivities (stage r3) — OPD at the coronagraph exit pupil per unit rigid-body motion
 ::: full
-![Two of the 192 channels: the centre segment (E1) and an outer-ring segment (E8), x-rotation.  For each: the centre-field OPD at full size, then the same channel at all five fields — centre + the 4 corners of the field box.  Piston removed; 1–99% color scale.](figs/fig_dwdx_read.png){h=3.6}
-- **192 channels:** six rigid-body DOFs for every optic — the 19 segments, both DMs, the 8 OAPs — plus the whole primary as one rigid group, five fields each, stacked into the control Jacobian.  The response lives on the moved segment's footprint and walks with field.
+![Two of the 192 channels: the centre segment (E1) and an outer-ring segment (E8), x-rotation.  For each: the channel at the coronagraph's own field (centre — the coronagraph is narrow-field, and its stops vignette the corners), then the same channel on the imaging leg — the full-field instrument — across all five fields (centre + 4 corners).  Piston removed; 1–99% color scale.](figs/fig_dwdx_read.png){h=3.6}
+- **192 channels:** six rigid-body DOFs for every optic — the 19 segments, both DMs, the 8 OAPs — plus the whole primary as one rigid group, five fields each, stacked into the control Jacobian.  The response lives on the moved segment's footprint and walks with field.  The coronagraph works the centre field only — its stops own the corners; the imaging leg sees the full box.
 ~ Harvest on r1_seg_prop.in, the deck the simulator propagates; per-field FEX reset; closure gated by jacobian_check.  Record: templates/80_end_to_end/e2e6m_r2.
 
 ## The control basis II: segment-figure channels — dw/dz | Runner: macos.dw_dz_zernike_multi, harvested by run_sensitivities (stage r3) — MonZernike modes 4–11 on each segment
 ::: full
-![Two of the 152 channels: segments E1 and E8, MonZernike mode 4.  Centre-field OPD at full size, then all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdz_read.png){h=3.6}
+![Two of the 152 channels: segments E1 and E8, MonZernike mode 4 — the coronagraph-field channel, then the imaging-leg channel across all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdz_read.png){h=3.6}
 - **152 channels:** MonZernike figure modes 4–11 on each of the 19 segments — the low-order surface deformations a segment can carry — five fields each.  Each channel is confined to its own segment; the mode shape is visible at a glance.
 ~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
 ## The control basis III: segment-influence channels — dw/dgrid | Runner: macos.dw_dgrid_multi, harvested by run_sensitivities (stage r3) — the grid influence basis on each segment
 ::: full
-![Two of the 114 channels: segments E1 and E8, grid mode 4.  Centre-field OPD at full size, then all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdgrid_read.png){h=3.6}
+![Two of the 114 channels: segments E1 and E8, grid mode 4 — the coronagraph-field channel, then the imaging-leg channel across all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdgrid_read.png){h=3.6}
 - **114 channels:** six grid-basis influence shapes per segment — the interface for measured influence functions and actuator maps, the same machinery the DM Jacobians use.  Together the three families stack into one Jacobian: the control basis the metrology, estimator and closed loop all share.
 ~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
