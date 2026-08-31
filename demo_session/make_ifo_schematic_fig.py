@@ -85,10 +85,10 @@ ax.add_patch(Rectangle((4.05, 1.5), 0.9, 0.22, fc=MID, ec=INK, lw=0.8))
 label(ax, 5.25, 1.61, "analyzer at θ  →  fringe phase 2θ", size=7.5,
       ha="left")
 ax.add_patch(Rectangle((4.12, 0.82), 0.76, 0.5, fc=INK, ec=INK))
-label(ax, 5.25, 1.07, "camera — four θ = the four PSI steps", size=7.5,
-      ha="left")
+label(ax, 5.25, 1.07, "camera (pixelated: 0/45/90/135° per 2×2 tile — four steps, one frame)",
+      size=7.2, ha="left")
 label(ax, 0.2, 0.22,
-      "one splitter, a natural null against the flat — and nothing moves",
+      "one splitter, a natural null against the flat — nothing in the interferometer moves",
       size=7.2, ha="left")
 
 # --------------------------------------------- splitter: plate vs cube
