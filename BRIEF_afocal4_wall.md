@@ -379,3 +379,141 @@ Proposed note, to be inserted at the foot of §S4b.4 and mirrored in
 **SIGNED OFF (Dave 2026-08-31, via CC): the §S4b.4 correction is
 approved as written.**  Commit the note into `RESULTS.md` §S4b.4 and
 mirror it in `STATUS_S4B.md` with the handback.
+## 8 — THE FRONTIER: both halves of the brief's premise reversed
+
+### 8a — the margin is not spent, and the wall is insurance not the answer
+
+The brief asks for the clearing stage's margin-spending to be reproduced with
+the wall off and abolished with it on.  **It does not reproduce.**
+
+| tilt, 0 mm floor | raw tilt | clearing stage (427 ev, forward) | wall OFF, converged | wall ON, converged |
+|---|---|---|---|---|
+| −8° | +23.34 | **+2.32** | **+28.05** | +28.05 *(identical)* |
+| −9° | +42.25 | **+0.69** | **+38.67** | +43.18 |
+| −10° | +57.44 | +37.82 | **+45.07** | +45.07 *(identical)* |
+
+Same tilt, same DOFs, same seed, wall off; the only difference is 427
+budget-capped forward-difference evaluations against 1209 central-difference
+ones.  At −8° and −10° the wall-on and wall-off runs are **identical to the
+last digit of round-1 merit** (46.181908, 50.097881) — the wall never rejected
+an iterate.  **The margin-spending was a stalled solve on the gradient S4c
+had already measured as 17 % low, not a merit blind to clearance.**
+
+The wall is still right to have — nothing else holds the clearance, it refuses
+the committed deck at −79.89 mm, and `union_min` is a real threshold — but on
+this design it is **insurance**, and **convergence** is what changed the
+answer.  Where it DOES bind (+15 mm floor; −9° at 0 mm) it changed the path
+and landed a **better** design both times (merit 34.34 vs 36.89; 31.47 vs
+32.89), which is not what a cage does.
+
+Determinism checked: the −10° wall-off point ran twice in independent
+processes and reproduced round merits 50.097881 / 47.094653 / 35.998867 both
+times.
+
+### 8b — the free-standoff sweep is not a tilt-vs-price curve
+
+Sorted by the standoff each solve reached rather than by tilt:
+
+| point | converged s_FM (mm) | K_FM | WFE (nm) | blur (µm) |
+|---|---|---|---|---|
+| −6° | −229.2 | −3.00 | 12076.2 | 535.8 |
+| −8° | +229.7 | −8.25 | 7813.1 | 347.5 |
+| −10° (wall off) | +275.9 | −15.78 | 6744.1 | 352.5 |
+| −9° | +438.8 | −18.53 | 5288.8 | 288.1 |
+| −7° | +535.6 | −25.34 | 3212.5 | 227.8 |
+
+Monotone in the standoff, from a −38.6 mm parent toward a +600 mm bound, with
+every solve still descending 24–43 % per round.  **The differences between
+tilts are mostly how far each solve walked the standoff.**  Two consequences:
+a real tilt curve must hold the standoff fixed (§8c), and **the committed
+design is nowhere near its own optimum in the standoff DOF either** — worth
+3–4× of wavefront error, where the tilt is worth a few percent.  That is a
+second unclaimed quantity beside §4's, and a larger one.
+
+### 8c — the frontier, tilt isolated: THE DELIVERED POINT IS PAST THE KNEE
+
+Standoff pinned at +276 mm, DOFs `{conic, front}`, wall ON at 0 mm, 1628
+evaluations over 4 rounds each (round-4 gains 5.4e-2 / 8.3e-4 / 2.1e-2 /
+7.7e-3):
+
+| tilt | floor (mm) | bare (mm) | WFE (nm) | blur (µm) | breathing (%) | wander (µm) | AOI | M |
+|---|---|---|---|---|---|---|---|---|
+| **−8°** | +15.18 | +39.38 | **6513.9** | **279.9** | **0.7210** | **284.2** | 10.68 | 30.0150 |
+| **−9°** | **+45.44** | +63.33 | 7794.7 | 352.0 | 0.9190 | 356.4 | 11.01 | 30.0150 |
+| −10° | +48.54 | +64.85 | 7682.3 | 456.8 | 1.1912 | 460.9 | 11.29 | 29.9846 |
+| −11° | +47.17 | +63.52 | 7464.9 | 482.9 | 1.2044 | 487.0 | 11.34 | 29.9848 |
+
+**The clearance saturates by −9°** (+45.4 / +48.5 / +47.2, flat to ±3 mm) while
+the pupil price keeps climbing — so **−10° and −11° are DOMINATED** and the
+delivered design sits past the knee.
+
+**The operating point is −9°**, beating the delivered −10° row on four of five
+columns: WFE **−13.3 %**, blur **−36.4 %**, wander **−36.3 %**, floor
+**+7.62 mm**, breathing +12.6 %.
+
+**And the brief's own question, answered:** *does a walled −8° hold real margin
+at materially less pupil damage than −10°?*  **Yes** — **+15.18 mm**, i.e.
+exactly the declared allowance's own 15 mm pad, at **49.4 % less blur**, with
+breathing and wavefront also better.
+
+Isolated, the tilt's price is small and one-sided: the wavefront moves in a
+15 % band with no trend (the clearing stage's "the wavefront is not the price"
+survives) while blur, wander, breathing and AOI all grow monotonically with
+|tilt|.  **Buy exactly as much tilt as the clearance needs and not one degree
+more.**
+
+*Caveat: this curve holds the standoff at one station.  §8b shows the standoff
+is worth far more than the tilt, so this is the tilt's price AT a good
+station, not the design's optimum.*
+
+## 9 — a second wall defect, found by the addendum
+
+**A WALL IS ONLY A WALL WHILE IT DOMINATES THE MERIT'S OWN SCALE.**
+`clear_solve` rejects a wall-violating iterate with a constant residual of 20
+per component — merit 5600.  At the study's weights a sound design scores ~30,
+so 5600 is an impassable barrier.  Multiply the pupil weights by 16 to measure
+§4's slack and a *sound* design scores ~4e4: the same constant now looks
+**attractive**, and the solver walks through the wall on purpose.  Measured:
+the ×16 run returned a converged `x` whose closure put M3 **1051 mm in FRONT
+of the primary** and died in the report build on the S4b packaging wall.
+
+Fixed: the residual scales with the largest merit weight in play,
+`20 * max(1, max(P.weights))`.  With the study's own weights that is exactly
+20 — **bit-identical to every committed clearing-stage solve**.
+
+**This matters directly for the descent brief**, whose Task 1 introduces a
+power-economy regularizer: changing the merit's scale is precisely the
+condition under which a fixed-magnitude wall residual stops being a wall.
+
+## 10 — status at handback
+
+**Complete and in the record:** Tasks 1 (the wall + seeder + non-vacuity + the
+measured cost), 2 (the frontier, both series, the operating point, the polish
+flag), 3's first half (the signed-tilt curve and the corrected explanation), 4
+(leverage 4's bar restated against the frontier's own best point), and 5 (the
+canonical record, the retirements in place, the §S4b.4 wording held for Dave).
+
+**Still in flight at handback:** the two pupil-weighted polishes of Task 3's
+second half (`pw4_t-80`, `pw16_t-80` — tilt −8°, standoff +276 mm, DOFs
+`{conic, front}`, matched to `ctl_t-80`).  They were relaunched after the §9
+wall-scale defect invalidated the first pair, and were in their second of two
+rounds when this handed back.  Their checkpoints land as
+`wall/wall_pw{4,16}_t-80.mat`; `afocal4_wall('pupil','load')` picks them up and
+fills `RESULTS.md` § C.7b, which is marked IN FLIGHT rather than left silent.
+
+**Gates at handback:** `tAfocal4Wall` 8/8 (new), `tAfocal4` 8/8,
+`tAfocal4Clear` 8/8.  The delivered cleared deck re-scores to its recorded
+numbers exactly.  `afocal4_wall()` runs end to end and writes
+`afocal4_wall_frontier.png` + `afocal4_wall.mat`.
+
+**Run inventory:** 17 points launched, 13 carry checkpoints and are reported;
+the dropped four (−11/−12 past saturation; −9/−10 at the +15 mm wall where it
+never binds) and the two re-runs are accounted for in `wall/README.md` §3.
+Decks with no checkpoint behind them were deleted — a mid-solve snapshot on
+disk is a number waiting to be mis-quoted.
+
+**Not done, deliberately, and named:** no fold-route or envelope work (the
+packaging round owns it); no fifth-mirror architecture beyond the bar; the
+standoff's own operating point — which § C.4c measures as worth 3–4× of
+wavefront, far more than the tilt — is left open and is the largest loose
+thread this slice found.  It is the natural first question for the descent.
