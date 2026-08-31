@@ -190,8 +190,8 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 
 ## A second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
-- **Why a Twyman–Green for a DM:** it is the Michelson topology fed with collimated light — both arms end on mirrors, so the DM takes one arm whole, at normal incidence, double pass (height counts twice), with a natural null against the reference flat.  A transmission layout like the Mach–Zehnder has no natural seat for a mirror; its isolated arms and two ports serve dynamics and transmission testing, not figure.
-- **Phase shifting with no moving parts:** the arms carry orthogonal polarizations; a quarter-wave plate makes them opposite circular, and the analyzer angle θ writes fringe phase 2θ — four angles are the four PSI steps.
+- **Why a Twyman–Green for a DM:** it is the Michelson topology fed with collimated light — both arms end on mirrors, so the DM takes one arm whole, at normal incidence, double pass (height counts twice), with a natural null against the reference flat.  A Mach–Zehnder has no natural seat for a mirror — its isolated arms and two ports serve dynamics and transmission, not figure.
+- **Phase shifting, nothing moving in the interferometer:** the arms carry orthogonal polarizations; a quarter-wave plate makes them opposite circular; the analyzer angle θ writes fringe phase 2θ.  The analyzer sits in the recombined beam, where its motion adds only common phase — or is a pixelated camera (0/45/90/135° per 2×2 tile): all four steps in one snapshot.
 - **Cube against plate:** the plate rig's diattenuation rotates one arm 7.5° and the gauge reads 11.7% high; the MacNeille cube parks each arm on a coating eigenaxis.  Both are built — the cube runs today.
 ::: right
 
