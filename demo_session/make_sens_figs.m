@@ -2,10 +2,12 @@
 % control-basis slides (dw/dx, dw/dz, dw/dgrid): 1-2 segments, centre field
 % at full size + the 5-field quincunx, per family (Dave 2026-08-31).
 %
-% ONE HARVEST ONLY: the committed r3 coronagraph-train harvest
-% (e2e6m_r2/r3_sens.mat), self-consistent across every panel.  The
-% corner-field pupils are clipped by the coronagraph's own stops -- labeled
-% as such; the coronagraph works the centre field.  A companion imaging-leg
+% ONE HARVEST ONLY: the committed ROUND-1 s4 harvest (e2e6m/s4_sens.mat)
+% -- same telescope, same channel families, and its train's stops pass the
+% whole field box, so ALL FIVE field pupils are full (fill 0.62 = centre;
+% Dave 2026-08-31 pm).  The r2-train harvest (r3_sens.mat) matches it at
+% the centre field (E1 Rx +-1.18 both) but its DM-bearing back end clips
+% the corner fields.  A companion imaging-leg
 % harvest (harvest_tel_sens.m) was tried for the 5-fov panels and PULLED:
 % on that FEX-referenced deck the walk-producing DOFs come out one-signed
 % with inflated amplitudes and mode shapes morph (fingerprints in the
@@ -21,7 +23,7 @@
 
 run('/home/dcr/dev/MACOS_res_dev/mmacos/mmacos_setup.m');
 S = load(['/home/dcr/dev/MACOS_res_dev/mmacos/templates/80_end_to_end/' ...
-          'e2e6m_r2/r3_sens.mat']);
+          'e2e6m/s4_sens.mat']);
 here = fileparts(mfilename('fullpath'));
 
 fam(1) = struct('key',"ox", 'chan',{["Elt 1 Rx","Elt 8 Rx"]}, ...
@@ -60,11 +62,11 @@ for f = 1:3
             plot(ax, [g g], [0.5 765.5], '-', 'Color', [0.85 0.85 0.85]);
             plot(ax, [0.5 765.5], [g g], '-', 'Color', [0.85 0.85 0.85]);
         end
-        title(ax, 'all 5 fields (corners clipped by the coronagraph''s stops)', ...
+        title(ax, 'all 5 fields (centre + 4 corners) — full pupils', ...
               'FontSize', 11);
     end
-    title(t, sprintf('%s — two of the %d channels, OPD at the coronagraph exit pupil', ...
-          fam(f).ttl, numel(cn)), 'FontSize', 13, 'FontWeight', 'bold');
+    title(t, sprintf('%s — two representative channels, OPD at the exit pupil (round-1 train)', ...
+          fam(f).ttl), 'FontSize', 13, 'FontWeight', 'bold');
     exportgraphics(fig, fullfile(here, 'figs', char(fam(f).png)), 'Resolution', 150);
     fprintf('wrote %s\n', fam(f).png);
 end
