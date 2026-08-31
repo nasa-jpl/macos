@@ -12,9 +12,10 @@ fi
 T=$(python3 pptx_text_diff.py baseline_pass3.pptx deck_keysight_edit.pptx | wc -l)
 G=$(python3 pptx_geo_diff.py baseline_pass3.pptx deck_keysight_edit.pptx | grep -cE "moved|font|only in")
 if [ "$T" -ne 0 ] || [ "$G" -ne 0 ]; then
-    if [ "$1" != "--force" ]; then
+    if [ "$1" != "--force" ] && [ "$1" != "--folded" ]; then
         echo "REFUSED: edit deck has unrecovered changes (text $T lines, geo $G deliberate)."
-        echo "Run the diffs, fold into md/sidecar, then re-run.  --force discards them."
+        echo "Fold into md/sidecar + rebuild, then re-run with --folded."
+        echo "--force DISCARDS them (only on Dave's say-so)."
         exit 1
     fi
 fi
