@@ -15,10 +15,10 @@
   },
   "Challenge 3: moving a 20°×20° field 22° off axis": {
     "img:pair_r3t_s1_layout.png": {
-      "x": 6.3,
-      "y": 1.75,
-      "w": 6.83,
-      "h": 3.42,
+      "x": 5.75,
+      "y": 1.47,
+      "w": 7.38,
+      "h": 3.7,
       "cx": 7.01,
       "cy": 5.25,
       "cw": 5.9
@@ -29,7 +29,8 @@
       "w": 5.9
     },
     "txt:The hardest of the three": {
-      "w": 5.7
+      "w": 5.15,
+      "fs": 14
     }
   },
   "Challenge 3: the numbers": {
@@ -61,7 +62,8 @@
   },
   "The live demonstration: an adjacent instrument, designed during this talk": {
     "txt:The ask: name a field-box": {
-      "w": 5.3
+      "w": 5.3,
+      "fs": 15
     },
     "code:1": {
       "x": 6.0,
@@ -101,7 +103,30 @@
       "w": 4.9
     }
   },
-  "The second live demonstration: the AI drives an interferometer": {
+  "Challenge 1: MACOS matches the re-traced CODE V designs": {
+    "txt:The metric decoded": {
+      "fs": 14
+    },
+    "img:rodgers1_layout_s4_seq.png": {
+      "x": 7.22,
+      "y": 3.3,
+      "w": 5.25,
+      "h": 3.1,
+      "cx": 7.0,
+      "cy": 6.44,
+      "cw": 5.9
+    },
+    "txt:Box max / avg": {
+      "x": 7.0,
+      "y": 6.74
+    }
+  },
+  "Challenge 2: a 30× afocal feeding an instrument through a tilted cold stop": {
+    "txt:The challenge: a three-mirror afocal": {
+      "fs": 15
+    }
+  },
+  "A second live demonstration: the AI drives an interferometer": {
     "txt:Why a Twyman–Green for a DM": {
       "w": 5.3
     },
