@@ -493,13 +493,16 @@ flag), 3's first half (the signed-tilt curve and the corrected explanation), 4
 (leverage 4's bar restated against the frontier's own best point), and 5 (the
 canonical record, the retirements in place, the §S4b.4 wording held for Dave).
 
-**Still in flight at handback:** the two pupil-weighted polishes of Task 3's
-second half (`pw4_t-80`, `pw16_t-80` — tilt −8°, standoff +276 mm, DOFs
-`{conic, front}`, matched to `ctl_t-80`).  They were relaunched after the §9
-wall-scale defect invalidated the first pair, and were in their second of two
-rounds when this handed back.  Their checkpoints land as
-`wall/wall_pw{4,16}_t-80.mat`; `afocal4_wall('pupil','load')` picks them up and
-fills `RESULTS.md` § C.7b, which is marked IN FLIGHT rather than left silent.
+**Task 3's second half, landed after the first commit (§ C.7b):** the
+pupil-weighted polish does NOT recover the blur, and the incumbent beats both
+re-weighted solves ON THEIR OWN MERITS -- 229.9 vs 301.3 at x4, 3386.5 vs
+5886.4 at x16.  The x16 run PLATEAUED there (round-2 gain 1.17e-5); the x4 run
+was still descending (round-2 gain 89 %) and is reported as a PROBE, not a
+converged point, because quoting a still-descending number as a result is the
+exact failure this slice exists to retire.  Both re-weighted solves also broke
+the customer interface -- M 0.515 % and 0.98 % off 30 against a 0.1 % target --
+because nothing in a re-weighting protects a requirement that was previously
+satisfied incidentally.  Earned rule 34.
 
 **Gates at handback:** `tAfocal4Wall` 8/8 (new), `tAfocal4` 8/8,
 `tAfocal4Clear` 8/8.  The delivered cleared deck re-scores to its recorded
