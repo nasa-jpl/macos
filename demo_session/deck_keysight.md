@@ -183,10 +183,10 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 
 ## Challenge 2: packaging — and the defect no fold could fix | The collimator stood in its own feed beam by −80 mm; a −10° extraction tilt clears it at +38 mm — wavefront 14% better
 ::: full
-![Engine truth, three ways: the committed 343 mm deck (deepest optic 1.887 m behind the 1.042 m M1–M2 span, the feed beam through the collimator by −79.9 mm over the field box); the four-flat fold recipe (0.893 m deep — but a fold is an isometry, and the interference rides across unchanged); the cleared −10° extraction-tilt deck: +37.8 mm of daylight, deepest optic 1.287 m, zero flats.](figs/afocal4_clear_layouts_tight.png){h=3.1}
-- **Why no fold could ever fix it:** a part's union footprint and a beam's at one station are scaled copies of the same off-axis field box — they separate only if their scales differ by 2.43×, and the measured ratio is 1.30, one scale pinned by the customer interface.  The best flat placement anywhere reproduces −79.9 mm to the last digit; every point of the committed trade curve fails the same gate.
-- **The fix is optical, and priced:** tilt the field mirror −10° and re-solve around it.  Clears at +37.8 mm with zero rays lost; wavefront 8993 vs 10407 nm; the interface holds (30.015×, 33.57 mm exit beam).  It packages itself — deepest optic 1.81× → 1.24× the M1–M2 spacing, with zero fold flats.  The price is the fourth mirror's pupil control: blur 157 → 553 µm, breathing 0.12 → 0.82% — still 4× steadier than three mirrors.
-~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  The union-footprint check is now a standing gate: it fails the committed deck and passes the cleared one.  Record: challenges/afocal4/{packaging,clearing}.
+![Nine per-field feed-beam patches (light blue) at the collimator's plane, their union (dashed), and the part (gray).  The centre field's beam (bold) clears its own glass (green) — it lands on the glass the other fields need.  Left: committed, −79.9 mm.  Right: cleared −10°, +37.8 mm.](figs/fig_collision.png){h=3.1}
+- **Why no single-field trace shows it, and no fold fixes it:** each field's feed beam clears the glass its own light uses by 10–27 mm — the collision is with the glass the *other* fields need, and one monolithic mirror must carry them all.  Body and beam unions are scaled copies of the same field box (separation needs a 2.43× scale ratio; measured 1.30), and a fold is an isometry: the best flat placement anywhere reproduces −79.9 mm to the last digit.
+- **The fix is optical, and priced:** tilt the field mirror −10° and re-solve around it.  Clears at +37.8 mm with zero rays lost; wavefront 8993 vs 10407 nm; the interface holds (30.015×, 33.57 mm exit beam).  It packages itself — deepest optic 1.81× → 1.24× the M1–M2 spacing, zero fold flats.  The price is the fourth mirror's pupil control: blur 157 → 553 µm, breathing 0.12 → 0.82% — still 4× steadier than three mirrors.
+~ The union check is now a standing gate: fails the committed deck, passes the cleared one — a margin is a number, not a body.  Three-way layouts: backup.  Record: challenges/afocal4/{packaging,clearing}.
 
 ## A second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
@@ -363,6 +363,11 @@ $ claude                      % a fresh AI session, in the terminal
 - A repeat 12° run reproduces the bundle to every printed digit — the demonstration is deterministic.
 - Wide asks pass: the committed frontier line understates the envelope (its widest rows stopped early on a wavefront-only criterion while the clearance penalty was still improving).
 ~ Bundle: templates/10_telescopes/offset_imager/demo_adjacent — figures, verdict text, prescriptions, run records.
+
+## Challenge 2 packaging, three ways | The committed deck, the retired four-flat recipe, and the cleared tilt — engine truth on one scale
+::: full
+![Reading the markers: the blue dashed box is the stated envelope — the slab one M1–M2 spacing deep directly behind the primary, inside the 0.56 m keep-out radius; the blue bracket is the M1–M2 yardstick the depth ratios read against; the red dotted line marks the deepest optic; the green patch is the instrument volume along the exit chief.](figs/afocal4_clear_layouts_tight.png){h=3.4}
+~ Committed: deepest optic 1.887 m = 1.81× the spacing, the feed beam through the collimator by −79.9 mm.  Four-flat recipe: 0.893 m deep, but a fold is an isometry — the interference rides across — and it does not close on the cleared deck (96 routes, every admissible one loses rays).  Cleared −10°: 1.287 m = 1.24×, zero flats, +37.8 mm of daylight.  Record: challenges/afocal4/{packaging,clearing}.
 
 ## Interferometer demonstration backups | One committed image per live beat
 ::: full

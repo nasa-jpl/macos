@@ -91,12 +91,13 @@
       "cw": 6.35
     },
     "img:rodgers2_final_trade.png": {
-      "x": 8.8,
-      "w": 3.04,
-      "h": 2.08,
+      "x": 7.09,
+      "w": 6.03,
+      "h": 4.12,
       "cx": 8.0,
       "cy": 5.86,
-      "cw": 4.9
+      "cw": 4.9,
+      "y": 1.54
     },
     "txt:Yardsticks: pupil imaging": {
       "x": 8.0,
