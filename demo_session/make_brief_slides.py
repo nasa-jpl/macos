@@ -368,6 +368,8 @@ def render_slide(spec):
         elif typ in ("bullets", "para", "note"):
             items = payload if typ == "bullets" else [payload]
             size = body_size(w) if typ != "note" else 10.5
+            if ov and "fs" in ov:   # sidecar font-size override (points)
+                size = ov["fs"]
             color = INK if typ != "note" else GRAY
             tf = tb(sl, x, y, w, 0.3)
             for j, it in enumerate(items):

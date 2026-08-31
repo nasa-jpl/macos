@@ -114,7 +114,8 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 ::: left
 - **The ask:** name a field-box full width, anywhere in 5–15°, for the same instrument class — 150 mm f/3.3 at the +22.5° offset, same envelope, same clearance rules.
 - **What happens:** the frontier states the prediction first; one MATLAB call launches a full-freedom solve, warm-started from the nearest committed design below the ask, and it runs while the talk continues (~15 min).
-- **No AI in this loop:** the design knowledge is compiled into the driver — this is the "adjacent solutions, without AI assistance" half of the objective, running live.
+- **The AI is not driving:** the design knowledge is compiled into the driver — this is the "adjacent solutions, without AI assistance" half of the objective, running live.
+- **The AI is available for questions.**
 - **What the reveal shows:** the field map, the clearance floor and the exit-direction check, beside the stated prediction.  Every ask is a genuine continuation step, never a re-score of a stored design; a repeat run reproduces every printed digit.
 ::: right
 
@@ -135,7 +136,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 ~ The literal demo-day sequence ($ = shell, >> = MATLAB); the rehearsal at 12° solved 33.6 nm against the ~33.7 prediction, and the 14° rehearsal beat its predict too.
 ~ In the mean time, continuing...
 
-## Challenge 1: MACOS matches or beats the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
+## Challenge 1: MACOS matches the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
 ::: full
 | design | centroid | (chief) | bestfoc + LS tilt | CODE V reported |
 | S2 verbatim | 482.8 / 272.0 | (672.9 / 390.9) | 371.4 / 201.4 | 374.6 / 200.0 |
@@ -151,10 +152,11 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 ![The arrived-at configuration: the stage-4 joint solve traced at the offset field.](figs/rodgers1_layout_s4_seq.png){h=2.5}
 ~ Box max / avg, nm, at the .seq configuration; centroid reference primary, chief in parentheses.  Full record: design/rodgers1 — packet with 10 addenda, every retraction in place.
 
-## Challenge 2: the 30× afocal telescope, reproduced | Parameters matched to the micron; all four design variants at 0.95–1.02×
+## Challenge 2: a 30× afocal feeding an instrument through a tilted cold stop | Reproduced, then extended: the pupil measured, the trade priced, the package cleared
 ::: left
-- **Parameters matched:** the lens sequences transcribe verbatim with a full audit; the coordinate break lands the cold stop on the traced beam to 2×10⁻⁷ mm (the wrong sign convention misses by 211–247 mm on a 33 mm beam); the computed exit pupil falls 0.8 mm from the stop placed by hand in the source deck.
-- **Performance matched:** all four design variants reproduce the reported wavefront numbers at the decoded reference; the reported 28.7× magnification of the frozen-offset variant measures 28.686×.
+- **The challenge:** a three-mirror afocal, 30×, 1 m aperture, a 0.5°×0.5° field offset 0.6° — feeding an instrument through a tilted cold stop, with the pupil quality left unmeasured by the source.
+- **The pursuit:** transcribe and audit the delivered sequences, decode the reporting reference, reproduce all four variants — then extend where the source stopped: measure the pupil, price the fourth mirror, clear the package.
+- **Achieved:** all four variants inside 0.95–1.02×; the reported 28.7× magnification measures 28.686×; the computed exit pupil falls 0.8 mm from the stop placed by hand in the source deck.
 
 | variant | CODE V | MACOS / CODE V |
 | on-axis | ≤ 15 nm | 0.99× |
@@ -163,7 +165,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 | offset, tilt/dec | ≤ 119 nm | 1.02× |
 ::: right
 ![The transcribed system traced in MACOS: light enters left, M1 → M2 → M3; the computed exit pupil falls 0.8 mm from the delivered cold stop (detail panel).](figs/rodgers2_layout_parent3.png){h=3.3}
-~ The source deck reports wavefront error only; its pupil statement — "with 3 mirrors, the pupil quality is not very good" — has no metric.  MACOS defines and measures one: next slide.  Full record: design/rodgers2.
+~ The source's own pupil verdict — "with 3 mirrors, the pupil quality is not very good" — carries no metric; MACOS defines and measures one: next slide.  Audit rigor: the coordinate break lands the cold stop on the traced beam to 2×10⁻⁷ mm, where the wrong sign convention misses by 211–247 mm.  Full record: design/rodgers2.
 
 ## Challenge 2, extended: the pupil measured — and what a fourth mirror buys | Pupil blur 469 → 157 µm; the exchange costs image quality a factor 39
 ::: left
@@ -186,7 +188,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 - **The fix is optical, and priced:** tilt the field mirror −10° and re-solve around it.  Clears at +37.8 mm with zero rays lost; wavefront 8993 vs 10407 nm; the interface holds (30.015×, 33.57 mm exit beam).  It packages itself — deepest optic 1.81× → 1.24× the M1–M2 spacing, with zero fold flats.  The price is the fourth mirror's pupil control: blur 157 → 553 µm, breathing 0.12 → 0.82% — still 4× steadier than three mirrors.
 ~ The recorded single-fold layout passed its gate on a 17.5-vs-15 mm margin while its flat clips the feed beam by −74 mm — a gate's margin is a number, not a body.  The union-footprint check is now a standing gate: it fails the committed deck and passes the cleared one.  Record: challenges/afocal4/{packaging,clearing}.
 
-## The second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
+## A second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
 - **Why a Twyman–Green for a DM:** it is the Michelson topology fed with collimated light — both arms end on mirrors, so the DM takes one arm whole, at normal incidence, double pass (height counts twice), with a natural null against the reference flat.  A transmission layout like the Mach–Zehnder has no natural seat for a mirror; its isolated arms and two ports serve dynamics and transmission testing, not figure.
 - **Phase shifting with no moving parts:** the arms carry orthogonal polarizations; a quarter-wave plate makes them opposite circular, and the analyzer angle θ writes fringe phase 2θ — four angles are the four PSI steps.
