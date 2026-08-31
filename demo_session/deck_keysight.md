@@ -188,7 +188,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 
 ## The second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
-- **Why a Twyman–Green for a DM:** normal incidence, double pass (height counts twice), a natural null against the flat reference — the fewest reference surfaces of any two-beam layout.  A Mach–Zehnder buys isolated arms and two ports: dynamics and transmission, not figure.
+- **Why a Twyman–Green for a DM:** it is the Michelson topology fed with collimated light — both arms end on mirrors, so the DM takes one arm whole, at normal incidence, double pass (height counts twice), with a natural null against the reference flat.  A transmission layout like the Mach–Zehnder has no natural seat for a mirror; its isolated arms and two ports serve dynamics and transmission testing, not figure.
 - **Phase shifting with no moving parts:** the arms carry orthogonal polarizations; a quarter-wave plate makes them opposite circular, and the analyzer angle θ writes fringe phase 2θ — four angles are the four PSI steps.
 - **Cube against plate:** the plate rig's diattenuation rotates one arm 7.5° and the gauge reads 11.7% high; the MacNeille cube parks each arm on a coating eigenaxis.  Both are built — the cube runs today.
 ::: right
@@ -207,7 +207,7 @@ $ claude                      % a fresh AI session, in the terminal
 ```
 ~ The dialog is the demonstration: the AI narrates each beat, runs it on the cue, pastes the real output, and answers the room's questions from the live session — figures open on the desktop as they draw.  Every beat has a committed fallback figure.
 ::: full
-![Two-beam topologies, and the splitter that decides the error budget.](figs/fig_ifo_topologies.png){h=2.5}
+![The demo rig, and the splitter that decides its error budget.](figs/fig_ifo_topologies.png){h=2.5}
 
 ## Recap: the interferometer, built and calibrated in the model | The plate rig's 11.7% error, caught and fixed — then designed out by a real MacNeille cube
 ::: left
