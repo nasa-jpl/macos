@@ -276,18 +276,18 @@ $ claude                      % a fresh AI session, in the terminal
 ::: full
 - **The testbed is where the models are built and proven; the same modeling then builds the flight-like system:** an unobscured 6 m telescope from the design-layer templates — imaging leg and coronagraph leg, with the same DMs, apodizer, focal-plane mask and Lyot machinery — packaged to an 8 m launch shroud, drawn and checked.
 ::: left
-![The light order, both instruments: the shared trunk, the deployable-pick-off imager leg, and the DM-bearing coronagraph leg.](figs/r2_sequence.png){h=1.9}
+![The full train, traced: the segmented 6 m primary feeding the DM-bearing back end — 37 elements across the two instrument legs.](figs/crop_r2_train_iso.png){h=4.3}
 ::: right
-![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=2.9}
-~ The telescope is one of the design-layer templates, diffraction-limited at 500 nm (imaging-leg Strehl 0.9993).  Record: templates/80_end_to_end/e2e6m_r2.
+![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=3.7}
+~ The telescope is one of the design-layer templates, diffraction-limited at 500 nm (imaging-leg Strehl 0.9993); the two-leg light-order chart is in the record.  Record: templates/80_end_to_end/e2e6m_r2.
 
 ## Segmentation, metrology, controls — on the observatory | The same segmentation and metrology machinery the smaller studies proved, at 6 m scale
 ::: left
 - The primary segments hex-19 with physical apertures through the same segmentation product; every segment gets rigid-body and surface-figure sensitivity channels, stacked into one Jacobian — the control basis.
 - Metrology and edge sensors are designed ON that Jacobian — 114 beams from the launcher stations shown — and the same matrices drive the estimator and the closed loop.
+![The metrology on the observatory: 24 elements, 114 MET beams to the aft launcher station.](figs/r3_met_view_rx.png){h=4.3}
 ::: right
-![The metrology on the observatory: 24 elements, 114 MET beams to the aft launcher station.](figs/r3_met_view_rx.png){h=2.6}
-![Per-segment wavefront sensitivity channels — the control basis.](figs/r3_dwdx_channels.png){h=1.95}
+![Per-segment wavefront sensitivity channels — the control basis.](figs/r3_dwdx_channels.png){h=5.0}
 ~ Record: templates/80_end_to_end/e2e6m_r2, sensitivities + MET stages.
 
 ## A randomly disturbed observatory, simulated | The closed loop holds dark-zone contrast at 2.5×10⁻⁷ where the uncontrolled series drifts to 1.7×10⁻⁶
@@ -296,7 +296,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **The disturbance interface is the point:** the same channels are built to ingest dynamical- and thermal-model time histories — simulating performance in the space environment.  Work in progress.
 - Honest gap, attributed: the segmented-pupil contrast floor sits above the clear-pupil testbed's — the gaps and edges carry it, not the control.
 ::: right
-![Four hundred seconds under drift: segment rigid-body state, wavefront at the coronagraph exit pupil, and science-plane contrast — open loop against closed.](figs/r4_series_3nm.png){h=3.6}
+![Four hundred seconds under drift: segment rigid-body state, wavefront at the coronagraph exit pupil, and science-plane contrast — open loop against closed.](figs/r4_series_3nm.png){h=5.0}
 ~ Record: templates/80_end_to_end/e2e6m_r2, time-series stage.
 
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
