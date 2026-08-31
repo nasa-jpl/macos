@@ -165,3 +165,217 @@ optical designer outside the project:
 - Local commits only, on top of `9902c21`/`1518cbb`; delivery log at the
   foot of THIS brief; nothing pushed; outward-facing text (slides,
   anything leaving the repo) waits on Dave's sign-off via CC.
+
+---
+
+# DELIVERY LOG (2026-08-31)
+
+Everything new lives in `MACOS_res_dev/mmacos/challenges/afocal4/wall/` (its
+README is numbers-first).  **Nothing under `challenges/afocal4/` was
+overwritten**; the additive clauses beside it are listed in §5 below, all
+default-OFF and all asserted to leave the committed decks rebuilding byte for
+byte.  Local, unpushed.  No engine work.  Base: `MACOS_res_dev 9902c21` /
+`macos 1518cbb`, built on, not rebased.
+
+## 1 — the wall, and it is a wall
+
+`afocal4_union`'s floor on the **declared body model** is now a wall in
+`afocal4_build` beside the S4b `m3_behind_min` one, via a new
+`../afocal4_union_wall.m`.  Four `P.pack` fields: `union_enforce` (default
+**false**), `union_min` (0 m), `union_body_k` (1.15), `union_body_pad`
+(0.015 m).
+
+* **Default OFF is load-bearing.**  With the wall on, `afocal4_build` cannot
+  re-emit the committed 343 mm deck (−79.89 mm) and every S4 / S4b / S4c /
+  clearing artifact stops reproducing.  Same reason `P.pack.enforce = false`
+  keeps the unbuildable S4 reference alive.
+* **`clear_build` DEFERS it past the tilt.**  `afocal4_build` emits the
+  *untilted* train; a wall applied there judges the design the tilt exists to
+  get away from and rejects every iterate — a cage.  Gated on one `P`, both
+  halves.
+* **Cost, measured, inside the loop** (the brief asked which and what):
+  evaluated INSIDE the build, so every iterate the solver sees is compliant.
+  Cold, at solve sampling: `clear_build` 1.61 s + `afocal4_score` 6.56 s =
+  8.17 s, wall +4.18 s → **+51 %**.  Warm in a solver loop the whole
+  evaluation is ~3.2 s.  Nearly all the wall's cost is the nine-field
+  re-trace `afocal4_score` already paid for; the probe count is nearly free
+  (314 probes 4.18 s vs 65 probes 3.52 s) so it is **not** tuned down — a wall
+  must hold the quantity the gate reports.
+* **Sampling, stated not hidden:** the wall is judged at SOLVE sampling and
+  every table quotes REPORTING sampling.  A bigger ray grid makes a bigger
+  union hull, so the wall's number is the optimistic one — measured **+1.0 to
+  +3.2 mm** across the frontier and carried per point as
+  `R.sampling_bias_mm`.
+
+## 2 — the compliant seeder, and a finding about the law
+
+`wall_seed`, `afocal4_pack_seed`'s sibling.  Preferences: the tilt alone
+(nothing moved — which is what keeps a point comparable with the delivered
+row); the smallest field-mirror standoff change that clears, on the parent's
+own front end; a different M2 radius; last, the delivered −10° design's DOFs
+(flagged as a different basin).  Margin 10 mm over `union_min`.
+
+**THE FIELD-WALK LAW IS 5–6× OPTIMISTIC AS A PREDICTOR OF A STANDOFF CHANGE.**
+The obvious cheap ranking is `f̂ = f + 2|α|(d − d₀)`, pure closure arithmetic.
+Measured at −6°, moving the standoff −38.6 → +250 mm takes `d` 0.563 → 0.680 m
+and the law predicts the floor going −13.00 → **+11.45 mm**; it measures
+**−8.25**.  Realised sensitivity **33 mm per metre of `d`** against the law's
+**209**.  The law is not wrong — the tilt really does supply a
+field-independent `2αd` — but a **standoff** change moves the
+field-PROPORTIONAL part at the same time and the two nearly cancel.  *Leverage
+2 showing up inside leverage 3.*  So the seeder **probes and bisects on
+measurements** instead: 4–6 gate evaluations, no prediction relied on, and
+`INFO.slope_mm_per_m` carries the realised slope beside the law's.
+
+Ranking by `afocal4_pack_seed`'s own "weakest field mirror first" is worse
+still — at −6° it spent ten gate evaluations walking a −13.0 mm floor down to
+**−83.2 mm**.
+
+**And `P.parent` is not the parent design.**  It carries Mike's raw secondary
+(R_M2 468.8 mm, t_M1M2 1.0492 m) while the committed 343 mm deck has a
+re-solved front end (448.4 mm, 1.0420 m).  Filtering seed candidates through
+`P.parent` admitted 21 standoffs of 57 and **not one was the deck's own**;
+carrying `D.R2`/`D.t1` into the closure — what `afocal4_build` does — admits
+54, spanning `d` = 0.255…0.821 m against the parent's 0.563.
+
+## 3 — the bug that cost an hour, and the rule it earned
+
+**A wall belongs on ITERATES, never on the REPORT that follows them.**
+`clear_solve` built its final, quotable deck through the same walled builder
+the objective used.  Inside the objective a violation becomes a large finite
+residual and the solver backs out of it; in the report path there is nobody to
+back out — and because the wall is judged at SOLVE sampling while the report
+builds at REPORTING sampling (~2.5 mm lower floor), **a converged design
+sitting on its wall throws out of its own report and takes the whole solve
+with it.**  Measured twice: `t-80_u15` and `t-90_u15`, both re-run.  Fixed in
+`clear_solve` (the report build measures, it does not judge) and guarded in
+`wall_point` (a round that throws costs a round, not a night).
+
+Operational note worth keeping: **a running MATLAB caches the function it has
+already called**, so a mid-flight fix does not reach processes already in
+their solve.  Only points the fleet started AFTER the edit picked it up; the
+two that did not were identified from the fleet log's start times and re-run.
+
+## 4 — the addendum: the unclaimed pupil, and a correction to the clearing record
+
+The signed-tilt curve on the committed deck, 1° steps, nothing re-solved
+(`wall/afocal4_wall_unclaimed.png`):
+
+* the blur optimum is **101.3 µm at +5°**, not 102.6 at +4° — **35.5 %** below
+  the committed design's, for a tilt and no re-solve.  The clearing stage's 2°
+  grid straddled it.
+* **it is not free.**  What pays is magnification **breathing**, 0.124 →
+  0.795 %, and breathing is the one pupil target the committed design *meets*
+  (0.4 %).  Wander tracks blur; the wavefront is flat to 0.5 % across ±8°.
+* **the free move is a small NEGATIVE tilt:** at −1° breathing reaches
+  **0.0381 %**, three times better than committed and ten times inside target,
+  for 178.2 vs 157.0 µm of blur and no loss of clearance.
+
+**AND THE REASON THE CLEARING RECORD GIVES IS WRONG.**  It attributes the
+unclaimed pupil to a merit owned by a wavefront term 130× off target.  Read
+off the residual vector, `afocal4_score` divides the per-field wavefront
+residuals by `sqrt(K)`, so the wavefront block is **78 %** of the merit, not
+~97 %, and **the merit PREFERS the +5° point** (29.40 against 30.22).  The
+committed design is not at its pupil optimum because **an extraction tilt was
+never in the DOF set that produced it** (`{conic, standoff, front}`).
+Corrected in place in `clearing/README.md` §12.3 and written up in
+`RESULTS.md` § C.7a.
+
+**The rung-4 rigid-body tilt is a DIFFERENT operation, with the opposite
+sign** — measured, because "the freedom was already there" had to be tested
+rather than assumed.  `P.bounds.tilt` allows ±2.86° of FM x-tilt about the
+element's **vertex** with the train not re-posed:
+
+| operation on the field mirror | WFE (nm) | blur (µm) | breathing (%) | floor (mm) |
+|---|---|---|---|---|
+| committed, nothing moved | 10407.0 | 157.0 | 0.1240 | −79.89 |
+| rung-4 rigid body +2.86° (vertex, the bound) | **9818.8** | **613.0** | 0.1381 | −86.19 |
+| extraction tilt +3.00° (chief, train re-posed) | 10436.9 | **116.7** | 0.5271 | −84.27 |
+
+The rigid-body tilt is a *wavefront* knob that spends pupil; the extraction
+tilt is a *pupil* knob that spends a little wavefront.  So the extraction tilt
+is a genuinely new degree of freedom — and a second unclaimed quantity sits
+beside it: **a rung-4 pass on the committed 343 mm deck is worth ~5.6 % of
+wavefront**, on a design whose rung-4 DOFs were never solved.  Neither chased;
+both recorded.
+
+## 5 — what changed outside `wall/`, all additive and default-off
+
+| file | change |
+|---|---|
+| `afocal4_union_wall.m` | **new** |
+| `afocal4_build.m` | one deferred-wall clause (§3c) + `'defer_union'` option |
+| `clearing/clear_build.m` | one post-tilt wall call; `'defer_union',true` on its inner build |
+| `clearing/clear_solve.m` | the final report build measures, does not judge (§3) |
+| `afocal4_params.m` | four `P.pack.union_*` fields, wall OFF |
+| `tests/tAfocal4Wall.m` | **new**, 8 tests, registered in `SUITE_FREEFORM` |
+| `RESULTS.md` | **new `# CLEARING RESULTS` section** (§6) + superseded note on §S4b.4 |
+| `README.md` | the packaging → clearing → wall arc made findable from the entry point |
+| `packaging/README.md` | Path A marked superseded in place |
+| `clearing/README.md` | §12.3 corrected in place |
+
+**Gates: `tAfocal4Wall` 8/8 (new), `tAfocal4` 8/8, `tAfocal4Clear` 8/8.**  And
+the delivered cleared deck re-scores to its recorded numbers exactly —
+8992.68 / 553.34 / 0.8160 / 559.87 / +37.82, zero rays lost.
+
+## 6 — the canonical record (Task 5)
+
+**Placed as a `# CLEARING RESULTS` section appended to
+`challenges/afocal4/RESULTS.md`**, not as a separate `RESULTS_CLEARING.md`.
+Why: RESULTS.md is what someone entering through `challenges/afocal4/` reads,
+S4b and S4c were both appended as sections rather than split out, and the
+superseded notes elsewhere need one findable place to point at.  The two
+stage READMEs stay the numbers-first accounts.
+
+It carries: the defect and the number that hid it (per-field daylight vs the
+union footprint); the field-walk ratio law with its measured terms and the
+`M × iface` pin; the three leverage retirements/delivery as measurements; the
+price table; the wall and the seeder; the walled frontier and its operating
+point; the packaging consequences with **the two ratios named apart**
+(deepest/spacing 1.81× → 1.24× vs overhang/spacing 0.81× → 0.24×, and Path A
+does not close on the cleared deck — 96 routes, 15 admissible, every one lost
+rays); the standing gate with a **non-vacuity table** naming where each half
+is asserted; the addendum; leverage 4's bar; and nine new earned rules
+(23–31).
+
+**Retired in place, not deleted:** `packaging/README.md` §3 (Path A) and
+`RESULTS.md` §S4b.4 (the S4b single fold) both carry dated superseded notes
+that keep the measurements and the "a margin is a number, not a body" lesson.
+
+## 7 — FOR DAVE: the §S4b.4 correction wording, held for sign-off
+
+`packaging/check_record` reproduces the discrepancy.  Measured from the
+committed `afocal4_b_final_folded.in`, against what §S4b.4 and
+`STATUS_S4B.md` both state:
+
+| quantity | as recorded | as measured |
+|---|---|---|
+| interface pupil (m) | [+0.304, −0.004, +0.614] | **[+0.2483, −0.0051, +1.3782]** |
+| 1000 mm envelope ends (m) | [+1.304, −0.017, +0.614] | **[+1.1990, −0.3151, +1.3782]** |
+| instrument z-slab (m) | +0.464 … +0.764 | **+1.2282 … +1.5282** |
+
+On the committed deck the fold and the interface plane are both at
+z = +1.3782 m.  **The conclusion those numbers support is unchanged** — every
+z is positive, so the instrument sits entirely behind the primary — and the
+fold-is-null row, the WFE/blur/breathing/wander table and the 137 mm
+closest-approach are measurements of different quantities and are unaffected.
+
+Proposed note, to be inserted at the foot of §S4b.4 and mirrored in
+`STATUS_S4B.md`, **not committed until you approve the wording**:
+
+> **DATED CORRECTION (2026-08-31).**  The interface-pupil coordinates and the
+> instrument z-slab quoted above for the FOLDED deck do not reproduce from the
+> committed file.  Measured by `packaging/check_record` on
+> `afocal4_b_final_folded.in`: interface pupil **[+0.2483, −0.0051,
+> +1.3782] m**, envelope ending **[+1.1990, −0.3151, +1.3782] m**, z-slab
+> **+1.2282 … +1.5282 m**; the fold and the interface plane are both at
+> z = +1.3782 m.  The statement the numbers support is unaffected — every z is
+> positive, so the instrument is entirely behind the primary — and the
+> fold-is-null result is a measurement of a different quantity.  The recipe
+> itself is superseded (see the head of this section), so this corrects the
+> historical record, not a live design.
+
+
+**SIGNED OFF (Dave 2026-08-31, via CC): the §S4b.4 correction is
+approved as written.**  Commit the note into `RESULTS.md` §S4b.4 and
+mirror it in `STATUS_S4B.md` with the handback.
