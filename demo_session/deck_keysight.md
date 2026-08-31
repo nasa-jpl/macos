@@ -288,10 +288,28 @@ $ claude                      % a fresh AI session, in the terminal
 ::: left
 - The primary segments hex-19 with physical apertures through the same segmentation product; every segment gets rigid-body and surface-figure sensitivity channels, stacked into one Jacobian — the control basis.
 - Metrology and edge sensors are designed ON that Jacobian — 114 beams from the launcher stations shown — and the same matrices drive the estimator and the closed loop.
-![The metrology on the observatory: 24 elements, 114 MET beams to the aft launcher station.](figs/r3_met_view_rx.png){h=4.3}
+- **The channels themselves — dw/dx, dw/dz, dw/dgrid — follow on the next three slides, at readable size.**
 ::: right
-![Per-segment wavefront sensitivity channels — the control basis.](figs/r3_dwdx_channels.png){h=5.0}
+![The metrology on the observatory: 24 elements, 114 MET beams to the aft launcher station.](figs/r3_met_view_rx.png){h=4.9}
 ~ Record: templates/80_end_to_end/e2e6m_r2, sensitivities + MET stages.
+
+## The control basis I: rigid-body channels — dw/dx | Runner: macos.dw_dx_multi, harvested by run_sensitivities (stage r3) — OPD at the coronagraph exit pupil per unit rigid-body motion
+::: full
+![Two of the 192 channels: the centre segment (E1) and an outer-ring segment (E8), x-rotation.  For each: the centre-field OPD at full size, then the same channel at all five fields — centre + the 4 corners of the field box.  Piston removed; 1–99% color scale.](figs/fig_dwdx_read.png){h=3.6}
+- **192 channels:** six rigid-body DOFs for every optic — the 19 segments, both DMs, the 8 OAPs — plus the whole primary as one rigid group, five fields each, stacked into the control Jacobian.  The response lives on the moved segment's footprint and walks with field.
+~ Harvest on r1_seg_prop.in, the deck the simulator propagates; per-field FEX reset; closure gated by jacobian_check.  Record: templates/80_end_to_end/e2e6m_r2.
+
+## The control basis II: segment-figure channels — dw/dz | Runner: macos.dw_dz_zernike_multi, harvested by run_sensitivities (stage r3) — MonZernike modes 4–11 on each segment
+::: full
+![Two of the 152 channels: segments E1 and E8, MonZernike mode 4.  Centre-field OPD at full size, then all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdz_read.png){h=3.6}
+- **152 channels:** MonZernike figure modes 4–11 on each of the 19 segments — the low-order surface deformations a segment can carry — five fields each.  Each channel is confined to its own segment; the mode shape is visible at a glance.
+~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
+
+## The control basis III: segment-influence channels — dw/dgrid | Runner: macos.dw_dgrid_multi, harvested by run_sensitivities (stage r3) — the grid influence basis on each segment
+::: full
+![Two of the 114 channels: segments E1 and E8, grid mode 4.  Centre-field OPD at full size, then all five fields.  Piston removed; 1–99% color scale.](figs/fig_dwdgrid_read.png){h=3.6}
+- **114 channels:** six grid-basis influence shapes per segment — the interface for measured influence functions and actuator maps, the same machinery the DM Jacobians use.  Together the three families stack into one Jacobian: the control basis the metrology, estimator and closed loop all share.
+~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
 ## A randomly disturbed observatory, simulated | The closed loop holds dark-zone contrast at 2.5×10⁻⁷ where the uncontrolled series drifts to 1.7×10⁻⁶
 ::: left
