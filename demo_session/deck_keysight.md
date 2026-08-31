@@ -270,7 +270,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **The physics layers, measured:** the coated train's polarization floor rides flat at 1.1×10⁻¹⁵ at every bandwidth (a state change, not an aberration); the chromatic floor grows gently when control sampling matches the band — 8×10⁻¹³ mono to 5.4×10⁻¹¹ at a 20% band.
 - **The vector-vortex verdict:** the zero-order plate's retardance leak is uncorrectable by any mirror but optically removable — a circular polarizer sandwich returns to the scalar floor under per-λ control; a crossed-linear sandwich goes decades deeper on the star, at the price of eight planet blind spots.
 ::: right
-![The vortex-chain dark hole: before and after (color floor 10⁻¹⁴), convergence, and the sub-nanometer command maps.](figs/ctb_efc_vortex.png){h=2.35}
+![The vortex-chain dark hole: before and after (color floor 10⁻¹⁴), convergence, and the command maps.](figs/ctb_efc_vortex.png){h=2.35}
 ![The bandwidth map: static, closed-loop floor, and the flat polarization floor at each band.](figs/ctb_vortex_bandwidth.png){h=2.2}
 ~ 6.8×10⁻¹⁵ = dark-zone mean 3–15 λ/D, Strehl-normalized, monochromatic, noiseless sensing — the numerical floor of the noiseless model, not a hardware prediction.  Next layer of realism: camera-based sensing (pairwise probing), then FALCO driving the same DMs.
 

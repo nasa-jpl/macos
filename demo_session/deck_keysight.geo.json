@@ -135,6 +135,12 @@
       "x": 6.0,
       "y": 1.5,
       "w": 7.33
+    },
+    "img:fig_ifo_topologies.png": {
+      "x": 1.12,
+      "y": 4.52,
+      "w": 10.63,
+      "h": 2.57
     }
   },
   "Recap: the interferometer, built and calibrated in the model": {
@@ -165,6 +171,89 @@
     "txt:Records: templates/90_polarization": {
       "x": 7.0,
       "y": 6.69
+    }
+  },
+  "Recap: the measurement the room just watched": {
+    "txt:The eight beats, replayed": {
+      "fs": 18
+    }
+  },
+  "A coronagraph testbed, end to end": {
+    "txt:The full testbed model": {
+      "fs": 16
+    },
+    "table:1": {
+      "y": 4.21
+    },
+    "img:ctb_train_render.png": {
+      "x": 7.75,
+      "y": 1.38,
+      "w": 4.7,
+      "h": 1.49,
+      "cx": 7.0,
+      "cy": 2.96,
+      "cw": 5.9
+    },
+    "img:ctb_mask_compare.png": {
+      "x": 7.25,
+      "y": 3.41,
+      "w": 5.18,
+      "h": 2.78,
+      "cx": 7.0,
+      "cy": 6.14,
+      "cw": 5.9
+    },
+    "txt:Dark zone 3–15": {
+      "x": 7.0,
+      "y": 6.64
+    }
+  },
+  "The vortex against the Lyot stop": {
+    "txt:One mask, one dial": {
+      "w": 5.8,
+      "fs": 18
+    },
+    "img:ctb_vortex_lyot_sweep.png": {
+      "x": 6.49,
+      "y": 1.48,
+      "w": 6.5,
+      "h": 4.52,
+      "cx": 7.0,
+      "cy": 6.12,
+      "cw": 5.9
+    },
+    "txt:Same grid, annulus": {
+      "x": 7.0,
+      "y": 6.59
+    }
+  },
+  "The mirrors close the loop": {
+    "txt:The control matrix is measured": {
+      "w": 5.55,
+      "fs": 15
+    },
+    "img:ctb_efc_vortex.png": {
+      "x": 6.17,
+      "y": 1.42,
+      "w": 7.07,
+      "h": 1.58,
+      "cx": 6.0,
+      "cy": 3.07,
+      "cw": 6.9
+    },
+    "img:ctb_vortex_bandwidth.png": {
+      "x": 7.75,
+      "y": 3.43,
+      "w": 3.89,
+      "h": 2.89,
+      "cx": 6.28,
+      "cy": 6.31,
+      "cw": 6.89
+    },
+    "txt:6.8×10⁻¹⁵": {
+      "x": 6.29,
+      "y": 6.55,
+      "w": 6.89
     }
   }
 }
