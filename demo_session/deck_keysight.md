@@ -26,6 +26,7 @@
 # MACOS — Optical Modeling, Analysis and Design, with an AI in the Loop
 One ray-trace and physical-optics engine, four language surfaces, an AI-driven design layer — with two elements run live
 D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight CODE V team.  DRAFT — pending source sign-off.
+The code is public: github.com/nasa-jpl/macos
 ~ Live elements: a telescope designed during the talk to an audience-chosen field specification (asked and launched once challenge 3 is on the table, revealed before the closing discussion), and a polarization phase-shifting interferometer measuring a deformable mirror.  All wavefront numbers are RMS wavefront error; each study states its reference convention where it reports.
 
 ## Four decades of NASA optical modeling | Technology development to flight: Hubble, JWST, TMT
@@ -359,22 +360,19 @@ $ claude                      % a fresh AI session, in the terminal
 
 ## AI in design and analysis — the working questions | What we ask of an AI-driven study before believing it
 ::: full
-- How is a result verified when the designer is a machine?  Here: regression checks with negative controls, layout figures read against every claim, and corrected signed measures — the checks caught the errors shown today.
-- Where does the human rule?  Constraint choices, metric definitions, and every outward claim carry a human sign-off; the AI proposes, the record decides.
-- Is it reproducible?  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
-~ These are offered as discussion questions, not settled doctrine.
+- **How is a machine's result verified?**  Regression checks with negative controls; layout renders read against every claim — the checks caught the errors shown today.
+- **Where does the human rule?**  Constraints, metrics, and every outward claim — the AI proposes, the record decides.
+- **Is it reproducible?**  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
+~ Offered as discussion questions, not settled doctrine — the next slide takes one of them to architecture.
 
 ## Discussion: where should the agent sit? | Three modes — two exercised by this study, one open — and the boundary between them is the question
 ::: full
-- **A · Run the compiled tool, no agent** — what ships today.  The walk ran unattended on a fresh instance; the checks, caps, and continuation runner are versioned and regression-tested.  Inspectable and maintenance-stable — but 1 of 15 frictions did not compile, and the docs alone did not carry a cold user.
-- **B · Invoke an agent to guide the work** — what this study actually did.  An AI agent in the loop, under expert prompting, found and fixed every conceptual defect in hours and chose the strategies worth compiling — including the walk.  Available to any user now; its knowledge is current, but not versioned with the tool.
-- **C · Embed a helper in the tool** — the open question: advice at call time — "your step 1 runs 8× deeper than the reference; expect the offset box to lose rays" — the one failure that was documented and still fatal.
-- **How embedding could work — three shapes in increasing order of authority:**
--- Make the tool agent-readable (lightest): expose the tool's state as structured output — deck, residual history, check results — with machine-readable docs and runnable checks, so the user's own assistant drives the tool well.  The tool's knowledge stays in the code and its tests.
--- A failure-triage assistant: invoked only when a check fires or a solve stalls; it reads the saved state and returns a one-line diagnosis and a suggested next command, which the person runs.
--- A policy assistant inside hard limits: it chooses solve-field counts, penalty targets, and walk schedules between stages; the code enforces the limits, validates every action through the same checks, and logs every choice for replay.
--- Tier the agents, at any of these levels — an orchestrating agent plans and delegates; each sub-agent gets one bounded task with only the files it needs; the committed records, not any agent's memory, are the shared memory.
-~ Where is the line between knowledge in the code as checks and knowledge served as advice?  A stale check fails loudly; stale advice fails silently.  Measured: the tool alone did not carry a new user; an agent alongside it closed every gap — most of what it learned is now checks and defaults.
+- **A · The compiled tool, no agent** — what ships: versioned, regression-tested, inspectable, and it runs unattended.  But measured on a cold user, the docs alone did not carry them.
+- **B · An agent alongside the tool** — what these studies did: it found and fixed the conceptual defects in hours and chose what was worth compiling.  Its knowledge is current — but not versioned with the tool.
+- **C · A helper embedded in the tool** — the open question: advice at the moment of use, catching the failure class that was documented and still fatal.
+- **Shapes for C, in increasing authority:**  agent-readable state (the user's own assistant drives the tool); a failure-triage assistant (fires on a failed check, returns a diagnosis and a next command); a policy assistant inside hard limits (chooses schedules and targets; the code enforces limits and logs every choice).
+- **At any level, tier the agents:** an orchestrator plans and delegates bounded tasks; the committed records — not any agent's memory — are the shared memory.
+~ A stale check fails loudly; stale advice fails silently.  Measured: the tool alone did not carry a new user; an agent alongside it closed every gap — and most of what it learned is now in the tool, as checks and defaults.
 
 ## Backup Slides
 
