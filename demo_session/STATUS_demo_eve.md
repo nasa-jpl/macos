@@ -1,6 +1,6 @@
 # STATUS — demo eve (2026-08-31 evening), the resume-here file
 
-**Talk: 2026-09-01 morning.  Deck: 40 slides, current and synced
+**Talk: 2026-09-02 morning.  Deck: 40 slides, current and synced
 (ladder slide 28 added late 2026-08-31; all decks match the md).**
 Post-compaction: read this + the md header comment + memory
 `project_keysight_demo` before touching anything.
@@ -68,4 +68,4 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
   renders verified (wR).  Edit-deck sync COMPLETE (~00:00 09-01): Dave
   closed with zero diffs; gate passed clean; edit deck + baseline carry
   the 40-slide ladder build.  ALL deck_keysight* decks current.
-- Dave flag pending: "M2-M4" wording on slides 22/23 (no M4 element).
+- "M2-M4" wording: DONE -> M2-M3 (both state-equations slides, 09-01).
