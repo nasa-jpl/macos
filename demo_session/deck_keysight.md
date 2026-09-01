@@ -374,6 +374,15 @@ $ claude                      % a fresh AI session, in the terminal
 - **At any level, tier the agents:** an orchestrator plans and delegates bounded tasks; the committed records — not any agent's memory — are the shared memory.
 ~ A stale check fails loudly; stale advice fails silently.  Measured: the tool alone did not carry a new user; an agent alongside it closed every gap — and most of what it learned is now in the tool, as checks and defaults.
 
+## If you asked us: AI around CODE V and LightTools | Add it around the optics, not in them — every claim below is measured, not speculative
+::: full
+- **Make the tools agent-readable first** — state, results, warnings and docs as structured data through the existing macro/API surface.  Every user's assistant then attaches today, and the vendor ships no intelligence at all.  This whole talk ran in that mode.
+- **Ship the conventions as data.**  The largest defect class our agent found was conventions — the sign of a radius, DAR versus a coordinate break, which reference sphere a number is quoted against.  Make them queryable and the dominant error source disappears for humans and agents alike.
+- **Embed a failure-triage assistant first** — it wakes on a failed trace or a stalled solve, reads the saved state, and returns one line of diagnosis plus a next command the person runs.  Our stalled solve was a finite-difference step reading the gradient 17% low: a one-line answer sitting in state the tool already had.
+- **Put the agent in the search, never the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder opened decades of dark-hole floor overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
+- **Ship the trust machinery with it:** every AI action a readable, replayable script — never an opaque state mutation; every proposal a before/after check with negative controls; the assistant's knowledge versioned with the release.
+~ A stale check fails loudly; stale advice fails silently — and the best advice ends up compiled into the tool, as checks and defaults.
+
 ## Backup Slides
 
 ## Validation anchors | The trust base, by physics domain
