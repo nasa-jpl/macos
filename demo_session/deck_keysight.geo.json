@@ -241,18 +241,25 @@
   "From the testbed to an observatory": {
     "img:crop_r2_train_iso.png": {
       "x": 1.09,
-      "y": 3.26,
+      "y": 3.29,
       "w": 5.66,
-      "h": 3.09,
+      "h": 3.17,
       "cx": 0.45,
       "cy": 6.36,
       "cw": 6.35,
-      "cfs": 10.5
+      "cfs": 10.5,
+      "ct": 0.213
     },
     "txt:The telescope is diffraction-limited": {
       "x": 0.45,
       "y": 6.83,
       "fs": 11
+    },
+    "img:r1_seg_d110_shroud.png": {
+      "x": 8.1,
+      "y": 3.25,
+      "w": 4.26,
+      "h": 3.08
     }
   },
   "Segmentation, metrology, controls — on the observatory": {
@@ -260,14 +267,18 @@
       "fs": 16
     },
     "img:r3_met_view_rx.png": {
-      "x": 7.75,
-      "y": 1.5,
-      "w": 4.25,
-      "h": 5.92,
+      "x": 8.0,
+      "y": 1.42,
+      "w": 4.5,
+      "h": 5.99,
       "cx": 4.96,
       "cy": 4.56,
       "cw": 2.75,
-      "cfs": 15
+      "cfs": 15,
+      "cl": 0.294,
+      "cr": 0.294,
+      "ct": 0.042,
+      "cb": 0.059
     },
     "txt:Record: templates/80_end_to_end/e2e6m_r2, sensit": {
       "x": 3.35,
