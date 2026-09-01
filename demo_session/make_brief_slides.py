@@ -248,13 +248,15 @@ def place_img(sl, path, x_in, y_in, w_in, h_in, caption, exact=False,
         cx, cw = x_in, w_in
     if caption:
         cy = yy + 0.02
+        cfs = 10
         if cap_ov:
             cx = cap_ov.get("cx", cx)
             cy = cap_ov.get("cy", cy)
             cw = cap_ov.get("cw", cw)
-        cap_h = est_text_h(caption, cw, 10)
+            cfs = cap_ov.get("cfs", cfs)
+        cap_h = est_text_h(caption, cw, cfs)
         tf = tb(sl, cx, cy, cw, cap_h)
-        para(tf, caption, size=10, color=GRAY, first=True,
+        para(tf, caption, size=cfs, color=GRAY, first=True,
              align=PP_ALIGN.CENTER, space_after=0)
         yy = cy + cap_h + 0.04
     return yy

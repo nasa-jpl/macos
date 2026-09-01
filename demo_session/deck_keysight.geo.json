@@ -255,5 +255,65 @@
       "y": 6.55,
       "w": 6.89
     }
+  },
+  "From the testbed to an observatory": {
+    "img:crop_r2_train_iso.png": {
+      "x": 1.09,
+      "y": 3.26,
+      "w": 5.66,
+      "h": 3.09,
+      "cx": 0.45,
+      "cy": 6.36,
+      "cw": 6.35,
+      "cfs": 10.5
+    },
+    "txt:The telescope is diffraction-limited": {
+      "x": 0.45,
+      "y": 6.83,
+      "fs": 11
+    }
+  },
+  "Segmentation, metrology, controls — on the observatory": {
+    "txt:The primary segments hex-19": {
+      "fs": 16
+    },
+    "img:r3_met_view_rx.png": {
+      "x": 7.75,
+      "y": 1.5,
+      "w": 4.25,
+      "h": 5.92,
+      "cx": 4.96,
+      "cy": 4.56,
+      "cw": 2.75,
+      "cfs": 15
+    },
+    "txt:Record: templates/80_end_to_end/e2e6m_r2, sensit": {
+      "x": 3.35,
+      "y": 6.98
+    }
+  },
+  "The control basis I: rigid-body channels — dw/dx": {
+    "img:fig_dwdx_read.png": {
+      "cfs": 11
+    },
+    "txt:Harvest on r1_seg_prop.in": {
+      "fs": 12
+    }
+  },
+  "The control basis II: segment-figure channels — dw/dz": {
+    "img:fig_dwdz_read.png": {
+      "cfs": 13
+    },
+    "txt:Same harvest, metric and gates": {
+      "fs": 13
+    }
+  },
+  "The control basis III: shape-normalized modes — dw/dgrid": {
+    "img:fig_dwdgrid_read.png": {
+      "cfs": 12
+    },
+    "txt:Same harvest, metric and gates": {
+      "fs": 13
+    }
   }
 }
