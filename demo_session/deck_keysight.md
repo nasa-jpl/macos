@@ -360,6 +360,14 @@ $ claude                      % a fresh AI session, in the terminal
 ![The ladder: measured dark-zone floor by restart round, with the linear-achievable substrate re-measured at every dug state.](figs/fig_cf3d_ladder.png){h=4.6}
 ~ Record: templates/80_end_to_end/e2e6m_r2, CF3d stage — checkpointed and resumable; every round is a finished floor.
 
+## Inside the dig, station by station | Intensity at seven internal planes — the DM commands visibly do the gap work
+::: full
+![Seven planes, DMs flat (top row) against the dug state (bottom): pupil, apodizer, focal plane before and after the occulter, Lyot plane before and after the stop, science-plane contrast.  The dug row ends in the full 3–15 λ/D annular dark hole at the 10⁻⁹ floor; the in-walk dark-zone means reproduce the scored record exactly.](figs/fig_cf3d_stations_wide.png){h=2.9}
+- **DM1's command map imprints the hex-gap lattice** — the controller is doing the gap-and-edge work the apodizer was bought for, actuator by actuator, at 33 nm rms; a no-apodizer A/B to price the throughput trade is the scoped follow-on.
+- **The 0.90 Lyot stop removes only ~0.1% of the post-occulter energy** — this train's rejected light is interior gap structure, not edge rings, so the Lyot radius is not where the suppression happens.
+![](figs/fig_cf3d_dm_state.png){h=1.3}
+~ The CTB documentation model — intensity at key planes, compact-vs-full — applied to the observatory train: same station layout, the two columns now DMs-flat vs dug.
+
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
 ::: left
 - **The ask:** a field-box width, anywhere in 5–15°.  **The prediction, stated before the solve:** interpolated from the committed frontier rows.
