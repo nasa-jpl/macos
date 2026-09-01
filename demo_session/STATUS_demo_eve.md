@@ -64,6 +64,6 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
   Then: md table edit, rebuild, render p10, gated sync, commit.
 - **cf3d deep-dig ladder RUNNING detached** (d=1.10 apl restart ladder,
   monitor bq69ackrd, report cf3d_report.txt, checkpoint cf3d_run.mat,
-  wall 6 h).  Round 1 = 1.068e-6 (matches cf3b fixed-G).  Morning:
+  wall 6 h; EXTENDED by watcher on completion: resume w/ max_rounds 40, wall 9 h, target 5e-11 -- Dave 2026-08-31 late).  Round 5 = 1.53e-8.  Morning:
   slide-25 re-cut with Dave's sign-off if it digs.
 - Dave flag pending: "M2-M4" wording on slides 22/23 (no M4 element).
