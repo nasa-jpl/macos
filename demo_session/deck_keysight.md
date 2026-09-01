@@ -138,19 +138,19 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 
 ## Challenge 1: MACOS matches the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
 ::: full
-| design | centroid | (chief) | bestfoc + LS tilt | CODE V reported |
-| S2 verbatim | 482.8 / 272.0 | (672.9 / 390.9) | 371.4 / 201.4 | 374.6 / 200.0 |
-| S3 MACOS solve | 116.8 / 68.1 | (173.4 / 95.1) | 86.8 / 50.5 | 91.6 / 46.4 |
-| S3 CODE V re-traced | 121.0 / 67.9 | (176.7 / 94.7) | 91.9 / 50.2 | 91.6 / 46.4 |
-| S4 MACOS solve | 65.6 / 36.4 | (115.9 / 56.9) | 41.2 / 21.9 | 39.8 / 22.5 |
-| S4 CODE V re-traced | 67.6 / 36.7 | (100.5 / 54.4) | 39.8 / 22.1 | 39.8 / 22.5 |
+| design | MACOS, piston + tilt removed | bestfoc + LS tilt | CODE V reported |
+| S2 verbatim | 482.8 / 272.0 | 371.4 / 201.4 | 374.6 / 200.0 |
+| S3 MACOS solve | 116.8 / 68.1 | 86.8 / 50.5 | 91.6 / 46.4 |
+| S3 CODE V re-traced | 121.0 / 67.9 | 91.9 / 50.2 | 91.6 / 46.4 |
+| S4 MACOS solve | 65.6 / 36.4 | 41.2 / 21.9 | 39.8 / 22.5 |
+| S4 CODE V re-traced | 67.6 / 36.7 | 39.8 / 22.1 | 39.8 / 22.5 |
 ::: left
 - **The metric decoded:** the reported map subtracts per-field best focus + least-squares tip/tilt; re-scoring the same traces under that convention (third column) lands the re-traced designs at 0.991× / 1.003× / 1.000× of the reported max.
 - **Design vs design, the reproduction closes:** the MACOS solves score 0.97× of the re-traced CODE V designs at both stages; under the reported convention the S3 solve (86.8 nm) beats the reported 91.6.  Conics agree to 1.5×10⁻⁴, rigid-body DOFs land on the same compensation branch, all signs matching.
 - **The study returned more than it consumed:** two engine defects found and fixed (a silently inert exit-pupil keyword; collimated sources tracing a pupil 5% oversize, hidden for decades), and the joint-solve doctrine — optics + focal-plane pose in one DOF set, never alternating.
 ::: right
 ![The arrived-at configuration: the stage-4 joint solve traced at the offset field.](figs/rodgers1_layout_s4_seq.png){h=2.5}
-~ Box max / avg, nm, at the .seq configuration; centroid reference primary, chief in parentheses.  Full record: design/rodgers1 — packet with 10 addenda, every retraction in place.
+~ Box max / avg, nm, at the .seq configuration.  Piston + per-field tip/tilt removed = a centroid-referenced sphere (a chief-referenced sphere leaves the tilt in).  Full record: design/rodgers1 — packet with 10 addenda, every retraction in place.
 
 ## Challenge 2: a 30× afocal feeding an instrument through a tilted cold stop | Reproduced, then extended: the pupil measured, the trade priced, the package cleared
 ::: left
