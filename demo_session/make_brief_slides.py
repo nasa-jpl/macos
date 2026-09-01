@@ -259,10 +259,12 @@ def place_img(sl, path, x_in, y_in, w_in, h_in, caption, exact=False,
             cy = cap_ov.get("cy", cy)
             cw = cap_ov.get("cw", cw)
             cfs = cap_ov.get("cfs", cfs)
+        cal = {"left": PP_ALIGN.LEFT, "right": PP_ALIGN.RIGHT,
+               "center": PP_ALIGN.CENTER}[(cap_ov or {}).get("cal", "center")]
         cap_h = est_text_h(caption, cw, cfs)
         tf = tb(sl, cx, cy, cw, cap_h)
         para(tf, caption, size=cfs, color=GRAY, first=True,
-             align=PP_ALIGN.CENTER, space_after=0)
+             align=cal, space_after=0)
         yy = cy + cap_h + 0.04
     return yy
 
