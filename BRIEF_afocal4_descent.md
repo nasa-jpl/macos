@@ -180,3 +180,143 @@ until its layout has been looked at), and the failed-rung autopsy.
 - Outward-facing text waits on Dave's sign-off via CC — including any
   "how many mirrors does the spec need" headline, which people will
   quote.
+
+---
+
+# DELIVERY LOG (2026-09-01)
+
+Everything new lives in `MACOS_res_dev/mmacos/challenges/afocal4/descent/`
+(numbers-first README).  Canonical record: **`# DESCENT RESULTS` appended to
+`challenges/afocal4/RESULTS.md`** (§ D.1-D.7), the wall slice's precedent.
+Local, unpushed.  No engine work.  Base: the wall slice's handback commits.
+
+## The headline, and it is not the shape the brief expected
+
+**No mirror count in this family reaches the requirement set.**  The stage was
+to start at seven mirrors where everything is met with margin and walk down;
+**the top rung was never reached**, and what the stage delivers is the reason,
+measured three independent ways.
+
+With the pupil requirement **abandoned entirely** and every DOF free -- the
+most optimistic wavefront this family can produce -- seven mirrors floor at
+**3424 nm against a 71 nm target (48x)**, and three extra mirrors buy **11 %**
+over four.  So the ladder's question has an answer of a different KIND than a
+rung count.
+
+## 1 - Task 0: the N-mirror machinery, done and gated
+
+The closure generalizes in three lines and they are `afocal4_close`'s own:
+`phi_N` recollimates (analytic), `t_{N-1}` sets M (analytic), and only
+`phi_{N-1}` needs a root because the chief ray is the residue.  Verified two
+ways at N=4 -- against `afocal4_close` (max|dR| 4.4e-16, residuals 0 /
+2.2e-16 / 0) and through the builder against the committed deck, **byte for
+byte**, under `afocal4_phi4`'s own scan window.
+
+Two things had to be derived, not inherited: the exit marginal height's SIGN
+is a property of the layout at general N (both are closed; the one giving a
+positive last spacing wins), and the pole problem is worse, so every candidate
+is closed and CHECKED.
+
+Machinery: `descent_close`, `descent_build` (tilts in the DOF set from the
+start, applied upstream-first so they compose), `descent_seed`,
+`descent_require` (TARGETS with margin / WALLS with room left / GATES as
+facts; interface surface RIM-anchored per the S4c spec rule), `descent_solve`,
+`descent_remove`, `descent_add`, and per-point runners.  Gate
+**`tAfocal4Descent` 6/6**, registered in `SUITE_FREEFORM`.
+
+## 2 - Tasks 1-3: what every route said
+
+| route | N | merit | WFE nm | blur um | M err % | verdict |
+|---|---|---|---|---|---|---|
+| committed | 4 | 30.2 | 10407 | 157 | 0.0221 | the S4b/S4c delivery |
+| cold seed | 7 | 70.78 | 12422 | 506 | 3.86 | missed, stalled |
+| cold, radii freed | 7 | 70.40 | 11718 | 534 | 3.68 | missed, stalled |
+| cold seed 2 | 7 | 707 | 3.7e9 | 1.7e6 | 95 | scrambled, gates caught it |
+| cold seed 3 | 7 | 53.57 | - | - | - | missed, worst 177x |
+| cold seed | 8 | 146.7 | - | - | - | missed, worst 1768x |
+| ascent | 5 | 37.39 | 10775 | 332 | 0.1379 | missed |
+| ascent | 6 | 44.20 | 9137 | 721 | 0.0651 | missed |
+| ascent | 7 | 42.66 | 7894 | 705 | 0.0632 | missed |
+
+The wavefront-only floors (pupil abandoned, every DOF free):
+**N=4 3841.8 / N=5 8077.4 / N=6 5689.0 / N=7 3424.2 nm** -- 54x / 114x / 80x /
+48x the target.  Upper bounds (rounds still gaining 18-25 %) and labelled so;
+closing 48x would need two orders of magnitude where S4c's 17x-budget solves
+moved the same designs 0.02-10.8 %.
+
+Figure: `descent/afocal4_descent_ladder.png`.
+
+## 3 - The findings that are reusable beyond this stage
+
+* **THE PACKAGING STATION OBEYS A PARITY LAW.**  `z_N = sum (-1)^k t_k`, so
+  the closure's own last spacing enters with sign `(-1)^(N-1)`.  Compliance
+  rate: **88.4 % / 0.03 % / 89.7 % / 0.00014 %** at N = 5/6/7/8 -- a factor of
+  ~3000 between adjacent N from one sign.  S4b's "one extra mirror flips the
+  parity of the back end", with a rate attached.
+* **AND IT DOES NOT TRANSFER TO A SINGLE REMOVAL** (predicted too strongly by
+  me, then measured).  Retain clears 3 of 3, delete 1 of 3 -- but M5's delete
+  clears, because deleting element k MERGES `t_{k-1}+t_k` and re-signs
+  everything after it.  **"N = 6 cannot be built" is false**: at least four
+  routes exist from the N=7 base.
+* **WHAT THE PUPIL REQUIREMENT COSTS, priced.**  At 343 mm, dropping it takes
+  the wavefront 10407 -> 3842 nm, a factor of **2.7**.  S4 ran the same A/B at
+  140 mm, got 4 %, and generalized it as "the DOFs do not touch it" -- that
+  generalization is operating-point specific and should not be carried.
+* **A COLD CLOSURE IS A SPECIFICATION, NOT A DESIGN.**  Four cold seeds landed
+  worse than the four-mirror family with twice the freedom; the same machinery
+  warm-started produced sound rungs.  A closure holding its conditions at
+  1e-16 says nothing about quality -- one such probe traced M = 40.45 against
+  a paraxial 30.0000.
+
+## 4 - Two of my own hypotheses, refuted, and one recorded wrong prediction
+
+Recorded because the corrections are the useful part:
+
+* **"the DOF set is the reason"** -- the wall slice's own finding, reached for
+  first.  Freeing the radii bought **5.7 %** on a row needing 165x.
+* **"the tilts are the missing freedom"** -- the wavefront-only control
+  WITHOUT tilts floors at **3841.8 nm, BETTER** than 4497.7 with them.  Tilts
+  are a pupil knob, exactly as the clearing stage measured.
+* **the parity prediction**, written as a rule and true only as a rate (above).
+
+*A lesson confirmed once does not become the explanation for the next stall.*
+Both times, the SEED was the reason.  Earned rules 35-38 in § D.6.
+
+## 5 - Method defects caught, each before it cost a result
+
+* **A grid is a grid**: the N=4 compliance row first read "no compliant
+  closure" for the design sitting in the repository complying at +1323 mm.
+  The parent's own spacings are now always injected.
+* **A wall with only one side is not a constraint**: the first N=7 seed put
+  the last powered mirror **10.96 m** behind the primary and was compliant by
+  every check.  Bounds now two-sided, in multiples of the M1-M2 spacing.
+* **The insertion needs a compliant seed too**: a naive midpoint split put the
+  child 479 mm IN FRONT of the primary -- the parity law charging for the
+  extra reflection.  `descent_add(...,'search',true)` scans for it.
+* **`afocal4_score`'s failure path returns a MINIMAL struct** and
+  `descent_solve` reached past it, turning a scored-as-bad iterate into a dead
+  run.  Guarded.  `clear_solve` carries the same unguarded access and has
+  never been handed that struct -- noted, not chased.
+
+## 6 - Scope not done, and named
+
+No fold-route or envelope work (the packaging round owns it).  No fifth-mirror
+architecture beyond what the ladder measured.  **The descent proper -- walking
+DOWN from a top rung that meets the set -- was not run, because no such rung
+exists**; the removal machinery is built, gated and demonstrated, and the
+first removal step is measured in § D.5.
+
+## 7 - FOR DAVE
+
+**The requirement set is not reachable by mirror count in this family, so the
+next move is a judgement about what the work is for, not another solve:**
+
+* **the spec** -- 71 nm was set at >= 10x Rodgers' best three-mirror (S3 gate
+  review).  Nothing in this arc has come within 48x of it, with the pupil
+  requirement abandoned and up to seven mirrors; or
+* **the family** -- a coaxial all-reflective afocal whose interface-pupil
+  condition consumes the last two powers.  § D.4 now prices that condition at
+  a factor of 2.7 of wavefront.
+
+Also still open from the wall slice: the **§S4b.4 correction wording**, held
+for sign-off and uncommitted.
