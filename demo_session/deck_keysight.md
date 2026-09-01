@@ -284,6 +284,18 @@ $ claude                      % a fresh AI session, in the terminal
 ::: right
 ![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=3.1}
 
+## The linear model: the mathematics under the next six slides | Every matrix is measured from the engine, then closure-checked against it
+::: full
+- **The wavefront model:**   w  =  w₀ + J·x,    J = [ ∂w/∂x   ∂w/∂z   ∂w/∂grid ]
+-- x stacks rigid-body states (6 DOF per optic and per group), segment Zernike figure modes, and grid/actuator influences; J's columns are engine-measured pokes through the full train, per field — the three families on the next three slides.
+- **The metrology forward model:**   m  =  [ ∂l/∂x ; ∂e/∂x ]·x + n
+-- laser-gauge lengths l and edge-sensor gaps e; a sensor layout is scored by the control information it carries — minimize trace( J Px̂ Jᵀ ), the wavefront error the estimator leaves behind.
+- **Estimation and control:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·x̂
+-- BLUE: weighted least squares with a ridge on the segment state; an integrator closes the rigid-body loop each frame.
+- **Dark-hole control (EFC):**   Δa  =  −( Re(GᴴG) + λI )⁻¹ Re(GᴴE)
+-- G = ∂E/∂a, the electric-field Jacobian of the DM actuators through the masked chain, engine-measured; a Tikhonov step, line-searched against measured contrast.
+~ Notation as in the code: run_sensitivities builds the J families; the MET stage scores layouts on the trace merit; the simulator (r4) runs the BLUE estimator, the integrator, and the EFC step — and jacobian_check re-pokes the engine against every J before it is trusted.
+
 ## Segmentation, metrology, controls — on the observatory | The same segmentation and metrology machinery the smaller studies proved, at 6 m scale
 ::: left
 - The primary segments hex-19 with physical apertures through the same segmentation product; every segment gets rigid-body and surface-figure sensitivity channels, stacked into one Jacobian — the control basis.
