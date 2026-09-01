@@ -342,15 +342,6 @@ $ claude                      % a fresh AI session, in the terminal
 - DM Jacobians use the same form: dw/dDM.
 ~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
-## A randomly disturbed observatory, simulated | The closed loop holds dark-zone contrast at 2.5×10⁻⁷ where the uncontrolled series drifts to 1.7×10⁻⁶
-::: left
-- Random segment drift is injected; the rigid-body loop senses through the designed metrology, estimates and corrects, while EFC re-solves the dark zone per scored frame — all on one model.
-- **The disturbance interface is the point:** the same channels are built to ingest dynamical- and thermal-model time histories — simulating performance in the space environment.  Work in progress.
-- Honest gap, attributed: the hold level is the loop mechanization's floor (sensor noise through the gain, damped EFC), not the model's limit — the next slide digs the static dark hole three decades deeper, overnight.
-::: right
-![Four hundred seconds under drift: segment rigid-body state, wavefront at the coronagraph exit pupil, and science-plane contrast — open loop against closed.](figs/r4_series_3nm.png){h=5.0}
-~ Record: templates/80_end_to_end/e2e6m_r2, time-series stage.
-
 ## Digging the dark hole: the overnight restart ladder | 1.2×10⁻⁶ → 1.1×10⁻⁹ — three decades from restart scheduling alone; no new hardware, no new physics
 ::: left
 - **The recipe:** EFC to a floor, relinearize about the dug state, restart at that floor — rinse and repeat.  Ten digging rounds, ~4 h unattended, on the d = 1.10 m two-DM variant — the spacing study's best linear substrate; three stall rounds then prove the plateau.
@@ -367,6 +358,16 @@ $ claude                      % a fresh AI session, in the terminal
 - **The 0.90 Lyot stop removes only ~0.1% of the post-occulter energy** — this train's rejected light is interior gap structure, not edge rings, so the Lyot radius is not where the suppression happens.
 ![](figs/fig_cf3d_dm_state.png){h=1.3}
 ~ The CTB documentation model — intensity at key planes, compact-vs-full — applied to the observatory train: same station layout, the two columns now DMs-flat vs dug.
+
+## A randomly disturbed observatory, simulated | JWST-class drift on the dug dark hole: open loop decays 4.5 decades in a day — the loop holds 2×10⁻⁹
+::: left
+- **The series starts at the new solution** — frame one reproduces the dug floor (1.134 vs 1.133×10⁻⁹, a built-in gate) — and runs a JWST-experience disturbance: a 10 nm/hr correlated drift ramp plus a 0.5 nm-per-step walk, 24 hours at 30-minute frames.
+- **Open loop, DMs frozen at the dug state:** 1.1×10⁻⁹ → 3.9×10⁻⁵.  The first decade is lost to the first nanometre of drift — at 10⁻⁹, continuous control is not optional.
+- **Closed loop:** the rigid-body loop senses through the designed metrology and holds the segment state at 1.2 nm against 23 nm of accumulated drift; a guarded EFC hold — one damped step per hour about the dug-state Jacobian, 25 steps taken, none reverted — keeps the dark zone at ~2×10⁻⁹ for the full day.
+- **The disturbance interface is the point:** the same channels ingest dynamical- and thermal-model time histories — simulating performance in the space environment.
+::: right
+![Twenty-four hours under JWST-class drift, both passes starting from the dug dark hole: segment rigid-body state, exit-pupil wavefront, and science-plane contrast — open loop against closed.](figs/fig_cf5b_jwst.png){h=5.0}
+~ Record: templates/80_end_to_end/e2e6m_r2, CF5b stage — d=1.10 deck, G = the ladder's dug-state Jacobian.
 
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
 ::: left
