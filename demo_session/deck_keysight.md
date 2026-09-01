@@ -346,10 +346,19 @@ $ claude                      % a fresh AI session, in the terminal
 ::: left
 - Random segment drift is injected; the rigid-body loop senses through the designed metrology, estimates and corrects, while EFC re-solves the dark zone per scored frame — all on one model.
 - **The disturbance interface is the point:** the same channels are built to ingest dynamical- and thermal-model time histories — simulating performance in the space environment.  Work in progress.
-- Honest gap, attributed: the segmented-pupil contrast floor sits above the clear-pupil testbed's — the gaps and edges carry it, not the control.
+- Honest gap, attributed: the hold level is the loop mechanization's floor (sensor noise through the gain, damped EFC), not the model's limit — the next slide digs the static dark hole three decades deeper, overnight.
 ::: right
 ![Four hundred seconds under drift: segment rigid-body state, wavefront at the coronagraph exit pupil, and science-plane contrast — open loop against closed.](figs/r4_series_3nm.png){h=5.0}
 ~ Record: templates/80_end_to_end/e2e6m_r2, time-series stage.
+
+## Digging the dark hole: the overnight restart ladder | 1.2×10⁻⁶ → 1.1×10⁻⁹ — three decades from restart scheduling alone; no new hardware, no new physics
+::: left
+- **The recipe:** EFC to a floor, relinearize about the dug state, restart at that floor — rinse and repeat.  Ten digging rounds, ~4 h unattended, on the d = 1.10 m two-DM variant — the spacing study's best linear substrate; three stall rounds then prove the plateau.
+- **The controller was the bottleneck, measured:** a single linearization stalls at 9.0×10⁻⁷; every restart bought another step down.  DM strokes end at 33 nm rms, well inside the 50 nm budget.
+- **The remaining 1.5 decades are priced:** re-measured at every dug state, the linear-achievable floor holds at 2–4×10⁻¹¹ — HWO-class 5×10⁻¹¹ is within this substrate's reach.  The plateau at 1.1×10⁻⁹ is the monotone Tikhonov step rule: the measured case for FALCO-grade step control on this same model.
+::: right
+![The ladder: measured dark-zone floor by restart round, with the linear-achievable substrate re-measured at every dug state.](figs/fig_cf3d_ladder.png){h=4.6}
+~ Record: templates/80_end_to_end/e2e6m_r2, CF3d stage — checkpointed and resumable; every round is a finished floor.
 
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
 ::: left
@@ -382,7 +391,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **Make the tools agent-readable first** — state, results, warnings and docs as structured data through the existing macro/API surface.  Every user's assistant then attaches today, and the vendor ships no intelligence at all.  This whole talk ran in that mode.
 - **Ship the conventions as data.**  The largest defect class our agent found was conventions — the sign of a radius, DAR versus a coordinate break, which reference sphere a number is quoted against.  Make them queryable and the dominant error source disappears for humans and agents alike.
 - **Embed a failure-triage assistant first** — it wakes on a failed trace or a stalled solve, reads the saved state, and returns one line of diagnosis plus a next command the person runs.  Our stalled solve was a finite-difference step reading the gradient 17% low: a one-line answer sitting in state the tool already had.
-- **Put the agent in the search, never in the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder opened decades of dark-hole floor overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
+- **Put the agent in the search, never in the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder dug the dark hole 1.2×10⁻⁶ → 1.1×10⁻⁹ overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
 - **Ship the trust machinery with it:** every AI action a readable, replayable script — never an opaque state mutation; every proposal a before/after check with negative controls; the assistant's knowledge versioned with the release.
 ~ A stale check fails loudly; stale advice fails silently — and the best advice ends up compiled into the tool, as checks and defaults.
 
