@@ -53,3 +53,17 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
 - Telescope solve: oi_demo_step(width) per slide 9 / rehearsal bundle.
 - All numbers in the deck re-derivable from committed records; renders in
   renders/ (wF latest for 22-24).
+
+## IN-FLIGHT at compaction (2026-08-31 late)
+- **Slide 10 table change (Dave)**: replace the "(chief)" column with
+  MACOS scored at PISTON+TILT REMOVED (the rung-2-style convention).
+  Numbers: look in MACOS_res_dev/mmacos/challenges/rodgers1/ (PACKET.md
+  + addenda) for per-design piston+tip/tilt-removed RMS; if absent,
+  re-score the committed .in decks (S2 verbatim, S3/S4 solves +
+  re-traced) — box max/avg over the field map, piston+tilt removed.
+  Then: md table edit, rebuild, render p10, gated sync, commit.
+- **cf3d deep-dig ladder RUNNING detached** (d=1.10 apl restart ladder,
+  monitor bq69ackrd, report cf3d_report.txt, checkpoint cf3d_run.mat,
+  wall 6 h).  Round 1 = 1.068e-6 (matches cf3b fixed-G).  Morning:
+  slide-25 re-cut with Dave's sign-off if it digs.
+- Dave flag pending: "M2-M4" wording on slides 22/23 (no M4 element).
