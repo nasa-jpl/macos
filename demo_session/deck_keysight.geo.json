@@ -104,24 +104,6 @@
       "w": 4.9
     }
   },
-  "Challenge 1: MACOS matches the re-traced CODE V designs": {
-    "txt:The metric decoded": {
-      "fs": 14
-    },
-    "img:rodgers1_layout_s4_seq.png": {
-      "x": 7.22,
-      "y": 3.3,
-      "w": 5.25,
-      "h": 3.1,
-      "cx": 7.0,
-      "cy": 6.44,
-      "cw": 5.9
-    },
-    "txt:Box max / avg": {
-      "x": 7.0,
-      "y": 6.74
-    }
-  },
   "Challenge 2: a 30× afocal feeding an instrument through a tilted cold stop": {
     "txt:The challenge: a three-mirror afocal": {
       "fs": 15
@@ -314,6 +296,24 @@
     },
     "txt:Same harvest, metric and gates": {
       "fs": 13
+    }
+  },
+  "Challenge 1: MACOS solves match the re-traced CODE V designs": {
+    "txt:The metric decoded": {
+      "fs": 14
+    },
+    "img:rodgers1_layout_s4_seq.png": {
+      "x": 7.22,
+      "y": 3.3,
+      "w": 5.25,
+      "h": 3.1,
+      "cx": 7.0,
+      "cy": 6.44,
+      "cw": 5.9
+    },
+    "txt:Box max / avg": {
+      "x": 7.0,
+      "y": 6.74
     }
   }
 }
