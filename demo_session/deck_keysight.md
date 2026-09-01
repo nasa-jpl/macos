@@ -26,7 +26,7 @@
 # MACOS — Optical Modeling, Analysis and Design, with an AI in the Loop
 One ray-trace and physical-optics engine, four language surfaces, an AI-driven design layer — with two elements run live
 D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight CODE V team.  DRAFT — pending source sign-off.
-The code is public: github.com/nasa-jpl/macos
+The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_resources
 ~ Live elements: a telescope designed during the talk to an audience-chosen field specification (asked and launched once challenge 3 is on the table, revealed before the closing discussion), and a polarization phase-shifting interferometer measuring a deformable mirror.  All wavefront numbers are RMS wavefront error; each study states its reference convention where it reports.
 
 ## Four decades of NASA optical modeling | Technology development to flight: Hubble, JWST, TMT
@@ -39,7 +39,7 @@ The code is public: github.com/nasa-jpl/macos
 -- ***Testbeds validated the models, and the validated models proved the space system.***
 - **TMT, Keck and other space missions:** Observatory modeling, including segmented-aperture systems, testbeds, instrument studies.
 -- ***Validated against testbed and operational data across those programs.***
-- **We are now modernizing and extending the capabilities of our modeling to meet new challenges.**
+- **We are now modernizing and extending our modeling tools and practices to meet new challenges.**
 -- ***New elements: Freeforms with aberrations, polarizers, complex masks and apodizers, completely general surfaces added through the API***
 -- ***The same functionality, streamlined: linear model generation, simulation, multi-path, metrology and edge sensors***
 -- ***New capabilities: design layer***
@@ -57,7 +57,7 @@ The code is public: github.com/nasa-jpl/macos
 ## Inside the toolbox | Five areas, organized the way the work flows — veneer, sensitivities, design, runners, worked examples
 ::: full
 ![](figs/fig_mmacos.png){h=4.7}
-~ Counts as of 2026-08.  Every area is exercised by the committed test suites and by the worked examples beside it — the same templates this talk's studies live in.  Rebuild the figure: make_mmacos_fig.py.
+~ Counts as of 2026-08.  Every area is exercised by the committed test suites and by the worked examples beside it — the same templates this talk's studies live in.
 
 ## Three design challenges, one method | CODE V benchmark studies reproduced first, then extended
 ::: full
@@ -291,9 +291,11 @@ $ claude                      % a fresh AI session, in the terminal
 -- x stacks rigid-body states (6 DOF per optic and per group), segment Zernike figure modes, and grid/actuator influences; J's columns are engine-measured pokes through the full train, per field — the three families on the following slides.
 - **The metrology forward model:**   m  =  [ ∂l/∂x ; ∂e/∂x ]·x + n
 -- laser-gauge lengths l and edge-sensor gaps e; a sensor layout is scored by the control information it carries — minimize trace( J Px̂ Jᵀ ), the wavefront error the estimator leaves behind.
-- **Control using wavefront measurements:**   u  =  −J⁺·w ,    J⁺  =  ( JᵀJ + ρI )⁻¹ Jᵀ
+- **Actuators to states:**   x  =  (∂x/∂u)·u ,   so   ∂w/∂u  =  J·(∂x/∂u)
+-- Stewart-platform kinematics carry the actuator strokes u of each segment and of M2 into rigid-body states x; ∂w/∂u is the control Jacobian.
+- **Control using wavefront measurements:**   u  =  −(∂w/∂u)⁺·w
 -- Wavefront sensing and control in one step, enveloping telescope initialization controls.
-- **Estimation and control using metrology measurements:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·x̂
+- **Estimation and control using metrology measurements:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·(∂x/∂u)⁺·x̂
 -- BLUE: weighted least squares with a ridge on the segment state; an integrator closes the rigid-body loop each frame.
 ~ Notation as in the code: run_sensitivities builds the J families; the MET stage scores layouts on the trace merit; the simulator runs the BLUE estimator and integrator — and jacobian_check re-pokes the engine against every J before it is trusted.
 
@@ -318,13 +320,13 @@ $ claude                      % a fresh AI session, in the terminal
 ![The metrology on the observatory: 24 elements, 114 MET beams to the aft launcher station.](figs/r3_met_view_rx.png){h=4.9}
 ~ Record: templates/80_end_to_end/e2e6m_r2, sensitivities + MET stages.
 
-## The control basis I: rigid-body channels — dw/dx | Runner: macos.dw_dx_multi, harvested by run_sensitivities (stage r3) — OPD at the coronagraph exit pupil per unit rigid-body motion
+## The state equations I: rigid-body channels — dw/dx | Runner: macos.dw_dx_multi, harvested by run_sensitivities (stage r3) — OPD at the coronagraph exit pupil per unit rigid-body motion
 ::: full
 ![Two rigid-body channels: the centre segment (E1) and an outer-ring segment (E8), x-rotation — the centre-field OPD at full size, then the same channel at all five fields, every pupil full.  Drawn from the round-1-train harvest, whose stops pass the whole box; the r2-train harvest matches at the centre field, but its DM-bearing coronagraph clips the corners — that instrument works the centre field.  Piston removed; 1–99% color scale.](figs/fig_dwdx_read.png){h=3.6}
 - **Six rigid-body DOFs for every optic** — the 19 segments, M2-M4, both DMs, the 8 OAPs — plus the whole primary as one rigid group, five fields each, stacked into the control Jacobian.  The response lives on the moved segment's footprint and walks with field.  The coronagraph works the center field only — its stops vignette the corners; the imaging leg sees the full box.
 ~ Harvest on r1_seg_prop.in, the deck the simulator propagates; per-field FEX reset; closure gated by jacobian_check.  Every panel is one line from the saved Jacobian: OPD = v2m(dwdx(:,k), indx).  Record: templates/80_end_to_end/e2e6m_r2.
 
-## The control basis II: segment-figure channels — dw/dz | Runner: macos.dw_dz_zernike_multi, harvested by run_sensitivities (stage r3) — MonZernike modes 4–11 on each segment
+## The state equations II: segment-figure channels — dw/dz | Runner: macos.dw_dz_zernike_multi, harvested by run_sensitivities (stage r3) — MonZernike modes 4–11 on each segment
 ::: full
 ![Two of the 152 channels: segments E1 and E8, MonZernike mode 4 — the centre field at full size, then all five fields (round-1-train harvest, full pupils).  Piston removed; 1–99% color scale.](figs/fig_dwdz_read.png){h=3.6}
 - **Zernike figure modes 4–11** on each of the 19 segments, M2-M4, the 8 OAPs — five fields each.  Each channel is confined to its own segment; the mode shape is visible at a glance.
@@ -332,11 +334,12 @@ $ claude                      % a fresh AI session, in the terminal
 - MACOS supports 4 types of Zernikes, in normalized or raw forms.
 ~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
-## The control basis III: shape-normalized modes — dw/dgrid | Runner: macos.dw_dgrid_multi, harvested by run_sensitivities (stage r3) — the grid influence basis on each segment
+## The state equations III: shape-normalized modes — dw/dgrid | Runner: macos.dw_dgrid_multi, harvested by run_sensitivities (stage r3) — the grid influence basis on each segment
 ::: full
 ![Two of the 114 channels: segments E1 and E8, grid mode 4 — the centre field at full size, then all five fields (round-1-train harvest, full pupils).  Piston removed; 1–99% color scale.](figs/fig_dwdgrid_read.png){h=3.6}
 - **GridData surfaces can be used to add nearly any surface departure form:** as-measured aberrations, Gram-Schmidt orthogonalized Zernike modes, and DM actuations are all used in coronagraphic telescope models.
-- These plots illustrate grid-basis influence shapes on 2 of the 19 segments, using the interface for measured influence functions and actuator maps — the same machinery the DM Jacobians use.
+- These plots illustrate grid-basis influence shapes on 2 of the 19 segments, using the interface for measured influence functions and actuator maps.
+- DM Jacobians use the same form: dw/dDM.
 ~ Same harvest, metric and gates as dw/dx.  Record: templates/80_end_to_end/e2e6m_r2.
 
 ## A randomly disturbed observatory, simulated | The closed loop holds dark-zone contrast at 2.5×10⁻⁷ where the uncontrolled series drifts to 1.7×10⁻⁶
@@ -379,7 +382,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **Make the tools agent-readable first** — state, results, warnings and docs as structured data through the existing macro/API surface.  Every user's assistant then attaches today, and the vendor ships no intelligence at all.  This whole talk ran in that mode.
 - **Ship the conventions as data.**  The largest defect class our agent found was conventions — the sign of a radius, DAR versus a coordinate break, which reference sphere a number is quoted against.  Make them queryable and the dominant error source disappears for humans and agents alike.
 - **Embed a failure-triage assistant first** — it wakes on a failed trace or a stalled solve, reads the saved state, and returns one line of diagnosis plus a next command the person runs.  Our stalled solve was a finite-difference step reading the gradient 17% low: a one-line answer sitting in state the tool already had.
-- **Put the agent in the search, never the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder opened decades of dark-hole floor overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
+- **Put the agent in the search, never in the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder opened decades of dark-hole floor overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
 - **Ship the trust machinery with it:** every AI action a readable, replayable script — never an opaque state mutation; every proposal a before/after check with negative controls; the assistant's knowledge versioned with the release.
 ~ A stale check fails loudly; stale advice fails silently — and the best advice ends up compiled into the tool, as checks and defaults.
 
