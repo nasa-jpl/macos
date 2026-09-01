@@ -1,6 +1,7 @@
 # STATUS — demo eve (2026-08-31 evening), the resume-here file
 
-**Talk: 2026-09-01 morning.  Deck: 38 slides, current and synced.**
+**Talk: 2026-09-01 morning.  Deck: 40 slides (ladder slide added late
+2026-08-31; edit-deck sync PENDING — Impress lock held it, see below).**
 Post-compaction: read this + the md header comment + memory
 `project_keysight_demo` before touching anything.
 
@@ -54,16 +55,17 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
 - All numbers in the deck re-derivable from committed records; renders in
   renders/ (wF latest for 22-24).
 
-## IN-FLIGHT at compaction (2026-08-31 late)
-- **Slide 10 table change (Dave)**: replace the "(chief)" column with
-  MACOS scored at PISTON+TILT REMOVED (the rung-2-style convention).
-  Numbers: look in MACOS_res_dev/mmacos/challenges/rodgers1/ (PACKET.md
-  + addenda) for per-design piston+tip/tilt-removed RMS; if absent,
-  re-score the committed .in decks (S2 verbatim, S3/S4 solves +
-  re-traced) — box max/avg over the field map, piston+tilt removed.
-  Then: md table edit, rebuild, render p10, gated sync, commit.
-- **cf3d deep-dig ladder RUNNING detached** (d=1.10 apl restart ladder,
-  monitor bq69ackrd, report cf3d_report.txt, checkpoint cf3d_run.mat,
-  wall 6 h; EXTENDED by watcher on completion: resume w/ max_rounds 40, wall 9 h, target 5e-11 -- Dave 2026-08-31 late).  Round 5 = 1.53e-8.  Morning:
-  slide-25 re-cut with Dave's sign-off if it digs.
+## IN-FLIGHT (2026-08-31 ~22:00)
+- Slide 10 table change: DONE (piston+tilt-removed MACOS column in md).
+- **cf3d ladder DONE + FOLDED** (Dave's "redo the e2e6m_r2 reports and
+  the deck_keysight* decks" executed): 1.215e-6 → 1.133e-9, 10 digging
+  rounds / 4.6 h, plateau PROVEN by 3 no-step rounds (alphas to 1e-10,
+  niter 30); la(G) 3.52e-11 at the dug state — the FALCO case.  Record:
+  CF3d LOG section + cf3d_* committed (MACOS_res_dev).  Deck: NEW slide
+  after the drift slide ("Digging the dark hole: the overnight restart
+  ladder", figs/fig_cf3d_ladder.png), drift slide's honest-gap bullet
+  re-scoped, closing-slide claim quantified.  Rebuilt 40 slides,
+  renders verified (wR).  **Edit-deck sync HELD: Impress lock present
+  (Dave editing).  On close: capture his diffs FIRST, fold, then
+  ./sync_edit_deck.sh --folded.**
 - Dave flag pending: "M2-M4" wording on slides 22/23 (no M4 element).
