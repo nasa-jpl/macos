@@ -36,8 +36,8 @@ D. C. Redding, with Claude Code — 1 September 2026.  Prepared for the Keysight
 -- ***Prescription retrieval from image data has served other missions as well.***
 - **JWST:** integrated observatory modeling and wavefront sensing and control development
 -- ***Testbeds validated the models, and the validated models proved the space system.***
-- **TMT, Keck and many space missions:** Observatory modeling, including segmented-aperture systems, testbeds, instrument studies.
--- ***Validated against testbed and flight data across those programs.***
+- **TMT, Keck and other space missions:** Observatory modeling, including segmented-aperture systems, testbeds, instrument studies.
+-- ***Validated against testbed and operational data across those programs.***
 - **We are now modernizing and extending the capabilities of our modeling to meet new challenges.**
 -- ***New elements: Freeforms with aberrations, polarizers, complex masks and apodizers, completely general surfaces added through the API***
 -- ***The same functionality, streamlined: linear model generation, simulation, multi-path, metrology and edge sensors***
@@ -136,7 +136,7 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 ~ The literal demo-day sequence ($ = shell, >> = MATLAB); the rehearsal at 12° solved 33.6 nm against the ~33.7 prediction, and the 14° rehearsal beat its predict too.
 ~ In the mean time, continuing...
 
-## Challenge 1: MACOS matches the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
+## Challenge 1: MACOS solves match the re-traced CODE V designs | Re-traced designs land 0.991–1.003× of reported; the MACOS solves score 0.97× design vs design
 ::: full
 | design | MACOS, piston + tilt removed | bestfoc + LS tilt | CODE V reported |
 | S2 verbatim | 482.8 / 272.0 | 371.4 / 201.4 | 374.6 / 200.0 |
