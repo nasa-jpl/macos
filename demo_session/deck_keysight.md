@@ -365,7 +365,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **Is it reproducible?**  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
 ~ Offered as discussion questions, not settled doctrine — the next slide takes one of them to architecture.
 
-## Discussion: where should the agent sit? | Three modes — two exercised by this study, one open — and the boundary between them is the question
+## Discussion: where should the agent sit? | Three modes — two exercised by these studies, one open — and the boundary between them is the question
 ::: full
 - **A · The compiled tool, no agent** — what ships: versioned, regression-tested, inspectable, and it runs unattended.  But measured on a cold user, the docs alone did not carry them.
 - **B · An agent alongside the tool** — what these studies did: it found and fixed the conceptual defects in hours and chose what was worth compiling.  Its knowledge is current — but not versioned with the tool.
