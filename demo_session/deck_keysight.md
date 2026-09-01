@@ -361,12 +361,12 @@ $ claude                      % a fresh AI session, in the terminal
 
 ## A randomly disturbed observatory, simulated | JWST-class drift on the dug dark hole: open loop decays 4.5 decades in a day — the loop holds 2×10⁻⁹
 ::: left
-- **The series starts at the new solution** — frame one reproduces the dug floor (1.134 vs 1.133×10⁻⁹, a built-in gate) — and runs a JWST-experience disturbance: a 10 nm/hr correlated drift ramp plus a 0.5 nm-per-step walk, 24 hours at 30-minute frames.
+- **The series starts at the new solution** — frame one reproduces the dug floor (1.134 vs 1.133×10⁻⁹, a built-in gate) — and runs a random disturbance: a 10 nm/hr correlated drift ramp plus a 0.5 nm-per-step walk, 24 hours at 30-minute frames.
 - **Open loop, DMs frozen at the dug state:** 1.1×10⁻⁹ → 3.9×10⁻⁵.  The first decade is lost to the first nanometre of drift — at 10⁻⁹, continuous control is not optional.
 - **Closed loop:** the rigid-body loop senses through the designed metrology and holds the segment state at 1.2 nm against 23 nm of accumulated drift; a guarded EFC hold — one damped step per hour about the dug-state Jacobian, 25 steps taken, none reverted — keeps the dark zone at ~2×10⁻⁹ for the full day.
 - **The disturbance interface is the point:** the same channels ingest dynamical- and thermal-model time histories — simulating performance in the space environment.
 ::: right
-![Twenty-four hours under JWST-class drift, both passes starting from the dug dark hole: segment rigid-body state, exit-pupil wavefront, and science-plane contrast — open loop against closed.](figs/fig_cf5b_jwst.png){h=5.0}
+![Twenty-four hours random drift, both passes starting from the dug dark hole: segment rigid-body state, exit-pupil wavefront, and science-plane contrast — open loop against closed.](figs/fig_cf5b_jwst.png){h=5.0}
 ~ Record: templates/80_end_to_end/e2e6m_r2, CF5b stage — d=1.10 deck, G = the ladder's dug-state Jacobian.
 
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
@@ -375,7 +375,7 @@ $ claude                      % a fresh AI session, in the terminal
 - **The pre-run rehearsal of the default ask (12°):** predicted 33.7 nm; solved 33.6 nm — 1.00× — at a 24.9 mm clearance floor, both checks pass, in 15 minutes.
 - The run is deterministic to every printed digit, and every ask is a genuine continuation step — never a re-score of a stored design.
 ::: right
-![The 12° rehearsal design and its field map: 33.6 nm max against a 33.7 nm prediction.](figs/oi_demo_12deg_layout.png){h=2.5}
+![The 12° rehearsal design and its field map: 33.6 nm max against a 33.7 nm prediction.](figs/crop_oi_demo_12deg_layout.png){h=3.0}
 ![](figs/oi_demo_12deg_map.png){h=2.2}
 ~ On demo day the live run's figures replace these panels; this pre-generated bundle is the fallback if the room's ask matches nothing better.
 
@@ -400,9 +400,9 @@ $ claude                      % a fresh AI session, in the terminal
 - **Make the tools agent-readable first** — state, results, warnings and docs as structured data through the existing macro/API surface.  Every user's assistant then attaches today, and the vendor ships no intelligence at all.  This whole talk ran in that mode.
 - **Ship the conventions as data.**  The largest defect class our agent found was conventions — the sign of a radius, DAR versus a coordinate break, which reference sphere a number is quoted against.  Make them queryable and the dominant error source disappears for humans and agents alike.
 - **Embed a failure-triage assistant first** — it wakes on a failed trace or a stalled solve, reads the saved state, and returns one line of diagnosis plus a next command the person runs.  Our stalled solve was a finite-difference step reading the gradient 17% low: a one-line answer sitting in state the tool already had.
-- **Put the agent in the search, never in the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder dug the dark hole 1.2×10⁻⁶ → 1.1×10⁻⁹ overnight); tolerancing and glass searches.  The agent proposes; the trusted engine disposes.
+- **Put the agent in the search, never in the numerics** — starting points and basins (a warm-started walk beat the cold start 8500×); variable-set audits (35% of a metric unclaimed because one freedom was never offered); optimization schedules (a restart ladder dug the dark hole 1.2×10⁻⁶ → 1.1×10⁻⁹ overnight); tolerancing and glass searches.
 - **Ship the trust machinery with it:** every AI action a readable, replayable script — never an opaque state mutation; every proposal a before/after check with negative controls; the assistant's knowledge versioned with the release.
-~ A stale check fails loudly; stale advice fails silently — and the best advice ends up compiled into the tool, as checks and defaults.
+~ The agent proposes; the trusted engine disposes.
 
 ## Backup Slides
 
