@@ -290,7 +290,9 @@ $ claude                      % a fresh AI session, in the terminal
 -- x stacks rigid-body states (6 DOF per optic and per group), segment Zernike figure modes, and grid/actuator influences; J's columns are engine-measured pokes through the full train, per field — the three families on the following slides.
 - **The metrology forward model:**   m  =  [ ∂l/∂x ; ∂e/∂x ]·x + n
 -- laser-gauge lengths l and edge-sensor gaps e; a sensor layout is scored by the control information it carries — minimize trace( J Px̂ Jᵀ ), the wavefront error the estimator leaves behind.
-- **Estimation and control:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·x̂
+- **Control using wavefront measurements:**   u  =  −J⁺·w ,    J⁺  =  ( JᵀJ + ρI )⁻¹ Jᵀ
+-- Wavefront sensing and control in one step, enveloping telescope initialization controls.
+- **Estimation and control using metrology measurements:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·x̂
 -- BLUE: weighted least squares with a ridge on the segment state; an integrator closes the rigid-body loop each frame.
 ~ Notation as in the code: run_sensitivities builds the J families; the MET stage scores layouts on the trace merit; the simulator runs the BLUE estimator and integrator — and jacobian_check re-pokes the engine against every J before it is trusted.
 
@@ -362,30 +364,19 @@ $ claude                      % a fresh AI session, in the terminal
 - Is it reproducible?  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
 ~ These are offered as discussion questions, not settled doctrine.
 
-## Summary | One engine, validated; a toolbox that designs; an AI that drives it — all public
+## Discussion: where should the agent sit? | Three modes — two exercised by this study, one open — and the boundary between them is the question
 ::: full
-- One validated engine behind four language surfaces; a MATLAB design layer that took three CODE V benchmark studies from reproduction to extension.
-- Two things happened live: a telescope designed to the audience's field specification in one warm-started step, and a polarization interferometer measuring a deformable mirror to 0.18 nm.
-- The code is public: github.com/nasa-jpl/macos.
-~ Contact and records: all studies cited are committed with packets and regression checks.
+- **A · Run the compiled tool, no agent** — what ships today.  The walk ran unattended on a fresh instance; the checks, caps, and continuation runner are versioned and regression-tested.  Inspectable and maintenance-stable — but 1 of 15 frictions did not compile, and the docs alone did not carry a cold user.
+- **B · Invoke an agent to guide the work** — what this study actually did.  An AI agent in the loop, under expert prompting, found and fixed every conceptual defect in hours and chose the strategies worth compiling — including the walk.  Available to any user now; its knowledge is current, but not versioned with the tool.
+- **C · Embed a helper in the tool** — the open question: advice at call time — "your step 1 runs 8× deeper than the reference; expect the offset box to lose rays" — the one failure that was documented and still fatal.
+- **How embedding could work — three shapes in increasing order of authority:**
+-- Make the tool agent-readable (lightest): expose the tool's state as structured output — deck, residual history, check results — with machine-readable docs and runnable checks, so the user's own assistant drives the tool well.  The tool's knowledge stays in the code and its tests.
+-- A failure-triage assistant: invoked only when a check fires or a solve stalls; it reads the saved state and returns a one-line diagnosis and a suggested next command, which the person runs.
+-- A policy assistant inside hard limits: it chooses solve-field counts, penalty targets, and walk schedules between stages; the code enforces the limits, validates every action through the same checks, and logs every choice for replay.
+-- Tier the agents, at any of these levels — an orchestrating agent plans and delegates; each sub-agent gets one bounded task with only the files it needs; the committed records, not any agent's memory, are the shared memory.
+~ Where is the line between knowledge in the code as checks and knowledge served as advice?  A stale check fails loudly; stale advice fails silently.  Measured: the tool alone did not carry a new user; an agent alongside it closed every gap — most of what it learned is now checks and defaults.
 
 ## Backup Slides
-
-## What MACOS does today | System-level modeling from design through control
-::: full
-- **Applications:** error budgeting, integrated observatory simulation, wavefront sensing and control for segmented telescopes, coronagraph testbeds and instruments.
-- **The linear-model workflow:** w = J·x + w₀ — wavefront sensitivity channels per element, per segment, per surface mode; stacked over fields and configurations; element groups move as one.
-- **From model to control:** the same sensitivity matrices drive metrology design, estimator synthesis, and closed-loop simulation — one model, one bookkeeping, design to control.
-~ Every capability shown today is in the committed test suites; validation anchors: next slide.
-
-## The MATLAB toolbox and the design layer | Design → segmentation → sensitivities → metrology → simulation, each one call — fully public-domain
-::: left
-- **Drivers:** telescope/bench design builders, sensitivity supervisors (rigid-body, alignment, surface-grid), metrology placement, model-vs-model comparison, closed-loop simulators, study orchestrators.
-- **One-call reconstructible studies:** every figure in this deck rebuilds from a committed script and committed records.
-::: right
-- **Utilities:** trace, wavefront, perturb, pupil find; layout and ray-bundle viewers; Jones pupils, polarization elements; segment grid bases and grid file IO; multi-wavelength composition; spot, intensity, complex field.
-- **Why a design layer:** the whole stack is public-domain — a design study needs no proprietary prescription to start from.
-~ The two live demonstrations exercised exactly these layers: the bench builder and a design-family driver.
 
 ## Validation anchors | The trust base, by physics domain
 ::: full
