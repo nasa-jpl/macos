@@ -230,8 +230,13 @@ def place_img(sl, path, x_in, y_in, w_in, h_in, caption, exact=False,
     full = os.path.join(HERE, path)
     if exact:
         # sidecar-pinned geometry: draw at (x,y) w x h verbatim
-        sl.shapes.add_picture(full, Inches(x_in), Inches(y_in),
-                              Inches(w_in), Inches(h_in))
+        pic = sl.shapes.add_picture(full, Inches(x_in), Inches(y_in),
+                                    Inches(w_in), Inches(h_in))
+        if cap_ov:   # crop fractions (Impress/PowerPoint semantics)
+            for attr, key in (("crop_left", "cl"), ("crop_right", "cr"),
+                              ("crop_top", "ct"), ("crop_bottom", "cb")):
+                if key in cap_ov:
+                    setattr(pic, attr, cap_ov[key])
         yy = y_in + h_in
         cx, cw = x_in, w_in
     else:
