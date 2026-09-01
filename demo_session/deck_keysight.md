@@ -284,17 +284,27 @@ $ claude                      % a fresh AI session, in the terminal
 ::: right
 ![End-on in the shroud: the hex-19 telescope and instrument legs — hardware union 7.451 m against the 8.0 m gate.](figs/r1_seg_d110_shroud.png){h=3.1}
 
-## The linear model: the mathematics under the next six slides | Every matrix is measured from the engine, then closure-checked against it
+## The linear model: state to wavefront to control | Every matrix is measured from the engine, then closure-checked against it
 ::: full
 - **The wavefront model:**   w  =  w₀ + J·x,    J = [ ∂w/∂x   ∂w/∂z   ∂w/∂grid ]
--- x stacks rigid-body states (6 DOF per optic and per group), segment Zernike figure modes, and grid/actuator influences; J's columns are engine-measured pokes through the full train, per field — the three families on the next three slides.
+-- x stacks rigid-body states (6 DOF per optic and per group), segment Zernike figure modes, and grid/actuator influences; J's columns are engine-measured pokes through the full train, per field — the three families on the following slides.
 - **The metrology forward model:**   m  =  [ ∂l/∂x ; ∂e/∂x ]·x + n
 -- laser-gauge lengths l and edge-sensor gaps e; a sensor layout is scored by the control information it carries — minimize trace( J Px̂ Jᵀ ), the wavefront error the estimator leaves behind.
 - **Estimation and control:**   x̂  =  ( HᵀWH + ρI )⁻¹ HᵀW·m ;    u  ←  u − g·x̂
 -- BLUE: weighted least squares with a ridge on the segment state; an integrator closes the rigid-body loop each frame.
-- **Dark-hole control (EFC):**   Δa  =  −( Re(GᴴG) + λI )⁻¹ Re(GᴴE)
--- G = ∂E/∂a, the electric-field Jacobian of the DM actuators through the masked chain, engine-measured; a Tikhonov step, line-searched against measured contrast.
-~ Notation as in the code: run_sensitivities builds the J families; the MET stage scores layouts on the trace merit; the simulator (r4) runs the BLUE estimator, the integrator, and the EFC step — and jacobian_check re-pokes the engine against every J before it is trusted.
+~ Notation as in the code: run_sensitivities builds the J families; the MET stage scores layouts on the trace merit; the simulator runs the BLUE estimator and integrator — and jacobian_check re-pokes the engine against every J before it is trusted.
+
+## The physical-optics model: wavefront to field to contrast | The same engine — every plane PROPER-checked, every coating checked against the Fresnel closed forms
+::: full
+- **From rays to fields:**   E  =  A·e^(−i·2πw/λ)   at each pupil;   plane to plane   E′ = F⁻¹[ e^(−iπλΔz·f²) F[E] ] ;   to a focal plane   E_focal ∝ F[E]
+-- the ray-traced OPD w and aperture A seed the grid; Fresnel / angular-spectrum kernels carry it through apodizer, focal-plane mask, Lyot stop and field stop — the masks act on the field, plane by plane.
+- **The image and the score:**   I = |E|² ;   contrast C = ⟨ I / I₀,peak ⟩ over the 3–15 λ/D dark zone
+-- Strehl-normalized to the bare unmasked peak; one grid and one normalization for Jacobian, control and scoring.
+- **The field Jacobian, from repeated propagations:**   G(:,k) = [ E(a+δeₖ) − E(a) ] / δ   →   Δa = −( Re(GᴴG) + λI )⁻¹ Re(GᴴE)
+-- every column is one full-chain propagation with actuator k poked; the EFC step is Tikhonov, line-searched against measured contrast — and re-linearized about the dug state as the hole deepens.
+- **Polarization:**   at each surface  E → ( r_s ŝŝᵀ + r_p p̂p̂ᵀ )·E  (multilayer coatings by the Airy recursion);  vector diffraction propagates Ex, Ey, Ez as three planes;  the Jones pupil J(u,v) yields diattenuation and retardance maps
+-- the machinery behind the interferometer demo and the coated-train contrast floors.
+~ Conventions: exp(+iωt) time dependence, so phase = −2πw/λ.  Anchors: PROPER station by station at 10⁻¹¹–10⁻¹³; coatings against Born & Wolf / Abelès at 10⁻¹²–10⁻¹⁴; published protected-Al Mueller data at ~10⁻¹⁴.
 
 ## Segmentation, metrology, controls — on the observatory | The same segmentation and metrology machinery the smaller studies proved, at 6 m scale
 ::: left
