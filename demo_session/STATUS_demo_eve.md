@@ -63,17 +63,41 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
 - All numbers in the deck re-derivable from committed records; renders in
   renders/ (wF latest for 22-24).
 
-## IN-FLIGHT (2026-08-31 ~22:00)
-- Slide 10 table change: DONE (piston+tilt-removed MACOS column in md).
-- **cf3d ladder DONE + FOLDED** (Dave's "redo the e2e6m_r2 reports and
-  the deck_keysight* decks" executed): 1.215e-6 → 1.133e-9, 10 digging
-  rounds / 4.6 h, plateau PROVEN by 3 no-step rounds (alphas to 1e-10,
-  niter 30); la(G) 3.52e-11 at the dug state — the FALCO case.  Record:
-  CF3d LOG section + cf3d_* committed (MACOS_res_dev).  Deck: NEW slide
-  after the drift slide ("Digging the dark hole: the overnight restart
-  ladder", figs/fig_cf3d_ladder.png), drift slide's honest-gap bullet
-  re-scoped, closing-slide claim quantified.  Rebuilt 40 slides,
-  renders verified (wR).  Edit-deck sync COMPLETE (~00:00 09-01): Dave
-  closed with zero diffs; gate passed clean; edit deck + baseline carry
-  the 40-slide ladder build.  ALL deck_keysight* decks current.
-- "M2-M4" wording: DONE -> M2-M3 (both state-equations slides, 09-01).
+## DEMO-DAY MORNING (written 2026-09-02 ~00:45 — READ THIS FIRST)
+
+**Deck: FINAL. 42 slides, DRAFT retired, export-review marking on
+Dave's 17 slides (builder-encoded: EXPORT_MARK_TITLES in
+make_brief_slides.py). All deck_keysight* synced via the gate and
+PUSHED (nasa-jpl dev-candidate on BOTH repos — pushing is allowed
+now, rule Bash(git push*)).** Slide count 42: ladder 27, stations 28,
+drift 29, reveal 30, working-questions 31, agent-questions 32,
+discussion 33, closing 34, backup 35+.
+
+- **Choreography RULING: live solve on the LINUX box** — slide 30 says
+  "in 15 minutes" and the ThinkPad timing run confirmed ~15 min class
+  (scratchpad/oi_timing.log, grep THINKPAD TIMING for the final
+  number). The Mac (CCMac) = hot spare: 18× faster, byte-identical
+  digits — spoken bonus at the reveal, not the driver.
+- **Q&A relay live**: slide 32 = five agent questions (afocal pupil +
+  compressed-beam corrector; basins/seeding; merit scaling;
+  conventions-as-data via macro/API; EFC ladder + stroke economy).
+  Dave pastes audience answers/questions into the SUPERVISOR session;
+  answer ONLY from committed records, numbers cited.
+- **Key quotables**: off-axis 4-mirror 42× vs coaxial 129× under FULL
+  scoring (TO, RESULTS § OFFAXIS; wrap due 08:00; rule 39 = freedom
+  flows to the unscored quantity). Apodizer trade: prolate 0.091 thru
+  / 1.13e-9 floor; feather σ2 0.607 / <3.7e-6 (final in
+  cf3f_report.txt); bare 0.745 / 4.48e-6 (CLOSED, 18 rounds, all
+  remedies exhausted, laU 4.4e-11 @ 5.4 µm — linear validity is the
+  wall). CF5b: JWST-drift hold at 2e-9 from the dug state.
+
+MORNING HARVEST (in order):
+1. cf3f_report.txt tail → final feather floor; write the three-way
+   trade table + LOG section; commit + push (MACOS_res_dev).
+2. CCMac's cf3h_s* σ-sweep (GATE: their chain must reproduce tag
+   f20 / THRU 0.607 / static 9.976e-5 — gate failed ⇒ sweep is noise).
+3. TO's § OFFAXIS wrap + N=7 pupil floor + N=6 crossover.
+4. oi_timing.log final line → confirm/record the cover time.
+5. Monitors: cf3f = b48fbgvkd (keep until DONE); cf3e = b9hse8g8e
+   (arm CLOSED at 4.480e-6 — stop the monitor).
+6. Deck edits only on Dave's word — it is FINAL.
