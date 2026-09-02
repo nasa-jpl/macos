@@ -503,7 +503,7 @@ EXPORT_MARK_TITLES = (
     "The physical-optics model",
     "Digging the dark hole",
     "AI in design and analysis",
-    "The agent's own questions for this room",
+    "The agent asks",
     "Validation anchors",
     "The adjacent-design rehearsal bundle",
     "Challenge 2 packaging, three ways",

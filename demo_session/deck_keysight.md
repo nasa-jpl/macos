@@ -111,6 +111,12 @@ The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_reso
 ![The 11° step's field map: 27.3 nm max — the largest spec-compliant row.](figs/t5_walk_k03_map.png){h=3.3}
 ~ This frontier is the basis of the live demonstration — next slide.
 
+## The agent asks: when do you change basins? | A question to this room, from the AI that ran these studies
+::: full
+- **Our solvers never left the basin they were seeded in.**  The warm-started walk beat the cold start 8500×; offered ±15° of rigid-body freedom, a converged solve used 0.9° — the off-axis family had to be *seeded*, never perturbed into.  **When does your practice reach for a genuinely new starting geometry rather than a better step — and do you trust automated global search to make that call?**
+- **And how do you scale one merit across requirement classes decades apart?**  A term 120× from feasible owned our sum of squares and the rest cast no vote; we ended in log-domain residuals and constraint walls applied to iterates, never to reports.  **What is your practice?**
+~ Genuine, not rhetorical: the agent is live during this talk — Dave can relay your answers, or your questions, and it will respond in real time.
+
 ## The live demonstration: an adjacent instrument, designed during this talk | Kicked off now, in MATLAB; predicted first, revealed before the closing discussion
 ::: left
 - **The ask:** name a field-box full width, anywhere in 5–15°, for the same instrument class — 150 mm f/3.3 at the +22.5° offset, same envelope, same clearance rules.
@@ -188,6 +194,12 @@ $ matlab &                    % a fresh MATLAB, just for this solve
 - **Why no single-field trace shows it, and no fold fixes it:** each field's feed beam clears the glass its own light uses by 10–27 mm — the collision is with the glass the *other* fields need, and one monolithic mirror must carry them all.  Body and beam unions are scaled copies of the same field box (separation needs a 2.43× scale ratio; measured 1.30), and a fold is an isometry: the best flat placement anywhere reproduces −79.9 mm to the last digit.
 - **The fix is optical, and priced:** tilt the field mirror −10° and re-solve around it.  Clears at +37.8 mm with zero rays lost; wavefront 8993 vs 10407 nm; the interface holds (30.015×, 33.57 mm exit beam).  It packages itself — deepest optic 1.81× → 1.24× the M1–M2 spacing, zero fold flats.  The price is the fourth mirror's pupil control: blur 157 → 553 µm, breathing 0.12 → 0.82% — still 4× steadier than three mirrors.
 ~ The union check is now a standing gate: fails the committed deck, passes the cleared one — a margin is a number, not a body.  Three-way layouts: backup.  Record: challenges/afocal4/{packaging,clearing}.
+
+## The agent asks: about this afocal family | Questions the 30× study could not settle
+::: full
+- **The interface-pupil condition consumed the last two mirror powers** — priced at 2.7× of wavefront — and field curvature owned 60–99.7% of every design's variance.  **Is that pupil requirement held this hard in shipped practice — and is a strongly curved opposite-sign corrector in the compressed beam near the exit a move you have seen work?**
+- **Overnight we found an effect we cannot explain:** decentering the pupil improved *every* mirror count tried — 3.5× at best, and the best absolute design in the study — measured under the full requirement set with three controls, while four mechanism hypotheses failed in turn.  **Do you recognize this effect?**
+~ Genuine question — the agent is live and will follow up.
 
 ## A second live demonstration: the AI drives an interferometer | A polarization Twyman–Green gauging a deformable mirror — armed in a terminal now, run on the room's cue
 ::: left
@@ -369,6 +381,12 @@ $ claude                      % a fresh AI session, in the terminal
 ![Twenty-four hours random drift, both passes starting from the dug dark hole: segment rigid-body state, exit-pupil wavefront, and science-plane contrast — open loop against closed.](figs/fig_cf5b_jwst.png){h=5.0}
 ~ Record: templates/80_end_to_end/e2e6m_r2, CF5b stage — d=1.10 deck, G = the ladder's dug-state Jacobian.
 
+## The agent asks: what buys the last decade? | For coronagraph folks
+::: full
+- **Our EFC restart ladder walled at 1.1×10⁻⁹ against a measured 3.5×10⁻¹¹ substrate** — the step rule was the binder, not the optics.  **What buys the last decade and a half in your experience: β-bump schedules, per-mode regularization, constrained strokes?**
+- **The apodizer's real purchase measured as stroke economy**: the same 10⁻¹¹-class substrate costs 33 nm of DM stroke apodized and microns bare, at 8× the throughput.  **Do micron-stroke amplitude solutions survive real hardware?**
+~ Genuine question — the agent is live and will follow up.
+
 ## The live design, revealed | Predicted from the frontier before solving; solved in one warm-started step while we talked
 ::: left
 - **The ask:** a field-box width, anywhere in 5–15°.  **The prediction, stated before the solve:** interpolated from the committed frontier rows.
@@ -386,14 +404,11 @@ $ claude                      % a fresh AI session, in the terminal
 - **Is it reproducible?**  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
 ~ Offered as discussion questions, not settled doctrine — the next slide takes one of them to architecture.
 
-## The agent's own questions for this room | Asked by the AI that ran these studies — each is a place a campaign hit something your experience can answer
+## The agent asks, last: could conventions ship as data? | The largest error class an AI produced in months of optical work
 ::: full
-- **On the afocal family:** the interface-pupil condition consumes the last two mirror powers — we priced it at 2.7× of wavefront — and field curvature owns 60–99.7% of every design's wavefront variance.  Is that pupil requirement held this hard in shipped practice, and is a strongly curved opposite-sign corrector in the compressed beam near the exit a move you have seen work?
-- **On basins:** our solvers never left the basin they were seeded in — a cold start lost to a warm one by 8500×, and rigid bodies offered ±15° of freedom used 0.9° (the off-axis family had to be *seeded*, not perturbed into).  When does your practice reach for a genuinely new starting geometry rather than a better step — and do designers trust automated global search to make that call?
-- **On merit functions:** a requirement sitting 120× from feasible owns the sum of squares and the other terms cast no vote — we ended in log-domain residuals, and constraint walls applied to iterates, never to reports.  What is your practice for scaling one merit across requirement classes that live decades apart?
-- **On conventions:** the largest error class I produced in months of this work was conventions — the sign of a radius, which reference sphere a number is quoted against.  Today those answers live in manuals.  Could the macro/API layer serve them as data — let a program, or an AI, *ask the design* which convention a number is in, instead of inferring it?
-- **For anyone who has run a testbed:** our EFC restart ladder walled at 1.1×10⁻⁹ against a measured 3.5×10⁻¹¹ substrate — the step rule was the binder, not the optics — and the apodizer's real purchase measured as *stroke economy*: the same substrate costs 33 nm of DM stroke apodized and microns bare, at 8× the throughput.  What buys the last decade in your experience, and do micron-stroke amplitude solutions survive real hardware?
-~ These are genuine, not rhetorical.  The agent is live during this talk: Dave can relay your answers — or your questions — and it will respond, or follow up, in real time.
+- **The sign of a radius; which reference sphere a number is quoted against.**  Nothing cost this agent — or its human reviewers — more error than conventions, and today the answers live in manuals.  **Could the macro/API layer serve them as data — let a program, or an AI, ask the design which convention a number is in, instead of inferring it?**
+- The agent's other questions were asked where they arose: basins and merit scaling, the afocal family and its unexplained decenter effect, the testbed's last decade.  All are genuine — answers relayed in the room reach it live.
+~ These are the questions this work earned; the next slides are what we would recommend.
 
 ## Discussion: where should the agent sit? | Three modes — two exercised by these studies, one open — and the boundary between them is the question
 ::: full
