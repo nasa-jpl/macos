@@ -102,6 +102,16 @@ discussion 33, closing 34, backup 35+.
   no-gain, laU 4.4e-11 @ 5.4 µm — linear validity is the
   wall). CF5b: JWST-drift hold at 2e-9 from the dug state.
 
+REVEAL PROTOCOL (dry-run PASS 2026-09-02, 5 s end-to-end): when the
+live `oi_demo_step(W)` wraps, run `python3 make_reveal.py <W>` in
+demo_session/ — it finds the NEWEST `oi_demo_<W>deg*_verdict.txt`
+bundle (live runs are timestamped), crops the figures, splices the
+live numbers into slide 33 of a COPY (`deck_keysight_live.pptx`),
+and renders `renders/live33-33.png` for pre-flight.  Verified: text
++ geo diffs touch ONLY slide 33.  Dave's ruling: he opens the live
+copy on my prompt at the reveal; the presented deck is never edited.
+Fallback = the 12° bundle already on the slide.
+
 MORNING HARVEST (in order):
 1. cf3f_report.txt tail → final feather floor; write the three-way
    trade table + LOG section; commit + push (MACOS_res_dev).
