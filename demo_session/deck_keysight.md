@@ -25,9 +25,9 @@
 
 # MACOS — Optical Modeling, Analysis and Design, with an AI in the Loop
 One ray-trace and physical-optics engine, four language surfaces, an AI-driven design layer — with two elements run live
-D. C. Redding, with Claude Code — 2 September 2026.  Prepared for the Keysight CODE V team.  DRAFT — pending source sign-off.
+D. C. Redding, with Claude Code.
+2 September 2026.
 The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_resources
-~ Live elements: a telescope designed during the talk to an audience-chosen field specification (asked and launched once challenge 3 is on the table, revealed before the closing discussion), and a polarization phase-shifting interferometer measuring a deformable mirror.  All wavefront numbers are RMS wavefront error; each study states its reference convention where it reports.
 
 ## Four decades of NASA optical modeling | Technology development to flight: Hubble, JWST, TMT
 ::: full

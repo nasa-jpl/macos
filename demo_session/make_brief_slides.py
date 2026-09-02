@@ -483,7 +483,38 @@ def render_slide(spec):
         if colname == "full":
             for c in cur:
                 cur[c] = y
+    if any(spec["title"].startswith(t) for t in EXPORT_MARK_TITLES):
+        draw_export_mark(sl)
 
+
+
+EXPORT_MARK = ("This document has been reviewed and determined not to "
+               "contain export-controlled information")
+# Dave's pass-7 selection (2026-09-01): the slides whose bottom band is
+# free of footnotes; matched by slide-title prefix.  Title page included
+# via render_title.
+EXPORT_MARK_TITLES = (
+    "Four decades of NASA optical modeling",
+    "Inside the toolbox",
+    "Three design challenges, one method",
+    "The live demonstration",
+    "Recap: the measurement the room just watched",
+    "The linear model",
+    "The physical-optics model",
+    "Digging the dark hole",
+    "AI in design and analysis",
+    "The agent's own questions for this room",
+    "Validation anchors",
+    "The adjacent-design rehearsal bundle",
+    "Challenge 2 packaging, three ways",
+    "The e2e worked example",
+)
+
+
+def draw_export_mark(sl):
+    tf = tb(sl, 0.89, 6.90, 11.53, 0.32)
+    p = para(tf, EXPORT_MARK, size=9.5, color=GRAY, first=True, space_after=0)
+    p.alignment = PP_ALIGN.CENTER
 
 def render_title(t):
     sl = prs.slides.add_slide(BLANK)
@@ -496,6 +527,7 @@ def render_title(t):
     tf2 = tb(sl, 0.9, 6.0, SW_IN - 1.8, 1.0)
     for j, n in enumerate(t["notes"]):
         para(tf2, n, size=13, color=GRAY, first=(j == 0), space_after=4)
+    draw_export_mark(sl)
 
 
 def main():
