@@ -96,9 +96,10 @@ discussion 33, closing 34, backup 35+.
   wall-limited 1.09e-5 still digging (RESUMED in parallel per Dave),
   σ4 running; depth axis = la@50/laU, c_end wall-limited rows =
   floor-so-far. Apodizer trade: prolate 0.091 thru
-  / 1.13e-9 floor; feather σ2 0.607 / <3.7e-6 (final in
-  cf3f_report.txt); bare 0.745 / 4.48e-6 (CLOSED, 18 rounds, all
-  remedies exhausted, laU 4.4e-11 @ 5.4 µm — linear validity is the
+  / 1.13e-9 floor; feather σ2 0.607 / **9.527e-7 FINAL** (CONVERGED
+  00:17 Sep 2, 22 rounds, laU 1.155e-11 @ 6.3 µm); bare 0.745 /
+  4.48e-6 (CLOSED, 18 rounds incl. bump-armed resume 16–18 all
+  no-gain, laU 4.4e-11 @ 5.4 µm — linear validity is the
   wall). CF5b: JWST-drift hold at 2e-9 from the dug state.
 
 MORNING HARVEST (in order):
