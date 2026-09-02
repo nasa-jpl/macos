@@ -83,9 +83,19 @@ discussion 33, closing 34, backup 35+.
   conventions-as-data via macro/API; EFC ladder + stroke economy).
   Dave pastes audience answers/questions into the SUPERVISOR session;
   answer ONLY from committed records, numbers cited.
-- **Key quotables**: off-axis 4-mirror 42× vs coaxial 129× under FULL
-  scoring (TO, RESULTS § OFFAXIS; wrap due 08:00; rule 39 = freedom
-  flows to the unscored quantity). Apodizer trade: prolate 0.091 thru
+- **Key quotables**: TO's slice COMPLETE — off-axis beats coaxial at
+  ALL FOUR mirror counts; best = SIX mirrors at 33× (2344.5 nm, 3.54×
+  gain); mirror economy = four at 42× vs best coaxial 109×; the
+  decenter effect is measured/controlled but UNEXPLAINED (4 hypotheses
+  dead — slide 15 asks the room); rule 39 = freedom flows to the
+  unscored quantity (RESULTS § OFFAXIS wrap, 26 commits local
+  unpushed).  DECK now 45 slides: agent questions DISTRIBUTED (9
+  basins/merit, 15 afocal+decenter, 32 EFC 'For coronagraph folks',
+  35 conventions closer); reveal 33, discussion 36, closing 37,
+  backup 38+.  CCMac σ-sweep: σ1 converged 8.8e-5 (too soft), σ3
+  wall-limited 1.09e-5 still digging (RESUMED in parallel per Dave),
+  σ4 running; depth axis = la@50/laU, c_end wall-limited rows =
+  floor-so-far. Apodizer trade: prolate 0.091 thru
   / 1.13e-9 floor; feather σ2 0.607 / <3.7e-6 (final in
   cf3f_report.txt); bare 0.745 / 4.48e-6 (CLOSED, 18 rounds, all
   remedies exhausted, laU 4.4e-11 @ 5.4 µm — linear validity is the
