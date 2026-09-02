@@ -52,6 +52,14 @@ extraction idiom on slide) · fonts/layout per Dave's passes 2-3+.
 ## Demo day
 - IFO demo: RUNBOOK_ifo_demo.md (fresh CC session, ./ifo_dialog.sh, v2).
 - Telescope solve: oi_demo_step(width) per slide 9 / rehearsal bundle.
+- AUDIENCE Q&A RELAY (Dave 2026-09-01): slide 32 = "The agent's own
+  questions for this room" (4 questions, each anchored in a committed
+  number: ladder/step machinery, apodizer stroke economy, afocal pupil
+  requirement + compressed-beam corrector, conventions as data).
+  Protocol: Dave pastes audience answers/questions into THIS supervisor
+  session; the agent answers from the records (concise, numbers cited,
+  no claim beyond the committed record) or asks follow-ups.  Slide
+  numbering after 31 shifted +1 (discussion 33, closing 34, backup 35).
 - All numbers in the deck re-derivable from committed records; renders in
   renders/ (wF latest for 22-24).
 
