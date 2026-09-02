@@ -13,7 +13,7 @@
    "w": 10.63
   }
  },
- "Challenge 3: moving a 20°×20° field 22° off axis": {
+ "Challenge 3: moving a 20\u00b0\u00d720\u00b0 field 22\u00b0 off axis": {
   "img:pair_r3t_s1_layout.png": {
    "x": 5.75,
    "y": 1.47,
@@ -80,7 +80,7 @@
    "w": 3.15
   }
  },
- "Challenge 2, extended: the pupil measured — and what a fourth mirror buys": {
+ "Challenge 2, extended: the pupil measured \u2014 and what a fourth mirror buys": {
   "img:rodgers2_S1_onaxis_pupil.png": {
    "x": 0.25,
    "y": 4.76,
@@ -104,7 +104,7 @@
    "w": 4.9
   }
  },
- "Challenge 2: a 30× afocal feeding an instrument through a tilted cold stop": {
+ "Challenge 2: a 30\u00d7 afocal feeding an instrument through a tilted cold stop": {
   "txt:The challenge: a three-mirror afocal": {
    "fs": 15
   },
@@ -124,7 +124,7 @@
   }
  },
  "A second live demonstration: the AI drives an interferometer": {
-  "txt:Why a Twyman–Green for a DM": {
+  "txt:Why a Twyman\u2013Green for a DM": {
    "w": 5.3
   },
   "code:1": {
@@ -140,7 +140,7 @@
   }
  },
  "Recap: the interferometer, built and calibrated in the model": {
-  "txt:The rig: a polarizing Twyman–Green": {
+  "txt:The rig: a polarizing Twyman\u2013Green": {
    "fs": 14
   },
   "table:1": {
@@ -199,7 +199,7 @@
    "cy": 6.14,
    "cw": 5.9
   },
-  "txt:Dark zone 3–15": {
+  "txt:Dark zone 3\u201315": {
    "x": 7.0,
    "y": 6.64
   }
@@ -246,7 +246,7 @@
    "cy": 6.31,
    "cw": 6.89
   },
-  "txt:6.8×10⁻¹⁵": {
+  "txt:6.8\u00d710\u207b\u00b9\u2075": {
    "x": 6.29,
    "y": 6.55,
    "w": 6.89
@@ -276,7 +276,7 @@
    "h": 3.08
   }
  },
- "Segmentation, metrology, controls — on the observatory": {
+ "Segmentation, metrology, controls \u2014 on the observatory": {
   "txt:The primary segments hex-19": {
    "fs": 16
   },
@@ -318,7 +318,7 @@
    "y": 6.74
   }
  },
- "The state equations I: rigid-body channels — dw/dx": {
+ "The state equations I: rigid-body channels \u2014 dw/dx": {
   "img:fig_dwdx_read.png": {
    "cfs": 11
   },
@@ -326,7 +326,7 @@
    "fs": 12
   }
  },
- "The state equations II: segment-figure channels — dw/dz": {
+ "The state equations II: segment-figure channels \u2014 dw/dz": {
   "img:fig_dwdz_read.png": {
    "cfs": 13
   },
@@ -334,7 +334,7 @@
    "fs": 13
   }
  },
- "The state equations III: shape-normalized modes — dw/dgrid": {
+ "The state equations III: shape-normalized modes \u2014 dw/dgrid": {
   "img:fig_dwdgrid_read.png": {
    "cfs": 12
   },
@@ -344,15 +344,8 @@
    "fs": 13
   }
  },
- "Inside the toolbox": {
-  "txt:Counts as of 2026-08": {
-   "x": 1.0,
-   "y": 6.12,
-   "w": 11.88
-  }
- },
  "Discussion: where should the agent sit?": {
-  "txt:A · The compiled tool": {
+  "txt:A \u00b7 The compiled tool": {
    "fs": 20
   },
   "txt:A stale check fails loudly": {
@@ -417,6 +410,13 @@
    "x": 0.58,
    "y": 6.57,
    "w": 5.9
+  }
+ },
+ "Inside the mmacos toolbox": {
+  "txt:Counts as of 2026-08": {
+   "x": 1.0,
+   "y": 6.12,
+   "w": 11.88
   }
  }
 }

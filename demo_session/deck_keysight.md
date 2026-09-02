@@ -32,6 +32,7 @@ The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_reso
 ## Four decades of NASA optical modeling | Technology development to flight: Hubble, JWST, TMT
 ::: full
 - **Late 1980s:** the engine originates in NASA telescope technology development
+-- ***Based on a coordinate-free ray-trace theory***
 -- ***Used for Star Wars control-system development and NASA SubMM telescope analysis.***
 - **1991:** Hubble — prescription recovery correctly diagnosed the aberration from flight imagery
 -- ***Prescription retrieval from image data has served other missions as well.***
@@ -54,7 +55,7 @@ The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_reso
 - **CODE V and PROPER provide independent cross-checks.**
 - **One source tree: github nasa-jpl/macos and /MACOS_resources contain it all.**
 
-## Inside the toolbox | Five areas, organized the way the work flows — veneer, sensitivities, design, runners, worked examples
+## Inside the mmacos toolbox | Five areas, organized the way the work flows — veneer, sensitivities, design, runners, worked examples
 ::: full
 ![](figs/fig_mmacos.png){h=4.7}
 ~ Counts as of 2026-08.  Every area is exercised by the committed test suites and by the worked examples beside it — the same templates this talk's studies live in.
@@ -93,7 +94,7 @@ The code is public: github.com/nasa-jpl/macos and github.com/nasa-jpl/MACOS_reso
 
 ## Challenge 3: the numbers | Paying the same constraints lands the same design space — then a diagnosis beats the reported result
 ::: full
-- **The buildability step:** enforcing the reported ≥35 mm clearance lands 113.6 nm at a 34.1 mm floor, against the reported 117 nm — 0.97×, same design space.  **The final step, diagnosed then beaten:** the gap to the reported 53 nm was the solve-field count, not physics; matching it lands 45.4 nm — 0.86× — at a floor 1.6 mm shy of the stated 35 mm.
+- **The buildability step:** enforcing the reported ≥35 mm clearance lands 113.6 nm at a 34.1 mm floor, against the reported 117 nm — 0.97×, same design space.  **The final step, diagnosed then beaten:** the barrier to achieving the reported 53 nm was the solve-field count, not physics; matching it lands 45.4 nm — 0.86× — at a floor 1.6 mm shy of the stated 35 mm.
 - An unconstrained solve reads 58.3 nm — with the beam passing through the secondary.  The layout figure caught it; clearance constraints are part of the problem statement.
 ::: left
 ![The buildability-constrained design: a 34.1 mm clearance floor, traced (iso + side views).](figs/pair_r3t_s4_layout.png){h=2.9}
@@ -384,6 +385,7 @@ $ claude                      % a fresh AI session, in the terminal
 ## The agent asks: what buys the last decade? | For coronagraph folks
 ::: full
 - **Our EFC restart ladder walled at 1.1×10⁻⁹ against a measured 3.5×10⁻¹¹ substrate** — the step rule was the binder, not the optics.  **What buys the last decade and a half in your experience: β-bump schedules, per-mode regularization, constrained strokes?**
+-- Control ≡ truth in these runs — the no-knowledge-error regime HCIT calls "optimal regularization"; estimation and gain-map knowledge errors are the next phase.
 - **The apodizer's real purchase measured as stroke economy**: the same 10⁻¹¹-class substrate costs 33 nm of DM stroke apodized and microns bare, at 8× the throughput.  **Do micron-stroke amplitude solutions survive real hardware?**
 ~ Genuine question — the agent is live and will follow up.
 
@@ -399,8 +401,13 @@ $ claude                      % a fresh AI session, in the terminal
 
 ## AI in design and analysis — the working questions | What we ask of an AI-driven study before believing it
 ::: full
-- **How is a machine's result verified?**  Regression checks with negative controls; layout renders read against every claim — the checks caught the errors shown today.
-- **Where does the human rule?**  Constraints, metrics, and every outward claim — the AI proposes, the record decides.
+- **How is a machine's result verified?**
+-- Regression checks with negative controls
+-- Cross-checks with established results, codes, hardware experience
+-- Layout renders read against every claim — the checks caught the errors shown today.
+- **Where does the human rule?**
+-- People pilot the AI – setting the problem, providing experience based prompts, catching obvious errors
+-- Constraints, metrics, and every outward claim — the AI proposes, the record decides.
 - **Is it reproducible?**  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
 ~ Offered as discussion questions, not settled doctrine — the next slide takes one of them to architecture.
 
