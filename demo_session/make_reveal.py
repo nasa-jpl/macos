@@ -18,6 +18,7 @@ W = int(sys.argv[1])
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 BUNDLE = os.path.expanduser(
+    sys.argv[2] if len(sys.argv) > 2 else
     "~/dev/MACOS_res_dev/mmacos/templates/10_telescopes/offset_imager/"
     "demo_adjacent")
 SLIDE_TITLE = "## The live design, revealed |"
