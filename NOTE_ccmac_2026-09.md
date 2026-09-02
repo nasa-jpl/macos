@@ -28,8 +28,11 @@ demo deck is frozen-ish; read the box rules before running anything.
   of wavefront variance, an off-axis FOUR-mirror at 2181 nm beats the
   coaxial seven-mirror floor (M-defense pending), N=6 crossover test
   in flight.
-- **Branch state**: everything above is LOCAL on dev-candidate
-  (both repos), **nothing pushed** — do not push, pull, or rebase.
+- **Branch state (UPDATED ~23:15)**: `dev-candidate` is PUSHED on both
+  repos — pull it from **nasa-jpl/macos** and **nasa-jpl/MACOS_resources**
+  (NOT the ajax247 fork; the box's key lacks write access there, so that
+  channel is stale until Dave adds ajax147 as a collaborator).  Your
+  August t5_endgame commits are merged in.  Do not rebase.
 
 ## Tonight, if you have cycles (both bounded, both de-risk the demo)
 
