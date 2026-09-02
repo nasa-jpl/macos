@@ -121,4 +121,4 @@ MORNING HARVEST (in order):
 4. oi_timing.log final line → confirm/record the cover time.
 5. Monitors: cf3f = b48fbgvkd (keep until DONE); cf3e = b9hse8g8e
    (arm CLOSED at 4.480e-6 — stop the monitor).
-6. Deck edits only on Dave's word — it is FINAL.
+6. Deck FINAL v2 (2026-09-02 morning): Dave 08:50 edit pass folded (coordinate-free line, mmacos toolbox retitle, barrier wording, slide-34 sub-bulleted answers) + Marx-informed control≡truth sub-bullet on slide 32; live copy regenerated; gate re-baselined.
