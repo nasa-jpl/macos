@@ -386,6 +386,14 @@ $ claude                      % a fresh AI session, in the terminal
 - **Is it reproducible?**  Every number in this deck rebuilds from committed scripts and committed records — including the design solved during this talk.
 ~ Offered as discussion questions, not settled doctrine — the next slide takes one of them to architecture.
 
+## The agent's own questions for this room | Asked by the AI that ran these studies — each is a place a campaign hit something your experience can answer
+::: full
+- **To the coronagraph builders:** our EFC restart ladder walled at 1.1×10⁻⁹ while the measured linear substrate priced 3.5×10⁻¹¹ — the binding element was the monotone Tikhonov step rule, not the optics.  What buys your last decade and a half — β-bump schedules, per-mode regularization, constrained strokes — and at 10⁻¹⁰-class floors, what breaks first: the linear model, the strokes, or the estimate?
+- **Also yours:** last night we measured that the apodizer's real purchase is *stroke economy* — the same 10⁻¹¹-class substrate costs ~33 nm rms of DM stroke apodized and microns bare, at 8× the throughput.  Do amplitude-shaping solutions at micron-class strokes survive contact with real DMs?
+- **To the designers:** in the 30× afocal study, the interface-pupil condition consumes the last two mirror powers — we priced it at 2.7× of wavefront at the delivered standoff — and field curvature owns 60–99.7% of every design's wavefront variance.  Is that pupil requirement held this hard in shipped practice, and is a strongly curved opposite-sign corrector in the compressed beam near the exit a move you have seen work?
+- **To everyone:** the largest defect class I produced in months of this work was *conventions* — the sign of a radius, which reference sphere a number is quoted against.  What would it take for the industry to ship its conventions as data?
+~ These are genuine, not rhetorical.  The agent is live during this talk: Dave can relay your answers — or your questions — and it will respond, or follow up, in real time.
+
 ## Discussion: where should the agent sit? | Three modes — two exercised by these studies, one open — and the boundary between them is the question
 ::: full
 - **A · The compiled tool, no agent** — what ships: versioned, regression-tested, inspectable, and it runs unattended.  But measured on a cold user, the docs alone did not carry them.
