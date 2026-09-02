@@ -87,7 +87,22 @@ body = f"""::: left
 ~ Solved live during this talk; artifacts {os.path.basename(STEM)}_* in the demo_adjacent directory.
 """
 open("deck_keysight_live.md", "w").write(md[:i1] + body + md[i2:])
-shutil.copy("deck_keysight.geo.json", "deck_keysight_live.geo.json")
+
+# geo overrides are keyed by FILENAME (img:) / text prefix (txt:) --
+# remap the reveal slide's keys to the live blocks so the presented
+# deck's slide-33 geometry (map under the text, layout large on the
+# right) carries over verbatim.
+import json
+geo = json.load(open("deck_keysight.geo.json"))
+sl = geo["The live design, revealed"]
+remap = {"img:crop_oi_demo_12deg_layout.png": "img:oi_demo_live_layout.png",
+         "img:oi_demo_12deg_map.png":         "img:oi_demo_live_map.png",
+         "txt:On demo day the live run's figures":
+                                              "txt:Solved live during this talk"}
+for old, new in remap.items():
+    assert old in sl, f"geo key drift: {old} missing on the reveal slide"
+    sl[new] = sl.pop(old)
+json.dump(geo, open("deck_keysight_live.geo.json", "w"), indent=1)
 
 # ---- 4. build + render the check ---------------------------------
 subprocess.run(["python3", "make_brief_slides.py", "deck_keysight_live.md"],
