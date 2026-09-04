@@ -53,12 +53,13 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 ![Commanded figure (left) against the single-frame recovery (right): same rings, same scale.](figs/zwfs_response.png){h=2.6}
 ~ All numbers from zwfs_s1_report.txt (five gates, 20 s a run, development resolution); full-resolution battery pending.
 
-## Measuring the DM: a poke and a low-order figure | One actuator pushed 20 nm reads at gain 0.45 through one frame at this camera; an 8 nm defocus reads at 0.99 — applied, sensed, and the estimate error, side by side
+## Measuring the DM: a poke and a low-order figure | One actuator pushed 20 nm reads at gain 0.45 through one frame; an 8 nm defocus at 0.99 — and a sampling sweep shows the spot size, not the camera, sets the trade
 ::: full
 ![One actuator pushed 20 nm: the sensed blob is broadened and dimmed — gain 0.445, 0.29 nm rms error.  The fine end is this sensor's real cost at this camera.](figs/zwfs_poke_triptych.png){h=1.85}
 ![Defocus at 8 nm amplitude: sensed matches applied at gain 0.986, 0.16 nm rms — low orders above tilt are not the trouble they were presumed to be.](figs/zwfs_defocus_triptych.png){h=1.85}
-- **The honest caveat on the poke number:** the beam fills 74% of the aperture, so this camera resolves only 143 pixels across the lit pupil — 1.5× the actuator scale, under the 2× design rule the raw grid count appeared to satisfy.  The compliant configuration (385-pixel grid, 3.0 λF/D spot) is the battery's; and the actuator-model fit — the agreed score — recovers resolution the raw map lacks.
-~ Linear reconstructor throughout; alternatives are a scheduled study.  Identical cases measured on the interferometer: poke gain 0.984 / 0.049 nm, defocus 1.024 / 0.086 nm (the Fang deck carries them).
+- **Swept, and it is not the camera:** poke gain does not move from 1.7× to 5× detector margin over the actuator scale, nor from 1.3 to 3.7 rays per actuator on the DM side.  The lever is the spot: 3.0 λF/D reads the poke at 0.59 but defocus falls to 0.78; 2.0 gives 0.45 and 0.99; the 1.06 hardware spot inverts the poke's sign.  The dimple diameter selects a band — no single spot serves both.
+- **Why that is workable:** the transfer is flat in sampling and set by a known dimple — stable and calibratable.  The actuator-model fit (the agreed score) with a measured response absorbs it; that is the battery's reconstructor path toward the 1 pm ultimate target.
+~ Linear reconstructor throughout; alternatives are a scheduled study.  Sweep record: zwfs_sweep.m (8 configs, 1.2 min).  Identical cases on the interferometer: poke gain 0.984 / 0.049 nm, defocus 1.024 / 0.086 nm (the Fang deck carries them).
 
 ## Side by side with the Twyman–Green | The interferometer dims at the finest patterns, the Zernike sensor at the very lowest and in range — the price of its one-frame economy
 ::: full
@@ -70,7 +71,7 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 | null, nothing aligned | 0.134 nm | to be measured |
 | response rolls off at | fine patterns: 0.50 at the 96×96 checkerboard | the very lowest orders (piston/tilt; defocus already 0.99) |
 | range in one frame set | half a wave, and unwrappable | small departures only; the fold point is a scheduled measurement |
-| one actuator pushed 20 nm | gain 0.98, error 0.05 nm rms | gain 0.45 at a sampling-starved camera (next slide) |
+| one actuator pushed 20 nm | gain 0.98, error 0.05 nm rms | gain 0.45–0.59, set by spot size, flat in sampling (next slide) |
 | a 10 nm actuator change, differenced | 0.021 nm | the head-to-head |
 - **Reading:** the interferometer measures any surface and pays at high spatial frequency; the Zernike sensor measures small changes cheaply — one frame, no polarization train — and pays at low spatial frequency and in range.  Neither table column is a winner until both are scored on the same question.
 ~ PSI column: tg_psi_dm96 run 10.  Differential entries are map-space; both instruments will be restated in actuator space before the head-to-head (next slide).
