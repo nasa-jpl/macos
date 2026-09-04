@@ -92,6 +92,14 @@ def parse(md_text):
             col, mode = "full", None
         elif s.startswith("# ") and cur is None:
             title_slide["title"] = clean(s[2:].strip())
+        elif s.startswith("# "):
+            # section divider (e.g. "# Backup") -- its own plain slide.
+            # (Previously fell through to body text: the divider line
+            # leaked verbatim onto the preceding slide.)
+            cur = {"title": clean(s[2:].strip()), "sub": "",
+                   "blocks": [], "divider": True}
+            slides.append(cur)
+            col, mode = "full", None
         elif s.startswith(":::"):
             tok = s[3:].strip().split()
             if tok and tok[0] in ("left", "right", "mid", "full"):
@@ -538,6 +546,13 @@ def main():
         title_slide, slides = parse(f.read())
     render_title(title_slide)
     for spec in slides:
+        if spec.get("divider"):
+            sl = prs.slides.add_slide(BLANK)
+            tf = tb(sl, 0.9, 3.0, SW_IN - 1.8, 1.4)
+            pd = para(tf, spec["title"], size=40, bold=True, color=ACCENT,
+                      first=True)
+            pd.alignment = PP_ALIGN.CENTER
+            continue
         render_slide(spec)
     prs.save(OUT)
     print(f"wrote {OUT}  ({len(slides) + 1} slides)")
