@@ -527,7 +527,10 @@ def render_title(t):
     tf2 = tb(sl, 0.9, 6.0, SW_IN - 1.8, 1.0)
     for j, n in enumerate(t["notes"]):
         para(tf2, n, size=13, color=GRAY, first=(j == 0), space_after=4)
-    draw_export_mark(sl)
+    # The export mark is a review statement: never stamp a DRAFT deck
+    # (rule: no export marking until Dave's sign-off).
+    if not any("DRAFT" in n for n in t["notes"] + t["paras"] + t["big"]):
+        draw_export_mark(sl)
 
 
 def main():

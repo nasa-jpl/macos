@@ -4,14 +4,17 @@ Fang Shi.  DRAFT — pending Dave's sign-off; NO export marking until
 reviewed.  Build: python3 make_brief_slides.py deck_tg_fang.md
 Recast 2026-09-03 (Dave): options-first with decision table, then cube
 details; first-order cost at 50/75/100 mm CA added.
+2026-09-04 fold: TG96 section (shallow plate realized for a Xinetics
+96x96 — layout+sampling solve, measured instrument, differential
+metric) from tg_psi_dm96 run 10 (tg96_report.txt).
 Sources: templates/90_polarization/tg_psi_dm (v1) + tg_psi_dm_v2 (v2),
-tg_aoi_ladder (option 3), tTgPol/tTgPol2 gates, 2026-09-02 live-demo
-record, tg_widen rerun.  Cost slide = scaling estimates, vendor quotes
-pending (footnoted).
+tg_aoi_ladder (option 3), tg_psi_dm96 (96x96 realization),
+tTgPol/tTgPol2 gates, 2026-09-02 live-demo record, tg_widen rerun.
+Cost slide = scaling estimates, vendor quotes pending (footnoted).
 -->
 
 # A deformable-mirror surface gauge, modeled end to end
-A polarization phase-shifting Twyman–Green in MACOS: three splitter options priced, the idealized gauge closed at 0.18 nm, and calibration taken to the actuator scale
+A polarization phase-shifting Twyman–Green in MACOS: three splitter options priced, the idealized gauge closed at 0.18 nm, calibration taken to the actuator scale — and the shallow-plate option laid out and measured at full 96×96 scale
 D. C. Redding, with Claude Code.
 September 2026.  Prepared for Fang Shi.
 DRAFT — pending review.
@@ -46,7 +49,7 @@ DRAFT — pending review.
 | aperture cost scaling | CA² area | CA² area | CA³ mass + 1/CA homogeneity spec |
 | full 16×16 closure measured | 0.304 nm rms | not yet run | 0.183 nm rms |
 - **Reading:** option 1 needs the alignment solve or carries an invisible 11.7% systematic.  Option 3 removes ~95% of the systematic with geometry alone and keeps plate-class cost — the natural choice at large aperture.  Option 2 removes it structurally and converts residual waveplate errors from invisible scale to visible contrast — the best instrument, at a cost that grows as the cube of aperture.
-~ All entries from committed runs (v1 example, v2 example, tg_aoi_ladder); "plate-class" and the closure gap are marked where not yet measured.
+~ All entries from committed runs (v1 example, v2 example, tg_aoi_ladder); "plate-class" and the closure gap are marked where not yet measured.  Option 3 has since been laid out and measured at full 96×96 scale — the closing slides.
 
 ## First-order cost with clear aperture | The cube's glass grows as CA³ and its homogeneity spec tightens as 1/CA; plates grow as CA²
 ::: full
@@ -124,6 +127,38 @@ DRAFT — pending review.
 ![Per-mode gain against spatial frequency: the gauge's transfer curve, measured on the actuator lattice.](figs/tg_widen_gain.png){h=3.0}
 ~ 12 modes × 3 traces in 14.6 s.  The checkerboard is the Nyquist member of the cosine set — in the calibrated span by construction — so the random pattern is the honest test.
 
+## The shallow plate at full scale: a 96×96, 1 mm-pitch Xinetics DM | The layout is solved against clearances — and, after one silent failure, the sampling is solved with it
+::: left
+- **The article:** a Xinetics 96×96-actuator DM at 1.0 mm pitch — a 96 mm beam, the aperture class where the cube goes custom and the shallow plate is the natural choice.  The rig is scaled up 1.71× and re-solved, not just magnified.
+- **Clearances set the geometry:** the arms separate at twice the plate's incidence angle, so beam-edge clearances (25 mm margin around real component bodies) fix the plate at 7° with a 700 mm DM leg.  Achieved margins: +28, +58, +68 mm; the binding pair is the DM arm against the reference beam.
+- **Sampling is part of the design:** every sampling interface is now budgeted, in the layout solve itself, against the finest feature to be measured (the actuator spacing, 48 cycles across the pupil): detector 385 px across the pupil (4.0× above the minimum 2×), surface grid 3.6 px per actuator, diffraction grid 1024².  The lesson that bought the rule: the geometrically-scaled 63 px detector read a 1 mm actuator at half its true height — with nothing else visibly wrong.
+::: right
+![The solved bench: plate at 7°, DM leg 700 mm, every beam-edge margin ≥ 25 mm.](figs/tg96_layout.png){h=3.0}
+~ Record: templates/90_polarization/tg_psi_dm96 (tg96.m; report, layout and figures committed).
+
+## The 96 mm gauge, measured | The ladder's promise holds at full scale: arms 0.14° from orthogonal, null 0.134 nm with nothing aligned, and a smooth measurable response out to the finest actuator pattern
+::: left
+- **Polarization at 7°:** arm azimuths −44.86° / +45.00° — 0.143° from orthogonal, scale error +0.145%, no alignment step.  The 45° plate's 7.5° / 11.7% systematic is removed by geometry alone, as the angle ladder predicted.
+- **The null:** 0.134 nm rms with nothing aligned — after re-optimizing the detector-leg optics at this scale.  The geometrically-scaled detector leg read 9.1 nm: lengths scale, diffraction does not.  Re-opening its four parameters recovered 68×.
+- **Camera-to-DM registration needs four separate calibrations,** each from its own observable: scale and rotation from traced rays; translation from one center poke; the array's flip/transpose orientation from one off-center poke by direct overlap (0.93 against 0.002 for the runner-up); and the sign of the measurement from that same overlap.  Symmetric test patterns fail — a checkerboard cannot see a one-actuator shift or a flip.  Measured, not supposed: the failure series is preserved in the record.
+- **A single 1 mm actuator poked 150 nm reads 146.1 nm.**
+::: right
+![The measured response against spatial frequency: gain 1.02 at low frequency, 0.85 at 34 cycles/pupil, 0.50 at the finest 96×96 pattern.  Positive and monotonic — an instrument response that calibrates.](figs/tg96_transfer.png){h=2.9}
+~ Tuning the detector leg for the null alone traded away pupil-image sharpness (finest-pattern gain 0.84 → 0.50) and 0.14 mm of mapping warp; the next pass optimizes null, sharpness and distortion jointly.  Record: tg96_report.txt.
+
+## The differential measurement: how well is a change measured? | A 10 nm actuator deviation reads to 0.021 nm — the same about a 30 nm working surface as about a flat
+::: full
+- **The real job of this instrument is measuring deviations** — how the surface differs from where it was — not any one surface in isolation.  So the closing test measures a base state, applies a known deviation, measures again, and scores the difference of the two measurements against the truth.
+| base state | deviation applied | fitted gain | residual | correlation |
+| flat | one actuator, 10 nm | 0.965 | 0.021 nm rms | 0.991 |
+| flat | random pattern, 10 nm rms | 0.920 | 3.67 nm rms | 0.926 |
+| working surface, 30 nm rms | one actuator, 10 nm | 0.977 | 0.024 nm rms | 0.989 |
+| working surface, 30 nm rms | random pattern, 10 nm rms | 0.921 | 3.68 nm rms | 0.926 |
+- **The common systematic cancels, as designed:** the single-actuator rows agree to 0.003 nm across bases — the gauge measures a change the same way about a working surface as about a flat.
+- **What remains is the response curve, not a hidden coupling:** the random-pattern rows (all spatial frequencies at once) read 37% low identically about both bases.  The differential error is the instrument response of the previous slide — which calibrates — not a coupling to the working state.
+- **This is the benchmark for what comes next:** the same DM truth and the same differential score, measured by a Zernike wavefront sensor — the planned comparison.
+~ Each row: measure the base, apply the deviation, measure again, difference the two measurements, fit one gain against the true deviation; the residual is what is left.  Record: tg96_report.txt, differential section.
+
 ## What this offers a bench program | An instrument-error sandbox where truth is exact and every systematic prints
 ::: full
 - **Catch the invisible class before hardware does:** the plate rig's 11.7% scale error moved contrast 0.17% — found on first closure in the model, because the model has the truth panel a bench lacks.
@@ -138,6 +173,8 @@ DRAFT — pending review.
 ::: full
 - v1 rig, finding and fix: templates/90_polarization/tg_psi_dm — example_tg_psi_dm.m (5 gates + closure), demo_tg_psi.m, README with the topology trade; tg_aoi_ladder.m = the option-3 angle ladder (this deck).
 - v2 cube: templates/90_polarization/tg_psi_dm_v2 — pbs_macneille.m + thinfilm_rt.m (textbook thin-film reference, general incident medium), example, demo_tg_psi_v2.m (8 beats), tg_widen.m (actuator-scale calibration).
+- 96×96 realization: templates/90_polarization/tg_psi_dm96 — tg96.m (clearance solve, sampling budget, build, battery, response curve, differential test), tg96_tail.m (detector-leg re-optimization: null 9.11 → 0.134 nm, found at reduced resolution, verified at full), tg96_report.txt (all numbers on the 96×96 slides), plus the preserved registration failure series (six reports).
 - Regression: tTgPol (9 checks) + tTgPol2 (9 checks) in the fast suite; the polarizing option's off-state is bit-identical to the plain Twyman–Green.
 - Traps recorded so they are not re-derived: a circular state is analyzer-invariant in power (single-arm tripwires pass vacuously on the aligned rig); the four-step protocol's 4θ term is real at the detector (8.9×10⁻⁴ of the fringe) and cancels in the differential protocol (1.7×10⁻¹⁴ nm); diffraction-array row/column parity is calibrated on one actuator and verified on a second, never hard-coded.
-- Option-3 open items: full 16×16 closure at 12°, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.
+- Option-3 open items: joint detector-leg optimization (null + pupil-image sharpness + distortion together — the current leg tuned for null alone gave up finest-pattern gain 0.84 → 0.50), response-curve-corrected scoring of the differential residuals, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.
+- Planned configurations on the same DM truth and battery: an all-reflective variant (off-axis paraboloids replace the lenses — removes the transmitted-glass and homogeneity cost rows entirely) and the Zernike wavefront sensor comparison against the differential benchmark.
