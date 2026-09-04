@@ -133,8 +133,8 @@ DRAFT — pending review.
 - **Clearances set the geometry:** the arms separate at twice the plate's incidence angle, so beam-edge clearances (25 mm margin around real component bodies) fix the plate at 7° with a 700 mm DM leg.  Achieved margins: +28, +58, +68 mm; the binding pair is the DM arm against the reference beam.
 - **Sampling is part of the design:** every sampling interface is now budgeted, in the layout solve itself, against the finest feature to be measured (the actuator spacing, 48 cycles across the pupil): detector 385 px across the pupil (4.0× above the minimum 2×), surface grid 3.6 px per actuator, diffraction grid 1024².  The lesson that bought the rule: the geometrically-scaled 63 px detector read a 1 mm actuator at half its true height — with nothing else visibly wrong.
 ::: right
-![The solved bench: plate at 7°, DM leg 700 mm, every beam-edge margin ≥ 25 mm.](figs/tg96_layout.png){h=3.0}
-~ Record: templates/90_polarization/tg_psi_dm96 (tg96.m; report, layout and figures committed).
+![The test arm as traced: plate at 7°, the 96 mm DM on its 700 mm leg, and the detector tail to the pupil-image camera.](figs/tg96_render_rig.png){h=2.3}
+~ Record: templates/40_benches/tg_psi_dm96 (tg96.m; report, clearance-margin layout figure, and all numbers committed).
 
 ## The 96 mm gauge, measured | The ladder's promise holds at full scale: arms 0.14° from orthogonal, null 0.134 nm with nothing aligned, and a smooth measurable response out to the finest actuator pattern
 ::: left
@@ -145,6 +145,13 @@ DRAFT — pending review.
 ::: right
 ![The measured response against spatial frequency: gain 1.02 at low frequency, 0.85 at 34 cycles/pupil, 0.50 at the finest 96×96 pattern.  Positive and monotonic — an instrument response that calibrates.](figs/tg96_transfer.png){h=2.9}
 ~ Tuning the detector leg for the null alone traded away pupil-image sharpness (finest-pattern gain 0.84 → 0.50) and 0.14 mm of mapping warp; the next pass optimizes null, sharpness and distortion jointly.  Record: tg96_report.txt.
+
+## Wavefront estimates through the gauge | One actuator pushed 20 nm recovers at gain 0.98 with 0.05 nm rms error; an 8 nm defocus at 1.02 with 0.09 nm — applied, sensed, and the estimate error
+::: full
+![One actuator pushed 20 nm: sensed matches applied; the error is a 0.05 nm rms sub-actuator dipole (residual registration, not gauge phase).](figs/tg96_poke_triptych.png){h=1.85}
+![Defocus at 8 nm amplitude: gain 1.024, error flat at 0.086 nm rms — the interferometer owns low order.](figs/tg96_defocus_triptych.png){h=1.85}
+- **Reading with the transfer curve in hand:** the gauge is essentially perfect from low order through the single-actuator scale; its cost concentrates at the finest patterns (0.50 gain at the full 96×96 checkerboard).  The same two cases measured on the Zernike sensor (its own deck): poke 0.45 at its sampling-starved camera, defocus 0.99.
+~ Truth mapped to the camera by traced rays; measurement sign −1 and patterns on the illuminated 38 mm radius (the source fills 74% of the aperture — a display-frame lesson recorded in the campaign README).  Record: tg96_wf_figs.m.
 
 ## The differential measurement: how well is a change measured? | A 10 nm actuator deviation reads to 0.021 nm — the same about a 30 nm working surface as about a flat
 ::: full
@@ -173,7 +180,7 @@ DRAFT — pending review.
 ::: full
 - v1 rig, finding and fix: templates/90_polarization/tg_psi_dm — example_tg_psi_dm.m (5 gates + closure), demo_tg_psi.m, README with the topology trade; tg_aoi_ladder.m = the option-3 angle ladder (this deck).
 - v2 cube: templates/90_polarization/tg_psi_dm_v2 — pbs_macneille.m + thinfilm_rt.m (textbook thin-film reference, general incident medium), example, demo_tg_psi_v2.m (8 beats), tg_widen.m (actuator-scale calibration).
-- 96×96 realization: templates/90_polarization/tg_psi_dm96 — tg96.m (clearance solve, sampling budget, build, battery, response curve, differential test), tg96_tail.m (detector-leg re-optimization: null 9.11 → 0.134 nm, found at reduced resolution, verified at full), tg96_report.txt (all numbers on the 96×96 slides), plus the preserved registration failure series (six reports).
+- 96×96 realization: templates/40_benches/tg_psi_dm96 — tg96.m (clearance solve, sampling budget, build, battery, response curve, differential test), tg96_tail.m (detector-leg re-optimization: null 9.11 → 0.134 nm, found at reduced resolution, verified at full), tg96_report.txt (all numbers on the 96×96 slides), plus the preserved registration failure series (six reports).
 - Regression: tTgPol (9 checks) + tTgPol2 (9 checks) in the fast suite; the polarizing option's off-state is bit-identical to the plain Twyman–Green.
 - Traps recorded so they are not re-derived: a circular state is analyzer-invariant in power (single-arm tripwires pass vacuously on the aligned rig); the four-step protocol's 4θ term is real at the detector (8.9×10⁻⁴ of the fringe) and cancels in the differential protocol (1.7×10⁻¹⁴ nm); diffraction-array row/column parity is calibrated on one actuator and verified on a second, never hard-coded.
 - Option-3 open items: joint detector-leg optimization (null + pupil-image sharpness + distortion together — the current leg tuned for null alone gave up finest-pattern gain 0.84 → 0.50), response-curve-corrected scoring of the differential residuals, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.

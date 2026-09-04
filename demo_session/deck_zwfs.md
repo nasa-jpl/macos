@@ -20,7 +20,7 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 ::: left
 - **One transparent plate, one tiny etched spot.**  At the focus, the core of the beam passes through the dimple and picks up a quarter-wave phase shift; everything outside misses it.  The shifted core light spreads back across the whole pupil image and interferes with the rest — a common-path interferometer with no second arm.
 - **Pupil brightness becomes a phase map.**  Near a quarter wave of shift, the camera intensity is close to linear in the wavefront: one frame per measurement, no moving parts, no polarization optics.
-- **The two prices, both already measured or scheduled:** the reference is made from the beam itself, so the slowest shapes partially cancel against themselves (defocus reads at 0.32 of its true size — measured); and the linear reading holds only for small departures — the range limit is a scheduled measurement.
+- **The two prices:** the sensor cannot see piston and dims toward the very lowest spatial frequencies — the reference is made from the beam itself.  Measured so far the cost sits BELOW defocus: defocus itself already reads at 0.99 (2.0 λF/D spot, full resolution).  And the linear reading holds only for small departures — the range limit is a scheduled measurement.
 ::: right
 ![The focal spot with the dimple footprint on its core (left); the mask itself — a 1.57 rad phase disk, edges gray from area-weighted supersampling (right).](figs/zwfs_mask_fig.png){h=2.5}
 ~ The dimple takes 28.0% of the light — the encircled energy a 1.06 λF/D disk should take from a focused spot.
@@ -31,7 +31,7 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 - **Removed:** the reference flat and its leg; the polarizer, four arm waveplates, output waveplate and analyzer.  Nothing else moves.
 - **Why that discipline matters:** when the two instruments are scored against each other, the only difference is the sensing principle — not the glass, not the geometry.
 ::: right
-![The traced train: source and splitter at left, the 96 mm DM on its 700 mm leg, and the detector tail with the dimple at its internal focus.](figs/zwfs_layout.png){h=2.7}
+![The train as traced: source and splitter at left, the 96 mm DM on its 700 mm leg, the detector tail converging to the dimple's focus, and the camera at the pupil image.](figs/zwfs_render_rig.png){h=2.3}
 ~ Two model findings on the way, recorded in the campaign README: the mask must sit at the real focus (−5.58 mm from the textbook seed — the lens is the optimized one), and representing a µm-scale mask at focus needs a diffraction bracket around that plane (reference-sphere legs, the coronagraph-bench idiom).
 
 ## The mask is real hardware, modeled at its own numbers | 346.2 nm of etch in fused silica = 1.571 rad at 632.8 nm; a 9-spot substrate, one spot in the beam at a time
@@ -48,12 +48,19 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 - **The response chain, gated:** dimple resolved at 6.3 px on the focal grid; masked frame = direct + diffracted parts at 3×10⁻¹⁶; core fraction 0.280.
 - **The measurement:** an 8 nm radial ripple on the DM, reconstructed from a single frame against the flat-state reference maps — gain 0.932, residual 0.45 nm, with the camera-to-DM mapping taken from traced rays (magnification 10.16, anamorphism 0.00%).
 - **The control:** the same DM state read without the dimple recovers gain −0.07 — plain pupil imaging is phase-blind; the signal is the dimple's.
-- **The measured instrument property:** defocus reads at 0.32 — the self-reference cancellation.  The sensor's response will roll off at low spatial frequency, the mirror image of the interferometer.
+- **Low orders are less trouble than presumed:** defocus reads at 0.986 at full resolution.  The self-reference blindness lives at piston and tilt; the full response curve against the interferometer is the battery's job.
 ::: right
 ![Commanded figure (left) against the single-frame recovery (right): same rings, same scale.](figs/zwfs_response.png){h=2.6}
 ~ All numbers from zwfs_s1_report.txt (five gates, 20 s a run, development resolution); full-resolution battery pending.
 
-## Side by side with the Twyman–Green | Mirror-image instruments: the interferometer dims at the finest patterns, the Zernike sensor at the slowest — and it pays for its one-frame economy with range
+## Measuring the DM: a poke and a low-order figure | One actuator pushed 20 nm reads at gain 0.45 through one frame at this camera; an 8 nm defocus reads at 0.99 — applied, sensed, and the estimate error, side by side
+::: full
+![One actuator pushed 20 nm: the sensed blob is broadened and dimmed — gain 0.445, 0.29 nm rms error.  The fine end is this sensor's real cost at this camera.](figs/zwfs_poke_triptych.png){h=1.85}
+![Defocus at 8 nm amplitude: sensed matches applied at gain 0.986, 0.16 nm rms — low orders above tilt are not the trouble they were presumed to be.](figs/zwfs_defocus_triptych.png){h=1.85}
+- **The honest caveat on the poke number:** the beam fills 74% of the aperture, so this camera resolves only 143 pixels across the lit pupil — 1.5× the actuator scale, under the 2× design rule the raw grid count appeared to satisfy.  The compliant configuration (385-pixel grid, 3.0 λF/D spot) is the battery's; and the actuator-model fit — the agreed score — recovers resolution the raw map lacks.
+~ Linear reconstructor throughout; alternatives are a scheduled study.  Identical cases measured on the interferometer: poke gain 0.984 / 0.049 nm, defocus 1.024 / 0.086 nm (the Fang deck carries them).
+
+## Side by side with the Twyman–Green | The interferometer dims at the finest patterns, the Zernike sensor at the very lowest and in range — the price of its one-frame economy
 ::: full
 | | Twyman–Green PSI (measured) | Zernike sensor (this campaign) |
 | reference beam | the second arm's flat | made from the beam's own focal core |
@@ -61,8 +68,9 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 | polarization hardware | polarizer, 5 waveplates, analyzer | none |
 | moving parts | none (polarization-stepped) | none |
 | null, nothing aligned | 0.134 nm | to be measured |
-| response rolls off at | fine patterns: 0.50 at the 96×96 checkerboard | slow patterns: defocus 0.32 (measured) |
+| response rolls off at | fine patterns: 0.50 at the 96×96 checkerboard | the very lowest orders (piston/tilt; defocus already 0.99) |
 | range in one frame set | half a wave, and unwrappable | small departures only; the fold point is a scheduled measurement |
+| one actuator pushed 20 nm | gain 0.98, error 0.05 nm rms | gain 0.45 at a sampling-starved camera (next slide) |
 | a 10 nm actuator change, differenced | 0.021 nm | the head-to-head |
 - **Reading:** the interferometer measures any surface and pays at high spatial frequency; the Zernike sensor measures small changes cheaply — one frame, no polarization train — and pays at low spatial frequency and in range.  Neither table column is a winner until both are scored on the same question.
 ~ PSI column: tg_psi_dm96 run 10.  Differential entries are map-space; both instruments will be restated in actuator space before the head-to-head (next slide).
@@ -82,5 +90,7 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 - Campaign: templates/40_benches/zwfs_dm96 — zwfs_s1.m (five gates: sampling, superposition, reference wave, response, no-dimple control), zwfs_mask.m, zwfs_s1_figs.m (the figures here), zwfs_s1_report.txt, README with the findings chain; plan and rulings in macos/BRIEF_zwfs_campaign.md.
 - Findings earned in S1, recorded so they are not re-derived: the stock detector leg is ray-traced (geometric) at the mask plane — a λ/D-scale mask needs the reference-sphere diffraction bracket (now a builder option, default off, existing decks bit-identical, suites green); the mask must sit at the optimized lens's real focus (−5.58 mm from the thin-lens seed, found by a peak scan the gate re-runs); the camera-to-DM frame must come from traced rays — a support-area estimate was 25% off and read a fine test pattern as "no response."
 - Sign convention pinned by gate: surface height = −φ·λ/4π on this deck (single reflection doubles height).
+- Correction trail (kept so it is not re-derived): early defocus readings of 0.54 and 0.32 were PATTERN-RADIUS bias — the source cone fills 74% of the aperture, and truth patterns drawn on the aperture radius overhang the light.  Corrected on the measured illuminated radius: 0.986.  Third frame lesson of the campaign; the campaign README carries all three.
+- WF-estimate figures: zwfs_wf_figs.m (traced render + triptychs, model 1024 / 193-px camera / 2.0 λF/D spot; cases matched to tg96_wf_figs.m).
 - Hardware source: "VSG2 Zernike Wavefront Sensor Update -v2" deck, parameters carried in templates/40_benches/vsg_wip/vsg2_params.m §9.
-- Interferometer comparison column: templates/90_polarization/tg_psi_dm96, run 10 (tg96_report.txt).
+- Interferometer comparison column: templates/40_benches/tg_psi_dm96, run 10 (tg96_report.txt).
