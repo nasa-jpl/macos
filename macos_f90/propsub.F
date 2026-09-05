@@ -117,7 +117,7 @@ C***********************************************************************
         use sourcsub_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
      &                     ZerntoMon4, LZPFailed, nZPFailMsg,
-     &                     iZernTypeForNorm
+     &                     iZernTypeForNorm, LNSFlowL
         use tracesub_mod
 	use elemsub_mod
 	use traceutil_mod
@@ -973,6 +973,10 @@ C					! Nonsequential Elements
 	        CurIndRef=PNSIndRef
 	        CurExtinc=PNSExtinc
 	        iminPrev=iFirstNonSeq-1
+!-->  NS probes + member bounces: flow-of-light root selection
+!     (smallest positive) in the base-conic pick -- see surfsub LNSFlowL
+	        LNSFlowL=.TRUE.
+!<--
 
 C	Loop until ray hits next sequential element
 	        CrntNSCnt=0
@@ -1199,6 +1203,9 @@ cdebug
 	              RayMap(RayIndex(1,iRay),RayIndex(2,iRay))=0
 	              SegMap(RayIndex(1,iRay),RayIndex(2,iRay))=0
 	            END IF
+!-->
+	            LNSFlowL=.FALSE.
+!<--
 	            GO TO 9
 	          END IF
 
@@ -1225,6 +1232,9 @@ cdebug
 	            GO TO 708
 	          END IF
 	        iElt=iLastNonSeq
+!-->
+	        LNSFlowL=.FALSE.
+!<--
 C					! Lens Array
 	      ELSE IF (EltID(iElt).EQ.10) THEN
 c	        PrevElt=PrevNonSeg(iRay)
