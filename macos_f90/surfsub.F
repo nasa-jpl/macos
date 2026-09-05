@@ -20,6 +20,17 @@ C***********************************************************************
          INTEGER :: nZPFailMsg = 0
          INTEGER, PARAMETER :: mZPFailMsg = 20
 !<--
+!-->  Non-sequential candidate probes need FLOW-OF-LIGHT root selection:
+!     when LNSFlowL is set, the base-conic root pick in ConSrf / AsphSrf
+!     / AsphGridSrf / FreeFormSrf / UDSrf takes the SMALLEST POSITIVE
+!     root (the first forward crossing) instead of the |L^2-mpr|
+!     proximity metric, which has no flow-of-light sense and chooses
+!     between a two-sheet hyperboloid's branches by an unphysical
+!     distance -- the NS wrong-turn zone (macos/BRIEF_luis_round3.md).
+!     Set/cleared ONLY around the NS blocks in tracesub.F / propsub.F
+!     (the LZPFailed pattern).
+         LOGICAL :: LNSFlowL = .FALSE.
+!<--
 !-->  ZernType to gate ZerntoMon1's RMS normalisation on.  ZerntoMon1 is
 !     shared by the element-Zern, FF and Mon coefficient paths, so it cannot
 !     infer the governing type from the element id alone.  Each dispatch path
@@ -56,7 +67,7 @@ C***********************************************************************
             c=psi(1)*prel(1)+psi(2)*prel(2)+psi(3)*prel(3)
             L=-c/b
 
-            IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+            IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
 
             Do i=1,3
                pr(i)=pin(i)+L*ihat(i)
@@ -122,7 +133,7 @@ C***********************************************************************
 
             IF ((ABS(a).LE.1d-20).OR.(ABS(Kr).GE.1d20)) THEN
                L=-c/b
-               IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+               IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
             ELSE
                k2 = b*b - 4d0*a*c
                IF (k2.LT.0d0) GO TO 98
@@ -135,7 +146,8 @@ C***********************************************************************
                ! docs/Archive/dev_optimization_surfsub/README.md.
                IF (k2 .LT. TOL_TANGENT * b*b) THEN
                   L = -b / (2d0*a)
-                  IF (.NOT.ifLNsrf .AND. (L.LT.0d0)) GO TO 98
+                  IF ((LNSFlowL .OR. .NOT.ifLNsrf)
+     &               .AND. (L.LT.0d0)) GO TO 98
                   GO TO 49
                END IF
                IF (b.GE.0d0) THEN
@@ -145,7 +157,26 @@ C***********************************************************************
                END IF
                kp = ksqrt/a
                km = c/ksqrt
-               IF(ifLNsrf) THEN
+               IF (LNSFlowL) THEN
+!-->  NS candidate probe: the FIRST FORWARD crossing -- smallest
+!     positive root BEYOND the NS self-intersection threshold (1d-8,
+!     matching the NS acceptance gate).  A probe launched from ON the
+!     surface it just crossed carries a degenerate ~0 root; naive
+!     min-positive returns it and the acceptance gate then kills the
+!     candidate, losing the REAL forward crossing (the Luneberg
+!     exit-chord lesson -- each concentric shell is legitimately hit
+!     twice).  No qualifying root = no forward intersection.
+                  IF ((kp.GT.1d-8).AND.(km.GT.1d-8)) THEN
+                     L=MIN(kp,km)
+                  ELSE IF (kp.GT.1d-8) THEN
+                     L=kp
+                  ELSE IF (km.GT.1d-8) THEN
+                     L=km
+                  ELSE
+                     GO TO 98
+                  END IF
+!<--
+               ELSE IF (ifLNsrf) THEN
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      L=kp
                   ELSE
@@ -169,7 +200,7 @@ C***********************************************************************
                END IF
             END IF
 
-            IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+            IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
 
    49       CONTINUE
             S1 = Kr + Kc*(psitprel+L*itpsi)
@@ -891,7 +922,7 @@ C	Compute intersection point and normal vector
                   stop
                end if
                L=-c/b
-               IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+               IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
             ELSE
                k2=b*b-4d0*a*c
                IF (k2.LT.0d0) GO TO 98
@@ -902,7 +933,26 @@ C	Compute intersection point and normal vector
                END IF
                kp=ksqrt/a
                km=c/ksqrt
-               IF(ifLNsrf) THEN
+               IF (LNSFlowL) THEN
+!-->  NS candidate probe: the FIRST FORWARD crossing -- smallest
+!     positive root BEYOND the NS self-intersection threshold (1d-8,
+!     matching the NS acceptance gate).  A probe launched from ON the
+!     surface it just crossed carries a degenerate ~0 root; naive
+!     min-positive returns it and the acceptance gate then kills the
+!     candidate, losing the REAL forward crossing (the Luneberg
+!     exit-chord lesson -- each concentric shell is legitimately hit
+!     twice).  No qualifying root = no forward intersection.
+                  IF ((kp.GT.1d-8).AND.(km.GT.1d-8)) THEN
+                     L=MIN(kp,km)
+                  ELSE IF (kp.GT.1d-8) THEN
+                     L=kp
+                  ELSE IF (km.GT.1d-8) THEN
+                     L=km
+                  ELSE
+                     GO TO 98
+                  END IF
+!<--
+               ELSE IF (ifLNsrf) THEN
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      L=kp
                   ELSE
@@ -1154,7 +1204,7 @@ C       Compute intersection point and normal vector
 
             IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
                L=-c/b
-               IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+               IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
             ELSE
                k2=b*b-4d0*a*c
                IF (k2.LT.0d0) GO TO 98
@@ -1165,7 +1215,26 @@ C       Compute intersection point and normal vector
                END IF
                kp=ksqrt/a
                km=c/ksqrt
-               IF(ifLNsrf) THEN
+               IF (LNSFlowL) THEN
+!-->  NS candidate probe: the FIRST FORWARD crossing -- smallest
+!     positive root BEYOND the NS self-intersection threshold (1d-8,
+!     matching the NS acceptance gate).  A probe launched from ON the
+!     surface it just crossed carries a degenerate ~0 root; naive
+!     min-positive returns it and the acceptance gate then kills the
+!     candidate, losing the REAL forward crossing (the Luneberg
+!     exit-chord lesson -- each concentric shell is legitimately hit
+!     twice).  No qualifying root = no forward intersection.
+                  IF ((kp.GT.1d-8).AND.(km.GT.1d-8)) THEN
+                     L=MIN(kp,km)
+                  ELSE IF (kp.GT.1d-8) THEN
+                     L=kp
+                  ELSE IF (km.GT.1d-8) THEN
+                     L=km
+                  ELSE
+                     GO TO 98
+                  END IF
+!<--
+               ELSE IF (ifLNsrf) THEN
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      L=kp
                   ELSE
@@ -2057,7 +2126,7 @@ C	Compute incidence point of ray on the base conic surface
 
             IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
                L=-c/b
-               IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+               IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
             ELSE
                k2=b*b-4d0*a*c
                IF (k2.LT.0d0) GO TO 98
@@ -2068,7 +2137,26 @@ C	Compute incidence point of ray on the base conic surface
                END IF
                kp=ksqrt/a
                km=c/ksqrt
-               IF(ifLNsrf) THEN
+               IF (LNSFlowL) THEN
+!-->  NS candidate probe: the FIRST FORWARD crossing -- smallest
+!     positive root BEYOND the NS self-intersection threshold (1d-8,
+!     matching the NS acceptance gate).  A probe launched from ON the
+!     surface it just crossed carries a degenerate ~0 root; naive
+!     min-positive returns it and the acceptance gate then kills the
+!     candidate, losing the REAL forward crossing (the Luneberg
+!     exit-chord lesson -- each concentric shell is legitimately hit
+!     twice).  No qualifying root = no forward intersection.
+                  IF ((kp.GT.1d-8).AND.(km.GT.1d-8)) THEN
+                     L=MIN(kp,km)
+                  ELSE IF (kp.GT.1d-8) THEN
+                     L=kp
+                  ELSE IF (km.GT.1d-8) THEN
+                     L=km
+                  ELSE
+                     GO TO 98
+                  END IF
+!<--
+               ELSE IF (ifLNsrf) THEN
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      L=kp
                   ELSE
@@ -2931,7 +3019,7 @@ C	Compute incidence point of ray on the surface
 
             IF ((ABS(a).LE.1d-10).OR.(ABS(Kr).GE.1d10)) THEN
                L=-c/b
-               IF (.NOT.ifLNsrf.AND.(L.LT.0d0)) GO TO 98
+               IF ((LNSFlowL.OR..NOT.ifLNsrf).AND.(L.LT.0d0)) GO TO 98
             ELSE
                k2=b*b-4d0*a*c
                IF (k2.LT.0d0) GO TO 98
@@ -2942,7 +3030,26 @@ C	Compute incidence point of ray on the surface
                END IF
                kp=ksqrt/a
                km=c/ksqrt
-               IF(ifLNsrf) THEN
+               IF (LNSFlowL) THEN
+!-->  NS candidate probe: the FIRST FORWARD crossing -- smallest
+!     positive root BEYOND the NS self-intersection threshold (1d-8,
+!     matching the NS acceptance gate).  A probe launched from ON the
+!     surface it just crossed carries a degenerate ~0 root; naive
+!     min-positive returns it and the acceptance gate then kills the
+!     candidate, losing the REAL forward crossing (the Luneberg
+!     exit-chord lesson -- each concentric shell is legitimately hit
+!     twice).  No qualifying root = no forward intersection.
+                  IF ((kp.GT.1d-8).AND.(km.GT.1d-8)) THEN
+                     L=MIN(kp,km)
+                  ELSE IF (kp.GT.1d-8) THEN
+                     L=kp
+                  ELSE IF (km.GT.1d-8) THEN
+                     L=km
+                  ELSE
+                     GO TO 98
+                  END IF
+!<--
+               ELSE IF (ifLNsrf) THEN
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      L=kp
                   ELSE
