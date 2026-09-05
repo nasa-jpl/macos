@@ -3825,6 +3825,10 @@ c	      END IF
 	        END IF
 	        iLastNonSeq=iNextSeq-1
 	        iminPrev=iElt-1
+!-->  NS probes + member bounces: flow-of-light root selection
+!     (smallest positive) in the base-conic pick -- see surfsub LNSFlowL
+	        LNSFlowL=.TRUE.
+!<--
 
               ! Loop until ray hits next sequential element
 	      CrntNSCnt=0
@@ -4091,6 +4095,9 @@ C	Here when element number is determined...
 	          IF (ifRayPrint) THEN
 	            WRITE(*,122)iRay,LastElt
 	          END IF
+!-->
+	          LNSFlowL=.FALSE.
+!<--
 	          GO TO 14
 	        END IF
 	        iElt=imin
@@ -4120,6 +4127,9 @@ C	Here when element number is determined...
 	          GO TO 708
 	        END IF
 	      iElt=iLastNonSeq
+!-->
+	      LNSFlowL=.FALSE.
+!<--
 
             ! --------------------------------------
             ! (10) Lens Array
