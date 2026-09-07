@@ -4,6 +4,10 @@ Fang Shi.  DRAFT — pending Dave's sign-off; NO export marking until
 reviewed.  Build: python3 make_brief_slides.py deck_tg_fang.md
 Recast 2026-09-03 (Dave): options-first with decision table, then cube
 details; first-order cost at 50/75/100 mm CA added.
+2026-09-07 fold: head-to-head section (S4 actuator-currency table + break
+scale, ZWFS modeling-assumptions slide for the Fang conversation, S5
+photon pricing) from tg96/zwfs s4+s5 reports; stale claims corrected
+(sampling-starvation refuted; comparison no longer "planned").
 2026-09-04 fold: TG96 section (shallow plate realized for a Xinetics
 96x96 — layout+sampling solve, measured instrument, differential
 metric) from tg_psi_dm96 run 10 (tg96_report.txt).
@@ -14,7 +18,7 @@ Cost slide = scaling estimates, vendor quotes pending (footnoted).
 -->
 
 # A deformable-mirror surface gauge, modeled end to end
-A polarization phase-shifting Twyman–Green in MACOS: three splitter options priced, the idealized gauge closed at 0.18 nm, calibration taken to the actuator scale — and the shallow-plate option laid out and measured at full 96×96 scale
+A polarization phase-shifting Twyman–Green in MACOS: three splitter options priced, the idealized gauge closed at 0.18 nm, calibration taken to the actuator scale, the shallow-plate option measured at full 96×96 scale — and a Zernike-sensor head-to-head on the same DM truth, priced to the 1 pm ambition
 D. C. Redding, with Claude Code.
 September 2026.  Prepared for Fang Shi.
 DRAFT — pending review.
@@ -150,7 +154,7 @@ DRAFT — pending review.
 ::: full
 ![One actuator pushed 20 nm: sensed matches applied; the error is a 0.05 nm rms sub-actuator dipole (residual registration, not gauge phase).](figs/tg96_poke_triptych.png){h=1.85}
 ![Defocus at 8 nm amplitude: gain 1.024, error flat at 0.086 nm rms — the interferometer owns low order.](figs/tg96_defocus_triptych.png){h=1.85}
-- **Reading with the transfer curve in hand:** the gauge is essentially perfect from low order through the single-actuator scale; its cost concentrates at the finest patterns (0.50 gain at the full 96×96 checkerboard).  The same two cases measured on the Zernike sensor (its own deck): poke 0.45 at its sampling-starved camera, defocus 0.99.
+- **Reading with the transfer curve in hand:** the gauge is essentially perfect from low order through the single-actuator scale; its cost concentrates at the finest patterns (0.50 gain at the full 96×96 checkerboard).  The same two cases measured on the Zernike sensor (its own deck): poke 0.45 raw — the mask spot selects the band; a sampling sweep refuted the camera as the cause, and kernel calibration recovers 0.90 — defocus 0.99.
 ~ Truth mapped to the camera by traced rays; measurement sign −1 and patterns on the illuminated 38 mm radius (the source fills 74% of the aperture — a display-frame lesson recorded in the campaign README).  Record: tg96_wf_figs.m.
 
 ## The differential measurement: how well is a change measured? | A 10 nm actuator deviation reads to 0.021 nm — the same about a 30 nm working surface as about a flat
@@ -163,8 +167,39 @@ DRAFT — pending review.
 | working surface, 30 nm rms | random pattern, 10 nm rms | 0.921 | 3.68 nm rms | 0.926 |
 - **The common systematic cancels, as designed:** the single-actuator rows agree to 0.003 nm across bases — the gauge measures a change the same way about a working surface as about a flat.
 - **What remains is the response curve, not a hidden coupling:** the random-pattern rows (all spatial frequencies at once) read 37% low identically about both bases.  The differential error is the instrument response of the previous slide — which calibrates — not a coupling to the working state.
-- **This is the benchmark for what comes next:** the same DM truth and the same differential score, measured by a Zernike wavefront sensor — the planned comparison.
+- **This benchmark has since been run head-to-head** against a Zernike wavefront sensor on the same DM truth, in actuator currency — the next three slides.
 ~ Each row: measure the base, apply the deviation, measure again, difference the two measurements, fit one gain against the true deviation; the residual is what is left.  Record: tg96_report.txt, differential section.
+
+## The head-to-head, in actuator currency | A 10 nm actuator change reads to 46 pm through the calibrated interferometer, identically on a flat and a 30 nm working surface — and the interferometer does not break as the working state grows
+::: full
+- **Scoring moved to actuator space** (the ruling): fit the DM's influence model to the measurement through the ray-traced registration, score recovered actuator commands — one currency for any sensor.  Both instruments carry calibrated estimators: a measured (ZWFS) or exact (IFO) response kernel, Tikhonov lattice deconvolution, and a measured modal transfer correction.
+| single 10 nm actuator change, on a 30 nm working surface | gain | error |
+| interferometer, four-step differential | 0.92 | 46 pm |
+| Zernike sensor, frozen-reference linear reading | 0.66 | 744 pm |
+| Zernike sensor, multi-depth phase-stepped retrieval | 1.13 | 773 pm |
+- **The break scale separates them:** growing the working surface 30 → 480 nm rms costs the interferometer ~5% of gain and 44 → 55 pm of floor — it does not fold.  The Zernike sensor's linear reading folds beyond a ~30 nm working state; the phase-stepped retrieval holds to ~60 nm; beyond ~120 nm its recoveries still clear a formal detection threshold but are no longer measurements.
+- **Verdict as measured, not assumed:** the working-state axis belongs to the interferometer; the Zernike sensor serves flat and small working states — and owns dynamic range on single frames (a 150 nm poke, 3 radians, retrieves within 9% via the depth ladder where the linear reading folds).
+~ 96×96 rig; 48×48 (DST-class pitch) measured alongside with the same conclusions at 33 pm.  Records: tg96_s4_report.txt, zwfs_s4_report.txt; machinery factored into one scoring library (dm_gauge_lib) so both instruments run the identical estimator code.
+
+## The Zernike sensor as we model it | Explicit choices, so a different modeling of the same sensor is discoverable in one conversation
+::: full
+- **Geometry:** the gauge's own test arm, reference arm removed — same source, lenses and DM; the phase dimple sits at the internal focus of the detector leg, and the camera sees the re-imaged pupil.  One frame per measurement.
+- **The mask is a complex transmission applied to the propagated field at focus** — not a phase screen on rays: 346.2 nm etch in fused silica (π/2 at 632.8 nm, the VSG2 hardware value), gray-edge supersampled disk, diameter 2.0 λ/D as used (1.06 λ/D — the hardware spot — sign-inverts the fine-actuator band; the spot is a band-select lever we measured, not a free parameter).
+- **Propagation to and from the focus is physical optics** (near-field reference-sphere sandwich), with the focal-plane sampling asserted at ≥6 pixels across the dimple — an interface we found silently starved when the tail was traced geometrically.
+- **Two reconstructions, used per their measured strengths:** a frozen-reference linear reading (calibrated against model-measured E₀ and E_b fields on the flat DM), and a multi-depth phase-stepped retrieval (π/2, π, 3π/2 + clear).  A structural fact worth comparing notes on: for a phase-only dimple |c|² = −2 Re c identically, so depth stepping yields two observables per pixel, not three — |E_b|² must come from a one-time calibration, not the ladder.
+- **Calibration is noiseless in the model** (long-exposure assumption), and scoring is actuator-space through the same estimator code as the interferometer.
+~ Phase 2 in plan: a polarizing metasurface producing two phase images (vector Zernike sensor) once the scalar system is agreed.  If Fang's group models the sensor differently — mask representation, propagation, reference handling, reconstruction — this slide is the diff list.
+
+## Pricing the 1 pm ambition: photons are not the blocker | All three readings reach 1 pm near 10¹⁵ photons per DM state — within 2× of each other — so systematics, not light, decide
+::: full
+- **Method:** the optical fields do not depend on noise, so noiseless frames are captured once per DM state and photon shot noise is Monte-Carloed numerically; the photon budget per state is split across each reading's frames (interferometer 4, linear 1, stepped 4) — equal light and equal time across modalities.
+| reading | noise on the 10 nm change | photons/state for 1 pm |
+| interferometer four-step | 2.8×10⁷/√N pm | 8×10¹⁴ |
+| Zernike linear | 3.7×10⁷/√N pm | 1.4×10¹⁵ |
+| Zernike stepped | 7.0×10⁷/√N pm | 5×10¹⁵ |
+- **The noise follows 1/√N over eight decades, and each instrument's high-photon floor converges to its measured systematic floor** — the noiseless campaign and the noise model agree where they must.
+- **10¹⁵ photons at 633 nm is ~0.3 mJ** — trivial for a bench source.  The 1 pm budget is therefore a systematics and gain-stability budget (gain jitter measured at the 0.1% class), not a photon budget — and the sensors' photon economies do not discriminate between them.
+~ Scenario: the head-to-head row (single 10 nm change on the 30 nm working surface, 96×96).  Detector read noise, drift and calibration noise are the natural next terms once a use case fixes them.  Records: tg96_s5noise_report.txt, zwfs_s5noise_report.txt.
 
 ## What this offers a bench program | An instrument-error sandbox where truth is exact and every systematic prints
 ::: full
@@ -184,4 +219,5 @@ DRAFT — pending review.
 - Regression: tTgPol (9 checks) + tTgPol2 (9 checks) in the fast suite; the polarizing option's off-state is bit-identical to the plain Twyman–Green.
 - Traps recorded so they are not re-derived: a circular state is analyzer-invariant in power (single-arm tripwires pass vacuously on the aligned rig); the four-step protocol's 4θ term is real at the detector (8.9×10⁻⁴ of the fringe) and cancels in the differential protocol (1.7×10⁻¹⁴ nm); diffraction-array row/column parity is calibrated on one actuator and verified on a second, never hard-coded.
 - Option-3 open items: joint detector-leg optimization (null + pupil-image sharpness + distortion together — the current leg tuned for null alone gave up finest-pattern gain 0.84 → 0.50), response-curve-corrected scoring of the differential residuals, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.
-- Planned configurations on the same DM truth and battery: an all-reflective variant (off-axis paraboloids replace the lenses — removes the transmitted-glass and homogeneity cost rows entirely) and the Zernike wavefront sensor comparison against the differential benchmark.
+- Head-to-head campaign records (both instruments, one scoring library): templates/40_benches/dm_gauge_lib (registration / actuator fit / modal correction / both measurement factories; the two S3 batteries re-run identically through it as the equivalence gate) + tg_psi_dm96 and zwfs_dm96 stage reports S2–S5 (registration and kernel calibration, modal battery, differential head-to-head with break scale, photon-noise pricing).  Campaign READMEs carry the findings ledgers, including the corrected attributions (pattern-radius frame bias; the refuted sampling-starvation hypothesis).
+- Planned configurations on the same DM truth and battery: an all-reflective variant (off-axis paraboloids replace the lenses — removes the transmitted-glass and homogeneity cost rows entirely) and the phase-2 vector Zernike sensor (polarizing metasurface, two phase images).
