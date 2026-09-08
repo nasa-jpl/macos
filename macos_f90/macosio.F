@@ -3058,6 +3058,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	REAL*8 DVAR(N),DDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3094,7 +3096,31 @@ C  Read response:
 	CALL READ_LOH(2)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(DVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(DVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(2)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO I=1,ABSN
@@ -3237,6 +3263,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	SREAL RVAR(N),RDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3273,7 +3301,31 @@ C  Read response:
 	CALL READ_LOH(3)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(RVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(RVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(3)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO 9 I=1,ABSN
@@ -3413,6 +3465,8 @@ C  with Fortran WRITE.  See CACCEPT for the rationale.
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
 	INTEGER I, N, ABSN, LEN, IVAR(N), IDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	INTEGER ICLEN
 	CHARACTER*16 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
@@ -3450,8 +3504,32 @@ c goes via the cache so readline can render and own cursor state.
 C  Read response:
 	CALL READ_LOH(4)
 	CALL clear_sub_prompt
-	IF (CVAR.NE.' ') THEN
-	   READ(CVAR,*,ERR=1)(IVAR(I),I=1,ABSN)
+	IF (CVAR.NE.' ')THEN
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(IVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(4)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
      	   ! No data entered, use the default
 	   DO 9 I=1,ABSN

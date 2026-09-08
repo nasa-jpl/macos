@@ -54,7 +54,8 @@ caller only overwrites when the flag is set.
 ```
 
 Downstream is untouched: the telecentric guard, the beam-footprint
-autoswitch and the Rx-order flag all still see `zp` and behave as before.
+autoswitch (and the Rx-order flag, until its removal on 2026-09-08) all
+still see `zp` and behave as before.
 
 The geometry.  With `prel = o − Vpt(iNxt)`, `itpsi = d·psi`,
 `psitprel = psi·prel`, `mpr = |prel|²`, the conic

@@ -6108,7 +6108,7 @@
         use    smacosio_mod, only: RxStopSet, EltStopSet, StopOffset
         use         src_mod, only: StopElt
         use       macos_mod, only: ifStopSet
-        use         elt_mod, only: EltID,NSRefractorElt,NSReflectorElt,SegmentElt
+        use         elt_mod, only: EltID,NSRefractorElt,NSReflectorElt
 
         implicit none
         logical, intent(out):: OK            ! (PASS=1) if successful; (FAIL=0) otherwise
@@ -6118,10 +6118,12 @@
         OK = FAIL
         if (.not. SystemCheck() .or. nElt <=3 .or. iElt<1 .or. iElt>=nElt-2) return
 
-        ! cannot set stop at element of type NSRefractor,NSReflector or Segment
+        ! cannot set stop at a non-sequential element.  Segment IS allowed
+        ! (2026-09-08, Dave): the STOP command maps the chief ray to the
+        ! segment's source segment for the aiming trace -- see the STOP
+        ! branch in macos_cmd_loop.inc.
         if ((EltID(iElt)==NSRefractorElt).or. &
-            (EltID(iElt)==NSReflectorElt).or. &
-            (EltID(iElt)==SegmentElt)) return
+            (EltID(iElt)==NSReflectorElt)) return
 
         ! chk Offset
         if (isnan(VptOffset(1)) .or. isnan(VptOffset(2))) return
