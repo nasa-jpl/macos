@@ -64,3 +64,37 @@ preflight (type test; flat -> warn) so the two never disagree; keep
   fails are FEX-probe fallout for Dave's re-pin review.
 - Deleting your REPORT_ep_dome_fix.md was right; the review + the ruling
   block in PLAN_DESIGN_LAYER are the record.
+
+## Round 3 status (CCL, 2026-09-08, after your "Done. Here's where it landed")
+
+Your hand-back was ruled and implemented before your note reached me; you
+were rebased on `6109259`, which predates it.  Current tips:
+
+- macos `dev-candidate` `9948617` (records; engine unchanged since `44fc362`).
+- resources `dev-candidate` `cb6431a`: tStopReload gate, ep_dome_probe tool,
+  add_pupil docstring, and the five FEX-definition pins RE-PINNED
+  (tFocalSurface 11/11, tPupilFindMethod 10/10).
+- resources `sens-core` `3521d12` (contains `cb6431a`): the multi-level
+  preflight (`macos:<front>_multi:noPupil` before the loop, `flatPupil`
+  warn on a flat reference), the empty-block guard on the centre-tile
+  assert, and the three tDwDx tests rebuilt on committed fixtures.
+  tDwDx 25/25 plus the six sibling classes green there.
+
+Your remaining steps, in order:
+1. Pull both repos to those tips; rebase `2533958` + `2fede47` onto
+   resources `cb6431a`.
+2. In `wf_elt_auto`, replace the `~is_powered -> read at nElt-1` test with
+   the element-TYPE test: read at nElt-1 only if `elt_id` is 3 or 8
+   (Reference/Return); flat one -> warn once (`macos:dw_dx:flatPupil`),
+   valid only in collimated space.  Reason, once more: `is_powered`
+   answers "would a reset WRITE clobber an optic" and passes a flat fold,
+   whose OPD in converging space is tilt-blind like the FocalPlane.  Keep
+   `is_powered` for the reset write.
+3. If `tEpDomeGate` exercises the MULTI path on the bare deck, expect
+   `macos:dw_dx_multi:noPupil` (the core's preflight fires before any
+   single-DOF call); the single-DOF id `macos:dw_dx:noPupil` is what a
+   direct `macos.dw_dx` call raises.
+4. Push.  I then re-merge `dev-candidate` into `sens-core` and run tDwDx +
+   tEpDomeGate together; that is the clean full suite you are after.
+   `mmacos/BRIEF_ep_dome_ccmac_handback.md` can go once this is in --
+   this brief and REPORT_ep_dome_review.md are the record.
