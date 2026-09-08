@@ -1,3 +1,10 @@
+> **Note (2026-09-08):** every FEX radius quoted in this report was measured
+> with the legacy single-probe FEX (tangential pupil).  The frame-independent
+> FEX (`82d8148`, medial pupil) moves the jwst-zoom null radii by
+> +0.68..1.23 mm; `tFocalSurface` was re-pinned to the medial values on
+> 2026-09-08 (Dave).  The findings here (surface leg vs plane leg, the
+> curved-focal-surface defocus) are unaffected -- only the absolute radii.
+
 # Focal-surface work — the FEX/SXP curved-`iElt+1` radius fix, and the focal-surface finder
 
 _TO, 2026-08-28.  Tasking: `macos/BRIEF_focal_surface.md` (Dave ruled the
