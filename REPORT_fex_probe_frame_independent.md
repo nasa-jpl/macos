@@ -120,7 +120,19 @@ chief ray that survives to its EP return before FEX means anything.
 (1e-7: 3017.58 -> 3018.29..3018.74), `test_null_radii_match_the_ab_report_
 stop_orders_now_agree` (5e-3 abs vs REPORT_wnom_cli_ab V4), `test_emitted_
 deck_loads_and_its_fex_radius_follows_the_fit` (3017.5444 -> 3018.4638).
-All three fail by exactly the medial shift (+0.7..1.2 mm).  Green:
+All three fail by exactly the medial shift (+0.7..1.2 mm).
+`tPupilFindMethod` (found later the same day, 8/10): `test_field_scope_
+places_per_combo_tilt_absorbing_spheres` pinned the written vertex
+INVARIANT across the two zoom configurations to 1e-6 mm -- true for the
+tangential probe (the FSM tilts about y, deflecting the beam in x, and
+the y-plane crossing is symmetric under that), not for the medial, whose
+sagittal half sees the deflection: measured 5.5e-4 mm.  `test_object_
+space_apstop_deck_needs_no_stop_elt` pinned a 10-40 mm gap between
+FEX and pupil_find's cone-convergence station on e5hex1 ("this deck's
+smear is ~23 mm"); the medial FEX moved 24 mm toward that station and
+the gap is now 1.3 mm -- the two independent finders AGREE, and the
+"smear" was mostly the tangential-vs-medial offset.  Both are re-pin
+candidates for the same review.  Green:
 tStopReload 2/2 (now asserts obj == Segment stop at 1e-9), tOptFex 3/3,
 tPupilMap 13/13, tVeneerXP 5/5, tSpot 7/7, tDwDx 25/25 (the dw_dx
 sensitivity channels reset_xp through FEX on e5hex1 -- their gates pin
