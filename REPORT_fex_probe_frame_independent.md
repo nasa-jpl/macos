@@ -131,8 +131,9 @@ space_apstop_deck_needs_no_stop_elt` pinned a 10-40 mm gap between
 FEX and pupil_find's cone-convergence station on e5hex1 ("this deck's
 smear is ~23 mm"); the medial FEX moved 24 mm toward that station and
 the gap is now 1.3 mm -- the two independent finders AGREE, and the
-"smear" was mostly the tangential-vs-medial offset.  Both are re-pin
-candidates for the same review.  Green:
+"smear" was mostly the tangential-vs-medial offset.  **All five were
+re-pinned to the medial values on 2026-09-08 (Dave's ruling), each with the
+legacy value and the mechanism recorded in the test.**  Green:
 tStopReload 2/2 (now asserts obj == Segment stop at 1e-9), tOptFex 3/3,
 tPupilMap 13/13, tVeneerXP 5/5, tSpot 7/7, tDwDx 25/25 (the dw_dx
 sensitivity channels reset_xp through FEX on e5hex1 -- their gates pin

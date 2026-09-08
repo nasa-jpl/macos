@@ -365,12 +365,16 @@ confirmed with the LEGACY engine on 90-degree-rotated source frames
 split is pupil astigmatism, not a probe defect.  **tFocalSurface pins
 3 tests to the legacy radii** (`test_null_radii_are_pinned` 1e-7,
 `..._match_the_ab_report_...` 5e-3 abs vs REPORT_wnom_cli_ab's V4,
-`..._fex_radius_follows_the_fit` 3017.5444) -- they FAIL by exactly the
-shift above and need a REVIEWED re-pin (Dave), not a tolerance bump.
-Same review: `tPupilFindMethod` 8/10 -- the zoom cross-config vertex
-invariance (1e-6 mm; medial gives 5.5e-4 mm, the sagittal half sees the
-FSM deflection) and e5hex1's pinned 10-40 mm FEX-vs-cone-fit gap (now
-1.3 mm: the medial FEX AGREES with pupil_find's cone station).
+`..._fex_radius_follows_the_fit` 3017.5444) -- they failed by exactly the
+shift above and were **RE-PINNED to the medial values 2026-09-08 (Dave's
+ruling)**, each with the legacy value and the mechanism in a comment.
+Same re-pin: `tPupilFindMethod` -- the zoom cross-config vertex
+separation is pinned at 5.536e-4 mm (the sagittal half of the medial
+crossing sees the FSM deflection; the tangential one did not) and
+e5hex1's FEX-vs-cone-fit gap at 1.302 mm (was ~23 mm: the medial FEX
+AGREES with pupil_find's cone station).  Rule for the next FEX-definition
+change: these five are the pins that move; re-pin with the value AND the
+mechanism, never a tolerance bump.
 NOT changed:
 XPS (per-ray crossing cloud, still one probe about xGrid -- its vertex
 can now differ from FEX by the probe-sign term on asymmetric decks),
