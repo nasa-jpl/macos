@@ -901,8 +901,12 @@ Enter number of exit pupil return surface: [5]: 6
    (z, psi, Vpt likewise)
 Accept the new element? [YES]:
 ```
-Locates the exit pupil from the chief plus a differential chief
-ray and refits the chosen Return/Reference element there as the
+Locates the exit pupil from the chief ray plus FOUR differential
+chief rays (+/-5e-6 rad about two orthonormal axes perpendicular
+to the chief ray; the crossings are averaged, so the result does
+not depend on the sign or azimuth of the source frame -- 2026-09-08,
+before that a single probe about xGrid) and refits the chosen
+Return/Reference element there as the
 reference sphere for far-field propagation (eElt=0, fElt=|z|,
 KrElt=-fElt, KcElt=0, psi, Vpt/Rpt updated).  Requires STOp
 first.  The EP radius is the chief-ray distance from the EP to
@@ -1062,6 +1066,14 @@ PFP and FEXit.  Source adjustment follows SAOpt (default:
 collimated source translates ChfRayPos; point source re-aims
 ChfRayDir).  If the Rx declared ApStop, the first STOp run
 substitutes that element/offset for the typed values.
+Segment elements are accepted (2026-09-08; the chief ray is
+mapped to that segment for the aiming trace) -- note that in
+segment-class decks every segment's VptElt is the PARENT vertex,
+so offset 0,0 on any segment is the parent vertex; use an RptElt-
+based offset for a segment centre.  Non-sequential elements
+(NSReflector/NSRefractor) are refused by name.  The OBJ answer may
+be typed on one line (`stop obj 0 0 0`); a short line is completed
+from the next prompt.
 SMACOS: CARG(1)='ELT'|'OBJ'; ELT: IARG(1)=element,
 DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 *Related:* CENter, SAOpt, FEXit, FFP, PFP.

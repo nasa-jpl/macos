@@ -570,7 +570,7 @@ To use FEX, the prescription must be set up with two return surfaces followed by
 
 FEX works for systems where the exit pupil is located in front of the detector. It is not useful for telecentric systems (where the exit pupil is at infinity) or for cases where the exit pupil is located behind the detector.
 
-FEX traces two rays: the nominal chief ray and a differential chief ray. The field angle of differential chief ray differs by 1 arcsecond from the nominal chief ray angle. Both rays are traced to the detector return surface and then backwards to find their intersection. The intersection of the nominal and differential chief rays defines the center of the exit pupil. The parameters of the exit pupil (the second return surface) are set as follows:
+FEX traces five rays: the nominal chief ray and four differential chief rays whose field angles differ from it by about 1 arcsecond (5e-6 rad), in the plus and minus directions about each of two perpendicular axes. All are traced to the detector return surface and then backwards to find their intersections with the nominal chief ray; the mean of the four crossing points defines the center of the exit pupil. Averaging the plus and minus probes cancels the term linear in the probe angle, and averaging the two axes takes the medial of the tangential and sagittal pupils, so the result does not depend on the orientation or handedness of the source coordinate frame (before 2026-09-08 a single probe about xGrid was used). The parameters of the exit pupil (the second return surface) are set as follows:
 
 -   vertex, VptElt, to the center of the exit pupil
 

@@ -308,6 +308,43 @@ split.  And the legacy `zp_iEm1` leg is NOT a general substitute -- it
 equals the surface leg on the jwst deck only because elt 26 is
 coincident with elt 28.
 
+## FEX probe is FRAME-INDEPENDENT (2026-09-08, Dave)
+`FEXProbeCross` (tracesub_mod, called by BOTH `FEX` and `SXP`) traces
+FOUR differential chief rays, `+/-5d-6` about two orthonormal axes
+perpendicular to the source chief ray (azimuth seeded by xGrid, yGrid
+fallback), crosses each with the chief (`FindCrossPt`, point ON the
+chief) and returns the MEAN crossing distance; `CrossPt = cr1pos +
+zpLeg*cr1dir`.  Why: the legacy single probe `th = 5d-6*xGrid` gave a
+crossing with a term LINEAR in the probe angle on off-axis decks, so the
+answer depended on the SIGN of xGrid (e5hex1: 2548.0019 vs 2549.5813,
+1.58 mm along the chief ray, between the deck's left-handed frame and
+the right-handed one an element STOP rebuilds) and on its azimuth
+(tangential vs sagittal pupil).  The +/- pair is a central difference
+(sign term cancels EXACTLY); the two azimuths average to the medial
+pupil (rotation-invariant at first order).  Symmetric decks: all four
+crossings coincide -> unchanged to round-off.  Telecentric test now uses
+the LARGEST chief/probe sine; `nGood=0` (all probes lost) takes the same
+station fallback with its own message; `nGood<4` warns and averages the
+survivors.  Each run prints `EP crossing = mean of N probes; spread S`
+-- S is the pupil-astigmatism / probe-asymmetry measure.
+**MAGNITUDE, measured (the medial pupil is NOT the legacy tangential
+one on off-axis decks):** e5hex1 axis1 2548.79 / axis2 2498.68 mm ->
+medial 2523.74 (legacy 2548.00; T/S split 50 mm, 1%); j18sc stop-elt-4
+3037.064 -> 3037.968 (split 1.8 mm); jwst zoom fixture null radii
+3017.5x -> 3018.3-3018.7 (+0.7..1.2 mm, 2.4e-4..4.1e-4).  Independently
+confirmed with the LEGACY engine on 90-degree-rotated source frames
+(e5hex1 sagittal 2498.68, j18sc 3000.29 vs tangential 2997.89), so the
+split is pupil astigmatism, not a probe defect.  **tFocalSurface pins
+3 tests to the legacy radii** (`test_null_radii_are_pinned` 1e-7,
+`..._match_the_ab_report_...` 5e-3 abs vs REPORT_wnom_cli_ab's V4,
+`..._fex_radius_follows_the_fit` 3017.5444) -- they FAIL by exactly the
+shift above and need a REVIEWED re-pin (Dave), not a tolerance bump.
+NOT changed:
+XPS (per-ray crossing cloud, still one probe about xGrid -- its vertex
+can now differ from FEX by the probe-sign term on asymmetric decks),
+the STOP-ELT entrance-pupil crossing, FPP/PFP and the WINDOW/PLOCATE
+beam-frame probes (those DEFINE a frame from xGrid by design).
+
 ## FEX EP-radius rework (2026-07-03) + SXP command (Set eXit Pupil)
 **FEX now defaults to the EP→next-element radius** (Dave's spec): the
 EP Return radius is ALWAYS the chief-ray distance from the EP
@@ -323,10 +360,17 @@ element station, radius = station→iElt+1 plane, FLAT 1d22 fallback;
 (2) **beam-footprint sanity** — a reference sphere smaller than the
 beam footprint at the EP guarantees k2<0 "surface miss" for marginal
 rays (the SegDemo3 failure); autoswitches to the other leg if usable;
-(3) **Rx-order flag** — a Return immediately preceding the EP return
-usually marks an intermediate focus that should be a passive
-Reference (pattern: Reference@FP, Return@EP, Return@FP); fires on
-most legacy Rx (corpus predates the convention — deliberate nudge).
+A third guard, the **Rx-order flag** (warn whenever the element
+before the EP return is a Return), was **REMOVED 2026-09-08** (Dave,
+j18sc `fex 27`): the pattern it prescribed — Reference@FP, Return@EP,
+Return@FP — exists nowhere.  The manual's FEX setup is two Returns
+then a FocalPlane/Reference, the FIRST Return AT the focus; a
+514-deck census finds 119 ending Return/Return/FocalPlane and 0 ending
+Reference/Return/Return; and the legacy `zp_iEm1` leg assumes iEm1 IS
+the focal Return.  "Fires on most legacy Rx" was the guard being
+wrong, not the corpus.  The SegDemo3 defect it was meant to catch is a
+POSITION error (focal Return not at the focus), visible as the two
+printed legs disagreeing — do not re-add a TYPE check.
 **Compatibility (fex_sweep 2026-07-03):** conforming double-pass Rx
 have the pre-EP Return AT the focus, so both legs are equal by
 construction → round-off-level no-op (e5hex1, 6MST, iris, j18*,
@@ -785,6 +829,56 @@ Elt 21 became factor ~1e5 from FPM alone, factor ~3e6 with the Lyot.
 The right model to follow is `MACOS_resources/docs/macos-manual/examples/CoroExample.in`
 Elt 6 (the working CoroMask).  Any new coronagraph test prescription
 should use `Element= Obscuring` for the mask element.
+
+## STOP on a Segment element + multi-value prompt gather (2026-09-08)
+Two CLI fixes from Dave's j18sc `fex 27` session (no `ApStop=` in that
+deck, so a STOP had to be set by hand):
+- **`stop obj 0 0 0` on ONE line crashed** (`forrtl severe (24): end-of-
+  file during read, unit -5`).  `DACCEPT`/`RACCEPT`/`IACCEPT` (macosio.F)
+  get ONE blank-delimited token per `READ_LOH`, then list-directed READ
+  ABSN values from it -- EOF on a short token, and `ERR=` does not catch
+  EOF.  Now they gather: `READ(acc,*,IOSTAT=ios)`; on `ios<0` pull the
+  next token (rest of the line, then further lines / journal lines, with
+  a `(N values expected -- enter the rest)` note when the line is used
+  up) and retry; `ios>0` re-prompts as before.  The comma form `0,0,0`
+  was always one token and still is.  Journal contract unchanged: READ_LOH
+  journals per token, and the gather reads across lines on replay.
+  smacosio.F's copies (SMACOS stack path) are NOT touched -- the stack
+  packs complete values.
+- **STOP/CENTER rejected `Segment` (EltID 11) with `Invalid element type`**
+  -- and indexed `EltID(iStop)` BEFORE the range check.  Now: range check
+  first; the veto keeps only `NSRefractorElt`/`NSReflectorElt` (named in
+  the message); Segment is allowed.  The one Segment-specific mechanism:
+  CTRACE visits a Segment element only for rays whose `RayToSegMap`
+  contains `EltToSegMap(iElt)`, so the chief ray is mapped to the stop
+  segment right before `CALL STOP` (AFTER label 210, so the Rx `ApStop=`
+  entry path gets it too); `SetSourceRayGrid` rebuilds the maps at the
+  next grid setup.  `stop_info_set` (macos_api_mod) dropped the same
+  Segment veto, so `macos.stop(4)` / `m.stop(4)` work on segmented decks.
+  `COORD` still carries the old 9/11/12 veto -- not asked, not touched.
+  Gate: j18sc `stop elt 4 0,0` (CenterSegment) then `fex 27` reproduces
+  `stop obj 0,0,0` to 1e-13 (aiming convergence).  MEASURED TRAP: `stop
+  elt 5 0,0` (an off-axis segment) gives the IDENTICAL stop -- not a
+  bug: in segment-class decks every segment's `VptElt` IS the parent
+  vertex (j18sc: all 19 at 0,0,0; only `RptElt`/apertures differ), and
+  the offset is relative to VptElt.  A segment CENTRE needs an
+  RptElt-based offset.
+  **SECOND MEASURED TRAP (FEX side FIXED the same day -- see "FEX probe
+  is FRAME-INDEPENDENT"; the ELT-stop frame flip itself remains):** on
+  e5hex1, `stop elt 1 0,0` then `fex 12` gives EP radius 2549.581280 vs
+  2548.001852 from `stop obj 0,0,0` (6.2e-4; vertex moved 1.58 mm ALONG
+  the chief ray; chief-ray direction and StopPos identical to 1e-10).
+  Cause, pinned by SAVE-diff: the OBJ path keeps the deck's source frame
+  (`xGrid = -1 0 0`, LEFT-handed with yGrid/ChfRayDir), while every
+  ELEMENT stop rebuilds it right-handed via ChiefRayAiming -> UpdSrcGrid
+  -> `define_local_csys` (`xGrid = +1 0 0`); FEX's differential probe is
+  `th = 5d-6*xGrid`, so the probe sign flips and the crossing walks
+  1.58 mm on this off-axis deck.  Carried by the FRAME, not the stop
+  type: `stop elt 1` then `stop obj 0,0,0` (which preserves xGrid)
+  reproduces 2549.581280 exactly.  j18sc (right-handed deck frame) shows
+  no difference (1e-13).  Gate `tStopReload/
+  test_stop_accepts_a_segment_element` asserts direction + on-line
+  vertex and tolerates the radius to 2e-3.
 
 ## IACCEPT_S reprompt-loop sweep (macos_cmd_loop.inc, 2026-07-16)
 Interactive commands that validated an element/ray id and jumped BACK

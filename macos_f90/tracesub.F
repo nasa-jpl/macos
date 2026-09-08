@@ -384,6 +384,166 @@ C***********************************************************************
 	END SUBROUTINE FEXConicLeg
 
 
+C***********************************************************************
+C       FEXProbeCross -- frame-independent exit-pupil crossing
+C       (Dave 2026-09-08).
+C
+C       FEX used ONE differential chief ray, rotated +5d-6 rad about
+C       xGrid through StopPos, and crossed it with the chief ray.  The
+C       crossing point of two rays from field points theta apart has a
+C       term LINEAR in theta on any off-axis / pupil-aberrated deck, so
+C       the answer depended on the SIGN of xGrid (measured: e5hex1's
+C       left-handed deck frame vs the right-handed one an element STOP
+C       rebuilds -> EP radius 2548.0019 vs 2549.5813, 1.58 mm along the
+C       chief ray) and, through the tangential/sagittal pupil split, on
+C       its AZIMUTH.
+C
+C       This routine traces FOUR probes, +/-dth about each of two
+C       orthonormal axes perpendicular to the source chief ray (azimuth
+C       seeded by xGrid, falling back to yGrid), crosses each with the
+C       chief ray (FindCrossPt, point on the CHIEF), and returns the
+C       MEAN crossing distance along the chief ray:
+C         * the +/- pair is a central difference -- the O(theta) term
+C           cancels exactly, so the frame's sign no longer matters;
+C         * the two azimuths average the tangential and sagittal
+C           pupils (the medial pupil), which is rotation-invariant at
+C           first order, so the frame's azimuth no longer matters.
+C       On a symmetric deck all four crossings coincide and the result
+C       equals the legacy single probe to round-off.
+C
+C       OUTPUTS: zpLeg (mean chief-ray distance cr1pos -> crossing),
+C       CrossDist (largest closest-approach distance over the probes),
+C       CrossPt (= cr1pos + zpLeg*cr1dir, ON the chief ray), fexsin
+C       (largest sine between chief and probe directions -- the
+C       caller's telecentric test), nGood (probes that survived the
+C       trace and were not parallel), nTr (probes that survived the
+C       trace at all -- nTr=0 means LOST, not telecentric), vax(2)
+C       (per-axis mean crossing
+C       distance = the tangential / sagittal pupils; their difference
+C       is the pupil astigmatism), asym (largest |v+ - v-|/2: the
+C       probe-sign term the central difference removes).  Both are
+C       printed by the caller.  Leaves ray 1 holding the
+C       LAST probe, as the legacy code did.
+C***********************************************************************
+
+	SUBROUTINE FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	  ifLNegOK,Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,
+     &	  StartIndRef,StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,
+     &	  xDraw,yDraw,cr1pos,cr1dir,zpLeg,CrossDist,CrossPt,fexsin,
+     &	  nGood,nTr,vax,asym)
+
+	use param_mod
+	use src_mod
+	use cfiles_mod
+	use elt_mod
+	use sourcsub_mod
+
+	IMPLICIT NONE
+
+	LOGICAL ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,ifRayPrint,
+     &	  ifIntSrfSet(mElt)
+	INTEGER iEm1,nBadRays,DrawEltVec(mDrawElt,mDrawRay),nDrawElt,
+     &	  nGood,nTr
+	SREAL Cmatrix(7,mCm,bRay),DrawRayVec(2,mDrawElt,mDrawRay)
+	REAL*8 StartIndRef,StartExtinc,xDraw(3),yDraw(3),
+     &	  cr1pos(3),cr1dir(3),zpLeg,CrossDist,CrossPt(3),fexsin,
+     &	  vax(2),asym
+
+	REAL*8, PARAMETER :: dth=5d-6
+	REAL*8 ax(3,2),th(3),cr2indir(3),cr2inpos(3),cr2dir(3),
+     &	  cr2pos(3),crs(3),s,v,d,pt(3),vsum,dmax,cd,vk(4)
+	INTEGER k,ia,iStartElt,iEndElt,iStartRay,iEndRay,nax(2)
+	LOGICAL Lk(4)
+
+	! Probe axes: orthonormal pair perpendicular to the SOURCE
+	! chief ray; ax1 = xGrid projected (yGrid if xGrid is along
+	! the chief ray), ax2 = chief x ax1.
+	cd=DDOTC(xGrid,ChfRayDir)
+	DO k=1,3
+	  ax(k,1)=xGrid(k)-cd*ChfRayDir(k)
+	END DO
+	IF (SQRT(DDOTC(ax(1,1),ax(1,1))).LT.1d-8) THEN
+	  cd=DDOTC(yGrid,ChfRayDir)
+	  DO k=1,3
+	    ax(k,1)=yGrid(k)-cd*ChfRayDir(k)
+	  END DO
+	END IF
+	CALL DUNITIZE(ax(1,1))
+	CALL DXPROD(ax(1,2),ChfRayDir,ax(1,1))
+	CALL DUNITIZE(ax(1,2))
+
+	iStartElt=0
+	iEndElt=iEm1
+	iStartRay=1
+	iEndRay=1
+	nGood=0
+	nTr=0
+	vsum=0d0
+	dmax=0d0
+	fexsin=0d0
+	vk(1:4)=0d0
+	Lk(1:4)=.FALSE.
+	DO k=1,4
+	  ia=(k+1)/2                       ! axis 1,1,2,2
+	  s=dth
+	  IF (MOD(k,2).EQ.0) s=-dth        ! +,-,+,-
+	  CALL DSMPROD(th,ax(1,ia),s,3)
+	  CALL DEQUATE(cr2indir,ChfRayDir,3)
+	  CALL DEQUATE(cr2inpos,ChfRayPos,3)
+	  CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
+	  CALL DEQUATE(RayDir(1,1),cr2indir,3)
+	  CALL DEQUATE(RayPos(1,1),cr2inpos,3)
+	  CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	    ifLNegOK,Cmatrix,
+     &	    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &	    ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &	    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+	  IF (.NOT.LRayOK(1)) CYCLE
+	  nTr=nTr+1
+	  CALL DEQUATE(cr2dir,RayDir(1,1),3)
+	  CALL DEQUATE(cr2pos,RayPos(1,1),3)
+	  CALL DXPROD(crs,cr1dir,cr2dir)
+	  s=SQRT(DDOTC(crs,crs))
+	  IF (s.GT.fexsin) fexsin=s
+	  IF (s.LT.1d-12) CYCLE            ! parallel: no crossing
+	  CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,v,d,pt)
+	  nGood=nGood+1
+	  vsum=vsum+v
+	  vk(k)=v
+	  Lk(k)=.TRUE.
+	  IF (d.GT.dmax) dmax=d
+	END DO
+	! Per-axis means (the tangential/sagittal pupils along the
+	! chief ray) and the largest +/- asymmetry (the term the
+	! central difference removes).
+	asym=0d0
+	DO ia=1,2
+	  nax(ia)=0
+	  vax(ia)=0d0
+	  DO k=2*ia-1,2*ia
+	    IF (Lk(k)) THEN
+	      nax(ia)=nax(ia)+1
+	      vax(ia)=vax(ia)+vk(k)
+	    END IF
+	  END DO
+	  IF (nax(ia).GT.0) vax(ia)=vax(ia)/DBLE(nax(ia))
+	  IF (nax(ia).EQ.2) asym=MAX(asym,ABS(vk(2*ia-1)-vk(2*ia))/2d0)
+	END DO
+
+	IF (nGood.GT.0) THEN
+	  zpLeg=vsum/DBLE(nGood)
+	  CrossDist=dmax
+	  DO k=1,3
+	    CrossPt(k)=cr1pos(k)+zpLeg*cr1dir(k)
+	  END DO
+	ELSE
+	  zpLeg=0d0
+	  CrossDist=0d0
+	  CALL DEQUATE(CrossPt,cr1pos,3)
+	END IF
+	END SUBROUTINE FEXProbeCross
+
+
 
 
 C***********************************************************************
@@ -425,7 +585,8 @@ C***********************************************************************
 !-->
 	REAL*8 fexcrs(3),fexsin,fexR,fexT,fexden,fexdot,fexvec(3),
      &	  fexdir(3),fexS,fexL,zpLeg,fexTs
-	INTEGER nBadSv,nFtRays,iFPnxt
+	INTEGER nBadSv,nFtRays,iFPnxt,nGood,nTr
+	REAL*8 vax(2),asym
 	LOGICAL LTelec,LFPLeg,LFPSrf,LFPTyp
 !<--
 
@@ -449,26 +610,17 @@ C         ***Find exit pupil (with option to minimize tilt)***
 	CALL DEQUATE(cr1pos,RayPos(1,1),3)
         !print*,' ** FEX at focal-return: cr1pos =', cr1pos
         !print*,' ** FEX at focal-return: cr1dir =', cr1dir
-c	th(1)=3.5355d-6
-c	th(2)=3.5355d-6
-c	th(3)=3.5355d-6
-	!CALL DSMPROD(th,xGrid,1d-5,3)  ! jzlou trying a smaller dangle
-	CALL DSMPROD(th,xGrid,5d-6,3)
-	CALL DEQUATE(cr2indir,ChfRayDir,3)
-	CALL DEQUATE(cr2inpos,ChfRayPos,3)
-	CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
-	CALL DEQUATE(RayDir(1,1),cr2indir,3)
-	CALL DEQUATE(RayPos(1,1),cr2inpos,3)
-
-	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	  	 ifLNegOK,Cmatrix,
-     &	  	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &	  	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &	         StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-	CALL DEQUATE(cr2dir,RayDir(1,1),3)
-	CALL DEQUATE(cr2pos,RayPos(1,1),3)
-        !print*,' ** FEX at focal-return: cr2pos =', cr2pos
-        !print*,' ** FEX at focal-return: cr2dir =', cr2dir
+!--> Frame-independent probe (Dave 2026-09-08): four differential
+!    chief rays (+/-5d-6 about two orthonormal axes perpendicular
+!    to the chief ray), crossed with the chief and averaged -- see
+!    FEXProbeCross.  Replaces the single +5d-6*xGrid probe whose
+!    crossing depended on the frame's sign and azimuth.
+	CALL FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     &	  Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,StartIndRef,
+     &	  StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw,
+     &	  cr1pos,cr1dir,zpLeg,CrossDist,CrossPt,fexsin,nGood,nTr,vax,
+     &	  asym)
+!<--
 
 !--> FEX EP-radius rework + robustness guards (Dave 2026-07-03):
 !    the EP Return radius is ALWAYS the chief-ray distance from
@@ -486,27 +638,38 @@ c	th(3)=3.5355d-6
 !    Return(EP), FocalPlane -- the legacy leg above assumes it --
 !    so the flag fired on every conforming deck.)
 
-	! Telecentric detection: sine of the angle between the two
-	! probe-field chief rays.  Probe rotation is 5d-6 rad, so
-	! sin < 1d-12 means the crossing is beyond ~1e6 system
-	! lengths -- effectively at infinity.
-	fexcrs(1)=cr1dir(2)*cr2dir(3)-cr1dir(3)*cr2dir(2)
-	fexcrs(2)=cr1dir(3)*cr2dir(1)-cr1dir(1)*cr2dir(3)
-	fexcrs(3)=cr1dir(1)*cr2dir(2)-cr1dir(2)*cr2dir(1)
-	fexsin=SQRT(DDOTC(fexcrs,fexcrs))
-	LTelec=(fexsin.LT.1d-12)
-	zpLeg=0d0
+	! Telecentric detection: largest sine of the angle between
+	! the chief ray and the four probe chief rays.  Probe rotation
+	! is 5d-6 rad, so sin < 1d-12 means every crossing is beyond
+	! ~1e6 system lengths -- effectively at infinity.  nGood=0 with
+	! a non-parallel probe means every probe ray was LOST.
+	LTelec=(fexsin.LT.1d-12).OR.(nGood.EQ.0)
 	IF (LTelec) THEN
-	  WRITE(*,*)'***** FEX WARNING: probe-field chief rays'
-	  WRITE(*,*)'***** are PARALLEL -- system appears'
-	  WRITE(*,*)'***** TELECENTRIC (exit pupil at infinity).'
+	  IF (nTr.GT.0) THEN
+	    WRITE(*,*)'***** FEX WARNING: probe-field chief rays'
+	    WRITE(*,*)'***** are PARALLEL -- system appears'
+	    WRITE(*,*)'***** TELECENTRIC (exit pupil at infinity).'
+	  ELSE
+	    WRITE(*,*)'***** FEX WARNING: all 4 probe chief rays'
+	    WRITE(*,*)'***** were LOST before element',iEm1
+	  END IF
 	  WRITE(*,*)'***** Keeping current element station; radius'
 	  WRITE(*,*)'***** set from station to next-element plane.'
 	  CALL DEQUATE(CrossPt,VptElt(1,iElt),3)
 	  CrossDist=0d0
+	  zpLeg=0d0
 	ELSE
-	  CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zpLeg,
-     &		           CrossDist,CrossPt)
+	  IF (nGood.LT.4) THEN
+	    WRITE(*,*)'***** FEX WARNING:',4-nGood,' of 4 probe chief'
+	    WRITE(*,*)'***** rays lost; crossing from the survivors.'
+	  END IF
+	  WRITE(*,'(A,I1,A)')' ***** FEX: EP crossing from',nGood,
+     &	    ' probes (+/-axis1, +/-axis2), mm along the chief ray:'
+	  WRITE(*,'(A,1PG16.9,A,1PG16.9,A,1PG16.9)')
+     &	    ' *****   axis1',vax(1),'  axis2',vax(2),'  medial',zpLeg
+	  WRITE(*,'(A,1PE10.3,A,1PE10.3)')
+     &	    ' *****   T/S split',ABS(vax(1)-vax(2)),
+     &	    '  +/- asymmetry',asym
 	END IF
 
 	! Beam footprint at the EP plane: trace the nMinPts grid
@@ -775,6 +938,8 @@ C***********************************************************************
      &	  cr2indir(3),cr2inpos(3),CrossDist,
      &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1,sxpdir(3),t_Srf
 	LOGICAL LFPSrf,LFPTyp
+	INTEGER nGood,nTr
+	REAL*8 sxpsin,vax(2),asym
 
 C       Standard FEX chief-ray pair trace (source -> iEm1) and find
 C       the two-ray crossing point -- that's the EP location.
@@ -795,23 +960,26 @@ C       the two-ray crossing point -- that's the EP location.
 
 	CALL DEQUATE(cr1dir,RayDir(1,1),3)
 	CALL DEQUATE(cr1pos,RayPos(1,1),3)
-	CALL DSMPROD(th,xGrid,5d-6,3)
-	CALL DEQUATE(cr2indir,ChfRayDir,3)
-	CALL DEQUATE(cr2inpos,ChfRayPos,3)
-	CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
-	CALL DEQUATE(RayDir(1,1),cr2indir,3)
-	CALL DEQUATE(RayPos(1,1),cr2inpos,3)
-
-	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	  	 ifLNegOK,Cmatrix,
-     &	  	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &	  	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &	         StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-	CALL DEQUATE(cr2dir,RayDir(1,1),3)
-	CALL DEQUATE(cr2pos,RayPos(1,1),3)
-
-	CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zp_iEm1,
-     &		         CrossDist,CrossPt)
+!--> Frame-independent probe, as in FEX (Dave 2026-09-08).
+	CALL FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     &	  Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,StartIndRef,
+     &	  StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw,
+     &	  cr1pos,cr1dir,zp_iEm1,CrossDist,CrossPt,sxpsin,nGood,nTr,
+     &	  vax,asym)
+	IF ((sxpsin.LT.1d-12).OR.(nGood.EQ.0)) THEN
+	  WRITE(*,*)'***** SXP WARNING: probe chief rays parallel'
+	  WRITE(*,*)'***** or lost; keeping the element station.'
+	  CALL DEQUATE(CrossPt,VptElt(1,iElt),3)
+	  zp_iEm1=0d0
+	ELSE
+	  WRITE(*,'(A,1PG16.9,A,1PG16.9,A,1PG16.9)')
+     &	    ' ***** SXP: EP crossing axis1',vax(1),'  axis2',vax(2),
+     &	    '  medial',zp_iEm1
+	  WRITE(*,'(A,1PE10.3,A,1PE10.3)')
+     &	    ' *****   T/S split',ABS(vax(1)-vax(2)),
+     &	    '  +/- asymmetry',asym
+	END IF
+!<--
 
 C       Replace the FEX zp (iEm1-to-EP distance) with the chief-ray
 C       distance from the EP (CrossPt) to the FP (iElt+1).
