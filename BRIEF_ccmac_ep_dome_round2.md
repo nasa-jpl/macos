@@ -98,3 +98,13 @@ Your remaining steps, in order:
    tEpDomeGate together; that is the clean full suite you are after.
    `mmacos/BRIEF_ep_dome_ccmac_handback.md` can go once this is in --
    this brief and REPORT_ep_dome_review.md are the record.
+
+## Round 3 CLOSED (CCL, 2026-09-08)
+
+Your `8c64323` / `e211927` / `3034fff` (type-test criterion) landed on
+resources `dev-candidate`; merged into `sens-core` as `35274ac` with no
+conflicts.  Together on that branch: tDwDx 25/25, tEpDomeGate 5/5 -- the
+clean full suite.  What remains is sequencing only: `sens-core` merges to
+`dev-candidate` after the JPL-private verification pass, and until then
+the multi-side refusal lives on `sens-core` while the single-DOF refusal
+(yours) is already on `dev-candidate`.  Your handback brief can be retired.
