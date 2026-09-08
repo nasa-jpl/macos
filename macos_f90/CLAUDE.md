@@ -308,6 +308,34 @@ split.  And the legacy `zp_iEm1` leg is NOT a general substitute -- it
 equals the surface leg on the jwst deck only because elt 26 is
 coincident with elt 28.
 
+## Element STOP preserves the source frame's HANDEDNESS (2026-09-08)
+`UpdSrcGrid` (sourcsub.F, the only caller of `define_local_csys` on the
+SOURCE frame; reached from ChiefRayAiming, i.e. every ELEMENT stop)
+rebuilt (xGrid,yGrid,ChfRayDir) right-handed.  The corpus is full of
+LEFT-handed deck frames (`xGrid= -1 0 0` with ChfRayDir +z: e5hex1,
+6MST, every Telescope-emitted deck), so an element stop flipped xGrid to
++1 0 0 while an object-space stop (cmd_loop label 205 re-orthogonalises
+the deck frame) did not.  Two measured consequences: (1) FEX's legacy
+single probe `5d-6*xGrid` flipped sign (the 1.58 mm e5hex1 finding;
+moot since the four-probe FEX); (2) **on a SEGMENTED source the mirrored
+xGrid mirrors the ray grid while `EltToSegMap` does not move, so rays
+hit segments they are not mapped to and are OBSCURED** -- e2e6m
+`s3_imager_full` + the add_pupil pair: 732 of 985 rays obscured after
+`macos.stop(1)` (Segment) and 962 after `stop(25)` (Reflector), 2 after
+`stop_obj(0,0,0)`; the 253 survivors are the 5 segments on the x=0
+column, the mirror-symmetric ones.  This is what made `add_pupil` on
+segmented decks look like it "kills" rays, and what every supervisor
+harvest with an explicit `stop_elt` on such a deck was silently
+suffering; accepting Segment stops widened its reach to add_pupil's
+default `stop_elt=1`.  Fix: UpdSrcGrid records the incoming triad's
+handedness and negates xGrid after define_local_csys when it was
+left-handed (y and z are unchanged, so this is exactly the OBJ path's
+triad).  Right-handed decks: bit-identical.  Gate: after `stop elt 1`
+on e5hex1 the SAVEd xGrid is still `-1 0 0`; s3 obscured count 2.
+Engine-side reporting gap seen en route: the end-of-trace obscuration
+stamp writes `RayFailElt = nElt+1` (29 on a 28-element deck), not the
+clipping element.
+
 ## FEX probe is FRAME-INDEPENDENT (2026-09-08, Dave)
 `FEXProbeCross` (tracesub_mod, called by BOTH `FEX` and `SXP`) traces
 FOUR differential chief rays, `+/-5d-6` about two orthonormal axes
@@ -339,6 +367,10 @@ split is pupil astigmatism, not a probe defect.  **tFocalSurface pins
 `..._match_the_ab_report_...` 5e-3 abs vs REPORT_wnom_cli_ab's V4,
 `..._fex_radius_follows_the_fit` 3017.5444) -- they FAIL by exactly the
 shift above and need a REVIEWED re-pin (Dave), not a tolerance bump.
+Same review: `tPupilFindMethod` 8/10 -- the zoom cross-config vertex
+invariance (1e-6 mm; medial gives 5.5e-4 mm, the sagittal half sees the
+FSM deflection) and e5hex1's pinned 10-40 mm FEX-vs-cone-fit gap (now
+1.3 mm: the medial FEX AGREES with pupil_find's cone station).
 NOT changed:
 XPS (per-ray crossing cloud, still one probe about xGrid -- its vertex
 can now differ from FEX by the probe-sign term on asymmetric decks),
