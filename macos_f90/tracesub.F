@@ -478,8 +478,13 @@ c	th(3)=3.5355d-6
 !    iEm1->EP distance is the fallback when there is no next
 !    element or its plane is degenerate.  Guards: telecentric
 !    detection (parallel probe chief rays -> FindCrossPt would
-!    return 0/0); beam-footprint sanity check with autoswitch;
-!    Return-order Rx flag.
+!    return 0/0); beam-footprint sanity check with autoswitch.
+!    (An "Rx-order flag" that warned whenever the element before
+!    the EP return was a Return was REMOVED 2026-09-08 (Dave): it
+!    prescribed a Reference(FP)/Return(EP)/Return(FP) pattern that
+!    exists nowhere.  The documented sequence is Return(FP),
+!    Return(EP), FocalPlane -- the legacy leg above assumes it --
+!    so the flag fired on every conforming deck.)
 
 	! Telecentric detection: sine of the angle between the two
 	! probe-field chief rays.  Probe rotation is 5d-6 rad, so
@@ -625,21 +630,6 @@ c	th(3)=3.5355d-6
 	  ELSE
 	    WRITE(*,*)'***** FEX WARNING: legacy iEm1->EP radius'
 	    WRITE(*,*)'***** unusable too; keeping EP->next value.'
-	  END IF
-	END IF
-
-	! Rx-order flag: a Return immediately before the EP return
-	! usually means a Return sits at an intermediate focus that
-	! should be a passive Reference.  Correct pattern when the
-	! beam reaches the focus before the pupil:
-	!   Reference (at FP), Return (EP), Return (FP).
-	IF (iEm1.GE.1) THEN
-	  IF (EltID(iEm1).EQ.ReturnElt) THEN
-	    WRITE(*,*)'***** FEX WARNING: element',iEm1
-	    WRITE(*,*)'***** (preceding the EP return) is a Return.'
-	    WRITE(*,*)'***** If it marks a focus it should be a'
-	    WRITE(*,*)'***** Reference -- pattern: Reference (FP),'
-	    WRITE(*,*)'***** Return (EP), Return (FP).'
 	  END IF
 	END IF
 !<--

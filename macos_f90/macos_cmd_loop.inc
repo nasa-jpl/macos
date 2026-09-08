@@ -2714,7 +2714,7 @@ C         ***
 C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
 C         *** EP -> next-element radius (the far-field propagation
 C         *** distance), with the legacy leg as fallback plus
-C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** telecentric/footprint guards -- see the FEX
 C         *** rework block in tracesub.F.  SXP is retained as-is for
 C         *** compatibility; it is now largely redundant with FEX.
 
@@ -3070,12 +3070,17 @@ C         ***Center Beam in System Stop***
 	  ELSE IF (LCMP(command,'CENTER',5)) THEN
 	    CALL IACCEPT_S(iStop,1,1,
      &	      'Enter system stop element number:')
-	    IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	      .OR.(EltID(iStop).EQ.12)) THEN
-	      WRITE(*,*)'Invalid element type =', EltID(iStop)
-	    ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
-	      WRITE(*,*)'CENTER: Invalid element number: ', iElt
+!-->  Same rules as STOP (2026-09-08): range first, veto only the
+!     non-sequential types, Segment allowed.
+	    IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+	      WRITE(*,*)'CENTER: Invalid element number: ', iStop
+	    ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	      (EltID(iStop).EQ.NSReflectorElt)) THEN
+	      WRITE(*,*)'CENTER: element',iStop,' is ',
+     &	        TRIM(EltTypeName(EltID(iStop))),
+     &	        ' -- a non-sequential element cannot be the stop.'
 	    ELSE
+!<--
 	      CALL DEQUATE(DDEF,VptElt,3)
 	      CALL DACCEPT(xTarg,DDEF,2,'Enter offset vector (dx,dy):')
 	      ifGrid=.FALSE.
@@ -3085,6 +3090,13 @@ C         ***Center Beam in System Stop***
 	      ifBuild=.FALSE.
 	      ifOPDCalc=.FALSE.
 
+!-->  Segment stop: chief-ray mapping, as in STOP.
+	      IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	    (EltToSegMap(iStop).GT.0)) THEN
+	        nRayToSeg(1)=1
+	        RayToSegMap(1,1)=EltToSegMap(iStop)
+	      END IF
+!<--
 	      CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &	        ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
@@ -3280,12 +3292,19 @@ C         *** Set System Stop ***
 	      ! Stop specified at ELT point
 	      CALL IACCEPT_S(iStop,1,1,
      &	                     'Enter system stop element number:')
-	      IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	          .OR.(EltID(iStop).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iStop)
-	      ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+!-->  Range check FIRST (EltID(iStop) used to be indexed before
+!     it).  The type veto keeps only the non-sequential types: a
+!     Segment stop is allowed (Dave 2026-09-08) -- see the chief-
+!     ray mapping ahead of CALL STOP below.
+	      IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
 	        WRITE(*,*)'STOP: Invalid element number: ',iStop
+	      ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	          (EltID(iStop).EQ.NSReflectorElt)) THEN
+	        WRITE(*,*)'STOP: element',iStop,' is ',
+     &	          TRIM(EltTypeName(EltID(iStop))),
+     &	          ' -- a non-sequential element cannot be the stop.'
 	      ELSE
+!<--
 	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
@@ -3323,6 +3342,19 @@ C         *** Set System Stop ***
 !	          GO TO 1
 !	        END IF
 
+!-->  Segment stop (Dave 2026-09-08): CTRACE visits a Segment
+!     element only for rays mapped to its source segment
+!     (RayToSegMap vs EltToSegMap), so map the chief ray to this
+!     segment for the aiming trace.  Transient: SetSourceRayGrid
+!     rebuilds the maps at the next grid setup (ifGrid is FALSE
+!     from here on).  Placed AFTER label 210 so the Rx ApStop=
+!     path (GO TO 210) gets it too.
+	        IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	      (EltToSegMap(iStop).GT.0)) THEN
+	          nRayToSeg(1)=1
+	          RayToSegMap(1,1)=EltToSegMap(iStop)
+	        END IF
+!<--
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
                 ! Center beam in stop to get new chief ray:
