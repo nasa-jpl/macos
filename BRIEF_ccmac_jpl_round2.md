@@ -11,9 +11,12 @@ supervisor axis, PRE vs POST on the same NEW engine -- passed on both:
 every `reset_xp=false` Jacobian byte-identical, every other difference
 error-parity or the designed emptyOPD softening.  The engine axis is
 classified: IRIS FEX moved -0.35 mm (half the T/S split, expected), OPTIIX
-FEX bit-identical on axis.  Recommendation to Dave: merge `sens-core` ->
-`dev-candidate` now.  Three items stay open as measurements, none of them
-a sens-core regression; they are below, cheapest first.
+FEX bit-identical on axis.  Dave's call, executed 2026-09-09: `sens-core`
+MERGED into resources `dev-candidate` at `57a6ec0` and the branch deleted
+(local + origin).  Run everything below on `dev-candidate` >= `57a6ec0`
+(resources) with the macos `dev-candidate` engine >= `cdf8636`; the
+PRE/POST pair no longer exists.  Three items stay open as measurements,
+none of them a sens-core regression; they are below, cheapest first.
 
 ## 1. OPTIIX Test 2c -- RULED: expected (the finite-difference floor)
 
@@ -104,8 +107,9 @@ once sens-core is on dev-candidate; the OLD/NEW engine axis is optional.
 - `Get_Values` (iosub.inc:3432) reads 36 bytes past its 220-char
   buffer: any deck with `ArrWaveLen=` / `ArrIndRef=` parses
   nondeterministically (the July fixture `tst_save_keys.in` loaded 3 of
-  5 times here).  PLAN section 0, `386e51d`.  If an IRIS deck carries
-  either keyword and ever fails to load with "Bad real number", that is
-  this, not you.
+  5 times here).  FIXED at macos `cdf8636` (gate 20/20 loads on both
+  compilers) -- rebuild your NEW engine from that tip or later.  If an
+  IRIS deck ever failed to load with "Bad real number" on the older
+  engine, that was this, not you.
 - `macos.trace(26)` then `trace(27)` on the jwst zoom deck returns a
   wrong first OPD (PLAN section 0); harvests never see it.
