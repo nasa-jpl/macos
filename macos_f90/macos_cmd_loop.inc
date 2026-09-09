@@ -3247,16 +3247,10 @@ C         *** Set System Stop ***
 
 	      ! Chief ray aiming
 	      ! 'Clean up' xGrid, yGrid first, as in source routines
- 205	      CALL DXPROD(zGrid,xGrid,yGrid)
-              IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-                zGrid = ChfRayDir
-              ELSE
-                zGrid = -ChfRayDir
-              END IF
-              CALL DUNITIZE(zGrid)
-              CALL DXPROD(yGrid,zGrid,xGrid)
-              CALL DUNITIZE(yGrid)
-              CALL DXPROD(xGrid,yGrid,zGrid)
+ 205	      CONTINUE
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	      CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 
 	      IF (ABS(zSource).LE.1d10) THEN
 	        ! Pt source
@@ -3266,6 +3260,13 @@ C         *** Set System Stop ***
 	          srcPos(1:3)=ChfRayPos(1:3)+zSource*ChfRayDir
 	          ChfRayDir(1:3)=StopPos(1:3)-srcPos
 	          CALL DUNITIZE(ChfRayDir)
+!-->  dead band (2026-09-08): a re-aim below round-off of a unit
+!     direction is the no-fixed-point case -- keep the incoming aim.
+	          IF (MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3))).LE.1d-14) THEN
+	            ChfRayDir(1:3)=cr1indir(1:3)
+	            c1=1d0
+	          ELSE
+!<--
 	          c1=DDOTC(ChfRayDir,ChfRayDir)
 	          If (c1.LE.1d-22) Then
                     WRITE(*,*)' Error in setting STOP, abort ...'
@@ -3274,17 +3275,36 @@ C         *** Set System Stop ***
 	            ! Need update ChfRayPos as well
 	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)
 		  End If
+	          END IF   ! dead band
 	        Else If (SAOpt==SAPos) Then
 	          ! Translate chief ray in (xGrid,yGrid) plane
 	          x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
                   y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+	          IF (MAX(ABS(x),ABS(y)).GT.1d-13*MAX(1d0,
+     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))) THEN
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	          END IF
+!<--
 	        End If
 	      ELSE
 	        ! Collimated source, translate chief ray in (xGrid,yGrid) plane
 	        x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
 	        y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+	        IF (MAX(ABS(x),ABS(y)).GT.1d-13*MAX(1d0,
+     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))) THEN
            ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	        END IF
+!<--
 	      END IF
 	      ifStopSet=.TRUE.
 

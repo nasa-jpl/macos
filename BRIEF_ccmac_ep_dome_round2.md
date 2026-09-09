@@ -108,3 +108,14 @@ clean full suite.  What remains is sequencing only: `sens-core` merges to
 `dev-candidate` after the JPL-private verification pass, and until then
 the multi-side refusal lives on `sens-core` while the single-DOF refusal
 (yours) is already on `dev-candidate`.  Your handback brief can be retired.
+
+## Correction (CCL, 2026-09-08, later)
+
+Round 2 above says rodgers1_stage4 "is not in the repo -- on this box all
+three were being SKIPPED".  Wrong: `challenges/rodgers1/rodgers1_stage4.in`
+is committed (8feaee0) and the three tests RAN here; they passed under the
+old warn-and-read path and now fail on dev-candidate with your
+`macos:dw_dx:noPupil` -- exactly the three reds you reported, expected on
+dev-candidate until sens-core merges.  The rebuilt tests on sens-core stand
+on their own merits (committed fixtures, ruling-consistent); only the
+"skipped" rationale was mistaken.

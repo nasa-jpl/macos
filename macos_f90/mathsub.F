@@ -2692,6 +2692,47 @@ C ********************************************************
           RETURN
         END SUBROUTINE  CSWAP
 
+!-->  OrthoSrcFrame (2026-09-08, Dave): the source-frame re-orthogonal-
+!     isation used at every grid setup -- z = +/-ChfRayDir (sign from the
+!     current x cross y), y = unit(z x x), x = y x z -- has no floating-
+!     point FIXED POINT on a general frame: applied to a frame it itself
+!     produced it returns a 1-ulp neighbour, and the two alternate on
+!     every trace (measured on the jwst zoom deck: xGrid(1)
+!     -0.99999991481031303 <-> ...292).  Every ray launch moves with the
+!     frame, so the accumulated OPL alternates by a few ulp of the 24 m
+!     path on ~2200 rays -- the 'speckle' floor of every finite-difference
+!     sensitivity column (macos/REPORT_sens_noise_center.md).  A frame
+!     that is exact, e5hex1's (-1,0,0), is its own fixed point, which is
+!     why that deck was idempotent.  Idempotent form: compute the candidate
+!     frame; if it differs from the incoming one by round-off only (every
+!     component within OrthoTol) keep the incoming frame.  A physical
+!     change -- any field move >= 1e-14 rad, a re-read deck, a stale z --
+!     is far above the band and is applied exactly as before.
+	SUBROUTINE OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+	IMPLICIT NONE
+	REAL*8 ChfRayDir(3),xGrid(3),yGrid(3),zGrid(3)
+	REAL*8 x(3),y(3),z(3),d
+	REAL*8, PARAMETER :: OrthoTol=1d-14
+	CALL DXPROD(z,xGrid,yGrid)
+	IF (DDOTC(z,ChfRayDir).GT.0d0) THEN
+	  z=ChfRayDir
+	ELSE
+	  z=-ChfRayDir
+	END IF
+	CALL DUNITIZE(z)
+	CALL DXPROD(y,z,xGrid)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	d=MAX(MAXVAL(ABS(x-xGrid)),MAXVAL(ABS(y-yGrid)),
+     &	      MAXVAL(ABS(z-zGrid)))
+	IF (d.GT.OrthoTol) THEN
+	  xGrid=x
+	  yGrid=y
+	  zGrid=z
+	END IF
+	END SUBROUTINE OrthoSrcFrame
+!<--
+
 
         END MODULE math_mod
 
