@@ -24,8 +24,28 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-09-08 late).  NEXT = the Fang thread: IFO and ZWFS
-> DM-gauge decks** -- `deck_tg_fang` (22 slides, macos `82ced2b` fold) and
+> **CURRENT STATE (2026-09-09 midday).  NEXT = the ZWFS MODELING arc:
+> the iterated-reference-wave reconstructor** -- read
+> `REPORT_zwfs_lit_scan.md` FIRST (the ranked literature imports + the
+> PZT verdict; "Suggested first ZWFS task" at the end is the spec), then
+> `MACOS_resources/mmacos/templates/40_benches/zwfs_dm96/README.md` (S1-S6
+> findings; S6 = multi-color) and `dm_gauge_lib/README.md` (the ONE scoring
+> library; `dmg_zwfs_gauge` gains a third reading).  Memory
+> `project_tg96_gauge` has the campaign state.  Everything below in this
+> block is CLOSED and PUSHED: sens-core merged (resources `57a6ec0`,
+> branch deleted), MR text `MR_dev_candidate_to_dev_2026-09-09.md`
+> (Dave files it), CCMac round 2 closed (`BRIEF_ccmac_jpl_round2.md`),
+> round 3 handed to CCMac (`BRIEF_ccmac_jpl_round3.md`: confirm the
+> phantom-grid save fix `cda178e` on IRIS + run the instrumented
+> supervisor for the reset_xp canvas fault), engine fixes `cdf8636`
+> (Get_Values over-read) + `cda178e` (phantom-grid SAVE crash), decks
+> carry the S6 color slide (`2b4821c`).  Open engine items in PLAN
+> section 0: lensarr TRACE-time overrun (tst_save_keys only),
+> trace(26)->trace(27) stale OPD.  Tips: macos dev-candidate `c3f3738`+,
+> resources `e36db7c`.
+>
+> **PRIOR STATE (2026-09-08 late) kept for the record.  NEXT was the Fang
+> thread: IFO and ZWFS DM-gauge decks** -- `deck_tg_fang` (22 slides, macos `82ced2b` fold) and
 > `deck_zwfs` (DRAFT, 9 slides); record in memory `project_tg96_gauge`
 > (complete thru S5; deck folds DONE; next stages on Dave's steer) +
 > `BRIEF_zwfs_campaign.md` (uncommitted edits present) +
