@@ -308,6 +308,40 @@ split.  And the legacy `zp_iEm1` leg is NOT a general substitute -- it
 equals the surface leg on the jwst deck only because elt 26 is
 coincident with elt 28.
 
+## Re-traces are IDEMPOTENT: OrthoSrcFrame + the aim dead bands (2026-09-08)
+Luis's 'centre-channel speckle' in dwdsurf_9zoom_5fov (Terminal Opus,
+`REPORT_sens_noise_center.md`): a strict 2-CYCLE of the OPD across
+identical traces on the jwst zoom deck -- max 2.2e-11 mm = 6 ulp of the
+24 459 mm path on ~2200 of 2207 rays, W3 == W1 exactly -- which every
+finite-difference column divides by 2*delta (1.19e-6 at delta 1e-6),
+fixed per (field, zoom) because the pattern is deterministic.  CAUSE
+(measured, not the stop -- it is there with NO stop set, and
+ChfRayPos never moved): the source-frame re-orthogonalisation done at
+every grid setup (`z = +/-ChfRayDir`, `y = unit(z x x)`, `x = y x z`;
+ColSource, PtSource, ssrcray.inc, the STOP-OBJ cleanup at cmd_loop
+label 205) has NO floating-point fixed point on a general frame: fed
+the frame it produced, it returns a 1-ulp neighbour and the two
+alternate (xGrid(1) -0.99999991481031303 <-> ...292 every trace).  A
+full-precision orthonormal input alternates too; e5hex1's exact
+(-1,0,0) is its own fixed point, which is why it was idempotent.  FIX:
+`OrthoSrcFrame` (math_mod) computes the candidate frame and KEEPS the
+incoming one when they differ by round-off only (every component within
+1e-14); all four sites call it.  Same disease, second place: the
+object-space STOP translation `ChfRayPos += x*xGrid + y*yGrid` (run at
+every load with an `ApStop=` header) alternated eac2_7seg's SAVE
+round-trip by 2 ulp of ChfRayPos(3) -- the 'pre-existing 2-ulp
+ChfRayPos re-aim oscillation' the SAVE work met in July; dead band
+1e-13 x max(1, |StopPos|, |ChfRayPos|) on |x|,|y|, and on the
+point-source direction re-aim (1e-14 on the unit vector).  Measured
+after: ten traces bit-identical on jwst (with the header ApStop, with
+`stop 25`, and with no stop) and e5hex1; the elt-4 (virtual
+CenterSegment) dw/dsurf column is EXACTLY 0 (was 1.19e-6 rms of
+salt-and-pepper), elt 5's columns unchanged and smooth (roughness
+0.01-0.02); a single load+SAVE is bit-identical pre/post.  First-trace
+results never change (the band only suppresses the ulp re-application),
+so single-trace gates are unaffected by construction.  `srcaim.inc` is a
+commented-out include (dead) and still carries the old recipe.
+
 ## Element STOP preserves the source frame's HANDEDNESS (2026-09-08)
 `UpdSrcGrid` (sourcsub.F, the only caller of `define_local_csys` on the
 SOURCE frame; reached from ChiefRayAiming, i.e. every ELEMENT stop)

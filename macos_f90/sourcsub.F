@@ -194,16 +194,9 @@ C***********************************************************************
 
 	nRayToSeg(1:mRay)=0
 
-	CALL DXPROD(zGrid,xGrid,yGrid)
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  zGrid = ChfRayDir
-	ELSE
-	  zGrid = -ChfRayDir
-	END IF
-	CALL DUNITIZE(zGrid)  ! nomalize z
-	CALL DXPROD(yGrid,zGrid,xGrid)  ! cross-product z and x to get y
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zGrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xGrid(1:3)
 	Tbg(1:3,2)=yGrid(1:3)
 
@@ -717,19 +710,9 @@ C***********************************************************************
 
 	nRayToSeg(1:nRay)=0
 
-        ! zGrid = cross-product of xGrid and yGrid - jzlou
-	CALL DXPROD(zGrid,xGrid,yGrid)
-
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  CALL DEQUATE(zGrid,ChfRayDir,3)
-	ELSE
-	  CALL DNEGATE(zGrid,ChfRayDir,3)
-	END IF
-
-	CALL DUNITIZE(zgrid)
-	CALL DXPROD(yGrid,zGrid,xGrid)
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zgrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xgrid(1:3)
 	Tbg(1:3,2)=ygrid(1:3)
 

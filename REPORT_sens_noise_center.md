@@ -298,3 +298,33 @@ Scripts kept (not committed) under `~/dev/MACOS_sandbox/sens_noise/work/`:
 | `cli_toggle_probe.py` | the pty-CLI cross-check (engine-side confirmation) |
 | `jwst_ote_designc_prepromo.in` | the pre-FreeForm-promotion deck, from `8316b68` |
 | `jwst_ote_designc_meanref.in` | Luis's deck with `UseChfRay4OPD= Y` stripped |
+
+## Addendum (CCL, 2026-09-08): the engine cause, and the fix
+
+The open engine question above is closed.  Measured first, before any
+code: the 2-cycle is present with NO stop set at all (1.8e-11), so the
+chief-ray re-aim is not the cause (`srcaim.inc` turns out to be a
+commented-out include), and ChfRayPos does not move between traces.  What
+moves is the SOURCE FRAME: xGrid alternates by exactly one ulp on every
+trace (-0.99999991481031303 <-> ...292), because the re-orthogonalisation
+every grid setup applies -- z = +/-ChfRayDir, y = unit(z x x), x = y x z --
+has no floating-point fixed point on a general frame; fed the frame it
+produced, it returns a 1-ulp neighbour, and the two alternate.  A
+full-precision orthonormal input alternates the same way; e5hex1's exact
+(-1,0,0) frame is its own fixed point, which is why that deck was
+idempotent.  Every ray launch moves with the frame, and the accumulated
+path rounds differently on ~2200 rays -- the 6-ulp pattern this report
+measured.
+
+Fix (macos dev-candidate, `OrthoSrcFrame` in math_mod, four call sites;
+plus the same dead band on the object-space STOP translation, which was
+alternating eac2_7seg's SAVE round-trip by 2 ulp of ChfRayPos): compute
+the candidate frame and keep the incoming one when they differ by
+round-off only (1e-14).  Measured after: ten traces bit-identical on the
+jwst deck with the header ApStop, with `stop 25`, and with no stop, and
+on e5hex1; the zero-poke difference is 0 on 0 rays; the elt-4 dw/dsurf
+column is EXACTLY 0 (was 1.19e-6 rms, roughness 1.40); elt 5's Kr / Kc
+columns 2.0064e-03 / 9.0331e-02 rms, roughness 0.01 / 0.02, i.e. the
+live responses this report quoted, now without the floor under them.
+Dave's ruling stands: the delta stays at 1e-6; the floor was removed at
+its source rather than diluted.
