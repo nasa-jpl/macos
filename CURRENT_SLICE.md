@@ -24,7 +24,32 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-09-09 midday).  NEXT = the ZWFS MODELING arc:
+> **CURRENT STATE (2026-09-09 evening).  S7 of the ZWFS campaign RAN:
+> the iterated-reference exact reading landed AND a MODEL DEFECT was
+> found and fixed on the way** -- the `twyman_green` 'nf' mask sandwich
+> was ASYMMETRIC (exit sphere zElt/Kr 23.86 vs entrance 352.7 mm), so
+> the engine's SPH2PL quadratic factor Fresnel-DEFOCUSED the reimaged
+> pupil by an effective 4.86 m for EVERY ZWFS number in S1-S6 (ringed
+> kernel, Talbot transfer null at ~30 cyc/ap, 29% amplitude modulation
+> under the 30 nm state, the 744 pm base floors, the "undetected"
+> grid-on-base).  Fixed: 'nf' symmetric (round trip 1.8e-15),
+> 'nf_legacy' byte-identical (tBench gate); S1-S6 = legacy record.
+> Record: `MACOS_resources/mmacos/templates/40_benches/zwfs_dm96/
+> README.md` (banner + S7 bullet), `BRIEF_zwfs_campaign.md` S7 section,
+> memory `project_tg96_gauge`.  Headline: on the corrected model the
+> linear reading alone takes the single-on-base floor 744 -> 67 pm and
+> grid-on-base SNR 1.46 -> 14; the one-frame iterated reading with the
+> REFINED base prior (I+; `dmg_zwfs_gauge` priorS) reaches 13 pm / SNR
+> 584 (96x96) and HOLDS to 60 nm rms working state (gain 0.85-0.91)
+> where the four-frame stepped reading falls to 0.56; without the
+> refined prior the iterated readings cliff between 30 and 40 nm (branch
+> fold).  **NEXT (Dave's steer): (1) tell Dave -- the S1-S6 ZWFS record
+> + deck_zwfs slides are on the defocused model; (2) NGRID 385 compliant
+> run (the 0.90 raw hold-out at 96x96 is sampling); (3) S6 color RE-RUN
+> on the corrected model; (4) S5 noise pricing of I+; (5) deck fold.**
+> IFO untouched (all-geometric).  Everything below is the prior state.
+>
+> **PRIOR STATE (2026-09-09 midday).  NEXT was the ZWFS MODELING arc:
 > the iterated-reference-wave reconstructor** -- read
 > `REPORT_zwfs_lit_scan.md` FIRST (the ranked literature imports + the
 > PZT verdict; "Suggested first ZWFS task" at the end is the spec), then
