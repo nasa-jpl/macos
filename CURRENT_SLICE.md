@@ -24,6 +24,23 @@
 
 ## Active slice
 
+> **LATE 2026-09-09 (Luis round 4, after S7): FIXED on dev-candidate --
+> `run_sensitivities` never forwarded 'orient'/'sign'; no dw_d* driver
+> set the OPD reference, so every harvest was mean-referenced and a
+> single-segment poke pistoned every other segment by
+> -(N_k/N)*mean(poked) (driver-path measurement e5hex1 seg 2 Kr/Kc:
+> 14.7% / 12.0% of the poked rms; 'chief' -> exactly 0).  'opd_ref'
+> {'mean','chief'} now in all 8 drivers + core (re-applied after every
+> reload) + runner (+ 'orient'/'sign'); defaults 'mean'.  Record: PLAN
+> 0.x dated block, `mmacos/doc/SENSITIVITY_TOOLS.md`, gate
+> `tOpdRef/test_driver_single_segment_poke_is_local_under_chief`, reply
+> `DRAFT_email_luis_round4.md`.  OPEN for Dave: the chief ray's OWN
+> segment stays non-local under 'chief' -> nominal fixed-length
+> reference (`opd_ref_len_set`, engine OPDRefRayLen branch) + the
+> default flip.  Dave also asked for a few slides of the dwdsurf results
+> under all options (figs: demo_session/figs/dwdsurf_*.png; deck md
+> `demo_session/deck_dwdsurf_options.md`).**
+>
 > **CURRENT STATE (2026-09-09 evening).  S7 of the ZWFS campaign RAN:
 > the iterated-reference exact reading landed AND a MODEL DEFECT was
 > found and fixed on the way** -- the `twyman_green` 'nf' mask sandwich
