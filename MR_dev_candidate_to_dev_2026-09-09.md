@@ -122,7 +122,12 @@ Benches and campaigns (templates/40_benches, 80_end_to_end, challenges):
 
 Verification: mmacos full suite green at the tip (per-model-size
 batches); pymacos 6694/0 + PROPER 26/26; JPL-private IRIS + OPTIIX per
-`macos/BRIEF_ccmac_jpl_round2.md`.
+`macos/BRIEF_ccmac_jpl_round2.md`.  Gates run 2026-09-09 on the merged
+tree against the rebuilt engine (`cdf8636`): fast (128) 438 pass + 2
+`tSegMirMaker` byte-identity fails that were a STALE LOCAL SegMirMaker
+binary (built 07-23, source changed 08-07) -- 3/3 after
+`makesegmirmaker.sh`; `tEpDomeGate` 5/5; `tPupilFindMethod` 10/10;
+`tst_save_keys.in` loads 20/20 on gfortran and ifx.
 
 Open (post-merge follow-ups, not blocking): emptyOPD guard keys on
 nonzero samples rather than the ray-pass mask (pending CCMac's IRIS
