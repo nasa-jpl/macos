@@ -174,6 +174,59 @@ part is neutral, the systematic part improves.  Records: both READMEs
 (S6 sections), `zwfs_s6color_report.txt` / `tg96_s6color_report.txt`,
 figure `zwfs_dm96/zwfs_s6color.png`.
 
+## S7 — model correction + the iterated-reference reading (2026-09-09, RUN)
+
+Executing the literature scan's first task (`REPORT_zwfs_lit_scan.md`)
+exposed a MODEL DEFECT first: the `twyman_green` 'nf' sandwich emitted
+the exit reference sphere with zElt/Kr = 0.6·D_MASK_FL (23.86 mm)
+against the entrance sphere's 352.7 mm.  The engine's SPH2PL leg applies
+a focal quadratic factor S ∝ (Z2−Z1)·Z1/Z2 and PL2SPH is a plain FFT, so
+the unmasked round trip was a Fresnel DEFOCUS of the reimaged pupil by
+z_eff = 4.86 m (entrance-sphere scale), not the identity the ctb_dcr.in
+precedent gets with equal radii.  Measured on the legacy deck: round
+trip 0.159 with a FLAT DM; 29% rms detector amplitude modulation under
+the 30 nm state (a phase-only state must give 0); the ringed poke
+kernel (raw peak 0.27); the oscillatory transfer null near 30 cyc/ap =
+a Talbot null (predicted 34).  **Every ZWFS number in S1–S6 was taken
+on that defocused sensor; the IFO twin is all-geometric and untouched.**
+Fix: 'nf' now emits the SYMMETRIC sandwich (round trip 1.8e-15);
+'nf_legacy' reproduces the old emission byte-for-byte (tBench gate);
+S1–S6 stand as the legacy-model record.
+
+The reading itself (`dmg_zwfs_gauge` measI/reconI): per-pixel exact
+solve with the reference wave re-propagated through the FFT surrogate
+of the mask model (validated against the engine's own Eb at 2e-15), one
+frame.  Gated: with the oracle b and the true branch the solve is exact
+to 3e-14 on every pixel; its two residuals are the quarter-wave
+sensor's per-pixel BRANCH (7.8% of pixels beyond the fold on the 30 nm
+base) and PISTON (the intensity is invariant under a common phase on E
+and b — the sensor's piston null).  'I+' = the same one frame plus a
+branch prior from a ONE-TIME stepped retrieval of the working state,
+REFINED by re-solving that retrieval with the iterated |b|² (two passes
+reach the true branch on 99.99% of pixels; the plain stepped prior
+misses 3%, enough to sign-flip a single-actuator differential whose
+footprint sits beyond the fold — the 48×48 case).  Map space, piston
+removed: the 30 nm working state (0.54 rad rms) is read from ONE frame
+to 2.8e-4 rad rms with the refined prior (0.034 plain prior; 0.24–0.26
+for the un-primed readings); the flat 20 nm hold-out to 7.5e-7 rad
+(linear 8.5e-4).  Results, actuator
+space (legacy in brackets): model correction alone, linear reading —
+single-on-base floor 744 → 67 pm (SNR 9 → 80), grid-on-base SNR 1.46 →
+14 (the "undetected" scenario detected by EVERY reading), dense random
+42 → 9.6 nm.  I+ on the 30 nm state: floor 13 pm / SNR 584 (96×96), 24
+pm / 466 (48×48); grid-on-base SNR 34 / 115; and on the break-scale
+ladder **I+ holds to 60 nm rms working state (gain 0.85–0.91 at 96×96,
+1.00–1.07 at 48×48) where the four-frame stepped reading falls to 0.56
+/ 0.52 and the un-primed one-frame readings cliff between 30 and 40 nm
+(wrong-branch pixels re-propagated into b)**.  The stepped reading keeps
+dense random (3.3 nm vs I+ 5.8).  Spec: grid-on-base SNR ≥ 5 from one
+frame MET; hold-out raw gain within 3% MET at 48×48 (0.997), 0.90 at
+96×96 = the NGRID-193 dev grid sampling a 1 mm actuator at ~2 px (not
+the reading, not the regularization).  Record: `zwfs_dm96/README.md`
+S7 bullet + banner, `zwfs_s7iter_report.txt`, `zwfs_s7iter.png`.  Open:
+NGRID 385; S6 color re-run on the corrected model; S5 noise pricing of
+I+; deck fold (deck_zwfs is on the legacy model).
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to
