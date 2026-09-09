@@ -1,8 +1,28 @@
-# The IRIS save_rx -> reload SIGSEGV: a phantom-grid SAVE bug (2026-09-09)
+# The save_rx grid-SAVE crashes: a phantom-grid bug FIXED, a real-grid bug STILL OPEN (2026-09-09)
 
-CCMac's round-2 item 3, root-caused and fixed.  Off the sens-core merge
-path (the merge stands); a pre-existing crash in the SAVE writer since
-the July element-data bucket work (macos `662e86e`).
+CCMac's round-2 item 3.  Off the sens-core merge path (the merge stands);
+pre-existing in the SAVE writer since the July element-data bucket
+(macos `662e86e`).
+
+> **STATUS after CCMac round 3 (`verify/REPORT_round3.md`).**  This report
+> fixes ONE of two defects.  The **phantom-grid** side is FIXED and gated
+> (below): the 38 `nGridMat= 99` / `GridFile= none` elements no longer
+> gain a frame (pData/GridSrfdx count 44 -> 6).  But the **real
+> ZrnGrData grids** on IRIS (iElt **17/19/21/35/37/39**) STILL SIGSEGV on
+> reload after `save_rx` -- same stack -- and `cda178e` does NOT cover
+> them.  CCMac's attribution (eliminated: not a pre-existing grid-trace
+> bug -- the original with the grid activated traces fine, 12737 survive;
+> not the missing file; not the added `lData`).  The trigger: `save_rx`
+> CLEANS the original `GridFile=` TAB-comment that had silently disabled
+> those grids (the GridFile tab bug), so reload now actually loads the
+> grid and hits a corrupted rewrite of the real-grid block.  OPEN,
+> engine-side, best chased with a debug build on the IRIS deck.
+> Candidates for that session (unverified): the `GridSrfOrder= 3` bicubic
+> edge stencil overrunning `GridMat` near the grid rim; the rewritten
+> `GridFile` name/path; `nGridMat` vs the file's actual dimensions; the
+> pData/xData frame written for a ZrnGrData(13) element.  Note the public
+> `SegDemo3data` (6 grids) round-trips clean, so the ZrnGrData save path
+> is not universally broken -- the trigger is IRIS-specific.
 
 ## Symptom
 
