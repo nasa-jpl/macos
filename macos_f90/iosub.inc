@@ -3440,26 +3440,42 @@ C***********************************************************************
 
         nextTok=.true. ! when true, 'state' is outside of a token
         tok(1:100)=' '; c=1; j=1; nVal=0
+!-->    Bound the scan by the BUFFER's length, not the command length:
+!       ValBuf is MacosValLen (220) chars, MacosCharLen is 256, so the
+!       old loop read 36 bytes past the actual argument and tokenized
+!       whatever sat there -- a non-blank byte became a bogus token and
+!       Read(tok,*) failed "Bad real number" NONDETERMINISTICALLY
+!       (tst_save_keys.in loaded 3 of 5 times, 2026-09-09).  Only the
+!       ArrWaveLen=/ArrIndRef= lines reach here.  Also cap the token and
+!       the output array so a malformed line cannot overrun either.
         Do
-          If (c==MacosCharLen) exit  ! done
-          If (ValBuf(c:c)==' ' .and. c<MacosCharLen) Then
+          If (c>=LEN(ValBuf)) exit  ! done
+          If (ValBuf(c:c)==' ') Then
             If (.not.nextTok) Then
               ! a token is complete
               !print*,'** tok = ',tok
+              If (j>SIZE(ValArr)) exit
               Read(tok,*) ValArr(j)
               !print*,'** ValArr(j) =',ValArr(j)
               j=j+1; tok(1:100)=' '; nextTok=.true.
 	      nVal=nVal+1
             End If
-            If (c<MacosCharLen) c=c+1
+            c=c+1
           Else
             If (nextTok) Then
               i=1; nextTok=.false.
             End If
             !print*,'** i =',i
-            tok(i:i)=ValBuf(c:c); i=i+1; c=c+1
+            If (i<=LEN(tok)) tok(i:i)=ValBuf(c:c)
+            i=i+1; c=c+1
           End If
         End Do
+        ! a token still open at the buffer's end (no trailing blank)
+        If ((.not.nextTok) .and. (j<=SIZE(ValArr))) Then
+          Read(tok,*) ValArr(j)
+          nVal=nVal+1
+        End If
+!<--
         End Subroutine Get_Values
 
 C***********************************************************************

@@ -40,6 +40,15 @@ CLAUDE.md. Move text, don't paraphrase — engine gotchas are exact.*
   `k2 = b*b - 4*a*c < TOL_TANGENT * b*b` the quadratic is effectively
   linear; fall back to `L = -b/(2*a)` instead of `sqrt(k2)` to avoid
   loss-of-precision NaN.
+- **`Get_Values` over-read (iosub.inc, 2026-09-09).**  The value
+  tokenizer scanned to `MacosCharLen` (256) over a `MacosValLen` (220)
+  buffer -- 36 bytes past the argument -- so `ArrWaveLen=`/`ArrIndRef=`
+  lines (its only callers) parsed NONDETERMINISTICALLY: a non-blank byte
+  beyond the buffer became a token and `Read(tok,*)` died "Bad real
+  number in item 1" (tst_save_keys.in loaded 3 of 5 times).  Bounded by
+  `LEN(ValBuf)`, token/array capped, trailing token completed; gate =
+  20 consecutive loads on both compilers.  Same class as the lensarr
+  heap stomp: fixed-length buffers scanned by a DIFFERENT constant.
 - **`smacos_compute.inc` slice overrun.**  Five `1:mZern` → `1:mZernModes`
   fixes (mZern≠mZernModes when both Zern and FF aspheres are active).
   Cherry-picked back to release-candidate.
