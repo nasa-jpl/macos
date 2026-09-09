@@ -122,6 +122,58 @@ are measured.  Consequences:
   the same influence-function forward model that BUILDS the truth
   grids, applied through the two-poke registration affine.
 
+## Multi-mask phase stepping (Dave 2026-09-04: "masks with varying depth")
+
+Frames through dimples of several etch DEPTHS (φ = π/2, π, 3π/2 at one
+diameter) plus the clear frame solve the per-pixel field EXACTLY
+(linear 3×3: I_k = I₀ + |c_k|²·|E_b|² + 2Re(c_k·E_b·conj(E₀))) — no
+small-phase assumption, no sign ambiguity, per-pixel range ±π and
+unwrappable.  The sequential cousin of the phase-2 metasurface (which
+delivers two phases simultaneously).  Cost: 4 frames per measurement
+vs 1 (still no polarization train; vs the IFO's 6 traces).  Hardware
+implication: a mask substrate carrying spots of several DEPTHS — the
+VSG2 part varies diameter at one depth.  Stage S2b (zwfs_s2b.m);
+sensitivity rerun with the stepped retrieval follows it.
+
+## Sensitivity stage (Dave 2026-09-04)
+
+How small a change is detectable, and how accurately: single pokes
+and grid pokes, against flat and a ~30 nm background, amplitudes
+10 nm → 0.1 pm, differential protocol, actuator space; detection =
+SNR ≥ 5 over the unpoked-actuator floor.  Objective: sensitivity at
+1 pm or below.  Noiseless model → the measured floor is systematic +
+numerics; photon noise is a later budgeted stage.  Twin scripts
+tg96_sens.m / zwfs_sens.m.
+
+## Multi-color stage (Dave 2026-09-08, evening: "try running both systems
+   at multiple colors, maybe the combination will help with some poor SNR
+   regions") — RUN, both instruments
+
+`zwfs_s6color.m` / `tg96_s6color.m` + `dm_gauge_lib/dmg_color_comb.m`
+(multi-channel Wiener on the actuator lattice, a_hat = Σ_k G_k A_k /
+(Σ_k G_k² + β²)).  Five colors 480/532/632.8/700/780 nm; only the deck
+header `Wavelen=` changes; every calibration redone per color; 96×96;
+noiseless.  **ZWFS: YES.**  The oscillatory transfer null (near 30
+cyc/ap at 632.8) migrates as 1/λ with the dimple's angular size (40 /
+36 / 24 / 20 cyc/ap at 480 / 532 / 700 / 780), so the five-color
+transfer never drops below 0.99 (best single 0.91).  Rows, linear
+reading, 632.8 → comb: hold-out 202 → 143 pm; dense random 16.4 → 7.2
+nm; single-on-30nm-base floor 720 → 224 pm (SNR 9 → 35); the one
+UNDETECTED scenario (grid on base) SNR 1.46 → 3.43 — better, still under
+5.  Stepped: base rows the same way; the flat hold-out slightly WORSE
+(287 → 313) because the stepped systematic is larger at the other
+colors and the equal-weight combiner inherits it — weight by a measured
+per-color systematic before combining stepped readings.  **IFO: NO
+lever** — transfer and every row identical across colors to 3 digits
+(92 pm / 4.17 nm / SNR 210 / 19.8 at each λ and combined).  A
+diffraction roll-off would have moved 1.6× between 480 and 780; it moved
+< 0.3%, so the IFO's high-f deficit is GEOMETRIC (the null-tuned tail's
+conjugate + 0.136 mm distortion) — the joint tail objective is its
+lever, not the source.  Cost: K× frames; at equal total light the noise
+part is neutral, the systematic part improves.  Records: both READMEs
+(S6 sections), `zwfs_s6color_report.txt` / `tg96_s6color_report.txt`,
+figure `zwfs_dm96/zwfs_s6color.png`.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to
