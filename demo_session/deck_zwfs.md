@@ -3,6 +3,9 @@ deck_zwfs.md — the Zernike wavefront sensor for the DM gauge, and how
 it will be compared to the Twyman–Green IFO.  DRAFT — pending Dave's
 sign-off; the builder suppresses the export mark on DRAFT decks.
 Build: python3 make_brief_slides.py deck_zwfs.md
+2026-09-09 fold 2: the literature scan (three slides after the head-to-head:
+papers in priority order with synopses + references, and the conclusions /
+next steps) from macos/REPORT_zwfs_lit_scan.md.
 Status: covers the campaign through S1 (mask + response gates green) plus
 the S6 multi-color excursion (2026-09-09 fold, Dave's 2026-09-08 ask);
 the S2–S5 battery / head-to-head / photon pricing are reported in the
@@ -16,7 +19,7 @@ BRIEF_zwfs_campaign.md (plan + rulings 2026-09-04).
 The same 96 mm bench with the reference arm removed: a quarter-wave dimple at focus turns one camera frame into a wavefront measurement — set against the phase-shifting interferometer on the same deformable mirror
 D. C. Redding, with Claude Code.
 September 2026.
-DRAFT — pending review.  Campaign status: sensor model verified; battery, head-to-head and photon pricing measured (reported in the interferometer deck); multi-color excursion folded here; vector step pending.
+DRAFT — pending review.  Campaign status: sensor model verified; battery, head-to-head and photon pricing measured (reported in the interferometer deck); multi-color excursion and the literature scan folded here; vector step pending.
 
 ## The idea: the beam interferes with its own core | An etched dimple at the focus phase-shifts the heart of the beam; that light spreads back over the pupil as a built-in reference
 ::: left
@@ -97,6 +100,44 @@ DRAFT — pending review.  Campaign status: sensor model verified; battery, head
 - **Then the vector step:** a polarizing metasurface in place of the etched dimple gives the two polarizations opposite phase shifts — two pupil images in one frame, shifted opposite ways, so the sign ambiguity disappears and the usable range grows.  The engine's vector-diffraction and per-polarization mask machinery is already in place from the coronagraph work.
 ~ Registration pokes drop to ~20 nm for the sensor: a 150 nm poke is 3 rad of phase — outside the linear reading.  Measured since (S2–S5): 46 pm for the interferometer against 744 pm (linear) / 773 pm (phase-stepped) for the sensor on the 30 nm working surface; the interferometer deck carries the head-to-head, break scale and photon pricing.
 
+## What the Zernike-sensor literature offers, in priority order | Twelve papers read; one import addresses this campaign's weak results directly: reconstruct with an iterated reference wave
+::: full
+| # | paper | what it gives this model |
+| 1 | Ruane, Wallace, Steeves et al. 2020, JATIS 6, 045005 | Exact per-pixel reconstruction from the pupil amplitude, the reference wave b and the masked image; a sensitivity factor per pixel; a four-term systematic budget; 1 pm reached at 4.4×10⁵ frames; no loss to 25 % bandwidth |
+| 2 | Doelman, Fagginger Auer, Escuti, Snik 2019, Opt. Lett. 44, 17 | Vector Zernike: ±π/2 on opposite circular polarizations gives two pupil images, an exact phase-and-amplitude solution, an iterated b, achromatic to 100 % bandwidth; the leakage terms are written down |
+| 3 | N'Diaye, Vigan, Dohlen et al. 2016, A&A 592, A79 (ZELDA II) | Second-order reconstruction with b from the mask model; 1.06 λ/D at π/2; range −0.14 to +0.36 λ; the sensitivity factor drifts 10 % day to day on SPHERE |
+| 4 | Chambouleyron, Cissé, Salama, Haffert, Wallace et al. 2024, SPIE 13097 | A phase-shifted pair (±π/2) yields cos φ and sin φ; iterative reconstructors reach about 1 rad rms; the bench limits were polarization crosstalk and defocus between the two pupils |
+| 5 | Haffert 2024, A&A 683, A113 | Iterative nonlinear reconstructors reach machine precision below 0.25 rad rms; phase sorting extends to 0.75 rad; adding wavelengths to 1.4 rad rms |
+| 6 | Darcis, Haffert, Chambouleyron, Doelman et al. 2025, A&A | Multi-wavelength gradient descent through the forward model: dynamic range for the scalar sensor, photon robustness across a wider band, two-wavelength unwrapping of petal errors |
+~ Priority = payoff against this campaign's measured weak results (the base-crosstalk floors, the undetected grid-on-base case, the stepped-reading regression under equal-weight color combination).  Synopses and links: macos/REPORT_zwfs_lit_scan.md.
+
+## Demonstrations, segmented mirrors, and the in-house precedent | Picometers by alternating DM states and averaging; segment piston by model iteration, underestimated below 50 % Strehl
+::: full
+| # | paper | what it gives this model |
+| 7 | Steeves, Wallace, Kettenbeil, Jewell 2020, Optica 7, 1267 | 1.6 pm repeatability in 4.3 s by alternating flat and waffle DM states and averaging the differences; a reconstruction robust at the highest spatial frequencies |
+| 8 | Wallace, Rao, Jensen-Clem, Serabyn 2011, SPIE 8126 | All-reflective phase-shifting Zernike interferometer: a dynamic, arbitrary core phase shift read in four steps gives phase and amplitude; low sensitivity to vibration, polarization and wavelength |
+| 9 | Moore and Redding 2018, SPIE 10698 | Nonlinear polychromatic physical-optics reconstruction for picometer differential metrology on LUVOIR; the in-house precedent for the reconstructor above |
+| 10 | Keck vector-Zernike segment control 2024 (arXiv 2404.08728); Wallace et al. 2022 (arXiv 2205.02241) | Segment piston by model-based iteration; 11 nm rms piston uncertainty; underestimation 2 to 4× below 50 % Strehl; fabricated shifts 0.30π and 0.68π instead of ±0.5π |
+| 11 | HiCAT mid-order Zernike sensor 2024 (arXiv 2409.03411) | Per-segment piston, tip and tilt by interaction matrix; a minimal step of 125 ± 31 pm at SNR 4; 14-bit DM quantization reads as steps in the response |
+| 12 | Shi et al. 2015, SPIE 9605 (Roman low-order sensor) | A reflective dimple on the focal-plane mask senses Z2 to Z11 from the rejected starlight: the spatially filtered form of the same sensor |
+~ Also read: PIAA-ZWFS (2026, arXiv 2606.28136), lossless pupil apodization that closes the gap to the fundamental sensitivity limit by 10× — a design lever, not a model change.
+
+## Conclusions: reconstruct with an iterated reference wave first | The frozen-reference linear reading is the un-iterated case of what every recent paper iterates; that is where the sensor's remaining floors come from
+::: full
+- **Why this comes first:** the base-crosstalk floors and the undetected grid-on-base case are the frozen-b error — the reference wave is calibrated on the flat DM and never updated, so a working surface moves the reference core and the linear reading reads it as crosstalk (S2b: defocus on a working surface read 0.74 under exact retrieval).  Every recent reconstructor iterates b; this model does not yet.
+- **The spec:** solve each pixel exactly from the masked image, the pupil amplitude and b (Ruane 2020, eq. 36–37); re-propagate the estimate through the mask model to refresh b; repeat three to five times.  The engine's exact reference field gates the FFT surrogate for b to 10⁻¹⁰ before it is trusted — a check no bench can make.  Success: the grid-on-base case detected from one frame at SNR ≥ 5, and the hold-out gain within 3 % of 1 without the modal over-correction.
+- **What this model has that the papers do not:** engine-exact reference and pupil fields, the ray-affine registration doctrine, actuator-space scoring through the DM influence model, the two-observables-per-pixel depth-ladder result, and the color-resolved migration of the response nulls.
+~ Spec and provenance: macos/REPORT_zwfs_lit_scan.md, "Suggested first ZWFS task"; implemented as a third reading in dm_gauge_lib/dmg_zwfs_gauge beside the frozen-linear and phase-stepped readings.
+
+## Conclusions: the follow-on imports, in order | Budget form, model-matched DM calibration, spot and color reruns on the new reconstructor, the vector sensor priced before it is built
+::: full
+- **The JPL budget form:** a per-pixel sensitivity factor from the measured fields predicts the photon-noise stage analytically, and the four systematic terms (pupil calibration at ½, reference wave at 1, dimple depth, initial phase) become the rows of the error budget.
+- **Calibrate the DM through the sensor's own image model:** fit actuator positions and gains by matching sensor images of poke grids to a simulation that includes the propagation distances — the out-of-conjugate case.  The interferometer's detector sits off the DM conjugate after the null-tuned tail, so this is its lever too.
+- **Rerun spot size and color on the new reconstructor:** the "larger spot, worse b" trade disappears once b is iterated, so the 1.06 / 2.0 / 3.0 λ/D sweep is due again; the five-color combination becomes a joint per-wavelength fit, which also removes the stepped-reading regression seen under equal weights.
+- **Model the vector sensor before the metasurface is built:** the exact two-image solution and its leakage terms (retardance offsets, splitter rotation) run on the engine's polarization machinery; the bench limits at Keck and SEAL were defocus and crosstalk between the two pupil images, both priceable here.
+- **The interferometer, for balance:** a PZT phase shift buys no model gain — its floors are geometric and color-independent — but on hardware an absolute phase scale and freedom from polarization systematics; the recommended form is a hybrid: polarization snapshot for the differential measurements, a PZT on the reference flat as calibrator.
+~ Segmented-mirror lessons carried forward: the sensor reads segment piston but not global piston, DM quantization appears as steps in the response, and piston is underestimated below 50 % Strehl (Keck) — all three enter the e5-class segmented gauges.
+
 # Backup
 
 ## Provenance and records | Every number re-derives from a committed script
@@ -108,3 +149,4 @@ DRAFT — pending review.  Campaign status: sensor model verified; battery, head
 - WF-estimate figures: zwfs_wf_figs.m (traced render + triptychs, model 1024 / 193-px camera / 2.0 λF/D spot; cases matched to tg96_wf_figs.m).
 - Hardware source: "VSG2 Zernike Wavefront Sensor Update -v2" deck, parameters carried in templates/40_benches/vsg_wip/vsg2_params.m §9.
 - Interferometer comparison column: templates/40_benches/tg_psi_dm96, run 10 (tg96_report.txt).
+- Literature scan (2026-09-09): macos/REPORT_zwfs_lit_scan.md — twelve papers, ranked, with the PZT verdict for the interferometer and the spec for the iterated-reference-wave reconstructor.
