@@ -81,6 +81,17 @@ harvest that passed an explicit `stop_elt` on a left-handed segmented
 deck was silently losing rays to this; results on such decks are worth
 a re-run.
 
+## The handle he needed was already in the deck
+`s3_imager_full` carries `SharedPupil` (element 23, a flat Reference in
+the collimated space after OAP1) -- a REAL pupil plane.  A flat reference
+normal to the chief ray in collimated space is a legitimate wavefront
+reference, and reading the same Seg8 tilt there gives the exit-pupil
+map: correlation 0.9975 with the EP-sphere read, rms ratio 1.03; the
+global 1e-6 rad tilt reads 1.385e-6 there vs 1.40e-6 at the sphere.  For
+a TELESCOPE-only harvest (the stated purpose of harvest_tel_sens) the
+read surface is `exit_pupil_elt = 23`, no pupil placement needed; the
+imaging leg's own exit pupil needs the add_pupil pair.
+
 ## Recommendation for the fix
 
 1. Do NOT merge the FP-read branch.  Replace it: a powered nElt-1 with no
