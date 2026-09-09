@@ -94,6 +94,33 @@ c. The model size used, and whether the grids are 256 (mGridMat caps at
    256 regardless of model size).
 d. THEN the OLD-engine check, only if (a) also crashes.
 
+## Round 2 CLOSED (CCMac 2026-09-09) + item 3 fixed on our side
+
+CCMac ran all three on the merged tree and closed them:
+- **Item 1 (OPTIIX 2c):** `81d3308` present in NEW, absent from OLD ->
+  the finite-difference floor, as ruled.  Expected.
+- **Item 2 (IRIS reset_xp=true empty):** neither branch of my read.  The
+  raw engine read is NOT empty (12756 rays pass, max|w| 1e-4) and FEX
+  moved the Return sphere kr -2516.07 -> -2546.91 (a real move) -- so
+  the empty is in the supervisor's masked `w_nom_2d`, a canvas/mask
+  blind spot, not physics.  Benign for the merge; reset_xp=true just
+  yields no rows on IRIS.  **CCL follow-up done in part:** the
+  `dw_multi_core` empty-OPD warning now RE-READS the engine at the read
+  surface and says which case it is -- "the ENGINE read is NOT empty (N
+  rays, M samples): canvas/mask fault, report it" vs "K rays pass:
+  vignetting".  The canvas-construction fix (why the scatter drops a
+  non-empty read on IRIS) needs the JPL deck: run the instrumented
+  supervisor on iris_dp_ZGD and send which branch fires.
+- **Item 3 (save_rx SIGSEGV):** FIXED, `macos/REPORT_iris_save_crash.md`,
+  macos `dev-candidate` `cda178e`.  Phantom grids (`nGridMat= 99`,
+  `GridFile= None`) gained a `pData..zData` frame on SAVE that indexed an
+  unallocated `GridMat` at zero pitch on reload.  Gated on 7 real-grid
+  decks (byte-identical) + 2 synthetic phantoms; the real IRIS round-trip
+  is yours to confirm (rebuild the engine at `cda178e`+, relink, then
+  `load -> stop(24) -> save_rx -> reload -> trace`).  A separate
+  pre-existing lensarr TRACE-time overrun found alongside is filed in
+  PLAN section 0, not on the merge path.
+
 ## 4. After the merge
 
 The byte-identity gate is proven on the two most different decks in the
