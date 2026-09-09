@@ -2098,7 +2098,14 @@ C  Determine active terms from sentinels
 
             ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
-            ifGridTerm = (nGridMat .GT.  0 )
+!-->        A declared grid with NO data (GridFile= none / missing, the
+!           IRIS "nGridMat= 99" idiom) leaves GridSrfdx at 0: the pixel
+!           index xi = (xData.rhom)/dAct then divides by zero and the
+!           NaN index reads GridMat out of bounds (SIGSEGV on macOS, NaN
+!           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
+!           so the grid term is INACTIVE without one.
+            ifGridTerm = (nGridMat .GT. 0) .AND. (GridSrfdx .GT. 0d0)
+!<--
 
 C----------------------------------------------------------------------------
 C	Compute incidence point of ray on the base conic surface
@@ -2459,7 +2466,14 @@ C***********************************************************************
 
             ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
-            ifGridTerm = (nGridMat .GT.  0 )
+!-->        A declared grid with NO data (GridFile= none / missing, the
+!           IRIS "nGridMat= 99" idiom) leaves GridSrfdx at 0: the pixel
+!           index xi = (xData.rhom)/dAct then divides by zero and the
+!           NaN index reads GridMat out of bounds (SIGSEGV on macOS, NaN
+!           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
+!           so the grid term is INACTIVE without one.
+            ifGridTerm = (nGridMat .GT. 0) .AND. (dAct .GT. 0d0)
+!<--
 
 C  Compute rho and Sconic
 
