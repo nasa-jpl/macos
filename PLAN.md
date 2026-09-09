@@ -298,6 +298,26 @@ EP-radius rework got:
   comparison harnesses do their own referencing and must be re-checked,
   not assumed.
 
+**2026-09-09 — the sensitivity path now carries the reference (Luis's
+"residual on the other segments when one segment is poked", round 4).**
+`opd_ref` {'mean','chief'} added to all eight `dw_d*` drivers, the
+supervisor core (re-applied after EVERY reload) and `run_sensitivities`
+(which also gained `orient` / `sign` — it forwarded neither, so no
+`run_dwd*` user could choose the orientation).  Defaults stay `'mean'`
+(no baseline moves).  Measured on the DRIVER path (`macos.dw_dsurf`,
+e5hex1 segment 2, Kr / Kc, orient xy, remove_ptt false): under `mean`
+the six other segments read one constant, `-(N_k/N)*mean(poked)` =
+4.32e-4 / 2.04e-2 per unit parameter (14.7% / 12.0% of the poked
+segment's rms, std 3e-16); under `chief` exactly 0.  What `chief` does
+NOT localise: the chief ray's OWN segment (its reference moves with the
+poke; the others read `-m(chief)` = -2.18e-5 per unit Kr on e5hex1, 5.0%
+of that segment's own rms).  **Recommended next step, unchanged:
+(b) below — a nominal-anchored fixed-length reference via the existing
+`OPDRefRayLen` branch (`opd_ref_len_set`), which makes EVERY column
+local; then the drivers can default to it.**  Gate: `tOpdRef/
+test_driver_single_segment_poke_is_local_under_chief`; doc:
+`mmacos/doc/SENSITIVITY_TOOLS.md` (OPD conventions section).
+
 **DEFERRED, and LOWER priority than first scoped — a stable reference
 that survives a geometrically dead chief.**  The branch gates on
 `LRayOK(1)`, the GEOMETRIC flag, not `LRayPass(1)`: an OBSCURED chief
