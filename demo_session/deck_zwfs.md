@@ -3,9 +3,11 @@ deck_zwfs.md — the Zernike wavefront sensor for the DM gauge, and how
 it will be compared to the Twyman–Green IFO.  DRAFT — pending Dave's
 sign-off; the builder suppresses the export mark on DRAFT decks.
 Build: python3 make_brief_slides.py deck_zwfs.md
-Status: covers the campaign through S1 (mask + response gates green);
-battery, differential head-to-head and the vector step are pending and
-say so.  Sources: templates/40_benches/zwfs_dm96 (S1, d6791d1),
+Status: covers the campaign through S1 (mask + response gates green) plus
+the S6 multi-color excursion (2026-09-09 fold, Dave's 2026-09-08 ask);
+the S2–S5 battery / head-to-head / photon pricing are reported in the
+interferometer deck (deck_tg_fang) and referenced here; the vector step
+is pending and says so.  Sources: templates/40_benches/zwfs_dm96 (S1, d6791d1),
 vsg_wip/vsg2_params.m §9 (hardware), tg_psi_dm96 run 10 (IFO numbers),
 BRIEF_zwfs_campaign.md (plan + rulings 2026-09-04).
 -->
@@ -14,7 +16,7 @@ BRIEF_zwfs_campaign.md (plan + rulings 2026-09-04).
 The same 96 mm bench with the reference arm removed: a quarter-wave dimple at focus turns one camera frame into a wavefront measurement — set against the phase-shifting interferometer on the same deformable mirror
 D. C. Redding, with Claude Code.
 September 2026.
-DRAFT — pending review.  Campaign in progress: sensor model verified; battery and head-to-head pending.
+DRAFT — pending review.  Campaign status: sensor model verified; battery, head-to-head and photon pricing measured (reported in the interferometer deck); multi-color excursion folded here; vector step pending.
 
 ## The idea: the beam interferes with its own core | An etched dimple at the focus phase-shifts the heart of the beam; that light spreads back over the pupil as a built-in reference
 ::: left
@@ -61,6 +63,17 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 - **Why that is workable:** the transfer is flat in sampling and set by a known dimple — stable and calibratable.  The actuator-model fit (the agreed score) with a measured response absorbs it; that is the battery's reconstructor path toward the 1 pm ultimate target.
 ~ Linear reconstructor throughout; alternatives are a scheduled study.  Sweep record: zwfs_sweep.m (8 configs, 1.2 min).  Identical cases on the interferometer: poke gain 0.984 / 0.049 nm, defocus 1.024 / 0.086 nm (the Fang deck carries them).
 
+## Color as a lever: the blind bands move with wavelength | Five colors through the one mask keep the combined transfer above 0.99; on a 30 nm working surface the single-actuator floor falls 720 → 224 pm
+::: left
+![The transfer of (p,0) lattice modes at five wavelengths: the null near 30 cycles/pupil at 632.8 nm sits at 40 at 480 nm and at 20 at 780 nm; the five-color combination (black) never drops below 0.991.](figs/crop_zwfs_s6color_zwfs.png){h=4.3}
+::: right
+- **Why it works:** the dimple is fixed glass — its phase (π/2 at 632.8 nm) and its diameter in λ/D scale with wavelength, and so does the frequency where the response crosses zero: 40, 36, ~30, 24, 20 cycles/pupil at 480, 532, 632.8, 700, 780 nm.  Each color carries its own calibration: flat references, measured kernel, modal transfer.
+- **The combination:** a multi-channel Wiener estimate on the actuator lattice weights each color by its own transfer, so a mode one color cannot see is carried by another.
+- **What it buys** (linear reading, 632.8 nm alone → five colors): single-actuator floor on the 30 nm working surface 720 → 224 pm (SNR 9 → 35); dense random 16.4 → 7.2 nm; the grid case the sensor could not detect rises from SNR 1.5 to 3.4 — better, still short of detection.
+- **The interferometer, same test:** unchanged at every color — its roll-off is geometric, not diffractive (its deck carries the slide).
+::: full
+~ Cost: K× frames per measurement.  Under equal weights the phase-stepped reading on a flat gets slightly worse (287 → 313 pm): weight colors by their measured systematic first.  Noiseless, 96×96; records zwfs_s6color.m / zwfs_s6color_report.txt, combiner dm_gauge_lib/dmg_color_comb.m.
+
 ## Side by side with the Twyman–Green | The interferometer dims at the finest patterns, the Zernike sensor at the very lowest and in range — the price of its one-frame economy
 ::: full
 | | Twyman–Green PSI (measured) | Zernike sensor (this campaign) |
@@ -82,7 +95,7 @@ DRAFT — pending review.  Campaign in progress: sensor model verified; battery 
 - **The interferometer's differential floor stands at** 0.021 nm on a 10 nm single-actuator change and 3.67 nm on a 10 nm random pattern (map space, base-independent) — both to be restated in actuator space before the sensor is scored against them.
 - **The campaign from here:** camera registration by the two-poke doctrine at small strokes → the same 12-pattern battery at 48×48 and 96×96 → the differential head-to-head, including the working-state size where the sensor's linear reading folds.
 - **Then the vector step:** a polarizing metasurface in place of the etched dimple gives the two polarizations opposite phase shifts — two pupil images in one frame, shifted opposite ways, so the sign ambiguity disappears and the usable range grows.  The engine's vector-diffraction and per-polarization mask machinery is already in place from the coronagraph work.
-~ Registration pokes drop to ~20 nm for the sensor: a 150 nm poke is 3 rad of phase — outside the linear reading.
+~ Registration pokes drop to ~20 nm for the sensor: a 150 nm poke is 3 rad of phase — outside the linear reading.  Measured since (S2–S5): 46 pm for the interferometer against 744 pm (linear) / 773 pm (phase-stepped) for the sensor on the 30 nm working surface; the interferometer deck carries the head-to-head, break scale and photon pricing.
 
 # Backup
 
