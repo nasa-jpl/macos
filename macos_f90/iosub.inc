@@ -1631,8 +1631,17 @@ C***********************************************************************
 !<--
               IF (nGridMat(iElt).GT.0) THEN
                 CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-                CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-                CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!-->            a declared-but-empty grid has a blank name in memory;
+!               write the 'none' sentinel GridInit already accepts, so
+!               the SAVE re-loads (a blank value trips the validator)
+                IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+                  CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+                ELSE
+                  CALL PrintFmt('GridFile', "2x,A", 'none')
+                END IF
+!<--
+                IF (GridDefinedElt(iElt))
+     &            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
               END IF
 
             ! ---------------------------- undefined Special Srf.
@@ -1652,8 +1661,17 @@ C***********************************************************************
      &         (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
      &         (SrfType(iElt).EQ.SrfType_FreeForm))) THEN
             CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-            CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+            IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+            ELSE
+              CALL PrintFmt('GridFile', "2x,A", 'none')
+            END IF
+!-->        the pitch only for a DEFINED grid: a declared-but-empty
+!           grid (GridFile= none) has no pitch, and writing its 0 hard-
+!           codes a division by zero into the reload (IRIS 2026-09-09)
+            IF (GridDefinedElt(iElt))
+     &        CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!<--
           END IF
 !<--
 
@@ -1676,9 +1694,12 @@ C***********************************************************************
 !    SrfType 9/11 use the same pData/xData/yData/zData frame in the
 !    trace (GridSrf null-frame fix), so dropping it on SAVE moved
 !    the grid figure to the ChkDf2 default frame on reload
+!    Only for a DEFINED grid (GridDefinedElt): the 38 IRIS elements
+!    that declare nGridMat= 99 with GridFile= None carried no frame in
+!    the source deck and must not gain one on SAVE (2026-09-09).
           IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
      &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
-     &        (nGridMat(iElt).GT.0)) THEN
+     &        GridDefinedElt(iElt)) THEN
             CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
             CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
             CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
@@ -3478,6 +3499,22 @@ C***********************************************************************
 !<--
         End Subroutine Get_Values
 
+C***********************************************************************
+!-->  Does element iElt carry a DEFINED grid (data actually read)?  A
+!     declared-but-empty grid (nGridMat>0 with GridFile= none or a
+!     file that failed to load) has a slot but ifGridDataDefined false.
+        LOGICAL FUNCTION GridDefinedElt(iElt)
+        use elt_mod, only: nGridMat,iEltToGridSrf,ifGridDataDefined
+        Implicit none
+        Integer, intent(in) :: iElt
+        GridDefinedElt = .FALSE.
+        If (nGridMat(iElt).GT.0) Then
+          If (iEltToGridSrf(iElt).GT.0) Then
+            GridDefinedElt = ifGridDataDefined(iEltToGridSrf(iElt))
+          End If
+        End If
+        END FUNCTION GridDefinedElt
+!<--
 C***********************************************************************
 C*******End file iosub.inc**********************************************
 C***********************************************************************
