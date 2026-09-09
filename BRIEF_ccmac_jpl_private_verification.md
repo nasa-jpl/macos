@@ -38,6 +38,26 @@ macos `dev-candidate` (engine tip `44fc362`; later commits are records):
   xGrid, and on a SEGMENTED source that mirrored the ray grid against the
   segment map: 732 of 985 rays obscured on e2e6m s3 after `stop(1)`, 962
   after a Reflector stop, 2 after an object-space stop.  Now: no flip.
+- `81d3308` (**landed AFTER this brief was written -- 2026-09-09 addendum**)
+  re-traces are IDEMPOTENT: the source-frame re-orthogonalisation at every
+  grid setup and the object-space STOP re-aim now keep the incoming frame
+  when the recomputed one differs by round-off only.  Before it, identical
+  consecutive traces could alternate by a few ulp of the accumulated path
+  (a strict 2-cycle on the jwst zoom deck; the eac2_7seg 2-ulp ChfRayPos
+  oscillation under `ApStop=`).  CONSEQUENCE FOR TEST 2c: a NEW engine at
+  or past `81d3308` against OLD `82ced2b` may show `reset_xp=true`
+  Jacobians differing at the finite-difference FLOOR, |dJ| ~ eps/(2 delta)
+  with eps = a few ulp of the path and delta = 1e-8 (the dw_dx default):
+  ~1e-12 mm / 2e-8 = ~5e-5 absolute, uniform across fields INCLUDING one
+  whose FEX output is bit-identical, and absent from the reset_xp=false
+  family (no grid re-setup between the +/- traces).  That is EXPECTED, and
+  the NEW Jacobian is the clean one.  Discriminators, one MATLAB each: (i)
+  `git rev-parse HEAD` of NEW contains `81d3308`; (ii) twice-trace
+  idempotency at field C on each engine (`trace`, `modify`, `trace`; max
+  |w1 - w2|: NEW 0, OLD a few ulp); (iii) the OLD-NEW difference scales as
+  1/delta (rerun one block at delta 1e-7 and 1e-6).  Measured on OPTIIX
+  (CCMac 2026-09-09): 6.8e-5 abs / 1.25e-7 relative, w0 differing by
+  9.3e-13 -- the floor class.
 resources `dev-candidate` `3034fff`: your `wf_elt_auto` error variant with
 the element-TYPE criterion (Return/Reference at nElt-1 or refuse), your
 `tEpDomeGate`, the five FEX-definition pins re-pinned to medial values.
@@ -142,6 +162,9 @@ c. Pupil decks only: `sens_core_ab` on POST_OLDENG vs POST and compare.
    That number is the FEX-definition effect on this deck -- Dave wants
    it, it is not a finding.  Only a difference on a deck whose FEX did
    not move (b. gave 0) is STOP-AND-REPORT.
+   **Addendum 2026-09-09:** unless it is the finite-difference floor of
+   `81d3308` (see section 1) -- eps/(2 delta), uniform across fields,
+   reset_xp=true only; check with the three discriminators there.
 
 ## 6. Test 3 -- the pupil-read audit (Dave's ruling: read at the pupil)
 
