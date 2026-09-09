@@ -40,9 +40,17 @@
 > supervisor for the reset_xp canvas fault), engine fixes `cdf8636`
 > (Get_Values over-read) + `cda178e` (phantom-grid SAVE crash), decks
 > carry the S6 color slide (`2b4821c`).  Open engine items in PLAN
-> section 0: lensarr TRACE-time overrun (tst_save_keys only),
-> trace(26)->trace(27) stale OPD.  Tips: macos dev-candidate `c3f3738`+,
-> resources `e36db7c`.
+> section 0: **IRIS save_rx -> reload SIGSEGV on the REAL ZrnGrData grids
+> (iElt 17/19/21/35/37/39) -- STILL OPEN** (CCMac round 3; the phantom
+> guard `cda178e` was only half; chase with a debug build on the IRIS
+> deck, breadcrumbs in `REPORT_iris_save_crash.md`; off the merge path);
+> the **dw_multi_core reset_xp=true per-field aggregation collapse to
+> [12 12]/0** (CCMac localized it -- direct dw_dx is healthy [256 256];
+> sens-core follow-up + fix my NaN-rays mis-route in the emptyOPD
+> warning; needs the IRIS deck); lensarr TRACE-time overrun
+> (tst_save_keys only); trace(26)->trace(27) stale OPD.  CCMac round-4
+> note: `BRIEF_ccmac_jpl_round4.md`.  Tips: macos dev-candidate
+> `6174b1f`+, resources `e36db7c`.
 >
 > **PRIOR STATE (2026-09-08 late) kept for the record.  NEXT was the Fang
 > thread: IFO and ZWFS DM-gauge decks** -- `deck_tg_fang` (22 slides, macos `82ced2b` fold) and
