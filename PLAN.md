@@ -19,16 +19,26 @@ task.
 
 - [x] **Re-traces were not idempotent (strict 2-cycle, the dwdsurf 'speckle' floor).**  CLOSED 2026-09-08 (Dave: "let's try the dead band").  The candidate below was WRONG and was falsified before coding: the cycle is present with NO stop and ChfRayPos never moves; `srcaim.inc` is a dead include.  The cause is the source-frame re-orthogonalisation at every grid setup, which has no floating-point fixed point (xGrid alternates by 1 ulp each trace); fix = `OrthoSrcFrame` (math_mod, dead band 1e-14, four call sites) + the same dead band on the object-space STOP translation (the eac2_7seg SAVE 2-ulp oscillation).  Measured: ten traces bit-identical on jwst/e5hex1; elt-4 dw/dsurf column 1.19e-6 -> exactly 0; live columns unchanged.  See macos_f90/CLAUDE.md "Re-traces are IDEMPOTENT".  ORIGINAL NOTE (kept for the record of a wrong first guess):  Surfaced 2026-09-08 by Terminal Opus's `REPORT_sens_noise_center.md` (Luis's dwdsurf 'centre-channel speckle'): on the jwst zoom deck at its nominal field, ten identical traces ALTERNATE in a strict 2-cycle, max 2.18e-11 mm = 6 ulp of the 24 459 mm accumulated path, on 379 of 2184 rays; bit-for-bit in the pty CLI; e5hex1 and Rx_Cass_NS exactly idempotent.  It is the FD noise floor of every dw/dsurf column (1/delta, 1.19e-6 at delta 1e-6) and the whole 'speckle'.  **Mechanism candidate (CCL, not yet measured):** the per-trace chief-ray re-aim under a set stop (`srcaim.inc`, collimated branch: translate ChfRayPos in the (xGrid,yGrid) plane to pass through StopPos) is applied from the CURRENT ChfRayPos every trace; on a deck whose chief is tilted (jwst 2.3e-3 rad, yGrid not exactly perpendicular at the ulp level) the projection has no fixed point and alternates between two ulp-neighbours, which the SAVE round-trip work already met on eac2_7seg as 'a pre-existing 2-ulp ChfRayPos re-aim oscillation under ApStop' (2026-07-03).  e5hex1 is idempotent because its translation is exactly zero after the first application.  Discriminator: the 2-cycle must vanish with no stop set (no re-aim) and with the re-aim skipped when |x|,|y| < ~1e-13*max(1,|ChfRayPos|).  Fix candidate: that dead band in `srcaim.inc` (aim converges instead of alternating); gate = ten traces bit-identical on jwst + eac2_7seg SAVE pass2==pass3, e5hex1 unchanged.  Engine change -- Dave's go.
 - [x] **`Get_Values` (iosub.inc:3432) reads past its buffer -- `ArrWaveLen=` / `ArrIndRef=` lines parse NONDETERMINISTICALLY.**  FIXED 2026-09-09 (loop bounded by `LEN(ValBuf)`, token and output array capped, a token open at the buffer end completed); gate: 20 consecutive CLI loads of tst_save_keys.in on gfortran AND ifx, 20/20 each (was 3 of 5).  `ValBuf` is `CHARACTER(len=MacosValLen)` = 220 (realtype.h) but the tokenizer loop runs `c` to `MacosCharLen` = 256 and indexes `ValBuf(c:c)`: 36 bytes of whatever follows the caller's `VALUE` are tokenized, and a non-blank byte there becomes a bogus token -> `Read(tok,*)` -> gfortran "Bad real number in item 1 of list input" at iosub.inc:3449 (ifx: silent garbage or the same).  Measured 2026-09-09: `ZGD_test_files/tst_save_keys.in` (the July round-trip fixture; its `ArrWaveLen=` line is the only local caller) failed to LOAD on 2 of 5 identical CLI runs on the gfortran release build and loaded cleanly on the other 3; the SAVEd copy behaves the same way.  Only callers: msmacosio.inc:403/405 (ArrWaveLen) and :2696 (ArrIndRef).  Fix = bound the loop by `LEN(ValBuf)` (one line) + a gate that loads tst_save_keys 20x.  Found while chasing CCMac's iris_dp_ZGD save_rx->reload SIGSEGV (which is a DIFFERENT site, SFFSrf/FreeFormSrf, and did NOT reproduce here on 7 FreeForm/grid/NS decks x 2 engines x +/-stop).
-- [x] **IRIS `save_rx` -> reload SIGSEGV: phantom-grid SAVE bug.**  FIXED
-  2026-09-09 (`surfsub.F` grid term gated on a positive pitch; `iosub.inc`
-  SAVE emits the grid frame / `GridSrfdx` only for a DEFINED grid,
-  `GridDefinedElt`, and writes a blank `GridFile` as the `none` sentinel).
-  Root cause: 38 IRIS elements declare `nGridMat= 99` with `GridFile= None`
-  (a grid slot, no data); the July element-data bucket (`662e86e`) wrote
-  them a `pData..zData` frame on reload that indexed an unallocated
-  `GridMat` at zero pitch.  Gate: 7 real-grid decks byte-identical, 2
-  synthetic phantoms clean, both compilers.  CCMac confirms on the real
-  IRIS deck.  Report: `REPORT_iris_save_crash.md`.
+- [x] **IRIS `save_rx` phantom-grid frame over-emission.**  FIXED
+  2026-09-09 (`cda178e`: `surfsub.F` grid term gated on a positive pitch;
+  `iosub.inc` SAVE emits the grid frame / `GridSrfdx` only for a DEFINED
+  grid, `GridDefinedElt`, blank `GridFile` -> `none`).  The 38
+  `nGridMat= 99` / `GridFile= none` phantoms no longer gain a frame
+  (CCMac round 3: pData/GridSrfdx 44 -> 6).  Gate: 7 real-grid decks
+  byte-identical, 2 phantoms clean, both compilers.
+- [ ] **IRIS `save_rx` -> reload SIGSEGV on the REAL ZrnGrData grids
+  (iElt 17/19/21/35/37/39) -- STILL OPEN.**  CCMac round 3: the phantom
+  fix above is NOT sufficient; the IRIS round-trip still crashes
+  (`SFFSrf->FreeFormSrf->MonGridSrf->FindSrf->CTRACE`).  Attribution:
+  `save_rx` cleaning the original `GridFile=` tab-comment (which had
+  silently disabled those grids via the tab bug) unmasks a corrupted
+  rewrite of the real-grid block; only the `save_rx` form crashes, the
+  original-with-grid-active traces fine (12737).  Engine-side, off the
+  merge path (writer `662e86e`).  Chase with a debug build on the IRIS
+  deck; candidates (unverified) in `REPORT_iris_save_crash.md`
+  (GridSrfOrder=3 bicubic edge stencil; rewritten GridFile name;
+  nGridMat vs file dims; the ZrnGrData frame).  `SegDemo3data`
+  round-trips clean, so the trigger is IRIS-specific.
 - [ ] **lensarr trace-time overrun (resurfaced 2026-09-09).**  Tracing a
   deck with `LensArrayIndRef=` stamps a lenslet index onto a later
   element's `IndRef` (seen on `tst_save_keys.in`: load->save clean,
