@@ -44,6 +44,17 @@
 > `BRIEF_ccmac_jpl_private_verification.md`).  Open engine item: PLAN section 0
 > `trace(26)->trace(27)` stale first OPD.  Luis draft ready:
 > `DRAFT_email_luis_sens_noise.md`.
+>
+> **LATE ADD (2026-09-08 night, Dave's parting ask, run autonomously):
+> S6 COLOR** -- both DM gauges at 480/532/632.8/700/780 nm + a multi-
+> channel Wiener combination (`dm_gauge_lib/dmg_color_comb`).  ZWFS: the
+> transfer nulls migrate as 1/lambda and the 5-color combination fills
+> them (base-row floors 3-4x, dense random 2.3x, grid-on-base SNR 1.46 ->
+> 3.43, still < 5).  IFO: identical at every color -> its roll-off is
+> GEOMETRIC (tail conjugate + distortion), the joint tail objective is
+> its lever.  Resources dev-candidate `b47dd5f`, macos `42cffde`
+> (BRIEF_zwfs_campaign section); memory `project_tg96_gauge`; figure
+> `zwfs_dm96/zwfs_s6color.png`.
 
 > **PRIOR STATE (2026-08-19) kept below for the rodgers3 record.**
 
