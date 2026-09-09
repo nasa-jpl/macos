@@ -4,6 +4,9 @@ Fang Shi.  DRAFT — pending Dave's sign-off; NO export marking until
 reviewed.  Build: python3 make_brief_slides.py deck_tg_fang.md
 Recast 2026-09-03 (Dave): options-first with decision table, then cube
 details; first-order cost at 50/75/100 mm CA added.
+2026-09-09 fold: multi-color excursion (S6, Dave's 2026-09-08 ask) -- one
+slide after the photon pricing; modeling-assumptions, open-items and
+provenance bullets updated from zwfs/tg96 s6color reports.
 2026-09-07 fold: head-to-head section (S4 actuator-currency table + break
 scale, ZWFS modeling-assumptions slide for the Fang conversation, S5
 photon pricing) from tg96/zwfs s4+s5 reports; stale claims corrected
@@ -184,7 +187,7 @@ DRAFT — pending review.
 ## The Zernike sensor as we model it | Explicit choices, so a different modeling of the same sensor is discoverable in one conversation
 ::: full
 - **Geometry:** the gauge's own test arm, reference arm removed — same source, lenses and DM; the phase dimple sits at the internal focus of the detector leg, and the camera sees the re-imaged pupil.  One frame per measurement.
-- **The mask is a complex transmission applied to the propagated field at focus** — not a phase screen on rays: 346.2 nm etch in fused silica (π/2 at 632.8 nm, the VSG2 hardware value), gray-edge supersampled disk, diameter 2.0 λ/D as used (1.06 λ/D — the hardware spot — sign-inverts the fine-actuator band; the spot is a band-select lever we measured, not a free parameter).
+- **The mask is a complex transmission applied to the propagated field at focus** — not a phase screen on rays: 346.2 nm etch in fused silica (π/2 at 632.8 nm, the VSG2 hardware value), gray-edge supersampled disk, diameter 2.0 λ/D as used (1.06 λ/D — the hardware spot — sign-inverts the fine-actuator band; the spot is a band-select lever we measured, not a free parameter); the mask is fixed glass, so its phase and λ/D diameter scale with wavelength — the multi-color slide.
 - **Propagation to and from the focus is physical optics** (near-field reference-sphere sandwich), with the focal-plane sampling asserted at ≥6 pixels across the dimple — an interface we found silently starved when the tail was traced geometrically.
 - **Two reconstructions, used per their measured strengths:** a frozen-reference linear reading (calibrated against model-measured E₀ and E_b fields on the flat DM), and a multi-depth phase-stepped retrieval (π/2, π, 3π/2 + clear).  A structural fact worth comparing notes on: for a phase-only dimple |c|² = −2 Re c identically, so depth stepping yields two observables per pixel, not three — |E_b|² must come from a one-time calibration, not the ladder.
 - **Calibration is noiseless in the model** (long-exposure assumption), and scoring is actuator-space through the same estimator code as the interferometer.
@@ -200,6 +203,16 @@ DRAFT — pending review.
 - **The noise follows 1/√N over eight decades, and each instrument's high-photon floor converges to its measured systematic floor** — the noiseless campaign and the noise model agree where they must.
 - **10¹⁵ photons at 633 nm is ~0.3 mJ** — trivial for a bench source.  The 1 pm budget is therefore a systematics and gain-stability budget (gain jitter measured at the 0.1% class), not a photon budget — and the sensors' photon economies do not discriminate between them.
 ~ Scenario: the head-to-head row (single 10 nm change on the 30 nm working surface, 96×96).  Detector read noise, drift and calibration noise are the natural next terms once a use case fixes them.  Records: tg96_s5noise_report.txt, zwfs_s5noise_report.txt.
+
+## Color moves the sensor's blind bands, not the interferometer's | Five colors, 480–780 nm, lift the sensor's floors 3–4× and halve its dense-random error; every interferometer number holds to three digits
+::: left
+![Zernike sensor: the transfer null near 30 cycles/pupil at 632.8 nm sits at 40 cycles at 480 nm and at 20 at 780 nm; the five-color combination (black) stays above 0.99.](figs/crop_zwfs_s6color_zwfs.png){h=3.2}
+::: right
+![Interferometer: the five colors coincide (spread 0.004 in gain) — the roll-off is not diffraction.](figs/crop_zwfs_s6color_ifo.png){h=3.2}
+::: full
+- **Sensor:** the dimple is fixed glass — its phase and λ/D size scale with wavelength, so no two colors are blind at the same frequency, and a multi-channel Wiener estimate on the actuator lattice carries each mode with the colors that see it.  On the 30 nm working surface: single-actuator floor 720 → 224 pm (SNR 9 → 35), dense random 16.4 → 7.2 nm; the undetected grid case (47 actuators at 1 nm) rises from SNR 1.5 to 3.4 — still short of 5.
+- **Interferometer:** 92 pm hold-out, 4.17 nm dense random, SNR 210 at every color and after combination.  A diffraction roll-off would have moved 1.6× across this band; it moved under 0.3%: the loss is geometric (the null-tuned detector leg's conjugate and 0.14 mm of warp), so the joint leg optimization is the lever, not the source.
+~ One physical mask (346.2 nm etch, dispersion-corrected index), every calibration redone per color; achromatic quarter-wave plates and dispersionless lenses assumed; noiseless — K colors cost K× the frames.  Records: zwfs_s6color_report.txt, tg96_s6color_report.txt (96×96).
 
 ## What this offers a bench program | An instrument-error sandbox where truth is exact and every systematic prints
 ::: full
@@ -218,6 +231,6 @@ DRAFT — pending review.
 - 96×96 realization: templates/40_benches/tg_psi_dm96 — tg96.m (clearance solve, sampling budget, build, battery, response curve, differential test), tg96_tail.m (detector-leg re-optimization: null 9.11 → 0.134 nm, found at reduced resolution, verified at full), tg96_report.txt (all numbers on the 96×96 slides), plus the preserved registration failure series (six reports).
 - Regression: tTgPol (9 checks) + tTgPol2 (9 checks) in the fast suite; the polarizing option's off-state is bit-identical to the plain Twyman–Green.
 - Traps recorded so they are not re-derived: a circular state is analyzer-invariant in power (single-arm tripwires pass vacuously on the aligned rig); the four-step protocol's 4θ term is real at the detector (8.9×10⁻⁴ of the fringe) and cancels in the differential protocol (1.7×10⁻¹⁴ nm); diffraction-array row/column parity is calibrated on one actuator and verified on a second, never hard-coded.
-- Option-3 open items: joint detector-leg optimization (null + pupil-image sharpness + distortion together — the current leg tuned for null alone gave up finest-pattern gain 0.84 → 0.50), response-curve-corrected scoring of the differential residuals, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.
-- Head-to-head campaign records (both instruments, one scoring library): templates/40_benches/dm_gauge_lib (registration / actuator fit / modal correction / both measurement factories; the two S3 batteries re-run identically through it as the equivalence gate) + tg_psi_dm96 and zwfs_dm96 stage reports S2–S5 (registration and kernel calibration, modal battery, differential head-to-head with break scale, photon-noise pricing).  Campaign READMEs carry the findings ledgers, including the corrected attributions (pattern-radius frame bias; the refuted sampling-starvation hypothesis).
+- Option-3 open items: joint detector-leg optimization (null + pupil-image sharpness + distortion together — the current leg tuned for null alone gave up finest-pattern gain 0.84 → 0.50; the multi-color run shows that loss is geometric, so the leg, not the source, is the lever), response-curve-corrected scoring of the differential residuals, decomposition of the sub-1% shallow-angle residuals (rig geometry against polarization), and a real splitter-coating design at shallow incidence.
+- Head-to-head campaign records (both instruments, one scoring library): templates/40_benches/dm_gauge_lib (registration / actuator fit / modal correction / both measurement factories; the two S3 batteries re-run identically through it as the equivalence gate) + tg_psi_dm96 and zwfs_dm96 stage reports S2–S6 (registration and kernel calibration, modal battery, differential head-to-head with break scale, photon-noise pricing, multi-color combination — dmg_color_comb).  Campaign READMEs carry the findings ledgers, including the corrected attributions (pattern-radius frame bias; the refuted sampling-starvation hypothesis).
 - Planned configurations on the same DM truth and battery: an all-reflective variant (off-axis paraboloids replace the lenses — removes the transmitted-glass and homogeneity cost rows entirely) and the phase-2 vector Zernike sensor (polarizing metasurface, two phase images).
