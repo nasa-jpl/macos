@@ -24,6 +24,29 @@
 
 ## Active slice
 
+> **CURRENT STATE (2026-09-08 late).  NEXT = the Fang thread: IFO and ZWFS
+> DM-gauge decks** -- `deck_tg_fang` (22 slides, macos `82ced2b` fold) and
+> `deck_zwfs` (DRAFT, 9 slides); record in memory `project_tg96_gauge`
+> (complete thru S5; deck folds DONE; next stages on Dave's steer) +
+> `BRIEF_zwfs_campaign.md` (uncommitted edits present) +
+> `templates/40_benches/{tg_psi_dm96,zwfs_dm96}` READMEs.  Read those before
+> touching decks; STYLE_REPORTS section 5 gate before any rebuild.
+>
+> **Closed today, all PUSHED (SHAs in memory `project_fex_ep_radius_rework`,
+> `project_ep_dome_review`, `project_zoom5x5_pupilfind`,
+> `project_luis_sens_hardening`):** FEX Rx-order guard removed; STOP
+> multi-value prompts + Segment stops; FEX four-probe medial pupil (five pins
+> re-pinned); element-STOP handedness fix; EP-dome review -> pupil-read ruling
+> (sens-core preflight + CCMac's single-DOF error variant); re-traces made
+> idempotent (OrthoSrcFrame dead band -> dwdsurf speckle floor exactly 0).
+> macos dev-candidate `48451d8`; resources dev-candidate `bf1b182`, sens-core
+> `f02dc60` (merges after CCMac's JPL pass,
+> `BRIEF_ccmac_jpl_private_verification.md`).  Open engine item: PLAN section 0
+> `trace(26)->trace(27)` stale first OPD.  Luis draft ready:
+> `DRAFT_email_luis_sens_noise.md`.
+
+> **PRIOR STATE (2026-08-19) kept below for the rodgers3 record.**
+
 > **CURRENT STATE (2026-08-19 eve).  NEXT STEP = execute
 > `BRIEF_rodgers3_s1.md`** (the offset_imager template + the
 > challenges/rodgers3 instance; Stage 0 is DONE — all 5 rungs of
