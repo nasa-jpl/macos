@@ -38,7 +38,7 @@ jwst_ote_designc.in (the zoom_5x5 fixture), model 512, 63-ray grid, stop at the 
 
 ## Reading a 275-page harvest | the contact sheet indexes every channel to its page; the text index names the channels on each
 ::: left
-![The dW/dx contact sheet: every one of the 138 channels as a thumbnail, each labelled with the full-size page it is drawn on (E5 Rx p04 ...).](figs/march_dwdx_index.png){h=4.8}
+![The dW/dx contact sheet: 23 rows (one per element, group, source) x 6 DOFs. Each row is named once on the left, each thumbnail carries its channel and page ("Rx  pg 4") and its own rms underneath -- so a dead channel announces itself instead of being painted at full colour scale.](figs/march_dwdx_index.png){h=5.4}
 ::: right
 | rung | channels | rank | cond+ | pages | runtime s |
 |---|---|---|---|---|---|
@@ -46,5 +46,5 @@ jwst_ote_designc.in (the zoom_5x5 fixture), model 512, 63-ray grid, stop at the 
 | dW/dz | 60 | 60 | 3.3e+01 | 60 | 190 |
 | dW/dsurf | 42 | 40 | 6.5e+05 | 63 | 192 |
 | dW/dgrid | 60 | 60 | 5.7e+00 | 60 | 175 |
-~ THE E4 ROW IS ROUND-OFF, NOT SIGNAL.  Element 4 is the virtual centre segment; its six columns are dead -- Rx, Rz, Tz are EXACTLY zero (0 non-zero of 54 595 rows, so nothing is drawn) and Ry, Tx, Ty carry max 1.1e-14 / 8.5e-16 mm on 612 / 8 641 / 2 491 rows, taking 3-4 distinct values each: the finite-difference floor of a re-trace, 17 decades below element 5 (max 1.4e+03, rms 1.6e+02).  The thumbnails are autoscaled with no colorbar, so those few pixels are painted across the full jet range.  `flag_zero_norm_channels` catches the column and the driver drops it from the saved .mat; the figures are drawn before that drop.
+~ THE E4 ROW IS ROUND-OFF, AND THE SHEET NOW SAYS SO.  Element 4 is the virtual centre segment; its six columns are dead -- Rx, Rz, Tz are EXACTLY zero over all 54 595 rows (nothing drawn, `rms 0`) and Ry, Tx, Ty carry max 1.06e-14 / 8.47e-16 / 8.47e-16 mm on 612 / 8 641 / 2 491 rows, taking 3-4 distinct values each: the finite-difference floor of a re-trace, 17 decades below element 5 (column max 1.405e+03, rms 1.614e+02).  Autoscaled thumbnails with no colorbar painted those few pixels across the full jet range, which reads as structure; the per-panel rms is the scale the colours were missing (`rms 4.3e-15` against `rms 1.6e+02` one row down).  Panel rms is of the map AS DRAWN -- valid pixels, piston removed -- so it differs from the column rms over all rows.  `flag_zero_norm_channels` catches the column and the driver drops it from the saved .mat; the figures are drawn before that drop.
 ~ Panels are drawn at a floor of 3.5 in per OPD map / 1.2 in per field tile and the pages follow, so a 19-segment harvest is 275 readable pages (17 MB) instead of one sheet of specks.  `<name>_<ch>_channels.png` is that contact sheet; `<name>_pages_index.txt` lists every page with its element and channels; the full-size pages are in `<name>_pages/` (gitignored -- regenerate with the four `run_dwd*_5zoom_5fov.m` drivers).
