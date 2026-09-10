@@ -24,34 +24,17 @@
 
 ## Active slice
 
-> **IN FLIGHT (2026-09-10, Dave: "work down the ZWFS open list, your
-> sequence; report each item as it arrives; a PARAMETERIZED RUNNER users
-> can modify and rerun without AI -- keep updating it as we go; standing
-> rule for all build tasks" -> memory `feedback_parameterized_runner`).**
-> Runner SHIPPED locally in `templates/40_benches/zwfs_dm96/`:
-> `zwfs_params.m` (every knob, values of record) + `zwfs_run.m` (stages
-> bench/battery/color/noise/figs, readings L F I I+ S) + `zwfs_run_figs.m`
-> + `zwfs_run_batch.m` + `zwfs_batch.sh` (systemd-run MemoryMax=14G, log
-> runs/<tag>.log); README "Run it yourself" section; mmacos/.gitignore
-> patterns.  EQUIVALENCE GATE PASSED: `runs/rec193` reproduces the S7
-> record (64 row/ladder lines, 8 differ in the last digit = pcg tol).
-> Sequence: [1] told Dave the S1-S6/deck are on the defocused model (done,
-> status msg); [2] NGRID 385: `runs/ng385` (spot 2.0, dimple 3.96 px NOT
-> the 6-px rule) + `runs/ng385s3` (spot 3.0, 5.94 px) DONE -- hold-out raw
-> gain 0.900 -> 0.935 (96x96) is NGRID-driven and SPOT-INDEPENDENT
-> (0.9348/0.9347); spot 3.0 only deepens the dimple-passband dip (0.5-1
-> cyc/ap: 0.22/0.30 vs 0.71/0.50), transfer identical above 2 cyc/ap ->
-> spot 2.0 stays the sensor of record; the single-site I+ ladder at 385
-> broke at 50 nm where 193 held -> runner gained `battery.ladder_sites`
-> 'grid' (47 sites) + a reference-wave radial profile diagnostic (bprof:
-> |Eb|/|E0| vs pupil radius must be NGRID-independent = the dimple-sampling
-> fidelity test; model 2048 would be the clean test but needs ~40 GB, box
-> has 30).  RUNNING: `runs/rec193full` (193, grid ladder, battery+color+
-> noise+figs = items [3] S6 color re-run + [4] S5 noise pricing of I+).
-> NEXT: `ng385g` (385, spot 2.0, grid ladder; compare bprof to rec193full);
-> README S8 bullet + campaign memory; deck fold [5]; commit LOCAL (push
-> only on Dave's review).  Runs are sequential (one MODEL-1024 MATLAB;
-> another session's MATLAB shares this box -- check `free -g` first).
+> **ZWFS S8 LANDED (2026-09-10, LOCAL: resources dev-candidate 2db7e1d
+> -- push only on Dave's review).**  The parameterized runner
+> (`zwfs_dm96/zwfs_params.m` + `zwfs_run.m` + figs/batch; README "Run it
+> yourself"; standing rule -> memory `feedback_parameterized_runner`)
+> and open items 2-4 measured through it: NGRID 385 at model 1024 AND
+> 2048 (trimmed size table `macos_param_2048.txt`, `param_file` knob --
+> the engine reads the run dir first), colour re-run, noise pricing of
+> I+.  Record: README S8 bullet, `BRIEF_zwfs_campaign.md` S8, memory
+> `project_tg96_gauge`.  OPEN: item 5 deck fold (deck_zwfs is still the
+> legacy-model S1-S6 story) on Dave's steer; the hold-out-site kernel
+> check (the remaining 6.5% of hold-out gain).
 
 > **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
 > (`BRIEF_dwd_plot_size.md`).**  Size is fixed FIRST and the pages follow:

@@ -227,6 +227,45 @@ S7 bullet + banner, `zwfs_s7iter_report.txt`, `zwfs_s7iter.png`.  Open:
 NGRID 385; S6 color re-run on the corrected model; S5 noise pricing of
 I+; deck fold (deck_zwfs is on the legacy model).
 
+## S8 -- the runner, NGRID 385 / model 2048, colour re-run, noise of I+ (2026-09-10, RUN)
+
+Dave: "work down the open list, your sequence; report each item as it
+arrives; a PARAMETERIZED RUNNER users can modify and rerun without AI --
+keep updating it as we go" (standing rule for all build tasks).
+Delivered `zwfs_params.m` + `zwfs_run.m` (+ `zwfs_run_figs`,
+`zwfs_run_batch`, `zwfs_batch.sh`) in `zwfs_dm96/`; stages bench /
+battery / colour / noise / figs; readings L F I I+ S; README "Run it
+yourself".  Equivalence gate: defaults reproduce the S7 record (64
+row/ladder lines, 8 differ in the last digit).  Every item below ran
+THROUGH it (`runs/<tag>/`).
+
+- **NGRID 385:** `ng385` (1024, spot 2.0; dimple 3.96 px FAILS the 6-px
+  line), `ng385s3` (spot 3.0, 5.94 px), `m2048` (MODEL 2048 via a
+  trimmed size table, `macos_param_2048.txt`, dropped into the run dir
+  where `find_macos_file` looks first: mGridSrf 200->4, mpts->512,
+  mElt->64, mGridMat UP to 512 for the 384 DM grid; 7.92 px AND 5.03
+  px/actuator = fully compliant; 32.5 min, <4 GB).  The hold-out raw gain
+  moves 0.900->0.935 (96x96) with NGRID and is then identical at 1024 and
+  2048 and at spot 3.0; every actuator-space row at 385 agrees between
+  1024 and 2048 to 3 digits although the reference-wave profile
+  (|Eb|/|E0| vs radius, new bench diagnostic) differs 2.5% between the
+  4-px and 8-px dimples.  Sampling trade (Dave): mask px per lam/D =
+  fill*MODEL/NGRID, detector px/actuator ~ NGRID -- opposite ways; only
+  MODEL buys both.  Spot 3.0 = deeper dimple-passband dip only; spot 2.0
+  stays.  Multi-site ladder (47 grid sites, `battery.ladder_sites`
+  'grid'): I+ holds to 40 nm rms at 96x96 and 50 at 48x48; the record's
+  "60 nm" was one site.
+- **S6 colour on the corrected model:** not a lever -- combination min
+  transfer 0.991 vs best single 0.962; rows neutral (I+/S) or worse (L,
+  the 480 nm channel goes negative on the 30 nm base); 780 nm is the best
+  single colour = a RANGE lever, not null-filling.
+- **S5 noise of I+:** N(1 pm) per state L 5.4e13 / F 3.7e13 / I 6.4e13 /
+  I+ 8.8e13 (prior noise costs 5%) / S 1.0e14 -- ~25x cheaper than the
+  defocused-model pricing; floors converge to the battery's systematics.
+
+Open: kernel measured AT the hold-out site (the remaining 6.5%); deck
+fold (item 5, on Dave's steer).
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to
