@@ -180,3 +180,26 @@ green (Dave orders merges).  Report:
 `MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96/REPORT_oap.md`
 (numbers first; what was departed from in this brief and why).  If the
 engine needs something, STOP and write it up -- no physics shortcuts.
+
+## Addendum 2026-09-10 (after the ZWFS calibration experiments): fix the stencil site in the interferometer's calibration too
+
+The actuator-space fit samples the response STENCIL about the poke's
+peak as `dmg_anchor` returns it -- `tax = xg(tc)`, the nearest point of
+the 0.28 mm MAP grid -- while the fit itself samples the map at the
+exact 1 mm actuator centres.  The stencil can therefore sit up to half
+a grid pitch (0.14 mm) off the centre it is fitted at.  Measured on the
+ZWFS twin (zwfs_dm96 runs ks_hold / ks_hold_lat / rec193_lat): with the
+kernel measured at the test actuator itself the fit recovered 0.958 of
+a 20 nm change; sampling the stencil at the exact lattice point takes
+that to 0.9915 (floor 5 pm), and the record configuration's test-
+actuator gain from 0.900 to 0.946.  `tg96_s3.m` / `tg96_s4.m` sample
+the interferometer's TRUE kernel (`dmg_stencil(dmap(Aa), xg, R.tax,
+R.tay, ...)`) the same way, so the 0.92 hold-out gain of record likely
+carries the same few-percent bias.  For `tg96_run`: snap the stencil
+site to the actuator lattice (the ZWFS runner's `reg.stencil_site`
+'lattice' -- `zwfs_run.m`, calibrate_) as the default, keep 'grid' as
+the option that reproduces the S3/S4 record, and report both on the
+lens rig before the OAP rig runs.  Also measured on the ZWFS and worth
+knowing for the IFO rows: calibrating on the working surface instead
+of the flat did NOT recover the working-surface gain deficit (I+ 0.74
+vs 0.79), and a wider stencil (half-width 12 vs 6) changed nothing.
