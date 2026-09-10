@@ -2,10 +2,21 @@
 jwst_ote_designc.in (Luis's zoom deck), model 512, 63-ray grid, stop at the FSM (element 25), wavefront read at the ExitPupil Return (27); Seg2 (element 5) poked alone in radius (Kr) and conic (Kc) through run_sensitivities, centre field
 ~ DRAFT 2026-09-09.  Every option shown is a run_sensitivities option since this date ('orient', 'sign', 'opd_ref', and 'elts' now reach the dwdsurf channel).  Numbers: dW/dp per unit parameter, mm of OPD per mm (Kr) / per unit (Kc), centre field, single configuration.
 
-## The OPD reference decides what the unpoked segments read | mean reference: one constant on the other 17; chief reference: exactly zero
+## The OPD reference decides what the unpoked segments read | the runner's own centre-field page, unmodified: mean paints the other 17 segments, chief shows only the poked one
+::: left
+![opd_ref = mean: the 17 unpoked segments appear as one flat colour (the piston-removed constant), the poked Seg2 as the hexagon.](figs/dwdsurf_jwst_page_mean_xy.png){h=3.2}
+::: right
+![opd_ref = chief: the unpoked segments read exactly zero and are not drawn; only Seg2 remains.](figs/dwdsurf_jwst_page_chief_xy.png){h=3.2}
 ::: full
-![Kr and Kc columns of Seg2 under opd_ref = mean (left) and chief (right): the 17 unpoked segments carry a flat offset on the left (the colour scale's top) and exactly zero on the right.](figs/dwdsurf_jwst_ref.png){h=5.0}
-~ Offset on the unpoked segments under mean = -(N_k/N) x mean(poked response): Kr 4.40e-4, Kc 1.66e-2 per unit parameter (5.4% / 4.5% of the poked segment's rms), equal on all 17 to 6e-16; the mean and chief columns differ by that one constant everywhere (1.4e-12 relative).  orient xy, sign opl, surf_remove_ptt off; MATLAB jet colormap, autoscaled colour limits, as in Luis's plots.
+~ run_sensitivities pages (<name>_pages/*_elt5_center.png), orient xy, sign opl, surf_remove_ptt off, piston removed by the page plotter, MATLAB default colormap, autoscaled.  Under mean the offset on the unpoked segments is -(N_k/N) x mean(poked response): Kr 4.40e-4, Kc 1.66e-2 per unit parameter (5.4% / 4.5% of the poked segment's rms), equal on all 17 to 6e-16.
+
+## Under orient xy the page itself was scrambled | the same chief-reference page before and after the plotter fix; the raw-orientation page was always clean
+::: left
+![Before: the centre-field page rebuilt its pixel index from the transposed nominal map, so the rows landed on the wrong pixels and the hexagon smeared into streaks.](figs/dwdsurf_jwst_page_chief_xy_OLD.png){h=3.2}
+::: right
+![After: the index is built on the raw-orientation map and remapped with the same rule as the harvest; the xy page is the raw page transposed, exactly.](figs/dwdsurf_jwst_page_chief_xy.png){h=3.2}
+::: full
+~ sensitivities/per_field_indx.m; gate tRunSensitivities/test_per_element_page_index_follows_orient_xy (xy page == raw page transposed to 0; the old recipe differs by more than 10% of the map).  This is the picture Luis was reading as a residual.
 
 ## Why: a column is a difference of two referenced maps | poking one segment moves the aperture-mean reference; the chief ray's does not move unless its own segment is poked
 ::: stack

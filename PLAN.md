@@ -313,7 +313,10 @@ the six other segments read one constant, `-(N_k/N)*mean(poked)` =
 segment's rms, std 3e-16); under `chief` exactly 0.  What `chief` does
 NOT localise: the chief ray's OWN segment (its reference moves with the
 poke; the others read `-m(chief)` = -2.18e-5 per unit Kr on e5hex1, 5.0%
-of that segment's own rms).  **Recommended next step, unchanged:
+of that segment's own rms).  Found the same day from Luis's own pictures: the per-element
+CENTRE-FIELD page plotter scrambled the map under `orient xy` (index
+rebuilt from the transposed nominal map; fixed, `per_field_indx`, gated).
+**Recommended next step, unchanged:
 (b) below — a nominal-anchored fixed-length reference via the existing
 `OPDRefRayLen` branch (`opd_ref_len_set`), which makes EVERY column
 local; then the drivers can default to it.**  Gate: `tOpdRef/

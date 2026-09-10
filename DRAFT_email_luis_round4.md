@@ -42,8 +42,16 @@ pull.
    length, an engine branch that already exists and needs one api
    wrapper; I have the call on that and on flipping the default.
 
-The tests that pin this (tOpdRef, tRunSensitivities) fail on the old
-code and pass now.  Slides showing the Seg2 column under each option
+3. The pictures you sent are a third thing: under 'orient','xy' the
+   per-element centre-field page (the *_pages/*_center.png files)
+   rebuilt its pixel index from the transposed nominal map while the
+   Jacobian rows stayed in the raw order, so one segment's poke smeared
+   into diagonal streaks.  The raw-orientation page was always clean.
+   Fixed (sensitivities/per_field_indx.m); the xy page is now the raw
+   page transposed, exactly.
+
+The tests that pin all three (tOpdRef, tRunSensitivities) fail on the
+old code and pass now.  Slides showing the Seg2 column under each option
 are attached.
 
 Dave
