@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **NEXT TASK (Dave 2026-09-10, "Opus-level"): make the dwd* plots large
+> enough to be interpretable at any segment count -- many more pages.
+> Brief: `BRIEF_dwd_plot_size.md` (extends the queued
+> `BRIEF_dwd_plot_pagination.md`).  Bindings: deck plots = the tool's own
+> output unmodified; jet; zeros blank; no "leak" language; push only on
+> Dave's review.  ZWFS S7 + Luis round 4 are CLOSED and in memory
+> (`project_tg96_gauge`, `project_opd_conventions`); macos `ac8bf3b`
+> (reply draft cut to 236 words, LOCAL) on top of pushed `6a0dc31`;
+> resources pushed `8bc8fcc`.**
+
 > **LATE 2026-09-09 (Luis round 4, after S7): FIXED and PUSHED (Dave:
 > "good results -- go ahead and push"; macos 097dd52, resources fe6c6bd;
 > deck REBUILT on jwst_ote_designc: `demo_session/deck_dwdsurf_options.pptx`
