@@ -32,8 +32,10 @@
 > 2048 (trimmed size table `macos_param_2048.txt`, `param_file` knob --
 > the engine reads the run dir first), colour re-run, noise pricing of
 > I+.  Record: README S8 bullet, `BRIEF_zwfs_campaign.md` S8, memory
-> `project_tg96_gauge`.  OPEN: item 5 deck fold (deck_zwfs is still the
-> legacy-model S1-S6 story) on Dave's steer; the hold-out-site kernel
+> `project_tg96_gauge`.  Item 5 deck fold DONE (macos 6fd8d8f, LOCAL): deck_zwfs 20
+> slides fold 3 + deck_tg_fang sensor rows on the corrected model, both
+> DRAFT for Dave's review.  CCMac briefed on the reflective TG96
+> (`BRIEF_ccmac_tg96_oap.md`, pushed).  OPEN: the hold-out-site kernel
 > check (the remaining 6.5% of hold-out gain).
 
 > **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
