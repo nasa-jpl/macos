@@ -1,61 +1,33 @@
-# Reply to Luis (run_sensitivities 'orient' + the single-segment residual) -- FINAL 2026-09-09
+# Reply to Luis (round 4) -- FINAL 2026-09-10
 
 Luis,
 
-Both items are real, and both are fixed on dev-candidate for your next
-pull.
+All three are real and fixed on dev-candidate.
 
-1. run_sensitivities did not forward 'orient' (or 'sign') to the dw_d*
-   tools, so no run_dwd* user could choose the OPD orientation.  It now
-   takes 'orient' ('raw' | 'xy'), 'sign' ('opl' | 'wavefront') and
-   'opd_ref' (see 2), passes them to all four channels, and prints the
-   conventions in use at the top of the report.  It also now forwards
-   'elts' to the dwdsurf channel (it did for the other three, not that
-   one), so a one-segment Kr/Kc request stays one segment.
+1. run_sensitivities never forwarded 'orient' or 'sign' (nor 'elts' to
+   the dwdsurf channel).  It now takes 'orient', 'sign', 'opd_ref' and
+   passes all of them, plus 'elts', to every channel; the report header
+   names the conventions in use.
 
-2. The residual on the other segments is the OPD reference, not the
-   poke.  Every map is referenced to the whole-aperture mean path length
-   (the engine default), so poking one segment shifts that mean and
-   every other segment reads the same constant, -(N_k/N) times the mean
-   of the poked segment's response.  Measured on your jwst_ote_designc
-   deck through run_sensitivities (Seg2 poked, Kr and Kc, orient xy,
-   PTT removal off, centre field): the other 17 segments carry 4.4e-4
-   (Kr) and 1.7e-2 (Kc) per unit parameter, 5.4% and 4.5% of the poked
-   segment's rms, identical on all 17 to 1e-15.  Under the chief-ray
-   reference they read exactly zero.  That reference has existed since
-   your August fix (macos.opd_ref), but the sensitivity tools never set
-   it and a reload resets it; they all take 'opd_ref' now and re-apply
-   it after every reload.  So:
+2. The flat value on the other segments is the OPD reference, not the
+   poke.  Every map is referenced to the whole-aperture mean path, so
+   poking one segment shifts that mean and every other segment reads
+   the same constant, -(N_k/N) x mean of the poked response.  On your
+   jwst_ote_designc deck (Seg2, Kr/Kc, orient xy, centre field) that is
+   5.4% / 4.5% of the poked segment's rms on all 17 others; under the
+   chief-ray reference they read exactly zero.  Neither is wrong -- the
+   two columns are the same data differing by one constant, and PTT
+   removal is a third convention (a tilt instead of a flat offset).
+   The tools all take 'opd_ref' now and re-apply it after every reload:
 
        run_sensitivities(RX, ..., 'orient','xy', 'opd_ref','chief')
 
-   Neither reference is wrong: the two columns are the same data and
-   differ by that one constant everywhere.  'surf_remove_ptt' is a
-   third convention on the same data: it fits a global piston/tip/tilt
-   to the whole column (which the poked segment sets), so the other
-   segments then show a tilt instead of a flat offset, identically
-   under either reference.  Pick what your consumer expects.
+3. The streaks in your xy pictures were the per-element page plotter:
+   under 'orient','xy' it rebuilt its pixel index from the transposed
+   map while the rows stayed in raw order.  Fixed; the xy page is now
+   the raw page transposed exactly.
 
-   On the JWST deck every real segment is fully local under the chief
-   reference, because the chief ray sits on the virtual centre segment.
-   The one case it does not localise is a deck whose chief ray sits on
-   a real segment (e5hex1's centre segment): poking that segment moves
-   the reference, and the others then read about 5% of that segment's
-   rms.  The clean fix for every column is a fixed nominal reference
-   length, an engine branch that already exists and needs one api
-   wrapper; I have the call on that and on flipping the default.
-
-3. The pictures you sent are a third thing: under 'orient','xy' the
-   per-element centre-field page (the *_pages/*_center.png files)
-   rebuilt its pixel index from the transposed nominal map while the
-   Jacobian rows stayed in the raw order, so one segment's poke smeared
-   into diagonal streaks.  The raw-orientation page was always clean.
-   Fixed (sensitivities/per_field_indx.m); the xy page is now the raw
-   page transposed, exactly.
-
-The tests that pin all three (tOpdRef, tRunSensitivities) fail on the
-old code and pass now.  Slides showing the Seg2 column under each option
-are attached.
+Tests for all three fail on the old code and pass now.  Slides attached.
 
 Dave
 
