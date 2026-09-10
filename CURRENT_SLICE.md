@@ -24,15 +24,67 @@
 
 ## Active slice
 
-> **NEXT TASK (Dave 2026-09-10, "Opus-level"): make the dwd* plots large
-> enough to be interpretable at any segment count -- many more pages.
-> Brief: `BRIEF_dwd_plot_size.md` (extends the queued
-> `BRIEF_dwd_plot_pagination.md`).  Bindings: deck plots = the tool's own
-> output unmodified; jet; zeros blank; no "leak" language; push only on
-> Dave's review.  ZWFS S7 + Luis round 4 are CLOSED and in memory
-> (`project_tg96_gauge`, `project_opd_conventions`); macos `ac8bf3b`
-> (reply draft cut to 236 words, LOCAL) on top of pushed `6a0dc31`;
-> resources pushed `8bc8fcc`.**
+> **IN FLIGHT (2026-09-10, Dave: "work down the ZWFS open list, your
+> sequence; report each item as it arrives; a PARAMETERIZED RUNNER users
+> can modify and rerun without AI -- keep updating it as we go; standing
+> rule for all build tasks" -> memory `feedback_parameterized_runner`).**
+> Runner SHIPPED locally in `templates/40_benches/zwfs_dm96/`:
+> `zwfs_params.m` (every knob, values of record) + `zwfs_run.m` (stages
+> bench/battery/color/noise/figs, readings L F I I+ S) + `zwfs_run_figs.m`
+> + `zwfs_run_batch.m` + `zwfs_batch.sh` (systemd-run MemoryMax=14G, log
+> runs/<tag>.log); README "Run it yourself" section; mmacos/.gitignore
+> patterns.  EQUIVALENCE GATE PASSED: `runs/rec193` reproduces the S7
+> record (64 row/ladder lines, 8 differ in the last digit = pcg tol).
+> Sequence: [1] told Dave the S1-S6/deck are on the defocused model (done,
+> status msg); [2] NGRID 385: `runs/ng385` (spot 2.0, dimple 3.96 px NOT
+> the 6-px rule) + `runs/ng385s3` (spot 3.0, 5.94 px) DONE -- hold-out raw
+> gain 0.900 -> 0.935 (96x96) is NGRID-driven and SPOT-INDEPENDENT
+> (0.9348/0.9347); spot 3.0 only deepens the dimple-passband dip (0.5-1
+> cyc/ap: 0.22/0.30 vs 0.71/0.50), transfer identical above 2 cyc/ap ->
+> spot 2.0 stays the sensor of record; the single-site I+ ladder at 385
+> broke at 50 nm where 193 held -> runner gained `battery.ladder_sites`
+> 'grid' (47 sites) + a reference-wave radial profile diagnostic (bprof:
+> |Eb|/|E0| vs pupil radius must be NGRID-independent = the dimple-sampling
+> fidelity test; model 2048 would be the clean test but needs ~40 GB, box
+> has 30).  RUNNING: `runs/rec193full` (193, grid ladder, battery+color+
+> noise+figs = items [3] S6 color re-run + [4] S5 noise pricing of I+).
+> NEXT: `ng385g` (385, spot 2.0, grid ladder; compare bprof to rec193full);
+> README S8 bullet + campaign memory; deck fold [5]; commit LOCAL (push
+> only on Dave's review).  Runs are sequential (one MODEL-1024 MATLAB;
+> another session's MATLAB shares this box -- check `free -g` first).
+
+> **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
+> (`BRIEF_dwd_plot_size.md`).**  Size is fixed FIRST and the pages follow:
+> `mmacos/sensitivities/dw_page_layout.m` + `dw_page_fig` / `dw_page_axes`
+> / `dw_draw_map` / `dw_block_keys` / `dw_canvas_tiles` / `plot_dw_index`
+> / `write_page_index`; `plot_dw_channels` paginates on ELEMENT
+> boundaries and returns a manifest; `plot_dw_per_element` gains `field`
+> mode; `plot_opd_canvas` sized by tile count; `run_sensitivities` takes
+> `panel_in` / `tile_in` / `page_in` / `page_max_in` / `max_per_page` and
+> writes `<name>_pages_index.txt`.  Floors: 3.5 in per OPD map, 1.2 in per
+> FIELD TILE of a canvas; a sparse page GROWS to fill 16:9, a page grows
+> to [32 20] in to keep one element whole, only then splits (`_p02`).
+> **Measured on the zoom fixture:** one dwdsurf channel's 567x567 canvas
+> was drawn in a 14x15 px box with 40 non-white pixels (a ~9:1 subsample);
+> now ~1500 px across, ~167 px per field point, 21 pages instead of one
+> sheet.  Per-element centre page: 635 -> 999 px of drawn map on FEWER
+> total page pixels (recovered subplot margin).  Two bugs closed en route
+> (per-field cells are Nc x Nf -- index them 2-D; row-per-block slots must
+> use the PAGE's column count).  10 gates in `tRunSensitivities`.
+> Acceptance: the zoom drivers re-run (dwdsurf 200 s / 63 pages, dwdx
+> 330 s / 92 pages) and the pages READ.  `<name>_<ch>_channels.png` KEEPS
+> its name -- the single page when one suffices, else the page-labelled
+> INDEX contact sheet, full-size pages in the (gitignored) `_pages/` --
+> so no README or artifact reference breaks.  Deviation to flag:
+> byte-identity with the old small-deck pages is NOT achievable together
+> with the size floor (the old pages spend ~30% of every cell on subplot
+> margin), so the gate asserts one page + the historical filename +
+> panels no smaller than before.  Also regenerated: the zoom dwdsurf artifacts
+> were STALE (4 channels; the powered set became 42 on 2026-09-05) --
+> README corrected.  Bindings held: jet, zeros blank, no "leak" language,
+> push only on Dave's review.  ZWFS S7 + Luis round 4 CLOSED in memory
+> (`project_tg96_gauge`, `project_opd_conventions`); macos `ac8bf3b` LOCAL
+> on top of pushed `6a0dc31`; resources was pushed `8bc8fcc`.**
 
 > **LATE 2026-09-09 (Luis round 4, after S7): FIXED and PUSHED (Dave:
 > "good results -- go ahead and push"; macos 097dd52, resources fe6c6bd;
