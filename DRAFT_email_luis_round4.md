@@ -9,7 +9,9 @@ pull.
    dw_d* tools, so no run_dwd* user could choose the OPD orientation.
    It now takes 'orient' ('raw' | 'xy'), 'sign' ('opl' | 'wavefront')
    and 'opd_ref' (see 2), passes them to all four channels, and prints
-   the conventions in use at the top of the report.
+   the conventions in use at the top of the report.  It also now
+   forwards 'elts' to the dwdsurf channel (it did for the other three,
+   not that one), so a one-segment Kr/Kc request stays one segment.
 
 2. The residual on the other segments is the OPD REFERENCE, not the
    poke.  Every map is referenced to the whole-aperture mean path

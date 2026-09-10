@@ -24,7 +24,9 @@
 
 ## Active slice
 
-> **LATE 2026-09-09 (Luis round 4, after S7): FIXED on dev-candidate --
+> **LATE 2026-09-09 (Luis round 4, after S7): FIXED and PUSHED (Dave:
+> "good results -- go ahead and push"; macos 097dd52, resources fe6c6bd;
+> the JWST-deck slide rebuild follows) --
 > `run_sensitivities` never forwarded 'orient'/'sign'; no dw_d* driver
 > set the OPD reference, so every harvest was mean-referenced and a
 > single-segment poke pistoned every other segment by

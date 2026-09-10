@@ -303,7 +303,9 @@ EP-radius rework got:
 `opd_ref` {'mean','chief'} added to all eight `dw_d*` drivers, the
 supervisor core (re-applied after EVERY reload) and `run_sensitivities`
 (which also gained `orient` / `sign` — it forwarded neither, so no
-`run_dwd*` user could choose the orientation).  Defaults stay `'mean'`
+`run_dwd*` user could choose the orientation — and now forwards `elts`
+to the dwdsurf channel, which it alone had dropped: a one-segment
+request harvested all 42 Kr/Kc channels on jwst_ote_designc).  Defaults stay `'mean'`
 (no baseline moves).  Measured on the DRIVER path (`macos.dw_dsurf`,
 e5hex1 segment 2, Kr / Kc, orient xy, remove_ptt false): under `mean`
 the six other segments read one constant, `-(N_k/N)*mean(poked)` =
