@@ -48,8 +48,7 @@ place to re-attack the 0.77 dense-random gain.
 - **No engine work.**  Builder / example / runner level only.  If a
   capability is genuinely missing at the engine, STOP and write it up.
 - **Both lenses, L1 and L2, become OAPs.**  The field lens FL in the tail
-  is NOT in Dave's ask; keep it, but make its replacement a flag if it
-  falls out naturally (see open question 1).
+  stays transmissive (Dave's ruling, below); same-plane folds.
 - **`'optics','lens'` (default) must emit BIT-IDENTICALLY** -- gate it in
   `tBench` the way `'polarizing'`, `'pbs'`, `'tail_arch'` and
   `'mask_prop'` are gated.  The lens rig is the record; the OAP rig is a
