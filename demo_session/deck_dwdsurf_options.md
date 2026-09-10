@@ -4,8 +4,8 @@ jwst_ote_designc.in (Luis's zoom deck), model 512, 63-ray grid, stop at the FSM 
 
 ## The OPD reference decides what the unpoked segments read | mean reference: one constant on the other 17; chief reference: exactly zero
 ::: full
-![Kr and Kc columns of Seg2 under opd_ref = mean (left) and chief (right): the 17 unpoked segments carry a flat offset on the left and exactly nothing on the right; the colour scale is +-3x that offset, so the poked segment saturates.](figs/dwdsurf_jwst_ref.png){h=5.0}
-~ Offset on the unpoked segments under mean = -(N_k/N) x mean(poked response): Kr 4.40e-4, Kc 1.66e-2 per unit parameter (5.4% / 4.5% of the poked segment's rms), equal on all 17 to 6e-16; the mean and chief columns differ by that one constant everywhere (1.4e-12 relative).  orient xy, sign opl, surf_remove_ptt off.
+![Kr and Kc columns of Seg2 under opd_ref = mean (left) and chief (right): the 17 unpoked segments carry a flat offset on the left (the colour scale's top) and exactly zero on the right.](figs/dwdsurf_jwst_ref.png){h=5.0}
+~ Offset on the unpoked segments under mean = -(N_k/N) x mean(poked response): Kr 4.40e-4, Kc 1.66e-2 per unit parameter (5.4% / 4.5% of the poked segment's rms), equal on all 17 to 6e-16; the mean and chief columns differ by that one constant everywhere (1.4e-12 relative).  orient xy, sign opl, surf_remove_ptt off; MATLAB jet colormap, autoscaled colour limits, as in Luis's plots.
 
 ## Why: a column is a difference of two referenced maps | poking one segment moves the aperture-mean reference; the chief ray's does not move unless its own segment is poked
 ::: stack

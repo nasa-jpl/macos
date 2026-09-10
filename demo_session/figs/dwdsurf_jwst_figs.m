@@ -58,10 +58,10 @@ osr = R.mean_raw;  [rowsR, ~, ixr] = centre_rows(osr, kC);
 % raw column: identify the support by the same pixel SET as xy (transpose)
 fprintf('raw map %s; (raw stores index 1 along global X)\n', mat2str(ixr.size));
 ink = [11 11 11]/255;  ink2 = [82 81 78]/255;  surf_c = [1 1 1];
-cb = [42 120 214]/255;  co = [235 104 52]/255;  nn = 128;
-cmap = [ [linspace(cb(1),1,nn).' linspace(cb(2),1,nn).' linspace(cb(3),1,nn).']; ...
-         [linspace(1,co(1),nn).' linspace(1,co(2),nn).' linspace(1,co(3),nn).'] ];
+cmap = jet(256);          % MATLAB 'jet', to match Luis's plots (Dave 2026-09-09)
 stat = @(v) local_stat(v, SUPP, okm);
+LITM = unf_field(R.mean_xy, kC, KR, true(size(R.mean_xy.per_field_w_nom_2d{1})));  LIT = isfinite(LITM) & LITM ~= 0;
+fprintf('lit pupil mask: %d px (centre-field rows %d)\n', nnz(LIT), nnz(rowsC));
 dmc = R.mean_xy.dwdxall(rowsC, KR) - R.chief_xy.dwdxall(rowsC, KR);   % should be one constant
 okd = isfinite(dmc);
 fprintf('mean - chief (Kr column, all px): mean %.6e std %.3e -> %.2e relative; on the poked support std %.3e, on the others %.3e\n', ...
@@ -79,10 +79,10 @@ P = {R.mean_xy, KR, 'Kr column, opd\_ref = mean (engine default)'; R.chief_xy, K
      R.mean_xy, KC, 'Kc column, opd\_ref = mean'; R.chief_xy, KC, 'Kc column, opd\_ref = chief'};
 for k = 1:4
     o = P{k,1};  cc = P{k,2};  [rr, ~] = centre_rows(o, kC);
-    v = o.dwdxall(rr, cc);  w = unf_field(o, kC, cc);
+    v = o.dwdxall(rr, cc);  w = unf_field(o, kC, cc, LIT);
     s = stat(v);  cst = abs(stat(R.mean_xy.dwdxall(rr, cc)).oth_mean);
     ax = nexttile;  imagesc(ax, w, 'AlphaData', ~isnan(w));  axis(ax, 'image');  axis(ax, 'xy');
-    colormap(ax, cmap);  if ~(cst > 0), cst = max(abs(v), [], 'omitnan')/3; end;  clim(ax, [-3*cst 3*cst]);  cbh = colorbar(ax);  cbh.Label.String = 'dW/dp';
+    colormap(ax, cmap);  cbh = colorbar(ax);  cbh.Label.String = 'dW/dp';
     title(ax, sprintf('%s\nunpoked segments: %.3g (spread %.1e); poked segment rms %.3g', P{k,3}, s.oth_mean, s.oth_std, s.pk_rms), ...
         'Color', ink, 'FontWeight', 'normal', 'FontSize', 10);
     set(ax, 'XColor', ink2, 'YColor', ink2, 'XTick', [], 'YTick', []);
@@ -99,10 +99,10 @@ P = {R.mean_ptt, 'surf\_remove\_ptt = true, opd\_ref = mean', R.mean_ptt; R.chie
 cst = abs(stat(R.mean_xy.dwdxall(rowsC, KR)).oth_mean);
 for k = 1:4
     o = P{k,1};  [rr, ~] = centre_rows(o, kC);
-    v = o.dwdxall(rr, KR);  w = unf_field(o, kC, KR);
+    v = o.dwdxall(rr, KR);  w = unf_field(o, kC, KR, LIT);
     [rs, ~] = centre_rows(P{k,3}, kC);  s = stat(P{k,3}.dwdxall(rs, KR));   % raw panel: stats from the xy twin
     ax = nexttile;  imagesc(ax, w, 'AlphaData', ~isnan(w));  axis(ax, 'image');  axis(ax, 'xy');
-    colormap(ax, cmap);  if ~(cst > 0), cst = max(abs(v), [], 'omitnan')/3; end;  clim(ax, [-3*cst 3*cst]);  cbh = colorbar(ax);  cbh.Label.String = 'dW/dp';
+    colormap(ax, cmap);  cbh = colorbar(ax);  cbh.Label.String = 'dW/dp';
     title(ax, sprintf('%s\nunpoked segments: rms %.3g (mean %.3g); poked segment rms %.3g', P{k,2}, s.oth_rms, s.oth_mean, s.pk_rms), ...
         'Color', ink, 'FontWeight', 'normal', 'FontSize', 10);
     set(ax, 'XColor', ink2, 'YColor', ink2, 'XTick', [], 'YTick', []);
@@ -112,15 +112,17 @@ exportgraphics(f, fullfile(od, 'dwdsurf_jwst_opts.png'), 'Resolution', 110, 'Bac
 fclose(fid);
 fprintf('JWST FIGS DONE\n');
 
-function w = unf_field(os, kC, col)
+function w = unf_field(os, kC, col, lit)
 % the stacked Jacobian is scattered onto the TILED FIELD CANVAS (dw_multi_core
 % [stack]); macos.v2m on indxall rebuilds the canvas, the centre field's tile
-% sits at field_table(kC, 3:4) (tile_row, tile_col), one nominal-map size each
+% sits at field_table(kC, 3:4) (tile_row, tile_col), one nominal-map size each.
+% LIT = the pupil mask (rays present); exact zeros INSIDE it are data (the
+% chief-referenced unpoked segments), so they are kept, not blanked.
 canv = macos.v2m(os.dwdxall(:, col), os.indxall);
 n = size(os.per_field_w_nom_2d{1}, 1);
 tr = os.field_table(kC, 3);  tc = os.field_table(kC, 4);
 w = canv((tr-1)*n + (1:n), (tc-1)*n + (1:n));
-w(w == 0) = NaN;                                   % canvas zeros = no ray
+w(~lit) = NaN;
 end
 function [rows, ix, ixk] = centre_rows(os, kC)
 % rows of the centre field in the stacked Jacobian = the rows whose canvas
