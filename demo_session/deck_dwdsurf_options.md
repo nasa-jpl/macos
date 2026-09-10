@@ -1,6 +1,6 @@
 # dw/dsurf on the JWST OTE deck: what each option does to one segment's column
 jwst_ote_designc.in (Luis's zoom deck), model 512, 63-ray grid, stop at the FSM (element 25), wavefront read at the ExitPupil Return (27); Seg2 (element 5) poked alone in radius (Kr) and conic (Kc) through run_sensitivities, centre field
-~ DRAFT 2026-09-09.  Every option shown is a run_sensitivities option since this date ('orient', 'sign', 'opd_ref', and 'elts' now reach the dwdsurf channel).  Numbers: dW/dp per unit parameter, mm of OPD per mm (Kr) / per unit (Kc), centre field, single configuration.
+~ DRAFT 2026-09-10.  Every figure is the runner's own centre-field page (<name>_pages/*_elt5_center.png), unmodified: MATLAB default colormap, autoscaled, piston removed by the page plotter, zeros not drawn.  Every option shown is a run_sensitivities option since 2026-09-09 ('orient', 'sign', 'opd_ref', and 'elts' now reach the dwdsurf channel).  Numbers: dW/dp per unit parameter, mm of OPD per mm (Kr) / per unit (Kc), centre field, single configuration.
 
 ## The OPD reference decides what the unpoked segments read | the runner's own centre-field page, unmodified: mean paints the other 17 segments, chief shows only the poked one
 ::: left
@@ -26,10 +26,21 @@ jwst_ote_designc.in (Luis's zoom deck), model 512, 63-ray grid, stop at the FSM 
 - The one gap :: a deck whose chief ray sits on a real segment (e5hex1: the centre one) moves the reference when that segment is poked; the others then read -m(chief), 5% of that segment's rms for Kr.  A fixed nominal reference length (engine OPDRefRayLen branch, one api wrapper) localises every column
 ~ Gates: tOpdRef/test_driver_single_segment_poke_is_local_under_chief (e5hex1, driver path; fails on the previous code) and tRunSensitivities/test_dwdsurf_channel_honours_elts_orient_and_opd_ref.  The default stays 'mean' until the fixed-length reference lands: no committed baseline moves.
 
-## The other options do not remove the leak; they relabel it | PTT removal fits the whole column, orientation transposes, sign negates
+## PTT removal does not remove the leak; it relabels it as a tilt | with surf_remove_ptt on, the mean and chief pages become identical and a tilt runs across all 18 segments
+::: left
+![surf_remove_ptt = true, opd_ref = mean: the 17 unpoked segments carry a tilt instead of a flat offset.](figs/dwdsurf_jwst_page_mean_ptt.png){h=3.2}
+::: right
+![surf_remove_ptt = true, opd_ref = chief: identical to the mean page, the global piston/tip/tilt fit has absorbed the reference difference.](figs/dwdsurf_jwst_page_chief_ptt.png){h=3.2}
 ::: full
-![The same Kr column with PTT removal (top row: mean and chief become identical, and a tilt now runs across all 18 segments), raw orientation (bottom left: the same rays with index 1 along global X, the spiders rotate) and the wavefront sign (bottom right: negated).](figs/dwdsurf_jwst_opts.png){h=5.0}
-~ surf_remove_ptt fits global piston/tip/tilt to the whole column: the poked segment biases the fit, so the 17 unpoked segments trade a 4.4e-4 flat offset for a tilt of 7.0e-4 rms, and the reference choice no longer matters.  Orientation check: Seg2 sits at (X, Y) = (-1137, +657) mm and its footprint appears at (+10, -6.5) px from the pupil centre in the xy map, i.e. columns run along xGrid = -X and rows along yGrid = -Y (the deck's source frame; magnitudes match the exit-pupil scale).  'xy' fixes the transpose, not the sign of each axis.
+~ Runner pages, unmodified.  The fit is global, so the poked segment biases it: the unpoked segments' rms goes from 4.4e-4 (flat offset under mean) to 7.0e-4 (tilt), the same under either reference.
+
+## Orientation transposes the array; sign negates it | raw is the engine array (index 1 along global X), xy is its transpose; wavefront is opl negated
+::: left
+![orient = raw, opd_ref = mean: the same rays as the xy page, transposed (the spider arms rotate); the unpoked segments carry the same flat offset.](figs/dwdsurf_jwst_page_mean_raw.png){h=3.2}
+::: right
+![sign = wavefront, opd_ref = chief, orient xy: the poked segment's response negated, nothing else drawn.](figs/dwdsurf_jwst_page_chief_wf.png){h=3.2}
+::: full
+~ Runner pages, unmodified.  Orientation anchor: Seg2 sits at (X, Y) = (-1137, +657) mm; in the xy page its footprint is at (+10, -6.5) px from the pupil centre, i.e. columns run along xGrid = -X and rows along yGrid = -Y (the deck's source frame).  'xy' fixes the transpose, not the sign of each axis.
 
 ## What to run | the options, where they live, and the recommended call on a segmented deck
 | option | values | now taken by | recommended (segmented) |
