@@ -266,6 +266,24 @@ THROUGH it (`runs/<tag>/`).
 Open: kernel measured AT the hold-out site (the remaining 6.5%); deck
 fold (item 5, on Dave's steer).
 
+## S9 -- the calibration questions (2026-09-10, RUN)
+
+Runner knobs `reg.kernel_site`, `battery.calib_surface`,
+`reg.stencil_site`, `dm_use`, `hold`; fold-crossing diagnostic per row.
+(1) Kernel site: own-site gain was 0.958, not 1 -- the stencil was
+sampled on the 0.28 mm map grid, up to 0.14 mm off the actuator centre
+(`dmg_anchor`'s `tax = xg(tc)`); snapping it to the lattice
+(`reg.stencil_site` 'lattice', now default; 'grid' = the S7 record)
+gives own-site 0.9915 / 5 pm, record 0.900 -> 0.946, and at NGRID 385
+the test-actuator gain 0.935 -> 0.9963 (spec MET); I+ on the 30 nm
+surface at 385: 0.975 / 18 pm / SNR 529.  The IFO's tg96_s3/s4 share
+the bias -> CCMac brief addendum.  (2) Calibrating on the working
+surface does not help (I+ 0.74 vs 0.79); fold crossings under a single
+change are 3 pixels (946 under dense random); the working-surface
+deficit lives in the readings / the fit on a working surface -- open,
+named.  Record: README S9; runs/ks_hold*, cal_base, fold_diag,
+rec193_lat, ng385_lat, m2048_lat.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to

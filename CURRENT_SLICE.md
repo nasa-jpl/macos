@@ -24,19 +24,18 @@
 
 ## Active slice
 
-> **ZWFS S8 LANDED (2026-09-10, LOCAL: resources dev-candidate 2db7e1d
-> -- push only on Dave's review).**  The parameterized runner
-> (`zwfs_dm96/zwfs_params.m` + `zwfs_run.m` + figs/batch; README "Run it
-> yourself"; standing rule -> memory `feedback_parameterized_runner`)
-> and open items 2-4 measured through it: NGRID 385 at model 1024 AND
-> 2048 (trimmed size table `macos_param_2048.txt`, `param_file` knob --
-> the engine reads the run dir first), colour re-run, noise pricing of
-> I+.  Record: README S8 bullet, `BRIEF_zwfs_campaign.md` S8, memory
-> `project_tg96_gauge`.  Item 5 deck fold DONE (macos 6fd8d8f, LOCAL): deck_zwfs 20
-> slides fold 3 + deck_tg_fang sensor rows on the corrected model, both
-> DRAFT for Dave's review.  CCMac briefed on the reflective TG96
-> (`BRIEF_ccmac_tg96_oap.md`, pushed).  OPEN: the hold-out-site kernel
-> check (the remaining 6.5% of hold-out gain).
+> **ZWFS S9 LANDED (2026-09-10, LOCAL: resources edd960b, macos this
+> commit; push only on Dave's review).**  The calibration questions
+> measured through the runner: a STENCIL-SITE bias in the actuator fit
+> found and fixed (`reg.stencil_site` 'lattice' default; test-actuator
+> gain 0.996 at NGRID 385, spec met; I+ 0.976 / 19 pm on the 30 nm
+> surface at 385/2048); calibrating on the working surface does NOT
+> help; fold crossings only matter for dense changes.  Decks re-stated
+> (deck_zwfs fold 3c, deck_tg_fang head-to-head), both DRAFT.  CCMac
+> brief addendum pushed (the IFO's S3/S4 share the stencil bias).
+> Record: README S9, BRIEF_zwfs_campaign S9, memory project_tg96_gauge.
+> OPEN: the 47-site working-surface deficit (I+ 0.80 at 30 nm; the fit
+> stage on a working surface); deck sign-off; the vector ZWFS.
 
 > **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
 > (`BRIEF_dwd_plot_size.md`).**  Size is fixed FIRST and the pages follow:
