@@ -306,7 +306,9 @@ supervisor core (re-applied after EVERY reload) and `run_sensitivities`
 `run_dwd*` user could choose the orientation — and now forwards `elts`
 to the dwdsurf channel, which it alone had dropped: a one-segment
 request harvested all 42 Kr/Kc channels on jwst_ote_designc).  Defaults stay `'mean'`
-(no baseline moves).  Measured on the DRIVER path (`macos.dw_dsurf`,
+(no baseline moves).  **Ruling (Dave 2026-09-10): the mean-referenced
+and PTT-removed columns are NOT a leak -- they are the same correct data
+presented under a different convention.**  Measured on the DRIVER path (`macos.dw_dsurf`,
 e5hex1 segment 2, Kr / Kc, orient xy, remove_ptt false): under `mean`
 the six other segments read one constant, `-(N_k/N)*mean(poked)` =
 4.32e-4 / 2.04e-2 per unit parameter (14.7% / 12.0% of the poked
