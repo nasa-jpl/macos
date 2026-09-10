@@ -116,8 +116,8 @@ place to re-attack the 0.77 dense-random gain.
 
 1. `twyman_green` option `'optics'` ('lens' default, bit-identical
    gate; 'oap' = OAP1 for L1 in `front_end`, OAP2 for L2 in `tail`),
-   with `OAP1_AOI` / `OAP2_AOI` (deg) and the conjugate rule above; the
-   emitted `.in`s beside the lens rig's.  Gate: lens default byte-equal;
+   with `OAP1_AOI` / `OAP2_AOI` (deg), same-plane folds, and the
+   conjugate rule above; the emitted `.in`s beside the lens rig's.  Gate: lens default byte-equal;
    OAP rig's pole-to-focus distances == F1 / F2 (assert from the Bench
    objects); the collimated beam diameter at the BS == the lens rig's
    to 1e-6.
@@ -142,15 +142,22 @@ place to re-attack the 0.77 dense-random gain.
    memory-style summary at the top of your report; the runner's "Run it
    yourself" lines.
 
-## Open questions for Dave (answer in your report; do not block on them)
+## Rulings on the two open questions (Dave 2026-09-10)
 
-1. FL (the tail's pupil-relay lens): keep, or make it a small OAP too
-   (`'optics','oap'` would then be all-reflective end to end)?  Report
-   the cost of keeping it (one transmitted singlet, sub-mm beam) so Dave
-   can rule.
-2. Fold plane: both OAPs folding in the same plane as the BS (compact,
-   planar bench) vs. orthogonal planes (astigmatism partly cancels).
-   Pick one by the Stage A margins and say why.
+1. **The field lens FL stays transmissive.**  Only L1 and L2 become
+   OAPs; the tail keeps its singlet pupil relay (re-tuned, per the tail
+   rule above).  Report its one-singlet cost line anyway so the budget
+   shows what an all-reflective tail would remove.
+2. **Same-plane folds** -- both OAPs fold in the plane of the BS.  Dave:
+   "let's see if there are significant effects from that."  So this is a
+   MEASUREMENT, not a choice to optimize away: quantify the same-plane
+   astigmatism / distortion the folded train adds -- the null before
+   and after the tail retune, the pupil-mapping nonlinearity (the
+   record's 0.136 mm distortion row), the modal transfer against the
+   lens rig, and the single-actuator and dense-random differential rows
+   -- and say whether it is significant at the pm scale of the rows.  If
+   it is, the orthogonal-plane layout is the follow-on comparison, on
+   Dave's steer; do not build it unasked.
 
 ## Traps (paid for once already -- do not repay)
 
