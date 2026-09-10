@@ -21,7 +21,12 @@ pull.
    the driver (e5hex1, segment 2, Kr and Kc, orient xy, PTT removal off):
    the other six segments carry 4.3e-4 (Kr) and 2.0e-2 (Kc) per unit
    parameter, 15% and 12% of the poked segment's rms, identical on all
-   six to 3e-16.  Under the chief-ray reference they read exactly zero.
+   six to 3e-16.  Under the chief-ray reference they read exactly zero.  On your
+   jwst_ote_designc deck (Seg2 poked, run_sensitivities, centre field)
+   the same leak is 5.4% (Kr) and 4.5% (Kc) of the poked segment's rms
+   on all 17 other segments, zero under chief; every real segment is
+   fully local there because the chief ray sits on the virtual centre
+   segment.  The slide deck shows it panel by panel.
    That reference existed since your August fix (macos.opd_ref) but the
    sensitivity tools never set it and a reload resets it; they all take
    'opd_ref' now and re-apply it after every reload.  So:
