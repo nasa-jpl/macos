@@ -30,8 +30,9 @@
 > (macos 353e942 pushed); second runner bug fixed en route: 'elts' never
 > reached the dwdsurf channel, resources 30b6627 pushed; THIRD bug =
 > what Luis's pictures actually showed: the per-element centre-field
-> page scrambled under orient xy, resources 1e0a956 pushed; deck slides
-> 2-3 now use the runner's own pages) --
+> page scrambled under orient xy, resources 1e0a956 pushed; DECK = the
+> runner's own pages ONLY, unmodified -- Dave's standing rule, memory
+> feedback_deck_plots_unmodified) --
 > `run_sensitivities` never forwarded 'orient'/'sign'; no dw_d* driver
 > set the OPD reference, so every harvest was mean-referenced and a
 > single-segment poke pistoned every other segment by
