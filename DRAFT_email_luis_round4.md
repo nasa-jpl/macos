@@ -29,9 +29,12 @@ pull.
 
        run_sensitivities(RX, ..., 'orient','xy', 'opd_ref','chief')
 
-   'surf_remove_ptt' is not a substitute: it fits a global piston/tip/
-   tilt to the whole column, which the poked segment biases, so the
-   other segments trade the flat offset for a tilt.
+   Neither reference is wrong: the two columns are the same data and
+   differ by that one constant everywhere.  'surf_remove_ptt' is a
+   third convention on the same data: it fits a global piston/tip/tilt
+   to the whole column (which the poked segment sets), so the other
+   segments then show a tilt instead of a flat offset, identically
+   under either reference.  Pick what your consumer expects.
 
    On the JWST deck every real segment is fully local under the chief
    reference, because the chief ray sits on the virtual centre segment.
