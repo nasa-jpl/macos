@@ -159,7 +159,9 @@ What `tg96_run` stage 'loop' has to provide to `dmg_loop`:
 - `ins.measure(cmd)`: the DM at command `cmd` (nact x nact, mm) traced,
   the four fringe frames captured NOISELESS (your `frames`/four-step
   capture);
-- `ins.noisy(F, nph, seed)`: photon noise at `nph` photons per STATE
+- `ins.noisy(F, nph, seed)`: photon noise at `nph` photons per MEASUREMENT
+  (one DM shape measured once -- Dave 2026-09-11: say "measurement", not
+  "state", which collides with state-vector controls terminology)
   split over the four frames (nph/4 each), from a `RandStream` seeded
   with `seed` (the S5 model, `zwfs_run` `noisy_frames_` verbatim in form);
 - `ins.diff(F1, F0)`: the four-step differential map between two frame

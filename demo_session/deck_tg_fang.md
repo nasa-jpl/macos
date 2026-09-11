@@ -197,10 +197,10 @@ DRAFT — pending review.
 - **Calibration is noiseless in the model** (long-exposure assumption), and scoring is actuator-space through the same estimator code as the interferometer.
 ~ Phase 2 in plan: a polarizing metasurface producing two phase images (vector Zernike sensor) once the scalar system is agreed.  If Fang's group models the sensor differently — mask representation, propagation, reference handling, reconstruction — this slide is the diff list.
 
-## Pricing the 1 pm ambition: photons are not the blocker | The interferometer reaches 1 pm at 10¹⁵ photons per DM state, the Zernike sensor's readings at 10¹⁴ — both trivial, so systematics decide
+## Pricing the 1 pm ambition: photons are not the blocker | The interferometer reaches 1 pm at 10¹⁵ photons per measurement, the Zernike sensor's readings at 10¹⁴ — both trivial, so systematics decide
 ::: full
-- **Method:** the optical fields do not depend on noise, so noiseless frames are captured once per DM state and photon shot noise is Monte-Carloed numerically; the photon budget per state is split across each reading's frames (interferometer 4, linear 1, stepped 4) — equal light and equal time across modalities.
-| reading | noise on the 10 nm change | photons/state for 1 pm |
+- **Method:** the optical fields do not depend on noise, so noiseless frames are captured once per measurement (one DM shape measured once) and photon shot noise is Monte-Carloed numerically; the photon budget per measurement is split across each reading's frames (interferometer 4, linear 1, stepped 4) — equal light and equal time across modalities.
+| reading | noise on the 10 nm change | photons per measurement for 1 pm |
 | interferometer four-step | 2.8×10⁷/√N pm | 8×10¹⁴ |
 | Zernike linear (one frame) | 7.3×10⁶/√N pm | 5.4×10¹³ |
 | Zernike exact, iterated reference + base prior (one frame) | 9.4×10⁶/√N pm | 8.8×10¹³ |

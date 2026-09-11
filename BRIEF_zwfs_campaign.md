@@ -318,7 +318,7 @@ and closed-loop servo; the metric for THAT mode.  Spec
 gauges, gated by `tests/tDmgLoop.m`, 9 gates on a synthetic instrument);
 `zwfs_run` stage 'loop' + `P.loop`.  Proportional loop, gain 0.5, 60
 cycles, the 30 nm working surface as set point, the matrix measured ON
-it, photon noise per state, differential to the set point's frames.
+it, photon noise per measurement (one DM shape measured once; "state" retired 2026-09-11, Dave: collides with state-vector terminology), differential to the set point's frames.
 Metric = steady-state hold error vs photons per cycle; ONE number =
 photons per cycle to hold 3 pm.  Measured at 193 rays (runs/loop193):
 the loop propagates noise and a random walk exactly as theory (noise-only
