@@ -6,7 +6,7 @@ Recast 2026-09-03 (Dave): options-first with decision table, then cube
 details; first-order cost at 50/75/100 mm CA added.
 2026-09-10 fold: the Zernike-sensor rows re-stated on the CORRECTED sensor
 model (the S1-S6 sensor was Fresnel-defocused; zwfs deck fold 3): head-to-head
-table, sensor-as-modeled bullets, photon table, colour slide + provenance.
+table, sensor-as-modeled bullets, photon table, color slide + provenance.
 2026-09-09 fold: multi-color excursion (S6, Dave's 2026-09-08 ask) -- one
 slide after the photon pricing; modeling-assumptions, open-items and
 provenance bullets updated from zwfs/tg96 s6color reports.
@@ -209,13 +209,13 @@ DRAFT — pending review.
 - **10¹⁵ photons at 633 nm is ~0.3 mJ** — trivial for a bench source.  The 1 pm budget is therefore a systematics and gain-stability budget (gain jitter measured at the 0.1% class), not a photon budget.  The sensor's tenfold photon advantage over the interferometer is real but does not decide anything at these levels.
 ~ Scenario: the head-to-head row (single 10 nm change on the 30 nm working surface, 96×96).  Detector read noise, drift and calibration noise are the natural next terms once a use case fixes them.  Records: tg96_s5noise_report.txt; zwfs_dm96/runs/rec193full (corrected sensor model).
 
-## Colour is a lever for neither instrument | On the corrected sensor model five colours lift the sensor's transfer by 3% and its rows not at all; every interferometer number holds to three digits
+## Color is a lever for neither instrument | On the corrected sensor model five colors lift the sensor's transfer by 3% and its rows not at all; every interferometer number holds to three digits
 ::: left
-![Zernike sensor, linear reading, corrected model: five colours share one smooth transfer with only the dimple's own low-order dip; the five-colour combination (orange) sits at 0.99–1.](figs/crop_zwfs_rec193full_color_L.png){h=3.2}
+![Zernike sensor, linear reading, corrected model: five colors share one smooth transfer with only the dimple's own low-order dip; the five-color combination (orange) sits at 0.99–1.](figs/crop_zwfs_rec193full_color_L.png){h=3.2}
 ::: right
 ![Interferometer: the five colors coincide (spread 0.004 in gain) — the roll-off is not diffraction.](figs/crop_zwfs_s6color_ifo.png){h=3.2}
 ::: full
-- **Sensor:** the blind band that first seemed to migrate with wavelength was the defocused sensor model's Talbot null.  On the corrected model the five single-colour transfers bottom at 0.92–0.97 after the Wiener step and their combination at 0.991; on the 30 nm working surface the one-frame exact reading's SNR is 269 at 632.8 nm, 183 combined, 255 for the best pair (700 + 780 nm).  What stays chromatic is range: the reddest colour is the best single colour (smaller phase per nanometre, a 1.6 λ/D dimple).
+- **Sensor:** the blind band that first seemed to migrate with wavelength was the defocused sensor model's Talbot null.  On the corrected model the five single-color transfers bottom at 0.92–0.97 after the Wiener step and their combination at 0.991; on the 30 nm working surface the one-frame exact reading's SNR is 269 at 632.8 nm, 183 combined, 255 for the best pair (700 + 780 nm).  What stays chromatic is range: the reddest color is the best single color (smaller phase per nanometer, a 1.6 λ/D dimple).
 - **Interferometer:** 92 pm hold-out, 4.17 nm dense random, SNR 210 at every color and after combination.  A diffraction roll-off would have moved 1.6× across this band; it moved under 0.3%: the loss is geometric (the null-tuned detector leg's conjugate and 0.14 mm of warp), so the joint leg optimization is the lever, not the source.
 ~ One physical mask (346.2 nm etch, dispersion-corrected index), every calibration redone per color; achromatic quarter-wave plates and dispersionless lenses assumed; noiseless — K colors cost K× the frames.  Records: zwfs_dm96/runs/rec193full (corrected sensor model), tg96_s6color_report.txt (96×96).
 
