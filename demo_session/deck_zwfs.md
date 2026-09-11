@@ -11,9 +11,9 @@ sampling table re-stated from runs/m2048_lat), calibration-on-the-surface
 and fold-crossing results on the range slide.
 2026-09-10 fold 3b (Dave's review of fold 3): plain-words pass on every
 slide; a "how the numbers are scored" slide defines gain / floor / SNR /
-working surface / state / calibration once; the range slide now states
+working surface / measurement / calibration once; the range slide now states
 the accuracy after calibration and answers whether calibration can
-absorb the gain variation; "photons per state" defined.
+absorb the gain variation; "photons per measurement" defined (2026-09-11: renamed from "per state" -- Dave: "state" collides with state-vector controls terminology).
 2026-09-10 fold 3 (S7 + S8): the sensor-model correction, the five
 readings, sampling closed at MODEL 2048, color and photon re-runs, the
 multi-site working-surface range, the parameterized runner.  Figures are
@@ -54,7 +54,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Floor:** the spread (rms) of the actuators that were not changed, in picometers.  It is what the measurement puts on actuators that should read zero.
 - **SNR:** recovered change divided by the floor.  Above 5 counts as detected.
 - **Working surface:** a random DM shape, 30 nm rms unless stated, present during the test.  It is the same random pattern every time, scaled.
-- **State and frame:** a state is one DM shape measured once.  A measurement of a change costs two states.  A state costs one camera frame for the one-frame readings and four frames for the stepped reading; photon budgets are quoted per state.
+- **Measurement and frame:** a measurement is one DM shape measured once; it takes one camera frame for the one-frame readings and four for the stepped reading.  Measuring a change costs two measurements (before and after).  Photon budgets are quoted per measurement, all its frames summed.
 ~ 96×96 DM at 1 mm pitch unless stated (48×48 at 2 mm alongside).  The interferometer is scored the same way with the same code (dm_gauge_lib).  Target: 1 pm.
 
 ## The mask is real hardware, modeled with its own numbers | 346.2 nm of etch in fused silica = 1.571 rad at 632.8 nm; a substrate with nine spots, one in the beam at a time
@@ -143,20 +143,20 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **What stays with color is range:** 780 nm is the best single color on nearly every row — less phase per nanometer of height, and a 1.6 λ/D dimple.  The interferometer is unchanged at every color (its deck).
 ~ 632.8 / 480 / 532 / 700 / 780 nm through one physical mask, every calibration redone per color; development sampling (193 rays, 1024 grid); runs/rec193full.
 
-## Photons: 10¹⁴ per state reaches 1 pm | Every reading needs about the same light, 25× less than the out-of-focus model said; the sign map's own noise costs 5%
+## Photons: 10¹⁴ per measurement reaches 1 pm | Every reading needs about the same light, 25× less than the out-of-focus model said; the sign map's own noise costs 5%
 ::: left
-![Noise on the single-actuator estimate against photons per state, per reading; the dotted line is the 1 pm target.](figs/zwfs_rec193full_noise.png){h=3.4}
+![Noise on the single-actuator estimate against photons per measurement, per reading; the dotted line is the 1 pm target.](figs/zwfs_rec193full_noise.png){h=3.4}
 ::: right
-| reading | photons per state for 1 pm |
+| reading | photons per measurement for 1 pm |
 | linear (L) | 5.4×10¹³ |
 | exact, flat-DM reference (F) | 3.7×10¹³ |
 | exact, re-computed reference (I) | 6.4×10¹³ |
 | I with the sign map (I+) | 8.8×10¹³ (8.4×10¹³ if the sign map is noise-free) |
-| phase-stepped (S) | 1.0×10¹⁴ |
-| interferometer, four-step | 8×10¹⁴ |
-- **What "photons per state" counts:** every photon the camera detects over the whole pupil image while one DM shape is measured once, summed over the frames that measurement needs: one frame for the one-frame readings, four for the stepped reading (a quarter each).  Not per mode or per actuator: 10¹⁴ per state is 3×10¹⁰ per lit actuator.  Measuring a change takes two states, so twice the number.
-- **In laser terms:** at 633 nm, 10¹⁴ photons is 31 µJ.  The test arm passes a 50/50 splitter twice, so a quarter of the laser power reaches the camera (other losses not counted): a 1 mW laser needs 0.13 s per state, a 5 mW laser 25 ms; the interferometer's 8×10¹⁴ is 1 s at 1 mW.
-- **Method:** noise-free frames once per state, photon shot noise added numerically, eight trials per point.  The 1 pm budget is about systematic errors and gain stability, not light.
+| phase-stepped (S) | 1.0×10¹⁴ (four frames of 2.5×10¹³) |
+| interferometer, four-step | 8×10¹⁴ (four frames of 2×10¹⁴) |
+- **What "photons per measurement" counts:** every photon the camera detects over the whole pupil image while one DM shape is measured once, summed over the frames that reading needs: one frame for the one-frame readings, four for the stepped reading (a quarter each).  Not per mode or per actuator: 10¹⁴ per measurement is 3×10¹⁰ per lit actuator.  Measuring a change takes two measurements, so twice the number.
+- **In laser terms:** at 633 nm, 10¹⁴ photons is 31 µJ.  The test arm passes a 50/50 splitter twice, so a quarter of the laser power reaches the camera (other losses not counted): a 1 mW laser needs 0.13 s per measurement, a 5 mW laser 25 ms; the interferometer's 8×10¹⁴ is 1 s at 1 mW.
+- **Method:** noise-free frames once per measurement, photon shot noise added numerically, eight trials per point.  The 1 pm budget is about systematic errors and gain stability, not light.
 ~ Case: a single 10 nm change on the 30 nm surface, 96×96, development sampling; read noise, drift and calibration noise are the next terms.  Records: runs/rec193full; tg96_s5noise_report.txt.
 
 ## Holding the surface in closed loop: the on-orbit metric | Servoed through the sensor, the readings cost the same light; what differs is each reading's fixed error: none, some, or a runaway
@@ -168,7 +168,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | random walk, 2 pm per cycle | 7.3×10¹² | runs away | 7.5×10¹² |
 | thermal ramp, 5 pm per cycle | 27.6 pm at any light | runs away | 10.0 pm at any light (the loop's own lag) |
 | noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm |
-- **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the DM shape is measured once with N photons (photons per state, slide 13), compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
+- **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the DM shape is measured once with N photons (photons per measurement, slide 13), compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
 - **What it shows:** noise and a random walk propagate exactly as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error on the DM when a slow ramp leaves a persistent low-order residual; I+ has sites that read with the wrong sign, and no gain fixes a wrong sign.
 ~ 7.5×10¹² photons per cycle is 2.4 µJ: 9 ms of a 1 mW laser at the test arm's 25% throughput.  Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays; the 385-ray check gives the same numbers (runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
 
@@ -195,7 +195,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | response falls off at | fine patterns: 0.50 at the 96×96 checkerboard | 0.5 to 1 cycle across the pupil (0.5 at 1); piston unseen |
 | working surface it can handle | 480 nm rms and beyond | 40 nm rms one-frame (1 mm actuators), 50–60 nm four-frame |
 | a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.99, floor 5 pm (stepped, four frames; matrix on the surface) — gain 1.05, floor 23 pm (linear, one frame) |
-| photons per state for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
+| photons per measurement for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
 | held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | pending (same loop code, CCMac) | 7.5×10¹² (stepped), 7.3×10¹² (linear) |
 - **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — no polarization train, a floor ten times lower once its response matrix is measured on that surface — and pays at the lowest spatial frequencies and in the surface it can handle.
 ~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: 385 rays, matrix calibration on the working surface (slide 10), photons at development sampling.  Both in actuator units through the same code (dm_gauge_lib).
@@ -214,7 +214,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 ## Demonstrations, segmented mirrors, and the in-house precedent | Picometers by alternating DM shapes and averaging; segment piston by model iteration, underestimated below 50 % Strehl
 ::: full
 | # | paper | what it gives this model |
-| 7 | Steeves, Wallace, Kettenbeil, Jewell 2020, Optica 7, 1267 | 1.6 pm repeatability in 4.3 s by alternating flat and waffle DM states and averaging the differences; a reconstruction robust at the highest spatial frequencies |
+| 7 | Steeves, Wallace, Kettenbeil, Jewell 2020, Optica 7, 1267 | 1.6 pm repeatability in 4.3 s by alternating flat and waffle DM shapes and averaging the differences; a reconstruction robust at the highest spatial frequencies |
 | 8 | Wallace, Rao, Jensen-Clem, Serabyn 2011, SPIE 8126 | All-reflective phase-shifting Zernike interferometer: a dynamic, arbitrary core phase shift read in four steps gives phase and amplitude; low sensitivity to vibration, polarization and wavelength |
 | 9 | Moore and Redding 2018, SPIE 10698 | Nonlinear polychromatic physical-optics reconstruction for picometer differential metrology on LUVOIR; the in-house precedent for the reconstructor above |
 | 10 | Keck vector-Zernike segment control 2024 (arXiv 2404.08728); Wallace et al. 2022 (arXiv 2205.02241) | Segment piston by model-based iteration; 11 nm rms piston uncertainty; underestimation 2 to 4× below 50 % Strehl; fabricated shifts 0.30π and 0.68π instead of ±0.5π |
@@ -228,7 +228,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **The exact reading with a re-computed reference is the import that paid** (paper 1): 26 pm from one frame on a 30 nm working surface, SNR 355 — with the sign fold settled once from four stepped frames and refined.  The plain stepped sign map misses 3% of pixels and can flip a single actuator's sign.
 - **Calibrate with a measured response matrix, on the working surface:** the sparse-grid measurement of every actuator's response (with the sensor's piston null carried) reads a single actuator on the flat at 0.994 with a 4 pm floor; measured on the working surface it gives the stepped reading 0.99 and 5 pm there and makes the linear one-frame reading usable (1.05, 23 pm).  The floors fall ten times; what remains is gain stability as the surface drifts (7% over 20 nm rms) and the one-frame exact readings' sign fold.
 - **Sampling is settled, and a bias in the fit is fixed:** camera pixels per actuator (the ray count) set the gain on a test actuator; sampling the single-site response pattern at the actuator center took that gain to 0.996 at 5 pixels per actuator.
-- **Color and photons are not levers:** the chromatic null was the defocus; 10¹⁴ photons per state reach 1 pm.  The budget is systematic error: the 25 to 60 pm floors and the gain's stability.
+- **Color and photons are not levers:** the chromatic null was the defocus; 10¹⁴ photons per measurement reach 1 pm.  The budget is systematic error: the 25 to 60 pm floors and the gain's stability.
 - **In closed loop the stepped reading has no fixed error:** it holds a 2 pm-per-cycle walk to 3 pm from 7.5×10¹² photons per cycle and returns to zero after a step; the linear reading costs the same light but leaves a fine-scale error under a slow ramp; the one-frame exact reading runs away.
 ~ Script and records: templates/40_benches/zwfs_dm96 (README S7/S8; runs/rec193, ng385, ng385s3, m2048, rec193full).
 
