@@ -37,9 +37,9 @@
 > DIVERGES (fold-flipped sites = negative gain).  Record: README S11,
 > BRIEF_zwfs_campaign S11, deck_zwfs slide 14 (DRAFT), memory
 > project_tg96_gauge.  IFO half handed to CCMac: BRIEF_ccmac_tg96_oap2
-> addendum (deliverable 7).  RUNNING: `runs/loop385` (385-ray check, L
-> + S, walk + none) -- fold its numbers into README S11 / the deck
-> footnote when it lands.  OPEN: integral term for the thermal case;
+> addendum (deliverable 7).  `runs/loop385` (385-ray check, L + S) reproduces
+> it (3 pm at 2.1e12 / 2.6e12 noise-only, 7.2e12 / 7.7e12 walk; thermal
+> floors 24.7 / 10.1 pm).  Fast suite 462/0 with tDmgLoop.  OPEN: integral term for the thermal case;
 > fold-aware I+ (re-take the branch prior); the IFO row.
 >
 > **ZWFS S10 LANDED (2026-09-10, LOCAL: resources 8181893, macos this
