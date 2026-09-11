@@ -24,18 +24,21 @@
 
 ## Active slice
 
-> **ZWFS S9 LANDED (2026-09-10, LOCAL: resources edd960b, macos this
-> commit; push only on Dave's review).**  The calibration questions
-> measured through the runner: a STENCIL-SITE bias in the actuator fit
-> found and fixed (`reg.stencil_site` 'lattice' default; test-actuator
-> gain 0.996 at NGRID 385, spec met; I+ 0.976 / 19 pm on the 30 nm
-> surface at 385/2048); calibrating on the working surface does NOT
-> help; fold crossings only matter for dense changes.  Decks re-stated
-> (deck_zwfs fold 3c, deck_tg_fang head-to-head), both DRAFT.  CCMac
-> brief addendum pushed (the IFO's S3/S4 share the stencil bias).
-> Record: README S9, BRIEF_zwfs_campaign S9, memory project_tg96_gauge.
-> OPEN: the 47-site working-surface deficit (I+ 0.80 at 30 nm; the fit
-> stage on a working surface); deck sign-off; the vector ZWFS.
+> **ZWFS S10 LANDED (2026-09-10, LOCAL: resources 8181893, macos this
+> commit; push only on Dave's review).**  Dave's measured response
+> matrix (sparse multiplexed grids, dw/da) is the runner's default
+> calibration (`battery.calib_mode` 'matrix'; the ZWFS piston null
+> carried as a rank-one term -- without it the fit over-responds 2-4x
+> at low order); flat single actuator 0.994 / 4 pm; matrix ON the
+> working surface -> stepped reading 0.989 / 5 pm / SNR 2200 on a 30 nm
+> surface, linear one-frame 1.05 / 23 pm; exact one-frame readings
+> limited by the fold sensitivity.  Alternating +/- pokes: neutral in
+> the model, kept for bench drift.  Decks re-stated (deck_zwfs 22
+> slides, fold 3d: the matrix-calibration slide; deck_tg_fang head-to-
+> head), both DRAFT.  Record: README S9/S10, BRIEF S9/S10, memory
+> project_tg96_gauge.  OPEN: deck sign-off; the matrix for the IFO
+> (CCMac's tg96 runner, brief addendum); vector ZWFS; the 2048-grid
+> matrix run (not needed: 385/1024 == 385/2048 shown thrice).
 
 > **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
 > (`BRIEF_dwd_plot_size.md`).**  Size is fixed FIRST and the pages follow:

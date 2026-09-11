@@ -284,6 +284,32 @@ deficit lives in the readings / the fit on a working surface -- open,
 named.  Record: README S9; runs/ks_hold*, cal_base, fold_diag,
 rec193_lat, ng385_lat, m2048_lat.
 
+## S10 -- the measured response matrix (Dave 2026-09-10, RUN; now the default)
+
+`battery.calib_mode` 'matrix': sparse-grid multiplexed pokes (step 8, 64
+states), each actuator's response cut from its own detector window,
+least squares on the measured J.  The ZWFS piston null must be carried
+(each column's volume spread over the mask; rank-one term) or the
+estimator over-responds 2-4x below 12 cyc/ap.  With it: exact-reading
+response 0.99-1.08 at every frequency with no correction; flat single
+actuator 0.994 / 4 pm (kernel 0.946 / 37); floors on a working surface
+fall 6-10x while the gain there falls (I+ 0.73 vs 0.82 single, 0.68 vs
+0.80 on 47 sites) -> the working-surface loss is a READING effect (fold
+crossings inside the changed footprint for I+; flat |Eb|^2 for S) --
+the next fixes.  Alternating +/- pokes: neutral to slightly worse in
+the model, keeps for hardware (drift).  THEN the matrix ON THE WORKING
+SURFACE (the operating-point interaction matrix, 256 frames once per
+working state): S single 10 nm change 0.989 / 5 pm / SNR 2160 (flat
+matrix 0.75 / 17), 47-site 1 nm grid 0.999 / 4 pm, dense random 0.98 /
+0.68 nm; the LINEAR one-frame reading 1.04 / 21 pm; the exact one-frame
+readings do not benefit (fold sensitivity moves with the change).  The
+map-space diagnostic (mapdiag) showed every reading's differential map
+29-60% off on the surface: the local sensitivity depends on the local
+phase (Ruane's per-pixel factor).  Doctrine: calibrate the matrix on
+the working surface; the stepped reading then reads changes at 5 pm.
+Record: README S10; runs/mat193, mat193b, mat193c, mat385, mapdiag,
+matbase, matbase385.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to

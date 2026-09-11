@@ -176,17 +176,17 @@ DRAFT — pending review.
 - **This benchmark has since been run head-to-head** against a Zernike wavefront sensor on the same DM truth, in actuator currency — the next three slides.
 ~ Each row: measure the base, apply the deviation, measure again, difference the two measurements, fit one gain against the true deviation; the residual is what is left.  Record: tg96_report.txt, differential section.
 
-## The head-to-head, in actuator currency | A 10 nm change on a 30 nm working surface reads to 46 pm through the interferometer and 34 pm from one sensor frame; only the interferometer never folds
+## The head-to-head, in actuator currency | A 10 nm change on a 30 nm working surface reads to 46 pm through the interferometer and 5 pm through the sensor calibrated on that surface; only the interferometer never folds
 ::: full
 - **Scoring moved to actuator space** (the ruling): fit the DM's influence model to the measurement through the ray-traced registration, score recovered actuator commands — one currency for any sensor.  Both instruments carry calibrated estimators: a measured (ZWFS) or exact (IFO) response kernel, Tikhonov lattice deconvolution, and a measured modal transfer correction.
 | single 10 nm actuator change, on a 30 nm working surface | gain | floor |
 | interferometer, four-step differential | 0.92 | 46 pm |
-| Zernike sensor, linear reading (one frame) | 0.35 | 63 pm |
-| Zernike sensor, exact reading with iterated reference and base prior (one frame) | 0.93 | 34 pm |
-| Zernike sensor, phase-stepped retrieval (four frames) | 0.87 | 36 pm |
+| Zernike sensor, exact reading with iterated reference and base prior (one frame; calibrated on the flat) | 0.93 | 34 pm |
+| Zernike sensor, phase-stepped retrieval (four frames; response matrix measured on the working surface) | 0.99 | 5 pm |
+| Zernike sensor, linear reading (one frame; response matrix measured on the working surface) | 1.05 | 23 pm |
 - **The break scale separates them:** growing the working surface 30 → 480 nm rms costs the interferometer ~5% of gain and 44 → 55 pm of floor — it does not fold.  The Zernike sensor's one-frame exact reading holds to 40 nm rms on 1 mm actuators (50 nm on 2 mm) and the four-frame retrieval to 50–60 nm, measured on 47 sites at once; beyond ~120 nm its recoveries alias.
-- **Verdict as measured, not assumed:** the working-state axis belongs to the interferometer; the Zernike sensor reads small changes on a small working surface from one frame at a floor on par with the interferometer's.
-~ 96×96 rig, both instruments in actuator space through one scoring library (dm_gauge_lib); sensor numbers on the corrected sensor model at its compliant sampling (385 rays across, 2048 grid; its deck), corrected for the measured modal transfer.  Records: tg96_s4_report.txt, zwfs_dm96/runs/m2048_lat.  The sensor's actuator fit samples its response pattern at the actuator centre (a 0.14 mm sampling bias found 2026-09-10); the interferometer's S3/S4 fit shares the bias and is to be re-run the same way in its reflective build.
+- **Verdict as measured, not assumed:** the working-state axis belongs to the interferometer; the Zernike sensor, with its response matrix measured on the working surface (64 sparse-grid states, 256 frames once), reads small changes there at a floor ten times below the interferometer's — the calibration a real DM needs anyway, and the same measurement the interferometer's own calibration should adopt.
+~ 96×96 rig, both instruments in actuator space through one scoring library (dm_gauge_lib); sensor numbers on the corrected sensor model at its compliant sampling (385 rays across, 2048 grid; its deck), corrected for the measured modal transfer.  Records: tg96_s4_report.txt, zwfs_dm96/runs/m2048_lat.  Sensor rows: 385 rays; the matrix calibration = every actuator's response measured once from sparse multiplexed grids (the sensor's piston null carried as a rank-one term).  The interferometer's S3/S4 fit still uses a single-site response pattern (with a 0.14 mm stencil bias found 2026-09-10); both are to be re-run with the measured matrix in its reflective build.
 
 ## The Zernike sensor as we model it | Explicit choices, so a different modeling of the same sensor is discoverable in one conversation
 ::: full
