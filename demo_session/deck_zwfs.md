@@ -3,6 +3,9 @@ deck_zwfs.md — the Zernike wavefront sensor for the DM gauge, and how
 it compares to the Twyman–Green IFO.  DRAFT — pending Dave's sign-off;
 the builder suppresses the export mark on DRAFT decks.
 Build: python3 make_brief_slides.py deck_zwfs.md
+2026-09-10 fold 3d (S10): the measured-response-matrix slide (Dave's
+method; piston-null term; matrix on the working surface), range and
+side-by-side tables re-stated from runs/matbase385 + mat385.
 2026-09-10 fold 3c (S9): the stencil-site fix in the actuator fit (rows and
 sampling table re-stated from runs/m2048_lat), calibration-on-the-surface
 and fold-crossing results on the range slide.
@@ -24,7 +27,7 @@ macos/BRIEF_zwfs_campaign.md, tg_psi_dm96 run 10 + S4/S5 (IFO numbers).
 The same 96 mm bench with the reference arm removed: a quarter-wave dimple at the focus turns one camera frame into a wavefront measurement — compared with the phase-shifting interferometer on the same deformable mirror
 D. C. Redding, with Claude Code.
 September 2026.
-DRAFT — pending review.  Status: the sensor model has been corrected (the early model was out of focus); five ways of reading the frames measured on the corrected model; sampling settled on a 2048 grid; colour and photon budgets re-run; one script with a parameter sheet reproduces every number; a sampling bias in the actuator fit found and fixed; the polarizing (vector) version is still to come.
+DRAFT — pending review.  Status: the sensor model has been corrected (the early model was out of focus); five ways of reading the frames measured on the corrected model; sampling settled on a 2048 grid; colour and photon budgets re-run; one script with a parameter sheet reproduces every number; a sampling bias in the actuator fit found and fixed; calibration by a measured response matrix on the working surface takes the stepped reading to 5 pm; the polarizing (vector) version is still to come.
 
 ## The idea: the beam interferes with its own core | A small etched dimple at the focus delays the centre of the beam; that light spreads back over the pupil and acts as the reference
 ::: left
@@ -91,7 +94,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | SNR (before) | 54 | 173 | 386 | 525 | 461 |
 | 47 actuators changed by 1 nm on the same surface: SNR | 13.4 | 12.4 | 12.6 | 45.5 | 47.1 |
 - **The one physical limit is the sign fold:** with the true sign map and the engine's own reference wave, the inversion is exact to 3×10⁻¹⁴.  On the 30 nm surface 7.8% of pixels sit past the fold.  The refined sign map gets 99.99% of pixels right; the plain stepped one misses 3%, enough to flip the sign of a single actuator.
-~ Fully sampled setup (385 rays across the pupil, 2048 grid; slide 9).  "Frequency correction" = dividing out the measured response by spatial frequency.  The reference-wave model matches the engine's own field to 2×10⁻¹⁵.  Interferometer on the same row: gain 0.92, floor 46 pm.  Record: runs/m2048_lat (the fit's stencil sampled at the actuator centre, slide 9).
+~ Fully sampled setup (385 rays across the pupil, 2048 grid; slide 9).  "Frequency correction" = dividing out the measured response by spatial frequency.  The reference-wave model matches the engine's own field to 2×10⁻¹⁵.  Interferometer on the same row: gain 0.92, floor 46 pm.  Calibrated on the flat DM with a single-site response pattern (the record's method); the measured-matrix calibration on slide 10 supersedes it.  Record: runs/m2048_lat.
 
 ## Sampling: two requirements that pull opposite ways | Dimple pixels go as grid size over ray count, camera pixels per actuator as ray count — only a larger grid serves both; a 2048 grid fits
 ::: left
@@ -107,17 +110,29 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 ![The fully sampled setup (385 rays, 2048 grid): response by spatial frequency per kind of reading (left) and gain on one actuator as the working surface grows (right).](figs/zwfs_m2048_battery_n96.png){h=2.9}
 ~ Test actuator = a single 20 nm change away from the calibration actuator, gain before the frequency correction.  I+ values before correction.  Records: runs/rec193, ng385, ng385s3, m2048.
 
-## How large a working surface each reading can handle | On 47 actuators at once the one-frame reading is within 17–20% of a 10 nm change up to 40 nm rms of surface and fails at 50; four frames hold to 50–60
+## Calibrate with a measured response matrix | Every actuator's response measured once from 64 sparse-grid states; measured on the working surface, the stepped reading reads a 10 nm change to 5 pm
 ::: full
-| 10 nm changes on 47 actuators; gain, read value of 10 nm, floor | 30 nm surface | 40 nm | 50 nm | 60 nm |
-| 96×96, 1 mm pitch — I+ (one frame) | 0.80 → 8.0 nm, 0.29 nm | 0.83 → 8.3 nm, 0.25 nm | 0.73 → 7.3 nm, 0.80 nm | 0.30 → 3.0 nm, 3.3 nm |
-| 96×96 — S (four frames) | 0.90 → 9.0 nm, 0.28 nm | 0.82 → 8.2 nm, 0.27 nm | 0.81 → 8.1 nm, 0.44 nm | 0.65 → 6.5 nm, 0.65 nm |
-| 48×48, 2 mm pitch — I+ | 0.88 → 8.8 nm, 0.16 nm | 0.79 → 7.9 nm, 0.20 nm | 0.84 → 8.4 nm, 0.21 nm | 0.83 → 8.3 nm, 3.0 nm |
-| 48×48 — S | 0.89 → 8.9 nm, 0.18 nm | 0.83 → 8.3 nm, 0.19 nm | 0.98 → 9.8 nm, 0.61 nm | 0.55 → 5.5 nm, 0.48 nm |
-- **What gain means here:** these gains are after the flat-DM calibration, so 0.80 means a 10 nm change reads 8.0 nm — a 20% error the calibration did not remove.  The floor is a second error on top: 0.3 nm spread over the 47 sites' neighbours.  A single actuator changed alone on the same surface reads 0.98 (slide 8); the 47-site deficit is the crosstalk of many simultaneous changes.
-- **Can calibration absorb it?  Measured: no.**  Calibrating on the working surface itself instead of the flat DM gave 0.74 against 0.79 for the one-frame reading (development sampling).  The deficit is in the readings on a working surface, not in the calibration; it is not pixels crossing the sign fold either (3 pixels move under a single change; 946 under a dense random one).  The next place to look is the actuator fit on a working surface.
-- **The failure at 50–60 nm** is not a gain to calibrate: the floor jumps to 1–3 nm because some of the 47 sites fall past the sign fold.  The earlier "holds to 60 nm" was one actuator at one site.  Past 120 nm rms every reading aliases.
-~ Floor here = spread of the unchanged actuators under 47 simultaneous 10 nm changes (their crosstalk), larger than the single-site floor on slide 8.  Fully sampled setup; records: runs/m2048_lat (rows), runs/cal_base and fold_diag (calibration on the surface, fold crossings).
+- **The method:** 64 multiplexed states cover all 3252 lit actuators once; each response is cut from its own window in camera pixels and forms one column of dw/da; actuator changes are a least-squares fit against that matrix.  No single-site pattern, no shift-invariance, no frequency correction; registration only places the windows; a real DM's irregularities are in the calibration by construction.
+- **One property of this sensor had to be carried:** it cannot see piston, so each frame is mean-referenced and the pokes' shared pedestal sits in every window; cut naively, the fit over-responds 2 to 4× below 12 cycles across the pupil.  With each column's pedestal spread over the pupil (a rank-one term), the exact reading's response is 0.99 to 1.08 at every frequency uncorrected, and a single actuator on the flat reads 0.994 with a 4 pm floor (0.946, 37 pm with the single-site pattern).
+| matrix measured on the flat / on the 30 nm surface; 30 nm surface, 385 rays | linear (one frame) | exact I+ (one frame) | stepped (four frames) |
+| single 10 nm change: gain, floor | 0.30, 142 pm / **1.05, 23 pm** | 0.78, 27 pm / 0.78, 74 pm | 0.77, 18 pm / **0.99, 5 pm** |
+| 47 actuators changed 1 nm: gain, floor | 1.01, 77 pm / 1.05, 22 pm | 0.98, 12 pm / 0.90, 35 pm | 0.83, 10 pm / **1.00, 3 pm** |
+| dense random 10 nm: gain, error | 0.88, 9.9 nm / 1.04, 4.7 nm | 0.90, 4.2 nm / 0.86, 5.2 nm | 0.82, 2.1 nm / **0.98, 0.67 nm** |
+- **Why the surface matters:** every reading's differential map on the 30 nm surface differs 30 to 60% from the same change read on the flat — the sensor's local sensitivity depends on the local phase.  A matrix measured on the working surface carries it; the readings without a sign ambiguity (stepped, linear) then read changes almost exactly.  The exact one-frame reading does not benefit: its surface error is the sign fold, which moves with the change.
+~ Alternating ± pokes: neutral to slightly worse in the model (0.987, 11 pm vs 0.994, 4 pm); kept as a bench option (drift cancels between sets).  Records: runs/mat385, matbase385, mapdiag.
+
+## How large a working surface each reading can handle | With the matrix measured at 30 nm, 47 changes at once read at 1.08 to 0.93 up to 50 nm rms (stepped) and 1.03 to 0.83 (linear); the calibration ages slowly
+::: full
+| 10 nm changes on 47 actuators, 96×96; gain, read value of 10 nm, floor | 30 nm surface | 40 nm | 50 nm | 60 nm |
+| matrix on the 30 nm surface — S (four frames) | 1.08 → 10.8 nm, 0.25 nm | 0.98 → 9.8 nm, 0.24 nm | 0.93 → 9.3 nm, 0.40 nm | 0.71 → 7.1 nm, 0.59 nm |
+| matrix on the 30 nm surface — L (one frame) | 1.03 → 10.3 nm, 0.28 nm | 0.95 → 9.5 nm, 0.35 nm | 0.83 → 8.3 nm, 0.50 nm | 0.67 → 6.7 nm, 0.61 nm |
+| matrix on the 30 nm surface — I+ (one frame) | 1.01 → 10.1 nm, 0.20 nm | 0.91 → 9.1 nm, 0.35 nm | 0.69 → 6.9 nm, 1.9 nm | 0.57 → 5.7 nm, 1.2 nm |
+| matrix on the flat — I+ | 0.81 → 8.1 nm, 0.21 nm | 0.83 → 8.3 nm, 0.16 nm | 0.65 → 6.5 nm, 1.8 nm | 0.58 → 5.8 nm, 1.2 nm |
+| matrix on the flat — S | 0.91 → 9.1 nm, 0.23 nm | 0.83 → 8.3 nm, 0.23 nm | 0.79 → 7.9 nm, 0.37 nm | 0.59 → 5.9 nm, 0.55 nm |
+- **What gain means here:** gain is after calibration, so 0.93 means a 10 nm change reads 9.3 nm — a 7% error the calibration did not remove.  The floor is a second error on top: the spread over the 47 sites' unchanged neighbours (their crosstalk, 0.2 to 0.6 nm here).
+- **Calibration on the working surface absorbs most of it** for the readings without a sign ambiguity: the stepped reading goes from 0.91 to 1.08 at 30 nm and from 0.79 to 0.93 at 50 nm; the linear reading from unusable to 1.03.  A matrix measured at 30 nm is still within 7% at 50 nm rms, so a calibration follows the working surface slowly.  The one-frame exact reading is not helped: its surface error is the sign fold, which moves with the change (it fails at 50 nm, floor 1.9 nm, when some of the 47 sites fall past the fold).
+- Past 120 nm rms every reading aliases (the stepped retrieval itself wraps).
+~ Floor here = spread of the unchanged actuators under 47 simultaneous 10 nm changes (their crosstalk), larger than the single-site floors on slide 9.  385 rays; records: runs/matbase385 (surface matrix), runs/mat385 (flat matrix).
 
 ## Colour is no longer a lever | With the sensor's null gone, five colours raise the combined response by 3% instead of 3×, and do nothing for the measurement rows
 ::: left
@@ -155,20 +170,20 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Checks that run every time:** the no-mask round trip through the bracket (must return the field unchanged); the reference-wave model against the engine's own field; the pupil brightness must not change with the DM shape; the sampling checks (pixels across the dimple, camera pixels per actuator); and the search for the camera-to-DM mirror/transpose and sign.
 ~ Reproduction check: 64 lines of results against the stage-7 report, 8 differ in the last printed digit (the actuator fit's solver tolerance).  README "Run it yourself" carries the parameter table.
 
-## Side by side with the Twyman–Green | The interferometer loses response at fine patterns and never fails; the sensor reads a change from one frame at the same floor, up to a 40–60 nm surface
+## Side by side with the Twyman–Green | The interferometer loses response at fine patterns and never fails; the sensor, calibrated on its working surface, reads a change to 5 pm up to 50–60 nm
 ::: full
 | | Twyman–Green PSI (measured) | Zernike sensor (measured) |
 | reference beam | the second arm's flat | made from the beam's own focal core |
-| one measurement costs | 6 traces (3 per arm), 4 fringe frames | 1 camera frame (I+; 4 frames once per working surface) |
+| one measurement costs | 6 traces (3 per arm), 4 fringe frames | 1 or 4 camera frames; 256 calibration frames once per working surface |
 | polarization hardware | polarizer, 5 waveplates, analyzer | none |
 | moving parts | none (polarization-stepped) | none |
 | null, nothing aligned | 0.134 nm | 0 by construction (the flat is the reference) |
 | response falls off at | fine patterns: 0.50 at the 96×96 checkerboard | 0.5 to 1 cycle across the pupil (0.5 at 1); piston unseen |
 | working surface it can handle | 480 nm rms and beyond | 40 nm rms one-frame (1 mm actuators), 50–60 nm four-frame |
-| a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.98, floor 19 pm (I+, one frame) |
+| a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.99, floor 5 pm (stepped, four frames; matrix on the surface) — gain 1.05, floor 23 pm (linear, one frame) |
 | photons per state for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
-- **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — one frame, no polarization train, an equal or better floor — and pays at the lowest spatial frequencies and in the surface it can handle.
-~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: the fully sampled setup (slide 9) except photons (development sampling).  Both in actuator units through the same code (dm_gauge_lib).
+- **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — no polarization train, a floor ten times lower once its response matrix is measured on that surface — and pays at the lowest spatial frequencies and in the surface it can handle.
+~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: 385 rays, matrix calibration on the working surface (slide 10), photons at development sampling.  Both in actuator units through the same code (dm_gauge_lib).
 
 ## What the Zernike-sensor literature offers, in priority order | Twelve papers read; the first import — re-computing the reference wave — is now built and measured (slide 8)
 ::: full
@@ -192,18 +207,19 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | 12 | Shi et al. 2015, SPIE 9605 (Roman low-order sensor) | A reflective dimple on the focal-plane mask senses Z2 to Z11 from the rejected starlight: the spatially filtered form of the same sensor |
 ~ Also read: PIAA-ZWFS (2026, arXiv 2606.28136), lossless pupil apodization that closes the gap to the fundamental sensitivity limit by 10× — a design lever, not a model change.
 
-## Conclusions: what the corrected model and the exact reading settled | Fixing the model was the bigger gain; the exact reading with the sign map is the best one-frame reading; colour and photons are not the 1 pm budget
+## Conclusions: what the corrected model and the exact reading settled | Fixing the model was the bigger gain; a response matrix measured on the working surface takes the stepped reading to 5 pm; colour and photons are not the limit
 ::: full
 - **The model must keep the pupil image in focus:** the two spheres around the mask share one radius, and the script checks the no-mask round trip on every run.  The correction alone took the single-actuator floor from 744 to 67 pm and made the undetected grid case detectable.
 - **The exact reading with a re-computed reference is the import that paid** (paper 1): 26 pm from one frame on a 30 nm working surface, SNR 355 — with the sign fold settled once from four stepped frames and refined.  The plain stepped sign map misses 3% of pixels and can flip a single actuator's sign.
-- **Sampling is settled, and a bias in the fit is fixed:** camera pixels per actuator (the ray count) set the gain on a test actuator; the dimple's own sampling did not move any actuator-unit result at 4 against 8 pixels; sampling the response pattern at the actuator centre took the test-actuator gain to 0.996 at 5 pixels per actuator.  Calibrating on the working surface was measured and does not help; the 47-site deficit on a working surface is the open item.
+- **Calibrate with a measured response matrix, on the working surface:** the sparse-grid measurement of every actuator's response (with the sensor's piston null carried) reads a single actuator on the flat at 0.994 with a 4 pm floor; measured on the working surface it gives the stepped reading 0.99 and 5 pm there and makes the linear one-frame reading usable (1.05, 23 pm).  The floors fall ten times; what remains is gain stability as the surface drifts (7% over 20 nm rms) and the one-frame exact readings' sign fold.
+- **Sampling is settled, and a bias in the fit is fixed:** camera pixels per actuator (the ray count) set the gain on a test actuator; sampling the single-site response pattern at the actuator centre took that gain to 0.996 at 5 pixels per actuator.
 - **Colour and photons are not levers:** the chromatic null was the defocus; 10¹⁴ photons per state reach 1 pm.  The budget is systematic error: the 25 to 60 pm floors and the gain's stability.
 ~ Script and records: templates/40_benches/zwfs_dm96 (README S7/S8; runs/rec193, ng385, ng385s3, m2048, rec193full).
 
 ## Conclusions: what to import next, in order | The JPL budget form, DM calibration through the sensor's own images, the vector sensor priced before it is built, and the interferometer's lever
 ::: full
-- **The JPL budget form:** a sensitivity factor per pixel from the measured fields predicts the photon-noise stage analytically, and four systematic terms (pupil calibration at ½, reference wave at 1, dimple depth, initial phase) become the rows of the error budget.
-- **Calibrate the DM through the sensor's own image model:** fit actuator positions and gains by matching sensor images of poke grids to a simulation that includes the propagation distances.  The interferometer's camera sits off the DM conjugate after the tuned tail, so it is its lever too — and its calibration code carries the same stencil bias fixed here (slide 9).
+- **The JPL budget form:** a sensitivity factor per pixel from the measured fields — the quantity the working-surface effect on slide 10 is made of — predicts the photon-noise stage analytically, and four systematic terms (pupil calibration at ½, reference wave at 1, dimple depth, initial phase) become the rows of the error budget.
+- **The response matrix for the interferometer too:** its calibration still uses a single-site response pattern, with the stencil bias fixed here (slide 9); the sparse-grid measured matrix is the calibration its reflective build should carry.  Model-matched DM calibration (actuator positions and gains through the sensor's own images) remains the lever for a real DM's geometry.
 - **Colour as a joint fit, not a combination:** an equal-weight combination inherits a bad channel; a joint fit through the exact reading would use 700 to 780 nm for range and 632.8 nm for the calibration of record.
 - **Model the vector sensor before the metasurface is built:** the exact two-image solution and its leakage terms (retardance offsets, splitter rotation) run on the engine's polarization machinery; the bench limits at Keck and SEAL were defocus and crosstalk between the two pupil images, both priceable here.
 - **The interferometer, for balance:** a PZT phase shift buys no model gain — its floors are geometric and colour-independent — but on hardware an absolute phase scale and freedom from polarization systematics; the recommended form is a hybrid: polarization snapshot for the change measurements, a PZT on the reference flat as calibrator.  Its all-mirror (OAP) version is in build.
