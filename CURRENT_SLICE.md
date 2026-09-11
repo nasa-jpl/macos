@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **NEXT (Dave 2026-09-11): build the CLOSED-LOOP HOLD METRIC for both
+> gauges -- spec in `BRIEF_loop_metric.md` (shared `dm_gauge_lib/
+> dmg_loop.m` + unit test on a synthetic instrument, then `zwfs_run`
+> stage 'loop', then the IFO half to CCMac as an addendum to
+> `BRIEF_ccmac_tg96_oap2.md`).  Read that brief first after a compact
+> or clear.  CCMac's `tg96-oap` was reviewed 2026-09-11 (tBench 9/9;
+> feasibility proven; route = full ray affine + measured matrix,
+> `BRIEF_ccmac_tg96_oap2.md`, pushed 832be02).  Everything on both
+> dev-candidates is pushed as of 2026-09-11 morning.**
+>
 > **ZWFS S10 LANDED (2026-09-10, LOCAL: resources 8181893, macos this
 > commit; push only on Dave's review).**  Dave's measured response
 > matrix (sparse multiplexed grids, dw/da) is the runner's default
