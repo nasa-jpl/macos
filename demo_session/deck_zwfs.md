@@ -158,6 +158,19 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Reading:** 10¹⁴ photons at 633 nm is 30 µJ.  The 1 pm budget is about systematic errors and gain stability, not light.
 ~ Case: a single 10 nm change on the 30 nm surface, 96×96, development sampling.  Read noise, drift and calibration noise are the next terms once a use case fixes them.  Records: runs/rec193full; interferometer tg96_s5noise_report.txt.
 
+## Holding the surface in closed loop: the on-orbit metric | Servoed through the sensor, the readings cost the same light; what differs is each reading's fixed error: none, some, or a runaway
+::: left
+![The stepped reading's residual per cycle under a 2 pm-per-cycle random walk at four light levels (10¹² to 10¹⁵ photons per cycle, light to dark), and a noise-free 1 nm step (dashed) returning to zero.  Left panel of the runner's figure.](figs/crop_zwfs_loop193_left.png){h=3.7}
+::: right
+| held to 3 pm rms: photons per cycle | linear (L) | exact, one frame (I+) | stepped (S) |
+| noise only | 2.1×10¹² | runs away | 2.6×10¹² |
+| random walk, 2 pm per cycle | 7.3×10¹² | runs away | 7.5×10¹² |
+| thermal ramp, 5 pm per cycle | 27.6 pm at any light | runs away | 10.0 pm at any light (the loop's own lag) |
+| noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm |
+- **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the state is measured with N photons, compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
+- **What it shows:** noise and a random walk propagate exactly as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error on the DM when a slow ramp leaves a persistent low-order residual; I+ has sites that read with the wrong sign, and no gain fixes a wrong sign.
+~ Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays (385-ray check: runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
+
 ## Run it yourself | One parameter sheet and one script reproduce every number here; the defaults reproduce the stage-7 record to the last printed digit
 ::: full
 - **Two files:** zwfs_params.m returns every setting at its value of record — grid and ray count, wavelength, the bench's lengths and tuned figures, the mask's etch and spot, the sampling checks, registration, the DM sizes, the test amplitudes and seeds, the colour and photon stages.  zwfs_run.m runs the chosen stages and writes the report, a .mat file and the figures into a folder named by the run's tag.
@@ -182,6 +195,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | working surface it can handle | 480 nm rms and beyond | 40 nm rms one-frame (1 mm actuators), 50–60 nm four-frame |
 | a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.99, floor 5 pm (stepped, four frames; matrix on the surface) — gain 1.05, floor 23 pm (linear, one frame) |
 | photons per state for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
+| held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | pending (same loop code, CCMac) | 7.5×10¹² (stepped), 7.3×10¹² (linear) |
 - **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — no polarization train, a floor ten times lower once its response matrix is measured on that surface — and pays at the lowest spatial frequencies and in the surface it can handle.
 ~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: 385 rays, matrix calibration on the working surface (slide 10), photons at development sampling.  Both in actuator units through the same code (dm_gauge_lib).
 
@@ -214,6 +228,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Calibrate with a measured response matrix, on the working surface:** the sparse-grid measurement of every actuator's response (with the sensor's piston null carried) reads a single actuator on the flat at 0.994 with a 4 pm floor; measured on the working surface it gives the stepped reading 0.99 and 5 pm there and makes the linear one-frame reading usable (1.05, 23 pm).  The floors fall ten times; what remains is gain stability as the surface drifts (7% over 20 nm rms) and the one-frame exact readings' sign fold.
 - **Sampling is settled, and a bias in the fit is fixed:** camera pixels per actuator (the ray count) set the gain on a test actuator; sampling the single-site response pattern at the actuator centre took that gain to 0.996 at 5 pixels per actuator.
 - **Colour and photons are not levers:** the chromatic null was the defocus; 10¹⁴ photons per state reach 1 pm.  The budget is systematic error: the 25 to 60 pm floors and the gain's stability.
+- **In closed loop the stepped reading has no fixed error:** it holds a 2 pm-per-cycle walk to 3 pm from 7.5×10¹² photons per cycle and returns to zero after a step; the linear reading costs the same light but leaves a fine-scale error under a slow ramp; the one-frame exact reading runs away.
 ~ Script and records: templates/40_benches/zwfs_dm96 (README S7/S8; runs/rec193, ng385, ng385s3, m2048, rec193full).
 
 ## Conclusions: what to import next, in order | The JPL budget form, DM calibration through the sensor's own images, the vector sensor priced before it is built, and the interferometer's lever
