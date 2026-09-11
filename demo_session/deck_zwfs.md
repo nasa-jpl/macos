@@ -169,7 +169,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm |
 - **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the state is measured with N photons, compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
 - **What it shows:** noise and a random walk propagate exactly as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error on the DM when a slow ramp leaves a persistent low-order residual; I+ has sites that read with the wrong sign, and no gain fixes a wrong sign.
-~ Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays (385-ray check: runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
+~ Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays; the 385-ray check gives the same numbers (runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
 
 ## Run it yourself | One parameter sheet and one script reproduce every number here; the defaults reproduce the stage-7 record to the last printed digit
 ::: full
