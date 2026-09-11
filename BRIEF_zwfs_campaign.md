@@ -310,6 +310,36 @@ the working surface; the stepped reading then reads changes at 5 pm.
 Record: README S10; runs/mat193, mat193b, mat193c, mat385, mapdiag,
 matbase, matbase385.
 
+## S11 -- the closed-loop HOLD metric (Dave 2026-09-11, RUN)
+
+Dave: on orbit the DM must hold to << 10 pm under frequent remeasurement
+and closed-loop servo; the metric for THAT mode.  Spec
+`BRIEF_loop_metric.md`; code `dm_gauge_lib/dmg_loop.m` (ONE loop for both
+gauges, gated by `tests/tDmgLoop.m`, 9 gates on a synthetic instrument);
+`zwfs_run` stage 'loop' + `P.loop`.  Proportional loop, gain 0.5, 60
+cycles, the 30 nm working surface as set point, the matrix measured ON
+it, photon noise per state, differential to the set point's frames.
+Metric = steady-state hold error vs photons per cycle; ONE number =
+photons per cycle to hold 3 pm.  Measured at 193 rays (runs/loop193):
+the loop propagates noise and a random walk exactly as theory (noise-only
+L 4.39 / 1.39 / 0.44 / 0.14 pm at 1e12..1e15 vs 4.25 / 1.35 / 0.43 /
+0.13; walk floor 2.31 pm = the 2 pm/cycle walk at g 0.5); L and S are
+the SAME per photon (single-shot noise 7.4 vs 8.2 pm at 1e12; 3 pm at
+2.1e12 vs 2.6e12 noise-only, 7.3e12 vs 7.5e12 walk).  What discriminates
+is the systematic term: S has NO noiseless floor (1 and 10 nm steps ->
+0.000 pm; thermal hold 10.05 pm = the lag rate/g of a unit-gain reading);
+L holds noise and walk but a persistent low-order residual makes it
+imprint high-frequency error on the DM (thermal 27.6 pm, still creeping,
+26 pm above 12 cyc/ap; steps decay with a slow mode rho 0.83) -- near-
+zero local sensitivity sites integrate crosstalk; I+ (one-frame exact
+with the set point's branch prior) DIVERGES (1 nm -> 99 nm in 60 cycles;
+even noise-only at 1e15 wanders to 0.9 nm): fold-flipped sites have
+negative gain, and no gain fixes a negative gain.  Thermal at g 0.5 lags
+10 pm for any reading (proportional loop): an integral term is the fix,
+same loop code.  Record: README S11; runs/loop193, loop385 (385-ray
+confirmation).  IFO half -> CCMac (BRIEF_ccmac_tg96_oap2.md addendum,
+deliverable 7): identical dmg_loop, seeds, drifts, photon levels.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to

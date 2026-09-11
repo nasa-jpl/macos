@@ -24,15 +24,23 @@
 
 ## Active slice
 
-> **NEXT (Dave 2026-09-11): build the CLOSED-LOOP HOLD METRIC for both
-> gauges -- spec in `BRIEF_loop_metric.md` (shared `dm_gauge_lib/
-> dmg_loop.m` + unit test on a synthetic instrument, then `zwfs_run`
-> stage 'loop', then the IFO half to CCMac as an addendum to
-> `BRIEF_ccmac_tg96_oap2.md`).  Read that brief first after a compact
-> or clear.  CCMac's `tg96-oap` was reviewed 2026-09-11 (tBench 9/9;
-> feasibility proven; route = full ray affine + measured matrix,
-> `BRIEF_ccmac_tg96_oap2.md`, pushed 832be02).  Everything on both
-> dev-candidates is pushed as of 2026-09-11 morning.**
+> **S11 LOOP METRIC BUILT + RUN (2026-09-11, LOCAL: resources 88fb9ac,
+> 922c366 + the record commit; macos this commit; push only on Dave's
+> review).**  `dm_gauge_lib/dmg_loop.m` (the ONE loop for both gauges) +
+> `tests/tDmgLoop.m` (9 gates, SUITE_FAST) + `zwfs_run` stage 'loop' /
+> `P.loop`.  Record `runs/loop193` (98 min, 2562 states): the loop
+> propagates noise and a walk per theory; L and S cost the SAME light
+> (3 pm from 2.1e12 / 2.6e12 photons per cycle noise-only, 7.3e12 /
+> 7.5e12 under a 2 pm walk); S has NO fixed error (steps -> 0.000 pm,
+> thermal = the lag 10 pm); L imprints high-frequency error under a
+> persistent low-order residual (thermal 27.6 pm, creeping); I+
+> DIVERGES (fold-flipped sites = negative gain).  Record: README S11,
+> BRIEF_zwfs_campaign S11, deck_zwfs slide 14 (DRAFT), memory
+> project_tg96_gauge.  IFO half handed to CCMac: BRIEF_ccmac_tg96_oap2
+> addendum (deliverable 7).  RUNNING: `runs/loop385` (385-ray check, L
+> + S, walk + none) -- fold its numbers into README S11 / the deck
+> footnote when it lands.  OPEN: integral term for the thermal case;
+> fold-aware I+ (re-take the branch prior); the IFO row.
 >
 > **ZWFS S10 LANDED (2026-09-10, LOCAL: resources 8181893, macos this
 > commit; push only on Dave's review).**  Dave's measured response

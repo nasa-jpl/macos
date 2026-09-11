@@ -135,3 +135,55 @@ the stencil-site bias), `tg_psi_dm96_oap/REPORT_oap.md` and README,
 bullets and `zwfs_run.m` (`calib_matrix_`, `est_matrix_`, `frames_`),
 `dm_gauge_lib/README.md`, `dmg_frame.m`, `dmg_anchor.m`, memory-style
 summaries in `macos/CURRENT_SLICE.md`.
+
+## Addendum 2026-09-11: the closed-loop HOLD metric -- the IFO half (deliverable 7)
+
+Dave: on orbit the DM surface must hold to << 10 pm under frequent
+remeasurement and closed-loop actuator servo; the metric that compares
+the gauges in THAT mode is the steady-state hold error.  Spec:
+`macos/BRIEF_loop_metric.md`.  The loop code is SHARED and already
+gated: `dm_gauge_lib/dmg_loop.m` (read its header: the instrument
+interface is four function handles + a lit mask) with `tests/tDmgLoop.m`
+(8 gates on a synthetic linear instrument: geometric convergence at
+1 - gG, the noise-only steady state sigma_n sqrt(g/(2-g)), the random-
+walk and ramp laws, a biased reading converging to a non-zero surface,
+seeded drift, a single-shot reference as a fixed bias, Parseval).  Do
+NOT copy or re-implement the loop; run it.  The ZWFS reference
+implementation is `zwfs_dm96/zwfs_run.m` -> `stage_loop_` (+ `P.loop` in
+`zwfs_params.m`, `noisy_frames_`, `hold_photons_`, the loop figure in
+`zwfs_run_figs.m`): lift it after the matrix calibration (deliverable 2)
+is in `tg96_run`, because the loop reads the state through the measured
+matrix on the working surface.
+
+What `tg96_run` stage 'loop' has to provide to `dmg_loop`:
+- `ins.measure(cmd)`: the DM at command `cmd` (nact x nact, mm) traced,
+  the four fringe frames captured NOISELESS (your `frames`/four-step
+  capture);
+- `ins.noisy(F, nph, seed)`: photon noise at `nph` photons per STATE
+  split over the four frames (nph/4 each), from a `RandStream` seeded
+  with `seed` (the S5 model, `zwfs_run` `noisy_frames_` verbatim in form);
+- `ins.diff(F1, F0)`: the four-step differential map between two frame
+  sets, mean-referenced over the mask (the reference ruling above);
+- `ins.est(map)`: the matrix estimator (`est_matrix_`), on the matrix
+  calibrated ON the working surface (`calib_surface 'base'`);
+- `ins.lit`: the lit actuators.
+Then the same run matrix as the ZWFS: readings = the four-step reading
+(one row; add the two-step or single-frame variants only if the runner
+has them), drifts 'walk' 2 pm per actuator per cycle and 'thermal' 5 pm
+rms per cycle, noiseless steps 1 and 10 nm, photons per cycle {1e12,
+1e13, 1e14, 1e15}, g 0.5, K 60, the noise-only floor at every level,
+`seed 77` (the drift realization is drawn on the full actuator grid and
+masked by lit, so both instruments see the SAME pattern where both are
+lit), `hold_spec 3e-9` (3 pm).  Cost: K + 1 traced states per run; at
+one state ~ 4 frames the record run is an hour-class background job
+(`zwfs_batch.sh` pattern, memory-capped).
+
+Report (the same tables as the ZWFS stage, so the comparison is row by
+row): the step response (rho, tau, the noiseless floor), the hold error
+vs photons per cycle for none / walk / thermal (ss, bias, sig_n, the
+theory line), the ONE number = photons per cycle to hold 3 pm rms per
+drift, and the spectrum bands of the held residual.  Lens rig first (the
+record), OAP rig when its matrix exists.  Also say what the four-step
+reading's 4-theta harmonic does in the loop (absolute vs differential:
+the differential to the set point's frames should cancel a fixed
+harmonic; measure, do not assume).
