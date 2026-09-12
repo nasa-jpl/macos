@@ -316,8 +316,17 @@ per frame, integrated over 12 h).  The knob therefore has a relative
 unit now (`loop.cam_unit 'rel'`: a fraction of the mean photons per lit
 pixel per frame, per cycle -- a bias / gain drift scaled to the signal);
 `runs/pcam193r` (1e-3 per cycle, constant within a scan) and
-`pcam193ri` (the whole step within each scan) are queued; `pcam193i`
-(the electron form, within-scan) is running.  The unit-test gate (tDmgLoop
+`pcam193ri` (the whole step within each scan) are queued behind the
+peer session's ZWFS V3 sequence; `pcam193i` (the electron form,
+within-scan) is invisible as well.  **First relative-form run
+(`runs/pcam193r_perframe`, 1e-3 per cycle, 14:32) -- the single-frame
+reading L imprints the walk at 10.8 nm (floor 1.4 pm without it), the
+pair V 89 pm, and the zero-sum readings S / P / PF 32 / 34 / 130 pm --
+NOT the exact immunity the unit test guarantees.  Cause, mine: the
+'rel' scale was each FRAME's own mean, so the frames of one scan got
+different offsets; a camera bias is the same electrons on every frame.
+Fixed to one scale per scan (the mean over the reading's frames);
+`pcam193r` re-queued; the numbers above are superseded.**  The unit-test gate (tDmgLoop
 G8) already shows the mechanism: a zero-sum reading is exactly immune, a
 single-frame reading imprints the walk.
 
