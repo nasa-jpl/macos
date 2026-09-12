@@ -40,7 +40,7 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **Why phase shifting:** any camera pattern constant within one scan subtracts; Roman's Zernike sensor is limited by ~1 electron per pixel of camera drift over 12 hours.
 - **Modeled here as their code has it:** the exact step-index mode (V 2.3, b 0.5, core radius 0.5 λ/D), the coupling of each state's focal field into it, the 60/40 split, the four-step and the five-frame schemes, an optional shutter frame of the reference alone.
 ::: right
-- **What moves with the surface, and what does not.**  The waveguide fixes the reference's shape; the surface changes only how much light couples in — a scalar.  Under the 30 nm working surface the coupling drops to 0.85 with 0.005 rad of phase; the differential phase divides the scalar out.
+- **What moves with the surface, and what does not.**  The waveguide fixes the reference's shape; the surface changes only how much light couples in — a scalar.  Under the 30 nm working surface the coupling drops to 0.86 with 0.025 rad of phase (record run); the differential phase divides the scalar out.
 - **The pinhole reference by size (record 1, 30 nm surface):** shape change 0.10% at 0.5 λ/D, 0.26% at 1, 0.58% at 1.5, 1.06% at 2 (the dimple), 2.6% at 3; the amplitude scale 0.86 at every size — the Strehl ratio.
 - **Coupling and light:** 59% of the focal light couples into the mode on the flat DM; with the 60/40 split the reference is budget-limited to 73% of the visibility-1 amplitude; visibility 0.86, throughput 0.75.
 ~ Their next steps, stated in the paper: noise, non-common-path drift, detector systematics.  The model here is ideal in the arm; the camera-drift knob (slide 7) is the first of those.
@@ -71,18 +71,23 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **Range:** the pinhole's reference amplitude collapses with the Strehl ratio like the dimple's, so both fold at 120 nm; a reference that does not depend on the surface keeps reading.
 ~ Flat-DM calibration (the record's first form); the on-surface calibration that took the stepped sensor to 0.99 / 5 pm is record 2's.  Errors in pm over the lit actuators; SNR = recovered change / floor.
 
-## Record 2: the waveguide reference, calibrated on the working surface | [R2] filled from runs/pdi193f, pdi193fbase, pdi193state, pdi193d1
-::: full
-| 96×96, matrix on the 30 nm surface | S | V | P | PF (waveguide) |
-| 10 nm on the surface: gain / error pm | [R2] | [R2] | [R2] | [R2] |
-| 1 nm on 47 actuators: gain / SNR | [R2] | [R2] | [R2] | [R2] |
-| 10 nm random: gain / error pm | [R2] | [R2] | [R2] | [R2] |
-| ladder: gain at 60 / 120 / 240 nm | [R2] | [R2] | [R2] | [R2] |
-| photons per measurement for 1 pm (camera / incident) | [R2] | [R2] | [R2] | [R2] |
-- **Shutter frame** (the reference alone, once per state): [R2].
-- **A 1 λ/D pinhole** (the classical regime): [R2].
-- **Step-size error of 2%:** four-step least squares vs the five-frame Schwider–Hariharan scan: [R2].
-~ [R2]
+## Record 2: calibrated on the working surface, the three exact readings are the same instrument | A 10 nm change on the 30 nm surface reads 0.9935 with a 4 pm floor for the polarized pair, the pinhole and the waveguide; the waveguide reading has no range limit
+::: left
+| 96×96, response matrix measured on the 30 nm surface (runs/pdi193fbase) | S | V | P | PF |
+| 10 nm on the surface: gain / floor pm / SNR | 0.989 / 5 / 2120 | 0.994 / 4 / 2835 | 0.994 / 4 / 2790 | 0.994 / 4 / 2842 |
+| 1 nm on 47 actuators: gain / floor pm | 0.999 / 4 | 0.999 / 3 | 0.999 / 3 | 0.999 / 3 |
+| 10 nm random: gain / error pm | 0.984 / 681 | 1.000 / 331 | 0.999 / 338 | 1.000 / 330 |
+| gain at 60 / 120 / 240 / 480 nm rms | 0.66 / fold / fold / fold | 0.98 / fold / fold / fold | 0.94 / fold / fold / fold | 1.01 / 1.02 / 1.06 / 1.13 |
+| photons per measurement for 1 pm, at the camera | 5.4×10¹³ | 4.7×10¹³ | 3.3×10¹³ | 1.9×10¹⁴ |
+| light kept (divide the row above by it for incident photons) | 1 | 1 | 0.82 | 0.75 |
+- **Shutter frame** (the reference alone, once per state, 5 frames): [R2].
+- **A 1 λ/D pinhole:** [R2].
+- **A 2% step-size error,** four-step least squares against the five-frame Schwider–Hariharan scan: [R2].
+::: right
+![The record run's own figure: the focal spot with the 2 λ/D pinhole (red), the dimple (green) and the waveguide mode's 1/e contour (brown); the reference amplitudes across the pupil image; the reference's motion under the 30 nm surface by pinhole size (shape, red; amplitude, black; the waveguide's coupling, brown); the fringe visibility of both readings on the flat DM.](figs/pdi193fbase_pdi.png){h=3.3}
+- **Range without a fold:** the self-referenced readings lose their reference amplitude with the Strehl ratio and fold at 120 nm rms; the waveguide reference is fixed, so the reading holds gain 1.0–1.1 to 480 nm (the floor grows to 1.6 nm because the response matrix was measured at 30 nm).
+- **Light:** with the paper's 60/40 split the reference arm returns 35% of the light and the test beam keeps 40%; the modulation is a smaller share of the detected flux than the stepped pinhole's, whose reference rides on the same beam — 4× more camera photons per picometer, before the arm's own loss.
+~ Same seeds, same actuator-space scoring, same code as the sensor rows (dm_gauge_lib).  "fold" = gain −0.01: the reading returns nothing.  P at unit transmission and the dimple's size equals S to 5×10⁻¹⁵ (check G7).
 
 ## In closed loop: the hold metric with a camera that drifts | [CAM] filled from runs/ploop193, pcam193, pcam193i
 ::: left
