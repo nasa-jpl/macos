@@ -56,8 +56,8 @@ the D4 claim that the null is common-mode in the differential.
    cross-talk ~0.42) is attributed to physical astigmatism, but two
    software mechanisms are not excluded, and each is one run:**
    (a) *Window truncation.*  An elongated response's tail outside its
-   own +/-half-step window lands in its neighbours' windows in a dense
-   pattern and is assigned to them; a single poke has no neighbours.
+   own +/-half-step window lands in its neighbors' windows in a dense
+   pattern and is assigned to them; a single poke has no neighbors.
    That is exactly the single 0.99 / dense 0.75 signature.  Test: run
    the OAP matrix with `matrix_step` 16 (windows twice as wide, 256
    states) -- or, better and cheaper, assign every mask pixel to its
