@@ -340,6 +340,37 @@ same loop code.  Record: README S11; runs/loop193, loop385 (385-ray
 confirmation).  IFO half -> CCMac (BRIEF_ccmac_tg96_oap2.md addendum,
 deliverable 7): identical dmg_loop, seeds, drifts, photon levels.
 
+## V1 -- the vector (polarized-dimple) reading, ideal metasurface (Dave 2026-09-11 "Begin!", RUN)
+
+Reading V: a geometric-phase dimple gives +phi and -phi pupil images at
+once (one per circular polarization); ideal metasurface = two scalar
+traces through the existing factory (`dmg_zwfs_gauge` frameV / reconV /
+solveV: the pair gives cos and sin of the phase per pixel, atan2, no
+branch, no clamp; b iterated as for I); runner class 4 through every
+stage, photons N/2 per image.  G4 fold gate: 100 nm single-actuator
+pokes every 8th actuator (3.1% of the pupil beyond the fold) -- V 0.053
+pm vs the engine's own field phase, the single frame 9.0 nm.  Learned:
+a whole-pupil 60 nm figure is NOT a fold test (the core collapses for
+every reading -- the S7 cliff), and the b iteration is exact modulo
+piston only.  Flat matrix: V == I+ on the flat; on the 30 nm surface V
+is the best reading already (single 0.94 / 25 pm; grid 1 nm 0.997 / 12
+pm; dense 0.999 / 1.07 nm).  Matrix ON the surface: single 10 nm
+0.9935 / 4 pm / SNR 2830 (S 0.989 / 5 / 2160); grid 1 nm 0.9992 / 3 pm;
+dense random 10 nm 0.9999 / 0.33 nm (S 0.68 nm) -- the stepped
+reading's numbers at half the frames, half its dense error.  Range =
+the core and lambda/2 (wraps at 50 nm rms), not the fold.  Runner:
+matrix mode reports RAW (the Wiener correction penalized V's transfer
+above 1); the noise stage prices the readings run.  Photons (S5 scenario, flat matrix): N(1 pm) V 4.7e13 per measurement (S
+5.6e13, L 3.3e13).  Loop (S and V, same seeds; S reproduces loop193):
+V contraction 0.509 (gain 0.98), steps -> 0.000 pm, noise-only 3.72 /
+1.17 / 0.37 / 0.12 pm (S 4.81 / 1.52 / 0.48 / 0.15), walk 4.38 / 2.60 /
+2.35 / 2.32; 3 pm held from 1.5e12 photons per cycle noise-only and
+5.3e12 under the walk (S 2.6e12 / 7.5e12): the best loop reading on
+every line, at two simultaneous frames.  Record: README V1; runs/v193flat, v193base,
+v193noise, vloop193.  Next: V2 metasurface retardance error / leakage
+knob; V3 the arm's polarization aberrations (Jones pupil) per channel;
+V4 the stepped reading's reference-intensity drift in the loop.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to

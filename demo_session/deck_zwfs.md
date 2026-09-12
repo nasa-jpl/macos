@@ -163,14 +163,29 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 ::: left
 ![The stepped reading's residual per cycle under a 2 pm-per-cycle random walk at four light levels (10¹² to 10¹⁵ photons per cycle, light to dark), and a noise-free 1 nm step (dashed) returning to zero.  Left panel of the runner's figure.](figs/crop_zwfs_loop193_left.png){h=3.7}
 ::: right
-| held to 3 pm rms: photons per cycle | linear (L) | exact, one frame (I+) | stepped (S) |
-| noise only | 2.1×10¹² | runs away | 2.6×10¹² |
-| random walk, 2 pm per cycle | 7.3×10¹² | runs away | 7.5×10¹² |
-| thermal ramp, 5 pm per cycle | 27.6 pm at any light | runs away | 10.0 pm at any light (the loop's own lag) |
-| noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm |
+| held to 3 pm rms: photons per cycle | linear (L) | exact, one frame (I+) | stepped (S) | polarized pair (V, next slide) |
+| noise only | 2.1×10¹² | runs away | 2.6×10¹² | 1.5×10¹² |
+| random walk, 2 pm per cycle | 7.3×10¹² | runs away | 7.5×10¹² | 5.3×10¹² |
+| thermal ramp, 5 pm per cycle | 27.6 pm at any light | runs away | 10.0 pm at any light (the loop's own lag) | 9.9 pm |
+| noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm | 0.000 pm |
 - **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the DM shape is measured once with N photons (photons per measurement, slide 13), compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
 - **What it shows:** noise and a random walk propagate exactly as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error on the DM when a slow ramp leaves a persistent low-order residual; I+ has sites that read with the wrong sign, and no gain fixes a wrong sign.
 ~ 7.5×10¹² photons per cycle is 2.4 µJ: 9 ms of a 1 mW laser at the test arm's 25% throughput.  Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays; the 385-ray check gives the same numbers (runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
+
+## The polarized dimple: two images at once, no fold | A dimple that shifts the two circular polarizations by opposite phases gives an exact reading from two simultaneous frames; it is the best reading on every line
+::: left
+![Steady-state hold error against photons per cycle for the stepped reading (green) and the polarized-dimple pair (purple), under no drift (dotted), a 2 pm random walk (solid) and a 5 pm thermal ramp (dashed).  Right panel of the runner's figure.](figs/crop_zwfs_vloop193_right.png){h=3.7}
+::: right
+| matrix measured on the 30 nm surface; 193 rays | stepped (S), four frames | polarized pair (V), two frames |
+| single 10 nm change: gain, floor | 0.989, 5 pm | 0.994, 4 pm |
+| 47 actuators changed 1 nm | 0.999, 4 pm | 0.999, 3 pm |
+| dense random 10 nm: gain, error | 0.98, 0.68 nm | 1.000, 0.33 nm |
+| gain at 40 / 50 / 60 nm rms with the 30 nm calibration | 0.91 / 0.86 / 0.66 | 0.996 / 0.991 / 0.981 |
+| photons per measurement for 1 pm | 5.6×10¹³ | 4.7×10¹³ |
+| held to 3 pm in closed loop: noise only / 2 pm walk | 2.6×10¹² / 7.5×10¹² | 1.5×10¹² / 5.3×10¹² |
+- **How it works:** a geometric-phase (metasurface) dimple applies +90° to one circular polarization and −90° to the other; a polarization splitter behind the pupil relay gives both pupil images in one exposure.  Per pixel the difference of the pair gives the sine of the phase and the sum the cosine, so the phase is solved exactly with no sign fold, and the reference wave is refined as for the exact reading.
+- **What it buys:** the one-frame exact reading's fold is gone (a 100 nm poke reads to 0.05 pm where the single frame errs by 9 nm), the calibration ages five times slower, and nothing moves between the two frames.  What it does not change: the sensor's range is still set by the focal core (all readings fail past 120 nm rms) and by half a wavelength.
+~ Ideal metasurface: each image is the scalar sensor with its own dimple sign.  Next: metasurface retardance error, the arm's polarization aberrations, the stepped reading's between-frame drift.  Records: runs/v193base, v193noise, vloop193.
 
 ## Run it yourself | One parameter sheet and one script reproduce every number here; the defaults reproduce the stage-7 record to the last printed digit
 ::: full
@@ -196,7 +211,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | working surface it can handle | 480 nm rms and beyond | 40 nm rms one-frame (1 mm actuators), 50–60 nm four-frame |
 | a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.99, floor 5 pm (stepped, four frames; matrix on the surface) — gain 1.05, floor 23 pm (linear, one frame) |
 | photons per measurement for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
-| held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | pending (same loop code, CCMac) | 7.5×10¹² (stepped), 7.3×10¹² (linear) |
+| held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | pending (same loop code, CCMac) | 7.5×10¹² (stepped), 7.3×10¹² (linear), 5.3×10¹² (polarized pair) |
 - **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — no polarization train, a floor ten times lower once its response matrix is measured on that surface — and pays at the lowest spatial frequencies and in the surface it can handle.
 ~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: 385 rays, matrix calibration on the working surface (slide 10), photons at development sampling.  Both in actuator units through the same code (dm_gauge_lib).
 
@@ -230,6 +245,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Sampling is settled, and a bias in the fit is fixed:** camera pixels per actuator (the ray count) set the gain on a test actuator; sampling the single-site response pattern at the actuator center took that gain to 0.996 at 5 pixels per actuator.
 - **Color and photons are not levers:** the chromatic null was the defocus; 10¹⁴ photons per measurement reach 1 pm.  The budget is systematic error: the 25 to 60 pm floors and the gain's stability.
 - **In closed loop the stepped reading has no fixed error:** it holds a 2 pm-per-cycle walk to 3 pm from 7.5×10¹² photons per cycle and returns to zero after a step; the linear reading costs the same light but leaves a fine-scale error under a slow ramp; the one-frame exact reading runs away.
+- **The polarized dimple is the best reading on every line:** two simultaneous frames, no fold, 3 pm held from 5.3×10¹² photons per cycle, and a calibration that stays within 2% out to 60 nm rms.
 ~ Script and records: templates/40_benches/zwfs_dm96 (README S7/S8; runs/rec193, ng385, ng385s3, m2048, rec193full).
 
 ## Conclusions: what to import next, in order | The JPL budget form, DM calibration through the sensor's own images, the vector sensor priced before it is built, and the interferometer's lever
