@@ -371,6 +371,20 @@ v193noise, vloop193.  Next: V2 metasurface retardance error / leakage
 knob; V3 the arm's polarization aberrations (Jones pupil) per channel;
 V4 the stepped reading's reference-intensity drift in the loop.
 
+## V2 -- metasurface retardance error (2026-09-12, RUN): not a servo-budget term
+
+Retardance pi + err converts eta = cos^2(err/2), leaks the rest
+unshifted; coherent with the converted light for a linear laser -> one
+complex constant kappa on E0.  Uncalibrated absolute reading: bias
+1.3x the leaked amplitude when the leak is in phase (153 pm per 0.02
+rad on a 12 nm figure), quadratic when in quadrature (piston otherwise);
+a 3-number fit on the flat's two images removes it exactly (0.048 pm);
+differential rows and the loop through the on-surface matrix are
+IDENTICAL to the ideal mask at 0.1 and 0.2 rad (the matrix carries the
+constant as gain).  Record: README V2; runs/v2g_*, v2e10a, v2e10afit,
+v2e20a, v2loop.  Next: V3 the arm's polarization aberrations per
+channel (Jones pupil); V4 the stepped reading's between-frame drift.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to

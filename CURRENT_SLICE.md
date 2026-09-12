@@ -24,6 +24,37 @@
 
 ## Active slice
 
+> **PDI READINGS (Dave 2026-09-12 "look at another sensor, using a
+> point-diffraction IFO approach -- see Brandon Dube"), IN FLIGHT, LOCAL.**
+> Plan + literature: `BRIEF_pdi_campaign.md` (the paper meant = Dube,
+> Nejadriahi, Sidick, Jewell, Redding, Lou, Basinger, SPIE 13092-178
+> (2024), "Absolute and differential complex E field reconstruction by
+> phase shifting interferometry" -- non-common-path IFO with a photonic
+> phase shifter; full text not retrievable here, ask Dave for the PDF).
+> Built: `dm_gauge_lib/dmg_pdi_gauge.m` (readings P = stepped pinhole at
+> the FocalMask, common path, surround t; PF = fiber reference with
+> photonic steps, exact) threaded into `zwfs_run` as classes 5/6 (P.pdi
+> knobs; opt-in, record defaults untouched), gates G5-G7 in the bench
+> stage, figs palette.  Dev gates PASS (`runs/pdi_dev`, model 512):
+> G5 P 1.9 pm of 11.8 nm, PF 0.000; G7 5e-15 (P at t=1 == S).  RECORD
+> SEQUENCE RUNNING in background: `runs/pseq.sh` -> pdi193 (flat
+> battery + noise), pdi193base, pdi193d1 (1 lam/D on the base), ploop193
+> (loop P/PF).  V2 code committed (resources 7323d80); V2 runs v2g_*/
+> v2e10a done (0.1 rad retardance error, uncalibrated: on-surface single
+> 0.9934/4 pm -- the surface matrix absorbs it) -- README V2 still to
+> write.  NEXT: fold numbers into README "P / PF" section + brief +
+> memory; commit; push only on Dave's review.
+
+> **ZWFS V2 DONE 2026-09-12 (LOCAL: resources this commit; macos this
+> commit; push on Dave's review): metasurface retardance error = one
+> complex constant kappa; uncalibrated absolute bias 1.3x the leaked
+> amplitude in phase / quadratic in quadrature; 3-number flat
+> calibration removes it (0.048 pm); differential rows + loop through
+> the on-surface matrix IDENTICAL to the ideal mask at 0.1-0.2 rad ->
+> not a servo-budget term.  Knobs mask.v_ret_err / v_leak_phase / v_cal.
+> NEXT: V3 arm polarization aberrations per channel (Jones pupil); V4
+> the stepped reading's between-frame drift in the loop.**
+>
 > **PUSHED 2026-09-12 (Dave: "Push yes. Merge yes. Brief CCMac!"):**
 > tg96-oap MERGED into MACOS_resources dev-candidate (0fd6786; fast
 > suite 463/0 incl. tBench) and pushed; macos dev-candidate pushed.
