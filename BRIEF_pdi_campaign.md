@@ -285,6 +285,23 @@ any base until the fringes vanish -- the record ladder tests that.
   the gate is now informational when `pdi.step_err` is set, and the two
   runs are re-queued.
 
+## The loop rows (`runs/ploop193`, S11 seeds, matrix on the 30 nm surface)
+
+| reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | noiseless step at cycle 60 |
+|---|---|---|---|---|
+| ZWFS linear L (1 frame) | 2.1e12 | 7.3e12 | 27.6 pm | 1.2 pm, still falling |
+| ZWFS stepped S (4) | 2.6e12 | 7.5e12 | 10.0 pm | 0.000 |
+| ZWFS polarized pair V (2) | 1.5e12 | 5.3e12 | 9.9 pm | 0.000 |
+| **stepped pinhole P (4)** | **2.3e12** | **7.0e12** | 9.9 pm | 0.000 |
+| **P/SRI waveguide PF (4)** | **7.0e12** | **2.5e13** | 9.9 pm | 0.000 |
+
+Both PDI readings contract at 0.509 per cycle (gain 0.98, as V) with no
+fixed error; the stepped pinhole costs the same light as the stepped
+dimple in the loop; the P/SRI costs 3x (its single-shot noise 1.7x P's
+at every level: the 60/40 split).  The held residual's spectrum under
+the walk is V's (0.25 / 0.72 / 2.2 pm in the < 4 / 4-12 / > 12 cycles
+per aperture bands).  Loop figure: runs/ploop193/ploop193_loop.png.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a

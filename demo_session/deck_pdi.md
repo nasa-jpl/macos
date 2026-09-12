@@ -89,7 +89,7 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **Light:** with the paper's 60/40 split the reference arm returns 35% of the light and the test beam keeps 40%; the modulation is a smaller share of the detected flux than the stepped pinhole's, whose reference rides on the same beam — 4× more camera photons per picometer, before the arm's own loss.
 ~ Same seeds, same actuator-space scoring, same code as the sensor rows (dm_gauge_lib).  "fold" = gain −0.01: the reading returns nothing.  P at unit transmission and the dimple's size equals S to 5×10⁻¹⁵ (check G7).
 
-## In closed loop: the hold metric with a camera that drifts | [CAM] filled from runs/ploop193, pcam193, pcam193i
+## In closed loop the stepped pinhole costs the stepped dimple's light and the waveguide reference three times that | Held to 3 pm against a 2 pm random walk from 7.0×10¹² photons per cycle (pinhole) and 2.5×10¹³ (waveguide); camera-drift rows [CAM] from runs/pcam193, pcam193i
 ::: left
 - **The loop:** the DM held at the working surface at gain 0.5 for 60 cycles through one reading; the differential to the set point's frames fitted through the matrix; scored as the steady-state hold error.  The ZWFS rows on the same seeds: stepped 2.6×10¹² photons per cycle to hold 3 pm against noise, 7.5×10¹² against a 2 pm walk; polarized pair 1.5 / 5.3×10¹².
 - **The camera knob:** every pixel's offset random-walks 0.13 electrons per cycle (about 1 electron over the run, the paper's 12-hour figure compressed), constant within a scan.  Readings whose step weights sum to zero (S, P, PF) subtract it exactly; the single-frame readings and the simultaneous pair see the walk and put it on the DM.
@@ -99,9 +99,10 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 | stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | [CAM] |
 | polarized pair V | 1.5×10¹² | 5.3×10¹² | 9.9 pm | [CAM] |
 | linear L (1 frame) | 2.1×10¹² | 7.3×10¹² | 27.6 pm | [CAM] |
-| stepped pinhole P | [CAM] | [CAM] | [CAM] | [CAM] |
-| P/SRI waveguide PF | [CAM] | [CAM] | [CAM] | [CAM] |
-~ dm_gauge_lib/dmg_loop, shared with the interferometer; drift seed 77 on the full actuator grid.
+| stepped pinhole P | 2.3×10¹² | 7.0×10¹² | 9.9 pm | [CAM] |
+| P/SRI waveguide PF | 7.0×10¹² | 2.5×10¹³ | 9.9 pm | [CAM] |
+![Steady-state hold error against photons per cycle for the stepped pinhole (red) and the waveguide reference (brown) under no drift (dotted), the 2 pm random walk (solid) and the 5 pm thermal ramp (dashed); the 3 pm hold level marked.  Right panel of the runner's figure.](figs/ploop193_loop.png){h=2.2}
+~ dm_gauge_lib/dmg_loop, shared with the interferometer; drift seed 77 on the full actuator grid; matrix measured on the working surface.  Both PDI readings contract at 0.509 per cycle with no fixed error (steps return to 0.000 pm).
 
 ## Run it yourself | One parameter sheet and one script; the sensor runner carries the two point-diffraction readings as options
 ::: full
