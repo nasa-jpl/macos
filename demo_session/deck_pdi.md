@@ -80,9 +80,9 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 | gain at 60 / 120 / 240 / 480 nm rms | 0.66 / fold / fold / fold | 0.98 / fold / fold / fold | 0.94 / fold / fold / fold | 1.01 / 1.02 / 1.06 / 1.13 |
 | photons per measurement for 1 pm, at the camera | 5.4×10¹³ | 4.7×10¹³ | 3.3×10¹³ | 1.9×10¹⁴ |
 | light kept (divide the row above by it for incident photons) | 1 | 1 | 0.82 | 0.75 |
-- **Shutter frame** (the reference alone, once per state, 5 frames): [R2].
-- **A 1 λ/D pinhole:** [R2].
-- **A 2% step-size error,** four-step least squares against the five-frame Schwider–Hariharan scan: [R2].
+- **A reference frame per state** (the pinhole alone, a fifth frame) makes the pinhole reading the waveguide reading's twin on every row and the ladder: 1.02 / 1.06 / 1.13 at 120 / 240 / 480 nm.  The pinhole's fold was the flat-DM reference-intensity assumption, not the pinhole.
+- **A 1 λ/D pinhole** (the classical regime; 0.28 plate transmission, 29% of the light, visibility 0.94) has no fold even with that assumption: the same 1.02 / 1.06 / 1.13, the same rows; 2.9×10¹⁴ camera photons per picometer.
+- **A 2% step-size error:** the flat reads 0.069 rad rms under four-step least squares and 1.3×10⁻⁵ rad under the five-frame Schwider–Hariharan scan; the differential rows: [R2].
 ::: right
 ![The record run's own figure: the focal spot with the 2 λ/D pinhole (red), the dimple (green) and the waveguide mode's 1/e contour (brown); the reference amplitudes across the pupil image; the reference's motion under the 30 nm surface by pinhole size (shape, red; amplitude, black; the waveguide's coupling, brown); the fringe visibility of both readings on the flat DM.](figs/pdi193fbase_pdi.png){h=3.3}
 - **Range without a fold:** the self-referenced readings lose their reference amplitude with the Strehl ratio and fold at 120 nm rms; the waveguide reference is fixed, so the reading holds gain 1.0–1.1 to 480 nm (the floor grows to 1.6 nm because the response matrix was measured at 30 nm).
