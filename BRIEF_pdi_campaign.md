@@ -234,6 +234,35 @@ any base until the fringes vanish -- the record ladder tests that.
   4x for its reference apodization -- record 2 re-prices it with the
   LP01 reference.
 
+## Record 2 (`runs/pdi193f` flat matrix, `runs/pdi193fbase` matrix on the 30 nm surface; PF = the P/SRI with the LP01 reference)
+
+- PF, the P/SRI: coupling eta_c 0.587 on the flat; a budget-limited
+  (0.73 of the visibility-1 match at pickoff 0.6); visibility 0.863,
+  throughput 0.752; G5 0.000 pm; |kappa| 0.860 with 0.025 rad under the
+  30 nm surface.
+- Flat matrix: PF reads as V and P on every row (single 0.940 / 25 pm,
+  grid 0.998, dense 1.001); the ladder holds 0.77 at 120 nm, 0.55 at 240
+  where S / V / P fold; N(1 pm) at the camera 1.9e14 (S 5.4e13, V
+  4.7e13, P 3.3e13) -- per detected photon the waveguide form is the
+  most expensive of the four, because with the paper's 60/40 split 60%
+  of the light goes to an arm that returns 59% of it as reference and the
+  test beam keeps 40%: the modulation is a smaller fraction of the
+  detected flux than the stepped pinhole's, whose reference rides on the
+  same beam.  (In incident photons: divide by 0.75 / 0.82.)
+- **Matrix on the 30 nm surface (the campaign's operating point):**
+  single 10 nm -- S 0.9885 / 5 pm / SNR 2120, V 0.9935 / 4 / 2835,
+  **P 0.9935 / 4 / 2790, PF 0.9935 / 4 / 2842**; grid 1 nm -- all four
+  0.999 / 3-4 pm; dense random 10 nm -- S 0.984 / 681 pm, V 0.9999 /
+  331, P 0.9985 / 338, PF 1.0002 / 330.  The three exact readings are
+  indistinguishable at the operating point; S carries twice the dense
+  error.
+- **Ladder (47 grid sites, matrix from 30 nm):** at 60 nm S 0.66, V
+  0.98, P 0.94, PF 1.006; at 120 nm S / V / P fold (-0.01), **PF 1.02**;
+  240 nm PF 1.06; 480 nm PF 1.13 (floor 1.6 nm: the 30 nm matrix
+  applied to a 16x larger surface).  A reference that does not depend
+  on the surface has no fold: the P/SRI's range is the wrap of the
+  DIFFERENCE, not of the surface.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a
