@@ -194,3 +194,62 @@ Stage E break ladder -- single 10nm differential vs base rms (lens):
 
 wrote vlens_report.txt + vlens.mat + figures in /home/dcr/dev/MACOS_resources_wt_oap/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/vlens
 ```
+
+## Addendum 2026-09-12: 662e76a received -- items 1-6 closed; the D5 reframe; one modelling run before it is a design number
+
+Items 1-6 are closed as asked (evidence committed as pruned results;
+tail keyed by optics with a null WARN; Voronoi byte-identical -> not
+truncation; bright/dark split -> the dark 25 % are dark, not
+regularized; the D1 picture; the non-vacuity stated on the OAP and the
+lens line labelled vacuous; calib_surface 'base' + the wrap guard).
+`origin/tg96-oap` merges CLEAN into dev-candidate as it stands today
+(V1 included).  Good work.
+
+**The D5 reframe is accepted as measured, not yet as physics.**  The
+picture says the dark columns are a bowed vertical BAND through the
+pupil centre (d1_picture.png, column norm ~0 in the band, ~5.5 outside),
+i.e. a fringe-VISIBILITY null: in the band the test arm's polarization
+after the two folds is orthogonal to the reference arm's at the
+analyzer.  A perfect conductor has r_s = -1, r_p = +1 at every angle
+(zero retardance between s and p in the ray-following basis), and BARE
+aluminium at 5-9 deg is within a degree or two of that -- so if the
+null is the conductor's, bare metal has it too, and a coating whose
+retardance is only a few degrees at 9 deg filling it from 0.05 to 0.82
+means the null is a knife-edge in the polarization train, not a fold
+cost at all.  Two runs settle which, and both are one command each:
+
+1. **Bare aluminium** on both OAPs: `coat_set` with the Al index at
+   632.8 nm (n = 1.373, k = 7.62, Rakic 1998 -- the
+   `pol_external_anchor` tool carries van Harten's table if you prefer
+   theirs).  Same rows as D5.  If the band persists, the uncoated D3
+   numbers ARE the bare-metal numbers and the coating is a design
+   parameter (state its retardance at both OAP AOIs and its chromatic
+   slope); if it fills in, the "ideal reflector" idiom was the
+   idealization and D3 is retired.
+2. **The Jones pupil of the test arm** for the three cases (ideal /
+   bare Al / protected Al) with `macos.jones_pupil` + `pol_maps` (the
+   Phase-2 binding-side tools; double-pole basis): the retardance map
+   and the per-pixel fringe visibility.  Report the visibility at the
+   band centre and at the pupil edge for each case -- numbers, beside
+   the dense-random gain.  That is the mechanism statement the report
+   needs instead of "polarization artifact".
+
+If the band is real physics, the cheaper fix is in the train, not the
+mirror: re-solve the test-arm QWP azimuth for the folded arm (the
+`tg_psi` runner solves the waveplate azimuths for the lens rig; the OAP
+rig has a different arm rotation) before reaching for a coating.  Say
+which you did.
+
+**D7 (the loop).**  Blocked on Dave pushing MACOS_resources
+dev-candidate (`dmg_loop` + `tDmgLoop`; also the V1 vector reading, so
+`stage_loop_` now has four readings to mirror).  When it lands: merge
+dev-candidate into tg96-oap (clean today), the stage exactly as
+`zwfs_run` `stage_loop_`, seed 77, photons per MEASUREMENT, lens rig
+first, the S11 table as the comparison; add the polarized-pair ZWFS row
+(V1: 3 pm from 1.5e12 noise-only / 5.3e12 walk) beside S.
+
+**Merge order (my recommendation to Dave):** merge tg96-oap into
+dev-candidate now -- it is additive (new template dir, `dmg_frame`'s
+optional third output, `twyman_green` 'optics', tBench cases) and
+conflict-free -- and do D7 on dev-candidate directly, so the loop code
+is edited in one tree.
