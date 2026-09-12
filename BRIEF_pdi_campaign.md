@@ -302,6 +302,25 @@ at every level: the 60/40 split).  The held residual's spectrum under
 the walk is V's (0.25 / 0.72 / 2.2 pm in the < 4 / 4-12 / > 12 cycles
 per aperture bands).  Loop figure: runs/ploop193/ploop193_loop.png.
 
+## Camera drift in the loop (`runs/pcam193`; the relative form pending)
+
+The paper's number -- an offset random-walking 0.13 electrons per pixel
+per cycle, ~1 e over the 60-cycle run -- is INVISIBLE to every reading at
+1e13 and 1e15 photons per cycle: hold error, bias and spectrum equal the
+noise-only rows to the printed digit (L 1.39 / 0.14 pm, S 1.52 / 0.15, V
+1.17 / 0.12, P 1.45 / 0.14, PF 2.50 / 0.25 at 1e13 / 1e15, with and
+without).  A lit pixel collects ~3e8 photons per frame at 1e13 per
+measurement, so an electron is 1e-4 of its shot noise; the PSI immunity
+argument lives in Roman's photon-starved LOWFS regime (1e2-1e3 per pixel
+per frame, integrated over 12 h).  The knob therefore has a relative
+unit now (`loop.cam_unit 'rel'`: a fraction of the mean photons per lit
+pixel per frame, per cycle -- a bias / gain drift scaled to the signal);
+`runs/pcam193r` (1e-3 per cycle, constant within a scan) and
+`pcam193ri` (the whole step within each scan) are queued; `pcam193i`
+(the electron form, within-scan) is running.  The unit-test gate (tDmgLoop
+G8) already shows the mechanism: a zero-sum reading is exactly immune, a
+single-frame reading imprints the walk.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a

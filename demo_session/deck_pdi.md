@@ -92,15 +92,16 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 ## In closed loop the stepped pinhole costs the stepped dimple's light and the waveguide reference three times that | Held to 3 pm against a 2 pm random walk from 7.0×10¹² photons per cycle (pinhole) and 2.5×10¹³ (waveguide); camera-drift rows [CAM] from runs/pcam193, pcam193i
 ::: left
 - **The loop:** the DM held at the working surface at gain 0.5 for 60 cycles through one reading; the differential to the set point's frames fitted through the matrix; scored as the steady-state hold error.  The ZWFS rows on the same seeds: stepped 2.6×10¹² photons per cycle to hold 3 pm against noise, 7.5×10¹² against a 2 pm walk; polarized pair 1.5 / 5.3×10¹².
-- **The camera knob:** every pixel's offset random-walks 0.13 electrons per cycle (about 1 electron over the run, the paper's 12-hour figure compressed), constant within a scan.  Readings whose step weights sum to zero (S, P, PF) subtract it exactly; the single-frame readings and the simultaneous pair see the walk and put it on the DM.
+- **The camera knob:** every pixel's offset random-walks, constant within a scan.  Readings whose step weights sum to zero (S, P, PF) subtract it exactly; the single-frame readings and the simultaneous pair see the walk and put it on the DM (the loop's unit test shows both).
+- **At the paper's 1 electron per pixel it is invisible to every reading:** a lit pixel collects 3×10⁸ photons per frame at 10¹³ per measurement, so an electron is 10⁻⁴ of its shot noise.  The immunity argument belongs to Roman's photon-starved sensor (10² to 10³ per pixel per frame over 12 hours).  The drift is therefore also run as a fraction of the signal, 10⁻³ per cycle.
 - **Within-scan drift** (the whole step across the frames): what the zero-sum readings pay: [CAM].
 ::: right
-| reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | camera walk, 10¹⁵ photons: hold error |
-| stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | [CAM] |
-| polarized pair V | 1.5×10¹² | 5.3×10¹² | 9.9 pm | [CAM] |
-| linear L (1 frame) | 2.1×10¹² | 7.3×10¹² | 27.6 pm | [CAM] |
-| stepped pinhole P | 2.3×10¹² | 7.0×10¹² | 9.9 pm | [CAM] |
-| P/SRI waveguide PF | 7.0×10¹² | 2.5×10¹³ | 9.9 pm | [CAM] |
+| reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | camera walk of 1 e per pixel: hold error at 10¹⁵ | camera walk of 10⁻³ of the signal: [CAM] |
+| stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | 0.15 pm (= no drift) | [CAM] |
+| polarized pair V | 1.5×10¹² | 5.3×10¹² | 9.9 pm | 0.12 pm (= no drift) | [CAM] |
+| linear L (1 frame) | 2.1×10¹² | 7.3×10¹² | 27.6 pm | 0.14 pm (= no drift) | [CAM] |
+| stepped pinhole P | 2.3×10¹² | 7.0×10¹² | 9.9 pm | 0.14 pm (= no drift) | [CAM] |
+| P/SRI waveguide PF | 7.0×10¹² | 2.5×10¹³ | 9.9 pm | 0.25 pm (= no drift) | [CAM] |
 ![Steady-state hold error against photons per cycle for the stepped pinhole (red) and the waveguide reference (brown) under no drift (dotted), the 2 pm random walk (solid) and the 5 pm thermal ramp (dashed); the 3 pm hold level marked.  Right panel of the runner's figure.](figs/ploop193_loop.png){h=2.2}
 ~ dm_gauge_lib/dmg_loop, shared with the interferometer; drift seed 77 on the full actuator grid; matrix measured on the working surface.  Both PDI readings contract at 0.509 per cycle with no fixed error (steps return to 0.000 pm).
 
