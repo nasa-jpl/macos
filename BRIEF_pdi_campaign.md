@@ -263,6 +263,28 @@ any base until the fringes vanish -- the record ladder tests that.
   on the surface has no fold: the P/SRI's range is the wrap of the
   DIFFERENCE, not of the surface.
 
+## Record 2, continued (`runs/pdi193state`, `runs/pdi193d1`; matrix on the 30 nm surface)
+
+- **Shutter frame per state (`pdi.b2 'state'`, 5 frames):** the pinhole
+  reading P becomes PF's twin on every row AND the ladder -- single
+  0.9935 / 4 pm, grid 0.9992 / 3, dense 1.0002 / 330, and **1.02 / 1.06 /
+  1.13 at 120 / 240 / 480 nm**: P's fold at 120 nm in record 2 was the
+  flat |b|^2 assumption, not the pinhole.  Cost: a fifth frame; noise
+  priced with the on-surface matrix in this run: S 9.3e13, P(5) 1.3e14,
+  PF 2.7e14 photons per measurement at the camera.
+- **A 1 lam/D pinhole (`pdi.DIA_LAMD 1.0`; 3.96 px at the mask plane,
+  the budget line warns):** t_auto 0.28, eta_pin 0.24, throughput 0.29,
+  visibility 0.94; G5 0.002 pm (the reference iteration converges 100x
+  better than at 2 lam/D); rows identical to PF's (0.9935 / 4; 0.9992 /
+  3; 1.0002 / 330); **no fold with the flat |b|^2: 1.02 / 1.06 / 1.13 at
+  120 / 240 / 480 nm** -- the classical PDI regime buys the P/SRI's
+  range in the common path, at 29% of the light (N(1 pm) at the camera
+  2.9e14 vs S 1.0e14 in this run; 1e15 incident).
+- The 2% step-error runs (`pdi193se_ls`, `se_sh5`) aborted at gate G5
+  (0.1% exactness), which a deliberate step error is meant to violate;
+  the gate is now informational when `pdi.step_err` is set, and the two
+  runs are re-queued.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a
