@@ -24,6 +24,18 @@
 
 ## Active slice
 
+> **CCMac tg96-oap f46585d REVIEWED 2026-09-11 (`BRIEF_ccmac_tg96_oap3.md`,
+> LOCAL): accepted in substance; D2 lens numbers reproduced here to the
+> digit (worktree of the branch + this box's mex; appendix in the brief).
+> Six items before the merge: evidence dirs not committed; tuned tail
+> keyed by TAG (any other tag = untuned bench, null 9.11 vs 0.134 nm);
+> the OAP dense loss (0.75 / 4.8 nm, x-talk 0.42) not separated from
+> window truncation / regularization (step 16 or Voronoi cells; lambda
+> sweep); D1 "worst at centre" wants a map; non-vacuity stated on the
+> lens (passes there, meaningful on the OAP); calib_surface 'base' +
+> a wrap guard.  Then deliverable 7 (the loop).  Worktree
+> `~/dev/MACOS_resources_wt_oap` holds the runs (remove when done).**
+>
 > **S11 LOOP METRIC BUILT + RUN (2026-09-11, LOCAL: resources 88fb9ac,
 > 922c366 + the record commit; macos this commit; push only on Dave's
 > review).**  `dm_gauge_lib/dmg_loop.m` (the ONE loop for both gauges) +
