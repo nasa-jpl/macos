@@ -24,6 +24,13 @@
 
 ## Active slice
 
+> **PUSHED 2026-09-12 (Dave: "Push yes. Merge yes. Brief CCMac!"):**
+> tg96-oap MERGED into MACOS_resources dev-candidate (0fd6786; fast
+> suite 463/0 incl. tBench) and pushed; macos dev-candidate pushed.
+> CCMac's next brief: `BRIEF_ccmac_tg96_loop.md` (deliverable 7 on
+> dev-candidate + the bare-Al / Jones-pupil runs).  Worktree
+> `~/dev/MACOS_resources_wt_oap` can be removed.
+>
 > **ZWFS V1 -- THE VECTOR (POLARIZED-DIMPLE) READING, DONE 2026-09-12
 > (LOCAL: resources 1cf5889 + e3e32e0; macos this commit; push on Dave's
 > review).**  Reading V = +phi/-phi image pair, exact per-pixel solve, no
