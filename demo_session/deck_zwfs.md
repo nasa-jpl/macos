@@ -168,9 +168,9 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | random walk, 2 pm per cycle | 7.3×10¹² | runs away | 7.5×10¹² | 5.3×10¹² |
 | thermal ramp, 5 pm per cycle | 27.6 pm at any light | runs away | 10.0 pm at any light (the loop's own lag) | 9.9 pm |
 | noise-free 1 nm step, after 60 cycles | 1.2 pm and still falling | 99 nm | 0.000 pm | 0.000 pm |
-- **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) closed through one reading; each cycle the DM shape is measured once with N photons (photons per measurement, slide 13), compared with the set point's frames, and half the estimated change removed.  The same loop code will run the interferometer.
-- **What it shows:** noise and a random walk propagate exactly as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error on the DM when a slow ramp leaves a persistent low-order residual; I+ has sites that read with the wrong sign, and no gain fixes a wrong sign.
-~ 7.5×10¹² photons per cycle is 2.4 µJ: 9 ms of a 1 mW laser at the test arm's 25% throughput.  Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays; the 385-ray check gives the same numbers (runs/loop385).  A ramp under a proportional loop always lags by rate/gain; an integral term is the fix.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
+- **The loop:** the DM is held at the 30 nm working surface by a proportional servo (gain 0.5) through one reading: each cycle the shape is measured once with N photons (slide 13), compared with the set point's frames, and half the estimated change removed.
+- **What it shows:** noise and a random walk propagate as theory says, and L and S cost the same light.  What differs is the fixed error: S has none; L imprints a fine-scale error under a slow ramp; I+ reads some sites with the wrong sign, and no gain fixes a wrong sign.
+~ 7.5×10¹² photons per cycle is 2.4 µJ: 9 ms of a 1 mW laser at the test arm's 25% throughput.  Gain 0.5, 60 cycles, matrix measured on the working surface, 193 rays; the 385-ray check gives the same numbers.  A ramp under a proportional loop always lags by rate/gain.  Code dm_gauge_lib/dmg_loop, gated by tDmgLoop.
 
 ## The polarized dimple: two images at once, no fold | A dimple that shifts the two circular polarizations by opposite phases gives an exact reading from two simultaneous frames; it is the best reading on every line
 ::: left
@@ -186,6 +186,18 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **How it works:** a geometric-phase (metasurface) dimple applies +90° to one circular polarization and −90° to the other; a polarization splitter behind the pupil relay gives both pupil images in one exposure.  Per pixel the difference of the pair gives the sine of the phase and the sum the cosine, so the phase is solved exactly with no sign fold, and the reference wave is refined as for the exact reading.
 - **What it buys:** the one-frame exact reading's fold is gone (a 100 nm poke reads to 0.05 pm where the single frame errs by 9 nm), the calibration ages five times slower, and nothing moves between the two frames.  What it does not change: the sensor's range is still set by the focal core (all readings fail past 120 nm rms) and by half a wavelength.
 ~ Ideal metasurface: each image is the scalar sensor with its own dimple sign.  Next: metasurface retardance error, the arm's polarization aberrations, the stepped reading's between-frame drift.  Records: runs/v193base, v193noise, vloop193.
+
+## Both instruments through the same loop | The interferometer holds the surface at twice the sensor's light but keeps a 9% fixed error; its reflective version cannot hold a 2 pm walk at all
+::: full
+| held to 3 pm rms: photons per cycle | ZWFS stepped (S) | ZWFS polarized pair (V) | interferometer, lens rig | interferometer, reflective rig (bare aluminum) |
+| noise only | 2.6×10¹² | 1.5×10¹² | 5.5×10¹² | 3.4×10¹³ |
+| random walk, 2 pm per cycle | 7.5×10¹² | 5.3×10¹² | 2.0×10¹³ | never (4.1 pm floor) |
+| thermal ramp, 5 pm per cycle | 10.0 pm (the loop's lag) | 9.9 pm | 13.1 pm | 39 pm |
+| noise-free 1 nm step, after 60 cycles | 0.000 pm | 0.000 pm | 87 pm, rising | 276 pm |
+| single-shot noise at 10¹² photons per measurement | 8.2 pm | 6.4 pm | 12.0 pm | — |
+- **Same loop code, same drift realization, same scoring** (dm_gauge_lib/dmg_loop; the interferometer rows by CCMac).  The loop propagates noise as theory says on every instrument, so the light each needs follows from its single-shot noise: the interferometer's four-step reading is about 1.5× noisier per photon than the sensor's stepped reading, about twice the photons.
+- **The fixed error is the difference.** The sensor's stepped and polarized readings return to zero after a step; the interferometer keeps about 9% of any change (its fine-pattern roll-off and cross-talk, now in closed loop), so it behaves like the sensor's linear reading, not its stepped one.  The reflective interferometer's remaining fold cross-talk (0.18 open-loop, once the ideal-reflector artifact was removed with bare aluminum) becomes a hard wall in hold mode: the 2 pm walk is never held to 3 pm.  Open-loop batteries could not make that distinction.
+~ Sensor rows: zwfs_dm96 runs/loop193, vloop193.  Interferometer rows: tg_psi_dm96_oap runs/loop_lens, loop_oap (bare aluminum on both OAPs; the ideal-reflector null was an idealization, its exactly-zero retardance variation).  All at gain 0.5, 60 cycles, matrix measured on the 30 nm working surface.
 
 ## Run it yourself | One parameter sheet and one script reproduce every number here; the defaults reproduce the stage-7 record to the last printed digit
 ::: full
@@ -211,7 +223,8 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | working surface it can handle | 480 nm rms and beyond | 40 nm rms one-frame (1 mm actuators), 50–60 nm four-frame |
 | a 10 nm actuator change on a 30 nm surface | gain 0.92, floor 46 pm | gain 0.99, floor 5 pm (stepped, four frames; matrix on the surface) — gain 1.05, floor 23 pm (linear, one frame) |
 | photons per measurement for 1 pm | 8×10¹⁴ | 0.4 to 1×10¹⁴ |
-| held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | pending (same loop code, CCMac) | 7.5×10¹² (stepped), 7.3×10¹² (linear), 5.3×10¹² (polarized pair) |
+| held in closed loop to 3 pm against a 2 pm random walk: photons per cycle | 2.0×10¹³ (lens rig); never with the reflective rig | 7.5×10¹² (stepped), 7.3×10¹² (linear), 5.3×10¹² (polarized pair) |
+| fixed error in closed loop (noise-free 1 nm step after 60 cycles) | 87 pm and rising (lens); 276 pm (reflective) | 0.000 pm (stepped, polarized pair) |
 - **Reading:** the interferometer measures any surface and pays at fine patterns; the sensor measures small changes on a small working surface more cheaply — no polarization train, a floor ten times lower once its response matrix is measured on that surface — and pays at the lowest spatial frequencies and in the surface it can handle.
 ~ PSI column: tg_psi_dm96 run 10 and S4/S5; sensor column: 385 rays, matrix calibration on the working surface (slide 10), photons at development sampling.  Both in actuator units through the same code (dm_gauge_lib).
 

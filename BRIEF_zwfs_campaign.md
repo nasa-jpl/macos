@@ -371,6 +371,20 @@ v193noise, vloop193.  Next: V2 metasurface retardance error / leakage
 knob; V3 the arm's polarization aberrations (Jones pupil) per channel;
 V4 the stepped reading's reference-intensity drift in the loop.
 
+## The head-to-head in closed loop (CCMac D7, 2026-09-12, RUN)
+
+Identical `dmg_loop`, seed 77.  3 pm held: ZWFS S 2.6e12 / 7.5e12
+(noise-only / 2 pm walk), V 1.5e12 / 5.3e12, IFO lens 5.5e12 / 2.0e13,
+IFO reflective (bare Al) 3.4e13 / never (4.1 pm floor).  Fixed error
+(noiseless 1 nm step at cycle 60): S and V 0.000 pm; IFO lens 87 pm
+rising (~9 %, roll-off + cross-talk in closed loop -> behaves like the
+ZWFS linear reading); IFO reflective 276 pm.  Item B settled: the OAP
+dark band was the ideal reflector's exactly-zero retardance variation;
+bare Al fills it (dense 0.95), the D3 uncoated numbers are retired; the
+residual fold cross-talk 0.18 is the hard wall in hold mode.  Record:
+zwfs README S11 addendum; tg_psi_dm96_oap README / REPORT_oap /
+runs/loop_lens, loop_oap; deck slide 16.
+
 ## V2 -- metasurface retardance error (2026-09-12, RUN): not a servo-budget term
 
 Retardance pi + err converts eta = cos^2(err/2), leaks the rest
