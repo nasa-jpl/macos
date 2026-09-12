@@ -3,6 +3,11 @@ deck_zwfs.md — the Zernike wavefront sensor for the DM gauge, and how
 it compares to the Twyman–Green IFO.  DRAFT — pending Dave's sign-off;
 the builder suppresses the export mark on DRAFT decks.
 Build: python3 make_brief_slides.py deck_zwfs.md
+2026-09-12 fold 4 (V2 + V3): slide 16 "What can spoil the polarized
+dimple" (metasurface retardance error; the arm's polarization aberration
+per channel from the engine's polarized traces; the design scan; the
+per-channel unmasked frames calibrate the retardance-type term); the
+conclusions bullet re-stated.  Records: zwfs_dm96 runs/v2*, v3*.
 2026-09-10 fold 3d (S10): the measured-response-matrix slide (Dave's
 method; piston-null term; matrix on the working surface), range and
 side-by-side tables re-stated from runs/matbase385 + mat385.
@@ -185,7 +190,18 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 | held to 3 pm in closed loop: noise only / 2 pm walk | 2.6×10¹² / 7.5×10¹² | 1.5×10¹² / 5.3×10¹² |
 - **How it works:** a geometric-phase (metasurface) dimple applies +90° to one circular polarization and −90° to the other; a polarization splitter behind the pupil relay gives both pupil images in one exposure.  Per pixel the difference of the pair gives the sine of the phase and the sum the cosine, so the phase is solved exactly with no sign fold, and the reference wave is refined as for the exact reading.
 - **What it buys:** the one-frame exact reading's fold is gone (a 100 nm poke reads to 0.05 pm where the single frame errs by 9 nm), the calibration ages five times slower, and nothing moves between the two frames.  What it does not change: the sensor's range is still set by the focal core (all readings fail past 120 nm rms) and by half a wavelength.
-~ Ideal metasurface: each image is the scalar sensor with its own dimple sign.  Next: metasurface retardance error, the arm's polarization aberrations, the stepped reading's between-frame drift.  Records: runs/v193base, v193noise, vloop193.
+~ Ideal metasurface: each image is the scalar sensor with its own dimple sign.  Its two imperfections are priced on the next slide; still open: the stepped reading's between-frame drift.  Records: runs/v193base, v193noise, vloop193.
+
+## What can spoil the polarized dimple, priced | A retardance error in the metasurface and the test arm's polarization aberration both wash out through the working-surface matrix; only a large difference between the two channels' phases costs anything
+::: full
+| term | uncalibrated, absolute (100 nm pokes) | with the bench's own calibration | through the matrix measured on the 30 nm surface: 10 nm change / 47 × 1 nm / dense 10 nm |
+| metasurface retardance error 0.1 rad: 5% of the light unshifted, one complex constant on both images | 0.75 nm (leak in phase), 18 pm (in quadrature) | 0.05 pm: three numbers fitted on the flat's two images | 0.993, 4 pm / 0.999, 3 pm / 0.33 nm — the ideal numbers; loop identical |
+| this lens rig's arm, laser 45° to the fold plane: the channels' phases differ by 1.6 mrad rms (six 7° glass faces, 0.5% diattenuation) | 9 pm (17 at 0°; 0.1 with the laser on the fold plane's axis) | 9.5 pm: the unmasked reference frames cannot see a phase; 0.05 pm with a polarimetric map | ideal to the printed digit |
+| channel phase difference 0.1 / 0.3 rad rms (a pupil-varying diattenuation) | 0.6 / 1.9 nm (6 nm per rad) | unchanged | 0.995, 4 / 1.001, 4 / 0.44 nm at 0.1; 0.997, 4 / 1.007, 8 / 0.96 nm at 0.3; loop at 0.3: 10% less gain, same noise, no fixed error |
+| channel amplitude ratio 0.1 / 0.3 rms (a pupil-varying retardance, the all-mirror rig's term) | 2.3 / 7.1 nm | 0.05 pm: removed by the per-channel unmasked reference frames every Zernike-sensor bench takes | 0.993, 4 / 1.000, 3 / 0.43 nm at 0.1 uncalibrated; the ideal numbers once calibrated |
+- **How the arm enters:** the metasurface converts one circular polarization with +90° and the other with −90°, so each image is of that polarization's own pupil field.  The engine's polarized ray trace of the arm gives both fields at every pixel; a real Jones matrix makes the channels differ in phase only, by the diattenuation times sin 2(axis − laser angle).
+- **Design rule:** specify the arm's pupil-varying diattenuation (0.1 rad rms of channel phase difference costs nothing through the matrix; 0.3 costs the grid row 2.6× and 10% of loop gain) and put the laser on the arm's dominant axis; a pupil-varying retardance the sensor calibrates from frames it takes anyway.
+~ Astigmatic maps, rms over the pupil; 193 rays; the mask's own change with incidence angle is not modeled.  Records: zwfs_dm96 runs (the v2, v3arm, v3s and v3loop series); README V2 and V3.
 
 ## Both instruments through the same loop | The interferometer holds the surface at twice the sensor's light but keeps a 9% fixed error; its reflective version cannot hold a 2 pm walk at all
 ::: full
@@ -266,7 +282,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **The JPL budget form:** a sensitivity factor per pixel from the measured fields — the quantity the working-surface effect on slide 10 is made of — predicts the photon-noise stage analytically, and four systematic terms (pupil calibration at ½, reference wave at 1, dimple depth, initial phase) become the rows of the error budget.
 - **The response matrix for the interferometer too:** its calibration still uses a single-site response pattern, with the stencil bias fixed here (slide 9); the sparse-grid measured matrix is the calibration its reflective build should carry.  Model-matched DM calibration (actuator positions and gains through the sensor's own images) remains the lever for a real DM's geometry.
 - **Color as a joint fit, not a combination:** an equal-weight combination inherits a bad channel; a joint fit through the exact reading would use 700 to 780 nm for range and 632.8 nm for the calibration of record.
-- **Model the vector sensor before the metasurface is built:** the exact two-image solution and its leakage terms (retardance offsets, splitter rotation) run on the engine's polarization machinery; the bench limits at Keck and SEAL were defocus and crosstalk between the two pupil images, both priceable here.
+- **The vector sensor, priced before the metasurface is built:** the exact two-image solution stands (slide 15); its metasurface retardance error and the arm's polarization aberration are priced (slide 16) and neither reaches the working-surface rows; still to price: the splitter's crosstalk between the two pupil images and defocus between them, the bench limits at Keck and SEAL.
 - **The interferometer, for balance:** a PZT phase shift buys no model gain — its floors are geometric and color-independent — but on hardware an absolute phase scale and freedom from polarization systematics; the recommended form is a hybrid: polarization snapshot for the change measurements, a PZT on the reference flat as calibrator.  Its all-mirror (OAP) version is in build.
 ~ Segmented-mirror lessons carried forward: the sensor reads segment piston but not global piston, DM quantization appears as steps in the response, and piston is underestimated below 50 % Strehl (Keck) — all three enter the e5-class segmented gauges.
 

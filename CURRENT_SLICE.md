@@ -52,6 +52,26 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **ZWFS V3 DONE 2026-09-12 (LOCAL: resources 65788d9 + the record
+> commit; macos this commit; push on Dave's review): the arm's
+> polarization aberration per circular channel.**  `dmg_arm_maps` (two
+> polarized vector traces -> J per grid pixel at the sandwich's entrance
+> sphere, the mask's PROJECTED-axes basis per ray, J/sqrt(det J) --
+> vector-mode field = scalar's exact conjugate, slope -2.0000 --, unit
+> mean power per laser state); gauge V_ARM none|engine|synthetic,
+> chained apodization (G8), cross-channel leak, per-pixel per-channel
+> solver, v_cal ideal|amp|fit|map; runner knobs + prints.  Record (193):
+> lens rig channel PHASE difference 1.6 mrad rms at laser 45 deg (nil on
+> the fold plane's s axis), uncalibrated 9 pm on 100 nm pokes, oracle
+> 0.053, on-surface rows = ideal to the digit; scan: diattenuation-type
+> 6 nm/rad absolute, nothing through the matrix to 0.1 rad, 0.3 = grid
+> row 2.6x + loop gain -10% (no fixed error); retardance-type 3.8x larger
+> absolute but REMOVED by the per-channel unmasked frames ('amp').
+> Record: README V3, brief V3, deck slide 16 (26 slides, DRAFT), memory.
+> Queue: TO's pseq6 waits on my "v3seq2 done" (written 16:01).  NEXT: V4
+> the stepped reading's between-frame drift; integral term (thermal);
+> fold-aware I+; deck sign-off.**
+
 > **ZWFS V2 DONE 2026-09-12 (LOCAL: resources this commit; macos this
 > commit; push on Dave's review): metasurface retardance error = one
 > complex constant kappa; uncalibrated absolute bias 1.3x the leaked

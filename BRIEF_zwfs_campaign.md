@@ -399,6 +399,55 @@ constant as gain).  Record: README V2; runs/v2g_*, v2e10a, v2e10afit,
 v2e20a, v2loop.  Next: V3 the arm's polarization aberrations per
 channel (Jones pupil); V4 the stepped reading's between-frame drift.
 
+## V3 -- the arm's polarization aberration per channel (2026-09-12, RUN)
+
+The metasurface converts L -> R with the +phi dimple and R -> L with -phi,
+so the two images are of DIFFERENT pupil fields: the laser state's L and
+R components through the arm's Jones pupil, qL.*E and qR.*E.  Maps from
+the engine (`dmg_arm_maps`): two polarized vector traces, the 2x2 J at
+every diffraction-grid pixel at the mask sandwich's entrance sphere (the
+detector's grid; every arm optic, not the mask or the field lens), in
+the basis the mask acts in -- its axes projected into each ray's
+transverse plane (Convention 2, Korger 2013; the double-pole pair adds a
+(theta^2/4) sin 2 alpha rotation per pixel, 1.6 mrad rms of fake channel
+difference on the 5-deg cone -- measured, then discarded), the common
+scalar stripped by J/sqrt(det J) (the vector-mode field is the scalar's
+exact CONJUGATE on this train, slope -2.0000, residual 4e-9, and carries
+the Fresnel losses; neither is polarization physics), normalized to the
+ideal split and to unit mean power for the state.  Frames through the
+engine's chained apodization (map at the entrance sphere, then the
+dimple; G8 = 0 / 4e-15); the leaked light of one output channel is the
+other input's.  Solver per pixel per channel (V2's constant-kappa shift
+2 arg kappa -> arg kappa, a piston); what the bench knows: 'ideal'
+(nothing), 'amp' (the per-channel UNMASKED reference frames: amplitude
+maps), 'fit' (+5 constants), 'map' (the truth).  Lens rig (193):
+diattenuation 5.1e-3 mean / 1.1e-3 rms, retardance 0.9 mrad; a real J
+-> channel PHASE difference only, 1.63 mrad rms at laser 45 deg, 2.31 at
+0, nil (2e-5) at 90 (the fold plane's s axis); uncalibrated G4 (100 nm
+pokes) 9.0 / 17.2 / 11.2 pm at 45 / 0 / 90 deg -- the 90 one is the
+common amplitude map, gone with the unmasked frames ('amp' 0.11 pm);
+'fit' has nothing to fit (9.5); oracle 0.053; AR-coated 5.0; through the
+on-surface matrix the ideal record to the digit.  Design scan (synthetic
+astigmatic maps): the diattenuation-type term (channel phase difference)
+costs 6 nm per rad absolute (59 / 178 / 597 / 1877 pm at 0.01 / 0.03 /
+0.1 / 0.3 rad rms), nothing through the on-surface matrix to 0.1 rad,
+at 0.3 the grid row 2.6x (1.0068 / 8 pm / SNR 193), dense 962 pm, loop
+contraction 0.554 vs 0.509 with the SAME noise and zero fixed error (3
+pm below 1e13 on both lines); the retardance-type term (channel
+amplitude ratio) is 3.8x larger absolute (226 .. 7106 pm at 0.01 .. 0.3)
+but the per-channel unmasked frames REMOVE it entirely ('amp' at 0.3:
+0.054 pm, every row the ideal record); the oracle at 0.3 rad likewise.
+Rule: specify the arm's pupil-varying DIATTENUATION (0.1 rad rms of
+channel phase costs nothing, 0.3 costs the grid row and 10% loop gain)
+and put the laser on its dominant eigenaxis; its RETARDANCE band (the
+OAP rig's bare-Al term) the sensor calibrates from frames it takes
+anyway.  Record: README V3; runs/v3arm*, v3s_p*, v3s_a*, v3s_p0.3map,
+v3s_a0.3amp, v3s_p0.3amp, v3loop.  Not modeled: the metasurface's own
+oblique-incidence terms over the f/4.2 cone (retardance and geometric
+phase ~theta^2, 0.7% at the edge) -- V2-type, a pupil-varying eta and
+dimple phase.  Next: V4 the stepped reading's between-frame drift in the
+loop; an integral term for the thermal case.
+
 ## Decision points — RULED (Dave 2026-09-04)
 
 1. **Scale:** 96×96 rig; may mask down to 16×16 (1 mm actuators) to
