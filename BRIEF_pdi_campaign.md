@@ -330,6 +330,17 @@ Fixed to one scale per scan (the mean over the reading's frames);
 G8) already shows the mechanism: a zero-sum reading is exactly immune, a
 single-frame reading imprints the walk.
 
+## The step-scheme trade, half 1 (`runs/pdi193se_ls`: 2% step error, four-step least squares)
+
+The absolute reading carries a step error: the flat reads 0.069 rad rms
+(P) / 0.057 (PF) instead of 1e-15, the 12 nm sparse-poke figure comes
+back with 421 / 251 pm rms error (3.5% / 2.1%).  The DIFFERENTIAL rows
+barely move: single 10 nm P 0.9918 / 4 pm, PF 0.9908 / 4 (0.9935 / 4
+without); dense 0.998 / 354 and 1.004 / 353 (338 / 330) -- the error is
+mostly common to the two states and cancels in the wrapped difference.
+Half 2, the five-frame Schwider-Hariharan scan (flat reading 1.3e-5 rad
+rms for the same error in the first attempt), is queued.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a
