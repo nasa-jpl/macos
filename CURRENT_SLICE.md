@@ -39,7 +39,14 @@
 > G5 P 1.9 pm of 11.8 nm, PF 0.000; G7 5e-15 (P at t=1 == S).  RECORD
 > SEQUENCE RUNNING in background: `runs/pseq.sh` -> pdi193 (flat
 > battery + noise), pdi193base, pdi193d1 (1 lam/D on the base), ploop193
-> (loop P/PF).  V2 code committed (resources 7323d80); V2 runs v2g_*/
+> (loop P/PF).  **UPDATE 08:35: Dave pointed at the paper
+> (`~/dev/MACOS_sandbox/pSRI/Dube_pSRI.pdf` + their MATLAB model); PF
+> re-pinned to it (LP01 fiber-mode reference with per-state coupling
+> kappa, pickoff 0.6, SH5 scheme option, step_err) -- resources 09c40da;
+> the first sequence was stopped after pdi193 (record 1, PF = pinhole-
+> shaped idealization, numbers in the brief); `runs/pseq2.sh` is the
+> live sequence: pdi193f, pdi193fbase, pdi193state, pdi193d1,
+> pdi193se_ls/sh5, ploop193 (~2.5 h from 08:31).**  V2 code committed (resources 7323d80); V2 runs v2g_*/
 > v2e10a done (0.1 rad retardance error, uncalibrated: on-surface single
 > 0.9934/4 pm -- the surface matrix absorbs it) -- README V2 still to
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
