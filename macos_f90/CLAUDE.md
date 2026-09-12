@@ -1531,7 +1531,16 @@ Return-terminated Cass FF the assembled vector EP field matches the
 scalar field's convention (measured: circular-concentration same=0.994 /
 conjugate=0.002; signed far-field tilt response equal at +0.94x), while
 plain trace-to-detector `RayE` measures CONJUGATE to the OPD map (slope
--0.9995, corr -0.9995).  There is NO universal convention bridge to
+-0.9995, corr -0.9995).  Confirmed on the GRID 2026-09-12 (zwfs_dm96
+Twyman-Green test arm: retro DM, two lenses, PEC plate BS, NF sandwich;
+model 512): the vector-mode field at the detector has the scalar trace's
+amplitude structure but its common phase fits **-2.0000 x the scalar
+pupil phase, residual 4e-9** -- an exact conjugate, plus the Fresnel
+losses the scalar trace never applies (T 0.66).  `dmg_arm_maps` (the
+vector-ZWFS arm maps) does not bridge it: it takes J/sqrt(det J), which
+drops the common scalar and keeps only the polarization part.  Anyone
+comparing a vector-mode field to a scalar one phase-for-phase on such a
+train must expect the conjugate.  There is NO universal convention bridge to
 apply -- correctness rests on the behavioral gates (exact on the
 mask-type/normal-incidence class Tranche 1 claims), and **Tranche 2's
 J_run must carry phases explicitly relative to the CumRayL bookkeeping**
