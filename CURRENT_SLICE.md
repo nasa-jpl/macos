@@ -24,6 +24,26 @@
 
 ## Active slice
 
+> **ZWFS V1 -- THE VECTOR (POLARIZED-DIMPLE) READING, DONE 2026-09-12
+> (LOCAL: resources 1cf5889 + e3e32e0; macos this commit; push on Dave's
+> review).**  Reading V = +phi/-phi image pair, exact per-pixel solve, no
+> fold (`dmg_zwfs_gauge` frameV/reconV/solveV/diffV); runner class 4 in
+> every stage; G4 fold gate (100 nm sparse pokes: V 0.05 pm, single frame
+> 9 nm).  Record (README V1; runs/v193flat, v193base, v193noise,
+> vloop193): matrix on the 30 nm surface -> single 10 nm 0.9935 / 4 pm,
+> grid 1 nm 0.9992 / 3 pm, dense 0.9999 / 0.33 nm (S 0.68); ladder gain
+> within 2% to 60 nm rms (S 0.66); loop contraction 0.509, steps ->
+> 0.000, 3 pm from 1.5e12 / 5.3e12 photons per cycle (S 2.6e12 /
+> 7.5e12); N(1 pm) 4.7e13 (S 5.6e13).  Learned: a whole-pupil 60 nm
+> figure collapses the core for every reading (not a fold test); b
+> iteration exact modulo piston; V's differential must be the WRAPPED
+> phase difference; matrix mode reports RAW (S10's ladders were
+> Wiener-corrected); the noise stage prices the readings run; an eager
+> ifelse_ killed any battery without I+ (fixed).  Deck slide 15 (DRAFT).
+> NEXT: V2 metasurface retardance/leakage knob; V3 arm polarization
+> aberrations per channel (Jones pupil); V4 the stepped reading's
+> between-frame drift in the loop.**
+>
 > **CCMac tg96-oap f46585d REVIEWED 2026-09-11 (`BRIEF_ccmac_tg96_oap3.md`,
 > LOCAL): accepted in substance; D2 lens numbers reproduced here to the
 > digit (worktree of the branch + this box's mex; appendix in the brief).
