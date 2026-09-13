@@ -350,8 +350,12 @@ back with 421 / 251 pm rms error (3.5% / 2.1%).  The DIFFERENTIAL rows
 barely move: single 10 nm P 0.9918 / 4 pm, PF 0.9908 / 4 (0.9935 / 4
 without); dense 0.998 / 354 and 1.004 / 353 (338 / 330) -- the error is
 mostly common to the two states and cancels in the wrapped difference.
-Half 2, the five-frame Schwider-Hariharan scan (flat reading 1.3e-5 rad
-rms for the same error in the first attempt), is queued.
+**Half 2 (`runs/pdi193se_sh5`): the five-frame Schwider-Hariharan scan
+under the same 2% error -- the flat reads 1.3e-5 rad rms, the 12 nm
+figure 4.9 / 2.2 pm rms error (P / PF), and the differential rows are the
+error-free ones to the digit (0.9935 / 4, 0.9992 / 3, 0.9985 / 338;
+PF 1.0002 / 330).  The paper's scheme buys first-order immunity to the
+step size for one extra frame.**
 
 ## Decision points for Dave
 
