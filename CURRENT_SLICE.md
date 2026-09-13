@@ -81,7 +81,8 @@
 > start matrix is measured ONCE per start for EVERY class (was once per
 > reading) -- what makes the ladder affordable; the stage prints the
 > OPENING differential's wrapped rms / residues / max gradient /
-> unwrapped rms per start and reading.  **PUSH BLOCKED:** Dave approved
+> unwrapped rms per start and reading.  **GATES GREEN: tDmgLoop 15/15,
+> mmacos fast suite 469 pass / 0 fail.**  **PUSH BLOCKED:** Dave approved
 > the push and CCMac is blocked on the shared knobs, but `git push` is
 > refused by the session's auto-mode classifier -- Dave has to run it or
 > allow the rule.  Commits to push: resources `5d99c20 e873703 215a452
