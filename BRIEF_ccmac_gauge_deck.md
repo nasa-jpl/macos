@@ -111,6 +111,11 @@ deck.
 
 ## Report
 
+Dave (2026-09-13): the deck's main body shows each approach ONCE, in
+its best-performing configuration; everything else is backup.  Open the
+report with that configuration named and the numbers that make it the
+best; keep the route there for the backup slides.
+
 One report file (REPORT_gauge_ifo.md in tg_psi_dm96_oap/), numbers first,
 departures flagged, every figure and run tag listed, the three
 phase-shift forms in one table, the OAP-front-end rows beside the lens

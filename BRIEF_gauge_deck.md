@@ -100,33 +100,44 @@ panel at full slide width, type readable at slide size.  The recipe is
 8. Style: succinct; add slides rather than crowd one; jargon-free,
    fact-based, no fluff.  Slide rule: one figure or one table, at most
    three bullets, at most ~60 words of bullets, a footnote that fits.
+9. Time is limited: the main body presents each APPROACH once, in its
+   best-performing configuration; the alternatives and the stories of how
+   we got there (the model correction, the readings that lost, the rigs
+   that do not hold) are backup slides.  Each lane's report names the
+   best configuration of its approach with the numbers that make it so.
 
-## 6. Deck outline (deck_gauges.md, ~26 slides, DRAFT until Dave signs)
+## 6. Deck outline (deck_gauges.md; main body ~15 slides, backup the rest; DRAFT until Dave signs)
 
+Main body -- each approach once, in its best configuration:
 1. Title: DM Surface Gauge Comparison.
-2. The requirement: picometers on a 96x96 DM holding a 30-60 nm surface,
-   in a servo; first capture of a 100-200 nm WFE figure.  The scoring in
-   one sentence each: rows, capture range, photons, hold.
-3. The shared front end (layout + parts).
-4. Six configurations at a glance (six small layouts).
-5-10. One slide per configuration: layout (large) + the parts it adds.
-11-13. The three IFO phase-shift forms: what each adds, and the
-   systematic each carries (PZT: step error, drift between frames;
-   snapshot: polarization errors; hybrid: both handled).
-14. Lenses vs OAPs: the IFO on each (open loop and hold mode).
-15. The other gauges on the OAP front end.
-16. Performance side by side (rows on the 30 nm surface).
-17. Capture range, aging calibration.
-18. Capture range, re-measured calibration, and its photon cost.
-19. Photons for 1 pm.
-20. Closed loop: 3 pm held vs light; fixed errors.
-21. Drift: camera and DM, between and within measurements.
-22. Capturing the initial figure: each configuration's route from
-   100-200 nm WFE to hold.
-23. Systematics priced, and the open ones.
-24. Recommendation.
-25. Run it yourself.
-26. Provenance.
+2. The requirement: picometers on a 96x96 DM holding a 30-60 nm surface
+   in a servo; first capture of a 100-200 nm WFE figure; the four scores.
+3. The shared front end: layout + parts.
+4. Interferometer, best configuration (lens rig; the phase-shift form the
+   numbers pick -- expected the hybrid): layout + parts.
+5. Zernike sensor, best configuration (the stepped reading, matrix on
+   the surface): layout + parts.
+6. Vector Zernike sensor (the polarized pair, cube split): layout + parts.
+7. Point-diffraction, best configuration (stepped pinhole or P/SRI, as
+   the numbers pick): layout + parts.
+8. Performance side by side (rows on the 30 nm surface).
+9. Capture range (aging and re-measured, with the photon cost).
+10. Photons for 1 pm and the closed-loop hold (3 pm vs light; fixed
+    errors) -- two slides if one overflows.
+11. Capturing the initial figure: each approach's route from 100-200 nm
+    WFE to hold (the descent run).
+12. Lenses vs OAPs: the budget question answered with the IFO on each and
+    the other gauges on the OAP front end.
+13. Systematics: priced and open, one line per approach.
+14. Recommendation.
+15. Run it yourself.
+
+Backup: the three IFO phase-shift forms in detail; the OAP rig's rows and
+loop; the scalar Zernike readings that lost (linear, one-frame exact) and
+the fold; the pinhole-diameter and P/SRI-vs-pinhole trades; drift
+(camera, DM, within-measurement); the metasurface and arm terms (V2,
+V3); the model correction and sampling story; the coating story (item
+B); provenance.
 
 ## 7. Capturing the initial figure (new measurement)
 
