@@ -97,6 +97,17 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **CAPTURE = A WRAP PROBLEM (TO 2026-09-13, accepted): from a 100 nm rms
+> start the differential to the set point is ~2 rad rms, wrapped for every
+> reading (IFO included).  Fix = 2-D unwrapping of the differential before
+> the estimator (`dmg_unwrap`, `battery.unwrap`), then the start-rms
+> ladder both ways -> the deck's capture slide.  Briefs:
+> `BRIEF_to_capture.md` (TO: push OK; deliverables 8-9), `BRIEF_ccmac_capture.md`
+> (CCMac: accepted lens_deck; "re-measured collapses" needs its mechanism
+> -- wrapped differentials everywhere?; mirror the unwrapper; the IFO's
+> 47-site aging range is 45 nm, its single-site 120-158).  TO's PF result:
+> reference moving with the state = 5.9 pm absolute on 13 nm, frozen 0.**
+
 > **PUSHED 2026-09-13 (Dave: "Time to push!"): resources dev-candidate
 > c24245f (27 commits: CCL V2/V3/capture range/layout, TO's PDI lane,
 > the merge of CCMac's renders), macos dev-candidate b219135 (19
