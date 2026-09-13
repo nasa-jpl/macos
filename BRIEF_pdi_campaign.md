@@ -357,6 +357,42 @@ error-free ones to the digit (0.9935 / 4, 0.9992 / 3, 0.9985 / 338;
 PF 1.0002 / 330).  The paper's scheme buys first-order immunity to the
 step size for one extra frame.**
 
+## The P/SRI as a buildable bench (Dave 2026-09-12: "separate but balanced arms, the reference through the pinhole / phase shifter")
+
+`macos.design.psri_bench` + `zwfs_dm96/psri_layout_fig.m` (figures
+`psri_layout.png`, `psri_render.png`; decks `psri_test.in`, `psri_ref.in`):
+the TG96 front end to the recombination plane, then a Mach-Zehnder laid
+out in the frame of the returned chief -- BS2 (45 deg plate) splits; the
+TEST arm transmits, runs 320 mm to fold M1, carries a normal-incidence
+glass compensator down the right leg and reflects off BS3's front face;
+the REFERENCE arm reflects down the left leg to Lr1 (f 300 mm, F/2.9 on
+the 103 mm beam), the pinhole seat inside its NF sphere bracket at the
+true focus (+1.10 mm from the thin-lens seat), Lr2 recollimating, fold M3
+along the bottom leg, and transmits BS3; both exit on ONE chief into the
+tuned pupil-imaging tail (L2, empty seat, relay, camera at the DM image).
+Balance, solved: equal plate glass by construction (one transmission +
+one front reflection each); the compensator (21.9 mm) nulls the lens glass
+so the two chief optical paths are equal to the digit (4453.1 mm); M3 is
+placed so the exit chiefs coincide (2e-13 mm); both decks trace 3210/3210
+rays to one camera plane (chiefs 2e-12 mm apart, footprints 3.60 / 3.29
+mm).  Lenses: Lr1's conic solved on the trace (-0.578, 0.1 um ray blur at
+the pinhole; the add_lens seed gives 0.31 mm -- the ZWFS L2 carries a
+tuned conic for the same reason), Lr2 = Lr1 mirrored about the pinhole
+(exact recollimation of the pinhole's wave).  Three traps met and
+recorded: (1) at F/2.9 the diffraction focus is ~20 um deep, so a coarse
+trim scan straddles it -- find the ray focus first; (2) the engine's OPD
+at a tilted fold reads geometry, and at the camera the tail's converging
+beam dominates -- measure a collimated wavefront on a plane normal to it;
+(3) the collimated beam behind the DM carries the front end's 5.8 um rms
+residual (L1), which the tuned tail cancels for the test arm and the
+pinhole filters for the reference -- a "solved" Lr2 would half-cancel it
+instead of being right for the filtered wave; reversibility (Lr2 = Lr1)
+is the design rule, and the check plane reproducing the recombination
+plane's wavefront (5.78 vs 5.80 um rms) is its gate.  Deck slides 5-6 are the
+sketch and the two-arm traced render (the ZWFS deck's recipe).  NEXT: run
+the PF reading on the two decks (the reference from psri_ref.in through
+the pinhole, the test from psri_test.in) instead of synthesizing it.
+
 ## Decision points for Dave
 
 1. Which paper / layout is meant: if the 2024 paper's reference is a
