@@ -383,7 +383,7 @@ dark band was the ideal reflector's exactly-zero retardance variation;
 bare Al fills it (dense 0.95), the D3 uncoated numbers are retired; the
 residual fold cross-talk 0.18 is the hard wall in hold mode.  Record:
 zwfs README S11 addendum; tg_psi_dm96_oap README / REPORT_oap /
-runs/loop_lens, loop_oap; deck slide 16.
+runs/loop_lens, loop_oap; deck slide 19.
 
 ## V2 -- metasurface retardance error (2026-09-12, RUN): not a servo-budget term
 
@@ -447,6 +447,36 @@ oblique-incidence terms over the f/4.2 cone (retardance and geometric
 phase ~theta^2, 0.7% at the edge) -- V2-type, a pupil-varying eta and
 dimple phase.  Next: V4 the stepped reading's between-frame drift in the
 loop; an integral term for the thermal case.
+
+## Capture range (Dave 2026-09-12: "they will not be operating at null"; RUN)
+
+Definition: the largest working-surface rms at which a 10 nm change on
+47 grid sites reads within 10% (gain 0.9..1.1), log-interpolated
+between ladder rungs; the runner prints it after every ladder; raw
+matrix estimates.  385 rays.  (a) A calibration that ages from a 30 nm
+surface: L 44 nm, I+ 36, S 42, V 70 (from the flat: 32 / 42 / below 30
+/ 68 -- the vector pair's range does not depend on where its matrix was
+measured); every reading dead by 100 nm rms (2 rad rms of phase: the
+focal core, the sensor's reference, is gone).  (b) The matrix
+re-measured on the surface: gain within 5% at 60 / 90 / 120 / 160 nm for
+every reading (floors 3 -> 13-21 pm) -- the inversion scales the
+weakened response back up; the price is photons: N(1 pm) 30 -> 160 nm
+L 9e13 -> 5e14, S 9e13 -> 3e15, V 6e13 -> 2e15 (5x to 40x).  (c) The
+interferometer (CCMac lens_base, single site, matrix at 30 nm): 0.99 /
+1.00 / 1.02 at 30 / 60 / 120, breaks at 240 (the four-step wraps at
+lambda/4 of surface, 158 nm) -> 120-158 nm; the bare-Al OAP rig 60-120.
+Rule: with an aging calibration the vector pair holds to 70 nm and the
+scalar readings to ~40, the interferometer to its wrap; a servo that
+re-measures its matrix on the surface it holds keeps every ZWFS
+reading's gain to 160 nm and pays in light.  Record: README "Capture
+range"; runs/cap385, cap385_flat, cap385_b60..b160, noise193_b30..b160;
+deck slides 11-12.  Also this session: the vector sensor's LAYOUT
+(`zwfs_vlayout.m`: QWP + 12.7 mm MacNeille cube behind the field lens,
+two cameras 20.7 mm behind the cube at the pupil image; decks
+zwfs_v_camA/B.in; deck slide 17) and slide 2's mask figure re-drawn from
+the record run (2.0 lam F/D spot at 3.96 px per lam F/D at BOTH 193/1024
+and 385/2048 -- the larger grid doubles the pupil sampling, not the
+focal one; 70.7% of the light enclosed; runs/mask385).
 
 ## Decision points — RULED (Dave 2026-09-04)
 
