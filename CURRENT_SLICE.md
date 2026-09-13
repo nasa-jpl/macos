@@ -63,7 +63,34 @@
 > reference model does not set the photon cost, the 60/40 pickoff does.
 > Deliverable 6 DONE (both layouts + psri_render redone in the recipe,
 > `pdi_vfig_util`; parts lists in the README).  Gates: tDmgLoop 14/14.
+> **UPDATE `BRIEF_to_capture.md` (Dave/CCL 2026-09-13): the wrap finding
+> accepted; deliverables 8 and 9.**  D8 DONE: `dm_gauge_lib/dmg_unwrap.m`
+> -- masked 2-D least-squares unwrapping (Ghiglia & Romero 1994: the
+> unweighted Poisson solve by MIRRORED FFT, since `dct2` is a toolbox
+> function and the release gate forbids external deps; then their sec-5
+> PCG refinement on the WEIGHTED equations so the region outside the mask
+> cannot pull on the answer inside it), with RESIDUES counted so a map
+> past the pixel-gradient limit is reported not silently wrong.  Gates
+> tDmgLoop G13, 15/15 (ramp 8.5e-14 rad; 1.5 / 3.0 waves PV on a disc
+> 6.7e-13 / 1.3e-12, zero residues; 40 waves PV -> 644 residues).  Wired
+> behind `battery.unwrap` (DEFAULT FALSE) for S/V/P/PF in BOTH the
+> measurement differential and the calibration's class maps;
+> `loop.unwrap 'auto'` turns it on exactly when `loop.start_rms` is set;
+> L/F/I/I+ untouched.  Non-disturbance: `runs/uwoff_ref` bit-identical
+> (v3dev G4 = 0.296 pm).  `loop.start_rms` now takes a VECTOR and the
+> start matrix is measured ONCE per start for EVERY class (was once per
+> reading) -- what makes the ladder affordable; the stage prints the
+> OPENING differential's wrapped rms / residues / max gradient /
+> unwrapped rms per start and reading.  **PUSH BLOCKED:** Dave approved
+> the push and CCMac is blocked on the shared knobs, but `git push` is
+> refused by the session's auto-mode classifier -- Dave has to run it or
+> allow the rule.  Commits to push: resources `5d99c20 e873703 215a452
+> 2e0ab46 6ded38c`, macos `e8c51d0`.
 > **RUNNING:** gseq1's tail (pfdeck_loop, cap385p*, noise193p_b*), then
+> `runs/gmaster3.sh` -> gcap (D9, the ladder BOTH WAYS: starts 30-300 nm,
+> 193 rays and K 40, both departures stated), gseq3 (intra), gseq4 (ref
+> walk), gseq2 (pinhole).  Superseded: gmaster.sh, gmaster2.sh.
+> **[old plan below]**
 > `runs/gmaster2.sh` -> gseq4 (D5 reference-arm walk, ~75 min), gseq2
 > (D3 pinhole diameter, the model-2048 leg ~4 h), gseq3 (D4 descent +
 > within-scan drift, ~7 h).  NEXT: fill REPORT_gauge_pdi.md sections
