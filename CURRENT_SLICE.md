@@ -52,6 +52,22 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **GAUGE DECK PLAN RULED 2026-09-13 (Dave):** title "DM Surface Gauge
+> Comparison", audience the JPL HWO WFS&C group; OAPs = the budget
+> baseline, show why lenses (if true) and run the other gauges on the
+> OAP front end; all three IFO phase-shift forms; TO's points ruled
+> (paper's pickoff form; pinhole diameter = the better of 2.0@1024/193
+> and 1.0@2048/385; own dir pdi_dm96/); the draft stance approved plus
+> CAPTURING THE INITIAL FIGURE (100-200 nm WFE): the descent run
+> (loop.start_rms / loop.recal_every) for every reading; CCMac's renders
+> not deck quality -> redo in the zwfs_vlayout recipe; CCMac and TO
+> tasked at the OPUS level (`BRIEF_ccmac_gauge_deck.md`,
+> `BRIEF_to_gauge_deck.md`, standalone); style: succinct, more slides,
+> one figure or table + <= 3 bullets per slide.  CCL owns: the vZWFS
+> cube leakage, figure QA, combined figures, the deck (deck_gauges.md,
+> ~26 slides).  NEXT: CCL's cube-leakage run; then wait for the lanes;
+> assemble.  The two briefs are the handoff text for Dave to relay.
+
 > **GAUGE DECK PLAN 2026-09-13 (Dave: "bring all the DM surface gauge
 > concepts together into one new deck ... Let's plan!"): `BRIEF_gauge_deck.md`
 > -- six configurations on one front end (lens IFO, OAP IFO, ZWFS, vZWFS,

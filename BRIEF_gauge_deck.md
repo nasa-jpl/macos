@@ -70,97 +70,99 @@ panel at full slide width, type readable at slide size.  The recipe is
 | E PDI | pdi_layout.png / pdi_layout_tail.png exist (deck_pdi) -- check against the recipe | TO: pinhole substrate (diameter, surround transmission t, the stepping) |
 | F P/SRI | psri_layout.png / psri_render.png exist (deck_pdi slides 5-6) -- check against the recipe | TO: pickoff BS, Lr1/Lr2, pinhole, folds M1/M3, compensator, waveguide chip + phase shifter, BS3 |
 
-## 5. Deck outline (deck_gauges.md, ~18 slides, DRAFT until Dave signs)
+## 5. Dave's rulings (2026-09-13)
 
-1. Title.
-2. The requirement: a DM surface gauge at picometers, holding a real
-   surface (30-60 nm rms), 96x96, in a servo -- not at null.  The four
-   numbers every candidate is scored on (rows, capture range, photons,
-   hold).
-3. The six configurations at a glance: one small layout each + the parts
-   each adds to the shared front end.
-4. The shared front end: layout + parts (source to the tail).
-5-10. One slide per configuration: layout large (left), parts list
-   (right), its numbers row (bottom).  A and B may share a slide if the
-   OAP rig is dropped as a candidate (decision 2).
-11. Performance side by side: the table of section 3 in slide form.
-12. Capture range (both ways) across all six.
-13. Closed loop: hold vs photons, all six on one figure (the dmg_loop
-   figures exist per lane; the combined figure is a runner-figs job).
-14. Systematics priced per configuration, and the ones still open.
-15. What each lane has not finished (honest status).
-16. The recommendation (Dave's; a draft stance is in section 7).
-17. Run it yourself: one runner per lane, one scoring library.
-18. Provenance.
+1. Audience: the JPL HWO WFS&C discussion group.  Title: **DM Surface
+   Gauge Comparison**.
+2. OAPs are the traditional (budget) implementation.  The deck must show
+   why the lens route is worth its cost, if it is, and what the OAP
+   front end means for the OTHER approaches -- so the ZWFS, vZWFS and
+   PDI readings get run on the OAP rig too (section 8, CCMac).
+3. All three IFO phase-shift forms are compared: PZT four-step,
+   polarization snapshot (v1 plate, v2 cube), and the hybrid (snapshot
+   for the change measurements, PZT as the calibrator).
+4. TO's points, ruled here: the P/SRI models the paper's pickoff form
+   (the pinhole form P stays as the stepped-pinhole reading); pinhole
+   diameter of record = whichever of 2.0 lam/D (1024/193) and 1.0 lam/D
+   (2048/385) performs better on the surface rows and the loop, with
+   both recorded; the PDI gets its own directory `40_benches/pdi_dm96/`
+   (pdi_params, pdi_run, the psri bench and decks, README, runs), the
+   code staying shared through zwfs_run / dm_gauge_lib.
+5. The draft stance is approved for performance.  Added: **capturing the
+   DM's initial figure, ~100-200 nm WFE (50-100 nm of surface)** -- every
+   configuration must show how it gets from there to the hold regime
+   (section 7).
+6. CCMac's renders and layouts are not of deck quality: redo in the
+   recipe; CCL QAs every figure before it enters the deck.
+7. CCMac and TO are tasked at the Opus level (briefs in section 8, written
+   to be executed without CCL); CCL does QA, the vZWFS cube leakage, and
+   the assembly.
+8. Style: succinct; add slides rather than crowd one; jargon-free,
+   fact-based, no fluff.  Slide rule: one figure or one table, at most
+   three bullets, at most ~60 words of bullets, a footnote that fits.
 
-Style: American English; figures = the tools' own PNGs, crop only;
-every axis quantity defined once; photons per measurement, never per
-state; the pre-write gate in doc/STYLE_REPORTS.md.
+## 6. Deck outline (deck_gauges.md, ~26 slides, DRAFT until Dave signs)
 
-## 6. Work split, in order
+1. Title: DM Surface Gauge Comparison.
+2. The requirement: picometers on a 96x96 DM holding a 30-60 nm surface,
+   in a servo; first capture of a 100-200 nm WFE figure.  The scoring in
+   one sentence each: rows, capture range, photons, hold.
+3. The shared front end (layout + parts).
+4. Six configurations at a glance (six small layouts).
+5-10. One slide per configuration: layout (large) + the parts it adds.
+11-13. The three IFO phase-shift forms: what each adds, and the
+   systematic each carries (PZT: step error, drift between frames;
+   snapshot: polarization errors; hybrid: both handled).
+14. Lenses vs OAPs: the IFO on each (open loop and hold mode).
+15. The other gauges on the OAP front end.
+16. Performance side by side (rows on the 30 nm surface).
+17. Capture range, aging calibration.
+18. Capture range, re-measured calibration, and its photon cost.
+19. Photons for 1 pm.
+20. Closed loop: 3 pm held vs light; fixed errors.
+21. Drift: camera and DM, between and within measurements.
+22. Capturing the initial figure: each configuration's route from
+   100-200 nm WFE to hold.
+23. Systematics priced, and the open ones.
+24. Recommendation.
+25. Run it yourself.
+26. Provenance.
 
-**CCMac (reflective + lens IFO completion):**
-0. The rows on the 30 nm working surface, matrix measured on it, with the
-   47-site 1 nm grid row (the ZWFS convention; the current rows are on a
-   16 nm base and single-site) -- lens and OAP.
-1. The runner prints the capture range (port the `zwfs_run` line: the
-   largest base rms with the 47-site 10 nm gain in 0.9..1.1), and runs
-   the ladder both ways (matrix aging from 30 nm; re-measured at 60 / 90
-   / 120 / 160) with N(1 pm) at each surface, lens and OAP.
-2. Photons for 1 pm in the S5 noise-stage form (not only the loop's
-   sig_n), lens and OAP.
-3. Layout figures in the recipe: lens rig with the reference arm and the
-   PZT flat, OAP rig with the fold plane in view, BS-node inset, names.
-4. Parts lists (section 4).
-5. Close the reflective design: is the 0.18 fold cross-talk that walls
-   the loop reducible (OAP AOI, coating retardance spec, the waveplate
-   azimuth) or is the OAP rig open-loop-only?  One paragraph with a
-   number, in REPORT_oap.md.
+## 7. Capturing the initial figure (new measurement)
 
-**TO (PDI completion):**
-1. PF run through the two decks (the reference physically through
-   psri_ref.in's pinhole) instead of synthesized -- the P/SRI's number of
-   record.
-2. Capture range for P and PF: a ladder run (the print is in zwfs_run
-   already), aging and re-measured, with photons.
-3. The reference arm's own drift (non-common path) in the loop -- the
-   term the paper lists; a knob in dmg_loop or the PF instrument.
-4. Layout figures checked against the recipe; parts lists (section 4).
-5. deck_pdi conclusions stated.
+The DM arrives with 100-200 nm WFE (50-100 nm of surface).  The capture
+range slides say: with a calibration aging from 30 nm every ZWFS reading
+is dead by 100 nm of surface; re-measured on the surface it holds to 160
+nm at 5-40x the light; the IFO reads to its wrap (158 nm of surface,
+316 nm WFE) and never folds; the P/SRI's reference does not depend on the
+surface (TO's ladder 1.02 / 1.06 / 1.13 at 120 / 240 / 480 nm).  The
+measurement that settles it is a DESCENT run: the loop started at a 100
+nm rms surface (200 nm WFE) with the matrix measured there, gain 0.5,
+recalibrated every K cycles (or once), photons per cycle at the hold
+level -- does each reading converge to the hold regime, in how many
+cycles, at what light?  Knobs `loop.start_rms`, `loop.recal_every` in
+dmg_loop / zwfs_run (TO builds, section 8), mirrored in tg96_run
+(CCMac).  Two more routes to state on the slide: capture with the IFO,
+then hold with the sensor (the hybrid bench); and the longer wavelength
+(the color stage: 780 nm widens every fold by 1.23x).
 
-**CCL (assembly + the vector sensor's last term):**
-1. The cube's channel leakage for the vZWFS (the coated diagonal is in
-   the decks; a crosstalk term between the two images) -- the one open
-   systematics on D.
-2. The shared front-end parts list; the combined capture-range and loop
-   figures across lanes (runner figs jobs).
-3. deck_gauges.md + build; the side-by-side table; QA renders.
+## 8. Tasking (Opus level; each brief stands alone)
 
-Sequencing: lanes 1-2 of CCMac and TO are the numbers the comparison
-slides need; their layout/parts items feed slides 4-10; CCL assembles
-once the numbers land and fills the rest from the existing records.
+- `BRIEF_ccmac_gauge_deck.md` -- CCMac: rows on the 30 nm surface (lens,
+  OAP); capture range both ways + photons; the three phase-shift forms'
+  systematics; the descent run; the ZWFS / vZWFS / PDI readings on the
+  OAP rig; layouts in the recipe; parts lists; close the reflective
+  design.
+- `BRIEF_to_gauge_deck.md` -- TO: `pdi_dm96/`; PF through the two decks;
+  the pinhole-diameter choice; capture range + photons; the descent
+  knobs in dmg_loop + the within-measurement DM drift knob (V4, shared
+  with the IFO's PZT form); the reference arm's drift; layouts checked
+  against the recipe; parts lists; deck_pdi conclusions.
+- CCL: the vZWFS cube leakage; figure QA; the combined figures; the deck.
 
-## 7. Decisions for Dave
+Gate before assembly: every number on slides 14-22 has a run tag in a
+committed report; every layout figure passed CCL's QA at slide size.
 
-1. Audience and title of the deck (Fang's bench build? the JPL review?).
-2. Is the reflective (OAP) IFO still a candidate, given it cannot hold a
-   2 pm walk in closed loop at any photon count?  Keep as a row with the
-   verdict, or drop to a backup slide.
-3. Which IFO phase-shift form is the candidate: the PZT four-step, the
-   polarization snapshot (v1 plate / v2 cube), or the hybrid (snapshot
-   for the change measurements, PZT as the calibrator) the ZWFS deck
-   recommends.
-4. TO's three points: which paper/layout the P/SRI models (pickoff vs
-   intermediate-focus pinhole); the pinhole diameter of record (2.0 lam/D
-   = the dimple, or 1.0 at MODEL 2048); whether the PDI gets its own
-   directory or stays as readings of zwfs_dm96.
-5. The recommendation's stance.  Draft, for your judgment: build the
-   scalar Zernike sensor first (the mask substrate is the only new part,
-   and its stepped reading matches the vector pair on every closed-loop
-   line at four frames); the vector sensor as the upgrade (metasurface,
-   QWP, cube, second camera: two frames, the best reading, no fold, 70 nm
-   capture range aging); the lens IFO with a PZT as the absolute
-   calibrator (its capture range reaches its wrap near 150 nm and it
-   never folds, at 2.6x the light and a 9% fixed error in hold mode);
-   the P/SRI where a surface-independent reference is worth a second
-   arm; the OAP rig not for hold mode.
+## 9. Decisions still open
+
+None blocking.  The recommendation slide's wording is Dave's at sign-off.
