@@ -52,6 +52,18 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **GAUGE DECK PLAN 2026-09-13 (Dave: "bring all the DM surface gauge
+> concepts together into one new deck ... Let's plan!"): `BRIEF_gauge_deck.md`
+> -- six configurations on one front end (lens IFO, OAP IFO, ZWFS, vZWFS,
+> PDI pinhole, P/SRI), the common-currency table with each cell's run tag
+> or owner, the layout/parts rule (the zwfs_vlayout recipe), an 18-slide
+> outline, the work split (CCMac: 30 nm rows + capture range + photons +
+> layouts + parts + close the reflective design; TO: PF through the two
+> decks + capture range + reference-arm drift + parts; CCL: cube leakage
+> + assembly), five decisions for Dave.  Awaiting his ruling; nothing
+> built.  CCMac's render commits (5e45851, b6ed9fe) merged locally
+> (c24245f); their OAP table-plane panel is edge-on, labels E-numbers.**
+
 > **DECK QUESTIONS ANSWERED 2026-09-12 (Dave: capture range to 10%
 > recorded for every device -- "they will not be operating at null";
 > the vZWFS layout drawn large; slide 2's mask figure swapped).  LOCAL
