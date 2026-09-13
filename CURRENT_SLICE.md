@@ -52,6 +52,13 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **PUSHED 2026-09-13 (Dave: "Time to push!"): resources dev-candidate
+> c24245f (27 commits: CCL V2/V3/capture range/layout, TO's PDI lane,
+> the merge of CCMac's renders), macos dev-candidate b219135 (19
+> commits: briefs, decks, slice, engine note).  Fast suite: no failures
+> in a 25-min partial pass and the first 10 suites of the full pass; the
+> full pass was still running at the push (Dave's call).**
+
 > **GAUGE DECK PLAN RULED 2026-09-13 (Dave):** title "DM Surface Gauge
 > Comparison", audience the JPL HWO WFS&C group; OAPs = the budget
 > baseline, show why lenses (if true) and run the other gauges on the
