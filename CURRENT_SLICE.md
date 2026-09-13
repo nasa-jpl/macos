@@ -24,6 +24,51 @@
 
 ## Active slice
 
+> **TO / GAUGE-DECK PDI LANE, IN FLIGHT 2026-09-13 (`BRIEF_to_gauge_deck.md`;
+> plan `BRIEF_gauge_deck.md`).  CODE COMMITTED, resources `5d99c20`, LOCAL.**
+> New dir `mmacos/templates/40_benches/pdi_dm96/` (pdi_params / pdi_run /
+> pdi_batch.sh / pdi_vfig_util + the psri decks and figures + README +
+> REPORT_gauge_pdi.md + runs/); the P/PF README section MOVED there with a
+> pointer left in zwfs_dm96; pre-split records stay in zwfs_dm96/runs.
+> **Built:** (1) `dmg_pdi_gauge` REF_SHAPE 'deck' -- the P/SRI reference arm
+> TRACED through psri_ref.in's physical pinhole, test through psri_test.in
+> (+`pdi.ref_frozen`, the control that separates the arm's SHAPE from its
+> MOTION); `zwfs_run` gains a self-contained `stage_bench_psri_`
+> (`pdi.bench 'psri'`, readings must be {'PF'}).  ZWFS path BIT-IDENTICAL
+> (pdi_dev3's G3/G4/G5/G6/G7 reproduce; G4 = 0.296 pm).  (2) `dmg_loop`
+> knobs `start_rms`/`start_shape` (the DESCENT: the DM's initial figure),
+> `recal_every` (+ the `ins.recal(cmd) -> struct('est','nstates')`
+> contract CCMac mirrors), `intra` (drift WITHIN a scan, `aux.dstep`),
+> `ref_walk` (non-common-path reference phase, `aux.ref_phase`); gates
+> tDmgLoop G9-G12, 14/14.  A descent's STARTING matrix is measured on the
+> STARTING surface.  Drift increments now drawn once ahead of the loop in
+> the same order -> every earlier run reproduces bit-for-bit.
+> **Measured so far (dev res, model 512/65, 48x48 DM):** the traced arm's
+> reference under the 30 nm surface -- total change 0.1528, scale |0.847|,
+> **SHAPE change 0.0057** (the FFT surrogate at 2 lam/D gives 0.1539 /
+> 0.8463 / 0.0059: the real arm behaves like the surrogate); G5 absolute
+> 31.06 pm = 0.257% of a 12 nm figure where the synthesized reference reads
+> 0.000 by construction; rows single 0.9939 / 5 pm, grid 0.9936 / 2, dense
+> 0.9949 / 164; N(1 pm) 3.15e13.
+> **RECORD LANDED (resources `215a452`): deliverable 1 COMPLETE.**  At
+> model 1024 / 193 rays / 96x96 with the matrix on the 30 nm surface:
+> the traced arm's G5 absolute error **5.889 pm** on a 13 nm figure vs
+> **0.000 pm** frozen and 0.000 synthesized -- so the error is ENTIRELY
+> the reference MOVING, and the synthesized LP01 model IS a frozen
+> reference; differentially the motion is a 10%-class noise-floor effect
+> (dense 129 -> 144 pm) and nothing on gain or range; rows single
+> 0.9935/2 pm/SNR 4895, grid 0.9924/1, dense 0.9926/144; **capture range
+> 480 nm+ with gain inside 0.7%** (the synthesized model is +12.8%
+> there; S and P fold at 120 nm); N(1 pm) 2.00e14 vs 1.9e14 -- the
+> reference model does not set the photon cost, the 60/40 pickoff does.
+> Deliverable 6 DONE (both layouts + psri_render redone in the recipe,
+> `pdi_vfig_util`; parts lists in the README).  Gates: tDmgLoop 14/14.
+> **RUNNING:** gseq1's tail (pfdeck_loop, cap385p*, noise193p_b*), then
+> `runs/gmaster2.sh` -> gseq4 (D5 reference-arm walk, ~75 min), gseq2
+> (D3 pinhole diameter, the model-2048 leg ~4 h), gseq3 (D4 descent +
+> within-scan drift, ~7 h).  NEXT: fill REPORT_gauge_pdi.md sections
+> 2-5 and 0 as they land; push only on Dave's review.
+
 > **PDI READINGS (Dave 2026-09-12 "look at another sensor, using a
 > point-diffraction IFO approach -- see Brandon Dube"), IN FLIGHT, LOCAL.**
 > Plan + literature: `BRIEF_pdi_campaign.md` (the paper meant = Dube,
