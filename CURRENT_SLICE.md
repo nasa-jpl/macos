@@ -63,7 +63,8 @@
 > not deck quality -> redo in the zwfs_vlayout recipe; CCMac and TO
 > tasked at the OPUS level (`BRIEF_ccmac_gauge_deck.md`,
 > `BRIEF_to_gauge_deck.md`, standalone); style: succinct, more slides,
-> one figure or table + <= 3 bullets per slide.  CCL owns: the vZWFS
+> one figure or table + <= 3 bullets per slide; MAIN BODY = each approach
+> once in its best configuration, the rest backup.  CCL owns: the vZWFS
 > cube leakage, figure QA, combined figures, the deck (deck_gauges.md,
 > ~26 slides).  NEXT: CCL's cube-leakage run; then wait for the lanes;
 > assemble.  The two briefs are the handoff text for Dave to relay.

@@ -106,6 +106,11 @@ every number here.
 
 ## Report
 
+Dave (2026-09-13): the deck's main body shows each approach ONCE, in
+its best-performing configuration; everything else is backup.  Open the
+report with that configuration named and the numbers that make it the
+best; keep the route there for the backup slides.
+
 One file `pdi_dm96/REPORT_gauge_pdi.md`: numbers first, departures
 flagged, run tags, figures.  Say which of 1-7 is done, and push when
 tDmgLoop and the fast suite are green.
