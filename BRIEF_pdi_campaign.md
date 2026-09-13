@@ -326,7 +326,15 @@ NOT the exact immunity the unit test guarantees.  Cause, mine: the
 'rel' scale was each FRAME's own mean, so the frames of one scan got
 different offsets; a camera bias is the same electrons on every frame.
 Fixed to one scale per scan (the mean over the reading's frames);
-`pcam193r` re-queued; the numbers above are superseded.**  The unit-test gate (tDmgLoop
+the numbers above are superseded.**  **Corrected run (`runs/pcam193r`,
+17:03): L imprints the walk at 10.8 nm hold error (noise-only 1.4 pm),
+V at 89 pm, and S / P / PF read their noise-only values to the printed
+digit (1.52 / 1.45 / 2.50 pm at 1e13, 0.15 / 0.14 / 0.25 at 1e15;
+spectra identical).  The PSI immunity of the paper, measured on the
+bench: a camera bias constant within a scan cannot reach a reading
+whose step weights sum to zero; the single-frame Zernike readings and
+the simultaneous pair carry it onto the DM.**  The within-scan variant
+(`pcam193ri`) is running.  The unit-test gate (tDmgLoop
 G8) already shows the mechanism: a zero-sum reading is exactly immune, a
 single-frame reading imprints the walk.
 
