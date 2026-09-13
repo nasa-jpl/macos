@@ -130,7 +130,9 @@ Main body -- each approach once, in its best configuration:
     the other gauges on the OAP front end.
 13. Systematics: priced and open, one line per approach.
 14. Recommendation.
-15. Run it yourself.
+15-17. Future work (section 10): capture beyond one wave; other
+    approaches; the path to as-built performance.
+18. Run it yourself.
 
 Backup: the three IFO phase-shift forms in detail; the OAP rig's rows and
 loop; the scalar Zernike readings that lost (linear, one-frame exact) and
@@ -177,3 +179,87 @@ committed report; every layout figure passed CCL's QA at slide size.
 ## 9. Decisions still open
 
 None blocking.  The recommendation slide's wording is Dave's at sign-off.
+
+## 10. Future work (three slides; Dave 2026-09-13)
+
+### 10.1 Capture beyond one wave: a second color
+
+Unwrapping resolves a wrapped differential only while neighboring pixels
+differ by less than pi: at 4 px per actuator a 100-200 nm rms actuator
+pattern is 0.7-1.4 rad per pixel and unwraps; a figure of more than a
+wave with actuator-scale structure (quilting, print-through, a stuck
+actuator) does not.  The second color removes the ambiguity without
+unwrapping: two wavelengths give a synthetic wavelength lambda1 lambda2 /
+|lambda1 - lambda2| -- 632.8 + 700 nm: 6.6 um, an unambiguous surface
+range of 1.6 um (double pass); 632.8 + 780 nm: 3.35 um, 0.84 um -- at a
+noise cost of lambda_syn / lambda (5-10x), so the coarse color pair
+captures and the single color holds.  The machinery exists: the color
+stage runs one physical mask at five wavelengths (its phase 1.57 rad at
+632.8 nm, 1.42 at 700; the stepped depths scale as (n-1)/lambda), and a
+two-color IFO is the classic form.  Measurement to add: the start-rms
+ladder with a two-color coarse solve feeding the single-color loop, per
+reading; the number is the largest capturable start and its light.
+
+### 10.2 Other approaches to consider
+
+One line each; none is modeled yet.
+- Shack-Hartmann or modulated pyramid as the capture stage: range of
+  many waves, no wrap, sensitivity far from picometers; hands off to the
+  gauge once inside its range.
+- Phase diversity (two defocused pupil images, no mask): wide range,
+  iterative, common path; a candidate for capture with the existing
+  camera and a translation stage.
+- White-light (low-coherence) scanning in the interferometer: absolute
+  surface with no wrap, slow; a one-time capture tool.
+- Model-based large-figure solve: the DM's influence functions as the
+  basis of a nonlinear (iterative) fit to the sensor's frames; the
+  actuator-space estimator already carries the basis, the nonlinearity
+  is the addition.
+- Vector Zernike with a polarization camera (micro-polarizer array):
+  one camera instead of the cube and two; costs a quarter of the pixels
+  per image.
+- Heterodyne or lock-in detection: immunity to slow drift and 1/f
+  electronics, at the cost of a frequency-shifted reference (the
+  interferometer and the P/SRI can carry it; the common-path sensors
+  cannot).
+- Direct actuator metrology (capacitive, optical) as the coarse reference
+  the optical gauge is calibrated against.
+
+### 10.3 The path to as-built performance
+
+The model today: ideal optics, a perfect camera, photon noise, DM and
+camera drift.  As-built adds, in the order they are likely to matter:
+1. **The camera's throughput sets the measurement time, not the laser.**
+   1e14 photons per measurement over ~1e5 pupil pixels is 1e9 electrons
+   per pixel; a 1e5-electron well means 1e4 co-added frames -- at 100
+   frames per second, 100 s per measurement, against the 0.13 s the
+   laser needs.  Price it: well depth, frame rate, read noise per frame
+   (which then enters as sqrt(frames) x read noise), bit depth
+   (quantization at 1e-4 of the signal), gain nonlinearity and pixel
+   response nonuniformity (a flat-field term the differential mostly
+   cancels), persistence between frames (the stepped readings).
+2. **Optical surface errors:** each lens, OAP, plate and the mask
+   substrate with a typical figure (lambda/10 to lambda/20 PV, a 1/f^2
+   spectrum) as GridData on the element; the sensor's reference core
+   sees the low orders (the S7 lesson: 0.16 of defocus moved every
+   number), the differential rows cancel what is fixed.  The mask
+   substrate's flatness and the dimple's etch-depth error (the
+   metasurface's retardance error is V2) are the ZWFS-specific ones.
+3. **Alignment and stability:** the alignment sensitivities exist (D4:
+   10 um, 10 urad); add the mask's centering drift on the focal spot
+   (the S1 registration is the sensitivity), thermal expansion of the
+   bench (a leg length per degree), source pointing and wavelength drift
+   (the mask phase goes as 1/lambda), laser polarization angle (V3), and
+   for the two-arm instruments the non-common-path air and mount drift
+   (the P/SRI's reference walk is TO's item 5).
+4. **More drift terms in the loop:** actuator hysteresis and creep,
+   command quantization (14-16 bit: 0.1-0.5 nm steps as a floor), the
+   influence-function error (absorbed by a matrix measured through the
+   sensor, not by a modeled one), vibration within a stepped scan (the
+   PZT form; `loop.intra`).
+5. **The error budget in the JPL form:** per reading, fixed terms
+   (calibratable, the residual after calibration), drift terms weighted
+   by the servo bandwidth, and noise terms (photon, read, quantization),
+   summed in quadrature to a held error at a stated light and time --
+   the sensitivity-factor form the ZWFS deck's conclusions name.  The
+   deck's comparison table becomes the first column of it.
