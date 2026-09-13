@@ -105,7 +105,7 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **The camera knob:** every pixel's offset random-walks, constant within a scan.  Readings whose step weights sum to zero (S, P, PF) subtract it exactly; the single-frame readings and the simultaneous pair see the walk and put it on the DM (the loop's unit test shows both).
 - **At the paper's 1 electron per pixel it is invisible to every reading:** a lit pixel collects 3×10⁸ photons per frame at 10¹³ per measurement, so an electron is 10⁻⁴ of its shot noise.  The immunity argument belongs to Roman's photon-starved sensor (10² to 10³ per pixel per frame over 12 hours).  The drift is therefore also run as a fraction of the signal, 10⁻³ per cycle.
 - **Measured at 10⁻³ of the signal per cycle:** the linear reading imprints the walk at 10.8 nm, the polarized pair at 89 pm; the stepped dimple, the stepped pinhole and the waveguide reading hold at their noise-only values to the printed digit (0.15, 0.14, 0.25 pm at 10¹⁵ photons).
-- **Within-scan drift** (the whole step developing across the frames): what the zero-sum readings pay: [CAM].
+- **Within-scan drift** (the whole step developing across the frames of each scan): the stepped readings pay for the frame-to-frame part, 5.4 pm (dimple), 5.3 pm (pinhole), 10.7 pm (waveguide) at 10¹⁵ photons, 2000× below the single-frame reading; the scan rate is the hardware lever.
 ::: right
 | reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | camera walk of 1 e per pixel: hold error at 10¹⁵ | camera walk of 10⁻³ of the signal per cycle: hold error at 10¹⁵ |
 | stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | 0.15 pm (= no drift) | 0.15 pm (= no drift) |
@@ -133,7 +133,7 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **The stepped pinhole is the stepped Zernike sensor with a smaller, attenuated reference:** the same frames and the same algebra (equal to 5×10⁻¹⁵ at unit transmission); it reads exactly where the dimple's four-step does not (0.93 vs 0.75 on the 30 nm surface), for 1.6× fewer camera photons, and pays 18% of the light at the plate.
 - **A reference that does not depend on the surface is what extends the range:** the waveguide reading keeps reading past the surfaces at which every self-referenced reading folds.
 - **[R2]** the on-surface calibration, the 1 λ/D pinhole, the scheme trade.
-- **A drifting camera reaches only the readings that do not phase-step:** at 10⁻³ of the signal per cycle the linear reading puts 10.8 nm on the DM and the polarized pair 89 pm; the stepped dimple, the stepped pinhole and the waveguide reading are unaffected to the printed digit.  At the paper's 1 electron per pixel nothing is affected at these light levels.  [CAM] what within-scan drift costs the stepped readings.
+- **A drifting camera reaches only the readings that do not phase-step:** at 10⁻³ of the signal per cycle the linear reading puts 10.8 nm on the DM and the polarized pair 89 pm; the stepped dimple, the stepped pinhole and the waveguide reading are unaffected to the printed digit.  At the paper's 1 electron per pixel nothing is affected at these light levels; drift developing within a scan costs the stepped readings 5 to 11 pm, so the scan rate, not the reading, sets that floor.
 - **What the model does not yet carry:** the reference arm's own drift (non-common path), detector nonlinearity and persistence — the paper's own list.
 
 # Backup

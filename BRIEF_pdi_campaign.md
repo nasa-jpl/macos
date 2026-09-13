@@ -333,8 +333,12 @@ digit (1.52 / 1.45 / 2.50 pm at 1e13, 0.15 / 0.14 / 0.25 at 1e15;
 spectra identical).  The PSI immunity of the paper, measured on the
 bench: a camera bias constant within a scan cannot reach a reading
 whose step weights sum to zero; the single-frame Zernike readings and
-the simultaneous pair carry it onto the DM.**  The within-scan variant
-(`pcam193ri`) is running.  The unit-test gate (tDmgLoop
+the simultaneous pair carry it onto the DM.**  **Within-scan variant
+(`runs/pcam193ri`, the whole step developing across the frames of each
+scan): S 5.4 pm, P 5.3 pm, PF 10.7 pm hold error at 1e15 (L 10.8 nm, V
+89 pm unchanged) -- what temporal PSI cannot remove is the drift between
+its own frames; 2000x below the single-frame reading, and the scan rate
+is the hardware lever (the paper's continuous triangle-wave scans).**  The unit-test gate (tDmgLoop
 G8) already shows the mechanism: a zero-sum reading is exactly immune, a
 single-frame reading imprints the walk.
 
