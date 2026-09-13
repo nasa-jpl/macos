@@ -57,6 +57,16 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 | P/SRI waveguide (PF) | 4 (or 5) | the waveguide mode, fixed | 0.75 |
 ~ Photons "per measurement": one DM shape measured once, all frames summed.  Sampling: the pinhole gets the dimple's rule (≥ 6 pixels across at the focus; 3.96 per λ/D at 1024/193, so 1 λ/D needs the 2048 grid).
 
+## The bench as traced, source to camera | Collimator 857 mm, 7° splitter, 700 mm leg to the 96 mm DM, focusing lens 429 mm, the mask seat (16) inside the sphere bracket, 42.5 mm relay, camera at the DM image
+::: full
+![Looking down on the bench; distances in millimeters along the chief ray in blue.  Source and 21 mm baffle (1), collimator (2, 3), splitter plate at 7° (4 to 6, 10 to 12), the DM (7, radius 51 mm) on its 700 mm leg, focusing lens (13, 14), and the tail to the camera (20), enlarged on the next slide.](figs/pdi_layout.png){h=4.7}
+~ The Zernike sensor's deck, unchanged (tg96 test arm, tuned tail; mask trim −5.58 mm to the true focus); the pinhole plate replaces the dimple plate in seat 16.  The P/SRI's reference arm (a 60/40 plate splitter before the focusing lens, a waveguide chip at a second focus, a recombiner; paper Fig. 3) is not traced: its reference is the waveguide mode's field at the pupil, scaled by the coupling of the traced focal field.
+
+## The last 130 mm: mask seat, exit sphere, relay lens, camera | The exit sphere (17) carries the entrance sphere's radius, so the unmasked round trip is the identity; the relay (18, 19) reimages the DM onto the camera (20)
+::: full
+![The tail at 14× the bench scale: focus at the mask seat (16), the exit sphere (17) 23.9 mm behind it, the relay lens (18, 19) 15.9 mm further, and the camera (20) 32.4 mm behind the relay.](figs/pdi_layout_tail.png){h=4.7}
+~ Seat 16 holds the dimple (Zernike readings), the pinhole plate (P), or nothing (PF).  The focal-plane grid inside the bracket samples the mask at 3.96 pixels per λ/D (1024 grid, 193 rays), 7.9 pixels across the 2 λ/D pinhole.
+
 ## Record 1: on the working surface the three exact readings agree, and the stepped sensor does not | A 10 nm actuator change on a 30 nm surface reads at 0.93–0.94 for the polarized pair, the pinhole and the waveguide; 0.75 for the stepped dimple (flat-DM calibration)
 ::: full
 | 96×96, calibration on the flat DM (runs/pdi193) | S | V | P | PF (pinhole-shaped reference) |
@@ -89,19 +99,20 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **Light:** with the paper's 60/40 split the reference arm returns 35% of the light and the test beam keeps 40%; the modulation is a smaller share of the detected flux than the stepped pinhole's, whose reference rides on the same beam — 4× more camera photons per picometer, before the arm's own loss.
 ~ Same seeds, same actuator-space scoring, same code as the sensor rows (dm_gauge_lib).  "fold" = gain −0.01: the reading returns nothing.  P at unit transmission and the dimple's size equals S to 5×10⁻¹⁵ (check G7).
 
-## In closed loop the stepped pinhole costs the stepped dimple's light and the waveguide reference three times that | Held to 3 pm against a 2 pm random walk from 7.0×10¹² photons per cycle (pinhole) and 2.5×10¹³ (waveguide); camera-drift rows [CAM] from runs/pcam193, pcam193i
+## In closed loop the stepped pinhole costs the stepped dimple's light, the waveguide three times that, and a drifting camera reaches only the single-frame readings | Held to 3 pm against a 2 pm walk from 7.0×10¹² photons per cycle (pinhole) and 2.5×10¹³ (waveguide); a camera bias walking 10⁻³ of the signal per cycle puts 10.8 nm on the DM through the linear reading, 89 pm through the pair, nothing through the stepped readings
 ::: left
 - **The loop:** the DM held at the working surface at gain 0.5 for 60 cycles through one reading; the differential to the set point's frames fitted through the matrix; scored as the steady-state hold error.  The ZWFS rows on the same seeds: stepped 2.6×10¹² photons per cycle to hold 3 pm against noise, 7.5×10¹² against a 2 pm walk; polarized pair 1.5 / 5.3×10¹².
 - **The camera knob:** every pixel's offset random-walks, constant within a scan.  Readings whose step weights sum to zero (S, P, PF) subtract it exactly; the single-frame readings and the simultaneous pair see the walk and put it on the DM (the loop's unit test shows both).
 - **At the paper's 1 electron per pixel it is invisible to every reading:** a lit pixel collects 3×10⁸ photons per frame at 10¹³ per measurement, so an electron is 10⁻⁴ of its shot noise.  The immunity argument belongs to Roman's photon-starved sensor (10² to 10³ per pixel per frame over 12 hours).  The drift is therefore also run as a fraction of the signal, 10⁻³ per cycle.
-- **Within-scan drift** (the whole step across the frames): what the zero-sum readings pay: [CAM].
+- **Measured at 10⁻³ of the signal per cycle:** the linear reading imprints the walk at 10.8 nm, the polarized pair at 89 pm; the stepped dimple, the stepped pinhole and the waveguide reading hold at their noise-only values to the printed digit (0.15, 0.14, 0.25 pm at 10¹⁵ photons).
+- **Within-scan drift** (the whole step developing across the frames): what the zero-sum readings pay: [CAM].
 ::: right
-| reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | camera walk of 1 e per pixel: hold error at 10¹⁵ | camera walk of 10⁻³ of the signal: [CAM] |
-| stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | 0.15 pm (= no drift) | [CAM] |
-| polarized pair V | 1.5×10¹² | 5.3×10¹² | 9.9 pm | 0.12 pm (= no drift) | [CAM] |
-| linear L (1 frame) | 2.1×10¹² | 7.3×10¹² | 27.6 pm | 0.14 pm (= no drift) | [CAM] |
-| stepped pinhole P | 2.3×10¹² | 7.0×10¹² | 9.9 pm | 0.14 pm (= no drift) | [CAM] |
-| P/SRI waveguide PF | 7.0×10¹² | 2.5×10¹³ | 9.9 pm | 0.25 pm (= no drift) | [CAM] |
+| reading | 3 pm held, noise only | 3 pm held, 2 pm walk | thermal floor | camera walk of 1 e per pixel: hold error at 10¹⁵ | camera walk of 10⁻³ of the signal per cycle: hold error at 10¹⁵ |
+| stepped dimple S | 2.6×10¹² | 7.5×10¹² | 10.0 pm | 0.15 pm (= no drift) | 0.15 pm (= no drift) |
+| polarized pair V | 1.5×10¹² | 5.3×10¹² | 9.9 pm | 0.12 pm (= no drift) | 89 pm |
+| linear L (1 frame) | 2.1×10¹² | 7.3×10¹² | 27.6 pm | 0.14 pm (= no drift) | 10.8 nm |
+| stepped pinhole P | 2.3×10¹² | 7.0×10¹² | 9.9 pm | 0.14 pm (= no drift) | 0.14 pm (= no drift) |
+| P/SRI waveguide PF | 7.0×10¹² | 2.5×10¹³ | 9.9 pm | 0.25 pm (= no drift) | 0.25 pm (= no drift) |
 ![Steady-state hold error against photons per cycle for the stepped pinhole (red) and the waveguide reference (brown) under no drift (dotted), the 2 pm random walk (solid) and the 5 pm thermal ramp (dashed); the 3 pm hold level marked.  Right panel of the runner's figure.](figs/ploop193_loop.png){h=2.2}
 ~ dm_gauge_lib/dmg_loop, shared with the interferometer; drift seed 77 on the full actuator grid; matrix measured on the working surface.  Both PDI readings contract at 0.509 per cycle with no fixed error (steps return to 0.000 pm).
 
@@ -122,7 +133,7 @@ DRAFT — pending review.  Status: both readings built into the sensor runner an
 - **The stepped pinhole is the stepped Zernike sensor with a smaller, attenuated reference:** the same frames and the same algebra (equal to 5×10⁻¹⁵ at unit transmission); it reads exactly where the dimple's four-step does not (0.93 vs 0.75 on the 30 nm surface), for 1.6× fewer camera photons, and pays 18% of the light at the plate.
 - **A reference that does not depend on the surface is what extends the range:** the waveguide reading keeps reading past the surfaces at which every self-referenced reading folds.
 - **[R2]** the on-surface calibration, the 1 λ/D pinhole, the scheme trade.
-- **[CAM]** which readings the camera walk reaches, and what within-scan drift costs the zero-sum ones.
+- **A drifting camera reaches only the readings that do not phase-step:** at 10⁻³ of the signal per cycle the linear reading puts 10.8 nm on the DM and the polarized pair 89 pm; the stepped dimple, the stepped pinhole and the waveguide reading are unaffected to the printed digit.  At the paper's 1 electron per pixel nothing is affected at these light levels.  [CAM] what within-scan drift costs the stepped readings.
 - **What the model does not yet carry:** the reference arm's own drift (non-common path), detector nonlinearity and persistence — the paper's own list.
 
 # Backup
