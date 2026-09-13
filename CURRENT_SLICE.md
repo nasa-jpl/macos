@@ -52,6 +52,21 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **DECK QUESTIONS ANSWERED 2026-09-12 (Dave: capture range to 10%
+> recorded for every device -- "they will not be operating at null";
+> the vZWFS layout drawn large; slide 2's mask figure swapped).  LOCAL
+> (resources aa3bbb7 + this commit; macos this commit).**  Capture
+> range: runner prints it after every ladder; aging calibration (matrix
+> at 30 nm, 385 rays) L 44 / I+ 36 / S 42 / V 70 nm; re-measured on the
+> surface, gain within 5% to 160 nm for all, photons for 1 pm x5 (L) to
+> x40 (V); IFO 120-158 nm (its four-step wrap).  Layout: zwfs_vlayout.m
+> (QWP + 12.7 mm MacNeille cube, two cameras; decks zwfs_v_camA/B.in;
+> the cube's diagonal leakage = next item).  Mask figure: runs/mask385
+> (2.0 lam F/D spot, 3.96 px per lam F/D at both record settings; the
+> old figure was stage 1's spot 9).  Deck: 28 slides (11-12 capture
+> range, 17 layout, 18 V2+V3), DRAFT.  Model-2048 MATLAB segfaults at
+> EXIT after writing everything (mask385, exit 137) -- results intact.
+
 > **ZWFS V3 DONE 2026-09-12 (LOCAL: resources 65788d9 + the record
 > commit; macos this commit; push on Dave's review): the arm's
 > polarization aberration per circular channel.**  `dmg_arm_maps` (two
@@ -67,7 +82,7 @@
 > 6 nm/rad absolute, nothing through the matrix to 0.1 rad, 0.3 = grid
 > row 2.6x + loop gain -10% (no fixed error); retardance-type 3.8x larger
 > absolute but REMOVED by the per-channel unmasked frames ('amp').
-> Record: README V3, brief V3, deck slide 16 (26 slides, DRAFT), memory.
+> Record: README V3, brief V3, deck slide 18 (28 slides, DRAFT), memory.
 > Queue: TO's pseq6 waits on my "v3seq2 done" (written 16:01).  NEXT: V4
 > the stepped reading's between-frame drift; integral term (thermal);
 > fold-aware I+; deck sign-off.**

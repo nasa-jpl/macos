@@ -3,7 +3,13 @@ deck_zwfs.md — the Zernike wavefront sensor for the DM gauge, and how
 it compares to the Twyman–Green IFO.  DRAFT — pending Dave's sign-off;
 the builder suppresses the export mark on DRAFT decks.
 Build: python3 make_brief_slides.py deck_zwfs.md
-2026-09-12 fold 4 (V2 + V3): slide 16 "What can spoil the polarized
+2026-09-12 fold 4 (V2 + V3): slides 11-12 re-state the range slide as the
+CAPTURE RANGE (Dave: not at null; 10% accuracy) from runs/cap385* +
+noise193_b*, raw;
+slide 2's mask figure re-drawn from the
+record run (2.0 lam F/D spot at 3.96 px per lam F/D, runs/mask385; the
+stage-1 figure showed spot 9 at 5.94 px per lam F/D); slide 17 the vector sensor's layout
+(zwfs_vlayout.png, both channel decks traced); slide 18 "What can spoil the polarized
 dimple" (metasurface retardance error; the arm's polarization aberration
 per channel from the engine's polarized traces; the design scan; the
 per-channel unmasked frames calibrate the retardance-type term); the
@@ -40,8 +46,8 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Pupil brightness becomes a phase map.**  Near a quarter wave of delay, the camera brightness is nearly proportional to the wavefront.  One frame per measurement, no moving parts, no polarization optics.  An exact pixel-by-pixel inversion (slide 8) removes the small-phase limit.
 - **The two prices.**  The sensor cannot see piston, and it is weak at the very lowest spatial frequencies, because the reference is made from the beam itself.  On the corrected model the weak band is 0.5 to 1 cycle across the pupil (half response at 1 cycle); defocus and everything finer read near full response.
 ::: right
-![The focal spot with the dimple on its core (left); the mask itself — a 1.57 rad phase disk with gray edges from area-weighted supersampling (right).](figs/zwfs_mask_fig.png){h=2.5}
-~ The dimple takes 28.0% of the light — the fraction a 1.06 λF/D disk should take from a focused spot.
+![The flat DM's focal spot (log scale) with the dimple's footprint on its core, and the mask's phase, at the sampling the deck's numbers use: 3.96 px per λF/D, the 2.0 λF/D dimple 7.9 px across (385 rays, 2048 grid).  The runner's own figure, runs/mask385.](figs/zwfs_mask385_mask.png){h=3.2}
+~ The dimple encloses 70.7% of the focused light; the sampling budget asks for at least 6 px across it (slide 9).
 
 ## The setup: the interferometer's test arm, alone | Same source, same splitter, same 700 mm mirror leg, same lenses — the reference arm and every polarization element removed
 ::: left
@@ -126,18 +132,27 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **Why the surface matters:** every reading's differential map on the 30 nm surface differs 30 to 60% from the same change read on the flat — the sensor's local sensitivity depends on the local phase.  A matrix measured on the working surface carries it; the readings without a sign ambiguity (stepped, linear) then read changes almost exactly.  The exact one-frame reading does not benefit: its surface error is the sign fold, which moves with the change.
 ~ Alternating ± pokes: neutral to slightly worse in the model (0.987, 11 pm vs 0.994, 4 pm); kept as a bench option (drift cancels between sets).  Records: runs/mat385, matbase385, mapdiag.
 
-## How large a working surface each reading can handle | With the matrix measured at 30 nm, 47 changes at once read at 1.08 to 0.93 up to 50 nm rms (stepped) and 1.03 to 0.83 (linear); the calibration ages slowly
+## Capture range: how large a working surface each reading holds to 10% | The devices will not run at null.  With a calibration aging from a 30 nm surface the polarized pair holds to 70 nm rms and the scalar readings to about 40; re-measured on the surface, every reading holds its gain to 160 nm and pays 5 to 40× in photons
 ::: full
-| 10 nm changes on 47 actuators, 96×96; gain, read value of 10 nm, floor | 30 nm surface | 40 nm | 50 nm | 60 nm |
-| matrix on the 30 nm surface — S (four frames) | 1.08 → 10.8 nm, 0.25 nm | 0.98 → 9.8 nm, 0.24 nm | 0.93 → 9.3 nm, 0.40 nm | 0.71 → 7.1 nm, 0.59 nm |
-| matrix on the 30 nm surface — L (one frame) | 1.03 → 10.3 nm, 0.28 nm | 0.95 → 9.5 nm, 0.35 nm | 0.83 → 8.3 nm, 0.50 nm | 0.67 → 6.7 nm, 0.61 nm |
-| matrix on the 30 nm surface — I+ (one frame) | 1.01 → 10.1 nm, 0.20 nm | 0.91 → 9.1 nm, 0.35 nm | 0.69 → 6.9 nm, 1.9 nm | 0.57 → 5.7 nm, 1.2 nm |
-| matrix on the flat — I+ | 0.81 → 8.1 nm, 0.21 nm | 0.83 → 8.3 nm, 0.16 nm | 0.65 → 6.5 nm, 1.8 nm | 0.58 → 5.8 nm, 1.2 nm |
-| matrix on the flat — S | 0.91 → 9.1 nm, 0.23 nm | 0.83 → 8.3 nm, 0.23 nm | 0.79 → 7.9 nm, 0.37 nm | 0.59 → 5.9 nm, 0.55 nm |
-- **What gain means here:** gain is after calibration, so 0.93 means a 10 nm change reads 9.3 nm — a 7% error the calibration did not remove.  The floor is a second error on top: the spread over the 47 sites' unchanged neighbors (their crosstalk, 0.2 to 0.6 nm here).
-- **Calibration on the working surface absorbs most of it** for the readings without a sign ambiguity: the stepped reading goes from 0.91 to 1.08 at 30 nm and from 0.79 to 0.93 at 50 nm; the linear reading from unusable to 1.03.  A matrix measured at 30 nm is still within 7% at 50 nm rms, so a calibration follows the working surface slowly.  The one-frame exact reading is not helped: its surface error is the sign fold, which moves with the change (it fails at 50 nm, floor 1.9 nm, when some of the 47 sites fall past the fold).
-- Past 120 nm rms every reading aliases (the stepped retrieval itself wraps).
-~ Floor here = spread of the unchanged actuators under 47 simultaneous 10 nm changes (their crosstalk), larger than the single-site floors on slide 9.  385 rays; records: runs/matbase385 (surface matrix), runs/mat385 (flat matrix).
+| gain on 47 changes of 10 nm, matrix measured once on the 30 nm surface (385 rays) | 30 nm | 40 | 50 | 60 | 80 | 100 | holds to 10% up to |
+| linear, one frame (L) | 1.03 | 0.96 | 0.83 | 0.68 | 0.39 | 0.19 | 44 nm (32 with the matrix from the flat) |
+| exact, one frame (I+) | 0.96 | 0.87 | 0.66 | 0.54 | 0.26 | 0.10 | 36 nm (42) |
+| stepped, four frames (S) | 1.00 | 0.91 | 0.86 | 0.66 | 0.22 | 0.06 | 42 nm (below 30) |
+| polarized pair, two frames (V) | 1.00 | 1.00 | 0.99 | 0.98 | 0.83 | 0.06 | 70 nm (68) |
+| interferometer, lens rig (one site; slide 19) | 0.99 | — | — | 1.00 | — | 1.02 at 120, breaks at 240 | 120 to 158 nm, its four-step wrap |
+- **Why the aging range ends:** at 100 nm rms (2 rad rms of phase) the focal core, the sensor's reference, is gone for every reading; the polarized pair lasts longest because it has no fold to cross, and its range does not depend on where its matrix was measured.
+~ Capture range = the largest working-surface rms where a 10 nm change on 47 grid sites reads within 10% (interpolated between rungs); raw matrix estimates (the earlier draft's modal correction is off since the vector reading; its stepped rows read higher).  Records: zwfs_dm96 runs/cap385, cap385_flat; tg_psi_dm96_oap runs/lens_base (single-site ladder).
+
+## Capture range with the matrix re-measured on the surface | Every reading keeps its gain to 160 nm rms; the sensor's sensitivity has fallen with the focal core, so 1 pm costs 5 to 40× the light
+::: full
+| matrix re-measured on the working surface: gain, floor on 1 nm changes at 47 sites (385 rays) | 60 nm | 90 | 120 | 160 | photons per measurement for 1 pm, 30 → 160 nm (193 rays) |
+| L | 0.96, 25 pm | 0.95, 21 | 0.96, 17 | 0.97, 13 | 9×10¹³ → 5×10¹⁴ |
+| S | 0.93, 59 | 0.96, 29 | 0.97, 22 | 0.97, 20 | 9×10¹³ → 3×10¹⁵ |
+| V | 1.00, 3 | 0.96, 47 | 0.97, 23 | 0.97, 21 | 6×10¹³ → 2×10¹⁵ |
+| exact, one frame (I+) | 0.83, 150 | 0.95, 20 | 0.96, 17 | 0.97, 13 | not priced |
+- **Why recalibration restores the gain:** the matrix measured on the surface carries the weakened response and the inversion scales it back up, so with noiseless frames the gain holds within 5% at every rung to 160 nm, for every reading.  The floors (the unchanged sites' crosstalk) rise from 3 pm to 13 to 21 pm.
+- **What it costs:** the sensor's sensitivity per photon falls with the focal core.  The light for 1 pm rises 5× for the linear reading and 40× for the polarized pair between 30 and 160 nm rms; at 160 nm the pair needs 2×10¹⁵ photons per measurement, 0.8 mJ, 3 s of a 1 mW laser at the arm's 25% throughput.  A servo that re-measures its matrix on the surface it holds (slide 10) buys range with photons; the stepped reading's 60 nm value is a fold outlier of the six-realization pricing.
+~ Records: zwfs_dm96 runs/cap385_b60 to b160 (gain, floor), noise193_b30 to b160 (photons: single 10 nm change, matrix on the surface, six realizations per light level).
 
 ## Color is no longer a lever | With the sensor's null gone, five colors raise the combined response by 3% instead of 3×, and do nothing for the measurement rows
 ::: left
@@ -191,6 +206,11 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **How it works:** a geometric-phase (metasurface) dimple applies +90° to one circular polarization and −90° to the other; a polarization splitter behind the pupil relay gives both pupil images in one exposure.  Per pixel the difference of the pair gives the sine of the phase and the sum the cosine, so the phase is solved exactly with no sign fold, and the reference wave is refined as for the exact reading.
 - **What it buys:** the one-frame exact reading's fold is gone (a 100 nm poke reads to 0.05 pm where the single frame errs by 9 nm), the calibration ages five times slower, and nothing moves between the two frames.  What it does not change: the sensor's range is still set by the focal core (all readings fail past 120 nm rms) and by half a wavelength.
 ~ Ideal metasurface: each image is the scalar sensor with its own dimple sign.  Its two imperfections are priced on the next slide; still open: the stepped reading's between-frame drift.  Records: runs/v193base, v193noise, vloop193.
+
+## The polarized dimple on the bench: the split behind the field lens | Nothing changes before the mask; behind the field lens a quarter-wave plate and a polarizing cube put the two pupil images on two cameras at the same distance
+::: full
+![The tail of the vector Zernike sensor as traced by the engine, from the focus to the two cameras, seen from above the bench.  Purple: channel A, transmitted by the cube; orange: channel B, reflected.  The whole train (slide 3) is unchanged up to here.  Lower panel of the tool's figure.](figs/crop_zwfs_vlayout_tail.png){h=5.1}
+~ The geometric-phase metasurface sits where the etched plate sat.  The quarter-wave plate turns the two circular outputs into the cube's s and p states; the 12.7 mm cemented MacNeille cube sends one to each camera, both 20.7 mm behind the cube at the pupil image (its glass lengthens the image distance by 5 mm, on both ports).  Two cameras rather than a Wollaston and one: the 9.4 mm pupil image sits 32 mm behind the field lens, so side-by-side images would need a 17° split, a calcite prism's limit; the cube's ports are identical legs by construction and its coated diagonal is the leakage term to price next.  Tool: zwfs_dm96/zwfs_vlayout.m (decks zwfs_v_camA.in, zwfs_v_camB.in; macos.view_rx).
 
 ## What can spoil the polarized dimple, priced | A retardance error in the metasurface and the test arm's polarization aberration both wash out through the working-surface matrix; only a large difference between the two channels' phases costs anything
 ::: full
@@ -282,7 +302,7 @@ DRAFT — pending review.  Status: the sensor model has been corrected (the earl
 - **The JPL budget form:** a sensitivity factor per pixel from the measured fields — the quantity the working-surface effect on slide 10 is made of — predicts the photon-noise stage analytically, and four systematic terms (pupil calibration at ½, reference wave at 1, dimple depth, initial phase) become the rows of the error budget.
 - **The response matrix for the interferometer too:** its calibration still uses a single-site response pattern, with the stencil bias fixed here (slide 9); the sparse-grid measured matrix is the calibration its reflective build should carry.  Model-matched DM calibration (actuator positions and gains through the sensor's own images) remains the lever for a real DM's geometry.
 - **Color as a joint fit, not a combination:** an equal-weight combination inherits a bad channel; a joint fit through the exact reading would use 700 to 780 nm for range and 632.8 nm for the calibration of record.
-- **The vector sensor, priced before the metasurface is built:** the exact two-image solution stands (slide 15); its metasurface retardance error and the arm's polarization aberration are priced (slide 16) and neither reaches the working-surface rows; still to price: the splitter's crosstalk between the two pupil images and defocus between them, the bench limits at Keck and SEAL.
+- **The vector sensor, priced before the metasurface is built:** the exact two-image solution stands (slide 16); its metasurface retardance error and the arm's polarization aberration are priced (slide 18) and neither reaches the working-surface rows; still to price: the splitter's crosstalk between the two pupil images and defocus between them, the bench limits at Keck and SEAL.
 - **The interferometer, for balance:** a PZT phase shift buys no model gain — its floors are geometric and color-independent — but on hardware an absolute phase scale and freedom from polarization systematics; the recommended form is a hybrid: polarization snapshot for the change measurements, a PZT on the reference flat as calibrator.  Its all-mirror (OAP) version is in build.
 ~ Segmented-mirror lessons carried forward: the sensor reads segment piston but not global piston, DM quantization appears as steps in the response, and piston is underestimated below 50 % Strehl (Keck) — all three enter the e5-class segmented gauges.
 
