@@ -212,6 +212,19 @@ nm WFE range with unwrapping.  So the bench needs either the hybrid
 alone, or the sensor with a second color for capture (10.1).  Slide 11
 carries this table; slide 14's stance is updated to it.
 
+### 7.1b The P/SRI's reference-arm walk (TO deliverable 5, 2026-09-14; slide 21 / 13)
+
+A path-length walk between the P/SRI's arms is a piston on the retrieved
+phase, the mode the actuator estimator nulls (the S10 rank-one term), so
+it is nearly free in hold: 3 pm under the 2 pm DM walk at 4.8e13 /
+4.9e13 / 5.0e13 photons per cycle for 1e-3 / 1e-2 / 1e-1 rad per cycle
+(4% across a hundredfold range); the common-path pinhole P is
+bit-identical (no such arm; below 1e13).  Scoped: for absolute field
+reconstruction (the paper's use) the same walk is a direct error; a
+reference arm that TILTS is not a piston and is not modeled -- the
+as-built term to carry (10.3).  deck_pdi stays the lane's draft record;
+the comparison deck takes the report's numbers.
+
 ### 7.2 The OAP front end under the mask gauges (CCMac fe36c66, 2026-09-14; slide 12)
 
 Resolved: the OAP rig's seat needed a solved trim (MASK_TRIM 6.14 mm;
