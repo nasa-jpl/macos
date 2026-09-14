@@ -82,11 +82,31 @@
 > reading) -- what makes the ladder affordable; the stage prints the
 > OPENING differential's wrapped rms / residues / max gradient /
 > unwrapped rms per start and reading.  **GATES GREEN: tDmgLoop 15/15,
-> mmacos fast suite 469 pass / 0 fail.**  **PUSH BLOCKED:** Dave approved
-> the push and CCMac is blocked on the shared knobs, but `git push` is
-> refused by the session's auto-mode classifier -- Dave has to run it or
-> allow the rule.  Commits to push: resources `5d99c20 e873703 215a452
-> 2e0ab46 6ded38c`, macos `e8c51d0`.
+> mmacos fast suite 469 pass / 0 fail.**  **PUSHED 2026-09-14** (Dave
+> ran it: "I pushed them, keep going"; the session's auto-mode classifier
+> refused `git push` throughout 2026-09-13).  Both repos in sync with
+> origin; CCMac unblocked on the shared dmg_loop knobs.
+> **DELIVERABLES 1, 2, 4, 5, 6, 7, 8, 9 DONE; 3 (the pinhole diameter of
+> record) running as gseq2.**  Overnight, all exit 0:
+> **CAPTURE (D9):** largest initial surface brought to 3 pm -- L 30,
+> S 30, V 60, P 60, PF 60 nm, IDENTICAL with the unwrapper off and on.
+> The wrap premise is right for PF ONLY: past ~60 nm S/V/P return 24-28
+> nm whatever the truth is, with ZERO residues -- BLIND, not folded.
+> Unwrapping AND on-surface recal TOGETHER raise PF and P-with-shutter
+> to 100 nm = 200 nm WFE (0.245 / 0.207 pm, against 64095 with neither,
+> 5383 unwrap-only, 63520 recal-only), at 1e13 as well as 1e15 --
+> reference-limited, not light-limited.  Cadence is not the constraint.
+> **V4 within-scan drift:** the DM's HELPS the stepped readings 26-32%
+> (a scan reads the surface at its MIDPOINT = a free half-step of
+> prediction); the camera's HURTS because it is additive BIAS.  Opposite
+> signs, same knob; L and V unchanged to the digit.
+> **D5 reference-arm walk:** 100x of walk costs 4% in photons -- a
+> path-length change between arms is a PISTON, the mode the estimator
+> nulls.  Benign for a DM servo, NOT for absolute E-field work.
+> **Two bugs fixed:** the per-start calibrations held ~750 MB each and a
+> six-rung ladder was OOM-killed (build one at a time, drop before the
+> next); and `tr -d '-.'` reads the leading '-' as an option, collapsing
+> three reference-walk runs onto one tag.
 > **RUNNING:** gseq1's tail (pfdeck_loop, cap385p*, noise193p_b*), then
 > `runs/gmaster3.sh` -> gcap (D9, the ladder BOTH WAYS: starts 30-300 nm,
 > 193 rays and K 40, both departures stated), gseq3 (intra), gseq4 (ref
