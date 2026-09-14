@@ -212,6 +212,25 @@ nm WFE range with unwrapping.  So the bench needs either the hybrid
 alone, or the sensor with a second color for capture (10.1).  Slide 11
 carries this table; slide 14's stance is updated to it.
 
+### 7.2 The OAP front end under the mask gauges (CCMac fe36c66, 2026-09-14; slide 12)
+
+Resolved: the OAP rig's seat needed a solved trim (MASK_TRIM 6.14 mm;
+the root is OAP1's residual collimation defocus refocused by OAP2), not a
+geometry fix -- the "8 um, 3 lambda F/D" of CCL's scan was defocus from
+the scan's 0.25 mm rung spacing (0.11 mm off best focus at NA 0.069); at
+best focus the blur is fold coma, 0.82 lambda F/D at 9 deg AOI, and G1 =
+2e-15, G3 = 4e-16 pass.  The gauges then split by how focus-critical
+their mask feature is: the stepped dimple ZWFS survives (single 10 nm
+1.000 / 4 pm, grid SNR 221, capture 38 nm -- comparable to the lens rig),
+the vector pair fails its fold gate (19.6 pm on the 100 nm pokes), the
+pinhole fails its exactness gate (94 pm).  Deck statement: the OAP front
+end carries the interferometer and the dimple ZWFS on a marginal,
+~0.05 mm-alignment-critical focus, degrades the vector reading and
+breaks the pinhole -- the more focus-critical the mask feature, the
+worse the fold coma.  Open, not for this deck: trace-solving the OAP
+seat trim inside twyman_green (the S1 recipe; a builder change that
+risks the lens rig's byte-identical gate).
+
 ## 8. Tasking (Opus level; each brief stands alone)
 
 - `BRIEF_ccmac_gauge_deck.md` -- CCMac: rows on the 30 nm surface (lens,
