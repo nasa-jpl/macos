@@ -40,3 +40,27 @@ tracker; this note plus your report line.
    item-4 rows follow.  If the OAP rig cannot make a clean focus at the
    seat by design, say so with the number -- that is itself a deck
    statement about the OAP front end under the mask gauges.
+
+## Addendum 2026-09-14: QA of lens_vlayout.png / oap_vlayout.png (c8af3fe)
+
+**lens_vlayout.png -- usable after:** type 22 pt+ at 3250 px (or 1800 px
+wide, the recipe's size: 14 pt here reads as 6 pt on the slide); the node
+panel's filled hull merges the outgoing and returning bundles into a
+false focus at the compensator -- use `'bundle','rim'` or `'bodies',
+'outline'` there; label the reference flat and its PZT in the drawing,
+not only the title; add a third panel for the tail (mask seat, field
+lens, camera) -- the per-approach slide shows the tail.
+
+**oap_vlayout.png -- not usable:** the OAP bodies are not drawn (both
+OAP labels point at empty space; the hide list has probably caught the
+Reflectors named L1 / L2); the title collides with the OAP2 label; the
+source cone's rays cross the whole node panel (exclude the source fan or
+limit the axes to the node); the tail folds back over the front end in
+the top view and cannot be read -- give it its own panel.
+
+**The story line, corrected for the deck:** the interferometer's edge is
+CAPTURE (its external reference takes 100-600 nm WFE to picometers); in
+HOLD the stepped and vector Zernike readings hold the same surface at
+1.5-2.6e12 photons per cycle against its 5.5e12, with no fixed error
+against its 9%.  The deck's line is the hybrid: capture with the
+interferometer, hold with the sensor.
