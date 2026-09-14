@@ -125,6 +125,15 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **CAPTURE RESULTS 2026-09-14:** self-referenced readings (S, V, P)
+> capture to ~60 nm of surface -- their reference COLLAPSES (blind, not
+> folded; unwrap changes nothing); PF captures from 100 nm only with
+> unwrap + recalibration (0.245 pm; 3 pm at cycle 26); the IFO captures
+> from 150 nm with unwrap alone (CCMac; 200/300 running).  Plan section
+> 7.1; recommendation = hybrid / P/SRI / second color.  TO's 30 commits
+> pushed by CCL (resources 0dc8767).  CCMac asked which next: zwfs-on-OAP
+> (slide 15) before the OAP descent (backup).
+
 > **CAPTURE = A WRAP PROBLEM (TO 2026-09-13, accepted): from a 100 nm rms
 > start the differential to the set point is ~2 rad rms, wrapped for every
 > reading (IFO included).  Fix = 2-D unwrapping of the differential before

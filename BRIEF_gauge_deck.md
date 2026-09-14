@@ -159,6 +159,32 @@ dmg_loop / zwfs_run (TO builds, section 8), mirrored in tg96_run
 then hold with the sensor (the hybrid bench); and the longer wavelength
 (the color stage: 780 nm widens every fold by 1.23x).
 
+### 7.1 Capture results so far (2026-09-14, TO descent ladder at 193 rays; CCMac descent_lens at 1024)
+
+The premise "capture is a wrap problem" held for one reading only.
+Largest starting surface reaching 3 pm in 40 cycles, matrix at the
+start, 1e13 and 1e15 alike: L 30 nm, S 30, V 60, P 60, PF 60 -- unwrap
+on or off, bit-identical for S / V / P: past ~60 nm their maps carry no
+2 pi residues and no gradient near pi; they return 24-28 nm whatever the
+truth (70 to 270 nm).  Their focal-plane REFERENCE has collapsed; they
+are blind, not folded.  Only PF's map genuinely folds (4928 residues at
+70 nm), and PF from 100 nm captures only with BOTH the unwrapper and
+re-calibration (neither: 64 nm; unwrap: 5.4 nm contracting; recal: 64
+nm; both: 0.245 pm, 3 pm at cycle 26), at 1e13 as at 1e15 --
+reference-limited, not light-limited.  The interferometer (CCMac,
+unwrapper, no re-calibration) captures from 150 nm rms to 2.1 pm at 1e13
+(0.21 at 1e15); 200 and 300 nm running.  Pending: P with a shutter frame
+(tracks PF to four digits so far), the OAP descent.
+
+Consequence for the recommendation: a self-referenced reading (the
+Zernike dimple, scalar or vector; the stepped pinhole) captures to ~60
+nm of surface (120 nm WFE); an externally referenced one (the
+interferometer's flat, the P/SRI's waveguide) captures the whole 100-200
+nm WFE range with unwrapping.  So the bench needs either the hybrid
+(interferometer or P/SRI for capture, the sensor for hold), the P/SRI
+alone, or the sensor with a second color for capture (10.1).  Slide 11
+carries this table; slide 14's stance is updated to it.
+
 ## 8. Tasking (Opus level; each brief stands alone)
 
 - `BRIEF_ccmac_gauge_deck.md` -- CCMac: rows on the 30 nm surface (lens,
