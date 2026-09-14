@@ -22,30 +22,27 @@ fewer columns.
 The per-element path deliberately does none of that, which is why the 21-element
 run is fast.
 
-Fix (done, in review): the grouped channel now (a) stops doing the re-aim on the
-restore step, where it's pure waste (a universal ~1/3 saving), and (b) skips the
-re-aim entirely when the whole group sits downstream of the aperture stop (moving
-it rigidly can't change the chief-ray aim). The session is left at the correct
-nominal aim afterward, and the Jacobian is numerically unchanged — verified by an
-A/B test (gate on vs off) — so it's purely a speed fix. Interior/downstream group
-columns drop back to roughly element-column speed.
+Fix (done, tested, on dev-candidate): the grouped channel now skips that
+per-poke re-aim whenever it can't change the answer, and leaves the session at
+the correct nominal aim afterward. The Jacobian is numerically unchanged —
+verified by an A/B test (gate on vs off) — so it's purely a speed fix. Two
+cases, both now covered:
+ - Object-space stop (the default): the chief ray is aimed from the fixed
+   source through a fixed point in space that no optic can move, so the re-aim
+   is a genuine no-op — it's skipped for every group. This is your case, and it
+   removes the whole per-poke cost, no knob needed.
+ - Element-defined stop (ApStop= / macos.stop(elt)): the re-aim is skipped for
+   any group sitting entirely downstream of the stop element (a rigid move
+   there can't change which ray hits the stop), and kept for a group at/upstream
+   of it.
+Expect the group columns to drop back to roughly element-column speed — the 7 h
+run should come back toward ~1 h.
 
-One important detail on getting the FULL (b) speedup: the code resolves the stop
-element from the engine, and that only works when the deck defines an ELEMENT
-stop (an "ApStop=" in the header, or macos.stop(elt)). Under a pure object-space
-stop (the default group_stop_mode='obj'), the engine can't report a stop element,
-so the gate stays safe-but-conservative and you get only the ~1/3 (part a). If
-your FSM decks have a defined stop element, run the groups with
-group_stop_mode='elt' and that stop element to get the full skip; if you know a
-group is entirely downstream of the stop, group_stop_mode='none' is exact and
-fastest.
-
-Interim workaround you can use right now, no rebuild:
-    run_sensitivities(..., 'group_stop_mode','none', 'group_fp_mode','none')
-Important caveat: 'group_stop_mode','none' is only *correct* for groups that are
-entirely downstream of the aperture stop. If a group contains or sits upstream of
-the stop, turning it off will change those numbers — so use it only for the
-downstream groups, and keep the default for any group at/before the stop.
+If you're on the current binary and want the speedup right now without the
+rebuild, run_sensitivities(..., 'group_stop_mode','none') also skips the re-aim;
+just note that 'none' is only *exact* for groups downstream of (or with) an
+object-space stop — with an element stop upstream it would change the numbers,
+so prefer the rebuilt default, which decides correctly per group.
 
 2) Link= iElt for grouped perturbation
 --------------------------------------
