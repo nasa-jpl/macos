@@ -1482,6 +1482,19 @@ C***********************************************************************
           IF (EltGrp(0,iElt)/=0)
      &      CALL PrintFmtArray('EltGrp','2x,i0',EltGrp(0,iElt)+1,EltGrp(0:EltGrp(0,iElt),iElt))
 
+!-->  Linked-element (rigid-group) perturbation target.  "Link= iElt" (alias
+!     "DpElt=") makes a PERTURB / optimize of THIS element also move element
+!     iElt as a rigid unit (funcsub.F CPERTURB -> LnkEltCPERTURB).  LnkElt
+!     inits to -1 (elt_mod.F), so emit only a real (>0) target -- unlinked
+!     elements write nothing.  This round-trips the linkage that an explicit
+!     "Link=" OR a DuplElt/CopyElt block macro both record in LnkElt; on reload
+!     the keyword just restores LnkElt (no re-duplication -- the full element
+!     block is already written), so a loaded linked Rx survives SAVE.  Was
+!     previously dropped on SAVE (SAVE_KEYWORD_AUDIT.md).
+          IF (LnkElt(iElt) > 0)
+     &      CALL PrintFmt('Link', "2x,i0", LnkElt(iElt))
+!<--
+
           ! --------------------------------------------
           ! Srf. dependent parameters
           ! --------------------------------------------

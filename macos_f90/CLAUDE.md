@@ -611,11 +611,17 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   masked under ifx because the same broken path also corrupted memory and
   triggered an exit-time SIGSEGV — gfortran exposed the actual zero-response
   bug cleanly).
-- Latent gap (not yet fixed): the propsub/srtrace IF/ELSEIF chains don't
-  handle ZernTypeL=10 (Noll) or =11 (ExtFringe). A user Rx with
-  `ZernType= Noll` parses correctly and sets ZernTypeL=10, then the trace
-  dispatch silently no-ops. Add ELSE-with-error or extend the chain when this
-  surfaces. (We didn't extend it now because no current test exercises it.)
+- Noll IS handled now (verified 2026-09-14): all three trace chains dispatch
+  `ZernTypeL=10` (Noll) / `ZernType_NormNoll` to `ZerntoMon6` —
+  `propsub.F:267-269`, `tracesub.F:3413-3415`, `srtrace.F:154-156` (and the
+  parallel FF/Mon blocks). `NormAnnularNoll` (9) → `ZerntoMon7`. So a user Rx
+  with `ZernType= Noll` traces correctly; the earlier "silent no-op" note was
+  stale (and inconsistent with the same section's own `ZerntoMon1/2/3/4/6/7`
+  dispatch list).
+- Remaining gap: only `ZernTypeL=11` (ExtFringe) has no `ZerntoMon` converter —
+  it falls through the IF/ELSEIF (warns in propsub, silent elsewhere). Add
+  ELSE-with-error or a converter when this surfaces. (No current test exercises
+  ExtFringe.)
 
 ## Conforming Reference: Surface=Zernike/Aspheric is PASSIVE (sls-dev c9fa767)
 - `Element=Reference` accepts `Surface=Zernike` (8) and `Surface=Aspheric` (3)

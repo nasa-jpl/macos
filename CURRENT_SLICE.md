@@ -24,6 +24,36 @@
 
 ## Active slice
 
+> **LUIS SENS-TOOLS FIXES — IMPLEMENTED, LOCAL, UNPUSHED (2026-09-14).**
+> Plan `~/.claude/plans/soft-hugging-peach.md` (Dave-approved + CCL/CCMac's
+> six changes folded in). Luis reply draft `macos/DRAFT_email_luis_sens_groups.md`.
+> Order run WS4→WS1→WS3→WS2. All targeted tests green; full `fast` = 469 pass,
+> 3 fail ALL PRE-EXISTING (cross-platform bit-exact baselines: tPolElement
+> material-flip = 1-ULP `isequaln` drift, err 2e-19; tSegMirMaker pie/hex2 =
+> external SegMirMaker binary Hx bit-drift — neither is in my changed files).
+> - **WS4** doc: `macos_f90/CLAUDE.md` Noll note fixed (Noll→ZerntoMon6 in all
+>   3 chains; only ExtFringe(11) no-op).
+> - **WS1** group dwdx speedup (`GroupedRigidBodyChannel` + builder + threaded
+>   `group_smart_stop` default-on through dw_dx/dw_dx_multi/run_sensitivities):
+>   Fix A skip-reaim-on-restore + one tail-settle/group; Fix B skip when all
+>   members strictly downstream of the ENGINE-resolved stop, keep-when-ambiguous.
+>   `tDwDxGroups` 15/15 (A/B gate-on==gate-off + StubGroupSession call-counts).
+>   **Fix B engages only with an ELEMENT stop** (ApStop=/macos.stop); object-space
+>   stop (default) → conservative, Fix A's ~1/3 still universal. Follow-up: resolve
+>   object-space stop's effective element to widen Fix B.
+> - **WS3** `zernike_grid_basis` +'noll'/'bornwolf' (verbatim ZerntoMon6/2 perm
+>   tables → ANSI evaluator, same ndgrid orientation); `dw_dgrid` `zconv` recorded
+>   in `out.zconv`. Fringe/NormHex/NormAnnularNoll deferred (error). `tZernikeGridBasis`
+>   5/5 ((n,m) cross-check). Follow-up: non-segment engine round-trip per convention.
+> - **WS2** engine: `PrtSingleEltInfo` emits `Link= <iElt>` when LnkElt>0;
+>   `SAVE_KEYWORD_AUDIT.md` reclassified. Engine rebuilt (gfortran) + mex relinked.
+>   `tLinkSave` 3/3 (emit-only-when-present; active+distinct-from-stock via OPD;
+>   survives save→reload→save). `get_elt_csys` reads LCS not linked-reflector
+>   motion → test uses OPD.
+> NEXT: CCL review; ifx engine build + mex relink on Linux (WS2 touches the
+> shared writer); push only on Dave's word. Also: 2 e2e6m_r2 template files
+> were already modified in the resources tree (NOT mine).
+
 > **TO / GAUGE-DECK PDI LANE, IN FLIGHT 2026-09-13 (`BRIEF_to_gauge_deck.md`;
 > plan `BRIEF_gauge_deck.md`).  CODE COMMITTED, resources `5d99c20`, LOCAL.**
 > New dir `mmacos/templates/40_benches/pdi_dm96/` (pdi_params / pdi_run /

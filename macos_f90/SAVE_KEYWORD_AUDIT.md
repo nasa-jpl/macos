@@ -28,8 +28,19 @@ ifx/gfortran SAVE output now byte-identical (e5hex1 diff).
 ## By-design canonical alternatives — no action
 The parser accepts these as *input* conveniences; SAVE writes the
 canonical form instead: `fElt`, `eElt` (→ `KrElt`/`KcElt`), `EltType`
-(→ `Element`), `CopyElt`, `DuplElt`, `LINK` (block macros expand at
-load), `JZLouChfRayDir/Pos`, `JZLouWavelen` (debug aliases).
+(→ `Element`), `CopyElt`, `DuplElt` (block macros expand at load into a
+full element block **plus** a `LnkElt` linkage),
+`JZLouChfRayDir/Pos`, `JZLouWavelen` (debug aliases).
+
+**`LINK` / `DpElt` — now round-tripped (2026-09-14).** SAVE emits
+`Link= <iElt>` in each element's grouping block (`PrtSingleEltInfo`,
+iosub.inc) whenever `LnkElt(iElt) > 0`.  The linked-element rigid-group
+perturbation (`funcsub.F` `CPERTURB` → `LnkEltCPERTURB`) was fully live
+but the linkage was previously DROPPED on SAVE, so a load→perturb→save→
+reload silently lost it.  Emitting the canonical `Link=` restores
+`LnkElt` on reload (no re-duplication — the element block is already
+written), and covers linkages authored either explicitly or via
+`DuplElt`/`CopyElt`.  Gated by `tst_save_keys` (Link round-trip).
 
 ## Run/debug/output toggles — probably skip (session state, not Rx)
 `DumpRayPosH`, `SaveRayPosH`, `SaveVis3dDat`, `SaveOPDMap`,
