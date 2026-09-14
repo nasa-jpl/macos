@@ -130,9 +130,14 @@ Main body -- each approach once, in its best configuration:
     the other gauges on the OAP front end.
 13. Systematics: priced and open, one line per approach.
 14. Recommendation.
-15-17. Future work (section 10): capture beyond one wave; other
-    approaches; the path to as-built performance.
-18. Run it yourself.
+15. The modes, and the flow from launch to hold (section 11.1, a flow
+    diagram).
+16. The complex amplitude for two-DM control: which readings give it
+    (section 11.2).
+17. One bench, all modes: what is inserted or removed to switch
+    (section 11.3, the universal-bench layout).
+18-20. Future work (section 10).
+21. Run it yourself.
 
 Backup: the three IFO phase-shift forms in detail; the OAP rig's rows and
 loop; the scalar Zernike readings that lost (linear, one-frame exact) and
@@ -289,3 +294,75 @@ camera drift.  As-built adds, in the order they are likely to matter:
    summed in quadrature to a held error at a stated light and time --
    the sensitivity-factor form the ZWFS deck's conclusions name.  The
    deck's comparison table becomes the first column of it.
+
+## 11. Dave's notes of 2026-09-14: modes, complex amplitude, one bench
+
+### 11.1 The modes, with a flow diagram (slide 15)
+
+The deck names the modes it tests and draws the flow between them:
+
+- **Mode 0, ground flat:** the ground-calibrated voltage map (~0 WFE on
+  the ground) is applied; on orbit the residual is the launch, gravity-
+  release and thermal change, 100-200 nm WFE.
+- **Mode 1, image-based phase retrieval:** the WFS&C loop's own
+  phase-retrieval (focal-plane images, no gauge) drives the WF toward
+  the gauge's capture level.  It wraps too: at the half-wave level with
+  high-spatial-frequency WFE -- the same failure class as the gauges'
+  wrap, one wave earlier.  Its reach sets what mode 2 must capture.
+- **Mode 2, capture:** an externally referenced reading (interferometer
+  or P/SRI) with unwrapping, re-calibrated on the surface as it moves
+  (7.1); or the sensor with a second color (10.1).  Ends at the hold
+  regime (~30 nm of surface, then the matrix measured there).
+- **Mode 3, closed-loop hold:** the sensor at picometers (the stepped or
+  vector Zernike reading, or the pinhole), gain 0.5, the matrix
+  re-measured on the held surface when the calibration ages (slide 9).
+- **Recalibration events** between modes: the matrix on the current
+  surface (photon cost, 7.1); the flat re-taken.
+
+The figure is a boxes-and-arrows flow with the capture limit of each
+reading written on its arrow (30 / 60 / 100 / 150 nm of surface, from
+7.1), drawn by a script (graphviz `dot` -> PNG, committed with the deck
+as `gauge_modes_flow.py`); CCL, at assembly.
+
+### 11.2 The complex amplitude: intensity across the pupil as well as the WF (slide 16)
+
+With starlight through a coronagraph, controlling DM1 and DM2 needs the
+pupil's amplitude as well as its phase.  What the existing frames give,
+per reading:
+
+| reading | amplitude from the existing frames? | how |
+|---|---|---|
+| ZWFS linear L, exact I | no | one frame; the solve assumes the flat's amplitude |
+| ZWFS stepped S | yes | its clear frame IS the pupil intensity; the three depths give the complex field E conj(b) |
+| vector Zernike V | yes, with a solver change | two simultaneous images = two equations per pixel; with b iterated they give A and phi together (Doelman 2019's "phase and amplitude"); the present solver takes A as known -- extend and gate |
+| pinhole P, P/SRI PF | yes | the phase-stepped solve is the complex field against a known reference (Dube 2024's "complex E field reconstruction") |
+| interferometer four-step | yes | fringe modulation = the test amplitude times the reference's, the reference known |
+
+So no separate camera is needed: every phase-stepped or two-image form
+returns the complex field; the one-frame Zernike readings do not.  The
+measurement to add: an amplitude aberration on the pupil (an apodizing
+patch on the test-optic aperture, `macos.apodize`, 5% and 20% dips) and
+each reading's recovered amplitude map against it, with the phase rows
+unchanged as the gate.  CCL extends `solveV` (A and phi from the pair,
+the 'amp' machinery reused) and gates it; TO gates P / PF; CCMac gates
+the four-step.  On orbit the photon budget per stellar magnitude is
+future work (10.3).
+
+### 11.3 One bench, all modes (slide 17)
+
+Yes: one layout switches between every mode by inserting or removing a
+part, nothing realigned:
+
+| switch | part | modes |
+|---|---|---|
+| the mask seat translates | one substrate with the etched dimples, the pinholes (with their attenuated surrounds), the metasurface and a clear window (the VSG2 nine-spot idea) | Zernike / vector Zernike / pinhole / clear (interferometer, phase retrieval) |
+| reference-arm shutter | the interferometer's reference flat on its PZT stays built | interferometer on / sensors (arm shuttered) |
+| quarter-wave plate in or out | the MacNeille cube and camera B stay behind the field lens; with the laser p-polarized the cube transmits (98%) to camera A in every scalar mode; the plate in makes the vector split | vector Zernike / all others |
+| flip-in pickoff plate | the P/SRI's second arm (Lr1, pinhole, Lr2, folds, compensator, waveguide, BS3) on its own breadboard behind a flip-in plate | P/SRI / all others |
+| in-arm quarter-wave plates in or out; analyzer | the polarization-snapshot form of the interferometer on the plate rig; the PZT form needs neither; the hybrid uses both | interferometer forms |
+
+The v2 cemented-cube interferometer is the one form that does not switch
+in (it replaces the plate splitter); it stays a backup slide.  The
+universal-bench drawing: the two-arm interferometer with the vector tail
+and the flip-in P/SRI arm, switchable parts marked -- TO draws it (the
+`psri_bench` + `zwfs_vlayout` recipe, both theirs to combine), CCL QAs.
