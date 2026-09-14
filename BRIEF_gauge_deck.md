@@ -181,6 +181,28 @@ unwrapper, no re-calibration) captures from 150 nm rms to 2.1 pm at 1e13
 (0.21 at 1e15); 200 and 300 nm running.  Pending: P with a shutter frame
 (tracks PF to four digits so far), the OAP descent.
 
+Update 2026-09-14 (TO): the recommended configuration captures -- the
+stepped pinhole P WITH A SHUTTER FRAME (the reference re-measured per
+state), unwrapped, re-calibrated every 10 cycles, from a 100 nm surface
+(200 nm WFE): 0.207 pm at 1e15, 2.07 pm at 1e13, 3 pm at cycle 26,
+contraction 0.716 (measured, cap_state_uw_recal); at 150 nm it reaches
+10 nm, not 3 pm -- the ceiling is between 100 and 150 nm.  Recalibration
+cadence is not the constraint (every 2 cycles 6.5 pm, every 5 11.2, every
+10 enough); the cycle count is.  So the per-state reference is what a
+self-made reference needs to capture: the plain dimple and pinhole do
+not, the shuttered pinhole and the P/SRI do, the interferometer does.
+
+Within-scan DM drift (V4, TO, `loop.intra`): it HELPS the stepped
+readings -- 2 pm walk at 1e15: S 2.32 -> 1.57 pm, P 2.32 -> 1.58, PF
+2.33 -> 1.71; 5 pm ramp: S 10.05 -> 7.16, P 9.86 -> 6.70, PF 9.88 ->
+7.30; L and V unchanged to the digit (the plumbing gate).  A scan
+measures the surface at its midpoint, half a measurement closer to now:
+a free half-step of prediction against a smooth drift.  Camera drift
+within a scan costs 5-11 pm because it is additive bias, which a
+zero-sum scheme cancels only while constant across the scan.  Same knob,
+opposite signs -- the slide states it that way (the V4 framing
+inverted).
+
 Consequence for the recommendation: a self-referenced reading (the
 Zernike dimple, scalar or vector; the stepped pinhole) captures to ~60
 nm of surface (120 nm WFE); an externally referenced one (the
