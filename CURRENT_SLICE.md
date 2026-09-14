@@ -175,6 +175,27 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **HANDOFF 2026-09-14 15:30 (CCL at 8% context; compact next).**  State:
+> all lanes' work is on origin (both repos level).  The gauge deck plan
+> `BRIEF_gauge_deck.md` (sections 1-11) is the spec; slides = main body
+> each approach once in its best configuration.  Lane status: CCMac IFO
+> lanes COMPLETE (report REPORT_gauge_ifo.md; figures lens/oap_vlayout
+> redone; OAP focus solved, trim 6.14: dimple ZWFS survives, vector
+> degrades, pinhole breaks); TO PDI lanes complete except the pinhole
+> trade (pin10_2048 must be RE-RUN: CCL's pkill killed it at 14:54;
+> pin10_loop ran on); Luis sens-tools WS1-4 reviewed
+> (`BRIEF_ccmac_luis_review.md`: WS2 accepted, WS1 accepted + object-space
+> stop follow-up, WS3 needs the engine-equivalence gate / BornWolf
+> normalization, add the 2 suites to SUITE_FAST; Linux gate 472/0).
+> CCL's OWN remaining items: (1) vZWFS cube channel leakage (the coated
+> diagonal in zwfs_v_camA/B.in; a crosstalk term between the two
+> images), (2) solveV amplitude+phase from the pair + the amplitude-dip
+> gate (plan 11.2), (3) the modes flow diagram (11.1), (4) QA of TO's
+> universal-bench drawing (11.3), (5) assemble deck_gauges.md (~26
+> slides) from the three reports via make_brief_slides.py, render QA,
+> DRAFT for Dave.  Memory: project_tg96_gauge (capture, OAP, V4),
+> feedback_capture_range, feedback_shell_self_kill (kill by PID only).**
+
 > **CAPTURE RESULTS 2026-09-14:** self-referenced readings (S, V, P)
 > capture to ~60 nm of surface -- their reference COLLAPSES (blind, not
 > folded; unwrap changes nothing); PF captures from 100 nm only with
