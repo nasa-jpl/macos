@@ -50,9 +50,16 @@
 >   `tLinkSave` 3/3 (emit-only-when-present; active+distinct-from-stock via OPD;
 >   survives save→reload→save). `get_elt_csys` reads LCS not linked-reflector
 >   motion → test uses OPD.
-> NEXT: CCL review; ifx engine build + mex relink on Linux (WS2 touches the
-> shared writer); push only on Dave's word. Also: 2 e2e6m_r2 template files
-> were already modified in the resources tree (NOT mine).
+> **CCL REVIEW CLOSED (2026-09-14):** Linux gate green (fast 472/0, gfortran+ifx).
+> WS1 follow-up landed: object-space stop (default) re-aim is a no-op (chief
+> aimed at a fixed global point) -> now skipped UNCONDITIONALLY, so Luis gets the
+> full gain with no knob (gated by test_smart_gate_preserves_jacobian on e5hex1).
+> WS3 engine-exactness gate ADDED + PASSES both noll+bornwolf
+> (tRunCompare/test_zern_grid_conventions_engine_equivalence; compare within the
+> confined disk -- generator matches zern_seg_eval corr 1.0; norm applied
+> post-reindex so bornwolf scale is exact). tLinkSave+tZernikeGridBasis added to
+> SUITE_FAST. NEXT: push follow-ups; ifx/Linux already validated by CCL. Also: 2
+> e2e6m_r2 template files were already modified in the resources tree (NOT mine).
 
 > **TO / GAUGE-DECK PDI LANE, IN FLIGHT 2026-09-13 (`BRIEF_to_gauge_deck.md`;
 > plan `BRIEF_gauge_deck.md`).  CODE COMMITTED, resources `5d99c20`, LOCAL.**
