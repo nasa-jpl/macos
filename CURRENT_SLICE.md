@@ -182,6 +182,37 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-14 EVENING (CCL, post-compaction).**  (a) CCMac's Luis
+> follow-ups (macos c44d179, resources 4772c83) pulled and gated on Linux:
+> tDwDxGroups 15/15, tZernikeGridBasis 5/5, tLinkSave 3/3, both tRunCompare
+> zern_grid gates pass; WS1 object-space skip ACCEPTED; WS3 gate passes but
+> is BLIND to a Noll/Born&Wolf swap (index 8 lands on ANSI slot 9 in both
+> tables; the crossed pairings at mode 7 give corr -0.1, the right ones
+> 1.039/0.969 = grid discretization at ng 128: at ng 256 every mode is 1% /
+> 1.0000) -> fix = ng 256, modes 4/7/8, 1%/0.999, crossed negative control
+> (`BRIEF_ccmac_luis_review.md` round 2); fast suite re-run in flight
+> (scratchpad/fast_suite.log).  (b) CCMac's as-built question answered in
+> `BRIEF_ccmac_asbuilt.md`: budget FIRST (static covariance roll-up, named
+> allocation table), then the dynamic predictor consumes it; covariance
+> primary, MC the check; one camera model shared with the gauge lane;
+> contrast a follow-on; DAVE RULES which system (telescope sens-tools =
+> CCMac's framing vs the gauge bench = plan 10.3) -- CCL assumed the
+> telescope tools.  (c) CCL item (1) DONE at dev resolution: the vector
+> sensor's ANALYZER leak (`dm_gauge_lib/dmg_analyzer_maps`, README V4,
+> plan 7.3): cube extinction a non-term (3.6 pm on 100 nm pokes), plate
+> errors coherent delta/2 (lambda/300 = 162 pm uncalibrated, 1.4% of the
+> figure), absorbed by the on-surface matrix (gain within 0.3%); the
+> runner patch (`zwfs_dm96/runs/v4_patch_analyzer.py`: mask.v_analyzer /
+> v_qwp_err / v_qwp_az, frameV_ mixing, G4 priced) is applied by a
+> DETACHED WATCHER (scratchpad/v4_watch.sh, log runs/v4watch.log) the
+> moment TO's pin10_2048 MATLAB (PID 1728580, ~21:00) exits, then
+> `runs/v4seq.sh` (an193_ref/cube/q300/q100/az1/bound, bench + battery
+> rows) queues through zwfs_batch.sh.  NEXT SESSION: check v4watch.log,
+> fold an193_* into README/plan 7.3 (replace the dev numbers), commit the
+> patched runner; then items (2)-(5).  TO has 8 LOCAL commits on
+> resources (fe387ee..640db68: reference-arm walk, README, report head,
+> pin10 requeue) awaiting Dave's push word.**
+
 > **HANDOFF 2026-09-14 15:30 (CCL at 8% context; compact next).**  State:
 > all lanes' work is on origin (both repos level).  The gauge deck plan
 > `BRIEF_gauge_deck.md` (sections 1-11) is the spec; slides = main body

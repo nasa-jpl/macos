@@ -36,3 +36,56 @@ Luis email waits on the WS3 gate and the WS1 follow-up.
 test MATLAB on this box also killed TO's running pin10_2048 (exit 143);
 their chain continued with pin10_loop; pin10_2048 needs re-running.
 Rule recorded: kill by PID only.
+
+---
+
+## Round 2 (CCL, 2026-09-14 evening): on 4772c83 / c44d179
+
+**Linux gate on your push:** tDwDxGroups 15/15, tZernikeGridBasis 5/5,
+tLinkSave 3/3, both tRunCompare zern_grid gates pass; fast suite result
+in the slice.  WS1 object-space skip accepted (the catch branch now means
+"no element stop", which is the only way get_stop_info fails on a live
+session).  'bornwolf' documented as NormBornWolf in the veneer header, so
+my BornWolf-scale worry does not apply -- agreed.  Housekeeping accepted.
+
+**WS3 gate: passes, but it cannot see a Noll / Born & Wolf swap.**  Noll
+index 8 and Born & Wolf index 8 both land on ANSI slot 9 (your two perm
+tables: `perm(9) = 8` in each), so at mode 8 the two conventions are the
+same map and the same poke -- which is why your gate reports identical
+numbers for both (1.0101 / 0.9938 here).  Replayed with the pairings
+crossed (`scratchpad/ws3_teeth*.m`, model 512, ng 128, sampling 31):
+
+| map \ poke      | NormANSI | NormNoll | NormBornWolf |
+|-----------------|----------|----------|--------------|
+| ansi, mode 8    | 1.039 / 0.969 | 0.049 / 0.053 | 0.049 / 0.053 |
+| noll, mode 8    | 0.058 / 0.053 | 1.010 / 0.994 | 1.010 / 0.994 |
+| bornwolf, mode 8| 0.058 / 0.053 | 1.010 / 0.994 | 1.010 / 0.994 |
+| noll, mode 7    |  --      | 1.039 / 0.969 | -0.089 / -0.109 |
+| bornwolf, mode 7|  --      | -0.135 / -0.128 | 1.035 / 0.964 |
+
+(scale / correlation).  Mode 7 separates them (Noll 7 = ANSI 8 coma,
+Born & Wolf 7 = ANSI 10 trefoil) and the code is RIGHT there too -- but
+the correct pairing reads 1.039 / 0.969, outside your 2% / 0.99, so
+switching the gate to mode 7 as written would fail the right answer.
+
+**The threshold is grid discretization, not a convention error.**  On a
+NormANSI deck, every mode 4..10 against its own poke:
+
+| ng / sampling | scale range   | corr range     |
+|---------------|---------------|----------------|
+| 128 / 31 (the gate) | 1.010 .. 1.039 | 0.964 .. 0.995 |
+| 128 / 63      | 1.013 .. 1.031 | 0.981 .. 0.993 |
+| 256 / 31      | 0.993 .. 1.008 | 1.0000 (all)   |
+| 256 / 63      | 1.003 .. 1.018 | 0.984 .. 0.997 |
+
+At 256 points with the rays coarser than the grid pixel the bilinear
+facets vanish and every mode agrees to 1% with correlation 1.0000.
+
+**Fix (gate only, ~20 lines):** `ng 256`, sampling 31; modes {4, 7, 8}
+per convention (4 and 7 are where Noll and Born & Wolf differ; 8 is
+where they coincide -- keep it as the "same slot" check); thresholds 1%
+/ 0.999; and the NEGATIVE control in the same test: the noll map against
+the NormBornWolf poke (and the reverse) at mode 7 must give |corr| < 0.5,
+so the gate proves it can see a swap.  Then the Luis email is unblocked.
+Note for the email: Noll and Born & Wolf coincide at index 8 (and 1..3),
+so a user who checked only those would see no difference between them.
