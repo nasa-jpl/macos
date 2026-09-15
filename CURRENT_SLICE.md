@@ -192,6 +192,21 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **HANDOFF 2026-09-15 ~08:30 (CCL, autocompact).**  PUSHED both repos at
+> Dave's word (resources 1338920, macos c8a5472); local since: macos
+> ccacaee (briefs re-addressed).  The 07:15-07:22 tg96 node-solve edits
+> were MINE (lost from memory in the OOM crash), gated and committed as
+> item 2 (1338920).  CCMac will NOT return: TO owns the realism brief's
+> items 3-8 AFTER `BRIEF_to_reflective.md`; the queue is in that brief's
+> section 6.  RUNNING detached: zwfs_dm96/runs/gate22_193 (S/V/P rows on
+> the 22.5-deg bench; compare with pdi193fbase; fold into README + deck's
+> side-by-side slide; expect the same numbers).  Deck 44 slides DRAFT at
+> demo_session/deck_gauges.md (22.5 deg layouts, three jobs, parts x3,
+> station figures S/V/P, analysis path, migration planned).  Rules learned
+> today: one model-1024 MATLAB on this box, every wrapper waits (tg96
+> fixed); a session's uncommitted edits survive its death in the shared
+> tree -- read `git status` before assuming another lane's work.**
+
 > **HANDOFF 2026-09-15 ~08:00 (CCL at 8% context).**  Bench of record =
 > 22.5 deg (resources 9b2181c: twyman_green plates at the retro end,
 > tg96_run forwards D_RECOMB/D_RC_L2, both sheets 22.5/150/55/comp 200;
