@@ -22,7 +22,7 @@ American English; photons per measurement.
 Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same two jobs: hold the surface in a servo, and capture its shape after launch.
 D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
-DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.
+DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the layouts show the proposed 30° geometry, and the substrates and camera are being added to the model.
 
 ## The two jobs, and how each is scored | Hold the surface to picometers in a servo; capture its post-launch shape, 100-200 nm of wavefront, and bring it into the servo's reach
 ::: left
@@ -40,24 +40,24 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | hold, one number | photons per cycle that hold 3 pm rms in a 60-cycle loop at gain 0.5 |
 ~ Measuring a change costs two measurements.  The 96×96 at 385 detector pixels per pupil is the flight-like sampling; most rows here are at 193 pixels, which the sampling study showed reads the same numbers.
 
-## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a 7° plate splitter, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image
+## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 30°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image
 ::: full
-![The shared front end as traced by the engine, seen from above: source at left, collimator L1, the 7° plate splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_lens_vlayout_train.png){h=2.2}
+![The shared front end as traced by the engine, seen from above, at the proposed 30° splitter: source at left, collimator L1, the splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_bench_bs30_train.png){h=3.0}
 ::: left
 | part | value |
 |---|---|
 | source | HeNe 632.8 nm, filtered, 51 mm beam radius |
 | collimator L1 | f 857 mm, 103 mm, coated |
-| plate splitter | 7° incidence, 2.6 mm thick, 50/50; compensator plate matched |
+| plate splitter | 30° incidence (proposed; the record's 7° does not clear the node), 2.6 mm thick, 50/50; compensator matched |
 | deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg |
 ::: right
 | part | value |
 |---|---|
 | focuser L2 | f 429 mm, 103 mm; internal focus at F/4.2 |
 | field lens | f 43 mm, 21 mm; pupil image 9.4 mm, 32 mm behind it |
-| camera | 385 pixels across the pupil (1 Mpix class), 5 pixels per actuator |
+| camera | pupil image 9.4 mm: a 6.5 µm sCMOS puts 1450 pixels across it, binned 4 to the modeled 385 (5 per actuator) |
 | mask seat | one substrate at the internal focus, translated to select the sensor |
-~ The reference arm (a 103 mm flat on a piezo stage, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Lenses, not off-axis mirrors: the choice is priced on the lenses-versus-mirrors slide.
+~ The reference arm (a 103 mm flat on a piezo stage, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Lenses, not off-axis mirrors: the choice is priced on the lenses-versus-mirrors slide.  Why 30°: the backup slide on clearance.
 
 ## Interferometer: Twyman-Green, four phase steps | Its best form is the hybrid: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
@@ -69,14 +69,14 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 |---|---|
 | reference flat on a piezo stage | 103 mm, protected aluminum, 564 mm leg |
 | compensator plate | matched to the splitter |
-| snapshot form: input polarizer, two arm quarter-wave plates, output quarter-wave plate, analyzer | zero-order plates; azimuths 45 / 0 / 45 / 0 / 0° |
+| snapshot form: input polarizer, two arm quarter-wave plates, output quarter-wave plate, analyzer | zero-order plates on 2-3 mm substrates (to be modeled); azimuths 45 / 0 / 45 / 0 / 0° |
 | frames per measurement | 4 (snapshot: at once; piezo: in sequence) |
 ~ Run tags lens_deck, loop_lens, lens_deck_se2; the three phase-shift forms are priced in backup.
 
-## Interferometer: the layout | The splitter node from above, with the compensator, the recombination, and the snapshot form's polarization optics; the whole train is on the front-end slide
+## Interferometer: the node, at the proposed 30° | Every part clears every beam it is not in by at least 57 mm: the collimator and input polarizer on the source leg, the compensator on the mirror leg, the output plate and analyzer moved to 160 mm behind the splitter ahead of the focuser
 ::: full
-![The reference arm's node, from above, as traced: the input polarizer, the plate splitter and its compensator, the recombination, the output quarter-wave plate and analyzer (snapshot form); test arm blue, reference arm orange.  Axes in bench millimeters.](figs/crop_lens_vlayout_node.png){h=4.6}
-~ Drawn by tg96_run from the emitted deck (lens_vlayout.png in tg_psi_dm96_oap); the detector tail beyond the focuser is the same as the sensors'.
+![The splitter node from above, as traced at 30°, ±320 mm about the splitter: L1 and the input polarizer, the splitter, the compensator on the mirror leg, the output quarter-wave plate and analyzer just ahead of the focuser L2; test arm blue, reference arm orange.  The two "QWP" labels at the node mark builder placements; the physical plates sit at the mirror and the flat.](figs/crop_bench_bs30_node.png){h=4.5}
+~ The plates here (polarizer, quarter-wave plates, analyzer) are drawn as ideal surfaces; the next model round gives each a 2-3 mm substrate, which in these collimated legs adds path only.  Drawn by dmg_bench_clearance.
 
 ## Zernike sensor: a quarter-wave dimple at the focus | The beam interferes with its own core: no reference arm; the best reading steps the dimple's depth through four frames and inverts pixel by pixel
 ::: left
@@ -85,7 +85,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **Servo:** 3 pm from 2.6e12 photons per cycle noise only, 7.5e12 under the 2 pm walk; no fixed error (a noiseless step goes to 0.000 pm).
 ::: right
 ![The flat mirror's focal spot (log scale) with the dimple's footprint on its core, and the mask's phase, at the record's sampling: 3.96 pixels per λF/D, the dimple 7.9 pixels across.  It encloses 70.7% of the focused light.](figs/zwfs_mask385_mask.png){h=3.0}
-~ Added to the front end: one fused-silica plate with a 3×3 array of etched spots (one in the beam at a time; the 346 nm etch is a quarter wave at 632.8 nm), on a translation stage.  Nothing else.  Run tags matbase, matbase385, loop193.
+~ Added to the front end: one fused-silica plate, 2-3 mm thick, with a 3×3 array of etched spots (one in the beam at a time; the 346 nm etch is a quarter wave at 632.8 nm), on a translation stage.  Nothing else.  The plate's thickness in the F/4.2 beam is 0.03 wave of spherical aberration and a 0.7 mm focus shift the tail absorbs (to be modeled).  Run tags matbase, matbase385, loop193.
 
 ## Vector Zernike sensor: the polarized dimple | A geometric-phase metasurface in the same seat delays the two circular polarizations by +90° and −90°; a quarter-wave plate and a polarizing cube send the two images to two cameras, both frames at once
 ::: left
@@ -96,16 +96,16 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | added to the front end | value |
 |---|---|
 | metasurface | geometric-phase (half-wave) dimple in the etched plate's seat: +90° on one circular state, −90° on the other |
-| quarter-wave plate | zero order, fast axis at 45° between the cube's s and p; spec λ/300 |
+| quarter-wave plate | zero order on a 2 mm substrate (0.05 wave of spherical aberration in the F/3.6 leg, to be modeled), fast axis at 45° between the cube's s and p; spec λ/300 |
 | polarizing cube | 12.7 mm cemented MacNeille, behind the field lens |
-| cameras | two, both 20.7 mm behind the cube at the pupil image |
+| cameras | two, both 20.7 mm behind the cube at the 9.4 mm pupil image; a 6.5 µm sCMOS (13 mm sensor) binned 4 |
 | frames per measurement | 2, simultaneous |
 ~ Two cameras rather than one: the 9.4 mm pupil image 32 mm behind the field lens would need a 17° split for side-by-side images, past a calcite prism's limit.  Run tags v193base, vloop193.
 
 ## Vector Zernike sensor: the layout | The tail from the focus to the two cameras, both channel decks traced by the engine
 ::: full
 ![The vector sensor's tail from above: the focus with the metasurface, the field lens, the quarter-wave plate, the 12.7 mm polarizing cube, camera A on the transmitted port (purple) and camera B on the reflected port (orange), both at the pupil image.](figs/crop_zwfs_vlayout_tail.png){h=4.8}
-~ Drawn by zwfs_vlayout.m from the two emitted decks (the engine does not split rays); the whole train is on the front-end slide.
+~ Drawn by zwfs_vlayout.m from the two emitted decks (the engine does not split rays); the whole train is on the front-end slide.  The metasurface and the plate are drawn as ideal surfaces and the cameras as planes; the next model round draws the substrates and the 13 mm sensors.
 
 ## Point-diffraction sensor: a stepped pinhole with a shutter frame | The best common-path form: a 5.3 µm pinhole with an attenuated surround at the focus, five phase steps of the substrate, plus one pinhole-only frame per state that keeps the calibration honest far from null
 ::: left
@@ -115,7 +115,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: right
 | added to the front end | value |
 |---|---|
-| pinhole substrate | fused silica in the mask seat; pinhole 5.27 µm (2.0 λF/D at F/4.2), clear |
+| pinhole substrate | fused silica, 2-3 mm, in the mask seat; pinhole 5.27 µm (2.0 λF/D at F/4.2), clear |
 | surround | attenuated to 0.72 in amplitude (0.52 in power), phase-stepped on a stage |
 | shutter | over the surround: one pinhole-only frame per state |
 | frames per measurement | 6: the five-step scan plus the shutter frame |
@@ -124,7 +124,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ## Point-diffraction sensor: the layout | The tail from the focuser to the camera, with the pinhole substrate at the internal focus
 ::: full
 ![The point-diffraction tail from above, as traced: the focuser, the pinhole substrate in the mask seat at the internal focus (2.0 λF/D across, the surround attenuated), the field lens, the camera at the pupil image.  Axes in bench millimeters.](figs/crop_pdi_layout_tail.png){h=4.6}
-~ Drawn by pdi_run from the emitted deck (pdi_layout.png in pdi_dm96); the whole train is on the front-end slide.
+~ Drawn by pdi_run from the emitted deck (pdi_layout.png in pdi_dm96); the whole train is on the front-end slide.  The pinhole plate is drawn as a surface and the camera as a plane; the next model round draws the 2-3 mm substrate and the 13 mm sensor.
 
 ## Performance side by side | Every reading on the same 30 nm working surface, the response matrix measured on it: the four best readings are within 1% of each other and within 2 pm on the floor
 ::: full
@@ -423,6 +423,21 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: right
 ![The model correction: the runner's figure of the iterated reference-wave solve on the corrected model.](figs/zwfs_s7iter.png){h=2.6}
 ~ Run tags rec193full, m2048, m2048_lat, ng385_lat; zwfs_dm96 README S7-S9.
+
+## Backup: why the splitter moves from 7° to 30° | The record's clearance solve cleared the mirror, flat and camera bodies at the leg ends and never looked at the node; two 103 mm beams 2θ apart clear a part at distance d only if d·sin 2θ exceeds about 111 mm
+::: left
+| splitter | worst part | others |
+|---|---|---|
+| 7° (the record) | output plate −109 mm | eight parts in another beam: reference plate, analyzer, compensator, L2, polarizer, L1 |
+| 15° | compensator −27 mm | output plate −17, analyzer −11, L2 +10 |
+| 22.5° | compensator +16 mm | output plate +55, analyzer +65, L2 +100, L1 +153 |
+| 30° | compensator +57 mm | output plate +178, analyzer +196, L2 +257, L1 +350 |
+- **What moves:** the output plate and analyzer from 17 and 27 mm behind the splitter to 160 and 170 mm, just ahead of the focuser at 207 mm; nothing else, so the tuned tail is untouched.
+- **What it costs the sensors: nothing.**  At 30° the Zernike rows reproduce (0.9943 / 5 pm against 0.9942 / 5), the mask gates pass, and the arm's channel phase difference is 1.69 mrad against 1.63; the plate's diattenuation rises to 10% but uniformly, a non-term with the laser on its eigenaxis.
+::: right
+![The node at 22.5°, the alternative: every part clears, the compensator by 16 mm.](figs/crop_bench_bs22_node.png){h=2.4}
+![The record's node at 7°: eight parts sit in another beam.](figs/crop_bench_bs7_node.png){h=2.4}
+~ Clearance = lateral distance of a beam's chief where it crosses the part's plane, minus the beam radius (51 mm) and the part's radius plus an 8 mm mount.  Tool dmg_bench_clearance; run tag bs30_dev.  The interferometer's snapshot form feels the angle through the plate's polarization; its numbers re-run at the chosen angle.
 
 ## Backup: provenance | Every number in this deck has a run tag in a committed run directory of the shared model; the three lane reports carry the full tables
 ::: full

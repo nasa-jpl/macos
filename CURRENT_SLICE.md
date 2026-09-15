@@ -182,6 +182,36 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **BENCH NOT BUILDABLE (Dave 2026-09-15, deck review): the record's 7-deg
+> splitter puts 8 of 9 node parts in another beam (L1, input polarizer,
+> compensator, output QWP, analyzer, L2, both arm QWPs' node records);
+> the Stage-A solve in tg96_run cleared only the three END bodies.**  Tool
+> `dm_gauge_lib/dmg_bench_clearance.m` (parts grouped by name stem, beams
+> tested where they cross a part's plane, the 103 mm DM aperture as the
+> beam, +8 mm mounts; draws the bench from above + the node panel:
+> `zwfs_dm96/bench_bs7/22/30.png`).  Scan with the output QWP + analyzer
+> moved to 160 / 170 mm behind the splitter (`D_RECOMB` 150, `D_RC_L2` 55;
+> L2 stays at 207 so the tuned tail is untouched): 15 deg still collides;
+> 22.5 deg clears (compensator +16 mm); 30 deg clears every part by >= 57
+> mm.  The sensors do not care (bs30_dev: rows 0.9943/5 vs 0.9942/5, G1/G3
+> pass, arm channel phase 1.69 vs 1.63 mrad; the plate's diattenuation
+> 10% but uniform).  Dave also wants: SUBSTRATES of real thickness on the
+> polarizers / QWPs / analyzer / masks (mask plate in the F/4.2 beam: 0.03
+> wave W040 + 0.7 mm focus shift for 2 mm; vector QWP 0.05 wave), and a
+> REAL CAMERA pitch (9.4 mm pupil image: 6.5 um sCMOS = 1450 px across,
+> bin 4 to the modeled 385; shrinking the image to 385 px of a 3-5 um
+> camera needs an F/0.7 field lens -- keep the image and bin; small
+> pixels help the well-depth time).  Brief `BRIEF_ccmac_bench_realism.md`
+> (Stage-A extended to the node parts; forward D_RECOMB/D_RC_L2; arm QWPs
+> at the retro for both passes; OAP folds re-solved; substrate option;
+> camera pitch; re-runs: layouts, the snapshot form's polarization at the
+> new angle, CCL's V3/V4 on the new bench + the mask-sensor gate; TO's
+> P/SRI node through the tool).  DAVE RULES 22.5 vs 30 (CCL: 30).  Deck
+> revised (35 slides): front-end + IFO layout slides show the proposed
+> 30-deg bench, parts tables carry the substrates and the camera, a
+> backup slide carries the clearance scan; DRAFT status line says the
+> geometry is under revision.**
+
 > **DECK ASSEMBLED 2026-09-14 (CCL): `demo_session/deck_gauges.md` ->
 > `deck_gauges.pptx`, 34 slides, DRAFT pending Dave's sign-off.**  Main
 > body 24 (title, jobs + scores, front end, IFO + layout, Zernike, vector
