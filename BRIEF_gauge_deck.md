@@ -128,7 +128,7 @@ Main body -- each approach once, in its best configuration:
     WFE to hold (the descent run).
 12. Lenses vs OAPs: the budget question answered with the IFO on each and
     the other gauges on the OAP front end.
-13. Systematics: priced and open, one line per approach.
+13. Systematics: priced and open, one line per approach (the vector sensor's line now closes: arm V3, metasurface V2, analyzer V4 -- section 7.3; nothing open).
 14. Recommendation.
 15. The modes, and the flow from launch to hold (section 11.1, a flow
     diagram).
@@ -243,6 +243,38 @@ breaks the pinhole -- the more focus-critical the mask feature, the
 worse the fold coma.  Open, not for this deck: trace-solving the OAP
 seat trim inside twyman_green (the S1 recipe; a builder change that
 risks the lens rig's byte-identical gate).
+
+### 7.3 The vector sensor's analyzer (V4, CCL 2026-09-14; the systematics slide, slide 13)
+
+The last unpriced term on the polarized dimple: the quarter-wave plate
+and polarizing cube that separate the two images.  From the engine
+(`dmg_analyzer_maps`: the two channel decks of `zwfs_vlayout` traced in
+polarization mode, the analyzer's Jones per ray = camera / record, the
+two circular states pushed through it) two terms per camera: an
+incoherent leak (the cube's extinction: 4.2e-4 transmitted port, 6.3e-4
+reflected, varying with the cone's angle to 2.6e-3) and a coherent one
+(a plate retardance error delta gives delta/2, an azimuth error theta
+gives theta, engine-exact; opposite signs in the two ports; an ideal
+plate in the converging beam leaves 1.5e-3 of zero mean, dropped by the
+scalar model and bounded as if uniform).  Priced at dev resolution
+(512 / 65; the record at 1024 / 193 runs as `runs/v4seq.sh` -> an193_*):
+
+| analyzer | uncalibrated G4 (100 nm pokes) | single 10 nm on the 30 nm surface, matrix on it | grid 1 nm |
+|---|---|---|---|
+| ideal | 0.30 pm | 0.9942 / 5 pm | 0.9961 / 2 pm |
+| cube alone | 3.6 pm | -- | -- |
+| ideal-plate term, bound | 23 pm | 0.9938 / 5 | 0.9963 / 2 |
+| plate lambda/300 | 162 pm (1.4% of the figure) | 0.9919 / 6 | 0.9975 / 2 |
+| plate 1 deg azimuth | 264 pm | -- | -- |
+| plate lambda/100 | 487 pm | -- | -- |
+
+Verdict, the arm's (V3) again: an absolute term the sensor's own
+response matrix absorbs (gain within 0.3%, floors within 1 pm).  Spec:
+a zero-order plate at lambda/300, azimuth to 1 deg; the plate in a
+slower beam, or a per-pixel analyzer calibration, only if the absolute
+reading must hold to 0.1%.  Runner: `mask.v_analyzer` 'engine' | struct,
+`mask.v_qwp_err`, `mask.v_qwp_az`; the V error prints as priced, G4 not
+asserted; 'none' reproduces the record bit-for-bit (an_ref = uwoff_ref).
 
 ## 8. Tasking (Opus level; each brief stands alone)
 
