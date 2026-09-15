@@ -42,24 +42,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | hold, one number | photons per cycle that hold 3 pm rms in a 60-cycle loop at gain 0.5 |
 ~ Measuring a change costs two measurements.  The 96×96 at 385 detector pixels per pupil is the flight-like sampling; most rows here are at 193 pixels, which the sampling study showed reads the same numbers.
 
-## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 22.5°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image
-::: full
-![The shared front end as traced by the engine, seen from above, at the 22.5° splitter: source at left, collimator L1, the splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_bench_bs22_train.png){h=3.0}
+## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 22.5°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image; the collimator and focuser are lenses or off-axis parabolas
 ::: left
-| part | value |
-|---|---|
-| source | HeNe 632.8 nm, filtered, 51 mm beam radius |
-| collimator L1 | f 857 mm, 103 mm, coated; modeled 5 mm center, 2 mm edge, to be a real 103 mm singlet |
-| plate splitter | 22.5° incidence (the record's 7° does not clear the node: next slide), 50/50; compensator matched; modeled 2.6 mm thick, to be 10 mm |
-| deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg |
+![The lens rig as traced by the engine, from above: source at left, collimator L1, the 22.5° splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_bench_bs22_train.png){h=2.9}
 ::: right
-| part | value |
-|---|---|
-| focuser L2 | f 429 mm, 103 mm; internal focus at F/4.2; modeled 8 mm center, to be real |
-| field lens | f 43 mm, 21 mm; pupil image 9.4 mm, 32 mm behind it |
-| camera | pupil image 9.4 mm: a 6.5 µm sCMOS puts 1450 pixels across it, binned 4 to the modeled 385 (5 per actuator) |
-| mask seat | one substrate at the internal focus, translated to select the sensor |
-~ The reference arm (a 103 mm flat on a piezo stage, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Lenses, not off-axis mirrors: the choice is priced on the lenses-versus-mirrors slide.  The drawings are to scale: the model's parts are the 56 mm rig's scaled up, thinner than 103 mm optics can be built; the next model round gives every part its real thickness.
+![The reflective rig, redesigned on the same splitter: the source and input polarizer in the diverging leg, OAP1 collimating at a 20° fold, the same node, OAP2 focusing at 25° toward the mask seat.  Both drawings are the tools' own renders to scale; parts and thicknesses are on the next slides.](figs/crop_oapdraw3_train.png){h=2.9}
+::: full
+| | lenses (L1, L2: 103 mm singlets) | off-axis parabolas (OAP1 20°, OAP2 25°) |
+|---|---|---|
+| for | on axis, no fold polarization; cheap parts; the record's readings were all measured on it | no glass in the beam: achromatic (a second color for capture is free), no ghosts; fed at its focus the mask seat is diffraction-limited at zero trim, and the untuned tail nulls 0.029 nm against the lens rig's tuned 0.134; every part clears by 33 mm |
+| against | one wavelength (a second color refocuses); substrates in the converging legs (0.03 wave W040 per 2 mm); the tail needs a tuned solve; faces need AR coating in the interferometer | fold polarization: bare aluminum at these angles gives the vector reading 0.1 rad of channel phase, at the edge of its calibration (a quarter-wave overcoat is expected to fix it); 10 µrad of mirror tilt moves the null 95-103 nm; capture range on a deep surface pending (the seed tail wraps at 120 nm) |
+| where it stands | the record | rows read at 0.99 / 2.4 pm and 0.99 / 161 pm, cross-talk 0.006-0.02 (the lens rig's own); pinhole recovers; vector pair and interferometer servo being re-measured |
+~ The reference arm (a 103 mm flat on a piezo, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Run tags bench_bs22, oapdraw3, oapifo2, oapsens22; the priced comparison is on the lenses-versus-mirrors slides.
 
 ## The splitter angle: three options | The record's 7° cannot be built; 22.5° clears every part and is the choice; 30° adds margin at the price of a wider bench and more plate polarization
 ::: full
