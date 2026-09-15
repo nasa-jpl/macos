@@ -293,6 +293,11 @@ asserted; 'none' reproduces the record bit-for-bit (an_ref = uwoff_ref).
 Gate before assembly: every number on slides 14-22 has a run tag in a
 committed report; every layout figure passed CCL's QA at slide size.
 
+**Dave 2026-09-14 (evening):** the Luis email is sent.  CCMac may run
+the as-built budget arc (`BRIEF_ccmac_asbuilt.md`), but it is a LATER
+add to the deck; priority now is the deck's completion with what is in
+hand.
+
 ## 9. Decisions still open
 
 None blocking.  The recommendation slide's wording is Dave's at sign-off.
