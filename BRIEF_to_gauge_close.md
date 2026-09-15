@@ -27,7 +27,14 @@ last only because it is largest; he may pull it forward.
   record: `tg_psi_dm96_oap/REPORT_bench_realism.md`, `runs/oap22d/*` edits,
   `pdi_dm96/runs/psriclear2/psriclear2_clear.mat`, `oapdesc_tail.mat`,
   `oapfix_tail.mat`.  Commit or delete each in item 1's commit; an
-  uncommitted artifact is an unverifiable claim.
+  uncommitted artifact is an unverifiable claim.  Everything untracked
+  under `templates/40_benches` is yours EXCEPT three stale zwfs_dm96
+  leftovers from earlier lanes (`runs/.batch.lock`, `runs/mask385/
+  macos_param.txt`, `runs/pcam193r_perframe/pcam193r_loop.png`): leave
+  those.  CCL's work is all committed.  If you are a fresh session: start
+  with `git status --short mmacos/templates/40_benches`, then the status
+  table at the top of `tg_psi_dm96_oap/REPORT_reflective.md`, then
+  `runs/*.log` tails for exit codes; nothing else needs to be re-read.
 
 ## 1. The vector pair on the redesigned reflective rig: rows, overcoat, verdict
 
