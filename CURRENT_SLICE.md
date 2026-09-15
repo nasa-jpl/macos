@@ -192,6 +192,26 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 ~09:30 (CCL, post-compaction).**  The slice's TO DO is
+> DONE: gate22_193 folded into the zwfs_dm96 README (Findings, first
+> bullet: "Bench of record = the 22.5-degree splitter", rows vs the 7-deg
+> record in parentheses, capture S 37 / V 62 / P 54 nm at 193 rays) and
+> into the deck's side-by-side footnote + provenance tags (stations193,
+> gate22_193); runs/gate22_193 COMMITTED (resources, this session's first
+> commit); deck rebuilt (44 slides), render-checked.  TO IS ALIVE on
+> `BRIEF_to_reflective.md`: items 1 and 2 committed (9a8d699 = item 1,
+> pushed by me at 08:30 as part of Dave's push; faab9ce + 180258b = item
+> 2, LOCAL: OAP1 20 deg / OAP2 25 deg, sides +1/-1, polarizer in the
+> source leg, output optics 125 mm ahead of OAP2, worst +33.4 mm over 8
+> parts) -- `tg_psi_dm96_oap/REPORT_reflective.md` has the status table
+> (items 3-7 not started); a model-1024 tg96 run (oap22d, stages
+> bench/figs/clearance) is LIVE in TO's lane, so NO model-1024 MATLAB from
+> this lane until it exits; TO's tree edits (oap tg96_run.m, runs/oap22d,
+> *.nohup) are THEIRS -- not staged, not touched.  NEXT (CCL): when TO's
+> item 3 layout figure lands, redo the deck's lenses-vs-mirrors and OAP
+> slides from it; the deck DRAFT awaits Dave's sign-off; push on Dave's
+> word only (resources has TO's 2 + my 1 ahead of origin).**
+
 > **HANDOFF 2026-09-15 ~08:30 (CCL, autocompact).**  PUSHED both repos at
 > Dave's word (resources 1338920, macos c8a5472); local since: macos
 > ccacaee (briefs re-addressed).  The 07:15-07:22 tg96 node-solve edits
