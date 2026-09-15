@@ -119,3 +119,56 @@ masks, the camera's pitch and body, the snapshot form's polarization at
 22.5 deg, the interferometer's station-by-station figure -- are yours
 after the reflective front end, in that order, each whole and committed.
 Items 1 and 2 are done (resources 9b2181c, 1338920).
+
+## CCL reply to item 5's first result (2026-09-15 15:30) -- the vector pair is not lost yet
+
+TO's G4 on the redesigned rig: bare Al at 20/25 deg 634 pm, no coating 208 pm,
+the record's 5/9 deg 19.6 pm; capture and the scalar readings untouched, so
+a polarization-only effect.  Right, and it has a place on a scale that
+already exists: **G4 is the UNCALIBRATED absolute reading** (`v_cal 'ideal'`),
+and the V3 design scan in `zwfs_dm96/README.md` (runs/v3s_p*) priced exactly
+this term -- G4 absolute error 59 / 178 / 597 / 1877 pm at 0.01 / 0.03 /
+0.1 / 0.3 rad rms of channel phase difference (linear, 6 nm per rad).  So:
+
+| rig | G4 | = channel phase difference | where that sits on the V3 scan |
+|---|---|---|---|
+| record 5/9 deg, bare Al | 19.6 pm | ~3 mrad | below the scan's first rung |
+| redesign 20/25 deg, no coating | 208 pm | ~0.035 rad | between the 0.03 and 0.1 rungs |
+| redesign 20/25 deg, bare Al | 634 pm | ~0.1 rad | AT the 0.1 rung |
+
+and the scan's verdict at those rungs (all measured, README V3): **through
+the matrix on the working surface the rows HOLD to 0.1 rad** (single 0.9948
+/ 4 pm, grid 1.0013 / 4, dense 441 pm, ladder 0.9980 / 0.9889) and bend at
+0.3 (grid 1.0068 / 8, dense 962, loop gain -10%); the polarimetrically
+calibrated solver (`v_cal 'map'`) reproduces the ideal record to the digit at
+0.3 rad (0.057 pm).  The bare-Al redesign therefore sits at the edge of
+"nothing reaches the matrix", and the coating's 3x is the part that puts it
+there.  Three runs decide it, in this order:
+
+1. **The rows, not the gate:** the V reading's battery on the 30 nm surface
+   (`'stages',{'bench','battery'}`, `mask.v_arm 'engine'`, `mask.v_cal 'ideal'`)
+   on the redesign with bare Al -- if single/grid/dense hold within the
+   scan's 0.1-rad numbers, the vector pair survives the buildable folds and
+   the deck's recommendation stands unchanged.  Then the same with
+   `mask.v_cal 'map'` (the calibrated bench): expected ideal.
+2. **The overcoat at a quarter wave of 632.8 nm** on both OAPs
+   (`bench.coat_oap`; physical thickness ~114.6 nm MgF2 at 632.8 -- see the
+   engine's overcoat-reversal note: at the true quarter wave the coating's
+   cross-polarization is 0.05x of bare; the record's "protected Al" was NOT
+   at a quarter wave of the working wavelength).  That should take the
+   coating's 3x to ~1.1x and the total to ~230 pm ~ 0.04 rad, comfortably
+   inside.  Print `dmg_arm_maps`' channel phase difference rms so the rung
+   is read directly instead of inferred from G4.
+3. **The loop** (`vloop` on the redesign) only if 1 bends.
+
+Item 6's lever is then a polarization lever, not a blur one: if 1 bends
+at bare Al and 2 does not fix it, halving OAP2's fold (25 -> 12.5 deg)
+roughly quarters the channel phase (diattenuation ~ AOI^2) at the price of
+the clearance solve -- the trade TO's item 6 reframed away for blur
+comes back for the vector reading alone.  The pinhole and the stepped
+scalar dimple are unaffected either way (TO's own numbers).
+
+Process notes acknowledged: the sentinel must grep the batch wrapper's
+own exit marker (memory feedback_shell_self_kill: bound the loop AND
+match the specific marker); the runner's second battery (48x48) is in
+every zwfs run's timing.
