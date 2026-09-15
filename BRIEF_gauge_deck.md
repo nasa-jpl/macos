@@ -407,8 +407,11 @@ The deck names the modes it tests and draws the flow between them:
 
 The figure is a boxes-and-arrows flow with the capture limit of each
 reading written on its arrow (30 / 60 / 100 / 150 nm of surface, from
-7.1), drawn by a script (graphviz `dot` -> PNG, committed with the deck
-as `gauge_modes_flow.py`); CCL, at assembly.
+7.1), drawn by a script; CCL, at assembly.  DONE 2026-09-14:
+`demo_session/gauge_modes_flow.m` -> `figs/gauge_modes_flow.png` (MATLAB,
+1800 px, 16-19 pt: graphviz is not installed on the build box); the
+capture limits from 7.1 listed under the capture box, the recalibration
+events above.
 
 ### 11.2 The complex amplitude: intensity across the pupil as well as the WF (slide 16)
 
