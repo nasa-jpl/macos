@@ -192,6 +192,25 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 ~16:00 (CCL).**  TO's reflective lane: items 1-3, 5-7 done;
+> item 4 reads on the SEED tail (oapifo2: rows 0.9915/2.4 pm, 0.9905/161,
+> cross-talk 0.006-0.02, null 28.9 pm; the break ladder WRAPS at 120 nm --
+> smaller capture than the lens rig); the tail tuner's objective fix was
+> DISPROVEN (objwin3 scores better and reads 0.0338) -- open why; item 5:
+> pinhole RECOVERS (0.269 pm), vector pair raw G4 634 pm bare Al / 208 no
+> coating = ~0.1 / 0.035 rad channel phase on the V3 scan where the
+> on-surface rows still hold (my reply in BRIEF_to_reflective).  NEW BRIEF
+> `BRIEF_to_gauge_close.md` (7 items: vector rows + lam/4 overcoat + verdict;
+> item 4's loop/descent + the 120 nm wrap; tuner gated by a battery row;
+> realism 3-5, 6, 8; the coronagraph FIELD SERVO on the CTB deck -- Dave's
+> C+ concept, `NOTES_gauge_in_coronagraph.md` with the clearance scan tool
+> `demo_session/gauge_in_coro_clearance.py`: face-on blocked in both
+> packages, out-of-plane 15 deg clears the CTB, nothing clears the space
+> relay; DM separability 33 cycles on the CTB, never in flight; 10 pm per
+> 200 s on V=5).  Deck 45 slides (slide 13 pol-camera bullet, redesigned-rig
+> slide).  Local macos commits since Dave's push: f117c42..this; resources
+> c9f92f6 + TO's.  Push on Dave's word.**
+
 > **2026-09-15 ~10:00 (CCL).**  TO's reflective items 1, 2, 3, 7 are
 > COMMITTED (resources 5cb2651 layout + parts list, 5c170c0 P/SRI
 > clearance PASS at 22.5 +36.9 mm / FAIL at 7, 69033b6 tail + seat; macos
