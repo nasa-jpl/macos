@@ -24,11 +24,12 @@ D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
 DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are being added to the model.
 
-## The two jobs, and how each is scored | Hold the surface to picometers in a servo; capture its post-launch shape, 100-200 nm of wavefront, and bring it into the servo's reach
+## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
-- **The mirror:** 96×96 actuators on a 1 mm pitch, 96 mm across.  On orbit its surface must stay constant to well under 10 pm, measured often and held by a closed loop.  The working surface during every test is a random 30 nm rms shape, not a flat: the gauge never operates at null.
-- **Hold:** a change of 10 nm on one actuator, or 1 nm on 47 actuators, or a dense random 10 nm pattern, read on the 30 nm surface with the response matrix measured on it.  Then the servo: the light per cycle that holds 3 pm rms.
-- **Capture:** the largest starting surface the servo brings to 3 pm; every phase reading wraps at ±158 nm of surface (±π at 632.8 nm, double pass), so this is a wrapping problem before it is a noise problem.
+- **The mirror:** 96×96 actuators on a 1 mm pitch, 96 mm across.  On orbit its surface must stay constant to well under 10 pm, measured often and held by a closed loop.  Every test runs on a random 30 nm rms working surface, not a flat: the gauge never operates at null.
+- **Job 1, measure:** read a change of 10 nm on one actuator, of 1 nm on 47 actuators, and a dense random 10 nm pattern, on the 30 nm surface with the response matrix measured on it; and keep that accuracy as the surface moves away from the calibration (capture range).
+- **Job 2, capture:** bring the largest possible starting surface, 100-200 nm of wavefront, down to the servo's floor; every phase reading wraps at ±158 nm of surface (±π at 632.8 nm, double pass), so this is a wrapping problem before it is a noise problem.
+- **Job 3, hold:** the servo at picometers: the light per cycle that holds 3 pm rms, and whether the reading leaves a fixed error.
 ::: right
 | score | meaning |
 |---|---|
@@ -37,6 +38,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | SNR | recovered change ÷ floor; above 5 counts as detected |
 | photons per measurement | all frames of one measurement summed; 1e14 photons at 633 nm = 31 µJ = 0.13 s of a 1 mW laser at 25% throughput |
 | capture range to 10% | the largest working surface at which a 10 nm change on the 47 sites reads within 10%, the matrix left as calibrated at 30 nm |
+| capture | the largest starting surface the servo brings to 3 pm |
 | hold, one number | photons per cycle that hold 3 pm rms in a 60-cycle loop at gain 0.5 |
 ~ Measuring a change costs two measurements.  The 96×96 at 385 detector pixels per pupil is the flight-like sampling; most rows here are at 193 pixels, which the sampling study showed reads the same numbers.
 
@@ -72,6 +74,43 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | transmitted beam shift in the 2.6 mm plate | 0.1 mm | 0.36 mm (1.4 at 10 mm) | 0.50 mm |
 | interferometer snapshot form | the small-angle case | its plate systematics re-run at this angle | larger |
 ~ The sensors reproduce their rows at every angle; the interferometer's snapshot form is the one thing the angle changes, through the plate's polarization, and the cube form is built for 45°.  Run tags bs22_dev, bs30_dev; the panels at 7° and 30° are on the backup clearance slide.
+
+## Parts common to every configuration | The front end and the detector tail, from the parameter sheet; thicknesses are the scaled model's and are being made real
+::: full
+| part | size and figure | coating | count | purpose |
+|---|---|---|---|---|
+| laser, spatially filtered | HeNe 632.8 nm, 1 mW class; beam 51 mm radius after L1 | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
+| collimator L1 | f 857 mm, 103 mm, plano-convex conic; modeled 5 mm center, to be a real singlet | anti-reflection | 1 | collimates onto the mirror |
+| plate splitter | 103 mm, 22.5° incidence, 50/50; modeled 2.6 mm, to be 10 mm | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
+| compensator plate | 103 mm, matched to the splitter, in the mirror leg | AR | 1 | balances the glass path through the splitter |
+| deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg | protected aluminum | 1 | the test object; its surface is the measurand |
+| focuser L2 | f 429 mm, 103 mm, plano-convex conic; modeled 8 mm center | AR | 1 | the internal focus at F/4.2 where the masks sit |
+| mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
+| field lens | f 43 mm, 21 mm | AR | 1 | reimages the pupil (9.4 mm) 32 mm behind it |
+| camera A | sCMOS 2048×2048, 6.5 µm (13.3 mm), binned 4 to 385 pixels across the pupil | — | 1 | every configuration's pupil image |
+| mounts, bench | 2 m × 1 m table; 103 mm mounts on the node parts, 25 mm clearance | — | — | the 22.5° layout clears every part |
+~ The tail (focuser, mask seat, field lens, camera) is tuned once and shared; only the mask seat's contents and what follows the field lens change between configurations.
+
+## Parts specific to the interferometer | What the reference arm and the two phase-shift forms add to the common bench
+::: full
+| form | part | size and figure | coating / material | count | purpose |
+|---|---|---|---|---|---|
+| all | reference flat on a piezo stage | 103 mm, λ/20; 564 mm leg; stroke over one wave | protected aluminum | 1 | the external reference; the four phase steps in the piezo form |
+| snapshot | input polarizer; two arm quarter-wave plates; output quarter-wave plate | 103 mm zero-order plates on 2-3 mm substrates; azimuths 45 / 0 / 45 / 0° | AR | 4 | codes the four channels in polarization |
+| snapshot | polarization camera, in place of camera A | micro-polarizer array 0 / 45 / 90 / 135°, 3.45 µm pixels, 680 per orientation across the pupil | — | 1 | the four analyzer channels at once; no rotating stage |
+| cube (backup) | cemented polarizing cube in place of the plate and compensator | 103 mm class MacNeille, symmetric stack | ZnS / cryolite on n 1.655 glass | 1 | the split as polarization physics; no compensator |
+~ The hybrid form uses the snapshot parts for every change measurement and the piezo for the absolute calibration; both live on the same bench.
+
+## Parts specific to the sensors | What each focal-plane sensor adds to the common bench: one substrate on the mask seat, and the vector sensor's split behind the field lens
+::: full
+| configuration | part | size and figure | material | count | purpose |
+|---|---|---|---|---|---|
+| Zernike | etched mask plate | fused silica, 2-3 mm; a 3×3 array of dimples 346 nm deep (a quarter wave), the record's 5.3 µm (2.0 λF/D) | bare fused silica | 1 | the reference from the beam's own core; stepped by translating between depths |
+| vector Zernike | geometric-phase metasurface | in the mask seat: a half-wave dimple pattern, +90° on one circular state and −90° on the other | dielectric metasurface on fused silica | 1 | the two images with opposite dimple sign |
+| vector Zernike | quarter-wave plate; polarizing cube; camera B | zero-order plate at λ/300 on a 2 mm substrate; 12.7 mm cemented MacNeille cube; a second sCMOS like camera A | AR; ZnS / cryolite | 3 | separates the two circular states onto two cameras, both frames at once |
+| stepped pinhole | pinhole plate on a phase-stepping stage; shutter | fused silica, 2-3 mm; 5.27 µm pinhole, surround attenuated to 0.72 in amplitude; steps of an eighth wave | metal-film attenuator | 2 | the reference from the core through the pinhole; the shutter frame reads the reference alone |
+| P/SRI (backup) | pickoff plate; lens Lr1; pinhole into a single-mode waveguide with a thermo-optic phase shifter; lens Lr2; two folds; compensator; recombiner; camera C | 60/40 plate at 45°; f 300 mm F/2.9; 3.7 µm; f 300 mm mirrored; 150 mm flats at 45°; 21.9 mm of glass; 50/50 plate at 45°; sCMOS | AR; protected-metal folds | 9 | the two-arm form with a reference that does not move with the surface |
+~ The Zernike, vector and pinhole plates share one substrate on the seat.  Full parts tables with vendors' classes are in each lane's README.
 
 ## Interferometer: Twyman-Green, four phase steps | Its best form is the hybrid: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
