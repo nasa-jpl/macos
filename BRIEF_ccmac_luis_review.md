@@ -42,8 +42,8 @@ Rule recorded: kill by PID only.
 ## Round 2 (CCL, 2026-09-14 evening): on 4772c83 / c44d179
 
 **Linux gate on your push:** tDwDxGroups 15/15, tZernikeGridBasis 5/5,
-tLinkSave 3/3, both tRunCompare zern_grid gates pass; fast suite result
-in the slice.  WS1 object-space skip accepted (the catch branch now means
+tLinkSave 3/3, both tRunCompare zern_grid gates pass; fast suite with your SUITE_FAST change 481 pass /
+0 fail on Linux.  WS1 object-space skip accepted (the catch branch now means
 "no element stop", which is the only way get_stop_info fails on a live
 session).  'bornwolf' documented as NormBornWolf in the veneer header, so
 my BornWolf-scale worry does not apply -- agreed.  Housekeeping accepted.

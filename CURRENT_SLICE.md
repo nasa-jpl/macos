@@ -182,6 +182,30 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-14 LATE (CCL).**  Fast suite with CCMac's SUITE_FAST change:
+> 481 / 0 on Linux.  TO's pin10_2048 re-run FINISHED 18:08 (exit 137 = the
+> model-2048 exit segfault; report + .mat complete: P / PF capture 120 nm+,
+> N(1 pm) 2.1e14 / 3.3e14) -> TO's lane is complete.  V4 RECORD RUNNING
+> (v4watch.log): an193_ref G4 0.053 pm, rows single 0.9935/4, grid
+> 0.9992/3; an193_cube 3.55 pm, rows 0.9934/4, 0.9992/3 (the cube is a
+> non-term at record resolution too); q300 / q100 / az1 / bound follow
+> (~8 min each).  V5 DONE at dev res (README V5, plan 11.2): the pair
+> ALONE cannot give amplitude + phase (mirror ambiguity about the
+> reference wave, square-root conditioning; ZW.solveVA kept for the
+> record); the pair + the STATE's CLEAR FRAME does (mask.v_clear; gate G9
+> mask.v_dip: 0.35 / 0.50 pm through 5% / 20% dips vs 241 / 967 with the
+> flat's amplitude; rows unchanged) -- a second detached watcher
+> (scratchpad/v5_watch.sh, log runs/v5watch.log) applies
+> runs/v5_patch_clear.py after v4seq and runs runs/v5seq.sh (an193_clear).
+> Modes flow diagram DONE (demo_session/gauge_modes_flow.m -> figs/
+> gauge_modes_flow.png).  NEXT SESSION: read v4watch.log + v5watch.log;
+> fold an193_* into README V4/V5 + plan 7.3/11.2 (replace the dev
+> numbers); commit the V5 runner patch (v5_patch_clear.py applied by the
+> watcher) with the run dirs; then items (4) QA of TO's universal-bench
+> drawing and (5) the deck assembly.  Local commits awaiting Dave's push
+> word: macos 4adf4e7 78af1ad + this; resources e0ec760 a9309bf + TO's 8
+> (fe387ee..640db68).**
+
 > **2026-09-14 EVENING (CCL, post-compaction).**  (a) CCMac's Luis
 > follow-ups (macos c44d179, resources 4772c83) pulled and gated on Linux:
 > tDwDxGroups 15/15, tZernikeGridBasis 5/5, tLinkSave 3/3, both tRunCompare

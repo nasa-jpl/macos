@@ -437,6 +437,20 @@ the 'amp' machinery reused) and gates it; TO gates P / PF; CCMac gates
 the four-step.  On orbit the photon budget per stellar magnitude is
 future work (10.3).
 
+**Measured 2026-09-14 (CCL; zwfs_dm96 README V5):** the pair ALONE does
+not give amplitude and phase at gauge-level phases -- its two images are
+two circles whose intersections are mirror images about the reference
+wave, so it measures A sin(phi) and |A cos(phi) - b|, ambiguous where
+A cos(phi) crosses b (1.9 rad pokes do) and square-root-conditioned near
+it (the iterated solve diverges; 5.8 nm on the G4 pokes).  The pair plus
+the STATE's CLEAR FRAME reads both exactly: through a 5% / 20% pupil
+amplitude dip 0.35 / 0.50 pm (the flat's amplitude: 241 / 967 pm), the
+rows on the 30 nm surface unchanged.  Deck statement for slide 16: the
+vector sensor gives the complex pupil field from three frames (the two
+images and the clear frame); the stepped sensor from its four steps plus
+the clear frame; the pinhole and the interferometer return it from their
+steps.  No separate camera.  Runner: `mask.v_clear`, gate G9 `mask.v_dip`.
+
 ### 11.3 One bench, all modes (slide 17)
 
 Yes: one layout switches between every mode by inserting or removing a
