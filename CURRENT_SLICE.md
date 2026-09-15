@@ -182,6 +182,29 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **DECK ASSEMBLED 2026-09-14 (CCL): `demo_session/deck_gauges.md` ->
+> `deck_gauges.pptx`, 34 slides, DRAFT pending Dave's sign-off.**  Main
+> body 24 (title, jobs + scores, front end, IFO + layout, Zernike, vector
+> + layout, pinhole + layout, side by side, capture range x2, photons,
+> servo, capture (descent), lenses vs OAPs, systematics, recommendation,
+> modes, complex amplitude, one bench, future work x3, run it yourself),
+> backup 10 (phase-shift forms, OAP rig, lost Zernike readings + fold,
+> PDI trades, drift, vector polarization terms, model + sampling + color,
+> provenance).  Raw material with every run tag and figure size:
+> `deck_gauges_material.md` (subagent extraction from the three reports;
+> four source disagreements listed there, resolved in the deck by the
+> lane reports' record values: IFO rows from lens_deck on the 30 nm
+> surface, IFO aging range 322 / 480+, S's N(1 pm) by tag, 52 vs 47
+> sites stated).  Figures: the tools' own PNGs; panel crops by
+> `crop_panels.py` (lens/oap/psri/pdi/zwfs layouts); the flow diagram and
+> the one-bench schematic drawn by MATLAB; the OAP layout figure NOT used
+> in the main body (its OAP bodies sit off the drawn rays -- CCMac to
+> check) -- the lenses-vs-OAPs slide is a table.  Render QA: soffice ->
+> pdftoppm, no overflow.  Dave (evening): Luis email sent; CCMac's
+> budget arc is a LATER add; deck first.  V4 + V5 records landed and
+> committed (resources 983148a).  NEXT: Dave's review of the deck;
+> TO's engine-drawn universal bench (follow-up); CCMac's WS3 gate fix.**
+
 > **2026-09-14 LATE (CCL).**  Fast suite with CCMac's SUITE_FAST change:
 > 481 / 0 on Linux.  TO's pin10_2048 re-run FINISHED 18:08 (exit 137 = the
 > model-2048 exit segfault; report + .mat complete: P / PF capture 120 nm+,
