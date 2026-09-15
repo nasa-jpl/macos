@@ -22,7 +22,7 @@ American English; photons per measurement.
 Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same two jobs: hold the surface in a servo, and capture its shape after launch.
 D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
-DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the layouts show the proposed 30° geometry, and the substrates and camera are being added to the model.
+DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are being added to the model.
 
 ## The two jobs, and how each is scored | Hold the surface to picometers in a servo; capture its post-launch shape, 100-200 nm of wavefront, and bring it into the servo's reach
 ::: left
@@ -40,24 +40,38 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | hold, one number | photons per cycle that hold 3 pm rms in a 60-cycle loop at gain 0.5 |
 ~ Measuring a change costs two measurements.  The 96×96 at 385 detector pixels per pupil is the flight-like sampling; most rows here are at 193 pixels, which the sampling study showed reads the same numbers.
 
-## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 30°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image
+## One bench, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 22.5°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image
 ::: full
-![The shared front end as traced by the engine, seen from above, at the proposed 30° splitter: source at left, collimator L1, the splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_bench_bs30_train.png){h=3.0}
+![The shared front end as traced by the engine, seen from above, at the 22.5° splitter: source at left, collimator L1, the splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods differ.](figs/crop_bench_bs22_train.png){h=3.0}
 ::: left
 | part | value |
 |---|---|
 | source | HeNe 632.8 nm, filtered, 51 mm beam radius |
-| collimator L1 | f 857 mm, 103 mm, coated |
-| plate splitter | 30° incidence (proposed; the record's 7° does not clear the node), 2.6 mm thick, 50/50; compensator matched |
+| collimator L1 | f 857 mm, 103 mm, coated; modeled 5 mm center, 2 mm edge, to be a real 103 mm singlet |
+| plate splitter | 22.5° incidence (the record's 7° does not clear the node: next slide), 50/50; compensator matched; modeled 2.6 mm thick, to be 10 mm |
 | deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg |
 ::: right
 | part | value |
 |---|---|
-| focuser L2 | f 429 mm, 103 mm; internal focus at F/4.2 |
+| focuser L2 | f 429 mm, 103 mm; internal focus at F/4.2; modeled 8 mm center, to be real |
 | field lens | f 43 mm, 21 mm; pupil image 9.4 mm, 32 mm behind it |
 | camera | pupil image 9.4 mm: a 6.5 µm sCMOS puts 1450 pixels across it, binned 4 to the modeled 385 (5 per actuator) |
 | mask seat | one substrate at the internal focus, translated to select the sensor |
-~ The reference arm (a 103 mm flat on a piezo stage, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Lenses, not off-axis mirrors: the choice is priced on the lenses-versus-mirrors slide.  Why 30°: the backup slide on clearance.
+~ The reference arm (a 103 mm flat on a piezo stage, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Lenses, not off-axis mirrors: the choice is priced on the lenses-versus-mirrors slide.  The drawings are to scale: the model's parts are the 56 mm rig's scaled up, thinner than 103 mm optics can be built; the next model round gives every part its real thickness.
+
+## The splitter angle: three options | The record's 7° cannot be built; 22.5° clears every part and is the choice; 30° adds margin at the price of a wider bench and more plate polarization
+::: full
+![The node at 7° (left, the record: eight parts in another beam), 22.5° (middle, the choice: every part clears, the compensator by 16 mm) and 30° (right: the compensator by 57 mm); the output plate and analyzer moved to 160 mm behind the splitter in the last two.  The three panels are the tool's own node drawings, placed side by side.](figs/bench_three_nodes.png){h=2.0}
+| impact | 7° (record) | 22.5° (choice) | 30° |
+|---|---|---|---|
+| node clearance, worst part | −109 mm: not buildable | compensator +16 mm; output optics +55 / +65; L2 +100 | compensator +57; the rest +178 or more |
+| bench shape | all four legs within 14° of one line | mirror leg at 45° to the source leg | mirror leg at 60° |
+| plate's polarization (mean diattenuation, uniform) | 0.5% | 5.5% | 10% |
+| pupil-varying part (the lenses; what the sensors feel) | 1.1e-3 rms | 1.1e-3 rms | 1.1e-3 rms |
+| vector sensor, channel phase difference / 100 nm pokes | 1.63 mrad / 9.0 pm | 1.66 mrad / 8.8 pm | 1.69 mrad / 9.1 pm |
+| transmitted beam shift in the 2.6 mm plate | 0.1 mm | 0.36 mm (1.4 at 10 mm) | 0.50 mm |
+| interferometer snapshot form | the small-angle case | its plate systematics re-run at this angle | larger |
+~ The sensors reproduce their rows at every angle; the interferometer's snapshot form is the one thing the angle changes, through the plate's polarization, and the cube form is built for 45°.  Run tags bs22_dev, bs30_dev; the panels at 7° and 30° are on the backup clearance slide.
 
 ## Interferometer: Twyman-Green, four phase steps | Its best form is the hybrid: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
@@ -73,10 +87,10 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | frames per measurement | 4 (snapshot: at once; piezo: in sequence) |
 ~ Run tags lens_deck, loop_lens, lens_deck_se2; the three phase-shift forms are priced in backup.
 
-## Interferometer: the node, at the proposed 30° | Every part clears every beam it is not in by at least 57 mm: the collimator and input polarizer on the source leg, the compensator on the mirror leg, the output plate and analyzer moved to 160 mm behind the splitter ahead of the focuser
+## Interferometer: the node at 22.5° | Every part clears every beam it is not in; the output plate and analyzer sit 160 mm behind the splitter, ahead of the focuser; the four snapshot channels come from a polarization camera, not a rotating analyzer
 ::: full
-![The splitter node from above, as traced at 30°, ±320 mm about the splitter: L1 and the input polarizer, the splitter, the compensator on the mirror leg, the output quarter-wave plate and analyzer just ahead of the focuser L2; test arm blue, reference arm orange.  The two "QWP" labels at the node mark builder placements; the physical plates sit at the mirror and the flat.](figs/crop_bench_bs30_node.png){h=4.5}
-~ The plates here (polarizer, quarter-wave plates, analyzer) are drawn as ideal surfaces; the next model round gives each a 2-3 mm substrate, which in these collimated legs adds path only.  Drawn by dmg_bench_clearance.
+![The splitter node from above, as traced at 22.5°, ±320 mm about the splitter: L1 and the input polarizer, the splitter, the compensator on the mirror leg, the output quarter-wave plate and analyzer just ahead of the focuser L2; test arm blue, reference arm orange.  The two "QWP" labels at the node mark builder placements; the physical plates sit at the mirror and the flat.](figs/crop_bench_bs22_node.png){h=4.2}
+~ The analyzer's four orientations are taken at once by a polarization camera (a micro-polarizer array at 0 / 45 / 90 / 135° on the pixels); the model rotates an ideal analyzer between its four frames, the same measurement.  A rotating stage would make the snapshot a sequential scan.  The plates here are drawn as ideal surfaces; the next model round gives each a 2-3 mm substrate, which in these collimated legs adds path only.  Drawn by dmg_bench_clearance.
 
 ## Zernike sensor: a quarter-wave dimple at the focus | The beam interferes with its own core: no reference arm; the best reading steps the dimple's depth through four frames and inverts pixel by pixel
 ::: left
@@ -424,7 +438,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The model correction: the runner's figure of the iterated reference-wave solve on the corrected model.](figs/zwfs_s7iter.png){h=2.6}
 ~ Run tags rec193full, m2048, m2048_lat, ng385_lat; zwfs_dm96 README S7-S9.
 
-## Backup: why the splitter moves from 7° to 30° | The record's clearance solve cleared the mirror, flat and camera bodies at the leg ends and never looked at the node; two 103 mm beams 2θ apart clear a part at distance d only if d·sin 2θ exceeds about 111 mm
+## Backup: the clearance scan behind the 22.5° choice | The record's clearance solve cleared the mirror, flat and camera bodies at the leg ends and never looked at the node; two 103 mm beams 2θ apart clear a part at distance d only if d·sin 2θ exceeds about 111 mm
 ::: left
 | splitter | worst part | others |
 |---|---|---|
@@ -435,7 +449,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **What moves:** the output plate and analyzer from 17 and 27 mm behind the splitter to 160 and 170 mm, just ahead of the focuser at 207 mm; nothing else, so the tuned tail is untouched.
 - **What it costs the sensors: nothing.**  At 30° the Zernike rows reproduce (0.9943 / 5 pm against 0.9942 / 5), the mask gates pass, and the arm's channel phase difference is 1.69 mrad against 1.63; the plate's diattenuation rises to 10% but uniformly, a non-term with the laser on its eigenaxis.
 ::: right
-![The node at 22.5°, the alternative: every part clears, the compensator by 16 mm.](figs/crop_bench_bs22_node.png){h=2.4}
+![The node at 30°: the compensator clears by 57 mm, the rest by 178 mm or more.](figs/crop_bench_bs30_node.png){h=2.4}
 ![The record's node at 7°: eight parts sit in another beam.](figs/crop_bench_bs7_node.png){h=2.4}
 ~ Clearance = lateral distance of a beam's chief where it crosses the part's plane, minus the beam radius (51 mm) and the part's radius plus an 8 mm mount.  Tool dmg_bench_clearance; run tag bs30_dev.  The interferometer's snapshot form feels the angle through the plate's polarization; its numbers re-run at the chosen angle.
 
