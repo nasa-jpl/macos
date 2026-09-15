@@ -20,6 +20,8 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_node.png',    (0.15, 0.40, 0.85, 1.0)),
     (R+'zwfs_dm96/bench_bs7.png',          'crop_bench_bs7_node.png',     (0.15, 0.40, 0.85, 1.0)),
     (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_train.png',   (0.15, 0.0, 0.85, 0.40)),
+    (R+'tg_psi_dm96_oap/runs/oapdraw3/oapdraw3_vlayout.png', 'crop_oapdraw3_train.png', (0.15, 0.05, 0.9, 0.33)),
+    (R+'tg_psi_dm96_oap/runs/oapdraw3/oapdraw3_vlayout.png', 'crop_oapdraw3_node.png',  (0.3, 0.33, 0.8, 0.66)),
 ]
 def trim(im):
     bg = Image.new(im.mode, im.size, (255, 255, 255))

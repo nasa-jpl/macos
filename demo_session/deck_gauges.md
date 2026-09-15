@@ -22,7 +22,7 @@ American English; photons per measurement.
 Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same two jobs: hold the surface in a servo, and capture its shape after launch.
 D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
-DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are being added to the model.
+DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are being added to the model.  The reflective front end has been redesigned on it (2026-09-15) and its rows are being re-measured; the lenses-versus-mirrors comparison is provisional.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -292,7 +292,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **The interferometer needs no recalibration** because its reference is the flat, not the beam.
 ~ 1e13 and 1e15 photons per cycle give the same convergence: capture is reference-limited, not light-limited.  Run tags cap_nouw, cap_uw, cap_state_uw_recal, descent193, descent_lens, descent_oap.
 
-## Lenses or off-axis mirrors in the front end | The reflective rig is the budget choice; it costs the interferometer its servo and its capture, and it breaks the focus-critical sensors: the mirror fold's coma at the mask seat is 0.8 λF/D
+## Lenses or off-axis mirrors: the record | On the record's 7° mirror rig the interferometer lost its servo and its capture and the focus-critical sensors broke; the cause was read as fold coma.  It was not (next slide): the collimator was fed 25 mm inside its focus
 ::: left
 | | lens rig | off-axis mirror rig (bare aluminum) |
 |---|---|---|
@@ -307,10 +307,26 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | vector Zernike, 100 nm pokes | 0.05 pm | 19.6 pm: fails its gate |
 | stepped pinhole, 100 nm pokes | 1.9 pm | 94 pm: fails its gate |
 ::: right
-- **The mirror rig's fold is in the same plane as the splitter's**, and its residual astigmatism and coma leak between the mirror's modes.  Open-loop rows tolerate it; a servo does not.
-- **At the mask seat the fold coma blurs the focus to 1.1 λF/D** once the seat is refocused (a 6.1 mm trim, the collimator's residual defocus refocused by the focuser).  The more focus-critical the mask feature, the worse: the 2 λF/D dimple survives, the polarized dimple degrades, the pinhole breaks.
+- **What the record saw:** residual astigmatism and coma leaking between the mirror's modes; open-loop rows tolerated it, a servo did not.  At the mask seat the blur was 1.1 λF/D once the seat was refocused by a 6.1 mm trim, and the more focus-critical the mask feature, the worse: the 2 λF/D dimple survived, the polarized dimple degraded, the pinhole broke.
+- **What it was:** the collimator fed 25 mm inside its focus, a 926 µrad residual the fold turns into coma, linear in the angle; the 6.1 mm trim is that error refocused.  Fed at its focus the blur is zero at every fold angle.
 - **Coatings do not rescue it:** bare and protected aluminum give the same rows; the retardance variation they add is 0.5 mrad, a floor.
-~ Run tags oap_deck, loop_oap, descent_oap, zoap; the seat-trim solve is in tg_psi_dm96_oap/REPORT_gauge_ifo.md section 4.  Astigmatism scales with the fold angle squared: halving it lengthens the leg 1.33×.
+~ Run tags oap_deck, loop_oap, descent_oap, zoap (all on the 7° rig with the 25 mm conjugate error; the seat-trim solve is in tg_psi_dm96_oap/REPORT_gauge_ifo.md section 4).  These rows stand as the record of what a misfed collimator costs; the redesigned rig's rows are being re-measured.
+
+## The reflective front end, redesigned | Fed at its focus and re-solved at the 22.5° splitter, the mirror rig is buildable (every part clears by 33 mm), its mask seat is diffraction-limited at zero trim, and its untuned tail nulls 4.6× better than the lens rig's tuned one; the rows are running
+::: left
+![The redesigned reflective interferometer as traced by the engine, from above: the source and input polarizer in the diverging leg, OAP1 (collimator, 20° fold), the splitter at 22.5°, the 96 × 96 mirror on the test leg (blue), the reference flat on its piezo (orange), the output plate and analyzer, OAP2 (focuser, 25° fold) toward the mask seat.](figs/crop_oapdraw3_train.png){h=3.4}
+::: right
+| | record's mirror rig (7°) | redesigned (22.5°) |
+|---|---|---|
+| collimation after the collimator | 926 µrad rms (a 28.8 m focus) | 0.00 |
+| blur at the mask seat, best focus | 1.1 λF/D at a 6.1 mm trim | 0.000 λF/D at zero trim |
+| flat-mirror null, tail as tuned / untuned | 12.9 nm tuned | 0.029 nm untuned (lens rig 0.13 tuned) |
+| clearance, worst part | fails (a plate 10 mm past the pole) | +33.4 mm over 8 parts |
+| rays lost | 2-33% by fold angle | 0 |
+- **Two defects, both removed:** the builder placed the point source 25 mm inside the collimator's focus (a lens hides that in its tuned figures; a parabola cannot), and the input polarizer sat 10 mm past the collimator's pole, inside the incoming cone and the mirror's own sag.  The polarizer moves into the source leg.
+- **The "fold coma" was the conjugate error turned into coma by the fold**, linear in the angle, not quadratic; at the design point there is nothing left for a smaller fold to recover.
+- **Open:** the interferometer's rows, servo and descent, and the three sensors on this rig, are running (TO).  Their numbers replace the record's on the previous slide when they land.
+~ Off-axis parabolas: OAP1 parent f 757 mm, off-axis 551 mm, 20°; OAP2 parent f 352 mm, off-axis 328 mm, 25°; each on a tip/tilt mount.  Run tags fold1-4, loss, loss_src, conj, zseat, oap22d, oapdraw3, oap22d_tail; tg_psi_dm96_oap/REPORT_reflective.md (TO, 2026-09-15).
 
 ## What can spoil each reading, priced | Every systematic we could model is either calibrated by the response matrix measured through the sensor, or shown small; one line per approach
 ::: full
@@ -332,7 +348,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: left
 - **Hold:** the polarized dimple is the best reading on every line — 3 pm from 1.5e12 photons per cycle, two frames taken at once, no stepping, no fold, no fixed error, and every systematic we modeled calibrated by the matrix measured through it.  The stepped scalar dimple is the fallback with no polarization optics, at 1.7× the light.
 - **Capture:** the interferometer takes 100-600 nm of wavefront to 2 pm in tens of cycles with unwrapping alone.  In the common path, the stepped pinhole with a shutter frame captures 200 nm of wavefront with unwrapping and three recalibrations.  A second color is the sensors' own route (future work).
-- **Front end:** lenses.  The mirror rig's fold coma walls the servo and breaks the pinhole.
+- **Front end:** lenses on the record; the redesigned mirror rig (fed at its focus, 22.5°) removes what walled the servo and broke the pinhole, and its rows are running.  If they match the lens rig's, the mirrors are the budget choice with no penalty.
 ::: right
 - **The bench:** one layout with the reference arm shuttered, the mask seat translated, the quarter-wave plate in or out, and the P/SRI arm behind a flip-in plate (the one-bench slide).  Capture with the interferometer, hand off inside the sensor's 60 nm reach, hold with the sensor at a third of the light.
 - **What the numbers do not decide:** the pinhole and the vector dimple tie on the working surface (0.9935 / 4 pm both); the dimple wins the servo by 1.5×, the pinhole wins capture range for one extra frame.  A bench that carries both costs one substrate.
@@ -545,7 +561,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Backup: provenance | Every number in this deck has a run tag in a committed run directory of the shared model; the three lane reports carry the full tables
 ::: full
-- **Interferometer** (tg_psi_dm96_oap/runs): lens_deck, lens_deck_se2, lens_deck_se5, loop_lens, loop_lens_cam, loop_lens_intra, loop_lens_se2, descent_lens, oap_deck, loop_oap, descent_oap, oap_bareAl, oap_coat, oap_jones, zoap.  Report REPORT_gauge_ifo.md (CCMac), with REPORT_oap.md and README.md.
+- **Interferometer** (tg_psi_dm96_oap/runs): lens_deck, lens_deck_se2, lens_deck_se5, loop_lens, loop_lens_cam, loop_lens_intra, loop_lens_se2, descent_lens, oap_deck, loop_oap, descent_oap, oap_bareAl, oap_coat, oap_jones, zoap (the 7° rigs); lens22, lens22g, lens22h, node22t, fold1-4, loss, loss_src, loss_a2, conj, zseat, zseat2, oap22d, oapdraw3, oap22d_tail (the 22.5° bench and the redesigned reflective rig); pdi_dm96/runs/psriclear2 (the P/SRI bench through the clearance tool).  Reports REPORT_gauge_ifo.md (CCMac) with REPORT_oap.md, REPORT_bench_realism.md and REPORT_reflective.md (TO), and README.md.
 - **Zernike sensors** (zwfs_dm96/runs): matbase, matbase385, m2048, m2048_lat, cap385, cap385_b60-b160, noise193_b30-b160, rec193full, loop193, loop385, v193base, v193noise, vloop193, fold_diag, v2g, v2loop, v3arm, v3s, v3loop, an193_ref/cube/q300/q100/az1/bound/clear, stations193, gate22_193 (the 22.5° bench).  README.md (CCL) and deck_zwfs.md.
 - **Point-diffraction** (pdi_dm96/runs, and the pre-split records in zwfs_dm96/runs): pdi193f, pdi193fbase, pdi193state, pdi193se_ls, pdi193se_sh5, ploop193, pcam193, pcam193r, pcam193ri, pfdeck, pfdeck_frz, pfdeck_loop, cap385p, cap385p_b60-b160, noise193p_b30-b160, cap_nouw, cap_uw, cap_uw_recal, cap_state_uw, cap_state_uw_recal, descent193, descent193s, descent193f, intra193_0, intra193, rw193_1e3/1e2/1e1, pin20_1024, pin20_loop, pin10_2048, pin10_loop.  Report REPORT_gauge_pdi.md (TO) and README.md.
 - **Plan and rulings:** macos/BRIEF_gauge_deck.md sections 5-11.  Raw material with every figure's pixel size: demo_session/deck_gauges_material.md.

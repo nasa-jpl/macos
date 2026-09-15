@@ -192,6 +192,26 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 ~10:00 (CCL).**  TO's reflective items 1, 2, 3, 7 are
+> COMMITTED (resources 5cb2651 layout + parts list, 5c170c0 P/SRI
+> clearance PASS at 22.5 +36.9 mm / FAIL at 7, 69033b6 tail + seat; macos
+> 62248d5).  THE STORY CHANGED: there is no fold coma -- the builder fed
+> the collimator 25 mm inside its focus (zSource; 926 urad residual, blur
+> linear in the fold angle, the 6.14 mm seat trim = that error refocused);
+> fed at its focus the seat blur is 0.000 lam F/D at zero trim, and the
+> designed rig's UNTUNED tail nulls 0.0289 nm (record's tuned OAP tail
+> 12.9, lens rig tuned 0.134).  The blocker was the input polarizer 10 mm
+> past OAP1's pole (in the cone + the sag envelope) -> moved to the source
+> leg, ray loss 0.  DECK (45 slides, macos this commit): the
+> lenses-vs-mirrors slide retitled "the record" with the cause corrected;
+> NEW slide "The reflective front end, redesigned" (TO's oapdraw3 layout
+> crop + record-vs-redesign table); recommendation's front-end bullet
+> hedged; status line + provenance tags.  RUNNING in TO's lane:
+> oap22d_tail (model 512) then ifoseq.sh -> oapifo (rows) + oapifol
+> (loop); then the mask sensors on the rig (item 5; needs
+> bench.MASK_TRIM 0).  When those land: replace the record's rows on the
+> two slides and re-decide the recommendation's front-end line (Dave).**
+
 > **2026-09-15 ~09:30 (CCL, post-compaction).**  The slice's TO DO is
 > DONE: gate22_193 folded into the zwfs_dm96 README (Findings, first
 > bullet: "Bench of record = the 22.5-degree splitter", rows vs the 7-deg
