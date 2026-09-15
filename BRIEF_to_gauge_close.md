@@ -23,18 +23,30 @@ last only because it is largest; he may pull it forward.
   `] exit` marker and are bounded.
 - No `--amend`, no push (Dave pushes), no re-render of a deck figure (deck
   figures are the tools' own PNGs).  American English in every report.
-- Three of your files are UNTRACKED in the tree right now and are part of the
-  record: `tg_psi_dm96_oap/REPORT_bench_realism.md`, `runs/oap22d/*` edits,
-  `pdi_dm96/runs/psriclear2/psriclear2_clear.mat`, `oapdesc_tail.mat`,
-  `oapfix_tail.mat`.  Commit or delete each in item 1's commit; an
-  uncommitted artifact is an unverifiable claim.  Everything untracked
-  under `templates/40_benches` is yours EXCEPT three stale zwfs_dm96
-  leftovers from earlier lanes (`runs/.batch.lock`, `runs/mask385/
-  macos_param.txt`, `runs/pcam193r_perframe/pcam193r_loop.png`): leave
-  those.  CCL's work is all committed.  If you are a fresh session: start
-  with `git status --short mmacos/templates/40_benches`, then the status
-  table at the top of `tg_psi_dm96_oap/REPORT_reflective.md`, then
-  `runs/*.log` tails for exit codes; nothing else needs to be re-read.
+- **Item 0 is real work: ~70 of your files are UNTRACKED** (`git status
+  --short mmacos/templates/40_benches`): `REPORT_bench_realism.md`; the
+  `runs/oap22d/*` re-render (modified, uncommitted); fourteen `*_tail.mat`
+  in tg_psi_dm96_oap (tailA, oapfix, oapfixb, oapifo, oapifol, oapdesc,
+  objseed2/3, objwin2/3, polA/B); run dirs tailA, tailB, oapfixb, oapifol,
+  oapdraw/2, nodesolve, node22s/v, clear22, foldsmoke, lens22h; the sketch
+  PNGs in lens22/lens22g/oap22/oap22d/oapdraw3/oapifo/oapifo2; oapifo2's
+  vlayout + clearance PNGs; seq scripts; pdi_dm96's psriclear/psriclear2
+  mat and pdi_layout.in; zwfs_dm96's oapsens22/oapsens22n .mat.  Rule:
+  every tag the reports cite gets its run dir committed (grep the three
+  reports for the tag); tail mats cited in section 4 (tailA/B, objseed3,
+  objwin3, oapifo/oapifol) committed as evidence, the rest deleted;
+  sketch PNGs deleted unless a report shows them; the oap22d re-render
+  committed only if it is the auto-placed one (else `git checkout` it).
+  An uncommitted artifact is an unverifiable claim.  Everything untracked
+  under 40_benches is yours EXCEPT a few zwfs_dm96 leftovers from earlier
+  lanes (`.batch.lock`, `mask385/macos_param.txt`, `pcam193r_perframe/`,
+  `pdi_dev2/3`, `pseq6.sh`, `v3dev_oap0`, `vafter*.sh`): leave those.
+  CCL's work is all committed.  **If you are a fresh session:** start with
+  that `git status`, then the status table at the top of
+  `tg_psi_dm96_oap/REPORT_reflective.md` (sections 4.5-4.6 and 5 are the
+  live findings; 4.1-4.4 are RETRACTED attributions, do not re-derive
+  them), then `runs/*.log` tails for exit codes; nothing else needs to be
+  re-read.
 
 ## 1. The vector pair on the redesigned reflective rig: rows, overcoat, verdict
 
