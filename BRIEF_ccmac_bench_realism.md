@@ -195,8 +195,14 @@ camera, the pitch, the binning.
 - CCL: the arm maps V3 and the analyzer V4 on the new bench (a few
   runs), and the mask sensors' bench + battery + one loop as the gate
   that the rows hold (they did at 30 deg without substrates).
-- TO: the P/SRI bench through `dmg_bench_clearance` (its pickoff and
-  recombiner are at 45 deg; check the reference arm's node).
+- TO: the P/SRI bench through `dmg_bench_clearance` -- **DONE** (resources,
+  "P/SRI bench through the clearance tool"): PASSES at 22.5 deg, worst
+  +36.9 mm (the compensator), and FAILS at the record's 7 (-47.3 mm
+  compensator, -22.9 L1).  The failures are entirely the shared FRONT END,
+  the same two parts as the TG96 finding; the Mach-Zehnder node -- the
+  reference arm's relay lenses, its pinhole seat and bottom fold, the 45-deg
+  pickoff and recombiner -- is clear by 227-383 mm at both angles.  Section
+  appended to `pdi_dm96/REPORT_gauge_pdi.md`; runner `psri_clearance.m`.
 
 Report: one file, numbers first, the clearance table, run tags; the
 deck's front-end, interferometer, vector and pinhole layout slides are
