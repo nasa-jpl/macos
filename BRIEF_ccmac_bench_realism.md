@@ -220,3 +220,18 @@ rebuilt from your figures.
    Commit.
 7. The OAP and P/SRI rigs through the tool (with TO).  Commit.
 Then the report's status table says "all done" and Dave pushes.
+8. **The interferometer's station-by-station figure** (Dave 2026-09-15:
+   "an example walk-through of the key beam train elements would
+   illustrate the key signals and add credibility").  The sensors have
+   it in `zwfs_run` (`stations_fig_`: two rows, the flat and the 30 nm
+   working surface; the mirror command, the focal spot with the mask's
+   footprint, the mask, the reference wave, two frames, the recovered
+   surface, the raw map minus the engine's field in pm) ->
+   `runs/stations193/stations193_stations_{S,V,P}.png`, 2438 x 732, in
+   the deck.  Make the same for the lens interferometer in `tg96_run`:
+   the mirror command; the test-arm pupil field at the detector
+   (intensity); the reference-arm field; two of the four phase-stepped
+   frames (0 and pi/2); the recovered phase map as surface (nm); the raw
+   map minus the engine's field (pm) -- on the flat and on the 30 nm
+   surface.  One figure `<tag>_stations.png`, 2 x 7 panels, 1800 px
+   wide, 10-13 pt, the pupil cropped to its box.  Commit.

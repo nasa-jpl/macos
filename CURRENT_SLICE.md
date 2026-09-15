@@ -192,6 +192,17 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 later (CCL): deck 44 slides -- three jobs (measure /
+> capture / hold) on slide 2; parts slides (common, interferometer,
+> sensors); the analysis-path slide + backup table; station-by-station
+> walk-throughs for S / V / P from the runner's new `stations_fig_`
+> (runs/stations193 at 22.5 deg; raw-map residuals on the 30 nm surface:
+> S 4.75 nm = the self-reference moved, V 25 pm, P 0.18 nm) -- the
+> interferometer's is CCMac's brief item 8.  Memory: the repeatable path
+> (reference_gauge_flow_*) and the migration plan
+> (project_gauge_deck_migration).  Local: resources + macos commits since
+> the 736836a / 521cf9c push.**
+
 > **2026-09-15 (CCL): splitter RULED 22.5 deg; the phantom "glass" on the
 > node figure was view_rx joining the polarizer and the tilted splitter
 > into one lens (fixed: faces join only when parallel and close; tBench
