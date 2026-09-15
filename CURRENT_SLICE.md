@@ -192,6 +192,22 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 (CCL): splitter RULED 22.5 deg; the phantom "glass" on the
+> node figure was view_rx joining the polarizer and the tilted splitter
+> into one lens (fixed: faces join only when parallel and close; tBench
+> 9/9, tPropLayout 3/3); the model's parts are the scaled 56 mm rig's
+> (2.6 mm plates, 5/8 mm lens centers, zero-thickness plates) -> the
+> realism round; the analyzer = a polarization camera (a rotating stage
+> would make the snapshot sequential); two model-1024 jobs on 64 GB OK
+> (measured 11.9 GB peak).  PUSHED both repos (resources 736836a, macos
+> 521cf9c) at Dave's word for CCMac.  Deck 38 slides: the three-option
+> splitter slide, the node at 22.5, "How every configuration was
+> analyzed" (ten steps) + the backup table per configuration.  The
+> repeatable path saved as reference memory (reference_gauge_flow_common
+> / _ifo / _zwfs / _pdi); MIGRATION PLANNED at the cycle's end: the deck
+> + tools from macos/demo_session to templates/40_benches/gauge_deck
+> (plan section 12; memory project_gauge_deck_migration).**
+
 > **BENCH NOT BUILDABLE (Dave 2026-09-15, deck review): the record's 7-deg
 > splitter puts 8 of 9 node parts in another beam (L1, input polarizer,
 > compensator, output QWP, analyzer, L2, both arm QWPs' node records);

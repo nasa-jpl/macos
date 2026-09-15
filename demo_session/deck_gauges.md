@@ -336,6 +336,25 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **The error budget in the JPL form:** per reading, fixed terms after calibration, drift terms weighted by the servo bandwidth, noise terms in quadrature, to a held error at a stated light and time.  This deck's comparison table is its first column.
 ~ The telescope-level version of this (an allocation table rolled through the sensitivity model, then the closed-loop predictor) is being planned separately; it is a later add to this deck.
 
+## How every configuration was analyzed | One repeatable path, ten steps, the same for all four approaches: a new sensor is a new reading class in the shared runner plus its gate, then steps 4 to 10 unchanged
+::: left
+| step | what | gate or output |
+|---|---|---|
+| 1 | one parameter sheet and one runner per approach; batch wrappers | every number has a run tag |
+| 2 | build the bench from the sheet, trace it; clearance of end bodies and node parts; tail tune; sampling budget | every part clears by 25 mm; 6 pixels across the mask feature |
+| 3 | model gates before any number | mask round trip, reference-wave surrogate, working-state amplitude, the reading on 100 nm pokes |
+| 4 | calibration: the response matrix measured through the sensor, on the 30 nm working surface | piston null carried; stencil-site fit |
+| 5 | rows on the working surface: 10 nm on one actuator; 1 nm on 47 sites; dense 10 nm | gain, floor, SNR |
+::: right
+| step | what | gate or output |
+|---|---|---|
+| 6 | capture range: the aging ladder to 10%; the matrix re-measured at 60 to 160 nm with its photon cost | range in nm; photons per rung |
+| 7 | photons: noise fit over 1e8 to 1e14 per measurement, flat and on-surface matrix | photons for 1 pm |
+| 8 | closed loop in the shared loop code: noise, walk, ramp; noiseless step; within-scan drift | photons per cycle for 3 pm; fixed error |
+| 9 | descent: the start ladder with unwrapping and recalibration on and off | largest start brought to 3 pm |
+| 10 | systematics one at a time, uncalibrated and through the matrix; layout drawn from the emitted deck; parts from the sheet; report numbers first | one line per term on the systematics slide |
+~ The scoring library (the loop, the unwrapper, the arm and analyzer maps, the clearance check) is shared by the three lanes; nothing is copied between them.  The path is recorded as reference memory so the next configuration follows it in a day.
+
 ## Run it yourself | One parameter sheet and one runner per approach, shared code underneath; every number here is reproduced by the commands below
 ::: left
 - **Interferometer** (tg_psi_dm96_oap): `tg96_run` for the lens rig; `tg96_run('bench.optics','oap','tag','oap')` for the mirror rig; `./tg96_batch.sh lens_deck "'stages',{'bench','deck'},'battery.noise',true"`; `./tg96_batch.sh loop_lens "'stages',{'bench','loop','figs'}"`.
@@ -452,6 +471,20 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The node at 30°: the compensator clears by 57 mm, the rest by 178 mm or more.](figs/crop_bench_bs30_node.png){h=2.4}
 ![The record's node at 7°: eight parts sit in another beam.](figs/crop_bench_bs7_node.png){h=2.4}
 ~ Clearance = lateral distance of a beam's chief where it crosses the part's plane, minus the beam radius (51 mm) and the part's radius plus an 8 mm mount.  Tool dmg_bench_clearance; run tag bs30_dev.  The interferometer's snapshot form feels the angle through the plate's polarization; its numbers re-run at the chosen angle.
+
+## Backup: the path per configuration | The runner stages and knobs each approach went through, in the order they ran
+::: full
+| step | interferometer (tg96_run) | Zernike, scalar and vector (zwfs_run) | point-diffraction (pdi_run over zwfs_run) |
+|---|---|---|---|
+| build + gates | stage A clearance, A2 sampling, B build both arms; the tail from tg96_tail; the wrapped phase difference | bench: the symmetric mask sandwich (the S7 correction), the mask gauge factory, gates G1 to G4, G8, G9, the mask figure | the pinhole gauge in the same seat; G5 (pinhole at full transmission equals the stepped Zernike); the P/SRI's two decks, G6, G7 |
+| calibration + rows | stage deck: matrix on the 30 nm surface; single, 52-site grid, dense | battery: matrix on the surface (record mode, stencil fix); the same three rows; readings L, I, I+, S, V | battery through the shared runner; readings P (five-frame scan, shutter frame), PF (traced reference) |
+| capture range | aging 30 to 480 nm; re-measured to 160; photons | the ladder with the capture-range print; base_rms rungs; noise stage per rung | the same knobs; the shutter frame's 480 nm |
+| photons | S5 form and the loop's noise fit | noise stage: N(1 pm) flat and on-surface | noise stage; 2.0 vs 1.0 λF/D |
+| loop | shared loop; PZT step error; camera and DM within-scan walks | shared loop: noise, walk, ramp, step; camera drift forms | shared loop; within-scan drift; reference-arm walk |
+| descent | unwrap alone: 60 to 300 nm starts | the start ladder: self-referenced readings blind past 60 nm | unwrap + recalibration: 100 nm with the shutter frame |
+| systematics | the three phase-shift forms; coatings; alignment (D4); OAP seat trim | V2 metasurface, V3 arm maps, V4 analyzer, V5 clear frame; color; sampling | step schemes; camera drift; reference motion and walk; pinhole diameter |
+| layout + parts | the view_rx recipe: train, node, tail | zwfs_vlayout: both channel decks; the bench clearance tool | pdi_vfig_util: pinhole and P/SRI layouts |
+~ Directories tg_psi_dm96_oap, zwfs_dm96, pdi_dm96 and the shared dm_gauge_lib under MACOS_resources/mmacos/templates/40_benches; each README's "run it yourself" reproduces its column.
 
 ## Backup: provenance | Every number in this deck has a run tag in a committed run directory of the shared model; the three lane reports carry the full tables
 ::: full
