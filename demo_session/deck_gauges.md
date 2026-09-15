@@ -140,6 +140,12 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The flat mirror's focal spot (log scale) with the dimple's footprint on its core, and the mask's phase, at the record's sampling: 3.96 pixels per λF/D, the dimple 7.9 pixels across.  It encloses 70.7% of the focused light.](figs/zwfs_mask385_mask.png){h=3.0}
 ~ Added to the front end: one fused-silica plate, 2-3 mm thick, with a 3×3 array of etched spots (one in the beam at a time; the 346 nm etch is a quarter wave at 632.8 nm), on a translation stage.  Nothing else.  The plate's thickness in the F/4.2 beam is 0.03 wave of spherical aberration and a 0.7 mm focus shift the tail absorbs (to be modeled).  Run tags matbase, matbase385, loop193.
 
+## Zernike sensor, station by station | The key signals along the train for the flat mirror and for the 30 nm working surface: the raw pixel map on the working surface is off by 4.8 nm because the sensor's reference is made from the beam, which is why the response matrix is measured on the surface
+::: full
+![Row 1 the flat mirror, row 2 the 30 nm working surface.  Left to right: the mirror command; the focal spot at the mask (log scale) with the dimple's footprint; the dimple's phase; the reference wave the dimple makes at the detector; the clear frame and the first depth frame of the four; the surface recovered from the four frames; the raw map minus the engine's own field at the detector (0 on the flat, 4.8 nm rms on the working surface).  The runner's own figure, run stations193 at 193 pixels per pupil.](figs/stations193_stations_S.png){h=3.0}
+- **The reference wave** (fourth column) is the core of the focal spot spread back over the pupil: on the working surface it has changed, so the raw four-frame map carries a 4.8 nm bias.  The matrix measured on the surface absorbs it, which is how the stepped reading reaches 5 pm on its rows.
+~ The residual column is the raw pixel map against the engine's field, before any calibration; the rows and the servo use the calibrated estimate.
+
 ## Vector Zernike sensor: the polarized dimple | A geometric-phase metasurface in the same seat delays the two circular polarizations by +90° and −90°; a quarter-wave plate and a polarizing cube send the two images to two cameras, both frames at once
 ::: left
 - **How it reads:** the two images are the sensor with its dimple sign flipped; per pixel they give the cosine and sine of the phase together, so the inversion is exact with no branch choice and no stepping.  Two simultaneous frames per measurement.
@@ -160,6 +166,12 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The vector sensor's tail from above: the focus with the metasurface, the field lens, the quarter-wave plate, the 12.7 mm polarizing cube, camera A on the transmitted port (purple) and camera B on the reflected port (orange), both at the pupil image.](figs/crop_zwfs_vlayout_tail.png){h=4.8}
 ~ Drawn by zwfs_vlayout.m from the two emitted decks (the engine does not split rays); the whole train is on the front-end slide.  The metasurface and the plate are drawn as ideal surfaces and the cameras as planes; the next model round draws the substrates and the 13 mm sensors.
 
+## Vector Zernike sensor, station by station | The two images taken at once, and a raw map within 25 pm of the engine's field on the 30 nm working surface: the pixel-by-pixel solve needs no calibration to read the surface
+::: full
+![Row 1 the flat mirror, row 2 the 30 nm working surface.  Left to right: the mirror command; the focal spot with the metasurface's footprint; the metasurface's phase (+90° on one circular state, −90° on the other); the reference wave at the detector; camera A (the +φ image) and camera B (the −φ image); the surface recovered from the pair; the raw map minus the engine's field (0 on the flat, 25 pm rms on the working surface).  Run stations193.](figs/stations193_stations_V.png){h=3.0}
+- **On the flat the two images are complementary** (dark center on A, bright on B: the dimple's sign); on the working surface each carries the surface's structure, and their per-pixel combination gives the phase with no branch choice and no stepping.
+~ The 25 pm is the raw absolute map's error on a 30 nm surface with the flat's calibration; the rows on the same surface read 0.9935 / 4 pm through the matrix.
+
 ## Point-diffraction sensor: a stepped pinhole with a shutter frame | The best common-path form: a 5.3 µm pinhole with an attenuated surround at the focus, five phase steps of the substrate, plus one pinhole-only frame per state that keeps the calibration honest far from null
 ::: left
 - **How it reads:** the pinhole passes the core of the focal spot as the reference; the surround, attenuated to 0.72 in amplitude, passes the rest.  The substrate steps the surround's phase through five frames (the Schwider-Hariharan scan, insensitive to step error); a sixth frame with the surround shuttered measures the reference by itself.
@@ -178,6 +190,12 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: full
 ![The point-diffraction tail from above, as traced: the focuser, the pinhole substrate in the mask seat at the internal focus (2.0 λF/D across, the surround attenuated), the field lens, the camera at the pupil image.  Axes in bench millimeters.](figs/crop_pdi_layout_tail.png){h=4.6}
 ~ Drawn by pdi_run from the emitted deck (pdi_layout.png in pdi_dm96); the whole train is on the front-end slide.  The pinhole plate is drawn as a surface and the camera as a plane; the next model round draws the 2-3 mm substrate and the 13 mm sensor.
+
+## Stepped pinhole, station by station | The pinhole passes the core as the reference, the attenuated surround passes the rest; the first step frame and the shutter frame; a raw map within 0.18 nm of the engine's field on the working surface
+::: full
+![Row 1 the flat mirror, row 2 the 30 nm working surface.  Left to right: the mirror command; the focal spot with the pinhole's footprint; the pinhole plate's transmission (the clear pinhole, the surround at 0.72); the reference wave at the detector; the first frame of the five-step scan and the shutter frame (the surround closed, the pinhole's light alone); the surface recovered from the scan; the raw map minus the engine's field (0 on the flat, 0.18 nm rms on the working surface).  Run stations193.](figs/stations193_stations_P.png){h=3.0}
+- **The shutter frame measures the reference by itself**, state by state; that is what lets this reading keep its calibration to 480 nm of surface where the dimple's self-reference collapses at 60.
+~ The 0.18 nm is the raw map's error with the flat's calibration; through the matrix on the surface the pinhole reads 0.9935 / 4 pm, the same as the vector dimple.
 
 ## Performance side by side | Every reading on the same 30 nm working surface, the response matrix measured on it: the four best readings are within 1% of each other and within 2 pm on the floor
 ::: full
