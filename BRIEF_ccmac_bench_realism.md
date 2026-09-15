@@ -202,6 +202,13 @@ Report: one file, numbers first, the clearance table, run tags; the
 deck's front-end, interferometer, vector and pinhole layout slides are
 rebuilt from your figures.
 
+## Status (2026-09-15 evening)
+
+| item | state |
+|---|---|
+| 1 | **done by CCL** (your session ran out of budget before its first edit; nothing of yours was lost): resources commit "Bench of record -> 22.5 deg" -- twyman_green places each arm's QWP once at the retro end (both rigs); tg96_run forwards D_RECOMB / D_RC_L2; tg96_params and zwfs_params at 22.5 / 150 / 55 / compensator 200 mm; clearance on the sheet every part >= +38 mm; tBench, tTgPol, tTgPol2, tDmgLoop, tPropLayout green; `runs/lens22` = your runner's re-emit + vlayout at 22.5 (its labels need re-placing for the new node: yours). The sensors' gate run on the new sheet (`zwfs_dm96/runs/gate22_193`, bench + battery, S / V / P) is running. |
+| 2-8 | not started -- yours, in the order below, from item 2 |
+
 ## 6. The order (each item whole, committed, before the next)
 
 1. `D_RECOMB` / `D_RC_L2` forwarded; the arm QWPs at the retro end; the
