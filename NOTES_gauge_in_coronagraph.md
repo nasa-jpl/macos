@@ -145,6 +145,74 @@ DM, the matrix column says which -- the gauge deck's multiplexed matrix
 already carries both DMs' actuators as columns; the deck's "complex
 amplitude for two-mirror control" slide is this).
 
+**C+. The pupil-dichroic FIELD SERVO (Dave 2026-09-15).**  Take C to its
+end: a dichroic at the apodizer pupil pulls the out-of-band light to a
+vector Zernike or pinhole sensor reading the FULL complex amplitude of the
+coronagraph's input field, and the two DMs servo that field -- amplitude
+and phase -- to the field recorded when the dark hole was dug with EFC.
+That holds the dark hole against everything upstream of the pickoff, not
+only the DMs: telescope misalignment, segment and mirror figure drift,
+the relay's own drift, since all of it arrives as the input field.  It is
+the deck's job 3 (hold) with the coronagraph's input field as the
+surface, and the deck's readings and currencies transfer to it directly:
+the vector pair with its clear frame (V5) is the amplitude-and-phase
+reading, the servo slide's photons per cycle price it, the capture slide
+says how far from the dug field it still converges.
+
+Four things bound it, each a number:
+
+1. *What it cannot see:* anything downstream of the pickoff -- the
+   apodizer, FPM, Lyot and their alignment, the science camera.  Those
+   stay with the dark-hole probing.  The sensor holds the INPUT field;
+   the probing watches the OUTPUT and is needed far less often.
+2. *Two DMs from one conjugate:* amplitude and phase at the apodizer are
+   two real maps and two DMs are two real maps, so the control is
+   determined -- but DM2's amplitude authority at DM1's plane is the
+   Fresnel conversion sin(pi lambda z / L^2), which is small at low
+   spatial frequency.  DM2 stroke per unit of amplitude correction
+   (CTB / space relay): 530 / 900 at 2 cycles across the beam, 85 / 144
+   at 5, 21 / 36 at 10, 8 / 14 at 16 (the space relay's actuator
+   Nyquist), 2.4 / 4 at 30.  So low-order AMPLITUDE drift (a
+   misalignment's pupil-shear, a segment's reflectivity) is expensive to
+   null and the servo must regularize it exactly as EFC does; low-order
+   PHASE is cheap (DM1 alone).  The dark hole's own EFC solution lives
+   under the same authority, so this is consistent, not new.
+3. *Chromaticity:* the sensor works out of band and the hold is at the
+   science band.  Surface phase transfers as OPD (achromatic); the
+   amplitude made by out-of-pupil phase scales as lambda (Talbot), and so
+   does DM2's correction of it.  The servo therefore holds a MODEL-
+   propagated target, not the sensed map itself -- the engine's two-plane
+   propagation is the transfer -- and the deck's second-color slide is the
+   same physics.  A sensing band adjacent to the science band keeps the
+   transfer near unity.
+4. *Photons on a star* (6 m unobscured, 28 m^2; a 100 nm out-of-band
+   slice; 25% throughput to the sensor; V=0 = 1.0e11 ph/s/m^2/um), against
+   the deck's vector-pair servo cost of 1.5e12 photons per cycle for 3 pm
+   at gain 0.5, scaling as 1/N^2:
+
+   | star | photons/s to the sensor | cycle for 3 pm | 10 pm | 30 pm |
+   |---|---|---|---|---|
+   | V=0 | 7e10 | 21 s | 2 s | 0.2 s |
+   | V=2 | 1.1e10 | 134 s | 12 s | 1.3 s |
+   | V=5 | 7e8 | 35 min | 200 s | 21 s |
+   | V=8 | 4.5e7 | 9 h | 52 min | 6 min |
+
+   A 1e-10 dark hole wants the input field held at the 10 pm-class over
+   the controlled band; on a V=5 target that is a cycle every few
+   minutes, on V=2 every ten seconds.  Slower than a DM-figure drift
+   (fine), comparable to a thermal drift (fine), far faster than the
+   probing it replaces.  The self-referenced sensors' capture range
+   (60 nm surface) is far wider than any in-flight drift, so the servo
+   never leaves the linear regime; recalibration is the ground matrix.
+
+What to model for it (adds to section 4): the two-DM field servo on the
+CTB deck through `dmg_loop` with the input field as the state -- both DMs
+as actuators, the vector pair with its clear frame at the apodizer
+conjugate as the reading, a drift injected upstream (a tilted OAP, a
+segment piston in the e2e6m train) -- and the dark-hole contrast scored
+through the existing EFC chain before and after the hold.  The stroke
+table above says where the regularization has to sit.
+
 **D. The coronagraph's own sensors as the gauge (LOWFS / dark-hole
 estimation).**  The FPM-rejected-light ZWFS (LOWFS) and the science-camera
 pairwise probing already measure the field the DMs make.  They are the
