@@ -15,6 +15,10 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'pdi_dm96/pdi_layout.png',          'crop_pdi_layout_train.png',   (0.0, 0.0, 1.0, 0.37)),
     (R+'pdi_dm96/pdi_layout.png',          'crop_pdi_layout_tail.png',    (0.0, 0.37, 1.0, 1.0)),
     (R+'zwfs_dm96/zwfs_vlayout.png',       'crop_zwfs_vlayout_train.png', (0.0, 0.0, 1.0, 0.5)),
+    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_train.png',   (0.15, 0.0, 0.85, 0.40)),
+    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_node.png',    (0.15, 0.40, 0.85, 1.0)),
+    (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_node.png',    (0.15, 0.40, 0.85, 1.0)),
+    (R+'zwfs_dm96/bench_bs7.png',          'crop_bench_bs7_node.png',     (0.15, 0.40, 0.85, 1.0)),
 ]
 def trim(im):
     bg = Image.new(im.mode, im.size, (255, 255, 255))
