@@ -206,7 +206,7 @@
 > session on this box AFTER and ON TOP OF 9b2181c (runs node22s/t,
 > nodesolve, clear22) -- that session likely died in the crash; its
 > owner (TO restarted? CCMac?) must commit them; do not overwrite.
-> NEXT for TO: `BRIEF_to_reflective.md` (the OAP front end from scratch:
+> Dave: CCMac will NOT return; TO takes the realism brief's items 3-8 AFTER the reflective brief (item 2 done by CCL, resources 1338920).  NEXT for TO: `BRIEF_to_reflective.md` (the OAP front end from scratch:
 > diagnose the OAP-body drawing defect first, then design / layout /
 > IFO + sensors on it / fold lever / P-SRI clearance).  CCMac (budget
 > out): `BRIEF_ccmac_bench_realism.md` items 2-8 (status table inside).

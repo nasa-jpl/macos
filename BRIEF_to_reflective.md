@@ -109,3 +109,13 @@ stays as the 7-deg history): numbers first, the status table on top,
 the clearance table, run tags, figures.  The deck's "lenses or off-axis
 mirrors" slide and a new "reflective rig: layout" slide are rebuilt from
 it; CCL assembles.
+
+## 6. After this brief: the rest of the bench-realism round is yours
+
+CCMac will not return before this work concludes (Dave 2026-09-15).
+`BRIEF_ccmac_bench_realism.md` items 3-8 -- real thicknesses (10 mm
+splitter and compensator, lens edges), substrates on the plates and
+masks, the camera's pitch and body, the snapshot form's polarization at
+22.5 deg, the interferometer's station-by-station figure -- are yours
+after the reflective front end, in that order, each whole and committed.
+Items 1 and 2 are done (resources 9b2181c, 1338920).
