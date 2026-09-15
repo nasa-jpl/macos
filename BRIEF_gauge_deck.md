@@ -476,3 +476,23 @@ in (it replaces the plate splitter); it stays a backup slide.  The
 universal-bench drawing: the two-arm interferometer with the vector tail
 and the flip-in P/SRI arm, switchable parts marked -- TO draws it (the
 `psri_bench` + `zwfs_vlayout` recipe, both theirs to combine), CCL QAs.
+
+## 12. The repeatable path, and where the deck lives (Dave 2026-09-15)
+
+The analysis path every configuration followed is written up as
+reference memory (`reference_gauge_flow_common`, `_ifo`, `_zwfs`, `_pdi`:
+the ten steps, then each lane's runner stages and knobs) and summarized
+in the deck (main-body slide "How every configuration was analyzed" +
+the backup table per configuration).
+
+**Migration at the cycle's end:** the deck and its tools leave
+`macos/demo_session` for `MACOS_resources/mmacos/templates/40_benches/
+gauge_deck/` (beside the three lane directories and dm_gauge_lib):
+`deck_gauges.md` / `.pptx`, `deck_gauges_material.md`, `crop_panels.py`,
+`gauge_modes_flow.m`, `gauge_one_bench.m`, the figs and crops it uses,
+and the lane decks `deck_zwfs.md` / `deck_pdi.md`; `make_brief_slides.py`
+moved with them or referenced from one place.  The cycle ends when the
+bench-realism round (`BRIEF_ccmac_bench_realism.md`) lands and the
+layouts are rebuilt from it.  `git mv`, relative figure paths, re-run the
+crops and the two figure scripts from the new place, rebuild, render QA,
+the 40_benches README names the deck.
