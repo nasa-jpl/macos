@@ -45,6 +45,20 @@ session (yours or anyone's) resumes from the record, not from memory:
 With this, a session cut at any point costs one uncommitted edit; the
 runs keep going and the record shows exactly where to resume.
 
+**Two model-1024 jobs at once on your 64 GB box: yes.**  Measured on
+this box (2026-09-15, `/usr/bin/time -v`): a model-1024 / 193-ray bench
++ battery run peaks at 11.9 GB resident, 8 min wall; the loop and ladder
+stages stay under the 14 GB cap the Linux wrappers impose.  Two are 24
+GB, three 36 GB.  Model 2048 runs need up to 20 GB (TO's cap); one 2048
+beside one 1024 is fine, two 2048 only with nothing else open.  Three
+things to do for a pair: give each its own tag (run dirs, decks and the
+param-table copy are per tag, so they do not collide); bypass the
+wrappers' one-at-a-time wait (`ZWFS_NOWAIT=1` for zwfs/pdi_batch;
+tg96_batch has no wait) -- on macOS there is no systemd cap, so the
+wrapper runs an uncapped `matlab -batch`; and watch the first pair's
+peak in Activity Monitor before trusting a third.  The engine is one
+process per job with no shared state on disk beyond the run dir.
+
 ## 1. What is wrong, measured
 
 `dm_gauge_lib/dmg_bench_clearance.m` (CCL, 2026-09-15): builds the
