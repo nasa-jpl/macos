@@ -55,7 +55,7 @@ pupil -- a non-term with the laser on the eigenaxis (V3's rule).  The
 interferometer's polarization-snapshot form is the one thing that feels
 the angle (item 4).
 
-Dave rules the angle (22.5 or 30); CCL recommends 30 for the margin.
+**Dave ruled 22.5 deg (2026-09-15).**  At 22.5 the plate's uniform diattenuation is 5.5% (7 deg: 0.5%; 30: 10%), the vector sensor's channel phase difference 1.66 mrad (1.63 / 1.69), the transmitted beam's shift in the 2.6 mm plate 0.36 mm (`runs/bs22_dev`).
 
 ## 2. The builder and the Stage-A solve (yours)
 
@@ -75,7 +75,17 @@ Dave rules the angle (22.5 or 30); CCL recommends 30 for the margin.
    layouts show one plate where it is.
 4. **Re-solve the OAP folds** for the new angle (the Stage-A fold solve).
 
-## 3. Substrates (Dave): real plates, drawn and traced
+## 3. Substrates and thicknesses (Dave): real parts, drawn and traced
+
+Dave, from the drawings (which are to scale): "Is the compensator really
+< 1 mm thick?  Are the lenses?"  The model's parts are the 56 mm rig's
+scaled by 1.714: the splitter and compensator are 2.6 mm plates, L1 is
+5.1 mm at the center with a 1.8 mm edge, L2 7.8 mm with 1.6 mm, the
+field lens 4.2 mm; the polarizers, plates and analyzer have no thickness.
+Make them real: a 103 mm plate splitter and compensator at 10 mm (the
+flatness a 4-inch plate needs; the transmitted beam shifts 1.4 mm at
+22.5 deg, which the builder's chief-ray path carries), lenses with a
+real edge (3-5 mm for 103 mm singlets), and:
 
 Every thin element is a plate of real thickness: the input polarizer,
 the two arm QWPs, the output QWP, the analyzer, the vector sensor's QWP,
@@ -96,6 +106,18 @@ layouts show the glass and the trace carries it:
 Builder: a `'substrate', [n t]` option on `add_polarizer`,
 `add_waveplate` and the mask seat.  Then the tail retune (tg96_tail /
 the ZWFS S1 rounds) with the plates in.
+
+## 3b. The analyzer (Dave): how is it implemented?
+
+The snapshot form's four analyzer orientations must be simultaneous.
+A rotating stage would make it a sequential scan (the PZT form's drift
+class without its step error).  Implement it as a polarization camera
+(a micro-polarizer array at 0 / 45 / 90 / 135 deg on the pixels: at the
+9.4 mm pupil image a 3.45 um polarization sCMOS gives 2700 pixels across,
+680 per orientation); the model's rotating ideal analyzer between four
+frames is that measurement.  The deck says so; the parts list names the
+camera.  The vector sensor's two cameras stay (its two channels are
+circular states, split by the cube).
 
 ## 4. The camera (Dave): a real pixel pitch
 
