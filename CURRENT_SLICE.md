@@ -192,6 +192,28 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **HANDOFF 2026-09-15 ~08:00 (CCL at 8% context).**  Bench of record =
+> 22.5 deg (resources 9b2181c: twyman_green plates at the retro end,
+> tg96_run forwards D_RECOMB/D_RC_L2, both sheets 22.5/150/55/comp 200;
+> clearance every part >= +38 mm; gates green).  OOM 07:25: two
+> model-1024 MATLABs (my gate22_193 + another lane's tg96 clear22) ->
+> systemd-oomd killed VS Code + the gate run; tg96_batch.sh now waits +
+> locks (fac4771); gate22_193 RE-QUEUED detached (zwfs_dm96/runs/
+> gate22_193: read its S/V/P rows vs pdi193fbase; fold into README +
+> deck).  UNCOMMITTED IN THE TREE, NOT MINE: tg96_run.m (+167: Stage A
+> node-part solve + a 'clearance' stage), tg96_params.m (P.clear.MOUNT /
+> node), dmg_bench_clearance.m (+63), edited 07:15-07:22 by a live
+> session on this box AFTER and ON TOP OF 9b2181c (runs node22s/t,
+> nodesolve, clear22) -- that session likely died in the crash; its
+> owner (TO restarted? CCMac?) must commit them; do not overwrite.
+> NEXT for TO: `BRIEF_to_reflective.md` (the OAP front end from scratch:
+> diagnose the OAP-body drawing defect first, then design / layout /
+> IFO + sensors on it / fold lever / P-SRI clearance).  CCMac (budget
+> out): `BRIEF_ccmac_bench_realism.md` items 2-8 (status table inside).
+> Deck: 44 slides DRAFT, local macos commits cd97214 and later; push on
+> Dave's word.  Memory: feedback_sequenced_batch_jobs (OOM rule),
+> reference_gauge_flow_* (the path), project_gauge_deck_migration.**
+
 > **2026-09-15 later (CCL): deck 44 slides -- three jobs (measure /
 > capture / hold) on slide 2; parts slides (common, interferometer,
 > sensors); the analysis-path slide + backup table; station-by-station
