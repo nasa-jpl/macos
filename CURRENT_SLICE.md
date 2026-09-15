@@ -58,8 +58,18 @@
 > (tRunCompare/test_zern_grid_conventions_engine_equivalence; compare within the
 > confined disk -- generator matches zern_seg_eval corr 1.0; norm applied
 > post-reindex so bornwolf scale is exact). tLinkSave+tZernikeGridBasis added to
-> SUITE_FAST. NEXT: push follow-ups; ifx/Linux already validated by CCL. Also: 2
-> e2e6m_r2 template files were already modified in the resources tree (NOT mine).
+> SUITE_FAST. Also: 2 e2e6m_r2 template files were already modified in the
+> resources tree (NOT mine).
+> **CCL ROUND 2 (2026-09-14 eve) CLOSED:** Linux fast 481/0 on the push. WS3 gate
+> STRENGTHENED to have teeth -- CCL showed Noll idx 8 and B&W idx 8 both land on
+> ANSI slot 9 (coincide), so the mode-8-only gate couldn't see a convention swap.
+> Now modes {4,7,8} per convention at ng 256 / sampling 31 (rays coarser than
+> the grid pixel -> facets vanish, 1%/corr 1.0000), thresholds 1%/0.999, PLUS a
+> negative control at mode 7 (Noll 7 coma vs B&W 7 trefoil; other-convention map
+> vs this deck's poke must give |corr|<0.5). tRunCompare 4/4. Luis email UNBLOCKED
+> (added the note: Noll & B&W coincide at 1-3 and 8). NEXT: Dave's new thread =
+> predict as-built performance (surface errors, error budgets, drift, electronics
+> noise) -- awaiting his steer on static-budget-first vs dynamic-loop-first.
 
 > **TO / GAUGE-DECK PDI LANE, IN FLIGHT 2026-09-13 (`BRIEF_to_gauge_deck.md`;
 > plan `BRIEF_gauge_deck.md`).  CODE COMMITTED, resources `5d99c20`, LOCAL.**

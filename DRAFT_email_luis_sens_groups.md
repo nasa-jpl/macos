@@ -65,27 +65,34 @@ per master, and Link= must reference a positive element id.)
 
 3) Zernike basis types for non-segment surfaces
 ------------------------------------------------
-Your observation is correct: the MATLAB *basis-map generator* for a plain
-(non-segment) surface currently produces ANSI only. The recent self-contained Noll
-work went into the per-segment basis builders, not the general non-segment
-generator, so Noll/Fringe/Born-Wolf sampled maps aren't available there yet.
+Your observation was correct: the MATLAB *basis-map generator* for a plain
+(non-segment) surface produced ANSI only. That's now fixed — the generator
+(macos.zernike_grid_basis) takes a convention argument and produces engine-exact
+Noll and Born & Wolf maps for any surface; dw_dgrid takes a 'zconv' option and
+records the convention on the saved map so it's self-documenting.
 
 Two things to separate:
  - Coefficient level (works today, all engine types 1-10): declare MonZernType=
-   Noll (or Fringe, BornWolf, the Norm* variants) in the Rx, or set it
-   programmatically, and the finite-difference Zernike channel operates in that
-   basis. The engine realizes those correctly — Noll included. (Only ExtFringe has
-   no converter engine-side.)
- - Sampled grid/influence-map level (the dw_dgrid use case): this is the gap. We're
-   extending the non-segment generator to emit engine-exact maps in the other
-   conventions — matched to the engine so a grid poke equals a MonZernType
-   coefficient poke — and we'll label each saved map with its convention so it's
-   self-documenting. We'll validate it in both grid orientations (the coma/trefoil
-   orientation you've run into before).
+   Noll (or BornWolf, the Norm* variants) in the Rx, or set it programmatically,
+   and the finite-difference Zernike channel operates in that basis. The engine
+   realizes those correctly — Noll included. (Only ExtFringe has no converter
+   engine-side.)
+ - Sampled grid/influence-map level (the dw_dgrid use case): now covered for
+   ANSI, Noll and Born & Wolf. These are matched to the engine so a grid poke
+   equals a MonZernCoef poke of the matching MonZernType (gated against the
+   engine, per convention). Fringe / NormHex / annular-Noll are not offered yet
+   (their orderings/radial polynomials need more work) — asking for one errors
+   rather than returning a wrong basis.
 
-Priority order on our side: the group speedup first (that's the one biting you
-now), then the non-segment Zernike bases, then the SAVE/Link= fix (engine change,
-needs a rebuild).
+One heads-up if you compare conventions: Noll and Born & Wolf coincide at
+indices 1-3 AND at index 8 (both map to the same ANSI mode there), so a check
+that only exercised those modes would see NO difference between them. They first
+diverge at index 4 and clearly at index 7 (Noll 7 is coma, Born & Wolf 7 is
+trefoil) — use one of those to tell them apart.
+
+All three are in and tested on dev-candidate (the group speedup and the Zernike
+generator on the MATLAB side; the Link=-on-SAVE fix is an engine change, so it
+needs the rebuilt binary). Pull dev-candidate and rebuild when you get a chance.
 
 Keep the emails coming — this batch was useful.
 
