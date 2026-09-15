@@ -198,9 +198,12 @@
 > were MINE (lost from memory in the OOM crash), gated and committed as
 > item 2 (1338920).  CCMac will NOT return: TO owns the realism brief's
 > items 3-8 AFTER `BRIEF_to_reflective.md`; the queue is in that brief's
-> section 6.  RUNNING detached: zwfs_dm96/runs/gate22_193 (S/V/P rows on
-> the 22.5-deg bench; compare with pdi193fbase; fold into README + deck's
-> side-by-side slide; expect the same numbers).  Deck 44 slides DRAFT at
+> section 6.  DONE: zwfs_dm96/runs/gate22_193 (exit 0): on the 22.5-deg bench the
+> rows HOLD -- single 10 nm S 0.9888/5 pm, V 0.9938/3, P 0.9937/3 (7 deg:
+> 0.9885/5, 0.9935/4, 0.9935/4); grid 1 nm S 0.9982/4, V 0.9980/3, P
+> 0.9980/3 (0.9993/4, 0.9992/3, 0.9992/3); dense V 0.9986/278 pm, P
+> 0.9972/287.  TO DO: fold into README (a 'bench of record 22.5' line)
+> + the deck's side-by-side footnote; commit runs/gate22_193.  Deck 44 slides DRAFT at
 > demo_session/deck_gauges.md (22.5 deg layouts, three jobs, parts x3,
 > station figures S/V/P, analysis path, migration planned).  Rules learned
 > today: one model-1024 MATLAB on this box, every wrapper waits (tg96
