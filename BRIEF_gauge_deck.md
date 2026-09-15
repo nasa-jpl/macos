@@ -256,20 +256,21 @@ reflected, varying with the cone's angle to 2.6e-3) and a coherent one
 (a plate retardance error delta gives delta/2, an azimuth error theta
 gives theta, engine-exact; opposite signs in the two ports; an ideal
 plate in the converging beam leaves 1.5e-3 of zero mean, dropped by the
-scalar model and bounded as if uniform).  Priced at dev resolution
-(512 / 65; the record at 1024 / 193 runs as `runs/v4seq.sh` -> an193_*):
+scalar model and bounded as if uniform).  Priced at the record's
+resolution (1024 / 193, `runs/an193_*`; DM 1 rows):
 
 | analyzer | uncalibrated G4 (100 nm pokes) | single 10 nm on the 30 nm surface, matrix on it | grid 1 nm |
 |---|---|---|---|
-| ideal | 0.30 pm | 0.9942 / 5 pm | 0.9961 / 2 pm |
-| cube alone | 3.6 pm | -- | -- |
-| ideal-plate term, bound | 23 pm | 0.9938 / 5 | 0.9963 / 2 |
-| plate lambda/300 | 162 pm (1.4% of the figure) | 0.9919 / 6 | 0.9975 / 2 |
-| plate 1 deg azimuth | 264 pm | -- | -- |
-| plate lambda/100 | 487 pm | -- | -- |
+| ideal | 0.05 pm | 0.9935 / 4 pm | 0.9992 / 3 pm |
+| cube alone | 3.5 pm | 0.9934 / 4 | 0.9992 / 3 |
+| ideal-plate term, bound | 23 pm | 0.9934 / 4 | 0.9993 / 3 |
+| plate lambda/300 | 165 pm (1.4% of the figure) | 0.9932 / 4 | 1.0001 / 3 |
+| plate 1 deg azimuth | 263 pm | 0.9932 / 4 | 1.0012 / 3 |
+| plate lambda/100 | 496 pm | 0.9928 / 4 | 1.0019 / 3 |
 
 Verdict, the arm's (V3) again: an absolute term the sensor's own
-response matrix absorbs (gain within 0.3%, floors within 1 pm).  Spec:
+response matrix absorbs (gain within 0.7%, floors within 4 pm at
+lambda/100 on the second DM).  Spec:
 a zero-order plate at lambda/300, azimuth to 1 deg; the plate in a
 slower beam, or a per-pixel analyzer calibration, only if the absolute
 reading must hold to 0.1%.  Runner: `mask.v_analyzer` 'engine' | struct,
@@ -449,8 +450,9 @@ wave, so it measures A sin(phi) and |A cos(phi) - b|, ambiguous where
 A cos(phi) crosses b (1.9 rad pokes do) and square-root-conditioned near
 it (the iterated solve diverges; 5.8 nm on the G4 pokes).  The pair plus
 the STATE's CLEAR FRAME reads both exactly: through a 5% / 20% pupil
-amplitude dip 0.35 / 0.50 pm (the flat's amplitude: 241 / 967 pm), the
-rows on the 30 nm surface unchanged.  Deck statement for slide 16: the
+amplitude dip 0.016 / 0.13 pm at the record's resolution (the flat's
+amplitude: 237 / 952 pm; `runs/an193_clear`), the rows on the 30 nm
+surface unchanged to the digit.  Deck statement for slide 16: the
 vector sensor gives the complex pupil field from three frames (the two
 images and the clear frame); the stepped sensor from its four steps plus
 the clear frame; the pinhole and the interferometer return it from their
