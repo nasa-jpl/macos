@@ -163,7 +163,8 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Vector Zernike sensor: the layout | The tail from the focus to the two cameras, both channel decks traced by the engine
 ::: full
-![The vector sensor's tail from above: the focus with the metasurface, the field lens, the quarter-wave plate, the 12.7 mm polarizing cube, camera A on the transmitted port (purple) and camera B on the reflected port (orange), both at the pupil image.](figs/crop_zwfs_vlayout_tail.png){h=4.8}
+![The vector sensor's tail from above: the focus with the metasurface, the field lens, the quarter-wave plate, the 12.7 mm polarizing cube, camera A on the transmitted port (purple) and camera B on the reflected port (orange), both at the pupil image.](figs/crop_zwfs_vlayout_tail.png){h=4.2}
+- **The same polarization camera as the interferometer's snapshot form would replace the cube and one camera:** behind the quarter-wave plate the two circular channels are the 0° and 90° pixels of the micro-polarizer array, so the two images land on one sensor, registered by construction.  The price is half the pixels per channel and the array's extinction in place of the cube's, a term the model already carries (the analyzer, on the systematics slide).
 ~ Drawn by zwfs_vlayout.m from the two emitted decks (the engine does not split rays); the whole train is on the front-end slide.  The metasurface and the plate are drawn as ideal surfaces and the cameras as planes; the next model round draws the substrates and the 13 mm sensors.
 
 ## Vector Zernike sensor, station by station | The two images taken at once, and a raw map within 25 pm of the engine's field on the 30 nm working surface: the pixel-by-pixel solve needs no calibration to read the surface
