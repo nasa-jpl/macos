@@ -9,6 +9,42 @@ the camera must match a real pixel pitch.  Priority: the deck.  Standing
 rules as before (dev-candidate; one model-1024 MATLAB at a time; every
 number in a committed report; American English).
 
+## 0. Work so that a dead session loses nothing (Dave, 2026-09-15)
+
+A session can run out of tokens partway through.  Structure the work so
+the benefit of everything already done survives that, and a successor
+session (yours or anyone's) resumes from the record, not from memory:
+
+1. **Order the items cheapest-complete-first and land each one whole**
+   (code, gate, report section, run dir) before starting the next --
+   TO's practice on the PDI lane.  Section 6 below is the order.
+2. **Commit after every item, locally, into the shared tree** (`git add`
+   your files only; a foreign-hunk check before adding a shared file).
+   The commit is the checkpoint; Dave pushes.  Never hold a day's work
+   uncommitted for a single big commit.
+3. **Every run longer than a few minutes is a detached batch job**
+   (`tg96_batch.sh` / `zwfs_batch.sh`: nohup + the lock, the log in
+   `runs/<tag>.log`, the exit code recorded), never a foreground call
+   in the session.  A detached run finishes after the session dies; its
+   report and .mat are harvested by whoever comes next.  Chain runs in a
+   sequence script (`runs/<name>seq.sh`) so the whole ladder proceeds
+   unattended.
+4. **Write the report as you go, numbers first**: each item appends its
+   own section with its run tag the moment its run lands.  Keep a status
+   table at the TOP of the report (item | state: done / running (tag,
+   started, expected end) / not started) -- the successor reads that
+   table first, then `runs/*.log` for the exit codes, and continues from
+   the first item not done.
+5. **Keep the context small**: grep the reports and tail the logs rather
+   than reading them whole; do not paste long outputs into the session;
+   let the runner's gates do the checking.
+6. **If you see the budget ending**: commit what is committed-able,
+   update the status table with what is running and where its output
+   goes, and stop cleanly -- do not start a new item.
+
+With this, a session cut at any point costs one uncommitted edit; the
+runs keep going and the record shows exactly where to resume.
+
 ## 1. What is wrong, measured
 
 `dm_gauge_lib/dmg_bench_clearance.m` (CCL, 2026-09-15): builds the
@@ -151,3 +187,22 @@ camera, the pitch, the binning.
 Report: one file, numbers first, the clearance table, run tags; the
 deck's front-end, interferometer, vector and pinhole layout slides are
 rebuilt from your figures.
+
+## 6. The order (each item whole, committed, before the next)
+
+1. `D_RECOMB` / `D_RC_L2` forwarded; the arm QWPs at the retro end; the
+   clearance table printed by the report (`dmg_bench_clearance`); the
+   lens rig re-emitted at 22.5 deg; layouts redrawn -- gate: every part
+   >= +25 mm.  Commit.
+2. Stage A extended to the node parts (the solve reproduces 22.5 as the
+   ruled angle's neighbor; the OAP folds re-solved).  Commit.
+3. Thicknesses: the 10 mm splitter and compensator, real lens edges; the
+   tail retune; the mask-sensor gate run (bench + battery).  Commit.
+4. Substrates on the polarizers / QWPs / analyzer / masks; the tail
+   retune again; the gate run.  Commit.
+5. The camera: pitch and binning in the parts lists, the sensor body in
+   the layouts.  Commit.
+6. The snapshot form's polarization at 22.5 deg (`tg_aoi_ladder`).
+   Commit.
+7. The OAP and P/SRI rigs through the tool (with TO).  Commit.
+Then the report's status table says "all done" and Dave pushes.
