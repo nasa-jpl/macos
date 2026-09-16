@@ -196,7 +196,8 @@
 > `ctb_dm.m` beam_d_mm 21.3 used as the DIAMETER; the deck's beam is 21.4 mm
 > RADIUS (Aperture 8.485e-3 x 2519 mm) -> the lattice covered the inner 28%
 > of the pupil; Jacobians/EFC/README inherit; the deck_ctb slides 9-13 are
-> self-consistent (aberration-free) but must be RE-SCORED.  Ordered first
+> self-consistent (aberration-free) but must be RE-SCORED.  RULED (Dave): beam stays 42.75, DM = a real 64x64 at 1 mm pitch, active =
+> influence inside the beam, reach 21 cycles.  Ordered first
 > in `BRIEF_to_gauge_close.md` section 0b (TO, by THU 09-17 NOON: probe
 > committed, defaults fixed in ctb_dm/ctb_dm_jacobian/ctb_efc_physics +
 > callers audited, tCtbDm gate, ctb_study re-derived jac/efc/relin/physics/

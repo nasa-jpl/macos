@@ -57,16 +57,26 @@ CTB deck and the report can absorb the numbers.  Your `ctb_beam_probe.m`
 (untracked, 16:32) is the arbiter: commit it with its printed table as the
 first line of the record.  Then:
 
-1. `ctb_dm.m`, `ctb_dm_jacobian.m`, `ctb_efc_physics.m`: `beam_d_mm`
+**DAVE'S RULING (2026-09-15 18:30): the beam stays 42.75 mm; the DM
+becomes a REAL device -- 64 x 64 at 1 mm pitch (the HCIT-class 64 mm DM)
+-- and the controlled set is every actuator with some influence inside
+the beam.**  Reach: 42.75 / (2 x 1) = 21 cycles across the beam (21 lam/D;
+the 3-15 lam/D annulus sits inside it with margin).  Not chosen: enlarging
+the beam to 64 mm to keep 32 cycles (a bench change), or a 0.67 mm pitch
+(not a device).
+
+1. `ctb_dm.m`, `ctb_dm_jacobian.m`, `ctb_efc_physics.m`: `nact` default
+   64, `pitch_mm` default 1.0 (FIXED, no longer beam/nact), `beam_d_mm`
    default = the PROBED diameter (42.75 if the probe agrees with the deck
-   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius), doc strings
-   corrected ("gate1b probe" was the RADIUS); `pitch_mm` follows
-   (1.336 mm).  Callers that pass their own `beam_d_mm`/`nact`
-   (`ctb_dst_2c`, `ctb_dst_s1*`, `ctb_vvc`, `ctb_study`): audit each;
-   none may keep 21.3.  A gate in `tests/tCtbDm.m`: the model's active
-   set covers the traced footprint (nact_active ~ pi/4 x 32^2 ~ 800 on
-   the FULL beam, not 880 on the inner half -- the number will differ,
-   state it).
+   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius); the active
+   rule stays "centre within beam_r + 1 pitch" (the influence function is
+   0.12 there), which is "some influence inside the beam" -- print the
+   count (expect ~pi x 22.4^2 ~ 1580 per DM, 3150 pokes, ~20 min at 512).
+   Doc strings corrected ("gate1b probe" was the RADIUS).  Callers that
+   pass their own `beam_d_mm`/`nact`/`pitch_mm` (`ctb_dst_2c`,
+   `ctb_dst_s1*`, `ctb_vvc`, `ctb_study`): audit each; none may keep 21.3
+   or 32.  Gate in `tests/tCtbDm.m`: the active set covers the traced
+   footprint, the pitch is 1.0, the lattice spans 64 mm.
 2. Regenerate: `ctb_dm_jacobian` at N=512 (~25 min) and the N=1024
    configurations the deck cites (`ctb_dm_jacobian_N1024_*` fingerprints:
    hp, ann, 2c_mono_hp, nb615-655 -- `ctb_study` derives them; read its
@@ -76,10 +86,10 @@ first line of the record.  Then:
 3. Re-score deck_ctb slides 9-13 (EFC hard 2.9e-7 -> 8.1e-9; vortex loop
    1.7e-8 -> 6.8e-15; polarization residual 1.1e-15; bandwidth 8e-13 ->
    5.4e-11; vector vortex) through `ctb_study` -- the same configs, the
-   new DM.  Expect the aberration-free floors to MOVE (a full-pupil
-   lattice at twice the pitch has half the frequency reach: the 3-15
-   lam/D annulus is inside a 16 lam/D Nyquist, so the holes should still
-   dig, shallower or deeper is the measurement).  Table in
+   new DM.  Expect the aberration-free floors to MOVE (reach 21 instead
+   of 32 cycles, the 3-15 lam/D annulus still inside it; shallower or
+   deeper is the measurement; the deck's slide-9 text "0.67 mm pitch =
+   beam/32; 880 actuators" is rewritten from the new count).  Table in
    `CTB_PROP_STATUS.md`: old / new per slide, and the README line
    ("880 active actuators ... beam radius") corrected.  Commit per stage.
 4. Hand CCL the old/new table + regenerated figures by Thursday noon;
