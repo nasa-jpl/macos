@@ -192,6 +192,27 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-16 ~08:30 (CCL): DECK 47 SLIDES for Dave's JPL preliminary
+> (macos this commit): Dave's two edit-copy changes folded ("The DM";
+> slide 8 left block 15 pt via NEW sidecar deck_gauges.geo.json); the
+> overnight results in: servo table (mirror rig redesigned 5.4e12 / 1.7e13
+> / 10 pm; record 7-deg row kept), capture tables (redesigned captures from
+> 200 nm unwrapped; raw fold 120 vs lens 240 = ladder arithmetic), NEW
+> slide "Interferometer, station by station" (oapifol2_stations.png), NEW
+> slide "The reflective front end, measured" (record / redesigned / lens
+> table + vector amplitude-imbalance + open items), slide 3 for/against
+> updated, recommendation front-end line = "either builds; ruling
+> pending", camera 7.5 mm / 1155 px / bin 3 or 6, splitter 10 mm modeled
+> (null 0.13 -> 20 nm, rows pending item4bseq), polarization at the built
+> angle (1.56 deg, +0.9%), provenance tags.  Dave's edit copy is OPEN in
+> Impress and NOT re-synced (gate refuses); he must close it, then
+> `./sync_edit_deck.sh deck_gauges --folded`.  CTB doc pass DONE by
+> subagent, committed resources d28fdeb (README 47% fill + Aperture
+> convention, example_ctb label, deck_ctb slides 1/9, CTB_PROP_STATUS
+> section).  Dave's CTB ruling: (1) docs now; (2) regenerate at 42.75 mm
+> AFTER the gauge results clear.  Claude update pending restart; this
+> slice is the handoff.**
+
 > **2026-09-16 morning (CCL): TO's overnight results harvested (git log
 > 09-15 18:00 -> 09-16 06:39, 20 commits; every run exit 0 except oapdesc2's
 > figure bug after its descents landed).  HEADLINE: the CTB DM-model "slip"
