@@ -53,17 +53,19 @@ costs **SNR and floor, not gain**, which is why every gain row looks healthy
 and only the reading shows it. The old `max|h|` meter saturates at 1.00 from
 120 nm up and could not have found it. §3.2.
 
-**The tail gate is still ADVISORY and must not be quoted as gating.** Its
-measure no longer INVERTS (the point-sample one read the bad tail at 0.9804 and
-a good tail at −0.8285); the lattice measure orders three tails correctly —
-objwin3 −0.1621, lens_tail 0.8074, thk22_tail 0.9104 against battery 0.0338 /
-0.9968 / 0.9885. But the scale is not the battery's, so 0.95 would refuse two
-good tails. **Not the regularizer** — the act_lam sweep is flat (1.1 / 0.9 /
-1.4 % from 0.05 to 0.002). Recommended fix is scale-free: gate the winner
-against the geometric seed through the same estimator. Awaiting Dave.
+**The tail gate now ENFORCES, and its criterion is RELATIVE to the seed**
+(Dave's call, same day). It refuses a winner that reads worse than the
+geometric seed it would fall back to, both measured through the same
+estimator: `objwin3` ratio **0.1977 REFUSED**, `lens_tail` **0.9467
+ACCEPTED**, `thk22_tail` **0.9930 ACCEPTED**. The two-leg test passes for the
+first time. Two absolute thresholds had failed before it — the point-sample
+measure inverted the verdict, and the lattice measure reads 8–19 % below the
+battery (not the regularizer; the sweep is flat to ~1 %). A ratio of two
+identically-estimated quantities cancels the bias instead of calibrating it.
+Margin 0.047 at the tightest leg with exactly zero run-to-run spread. `4.9`.
 
 ## Queue state
 
-Steps 1–4 of `BRIEF_to_restart` are done. **Step 5 (item 7, the coronagraph
+Steps 1–4 of `BRIEF_to_restart` are done, item 3 included (the gate closed after Dave ruled on the criterion). **Step 5 (item 7, the coronagraph
 field servo, 2–3 days) is not started**; step 6 (the CTB regeneration at the
 intended beam) remains gated on Dave's word and on 1–5.
