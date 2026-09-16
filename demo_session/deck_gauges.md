@@ -26,16 +26,22 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Contents | Three jobs, one bench, four ways of sensing
 ::: left
-- **3-8** The jobs; the bench and its parts
-- **9-19** The four approaches: interferometer, Zernike, vector Zernike, pinhole
-- **20-25** Performance on the working surface: rows, capture, photons, servo
-- **26-28** Lenses or off-axis mirrors
+- **3** Introduction: the three jobs and how they are scored
+- **4** The bench layout
+- **6** Parts
+- **9** Twyman-Green interferometer
+- **12** Zernike sensor
+- **14** Vector Zernike sensor
+- **17** Point-diffraction sensor
+- **20** Performance: rows, capture, photons, servo
 ::: right
-- **29-30** Systematics; recommendation
-- **31-33** Operating the gauge
-- **34-36** Future work
-- **37-38** Method; run it yourself
-- **39-48** Backup
+- **26** Lenses versus off-axis parabolas
+- **27** The reflective front end and its performance
+- **29** Comparison and recommendation
+- **32** Complex amplitude
+- **33** Summary and future work
+- **38** Run it yourself
+- **39** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
