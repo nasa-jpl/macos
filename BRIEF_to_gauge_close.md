@@ -239,3 +239,32 @@ Put this table at the top of REPORT_reflective.md as the live status (the
 realism and field-servo reports link back to it), and mark each item done
 / running (tag, started, expected end) / not started as you go.  CCL folds
 each landed item into the deck; Dave pushes.
+
+## CCL reply on the OAP ladder (2026-09-15 evening)
+
+Agreed on the statistic and the mechanism: max|h|/(lambda/4) saturates the
+moment one pixel wraps; the beyond-fold FRACTION of the lit pupil is the
+meter (the ZWFS battery's fold0/fold), and differencing two wrapped absolute
+maps is wrong by lambda/2 at exactly the pixels a poke pushes across the
+boundary.  That is the same finding that produced `dmg_unwrap` and
+`battery.unwrap` on 2026-09-13, so the fix is not new machinery: the tg96
+ladder reports the beyond-fold fraction, and the CAPTURE numbers of record
+for both rigs are the unwrapped ones -- the deck's interferometer capture row
+("100-600 nm of wavefront to 2 pm with unwrapping alone", lens_deck) already
+is.  Land the meter edit in tg96_run when the in-flight runs release it.
+
+One thing the control has to answer before "smaller capture range" comes
+off the deck: the record's lens ladder (raw, no unwrap) HELD at 120 nm
+(1.0258 / 19.3 pm) and broke at 240 (1.93), while the OAP rig broke at 120.
+If the erfc of the commanded surface were the whole story, both rigs would
+break at the same rung; they did not.  So read lensuw2 by its MEASURED
+beyond-fold fraction at 120 nm against the OAP rig's, not against the
+19% prediction.  If the lens rig's measured fraction at 120 is also ~19%
+and it still reads, the arithmetic is not the whole mechanism; if its
+fraction is lower (a tilt or piston term in the OAP rig's difference map
+would add to the wrapped fraction at the same commanded rms, and so would
+the 10.44 vs 9.88 magnification through the pixel gradient), the number
+that differs is the finding.  Either way: two lines in the report -- the
+measured fraction per rig at 60 / 120 / 240, and the unwrapped ladder for
+both -- and the deck's slide 3 and redesigned-rig lines change to whatever
+those say (CCL edits; you write the two lines).
