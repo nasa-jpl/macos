@@ -29,7 +29,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **The mirror:** 96×96 actuators on a 1 mm pitch, 96 mm across.  On orbit its surface must stay constant to well under 10 pm, measured often and held by a closed loop.  Every test runs on a random 30 nm rms working surface, not a flat: the gauge never operates at null.
 - **Job 1, measure:** read a change of 10 nm on one actuator, of 1 nm on 47 actuators, and a dense random 10 nm pattern, on the 30 nm surface with the response matrix measured on it; and keep that accuracy as the surface moves away from the calibration (capture range).
 - **Job 2, capture:** bring the largest possible starting surface, 100-200 nm of wavefront, down to the servo's floor; every phase reading wraps at ±158 nm of surface (±π at 632.8 nm, double pass), so this is a wrapping problem before it is a noise problem.
-- **Job 3, hold:** the servo at picometers: the light per cycle that holds 3 pm rms, and whether the reading leaves a fixed error.
+- **Job 3, hold:** the servo at picometers on the 30 nm rms working surface, its set point: the light per cycle that holds changes about it to 3 pm rms under a 2 pm per-cycle random walk, and whether the reading leaves a fixed error.
 ::: right
 | score | meaning |
 |---|---|
