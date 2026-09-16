@@ -18,20 +18,93 @@ number will carry its run tag; the three source decks are
 
 ## 1. The coronagraph testbed model (CTB)
 
-- 1.1 What it is: the 8-OAP / 2-DM bench in two layers (geometry: `example_ctb`, staged optimization; diffraction: `ctb_prop_layout`, the compact and the station-to-station decks, the exit-pupil-sphere quartet at every mask plane).  Validation against PROPER (pitch ratio 1.0000 / corr 1.000000 / centroid 0.000 px on the through-focus leg).
-- 1.2 Coronagraph performance: mask sweep, the 2.70 lam/D null, Lyot 0.50; the six mask families head-to-head on one annulus (APLC 2.1e-10 at 27%, BLC 2.7e-8, hard 2.5e-7, vortex-matched 2.9e-7, R&R 3.2e-6, dual-zone 6.4e-6); the vortex against the Lyot stop.
-- 1.3 The loop: EFC on the engine itself (hard 2.9e-7 -> 8.1e-9; vortex 1.7e-8 -> 6.8e-15); polarization (1.1e-15 residual, a state change); bandwidth (mono 8e-13 -> 20% 5.4e-11); the vector vortex verdict (leak uncorrectable but optically removable).  **The DM model was questioned (2026-09-15) and confirmed by the traced footprint (09-16): the beam at the DMs is 21.24 mm and the 32 x 32 / 0.67 mm lattice spans it; every loop number stands.  What the probe found instead: the generator reads the engine's point-source Aperture (a full cone angle) as a half-angle, so the bench carries half the sheet's intended fill (47% of the DM's clear aperture, not 95%) -- self-consistent, and Dave's call whether the story keeps the bench as built (recommended) or regenerates at the intended beam.**
-- 1.4 Hand-offs: the phase-factor export (18 stations, PROPER consumes it; per-leg replay check), the pure-PROPER run.
-- 1.5 Open, in dependency order (deck slide 14): as-built surfaces, time-series drift, FALCO as the DM driver, validation against a dataset.
+### 1.1 What it is
+
+The CTB model is an all-reflective coronagraph bench: eight off-axis parabolas (OAPs), two deformable mirrors (DMs), an apodizer and a Lyot stop at pupil images, a focal-plane mask and a field stop at focus images, and a camera (CTB slide 1).  DM1 is the aperture stop; the beam on the DMs is 21.2 mm in diameter (slide 1; see 1.3).  The bench is geometrically diffraction-limited at 0.0014 waves (slide 1).
+
+The model has two layers over the same optics (bench_ctb/README.md, layer table).  The geometry layer, `example_ctb.m`, places the optics by staged optimization: each pupil or focus is solved on its own plane in light order with the upstream optics frozen, so no conjugate can trade against another (README, "Why staged optimization").  The diffraction layer, `ctb_prop_layout.m`, emits two propagation prescriptions (slide 1): a compact model of 31 elements (one plane-to-plane leg DM1 to DM2, a four-surface mask block at each focus, far field to the camera) and a station-to-station model of 44 elements in which every leg between optics is propagated.  The four-surface block at each mask plane is a flat return, an exit-pupil sphere carrying the first half-propagation, the mask plane carrying the second half, and the same sphere again; the two sphere distances agree to all digits, so the block is transparent when no mask is applied (slide 1).
+
+Validation is against MATLAB PROPER (Krist 2007).  The through-focus half-propagation from the exit-pupil sphere to the mask plane, the one step no earlier PROPER campaign covered, reproduces PROPER at matched sampling: focal pixel pitch ratio 1.0000, peak-normalized correlation 1.000000, centroid offset 0.000 px (slide 2).  The compact and station-to-station models agree on the bare image to 0.9989 correlation; with the coronagraph in, they differ by 1.76x, the mirror-to-mirror diffraction the compact model omits (slide 2).
+
+### 1.2 Coronagraph performance
+
+With a hard occulter, centering the mask builders on the focus pixel, sampling the camera at 4.0 pixels per λ/D (model 1024) and a mask sweep bought 16x: an interior null at an occulter radius of 2.70 λ/D with a Lyot stop of 0.50 (25% throughput) took the dark-zone mean from 4.6e-6 to 2.9e-7 (slide 3).
+
+Six mask families were then scored on one grid, one annulus and one normalization (slide 5).  Static, before any DM control: apodized-pupil Lyot 2.1e-10 at 27% throughput; vortex with matched Lyot 1.4e-8 at 81%; band-limited (4th order) 2.7e-8 at 36%; hard occulter 2.5e-7 at 25%; Roddier π-mask 2.4e-6 at 81%; dual-zone phase 6.8e-6 at 81% (slide 5 table).  (The vortex's earlier 2.9e-7 was a sampling artifact of its singular core, cured by pixel-averaging; backup, "The vortex core".)  With the Lyot fraction as the only dial, a charge-4 vortex under-runs every fixed design at every throughput: 8.8e-11 at a 0.60 stop (36%) against the apodized Lyot's 2.1e-10 at 27%, with no apodizer to fabricate (slide 6).
+
+### 1.3 The loop
+
+Every number here is measured on the design train: no as-built surface errors, no drift, and sensing that reads the model's complex field directly (slide 9 footnote; slide 14).  Each DM is a 32 x 32 actuator lattice at 0.67 mm pitch (the 21.2 mm beam / 32) with Gaussian influence functions, 880 actuators inside the beam (slide 9).  The control matrix is measured: 1760 pokes of 2 nm through the full masked chain, 11 minutes (slide 9).  Electric-field conjugation (EFC, Give'on 2007) takes the hard-occulter chain 36x in 19 iterations, within 2x of the matrix's linear bound of 4.5e-9; DM1 alone stalls at 1.3e-7 (slide 9).  Re-measuring the matrix about the corrected state moves the hard chain to a floor set by occulter-edge diffraction and the vortex chain (charge 4, Lyot 0.60) to double-precision roundoff at half-nanometer strokes (slide 10; Table 1).
+
+Polarization does not set the floor.  With quarter-wave MgF2 over aluminum on all ten mirrors, the ray-traced Jones pupil has 3.4 mrad mean retardance with 8.7 µrad rms variation; the mean is a state change the loop absorbs.  Closed loop reaches 5.8e-13, the scalar result, with an uncontrollable residual of 1.1e-15 at every bandwidth (slide 11).  Bandwidth is the floor that grows, 65x from monochromatic to a 20% band, with control wavelengths at a constant 2.5% spacing (slide 12; Table 1).  The vector vortex verdict (slide 13): the zero-order plate's retardance leak (1e-3 of the starlight at 5%, 1e-2 at 20%) is uncorrectable by the DMs, since its sign flips across band center, but a circular-polarizer sandwich removes it optically and per-wavelength control returns the sandwich to the scalar floor (7.9e-12 at 5%); a crossed-linear sandwich goes two to three decades deeper at the price of eight planet blind spots.
+
+The DM model.  Questioned on 2026-09-15 (was `ctb_dm.m`'s 21.3 mm a radius used as a diameter?), it was confirmed on 2026-09-16 by a traced footprint: `ctb_beam_probe` on `ctb_dcr.in` (model 512, 50618 rays) measures 21.2444 mm at DM1 and 21.2451 mm at DM2, so the lattice spans the beam and every loop number stands (REPORT_field_servo.md section 0; CTB_PROP_STATUS.md, 2026-09-16).  The probe found a different slip: the generator sets the source cone as a half-angle where the engine takes the full cone angle (`sourcsub.F`, `A = Aperture/2`), so the intended 42.75 mm beam lands as 21.2 mm and the DM's 22.5 mm clear radius is filled to 47%, not 95% (README, "Source model").  Everything downstream is sized on the beam that exists; regeneration at the intended beam is a pending decision (README, 2026-09-16 note).
+
+### 1.4 Hand-offs
+
+One self-describing export carries the 44-element model: 18 stations (complex field, amplitude, OPD, pitch, in meters), 17 legs, 4 reference spheres and 18 phase screens, conventions stamped inside and orientation measured (slide 7).  Replayed leg by leg in PROPER, focus stations reproduce at correlation 1.000000 and gated pupils at 0.9998 or better (backup, "Per-leg replay check").  A pure-PROPER script reading only the export reproduces the bare image at 1.000000 and a dark zone at 1.4e-8, within the 2x gate above the shipped 2.9e-7 (slide 8).  A single continuous PROPER beam cannot reproduce the model (pitch ratio 0.71): every intermediate focus is sampled at the exit-pupil pitch (slide 8).
+
+### 1.5 Open
+
+In dependency order (slide 14): realistic sensing (pairwise probing from camera images, then FALCO on the same DMs); as-built surface maps, then drifts as a time series against the delivered loop; validation against a named testbed dataset.  `ctb_study` reruns slides 9 to 13 at other parameters with one call (backup).
+
+Table 1.  Closed-loop results per chain (CTB slide 10) and the bandwidth ladder on the vortex chain (CTB slide 12).  N = 512, design train, perfect sensing; strokes at the floor 9.9 / 8.6 nm rms (hard chain), 0.49 / 0.55 nm rms (vortex).
+
+| chain | band (control colors) | static | fixed matrix | re-measured matrix | polarization floor | source |
+|---|---|---|---|---|---|---|
+| hard occulter, Lyot 0.50 | mono (1) | 2.9e-7 | 8.1e-9 | 3.8e-9 | not run | slide 10 |
+| vortex charge 4, Lyot 0.60 | mono (1) | 1.7e-8 | 5.8e-13 | 6.8e-15 | 1.1e-15 | slides 10, 11 |
+| vortex charge 4, Lyot 0.60 | 5% (3) | not stated | 9.4e-12 | not run | 1.1e-15 | slide 12 |
+| vortex charge 4, Lyot 0.60 | 10% (5) | 2.2e-8 | 2.5e-11 | 2.0e-11 | 1.1e-15 | slides 5, 12 |
+| vortex charge 4, Lyot 0.60 | 20% (9) | not stated | 5.4e-11 | not run | 1.1e-15 | slide 12 |
 
 ## 2. The 6 m end-to-end model (e2e6m, round 2) and its overlap with the CTB
 
-- 2.1 What it is: a diffraction-limited unobscured 6 m telescope (0.0473 waves rms across the field at 500 nm), 19-segment primary with physical apertures, the 8-mirror / 2-DM relay in metres spliced on, six coronagraph families on one train, an imager on the same shroud; sensitivities (dwdx / dwdz / dwdgrid), the error budget closing engine vs model to 0.35%, the metrology truss (114 gauges + 252 edge sensors), the restart ladder, JWST-class drift held at 2.0e-9 in closed loop.
-- 2.2 The overlap with the CTB, stated as what is SHARED and what is NOT:
-  - shared: the Bench primitives (add_oap, the DM as a grid surface with influence functions, add_reference markers), the propagation recipe (the sphere-bracketed mask quartet, NF1/NF2), the mask library and its generators, the EFC driver, the contrast scorer, the phase-export format;
-  - not shared: the pupil (segmented 6 m vs a 45 mm circular DM stop), the DM pitch (1.48 mm on a 47.5 mm beam vs 1.34 mm on 42.75 -- both 32 across), the packaging (a 3-D shroud vs a planar table), the drift model (telescope + segments vs bench thermal), and the DM-model slip (the e2e6m DMs are sized from their beam; the CTB's were not -- check and state).
-  - what the CTB validates for e2e6m: the propagation and mask machinery against PROPER; what e2e6m adds: the telescope, the segments, the truss, the time series.
-- 2.3 What each is for: the CTB is the lab-facing model (as-built data, phase export to external users); e2e6m is the mission-facing one (error budget, drift, hold).
+### 2.1 What it is
+
+Round 2 of e2e6m is one model from mirror figure to a held dark zone (e2e6m slide 19).  The telescope is a 6 m unobscured three-mirror design: 0.0473 waves rms worst case over a ±0.35 arcmin field at 500 nm against the 0.071-wave diffraction limit; 7.450 m in an 8 m shroud; f/25.39 against a requested f/12 to 20 (slide 1).  The primary is 19 hexagonal segments, 1.2 m flat to flat with 25 mm gaps, each with its own polygonal aperture; 983 of 985 rays survive, and a 10 nm displacement of one segment moves the wavefront 19.91 nm over that segment's 52 rays and zero over the other 930 (slide 2).
+
+The relay is the CTB topology in meters: an OAP collimator to a 47 mm pupil, seven 1:1 relays, DM1 and DM2 0.15 m apart at the collimated pupil, spliced onto the telescope as 37 elements of one prescription (slide 3; LOG, 2026-08-26 R1).  A deployable pick-off feeds an imager at 0.0042 waves rms; both legs fit the shroud at 7.451 m (slide 4).  Six coronagraph families run behind a circular stop at the apodizer plane; pre-control the apodized Lyot leads at 4.37e-7 with 9% throughput, and the vortex pays the segment gaps about 40x (slide 9).  The gap cost against a monolithic twin is 1298x (slide 8); closed loop the apodized Lyot reaches 1.1e-7, within 2x of its linear bound (slide 10).
+
+The sensitivity model has 192 rigid-body, 152 figure and 114 influence channels over five fields; engine versus model closes to 0.35% worst over 18 freedom pairs (slide 14).  The metrology truss, 114 laser gauges and 252 edge sensors, leaves 0.86 nm of wavefront per nm of gauge noise; its finite-difference check closes at 0% (slide 15).  The restart ladder (EFC, relinearize, restart) takes the 1.10 m DM-spacing train from 1.2e-6 to 1.13e-9 in 10 rounds over 4.6 h, with the linear-achievable substrate at 2.0e-11 to 3.8e-11 (slide 16).  Under the JWST-class drift of Table 2 the open loop decays 4.5 decades in a day; segment control (BLUE + ridge, gain 0.5) plus a guarded EFC hold of one damped step per hour keeps 2.0e-9 all day (slide 18).
+
+### 2.2 The overlap with the CTB
+
+Shared, code and recipe:
+
+- the Bench primitives `add_oap`, `add_mirror` and `add_reference` (bench_ctb/README.md, topology; LOG R1);
+- the DM as an influence-function grid surface, `ctb_dm` and `ctb_dm_rx` (CTB slide 9; e2e6m slide 7, the same 20 nm poke gate);
+- the sphere-bracketed mask quartet and the NF1/NF2 propagation recipe, seeded on the DM1-to-DM2 leg (CTB slide 1; LOG R1);
+- the mask library and its generators (CTB slide 5; e2e6m slide 9);
+- the EFC driver and the contrast scorer, `ctb_chain` and `ctb_efc` pointed at the e2e6m deck (LOG R3);
+- the phase-export format (CTB slide 7).
+
+Not shared:
+
+- the pupil: a segmented 6 m primary against a 45 mm circular DM stop carrying a 21 mm beam (Table 2);
+- the DM pitch: 1.49 mm on a 47.5 mm beam against 0.67 mm on 21.2 mm, both 32 across (Table 2);
+- the packaging: a deployed 3-D shroud fit (e2e6m slide 4) against a planar table (CTB backup, "Bare-optics agreement");
+- the drift model: a telescope-plus-segment time series (e2e6m slide 18) against none yet on the CTB (CTB slide 14).
+
+The DM-sizing question was checked.  The e2e6m lattice is sized from its traced beam: `r1_dm.m` line 57 sets `beam_d = 2 * 0.023771`, commented "measured pupil at the DMs (r1 gate)", the radius `r1_seg_report.txt` records at DM1 and DM2 on a 60 mm clear aperture.  The CTB lattice was also sized from a traced footprint (`ctb_dm.m` default 21.3 mm; REPORT_field_servo.md section 0).  The difference is not in the lattices: the CTB beam is half what its generator intended (1.3); the e2e6m beam is the 47 mm the design specifies.
+
+What the CTB validates for e2e6m is the propagation and mask machinery against PROPER (1.1, 1.4); what e2e6m adds is the telescope, the segments, the truss and the time series.
+
+### 2.3 What each model is for
+
+The CTB is the lab-facing model: cross-checked against PROPER, its next inputs are as-built surface maps and a testbed dataset (CTB slide 14), and its phase export lets an external PROPER user run the same planes with no macos (CTB slides 7 and 8).  The e2e6m model is the mission-facing one: the error budget (e2e6m slide 14), the metrology (slide 15), the drift and the hold (slide 18), what a flight-like train does rather than what a bench measures.
+
+Table 2.  The two models side by side.
+
+| parameter | CTB | e2e6m round 2 |
+|---|---|---|
+| aperture | 45 mm circular DM stop (22.5 mm clear radius), DM1 is the stop (CTB slide 1; README "Source model") | 6 m, 19 hexagonal segments, 1.2 m flat to flat, 25 mm gaps (e2e6m slide 2) |
+| beam at the DMs | 21.2 mm diameter, 47% of the DM radius (CTB slide 1; README "Source model") | 47.5 mm diameter on a 60 mm DM, traced (e2e6m slide 7; `r1_seg_report.txt`) |
+| DM pitch, actuators across | 0.67 mm, 32 x 32, 880 in the beam (CTB slide 9) | 1.49 mm, 32 x 32, 880 in the beam (`r1_dm.m`; e2e6m slide 7) |
+| mask families run | six: apodized Lyot, vortex, band-limited, hard occulter, Roddier, dual-zone (CTB slide 5) | six: classical Lyot, apodized Lyot, APLC-as-implemented, band-limited, vortex charge 4 and 6 (e2e6m slide 9) |
+| deepest contrast | 6.8e-15, vortex charge 4, mono, re-measured matrix, design train (CTB slide 10) | 1.13e-9, apodized Lyot, restart ladder at 1.10 m spacing (e2e6m slide 16) |
+| control loop | EFC on a measured matrix, perfect sensing, relinearize once (CTB slides 9 and 10) | EFC restart ladder plus segment control (BLUE + ridge) and a guarded EFC hold (e2e6m slides 16 and 18) |
+| drift model | none yet; queued after sensing (CTB slide 14) | 10 nm/hr correlated ramp + 0.5 nm/step walk, 24 h at 30-minute frames; open loop 1.1e-9 to 3.9e-5, held 2.0e-9 (e2e6m slide 18) |
 
 ## 3. The DM surface gauge
 
@@ -264,3 +337,12 @@ to answer.
 
 ## Sources
 deck_ctb.md / CTB_PROP_STATUS.md / README (bench_ctb); deck_e2e6m_r2.md / e2e6m_r2_LOG.md / README (e2e6m, e2e6m_r2); deck_gauges.md / BRIEF_gauge_deck.md / the three lane reports (REPORT_gauge_ifo, REPORT_reflective, REPORT_gauge_pdi, zwfs_dm96 README); NOTES_gauge_in_coronagraph.md; memory project_ctb_diffraction / project_e2e6m / project_tg96_gauge.
+
+## Notes on sources (sections 1-2)
+1. Outline 1.2 lists the vortex-matched static at 2.9e-7, Roddier at 3.2e-6 and dual-zone at 6.4e-6.  Deck v5 slide 5 has vortex with matched Lyot 1.4e-8 (the pixel-averaged core; 2.9e-7 was the direct-sampled artifact), Roddier π-mask 2.4e-6, dual-zone 6.8e-6.  The deck values are used.
+2. Outline 2.2 gives the CTB DM pitch as 1.34 mm on a 42.75 mm beam.  The traced beam is 21.2 mm and the pitch 0.67 mm (CTB slide 9; README "Source model"); 42.75 mm is the generator's intended beam, never delivered.  The measured values are used.
+3. Outline 2.2 states the e2e6m pitch as 1.48 mm.  `r1_dm.m` gives 2 x 23.771 / 32 = 1.486 mm, which rounds to 1.49 mm; 1.48 is the truncated value.  The text uses 1.49 mm.
+4. Outline 2.2 asserts "the e2e6m DMs are sized from their beam; the CTB's were not."  Both lattices are sized from traced footprints (`r1_dm.m` line 57; `ctb_dm.m` default 21.3 mm per REPORT_field_servo.md section 0).  The CTB slip is in the generator's source cone (half the intended beam), not in the DM lattice.  The text says so.
+5. Outline 2.1 quotes the closure as "0.35%"; the deck prints "worst relative error 0.0035" (e2e6m slide 14).  Same number, stated as a percentage in the text.
+6. The task wording gives the e2e6m beam as "47.5 mm" and e2e6m slide 7 says "47 mm"; `r1_dm_report.txt` prints 47.5 mm (2 x 23.771 = 47.54).  The table quotes 47.5 mm with the report as source.
+7. The vortex mono closed-loop floor is 5.8e-13 on CTB slide 11 (the scalar/polarization run) and 8.3e-13 on slide 12 (the bandwidth ladder's mono point); both are roundoff-class and Table 1 carries both with their slides.
