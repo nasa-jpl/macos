@@ -48,6 +48,47 @@ last only because it is largest; he may pull it forward.
   them), then `runs/*.log` tails for exit codes; nothing else needs to be
   re-read.
 
+## 0b. URGENT, AHEAD OF ITEM 1: the CTB DM model's beam diameter (Dave 2026-09-15 17:30)
+
+Dave needs the CTB story out soon and an interim report on CTB + e2e6m +
+the DM gauge by Friday 2026-09-18 (CCL writes it).  Your finding is in it,
+so the FIX and the RE-SCORE come first, by **Thursday 09-17 noon**, so the
+CTB deck and the report can absorb the numbers.  Your `ctb_beam_probe.m`
+(untracked, 16:32) is the arbiter: commit it with its printed table as the
+first line of the record.  Then:
+
+1. `ctb_dm.m`, `ctb_dm_jacobian.m`, `ctb_efc_physics.m`: `beam_d_mm`
+   default = the PROBED diameter (42.75 if the probe agrees with the deck
+   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius), doc strings
+   corrected ("gate1b probe" was the RADIUS); `pitch_mm` follows
+   (1.336 mm).  Callers that pass their own `beam_d_mm`/`nact`
+   (`ctb_dst_2c`, `ctb_dst_s1*`, `ctb_vvc`, `ctb_study`): audit each;
+   none may keep 21.3.  A gate in `tests/tCtbDm.m`: the model's active
+   set covers the traced footprint (nact_active ~ pi/4 x 32^2 ~ 800 on
+   the FULL beam, not 880 on the inner half -- the number will differ,
+   state it).
+2. Regenerate: `ctb_dm_jacobian` at N=512 (~25 min) and the N=1024
+   configurations the deck cites (`ctb_dm_jacobian_N1024_*` fingerprints:
+   hp, ann, 2c_mono_hp, nb615-655 -- `ctb_study` derives them; read its
+   config list before starting and chain the whole set in one detached
+   sequence, ONE MATLAB at a time on this box, after lensuw2 exits).
+   Every `.fp.json` is re-committed; the `.mat` stay gitignored.
+3. Re-score deck_ctb slides 9-13 (EFC hard 2.9e-7 -> 8.1e-9; vortex loop
+   1.7e-8 -> 6.8e-15; polarization residual 1.1e-15; bandwidth 8e-13 ->
+   5.4e-11; vector vortex) through `ctb_study` -- the same configs, the
+   new DM.  Expect the aberration-free floors to MOVE (a full-pupil
+   lattice at twice the pitch has half the frequency reach: the 3-15
+   lam/D annulus is inside a 16 lam/D Nyquist, so the holes should still
+   dig, shallower or deeper is the measurement).  Table in
+   `CTB_PROP_STATUS.md`: old / new per slide, and the README line
+   ("880 active actuators ... beam radius") corrected.  Commit per stage.
+4. Hand CCL the old/new table + regenerated figures by Thursday noon;
+   CCL updates deck_ctb.md and the interim report.  deck_ctb's slides
+   carry a DRAFT banner until then (CCL adds it now).
+
+Item 7's step 0 is this item; steps 1-3 of item 7 wait for it.  Item 1
+(the vector rows) runs AFTER the Jacobian sequence unless the box is idle.
+
 ## 1. The vector pair on the redesigned reflective rig: rows, overcoat, verdict
 
 Your item-5 G4 (bare Al 20/25 deg 634 pm; no coating 208; the record's
