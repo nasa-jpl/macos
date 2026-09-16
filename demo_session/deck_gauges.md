@@ -24,19 +24,18 @@ D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
 DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are in the model (2026-09-16: the sensors do not move; the interferometer's 10 mm plates cost its flat null, its differential rows being re-measured).  The reflective front end has been redesigned and re-measured (rows, servo, descent, sensors, 2026-09-16); the lenses-versus-mirrors comparison is now measured on both rigs.
 
-## Contents | Three jobs, one bench, four ways of sensing; the record on a 30 nm working surface; lenses or mirrors; what remains
+## Contents | Three jobs, one bench, four ways of sensing
 ::: left
-- **The jobs and the bench (3-8):** measure, capture, hold; one bench, four ways of sensing; the splitter angle; parts common to every configuration, the interferometer's, the sensors'.
-- **The four approaches (9-19):** the Twyman-Green interferometer, its node and its stations; the Zernike dimple and its stations; the vector Zernike, its layout and stations; the stepped pinhole, its layout and stations.
-- **Performance on the working surface (20-25):** side by side; capture range and its photon price; photons for 1 pm; the servo; capturing the initial figure.
-- **Lenses or off-axis mirrors (26-28):** the record; the reflective front end redesigned; measured.
+- **3-8** The jobs; the bench and its parts
+- **9-19** The four approaches: interferometer, Zernike, vector Zernike, pinhole
+- **20-25** Performance on the working surface: rows, capture, photons, servo
+- **26-28** Lenses or off-axis mirrors
 ::: right
-- **Systematics and the recommendation (29-30).**
-- **Operating the gauge (31-33):** the modes from launch to hold; the complex amplitude for two-mirror control; one bench, every mode.
-- **Future work (34-36):** a second color for capture; other approaches; from this model to as-built performance.
-- **Method (37-38):** how every configuration was analyzed; run it yourself.
-- **Backup (39-48):** the three phase-shift forms; the record's mirror rig; the Zernike readings that lost; the pinhole trades; drift within a measurement; the vector sensor's polarization terms; sampling and color; the clearance scan; the path per configuration; provenance.
-~ Every number carries a run tag on its slide; the tags resolve to committed run directories of the shared model (provenance, slide 48).
+- **29-30** Systematics; recommendation
+- **31-33** Operating the gauge
+- **34-36** Future work
+- **37-38** Method; run it yourself
+- **39-48** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
