@@ -58,3 +58,13 @@ ONE model-1024 MATLAB on this box, every wrapper waits; kill by PID; no
 `--amend`, no push (Dave pushes); commit per item; report as you go with the
 status table on top; a document can be read wrongly -- trace it (the probe
 was the right instrument, and it is why the retraction is clean).
+
+## Note 2026-09-16 (CCL): flock on macOS
+
+The Mac has no `flock`; `tg96_batch.sh` died at the lock (exit 127) when
+Dave ran item4bseq there (the same run you did here, so nothing lost).
+tg96_batch / zwfs_batch / pdi_batch now guard it (`command -v flock`).
+`oap_fold_batch.sh` has the same line (its :25) and was EXECUTING your
+rpt_lens2 gate when I patched the others, so it is untouched: apply the same
+one-line guard between runs.  Dave's Mac job B (oaploop22, the sensors'
+servo on the redesigned rig) exited 0 and is being pushed from the Mac.
