@@ -240,7 +240,27 @@ before, after, and after the hold.
 
 ## 5. Where the three meet, and what is next
 
-One engine, one Bench builder, one DM doctrine, one propagation recipe, one contrast scorer; the gauge's readings become the coronagraph's input-field sensor; e2e6m carries the telescope side.  Next: the CTB re-score and its aberration arc; the field-servo model; the gauge deck's sign-off; migration of the gauge work into templates.
+The three efforts run on one engine and one set of tools, and that is the
+point of reporting them together.  The CTB and e2e6m share the Bench
+builder, the DM as an influence-function surface, the sphere-bracketed
+propagation recipe validated against PROPER, the mask library, the EFC
+driver and the contrast scorer; the gauge deck shares the same DM doctrine
+and its readings are the coronagraph's input-field sensor in the field
+servo now being modeled.  Each lane is driven by one parameter sheet and
+one runner, every number carries its run tag, and every deck figure is the
+tool's own output.  Three things the last week established across the
+lanes: a document can be read wrongly and only a trace settles it (the OAP
+poles, the CTB beam, the tail tuner); calibrate on the working surface,
+never at null; and a servo's floors are analytic, so the design levers can
+be read off without another run.
+
+Next, in order: the interferometer's rows with real plate thicknesses and
+the wrap-arithmetic verdict (running); the detector-leg tuner's fix; the
+coronagraph field servo in three steps on the CTB deck; the CTB regenerated
+at the sheet's intended beam once the gauge queue is drained; the gauge
+deck's sign-off and the migration of its tools into the templates tree; and
+the CTB roadmap's aberration and drift arcs, which the field servo is built
+to answer.
 
 ## Sources
 deck_ctb.md / CTB_PROP_STATUS.md / README (bench_ctb); deck_e2e6m_r2.md / e2e6m_r2_LOG.md / README (e2e6m, e2e6m_r2); deck_gauges.md / BRIEF_gauge_deck.md / the three lane reports (REPORT_gauge_ifo, REPORT_reflective, REPORT_gauge_pdi, zwfs_dm96 README); NOTES_gauge_in_coronagraph.md; memory project_ctb_diffraction / project_e2e6m / project_tg96_gauge.
