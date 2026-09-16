@@ -192,6 +192,24 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-16 midday (CCL).**  Deck 48 slides (contents slide 2; Dave's
+> editing copy synced via the gate; sidecar deck_gauges.geo.json).  TO's
+> close-out landed on the slides: item 2(a) CLOSED (the raw four-step wraps
+> between 60 and 120 nm on BOTH rigs: a base past lam/2 reads 91 nm =
+> 316.4/sqrt(12); the lens "never flags" was the 7-deg record); item 4 rows
+> on the tuned tail (10 mm plates: rows 1.00-1.01, reading attenuated 13% =
+> floor/SNR not gain); item 6 station figures at 1800 px (stnoap on the
+> deck; stnlens has a 62 nm misregistration, open); item 3 CLOSED (winner
+> gate relative to the seed, enforcing).  MAC: job A died (no flock on
+> macOS -> wrappers guarded, resources 3c88b46; oap_fold_batch.sh left for TO,
+> it was executing); job B oaploop22 (Dave pushed 0cba0a6): sensors' servo
+> on the redesigned mirror rig S 2.7e12/7.9e12, V 1.7e12/5.7e12, P
+> 2.5e12/7.4e12, thermal floors 10 pm -- within 10% of the lens rig -> servo
+> slide + measured slide + recommendation + report.  INTERIM REPORT full
+> first draft (5200 words, sections 1-2 by subagent with a source-notes
+> appendix; 3-5 CCL) at REPORT_interim_ctb_e2e6m_gauge.md.  Local unpushed:
+> macos commits since a9eddc5; resources 3c88b46.**
+
 > **2026-09-16 ~08:30 (CCL): DECK 47 SLIDES for Dave's JPL preliminary
 > (macos this commit): Dave's two edit-copy changes folded ("The DM";
 > slide 8 left block 15 pt via NEW sidecar deck_gauges.geo.json); the
