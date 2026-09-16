@@ -192,6 +192,42 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-16 morning (CCL): TO's overnight results harvested (git log
+> 09-15 18:00 -> 09-16 06:39, 20 commits; every run exit 0 except oapdesc2's
+> figure bug after its descents landed).  HEADLINE: the CTB DM-model "slip"
+> is RETRACTED by the traced footprint (beam 21.24 mm; the 32x32/0.67 mm
+> lattice spans it; no EFC result affected); the real finding is the
+> point-source Aperture convention (engine: FULL cone angle, sourcsub A =
+> Aperture/2; example_ctb reads a half-angle -> 47% fill, README says 95%)
+> -> Dave decides keep (CCL recommends) or regenerate; the 64x64/1 mm ruling
+> withdrawn; brief 0b, note, memory, deck_ctb banner corrected (macos
+> 1b1bdbe, resources ddaca96).  Vector pair on the reflective rig: G4 634
+> bare / 319 lam/4 overcoat / 0.054 pm calibrated (PASS); the variable is
+> channel AMPLITUDE (phase fixed at 0.062 rad); rows hold on every coating;
+> fold lever unpulled.  Servo (oapifol2, 854 states, 5.5 h): 3 pm from
+> 5.4e12 noise-only, 1.7e13 under the 2 pm walk; thermal floor 10.0 pm =
+> rate/(gG), LOW-ORDER (9.2 of 10 pm below 4 cyc/ap), not photon-limited;
+> both floors analytic to 1%.  Descent (oapdesc2, unwrap on): 100 and 200 nm
+> starts reach 3 pm at cycle 17/19, rho 0.50/0.52.  Wrap: the record's lens
+> ladder was a 7-deg bench; like-for-like the lens rig ALSO breaks (at 240,
+> OAP at 120); wrap column identical; candidate = pixels per unknown in the
+> solve (37 vs 41 px); the 'wrap' stage (dA vs dD, n_cross) staged;
+> battery.unwrap never reached the ladder (vacuous) -- fixed as a stage.
+> Realism: 10 mm plates cost the flat null 0.134 -> 20.09 nm retuned (the
+> 1.39 mm shear), gate ate the winner -> item4bseq; the sensors' rows with
+> substrates (sub22) and thickness (thk22) = gate22_193 to the digit
+> (S 0.9888/5, V 0.9938/3, P 0.9937/3; capture 37/62/54); MASK_TRIM 'scan'
+> found +0.86 mm; pupil image is 7.5-7.8 mm not 9.4 (binning 6 not 4 on the
+> ZWFS rig).  Snapshot polarization at the built angles: arm rotation
+> +/-1.56 deg, gain within 1% (record 7.48 deg / 11.7%); the 'corrected'
+> column is a no-op by construction (rigid analyzer rotation cancels in a
+> differential).  Tail-tuner gate FAILED its two-leg test (point sample
+> tracks magnification) -> advisory; item 3 NOT done.  IFO station figure
+> works (0.00 pm flat / 626 pm on 30 nm = 2% absolute); lens-rig figure +
+> 1800 px re-run queued.  Field servo step 1 prescription written (dichroic
+> at Apodizer_Pst, 300 mm lens F/9.4, 2 lam/D dimple 11.8 um).  Queue now
+> chains on run artifacts (closefinal.sh).**
+
 > **2026-09-15 ~18:00 (CCL).  TWO DEADLINES.**  (1) CTB DM-MODEL DEFECT (TO):
 > `ctb_dm.m` beam_d_mm 21.3 used as the DIAMETER; the deck's beam is 21.4 mm
 > RADIUS (Aperture 8.485e-3 x 2519 mm) -> the lattice covered the inner 28%
