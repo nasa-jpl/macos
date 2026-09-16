@@ -18,8 +18,8 @@ committed.
 
 | | CTB bench (`bench_ctb/ctb_dcr.in`) | e2e6m space relay (`e2e6m_r2/r1_seg_d040_full.in`) |
 |---|---|---|
-| DM clear radius / beam radius | 22.5 / 21.4 mm | 30 / 23.75 mm (47.5 mm beam) |
-| actuators, pitch | 32 across the 42.75 mm beam, 1.34 mm (the committed DM model uses 21.3 mm as the beam DIAMETER, so its lattice covers the inner 28% of the pupil at 0.67 mm pitch -- TO 2026-09-15; see section 6) | 32 across, 1.48 mm |
+| DM clear radius / beam radius | 22.5 / 10.6 mm (the traced beam is 21.24 mm across: the generator reads the engine's point-source Aperture, a FULL cone angle, as a half-angle, so the bench carries 47% of the sheet's intended 95% fill -- TO 2026-09-16) | 30 / 23.75 mm (47.5 mm beam) |
+| actuators, pitch | 32 across the 21.2 mm beam, 0.67 mm (the committed DM model is right; the 09-15 reading that it covered only the inner pupil was retracted by the traced footprint, section 6) | 32 across, 1.48 mm |
 | science incidence on each DM | 4.9 / 5.0 deg | 6.0 / 6.0 deg |
 | OAP1 -> DM1 / DM1 -> DM2 / DM2 -> OAP2 | 600 / 500 / 700 mm | 250 / 400 / 200 mm |
 | OAP body radius (assumed here) | 75 mm (README) | 60 mm (2x the beam; not in the deck) |
@@ -27,7 +27,8 @@ committed.
 | DM pupil | DM1 is the pupil; DM2 is 500 mm downstream of it | same, 400 mm |
 
 Rules used: mounts +8 mm on every body, clearance >= 25 mm (the gauge
-bench's rule), gauge beam = the DM's clear radius, the gauge's IN and OUT
+bench's rule), gauge beam = the DM's clear radius (22.5 / 30 mm; the
+science beams at their traced radii, 10.6 / 23.75), the gauge's IN and OUT
 legs at +theta and -theta about the DM normal in the plane of azimuth phi.
 Two numbers per case: the gauge BEAM against every body over 700 mm, and the
 gauge's first OPTIC (a body of beam radius + mount) at 300 or 500 mm from the
@@ -40,20 +41,22 @@ collision; hardware in a beam is.
 
 | theta | beam clearance | binds | optic at 300 mm | optic at 500 mm |
 |---|---|---|---|---|
-| 0 (face-on) | **-53** | OAP1 body | -25 (in the OAP1 -> DM1 beam) | -8 (DM2) |
-| 6 | -24 | OAP1 | -10 | +16 |
-| 8 | -7 | OAP1 | -2 | +30 |
-| 10 | +11 | OAP1 | +7 | +41 |
-| 12 | +30 | OAP1 | +16 | +54 |
-| **15** | **+58** | OAP1 | **+31** | +76 |
-| 20 | +106 | OAP1 | +55 | +115 |
+| 0 (face-on) | **-54** | OAP1 body | -16 (in the OAP1 -> DM1 beam) | -9 (DM2) |
+| 6 | -25 | OAP1 | -1 | +15 |
+| 8 | -8 | OAP1 | +8 | +29 |
+| 10 | +10 | OAP1 | +17 | +40 |
+| **12** | **+29** | OAP1 | **+26** | +53 |
+| 15 | +57 | OAP1 | +40 | +75 |
+| 20 | +105 | OAP1 | +64 | +114 |
 
 The best azimuth is 90 deg at every angle: OUT OF THE BENCH PLANE.  Face-on
 is blocked twice -- by OAP1's 150 mm body, which sits 5 deg off the DM normal
-at 600 mm (lateral 52 mm against 104 needed), and by DM2 at 5 deg the other
-way (44 mm against 52).  A gauge that comes in from above the table at 15 deg
-and leaves below it clears everything by 31 mm with its first optic 300 mm
-from the DM; at 10 deg it needs the optic at 500 mm.  The lever if 15 deg is
+at 600 mm (lateral 52 mm against 106 needed), and by DM2 at 5 deg the other
+way (44 mm against 53).  A gauge that comes in from above the table at 12 deg
+and leaves below it clears everything by 26 mm with its first optic 300 mm
+from the DM (15 deg: 40 mm); at 8 deg it needs the optic at 500 mm.  (Table
+re-run 2026-09-16 with the traced 21.2 mm science beam; the gauge beam covers
+the DM's 45 mm clear aperture either way.)  The lever if 15 deg is
 too steep is the DM fold angle itself: the record's 5 deg puts both OAP1 and
 DM2 right on the normal.
 
@@ -128,18 +131,20 @@ for a DM servo, not for absolute field work).
 
 **Separability of DM1 and DM2 in one conjugate, the number that decides
 C.**  A phase sinusoid of period L on DM2 converts to amplitude at DM1's
-plane by sin(pi lambda z / L^2).  CTB (1.34 mm pitch on the 42.75 mm beam,
-500 mm, 550 nm): 12% at the actuator Nyquist period (16 cycles across the
-beam), 47% at one cycle per actuator, 50% only at 33 cycles -- twice the
-Nyquist.  Space relay (1.48 mm pitch, 400 mm, 500 nm): 7% at Nyquist, 28%
-at one cycle per actuator, 50% at 43 cycles against a Nyquist of 16.
-**In BOTH packages a single-conjugate reading cannot tell DM2 from DM1
-inside the controllable band**; DM2's figure reads as phase at DM1's plane
-up to the top of the actuator band, where a complex-amplitude reading
-starts to see its print-through as amplitude.  (Corrected 2026-09-15: the
-first draft used the committed DM model's 0.67 mm pitch, which is the
-model's slip, not the bench's -- the 33-cycle crossover stood, its
-relation to the actuator band did not.)  Per-DM
+plane by sin(pi lambda z / L^2).  CTB (0.67 mm pitch on the 21.2 mm beam,
+500 mm, 550 nm): 47% at the actuator Nyquist period (16 cycles across the
+beam), 93% at one cycle per actuator, 50% at 16.5 cycles -- right at the
+top of the controllable band.  So on the CTB the two mirrors separate at
+the actuator scale (a complex-amplitude reading sees DM1 as phase and DM2's
+actuator print-through mostly as amplitude) and do not below ~10 cycles,
+where both are phase.  Space relay (1.48 mm pitch on the 47.5 mm beam,
+400 mm, 500 nm): 7% at Nyquist, 28% at one cycle per actuator, 50% at 43
+cycles against a Nyquist of 16.  **In the flight relay a single-conjugate
+reading cannot tell DM2 from DM1 at any controllable frequency; on the CTB
+it can, at the top of the band.**  (History: the first draft had these
+CTB numbers with a wrong cycle count; the 09-15 correction to a 1.34 mm
+pitch was itself wrong and was retracted by the traced beam on 09-16 --
+section 6.)  Per-DM
 knowledge there needs either a second conjugate (reimage DM2 onto a second
 camera behind the same pickoff -- one more lens, and the two complex fields
 over-determine the two phase screens) or differential attribution (poke one
@@ -172,9 +177,8 @@ Four things bound it, each a number:
    determined -- but DM2's amplitude authority at DM1's plane is the
    Fresnel conversion sin(pi lambda z / L^2), which is small at low
    spatial frequency.  DM2 stroke per unit of amplitude correction
-   (CTB / space relay): 530 / 900 at 2 cycles across the beam, 85 / 144
-   at 5, 21 / 36 at 10, 8 / 14 at 16 (the space relay's actuator
-   Nyquist), 2.4 / 4 at 30.  So low-order AMPLITUDE drift (a
+   (CTB / space relay): 130 / 900 at 2 cycles across the beam, 21 / 144
+   at 5, 5.2 / 36 at 10, 2.1 / 14 at 16 (both rigs' actuator Nyquist).  So low-order AMPLITUDE drift (a
    misalignment's pupil-shear, a segment's reflectivity) is expensive to
    null and the servo must regularize it exactly as EFC does; low-order
    PHASE is cheap (DM1 alone).  The dark hole's own EFC solution lives
@@ -284,21 +288,27 @@ beyond the first optic, nor the interferometer's reference arm; both go on
 the riser and clear by construction on the CTB, and are moot in the space
 relay until the OAP sizes are real.
 
-## 6. The CTB DM model's beam diameter (TO, 2026-09-15) -- fix before any of this
+## 6. The CTB DM model was questioned and CONFIRMED; the real finding is the source aperture (TO, 2026-09-15/16)
 
-`ctb_dm.m` declares `beam_d_mm` as the controlled beam DIAMETER and defaults
-it to 21.3; the deck generator (`example_ctb.m`: `w_DM = 22.5 x 0.95 =
-21.375`, printed under "pupil beam radii") and the committed deck's Aperture
-(8.485e-3 = a 2519.1 mm conjugate) make the beam 42.75 mm across.  So the
-committed lattice is 32 actuators at 0.67 mm over the inner half of the
-pupil diameter, 28% of its area; `ctb_dm_jacobian` and `ctb_efc` inherit it
-and the README repeats it in words ("centers within beam radius + 1 pitch").
-The committed contrasts are self-consistent for an aberration-free train
-(EFC nulled the masks' own residual with the DM it had); they say nothing
-about a train with aberrations, where 72% of the pupil area has no actuator
-under it.  Fix: `beam_d_mm` taken from the traced footprint at the DM (the
-runner prints the beam radius; twice it), pitch 1.336 mm, the N=512
-Jacobian fingerprint regenerated, the hard-occulter and vortex EFC re-scored,
-the README line corrected -- an hour-class item, and it precedes item 7's
-steps 2-3 and the CTB roadmap's aberration and drift arcs.  The note's
-section 3 numbers were corrected to the 1.34 mm pitch above.
+On 09-15 TO read the generator's `w_DM = R_DM*FILL = 21.375` as a radius and
+concluded that `ctb_dm.m`'s `beam_d_mm` 21.3 was a radius used as a diameter,
+so that the lattice covered the inner 28% of the pupil; this note's tables
+and the field-servo brief were re-based on a 42.75 mm beam and a 1.34 mm
+pitch, and Dave ruled a 64 x 64 / 1 mm DM.  On 09-16 `ctb_beam_probe` traced
+the committed deck (model 512, 50618 rays): **the beam at the DMs is 21.24 mm
+across**, the apodizer 15.87, the Lyot 7.94 -- the README's chain to three
+figures.  The DM model is right, the 0.666 mm pitch spans the beam, no EFC
+result is affected, and the 64 x 64 ruling is withdrawn with its premise.
+
+What the probe found instead is an engine convention: `sourcsub.F` takes a
+point source's `Aperture` as the FULL cone angle (`A = Aperture/2`; the VSG2
+record says the same), and `example_ctb.m` sets it as the half-angle NA, so
+the CTB carries HALF the sheet's intended beam -- 47% of the DM's 45 mm clear
+aperture, where the README says 95%.  Self-consistent everywhere downstream;
+wrong only against the sheet's intent.  Dave's call: keep the bench as
+built (recommended for the story this week; fix the README and the label) or
+regenerate at the intended 42.75 mm beam, after which the 64 x 64 / 1 mm DM
+ruling would apply (43 across, 21 cycles) and every downstream number
+re-derives.  The lesson is the one already on record: never fix a model from
+a document; trace it.  This note's sections 1-3 and C+ are back on the
+traced 21.2 mm beam.

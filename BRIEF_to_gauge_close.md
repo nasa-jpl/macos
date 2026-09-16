@@ -48,66 +48,42 @@ last only because it is largest; he may pull it forward.
   them), then `runs/*.log` tails for exit codes; nothing else needs to be
   re-read.
 
-## 0b. URGENT, AHEAD OF ITEM 1: the CTB DM model's beam diameter (Dave 2026-09-15 17:30)
+## 0b. RETRACTED 2026-09-16 (TO's probe): the CTB DM model is RIGHT -- and the real finding is the source aperture
 
-Dave needs the CTB story out soon and an interim report on CTB + e2e6m +
-the DM gauge by Friday 2026-09-18 (CCL writes it).  Your finding is in it,
-so the FIX and the RE-SCORE come first, by **Thursday 09-17 noon**, so the
-CTB deck and the report can absorb the numbers.  Your `ctb_beam_probe.m`
-(untracked, 16:32) is the arbiter: commit it with its printed table as the
-first line of the record.  Then:
+`ctb_beam_probe` traced the committed deck: the beam at DM1/DM2 is **21.24 mm
+across** (Apodizer 15.87, Lyot 7.94 -- the README's chain to three figures),
+so `ctb_dm.m`'s 21.3 mm IS the diameter, the 0.666 mm pitch is right, the
+32 x 32 lattice spans the beam, and **no EFC result is affected**.  Yesterday's
+fix order (64 x 64 at 1 mm, re-score by Thursday) is WITHDRAWN; Dave's ruling
+was premised on a 42.75 mm beam that does not exist.  Nothing in section 0b's
+old text is to be executed.
 
-**DAVE'S RULING (2026-09-15 18:30): the beam stays 42.75 mm; the DM
-becomes a REAL device -- 64 x 64 at 1 mm pitch (the HCIT-class 64 mm DM)
--- and the controlled set is every actuator with some influence inside
-the beam.**  Reach: 42.75 / (2 x 1) = 21 cycles across the beam (21 lam/D;
-the 3-15 lam/D annulus sits inside it with margin).  Not chosen: enlarging
-the beam to 64 mm to keep 32 cycles (a bench change), or a 0.67 mm pitch
-(not a device).
+**What is real, and it is an engine convention:** `sourcsub.F` takes a point
+source's `Aperture` as the FULL cone angle (`A = Aperture/2`; the VSG2 record
+says the same: fiber NA 0.1 -> Aperture 0.2).  `example_ctb.m` sets
+`Aperture = R_DM*FILL/r` as if it were the half-angle NA, so the bench
+delivers HALF the sheet's intended beam: 47% of the DM's 45 mm clear
+aperture, not the 95% fill the README claims.  Self-consistent everywhere
+downstream (every pupil is half size, the sampling followed), wrong only
+against the sheet's intent and the README's words.
 
-1. `ctb_dm.m`, `ctb_dm_jacobian.m`, `ctb_efc_physics.m`: `nact` default
-   64, `pitch_mm` default 1.0 (FIXED, no longer beam/nact), `beam_d_mm`
-   default = the PROBED diameter (42.75 if the probe agrees with the deck
-   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius).  **The
-   controlled set (Dave 2026-09-15): every actuator whose influence
-   reaches inside the beam, however weakly** -- actuators beyond the
-   footprint still push the edge of the pupil.  So the active rule widens
-   from "centre within beam_r + 1 pitch" (influence 0.12 at the edge) to
-   "centre within beam_r + WIN pitches" (WIN = 3, the stamp's own support;
-   influence 0.12^9 ~ 5e-9 at the edge for the outermost ring), and the
-   measurement decides their weight: poke them ALL (expect ~pi x 24.4^2 ~
-   1870 per DM, ~3700 pokes, ~25 min at 512) and print the Jacobian
-   column-norm ladder by distance of the centre from the beam edge (-3 ..
-   +3 pitches).  EFC's Tikhonov solve gives a weak column little command
-   by itself; the ladder shows where "some influence" ends on this
-   influence function (Gaussian, 12% at one pitch), and that number, not
-   a rule, goes in the report.
-   Doc strings corrected ("gate1b probe" was the RADIUS).  Callers that
-   pass their own `beam_d_mm`/`nact`/`pitch_mm` (`ctb_dst_2c`,
-   `ctb_dst_s1*`, `ctb_vvc`, `ctb_study`): audit each; none may keep 21.3
-   or 32.  Gate in `tests/tCtbDm.m`: the active set covers the traced
-   footprint, the pitch is 1.0, the lattice spans 64 mm.
-2. Regenerate: `ctb_dm_jacobian` at N=512 (~25 min) and the N=1024
-   configurations the deck cites (`ctb_dm_jacobian_N1024_*` fingerprints:
-   hp, ann, 2c_mono_hp, nb615-655 -- `ctb_study` derives them; read its
-   config list before starting and chain the whole set in one detached
-   sequence, ONE MATLAB at a time on this box, after lensuw2 exits).
-   Every `.fp.json` is re-committed; the `.mat` stay gitignored.
-3. Re-score deck_ctb slides 9-13 (EFC hard 2.9e-7 -> 8.1e-9; vortex loop
-   1.7e-8 -> 6.8e-15; polarization residual 1.1e-15; bandwidth 8e-13 ->
-   5.4e-11; vector vortex) through `ctb_study` -- the same configs, the
-   new DM.  Expect the aberration-free floors to MOVE (reach 21 instead
-   of 32 cycles, the 3-15 lam/D annulus still inside it; shallower or
-   deeper is the measurement; the deck's slide-9 text "0.67 mm pitch =
-   beam/32; 880 actuators" is rewritten from the new count).  Table in
-   `CTB_PROP_STATUS.md`: old / new per slide, and the README line
-   ("880 active actuators ... beam radius") corrected.  Commit per stage.
-4. Hand CCL the old/new table + regenerated figures by Thursday noon;
-   CCL updates deck_ctb.md and the interim report.  deck_ctb's slides
-   carry a DRAFT banner until then (CCL adds it now).
+**Decision for Dave (CCL recommends A for the story going out this week):**
+- **A.** Keep the bench as built: 21 mm beam, 32 x 32 at 0.67 mm, every
+  committed number stands.  Fix the README's "95% fill" to 47% and the
+  generator's label; nothing re-runs.
+- **B.** Regenerate with the intended 42.75 mm beam (`Aperture = 2*NA`),
+  then the 64 x 64 / 1 mm DM ruling applies (43 across, 21 cycles): every
+  downstream number re-derives.  A week of one MATLAB, not a day.
 
-Item 7's step 0 is this item; steps 1-3 of item 7 wait for it.  Item 1
-(the vector rows) runs AFTER the Jacobian sequence unless the box is idle.
+**TO, one small item either way:** audit every Bench point-source user for
+the same half-angle reading (`grep -n "Aperture" src/+macos/+design/*.m
+templates/**/*.m`): the gauge benches launch collimated beams through a
+collimator, so a wrong cone only changes the fill there too, but state which
+sheets carry it.  Item 7 step 2's expectation returns to the note's first
+numbers on the real beam: 47% Fresnel amplitude conversion at the actuator
+Nyquist (16 cycles across the 21.2 mm beam), 93% at one cycle per actuator,
+50% at 16.5 cycles -- the CTB's two DMs separate at the TOP of the band from
+one conjugate; the flight relay's (7% at Nyquist) do not.
 
 ## 1. The vector pair on the redesigned reflective rig: rows, overcoat, verdict
 
