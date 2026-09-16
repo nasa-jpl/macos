@@ -203,12 +203,20 @@ in bench_ctb, sheet-driven like every runner:
    (632.8 nm against the CTB's science band).  Gate: the reading
    reproduces the engine's complex field at the apodizer to the V5 record
    (0.016 / 0.128 pm through 5 / 20% amplitude dips).
+0. **First, the DM model's beam diameter** (your finding, note section
+   6): `beam_d_mm` from the traced footprint (42.75 mm), pitch 1.336 mm,
+   the N=512 Jacobian fingerprint regenerated, hard-occulter + vortex EFC
+   re-scored, README corrected.  Commit before step 1.
 2. **Separability of the two DMs.**  The multiplexed matrix
    (`battery.calib_mode 'matrix'`) over BOTH DMs' actuators as columns;
-   the DM1-vs-DM2 column cross-talk vs spatial frequency; the note
-   predicts a 50% amplitude conversion at 33 cycles across the beam
-   (0.67 mm pitch, 500 mm, 550 nm) -- confirm or refute with the measured
-   crossover.  Rows for DM1 pokes, DM2 pokes, and both.
+   the DM1-vs-DM2 column cross-talk vs spatial frequency.  On the real
+   1.34 mm pitch the note predicts 12% amplitude conversion at the
+   actuator Nyquist (16 cycles) and 50% only at 33, so expect the two DMs
+   NOT to separate inside the band from one conjugate; the measurement is
+   how much cross-talk the matrix carries per frequency, and the
+   second-conjugate reading (DM2 reimaged behind the same pickoff) is the
+   baseline for step 3, not a variant.  Rows for DM1 pokes, DM2 pokes, and
+   both, at one and at two conjugates.
 3. **The servo.**  `dmg_loop` with the input field as the state and both
    DMs as actuators; a drift injected UPSTREAM (a 10 urad tilt of OAP1,
    a 1 nm figure walk on OAP2 -- `run_simulator`'s pattern), the hold at

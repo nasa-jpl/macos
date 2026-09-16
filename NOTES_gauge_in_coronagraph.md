@@ -19,7 +19,7 @@ committed.
 | | CTB bench (`bench_ctb/ctb_dcr.in`) | e2e6m space relay (`e2e6m_r2/r1_seg_d040_full.in`) |
 |---|---|---|
 | DM clear radius / beam radius | 22.5 / 21.4 mm | 30 / 23.75 mm (47.5 mm beam) |
-| actuators, pitch | 32 across, 0.67 mm | 32 across, 1.48 mm |
+| actuators, pitch | 32 across the 42.75 mm beam, 1.34 mm (the committed DM model uses 21.3 mm as the beam DIAMETER, so its lattice covers the inner 28% of the pupil at 0.67 mm pitch -- TO 2026-09-15; see section 6) | 32 across, 1.48 mm |
 | science incidence on each DM | 4.9 / 5.0 deg | 6.0 / 6.0 deg |
 | OAP1 -> DM1 / DM1 -> DM2 / DM2 -> OAP2 | 600 / 500 / 700 mm | 250 / 400 / 200 mm |
 | OAP body radius (assumed here) | 75 mm (README) | 60 mm (2x the beam; not in the deck) |
@@ -128,16 +128,18 @@ for a DM servo, not for absolute field work).
 
 **Separability of DM1 and DM2 in one conjugate, the number that decides
 C.**  A phase sinusoid of period L on DM2 converts to amplitude at DM1's
-plane by sin(pi lambda z / L^2).  CTB (0.67 mm pitch, 500 mm, 550 nm):
-47% at the actuator Nyquist period, 93% at one cycle per actuator, 50% at
-33 cycles across the beam.  So on the CTB the two mirrors separate at the
-actuator scale (a complex-amplitude reading -- the vector pair with its clear
-frame, the pinhole, the interferometer -- sees DM1 as phase and DM2's
-actuator print-through mostly as amplitude) and do NOT separate below ~30
-cycles per aperture, where both are phase.  Space relay (1.48 mm pitch,
-400 mm, 500 nm): 7% at Nyquist; 50% only at 43 cycles across the beam,
-beyond the actuator Nyquist of 16.  **In the flight relay a single-conjugate
-reading cannot tell DM2 from DM1 at any controllable frequency.**  Per-DM
+plane by sin(pi lambda z / L^2).  CTB (1.34 mm pitch on the 42.75 mm beam,
+500 mm, 550 nm): 12% at the actuator Nyquist period (16 cycles across the
+beam), 47% at one cycle per actuator, 50% only at 33 cycles -- twice the
+Nyquist.  Space relay (1.48 mm pitch, 400 mm, 500 nm): 7% at Nyquist, 28%
+at one cycle per actuator, 50% at 43 cycles against a Nyquist of 16.
+**In BOTH packages a single-conjugate reading cannot tell DM2 from DM1
+inside the controllable band**; DM2's figure reads as phase at DM1's plane
+up to the top of the actuator band, where a complex-amplitude reading
+starts to see its print-through as amplitude.  (Corrected 2026-09-15: the
+first draft used the committed DM model's 0.67 mm pitch, which is the
+model's slip, not the bench's -- the 33-cycle crossover stood, its
+relation to the actuator band did not.)  Per-DM
 knowledge there needs either a second conjugate (reimage DM2 onto a second
 camera behind the same pickoff -- one more lens, and the two complex fields
 over-determine the two phase screens) or differential attribution (poke one
@@ -260,7 +262,8 @@ volume trade against the 8 m shroud.
    reading on the CTB deck (both DMs as grid surfaces, the vector pair with
    its clear frame at Focus23 reimaged by OAP3), the multiplexed matrix over
    both DMs' actuators, the cross-talk between DM1 and DM2 columns vs spatial
-   frequency.  Confirms or refutes the 33-cycle crossover.
+   frequency.  Confirms or refutes the 33-cycle crossover, and measures
+   how far below it the matrix still tells the two DMs apart.
 3. **The space relay's OAP body sizes from the design** (not assumed) and a
    re-scan; then the second-conjugate variant of C (reimage DM2), since B
    does not fit there.
@@ -280,3 +283,22 @@ The scan does not yet place the gauge's own tail (focuser, mask, camera)
 beyond the first optic, nor the interferometer's reference arm; both go on
 the riser and clear by construction on the CTB, and are moot in the space
 relay until the OAP sizes are real.
+
+## 6. The CTB DM model's beam diameter (TO, 2026-09-15) -- fix before any of this
+
+`ctb_dm.m` declares `beam_d_mm` as the controlled beam DIAMETER and defaults
+it to 21.3; the deck generator (`example_ctb.m`: `w_DM = 22.5 x 0.95 =
+21.375`, printed under "pupil beam radii") and the committed deck's Aperture
+(8.485e-3 = a 2519.1 mm conjugate) make the beam 42.75 mm across.  So the
+committed lattice is 32 actuators at 0.67 mm over the inner half of the
+pupil diameter, 28% of its area; `ctb_dm_jacobian` and `ctb_efc` inherit it
+and the README repeats it in words ("centers within beam radius + 1 pitch").
+The committed contrasts are self-consistent for an aberration-free train
+(EFC nulled the masks' own residual with the DM it had); they say nothing
+about a train with aberrations, where 72% of the pupil area has no actuator
+under it.  Fix: `beam_d_mm` taken from the traced footprint at the DM (the
+runner prints the beam radius; twice it), pitch 1.336 mm, the N=512
+Jacobian fingerprint regenerated, the hard-occulter and vortex EFC re-scored,
+the README line corrected -- an hour-class item, and it precedes item 7's
+steps 2-3 and the CTB roadmap's aberration and drift arcs.  The note's
+section 3 numbers were corrected to the 1.34 mm pitch above.
