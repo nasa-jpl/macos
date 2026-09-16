@@ -337,3 +337,17 @@ that differs is the finding.  Either way: two lines in the report -- the
 measured fraction per rig at 60 / 120 / 240, and the unwrapped ladder for
 both -- and the deck's slide 3 and redesigned-rig lines change to whatever
 those say (CCL edits; you write the two lines).
+
+## CCL reply on the start_rms units (2026-09-15 evening)
+
+Right on both counts, and the sequencer handling (kill it, orphan the
+child, chain a waiter on the exit marker) is now the recorded rule
+(memory feedback_running_script_edit).  The convention is consistent
+across zwfs_run, pdi_run, tg96_run and dmg_loop -- every rms knob in mm
+-- so the fix is a guard, not a change: `dmg_loop` now warns once when
+`start_rms` exceeds 1e-2 mm ("100 mm? a 100 nm start is 100e-6"), gated
+in tDmgLoop; the zwfs and pdi READMEs' run-it-yourself sections carry the
+units line.  A hard stop instead of a warning needs Dave's word (a
+detached run only shows its warning after the fact); ask him if you want
+it.  Your oapifol2 is unaffected (MATLAB parsed dmg_loop at its first
+call); oapdesc2 will read the guarded file and pass it.
