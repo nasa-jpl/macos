@@ -68,10 +68,20 @@ the beam to 64 mm to keep 32 cycles (a bench change), or a 0.67 mm pitch
 1. `ctb_dm.m`, `ctb_dm_jacobian.m`, `ctb_efc_physics.m`: `nact` default
    64, `pitch_mm` default 1.0 (FIXED, no longer beam/nact), `beam_d_mm`
    default = the PROBED diameter (42.75 if the probe agrees with the deck
-   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius); the active
-   rule stays "centre within beam_r + 1 pitch" (the influence function is
-   0.12 there), which is "some influence inside the beam" -- print the
-   count (expect ~pi x 22.4^2 ~ 1580 per DM, 3150 pokes, ~20 min at 512).
+   header: Aperture 8.485e-3 x 2519.1 mm = 21.4 mm radius).  **The
+   controlled set (Dave 2026-09-15): every actuator whose influence
+   reaches inside the beam, however weakly** -- actuators beyond the
+   footprint still push the edge of the pupil.  So the active rule widens
+   from "centre within beam_r + 1 pitch" (influence 0.12 at the edge) to
+   "centre within beam_r + WIN pitches" (WIN = 3, the stamp's own support;
+   influence 0.12^9 ~ 5e-9 at the edge for the outermost ring), and the
+   measurement decides their weight: poke them ALL (expect ~pi x 24.4^2 ~
+   1870 per DM, ~3700 pokes, ~25 min at 512) and print the Jacobian
+   column-norm ladder by distance of the centre from the beam edge (-3 ..
+   +3 pitches).  EFC's Tikhonov solve gives a weak column little command
+   by itself; the ladder shows where "some influence" ends on this
+   influence function (Gaussian, 12% at one pitch), and that number, not
+   a rule, goes in the report.
    Doc strings corrected ("gate1b probe" was the RADIUS).  Callers that
    pass their own `beam_d_mm`/`nact`/`pitch_mm` (`ctb_dst_2c`,
    `ctb_dst_s1*`, `ctb_vvc`, `ctb_study`): audit each; none may keep 21.3
