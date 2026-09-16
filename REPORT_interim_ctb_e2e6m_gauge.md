@@ -144,7 +144,7 @@ beam 1.39 mm, and its differential rows under that are being re-measured
 |---|---|---|---|---|
 | Twyman-Green interferometer, lens rig (4) | 0.991 / 2 pm | 0.990 / 1 pm | 0.990 / 168 pm | 2.0e13 photons per cycle |
 | interferometer, redesigned mirror rig (4) | 0.992 / 2.4 pm | -- | 0.991 / 161 pm | 1.7e13 |
-| the three sensors on the redesigned mirror rig | -- | -- | -- | vector 5.7e12, pinhole 7.4e12, stepped 7.9e12 |
+| the three sensors on the redesigned mirror rig | -- | -- | -- | vector 5.7e12, pinhole 7.4e12, stepped 7.9e12 (photons for 1 pm on the surface: 7.3e13 / 8.5e13 / 5.8e13; oapnoise22) |
 | Zernike dimple, stepped (4) | 0.989 / 5 pm | 0.999 / 4 pm | 0.984 / 0.68 nm | 7.5e12 |
 | vector Zernike, polarized dimple (2, at once) | 0.9935 / 4 pm | 0.9992 / 3 pm | 0.9999 / 0.33 nm | 5.3e12 |
 | stepped pinhole with a shutter frame (6) | 0.9935 / 4 pm | 0.9992 / 3 pm | 0.9985 / 338 pm | 7.0e12 |
