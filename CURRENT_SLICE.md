@@ -192,6 +192,28 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-15 ~18:00 (CCL).  TWO DEADLINES.**  (1) CTB DM-MODEL DEFECT (TO):
+> `ctb_dm.m` beam_d_mm 21.3 used as the DIAMETER; the deck's beam is 21.4 mm
+> RADIUS (Aperture 8.485e-3 x 2519 mm) -> the lattice covered the inner 28%
+> of the pupil; Jacobians/EFC/README inherit; the deck_ctb slides 9-13 are
+> self-consistent (aberration-free) but must be RE-SCORED.  Ordered first
+> in `BRIEF_to_gauge_close.md` section 0b (TO, by THU 09-17 NOON: probe
+> committed, defaults fixed in ctb_dm/ctb_dm_jacobian/ctb_efc_physics +
+> callers audited, tCtbDm gate, ctb_study re-derived jac/efc/relin/physics/
+> bandwidth/vvc ONE MATLAB at a time, old/new table in CTB_PROP_STATUS).
+> deck_ctb carries a DRAFT banner (resources, this session).  My note's
+> separability numbers corrected to the real 1.34 mm pitch (12% at Nyquist:
+> NOT separable in-band on the CTB either).  (2) INTERIM REPORT (CCL, due
+> FRI 09-18): `REPORT_interim_ctb_e2e6m_gauge.md` skeleton + day plan (Wed
+> draft 1-3 from the decks; Thu TO's numbers in + section 4; Fri style
+> gate, .docx, Dave).  Deck_gauges: slide 3 both layouts + for/against,
+> plain-language pass, slide 15 'magic' steps.  TO's ladder: the tg96
+> ladder break is the wrapped-absolute subtraction (beyond-fold fraction is
+> the meter; unwrapped capture is the number of record); control lensuw2
+> running -- read it by the MEASURED fraction per rig (lens raw ladder held
+> at 120 where the OAP broke).  Local macos commits f117c42..this; resources
+> c9f92f6 + the banner + TO's.  Push on Dave's word.**
+
 > **2026-09-15 ~16:00 (CCL).**  TO's reflective lane: items 1-3, 5-7 done;
 > item 4 reads on the SEED tail (oapifo2: rows 0.9915/2.4 pm, 0.9905/161,
 > cross-talk 0.006-0.02, null 28.9 pm; the break ladder WRAPS at 120 nm --
