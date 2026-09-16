@@ -32,9 +32,9 @@ L_OPT = [300.0, 500.0]  # mm, candidate stations for the gauge's first optic
 
 CASES = [
     dict(name='CTB bench (ctb_dcr.in, mm)', deck=R+'30_instruments/bench_ctb/ctb_dcr.in', scale=1.0,
-         radius={'OAP': 75.0, 'DM': 22.5, 'default': 25.0}, r_beam=21.4, first=1),
+         radius={'OAP': 75.0, 'DM': 22.5, 'default': 25.0}, r_beam=22.5, r_sci=10.62, first=1),   # gauge covers the DM's clear radius; the traced science beam is 21.24 mm across (ctb_beam_probe, TO 2026-09-16)
     dict(name='e2e6m space relay (r1_seg_d040_full.in, m -> mm)', deck=R+'80_end_to_end/e2e6m_r2/r1_seg_d040_full.in',
-         scale=1000.0, radius={'OAP': 60.0, 'DM': 30.0, 'M2': 400.0, 'M3': 400.0, 'default': 25.0}, r_beam=30.0, first=20),
+         scale=1000.0, radius={'OAP': 60.0, 'DM': 30.0, 'M2': 400.0, 'M3': 400.0, 'default': 25.0}, r_beam=30.0, r_sci=23.75, first=20),
 ]
 
 def parabola_hit(P, u, V, a, R):
@@ -173,7 +173,7 @@ def scan(case):
                             c = np.linalg.norm(x - e['v']) - body_radius(e, rad) - rg - MOUNT
                             if c < cc: cc, ww = c, e['name']
                         for a, b in legs:
-                            c = point_seg_dist(x, a['v'], b['v']) - case['r_beam'] - rg - MOUNT
+                            c = point_seg_dist(x, a['v'], b['v']) - case['r_sci'] - rg - MOUNT
                             if c < cc: cc, ww = c, f"beam {a['name']}>{b['name']}"
                     co.append((cc, ww))
                 score = min(cb, co[0][0])
