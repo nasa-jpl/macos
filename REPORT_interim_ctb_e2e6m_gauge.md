@@ -201,6 +201,16 @@ at the built 22.5-degree splitter rotates the test arm 1.56 degrees and
 biases the gain 0.9% (7.5 degrees and 11.7% at the record's 45 degrees),
 with 1.4e-3 left after a measured matrix (aoi_lens22, aoi_oap22).
 
+Pupil image quality of the interferometer's camera (Fang Shi's request,
+2026-09-16; `tg96_pupilq`, the DM as the stop): a DM zone's image walks
+0.02-0.03 mm rms over the band of spatial frequencies the DM can make on
+either front end, so the camera sees the DM sharply; against a single
+global mapping the image is distorted by 0.13 mm rms and 0.30 mm at the
+edge on the lens rig and 0.45 / 0.85 mm on the mirror rig (the off-axis
+parabolas), which the measured response matrix absorbs and a geometric
+pixel-to-actuator map would not; the mirror rig's focus is exact on axis
+and coma-limited off it (2.3 lam F/D at the actuator-band tilt).
+
 Not yet modeled, stated on the slides: the camera (a 6.5 um sCMOS binned 3
 to the 385 modeled pixels across the traced 7.5 mm pupil image; well depth
 sets the measurement time, not the laser), the photonic phase shifter of

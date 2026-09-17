@@ -30,18 +30,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **4** The bench layout
 - **6** Parts
 - **9** Twyman-Green interferometer
-- **12** Zernike sensor
-- **14** Vector Zernike sensor
-- **17** Point-diffraction sensor
-- **20** Performance: rows, capture, photons, servo
+- **13** Zernike sensor
+- **15** Vector Zernike sensor
+- **18** Point-diffraction sensor
+- **21** Performance: rows, capture, photons, servo
 ::: right
-- **26** Lenses versus off-axis parabolas
-- **27** The reflective front end and its performance
-- **29** Comparison and recommendation
-- **32** Complex amplitude
-- **33** Summary and future work
-- **38** Run it yourself
-- **39** Backup
+- **27** Lenses versus off-axis parabolas
+- **28** The reflective front end and its performance
+- **30** Comparison and recommendation
+- **33** Complex amplitude
+- **34** Summary and future work
+- **39** Run it yourself
+- **40** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -149,6 +149,20 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![Two rows (the flat mirror, the 30 nm rms working surface) by seven stations: the mirror command, the test-arm field at the camera, the reference-arm field, two of the four phase-stepped frames (0 and π/2), the surface recovered from the four-step, and the recovered map minus the engine's own field.  The runner's own figure from the servo run.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/stnoap/stnoap_stations.png){h=3.2}
 - **The residual column is the absolute read against the engine:** 0.00 pm on the flat, 626 pm on the 30 nm surface (2% of the figure); the differential rows the servo uses read the same surface's changes to 2.4 pm, which is why the matrix is measured on the surface.
 ~ Run tag stnoap (the redesigned mirror rig, seed detector leg; bit-identical to the servo run's figure).  The lens rig's figure exists but its residual panel reads 62 nm against the engine, a misregistration under investigation, so it is not shown.
+
+## Interferometer: pupil image quality | The camera sees the DM sharply on both front ends; against a single global mapping the image is distorted by a third of a pitch at the edge on lenses and most of a pitch on mirrors, which the measured response matrix absorbs and a geometric mapping would not
+::: left
+![The DM's image at the camera on the lens rig, the DM as the stop: left, distortion against the global affine (arrows ×3, DM mm); right, the blur of each zone's image over the band of tilts the DM can make.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilq_lens/pupilq_lens_pupil.png){h=2.6}
+::: right
+| DM mm unless stated | lens rig | mirror rig |
+|---|---|---|
+| distortion vs one affine: rms / edge | 0.13 / 0.30 | 0.45 / 0.85 |
+| blur over the actuator band: rms / max | 0.023 / 0.060 | 0.032 / 0.093 |
+| image surface: defocus / tilt (mm of sag) | 3.8 / 0.0 | -0.5 / 0.45 |
+| focal spot on axis / at the actuator-band tilt | 0.16 / 0.16 λF/D | 0.00 / 2.3 λF/D |
+- **Method:** the DM declared the stop; the field a tilt about it (a spatial frequency on its surface); two traces a small field step apart cross at each zone's image at the camera; scored in DM millimeters against the 1 mm pitch and the 0.4 mm pixel.
+- **The mirror rig's focus is perfect on axis and coma-limited off it** (2.3 λF/D at the actuator-band tilt); not a pupil-image or mask-sensor cost, a number to know for any off-axis reading at the seat.
+~ Run tags pupilq_lens, pupilq_oap (tg96_pupilq, model 512); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.
 
 ## Zernike sensor: a quarter-wave dimple at the focus | The beam interferes with its own core: no reference arm; the best reading steps the dimple's depth through four frames and inverts pixel by pixel
 ::: left
@@ -604,7 +618,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Backup: provenance | Every number in this deck has a run tag in a committed run directory of the shared model; the three lane reports carry the full tables
 ::: full
-- **Interferometer** (tg_psi_dm96_oap/runs): lens_deck, lens_deck_se2, lens_deck_se5, loop_lens, loop_lens_cam, loop_lens_intra, loop_lens_se2, descent_lens, oap_deck, loop_oap, descent_oap, oap_bareAl, oap_coat, oap_jones, zoap (the 7° rigs); lens22, lens22g, lens22h, node22t, fold1-4, loss, loss_src, loss_a2, conj, zseat, zseat2, oap22d, oapdraw3, oap22d_tail, tailA, tailB, oapifo2, oapifol2, oapdesc2, oapuw2, lensuw2, thk22, sub22, aoi_lens22, aoi_oap22, gate3_win, gate3_lens, wrapoap, wraplens, stnoap, stnlens (the 22.5° bench and the redesigned reflective rig); pdi_dm96/runs/psriclear2 (the P/SRI bench through the clearance tool).  Reports REPORT_gauge_ifo.md (CCMac) with REPORT_oap.md, REPORT_bench_realism.md and REPORT_reflective.md (TO), and README.md.
+- **Interferometer** (tg_psi_dm96_oap/runs): lens_deck, lens_deck_se2, lens_deck_se5, loop_lens, loop_lens_cam, loop_lens_intra, loop_lens_se2, descent_lens, oap_deck, loop_oap, descent_oap, oap_bareAl, oap_coat, oap_jones, zoap (the 7° rigs); lens22, lens22g, lens22h, node22t, fold1-4, loss, loss_src, loss_a2, conj, zseat, zseat2, oap22d, oapdraw3, oap22d_tail, tailA, tailB, oapifo2, oapifol2, oapdesc2, oapuw2, lensuw2, thk22, sub22, aoi_lens22, aoi_oap22, gate3_win, gate3_lens, wrapoap, wraplens, stnoap, stnlens, pupilq_lens, pupilq_oap (the 22.5° bench and the redesigned reflective rig); pdi_dm96/runs/psriclear2 (the P/SRI bench through the clearance tool).  Reports REPORT_gauge_ifo.md (CCMac) with REPORT_oap.md, REPORT_bench_realism.md and REPORT_reflective.md (TO), and README.md.
 - **Zernike sensors** (zwfs_dm96/runs): matbase, matbase385, m2048, m2048_lat, cap385, cap385_b60-b160, noise193_b30-b160, rec193full, loop193, loop385, v193base, v193noise, vloop193, fold_diag, v2g, v2loop, v3arm, v3s, v3loop, an193_ref/cube/q300/q100/az1/bound/clear, stations193, gate22_193, sub22, thk22 (the 22.5° bench with substrates and thicknesses), oapsens22, oapsens22n, vqw22, vmap22, oaploop22, oapnoise22 (the sensors on the redesigned mirror rig).  README.md (CCL) and deck_zwfs.md.
 - **Point-diffraction** (pdi_dm96/runs, and the pre-split records in zwfs_dm96/runs): pdi193f, pdi193fbase, pdi193state, pdi193se_ls, pdi193se_sh5, ploop193, pcam193, pcam193r, pcam193ri, pfdeck, pfdeck_frz, pfdeck_loop, cap385p, cap385p_b60-b160, noise193p_b30-b160, cap_nouw, cap_uw, cap_uw_recal, cap_state_uw, cap_state_uw_recal, descent193, descent193s, descent193f, intra193_0, intra193, rw193_1e3/1e2/1e1, pin20_1024, pin20_loop, pin10_2048, pin10_loop.  Report REPORT_gauge_pdi.md (TO) and README.md.
 - **Plan and rulings:** macos/BRIEF_gauge_deck.md sections 5-11.  Raw material with every figure's pixel size: demo_session/deck_gauges_material.md.
