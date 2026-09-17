@@ -192,6 +192,23 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-16 evening (CCL): PUPIL IMAGE QUALITY for Fang Shi DONE (due
+> 09-17).**  `tg_psi_dm96_oap/tg96_pupilq.m` (resources fd24ad9; runs
+> pupilq_lens / pupilq_oap; REPORT_bench_realism section 6; deck slide 12
+> after the IFO station slide, 49 slides; memory project_pupil_quality_tg).
+> The DM is the STOP (Dave): bench as built, field = source shift at the
+> collimator's focus; crossing cloud at the camera.  Distortion vs one
+> affine 0.13/0.30 mm (lens), 0.45/0.85 mm (mirrors); blur 0.02-0.03 mm
+> rms over the actuator band; pupil surface sag 3.8 mm (lens) / tilt 0.45
+> (OAP); focal WFE lens 1.1-2.7 nm, OAP 0 on axis / 144 nm = 2.3 lam F/D at
+> the band tilt (coma).  Traps: collimated source at the DM = a
+> nonexistent bench (16 lam F/D); the seat marker is not the focus; the
+> exit-pupil sphere idiom refuses to load via the mex (fitted focus removal
+> instead); `range` is a toolbox call.  Mac cycle 2: oapnoise22 folded
+> (photons for 1 pm: S 5.8e13, V 7.3e13, P 8.5e13); oapcap22 running;
+> oapsens385 queued.  Interim report has the pupil paragraph.  Unpushed:
+> macos since 303c209 (brief, deck, report), resources fd24ad9.**
+
 > **2026-09-16 midday (CCL).**  Deck 48 slides (contents slide 2; Dave's
 > editing copy synced via the gate; sidecar deck_gauges.geo.json).  TO's
 > close-out landed on the slides: item 2(a) CLOSED (the raw four-step wraps
