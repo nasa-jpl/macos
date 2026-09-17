@@ -40,8 +40,8 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **33** Comparison and recommendation
 - **36** Measuring the complex amplitude
 - **37** Summary and future work
-- **42** Run it yourself
-- **43** Backup
+- **43** Run it yourself
+- **44** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -88,7 +88,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | interferometer snapshot form | the small-angle case | its plate systematics re-run at this angle | larger |
 ~ The sensors reproduce their rows at every angle; the interferometer's snapshot form is the one thing the angle changes, through the plate's polarization, and the cube form is built for 45°.  Run tags bs22_dev, bs30_dev; the panels at 7° and 30° are on the backup clearance slide.
 
-## Parts common to every configuration | The front end and the detector leg, from the parameter sheet; thicknesses are the scaled model's and are being made real
+## Parts common to every configuration | The front end and the detector leg, from the parameter sheet; the substrates are now decided (10 mm splitter and compensator, 2 mm fused-silica plates under every polarizing element, a 2 mm mask plate, 4 mm lens edges) and go into every deck from here
 ::: full
 | part | size and figure | coating | count | purpose |
 |---|---|---|---|---|
@@ -99,8 +99,8 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg | protected aluminum | 1 | the test object; its surface is the measurand |
 | focuser L2 | f 429 mm, 103 mm, plano-convex conic; modeled 8 mm center | AR | 1 | the internal focus at F/4.2 where the masks sit |
 | mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
-| field lens | f 43 mm, 21 mm | AR | 1 | reimages the pupil (7.5-7.8 mm as traced) 32 mm behind it |
-| camera A | sCMOS 2048×2048, 6.5 µm (13.3 mm): 1155 raw pixels across the 7.5 mm pupil image, binned 3 to 385 or 6 to the modeled 193 | — | 1 | every configuration's pupil image |
+| field lens | f 43 mm, 21 mm, at the seed station 10.8 mm past the focus (the null-tuned station 39.8 mm back bowled the pupil image; slide 15) | AR | 1 | reimages the DM, 9.8 mm across on the full 96 mm beam (7.8 mm on the record's 77 mm beam), 38 mm behind it |
+| camera A | sCMOS 2048×2048, 6.5 µm: 1500 raw pixels across the 9.8 mm pupil image, binned 4 to 377 (26 µm); or a 24 µm-pixel camera unbinned (408 across); both to be priced by the runner | — | 1 | every configuration's pupil image |
 | mounts, bench | 2 m × 1 m table; 103 mm mounts on the node parts, 25 mm clearance | — | — | the 22.5° layout clears every part |
 ~ The detector leg (focuser, mask seat, field lens, camera) is focused once and shared; only the mask seat's contents and what follows the field lens change between configurations.
 
@@ -296,11 +296,12 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | pinhole with a shutter frame | 480 nm and beyond (1.02 / 1.06 / 1.13 at 120 / 240 / 480) |
 | P/SRI | 480 nm and beyond (within 1% at 100) |
 | interferometer, lens rig | 322 nm single site; 480 and beyond on the grid |
+| the sensors on the mirror rig, 385 px (Zernike stepped / vector / pinhole) | 36 / 59 / 52 nm: the lens rig's numbers |
 ::: right
 - **Why the sensors age:** their reference is made from the beam's own core, and the core changes with the surface.  Past 100 nm rms (2 rad of phase) the core collapses and the reading goes blind.
 - **The shutter frame fixes the pinhole's version of this:** measuring the reference by itself each state removes the surface dependence, for one more frame.
 - **Re-measuring the matrix on the surface restores every reading's gain** to within 5% at 60-160 nm — at a photon price (next slide).
-~ Run tags cap385, cap385p, pdi193state, lens_deck, oap_deck; 385 pixels per pupil, 47 sites (52 for the interferometer).
+~ Run tags cap385, cap385p, pdi193state, lens_deck, oap_deck, oapsens385 (the mirror rig at 385 px, the Mac); 385 pixels per pupil, 47 sites (52 for the interferometer).
 
 ## Capture range, second half: the photon price of working off null | The matrix re-measured on the surface holds the gain; the light for 1 pm then rises 5-40× for the self-referenced sensors and not at all for the P/SRI
 ::: full
@@ -417,9 +418,10 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | capture with unwrapping | stalls from 60 nm | 3 pm from 200 nm in 19 cycles | 3 pm from 300 nm in 43 cycles |
 | vector Zernike, 100 nm pokes (fold gate) | 19.6 pm, fails | 634 pm raw; 0.054 pm calibrated: passes | 0.05 pm |
 | stepped pinhole, 100 nm pokes | 94 pm, fails | 0.27 pm: passes | 1.9 pm |
+| sensors' capture with unwrapping (vector / pinhole / stepped) | — | 3 pm from 60 nm in 21 / 19 cycles; from 100 nm both diverge; the stepped reading never (its one-frame estimate past the fold) | — |
 - **The vector pair's raw error on the mirror rig is channel amplitude imbalance from the metal folds** (1.08 between its two circular channels on bare aluminum; a quarter-wave overcoat halves the error), not channel phase; calibrating the two channels removes it.  The rows hold uncalibrated on every coating.
 - **Closed:** the raw interferometer reading wraps between 60 and 120 nm of surface on both rigs, lens and mirror alike (a base the four-step cannot follow reads λ/2 ÷ √12 = 91 nm rms, measured 89-92 on both); the capture range is set by the reading, not the optics, and unwrapping restores it.  The detector leg here is the geometric seed; the tuner's winner is now gated against the seed through the same estimator, so a leg that does not read cannot be handed to a bench.
-~ Run tags oapifo2, oapifol2, oapdesc2, oapsens22, vqw22, vmap22, oapuw2, lensuw2, oaploop22; tg_psi_dm96_oap/REPORT_reflective.md (TO, 2026-09-16).
+~ Run tags oapifo2, oapifol2, oapdesc2, oapsens22, vqw22, vmap22, oapuw2, lensuw2, oaploop22, oapcap22 and oapsens385 (the Mac, 2026-09-16); tg_psi_dm96_oap/REPORT_reflective.md (TO, 2026-09-16).
 
 ## What can spoil each reading, priced | Every systematic we could model is either calibrated by the response matrix measured through the sensor, or shown small; one line per approach
 ::: full
@@ -501,6 +503,19 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **More drift in the loop:** actuator hysteresis and creep, command quantization (14-16 bits: 0.1-0.5 nm steps as a floor), influence-function error, vibration within a stepped scan.
 - **The error budget in the JPL form:** per reading, fixed terms after calibration, drift terms weighted by the servo bandwidth, noise terms in quadrature, to a held error at a stated light and time.  This deck's comparison table is its first column.
 ~ The telescope-level version of this (an allocation table rolled through the sensitivity model, then the closed-loop predictor) is being planned separately; it is a later add to this deck.
+
+## Next: the interferometer redone on the improved bench | Three defects of the modeled bench were found and fixed on 2026-09-17: the record's numbers describe a bench we will not build, so they are being redone on the one we will
+::: left
+- **The beam is the DM now:** the record's beam was the source cone, 77 mm on lenses and 82 on mirrors on a 96 mm mirror, the outer actuator rings unlit; the baffle is opened and the aperture sits on the DM.
+- **The lens rig is collimated for real:** the record's source sits 14 mm inside its collimator's focus (41 waves of curvature across the beam); the source moves to the focus and both lens figures are re-solved.
+- **The detector leg keeps its pupil image:** the field lens stays at the seed station, its figure and the camera trim tuned on the interferometer's own reading (the recovered surface), not on the flat-mirror null; the camera at the image surface's mean.
+- **Substrates in every deck** (previous slides), a larger-pixel camera priced.
+::: right
+- **Redone on both rigs, the Mac carrying the mirror rig:** rows on the 30 nm surface, station figures, pupil image, capture ladders and their photon price, photons for 1 pm, servo, descent, window placement, alignment sensitivities, the plates and the polarization at the built angle, the vector pair; each gated against the record.
+- **The engine's own plane-to-plane propagation of the detector leg** (the coronagraph model's reference surfaces, every leg propagated) validated leg by leg on the collimated bench, then set beside the zone-PSF model on the pupil slides; once it holds it is the full physical model for the sensors' legs too.
+- **The coronagraph field servo resumes after this** (its prescription step corrected twice; the next steps unchanged).
+- **Expected movement:** the lens rig's rows and station figure improve; the pupil image grows to 9.8 mm; all 96×96 actuators in the lit set; the mirror rig's rows move only with the beam.
+~ The interim report of 2026-09-18 carries the current record, labeled; the redo lands in its next revision.  Plan: BRIEF_to_tg_redo.md (packages A0, A, B, C); tools tg96_pupilsim, tg96_pupil_options, tg96_pupil_s2s.
 
 ## How every configuration was analyzed | One repeatable path, ten steps, the same for all four approaches: a new sensor is a new reading class in the shared runner plus its gate, then steps 4 to 10 unchanged
 ::: left
