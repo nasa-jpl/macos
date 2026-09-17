@@ -566,9 +566,13 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | 1 nm on a 112-site grid | 0.754 / 61.5 pm / 135 | 0.981 / 4.5 pm / 309 | 0.999 / 4 pm |
 | capture to 10%, single site / grid | 480 nm and beyond / outside at the first rung | 480 and beyond / 480 and beyond | 322 / 480 and beyond |
 | pupil image on the 96 mm beam | 9.5 mm (341 px) | 11.1 mm (384 px) | 7.8 / 8.0 mm |
+| pupil imaging on these decks (tg96_pupilsim): image surface vs the camera / Nyquist gain / distortion / 30 nm surface error | within ±0.3 mm / 0.9999 / 0.008 mm / 0.08 nm | within −0.6 to +0.4 mm / 0.9996 / 0.72 mm (the parabola pair's mapping) / 0.10 nm | tuned tail: 2.6 to 6 mm / 0.954 / 0.27 mm / 1.2 nm |
+| the sensors on the mirror rig at 385 px, substrates in: stepped-Zernike rows, single / grid | — | 0.993 / 5 pm; 0.995 / 4 pm | 0.991 / 4; 0.999 / 4 (no substrates) |
+| the sensors' capture to 10%: stepped / vector / pinhole | — | 35 / 51 / 42 nm | 36 / 59 / 52 nm (no substrates) |
 - **Read it as the redo's justification:** with the 10 mm plates and the 2 mm windows in, the seed tail's null on the lens rig's misfed collimator reaches 92 nm, a third of a wave of wavefront, and the 112-site row at 1 nm falls to 0.75 through the fold, while one actuator still reads to 1 pm.  Package A (the collimator at its focus, the tail tuned on the reading) is what restores it; the mirror rig, already fed at its focus, holds its rows at 0.98 to 0.99 with a 26 nm fixed-pattern null the reference frame removes.
+- **The pupil image is not what limits either rig:** on the seed tail with the substrates in, the DM images within a third of a millimeter of the camera on lenses (0.9999 at the actuator Nyquist, 0.08 nm on the working surface) and within 0.6 mm on mirrors; the lens rig's 92 nm null is the plate's spherical aberration and the misfed collimator, not the imaging.  **The mask plate costs the sensors a little capture** (vector 59 to 51 nm, pinhole 52 to 42) and no gain.
 - **One clearance line moved:** with the thicker plates and the larger beam the compensator sits 16 mm from the source beam against the 25 mm rule; it moves down the DM leg in the redo.
-~ Run tags sub96_lens, sub96_oap (the Mac, RUNBOOK_mac_cycle3a); the pupil stage and the sensors at 385 on these decks follow.
+~ Run tags sub96_lens, sub96_oap, pupilsim_sub96_lens, pupilsim_sub96_oap, sub96_oapsens (the Mac, RUNBOOK_mac_cycle3a, 2026-09-17).
 
 ## Backup: the interferometer on the mirror rig | Open loop it reads; in a servo it does not hold, and from a large start it does not capture
 ::: left

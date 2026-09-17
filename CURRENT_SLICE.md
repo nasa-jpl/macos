@@ -352,7 +352,14 @@
 > (23131f6 + working-tree edits; redoseq chain running the lens tail tune on
 > the reading objective) -- NOT pushed; do not launch MATLAB here while its
 > chain runs (my smoke delayed it ~10 min).  The Mac next: jobs C and D of
-> RUNBOOK_mac_cycle3a, then redo96_* once package A passes and is pushed.  Standalone paraxial chain (`fourier` true) works as
+> RUNBOOK_mac_cycle3a, then redo96_* once package A passes and is pushed.
+> Jobs C+D landed (d4159da): the pupil stage on the sub96 decks is near-perfect
+> on both rigs (lens 0.9999 / 0.008 mm / 0.08 nm; mirrors 0.9996 / 0.72 / 0.10)
+> -> the lens rig's 92 nm null is the plate's W040 + the misfed collimator, not
+> the imaging; sensors at 385 with the mask plate (MASK_TRIM 0.632, the first
+> launch died 'mask plane not focused' at 0): rows hold (S 0.993/0.995),
+> capture S 35 / V 51 / P 42 (was 36/59/52).  Deck backup slide + brief
+> section 7 updated; deck 54 slides synced.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
