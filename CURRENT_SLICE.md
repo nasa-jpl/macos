@@ -217,9 +217,16 @@
 > leg has none before the detector (the DM's image by L2 is virtual, 876 mm
 > past the focus) -> the seed is the undiffracted DM pattern; the sandwich
 > centered on the seat marker (5.5 mm off focus) seeds 54 waves of defocus.
-> NEXT: the CTB station-to-station form (every leg from the DM propagated,
-> zElt conventions validated leg by leg on the flat pupil + a known
-> defocus), half a day.  Standalone paraxial chain (`fourier` true) works as
+> The station-to-station form was BUILT (`tg96_pupil_s2s.m`: 4 collimated
+> NFPlane pairs, the Rx_Coro quartet with asymmetric radii, the lens per
+> index, an exit sphere + NFS1surf, 4 zElt conventions x a 10 mm defocus
+> discriminator).  Lens rig: cannot work -- its collimated space carries 41
+> waves (collimator fed 25 mm inside its focus), the rays walk off the grid
+> between NF legs (1.5 waves of spurious aberration at S1, a 10x focal
+> spot).  Mirror rig (fed at the focus): runs but wrong -- the quartet's
+> far-side pupil 20% small vs the rays; no convention gives a gain map.
+> NEXT (half a day): the focal spot after the entrance sphere, the far
+> sphere's pitch bookkeeping, the exit step alone with a known defocus.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
