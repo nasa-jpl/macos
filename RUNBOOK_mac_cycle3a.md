@@ -85,12 +85,16 @@ worst, distortion < 0.01 mm rms) on both rigs, now with the substrates in.
 
 ```bash
 cd ~/dev/MACOS_resources/mmacos/templates/40_benches/zwfs_dm96
-OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'bench.SRC_AT_FOCUS',true,'bench.MASK_TRIM',0,'mask.v_arm','engine','battery.calib_surface','base'"
+OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'bench.SRC_AT_FOCUS',true,'bench.MASK_TRIM',0.632,'mask.v_arm','engine','battery.calib_surface','base'"
 ZWFS_NOWAIT=1 nohup ./zwfs_batch.sh sub96_oapsens "$OAPZ,'MODEL',2048,'NGRID',385,'param_file','macos_param_2048.txt','readings',{'S','V','P'},'stages',{'bench','battery'},'battery.rows',{'base/single','base/grid','base/rand'}" > runs/sub96_oapsens.nohup 2>&1 &
 ```
 (the cycle-2 `oapsens385` job with the sheet's new defaults: the mask plate is in the
 converging beam now, the plates under the polarizing elements, the coating protected
-aluminum.)  Report lines: `grep -h 'capture range\|rand30/single10\|rand30/grid\|camera: pupil' runs/sub96_oapsens/sub96_oapsens_report.txt`.
+aluminum.  **`MASK_TRIM` 0.632, not 0:** the 2 mm fused-silica mask plate moves the
+focus 2 (1 - 1/1.4585) = 0.63 mm downstream and the builder leaves the mask where it
+was, so with 0 the runner stops at `dmg_zwfs_gauge: mask plane not focused` -- the
+first launch did exactly that.  0.632 is the mirror rig's seat as TO's package A
+solves it with the plate in.)  Report lines: `grep -h 'capture range\|rand30/single10\|rand30/grid\|camera: pupil' runs/sub96_oapsens/sub96_oapsens_report.txt`.
 
 ## Harvest
 
