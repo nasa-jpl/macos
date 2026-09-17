@@ -32,6 +32,17 @@ only the rig and the stages.
 > Either way the mirror rig's own optics are unchanged by package A (a parabola
 > fed at its focus was already exact); what moves on that rig is the mask seat,
 > the beam radius and the tail's DET_TRIM.
+>
+> **ONE LINE IN JOB D IS NOW WRONG WHICHEVER WAY YOU GO.**  `OAPZ` passes
+> `'bench.MASK_TRIM',0`, which OVERRIDES the zwfs sheet's `'scan'`.  That was
+> right while the mask had no substrate; with the decided 2 mm mask plate the
+> focus moves `t(1-1/n)` = 0.63 mm, and the ZWFS's mask IS the optic -- its
+> dimple has to sit AT the focus, unlike the interferometer's marker.  Measured
+> on the tg96 mirror rig, whose seat is the same geometry: 0.631902 mm against
+> the plate's 0.6285.  **Drop `'bench.MASK_TRIM',0` from `OAPZ`** and let the
+> sheet's `'scan'` re-find it (that is exactly what the scan exists for), or
+> pass 0.632.  Leaving it at 0 seats the dimple 0.63 mm off focus and the
+> sensors' numbers will be quietly worse.
 
 ## Setup (pull first: the sheets changed)
 
