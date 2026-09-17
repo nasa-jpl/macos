@@ -359,7 +359,17 @@
 > the imaging; sensors at 385 with the mask plate (MASK_TRIM 0.632, the first
 > launch died 'mask plane not focused' at 0): rows hold (S 0.993/0.995),
 > capture S 35 / V 51 / P 42 (was 36/59/52).  Deck backup slide + brief
-> section 7 updated; deck 54 slides synced.  Standalone paraxial chain (`fourier` true) works as
+> section 7 updated; deck 54 slides synced.
+> 13:30 TO: PACKAGE A PASSED both rigs (resources d1a3b57 + 12 commits,
+> LOCAL): lens Nyquist 1.0000, 30 nm surface to 42 pm (record's tuned 1.22
+> nm), cross-talk 0.005; mirrors 0.9994 / 92 pm; certified at 129 rays.
+> Distortion gate withdrawn (the OAP pair's 0.72 mm mapping).  Emitted tags
+> redo_lens / redo_oap, tails redo_*_tail.mat; TO's follow-ons (redotail:
+> seed tail on the same bench, own-cone check, null decomposition) then
+> package B.  Deck slide 41 + brief section 8 updated.  RUNBOOK_mac_cycle3b
+> written (package C first cut: DECK both rigs on the redo tails, sensors
+> at 385 with the sheet's MASK_TRIM 'scan'); PRECONDITION: TO's commits
+> pushed (Dave's word).  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
