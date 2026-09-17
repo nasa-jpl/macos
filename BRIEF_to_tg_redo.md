@@ -289,3 +289,18 @@ holds 0.98-0.99 with a 26 nm fixed-pattern null: its package-A change is the DET
 alone, as planned.  Package A0 detail: the compensator moves down the DM leg
 (D_BS_CMP) to restore the 25 mm margin against the 56 mm beam.  Jobs C (pupil stage on
 these decks) and D (the sensors at 385 on the mirror rig) follow on the Mac.
+
+Jobs C and D landed (resources d4159da).  **Pupil stage on the sub96 decks** (seed tail,
+substrates, 96 mm beam): lens rig -- image surface within +-0.3 mm of the camera,
+band-edge phase 0.017 rad max, Nyquist gain 0.9999, distortion 0.008 mm rms, working
+surface 0.075 nm; mirror rig -- within -0.6..+0.4 mm, 0.030 rad, 0.9996, 0.72 mm (the
+parabola pair's mapping), 0.10 nm.  So the pupil imaging is solved on both rigs by the
+seed station alone; the lens rig's 92 nm null is the mask plate's spherical aberration
+plus the misfed collimator, which package A addresses.  **Sensors at 385 on the mirror
+rig with the substrates** (`sub96_oapsens`, MASK_TRIM 0.632): stepped-Zernike rows
+0.993 / 5 pm (single) and 0.995 / 4 pm (grid), against 0.991 / 4 and 0.999 / 4 without
+the plate; capture to 10% S 35 / V 51 / P 42 nm (36 / 59 / 52 before): the mask plate
+costs the self-referenced sensors 15-20% of capture and no gain; the pinhole's 100 nm
+poke gate 3.5 pm (0.2 before), still passing; the vector pair's uncalibrated error
+408 pm (633 before).  Package A0 stands as decided; the plate's spherical aberration is
+part of the bench and the tail tune runs with it in.
