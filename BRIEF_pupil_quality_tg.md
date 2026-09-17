@@ -173,3 +173,16 @@ through reference surfaces in the .in file), run-it-yourself
    zElt conventions validated leg by leg.  **Rule:** now, or after Friday's
    report.  Until then the zone-PSF model is the result of record, with the
    paraxial standby chain as its check.
+   **Later the same day:** the station-to-station chain was built
+   (`tg96_pupil_s2s.m`).  On the lens rig of record it cannot work: that
+   rig's collimated space carries 41 waves of curvature (the collimator fed
+   25 mm inside its focus), the rays walk off the propagation grid between
+   the NFPlane legs, and the per-index lens phase lands on the wrong pixels
+   (1.5 waves of spurious aberration, a 10x focal spot).  The mirror rig of
+   record is fed at the focus; the chain is being validated there.
+   On the mirror rig (truly collimated) the chain runs but is not yet right:
+   the quartet's far-side pupil reads 20% small against the rays and the
+   readout is not a gain map under any convention.  Next checks are listed in
+   REPORT_bench_realism section 7 (the focal spot after the entrance sphere,
+   the far sphere's pitch, the exit step alone with a 10 mm defocus).  Half a
+   day more; the zone-PSF model stands as the result of record meanwhile.
