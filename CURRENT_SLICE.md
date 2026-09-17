@@ -227,13 +227,49 @@
 > <0.06), phase gain 0.9997 worst (gate >=0.998), image surface flat to 0.7 mm,
 > distortion 0.023 mm rms (the brief's 0.01 came from the UNcollimated bench;
 > the same table already showed collimation RAISING distortion), null 59.3 nm.
-> **IN FLIGHT:** `runs/redoseq.sh` (detached chain, ~3 h from 10:24): lens tail
+> **TWO CORRECTIONS, 12:30 (both found because the mirror rig's DET_TRIM tune
+> moved the detector the WRONG WAY against the brief's -0.6 mm prediction).**
+> (1) MY DEFECT, caught before any deck of record was emitted: `MASK_TRIM` was
+> ONE global sheet field, so the lens rig's +1.2318 seat (its plano singlet's
+> principal plane + the mask plate + residual SA) was being applied to the
+> MIRROR rig, whose parabola has none of it -- 0.69 mm wrong, OUTSIDE package
+> A's own 0.5 mm gate.  Fixed: anything in `P.oap.*` overrides its `P.bench.*`
+> namesake when `optics=='oap'`, in `tg96_run` stage_B_ AND `tg96_tail`.
+> (2) A REAL consequence of the substrates: `POL_IN 'source'` puts the input
+> polarizer's 2 mm plate in the DIVERGING leg, and a plane-parallel plate
+> displaces the apparent source `t(1-1/n)` = 0.63 mm ALONG the light -- so the
+> parabola is fed inside its focus and its "collimated" space carried 0.70
+> waves (1.710e-05 rad rms).  `tg96_collimate` now solves the source station
+> for the mirror rig (1-D): **`P.oap.SRC_TRIM` -0.370629 -> 1.358e-08 rad rms,
+> 0.00 waves**, and then **`P.oap.MASK_TRIM` 0.631902 == the mask plate's own
+> `t(1-1/n)` 0.6285 to three figures** (before the source fix it read 0.5393:
+> the defocus was being paid for at the seat).  Also flagged outward:
+> RUNBOOK_mac_cycle3a job D's `OAPZ` passes `'bench.MASK_TRIM',0`, which
+> OVERRIDES the zwfs sheet's `'scan'` -- with the mask plate in that seats the
+> ZWFS DIMPLE (which unlike the IFO's marker IS the optic) 0.63 mm off focus.
+> **IN FLIGHT:** `runs/redoseq.sh` (detached chain, RESTARTED 12:32 on the
+> corrected sheet) + `runs/redotail.sh` (waits for it, then `redoseq2.sh` =
+> the seed tail on the SAME bench + the own-cone pupil check, then
+> `nullab.sh` = where the 59 / 73 nm nulls come from).  Original chain plan: lens tail
 > tune (tag lens96) -> mirror tail (oap96, DET_TRIM alone) -> both rigs
 > re-emitted as `redo_lens` / `redo_oap` (stages clearance/bench/figs, on
 > `redo_<optics>_tail.mat` copies so the record's lens_tail.mat/oap_tail.mat
 > stay put until the gate passes) -> the pupil stage on each EMITTED deck =
 > package A's gate record.  Watch: `runs/redoseq.nohup`, `runs/tail_*.log`.
-> **NEXT:** harvest the chain into REPORT_bench_realism section 8 (8.3/8.4),
+> **LENS TAIL DONE (12:21):** `FL_Kc` -2.11278 -> **-7.77234**, `DET_TRIM`
+> 1.8606 -> **1.9951**, station HELD; band-edge phase 0.0122 -> **0.0000** rad
+> rms, zone image surface 0.7 mm of departure -> **0.002 mm**, astig split
+> 0.146 -> 0.056, worst Nyquist gain 0.9997 -> **1.0000**, distortion 0.023 ->
+> 0.041 mm.  **Winner gate KEPT it at winner/seed = 0.9970** -- and that is the
+> honest reading: the row gate cannot separate the two tails, so what the tune
+> bought is the pupil IMAGE, not the reading.  Put to Dave in REPORT 8.4 as a
+> TRADE (a 0.24-wave stronger asphere on the field lens for a flat pupil image
+> and no measurable reading change; the seed tail is the simpler part and
+> passes the same gate).  The null did not move on ANY of the 109 evals
+> (59.3168 nm): with the station held both free knobs are blind to an arm
+> DIFFERENCE.  Report sections 8.1-8.5 written; `runs/harvest_redo.sh` prints
+> the gate record under its run tags.
+> **NEXT:** harvest the chain into REPORT_bench_realism section 8 (8.6),
 > copy the accepted tails onto `lens_tail.mat`/`oap_tail.mat`, then package B
 > (tg96_pupil_s2s leg by leg on the improved bench: the collimated legs to
 > <0.02 wave, the quartet's Airy spot and its far-side pupil radius -- 20%
