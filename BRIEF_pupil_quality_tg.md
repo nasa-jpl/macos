@@ -4,30 +4,32 @@ CCL for Dave, 2026-09-16.  Plan only; nothing built.  Owner: CCL builds the
 stage (a day), runs on the Mac (cycle 3) or this box when TO's field-servo
 runs leave it free.
 
-## 1. The question, and two ways to ask it
+## 1. The question, and the formulation: the DM is the stop
 
 Fang asks how well the interferometer's camera sees the DM: is a poked
 actuator imaged sharply, in the right place, at the right size, over the
-whole 96 mm?  The detector leg (focuser L2, the internal focus, the field
-lens, the camera at the pupil image) is the imaging system; the DM is its
-object; the aperture at the internal focus is its stop.  Two equivalent
-formulations, and they use the same deck:
+whole 96 mm?  The thing being imaged is the DM, so the DM is the aperture
+stop and the entrance pupil (Dave's ruling 2026-09-16), and the camera
+plane is its exit pupil.  The rodgers2 form then applies without change: a
+collimated source launched at the DM with the DM's clear aperture as the
+stop, tilted about the DM by a field angle theta, and two things scored:
 
-- **(B) Dave's, the rodgers2 form:** a collimated source at the DM, the
-  entrance pupil AT the DM, tilted about it by a field angle theta, scored
-  at the interferometer's focal plane (the mask seat).  A tilt theta at the
-  DM is a spatial frequency f = theta / lambda on the DM surface, so the
-  focal-plane image quality over the field of tilts IS the transfer of the
-  pupil image, frequency by frequency: a spot that blurs or walks at angle
-  theta is a DM frequency f that the camera sees attenuated or shifted.
-- **(A) the direct form:** point sources ON the DM (a grid of DM
-  positions), each radiating into the cone the tail accepts, imaged at the
-  camera: the point-spread function of the pupil image in DM millimeters,
-  its distortion against the runner's ray affine, and its wavefront.
-
-(B) is what the rodgers2 tools score without change; (A) is the picture
-Fang will recognize.  Run both from one stage; report (B) as the
-assessment and (A) as its illustration.
+- **at the camera, the pupil image itself:** the exit-pupil surface from
+  `macos.xps` + `macos.pupil_quality` (the index-matched exit rays at two
+  fields cross at the image of that DM zone; the cloud's fit gives the
+  image's defocus and astigmatism in mm, its low-order shape); the
+  crossing position of every zone against its DM coordinate times the
+  magnification (the pupil distortion map, in DM millimeters, against the
+  runner's single global affine); and the crossings' spread over the band
+  of field angles (the pupil blur per zone, in DM millimeters, against the
+  1 mm pitch and the 0.2 mm detector pixel).  This is the direct picture
+  Fang will recognize, and it needs no second source form.
+- **at the focal plane (the mask seat), the rodgers2 set per tilt:** spot,
+  strict wavefront, centroid against focal length times angle, pupil
+  wander.  A tilt theta at the DM is a spatial frequency theta / lambda on
+  its surface, so this is the pupil image's transfer, frequency by
+  frequency, and the edge-only rule applies: quote the worst tilt in the
+  actuator band.
 
 ## 2. Numbers that size the scan (from the bench of record, lens rig)
 
@@ -52,41 +54,35 @@ pitch and the 0.2 mm detector pixel.
 ## 3. The stage: `tg96_run` stage 'pupilq' (sheet-driven, per Dave's rule)
 
 `P.pupilq` knobs: `tilts` (rad, default `[0 0.5 1 2 3.2 10]*1e-4` on two
-azimuths), `dm_grid` (points on the DM for form A, default 5 x 5 over the
-lit 96 mm), `na_stop` ('fieldlens' | a radius in mm at the focus), `rig`
-('lens' | 'oap'; both run), `tail` (the tail of record per rig: the tuned
-lens tail; the geometric seed on the mirrors).
+azimuths), `zones` (the DM grid the crossings are reported on, default the
+lit 96 x 96 binned to 12 x 12), `rig` ('lens' | 'oap'; both run), `tail`
+(the tail of record per rig: the tuned lens tail; the geometric seed on the
+mirrors).
 
 1. **The deck.**  The runner's emitted test-arm deck with everything
-   upstream of the DM removed and the source replaced: form B, a collimated
-   beam launched at the DM's station along its normal (zSource 1e22,
-   Aperture = the 103 mm beam), the DM as element 1 (its EP), the field
-   angle set per point by the chief-ray direction; form A, a point source
-   at each DM grid position with the cone the field lens accepts.  The DM
-   flat (the pupil imaging is about the tail, not the surface).  Reference
-   arm shuttered.  One deck per rig, emitted and committed (`runs/pupilq_
-   <rig>/pupilq_<rig>.in`).
-2. **Form B scores at the focal plane (the mask seat), per tilt, the
-   rodgers2 set:** the spot (rms radius, um, and in lambda F/D); the
-   wavefront referenced to the chief-tied sphere with piston and tilt
-   removed (the strict metric; nm rms; low-order Zernikes); the centroid
-   against F2 x theta (distortion, um and as a fraction); the exit-pupil
-   surface from `macos.xps` + `macos.pupil_quality` at the camera's pupil
-   return (defocus and astigmatism of the DM's image, mm) and its walk
-   with theta (pupil wander, um).  The edge-only re-score rule applies:
-   quote the worst tilt in the actuator band, not the mean.
-3. **Form A scores at the camera, per DM point:** the spot in DM
-   millimeters through the affine (the pupil-image PSF; against the 1 mm
-   pitch and the 0.2 mm pixel), the centroid against the affine's
-   prediction (pupil distortion map, um on the DM), the wavefront per DM
-   point (nm rms).  One map figure: distortion arrows + spot ellipses over
-   the DM, the runner's own figure.
-4. **Both rigs**, and for the lens rig both tails (the tuned tail of
-   record and the geometric seed) so the tuner's effect on the pupil
-   image is a number.
-5. **Report section + two figures** into `REPORT_bench_realism.md` (a new
-   section 6, "Pupil image quality"), the deck gets one slide in the
-   interferometer block: the form-A map with the form-B worst-tilt table.
+   upstream of the DM removed and the source replaced by a collimated beam
+   launched at the DM's station along its normal (zSource 1e22, Aperture =
+   the DM's clear aperture, 96 mm; `ApStop` at the DM so the DM IS the
+   stop), the DM flat (the pupil imaging is about the tail, not the
+   surface), the reference arm shuttered, the camera's pupil return as the
+   exit-pupil element for XPS.  One deck per rig, emitted and committed
+   (`runs/pupilq_<rig>/pupilq_<rig>.in`).
+2. **At the camera:** `macos.xps` at the pupil return for each tilt pair
+   about the nominal; `macos.pupil_quality` for the surface; the crossing
+   cloud mapped to DM coordinates through the ray history (each ray's DM
+   hit is its zone), giving the distortion map (crossing vs magnification
+   times zone, um on the DM) and the blur per zone (crossing spread over
+   the tilt band).  One figure: distortion arrows + blur ellipses over the
+   DM, the runner's own.
+3. **At the focal plane:** per tilt, the spot (rms radius, um and lambda
+   F/D), the wavefront referenced to the chief-tied sphere with piston and
+   tilt removed (nm rms; low-order Zernikes), the centroid against
+   F2 x theta.  One figure: the three against theta, both azimuths.
+4. **Both rigs**, and on the lens rig both tails (tuned and seed), so the
+   tuner's effect on the pupil image is a number.
+5. **Report section + the two figures** into `REPORT_bench_realism.md`
+   (section 6, "Pupil image quality"); the deck gets one slide in the
+   interferometer block: the distortion/blur map with the worst-tilt table.
 
 ## 4. What the answer looks like, and what would be a finding
 
@@ -104,8 +100,8 @@ from the 25-degree fold.  Both results are one table for Fang.
 
 ## 5. Cost
 
-Building the stage: a day of CCL (deck surgery, the two source forms, the
-scoring, the figure).  Running: form B is 12 tilts x 2 azimuths x 2 rigs of
-single traces at model 512 (minutes); form A is 25 point sources x 2 rigs
-(minutes); no battery, no loop.  The Mac can run it (cycle 3) the moment
+Building the stage: a day of CCL (deck surgery, the collimated source with
+the DM as stop, XPS per tilt pair, the zone mapping, two figures).
+Running: 12 tilts x 2 azimuths x 2 rigs of single traces plus the XPS
+pairs at model 512 (minutes); no battery, no loop.  The Mac can run it (cycle 3) the moment
 the stage is committed.
