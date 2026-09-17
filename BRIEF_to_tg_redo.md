@@ -222,7 +222,31 @@ waiting.
 3. C on this box (lens rig, one model-1024 MATLAB at a time).
 4. Deck + reports + brief closed; then item 7.
 
-## 6. Questions for Dave before this goes to TO
+## 6. Dave's rulings (2026-09-17 afternoon) -- this brief is now TO's
+
+0. **The substrate set of section 1b: YES, as proposed** (10 mm splitter and
+   compensator, 2 mm fused-silica plates under the five polarizing elements, the 2 mm
+   mask plate, 4 mm lens edges, protected aluminum on the parabolas by default).
+1. **The tail objective: whichever gives the best performance AS AN INTERFEROMETER.**
+   Not a weight between the null and the bowl: the objective is the reading itself.
+   Use the working-surface error the pupil stage measures (stage 2 of
+   `tg96_pupilsim`: the recovered minus true 30 nm surface, piston and tilt out; 1.2 nm
+   on the tuned tail, 0.06 on the seed) as the objective, or its stage-1 proxy where
+   the full stage is too slow inside a tune (the band-edge phase rms over the pupil,
+   40 s per evaluation; the two track each other in every case run today).  The null
+   is reported beside it, never optimized.  The winner gate (the single-actuator row
+   read through the ray affine) stays as the acceptance test.
+2. **Keep the L2 conic re-solve** in package A.
+3. **Camera: a camera with larger pixels.**  On the 9.8 mm pupil image the 385-px
+   budget wants a 25 um pixel.  Two ways, both to be priced by the runner's camera
+   report (`P.cam`): the sCMOS of record binned 4 (6.5 um -> 26 um, 377 px across the
+   image, what the record already does at 7.8 mm), or an unbinned large-pixel camera
+   (24 um class, 408 px).  Report both; the deck's camera line carries the chosen one.
+4. **The Mac's cycle-2 results are pushed** (oapcap22 and what followed); CCL folds
+   them into the deck as the record on the old beam, labeled; the redo supersedes
+   them.
+
+The original questions, for the record:
 
 0. The substrate set of section 1b, line by line (10 mm splitter and compensator, 2 mm
    fused-silica plates under the five polarizing elements, the 2 mm mask plate, 4 mm
