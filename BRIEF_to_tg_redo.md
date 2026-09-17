@@ -60,6 +60,33 @@ To add (work package A):
 
 Half a day.  Commit the builder and sheet changes before the first run of package C.
 
+## 1b. Substrates: decided and baked in before anything is emitted (work package A0)
+
+Today the decks of record carry IDEAL polarizing elements and no mask plate:
+`PLATE_SUB = []`, `MASK_SUB = []` in both sheets.  The substrates were PRICED as
+variants (sub22 / thk22 / item4bseq: splitter and compensator 10 mm, 2 mm fused-silica
+plates under the five polarizing elements, a 2 mm mask plate, 4 mm lens edges: rows
+hold at 1.00-1.01, the flat null 0.134 -> 20 nm re-tuned, the reading attenuated 13%
+by floor, not gain) and then left out of the defaults.  The redo bakes the decided set
+into the sheet defaults, so every emitted deck, render, station figure and parts list
+carries it.  Proposed set (Dave to confirm each line):
+
+| part | today's default | proposed default | where it shows |
+|---|---|---|---|
+| splitter and compensator plates | `BS_T` 1.5 x s = 2.6 mm | 5.833 x s = 10.0 mm (the realism set) | Rx faces, render, node clearance (the 1.39 mm shear), parts list |
+| input polarizer, both arm QWPs, output QWP, analyzer | ideal, zero thickness | `PLATE_SUB [1.4585 2.0]`: 2 mm fused silica each (two faces around each ideal element; stations downstream shift t/2 per plate, the tail absorbs) | Rx faces, render, station figure, parts list |
+| mask plate (the sensors' seat) | none | `MASK_SUB [1.4585 2.0]`, faces ahead of the sandwich's entrance sphere inside the gap (W040 + the t(1-1/n) focus shift, measurable) | sensors' Rx, render, parts list |
+| singlet edges (L1, L2, field lens) | `EDGE_MARGIN` 2.0 mm | 4.0 mm (a 113 mm singlet's edge) | Rx thickness, render |
+| OAP coating (mirror rig) | `coat_oap` per run ('none' for geometric rows; bareAl / protectedAl for the vector pair) | protectedAl (MgF2 quarter wave at 632.8 nm) as the default; 'none' only for the geometric equivalence gate | Rx coatings, the polarization rows |
+| lens AR coatings, camera window, DM window | not modeled | stay out (state it on the parts slide): the scalar record has no Fresnel loss; the vector mode carries the uncoated faces' loss (T 0.66) | -- |
+
+Package A0 is a sheet change plus one run of the pupil stage and the DECK stage on
+each rig to confirm the rows still hold on the substrates with the tail re-tuned on
+them (the tail's re-tune in package A runs WITH the substrates in).  The renders
+(`<tag>_render.png`, view_rx bodies on their real sag and thickness), the station
+figures and the deck's parts slides (6-8) are regenerated from the emitted decks;
+CCL carries the parts slides.  Half a day inside package A.
+
 ## 2. The physical-optics chain on the improved bench (work package B)
 
 `tg96_pupil_s2s.m` is the station-to-station form as the CTB emits it (four collimated
@@ -144,7 +171,7 @@ waiting.
 
 ## 5. Order, and what the Mac does
 
-1. A (bench, CCL + TO, half a day) -> commit -> the pupil stage on both emitted decks.
+1. A0 + A (substrates decided and baked in, then the bench: CCL + TO, a day) -> commit -> the pupil stage on both emitted decks.
 2. B (the physical-optics chain, TO, half a day to a day) in parallel with the first
    C runs on the Mac (mirror rig: DECK, station, ladder, noise, loop, descent -- the
    cycle-3 runbook).
@@ -152,6 +179,10 @@ waiting.
 4. Deck + reports + brief closed; then item 7.
 
 ## 6. Questions for Dave before this goes to TO
+
+0. The substrate set of section 1b, line by line (10 mm splitter and compensator, 2 mm
+   fused-silica plates under the five polarizing elements, the 2 mm mask plate, 4 mm
+   lens edges, protected aluminum on the parabolas by default).
 
 1. The tail objective's weight between the null and the image surface (proposed: a
    0.3 mm rms bowl = 1 nm of null).  Or drop the null from the objective and gate it
