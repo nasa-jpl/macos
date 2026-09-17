@@ -192,6 +192,40 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-17 (CCL): THE PUPIL IMAGE SIMULATED (Dave's ask), THE DM MADE THE
+> STOP, RIY runners.**  `tg_psi_dm96_oap/tg96_pupilsim.m` (runs pupilsim_lens /
+> pupilsim_oap; report section 7; deck slide 13 of 50; sheet block P.pupil;
+> RIY `tg96_pupil_batch.{m,sh}`; README block).  Stage 1: the leg's coherent
+> PSF per DM zone from the rays (41 tilts, 2-D over the band; the DM as the
+> stop keeps each ray on its zone to 2 um; the zone wavefront = defocus +
+> astig, higher orders 0.3 nm).  Stage 2: the DM field through the zone
+> PSFs (overlap-add), four-step readout.  RESULTS: every mode observable on
+> both rigs; lens rig as tuned Nyquist gain 0.99 center / 0.95 worst,
+> half-Nyquist and below within 0.3%, pokes 0.99, 30 nm surface back to
+> 1.2 nm; mirror rig 0.997 / 0.23 nm.  THE LENS RIG'S DETECTOR IS NOT AT
+> THE PUPIL IMAGE: 2.6 mm ahead on axis, 4-6 at the edge (the null-tuned
+> tail is blind to pupil defocus); +4.3 mm -> 0.993 worst, 0.4 nm.  THE BEAM
+> OF RECORD WAS THE SOURCE CONE (77 mm lens / 82 mirrors on the 96 mm DM;
+> nothing clips): Dave ruled the baffle must not constrain + an aperture on
+> the DM -> sheets changed (tg96_params, zwfs_params: R_BAFFLE 12.5->18,
+> D_LENS 60->66, R_TO_AP 30->28 = 48 mm); the simulation opens the baffle,
+> widens the cone x1.06 and puts the 48 mm aperture on the DM.  ENGINE
+> PLANE-TO-PLANE CHECK (Dave: reference surfaces in the .in, the CTB model):
+> `tg96_pupil_engine.m` built (mask sandwich + a sphere concentric with the
+> beam after the FL, NFS1surf to the detector); MEASURED that a
+> geometric-to-physical hand-off is exact only at a pupil conjugate and this
+> leg has none before the detector (the DM's image by L2 is virtual, 876 mm
+> past the focus) -> the seed is the undiffracted DM pattern; the sandwich
+> centered on the seat marker (5.5 mm off focus) seeds 54 waves of defocus.
+> NEXT: the CTB station-to-station form (every leg from the DM propagated,
+> zElt conventions validated leg by leg on the flat pupil + a known
+> defocus), half a day.  Standalone paraxial chain (`fourier` true) works as
+> a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
+> BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
+> record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
+> objective; the s2s chain now or after Friday).  Final reruns of both rigs
+> (corrected scoring) in flight at the time of writing; commit after.**
+
 > **2026-09-16 evening (CCL): PUPIL IMAGE QUALITY for Fang Shi DONE (due
 > 09-17).**  `tg_psi_dm96_oap/tg96_pupilq.m` (resources fd24ad9; runs
 > pupilq_lens / pupilq_oap; REPORT_bench_realism section 6; deck slide 12

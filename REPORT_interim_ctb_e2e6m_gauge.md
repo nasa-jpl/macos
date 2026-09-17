@@ -202,14 +202,29 @@ biases the gain 0.9% (7.5 degrees and 11.7% at the record's 45 degrees),
 with 1.4e-3 left after a measured matrix (aoi_lens22, aoi_oap22).
 
 Pupil image quality of the interferometer's camera (Fang Shi's request,
-2026-09-16; `tg96_pupilq`, the DM as the stop): a DM zone's image walks
-0.02-0.03 mm rms over the band of spatial frequencies the DM can make on
-either front end, so the camera sees the DM sharply; against a single
-global mapping the image is distorted by 0.13 mm rms and 0.30 mm at the
-edge on the lens rig and 0.45 / 0.85 mm on the mirror rig (the off-axis
-parabolas), which the measured response matrix absorbs and a geometric
-pixel-to-actuator map would not; the mirror rig's focus is exact on axis
-and coma-limited off it (2.3 lam F/D at the actuator-band tilt).
+2026-09-16; `tg96_pupilq` and `tg96_pupilsim`, the DM as the stop): the
+detector leg's coherent point-spread function was derived zone by zone from
+the engine's rays (a two-dimensional set of tilts over the actuator band;
+the zone wavefront is defocus and astigmatism to 0.3 nm) and the DM's field
+propagated through it with the interferometer's four-step readout.  Every
+DM mode is observable on both front ends.  On the lens rig as tuned the
+actuator-Nyquist gain runs from 0.99 at the center to 0.95 at the edge,
+half-Nyquist and below are within 0.3%, a single actuator reads at 0.99,
+and the 30 nm working surface comes back with 1.2 nm of error (4%, its
+Nyquist content); the mirror rig is at 0.997 worst and 0.23 nm.  The lens
+rig's detector sits 2.6 to 6 mm ahead of the pupil image surface (the tail
+was tuned on the flat-mirror null, which is blind to pupil defocus); moving
+it 4.3 mm downstream takes the worst gain to 0.993 and the surface error to
+0.4 nm, and the mirror rig's thin-lens conjugate is already within 1.3 mm
+of its image.  The distortion against a single global mapping (0.27 mm rms
+and 0.55 at the edge on lenses, 0.72 / 1.25 on the parabolas) is a mapping
+the measured response matrix absorbs, not a blur.  Two bench facts came
+out of the same work: the record's beam was the source cone, 77 mm on the
+lens rig and 82 on the mirrors on a 96 mm DM, so the outer actuator rings
+were unlit (the sheets now open the baffle and put the aperture on the DM;
+runs from 2026-09-17 carry the 96 mm beam), and the mirror rig's focus is
+exact on axis and coma-limited off it (2.3 lam F/D at the actuator-band
+tilt).
 
 Not yet modeled, stated on the slides: the camera (a 6.5 um sCMOS binned 3
 to the 385 modeled pixels across the traced 7.5 mm pupil image; well depth
