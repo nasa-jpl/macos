@@ -307,7 +307,16 @@
 > edit copy synced.  INTERIM DECK for Dave (~5 h from 15:00): this build.
 > NEXT for TO: BRIEF_to_tg_redo packages A0, A, B, C; CCL writes the Mac's
 > cycle-3 runbook once A lands.  Friday: the interim REPORT (current record,
-> labeled), style gate, .docx.  Standalone paraxial chain (`fourier` true) works as
+> labeled), style gate, .docx.
+> EVENING: Mac cycle 3a landed (resources b13cd38: sub96_lens, sub96_oap --
+> substrates in, 96 mm beam, seed tail, the record's collimator): lens rig
+> null 92 nm (!), single row 1.003/1 pm, grid row 0.754/61 pm (the fold);
+> mirror rig null 26 nm, rows 0.986/0.981 -> the case for package A in one
+> number (brief section 7; deck backup slide).  TO's package A is LOCAL
+> (23131f6 + working-tree edits; redoseq chain running the lens tail tune on
+> the reading objective) -- NOT pushed; do not launch MATLAB here while its
+> chain runs (my smoke delayed it ~10 min).  The Mac next: jobs C and D of
+> RUNBOOK_mac_cycle3a, then redo96_* once package A passes and is pushed.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
