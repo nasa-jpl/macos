@@ -60,12 +60,15 @@ Same lines with `redo96_oap`; the `Tail:` line must name `redo96_oap_tail.mat`. 
 
 ```bash
 cd ~/dev/MACOS_resources/mmacos/templates/40_benches/zwfs_dm96
-OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'mask.v_arm','engine','battery.calib_surface','base'"
+OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'bench.MASK_TRIM',0.632,'mask.v_arm','engine','battery.calib_surface','base'"
 ZWFS_NOWAIT=1 nohup ./zwfs_batch.sh redo96_oapsens "$OAPZ,'MODEL',2048,'NGRID',385,'param_file','macos_param_2048.txt','readings',{'S','V','P'},'stages',{'bench','battery'},'battery.rows',{'base/single','base/grid','base/rand'}" > runs/redo96_oapsens.nohup 2>&1 &
 ```
-No `SRC_AT_FOCUS` and no `MASK_TRIM` on the line: the sensor sheet now carries the
-collimation and RE-SCANS the seat per run (TO: `MASK_TRIM 'scan'`), which is what puts
-the mask plane on the focus with the plate in.  Report lines:
+No `SRC_AT_FOCUS` on the line (the sheet carries the collimation).  **`MASK_TRIM` 0.632
+explicitly:** the sheet's per-run seat scan (`'scan'`) converged on the Mac's first
+launch to -5.93 mm with a mask-plane peak of 2e-6 (the lens record's neighborhood,
+not a focus) and the run died; +0.632 mm is the mirror rig's seat with the plate in,
+the value cycle 3a passed at.  The scan's start and range on the mirror rig are TO's
+to fix (brief section 8).  Report lines:
 ```bash
 grep -n 'focal spot\|camera: pupil\|single10\|grid@1nm\|capture range to\|G5' runs/redo96_oapsens/redo96_oapsens_report.txt
 ```
