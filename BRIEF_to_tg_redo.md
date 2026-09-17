@@ -263,3 +263,29 @@ The original questions, for the record:
    larger image.
 4. The mirror rig's mask sensors (oapsens385, queued on the Mac on the old beam): let
    it run and label, or pull it into the redo.
+
+## 7. Mac cycle 3a landed (2026-09-17, resources b13cd38): the baseline, and what it says
+
+Substrates in, the 96 mm beam, the seed tail, the record's collimator (`sub96_lens`,
+`sub96_oap`, rows on the 30 nm surface, matrix on it):
+
+| | lens rig | mirror rig |
+|---|---|---|
+| flat-DM null | 92.4 nm rms | 26.3 nm |
+| 10 nm on one actuator | 1.003 / 1 pm / SNR 10645 | 0.986 / 2.2 pm / 6472 |
+| 1 nm on the grid (112 / 120 sites) | 0.754 / 61.5 pm / 135 | 0.981 / 4.5 pm / 309 |
+| capture to 10%, single / grid | 480+ / outside at the first rung | 480+ / 480+ |
+| pupil image | 9.54 mm (341 px) | 11.07 mm (384 px) |
+| clearance | compensator 16 mm vs 25 (1 of 6 node parts) | 1 of 5 node parts |
+
+Reading for package A: the seed tail on the MISFED collimator with the plates in gives a
+92 nm null (a third of a wave of wavefront); one actuator still reads to 1 pm but the
+multi-site row at 1 nm falls to 0.75 through the fold.  That is the case for the
+collimator fix and the reading-objective tune, in one number; the tuner's objective
+(the recovered surface) penalizes a wrapping null by construction, so no separate
+null term is needed -- but package A's gate must include the grid row at 1 nm on the
+30 nm surface (>= 0.98) beside the pupil numbers.  The mirror rig, fed at its focus,
+holds 0.98-0.99 with a 26 nm fixed-pattern null: its package-A change is the DET_TRIM
+alone, as planned.  Package A0 detail: the compensator moves down the DM leg
+(D_BS_CMP) to restore the 25 mm margin against the 56 mm beam.  Jobs C (pupil stage on
+these decks) and D (the sensors at 385 on the mirror rig) follow on the Mac.

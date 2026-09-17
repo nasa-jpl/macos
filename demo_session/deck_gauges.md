@@ -557,6 +557,19 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | hybrid | snapshot for the change, piezo for the absolute step | each half removes the other's error | the recommended form; its value is the absolute calibration more than drift immunity: the four-step already tolerates all three sequential terms in hold |
 ~ Run tags lens_deck_se2, lens_deck_se5, loop_lens_se2, loop_lens_cam, loop_lens_intra, tg_psi_dm, tg_psi_dm_v2.
 
+## Backup: the substrates in, the full beam, the seed tail (Mac cycle 3a, 2026-09-17) | On the bench as it will be built but before the collimator fix, the mirror rig reads; the lens rig's flat null grows to 92 nm on the record's misfed collimator and the multi-site row breaks, which is the redo's package A in one number
+::: full
+| rows on the 30 nm surface, matrix on it (four-step) | lens rig, seed tail, substrates in | mirror rig, seed tail, substrates in | the record (tuned tail, no substrates, 77 / 82 mm beam) |
+|---|---|---|---|
+| flat-mirror null | 92.4 nm rms | 26.3 nm | 0.13 nm lens / 0.03 mirrors |
+| 10 nm on one actuator: gain / error / SNR | 1.003 / 1 pm / 10645 | 0.986 / 2.2 pm / 6472 | 0.992 / 2.2 pm (lens), 0.992 / 2.4 (mirrors) |
+| 1 nm on a 112-site grid | 0.754 / 61.5 pm / 135 | 0.981 / 4.5 pm / 309 | 0.999 / 4 pm |
+| capture to 10%, single site / grid | 480 nm and beyond / outside at the first rung | 480 and beyond / 480 and beyond | 322 / 480 and beyond |
+| pupil image on the 96 mm beam | 9.5 mm (341 px) | 11.1 mm (384 px) | 7.8 / 8.0 mm |
+- **Read it as the redo's justification:** with the 10 mm plates and the 2 mm windows in, the seed tail's null on the lens rig's misfed collimator reaches 92 nm, a third of a wave of wavefront, and the 112-site row at 1 nm falls to 0.75 through the fold, while one actuator still reads to 1 pm.  Package A (the collimator at its focus, the tail tuned on the reading) is what restores it; the mirror rig, already fed at its focus, holds its rows at 0.98 to 0.99 with a 26 nm fixed-pattern null the reference frame removes.
+- **One clearance line moved:** with the thicker plates and the larger beam the compensator sits 16 mm from the source beam against the 25 mm rule; it moves down the DM leg in the redo.
+~ Run tags sub96_lens, sub96_oap (the Mac, RUNBOOK_mac_cycle3a); the pupil stage and the sensors at 385 on these decks follow.
+
 ## Backup: the interferometer on the mirror rig | Open loop it reads; in a servo it does not hold, and from a large start it does not capture
 ::: left
 | | lens | mirror rig, bare Al |
