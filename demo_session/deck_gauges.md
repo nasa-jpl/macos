@@ -30,18 +30,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **4** The bench layout
 - **6** Parts
 - **9** Twyman-Green interferometer
-- **13** Zernike sensor
-- **15** Vector Zernike sensor
-- **18** Point-diffraction sensor
-- **21** Performance: rows, capture, photons, servo
+- **15** Zernike sensor
+- **17** Vector Zernike sensor
+- **20** Point-diffraction sensor
+- **23** Performance: rows, capture, photons, servo
 ::: right
-- **27** Lenses versus off-axis parabolas
-- **28** The reflective front end and its performance
-- **30** Comparison and recommendation
-- **33** Complex amplitude
-- **34** Summary and future work
-- **39** Run it yourself
-- **40** Backup
+- **29** Lenses versus off-axis parabolas
+- **30** The reflective front end and its performance
+- **32** Comparison and recommendation
+- **35** Complex amplitude
+- **36** Summary and future work
+- **41** Run it yourself
+- **42** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -163,6 +163,28 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **Method:** the DM declared the stop; the field a tilt about it (a spatial frequency on its surface); two traces a small field step apart cross at each zone's image at the camera; scored in DM millimeters against the 1 mm pitch and the 0.4 mm pixel.
 - **The mirror rig's focus is perfect on axis and coma-limited off it** (2.3 λF/D at the actuator-band tilt); not a pupil-image or mask-sensor cost, a number to know for any off-axis reading at the seat.
 ~ Run tags pupilq_lens, pupilq_oap (tg96_pupilq, model 512); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.
+
+## The question: must the pupil imaging be simulated, and how? | Is it possible or even necessary to simulate the effect of the pupil imaging geometry on the pupil images of the DM?  Convolve the pupil image with the complex amplitude?  (Dave, 2026-09-16)
+::: full
+- **The right model is coherent imaging:** the field at the camera is the field at the DM convolved with the complex point-spread function of the detector leg; equivalently, the leg's transfer function at a DM spatial frequency is the aperture function at the matching focal-plane position, phase included.  A convolution of the intensity image would be wrong; a convolution of complex amplitudes is the Fourier statement of the same thing.
+- **For the mask sensors it is already in the runner:** the mask sandwich propagates the field to the seat, applies the mask, and propagates back to the pupil image, mask shape and all.
+- **For the interferometer the aperture at the focus is wide** (the field lens, 21 mm at F/4.2: a coherent resolution of 13 µm at the DM against a 1 mm pitch), so the leg's resolution is not the question.  What is: the phase of the transfer function over the actuator band, set by how far each zone's image lies from the camera plane.  That is simulated on the next slide.
+- **When a small field stop sits at the focus** (a spatial filter of a few λ/D), the pupil image is low-pass filtered and actuator responses blur; then one aperture element at the seat through the existing sandwich answers it in one run.
+~ The answer as given on 2026-09-16, before the simulation; the next slide supersedes its "not needed" with numbers.
+
+## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode is observable; the lens rig's camera is not at the pupil image, and 4 mm fixes it
+::: left
+![Phase gain (recovered over true) versus pupil radius on the lens rig for DM sinusoids at 2, 4, 8 and 16 mm period, at the camera plane as built (left) and 4.3 mm downstream (middle); right, the amplitude cross-talk the four-step ignores.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_lens/pupilsim_lens_gain.png){h=3.1}
+::: right
+| gain at the actuator Nyquist (2 mm) | center | edge | worst | 30 nm surface, error |
+|---|---|---|---|---|
+| lens rig, camera as built | 0.990 | 0.973 | 0.954 | 1.2 nm |
+| lens rig, camera +4.3 mm | 0.997 | 0.998 | 0.993 | 0.4 nm |
+| mirror rig, as built | 1.000 | 0.999 | 0.997 | 0.2 nm |
+- **How:** the DM the stop; 41 tilts over the actuator band; each zone's image walk integrates to its wavefront (defocus and astigmatism to 0.3 nm), whose transform is the zone's complex PSF; the DM field filtered zone by zone, the reference arm through the same leg, angle of the product read as the surface.
+- **The image is a bowl the camera sits ahead of** on the lens rig: 2.6 mm on axis, 6 mm at the edge (the tail was tuned on the flat-mirror null, which cannot see pupil defocus).  The mirror rig's thin-lens seat is within 1.3 mm of its image.
+- **The beam of record under-filled the DM** (77 / 82 mm of 96): the baffle is now opened and the aperture sits on the DM; runs from 2026-09-17 carry the full 96 mm.
+~ Run tags pupilsim_lens, pupilsim_oap (tg96_pupilsim; run it yourself: tg96_pupil_batch.sh both); REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
 
 ## Zernike sensor: a quarter-wave dimple at the focus | The beam interferes with its own core: no reference arm; the best reading steps the dimple's depth through four frames and inverts pixel by pixel
 ::: left
@@ -488,6 +510,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ## Run it yourself | One parameter sheet and one runner per approach, shared code underneath; every number here is reproduced by the commands below
 ::: left
 - **Interferometer** (tg_psi_dm96_oap): `tg96_run` for the lens rig; `tg96_run('bench.optics','oap','tag','oap')` for the mirror rig; `./tg96_batch.sh lens_deck "'stages',{'bench','deck'},'battery.noise',true"`; `./tg96_batch.sh loop_lens "'stages',{'bench','loop','figs'}"`.
+- **Pupil image** (tg_psi_dm96_oap): `tg96_pupilq('rig','lens')`, `tg96_pupilsim('rig','oap')`; both tools, both rigs: `./tg96_pupil_batch.sh both` (knobs: P.pupil in tg96_params).
 - **Zernike sensors** (zwfs_dm96): `out = zwfs_run;` (bench + battery + figures); `zwfs_run('tag','ng385','NGRID',385)`; `zwfs_run('MODEL',2048,'NGRID',385,'param_file','macos_param_2048.txt')`; `./zwfs_batch.sh loop193 "'stages',{'bench','loop','figs'}"`.
 - **Point-diffraction** (pdi_dm96): `P = pdi_params; out = pdi_run(P);`; `pdi_run('pdi.DIA_LAMD',1.0,'stages',{'bench','battery','figs'})`; `./pdi_batch.sh TAG "pdi_params, 'stages',{'bench','loop','figs'}"`.
 ::: right

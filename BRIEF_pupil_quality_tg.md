@@ -129,3 +129,47 @@ the stage is committed.
    traces a small field step apart, the closest point between each ray's
    two exit lines, mapped to the ray's DM coordinate from the trace at the
    DM.  Distortion, blur and the pupil surface follow from that cloud.
+
+## 7. 2026-09-17: the simulation (CCL for Dave), and three things to rule on
+
+Built and run: `tg96_pupilsim.m` (stages: the leg's coherent PSF per DM zone
+from the rays; the DM field through those PSFs with the four-step readout; the
+compromise detector plane), `tg96_pupil_engine.m` (the engine's propagation
+through reference surfaces in the .in file), run-it-yourself
+`tg96_pupil_batch.sh both`, sheet block `P.pupil`.  Report:
+`tg_psi_dm96_oap/REPORT_bench_realism.md` section 7; deck slide 13.
+
+**Findings.**
+1. **The beam of record was the source cone, not the DM** (77 mm on the lens
+   rig, 82 on the mirrors, on a 96 mm DM; nothing clips a ray).  Per your
+   ruling the baffle is opened and the DM carries a 48 mm aperture: sheets
+   changed (`tg96_params`, `zwfs_params`: R_BAFFLE 12.5 -> 18, D_LENS 60 -> 66,
+   R_TO_AP 30 -> 28).  Every deck emitted from now on has the 96 mm beam;
+   the record's rows were made on the 77 / 82 mm beam and stand as labeled
+   until re-run.  **Rule:** re-run the record's rows on the 96 mm beam now
+   (the Mac has cycles) or after the interim report.
+2. **Every DM mode is observable on both rigs.**  Lens rig as tuned: Nyquist
+   gain 0.99 center to 0.95 worst at the edge, half-Nyquist and below within
+   0.3%, a single actuator 0.99, the 30 nm working surface back to 1.2 nm.
+   Mirror rig: 0.997 worst, 0.23 nm.  Amplitude cross-talk up to a third of
+   the phase modulation at the lens rig's edge, which the four-step ignores.
+3. **The lens rig's detector is not at the pupil image**: 2.6 mm ahead of the
+   on-axis image, 4-6 mm ahead of the edge zones' (the null-tuned tail is
+   blind to pupil defocus).  Moving it 4.3 mm downstream takes the Nyquist gain
+   to 0.993 worst and the working surface to 0.4 nm; the residual is the field
+   lens's own astigmatism (1 mm split at the edge).  The mirror rig's geometric
+   seed sits at the image (within 0.4-1.3 mm).  **Rule:** add the image position
+   (from the rays) to the tail tuner's objective, or trim DET_TRIM + 4.3 mm on
+   the lens rig and re-read the rows.
+4. **The engine's plane-to-plane check is built but cannot yet check this
+   leg.**  A geometric-to-physical hand-off on a reference sphere is exact only
+   at a pupil conjugate, and the detector leg has none before the detector
+   (the DM's image by the focuser is virtual, 876 mm past the focus); the seed
+   on any upstream sphere is the undiffracted DM pattern -- the effect itself.
+   Measured, not argued (the seeded phase matches the OPD to 0.3 waves; the
+   propagated flat pupil is a clean disc; the modes come out wrong under every
+   zElt convention).  The faithful form is the CTB's station-to-station chain
+   (every leg from the DM propagated, no hand-back to rays), half a day with the
+   zElt conventions validated leg by leg.  **Rule:** now, or after Friday's
+   report.  Until then the zone-PSF model is the result of record, with the
+   paraxial standby chain as its check.
