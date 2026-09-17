@@ -94,13 +94,13 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 |---|---|---|---|---|
 | laser, spatially filtered | HeNe 632.8 nm, 1 mW class; beam 51 mm radius after L1 | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
 | collimator L1 | f 857 mm, 103 mm, plano-convex conic; modeled 5 mm center, to be a real singlet | anti-reflection | 1 | collimates onto the mirror |
-| plate splitter | 103 mm, 22.5° incidence, 50/50; 10 mm thick (modeled): shifts the transmitted beam 1.39 mm, which the compensator cannot undo; the interferometer's flat null rises from 0.13 to 20 nm and its reading is attenuated 13%, a cost in floor and SNR, not gain (differential rows 1.00-1.01, single actuator 0.989; capture unchanged); the sensors do not move | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
+| plate splitter | 103 mm, 22.5° incidence, 50/50; 10 mm thick: shifts the transmitted beam 1.39 mm, the flat null 0.13 → 20 nm, the reading attenuated 13% (floor, not gain; rows hold) | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
 | compensator plate | 103 mm, matched to the splitter, in the mirror leg | AR | 1 | balances the glass path through the splitter |
 | deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg | protected aluminum | 1 | the test object; its surface is the measurand |
 | focuser L2 | f 429 mm, 103 mm, plano-convex conic; modeled 8 mm center | AR | 1 | the internal focus at F/4.2 where the masks sit |
 | mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
-| field lens | f 43 mm, 21 mm, at the seed station 10.8 mm past the focus (the null-tuned station 39.8 mm back bowled the pupil image; slide 15) | AR | 1 | reimages the DM, 9.8 mm across on the full 96 mm beam (7.8 mm on the record's 77 mm beam), 38 mm behind it |
-| camera A | sCMOS 2048×2048, 6.5 µm: 1500 raw pixels across the 9.8 mm pupil image, binned 4 to 377 (26 µm); or a 24 µm-pixel camera unbinned (408 across); both to be priced by the runner | — | 1 | every configuration's pupil image |
+| field lens | f 43 mm, 21 mm; at the seed station 10.8 mm past the focus (slide 15) | AR | 1 | reimages the DM: 9.8 mm across on the 96 mm beam, 38 mm behind it |
+| camera A | sCMOS 2048×2048, 6.5 µm, binned 4 to 377 px across the 9.8 mm image; or a 24 µm-pixel camera unbinned (408) | — | 1 | every configuration's pupil image |
 | mounts, bench | 2 m × 1 m table; 103 mm mounts on the node parts, 25 mm clearance | — | — | the 22.5° layout clears every part |
 ~ The detector leg (focuser, mask seat, field lens, camera) is focused once and shared; only the mask seat's contents and what follows the field lens change between configurations.
 

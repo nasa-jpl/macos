@@ -241,7 +241,22 @@
 > mirror rig the 0.6 mm move; fix the collimator first.  Deck 52 slides;
 > Dave's edit copy was OPEN -> NOT re-synced (run sync_edit_deck.sh
 > deck_gauges after closing it).  Committed: resources 02929cc 50358d4 +
-> this; macos c13d4c5 fd56d45 + this.  Push on Dave's word.  Standalone paraxial chain (`fourier` true) works as
+> this; macos c13d4c5 fd56d45 + this.  Push on Dave's word.
+> LATE AFTERNOON: Dave's rulings on BRIEF_to_tg_redo (substrates YES as
+> proposed; tail objective = the IFO's own reading, null reported; keep the
+> L2 re-solve; larger-pixel camera priced both ways; the Mac assigned to the
+> redo's runs) written into the brief (sections 1b, 6) + a read-up section
+> for TO (clear over compact).  The Mac's cycle 2 pulled (resources 12d03b0,
+> rebased): oapsens385 (mirror rig at 385 px: capture S 36 / V 59 / P 52 nm,
+> rows S 0.9911/4 pm) and oapcap22 (sensors' descent on the mirror rig:
+> V/P 3 pm from 60 nm in 21/19 cycles, diverge from 100, S never) folded
+> into the deck.  Deck 53 slides: parts slide 6 with the decided substrates
+> + the seed field-lens station + the 9.8 mm pupil image + camera options;
+> NEW slide 41 'Next: the interferometer redone on the improved bench';
+> edit copy synced.  INTERIM DECK for Dave (~5 h from 15:00): this build.
+> NEXT for TO: BRIEF_to_tg_redo packages A0, A, B, C; CCL writes the Mac's
+> cycle-3 runbook once A lands.  Friday: the interim REPORT (current record,
+> labeled), style gate, .docx.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
