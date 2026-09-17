@@ -5,6 +5,50 @@ CCL for Dave's review, then TO.  2026-09-17.  Companion to `BRIEF_to_gauge_close
 gauge-close brief hold (one model-1024 MATLAB on this box, kill by PID, never edit a
 running sequence, every rms knob in mm, push on Dave's word).
 
+## Read-up first (TO, after a clear or a compact)
+
+Clear rather than compact: this brief and the slice carry everything this work needs,
+and a fresh context reads them faster than a compacted one re-derives them.  Then, in
+this order, before touching anything:
+
+1. `macos/CLAUDE.md` (the root rules) and, when you touch the engine's propagators for
+   package B, `macos/macos_f90/CLAUDE.md` (the nested one is not re-injected after a
+   compact).  Memory: `MEMORY.md`, then `project_pupil_quality_tg` (the pupil work and
+   the engine hand-off lesson), `feedback_sequenced_batch_jobs` (one model-1024 MATLAB
+   on this box; wrappers wait), `feedback_running_script_edit`,
+   `feedback_shell_self_kill` (kill by PID, never `pkill` MATLAB by name),
+   `project_reflective_front_end`, `reference_gauge_flow_ifo`.
+2. `macos/CURRENT_SLICE.md`, the two blocks dated 2026-09-17 (the pupil simulation, the
+   stop change, the station-to-station chain's state) and 2026-09-16 evening.
+3. This brief, whole.  Then `BRIEF_to_gauge_close.md` section 0 (the rules) and section
+   7 (the field servo's state, where it resumes), and `BRIEF_pupil_quality_tg.md`
+   sections 7-8 (the day's findings and Dave's rulings).
+4. `MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/REPORT_bench_realism.md`
+   sections 6, 7 and 7.1 (the numbers this brief quotes, with their run tags), and the
+   headers of `tg96_pupilsim.m`, `tg96_pupil_options.m`, `tg96_pupil_s2s.m`,
+   `tg96_pupil_engine.m` (what each does and what it found; `tg96_pupil_engine` is the
+   single-sphere hand-off that cannot work here, kept for the record).
+5. The sheets: `tg96_params.m` (the bench block with today's stop change and its
+   comment, `P.pupil`, `P.bench.tail_*`, `P.bench.SRC_AT_FOCUS`, `coat_oap`, the
+   realism knobs `PLATE_SUB` / `MASK_SUB` / `BS_T` / `EDGE_MARGIN`) and `zwfs_params.m`
+   (the same bench block); `tg96_tail.m`'s header (the tuner and its winner gate: the
+   objective you are about to change).
+6. The runs to have open: `runs/pupilsim_lens`, `runs/pupilsim_oap` (the simulation of
+   record: `<tag>_report.txt` and the four figures), `runs/pupil_options/
+   pupil_options_report.txt` (the five variants), `runs/pupils2s_oap/
+   pupils2s_oap_report.txt` and `runs/pupils2s_lens/...` (the chain's state, the
+   numbers in section 2), `runs/pupileng_lens` (the hand-off that failed, with why).
+7. Git: both repos on `dev-candidate`; the day's commits are LOCAL and unpushed
+   (resources 02929cc, 50358d4, dad95cf; macos c13d4c5 .. 1a4f23a); `git log
+   --oneline -12` in each before you start, `git status --short` for what is tracked
+   in `runs/` (deck, report, figures; never the .mat).  Push only on Dave's word.
+8. Before running anything: `ps -C MATLAB` (the Mac's cycle-2 jobs are on the Mac, not
+   here; anything here is yours or Dave's), and the sequencer rule: never edit a bash
+   sequence that is executing.
+
+Verify before you build on a number: every figure in this brief has a run tag; re-read
+the tag's report rather than this brief if they disagree.
+
 ## 0. Why, in one paragraph
 
 The interferometer record (rows, capture, photons, servo, descent, station figures,
