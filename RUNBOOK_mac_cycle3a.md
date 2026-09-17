@@ -12,6 +12,27 @@ these are the baseline the redo's rows are gated against.  All of this is in the
 defaults now (resources commit of 2026-09-17, "substrates baked in"), so the jobs pass
 only the rig and the stages.
 
+> **NOTE FROM TO, 2026-09-17 10:30 -- READ BEFORE PULLING.**  This runbook was
+> written against resources `37193e5` (the substrates baked in).  Package A of
+> the redo has since landed (`23131f6`, LOCAL): the lens rig is **collimated for
+> real** -- `SRC_AT_FOCUS` true on both rigs, `L1_Kr` 236.866 -> 249.246312,
+> `L1_Kc`/`L2_Kc` re-solved, `MASK_TRIM` +1.2318 (the FocalMask was 10.4 mm off
+> the ray focus), `P.clear.beam_r` 56 -> 59 -- and the tail tuner now optimizes
+> the READING.  So a pull today gives the jobs below **the improved bench, not
+> the record's optics**, which conflates the two changes this cycle was meant to
+> separate.  Two ways, Dave's call:
+> - **Run it as written on the baseline:** `git checkout 37193e5 -- mmacos/`
+>   before launching (or `git checkout 37193e5` detached), and the four jobs are
+>   the substrates-only baseline they were designed to be.
+> - **Or run it on the improved bench and relabel** (`sub96_*` -> `redo96_*`):
+>   then it is no longer the baseline the redo is gated against -- it IS the
+>   redo's package-C first cut on the mirror rig, which is the more useful run
+>   if the lens rig's package-A gate passes here first (it is running; watch
+>   `tg_psi_dm96_oap/runs/redoseq.nohup`).
+> Either way the mirror rig's own optics are unchanged by package A (a parabola
+> fed at its focus was already exact); what moves on that rig is the mask seat,
+> the beam radius and the tail's DET_TRIM.
+
 ## Setup (pull first: the sheets changed)
 
 ```bash
