@@ -304,3 +304,21 @@ costs the self-referenced sensors 15-20% of capture and no gain; the pinhole's 1
 poke gate 3.5 pm (0.2 before), still passing; the vector pair's uncalibrated error
 408 pm (633 before).  Package A0 stands as decided; the plate's spherical aberration is
 part of the bench and the tail tune runs with it in.
+
+## 8. Package A passed (TO, 2026-09-17 13:30; resources d1a3b57, local) -- and the gate list revised
+
+Both rigs collimated, re-tuned on the reading, re-emitted (tags `redo_lens`, `redo_oap`;
+REPORT_bench_realism section 8).  Gate record from the pupil stage on the emitted
+decks at 129 rays across (the tunes ran at 65): Nyquist gain worst 1.0000 (lens) /
+0.9994 (mirrors); band-edge phase 0.000 / 0.035 rad; amplitude cross-talk 0.005 / 0.036;
+zone image surface flat to 0.001 mm (lens), tilt 0.43 and defocus -0.45 (mirrors); the
+30 nm working surface recovered to 0.042 nm (lens; the record's tuned tail 1.22) and
+0.092 (mirrors); single pokes 0.9998 peak, 0.999 width, < 0.4 um centroid shift.
+**The distortion gate (< 0.01 mm rms) is withdrawn** (TO): the mirror rig's 0.72 mm is
+the parabola pair's mapping, carried through every record it set while reading 0.997,
+and the matrix absorbs it.  Package A's gate is therefore: gain >= 0.998 worst, band-edge
+phase < 0.06 rad max, the working surface < 0.15 nm -- and, added from cycle 3a, the
+DECK stage's grid row at 1 nm on the 30 nm surface >= 0.98 (package C's first item, on
+the Mac).  Follow-ons TO queued (`redotail`): the seed tail on the same bench (what the
+tune bought), the own-cone pupil check, the null decomposition.  Next: package B here;
+package C on the Mac (cycle 3b, once these commits are pushed).
