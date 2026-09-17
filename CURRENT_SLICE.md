@@ -226,7 +226,22 @@
 > spot).  Mirror rig (fed at the focus): runs but wrong -- the quartet's
 > far-side pupil 20% small vs the rays; no convention gives a gain map.
 > NEXT (half a day): the focal spot after the entrance sphere, the far
-> sphere's pitch bookkeeping, the exit step alone with a known defocus.  Standalone paraxial chain (`fourier` true) works as
+> sphere's pitch bookkeeping, the exit step alone with a known defocus.
+> AFTERNOON: Dave asked how to IMPROVE the pupil images -> `tg96_pupil_options`
+> (five lens-rig variants, REPORT_bench_realism 7.1, deck slide 15, brief
+> section 8): THE TAIL GEOMETRY IS THE WHOLE STORY -- the seed field-lens
+> station (10.8 mm past the focus) images the DM flat (0.9992 as built,
+> 0.9999 with a 0.7 mm move, distortion 0.003 mm) where the null-tuned tail
+> (39.8 mm, conic -2.59) gives 0.954 / 0.27; a flattener cannot fix the
+> tuned bowl (5 mm-radius image surface); true collimation (the source is
+> 14 mm inside the hyperbolic collimator's focus) halves the distortion and
+> is needed for re-tunes + the physical-optics chain, not for the gain.
+> Recommendation: hold the field lens at the seed station, re-tune conic +
+> trim with the image surface in the objective, detector at the image mean;
+> mirror rig the 0.6 mm move; fix the collimator first.  Deck 52 slides;
+> Dave's edit copy was OPEN -> NOT re-synced (run sync_edit_deck.sh
+> deck_gauges after closing it).  Committed: resources 02929cc 50358d4 +
+> this; macos c13d4c5 fd56d45 + this.  Push on Dave's word.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner

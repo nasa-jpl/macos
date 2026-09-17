@@ -186,3 +186,27 @@ through reference surfaces in the .in file), run-it-yourself
    REPORT_bench_realism section 7 (the focal spot after the entrance sphere,
    the far sphere's pitch, the exit step alone with a 10 mm defocus).  Half a
    day more; the zone-PSF model stands as the result of record meanwhile.
+
+## 8. Improving the pupil image (Dave's ask, 2026-09-17 afternoon): assessed
+
+`tg96_pupil_options.m`, five variants of the lens rig (REPORT_bench_realism 7.1):
+
+- **The tail geometry is the whole story.**  The null tuner moved the field
+  lens to 39.8 mm past the focus and bent it; the SEED tail (10.8 mm, the
+  mirror rig's geometry) images the DM to within 1 mm, astigmatism 0.08 mm,
+  Nyquist gain 0.9992 as built and 0.9999 with a 0.7 mm detector move, the
+  30 nm surface to 0.06 nm, distortion 0.003 mm (vs 0.27).  Cost: the
+  flat-DM null 9.1 nm vs 0.134 tuned -- a fixed pattern the reference frame
+  removes.
+- **Detector move:** yes; second-order once the tail is right (0.7 mm).
+- **Field lens / flattener at the detector:** no -- the tuned tail's bowl
+  is a 5 mm-radius surface in image space (a -3.5 mm flattener), and the
+  seed geometry removes the bowl instead.
+- **True collimation:** worth doing for itself (halves the distortion,
+  needed for the physical-optics chain and for any re-tune), not for the
+  gain: 0.999 with the seed tail either way.  The record's source sits 14 mm
+  inside the hyperbolic collimator's focus.
+- **Rule:** lens rig -> seed field-lens station held, re-tune the conic +
+  trim with the image surface in the objective; mirror rig -> the 0.6 mm
+  move; collimator fixed before the next tune; rows re-run on the corrected
+  tail + the 96 mm beam together.

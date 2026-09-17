@@ -30,18 +30,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **4** The bench layout
 - **6** Parts
 - **9** Twyman-Green interferometer
-- **15** Zernike sensor
-- **17** Vector Zernike sensor
-- **20** Point-diffraction sensor
-- **23** Performance: rows, capture, photons, servo
+- **16** Zernike sensor
+- **18** Vector Zernike sensor
+- **21** Point-diffraction sensor
+- **24** Performance: rows, capture, photons, servo
 ::: right
-- **29** Lenses versus off-axis parabolas
-- **30** The reflective front end and its performance
-- **32** Comparison and recommendation
-- **35** Complex amplitude
-- **36** Summary and future work
-- **41** Run it yourself
-- **42** Backup
+- **30** Lenses versus off-axis parabolas
+- **31** The reflective front end and its performance
+- **33** Comparison and recommendation
+- **36** Complex amplitude
+- **37** Summary and future work
+- **42** Run it yourself
+- **43** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -185,6 +185,20 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **The image is a bowl the camera sits ahead of** on the lens rig: 2.6 mm on axis, 6 mm at the edge (the tail was tuned on the flat-mirror null, which cannot see pupil defocus).  The mirror rig's thin-lens seat is within 1.3 mm of its image.
 - **The beam of record under-filled the DM** (77 / 82 mm of 96): the baffle is now opened and the aperture sits on the DM; runs from 2026-09-17 carry the full 96 mm.
 ~ Run tags pupilsim_lens, pupilsim_oap (tg96_pupilsim; run it yourself: tg96_pupil_batch.sh both); REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
+
+## Improving the pupil image: the options, assessed | The tail geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
+::: full
+| lens rig variant | zone image vs the detector, mm (on axis / mean / edge) | astigmatism | Nyquist gain, as built / worst | with the detector at the image mean | 30 nm surface error | distortion |
+|---|---|---|---|---|---|---|
+| tuned tail (field lens 39.8 mm past the focus, conic −2.59) | +2.6 / +4.3 / +6.0 | 1.05 mm | 0.979 / 0.954 | +4.3 mm: 0.993 worst | 1.2 → 0.4 nm | 0.27 mm |
+| **seed tail** (field lens 10.8 mm past the focus, conic −2.11) | −0.5 / −0.7 / −1.0 | 0.08 mm | 0.9992 / 0.9986 | −0.7 mm: 0.9999 | 0.24 → 0.06 nm | 0.003 mm |
+| tuned tail, spherical field lens | +2.6 / +1.5 / +0.3 | 0.59 mm | 0.996 / 0.992 | +1.5 mm: 0.994 | 0.54 → 0.34 nm | 0.30 mm |
+| true collimation, tuned tail | +2.7 / +3.9 / +5.1 | 0.80 mm | 0.982 / 0.965 | +3.9 mm: 0.996 | 1.1 → 0.3 nm | 0.13 mm |
+| true collimation, seed tail | −0.5 / −0.8 / −1.1 | 0.11 mm | 0.9991 / 0.9980 | −0.8 mm: 0.9999 | 0.26 → 0.08 nm | 0.035 mm |
+| mirror rig, as built (seed tail) | −0.4 / −0.6 / −1.3 | 0.09 mm | 0.9993 / 0.9974 | −0.6 mm: 0.9994 | 0.23 → 0.09 nm | 0.72 mm |
+- **The null tuner bought its 0.13 nm flat-mirror null with the pupil image:** it moved the field lens to its own focal length behind the focus, where the pupil rides 4.6 mm high on a 12 mm asphere.  At the seed station the pupil rides 1.2 mm high and the DM images flat.  The null it gives up (9 nm) is a fixed pattern the reference frame removes.
+- **A flattener behind the tuned tail is not an optic:** its bowl is a 5 mm-radius surface in image space.  **True collimation** (the record's source sits 14 mm inside the hyperbolic collimator's focus) halves the distortion and is needed for any re-tune and for the physical-optics chain.
+~ Recommendation: lens rig, field lens held at the seed station, conic and trim re-tuned with the image surface in the objective, detector at the image mean; mirror rig, the 0.6 mm move; collimator fixed first; rows re-run on the corrected tail and the 96 mm beam together.  Run tag pupil_options (tg96_pupil_options); REPORT_bench_realism 7.1.
 
 ## Zernike sensor: a quarter-wave dimple at the focus | The beam interferes with its own core: no reference arm; the best reading steps the dimple's depth through four frames and inverts pixel by pixel
 ::: left
