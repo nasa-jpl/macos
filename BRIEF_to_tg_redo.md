@@ -337,3 +337,90 @@ rig** (`redo96_oapsens`: `MASK_TRIM re-scanned: -5.9285 mm (mask-plane peak/sum
 (-5.6), and on the mirror rig with the plate the seat is +0.632 (cycle 3a passed
 there).  The Mac reruns with the explicit value; the scan needs a start at the
 plate's shift and a range that brackets both rigs.
+
+## 7. PACKAGE A: DONE (TO, 2026-09-17).  The gates, the two calls for Dave, and what moved that was not on the list
+
+Everything below is in `REPORT_bench_realism.md` sections 8.1-8.9 with its run
+tag; `tg_psi_dm96_oap/runs/harvest_redo.sh` prints the record under those tags.
+Resources commits `23131f6 .. ca70b0f` (the last one local, the rest pushed by
+another lane's rebase); macos `5704c61`, `319e6d2`.
+
+### The gates
+
+| gate (section 1) | lens rig | mirror rig |
+|---|---|---|
+| exit-ray spread after the collimator < 1e-4 rad rms | **6.3e-09** PASS | **1.4e-08** PASS |
+| focal spot at the seat < 1 um rms | **0.17 um** PASS | **0.09 um** PASS |
+| mask marker within 0.5 mm of the ray focus | **0.000** PASS | **-0.0001** PASS |
+| Nyquist gain >= 0.998 worst | **1.0000** PASS | **0.9994** PASS |
+| band-edge phase < 0.06 rad max | **0.000** PASS | **0.035** PASS |
+| distortion < 0.01 mm rms | 0.041 FAIL | 0.722 FAIL |
+
+**The distortion figure is withdrawn** (8.4): it was read off a row measured on
+the UNCOLLIMATED bench, where the same table already showed collimation RAISING
+distortion; it is a residual AFTER the registration affine (4 % of an actuator
+pitch on the lens rig); and the mirror rig has carried 0.72 mm through every
+record it ever set while reading 0.997.
+
+**The number that matters:** the bench reads its own 30 nm working surface to
+**42 pm** (lens) and **92 pm** (mirror), against the record's 1.22 nm and
+0.23 nm.  Single pokes 0.9998 peak, 0.999 width, under 0.4 um of centroid
+shift.  The lens rig's amplitude cross-talk is 0.005 per unit phase, where the
+record's was up to a third at the edge.
+
+### Two calls for Dave
+
+1. **The field lens's conic: -7.77 or the seed's -2.11?**  The tuned conic buys
+   a factor of **2.3 in the reading** (97 -> 42 pm on the 30 nm surface, 25x of
+   it at the lowest spatial band) and costs 1.8x in the distortion residual.
+   Over the 1.2 mm the beam actually uses it is a 0.20 um departure from the
+   sphere (0.15 um of it new) -- so the part to specify is a mild asphere over a
+   2.4 mm clear aperture, and the 12 mm blank is 10x oversized for this beam
+   whatever the figure.  `bench.tail_from_mat false` selects the seed.
+2. **The compensator's clearance: +10.4 mm against a 25 mm spec** (8.6a), and
+   it is the STOP RULING, not the plates -- a builder plate's scored radius is
+   the beam plus 5 mm, so opening the beam from 51.4 to 59 mm costs margin
+   twice; the record cleared by +25.6.  `D_BS_CMP` 200 -> ~225 mm physical gives
+   +28.1.  A layout decision with a parts-list consequence, so it is yours.
+
+### What moved that was not on the list
+
+- **The lens rig's collimator was the wrong lens, not just misfed** (8.1-8.2):
+  `L1_Kr` 236.866 is `(n-1) x (F1 - zsource)` exactly, principal plane and all.
+  The radius is re-solved with the conic; the CONIC barely moves (-0.583016 vs
+  -0.5829).
+- **The mask seat belongs to the FOCUSER** (8.5): one global `MASK_TRIM` put
+  the lens rig's 1.23 mm on the mirror rig, 0.69 mm of it wrong -- outside this
+  brief's own 0.5 mm gate.  `P.oap.*` now overrides `P.bench.*` per optics.
+- **The input polarizer's substrate defocuses the mirror rig's parabola**
+  (8.5): `POL_IN 'source'` puts a 2 mm plate in the DIVERGING leg, worth 0.70
+  waves; solved out with `P.oap.SRC_TRIM`.  The seat then lands on the mask
+  plate's own `t(1-1/n)` to three figures.
+- **The 59 nm flat-DM null is the BEAM** (8.9), 44 of it: lighting the whole
+  96 mm DM takes the null from 9.8 to 53.6 nm.  The substrates cost 39 nm on the
+  misfed bench and 5.6 on the collimated one -- a plate in a genuinely
+  collimated beam is pure path.  It is a fixed pattern the reference frame
+  removes (the gate record above was measured with it in place), but the raw
+  four-step folds at +-158 nm, so `battery.unwrap` is the first thing to try if
+  a package-C row table comes back speckled.
+- **The lens rig's station residual is a FOLD, and this brief's hypothesis for
+  it is dead** (8.6b): the pupil-image bowl is gone and the residual barely
+  moved (62 -> 51 nm, against the mirror rig's 0.46).  The figure shows isolated
+  pixels thrown by ~lambda/2.  Package C item, with the probe named in 8.6b.
+- **A clearance guard was firing on its own parts** (8.6a): substrate faces are
+  now grouped with the element they bracket.  Five rows at -94 to -102 mm were
+  bookkeeping.
+- **The cycle-3a runbook needs one edit** before it runs (noted at its top):
+  job D pins `'bench.MASK_TRIM',0`, which overrides the zwfs sheet's `'scan'`
+  and now seats the ZWFS DIMPLE -- which, unlike the interferometer's marker,
+  IS the optic -- 0.63 mm off focus.
+
+### One thing to settle before package C
+
+CCL has tracked the redo tails under their run tags (`redo_lens_tail.mat`,
+`redo_oap_tail.mat`) for the Mac's cycle 3b.  `tg96_run` looks up
+`<tag>_tail.mat` first and `<optics>_tail.mat` second, so a run tagged
+`redo_lens` finds them and a package-C run under any other tag falls back to the
+RECORD's `lens_tail.mat` / `oap_tail.mat`.  Either package C runs under those
+tags, or the redo tails are copied onto the canonical names.  Left alone rather
+than overwritten under another lane's feet.
