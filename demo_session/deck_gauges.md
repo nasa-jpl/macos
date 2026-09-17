@@ -38,7 +38,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **30** Lenses versus off-axis parabolas
 - **31** The reflective front end and its performance
 - **33** Comparison and recommendation
-- **36** Complex amplitude
+- **36** Measuring the complex amplitude
 - **37** Summary and future work
 - **42** Run it yourself
 - **43** Backup
