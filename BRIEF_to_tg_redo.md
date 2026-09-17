@@ -322,3 +322,18 @@ DECK stage's grid row at 1 nm on the 30 nm surface >= 0.98 (package C's first it
 the Mac).  Follow-ons TO queued (`redotail`): the seed tail on the same bench (what the
 tune bought), the own-cone pupil check, the null decomposition.  Next: package B here;
 package C on the Mac (cycle 3b, once these commits are pushed).
+
+**Mac cycle 3b landed (resources 4f91561): the redo bench's rows.**  Lens rig
+(`redo96_lens`, the redo tail): null 59.3 nm (the seed tail on the misfed collimator
+gave 92), single row 1.004 / 1.4 pm / SNR 7741, grid row at 1 nm **0.993** / 10 pm / 246
+(was 0.754): the package-A gate's grid row passes.  Mirror rig (`redo96_oap`): null
+26.5, rows 0.986 / 0.981, unchanged from 3a by design.  Capture 480+ on both.  Pupil
+image 11.3 / 11.1 mm (384 px).  The null left on both rigs is the mask plate's
+spherical aberration in the F/4.2 beam (2 mm: about 0.1 wave rms), a fixed pattern the
+reference frame removes and the reading-tuned tail does not chase; the null
+decomposition prices it.  **For TO: the sensor sheet's seat scan failed on the mirror
+rig** (`redo96_oapsens`: `MASK_TRIM re-scanned: -5.9285 mm (mask-plane peak/sum
+2.288e-06)`, then the run died): the scan's start or range is the lens record's
+(-5.6), and on the mirror rig with the plate the seat is +0.632 (cycle 3a passed
+there).  The Mac reruns with the explicit value; the scan needs a start at the
+plate's shift and a range that brackets both rigs.

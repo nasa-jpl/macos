@@ -369,7 +369,15 @@
 > package B.  Deck slide 41 + brief section 8 updated.  RUNBOOK_mac_cycle3b
 > written (package C first cut: DECK both rigs on the redo tails, sensors
 > at 385 with the sheet's MASK_TRIM 'scan'); PRECONDITION: TO's commits
-> pushed (Dave's word).  Standalone paraxial chain (`fourier` true) works as
+> pushed (Dave's word).
+> Dave OK'd the push: TO's 12 commits rebased onto the Mac's 2 harvest
+> commits and pushed (+ my f09ea0d tracking the redo tails).  Mac cycle 3b
+> landed (4f91561): lens redo96 null 59 nm, single 1.004, GRID 0.993 (was
+> 0.754) -> package A's grid gate passes; mirror unchanged (26.5 / 0.986 /
+> 0.981); the sensors' run DIED at the sheet's seat scan (-5.93 mm, peak
+> 2e-6) -> runbook 3b job C now passes MASK_TRIM 0.632 explicitly; TO to
+> fix the scan's start/range on the mirror rig (brief).  Deck backup slide
+> has the 3b columns.  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
