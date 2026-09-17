@@ -105,3 +105,27 @@ the DM as stop, XPS per tilt pair, the zone mapping, two figures).
 Running: 12 tilts x 2 azimuths x 2 rigs of single traces plus the XPS
 pairs at model 512 (minutes); no battery, no loop.  The Mac can run it (cycle 3) the moment
 the stage is committed.
+
+## 6. Built 2026-09-16 evening: `tg96_pupilq.m` (tg_psi_dm96_oap), and three things the first passes settled
+
+1. **A collimated source AT the DM measures a bench that does not exist.**
+   On an ideal collimated beam the lens rig's detector leg lands 16 lam F/D
+   of blur (1.07 um rms of wavefront) at the seat, because the leg was tuned
+   to the collimator's actual beam, fed 25 mm inside its focus.  So the
+   stage keeps the bench as built: the point source of record, the DM
+   declared the STOP (`macos.stop`), and the field as a lateral shift of the
+   source at the collimator's focus, which is a tilt about the DM by shift
+   over the collimator's conjugate (832 mm on the lens rig).
+2. **The seat marker in the interferometer's deck is not at the focus**
+   (352 um rms of geometric spot there, 6.5 um of pure defocus in the
+   wavefront): the runner parks it where the tuned tail wants the mask
+   seat.  The stage finds the best focus from the rays themselves along the
+   chief (pure geometry) and scores the spot there; the wavefront is scored
+   with piston, tilt and focus removed by a fit -- the chief-tied sphere
+   metric to first order.  The engine's exit-pupil sphere (the
+   Return/Return/plane idiom) refused to load through the mex without a
+   message; not chased tonight.
+3. **The crossing cloud at the camera needs no engine command:** two
+   traces a small field step apart, the closest point between each ray's
+   two exit lines, mapped to the ray's DM coordinate from the trace at the
+   DM.  Distortion, blur and the pupil surface follow from that cloud.
