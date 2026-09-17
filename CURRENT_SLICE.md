@@ -192,6 +192,57 @@
 > write.  NEXT: fold numbers into README "P / PF" section + brief +
 > memory; commit; push only on Dave's review.
 
+> **2026-09-17 (TO): BRIEF_to_tg_redo PACKAGE A -- THE BENCH COLLIMATED FOR
+> REAL, THE TAIL TUNER PUT ON THE READING.  Committed LOCAL, resources
+> `23131f6` (A0 was CCL's `37193e5`).**  New tool `tg96_collimate.m`
+> (runs/coll_lens): solves the collimator's RADIUS with its conic, the
+> focuser's conic, and the FocalMask seat, against the engine's rays, over the
+> rays that REACH the DM.  **THE FINDING: the lens rig's collimator was not
+> merely fed 25 mm inside its conjugate -- its RADIUS was matched to that wrong
+> conjugate.**  `L1_Kr` 236.866 = (n-1)*473.7 = (n-1)*(F1 - zsource), so with
+> the source at F1 the lens has 5% of surplus focal length; a solve holding the
+> radius runs the conic to -4.68, walks the source back 27 mm (undoing
+> SRC_AT_FOCUS exactly) and still leaves 2.6e-4 rad rms.  Solved:
+> **L1_Kr 249.246312, L1_Kc -0.583016, L2_Kc -0.581843, MASK_TRIM +1.231759**
+> -> exit-ray spread **1.27e-3 -> 6.3e-9 rad rms** (47 waves over the beam ->
+> 0.0), focal spot **0.17 um rms** (lambda F/D 2.8 um), marker ON the ray focus
+> (was 10.4 mm off -- the same error the zwfs sheet carried as the constant
+> MASK_TRIM -5.582 since S1; now `'scan'` there).  **The CONIC barely moved**
+> (-0.583016 vs the record's -0.5829): a conic belongs to the shape and the
+> plano orientation, not to the conjugate.  Beam now 58.3 mm at the 48 mm DM
+> (the DM IS the stop, 68% of the grid through); `P.clear.beam_r` 56 -> 59; the
+> DM leg (450) and BS angle (22.5) do not move.  **Builder trap closed:**
+> `stage_B_` forwarded SRC_AT_FOCUS from INSIDE its `if optics=='oap'` block,
+> so setting it on the lens rig was accepted by the sheet and silently dropped
+> (the trap zwfs_params records for MASK_SUB); SRC_AT_FOCUS/SRC_TRIM/MASK_TRIM
+> now forwarded on both rigs by tg96_run AND tg96_tail.  **Tail tuner (Dave's
+> ruling):** `P.tail.objective 'reading'` -- the cost IS what the pupil stage
+> measures the camera recovering off the DM (tg96_pupilsim stage 2, or its
+> stage-1 band-edge-phase proxy, default, ~70 s/eval), the null computed and
+> PRINTED every evaluation and never optimized; `P.tail.free` holds the field
+> lens at the geometric seed station (lens: {FL_Kc,DET_TRIM}; mirror rig:
+> {DET_TRIM} alone).  tg96_pupilsim gained 'stages'/'figs'; a failed evaluation
+> now prints its error instead of a silent 1e6.  **Seed tail on the collimated
+> bench, before any tuning:** band-edge phase 0.0122 rad rms / 0.0237 max (gate
+> <0.06), phase gain 0.9997 worst (gate >=0.998), image surface flat to 0.7 mm,
+> distortion 0.023 mm rms (the brief's 0.01 came from the UNcollimated bench;
+> the same table already showed collimation RAISING distortion), null 59.3 nm.
+> **IN FLIGHT:** `runs/redoseq.sh` (detached chain, ~3 h from 10:24): lens tail
+> tune (tag lens96) -> mirror tail (oap96, DET_TRIM alone) -> both rigs
+> re-emitted as `redo_lens` / `redo_oap` (stages clearance/bench/figs, on
+> `redo_<optics>_tail.mat` copies so the record's lens_tail.mat/oap_tail.mat
+> stay put until the gate passes) -> the pupil stage on each EMITTED deck =
+> package A's gate record.  Watch: `runs/redoseq.nohup`, `runs/tail_*.log`.
+> **NEXT:** harvest the chain into REPORT_bench_realism section 8 (8.3/8.4),
+> copy the accepted tails onto `lens_tail.mat`/`oap_tail.mat`, then package B
+> (tg96_pupil_s2s leg by leg on the improved bench: the collimated legs to
+> <0.02 wave, the quartet's Airy spot and its far-side pupil radius -- 20%
+> small today, suspects in BRIEF_to_tg_redo section 2 -- the exit step's zElt
+> convention against a 10 mm known defocus, then the readout vs tg96_pupilsim).
+> Then package C (the record's runs redone, the Mac carrying the mirror rig).
+> Report: REPORT_bench_realism section 8.  Rules in force: one MATLAB at a
+> time, kill by PID, no push.**
+
 > **2026-09-17 (CCL): THE PUPIL IMAGE SIMULATED (Dave's ask), THE DM MADE THE
 > STOP, RIY runners.**  `tg_psi_dm96_oap/tg96_pupilsim.m` (runs pupilsim_lens /
 > pupilsim_oap; report section 7; deck slide 13 of 50; sheet block P.pupil;
