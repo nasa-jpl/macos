@@ -377,7 +377,14 @@
 > 0.981); the sensors' run DIED at the sheet's seat scan (-5.93 mm, peak
 > 2e-6) -> runbook 3b job C now passes MASK_TRIM 0.632 explicitly; TO to
 > fix the scan's start/range on the mirror rig (brief).  Deck backup slide
-> has the 3b columns.  Standalone paraxial chain (`fourier` true) works as
+> has the 3b columns.
+> Sensors rerun at the explicit seat (49444dc): identical to 3a to the
+> digit (the mirror rig's sensor bench unchanged) -> cycle 3b COMPLETE.
+> TO's brief section (local b302521) has TWO CALLS FOR DAVE: the field
+> lens's conic (-7.77 tuned vs the seed -2.11: 2.3x in the reading, a mild
+> asphere over 2.4 mm) and the compensator's clearance (+10.4 vs 25:
+> D_BS_CMP 200 -> ~225).  Next: RUNBOOK_mac_cycle3c (the rest of package
+> C on the Mac).  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
