@@ -569,7 +569,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | hybrid | snapshot for the change, piezo for the absolute step | each half removes the other's error | the recommended form; its value is the absolute calibration more than drift immunity: the four-step already tolerates all three sequential terms in hold |
 ~ Run tags lens_deck_se2, lens_deck_se5, loop_lens_se2, loop_lens_cam, loop_lens_intra, tg_psi_dm, tg_psi_dm_v2.
 
-## Backup: the substrates in, the full beam, the seed tail (Mac cycle 3a, 2026-09-17) | On the bench as it will be built but before the collimator fix, the mirror rig reads; the lens rig's flat null grows to 92 nm on the record's misfed collimator and the multi-site row breaks, which is the redo's package A in one number
+## Backup: the substrates in, the full beam, the seed tail (Mac cycle 3a-3b, 2026-09-17): the interferometer's rows | On the bench as it will be built but before the collimator fix, the mirror rig reads; the lens rig's flat null grows to 92 nm on the record's misfed collimator and the multi-site row breaks, which is the redo's package A in one number
 ::: full
 | rows on the 30 nm surface, matrix on it (four-step) | lens rig, seed tail, substrates in (cycle 3a) | **lens rig, redo bench (cycle 3b)** | mirror rig, seed tail, substrates in (3a) | mirror rig, redo bench (3b) | the record (tuned tail, no substrates, 77 / 82 mm beam) |
 |---|---|---|---|---|---|
@@ -577,15 +577,21 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | 10 nm on one actuator: gain / error / SNR | 1.003 / 1 pm / 10645 | 1.004 / 1.4 pm / 7741 | 0.986 / 2.2 pm / 6472 | 0.986 / 2.3 pm / 6044 | 0.992 / 2.2 pm (lens), 0.992 / 2.4 (mirrors) |
 | 1 nm on the grid (112-120 sites) | 0.754 / 61.5 pm / 135 | **0.993 / 10 pm / 246** | 0.981 / 4.5 pm / 309 | 0.981 / 4.4 pm / 310 | 0.999 / 4 pm |
 | capture to 10%, single site / grid | 480 nm and beyond / outside at the first rung | 480+ / 480+ | 480+ / 480+ | 480+ / 480+ | 322 / 480 and beyond |
+- **Read it as the redo's justification:** with the 10 mm plates and the 2 mm windows in, the seed tail's null on the lens rig's misfed collimator reaches 92 nm, a third of a wave of wavefront, and the 112-site row at 1 nm falls to 0.75 through the fold, while one actuator still reads to 1 pm.  Package A (the collimator at its focus, the tail tuned on the reading) is what restores it; the mirror rig, already fed at its focus, holds its rows at 0.98 to 0.99 with a 26 nm fixed-pattern null the reference frame removes.
+- **The redo bench restores the lens rig's grid row** (0.754 to 0.993) and leaves a 59 nm null; the mirror rig is unchanged by design.  **The null that remains on both rigs is the mask plate's spherical aberration** in the F/4.2 beam (a 2 mm plate: about 0.1 wave rms), a fixed pattern the reference frame removes and the reading-tuned tail does not chase; TO's null decomposition prices it.
+~ Run tags sub96_lens, sub96_oap (cycle 3a); redo96_lens, redo96_oap (cycle 3b); the Mac, 2026-09-17.  The pupil image and the sensors on these same decks are on the next slide.
+
+## Backup: the same decks — the pupil image and the sensors | The imaging is not what limits either rig on the seed tail with the substrates in, and the mask plate costs the sensors a little capture and no gain
+::: full
+| rows on the 30 nm surface, matrix on it (four-step) | lens rig, seed tail, substrates in (cycle 3a) | **lens rig, redo bench (cycle 3b)** | mirror rig, seed tail, substrates in (3a) | mirror rig, redo bench (3b) | the record (tuned tail, no substrates, 77 / 82 mm beam) |
+|---|---|---|---|---|---|
 | pupil image on the 96 mm beam | 9.5 mm (341 px) | 11.3 mm (384 px) | 11.1 mm (384 px) | 11.1 mm | 7.8 / 8.0 mm |
 | pupil imaging on these decks (tg96_pupilsim): image surface vs the camera / Nyquist gain / distortion / 30 nm surface error | within ±0.3 mm / 0.9999 / 0.008 mm / 0.08 nm | flat to 0.001 mm / 1.0000 / 0.04 mm / 0.04 nm (TO's gate record) | within −0.6 to +0.4 mm / 0.9996 / 0.72 mm (the parabola pair's mapping) / 0.10 nm | tilt 0.43, defocus −0.45 / 0.9994 / 0.72 / 0.09 nm | tuned tail: 2.6 to 6 mm / 0.954 / 0.27 mm / 1.2 nm |
 | the sensors on the mirror rig at 385 px, substrates in: stepped-Zernike rows, single / grid | — | — | 0.993 / 5 pm; 0.995 / 4 pm | identical (the sensor bench is the same) | 0.991 / 4; 0.999 / 4 (no substrates) |
 | the sensors' capture to 10%: stepped / vector / pinhole | — | — | 35 / 51 / 42 nm | identical | 36 / 59 / 52 nm (no substrates) |
-- **Read it as the redo's justification:** with the 10 mm plates and the 2 mm windows in, the seed tail's null on the lens rig's misfed collimator reaches 92 nm, a third of a wave of wavefront, and the 112-site row at 1 nm falls to 0.75 through the fold, while one actuator still reads to 1 pm.  Package A (the collimator at its focus, the tail tuned on the reading) is what restores it; the mirror rig, already fed at its focus, holds its rows at 0.98 to 0.99 with a 26 nm fixed-pattern null the reference frame removes.
-- **The redo bench restores the lens rig's grid row** (0.754 to 0.993) and leaves a 59 nm null; the mirror rig is unchanged by design.  **The null that remains on both rigs is the mask plate's spherical aberration** in the F/4.2 beam (a 2 mm plate: about 0.1 wave rms), a fixed pattern the reference frame removes and the reading-tuned tail does not chase; TO's null decomposition prices it.
 - **The pupil image is not what limits either rig:** on the seed tail with the substrates in, the DM images within a third of a millimeter of the camera on lenses (0.9999 at the actuator Nyquist, 0.08 nm on the working surface) and within 0.6 mm on mirrors; the lens rig's 92 nm null is the plate's spherical aberration and the misfed collimator, not the imaging.  **The mask plate costs the sensors a little capture** (vector 59 to 51 nm, pinhole 52 to 42) and no gain.
 - **One clearance line moved:** with the thicker plates and the larger beam the compensator sits 16 mm from the source beam against the 25 mm rule; it moves down the DM leg in the redo.
-~ Run tags sub96_lens, sub96_oap, pupilsim_sub96_lens, pupilsim_sub96_oap, sub96_oapsens (cycle 3a); redo96_lens, redo96_oap (cycle 3b); redo96_oapsens (3b); the Mac, 2026-09-17.
+~ Run tags pupilsim_sub96_lens, pupilsim_sub96_oap, sub96_oapsens (cycle 3a); redo96_oapsens (3b); the Mac, 2026-09-17.  The interferometer's rows on these decks are on the previous slide.
 
 ## Backup: the interferometer on the mirror rig | Open loop it reads; in a servo it does not hold, and from a large start it does not capture
 ::: left

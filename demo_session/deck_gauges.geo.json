@@ -147,7 +147,13 @@
  },
  "The reflective front end, measured": {
   "txt:The vector pair's raw error": {
-   "fs": 12
+   "fs": 12,
+   "x": 0.41,
+   "y": 5.7
+  },
+  "txt:Run tags oapifo2, oapifol2": {
+   "x": 0.45,
+   "y": 6.92
   }
  },
  "The reflective front end, redesigned": {
