@@ -19,7 +19,7 @@ American English; photons per measurement.
 -->
 
 # DM Surface Gauge Comparison
-Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same two jobs: hold the surface in a servo, and capture its shape after launch.
+Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same three jobs: measure the surface, capture its shape after launch, and hold the surface to <<10 pm in a servo.
 D. C. Redding, with Claude Code.
 September 2026.  For the JPL HWO WFS&C discussion group.
 DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.  Bench geometry under revision (2026-09-15): the record's 7° splitter is not buildable; the splitter goes to 22.5° (ruled 2026-09-15; the layouts show it), and the substrates, part thicknesses and camera are in the model (2026-09-16: the sensors do not move; the interferometer's 10 mm plates cost its flat null, its differential rows being re-measured).  The reflective front end has been redesigned and re-measured (rows, servo, descent, sensors, 2026-09-16); the lenses-versus-mirrors comparison is now measured on both rigs.
@@ -28,20 +28,21 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: left
 - **3** Introduction: the three jobs and how they are scored
 - **4** The bench layout
-- **6** Parts
-- **9** Twyman-Green interferometer
-- **16** Zernike sensor
-- **18** Vector Zernike sensor
-- **21** Point-diffraction sensor
-- **24** Performance: rows, capture, photons, servo
+- **6** Parts: the front end and the detector leg
+- **8** Parts: the interferometer and the sensors
+- **10** Twyman-Green interferometer
+- **17** Zernike sensor
+- **19** Vector Zernike sensor
+- **22** Point-diffraction sensor
+- **25** Performance: rows, capture, photons, servo
 ::: right
-- **30** Lenses versus off-axis parabolas
-- **31** The reflective front end and its performance
-- **33** Comparison and recommendation
-- **36** Measuring the complex amplitude
-- **37** Summary and future work
-- **43** Run it yourself
-- **44** Backup
+- **31** Lenses versus off-axis parabolas
+- **32** The reflective front end and its performance
+- **34** Comparison and recommendation
+- **37** Measuring the complex amplitude
+- **38** Summary and future work
+- **44** Run it yourself
+- **45** Backup
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -88,29 +89,38 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | interferometer snapshot form | the small-angle case | its plate systematics re-run at this angle | larger |
 ~ The sensors reproduce their rows at every angle; the interferometer's snapshot form is the one thing the angle changes, through the plate's polarization, and the cube form is built for 45°.  Run tags bs22_dev, bs30_dev; the panels at 7° and 30° are on the backup clearance slide.
 
-## Parts common to every configuration | The front end and the detector leg, from the parameter sheet; the substrates are now decided (10 mm splitter and compensator, 2 mm fused-silica plates under every polarizing element, a 2 mm mask plate, 4 mm lens edges) and go into every deck from here
+## Parts common to every configuration: the front end | The source, the collimator and the splitter node, from the parameter sheet; the substrates are now decided (10 mm splitter and compensator, 2 mm fused-silica plates under every polarizing element, a 2 mm mask plate, 4 mm lens edges) and go into every deck from here
 ::: full
 | part | size and figure | coating | count | purpose |
 |---|---|---|---|---|
-| laser, spatially filtered | HeNe 632.8 nm, 1 mW class; beam 51 mm radius after L1 | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
-| collimator L1 | f 857 mm, 103 mm, plano-convex conic; modeled 5 mm center, to be a real singlet | anti-reflection | 1 | collimates onto the mirror |
-| plate splitter | 103 mm, 22.5° incidence, 50/50; 10 mm thick: shifts the transmitted beam 1.39 mm, the flat null 0.13 → 20 nm, the reading attenuated 13% (floor, not gain; rows hold) | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
+| laser, spatially filtered | HeNe 632.8 nm, 1 mW class; the source cone is baffled to 59 mm radius, overfilling the mirror by 11 mm | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
+| collimator: L1 or OAP1 | L1: f 857 mm, 103 mm, plano-convex conic (R 427.3, conic −0.583), 5 mm center.  OAP1: parent f 757 mm (R −1514), 551 mm off-axis, 20° fold, 113 mm | L1 anti-reflection; OAP1 protected aluminum | 1 | collimates onto the mirror |
+| plate splitter | 103 mm, 22.5°, 50/50, 10 mm thick; the glass shifts the transmitted beam 1.39 mm and takes the flat null 0.13 → 20 nm | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
 | compensator plate | 103 mm, matched to the splitter, in the mirror leg | AR | 1 | balances the glass path through the splitter |
 | deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg | protected aluminum | 1 | the test object; its surface is the measurand |
-| focuser L2 | f 429 mm, 103 mm, plano-convex conic; modeled 8 mm center | AR | 1 | the internal focus at F/4.2 where the masks sit |
+| aperture on the mirror | 96 mm, at the actuator footprint | — | 1 | the stop: it defines the pupil, so the baffle never does |
+| mounts, bench | 2 m × 1 m table; 103 mm mounts, 25 mm clearance | — | — | the 22.5° layout clears every part |
+~ The two front ends are alternatives, not additions: a rig is all lenses or all mirrors, and the conjugates are identical either way.  One coating entry still needs a decision — the overcoat on the parabolas is modeled as a half wave of MgF2, and the polarization cost of an overcoat reverses sign across the quarter-wave condition, so a quarter wave AT 632.8 nm is the specification to order if the mirror rig is built.
+
+## Parts common to every configuration: the detector leg | From the focuser to the camera: focused once and shared by every configuration, so only the mask seat's contents and what follows the field lens change
+::: full
+| part | size and figure | coating | count | purpose |
+|---|---|---|---|---|
+| focuser: L2 or OAP2 | L2: f 429 mm, 103 mm, plano-convex conic (conic −0.582), 8 mm center.  OAP2: parent f 352 mm (R −704), 328 mm off-axis, 25° fold, 113 mm | L2 anti-reflection; OAP2 protected aluminum | 1 | the internal focus at F/4.2 where the masks sit |
 | mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
-| field lens | f 43 mm, 21 mm; at the seed station 10.8 mm past the focus (slide 15) | AR | 1 | reimages the DM: 9.8 mm across on the 96 mm beam, 38 mm behind it |
-| camera A | sCMOS 2048×2048, 6.5 µm, binned 4 to 377 px across the 9.8 mm image; or a 24 µm-pixel camera unbinned (408) | — | 1 | every configuration's pupil image |
-| mounts, bench | 2 m × 1 m table; 103 mm mounts on the node parts, 25 mm clearance | — | — | the 22.5° layout clears every part |
-~ The detector leg (focuser, mask seat, field lens, camera) is focused once and shared; only the mask seat's contents and what follows the field lens change between configurations.
+| field lens | f 43 mm, 21 mm, a conic: −2.11 at the seed station 10.8 mm past the focus, or −7.77 tuned — over the 2.4 mm of it the beam uses, 0.20 µm apart | AR | 1 | reimages the DM: 9.8 mm across on the 96 mm beam, 38 mm behind it |
+| camera A | sCMOS 2048×2048, 6.5 µm binned 4 to 377 px across the 9.8 mm image; or 24 µm pixels unbinned (408) | — | 1 | every configuration's pupil image |
+~ The field lens's conic is the one part still open: the seed station images the mirror flat, the tuned station reads it 2.3x better, and the two differ by 0.20 µm over the 2.4 mm the beam uses.
 
 ## Parts specific to the interferometer | What the reference arm and the two phase-shift forms add to the common bench
 ::: full
 | form | part | size and figure | coating / material | count | purpose |
 |---|---|---|---|---|---|
-| all | reference flat on a piezo stage | 103 mm, λ/20; 564 mm leg; stroke over one wave | protected aluminum | 1 | the external reference; the four phase steps in the piezo form |
-| snapshot | input polarizer; two arm quarter-wave plates; output quarter-wave plate | 103 mm zero-order plates on 2-3 mm substrates; azimuths 45 / 0 / 45 / 0° | AR | 4 | codes the four channels in polarization |
-| snapshot | polarization camera, in place of camera A | micro-polarizer array 0 / 45 / 90 / 135°, 3.45 µm pixels, 680 per orientation across the pupil | — | 1 | the four analyzer channels at once; no rotating stage |
+| all | reference flat | 103 mm, λ/20; 564 mm leg | protected aluminum | 1 | the external reference: the arm that makes this the one gauge to capture a whole wave |
+| piezo form | closed-loop piezo stage under the flat | stroke over one wave (633 nm) in four steps of λ/8 of surface; closed-loop, since the step error is read directly as phase | — | 1 | steps the reference phase; a 2% step error is priced in the servo, and the stepping is what exposes it to within-scan drift |
+| snapshot | input polarizer; one quarter-wave plate in each arm, double-passed; output quarter-wave plate | 103 mm zero-order plates on 2-3 mm substrates; azimuths 45 / 0 / 45 / 0° | AR | 4 | codes the four channels in polarization |
+| piezo | analyzer | 103 mm polarizer on a 2 mm substrate, 160 mm behind the splitter with the output plate | AR | 1 | sets the interference to be read; in the snapshot form the camera's own micro-polarizer array does this job four ways at once |
+| snapshot | polarization camera, replacing camera A | micro-polarizer array 0 / 45 / 90 / 135° over a 2048×2048 sCMOS, 3.45 µm pixels in 2×2 super-pixels, 680 per orientation across the pupil | — | 1 | the four analyzer channels in one frame: no moving part, and immune to the drift within a scan that the piezo form pays for |
 | cube (backup) | cemented polarizing cube in place of the plate and compensator | 103 mm class MacNeille, symmetric stack | ZnS / cryolite on n 1.655 glass | 1 | the split as polarization physics; no compensator |
 ~ The hybrid form uses the snapshot parts for every change measurement and the piezo for the absolute calibration; both live on the same bench.
 
@@ -120,10 +130,11 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 |---|---|---|---|---|---|
 | Zernike | etched mask plate | fused silica, 2-3 mm; a 3×3 array of dimples 346 nm deep (a quarter wave), the record's 5.3 µm (2.0 λF/D) | bare fused silica | 1 | the reference from the beam's own core; stepped by translating between depths |
 | vector Zernike | geometric-phase metasurface | in the mask seat: a half-wave dimple pattern, +90° on one circular state and −90° on the other | dielectric metasurface on fused silica | 1 | the two images with opposite dimple sign |
-| vector Zernike | quarter-wave plate; polarizing cube; camera B | zero-order plate at λ/300 on a 2 mm substrate; 12.7 mm cemented MacNeille cube; a second sCMOS like camera A | AR; ZnS / cryolite | 3 | separates the two circular states onto two cameras, both frames at once |
+| vector Zernike, split form | quarter-wave plate; polarizing cube; camera B | zero-order plate at λ/300 on a 2 mm substrate; 12.7 mm cemented MacNeille cube; a second sCMOS like camera A | AR; ZnS / cryolite | 3 | separates the two circular states onto two cameras, both frames at once |
+| vector Zernike, snapshot form | quarter-wave plate; the interferometer's polarization camera in place of camera A | the same zero-order plate; the micro-polarizer array already on the bench for the snapshot interferometer | AR | 2 | the same two states read on one camera: one detector, no split leg to align, at a quarter of the pixels per state |
 | stepped pinhole | pinhole plate on a phase-stepping stage; shutter | fused silica, 2-3 mm; 5.27 µm pinhole, surround attenuated to 0.72 in amplitude; steps of an eighth wave | metal-film attenuator | 2 | the reference from the core through the pinhole; the shutter frame reads the reference alone |
 | P/SRI (backup) | pickoff plate; lens Lr1; pinhole into a single-mode waveguide with a thermo-optic phase shifter; lens Lr2; two folds; compensator; recombiner; camera C | 60/40 plate at 45°; f 300 mm F/2.9; 3.7 µm; f 300 mm mirrored; 150 mm flats at 45°; 21.9 mm of glass; 50/50 plate at 45°; sCMOS | AR; protected-metal folds | 9 | the two-arm form with a reference that does not move with the surface |
-~ The Zernike, vector and pinhole plates share one substrate on the seat.  Full parts tables with vendors' classes are in each lane's README.
+~ The vector sensor is the one configuration with a choice of readout: the split form buys full pixel count per state, the snapshot form reuses the interferometer's own camera.  The Zernike, vector and pinhole plates share one substrate on the seat.  Full parts tables with vendors' classes are in each lane's README.  **What the photonic reference is, and is not, in these numbers:** the P/SRI arm's reference is modeled as the recollimated LP01 mode of a single-mode fiber, with the pickoff fraction, the coupling into the mode, and a miscalibration of the phase steps all priced.  The waveguide itself is not a traced element and the thermo-optic shifter is an ideal phase per frame, so the photonic option is costed as an ideal device on a real mode: its own loss, dispersion and thermal drift are the next thing to model, not something already in these numbers.
 
 ## Interferometer: Twyman-Green, four phase steps | Its best form is the hybrid: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
@@ -485,12 +496,13 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | 632.8 + 780 nm | 3.35 µm | 0.84 µm | 5× |
 ~ The two-color interferometer is the classic form; the same trick applies to the dimple and the pinhole through their color stage.
 
-## Future work: other approaches worth a look | Seven candidates, none modeled here, each with one sentence on what it would buy
+## Future work: other approaches worth a look | Eight candidates, none modeled here, each with one sentence on what it would buy
 ::: full
+- **A model-based large-figure solve:** the mirror's influence functions as the basis of a nonlinear fit to the sensor's frames; the estimator already carries the basis.
 - **Shack-Hartmann or modulated pyramid as the capture stage:** many waves of range, no wrap, far from picometers; hands off to the gauge inside its range.
+- **Redesign the lenses as multi-element assemblies.**
 - **Phase diversity (two defocused pupil images):** wide range, common path, iterative; a capture candidate with the existing camera and one translation stage.
 - **White-light scanning in the interferometer:** an absolute surface with no wrap, slow; a one-time capture tool.
-- **A model-based large-figure solve:** the mirror's influence functions as the basis of a nonlinear fit to the sensor's frames; the estimator already carries the basis.
 - **Vector Zernike with a polarization camera:** one camera instead of the cube and two, at a quarter of the pixels per image.
 - **Heterodyne or lock-in detection:** immunity to slow drift and 1/f electronics, for a frequency-shifted reference; the two-arm instruments can carry it, the common-path sensors cannot.
 - **Direct actuator metrology (capacitive, optical):** a coarse reference the optical gauge is calibrated against.
