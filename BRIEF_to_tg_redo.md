@@ -424,3 +424,11 @@ CCL has tracked the redo tails under their run tags (`redo_lens_tail.mat`,
 RECORD's `lens_tail.mat` / `oap_tail.mat`.  Either package C runs under those
 tags, or the redo tails are copied onto the canonical names.  Left alone rather
 than overwritten under another lane's feet.
+
+**Cycle 3b's sensors landed (resources 49444dc, `redo96_oapsens` at the explicit seat
+0.632):** identical to cycle 3a's `sub96_oapsens` to the digit (rows 0.993 / 0.995,
+capture S 35 / V 51 / P 42, pinhole gate 3.5 pm, vector 408 pm uncalibrated) -- as it
+should be: the mirror rig's sensor bench did not change between the cycles (package A
+moved only the interferometer's tail on that rig), so the sensors' package-C baseline
+on the redo bench is this run.  Cycle 3b is complete; cycle 3c (the ladders, the
+photons, the servo, the descent, the station figures) is next on the Mac.
