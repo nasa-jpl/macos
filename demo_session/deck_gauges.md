@@ -171,6 +171,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | blur over the actuator band: rms / max | 0.066 / 0.133 | 0.051 / 0.143 |
 | image surface: defocus / astig / tilt (mm of sag) | -0.0005 / -0.095 / 0.002 | -0.45 / 0.14 / 0.42 |
 | focal spot on axis / at the actuator-band tilt | 0.06 / 0.09 λF/D | 0.03 / 2.2 λF/D |
+- **The imaging supports picometer measurement on both rigs:** carried through to a reading, it costs **42 pm** (lenses) and **92 pm** (mirrors) on a 30 nm working surface — 0.1 % and 0.3 % of the figure — rising to 0.5 % and 0.9 % in the top spatial band.  It holds because the response matrix is MEASURED: the mirror rig's image is distorted by more than an actuator pitch at the edge, which a geometric mapping would carry straight into the surface.
 - **Method:** the DM declared the stop, the field a tilt about it; two traces a small field step apart cross at each zone's image at the camera; scored in DM mm against the 1 mm pitch.
 - **What package A did here:** the lens rig's image went flat (0.5 µm of defocus against 3.8 mm) and its distortion fell 2.8×; the mirror rig's went the other way (edge 0.85 → 1.19 mm), the OAP pair's mapping, and why the distortion gate was withdrawn.
 - **The mirror rig's focus is perfect on axis and coma-limited off it** (2.2 λF/D at the actuator-band tilt); not a pupil-image cost, a number to know for any off-axis reading at the seat.
@@ -466,7 +467,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The operating modes as a flow: ground flat, image-based phase retrieval, capture, closed-loop hold; the readings' capture limits under the capture box; recalibration events above.](figs/gauge_modes_flow.png){h=4.6}
 ~ The loop's own focal-plane phase retrieval wraps at half a wave of high-spatial-frequency wavefront, one wave before the gauges do; its reach sets what capture must cover.  Drawn by gauge_modes_flow.m.
 
-## The complex amplitude, for two-mirror control | Every approach but the one-frame Zernike readings returns the pupil field's amplitude as well as its phase from frames it already takes; no separate camera is needed
+## Measuring the full complex amplitude, for two-mirror control | Every approach but the one-frame Zernike readings returns the pupil field's amplitude as well as its phase from frames it already takes; no separate camera is needed
 ::: left
 | reading | amplitude from its own frames? | how |
 |---|---|---|

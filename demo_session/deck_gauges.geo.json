@@ -1,5 +1,15 @@
 {
  "_comment": "Dave's edit-copy passes (recovered via pptx_geo_diff.py). Applied by make_brief_slides.py on every rebuild.  TWO THINGS TO KNOW WHEN ADDING ENTRIES.  (1) Keys are the BUILDER's block keys, not the rendered text: a bullet block's key is 'txt:' + the FIRST bullet with its markdown emphasis stripped and NO bullet glyph -- pptx_geo_diff.py prints the rendered form ('• How it reads: ...'), and a key copied from it never matches, so the override is silently dropped (that is what happened to the slide-9 font bump from an earlier pass; fixed 2026-09-18).  (2) An Impress round-trip resizes almost every text block's HEIGHT by a fraction of an inch (autofit recompute: width unchanged, no move).  That is noise and is deliberately NOT recorded here -- only moves, picture geometry, CROPS (cl/cr/ct/cb -- Dave trims figures to fit, and a crop moves nothing, so it was invisible to both diffs until pptx_geo_diff.py learned to report it on 2026-09-18) and font sizes are.  THIRD: an img: key is the figure's BASENAME, so repointing a slide at a newer run silently drops that figure's crop and pinned geometry -- update the key in the same edit (2026-09-18).",
+ "Backup: provenance": {
+  "txt:Interferometer (tg_psi_dm96_oap/runs): lens_de": {
+   "x": 0.43,
+   "y": 1.24
+  },
+  "txt:Model sizes: 1024 grid with 193 rays": {
+   "x": 0.45,
+   "y": 7.0
+  }
+ },
  "Capture range: how far from null each reading works": {
   "txt:Why the sensors age": {
    "fs": 15
@@ -55,6 +65,11 @@
   "txt:Run tags pupilq_lens, pupilq_oap": {
    "x": 7.0,
    "y": 5.67
+  },
+  "txt:Run tags pupilq96_lens, pupilq96_oap": {
+   "x": 7.0,
+   "y": 6.25,
+   "w": 5.9
   }
  },
  "Lenses or off-axis mirrors: the record": {
@@ -64,6 +79,15 @@
   "txt:Run tags oap_deck, loop_oap": {
    "x": 7.0,
    "y": 5.2
+  }
+ },
+ "Measuring the full complex amplitude, for two-mirror control": {
+  "txt:The vector pair alone cannot": {
+   "fs": 15
+  },
+  "txt:Run tag an193_clear": {
+   "x": 7.1,
+   "y": 5.25
   }
  },
  "Photons for 1 pm": {
@@ -113,6 +137,11 @@
    "x": 7.75,
    "y": 5.83,
    "w": 5.15
+  },
+  "txt:Run tags pupilsim_redo_lens, pupilsim_redo_oap": {
+   "x": 8.0,
+   "y": 6.14,
+   "w": 4.9
   }
  },
  "Recommendation": {
@@ -125,15 +154,6 @@
   "txt:Draft stance approved": {
    "x": 7.0,
    "y": 5.0
-  }
- },
- "The complex amplitude, for two-mirror control": {
-  "txt:The vector pair alone cannot": {
-   "fs": 15
-  },
-  "txt:Run tag an193_clear": {
-   "x": 7.1,
-   "y": 5.25
   }
  },
  "The question: must the pupil imaging be simulated, and how?": {
