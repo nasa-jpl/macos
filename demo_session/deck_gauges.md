@@ -155,25 +155,26 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The splitter node from above, as traced at 22.5°, ±320 mm about the splitter: L1 and the input polarizer, the splitter, the compensator on the mirror leg, the output quarter-wave plate and analyzer just ahead of the focuser L2; test arm blue, reference arm orange.  The two "QWP" labels at the node mark builder placements; the physical plates sit at the mirror and the flat.](figs/crop_bench_bs22_node.png){h=4.2}
 ~ The analyzer's four orientations are taken at once by a polarization camera (a micro-polarizer array at 0 / 45 / 90 / 135° on the pixels); the model rotates an ideal analyzer between its four frames, the same measurement.  A rotating stage would make the snapshot a sequential scan.  The plates here are drawn as ideal surfaces; the next model round gives each a 2-3 mm substrate, which in these collimated legs adds path only.  Drawn by dmg_bench_clearance.
 
-## Interferometer, station by station | The key signals along the train for the flat mirror and for the 30 nm working surface, on the redesigned mirror rig: the absolute map is within 2% of the engine's field, the differential rows within 2.4 pm
+## Interferometer, station by station | The key signals along the train for the flat mirror and for the 30 nm working surface, on the redesigned mirror rig: the absolute map is within 1.5% of the engine's field, the differential rows within 1.8 pm
 ::: full
-![Two rows (the flat mirror, the 30 nm rms working surface) by seven stations: the mirror command, the test-arm field at the camera, the reference-arm field, two of the four phase-stepped frames (0 and π/2), the surface recovered from the four-step, and the recovered map minus the engine's own field.  The runner's own figure from the servo run.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/stnoap/stnoap_stations.png){h=3.2}
-- **The residual column is the absolute read against the engine:** 0.00 pm on the flat, 626 pm on the 30 nm surface (2% of the figure); the differential rows the servo uses read the same surface's changes to 2.4 pm, which is why the matrix is measured on the surface.
-~ Run tag stnoap (the redesigned mirror rig, seed detector leg; bit-identical to the servo run's figure).  The lens rig's figure exists but its residual panel reads 62 nm against the engine, a misregistration under investigation, so it is not shown.
+![Two rows (the flat mirror, the 30 nm rms working surface) by seven stations: the mirror command, the test-arm field at the camera, the reference-arm field, two of the four phase-stepped frames (0 and π/2), the surface recovered from the four-step, and the recovered map minus the engine's own field.  The runner's own figure from the servo run.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/redo96_oapstn/redo96_oapstn_stations.png){h=3.2}
+- **The residual column is the absolute read against the engine:** 0.00 pm on the flat, 463 pm on the 30 nm surface (1.5% of the figure); the differential rows the servo uses read the same surface's changes to 1.8 pm, which is why the matrix is measured on the surface.
+~ Run tag redo96_oapstn (the mirror rig on the redo bench, Mac cycle 3c, 2026-09-18).  The lens rig's figure exists but its residual panel reads 51 nm against the engine — a fold, not the pupil-image bowl the earlier hypothesis blamed: the bowl is gone and the residual barely moved (62 → 51 nm).  Under investigation, so it is not shown.
 
-## Interferometer: pupil image quality | The camera sees the DM sharply on both front ends; against a single global mapping the image is distorted by a third of a pitch at the edge on lenses and most of a pitch on mirrors, which the measured response matrix absorbs and a geometric mapping would not
+## Interferometer: pupil image quality | The camera sees the DM sharply on both front ends; against a single global mapping the image is distorted by a seventh of a pitch at the edge on lenses and more than a pitch on mirrors, which the measured response matrix absorbs and a geometric mapping would not
 ::: left
-![The DM's image at the camera on the lens rig, the DM as the stop: left, distortion against the global affine (arrows ×3, DM mm); right, the blur of each zone's image over the band of tilts the DM can make.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilq_lens/pupilq_lens_pupil.png){h=2.6}
+![The DM's image at the camera on the lens rig, the DM as the stop: left, distortion against the global affine (arrows ×3, DM mm); right, the blur of each zone's image over the band of tilts the DM can make.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilq96_lens/pupilq96_lens_pupil.png){h=2.6}
 ::: right
 | DM mm unless stated | lens rig | mirror rig |
 |---|---|---|
-| distortion vs one affine: rms / edge | 0.13 / 0.30 | 0.45 / 0.85 |
-| blur over the actuator band: rms / max | 0.023 / 0.060 | 0.032 / 0.093 |
-| image surface: defocus / tilt (mm of sag) | 3.8 / 0.0 | -0.5 / 0.45 |
-| focal spot on axis / at the actuator-band tilt | 0.16 / 0.16 λF/D | 0.00 / 2.3 λF/D |
-- **Method:** the DM declared the stop; the field a tilt about it (a spatial frequency on its surface); two traces a small field step apart cross at each zone's image at the camera; scored in DM millimeters against the 1 mm pitch and the 0.4 mm pixel.
-- **The mirror rig's focus is perfect on axis and coma-limited off it** (2.3 λF/D at the actuator-band tilt); not a pupil-image or mask-sensor cost, a number to know for any off-axis reading at the seat.
-~ Run tags pupilq_lens, pupilq_oap (tg96_pupilq, model 512); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.
+| distortion vs one affine: rms / edge | 0.047 / 0.138 | 0.62 / 1.19 |
+| blur over the actuator band: rms / max | 0.066 / 0.133 | 0.051 / 0.143 |
+| image surface: defocus / astig / tilt (mm of sag) | -0.0005 / -0.095 / 0.002 | -0.45 / 0.14 / 0.42 |
+| focal spot on axis / at the actuator-band tilt | 0.06 / 0.09 λF/D | 0.03 / 2.2 λF/D |
+- **Method:** the DM declared the stop, the field a tilt about it; two traces a small field step apart cross at each zone's image at the camera; scored in DM mm against the 1 mm pitch.
+- **What package A did here:** the lens rig's image went flat (0.5 µm of defocus against 3.8 mm) and its distortion fell 2.8×; the mirror rig's went the other way (edge 0.85 → 1.19 mm), the OAP pair's mapping, and why the distortion gate was withdrawn.
+- **The mirror rig's focus is perfect on axis and coma-limited off it** (2.2 λF/D at the actuator-band tilt); not a pupil-image cost, a number to know for any off-axis reading at the seat.
+~ Run tags pupilq96_lens, pupilq96_oap (tg96_pupilq, model 512, on the emitted redo decks, 2026-09-18); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.  λF/D = 2.83 µm on the 96 mm beam.  Blur grew on both rigs against the record because the beam now fills the DM: it lit 77 / 82 mm of 96, leaving the edge zones, where the walk is largest, out of that average.
 
 ## The question: must the pupil imaging be simulated, and how? | Is it possible or even necessary to simulate the effect of the pupil imaging geometry on the pupil images of the DM?  Convolve the pupil image with the complex amplitude?  (Dave, 2026-09-16)
 ::: full
@@ -183,19 +184,19 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **When a small field stop sits at the focus** (a spatial filter of a few λ/D), the pupil image is low-pass filtered and actuator responses blur; then one aperture element at the seat through the existing sandwich answers it in one run.
 ~ The answer as given on 2026-09-16, before the simulation; the next slide supersedes its "not needed" with numbers.
 
-## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode is observable; the lens rig's camera is not at the pupil image, and 4 mm fixes it
+## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode is observable, and on the redo bench the camera sits AT the pupil image on both rigs — the detector move the record needed is gone
 ::: left
-![Phase gain (recovered over true) versus pupil radius on the lens rig for DM sinusoids at 2, 4, 8 and 16 mm period, at the camera plane as built (left) and 4.3 mm downstream (middle); right, the amplitude cross-talk the four-step ignores.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_lens/pupilsim_lens_gain.png){h=3.1}
+![Phase gain (recovered over true) versus pupil radius on the lens rig for DM sinusoids at 2, 4, 8 and 16 mm period, at the camera plane as built (left) and 4.3 mm downstream (middle); right, the amplitude cross-talk the four-step ignores.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_redo_lens/pupilsim_redo_lens_gain.png){h=3.1}
 ::: right
 | gain at the actuator Nyquist (2 mm) | center | edge | worst | 30 nm surface, error |
 |---|---|---|---|---|
-| lens rig, camera as built | 0.990 | 0.973 | 0.954 | 1.2 nm |
-| lens rig, camera +4.3 mm | 0.997 | 0.998 | 0.993 | 0.4 nm |
-| mirror rig, as built | 1.000 | 0.999 | 0.997 | 0.2 nm |
+| lens rig, redo bench | 1.0000 | 1.0000 | **1.0000** | **42 pm** |
+| mirror rig, redo bench | 0.9994 | 0.9994 | 0.9994 | 92 pm |
+| lens rig, the record's tuned tail (superseded) | 0.990 | 0.973 | 0.954 | 1.2 nm |
 - **How:** the DM the stop; 41 tilts over the actuator band; each zone's image walk integrates to its wavefront (defocus and astigmatism to 0.3 nm), whose transform is the zone's complex PSF; the DM field filtered zone by zone, the reference arm through the same leg, angle of the product read as the surface.
-- **The image is a bowl the camera sits ahead of** on the lens rig: 2.6 mm on axis, 6 mm at the edge (the tail was tuned on the flat-mirror null, which cannot see pupil defocus).  The mirror rig's thin-lens seat is within 1.3 mm of its image.
+- **The bowl is gone.**  On the record's tuned tail the image was a surface the camera sat 2.6 mm ahead of on axis and 6 at the edge, because that tail was tuned on the flat-mirror null, which cannot see pupil defocus.  On the redo bench the best detector move is **−0.00 mm**: there is nothing left to correct, and the band-edge phase is 0.000 rad rms on lenses, 0.013 on mirrors.
 - **The beam of record under-filled the DM** (77 / 82 mm of 96): the baffle is now opened and the aperture sits on the DM; runs from 2026-09-17 carry the full 96 mm.
-~ Run tags pupilsim_lens, pupilsim_oap (tg96_pupilsim; run it yourself: tg96_pupil_batch.sh both); REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
+~ Run tags pupilsim_redo_lens, pupilsim_redo_oap (tg96_pupilsim on the emitted redo decks = package A's gate record, 2026-09-17; run it yourself: tg96_pupil_batch.sh both).  The superseded row is the record's tuned tail, kept so the gain is legible; REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
 
 ## Improving the pupil image: the options, assessed | The tail geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
 ::: full
