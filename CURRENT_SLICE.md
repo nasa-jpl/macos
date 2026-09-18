@@ -384,7 +384,15 @@
 > lens's conic (-7.77 tuned vs the seed -2.11: 2.3x in the reading, a mild
 > asphere over 2.4 mm) and the compensator's clearance (+10.4 vs 25:
 > D_BS_CMP 200 -> ~225).  Next: RUNBOOK_mac_cycle3c (the rest of package
-> C on the Mac).  Standalone paraxial chain (`fourier` true) works as
+> C on the Mac).
+> WRAP (Dave, end of day): deck_gauges.pptx 54 slides = the INTERIM DECK
+> (edit copy synced, pushed 9d2397d); RUNBOOK_mac_cycle3c written + pushed
+> (1799cd8); TO's brief commit b302521 local in macos.  OPEN FOR DAVE: the
+> field lens's conic (-7.77 vs seed -2.11), the compensator's station
+> (D_BS_CMP ~225).  NEXT SESSION: fold cycle 3c as it lands (the deck's
+> servo/capture/photons/descent/station slides -> the redo bench columns),
+> then the interim REPORT (Fri 09-18: current record labeled; style gate
+> doc/STYLE_REPORTS.md section 5; .docx).  Standalone paraxial chain (`fourier` true) works as
 > a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
 > BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
 > record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
