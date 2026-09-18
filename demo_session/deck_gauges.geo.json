@@ -1,7 +1,191 @@
 {
- "_comment": "Dave's edit-copy passes (recovered via pptx_geo_diff.py). Applied by make_brief_slides.py on every rebuild.",
+ "_comment": "Dave's edit-copy passes (recovered via pptx_geo_diff.py). Applied by make_brief_slides.py on every rebuild.  TWO THINGS TO KNOW WHEN ADDING ENTRIES.  (1) Keys are the BUILDER's block keys, not the rendered text: a bullet block's key is 'txt:' + the FIRST bullet with its markdown emphasis stripped and NO bullet glyph -- pptx_geo_diff.py prints the rendered form ('• How it reads: ...'), and a key copied from it never matches, so the override is silently dropped (that is what happened to the slide-9 font bump from an earlier pass; fixed 2026-09-18).  (2) An Impress round-trip resizes almost every text block's HEIGHT by a fraction of an inch (autofit recompute: width unchanged, no move).  That is noise and is deliberately NOT recorded here -- only moves, picture geometry, CROPS (cl/cr/ct/cb -- Dave trims figures to fit, and a crop moves nothing, so it was invisible to both diffs until pptx_geo_diff.py learned to report it on 2026-09-18) and font sizes are.",
+ "Capture range: how far from null each reading works": {
+  "txt:Why the sensors age": {
+   "fs": 15
+  },
+  "txt:Run tags cap385, cap385p": {
+   "x": 6.95,
+   "y": 4.75
+  }
+ },
+ "Capturing the initial figure": {
+  "txt:The wrap is not the limit": {
+   "fs": 15
+  },
+  "txt:1e13 and 1e15 photons per cycle": {
+   "x": 7.02,
+   "y": 4.98
+  }
+ },
+ "Contents": {
+  "txt:3 Introduction": {
+   "fs": 15
+  },
+  "txt:30 Lenses versus off-axis parabolas": {
+   "fs": 15
+  }
+ },
+ "Future work: capture beyond one wave with a second color": {
+  "txt:Where unwrapping stops": {
+   "fs": 15
+  }
+ },
  "Interferometer: Twyman-Green, four phase steps": {
-  "txt:• How it reads: the test beam": {
+  "txt:How it reads: the test beam": {
+   "fs": 15
+  }
+ },
+ "Interferometer: pupil image quality": {
+  "img:pupilq_lens_pupil": {
+   "x": 0.0,
+   "y": 1.42,
+   "w": 7.0,
+   "h": 3.58,
+   "cl": 0.0785,
+   "cr": 0.0785,
+   "ct": 0,
+   "cb": 0.0427,
+   "cx": 0.44,
+   "cy": 5.68
+  },
+  "txt:Method: the DM declared the stop": {
+   "fs": 14
+  },
+  "txt:Run tags pupilq_lens, pupilq_oap": {
+   "x": 7.0,
+   "y": 5.67
+  }
+ },
+ "Lenses or off-axis mirrors: the record": {
+  "txt:What the record saw": {
+   "fs": 15
+  },
+  "txt:Run tags oap_deck, loop_oap": {
+   "x": 7.0,
+   "y": 5.2
+  }
+ },
+ "Photons for 1 pm": {
+  "img:zwfs_rec193full_noise": {
+   "x": 7.11,
+   "y": 1.42,
+   "w": 5.39,
+   "h": 4.26,
+   "cx": 7.03,
+   "cy": 5.7
+  },
+  "txt:One measurement at 1e14 photons": {
+   "x": 7.03,
+   "y": 6.17
+  }
+ },
+ "Point-diffraction sensor: a stepped pinhole with a shutter frame": {
+  "txt:How it reads: the pinhole passes the core": {
+   "fs": 15
+  }
+ },
+ "Pupil imaging: the DM's modes through the detector leg": {
+  "img:pupilsim_lens_gain": {
+   "x": 0.05,
+   "y": 1.85,
+   "w": 7.62,
+   "h": 3.0,
+   "cl": 0.0874,
+   "cr": 0.0808,
+   "ct": 0,
+   "cb": 0.0176,
+   "cx": 0.45,
+   "cy": 5.9
+  },
+  "table:1": {
+   "x": 7.75,
+   "y": 1.42,
+   "w": 5.15,
+   "h": 1.15
+  },
+  "txt:How: the DM the stop": {
+   "x": 7.75,
+   "y": 2.73,
+   "w": 5.15
+  },
+  "txt:Run tags pupilsim_lens, pupilsim_oap": {
+   "x": 7.75,
+   "y": 5.83,
+   "w": 5.15
+  }
+ },
+ "Recommendation": {
+  "txt:Hold: the polarized dimple": {
+   "fs": 15
+  },
+  "txt:The bench: one layout": {
+   "fs": 15
+  },
+  "txt:Draft stance approved": {
+   "x": 7.0,
+   "y": 5.0
+  }
+ },
+ "The complex amplitude, for two-mirror control": {
+  "txt:The vector pair alone cannot": {
+   "fs": 15
+  },
+  "txt:Run tag an193_clear": {
+   "x": 7.1,
+   "y": 5.25
+  }
+ },
+ "The question: must the pupil imaging be simulated, and how?": {
+  "txt:The right model is coherent imaging": {
+   "fs": 18
+  },
+  "txt:The answer as given on 2026-09-16": {
+   "x": 0.45,
+   "y": 6.19
+  }
+ },
+ "The reflective front end, measured": {
+  "txt:The vector pair's raw error": {
+   "fs": 12
+  }
+ },
+ "The reflective front end, redesigned": {
+  "img:crop_oapdraw3_train": {
+   "x": 1.25,
+   "y": 1.7,
+   "w": 4.75,
+   "h": 4.3,
+   "cx": 0.45,
+   "cy": 6.23
+  }
+ },
+ "The servo: holding 3 pm": {
+  "img:crop_zwfs_vloop193_right": {
+   "x": 7.75,
+   "y": 1.39,
+   "w": 4.38,
+   "h": 3.69,
+   "cx": 7.0,
+   "cy": 5.14
+  },
+  "txt:7.5e12 photons per cycle": {
+   "x": 7.0,
+   "y": 5.68
+  }
+ },
+ "The three jobs, and how each is scored": {
+  "txt:The DM: 96×96 actuators": {
+   "fs": 14
+  }
+ },
+ "Vector Zernike sensor: the polarized dimple": {
+  "txt:How it reads: the two images": {
+   "fs": 15
+  }
+ },
+ "Zernike sensor: a quarter-wave dimple at the focus": {
+  "txt:How it reads: a 5.3 µm etched dimple": {
    "fs": 15
   }
  }
