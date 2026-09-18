@@ -12,6 +12,10 @@ source path here does not exist, the crop is SKIPPED and the deck keeps the
 stale PNG -- which is why this file now reports every miss at the end."""
 from PIL import Image, ImageChops
 R = '/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/'
+# BOX WIDTHS: the fractional box only has to SELECT a panel -- trim() strips the
+# white margin afterwards -- so a narrow box buys nothing and costs content.  The
+# 0.15/0.85 side margins these carried were cutting the beams off at both edges
+# (Dave, 2026-09-18); full width is the right default.
 JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'tg_psi_dm96_oap/runs/lay96_lens/lay96_lens_vlayout.png', 'crop_lens_vlayout_train.png', (0.0, 0.0, 1.0, 0.33)),
     (R+'tg_psi_dm96_oap/runs/lay96_lens/lay96_lens_vlayout.png', 'crop_lens_vlayout_node.png',  (0.2, 0.33, 0.8, 0.66)),
@@ -23,16 +27,26 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'pdi_dm96/pdi_layout.png',          'crop_pdi_layout_train.png',   (0.0, 0.0, 1.0, 0.37)),
     (R+'pdi_dm96/pdi_layout.png',          'crop_pdi_layout_tail.png',    (0.0, 0.37, 1.0, 1.0)),
     (R+'zwfs_dm96/zwfs_vlayout.png',       'crop_zwfs_vlayout_train.png', (0.0, 0.0, 1.0, 0.5)),
-    (R+'zwfs_dm96/zwfs_vlayout.png',       'crop_zwfs_vlayout_tail.png',  (0.0, 0.5, 1.0, 1.0)),
-    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_train.png',   (0.15, 0.0, 0.85, 0.40)),
-    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_node.png',    (0.15, 0.40, 0.85, 1.0)),
-    (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_node.png',    (0.15, 0.40, 0.85, 1.0)),
-    (R+'zwfs_dm96/bench_bs7.png',          'crop_bench_bs7_node.png',     (0.15, 0.40, 0.85, 1.0)),
-    (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_train.png',   (0.15, 0.0, 0.85, 0.40)),
+    (R+'zwfs_dm96/zwfs_vlayout.png',       'crop_zwfs_vlayout_tail.png',  (0.0, 0.46, 1.0, 1.0)),
+    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_train.png',   (0.02, 0.0, 0.99, 0.40)),
+    (R+'zwfs_dm96/bench_bs30.png',         'crop_bench_bs30_node.png',    (0.02, 0.40, 0.99, 1.0)),
+    (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_node.png',    (0.02, 0.40, 0.99, 1.0)),
+    (R+'zwfs_dm96/bench_bs7.png',          'crop_bench_bs7_node.png',     (0.02, 0.40, 0.99, 1.0)),
+    (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_train.png',   (0.02, 0.0, 0.99, 0.40)),
     (R+'tg_psi_dm96_oap/runs/lay96_oap/lay96_oap_vlayout.png', 'crop_lay96_oap_train.png', (0.15, 0.05, 0.9, 0.33)),
     (R+'tg_psi_dm96_oap/runs/lay96_oap/lay96_oap_vlayout.png', 'crop_lay96_oap_node.png',  (0.3, 0.33, 0.8, 0.66)),
 ]
 MISSING = []
+
+
+# Margin left around the ink after trimming, as a fraction of the trimmed size.
+# A FIXED 12 px (what this was until 2026-09-18) is half a percent of a 2438 px
+# render -- invisible at deck scale, so every panel sat flush against its own
+# content and read as cramped on the slide (Dave: "a little too tight").  The
+# fractional box was never the problem: widening it changed nothing, because the
+# space it gained was white that trim then removed again.
+PAD_FRAC = 0.025
+PAD_MIN = 12
 
 
 def trim(im):
@@ -40,8 +54,15 @@ def trim(im):
     diff = ImageChops.difference(im.convert('RGB'), bg.convert('RGB'))
     bbox = diff.getbbox()
     if bbox:
-        l, t, r, b = bbox; m = 12
-        im = im.crop((max(0, l-m), max(0, t-m), min(im.width, r+m), min(im.height, b+m)))
+        l, t, r, b = bbox
+        m = max(PAD_MIN, int(PAD_FRAC * max(r - l, b - t)))
+        # Paste onto white rather than taking the margin from the source: a
+        # panel whose ink runs to the edge of its fractional box (the node
+        # panels do, vertically) cannot give the margin back, so taking it
+        # from the source pads the sides and leaves top and bottom flush.
+        core = im.crop(bbox)
+        im = Image.new('RGB', (core.width + 2*m, core.height + 2*m), (255, 255, 255))
+        im.paste(core, (m, m))
     return im
 import os
 for src, out, (l, t, r, b) in JOBS:
