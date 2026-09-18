@@ -269,6 +269,42 @@
 > (59.3168 nm): with the station held both free knobs are blind to an arm
 > DIFFERENCE.  Report sections 8.1-8.5 written; `runs/harvest_redo.sh` prints
 > the gate record under its run tags.
+> **PACKAGE A CLOSED (gate record REPORT 8.7), PACKAGE B FIRST PASS DONE
+> (REPORT 9-9.4).**  Package A's gates: exit spread 6.3e-09 / 1.4e-08 rad rms,
+> spot 0.17 / 0.09 um, seat 0.000 / -0.0001 mm, Nyquist gain 1.0000 / 0.9994,
+> band-edge phase 0.000 / 0.035 rad -- ALL PASS both rigs; distortion 0.041 /
+> 0.722 FAILS the brief's 0.01 figure, which is WITHDRAWN (it was read off a row
+> measured on the UNcollimated bench).  **The bench reads its own 30 nm working
+> surface to 42 pm (lens) / 92 pm (mirror)** against the record's 1.22 / 0.23
+> nm; single pokes 0.9998; the lens rig's amplitude cross-talk 0.005 (was 0.33).
+> The tuned tail buys 2.3x over the seed (97 -> 42 pm) -- the WINNER GATE could
+> not see it (SNR ~170, ratio 0.9970), which corrected 8.4.  The 59/74 nm nulls
+> are THE BEAM (9.8 -> 53.6 nm when the DM became the stop); substrates cost
+> 39 nm misfed vs 5.6 collimated.  Brief section 7 = package A's close-out with
+> the two calls for Dave (the field lens's conic -7.77 vs the seed's -2.11; the
+> compensator's +10.4 mm clearance, which is the STOP ruling not the plates).
+> **PACKAGE B:** the chain RUNS on the lens rig for the first time.  Found and
+> fixed: the quartet was appended straight after the focuser, so the mask plate
+> landed AFTER S2 in deck order and the rays turned back 7 mm upstream into
+> glass (6.2 % on the bundle, ray-to-ray); the engine requires the NF1 sphere to
+> be IMMEDIATELY followed by the NF2 plane (substrate faces between poison zEnd
+> with their zElt 0 -> empty field); the fix is to relocate that glass into the
+> gap after the focuser, exact to first order because a plate's focus shift
+> t(1-1/n) does not depend on where in the cone it sits.  Now 1a/2b/2c/2d PASS.
+> 1b CLOSED: the 11-17 % Nyquist loss is sinc^2 INTERPOLATION twice over (the DM
+> GridData onto the rays, the rays onto the diffraction grid) -- not the legs,
+> and a floor under every gain at the top of the band.  2a CLOSED: the focal
+> field IS the Airy pattern (three profiles overlay across five decades); the
+> "excess" was the EE statistic's grid-total normalisation.  **THREE of the five
+> checks were measuring their own limits** (1a's wrapped-phase ceiling 0.2887,
+> 1b's suspected leakage, 2a's EE normalisation, plus a radial binning hole that
+> read as a null); only 2c/2d measured the chain, and those found the real bug.
+> **Open in B:** the exit-step convention sweep has NOT been re-run since the
+> deck-order fix, the readout-vs-pupilsim comparison waits on it, and the mirror
+> rig has not been through the chain.  **Open elsewhere:** the lens rig's station
+> residual is a FOLD (51443 pm vs the mirror's 463; the bowl hypothesis is dead
+> -- 8.6b names the probe); CCL tracked the redo tails under redo_* tags, so
+> package C either runs under those tags or the tails go on the canonical names.
 > **NEXT:** harvest the chain into REPORT_bench_realism section 8 (8.6),
 > copy the accepted tails onto `lens_tail.mat`/`oap_tail.mat`, then package B
 > (tg96_pupil_s2s leg by leg on the improved bench: the collimated legs to
