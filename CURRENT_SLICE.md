@@ -24,6 +24,41 @@
 
 ## Active slice
 
+> **2026-09-18/19 (CCL): THE DECK, AND THE DESCENT STALL SOLVED.  All deck
+> work PUSHED (macos a91a45d..adf6d65, 12 commits; resources 8c2a852..bc01b23).**
+> `deck_gauges.pptx` at **59 slides**, every slide fitting, edit copy synced.
+> New slide 3 "What the bench delivers" leads on Dave's four claims, each
+> checked against the runs first: accuracy 0.13%/0.29% of a 30 nm surface
+> (0.5%/0.9% top band), precision 0.7 pm at 1e15 photons, repeatability
+> (servo-held) 0.4-0.5 pm, hold 3 pm at 2.0-2.3e13 photons/cycle — with the
+> one claim that does NOT hold on the same slide (thermal ramp lags ~10 pm
+> at any photon count), and anchored to Steeves et al. 2020's published
+> 1.6 pm as a CHECK not a beat.  Parts slides split (front end / detector
+> leg) with both rigs in each box; backup slide split; slides 12-15 brought
+> onto the current bench (3 of 4 quoted runs predated it, 2 had newer runs
+> already on disk); Zernike literature ported from deck_zwfs to backup.
+> **Every layout figure re-rendered** with substrates + the blue-leg fix —
+> 4 of 6 producers could no longer run, each broken differently (see
+> [[feedback_figure_producers_rot]]).  **Three silent holes closed in the
+> edit-recovery tooling** (table cells, picture crops, sidecar keys orphaned
+> by a rename) — see the edit-deck memory.
+> **DESCENT STALL SOLVED: the outer actuator rings.**  Full record in the
+> `project_redo_descent_stall` memory.  Headline: 180 actuators (2.4% of
+> lit) carry 95-98% of the residual because package A's opened beam put the
+> pupil edge ON the array edge; the interior was always at the photon floor.
+> Four hypotheses died first (~12 h of box time) — do not re-run those
+> ladders.  **OPEN, Dave's call: (1) pull `R_TO_AP` in ~3 actuators (the
+> real fix), (2) per-column regularisation.**  TO's `tg96_place.m` +
+> `tg96_ring_analysis.m` are resources `49364b3`, LOCAL and unpushed.
+> **ALSO OPEN for Dave:** `D_BS_CMP` 200 -> ~225 (and reconcile +38.6 mm
+> from the substrates-in node scan against the package-A brief's +10.4 --
+> different benches), the field-lens conic (-7.77 tuned vs -2.11 seed), the
+> overcoat quarter-wave (sheet ships a HALF wave; engine rule says lambda/4
+> at the working wavelength).  **Deck item:** slide 30 claims capture from
+> 100 nm on RECORD-bench tags — false on the redo bench until the aperture
+> fix lands, then re-runnable.  **Friday's interim report NOT started.**
+> Dave travelling from 2026-09-19; work paused.
+
 > **LUIS SENS-TOOLS FIXES — IMPLEMENTED, LOCAL, UNPUSHED (2026-09-14).**
 > Plan `~/.claude/plans/soft-hugging-peach.md` (Dave-approved + CCL/CCMac's
 > six changes folded in). Luis reply draft `macos/DRAFT_email_luis_sens_groups.md`.
