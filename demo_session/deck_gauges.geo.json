@@ -90,6 +90,18 @@
    "y": 5.25
   }
  },
+ "One bench, four ways of sensing": {
+  "txt:The reference arm (a 103 mm flat on a piezo": {
+   "x": 0.45,
+   "y": 6.96
+  }
+ },
+ "Parts specific to the sensors": {
+  "txt:The vector sensor is the one configuration": {
+   "x": 0.32,
+   "y": 6.28
+  }
+ },
  "Photons for 1 pm": {
   "img:zwfs_rec193full_noise": {
    "x": 7.11,
@@ -198,6 +210,12 @@
   "txt:7.5e12 photons per cycle": {
    "x": 7.0,
    "y": 5.68
+  }
+ },
+ "The splitter angle: three options": {
+  "txt:The sensors reproduce their rows at every angle": {
+   "x": 0.45,
+   "y": 7.0
   }
  },
  "The three jobs, and how each is scored": {
