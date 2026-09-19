@@ -55,11 +55,10 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | **repeatability** | the same surface held in a servo, rms over 30 cycles, same photons | 1.4 / **0.5 pm** | 1.3 / **0.4 pm** |
 | **hold** | photons per cycle to keep the surface inside 3 pm | 2.3e13 | 2.0e13 |
 | | the same under a 2 pm per actuator per cycle random walk | 7.1e13 | 6.6e13 |
-| **differential** | a 10 nm single-actuator change, read against truth | 1.5 pm, gain 1.001 | 1.8 pm, gain 0.993 |
-- **Picometer measurement is photon-limited, not bench-limited.**  One measurement at 1e15 photons — 0.31 mJ, about 1.3 s of a 1 mW laser — is repeatable to 0.7 pm, and a servo fed at that rate holds the surface to under half a picometer.  Both front ends give the same answer to within 10 %.
-- **The accuracy figure is systematic and proportional:** it is a fraction of the figure being read, so a 30 nm working surface costs tens of picometers and a 200 nm capture figure costs hundreds.  It holds because the response matrix is measured on the surface rather than assumed geometric.
-- **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp the loop lags at about 10 pm however many photons it is given.  That is a cadence and a thermal-control requirement, not a sensing one.
-~ Every number on this slide is a committed run of the shared model; the run tags are on the provenance slide and each is repeated on the slide that derives it.
+- **Picometer measurement is photon-limited, not bench-limited.**  One measurement at 1e15 photons — 0.31 mJ, about 1.3 s of a 1 mW laser — repeats to 0.7 pm, and a servo fed at that rate holds under half a picometer.  Both front ends agree to within 10 %.  For scale, **Steeves et al. (2020, Optica 7, 1267) demonstrate 1.6 pm in 4.3 s on a real interferometer**: ours is photon-limited only, carrying no vibration, thermal drift or detector systematics, so it is the floor this design allows rather than a prediction of the built bench — and agreeing within a factor of two is the check that the model is in the right regime.
+- **Accuracy is systematic and proportional** — a fraction of the figure read, so 30 nm costs tens of picometers and a 200 nm capture figure costs hundreds.  It holds because the response matrix is measured on the surface, not assumed geometric.
+- **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp the loop lags at about 10 pm however many photons it is given — a cadence and thermal-control requirement, not a sensing one.
+~ A 10 nm single-actuator change — what the servo actually corrects — reads against truth to 1.5 pm at gain 1.001 on lenses and 1.8 pm at 0.993 on mirrors.  Every number here is a committed run of the shared model; the run tags are on the provenance slide and each is repeated on the slide that derives it.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
