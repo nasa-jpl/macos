@@ -575,7 +575,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **The other gauges on the mirror rig:** `zwfs_run('bench.optics','oap','bench.coat_oap','bareAl','readings',{'L','S','V','P','PF'},'stages',{'bench','battery','noise','loop'},'mask.v_arm','engine')`.
 - **Where:** MACOS_resources/mmacos/templates/40_benches/{tg_psi_dm96_oap, zwfs_dm96, pdi_dm96}, the shared scoring library dm_gauge_lib, branch dev-candidate.  A model-1024 run needs about 11 GB; the batch wrappers run one at a time.
 - **Gates:** every stage asserts its own gates (the mask round trip, the reference-wave surrogate, the fold, the pinhole, the analyzer); tDmgLoop 15/15; the mmacos fast suite 481/0.
-~ Each directory's README carries the full command list and the run-tag index.
+~ Each directory's README carries the full command list and the run-tag index. All code and documentation is available from the public nasa-jpl github macos and MACOS_resources repos.
 
 ## Backup: the interferometer's three phase-shift forms | The four frames are the same in the model; the forms differ in what they get wrong
 ::: full
