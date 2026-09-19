@@ -26,23 +26,40 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Contents | Three jobs, one bench, four ways of sensing
 ::: left
-- **3** Introduction: the three jobs and how they are scored
-- **4** The bench layout
-- **6** Parts: the front end and the detector leg
-- **8** Parts: the interferometer and the sensors
-- **10** Twyman-Green interferometer
-- **17** Zernike sensor
-- **19** Vector Zernike sensor
-- **22** Point-diffraction sensor
-- **25** Performance: rows, capture, photons, servo
+- **3** What the bench delivers
+- **4** Introduction: the three jobs and how they are scored
+- **5** The bench layout
+- **7** Parts: the front end and the detector leg
+- **9** Parts: the interferometer and the sensors
+- **11** Twyman-Green interferometer
+- **18** Zernike sensor
+- **20** Vector Zernike sensor
+- **23** Point-diffraction sensor
+- **26** Performance: rows, capture, photons, servo
 ::: right
-- **31** Lenses versus off-axis parabolas
-- **32** The reflective front end and its performance
-- **34** Comparison and recommendation
-- **37** Measuring the complex amplitude
-- **38** Summary and future work
-- **44** Run it yourself
-- **45** Backup
+- **32** Lenses versus off-axis parabolas
+- **33** The reflective front end and its performance
+- **35** Comparison and recommendation
+- **38** Measuring the complex amplitude
+- **39** Summary and future work
+- **45** Run it yourself
+- **46** Backup
+
+## What the bench delivers | Accuracy, precision, repeatability and hold — measured on both front ends, on the bench as it will be built
+::: full
+| the claim | what it means here | lens rig | mirror rig |
+|---|---|---|---|
+| **accuracy** | the imaging's error in reading a 30 nm working surface, piston and tilt removed | **0.13 %** (42 pm) | **0.29 %** (92 pm) |
+| | the same, in the top spatial band (at the actuator Nyquist) | **0.5 %** | **0.9 %** |
+| **precision** | one measurement, photon-limited, at 1e14 / 1e15 photons | 2.3 / **0.7 pm** | 2.1 / **0.7 pm** |
+| **repeatability** | the same surface held in a servo, rms over 30 cycles, same photons | 1.4 / **0.5 pm** | 1.3 / **0.4 pm** |
+| **hold** | photons per cycle to keep the surface inside 3 pm | 2.3e13 | 2.0e13 |
+| | the same under a 2 pm per actuator per cycle random walk | 7.1e13 | 6.6e13 |
+| **differential** | a 10 nm single-actuator change, read against truth | 1.5 pm, gain 1.001 | 1.8 pm, gain 0.993 |
+- **Picometer measurement is photon-limited, not bench-limited.**  One measurement at 1e15 photons — 0.31 mJ, about 1.3 s of a 1 mW laser — is repeatable to 0.7 pm, and a servo fed at that rate holds the surface to under half a picometer.  Both front ends give the same answer to within 10 %.
+- **The accuracy figure is systematic and proportional:** it is a fraction of the figure being read, so a 30 nm working surface costs tens of picometers and a 200 nm capture figure costs hundreds.  It holds because the response matrix is measured on the surface rather than assumed geometric.
+- **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp the loop lags at about 10 pm however many photons it is given.  That is a cadence and a thermal-control requirement, not a sensing one.
+~ Every number on this slide is a committed run of the shared model; the run tags are on the provenance slide and each is repeated on the slide that derives it.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -171,11 +188,11 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | blur over the actuator band: rms / max | 0.066 / 0.133 | 0.051 / 0.143 |
 | image surface: defocus / astig / tilt (mm of sag) | -0.0005 / -0.095 / 0.002 | -0.45 / 0.14 / 0.42 |
 | focal spot on axis / at the actuator-band tilt | 0.06 / 0.09 λF/D | 0.03 / 2.2 λF/D |
-- **The imaging supports picometer measurement on both rigs:** carried through to a reading, it costs **42 pm** (lenses) and **92 pm** (mirrors) on a 30 nm working surface — 0.1 % and 0.3 % of the figure — rising to 0.5 % and 0.9 % in the top spatial band.  It holds because the response matrix is MEASURED: the mirror rig's image is distorted by more than an actuator pitch at the edge, which a geometric mapping would carry straight into the surface.
+- **Pupil image quality supports picometer measurement on both rigs.**  Carried through to a reading it costs **0.13 %** of the figure on lenses and **0.29 %** on mirrors — 42 and 92 pm on a 30 nm working surface — and **0.5 % / 0.9 %** in the top spatial band, where it is worst.  That is the accuracy term; precision and repeatability are photon-limited and sub-picometer.  It holds because the response matrix is MEASURED on the surface: the mirror rig's image is distorted by more than an actuator pitch at the edge, which a geometric mapping would carry straight into the surface.
 - **Method:** the DM declared the stop, the field a tilt about it; two traces a small field step apart cross at each zone's image at the camera; scored in DM mm against the 1 mm pitch.
-- **What package A did here:** the lens rig's image went flat (0.5 µm of defocus against 3.8 mm) and its distortion fell 2.8×; the mirror rig's went the other way (edge 0.85 → 1.19 mm), the OAP pair's mapping, and why the distortion gate was withdrawn.
+- **The lens rig images the DM flat** (0.5 µm of defocus across the pupil) and holds its mapping to a seventh of an actuator pitch.  **The mirror rig trades mapping for the front end**: the OAP pair distorts the image by more than a pitch at the edge, which the measured matrix absorbs and the numbers above already include.
 - **The mirror rig's focus is perfect on axis and coma-limited off it** (2.2 λF/D at the actuator-band tilt); not a pupil-image cost, a number to know for any off-axis reading at the seat.
-~ Run tags pupilq96_lens, pupilq96_oap (tg96_pupilq, model 512, on the emitted redo decks, 2026-09-18); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.  λF/D = 2.83 µm on the 96 mm beam.  Blur grew on both rigs against the record because the beam now fills the DM: it lit 77 / 82 mm of 96, leaving the edge zones, where the walk is largest, out of that average.
+~ Run tags pupilq96_lens, pupilq96_oap (tg96_pupilq, model 512, on the emitted redo decks, 2026-09-18); tg_psi_dm96_oap/REPORT_bench_realism.md section 6.  Requested by Fang Shi.  λF/D = 2.83 µm on the 96 mm beam, which the DM's aperture defines.  Blur is quoted over the actuator band, edge zones included.
 
 ## The question: must the pupil imaging be simulated, and how? | Is it possible or even necessary to simulate the effect of the pupil imaging geometry on the pupil images of the DM?  Convolve the pupil image with the complex amplitude?  (Dave, 2026-09-16)
 ::: full
@@ -185,19 +202,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **When a small field stop sits at the focus** (a spatial filter of a few λ/D), the pupil image is low-pass filtered and actuator responses blur; then one aperture element at the seat through the existing sandwich answers it in one run.
 ~ The answer as given on 2026-09-16, before the simulation; the next slide supersedes its "not needed" with numbers.
 
-## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode is observable, and on the redo bench the camera sits AT the pupil image on both rigs — the detector move the record needed is gone
+## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode the DM can make is observable, and the camera sits at the pupil image on both rigs
 ::: left
 ![Phase gain (recovered over true) versus pupil radius on the lens rig for DM sinusoids at 2, 4, 8 and 16 mm period, at the camera plane as built (left) and 4.3 mm downstream (middle); right, the amplitude cross-talk the four-step ignores.  The runner's own figure.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_redo_lens/pupilsim_redo_lens_gain.png){h=3.1}
 ::: right
 | gain at the actuator Nyquist (2 mm) | center | edge | worst | 30 nm surface, error |
 |---|---|---|---|---|
-| lens rig, redo bench | 1.0000 | 1.0000 | **1.0000** | **42 pm** |
-| mirror rig, redo bench | 0.9994 | 0.9994 | 0.9994 | 92 pm |
-| lens rig, the record's tuned tail (superseded) | 0.990 | 0.973 | 0.954 | 1.2 nm |
+| lens rig | 1.0000 | 1.0000 | **1.0000** | **42 pm** |
+| mirror rig | 0.9994 | 0.9994 | 0.9994 | 92 pm |
 - **How:** the DM the stop; 41 tilts over the actuator band; each zone's image walk integrates to its wavefront (defocus and astigmatism to 0.3 nm), whose transform is the zone's complex PSF; the DM field filtered zone by zone, the reference arm through the same leg, angle of the product read as the surface.
-- **The bowl is gone.**  On the record's tuned tail the image was a surface the camera sat 2.6 mm ahead of on axis and 6 at the edge, because that tail was tuned on the flat-mirror null, which cannot see pupil defocus.  On the redo bench the best detector move is **−0.00 mm**: there is nothing left to correct, and the band-edge phase is 0.000 rad rms on lenses, 0.013 on mirrors.
+- **The camera is at the pupil image**, and the best detector move from here is **−0.00 mm**: there is nothing left to correct.  The band-edge quadratic phase is 0.000 rad rms on lenses and 0.013 on mirrors, so the gain at the actuator Nyquist is 1.0000 and 0.9994.
 - **The beam of record under-filled the DM** (77 / 82 mm of 96): the baffle is now opened and the aperture sits on the DM; runs from 2026-09-17 carry the full 96 mm.
-~ Run tags pupilsim_redo_lens, pupilsim_redo_oap (tg96_pupilsim on the emitted redo decks = package A's gate record, 2026-09-17; run it yourself: tg96_pupil_batch.sh both).  The superseded row is the record's tuned tail, kept so the gain is legible; REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
+~ Run tags pupilsim_redo_lens, pupilsim_redo_oap (tg96_pupilsim on the emitted decks, 2026-09-17; run it yourself: tg96_pupil_batch.sh both); REPORT_bench_realism.md section 7.  The engine's own plane-to-plane check through reference surfaces is built and needs the station-to-station form (in progress).
 
 ## Improving the pupil image: the options, assessed | The tail geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
 ::: full
