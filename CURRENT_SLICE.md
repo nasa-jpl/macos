@@ -24,6 +24,42 @@
 
 ## Active slice
 
+> **NEXT ARC (Dave 2026-09-29, set before a security-update restart): .in-file
+> COMMENTS, then dev-candidate -> dev.**  Four items, in order.
+> **(1) Restore `/* ... */` block comments in .in-file parsing** (Scott's
+> request) **and look at restoring IN-LINE comments too -- in the parser, the
+> validator, AND SAVE.**  Read-up pointers: the validator
+> (`macos_f90/validate_prescription.F90:99`) skips a line only when its first
+> non-blank char is `%` or `!` -- no `/*`, no trailing comment after a value;
+> the parser's own comment skip is NOT in `msmacosio.inc` (the only `%` hit
+> there is the LOHIN2 call at :1157) -- find it in the line reader
+> (`macosio.F` / `iosub.inc` `READ_LOH`/`GET_LOH` family) before touching
+> anything.  Prior evidence the feature was lost: the eac5 thread (this file,
+> ~:2497) -- `~/dev/tst_dir/eac5mono.in` carries `/* */` blocks at l.151+ and
+> the Phase-1 validator REJECTS it ("blank line inside TElt block"), so old JPL
+> decks with block comments no longer load.  Scope questions for Dave before
+> building: which in-line syntax (`Key= value  % note`? `!`?), and whether
+> SAVE should ROUND-TRIP comments (needs storage per element/key -- a much
+> bigger change than emitting nothing) or merely not DESTROY a hand-edited
+> deck's comments (i.e. SAVE to a new file, never over the source).  Gate:
+> eac5mono.in loads + validates + saves; a tst_save_keys-style round-trip on
+> a commented deck; the CLI and both bindings share the parser so one fix
+> covers all three.
+> **(2) Consolidate dev-candidate** -- resources is ahead 1 (`49364b3`, the
+> descent-stall tool + `place.lit_erode`, awaiting Dave's review); the
+> uncommitted blank line in `RUNBOOK_mac_cycle3b.md` is noise.
+> **(3) Update the redacted developer-files list** -- the public-release
+> strategy in root `CLAUDE.md` names what is stripped from `main` (CLAUDE.md,
+> PLAN*.md, `.claude/`, internal ZGD fixtures, `docs/Archive/`); it predates
+> this month's BRIEF_*/RUNBOOK_*/REPORT_* files and `demo_session/`, and it
+> says nothing about MACOS_resources although `gh` reports that repo PUBLIC
+> (2026-09-18).
+> **(4) Write the push request for dev-candidate -> dev** (per the branch
+> model: engine first, resources second; both repos).
+> Still open from the last arc, unchanged: R_TO_AP in ~3 actuators + per-
+> column lambda (the descent fixes), D_BS_CMP, the field-lens conic, the
+> overcoat quarter-wave, slide 30's capture claim, the interim report.
+
 > **2026-09-18/19 (CCL): THE DECK, AND THE DESCENT STALL SOLVED.  All deck
 > work PUSHED (macos a91a45d..adf6d65, 12 commits; resources 8c2a852..bc01b23).**
 > `deck_gauges.pptx` at **59 slides**, every slide fitting, edit copy synced.
