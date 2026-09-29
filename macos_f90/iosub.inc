@@ -2607,8 +2607,13 @@ C       BEGIN PARSING THE STRING
 	  ELSE IF (STRING(I:I) .EQ. '%') THEN
 	    in_tok=.false.
 	    IF (NO_LET) THEN
-!--> whole-line comment: keep it for the SAVE round-trip
-	      CALL RxCommentCapture(STRING)
+!--> whole-line comment: keep it for the SAVE round-trip.  Inside a
+!    /* */ block the line belongs to the BLOCK and is kept verbatim.
+	      IF (LInCommentMode) THEN
+	        CALL RxCommentCaptureRaw(STRING)
+	      ELSE
+	        CALL RxCommentCapture(STRING)
+	      END IF
 !<--
 	      SP_FLG=.TRUE.
 	      GO TO 20
@@ -2663,19 +2668,34 @@ C       BEGIN PARSING THE STRING
    15   CONTINUE
 
 	IF (VAR_NAM(1:1) .EQ. ' ') THEN
+!--> a blank line inside a /* */ block is part of the block
+	  IF (LInCommentMode) CALL RxCommentCaptureRaw(STRING)
+!<--
 	  SP_FLG=.TRUE.
 	  GO TO 20
 	END IF
 
 	IF (LCMP(VAR_NAM,'CommentBegin',12) .or.
      &      LCMP(VAR_NAM,'/*',2)) THEN
+!--> the block's opening line, kept verbatim for the SAVE round-trip
+!    (block comments were LOST on SAVE until 2026-09-29: the lines
+!    inside never reached RxCommentCapture, which sees only '%')
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.TRUE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
 	ELSE IF (LCMP(VAR_NAM,'CommentEnd',10) .OR.
      &           LCMP(VAR_NAM,'*/',2)) THEN
+!--> the closing line
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.FALSE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
           GO TO 20
+	ELSE IF (LInCommentMode) THEN
+!--> a line INSIDE the block: whatever it says, it is kept as text
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	END IF
 	IF (LInCommentMode) GO TO 20
 
@@ -2698,14 +2718,18 @@ C     load(SAVE'd Rx) -> SAVE cycle stays idempotent.  Inline
 C     comments (key= value % note) are deliberately NOT preserved --
 C     that is the fragile case behind the GridFile-tab bug.
 	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
-     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
 	IMPLICIT NONE
 	CHARACTER(len=*) :: line
 	INTEGER :: L,i
 	LOGICAL :: furniture
 
 	IF (.NOT.LRxCommentCapture) RETURN
-	IF (nRxComment.GE.mRxComment) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
 	L=LEN_TRIM(line)
 	IF (L.EQ.0) RETURN
 	furniture=.TRUE.
@@ -2728,16 +2752,50 @@ C     that is the fragile case behind the GridFile-tab bug.
 	END SUBROUTINE RxCommentCapture
 
 
+	SUBROUTINE RxCommentCaptureRaw(line)
+C     Keep one line of a /* */ (CommentBegin/CommentEnd) block VERBATIM
+C     for the SAVE round-trip.  No furniture filter and blank lines
+C     allowed: inside a block the text can be anything -- typically
+C     keywords commented out -- and the block is re-emitted whole, so a
+C     reload of the SAVEd file skips it exactly as the source was.
+	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
+	IMPLICIT NONE
+	CHARACTER(len=*) :: line
+
+	IF (.NOT.LRxCommentCapture) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
+	nRxComment=nRxComment+1
+	RxCommentLine(nRxComment)=line
+	RxCommentAnchor(nRxComment)=RxCommentCtx
+	END SUBROUTINE RxCommentCaptureRaw
+
+
 	SUBROUTINE RxCommentEmit(ctx)
 C     Re-emit the captured whole-line comments anchored to ctx
 C     (0 = header/source section, iElt = that element's block).
 C     Called by PrtSourceInfo (ctx=0) and PrtSingleEltInfo (iElt).
-	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor
+	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor,
+     &	    mRxComment,nRxCommentDropped
 	use macos_IO, only: PrintMsg
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: ctx
 	INTEGER :: i
 
+!--> capture is capped at mRxComment lines: say so once, on the
+!    console (not into the file being written), rather than lose
+!    comments silently
+	IF (nRxCommentDropped.GT.0) THEN
+	  WRITE(*,'(A,I0,A,I0,A)') ' SAVE: ',nRxCommentDropped,
+     &	    ' comment line(s) of the loaded Rx were not kept (limit ',
+     &	    mRxComment,' lines)'
+	  nRxCommentDropped=0
+	END IF
+!<--
 	DO i=1,nRxComment
 	  IF (RxCommentAnchor(i).EQ.ctx)
      &	    CALL PrintMsg(TRIM(RxCommentLine(i)))

@@ -378,6 +378,7 @@ C***********************************************************************
         Integer :: nRxComment = 0
         Integer :: RxCommentCtx = 0
         Logical :: LRxCommentCapture = .FALSE.
+        Integer :: nRxCommentDropped = 0   ! lines past mRxComment
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -902,6 +903,7 @@ C***********************************************************************
           nRxComment           = 0
           RxCommentCtx         = 0
           LRxCommentCapture    = .FALSE.
+          nRxCommentDropped    = 0
 !<--
           LEltObs(:)           = .FALSE.
           ifComputeDZ(:)       = .FALSE.

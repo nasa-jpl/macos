@@ -9,6 +9,7 @@ C       Set entrance condition flags to .FALSE.
           nRxComment        = 0
           RxCommentCtx      = 0
           LRxCommentCapture = .TRUE.
+          nRxCommentDropped = 0
 !<--
 
   50      CONTINUE   ! This section is for header part of Rx
