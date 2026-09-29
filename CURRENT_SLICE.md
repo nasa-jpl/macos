@@ -24,6 +24,23 @@
 
 ## Active slice
 
+> **2026-09-29 (latest): the dev->main STRIP LIST was broken, fixed by dry
+> run (macos 92e792f, resources 9963fe3).**  The comment/blank lines de0f3c8
+> added to `release-exclude.txt` abort `git rm --pathspec-from-file`
+> (`fatal: empty string is not a valid pathspec`; `#` is a literal path), so
+> the documented strip would have died at the first promotion.  Now a bare
+> list; reasons in DEV_FILES.md.  Measured: a root glob (`BRIEF_*.md`) is
+> ROOT-ONLY.  Survivors caught and added: `NOTE_*.md` (2), `MR_*.md`,
+> `docs/macos-manual/audit_4.1beta.txt`; resources: 2 BRIEFs +
+> `PLAN_EXAMPLES_REORG.md` (README-linked `PLAN_CONFIGURATIONS` and the
+> template `REPORT_*` KEPT -- documentation there).  After: macos 318
+> stripped, 13 user files at root; resources 33.  The gate recipe lives in
+> DEV_FILES.md ("Gate: dry-run the strip"): re-run at EVERY promotion and
+> again after the repo merge.  Email §4 now says WE do dev-candidate->dev
+> AND dev->main (merge + strip in one PR per repo; first after step 1,
+> again after the import).  `DRAFT_email_andy_repo_merge.md` uncommitted
+> for Dave's edits.
+
 > **2026-09-29 (later): TWO THINGS ON TOP OF THE ARC.**
 > **(A) BLOCKER -- NPSOL (and pgplot) source in the PUBLIC repo's history.**
 > Found while sizing (B).  423 npsol paths (the licensed Stanford SOL source:
