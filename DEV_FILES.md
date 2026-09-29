@@ -12,7 +12,7 @@ This file is itself dev-only — it appears in its own strip list below.
 `git rm -r -q --pathspec-from-file=release-exclude.txt`.
 Keep the two in sync; the .txt is also dev-only.
 
-Re-audited 2026-08-06 against `dev` + `pol-core` (union — the pol-core
+Re-audited 2026-08-06 against `dev` + `pol-core`, and 2026-09-29 against `dev-candidate` (union — the pol-core
 entries arrive on `dev` when PR #67 merges; listing them early is
 harmless, the strip step skips absent paths with `--ignore-unmatch`).
 
@@ -48,8 +48,33 @@ docs/macos-manual/CLAUDE.md
 docs/macos-manual/FIGURE_RESCUE_LOG.md
 docs/macos-manual/RECONCILE_4_01.md
 docs/macos-manual/src/_dropped_legacy_index.md
-docs/Archive/dev_optimization_surfsub/README.md
+docs/Archive/dev_optimization_surfsub
+BRIEF_*.md
+DRAFT_email_*.md
+REPORT_*.md
+RUNBOOK_*.md
+NOTES_*.md
+MERGE_HANDOFF_*.md
+demo_session
 ```
+
+2026-09-29 re-audit against `dev-candidate` (the branch being promoted to
+`dev`), and why:
+- `BRIEF_*.md` (44), `RUNBOOK_*.md` (5), `REPORT_*.md` (7), `DRAFT_email_*.md`
+  (3), `NOTES_*.md`, `MERGE_HANDOFF_*.md` -- the agent<->agent briefs, Mac
+  runbooks, internal review/finding reports and email drafts of the
+  Aug-Sep 2026 gauge, sensitivity and afocal4 arcs.  Same class as
+  `REVIEW_POL_*`.  Listed as GLOBS: git pathspecs glob, so the strip step
+  covers new members without another edit here.
+- `demo_session/` (216 files) -- deck builds (`deck_*.pptx`, edit copies,
+  baselines, sidecars), their figures and the pptx tooling.  Working decks
+  for JPL-internal discussions, not user documentation.
+- NOT listed, deliberately: `ZGD_test_files/` -- the engine's own test
+  fixtures (tst_save_keys.in, tst_block_comment.in, the FreeForm decks);
+  stripping them would break the gates on `main`.  The root CLAUDE.md's
+  "internal ZGD fixtures" wording predates the proprietary-Rx purge
+  (OPTIIX/IRIS are gone) and should be read as this manifest.
+  `README.md` and `HOW_TO_COMPILE.md` are user docs and stay.
 
 2026-08-06 additions and why (all arrive via pol-core → dev, PR #67):
 - `NOTES` (whole directory) — the agent↔agent hand-off channel

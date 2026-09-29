@@ -27,4 +27,18 @@ docs/macos-manual/CLAUDE.md
 docs/macos-manual/FIGURE_RESCUE_LOG.md
 docs/macos-manual/RECONCILE_4_01.md
 docs/macos-manual/src/_dropped_legacy_index.md
-docs/Archive/dev_optimization_surfsub/README.md
+docs/Archive/dev_optimization_surfsub
+
+# ---- 2026-09-29 re-audit (dev-candidate): agent/process files that arrived
+# since 2026-08-06.  Globs: git pathspecs match them, so new members of each
+# family are covered without another edit.  README.md / HOW_TO_COMPILE.md are
+# user docs and stay.  ZGD_test_files/ is NOT listed: engine test fixtures,
+# not process files (the "internal ZGD fixtures" wording in CLAUDE.md is
+# looser than this manifest and is the thing to correct).
+BRIEF_*.md
+DRAFT_email_*.md
+REPORT_*.md
+RUNBOOK_*.md
+NOTES_*.md
+MERGE_HANDOFF_*.md
+demo_session
