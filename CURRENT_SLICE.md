@@ -24,6 +24,43 @@
 
 ## Active slice
 
+> **2026-09-29 (later): TWO THINGS ON TOP OF THE ARC.**
+> **(A) BLOCKER -- NPSOL (and pgplot) source in the PUBLIC repo's history.**
+> Found while sizing (B).  423 npsol paths (the licensed Stanford SOL source:
+> npsubs/opsubs/lssubs/chsubs/cmsubs/mcsubs/srsubs/npmain/lsmain.f) and 1564
+> pgplot paths are reachable on origin/main, origin/dev AND
+> origin/dev-candidate; 0 at any HEAD; `gh` says PUBLIC.  The release
+> strategy's history rewrite (root CLAUDE.md, "lands ~07-24") never landed
+> or was overwritten by a pre-rewrite clone.  Archive bundle:
+> `~/macos-archive-20260723`.  MACOS_resources: 21 OPTIIX/IRIS proprietary-
+> Rx paths in ITS public history.  Andy's decision; memory
+> `project_npsol_history_exposure`.  Pushing dev-candidate adds no exposure,
+> but every commit pushed before the rewrite is one more it must carry.
+> **(B) The group wants MACOS_resources moved INTO macos.**  Facts gathered:
+> resources .git 2.0 GB (a 77 MB s4_jacobians.mat committed 6x; the
+> proprietary Rx above); tracked tree ~370 MB of which runs/ 340 MB (1129
+> artifacts) and 262 MB of >5 MB .mat/.gif/.log at HEAD; 4092 mmacos files
+> (2938 templates); `pymacos/src/macos` is a SUBMODULE pointing at
+> nasa-jpl/macos (a self-reference after a merge -- must become a relative
+> path); 76 macos files name MACOS_resources (CMakeLists.txt
+> `_gmi_default`/`_mmacos_default` = `../MACOS_resources/{GMI,mmacos}`,
+> manual Makefile POLVAL_TOOL, demo_session tools, .gitattributes) and 84
+> resources files name the macos build (MACOS_BUILD_DIR/MACOS_HOME/
+> ~/dev/macos); resources' own DEV_FILES/release-exclude (29 entries) must
+> fold into macos's.  RECOMMENDATION put to Dave: (1) promote dev-candidate
+> -> dev in BOTH repos first, as prepared -- the repo merge is a separate
+> operation on `dev`; (2) import as a SNAPSHOT (git subtree add --squash or
+> plain copy), NOT with history -- history brings the proprietary blobs and
+> 2 GB into the engine repo, and a history rewrite is needed there anyway,
+> so sequence the import AFTER that rewrite; (3) land at top level
+> (`macos/mmacos`, `macos/pymacos`, `macos/GMI`, `segmirmaker`,
+> `optical_design`, `rx_converter`) so the CMake defaults become `./GMI`,
+> `./mmacos`; (4) leave runs/ artifacts and the >5 MB results OUT (archive
+> repo stays read-only for history + artifacts), or LFS; (5) drop the
+> submodule, fix the 84 + 76 references, merge the strip lists; (6) then the
+> "engine first, resources second" ordering rule retires -- the point of the
+> move.  Nothing done yet; awaiting Dave/Andy.
+
 > **ARC STATUS 2026-09-29 (post-restart session): items 1-3 DONE, 4 DRAFTED.**
 > (1) Block comments: engine `223a6ff` (validator + SAVE; the parser was
 > fine), cheatsheet `f6af199`, gate `tRxBlockComment` 4/4 (resources
