@@ -687,6 +687,45 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   of MOD_LOH — left a stray empty line between the MOD prompt and
   `MACOS>` on every exit.
 
+## Rx comments: block, whole-line and in-line (2026-09-29, Scott's report)
+Three comment forms, three different fates -- know which is which before
+touching any of them:
+- **Block comments `/* ... */` and `CommentBegin ... CommentEnd`** are a
+  FIRST-TOKEN rule in `GET_EQ` (iosub.inc ~:2670): the marker must start
+  its line; label 20 is GET_EQ's own read-next-line loop, so a block is
+  consumed within one call and the top-of-call `LInCommentMode=.FALSE.`
+  never sees it.  **The parser has always handled them.**  What was broken
+  (both fixed 223a6ff): the Phase-1 VALIDATOR ran first and knew only
+  `%`/`!`, so a `/*` line (no `=`) was read as a continuation row of the
+  last multi-row key and the deck refused ("blank line inside multi-row
+  block" -- eac5mono.in at 149 for a `/*` at 151); and SAVE LOST every
+  block, because capture saw only `%` lines.  Now the validator carries
+  the same first-token mode, and `RxCommentCaptureRaw` keeps the opening,
+  interior (incl. `%` lines and blanks) and closing lines verbatim so the
+  SAVEd deck re-enters the block on reload.
+- **A one-line `/* x */` is NOT supported** (first-token rule: `*/` is
+  never a first token) -- the parser would swallow the rest of the file.
+  The validator now refuses it as "comment block never closed" rather than
+  let that happen.  Same for a genuinely unterminated block.
+- **Whole-line `%` comments** round-trip through SAVE (`RxCommentCapture`,
+  PLAN sec.0 item 3), furniture-filtered; capture is capped at
+  `mRxComment` (500) lines and overflow is now counted and reported ONCE on
+  the console at SAVE, not silent.
+- **In-line `Key= value  % note`** is READ (the `%` ends the value,
+  iosub.inc ~:2607) and, by the recorded decision, NOT preserved by SAVE
+  (the fragile case behind the GridFile-tab bug).  The validator now judges
+  `Key= % note` as the EMPTY value the parser will see.
+- `!` is a comment char to the VALIDATOR only -- the parser has no `!`
+  branch and would tokenize a `!` line as an unknown keyword.  Pre-existing,
+  left alone.
+- The CLI, mmacos and pymacos share GET_EQ and the validator, so one fix
+  covers all three.  Gates: `ZGD_test_files/tst_block_comment.in` (CLI, both
+  compilers, SAVE->load->SAVE byte-identical, gfortran==ifx) and
+  `mmacos/tests/tRxBlockComment` (the binding path, with a live-keyword
+  negative control).  The only round-trip diff on eac5mono.in is a 1-ulp
+  psiElt print wobble on a tilted unit vector, reproduced on the pre-fix
+  binary -- pre-existing, not comments.
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
