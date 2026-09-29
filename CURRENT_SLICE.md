@@ -67,9 +67,38 @@
 > (2026-09-18).
 > **(4) Write the push request for dev-candidate -> dev** (per the branch
 > model: engine first, resources second; both repos).
-> Still open from the last arc, unchanged: R_TO_AP in ~3 actuators + per-
-> column lambda (the descent fixes), D_BS_CMP, the field-lens conic, the
-> overcoat quarter-wave, slide 30's capture claim, the interim report.
+> **(5) DESCENT-STALL RECOVERY -- the two fixes, exercised TOGETHER as a
+> 2x2** (Dave 2026-09-29: "can we exercise both together?" -- yes, and the
+> right way is all three cells against the measured baseline, so each fix's
+> share is attributable).  Full diagnosis: memory `project_redo_descent_stall`.
+> - **Fix A, the aperture:** pull `R_TO_AP` in ~3 actuators (90 mm pupil,
+>   not 96) so the outermost rings are not illuminated at all.  Mechanism:
+>   the lit disc (radius 49.0) reaches the array edge (48), truncating those
+>   actuators' influence functions.  NOT the same as `erode3`, which kept the
+>   ring illuminated and only dropped it from control/scoring -- A changes the
+>   pupil, hence the calibration geometry (window px, mag), so it needs its
+>   own row.
+> - **Fix B, per-column regularisation:** in `build_J_`/`recal_build_`,
+>   `lambda_i = matrix_lam * diag(JtJ)_i` (each column against its OWN
+>   energy) instead of the one scalar `matrix_lam * median(diag(JtJ))` that
+>   damps a weak column as hard as a strong one.  A ~5-line change.  Has
+>   value even AFTER A: the reg sweep's "dark columns" 0.9519 -> 0.9872 at
+>   lambda 1e-5 says weak INTERIOR columns exist too.
+> - **Independent mechanisms, so a 2x2:** baseline (measured: samp512 96.9 pm
+>   at NGRID 512 / step 8 / 100 nm start, recal never), A alone, B alone,
+>   A+B.  Three new rows, ~2 h each at model 1024 / NGRID 512, one MATLAB at
+>   a time (16G cap).  Predictions on record: A alone ~3 pm (erode3's 3.019
+>   is the ceiling on what excluding the ring buys; the aperture version may
+>   land nearer the record's 2.34); B alone -- ring 1 improves substantially,
+>   interior unchanged at ~3 pm; A+B <= A.  Keep the 30 nm on-point row in
+>   each invocation as the control (it must stay at ~0.5 rho / ~4 pm).
+> - Self-checks every row prints: window px, flat-DM null 26.50 nm, lit count.
+> - Tool for reading them: `tg96_ring_analysis.m` (resources `49364b3`,
+>   local) -- per-ring rms and correction efficiency; run it on every row.
+> - `calib_at='setpoint'` is unspent and no longer needed.
+> Still open otherwise, unchanged: D_BS_CMP (+38.6 vs +10.4 mm to reconcile),
+> the field-lens conic, the overcoat quarter-wave, slide 30's capture claim
+> (fixable once A lands), the interim report.
 
 > **2026-09-18/19 (CCL): THE DECK, AND THE DESCENT STALL SOLVED.  All deck
 > work PUSHED (macos a91a45d..adf6d65, 12 commits; resources 8c2a852..bc01b23).**
