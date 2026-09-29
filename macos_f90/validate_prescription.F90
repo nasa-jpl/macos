@@ -40,6 +40,15 @@
           INTEGER :: lineno, pending_lineno, eqpos, lerr, i, n
           INTEGER :: cont_key_lineno, blank_lineno
           LOGICAL :: pending, fexist, prev_was_cont, saw_blank
+          ! Block comments: '/*' or 'CommentBegin' as a line's first
+          ! token opens one, '*/' or 'CommentEnd' closes it -- the same
+          ! rule GET_EQ applies (iosub.inc).  Everything inside is
+          ! skipped by the parser, so it must be skipped here too, or a
+          ! deck the parser reads fine is refused before it gets there
+          ! (the eac5mono.in failure: commented-out TElt rows read as a
+          ! broken multi-row block).
+          LOGICAL :: in_block
+          INTEGER :: block_lineno, t2, pct
 
           ios = 0
           msg = ''
@@ -53,6 +62,8 @@
           cont_key = ''
           cont_key_lineno = 0
           blank_lineno = 0
+          in_block     = .FALSE.
+          block_lineno = 0
 
           INQUIRE (FILE=filename, EXIST=fexist)
           IF (.NOT. fexist) THEN
@@ -86,7 +97,8 @@
               CYCLE
             END IF
             DO i = 1, n
-              IF (line(i:i) /= ' ' .AND. ICHAR(line(i:i)) /= 9) EXIT
+              IF (line(i:i) /= ' ' .AND. ICHAR(line(i:i)) /= 9 .AND. &
+                  ICHAR(line(i:i)) /= 13) EXIT
             END DO
             IF (i > n) THEN
               ! All-whitespace line (treat like blank).
@@ -96,6 +108,24 @@
               END IF
               CYCLE
             END IF
+            ! First token = up to the next blank / tab / CR.
+            t2 = i
+            DO WHILE (t2 < n)
+              IF (line(t2+1:t2+1) == ' ' .OR. ICHAR(line(t2+1:t2+1)) == 9 &
+                  .OR. ICHAR(line(t2+1:t2+1)) == 13) EXIT
+              t2 = t2 + 1
+            END DO
+            IF (line(i:MIN(i+1,n)) == '/*' .OR. &
+                KeyEq(line(i:t2), 'CommentBegin')) THEN
+              in_block     = .TRUE.
+              block_lineno = lineno
+              CYCLE
+            ELSE IF (line(i:MIN(i+1,n)) == '*/' .OR. &
+                     KeyEq(line(i:t2), 'CommentEnd')) THEN
+              in_block = .FALSE.
+              CYCLE
+            END IF
+            IF (in_block) CYCLE
             IF (line(i:i) == '%' .OR. line(i:i) == '!') CYCLE
 
             eqpos = INDEX(line, '=')
@@ -124,7 +154,9 @@
                 RETURN
               END IF
 
-              IF (LEN_TRIM(line(eqpos+1:)) == 0) THEN
+              pct = INDEX(line(eqpos+1:), '%')
+              IF (pct == 0) pct = LEN(line) - eqpos + 1
+              IF (LEN_TRIM(line(eqpos+1:eqpos+pct-1)) == 0) THEN
                 ! Empty value on this line.  Most keys must get a
                 ! value via continuation (or by EOF this is an error),
                 ! but a few prescription keys are intentionally allowed
@@ -168,6 +200,13 @@
           END DO
 
           CLOSE(vunit)
+
+          IF (in_block) THEN
+            ios = 1
+            WRITE(msg, '(A,I0,A)') 'line ', block_lineno, &
+                ': comment block ("/*" or CommentBegin) is never closed'
+            RETURN
+          END IF
 
           IF (pending) THEN
             ios = 1
