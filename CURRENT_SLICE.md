@@ -24,6 +24,20 @@
 
 ## Active slice
 
+> **ARC STATUS 2026-09-29 (post-restart session): items 1-3 DONE, 4 DRAFTED.**
+> (1) Block comments: engine `223a6ff` (validator + SAVE; the parser was
+> fine), cheatsheet `f6af199`, gate `tRxBlockComment` 4/4 (resources
+> `0d0edd8`), CLI fixture `ZGD_test_files/tst_block_comment.in` both
+> compilers, eac5mono.in loads.  In-line comments in SAVE: left as the
+> recorded decision (not preserved) -- Dave's call if that changes.
+> (2) Consolidated: origin/dev merged into dev-candidate in both repos as
+> content no-ops (`5b60927`, `7f9490e`).  (3) `DEV_FILES.md` +
+> `release-exclude.txt` re-audited with globs (`de0f3c8`); ZGD_test_files
+> deliberately NOT stripped -- flag for Dave.  (4) PR bodies + push
+> commands in `MERGE_HANDOFF_dev_candidate_to_dev.md`; fast suite = the
+> gate, result to be filled in.  pymacos `.so` is stale (09-08) -- rebuild
+> before trusting its gates.  Nothing pushed.
+>
 > **NEXT ARC (Dave 2026-09-29, set before a security-update restart): .in-file
 > COMMENTS, then dev-candidate -> dev.**  Four items, in order.
 > **(1) `/* ... */` block comments** (Scott) **+ in-line comments, in the
