@@ -1,5 +1,20 @@
 # Push request: `dev-candidate` -> `dev`, both repos (prepared 2026-09-29)
 
+> **BLOCKER FOUND 2026-09-29 -- DECIDE BEFORE THIS PUSH OR ANY REPO MERGE.**
+> The licensed NPSOL library source (npsubs.f, opsubs.f, lssubs.f, chsubs.f,
+> cmsubs.f, mcsubs.f, srsubs.f, npmain.f, lsmain.f -- Stanford SOL banners)
+> is in the reachable HISTORY of origin/main, origin/dev and
+> origin/dev-candidate (added e1fa721 2022-10-07, moved under macos_f90/
+> 6e3ed58 2022-11-30, removed at HEAD by PR #44, never scrubbed), and the
+> repo is PUBLIC.  The history rewrite the release strategy describes did
+> not land, or was overwritten by a pre-rewrite clone.  Pushing dev-candidate
+> ADDS no exposure (the history is already on origin), but every commit
+> pushed before the rewrite is one more the rewrite has to carry.  Andy's
+> call; the 2026-07-22 archive bundles exist for the rewrite.  MACOS_resources
+> has the same class of problem: 21 OPTIIX/IRIS proprietary-Rx paths in its
+> public history (0 at HEAD).  Both bear on the group's request to move
+> MACOS_resources INTO macos -- see the proposal in CURRENT_SLICE.
+
 For Dave to review and push, then open the two PRs.  Engine first, resources
 second (the branch model's merge-ordering rule: a resources veneer promoted
 ahead of its engine fails at prescription-load time, not build time).
