@@ -56,10 +56,47 @@ RUNBOOK_*.md
 NOTES_*.md
 MERGE_HANDOFF_*.md
 demo_session
+NOTE_*.md
+MR_*.md
+docs/macos-manual/audit_4.1beta.txt
 ```
+
+## Gate: dry-run the strip before EVERY promotion (dev -> main)
+
+The list is a snapshot of the tree it was audited against; new process
+files arrive with every arc.  Before each `dev -> main` promotion run the
+strip as a dry run and read the SURVIVORS at the root:
+
+```
+git rm -r -n --cached --ignore-unmatch --pathspec-from-file=release-exclude.txt \
+  | sed "s/^rm '//; s/'$//" | sort > /tmp/stripped
+git ls-files | sort | comm -23 - /tmp/stripped | awk -F/ 'NF==1'     # root survivors
+```
+
+Every root survivor must be a user file (README, HOW_TO_COMPILE, LICENSE,
+CMakeLists, make*.sh, platform_requirements, giza_build_notes).  Anything
+else is a new family: add it (as a glob if it is a family) and re-run.
+Two facts about `--pathspec-from-file`, both measured 2026-09-29:
+- it takes NO comment or blank lines -- `#` is a literal path (skipped by
+  `--ignore-unmatch`) and an EMPTY line is `fatal: empty string is not a
+  valid pathspec`, which aborts the whole strip.  The .txt is a bare list;
+  the reasons live HERE.
+- a root glob such as `BRIEF_*.md` is ROOT-ONLY (it does not reach
+  `demo_session/BRIEF_x.md`); nested families need their directory
+  (`demo_session` is listed whole for that reason).
+
+Re-run the gate again after the MACOS_resources import lands in this repo
+(its list merges into this one; its paths gain no prefix if the
+directories land at top level).
 
 2026-09-29 re-audit against `dev-candidate` (the branch being promoted to
 `dev`), and why:
+- `NOTE_*.md` (2: the CCL close-out and CCMac welcome-back notes),
+  `MR_*.md` (the 2026-09-09 merge-request text) and
+  `docs/macos-manual/audit_4.1beta.txt` (the manual's structural audit
+  worksheet) -- found by the gate above as root/process survivors of the
+  first 2026-09-29 pass.  `NOTE_` (singular) is a different family from
+  `NOTES_*.md`.
 - `BRIEF_*.md` (44), `RUNBOOK_*.md` (5), `REPORT_*.md` (7), `DRAFT_email_*.md`
   (3), `NOTES_*.md`, `MERGE_HANDOFF_*.md` -- the agent<->agent briefs, Mac
   runbooks, internal review/finding reports and email drafts of the
