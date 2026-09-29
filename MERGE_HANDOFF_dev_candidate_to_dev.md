@@ -12,7 +12,7 @@ ahead of its engine fails at prescription-load time, not build time).
 | dev's stragglers merged in | `5b60927` -- Andy's 09-05 NS flow-of-light commit; **content no-op** (identical patch already here as `6bab7af`) | `7f9490e` -- Andy's four 09-05 sensitivity commits; **content no-op** except `SENSITIVITY_TOOLS.md` add/add, resolved to ours (dev's text + 117 lines inserted at l.43) |
 | verified by | `git diff --stat <pre-merge> HEAD` empty | same, empty |
 | local commits awaiting push | 8 (`223a6ff` .. `5b60927`, incl. this file) | 7 (incl. `49364b3` TO's descent tool, `0d0edd8` tRxBlockComment, `7f9490e` merge) |
-| gates | block-comment fixture, both compilers, gfortran==ifx byte-identical; eac5mono.in loads | **fast suite: RESULT PENDING (fill in)** |
+| gates | block-comment fixture, both compilers, gfortran==ifx byte-identical; eac5mono.in loads | **fast suite on the exact tree: 487 pass, 0 fail** (size 128, 2026-09-29 08:27-08:57) |
 
 Also in this batch: `DEV_FILES.md` + `release-exclude.txt` re-audited
 (`de0f3c8`).  That list governs the LATER promotion `dev -> main`; the PR to
