@@ -26,25 +26,36 @@
 
 > **NEXT ARC (Dave 2026-09-29, set before a security-update restart): .in-file
 > COMMENTS, then dev-candidate -> dev.**  Four items, in order.
-> **(1) Restore `/* ... */` block comments in .in-file parsing** (Scott's
-> request) **and look at restoring IN-LINE comments too -- in the parser, the
-> validator, AND SAVE.**  Read-up pointers: the validator
-> (`macos_f90/validate_prescription.F90:99`) skips a line only when its first
-> non-blank char is `%` or `!` -- no `/*`, no trailing comment after a value;
-> the parser's own comment skip is NOT in `msmacosio.inc` (the only `%` hit
-> there is the LOHIN2 call at :1157) -- find it in the line reader
-> (`macosio.F` / `iosub.inc` `READ_LOH`/`GET_LOH` family) before touching
-> anything.  Prior evidence the feature was lost: the eac5 thread (this file,
-> ~:2497) -- `~/dev/tst_dir/eac5mono.in` carries `/* */` blocks at l.151+ and
-> the Phase-1 validator REJECTS it ("blank line inside TElt block"), so old JPL
-> decks with block comments no longer load.  Scope questions for Dave before
-> building: which in-line syntax (`Key= value  % note`? `!`?), and whether
-> SAVE should ROUND-TRIP comments (needs storage per element/key -- a much
-> bigger change than emitting nothing) or merely not DESTROY a hand-edited
-> deck's comments (i.e. SAVE to a new file, never over the source).  Gate:
-> eac5mono.in loads + validates + saves; a tst_save_keys-style round-trip on
-> a commented deck; the CLI and both bindings share the parser so one fix
-> covers all three.
+> **(1) `/* ... */` block comments** (Scott) **+ in-line comments, in the
+> parser, the validator and SAVE.**  DIAGNOSED 2026-09-29 before the restart --
+> it is NOT a lost parser feature, it is two gaps around a parser that works:
+> - **The PARSER already handles block comments**: `iosub.inc:~2670` switches
+>   `LInCommentMode` on `CommentBegin`/`/*` and off on `CommentEnd`/`*/` (as
+>   whole-line TOKENS -- `LCMP(VAR_NAM,'/*',2)` -- so `/*` must start the
+>   line; mid-line `/*` is untested).  Inline `% note` after a value is READ
+>   and ignored (`iosub.inc:2607`, `%` ends the token).  Whole-line `%`
+>   comments already ROUND-TRIP through SAVE (`RxCommentCapture`, PLAN
+>   section 0 item 3), with the recorded design decision that INLINE comments
+>   are deliberately NOT preserved (the GridFile-tab bug).  The CLI, mmacos and
+>   pymacos share all of this.
+> - **GAP 1, the bug Scott hit: the VALIDATOR does not know block comments.**
+>   `validate_prescription.F90:99` skips only lines whose first non-blank is
+>   `%` or `!` -- it has no `/*`, `*/`, `CommentBegin`, `CommentEnd` -- and it
+>   runs BEFORE the parser, so a deck the parser reads fine is rejected first
+>   ("blank line inside TElt block" is the symptom: comment lines inside a
+>   block are seen as bad continuation rows).  Fix = teach the validator the
+>   same `LInCommentMode` rule.  Test deck: `~/dev/tst_dir/eac5mono.in`
+>   (exists, 2 `/*` blocks at l.151+; also CRLF + tabs-in-TElt to watch for).
+> - **GAP 2: block comments are LOST on SAVE.**  `RxCommentCapture` captures
+>   only `%` lines, and lines inside a `/* */` block are skipped (`GO TO 20`)
+>   before capture -- so load + SAVE strips every block comment.  Extending
+>   capture to block-comment lines is the same mechanism (they are whole
+>   lines, anchored the same way).
+> - **In-line comments in SAVE** is the one real design question for Dave:
+>   the existing decision says no (fragile), and honouring it means the rule
+>   is "SAVE never overwrites a hand-edited source" rather than round-trip.
+> Gate: eac5mono.in validates + loads + SAVEs with its blocks intact; a
+> tst_save_keys-style round-trip on a block-commented deck; both compilers.
 > **(2) Consolidate dev-candidate** -- resources is ahead 1 (`49364b3`, the
 > descent-stall tool + `place.lit_erode`, awaiting Dave's review); the
 > uncommitted blank line in `RUNBOOK_mac_cycle3b.md` is noise.
