@@ -880,6 +880,19 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
+!-->  Glass CATALOG state is blanked HERE, at allocation, and NOT in
+!     elt_mod_init_vars.  The catalog (GlassName/GlassTable) is loaded
+!     ONCE at start-up (rl_macos_glass.inc in the CLI, smacos_glass.inc
+!     at SMACOS first entry), but every Rx load runs
+!     reinitialise_variables() -> elt_mod_init_vars(), which used to
+!     wipe both arrays BEFORE the parser's GlassElt= lookup -- so every
+!     GlassElt= element kept its written IndRef and traced as air, in the
+!     CLI and both bindings (dyson5 gate 1b, TO 2026-09-30).  Per-element
+!     GlassElt/GlassCoef are Rx state and are still reset per load.
+        GlassName(:)   = ''
+        GlassTable(:,:) = 0d0
+!<--
+
 
         End Subroutine elt_mod_init
 
@@ -937,7 +950,6 @@ C***********************************************************************
 
           EltName(:)           = ''
           GlassElt(:)          = ''
-          GlassName(:)         = ''
           EltMRP(:)            = ''
 
           nElt                 =  0          ! total number of optical elements                (nElt <= mElt)
@@ -1095,7 +1107,6 @@ C***********************************************************************
           psiRx(:,:)           =  0e0_pr
           RptRx(:,:)           =  0e0_pr
           GlassCoef(:,:)       =  0e0_pr
-          GlassTable(:,:)      =  0e0_pr
           MTFMat(:,:)          =  0e0_pr
           MTFMat2(:,:)         =  0e0_pr
           pMonRx(:,:)          =  0e0_pr
