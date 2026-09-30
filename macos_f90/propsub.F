@@ -166,6 +166,7 @@ cdebug  &, pRay
      &	       zStart,zEnd,alpha,z1,dx1p,z2,dx2p,dzp,DAvgL,
      &         PNSIndRef,PNSExtinc,CurExtinc,PrevExtinc,
      &	       NextExtinc,StartExtinc,ddumy(2),OPD_in(mdttl,mdttl)
+	REAL*8 LegIndRef,WaveMed   ! medium-aware kernels: index of the leg's medium, WaveBU/n
 cdebug     &	,z1z2,PrevDir(3),PrevPos(3),Intxyz
 
 	COMPLEX*16 CD,DWF(mdttl,mdttl),Evec(3),C1
@@ -376,6 +377,7 @@ C  2. Initialize diffraction parameters
 	iElt=0
 	nEstart=iStartElt
 	iLstart=iStartElt
+	LegIndRef=StartIndRef   ! first physical leg: the medium at the start element
 	IF (iStartElt.EQ.0) THEN
 	  iWF=1
 	  CALL DXCALC(iElt,nEstart,dxMin(iElt),dxMax(iElt),
@@ -1742,6 +1744,22 @@ C       propagation from (iElt-1) to iElt, unless ReGrid is called. -jzlou
 	      kWF2=iWF
 	    END IF
 !<--
+!--> Medium-aware kernels (2026-09-30, dyson5).  Every kernel below takes
+!    the wavelength IN THE MEDIUM the leg traverses: WaveBU/n_leg, with
+!    n_leg the index of the medium at the leg's START element (captured
+!    as LegIndRef when nEstart advances; the source medium for the first
+!    leg).  The inter-leg geometric phase is unchanged -- CumRayL is an
+!    OPTICAL path (CurIndRef*RayL) against TPL=2pi/WaveBU -- so only the
+!    kernels' Fresnel numbers move.  Gate: a leg of length z in index n
+!    equals the same leg of length z/n in vacuum (test_prop_medium.py).
+!    A leg is assumed HOMOGENEOUS: a leg crossing a refracting face is
+!    not a case the kernels model in any case.
+	    WaveMed=WaveBU
+	    IF (LegIndRef.GT.0d0) WaveMed=WaveBU/LegIndRef
+	    IF (ABS(LegIndRef-1d0).GT.1d-12) WRITE(*,'(A,F10.6,A)')
+     &	      '  physical leg in a medium of index',LegIndRef,
+     &	      ': kernels use lambda/n'
+!<--
 
 C					Near-field sphere-to-sphere
 	    IF (PropType(iEm1).EQ.2) THEN
@@ -1751,12 +1769,12 @@ C					Near-field sphere-to-sphere
               print*,
      &            '=====> Near-field sphere-to-plane diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL NFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	          WaveBU,mdttl,DWF)
+     &	          WaveMed,mdttl,DWF)
 	      END DO
 
 	      WRITE(*,502)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
@@ -1775,7 +1793,7 @@ C					Far-field sphere-to-plane
      &     '===> 2: Far-field sphere-to-plane diffraction ...'
 	      END IF
 	      If (ifFnCalc)
-     &          Fn = FnCalc_DZ(zElt(nEstart),WaveBU,1)
+     &          Fn = FnCalc_DZ(zElt(nEstart),WaveMed,1)
 
 !--> PLAN_POLARIZATION 3a.1(1).  The vector far-field leg used to call
 !    PFFPROP, a bare per-component FFT that OMITS the Fresnel-integral
@@ -1791,7 +1809,7 @@ C					Far-field sphere-to-plane
 	      DO kWF=kWF1,kWF2
 	        CALL FFPROP(WFElt(1,1,kWF),dxElt(iElt),
      &	          WFElt(1,1,kWF),dxElt(nEstart),zElt(nEstart),
-     &	          WaveBU,mdttl,DWF)
+     &	          WaveMed,mdttl,DWF)
 	      END DO
 !<--
 	      IF (ifVecDif3) THEN
@@ -1838,12 +1856,12 @@ C					Near-field plane-to-plane
 
            print*,'===> Near-field plane-to-plane diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL PPPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	               dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	               WaveBU,mdttl,DWF)
+     &	               WaveMed,mdttl,DWF)
 	      END DO
 
 	      WRITE(*,504)
@@ -1859,12 +1877,12 @@ C					Near-field using 2 RS
 
               print*,'===> Near-field sphere-to-sphere diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL NFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	        	    dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	        	    WaveBU,mdttl,DWF)
+     &	        	    WaveMed,mdttl,DWF)
 	      END DO
 
 	      WRITE(*,505)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
@@ -1883,12 +1901,12 @@ C				Near-field plane-to-plane using 2 RS
 
               print*,'===> Near-field plane-to-plane diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL PPPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	                    dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	                    WaveBU,mdttl,DWF)
+     &	                    WaveMed,mdttl,DWF)
 	      END DO
 
 	      WRITE(*,504)nEstart,iElt,iWF,zElt(nEstart),dxElt(nEstart),
@@ -1916,12 +1934,12 @@ C		Near-field sphere-to-sphere with pin-hole spatial filter
               print*,
      &  '===> Near-field sphere-to-sphere (pin hole) diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL SFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	          WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+     &	          WaveMed,mdttl,DWF,PinHole(nEstart),dxsf)
 	      END DO
 
 	      WRITE(*,507)nEstart,iElt,iWF,PinHole(nEstart),dxsf,
@@ -1938,12 +1956,12 @@ C		Near-field sphere-to-sphere with pin-hole spatial filter
               print*,
      &          '=====> Near-field sphere-to-sphere diffraction ...'
     	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL SFPROP(WFElt(1,1,kWF),dxElt(iElt),WFElt(1,1,kWF),
      &	          dxElt(nEstart),zElt(iElt),zElt(nEstart),
-     &	          WaveBU,mdttl,DWF,PinHole(nEstart),dxsf)
+     &	          WaveMed,mdttl,DWF,PinHole(nEstart),dxsf)
 	      END DO
 
 
@@ -1963,12 +1981,12 @@ C    NOTE: set dx, z according to nf prop surfaces!!!
 
               print*,'===> Near-field NF1/NF2 diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc_DZ(zStart-zEnd,WaveBU,1)
+     &          Fn = FnCalc_DZ(zStart-zEnd,WaveMed,1)
 
 	      DO kWF=kWF1,kWF2
 	        CALL SPH2PL(WFElt(1,1,kWF),WFElt(1,1,kWF),
      &	                    dxElt(nEstart),zEnd,zStart,
-     &	                    WaveBU,mdttl,DWF)
+     &	                    WaveMed,mdttl,DWF)
 	      END DO
 
 
@@ -2024,12 +2042,12 @@ C					Fresnel sphere-to-sphere
 
               print*,'===> Fresnel sphere-to-sphere diffraction ...'
 	      If (ifFnCalc)
-     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveBU)
+     &          Fn = FnCalc(zElt(iElt),zElt(nEstart),WaveMed)
 
 	      DO kWF=kWF1,kWF2
 	        CALL FRPROP(WFElt(1,1,kWF),dxElt(iElt),
      &	          WFElt(1,1,kWF),dxElt(nEstart),zElt(iElt),
-     &	          zElt(nEstart),WaveBU,mdttl,DWF)
+     &	          zElt(nEstart),WaveMed,mdttl,DWF)
 	      END DO
 
 	      WRITE(*,512)nEstart,iElt,iWF,zElt(nEstart),
@@ -2046,7 +2064,7 @@ Cmore efficient	-- CALL WFrepack(DWF,WFElt(1,1,iWF),nGridPts)
 
 	      DO kWF=kWF1,kWF2
 	        CALL NFPropDFT(WFElt(1,1,kWF),mdttl,dxElt(nEstart),
-     &	               WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveBU,
+     &	               WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveMed,
      &	               zElt(nEstart)-zElt(iElt))
 	      END DO
 
@@ -2069,7 +2087,7 @@ C  Siegman-Sziklas coord xform:
 
 	      DO kWF=kWF1,kWF2
 	        CALL NFPropDFT(WFElt(1,1,kWF),mdttl,dx1p,
-     &                 WFElt(1,1,kWF),mdttl,dx2p,WaveBU,dzp)
+     &                 WFElt(1,1,kWF),mdttl,dx2p,WaveMed,dzp)
 	      END DO
 
 	      WRITE(*,514)nEstart,iElt,iWF,zElt(nEstart),
@@ -2082,7 +2100,7 @@ C					FF DFT
 	      Lin1=1d2*(dxElt(nEstart)-dxDev(nEstart))/dxElt(nEstart)
 	      DO kWF=kWF1,kWF2
 	        CALL FFPropDFT(WFElt(1,1,kWF),mdttl,dxElt(nEstart),
-     &	          WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveBU,
+     &	          WFElt(1,1,kWF),mdttl,dxElt(iElt),WaveMed,
      &	          zElt(nEstart)-zElt(iElt))
 	      END DO
 	      WRITE(*,515)nEstart,iElt,iWF,zElt(nEstart),
@@ -2106,6 +2124,7 @@ C     If starting surface for propagation, compute dx, set next start
 	  IF ((PropType(iElt).NE.1).AND.
      &	    ((PropType(iElt).NE.PropType(iEm1)).OR.(iEm1.EQ.0))) THEN
 	    nEstart=iElt
+	    LegIndRef=CurIndRef   ! the medium the NEXT leg (from this nEstart) traverses
 c	    CALL DXCALC(iElt,iElt,dxMin(iElt),dxMax(iElt),
 c     &	      dxAvg(iElt),dxDev(iElt),ifRegrid,ifOPDCalc,npts)
 c	      iLend=iElt
