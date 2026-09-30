@@ -726,6 +726,51 @@ touching any of them:
   psiElt print wobble on a tilted unit vector, reproduced on the pre-fix
   binary -- pre-existing, not comments.
 
+## `GlassElt=` was DEAD engine-wide until 2026-09-30 (catalog wiped per load)
+The glass catalog (`GlassName`/`GlassTable`, ~200 Sellmeier rows from
+`glass_builtin.f90`) is loaded ONCE at start-up (`rl_macos_glass.inc` in the
+CLI's model-size reset, `smacos_glass.inc` at SMACOS first entry).  Every Rx
+load runs `reinitialise_variables()` -> `elt_mod_init_vars()`, which blanked
+BOTH catalog arrays before the parser's `GlassElt=` lookup (msmacosio.inc
+~:2796), so every glass element kept its written `IndRef` and traced as AIR
+-- CLI, mmacos and pymacos alike.  Nothing caught it: no Rx in the corpus
+used a glass name (PLAN sec.0 item 4 said so, and "no user" was never read
+as "untested").  Found by TO's dyson5 gates.  Fix (macos b000390): the two
+catalog arrays are blanked once in `elt_mod_init` (allocation); per-element
+`GlassElt`/`GlassCoef` stay Rx state and are still reset per load.  **Rule:
+`elt_mod_init_vars` resets PRESCRIPTION state only; anything loaded once at
+start-up (catalogs, tables) is blanked at allocation.**  Gate: CLI A/B on
+`mmacos/tests/Rx/Rx_GlassPlate.in` (pre-fix: IndRef 1.0 and OPD 0 at every
+wavelength; post-fix: Malitson coefficients SAVEd, OPD 6.861e-4 / 6.679e-4 /
+6.491e-4 m at 0.5/1.0/2.0 um) + `tGlassDispersion` / `tGratingImmersed`
+(mmacos, SUITE_FAST).  Related facts pinned by TO: the Grating branch takes
+the EXIT index from the grating element as written (an immersed grating
+carries its glass on its own element); `ray_info_get` returns the OUTGOING
+direction at the element despite its "before surface" comment; CaF2 is in
+the table since 0ca61c1.
+
+## Physical-optics kernels are MEDIUM-AWARE (2026-09-30, dyson5)
+Every kernel call in `propsub.F`'s leg dispatch (NFPROP, PPPROP, SFPROP,
+FRPROP, NFPropDFT, FFPropDFT, SPH2PL/PL2SPH, FFPROP, `FnCalc`) was handed
+`WaveBU`, the VACUUM wavelength in base units, whatever medium the leg ran
+in.  The inter-leg geometric phase was always right (`CumRayL` accumulates
+`CurIndRef*RayL`, an OPTICAL path, against `TPL=2pi/WaveBU`), but a leg
+INSIDE a medium ran at the wrong Fresnel number by n -- invisible to every
+PROPER comparison because those are mirror trains in vacuum; fatal for a
+Dyson, where the slit and FPA sit on the silica block's face.  Now:
+`LegIndRef` = `CurIndRef` captured when `nEstart` advances (the medium the
+NEXT leg traverses; `StartIndRef` for the first leg), and the dispatch
+computes `WaveMed = WaveBU/LegIndRef` once per leg for all 21 kernel /
+FnCalc sites (a `WRITE` announces any leg with n /= 1).  A leg is assumed
+HOMOGENEOUS -- a leg that crosses a refracting face was never something the
+kernels modelled.  Gate = an identity: a leg of z in index n equals the same
+leg of z/n in vacuum (`pymacos/tests/test_prop_medium.py` on
+`Rx_PropMedium_{glass,vac}.in`, twins of `Rx_VecChain.in`; intensities
+compared -- the fields differ by a global piston).  Measured: pre-fix the
+glass twin matched the UNSCALED vacuum deck to 1.1e-15 and missed the scaled
+one by 74%; post-fix glass == scaled to ~1e-13 and != unscaled by 71-73%.
+Vector mode inherits it (same `WaveMed` per component plane).
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
