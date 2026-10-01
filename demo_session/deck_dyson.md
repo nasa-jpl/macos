@@ -145,8 +145,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## The compact variant, as traced by the engine | Step R4: the meniscus corrector in the air gap between the block and the grating; the design of record at a 220 mm block
 - **Eleven surfaces:** the block's flat and spherical faces, the meniscus, the grating, and the same faces again on the way back to the focal plane; the element table is on the next slide.
-![3-D view and the dispersion plane (Y-Z), metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
 - **Clearance:** the returning beam passes the detector carrier by 1.19 mm with no cold shield; any shield fails the check, so a fold prism at the slit is the next layout step.
+![3-D view and the dispersion plane (Y-Z), metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
 
 ## The compact variant: the prescription | The eleven elements of step R4 as written in `dyson5_s3_r4.in`; radii are |R|, apertures the declared circular radii, z along the axis from the block's face
 ::: full
