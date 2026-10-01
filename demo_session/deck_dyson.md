@@ -14,7 +14,7 @@ result slide, figures unmodified, conventions stated once).
 An EMIT-class push-broom spectrometer (F/1.8, 3000 × 500 pixels at 18 µm, 380–2500 nm) designed with MACOS from the public specification alone, scored on smile, keystone and the response functions, and checked by physical-optics propagation.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.
+DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.  Design of record: the compact variant (step R4): keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, 76 % of the energy in one pixel, at a 220 mm block.
 
 ## Contents | The target, the forms, the design ladder, the evidence
 ::: left
@@ -25,12 +25,18 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **7** The exact chain and the engine agree
 - **8** The seed, scored
 - **9** The departure ladder
-::: right
 - **10** The departure ladder, by the numbers
+::: right
 - **11** What each departure buys
-- **12** Next: the compact variant
-- **13** Run it yourself
-- **14** Backup
+- **12** The compact variant, as traced by the engine
+- **13** The compact variant in section
+- **14** The compact variant, scored
+- **15** The trade at a glance
+- **16** The propagation twin
+- **17** Slit diffraction loss
+- **18** Next steps
+- **19** Run it yourself
+- **20** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -79,21 +85,24 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## The seed, scored | The concentric seed at a 220 mm block meets smile; keystone and the corner blur are the work
 - **Smile is met at the seed** (below 0.01 pixel on both forms); the field-angle map is linear along the slit as designed.
-- **These maps predate the grating fixes of 2026-10-01:** the SRF ramp with wavelength is the groove-period defect, not the design; the re-scored maps replace this figure.
+- **SRF sits at 2.02 pixels on both forms**, the floor set by the 2-pixel slit; re-scored on the engine after the grating fixes (the earlier ramp with wavelength was the groove-period defect, not the design).
 ![Scorer maps for the two seeds at 220 mm (rows: Dyson, Offner): field-angle map, smile (pixels), SRF FWHM (pixels), ensquared energy in one pixel, versus slit position and wavelength.](figs_dyson/dyson5_s2_maps.png)
 
 ## The departure ladder | Each step solved on the exact chain with pixel-unit smile and keystone in the merit from the first pass, then emitted and scored in the engine
 ![Engine-scored maxima per ladder step at the seed's 220 mm block (left: smile, keystone, CRF FWHM in pixels; right: minimum ensquared energy in one pixel against the 0.75 design rule).](figs_dyson/dyson5_s3_ladder.png)
 
-## The departure ladder, by the numbers | Keystone falls nine-fold at fixed scale; smile and SRF stay at their floors
+## The departure ladder, by the numbers | Keystone falls 37-fold at fixed scale; the meniscus pays only with the block offset and grating radius moving with it
 ::: full
-| step | what moves | keystone (px) | smile (px) | CRF FWHM (px) | ensquared, 1 px |
-|---|---|---|---|---|---|
-| R0 | concentric seed | 0.095 | 0.006 | 2.28 | 0.44 |
-| R1 | grating-radius factor, face offset | 0.038 | 0.003 | 2.10 | 0.48 |
-| R2 | + conic and h⁴, h⁶ terms on the block face | 0.037 | 0.004 | 2.13 | 0.47 |
-| R3 | + block centre 0.86 mm off the grating's, along the dispersion | **0.011** | 0.008 | 2.10 | 0.48 |
-~ SRF FWHM is 2.02 px on every step: the floor set by the 2-pixel slit.  Records `dyson5_s3.txt`; the free-radius variant in `dyson5_s3free.txt`.
+| step | what moves | keystone (px) | smile (px) | CRF FWHM (px) | ensquared, 1 px | length (mm) | grating footprint (mm) | glass (L) |
+|---|---|---|---|---|---|---|---|---|
+| R0 | concentric seed | 0.095 | 0.006 | 2.28 | 0.44 | 708 | 275 | 22.2 |
+| R1 | grating-radius factor, face offset | 0.038 | 0.003 | 2.10 | 0.48 | 704 | 274 | 22.3 |
+| R2 | + conic and h⁴, h⁶ terms on the block face | 0.037 | 0.004 | 2.13 | 0.47 | 704 | 274 | 22.3 |
+| R3 | + block centre off the grating's, along the dispersion | 0.011 | 0.008 | 2.10 | 0.48 | 698 | 272 | 22.1 |
+| R4a | meniscus corrector alone | 0.063 | 0.012 | 2.49 | 0.33 | 698 | 270 | 22.3 |
+| **R4** | **meniscus with all variables (the compact variant)** | **0.0026** | 0.005 | **1.33** | **0.76** | 694 | 269 | 22.7 |
+| size alone | block radius free (341 mm) | 0.024 | 0.001 | 1.34 | 0.74 | 1099 | 427 | 82.8 |
+~ SRF FWHM is 2.02–2.05 px on every step: the 2-pixel-slit floor.  Length = slit plane to grating vertex; footprint = diameter of the grating hits over slit centre and ends × band edges; glass = block cap + meniscus.  Record `dyson5_s3_trade.txt`.
 
 ## What each departure buys | De-concentring the block solves the distortion; the face asphere is inert; the blur is bought only by size or by the compact form
 ::: left
@@ -101,17 +110,40 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **The block-face asphere does nothing here:** step R2 converges to 10 nm sags, and a one-dimensional scan about R1 is a steep bowl centred at zero.  An axisymmetric figure acts on every field point alike and cannot cancel a residual that grows as h⁴ along the slit.
 ::: right
 - **The blur does not move on any step, and the reason is on record:** the dispersed image sits 12 mm from the order-0 image, so the slit corner's effective field height is about 32 mm, and the h⁴/r³ law predicts the measured 0.4 px rms.
-- **Two routes buy it:** size alone (the free-radius variant reaches 0.74 ensquared at a 341 mm block) or the literature's compact variant, a separate mirror and a meniscus — the next step.
+- **Two routes buy it:** size alone (0.74 ensquared at a 341 mm block, 1.1 m long, 83 L of glass) or the compact variant: a meniscus corrector in the air gap, solved together with the block offset and the grating radius, reaches the same at the 220 mm block — 63 % of the length, 27 % of the glass.
 ![The free-radius ladder: ensquared energy reaches the 0.75 rule only as the block grows to 341 mm.](figs_dyson/dyson5_s3free_ladder.png)
 
-## Next: the compact variant | Step R4 under the identical operands and scorer, so the trade is one table
+## The compact variant, as traced by the engine | Step R4: the meniscus corrector in the air gap between the block and the grating; the design of record at a 220 mm block
+- **The prescription:** `challenges/dyson5/dyson5_s3_r4.in`, nine elements: the block's flat face, its spherical face, the meniscus (two surfaces), the grating, and the return through the meniscus and block to the focal plane.
+- **Bodies, rays and labels read back from the engine;** apertures are not yet declared (the block draws as the beam's hull), which the clearance pass adds next.
+![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
+
+## The compact variant in section | Dispersion plane and slit direction, to scale: block, meniscus, grating; slit and focal plane on the block's face
+![Left: the dispersion plane, slit centre, rays at 380 / 1440 / 2500 nm (blue / green / red).  Right: the slit direction, slit centre and ends at 1440 nm; the focal plane in magenta.  Block shaded; 100 mm scale bar.](figs_dyson/dyson5_s3_layout_r4.png)
+- **Sizes:** block radius 220 mm (217 mm thick, 85 mm face), meniscus 4 mm thick at radii near 2 m, grating 269 mm across on a 0.69 m radius; slit plane to grating vertex 694 mm.
+- **The solve ends on its bounds** (plate thickness and radii), and three solves from the same seed found a multimodal landscape; the global search over the meniscus is the next step.
+
+## The compact variant, scored | Keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, SRF 2.03 px, 76 % of the energy in one pixel, over the slit and the band
+![Engine-scored maps for R4 on 18 µm pixels, per slit position and wavelength: field-angle map, keystone, smile, SRF FWHM, CRF FWHM, ensquared energy; each convention on its colorbar, maxima in the labels.](figs_dyson/dyson5_s3_maps_r4.png)
+
+## The trade at a glance | Distortion, response functions and ensquared energy per step, both records; the specification and the literature rules as lines
+![Left: keystone and smile maxima (log scale) against the 1 % rule.  Middle: CRF and SRF FWHM against the 1.5 px specification and the 2-px-slit floor.  Right: minimum ensquared energy in one pixel against the 0.75 rule.](figs_dyson/dyson5_s3_trade.png)
+
+## The propagation twin | A far-field terminal on a reference sphere, re-posed per slit position and wavelength, agrees with the ray centroids to 0.0013 px
+![Left: the Offner at order 0, PSF (log scale) with the 18 µm pixel box, 85 % ensquared.  Middle: wave-minus-ray centroid over the slit and band, Offner and Dyson seeds.  Right: SRF and CRF from the propagated PSF at the slit centre.](figs_dyson/dyson5_s2w_twin.png)
+- **What it checks:** the ray-side scorer's centroids and response functions against physical-optics propagation through the same decks; across a grating the comparison is made in phase (modulo λ), never as unwrapped lengths.
+
+## Slit diffraction loss | A 36 µm slit at F/1.8: the engine's far-field leg against the sinc² closed form
+![Loss past the grating versus wavelength: engine far-field leg (points) against the sinc² form (line).](figs_dyson/dyson5_s2l_slitloss.png)
+- **Under 2.5 % over the band** by both; the engine runs above the closed form at the long end (2.48 % against 1.83 % at 2500 nm) and below it at the short end, and that factor is an open item in the record.
+
+## Next steps | Clearance on the design of record, the global meniscus search, and the telescope that feeds the slit
 ::: left
-- **R4:** the compact Dyson of the review — a separate mirror and a meniscus — solved on the same chain with the same smile and keystone operands, emitted and engine-scored like every other step.
-- **One trade table:** R3 (de-concentred block at 220 mm), the free-radius block (341 mm), and R4, on keystone, smile, CRF, SRF, ensquared energy, length, footprint, element count and glass volume.
+- **Apertures and clearance on R4:** declare every element's aperture from the footprint hulls, compute the minimum clearance of every beam leg against every body it does not traverse, model the slit-to-detector package on the block's face (a fold prism if it fails), and re-pose the Offner reference at a 0.2 R slit offset.
+- **Beat 4:** a global search over the meniscus (the R4 solve ends on its bounds) and the native multi-wavelength optimizer with the same smile and keystone operands.
 ::: right
-- **Then the physical-optics twin on the chosen design:** PSF centroids against ray centroids, SRF and CRF from the propagated PSF, the slit-width diffraction loss against the sinc² closed form.
-- **Then the native multi-wavelength optimizer** with the same operands, to confirm the chain's optimum from the engine side.
-~ Across a grating the wavefront is defined only modulo λ (the groove staircase); every OPD comparison in the twin is made in phase or on the complex field, never as unwrapped lengths.
+- **Beat 5, the telescope:** EMIT parameters — 420 km, 60 m ground sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8, 24.6° cross-track field onto the 54 mm slit, telecentric and flat; the telescope's exit pupil on the grating.  Then spectrometer and telescope traced end to end as one deck.
+- **Then the physical-optics twin on R4** and the radiometric chain against the band.
 
 ## Run it yourself | One parameter file, one runner, every stage through it
 ::: full
@@ -146,7 +178,8 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | seed scored | s1 emit, s2 score | `dyson5_s1.txt`, `dyson5_s2.txt`, `dyson5_s2_maps.png` | `spectrometer_geom.m`, `spectrometer_rx.m`, `spectrometer_score.m` |
 | chain vs engine | gate | `tests/tSpectrometerRx.m` | per-ray re-trace, 1e-9 m |
 | propagation twin | s2w (opt-in, model 512) | `dyson5_s2w.txt` | `spectrometer_wave.m` |
-| departure ladder | s3, s3free | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3*_ladder.png` | `dyson_ladder.m` |
+| departure ladder, R4, trade | s3, s3free, s3b | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3_trade.txt`, `dyson5_s3_layout_r*.png`, `dyson5_s3_maps_r*.png` | `dyson_ladder.m`, `dyson5_trade.m` |
+| slit loss | s2l | `dyson5_s2l.txt`, `dyson5_s2l_slitloss.png` | far-field leg vs sinc² |
 ~ Conventions behind the scaling law: block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF); field height h from the Dyson axis on the flat face; the slit corner is h = hypot(27 mm, 8 mm).
 
 ## Backup: conventions pinned on the way | Engine facts the chain depends on, stated once
