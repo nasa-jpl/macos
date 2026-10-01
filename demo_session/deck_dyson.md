@@ -14,7 +14,7 @@ result slide, figures unmodified, conventions stated once).
 An EMIT-class push-broom spectrometer (F/1.8, 3000 × 500 pixels at 18 µm, 380–2500 nm) designed with MACOS from the public specification alone, scored on smile, keystone and the response functions, and checked by physical-optics propagation.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.  Design of record: the compact variant (step R4): keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, 76 % of the energy in one pixel, at a 220 mm block.
+DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.  Design of record: the compact variant (step R4): ray-centroid keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, 76 % of the energy in one pixel, at a 220 mm block.  Open: the propagated-PSF centroid differs from the ray centroid by up to 0.12 px on R4, the detector-seen keystone until it is resolved.
 
 ## Contents | The target, the forms, the design ladder, the evidence
 ::: left
@@ -57,16 +57,16 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Realism (Jim):** as-built SRF is 2.5–3 pixels, slits are 2 pixels wide, the systems are photon-limited; smile and keystone drive the design.
 ~ The 54 mm slit is 2.3× EMIT's; Table 3 of the review places this spec in the ALIS class (3200 spatial pixels, 380–2500 nm).  Public comparison point: Carbon-I (arXiv:2505.22545), F/2.2, 2040–2380 nm.
 
-## The Dyson as traced by the engine | Step R3 of the ladder, before apertures: the beams clear every body, but the grating is 270 mm wide on a 0.70 m radius and the slit sits 18 mm from the band
+## The Dyson as traced by the engine | Step R3 of the ladder with every aperture declared: the beams clear every body; the grating is 270 mm wide on a 0.70 m radius and the slit sits 18 mm from the band
 - **The prescription:** `challenges/dyson5/dyson5_s3_r3.in`, seven elements; the block's spherical face (E2), the grating (E3, radius 0.71 m at the Dyson condition for a 220 mm block), and the focal plane on the flat face.  Bodies, rays and labels are read back from the engine.
 - **Sizes from the traced footprints:** block face 85 mm across at the sphere (220 mm radius, 217 mm thick), grating 270 mm across (0.70 m radius) at 0.69 m from the face; slit at +6 mm, this wavelength lands at −12 mm on the same face.
-- **No element declares an aperture yet,** so the block draws as the beam's hull and nothing can vignette; apertures, a clearance check and the slit-to-detector package split are the next revision of this layout.
+- **Every surface carries an aperture** cut from the multi-field, multi-wavelength footprint plus 5 mm, and a clearance check scores every beam leg against every body it does not traverse: the worst pair on this deck is the returning beam against the detector carrier, +1.16 mm, with no cold shield.
 ![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s3_r3_views.png)
 
-## The Offner as traced by the engine | The all-reflective twin at F/2.8, before apertures: the grating sits inside the slit-to-mirror beam, so the slit must move out to about 0.2 R
+## The Offner as traced by the engine | The all-reflective reference at F/2.8, re-posed at 0.22 R: the two mirror zones with the grating between the beams, clearing its mount by 10.2 mm
 - **The prescription:** `challenges/dyson5/dyson5_s1_offner.in`, five elements; the concave mirror (E1, used twice), the convex grating (E2) at the stop, the focal plane at the slit's conjugate.
-- **Obstruction, measured from the ray history:** the slit-to-M1 beam crosses the grating's plane over y = −39 to +51 mm while the grating's footprint spans ±45 mm; the return beam crosses it over −58 to +33 mm.  With no apertures declared the trace cannot see this; the slit offset of 6 mm must become about 100 mm (0.2 R, the classical Offner geometry) and the layout re-scored.
-- **Why it stays in the deck:** it is where the physical-optics twin is validated (order 0: pupil OPD 8e-11 m, 94 % of the energy in one pixel) and the trade's reference form.
+- **At the first slit offset (6 mm) the grating sat inside the slit-to-mirror beam;** at 0.20 R the beams still clipped its mount by 4 mm; at 0.22 R they clear by 10.2 mm, and the concentric form there is astigmatic (15 px), so the classical corrections are applied under the ladder's operands: convex radius × 1.0034, second concave zone × 0.951 with a 0.3 mm offset.
+- **As corrected:** keystone 0.028 px, CRF 1.20 px, SRF 3.69 px, 23 % of the energy in one pixel.  It stays in the deck as the reference form and as the ground where the physical-optics twin is validated (order 0: pupil OPD 8e-11 m, 85 % in one pixel).
 ![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s1_offner_views.png)
 
 ## The concentric Dyson and its scaling law | The classical condition verified by exact trace; at this slit the concentric block needs r ≥ 213 mm
@@ -115,7 +115,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## The compact variant, as traced by the engine | Step R4: the meniscus corrector in the air gap between the block and the grating; the design of record at a 220 mm block
 - **The prescription:** `challenges/dyson5/dyson5_s3_r4.in`, nine elements: the block's flat face, its spherical face, the meniscus (two surfaces), the grating, and the return through the meniscus and block to the focal plane.
-- **Bodies, rays and labels read back from the engine;** apertures are not yet declared (the block draws as the beam's hull), which the clearance pass adds next.
+- **Bodies, rays and labels read back from the engine,** apertures declared on every surface; the worst clearance on this deck is the returning beam against the detector carrier, +1.19 mm with no cold shield.  Any shield height fails the check, so a fold prism at the slit is the next step's first item.
 ![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
 
 ## The compact variant in section | Dispersion plane and slit direction, to scale: block, meniscus, grating; slit and focal plane on the block's face
@@ -123,8 +123,9 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Sizes:** block radius 220 mm (217 mm thick, 85 mm face), meniscus 4 mm thick at radii near 2 m, grating 269 mm across on a 0.69 m radius; slit plane to grating vertex 694 mm.
 - **The solve ends on its bounds** (plate thickness and radii), and three solves from the same seed found a multimodal landscape; the global search over the meniscus is the next step.
 
-## The compact variant, scored | Keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, SRF 2.03 px, 76 % of the energy in one pixel, over the slit and the band
+## The compact variant, scored | Ray-centroid keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, SRF 2.03 px; ensquared energy 0.76 geometric and 0.75 with diffraction
 ![Engine-scored maps for R4 on 18 µm pixels, per slit position and wavelength: field-angle map, keystone, smile, SRF FWHM, CRF FWHM, ensquared energy; each convention on its colorbar, maxima in the labels.](figs_dyson/dyson5_s3_maps_r4_rc.png)
+- **Open:** the propagated PSF's centroid parts from the ray centroid by up to 0.12 px on this design (0.001 px on the seeds, 0.03 px on R3), growing with wavelength, with the path-length check green.  A detector measures the intensity centroid, so until this is resolved the keystone that counts against the 0.1 px specification is the wave number.
 
 ## The trade at a glance | Distortion, response functions and ensquared energy per step, both records; the specification and the literature rules as lines
 ![Left: keystone and smile maxima (log scale) against the 1 % rule.  Middle: CRF and SRF FWHM against the 1.5 px specification and the 2-px-slit floor.  Right: minimum ensquared energy in one pixel against the 0.75 rule.](figs_dyson/dyson5_s3_trade_rc.png)
@@ -139,8 +140,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## Next steps | Clearance on the design of record, the global meniscus search, and the telescope that feeds the slit
 ::: left
-- **Apertures and clearance on R4:** declare every element's aperture from the footprint hulls, compute the minimum clearance of every beam leg against every body it does not traverse, model the slit-to-detector package on the block's face (a fold prism if it fails), and re-pose the Offner reference at a 0.2 R slit offset.
-- **Beat 4:** a global search over the meniscus (the R4 solve ends on its bounds) and the native multi-wavelength optimizer with the same smile and keystone operands.
+- **R5, the slit-to-detector split:** the returning beam clears the detector carrier by 1.2 mm with no cold shield; a fold prism at the slit (the literature's answer) is the next layout step, scored under the same clearance check.
+- **Beat 4, first:** settle the wave-versus-ray centroid difference (amplitude-weighted ray centroid from the engine's pupil amplitude; the twin's window and sampling as the null), then the global search over the meniscus and the native multi-wavelength optimizer with the centroid that a detector sees as the operand.
 ::: right
 - **Beat 5, the telescope:** EMIT parameters — 420 km, 60 m ground sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8, 24.6° cross-track field onto the 54 mm slit, telecentric and flat; the telescope's exit pupil on the grating.  Then spectrometer and telescope traced end to end as one deck.
 - **Then the physical-optics twin on R4** and the radiometric chain against the band.
