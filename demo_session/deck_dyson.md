@@ -51,14 +51,16 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Realism (Jim):** as-built SRF is 2.5–3 pixels, slits are 2 pixels wide, the systems are photon-limited; smile and keystone drive the design.
 ~ The 54 mm slit is 2.3× EMIT's; Table 3 of the review places this spec in the ALIS class (3200 spatial pixels, 380–2500 nm).  Public comparison point: Carbon-I (arXiv:2505.22545), F/2.2, 2040–2380 nm.
 
-## The Dyson as traced by the engine | Step R3 of the ladder: silica block, air gap, concave grating at the stop; rays from the slit return dispersed to the focal plane on the block's face
+## The Dyson as traced by the engine | Step R3 of the ladder, before apertures: the beams clear every body, but the grating is 270 mm wide on a 0.70 m radius and the slit sits 18 mm from the band
 - **The prescription:** `challenges/dyson5/dyson5_s3_r3.in`, seven elements; the block's spherical face (E2), the grating (E3, radius 0.71 m at the Dyson condition for a 220 mm block), and the focal plane on the flat face.  Bodies, rays and labels are read back from the engine.
-- **The slit sits on the block's flat face**, so the glass is the source medium and only the spherical face is a refracting element; the dispersion is the fan in the right-hand (Y-Z) view returning to the face.
+- **Sizes from the traced footprints:** block face 85 mm across at the sphere (220 mm radius, 217 mm thick), grating 270 mm across (0.70 m radius) at 0.69 m from the face; slit at +6 mm, this wavelength lands at −12 mm on the same face.
+- **No element declares an aperture yet,** so the block draws as the beam's hull and nothing can vignette; apertures, a clearance check and the slit-to-detector package split are the next revision of this layout.
 ![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s3_r3_views.png)
 
-## The Offner as traced by the engine | The all-reflective twin: concave mirror, convex grating at the common centre, concave mirror; all in air
+## The Offner as traced by the engine | The all-reflective twin at F/2.8, before apertures: the grating sits inside the slit-to-mirror beam, so the slit must move out to about 0.2 R
 - **The prescription:** `challenges/dyson5/dyson5_s1_offner.in`, five elements; the concave mirror (E1, used twice), the convex grating (E2) at the stop, the focal plane at the slit's conjugate.
-- **Why it is in the deck:** it is where the physical-optics twin is validated (order 0: pupil OPD 8e-11 m, 94 % of the energy in one pixel), and it is the trade's reference form.
+- **Obstruction, measured from the ray history:** the slit-to-M1 beam crosses the grating's plane over y = −39 to +51 mm while the grating's footprint spans ±45 mm; the return beam crosses it over −58 to +33 mm.  With no apertures declared the trace cannot see this; the slit offset of 6 mm must become about 100 mm (0.2 R, the classical Offner geometry) and the layout re-scored.
+- **Why it stays in the deck:** it is where the physical-optics twin is validated (order 0: pupil OPD 8e-11 m, 94 % of the energy in one pixel) and the trade's reference form.
 ![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s1_offner_views.png)
 
 ## The concentric Dyson and its scaling law | The classical condition verified by exact trace; at this slit the concentric block needs r ≥ 213 mm
