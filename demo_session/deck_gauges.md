@@ -391,7 +391,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | stepped pinhole with shutter frame | 100 nm (200 nm WFE) | unwrap + re-measure every 10: 0.21 pm at 1e15, 2.1 pm at 1e13, 3 pm by cycle 26 |
 | P/SRI | 100 nm | unwrap + re-measure: 0.25 pm; ceiling between 100 and 150 |
 | interferometer, lens rig | 300 nm (600 nm WFE) | unwrap alone: 3 pm in 16 / 18 / 21 / 25 / 43 cycles from 60 / 100 / 150 / 200 / 300 nm |
-| interferometer, mirror rig, redesigned | 200 nm (400 nm WFE) | unwrap alone: 3 pm in 19 / 24 cycles from 100 / 200 nm (2.98 pm at cycle 60), contraction 0.52 / 0.57; the 30 nm control holds at 2.97 pm |
+| interferometer, mirror rig, redesigned | 200 nm (400 nm WFE) | unwrap alone: 3 pm in 19 / 24 cycles from 100 / 200 nm, contraction 0.52 / 0.57; control 2.97 pm |
 | interferometer, mirror rig, record (7°) | none | stalls at 5.9 / 24 / 53 nm from 60 / 150 / 300 |
 ::: right
 - **The wrap is not the limit for the self-referenced sensors:** past 60 nm their differential comes back at 24-28 nm whatever the truth, with zero residues — the focal reference has collapsed, the reading is blind, not folded.
