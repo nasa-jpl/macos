@@ -54,13 +54,11 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Dyson:** a silica block whose flat face carries the slit and the focal plane, a concave grating concentric with the block's spherical face; the JPL flight form (EMIT, CWIS, ALIS).
 - **Offner:** concave mirror, convex grating at the common centre, concave mirror; all in air, so it is also where the physical-optics twin is validated first.
 ![The two forms as laid out by the exact chain, dispersion plane: slit (circle) to focal plane (square), rays at 380 / 1440 / 2500 nm.  Left, the Dyson: silica block, air gap, concave grating at the stop.  Right, the Offner: concave mirror twice, convex grating at the stop.  A chain sketch; deck-standard layouts (block outline, element arcs, mm axes) arrive with the compact variant.](figs_dyson/dyson5_s1_layout.png)
-~ Chain `spectrometer_geom.m`, emitter `spectrometer_rx.m`; the groove period is solved so the band spans the 9 mm focal plane.
 
 ## The concentric Dyson and its scaling law | The classical condition verified by exact trace; at this slit the concentric block needs r ≥ 213 mm
 - **The Dyson condition** R_g = n·r / (n − 1) is the blur minimum by exact 3-D trace: 0.67 µm at the condition against 4–5 µm at ±5 %, image at −h, residual fifth order (h⁴·¹⁷, r⁻³·¹⁹).
 - **The scaling answer, before any element was added:** a single concentric block meets a quarter-pixel corner blur only at r ≥ 213 mm, about twice flight scale, which is why the flight forms add an asphere, a meniscus or an air gap.
 ![Rms blur at the slit corner (h = 28.2 mm) of a concentric silica Dyson at F/1.8 versus block radius, exact trace at order 0: blur ∝ r⁻³·¹⁹; the quarter-pixel budget is met at r = 213 mm (grating radius 687 mm).](figs_dyson/dyson5_s0_scaling.png)
-~ Runner stage s0 (engine-free); record `dyson5_s0_scaling.txt`.  Block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF).
 
 ## The exact chain and the engine agree | Every engine ray re-traced by the chain from the engine's own launch directions lands within 1e-9 m
 ::: left
@@ -75,7 +73,6 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Smile is met at the seed** (below 0.01 pixel on both forms); the field-angle map is linear along the slit as designed.
 - **These maps predate the grating fixes of 2026-10-01:** the SRF ramp with wavelength is the groove-period defect, not the design; the re-scored maps replace this figure.
 ![Scorer maps for the two seeds at 220 mm (rows: Dyson, Offner): field-angle map, smile (pixels), SRF FWHM (pixels), ensquared energy in one pixel, versus slit position and wavelength.](figs_dyson/dyson5_s2_maps.png)
-~ Records `dyson5_s1.txt`, `dyson5_s2.txt`.
 
 ## The departure ladder | Each step solved on the exact chain with pixel-unit smile and keystone in the merit from the first pass, then emitted and scored in the engine
 ![Engine-scored maxima per ladder step at the seed's 220 mm block (left: smile, keystone, CRF FWHM in pixels; right: minimum ensquared energy in one pixel against the 0.75 design rule).](figs_dyson/dyson5_s3_ladder.png)
@@ -131,6 +128,17 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | groove period along the surface | 2.8 / 3.3 px rms spectral blur at 2500 nm (Offner / Dyson) | the local grating vector is the un-normalised projection of the ruling direction (chord-ruled) | `tGratingImmersed` (4), `test_grating_chord` |
 | grating path-length jump | 4 waves rms of pupil OPD where the rays converged to 0.05 µm | the jump is the groove count from the vertex along the ruling direction | `tGratingOpl` (2) |
 ~ Flat gratings are unchanged by the last two.  A fifth item, a short `AsphCoef=` line killing the host process, now pads with zero and warns (`tRxShortAsph`).
+
+## Backup: records and tools behind each slide | Every number traces to a runner stage and its record file
+::: full
+| slide | runner stage | record | tool |
+|---|---|---|---|
+| scaling law | s0 (engine-free) | `dyson5_s0_scaling.txt` | `design/src/dyson_layout.m`, `dyson_scaling.m` |
+| two forms, seed scored | s1 emit, s2 score | `dyson5_s1.txt`, `dyson5_s2.txt`, `dyson5_s2_maps.png` | `spectrometer_geom.m`, `spectrometer_rx.m`, `spectrometer_score.m` |
+| chain vs engine | gate | `tests/tSpectrometerRx.m` | per-ray re-trace, 1e-9 m |
+| propagation twin | s2w (opt-in, model 512) | `dyson5_s2w.txt` | `spectrometer_wave.m` |
+| departure ladder | s3, s3free | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3*_ladder.png` | `dyson_ladder.m` |
+~ Conventions behind the scaling law: block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF); field height h from the Dyson axis on the flat face; the slit corner is h = hypot(27 mm, 8 mm).
 
 ## Backup: conventions pinned on the way | Engine facts the chain depends on, stated once
 ::: left
