@@ -124,8 +124,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **The solve ends on its bounds** (plate thickness and radii), and three solves from the same seed found a multimodal landscape; the global search over the meniscus is the next step.
 
 ## The compact variant, scored | Ray-centroid keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, SRF 2.03 px; ensquared energy 0.76 geometric and 0.75 with diffraction
-![Engine-scored maps for R4 on 18 µm pixels, per slit position and wavelength: field-angle map, keystone, smile, SRF FWHM, CRF FWHM, ensquared energy; each convention on its colorbar, maxima in the labels.](figs_dyson/dyson5_s3_maps_r4_rc.png)
 - **Open:** the propagated PSF's centroid parts from the ray centroid by up to 0.12 px on this design (0.001 px on the seeds, 0.03 px on R3), growing with wavelength, with the path-length check green.  A detector measures the intensity centroid, so until this is resolved the keystone that counts against the 0.1 px specification is the wave number.
+![Engine-scored maps for R4 on 18 µm pixels, per slit position and wavelength: field-angle map, keystone, smile, SRF FWHM, CRF FWHM, ensquared energy; each convention on its colorbar, maxima in the labels.](figs_dyson/dyson5_s3_maps_r4_rc.png)
 
 ## The trade at a glance | Distortion, response functions and ensquared energy per step, both records; the specification and the literature rules as lines
 ![Left: keystone and smile maxima (log scale) against the 1 % rule.  Middle: CRF and SRF FWHM against the 1.5 px specification and the 2-px-slit floor.  Right: minimum ensquared energy in one pixel against the 0.75 rule.](figs_dyson/dyson5_s3_trade_rc.png)
