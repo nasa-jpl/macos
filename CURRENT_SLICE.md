@@ -24,6 +24,102 @@
 
 ## Active slice
 
+> **2026-10-01 12:00 -- RESUME POINT (context compaction).  PUSHED: macos
+> through 0d257ff (CALIB fixes + deck), resources through 18c225a (TO beats
+> 4b/4c/4d).  NEXT (Dave: "yes, up to date"): bring `demo_session/
+> deck_dyson.md` up to beat 4d -- (a) slit-loss slide: factor RESOLVED
+> (aliasing short end, evanescent energy in the normalisation long end,
+> engine 0.86-1.14x sinc^2; source `challenges/dyson5/BRIEF_dyson5_
+> beat4b.md`, dyson5_s2l*.png); (b) R5 fold prism = design of record on
+> Dave's acceptance (2 mm cold shield: CRF 1.295 px, EE 0.794, clearance
+> +0.67 mm PASS; BRIEF_dyson5_beat4d.md; render via `dyson5_view_figs.m`
+> on the R5 deck + `demo_session/tile_views.py`; element table via
+> `rx_elt_table.py`); (c) native optimize (beat 4c) = a line on the
+> ladder/next-steps slides; (d) global meniscus search: no better basin
+> (beat 4b).  Rules: text BEFORE figures, no per-slide footers, recompose
+> wide strips with `recompose.py` (pymacos venv python), QA by soffice ->
+> pdftoppm, sync via `sync_edit_deck.sh deck_dyson` (Dave closes the edit
+> copy first), commit, push on Dave's word.  TO's queue: s4env closure
+> sweep (addendum 11), beat 5 telescope (addendum 7), future work addenda
+> 10/12/13.  Engine: 4 CALIB items closed (addendum 14).
+
+> **2026-10-01 11:20: CALIB fixes COMMITTED (macos 0d257ff, local):** SPOT
+> derivative stride + OptAsph slice; tSpectrometerRx 6/6, tDesignTelescope
+> 70/70, fast 507/0.  Item 3 (OptRayGrid heap) probes running on
+> build_debug with the wait-for-exit driver (`scratchpad/
+> drive_macos_wait.py`, calibw_*.out).  Item 4 = queued feature.
+
+> **2026-10-01 pm: TO beat 4c -> 4 engine items.**  (1) CALIB SPOT-target
+> derivative stride opd_size->obj_size (design_optim.F ~794/796; YFIT 16385
+> of 30 pinned pre-fix on build_debug) FIXED; (2) smacos_compute.inc:382
+> asph slice n_optZernArr->n_optAsphArr FIXED; builds running (debug + ifx
+> + gfortran + mex + pymacos); then reproducer post-fix, OptRayGrid probe
+> (item 3, decks in scratchpad seed_optgrid{21,41}.in), tSpectrometerRx /
+> tDesignTelescope / fast suite.  (4) centroid operand = queued feature.
+
+> **2026-10-01 14:30: deck_dyson 26 slides; Dave's title-slide edit ruled
+> disposable (sync --force on his say-so, db6b193); RIY slide = full
+> sequence + exercised envelope; addenda 10 (future work: surface tour,
+> M&G spot diagrams, telescope) + 11 (closure-envelope sweep).  Unpushed:
+> macos 9062b99..latest (deck); resources 4d95a9a (TO centroid).
+
+> **2026-10-01 13:00: centroid CLOSED (TO 4d95a9a: twin grid frame sign;
+> keystone 0.0026 stands).  Deck: Dave's 5 asks done (element tables from
+> .in, methods+terms slide, slit-loss model + open factor, RIY wording, the
+> misformat check pending render), caveat -> Backup (macos local).  Addendum
+> 9: slit-loss factor tests (grid / window aliasing / 2-D slit), re-emit
+> ladder decks with apertures.  Unpushed: resources 4d95a9a; macos deck.
+
+> **2026-10-01 11:30: TO beat 3c (354186e, unpushed) = addenda 5-7 done on
+> R4; OPEN RISK: wave-vs-ray centroid 0.122 px on R4 (growing with lambda)
+> -- addendum 8 = beat 4 settles it first with discriminators (achromatic
+> amplitude weighting vs lambda-scaling twin numerics).  Deck updated with
+> the caveat on the title (macos local commit).
+
+> **2026-10-01 10:00: deck_dyson at 23 slides with R4 as the design of
+> record** (engine render + TO's section + maps + trade + twin + slit
+> loss; `recompose.py` splits wide strips into rows and drops the
+> super-title -- run it with the pymacos venv python, system python3 has
+> no numpy).  LOCAL, unpushed: macos 96792e8 adad9cf 26b5e71 9e5e382
+> 5db36cf (deck); resources 5cd3184 (TO beat 3b R4) 3b9d578 (probe).
+> TO's next: addendum 6 on R4 (apertures, clearance, Offner 0.2 R, package
+> split), addendum 7 (twin on R4; beat 5 telescope at EMIT params).
+> Twin slide (16) lopsided after the split -- Dave's editing pass.
+
+> **2026-10-01 09:00: R4 = design of record (TO 5cd3184); addendum 7 (R4,
+> addendum 6 on R4, EMIT telescope spec = beat 5); deck_dyson 23 slides
+> (macos adad9cf, local, edit copies synced).  Local unpushed: macos
+> 96792e8, adad9cf; resources 3b9d578 (probe).  TO's 5cd3184 pushed? --
+> it was in the 3aac2c5 push range? NO: 5cd3184 is after a6b5336; check
+> `git log origin/dev-candidate..` before the next push request.
+
+> **2026-10-01 07:30: PUSHED (macos ..f6a0011 incl. deck + AsphCoef;
+> resources ..3aac2c5), fast suite 504/0.  Dave: the renders show
+> OBSTRUCTION -- measured: Offner grating inside the slit beam (ApType None
+> everywhere); addendum 6 to TO (apertures, clearance tool, Offner slit
+> ~0.2 R, slit/FPA package, sizes); probe committed (resources local);
+> deck slides 4-5 corrected (macos local).  OPEN: the telescope feeding
+> the slit -- spec from Dave/Joe.
+
+> **2026-10-01 06:40: AsphCoef pad fix committed (macos + resources gate,
+> tRxShortAsph 2/2); fast suite rerun RUNNING.  deck_dyson: engine renders
+> of the .in files on slides 4-5 (resources 72a5d6d producer; macos 9cf9cdd).
+> Edit-copy sync waits for Dave to close deck_dyson_edit.pptx.  Then: push
+> request (macos: 0f4442b.. + deck + AsphCoef; resources: beat 2c/3 +
+> gates + view figs + AsphCoef gate).
+
+> **2026-10-01 06:00: deck_dyson started** (15 slides, local commits
+> 2f71704..fb0e51f; edit/baseline copies synced), Dave: COMPACT variant =
+> R4 (BRIEF_to_dyson5 addendum 4 with the deck-figure contract for TO).
+> AsphCoef pad fix built + string-verified in the mex; tRxShortAsph + fast
+> suite RUNNING -> commit + push request.
+
+> **2026-10-01 05:00: pushed (macos f6fbc41, resources a6b5336 = TO beat 3).
+> Engine item #5 in test: short `AsphCoef=` line killed the host -> ReadRealsPad
+> pads + warns (elt_mod + msmacosio.inc, both trees + mex rebuilt, string
+> verified in the mex); gate tRxShortAsph + fast suite RUNNING.  Then commit
+> + push request.
+
 > **2026-10-01 04:30: finding #3 CLOSED GREEN** -- tGratingOpl 2/2,
 > tGratingImmersed 4/4, tSpectrometerRx 2/2, pymacos 44/44, fast 501/0.
 > PUSH REQUEST: macos (the dL commit + this slice); resources f34c7fd (TO
