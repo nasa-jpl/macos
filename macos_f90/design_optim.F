@@ -788,12 +788,20 @@ C
 	           !print*,'dyda: yfit =',yfit(off:off+obj_size-1)
                    !print*,'dyda =',dyda(off:off+obj_size-1,i)
 	        end if
+!-->  The derivative columns must advance by obj_size, as the VALUE loop
+!     above does (lines ~688/692/717/719): opd_size = mpts*mpts equals
+!     obj_size only for the WFE target, so every Telescope optimize was
+!     fine, while a SPOT target (obj_size = 1) wrote its second (field,
+!     wavelength) into row 16385 of a 30-row yfit -- a bounds abort in
+!     the CLI, a segfault / hang in the mex (TO, dyson5 beat 4c,
+!     2026-10-01).
 	        if (.not. (OptBeam_m%ifOptBeamDir .OR.
      &                     OptBeam_m%ifOptBeamPos .OR.
      &                     OptBeam_m%ifOptBeamSize)) then
-	          off=off+opd_size
+	          off=off+obj_size
 	        else
-	          off=off+opd_size; off2=1
+	          off=off+obj_size; off2=1
+!<--
 	          if (OptBeam_m%ifOptBeamDir) then
 	            dyda(off+off2:off+off2+2,i)=
      &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
