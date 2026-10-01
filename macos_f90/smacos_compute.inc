@@ -379,7 +379,7 @@ C Apply perturbations in ptbArr to a selected set of DOFs
      &                     varZernArr(1:1), ! place holder
      &                     ptbArr(1:1), ! place holder
      &                     varAsphArr(ias+1:ias+n_optAsphArr(ie)),
-     &                     ptbArr(ia+1:ia+n_optZernArr(ie)))
+     &                     ptbArr(ia+1:ia+n_optAsphArr(ie)))  ! was n_optZernArr: an empty slice when the element has no Zernike DOF (TO, 2026-10-01)
 	    ias=ias+n_optAsphArr(ie)
 	    ia=ia+n_optAsphArr(ie)
 	  End If
