@@ -810,6 +810,20 @@ order-m Fourier term).  Compare OPDs across a grating in PHASE (wrapped, or
 the complex field), never as unwrapped lengths; the ray-side scorer never
 uses path lengths and is unaffected.
 
+## Short multi-value lines: `AsphCoef=` / `AnaCoef=` pad with zero (2026-10-01)
+A `AsphCoef=` line with fewer values than `nAsphCoef` (default 4) was an
+UNCAUGHT end-of-file in the list-directed internal READ -- a Fortran runtime
+abort that kills the HOST when the engine is a mex / .so (TO, dyson5 beat 3;
+same class as the `mod ngridpts = 33` and `stop obj 0 0 0` EOF crashes).
+Now `ReadRealsPad` (elt_mod, shared by the CLI and SMACOS parsers) reads as
+many values as the line carries, pads the rest with 0 and prints ONE line
+naming the element and the count -- fewer coefficients than slots means the
+higher orders are zero (guards warn, not error).  Applied at the four
+AsphCoef read sites (first line, continuation groups, the incomplete group)
+and to `AnaCoef=`.  The other multi-value keywords (MonCoef, ZernCoef, ...)
+still use bare `READ(VALUE,*)` -- same hazard, not yet guarded; extend
+`ReadRealsPad` there when one bites.
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character

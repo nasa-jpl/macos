@@ -609,6 +609,34 @@ C***********************************************************************
 
         End Subroutine ParseZernType
 
+!-->  ReadRealsPad (2026-10-01): list-directed read of up to n reals from
+!     a string, PADDING the missing tail with zero instead of dying.  A
+!     short `AsphCoef=` line (fewer values than nAsphCoef) was an uncaught
+!     end-of-file in the internal READ -- a Fortran runtime abort that
+!     kills the HOST process when the engine is a mex / .so (TO, dyson5
+!     beat 3).  Fewer coefficients than the slot count means the higher
+!     orders are zero, so pad and WARN (guards warn, not error).  nread
+!     returns how many values the string carried.
+        SUBROUTINE ReadRealsPad(str, arr, n, nread)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN)  :: str
+          INTEGER,          INTENT(IN)  :: n
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER,          INTENT(OUT) :: nread
+          INTEGER :: k, j, ios
+          arr(1:n) = 0d0
+          nread = 0
+          DO k = n, 1, -1
+            READ(str, *, IOSTAT=ios) (arr(j), j=1,k)
+            IF (ios .EQ. 0) THEN
+              nread = k
+              EXIT
+            END IF
+            arr(1:n) = 0d0
+          END DO
+        END SUBROUTINE ReadRealsPad
+!<--
+
 C***********************************************************************
 
         Subroutine elt_mod_init
