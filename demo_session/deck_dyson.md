@@ -23,7 +23,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **5** The Dyson as traced by the engine
 - **6** The Offner as traced by the engine
 - **7** The concentric Dyson and its scaling law
-- **8** The exact chain and the engine agree
+- **8** Two independent ray traces agree
 - **9** The seed, scored
 - **10** The departure ladder
 - **11** The departure ladder, by the numbers
@@ -104,14 +104,14 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **The scaling answer, before any element was added:** a single concentric block meets a quarter-pixel corner blur only at r ≥ 213 mm, about twice flight scale, which is why the flight forms add an asphere, a meniscus or an air gap.
 ![Rms blur at the slit corner (h = 28.2 mm) of a concentric silica Dyson at F/1.8 versus block radius, exact trace at order 0: blur ∝ r⁻³·¹⁹; the quarter-pixel budget is met at r = 213 mm (grating radius 687 mm).](figs_dyson/dyson5_s0_scaling.png)
 
-## The exact chain and the engine agree | Every engine ray re-traced by the chain from the engine's own launch directions lands within 1e-9 m
+## Two independent ray traces agree | The design solver and MACOS place every ray within a nanometre of each other, so the prescription is what the solver intended
 ::: left
-- **The check:** the engine's chief ray and every ray of its grid are re-traced through the chain's surfaces from the engine's launch directions; agreement is per ray, every surface, 1e-9 m; the dispersed band spans the focal plane to 1 %.
-- **With the aspheric block face (ladder step R2):** agreement 1e-12 m per ray; a sphere-only chain misses by 0.26 mm, so the check is not vacuous.
-- **The physical-optics twin:** a far-field terminal on a reference sphere upstream of the focal plane, re-posed per slit position and wavelength; on the Offner at order 0 the pupil OPD is 8e-11 m and the Airy spot puts 94 % of its energy in one 18 µm pixel.
+- **Two programs, one prescription.** The design solver (MATLAB) lays out each form from its design rules and writes the prescription.  MACOS then traces that prescription on its own.  The check: every ray MACOS launches is re-traced by the solver through the same surfaces, and the two land within 1e-9 m at every surface; the dispersed band spans the detector to 1 %.
+- **The check is not trivial.** With the aspheric block face of ladder step R2 the agreement is 1e-12 m per ray, while a solver that ignores the asphere misses by 0.26 mm.
+- **Wave propagation agrees too.** On the Offner at order 0 the propagated point image is a clean Airy pattern, 85 % of its energy in one pixel, with a pupil error of 8e-11 m.
 ::: right
-- **What the checks found in the engine, now fixed** (details in Backup): glass names were ignored at load; propagation inside glass used the vacuum wavelength; the grating groove period was held constant along the curved surface instead of along the chord; the grating's path-length jump had the matching defect.  Each has a regression test written from the physics, not from the engine.
-~ Regression tests: `tSpectrometerRx` (3), `tGratingOpl` (2), `tGratingImmersed` (4), `tGlassDispersion` (3), `tPropMedium` (3); mmacos fast suite 501 pass, 0 fail (2026-10-01).
+- **What the checks found in MACOS, and fixed** (details in Backup): glass names were ignored when a prescription loaded; propagation inside glass used the vacuum wavelength; a grating's groove spacing was held constant along the curved surface instead of along the chord; the grating's path-length term had the matching defect.  Each now has a regression test written from the physics.
+~ Regression tests: 15 in five classes; the MACOS fast suite stands at 504 pass, 0 fail (2026-10-01).
 
 ## The seed, scored | The concentric seed at a 220 mm block meets smile; keystone and the corner blur are the work
 - **Smile is met at the seed** (below 0.01 pixel on both forms); the field-angle map is linear along the slit as designed.
@@ -144,9 +144,9 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ![The free-radius ladder: ensquared energy reaches the 0.75 rule only as the block grows to 341 mm.](figs_dyson/dyson5_s3free_ladder.png)
 
 ## The compact variant, as traced by the engine | Step R4: the meniscus corrector in the air gap between the block and the grating; the design of record at a 220 mm block
-- **The prescription:** `challenges/dyson5/dyson5_s3_r4.in`, eleven elements: the block's flat face, its spherical face, the meniscus (two surfaces), the grating, and the return through the meniscus and block to the focal plane; the element table is on the next slide.
+- **Eleven surfaces:** the block's flat and spherical faces, the meniscus, the grating, and the same faces again on the way back to the focal plane; the element table is on the next slide.
 ![3-D view and the dispersion plane (Y-Z), metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
-- **Clearance:** the worst pair is the returning beam against the detector carrier, +1.19 mm with no cold shield; any shield height fails the check, so a fold prism at the slit is the next layout step.
+- **Clearance:** the returning beam passes the detector carrier by 1.19 mm with no cold shield; any shield fails the check, so a fold prism at the slit is the next layout step.
 
 ## The compact variant: the prescription | The eleven elements of step R4 as written in `dyson5_s3_r4.in`; radii are |R|, apertures the declared circular radii, z along the axis from the block's face
 ::: full
@@ -193,7 +193,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ::: right
 - **Beat 5, the telescope:** EMIT parameters — 420 km, 60 m ground sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8, 24.6° cross-track field onto the 54 mm slit, telecentric and flat; the telescope's exit pupil on the grating.  Then spectrometer and telescope traced end to end as one deck.
 - **Then the radiometric chain against the band.**
-- **Future work, once the design of record is stable:** a surface-by-surface tour of the prescription (role, ray footprint, clearance, and the field where a propagation leg ends, per surface); spot diagrams in the Mouroulis & Green form, slit positions down and wavelengths across inside the 18 µm pixel box; the telescope and the end-to-end instrument.
+- **Future work, once the design of record is stable:** a surface-by-surface tour of the prescription (role, ray footprint, clearance, and the field where a propagation leg ends, per surface); spot diagrams in the Mouroulis & Green form, slit positions down and wavelengths across inside the 18 µm pixel box; the telescope and the end-to-end instrument; polarization sensitivity of the Dyson against the Offner, since the Dyson's near-normal incidence is what the literature credits for its low sensitivity.
 
 ## Run it yourself | One parameter file, one runner, every stage through it
 ::: full
@@ -235,16 +235,6 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | departure ladder, R4, trade | s3, s3free, s3b | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3_trade.txt`, `dyson5_s3_layout_r*.png`, `dyson5_s3_maps_r*.png` | `dyson_ladder.m`, `dyson5_trade.m` |
 | slit loss | s2l | `dyson5_s2l.txt`, `dyson5_s2l_slitloss.png` | far-field leg vs sinc² |
 ~ Conventions behind the scaling law: block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF); field height h from the Dyson axis on the flat face; the slit corner is h = hypot(27 mm, 8 mm).
-
-## Backup: the centroid question, settled | A 0.12 px wave-versus-ray difference on R4 was the twin's grid read in the wrong frame; the detector sees the ray centroid
-::: left
-- **The symptom:** the propagated point-spread function's centroid parted from the ray centroid by 0.001 px on the seeds, 0.03 px on R3 and 0.12 px on R4, growing with wavelength, while the path-length check passed.
-- **The proposed mechanism, tested and refuted:** an amplitude-weighted ray centroid (Fresnel transmission across the pupil) reproduces the ray centroid to 4 % of the offset (0.0505 vs 0.0524 px at 2500 nm).
-- **Numerics ruled out:** doubling the window and halving the sampling reproduce every digit.
-::: right
-- **The cause:** the far-field grid carries the source grid's orientation in index space, inverted by the transform; the prescription's y axis is chief × x, which is +y on the Dyson's chief and −y on the Offner's.  Raw centroids on R4 were the ray offsets with both signs flipped, on the Offner with one.
-- **The fix:** the harness takes the signs from the engine's source frame and states them in its record.  After it: agreement 0.0022 px (R4) and 0.0058 px (Offner) at every slit position and wavelength.  The concentric seed could never have shown this; it had no offset to flip.
-~ Record: `dyson5_s2w.txt`, `dyson5_s2w_R3control.txt`; convention in the reference document.
 
 ## Backup: conventions pinned on the way | Engine facts the chain depends on, stated once
 ::: left
