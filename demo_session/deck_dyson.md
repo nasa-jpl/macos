@@ -30,14 +30,15 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ::: right
 - **12** What each departure buys
 - **13** The compact variant, as traced by the engine
-- **14** The compact variant in section
-- **15** The compact variant, scored
-- **16** The trade at a glance
-- **17** The propagation twin
-- **18** Slit diffraction loss
-- **19** Next steps
-- **20** Run it yourself
-- **21** Backup
+- **14** The compact variant: the prescription
+- **15** The compact variant in section
+- **16** The compact variant, scored
+- **17** The trade at a glance
+- **18** The propagation twin
+- **19** Slit diffraction loss
+- **20** Next steps
+- **21** Run it yourself
+- **22** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -71,7 +72,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ## The Dyson as traced by the engine | The concentric seed with every aperture declared: the beams clear every body; the grating is 270 mm wide on a 0.70 m radius and the slit sits 18 mm from the band
 ::: left
 - **The prescription:** `challenges/dyson5/dyson5_s1_dyson.in`; bodies, rays and labels are read back from the engine.  Radii are |R|; apertures are the declared circular radii (footprint plus 5 mm); z along the axis from the block's face.
-| E | element | type | surface | radius R (mm) | conic | aperture radius (mm) | vertex z (mm) |
+| E | name | type | surface | R (mm) | K | aperture r (mm) | z (mm) |
 |---|---|---|---|---|---|---|---|
 | 1 | BlockFaceIn | Refractor | Flat | - | - | 32.1 | 0.5 |
 | 2 | BlockSphereOut | Refractor | Conic | 220.0 | 0 | 73.2 | 220.0 |
@@ -87,7 +88,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ## The Offner as traced by the engine | The all-reflective reference at F/2.8, re-posed at 0.22 R: the two mirror zones with the grating between the beams, clearing its mount by 10.2 mm
 ::: left
 - **The prescription:** `challenges/dyson5/dyson5_s1_offner.in`, F/2.8, slit offset 0.22 R; the concave mirror used in two zones (E1, E3) with the convex grating (E2) at the stop; classical corrections: convex radius × 1.0034, second zone × 0.951 with a 0.3 mm offset.
-| E | element | type | surface | radius R (mm) | conic | aperture radius (mm) | vertex z (mm) |
+| E | name | type | surface | R (mm) | K | aperture r (mm) | z (mm) |
 |---|---|---|---|---|---|---|---|
 | 1 | M1 | Reflector | Conic | 500.0 | 0 | 119.3 | -486.6 |
 | 2 | Grating | Grating | Conic | 250.9 | 0 | 49.9 | -250.9 |
@@ -143,9 +144,13 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ![The free-radius ladder: ensquared energy reaches the 0.75 rule only as the block grows to 341 mm.](figs_dyson/dyson5_s3free_ladder.png)
 
 ## The compact variant, as traced by the engine | Step R4: the meniscus corrector in the air gap between the block and the grating; the design of record at a 220 mm block
-::: left
-- **The prescription:** `challenges/dyson5/dyson5_s3_r4.in`: the block's flat face, its spherical face, the meniscus (two surfaces), the grating, and the return through the meniscus and block to the focal plane.
-| E | element | type | surface | radius R (mm) | conic | aperture radius (mm) | vertex z (mm) |
+- **The prescription:** `challenges/dyson5/dyson5_s3_r4.in`, eleven elements: the block's flat face, its spherical face, the meniscus (two surfaces), the grating, and the return through the meniscus and block to the focal plane; the element table is on the next slide.
+![3-D view and the dispersion plane (Y-Z), metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
+- **Clearance:** the worst pair is the returning beam against the detector carrier, +1.19 mm with no cold shield; any shield height fails the check, so a fold prism at the slit is the next layout step.
+
+## The compact variant: the prescription | The eleven elements of step R4 as written in `dyson5_s3_r4.in`; radii are |R|, apertures the declared circular radii, z along the axis from the block's face
+::: full
+| E | name | type | surface | R (mm) | K | aperture r (mm) | z (mm) |
 |---|---|---|---|---|---|---|---|
 | 1 | BlockFaceIn | Refractor | Flat | - | - | 32.2 | 0.7 |
 | 2 | BlockSphereOut | Refractor | Aspheric | 220.0 | -0.00650944 | 73.0 | 219.1 |
@@ -158,9 +163,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 | 9 | BlockFaceOut | Refractor | Flat | - | - | 32.6 | 0.7 |
 | 10 | PreFPA | Reference | Flat | - | - | - | 0.9 |
 | 11 | FPA | FocalPlane | Flat | - | - | - | -0.1 |
-::: right
-![3-D view and the dispersion plane (Y-Z), metres, global frame.](figs_dyson/dyson5_s3_r4_views.png)
-- **Clearance:** the worst pair is the returning beam against the detector carrier, +1.19 mm with no cold shield; any shield height fails the check, so a fold prism at the slit is the next layout step.
+~ The two block faces and the meniscus appear twice because the light passes them on the way out and back; the engine traces them as separate surfaces.
 
 ## The compact variant in section | Dispersion plane and slit direction, to scale: block, meniscus, grating; slit and focal plane on the block's face
 ![Left: the dispersion plane, slit centre, rays at 380 / 1440 / 2500 nm (blue / green / red).  Right: the slit direction, slit centre and ends at 1440 nm; the focal plane in magenta.  Block shaded; 100 mm scale bar.](figs_dyson/dyson5_s3_layout_r4_rc.png)
@@ -179,9 +182,9 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ![Left: the Offner at order 0, PSF (log scale) with the 18 µm pixel box, 85 % ensquared.  Middle: wave-minus-ray centroid over the slit and band, Offner and Dyson seeds.  Right: SRF and CRF from the propagated PSF at the slit centre.](figs_dyson/dyson5_s2w_twin_rc.png)
 
 ## Slit diffraction loss | A 36 µm slit at F/1.8: the engine's far-field leg against the sinc² closed form
-![Loss past the grating versus wavelength: engine far-field leg (points) against the sinc² form (line).](figs_dyson/dyson5_s2l_slitloss.png)
 - **The model:** a uniformly lit 36 µm slit of zero length, propagated as a far-field wave to the grating's plane 0.70 m away on a 255-point grid; loss = the energy landing outside the F/1.8 acceptance.  The closed form is the exact sinc² integral for the same slit and acceptance.
 - **Under 2.5 % over the band by both,** but they disagree by a factor that changes sign: the engine reads 0.3× the closed form at 380 nm and 1.36× at 2500 nm.  Which of the grid, the window (11 % wider than the acceptance) or the slit's missing length explains it is being tested; the number is not yet design-grade.
+![Loss past the grating versus wavelength: engine far-field leg (points) against the sinc² form (line).](figs_dyson/dyson5_s2l_slitloss.png)
 
 ## Next steps | Clearance on the design of record, the global meniscus search, and the telescope that feeds the slit
 ::: left
