@@ -824,6 +824,38 @@ and to `AnaCoef=`.  The other multi-value keywords (MonCoef, ZernCoef, ...)
 still use bare `READ(VALUE,*)` -- same hazard, not yet guarded; extend
 `ReadRealsPad` there when one bites.
 
+## CALIB: asphere differential step + the LM failure path (2026-10-01, dyson5 beat 4c)
+`nls_optim_dvr` (design_optim.F) probed every aspheric coefficient with a
+FIXED step `das = 1e-10` (x 1e-5 per higher order).  On a deck in metres an
+h^4 coefficient of 1e-3 probed by 1e-10 moves the sag by 1e-15 m at a 70 mm
+aperture -- round-off, a zero derivative column, `gaussj: singular matrix (2)`
+at the first LM step (TO, sec. 3.5).  Now the step is `das_rel = 1e-3` of
+the coefficient; a ZERO coefficient (an asphere started from a conic) takes
+the step that moves the sag at the element's CIRCULAR aperture radius by
+1e-7 |Kr| (`ApType==1`, `ApVec(1)` = radius); with no circular aperture the
+legacy absolute step remains, now scaled per ORDER of the term
+(`das*1e-5**(j-1)`; the old code scaled by the term's POSITION in the
+list), and ONE line says so (that branch is still round-off on metre decks
+-- declare the aperture).  The same failure also
+killed the HOST: the loop's `if (.not. lmlsq_success)` branch had a bare
+`stop` before its own `rtn_flg=1` (the CLI happened to survive only when
+the failure came elsewhere; the mex segfaulted, TO sec. 3.6), and the
+"last run" branch `return`ed without deallocating.  Both now `go to 105`:
+the optics are put back at the last ACCEPTED parameter vector (the
+pre-optimization state when the first step failed), `rtn_flg=1`, normal
+cleanup -- which is what the CLI's CALIB handler (`Optimzation aborted!`)
+and the bindings' `calib_run` already expect: it answers OK=FAIL, which the
+mmacos wrapper raises as an ordinary, catchable MATLAB error (`mmacos:
+calib_run failed`) after the engine has printed the reason -- so
+`macos.calib`'s `converged=false` branch is unreachable from MATLAB; catch
+the error.
+Gates: `tAsphCalib` (mmacos, SUITE_FAST) on `Rx_AsphCalib.in` -- a metre
+paraboloid with a spoiled h^4 term that CALIB must drive back to zero, and
+the no-aperture/zero-term variant that must FAIL with the flag, the optics
+untouched and MATLAB alive.  Measured on TO's reproducer
+(`dyson5_s4_r4n_seed.in` + `OptAsph= 2 1 2`): pre-fix singular at once;
+post-fix 4 iterations in 9 s; the no-aperture variant returns to the prompt.
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character

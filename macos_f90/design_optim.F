@@ -113,16 +113,19 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	! Local variables - LM algorithm related
 	LREAL, parameter :: das_scale_factor=1d-05
+	LREAL, parameter :: das_rel=1d-3  ! asphere step = das_rel*|coef|
         LREAL, dimension(:), allocatable :: aparams,tmpda,sig
         LREAL, dimension(:,:), allocatable :: covar,alpha
         Logical, dimension(:), allocatable :: maska
         LREAL :: alamda, chisq, chisq_arr(tot_itrs+1),
      &           wfe_rms, wfe_rms_old(12,6)
         Integer :: len_a, idof,ifov,iwl,k,tot_itrs_done,m_err_rtn
-	LREAL, save :: dtt,dx,dp,dc,drc,dcc,dz,das,das_scale
+	LREAL, save :: dtt,dx,dp,dc,drc,dcc,dz,das
 
 	! General local variables
 	Integer :: iElt,itr,i,j,ios,off,status_flag
+	Integer :: ias,jterm,ie_asph
+	LREAL :: cval,hap
         Logical, save :: itr_done,first_entry = .true.
 	Integer, save :: entry_cnt=0  ! debug only
 
@@ -276,7 +279,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	! len_a = number of DOFs to calibrate
 	allocate(tmpda(n_varElt*(mVarDOF_nls
      &                 +mOptZern_nls+mOptAsph_nls)))
-	len_a=0; k=1
+	len_a=0; k=1; ias=0
 	!
 	Do iElt=1, n_elts
 	  Do idof=1,mVarDOF_nls
@@ -304,11 +307,43 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    tmpda(len_a)=dz
 	  End Do
 	  ! Add asph for this varElt
-	  das_scale=1d0
+!-->  The differential step for an aspheric coefficient scales with
+!     the coefficient (das_rel = 1e-3 of it), not the fixed das=1e-10:
+!     on a deck in metres an h^4 coefficient of 1e-3 probed by 1e-10
+!     moves the sag by 1e-15 m at a 70 mm aperture -- round-off, a zero
+!     derivative column and "gaussj: singular matrix" at the first LM
+!     step (TO, dyson5 beat 4c sec. 3.5, 2026-10-01).  A ZERO coefficient
+!     (an asphere started from a conic) takes the step that moves the sag
+!     at the element's circular aperture radius by 1e-7 of |Kr|; with no
+!     circular aperture declared the legacy absolute step remains, and a
+!     line says so.  The order scaling das_scale_factor is kept for that
+!     legacy branch only, applied per order of the term.
+	  ie_asph=elts(iElt)
 	  Do idof=1,n_optAsph(iElt)
-            len_a=len_a+1; tmpda(len_a)=das*das_scale
-	    das_scale=das_scale*das_scale_factor
+            len_a=len_a+1
+            jterm=varAsph_arr(ias+idof)
+            cval=0d0
+            if (ie_asph>0 .and. jterm>=1 .and. jterm<=mAsph)
+     &        cval=AsphCoef(jterm,ie_asph)
+            if (cval /= 0d0) then
+              tmpda(len_a)=das_rel*abs(cval)
+            else if (ie_asph>0 .and. ApType(ie_asph)==1 .and.
+     &               ApVec(1,ie_asph)>0d0 .and.
+     &               abs(KrElt(ie_asph))<1d10) then
+              hap=ApVec(1,ie_asph)
+              tmpda(len_a)=1d-7*abs(KrElt(ie_asph))/hap**(2*jterm+2)
+            else
+              ! legacy absolute step, scaled per ORDER of the term (the
+              ! old code scaled by the term's position in the list)
+              tmpda(len_a)=das*das_scale_factor**(jterm-1)
+              WRITE(*,'(A,I2,A,I4,A,ES9.2)')
+     &          ' ** CALIB: asphere term',jterm,' of element',ie_asph,
+     &          ' has a zero coefficient and no circular aperture:'//
+     &          ' legacy step',tmpda(len_a)
+            end if
           End Do
+          ias=ias+n_optAsph(iElt)
+!<--
 	End Do
 	!
 	if (allocated(aparams_nls_m)) deallocate(aparams_nls_m)
@@ -448,7 +483,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           WRITE(*,*)' Computing nominal system sensitivity ...'
           Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
 	  WRITE(*,*)' Done!'
-          go to 110
+          go to 100  ! was 110: a jump INTO the If (allocated) block
         End If
 
 	If (ifOptPrint) Then
@@ -499,8 +534,15 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      WRITE(*,*) ' ** Possible reasons: '
 	      WRITE(*,*) ' **   Incorrect setup for optimizer'
 	      WRITE(*,*) ' **   DOFs for optimization are correlated'
-	      stop
-	      rtn_flg=1; go to 110
+	      WRITE(*,*) ' **   A differential step too small to move',
+     &                   ' the merit (a zero derivative column)'
+!-->  No STOP here: it ended the HOST process when the engine is a mex /
+!     .so (TO, dyson5 beat 4c sec. 3.6) and left the optics at whatever
+!     probe the last derivative column had applied.  Label 105 restores
+!     the last accepted state and returns rtn_flg=1 through the normal
+!     cleanup, which is what the CLI's CALIB handler and the bindings'
+!     calib_run already expect (2026-10-01).
+	      rtn_flg=1; go to 105
 	    end if
 	    chisq_arr(itr) = chisq
           Else
@@ -546,7 +588,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
 	  if (.not. lmlsq_success) then
-            rtn_flg=1; return
+            rtn_flg=1; go to 105
 	  end if
 	  chisq_arr(tot_itrs_done+1) = chisq
 	Else
@@ -591,6 +633,23 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  WRITE(*,*)'Optimization iterations =',tot_itrs_done
 	  WRITE(*,*)' '
 	End If
+	go to 100
+
+!-->  Failure exit: put the optics back at the last ACCEPTED parameter
+!     vector (zero = the pre-optimization state when the first LM step
+!     failed), as the success path above applies the final one, then
+!     fall into the normal cleanup.
+ 105    continue
+	Call smacos_compute_perturbed(OPDm,ZCoefm,SPOTm,
+     &              SpotSizem,PIXm,
+     &              wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &              n_optZern,varZern_arr_m,
+     &              n_optAsph,varAsph_arr_m,
+     &              fovs(:,:,1),wls(1),aparams)
+	aparams_nls_m=aparams
+	WRITE(*,*) ' ** Optimization aborted; optics restored to the',
+     &             ' last accepted state.'
+!<--
 
  100    continue
 
