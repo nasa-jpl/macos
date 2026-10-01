@@ -427,6 +427,10 @@ def render_slide(spec):
             for j, l in enumerate(payload):
                 para(tf, l if l else " ", size=size, mono=True,
                      first=(j == 0), space_after=1)
+            # an auto-shape's first paragraph inherits CENTER alignment: the
+            # code box's first line sat centred (deck_dyson, 2026-10-01)
+            for pp in tf.paragraphs:
+                pp.alignment = PP_ALIGN.LEFT
             y += hgt + 0.12
         elif typ == "img":
             cap, path, h = payload

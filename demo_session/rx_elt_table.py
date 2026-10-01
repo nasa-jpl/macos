@@ -19,6 +19,6 @@ for k in range(1, len(blocks), 2):
         ap = f'{float(g("ApVec").split()[0].replace("D","E"))*1e3:.1f}'
     vpt = g('VptElt').split(); z = f'{float(vpt[2].replace("D","E"))*1e3:.1f}' if len(vpt) == 3 else '-'
     rows.append((i, name, typ, srf, R, f'{kc:g}' if R != '-' else '-', ap, z))
-print('| E | element | type | surface | radius R (mm) | conic | aperture radius (mm) | vertex z (mm) |')
+print('| E | name | type | surface | R (mm) | K | aperture r (mm) | z (mm) |')
 print('|---|---|---|---|---|---|---|---|')
 for r in rows: print('| ' + ' | '.join(str(x) for x in r) + ' |')
