@@ -51,11 +51,14 @@ for i in range(0, n, 6):
     tail = ", &" if i + 6 < n else " ]"
     a(f"     &    {chunk}{tail}")
 a("        REAL*8, PARAMETER :: tb(6, NB) = RESHAPE( [ &")
-flat = [f"{v:.8E}".replace("E", "D") for row in rows for v in row]
-# 6 values per line = one glass per line, readable + diffable
-for i in range(0, len(flat), 6):
-    chunk = ", ".join(flat[i:i+6])
-    tail = ", &" if i + 6 < len(flat) else " ], [6, NB] )"
+flat = [f"{v:.16E}".replace("E", "D") for row in rows for v in row]
+# full double precision (17 significant digits: a 9-digit bake of CaF2's IR
+# resonance term, 1200.55597 vs 1200.5559729, moved the index by 1e-11 at
+# 2 um -- tGlassDispersion caught it 2026-09-30).  3 values per line keeps
+# every line under gfortran's 132-column free-form limit: two lines per glass.
+for i in range(0, len(flat), 3):
+    chunk = ", ".join(flat[i:i+3])
+    tail = ", &" if i + 3 < len(flat) else " ], [6, NB] )"
     a(f"     &    {chunk}{tail}")
 a("        INTEGER :: i")
 a("")
