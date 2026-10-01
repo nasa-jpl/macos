@@ -192,7 +192,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Beat 4:** a global search over the meniscus (the R4 solve ends on its bounds), then the native multi-wavelength optimizer with the same smile and keystone operands.
 ::: right
 - **Beat 5, the telescope:** EMIT parameters — 420 km, 60 m ground sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8, 24.6° cross-track field onto the 54 mm slit, telecentric and flat; the telescope's exit pupil on the grating.  Then spectrometer and telescope traced end to end as one deck.
-- **Then the physical-optics twin on R4** and the radiometric chain against the band.
+- **Then the radiometric chain against the band.**
+- **Future work, once the design of record is stable:** a surface-by-surface tour of the prescription (role, ray footprint, clearance, and the field where a propagation leg ends, per surface); spot diagrams in the Mouroulis & Green form, slit positions down and wavelengths across inside the 18 µm pixel box; the telescope and the end-to-end instrument.
 
 ## Run it yourself | One parameter file, one runner, every stage through it
 ::: full
