@@ -19,17 +19,18 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ## Contents | The target, the forms, the design ladder, the evidence
 ::: left
 - **3** The target and how it is scored
-- **4** Two forms: Dyson and Offner
-- **5** The concentric Dyson and its scaling law
-- **6** The exact chain and the engine agree
-- **7** The seed, scored
-- **8** The departure ladder
-- **9** The departure ladder, by the numbers
+- **4** The Dyson as traced by the engine
+- **5** The Offner as traced by the engine
+- **6** The concentric Dyson and its scaling law
+- **7** The exact chain and the engine agree
+- **8** The seed, scored
+- **9** The departure ladder
 ::: right
-- **10** What each departure buys
-- **11** Next: the compact variant
-- **12** Run it yourself
-- **13** Backup
+- **10** The departure ladder, by the numbers
+- **11** What each departure buys
+- **12** Next: the compact variant
+- **13** Run it yourself
+- **14** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -50,10 +51,15 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Realism (Jim):** as-built SRF is 2.5–3 pixels, slits are 2 pixels wide, the systems are photon-limited; smile and keystone drive the design.
 ~ The 54 mm slit is 2.3× EMIT's; Table 3 of the review places this spec in the ALIS class (3200 spatial pixels, 380–2500 nm).  Public comparison point: Carbon-I (arXiv:2505.22545), F/2.2, 2040–2380 nm.
 
-## Two forms: Dyson and Offner | One exact ray-trace chain lays out both; the Dyson is the challenge, the Offner the all-reflective twin
-- **Dyson:** a silica block whose flat face carries the slit and the focal plane, a concave grating concentric with the block's spherical face; the JPL flight form (EMIT, CWIS, ALIS).
-- **Offner:** concave mirror, convex grating at the common centre, concave mirror; all in air, so it is also where the physical-optics twin is validated first.
-![The two forms as laid out by the exact chain, dispersion plane: slit (circle) to focal plane (square), rays at 380 / 1440 / 2500 nm.  Left, the Dyson: silica block, air gap, concave grating at the stop.  Right, the Offner: concave mirror twice, convex grating at the stop.  A chain sketch; deck-standard layouts (block outline, element arcs, mm axes) arrive with the compact variant.](figs_dyson/dyson5_s1_layout.png)
+## The Dyson as traced by the engine | Step R3 of the ladder: silica block, air gap, concave grating at the stop; rays from the slit return dispersed to the focal plane on the block's face
+- **The prescription:** `challenges/dyson5/dyson5_s3_r3.in`, seven elements; the block's spherical face (E2), the grating (E3, radius 0.71 m at the Dyson condition for a 220 mm block), and the focal plane on the flat face.  Bodies, rays and labels are read back from the engine.
+- **The slit sits on the block's flat face**, so the glass is the source medium and only the spherical face is a refracting element; the dispersion is the fan in the right-hand (Y-Z) view returning to the face.
+![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s3_r3_views.png)
+
+## The Offner as traced by the engine | The all-reflective twin: concave mirror, convex grating at the common centre, concave mirror; all in air
+- **The prescription:** `challenges/dyson5/dyson5_s1_offner.in`, five elements; the concave mirror (E1, used twice), the convex grating (E2) at the stop, the focal plane at the slit's conjugate.
+- **Why it is in the deck:** it is where the physical-optics twin is validated (order 0: pupil OPD 8e-11 m, 94 % of the energy in one pixel), and it is the trade's reference form.
+![Left: the traced bundle and the solid bodies in 3-D.  Right: the dispersion plane (Y-Z).  Positions in metres, global frame.](figs_dyson/dyson5_s1_offner_views.png)
 
 ## The concentric Dyson and its scaling law | The classical condition verified by exact trace; at this slit the concentric block needs r ≥ 213 mm
 - **The Dyson condition** R_g = n·r / (n − 1) is the blur minimum by exact 3-D trace: 0.67 µm at the condition against 4–5 µm at ±5 %, image at −h, residual fifth order (h⁴·¹⁷, r⁻³·¹⁹).
@@ -134,7 +140,8 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | slide | runner stage | record | tool |
 |---|---|---|---|
 | scaling law | s0 (engine-free) | `dyson5_s0_scaling.txt` | `design/src/dyson_layout.m`, `dyson_scaling.m` |
-| two forms, seed scored | s1 emit, s2 score | `dyson5_s1.txt`, `dyson5_s2.txt`, `dyson5_s2_maps.png` | `spectrometer_geom.m`, `spectrometer_rx.m`, `spectrometer_score.m` |
+| as traced (both forms) | `dyson5_view_figs.m` | `*_view3d.png`, `*_viewyz.png` | `macos.view_rx` on the deck |
+| seed scored | s1 emit, s2 score | `dyson5_s1.txt`, `dyson5_s2.txt`, `dyson5_s2_maps.png` | `spectrometer_geom.m`, `spectrometer_rx.m`, `spectrometer_score.m` |
 | chain vs engine | gate | `tests/tSpectrometerRx.m` | per-ray re-trace, 1e-9 m |
 | propagation twin | s2w (opt-in, model 512) | `dyson5_s2w.txt` | `spectrometer_wave.m` |
 | departure ladder | s3, s3free | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3*_ladder.png` | `dyson_ladder.m` |
