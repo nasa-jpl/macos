@@ -32,9 +32,25 @@ def split_cols(im, rows):
     edges = [0] + sorted(cuts) + [im.width]
     return [im.crop((edges[i], 0, edges[i+1], im.height)) for i in range(rows)]
 
+def drop_suptitle(im, max_frac=0.06):
+    """Remove a centred super-title: the first ink run from the top when it is
+    short (< max_frac of the height) and followed by a full-width white gap.
+    The slide caption carries the title (DECK_STYLE)."""
+    a = np.asarray(im.convert('L')); row_ink = (a < 250).sum(axis=1)
+    y = 0
+    while y < im.height and row_ink[y] == 0: y += 1
+    y0 = y
+    while y < im.height and row_ink[y] > 0: y += 1
+    y1 = y
+    while y < im.height and row_ink[y] == 0: y += 1
+    if 0 < (y1 - y0) < max_frac * im.height and y < im.height:
+        return im.crop((0, y, im.width, im.height))
+    return im
+
 src, dst = sys.argv[1], sys.argv[2]; rows = int(sys.argv[3]) if len(sys.argv) > 3 else 1
 im = trim(Image.open(src).convert('RGB'))
 if rows > 1:
+    im = trim(drop_suptitle(im))
     parts = [trim(p) for p in split_cols(im, rows)]
     W = max(p.width for p in parts); gutter = 16
     H = sum(p.height for p in parts) + gutter*(len(parts)-1)

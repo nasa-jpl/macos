@@ -130,8 +130,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ![Left: keystone and smile maxima (log scale) against the 1 % rule.  Middle: CRF and SRF FWHM against the 1.5 px specification and the 2-px-slit floor.  Right: minimum ensquared energy in one pixel against the 0.75 rule.](figs_dyson/dyson5_s3_trade_rc.png)
 
 ## The propagation twin | A far-field terminal on a reference sphere, re-posed per slit position and wavelength, agrees with the ray centroids to 0.0013 px
-![Left: the Offner at order 0, PSF (log scale) with the 18 µm pixel box, 85 % ensquared.  Middle: wave-minus-ray centroid over the slit and band, Offner and Dyson seeds.  Right: SRF and CRF from the propagated PSF at the slit centre.](figs_dyson/dyson5_s2w_twin_rc.png)
 - **What it checks:** the ray-side scorer's centroids and response functions against physical-optics propagation through the same decks; across a grating the comparison is made in phase (modulo λ), never as unwrapped lengths.
+![Left: the Offner at order 0, PSF (log scale) with the 18 µm pixel box, 85 % ensquared.  Middle: wave-minus-ray centroid over the slit and band, Offner and Dyson seeds.  Right: SRF and CRF from the propagated PSF at the slit centre.](figs_dyson/dyson5_s2w_twin_rc.png)
 
 ## Slit diffraction loss | A 36 µm slit at F/1.8: the engine's far-field leg against the sinc² closed form
 ![Loss past the grating versus wavelength: engine far-field leg (points) against the sinc² form (line).](figs_dyson/dyson5_s2l_slitloss.png)
