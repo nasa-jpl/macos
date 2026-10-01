@@ -4488,14 +4488,25 @@ C  Set output values for ray position, direction
         ! ToDo: check if psi is not parallel to RuleDir and if it is, then it
         !       does not behave like a Grating -- Snell's Law with Order = 0
 
-          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! prj. RuleDir onto tangent plane (psi)
-          CALL DXPROD(uhat,Nhat,RuleDir)       !
-          uhat = uhat / norm2(uhat)            ! CALL DUNITIZE(uhat)
-          CALL DXPROD(shat,uhat,Nhat)
-          shat = shat / norm2(shat)          ! CALL DUNITIZE(shat)
+          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! s0: unit rule dir in the VERTEX tangent plane (psi)
+!-->  Straight-ruled grating on a curved surface (2026-09-30, dyson5 finding
+!     #2, TO): the grooves are the intersections of EQUIDISTANT PARALLEL
+!     PLANES (spacing RuleWidth, normal s0) with the surface -- the classical
+!     ruled concave grating and the CODE V / Zemax convention: period
+!     constant along the CHORD.  The local grating vector is therefore the
+!     UN-normalised projection of s0/d onto the local tangent plane,
+!     |G| = (m lambda/d) sqrt(1 - (s0.N)^2), which falls as the surface
+!     tilts.  The old code unitised the projection (uhat, then shat), i.e. a
+!     period constant ALONG THE SURFACE -- on a concave Dyson/Offner grating a
+!     spectral blur ~ lambda, 3 px rms at 2500 nm, that no concentric design
+!     can correct.  Flat gratings: N = psi, so the projection IS s0 and the
+!     result is unchanged.  (N x s0) x N = s0 - (s0.N) N.
+          shat = RuleDir - dot_product(RuleDir,Nhat)*Nhat   ! chord-ruled local grating direction, |shat| = sqrt(1-(s0.N)^2)
+          CALL DXPROD(uhat,Nhat,RuleDir)       ! groove direction (not unit; unused downstream)
+!<--
           ! -------------------------------
 
-          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector
+          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector (chord-ruled)
           u_vec = (na * ihat + Gr_vec) / nb       ! Inc. Dir (Vector Refraction Equ.)
 
           ! Chk: TIR or Evanescent Wave
