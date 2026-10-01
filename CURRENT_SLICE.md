@@ -24,6 +24,20 @@
 
 ## Active slice
 
+> **2026-10-01 04:30: finding #3 CLOSED GREEN** -- tGratingOpl 2/2,
+> tGratingImmersed 4/4, tSpectrometerRx 2/2, pymacos 44/44, fast 501/0.
+> PUSH REQUEST: macos (the dL commit + this slice); resources f34c7fd (TO
+> beat 2c).  TO next: re-run s2w unchanged (order -1 rows), wrap every OPD
+> comparison across the grating (Dave's rule), then beat 3 ray-side.
+
+> **2026-10-01: dyson5 finding #3 (grating OPL jump used the local-plane
+> projection; cubic, 12 waves) -- FIX IN BUILD** (`dL = m lambda/d (s0.rho)`,
+> both trees + mex + pymacos rebuilding, then tGratingOpl / tGratingImmersed
+> / tSpectrometerRx / fast suite).  DAVE'S RULE recorded (CLAUDE.md engine +
+> BRIEF_to_dyson5 addendum 3): OPD across a grating is MODULO LAMBDA --
+> compare in phase, never unwrapped lengths.  TO beat 2c = resources
+> f34c7fd (unpushed).
+
 > **2026-09-30 22:55: ALL GREEN on the chord-ruled engine** -- gfortran
 > rebuilt (the earlier red was a stale mex: ifx rebuilt, gfortran not),
 > tGratingImmersed 4/4, tSpectrometerRx 2/2, fast suite 497/0; pymacos
