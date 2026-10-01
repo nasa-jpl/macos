@@ -198,13 +198,17 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ## Run it yourself | One parameter file, one runner, every stage through it
 ::: full
 ```
-run('<path>/mmacos/mmacos_setup.m');
-addpath('<path>/mmacos/challenges/dyson5');
-OUT = dyson5_run();                                      % stage s0: the scaling law (engine-free)
-OUT = dyson5_run(struct('stages', {{'s1','s2','s3'}}));  % emit, score, ladder
+cd <path>/MACOS_resources/mmacos                   % the mmacos folder of the repository (the engine is built already)
+matlab                                            % start MATLAB here
+>> run('mmacos_setup.m');                          % puts the engine and the design tools on the path
+>> addpath('challenges/dyson5');
+>> OUT = dyson5_run();                             % stage s0 only: the scaling law, no engine needed
+>> OUT = dyson5_run(struct('stages', {{'s1','s2','s3'}}));   % emit the decks, score them, run the ladder
+>> OUT = dyson5_run(struct('Fno', 2.0, 'block_r_m', 0.25, 'stages', {{'s1','s2','s3'}}));  % your own instance
 ```
-- **Changeable design parameters** live in one file, `dyson5_params.m` (F-number, pixel, band, slit, block radius, the ladder's options); change them to drive different solutions.  Every record in this deck is a stage output under `challenges/dyson5/`.
-- **Engine checks:** `./run_mmacos_tests.sh tSpectrometerRx` and the four grating / glass / propagation classes, all in the fast suite.
+- **Changeable design parameters live in one file, `dyson5_params.m`:** F-number, pixel count and pitch, band, slit width in pixels, block radius, glass, diffraction order, the slit offset, the ladder's steps and weights, the aperture and mount margins, the detector package.  Pass any of them as fields of the struct to drive a different solution; every record in this deck is a stage output under `challenges/dyson5/`.
+- **Where designs have closed so far:** F/1.8 with a 220 mm silica block, 54 mm slit, 380–2500 nm, 18 µm pixels, order 1 (the design of record); block radii 50–500 mm scanned at order 0 for the scaling law, where a concentric block meets the quarter-pixel blur only above 213 mm; the Offner reference at F/2.8.  The meniscus solve ends on its bounds, so outside this envelope (faster than F/1.8, blocks under 150 mm, slits beyond 54 mm) closure is untested; a sweep is queued.
+- **Checks:** `./run_mmacos_tests.sh tSpectrometerRx` and the four grating, glass and propagation classes, all in the fast suite.
 
 ## Backup
 Diagnostics, the engine findings, and the conventions behind the main path.
