@@ -1706,16 +1706,29 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 ! --------------------------
 
                 AsphCoef(:,iElt) = 0d0
+!-->  Short lines PAD with zero + one warning (ReadRealsPad, elt_mod) --
+!     a missing value was an uncaught EOF that killed the host (2026-10-01).
                 IF (nAsphCoef<=Grp) THEN
-                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,nAsphCoef)
+                  CALL ReadRealsPad(VALUE,AsphCoef(1:nAsphCoef,iElt),
+     &                              nAsphCoef,nZ)
+                  IF (nZ.LT.nAsphCoef) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',nAsphCoef,
+     &              ' values on the line; the rest are 0'
                 ELSE
 
-                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,Grp)
+                  CALL ReadRealsPad(VALUE,AsphCoef(1:Grp,iElt),Grp,nZ)
+                  IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
+     &              ' values on the first line; the rest are 0'
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nAsphCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                    CALL ReadRealsPad(STRING,
+     &                   AsphCoef(iZ*Grp+1:(iZ+1)*Grp,iElt),Grp,nZ)
+                    IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &                '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
+     &                ' values on a continuation line; the rest are 0'
                   END DO
 
                   ! incomplete Grp
@@ -1723,9 +1736,11 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   iZ = nAsphCoef/Grp
                   IF (nZ>0) THEN
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                    CALL ReadRealsPad(STRING,
+     &                   AsphCoef(iZ*Grp+1:iZ*Grp+nZ,iElt),nZ,iZ)
                   END IF
                 END IF
+!<--
 
                 nAsphCoef = nAsphCoef_Default  ! reset to default
               END BLOCK
@@ -1735,7 +1750,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ AnaCoef
             ELSE IF (LCMP(VAR_NAM,'AnaCoef',7)) THEN
-              READ(VALUE,*)(AnaCoef(j,iElt),j=1,4)
+              CALL ReadRealsPad(VALUE,AnaCoef(1:4,iElt),4,j)   ! short line pads (see AsphCoef)
+              IF (j.LT.4) WRITE(*,'(A,I3,A,I2,A)')
+     &          '  AnaCoef (elt',iElt,'): ',j,' of 4 values; the rest are 0'
               AnaCoef_FLG=.TRUE.
               GO TO 61
 
