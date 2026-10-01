@@ -564,3 +564,23 @@ Engine note from 4b (a FarField kernel option to zero |f| > 1/lambda so a wide
 window cannot carry evanescent energy into an energy-fraction metric):
 acknowledged, queued behind item 4 of addendum 14; the record's propagating
 normalisation stays the convention until then.
+
+## Addendum 16 (2026-10-01): beat 4c sections 3.5 and 3.6 -- both FIXED (macos, local)
+3.5 The asphere differential step is `das_rel = 1e-3` of the coefficient
+(design_optim.F); a ZERO coefficient takes the step that moves the sag at the
+element's circular aperture radius by 1e-7 |Kr|; with no circular aperture the
+legacy 1e-10 step remains and one line says so (so declare the aperture --
+every dyson5 deck does).  Your reproducer (`dyson5_s4_r4n_seed.in` +
+`OptAsph= 2 1 2` on the block face) runs 4 LM iterations in 9 s on the CLI
+where it was singular at once; the zero-term variant (`OptAsph= 1 3`) runs too.
+3.6 The LM failure branch no longer `stop`s: the optics go back to the last
+accepted parameter vector, `rtn_flg=1`, normal cleanup -- `macos.calib()` raises an ordinary MATLAB error
+(`mmacos: calib_run failed`, the engine's reason printed just before it;
+`dyson_native` should try/catch it) and MATLAB lives (the no-aperture variant of your
+deck exercises it: "Optimization aborted; optics restored").  Gate
+`tAsphCalib` (SUITE_FAST), fixture `Rx_AsphCalib.in` (a metre paraboloid with
+a spoiled h^4 term CALIB drives back to zero; the failure path with the host
+alive).  `P.native_asph` can come on when the fix is on the engine of record.
+Deck: slide 25 carries the native result as a confirmation (R4n = R4; the
+15-px keystone row as the reason for operands) and the asphere as the next
+freedom.

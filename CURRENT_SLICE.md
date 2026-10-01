@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **2026-10-01 17:00 -- TO's 3.5/3.6 FIXED (design_optim.F, local, uncommitted
+> until the suites report):** asphere step = 1e-3 |coef| (sag floor at the
+> circular aperture; legacy per-ORDER step + a line without one); LM failure
+> -> label 105 restores the last accepted state, rtn_flg=1 (the mex raises
+> "calib_run failed", MATLAB lives).  Gate tAsphCalib 2/2 + Rx_AsphCalib.in
+> (SUITE_FAST).  Running: tCalib/tDesignTelescope/tSpectrometerRx + fast.
+> Deck slide 25 = native result (R4n = R4); addendum 16.  GATES GREEN:
+> tCalib 9, tDesignTelescope 70, tSpectrometerRx 7, fast 510/0, pymacos 18.
+> Committed both repos (local); push on Dave's word.
+
 > **2026-10-01 16:30 -- deck_dyson at beats 4b-4e (30 slides, local):** slit
 > loss resolved, R5 fold prism (record = NO shield: CRF 1.267, EE 0.695,
 > +0.90 mm; the 2 mm/1.295/0.794 numbers were the WITHDRAWN first sweep),

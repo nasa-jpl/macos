@@ -120,7 +120,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Wave propagation agrees too.** On the Offner at order 0 the propagated point image is a clean Airy pattern, 85 % of its energy in one pixel, with a pupil error of 8e-11 m.
 ::: right
 - **What the checks found in MACOS, and fixed** (details in Backup): glass names were ignored when a prescription loaded; propagation inside glass used the vacuum wavelength; a grating's groove spacing was held constant along the curved surface instead of along the chord; the grating's path-length term had the matching defect; the multi-wavelength optimizer's derivative loop overran its array on a spot-size target.  Each now has a regression test written from the physics.
-~ Regression tests: 15 in five classes plus the optimizer's; the MACOS fast suite stands at 507 pass, 0 fail (2026-10-01).
+~ Regression tests: 15 in five classes plus the optimizer's; the MACOS fast suite stands at 510 pass, 0 fail (2026-10-01).
 
 ## The seed, scored | The concentric seed at a 220 mm block meets smile; keystone and the corner blur are the work
 - **Smile is met at the seed** (below 0.01 pixel on both forms); the field-angle map is linear along the slit as designed.
@@ -240,7 +240,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## Next steps | The native optimizer on the record, the cold window, and the telescope that feeds the slit
 ::: left
-- **The native multi-wavelength optimizer (MACOS CALIB) on the compact variant:** built and gated — the engine's spot-size solve over 5 slit positions × 6 wavelengths with the double-pass copies of each surface linked as one, smile and keystone held as walls between iteration chunks on the chain, and the engine's design read back under an identity check.  It runs now that the engine's derivative-loop defect is fixed (Backup); the result is not yet on the record.
+- **The native multi-wavelength optimizer (MACOS CALIB) confirms the compact variant:** the engine's spot-size solve over 5 slit positions × 6 wavelengths, the double-pass copies of each surface linked as one, smile and keystone held as walls between iteration chunks, the engine's design read back under an identity check (2e-16 m).  With the blur freedoms (block face radius and conic, meniscus faces, focus) every step is rejected: R4 is a local optimum of the engine's merit as well as the chain's.  With the grating's position free the engine bought blur with 15 px of keystone in five iterations and the wall rejected it: the reason the design needs distortion operands, queued as an engine feature.  From a deliberate 0.3 mm defocus the same solve cuts the spot from 97 to 21 µm, so it moves when there is something to gain.  The block's asphere joins the freedoms now that its differential step is fixed (Backup).
 - **The cold window:** the R5 variant with the shield as the detector housing behind a window cemented as the prism's exit face, under the same clearance gate.
 - **The radiometric chain against the band:** throughput, grating efficiency, detector quantum efficiency and the slit loss above.
 ::: right
@@ -266,7 +266,7 @@ matlab                                            % start MATLAB here
 ## Backup
 Diagnostics, the engine findings, and the conventions behind the main path.
 
-## Backup: five engine findings, each with a regression test | Found by the challenge's checks on 2026-09-30 and 10-01, fixed in the engine the same day
+## Backup: six engine findings, each with a regression test | Found by the challenge's checks on 2026-09-30 and 10-01, fixed in the engine the same day
 ::: full
 | finding | symptom | fix | test |
 |---|---|---|---|
@@ -275,7 +275,8 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | groove period along the surface | 2.8 / 3.3 px rms spectral blur at 2500 nm (Offner / Dyson) | the local grating vector is the un-normalised projection of the ruling direction (chord-ruled) | `tGratingImmersed` (4), `test_grating_chord` |
 | grating path-length jump | 4 waves rms of pupil OPD where the rays converged to 0.05 µm | the jump is the groove count from the vertex along the ruling direction | `tGratingOpl` (2) |
 | optimizer derivative stride | a spot-size optimisation over several fields overwrote memory on its second field (the derivative columns advanced by the wavefront's size, not the objective's) and crashed or hung the host | advance by the objective's size, as the value loop does | `tSpectrometerRx` native leg, `tDesignTelescope` (70, unchanged) |
-~ Flat gratings are unchanged by the grating fixes; the wavefront-target optimizer, which every telescope design used, was never affected by the fifth.  A sixth item, a short `AsphCoef=` line killing the host process, now pads with zero and warns (`tRxShortAsph`).
+| optimizer asphere step and failure exit | an aspheric coefficient was probed by a fixed 1e-10, round-off on a deck in metres: a zero derivative column, a singular matrix at the first step, and a `stop` on that path that ended the MATLAB process | the step is 1e-3 of the coefficient (sag-based for a zero one); the failure restores the optics and returns a flag | `tAsphCalib` (2): a spoiled paraboloid driven back to zero; the failure path with the host alive |
+~ Flat gratings are unchanged by the grating fixes; the wavefront-target optimizer, which every telescope design used, was never affected by the fifth.  A seventh item, a short `AsphCoef=` line killing the host process, now pads with zero and warns (`tRxShortAsph`).
 
 ## Backup: records and tools behind each slide | Every number traces to a runner stage and its record file
 ::: full
@@ -291,7 +292,7 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | slit loss | s2l + tool | `dyson5_s2l.txt`, `dyson5_s2l_tests.txt`, `dyson5_s2l_slitloss.png` | far-field leg vs sinc²; `dyson5_slitloss_tests.m` |
 | fold prism, cold shield | s5 | `dyson5_s5.txt`, `dyson5_s5_r5_h*.in`, `dyson5_s5_maps_r5.png`, `dyson5_s5_sweep.png` | `spectrometer_geom.m` (form `dyson_fold`), `spectrometer_clearance.m` |
 | closure envelope | s4env | `dyson5_s4env.txt`, `dyson5_s4env.png`, `dyson5_s4env_*.in` | `dyson5_envelope.m` |
-| native optimizer | s4 (`native_enabled`) | `dyson5_s4_r4n_seed.in` (the CALIB deck) | `dyson_native.m` |
+| native optimizer | s4 | `dyson5_s4.txt`, `dyson5_s4_r4n_seed.in` (the CALIB deck), `dyson5_s4_r4n.in` | `dyson_native.m` |
 ~ Conventions behind the scaling law: block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF); field height h from the Dyson axis on the flat face; the slit corner is h = hypot(27 mm, 8 mm).
 
 ## Backup: conventions pinned on the way | Engine facts the chain depends on, stated once
