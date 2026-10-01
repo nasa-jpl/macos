@@ -794,6 +794,21 @@ and the pre-fix engine fails it by up to 0.5% of the kick on a 100 mm /
 grating equation per ray, chord vs surface model as the must-fail leg).
 Holographic / variable-line-space gratings are a DIFFERENT model and are
 not what `h1HOE`/`RuleWidth` describe.
+**Finding #3 (2026-10-01, TO's propagation twin): the grating's OPL jump
+had the same defect.**  `dL = -(na i - nb r).rho_prj` projected the hit
+vector into the LOCAL tangent plane, = `(m lambda/d)(s0.rho_prj)`; the groove
+count of equidistant planes is `(m lambda/d)(s0.rho)` with rho from the
+VERTEX along the fixed ruling direction.  Difference `(m lambda/d)(s0.N)
+(rho.N)` ~ rho^3/2R^2: cubic, zero on a flat grating; 12 waves on a 45 mm
+footprint at R = 250 mm while the rays converged to 0.05 um -- rays and
+path lengths disagreed.  Fixed: `dL = Order*lambda/RuleWidth*dot(s0,rho)`.
+Gate `tGratingOpl` (TO; order 0 vs order -1 pupil OPD on a reference sphere
+about the chief's focus).  **DAVE'S RULE: across a grating the OPD is
+defined MODULO LAMBDA.**  The physical wavefront is the groove staircase;
+the engine's smooth order-m phase function equals it mod lambda (it IS the
+order-m Fourier term).  Compare OPDs across a grating in PHASE (wrapped, or
+the complex field), never as unwrapped lengths; the ray-side scorer never
+uses path lengths and is unaffected.
 
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
