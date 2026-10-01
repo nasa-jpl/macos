@@ -391,13 +391,13 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | stepped pinhole with shutter frame | 100 nm (200 nm WFE) | unwrap + re-measure every 10: 0.21 pm at 1e15, 2.1 pm at 1e13, 3 pm by cycle 26 |
 | P/SRI | 100 nm | unwrap + re-measure: 0.25 pm; ceiling between 100 and 150 |
 | interferometer, lens rig | 300 nm (600 nm WFE) | unwrap alone: 3 pm in 16 / 18 / 21 / 25 / 43 cycles from 60 / 100 / 150 / 200 / 300 nm |
-| interferometer, mirror rig, redesigned | 200 nm (400 nm WFE) | unwrap alone: 3 pm in 19 / 24 cycles from 100 / 200 nm, contraction 0.52 / 0.57; control 2.97 pm |
+| interferometer, mirror rig, redesigned | 200 nm (400 nm WFE) | unwrap alone: 3 pm in 19 / 24 cycles from 100 / 200 nm, contraction 0.52 |
 | interferometer, mirror rig, record (7°) | none | stalls at 5.9 / 24 / 53 nm from 60 / 150 / 300 |
 ::: right
 - **The wrap is not the limit for the self-referenced sensors:** past 60 nm their differential comes back at 24-28 nm whatever the truth, with zero residues — the focal reference has collapsed, the reading is blind, not folded.
 - **Unwrapping alone is not enough for the pinhole or the P/SRI:** the calibration measured at the start is wrong by the time the surface has moved; re-measuring it every 10 cycles (3 times in the descent) closes the loop.  Cadence is not the constraint; the cycle count is.
 - **The interferometer needs no recalibration** because its reference is the flat, not the beam.
-~ 1e13 and 1e15 photons per cycle give the same convergence: capture is reference-limited, not light-limited.  Run tags cap_nouw, cap_uw, cap_state_uw_recal, descent193, descent_lens, descent_oap, capt96_oap (the redesigned mirror rig, control set inside the DM aperture).
+~ 1e13 and 1e15 photons per cycle give the same convergence: capture is reference-limited, not light-limited.  Run tags cap_nouw, cap_uw, cap_state_uw_recal, descent193, descent_lens, descent_oap, capt96_oap (the redesigned mirror rig with the control set inside the DM aperture: 2.98 pm at cycle 60 from 100 and 200 nm, the 30 nm control at 2.97 pm).
 
 ## Lenses or off-axis mirrors: the record | On the record's 7° mirror rig the interferometer lost its servo and its capture and the focus-critical sensors broke; the cause was read as fold coma.  It was not (next slide): the collimator was fed 25 mm inside its focus
 ::: left
