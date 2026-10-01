@@ -24,6 +24,85 @@
 
 ## Active slice
 
+> **2026-09-30 22:55: ALL GREEN on the chord-ruled engine** -- gfortran
+> rebuilt (the earlier red was a stale mex: ifx rebuilt, gfortran not),
+> tGratingImmersed 4/4, tSpectrometerRx 2/2, fast suite 497/0; pymacos
+> 44/44 on ifx.  PUSH REQUEST to Dave: macos 799498b + 3 deck commits
+> (f13eb57, 9661369, c8745e2); resources 264711f.  Memory:
+> `feedback_two_build_trees_stale_binary`.
+
+> **2026-09-30 22:10: slide 30 re-run landed** -- capt96_oap on the fixed
+> bench: 3 pm in 19 / 24 cycles from 100 / 200 nm (2.98 pm), control 2.97.
+> Deck row rebuilt + synced (c8745e2, local).  Mex relinked on the
+> chord-ruled engine; tGratingImmersed / tSpectrometerRx / tGlassDispersion
+> / tPropMedium + fast suite RUNNING (`scratchpad/gates2.log`,
+> `fast_suite4.log`).  Then: push request to Dave (macos 799498b +
+> 3 deck commits; resources 264711f).
+
+> **2026-09-30 19:15: THIRD engine fix of the day -- gratings on curved
+> surfaces are now CHORD-ruled** (macos local after aba6350; resources gate
+> commit after 7522fe9).  TO's dyson5 beat 2 (78159c3) found the unitised
+> projection = period constant along the SURFACE = 3 px spectral blur at
+> 2500 nm.  pymacos 44/44 on ifx (chord gate + getters + prop + vec).
+> PENDING on capt96_oap (slide-30 re-run, ends ~21:15): mex relink,
+> tGratingImmersed / tSpectrometerRx / tGlassDispersion / fast suite, then
+> push for Dave's review.  spectrometer_geom default -> 'planes'.
+
+> **2026-09-30 18:00: FAST SUITE 497 pass / 0 fail on the final mex**
+> (`scratchpad/fast_suite3.log`); pymacos propagation gates 23/23 on the
+> rebuilt ifx tree.  Everything is local: macos 4 commits ahead of origin
+> (0ca61c1 CaF2, b000390 glass catalog, fcd85d7 medium-aware kernels,
+> aba6350 table precision); resources ahead by TO's 44ee31a, 4cecb77 digest,
+> af17cc7 bench 2x2 code, b492695 + 7982529 tPropMedium.  Awaiting Dave's
+> push review + the two bench decisions (lit_margin_mm default, slide 30).
+
+> **2026-09-30 17:30: gates GREEN on the final mex** -- tGratingImmersed,
+> tPropMedium, tVecChain pass; tGlassDispersion 3/3 after TWO precision
+> fixes on TO's CaF2 row (the row itself at 7 digits, then the generator's
+> `%.8E` bake: 1200.55597 vs 1200.5559729 = 1e-11 in n at 2 um; now
+> `%.16E`, 3 values/line).  First fast-suite run: 496 pass / 1 fail (that
+> CaF2 leg); full rerun on the final mex in progress (`scratchpad/
+> fast_suite3.log`).  macos local commits since origin: b000390 (glass
+> catalog), fcd85d7 (medium-aware kernels), + the table-precision commit.
+
+> **2026-09-30 16:50: DESCENT 2x2 CLOSED.**  fixA 2.964/2.953 pm, fixB
+> 5.998/6.012, fixAB 2.964/2.954 == fixA (baseline 96.937/4.003).  The fix is
+> the control-set rule `place.lit_margin_mm 1`; per-column reg adds nothing
+> on top.  `runs/fix2x2_score.txt`.  Build released: gfortran rebuilt, mex
+> relinked (glass catalog + medium-aware kernels), gates + fast suite RUNNING
+> (`scratchpad/gates.log`, `fast_suite2.log`).  Dave's calls: default-flip
+> of lit_margin_mm, slide-30 re-run.
+
+> **2026-09-30 14:30: medium-aware propagation kernels LANDED** (macos local
+> commit after b000390; resources gate commit after 4cecb77).  `WaveBU/n_leg`
+> at all 21 sites; identity gate z-in-n == z/n-in-vacuum: pre-fix 1.1e-15
+> vs the UNSCALED deck, post-fix 1.4e-15 vs the SCALED one; pymacos
+> test_prop_medium 5/5 on ifx.  Descent 2x2: fixA 2.964 pm, fixB 5.998 pm
+> (ring 1 dark: reg cannot fix an unlit actuator), fixAB running (ends
+> ~16:35) -> then gfortran rebuild, mex relink, tGlassDispersion /
+> tGratingImmersed / tPropMedium / fast suite, and the 2x2 scoring.
+
+> **2026-09-30 13:10: `GlassElt=` was dead engine-wide -- FIXED (macos
+> local, after TO's 0ca61c1 CaF2).**  `elt_mod_init_vars` wiped the glass
+> catalog on every load before the parser's lookup; now blanked once at
+> allocation.  CLI A/B green (pre-fix gfortran vs post-fix ifx on
+> Rx_GlassPlate.in).  PENDING until `fix2x2.done`: gfortran rebuild, mex
+> relink, TO's tGlassDispersion/tGratingImmersed, fast suite.  dyson5 beat
+> 1 = resources 44ee31a (memory `project_dyson5_spectrometer`).  Next engine
+> slice queued: medium-aware propagation kernels (`WaveBU/n_leg`).
+
+> **2026-09-30 08:32: DESCENT-STALL 2x2 RUNNING** (`tg_psi_dm96_oap/runs/
+> fix2x2_seq.sh`, pid in `runs/fix2x2_seq.pid`, cells fixA -> fixB -> fixAB,
+> ~3 h each, done file `runs/fix2x2.done`).  Mechanism sharpened before launch
+> (memory `project_redo_descent_stall`): ring 1 is OUTSIDE the DM aperture --
+> `lit` comes from the interferogram support = the REFERENCE arm's 59 mm cone,
+> 308 lit actuators dark, 284 half-clipped.  Fix A = `place.lit_margin_mm 1`
+> (control set inside the aperture by a pitch), NOT a stop change (a stop
+> clips rays but never moves lit; first launch killed for that + a wrong-tail
+> confound; all cells now use samp512's tail).  Fix B = `battery.matrix_reg
+> column`.  Code UNCOMMITTED in resources until the bench stage prints the
+> new lines.  Dave briefs the HWO study group ~10-08.
+
 > **2026-09-29 (latest): the dev->main STRIP LIST was broken, fixed by dry
 > run (macos 92e792f, resources 9963fe3).**  The comment/blank lines de0f3c8
 > added to `release-exclude.txt` abort `git rm --pathspec-from-file`
