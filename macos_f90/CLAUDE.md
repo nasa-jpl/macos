@@ -771,6 +771,30 @@ glass twin matched the UNSCALED vacuum deck to 1.1e-15 and missed the scaled
 one by 74%; post-fix glass == scaled to ~1e-13 and != unscaled by 71-73%.
 Vector mode inherits it (same `WaveMed` per component plane).
 
+## Gratings on CURVED surfaces are CHORD-ruled (2026-09-30, dyson5 finding #2)
+`Snells_Law_Grating` (elemsub.F, serves Grating / TrGrating / DoeTrGrating)
+built the local grating vector from the UNITISED projection of the rule
+direction onto the local tangent plane, i.e. a groove period constant ALONG
+THE SURFACE.  A straight-ruled concave grating -- the element's own name, the
+classical ruled grating, the CODE V / Zemax convention -- has equidistant
+parallel groove PLANES (normal s0 = unit(h1HOE) in the vertex plane, spacing
+RuleWidth) cutting the surface, so the local grating vector is
+`(m lambda/d) * (s0 - (s0.N) N)` UN-normalised: |G| falls as sqrt(1-(s0.N)^2)
+where the surface tilts.  The difference is a spectral blur proportional to
+lambda and uniform over the slit -- TO's chain measured 2.8 px (Offner) /
+3.3 px (Dyson) rms at 2500 nm against 0.003 / 0.04 px for the chord model --
+that no concentric design can correct; it set every engine SRF in dyson5
+beat 2.  FLAT gratings are unchanged (N = psi, the projection IS s0).  Fixed:
+`shat = RuleDir - dot(RuleDir,Nhat)*Nhat`, no unitise.  Why nothing caught
+it: the pymacos grating tests check parameter GETTERS only, and the one
+concave fixture (`Grating_example_001.in`, Kr -6 m) is never ray-compared.
+Gates: `tGratingImmersed` (mmacos; its closed form is now the chord model
+and the pre-fix engine fails it by up to 0.5% of the kick on a 100 mm /
+20 mm fixture) and `pymacos/tests/test_grating_chord.py` (the vector
+grating equation per ray, chord vs surface model as the must-fail leg).
+Holographic / variable-line-space gratings are a DIFFERENT model and are
+not what `h1HOE`/`RuleWidth` describe.
+
 ## Prescription validator (validate_prescription.F90)
 - Phase-1 pre-validator: `validate_prescription_mod%ValidatePrescription
   (filename, ios, msg)` runs before MBFile6 opens the .in file. Pure character
