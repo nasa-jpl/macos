@@ -24,6 +24,15 @@
 
 ## Active slice
 
+> **2026-10-01 16:30 -- deck_dyson at beats 4b-4e (30 slides, local):** slit
+> loss resolved, R5 fold prism (record = NO shield: CRF 1.267, EE 0.695,
+> +0.90 mm; the 2 mm/1.295/0.794 numbers were the WITHDRAWN first sweep),
+> cold-shield sweep, closure envelope, meniscus search, native = pending,
+> fifth engine finding in Backup; 10 stale figures refreshed from the
+> re-emitted records.  Addendum 15 in BRIEF_to_dyson5 (producer items for
+> TO).  NEXT: sync the edit copy (Dave closes it), commit, push on his word;
+> TO runs s4 (native) -- its row + a line on slide 25 when it lands.
+
 > **2026-10-01 12:00 -- RESUME POINT (context compaction).  PUSHED: macos
 > through 0d257ff (CALIB fixes + deck), resources through 18c225a (TO beats
 > 4b/4c/4d).  NEXT (Dave: "yes, up to date"): bring `demo_session/
