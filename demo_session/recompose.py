@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3   # needs numpy + PIL: run with the pymacos venv python if the system one lacks numpy
 """Recompose a wide multi-panel figure for a 16:9 slide: trim white margins and,
 for an N-panel strip, split it into R rows at column boundaries found from
 white gutters.  Composition only (DECK_STYLE: recompose at the panel level,
