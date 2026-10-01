@@ -24,11 +24,12 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **6** The exact chain and the engine agree
 - **7** The seed, scored
 - **8** The departure ladder
-- **9** What each departure buys
+- **9** The departure ladder, by the numbers
 ::: right
-- **10** Next: the compact variant
-- **11** Run it yourself
-- **12** Backup
+- **10** What each departure buys
+- **11** Next: the compact variant
+- **12** Run it yourself
+- **13** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -50,9 +51,9 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ~ The 54 mm slit is 2.3× EMIT's; Table 3 of the review places this spec in the ALIS class (3200 spatial pixels, 380–2500 nm).  Public comparison point: Carbon-I (arXiv:2505.22545), F/2.2, 2040–2380 nm.
 
 ## Two forms: Dyson and Offner | One exact ray-trace chain lays out both; the Dyson is the challenge, the Offner the all-reflective twin
-![The two forms as laid out by the exact chain, dispersion plane: slit (circle) to focal plane (square), rays at 380 / 1440 / 2500 nm.  Left, the Dyson: silica block, air gap, concave grating at the stop.  Right, the Offner: concave mirror twice, convex grating at the stop.  A chain sketch; deck-standard layouts (block outline, element arcs, mm axes) arrive with the compact variant.](figs_dyson/dyson5_s1_layout.png)
 - **Dyson:** a silica block whose flat face carries the slit and the focal plane, a concave grating concentric with the block's spherical face; the JPL flight form (EMIT, CWIS, ALIS).
 - **Offner:** concave mirror, convex grating at the common centre, concave mirror; all in air, so it is also where the physical-optics twin is validated first.
+![The two forms as laid out by the exact chain, dispersion plane: slit (circle) to focal plane (square), rays at 380 / 1440 / 2500 nm.  Left, the Dyson: silica block, air gap, concave grating at the stop.  Right, the Offner: concave mirror twice, convex grating at the stop.  A chain sketch; deck-standard layouts (block outline, element arcs, mm axes) arrive with the compact variant.](figs_dyson/dyson5_s1_layout.png)
 ~ Chain: `design/src/spectrometer_geom.m`; emitter: `spectrometer_rx.m`; the grating groove period is solved so the band spans the 9 mm focal plane.
 
 ## The concentric Dyson and its scaling law | The classical condition verified by exact trace; at this slit the concentric block needs r ≥ 213 mm
@@ -76,6 +77,8 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 
 ## The departure ladder | Each step solved on the exact chain with pixel-unit smile and keystone in the merit from the first pass, then emitted and scored in the engine
 ![Engine-scored maxima per ladder step at the seed's 220 mm block (left: smile, keystone, CRF FWHM in pixels; right: minimum ensquared energy in one pixel against the 0.75 design rule).](figs_dyson/dyson5_s3_ladder.png)
+
+## The departure ladder, by the numbers | Keystone falls nine-fold at fixed scale; smile and SRF stay at their floors
 ::: full
 | step | what moves | keystone (px) | smile (px) | CRF FWHM (px) | ensquared, 1 px |
 |---|---|---|---|---|---|
