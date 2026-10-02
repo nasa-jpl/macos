@@ -659,3 +659,59 @@ and freeform mirrors on the folded three-mirror (the engine's Zernike
 surfaces + OptZern; the chain lacks Zernike surfaces -- add them to
 chain_trace); a cheaper first check: seed the conics from the coaxial
 parent's anastigmat and fold afterwards.
+
+## Addendum 19 (2026-10-02, Dave): beat 5b -- the telescope through the offset_imager ladder (rodgers3's product)
+Written for a CLEARED TO (Opus 5.5 this round): re-read addendum 17's list,
+then 18, then this, then `templates/10_telescopes/offset_imager/README.md`
+and `BRIEF_dyson5_beat5.md` sections 4-5 (your own t1/t2 record: the layout
+closes, the image does not -- 67 px rms, a 1.6 mm field swing).
+
+**Why.**  Beat 5 started from spheres folded at the chief by 32 deg at each
+mirror and let conics + even aspheres chase the field swing: that is the
+offset_imager ladder's rung 4 without rungs 1 and 3.  The ladder that closed
+Mike Rodgers' 20x20 deg box offset 22 deg at F/4 (`challenges/rodgers3`) is:
+r1 coaxial anastigmat parent on axis, symmetric aspheres -> r3 the field box
+pushed OFF AXIS, aspheres re-solved -> r4 + tilts, decenters, radii -> r5
+8th-order Zernike freeform surfaces THROUGH THE ENGINE (Surface= Zernike;
+`oi_zern_seed`, the asphere->Zernike seed is NEGATED).  A pushbroom
+telescope IS an offset-field imager with a thin box: 24.6 deg cross-track x
+~0.3 deg along-track, pushed off axis ALONG-TRACK to clear the beams.
+
+**Run, in this order (every step through `dyson5_run`, a stage `t3`, its
+knobs in `dyson5_params`; the template is called, not copied):**
+1. `oi_story(struct('EPD_m',0.070,'Fno',1.8,'box_deg',[24.6 0.3],
+   'offset_deg',OFF,'clear_m',[0.005 0.005],'exit_dir',<toward the slit>, ...))`
+   at OFF = 4, 6, 8, 10 deg -- the along-track offset is THE unknown at
+   F/1.8 (the template's wide-offset trial found 12 deg unpackageable at
+   F/4 with a 20 deg box; a strip field is easier, a fat F/1.8 beam is
+   harder).  Seed `z_m1_m`, `spacings_m`, `seed_R1_m` from beat 5's T0 first
+   order (R [700 125 152], t [140 76 141] mm, Petzval 0), scaled to the
+   template's sign conventions (read `oi_paraxial.m`).  If the cold solve
+   stalls (the README's F8 rule), `oi_walk` the box from [6 0.3] outward.
+2. Add the three residual ROWS the template lacks, in `oi_solve`'s exit-wall
+   pattern (weighted rows on ITERATES, never a boolean wall -- lesson 3):
+   telecentricity (chief-ray angle at the slit, mrad, per field),
+   field flatness (best-focus z per field against the slit plane, um), and
+   the pupil match (chief miss of the grating vertex, mm, with the R4
+   spectrometer appended -- beat 5's t2 machinery).  Keep rodgers3's solver
+   lessons: TRUE GN on stacked PER-RAY residuals (per-field rms plateaus);
+   VERTEX-RADIAL natural scales for aspheres/Zernikes; spend on FIELDS not
+   iterations, odd field counts across the slit.
+3. Score every rung with beat 5's gates (engine render, chain-vs-engine
+   1e-9 m, the clearance gate with the spectrometer's bodies, `tTelescopeRx`)
+   and the END-TO-END row (telescope + R4 through the spectrometer's scorer:
+   smile / keystone / SRF / CRF / admitted fraction).  Beat 5's T3 row (67 px,
+   +0.75 mm) is the baseline every rung must beat; the target is the spot
+   inside the 18 um pixel at every field with telecentricity < 0.5 deg.
+4. Decision rule: if no OFF in step 1 gives a packageable r3 (clearance
+   gate PASS) at F/1.8, STOP and report the number -- that sends the design
+   to the review's two-mirror modified Schwarzschild (beat 5c), not to more
+   iterations.  If r4 packages but r5 is what buys the pixel, the Zernike
+   rung runs through the engine (the chain tracer does not carry Zernike
+   surfaces; `tSpectrometerRx`'s identity gate is then engine-vs-engine on
+   the re-emitted deck, as rodgers3 did).
+Deliverable: the ladder table (r1-r5 x spot / telecentricity / flatness /
+pupil miss / clearance / end-to-end CRF), the telescope of record if one
+closes, deck slides 25-26 replaced (the design-of-record rule: show the
+best, not the history), `BRIEF_dyson5_beat5b.md`, the t3 stage committed.
+The edit-deck sync and every push wait on Dave's word.
