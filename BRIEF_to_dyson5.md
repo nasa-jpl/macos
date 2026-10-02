@@ -755,3 +755,49 @@ under ~250 nm: the TMA lives -- add the three residual rows (telecentricity,
 flatness, pupil match), then S4 / S5.  If the image collapses at every scale
 that packages, or packaging needs more than ~0.8 m: THAT is the number that
 sends the design to beat 5c.
+
+## Addendum 21 (2026-10-02): the envelope scan will likely come back flat too -- prediction on the record, and a first-order SCREEN before any more solves
+Your note that the M2-to-M3 spacing stays at 76 mm in every case is the
+tell.  Addendum 20's walk (t1 x tan(offset)) clears the FRONT-end pairs
+(`in->M1 x M2`, `in->M1 x M3`); two BACK-end pairs do not depend on t1 at all.
+From your `dyson5_t3_off08_s3.in` (M1 z 200, M2 = stop z 60, M3 z 136.2, FP
+z -54 at y +17.46 mm; stop semi-diameter 29 mm):
+- **`M3->FP x M2`.**  The design is telecentric (exit chief along the axis),
+  so the image cone runs from M3 to the FP centred at the IMAGE HEIGHT,
+  y' = f tan(offset) = 126 mm x tan(8 deg) = 17.7 mm -- the FP's own y.  It
+  passes M2's plane 114 mm from focus with radius 114 / (2 x 1.8) = 32 mm.
+  Needed separation from M2: 32 + 29 = 61 mm (more with the x1.15 disks);
+  available: 17.7 mm.  Deficit ~ -45 mm, set by f, the offset and
+  (BFD - t2) only: 22 mm at 10 deg, 34 mm at 15 deg.
+- **`M1->M2 x M3`.**  Within 76 mm of the stop the M1->M2 beam is ~76 x
+  tan(chief angle) off the axis whatever t1 is, and M3's patch is the same
+  order on the other side: ~15-25 mm apart against ~60 needed.
+**PREDICTION (pre-registered):** all four cases of the running scan report
+floors of about -40 to -50 mm with the worst pair `M3->FP x M2` or
+`M1->M2 x M3`; none packages.  Let them finish (S1-S3, ~28 min): the NAMED
+pair is the measurement.  If a case packages, this addendum is wrong and
+addendum 20's rule 5 applies.
+
+**Next, before any further 28-minute solve: screen at FIRST ORDER.**  All
+nine template pairs can be evaluated from `telescope_seed`'s first-order
+layout in seconds, engine-free: per leg the chief height and the beam
+half-width (marginal + field) at each obstacle's plane, per obstacle its
+half-size; clearance = centre separation - (half-widths) x 1.15.  Tabulate
+over the family's real knobs -- t1 (300-600 mm), y2 (0.3-0.9: it sets t2 and
+the back focal distance) and the offset (8-30 deg) -- and print, per row,
+the nine clearances, t2, BFD, the mirror diameters and the length.  Check
+the screen against the template gate on the four finished cases first (it
+should reproduce their floors and name the same pair to a few mm); then
+solve ONLY rows the screen passes.
+Two things the screen should look for: (a) a back end with the focal plane
+near or inside M2's plane (BFD ~ t2: the image cone is small where it passes
+M2, and the slit is thin along-track, so `M2->M3 x FP` asks only
+f tan(offset) > M2's radius + a few mm, i.e. ~15 deg); (b) the offset at
+which `M3->FP x M2` closes for the present back end, ~atan(61/126) = 26 deg
+-- which is beat 5's 32 deg folds found from the other side.
+**Decision rule (third statement, now with a cheap test):** if the screen
+finds NO row with all nine clearances >= +5 mm at an offset <= ~15 deg, the
+telecentric three-mirror of this family does not package at F/1.8 and beat
+5c (the two-mirror modified Schwarzschild) is earned -- report the screen's
+best row and its binding pair as the evidence.  If rows pass, solve the best
+two through S3 and report image + gate.
