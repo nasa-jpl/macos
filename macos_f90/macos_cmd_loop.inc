@@ -3262,7 +3262,14 @@ C         *** Set System Stop ***
 	          CALL DUNITIZE(ChfRayDir)
 !-->  dead band (2026-09-08): a re-aim below round-off of a unit
 !     direction is the no-fixed-point case -- keep the incoming aim.
-	          IF (MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3))).LE.1d-14) THEN
+!     Band = DeadBandUlp of round-off (math_mod; tightened from 1d-14
+!     on 2026-10-02); a suppressed residual above the measured
+!     round-off is noted once per run.
+	          c1=MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3)))
+	          IF (c1.LE.DeadBandUlp*EPSILON(1d0)) THEN
+	            IF (c1.GT.DeadBandQuietUlp*EPSILON(1d0))
+     &	              CALL DeadBandNote('point-source aim',
+     &	                                c1/EPSILON(1d0))
 	            ChfRayDir(1:3)=cr1indir(1:3)
 	            c1=1d0
 	          ELSE
@@ -3285,9 +3292,13 @@ C         *** Set System Stop ***
 !     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
 !     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
 !     A physical re-aim is many orders above 1e-13 of the positions.
-	          IF (MAX(ABS(x),ABS(y)).GT.1d-13*MAX(1d0,
-     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))) THEN
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	          c1=EPSILON(1d0)*MAX(1d0,
+     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	          IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	          ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	            CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
 	          END IF
 !<--
 	        End If
@@ -3300,9 +3311,13 @@ C         *** Set System Stop ***
 !     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
 !     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
 !     A physical re-aim is many orders above 1e-13 of the positions.
-	        IF (MAX(ABS(x),ABS(y)).GT.1d-13*MAX(1d0,
-     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))) THEN
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	        c1=EPSILON(1d0)*MAX(1d0,
+     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	        IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
            ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	        ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	          CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
 	        END IF
 !<--
 	      END IF

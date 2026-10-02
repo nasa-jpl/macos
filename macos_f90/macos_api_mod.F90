@@ -831,6 +831,14 @@
         ChfRayPos = SrcPos
         if (abs(zSource) <= zSourceMax) ChfRayPos = ChfRayPos - zSource*ChfRayDir
 
+        !--> The source grid and its frame (xGrid/yGrid/zGrid) are rebuilt
+        !    only when the cached trace is invalidated; without this a
+        !    trace after set_src_fov re-used the frame of the OLD chief ray
+        !    (found by tRetraceIdempotent's band test, 2026-10-02 -- the
+        !    same class as the grid-setter retrace fix).
+        CALL modified_rx(OK)
+        !<--
+
         ! return
         OK = PASS
 
@@ -5867,6 +5875,26 @@
         maxWl  = max_wl
 
       end subroutine calib_buffer_dims
+
+
+      !---------------------------------------------------------------------------------------------
+      ! deadband_notes_get -- how many source-frame / stop-aim updates were
+      ! suppressed by the round-off dead band although they exceeded the
+      ! measured round-off (math_mod: DeadBandQuietUlp < residual <=
+      ! DeadBandUlp).  The engine prints ONE line for the first; this count
+      ! is the rest.  Zero on every deck measured 2026-10-02: a nonzero
+      ! count means either round-off larger than measured, or a caller
+      ! stepping the source direction / stop position at round-off level.
+      !---------------------------------------------------------------------------------------------
+      subroutine deadband_notes_get(nNotes)
+        use math_mod, only: nDeadBandNote
+
+        implicit none
+        integer, intent(out):: nNotes
+        ! ------------------------------------------------------
+        nNotes = nDeadBandNote
+
+      end subroutine deadband_notes_get
 
 
       !---------------------------------------------------------------------------------------------
