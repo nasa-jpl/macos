@@ -18,7 +18,7 @@ overlap at the figure's width; a zoom inset of the fold at the base.
 An EMIT-class push-broom spectrometer (F/1.8, 3000 × 500 pixels at 18 µm, 380–2500 nm) designed with MACOS from the public specification alone, scored on smile, keystone and the response functions, and checked by physical-optics propagation.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.  Design of record: the compact variant (step R4): keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, 76 % of the energy in one pixel, at a 220 mm block.  The propagated point-spread function reproduces the ray centroids to 0.002 px, so these are the numbers a detector sees.  The fold-prism layout (step R5) takes the detector package out of the slit's plane at CRF 1.27 px and 70 % in one pixel; a cold shield cannot be bought in this form, since every millimetre of air before the detector costs about 0.5 px of CRF.
+DRAFT — in progress.  Every number is from a committed, parameterized runner (mmacos, `dyson5_run`); records and figures are the runner's own output.  Design of record: the compact variant (step R4): keystone 0.0026 px, smile 0.005 px, CRF 1.33 px, 76 % of the energy in one pixel, at a 220 mm block.  The propagated point-spread function reproduces the ray centroids to 0.002 px, so these are the numbers a detector sees.  The fold-prism layout (step R5) takes the detector package out of the slit's plane at CRF 1.27 px and 70 % in one pixel; a cold shield cannot be bought in this form, since every millimetre of air before the detector costs about 0.5 px of CRF.  The block's size follows the slit: shared between two 27 mm modules, a 130 mm block of 1.7 kg matches the record against 220 mm and 8.2 kg for one module.
 
 ## Contents | The target, the methods, the forms, the design ladder, the evidence
 ::: left
@@ -34,9 +34,9 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **12** What each departure buys
 - **13** The compact variant, as traced by the engine
 - **14** The compact variant: the prescription
-::: right
 - **15** The compact variant in section
 - **16** The compact variant, scored
+::: right
 - **17** The trade at a glance
 - **18** The propagation twin
 - **19** Slit diffraction loss
@@ -45,11 +45,13 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **22** The fold prism, scored
 - **23** The cold shield: the air gap is the price
 - **24** Where the design closes
-- **25** The telescope that feeds the slit
-- **26** Telescope and spectrometer end to end
-- **27** Next steps
-- **28** Run it yourself
-- **29** Backup
+- **25** How small can the block be
+- **26** The block-size trade, by the numbers
+- **27** The telescope that feeds the slit
+- **28** Telescope and spectrometer end to end
+- **29** Next steps
+- **30** Run it yourself
+- **31** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -144,7 +146,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 | **R4** | **meniscus with all variables (the compact variant)** | **0.0026** | 0.005 | **1.33** | **0.76** | 694 | 269 | 22.7 |
 | R5 | + slit plate and fold prism: the detector out of the slit's plane | 0.0085 | 0.005 | 1.27 | 0.70 | 694 | 269 | 19.2 |
 | size alone | block radius free (341 mm) | 0.024 | 0.001 | 1.34 | 0.74 | 1099 | 427 | 82.8 |
-~ SRF FWHM is 2.02–2.05 px on every step: the 2-pixel-slit floor.  Length = slit plane to grating vertex; footprint = diameter of the grating hits over slit centre and ends × band edges; glass = block cap + meniscus.  Record `dyson5_s3_trade.txt`.
+~ SRF FWHM is 2.02–2.05 px on every step: the 2-pixel-slit floor.  Length = slit plane to grating vertex; footprint = diameter of the grating hits over slit centre and ends × band edges; glass = the full hemispherical cap + meniscus, an upper bound: edged to its clear aperture the R4 block is a rod 147 mm across and 221 mm long, 3.7 L and 8.2 kg in silica.  Record `dyson5_s3_trade.txt`.
 
 ## What each departure buys | De-concentring the block solves the distortion; the face asphere is inert; the blur is bought only by size or by the compact form
 ::: left
@@ -240,6 +242,25 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Outside the envelope the first metric to fail is the CRF:** 2.37 and 1.61 px at 150 and 180 mm blocks (the h⁴/r³ law of the scaling slide), 1.55 px at a 60 mm slit (by 0.05 px).  F/1.6 and F/2.8 end on the meniscus bounds with the CRF itself at 1.37 and 1.07 px: a bound to widen, not a form that fails.  Smile and keystone never exceed 0.02 px on any point.  A 30 µm pixel or a CaF2 block puts all of the energy in one pixel; the corner, F/1.6 with a 150 mm block, does not close.
 ![Each metric divided by its limit (1 = the limit) along five axes; a red cross marks a point that does not close (over a limit or on a bound).](figs_dyson/dyson5_s4env_rc.png)
 
+## How small can the block be | The slit is the lever, not the glass: one module at the full 54 mm slit cannot shrink; two modules of 27 mm match the record with a 130 mm block of 1.7 kg
+- **Why the record is 220 mm thick:** in the Dyson form the flat face sits at the center of curvature, so the block's thickness is its radius, and the blur law of the scaling slide (h⁴/r³) ties the radius to the slit length.
+- **The trade:** each point is a full R4 re-solve walked down in radius, warm-started from the next larger block and scored in the engine; a filled marker matches the record's own scores.
+![Per block radius, four families: CRF (left), ensquared energy in one pixel (middle), mass of the edged block (right); filled markers match R4 of record, lines mark the record's values.](figs_dyson/dyson5_size_rc.png)
+
+## The block-size trade, by the numbers | The smallest block per family that matches the record; mass is the block edged to its clear aperture
+::: full
+| configuration | block radius (mm) | thickness (mm) | edged mass (kg) | CRF (px) | ensquared, 1 px | smile / keystone (px) |
+|---|---|---|---|---|---|---|
+| **R4 of record: silica, one 54 mm slit** | 220 | 221 | 8.2 | 1.33 | 0.76 | 0.005 / 0.003 |
+| CaF2, one 54 mm slit | 180 | 181 | 7.9 | 1.20 | 0.82 | 0.017 / 0.020 |
+| **silica, two 27 mm slits, the record's distortion kept** | 130 | 131 | 1.7 each | 1.03 | 1.00 | 0.009 / 0.009 |
+| silica, two 27 mm slits, smallest | 100 | 101 | 1.0 each | 1.05 | 0.96 | 0.044 / 0.049 |
+| CaF2, two 27 mm slits, smallest | 80 | 81 | 0.9 each | 1.04 | 0.97 | 0.009 / 0.018 |
+- **One module cannot shrink:** silica already misses at 200 mm (CRF 1.34 px, 74 %), and CaF2's 180 mm block weighs the same as silica's 220 mm because it is denser.  The walk reproduces the closure envelope's 180 and 150 mm rows to 0.02 px, so those limits are the design's and not the solver's.
+- **What two modules cost:** two gratings and two detectors of 1500 pixels, and a swath split ahead of the slits, since each block is wider than its slit and the slits cannot abut.  The slit-to-detector clearance stays near 0.5 mm at every size.
+- **What they also buy:** halving the glass path halves the wavefront error from index inhomogeneity and from thermal gradients, estimated at 0.4 waves each for the 220 mm block.
+~ Record `dyson5_size.txt` (CCMac, 2026-10-02): 25 engine-scored points; the Mac's engine reproduces the Linux record of R4 to four decimals.
+
 ## The telescope that feeds the slit, as traced by the engine | EMIT's parameters: f = 126 mm, 70 mm at F/1.8, 24.6° onto the 54 mm slit; a folded three-mirror laid out, unobscured and pupil-matched; its image is not yet at the pixel
 - **Three facts first.**  The spectrometer is telecentric at its slit to 0.09° (its accepted chief rays cross 16.8 m behind the slit), so the pupil match is measured as the chief's miss of the grating vertex when the telescope's chief is sent on through the block.  With a flat field and that pupil the three-mirror first order is a one-parameter family.  And the push-broom field is the sky line that images onto the straight slit, solved per field.
 - **The layout.**  The coaxial section cannot be unobscured at F/1.8 with spacings of the beam's size, so the chief is folded at each mirror (32°, −32°, 21°) and a flat fold after M3 turns the beam into the spectrometer.  Every leg clears every body (+0.75 mm beyond the 5 mm mount margin); the chief lands within 9.4 mm of the grating vertex and the grating admits 100 % of the beam at every field; focal length by the map 126.4 mm.
@@ -256,6 +277,7 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ::: left
 - **The native multi-wavelength optimizer (MACOS CALIB) confirms the compact variant:** the engine's spot-size solve over 5 slit positions × 6 wavelengths, the double-pass copies of each surface linked as one, smile and keystone held as walls between iteration chunks, the engine's design read back under an identity check (2e-16 m).  With the blur freedoms (block face radius and conic, meniscus faces, focus) every step is rejected: R4 is a local optimum of the engine's merit as well as the chain's.  With the grating's position free the engine bought blur with 15 px of keystone in five iterations and the wall rejected it: the reason the design needs distortion operands, queued as an engine feature.  From a deliberate 0.3 mm defocus the same solve cuts the spot from 97 to 21 µm, so it moves when there is something to gain.  The block's asphere joins the freedoms now that its differential step is fixed (Backup).
 - **The cold window:** the R5 variant with the shield as the detector housing behind a window cemented as the prism's exit face, under the same clearance gate.
+- **One module or two (a project decision):** one 54 mm module needs the 220 mm, 8 kg block; two 27 mm modules need 130 mm and 1.7 kg each, with the swath split ahead of the slits.  The choice also sets the telescope's field: 24.6° for one, or 12.3° each for two.
 - **The radiometric chain against the band:** throughput, grating efficiency, detector quantum efficiency and the slit loss above.
 ::: right
 - **The telescope's image (beat 5 continues):** the folded three-mirror is laid out, unobscured, pupil-matched and traced end to end, but conics and symmetric aspheres leave 67 px at the slit.  Next: the two-mirror modified Schwarzschild the review recommends for wide fields at low F-number, and freeform (Zernike) mirrors on the folded three-mirror through the engine's native optimizer; then the end-to-end score and the full slit diffraction.
@@ -307,6 +329,7 @@ Diagnostics, the engine findings, and the conventions behind the main path.
 | fold prism, cold shield | s5 | `dyson5_s5.txt`, `dyson5_s5_r5_h*.in`, `dyson5_s5_maps_r5.png`, `dyson5_s5_sweep.png` | `spectrometer_geom.m` (form `dyson_fold`), `spectrometer_clearance.m` |
 | closure envelope | s4env | `dyson5_s4env.txt`, `dyson5_s4env.png`, `dyson5_s4env_*.in` | `dyson5_envelope.m` |
 | native optimizer | s4 | `dyson5_s4.txt`, `dyson5_s4_r4n_seed.in` (the CALIB deck), `dyson5_s4_r4n.in` | `dyson_native.m` |
+| block-size trade | `dyson5_size_trade.m` | `dyson5_size.txt`, `dyson5_size.png`, `dyson5_size_*.in`, `BRIEF_dyson5_size.md` | continuation walks over `dyson_ladder.m` |
 ~ Conventions behind the scaling law: block index n(silica, 1 µm) = 1.450417; in-glass marginal half-angle u = asin(1 / 2nF); field height h from the Dyson axis on the flat face; the slit corner is h = hypot(27 mm, 8 mm).
 
 ## Backup: conventions pinned on the way | Engine facts the chain depends on, stated once
