@@ -801,3 +801,26 @@ telecentric three-mirror of this family does not package at F/1.8 and beat
 5c (the two-mirror modified Schwarzschild) is earned -- report the screen's
 best row and its binding pair as the evidence.  If rows pass, solve the best
 two through S3 and report image + gate.
+
+## Addendum 22 (2026-10-02): the stalled 600 mm cases -- no verdict on EITHER count; the t1 continuation waits behind the screen
+Your read is right: a cold S1 that stalls at 20 um is a solve outside its
+basin, not evidence about the form.  One step further: **a stalled case's
+CLEARANCE number is not a verdict either.**  The template's pairs are cut
+from traced footprints, and the back-end pairs depend on the image cone
+being the F/1.8 cone at the image height; a design that does not image puts
+those legs somewhere a real design would not.  So both t1 = 600 mm cases
+count for nothing, whatever S3 prints; the 300 and 450 mm cases count only
+if their S1 converges.
+**Order of work:** (1) let 300 / 450 finish; (2) addendum 21's first-order
+nine-pair screen; (3) build the t1 continuation ONLY for rows the screen
+passes -- if it passes none at <= 15 deg the continuation is never needed.
+When it is needed, your design is the right one (warm-start each envelope's
+S1 from the converged 140 mm solution, step t1 up, the box walk applied to
+the spacing).  One thing to carry into it: the seed holds R1 = 5 x t1, so M1
+weakens as the envelope grows, and its conic's leverage on the wavefront
+falls as 1/R1^3 (16x weaker at 3.0 m than at 1.2 m) -- K1 ran to +17.6 while
+the merit did not move.  Scale K1's step with R1^3, or hold K1 and let M2 /
+M3 carry the correction on the long envelopes (rodgers3 lesson 2: natural
+scales must match the variable's real leverage, or the LM damping runs away).
+Do not chase the 8-vs-10 deg trace difference or the smoke-test mismatch
+(`pose_stop_once_`) unless a screened row depends on it.
