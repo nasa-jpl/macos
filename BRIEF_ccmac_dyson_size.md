@@ -235,3 +235,64 @@ per family under each rule, its mass, thickness and throughput against R4
 and against round 1's 130 mm block); the corrected CaF2 sentence; README
 section updated.  First report back: family D.  Commit locally; push on
 Dave's word.
+
+---
+
+# Round 3 (2026-10-02) -- Jim's comparison, spectrometer side; and "do better than Fresnel"
+
+Jim's reply (2026-10-02) reframes the trade.  The VSWIR instrument already
+has TWO imaging spectrometers of 3k pixels each (54 mm slits) behind two
+telescopes (30 m GSD at ~550 km).  His question: **is four telescopes +
+spectrometers with fused-silica lenses and 1.5k pixels better than two with
+bigger CaF2 lenses and 3k pixels?**  On CaF2: large pieces exist (50 cm
+boules), but a boule is several crystals, your piece is carved from a
+single-crystal volume, and the price grows faster than the volume.  On
+losses: "the VSWIR spectrometers have always used uncoated Dyson lenses and
+eaten the Fresnel losses.  Your estimate is spot-on.  Maybe you and AI can do
+better."
+
+## 3a. The comparison table (your families F and D/E, re-cut as Jim asks)
+
+One table, two columns, every row engine-scored from `dyson5_size.txt`:
+| | 2 x (3k, 54 mm slit, CaF2, no meniscus) | 4 x (1.5k, 27 mm slit, silica, no meniscus) |
+|---|---|---|
+| block (radius = thickness), per module | 240 mm (F) | 130 mm headline / 100 mm smallest (D) |
+| edged glass per module, total glass | ... | ... |
+| single-crystal CaF2 volume needed per block (the carve) | the circumscribing rod + a margin you state | n/a |
+| CRF / SRF / EE / smile / keystone | ... | ... |
+| air-glass crossings, uncoated throughput | 4 / 0.88 | 4 / 0.87 |
+| gratings, detectors, slits | 2 / 2 x 3k | 4 / 4 x 1.5k |
+| grating radius and diameter, length | ... | ... |
+Add the silica 3k row (220 mm WITH the 4 mm meniscus, 8 crossings) as the
+reference Jim knows, and the CaF2 1.5k row (80 mm) as the small end.  Do not
+price CaF2 -- state the volume and let Jim price it.
+
+## 3b. "Maybe you and AI can do better" -- the throughput question
+
+Three routes, each a measured number, none a promise:
+1. **Fewer crossings.**  Count what each design actually needs: the slit
+   mask DEPOSITED on the block's flat face and the detector's window
+   cemented to it would leave only the convex face's two crossings
+   (0.93 uncoated).  Score that geometry with the chain + engine: slit at
+   z = 0 on the face (no air gap) and the detector plane at the face; report
+   CRF / EE / clearance against the record.  R5's sweep says air costs
+   ~0.5 px per mm at 54 mm; at 27 mm the margin may buy a window.
+2. **A broadband AR coating** on fused silica and on CaF2 over 400-2500 nm:
+   `+macos/thinfilm_rt.m` (the engine's Abeles stack, gated by
+   tPolRadiometric) can score any stack.  Optimise a 2-4 layer design over
+   the band for average reflectance (candidate materials: MgF2, SiO2,
+   Al2O3, Ta2O5 -- state the indices you use and their source) and report
+   the band-averaged transmission for 4 crossings against uncoated 0.87.  A
+   single-layer MgF2 on silica is known to do little (index mismatch); say
+   so with the number.
+3. **The working distance.**  Jim: "If you and AI give up, I will tell the
+   tricks to greater working distances with better response functions."
+   Before we ask: scan the slit AND detector standoff at the 27 mm slit on
+   the 130 mm silica block (0.5 -> 3 mm, both sides equal, R3 re-solved at
+   each) and report CRF / EE / clearance.  If the small module tolerates a
+   few mm, that is the working distance; if not, the number tells Jim where
+   we are stuck.
+
+Deliverables: `BRIEF_dyson5_jim.md` with 3a's table first, then 3b's three
+numbers; records `dyson5_jim_*.txt`; new files only, same rules as before.
+First report back: the table (3a), which is a re-cut of what you have.
