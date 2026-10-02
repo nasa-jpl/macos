@@ -617,3 +617,23 @@ Deliverable of beat 5: the telescope deck of record, its score at the slit
 end-to-end deck (telescope + R4 and + R5) traced as ONE prescription and
 scored by the spectrometer's scorer, the clearance gate across both, and
 two deck slides (the telescope as traced + the end-to-end layout and score).
+
+## Addendum 18 (2026-10-01, Dave): the telescope goes THROUGH the design layer and the runner
+Build it with `macos.design.Telescope` (TMA layout from the f-numbers,
+Seidel-seeded conics, multi-field conic optimize, freeform / asphere
+refinement, `add_fold`, `realize_apertures`, `view_layout`) -- read
+`templates/10_telescopes/tma_widefield/example_tma_widefield.m` first (a
+two-mirror hits a wall as the field opens; the third mirror buys astigmatism:
+24.6 deg at F/1.8 IS that case) and `templates/80_end_to_end/e2e/README.md`
+for the stage pattern (telescope stage -> instrument stage, one parameter
+file, each stage consuming the previous stage's prescription).
+It runs as a NEW STAGE of `dyson5_run` with its knobs in `dyson5_params`
+(Dave's rule: one parameterized runner per modeled system) -- not a
+standalone template first.  When it closes, extract the telecentric
+wide-field TMA into `templates/10_telescopes/` (nothing there is telecentric
+today).
+Operands the Telescope optimizer does NOT have (it scores WFE or spot only):
+telecentricity (chief-ray angle at the slit, mrad), field flatness, and the
+PUPIL MATCH (exit pupil on the grating).  Hold them on the CHAIN side with
+the lsqnonlin machinery you already run for smile and keystone; the
+engine-side operand is queued with the centroid operand (addendum 14 item 4).
