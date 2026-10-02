@@ -907,3 +907,49 @@ sound: the same y2 walk at a 12.3 deg cross-track box (t1 140, R1 held,
 branch held, 5 x 3 solve set).  Report the same table.  If the on-axis
 parent at the packaging corner is several times better at half the field,
 that is the number Dave needs for the module decision.
+
+## Addendum 25 (2026-10-02): the hold on S3 is released for the 12.3 deg telescope; the red gate is understood
+**Your 12.3 deg walk is the number Dave needed:** at the packaging corner
+(y2 0.40) the on-axis parent is 93.8 nm against 786.7 nm at 24.6 deg, M3's
+reach falls from 0.89 to 0.57 of its radius, no edge rays are lost.  Commit
+it locally (the opt-in knobs `tel3w_xtrack_deg`, `tel3w_s1_only`,
+`tel3w_suffix`, the record and decks), by path.
+**The `tOffsetImager` failure, bisected (CC):** engine commit 81d3308
+(2026-09-08, re-traces made idempotent) is where `test_s3_resolve_recovers`
+turns red; the engines of 08-22, 09-05 and the two commits just before it
+pass with identical numbers.  Mechanism: before that fix every
+finite-difference Jacobian column carried a few-ulp 2-cycle of the re-trace;
+after it they are clean.  The test's 5-iteration S3 is ill-conditioned (LM
+damping ~1e-6), so the cleaner Jacobian moves step 1 by 0.006 nm, step 2 by
+7 %, and step 3 is rejected at 23.7 um where the old path reached 13.6 um.
+A path, not a property: with a 15-iteration budget today's engine takes that
+instance from 906 to 167 nm (s3/s2 = 0.18).  **The S3 solver is healthy at
+your cap of 40.**  CC re-pins the test; nothing for you to do.
+**So the full-field S3 result stands as what it is** -- a cold jump from an
+on-axis parent of 787 nm to 14 deg that started at 552 um and did not move.
+It is a stall, not a verdict, but the 24.6 deg three-mirror is not worth
+more time: its parent is three times over the bar before any offset.
+**Next: S3 at 14 deg on the 12.3 deg box, from the y2 0.40 parent (93.8 nm).**
+1. Direct first: stop re-posed at the offset, R1 and branch held, 5 x 3
+   solve set, cap 40, own stop.  Report the start value, the per-iteration
+   trace, the dense-map max and average, clearance after S3 with its worst
+   pair, exit error, M3 reach, edge rays kept.
+2. **Stall test, stated in advance:** a solve that stops within 5 iterations
+   having gained less than 20 % from its start, with the damping run up, is a
+   STALL.  If that happens, walk the OFFSET instead: 0 -> 5 -> 10 -> 14 deg,
+   S3 at each step seeded from the previous step's solved design with the
+   stop re-posed (the box walk applied to the offset; your step-1 runs solved
+   S3 at 4-10 deg from a carried design, so the first steps are known to
+   work).  Halve a step once if it stalls.
+3. **Rule.**  Dense-map max <= 250 nm with the gate >= +5 mm after the solve
+   (S4 with its clearance hinge if S3 un-packages it): the three-mirror
+   LIVES for a two-telescope instrument -- then the three residual rows
+   (telecentricity, flatness, pupil match) and the end-to-end deck against
+   the two-module, no-meniscus Dyson (CCMac's `dyson5_size_D_r130.in`, 27 mm
+   slit, 130 mm silica block).  Converged ABOVE 250 nm: run S5 (freeform)
+   once before any other form is considered.  The walk cannot reach 14 deg:
+   report where it ends and why.
+Geometry note for the record: a 12.3 deg box centred on the axis is ONE of
+two telescopes, each 70 mm at F/1.8, their axes +-6.15 deg apart cross-track,
+each feeding one 27 mm slit.  One 24.6 deg telescope with a field splitter
+is the other reading of "two modules" and is NOT what this run tests.
