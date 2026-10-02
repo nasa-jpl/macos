@@ -953,3 +953,42 @@ Geometry note for the record: a 12.3 deg box centred on the axis is ONE of
 two telescopes, each 70 mm at F/1.8, their axes +-6.15 deg apart cross-track,
 each feeding one 27 mm slit.  One 24.6 deg telescope with a field splitter
 is the other reading of "two modules" and is NOT what this run tests.
+
+## Addendum 26 (2026-10-02, Dave): TWO rules of the road, and the telescope target CHANGES (Jim's numbers)
+**1. Coordination.**  Your S3 run was killed today, almost certainly by CC
+relinking the shared mmacos mex (`rm src/mmacos.mexa64; make`) while your
+MATLAB had it loaded -- twice this afternoon, during the dead-band work.
+Rule from now on, both lanes: (a) `ps -C MATLAB -o pid,etime,args` before
+ANY mex relink, engine rebuild into the shared build trees, or `git pull`
+in the shared tree; if another lane's job is running, WAIT or run your
+gate in a scratch worktree with its own mex (CC did that for the bisect:
+`git worktree add <scratch> HEAD`, `make MACOS_BUILD_DIR=<scratch engine>`);
+(b) say in your report when you launch a long run and when it ends; (c)
+CC announces engine rebuilds in this brief before doing them.
+**2. The telescope target is NOT EMIT's.**  Jim (2026-10-02): the VSWIR
+instrument has TWO imaging spectrometers, each 3k spatial pixels at 18 um
+(a 54 mm slit each), and the telescopes give 30 m GSD at ~550 km -- "a
+reasonably long unobscured telescope".  So, per telescope:
+| | 3k module (54 mm slit) | 1.5k module (27 mm slit) |
+|---|---|---|
+| IFOV | 54.5 urad | 54.5 urad |
+| focal length (18 um pixel) | 330 mm | 330 mm |
+| aperture at F/1.8 | 183 mm | 183 mm |
+| cross-track field | 9.4 deg | 4.7 deg |
+| swath per telescope | 90 km | 45 km |
+The 24.6 deg / 126 mm / 70 mm telescope of beats 5-5b was EMIT's single
+wide field and is retired; so is the 12.3 deg case.  Jim's question, which
+is now the beat: "design the telescope and then see if four telescopes +
+spectrometers with fused-silica lenses and 1.5k pixels is better than two
+telescopes + spectrometers with bigger CaF2 lenses and 3k pixels."
+**Beat 5c, re-targeted (replaces the Schwarzschild question for now):** the
+three-mirror ladder you have, at f 330 mm, D 183 mm, F/1.8, telecentric and
+flat at the slit, box 9.4 x 0.3 deg (the 3k case) and 4.7 x 0.3 deg (the
+1.5k case).  Half and a quarter of the field that broke the 24.6 deg form,
+at 2.6x the focal length: the screen first (`tma_screen` over t1, y2,
+offset at the new scale), then the y2 walk, then S3 at the screened offset
+under addendum 25's rules.  Pupil match: the 3k Dyson of record is R4 /
+the CaF2 240 mm no-meniscus block (`dyson5_size_F_r240.in`); the 1.5k
+Dyson is CCMac's `dyson5_size_D_r130.in` (silica, no meniscus).  Report
+both cases' tables side by side: that IS Jim's comparison, telescope side.
+CCMac carries the spectrometer side (glass mass, CaF2 boule cost, crossings).
