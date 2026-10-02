@@ -715,3 +715,43 @@ pupil miss / clearance / end-to-end CRF), the telescope of record if one
 closes, deck slides 25-26 replaced (the design-of-record rule: show the
 best, not the history), `BRIEF_dyson5_beat5b.md`, the t3 stage committed.
 The edit-deck sync and every push wait on Dave's word.
+
+## Addendum 20 (2026-10-02): beat 5b step 1 read -- the IMAGE closes; the clearance test could not pass as I specified it; scan the ENVELOPE before beat 5c
+Read from your `t3/dyson5_t3_off{04,06,08,10}_REPORT.md` (CC, read-only).
+**1. The ladder images.**  Dense-map max strict RMS WFE over the 24.6 deg
+strip at 1 um: S1 coaxial 172 nm; S3 re-solved at the offset 162 / 173 / 196
+/ 216 nm at 4 / 6 / 8 / 10 deg.  That is ~0.2 waves -- of order a tenth of an
+18 um pixel of blur -- against beat 5's 67 px.  The form is alive on the
+image side, and the offset costs little up to 10 deg.
+**2. The clearance deficit is FLAT in the offset, so the offset is not the
+variable:** -53.9 mm at the ON-AXIS S1, -52 to -59 mm at every offset and
+rung.  Cause: the envelope.  Spacings are 140 and 76 mm for a 70 mm beam
+(your S3 side view: the incoming beam passes through M2 and M3).  The lateral
+walk an along-track offset buys is spacing x tan(offset) = 140 x tan(10 deg)
+= 25 mm; clearing a 70 mm beam plus margins needs ~80 mm.  No offset in 4-10
+deg could pass.  **That is my brief's error** (addendum 19 told you to seed
+the spacings from beat 5's T0 and called the offset THE unknown); the
+decision rule fired on a test that could not pass by construction, so beat
+5c is NOT yet earned.
+**3. Stop the four S5 runs.**  A freeform figure cannot move a beam 55 mm;
+their only product is an image number on an envelope that cannot be built.
+**4. The scan that decides it: envelope scale x offset, S1-S3 only** (your
+timestamps: ~28 min per case).  Lengthen the spacings through your
+first-order family (the t1 / y2 knobs of `telescope_seed`, EFL 126 mm and
+Petzval 0 held) so that  t1 x tan(offset) >= 80 mm :
+| t1 (mm) | offset (deg) | walk (mm) |
+|---|---|---|
+| 300 | 15 | 80 |
+| 450 | 10 | 79 |
+| 600 | 8 | 84 |
+| 600 | 10 | 106 |
+Report per case: the clearance floor WITH ITS WORST PAIR NAMED (the template
+gate reports the pair; the flat -54 mm never said which), S3 map max, the
+largest mirror diameter and the overall length.  A weak, long three-mirror
+with a short focal length is an inverted telephoto, "large against f" like
+the Schwarzschild; ~0.6 m beside a 0.7 m spectrometer is acceptable.
+**5. Decision rule, restated.**  If a case packages (floor >= +5 mm) with S3
+under ~250 nm: the TMA lives -- add the three residual rows (telecentricity,
+flatness, pupil match), then S4 / S5.  If the image collapses at every scale
+that packages, or packaging needs more than ~0.8 m: THAT is the number that
+sends the design to beat 5c.
