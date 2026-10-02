@@ -13,6 +13,19 @@ C***********************************************************************
 
       PUBLIC
       PRIVATE :: CSWAP, DROTG, DDOTLP, CNRM2, zrhqr, balanc, hqr
+!-->  Round-off dead bands (2026-10-02).  The source-frame
+!     re-orthogonalisation (OrthoSrcFrame) and the object-space STOP
+!     aim keep their incoming state when the freshly computed target
+!     differs from it by round-off only.  DeadBandUlp is the band, in
+!     units of EPSILON times the scale of the quantity.  MEASURED on
+!     the corpus (jwst zoom, e5hex1, Cass, dyson5, eac2_7seg; element,
+!     object and header stops): round-off residuals <= 0.5 (frame) and
+!     <= 0.7 (aim); the smallest genuine update 7e5.  A residual
+!     between DeadBandQuietUlp and the band is suppressed AND noted
+!     once per run by DeadBandNote; nDeadBandNote counts them all.
+      REAL*8, PARAMETER :: DeadBandUlp=16d0, DeadBandQuietUlp=2d0
+      INTEGER, SAVE :: nDeadBandNote=0
+!<--
       CONTAINS
 
         !-------------------------------------------------------------
@@ -2712,7 +2725,8 @@ C ********************************************************
 	IMPLICIT NONE
 	REAL*8 ChfRayDir(3),xGrid(3),yGrid(3),zGrid(3)
 	REAL*8 x(3),y(3),z(3),d
-	REAL*8, PARAMETER :: OrthoTol=1d-14
+	REAL*8 OrthoTol
+	OrthoTol=DeadBandUlp*EPSILON(1d0)   ! was 1d-14 (45 ulp)
 	CALL DXPROD(z,xGrid,yGrid)
 	IF (DDOTC(z,ChfRayDir).GT.0d0) THEN
 	  z=ChfRayDir
@@ -2729,8 +2743,27 @@ C ********************************************************
 	  xGrid=x
 	  yGrid=y
 	  zGrid=z
+	ELSE IF (d.GT.DeadBandQuietUlp*EPSILON(1d0)) THEN
+	  CALL DeadBandNote('source frame',d/EPSILON(1d0))
 	END IF
 	END SUBROUTINE OrthoSrcFrame
+
+!-->  One line per run when an update is suppressed although it is
+!     larger than the measured round-off; every such event is counted
+!     (macos_api_mod deadband_notes_get).  Guards warn, never flood.
+	SUBROUTINE DeadBandNote(site,ulps)
+	IMPLICIT NONE
+	CHARACTER(len=*) site
+	REAL*8 ulps
+	nDeadBandNote=nDeadBandNote+1
+	IF (nDeadBandNote.EQ.1) THEN
+	  WRITE(*,'(1X,3A,F6.1,A)') '** Note: a ',site,
+     &    ' update of ',ulps,' ulp (units of round-off)'
+	  WRITE(*,'(1X,A,F5.1,A)')
+     &    '   was inside the dead band (',DeadBandUlp,
+     &    ' ulp) and was NOT applied; later ones are counted only.'
+	END IF
+	END SUBROUTINE DeadBandNote
 !<--
 
 

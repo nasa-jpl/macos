@@ -350,6 +350,37 @@ salt-and-pepper), elt 5's columns unchanged and smooth (roughness
 results never change (the band only suppresses the ulp re-application),
 so single-trace gates are unaffected by construction.  `srcaim.inc` is a
 commented-out include (dead) and still carries the old recipe.
+**Bands tightened and made visible (2026-10-02, Dave: "how do we work
+around the 'didn't change' consequence of the LSB dead band?").**  Each
+band compares the FRESHLY computed target with the current state and skips
+the update only when the residual is below it -- a residual, not an
+increment, so a sub-band change is never accumulated and the error is
+bounded by one band.  MEASURED on the corpus (instrumented scratch build,
+`scratchpad/measure_dband.m`: jwst zoom with header / element stop,
+e5hex1, Cass, dyson5 R4 and telescope decks, eac2_7seg; element, object
+and header stops): round-off residuals <= 0.5 ulp in the frame and <= 0.7
+ulp (of the position scale) in the aim; the smallest GENUINE update 7e5
+ulp.  So `math_mod` now carries `DeadBandUlp = 16` (was 1e-14 = 45 ulp on
+the frame and 1e-13 = 450 ulp on the positions) and `DeadBandQuietUlp = 2`:
+a residual in (2, 16] ulp is suppressed AND reported ONCE per run by
+`DeadBandNote` ("** Note: a <site> update of N ulp ... was NOT applied"),
+every such event counted in `nDeadBandNote` (api `deadband_notes_get`,
+mex command of the same name; zero on every deck measured).  A nonzero
+count means round-off larger than measured or a caller stepping the
+source direction / stop position at round-off level -- both worth
+knowing, neither flooded.  Found while gating: `set_src_fov` wrote
+`ChfRayDir`/`ChfRayPos` WITHOUT invalidating the cached trace, so the next
+trace re-used the old chief ray's frame; it now calls `modified_rx`.  And a
+hand-written deck's `ChfRayDir` is unitised once at load (1 ulp), after
+which SAVE -> load -> SAVE is byte-identical: assert the SECOND round
+trip.  Gate `tRetraceIdempotent` (mmacos, SUITE_FAST): ten traces
+bit-identical (header stop, element stop, no stop, segment stop), the
+round-trip fixed point, and a direction change of 4500 ulp applied / 4 ulp
+kept-and-counted / 1 ulp kept-and-silent.  The 5-iteration smoke test
+`tOffsetImager/test_s3_resolve_recovers` went red at 81d3308 because its
+LM path, not its property, depended on the old Jacobian noise; re-pinned
+at 7 iterations (ratio 0.18, converged from 7 up) with the mechanism in
+its header.
 
 ## Element STOP preserves the source frame's HANDEDNESS (2026-09-08)
 `UpdSrcGrid` (sourcsub.F, the only caller of `define_local_csys` on the
