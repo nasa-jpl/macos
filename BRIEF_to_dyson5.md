@@ -824,3 +824,51 @@ M3 carry the correction on the long envelopes (rodgers3 lesson 2: natural
 scales must match the variable's real leverage, or the LM damping runs away).
 Do not chase the 8-vs-10 deg trace difference or the smoke-test mismatch
 (`pose_stop_once_`) unless a screened row depends on it.
+
+## Addendum 23 (2026-10-02): beat 5b read -- the screen did its job; one more round (the y2 continuation) with a hard stop
+Read from `BRIEF_dyson5_beat5b.md` (CC).  Accepted: the first-order screen
+(`tma_screen`, validated to 3-5 mm against the engine gate, same binding
+pair), its finding that t1 is NOT the knob and the back end closes at y2 =
+0.3-0.4 near 12-14 deg, the engine's confirmation that y2 = 0.4 packages
+(+17.5 / +10.4 mm), and the stall rule as you applied it.  My ~26 deg figure
+in addendum 21 was for the y2 = 0.6 back end; the short-BFD route (the other
+option in that addendum) is the one that closed.  The t1 continuation of
+addendum 22 is withdrawn: no row needs it.
+**Next: your y2 continuation, with these rules.**
+1. Walk y2 0.6 -> 0.55 -> 0.5 -> 0.45 -> 0.4 at t1 140, S1 only, each step
+   warm-started from the previous step's solved S1, the R2/R3 branch held
+   (`seed_R_m`), `nsolve` 5 across the slit.
+2. **Raise the iteration cap.**  "Still descending at the 12-iteration cap"
+   has now appeared three times; a capped solve is a stall by another name.
+   Run S1 and S3 to convergence (cap 40; stop on the LM's own criterion) and
+   report the iteration count.
+3. A step COUNTS when its S1 dense-map max is <= 1000 nm (your
+   `tel3_s1_conv_nm`).  If a step fails to converge, halve the y2 step once;
+   if it still fails, the walk ends there.
+4. At y2 = 0.4 (or the last converged step that the screen passes): S3 at
+   14 deg seeded FROM THAT S1, not from a sphere.  The template's S3 has no
+   clearance row and has already moved a layout from -7 to -38 mm, so a
+   solved S3 is accepted only if the gate still reads >= +5 mm afterwards;
+   if it does not, run S4 (which carries the clearance hinge) from it and
+   report that instead.
+5. Report per step: S1 max / avg, iterations, the radii and conics, M3's
+   rho/|R| at the box corners, the fraction of rays surviving at the
+   +-12.3 deg cross-track fields (the y2 = 0.4 seed already loses 17 of 277
+   there), and the exit chief error.
+**HARD STOP for this form.**  Beat 5c (the two-mirror modified Schwarzschild)
+is earned if ANY of these holds: the walk ends above y2 = 0.4 with no
+screen-passing step; S1 at the packaging corner cannot reach 1000 nm; or S3
+/ S4 at 14-15 deg ends above 250 nm with the gate satisfied.  It is also
+earned by vignetting: more than 5 % of rays lost at the cross-track edge on
+the solved design.  Report whichever fires with its number.  If none fires,
+the three-mirror lives: add the three residual rows (telecentricity,
+flatness, pupil match) and go to S4 / S5.
+**The template fix (section 4 of your brief) before it is committed:**
+`tOffsetImager` and `tRodgers3` (SUITE_FREEFORM) green on the DEFAULT path --
+"rodgers3 untouched" has to be a gate count, not a statement -- plus one new
+test: with `seed_R_m` at y2 = 0.3 the re-solved M2 stays CONVEX at every
+iterate, and without it the fixed Newton start lands on the concave root
+(the must-fail leg that documents the defect).
+**Commit your beat-5b work locally now** (`git add` BY PATH: the dyson5
+files, `tma_screen.m`, the four template files; the bench and sensitivity
+files showing as modified in that tree are not yours).  Push waits on Dave.
