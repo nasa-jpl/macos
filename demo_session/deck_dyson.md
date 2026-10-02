@@ -6,7 +6,7 @@ Build: python3 make_brief_slides.py deck_dyson.md
 Figures: the runner's own PNGs, copied unmodified into figs_dyson/; the *_rc.png
 copies are recomposed at the panel level only (recompose.py), the *_views.png are
 the engine's two renders tiled (tile_views.py).
-Sources: challenges/dyson5/README.md + BRIEF_dyson5_beat{1,2,2c,3,3b,3c,4a,4b,4c,4d,4e}.md (TO),
+Sources: challenges/dyson5/README.md + BRIEF_dyson5_beat{1,2,2c,3,3b,3c,4a,4b,4c,4d,4e,5}.md (TO),
 NOTE_mg2018_digest.md (CC), BRIEF_to_dyson5.md (the lane brief).
 Style: doc/DECK_STYLE.md (lean main path, one Backup divider, layout + map per
 result slide, figures unmodified, conventions stated once).
@@ -45,9 +45,11 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **22** The fold prism, scored
 - **23** The cold shield: the air gap is the price
 - **24** Where the design closes
-- **25** Next steps
-- **26** Run it yourself
-- **27** Backup
+- **25** The telescope that feeds the slit
+- **26** Telescope and spectrometer end to end
+- **27** Next steps
+- **28** Run it yourself
+- **29** Backup
 
 ## The target and how it is scored | Joe's specification, EMIT-class; the metrics stated once, here
 ::: left
@@ -238,13 +240,25 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 - **Outside the envelope the first metric to fail is the CRF:** 2.37 and 1.61 px at 150 and 180 mm blocks (the h⁴/r³ law of the scaling slide), 1.55 px at a 60 mm slit (by 0.05 px).  F/1.6 and F/2.8 end on the meniscus bounds with the CRF itself at 1.37 and 1.07 px: a bound to widen, not a form that fails.  Smile and keystone never exceed 0.02 px on any point.  A 30 µm pixel or a CaF2 block puts all of the energy in one pixel; the corner, F/1.6 with a 150 mm block, does not close.
 ![Each metric divided by its limit (1 = the limit) along five axes; a red cross marks a point that does not close (over a limit or on a bound).](figs_dyson/dyson5_s4env_rc.png)
 
+## The telescope that feeds the slit, as traced by the engine | EMIT's parameters: f = 126 mm, 70 mm at F/1.8, 24.6° onto the 54 mm slit; a folded three-mirror laid out, unobscured and pupil-matched; its image is not yet at the pixel
+- **Three facts first.**  The spectrometer is telecentric at its slit to 0.09° (its accepted chief rays cross 16.8 m behind the slit), so the pupil match is measured as the chief's miss of the grating vertex when the telescope's chief is sent on through the block.  With a flat field and that pupil the three-mirror first order is a one-parameter family.  And the push-broom field is the sky line that images onto the straight slit, solved per field.
+- **The layout.**  The coaxial section cannot be unobscured at F/1.8 with spacings of the beam's size, so the chief is folded at each mirror (32°, −32°, 21°) and a flat fold after M3 turns the beam into the spectrometer.  Every leg clears every body (+0.75 mm beyond the 5 mm mount margin); the chief lands within 9.4 mm of the grating vertex and the grating admits 100 % of the beam at every field; focal length by the map 126.4 mm.
+- **The image, and what it says.**  Four rungs on the exact chain (layout; conics + radii + spacings; + h⁴/h⁶ aspheres; everything) reach 67 px rms at the slit with a 1.6 mm field-curvature swing: conics and symmetric aspheres on folded mirrors do not image at the pixel over ±12.3° at F/1.8.  Next, the review's forms for this regime: the two-mirror modified Schwarzschild, and freeform mirrors.  Record `dyson5_t1.txt`, deck `dyson5_t1_t3.in`, every rung engine-scored.
+![3-D view and the dispersion plane (Y-Z), metres, global frame: the sky from +y, M1 at the bottom, M2 and M3 above it, the fold flat (E4) turning the beam into the slit (E6) on the Dyson's axis; apertures are the declared ellipses.](figs_dyson/dyson5_t1_t3_views.png)
+
+## Telescope and spectrometer end to end | One prescription of 16 (R4) and 19 (R5) elements, the grating its stop; the spectrometer's scorer sees the telescope's blur
+- **The deck.**  The telescope's surfaces are prepended to the spectrometer of record — sky, M1, M2, M3, fold, the slit as a pass-through reference, then block, meniscus, grating and detector — with a collimated 70 mm source per field and the grating declared the stop.  Gate `tTelescopeRx`: every ray at the slit and at the detector within 1e-9 m of the design solver's.
+- **The score (7 fields × 7 wavelengths, the spectrometer's own scorer):** with R4 smile 3.1 px, keystone 0.59 px, SRF 15.7 px, CRF 15.5 px; R5 the same to 0.03 px.  Against the spectrometer alone (smile 0.005, keystone 0.003, CRF 1.33 px) these are the telescope's 67 px blur passing through.  Clearance across both +0.75 mm with R4; with R5 the fold mirror's blur-widened footprint meets the detector package at −0.11 mm.
+- **What it establishes:** the end-to-end machinery is in place and gated — a telescope deck of record, a combined prescription with the stop at the grating, the admitted fraction per field, the clearance gate across both instruments.  Records `dyson5_t2.txt`, decks `dyson5_t2_r4.in`, `dyson5_t2_r5.in`.
+![3-D view and the dispersion plane (Y-Z), metres: the folded telescope below the slit plane, the block, meniscus and grating (E10) above it along the Dyson's axis, the detector on the block's face.](figs_dyson/dyson5_t2_r4_views.png)
+
 ## Next steps | The native optimizer on the record, the cold window, and the telescope that feeds the slit
 ::: left
 - **The native multi-wavelength optimizer (MACOS CALIB) confirms the compact variant:** the engine's spot-size solve over 5 slit positions × 6 wavelengths, the double-pass copies of each surface linked as one, smile and keystone held as walls between iteration chunks, the engine's design read back under an identity check (2e-16 m).  With the blur freedoms (block face radius and conic, meniscus faces, focus) every step is rejected: R4 is a local optimum of the engine's merit as well as the chain's.  With the grating's position free the engine bought blur with 15 px of keystone in five iterations and the wall rejected it: the reason the design needs distortion operands, queued as an engine feature.  From a deliberate 0.3 mm defocus the same solve cuts the spot from 97 to 21 µm, so it moves when there is something to gain.  The block's asphere joins the freedoms now that its differential step is fixed (Backup).
 - **The cold window:** the R5 variant with the shield as the detector housing behind a window cemented as the prism's exit face, under the same clearance gate.
 - **The radiometric chain against the band:** throughput, grating efficiency, detector quantum efficiency and the slit loss above.
 ::: right
-- **Beat 5, the telescope:** EMIT parameters — 420 km, 60 m ground sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8, 24.6° cross-track field onto the 54 mm slit, telecentric and flat; the telescope's exit pupil on the grating.  Then spectrometer and telescope traced end to end as one deck.
+- **The telescope's image (beat 5 continues):** the folded three-mirror is laid out, unobscured, pupil-matched and traced end to end, but conics and symmetric aspheres leave 67 px at the slit.  Next: the two-mirror modified Schwarzschild the review recommends for wide fields at low F-number, and freeform (Zernike) mirrors on the folded three-mirror through the engine's native optimizer; then the end-to-end score and the full slit diffraction.
 - **Future work, once the design of record is stable:** a surface-by-surface tour of the prescription (role, ray footprint, clearance, and the field where a propagation leg ends, per surface); spot diagrams in the Mouroulis & Green form, slit positions down and wavelengths across inside the 18 µm pixel box; the telescope and the end-to-end instrument; polarization sensitivity of the Dyson against the Offner, since the Dyson's near-normal incidence is what the literature credits for its low sensitivity; and, once the telescope exists, full diffraction from the slit through the grating to the detector, to put a number on the slit's truncation of the telescope's image (the literature expects about a 10 % effect on the response functions).
 
 ## Run it yourself | One parameter file, one runner, every stage through it

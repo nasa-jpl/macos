@@ -637,3 +637,25 @@ telecentricity (chief-ray angle at the slit, mrad), field flatness, and the
 PUPIL MATCH (exit pupil on the grating).  Hold them on the CHAIN side with
 the lsqnonlin machinery you already run for smile and keystone; the
 engine-side operand is queued with the centroid operand (addendum 14 item 4).
+
+## Addendum 18 (2026-10-01, evening): beat 5 run from the cleared context -- the telescope is laid out and traced end to end; its image is the open item
+Beat 5 was run in the cleared session per addendum 17 (resources
+dev-candidate, local).  On record (`challenges/dyson5/BRIEF_dyson5_beat5.md`,
+`dyson5_t1.txt`, `dyson5_t2.txt`, gate `tTelescopeRx`): the shared exact
+tracer (`chain_trace`, the Dyson's lifted verbatim; R4/R5 re-emit
+byte-identical), the telescope chain (`telescope_geom`: a folded
+three-mirror, the field as the sky line that images onto the straight slit),
+the end-to-end chain (`e2e_geom`, the grating the stop), the ladder, the
+engine scorers, the runner stages t1/t2, two deck slides.  Facts: R4 is
+telecentric at the slit to 0.09 deg (apparent pupil 16.84 m); the PNP first
+order is a one-parameter family in that limit; the coaxial section cannot be
+unobscured at F/1.8 with f-scale spacings -- the chief is folded at each
+mirror (32/-32/21 deg).  Result: layout clears (+0.75 mm), pupil match 9.4
+mm on the grating, 100 % admitted, EFL 126.4 by the map -- and 67 px rms at
+the slit (a 1.6 mm field swing): conics + even aspheres on folded mirrors do
+not image at the pixel over +-12.3 deg at F/1.8.  NEXT (TO or CC): the
+two-mirror modified Schwarzschild (M&G: the widest field and lowest F-number)
+and freeform mirrors on the folded three-mirror (the engine's Zernike
+surfaces + OptZern; the chain lacks Zernike surfaces -- add them to
+chain_trace); a cheaper first check: seed the conics from the coaxial
+parent's anastigmat and fold afterwards.
