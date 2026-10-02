@@ -584,3 +584,36 @@ alive).  `P.native_asph` can come on when the fix is on the engine of record.
 Deck: slide 25 carries the native result as a confirmation (R4n = R4; the
 15-px keystone row as the reason for operands) and the asphere as the next
 freedom.
+
+## Addendum 17 (2026-10-01, Dave): CLEAR before beat 5 -- the resume list
+Beat 5 is a new design (the telescope) and the engine of record now carries
+every fix the spectrometer beats found (macos f1d2617, pushed; resources
+b3d2644).  Start it from a CLEARED context, not a compaction: the numbers
+that matter are in the record files, not in the conversation, and a long
+context is where withdrawn numbers (the first R5 sweep) come back as facts.
+Re-read, in this order, before the first command:
+1. this brief: addendum 7 (the telescope spec = EMIT: 420 km, 60 m ground
+   sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8,
+   24.6 deg cross-track field onto the 54 mm slit, telecentric and flat,
+   exit pupil on the grating), addenda 10, 13 (full slit diffraction waits
+   for the telescope), 15-16 (deck state; the asphere step and the
+   calib_run error are fixed -- try/catch `macos.calib()`);
+2. `challenges/dyson5/README.md` + `BRIEF_dyson5_beat4d.md` section 2 (the
+   fold's detector frame `G.fpa.xhat/yhat/normal` -- the telescope's image
+   must land on the SLIT frame the same way) + `dyson5_s5.txt` (R5 of record
+   = NO shield; the 2 mm/1.295/0.794 numbers are withdrawn);
+3. `dyson5_params.m` / `dyson5_run.m` stage list (s0-s5, s4env): the
+   telescope is a new stage through the SAME runner (Dave's rule: every
+   stage through the parameterized runner), scored with the same gates
+   (apertures declared, clearance per leg/body, engine renders per deck,
+   chain-vs-engine identity to 1e-9 m);
+4. `macos_f90/CLAUDE.md` sections dated 2026-09-30 / 10-01 (glass catalog,
+   medium-aware kernels, chord-ruled gratings + modulo-lambda rule,
+   short-line pad, CALIB stride / asphere step / failure path) and the
+   design layer's telescope tools (`macos.design.Telescope`, `add_fold`,
+   `realize_apertures`, `view_layout`) before writing a new emitter.
+Deliverable of beat 5: the telescope deck of record, its score at the slit
+(spot inside a pixel at every field, telecentricity, field flatness), the
+end-to-end deck (telescope + R4 and + R5) traced as ONE prescription and
+scored by the spectrometer's scorer, the clearance gate across both, and
+two deck slides (the telescope as traced + the end-to-end layout and score).
