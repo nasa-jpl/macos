@@ -159,3 +159,79 @@ The deck is CC's (Linux): hand over the figure and the numbers, do not edit
   (they need both compilers).
 - First report back: section 0's gate counts, step 1's identity and solver
   check.  Then run step 2.
+
+---
+
+# Round 2 (2026-10-02) -- the Dyson WITHOUT the meniscus (Jim's point)
+
+Your round 1 is accepted (the slit is the lever; the envelope's radius axis
+is the design's limit; deck slides 25-26 carry it, with 130 mm as the
+headline two-module block because it keeps the record's distortion).  One
+correction for your report: CaF2's index is LOWER than silica's (1.43 vs
+1.45), so "higher index narrows the cone" is not the mechanism; say the
+mechanism is not established, or test it (family F below is one test).
+
+**Jim (who builds these), to Dave, 2026-10-02:** "We've never built a Dyson
+with a meniscus, because of the losses.  Without an AR coating that works
+over 400-2500 nm, the losses are ~0.92^2.  You could compensate by making
+the system faster, but that brings along a host of other challenges (mass,
+volume, image quality, etc).  The meniscus looks very thin, which is a
+challenge for fabrication, mounting, and vibe."
+
+So R4's corrector is a liability on three counts: throughput (four extra
+uncoated air-glass crossings: 0.966^4 = 0.87 in silica by Fresnel, Jim's
+rule 0.92^2 = 0.85), the part itself (4 mm thick, 155 mm across, and the
+solve ends ON the 4 mm bound -- it wants it thinner), and, not yet examined,
+ghosts (four near-concentric uncoated surfaces between block and grating).
+
+## The question
+
+Which configurations meet the spec with NO meniscus -- ladder rung R3 (the
+de-concentred block with its face conic and h^4/h^6 terms; `'rungs', 3`)?
+
+What is known: R3 at silica 220 mm with the 54 mm slit has CRF 2.10 px and
+EE 0.48 (fails).  Size alone needs a 341 mm block (R1, radius free).  The
+scaling law (blur ~ h^4.17 / r^3.19, quarter-pixel at r = 213 mm for the
+54 mm slit's corner, h = 28.2 mm) predicts ~100 mm for a 27 mm slit's
+corner (h = 15.7 mm with the 8 mm dispersion offset).  That prediction is
+the thing to test: your round 1 shows the short slit closing to 100 mm WITH
+the meniscus; if it also closes without, the meniscus goes.
+
+## The work (extend your own driver; still new files only)
+
+Add a `rung` option to `dyson5_size_trade.m` (3 = R3, 5 = R4) and these
+families, by continuation exactly as before.  Seed the first point of each
+from the R3 of record (the rung-3 entry of the saved ladder, 220 mm / 54 mm
+/ silica), walking the SLIT 54 -> 40 -> 27 mm at 220 mm first, then the
+radius.
+| family | rung | glass | slit | radius walk |
+|---|---|---|---|---|
+| D | R3 | silica | 27 mm | 220 -> 60 mm |
+| E | R3 | CaF2 | 27 mm | 220 -> 60 mm |
+| F | R3 | CaF2 | 54 mm | 300 -> 180 mm (does a one-module, no-meniscus Dyson exist at any size up to 300 mm?) |
+| G | R4 | silica | 54 mm, 220 mm | the THICK-meniscus basins of the global search (`dyson5_s3_r4global.txt`, starts 12 and 7, ~30 mm thick), engine-scored: a buildable part, if the meniscus is kept at all |
+
+**Two verdict columns per point:** `matches R4` (round 1's rule) and `meets
+the SPEC` (smile and keystone < 0.1 px, CRF < 1.5 px, SRF < 2.1 px, no
+variable on a bound).  Without the meniscus R4's ensquared energy may be out
+of reach while the specification is met; report EE either way, and name the
+smallest radius per family under each rule.
+
+**A throughput column:** the number of air-glass crossings on the slit ->
+detector path and the uncoated Fresnel product at 1 um for that glass
+(labelled as uncoated, normal incidence).  It is the first entry of the
+radiometric chain and the direct answer to Jim.
+
+Keep everything else from round 1: engine scores only, bounds reported not
+widened silently, edged volume and mass, the clearance gate, the two
+uniformity estimates.
+
+## Deliverables
+
+`dyson5_size.txt` / `.png` extended with families D-G (same figure, rung
+shown by line style); a "Round 2: no meniscus" section at the TOP of
+`BRIEF_dyson5_size.md` with the answer first (the smallest no-meniscus block
+per family under each rule, its mass, thickness and throughput against R4
+and against round 1's 130 mm block); the corrected CaF2 sentence; README
+section updated.  First report back: family D.  Commit locally; push on
+Dave's word.
