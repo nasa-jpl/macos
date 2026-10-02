@@ -872,3 +872,38 @@ iterate, and without it the fixed Newton start lands on the concave root
 **Commit your beat-5b work locally now** (`git add` BY PATH: the dyson5
 files, `tma_screen.m`, the four template files; the bench and sensitivity
 files showing as modified in that tree are not yours).  Push waits on Dave.
+
+## Addendum 24 (2026-10-02): beat 5b accepted; HOLD beat 5c -- the stop fired on a solve whose own gate is red, and the telescope's target is about to change
+Read from your committed `BRIEF_dyson5_beat5b.md` sections 6-9 (0a70058).
+**Accepted, and good work:** the y2 walk (every step converged on its own
+test), the `oi_score` telecentric fix (the same degenerate crossing the
+engine's FEX guards; your note that sections 1-5's image numbers are
+superseded is right -- including the 162-216 nm I leaned on in addendum 20,
+which was bought at R1 1.2 m, off the family), `hold_R1`, `seed_R_m`,
+`tOiSeedBranch`.
+**What the walk establishes, and it is the real finding:** in this family at
+24.6 deg, packaging and imaging pull opposite ways.  The on-axis parent goes
+349 -> 787 nm as y2 goes 0.60 -> 0.40, M3's reach jumps to 0.89 of its radius
+at the packaging corner, and the edge field starts losing rays there.
+**Why 5c is NOT yet earned.**
+1. The stop fired on S3 at 14 deg: start 552 081 nm, "4 iterations (own
+   stop)", map max 1 206 588 nm.  A solve that ends where it started is a
+   stall (addendum 22), and it was a cold jump from on-axis to 14 deg.
+2. The template's own gate for exactly that solve is RED on the committed
+   tree: `tOffsetImager/test_s3_resolve_recovers`, S3 29 274 vs S2 29 024 nm
+   where 2026-08-20 recorded s3/s2 = 0.71.  A design cannot be ruled out by
+   a solve whose smoke test fails.  **CC is chasing it now** (engine-vs-
+   MATLAB bisect: the August test commit against today's engine).  Do not
+   spend time on it.
+3. **The target is moving.**  CCMac's block-size trade (resources 9d3b6e2,
+   round 2 in progress): with the slit shared by two 27 mm modules the Dyson
+   needs no meniscus and a 100-130 mm block.  If Dave takes two modules, the
+   telescope question becomes one 24.6 deg field split ahead of the slits,
+   OR two telescopes of 12.3 deg -- half the cross-track field, where M1's
+   width, M3's reach and the edge losses all ease.
+**Until Dave rules on the modules and the S3 gate is understood:** no beat
+5c work.  One cheap run IS worth doing now, because it is S1 only and S1 is
+sound: the same y2 walk at a 12.3 deg cross-track box (t1 140, R1 held,
+branch held, 5 x 3 solve set).  Report the same table.  If the on-axis
+parent at the packaging corner is several times better at half the field,
+that is the number Dave needs for the module decision.
