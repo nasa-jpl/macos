@@ -24,6 +24,20 @@
 
 ## Active slice
 
+> **2026-10-02 00:30 -- BEAT 5 RUN, LOCAL (resources dev-candidate + macos
+> dev-candidate, uncommitted until the gates report; then commit).**  Stages
+> t1/t2 through dyson5_run: layout CLOSES (folds 32/-32/21 deg, +0.75 mm,
+> pupil 9.4 mm on the grating, 100 % admitted, EFL 126.4 by the map, e2e
+> decks 16/19 elements, identity 1e-14 m), IMAGE DOES NOT (67 px rms, 1.6 mm
+> field swing; e2e with R4 smile 3.1 / keystone 0.59 / CRF 15.5 px).  Report
+> `BRIEF_dyson5_beat5.md` sec. 4-5, README beat-5 section, BRIEF_to_dyson5
+> addendum 18, deck slides 25-26 (deck_dyson.pptx rebuilt, 32 slides; the
+> edit copy NOT synced -- Dave's word), memory updated.  NEXT (beat 6): the
+> two-mirror modified Schwarzschild and/or freeform (Zernike) mirrors on the
+> folded TMA (chain_trace needs a Zernike surface kind); cheaper first: seed
+> conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
+> before commit: tSpectrometerRx, tTelescopeRx.
+
 > **2026-10-01 17:00 -- TO's 3.5/3.6 FIXED (design_optim.F, local, uncommitted
 > until the suites report):** asphere step = 1e-3 |coef| (sag floor at the
 > circular aperture; legacy per-ORDER step + a line without one); LM failure
@@ -32,7 +46,7 @@
 > (SUITE_FAST).  Running: tCalib/tDesignTelescope/tSpectrometerRx + fast.
 > Deck slide 25 = native result (R4n = R4); addendum 16.  GATES GREEN:
 > tCalib 9, tDesignTelescope 70, tSpectrometerRx 7, fast 510/0, pymacos 18.
-> Committed both repos (local); push on Dave's word.
+> PUSHED (Dave): macos 9b05af6..f1d2617, resources 536c01a..b3d2644.  Next: TO beat 5 (telescope); native asphere run when TO turns P.native_asph on.
 
 > **2026-10-01 16:30 -- deck_dyson at beats 4b-4e (30 slides, local):** slit
 > loss resolved, R5 fold prism (record = NO shield: CRF 1.267, EE 0.695,
