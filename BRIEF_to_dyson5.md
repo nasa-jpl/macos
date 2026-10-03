@@ -1050,3 +1050,38 @@ decks and scores are unaffected at the level you report (fast suite 502/0,
 ten-trace idempotence gated); if a solve path shifts at the ulp level, that
 is the Jacobian noise change of addendum 25, not a design change.  No
 further engine rebuild is planned; I will announce the next one here first.
+
+## Addendum 29 (2026-10-03): the offset solves, read in the engine -- the family is exhausted; beat 5c is earned
+CC traced your 9 deg decks in the engine (`t3/dyson5_t3o_*_off09_s[345].in`,
+stop at element 2, 1185 rays, rms spot radius about the centroid at the
+focal plane): 3k S3 513 um, 3k S4 105 um, 1.5k S3 1162 um, 1.5k S4 517 um,
+1.5k S5 764 um -- 6 to 65 pixels, against a slit that wants under one.  So
+the field-constant residual is physics: the parent's own aberration at
+9 deg off its axis, shared by every point of the strip, which the symmetric
+surfaces were never asked to correct and which tilts, decenters and a
+40-iteration freeform could not remove.  Not the metric (the engine agrees
+with your order of magnitude), not the solver budget.
+**Decisions:**
+1. **End-to-end route:** moot for these designs -- a 105 um spot needs no
+   end-to-end trace to be ruled out.  For the future, ENGINE-ONLY joining
+   for any non-coaxial design (tilts, decenters, Zernike surfaces): the
+   emitted deck IS the design; the chain-vs-engine identity stays the gate
+   for coaxial decks only.  Do not extend the chain.
+2. **Do not re-run the 3k S4** with a stronger clearance penalty: the
+   image is 6 px with the gate failing by 1.6 mm; a 100x wall buys clearance
+   with more blur.
+3. **Commit by path**, yes: the four t3o records, the t3o/t3e stage work,
+   `oi_solve`'s `hist.lam` -- and nothing of the other lanes.
+**Beat 5c (now):** the review's form for this regime (Mouroulis & Green
+2018 sec. 5.1): the two-mirror modified Schwarzschild -- "the widest field
+and lowest F-number", 50 deg at F/1.6 with one conic and one asphere, an
+inverted telephoto, "large against f" (acceptable: f is 330 mm).  Build it
+with the design layer at Jim's numbers (f 330 mm, D 183 mm, F/1.8,
+telecentric and flat at the slit; both fields, 9.4 and 4.7 deg x 0.3 deg),
+a new stage through the runner, the same gates (engine render, clearance
+with the Dyson's bodies, admitted fraction, the end-to-end row with each
+module's own Dyson, engine-only joined).  First report: the paraxial
+layout and the first engine-scored spot per field, before any ladder.
+If the literature's 50 deg at F/1.6 holds, a 9.4 deg strip is far inside
+it; if the two-mirror cannot be made telecentric and flat together, that
+is the number to report.
