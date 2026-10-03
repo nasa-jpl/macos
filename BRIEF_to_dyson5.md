@@ -1041,3 +1041,12 @@ off-axis use are S4's (mirror tilts, decenters, radii), then S5's.
    offset beside the 10 deg case.
 The end-to-end row with each module's own Dyson (addendum 27) remains the
 verdict; run it on whatever S4 / S5 delivers, even if above the bar.
+
+## Note (2026-10-03 am, CC): the shared mmacos mex is now linked to engine e43b126
+Done at a moment with no MATLAB running (`ps -C MATLAB` empty): the shared
+`mmacos/src/mmacos.mexa64` now carries the dead-band change (16 ulp bands,
+the one-line note, `deadband_notes_get`) and the `set_src_fov` fix.  Your
+decks and scores are unaffected at the level you report (fast suite 502/0,
+ten-trace idempotence gated); if a solve path shifts at the ulp level, that
+is the Jacobian noise change of addendum 25, not a design change.  No
+further engine rebuild is planned; I will announce the next one here first.
