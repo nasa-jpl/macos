@@ -992,3 +992,21 @@ the CaF2 240 mm no-meniscus block (`dyson5_size_F_r240.in`); the 1.5k
 Dyson is CCMac's `dyson5_size_D_r130.in` (silica, no meniscus).  Report
 both cases' tables side by side: that IS Jim's comparison, telescope side.
 CCMac carries the spectrometer side (glass mass, CaF2 boule cost, crossings).
+
+## Addendum 27 (2026-10-02): launch S3 on both modules; the verdict is END TO END, not the 250 nm bar
+Your Jim-scale walks are accepted (3k: 255 nm at the corner, 1.5k: 78 nm;
+M3 at 0.46-0.49 of its radius; no edge loss; identical radii across the
+modules).  Commit them locally by path first, then launch S3 at the screened
+10 deg on BOTH modules from their y2 0.30 designs, in parallel, under
+addendum 25's rules (cap 40, the stall test, the offset walk as fallback,
+S4 if the gate is lost, S5 once if converged above the bar).  CC will not
+touch the shared mex or trees while they run; say when they end.
+**The 250 nm bar is a proxy.**  The verdict for each module is the END-TO-END
+score with its own Dyson: the t2 machinery (telescope + spectrometer as one
+deck, the grating the stop, the spectrometer's scorer): smile and keystone
+< 0.1 px, CRF < 1.5 px, SRF on the slit floor, the admitted fraction, the
+clearance gate across both.  Decks: 3k module -> `dyson5_size_F_r240.in`
+(CaF2 240 mm, no meniscus, CRF 1.21 px alone); 1.5k module ->
+`dyson5_size_D_r130.in` (silica 130 mm, no meniscus, CRF 1.03 px alone).
+Report the two end-to-end rows side by side: that is Jim's comparison on
+the telescope side, and the first thing he will read.
