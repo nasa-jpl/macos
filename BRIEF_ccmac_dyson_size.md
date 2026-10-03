@@ -312,3 +312,63 @@ the convex pair's AR then takes it to ~0.90; "2 crossings / 0.934" is not
 reachable with a cold detector behind a window.  Please amend
 `BRIEF_dyson5_jim.md` 3b route 1 and the bottom line accordingly (one
 commit, by path); CC's draft reply to Jim already uses the corrected count.
+
+---
+
+# Round 4 (2026-10-03) -- the three-mirror anastigmat at Jim's numbers, by the design layer
+
+The telescope side of Jim's comparison is open.  TO's three-mirror family
+(a coaxial parent with the stop at M2, solved on axis and then moved 9 deg
+off axis through the offset_imager ladder) does not image at F/1.8: CC
+measured 6-65 px spots at the slit on its best designs.  TO's two-mirror
+modified Schwarzschild images (0.5 px on axis) but, at f = 330 mm, scales
+to 2-5 px across a 9.4 deg strip (the review's TMS is a short-focal-length
+form).  The review's OWN first telescope example for our regime is
+**Mouroulis & Green 2018 Fig. 6: a 420 mm F/1.8 three-mirror anastigmat
+with a 16 deg linear field** ("dimensions roughly equal to its focal
+length"), and sec. 5.2 names the telecentric variant with the stop on the
+secondary.  That is Jim's "reasonably long unobscured telescope".  Your
+job: reach that class with DIFFERENT tooling from TO's -- the design
+layer's `macos.design.Telescope` (TMA layout from the f-numbers, Seidel
+seed, `add_fold`, `realize_apertures`, `view_layout`) and the engine's
+native multi-field optimizer (CALIB through `optimize`, which closed the
+e2e / e2e2 TMAs at f/1.75 primaries), solving the BIASED configuration from
+the start rather than an on-axis parent moved afterwards.
+
+**Spec (per telescope; Jim: 30 m GSD at ~550 km, 18 um pixels):** f 330 mm,
+D 183 mm at F/1.8, telecentric and flat at the slit, strip 9.4 x 0.3 deg
+(3k module) and 4.7 x 0.3 deg (1.5k module), unobscured, every clearance
+positive with the Dyson's bodies at the slit (`spectrometer_clearance`,
+the pattern in `dyson5_run` stage t2), the exit pupil matched to the
+grating (the Dyson accepts chiefs within 0.09 deg of telecentric).  Read
+first: the review's sec. 5.1-5.2 and Fig. 6 (`challenges/dyson5/
+Mouroulis&Green2018.pdf`, git-ignored, on disk); `templates/10_telescopes/
+tma_widefield/example_tma_widefield.m` and `tma_offaxis/`; memory
+`project_fold_extraction` (fold rules, "conics solved AT the bias field" --
+exactly the lesson TO's route missed); `BRIEF_dyson5_beat5.md` sec. 5 for
+the `seidel_seed` PNP first-order defect (EFL 381 vs 126 mm: check the
+seed's EFL by exact trace before trusting it).
+
+**Steps, each engine-scored on the slit's 7 fields (rms spot radius and
+energy in an 18 um pixel), each a committed record:**
+1. The coaxial TMA parent from `tma_layout` at f 330 / F/1.8 with the
+   stop on the secondary, conics solved by the native optimizer AT a field
+   bias of 3-6 deg along-track (scan the bias), the 9.4 deg strip as the
+   field set; report spot per field at each bias.
+2. The unobscured section: `add_fold` / off-axis apertures, every clearance
+   positive (your own gate, numbers not bodies), the bias that first
+   clears.
+3. Telecentricity and flatness at the slit (chief-ray angle per field,
+   best-focus z per field), the exit pupil's distance.
+4. Freeform refinement if conics + aspheres stall above 1 px
+   (`optimize_freeform` / `optimize_aspheres` in the Telescope class), one
+   rung, with the asphere-step and derivative fixes of 2026-10-01 on the
+   engine (pull first; rebuild).
+5. The end-to-end row with each module's own Dyson, engine-only join
+   (`dyson5_size_F_r240.in` for 3k, `dyson5_size_D_r130.in` for 1.5k),
+   scored by the spectrometer's scorer: smile / keystone / SRF / CRF /
+   admitted fraction / clearance -- the TMA entry in Jim's table.
+New files only (`dyson5_tma_*`, a `BRIEF_dyson5_tma.md`); TO's `tms_*`
+and `t4` files are theirs.  First report: step 1's spot-per-field at the
+best bias, with the layout rendered.  Length, M2 / M3 diameters and mirror
+mass (state the areal density) in every row.
