@@ -1010,3 +1010,34 @@ clearance gate across both.  Decks: 3k module -> `dyson5_size_F_r240.in`
 `dyson5_size_D_r130.in` (silica 130 mm, no meniscus, CRF 1.03 px alone).
 Report the two end-to-end rows side by side: that is Jim's comparison on
 the telescope side, and the first thing he will read.
+
+## Addendum 28 (2026-10-02): the slow S3 descent -- let them cap, then S4 BEFORE S5, and read the residual
+Starts of 87 um (3k) and 197 um (1.5k) at 10 deg from parents of 255 / 78
+nm, descending 1-2 % per full step with the damping on its floor: that is
+not a stall (addendum 25's test does not fire) and not convergence; it is
+Gauss-Newton on a problem whose first-order model is poor.  Physics: a
+coaxial parent with SYMMETRIC surfaces used 10 deg off axis has to be
+corrected AT 10 deg -- the symmetric-surface S3 is a wide-field design in
+disguise, which is what failed at 24.6 deg.  The freedoms that match an
+off-axis use are S4's (mirror tilts, decenters, radii), then S5's.
+1. Let both runs cap (the descent is worth keeping); do not kill them.
+2. From the capped S3 state run **S4 first** (tilts / decenters / radii with
+   the clearance hinge -- the ladder's own order), then S5 once; addendum
+   25's "S5 once if converged above the bar" assumed a converged S3.  Both
+   modules, in parallel, cap 40, the stall test as stated.
+3. Report, for the capped S3 and after each rung, the dense map per field
+   (where the residual lives: along the strip's cross-track ends, or in the
+   0.3 deg along-track direction) and the LM's final damping and step
+   acceptance -- that tells whether more iterations would have helped.
+4. The 1.5k module STARTS worse than the 3k (197 vs 87 um) from a parent
+   3x better: check the stop pose at the offset for that module
+   (`pose_stop_once_`; the beat-5b EP-construction miss) and the field set
+   actually solved before trusting its S3.
+5. In parallel if the box has room (two jobs run now; a third fits): the
+   screen's passing row at y2 0.30 with the SMALLEST offset (is 6-8 deg in
+   the passing set?).  The offset cost at this corner is steep and the
+   screen floor at 10 deg is +17 mm, more than the gate needs; a smaller
+   offset may trade some of that margin for image.  Report S3 at that
+   offset beside the 10 deg case.
+The end-to-end row with each module's own Dyson (addendum 27) remains the
+verdict; run it on whatever S4 / S5 delivers, even if above the bar.
