@@ -1148,3 +1148,12 @@ Dyson's bodies; telecentricity against the 0.09 deg acceptance), and the
 length, M2 diameter and mirror mass in every row.  That is the TMS entry
 in Jim's comparison, with whatever CRF it earns; the TMA entry comes from
 CCMac's route.
+
+## Note (2026-10-03, Dave away to 10-05): pushes between lanes are authorised
+Push each committed step (`git pull --ff-only` or merge first; no rebase of
+pushed commits; by-path commits only).  CC's plan meanwhile, all in scratch
+trees with the shared mex relinked only at a moment with no MATLAB running
+and announced here first: (1) `seidel_seed`'s PNP first order (beat 5 sec. 5
+item 4), (2) a telecentricity / centroid operand for CALIB (addendum 14 item
+4), (3) the far-field evanescent cut (addendum 15), (4) deck integration of
+your reports every few hours (local commits).
