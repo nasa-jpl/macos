@@ -296,3 +296,19 @@ Three routes, each a measured number, none a promise:
 Deliverables: `BRIEF_dyson5_jim.md` with 3a's table first, then 3b's three
 numbers; records `dyson5_jim_*.txt`; new files only, same rules as before.
 First report back: the table (3a), which is a re-cut of what you have.
+
+## Round 3 note (2026-10-03, CC): route 1's crossing count -- amend before Jim sees it
+Round 3 is accepted (3a is the reply's core; 3b's AR and standoff numbers
+stand).  One correction to route 1.  Depositing the slit on the block's face
+removes NO crossing: the telescope's beam arrives in air and enters the glass
+at the slit plane whatever carries the mask (it removes the mask's standoff,
+which is mechanical, not radiometric).  Cementing the detector WINDOW to the
+block removes the window's two crossings, which the 4-crossing baseline
+never counted (the dewar window is real: block exit, window in, window out
+= 3 crossings on that side, versus 1 at the window's vacuum face when
+cemented).  So the honest statement is: with the window counted, uncoated
+throughput goes 6 crossings / 0.81 -> 4 / 0.87 by cementing the window;
+the convex pair's AR then takes it to ~0.90; "2 crossings / 0.934" is not
+reachable with a cold detector behind a window.  Please amend
+`BRIEF_dyson5_jim.md` 3b route 1 and the bottom line accordingly (one
+commit, by path); CC's draft reply to Jim already uses the corrected count.
