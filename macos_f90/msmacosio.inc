@@ -9,6 +9,7 @@ C       Set entrance condition flags to .FALSE.
           nRxComment        = 0
           RxCommentCtx      = 0
           LRxCommentCapture = .TRUE.
+          nRxCommentDropped = 0
 !<--
 
   50      CONTINUE   ! This section is for header part of Rx
@@ -64,6 +65,9 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'FEXCentroid',11)) THEN
+!  Rx-level VETO of the FEX/SXP centroid axis: 'N' forbids it for this
+!  deck even if the CENTROID command / api mode 0 requested it.  Since
+!  the 2026-08-27 chief-ray default this is belt-and-suspenders only.
             IF (.NOT.LCMP(VALUE,'Y',1)) Rx_FEXCentrFlg=.False.
             GO TO 50
 
@@ -435,9 +439,30 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'UseChfRay4OPD',10)) THEN
+!-->        The 'Y' branch was missing, so the keyword could only ever
+!           turn chief-ray referencing OFF -- and it is ALREADY off.
+!           The stale "default to TRUE" comment below was wrong twice
+!           over: ray_mod_init_vars (traceutil_mod.F) inits
+!           LUseChfRayIfOK=.FALSE., and although the LOAD/OLD/NEW
+!           handler (macos_cmd_loop.inc, inside #ifdef DESIGN_OPTIM)
+!           sets it .TRUE., that assignment is made BEFORE MBFile6 is
+!           called and MBFile6's first act -- in BOTH macosio.F (CLI)
+!           and smacosio.F (SMACOS/bindings) -- is
+!           reinitialise_variables(), which runs ray_mod_init_vars and
+!           puts it back to .FALSE.  Net: every OPD, on every path,
+!           takes the whole-aperture average-OPL branch (tracesub.F
+!           OPD, the DAvgl ELSE), whose global mean couples segments:
+!           poking ONE segment shifts DAvgl and therefore pistons
+!           EVERY ray in the map.  With this branch, UseChfRay4OPD= Y
+!           opts a prescription back into the chief-ray reference
+!           (used only when LRayOK(1), i.e. the chief survives to the
+!           evaluation element).  Diagnosis: Luis Marchen, 2026-08-19.
             If (LCMP(VALUE,'N',1)) Then
-              LUseChfRayIfOK=.FALSE.  ! default to TRUE
+              LUseChfRayIfOK=.FALSE.
+            Else If (LCMP(VALUE,'Y',1)) Then
+              LUseChfRayIfOK=.TRUE.
             End If
+!<--
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -1545,18 +1570,35 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-	    ELSE IF (LCMP(VAR_NAM,'OptBeamDir',10) .AND.
-     &               (OptTarget==BEAM_TARGET)) THEN
+!-->  Beam rows ride on ANY target since 2026-10-03 (WFE / SPOT / ZWF +
+!     beam): the BEAM_TARGET condition is gone.
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamDir',10)) THEN
 	      If (.not. beamOpt%ifOptBeamDir) Then
 		READ(VALUE,*) (beamOpt%nomBeamDir(j),j=1,3)
+	        CALL DUNITIZE(beamOpt%nomBeamDir) ! the rows compare to a unit vector
 	        beamOpt%beamDirElt=iElt
 	        beamOpt%ifOptBeamDir=.TRUE.
 	      End If
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-	    ELSE IF (LCMP(VAR_NAM,'OptBeamPos',10) .AND.
-     &               (OptTarget==BEAM_TARGET)) THEN
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamPosFov',13)) THEN
+              If (beamOpt%nBeamPosFov < 12) Then
+                beamOpt%nBeamPosFov=beamOpt%nBeamPosFov+1
+                READ(VALUE,*) (beamOpt%nomBeamPosFov(j,
+     &                           beamOpt%nBeamPosFov),j=1,3)
+              Else
+                WRITE(*,*)' OptBeamPosFov: more than 12 rows ignored'
+              End If
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamWt',9)) THEN
+              READ(VALUE,*) beamOpt%beamWt
+              If (beamOpt%beamWt<=0d0) beamOpt%beamWt=1d0
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamCentroid',15)) THEN
+              beamOpt%ifBeamCentroid=(VALUE(1:1)=='Y'.OR.VALUE(1:1)=='y')
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamPos',10)) THEN
               If (.not. beamOpt%ifOptBeamPos) Then
                 READ(VALUE,*) (beamOpt%nomBeamPos(j),j=1,3)
                 beamOpt%beamPosElt=iElt
@@ -1681,16 +1723,29 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 ! --------------------------
 
                 AsphCoef(:,iElt) = 0d0
+!-->  Short lines PAD with zero + one warning (ReadRealsPad, elt_mod) --
+!     a missing value was an uncaught EOF that killed the host (2026-10-01).
                 IF (nAsphCoef<=Grp) THEN
-                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,nAsphCoef)
+                  CALL ReadRealsPad(VALUE,AsphCoef(1:nAsphCoef,iElt),
+     &                              nAsphCoef,nZ)
+                  IF (nZ.LT.nAsphCoef) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',nAsphCoef,
+     &              ' values on the line; the rest are 0'
                 ELSE
 
-                  READ(VALUE,*)(AsphCoef(j,iElt),j=1,Grp)
+                  CALL ReadRealsPad(VALUE,AsphCoef(1:Grp,iElt),Grp,nZ)
+                  IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
+     &              ' values on the first line; the rest are 0'
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nAsphCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,(iZ+1)*Grp)
+                    CALL ReadRealsPad(STRING,
+     &                   AsphCoef(iZ*Grp+1:(iZ+1)*Grp,iElt),Grp,nZ)
+                    IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+     &                '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
+     &                ' values on a continuation line; the rest are 0'
                   END DO
 
                   ! incomplete Grp
@@ -1698,9 +1753,11 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   iZ = nAsphCoef/Grp
                   IF (nZ>0) THEN
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(AsphCoef(j,iElt),j=iZ*Grp+1,iZ*Grp+nZ)
+                    CALL ReadRealsPad(STRING,
+     &                   AsphCoef(iZ*Grp+1:iZ*Grp+nZ,iElt),nZ,iZ)
                   END IF
                 END IF
+!<--
 
                 nAsphCoef = nAsphCoef_Default  ! reset to default
               END BLOCK
@@ -1710,7 +1767,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ AnaCoef
             ELSE IF (LCMP(VAR_NAM,'AnaCoef',7)) THEN
-              READ(VALUE,*)(AnaCoef(j,iElt),j=1,4)
+              CALL ReadRealsPad(VALUE,AnaCoef(1:4,iElt),4,j)   ! short line pads (see AsphCoef)
+              IF (j.LT.4) WRITE(*,'(A,I3,A,I2,A)')
+     &          '  AnaCoef (elt',iElt,'): ',j,' of 4 values; the rest are 0'
               AnaCoef_FLG=.TRUE.
               GO TO 61
 
@@ -1952,6 +2011,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END IF
               READ(VALUE,*) nGridMat(iElt)
               nGridMat_FLG=.TRUE.
+!-->          A GridFile= that arrived BEFORE this line was deferred
+!             (it had no size to read with); the size is known now.
+              IF (GridFilePending(iElt) .AND.
+     &            nGridMat(iElt).GT.0) THEN
+                CALL GridInit(GridFile(iElt),iEltToGridSrf(iElt),
+     &                        nGridMat(iElt),ifGridInit,
+     &                        GridFileBin(iElt))
+                ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
+                GridFilePending(iElt) = .FALSE.
+                IF (.NOT.ifGridInit) THEN
+                  WRITE(*,*)' GridFile not loaded correctly, iELT=',
+     &                      iElt
+                END IF
+              END IF
+!<--
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2024,8 +2098,26 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !<--
 
 	      k=ICLEN(GridFile(iElt))
+	      GridFileBin(iElt) = LCMP(GridFile(iElt)(k-2:k),'bin',3)
 
-	      If (.not.LCMP(GridFile(iElt)(k-2:k),'bin',3)) Then
+!-->          DEFER when nGridMat= has not been seen yet for this
+!             element.  GridInit sizes its read with DO j=1,nGridMat, so
+!             with nGridMat still 0 it reads ZERO rows, prints
+!             "dimension 0 by 0" and returns .TRUE. -- the trace then
+!             samples an all-zero grid and the surface is SILENTLY FLAT
+!             whenever GridFile= precedes nGridMat= in the element block
+!             (or nGridMat= is missing).  Stash instead; the nGridMat=
+!             handler resolves it, and ChkDf2 sweeps anything still
+!             pending at the end of the block and fails there.  Same
+!             deferral pattern as PolyObsVec/xObs.  Binary grids cannot
+!             self-size, so reading to EOF would not fix this.
+	      IF (nGridMat(iElt).LE.0) THEN
+	        GridFilePending(iElt) = .TRUE.
+	        GridMat_FLG=.TRUE.
+	        GO TO 61
+	      END IF
+!<--
+	      If (.not.GridFileBin(iElt)) Then
 	        ! ascii
                 CALL GridInit(GridFile(iElt),jGridSrf,nGridMat(iElt),
      &                        ifGridInit,.false.)

@@ -352,7 +352,13 @@ C***********************************************************************
      &                  LRayPass,LEltObs,LGlass,
      &                  LTaperedElt,LApTypeDefined,LApVecDefined,
      &                  LEltMRP_FLG,LUpdateTElt_FLG,LxObsDef,
-     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
+     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined,
+!-->  GridFile= parsed before nGridMat= for this element: the grid read
+!     is DEFERRED (GridInit sizes its read from nGridMat) and resolved
+!     by the nGridMat= handler or by ChkDf2.  GridFileBin remembers the
+!     ascii/binary dispatch decided at parse time.
+     &                  GridFilePending,GridFileBin
+!<--
         Logical, dimension(:,:), allocatable :: LRayToElt
 
 !-->  Per-ray status tracking arrays
@@ -372,6 +378,7 @@ C***********************************************************************
         Integer :: nRxComment = 0
         Integer :: RxCommentCtx = 0
         Logical :: LRxCommentCapture = .FALSE.
+        Integer :: nRxCommentDropped = 0   ! lines past mRxComment
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -418,6 +425,7 @@ C***********************************************************************
 
         Real*8, dimension(:,:), allocatable ::
      &        RayPos, RayDir, ApVec, xObs,
+     &        RayPosAtElt, ! every ray's position at beamOpt%beamPosElt (centroid)
      &        h1HOE,h2HOE, CoatIndxElt,CoatThkElt,
      &        yObs, zObs,DWORK,
      &        GlassCoef, GlassTable,MTFMat,MTFMat2,
@@ -485,6 +493,15 @@ C***********************************************************************
           Real*8 ::  nomBeamDir(3),nomBeamPos(3),nomBeamSize,
      &               nomBeamRefRayDir(3)
           Integer :: beamDirElt,beamPosElt,beamSizeElt,beamRefRayElt
+!-->  2026-10-03 (dyson5 addendum 14 item 4): per-FIELD position targets
+!     (OptBeamPosFov= rows, one per CALIB field in order; 12 = max_fov),
+!     the centroid option (OptBeamCentroid= Y: the beam position is the
+!     centroid of the rays at beamPosElt, not the chief ray), and a weight
+!     on every beam row against the WFE / SPOT rows (OptBeamWt=).
+          Integer :: nBeamPosFov
+          Real*8  :: nomBeamPosFov(3,12), beamWt
+          Logical :: ifBeamCentroid
+!<--
         End Type OptBeamStr
 
         Type PrvGlass
@@ -602,6 +619,34 @@ C***********************************************************************
 
         End Subroutine ParseZernType
 
+!-->  ReadRealsPad (2026-10-01): list-directed read of up to n reals from
+!     a string, PADDING the missing tail with zero instead of dying.  A
+!     short `AsphCoef=` line (fewer values than nAsphCoef) was an uncaught
+!     end-of-file in the internal READ -- a Fortran runtime abort that
+!     kills the HOST process when the engine is a mex / .so (TO, dyson5
+!     beat 3).  Fewer coefficients than the slot count means the higher
+!     orders are zero, so pad and WARN (guards warn, not error).  nread
+!     returns how many values the string carried.
+        SUBROUTINE ReadRealsPad(str, arr, n, nread)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN)  :: str
+          INTEGER,          INTENT(IN)  :: n
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER,          INTENT(OUT) :: nread
+          INTEGER :: k, j, ios
+          arr(1:n) = 0d0
+          nread = 0
+          DO k = n, 1, -1
+            READ(str, *, IOSTAT=ios) (arr(j), j=1,k)
+            IF (ios .EQ. 0) THEN
+              nread = k
+              EXIT
+            END IF
+            arr(1:n) = 0d0
+          END DO
+        END SUBROUTINE ReadRealsPad
+!<--
+
 C***********************************************************************
 
         Subroutine elt_mod_init
@@ -612,6 +657,7 @@ C***********************************************************************
      &               ifComputeDZ,LGlass,LTaperedElt,LFastRayTrace,
      &               LApTypeDefined,LApVecDefined,
      &               ifGridDataDefined,
+     &               GridFilePending,GridFileBin,
      &               ifMon,ifFF,ifGridTerm,
      &               stat=m_err_elt)
           if (m_err_elt /= 0)
@@ -663,7 +709,7 @@ C***********************************************************************
      &               ('elt_mod_init(SREAL): deallocate failed!')
 
           deallocate(TElt,ObsVec,XYZSRF,DZSRF,GridMat,AmplMat,
-     &               vptElt,RptElt,psiElt,RayPos,TEltRx,
+     &               vptElt,RptElt,psiElt,RayPos,RayPosAtElt,TEltRx,
      &               vptRx, RptRx, psiRx, ObsVecRx,LxObsDef,
      &               RayDir, ApVec, xObs, ApHexBound,ZernCoefRx,
      &               AsphCoef,MonCoef, ZernCoef,EdgeSensVec,
@@ -723,6 +769,7 @@ C***********************************************************************
      &           LApTypeDefined(mElt),LApVecDefined(mElt),
      &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay),
      &           ifGridDataDefined(mGridSrf),
+     &           GridFilePending(mElt),GridFileBin(mElt),
      &           ifMon(mElt),ifFF(mElt),ifGridTerm(mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
@@ -806,6 +853,7 @@ C***********************************************************************
      &          'elt_mod_init(real*8-0.5): allocate failed!')
 
         allocate(RptElt(3,mElt), psiElt(3,mElt), RayPos(3,mRay),
+     &           RayPosAtElt(3,mRay),
      &           RayDir(3,mRay), ApVec(6,mElt), xObs(3,mElt),
      &           AsphCoef(mAsphCoef,mElt),MonCoef(mMonCoef,mElt),
      &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),
@@ -871,6 +919,19 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
+!-->  Glass CATALOG state is blanked HERE, at allocation, and NOT in
+!     elt_mod_init_vars.  The catalog (GlassName/GlassTable) is loaded
+!     ONCE at start-up (rl_macos_glass.inc in the CLI, smacos_glass.inc
+!     at SMACOS first entry), but every Rx load runs
+!     reinitialise_variables() -> elt_mod_init_vars(), which used to
+!     wipe both arrays BEFORE the parser's GlassElt= lookup -- so every
+!     GlassElt= element kept its written IndRef and traced as air, in the
+!     CLI and both bindings (dyson5 gate 1b, TO 2026-09-30).  Per-element
+!     GlassElt/GlassCoef are Rx state and are still reset per load.
+        GlassName(:)   = ''
+        GlassTable(:,:) = 0d0
+!<--
+
 
         End Subroutine elt_mod_init
 
@@ -894,6 +955,7 @@ C***********************************************************************
           nRxComment           = 0
           RxCommentCtx         = 0
           LRxCommentCapture    = .FALSE.
+          nRxCommentDropped    = 0
 !<--
           LEltObs(:)           = .FALSE.
           ifComputeDZ(:)       = .FALSE.
@@ -908,6 +970,8 @@ C***********************************************************************
           ifOPDModGrid(:)      = .FALSE.
           LFastRayTrace(:)     = .FALSE.
           ifGridDataDefined(:) = .FALSE.
+          GridFilePending(:)   = .FALSE.
+          GridFileBin(:)       = .FALSE.
 
           ! FreeForm activity flags -- set at prescription-read time
           ! via SetFreeFormFlags(ie) based on SrfType and sentinels
@@ -925,7 +989,6 @@ C***********************************************************************
 
           EltName(:)           = ''
           GlassElt(:)          = ''
-          GlassName(:)         = ''
           EltMRP(:)            = ''
 
           nElt                 =  0          ! total number of optical elements                (nElt <= mElt)
@@ -1050,6 +1113,7 @@ C***********************************************************************
           RptElt(:,:)          =  0e0_pr
           psiElt(:,:)          =  0e0_pr
           RayPos(:,:)          =  0e0_pr
+          RayPosAtElt(:,:)     =  0e0_pr
           RayDir(:,:)          =  0e0_pr
           ApVec(:,:)           =  0e0_pr
           xObs(:,:)            =  0e0_pr
@@ -1083,7 +1147,6 @@ C***********************************************************************
           psiRx(:,:)           =  0e0_pr
           RptRx(:,:)           =  0e0_pr
           GlassCoef(:,:)       =  0e0_pr
-          GlassTable(:,:)      =  0e0_pr
           MTFMat(:,:)          =  0e0_pr
           MTFMat2(:,:)         =  0e0_pr
           pMonRx(:,:)          =  0e0_pr

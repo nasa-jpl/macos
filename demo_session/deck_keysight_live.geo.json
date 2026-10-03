@@ -1,0 +1,422 @@
+{
+ "_comment": "Dave's pass-2 layout edits (recovered from deck_keysight_edit.pptx via pptx_geo_diff.py, 2026-08-30). Applied by make_brief_slides.py on every rebuild. Inches; keys are block-key prefixes -- see the sidecar note in make_brief_slides.py.",
+ "One engine, four surfaces": {
+  "img:fig_ecosystem.png": {
+   "x": 2.25,
+   "y": 1.35,
+   "w": 8.95,
+   "h": 4.12
+  },
+  "txt:Physics lives in the engine": {
+   "x": 2.25,
+   "y": 5.5,
+   "w": 10.63
+  }
+ },
+ "Challenge 3: moving a 20\u00b0\u00d720\u00b0 field 22\u00b0 off axis": {
+  "img:pair_r3t_s1_layout.png": {
+   "x": 5.75,
+   "y": 1.47,
+   "w": 7.38,
+   "h": 3.7,
+   "cx": 7.01,
+   "cy": 5.25,
+   "cw": 5.9
+  },
+  "txt:Record: challenges/rodgers3": {
+   "x": 7.25,
+   "y": 5.55,
+   "w": 5.9
+  },
+  "txt:The hardest of the three": {
+   "w": 5.15,
+   "fs": 14
+  }
+ },
+ "Challenge 3: the numbers": {
+  "img:pair_r3t_s4_layout.png": {
+   "x": 0.29,
+   "y": 3.0,
+   "w": 7.73,
+   "h": 3.75,
+   "cx": 0.45,
+   "cy": 6.7,
+   "cw": 6.35
+  }
+ },
+ "From one design to a design family": {
+  "img:pair_t5_walk_k05_layout.png": {
+   "x": 0.0,
+   "y": 2.51,
+   "w": 7.04,
+   "h": 4.24,
+   "cx": 0.45,
+   "cy": 6.76,
+   "cw": 6.35
+  },
+  "txt:This frontier is the basis": {
+   "x": 7.59,
+   "y": 6.48,
+   "w": 5.15
+  }
+ },
+ "The live demonstration: an adjacent instrument, designed during this talk": {
+  "txt:The ask: name a field-box": {
+   "w": 5.3,
+   "fs": 15
+  },
+  "code:1": {
+   "x": 6.0,
+   "y": 1.5,
+   "w": 7.33
+  },
+  "txt:The literal demo-day sequence": {
+   "x": 6.36,
+   "y": 5.22
+  },
+  "txt:In the mean time": {
+   "x": 9.75,
+   "y": 6.48,
+   "w": 3.15
+  }
+ },
+ "Challenge 2, extended: the pupil measured \u2014 and what a fourth mirror buys": {
+  "img:rodgers2_S1_onaxis_pupil.png": {
+   "x": 0.25,
+   "y": 4.76,
+   "w": 6.75,
+   "h": 1.49,
+   "cx": 0.45,
+   "cy": 6.52,
+   "cw": 6.35
+  },
+  "img:rodgers2_final_trade.png": {
+   "x": 7.09,
+   "w": 6.03,
+   "h": 4.12,
+   "cx": 8.0,
+   "cy": 5.86,
+   "cw": 4.9,
+   "y": 1.54
+  },
+  "txt:Yardsticks: pupil imaging": {
+   "x": 8.0,
+   "w": 4.9
+  }
+ },
+ "Challenge 2: a 30\u00d7 afocal feeding an instrument through a tilted cold stop": {
+  "txt:The challenge: a three-mirror afocal": {
+   "fs": 15
+  },
+  "img:rodgers2_layout_parent3.png": {
+   "x": 7.12,
+   "y": 1.38,
+   "w": 5.63,
+   "h": 4.33,
+   "cx": 7.0,
+   "cy": 5.61,
+   "cw": 5.9
+  },
+  "txt:The source's own pupil verdict": {
+   "x": 7.0,
+   "y": 6.08,
+   "w": 5.9
+  }
+ },
+ "A second live demonstration: the AI drives an interferometer": {
+  "txt:Why a Twyman\u2013Green for a DM": {
+   "w": 5.3
+  },
+  "code:1": {
+   "x": 6.0,
+   "y": 1.5,
+   "w": 7.33
+  },
+  "img:fig_ifo_topologies.png": {
+   "x": 1.12,
+   "y": 4.52,
+   "w": 10.63,
+   "h": 2.57
+  }
+ },
+ "Recap: the interferometer, built and calibrated in the model": {
+  "txt:The rig: a polarizing Twyman\u2013Green": {
+   "fs": 14
+  },
+  "table:1": {
+   "y": 4.84
+  },
+  "img:demo2_beat6_sweep.png": {
+   "x": 7.5,
+   "y": 1.0,
+   "w": 4.75,
+   "h": 2.36,
+   "cx": 7.0,
+   "cy": 3.36,
+   "cw": 5.9
+  },
+  "img:tg_psi_dm_v2_sensitivity.png": {
+   "x": 7.21,
+   "y": 3.91,
+   "w": 5.61,
+   "h": 2.27,
+   "cx": 7.0,
+   "cy": 6.22,
+   "cw": 5.9
+  },
+  "txt:Records: templates/90_polarization": {
+   "x": 7.0,
+   "y": 6.69
+  }
+ },
+ "Recap: the measurement the room just watched": {
+  "txt:The eight beats, replayed": {
+   "fs": 18
+  }
+ },
+ "A coronagraph testbed, end to end": {
+  "txt:The full testbed model": {
+   "fs": 16
+  },
+  "table:1": {
+   "y": 4.21
+  },
+  "img:ctb_train_render.png": {
+   "x": 7.75,
+   "y": 1.38,
+   "w": 4.7,
+   "h": 1.49,
+   "cx": 7.0,
+   "cy": 2.96,
+   "cw": 5.9
+  },
+  "img:ctb_mask_compare.png": {
+   "x": 7.25,
+   "y": 3.41,
+   "w": 5.18,
+   "h": 2.78,
+   "cx": 7.0,
+   "cy": 6.14,
+   "cw": 5.9
+  },
+  "txt:Dark zone 3\u201315": {
+   "x": 7.0,
+   "y": 6.64
+  }
+ },
+ "The vortex against the Lyot stop": {
+  "txt:One mask, one dial": {
+   "w": 5.8,
+   "fs": 18
+  },
+  "img:ctb_vortex_lyot_sweep.png": {
+   "x": 6.49,
+   "y": 1.48,
+   "w": 6.5,
+   "h": 4.52,
+   "cx": 7.0,
+   "cy": 6.12,
+   "cw": 5.9
+  },
+  "txt:Same grid, annulus": {
+   "x": 7.0,
+   "y": 6.59
+  }
+ },
+ "The mirrors close the loop": {
+  "txt:The control matrix is measured": {
+   "w": 5.55,
+   "fs": 15
+  },
+  "img:ctb_efc_vortex.png": {
+   "x": 6.17,
+   "y": 1.42,
+   "w": 7.07,
+   "h": 1.58,
+   "cx": 6.0,
+   "cy": 3.07,
+   "cw": 6.9
+  },
+  "img:ctb_vortex_bandwidth.png": {
+   "x": 7.75,
+   "y": 3.43,
+   "w": 3.89,
+   "h": 2.89,
+   "cx": 6.28,
+   "cy": 6.31,
+   "cw": 6.89
+  },
+  "txt:6.8\u00d710\u207b\u00b9\u2075": {
+   "x": 6.29,
+   "y": 6.55,
+   "w": 6.89
+  }
+ },
+ "From the testbed to an observatory": {
+  "img:crop_r2_train_iso.png": {
+   "x": 1.09,
+   "y": 3.29,
+   "w": 5.66,
+   "h": 3.17,
+   "cx": 0.45,
+   "cy": 6.36,
+   "cw": 6.35,
+   "cfs": 10.5,
+   "ct": 0.213
+  },
+  "txt:The telescope is diffraction-limited": {
+   "x": 0.45,
+   "y": 6.83,
+   "fs": 11
+  },
+  "img:r1_seg_d110_shroud.png": {
+   "x": 8.1,
+   "y": 3.25,
+   "w": 4.26,
+   "h": 3.08
+  }
+ },
+ "Segmentation, metrology, controls \u2014 on the observatory": {
+  "txt:The primary segments hex-19": {
+   "fs": 16
+  },
+  "img:r3_met_view_rx.png": {
+   "x": 8.0,
+   "y": 1.42,
+   "w": 4.5,
+   "h": 5.99,
+   "cx": 5.63,
+   "cy": 4.94,
+   "cw": 2.75,
+   "cfs": 15,
+   "cl": 0.294,
+   "cr": 0.294,
+   "ct": 0.042,
+   "cb": 0.059,
+   "cal": "right"
+  },
+  "txt:Record: templates/80_end_to_end/e2e6m_r2, sensit": {
+   "x": 3.35,
+   "y": 6.98
+  }
+ },
+ "Challenge 1: MACOS solves match the re-traced CODE V designs": {
+  "txt:The metric decoded": {
+   "fs": 14
+  },
+  "img:rodgers1_layout_s4_seq.png": {
+   "x": 7.22,
+   "y": 3.3,
+   "w": 5.25,
+   "h": 3.1,
+   "cx": 7.0,
+   "cy": 6.44,
+   "cw": 5.9
+  },
+  "txt:Box max / avg": {
+   "x": 7.0,
+   "y": 6.74
+  }
+ },
+ "The state equations I: rigid-body channels \u2014 dw/dx": {
+  "img:fig_dwdx_read.png": {
+   "cfs": 11
+  },
+  "txt:Harvest on r1_seg_prop.in": {
+   "fs": 12
+  }
+ },
+ "The state equations II: segment-figure channels \u2014 dw/dz": {
+  "img:fig_dwdz_read.png": {
+   "cfs": 13
+  },
+  "txt:Same harvest, metric and gates": {
+   "fs": 13
+  }
+ },
+ "The state equations III: shape-normalized modes \u2014 dw/dgrid": {
+  "img:fig_dwdgrid_read.png": {
+   "cfs": 12
+  },
+  "txt:Same harvest, metric and gates": {
+   "x": 0.45,
+   "y": 6.74,
+   "fs": 13
+  }
+ },
+ "Discussion: where should the agent sit?": {
+  "txt:A \u00b7 The compiled tool": {
+   "fs": 20
+  },
+  "txt:A stale check fails loudly": {
+   "x": 0.45,
+   "y": 6.69,
+   "w": 12.43
+  }
+ },
+ "If you asked us: AI around CODE V and LightTools": {
+  "txt:Make the tools agent-readable first": {
+   "fs": 18
+  },
+  "txt:The agent proposes": {
+   "x": 0.45,
+   "y": 6.85,
+   "w": 12.43
+  }
+ },
+ "Digging the dark hole: the overnight restart ladder": {
+  "txt:The recipe": {
+   "fs": 18
+  }
+ },
+ "A randomly disturbed observatory, simulated": {
+  "txt:The series starts at the new solution": {
+   "fs": 16
+  },
+  "img:fig_cf5b_jwst.png": {
+   "x": 7.25,
+   "y": 1.18,
+   "w": 5.0,
+   "h": 4.85,
+   "cx": 7.0,
+   "cy": 6.03,
+   "cw": 5.9
+  },
+  "txt:Record: templates/80_end_to_end/e2e6m_r2, CF5b": {
+   "x": 7.0,
+   "y": 6.68,
+   "w": 5.9,
+   "fs": 12
+  }
+ },
+ "The live design, revealed": {
+  "txt:The ask": {
+   "fs": 16
+  },
+  "img:oi_demo_live_layout.png": {
+   "x": 7.84,
+   "y": 1.42,
+   "w": 3.85,
+   "h": 5.58,
+   "cx": 7.0,
+   "cy": 6.58,
+   "cw": 5.9
+  },
+  "img:oi_demo_live_map.png": {
+   "x": 2.28,
+   "y": 4.37
+  },
+  "txt:Solved live during this talk": {
+   "x": 0.58,
+   "y": 6.57,
+   "w": 5.9
+  }
+ },
+ "Inside the mmacos toolbox": {
+  "txt:Counts as of 2026-08": {
+   "x": 1.0,
+   "y": 6.12,
+   "w": 11.88
+  }
+ }
+}

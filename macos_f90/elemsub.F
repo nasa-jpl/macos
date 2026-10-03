@@ -4488,14 +4488,25 @@ C  Set output values for ray position, direction
         ! ToDo: check if psi is not parallel to RuleDir and if it is, then it
         !       does not behave like a Grating -- Snell's Law with Order = 0
 
-          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! prj. RuleDir onto tangent plane (psi)
-          CALL DXPROD(uhat,Nhat,RuleDir)       !
-          uhat = uhat / norm2(uhat)            ! CALL DUNITIZE(uhat)
-          CALL DXPROD(shat,uhat,Nhat)
-          shat = shat / norm2(shat)          ! CALL DUNITIZE(shat)
+          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! s0: unit rule dir in the VERTEX tangent plane (psi)
+!-->  Straight-ruled grating on a curved surface (2026-09-30, dyson5 finding
+!     #2, TO): the grooves are the intersections of EQUIDISTANT PARALLEL
+!     PLANES (spacing RuleWidth, normal s0) with the surface -- the classical
+!     ruled concave grating and the CODE V / Zemax convention: period
+!     constant along the CHORD.  The local grating vector is therefore the
+!     UN-normalised projection of s0/d onto the local tangent plane,
+!     |G| = (m lambda/d) sqrt(1 - (s0.N)^2), which falls as the surface
+!     tilts.  The old code unitised the projection (uhat, then shat), i.e. a
+!     period constant ALONG THE SURFACE -- on a concave Dyson/Offner grating a
+!     spectral blur ~ lambda, 3 px rms at 2500 nm, that no concentric design
+!     can correct.  Flat gratings: N = psi, so the projection IS s0 and the
+!     result is unchanged.  (N x s0) x N = s0 - (s0.N) N.
+          shat = RuleDir - dot_product(RuleDir,Nhat)*Nhat   ! chord-ruled local grating direction, |shat| = sqrt(1-(s0.N)^2)
+          CALL DXPROD(uhat,Nhat,RuleDir)       ! groove direction (not unit; unused downstream)
+!<--
           ! -------------------------------
 
-          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector
+          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector (chord-ruled)
           u_vec = (na * ihat + Gr_vec) / nb       ! Inc. Dir (Vector Refraction Equ.)
 
           ! Chk: TIR or Evanescent Wave
@@ -4509,9 +4520,26 @@ C  Set output values for ray position, direction
           if (.not.in_reflection)
      &        rhat = rhat - 2d0 * dot_product(Nhat, rhat) * Nhat
 
-          ! OPL change
-          rho_prj = rho - dot_product(Nhat, rho) * Nhat
-          dL = -dot_product((ihat*na-rhat*nb), rho_prj)
+          ! OPL change = the order-m grating PHASE FUNCTION at the hit point.
+!-->  Chord-ruled groove count (2026-10-01, dyson5 finding #3, TO): for
+!     equidistant groove PLANES (normal s0 in the vertex plane, spacing d)
+!     the phase at the hit point rho (w.r.t. the VERTEX) is the groove
+!     count, (m lambda/d)(s0.rho) -- the chord coordinate along the FIXED
+!     ruling direction.  The old form, -(na i - nb r).rho_prj with rho_prj
+!     the hit vector projected into the LOCAL tangent plane, equals
+!     (m lambda/d)(s0.rho_prj) = (m lambda/d)[s0.rho - (s0.N)(rho.N)]: it
+!     drops the sag term, cubic in the footprint (~rho^3/2R^2), zero on a
+!     FLAT grating -- 12 waves on a 45 mm footprint at R = 250 mm, while
+!     the rays themselves converged to 0.05 um (tGratingOpl).  Dave's
+!     rule, 2026-10-01: ACROSS A GRATING THE OPD IS DEFINED MODULO LAMBDA
+!     -- the physical wavefront is the groove staircase; this smooth
+!     phase function equals it mod lambda (it is the order-m Fourier
+!     term), so OPD comparisons across a grating are made in PHASE
+!     (wrapped), never as unwrapped lengths.  RuleDir here is s0 (unit,
+!     in the vertex plane, from DPERPUVEC above).
+          dL = Order*lambda/RuleWidth * dot_product(RuleDir, rho)
+          rho_prj = rho - dot_product(Nhat, rho) * Nhat   ! kept for reference (no longer used)
+!<--
 
         END SUBROUTINE Snells_Law_Grating
 

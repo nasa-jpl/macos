@@ -1113,6 +1113,24 @@ the WFE read at an explicit `ExitPupil` Return surface (should match);
 if MACOS's FP reference removes a term you need referenced to a SPECIFIC
 pupil, that's the case where `add_pupil` would enter the loop.
 
+> **RESOLVED 2026-09-08 (Dave's ruling, measured): the wavefront is read
+> at the PUPIL by default -- that is the OPD a PSF or any diffraction
+> calculation uses.**  The sentence above is WRONG for anything but the
+> optimiser's WFE objective.  MACOS's OPD at an element is the path to
+> each ray's landing point; a displaced perfect image has equal paths,
+> so the focal-plane read is BLIND to tilt: on e2e6m `s3_imager_full` a
+> 1e-6 rad global field tilt reads 4.4e-10 m rms at the FocalPlane vs
+> 1.4e-6 at the exit-pupil sphere, and a 1e-6 rad segment tilt reads as
+> a flat segment PISTON (Seg8 2.3e-6) instead of the +/-1e-6 bipolar
+> ramp.  The optimiser got away with it because minimising the FP OPD
+> minimises the wavefront modulo tilt and distortion; a rigid-body
+> Jacobian cannot.  A flat Reference normal to the chief in COLLIMATED
+> space is also a valid pupil read (s3's `SharedPupil`, elt 23, matches
+> the sphere to corr 0.9975).  Record: `macos/REPORT_ep_dome_review.md`,
+> tool `mmacos/tools/ep_dome_probe/`.  Supervisor default: read at a
+> placed pupil (Return/Reference, unpowered) and REFUSE or auto-place
+> when the deck has none -- never the FocalPlane (`BRIEF_ep_dome_ruling.md`).
+
 **`add_pupil` (exit-pupil reference surfaces, wanted by Dave):** a 2-pass
 op — (1) emit optics→FP, trace at a field, `m.fex()` to find the exit
 pupil; (2) re-emit `Return@image → ExitPupil Return (= elt nElt-1) →
