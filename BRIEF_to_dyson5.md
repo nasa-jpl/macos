@@ -1119,3 +1119,32 @@ of the two mirrors (state the areal density you assume) in the record from
 rung 1 on, so Jim's "reasonably long" has a number beside it.  Same
 stopping rules as before: a solve that stalls is reported as a stall; the
 end-to-end row is the verdict.
+
+## Addendum 31 (2026-10-03): rung 1 read; ONE bounded rung more on the TMS, then off-axis with its honest number
+Rung 1 is accepted (4.3 / 7.6 px, converged; engine = chain to 3.6e-13 m;
+M2 364 x 310 mm, M1 202 x 183 mm, 5.4 kg at 40 kg/m^2; envelope M2 to
+image 563 mm -- correct the "length" line as you said).  Your scaling of the
+review's TMS (f 24 mm, 3-6 um -> 2.3-4.6 px at f 330 mm) is the right frame:
+the review places the TMS at "low to medium resolution"; at 330 mm it is
+working outside its range, and the review's OWN first example for ours is
+**Fig. 6: a 420 mm F/1.8 TMA with a 16 deg linear field** -- a three-mirror,
+"dimensions roughly equal to its focal length" (Jim's "reasonably long
+unobscured telescope").  What failed in beats 5-5c was our three-mirror
+FAMILY (a coaxial parent solved on axis, then moved 9 deg) and its solve
+path, not the form.  CCMac takes the three-mirror by a different route
+(round 4 of its brief: the design layer's Telescope class and the native
+optimizer, solved AT the biased field from the start); you finish the TMS.
+**Option 1, bounded (one rung, `R2`):** open d, M1's h^4 / h^6, and the
+equal-radius constraint with the image held flat (Petzval as a residual
+row, not a constraint), function-evaluation limit raised to converge,
+R1 held as a reference row in the table.  Solve the **3k strip and the
+1.5k strip SEPARATELY** (each module gets its own telescope; the
+comparison is per module), the slit's 7 fields each.  Stop rule: a solve
+that converges is the TMS's number; report it whether it is 1 px or 4.
+**Then the off-axis section** with the converged R2 for each module (field
+bias / pupil decenter to clear M1 from the cone; clearance gate with the
+Dyson's bodies; telecentricity against the 0.09 deg acceptance), and the
+**end-to-end rows** (engine-only join, each module's own Dyson).  Carry
+length, M2 diameter and mirror mass in every row.  That is the TMS entry
+in Jim's comparison, with whatever CRF it earns; the TMA entry comes from
+CCMac's route.
