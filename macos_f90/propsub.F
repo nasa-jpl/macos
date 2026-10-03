@@ -2328,7 +2328,7 @@ C***********************************************************************
 
 	SUBROUTINE FFPROP(WF2,DX2,WF1,DX1,DZ,LAMBDA,NFFT,DWF)
         use Constants, only: PI
-        use dft_mod, only: applyfac2
+        use dft_mod, only: applyfac2, FFEvanCut
 	IMPLICIT NONE
 	INTEGER I,J,NN(2),NFFT
 	REAL*8 DX1,DX2,DZ,S,LAMBDA,C2
@@ -2353,6 +2353,7 @@ C***********************************************************************
 	C1 = 1d0/DCMPLX(0d0,lambda*dz)
 	C2 = PI/lambda/dz
 	CALL applyfac2(wf2,NFFT,NFFT,C1*dx1*dx1,C2,dx2)
+	CALL FFEvanCut(wf2,NFFT,NFFT,dx2,dz)
 
 	!wf2 = CDEXP(DCMPLX(0d0,(2d0*pi/lambda)*dz))*wf2   ! added by jzlou
 

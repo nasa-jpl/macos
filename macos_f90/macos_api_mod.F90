@@ -6088,6 +6088,149 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! calib_set_beam -- turn a beam row group on (or off) for the next CALIB
+      ! (2026-10-03, dyson5 addendum 14 item 4).  Beam rows ride on ANY
+      ! target: a WFE / SPOT target plus the chief-ray direction at an
+      ! element (telecentricity), its position (smile / keystone), or the
+      ! beam size.  Mirrors the Rx keywords OptBeamDir= / OptBeamPos= /
+      ! OptBeamSize= placed in element iElt's block.
+      !   kind   1 = direction (target = unit 3-vector; e.g. the detector
+      !              normal for a telecentric image), 2 = position (target =
+      !              3-vector in base units), 3 = size (target(1) = radius).
+      !   iElt   the element the quantity is read at.
+      !   on     .false. switches that group off (iElt / target ignored).
+      ! A position target that differs per CALIB field is given with
+      ! calib_set_beam_pos_fov; calib_set_beam_wt sets the weight against
+      ! the WFE / SPOT rows and the centroid option.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam(OK, kind, iElt, target, on)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: kind, iElt
+        real(8), intent(in) :: target(3)
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if (on .and. ((iElt < 1) .or. (iElt > nElt))) return
+        select case (kind)
+        case (1)
+          beamOpt%ifOptBeamDir = on
+          if (on) then
+            if (sum(target**2) <= 0d0) return
+            beamOpt%nomBeamDir = target/sqrt(sum(target**2))
+            beamOpt%beamDirElt = iElt
+          end if
+        case (2)
+          beamOpt%ifOptBeamPos = on
+          if (on) then
+            beamOpt%nomBeamPos = target
+            beamOpt%beamPosElt = iElt
+          end if
+        case (3)
+          beamOpt%ifOptBeamSize = on
+          if (on) then
+            beamOpt%nomBeamSize = target(1)
+            beamOpt%beamSizeElt = iElt
+          end if
+        case default
+          return
+        end select
+        OK = PASS
+
+      end subroutine calib_set_beam
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_beam_pos_fov -- per-field beam position targets: pos(3,n)
+      ! gives the target position for CALIB field 1..n in order (the FOV
+      ! list the Rx / calib_add_fov defines; n <= 12).  Fields beyond n
+      ! use the calib_set_beam(kind=2) target.  n = 0 clears the table.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam_pos_fov(OK, pos, n)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n
+        real(8), intent(in) :: pos(3, max(n,1))
+        !f2py integer intent(hide), depend(pos):: n=shape(pos,1)
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if ((n < 0) .or. (n > 12))                  return
+        beamOpt%nBeamPosFov = n
+        if (n > 0) beamOpt%nomBeamPosFov(1:3,1:n) = pos(1:3,1:n)
+        OK = PASS
+
+      end subroutine calib_set_beam_pos_fov
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_beam_wt -- weight of every beam row against the WFE / SPOT
+      ! rows (wt > 0; the row's sigma is divided by sqrt(wt)), and the
+      ! centroid option: with centroid = .true. the beam position is the
+      ! centroid of the rays that pass the train, not the chief ray.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam_wt(OK, wt, centroid)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: wt
+        logical, intent(in) :: centroid
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (wt <= 0d0) return
+        beamOpt%beamWt = wt
+        beamOpt%ifBeamCentroid = centroid
+        OK = PASS
+
+      end subroutine calib_set_beam_wt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! ffcut_set / ffcut_get -- the far-field evanescent cut (dyson5 addendum
+      ! 15, 2026-10-03): with on = .true. every far-field leg (FFPROP /
+      ! FFPropDFT) zeroes the output pixels with x^2 + y^2 > dz^2, i.e.
+      ! |sin theta| > 1 -- spatial frequencies above 1/lambda that carry no
+      ! propagating energy but that a wide output window otherwise hands to an
+      ! energy-fraction metric.  Default OFF.  Session state (not reset by a
+      ! load); dirties the cached propagation.  ffcut_get also returns how
+      ! many pixels the LAST far-field kernel call zeroed.
+      !---------------------------------------------------------------------------------------------
+      subroutine ffcut_set(OK, on)
+        use dft_mod, only: ifFFEvanCut
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        ifFFEvanCut = on
+        if (SystemCheck()) call modified_rx(OK)
+        OK = PASS
+
+      end subroutine ffcut_set
+
+      subroutine ffcut_get(OK, on, nPix)
+        use dft_mod, only: ifFFEvanCut, nFFEvanCutPix
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: on
+        integer, intent(out):: nPix
+        ! ------------------------------------------------------
+        on   = ifFFEvanCut
+        nPix = nFFEvanCutPix
+        OK   = PASS
+
+      end subroutine ffcut_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Get Stop Information
       !---------------------------------------------------------------------------------------------
       subroutine stop_info_get(OK, iElt, VptOffset)

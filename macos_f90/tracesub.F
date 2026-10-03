@@ -3547,6 +3547,14 @@ C	Begin iRay loop to trace each ray and compute its partials
 
 	DO 14 iRay=iStartRay,iEndRay
 	  crnt_traced_ray=iRay; iRay_debug=iRay
+!-->  PrevNonSeg is advanced element by element below and was never reset
+!     between rays: on a trace RESTARTED at iStartElt > 0 every ray after
+!     the first saw the previous ray's LAST element as "previous" (so
+!     ifLNsrf, which keys on it, was false for them) -- the reason a
+!     stepwise trace of TO's R2c deck differed from the one-call trace
+!     (2026-10-03).  A trace from the source re-derives it at element 1.
+	  IF (iStartElt.GT.0) PrevNonSeg=iStartElt
+!<--
 
 	  IF (ifRayPrint) THEN
 	    IF (iRay.EQ.1) THEN
@@ -4396,9 +4404,10 @@ C	Here when element number is determined...
 	                 ChfRayDirAtElt(1:3)=PrevDir(1:3)
 	              End If
 	              If (beamOpt%ifOptBeamPos .and.
-     &                    imin==beamOpt%beamPosElt .and. iRay==1) Then
+     &                    imin==beamOpt%beamPosElt) Then
                           ! Get chief ray position at beamPosElt, added by jzlou
-                         ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                         If (iRay==1) ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                         RayPosAtElt(1:3,iRay)=RayPos(1:3,iRay) ! centroid
                       End If
 	              If (beamOpt%ifOptBeamRefRayDir .and.
      &                    (imin==beamOpt%beamRefRayElt)) Then
@@ -4553,10 +4562,11 @@ C  End of element section
                 ChfRayDirAtElt(1:3)=PrevDir(1:3)
                 !print*,'Ctrace 2*: ChfRayDirAtElt(1:3)=',ChfRayDirAtElt(1:3)
               End If
-	      If ((beamOpt%ifOptBeamPos).AND.(iElt==beamOpt%beamPosElt)
-     &            .AND.(iRay==1)) Then
+	      If ((beamOpt%ifOptBeamPos).AND.(iElt==beamOpt%beamPosElt))
+     &        Then
                 ! Get chief ray position at beamPosElt, added by jzlou
-                ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                If (iRay==1) ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                RayPosAtElt(1:3,iRay)=RayPos(1:3,iRay) ! centroid option
               End If
 	      If ((beamOpt%ifOptBeamRefRayDir) .and.
      &            (iElt==beamOpt%beamRefRayElt)) Then

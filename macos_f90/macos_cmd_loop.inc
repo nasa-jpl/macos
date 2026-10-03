@@ -379,6 +379,8 @@ C         ***next command: Load optical description data***
 !<--
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
+	    beamOpt%nBeamPosFov=0; beamOpt%beamWt=1d0
+	    beamOpt%ifBeamCentroid=.FALSE.
 	    beamOpt%ifOptBeamSize=.FALSE.
 	    beamOpt%ifOptBeamRefRayDir=.FALSE.
 

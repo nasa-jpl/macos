@@ -31,6 +31,27 @@ C***********************************************************************
 !     (the LZPFailed pattern).
          LOGICAL :: LNSFlowL = .FALSE.
 !<--
+!-->  ifLNsrf root pick (a surface ON or right AFTER a Reference / Return,
+!     where the intersection may legitimately lie BEHIND the ray, e.g. the
+!     FEX exit-pupil sphere traced back from the focus): until 2026-10-03
+!     it was the |L^2 - mpr| proximity metric, mpr = |pin - pv|^2, i.e.
+!     "the root whose |L| best matches the ray's distance from the
+!     VERTEX" -- which includes the ray's LATERAL height.  A ray 90 mm off
+!     axis starting 5.3 mm ahead of a convex hyperboloid (TO's R2c
+!     Schwarzschild, EP Reference just ahead of M1) has mpr = 8.3e-3 and
+!     roots -0.107 / +0.011: the metric picked the sheet BEHIND the ray
+!     (93 mm rms spot, every ray).  LNsrfRoot picks the root whose HIT
+!     POINT is nearest the element's REFERENCE point prot (RptElt -- the
+!     vertex for an ordinary element, the POLE for an off-axis section):
+!     +0.011 here (the vertex is 5 mm ahead); the FEX sphere about the
+!     focus has roots +-R with its vertex behind -> -R, a strict choice
+!     where the old metric relied on an exact tie; a 90-deg OAP (tBench)
+!     takes the side of the paraboloid its pole is on.  A first cut used
+!     the axial distance to the VERTEX plane, which is degenerate when the
+!     ray runs parallel to that plane -- the OAP case -- and sent tBench's
+!     chief 600 mm off the pole.  Forward trains never reach this branch
+!     (ifLNsrf is false there).
+!<--
 !-->  ZernType to gate ZerntoMon1's RMS normalisation on.  ZerntoMon1 is
 !     shared by the element-Zern, FF and Mon coefficient paths, so it cannot
 !     infer the governing type from the element id alone.  Each dispatch path
@@ -41,6 +62,23 @@ C***********************************************************************
 !<--
 
       CONTAINS
+
+!-->  See the LNsrfRoot note at the top of the module.  The root whose HIT
+!     POINT pin + L*ihat is nearest the element's reference point prot
+!     (RptElt): d^2(L) = L^2 - 2 L q + const, q = ihat.(prot - pin).
+         REAL*8 FUNCTION LNsrfRoot(kp,km,ihat,pin,prot)
+            IMPLICIT NONE
+            REAL*8, INTENT(IN) :: kp,km,ihat(3),pin(3),prot(3)
+            REAL*8 :: q
+            q=ihat(1)*(prot(1)-pin(1))+ihat(2)*(prot(2)-pin(2))
+     &       +ihat(3)*(prot(3)-pin(3))
+            IF (kp*(kp-2d0*q).LE.km*(km-2d0*q)) THEN
+               LNsrfRoot=kp
+            ELSE
+               LNsrfRoot=km
+            END IF
+         END FUNCTION LNsrfRoot
+!<--
 
 C***********************************************************************
 
@@ -177,11 +215,7 @@ C***********************************************************************
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      IF (kp.GT.0D0) THEN
@@ -953,11 +987,7 @@ C	Compute intersection point and normal vector
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      IF (kp.GT.0D0) THEN
@@ -1235,11 +1265,7 @@ C       Compute intersection point and normal vector
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      IF (kp.GT.0D0) THEN
@@ -2164,11 +2190,7 @@ C	Compute incidence point of ray on the base conic surface
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      IF (kp.GT.0D0) THEN
@@ -3064,11 +3086,7 @@ C	Compute incidence point of ray on the surface
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
                   IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
                      IF (kp.GT.0D0) THEN

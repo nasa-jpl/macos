@@ -1570,18 +1570,35 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-	    ELSE IF (LCMP(VAR_NAM,'OptBeamDir',10) .AND.
-     &               (OptTarget==BEAM_TARGET)) THEN
+!-->  Beam rows ride on ANY target since 2026-10-03 (WFE / SPOT / ZWF +
+!     beam): the BEAM_TARGET condition is gone.
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamDir',10)) THEN
 	      If (.not. beamOpt%ifOptBeamDir) Then
 		READ(VALUE,*) (beamOpt%nomBeamDir(j),j=1,3)
+	        CALL DUNITIZE(beamOpt%nomBeamDir) ! the rows compare to a unit vector
 	        beamOpt%beamDirElt=iElt
 	        beamOpt%ifOptBeamDir=.TRUE.
 	      End If
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-	    ELSE IF (LCMP(VAR_NAM,'OptBeamPos',10) .AND.
-     &               (OptTarget==BEAM_TARGET)) THEN
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamPosFov',13)) THEN
+              If (beamOpt%nBeamPosFov < 12) Then
+                beamOpt%nBeamPosFov=beamOpt%nBeamPosFov+1
+                READ(VALUE,*) (beamOpt%nomBeamPosFov(j,
+     &                           beamOpt%nBeamPosFov),j=1,3)
+              Else
+                WRITE(*,*)' OptBeamPosFov: more than 12 rows ignored'
+              End If
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamWt',9)) THEN
+              READ(VALUE,*) beamOpt%beamWt
+              If (beamOpt%beamWt<=0d0) beamOpt%beamWt=1d0
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamCentroid',15)) THEN
+              beamOpt%ifBeamCentroid=(VALUE(1:1)=='Y'.OR.VALUE(1:1)=='y')
+              GO TO 61
+	    ELSE IF (LCMP(VAR_NAM,'OptBeamPos',10)) THEN
               If (.not. beamOpt%ifOptBeamPos) Then
                 READ(VALUE,*) (beamOpt%nomBeamPos(j),j=1,3)
                 beamOpt%beamPosElt=iElt
