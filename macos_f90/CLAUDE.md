@@ -841,6 +841,104 @@ order-m Fourier term).  Compare OPDs across a grating in PHASE (wrapped, or
 the complex field), never as unwrapped lengths; the ray-side scorer never
 uses path lengths and is unaffected.
 
+## ifLNsrf root pick is AXIAL, not radial; restarted traces reset PrevNonSeg (2026-10-03)
+TO's R2c Schwarzschild (`tests/Rx/Rx_SchwarzschildEP.in`): the EP
+Reference (elt 1, the stop) sits 5.3 mm ahead of a CONVEX hyperboloid.
+`macos.trace(5)` in ONE call gave a 93 mm rms spot; `trace(1)..trace(5)`
+gave 10.6 um and matched the exact chain per ray.  Two defects:
+1. **Root pick.**  The five base-conic routines (ConSrf / AsphSrf /
+   AsphGridSrf / FreeFormSrf / UDSrf) choose between the quadratic's two
+   roots; on a surface ON or right AFTER a Reference / Return (`ifLNsrf`,
+   negative L allowed -- the FEX exit-pupil sphere traced BACK from the
+   focus needs it) they used `|L^2 - mpr|` proximity with `mpr = |pin-pv|^2`,
+   the ray's distance to the VERTEX including its LATERAL height.  A ray
+   90 mm off axis has mpr ~ h^2 = 8.3e-3 and roots -0.107 / +0.011: the
+   sheet BEHIND the ray "wins".  Now `LNsrfRoot` (module function) picks
+   the root whose HIT POINT is nearest the element's REFERENCE point
+   `prot` = `RptElt` (`d^2 = L^2 - 2Lq`, `q = ihat.(prot-pin)`): the vertex
+   for an ordinary element, the POLE for an off-axis section.  M1 here ->
+   +0.011; the FEX sphere about the focus (roots +-R, vertex behind) ->
+   -R, a strict choice where the old metric relied on an exact TIE
+   (mpr = R^2); a 90-deg OAP takes the side its pole is on.  **A first cut
+   used the axial distance to the VERTEX plane, `s = ihat.(pv-pin)`: right
+   on both of those, and WRONG on tBench's 90-deg OAPs (the ray runs
+   parallel to the parent's vertex plane, the metric is degenerate, the
+   chief went 600 mm off the pole).**  Any future rule here must be checked
+   on all three: a pupil Reference just ahead of a convex conic, the FEX
+   sphere, an OAP after a Reference.  Measured A/B (pre-fix HEAD worktree
+   vs post-fix, gfortran): FEX radius and OPD bit-identical on e5hex1 /
+   Rx_Cass_FarField / jwst zoom (stop 25) / SegDemo3conic.  Forward trains
+   never reach this branch (ifLNsrf false -> the positive-root branch,
+   untouched).  `LNSFlowL` (NS probes) is a third branch, also untouched.
+2. **Stale `PrevNonSeg`.**  CTRACE advances `PrevNonSeg` element by
+   element and never reset it between rays; a trace RESTARTED at
+   `iStartElt > 0` (what `OPD` does when a trace exists and
+   `iCurRayElt <= iEndElt` -- the API's `trace(ie)` loop) left every ray
+   after the first seeing the previous ray's LAST element as "previous",
+   so `ifLNsrf` was FALSE for them and the positive root was forced: the
+   stepwise answer was right BY ACCIDENT.  Reset per ray at the ray-loop
+   head.  `trace(nElt)` and the stepwise loop are now bit-identical.
+Gate: `tTraceRestart` (mmacos, SUITE_FAST; pre-fix 9.33e-2 m, CLI RMS OPD
+8.87e-2 m).  Diagnosis pattern worth keeping: a pty-driven CLI
+(`onecall_cli.py` pattern) bisected `opd 1; opd 5` (right) vs `opd 2; opd 5`
+(wrong) in minutes, then one `WRITE` in AsphSrf per ray showed the two
+paths picking the SAME root at M1 with DIFFERENT `ifLNsrf` -- the
+ray-by-ray diff found the divergence at ray 2, not ray 1 (the chief is
+on axis, h = 0, and never sees the metric's flaw).
+
+## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
+`design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
+element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were
+sized and scored ONLY under `OptTarget= BEAM`; the BEAM-only value /
+derivative / linear paths reset their row offset to 1 for every field (a
+multi-field beam solve scored the LAST field alone); the ZMODE derivative
+stepped by `opd_size` and used `obj_size-1` modes; and the beam rows were
+written one row LATE (`off+1`) after a WFE / SPOT block.  Now ONE helper
+`beam_rows_` writes the rows for every target in the sizing order
+(dir 3, pos 3, size 1, refray 3 x nRefRay), each (wavelength, field)
+block is `obj_size + mBeamOff` rows, `sig` divides the beam rows by
+`sqrt(OptBeamWt)`.  New (OptBeamStr fields + `msmacosio.inc` keywords,
+reset per load in `macos_cmd_loop.inc`): `OptBeamPosFov=` (one 3-vector
+row per CALIB field, in order, <= 12 -- a dyson5 smile / keystone solve
+needs one per field), `OptBeamWt=`, `OptBeamCentroid= Y` (the position is
+the CENTROID of the rays that pass the train at `beamPosElt`, read from
+the new `RayPosAtElt(3,mRay)` that CTRACE fills at that element, instead
+of the chief ray; under a BEAM target the whole beam is traced with
+`GBS` to that element).  `OptBeamDir=` is unitised at parse.  API:
+`calib_set_beam(kind 1/2/3, iElt, target, on)`, `calib_set_beam_pos_fov`,
+`calib_set_beam_wt(wt, centroid)`; mmacos `macos.calib_set_beam` /
+`calib_set_beam_pos_fov` / `calib_set_beam_wt` + Session methods.
+Legacy trap kept: the `OptBeamPos=` keyword resets `OptTgtElt` to its
+element.  Units trap: WFE rows are in the target's units, SPOT and beam
+rows in base units -- weight accordingly.  Gate: `tBeamRows` (mmacos,
+SUITE_FAST, `Rx_BeamRows.in`): direction rows on a SPOT target (pre-fix:
+zero rows, the mirror never tilts), per-field position targets both met
+by one FP piston, centroid vs chief on a comatic field.
+
+## Far-field evanescent cut, opt-in (2026-10-03, dyson5 addendum 15)
+A far-field leg (`FFPROP` / `FFPropDFT`) maps spatial frequency f to the
+output coordinate `x = lambda*dz*f`, i.e. `sin(theta) = x/dz`.  The
+output window is `lambda*dz/dx1` wide, so a pupil sampled finer than
+`lambda/2` (a 20 um pinhole at 1 um on a 64-point grid; any heavily
+zero-padded fine pupil) carries pixels with `|x| > dz` -- `|f| > 1/lambda`,
+EVANESCENT, no propagating energy -- which an energy-fraction metric over
+the window then counts as light (0.64 % on `Rx_FarFieldPinhole.in`).
+`dft_mod%ifFFEvanCut` (default OFF -- the record's propagating
+normalisation stays the convention) makes both kernels zero every output
+pixel with `x^2 + y^2 > dz^2` right after `applyfac2` (`FFEvanCut`, same
+index convention: pixel `n/2+1` is x = 0) and print ONE line per call
+with the count (`nFFEvanCutPix`).  API `ffcut_set(on)` / `ffcut_get(on,
+nPix)` -- session state, not reset by a load, dirties the cached
+propagation; mmacos `macos.ffcut`, pymacos `pymacos.ffcut`.  Gates
+`tFFCut` (mmacos, SUITE_FAST) + `test_ffcut.py` (pymacos): the pinhole
+(pixels zeroed, the inside bit-identical, the total lower) AND
+`Rx_Cass_FarField` as the must-not-change twin (dx1 >> lambda: zero
+pixels, bit-identical) -- a cut that zeroed everything passes the
+pinhole leg alone.  Fixture trap met on the way: a Return sphere must FACE
+the incoming light (`psi` against the arrival direction) with its centre
+along `+psi`, exactly the Cass deck's EP idiom; the other way round every
+ray is lost and the field is silently all zero.
+
 ## Short multi-value lines: `AsphCoef=` / `AnaCoef=` pad with zero (2026-10-01)
 A `AsphCoef=` line with fewer values than `nAsphCoef` (default 4) was an
 UNCAUGHT end-of-file in the list-directed internal READ -- a Fortran runtime
@@ -880,6 +978,19 @@ mmacos wrapper raises as an ordinary, catchable MATLAB error (`mmacos:
 calib_run failed`) after the engine has printed the reason -- so
 `macos.calib`'s `converged=false` branch is unreachable from MATLAB; catch
 the error.
+**Follow-on (2026-10-03): the failure path leaked `lmlsq`'s SAVEd arrays.**
+`nls.F`'s `mrqmin_private` allocates `atry/beta/da` on the `alamda<0`
+initialisation call and frees them only on the `alamda=0` final call; a
+CALIB that ends on the failure path (or `gaussj` failing, `return` before
+the free) never makes that call, so the NEXT CALIB in the same process
+died at the `allocate` with "Attempting to allocate already allocated
+variable 'atry'" -- a Fortran runtime abort, host killed.  Invisible
+before 10-01 because the failure `stop`ped the process anyway; caught by
+the fast suite ONLY in order (`tBeamRows` right after `tAsphCalib`'s
+failure test; both classes green standalone -- an order-dependent crash
+is the signature of leaked SAVE state).  Now the initialisation frees any
+leftover first.  Gate: the suite order itself; `scratchpad/two_class.m`
+pattern (tAsphCalib -> tBeamRows in one process).
 Gates: `tAsphCalib` (mmacos, SUITE_FAST) on `Rx_AsphCalib.in` -- a metre
 paraboloid with a spoiled h^4 term that CALIB must drive back to zero, and
 the no-aperture/zero-term variant that must FAIL with the flag, the optics

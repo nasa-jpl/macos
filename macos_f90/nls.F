@@ -73,6 +73,15 @@ C
 	 mfit = count(maska)
 
 	 if (alamda < 0d0) then  ! initialization
+!-->  A CALIB that ended on the failure path (rtn_flg=1, design_optim's
+!     label 105, 2026-10-01) never made the alamda=0 final call that frees
+!     these SAVEd arrays, so the NEXT CALIB in the process died here with
+!     "Attempting to allocate already allocated variable 'atry'" -- a
+!     Fortran runtime abort that kills a mex host (tBeamRows after
+!     tAsphCalib's failure test in the fast suite, 2026-10-03).  Free any
+!     leftovers first.
+	   if (allocated(atry)) deallocate(atry, beta, da)
+!<--
 	   allocate(atry(ma),beta(ma),da(ma,1));
 	   alamda = 0.001d0
 

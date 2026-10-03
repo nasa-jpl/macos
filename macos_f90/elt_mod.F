@@ -425,6 +425,7 @@ C***********************************************************************
 
         Real*8, dimension(:,:), allocatable ::
      &        RayPos, RayDir, ApVec, xObs,
+     &        RayPosAtElt, ! every ray's position at beamOpt%beamPosElt (centroid)
      &        h1HOE,h2HOE, CoatIndxElt,CoatThkElt,
      &        yObs, zObs,DWORK,
      &        GlassCoef, GlassTable,MTFMat,MTFMat2,
@@ -492,6 +493,15 @@ C***********************************************************************
           Real*8 ::  nomBeamDir(3),nomBeamPos(3),nomBeamSize,
      &               nomBeamRefRayDir(3)
           Integer :: beamDirElt,beamPosElt,beamSizeElt,beamRefRayElt
+!-->  2026-10-03 (dyson5 addendum 14 item 4): per-FIELD position targets
+!     (OptBeamPosFov= rows, one per CALIB field in order; 12 = max_fov),
+!     the centroid option (OptBeamCentroid= Y: the beam position is the
+!     centroid of the rays at beamPosElt, not the chief ray), and a weight
+!     on every beam row against the WFE / SPOT rows (OptBeamWt=).
+          Integer :: nBeamPosFov
+          Real*8  :: nomBeamPosFov(3,12), beamWt
+          Logical :: ifBeamCentroid
+!<--
         End Type OptBeamStr
 
         Type PrvGlass
@@ -699,7 +709,7 @@ C***********************************************************************
      &               ('elt_mod_init(SREAL): deallocate failed!')
 
           deallocate(TElt,ObsVec,XYZSRF,DZSRF,GridMat,AmplMat,
-     &               vptElt,RptElt,psiElt,RayPos,TEltRx,
+     &               vptElt,RptElt,psiElt,RayPos,RayPosAtElt,TEltRx,
      &               vptRx, RptRx, psiRx, ObsVecRx,LxObsDef,
      &               RayDir, ApVec, xObs, ApHexBound,ZernCoefRx,
      &               AsphCoef,MonCoef, ZernCoef,EdgeSensVec,
@@ -843,6 +853,7 @@ C***********************************************************************
      &          'elt_mod_init(real*8-0.5): allocate failed!')
 
         allocate(RptElt(3,mElt), psiElt(3,mElt), RayPos(3,mRay),
+     &           RayPosAtElt(3,mRay),
      &           RayDir(3,mRay), ApVec(6,mElt), xObs(3,mElt),
      &           AsphCoef(mAsphCoef,mElt),MonCoef(mMonCoef,mElt),
      &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),
@@ -1102,6 +1113,7 @@ C***********************************************************************
           RptElt(:,:)          =  0e0_pr
           psiElt(:,:)          =  0e0_pr
           RayPos(:,:)          =  0e0_pr
+          RayPosAtElt(:,:)     =  0e0_pr
           RayDir(:,:)          =  0e0_pr
           ApVec(:,:)           =  0e0_pr
           xObs(:,:)            =  0e0_pr

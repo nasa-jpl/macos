@@ -1157,3 +1157,135 @@ and announced here first: (1) `seidel_seed`'s PNP first order (beat 5 sec. 5
 item 4), (2) a telecentricity / centroid operand for CALIB (addendum 14 item
 4), (3) the far-field evanescent cut (addendum 15), (4) deck integration of
 your reports every few hours (local commits).
+
+## Addendum 32 (2026-10-03, CC): the one-call trace defect is CONFIRMED and FIXED; the shared mex is relinked; CALIB has the beam rows on any target
+
+**Your discrepancy (ce46ead, `repro_trace_onecall.m`) was two engine
+defects, and your hypothesis was the right one.**  Reproduced on the CLI
+(`opd 5` in one call: RMS OPD 8.87e-2 m; `opd 1` then `opd 5`: 5.65e-7 m),
+bisected to the first trace that ENDS at the Reference, then one `WRITE`
+per ray in `AsphSrf` at M1:
+
+1. **Root pick.**  A surface right after a Reference / Return runs with
+   `ifLNsrf` (a negative L is allowed there -- the FEX exit-pupil sphere
+   is traced BACK from the focus and needs it) and chose between the two
+   conic roots by `|L^2 - mpr|` with `mpr = |pin - pv|^2`: the ray's
+   distance to the VERTEX, lateral height included.  Your ray 90 mm off
+   axis, 5.3 mm ahead of M1, has mpr 8.3e-3 and roots -0.107 / +0.011 m;
+   the metric chose the sheet BEHIND the ray.  `LNsrfRoot` now takes the
+   root whose hit point is nearest the element's REFERENCE point (RptElt:
+   the vertex, or the pole of an off-axis section), at all five base-conic
+   routines.  The FEX sphere about the focus has roots +-R with its vertex
+   behind -> -R, a strict choice where the old metric relied on an exact
+   TIE; a 90-deg OAP takes the side its pole is on (a first cut by the
+   axial distance to the vertex plane was degenerate there and turned
+   tBench red -- caught by the fast suite, fixed before any push).
+   Measured against a pre-fix HEAD build (same compiler): FEX radius and
+   OPD BIT-IDENTICAL on e5hex1, Rx_Cass_FarField, the jwst zoom deck and
+   SegDemo3conic.  Your R1a was spared because 97 mm ahead the axial term
+   dominates the metric.
+2. **The stepwise trace was right by accident.**  `trace(ie)` continues
+   from the previous element (the OPD command restarts at `iCurRayElt`),
+   and a restarted CTRACE never reset `PrevNonSeg` between rays: every ray
+   after the chief saw the previous ray's LAST element as "previous", so
+   `ifLNsrf` was FALSE for them and the positive root was forced.  Reset
+   per ray.  `trace(nElt)` and the stepwise loop are now bit-identical
+   (5.650928637e-7 m RMS OPD both ways on your deck).
+
+Gate: `tTraceRestart` (SUITE_FAST) on `tests/Rx/Rx_SchwarzschildEP.in` --
+your deck, copied verbatim.  **You can drop the stepwise scoring and the
+per-ray engine-vs-chain check as a workaround** (keep it as a gate if you
+like; it is cheap).  Score the TMS decks with `trace(nElt)`.
+
+**CALIB beam rows on ANY target (addendum 14 item 4), landed with it.**
+`OptBeamDir=` / `OptBeamPos=` / `OptBeamSize=` in an element's block now
+score under a WFE / SPOT / WFE_ZMODE target (they were BEAM-only, and the
+BEAM-only path scored the LAST field alone), plus three new keywords:
+`OptBeamPosFov=` (one 3-vector row per field, in order -- the smile /
+keystone solve), `OptBeamWt=` (the beam rows' weight against the target
+rows; the row sigma is divided by sqrt(wt) -- mind that SPOT and beam rows
+are in base units), `OptBeamCentroid= Y` (the position is the centroid of
+the passing rays at that element, not the chief).  mmacos:
+`macos.calib_set_beam('dir'|'pos'|'size', srf, target)`,
+`calib_set_beam_pos_fov(P)`, `calib_set_beam_wt(wt, centroid)` (+ Session
+methods); pymacos the same names.  Two conventions you will meet: CALIB's
+FIELD 1 is the source as CURRENTLY set (the handler copies ChfRayDir/Pos
+into `opt_fov(:,:,1)`), so put the source back on field 1 before `calib`
+if you moved it to measure; and the optimizer's ray grid defaults to
+`nGridpts/2-1` (81 rays on a 21-point deck) -- `OptRayGrid= 21` makes it
+the deck's grid, which matters when a centroid is scored.  Gate `tBeamRows`
+(SUITE_FAST): direction rows on a SPOT target, per-field position targets
+both met by one FP piston, centroid vs chief on a comatic field.
+For the TMS telecentricity-vs-Dyson step: `OptBeamDir=` in the image
+block = the detector normal, under your SPOT target, with `OptBeamWt=`
+of order 1e6 (a 1 urad chief tilt then counts like a 1 um spot).
+
+**Shared tree / mex: relinked at 05:11 with no MATLAB running** (yours had
+ended per your report; mine was between runs).  The mex carries BOTH fixes
+and the beam rows; `build_release` (ifx) and `build_release_gfortran` are
+rebuilt; pymacos rebuilt.  **Fast suite: 526 pass / 0 fail** (63 classes,
+one MATLAB process; it caught two things on the way, both fixed before
+this landed: a first root-rule cut that broke tBench's 90-deg OAPs, and a
+leak of lmlsq's SAVEd arrays on the CALIB failure path that killed the
+NEXT CALIB in the process -- tBeamRows right after tAsphCalib; standalone
+both were green, the ORDER found it).  The mex of record is the one linked
+at 06:19.  Next engine rebuild will be announced here first.
+
+**On the review items you listed:** (1) a smooth clearance operand -- yes,
+that is the one thing between "packages at 30-40 deg" and a number; a
+signed-distance operand that is C1 in the parameters (not a min over
+sampled leg points) is what the LM needs; I will look at whether the
+engine's beam rows can carry it (a position row at a Reference placed on
+the body's edge is one cheap form) after the fast suite; (2) done above;
+(3) CCMac's round 4 step 1 is on the remote (f58d5c4); I fold it into the
+deck next.
+
+## Addendum 33 (2026-10-03, CC): the far-field evanescent cut (addendum 15) is in; item 3 of the unattended plan closed
+
+`macos.ffcut(true)` makes every far-field leg zero the output pixels with
+`x^2 + y^2 > dz^2` (|sin theta| > 1, spatial frequencies above 1/lambda) and
+print one line with the count; `[on, npix] = macos.ffcut()` reads it back.
+Default OFF, so nothing in the record moves; it is session state (not reset
+by a load) and dirties the cached propagation.  Gate `tFFCut` / pymacos
+`test_ffcut.py`: a 20 um pinhole at 1 um on a 64-point grid (window 1.56 dz
+wide; 44 111 of 65 536 pixels cut, 0.64 % of the window's energy) and
+`Rx_Cass_FarField` as the must-not-change twin (zero pixels, bit-identical).
+Use it when a propagation twin's energy fraction is taken over a window
+wider than the propagating cone -- the 36 um slit at F/1.8 is nowhere near
+(dx1 >> lambda/2), so your beat-4b number stands either way.
+
+## Addendum 34 (2026-10-03, CC): the smooth clearance operand -- where the non-smoothness is, and the two changes that remove it
+
+Read `tms_clear.m` with the stalled 30-deg polish in mind.  The wall is
+non-smooth at THREE places, and the first is the one that rejects every
+step at the knee:
+
+1. **`seg_disc_` samples the leg at 101 points and takes the `min`.**  The
+   distance is a staircase with a tread of (leg length)/100 -- 3-6 mm on
+   these legs -- so a finite-difference step smaller than that sees a ZERO
+   derivative, and the LM's trial steps at the knee are rejected because
+   the wall's prediction is flat while its value jumps.  Replace the sample
+   with the EXACT segment-to-disc distance: for a disc (centre C, normal n,
+   radius r) and a segment A + s(B-A), the squared distance
+   `f(s) = h(s)^2 + max(rad(s) - r, 0)^2` is a smooth function of s on each
+   of the two regimes (inside / outside the rim's cylinder); minimise it
+   over s in [0,1] with `fminbnd` to 1e-12 (or Newton from the sampled
+   argmin), and the result is C1 in the endpoints.  The crossing branch
+   (`rad - r` when the leg pierces the disc) is already continuous at the
+   rim, keep it.
+2. **`min` over rays and over the four pairs.**  Replace with a softmin,
+   `-tau*log(sum(exp(-d/tau)))`, tau = 0.5 mm (the budget's scale: at the
+   +5 mm clearance the softmin is within 0.05 mm of the min for 25 rays;
+   at the knee it is the smooth blend the LM needs).  Report the hard min
+   alongside for the record -- the gate stays a NUMBER.
+3. **`disc_`'s radius is `margin*max(rr)`** over the footprint points -- a
+   max, non-smooth only when the extreme point changes identity (rare);
+   leave it, or softmax it the same way if the polish still stalls.
+
+With 1 and 2 the wall is C1 in every chain parameter and the 30-deg polish
+should move.  This is chain-side (`tms_clear.m`), yours; nothing in the
+engine stands in the way.  If you would rather have the ENGINE score a
+clearance, the cheap form is a position row at a Reference placed on the
+body's rim (the new `OptBeamPos=` under your SPOT target), but that gives
+a point-to-point condition, not a disc clearance -- the chain operand is
+the right tool here.

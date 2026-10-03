@@ -156,9 +156,12 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
         optElt_m=optElt; ifFEX_m=ifFEX
 
+!-->  Beam rows (chief direction / position, beam size, reference rays)
+!     ride on ANY target since 2026-10-03: blur + telecentricity, or a
+!     spot target + per-field centroid positions (dyson5 smile/keystone).
 	mBeamOff=0
 	OptBeam_m=OptBeam
-	If (opt_tgt_m==BEAM_TARGET) Then
+	If (.TRUE.) Then
 	  if (OptBeam%ifOptBeamDir)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamPos)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamSize) mBeamOff=mBeamOff+1
@@ -363,86 +366,46 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	If ((opt_tgt_m/=SPOT_TARGET) .and. (.not. tgt_wf_flag)) Then
 	  objfun_nom=0d0  ! target WF default to 0
 
-	  ! OptBeam currently works only for single FOV and wavelength
-	  off=1
-	  if (OptBeam_m%ifOptBeamDir) then
-	    ! initialize target beam direction for beamDirElt
-	    objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamDir
-	    off=off+3
-	  end if
-	  if (OptBeam_m%ifOptBeamPos) then
-            ! initialize target beam position for beamPosElt
-            objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamPos
-	    off=off+3
-          end if
-	  if (OptBeam_m%ifOptBeamSize) then
-	    ! initialize target beam size for beamSize
-	    objfun_nom(obj_size+off)=OptBeam_m%nomBeamSize
-	    off=off+1
-	  end if
-	  if (OptBeam_m%ifOptBeamRefRayDir) then
-	    Do j=1,nRefRay
-	      objfun_nom(obj_size+off:obj_size+off+2)=
-     &	        OptBeam_m%nomBeamRefRayDir(1:3)
-	        off=off+3
-	    End Do
-	  end if
-	Else If (opt_tgt_m==WFE_TARGET) Then
-	  if (NomSensOnly .OR. (tot_itrs.lt.0)) then
-	    ! NomSensOnly and restore don't need objfun_nom
-	   goto 115
-	  end if
-	  if (nwls>1) then
-	    ! tgt_wf currently not supported for multiple wavelengths
-	    WRITE(*,*) ' User-specified target WF not supported'//
-     &                 ' yet for multiple wavelengths'
-	    return
-	  end if
-	  ! Use user provided target WF
-	  If (LCMP(tgt_wf_format,'B',1)) Then
-	    ! binary format
-	    Open(Unit=tgt_wf_funit,
-     &	         File=tgt_wf_filename,form='unformatted',
-     &           status='OLD',iostat=ios)
-	    if (ios /= 0) then
-	      WRITE(*,*)' Open binary WF file failed, filename = ',
-     &                  tgt_wf_filename
-	      rtn_flg=1
-              go to 100
-	    end if
-	    Do ifov=1,nfov
-	      Do j=1,nGridPts
- 	        READ(tgt_wf_funit)
-     &            (objfun_nom((ifov-1)*opd_size+(j-1)*nGridPts+i),
-     &             i=1,nGridPts)
-	      End Do
-	    End Do
-	  Else
-	    ! ascii format
-	    !WRITE(*,*)' **Open txt target WF file: ',tgt_wf_filename
-	    Open(Unit=tgt_wf_funit,
-     & 	 	 File=tgt_wf_filename,form='formatted',
-     &           status='OLD',iostat=ios)
-	    if (ios /= 0) then
-              WRITE(*,*)' Open target WF file failed, filename = ',
-     &                  tgt_wf_filename
-              rtn_flg=1
-              go to 100
-            end if
-	    Do ifov=1,nfov
-	      Do j=1,nGridPts
- 	        READ(tgt_wf_funit,*)
-     &		  (objfun_nom((ifov-1)*opd_size+(j-1)*nGridPts+i),
-     &             i=1,nGridPts)
-	      End Do
-	    End Do
-	    !print*,' **1: nfov,nGridPts =',nfov,nGridPts
-	  End If
+	  ! beam-row targets are filled per (field, wavelength) block below
 	  close(tgt_wf_funit)
  115      continue
 	Else If (opt_tgt_m==SPOT_TARGET) Then
 	  objfun_nom=OptSpotSize
 	End If  ! target WF
+!-->  Beam-row targets, one block per (wavelength, field): the chief
+!     direction / position (per-field position when OptBeamPosFov rows
+!     were given), beam size, reference-ray directions.  The 2026-06 code
+!     filled the FIRST block only, so every other field was driven to a
+!     zero vector (its comment said "single FOV only").
+	If (mBeamOff>0) Then
+	  off=0
+	  Do iwl=1,nwls
+	    Do ifov=1,nfov
+	      j=off+obj_size
+	      if (OptBeam_m%ifOptBeamDir) then
+	        objfun_nom(j+1:j+3)=OptBeam_m%nomBeamDir; j=j+3
+	      end if
+	      if (OptBeam_m%ifOptBeamPos) then
+	        if (OptBeam_m%nBeamPosFov>=ifov) then
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamPosFov(1:3,ifov)
+	        else
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamPos
+	        end if
+	        j=j+3
+	      end if
+	      if (OptBeam_m%ifOptBeamSize) then
+	        objfun_nom(j+1)=OptBeam_m%nomBeamSize; j=j+1
+	      end if
+	      if (OptBeam_m%ifOptBeamRefRayDir) then
+	        Do k=1,nRefRay
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamRefRayDir; j=j+3
+	        End Do
+	      end if
+	      off=off+obj_size+mBeamOff
+	    End Do
+	  End Do
+	End If
+!<--
 
 	! Define weighting for fov: sig=1/sqrt(fov_weight)
 	j=1  ! sig=1d0
@@ -453,6 +416,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    else
 	      sig(j:j+(obj_size+mBeamOff)-1)=1d0/sqrt(abs(fov_wt(ifov)))
 	    end if
+	    if (mBeamOff>0) sig(j+obj_size:j+obj_size+mBeamOff-1)=
+     &      sig(j+obj_size:j+obj_size+mBeamOff-1)/sqrt(OptBeam_m%beamWt)
 	    j=j+obj_size+mBeamOff
 	  End Do
 	End Do
@@ -708,7 +673,8 @@ C
 
         Real*8, dimension(size(a)) :: a2
 	Real*8 :: wfe_rms
-        Integer :: size_a, ifov,iwl,off,off2,i,j
+        Real*8, dimension(max(1,mBeamOff)) :: bv
+        Integer :: size_a, ifov,iwl,off,i
 	Logical :: LUseChfRayIfOK_sv
 
 ! y = objfun_nom, yfit = OPD(a)
@@ -737,87 +703,27 @@ C
 
 	    !print*,' ** funcs_app: wfe_rms =',wfe_rms
 
-	    If (opt_tgt_m==WFE_TARGET .OR. opt_tgt_m==SPOT_TARGET) Then
-	      if (opt_tgt_m==WFE_TARGET) then
-                yfit(off:off+obj_size-1)=OPDm(1:obj_size)
-	      else if (opt_tgt_m==SPOT_TARGET) then
-                yfit(off:off+obj_size-1)=SpotSizem
-	      end if
-	      if (opt_tgt_m /= BEAM_TARGET) then
-	        off=off+obj_size
-	      else
-	        ! beamDir_m, beamPos_m and beamSize are computed in
-		! smacos_compute_perturbed()
-	        off=off+obj_size; off2=1
-	        if (OptBeam_m%ifOptBeamDir) then
- 	          yfit(off+off2:off+off2+2)=beamDir_m(1:3)
-	          off2=off2+3
-	        end if
-	        if (OptBeam_m%ifOptBeamPos) then
-                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
-	          off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          yfit(off+off2)=beamSize_m
-	          off2=off2+1
-		end if
-	        if (OptBeam_m%ifOptBeamRefRayDir) then
-	          Do j=1,nRefRay
-	            yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j)
-	            off2=off2+3
-		  End Do
-	        end if
-	        off=off+mBeamOff
-	      end if
-	    Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
-	      yfit(off:off+n_wf_zern_m-1)=ZCoefm(1:n_wf_zern_m)
-	      if (.not. OptBeam_m%ifOptBeamDir) then
-	        off=off+obj_size
-	      else
-	        off=off+obj_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  yfit(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
-                  off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          yfit(off+off2)=beamSize_m
-                  off2=off2+1
-	        end if
-	        if (OptBeam_m%ifOptBeamRefRayDir) then
-                  Do j=1,nRefRay
-		    yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j)
-                    off2=off2+3
-		  End Do
-	        end if
-	        off=off+mBeamOff
-	      end if
-	    Else If (opt_tgt_m==BEAM_TARGET) Then
-	      off=1
-	      if (OptBeam_m%ifOptBeamDir) then
-	        yfit(off:off+2)=beamDir_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamPos) then
-                yfit(off:off+2)=beamPos_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamSize) then
-	        yfit(off)=beamSize_m
-	        off=off+1
-	      end if
-	      if (OptBeam_m%ifOptBeamRefRayDir) then
-	        Do j=1,nRefRay
-		  yfit(off:off+2)=beamRefRayDir_m(1:3,j)
-	          off=off+3
-	        End Do
-	      end if
-	    End If
+!-->  One block per (wavelength, field): the target's own rows, then the
+!     beam rows (on ANY target since 2026-10-03), written by beam_rows_ so
+!     the value, derivative and linear paths cannot drift apart again.
+!     The 2026-06 code wrote the beam rows one row late (off+1), stepped
+!     the Zernike-mode derivative by opd_size, used obj_size-1 modes there,
+!     and reset the beam-only rows to off=1 for every field (so only the
+!     last field was scored).  The SPOT stride fix (obj_size, 2026-10-01)
+!     is kept.
+	    if (opt_tgt_m==WFE_TARGET) then
+	      yfit(off:off+obj_size-1)=OPDm(1:obj_size)
+	    else if (opt_tgt_m==SPOT_TARGET) then
+	      yfit(off:off+obj_size-1)=SpotSizem
+	    else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+	      yfit(off:off+obj_size-1)=ZCoefm(1:obj_size)
+	    end if
+	    off=off+obj_size
+	    if (mBeamOff>0) then
+	      call beam_rows_(yfit,off-1)
+	      off=off+mBeamOff
+	    end if
+!<--
 	  End Do
 	End Do
 
@@ -835,110 +741,23 @@ C
      &               n_optAsph_m,varAsph_arr_m,
      &               fovs_m(:,1:2,ifov),wls_m(iwl),a2)
 
-	      If (opt_tgt_m==WFE_TARGET .OR.
-     &            opt_tgt_m==SPOT_TARGET) Then
-	        if (opt_tgt_m==WFE_TARGET) then
-	          dyda(off:off+obj_size-1,i)=
-     &                (OPDm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
-	        else if (opt_tgt_m==SPOT_TARGET) then
-	           dyda(off:off+obj_size-1,i)=
-     &               (SpotSizem-yfit(off:off+obj_size-1))/da(i)
-	           !print*,'dyda: SpotSizem =',SpotSizem
-	           !print*,'dyda: yfit =',yfit(off:off+obj_size-1)
-                   !print*,'dyda =',dyda(off:off+obj_size-1,i)
-	        end if
-!-->  The derivative columns must advance by obj_size, as the VALUE loop
-!     above does (lines ~688/692/717/719): opd_size = mpts*mpts equals
-!     obj_size only for the WFE target, so every Telescope optimize was
-!     fine, while a SPOT target (obj_size = 1) wrote its second (field,
-!     wavelength) into row 16385 of a 30-row yfit -- a bounds abort in
-!     the CLI, a segfault / hang in the mex (TO, dyson5 beat 4c,
-!     2026-10-01).
-	        if (.not. (OptBeam_m%ifOptBeamDir .OR.
-     &                     OptBeam_m%ifOptBeamPos .OR.
-     &                     OptBeam_m%ifOptBeamSize)) then
-	          off=off+obj_size
-	        else
-	          off=off+obj_size; off2=1
-!<--
-	          if (OptBeam_m%ifOptBeamDir) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-	          end if
-	          if (OptBeam_m%ifOptBeamPos) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamPos_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-	          end if
-	          if (OptBeam_m%ifOptBeamSize) then
-	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i)
-	            off2=off2+1
-	          end if
-	          if (OptBeam_m%ifOptBeamRefRayDir) then
-	            Do j=1,nRefRay
-	              dyda(off+off2:off+off2+2,i)=(beamRefRayDir_m(1:3,j)
-     &                  -yfit(off+off2:off+off2+2))/da(i)
-	              off2=off2+3
-	            End Do
-	          end if
-	          off=off+mBeamOff
-	        end if
-	      Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
+	      if (opt_tgt_m==WFE_TARGET) then
 	        dyda(off:off+obj_size-1,i)=
-     &           (ZCoefm(1:obj_size-1)-yfit(off:off+obj_size-1))/da(i)
-	        if ((.not. OptBeam_m%ifOptBeamDir) .and.
-     &              (.not. OptBeam_m%ifOptBeamPos) .and.
-     &              (.not. OptBeam_m%ifOptBeamSize)) then
-	          off=off+obj_size
-	        else
-	          off=off+opd_size; off2=1
-	          if (OptBeam_m%ifOptBeamDir) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-                    off2=off2+3
-                  end if
-                  if (OptBeam_m%ifOptBeamPos) then
-                    dyda(off+off2:off+off2+2,i)=
-     &               (beamPos_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-                  end if
-	          if (OptBeam_m%ifOptBeamSize) then
-	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i)
-	            off2=off2+1
-	          end if
-	          if (OptBeam_m%ifOptBeamRefRayDir) then
-	            Do j=1,nRefRay
-                dyda(off+off2:off+off2+2,i)=(beamRefRayDir_m(1:3,j)
-     &                  -yfit(off+off2:off+off2+2))/da(i)
-	              off2=off2+3
-	            End Do
-		  end if
-	          off=off+mBeamOff
-	        end if
-	      Else
-	        off=1
-	        if (OptBeam_m%ifOptBeamDir) then
-                  dyda(off:off+2,i)=
-     &             (beamDir_m(1:3)-yfit(off:off+2))/da(i)
-                  off=off+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  dyda(off:off+2,i)=
-     &             (beamPos_m(1:3)-yfit(off:off+2))/da(i)
-                  off=off+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          dyda(off,i)=(beamSize_m-yfit(off))/da(i)
-	        end if
-		if (OptBeam_m%ifOptBeamRefRayDir) then
-		  Do j=1,nRefRay
-	            dyda(off:off+2,i)=(beamRefRayDir_m(1:3,j)
-     &                -yfit(off:off+2))/da(i)
-	            off=off+3
-		  End Do
-	        end if
-	      End If
+     &            (OPDm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
+	      else if (opt_tgt_m==SPOT_TARGET) then
+	        dyda(off:off+obj_size-1,i)=
+     &            (SpotSizem-yfit(off:off+obj_size-1))/da(i)
+	      else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+	        dyda(off:off+obj_size-1,i)=
+     &            (ZCoefm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
+	      end if
+	      off=off+obj_size
+	      if (mBeamOff>0) then
+	        call beam_rows_(bv,0)
+	        dyda(off:off+mBeamOff-1,i)=
+     &            (bv(1:mBeamOff)-yfit(off:off+mBeamOff-1))/da(i)
+	        off=off+mBeamOff
+	      end if
  	      !print*,'funcs_app for dyda: wfe_rms =', wfe_rms
 	    End Do
 	  End Do
@@ -946,6 +765,30 @@ C
 
 	LUseChfRayIfOK=LUseChfRayIfOK_sv ! restore
         End Subroutine funcs_app
+
+!-->  The beam rows of one (wavelength, field) block, in the order the
+!     sizing (mBeamOff) and the target fill use: direction (3), position
+!     (3), size (1), reference-ray directions (3 x nRefRay); v(off+1..).
+	Subroutine beam_rows_(v,off)
+	Real*8, dimension(:) :: v
+	Integer :: off,j,k
+	j=off
+	if (OptBeam_m%ifOptBeamDir) then
+	  v(j+1:j+3)=beamDir_m(1:3); j=j+3
+	end if
+	if (OptBeam_m%ifOptBeamPos) then
+	  v(j+1:j+3)=beamPos_m(1:3); j=j+3
+	end if
+	if (OptBeam_m%ifOptBeamSize) then
+	  v(j+1)=beamSize_m; j=j+1
+	end if
+	if (OptBeam_m%ifOptBeamRefRayDir) then
+	  Do k=1,nRefRay
+	    v(j+1:j+3)=beamRefRayDir_m(1:3,k); j=j+3
+	  End Do
+	end if
+	End Subroutine beam_rows_
+!<--
 
 
 C ***************************************************************************
@@ -966,7 +809,7 @@ C
 	LREAL, dimension(:), allocatable, save :: y0,y1
 	LREAL, dimension(:,:), allocatable, save :: dy0da,dady0
         LREAL :: dparams(size(params)),wfe_rms
-	Integer :: iwl,ifov,off,off2,j,ICLEN,m_err_rtn
+	Integer :: iwl,ifov,off,j,ICLEN,m_err_rtn
         Logical :: exist,LCMP
 	Logical, save :: first_entry = .TRUE.
 
@@ -1055,57 +898,16 @@ C
      &                n_optAsph_m,varAsph_arr_m,
      &                fovs_m(:,1:2,ifov),wls_m(iwl),params)
 
-            If (opt_tgt_m==WFE_TARGET) Then
-              y1(off:off+opd_size-1)=OPDm(1:opd_size)
-              if (.not. OptBeam_m%ifOptBeamDir) then
-                off=off+opd_size
-              else
-                off=off+opd_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  y1(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  y1(off+off2:off+off2+2)=beamPos_m(1:3)
-                  off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-                  y1(off+off2)=beamSize_m
-                end if
-                off=off+mBeamOff
-              end if
-            Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
-              y1(off:off+n_wf_zern_m-1)=ZCoefm(1:n_wf_zern_m)
-              if (.not. OptBeam_m%ifOptBeamDir) then
-                off=off+obj_size
-              else
-                off=off+obj_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  y1(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  y1(off+off2:off+off2+2)=beamPos_m(1:3)
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          y1(off)=beamSize_m
-	        end if
-                off=off+mBeamOff
-              end if
-            Else
-              off=1
-              if (OptBeam_m%ifOptBeamDir) then
-                y1(off:off+2)=beamDir_m(1:3)
-                off=off+3
-              end if
-              if (OptBeam_m%ifOptBeamPos) then
-                y1(off:off+2)=beamPos_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamSize) then
-	        y1(off)=beamSize_m
-	      end if
-            End If
+            if (opt_tgt_m==WFE_TARGET) then
+              y1(off:off+obj_size-1)=OPDm(1:obj_size)
+            else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+              y1(off:off+obj_size-1)=ZCoefm(1:obj_size)
+            end if
+            off=off+obj_size
+            if (mBeamOff>0) then
+              call beam_rows_(y1,off-1)
+              off=off+mBeamOff
+            end if
           End Do
         End Do
 

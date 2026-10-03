@@ -38,6 +38,44 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-03 (Dave away to 10-05) -- items 1+2 LANDED locally, pushes
+> between lanes authorised:** (1) seidel_seed signed fixed-frame solver
+> (resources 3e96ad8, pushed).  (2) CALIB beam rows on ANY target +
+> OptBeamPosFov / OptBeamWt / OptBeamCentroid + api calib_set_beam* +
+> mmacos/pymacos veneers, gate tBeamRows 3/3.  PLUS TO's one-call trace
+> defect (ce46ead): ifLNsrf root pick now axial (LNsrfRoot, 5 routines) and
+> PrevNonSeg reset per ray on restarted traces; gate tTraceRestart 2/2;
+> FEX/OPD A/B bit-identical on 4 decks vs a pre-fix HEAD worktree
+> (scratchpad/prefix).  Shared mex relinked 05:11 (no MATLAB running; TO
+> verified 05:15).  Deck: telescope slide at Jim's numbers (TMS + TMA),
+> eight-findings backup, records rows.  Fast suite running
+> (scratchpad/fast_item2.summary).  NEXT: commit by path (engine, then
+> resources), push both, addendum 32 fast-suite line; item 3 (evanescent
+> cut); TO's smooth clearance operand question; item 4 every few hours.
+> Two conventions learned: CALIB field 1 = CURRENT source; optimizer grid
+> default nGridpts/2-1 (OptRayGrid= sets it).
+
+> **2026-10-02 pm -- LOCAL, unpushed:** macos e43b126 (dead bands 16 ulp +
+> DeadBandNote + set_src_fov dirties), 2baf661/f0de004 (addenda 26, CCMac
+> round 3), e5aa521/9cfcf95 (addenda 23/25), 7744f86/2cf1d7f (deck);
+> resources f674eb6 + follow-up (tRetraceIdempotent, tOffsetImager re-pin,
+> mmacos_gen).  Shared mex NOT yet relinked to e43b126 (TO's stages were
+> running; rule: never relink while another lane's MATLAB runs).  Jim's
+> reply re-targets the telescope (f 330 mm, D 183 mm, 9.4 / 4.7 deg) and
+> frames the trade as 2 x 3k CaF2 vs 4 x 1.5k silica -- TO addendum 26,
+> CCMac round 3.  Draft reply to Jim waits on both.
+
+> **2026-10-02 -- PUSHED (Dave): macos f1d2617..fdbe98e, resources
+> b3d2644..e114c99.  TO's beat 5 (telescope): layout closes, image does NOT
+> (67 px rms, 1.6 mm field swing; BRIEF_dyson5_beat5.md).  Beat 5b brief =
+> addendum 19: the offset_imager ladder (rodgers3's product) as stage t3,
+> along-track offset 4-10 deg at F/1.8 as THE unknown, three residual rows
+> (telecentricity, flatness, pupil match), decision rule -> the two-mirror
+> Schwarzschild if nothing packages.  Dave restarts TO CLEARED on Opus 5.5
+> (addendum 17's list first).  My queue: the centroid / telecentricity
+> operands for CALIB (addendum 14 item 4), the FarField evanescent zeroing
+> option (addendum 15), seidel_seed's PNP first order (beat 5 sec. 5 item 4).
+
 > **2026-10-01 17:00 -- TO's 3.5/3.6 FIXED (design_optim.F, local, uncommitted
 > until the suites report):** asphere step = 1e-3 |coef| (sag floor at the
 > circular aperture; legacy per-ORDER step + a line without one); LM failure
