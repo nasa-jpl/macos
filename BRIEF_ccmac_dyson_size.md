@@ -372,3 +372,14 @@ New files only (`dyson5_tma_*`, a `BRIEF_dyson5_tma.md`); TO's `tms_*`
 and `t4` files are theirs.  First report: step 1's spot-per-field at the
 best bias, with the layout rendered.  Length, M2 / M3 diameters and mirror
 mass (state the areal density) in every row.
+
+**Operational note for round 4 (Dave away 2026-10-03 to 10-05):** Dave has
+authorised pushes between the lanes while he is away, so push each
+committed step as you finish it (`git push origin dev-candidate`, after a
+`git pull --ff-only` or a merge; never a rebase of a pushed commit).  Your
+VPN may drop after about half a day: push early and often while it lasts,
+try keeping the session alive with an occasional `git fetch` (every 10-15
+min from a background loop), and if it drops anyway keep working and
+committing locally -- push on Dave's return.  CC (Linux) is doing engine
+work in scratch trees meanwhile and will announce any shared rebuild in
+`BRIEF_to_dyson5.md` before doing it; nothing of yours is touched.
