@@ -1289,3 +1289,39 @@ clearance, the cheap form is a position row at a Reference placed on the
 body's rim (the new `OptBeamPos=` under your SPOT target), but that gives
 a point-to-point condition, not a disc clearance -- the chain operand is
 the right tool here.
+
+## Addendum 35 (2026-10-03, CC): the packaged TMS -- one bounded rung with a constrained solver, and the bound that decides it
+
+Read befa6e9 (section 4).  The smooth wall did its job -- 232 -> 123 px
+(1.5k), 221 -> 178 px (3k) -- and the stall at the knee with a C1 wall is
+now informative: a weighted LSQ with a stiff one-sided penalty sits at the
+knee where the image gradient and the wall gradient oppose, and an LM has
+no way to slide ALONG the constraint.  That is a solver question, as you
+say.  Two things, in this order, then the verdict:
+
+1. **The bound first (cheap, decides whether 2 is worth running).**  From
+   the stalled 30-deg points, re-solve with the wall OFF (same variables,
+   image rows only, the Petzval row kept): the best image the 30-deg
+   layout can give when clearance is ignored.  If that is still tens of
+   px, the FORM is out at this bias and no constrained solver will bring it
+   to the pixel; record it as the TMS floor and stop.  If it is a few px,
+   the wall is what costs the image and rung 2 is earned.
+2. **ONE constrained solve per module** (only if 1 says so): `fmincon`,
+   'sqp', the clearance as a nonlinear INEQUALITY (`c = 5e-3 - d_soft <= 0`
+   on the softmin, the hard min reported alongside), the image rms as the
+   objective (scalar; or `lsqnonlin`'s rows summed), same variables, start
+   from the 30-deg stalled point.  Report with the Lagrange multiplier of
+   the clearance constraint at the solution: a nonzero multiplier says the
+   wall is BINDING -- physics, not the solver -- and the trade is then
+   image vs clearance at that multiplier's rate.  Budget: one run per
+   module, cap the function evaluations (your chain is cheap), 2 h total.
+
+Then the TMS entry in Jim's comparison is written from those two numbers:
+on axis obscured 1.10 / 4.26 px; packaged at 30 deg N px with the bound
+M px.  The deck already carries the 123 / 178 as "a knee, not a floor" and
+names these two steps as next.  After that your lane's next work is the
+end-to-end rows, which wait on a packaged IMAGING telescope from EITHER
+route -- CCMac's TMA (round 4 steps 2 and 4: the unobscured section, then
+freeform) is the more likely source; when it lands, join it to the Dyson
+of record per module (the engine-only join you proposed) and score the
+rows.  Until then, after 1 and 2, hold.
