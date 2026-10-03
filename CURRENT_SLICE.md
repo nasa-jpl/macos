@@ -38,6 +38,10 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-03 06:45 -- PUSHED: macos 64c0a90, resources 813be1a (items 1-3 + the
+> trace fix + the lmlsq leak; fast suite 526/0).  Remaining: item 4 (deck folds
+> every few hours), Jim reply after the telescope closes.**
+
 > **2026-10-03 (Dave away to 10-05) -- items 1+2 LANDED locally, pushes
 > between lanes authorised:** (1) seidel_seed signed fixed-frame solver
 > (resources 3e96ad8, pushed).  (2) CALIB beam rows on ANY target +
