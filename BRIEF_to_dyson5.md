@@ -1085,3 +1085,37 @@ layout and the first engine-scored spot per field, before any ladder.
 If the literature's 50 deg at F/1.6 holds, a 9.4 deg strip is far inside
 it; if the two-mirror cannot be made telecentric and flat together, that
 is the number to report.
+
+## Addendum 30 (2026-10-03): the Schwarzschild seed is accepted; the order of work
+Accepted: `tms_paraxial` (flat field by equal radii, telecentric by the
+virtual stop at M2's front focus, EFL 330.0000 mm and exit chief slope 3e-17
+at every spacing), the d = 165 mm seed, the aplanatic conics, the engine
+chief within 3.6e-13 m of the chain's.  Half a pixel on axis beats anything
+the three-mirror family reached; the field-squared growth to 12 px at the
+3k edge is the seed's astigmatism, and the review's answer is the 4th-order
+asphere on M2.  Commit `tms_geom.m` / `tms_paraxial.m` by path.
+**Order:**
+1. **The runner stage first** (Dave's rule): knobs d, the field (9.4 / 4.7
+   deg x 0.3 deg), the module's Dyson deck; it reproduces this seed table as
+   the record (`dyson5_t4.txt`), decks emitted and engine-rendered.
+2. **Rung 1, the M2 asphere** (h^4, then h^6 if it earns it), solved on the
+   exact chain over the strip with the slit's 7 fields, engine-scored; the
+   target is the spot under one pixel at EVERY field of the 3k strip.  The
+   1.5k strip is the same design at half the field -- score it on the same
+   decks, do not solve it separately unless the 3k fails.
+3. **The off-axis section**: field bias and / or pupil decenter to take the
+   convex M1 out of the M2-to-image cone, with the clearance gate (M1's
+   body against the cone and the input beam; the Dyson's bodies at the
+   slit).  Report the bias needed and what it costs in spot.
+4. **Telecentricity and flatness at the slit** against the Dyson's
+   acceptance (R4 accepts chiefs crossing 16.8 m behind the slit, i.e. a
+   0.09 deg window), the exit pupil's location against the grating.
+5. **End to end** with each module's own Dyson (engine-only join;
+   `dyson5_size_F_r240.in` for 3k, `dyson5_size_D_r130.in` for 1.5k): the
+   two rows of addendum 27.
+Size: 0.74-0.96 m long with M2 330-410 mm across for a 183 mm aperture is
+what "large against f" means; carry the length, M2's diameter and the mass
+of the two mirrors (state the areal density you assume) in the record from
+rung 1 on, so Jim's "reasonably long" has a number beside it.  Same
+stopping rules as before: a solve that stalls is reported as a stall; the
+end-to-end row is the verdict.
