@@ -38,6 +38,12 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-03 19:15 -- TMA step 2 run on Linux (resources 714f57c): unobscured
+> eccentric section holds the 1.5k strip at 6-7 px (M2 -1.2 mm, plate scale
+> 450 vs 330 at the 3-deg bias -> step 2b re-centre); 3k strip ends 10 mm.
+> TMS verdict in (TO a7dafd2): out.  TO HOLDS for a packaged imaging deck.
+> CCMac silent since 04:48.  Deck folded.**
+
 > **2026-10-03 06:45 -- PUSHED: macos 64c0a90, resources 813be1a (items 1-3 + the
 > trace fix + the lmlsq leak; fast suite 526/0).  Remaining: item 4 (deck folds
 > every few hours), Jim reply after the telescope closes.**
