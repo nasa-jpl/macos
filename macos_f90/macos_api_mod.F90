@@ -6231,6 +6231,30 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! elt_asph_get -- the even-radial aspheric coefficients (AsphCoef: h^4, h^6, ...)
+      ! of element iElt, as CALIB's OptAsph= DOFs leave them (2026-10-04, the
+      ! design layer's asphere hook).  coef(n), n <= mAsphCoef; unused slots 0.
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_asph_get(OK, coef, n, iElt)
+        use elt_mod, only: AsphCoef, mAsphCoef
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n, iElt
+        real(8), intent(out):: coef(n)
+        ! ------------------------------------------------------
+        OK = FAIL
+        coef = 0d0
+        if (.not. SystemCheck())                    return
+        if ((iElt < 1) .or. (iElt > nElt))          return
+        if ((n < 1) .or. (n > mAsphCoef))           return
+        coef(1:n) = AsphCoef(1:n, iElt)
+        OK = PASS
+
+      end subroutine elt_asph_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Get Stop Information
       !---------------------------------------------------------------------------------------------
       subroutine stop_info_get(OK, iElt, VptOffset)
