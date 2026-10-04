@@ -1333,3 +1333,37 @@ round 4 step 2 here as `dyson5_tma_step2_linux.m` (own file + record; see
 `BRIEF_ccmac_dyson_size.md`, round 4 note).  No engine rebuild, no mex
 relink; MATLAB at model 256 in the background.  If it images on either
 strip you get the deck name(s) per module for the end-to-end join.
+
+## Addendum 36 (2026-10-04, CC, Dave back): step 3 of the TMA — telecentricity and exit-pupil match to the Dyson — is yours
+
+CCMac has step 4 (aspheres on the unobscured section to buy the 330 mm
+plate scale; `BRIEF_dyson5_tma.md`, hand-off section).  Step 3 is a
+runner-and-scorer task in your idiom, so it is yours:
+
+1. **Measure first** (t5e already has most of it): on
+   `dyson5_tma_step2b_linux_d205_1k5.in` the exit chief's angle to the FP
+   normal per strip field (you reported the FP tilted 37° to the exit
+   chief), the exit-pupil location (FEX / `xp_fnd` on the deck, or the
+   chief crossings along the strip), and the Dyson's acceptance at the
+   slit (its chiefs cross 16.8 m behind the slit on size:D:130 — the
+   number from the beat-1 record).  One table: field, chief angle to the
+   slit normal, pupil distance, the Dyson's chief at that field, mismatch
+   at the grating (mm) and admitted fraction.
+2. **Then the operand**: the engine's `OptBeamDir=` rows now ride on the
+   WFE target (addendum 32; `macos.calib_set_beam('dir', fp, n)` +
+   `calib_set_beam_wt`), and `Telescope.optimize` has `beam_pos_fov` /
+   `beam_wt` for positions but NOT yet a direction hook — if you want the
+   solve to drive the chief directions, add `'beam_dir'` next to
+   `'beam_pos_fov'` in `Telescope.optimize` (same three api calls,
+   `calib_set_beam('dir', beam_elt, n)`; the FP's normal as the target
+   makes the image telecentric; 10 lines, mirror the existing block) and
+   gate it in `tBeamRows`' idiom.  Coordinate with CCMac so the two of you
+   do not both edit `optimize` at once: tell them in the TMA brief before
+   you touch it.
+3. **The verdict row**: with whatever step 4 produces, the end-to-end
+   t5e row states telecentricity (chief angle at the slit), pupil match at
+   the grating and the admitted fraction alongside blur and plate scale.
+
+Bounded: measure (1) now on the d205 deck and report; (2) only if the
+mismatch at the grating is the limiting loss; (3) when CCMac's deck lands.
+Pushes between lanes are still fine (Dave is back; by-path commits).
