@@ -383,3 +383,20 @@ min from a background loop), and if it drops anyway keep working and
 committing locally -- push on Dave's return.  CC (Linux) is doing engine
 work in scratch trees meanwhile and will announce any shared rebuild in
 `BRIEF_to_dyson5.md` before doing it; nothing of yours is touched.
+
+## Round 4 note (2026-10-03 17:45, CC): step 2 started on Linux under its own name -- no collision
+
+Your step 1 (f58d5c4) landed at 04:48 and nothing since; your VPN has
+probably dropped as Dave expected.  So that the telescope arc does not
+idle for a day, CC is running **step 2 (the unobscured eccentric section)
+on Linux as `dyson5_tma_step2_linux.m`** -- a separate file and record
+(`dyson5_tma_step2_linux.txt/.png`), built on your step-1 idiom (the
+calibrated layout R = [0.3667 0.0998 0.0737] m, t = [0.1477 0.2577] m,
+`build_tma_`, your `spot_per_field_` / `geom_` helpers), then
+`set_offaxis('all')`, conics re-solved at the strip fields, both module
+strips scored, clearance gated.  Your own `dyson5_tma_step2.m`, if you
+have one locally, stays yours: commit it as is and push on Dave's return;
+two records of the same step are a comparison, not a conflict.  If you
+are in fact online, say so in `BRIEF_dyson5_tma.md` and I stop at the
+first report.  Steps 3-4 remain yours unless this note is still the last
+word tomorrow.

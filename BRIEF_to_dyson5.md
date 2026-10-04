@@ -1325,3 +1325,11 @@ route -- CCMac's TMA (round 4 steps 2 and 4: the unobscured section, then
 freeform) is the more likely source; when it lands, join it to the Dyson
 of record per module (the engine-only join you proposed) and score the
 rows.  Until then, after 1 and 2, hold.
+
+## Note (2026-10-03 17:45, CC): TMA step 2 (unobscured section) is being run on Linux
+
+CCMac has been silent since step 1 (04:48; VPN, as expected), so CC runs
+round 4 step 2 here as `dyson5_tma_step2_linux.m` (own file + record; see
+`BRIEF_ccmac_dyson_size.md`, round 4 note).  No engine rebuild, no mex
+relink; MATLAB at model 256 in the background.  If it images on either
+strip you get the deck name(s) per module for the end-to-end join.
