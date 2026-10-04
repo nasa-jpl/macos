@@ -38,6 +38,13 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-04 14:30 -- Dave back.  Asphere hook pushed (macos 9fe033e api
+> elt_asph_get; resources 669e217 Telescope.optimize asph_elts/asph_terms,
+> tAsphHook; 01eb44e hand-off).  Lanes: CCMac step 4 (aspheres, 330 mm plate
+> scale, 3k strip), TO step 3 (addendum 36, telecentricity/pupil match), CC
+> reviews + deck.  Everything pushed.  Context low: memory
+> project_dyson5_telescope.md holds the arc.**
+
 > **2026-10-03 19:15 -- TMA step 2 run on Linux (resources 714f57c): unobscured
 > eccentric section holds the 1.5k strip at 6-7 px (M2 -1.2 mm, plate scale
 > 450 vs 330 at the 3-deg bias -> step 2b re-centre); 3k strip ends 10 mm.
