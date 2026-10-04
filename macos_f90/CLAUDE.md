@@ -915,6 +915,24 @@ SUITE_FAST, `Rx_BeamRows.in`): direction rows on a SPOT target (pre-fix:
 zero rows, the mirror never tilts), per-field position targets both met
 by one FP piston, centroid vs chief on a comatic field.
 
+## Asphere DOFs from the design layer (2026-10-04, dyson5 round 4 step 4)
+`elt_asph_get(OK, coef, n, iElt)` (api; mmacos `macos.get_elt_asph`, pymacos
+`get_elt_asph`) reads `AsphCoef(1:n, iElt)` -- what CALIB's `OptAsph=` DOFs
+leave on an element.  `Telescope.optimize` gained `'asph_elts'` /
+`'asph_terms'`: the element is emitted `Surface= Aspheric` from a zero seed
+(the freeform declare-to-perturb rule), `OptAsph= n t1..tn` is written
+AFTER its `VarElt=` line (the parser keys it on `isVarElt`), coefficients
+are read back into `spec.elt(k).asph`.  Trap it carries: CALIB's
+zero-coefficient asphere step is sag-based ONLY with a CIRCULAR aperture
+(`ApType==1`), else the legacy round-off step on a metre deck -- Telescope
+decks declare `ApType= None`, so the hook declares a vertex-centred circle
+ENCLOSING the element's footprint for the solve (for an off-axis section
+that radius runs from the PARENT vertex to the far edge of the footprint,
+the scale the term acts on; it clips nothing) and removes it afterwards.
+Gate `tAsphHook` (SUITE_FAST): on the dyson5 TMA parent h^4+h^6 on M1/M3
+take the 3-field WFE [529 484 753] -> [55 117 308] nm vs the conic-only
+control; readback; clean emit; the circle gone.
+
 ## Far-field evanescent cut, opt-in (2026-10-03, dyson5 addendum 15)
 A far-field leg (`FFPROP` / `FFPropDFT`) maps spatial frequency f to the
 output coordinate `x = lambda*dz*f`, i.e. `sin(theta) = x/dz`.  The
