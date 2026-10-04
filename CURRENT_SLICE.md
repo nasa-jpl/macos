@@ -38,6 +38,12 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-04 18:05 -- tma_layout 'telecentric' pushed (resources d8035b8,
+> gate tTmaTelecentric; M1-stop telecentric Korsch engine-verified 1e-8 rad).
+> TO step 3 done (pupil 22 mm from image on d205); CCMac step 4 done (aspheres
+> buy centre only). Stage A hand-off 2bae387: section on the telecentric
+> parent, t5e pupil table + plate scale before figure. Deck macos 8ce3fb7.**
+
 > **2026-10-04 14:30 -- Dave back.  Asphere hook pushed (macos 9fe033e api
 > elt_asph_get; resources 669e217 Telescope.optimize asph_elts/asph_terms,
 > tAsphHook; 01eb44e hand-off).  Lanes: CCMac step 4 (aspheres, 330 mm plate
