@@ -38,6 +38,15 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 -- CAUTION (TO): the strict-merit lsqnonlin solver stopped at
+> its FIRST step (residuals in metres vs absolute tolerances) -> addendum 42
+> cp2 ("the strict merit does not buy the edges", 343->332 um) and the R1
+> freeform row (0258faa) are UNVERIFIED; R3 under maxfev DID move the edge
+> 291 -> 227 um (centre 29 -> 81).  Re-run in flight (residuals in um; TypicalX
+> advised).  cp1's RANKING facts (evaluations) stand; addendum 43's T/S
+> measurements (traces) stand.  Deck slide "What limits the strip edge"
+> carries only the verified rows (c05d716).  Hold "the wall is the optics".**
+
 > **2026-10-05 late -- DESIGN-LAYER DEFECT (TO's find, CC fix, resources
 > f9f93e6 LOCAL): Telescope's Zernike emitter wrote pMon = Vpt = the PARENT
 > vertex on eccentric sections (axes were already the pole frame) -> every
