@@ -1713,3 +1713,58 @@ ladder table; the full cp2-style table for the last rung.  Records
 `Telescope.optimize` as callers only (announce any hook first); commit
 locally by path; message at R1 (the astigmatism rung -- if it does not
 move the edge the premise is wrong and we stop) and at the end.
+
+## Addendum 45 (2026-10-05, CC for TO, Dave's order): the geometry lever and the transverse metric -- three runs
+
+**Why.**  The freeform ladders (your "For Dave" section) flatten the strip
+by trade and R5 showed the telescope's wavefront merit is not the
+instrument's.  Two things the record has never done, both named in the
+literature we read for the form but not for the method (Bauer, Schiesser
+& Rolland, Nat. Commun. 9, 1756, 2018: the STARTING TILT GEOMETRY decides
+whether freeform terms can correct a system; Shack & Thompson's nodal
+theory: field-quadratic astigmatism of a tilted-component system has
+nodes placed by the mirrors' relative tilts/decenters):
+1. every rung since stage A solved FIGURE on a frozen first-order layout
+   (`dofs [0 0 0 0 0 0 0 1]` + aspheres + Zernikes); no mirror tilt or
+   decenter was ever a variable -- the exact knob the eccentric section's
+   field-quadratic astigmatism answers to;
+2. the merit was wavefront rms at F/1.8 with 20-100 um of OPD, far from
+   diffraction-limited, where the slit and detector see TRANSVERSE blur.
+
+**The runs, in this order, both modules (1.5k m2 3.0 -4/190; 3k m2 3.0
+-4/180), each warm from your R4 freeform rung:**
+- **(a) Metric alone.**  R4's DOFs (conics + the two-channel freeform)
+  re-solved with CALIB's SPOT target (`OptTarget= SPOT` at the FP; its
+  derivative stride was fixed 10-01, tSpectrometerRx native leg) plus the
+  position rows -- `Telescope.optimize(..., 'target','SPOT', ...)` if the
+  freeform path exposes it, else your lsqnonlin evaluator with the
+  per-field best-focus AND as-placed rms spot radius as residuals (state
+  which; as-placed is the one the slit sees).  Same budget, same table,
+  same e2e row.  This is the clean A/B of metric against the strict
+  wavefront.
+- **(b) Geometry.**  (a)'s solve with M2 and M3 rigid-body DOFs added --
+  tilts and decenters, the first six of the eight (`dofs` rows per
+  element: M1 `[0 0 0 0 0 0 0 1]`, M2/M3 `[1 1 1 1 1 1 0 1]` with the
+  pole-frame convention `optimize` uses), FP focus (`fpa_dofs` z) if the
+  plate scale rows allow.  CLEARANCE IS NOW LIVE: the geometry moves, so
+  `check_clipping` + `spectrometer_clearance` (mount once) on EVERY rung,
+  no carry-over, and the e2e join re-placed from the moved deck.  Report
+  the tilt/decenter solved per mirror (mrad, mm) beside the spots.
+  **The diagnostic:** if the edge moves and the freeform coefficient norm
+  SHRINKS, the geometry was carrying the burden (Bauer's result); if the
+  norm grows with the tilts, the two are fighting and the stop position
+  (c') is next.
+- **(c) The instrument's merit, one final rung.**  The best of (a)/(b) with
+  the e2e scorer itself as the residual vector -- smile, keystone, CRF,
+  SRF per (field, lambda) through your engine join -- in lsqnonlin, a
+  bounded 1500-evaluation rung.  This is the rung whose number goes to
+  Jim.
+- **(c') If (b) says so:** the stop at M2 (the review's telecentric
+  variant) as a layout alternative -- `tma_layout` option or a hand-moved
+  stop -- first order only, one row, before any solve.
+
+**Rules.**  Equal field weights until Dave rules otherwise (the open
+ruling stands; (a)-(c) change the METRIC and the DOFs, not the weights).
+Records `dyson5_tA_GM_*`; per-rung tables as in addendum 44 plus the
+clearance columns; commit locally by path; message CC at (a) done, (b)
+done, (c) done.
