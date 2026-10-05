@@ -38,6 +38,13 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
+> telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
+> OPEN ENGINE ITEM for a FRESH session: CALIB cannot evaluate the 3k section at
+> -3 deg (per-field WFE mm-scale, rays pass, trace fine; +-4.69 deg fields
+> dropped as 9.9999e36 at -4 deg) -- suspect the FEX/exit-pupil reference on a
+> decentered section (addendum 38). Deck macos 5f8d036. Context exhausted here.**
+
 > **2026-10-04 18:05 -- tma_layout 'telecentric' pushed (resources d8035b8,
 > gate tTmaTelecentric; M1-stop telecentric Korsch engine-verified 1e-8 rad).
 > TO step 3 done (pupil 22 mm from image on d205); CCMac step 4 done (aspheres
