@@ -38,6 +38,14 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 -- NEXT STEPS set (Dave).  Step 1 = exit-pupil merit on the
+> eccentric section -> TO (addendum 42; trap: stop(1) aims at the PARENT
+> vertex on a decentered section; two checkpoints, CC monitors via idle
+> notice).  CC -> the DM-gauge deck rewrite (Dave's next brief).  Queue after:
+> exact asph+Zernike co-emit via FreeForm MonZern (PLAN_DESIGN_LAYER to-do,
+> CC); continuation freeform ladder per module; deck_dyson stage-B rows +
+> two engine findings; Jim reply waits on the edge number.**
+
 > **2026-10-04 night -- CALIB edge-field item CLOSED (CC): it was the engine's
 > forward conic root pick, not CALIB.  40 of 1185 rays sat on M3's FAR sheet
 > (K=-15.8, 2a=22 mm), 44 mm extra path, all "passing" -> 7.8 mm FP OPD =
