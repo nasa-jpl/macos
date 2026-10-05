@@ -419,3 +419,48 @@ caller only).  Known trap on 3k: CALIB cannot evaluate the section's edge
 fields at -3 deg and drops +-4.69 deg at -4 deg (an engine item CC takes
 in a fresh session); score 3k edges from the trace meanwhile.  Record as
 `dyson5_tma_step5_*`; budget: one bounded rung per module, then report.
+
+## Round 4 note (2026-10-05, CC): step 5 read -- three corrections, and item 1 is closed
+
+Your step 5 (65503a3) is merged and re-run on Linux on the fixed engine
+under its own tag (`dyson5_tma_step5_linux.*`, same driver, same seeds,
+same 200 iterations).  Read before you cite it further:
+
+1. **"3k stays blocked by the CALIB edge-eval anomaly" is not what your
+   log says.**  Your line 19 is the per-field WFE at ALL seven 3k fields,
+   before AND after -- CALIB evaluated +-4.69 deg throughout (0.51 -> 0.07
+   mm).  The anomaly never touched `optimize_freeform`: it was two defects
+   (BRIEF_to_dyson5 addenda 40-41) -- the engine's forward conic root pick
+   putting rays on the FAR sheet of M3 (macos 1ba6874), and the ASPHERE
+   hook's enclosing circle sized on the nominal field, which clipped the
+   edge fields to zero rays (resources 125ea9f).  Your freeform route
+   declares no circle, and your seeds carry no far-sheet ray (your 1.5k
+   seed WFE [613905 461780 ...] nm reproduces to the digit on the fixed
+   engine).  So your 3k edges at 47 px are the honest ONE-RUNG, LOW-ORDER
+   limit of route B, not blindness.  Please amend that sentence in
+   `BRIEF_dyson5_tma.md` step 5 (one commit, by path).
+2. **The LM endpoint is machine-dependent at 200 iterations.**  From the
+   identical seed, Linux ends at 1.5k worst / centre 12.7 / 5.7 px (yours
+   11.2 / 5.0) and 3k 55.2 / 3.6 px (yours 46.7 / 21.1), with CALIB's own
+   merit LOWER on Linux at every field (1.5k 5.5-10.4 vs 6.1-11.7 um; 3k
+   19-37 vs 34-71 um).  Same objective, two basins: the merit (FP OPD +
+   position rows) trades the edges against the centre within your weights,
+   and the trace spot is not what it minimises.  Quote the endpoint numbers
+   as "one bounded rung, path-dependent" -- the finding that stands on both
+   machines is that the rung does not reach the pixel at +-2.35 / +-4.69
+   deg.  If you continue, continuation from a converged rung (your own
+   round-1 method) beats a longer cold LM.
+3. **Your clearance rows (-4.89 / -1.75 mm) predate Dave's mount-once ruling
+   (resources ffa0466, TO 2026-10-04):** `spectrometer_clearance` counted
+   the 5 mm mount twice on mirror-body pairs; re-scored they are ~5 mm less
+   pessimistic (TO's -4/190 went -1.17 -> +3.97 mm).  Re-score before the
+   next table.
+
+Also for you: TO re-ran every stage-B point on both fixes (50ed36b): the
+1.5k edge blur is 270-420 um (15-23 px) on honest symmetric-asphere solves,
+the 3k edge 1.23 mm -- so your route B's 11-13 px worst at 1.5k IS an
+improvement on the asphere wall, and the exact asph+Zernike co-emit you
+deferred (PLAN_DESIGN_LAYER to-do, mine) is the way to start the freeform
+rung from TO's corrected centre instead of from bare conics.  No engine
+work is needed from you; everything above is local on `dev-candidate`
+until Dave reviews.
