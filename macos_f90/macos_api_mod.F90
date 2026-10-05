@@ -5898,6 +5898,25 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! fwd_root_flips_get -- how many surface intersections in the LAST
+      ! trace took the first forward crossing where the legacy |L^2-mpr|
+      ! root metric would have chosen the second sheet of a two-sheet
+      ! conic (surfsub FwdRoot, 2026-10-04).  Reset at every trace start.
+      ! Zero on a deck means the fix did not touch it; a nonzero count on
+      ! a legacy deck means that deck was tracing THROUGH a surface.
+      !---------------------------------------------------------------------------------------------
+      subroutine fwd_root_flips_get(nFlips)
+        use surfsub, only: nFwdRootFlip
+
+        implicit none
+        integer, intent(out):: nFlips
+        ! ------------------------------------------------------
+        nFlips = nFwdRootFlip
+
+      end subroutine fwd_root_flips_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! calib_set_var_elt -- mark element ``iElt`` as a CALIB variable
       ! and specify which DOFs / Zernike modes are free.
       !
