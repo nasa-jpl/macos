@@ -38,6 +38,16 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 eve -- addendum 43 ANSWERED (TO, resources d8d8d71 + 16cef7b,
+> LOCAL): the Petzval sum does NOT govern the section's focus surface
+> (prediction falsified, 9x and wrong zero).  T/S probe: along-track focus
+> flat at every m2, cross-track focus curves 2-4 mm, T-S 2.2-5.3 mm at the
+> edge -> the "field curvature" was the sagittal half of CROSS-TRACK
+> ASTIGMATISM; no power split removes it.  m2 6.0 (engine-flat as-is) 2x
+> worse after the solve; m2 3.0 modestly better (edge 343 -> 291 um, both
+> terms moved, SRF 5.9 -> 9.7 px open).  Edge wall = non-symmetric DOFs
+> (CCMac freeform); m2 3.0 the better parent for it.  Awaiting Dave's push.**
+
 > **2026-10-05 pm2 -- TO on addendum 43 (Petzval scan over secondary_mag; field
 > curvature = ~22 of the 34 um rms at the -4/190 edge, the 25.7 um best-focus
 > residual is astig/coma -> freeform).  Field lens ruled OUT (Dave's question).
