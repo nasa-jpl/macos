@@ -283,19 +283,17 @@ DRAFT — in progress.  Every number is from a committed, parameterized runner (
 ![The 1.5k telescope through its Dyson (`dyson5_t5e_tA_B3_1k5_b4d190_B1`), per slit position and wavelength: the field-angle, keystone and smile maps, the spectral and spatial response widths, and the energy in one pixel.  The response widths rise at the two strip ends and nowhere else.](figs_dyson/dyson5_t5e_tA_B3_1k5_b4d190_B1_maps_rc.png)
 ~ Supersedes the 2026-10-04 row (1.3 / 15.8 px): that solve's aperture circle clipped the edge fields (Backup, finding 10).
 
-## What limits the strip edge | Cross-track astigmatism of the eccentric section, growing as the square of the field; untouched by focus, by the mirrors' power split, or by astigmatism terms alone
+## What limits the strip edge | Cross-track astigmatism of the eccentric section, growing as the square of the field; untouched by focus or by the mirrors' power split
 ::: left
-- **It is not the metric.**  The optimizer's default merit, the path length to each ray's own point on the detector (which the chiefs meet at 31°), floors at 16 µm at every field and ranks the strip edge at 2.1× the centre where the true reference sphere ranks it 13.7×.  Re-solving the same conics and aspheres on the true sphere moves the edge 343 → 332 µm, 3 % — inside the solver's run-to-run scatter.  The reference sphere is the reporting metric from here on (about the detector point, and about best focus; they answer different questions).
+- **The optimizer's default merit mis-ranks the fields.**  The path length to each ray's own point on the detector (which the chiefs meet at 31°) floors at 16 µm at every field and ranks the strip edge at 2.1× the centre where the true reference sphere ranks it 13.7×.  The reference sphere is the reporting metric from here on (about the detector point, and about best focus; they answer different questions); whether solving on it buys the edge is being re-run (footnote).
 - **It is not focus, and not the field curvature of the parent.**  Along the strip the along-track focus is flat at every secondary magnification; the cross-track focus curves 2–4 mm, and the two line foci at the edge sit 2.2–5.3 mm apart.  The parent's Petzval sum predicts a flat field near m₂ = 2.9 and the engine shows none there; the magnification that flattens the mean focus (m₂ = 6) is 2× worse once solved.  m₂ = 3.0 is modestly better than the 3.5 used so far (edge 343 → 291 µm) and is the parent for the freeform work.
-- **It is not astigmatism terms alone.**  With the aspheres carried exactly on each mirror and Zernike astigmatism added about each section's pole, the edge does not move (291 → 297 µm): those terms are field-constant, the defect is field-quadratic (line-focus separation 0 / 0.9 / 2.1 mm at 0° / 1.6° / 2.3°).  The field dependence enters through the footprint's walk across each mirror times its higher terms — coma and trefoil, then the symmetric terms — the steps now running.
+- **Astigmatism terms are not expected to reach it alone:** about each section's pole they are field-constant, the defect is field-quadratic (line-focus separation 0 / 0.9 / 2.1 mm at 0° / 1.6° / 2.3°); the field dependence enters through the footprint's walk across each mirror times its higher terms — coma and trefoil, then the symmetric terms.  The freeform steps are running on the true reference sphere.
 ::: right
 | step | edge rms spot | edge wavefront (sphere about detector point / best focus) | line-focus separation at the edge |
 |---|---|---|---|
 | conics + aspheres, m₂ = 3.5 | 343 µm | 33.9 / 26.8 µm | 2.8 mm |
-| same, solved on the true sphere | 332 µm | — / 25.7 µm | — |
 | conics + aspheres, m₂ = 3.0 | 291 µm | 27.9 / 23.0 µm | 2.2 mm |
-| + Zernike astigmatism, m₂ = 3.0 | 297 µm | 27.8 / 23.5 µm | 2.3 mm |
-~ 1.5k section at 4° bias, 190 mm decenter, ±2.34° field; wavefront rms over the pupil at 633 nm; the two line foci from the x- and y-slices of the bundle along the chief.  Records `dyson5_tA_EP_cp*.txt`, `dyson5_tA_pz_1k5.txt`, `dyson5_tA_FF_1k5.txt`.
+~ 1.5k section at 4° bias, 190 mm decenter, ±2.34° field; wavefront rms over the pupil at 633 nm; the two line foci from the x- and y-slices of the bundle along the chief.  The solves ON the reference sphere (the same freedoms, and the freeform steps) first stopped at their solver's first step through a tolerance set in the wrong units; they are re-running and are not reported here.  Records `dyson5_tA_EP_cp*.txt`, `dyson5_tA_pz_1k5.txt`.
 
 ## Next steps | The native optimizer on the record, the cold window, and the telescope that feeds the slit
 ::: left
