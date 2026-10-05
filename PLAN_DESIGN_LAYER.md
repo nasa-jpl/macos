@@ -1510,6 +1510,20 @@ slice 4 wants speed.
   observability.  First cut pure-MATLAB kinematics; MACOS validates
   selected configs through the real gauge functions + traces met-beam
   clearance.  Gated on §9.1 Q8.
+- **Exact asphere+Zernike co-emit on one mirror (`Telescope.build`).**
+  The emitter emits `Surface= Aspheric` OR `Surface= Zernike`, never
+  both; the engine applies the even-radial `AsphCoef` only on `Aspheric`
+  (SrfType 3), while `Zernike`(8)/`FreeForm`(14) carry a single monomial
+  field.  CCMac's dyson5 step-5 fold (even-radial → symmetric Zernike,
+  `asph_to_zern_`) is exact in the `MonZern` convention but the current
+  `Surface= Zernike`/`ZernCoef` emit applies a ~2× (plus a per-mode
+  residual) — see `MACOS_resources/mmacos/challenges/dyson5/
+  NOTE_asph_zernike_fold.md`.  FIX: emit the freeform via the `FreeForm`
+  `MonZern` channel (`zernike_grid_basis` is gated to match `MonZern`
+  exactly) and point `optimize_freeform`'s `OptZern` DOF at that channel;
+  no engine change.  Gate: A/B round-trip (asph via `Aspheric` == asph
+  via the fold, ray positions to engine precision).  The combined emit
+  path currently ERRORS until this lands.
 
 ---
 
