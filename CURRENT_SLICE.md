@@ -38,6 +38,16 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 -- RE-RUNS IN (TO, resources 8a64b9e LOCAL): with residuals in
+> um (every rung at maxfev 1500 -- none converged): cp2 S1 buys ~9% at the
+> edge with SYMMETRIC DOFs by trading the centre (343->313 um; was "3%"); the
+> freeform ladder on the m2 3.0 1.5k section moves the edge 291 -> 190 um
+> (10.5 px) and halves its astigmatism, flattening the field to ~7-13 um
+> strict everywhere (centre 29 -> 88 um); R4 stalls at -1%.  Orders: re-
+> converge R4 with a bigger budget; e2e join from ENGINE traces (bridge for
+> FreeForm decks later); as-placed spot column; then 3k.  deck_dyson slide
+> "What limits the strip edge" to be corrected to this (CC, after gauges).**
+
 > **2026-10-05 -- CAUTION (TO): the strict-merit lsqnonlin solver stopped at
 > its FIRST step (residuals in metres vs absolute tolerances) -> addendum 42
 > cp2 ("the strict merit does not buy the edges", 343->332 um) and the R1
