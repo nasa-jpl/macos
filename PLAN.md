@@ -253,6 +253,22 @@ task.
   work).
 - [x] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350).  Closed 2026-06-04 (commit 0ee4b23): one-line normalization after the matrix multiply.  `sin²(θ) + cos²(θ) ≠ 1` exactly in IEEE 754 for some θ (1e-6, 3e-5 notably) used to leave psi off by 1 ULP and drift slowly under repeated perturbs, producing a ~3e-14 OPD round-trip residual.  Regression probe at `MACOS_resources/mmacos/tests/tPerturbRoundtrip.m` was written defensively to allow both pre-fix (within 4*eps) and post-fix behaviour; now post-fix.
 
+### 0.y Engine fixes of the dyson5 cycle (2026-09-30 .. 10-04) — closed, recorded in `macos_f90/CLAUDE.md`
+
+All CLOSED on dev-candidate; each has a mmacos gate in SUITE_FAST and a
+CLAUDE.md section with the measured numbers.  Listed here so PLAN carries
+the cycle; the mechanics live in the nested file.
+- [x] `GlassElt=` dead engine-wide (catalog wiped per load) — `elt_mod_init_vars` resets prescription state only (b000390; tGlassDispersion).
+- [x] Physical-optics kernels medium-aware (`WaveMed = WaveBU/LegIndRef` per leg; test_prop_medium).
+- [x] Gratings on curved surfaces chord-ruled, and the grating OPL jump to match (tGratingImmersed, tGratingOpl; Dave's rule: OPD across a grating is defined modulo lambda).
+- [x] Short `AsphCoef=`/`AnaCoef=` lines pad with zero (`ReadRealsPad`; tRxShortAsph).
+- [x] CALIB: SPOT-target derivative stride; asphere step 1e-3|coef| / sag-based zero step; LM failure path restores the optics and returns a flag (host survives); the `lmlsq` SAVE'd-array leak on that path (tAsphCalib, 0d257ff..64c0a90).
+- [x] CALIB beam rows ride on ANY target; `OptBeamPosFov=`/`OptBeamWt=`/`OptBeamCentroid=`; api `calib_set_beam*` (tBeamRows).
+- [x] `ifLNsrf` root pick = hit nearest `RptElt` (`LNsrfRoot`); `PrevNonSeg` reset per ray on restarted traces (tTraceRestart; TO's one-call Schwarzschild).
+- [x] Far-field evanescent cut, opt-in (`ffcut_set`; tFFCut).
+- [x] **Forward conic root pick lands on the VERTEX sheet (`FwdRoot`, 1ba6874, 2026-10-04).**  The `|L^2-mpr|` metric put 40 of 1185 rays on M3's far hyperboloid sheet on dyson5's eccentric TMA section — every ray "passing", 44 mm of extra path, 7.8 mm rms FP OPD that CALIB faithfully reported and an outlier-cut spot metric hid.  Rule: `sign(Kr+(1+Kc)z) = sign(Kr)` on the real sheet; first crossing on a tie; legacy otherwise.  "First crossing" alone is WRONG (M2's far sheet sits IN the beam: 125 rays, 350 lost — measured).  Corpus A/B 406 decks identical to 10 digits; flips counted (`fwd_root_flips_get`).  Gate tFwdRoot.  Design-layer twin the same day: the asphere hook's enclosing circle now covers EVERY solve field (125ea9f; a nominal-only circle clipped the strip edges to 0 rays = CALIB's 9.9999e36 sentinel, and tAsphHook's pin [55 117 308] nm was the WFE of 180/97 of 253 surviving rays → re-pinned [496 407 467]).
+- [ ] **Still open from the same sweep:** `ifLNsrf` in RefSrf/ObsSrf/PolElt/IntSrf still uses the old vertex-distance metric (LNsrfRoot was applied in surfsub's five only); a ray whose only forward hit is the far sheet keeps that spurious hit (counted, guards-warn rule); NSRefractor's grid frame; `tst_save_keys.in` traces to NaN on both engines (the lensarr trace-time item above).
+
 ### 0.x OPD reference — chief ray vs whole-aperture mean (2026-08-19)
 
 Diagnosis: **Luis Marchen**; measurement, fix and gates: this tree.
@@ -604,6 +620,7 @@ Each function → regression test → manual entry → fix what surfaces. Order 
   - [ ] Or remove from the enum + parser so users can't silently pick a non-functional mode
   - [ ] Either way, document the resolution in pymacos's `m.calib_set_target` docstring and mmacos's `+macos/calib_set_target.m` help text
 - [ ] Diagnose `SPOT_TARGET` reporting 0 iterations even with `dopt_init_vars` fixed
+- [ ] **`WFE_TARGET`'s reference on a tilted / near-telecentric image surface — EPFIX, the fixed-station exit-pupil Return (Dave 2026-10-05, deferred with CCMac's asph+Zernike co-emit; design in PLAN_DESIGN_LAYER Sprint 6+).**  Measured on dyson5's eccentric TMA section (TO, BRIEF_to_dyson5 addendum 42): the default merit (OPD at the terminal FP, chiefs at 31 deg) has a 16 um floor at every field and ranks the strip edge at 2.1x the centre where the strict reference sphere ranks it 13.7x; `OptFEX` cannot run there at all (FEX finds a far astigmatic crossing, the EP sphere loses every ray, 9.9999e36), and FEX's telecentric fallback is a FLAT Return = a sphere centred at infinity.  Fix = `EPFIX iElt`, a sibling of SXP: Vpt fixed at a station, psi/Kr re-aimed per field at the chief's image point (same five assignments as FEX's caller, no probe crossing); `OptEPFix=` beside `OptFEX=`; FEX/SXP untouched.  Gates: coaxial identity vs OptFEX (rodgers1 2.7e-9 class), TO's section vs the hand STRICT numbers (both chief-intercept and best-focus forms), tTmaTelecentric.  Not urgent for dyson5 (cp2: symmetric DOFs move the edge 3% under the strict merit — the wall is the optics), required before the next freeform ladder on that section.
   - [ ] Find the early-exit gate
   - [ ] Fix and add regression case
 
