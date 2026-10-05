@@ -50,9 +50,14 @@
 > asphere hook's circle sized on the nominal footprint clipped the edge
 > fields at M3 -> now encloses every solve field (resources 125ea9f);
 > tAsphHook RE-PINNED [55 117 308] -> [496 407 467] nm (the old pin was the
-> WFE of 180/97 of 253 surviving rays).  Addenda 40 + 41.  SUITE_FAST on the
-> private mex running (scratchpad fast.log); relink the shared mex when
-> TO's MATLABs finish; push on Dave's word.**
+> WFE of 180/97 of 253 surviving rays).  Addenda 40 + 41.  Shared tree
+> rebuilt + mex relinked (TO, 19:25); fast suite on it 536/0 after the
+> get_elt_asph Session delegator (9c296af).  TO's stage-B re-run on both
+> fixes = resources 50ed36b (+ d874437 rays-based flag): every point solves
+> and clears, edge blur = the symmetric-asphere wall (1.5k 270-420 um, 3k
+> 1.23 mm) -> CCMac freeform.  ALL LOCAL, awaiting Dave's review to push:
+> macos 1ba6874 afe9923 76192db + this; resources 7c7f2b1 125ea9f 50ed36b
+> d874437 9c296af.**
 
 > **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
 > telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
