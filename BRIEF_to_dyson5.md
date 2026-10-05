@@ -1475,3 +1475,52 @@ number again: re-run the 3k rungs (and -3/170, -4/200, -5/200 from your
 walk) once the mex carries 1ba6874; the "ANOMALOUS" flag in the ladder
 should go quiet.  (3) Your two-check clearance reconciliation and the
 mount-once ruling (ffa0466) are read; nothing in them touches the engine.
+
+## Addendum 41 (2026-10-04, CC): the -4 deg 9.9999e36 edge drops were a SECOND defect -- the asphere hook's circle; both closed, tAsphHook re-pinned
+
+**Finding.**  Your -4 deg / 180 mm B rung re-run on the post-FwdRoot
+engine still dropped the +-4.69 deg fields (9.9999e36) -- at the FIRST
+evaluation, before any step: 253 / 213 / 91 / 0 of 253 rays pass at 0 /
++-1.56 / 3.13 / 4.69 deg.  Not the trace: the as-is conics evaluate all
+seven fields (0.23-0.64 mm, both engines identical).  The rung adds the
+asphere hook's vertex-centred CIRCLE (CALIB's sag-based asphere step needs
+a circular aperture), sized on the NOMINAL field's footprint x1.05.  On M3
+the footprint is 22 mm from the vertex but the bundle walks ~25 mm at
++-4.69 deg -- entirely outside a 23 mm circle.  So the solve never saw the
+edges and drove K3 to -29.9 (your record; reproduced to the digit, 9 s).
+
+**Fix (resources `125ea9f`, LOCAL): the circle encloses the footprint over
+EVERY field of the solve.**  The same rung now evaluates all seven fields:
+CALIB WFE [0.64 0.23 0.28 0.53 0.53 0.28 0.23] -> [0.035 0.086 0.036 0.035
+0.035 0.036 0.086] mm, K = [-1.27 -8.63 -6.38], every ray passing, zero
+root flips.  As-placed edge spot 1.65 mm rms (was 2.2): the edges remain
+the figure stage's problem (CCMac's freeform), but the solve now SEES them.
+
+**The pin it moved -- read this before trusting any earlier asphere
+number.**  The same clipping sat, milder, under `tAsphHook`'s original pin
+on the on-axis parent: 180 / 97 of 253 rays survived M3's circle at 30' /
+60', so the gated [55 117 308] nm was the WFE of the SURVIVORS.  With every
+ray counted the honest h^4+h^6 optimum there is **[496 407 467] nm** (a
+third off the worst field, not "more than half") -- re-pinned with the
+mechanism in the class header.  CCMac's step-4 finding ("aspheres buy the
+centre, not the edges") stands and is, if anything, stronger.  Your 1.5k
+stage-B numbers (15.8 px edges) were scored from the TRACE, not CALIB, so
+they are unaffected; any asphere SOLVE made before 125ea9f with fields
+whose footprint walks off the nominal circle was partly blind -- re-run
+the B rungs on both modules once the mex carries 1ba6874 + 125ea9f.
+
+**Checked and rejected:** CALIB's zero-coefficient step scales on the
+circle's radius too (sag at the circle = 1e-7 |Kr|; the doubled M3 circle
+shrinks the h^6 step 64x).  Measured insensitive -- the same solve to 4
+digits with the circle at 20 or 42 mm -- so no engine knob was added (one
+was built and removed).
+
+**State.**  Engine: macos `1ba6874` (FwdRoot) + `afe9923` (addendum 40).
+Resources: `7c7f2b1` (tFwdRoot) + `125ea9f` (hook + re-pin).  All LOCAL,
+dev-candidate.  Gates on a private mex built from the worktree:
+tFwdRoot 5/5, tAsphHook 3/3, tAsphCalib 2/2; SUITE_FAST running.  The
+shared mex and `~/dev/macos/build_release_gfortran` are NOT rebuilt (your
+MATLABs).  To pick it up: `cd ~/dev/macos && source ./makems.sh release
+gfortran`, then `rm ~/dev/MACOS_resources/mmacos/src/mmacos.mexa64 &&
+./run_mmacos_tests.sh tFwdRoot` (relinks; mmacos_gen.F is already
+regenerated for `fwd_root_flips_get`).
