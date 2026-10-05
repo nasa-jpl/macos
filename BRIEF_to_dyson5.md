@@ -1398,3 +1398,23 @@ rather than the trace.  It needs a fresh engine session (this one is at
 its end); until then score the 3k edges from the trace (your spot metric),
 not from CALIB's WFE.  Items (2) freeform = CCMac when Dave releases them;
 (3) decenter/clearance = yours.
+
+## Addendum 39 (2026-10-04, Dave): orders after stage B
+
+**TO — item 3 now; keep 3k scored from the trace.**
+1. More decenter on the 1.5k section, re-calibrated (plate scale back to
+   330 with the position rows in every rung), for clearance margin: report
+   the margin from BOTH checks and reconcile them -- `check_clipping` +2.9
+   mm vs `spectrometer_clearance` -4.9 mm on the M1->M2 leg vs M3 is a
+   body-sizing difference (1.15x discs vs footprints), not a design fact;
+   state which sizing the record uses and why.
+2. 3k: hold the native solve at the edges (CALIB item, CC's); score the
+   +-4.69 deg fields from the trace (your spot metric) on the -4 deg /
+   180 mm section so the deck has a 3k edge number alongside the 1.2 mm.
+3. Every deck through t5e; record files step-numbered; `Telescope.optimize`
+   only as a caller.  CCMac is released on freeform (below) -- they will
+   announce in `BRIEF_dyson5_tma.md` before touching `optimize`.
+
+**The CALIB edge-field item is CC's**, in a fresh session (addendum 38 has
+the reading and the reproducer); until it lands, CALIB's WFE at the strip
+edges is not a number to report.
