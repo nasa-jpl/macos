@@ -1524,6 +1524,50 @@ slice 4 wants speed.
   no engine change.  Gate: A/B round-trip (asph via `Aspheric` == asph
   via the fold, ray positions to engine precision).  The combined emit
   path currently ERRORS until this lands.
+- **EPFIX -- the fixed-station exit-pupil reference (engine + design
+  layer; Dave 2026-10-05, picked up with the co-emit above).**  Why:
+  `OptFEX` places the reference sphere at the probe chiefs' CROSSING,
+  which is ill-conditioned as a design approaches telecentric and fails
+  outright on dyson5's eccentric TMA section (far astigmatic crossing,
+  0.18/0.65 m probe axes, EP sphere loses every ray, CALIB aborts with
+  9.9999e36 -- TO addendum 42 cp1); FEX's telecentric fallback is a FLAT
+  Return, i.e. a sphere centred at infinity, which measures a converging
+  beam against a plane wave.  The metric never needed the crossing: a
+  reference sphere is correct iff it is centred on the field's chief
+  IMAGE point; its vertex station is a free convention.  Design: a
+  sibling of SXP, `EPFIX iElt` (tracesub.F): station S = VptElt(iElt)
+  NEVER moves; chief traced to the flat Return at the detector (iElt-1),
+  leg to element iElt+1 via `FEXConicLeg` -> image point P; then
+  `psi = unit(P-S)`, `Kr = -|P-S|`, `Kc = 0`, `Rpt = S` -- the same five
+  assignments FEX's caller makes, with S and P in place of the crossing
+  (no probe rays, nothing singular as the chiefs go parallel).  Dispatch
+  like SXP (`macos_cmd_loop.inc`, `smacosutil.F` LoadStack, `MACOS_OPS`);
+  CALIB flag `LOptEPFix` beside `LOptIfFEX` (dopt_mod; Rx `OptEPFix=`;
+  api `calib_set_ep_fix`; the ~15 `LOptIfFEX` sites in msmacosio /
+  stop_set / design_optim / smacos_compute mirror it), `smacos_compute`
+  calls EPFIX instead of FEX per field when set, STOP re-issue unchanged;
+  api `ep_fix(iElt)` + veneers; cmdref entry.  FEX and SXP are NOT
+  touched (FEX keeps "where the pupil IS" = the far-field propagation
+  distance).  Design layer: `add_pupil(..., 'station', z|'fex')` emits
+  the Return at a fixed station (default one FEX call at the seed, then
+  frozen); `optimize(..., 'ep_ref', 'fixed'|'fex')`, default 'fex' until
+  the gates pass.  Gates: (1) coaxial identity -- rodgers1's deck,
+  station = FEX's crossing, on-axis WFE equal to OptFEX to its 2.7e-9
+  class and the same solve; off-axis coaxial fields differ by the
+  second-order sphere-sampling term only (quantified); (2) TO's -4/190
+  section with the station 1 m out: runs where OptFEX aborted, per-field
+  rms matches TO's hand STRICT (29-40 um at the seed; `tEP` stage,
+  resources ea615fb) -- report BOTH the chief-intercept and the
+  best-focus form, the first carries field curvature (TO cp2: the strict
+  solve moved the worst SRF from the edge to the centre by balancing
+  focus); (3) tTmaTelecentric's Korsch: FEX falls back flat, EPFIX gives
+  the converging-wave reference; (4) FEX/SXP bit-identical.  Not urgent
+  for dyson5 (cp2: with symmetric DOFs the strict merit moves the edge
+  343 -> 332 um, the wall is the optics), but CCMac's freeform rungs on
+  the section currently optimise the FP merit, which mis-ranks the
+  fields 6x (16 um floor), so EPFIX goes in BEFORE the next freeform
+  ladder.  ~1 day.  Stopgap until then: TO's lsqnonlin strict solver
+  (`tEP` rung S1, deck write + reload per evaluation).
 
 ---
 
