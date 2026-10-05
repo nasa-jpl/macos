@@ -1524,6 +1524,11 @@ slice 4 wants speed.
   no engine change.  Gate: A/B round-trip (asph via `Aspheric` == asph
   via the fold, ray positions to engine precision).  The combined emit
   path currently ERRORS until this lands.
+  **UPDATE 2026-10-05 (TO, addendum 44 / 0258faa): the exact route is
+  `Surface= FreeForm` with two channels -- Mon about the VERTEX carrying
+  the asphere as unnormalised ANSI 1/5/13/25 (exact to 7.8e-15 m), FF about
+  the section POLE carrying the Zernike modes -- no conversion through
+  `ZernCoef`.  PLAN.md 3.1 carries it as "asph+Zernike surface option".**
 - **EPFIX -- the fixed-station exit-pupil reference (engine + design
   layer; Dave 2026-10-05, picked up with the co-emit above).**  Why:
   `OptFEX` places the reference sphere at the probe chiefs' CROSSING,
