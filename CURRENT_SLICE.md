@@ -38,6 +38,17 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 pm -- addendum 42 CLOSED by TO (resources fac46aa d33abac
+> d8cccca 427b60b ea615fb, LOCAL): stop(1) parent-vertex trap FIXED
+> (Telescope.stop_at_apstop_, gate tStopApStop 4/4); OptFEX cannot run on the
+> near-telecentric section; the FP merit mis-ranks fields 6x (16 um floor)
+> but with symmetric DOFs the strict merit moves the edge 343 -> 332 um --
+> THE WALL IS THE OPTICS; strict (chief-intercept AND best-focus) is the
+> reporting metric from here on.  Dave: EPFIX (fixed-station EP reference)
+> + CCMac's asph+Zernike co-emit DEFERRED together -> PLAN_DESIGN_LAYER
+> Sprint 6+ (design written out there); pick up before the next freeform
+> ladder.  CC -> DM-gauge deck rewrite.**
+
 > **2026-10-05 -- NEXT STEPS set (Dave).  Step 1 = exit-pupil merit on the
 > eccentric section -> TO (addendum 42; trap: stop(1) aims at the PARENT
 > vertex on a decentered section; two checkpoints, CC monitors via idle
