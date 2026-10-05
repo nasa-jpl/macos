@@ -38,6 +38,18 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-04 night -- CALIB edge-field item CLOSED (CC): it was the engine's
+> forward conic root pick, not CALIB.  40 of 1185 rays sat on M3's FAR sheet
+> (K=-15.8, 2a=22 mm), 44 mm extra path, all "passing" -> 7.8 mm FP OPD =
+> CALIB's mm-scale WFE.  FwdRoot = vertex-sheet rule (sign of Kr+(1+Kc)z);
+> NOT first-crossing (M2's far sheet is IN the beam: 125 rays, measured).
+> macos 1ba6874 + resources 7c7f2b1 LOCAL (gate tFwdRoot 5/5, corpus A/B 398
+> decks identical).  Shared mex/build_release_gfortran NOT relinked (TO's two
+> MATLABs running) -- do `makems.sh release gfortran` + rm mex + tFwdRoot when
+> they finish.  Open: the -4/180 B-rung 9.9999e36 drops (rung re-running
+> post-fix, scratchpad rung_b4.log); fast suite not yet run post-fix.
+> Addendum 40.**
+
 > **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
 > telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
 > OPEN ENGINE ITEM for a FRESH session: CALIB cannot evaluate the 3k section at
