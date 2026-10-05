@@ -1524,3 +1524,69 @@ MATLABs).  To pick it up: `cd ~/dev/macos && source ./makems.sh release
 gfortran`, then `rm ~/dev/MACOS_resources/mmacos/src/mmacos.mexa64 &&
 ./run_mmacos_tests.sh tFwdRoot` (relinks; mmacos_gen.F is already
 regenerated for `fwd_root_flips_get`).
+
+## Addendum 42 (2026-10-05, CC for TO, Dave's order): the EXIT-PUPIL merit on the eccentric section -- is the edge wall the optics or the metric?
+
+**Why.**  Every stage-A/B solve minimised CALIB's OPD at the terminal FP,
+which the section's chiefs hit at ~31 deg.  That is OPL to each ray's OWN
+intercept on a tilted plane: it tracks the spot only through tan(31 deg),
+and with the position rows it can trade edges against centre (today's
+step-5 re-run: same seed, two basins, 3k centre 3.6 vs 21 px).  The strict
+metric is the exit-pupil reference sphere (`add_pupil` + `OptFEX= Yes`,
+"the reason add_pupil exists"; rodgers1 gate0_merit_identity proved it
+equals the strict metric to 2.7e-9 ON AXIS).  It has never run on a
+decentered section.  Your job: run it, on the deck you know best, and
+report whether the edge blur moves.  Budget half a day; two checkpoints.
+
+**Deck.**  Your -4 deg / 190 mm 1.5k section (the stage-B re-run row,
+50ed36b: 332.9 mm, edge 343 um = 19 px, smile 3.26 px).  Build it the tA
+way, then before any solve: `tel.add_pupil(nE)` (inserts FP_return +
+ExitPupil, nElt 4 -> 6) and verify the three things below.
+
+**THE TRAP -- read before the first call.**  `add_pupil` and
+`Telescope.optimize` (use_ep branch) both call `macos.stop(1)` with NO
+offset, which aims the chief ray at M1's VptElt.  On a coaxial deck that is
+the beam centre; on YOUR section VptElt(1) is the PARENT vertex, 190 mm
+from the beam (RptElt).  A bare `stop(1)` re-aims the whole system onto
+the parent axis and every number after it is of a different telescope.
+Verify after `add_pupil`: `ri = macos.get_ray_info(...)` at element 1 must
+put the chief at RptElt(1) to < 1 mm, and `macos.get_stop_info` must report
+the stop at the section's ApStop (0, ~0.19, 0), not (0,0,0).  If it does
+not, STOP and report -- the fix is `macos.stop(1, [dx dy])` with the
+offset = RptElt(1) - VptElt(1) in M1's local frame (or the object-space
+form `macos.stop_obj` at the ApStop header position), and it belongs
+INSIDE `add_pupil`/`optimize` (stop_elt offset from RptElt when the element
+is a section), not in your runner -- announce it in BRIEF_dyson5_tma.md and
+make the one-line change by path, gated (`tStopReload` has the pattern).
+
+**Three checks before the solve (checkpoint 1, cheap -- report these
+first):**
+1. FEX on the section: `macos.fex(1)` prints the EP crossing as the mean
+   of 4 probes with a spread; the radius should be ~1.0-1.3 m (tA read the
+   pupil at -0.9..-1.3 m) and the printed axis must say CHIEF.  A radius of
+   mm-class or a telecentric fallback message = the Return is wrong.
+2. Identity at the SEED: evaluate (max_iters 0 or 1) the SAME 7 fields
+   with the FP merit (no add_pupil) and with the EP merit, and tabulate
+   per field: CALIB WFE (both merits), the trace rms spot (your helper),
+   nPassRays.  The EP WFE must RANK the fields like the spot does; the FP
+   WFE need not.  That table is the diagnostic Dave asked for.
+3. `fwd_root_flips_get` after each trace = 0 on this deck (it was 0 at the
+   nominal field today; the Return sphere traced back from the focus is the
+   ifLNsrf branch, untouched by FwdRoot -- a nonzero count is news).
+
+**The run (checkpoint 2).**  The same B1 rung as 50ed36b -- conics +
+h^4/h^6 on M1-M3, position rows at beam_wt 1 -- with the EP merit (the
+`beam_pos_fov` rows still target the DETECTOR element: `optimize` picks the
+last FocalPlane, which after add_pupil is still your FP).  Score as always:
+trace spot per field, efl_of_built_, check_clipping, then t5e with roll 180
+on the deck WITHOUT the pupil pair (save the solved spec, strip the pupil,
+or re-emit: t5e's join must see the real FP).  Report beside 50ed36b's row.
+If the edges move by more than the run-to-run basin scatter you measured
+today (your 1.49 -> 3.26 px smile), the metric was part of the wall and
+every later rung (CCMac's freeform) inherits the EP merit; if they do not,
+we have the optics' answer and stop asking.
+
+**Rules.**  New record files `dyson5_tA_EP_*`; `Telescope.optimize` only
+as a caller except the stop-offset fix above (announce first); commit
+locally by path; Dave reviews pushes.  CC is on the DM-gauge deck and will
+read your two checkpoints as they land -- message at each.
