@@ -38,6 +38,15 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 late -- DESIGN-LAYER DEFECT (TO's find, CC fix, resources
+> f9f93e6 LOCAL): Telescope's Zernike emitter wrote pMon = Vpt = the PARENT
+> vertex on eccentric sections (axes were already the pole frame) -> every
+> freeform mode evaluated at rho ~ 3.8; CCMac's step 5 + my 7cd8b24 re-run
+> were vertex-centred solves (superseded).  Now pMon = pole; gate
+> tFreeformPole 3/3 (engine leg: 1 um Z5 on M1 moves the chief 0.194 ->
+> <0.03 mm).  Queued engine item: ZernCoef bare READ at msmacosio.inc:1805
+> kills the host on a short block (ReadRealsPad sibling).  TO on R0'/R1.**
+
 > **2026-10-05 night -- FREEFORM LADDER -> TO (Dave: CCMac's budget), addendum
 > 44: continuation on the STRICT merit (tEP_strict_solve_, Zernike DOFs),
 > m2 = 3.0 -4/190 1.5k parent, R1 astigmatism {4,6} first, then coma/trefoil,
