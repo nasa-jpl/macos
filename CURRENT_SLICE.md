@@ -38,6 +38,11 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 pm2 -- TO on addendum 43 (Petzval scan over secondary_mag; field
+> curvature = ~22 of the 34 um rms at the -4/190 edge, the 25.7 um best-focus
+> residual is astig/coma -> freeform).  Field lens ruled OUT (Dave's question).
+> All pushed: macos 4b08106, resources ea615fb.  CC -> DM-gauge deck.**
+
 > **2026-10-05 pm -- addendum 42 CLOSED by TO (resources fac46aa d33abac
 > d8cccca 427b60b ea615fb, LOCAL): stop(1) parent-vertex trap FIXED
 > (Telescope.stop_at_apstop_, gate tStopApStop 4/4); OptFEX cannot run on the
