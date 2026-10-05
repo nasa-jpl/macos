@@ -91,12 +91,6 @@
    "y": 5.25
   }
  },
- "One bench, four ways of sensing": {
-  "txt:The reference arm (a 103 mm flat on a piezo": {
-   "x": 0.45,
-   "y": 6.96
-  }
- },
  "Parts specific to the sensors": {
   "txt:The vector sensor is the one configuration": {
    "x": 0.32,
@@ -232,6 +226,19 @@
  "Zernike sensor: a quarter-wave dimple at the focus": {
   "txt:How it reads: a 5.3 µm etched dimple": {
    "fs": 15
+  }
+ },
+ "One optical bench to demo 4 surface gauges, in mirror and lens forms": {
+  "txt:A 10 nm single-actuator change": {
+   "x": 0.5,
+   "y": 6.55,
+   "w": 12.43
+  }
+ },
+ "One bench, two forms, four ways of sensing": {
+  "txt:The reference arm (a 103 mm flat on a piezo": {
+   "x": 0.45,
+   "y": 6.96
   }
  }
 }
