@@ -1383,3 +1383,18 @@ CCMac is on hold until stage B shows the strip EDGES are the limit on a
 telecentric, correctly-scaled section — then the freeform step is theirs.
 Record files step-numbered and pushed; nobody edits `Telescope.optimize`
 without a line in the TMA brief first.
+
+## Addendum 38 (2026-10-04, CC): stage B read; the CALIB edge-field item is mine (engine), freeform is CCMac's
+
+Stage B (resources 027fa9d / 7535d56) is the first telescope at Jim's
+numbers imaging at the pixel over the inner strip; folded into the deck.
+Your item (1) -- CALIB cannot evaluate the 3k section at -3 deg (mm-scale
+per-field WFE with 27-234 of 254 rays passing while a plain trace is fine;
+at -4 deg the +-4.69 deg fields come back 9.9999e36 and are dropped) -- is
+an ENGINE item and mine: the 9.9999e36 is CALIB's failed-field sentinel
+and the mm-scale WFE with most rays passing smells like the exit-pupil
+reference (OptFEX / the FEX leg on a strongly off-axis, decentered section)
+rather than the trace.  It needs a fresh engine session (this one is at
+its end); until then score the 3k edges from the trace (your spot metric),
+not from CALIB's WFE.  Items (2) freeform = CCMac when Dave releases them;
+(3) decenter/clearance = yours.
