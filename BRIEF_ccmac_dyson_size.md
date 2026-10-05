@@ -400,3 +400,22 @@ two records of the same step are a comparison, not a conflict.  If you
 are in fact online, say so in `BRIEF_dyson5_tma.md` and I stop at the
 first report.  Steps 3-4 remain yours unless this note is still the last
 word tomorrow.
+
+## Round 4 orders (2026-10-04, Dave): freeform on the outer field -- you are released
+
+Stage B (TO, resources 027fa9d / 7535d56, `BRIEF_dyson5_tma.md`) made the
+strip EDGES the limit on a telecentric, correctly-scaled section: 1.5k
+1.3 px centre, <= 2.7 px inner half-strip, **15.8 px at +-2.35 deg**; 3k
+58 um centre, 1.2 mm at +-4.69 deg.  That is your trigger.  Take item 2:
+non-symmetric (freeform / Zernike) terms for the outer field on both
+modules, on TO's stage-B sections (the -3 deg / 160 mm 1.5k and the
+-4 deg / 180 mm 3k decks in the stage-B record), with the per-field
+position rows (`'beam_pos_fov'`, stated `beam_wt`) in every rung so the
+330 mm plate scale holds, and every deck scored by TO's t5e in one run.
+Your own tooling (`optimize_freeform`, `freeform_unobscured` / the
+sphere+Zernike front end) is the route; if you need a hook in
+`Telescope.optimize`, announce it in `BRIEF_dyson5_tma.md` first (TO is a
+caller only).  Known trap on 3k: CALIB cannot evaluate the section's edge
+fields at -3 deg and drops +-4.69 deg at -4 deg (an engine item CC takes
+in a fresh session); score 3k edges from the trace meanwhile.  Record as
+`dyson5_tma_step5_*`; budget: one bounded rung per module, then report.
