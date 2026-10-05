@@ -1367,3 +1367,19 @@ runner-and-scorer task in your idiom, so it is yours:
 Bounded: measure (1) now on the d205 deck and report; (2) only if the
 mismatch at the grating is the limiting loss; (3) when CCMac's deck lands.
 Pushes between lanes are still fine (Dave is back; by-path commits).
+
+## Addendum 37 (2026-10-04, Dave's split): stage A and B are yours; CCMac stands down
+
+Running now per Dave: you take stage A on the telecentric parent
+(`tma_layout(..., 'telecentric', true)`, M1 stop; `R = [0.3667 0.0998
+0.1667]`, `t = [0.1477 0.0461]`; `BRIEF_dyson5_tma.md`, hand-off of 18:00) —
+the eccentric section by the step-2 ladder, clearance by `check_clipping`,
+and the three numbers BEFORE any figure: chief angle at the slit, pupil
+distance, traced plate scale at the working bias (your t5e table).  If the
+plate scale still misses 330 on the telecentric parent, report it as a
+first-order residual with its mechanism.  Then stage B (aspheres + position
+rows; the 3k geometry) on what passes, each deck scored by t5e in one run.
+CCMac is on hold until stage B shows the strip EDGES are the limit on a
+telecentric, correctly-scaled section — then the freeform step is theirs.
+Record files step-numbered and pushed; nobody edits `Telescope.optimize`
+without a line in the TMA brief first.
