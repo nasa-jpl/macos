@@ -38,6 +38,18 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 -- FREEFORM LADDERS (TO, local 89bef91 / 15a92d8 / 277de9d):
+> LM + Jacobian scaling fixed the crawl.  1.5k: edge 291 -> 170 um (9.4 px),
+> centre 29 -> 73 um; e2e smile 0.82 / keystone 0.33 / CRF 7.7 / SRF 9.2 px.
+> 3k: edge 1086 -> 485 um (27 px) at R4, field flat 172-193 um inside 3.13 deg,
+> centre 68 -> 190 um; e2e smile 7.7 -> 4.6, CRF 15, SRF 11.8 -> 15.1 px;
+> R5 in play.  Mechanism: equal field weighting FLATTENS the strip by trade
+> (not astigmatism removal).  OPEN RULING (Dave): centre-weighted field set /
+> position-row weight -- what the strip must deliver where.  Clearance carried
+> from B1 (+7.35 mm 3k, +0.39 1.5k), FF sag <= 0.75 mm.  Gauges: content pass 1
+> committed (00bcdef); five redo runs serial (sensnoise done: S 1.19e14 /
+> V 4.6e13 / P 1.46e14 on-surface).**
+
 > **2026-10-05 -- RE-RUNS IN (TO, resources 8a64b9e LOCAL): with residuals in
 > um (every rung at maxfev 1500 -- none converged): cp2 S1 buys ~9% at the
 > edge with SYMMETRIC DOFs by trading the centre (343->313 um; was "3%"); the
