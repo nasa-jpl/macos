@@ -38,6 +38,13 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 night -- FREEFORM LADDER -> TO (Dave: CCMac's budget), addendum
+> 44: continuation on the STRICT merit (tEP_strict_solve_, Zernike DOFs),
+> m2 = 3.0 -4/190 1.5k parent, R1 astigmatism {4,6} first, then coma/trefoil,
+> symmetric, next order; stop two rungs after the edge stalls; 3k after.
+> SRF rise at m2 3.0 attributed (f72f042: edge profile SHAPE, same second
+> moment).  TO local: d8d8d71 16cef7b f72f042 (await push).  CC -> deck.**
+
 > **2026-10-05 eve -- addendum 43 ANSWERED (TO, resources d8d8d71 + 16cef7b,
 > LOCAL): the Petzval sum does NOT govern the section's focus surface
 > (prediction falsified, 9x and wrong zero).  T/S probe: along-track focus
