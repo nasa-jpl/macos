@@ -3319,6 +3319,7 @@ C  0. Initialize parameters
 	RayFailElt(:) = 0
 	RayFailMsg(:) = ' '
 	nZPFailMsg = 0
+	nFwdRootFlip = 0
 !<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
@@ -5284,7 +5285,7 @@ C***********************************************************************
 	use elt_mod, only: RayStatus, RayFailElt,
      &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
      &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
-	use surfsub, only: nZPFailMsg, mZPFailMsg
+	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip
 	IMPLICIT NONE
 	INTEGER nElt,iElt,nBadRays,iRay
 	INTEGER :: nMiss,nObs,nBrkt,nOther
@@ -5324,6 +5325,9 @@ C***********************************************************************
      &    WRITE(*,130) mZPFailMsg, nZPFailMsg
   130	FORMAT('   (',i4,' of ',i6,
      &    ' bracket/iteration messages shown)')
+	IF (nFwdRootFlip.GT.0) WRITE(*,131) nFwdRootFlip
+  131	FORMAT('   First-crossing root picks differing from the legacy',
+     &    ' metric: ',i8)
 !<--
 
 	RETURN

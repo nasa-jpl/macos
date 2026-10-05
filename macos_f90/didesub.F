@@ -18,7 +18,7 @@ C***********************************************************************
      &	  pin,ihat,XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
      &	  wVec,pr,L,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 	use math_mod
-	use surfsub, only: LZPFailed
+	use surfsub, only: LZPFailed, FwdRoot
 
 	IMPLICIT NONE
 
@@ -83,19 +83,7 @@ C	Compute intersection point and normal vector
 	      L=km
 	    END IF
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF

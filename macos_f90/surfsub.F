@@ -20,6 +20,45 @@ C***********************************************************************
          INTEGER :: nZPFailMsg = 0
          INTEGER, PARAMETER :: mZPFailMsg = 20
 !<--
+!-->  Forward (sequential) root pick -- FwdRoot, 2026-10-04.  Until then the
+!     .NOT.ifLNsrf branch of ConSrf / AsphSrf / AsphGridSrf / FreeFormSrf
+!     / UDSrf (and IntSrf, RefSrf, ObsSrf, PolElt, ReturnSrf) chose between
+!     the quadratic's two roots by the |L^2 - mpr| proximity metric,
+!     mpr = |pin - pv|^2: "the root whose |L| best matches the ray's
+!     distance from the VERTEX" -- lateral height included, no sense of
+!     which SHEET of the conic the hit is on (the same metric LNsrfRoot
+!     replaced on the ifLNsrf branch 2026-10-03).  On a two-sheet
+!     hyperboloid it takes the FAR sheet whenever the ray's vertex distance
+!     happens to lie nearer that root: dyson5's eccentric TMA section
+!     (M3 K=-15.8, sheets 22 mm apart) sent 40 of 1185 rays onto M3's far
+!     sheet (dz = +22.0 mm = 2a at h 7-8 mm from the vertex), 44 mm of
+!     extra path and a 10 mm spot tail, every ray "passing" -- read as
+!     8 mm rms OPD at the FP and as CALIB's mm-scale per-field WFE
+!     (addendum 38).
+!     THE RULE IS THE SHEET, NOT THE ORDER OF CROSSING.  The real surface
+!     is the sheet the vertex is on.  With p the hit relative to the
+!     vertex and z = psi.p, the conic is |p|^2 + 2 Kr z + Kc z^2 = 0 and
+!     the normal's axial component Nvec.psi = Kr + (1+Kc) z has the SIGN
+!     OF Kr on the vertex sheet and the opposite sign on the other sheet
+!     (the two meet where the normal is perpendicular to the axis: the
+!     hyperboloid's asymptotes at infinity, an ellipsoid's equator).  A
+!     forward root (L > 0) on the vertex sheet is taken; if both roots
+!     qualify, the first crossing.  "First forward crossing" alone is
+!     WRONG and was measured so: on the same deck M2's far sheet (a bowl
+!     opening toward M1, 37 mm in front of the mirror) is crossed by 125
+!     rays BEFORE the real surface -- min-positive put them on it and lost
+!     350 rays at M3.  When no forward vertex-sheet root exists the legacy
+!     choice is kept to the bit (a ray hitting only the far sheet keeps
+!     its old, spurious hit -- counted, not failed; Dave's guards-warn
+!     rule).  Every pick that differs from the legacy one is counted in
+!     nFwdRootFlip (reset per trace with nZPFailMsg, read by the api
+!     fwd_root_flips_get, summarised by WARN) and the first such pick of a
+!     RUN prints ONE note (a per-trace note floods a CALIB run) -- a
+!     nonzero count on a legacy deck means that deck was tracing onto the
+!     wrong sheet.
+         INTEGER :: nFwdRootFlip = 0
+         LOGICAL :: LFwdRootNoted = .FALSE.   ! the note prints ONCE per run
+!<--
 !-->  Non-sequential candidate probes need FLOW-OF-LIGHT root selection:
 !     when LNSFlowL is set, the base-conic root pick in ConSrf / AsphSrf
 !     / AsphGridSrf / FreeFormSrf / UDSrf takes the SMALLEST POSITIVE
@@ -78,6 +117,54 @@ C***********************************************************************
                LNsrfRoot=km
             END IF
          END FUNCTION LNsrfRoot
+!<--
+
+!-->  See the FwdRoot note at the top of the module.  Legacy pick kept
+!     verbatim as Lold; a forward root on the VERTEX sheet (sign of
+!     Kr + (1+Kc) z equal to the sign of Kr) wins, first crossing on a tie.
+         REAL*8 FUNCTION FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi)
+            IMPLICIT NONE
+            REAL*8, INTENT(IN) :: kp,km,mpr,Kr,Kc,psitprel,itpsi
+            REAL*8 :: Lold
+            LOGICAL :: okp,okm
+            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+               IF (kp.GT.0D0) THEN
+                  Lold=kp
+               ELSE
+                  Lold=km
+               END IF
+            ELSE
+               IF (km.GT.0D0) THEN
+                  Lold=km
+               ELSE
+                  Lold=kp
+               END IF
+            END IF
+            okp=(kp.GT.0d0).AND.
+     &          ((Kr+(1d0+Kc)*(psitprel+kp*itpsi))*Kr.GE.0d0)
+            okm=(km.GT.0d0).AND.
+     &          ((Kr+(1d0+Kc)*(psitprel+km*itpsi))*Kr.GE.0d0)
+            IF (okp.AND.okm) THEN
+               FwdRoot=MIN(kp,km)
+            ELSE IF (okp) THEN
+               FwdRoot=kp
+            ELSE IF (okm) THEN
+               FwdRoot=km
+            ELSE
+               FwdRoot=Lold
+            END IF
+            ! ABS(..).GT.0 is FALSE on NaN roots (a dead ray is not a flip)
+            IF (ABS(FwdRoot-Lold).GT.0d0) THEN
+               nFwdRootFlip=nFwdRootFlip+1
+               IF (.NOT.LFwdRootNoted) THEN
+                  LFwdRootNoted=.TRUE.
+                  WRITE(*,'(A/A)')
+     &  ' ** Note: a ray intersection moved to the VERTEX sheet of a '//
+     &  'two-sheet conic (legacy root pick took the other sheet);',
+     &  '    per-trace count: WARN / fwd_root_flips_get (noted once).'
+               END IF
+            END IF
+         END FUNCTION FwdRoot
 !<--
 
 C***********************************************************************
@@ -217,19 +304,7 @@ C***********************************************************************
                ELSE IF (ifLNsrf) THEN
                   L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -989,19 +1064,7 @@ C	Compute intersection point and normal vector
                ELSE IF (ifLNsrf) THEN
                   L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -1267,19 +1330,7 @@ C       Compute intersection point and normal vector
                ELSE IF (ifLNsrf) THEN
                   L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -2192,19 +2243,7 @@ C	Compute incidence point of ray on the base conic surface
                ELSE IF (ifLNsrf) THEN
                   L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -3088,19 +3127,7 @@ C	Compute incidence point of ray on the surface
                ELSE IF (ifLNsrf) THEN
                   L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF

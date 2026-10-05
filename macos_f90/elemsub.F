@@ -2353,19 +2353,7 @@ C	Compute intersection point and normal vector
 	  END IF
 	  kp=ksqrt/a
 	  km=c/ksqrt
-	  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	    IF (kp.GT.0D0) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
-	  ELSE
-	    IF (km.GT.0D0) THEN
-	      L=km
-	    ELSE
-	      L=kp
-	    END IF
-	  END IF
+	  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	END IF
 
         !print*,' ** ReturnSrf: L =',L
@@ -2713,19 +2701,7 @@ C	Compute intersection point and normal vector
 	      L=km
 	    END IF
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
@@ -3018,19 +2994,7 @@ C	Surface intersection -- identical to RefSrf
 	      L=km
 	    END IF
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
@@ -3284,19 +3248,7 @@ C	Compute intersection point and normal vector
 	      L=km
 	    END IF
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF

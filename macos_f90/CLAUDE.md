@@ -886,6 +886,54 @@ paths picking the SAME root at M1 with DIFFERENT `ifLNsrf` -- the
 ray-by-ray diff found the divergence at ray 2, not ray 1 (the chief is
 on axis, h = 0, and never sees the metric's flaw).
 
+## Forward root pick is the VERTEX SHEET, not the vertex distance (2026-10-04)
+The 10-03 entry above closed the `ifLNsrf` branch and left the FORWARD
+branch alone ("forward trains never reach this").  They do, through the
+other defect of the same metric.  The `.NOT.ifLNsrf` pick in ConSrf /
+AsphSrf / AsphGridSrf / FreeFormSrf / UDSrf (+ IntSrf in didesub.F and
+the RefSrf / ObsSrf / PolElt / ReturnSrf conics in elemsub.F) chose the
+root by `|L^2 - mpr|`, `mpr = |pin - pv|^2` -- the ray's distance to the
+VERTEX, lateral height included, with no notion of which SHEET of the
+conic the hit is on.  dyson5 stage B (TO, addendum 38): on the 3k
+eccentric TMA section at -3 deg / 180 mm, `Telescope.optimize` reported
+mm-scale per-field WFE (8.5 / 6.8 / 3.9 mm) with every ray passing while
+the trace's 4-sigma-cut spot said 400 um.  CALIB was FAITHFUL: the plain
+`OPD` at the FP is 7.8 mm rms on that deck because M3 (K = -15.8,
+Kr = -0.1617 m, sheets 2a = 21.9 mm apart) had 40 of 1185 rays on its FAR
+sheet (dz = +22.0 mm = 2a, at h 7-8 mm from the vertex), 44 mm of extra
+path and a 10 mm spot tail -- all "passing" (the far sheet is a perfectly
+good intersection).  The bimodal OPD histogram (90 % within 1.5 mm, 10 %
+at +42 mm) is the tell; an outlier-cut spot metric hides it completely.
+**Rule (`FwdRoot`, surfsub.F):** the real surface is the sheet the vertex
+is on.  With `p` the hit relative to the vertex and `z = psi.p`, the conic
+is `|p|^2 + 2 Kr z + Kc z^2 = 0` and the normal's axial component
+`Nvec.psi = Kr + (1+Kc) z` has the SIGN OF Kr on the vertex sheet and the
+opposite sign on the other (they meet where the normal is perpendicular
+to the axis).  A forward root (`L > 0`) on the vertex sheet is taken,
+first crossing on a tie; with none, the legacy pick is kept to the bit.
+**"First forward crossing" alone is WRONG, measured on the same deck:**
+M2's far sheet is a bowl opening toward M1, 37 mm IN FRONT of the mirror,
+and 125 rays cross it before the real surface -- min-positive put them on
+it and lost 350 rays at M3 (RMS OPD 0.34 m).  So the sheet decides, not
+the order.  Measured post-fix: elements 1-2 bit-identical, 40 flips at
+M3, FP OPD 7.84e-3 -> 5.79e-4 m, CALIB initial WFE [8.47 0.24 3.89 6.77
+..] -> [0.58 0.24 0.29 0.50 ..] mm.  **Corpus A/B (406 decks, CLI, pre
+vs post, `opd nElt`): 398 load on both, (RMS, P-V, nPass, lost) identical
+to 10 digits on every one; the only flip count on a legacy deck was
+`tst_save_keys.in`, a NaN trace on both engines -- `NaN .NE. NaN` is
+TRUE, so the counter now tests `ABS(new-old) > 0`.**  Every pick that
+differs from legacy is counted in `nFwdRootFlip` (reset per trace with
+`nZPFailMsg`; api `fwd_root_flips_get`; WARN line) and ONE note prints
+per RUN (a per-trace note floods CALIB).  A nonzero count on a legacy
+deck means that deck was tracing onto the wrong sheet.  Gate: `tFwdRoot`
+(mmacos, SUITE_FAST, `Rx_TwoSheetTMA.in` = the stage-B section as
+emitted): vertex-sheet residual < 1e-6 (pre-fix 2.2e-2), FP OPD < 1 mm,
+no spot tail, M2 bit-identical, the Schwarzschild twin unmoved, CALIB
+sees every field; the pre-fix mex fails 3 of 5 by exactly those numbers.
+The OPD at a FP the chiefs hit at 31 deg is still 0.5 mm-class on a
+400 um spot -- that is the tilted-plane OPL metric (rodgers1 A.1), the
+reason `add_pupil` exists; it is now a REAL number, not a wrong one.
+
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
 `design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
 element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were
