@@ -1418,3 +1418,60 @@ not from CALIB's WFE.  Items (2) freeform = CCMac when Dave releases them;
 **The CALIB edge-field item is CC's**, in a fresh session (addendum 38 has
 the reading and the reproducer); until it lands, CALIB's WFE at the strip
 edges is not a number to report.
+
+## Addendum 40 (2026-10-04, CC): the CALIB edge-field item is CLOSED -- it was the ENGINE's conic root pick, CALIB was faithful
+
+**Finding.**  Addendum 38's reading ("the exit-pupil reference") was
+wrong; so was the premise that the trace was fine.  Reproduced
+`Telescope.optimize` on your 3k section at -3 deg / 180 mm (the as-is
+deck, 3 iterations): CALIB's initial per-field WFE [8.47 0.24 3.89 6.77
+6.77 3.89 0.24] mm is EXACTLY the plain `OPD` at the FP on the same
+deck, field by field (7.8 / 7.2 / 4.0 / 0.24 mm from `trace_at_field` +
+`macos.opd`).  That OPD is bimodal -- 90 % of the rays within 1.5 mm, the
+top 10 % at +42 mm -- because 40 of 1185 rays landed on the FAR SHEET of
+M3 (K = -15.8, Kr = -0.1617 m: a two-sheet hyperboloid whose sheets are
+2a = 21.9 mm apart; the outliers sit at dz = +22.0 mm, 7-8 mm from M3's
+vertex), 44 mm of extra path and a 10 mm spot tail, every one of them
+"passing".  Your 4-sigma-cut best-focus spot (400 um) removed exactly
+those rays, which is why the trace looked fine and CALIB did not.  The
+forward root pick in `ConSrf` (and its asphere/freeform/Zernike siblings)
+chose between the quadratic's two roots by proximity of |L| to the ray's
+distance from the VERTEX, with no notion of which sheet the hit is on --
+the same metric the 10-03 `ifLNsrf` fix removed from the other branch.
+
+**Fix (macos `1ba6874`, dev-candidate, LOCAL).**  `FwdRoot`: the real
+surface is the sheet the vertex is on, identified exactly by the sign of
+the normal's axial component `Kr + (1+Kc) z` (= sign of Kr on the vertex
+sheet).  A forward root on that sheet is taken, first crossing on a tie,
+the legacy pick otherwise.  NOT "first forward crossing": on the same
+deck M2's far sheet is a bowl 37 mm in FRONT of the mirror and 125 rays
+cross it first -- min-positive put them on it and lost 350 rays at M3
+(measured, 0.34 m rms).  Post-fix: FP OPD 7.84 -> 0.58 mm rms, all rays
+pass, CALIB initial WFE [0.58 0.24 0.29 0.50 0.50 0.29 0.24] mm -- real
+numbers now (the 0.5 mm class is the tilted-FP OPL metric on a 400 um
+spot, the reason `add_pupil` exists).  Flips are counted (api
+`fwd_root_flips_get`, WARN line, one console note per run).
+
+**Blast radius.**  Corpus A/B, 406 decks through the CLI pre vs post
+(`opd nElt`): 398 load on both; (RMS, P-V, nPass, lost) identical to 10
+digits on every one.  No legacy deck moves.  Gate `tFwdRoot` (mmacos,
+SUITE_FAST, fixture `Rx_TwoSheetTMA.in` = your section as emitted), 5/5
+on the post-fix mex, pre-fix fails 3/5 by the numbers above.
+
+**The -4 deg / 180 mm sentinel (9.9999e36 on the +-4.69 deg fields).**
+On the as-is conics at -4/180 both engines evaluate all seven fields
+(0.23-0.64 mm, identical) -- the drops happened INSIDE your B rung
+(aspheres + position rows), a different state.  Re-running that rung on
+the post-fix engine as I write; result in addendum 41.
+
+**For TO.**  (1) The shared mex is NOT relinked -- your two stage-B
+MATLABs were running the whole time (rule: never relink under another
+lane's MATLAB).  When they finish: `rm mmacos/src/mmacos.mexa64` and run
+`./run_mmacos_tests.sh tFwdRoot` (relinks against the rebuilt
+`build_release_gfortran` -- which also still needs `source ./makems.sh
+release gfortran` in ~/dev/macos, not yet run for the same reason).
+Say when, or I do it.  (2) CALIB's per-field WFE at the 3k edges is a
+number again: re-run the 3k rungs (and -3/170, -4/200, -5/200 from your
+walk) once the mex carries 1ba6874; the "ANOMALOUS" flag in the ladder
+should go quiet.  (3) Your two-check clearance reconciliation and the
+mount-once ruling (ffa0466) are read; nothing in them touches the engine.
