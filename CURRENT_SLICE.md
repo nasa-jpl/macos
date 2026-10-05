@@ -46,9 +46,13 @@
 > macos 1ba6874 + resources 7c7f2b1 LOCAL (gate tFwdRoot 5/5, corpus A/B 398
 > decks identical).  Shared mex/build_release_gfortran NOT relinked (TO's two
 > MATLABs running) -- do `makems.sh release gfortran` + rm mex + tFwdRoot when
-> they finish.  Open: the -4/180 B-rung 9.9999e36 drops (rung re-running
-> post-fix, scratchpad rung_b4.log); fast suite not yet run post-fix.
-> Addendum 40.**
+> they finish.  The -4/180 B-rung 9.9999e36 drops = SECOND defect: the
+> asphere hook's circle sized on the nominal footprint clipped the edge
+> fields at M3 -> now encloses every solve field (resources 125ea9f);
+> tAsphHook RE-PINNED [55 117 308] -> [496 407 467] nm (the old pin was the
+> WFE of 180/97 of 253 surviving rays).  Addenda 40 + 41.  SUITE_FAST on the
+> private mex running (scratchpad fast.log); relink the shared mex when
+> TO's MATLABs finish; push on Dave's word.**
 
 > **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
 > telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
