@@ -38,6 +38,18 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 eve -- ADDENDUM 45 (a)/(b) IN (TO, resources c26e7c5 / 72a907d
+> LOCAL): the TRANSVERSE metric + M2/M3 rigid-body DOFs reach the pixel on 1.5k:
+> as-placed centre/edge 6/13 um, e2e smile 0.60 / keystone 0.02 / CRF 1.49 /
+> SRF 2.30 px, plate 327/331, clearance DEFENDED (+30 mm telescope, +0.38
+> overall).  3k: 27/41 um (2.3 px edge), CRF 8.3 / SRF 3.9, clearance marginal
+> (+0.06).  Control a0 (strict as per-ray rows): 3k gain is the METRIC, 1.5k
+> mostly the row form.  COSTS: M2 carries 1.3-2.1 mm of freeform at 56-185 mrad
+> (a different mirror); M3 tilted 11-16 deg; K3 -> near sphere; on 3k the FF
+> norm GROWS with the geometry (Bauer: they fight -> (c') stop at M2).
+> Body-model defect fixed en route (bodies on the base sphere, not the conic:
+> ~20 mm off on M1).  (c) e2e-scorer rung running (~2 h).  Equal weights.**
+
 > **2026-10-05 -- FREEFORM LADDERS (TO, local 89bef91 / 15a92d8 / 277de9d):
 > LM + Jacobian scaling fixed the crawl.  1.5k: edge 291 -> 170 um (9.4 px),
 > centre 29 -> 73 um; e2e smile 0.82 / keystone 0.33 / CRF 7.7 / SRF 9.2 px.
