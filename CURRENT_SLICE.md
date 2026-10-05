@@ -57,7 +57,8 @@
 > and clears, edge blur = the symmetric-asphere wall (1.5k 270-420 um, 3k
 > 1.23 mm) -> CCMac freeform.  ALL LOCAL, awaiting Dave's review to push:
 > macos 1ba6874 afe9923 76192db + this; resources 7c7f2b1 125ea9f 50ed36b
-> d874437 9c296af.**
+> d874437 9c296af 26bdc85 (TO's rays-based blind-field flag + must-fire gate
+> tCalibBlindFields 3/3, verified here).**
 
 > **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
 > telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
