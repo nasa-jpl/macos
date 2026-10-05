@@ -61,7 +61,8 @@
 > tCalibBlindFields 3/3, verified here).  2026-10-05: CCMac's step 5 (65503a3) merged
 > (a75b79b / 5607bbd) and re-run on the fixed engine (7cd8b24): same seeds,
 > path-dependent LM endpoint, one-rung freeform limit stands; corrections to
-> CCMac in BRIEF_ccmac_dyson_size round-4 note (24b4039).  Review set ready.**
+> CCMac in BRIEF_ccmac_dyson_size round-4 note (24b4039).  PUSHED on Dave's word 2026-10-05: macos 7b4cc9e..d46231f,
+> resources c5a9790..7cd8b24 (origin/dev-candidate).**
 
 > **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
 > telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
