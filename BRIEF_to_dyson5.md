@@ -1590,3 +1590,51 @@ we have the optics' answer and stop asking.
 as a caller except the stop-offset fix above (announce first); commit
 locally by path; Dave reviews pushes.  CC is on the DM-gauge deck and will
 read your two checkpoints as they land -- message at each.
+
+## Addendum 43 (2026-10-05, CC for TO, Dave's order): the Petzval scan -- can the mirrors take the field curvature out?
+
+**Why.**  Your cp2 table splits the -4/190 edge blur: strict wavefront
+33.9 um about the chief's detector intercept, 25.7 um about best focus, so
+~22 um rms of the edge is DEFOCUS (field curvature along the strip) and
+25.7 um (= the 332 um / 18.5 px best-focus spot) is astigmatism/coma.  Dave
+asked whether a field lens would clean the edge: NO -- a lens at the slit
+has no Petzval leverage, a flattener a centimetre before it sits where the
+Dyson's block face wants to be, and over 400-2500 nm it adds chromatic
+focal shift plus two uncoated crossings.  If the curvature is to come out
+it comes out of the MIRRORS: the Petzval sum of the three radii.  Our
+telecentric parent (R = [0.3667 0.0998 0.1617] after calibration) has
+1/R1 - 1/R2 + 1/R3 well away from zero because the telecentric condition
+and the EFL calibration fixed R3 and the M3 station; the one first-order
+knob left is the M2/M3 power split, `secondary_mag`, held at 3.5 since
+stage A.  Bounded item; first-order first, then one engine rung.
+
+**Step 1 -- first order (an hour).**  Extend the tA scan with a Petzval
+column from `tma_layout`'s output: `P = 1/R1 - 1/R2 + 1/R3` (sign
+convention: write it so a flat-field Korsch reads 0; check against the
+textbook Korsch with the standard three-mirror condition before trusting
+the sign), its radius 1/P, and the predicted sag of the Petzval surface at
+the strip edge, h^2 P / 2 with h = f tan(2.34 deg) = 13.5 mm (1.5k) and
+f tan(4.69 deg) = 27 mm (3k).  Scan `secondary_mag` 2.5 -> 8 at the
+working point (-4 deg / 190 mm, telecentric, EFL calibrated as tA does)
+and report, per m2: P, 1/P, the edge sag, the parent's R/t, M2 and M3
+diameters, overall length, and whether the section still clears (your
+`tA_clear_`).  The question is whether P = 0 is reachable INSIDE the
+clearance envelope at this EFL and F/#; if the flat-field m2 is far from
+3.5 the whole stage-A/B family was curved by construction.
+
+**Step 2 -- engine (the rung).**  At the m2 nearest P = 0 that clears:
+calibrate, run the B1 rung (conics + h4/h6 + position rows, beam_wt 1),
+and report the cp2 table for it -- STRICT about the chief AND about best
+focus per field, the best-focus spot, as-placed spot, plate, smile /
+keystone / SRF / CRF through t5e with roll 180 -- beside the -4/190 row.
+The number to watch is strict@chief minus strict@focus at the edge: if it
+collapses from 22 um toward zero while the best-focus 25.7 um stays, the
+Petzval knob did its whole job and the remaining wall is the
+astigmatism/coma that only non-symmetric DOFs (CCMac) can touch.  If the
+best-focus number moves too, say so loudly -- it means the power split
+also changed the astigmatism, which the layout then owns.
+
+**Rules.**  tA runner stage or a new `dyson5_tA_petzval` -- your call;
+records `dyson5_tA_pz_*`; `Telescope.optimize` as a caller only; engine
+scores only (the first-order P is a prediction to be checked by step 2's
+focus split, not a result); commit locally by path; report at each step.
