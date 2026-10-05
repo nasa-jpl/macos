@@ -1638,3 +1638,78 @@ also changed the astigmatism, which the layout then owns.
 records `dyson5_tA_pz_*`; `Telescope.optimize` as a caller only; engine
 scores only (the first-order P is a prediction to be checked by step 2's
 focus split, not a result); commit locally by path; report at each step.
+
+## Addendum 44 (2026-10-05, CC for TO, Dave's order): the FREEFORM LADDER is yours -- continuation, strict merit, m2 = 3.0 parent
+
+**Why you, why now.**  Addenda 42-43 closed the symmetric-DOF story: the
+edge wall of the eccentric section is CROSS-TRACK ASTIGMATISM (y-fan
+flat, x-fan curving 2-4 mm, T-S 2.2-5.3 mm at +-2.34 deg), which no power
+split or focus balance removes.  Non-symmetric DOFs are the next lever.
+Dave moves that work from CCMac to you (CCMac's budget).  CCMac's step 5
+(65503a3, merged; `dyson5_tma_step5.m`, `optimize_freeform` with the
+`beam_pos_fov` / `beam_wt` hooks they added) is the prior art and your
+starting tooling; their route B -- a SELF-CONSISTENT Zernike solve from
+the conic geometry over the symmetric modes {5,13,25} PLUS the
+non-symmetric {4,6,7,8,9,10} -- gave 11-13 px worst / 5 px centre at 1.5k
+in ONE bounded rung, path-dependent (CC's Linux re-run 7cd8b24).  Your
+job is the LADDER that one rung was not: continuation, rung by rung, on
+the strict merit, until the edge stops improving.
+
+**Parent.**  The -4 deg / 190 mm 1.5k section on the m2 = 3.0 telecentric
+parent (your addendum-43 row: edge 291 um, the better parent for this
+work), EFL-calibrated as tA does, position rows (`beam_pos_fov`,
+beam_wt 1) in EVERY rung so 330 mm holds.  3k (-4 deg / 180 mm, m2 3.0
+re-calibrated) AFTER 1.5k converges -- same ladder, one run.
+
+**The merit.**  STRICT, not the FP OPD: cp1 showed the FP merit floors at
+16 um and mis-ranks the fields; freeform trades edge against centre, which
+is exactly where a mis-ranking merit misleads.  Use your `tEP_strict_solve_`
+(lsqnonlin, deck write + reload per evaluation) with the Zernike
+coefficients as DOFs beside the conics: ~0.5 s per evaluation, so a rung
+of 36 DOFs costs ~20 s per Jacobian -- a 100-iteration rung is ~30 min,
+affordable.  Centre the sphere on the chief's DETECTOR intercept (the
+spectrometer sees the detector, not best focus) and REPORT both forms per
+field as cp2 did.  When EPFIX lands in CALIB (PLAN 3.1, deferred) the same
+ladder re-runs natively as an A/B; until then your solver is the strict
+optimizer we have.  If a rung's wall-clock exceeds an hour, fall back to
+`optimize_freeform` (CALIB, FP merit) for that rung and SAY SO on the row.
+
+**The ladder (continuation; each rung warm-started from the previous
+rung's solved design, never from the seed):**
+- R0: the B1 conics + h4/h6 state (your addendum-43 m2 = 3.0 row) --
+  the reference row.
+- R1: + ANSI {4,6} astigmatism on M1-M3 (the measured defect, first).
+- R2: + {7,8,9,10} coma / trefoil.
+- R3: + {5,13,25} symmetric (CCMac's lesson: without them the centre is
+  lost; with the aspheres present they may stay near zero -- report them).
+- R4: + the next order {11,12,14,15} (secondary astig / tetrafoil) if R3
+  still moves the edge.
+Stop two rungs after the edge spot stops improving by more than the
+basin scatter you measured (a few %).  `lMon` = the per-mirror beam
+FOOTPRINT radius (CCMac's `footrad3_`), not the body radius -- modes
+normalised to a larger radius are degenerate over the lit patch and the
+solve goes ill-conditioned (Telescope.set_freeform's own note).
+
+**Known traps.**  (1) `Surface= Zernike` and `Surface= Aspheric` cannot
+co-exist on one mirror in the emitter (CCMac's deferred co-emit): either
+carry the h4/h6 as the symmetric Zernike modes (route B; your R3 then
+re-solves them) or hold the aspheres and put ONLY non-symmetric modes on
+the Zernike surface -- NOT both on the same element; the combined path
+ERRORS on purpose.  State which you chose on every row.  (2) The ZernCoef
+~2x normalisation wall CCMac hit applies only to an ABSOLUTE
+asphere->Zernike conversion; a self-consistent solve does not care.
+(3) Your deck-write-per-evaluation path prints `** Unknown command`
+noise -- pre-existing, ignore.  (4) `fwd_root_flips_get` = 0 after each
+rung's trace; a nonzero count on a solved deck (K3 ~ -30 brought M3's
+sheets to 5.5 mm apart) is worth a line, not a stop.
+
+**Per rung, report:** strict@chief and strict@focus per field, best-focus
+and as-placed spot per field, T-S at the edge (your probe), plate (local /
+edge), coefficients per mirror (ANSI, lMon stated), clearance
+(mount-once), then t5e with roll 180 (smile / keystone / SRF / CRF /
+admitted) on the deck without the pupil pair.  One line per rung in a
+ladder table; the full cp2-style table for the last rung.  Records
+`dyson5_tA_FF_*`, decks per rung.  `optimize_freeform` /
+`Telescope.optimize` as callers only (announce any hook first); commit
+locally by path; message at R1 (the astigmatism rung -- if it does not
+move the edge the premise is wrong and we stop) and at the end.
