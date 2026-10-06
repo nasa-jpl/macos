@@ -16,7 +16,7 @@ layout + map per result slide, figures unmodified, conventions stated once).
 An EMIT-class push-broom spectrometer (F/1.8, 18 µm pixels, 380–2500 nm) at Jim's ground sample (30 m from 550 km), designed with MACOS from the public specification and scored on smile, keystone and the response functions, telescope and spectrometer together.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-~ DRAFT for review, 2026-10-06.  The 1.5k module (1500 cross-track pixels, a 27 mm slit) has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.50, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's resolution is not yet at the pixel level (CRF 4.2 pixels); the deck asks for help with both.
+~ The 1.5k module has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.50, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's resolution is not yet at the pixel level (CRF 4.0 pixels); the deck asks for help with both.
 
 ## Contents | The target, the two ways to build it, the 1.5k module scored, the comparison for Jim, the open module, the questions
 ::: left
