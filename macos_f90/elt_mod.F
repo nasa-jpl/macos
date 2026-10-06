@@ -931,6 +931,18 @@ C***********************************************************************
         GlassName(:)   = ''
         GlassTable(:,:) = 0d0
 !<--
+!-->  spcOption (SPCENTER: 1 = spot about the element vertex, 2 = about
+!     the chief ray) is a SESSION option, not prescription state.  The
+!     2024 re-init pass put `spcOption = 0` in elt_mod_init_vars, so every
+!     Rx LOAD reset it and the SPOT branch's ELSE (anything but 1) made
+!     every spot CHIEF-RAY-centred: a rigid-body tilt of a mirror moved
+!     the chief and the spot stayed put (Luis, OPTIIX FSM 2e-7 rad,
+!     2026-10-06; the heritage engine, spcOption 1, moved it).  The
+!     bindings are unaffected -- spot_cmd sets SPCENTER explicitly on
+!     every call.  Initialised HERE to the heritage default; MRESET and
+!     SPCENTER still set it.
+        spcOption = 1
+!<--
 
 
         End Subroutine elt_mod_init
@@ -995,7 +1007,7 @@ C***********************************************************************
           nRay                 =  0
           nOutCord             =  0
           nSeg                 =  0          ! total number of segments (requires seg. source) (nSeg <= mSeg)
-          spcOption            =  0
+          ! spcOption: a session option, initialised at allocation (above), NOT reset per load
 
           maxAsphCoef          =  4          ! default to 4 terms  (Heritage => affects MACOS 'NEW' cmd)
 
