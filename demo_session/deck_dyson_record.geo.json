@@ -128,10 +128,10 @@
    "cy": 5.73,
    "cw": 4.75
   },
-  "txt:Record dyson5_t5f_GM_3k_c.txt": {
-   "x": 8.25,
+  "txt:Record dyson5_t5f_GM_3k_c": {
+   "x": 8.5,
    "y": 6.38,
-   "w": 4.75
+   "w": 4.4
   }
  }
 }
