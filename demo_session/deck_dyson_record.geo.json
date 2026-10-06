@@ -29,7 +29,8 @@
    "h": 4.21,
    "cx": 0.75,
    "cy": 5.69,
-   "cw": 6.7
+   "cw": 6.7,
+   "cal": "right"
   },
   "txt:Radii are |R|": {
    "x": 0.5,
@@ -58,10 +59,12 @@
  },
  "The methods, and the checks behind every number": {
   "txt:Ray tracing (MACOS)": {
-   "fs": 13
+   "fs": 13,
+   "sa": 14
   },
   "txt:The optimizer:": {
-   "fs": 13
+   "fs": 13,
+   "sa": 14
   },
   "txt:Regression tests:": {
    "y": 5.87
@@ -77,23 +80,28 @@
  },
  "What the instrument does, and two ways to build it": {
   "txt:What it does:": {
-   "fs": 14
+   "fs": 14,
+   "sa": 14
   }
  },
  "Alternatives to the Dyson for the 3k slit": {
   "txt:The Offner (concave sphere": {
-   "fs": 14
+   "fs": 14,
+   "sa": 14
   },
   "txt:Split the slit, keep one telescope.": {
-   "fs": 14
+   "fs": 14,
+   "sa": 14
   }
  },
  "Next steps": {
   "txt:The 3k telescope:": {
-   "fs": 14
+   "fs": 14,
+   "sa": 14
   },
   "txt:In the engine:": {
-   "fs": 14
+   "fs": 14,
+   "sa": 14
   }
  },
  "The 3k Dyson module: where it stands": {

@@ -64,10 +64,50 @@ BOTTOM = 7.32
 
 
 def clean(s):
-    s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
-    s = re.sub(r"\*(.+?)\*", r"\1", s)
+    """Strip markdown markers; **bold** spans are kept as \x02..\x03 so the
+    paragraph builder can emit them as bold runs (DECK_STYLE: bold lead-in
+    labels; Dave's 2026-10-06 edit pass).  Titles and table cells use
+    clean_plain, which drops them."""
+    s = re.sub(r"\*\*(.+?)\*\*", "\x02\\1\x03", s)
+    s = re.sub(r"(?<!\x02)\*(.+?)\*", r"\1", s)
     s = s.replace("`", "")
     return s
+
+
+def clean_plain(s):
+    return clean(s).replace("\x02", "").replace("\x03", "")
+
+
+SUBSCRIPTS = ("CaF2", "SiO2", "MgF2", "Al2O3", "Ta2O5")
+
+
+def set_runs(p, text, size, bold, color, mono=False):
+    """Fill paragraph p with runs: \x02..\x03 spans bold, and the digits of
+    the chemical formulas in SUBSCRIPTS as subscripts (Dave: CaF2 reads
+    CaF\u2082).  Returns nothing; replaces whatever runs p had."""
+    for r in list(p.runs):
+        r._r.getparent().remove(r._r)
+    pat = "(" + "|".join(re.escape(f) for f in SUBSCRIPTS) + ")"
+    for seg in re.split(r"(\x02.*?\x03)", text):
+        if not seg:
+            continue
+        b = bold
+        if seg.startswith("\x02"):
+            seg = seg[1:-1]; b = True
+        for piece in re.split(pat, seg):
+            if not piece:
+                continue
+            if piece in SUBSCRIPTS:
+                parts = re.findall(r"[A-Za-z]+|\d+", piece)
+            else:
+                parts = [piece]
+            for part in parts:
+                r = p.add_run(); r.text = part
+                r.font.size = Pt(size); r.font.bold = b
+                r.font.color.rgb = color
+                r.font.name = "Consolas" if mono else "Arial"
+                if piece in SUBSCRIPTS and part.isdigit():
+                    r.font._element.set("baseline", "-25000")
 
 
 # --------------------------------------------------------------- parsing
@@ -86,17 +126,17 @@ def parse(md_text):
         if s.startswith("## "):
             head = s[3:]
             t, _, sub = head.partition("|")
-            cur = {"title": clean(t.strip()), "sub": clean(sub.strip()),
+            cur = {"title": clean_plain(t.strip()), "sub": clean_plain(sub.strip()),
                    "blocks": []}
             slides.append(cur)
             col, mode = "full", None
         elif s.startswith("# ") and cur is None:
-            title_slide["title"] = clean(s[2:].strip())
+            title_slide["title"] = clean_plain(s[2:].strip())
         elif s.startswith("# "):
             # section divider (e.g. "# Backup") -- its own plain slide.
             # (Previously fell through to body text: the divider line
             # leaked verbatim onto the preceding slide.)
-            cur = {"title": clean(s[2:].strip()), "sub": "",
+            cur = {"title": clean_plain(s[2:].strip()), "sub": "",
                    "blocks": [], "divider": True}
             slides.append(cur)
             col, mode = "full", None
@@ -113,7 +153,7 @@ def parse(md_text):
         elif s.startswith("|"):
             rows = []
             while i < len(lines) and lines[i].strip().startswith("|"):
-                cells = [clean(c.strip())
+                cells = [clean_plain(c.strip())
                          for c in lines[i].strip().strip("|").split("|")]
                 if not all(re.fullmatch(r":?-{2,}:?", c) for c in cells):
                     rows.append(cells)
@@ -161,7 +201,7 @@ def parse(md_text):
         elif s.startswith("!["):
             m = re.match(r"!\[(.*)\]\((.*?)\)(?:\{h=([\d.]+)\})?", s)
             if m:
-                cap, path, h = clean(m.group(1)), m.group(2), m.group(3)
+                cap, path, h = clean_plain(m.group(1)), m.group(2), m.group(3)
                 cur["blocks"].append(
                     (col, "img", (cap, path, float(h) if h else None)))
         elif s:
@@ -193,15 +233,10 @@ def tb(sl, x, y, w, h):
 def para(tf, text, size=12, bold=False, color=INK, first=False, mono=False,
          space_after=4, align=None):
     p = tf.paragraphs[0] if first else tf.add_paragraph()
-    p.text = text
+    set_runs(p, text, size, bold, color, mono)
     p.space_after = Pt(space_after)
     if align:
         p.alignment = align
-    for r in p.runs:
-        r.font.size = Pt(size)
-        r.font.bold = bold
-        r.font.color.rgb = color
-        r.font.name = "Consolas" if mono else "Arial"
     return p
 
 
@@ -321,12 +356,8 @@ def place_table(sl, rows, x, y, w):
             tf_ = cell.text_frame
             tf_.word_wrap = True
             p = tf_.paragraphs[0]
-            p.text = r[c] if c < len(r) else ""
-            for run in p.runs:
-                run.font.size = Pt(size)
-                run.font.name = "Arial"
-                run.font.bold = (ir == 0)
-                run.font.color.rgb = WHITE if ir == 0 else INK
+            set_runs(p, r[c] if c < len(r) else "", size, ir == 0,
+                     WHITE if ir == 0 else INK)
             cell.fill.solid()
             cell.fill.fore_color.rgb = ACCENT if ir == 0 else \
                 (WHITE if ir % 2 else LIGHT)
@@ -340,9 +371,9 @@ def block_key(typ, payload, counters):
         counters[typ] = counters.get(typ, 0) + 1
         return "%s:%d" % (typ, counters[typ])
     if typ == "bullets":
-        return "txt:" + payload[0].lstrip("\x01")
+        return "txt:" + payload[0].lstrip("\x01").replace("\x02", "").replace("\x03", "")
     if typ in ("para", "note", "h3"):
-        return "txt:" + str(payload)
+        return "txt:" + str(payload).replace("\x02", "").replace("\x03", "")
     return typ
 
 
@@ -387,6 +418,7 @@ def render_slide(spec):
             size = body_size(w) if typ != "note" else 10.5
             if ov and "fs" in ov:   # sidecar font-size override (points)
                 size = ov["fs"]
+            sa = (ov or {}).get("sa", 6)   # space after each item (points; Dave's blank lines between bullets)
             color = INK if typ != "note" else GRAY
             tf = tb(sl, x, y, w, 0.3)
             for j, it in enumerate(items):
@@ -403,8 +435,8 @@ def render_slide(spec):
                     continue
                 txt = ("•  " + it) if typ == "bullets" else it
                 para(tf, txt, size=size, color=color, first=(j == 0),
-                     space_after=6)
-                y += est_text_h(txt, w, size) + 6 / 72.0
+                     space_after=sa)
+                y += est_text_h(txt, w, size) + sa / 72.0
             y += 0.04
         elif typ == "table":
             y = place_table(sl, payload, x, y, w)
