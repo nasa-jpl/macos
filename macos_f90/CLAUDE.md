@@ -934,7 +934,7 @@ The OPD at a FP the chiefs hit at 31 deg is still 0.5 mm-class on a
 400 um spot -- that is the tilted-plane OPL metric (rodgers1 A.1), the
 reason `add_pupil` exists; it is now a REAL number, not a wrong one.
 
-## CLI SPOT was CHIEF-RAY-centred after every LOAD (2026-10-06, Luis's dcdx)
+## SPOT / dcdx were CHIEF-RAY-centred: the CLI after every LOAD, mmacos's dw_dx by request (2026-10-06, Luis)
 `spcOption` (the `SPCENTER` option: 1 = spot about the element vertex,
 2 = about the chief ray) is a SESSION option.  The 2024 re-init pass
 (a9b6f9e) put `spcOption = 0` into `elt_mod_init_vars`, which every Rx
@@ -956,6 +956,15 @@ the caller's `ref_pos` on every call.  Gate: `scratchpad/spot_cli_gate.py`
 pattern (pty CLI; `TEXT`; `SPOT 6 TOUT` on `Rx_Cass_FarField`; `PERTURB
 3` by 2e-7 rad; the written spot's mean must move with the chief; the
 `--chfray` leg puts the same binary in the pre-fix state and must fail).
+**The same hole on the mmacos side, deliberately asked for:** `dw_dx`,
+`dw_dgrid`, `dw_dsurf` and `dw_dz_zernike` formed their centroid channel
+(dcdx, line of sight) from `macos.spot(..., 'at','chief')`, so a fold or
+FSM tilt gave dcdx ~ 0 there too.  Now `'at','elt'`, and `macos.spot`'s
+default is `'elt'` (heritage, = pymacos `vpt_center=True`).  Gate
+`tDwDx/test_dcdx_of_a_rigid_tilt_is_the_chief_displacement`: the
+Cassegrain secondary tilted about x gives dcdx = -6.9 m/rad == the traced
+chief's displacement (pre-fix ~0).  A centroid measured about the chief
+ray is a SHAPE measure, never a line-of-sight one.
 Rule, third time: a value a command or the start-up sets as a USER
 OPTION does not belong in `elt_mod_init_vars` -- list of such options
 moved so far: the glass catalog, `spcOption`; `LUseChfRayIfOK` is reset
