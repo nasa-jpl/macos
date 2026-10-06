@@ -16,7 +16,7 @@ layout + map per result slide, figures unmodified, conventions stated once).
 An EMIT-class push-broom spectrometer (F/1.8, 18 µm pixels, 380–2500 nm) at Jim's ground sample (30 m from 550 km), designed with MACOS from the public specification and scored on smile, keystone and the response functions, telescope and spectrometer together.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-~ DRAFT for review, 2026-10-06.  The 1.5k module (1500 cross-track pixels, a 27 mm slit) has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.51, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's resolution is not yet at the pixel level (CRF 4.2 pixels); the deck asks for help with both.
+~ DRAFT for review, 2026-10-06.  The 1.5k module (1500 cross-track pixels, a 27 mm slit) has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.50, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's resolution is not yet at the pixel level (CRF 4.2 pixels); the deck asks for help with both.
 
 ## Contents | The target, the two ways to build it, the 1.5k module scored, the comparison for Jim, the open module, the questions
 ::: left
@@ -35,7 +35,7 @@ October 2026.  Working record; no proprietary prescription is used.
 - **14** Questions
 - **15** Next steps
 - **16** Run it yourself
-- **17** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; thirteen engine findings; records
+- **17** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; fourteen engine findings; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, here
 ::: left
@@ -93,25 +93,25 @@ October 2026.  Working record; no proprietary prescription is used.
 ::: full
 | criterion | specification | spectrometer alone (130 mm silica Dyson) | telescope alone (three off-axis aspheres) | together, end to end |
 |---|---|---|---|---|
-| smile | < 0.1 px | 0.007 px | – | 0.51 px |
+| smile | < 0.1 px | 0.007 px | – | 0.50 px |
 | keystone | < 0.1 px | 0.009 px | – | 0.01 px |
 | CRF FWHM | < 1.5 px | 1.03 px | – | 1.22 px |
 | SRF FWHM | < 1.5–2.0 px | 2.02 px (2-pixel slit) | – | 2.20 px |
 | energy in one 18 µm pixel | > 0.75 (design rule) | 1.00 | – | 0.78–0.89 over the central third; 0.65 at ±9 mm; 0.30–0.48 at the ends |
 | image blur (rms spot, as placed) | – | – | 8 µm center, 14 µm at ±2.3° (0.4 / 0.8 px) | – |
 | plate scale | 330 mm | – | 327 mm center, 331 mm edge | 327 / 331 mm |
-| light admitted by the grating stop | all | all | chiefs within 0.5° across the strip | 100 % at every field |
+| light admitted by the grating stop | all | all | chiefs within 0.5° across the strip | 99 % at every field |
 | uncoated throughput | – | 0.87 (four air-glass crossings) | three reflections, not scored | – |
 | clearance, worst pair | > 0 | +0.38 mm (detector package vs block face) | +39 mm (M1→M2 beam vs M3) | +0.38 mm (the spectrometer's pair) |
 | glass, mass | – | 0.75 L, 1.6 kg | mirrors not yet sized | – |
-~ Spectrometer: `dyson5_size.txt` row D (130 mm), `dyson5_jim_3a.txt`; telescope: `dyson5_tA_GM_1k5_bAs.txt`; together: `dyson5_t5f_GM_1k5_bAs.txt`, 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  The 3k module's columns: slide 12.
+~ Spectrometer: `dyson5_size.txt` row D (130 mm), `dyson5_jim_3a.txt`; telescope: `dyson5_tA_GM_1k5_bAs.txt`; together: `dyson5_t5f_GM_1k5_bAs_ap.txt`, 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  The 3k module's columns: slide 12.
 
-## The 1.5k module, end to end | Three off-axis aspheres feeding a 130 mm silica Dyson: smile 0.51, keystone 0.01, CRF 1.22, SRF 2.20 px over the whole strip; every field admitted; clearances +39 mm inside the telescope, +0.38 mm overall
+## The 1.5k module, end to end | Three off-axis aspheres feeding a 130 mm silica Dyson: smile 0.50, keystone 0.01, CRF 1.22, SRF 2.20 px over the whole strip; 99 % of the light admitted at every field; clearances +39 mm inside the telescope, +0.38 mm overall
 ::: left
 ![As the engine traces it (meters): the telescope's M1–M3 (E1–E3) at the lower right, the slit (E4) on the block's face, the 130 mm block and the grating (E7) above it, the detector (E11) beside the slit.  Left: 3-D; right: the dispersion plane.](figs_dyson/dyson5_t5f_GM_1k5_bAs_e2e_views.png){h=4.5}
 ::: right
-![Per slit position and wavelength (7 × 7): field angle, keystone, smile, the two response widths and the energy in one pixel.  The response widths rise only at the strip ends.](figs_dyson/dyson5_t5f_GM_1k5_bAs_maps_rc.png){h=4.5}
-~ Energy in one pixel end to end: 0.78–0.89 over the central third of the strip, 0.65 at ±9 mm, 0.30–0.48 at the strip ends (±13.5 mm); the spectrometer alone puts 1.00 in the pixel, the rest is the telescope's 8–14 µm blur.  Plate scale 327 mm at the center, 331 at the edge (330 specified).  Record `dyson5_t5f_GM_1k5_bAs.txt`; prescription `dyson5_t5f_GM_1k5_bAs_e2e.in`, 11 elements.
+![Per slit position and wavelength (7 × 7): field angle, keystone, smile, the two response widths and the energy in one pixel.  The response widths rise only at the strip ends.](figs_dyson/dyson5_t5f_GM_1k5_bAs_ap_maps_rc.png){h=4.5}
+~ Energy in one pixel end to end: 0.78–0.89 over the central third of the strip, 0.65 at ±9 mm, 0.30–0.48 at the strip ends (±13.5 mm); the spectrometer alone puts 1.00 in the pixel, the rest is the telescope's 8–14 µm blur.  Plate scale 327 mm at the center, 331 at the edge (330 specified).  Record `dyson5_t5f_GM_1k5_bAs_ap.txt` (re-scored 2026-10-06 with the grating's aperture enforced; 1 % of the sky beam falls outside the grating); prescription `dyson5_t5f_GM_1k5_bAs_e2e.in`, 11 elements.
 
 ## The telescope so far: three off-axis aspheres | f = 330 mm, 183 mm aperture, F/1.8: an unobscured section of a three-mirror parent, M3 ahead of the intermediate focus so the exit pupil sits at infinity, as the Dyson requires; a first design that reaches the pixel, not a finished one
 ::: full
@@ -151,19 +151,20 @@ October 2026.  Working record; no proprietary prescription is used.
 | single-crystal CaF2 to carve from | 6.2 L per block, 12.4 L in all | none: fused silica is a melt |
 | telescopes / gratings / detectors | 2 / 2 / 2 × 3k | 4 / 4 / 4 × 1.5k |
 | telescope so far | freeform three-mirror, not at the pixel (open) | three off-axis aspheres (slide 9) |
-| end to end: smile / keystone / CRF / SRF | 2.05 / 0.05 / 4.22 / 4.90 px | 0.51 / 0.01 / 1.22 / 2.20 px |
-| end to end: energy in one pixel | 0.05–0.09 | 0.30–0.89 (0.8 over the central third) |
+| end to end: smile / keystone / CRF / SRF | 1.64 / 0.05 / 4.02 / 4.99 px | 0.50 / 0.01 / 1.22 / 2.20 px |
+| end to end: energy in one pixel | 0.04–0.10 | 0.30–0.89 (0.8 over the central third) |
 | clearance, worst pair | +0.06 mm (M2→M3 beam against the block face) | +0.38 mm (detector package against the block face) |
-~ Carve = a cylinder of clear aperture + 20 mm by thickness + 20 mm; CaF2 is not priced here.  A cold detector adds a dewar window to every row alike; cementing it to the block keeps the count at four.  The 3k telescope is the freeform solve of 2026-10-05, scored before its next layout step (slide 12).  Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs.txt`, `dyson5_t5f_GM_3k_c.txt`.
+| light admitted by the grating | 95–98 % per field | 99 % per field |
+~ Carve = a cylinder of clear aperture + 20 mm by thickness + 20 mm; CaF2 is not priced here.  A cold detector adds a dewar window to every row alike; cementing it to the block keeps the count at four.  The 3k telescope is the freeform solve of 2026-10-05, scored before its next layout step (slide 12).  Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_t5f_GM_3k_c_ap.txt`.
 
-## The 3k Dyson module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.3–4.2 px, 5–9 % of the energy in one pixel, clearance +0.06 mm
+## The 3k Dyson module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.2–4.0 px, 4–10 % of the energy in one pixel, 95–98 % of the light through the grating, clearance +0.06 mm
 ::: left
-![The 3k telescope through the 240 mm CaF2 Dyson as the engine traces it (meters): the same arrangement as the 1.5k module at twice the strip.](figs_dyson/dyson5_t5f_GM_3k_c_e2e_views.png){h=3.0}
-- **What the solve gave:** Zernike freeform terms on all three mirrors (M2 carries 1.7 mm of departure at 126 mrad of slope) with the same merit and geometry freedoms as the 1.5k: smile 2.05, keystone 0.05, CRF 4.22, SRF 4.90 px; 98 % of the light admitted at the strip ends; the beam between M2 and M3 passes the block's face by 0.06 mm.
+![The 3k telescope through the 240 mm CaF2 Dyson as the engine traces it (meters); the beam overfills the grating (E7), which clips 2–5 % of the light per field.](figs_dyson/dyson5_t5f_GM_3k_c_e2e_views.png){h=3.0}
+- **What the solve gave:** Zernike freeform terms on all three mirrors (M2 carries 1.7 mm of departure at 126 mrad of slope) with the same merit and geometry freedoms as the 1.5k: smile 1.64, keystone 0.05, CRF 4.02, SRF 4.99 px.  Its marginal rays leave at up to F/1.2, so the grating, sized for F/1.8, passes 95–98 % of the light; the beam between M2 and M3 passes the block's face by 0.06 mm.
 - **Why it stalls:** on this section the figure terms and the mirror positions work against each other (the freeform norm grows as the geometry moves), which points at the stop's position.  **Next:** the stop at M2 instead of M1; an asphere-only solve from the same seed; the field weighting across the strip as a project ruling.
 ::: right
-![Per slit position and wavelength: the CRF is 2.3–3.7 px off center and 4.0–4.2 px at the strip center, the signature of a solve that traded the center for the ends under equal field weights.](figs_dyson/dyson5_t5f_GM_3k_c_maps_rc.png){h=4.3}
-~ Record `dyson5_t5f_GM_3k_c.txt`; prescription `dyson5_t5f_GM_3k_c_e2e.in`.  The 3k solve ran to the same evaluation budget as the 1.5k and is not converged in the optimizer's sense.
+![Per slit position and wavelength: the CRF is 2.2–2.6 px at mid-strip and 3.8–4.0 px at the center and the ends, the signature of a solve that traded under equal field weights.](figs_dyson/dyson5_t5f_GM_3k_c_ap_maps_rc.png){h=4.3}
+~ Record `dyson5_t5f_GM_3k_c_ap.txt` (the grating's aperture enforced; Backup); prescription `dyson5_t5f_GM_3k_c_e2e.in`.  The solve ran to the 1.5k's evaluation budget and is not converged in the optimizer's sense.
 
 ## Alternatives to the Dyson for the 3k slit | The Dyson was assumed for this challenge; the literature offers three other forms at a 54 mm slit, and the record's own result points at a fourth; the Offner was tried at F/1.8 and is out
 ::: left
@@ -286,7 +287,7 @@ How the telescope reached the pixel, the Dyson design ladder, the superseded 54 
 | optimizer asphere step and failure exit | a fixed 1e-10 probe step: a zero derivative column, a singular matrix, and a `stop` that ended the host process | the step is 1e-3 of the coefficient (sag-based for a zero one); the failure restores the optics and returns a flag |
 ~ Tests: `tGlassDispersion`, `tPropMedium`, `tGratingImmersed` + `test_grating_chord`, `tGratingOpl`, `tSpectrometerRx`, `tTraceRestart`, `tBeamRows`, `tAsphCalib`.  Flat gratings are unchanged by the grating fixes; the wavefront-target optimizer, which every telescope design used, was never affected by the fifth.
 
-## Five more findings from the telescope's eccentric section and the Offner | Found 2026-10-04 to 10-06, each invisible on the designs before it, each fixed the same day
+## Six more findings: the eccentric section, the Offner, the 3k join | Found 2026-10-04 to 10-06, each invisible on the designs before it, each fixed the same day
 ::: full
 | finding | symptom | fix |
 |---|---|---|
@@ -294,8 +295,9 @@ How the telescope reached the pixel, the Dyson design ladder, the superseded 54 
 | optimizer aperture sized at one field | the strip-edge fields lost every ray on M3 and were dropped by the solve | the aperture encloses the footprint over every field of the solve |
 | stop aimed at the parent vertex | on an eccentric section the pupil sphere was placed 190 mm from the beam | the stop at the prescription's object-space stop point |
 | Zernike origin at the parent vertex | freeform terms on a section evaluated 3.8 radii outside the unit disc | the origin is the element's pole |
+| a grating never vignetted by its aperture | the 3k end-to-end deck passed 21 % of its center-field rays 154–213 mm from the grating's axis against a 154 mm declared aperture; four grating routines computed the aperture verdict and then overwrote it with an unrelated check | the verdict is kept; the 1.5k row moves by 0.01 px, the 3k row by 0.4 px of smile |
 | clearance check blind to a beam through a disc | the check measured distance to body samples, which cannot go negative for a mirror or grating disc: an F/1.8 Offner beam through its grating read +0.2 mm (it is −33 mm) | every beam segment is tested against the surface inside its aperture and mount; all 54 Dyson records re-check bit-identical |
-~ Tests: `tFwdRoot` (5), `tAsphHook` (3), `tStopApStop` (4), `tFreeformPole` (3), `tSpectrometerRx/test_clearance_sees_a_beam_through_a_body`.  Each passed every existing check (rays passed, solves converged, decks loaded); what exposed the first four was a section whose beam is 190 mm from its parent's vertex, the fifth a form whose stop sits in its own beams.
+~ Tests: `tFwdRoot` (5), `tAsphHook` (3), `tStopApStop` (4), `tFreeformPole` (3), `tGratingAperture` (3), `tSpectrometerRx/test_clearance_sees_a_beam_through_a_body`.  Each passed every existing check; what exposed the first four was a section whose beam is 190 mm from its parent's vertex, the fifth a telescope whose cone overfills the spectrometer's stop, the sixth a form whose stop sits in its own beams.
 
 ## Records behind each slide | Every number traces to a runner stage and its record file
 ::: full
