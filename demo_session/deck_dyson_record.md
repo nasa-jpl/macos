@@ -34,7 +34,7 @@ October 2026.  Working record; no proprietary prescription is used.
 - **13** Questions
 - **14** Next steps
 - **15** Run it yourself
-- **16** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; twelve engine findings; records
+- **16** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; thirteen engine findings; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, here
 ::: left
@@ -158,15 +158,15 @@ October 2026.  Working record; no proprietary prescription is used.
 ![Per slit position and wavelength: the CRF is 2.3–3.7 px off center and 4.0–4.2 px at the strip center, the signature of a solve that traded the center for the ends under equal field weights.](figs_dyson/dyson5_t5f_GM_3k_c_maps_rc.png){h=4.3}
 ~ Record `dyson5_t5f_GM_3k_c.txt`; prescription `dyson5_t5f_GM_3k_c_e2e.in`.  The 3k solve ran to the same evaluation budget as the 1.5k and is not converged in the optimizer's sense.
 
-## Alternatives to the Dyson for the 3k slit | The Dyson was assumed for this challenge; at a 54 mm slit the literature offers three other forms, and the record's own result points at a fourth
+## Alternatives to the Dyson for the 3k slit | The Dyson was assumed for this challenge; the literature offers three other forms at a 54 mm slit, and the record's own result points at a fourth; the Offner was tried at F/1.8 and is out
 ::: left
-- **The Offner (concave sphere used twice, convex grating at the stop).**  All-reflective: no CaF2, no air-glass crossings, every leg in air, so a cold shield costs nothing.  The review's long-slit example is F/2.8 with a 48 mm slit at 30 µm pixels (smile 0.3 %, keystone 2 % of a pixel, 0.76 in a pixel).  The record's Offner at F/2.8 and 0.22 R, with the classical corrections, reaches keystone 0.028 px and CRF 1.20 px but SRF 3.69 px and 0.23 in a pixel; an F/1.8 Offner at a 54 mm slit has not been tried here.
+- **The Offner (concave sphere used twice, convex grating at the stop): tried at F/1.8 and 54 mm, out.**  All-reflective, no CaF2, no air-glass crossings, a cold shield for free; the review's long-slit example is F/2.8, 48 mm, 30 µm pixels.  At F/1.8 the grating is 0.28 R across and the slit must sit at 0.29–0.32 R to pass beside it.  With the classical corrections and the ring free, the best point (R = 0.5 m, 0.5 m long, 4.8 kg of blanks) reaches smile 0.17, keystone 0.18 and CRF 2.24 px, but the spectral blur is 7–9 px rms at every R to 1.25 m: an aberration along the dispersion the corrections do not touch (3–6 px, wavelength-independent) plus the grating's term at F/1.8 (+2–4 px by 2500 nm).  Energy in a pixel 0.01.  The next form of that family is the Offner–Chrisp (a third mirror), not tried.
 - **The prism Dyson (the review's BPDS, 3200 px, 18 µm, F/2, 57.6 mm slit):** a freeform prism in place of the grating, 54 cm long with a 19 cm prism; achieved smile 3 % and keystone 1 % of a pixel.  It is the published answer in this regime, and its size is the price.
 - **A long-slit Dyson with a separate mirror and a meniscus** (the review's compact variant, about 60 % of the BPDS's size, six more air-glass faces): the family the 220 mm meniscus design belongs to.
 ::: right
 - **Split the slit, keep one telescope.**  The record's own finding is that at 3k the spectrometer closes (CaF2 at 240 mm, or silica with the meniscus) and the telescope does not.  A 3k telescope feeding two 1.5k Dysons through a split slit keeps two telescopes and four small silica blocks, but it needs the 3k telescope, which is the open item.
-- **What the ray trace can settle quickly:** the Offner has a layout solver in the chain (`offner_solve`), so an F/1.8, 54 mm Offner can be laid out, emitted and scored on the same scorer in about a day; the prism Dyson needs a dispersing prism added to the chain first (the engine traces it already).  Which is worth the time is a question for Jim and Joe.
-~ Review: Mouroulis & Green, Opt. Eng. 57(4) 040901 (2018), Table 2 and Table 5.  The Offner numbers are the record's `dyson5_s1_offner` (`dyson5_s2.txt`).  Nothing on this slide has been traced at the 3k slit except the Dyson rows of slide 10.
+- **What the ray trace can settle next:** the prism Dyson needs a dispersing prism added to the layout chain (the engine traces one already); the Offner–Chrisp needs a three-mirror layout solver.  Each is a few days; whether either is worth it is a question for Jim and Joe.
+~ Review: Mouroulis & Green, Opt. Eng. 57(4) 040901 (2018), Table 2 and Table 5.  Offner at F/1.8: `dyson5_off18.txt`, `BRIEF_dyson5_jim.md` 3c (seed, fixed-ring and free-ring rows at R = 0.5–1.25 m; mass as 10 mm Zerodur blanks).  The prism Dyson and the Offner–Chrisp are not traced here.
 
 ## Questions | Two decisions the ray trace cannot make, and help with the part that is not done
 - **Two modules or four.**  The 1.5k module now has a telescope at the pixel end to end (slides 6–8); the 3k module does not yet (slide 11).  At the same 6000 cross-track pixels, four telescopes, spectrometers and detectors in 6.6 kg of fused silica against two in 28.5 kg of CaF2: is four a packaging the project would entertain?
@@ -278,7 +278,7 @@ How the telescope reached the pixel, the Dyson design ladder, the superseded 54 
 | optimizer asphere step and failure exit | a fixed 1e-10 probe step: a zero derivative column, a singular matrix, and a `stop` that ended the host process | the step is 1e-3 of the coefficient (sag-based for a zero one); the failure restores the optics and returns a flag |
 ~ Tests: `tGlassDispersion`, `tPropMedium`, `tGratingImmersed` + `test_grating_chord`, `tGratingOpl`, `tSpectrometerRx`, `tTraceRestart`, `tBeamRows`, `tAsphCalib`.  Flat gratings are unchanged by the grating fixes; the wavefront-target optimizer, which every telescope design used, was never affected by the fifth.
 
-## Four more findings from the telescope's eccentric section | Found 2026-10-04 to 10-05, each invisible on a coaxial design, each fixed the same day
+## Five more findings from the telescope's eccentric section and the Offner | Found 2026-10-04 to 10-06, each invisible on the designs before it, each fixed the same day
 ::: full
 | finding | symptom | fix |
 |---|---|---|
@@ -286,7 +286,8 @@ How the telescope reached the pixel, the Dyson design ladder, the superseded 54 
 | optimizer aperture sized at one field | the strip-edge fields lost every ray on M3 and were dropped by the solve | the aperture encloses the footprint over every field of the solve |
 | stop aimed at the parent vertex | on an eccentric section the pupil sphere was placed 190 mm from the beam | the stop at the prescription's object-space stop point |
 | Zernike origin at the parent vertex | freeform terms on a section evaluated 3.8 radii outside the unit disc | the origin is the element's pole |
-~ Tests: `tFwdRoot` (5), `tAsphHook` (3), `tStopApStop` (4), `tFreeformPole` (3).  Each of the four passed every existing check (rays passed, solves converged, decks loaded); what exposed them was a section whose beam is 190 mm from its parent's vertex.
+| clearance check blind to a beam through a disc | the check measured distance to body samples, which cannot go negative for a mirror or grating disc: an F/1.8 Offner beam through its grating read +0.2 mm (it is −33 mm) | every beam segment is tested against the surface inside its aperture and mount; all 54 Dyson records re-check bit-identical |
+~ Tests: `tFwdRoot` (5), `tAsphHook` (3), `tStopApStop` (4), `tFreeformPole` (3), `tSpectrometerRx/test_clearance_sees_a_beam_through_a_body`.  Each passed every existing check (rays passed, solves converged, decks loaded); what exposed the first four was a section whose beam is 190 mm from its parent's vertex, the fifth a form whose stop sits in its own beams.
 
 ## Records behind each slide | Every number traces to a runner stage and its record file
 ::: full
