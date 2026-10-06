@@ -38,6 +38,34 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **RESUME POINT 2026-10-05 22:xx (CC context nearly exhausted).  PUSHED on
+> Dave's word: macos cd9d623..d499604, resources 0258faa..7445a33 (all TO's
+> addendum 42-45 work + CC's pMon fix + gauge producers).  GAUGE DECK WORK
+> IN FLIGHT (Thursday 2026-10-08 4 pm PDT talk): (1) deck_gauges.md content
+> pass 1 + slide-10 fix committed (macos 00bcdef, 80e5a3b); Dave's edit copy
+> NOT yet re-synced (Impress lock; run `./sync_edit_deck.sh deck_gauges
+> --folded` once Dave closes it -- his edits ARE folded in the md/sidecar).
+> (2) Redo-bench runs serial on the gauge batch lock (queue script
+> tg_psi_dm96_oap/runs/redo96_ph_seq.sh; log in zwfs_dm96/runs/ and
+> tg_psi_dm96_oap/runs/redo96_ph_seq.log): redo96_sensnoise DONE (S 1.19e14
+> / V 4.6e13 / P 1.46e14 on-surface photons for 1 pm, mirror rig);
+> redo96_sensloop FAILED (loop.readings knob) -> relaunched as
+> redo96_sensloop2 (queued); redo96_lensph RUNNING; redo96_oapph,
+> capt96_lens (capt96_lens_after.sh), redo96_sensnoisef (flat calib) queued;
+> then layoutfigs_after.sh regenerates every layout figure with the new
+> three-leg colours (dmg_leg_draw: red source->BS->flat, blue BS->DM, green
+> BS->camera; resources 44cc4ea), then `python3 crop_panels.py` + rebuild.
+> (3) PENDING markers in deck_gauges.md name the rows each run replaces
+> (Photons for 1 pm; The servo; Capturing the initial figure; also the
+> "front ends" table's '(run in progress)' cells).  (4) Then the 20-slide
+> short deck (Dave approved the proposed main path; a few points: no
+> earlier-state narrative; P/SRI = the pinhole's two-arm variant; blank
+> Backup divider -- all done in pass 1).  (5) Open ask to Dave: re-score the
+> sensors on the LENS rig (never run on the built bench; needs the lens
+> seat value).  (6) deck_dyson telescope slides to be updated with the
+> addendum-45 result after the gauges deck.  Memory file for the gauges:
+> project_gauge_deck_* (write one if absent).**
+
 > **2026-10-05 night -- ADDENDUM 45 CLOSED (TO, resources 7445a33 LOCAL, 18
 > ahead of origin).  1.5k TELESCOPE OF RECORD = THREE OFF-AXIS ASPHERES
 > (`dyson5_tA_GM_1k5_bAs.in`; SPOT merit; R/K/h4/h6/vertex/axis per mirror +
