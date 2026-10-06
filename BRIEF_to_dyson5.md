@@ -1768,3 +1768,67 @@ ruling stands; (a)-(c) change the METRIC and the DOFs, not the weights).
 Records `dyson5_tA_GM_*`; per-rung tables as in addendum 44 plus the
 clearance columns; commit locally by path; message CC at (a) done, (b)
 done, (c) done.
+
+## Addendum 46 (2026-10-06, CC for TO, Dave's order): the F/1.8 OFFNER at the 54 mm slit -- one day, one table
+
+**Why.**  The deck for Jim and Joe (`demo_session/deck_dyson_record.md`,
+slide "Alternatives to the Dyson for the 3k slit") lists the review's
+other forms at a 54 mm slit and says the Offner "has not been tried
+here".  Dave wants it tried while the deck is finished: all-reflective
+(no CaF2, no air-glass crossings, a cold shield for free), the review's
+long-slit example is F/2.8 / 48 mm / 30 um px (Table 2: smile 0.3 %,
+keystone 2 % of a pixel, 0.76 in a pixel), and the record's own Offner
+sibling (`dyson5_s1_offner`, F/2.8, R 0.5 m, ring 0.22 R) reaches
+keystone 0.028 px and CRF 1.20 px but SRF 3.69 px and 0.23 in a pixel.
+The question is whether an Offner at F/1.8 and 54 mm reaches the Dyson
+rows (CaF2 240: CRF 1.21 / SRF 2.02 / EE 0.82; silica 220 + meniscus:
+1.33 / 2.03 / 0.76) and at what size.
+
+**The run.**  Spectrometer alone, 3k: `P.npix = [3000 500]`, 18 um,
+380-2500 nm, 2-px slit, `P.Fno_offner = 1.8`, the chain's `grating_model
+'planes'` (chord-ruled, as the engine).
+1. **First order, a scan over R:** `P.offner_R_m` in {0.5, 0.75, 1.0,
+   1.25} m with the ring radius at 0.22 R (addendum 6: the slit->M1 and
+   M3->FPA beams pass BESIDE the grating body, grating mount in the
+   clearance gate).  Per R: the seed's smile / keystone / CRF / SRF / EE,
+   the grating footprint (the stop at F/1.8 is about R/(2F#) across --
+   check), length, mirror diameters, clearance.  One table, engine-scored
+   (`spectrometer_score` 7 x 7 via the s2 stage or a direct call), no
+   solve yet.
+2. **The classical corrections at each R that clears:** `offner_solve`
+   (convex-grating radius factor, second-zone radius factor, dy, dz) under
+   the ladder's residuals (10 x smile/keystone, 1 x rms spot, clearance
+   wall), then emit and re-score in the engine.  Watch the SRF: it is the
+   number the F/2.8 sibling failed (3.69 px), and the review's Offner holds
+   SRF < 1.35 x sampling only at F/2.8.
+3. **One freedom step, only if 2 leaves SRF > 2.5 px at every R:** a conic
+   on each concave zone (the two zones are already separate radii in the
+   chain; add `Kc` per zone and, if the chain lacks it, say so and stop --
+   do not build a new surface kind today).  The Offner-Chrisp three-mirror
+   variant is NOT in scope; name it as the next form if 3 fails.
+4. **Score and clear the best point like a Dyson row:** smile, keystone,
+   CRF, SRF, EE per (field, lambda), `spectrometer_clearance` with the
+   grating mount, `dyson5_view_figs` for the engine renders,
+   `spectrometer_maps_fig` for the maps -- deck figures come from the
+   producers, not re-drawn.  Optional, if time remains: the e2e join with
+   the 3k (c) telescope (`dyson5_t5f` with `tel5f_e2e_template` pointing at
+   an Offner e2e deck -- there is none yet; if the template route does not
+   fit the Offner's frame, skip and say so).
+
+**Deliverable.**  One table for the deck's slide 10 -- rows: the Offner
+at each R (seed and corrected), the two Dyson references; columns: form,
+R or block radius, F#, slit, smile, keystone, CRF, SRF, EE, length,
+largest optic, mass (mirrors at 10 mm Zerodur-class blanks is enough, say
+the assumption), clearance worst pair -- plus two lines "For Dave": does
+the F/1.8 Offner reach the Dyson rows, and what it costs in size.  Records
+`dyson5_off18_*` (txt + .in + png) in `challenges/dyson5/`, a short
+section in `BRIEF_dyson5_jim.md` (3c), commit locally by path, message
+CC.  Budget: one day.  If step 2 cannot bring SRF under 3 px at R <= 1.25
+m, stop there and report -- a negative at a stated size is the answer.
+
+**Rules.**  American spellings in the record (Dave).  Numbers from the
+engine's trace, never the chain alone (the chain lays out, the engine
+scores).  `ps -C MATLAB` before any run: CC is running deck renders
+through the shared mex this morning; model 128/256 lanes coexist, do not
+relink the shared mex or pull.  Equal field weights.  Push only on Dave's
+word.
