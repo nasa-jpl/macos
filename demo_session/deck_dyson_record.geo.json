@@ -10,7 +10,7 @@
    "cy": 6.4,
    "cw": 6.35
   },
-  "img:dyson5_t5f_GM_1k5_bAs_maps_rc": {
+  "img:dyson5_t5f_GM_1k5_bAs_ap_maps_rc": {
    "cx": 7.85,
    "cy": 5.38,
    "cw": 5.15
@@ -117,9 +117,9 @@
   "txt:What the solve gave:": {
    "x": 0.45,
    "y": 5.47,
-   "w": 7.55
+   "w": 7.3
   },
-  "img:dyson5_t5f_GM_3k_c_maps_rc": {
+  "img:dyson5_t5f_GM_3k_c_ap_maps_rc": {
    "x": 8.25,
    "y": 1.42,
    "w": 4.63,
