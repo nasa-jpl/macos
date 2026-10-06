@@ -32,6 +32,14 @@ if [ -f "$base" ] && [ -f "$edit" ]; then
 else
     T=0; G=0
 fi
+# keep the edit copy being replaced whenever it differs from the baseline:
+# --folded is a claim that the edits are folded, and a wrong claim must not
+# destroy them (2026-10-06: a pass of Dave's tweaks was lost this way)
+if [ "$T" -ne 0 ] || [ "$G" -ne 0 ]; then
+    keep="${stem}_edit_$(date +%Y%m%d_%H%M%S).pptx.bak"
+    cp -p "$edit" "$keep"
+    echo "kept the replaced edit copy as ${keep} (text $T lines, geo $G deliberate)"
+fi
 cp -p "$build" "$edit"
 cp -p "$build" "$base"
 echo "synced ${stem}: edit + baseline = build (text $T, geo $G at check time)"
