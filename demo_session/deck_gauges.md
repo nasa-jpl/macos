@@ -87,8 +87,8 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 |---|---|---|
 | for | on axis, no polarization from folds; inexpensive parts | no glass in the beam: works at any color (a second color for capture is free), no ghosts; the focus lands on the mask without adjustment, and the residual with a flat mirror is 0.029 nm against the lens rig's 0.13; every part clears by 33 mm |
 | against | one color at a time; each plate in the converging beam adds aberration (0.03 wave per 2 mm); the detector leg reaches its best focus only after a numerical adjustment; faces need anti-reflection coating | the metal folds polarize: the vector reading needs its two channels calibrated (634 pm raw, 0.054 pm calibrated; a quarter-wave overcoat halves the raw error); 10 µrad of mirror tilt moves the null 95-103 nm; the raw four-step reading wraps between 60 and 120 nm of surface on both rigs (a base past λ/2 reads 91 nm whatever it is); both capture with unwrapping |
-| where it stands | reads 1.004 / 1.4 pm on a 10 nm change; holds 3 pm from 2.3e13 photons per cycle; capture run in progress | reads 0.986 / 2.3 pm; holds 3 pm from 2.0e13; captures from 200 nm in 24 cycles; the pinhole and the calibrated vector pair pass |
-~ The reference arm (a 103 mm flat on a piezo, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Run tags bench_bs22, oapdraw3, redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, redo96_oapsens; the priced comparison is on the lenses-versus-mirrors slide.
+| where it stands | reads 1.004 / 1.4 pm on a 10 nm change; holds 3 pm from 2.3e13 photons per cycle; captures from 200 nm to 3.1 pm in 60 cycles | reads 0.986 / 2.3 pm; holds 3 pm from 2.0e13; captures from 200 nm in 24 cycles; the pinhole and the calibrated vector pair pass |
+~ The reference arm (a 103 mm flat on a piezo, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Run tags bench_bs22, oapdraw3, redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, capt96_lens, redo96_oapsens; the priced comparison is on the lenses-versus-mirrors slide.
 
 ## The splitter angle: three options | 7° cannot be built; 22.5° clears every part and is the choice; 30° adds margin at the price of a wider bench and more plate polarization
 ::: full
@@ -231,7 +231,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: left
 - **How it reads:** the two images are the sensor with its dimple sign flipped; per pixel they give the cosine and sine of the phase together, so the inversion is exact with no branch choice and no stepping.  Two simultaneous frames per measurement.
 - **On the 30 nm surface, matrix measured on it (mirror rig, 385 px):** 10 nm on one actuator 1.008 / 2 pm / SNR 6364; 1 nm on 120 sites 1.001 / 4 pm; dense 10 nm 1.0035, 0.44 nm — the best line in the comparison.
-- **Servo:** 3 pm from 1.5e12 photons per cycle noise only, 5.3e12 under the 2 pm walk; no fixed error.
+- **Servo (mirror rig):** 3 pm from 2.2e12 photons per cycle noise only, 6.8e12 under the 2 pm walk; no fixed error.
 ::: right
 | added to the front end | value |
 |---|---|
@@ -324,49 +324,39 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | vector Zernike | 1.00 / 3, 0.96 / 47, 0.97 / 23, 0.97 / 21 pm | 6.1e13, 1.1e14, 2.2e15, 2.4e15 |
 | stepped pinhole | 1.00 / 3, 0.96 / 41, 0.97 / 19, 0.97 / 17 pm | 9.8e13, 1.7e14, tens of times more at 120-160 |
 | P/SRI | 1.000 / 3, 1.001 / 2, 1.001 / 2, 1.002 / 2 pm | 3.7e14, 4.1e14, 6.6e14, 3.7e14 |
-| interferometer, lens rig | 0.99 / 1 pm, correlation 0.9999, flat to 160 nm | 2.5e14, stable to 160 nm |
-| interferometer, mirror rig (record 7°) | 0.958, correlation 0.980 to 160 nm | 6.2e14, stable |
+| interferometer, lens rig | 1.001 / 2, 0.998 / 2, 0.996 / 2, 0.996 / 2 pm | 9.9e14, 8.6e14, 5.9e14, 6.6e14 |
+| interferometer, mirror rig | 0.989 / 2, 0.993 / 2, 0.995 / 2, 0.995 / 2 pm | 7.0e14, 5.3e14, 4.9e14, 4.4e14 |
 | interferometer, either rig | 0.99 / 2 pm to 60 nm; between 60 and 120 nm the raw four-step reading wraps (the base past λ/2 of surface reads 91 nm rms whatever it is) on lens and mirror rigs alike; unwrapping restores it (next slides) | — |
 - **What this says:** off null, a self-referenced sensor keeps its accuracy through recalibration but pays in light (2e15 photons is 0.8 mJ, 3 s of a 1 mW laser); the two-arm instruments pay nothing because their reference does not move with the surface.
-~ Run tags cap385_b60-b160, cap385p_b60-b160, noise193_b30-b160, noise193p_b30-b160, lens_deck, oap_deck.  Photons are per measurement, all frames summed, 6 noise realizations per point.
+~ Interferometer rows: redo96_lensph, redo96_oapph (the built rigs; the re-measured matrix on each surface, 1 nm on 112 sites).  Sensor rows: cap385_b60-b160, cap385p_b60-b160, noise193_b30-b160, noise193p_b30-b160 at 385 px, pending their repeat on the built bench.  Photons are per measurement, all frames summed, 6 noise realizations per point.
 
-<!-- PENDING (runs redo96_sensnoise, redo96_lensph, redo96_oapph): replace the interferometer and sensor photon rows with the built-bench values; drop the 'redesigned mirror rig' row label -->
-## Photons for 1 pm | On the flat calibration the sensors need 3-6e13 photons per measurement and the interferometer 1.4-2.5e14; on the working surface the sensors' cost roughly doubles, on either front end, and the two-arm instruments' does not
+## Photons for 1 pm | On the 30 nm working surface the vector Zernike needs 4.6e13 photons per measurement, the stepped Zernike 1.2e14, the pinhole 1.5e14, the interferometer 7e14 (mirror rig) to 1e15 (lens rig); a matrix measured on the flat costs the sensors less, the vector pair's cost barely moves
 ::: left
-| reading | photons for 1 pm, flat matrix | on the 30 nm surface, matrix on it |
+| reading | photons for 1 pm, matrix on the flat | matrix on the 30 nm surface |
 |---|---|---|
-| stepped pinhole | 3.3e13 | 9.8e13 |
-| vector Zernike | 4.7e13 | 6.1e13 |
-| Zernike stepped | 5.4e13 | 8.8e13 |
-| Zernike linear | 5.4e13 | 9.2e13 |
-| P/SRI | 2.0e14 | 3.7e14 |
-| interferometer, lens rig | 1.4e14 (servo form) | 2.5e14 |
-| stepped pinhole / vector Zernike / Zernike stepped, mirror rig | — | 8.5e13 / 7.3e13 / 5.8e13 |
+| vector Zernike, mirror rig | 4.3e13 | 4.6e13 |
+| stepped Zernike, mirror rig | 6.1e13 | 1.2e14 |
+| stepped pinhole, mirror rig | 1.3e14 | 1.5e14 |
+| interferometer, mirror rig | — | 7.0e14 |
+| interferometer, lens rig | — | 9.9e14 |
 ::: right
-![Noise on a single-actuator estimate against photons per measurement, per Zernike reading, with the 1 pm line: the runner's own figure.](figs/zwfs_rec193full_noise.png){h=2.6}
-~ One measurement at 1e14 photons is 31 µJ: 0.13 s of a 1 mW laser at 25% throughput.  The camera's well depth, not the laser, sets the time (future-work slide).  Run tags pdi193f, v193noise, rec193full, noise193_b30, noise193p_b30, pfdeck, loop_lens, lens_deck, oap_deck, oapnoise22 (the sensors on the mirror rig).
+![Noise on a single-actuator estimate against photons per measurement, per reading, with the 1 pm line: the runner's own figure.](figs/zwfs_redo96_noise.png){h=3.9}
+~ One measurement at 1e14 photons is 31 µJ: 0.13 s of a 1 mW laser at 25% throughput.  The camera's well depth, not the laser, sets the time (future-work slide).  The interferometer's single-shot cost on larger surfaces: 5.3-4.4e14 at 60-160 nm on the mirror rig, 8.6-6.6e14 on the lens rig.  Run tags redo96_sensnoisef (flat matrix), redo96_sensnoise (on the surface), redo96_oapph, redo96_lensph; 6 noise realizations per point.
 
-<!-- PENDING (run redo96_sensloop): the sensors' servo rows; the interferometer rows are the built bench already -->
-## The servo: holding 3 pm | In closed loop at gain 0.5 the vector Zernike holds 3 pm from 1.5-1.7e12 photons per cycle, the pinhole and stepped Zernike from 2.3-2.7e12, the interferometer from 2.0-2.3e13, on either front end — and the sensors carry no fixed error
+## The servo: holding 3 pm | In closed loop at gain 0.5 the vector Zernike holds 3 pm from 2.2e12 photons per cycle, the pinhole from 3.1e12, the stepped Zernike from 3.5e12, and the interferometer from 2.0e13 on the mirror rig and 2.3e13 on the lens rig; the sensors carry no fixed error
 ::: left
 | reading | 3 pm, noise only | 3 pm under a 2 pm per-cycle walk | floor under a 5 pm per-cycle ramp | noiseless 1 nm step after 60 cycles |
 |---|---|---|---|---|
-| vector Zernike | 1.5e12 | 5.3e12 | 9.9 pm | 0.000 pm |
-| stepped pinhole | 2.3e12 | 7.0e12 | 9.9 pm | 0.000 pm |
-| Zernike stepped | 2.6e12 | 7.5e12 | 10.0 pm | 0.000 pm |
-| Zernike linear | 2.1e12 | 7.3e12 | 27.6 pm | 1.2 pm, still falling |
-| P/SRI | 5.1e12 | 1.5e13 | 9.9 pm | 0.000 pm |
-| interferometer, lens rig | 2.3e13 | 7.1e13 | 10.2 pm | 0.015 pm |
-| vector Zernike, mirror rig | 1.7e12 | 5.7e12 | 9.8 pm | — |
-| stepped pinhole, mirror rig | 2.5e12 | 7.4e12 | 9.9 pm | — |
-| Zernike stepped, mirror rig | 2.7e12 | 7.9e12 | 10.0 pm | — |
+| vector Zernike, mirror rig | 2.2e12 | 6.8e12 | 9.8 pm | 0.000 pm |
+| stepped pinhole, mirror rig | 3.1e12 | 8.4e12 | 9.9 pm | 0.000 pm |
+| stepped Zernike, mirror rig | 3.5e12 | 9.1e12 | 10.5 pm | 0.000 pm |
 | interferometer, mirror rig | 2.0e13 | 6.6e13 | 11.5 pm | 2.8 pm |
+| interferometer, lens rig | 2.3e13 | 7.1e13 | 10.2 pm | 0.015 pm |
 ::: right
-![Steady-state hold error against photons per cycle for the stepped (green) and vector (purple) Zernike readings, with no drift, a 2 pm walk, and a 5 pm ramp: the runner's own figure.](figs/crop_zwfs_vloop193_right.png){h=2.5}
-~ 7.5e12 photons per cycle is 2.4 µJ, 9 ms of a 1 mW laser.  The ramp floor of 10 pm is the loop's lag (rate ÷ gain), the same for every reading with no fixed error, and it is low-order: 9.2 of its 10 pm sits below 4 cycles per aperture, so a faster or higher-gain low-order loop removes it while light buys nothing.  Both drift floors are the textbook formulas, reproduced by the engine to 1%.  The exact one-frame Zernike reading diverges in the loop.  Run tags vloop193, ploop193, loop193, pfdeck_loop, loop_lens, loop_oap, oapifol2, oaploop22 (the sensors on the mirror rig).
+![Steady-state hold error against photons per cycle for the stepped Zernike (green), the vector pair (purple) and the pinhole (red), with no drift, a 2 pm walk, and a 5 pm ramp: the runner's own figure.](figs/crop_zwfs_redo96_loop_right.png){h=3.9}
+~ 7.5e12 photons per cycle is 2.4 µJ, 9 ms of a 1 mW laser.  The ramp floor of 10 pm is the loop's lag (rate ÷ gain), the same for every reading with no fixed error, and it is low-order: 9.1-9.7 of its 10 pm sits below 4 cycles per aperture, so a faster or higher-gain low-order loop removes it while light buys nothing.  Both drift floors are the textbook formulas, reproduced by the engine to 1%.  The step response contracts by 0.49-0.51 per cycle for the vector pair and the pinhole, 0.66 for the stepped Zernike.  Run tags redo96_sensloop2 (the sensors, mirror rig), redo96_lensloop, redo96_oaploop (the interferometer).
 
-<!-- PENDING (run capt96_lens): the lens rig's capture row -->
-## Capturing the initial figure | From a 100 nm rms surface (200 nm of wavefront) only the externally referenced readings converge: the interferometer with unwrapping alone; the pinhole and the P/SRI with unwrapping and a matrix re-measured every 10 cycles
+## Capturing the initial figure | From a 100 nm rms surface (200 nm of wavefront) only the externally referenced readings converge: the interferometer with unwrapping alone (the mirror rig to 3 pm in 19-24 cycles, the lens rig to 3.1 pm at cycle 60); the pinhole and the P/SRI with unwrapping and a matrix re-measured every 10 cycles
 ::: left
 | reading | largest start brought to 3 pm | what it takes |
 |---|---|---|
@@ -376,30 +366,31 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | stepped pinhole with shutter frame | 100 nm (200 nm WFE) | unwrap + re-measure every 10: 0.21 pm at 1e15, 2.1 pm at 1e13, 3 pm by cycle 26 |
 | P/SRI | 100 nm | unwrap + re-measure: 0.25 pm; ceiling between 100 and 150 |
 | interferometer, mirror rig | 200 nm (400 nm WFE) | unwrap alone: 3 pm in 19 / 24 cycles from 100 / 200 nm, contraction 0.52 |
-| interferometer, lens rig | (run in progress) | unwrap alone |
+| interferometer, lens rig | 200 nm (400 nm WFE) | unwrap alone: 3.1 pm at cycle 60 from 30, 100 and 200 nm alike, contraction 0.50-0.69; not under 3 pm within 60 cycles |
 ::: right
 - **The wrap is not the limit for the self-referenced sensors:** past 60 nm their differential comes back at 24-28 nm whatever the truth, with zero residues — the focal reference has collapsed, the reading is blind, not folded.
 - **Unwrapping alone is not enough for the pinhole or the P/SRI:** the calibration measured at the start is wrong by the time the surface has moved; re-measuring it every 10 cycles (3 times in the descent) closes the loop.  Cadence is not the constraint; the cycle count is.
 - **The interferometer needs no recalibration** because its reference is the flat, not the beam.
-~ 1e13 and 1e15 photons per cycle give the same convergence: capture is reference-limited, not light-limited.  Run tags cap_nouw, cap_uw, cap_state_uw_recal, descent193, descent_lens, descent_oap, capt96_oap (the redesigned mirror rig with the control set inside the DM aperture: 2.98 pm at cycle 60 from 100 and 200 nm, the 30 nm control at 2.97 pm).
+~ 1e13 and 1e15 photons per cycle give the same convergence: capture is reference-limited, not light-limited.  Run tags capt96_oap and capt96_lens (the interferometer on the two built rigs, the control set inside the DM aperture: mirror rig 2.98 pm at cycle 60 from 100 and 200 nm, the 30 nm control at 2.97 pm; lens rig 3.08 / 3.06 / 3.12 pm); the sensor rows are the campaign's capture runs cap_nouw, cap_uw, cap_state_uw_recal, descent193, not yet repeated on the built bench.
 
-## Lenses or off-axis mirrors: the two front ends | Both rigs read and hold at the same photon cost within 15 %; the mirror rig is achromatic, puts no glass in the beam, and is where the sensors were scored
+## Lenses or off-axis mirrors: the two front ends | Both rigs hold 3 pm at the same photon cost within 15 % and the mirror rig reads 1 pm for 30 % fewer photons; it is achromatic, puts no glass in the beam, captures faster, and is where the sensors were scored
 ::: full
 | | lens rig | off-axis mirror rig (protected aluminum) |
 |---|---|---|
 | interferometer, 10 nm on one actuator | 1.004 / 1.4 pm / SNR 7741 | 0.986 / 2.3 pm / 6044 |
 | interferometer, 1 nm on 120 sites | 0.993 / 10 pm | 0.981 / 4.4 pm |
 | interferometer, dense random 10 nm | 0.9995 / 500 pm | 0.977 / 698 pm |
+| interferometer, photons for 1 pm on the 30 nm surface | 9.9e14 | 7.0e14 |
 | interferometer servo: 3 pm noise only / under the 2 pm walk | 2.3e13 / 7.1e13 | 2.0e13 / 6.6e13 |
 | noiseless 1 nm step, residual at cycle 60 | 0.015 pm | 2.8 pm |
-| capture with unwrapping, to 3 pm | (run in progress) | from 100 nm in 19 cycles, from 200 nm in 24 |
+| capture with unwrapping | 3.1 pm at cycle 60 from 100 and 200 nm | 3 pm from 100 nm in 19 cycles, from 200 nm in 24 |
 | flat-mirror null with the substrates in | 59 nm | 26.5 nm |
-| sensors, 10 nm on one actuator (stepped / vector / pinhole) | (not re-scored on this bench) | 0.993 / 5, 1.008 / 2, 0.995 / 3 pm |
+| sensors, 10 nm on one actuator (stepped / vector / pinhole) | not run on the lens rig | 0.993 / 5, 1.008 / 2, 0.995 / 3 pm |
 | sensors' capture range to 10% (stepped / vector / pinhole) | — | 35 / 51 / 42 nm |
 | alignment: 10 µrad tilt of a mirror | — | (D4 not yet run on this bench) |
 - **The vector pair's raw error on the mirror rig is channel amplitude imbalance from the metal folds** (1.08 between its two circular channels on bare aluminum; a quarter-wave overcoat halves the error), not channel phase; the calibrated reading passes its gate.
 - **Both rigs wrap between 60 and 120 nm of surface** (a base the four-step cannot follow reads λ/2 ÷ √12 = 91 nm rms); the capture range is set by the unwrapping, not by the front end.
-~ Run tags redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, redo96_oapsens.  The cells marked in progress or not yet run are listed on the provenance slide with their run names.
+~ Run tags redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, redo96_oapsens.  The two cells not run (the sensors on the lens rig; the 10 µrad tilt on this bench) are listed on the provenance slide.
 
 ## The reflective front end: the design | Fed at its focus and solved at the 22.5° splitter: every part clears by 33 mm, the focus lands on the mask seat without adjustment, and the residual with a flat mirror is 0.029 nm
 ::: left
@@ -434,12 +425,12 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## Recommendation | Hold with the vector Zernike sensor; capture with the interferometer, or with the stepped pinhole's shutter frame if a second arm is not wanted; build on lenses; build one bench that switches
 ::: left
-- **Hold:** the polarized dimple is the best reading on every line — 3 pm from 1.5e12 photons per cycle, two frames taken at once, no stepping, no fold, no fixed error, and every systematic we modeled calibrated by the matrix measured through it.  The stepped scalar dimple is the fallback with no polarization optics, at 1.7× the light.
-- **Capture:** the interferometer takes 100-600 nm of wavefront to 2 pm in tens of cycles with unwrapping alone.  In the common path, the stepped pinhole with a shutter frame captures 200 nm of wavefront with unwrapping and three recalibrations.  A second color is the sensors' own route (future work).
-- **Front end:** either builds.  The mirror rig matches the lens rig on the rows and the servo (interferometer 2.0e13 vs 2.3e13 photons per cycle noise only, 6.6e13 vs 7.1e13 under the walk) and captures from 200 nm; its sensors pass once calibrated; it buys any color and no glass in the beam, and costs alignment tolerance (10 µrad = 100 nm of null) and a polarization calibration of the vector reading.  The measured trade is on the table for a ruling.
+- **Hold:** the polarized dimple is the best reading on every line — 3 pm from 2.2e12 photons per cycle, two frames taken at once, no stepping, no fold, no fixed error, and every systematic we modeled calibrated by the matrix measured through it.  The stepped scalar dimple is the fallback with no polarization optics, at 1.6× the light.
+- **Capture:** the interferometer takes 200-400 nm of wavefront to 3 pm in 19-24 cycles on the mirror rig with unwrapping alone (3.1 pm at cycle 60 on the lens rig).  In the common path, the stepped pinhole with a shutter frame captures 200 nm of wavefront with unwrapping and three recalibrations.  A second color is the sensors' own route (future work).
+- **Front end:** either builds.  The mirror rig matches the lens rig on the rows and the servo (interferometer 2.0e13 vs 2.3e13 photons per cycle noise only, 6.6e13 vs 7.1e13 under the walk), reads 1 pm for 30 % fewer photons (7.0e14 vs 9.9e14) and captures from 200 nm in 24 cycles where the lens rig stops at 3.1 pm; its sensors pass once calibrated; it buys any color and no glass in the beam, and costs alignment tolerance (10 µrad = 100 nm of null) and a polarization calibration of the vector reading.  The measured trade is on the table for a ruling.
 ::: right
-- **The bench:** one layout with the reference arm shuttered, the mask seat translated, the quarter-wave plate in or out, and the P/SRI arm behind a flip-in plate (the one-bench slide).  Capture with the interferometer, hand off inside the sensor's 60 nm reach, hold with the sensor at a third of the light.
-- **What the numbers do not decide:** the pinhole and the vector dimple tie on the working surface (0.9935 / 4 pm both); the dimple wins the servo by 1.5×, the pinhole wins capture range for one extra frame.  A bench that carries both costs one substrate.
+- **The bench:** one layout with the reference arm shuttered, the mask seat translated, the quarter-wave plate in or out, and the P/SRI arm behind a flip-in plate (the one-bench slide).  Capture with the interferometer, hand off inside the sensor's 60 nm reach, hold with the sensor at a tenth of the light.
+- **What the numbers do not decide:** the pinhole and the vector dimple read the working surface alike (0.995 / 3 and 1.008 / 2 pm); the dimple wins the servo by 1.4×, the pinhole wins capture range for one extra frame.  A bench that carries both costs one substrate.
 ~ Draft stance approved 2026-09-13; the wording is for review.
 
 ## The modes, from launch to hold | Four operating modes and what carries the surface between them: the ground flat, the loop's own phase retrieval, capture, and the servo hold, with recalibration events
