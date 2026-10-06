@@ -16,7 +16,7 @@ layout + map per result slide, figures unmodified, conventions stated once).
 An EMIT-class push-broom spectrometer (F/1.8, 18 µm pixels, 380–2500 nm) at Jim's ground sample (30 m from 550 km), designed with MACOS from the public specification and scored on smile, keystone and the response functions, telescope and spectrometer together.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-~ DRAFT for review, 2026-10-06.  The 1.5k module (1500 cross-track pixels, a 27 mm slit) has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.51, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's is not yet at the pixel (CRF 4.2 pixels); the deck asks Jim's help with both.
+~ DRAFT for review, 2026-10-06.  The 1.5k module (1500 cross-track pixels, a 27 mm slit) has a spectrometer of record and a first telescope that together image at the pixel end to end: smile 0.51, keystone 0.01, CRF 1.22, SRF 2.20 pixels, every clearance positive; four such modules carry 6000 pixels in 6.6 kg of fused silica.  The telescope is not finished and the 3k module's resolution is not yet at the pixel level (CRF 4.2 pixels); the deck asks for help with both.
 
 ## Contents | The target, the two ways to build it, the 1.5k module scored, the comparison for Jim, the open module, the questions
 ::: left
@@ -28,8 +28,8 @@ October 2026.  Working record; no proprietary prescription is used.
 - **8** The telescope so far: three off-axis aspheres
 ::: right
 - **9** The spectrometer of record for the 1.5k module
-- **10** Two of 3k in CaF2 or four of 1.5k in silica
-- **11** The 3k module: where it stands
+- **10** To fill the swath: two of 3k pixels in CaF2 or four of 1.5k in silica?
+- **11** The 3k Dyson module: where it stands
 - **12** Alternatives to the Dyson for the 3k slit
 - **13** Questions
 - **14** Next steps
@@ -130,7 +130,7 @@ October 2026.  Working record; no proprietary prescription is used.
 ![Per block radius: CRF (left), energy in one pixel (middle), mass of the edged block (right); solid lines with the meniscus, dashed without; a filled marker meets the specification, a black ring also matches the 220 mm design's own scores.  The 27 mm slit (blue) holds the pixel down to 130 mm in silica without a meniscus.](figs_dyson/dyson5_size_rc.png)
 ~ Record `dyson5_size.txt` (48 engine-scored points, each a full re-solve); the working-distance scan and the throughput routes in `dyson5_jim_3b.txt`.  The 54 mm designs and their ladder: Backup.
 
-## Two of 3k in CaF2 or four of 1.5k in silica | On the spectrometer side four small silica modules win on glass; with the telescope included, the 1.5k module images at the pixel end to end and the 3k module does not yet
+## To fill the swath: two of 3k pixels in CaF2 or four of 1.5k in silica? | On the spectrometer side four small silica modules win on glass; with the telescope included, the 1.5k module images at the pixel end to end and the 3k module does not yet
 ::: full
 | | 2 × CaF2, 3k, 54 mm slit | 4 × fused silica, 1.5k, 27 mm slit |
 |---|---|---|
@@ -149,7 +149,7 @@ October 2026.  Working record; no proprietary prescription is used.
 | clearance, worst pair | +0.06 mm (M2→M3 beam against the block face) | +0.38 mm (detector package against the block face) |
 ~ Carve = a cylinder of clear aperture + 20 mm by thickness + 20 mm; CaF2 is not priced here.  A cold detector adds a dewar window to every row alike; cementing it to the block keeps the count at four.  The 3k telescope is the freeform solve of 2026-10-05, scored before its next layout step (slide 11).  Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs.txt`, `dyson5_t5f_GM_3k_c.txt`.
 
-## The 3k module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.3–4.2 px, 5–9 % of the energy in one pixel, clearance +0.06 mm
+## The 3k Dyson module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.3–4.2 px, 5–9 % of the energy in one pixel, clearance +0.06 mm
 ::: left
 ![The 3k telescope through the 240 mm CaF2 Dyson as the engine traces it (meters): the same arrangement as the 1.5k module at twice the strip.](figs_dyson/dyson5_t5f_GM_3k_c_e2e_views.png){h=3.0}
 - **What the solve gave:** Zernike freeform terms on all three mirrors (M2 carries 1.7 mm of departure at 126 mrad of slope) with the same merit and geometry freedoms as the 1.5k: smile 2.05, keystone 0.05, CRF 4.22, SRF 4.90 px; 98 % of the light admitted at the strip ends; the beam between M2 and M3 passes the block's face by 0.06 mm.
@@ -169,9 +169,10 @@ October 2026.  Working record; no proprietary prescription is used.
 ~ Review: Mouroulis & Green, Opt. Eng. 57(4) 040901 (2018), Table 2 and Table 5.  Offner at F/1.8: `dyson5_off18.txt`, `BRIEF_dyson5_jim.md` 3c (seed, fixed-ring and free-ring rows at R = 0.5–1.25 m; mass as 10 mm Zerodur blanks).  The prism Dyson and the Offner–Chrisp are not traced here.
 
 ## Questions | Two decisions the ray trace cannot make, and help with the part that is not done
-- **Two modules or four.**  The 1.5k module now has a telescope at the pixel end to end (slides 6–8); the 3k module does not yet (slide 11).  At the same 6000 cross-track pixels, four telescopes, spectrometers and detectors in 6.6 kg of fused silica against two in 28.5 kg of CaF2: is four a packaging the project would entertain?
-- **The CaF2 volume.**  Two 240 mm blocks need 12.4 L of single-crystal CaF2 to carve from (6.2 L each, clear aperture + 20 mm each way; 19.6 L at the 300 mm blocks that put all the energy in a pixel).  What does that cost against two to four fused-silica blocks of 0.75 L?
-- **The telescope, and the tricks.**  The telescope is a first design: the strip ends at 0.8 px, 2 mm of aspheric departure on M1, no tolerancing.  Help in bringing it home is asked for: the forms that have worked at 183 mm, F/1.8 and a 4.7–9.4° strip into a telecentric slit; and, more generally, the tricks for throughput (beyond cementing the window and a two-layer coating, 0.81 → 0.91) and for performance that the public record does not show.
+- **Are four modules acceptable?**  The 1.5k module now has a telescope at the pixel end to end (slides 6–8); the 3k module does not yet (slide 11).  At the same 6000 cross-track pixels, four telescopes, spectrometers and detectors in 6.6 kg of fused silica against two in 28.5 kg of CaF2: is four a packaging the project would entertain?
+- **Is CaF2 a realistic option for the 3,000 option?**  Two 240 mm blocks need 12.4 L of single-crystal CaF2 to carve from (6.2 L each, clear aperture + 20 mm each way; 19.6 L at the 300 mm blocks that put all the energy in a pixel).  What does that cost against two to four fused-silica blocks of 0.75 L?
+- **The telescope is a first design, and does not meet all inferred requirements:** the strip ends at 0.8 px, 2 mm of aspheric departure on M1, no tolerancing.
+- **We ask for help in bringing it home:** What telescope forms have worked at 183 mm, F/1.8 and a 4.7–9.4° strip into a telecentric slit?  More generally, what are we missing, for throughput (beyond cementing the window and a two-layer coating, 0.81 → 0.91) and for performance that the public record does not show?
 ~ Also open from the last round: whether the detector window is cemented to the block in the builds (six crossings and 0.81 uncoated, against four and 0.87).
 
 ## Next steps | The 3k telescope, the cold window, the radiometric chain
