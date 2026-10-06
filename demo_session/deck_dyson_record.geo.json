@@ -1,5 +1,5 @@
 {
- "_comment": "Dave's edit-copy pass on deck_dyson_record_edit.pptx, recovered via pptx_geo_diff.py 2026-10-06 (geometry and format; text edits folded into the md). Keys are the builder's block keys; w+h on an img place the picture exactly; cx/cy/cw place its caption; fs is a font-size override.",
+ "_comment": "Dave's edit-copy passes on deck_dyson_record_edit.pptx, recovered via pptx_geo_diff.py 2026-10-06 (two passes: 07:47, 08:45; geometry and format; text edits folded into the md). Keys are the builder's block keys; w+h on an img place the picture exactly; cx/cy/cw place its caption; fs is a font-size override.",
  "The 1.5k module, end to end": {
   "img:dyson5_t5f_GM_1k5_bAs_e2e_views": {
    "x": 0.29,
@@ -65,6 +65,65 @@
   },
   "txt:Regression tests:": {
    "y": 5.87
+  }
+ },
+ "Contents": {
+  "txt:3 The target and how it is scored": {
+   "fs": 14
+  },
+  "txt:9 The spectrometer of record for the 1.5k module": {
+   "fs": 14
+  }
+ },
+ "What the instrument does, and two ways to build it": {
+  "txt:What it does:": {
+   "fs": 14
+  }
+ },
+ "Alternatives to the Dyson for the 3k slit": {
+  "txt:The Offner (concave sphere": {
+   "fs": 14
+  },
+  "txt:Split the slit, keep one telescope.": {
+   "fs": 14
+  }
+ },
+ "Next steps": {
+  "txt:The 3k telescope:": {
+   "fs": 14
+  },
+  "txt:In the engine:": {
+   "fs": 14
+  }
+ },
+ "The 3k Dyson module: where it stands": {
+  "img:dyson5_t5f_GM_3k_c_e2e_views": {
+   "x": 2.0,
+   "y": 1.42,
+   "w": 4.75,
+   "h": 3.68,
+   "cx": 0.45,
+   "cy": 5.0,
+   "cw": 7.55
+  },
+  "txt:What the solve gave:": {
+   "x": 0.45,
+   "y": 5.47,
+   "w": 7.55
+  },
+  "img:dyson5_t5f_GM_3k_c_maps_rc": {
+   "x": 8.25,
+   "y": 1.42,
+   "w": 4.63,
+   "h": 4.11,
+   "cx": 8.25,
+   "cy": 5.73,
+   "cw": 4.75
+  },
+  "txt:Record dyson5_t5f_GM_3k_c.txt": {
+   "x": 8.25,
+   "y": 6.38,
+   "w": 4.75
   }
  }
 }
