@@ -38,6 +38,17 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-06 ORDERS (Dave): TODAY -- rewrite deck_dyson around the telescope
+> of record and SEND it with a note to Jim and Joe (drafts: DRAFT_email_jim_round2.md
+> exists, update it; style gate doc/STYLE_REPORTS.md sec. 5, outward-facing =
+> Dave signs the source; American English; best results only; the 3k row with
+> its flag; the comparison table from BRIEF_dyson5_jim.md 3a with the TMA entry
+> = 1.5k bAs e2e row; render the GM record's t5f maps for the slide first).
+> deck_dyson at 7cc3d61 (pushed) already carries the numbers (slides "The 1.5k
+> telescope of record" and "What it took").  THURSDAY-2: the gauges deck wraps
+> (runs in flight, PENDING markers, figure recolour, 20-slide cut) -- see the
+> resume point below and memory project_gauge_deck_thursday.**
+
 > **RESUME POINT 2026-10-05 22:xx (CC context nearly exhausted).  PUSHED on
 > Dave's word: macos cd9d623..d499604, resources 0258faa..7445a33 (all TO's
 > addendum 42-45 work + CC's pMon fix + gauge producers).  GAUGE DECK WORK
