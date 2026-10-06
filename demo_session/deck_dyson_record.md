@@ -159,7 +159,7 @@ October 2026.  Working record; no proprietary prescription is used.
 
 ## The 3k Dyson module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.2–4.0 px, 4–10 % of the energy in one pixel, 95–98 % of the light through the grating, clearance +0.06 mm
 ::: left
-![The 3k telescope through the 240 mm CaF2 Dyson as the engine traces it (meters); the beam overfills the grating (E7), which clips 2–5 % of the light per field.](figs_dyson/dyson5_t5f_GM_3k_c_e2e_views.png){h=3.0}
+![The 3k telescope through the 240 mm CaF2 Dyson as the engine traces it (meters); the beam overfills the grating (E7), and the rays it clips end there.](figs_dyson/dyson5_t5f_GM_3k_c_e2e_views.png){h=3.0}
 - **What the solve gave:** Zernike freeform terms on all three mirrors (M2 carries 1.7 mm of departure at 126 mrad of slope) with the same merit and geometry freedoms as the 1.5k: smile 1.64, keystone 0.05, CRF 4.02, SRF 4.99 px.  Its marginal rays leave at up to F/1.2, so the grating, sized for F/1.8, passes 95–98 % of the light; the beam between M2 and M3 passes the block's face by 0.06 mm.
 - **Why it stalls:** on this section the figure terms and the mirror positions work against each other (the freeform norm grows as the geometry moves), which points at the stop's position.  **Next:** the stop at M2 instead of M1; an asphere-only solve from the same seed; the field weighting across the strip as a project ruling.
 ::: right
