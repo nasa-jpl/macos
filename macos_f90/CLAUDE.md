@@ -934,6 +934,32 @@ The OPD at a FP the chiefs hit at 31 deg is still 0.5 mm-class on a
 400 um spot -- that is the tilted-plane OPL metric (rodgers1 A.1), the
 reason `add_pupil` exists; it is now a REAL number, not a wrong one.
 
+## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)
+`elemsub.F`'s four grating routines (`Grating`, `TrGrating`, `FzpTrGrating_`,
+`DoeTrGrating`) computed the aperture / obscuration verdict with
+`ChkRayTrans` and then OVERWROTE `LRT` on the next statement with the
+interpolated-surface check (`LRT = .not.(SrfType.EQ.Interpolated .AND.
+IERROR.NE.0)`), so a ray outside a grating's `ApType= Circular` aperture
+(or inside its obscurations) PASSED; only its E-field was zeroed.
+`Reflector` / `Refractor` keep the verdict.  Found because the engine's own
+render of the dyson5 3k end-to-end deck drew the grating smaller than the
+beam: 251 of 1185 center-field rays hit it 154-213 mm from its axis against
+a 154 mm aperture, every one "passing" -- the (c) freeform telescope's
+marginal rays leave at up to F/1.2 into an F/1.8 spectrometer.  Fixed: the
+two conditions are ANDed, `LRT = .TRUE.` when no aperture is declared.
+Measured after: the 1.5k row moves by 0.01 px (its 183 mm sky beam overfills
+the footprint+5 mm grating by 1 %, admits 0.988), the 3k row's smile 2.05 ->
+1.64 px, CRF 4.22 -> 4.02, admits 0.953; every spectrometer-alone dyson5
+record and TO's Offner rows are unchanged (their apertures are their own
+footprints + 5 mm).  Gate `tGratingAperture` (mmacos, SUITE_FAST): pass
+flags == the geometric inside-the-circle set ray by ray, the clipped rays
+carry `RayStat_Obscured` and stay clipped to the FP, the no-aperture control
+passes every ray; the pre-fix engine passes all 89.  Lesson, same as
+2026-09-30's groove law: the grating tests checked parameter GETTERS, the
+chord law, and the OPL jump -- nothing ever put a ray OUTSIDE a grating's
+aperture.  Any element type that vignettes needs one ray outside the
+aperture in its gate.
+
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
 `design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
 element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were

@@ -4666,13 +4666,22 @@ cdebug
 
         ! ----------------------------------------------------------------
         ! Check if ray is obscured
+!-->  2026-10-06: the aperture / obscuration verdict was OVERWRITTEN by the
+!     interpolated-surface check on the next line, so a Grating never
+!     vignetted a ray (a 3k Dyson deck passed 21 % of its rays outside the
+!     grating's declared aperture).  Keep it and AND the two.  The same
+!     overwrite is fixed in TrGrating, FzpTrGrating_ and DoeTrGrating.
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
           IF (.NOT.LRT) Eout(1:3)=0d0
+        ELSE
+          LRT=.TRUE.
         END IF
-        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        LRT = LRT .AND.
+     &    (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+!<--
         ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
         !   LRT=.FALSE.
         ! ELSE
@@ -4860,6 +4869,7 @@ C  Compute incidence point of ray
 
         ! ----------------------------------------------------------------
         ! Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -4867,8 +4877,12 @@ C  Compute incidence point of ray
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
+        ELSE
+          LRT=.TRUE.
         END IF
-        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        LRT = LRT .AND.
+     &    (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+!<--
         ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
         !   LRT=.FALSE.
         ! ELSE
@@ -5150,6 +5164,7 @@ C    Zero partial matrices
         END IF
 
 C  Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -5157,12 +5172,11 @@ C  Check if ray is obscured
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
-        END IF
-        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-          LRT=.FALSE.
         ELSE
           LRT=.TRUE.
         END IF
+        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) LRT=.FALSE.
+!<--
 
 C  Set output values for ray position, direction
         rout(1:3)=rhat(1:3)
@@ -5429,6 +5443,7 @@ C  Compute partials
         END IF
 
 C  Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -5436,12 +5451,11 @@ C  Check if ray is obscured
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
-        END IF
-        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-          LRT=.FALSE.
         ELSE
           LRT=.TRUE.
         END IF
+        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) LRT=.FALSE.
+!<--
 
 C  Set output values for ray position, direction
         rout(1:3)=rhat(1:3)
