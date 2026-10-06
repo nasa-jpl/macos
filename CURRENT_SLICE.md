@@ -38,6 +38,19 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-05 night -- ADDENDUM 45 CLOSED (TO, resources 7445a33 LOCAL, 18
+> ahead of origin).  1.5k TELESCOPE OF RECORD = THREE OFF-AXIS ASPHERES
+> (`dyson5_tA_GM_1k5_bAs.in`; SPOT merit; R/K/h4/h6/vertex/axis per mirror +
+> M2/M3 rigid body + FP focus): as-placed 8/14 um, e2e smile 0.51 / keystone
+> 0.01 / CRF 1.22 / SRF 2.20 px, plate 327/331, clearance +39 mm telescope /
+> +0.38 overall.  3k of record = (c): smile 2.05 / keystone 0.05 / CRF 4.22 /
+> SRF 4.90, genuine freeform (M2 1.7 mm at 126 mrad), overall +0.06 mm FLAG;
+> open: (c') stop at M2, asphere-only on 3k, FWHM-faithful residual, field
+> weighting.  Lessons: a0 control (row form vs metric); the fit is a start,
+> the engine's image is the verdict (sag vs slope); bodies on the best-fit
+> sphere per lit patch.  "For Dave" section in BRIEF_dyson5_tma.md.  Pushes
+> await Dave.  deck_dyson to be updated after the gauges deck.**
+
 > **2026-10-05 eve -- ADDENDUM 45 (a)/(b) IN (TO, resources c26e7c5 / 72a907d
 > LOCAL): the TRANSVERSE metric + M2/M3 rigid-body DOFs reach the pixel on 1.5k:
 > as-placed centre/edge 6/13 um, e2e smile 0.60 / keystone 0.02 / CRF 1.49 /
