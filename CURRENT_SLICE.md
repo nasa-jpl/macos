@@ -38,6 +38,20 @@
 > conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
 > before commit: tSpectrometerRx, tTelescopeRx.
 
+> **2026-10-06 11:00 -- DYSON DECK DAY, STATE (CC).  LOCAL, NOT PUSHED: macos
+> 7cc3d61..29f41da (deck_dyson_record 25 slides + sidecar + builder bold/subscript/
+> spacing/caption-align; sync_edit_deck keeps replaced edit copies; elemsub grating
+> aperture fix + CLAUDE.md entry; addendum 46), resources a55cded..823c175 (t5f maps,
+> view_figs tight axes, dyson5_block4 tool + records, tGratingAperture, re-scored
+> _ap rows) + TO's 2449b20/64c3fdc (Offner, clearance-gate fix).  Fast suite 551/0 on
+> the fixed engine.  ENGINE FINDING: a Grating never vignetted by its aperture
+> (four routines overwrote LRT); 3k row re-scored 1.64/0.05/4.02/4.99, 1.5k 0.50/
+> 0.01/1.22/2.20 admits 0.988.  Offner at F/1.8 OUT (TO, 3c).  Dave's V2 note
+> `DRAFT_email_jim_round2_V2.md` reviewed, numbers fixed; his sign-off on deck +
+> note pending; then push on his word.  LOST: Dave's third edit pass on the
+> edit copy (my --folded sync without a diff) -- he redoes it on the fresh copy.
+> Gauges (Thursday-2) untouched today: all redo runs done, PENDING markers next.**
+
 > **2026-10-06 ORDERS (Dave): TODAY -- rewrite deck_dyson around the telescope
 > of record and SEND it with a note to Jim and Joe (drafts: DRAFT_email_jim_round2.md
 > exists, update it; style gate doc/STYLE_REPORTS.md sec. 5, outward-facing =
