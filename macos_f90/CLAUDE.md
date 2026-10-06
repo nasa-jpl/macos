@@ -934,6 +934,33 @@ The OPD at a FP the chiefs hit at 31 deg is still 0.5 mm-class on a
 400 um spot -- that is the tilted-plane OPL metric (rodgers1 A.1), the
 reason `add_pupil` exists; it is now a REAL number, not a wrong one.
 
+## CLI SPOT was CHIEF-RAY-centred after every LOAD (2026-10-06, Luis's dcdx)
+`spcOption` (the `SPCENTER` option: 1 = spot about the element vertex,
+2 = about the chief ray) is a SESSION option.  The 2024 re-init pass
+(a9b6f9e) put `spcOption = 0` into `elt_mod_init_vars`, which every Rx
+LOAD runs, and the SPOT branch (`macos_cmd_loop.inc`) tests `IF
+(spcOption.EQ.1)` with an ELSE that centres on the chief -- so after any
+load the CLI's SPOT (its plot and the `TEXT`/`BINARY`/`MAT` spot file)
+had the chief ray's position SUBTRACTED from every ray.  A rigid-body tilt
+of a mirror therefore moved the printed "Chief ray location" line and
+left the spot where it was: Luis's OPTIIX FSM 2e-7 rad test (old MACOS
+spot displaced, new MACOS spot unmoved), and the dcdx (centroid
+sensitivity) mismatch downstream of the primary -- a PM perturbation
+changes the spot's SHAPE, a fold or FSM only its position.  MRESET and
+the start-up path set 1 but the load reset ran after them (same trap as
+`LUseChfRayIfOK`: the `.TRUE.` set before `MBFile6` never survived
+`reinitialise_variables`).  Fixed: `spcOption = 1` at allocation in
+`elt_mod_init`, removed from `elt_mod_init_vars`; `SPCENTER` still sets
+it.  **The bindings were never affected**: `spot_cmd` issues `SPC` with
+the caller's `ref_pos` on every call.  Gate: `scratchpad/spot_cli_gate.py`
+pattern (pty CLI; `TEXT`; `SPOT 6 TOUT` on `Rx_Cass_FarField`; `PERTURB
+3` by 2e-7 rad; the written spot's mean must move with the chief; the
+`--chfray` leg puts the same binary in the pre-fix state and must fail).
+Rule, third time: a value a command or the start-up sets as a USER
+OPTION does not belong in `elt_mod_init_vars` -- list of such options
+moved so far: the glass catalog, `spcOption`; `LUseChfRayIfOK` is reset
+there deliberately and the Rx keyword / api set it after the load.
+
 ## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)
 `elemsub.F`'s four grating routines (`Grating`, `TrGrating`, `FzpTrGrating_`,
 `DoeTrGrating`) computed the aperture / obscuration verdict with
