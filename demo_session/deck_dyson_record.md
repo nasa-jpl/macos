@@ -22,18 +22,19 @@ October 2026.  Working record; no proprietary prescription is used.
 ::: left
 - **3** The target and how it is scored
 - **4** What the instrument does, and two ways to build it
-- **5** The 1.5k module, scored: spectrometer, telescope, and the two together
-- **6** The 1.5k module, end to end
-- **7** The telescope so far: three off-axis aspheres
-- **8** The spectrometer of record for the 1.5k module
+- **5** Four 1.5k modules fill the swath
+- **6** The 1.5k module, scored: spectrometer, telescope, and the two together
+- **7** The 1.5k module, end to end
+- **8** The telescope so far: three off-axis aspheres
 ::: right
-- **9** Two of 3k in CaF2 or four of 1.5k in silica
-- **10** The 3k module: where it stands
-- **11** Alternatives to the Dyson for the 3k slit
-- **12** Questions
-- **13** Next steps
-- **14** Run it yourself
-- **15** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; twelve engine findings; records
+- **9** The spectrometer of record for the 1.5k module
+- **10** Two of 3k in CaF2 or four of 1.5k in silica
+- **11** The 3k module: where it stands
+- **12** Alternatives to the Dyson for the 3k slit
+- **13** Questions
+- **14** Next steps
+- **15** Run it yourself
+- **16** Backup: how the telescope reached the pixel; the Dyson design ladder; the 54 mm design; the block-size trade; the methods and the checks; twelve engine findings; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, here
 ::: left
@@ -69,7 +70,17 @@ October 2026.  Working record; no proprietary prescription is used.
 | glass for the swath | 28.5 kg; 12.4 L of single crystal | 6.6 kg; a melt |
 | telescopes, gratings, detectors | 2, 2, 2 × 3k | 4, 4, 4 × 1.5k |
 | telescope today | freeform, not at the pixel | three off-axis aspheres, at the pixel |
-~ The block follows the slit (slide 8): halving the slit halves the block's thickness and drops the meniscus and the CaF2; the telescope's field halves with it, which is what made the 1.5k telescope reachable first.  The 6000-pixel swath is Jim's framing of the trade; Joe's specification is written per 3000-pixel module.
+~ The block follows the slit (slide 9): halving the slit halves the block's thickness and drops the meniscus and the CaF2; the telescope's field halves with it, which is what made the 1.5k telescope reachable first.  The 6000-pixel swath is Jim's framing of the trade; Joe's specification is written per 3000-pixel module.
+
+## Four 1.5k modules fill the swath | Side by side across the track at a 234 mm pitch, each canted to its own 4.7° strip: no body touches another and no body sits in another's sky beam; the block of four is 0.97 × 0.41 × 0.76 m, 300 L, with 14.6 kg of optics
+::: full
+![The four modules as the engine traces them, each the 1.5k module of record moved rigidly: cants −7.05°, −2.35°, +2.35°, +7.05° about the axis normal to the track and the line of sight.  Left: 3-D; right: looking along the cant axis, light entering from below.](figs_dyson/dyson5_block4_views_rc.png){h=3.7}
+| item | value |
+|---|---|
+| pitch across the track; worst margins | 234 mm (module 204 mm + 20 mm gap); body to body +25 mm, body in another's 183 mm sky beam +29 mm |
+| envelope of the four | 965 × 411 × 758 mm, 300 L |
+| optics per module; for the swath | 3.65 kg (block 1.6, three mirrors 1.4, grating 0.6); 14.6 kg |
+~ Bodies are the engine's surface hits + 5 mm aperture + 10 mm mount; mirrors and grating as 10 mm blanks, the block from `dyson5_size.txt`.  Not included: structure, detectors and their cooling, electronics, baffles.  Each module's internal clearances are the record's by construction.  Record `dyson5_block4.txt`; tool `dyson5_block4.m`.
 
 ## The 1.5k module, scored: spectrometer, telescope, and the two together | The spectrometer meets every line of the specification; the telescope reaches the pixel at the strip center and 0.8 px at its ends; together they image at the pixel over the strip, with the energy in a pixel falling toward the ends
 ::: full
@@ -86,7 +97,7 @@ October 2026.  Working record; no proprietary prescription is used.
 | uncoated throughput | – | 0.87 (four air-glass crossings) | three reflections, not scored | – |
 | clearance, worst pair | > 0 | +0.38 mm (detector package vs block face) | +39 mm (M1→M2 beam vs M3) | +0.38 mm (the spectrometer's pair) |
 | glass, mass | – | 0.75 L, 1.6 kg | mirrors not yet sized | – |
-~ Spectrometer: `dyson5_size.txt` row D (130 mm), `dyson5_jim_3a.txt`; telescope: `dyson5_tA_GM_1k5_bAs.txt`; together: `dyson5_t5f_GM_1k5_bAs.txt`, 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  The 3k module's columns: slide 10.
+~ Spectrometer: `dyson5_size.txt` row D (130 mm), `dyson5_jim_3a.txt`; telescope: `dyson5_tA_GM_1k5_bAs.txt`; together: `dyson5_t5f_GM_1k5_bAs.txt`, 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  The 3k module's columns: slide 11.
 
 ## The 1.5k module, end to end | Three off-axis aspheres feeding a 130 mm silica Dyson: smile 0.51, keystone 0.01, CRF 1.22, SRF 2.20 px over the whole strip; every field admitted; clearances +39 mm inside the telescope, +0.38 mm overall
 ::: left
@@ -106,7 +117,7 @@ October 2026.  Working record; no proprietary prescription is used.
 ::: left
 - **Geometry:** the beam passes 190 mm from the parent axis, the strip is biased 4° and the Dyson is rolled 180° about the chief ray; from the first-order layout M2 is tilted 0.95° and moved 6 mm, M3 tilted 6.6° and moved 24 mm, the focal plane 8.5 mm along the axis.  No hole, no central obstruction.
 - **Image as placed:** 8 µm rms at the strip center, 14 µm at the ±2.3° edge (0.4 / 0.8 pixel); every field admitted; the strip's chief rays within 0.5° of each other at the slit.
-- **Not done:** the strip ends sit at 0.8 px (0.3–0.5 of the energy in a pixel through the Dyson); M1 departs 2.1 mm from its best-fit sphere and M3 is tilted 6.6°; no tolerancing, no coatings, no stray-light or mirror sizing; the solve ran to a fixed budget and is not converged.  Help in bringing it home is one of the questions (slide 12).
+- **Not done:** the strip ends sit at 0.8 px (0.3–0.5 of the energy in a pixel through the Dyson); M1 departs 2.1 mm from its best-fit sphere and M3 is tilted 6.6°; no tolerancing, no coatings, no stray-light or mirror sizing; the solve ran to a fixed budget and is not converged.  Help in bringing it home is one of the questions (slide 13).
 ::: right
 ![The telescope alone as the engine traces it (meters): light enters from below; M1 is the large mirror at the right, M2 the small one at the lower left, M3 above M2, the focal plane (E4) below M1.](figs_dyson/dyson5_tA_GM_1k5_bAs_views.png){h=3.4}
 ~ Radii are |R|; vertex z along the parent axis in the prescription's frame; the h⁴/h⁶ terms are about each mirror's own vertex and axis.  Prescription `dyson5_tA_GM_1k5_bAs.in`; solve record `dyson5_tA_GM_1k5_bAs.txt`.  The story of how it was reached, and the forms that did not work, is in the Backup.
@@ -132,11 +143,11 @@ October 2026.  Working record; no proprietary prescription is used.
 | glass for 6000 pixels | 9.0 L, 28.5 kg | 3.0 L, 6.6 kg |
 | single-crystal CaF2 to carve from | 6.2 L per block, 12.4 L in all | none: fused silica is a melt |
 | telescopes / gratings / detectors | 2 / 2 / 2 × 3k | 4 / 4 / 4 × 1.5k |
-| telescope so far | freeform three-mirror, not at the pixel (open) | three off-axis aspheres (slide 7) |
+| telescope so far | freeform three-mirror, not at the pixel (open) | three off-axis aspheres (slide 8) |
 | end to end: smile / keystone / CRF / SRF | 2.05 / 0.05 / 4.22 / 4.90 px | 0.51 / 0.01 / 1.22 / 2.20 px |
 | end to end: energy in one pixel | 0.05–0.09 | 0.30–0.89 (0.8 over the central third) |
 | clearance, worst pair | +0.06 mm (M2→M3 beam against the block face) | +0.38 mm (detector package against the block face) |
-~ Carve = a cylinder of clear aperture + 20 mm by thickness + 20 mm; CaF2 is not priced here.  A cold detector adds a dewar window to every row alike; cementing it to the block keeps the count at four.  The 3k telescope is the freeform solve of 2026-10-05, scored before its next layout step (slide 10).  Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs.txt`, `dyson5_t5f_GM_3k_c.txt`.
+~ Carve = a cylinder of clear aperture + 20 mm by thickness + 20 mm; CaF2 is not priced here.  A cold detector adds a dewar window to every row alike; cementing it to the block keeps the count at four.  The 3k telescope is the freeform solve of 2026-10-05, scored before its next layout step (slide 11).  Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs.txt`, `dyson5_t5f_GM_3k_c.txt`.
 
 ## The 3k module: where it stands | The same parent with a 9.4° strip needs freeform mirrors and is not yet at the pixel: CRF 2.3–4.2 px, 5–9 % of the energy in one pixel, clearance +0.06 mm
 ::: left
@@ -155,10 +166,10 @@ October 2026.  Working record; no proprietary prescription is used.
 ::: right
 - **Split the slit, keep one telescope.**  The record's own finding is that at 3k the spectrometer closes (CaF2 at 240 mm, or silica with the meniscus) and the telescope does not.  A 3k telescope feeding two 1.5k Dysons through a split slit keeps two telescopes and four small silica blocks, but it needs the 3k telescope, which is the open item.
 - **What the ray trace can settle quickly:** the Offner has a layout solver in the chain (`offner_solve`), so an F/1.8, 54 mm Offner can be laid out, emitted and scored on the same scorer in about a day; the prism Dyson needs a dispersing prism added to the chain first (the engine traces it already).  Which is worth the time is a question for Jim and Joe.
-~ Review: Mouroulis & Green, Opt. Eng. 57(4) 040901 (2018), Table 2 and Table 5.  The Offner numbers are the record's `dyson5_s1_offner` (`dyson5_s2.txt`).  Nothing on this slide has been traced at the 3k slit except the Dyson rows of slide 9.
+~ Review: Mouroulis & Green, Opt. Eng. 57(4) 040901 (2018), Table 2 and Table 5.  The Offner numbers are the record's `dyson5_s1_offner` (`dyson5_s2.txt`).  Nothing on this slide has been traced at the 3k slit except the Dyson rows of slide 10.
 
 ## Questions | Two decisions the ray trace cannot make, and help with the part that is not done
-- **Two modules or four.**  The 1.5k module now has a telescope at the pixel end to end (slides 5–7); the 3k module does not yet (slide 10).  At the same 6000 cross-track pixels, four telescopes, spectrometers and detectors in 6.6 kg of fused silica against two in 28.5 kg of CaF2: is four a packaging the project would entertain?
+- **Two modules or four.**  The 1.5k module now has a telescope at the pixel end to end (slides 6–8); the 3k module does not yet (slide 11).  At the same 6000 cross-track pixels, four telescopes, spectrometers and detectors in 6.6 kg of fused silica against two in 28.5 kg of CaF2: is four a packaging the project would entertain?
 - **The CaF2 volume.**  Two 240 mm blocks need 12.4 L of single-crystal CaF2 to carve from (6.2 L each, clear aperture + 20 mm each way; 19.6 L at the 300 mm blocks that put all the energy in a pixel).  What does that cost against two to four fused-silica blocks of 0.75 L?
 - **The telescope, and the tricks.**  The telescope is a first design: the strip ends at 0.8 px, 2 mm of aspheric departure on M1, no tolerancing.  Help in bringing it home is asked for: the forms that have worked at 183 mm, F/1.8 and a 4.7–9.4° strip into a telecentric slit; and, more generally, the tricks for throughput (beyond cementing the window and a two-layer coating, 0.81 → 0.91) and for performance that the public record does not show.
 ~ Also open from the last round: whether the detector window is cemented to the block in the builds (six crossings and 0.81 uncoated, against four and 0.87).
@@ -283,6 +294,7 @@ How the telescope reached the pixel, the Dyson design ladder, the superseded 54 
 |---|---|---|---|
 | 1.5k module end to end; the 3k module | t5f on `dyson5_tA_GM_1k5_bAs.in` / `dyson5_tA_GM_3k_c.in` | `dyson5_t5f_GM_1k5_bAs.txt`, `dyson5_t5f_GM_3k_c.txt`, `*_e2e.in`, `*_maps.png` | `dyson5_t5f.m` (the engine-placed join), `spectrometer_score.m`, `spectrometer_clearance.m` |
 | the telescope of record | `dyson5_tma_step5.m` (the geometry + merit steps) | `dyson5_tA_GM_1k5_bAs.txt`, `dyson5_tA_GM_conicfit.txt`, `BRIEF_dyson5_tma.md`, `BRIEF_to_dyson5.md` addenda 42–45 | `macos.design.tma_layout` 'telecentric', `Telescope.optimize`, the per-ray spot solver |
+| four modules fill the swath | `dyson5_block4.m` | `dyson5_block4.txt`, `dyson5_block4_views.png` | the e2e deck moved rigidly four times; `macos.view_rx`; surface-hit margins |
 | the spectrometer of record; block-size trade | `dyson5_size_trade.m` | `dyson5_size.txt`, `dyson5_size.png`, `dyson5_size_*.in`, `BRIEF_dyson5_size.md` | continuation walks over `dyson_ladder.m` |
 | comparison for Jim | `dyson5_jim.m` ('3a', '3b') | `dyson5_jim_3a.txt`, `dyson5_jim_3b.txt`, `BRIEF_dyson5_jim.md` | re-cut of `dyson5_size.mat`; `macos.design.thinfilm_rt` |
 | design ladder, R4, trade | s3, s3free, s3b | `dyson5_s3.txt`, `dyson5_s3free.txt`, `dyson5_s3_trade.txt`, `dyson5_s3_layout_r*.png`, `dyson5_s3_maps_r*.png` | `dyson_ladder.m`, `dyson5_trade.m` |
