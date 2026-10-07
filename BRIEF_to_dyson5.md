@@ -1885,9 +1885,35 @@ the end.)
    scored, do it per band with the AR designed for 2.0-2.5 um and the
    grating blaze stated.**
 
-**Not in hand:** the paper Jim attached (sizes of spectrometer vs
-telescope; the 192 mm beam).  Dave to drop it in `~/dev/MACOS_sandbox/`
-(a `dyson/` folder) when convenient; the (c') brief should cite it.
+**The paper (in the tree 2026-10-07):** `mmacos/challenges/dyson5/
+VSWIR_design.pdf` = Bradley, Moore, Van Gorp, ... Mouroulis, "Finalized
+optical design of the SBG VSWIR Wide Swath Imaging Spectrometer", ICSO
+2024, Proc. SPIE 13699, 1369945 (image-only PDF; no text layer).  What it
+pins, against the numbers this arc has been using:
+
+| item | the arc (Jim's first numbers) | the paper (final design) |
+|---|---|---|
+| architecture | 2 x 3k or 4 x 1.5k | **two identical** telescope + Dyson modules, each half of the 180 km / 17 deg swath (the single-telescope-two-DSI option lost on volume and mass: 108 x 60 mm image plane) |
+| telescope | f 330 mm, 183 mm, F/1.8, 9.4 deg strip | **f 345 mm, 192 mm aperture, F/1.8, 8.9 deg FOV, IFOV 51 urad**; freeform TMA (even-asphere TMA rejected as too SENSITIVE in tolerancing, not on nominal performance); spots 2-3 um radius, ~70 % of the asphere TMA's; "diffraction limited over most of the spectral range"; all-aluminium, 280-300 K |
+| slit / detector | 54 mm, 18 um, 3000 px | 54.45 mm, 36 um wide (2 px), 18 um spatial with 2 px co-added spectrally, **3072 x 512**, 10 nm per co-added pixel |
+| spectrometer | 240 mm CaF2 block, spherical grating | **CaF2 Dyson lens, ASPHERIC, with a CONIC grating** (Option B) on N-BK7, no corrector lens (throughput), 238-242 K; smaller than the telescope |
+| requirements | smile / keystone < 0.1 px; CRF < 1.5; SRF < 1.5-2.0 | **smile 1.8 um = 5 % of a co-added pixel, keystone 1.8 um = 10 % of a pixel; SRF < 1.8 co-added px; CRF < 2.8 px; ARF < 2.8 px** |
+| design values | -- | DSI alone (Table 2, B): smile 1.3 %, keystone 2.7 %, SRF 1.33, CRF 1.35; telescope-fed (Table 3, freeform): smile 1.3 %, keystone 3.2 %, SRF 1.34, ARF 2.18, CRF 1.30; CBEs after tolerancing SRF 1.50, CRF 1.89, ARF 2.36 |
+| method | -- | the telescope is optimised ALONE for uniform small spots over the full slit length, with constraints on F/# ANAMORPHICITY, baffle clearances and working distance; the DSI is then added for end-to-end keystone and CRF; the telescope "overfills" the F/1.8 DSI |
+
+Where that leaves the record: (i) the 1.5k row of record (CRF 1.22 / SRF
+2.20 / smile 0.50 px e2e) meets the paper's CRF requirement and design
+value, misses its smile (0.50 px against 0.05) and its SRF (2.20 against
+1.8 co-added) -- our smile spec was the right one; (ii) the 3k (c) row
+(CRF 4.02) fails even the paper's looser CRF; (iii) their telescope's
+2-3 um spots over an 8.9 deg strip, from a FREEFORM TMA at f 345, is the
+existence proof the (c') brief should aim at, with the cone bound stated
+as THEIR constraint: minimal F/# anamorphicity at F/1.8 (no F/1.2
+marginal rays), telecentric at the slit; (iv) the aspheric Dyson lens +
+conic grating is the spectrometer form to try when the 3k spectrometer
+is revisited (our 3k spectrometer-alone rows used a spherical block;
+addendum 11's meniscus is their rejected corrector lens).  Cite the
+paper's Table 1 as the spec sheet from here on.
 
 **Open asks he did not answer:** telescope forms that have worked at
 183 mm / F/1.8 / 4.7-9.4 deg into a telecentric slit (beyond "design them
