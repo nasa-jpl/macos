@@ -38,6 +38,12 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     # the built bench's sensor runs (redo96_*): the hold-error panel and the noise pricing
     (R+'zwfs_dm96/runs/redo96_sensloop2/redo96_sensloop2_loop.png', 'crop_zwfs_redo96_loop_right.png', (0.5, 0.04, 1.0, 1.0)),
     (R+'zwfs_dm96/runs/redo96_sensnoise/redo96_sensnoise_noise.png', 'zwfs_redo96_noise.png', (0.0, 0.0, 1.0, 1.0)),
+    # row 2 (the 30 nm working surface) of each gauge's station-by-station figure, for the
+    # four-strip signal-flow slide (Dave 2026-10-07); the full figures stay on their own slides
+    (R+'tg_psi_dm96_oap/runs/redo96_oapstn/redo96_oapstn_stations.png', 'crop_stations_row2_I.png', (0.0, 0.50, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193/stations193_stations_S.png', 'crop_stations_row2_S.png', (0.0, 0.42, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193/stations193_stations_V.png', 'crop_stations_row2_V.png', (0.0, 0.42, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193/stations193_stations_P.png', 'crop_stations_row2_P.png', (0.0, 0.42, 1.0, 1.0)),
 ]
 MISSING = []
 

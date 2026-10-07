@@ -46,7 +46,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 
 ## One optical bench to demo 4 surface gauges, in mirror and lens forms | Comparing accuracy, precision, repeatability and hold, for interferometers, scalar and vector Zernike WF sensors, and a point-diffraction sensor
 ::: full
-| the claim | what it means here | lens rig | mirror rig |
+| the claim (interferometer, both rigs) | what it means here | lens rig | mirror rig |
 |---|---|---|---|
 | **accuracy** | the imaging's error in reading a 30 nm working surface, piston and tilt removed | **0.13 %** (42 pm) | **0.29 %** (92 pm) |
 | | the same, in the top spatial band (at the actuator Nyquist) | **0.5 %** | **0.9 %** |
@@ -57,7 +57,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **Picometer measurement is photon-limited, not bench-limited.**  One measurement at 1e15 photons — 0.31 mJ, about 1.3 s of a 1 mW laser — repeats to 0.7 pm, and a servo fed at that rate holds under half a picometer.  Both front ends agree to within 10 %.  For scale, **Steeves et al. (2020, Optica 7, 1267) demonstrate 1.6 pm in 4.3 s on a real interferometer**: ours is photon-limited only, carrying no vibration, thermal drift or detector systematics, so it is the floor this design allows rather than a prediction of the built bench — and agreeing within a factor of two is the check that the model is in the right regime.
 - **Accuracy is systematic and proportional** — a fraction of the figure read, so 30 nm costs tens of picometers and a 200 nm capture figure costs hundreds.  It holds because the response matrix is measured on the surface, not assumed geometric.
 - **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp the loop lags at about 10 pm however many photons it is given — a cadence and thermal-control requirement, not a sensing one.
-~ A 10 nm single-actuator change — what the servo actually corrects — reads against truth to 1.5 pm at gain 1.001 on lenses and 1.8 pm at 0.993 on mirrors.  Every number here is a committed run of the shared model; the run tags are on the provenance slide and each is repeated on the slide that derives it.
+~ The table is the interferometer's, the one gauge scored on both front ends; the three sensors, scored on the mirror rig, read within 1 % and 2 pm of it on the same surface (the side-by-side slide).  A 10 nm single-actuator change, what the servo corrects, reads against truth to 1.5 pm at gain 1.001 on lenses and 1.8 pm at 0.993 on mirrors.  Run tags are on the provenance slide and on each slide that derives a number.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -279,6 +279,14 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![Row 1 the flat mirror, row 2 the 30 nm working surface.  Left to right: the mirror command; the focal spot with the pinhole's footprint; the pinhole plate's transmission (the clear pinhole, the surround at 0.72); the reference wave at the detector; the first frame of the five-step scan and the shutter frame (the surround closed, the pinhole's light alone); the surface recovered from the scan; the raw map minus the engine's field (0 on the flat, 0.18 nm rms on the working surface).  Run stations193.](figs/stations193_stations_P.png){h=3.0}
 - **The shutter frame measures the reference by itself**, state by state; that is what lets this reading keep its calibration to 480 nm of surface where the dimple's self-reference collapses at 60.
 ~ The 0.18 nm is the raw map's error with the flat's calibration; through the matrix on the surface the pinhole reads 0.9935 / 4 pm, the same as the vector dimple.
+
+## Each gauge reading the 30 nm working surface, station by station | The same mirror command through the four trains: what the camera sees, and what comes back; the last column is the raw map against the engine's own field, before any calibration
+::: full
+![Interferometer (hybrid, mirror rig): the command; the test and reference arms at the camera; two of the four phase-stepped frames; the recovered surface; the raw map minus the engine's field, 463 pm (1.5 %).](figs/crop_stations_row2_I.png){h=1.2}
+![Stepped Zernike: the focal spot with the dimple's footprint; the dimple's phase; the reference wave the dimple makes from the beam; the clear frame and the first depth frame; the recovered surface; raw map minus the engine, 4.8 nm (the beam-made reference, which the matrix measured on the surface absorbs).](figs/crop_stations_row2_S.png){h=1.2}
+![Vector Zernike: the metasurface (+90° on one circular state, −90° on the other); camera A and camera B, both frames at once; the pixel-by-pixel solve; raw map minus the engine, 25 pm.](figs/crop_stations_row2_V.png){h=1.2}
+![Stepped pinhole: the pinhole plate (clear pinhole, the surround at 0.72); the first step frame and the shutter frame (the pinhole's light alone); the recovered surface; raw map minus the engine, 184 pm.](figs/crop_stations_row2_P.png){h=1.2}
+~ Row 2 of each gauge's station-by-station figure (the full figures, with the flat mirror as row 1, are in the backup).  Run tags redo96_oapstn (interferometer) and stations193 (the three sensors, 193 pixels per pupil).
 
 ## Performance side by side | Every reading on the same 30 nm working surface, the response matrix measured on it: the four best readings are within 1% of each other and within 2 pm on the floor
 ::: full
