@@ -142,30 +142,38 @@
    "fs": 15
   },
   "txt:Reads": {
-   "fs": 13,
-   "sa": 8
+   "fs": 11,
+   "sa": 5
   },
   "txt:Frames per measurement": {
-   "fs": 13,
-   "sa": 8
+   "fs": 11,
+   "sa": 5
   },
   "txt:Gets right": {
-   "fs": 13,
-   "sa": 8
+   "fs": 11,
+   "sa": 5
   },
   "txt:Gets wrong": {
    "fs": 13,
    "sa": 8
   },
   "txt:Scored, 30 nm surface": {
-   "fs": 13,
-   "sa": 8
+   "fs": 11,
+   "sa": 5
   },
   "img:crop_pdi_layout_tail.png": {
    "x": 6.9,
    "y": 1.35,
    "w": 5.9,
    "h": 4.31
+  },
+  "txt:Scanned how": {
+   "fs": 11,
+   "sa": 5
+  },
+  "txt:The P/SRI": {
+   "fs": 11,
+   "sa": 5
   }
  },
  "Pupil imaging: the DM's modes through the detector leg": {
