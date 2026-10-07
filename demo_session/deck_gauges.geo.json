@@ -229,9 +229,9 @@
   }
  },
  "One optical bench to demo 4 surface gauges, in mirror and lens forms": {
-  "txt:A 10 nm single-actuator change": {
+  "txt:The table is the interferometer": {
    "x": 0.5,
-   "y": 6.55,
+   "y": 6.3,
    "w": 12.43
   }
  },
@@ -239,6 +239,53 @@
   "txt:The reference arm (a 103 mm flat on a piezo": {
    "x": 0.45,
    "y": 6.96
+  }
+ },
+ "Each gauge reading the 30 nm working surface, station by station": {
+  "img:crop_stations_row2_I.png": {
+   "x": 6.23,
+   "y": 1.24,
+   "w": 6.72,
+   "h": 1.34,
+   "cx": 0.45,
+   "cy": 1.29,
+   "cw": 4.6,
+   "cal": "left"
+  },
+  "img:crop_stations_row2_S.png": {
+   "x": 5.93,
+   "y": 2.66,
+   "w": 7.02,
+   "h": 1.15,
+   "cx": 0.45,
+   "cy": 2.71,
+   "cw": 4.6,
+   "cal": "left"
+  },
+  "img:crop_stations_row2_V.png": {
+   "x": 5.93,
+   "y": 3.89,
+   "w": 7.02,
+   "h": 1.15,
+   "cx": 0.45,
+   "cy": 3.94,
+   "cw": 4.6,
+   "cal": "left"
+  },
+  "img:crop_stations_row2_P.png": {
+   "x": 5.93,
+   "y": 5.12,
+   "w": 7.02,
+   "h": 1.15,
+   "cx": 0.45,
+   "cy": 5.17,
+   "cw": 4.6,
+   "cal": "left"
+  },
+  "txt:Row 2 of each gauge": {
+   "x": 0.45,
+   "y": 6.5,
+   "w": 12.4
   }
  }
 }
