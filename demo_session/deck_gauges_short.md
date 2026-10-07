@@ -135,16 +135,17 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![The vector sensor's leg from the focus to the two cameras, both channel decks traced by the engine.](figs/crop_zwfs_vlayout_tail.png){h=3.0}
 ~ Parts: the backup's "Parts specific to the sensors" (metasurface in the etched plate's seat; zero-order quarter-wave plate; 12.7 mm MacNeille cube behind the field lens; two cameras 20.7 mm behind the cube).  Run tags redo96_oapsens, redo96_sensloop2, stations193_oap.
 
-## Point-diffraction sensor: a stepped pinhole with a shutter frame | The best common-path form: a 5.3 µm pinhole with an attenuated surround at the focus, five phase steps of the substrate, plus one pinhole-only frame per state that keeps the calibration honest far from null
+## Point-diffraction sensor: a stepped pinhole with a shutter frame | The best common-path form: a 5.3 µm pinhole with an attenuated surround at the focus, five phase steps of the surround, plus one pinhole-only frame per state that keeps the calibration honest far from null; the P/SRI is its photonic two-arm sibling
 ::: left
-- **Reads:** the pinhole passes the core of the focal spot as the reference; the surround, attenuated to 0.72 in amplitude, passes the rest.
+- **Reads:** the pinhole passes the core of the focal spot as the reference; the surround, attenuated to 0.72 in amplitude, passes the rest; the two interfere at the pupil image.
 - **Frames per measurement: 6** — the surround's phase stepped through five (the Schwider-Hariharan scan, insensitive to step error) plus one frame with the surround shuttered, which measures the reference by itself.
+- **Scanned how:** fixed etches, no moving part in the beam.  One fused-silica plate carries a row of pinhole sites whose surrounds are etched 0 to 4 steps of 346 nm (a quarter wave of phase each at 632.8 nm, the Zernike plate's own etch) and a sixth site with the surround chromed, the shutter frame; the mask seat's translation stage moves site to site, as for the Zernike plate's 3×3 array.  Modeled so far: the step increment and its error; not yet the stage, the etch tolerances or the attenuator's own phase.
 - **Gets right:** the shutter frame keeps the calibration honest far from null: 10 % accuracy to 480 nm of surface and beyond, where the dimple's self-reference fails at 42-70 nm.
-- **Gets wrong:** how the phase is stepped is not modeled (an ideal increment with a step-error knob; no device physics for a stage, etched steps or a photonic shifter); six frames.
-- **Scored, 30 nm surface, matrix on it (mirror rig):** 10 nm change at gain 0.995 / 3 pm, SNR 3845; 1 nm on 120 sites 0.998 / 3 pm; dense 10 nm 0.994 / 313 pm; holds 3 pm from 3.1e12 photons per cycle (8.4e12 under the walk); no fixed error.
+- **Scored, 30 nm surface, matrix on it (mirror rig):** 10 nm change at gain 0.995 / 3 pm, SNR 3845; 1 nm on 120 sites 0.998 / 3 pm; holds 3 pm from 3.1e12 photons per cycle (8.4e12 under the walk); no fixed error.
+- **The P/SRI (Dube et al. 2024) is this sensor's photonic form:** a 60/40 plate feeds a reference arm that focuses onto a single-mode waveguide in a photonic chip; the waveguide's mode comes back as a point-diffraction reference fixed in shape, phase-shifted thermo-optically in the chip, and is recombined with the test beam.  Externally referenced like the interferometer (captures to 480 nm and beyond), non-common-path; 6× the pinhole's photons at null, nothing off it.
 ::: right
 ![The pinhole sensor's tail, the tool's own render: the focuser, the pinhole substrate at the internal focus on its stepping stage, the field lens and the camera.](figs/crop_pdi_layout_tail.png){h=3.0}
-~ Parts: the backup's "Parts specific to the sensors".  The P/SRI is this sensor's two-arm form (a 60/40 pickoff, a reference lens, a 3.7 µm pinhole into a single-mode waveguide with a thermo-optic shifter, a recombiner, its own camera): 6× the photons at null, nothing off null; a capture instrument, its trade in backup.  Run tags redo96_oapsens, redo96_sensloop2, stations193_oap.
+~ Parts: the backup's "Parts specific to the sensors".  P/SRI: Dube, Nejadriahi, Sidick, Jewell, Redding, Lou and Basinger, Proc. SPIE 13092, 130926F (2024); modeled here with their mode (V 2.3, core 0.5 λ/D), their split and their five-frame scan, the reference arm traced by the engine.  Run tags redo96_oapsens, redo96_sensloop2, stations193_oap; P/SRI pfdeck, psri_traced.
 
 ## Each gauge reading the 30 nm working surface, station by station | The same mirror command through the four trains; the last column is the raw map against the engine's own field, before any calibration
 ::: full
@@ -215,6 +216,23 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![Steady-state hold error against photons per cycle for the stepped Zernike (green), the vector pair (purple) and the pinhole (red), with no drift, a 2 pm walk, and a 5 pm ramp: the runner's own figure.](figs/crop_zwfs_redo96_loop_right.png){h=3.9}
 ~ 7.5e12 photons per cycle is 2.4 µJ, 9 ms of a 1 mW laser.  The ramp floor of 10 pm is the loop's lag (rate ÷ gain), the same for every reading with no fixed error, and it is low-order: 9.1-9.7 of its 10 pm sits below 4 cycles per aperture, so a faster or higher-gain low-order loop removes it while light buys nothing.  Both drift floors are the textbook formulas, reproduced by the engine to 1%.  The step response contracts by 0.49-0.51 per cycle for the vector pair and the pinhole, 0.66 for the stepped Zernike.  Run tags redo96_sensloop2 (the sensors, mirror rig), redo96_lensloop, redo96_oaploop (the interferometer).
 
+## Controlling two DMs with one sensor: the full complex amplitude | A second deformable mirror corrects amplitude as well as phase, so its control needs the pupil field's amplitude too; every approach but the one-frame Zernike readings returns it from frames it already takes
+::: left
+| reading | amplitude from its own frames? | how |
+|---|---|---|
+| Zernike, one frame | no | the solve assumes the flat's amplitude |
+| Zernike, stepped | yes | its clear frame is the pupil intensity; the depths give the field |
+| vector Zernike | yes, with one clear frame | the pair alone is ambiguous; the pair plus the clear frame is exact |
+| pinhole, P/SRI | yes | the stepped solve is the field against a known reference |
+| interferometer | yes | the fringe modulation is the test amplitude times the reference's |
+- **The vector pair alone cannot:** its two images fix the field only up to a mirror image about the reference wave, and at gauge-level phases (a 100 nm poke is 1.9 rad) the true field crosses that line; solving both from the pair diverges.
+- **The pair plus the state's clear frame reads both exactly:** through a 5 % and a 20 % dip in pupil amplitude the phase comes back at 0.02 and 0.13 pm, where the phase-only solve misreads by 237 and 952 pm; the hold rows are unchanged to the digit.  Three frames.
+::: right
+- **On the telescope:** a calibration source after M2, co-aligned with the starlight beam and out of the science band, feeds the gauge through the rest of the train — M3, the fold, both deformable mirrors — so amplitude and phase are read continuously, at the gauge's own light level, without taking starlight or waiting on the science camera (Redding et al.).  The star's own light then carries only the slow dark-hole loop.
+- **What the mode needs from the bench:** a reading that returns amplitude (every row above but the one-frame Zernike), the gauge's wavelength outside the band the coronagraph uses, and a response matrix measured through the gauge's own path — the same matrix practice as every row in this deck.
+- **What is not yet shown:** the second mirror's control law and its rows; the source's co-alignment tolerance; the out-of-band path's chromatic terms through the DMs.  The one-sensor, two-DM loop is the natural next campaign on this bench.
+~ Run tag an193_clear (the runner's mask.v_clear reading and its amplitude-dip check).  Redding et al.: reference to be supplied.
+
 ## Capturing the initial figure | From a 100 nm rms surface (200 nm of wavefront) only the externally referenced readings converge: the interferometer with unwrapping alone (the mirror rig to 3 pm in 19-24 cycles, the lens rig to 3.1 pm at cycle 60); the pinhole and the P/SRI with unwrapping and a matrix re-measured every 10 cycles
 ::: left
 | reading | largest start brought to 3 pm | what it takes |
@@ -277,24 +295,26 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **What the numbers do not decide:** the pinhole and the vector dimple read the working surface alike (0.995 / 3 and 1.008 / 2 pm); the dimple wins the servo by 1.4×, the pinhole wins capture range for one extra frame.  A bench that carries both costs one substrate.
 ~ Draft stance approved 2026-09-13; the wording is for review.
 
+## What comes next, and how to run it | Three threads of future work, and the commands that reproduce every number in the deck, in the public repositories
+::: left
+- **Capture beyond one wave with a second color:** 632.8 + 700 nm gives a 6.6 µm synthetic wavelength and 1.6 µm of unambiguous surface at 10× the noise; the coarse pair captures, the single color holds.  The runner already traces one mask at five colors (Backup).
+- **From this model to as-built performance:** the camera's well depth sets the measurement time (1e14 photons is 1600 frames at 60 ke per pixel); surface, alignment, stability and polarization errors priced per reading (Backup).
+- **Other approaches worth a look:** a modeled large-figure solve, phase diversity, white-light scanning, heterodyne detection, direct-sequence metrology (Backup); and the one-sensor, two-DM loop.
+::: right
+- **Interferometer** (tg_psi_dm96_oap): `tg96_run` (lens rig); `tg96_run('bench.optics','oap')` (mirror rig); batch: `./tg96_batch.sh TAG "'stages',{'bench','loop','figs'}"`.
+- **Pupil image** (tg_psi_dm96_oap): `tg96_pupilq('rig','lens')`, `tg96_pupilsim('rig','oap')`; both tools, both rigs: `./tg96_pupil_batch.sh both`.
+- **Zernike sensors** (zwfs_dm96): `out = zwfs_run;` (bench, battery, figures); mirror rig, all readings: `zwfs_run('bench.optics','oap','readings',{'S','V','P','PF'},'stages',{'bench','battery','noise','loop'},'mask.v_arm','engine')`; batch: `./zwfs_batch.sh TAG "..."`.
+- **Point-diffraction** (pdi_dm96): `P = pdi_params; out = pdi_run(P);`; `pdi_run('pdi.DIA_LAMD',1.0,'stages',{'bench','battery','figs'})`.
+- **Where:** MACOS_resources/mmacos/templates/40_benches/{tg_psi_dm96_oap, zwfs_dm96, pdi_dm96} and the shared dm_gauge_lib, branch dev-candidate; each README carries the full command list and the run-tag index.  One parameter sheet and one runner per approach; a model-1024 run needs about 11 GB, and the batch wrappers run one at a time.
+~ Every stage asserts its own gates (the mask round trip, the reference-wave surrogate, the fold, the pinhole, the analyzer); tDmgLoop 15/15; the mmacos fast suite 559/0 (2026-10-07).  All code and documentation is public: nasa-jpl/macos and nasa-jpl/MACOS_resources on github.
+
+## Backup
+
 ## The modes, from launch to hold | Four operating modes and what carries the surface between them: the ground flat, the loop's own phase retrieval, capture, and the servo hold, with recalibration events
 ::: full
 ![The operating modes as a flow: ground flat, image-based phase retrieval, capture, closed-loop hold; the readings' capture limits under the capture box; recalibration events above.](figs/gauge_modes_flow.png){h=4.6}
 ~ The loop's own focal-plane phase retrieval wraps at half a wave of high-spatial-frequency wavefront, one wave before the gauges do; its reach sets what capture must cover.  Drawn by gauge_modes_flow.m.
 
-## What comes next, and how to run it | Three threads of future work, and one command line per gauge; every number in the deck is reproduced by the runners in the public repositories
-::: left
-- **Capture beyond one wave with a second color:** 632.8 + 700 nm gives a 6.6 µm synthetic wavelength and 1.6 µm of unambiguous surface at 10× the noise; the coarse pair captures, the single color holds.  The runner already traces one mask at five colors (Backup).
-- **From this model to as-built performance:** the camera's well depth sets the measurement time (1e14 photons is 1600 frames at 60 ke per pixel); surface, alignment, stability and polarization errors priced per reading (Backup).
-- **Other approaches worth a look:** a modeled large-figure solve, phase diversity, white-light scanning, heterodyne detection, direct-sequence metrology (Backup).
-::: right
-- **Interferometer** (tg_psi_dm96_oap): `tg96_run` (lens rig); `tg96_run('bench.optics','oap')` (mirror rig).
-- **Zernike sensors** (zwfs_dm96): `zwfs_run` (bench, battery, figures); `zwfs_run('bench.optics','oap','readings',{'S','V','P'},'stages',{'bench','battery','noise','loop'})` for the mirror rig.
-- **Point-diffraction** (pdi_dm96): `P = pdi_params; out = pdi_run(P);`.
-- **Where:** MACOS_resources/mmacos/templates/40_benches/{tg_psi_dm96_oap, zwfs_dm96, pdi_dm96} and the shared dm_gauge_lib, branch dev-candidate; each directory's README carries the full command list and the run-tag index.  A model-1024 run needs about 11 GB.
-~ Every stage asserts its own gates (the mask round trip, the reference-wave surrogate, the fold, the pinhole, the analyzer); tDmgLoop 15/15; the mmacos fast suite 551/0 (2026-10-06).  All code and documentation is public: nasa-jpl/macos and nasa-jpl/MACOS_resources on github.
-
-## Backup
 
 ## The splitter angle: three options | 7° cannot be built; 22.5° clears every part and is the choice; 30° adds margin at the price of a wider bench and more plate polarization
 ::: full
@@ -501,18 +521,6 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | 9 | descent: the start ladder with unwrapping and recalibration on and off | largest start brought to 3 pm |
 | 10 | systematics one at a time, uncalibrated and through the matrix; layout drawn from the emitted deck; parts from the sheet; report numbers first | one line per term on the systematics slide |
 ~ The scoring library (the loop, the unwrapper, the arm and analyzer maps, the clearance check) is shared by the three lanes; nothing is copied between them.  The path is recorded as reference memory so the next configuration follows it in a day.
-
-## Run it yourself | One parameter sheet and one runner per approach, shared code underneath; every number here is reproduced by the commands below
-::: left
-- **Interferometer** (tg_psi_dm96_oap): `tg96_run` for the lens rig; `tg96_run('bench.optics','oap','tag','oap')` for the mirror rig; `./tg96_batch.sh lens_deck "'stages',{'bench','deck'},'battery.noise',true"`; `./tg96_batch.sh loop_lens "'stages',{'bench','loop','figs'}"`.
-- **Pupil image** (tg_psi_dm96_oap): `tg96_pupilq('rig','lens')`, `tg96_pupilsim('rig','oap')`; both tools, both rigs: `./tg96_pupil_batch.sh both` (knobs: P.pupil in tg96_params).
-- **Zernike sensors** (zwfs_dm96): `out = zwfs_run;` (bench + battery + figures); `zwfs_run('tag','ng385','NGRID',385)`; `zwfs_run('MODEL',2048,'NGRID',385,'param_file','macos_param_2048.txt')`; `./zwfs_batch.sh loop193 "'stages',{'bench','loop','figs'}"`.
-- **Point-diffraction** (pdi_dm96): `P = pdi_params; out = pdi_run(P);`; `pdi_run('pdi.DIA_LAMD',1.0,'stages',{'bench','battery','figs'})`; `./pdi_batch.sh TAG "pdi_params, 'stages',{'bench','loop','figs'}"`.
-::: right
-- **The other gauges on the mirror rig:** `zwfs_run('bench.optics','oap','bench.coat_oap','bareAl','readings',{'L','S','V','P','PF'},'stages',{'bench','battery','noise','loop'},'mask.v_arm','engine')`.
-- **Where:** MACOS_resources/mmacos/templates/40_benches/{tg_psi_dm96_oap, zwfs_dm96, pdi_dm96}, the shared scoring library dm_gauge_lib, branch dev-candidate.  A model-1024 run needs about 11 GB; the batch wrappers run one at a time.
-- **Gates:** every stage asserts its own gates (the mask round trip, the reference-wave surrogate, the fold, the pinhole, the analyzer); tDmgLoop 15/15; the mmacos fast suite 481/0.
-~ Each directory's README carries the full command list and the run-tag index. All code and documentation is available from the public nasa-jpl github macos and MACOS_resources repos.
 
 ## Improving the pupil image: the options, assessed | The tail geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
 ::: full
