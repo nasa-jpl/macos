@@ -1919,3 +1919,116 @@ paper's Table 1 as the spec sheet from here on.
 183 mm / F/1.8 / 4.7-9.4 deg into a telecentric slit (beyond "design them
 separately"), and the throughput tricks beyond the AR note.  Ask again,
 briefly, in the reply.
+
+## Addendum 48 (2026-10-07, CC for TO, Dave's order): the 3k telescope (c') -- Joe's spec, seeded from the SBG VSWIR form
+
+**Standing.**  Fresh session, Opus 5.5.  Read first: root `CLAUDE.md`,
+`CURRENT_SLICE.md` top entries, this file's addenda 37 (telecentric
+parent), 45 (the levers; decks of record), 46-47 (Offner out; Jim's
+answers and the paper).  Rules: `ps -C MATLAB` before any run (CC's gauge
+runs may be live; ONE model-1024 MATLAB on this box); do not relink the
+shared mex; the fast suite before any commit; American spellings; commit
+by path on resources `dev-candidate`; push only on Dave's word.  Report
+`macos/REPORT_dyson5_cprime.md`; message CC at the end of step 1 and at
+the end.
+
+**Why.**  Jim's reply (addendum 47) and the project's own paper
+(`challenges/dyson5/VSWIR_design.pdf`) settle the trade toward TWO 3k
+modules, which makes the 3k telescope the open item.  The record's 3k
+telescope (`dyson5_tA_GM_3k_c.in`, freeform (c)) reaches CRF 4.02 px
+with marginal rays at F/1.19 into an F/1.8 spectrometer and M2 at
+126 mrad; figure and geometry fight (addendum 45: stop at M2 is the open
+step).  Jim: "design the telescope and spectrometer separately, both
+telecentric at the slit; the telescope a little faster than the
+spectrometer; I don't see why some rays correspond to an f/1.2 cone."
+The paper does exactly that: the telescope is optimised ALONE for uniform
+small spots along the full slit, under constraints on **F/#
+anamorphicity**, baffle clearance and working distance; then the Dyson is
+added for end-to-end keystone and CRF.
+
+**The spec stays Joe's** (the deck's spec sheet): f 330 mm, D 183 mm,
+F/1.8, 9.4 deg strip (3k: 3000 x 18 um = 54 mm slit), telecentric at the
+slit (chiefs within 0.5 deg), smile / keystone < 0.1 px, CRF < 1.5 px,
+SRF < 1.5-2.0 px, energy in a pixel > 0.75, clearance > 0.  Report
+alongside, for the comparison Jim will make, the paper's five (Table 1 /
+Table 3): smile 5 % and keystone 10 % of a pixel, SRF < 1.8, CRF < 2.8,
+ARF < 2.8 px (ARF = the telescope's own along-track line spread, FWHM in
+px -- our telescope-alone spot FWHM in the slit-width direction).  Their
+freeform TMA DESIGN values: smile 1.3 %, keystone 3.2 %, SRF 1.34, ARF
+2.18, CRF 1.30; spots 2-3 um radius.
+
+**The seed = the paper's Fig. 4b**, digitised by CC (scale bar 226 px =
+200 mm; positions +-5 mm, angles +-2 deg).  Single field, meridional
+(along-track) plane; the strip is OUT of the page, as in our eccentric
+sections.  Collimated beam enters from the upper left; M1 concave, large,
+upper right; M2 small, left, below the entrance beam; M3 concave, large,
+lower right; the slit far left, level with M3.
+- legs: M1->M2 270 mm, M2->M3 257 mm, M3->slit 313 mm (840 mm total at
+  f 345).  Scaled to Joe's f 330 (x 0.957): **258 / 246 / 300 mm**.
+- chief-ray incidence: M1 ~30 deg, M2 ~37 deg, M3 ~15 deg (deviations
+  120 / 107 / 149 deg).  The beam turns the same way at M1 and M3 and
+  back at M2 -- a zig-zag, not a Korsch fold.
+- beam: ~192 mm at M1, ~85 mm footprint at M2 (M2 is the small mirror;
+  the stop is there or near it), ~175 mm at M3 -- M3 carries nearly all
+  of the final power (313 mm to the slit at F/1.8).  Mirror chords in the
+  drawing: M1 ~240 mm, M2 ~140 mm, M3 ~205 mm.
+- **313 mm of working distance behind M3** -- the whole Dyson sits in it;
+  the slit is at the telescope's side, where the paper's Fig. 1b puts
+  "Slit & FPA" with the Dyson lens and grating hanging below.  That is
+  the packaging our stage-A sections never had (the Dyson's FPA inside
+  M2 by 4-5 mm).
+- What the drawing does NOT settle: whether the beam passes through an
+  intermediate focus between M2 and M3 (the rays appear to cross just
+  after M2).  Addendum 37's finding stands -- a real intermediate focus
+  between M2 and M3 and an exit pupil at infinity are incompatible for a
+  stop at M2 -- so step 1 decides it with numbers, not from the picture.
+
+**The work.**
+1. **First order from the seed (half a day).**  Three radii for the three
+   legs above at f 330 with the stop at M2 and the exit pupil at
+   infinity (chiefs parallel at the slit to 1e-3 rad in the paraxial
+   model); report whether this family admits it, where the intermediate
+   focus (if any) falls, the pupil's place, and the M2 footprint.  If
+   telecentricity is not available with the stop at M2, say which stop
+   place (M1, or a stop between M1 and M2) gives it, and what it costs in
+   M2 size.  Build the eccentric section at those legs and chief
+   incidences (`tma_layout` with explicit `'dist'` and tilts; addendum 37's
+   machinery; NOT the coaxial telecentric parent's spacings -- this is a
+   different family), emit, and measure in the ENGINE: chief angles at
+   the slit across the strip (+-4.7 deg), plate scale (`efl_of_built_`),
+   admitted fraction, clearance of the three bodies and the slit, M2
+   footprint.  Message CC here with the first-order table before any
+   figure work.
+2. **Conics + aspheres, the cone bounded.**  Stage tGM's machinery
+   (per-ray SPOT rows, position rows for plate scale, M2/M3 rigid body +
+   focus, h4+h6 per mirror from a zero seed), with TWO new rows per field:
+   (a) telecentric: chief direction at the slit (`'beam_dir'` rows, wt as
+   addendum 45); (b) **the cone**: the marginal rays' F/# at the slit in
+   BOTH directions within [1.7, 1.8] -- the paper's F/# anamorphicity
+   constraint and Jim's "a little faster than the spectrometer".  Build
+   (b) as beam-size rows at the slit (`calib_set_beam` kind 3 /
+   `OptBeamSize=`) if the engine's size row serves (check what it
+   measures -- rms or extent -- and say so); else as a per-field wall on
+   the extreme ray angles in the chain merit, reported with its margin.
+   Every rung reports, per field: spot FWHM in both axes (px), chief
+   angle, F/# x and y from the marginal rays, admitted fraction, M2
+   footprint, clearance.  A rung whose marginal rays run below F/1.7 is a
+   failed rung whatever its spot.
+3. **Freeform only if 2 leaves the strip ends above spec.**  The paper
+   chose freeform for TOLERANCE insensitivity, not nominal performance;
+   nominal first.  If freeform is needed, continue from the asphere
+   endpoint with addendum 44's ladder, the two new rows kept.
+4. **End to end.**  Join to the 3k Dyson of record (CaF2 240,
+   `dyson5_t5f`): smile / keystone / CRF / SRF / energy in a pixel per
+   (field, wavelength), admitted at the grating (the grating aperture
+   clips now -- macos 29f41da), clearance with the Dyson's bodies in the
+   300 mm working distance, the views (`dyson5_view_figs`, vignetted rays
+   in red).  One table against Joe's spec and the paper's five.
+
+**Deliverables.**  `REPORT_dyson5_cprime.md` with: the first-order table
+(step 1), the rung table (step 2/3), the e2e table (step 4), the renders,
+the deck of record `dyson5_cprime_3k.in` + its e2e deck, and one paragraph
+on what the seed bought over the (c) section (CRF 4.02, F/1.19, M2
+126 mrad).  Numbers from the engine's own scorers, never the chain's
+estimate.  Do not touch the 1.5k deck of record or the sent deck
+`deck_dyson_record.pptx`.
