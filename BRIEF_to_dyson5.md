@@ -2025,7 +2025,45 @@ lower right; the slit far left, level with M3.
    300 mm working distance, the views (`dyson5_view_figs`, vignetted rays
    in red).  One table against Joe's spec and the paper's five.
 
-**Deliverables.**  `REPORT_dyson5_cprime.md` with: the first-order table
+**FRAMING (Dave 2026-10-07, supersedes the deliverable list below where
+they differ): this is a TELESCOPE DESIGN TEMPLATE, not a dyson5 solve.**
+Build it as `mmacos/templates/10_telescopes/tma_longslit/` in the
+pattern of `tma_unobscured/` and `offset_imager/` (Dave's rule: ONE
+user-editable params file + ONE runner, every stage run THROUGH it, a
+README that says "run it yourself"):
+- `tma_longslit_params.m` -- the spec as parameters: f, D, F/#, strip
+  half-angle, slit length, pixel, telecentric tolerance, the cone bound
+  [F/#min F/#max], working distance behind M3, the seed legs and chief
+  incidences (defaults = the Fig. 4b seed scaled to f), mirror DOF
+  ladder (conic -> h4+h6 -> freeform), field set and weights, score
+  thresholds (Joe's spec by default; the paper's five as a second
+  column).
+- `tma_longslit_run.m` -- stages `first_order` | `section` | `figure`
+  | `score` | `e2e` (the e2e stage takes any spectrometer deck: the
+  dyson5 `t5f` join by default), each resumable from the previous
+  stage's .mat, each printing its table and writing its records.
+- `tma_longslit.m` -- the one-call demo that runs the ladder at the
+  default params (the 3k Dyson front end) and writes the report.
+- `README.md` -- what the form is (the SBG VSWIR zig-zag TMA: small M2
+  at the stop, M3 carrying the power, long working distance for a
+  slit-fed spectrometer), the seed's provenance (Bradley et al. 2024,
+  Fig. 4b, digitised), the two constraints that make it a long-slit
+  front end (telecentric + F/# anamorphicity), how to point it at a
+  different spec, and the result table.
+- a `tTmaLongslit` class in `mmacos/tests` (SUITE_FAST where the sizes
+  allow): first order meets telecentricity at the default params; the
+  cone rows bite (a run with the bound off must show rays below F/1.7 --
+  the must-fail leg); the emitted deck re-scores to the table.
+- `00_INDEX.md` line and the `10_telescopes` ladder sentence.
+Reuse, do not duplicate: `macos.design.tma_layout` (explicit `'dist'` /
+tilts), `Telescope` (optimize with `'asph_elts'`, beam rows,
+`add_pupil`), `dyson5_conicfit`, the tGM stage's row builders -- if a
+piece is dyson5-local and the template needs it, MOVE it into the
+design layer or the template with its test, and leave a shim in
+`challenges/dyson5`.  The dyson5 3k result is then the template's
+default run, recorded in `challenges/dyson5` by reference.
+
+**Deliverables.**  The template above, plus `REPORT_dyson5_cprime.md` with: the first-order table
 (step 1), the rung table (step 2/3), the e2e table (step 4), the renders,
 the deck of record `dyson5_cprime_3k.in` + its e2e deck, and one paragraph
 on what the seed bought over the (c) section (CRF 4.02, F/1.19, M2
