@@ -1832,3 +1832,64 @@ scores).  `ps -C MATLAB` before any run: CC is running deck renders
 through the shared mex this morning; model 128/256 lanes coexist, do not
 relink the shared mex or pull.  Equal field weights.  Push only on Dave's
 word.
+
+## Addendum 47 (2026-10-07, CC): Jim's answers to the round-2 note -- the record, and what they move
+
+Jim replied in line to `DRAFT_email_jim_round2_V2.md` (sent 2026-10-06 with
+`deck_dyson_record.pptx`).  His points, verbatim in substance, and their
+consequence for this arc.  (He attached a paper; not yet in the tree -- see
+the end.)
+
+1. **Offner at the 3k slit.**  "It is hard to do much better than f/3 with
+   reasonably sized Offners."  Confirms addendum 46's verdict (F/1.8 Offner
+   OUT, spectral blur 7-9 px rms at every R to 1.25 m) as a property of the
+   form, not of our solve.  Offner-Chrisp stays the named next form, untried.
+2. **Four 1.5k modules.**  Four spectrometers + telescopes means integration,
+   test and calibration x4 -- labor and schedule, not mass, is the cost he
+   expects to dominate.  Detectors: Teledyne regularly makes 2k x 2k and
+   3k x 0.5k; 1.5k x 0.5k is possible but carries NRE for the packaging.  He
+   doubts the mass saving buys enough in spacecraft or launch to win.
+   **Consequence: the trade leans to two 3k modules, which puts the weight
+   back on the 3k telescope (the open item).**  The 4-module block stays in
+   the record as the fallback that already images at the pixel.
+3. **CaF2 volume.**  "Materials are almost always a tiny fraction of the
+   instrument cost."  Ask 2 of the note is answered: the 12.4-19.6 L of
+   single-crystal CaF2 is not the discriminator.  Do not carry it as one.
+4. **The detector window.**  It is an ORDER-SORTING FILTER, not a window.
+   The preferred Dyson lens material is CaF2 and the CTE mismatch to the
+   filter is too large to bond; fused silica to fused silica has a bad
+   bonding history too (possibly the transmissive epoxies' mechanical
+   robustness).  **Consequence: the air gap stands.  The six-crossing /
+   0.81 uncoated throughput is the baseline; the "cemented window, four
+   crossings, 0.87" line in the deck and in addendum 11's throughput table
+   is not available and should be labelled so wherever it is quoted.**
+5. **The telescope.**  Design telescope and spectrometer SEPARATELY, both
+   telecentric at the slit; the telescope a little faster than the
+   spectrometer; he "doesn't see why some rays correspond to an f/1.2
+   cone".  In his paper the spectrometers are smaller than the telescopes,
+   and the 192 mm beam into the telescope sets the approximate size of
+   both.  **Consequence, for the (c') brief: the 3k solve's F/1.19 marginal
+   rays are a DEFECT of the freeform solve (the pupil is not controlled),
+   not a feature to feed the grating; the next solve carries a cone bound
+   at the slit (every ray inside the spectrometer's F/1.8 acceptance, i.e.
+   the telescope at ~F/1.7 with the pupil at infinity -- CALIB's
+   `OptBeamSize=` / beam rows at the slit, or a marginal-ray row) together
+   with the stop at M2.  Scoring the telescope alone at the slit, as he
+   says, is what stage tA/tGM already does; keep it, and add the cone
+   bound to the per-field table.**
+6. **Coatings / throughput.**  These systems are photon-starved at the LONG
+   wavelength end; the grating efficiency is tailored to compensate; the AR
+   should help where the photons are needed most and not penalize too much
+   elsewhere.  **Consequence: a throughput number is wavelength-weighted,
+   not the uniform 0.87 / 0.81 the record quotes; when throughput is next
+   scored, do it per band with the AR designed for 2.0-2.5 um and the
+   grating blaze stated.**
+
+**Not in hand:** the paper Jim attached (sizes of spectrometer vs
+telescope; the 192 mm beam).  Dave to drop it in `~/dev/MACOS_sandbox/`
+(a `dyson/` folder) when convenient; the (c') brief should cite it.
+
+**Open asks he did not answer:** telescope forms that have worked at
+183 mm / F/1.8 / 4.7-9.4 deg into a telecentric slit (beyond "design them
+separately"), and the throughput tricks beyond the AR note.  Ask again,
+briefly, in the reply.
