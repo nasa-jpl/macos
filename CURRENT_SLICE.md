@@ -60,6 +60,24 @@
 > edit copy (my --folded sync without a diff) -- he redoes it on the fresh copy.
 > Gauges (Thursday-2) untouched today: all redo runs done, PENDING markers next.**
 
+> **2026-10-06 EOD RESUME POINT (CC).  ALL PUSHED: macos ..8322938, resources ..199342c
+> (dev-candidate both).  DONE TODAY: deck_dyson_record final (25 slides, export mark on) +
+> Dave's V2 note sent/sending to Jim & Joe; engine fixes (grating aperture 29f41da; spcOption
+> CLI SPOT ca3252e) + mmacos dcdx about the element (eef1d71) + view_rx vignetted rays red
+> (3ecfddd); TO: Offner F/1.8 OUT (3c), clearance-gate fix, dw_dx 'trans_output' base default
+> (199342c, REPORT_dwdx_units.md); gauges: every number on the built bench incl. off-null
+> (01c6201), deck_gauges_short.md = 20-slide version assembled by selection (re-select after
+> editing the full deck: the python snippet in this session's history or redo: split on
+> '^## ', map titles).  Edit copies all synced (sync_edit_deck keeps .bak now).  OPEN:
+> (1) Dave's message-tightening pass on deck_gauges/_short (both DRAFT-marked; talk Thu
+> 10-08 4 pm PDT); (2) Luis: DRAFT_email_luis_spot2_edit.md is Dave's to send; his answer
+> on '1e-3 smaller' (x1e-3 -> grid values' units / coefficient units; 0.1 % -> grid
+> interpolation) pending; his translation example pending; (3) gauges sensors on the LENS
+> rig never scored (needs lens seat value), D4 tilt on the built bench not run; (4) dyson5
+> 3k telescope: stop at M2 / asphere-only (TO, when Dave says).  RULES learned today: diff
+> the edit copy BEFORE every sync (lost a pass once); user options never in
+> elt_mod_init_vars; a centroid about the chief is a shape measure.**
+
 > **2026-10-06 ORDERS (Dave): TODAY -- rewrite deck_dyson around the telescope
 > of record and SEND it with a note to Jim and Joe (drafts: DRAFT_email_jim_round2.md
 > exists, update it; style gate doc/STYLE_REPORTS.md sec. 5, outward-facing =
