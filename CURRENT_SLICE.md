@@ -24,6 +24,14 @@
 
 ## Active slice
 
+> **2026-10-06 (TO) -- dw_dx 'trans_output' (BRIEF_dwdx_units, Dave's ruling).
+> Translation columns + dcdx rows are per BaseUnit by default ('si' = the old
+> per-metre); runners/jacobian_check convert via macos.dwdx_trans_per_metre
+> (identity on pre-change .mats).  FLAGGED, NOT RE-RUN: on mm decks a re-run of
+> zoom_5x5 and run_dwdx_multi (+ sensitivities/) sens_report translation norms
+> moves by x cbm (1e-3); ratios unchanged; e2e/e2e6m are metre decks (unchanged).
+> Report macos/REPORT_dwdx_units.md.  Resources commit local, push on Dave's word.**
+
 > **2026-10-02 00:30 -- BEAT 5 RUN, LOCAL (resources dev-candidate + macos
 > dev-candidate, uncommitted until the gates report; then commit).**  Stages
 > t1/t2 through dyson5_run: layout CLOSES (folds 32/-32/21 deg, +0.75 mm,
