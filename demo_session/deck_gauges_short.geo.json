@@ -354,6 +354,9 @@
   },
   "txt:One disturbance is not photon-limited": {
    "fs": 11
+  },
+  "txt:Steeves et al.": {
+   "fs": 11
   }
  },
  "One bench, two forms, four ways of sensing": {
@@ -364,48 +367,48 @@
  },
  "Each gauge reading the 30 nm working surface, station by station": {
   "img:crop_stations_row2_I.png": {
-   "x": 4.65,
-   "y": 1.12,
-   "w": 8.3,
-   "h": 1.41,
+   "x": 4.35,
+   "y": 1.18,
+   "w": 8.6,
+   "h": 1.46,
    "cx": 0.22,
-   "cy": 1.22,
-   "cw": 4.2,
+   "cy": 1.33,
+   "cw": 3.9,
    "cal": "left"
   },
   "img:crop_stations_row2_S.png": {
-   "x": 4.65,
-   "y": 2.58,
-   "w": 8.3,
-   "h": 1.45,
+   "x": 4.35,
+   "y": 2.68,
+   "w": 8.6,
+   "h": 1.5,
    "cx": 0.22,
-   "cy": 2.68,
-   "cw": 4.2,
+   "cy": 2.83,
+   "cw": 3.9,
    "cal": "left"
   },
   "img:crop_stations_row2_V.png": {
-   "x": 4.65,
-   "y": 4.08,
-   "w": 8.3,
-   "h": 1.43,
+   "x": 4.35,
+   "y": 4.22,
+   "w": 8.6,
+   "h": 1.49,
    "cx": 0.22,
-   "cy": 4.18,
-   "cw": 4.2,
+   "cy": 4.37,
+   "cw": 3.9,
    "cal": "left"
   },
   "img:crop_stations_row2_P.png": {
-   "x": 4.65,
-   "y": 5.56,
-   "w": 8.3,
-   "h": 1.43,
+   "x": 4.35,
+   "y": 5.75,
+   "w": 8.6,
+   "h": 1.49,
    "cx": 0.22,
-   "cy": 5.66,
-   "cw": 4.2,
+   "cy": 5.9,
+   "cw": 3.9,
    "cal": "left"
   },
   "txt:Row 2 of each station figure": {
    "x": 0.45,
-   "y": 7.06,
+   "y": 7.28,
    "w": 12.45
   }
  }
