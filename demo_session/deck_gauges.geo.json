@@ -252,54 +252,48 @@
  },
  "Each gauge reading the 30 nm working surface, station by station": {
   "img:crop_stations_row2_I.png": {
-   "x": 5.7,
-   "y": 1.16,
-   "w": 7.25,
-   "h": 1.23,
-   "cx": 0.25,
-   "cy": 1.28,
-   "cw": 4.3,
+   "x": 4.65,
+   "y": 1.12,
+   "w": 8.3,
+   "h": 1.41,
+   "cx": 0.22,
+   "cy": 1.22,
+   "cw": 4.2,
    "cal": "left"
   },
   "img:crop_stations_row2_S.png": {
-   "x": 5.7,
-   "y": 2.45,
-   "w": 7.25,
-   "h": 1.27,
-   "cx": 0.25,
-   "cy": 2.57,
-   "cw": 4.3,
+   "x": 4.65,
+   "y": 2.58,
+   "w": 8.3,
+   "h": 1.45,
+   "cx": 0.22,
+   "cy": 2.68,
+   "cw": 4.2,
    "cal": "left"
   },
   "img:crop_stations_row2_V.png": {
-   "x": 5.7,
-   "y": 3.78,
-   "w": 7.25,
-   "h": 1.25,
-   "cx": 0.2,
-   "cy": 3.9,
-   "cw": 4.35,
+   "x": 4.65,
+   "y": 4.08,
+   "w": 8.3,
+   "h": 1.43,
+   "cx": 0.22,
+   "cy": 4.18,
+   "cw": 4.2,
    "cal": "left"
   },
   "img:crop_stations_row2_P.png": {
-   "x": 5.7,
-   "y": 5.09,
-   "w": 7.25,
-   "h": 1.25,
-   "cx": 0.2,
-   "cy": 5.21,
-   "cw": 4.35,
+   "x": 4.65,
+   "y": 5.56,
+   "w": 8.3,
+   "h": 1.43,
+   "cx": 0.22,
+   "cy": 5.66,
+   "cw": 4.2,
    "cal": "left"
-  },
-  "txt:The stepped Zernike's 7.1 nm": {
-   "x": 0.45,
-   "y": 6.45,
-   "w": 12.45,
-   "fs": 10
   },
   "txt:Row 2 of each station figure": {
    "x": 0.45,
-   "y": 6.95,
+   "y": 7.06,
    "w": 12.45
   }
  }
