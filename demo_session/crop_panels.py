@@ -39,11 +39,14 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'zwfs_dm96/runs/redo96_sensloop2/redo96_sensloop2_loop.png', 'crop_zwfs_redo96_loop_right.png', (0.5, 0.04, 1.0, 1.0)),
     (R+'zwfs_dm96/runs/redo96_sensnoise/redo96_sensnoise_noise.png', 'zwfs_redo96_noise.png', (0.0, 0.0, 1.0, 1.0)),
     # row 2 (the 30 nm working surface) of each gauge's station-by-station figure, for the
-    # four-strip signal-flow slide (Dave 2026-10-07); the full figures stay on their own slides
-    (R+'tg_psi_dm96_oap/runs/redo96_oapstn/redo96_oapstn_stations.png', 'crop_stations_row2_I.png', (0.0, 0.50, 1.0, 1.0)),
-    (R+'zwfs_dm96/runs/stations193/stations193_stations_S.png', 'crop_stations_row2_S.png', (0.0, 0.42, 1.0, 1.0)),
-    (R+'zwfs_dm96/runs/stations193/stations193_stations_V.png', 'crop_stations_row2_V.png', (0.0, 0.42, 1.0, 1.0)),
-    (R+'zwfs_dm96/runs/stations193/stations193_stations_P.png', 'crop_stations_row2_P.png', (0.0, 0.42, 1.0, 1.0)),
+    # four-strip signal-flow slide (Dave 2026-10-07); the full figures stay on their own slides.
+    # Sources: the 2026-10-07 re-runs on the MIRROR rig with the shared format (xlabels with the
+    # rms values, one colorbar per row, the DM's full-lattice 30 nm command in every figure):
+    # redo96_oapstn2 (interferometer) and stations193_oap (the three sensors).
+    (R+'tg_psi_dm96_oap/runs/redo96_oapstn2/redo96_oapstn2_stations.png', 'crop_stations_row2_I.png', (0.0, 0.50, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193_oap/stations193_oap_stations_S.png', 'crop_stations_row2_S.png', (0.0, 0.50, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193_oap/stations193_oap_stations_V.png', 'crop_stations_row2_V.png', (0.0, 0.50, 1.0, 1.0)),
+    (R+'zwfs_dm96/runs/stations193_oap/stations193_oap_stations_P.png', 'crop_stations_row2_P.png', (0.0, 0.50, 1.0, 1.0)),
 ]
 MISSING = []
 
