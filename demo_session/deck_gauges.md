@@ -315,20 +315,18 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **Re-measuring the matrix on the surface restores every reading's gain** to within 5% at 60-160 nm — at a photon price (next slide).
 ~ Run tags cap385, cap385p, pdi193state, lens_deck, oap_deck, oapsens385 (the mirror rig at 385 px, the Mac); 385 pixels per pupil, 47 sites (52 for the interferometer).
 
-## Capture range, second half: the photon price of working off null | The matrix re-measured on the surface holds the gain; the light for 1 pm then rises 5-40× for the self-referenced sensors and not at all for the P/SRI
+## Capture range, second half: the photon price of working off null | The matrix re-measured on the surface holds the gain to 1-6 %; the light for 1 pm then rises 30-100× for the self-referenced sensors between 30 and 160 nm (vector 4.6e13 → 4.5e15) and falls for the interferometer (7.0e14 → 4.4e14), whose reference does not move with the surface
 ::: full
-| reading | 1 nm on 47 sites, matrix re-measured at 60 / 90 / 120 / 160 nm: gain / floor | photons per measurement for 1 pm at 30 / 60 / 120 / 160 nm |
+| reading | 1 nm on the grid sites, matrix re-measured at 60 / 120 / 160 nm: gain / floor | photons per measurement for 1 pm at 30 / 60 / 120 / 160 nm |
 |---|---|---|
-| Zernike linear | 0.96 / 25, 0.95 / 21, 0.96 / 17, 0.97 / 13 pm | 9.2e13, 1.8e14, 6.2e14, 4.6e14 |
-| Zernike stepped | 0.93 / 59, 0.96 / 29, 0.97 / 22, 0.97 / 20 pm | 8.8e13, then 1e15 class |
-| vector Zernike | 1.00 / 3, 0.96 / 47, 0.97 / 23, 0.97 / 21 pm | 6.1e13, 1.1e14, 2.2e15, 2.4e15 |
-| stepped pinhole | 1.00 / 3, 0.96 / 41, 0.97 / 19, 0.97 / 17 pm | 9.8e13, 1.7e14, tens of times more at 120-160 |
-| P/SRI | 1.000 / 3, 1.001 / 2, 1.001 / 2, 1.002 / 2 pm | 3.7e14, 4.1e14, 6.6e14, 3.7e14 |
-| interferometer, lens rig | 1.001 / 2, 0.998 / 2, 0.996 / 2, 0.996 / 2 pm | 9.9e14, 8.6e14, 5.9e14, 6.6e14 |
-| interferometer, mirror rig | 0.989 / 2, 0.993 / 2, 0.995 / 2, 0.995 / 2 pm | 7.0e14, 5.3e14, 4.9e14, 4.4e14 |
+| stepped Zernike | 0.94 / 50, 0.99 / 26, 0.99 / 26 pm | 1.2e14, 5.3e14, 4.6e15, 7.5e15 |
+| vector Zernike | 0.99 / 6, 0.99 / 26, 0.99 / 26 pm | 4.6e13, 1.4e14, 2.4e15, 4.5e15 |
+| stepped pinhole | 0.98 / 16, 0.99 / 26, 0.99 / 26 pm | 1.5e14, 3.0e14, 3.0e15, 7.3e15 |
+| interferometer, lens rig | 1.001 / 2, 0.996 / 2, 0.996 / 2 pm | 9.9e14, 8.6e14, 5.9e14, 6.6e14 |
+| interferometer, mirror rig | 0.989 / 2, 0.995 / 2, 0.995 / 2 pm | 7.0e14, 5.3e14, 4.9e14, 4.4e14 |
 | interferometer, either rig | 0.99 / 2 pm to 60 nm; between 60 and 120 nm the raw four-step reading wraps (the base past λ/2 of surface reads 91 nm rms whatever it is) on lens and mirror rigs alike; unwrapping restores it (next slides) | — |
-- **What this says:** off null, a self-referenced sensor keeps its accuracy through recalibration but pays in light (2e15 photons is 0.8 mJ, 3 s of a 1 mW laser); the two-arm instruments pay nothing because their reference does not move with the surface.
-~ Interferometer rows: redo96_lensph, redo96_oapph (the built rigs; the re-measured matrix on each surface, 1 nm on 112 sites).  Sensor rows: cap385_b60-b160, cap385p_b60-b160, noise193_b30-b160, noise193p_b30-b160 at 385 px, pending their repeat on the built bench.  Photons are per measurement, all frames summed, 6 noise realizations per point.
+- **What this says:** off null, a self-referenced sensor keeps its gain through recalibration but pays in light (4.5e15 photons is 1.4 mJ, 6 s of a 1 mW laser at 25 % throughput) and its floor rises to 26 pm; the interferometer pays nothing because its reference does not move with the surface.
+~ All rows on the built bench.  Interferometer: redo96_lensph, redo96_oapph (the re-measured matrix on each surface, 1 nm on 112 sites).  Sensors, mirror rig at 193 px: redo96_senscap_b60/b120/b160 (1 nm on 77 grid sites, matrix re-measured on the surface), redo96_sensnoise and redo96_sensnoise_b60/b120/b160 (photons).  Photons are per measurement, all frames summed, 6 noise realizations per point.
 
 ## Photons for 1 pm | On the 30 nm working surface the vector Zernike needs 4.6e13 photons per measurement, the stepped Zernike 1.2e14, the pinhole 1.5e14, the interferometer 7e14 (mirror rig) to 1e15 (lens rig); a matrix measured on the flat costs the sensors less, the vector pair's cost barely moves
 ::: left
