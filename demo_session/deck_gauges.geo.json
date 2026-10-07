@@ -231,8 +231,17 @@
  "One optical bench to demo 4 surface gauges, in mirror and lens forms": {
   "txt:The table is the interferometer": {
    "x": 0.5,
-   "y": 6.3,
+   "y": 6.78,
    "w": 12.43
+  },
+  "txt:Picometer measurement is photon-limited": {
+   "fs": 12
+  },
+  "txt:Accuracy is a gain": {
+   "fs": 12
+  },
+  "txt:One disturbance is not photon-limited": {
+   "fs": 12
   }
  },
  "One bench, two forms, four ways of sensing": {

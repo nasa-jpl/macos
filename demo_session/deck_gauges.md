@@ -48,16 +48,17 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ::: full
 | the claim (interferometer, both rigs) | what it means here | lens rig | mirror rig |
 |---|---|---|---|
-| **accuracy** | the imaging's error in reading a 30 nm working surface, piston and tilt removed | **0.13 %** (42 pm) | **0.29 %** (92 pm) |
-| | the same, in the top spatial band (at the actuator Nyquist) | **0.5 %** | **0.9 %** |
+| **accuracy** | a 10 nm change on one actuator, read through the matrix measured on the 30 nm surface: gain (error) / floor | **1.004** (0.4 %) / 1.4 pm | **0.986** (1.4 %) / 2.3 pm |
+| | the raw map of the 30 nm surface against the engine's field at the camera, before any calibration | not scored (a phase fold; backup) | **1.5 %** (463 pm), gain 0.987 |
+| | of which the pupil imaging, piston and tilt removed; in the top spatial band | 0.13 % (42 pm); 0.5 % | 0.29 % (92 pm); 0.9 % |
 | **precision** | one measurement, photon-limited, at 1e14 / 1e15 photons | 2.3 / **0.7 pm** | 2.1 / **0.7 pm** |
 | **repeatability** | the same surface held in a servo, rms over 30 cycles, same photons | 1.4 / **0.5 pm** | 1.3 / **0.4 pm** |
 | **hold** | photons per cycle to keep the surface inside 3 pm | 2.3e13 | 2.0e13 |
 | | the same under a 2 pm per actuator per cycle random walk | 7.1e13 | 6.6e13 |
 - **Picometer measurement is photon-limited, not bench-limited.**  One measurement at 1e15 photons — 0.31 mJ, about 1.3 s of a 1 mW laser — repeats to 0.7 pm, and a servo fed at that rate holds under half a picometer.  Both front ends agree to within 10 %.  For scale, **Steeves et al. (2020, Optica 7, 1267) demonstrate 1.6 pm in 4.3 s on a real interferometer**: ours is photon-limited only, carrying no vibration, thermal drift or detector systematics, so it is the floor this design allows rather than a prediction of the built bench — and agreeing within a factor of two is the check that the model is in the right regime.
-- **Accuracy is systematic and proportional** — a fraction of the figure read, so 30 nm costs tens of picometers and a 200 nm capture figure costs hundreds.  It holds because the response matrix is measured on the surface, not assumed geometric.
+- **Accuracy is a gain: systematic and proportional to the figure read.**  Raw, the four-step reads the 30 nm surface 1.3 % low on the mirror rig (463 pm); through the matrix measured on the surface a 10 nm change reads at gain 1.004 on lenses and 0.986 on mirrors, with floors of 1.4 and 2.3 pm.  The pupil imaging is the smaller part (0.13 % / 0.29 %); the gain is the polarization snapshot's, and the matrix measured on the surface is what carries it.
 - **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp the loop lags at about 10 pm however many photons it is given — a cadence and thermal-control requirement, not a sensing one.
-~ The table is the interferometer's, the one gauge scored on both front ends; the three sensors, scored on the mirror rig, read within 1 % and 2 pm of it on the same surface (the side-by-side slide).  A 10 nm single-actuator change, what the servo corrects, reads against truth to 1.5 pm at gain 1.001 on lenses and 1.8 pm at 0.993 on mirrors.  Run tags are on the provenance slide and on each slide that derives a number.
+~ The table is the interferometer's, the one gauge scored on both front ends; the three sensors, scored on the mirror rig, read within 1 % and 2 pm of it on the same surface (the side-by-side slide).  The raw-map row is the station-by-station figure's number (run redo96_oapstn2); the lens rig's raw absolute map folds the phase (51 nm against the engine, backup) and is not scored, while its differential rows read as the mirror rig's.  Run tags are on the provenance slide and on each slide that derives a number.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
