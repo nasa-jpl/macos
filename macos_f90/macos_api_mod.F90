@@ -6326,11 +6326,15 @@
 
         implicit none
         logical, intent(out):: OK            ! (PASS=1) if successful; (FAIL=0) otherwise
-        integer, intent(in) :: iElt          ! Element at which Optical System Stop to be defined (0 < iElt < nElt-2)
+        integer, intent(in) :: iElt          ! Element at which Optical System Stop to be defined (1 <= iElt <= nElt, the CLI STOP's range)
         real(8), intent(in) :: VptOffset(2)  ! [dx,dy]: Offset from Srf. Vertex Position
         ! ------------------------------------------------------
         OK = FAIL
-        if (.not. SystemCheck() .or. nElt <=3 .or. iElt<1 .or. iElt>=nElt-2) return
+        ! Range = the CLI STOP command's (macos_cmd_loop.inc: 1..nElt).  The
+        ! original wrapper refused iElt >= nElt-2 and nElt <= 3, which barred
+        ! the stop from the secondary of any 4-element telescope deck (M1 M2
+        ! M3 FP) -- TO, tma_longslit 2026-10-07 -- with no engine reason.
+        if (.not. SystemCheck() .or. nElt < 1 .or. iElt<1 .or. iElt>nElt) return
 
         ! cannot set stop at a non-sequential element.  Segment IS allowed
         ! (2026-09-08, Dave): the STOP command maps the chief ray to the
