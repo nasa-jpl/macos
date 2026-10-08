@@ -340,6 +340,54 @@ dominate: ~1e7 µm/rad, where 0.57 mrad is a ~6 mm row.  Or test the Dyson's
 smile sensitivity to an imposed chief tilt directly, on the Dyson alone.
 R7 stays the record.
 
+### The smile, attributed (CC's test (b), 2026-10-07)
+
+**The chief angle is NOT the cause.**  The Dyson ALONE was fed with R7's
+measured chief-angle pattern (`tls_dyson_chief_tilt`: each slit point's
+input chief tilted by the telescope's along-track and cross-track angle,
+interpolated at its field).  The base leg reproduces the record exactly
+(smile 0.0050, keystone 0.0058, CRF 1.213, SRF 2.024).  The tilt is live:
+keystone moves 0.0058 → 0.0066.
+
+| leg | smile | keystone | CRF | SRF |
+|---|---|---|---|---|
+| along-track ×1 | 0.0049 | 0.0061 | 1.213 | 2.024 |
+| cross-track ×1 | 0.0048 | 0.0063 | 1.213 | 2.024 |
+| along-track ×2 | 0.0049 | 0.0064 | 1.213 | 2.024 |
+| both | 0.0048 | 0.0066 | 1.213 | 2.024 |
+
+**It is the telescope's chief-minus-centroid offset ACROSS THE SLIT.**  t5f
+launches each field so its CHIEF lands on the slit line (the secant in the
+along-track field angle), and spectrometer_score scores the CENTROID.  The
+field variation of (chief − centroid) across the slit — the coma's
+across-slit component, which neither the BOW (chief) nor the CBOW (centroid)
+row holds — therefore reads directly as smile.
+
+Predicted (the spread of chief − centroid over the strip, telescope alone)
+vs e2e:
+
+| rung | predicted | e2e |
+|---|---|---|
+| R4 | 0.655 px | 0.732 |
+| R5 | 0.086 | 0.090 |
+| R6 | 0.122 | 0.149 |
+| R7 | 0.135 | 0.140 |
+| R8 | 0.133 | 0.138 |
+
+The remainder, ≤ 0.03 px, is the Dyson's own 0.005 plus sampling.  On R7
+the offset is 0 / 0.17 / 0.66 / 1.44 / 2.43 µm at 0 / 1.2 / 2.4 / 3.5 /
+4.7°.
+
+**The lever.**  A merit row on (chief − centroid) across the slit vs the
+centre.  Smile < 0.1 px needs the edge offset < 1.8 µm; < 0.05 px needs
+< 0.9 µm.
+
+**A convention question, not settled here.**  The t5f smile is a
+point-source smile: one sky direction per field, its chief placed on the
+slit line.  For an extended scene filling the slit, the chief's landing
+does not set where the light sits in the slit, and the smile would be the
+Dyson's own.  Which one the requirement means is for CC/Dave.
+
 ## Step 4 — end to end
 
 On R4–R7 above.  **Deck of record: R7** (`challenges/dyson5/dyson5_cprime_3k.in`,
