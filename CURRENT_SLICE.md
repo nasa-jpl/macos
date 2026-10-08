@@ -24,6 +24,35 @@
 
 ## Active slice
 
+> **2026-10-07 EOD RESUME POINT (CC).  LOCAL, NOT PUSHED: macos ad935a8..HEAD (23 commits),
+> resources 199342c..11daa83 (11), dev-candidate both -- push on Dave's word.  DONE TODAY: (1) Jim's
+> round-2 answers + the SBG VSWIR paper on the record (BRIEF_to_dyson5 addenda 47-48); the 3k telescope
+> as a TEMPLATE, `templates/10_telescopes/tma_longslit/` (TO): seed = the paper's Fig. 4b, first order
+> telecentric with the stop at M2 and no intermediate focus; R7 ffw at the pixel floor; R9 ffo = the
+> 3k DECK OF RECORD (`challenges/dyson5/dyson5_cprime_3k.in`): e2e smile 0.022 (slit-filled) / 0.016
+> (point-source shift), keystone 0.006, CRF 1.17, SRF 2.025 (= the Dyson's own 2.024, 0.025 over Joe's
+> 2.0 and over the paper's 1.8 -- the spectrometer's item: the paper's aspheric lens + conic grating),
+> EiP 0.85, cone F/1.89 x 1.80 (no ray below 1.7); smile was the LAUNCH CONVENTION (t5f lands the
+> chief, scores the centroid; both launches now in t5f, `P.tel5f_launch`), not the chief angle
+> (Dyson-alone chief-tilt diagnostic, tls_dyson_chief_tilt).  Equal-weight rms merit was the CRF wall;
+> a weight that is < 1 % of the merit is not a test (R8).  (2) Engine: stop_info_set takes the CLI's
+> range 1..nElt (a09cd59; tStopReload gate).  (3) Gauges decks for Thu 10-08 4 pm: slide 2 accuracy
+> rows = the reading's gain (1.004 / 0.986), the raw map (392 / 551 pm, gain 0.993 / 0.987; the piezo
+> four-step 0.01 pm, gain 1.0000 -- the hybrid's leg measured), the pupil imaging as the smaller part;
+> the four station figures on ONE DM command (full lattice, seed 7), mirror rig, shared format
+> (xlabels rms + gain, one colorbar, command in color), the interferometer's mask = the TEST beam
+> (the shared ctx.msk carries the reference-only annulus: OPEN item for the runner's pixel-rms
+> metrics; the lens rig's '51 nm fold' was the four-step's SIGN, now set by a +push); short deck:
+> gauge slides restructured (reads/frames/right/wrong/scored + the rig's render), pinhole stepping
+> explained, P/SRI introduced (Dube 2024), two-DM complex-amplitude slide (Redding 2023/2024 --
+> PAPER NUMBERS TO CONFIRM), modes to backup, full run-it-yourself; edit copies synced; DRAFT marks
+> stay until sign-off.  OPEN: Dave's sign-off on both decks; Luis's dwdz answer; sensors on the LENS
+> rig / D4 tilt never scored; the follow-up note to Jim & Joe (the sent deck says '3k not there yet').
+> RULES today: diff the edit copy before every sync (did, every time); a row set below ~1 % of the
+> merit is not a test; the join's metric convention must be stated before the join's number is read;
+> a shared mask from an interference frame is the wider beam's.**
+
+
 > **2026-10-06 (TO) -- dw_dx 'trans_output' (BRIEF_dwdx_units, Dave's ruling).
 > Translation columns + dcdx rows are per BaseUnit by default ('si' = the old
 > per-metre); runners/jacobian_check convert via macos.dwdx_trans_per_metre
