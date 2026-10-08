@@ -311,6 +311,35 @@ The figure is overstated: the disc is larger than the lit ellipse.
 - **The cross-track distortion of 79 µm** (0.24 %) at the strip end is a
   ground-mapping term.
 
+### R8 (`fft`): the smile test, inconclusive (CC 2026-10-07)
+
+**The hypothesis (CC):** the e2e smile (0.14 px) is the Dyson's response to
+the telescope's field-dependent chief angle.  The telescope's own smile
+contribution is ruled out: its centroid bow is ≤ 0.75 µm = 0.04 px, and the
+Dyson alone is 0.005.
+
+**Measured on R7.**  The chief at the slit, along-track (across the slit,
+the dispersion plane), is 0 / −0.056 / −0.225 / −0.508 mrad at
+0 / 1.57 / 3.13 / 4.7°: EVEN in field, smile's shape.  The cross-track
+component is 0 / ∓0.010 / ∓0.078 / ∓0.265 mrad.  In the joined deck, t5f
+re-aims every launch through the grating, so the telescope's chief does not
+enter the Dyson as such.  The e2e chief crosses M2 0.04–0.18 mm off the pole
+(a 0.1 % pupil shift).
+
+**The test.**  "Perturb the field angles until the chiefs are parallel" has
+three conditions on two sky DOF per field, so it is not constructible.  R8
+instead ran from R7 with the TELE rows ×30 (1e4 → 3e5 µm/rad), 3000
+evaluations: cost 1.0819e7 → 1.0816e7, worst chief 0.0328° (R7 0.0329°).
+E2E smile 0.138 / 0.138 px, keystone 0.005 / 0.009, CRF 1.182 / 1.256,
+SRF 2.025: R7 to the third digit.
+
+**Reading.**  At ×30 the TELE rows are still 0.4 % of the merit (4e4 of
+1.08e7, plate 6.8e6, cone 3.8e6), so the solve never worked on them.  R8
+neither confirms nor refutes the hypothesis.  A real test needs TELE to
+dominate: ~1e7 µm/rad, where 0.57 mrad is a ~6 mm row.  Or test the Dyson's
+smile sensitivity to an imposed chief tilt directly, on the Dyson alone.
+R7 stays the record.
+
 ## Step 4 — end to end
 
 On R4–R7 above.  **Deck of record: R7** (`challenges/dyson5/dyson5_cprime_3k.in`,
