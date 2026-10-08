@@ -46,30 +46,42 @@
    "fs": 15
   },
   "txt:Reads": {
-   "fs": 13,
-   "sa": 8
+   "fs": 12,
+   "sa": 5
   },
   "txt:Frames per measurement": {
-   "fs": 13,
-   "sa": 8
+   "fs": 12,
+   "sa": 5
   },
   "txt:Gets right": {
-   "fs": 13,
-   "sa": 8
+   "fs": 12,
+   "sa": 5
   },
   "txt:Gets wrong": {
-   "fs": 13,
-   "sa": 8
+   "fs": 12,
+   "sa": 5
   },
   "txt:Scored, 30 nm surface": {
-   "fs": 13,
-   "sa": 8
+   "fs": 12,
+   "sa": 5
   },
   "img:crop_lay96_oap_node.png": {
-   "x": 6.9,
+   "x": 7.3,
    "y": 1.35,
-   "w": 5.9,
-   "h": 3.61
+   "w": 5.6,
+   "h": 3.13,
+   "cx": 6.9,
+   "cy": 4.71,
+   "cw": 5.9
+  },
+  "txt:Parts: the backup": {
+   "x": 7.0,
+   "y": 5.41,
+   "w": 5.9
+  },
+  "txt:Reconstruction": {
+   "fs": 12,
+   "sa": 5
   }
  },
  "Interferometer: pupil image quality": {
@@ -172,6 +184,10 @@
    "sa": 5
   },
   "txt:The P/SRI": {
+   "fs": 11,
+   "sa": 5
+  },
+  "txt:Reconstruction": {
    "fs": 11,
    "sa": 5
   }
@@ -307,6 +323,10 @@
    "y": 1.35,
    "w": 5.9,
    "h": 4.08
+  },
+  "txt:Reconstruction": {
+   "fs": 13,
+   "sa": 5
   }
  },
  "Zernike sensor: a quarter-wave dimple at the focus": {
@@ -338,12 +358,16 @@
    "y": 1.35,
    "w": 5.9,
    "h": 4.08
+  },
+  "txt:Reconstruction": {
+   "fs": 13,
+   "sa": 5
   }
  },
  "One optical bench to demo 4 surface gauges, in mirror and lens forms": {
   "txt:The table is the interferometer": {
    "x": 0.5,
-   "y": 6.92,
+   "y": 6.9,
    "w": 12.43
   },
   "txt:Picometer measurement is photon-limited": {
@@ -363,52 +387,91 @@
   "txt:The reference arm (a 103 mm flat on a piezo": {
    "x": 0.45,
    "y": 6.96
+  },
+  "img:crop_bench_bs22_train.png": {
+   "x": 0.82,
+   "y": 1.33,
+   "w": 5.16,
+   "h": 2.57,
+   "cx": 0.4,
+   "cy": 3.74,
+   "cw": 6.35
+  },
+  "img:crop_lay96_oap_train.png": {
+   "x": 8.4,
+   "y": 1.42,
+   "w": 2.54,
+   "h": 2.32,
+   "cx": 6.95,
+   "cy": 3.74,
+   "cw": 5.9
+  },
+  "table:1": {
+   "x": 0.48,
+   "y": 4.54,
+   "w": 12.43
   }
  },
  "Each gauge reading the 30 nm working surface, station by station": {
   "img:crop_stations_row2_I.png": {
-   "x": 4.35,
-   "y": 1.18,
-   "w": 8.6,
-   "h": 1.46,
+   "x": 3.04,
+   "y": 1.45,
+   "w": 10.21,
+   "h": 1.4,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0864,
+   "cb": 0.1059,
    "cx": 0.22,
-   "cy": 1.33,
-   "cw": 3.9,
+   "cy": 1.53,
+   "cw": 3.03,
    "cal": "left"
   },
   "img:crop_stations_row2_S.png": {
-   "x": 4.35,
-   "y": 2.68,
-   "w": 8.6,
-   "h": 1.5,
+   "x": 3.04,
+   "y": 2.87,
+   "w": 10.21,
+   "h": 1.41,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.1042,
+   "cb": 0.104,
    "cx": 0.22,
-   "cy": 2.83,
-   "cw": 3.9,
+   "cy": 2.91,
+   "cw": 3.03,
    "cal": "left"
   },
   "img:crop_stations_row2_V.png": {
-   "x": 4.35,
-   "y": 4.22,
-   "w": 8.6,
-   "h": 1.49,
+   "x": 3.04,
+   "y": 4.32,
+   "w": 10.21,
+   "h": 1.38,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.1039,
+   "cb": 0.1161,
    "cx": 0.22,
-   "cy": 4.37,
-   "cw": 3.9,
+   "cy": 4.33,
+   "cw": 3.03,
    "cal": "left"
   },
   "img:crop_stations_row2_P.png": {
-   "x": 4.35,
-   "y": 5.75,
-   "w": 8.6,
-   "h": 1.49,
+   "x": 3.04,
+   "y": 5.74,
+   "w": 10.21,
+   "h": 1.39,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0929,
+   "cb": 0.1214,
    "cx": 0.22,
-   "cy": 5.9,
-   "cw": 3.9,
+   "cy": 5.78,
+   "cw": 3.03,
    "cal": "left"
   },
   "txt:Row 2 of each station figure": {
    "x": 0.45,
-   "y": 7.28,
+   "y": 7.15,
    "w": 12.45
   }
  }

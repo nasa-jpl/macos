@@ -34,7 +34,7 @@ JOBS = [  # (source, out name, (l, t, r, b) fractions)
     (R+'zwfs_dm96/bench_bs7.png',          'crop_bench_bs7_node.png',     (0.02, 0.40, 0.99, 1.0)),
     (R+'zwfs_dm96/bench_bs22.png',         'crop_bench_bs22_train.png',   (0.02, 0.0, 0.99, 0.40)),
     (R+'tg_psi_dm96_oap/runs/lay96_oap/lay96_oap_vlayout.png', 'crop_lay96_oap_train.png', (0.15, 0.05, 0.9, 0.33)),
-    (R+'tg_psi_dm96_oap/runs/lay96_oap/lay96_oap_vlayout.png', 'crop_lay96_oap_node.png',  (0.3, 0.33, 0.8, 0.66)),
+    (R+'tg_psi_dm96_oap/runs/lay96_oap/lay96_oap_vlayout.png', 'crop_lay96_oap_node.png',  (0.12, 0.33, 0.9, 0.66)),   # full width: the panel title was clipped at 0.3 (Dave 2026-10-08)
     # the built bench's sensor runs (redo96_*): the hold-error panel and the noise pricing
     (R+'zwfs_dm96/runs/redo96_sensloop2/redo96_sensloop2_loop.png', 'crop_zwfs_redo96_loop_right.png', (0.5, 0.04, 1.0, 1.0)),
     (R+'zwfs_dm96/runs/redo96_sensnoise/redo96_sensnoise_noise.png', 'zwfs_redo96_noise.png', (0.0, 0.0, 1.0, 1.0)),
