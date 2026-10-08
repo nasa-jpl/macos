@@ -64,9 +64,9 @@ Every number here comes from a committed run of one shared, parameterized model 
 
 ## One bench, two forms, four ways of sensing | Everything shares the front end: a filtered HeNe, a collimator, a plate splitter at 22.5°, a 700 mm leg to the mirror, a focuser to an internal focus, a field lens to a camera at the pupil image; the collimator and focuser are lenses or off-axis parabolas
 ::: left
-![The lens rig as traced by the engine, from above: source at left, collimator L1, the 22.5° splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange, the interferometer only), the focuser L2 toward the internal focus.  The mask seat at that focus is where the four sensing methods diverge.](figs/crop_bench_bs22_train.png){h=2.6}
+![The lens rig as traced by the engine, from above: source at left, collimator L1, the 22.5° splitter, the 96 mm mirror on its 700 mm leg (blue), the reference arm and its flat (orange), the focuser L2 toward the internal focus.  The mask seat at that focus is where the sensing methods diverge.](figs/crop_bench_bs22_train.png){h=2.6}
 ::: right
-![The reflective rig, redesigned on the same splitter: the source and input polarizer in the diverging leg, OAP1 collimating at a 20° fold, the same node, OAP2 focusing at 25° toward the mask seat.  Both drawings are the tools' own renders to scale; parts and thicknesses are on the next slides.](figs/crop_lay96_oap_train.png){h=2.6}
+![The reflective rig, redesigned on the same splitter: the source and input polarizer in the diverging leg, OAP1 collimating at a 20° fold, the same node, OAP2 focusing at 25° toward the mask seat.  Both drawings are the tools' own renders to scale; parts are on the next slides.](figs/crop_lay96_oap_train.png){h=2.6}
 ::: full
 | | lenses (L1, L2: 103 mm singlets) | off-axis parabolas (OAP1 20°, OAP2 25°) |
 |---|---|---|

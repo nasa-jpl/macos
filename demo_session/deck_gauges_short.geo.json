@@ -362,7 +362,8 @@
    "w": 12.43
   },
   "txt:Picometer measurement is photon-limited": {
-   "fs": 11
+   "fs": 11,
+   "y": 4.57
   },
   "txt:Accuracy is a gain": {
    "fs": 11
@@ -384,9 +385,9 @@
    "y": 1.33,
    "w": 5.16,
    "h": 2.57,
-   "cx": 0.4,
+   "cx": 0.25,
    "cy": 3.74,
-   "cw": 6.35
+   "cw": 6.5
   },
   "img:crop_lay96_oap_train.png": {
    "x": 8.4,
@@ -399,7 +400,7 @@
   },
   "table:1": {
    "x": 0.48,
-   "y": 4.54,
+   "y": 4.38,
    "w": 12.43
   }
  },
