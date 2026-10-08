@@ -239,15 +239,6 @@
    "y": 5.0
   }
  },
- "The question: must the pupil imaging be simulated, and how?": {
-  "txt:The right model is coherent imaging": {
-   "fs": 18
-  },
-  "txt:The answer as given on 2026-09-16": {
-   "x": 0.45,
-   "y": 6.19
-  }
- },
  "The reflective front end, measured": {
   "txt:The vector pair's raw error": {
    "fs": 12,
@@ -473,6 +464,60 @@
    "x": 0.45,
    "y": 7.15,
    "w": 12.45
+  }
+ },
+ "Recommendations and conclusions": {
+  "txt:Hold with the ZWFS": {
+   "fs": 14
+  },
+  "txt:Capture with the IFO": {
+   "fs": 14
+  },
+  "txt:Build with either front end": {
+   "fs": 14
+  },
+  "txt:A testbed for four": {
+   "fs": 14
+  },
+  "txt:A validation platform": {
+   "fs": 14
+  },
+  "txt:What the numbers do not decide": {
+   "fs": 14
+  },
+  "txt:Technology still to develop": {
+   "fs": 14
+  }
+ },
+ "What comes next, and how to run it": {
+  "txt:Capture beyond one wave": {
+   "fs": 13
+  },
+  "txt:From this model to as-built": {
+   "fs": 13
+  },
+  "txt:Other approaches worth a look": {
+   "fs": 13
+  },
+  "txt:Interferometer (tg_psi": {
+   "fs": 13
+  },
+  "txt:Pupil image (tg_psi": {
+   "fs": 13
+  },
+  "txt:Zernike sensors (zwfs": {
+   "fs": 13
+  },
+  "txt:Point-diffraction (pdi": {
+   "fs": 13
+  },
+  "txt:Where:": {
+   "fs": 13
+  },
+  "txt:Every stage asserts its own gates": {
+   "x": 0.35,
+   "y": 6.0,
+   "w": 5.9
   }
  }
 }
