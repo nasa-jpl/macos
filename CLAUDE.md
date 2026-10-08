@@ -5,7 +5,8 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build or
-> engine work, re-read: **this file**, `PLAN.md`, `PLAN_DESIGN_LAYER.md`,
+> engine work, re-read: **this file**, `PLAN.md`, `PLAN_CONSOLIDATION.md`
+> (the active sequencing, 2026-10-08), `PLAN_DESIGN_LAYER.md`,
 > `CURRENT_SLICE.md` (in-flight state), and the agent `MEMORY.md`
 > (build/test workflow entries).
 >
