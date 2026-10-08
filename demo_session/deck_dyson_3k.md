@@ -44,14 +44,14 @@ DRAFT — pending review.
 | pixels | 18 µm; 3000 cross-track, 500 spectral | 18 µm; 3072 × 512, 2 co-added spectrally |
 | slit | 54 mm; 2 pixels (36 µm) | 54.45 mm; 36 µm |
 | band | 380–2500 nm | 380–2500 nm |
-| smile, keystone | < 0.1 px (1.8 µm) | 5 % of a co-added px (1.8 µm); 10 % of a px (1.8 µm) |
+| smile, keystone | < 0.1 px (1.8 µm) | 1.8 µm each (5 % of a co-added px; 10 % of a px) = 0.10 of our pixel |
 | SRF FWHM | 1.5–2.0 px (27–36 µm) | < 1.8 co-added px (64.8 µm) |
 | CRF FWHM | < 1.5 px (27 µm) | < 2.8 px (50.4 µm) |
 | ARF FWHM (telescope, across the slit) | – | < 2.8 px (50.4 µm) |
 | field per module | 9.4° (3k) | 8.9° |
 ::: right
 - **Smile:** centroid drift along the slit at fixed wavelength; **keystone:** drift across wavelength at fixed slit position; both from ray centroids, in pixels.
-- **SRF, CRF:** slit ⊗ line-spread function ⊗ pixel ⊗ Airy, FWHM (Mouroulis & Green 2018).  With a 2-pixel slit a perfect spectrometer gives SRF = 2.000 px exactly: the slit's floor.
+- **SRF, CRF:** slit ⊗ line-spread function ⊗ pixel ⊗ Airy, FWHM (Mouroulis & Green 2018).  With a 2-pixel slit a perfect spectrometer gives SRF = 2.010–2.023 px over the band (slit, pixel and diffraction): the floor.
 - **Energy in one pixel:** the fraction of a point image inside one 18 µm pixel; design rule 0.75.
 - **End to end** is one prescription from the sky to the detector, the grating its stop, scored by the spectrometer's own scorer.  Smile end to end depends on how each field is launched onto the slit — slide 10 — so it is given under both conventions.
 - **The paper's SRF is in co-added pixels** (36 µm); its bounds are converted to micrometers in every table here.
@@ -99,10 +99,10 @@ DRAFT — pending review.
 ::: full
 | criterion | Joe | paper | spectrometer alone (240 mm CaF2 Dyson) | telescope alone (R9) | together, end to end |
 |---|---|---|---|---|---|
-| smile | < 0.1 px | < 1.8 µm | 0.005 px | – | 0.022 px slit-filled (0.4 µm); 0.016 px point-source shift |
-| keystone | < 0.1 px | < 1.8 µm | 0.006 px | – | 0.006 px (0.1 µm) |
+| smile | < 0.1 px | < 1.8 µm (0.10 px) | 0.005 px | – | 0.022 px slit-filled (0.4 µm); 0.016 px point-source shift |
+| keystone | < 0.1 px | < 1.8 µm (0.10 px) | 0.006 px | – | 0.006 px (0.1 µm) |
 | CRF FWHM | < 1.5 px | < 50.4 µm | 1.21 px | 1.02 px along the slit | 1.17 px (21 µm); 1.26 at roll 180° |
-| SRF FWHM | 1.5–2.0 px | < 64.8 µm | 2.024 px (2-px slit) | 1.02 px across the slit (ARF) | 2.025 px (36.5 µm) |
+| SRF FWHM | 1.5–2.0 px | < 64.8 µm | 2.024 px (2-px slit) | 1.02 px across the slit (ARF 18.4 µm) | 2.025 px (36.5 µm) |
 | energy in one 18 µm pixel | > 0.75 | – | 0.82 | 1.00 | 0.85 (0.81 at roll 180°) |
 | image blur (rms, as placed) | – | 2–3 µm (paper) | – | 1.8–2.5 µm | – |
 | plate scale | 330 mm | 345 | – | 329.9 / 330.1 mm | 330.1 mm |
@@ -110,7 +110,7 @@ DRAFT — pending review.
 | marginal rays at the slit | – | F/# anamorphicity bounded | – | F/1.80–1.89, none below 1.7 | grating admits 98.9 % |
 | clearance, worst pair | > 0 | – | +0.54 mm (slit vs block face) | +12.1 mm | +0.6 mm (the spectrometer's pair) |
 | glass, mass | – | – | 4.5 L, 14.3 kg | mirrors not yet sized | – |
-~ Spectrometer: `dyson5_jim_3a.txt` (size:F:240); telescope: `dyson5_cprime_3k.in`, `REPORT_dyson5_cprime.md`; together: `dyson5_t5f_cprime_centroid_roll000.txt` / `_roll180`, `_chief_roll000` (the point-source shift), 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  SRF 2.025 against a 2.000 floor: the Dyson adds 0.45 µm.
+~ Spectrometer: `dyson5_jim_3a.txt` (size:F:240); telescope: `dyson5_cprime_3k.in`, `REPORT_dyson5_cprime.md`; together: `dyson5_t5f_cprime_centroid_roll000.txt` / `_roll180`, `_chief_roll000` (the point-source shift), 7 fields × 7 wavelengths.  No coatings, no tolerances in any column.  SRF 2.025 against a floor of 2.010–2.023 (slit, pixel, diffraction): the Dyson adds at most 0.0015 px, 0.03 µm.
 
 ## The 3k module, end to end | The freeform telescope feeding the 240 mm CaF2 Dyson: smile 0.02, keystone 0.006, CRF 1.17, SRF 2.025 px at every slit position and wavelength; 98.9 % of the light through the grating; clearance +0.6 mm, the Dyson's own slit-to-block-face margin
 ::: left
@@ -166,9 +166,9 @@ DRAFT — pending review.
 - **Across the slit** the cone is F/1.80: the slit truncates the image in that direction, and the across-slit FWHM (the paper's ARF) is 1.02 px against its 2.8 px bound.
 ~ `REPORT_dyson5_cprime.md`, R9 per-field table; F/# from the marginal rays as 1/(2 sin u).
 
-## The spectrometer: at the slit floor; what is left | SRF 2.025 px is the two-pixel slit's 2.000 plus 0.45 µm of blur, and in the paper's units it is 36.5 µm against 64.8; the open spectrometer work is tolerances, the aspheric-lens form, and throughput by band
+## The spectrometer: at the slit floor; what is left | SRF 2.025 px is the two-pixel slit with the pixel and diffraction (2.010–2.023) plus at most 0.03 µm of blur, and in the paper's units it is 36.5 µm against 64.8; the open spectrometer work is tolerances, the aspheric-lens form, and throughput by band
 ::: left
-- **SRF is not a miss.**  The scorer's SRF is slit ⊗ LSF ⊗ pixel ⊗ Airy; with a 2-pixel slit a perfect spectrometer gives exactly 2.000 px.  The Dyson of record gives 2.024 alone and 2.025 behind the telescope: 0.45 µm of blur.  Joe's "1.5–2.0" is met at its floor; 1.5 would need a narrower slit, not a better spectrometer.  In the paper's co-added pixels our SRF is 1.01 against its 1.33 design and 1.8 requirement; our CRF 21 µm against its 50.
+- **SRF is not a miss.**  The scorer's SRF is slit ⊗ LSF ⊗ pixel ⊗ Airy; with a 2-pixel slit a perfect spectrometer gives 2.010 px at 380 nm and 2.023 at 2500 nm — the slit, the pixel and diffraction.  The Dyson of record sits 0.0001–0.0015 px above that floor at every wavelength, alone and behind the telescope: at most 0.03 µm of blur.  Joe's "1.5–2.0" is met at its floor; 1.5 would need a narrower slit, not a better spectrometer.  In the paper's co-added pixels our SRF is 1.01 against its 1.33 design and 1.8 requirement; our CRF 21 µm against its 50.
 - **The spectrometer of record for 3k** stands: 240 mm CaF2, spherical lens face and spherical grating, no meniscus; smile 0.005, keystone 0.006, CRF 1.21, 0.82 of the energy in a pixel; 4.5 L, 14.3 kg; the slit's package clears the block face by 0.54 mm.
 ::: right
 - **Tolerances, first.**  Nothing on either module is toleranced, and the paper chose both its forms for tolerance insensitivity (its spherical-grating option lost on exactly that: smile 0.3 % designed, 3.5 % as built).  Next: a sensitivity ladder on both Dysons — lens and grating decenter, tilt, radius, index (the thermal soak), grating period and clocking, slit and detector position — scored alone and through the join with R9, each with its compensator, summed to a budget against the paper's as-built margins.
@@ -195,7 +195,7 @@ DRAFT — pending review.
 
 ## Questions for Jim and Joe | Three the ray trace cannot settle
 - **The entrance beam.**  Joe's 183 mm at f 330 mm is F/1.803, so the telescope's cone along the slit is F/1.89 and cannot be "a little faster than the spectrometer" without a larger beam; the paper's is 192 mm.  Is the aperture Joe's number or the paper's?
-- **The slit and SRF.**  With a 2-pixel slit the SRF floor is 2.0 px (36 µm), where this design sits; the paper's bound is 64.8 µm.  Is the 1.5–2.0 px range read against a 2-pixel slit, or does the project want a narrower slit at the throughput's expense?
+- **The slit and SRF.**  With a 2-pixel slit the SRF floor is 2.01–2.02 px (36 µm) with the pixel and diffraction, where this design sits to 0.03 µm; the paper's bound is 64.8 µm.  Is the 1.5–2.0 px range read against a 2-pixel slit, or does the project want a narrower slit at the throughput's expense?
 - **The spectrometer's form.**  The spherical-faced CaF2 Dyson meets the specification at nominal.  The paper went to an aspheric lens and a conic grating for tolerances; before we build that ladder, what drove it in the build — smile and keystone as built, or energy in a pixel?
 ~ Still open from the last round: the detector window's gap (now answered: an order-sorting filter, not bonded) and the AR by band.
 
@@ -220,7 +220,7 @@ matlab
 >> OUT = dyson5_run(struct('stages', {{'t5f'}}, 'tel5f_deck', 'dyson5_cprime_3k.in'));   % the 3k module end to end, both launches
 ```
 - **Changeable parameters live in two files:** `tma_longslit_params.m` for the telescope (spec, seed, rows and weights, field set), `dyson5_params.m` for the Dyson (F-number, pixels, band, slit, block radius, glass, order, the join).  Every record in this deck is a stage output under `challenges/dyson5/` or the template's folder.
-- **Checks:** `./run_mmacos_tests.sh tTmaLongslit tSpectrometerRx tTelescopeRx tStopReload` and the grating, glass, propagation and root-pick classes, all in the fast suite (559 pass, 0 fail, 2026-10-07).  `tTmaLongslit` re-scores the deck of record by name.
+- **Checks:** `./run_mmacos_tests.sh tTmaLongslit tSpectrometerRx tTelescopeRx tStopReload` and the grating, glass, propagation and root-pick classes, all in the fast suite (566 pass, 0 fail, 2026-10-07).  `tTmaLongslit` re-scores the deck of record by name.
 
 ## Backup
 
