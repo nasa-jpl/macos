@@ -16,24 +16,26 @@ October 2026.  Working record; no proprietary prescription is used.
 DRAFT — pending review.
 ~ Since the 2026-10-06 deck: Jim's answers and the project's own paper settled the trade toward two 3k modules and pointed at the telescope form; a design template built on that form reaches the pixel at every field of the strip, with the cone bounded and the slit telecentric; the 0.14-pixel "smile" that remained was the scorer's launch convention, not the optics.  Both modules now meet the specification end to end; SRF sits at the two-pixel slit's floor.  What is left is the spectrometer's: tolerances, the aspheric-lens form, throughput by band.
 
-## Contents | What changed, the seed, the telescope of record, the module scored, how the solve got there, the two smile conventions, the spectrometer, the comparison, the questions
+## Contents | What changed, the pair of modules, the seed, the telescope of record, the module scored, how the solve got there, the two smile conventions, the spectrometer, the comparison, the questions
 ::: left
 - **3** The target and how it is scored
 - **4** What changed since the last deck: Jim's answers and the paper
-- **5** The seed: the SBG form, first order
-- **6** The telescope of record: freeform three-mirror, R9
-- **7** The 3k module, scored: spectrometer, telescope, and the two together
-- **8** The 3k module, end to end
-- **9** How the solve got there: six rungs and three lessons
+- **5** Two 3k modules fill the swath
+- **6** The two strips on the ground, and the two focal planes
+- **7** The seed: the SBG form, first order
+- **8** The telescope of record: freeform three-mirror, R9
+- **9** The 3k module, scored: spectrometer, telescope, and the two together
+- **10** The 3k module, end to end
 ::: right
-- **10** Smile is a convention: the launch, not the optics
-- **11** The cone, the spec and the paper's beam
-- **12** The spectrometer: toleranced, and a conic grating for margin
-- **13** Two of 3k or four of 1.5k, updated
-- **14** Questions for Jim and Joe
-- **15** Next steps
-- **16** Run it yourself
-- **17** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
+- **11** How the solve got there: six rungs and three lessons
+- **12** Smile is a convention: the launch, not the optics
+- **13** The cone, the spec and the paper's beam
+- **14** The spectrometer: toleranced, and a conic grating for margin
+- **15** Two of 3k or four of 1.5k, updated
+- **16** Questions for Jim and Joe
+- **17** Next steps
+- **18** Run it yourself
+- **19** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, with the paper's bounds in the same units
 ::: left
@@ -53,7 +55,7 @@ DRAFT — pending review.
 - **Smile:** centroid drift along the slit at fixed wavelength; **keystone:** drift across wavelength at fixed slit position; both from ray centroids, in pixels.
 - **SRF, CRF:** slit ⊗ line-spread function ⊗ pixel ⊗ Airy, FWHM (Mouroulis & Green 2018).  With a 2-pixel slit a perfect spectrometer gives SRF = 2.010–2.023 px over the band (slit, pixel and diffraction): the floor.
 - **Energy in one pixel:** the fraction of a point image inside one 18 µm pixel; design rule 0.75.
-- **End to end** is one prescription from the sky to the detector, the grating its stop, scored by the spectrometer's own scorer.  Smile end to end depends on how each field is launched onto the slit — slide 10 — so it is given under both conventions.
+- **End to end** is one prescription from the sky to the detector, the grating its stop, scored by the spectrometer's own scorer.  Smile end to end depends on how each field is launched onto the slit — slide 12 — so it is given under both conventions.
 - **The paper's SRF is in co-added pixels** (36 µm); its bounds are converted to micrometers in every table here.
 ~ Every number is a MACOS ray trace of a committed prescription; no coatings, no tolerances.  Paper: Bradley et al., "Finalized optical design of the SBG VSWIR Wide Swath Imaging Spectrometer," ICSO 2024, Proc. SPIE 13699, 1369945 (Tables 1–3).
 
@@ -68,6 +70,22 @@ DRAFT — pending review.
 - **The Offner** does not go much below F/3 at reasonable size (Jim), which confirms the F/1.8 Offner's exit in the last deck.
 - **AR and blaze** are tailored to the photon-starved long-wavelength end; throughput is a per-band number, not one figure.
 ~ Jim's comments of 2026-10-07 in line on the 10-06 note; the paper's numbers on this slide are its Tables 1–3 and Figs. 1 and 4.  Recorded in `BRIEF_to_dyson5.md` addendum 47.
+
+## Two 3k modules fill the swath | Side by side across the track at a 324 mm pitch, each canted ±4.68° to its own strip: no body touches another and no body sits in the other's sky beam; the pair is 0.75 × 0.60 × 1.36 m, 609 L, with 39 kg of optics
+::: full
+![The two modules as the engine traces them, each the 3k module of record moved rigidly: cants ±4.68° about the axis normal to the track and the line of sight.  Left: 3-D; right: looking along the cant axis, light entering from below.  The rays the grating stops are red.](figs_dyson/dyson5_block2_3k_views_rc.png){h=3.7}
+| item | value |
+|---|---|
+| pitch across the track; worst margins | 324 mm (module 319 mm + 20 mm gap, in 5 mm steps); body to body +24 mm, body in the other's 183 mm sky beam +36 mm |
+| envelope of the pair | 746 × 598 × 1363 mm, 609 L (the four 1.5k modules: 965 × 411 × 758 mm, 300 L) |
+| optics per module; for the swath | 19.5 kg (block 14.3, three mirrors 2.9, grating 2.3); 39.0 kg (the four 1.5k modules: 14.6 kg) |
+~ Bodies are the engine's surface hits + 5 mm aperture + 10 mm mount; mirrors and grating as 10 mm blanks (Zerodur, silica), the CaF2 block from `dyson5_jim_3a.txt`.  Not included: structure, detectors and their cooling, electronics, baffles.  Each module's internal clearances are the record's by construction.  Record `dyson5_block2_3k.txt`; tool `dyson5_block4.m` (`nmod` 2).
+
+## The two strips on the ground, and the two focal planes | Each module's slit admits ±4.691°, 3000 pixels; canted ±4.68° the strips overlap by 10 pixels at the join and cover 18.7°, 181 km from 550 km, with no along-track offset; each detector holds its strip across 3000 spatial pixels and the band across 500
+::: full
+![Top: the swath, cross-track angle across, ground distance from nadir in gray, the dark band the 10-pixel overlap, the arrow the along-track sweep.  Bottom: the two 3000 × 500 detectors under their strips, the lines the slit's image at the seven scored wavelengths from the engine's centroids (0.24 px/nm; 380 nm at +v, 2500 nm at −v; the image is inverted along the slit).](figs_dyson/dyson5_block2_3k_swath_rc.png){h=4.4}
+- **One join instead of three.**  The telescope's plate scale puts 3000 pixels over 9.381°; abutting at 9.4° would leave a 6-pixel gap at the join, so the cants are set from the admitted strip for 10 pixels of overlap.  **No along-track offset:** the two lines of sight lie in one cross-track plane, so both strips image the same ground line at the same time.  **Unique pixels:** 5990 over 18.73°, 30.1 m per pixel at nadir.  The detector is the paper's 3072 × 512 format.
+~ Record `dyson5_block2_3k.txt` (strip edges per module, overlap, swath); the admitted strip from `dyson5_t5f_cprime_centroid_roll000.txt`.
 
 ## The seed: the SBG form, first order | The paper's layout digitized and scaled to Joe's focal length; with the stop at M2 the first order is telecentric in closed form, has no intermediate focus, and gives 299 mm of working distance for the Dyson
 ::: left
@@ -91,7 +109,7 @@ DRAFT — pending review.
 - **Geometry:** the seed's legs and incidences kept; the layout stays the form (unbounded, the incidence angles collapse to a coaxial train that self-obscures).  Plate scale 329.9 mm local, 330.1 along track.  Footprints M1 235 × 202, M2 132 × 166, M3 215 × 173 mm; freeform departure 0.46 / 0.55 / 1.11 mm P-V over the lit patch (the 1.5k asphere telescope: 2.1 mm on M1).  Clearance +12.1 mm; working distance 299.4 mm.
 - **Figure:** a pole-frame polynomial (`Surface= Monomial`, degree 3–6, even in x); degree ≥ 3 leaves value, slope and curvature at the pole untouched, so the first order survives the figure.  Even aspheres about the parent axis were the wrong basis on these sections (the poles sit 0.9–1.5 m off axis).
 ::: right
-- **The constraint rows that make it a long-slit front end, in every rung:** the chief angle to the slit normal per field (telecentric); a hinge on the marginal rays' F/# at the slit, along and across, outside [1.7, 1.8] (the paper's F/# anamorphicity); and, in R9, the chief − centroid offset across the slit (slide 10).
+- **The constraint rows that make it a long-slit front end, in every rung:** the chief angle to the slit normal per field (telecentric); a hinge on the marginal rays' F/# at the slit, along and across, outside [1.7, 1.8] (the paper's F/# anamorphicity); and, in R9, the chief − centroid offset across the slit (slide 12).
 - **Not done:** no tolerancing, no coatings, no stray-light or mirror sizing beyond the footprints.
 ~ Prescription `challenges/dyson5/dyson5_cprime_3k.in` (= `tls_R9_ffo.in`); engine numbers, model 256, nine fields over ±4.7°, mirror-symmetric.  The gate `tTmaLongslit` re-scores it by name.  `REPORT_dyson5_cprime.md`.
 
@@ -132,7 +150,7 @@ DRAFT — pending review.
 | **R9** | R7 + chief − centroid rows across the slit ×1000 | **1.02** | **0.016** | 0.006 | **1.17** | 2.025 |
 - **Equal weights were the CRF wall.**  R5 and R6 weighted every field and both axes equally on rms spot size and spent it on the strip center (4 µm) while the outer half sat at 5–7 px along the slit; more budget on the same merit moved nothing.  Weighting the along-slit rows and the outer fields, from R4, took every field to the Airy floor in one rung.
 - **A row set below one percent of the merit is not a test.**  R8's telecentric rows at ×30 were 0.4 % of the merit; the solver never worked on them and R8 is R7 to the third digit.  R9's offset rows at ×30 would have been 0.07 %; at ×1000 they dominated, and the solve converged in 507 evaluations.
-- **The remaining 0.14 px of "smile" was the launch convention** (slide 10), and the row that removed its cause cost nothing at the pixel.
+- **The remaining 0.14 px of "smile" was the launch convention** (slide 12), and the row that removed its cause cost nothing at the pixel.
 ~ `REPORT_dyson5_cprime.md` (every rung and the four solves thrown out); the template's README, "What the ladder taught."  Each rung: 3000 evaluations of the engine's own trace (R9: 507), model 256.
 
 ## Smile is a convention: the launch, not the optics | The join lands each field's chief ray on the slit line and scores the centroid, so the telescope's coma — the chief-minus-centroid offset across the slit — read as smile; the Dyson fed with the telescope's chief angles does not move
@@ -189,6 +207,7 @@ DRAFT — pending review.
 | light admitted by the grating | 98.9 % per field | 99 % per field |
 | clearance, worst pair | +0.6 mm (slit package vs block face) | +0.38 mm (detector package vs block face) |
 | glass for 6000 pixels | 9.0 L, 28.5 kg CaF2 (12.4 L single crystal to carve) | 3.0 L, 6.6 kg fused silica |
+| the block of modules: envelope; optics | 0.75 × 0.60 × 1.36 m, 609 L; 39 kg | 0.97 × 0.41 × 0.76 m, 300 L; 14.6 kg |
 | telescopes / spectrometers / detectors | 2 / 2 / 2 × (3072 × 512, a standard format) | 4 / 4 / 4 × (1.5k × 0.5k, NRE) |
 | integration, test, calibration | two of each | four of each (Jim: the cost that dominates) |
 | materials | "a tiny fraction of the instrument cost" (Jim) | the same |
@@ -260,7 +279,7 @@ matlab
 ::: full
 - **The hypothesis:** the telescope's chief rays reach the slit up to 0.51 mrad from its normal in the dispersion direction, even in field and roughly quadratic — smile's shape — and a Dyson's spectral centroid moves with the input chief angle.
 - **Why it could not be tested by hand on the joined deck:** each field has two sky angles but needs three conditions (land on the slit line, two chief-angle components), and the join re-aims every launch through the grating, so a telecentric error appears there as a pupil shift.
-- **The test:** the spectrometer alone, each slit point's input chief tilted by the telescope's measured angles, scored as the record is (slide 10's left table).  Smile 0.0050 → 0.0049; keystone moves, so the hook is live.  The hypothesis is dead; the chief − centroid offset model (right table) predicts all five rungs.
+- **The test:** the spectrometer alone, each slit point's input chief tilted by the telescope's measured angles, scored as the record is (slide 12's left table).  Smile 0.0050 → 0.0049; keystone moves, so the hook is live.  The hypothesis is dead; the chief − centroid offset model (right table) predicts all five rungs.
 - **Why R8 said nothing:** its telecentric rows were 0.4 % of the merit.
 ~ `tls_dyson_chief_tilt.m` (wraps the launch; the library untouched), its `.mat`; the template README.
 
@@ -291,11 +310,12 @@ matlab
 ::: full
 | slide | record |
 |---|---|
-| 5 | `tma_longslit/tls_first_order.txt`, `tls_section_layout.png`; `dyson5_cprime_3k_viewyz.png` |
-| 6 | `challenges/dyson5/dyson5_cprime_3k.in`; `REPORT_dyson5_cprime.md` (R9); `tTmaLongslit` |
-| 7, 8 | `dyson5_jim_3a.txt`; `dyson5_t5f_cprime_centroid_roll000.txt`, `_roll180.txt`, `_chief_roll000.txt`; `_e2e.in`, `_maps.png`, `_e2e_viewyz.png` |
-| 9, 10 | `REPORT_dyson5_cprime.md` (R4–R9); `tls_dyson_chief_tilt.mat`; `tls_e2e_both_conventions.mat` |
-| 11 | R9 per-field table (`REPORT_dyson5_cprime.md`) |
-| 12 | `dyson5_jim_3a.txt`; `REPORT_dyson5_spec.md`; `spectrometer_sens`, `tSpectrometerSens`; `BRIEF_to_dyson5.md` addendum 49 |
-| 13 | `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_block4.txt` |
+| 5, 6 | `dyson5_block2_3k.txt`, `_views.png`, `_swath.png` (tool `dyson5_block4.m`, nmod 2) |
+| 7 | `tma_longslit/tls_first_order.txt`, `tls_section_layout.png`; `dyson5_cprime_3k_viewyz.png` |
+| 8 | `challenges/dyson5/dyson5_cprime_3k.in`; `REPORT_dyson5_cprime.md` (R9); `tTmaLongslit` |
+| 9, 10 | `dyson5_jim_3a.txt`; `dyson5_t5f_cprime_centroid_roll000.txt`, `_roll180.txt`, `_chief_roll000.txt`; `_e2e.in`, `_maps.png`, `_e2e_viewyz.png` |
+| 11, 12 | `REPORT_dyson5_cprime.md` (R4–R9); `tls_dyson_chief_tilt.mat`; `tls_e2e_both_conventions.mat` |
+| 13 | R9 per-field table (`REPORT_dyson5_cprime.md`) |
+| 14 | `dyson5_jim_3a.txt`; `REPORT_dyson5_spec.md`; `spectrometer_sens`, `tSpectrometerSens`; `BRIEF_to_dyson5.md` addendum 49 |
+| 15 | `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_block4.txt`, `dyson5_block2_3k.txt` |
 ~ All under `MACOS_resources/mmacos/challenges/dyson5/` and `templates/10_telescopes/tma_longslit/`, branch dev-candidate; the reports under `macos/`.  Public: nasa-jpl/macos, nasa-jpl/MACOS_resources.
