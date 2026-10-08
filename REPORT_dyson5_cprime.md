@@ -518,3 +518,113 @@ The result:
 
 CRF and SRF are the Dyson's own floors.  With the OFF rows (R9), smile is
 closed too: 0.022 px slit-filled, 0.016 px point-source.
+
+## The 1.5k module by the same method (CC 2026-10-08)
+
+### (a) The 1.5k record re-scored under both launches (`challenges/dyson5/dyson5_rescore_1k5_launch.txt`)
+
+The telescope is `dyson5_tA_GM_1k5_bAs.in` (three off-axis aspheres).  The
+Dyson is `size:D:130` (silica 130, 27 mm slit), with a 1500 px strip.
+
+| launch | roll | smile | keystone | CRF | SRF | EiP | admits |
+|---|---|---|---|---|---|---|---|
+| centroid | 0 | 0.082 | 0.014 | 1.255 | 2.214 | 0.385 | 0.989 |
+| centroid | 180 | 0.088 | 0.009 | 1.211 | 2.205 | 0.295 | 0.988 |
+| chief | 0 | 0.504 | 0.014 | 1.236 | 2.212 | 0.394 | 0.989 |
+| chief | 180 | 0.503 | 0.009 | 1.219 | 2.204 | 0.305 | 0.988 |
+
+Slit-filled, the record passes smile (< 0.1).  Its point-source shift is
+0.50 px, the same chief − centroid mechanism as the 3k's R7.  Its energy in a
+pixel is 0.30–0.39, far under 0.75.
+
+### (b) The template at the 1.5k spec (`tma_longslit_1k5.m`, tag `tls1k5`)
+
+**Spec:**
+- strip ±2.35°, 1500 px, slit 27 mm;
+- f 330 mm, D 183 mm, F/1.8;
+- the 3k's seed (SBG VSWIR Fig. 4b), its row sets and its weights
+  (along-slit spot ×3, outer fields ×1/1/2/3/3, OFF ×1000).
+
+The ladder (engine, model 256, 9 strip fields; `tls1k5_figure.txt`):
+
+| rung | DOFs | rms µm | worst FWHM px | min EiP | clearance mm |
+|---|---|---|---|---|---|
+| R0 seed | first order | 1876–1968 | 15.6 | 0.00 | +10.1 |
+| R1 `conic` | θ, slit dz | 151–187 | 10.8 | 0.00 | +17.1 |
+| R2 `asph` | + h⁴, h⁶ | 57–152 | 14.7 | 0.00 | +13.9 |
+| R3 `ff34` | freeform 3–4 | 17–21 | 1.92 | 0.22 | +1.2 |
+| R4 `ff` | freeform 3–6 | 0.73–0.98 | 1.02 | 1.00 | −0.3 |
+| R5 `ffc` | R4 + CLEAR wall | 0.76–0.96 | 1.02 | 1.00 | +2.4 |
+
+**Aspheres first, as ordered.**  They do not reach the floor at 1.5k on this
+seed: R2 is 57–152 µm.  (The 1.5k record does reach it with three aspheres,
+on a different layout.)
+
+**R4 is the first rung at 1.02 px at every field.**  It fails clearance:
+the M3 → slit leg runs 0.3 mm into M2's body.  An e2e on the best rung that
+cleared, R3, gave the following at roll 0 / 180 (`tls1k5_e2e_R3.txt`), not
+good enough:
+
+| smile | point-source shift | CRF | SRF |
+|---|---|---|---|
+| 0.131 / 0.144 | 0.143 / 0.156 | 2.10 / 2.15 | 2.70 / 2.68 |
+
+**R5 is R4 plus a new CLEAR wall row** (`tls_figure`).  Every iteration it
+scores `tls_clearance`, the record's rule, on the centre and edge fields
+(8 mm sampling, 60 rim rays).  The row is a hinge to 2 mm, `w_clear` 3000,
+sized to dominate the merit while the wall is violated
+(seed cost 5.16e7 → 4.07e6, 36 iterations).  It gave:
+- clearance +2.4 mm, the floor held, rms 0.76–0.96 µm;
+- worst chief 0.008°;
+- F/# along 1.893–1.894, across 1.801–1.805;
+- M1 203.8 × 201.5, M2 130.8 × 167.3, M3 189.2 × 172.1 mm;
+- working distance 299.4 mm.
+
+The layout stayed at AOI [30 37 15]° and legs [258.3 245.8 299.4] mm.
+
+### End to end on R5 (`tls1k5_e2e.txt`; decks `dyson5_t5f_tls1k5_{centroid,chief}_roll{000,180}_e2e.in`)
+
+| | roll 0 | roll 180 | Joe | paper (µm) |
+|---|---|---|---|---|
+| smile (slit-filled) | 0.009 px (0.17 µm) | 0.011 (0.20) | < 0.1 | < 1.8 |
+| point-source shift | 0.009 (0.16) | 0.011 (0.19) | — | — |
+| keystone | 0.009 (0.17) | 0.012 (0.22) | < 0.1 | < 1.8 |
+| CRF | 1.029 (18.5) | 1.028 (18.5) | < 1.5 | < 50.4 |
+| SRF | 2.024 (36.4) | 2.024 (36.4) | 1.5–2.0 | < 64.8 |
+| ARF | 1.018 (18.3) | 1.018 | — | < 50.4 |
+| EiP | 0.974 | 0.990 | > 0.75 | |
+| grating admits | 0.987 | 0.987 | | |
+| joined clearance | +0.6 mm (M3 → slit vs block face) | +0.6 | > 0 | |
+
+**It meets Joe's spec end to end under both launches except SRF, which sits
+on the slit floor (2.010–2.023 px).  It meets the paper's five with
+margin.**
+
+Against the 1.5k record it improves smile ×9, point-source shift ×50, CRF
+1.26 → 1.03 and EiP 0.30–0.39 → 0.97–0.99.  Keystone is a wash
+(0.009–0.012 vs 0.009–0.014).
+
+**Deck of record: `challenges/dyson5/dyson5_cprime_1k5.in`** (the join deck,
+with the header ApStop at the engine entrance pupil).  Pinned by
+`tTmaLongslit/test_the_1k5_record_rescores`.
+
+### Block of four on R5 (`challenges/dyson5/dyson5_block4_cprime1k5.txt`)
+
+`dyson5_block4()` was re-run on `dyson5_t5f_tls1k5_centroid_roll000_e2e.in`,
+with the same defaults as the record's run: cants for 10 px of overlap,
+20 mm gap, 5 + 10 mm margins, optics-only mass.
+
+| | R5 (c′ 1.5k) | 1.5k record (`dyson5_block4.txt`) |
+|---|---|---|
+| module pitch | 268.6 mm | 233.9 mm |
+| envelope (x × y × z) | 1009 × 533 × 919 mm = 494 L | 964 × 411 × 758 mm = 300 L |
+| optics, one module | 5.35 kg (block 1.60, mirrors 3.00, grating 0.75) | 3.65 kg (1.60, 1.43, 0.62) |
+| optics, block of four | 21.4 kg | 14.6 kg |
+| worst body-body / body-in-beam | +22 / +26 mm | +25 / +29 mm |
+| swath | 18.66°, 5970 unique px | same |
+
+**The cost of R5's image quality is size:** 1.65× the volume and 1.47× the
+optics mass of the 1.5k record.  M1 is the same size (r 109 vs 111 mm),
+but the zig-zag's M2 and M3 are full-aperture: r 98 / 99 mm against the
+record's 33 / 28 mm.  With the stop at M2, the beam is ~183 mm wide at M2 and
+still wide at M3.  There are no conflicts in either block.
