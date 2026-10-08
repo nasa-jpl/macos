@@ -28,12 +28,12 @@ DRAFT — pending review.
 ::: right
 - **10** Smile is a convention: the launch, not the optics
 - **11** The cone, the spec and the paper's beam
-- **12** The spectrometer: at the slit floor; what is left
+- **12** The spectrometer: toleranced, and a conic grating for margin
 - **13** Two of 3k or four of 1.5k, updated
 - **14** Questions for Jim and Joe
 - **15** Next steps
 - **16** Run it yourself
-- **17** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the engine finding; records
+- **17** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, with the paper's bounds in the same units
 ::: left
@@ -166,15 +166,16 @@ DRAFT — pending review.
 - **Across the slit** the cone is F/1.80: the slit truncates the image in that direction, and the across-slit FWHM (the paper's ARF) is 1.02 px against its 2.8 px bound.
 ~ `REPORT_dyson5_cprime.md`, R9 per-field table; F/# from the marginal rays as 1/(2 sin u).
 
-## The spectrometer: at the slit floor; what is left | SRF 2.025 px is the two-pixel slit with the pixel and diffraction (2.010–2.023) plus at most 0.03 µm of blur, and in the paper's units it is 36.5 µm against 64.8; the open spectrometer work is tolerances, the aspheric-lens form, and throughput by band
+## The spectrometer: toleranced, and a conic grating for margin | SRF sits at the two-pixel slit's floor; every large tolerance is a focus term the detector's focus removes; keystone sets the alignment tolerances at 26 µm and 35 µrad; a conic on the grating takes the energy in a pixel from 0.82 to 0.99
 ::: left
-- **SRF is not a miss.**  The scorer's SRF is slit ⊗ LSF ⊗ pixel ⊗ Airy; with a 2-pixel slit a perfect spectrometer gives 2.010 px at 380 nm and 2.023 at 2500 nm — the slit, the pixel and diffraction.  The Dyson of record sits 0.0001–0.0015 px above that floor at every wavelength, alone and behind the telescope: at most 0.03 µm of blur.  Joe's "1.5–2.0" is met at its floor; 1.5 would need a narrower slit, not a better spectrometer.  In the paper's co-added pixels our SRF is 1.01 against its 1.33 design and 1.8 requirement; our CRF 21 µm against its 50.
-- **The spectrometer of record for 3k** stands: 240 mm CaF2, spherical lens face and spherical grating, no meniscus; smile 0.005, keystone 0.006, CRF 1.21, 0.82 of the energy in a pixel; 4.5 L, 14.3 kg; the slit's package clears the block face by 0.54 mm.
+- **SRF is not a miss.**  Slit ⊗ LSF ⊗ pixel ⊗ Airy for a perfect spectrometer is 2.010 px at 380 nm and 2.023 at 2500 nm; the Dyson of record sits 0.0001–0.0015 px above that at every wavelength, alone and behind the telescope.  In the paper's units 36.5 µm against 64.8.  Joe's "1.5–2.0" is met at its floor; 1.5 would need a narrower slit.
+- **The Dyson of record is the paper's Option A:** 240 mm CaF2, an aspheric lens (K 0.043 with h⁴, h⁶) and a spherical grating, no meniscus; smile 0.005, keystone 0.006, CRF 1.21, 0.82 of the energy in a pixel; 4.5 L, 14.3 kg.
+- **Toleranced, 21 rows, alone and through the join:** every large sensitivity is a focus term — lens radius and thickness, the air space, slit and detector defocus, grating radius (the strongest: dR/R 10⁻⁴ costs CRF +1.9 px uncompensated, and a 76 µm detector refocus removes it to 0.006).  One-axis detector focus is the compensator; x/y adds nothing.  Smile is loose (≥ 300 µm or µrad).
 ::: right
-- **Tolerances, first.**  Nothing on either module is toleranced, and the paper chose both its forms for tolerance insensitivity (its spherical-grating option lost on exactly that: smile 0.3 % designed, 3.5 % as built).  Next: a sensitivity ladder on both Dysons — lens and grating decenter, tilt, radius, index (the thermal soak), grating period and clocking, slit and detector position — scored alone and through the join with R9, each with its compensator, summed to a budget against the paper's as-built margins.
-- **Then the paper's form for margin:** an aspheric CaF2 lens with a conic grating (their Option B) on our 3k geometry, nominal and its own ladder — the claim to test is insensitivity, not nominal performance.
-- **Throughput by band:** six crossings uncoated (0.81), a single- and a two-layer AR optimized for 2.0–2.5 µm, the blaze; per band, both modules.
-~ `BRIEF_to_dyson5.md` addendum 49 (in progress).  Energy in a pixel 0.82 alone is the one spectrometer number with room; the paper's Option B is where it would come from.
+- **Keystone sets the tolerances, and no compensator helps** (it is lateral color).  For the paper's as-built keystone (1.03 µm = 0.057 px): lens and grating decenter along the slit 26 µm, grating tilt 35 µrad, clocking 88 µrad; for Joe's 0.1 px: 47 µm, 47 µm, 64 µrad, 162 µrad.  The 1.5k Dyson is twice as sensitive (13 µm).  Linear where it matters (keystone vs decenter 1.10; CRF vs grating radius 1.03).
+- **Thermal:** 1 K of CaF2 index is negligible (CRF +0.001); CaF2's radius and thickness terms cancel (+0.050 / −0.051 px per K); the open terms are the aluminum air space (−0.22 px per K) and the N-BK7 grating radius (+0.14) — focus terms, refocus-compensable, which is the paper's "CRF limits the spectrometer's temperature requirements."
+- **Option B — a conic on the grating (K −0.004) with the lens re-solved:** alone CRF 1.03 (1.21), energy in a pixel 0.99 (0.82), keystone 0.002 (0.006); behind R9: CRF 1.06, energy 0.955, smile 0.012; SRF the floor in both.  Its keystone sensitivities are 6–45 % higher than A's (clocking most): **it buys nominal margin, not alignment insensitivity** — the paper's preference for B on tolerances is not reproduced by alignment alone (its as-built numbers include fabrication and thermal, not modeled here).  Recommended as the spectrometer candidate for its margin.
+~ `REPORT_dyson5_spec.md` (the ladder, 3k and 1.5k, Option B and its ladder); `spectrometer_sens`, gate `tSpectrometerSens`.  The compensator residuals are given for detector focus alone and focus + x/y.  A full every-CTE soak is the next row.  Throughput by band follows.
 
 ## Two of 3k or four of 1.5k, updated | Both modules now image at the pixel end to end; the trade is labor, detectors and integration, not optics or glass — and Jim's and the paper's answer is two
 ::: full
@@ -196,12 +197,12 @@ DRAFT — pending review.
 ## Questions for Jim and Joe | Three the ray trace cannot settle
 - **The entrance beam.**  Joe's 183 mm at f 330 mm is F/1.803, so the telescope's cone along the slit is F/1.89 and cannot be "a little faster than the spectrometer" without a larger beam; the paper's is 192 mm.  Is the aperture Joe's number or the paper's?
 - **The slit and SRF.**  With a 2-pixel slit the SRF floor is 2.01–2.02 px (36 µm) with the pixel and diffraction, where this design sits to 0.03 µm; the paper's bound is 64.8 µm.  Is the 1.5–2.0 px range read against a 2-pixel slit, or does the project want a narrower slit at the throughput's expense?
-- **The spectrometer's form.**  The spherical-faced CaF2 Dyson meets the specification at nominal.  The paper went to an aspheric lens and a conic grating for tolerances; before we build that ladder, what drove it in the build — smile and keystone as built, or energy in a pixel?
+- **The spectrometer's form.**  Our Dyson of record is the paper's Option A and meets the specification; its Option B (the conic grating) buys energy in a pixel 0.82 → 0.99 here but not alignment insensitivity.  What drove B in the build — fabrication, thermal, or the margin?
 ~ Still open from the last round: the detector window's gap (now answered: an order-sorting filter, not bonded) and the AR by band.
 
 ## Next steps | The spectrometer's tolerances and form; the telescope's tolerances and sizing; the record
 ::: left
-- **Spectrometer (in progress):** the sensitivity ladder on both Dysons with compensators, alone and through the join; the aspheric-lens + conic-grating form and its ladder; throughput by band with the blaze.
+- **Spectrometer:** the every-CTE thermal soak row; fabrication terms (figure, the grating's period and groove errors) in the ladder; throughput by band with the blaze; Option B as the candidate, its keystone tolerances (25 µm, 33 µrad) stated beside its margin.
 - **Telescope:** the same ladder on R9 (mirror decenter, tilt, figure; the slit's position), the mirrors sized with baffles, the two modules' lines of sight canted to their strips, as the four-module block was.
 ::: right
 - **The record:** the template `tma_longslit` is general (one parameter file: f, D, F/#, strip, slit, the cone bound, working distance, the seed legs); its default run is this module.  A note to Jim and Joe with this deck, superseding "the 3k module is not there yet."
@@ -263,6 +264,23 @@ matlab
 - **Why R8 said nothing:** its telecentric rows were 0.4 % of the merit.
 ~ `tls_dyson_chief_tilt.m` (wraps the launch; the library untouched), its `.mat`; the template README.
 
+## The tolerance ladder by the numbers | One perturbation at a time on the 3k Dyson of record, scored alone and through the R9 join; the compensator is the detector's focus
+::: full
+| perturbation (unit) | CRF, uncompensated (px) | CRF after detector refocus | keystone (px) | the tolerance for the paper's keystone CBE / for Joe's 0.1 px |
+|---|---|---|---|---|
+| lens decenter along the slit, 10 µm | – | – | 0.0099 | 26 µm / 47 µm |
+| grating decenter along the slit, 10 µm | – | – | 0.0099 | 26 µm / 47 µm |
+| grating tilt about the slit, 10 µrad | – | – | 0.0074 | 35 µrad / 64 µrad |
+| grating clocking, 10 µrad | – | – | 0.0029 | 88 µrad / 162 µrad |
+| grating radius dR/R 10⁻⁴ | +1.93 | +0.006 | – | focus-compensated |
+| lens radius, thickness; air space; slit, detector defocus | focus terms | ≤ 0.006 | – | focus-compensated |
+| CaF2 index, 10⁻⁵ (1 K) | +0.0014 | – | – | negligible |
+| CaF2 radius + thickness per K (CTE) | +0.050 − 0.051 | – | – | cancel |
+| aluminum air space per K; N-BK7 grating radius per K | −0.22; +0.14 | focus terms | – | refocus-compensated |
+- **Keystone is lateral color: no compensator touches it.**  Smile is loose everywhere (≥ 300 µm or µrad).  Linearity at 2×: keystone vs decenter 1.10, CRF vs grating radius 1.03, SRF 2.6 (quadratic, and at the floor).
+- **The 1.5k Dyson** has the same pattern at twice the keystone sensitivity (1.82 × 10⁻³ px per µm: 13 µm for the paper's CBE, 25 µm for Joe).  **Option B** raises the keystone sensitivities 6–45 % (clocking most): 25 µm, 33 µrad, 64 µrad.
+~ `REPORT_dyson5_spec.md`; 21 rows; the paper's Option A as-built keystone 5.7 % of a pixel = 1.03 µm (Table 2).  Compensator residuals for focus alone and focus + x/y are both in the report (x/y adds nothing: the metrics are relative).
+
 ## An engine finding from this round | The api refused an element stop on the secondary of a four-element telescope
 ::: full
 - **`stop_info_set` refused `iElt ≥ nElt−2` and `nElt ≤ 3`** — the original wrapper's range, with no engine reason — so `macos.stop(2)` failed on every M1-M2-M3-FP deck while the prescription keyword `ApStop=` and the CLI's STOP (1..nElt) accepted it.  The template worked around it with one deck per field until the fix.  Now the CLI's range; gate `tStopReload/test_stop_accepts_the_secondary_of_a_four_element_deck`.
@@ -278,6 +296,6 @@ matlab
 | 7, 8 | `dyson5_jim_3a.txt`; `dyson5_t5f_cprime_centroid_roll000.txt`, `_roll180.txt`, `_chief_roll000.txt`; `_e2e.in`, `_maps.png`, `_e2e_viewyz.png` |
 | 9, 10 | `REPORT_dyson5_cprime.md` (R4–R9); `tls_dyson_chief_tilt.mat`; `tls_e2e_both_conventions.mat` |
 | 11 | R9 per-field table (`REPORT_dyson5_cprime.md`) |
-| 12 | `dyson5_jim_3a.txt`; `BRIEF_to_dyson5.md` addendum 49 |
+| 12 | `dyson5_jim_3a.txt`; `REPORT_dyson5_spec.md`; `spectrometer_sens`, `tSpectrometerSens`; `BRIEF_to_dyson5.md` addendum 49 |
 | 13 | `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_block4.txt` |
 ~ All under `MACOS_resources/mmacos/challenges/dyson5/` and `templates/10_telescopes/tma_longslit/`, branch dev-candidate; the reports under `macos/`.  Public: nasa-jpl/macos, nasa-jpl/MACOS_resources.
