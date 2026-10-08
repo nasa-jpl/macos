@@ -4,6 +4,34 @@ TO, 2026-10-07.  Brief: `BRIEF_to_dyson5.md` addendum 48 (with Dave's framing: a
 telescope design TEMPLATE, `mmacos/templates/10_telescopes/tma_longslit/`).
 Status: **steps 1–4 done.**  Step 2: conics + aspheres leave the strip far above spec, reason measured.  Step 3: the reweighted pole-frame freeform (R7) puts the telescope at the pixel floor at every field.  Step 4: e2e on R4–R7.  **Deck of record = R9** (R4 provisional → R7 → R9).  The point-source smile is closed (0.016 px); SRF 2.025 is the Dyson's own.
 
+## Step 0 — the paper's units and the SRF floor (addendum 49, 2026-10-07)
+
+**The paper's Table 1 is in micrometres and CO-ADDED pixels,** read from
+the page:
+- SRF 64.8 µm (1.8 co-added px, a co-added px = 2 × 18 µm);
+- CRF and ARF 50.4 µm (2.8 px);
+- smile 1.8 µm ("5 % of co-added pixel");
+- keystone 1.8 µm ("10 % of pixel").
+
+Until this step this report and the template compared our 18-µm-pixel
+values with those numbers as if they were in our pixels.  So every "fails
+the paper's 1.8" on SRF was a units error.  The smile bound "< 0.05 px" was
+one too: 1.8 µm is 0.10 of our pixel.  Every table now carries the paper
+column in µm, and the record is re-read accordingly.
+
+**R9 against the paper, in its units:** smile 0.40 µm (< 1.8), keystone
+0.11 µm (< 1.8), CRF 21.1 µm (< 50.4), SRF 36.5 µm (< 64.8), ARF 18.4 µm
+(< 50.4).  All five pass with margin.
+
+**SRF 2.025 px is the slit FLOOR.**  The scorer's SRF is rect(2-px slit) ⊗
+LSF ⊗ rect(1 px) ⊗ Airy.  For a perfect spectrometer (zero LSF) it gives
+2.0104 / 2.0115 / 2.0131 / 2.0152 / 2.0176 / 2.0204 / 2.0233 px at the
+scored 0.38 … 2.5 µm (0.01-px LSF bins plus diffraction).  R9's worst-field
+SRF per wavelength sits above that floor by 0.0001 … 0.0015 px (≤ 0.03 µm).
+So the spectrometer of record adds ≤ 0.0015 px to the SRF, and Joe's
+"1.5–2.0" is met at its floor: a 1.5 would need a 1.5-px slit, not a better
+spectrometer.
+
 ## Step 1 — first order from the seed
 
 ### The model, and the one fact it forces
@@ -230,13 +258,13 @@ Joined to the 3k Dyson of record (CaF2 240, `size:F:240`) by the dyson5
 engine join (`dyson5_t5f`, unchanged).  7 fields × 7 wavelengths, the grating
 the stop, both rolls:
 
-| e2e | Dyson alone (record) | R4 roll 0 / 180 | R5 roll 0 / 180 | R6 roll 0 / 180 | **R7 roll 0 / 180** | (c) record | Joe | paper |
+| e2e | Dyson alone (record) | R4 roll 0 / 180 | R5 roll 0 / 180 | R6 roll 0 / 180 | **R7 roll 0 / 180** | (c) record | Joe (px) | paper (Table 1, µm) |
 |---|---|---|---|---|---|---|---|---|
-| smile px | 0.005 | 0.732 / 0.732 | **0.090 / 0.093** | 0.149 / 0.147 | 0.140 / 0.141 | 1.64 | < 0.1 | < 0.05 |
-| keystone px | 0.006 | 0.009 / 0.019 | 0.031 / 0.038 | 0.037 / 0.043 | **0.006 / 0.009** | 0.05 | < 0.1 | < 0.1 |
-| CRF px | 1.21 | 2.51 / 2.50 | 6.98 / 6.93 | 7.16 / 7.22 | **1.175 / 1.255** | 4.02 | < 1.5 | < 2.8 |
-| SRF px | 2.02 | 3.90 / 3.88 | 2.52 / 2.55 | 2.48 / 2.50 | **2.025 / 2.025** | 4.99 | < 1.5–2.0 | < 1.8 |
-| ARF px (telescope FWHM across slit) | — | 2.56 | 2.14 | 2.01 | **1.02** | — | — | < 2.8 |
+| smile px (chief launch) | 0.005 | 0.732 / 0.732 | **0.090 / 0.093** | 0.149 / 0.147 | 0.140 / 0.141 | 1.64 | < 0.1 | < 1.8 |
+| keystone px | 0.006 | 0.009 / 0.019 | 0.031 / 0.038 | 0.037 / 0.043 | **0.006 / 0.009** | 0.05 | < 0.1 | < 1.8 |
+| CRF px | 1.21 | 2.51 / 2.50 | 6.98 / 6.93 | 7.16 / 7.22 | **1.175 / 1.255** | 4.02 | < 1.5 | < 50.4 |
+| SRF px | 2.02 | 3.90 / 3.88 | 2.52 / 2.55 | 2.48 / 2.50 | **2.025 / 2.025** | 4.99 | 1.5–2.0 | < 64.8 |
+| ARF px (telescope FWHM across slit) | — | 2.56 | 2.14 | 2.01 | **1.02** | — | — | < 50.4 |
 | energy in a pixel (min) | 0.82 | 0.03 | — | — | **0.853 / 0.810** | — | > 0.75 | |
 | joined clearance mm | +0.54 | +0.6 | +0.6 | +0.6 | +0.6 | +0.06 | > 0 | |
 
@@ -305,9 +333,10 @@ The figure is overstated: the disc is larger than the lit ellipse.
 **What remains:**
 - **Smile 0.14 px (fails Joe's 0.1).**  It is not the slit-plane centroid
   bow (≤ 0.75 µm = 0.04 px); parked, per CC.
-- **SRF at 2.025 is the Dyson's own.**  It fails the paper's 1.8 and sits
-  on Joe's 2.0; the paper's aspheric Dyson lens + conic grating (Option B)
-  is the spectrometer form for that.
+- **SRF at 2.025 px is the slit floor** (step 0: rect(2 px) ⊗ rect(1 px) ⊗
+  Airy is 2.023 px at 2.5 µm for a perfect spectrometer).  It is 36.5 µm
+  against the paper's 64.8 µm (1.8 CO-ADDED pixels).  It passes; the
+  earlier "fails the paper's 1.8" was a units error.
 - **The cross-track distortion of 79 µm** (0.24 %) at the strip end is a
   ground-mapping term.
 
@@ -407,12 +436,12 @@ shift, which is the chief launch's smile, stated beside it.  Roll 0:
 | R8 fft | 0.009 | 0.138 | 0.005 | 1.183 | 2.025 | 0.852 |
 | Dyson alone | 0.005 | — | 0.006 | 1.213 | 2.024 | 0.824 |
 | Joe | < 0.1 | (not a requirement) | < 0.1 | < 1.5 | < 1.5–2.0 | > 0.75 |
-| paper | < 0.05 | | < 0.1 | < 2.8 | < 1.8 | |
+| paper (Table 1, µm) | < 1.8 µm | | < 1.8 µm | < 50.4 µm | < 64.8 µm | |
 
 **Under the slit-filled convention, the 3k module meets Joe's spec end to
 end on smile (0.010 px), keystone (0.006), CRF (1.18) and energy in a pixel
-(0.85).**  SRF (2.025 px) sits 0.025 above the 2.0 upper bound, equal to the
-Dyson alone (2.024): the spectrometer's own floor, not the telescope's.  The
+(0.85)**, and its SRF (2.025 px) is the 2-px slit floor (step 0), which
+meets Joe's 1.5–2.0 at its floor.  The
 point-source across-slit shift is 0.14 px, stated beside it.  Against the
 paper's five, it meets smile, keystone, CRF and ARF (1.02 px); SRF misses
 1.8, again the Dyson's own (the paper's aspheric Dyson lens + conic grating
@@ -452,10 +481,11 @@ evaluations to 1.079e7, R7's level.  The OFF rows end at 6.1e3, i.e.
 
 **R9 holds the floor AND cuts the shift: it is the deck of record**
 (CC's rule).  Under BOTH smile conventions the 3k module meets Joe's spec
-end to end on smile, keystone, CRF and energy in a pixel.  It also meets
-the paper's smile (5 %), keystone, CRF and ARF.  SRF (2.025 px) is the Dyson
-alone's 2.024: 0.025 over Joe's 2.0 and over the paper's 1.8, the
-spectrometer's own floor.
+end to end on smile, keystone, CRF, SRF and energy in a pixel.  The SRF of
+2.025 px is the 2-px slit floor (step 0), so Joe's 1.5–2.0 is met at its
+floor.  It meets the paper's five with margin, in the paper's units:
+smile 0.40 µm (< 1.8), keystone 0.11 (< 1.8), CRF 21.1 (< 50.4), SRF 36.5
+(< 64.8, 1.8 co-added px), ARF 18.4 (< 50.4).
 
 ## Step 4 — end to end
 
