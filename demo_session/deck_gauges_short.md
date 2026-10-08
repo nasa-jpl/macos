@@ -1,6 +1,6 @@
 <!--
-deck_gauges_short.md — DM Surface Gauge Comparison.  DRAFT — pending Dave's
-sign-off; the builder suppresses the export mark on DRAFT decks.
+deck_gauges_short.md — DM Surface Gauge Comparison.  Final for the 2026-10-08 talk
+(Dave's sign-off 2026-10-08).
 Build: python3 make_brief_slides.py deck_gauges_short.md
 The 40-minute version (Dave, 2026-10-05): 20 main slides in the order he set, every other
 slide of deck_gauges.md in Backup, nothing deleted; assembled by selection from deck_gauges.md
@@ -25,7 +25,7 @@ American English; photons per measurement.
 Four ways to measure a 96×96 deformable mirror's surface to picometers on one optical bench — a phase-shifting interferometer, a Zernike sensor, its polarized version, and a point-diffraction sensor — scored on the same mirror, the same light, and the same three jobs: measure the surface, capture its shape after launch, and hold the surface to <<10 pm in a servo.
 D. C. Redding, with Claude Code.
 October 2026.  For the JPL HWO WFS&C discussion group, 2026-10-08.
-DRAFT — pending review.  Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.
+Every number here comes from a committed run of one shared, parameterized model (MACOS, mmacos); the run tags are on the provenance slide.
 
 ## One optical bench to demo 4 surface gauges, in mirror and lens forms | Comparing accuracy, precision, repeatability and hold, for interferometers, scalar and vector Zernike WF sensors, and a point-diffraction sensor, photon noise driven
 ::: full
@@ -75,18 +75,19 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | where it stands | reads 1.004 / 1.4 pm on a 10 nm change; holds 3 pm from 2.3e13 photons per cycle; captures from 200 nm to 3.1 pm in 60 cycles | reads 0.986 / 2.3 pm; holds 3 pm from 2.0e13; captures from 200 nm in 24 cycles; the pinhole and the calibrated vector pair pass |
 ~ The reference arm (a 103 mm flat on a piezo, 564 mm leg) is the interferometer's; shuttered, the same bench is every other sensor.  Run tags bench_bs22, oapdraw3, redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, capt96_lens, redo96_oapsens; the priced comparison is on the lenses-versus-mirrors slide.
 
-## Parts common to every configuration: the front end | The source, the collimator and the splitter node, from the parameter sheet; the substrates are now decided (10 mm splitter and compensator, 2 mm fused-silica plates under every polarizing element, a 2 mm mask plate, 4 mm lens edges) and go into every deck from here
+## Parts common to every configuration | Source, collimator and splitter node, then focuser, mask seat, field lens and camera, from the parameter sheet; the substrates are decided (10 mm splitter and compensator, 2 mm plates under every polarizing element, a 2 mm mask plate) and go into every deck
 ::: full
 | part | size and figure | coating | count | purpose |
 |---|---|---|---|---|
-| laser, spatially filtered | HeNe 632.8 nm, 1 mW class; the source cone is baffled to 59 mm radius, overfilling the mirror by 11 mm | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
-| collimator: L1 or OAP1 | L1: f 857 mm, 103 mm, plano-convex conic (R 427.3, conic −0.583), 5 mm center.  OAP1: parent f 757 mm (R −1514), 551 mm off-axis, 20° fold, 113 mm | L1 anti-reflection; OAP1 protected aluminum | 1 | collimates onto the mirror |
-| plate splitter | 103 mm, 22.5°, 50/50, 10 mm thick; the glass shifts the transmitted beam 1.39 mm and takes the flat null 0.13 → 20 nm | 50/50 front coating, AR back | 1 | splits to the mirror and the reference arm |
-| compensator plate | 103 mm, matched to the splitter, in the mirror leg | AR | 1 | balances the glass path through the splitter |
-| deformable mirror | 96×96, 1 mm pitch, 96 mm, 700 mm leg | protected aluminum | 1 | the test object; its surface is the measurand |
-| aperture on the mirror | 96 mm, at the actuator footprint | — | 1 | the stop: it defines the pupil, so the baffle never does |
-| mounts, bench | 2 m × 1 m table; 103 mm mounts, 25 mm clearance | — | — | the 22.5° layout clears every part |
-~ The two front ends are alternatives, not additions: a rig is all lenses or all mirrors, and the conjugates are identical either way.  One coating entry still needs a decision — the overcoat on the parabolas is modeled as a half wave of MgF2, and the polarization cost of an overcoat reverses sign across the quarter-wave condition, so a quarter wave AT 632.8 nm is the specification to order if the mirror rig is built.
+| laser, spatially filtered | HeNe 632.8 nm, 1 mW class; the source cone baffled to 59 mm radius, overfilling the mirror by 11 mm | — | 1 | the source; 1e14 photons per measurement is 0.13 s |
+| collimator: L1 or OAP1 | L1 f 857 mm, 103 mm, plano-convex conic (R 427.3, −0.583), 5 mm center; OAP1 parent f 757 mm, 551 mm off-axis, 20° fold, 113 mm | L1 AR; OAP1 protected aluminum | 1 | collimates onto the mirror |
+| plate splitter; compensator | 103 mm, 22.5°, 50/50, 10 mm thick (the glass shifts the transmitted beam 1.39 mm, flat null 0.13 → 20 nm); a matched plate in the mirror leg | 50/50 front, AR back; AR | 1 + 1 | splits to the mirror and the reference arm; balances the glass path |
+| deformable mirror; its aperture | 96 × 96, 1 mm pitch, 96 mm, 700 mm leg; the 96 mm aperture at the actuator footprint | protected aluminum | 1 | the test object; the aperture is the stop, so the baffle never is |
+| focuser: L2 or OAP2 | L2 f 429 mm, 103 mm, plano-convex conic (−0.582), 8 mm center; OAP2 parent f 352 mm, 328 mm off-axis, 25° fold, 113 mm | L2 AR; OAP2 protected aluminum | 1 | the internal focus at F/4.2 where the masks sit |
+| mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
+| field lens | f 43 mm, 21 mm, a conic (−2.11 at the seed station 10.8 mm past the focus, or −7.77 tuned) | AR | 1 | reimages the DM: 9.8 mm across, 38 mm behind it |
+| camera A | sCMOS 2048 × 2048, 6.5 µm binned 4 to 377 px across the image; or 24 µm pixels unbinned (408) | — | 1 | every configuration's pupil image |
+~ Bench: 2 m × 1 m table, 103 mm mounts, 25 mm clearance.  Still to decide: the parabolas' overcoat (order a quarter wave of MgF2 at 632.8 nm: an overcoat's polarization cost reverses sign across the quarter-wave condition) and the field lens's conic (seed station images the mirror flat; tuned reads it 2.3× better; 0.20 µm apart).  Reference-arm and sensor-specific parts: Backup.
 
 ## Interferometer: Twyman-Green, four phase steps | Hybrid form: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
@@ -274,7 +275,7 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 - **Both rigs wrap between 60 and 120 nm of surface** (a base the four-step cannot follow reads λ/2 ÷ √12 = 91 nm rms); the capture range is set by the unwrapping, not by the front end.
 ~ Run tags redo96_lens, redo96_oap, redo96_lensloop, redo96_oaploop, capt96_oap, redo96_oapsens.  The two cells not run (the sensors on the lens rig; the 10 µrad tilt on this bench) are listed on the provenance slide.
 
-## Calibration removes the systematic errors; what it cannot, priced | Every systematic we could model is either absorbed by the response matrix — measured through the sensor itself, one poke per actuator, on the working surface — or shown small; one line per approach
+## Calibration removes the systematic errors; assessment of those it cannot | Every systematic we could model is either absorbed by the response matrix — measured through the sensor itself, one poke per actuator, on the working surface — or shown small; one line per approach
 ::: full
 | approach | term | uncalibrated size | after the response matrix is measured through the sensor on the working surface |
 |---|---|---|---|
@@ -336,16 +337,6 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 | interferometer snapshot form | the small-angle case | its plate systematics re-run at this angle | larger |
 ~ The sensors reproduce their rows at every angle; the interferometer's snapshot form is the one thing the angle changes, through the plate's polarization, and the cube form is built for 45°.  Run tags bs22_dev, bs30_dev; the panels at 7° and 30° are on the backup clearance slide.
 
-## Parts common to every configuration: the detector leg | From the focuser to the camera: focused once and shared by every configuration, so only the mask seat's contents and what follows the field lens change
-::: full
-| part | size and figure | coating | count | purpose |
-|---|---|---|---|---|
-| focuser: L2 or OAP2 | L2: f 429 mm, 103 mm, plano-convex conic (conic −0.582), 8 mm center.  OAP2: parent f 352 mm (R −704), 328 mm off-axis, 25° fold, 113 mm | L2 anti-reflection; OAP2 protected aluminum | 1 | the internal focus at F/4.2 where the masks sit |
-| mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
-| field lens | f 43 mm, 21 mm, a conic: −2.11 at the seed station 10.8 mm past the focus, or −7.77 tuned — over the 2.4 mm of it the beam uses, 0.20 µm apart | AR | 1 | reimages the DM: 9.8 mm across on the 96 mm beam, 38 mm behind it |
-| camera A | sCMOS 2048×2048, 6.5 µm binned 4 to 377 px across the 9.8 mm image; or 24 µm pixels unbinned (408) | — | 1 | every configuration's pupil image |
-~ The field lens's conic is the one part still open: the seed station images the mirror flat, the tuned station reads it 2.3x better, and the two differ by 0.20 µm over the 2.4 mm the beam uses.
-
 ## Parts specific to the interferometer | What the reference arm and the two phase-shift forms add to the common bench
 ::: full
 | form | part | size and figure | coating / material | count | purpose |
@@ -379,14 +370,6 @@ DRAFT — pending review.  Every number here comes from a committed run of one s
 ![Two rows (the flat mirror, the 30 nm rms working surface) by seven stations: the mirror command, the test-arm field at the camera, the reference-arm field, two of the four phase-stepped frames (0 and π/2), the surface recovered from the four-step, and the recovered map minus the engine's own field.  The runner's own figure from the servo run.](/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/redo96_oapstn2/redo96_oapstn2_stations.png){h=3.2}
 - **The residual column is the absolute read against the engine:** 0.00 pm on the flat, 551 pm on the 30 nm surface (1.8 % of the figure, gain 0.987); the differential rows the servo uses read the same surface's changes to 1.8 pm, which is why the matrix is measured on the surface.
 ~ Run tag redo96_oapstn2 (the mirror rig; the DM's full-lattice 30 nm command, seed 7, the same surface in every station figure).  The lens rig's figure (redo96_lensstn2) reads 392 pm at gain 0.993 once the four-step's sign is set by a +50 nm push: the two rigs' polarization inputs ('collimated' on lenses, at the source on mirrors) give opposite fringe directions with the analyzer, so the lens rig's raw map came out as the negative of the surface (the 51 nm residual of the 09-17 figure was 2 x the surface, not a fold); every differential row carries the sign in its matrix and never saw it.  The figure's mask is the test beam's support: the shared mask is taken from the interference frame and includes an annulus where only the wider reference beam arrives, which drew as a flat ring and diluted the rms values of the 09-17 figure (463 pm, 25.8 nm read) by the annulus area.  The eighth column is the hybrid's piezo four-step on the same frames' fields: 0.01 pm, gain 1.0000 on both rigs -- the snapshot's gain is a polarization term and the piezo leg is its calibration.
-
-## The question: must the pupil imaging be simulated, and how? | Is it possible or even necessary to simulate the effect of the pupil imaging geometry on the pupil images of the DM?  Convolve the pupil image with the complex amplitude?  (Dave, 2026-09-16)
-::: full
-- **The right model is coherent imaging:** the field at the camera is the field at the DM convolved with the complex point-spread function of the detector leg; equivalently, the leg's transfer function at a DM spatial frequency is the aperture function at the matching focal-plane position, phase included.  A convolution of the intensity image would be wrong; a convolution of complex amplitudes is the Fourier statement of the same thing.
-- **For the mask sensors it is already in the runner:** the mask sandwich propagates the field to the seat, applies the mask, and propagates back to the pupil image, mask shape and all.
-- **For the interferometer the aperture at the focus is wide** (the field lens, 21 mm at F/4.2: a coherent resolution of 13 µm at the DM against a 1 mm pitch), so the leg's resolution is not the question.  What is: the phase of the transfer function over the actuator band, set by how far each zone's image lies from the camera plane.  That is simulated on the next slide.
-- **When a small field stop sits at the focus** (a spatial filter of a few λ/D), the pupil image is low-pass filtered and actuator responses blur; then one aperture element at the seat through the existing sandwich answers it in one run.
-~ The answer as given on 2026-09-16, before the simulation; the next slide supersedes its "not needed" with numbers.
 
 ## Pupil imaging: the DM's modes through the detector leg | The leg's point-spread function, zone by zone from the rays, applied to the DM's field and read out as the interferometer reads: every mode the DM can make is observable, and the camera sits at the pupil image on both rigs
 ::: left
