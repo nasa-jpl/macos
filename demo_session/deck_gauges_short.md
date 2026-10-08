@@ -42,7 +42,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 - **Steeves et al. (2020, Optica 7, 1267) demonstrate 1.6 pm in 4.3 s on a real interferometer:** ours is photon-limited only (no vibration, thermal drift or detector systematics), the floor this design allows rather than a prediction of the built bench; agreeing within a factor of two says the model is in the right regime.
 - **Accuracy is a gain: systematic and proportional to the figure read.**  Raw, the four-step reads the 30 nm surface 0.7 % low on lenses (392 pm) and 1.3 % low on mirrors (551 pm); through the matrix measured on the surface a 10 nm change reads at gain 1.004 on lenses and 0.986 on mirrors, with floors of 1.4 and 2.3 pm.  The gain is the polarization snapshot's -- the hybrid's piezo four-step reads the same surface at gain 1.0000 against the engine, which is what its absolute-calibration leg is for -- and the matrix measured on the surface carries it; the pupil imaging is the smaller part (0.13 % / 0.29 %).
 - **One disturbance is not photon-limited:** under a 5 pm per cycle thermal ramp — a low-order change of the mirror's figure growing at a steady rate, the model's stand-in for a thermal drift of the DM; nothing in the bench or the sensor is given a temperature — the loop lags at rate ÷ (gain × response), about 10 pm, however many photons it is given: a cadence and thermal-control requirement, not a sensing one.
-~ The table is the interferometer's, the one gauge scored on both front ends; the three sensors, scored on the mirror rig, read within 1 % and 2 pm of it (the side-by-side slide).  Scope: gain / floor rows are single noiseless runs (systematics only); photon rows Monte Carlo, 6–24 realizations per level; servo rows one 60-cycle run per level, rms over the last 30, one drift realization for all.  Raw-map rows: the station figures (backup).
+~ The table is the interferometer's, the one gauge scored on both front ends; the three sensors, scored on the mirror rig, read within 1 % and 2 pm of it (the side-by-side slide).  Scope: gain / floor rows are single noiseless runs (systematics only); photon rows Monte Carlo, 6–24 realizations per level; servo rows one 60-cycle run per level, rms over the last 30, one drift realization for all.
 
 ## The three jobs, and how each is scored | Measure the mirror's surface to picometers; capture its post-launch shape, 100-200 nm of wavefront, into the servo's reach; hold it there in a servo
 ::: left
@@ -87,7 +87,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 | mask seat | translation stage at the internal focus | — | 1 | selects the sensor: clear window, dimple, metasurface, pinhole |
 | field lens | f 43 mm, 21 mm, a conic (−2.11 at the seed station 10.8 mm past the focus, or −7.77 tuned) | AR | 1 | reimages the DM: 9.8 mm across, 38 mm behind it |
 | camera A | sCMOS 2048 × 2048, 6.5 µm binned 4 to 377 px across the image; or 24 µm pixels unbinned (408) | — | 1 | every configuration's pupil image |
-~ Bench: 2 m × 1 m table, 103 mm mounts, 25 mm clearance.  Still to decide: the parabolas' overcoat (order a quarter wave of MgF2 at 632.8 nm: an overcoat's polarization cost reverses sign across the quarter-wave condition) and the field lens's conic (seed station images the mirror flat; tuned reads it 2.3× better; 0.20 µm apart).  Reference-arm and sensor-specific parts: Backup.
+~ Bench: 2 m × 1 m table, 103 mm mounts, 25 mm clearance.  Still to decide before ordering: the OAPs' overcoat thickness (a quarter wave of MgF2 at 632.8 nm, where it cancels rather than doubles the mirror's polarization term) and the field lens's conic (the seed station's, which images the mirror flat).  Reference-arm and sensor-specific parts: Backup.
 
 ## Interferometer: Twyman-Green, four phase steps | Hybrid form: a polarization snapshot for every change measurement, a piezo four-step for the absolute calibration; the reference arm makes it the one gauge that captures a whole wave of figure
 ::: left
@@ -426,7 +426,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 - **What this says:** off null, a self-referenced sensor keeps its gain through recalibration but pays in light (4.5e15 photons is 1.4 mJ, 6 s of a 1 mW laser at 25 % throughput) and its floor rises to 26 pm; the interferometer pays nothing because its reference does not move with the surface.
 ~ All rows on the built bench.  Interferometer: redo96_lensph, redo96_oapph (the re-measured matrix on each surface, 1 nm on 112 sites).  Sensors, mirror rig at 193 px: redo96_senscap_b60/b120/b160 (1 nm on 77 grid sites, matrix re-measured on the surface), redo96_sensnoise and redo96_sensnoise_b60/b120/b160 (photons).  Photons are per measurement, all frames summed, 6 noise realizations per point.
 
-## The reflective front end: the design | Fed at its focus and solved at the 22.5° splitter: every part clears by 33 mm, the focus lands on the mask seat without adjustment, and the residual with a flat mirror is 0.029 nm
+## Reflective front end design | Fed at its focus and solved at the 22.5° splitter: every part clears by 33 mm, the focus lands on the mask seat without adjustment, and the residual with a flat mirror is 0.029 nm
 ::: left
 ![The redesigned reflective interferometer as traced by the engine, from above: the source and input polarizer in the diverging leg, OAP1 (collimator, 20° fold), the splitter at 22.5°, the 96 × 96 mirror on the test leg (blue), the reference flat on its piezo (orange), the output plate and analyzer, OAP2 (focuser, 25° fold) toward the mask seat.](figs/crop_lay96_oap_train.png){h=3.4}
 ::: right
@@ -511,7 +511,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 | 10 | systematics one at a time, uncalibrated and through the matrix; layout drawn from the emitted deck; parts from the sheet; report numbers first | one line per term on the systematics slide |
 ~ The scoring library (the loop, the unwrapper, the arm and analyzer maps, the clearance check) is shared by the three lanes; nothing is copied between them.  The path is recorded as reference memory so the next configuration follows it in a day.
 
-## Improving the pupil image: the options, assessed | The tail geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
+## Improving the pupil image: the options, assessed | The imager (tail) geometry is the whole story: the seed field-lens station images the DM flat; the detector move is second-order once the tail is right; no flattener can fix the tuned bowl; true collimation is worth doing for itself
 ::: full
 | lens rig variant | zone image vs the detector, mm (on axis / mean / edge) | astigmatism | Nyquist gain, as built / worst | with the detector at the image mean | 30 nm surface error | distortion |
 |---|---|---|---|---|---|---|
@@ -562,7 +562,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 ~ Run tags pin20_1024, pin10_2048, pin20_loop, pin10_loop, pfdeck, pfdeck_frz, pdi193se_sh5, pdi193se_ls; layouts psri_layout.png and psri_render.png in pdi_dm96.
 ~ P/SRI parts (9): a 60/40 pickoff plate; two f 300 mm F/2.9 lenses; a 3.7 µm pinhole into a single-mode waveguide with a thermo-optic phase shifter; two 150 mm protected-metal folds; a 50/50 recombiner; camera C (sCMOS).  Its photonic reference is modeled as the recollimated LP01 mode of a single-mode fiber (pickoff fraction, coupling and phase-step miscalibration priced); the waveguide's own loss, dispersion and thermal drift are not yet in these numbers.
 
-## Drift within a measurement | A mirror that drifts during a stepped scan helps the stepped readings; a camera that drifts during the scan hurts them; the simultaneous readings see neither
+## Drift within a measurement | A DM that drifts during a stepped scan helps the stepped readings; a camera that drifts during the scan hurts them; the simultaneous readings see neither
 ::: left
 | hold error at 1e15 photons per cycle | linear | stepped | vector | pinhole | P/SRI |
 |---|---|---|---|---|---|
@@ -632,7 +632,7 @@ Every number here comes from a committed run of one shared, parameterized model 
 | # | paper | what it gives this model |
 | 7 | Steeves, Wallace, Kettenbeil, Jewell 2020, Optica 7, 1267 | 1.6 pm repeatability in 4.3 s by alternating flat and waffle DM shapes and averaging the differences; a reconstruction robust at the highest spatial frequencies |
 | 8 | Wallace, Rao, Jensen-Clem, Serabyn 2011, SPIE 8126 | All-reflective phase-shifting Zernike interferometer: a dynamic, arbitrary core phase shift read in four steps gives phase and amplitude; low sensitivity to vibration, polarization and wavelength |
-| 9 | Moore and Redding 2018, SPIE 10698 | Nonlinear polychromatic physical-optics reconstruction for picometer differential metrology on LUVOIR; the in-house precedent for the iterated nonlinear solve (row 5 on the previous slide; this deck's exact one-frame Zernike reading) |
+| 9 | Moore and Redding 2018, SPIE 10698 | Nonlinear polychromatic physical-optics reconstruction for picometer differential metrology on LUVOIR; the in-house precedent for the iterated nonlinear solve (row 5 on the previous slide; this deck's exact one-frame Zernike reading). |
 | 10 | Keck vector-Zernike segment control 2024 (arXiv 2404.08728); Wallace et al. 2022 (arXiv 2205.02241) | Segment piston by model-based iteration; 11 nm rms piston uncertainty; underestimation 2 to 4× below 50 % Strehl; fabricated shifts 0.30π and 0.68π instead of ±0.5π |
 | 11 | HiCAT mid-order Zernike sensor 2024 (arXiv 2409.03411) | Per-segment piston, tip and tilt by interaction matrix; a minimal step of 125 ± 31 pm at SNR 4; 14-bit DM quantization reads as steps in the response |
 | 12 | Shi et al. 2015, SPIE 9605 (Roman low-order sensor) | A reflective dimple on the focal-plane mask senses Z2 to Z11 from the rejected starlight: the spatially filtered form of the same sensor |
