@@ -2,7 +2,7 @@
 
 TO, 2026-10-07.  Brief: `BRIEF_to_dyson5.md` addendum 48 (with Dave's framing: a
 telescope design TEMPLATE, `mmacos/templates/10_telescopes/tma_longslit/`).
-Status: **steps 1–4 done.**  Step 2: conics + aspheres leave the strip far above spec, reason measured.  Step 3: the reweighted pole-frame freeform (R7) puts the telescope at the pixel floor at every field.  Step 4: e2e on R4–R7.  **Deck of record = R7** (was provisionally R4).  Open: smile 0.14 px.
+Status: **steps 1–4 done.**  Step 2: conics + aspheres leave the strip far above spec, reason measured.  Step 3: the reweighted pole-frame freeform (R7) puts the telescope at the pixel floor at every field.  Step 4: e2e on R4–R7.  **Deck of record = R9** (R4 provisional → R7 → R9).  The point-source smile is closed (0.016 px); SRF 2.025 is the Dyson's own.
 
 ## Step 1 — first order from the seed
 
@@ -418,11 +418,49 @@ paper's five, it meets smile, keystone, CRF and ARF (1.02 px); SRF misses
 1.8, again the Dyson's own (the paper's aspheric Dyson lens + conic grating
 is the form for that).
 
+### R9 (`ffo`): the offset rung — the deck of record
+
+**The rung.**  From R7, all of R7's weights kept, plus the OFF rows:
+(chief − centroid) across the slit vs the centre field.  The weight is
+×1000, not ×30: at ×30 these rows added 7e3 to a 1.08e7 merit, R8's lesson,
+so that start was stopped.  At ×1000, R7's 2.4 µm edge offset costs ~8.5e6
+(seed 1.92e7).  The solve converged (exitflag 4) in 12 iterations / 507
+evaluations to 1.079e7, R7's level.  The OFF rows end at 6.1e3, i.e.
+~0.1 µm.
+
+**Telescope.**
+- FWHM 1.02 × 1.02 px, EiP 1.00 at every field, rms 1.5–2.5 µm.
+- Cone F/1.889–1.894 by 1.796–1.806, no ray below F/1.7.
+- Chief components at the edge: −0.265 mrad along the slit, −0.510 mrad
+  across it.
+- M2 131.7 × 165.9 mm, clearance +12.1 mm.
+- Chief bow 1.95 µm and centroid bow 1.98 µm at the edge, so the offset is
+  **0.03 µm** (R7 2.43).
+
+**E2E, roll 0 / 180:**
+
+| | R9 |
+|---|---|
+| smile (slit-filled) | 0.022 / 0.024 px |
+| point-source across-slit shift | **0.016 / 0.018** (R7 0.140) |
+| keystone | 0.006 / 0.009 |
+| CRF | 1.174 / 1.262 |
+| SRF | 2.025 / 2.025 |
+| EiP | 0.849 / 0.805 |
+| grating admits | 0.989 / 0.990 |
+| joined clearance | +0.6 mm |
+
+**R9 holds the floor AND cuts the shift: it is the deck of record**
+(CC's rule).  Under BOTH smile conventions the 3k module meets Joe's spec
+end to end on smile, keystone, CRF and energy in a pixel.  It also meets
+the paper's smile (5 %), keystone, CRF and ARF.  SRF (2.025 px) is the Dyson
+alone's 2.024: 0.025 over Joe's 2.0 and over the paper's 1.8, the
+spectrometer's own floor.
+
 ## Step 4 — end to end
 
-On R4–R7 above.  **Deck of record: R7** (`challenges/dyson5/dyson5_cprime_3k.in`,
-e2e decks `dyson5_t5f_cprime_roll{000,180}_e2e.in`; R4 was provisional until
-R7 reported).
+On R4–R9 above.  **Deck of record: R9** (`challenges/dyson5/dyson5_cprime_3k.in`,
+e2e decks `dyson5_t5f_cprime_{centroid,chief}_roll{000,180}_e2e.in`).
 
 ## What the seed bought over the (c) section
 
@@ -448,5 +486,5 @@ The result:
 - M2 132 × 166 mm;
 - e2e CRF 1.18, SRF 2.03, keystone 0.006 px.
 
-CRF and SRF are the Dyson's own floors.  Smile, 0.14 px, is the one
-requirement still open.
+CRF and SRF are the Dyson's own floors.  With the OFF rows (R9), smile is
+closed too: 0.022 px slit-filled, 0.016 px point-source.
