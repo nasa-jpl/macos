@@ -638,19 +638,19 @@ Every number here comes from a committed run of one shared, parameterized model 
 | 12 | Shi et al. 2015, SPIE 9605 (Roman low-order sensor) | A reflective dimple on the focal-plane mask senses Z2 to Z11 from the rejected starlight: the spatially filtered form of the same sensor |
 ~ Also read: PIAA-ZWFS (2026, arXiv 2606.28136), lossless pupil apodization that closes the gap to the fundamental sensitivity limit by 10× — a design lever, not a model change.
 
-## The path per configuration | The runner stages and knobs each approach went through, in the order they ran
+## How each gauge was modeled, step by step | What was built, checked, calibrated and measured for each approach, in the order it was done
 ::: full
-| step | interferometer (tg96_run) | Zernike, scalar and vector (zwfs_run) | point-diffraction (pdi_run over zwfs_run) |
+| step | interferometer | Zernike sensors, scalar and vector | point-diffraction sensor |
 |---|---|---|---|
-| build + gates | stage A clearance, A2 sampling, B build both arms; the detector leg's focus from tg96_tail; the wrapped phase difference | bench: the symmetric mask sandwich (the S7 correction), the mask gauge factory, gates G1 to G4, G8, G9, the mask figure | the pinhole gauge in the same seat; G5 (pinhole at full transmission equals the stepped Zernike); the P/SRI's two decks, G6, G7 |
-| calibration + rows | stage deck: matrix on the 30 nm surface; single, 52-site grid, dense | battery: matrix on the surface (record mode, stencil fix); the same three rows; readings L, I, I+, S, V | battery through the shared runner; readings P (five-frame scan, shutter frame), PF (traced reference) |
-| capture range | aging 30 to 480 nm; re-measured to 160; photons | the ladder with the capture-range print; base_rms rungs; noise stage per rung | the same knobs; the shutter frame's 480 nm |
-| photons | S5 form and the loop's noise fit | noise stage: N(1 pm) flat and on-surface | noise stage; 2.0 vs 1.0 λF/D |
-| loop | shared loop; PZT step error; camera and DM within-scan walks | shared loop: noise, walk, ramp, step; camera drift forms | shared loop; within-scan drift; reference-arm walk |
-| descent | unwrap alone: 60 to 300 nm starts | the start ladder: self-referenced readings blind past 60 nm | unwrap + recalibration: 100 nm with the shutter frame |
-| systematics | the three phase-shift forms; coatings; alignment (D4); OAP seat trim | V2 metasurface, V3 arm maps, V4 analyzer, V5 clear frame; color; sampling | step schemes; camera drift; reference motion and walk; pinhole diameter |
-| layout + parts | the view_rx recipe: train, node, detector leg | zwfs_vlayout: both channel decks; the bench clearance tool | pdi_vfig_util: pinhole and P/SRI layouts |
-~ Directories tg_psi_dm96_oap, zwfs_dm96, pdi_dm96 and the shared dm_gauge_lib under MACOS_resources/mmacos/templates/40_benches; each README's "run it yourself" reproduces its column.
+| model, checked | the layout solved for clearance and sampling; both arms built and traced; the detector leg focused; the phase difference wrapped, never two absolute maps subtracted | the mask at the internal focus inside a pair of reference spheres (the correction that made the model exact); checks: the mask round-trips the field, the modeled reference wave equals the engine's, the flat mirror reads zero | the pinhole in the same seat; a check that at full transmission it reproduces the stepped Zernike reading exactly; the P/SRI's reference arm traced as its own prescription |
+| calibration, three readings | the response matrix measured on the 30 nm surface; one actuator, a 52-site grid, a dense random pattern | the same matrix and the same three measurements, for the one-frame, stepped and vector readings | the same, for the stepped pinhole (five-frame scan plus shutter frame) and the P/SRI |
+| capture range | the calibration left as made at 30 nm while the surface grows to 480 nm; re-measured to 160 nm; photons at each | the same ladder, with the photon cost at each rung | the same; the shutter frame carries it to 480 nm |
+| photons | photons for 1 pm from a noise fit, and in the servo | photons for 1 pm on the flat and on the surface | the same; pinhole 2.0 against 1.0 λF/D |
+| servo | the shared 60-cycle loop under noise, a random walk, a thermal ramp, a step; the piezo's step error; camera and mirror drift within a scan | the same loop; camera drift in its forms | the same loop; drift within a scan; the reference arm's own motion |
+| large-figure capture | unwrapping alone, from 60 to 300 nm starts | the self-referenced readings tried from each start: blind past 60 nm | unwrapping with recalibration: 100 nm with the shutter frame |
+| systematics | the three phase-shift forms; coatings; alignment; the parabolas' seating | metasurface retardance, the arm's polarization, the analyzer, the clear frame; color; sampling | step schemes; camera drift; reference motion; pinhole diameter |
+| layout, parts | the engine's own renders: train, splitter node, detector leg | both camera channels traced; the bench clearance check | pinhole and P/SRI layouts |
+~ Tools: tg96_run, zwfs_run, pdi_run over zwfs_run and the shared dm_gauge_lib (MACOS_resources/mmacos/templates/40_benches); each README's "run it yourself" reproduces its column.
 
 ## Provenance | Every number in this deck has a run tag in a committed run directory of the shared model; the three lane reports carry the full tables
 ::: full
