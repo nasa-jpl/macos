@@ -31,11 +31,12 @@ DRAFT — pending review.
 - **12** Smile is a convention: the launch, not the optics
 - **13** The cone, the spec and the paper's beam
 - **14** The spectrometer: toleranced, and a conic grating for margin
-- **15** Two of 3k or four of 1.5k, updated
-- **16** Questions for Jim and Joe
-- **17** Next steps
-- **18** Run it yourself
-- **19** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
+- **15** Throughput by band, and the blaze
+- **16** Two of 3k or four of 1.5k, updated
+- **17** Questions for Jim and Joe
+- **18** Next steps
+- **19** Run it yourself
+- **20** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
 
 ## The target and how it is scored | Joe's specification at Jim's ground sample; the metrics stated once, with the paper's bounds in the same units
 ::: left
@@ -193,7 +194,22 @@ DRAFT — pending review.
 - **Keystone sets the tolerances, and no compensator helps** (it is lateral color).  For the paper's as-built keystone (1.03 µm = 0.057 px): lens and grating decenter along the slit 26 µm, grating tilt 35 µrad, clocking 88 µrad; for Joe's 0.1 px: 47 µm, 47 µm, 64 µrad, 162 µrad.  The 1.5k Dyson is twice as sensitive (13 µm).  Linear where it matters (keystone vs decenter 1.10; CRF vs grating radius 1.03).
 - **Thermal:** 1 K of CaF2 index is negligible (CRF +0.001); CaF2's radius and thickness terms cancel (+0.050 / −0.051 px per K); the open terms are the aluminum air space (−0.22 px per K) and the N-BK7 grating radius (+0.14) — focus terms, refocus-compensable, which is the paper's "CRF limits the spectrometer's temperature requirements."
 - **Option B — a conic on the grating (K −0.004) with the lens re-solved:** alone CRF 1.03 (1.21), energy in a pixel 0.99 (0.82), keystone 0.002 (0.006); behind R9: CRF 1.06, energy 0.955, smile 0.012; SRF the floor in both.  Its keystone sensitivities are 6–45 % higher than A's (clocking most): **it buys nominal margin, not alignment insensitivity** — the paper's preference for B on tolerances is not reproduced by alignment alone (its as-built numbers include fabrication and thermal, not modeled here).  Recommended as the spectrometer candidate for its margin.
-~ `REPORT_dyson5_spec.md` (the ladder, 3k and 1.5k, Option B and its ladder); `spectrometer_sens`, gate `tSpectrometerSens`.  The compensator residuals are given for detector focus alone and focus + x/y.  A full every-CTE soak is the next row.  Throughput by band follows.
+~ `REPORT_dyson5_spec.md` (the ladder, 3k and 1.5k, Option B and its ladder); `spectrometer_sens`, gate `tSpectrometerSens`.  The compensator residuals are given for detector focus alone and focus + x/y.  A full every-CTE soak is the next row.  Throughput by band: next slide.
+
+## Throughput by band, and the blaze | Six air-glass crossings pass 0.82 uncoated in every band; a single quarter-wave MgF2 centered at 2.2 µm lifts the long band to 0.87 and costs nothing elsewhere, where a two-layer tuned to 1 µm trades the band ends for the middle; the grating's blaze is the lever that moves photons to the long end
+::: full
+| module, coating on all six crossings | 380–700 nm | 700–1300 nm | 1300–2500 nm | 380–2500 mean |
+|---|---|---|---|---|
+| 3k CaF2, uncoated | 0.817 | 0.822 | 0.827 | 0.822 |
+| 3k CaF2, MgF2 quarter wave at 2.2 µm | 0.852 | 0.844 | **0.869** | 0.855 |
+| 3k CaF2, MgF2 / Al₂O₃ quarter-quarter at 2.2 µm | 0.797 | 0.801 | **0.880** | 0.826 |
+| 3k CaF2, MgF2 / Al₂O₃ quarter-quarter at 1.0 µm | 0.749 | **0.920** | 0.736 | 0.802 |
+| 1.5k silica, uncoated / MgF2 at 2.2 µm | 0.807 / 0.851 | 0.814 / 0.840 | 0.821 / 0.872 | 0.814 / 0.854 |
+| grating, scalar blaze at 1.0 / 1.4 / 1.8 µm | 0.14 / 0.02 / 0.01 | 0.89 / 0.53 / 0.17 | 0.48 / 0.78 / 0.89 | – |
+- **The crossings:** the slit face in, the block's convex face out to the grating's air gap and back in, the exit face — four on the block — and two on the detector's order-sorting filter, which sits in air (Jim: it cannot be bonded to CaF2).  Each entry is the mean over the band of the product of the six transmittances, the block's index from its Sellmeier equation at every wavelength.
+- **Where to spend the coating:** on a 1.43–1.45 substrate a single MgF2 layer is never a good match, but centered at 2.2 µm it helps most where the photons are scarcest (+0.04–0.05 in the long band) and still helps at the short end; the two-layer tuned to 1 µm is the better coating in the middle of the band (0.92) and the worse one at both ends.  Jim's rule, in numbers.
+- **The blaze does the real work at the long end:** a 1.8 µm blaze puts 0.89 of first-order efficiency in the long band against 0.48 for a 1 µm blaze, at the price of the short band, where the photons are plentiful.  The scalar estimate says where the light goes, not the absolute efficiency; a vector grating calculation is the next step there.
+~ Record `dyson5_throughput_band.txt` (`dyson5_throughput_band.m`; `macos.design.thinfilm_rt`, Abeles, normal incidence; MgF2 1.384 and Al₂O₃ 1.63 at their 1 µm indices).  Not included: detector quantum efficiency, the slit's diffraction loss (0.3–1.8 %), mirror reflectivities.  The record's route 2 (`dyson5_jim_3b.txt`) is the 1.0 µm two-layer row.
 
 ## Two of 3k or four of 1.5k, updated | Both modules now image at the pixel end to end; the trade is labor, detectors and integration, not optics or glass — and Jim's and the paper's answer is two
 ::: full
@@ -201,9 +217,9 @@ DRAFT — pending review.
 |---|---|---|
 | block radius = thickness | 240 mm | 130 mm |
 | spectrometer alone: smile / keystone / CRF / SRF / energy in a pixel | 0.005 / 0.006 / 1.21 / 2.02 px / 0.82 | 0.007 / 0.009 / 1.03 / 2.02 px / 1.00 |
-| telescope | freeform three-mirror of the SBG form (R9): 1.02 px at every field | three off-axis aspheres: 0.4 px center, 0.8 px at the strip ends |
-| end to end: smile / keystone / CRF / SRF | 0.02 / 0.006 / 1.17 / 2.025 px | 0.50 / 0.01 / 1.22 / 2.20 px |
-| end to end: energy in one pixel | 0.85 over the strip | 0.30–0.89 (0.8 over the central third) |
+| telescope | freeform three-mirror of the SBG form (R9): 1.02 px at every field | three off-axis aspheres: 0.4 px center, 0.8 px at the strip ends (the template's 1.5k run is in progress) |
+| end to end: smile (slit-filled / point-source) / keystone / CRF / SRF | 0.02 / 0.02 / 0.006 / 1.17 / 2.025 px | 0.08 / 0.50 / 0.01 / 1.26 / 2.21 px |
+| end to end: energy in one pixel, worst field | 0.85 | 0.30–0.39 (0.8 over the central third) |
 | light admitted by the grating | 98.9 % per field | 99 % per field |
 | clearance, worst pair | +0.6 mm (slit package vs block face) | +0.38 mm (detector package vs block face) |
 | glass for 6000 pixels | 9.0 L, 28.5 kg CaF2 (12.4 L single crystal to carve) | 3.0 L, 6.6 kg fused silica |
@@ -211,7 +227,7 @@ DRAFT — pending review.
 | telescopes / spectrometers / detectors | 2 / 2 / 2 × (3072 × 512, a standard format) | 4 / 4 / 4 × (1.5k × 0.5k, NRE) |
 | integration, test, calibration | two of each | four of each (Jim: the cost that dominates) |
 | materials | "a tiny fraction of the instrument cost" (Jim) | the same |
-~ Records `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_t5f_cprime_centroid_roll000.txt`.  The four-module block (0.97 × 0.41 × 0.76 m, 14.6 kg of optics) of the last deck stands as the fallback.  The air gap at the window stands on both (six crossings, 0.81 uncoated).
+~ Records `dyson5_jim_3a.txt`, `dyson5_t5f_cprime_centroid_roll000.txt`, `dyson5_rescore_1k5_launch.txt` (the 1.5k module of record under both launches, 2026-10-08: its slit-filled smile is the older telescope's own 0.08 px, inside Joe's 0.1; its SRF 2.21 and energy 0.30–0.39 are the telescope's spots).  The four-module block (0.97 × 0.41 × 0.76 m, 14.6 kg of optics) of the last deck stands as the fallback.  The air gap at the window stands on both (six crossings, 0.81 uncoated).
 
 ## Questions for Jim and Joe | Three the ray trace cannot settle
 - **The entrance beam.**  Joe's 183 mm at f 330 mm is F/1.803, so the telescope's cone along the slit is F/1.89 and cannot be "a little faster than the spectrometer" without a larger beam; the paper's is 192 mm.  Is the aperture Joe's number or the paper's?
@@ -221,7 +237,7 @@ DRAFT — pending review.
 
 ## Next steps | The spectrometer's tolerances and form; the telescope's tolerances and sizing; the record
 ::: left
-- **Spectrometer:** the every-CTE thermal soak row; fabrication terms (figure, the grating's period and groove errors) in the ladder; throughput by band with the blaze; Option B as the candidate, its keystone tolerances (25 µm, 33 µrad) stated beside its margin.
+- **Spectrometer:** the every-CTE thermal soak row; fabrication terms (figure, the grating's period and groove errors) in the ladder; a vector grating efficiency to replace the scalar blaze; Option B as the candidate, its keystone tolerances (25 µm, 33 µrad) stated beside its margin.
 - **Telescope:** the same ladder on R9 (mirror decenter, tilt, figure; the slit's position), the mirrors sized with baffles, the two modules' lines of sight canted to their strips, as the four-module block was.
 ::: right
 - **The record:** the template `tma_longslit` is general (one parameter file: f, D, F/#, strip, slit, the cone bound, working distance, the seed legs); its default run is this module.  A note to Jim and Joe with this deck, superseding "the 3k module is not there yet."
@@ -317,5 +333,6 @@ matlab
 | 11, 12 | `REPORT_dyson5_cprime.md` (R4–R9); `tls_dyson_chief_tilt.mat`; `tls_e2e_both_conventions.mat` |
 | 13 | R9 per-field table (`REPORT_dyson5_cprime.md`) |
 | 14 | `dyson5_jim_3a.txt`; `REPORT_dyson5_spec.md`; `spectrometer_sens`, `tSpectrometerSens`; `BRIEF_to_dyson5.md` addendum 49 |
-| 15 | `dyson5_jim_3a.txt`, `dyson5_t5f_GM_1k5_bAs_ap.txt`, `dyson5_block4.txt`, `dyson5_block2_3k.txt` |
+| 15 | `dyson5_throughput_band.txt` (tool `dyson5_throughput_band.m`); `dyson5_jim_3b.txt` route 2 |
+| 16 | `dyson5_jim_3a.txt`, `dyson5_rescore_1k5_launch.txt`, `dyson5_block4.txt`, `dyson5_block2_3k.txt` |
 ~ All under `MACOS_resources/mmacos/challenges/dyson5/` and `templates/10_telescopes/tma_longslit/`, branch dev-candidate; the reports under `macos/`.  Public: nasa-jpl/macos, nasa-jpl/MACOS_resources.
