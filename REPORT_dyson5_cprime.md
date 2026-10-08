@@ -388,6 +388,36 @@ slit line.  For an extended scene filling the slit, the chief's landing
 does not set where the light sits in the slit, and the smile would be the
 Dyson's own.  Which one the requirement means is for CC/Dave.
 
+### Both conventions, every rung (CC's working ruling: smile is SLIT-FILLED)
+
+`dyson5_t5f` gained `P.tel5f_launch`.  `'chief'`, the default and the
+record, lands each field's chief on the slit line; `'centroid'` lands the
+bundle centroid there, the slit-filled proxy.  `tma_longslit_run('e2e')`
+now runs both.
+
+Every metric below is from the centroid launch except the point-source
+shift, which is the chief launch's smile, stated beside it.  Roll 0:
+
+| rung | smile (slit-filled) | point-source across-slit shift | keystone | CRF | SRF | EiP |
+|---|---|---|---|---|---|---|
+| R4 ff34 | 0.088 | 0.732 | 0.008 | 2.522 | 3.849 | 0.024 |
+| R5 ff | 0.010 | 0.090 | 0.031 | 6.972 | 2.516 | 0.044 |
+| R6 ff2 | 0.026 | 0.149 | 0.037 | 7.174 | 2.475 | 0.042 |
+| **R7 ffw** | **0.010** | 0.140 | **0.006** | **1.176** | **2.025** | **0.853** |
+| R8 fft | 0.009 | 0.138 | 0.005 | 1.183 | 2.025 | 0.852 |
+| Dyson alone | 0.005 | — | 0.006 | 1.213 | 2.024 | 0.824 |
+| Joe | < 0.1 | (not a requirement) | < 0.1 | < 1.5 | < 1.5–2.0 | > 0.75 |
+| paper | < 0.05 | | < 0.1 | < 2.8 | < 1.8 | |
+
+**Under the slit-filled convention, the 3k module meets Joe's spec end to
+end on smile (0.010 px), keystone (0.006), CRF (1.18) and energy in a pixel
+(0.85).**  SRF (2.025 px) sits 0.025 above the 2.0 upper bound, equal to the
+Dyson alone (2.024): the spectrometer's own floor, not the telescope's.  The
+point-source across-slit shift is 0.14 px, stated beside it.  Against the
+paper's five, it meets smile, keystone, CRF and ARF (1.02 px); SRF misses
+1.8, again the Dyson's own (the paper's aspheric Dyson lens + conic grating
+is the form for that).
+
 ## Step 4 — end to end
 
 On R4–R7 above.  **Deck of record: R7** (`challenges/dyson5/dyson5_cprime_3k.in`,
