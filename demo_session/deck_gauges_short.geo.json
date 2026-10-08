@@ -519,5 +519,12 @@
    "y": 6.0,
    "w": 5.9
   }
+ },
+ "How each gauge was modeled, step by step": {
+  "txt:Tools:": {
+   "x": 0.45,
+   "y": 7.12,
+   "w": 12.45
+  }
  }
 }
