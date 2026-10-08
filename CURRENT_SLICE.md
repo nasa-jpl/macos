@@ -24,6 +24,24 @@
 
 ## Active slice
 
+> **2026-10-08 RESUME POINT (CC; context exhausted).  READ `PLAN_CONSOLIDATION.md` FIRST -- it is the
+> active plan (Dave 2026-10-08: close PLAN section-0 items, build the CLI test suite, finish the manual
+> and cmdref, build in nothing new; four phases from 10-09; five rulings for Dave in its section 4).
+> PUSHED this morning: macos ..b69c974, resources ..2808406.  LOCAL since: macos b3c81d1 (the plan),
+> 2de4dbb (3k deck comparison); resources: TO's 1.5k template run (R5 ffc, `dyson5_cprime_1k5.in`;
+> both modules now meet Joe e2e under both launches, SRF = the slit floor 2.024; the four-module block
+> 494 L / 21.4 kg vs the three-asphere record's 300 L / 14.6 kg -- Dave's trade) committing locally.
+> DONE 10-08: gauges short deck FINAL for the 4 pm talk (Dave's sign-off, DRAFT off, export mark on;
+> his edits folded each time); the 3k deck complete (26 slides: pair of modules, strips, throughput by
+> band, tolerance ladder, Option B, the 1.5k row); addendum 49 (spectrometer) landed by TO: the record
+> is the paper's Option A, Option B buys margin not insensitivity, keystone sets 26 um / 35 urad;
+> throughput stage `dyson5_throughput_band`.  OPEN: Dave's rulings in PLAN_CONSOLIDATION section 4;
+> the follow-up note to Jim & Joe (both modules at the pixel now); the gauge runner's ctx.msk
+> (PLAN_CONSOLIDATION 1.4); Luis's dwdz answer.  RULES today: the join's metric convention must be
+> stated before its number is read; a row set below 1 % of the merit is not a test; a shared mask from
+> an interference frame is the wider beam's; a units comparison to a paper states the paper's pixel.**
+
+
 > **2026-10-07 EOD RESUME POINT (CC).  LOCAL, NOT PUSHED: macos ad935a8..HEAD (23 commits),
 > resources 199342c..11daa83 (11), dev-candidate both -- push on Dave's word.  DONE TODAY: (1) Jim's
 > round-2 answers + the SBG VSWIR paper on the record (BRIEF_to_dyson5 addenda 47-48); the 3k telescope
