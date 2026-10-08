@@ -2070,3 +2070,74 @@ on what the seed bought over the (c) section (CRF 4.02, F/1.19, M2
 126 mrad).  Numbers from the engine's own scorers, never the chain's
 estimate.  Do not touch the 1.5k deck of record or the sent deck
 `deck_dyson_record.pptx`.
+
+## Addendum 49 (2026-10-07, CC for TO, Dave's order): the SPECTROMETER -- units, a tolerance ladder, and Option B
+
+**Standing.**  Same session or fresh (Opus 5.5).  Read: addenda 47-48, `REPORT_dyson5_cprime.md`,
+the `tma_longslit` README, `design/src/spectrometer_score.m` (header: the SRF / CRF definitions),
+`challenges/dyson5/dyson5_params.m`.  Rules as addendum 48 (`ps -C MATLAB`; no mex relink; fast
+suite before commit; American spellings; commit by path on resources `dev-candidate`; push on
+Dave's word).  Report: a new section set in `REPORT_dyson5_cprime.md` or `REPORT_dyson5_spec.md`.
+
+**Where the record stands (R9, both modules at spec).**  The 3k module: smile 0.022 (slit-filled)
+/ 0.016 (point-source shift), keystone 0.006, CRF 1.17, SRF 2.025, EiP 0.85, admits 0.989.
+The spectrometer of record alone (CaF2 240, spherical lens, spherical grating): smile 0.005,
+keystone 0.006, CRF 1.21, SRF 2.024, EE 0.82.
+
+**Step 0 -- the units of the paper comparison (one hour, before anything else).**  The report,
+README and `tTmaLongslit` compare our SRF / CRF in 18 um pixels with the paper's bounds in its
+units, and the paper's SRF is in CO-ADDED pixels (2 x 18 = 36 um; Table 1: "SRF 64.8 um (1.8
+co-added pixels)", design 1.33 = 48 um) while its CRF 2.8 px is 50.4 um.  Ours: SRF 2.025 x 18
+= 36.5 um = 1.01 co-added px; CRF 1.17 px = 21 um.  So every "fail (1.8)" is a units error; we
+pass the paper's SRF with margin.  And SRF 2.025 is the SLIT FLOOR: the scorer's SRF is
+rect(2-px slit) (x) LSF (x) rect(1 px) (x) Airy, which is 2.000 px for a perfect spectrometer;
+the Dyson adds 0.025 px = 0.45 um.  Joe's "1.5-2.0" is met at its floor; 1.5 is a 1.5-px slit,
+not a better spectrometer.  Fix: the paper column in every table in MICROMETRES beside the
+pixels, the paper's bounds converted (SRF 64.8 um, CRF 50.4 um, smile 1.8 um, keystone 1.8 um),
+the README's convention paragraph extended by two sentences (co-added pixels; the slit floor),
+`tTmaLongslit`'s paper assertions re-pinned in um with the mechanism in the comment.  Message
+CC when done -- the deck is being written from these tables.
+
+**Step 1 -- the tolerance ladder, Dyson of record (the real spectrometer work).**  Nothing on
+either module has been toleranced; the paper chose its forms (aspheric lens + conic grating;
+freeform TMA) for tolerance INSENSITIVITY, not nominal performance, and its Table 2 shows the
+spherical-grating option losing on exactly that (Option A: smile 0.3 % -> 3.5 % CBE).  Build
+`spectrometer_sens` (design/src or the dyson5 challenge, with a shim either way): for the 3k
+Dyson of record, one perturbation at a time, scored by `spectrometer_score` (spectrometer alone)
+AND through the e2e join with R9 (`dyson5_t5f`, centroid launch, roll 0):
+- lens: decenter x/y 10 um, tilt 10 urad, radius dR/R 1e-4, index dn 1e-5 (CaF2 dn/dT ~ 1e-5/K:
+  so this is also 1 K), thickness 10 um;
+- grating: decenter 10 um, tilt 10 urad, radius dR/R 1e-4, period d(1/d)/(1/d) 1e-5, clocking 10 urad;
+- slit: decenter 10 um along and across, defocus 10 um; detector: defocus 10 um, tilt 10 urad;
+- block-to-grating air gap (the record has one): 10 um.
+Output per perturbation: d(smile, keystone, CRF, SRF, EE) in px and in um per unit perturbation,
+LINEAR (check linearity at 2x on two of them), and the compensator question answered per row:
+which of {detector focus, detector x/y, slit position} removes it, and the residual after that
+compensator.  Then the RSS to a budget: allocate the paper's CBE margins (Table 2: smile 3.5 %,
+keystone 5.8 %, SRF 1.51, CRF 2.04 co-added) as the targets and state what each tolerance must be
+to hold Joe's smile/keystone 0.1 px with the compensators.  One table per module: 3k; then the
+same ladder on the 1.5k Dyson of record (silica 130).  Thermal: the lens index row IS the soak
+(dn/dT), the block radius row scaled by CTE is the gradient-free soak -- state both in K.
+
+**Step 2 -- Option B nominal, for margin (one day, after step 1's table).**  The paper's form:
+aspheric CaF2 Dyson lens + CONIC grating (their final design), on our 3k geometry.  The chain and
+the engine already carry conics and `AsphCoef=`: add `Kc` on the grating and h^4/h^6 on the
+lens's convex face to the Dyson solve (`spectrometer_rx` / the s2 stage's DOFs), re-solve from
+the record, score alone and e2e with R9.  Deliverable: the record row vs Option B on the five
+metrics in um, the tolerance ladder of step 1 repeated on Option B (the paper's claim is less
+sensitivity, not better nominal -- test THAT), and the clearance (the lens asphere's sag at the
+block face; the +0.54 mm slit pinch).  If Option B buys nothing at nominal and nothing in
+sensitivity, say so and keep the spherical record.
+
+**Step 3 -- throughput by band (a table; CC may take it).**  Jim: photon-starved at 2.0-2.5 um,
+the grating blaze tailored, the AR to help where the photons are.  Per band (380-700, 700-1300,
+1300-2500 nm): the six air-glass crossings uncoated (Fresnel at the CaF2 / silica indices),
+with a single-layer MgF2 AR optimized at 2.2 um, and with a two-layer; the grating's scalar
+blaze efficiency for a blaze at 1.8 um; the detector window as an order-sorting filter (its
+own two crossings).  No solve.  One table, both modules.
+
+**Deliverables.**  The units fix (step 0) first and reported.  `spectrometer_sens` in the tree
+with a test (`tSpectrometerSens`, SUITE_FAST on the 1.5k deck at model 256: linearity, the
+compensator residual, a must-fail leg -- an unperturbed deck gives zero rows).  The sensitivity
+tables (3k, 1.5k; alone and e2e), the Option B row and its ladder, the throughput table, in the
+report; the deck is being written from them, so every table carries its units line.
