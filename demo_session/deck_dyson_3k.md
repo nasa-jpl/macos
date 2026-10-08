@@ -217,17 +217,17 @@ DRAFT — pending review.
 |---|---|---|
 | block radius = thickness | 240 mm | 130 mm |
 | spectrometer alone: smile / keystone / CRF / SRF / energy in a pixel | 0.005 / 0.006 / 1.21 / 2.02 px / 0.82 | 0.007 / 0.009 / 1.03 / 2.02 px / 1.00 |
-| telescope | freeform three-mirror of the SBG form (R9): 1.02 px at every field | three off-axis aspheres: 0.4 px center, 0.8 px at the strip ends (the template's 1.5k run is in progress) |
-| end to end: smile (slit-filled / point-source) / keystone / CRF / SRF | 0.02 / 0.02 / 0.006 / 1.17 / 2.025 px | 0.08 / 0.50 / 0.01 / 1.26 / 2.21 px |
-| end to end: energy in one pixel, worst field | 0.85 | 0.30–0.39 (0.8 over the central third) |
-| light admitted by the grating | 98.9 % per field | 99 % per field |
+| telescope | freeform three-mirror of the SBG form (R9): 1.02 px at every field | the same form through the same template (R5 ffc): 1.02 px at every field; aspheres alone did not reach the floor |
+| end to end: smile (slit-filled / point-source) / keystone / CRF / SRF | 0.02 / 0.02 / 0.006 / 1.17 / 2.025 px | 0.009 / 0.009 / 0.009 / 1.03 / 2.024 px |
+| end to end: energy in one pixel, worst field | 0.85 | 0.97 |
+| light admitted by the grating | 98.9 % per field | 98.7 % per field |
 | clearance, worst pair | +0.6 mm (slit package vs block face) | +0.38 mm (detector package vs block face) |
 | glass for 6000 pixels | 9.0 L, 28.5 kg CaF2 (12.4 L single crystal to carve) | 3.0 L, 6.6 kg fused silica |
-| the block of modules: envelope; optics | 0.75 × 0.60 × 1.36 m, 609 L; 39 kg | 0.97 × 0.41 × 0.76 m, 300 L; 14.6 kg |
+| the block of modules: envelope; optics | 0.75 × 0.60 × 1.36 m, 609 L; 39 kg | 1.01 × 0.53 × 0.92 m, 494 L; 21.4 kg (the three-asphere record's block: 300 L, 14.6 kg — the zig-zag's M2 and M3 are full aperture) |
 | telescopes / spectrometers / detectors | 2 / 2 / 2 × (3072 × 512, a standard format) | 4 / 4 / 4 × (1.5k × 0.5k, NRE) |
 | integration, test, calibration | two of each | four of each (Jim: the cost that dominates) |
 | materials | "a tiny fraction of the instrument cost" (Jim) | the same |
-~ Records `dyson5_jim_3a.txt`, `dyson5_t5f_cprime_centroid_roll000.txt`, `dyson5_rescore_1k5_launch.txt` (the 1.5k module of record under both launches, 2026-10-08: its slit-filled smile is the older telescope's own 0.08 px, inside Joe's 0.1; its SRF 2.21 and energy 0.30–0.39 are the telescope's spots).  The four-module block (0.97 × 0.41 × 0.76 m, 14.6 kg of optics) of the last deck stands as the fallback.  The air gap at the window stands on both (six crossings, 0.81 uncoated).
+~ Records `dyson5_jim_3a.txt`, `dyson5_t5f_cprime_centroid_roll000.txt`, `tls1k5_e2e.txt` and `dyson5_cprime_1k5.in` (the 1.5k module through the template, 2026-10-08: R5 ffc, a clearance wall row added after R4 touched M2 by 0.3 mm), `dyson5_block4_cprime1k5.txt`.  The earlier three-asphere 1.5k telescope re-scored under both launches: slit-filled smile 0.08, point-source 0.50, SRF 2.21, energy 0.30–0.39 (`dyson5_rescore_1k5_launch.txt`) — superseded.  The four-module block (0.97 × 0.41 × 0.76 m, 14.6 kg of optics) of the last deck stands as the fallback.  The air gap at the window stands on both (six crossings, 0.81 uncoated).
 
 ## Questions for Jim and Joe | Three the ray trace cannot settle
 - **The entrance beam.**  Joe's 183 mm at f 330 mm is F/1.803, so the telescope's cone along the slit is F/1.89 and cannot be "a little faster than the spectrometer" without a larger beam; the paper's is 192 mm.  Is the aperture Joe's number or the paper's?
