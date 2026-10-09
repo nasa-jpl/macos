@@ -4,7 +4,7 @@ on the 3k Dyson module (R9 feeding the 240 mm CaF2 Dyson of record) and applied
 to the 1.5k (R5 ffc, the CLEAR row added on the way).  Parallels
 deck_dyson_record.md (2026-10-06, sent to Jim and Joe).  Dave 2026-10-08: cast as
 establishing a template; TO's 1.5k as its application, deviations noted as they occurred.
-DRAFT -- pending Dave's sign-off.  Build: python3 make_brief_slides.py deck_dyson_3k.md
+FINAL (Dave's sign-off 2026-10-09; export mark on).  Build: python3 make_brief_slides.py deck_dyson_3k.md
 Sources: macos/REPORT_dyson5_cprime.md; templates/10_telescopes/tma_longslit/README.md;
 challenges/dyson5/dyson5_cprime_3k.in + dyson5_t5f_cprime_*; BRIEF_to_dyson5.md
 addenda 47-49; the SBG VSWIR paper (Bradley et al., ICSO 2024, Proc. SPIE 13699).
@@ -15,7 +15,6 @@ Figures are the runners' own PNGs; the figs_dyson/*_rc.png copies are recomposed
 A VSWIR imaging spectrometer for a 180 km swath at 30 m pixels, designed end to end by ray trace: a Dyson spectrometer and a freeform three-mirror telescope per module, two module sizes, both at the pixel — smile 0.02, CRF 1.2 px, 0.85–0.97 of the energy in one pixel — and the telescope design flow made a reusable template.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
-DRAFT — pending review.
 ~ The challenge was posed by Joe Green and Jim McGuire (JPL) as a test of MACOS and its design layer; this is its second round.  The first (2026-10-06) brought the spectrometers to the pixel and left the larger telescope short; their answers and the project's published design set this round's course.
 
 ## Contents | The challenge and the approach; the pair of 3k modules; the template's default run — seed, telescope of record, the module scored, how the ladder was set, the two smile conventions, the cone; the spectrometer; the template applied to the 1.5k; the comparison; the questions
