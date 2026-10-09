@@ -129,6 +129,22 @@ model to as-built" backup), Kent's ZWFS reconstruction if it arrives (3), and
 the Feng-posed comparison as a main slide.  Same rules: figures from the tools,
 numbers from records, American English, Dave's sign-off before anything leaves.
 
+### 4a. Carried into the composite deck from the blur work (TO, 2026-10-09, `REPORT_pupil_blur.md`)
+
+- The pupil-imaging slide's sentence is corrected: the 0.13 / 0.29 % share is the
+  leg's whole imaging error; blur is 3–8 % of it (legs at 0.006 / 0.016 pitch); the
+  rest is registration (a third of the lens share) and low-order error (mirror).  The
+  "blur 0.05–0.14 mm" figure was pupilq's tilt-band ray walk, not the coherent PSF.
+- The record's matrix estimator (λ_m 1e-3) rolls off the actuator Nyquist by 3.4 %
+  (the (96,96) mode, Stage D) and biases a dense random surface by ~1 % rms: a row in
+  every candidate's error budget, and λ_m a knob to trade against noise.
+- The box kernel settles the photodiode-array question harder than §7's assessment:
+  between 1 and 1.5 pitch per element the actuator-space fit COLLAPSES (fewer readings
+  than lit actuators), not merely loses the checkerboard.  A coarse array must be read
+  in a low-order (modal) basis, never in actuator space — the `format` stage's
+  photodiode row is a modal reconstruction of the drift, scored on the drift's
+  spectrum, or it is nothing.
+
 ## 5. Lanes and order
 
 - **TO:** `BRIEF_to_pupil_blur.md` first (in flight; its step 5 box kernel feeds
