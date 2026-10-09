@@ -172,3 +172,50 @@ comparison must not be rushed to the deck.
    work in resources outside the engine; confirm it is the named exception
    alongside the pupil-blur brief, and whether phase 1 of the consolidation
    starts in parallel (CC + TO split) or after.
+
+## 7. Rulings (Dave, 2026-10-09)
+
+1. **LO arm: TRACED, as a drop-in to the current bench** to the degree possible —
+   the reference flat's seat becomes the LO's entry; the rest of the bench, the
+   tail, the camera and the records stay.
+2. **Wavelength: 632.8 nm is fine for the comparison.  Feng may prefer ~1.3 µm
+   (SIM MET's 1319 nm Nd:YAG class).**  Carry λ as a parameter (`P.LAM`) and run
+   the record at 632.8; a 1.3 µm row needs an InGaAs camera (survey: C-RED 2/3,
+   640 × 512 at 600 fps, 1.4 Me⁻ well at low gain — 2.8e14 photons/s, but the
+   surface error per photon scales with λ, ×2.1) and the bench's refractive
+   tail refocused — a stage, not a toggle.  Capture range doubles with λ.
+3. **Cameras: several options, the three named are fine (Feng's 1k²/60 ke/30 Hz
+   baseline; Photonfocus 1024² 200 ke 150 fps; pco.edge 5.5 in true GS mode),
+   and READ NOISE enters every comparison** — the noise model per camera is
+   shot + read (σ_read per pixel per frame, four frames), with the full-well
+   ceiling setting photons per frame; the photons-for-1-pm and hold rows are
+   per camera.
+4. **Photodiode array: assess implementability first** (CC, below) before it is a
+   stage.
+5. **Order: CC finishes the Dyson deck now; TO is on the blur brief; then
+   re-evaluate** (the campaign's start, the freeze exception, phase 1).
+
+### On 4 — is a photodiode array remotely implementable? (CC's assessment)
+
+At the ACTUATOR PITCH, no: 96 × 96 = 9216 channels, each a photodiode, a
+transimpedance stage and a demodulator — TOM3 had 43 detectors and multiplexed
+them ten at a time.  As a COARSE array, yes, with custom electronics of a known
+kind: silicon photodiode arrays exist to 16 × 16 (Hamamatsu S-series) and 2-D
+APD/lidar arrays to 32 × 32 with per-pixel readout; 256–1024 channels digitized
+at ~100 kS/s for a 10 kHz beat is ~1e8 samples/s, an FPGA board set, with the
+phase per channel by digital I/Q demodulation rather than TOM3's 128 MHz
+counters.  What it buys: no well-depth ceiling — a photodiode takes the whole
+beam (1 mW is 3e15 photons/s), three orders above any camera's photons per
+second — so picometers per second on every channel, continuously, at kHz
+cadence.  What it costs: a 32 × 32 array over the 96 × 96 lattice is a 3-pitch
+cell — the box-kernel regime where the checkerboard (the single-actuator
+scale) is gone and only the low and mid orders are recovered (TO's step 5 will
+put a number on it).  That matters for Feng's own motivation: "floating
+electrodes" are SINGLE-actuator failures, which a coarse array cannot localize,
+while the thermal drift (~2 %/K, low order) is exactly what it reads well.  So
+the realistic form is a HYBRID — the camera four-bucket for the full lattice at
+its cadence, a coarse photodiode array for the low-order drift at kHz — and
+that is the trade the `format` stage should quantify: cell size × cadence ×
+photons against the drift spectrum.  Verdict: implementable as a coarse
+companion sensor, not as the full-resolution gauge; model it as a row, decide
+after the number.
