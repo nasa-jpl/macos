@@ -42,7 +42,7 @@ DRAFT — pending review.
 - **21** Run it yourself
 - **22** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
 
-## The specification, and how a design is scored against it | The challenge's numbers beside the project's published design (the SBG VSWIR paper), the metrics defined once, the paper's bounds converted to this work's pixel
+## The specification, and how a design is scored against it | The challenge's numbers beside the project's published design (the SBG VSWIR paper), the metrics defined once, the paper's bounds restated in detector pixels of 18 µm, where the paper mixes micrometers and co-added 2-pixel bins
 ::: left
 | item | the challenge (this work) | the SBG VSWIR paper |
 |---|---|---|
