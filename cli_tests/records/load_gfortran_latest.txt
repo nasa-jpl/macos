@@ -1,0 +1,9 @@
+record  load_gfortran_8cf28c3.csv  (91 decks)
+  must-fail missing_value.in       load_fail    OK
+  must-fail short_zerncoef.in      crash_load   OK
+  status    load_fail 2  ok 89
+  roundtrip same 80  ulp 9
+  NaN OPD   2: tst_block_comment.in tst_save_keys.in
+  load_fail     pre-existing /home/dcr/dev/macos/ZGD_test_files/SegDemo3broken.in
+  load_fail     pre-existing /home/dcr/dev/macos/docs/macos-manual/examples/SegDemo.in
+  verdict   PASS

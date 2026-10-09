@@ -54,6 +54,13 @@ carry the incidents).  They are the definition of done for every item below.
 - [ ] `ifLNsrf` root metric in RefSrf / ObsSrf / PolElt / IntSrf (§0 line 271; `LNsrfRoot` exists; the three-case rule in CLAUDE.md applies).
 - [ ] `LUseChfRayIfOK` global default (§0.x) — Dave's ruling needed (segmented decks want the chief).
 
+### 1.1a Found by the CLI load gate on day one (2026-10-09, core corpus, ifx and gfortran)
+- [ ] **SAVE → load → SAVE is a 1-ulp 2-cycle on tilted unit vectors** (`psiElt`, `xGrid`/`yGrid`): 9 of 91 core decks (CornerCube, HOEExample, opt_example ×3, Rx_Mask_Parabolas_glb, Rx_CornerCube, pymacos e5hex1 …) never reach a fixed point — the unitise-at-load of a printed 17-digit vector alternates between two neighbours, the same disease `OrthoSrcFrame` cured for the source frame with the dead band (CLAUDE.md "Re-traces are IDEMPOTENT").  The CLAUDE.md comments entry already calls the psiElt wobble "pre-existing".  Engine item for TO after the five in the brief: the same `DeadBandUlp` rule at the psiElt/xGrid unitise on load; gate = the suite's `roundtrip` column going `ulp` → `same` on those nine.
+- [ ] **`docs/macos-manual/examples/SegDemo.in` is refused by the validator**: the Appendix-A extractor left the next section's heading (`A.6 Near-Field Propagation Example`) after the deck, and a non-keyword line after a blank following a `Tout=` block reads as "blank line inside multi-row block".  Docs lane (CCMac): the extractor strips trailing text; check the other 22 manual examples the same way (they load today).  Validator question for later: should a line with no `=` and no digit end the block instead?
+- [ ] **Two fixtures trace to NaN OPD**: `tst_save_keys.in` (the lensarr item, brief item 3) and `tst_block_comment.in` (the same deck with comment blocks added, so the same NaN — one item, not two).
+- [ ] **`pymacos/tests/Rx/Grating_example_001.in` passes 7303 rays on ifx and 7295 on gfortran** (RMS OPD 177.168 vs 177.155): eight rays' pass/fail depends on the compiler's arithmetic — rays on a knife edge of the concave grating's aperture (the deck CLAUDE.md notes was "never ray-compared").  Not a defect by itself (a ray exactly on an edge is a coin toss) but a fixture that cannot anchor a cross-compiler record; either find the edge and move it, or accept it as the one known compiler-sensitive deck.  (`Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in` differs at 5e-6 of a 1e-12 OPD: noise.)
+- [ ] `ZGD_test_files/SegDemo3broken.in` refuses by design (a broken-deck fixture) — move it to `cli_tests/must_fail/` as a third permanent negative control.
+
 ### 1.2 Deferred engine items recorded only in `macos_f90/CLAUDE.md`
 - [ ] `NSRefractor` passes a null grid frame to `GridSrf` (piston-only figure on refractive NS grids).
 - [ ] `ZernTypeL = 11` (ExtFringe) has no `ZerntoMon` converter: add one or an error.
@@ -137,8 +144,12 @@ this plan); Dave rules the open questions below and signs off each phase.
 4. The CLI suite's home: `macos/cli_tests/` (engine repo, beside `ZGD_test_files/`) is proposed.
 5. Mac port (memory `project_mac_port`): in phase 4 or after.
 
+## 4a. Rulings taken so far
+- 2026-10-09: Dave started phase 1 ("take it slow and careful"); TO on §1.1 per `BRIEF_to_consolidation_p1.md`, CC on §2.1.  The suite's home is `macos/cli_tests/` (ruling 4, by use).  Rulings 1–3 and 5 still open; IRIS and `LUseChfRayIfOK` not started.
+
 ## 5. Bookkeeping
 
 - `CURRENT_SLICE.md` carries the phase in flight; this file carries the checklist; `PLAN.md` stays the record.
 - Every closed item gets its line in the nested `CLAUDE.md` turned into a one-line pointer to the manual page that now documents it (the gotcha file shrinks as the manual grows).
 - Weekly, CC runs the three suites and writes one line per suite here with the date and counts.
+- 2026-10-09 CLI load gate, core corpus (91), binaries at 8cf28c3 (clean worktree): ifx 89 ok / 2 load_fail (SegDemo3broken by design; SegDemo.in extractor artifact), round trip 80 same / 9 ulp; gfortran identical counts; 2 decks differ between compilers (Grating_example_001 8 edge rays; a 1e-12 OPD at noise).  Must-fail decks: both refused on both compilers.  Records `cli_tests/records/load_{ifx,gfortran}_8cf28c3.csv`.
