@@ -12,7 +12,7 @@ Figures are the runners' own PNGs; the figs_dyson/*_rc.png copies are recomposed
 -->
 
 # A Long-Slit Spectrometer Design Challenge
-A VSWIR imaging spectrometer for a 180 km swath at 30 m pixels, designed end to end by ray trace: a Dyson spectrometer and a freeform three-mirror telescope per module, two module sizes, both at the pixel — smile 0.02, CRF 1.2 px, 0.85–0.97 of the energy in one pixel — and the telescope flow made a reusable template.
+A VSWIR imaging spectrometer for a 180 km swath at 30 m pixels, designed end to end by ray trace: a Dyson spectrometer and a freeform three-mirror telescope per module, two module sizes, both at the pixel — smile 0.02, CRF 1.2 px, 0.85–0.97 of the energy in one pixel — and the telescope design flow made a reusable template.
 D. C. Redding, with Claude Code.
 October 2026.  Working record; no proprietary prescription is used.
 DRAFT — pending review.
@@ -22,7 +22,7 @@ DRAFT — pending review.
 ::: left
 - **3** The specification, and how a design is scored against it
 - **4** The challenge: two module sizes, a spectrometer and a telescope in each
-- **5** The approach: the 3k telescope as a template, the template on the 1.5k
+- **5** The 3k telescope solution provides a template; the template run on the 1.5k
 - **6** Two 3k modules fill the swath
 - **7** The two strips on the ground, and the two focal planes
 - **8** The seed: the SBG form, first order
@@ -33,16 +33,16 @@ DRAFT — pending review.
 ::: right
 - **13** Smile end to end: the specification read two ways
 - **14** The speed of the light at the slit: the specification and the paper's beam
-- **15** The spectrometer: toleranced, and a conic grating for margin
+- **15** Spectrometer tolerances, and a conic grating for margin
 - **16** Throughput by band, and the blaze
 - **17** The template applied: the 1.5k module, with the deviations as they occurred
-- **18** Two of 3k or four of 1.5k, updated
+- **18** Two of 3k or four of 1.5k?
 - **19** Questions for Jim and Joe
 - **20** Next steps
 - **21** Run it yourself
 - **22** Backup: the first order by the numbers; the rungs per field; the chief-tilt diagnostic; the tolerance ladder by the numbers; the engine finding; records
 
-## The specification, and how a design is scored against it | The challenge's numbers beside the project's published design (the SBG VSWIR paper), the metrics defined once, the paper's bounds restated in detector pixels of 18 µm, where the paper mixes micrometers and co-added 2-pixel bins
+## The specification, and how a design is scored against it | The challenge's numbers beside a published design (the SBG VSWIR paper), in common terms (micrometers at the detector)
 ::: left
 | item | the challenge (this work) | the SBG VSWIR paper |
 |---|---|---|
@@ -75,7 +75,7 @@ DRAFT — pending review.
 - **The project's published design** (Bradley et al., ICSO 2024): a freeform zig-zag three-mirror telescope at f 345 mm, 192 mm, 8.9°, with a small convex M2 at the stop and no intermediate focus, optimized alone for small spots along the slit; a Dyson with an aspheric CaF2 lens and a conic grating (their Option B); its bounds in micrometers (smile and keystone 1.8 µm; SRF 64.8 µm; CRF and ARF 50.4 µm).
 ~ The challenge and the first-round answers are recorded in `BRIEF_to_dyson5.md` (addenda 47–49); the first round's deck is `deck_dyson_record` (the spectrometers' design record).  The paper: Tables 1–3, Figs. 1 and 4.
 
-## The approach: the 3k telescope as a template, the template on the 1.5k | The published form became a parameterized design flow whose default run is the 3k module; at the 1.5k spec it reached the pixel in five rungs with one new row; the slides that follow are those two runs
+## The 3k telescope solution provides a template; the template run on the 1.5k | The published form became a parameterized design flow whose default run is the 3k module; at the 1.5k spec it reached the pixel in five rungs with one new row; the slides that follow are those two runs
 ::: left
 - **The 3k telescope (slides 8–14)**
 -- seed: the published layout, scaled to f 330 mm
@@ -216,7 +216,7 @@ DRAFT — pending review.
 - **Across the slit** the light arrives at F/1.80; the slit truncates the image in that direction, and the across-slit image width (the paper's ARF) is 1.02 px against its 2.8 px bound.
 ~ `REPORT_dyson5_cprime.md`, R9 per-field table; F-number from the marginal rays as 1/(2 sin u).
 
-## The spectrometer: toleranced, and a conic grating for margin | SRF sits at the two-pixel slit's floor; every large tolerance is a focus term the detector's focus removes; keystone sets the alignment tolerances at 26 µm and 35 µrad; a conic on the grating takes the energy in a pixel from 0.82 to 0.99
+## Spectrometer tolerances, and a conic grating for margin | SRF sits at the two-pixel slit's floor; every large tolerance is a focus term the detector's focus removes; keystone sets the alignment tolerances at 26 µm and 35 µrad; a conic on the grating takes the energy in a pixel from 0.82 to 0.99
 ::: left
 - **SRF is not a miss.**  Slit ⊗ LSF ⊗ pixel ⊗ Airy for a perfect spectrometer is 2.010 px at 380 nm and 2.023 at 2500 nm; the Dyson of record sits 0.0001–0.0015 px above that at every wavelength, alone and behind the telescope.  In the paper's units 36.5 µm against 64.8.  Joe's "1.5–2.0" is met at its floor; 1.5 would need a narrower slit.
 - **The Dyson of record is the paper's Option A:** 240 mm CaF2, an aspheric lens (K 0.043 with h⁴, h⁶) and a spherical grating, no meniscus; smile 0.005, keystone 0.006, CRF 1.21, 0.82 of the energy in a pixel; 4.5 L, 14.3 kg.
@@ -262,7 +262,7 @@ DRAFT — pending review.
 - **End to end, roll 0 / 180:** smile 0.009 / 0.011, keystone 0.009 / 0.012, CRF 1.03, SRF 2.024 (the floor), energy in a pixel 0.97 / 0.99, grating admits 0.987, clearance +0.6 mm.  Joe's spec met under both launches except SRF, at the floor; the paper's five pass.  Against the three-asphere 1.5k (smile 0.08 / 0.50 point-source, SRF 2.21, energy 0.30–0.39) every line improves but keystone at roll 180: 0.012 against 0.009, a tenth of the bound.
 ~ `tma_longslit_1k5.m`; `tls1k5_figure.txt`, `tls1k5_e2e.txt`, `dyson5_cprime_1k5.in` (pinned by `tTmaLongslit`), `dyson5_rescore_1k5_launch.txt`; model 256, nine fields.
 
-## Two of 3k or four of 1.5k, updated | Both modules now image at the pixel end to end; the trade is labor, detectors and integration, not optics or glass — and Jim's and the paper's answer is two
+## Two of 3k or four of 1.5k? | Both modules image at the pixel end to end; the trade is labor, detectors and integration, not optics or glass.  The paper's answer is two
 ::: full
 | | 2 × CaF2, 3k, 54 mm slit | 4 × fused silica, 1.5k, 27 mm slit |
 |---|---|---|
@@ -286,7 +286,7 @@ DRAFT — pending review.
 - **The spectrometer's form.**  Our Dyson of record is the paper's Option A and meets the specification; its Option B (the conic grating) buys energy in a pixel 0.82 → 0.99 here but not alignment insensitivity.  What drove B in the build — fabrication, thermal, or the margin?
 ~ Still open from the last round: the detector window's gap (now answered: an order-sorting filter, not bonded) and the AR by band.
 
-## Next steps | The spectrometer's tolerances and form; the telescope's tolerances and sizing; the record
+## Next steps | More on the spectrometer's tolerances and form; the telescope's tolerances and sizing; the record
 ::: left
 - **Spectrometer:** the every-CTE thermal soak row; fabrication terms (figure, the grating's period and groove errors) in the ladder; a vector grating efficiency to replace the scalar blaze; Option B as the candidate, its keystone tolerances (25 µm, 33 µrad) stated beside its margin.
 - **Telescope:** the same ladder on R9 and the 1.5k R5 (mirror decenter, tilt, figure; the slit's position); the mirrors sized with mounts and baffles (the blocks on slides 6 and 18 carry 10 mm blanks); the zig-zag's full-aperture M2 and M3 against the three-asphere 1.5k's smaller mirrors, if the four-module form returns.
