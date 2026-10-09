@@ -118,16 +118,19 @@ well-depth ceiling, mW on each of 43 detectors, 1e4 phase samples per second.  S
   camera; a deeper well or a faster camera scales it as √(well × rate) — a 100 ke
   sCMOS at 100 Hz would bring 1 Hz readings to about 7 pm and 1 pm to about a minute.
 - **COPHI-with-photodiodes is the version that is fast**, and it is worth a look
-  for THIS problem specifically: the unknown is 96 actuator values, not 1e6 pixels.
-  A detector array at the actuator pitch (one element per actuator cell, ~100–130
-  elements) read by a phasemeter at 10 kHz is a pm-class reading every second with
-  no well limit (633 nm × 10 kHz / 128 MHz = 49 pm per crossing, 0.5 pm per second if
-  white).  Each element averages the phase over its cell: a fixed, known linear
-  operator our response matrix absorbs — which is also exactly where Fang's blur
-  question becomes concrete (a coarse sampler is the blur), and the demo CCMac is
-  setting up answers whether the actuator state is recoverable through it.  The
-  cost is 100+ phasemeter channels (TOM3 multiplexed 43 into 10) and no spatial
-  oversampling for diagnostics.
+  for THIS problem specifically: the unknown is the 96 × 96 actuator lattice (9216
+  values, ~5000–7000 lit), not 1e6 pixels — and that is the trade.  Photodiodes with
+  a phasemeter at 10 kHz give a pm-class reading per second per channel with no
+  well limit (633 nm × 10 kHz / 128 MHz = 49 pm per crossing, 0.5 pm per second if
+  white), but one channel per actuator is thousands of phasemeter channels (TOM3
+  multiplexed 43 into 10); a coarser array trades resolution for speed, and every
+  element averages the phase over its cell — a fixed, known linear operator the
+  response matrix absorbs, and exactly where Fang's blur question becomes concrete
+  (a coarse sampler IS the blur).  Speed versus resolution is the axis to model:
+  the camera at the pixel end, the phasemeter array at the other, and what the
+  actuator fit recovers from each.  (Dave 2026-10-09: this deserves careful
+  modeling on its own — a campaign of its own when Feng's deck arrives: a template
+  `cophi_dm96` beside the three benches, `deck_cophi`, then a composite deck.)
 
 ## 4. What the model can say quickly (if Dave wants a row in the comparison)
 
