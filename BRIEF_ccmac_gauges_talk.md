@@ -46,7 +46,7 @@ gauge benches, but the mex must match the tree).  Rebuild per
 ## 2. What the talk says (so you can answer "where does that come from")
 
 **One optical bench, two front ends (lens rig and off-axis-mirror rig), four ways of
-sensing the figure of a 96-actuator DM to picometers:** a Twyman-Green interferometer
+sensing the figure of a 96 × 96-actuator DM to picometers:** a Twyman-Green interferometer
 (hybrid: polarization snapshot for change measurements, a piezo four-step for the
 absolute-calibration leg), a scalar Zernike sensor (stepped quarter-wave dimple), a
 vector Zernike sensor (geometric-phase metasurface, two circular polarizations at ±90°,
