@@ -164,3 +164,15 @@ vacuum.  TOM3's results are in a 3.3 m vacuum chamber on a Zerodur sub-bench.
   literature offers" backup (our first import was re-computing the reference wave);
   ask for his reconstructor and score it on the same bench.
 - **4. COPHI** — this note; Feng's slides when they arrive.
+
+## Addendum, 2026-10-09 later: Feng's full deck
+
+`MACOS_sandbox/DM_gauge/COPHI_for_DM_gauge.pptx` (12 slides, 2026-05-19) adds the
+PURPOSE — a DM drift sensor for the HWO coronagraph: DMs drift open-loop
+(material physics, "floating electrodes", ~2 % temperature coefficient), "the
+tallest tent pole in contrast stability"; COPHI runs each DM in a local loop —
+i.e. our HOLD job; the Zernike WFS with a dedicated laser (Ruane 2020, DST,
+Fang's VSG plan) as the alternative concept; the four-frame algebra and the
+generic N-frame least squares (Zygo's four-step = N 4) as backup; the surface
+H = ½ (φ/2π) λ (double pass).  No camera spec beyond 30 fps, no photon or error
+budget.  The campaign plan is `BRIEF_cophi_campaign.md`.
