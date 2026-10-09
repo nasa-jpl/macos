@@ -29,7 +29,7 @@ DRAFT — pending review.
 - **9** The telescope of record: freeform three-mirror, R9
 - **10** The 3k module, scored: spectrometer, telescope, and the two together
 - **11** The 3k module, end to end
-- **12** How the optimization sequence ("ladder") was set: six rungs and three lessons
+- **12** How the optimization "ladder" was set: six rungs, three lessons
 ::: right
 - **13** Smile is a convention: the launch, not the optics
 - **14** The cone, the spec and the paper's beam
@@ -151,7 +151,7 @@ DRAFT — pending review.
 - **CRF 1.02 px at the inner fields and 1.17 at the strip ends; SRF 2.02 everywhere; smile 0.022 → 0.018 px from 380 to 2500 nm; keystone 0.006 px at the ends, 0 at the center.**  Against the (c) solve of the last deck (smile 1.64, CRF 4.02, SRF 4.99, 4–10 % in a pixel), every line moved to the pixel.
 ~ Record `dyson5_t5f_cprime_centroid_roll000.txt` (each field's centroid on the slit line); the chief-launched twin `_chief_roll000.txt` gives the point-source shift 0.016 px; roll 180° about the chief: CRF 1.26, energy 0.81, the rest unchanged.  Prescription `dyson5_t5f_cprime_centroid_roll000_e2e.in` (3 telescope + 8 slit/Dyson elements).
 
-## How the optimization sequence ("ladder") was set: six rungs and three lessons | The 3k run fixed the template's weights and rows: equal weights spent the budget on the strip center; a constraint set weighted below one percent of the merit is not a test; the last tenth of a pixel of "smile" was the launch
+## How the optimization "ladder" was set: six rungs, three lessons | The 3k run fixed the template's weights and rows: equal weights spent the budget on the strip center; a constraint set weighted below one percent of the merit is not a test; the last tenth of a pixel of "smile" was the launch
 ::: full
 | rung | what changed | outer-field FWHM along the slit (px) | e2e smile, point-source (px) | keystone (px) | CRF (px) | SRF (px) |
 |---|---|---|---|---|---|---|
