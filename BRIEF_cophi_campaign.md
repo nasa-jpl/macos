@@ -137,7 +137,11 @@ numbers from records, American English, Dave's sign-off before anything leaves.
   "blur 0.05–0.14 mm" figure was pupilq's tilt-band ray walk, not the coherent PSF.
 - The record's matrix estimator (λ_m 1e-3) rolls off the actuator Nyquist by 3.4 %
   (the (96,96) mode, Stage D) and biases a dense random surface by ~1 % rms: a row in
-  every candidate's error budget, and λ_m a knob to trade against noise.
+  every candidate's error budget, and λ_m a knob to trade against noise.  Measured
+  (TO, `pupil_blur_lam_m`): the bias is 306 / 31.6 / 3.2 pm at λ_m 1e-3 / 1e-4 / 1e-5
+  on the 30 nm surface, photon-independent; the noise floor plateaus at 0.90 pm
+  (1e14 photons) / 2.85 (1e13) — the deck's class.  The row's number is the bias at
+  the λ_m the bench's Stage E reg sweep re-gates on its measured matrix.
 - The box kernel settles the photodiode-array question harder than §7's assessment:
   between 1 and 1.5 pitch per element the actuator-space fit COLLAPSES (fewer readings
   than lit actuators), not merely loses the checkerboard.  A coarse array must be read
