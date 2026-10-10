@@ -1850,7 +1850,25 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
               READ(VALUE,*,IOSTAT=iosRx) nZernCoef
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
-              IF ((nZernCoef<1) .OR. (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) GOTO 99
+!-->          No SILENT refusal (the 1b contract), and no index 0: with
+!             no ZernType= declared yet ZernTypeL is 0 and the old test
+!             read ZernType_MaxMode(0), out of the array, and refused
+!             with no message -- what a SAVE of a ZrnGrData NSReflector
+!             without ZernType= then could not reload (2026-10-10).
+              IF (ZernTypeL(iElt) < 1) THEN
+                WRITE(*,'(A,I4,A)')
+     &            ' ** Rx load refused: nZernCoef (elt', iElt,
+     &            '): no ZernType= declared before it'
+                GO TO 99
+              END IF
+              IF ((nZernCoef<1) .OR.
+     &            (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
+                WRITE(*,'(A,I4,A,I6,A,I4)') ' ** Rx load refused: '//
+     &            'nZernCoef (elt', iElt, '):', nZernCoef,
+     &            ' is outside 1 ..', ZernType_MaxMode(ZernTypeL(iElt))
+                GO TO 99
+              END IF
+!<--
 
               nZernCoef_FLG = .True.
               GO TO 61

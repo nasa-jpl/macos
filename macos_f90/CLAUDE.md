@@ -639,6 +639,17 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   on a huge `L`) overflows `i0=IDFLOOR(xi); i1=i0+1` (INT_MAX→INT_MIN wrap),
   the `i1>nGridMat` test reads false, and `GridMat` is indexed out of bounds
   → SIGSEGV.  Finite in-range indices are bit-identical to the old path.
+  **ARM-only, by hardware (TO, measured 2026-10-10):** the INT_MAX
+  saturation is ARM's (`fcvtzs`).  On x86_64 an out-of-range double ->
+  INT gives INT_MIN (`cvttsd2si` "integer indefinite"; `floor(1d10)` =
+  -2147483648 under gfortran AND ifx), `i0+1` does not wrap, and the OLD
+  `i0<1` test already caught it -- `tst_zrngr_overflow.in` traces
+  bit-identically to its finite twin on the pre-fix Linux engine, release
+  or debug.  So the red is Apple Silicon only (CCMac's crash_opd); a
+  Linux gate of B can only be a no-host-kill + counted regression gate.
+  (Also measured: the gfortran DEBUG build aborts at start-up in math_mod
+  LZERO on a legacy `A(1)` dummy under -fcheck=bounds -- pre-existing,
+  unrelated; the ifx debug build runs.)
 - **`NSCount=` is the non-sequential HIT BUDGET and round-trips through SAVE
   (2026-10-10).** `NSCnt(iElt)` caps the surface hits a ray may take inside
   an `Element= NSReflector` group (tracesub.F ~4499): absent/0 = UNLIMITED
@@ -690,6 +701,20 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
 - ChkDf2 defaults ZernTypeL to 1 (ANSI) for elements whose parse path visited
   the ZernType default block. **NSReflector+Conic elements don't visit that
   block** — their ZernTypeL stays 0 unless explicitly set in the Rx.
+  **And SAVE then wrote an unreloadable deck (fixed 2026-10-10):** the
+  writer's `Srf_Zernike` emitted a BLANK `ZernType=` plus `nZernCoef= 1`
+  for such an element (sized by `ZernType_MaxMode(0)`, out of the array),
+  and the parser's `nZernCoef=` range check read the same index 0 and
+  `GO TO 99` with NO message -- a silent refusal of the reload
+  (`tst_zrngr_roundtrip.in`; every binary back to 8cf28c3).  Now: no
+  type declared, no Zernike block written (`lMon` still is; the Mon/FF
+  writers likewise), and the parser refuses `nZernCoef=` with no
+  `ZernType=` before it, naming the key and element
+  (`tst_nzern_no_type.in`, `cli_tests/cmd/ZrnGr_refusal.jou`).  Defaulting
+  `ZernTypeL` for every Zernike-carrying surface regardless of EltID would
+  change traces and is Dave's (PLAN item 7; corpus: 10 of 406 decks have NS
+  elements, 1 -- `old_Rx/j18dcWithStop.in`, 6 elements, all-zero
+  coefficients, no nZernCoef= -- carries NS Zernike data with no type).
 - GMI workaround at `GMI.F:1066`: when forcing `SrfType(iElt)=8` to apply a
   Zernike perturbation to an arbitrary element, also force `ZernTypeL=1` if
   currently 0. Without this, GMI's pzern channel silently no-ops when applied

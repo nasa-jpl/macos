@@ -2024,6 +2024,7 @@ C***********************************************************************
             LOGICAL  :: nonzero(mMonCoef)
             REAL(pr) :: Coefs(mMonCoef)
             ! - - - - - - - - - - - - - - - - - - - - - - -
+            IF (MonZernTypeL(iElt) < 1) RETURN   ! none declared
             CALL PrintFmt('MonZernType', "2x,A",
      &           TRIM(ZernTypeNameL(MonZernTypeL(iElt))))
             mCoef = MIN(ZernType_MaxMode(MonZernTypeL(iElt)), mMonCoef)
@@ -2068,6 +2069,7 @@ C***********************************************************************
             LOGICAL  :: nonzero(mFFCoef)
             REAL(pr) :: Coefs(mFFCoef)
             ! - - - - - - - - - - - - - - - - - - - - - - -
+            IF (FFZernTypeL(iElt) < 1) RETURN   ! none declared
             CALL PrintFmt('FFZernType', "2x,A",
      &           TRIM(ZernTypeNameL(FFZernTypeL(iElt))))
             mCoef = MIN(ZernType_MaxMode(FFZernTypeL(iElt)), mFFCoef)
@@ -2114,6 +2116,17 @@ C***********************************************************************
             REAL(pr) :: Coefs(mZernModes)
             ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!-->        Nothing declared, nothing written (2026-10-10): with no
+!           ZernType= in force (ZernTypeL 0 -- e.g. a ZrnGrData
+!           NSReflector, which the ChkDf2 default never reaches) the
+!           block was written with a BLANK name and sized by
+!           ZernType_MaxMode(0), out of the array, and the reload
+!           refused it.  The normalisation radius is still the deck's.
+            IF (ZernTypeL(iElt) < 1) THEN
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              RETURN
+            END IF
+!<--
             CALL PrintFmt('ZernType', "2x,A", TRIM(ZernTypeNameL(ZernTypeL(iElt))))
 !--> was written misspelled ('ZernAnnualRatio') since the writer was
 !    born -- the parser key is 'ZernAnnularRatio', so the ratio was
