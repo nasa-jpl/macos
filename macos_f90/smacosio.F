@@ -241,18 +241,24 @@ C
 
 	  CALL LOHIN3()    ! def in iosub.inc
 
-	  READ(VALUE,*)nOutCord
+	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
+
+	  IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	  nOutCord_FLG=.TRUE.
 
 	  READ(RX_FID, 123, END=99)STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
-	    READ(VALUE,*)(Tout(1,j),j=1,7)
+	    READ(VALUE,*,IOSTAT=iosRx)(Tout(1,j),j=1,7)
+
+	    IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
 	 	READ(RX_FID, 123, END=99)STRING
-	        READ(STRING,*)(Tout(k,j),j=1,7)
+	        READ(STRING,*,IOSTAT=iosRx)(Tout(k,j),j=1,7)
+
+	        IF (RxBad(iosRx,VAR_NAM,0,STRING)) GO TO 99
    71         CONTINUE
 	    END IF
 	    Tout_FLG=.TRUE.

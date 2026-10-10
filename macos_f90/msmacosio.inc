@@ -27,7 +27,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  IF (LCMP(VAR_NAM,'JZLouChfRayDir',9)) THEN  ! disabled
-            READ(VALUE,*)(ChfRayDir(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(ChfRayDir(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(ChfRayDir(1),3) .EQ. 0.0D0) THEN
               WRITE(*,124)' ChfRayDir'
             ELSE
@@ -38,34 +39,39 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'JZLouChfRayPos',9)) THEN  ! disabled
-            READ(VALUE,*)(ChfRayPos(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(ChfRayPos(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             ChfRayPos_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'xFrame',6)) THEN
-            READ(VALUE,*) TElt(1:3,1,0)
+            READ(VALUE,*,IOSTAT=iosRx) TElt(1:3,1,0)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             SrcLF_FLG=.TRUE.;
 	    print*,' **** msmacosio: src xFrame read'
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'yFrame',6)) THEN
-            READ(VALUE,*) TElt(1:3,2,0)
+            READ(VALUE,*,IOSTAT=iosRx) TElt(1:3,2,0)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             SrcLF_FLG=.TRUE.
 	    print*,' **** msmacosio: src yFrame read'
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'zFrame',6)) THEN
-            READ(VALUE,*) TElt(1:3,3,0)
+            READ(VALUE,*,IOSTAT=iosRx) TElt(1:3,3,0)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             SrcLF_FLG=.TRUE.
             CalcSrcZFrame_FLG=.FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OPDRefRayLen',12)) THEN
-            READ(VALUE,*) OPDRefRayLen
+            READ(VALUE,*,IOSTAT=iosRx) OPDRefRayLen
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             OPDRefRayLen_FLG=.TRUE.
             GO TO 50
 
@@ -90,7 +96,8 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'ObjFile',7)) THEN
 	    ObjIntFn=' '
-	    READ(VALUE,*) ObjIntFn
+	    READ(VALUE,*,IOSTAT=iosRx) ObjIntFn
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    !print*,'ObjIntFn = ',ObjIntFn(1:StrLen(ObjIntFn))
 	    Call ReadDblArray2D(ObjIntFn,mdttl)
 	    ifObjImgSet=.TRUE.
@@ -98,7 +105,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'ApStop',6)) THEN
-            READ(VALUE,*)(StopPos(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(StopPos(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             ifStopSet=.TRUE.; RxStopSet=.TRUE.
             GO TO 50
 
@@ -114,7 +122,8 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'RayTgtElt',9)) THEN
 	    LRayTgtElt=.TRUE.
-            READ(VALUE,*) RayTgtElt
+            READ(VALUE,*,IOSTAT=iosRx) RayTgtElt
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -190,7 +199,8 @@ C       Set entrance condition flags to .FALSE.
           ! a silent GO TO 50 swallow -- a user setting this in a .in previously
           ! got no error and no effect.
           ELSE IF (LCMP(VAR_NAM,'Ex0Ey0',6)) THEN
-            READ(VALUE,*) DDEF(1),DDEF(2),DDEF(3),DDEF(4)
+            READ(VALUE,*,IOSTAT=iosRx) DDEF(1),DDEF(2),DDEF(3),DDEF(4)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Ex0 = DCMPLX(DDEF(1),DDEF(2))
             Ey0 = DCMPLX(DDEF(3),DDEF(4))
             GO TO 50
@@ -222,14 +232,16 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptSpotSize',11)) THEN
-            READ(VALUE,*)OptSpotSize
+            READ(VALUE,*,IOSTAT=iosRx)OptSpotSize
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             if (OptSpotSize<0) OptSpotSize=0d0
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptRayGrid',6)) THEN
 	    opt_npts_flg=.true.
-	    READ(VALUE,*) opt_npts
+	    READ(VALUE,*,IOSTAT=iosRx) opt_npts
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    IF (opt_npts>mpts) THEN
               WRITE(*,*)
      &          ' Too many grid points for optimization, resetting to',mpts
@@ -242,8 +254,10 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptZernModes',8)) THEN
-	    READ(VALUE,*) nWFZern
-	    READ(VALUE,*) nWFZern,WFZernMode(1:nWFZern)
+	    READ(VALUE,*,IOSTAT=iosRx) nWFZern
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+	    READ(VALUE,*,IOSTAT=iosRx) nWFZern,WFZernMode(1:nWFZern)
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -253,7 +267,8 @@ C       Set entrance condition flags to .FALSE.
 	    varElts(nVarElt)=0
 	    ! Read in three rotation and three translation
 	    ! flags for source
-	    READ(VALUE,*)(varEltDOF(j,0),j=1,mVarDOF-2)
+	    READ(VALUE,*,IOSTAT=iosRx)(varEltDOF(j,0),j=1,mVarDOF-2)
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    nDOF_VarElt(nVarElt)=0
             DO i=1,mVarDOF
               IF (varEltDOF(i,0)/=0) THEN
@@ -266,7 +281,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptSrcRpt',9)) THEN
-	    READ(VALUE,*)(OptSrcRpt(i),i=1,3)
+	    READ(VALUE,*,IOSTAT=iosRx)(OptSrcRpt(i),i=1,3)
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    OptSrcRpt_FLG=.TRUE.
 	    GO TO 50
 
@@ -274,7 +290,9 @@ C       Set entrance condition flags to .FALSE.
           ELSE IF (LCMP(VAR_NAM,'OptChfRayDir',12) .OR.
      &             LCMP(VAR_NAM,'ChfRayDir',9)) THEN
             nOptChfRayDir=nOptChfRayDir+1
-            READ(VALUE,*) (opt_fov(i,1,nOptChfRayDir),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)
+     &  (opt_fov(i,1,nOptChfRayDir),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    If (nOptChfRayDir==1) Then
 	       ChfRayDir(1:3)=opt_fov(1:3,1,nOptChfRayDir)
 	       IF (DMAG(ChfRayDir(1),3) .EQ. 0.0D0) THEN
@@ -293,7 +311,9 @@ C       Set entrance condition flags to .FALSE.
           ELSE IF (LCMP(VAR_NAM,'OptChfRayPos',12).OR.
      &             LCMP(VAR_NAM,'ChfRayPos',9)) THEN
             nOptChfRayPos=nOptChfRayPos+1
-            READ(VALUE,*) (opt_fov(i,2,nOptChfRayPos),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)
+     &  (opt_fov(i,2,nOptChfRayPos),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    If (nOptChfRayPos==1) Then
 	      ChfRayPos(1:3)=opt_fov(1:3,2,nOptChfRayPos)
 	      ChfRayPos_FLG=.TRUE.
@@ -306,7 +326,8 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptWFElt',8).OR.
      &             LCMP(VAR_NAM,'OptTgtElt',9)) THEN
-            READ(VALUE,*) OptTgtElt
+            READ(VALUE,*,IOSTAT=iosRx) OptTgtElt
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -385,19 +406,22 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptSvdSvCut',9)) THEN
-	    READ(VALUE,*) SvdSvCut
+	    READ(VALUE,*,IOSTAT=iosRx) SvdSvCut
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptFOVWt',5)) THEN
-            READ(VALUE,*)(fov_weight(i),i=1,nOptFov)
+            READ(VALUE,*,IOSTAT=iosRx)(fov_weight(i),i=1,nOptFov)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'OptWaveLen',10).OR.
      &             LCMP(VAR_NAM,'WaveLen',7)) THEN
             nOptWavelen=nOptWavelen+1
-            READ(VALUE,*) opt_wavelen(nOptWavelen)
+            READ(VALUE,*,IOSTAT=iosRx) opt_wavelen(nOptWavelen)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    If (nOptWavelen==1) Then
 	      Wavelen=opt_wavelen(nOptWavelen)
 	      Wavelen_FLG=.TRUE.
@@ -420,7 +444,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'OptMaxItrs',10)) THEN
-            READ(VALUE,*) nitrs_dopt
+            READ(VALUE,*,IOSTAT=iosRx) nitrs_dopt
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -473,20 +498,23 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'zSource',7)) THEN
-            READ(VALUE,*)zSource
+            READ(VALUE,*,IOSTAT=iosRx)zSource
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (ABS(zSource) <= EPS) GOTO 99
             zSource_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'IndRef',6)) THEN
-            READ(VALUE,*)IndRef(0)
+            READ(VALUE,*,IOSTAT=iosRx)IndRef(0)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IndRef_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Extinc',6)) THEN
-            READ(VALUE,*)Extinc(0)
+            READ(VALUE,*,IOSTAT=iosRx)Extinc(0)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Extinc_FLG=.TRUE.
             GO TO 50
 
@@ -543,13 +571,15 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'JZLouWavelen',7)) THEN
-            READ(VALUE,*)Wavelen
+            READ(VALUE,*,IOSTAT=iosRx)Wavelen
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Wavelen_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Flux',4)) THEN
-            READ(VALUE,*)Flux
+            READ(VALUE,*,IOSTAT=iosRx)Flux
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Flux_FLG=.TRUE.
             GO TO 50
 
@@ -591,19 +621,22 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Aperture',8)) THEN
-            READ(VALUE,*)Aperture
+            READ(VALUE,*,IOSTAT=iosRx)Aperture
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Aperture_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'Obscratn',8)) THEN
-            READ(VALUE,*)Obscratn
+            READ(VALUE,*,IOSTAT=iosRx)Obscratn
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             Obscratn_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nGridpts',8)) THEN
-            READ(VALUE,*) nGridpts
+            READ(VALUE,*,IOSTAT=iosRx) nGridpts
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             npts=nGridpts-1
             nGridpts_FLG=.TRUE.
             GO TO 50
@@ -611,7 +644,8 @@ C       Set entrance condition flags to .FALSE.
           !<--
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
-              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(pData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pData_FLG=.TRUE.
 	      if (.not.ZernCent_FLG)
      &          ZernCent(1:3,iElt)=pData(1:3,iElt)
@@ -619,55 +653,64 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
-              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
-              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(yData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
-              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(zData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
-              READ(VALUE,*)lData(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)lData(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
-              READ(VALUE,*)lFF(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)lFF(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
-              READ(VALUE,*)(pFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(pFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
-              READ(VALUE,*)(xFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
-              READ(VALUE,*)(yFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(yFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
-              READ(VALUE,*)(zFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(zFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zFF_FLG=.TRUE.
               GO TO 61
 
@@ -743,7 +786,8 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
-              READ(VALUE,*) nMonZernCoef
+              READ(VALUE,*,IOSTAT=iosRx) nMonZernCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF ((nMonZernCoef.LT.1).OR.
      &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
               nMonZernCoef_FLG = .TRUE.
@@ -762,18 +806,21 @@ C       Set entrance condition flags to .FALSE.
                 READ(VALUE,*,IOSTAT=ios)
      &            (MonZernModes(j),j=1,nMonZernCoef)
                 IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
+                  READ(VALUE,*,IOSTAT=iosRx)(MonZernModes(j),j=1,Grp)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                   nZ = MOD(nMonZernCoef,Grp)
                   iZ = nMonZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END IF
                 END IF
               END BLOCK
@@ -808,7 +855,8 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
-              READ(VALUE,*) nFFZernCoef
+              READ(VALUE,*,IOSTAT=iosRx) nFFZernCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF ((nFFZernCoef.LT.1).OR.
      &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
               nFFZernCoef_FLG = .TRUE.
@@ -827,18 +875,21 @@ C       Set entrance condition flags to .FALSE.
                 READ(VALUE,*,IOSTAT=ios)
      &            (FFZernModes(j),j=1,nFFZernCoef)
                 IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
+                  READ(VALUE,*,IOSTAT=iosRx)(FFZernModes(j),j=1,Grp)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                   nZ = MOD(nFFZernCoef,Grp)
                   iZ = nFFZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END IF
                 END IF
               END BLOCK
@@ -849,7 +900,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'xGrid',5)) THEN
-            READ(VALUE,*)(xGrid(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(xGrid(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(xGrid(1),3) .EQ. 0.0D0) THEN
               WRITE(*,124)' xGrid'
             ELSE
@@ -859,7 +911,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'yGrid',5)) THEN
-            READ(VALUE,*)(yGrid(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(yGrid(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(yGrid(1),3) .EQ. 0.0D0) THEN
               WRITE(*,124)' yGrid'
             ELSE
@@ -869,13 +922,15 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'drawXGrid',6)) THEN
-            READ(VALUE,*)(UDxDrawGrid(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(UDxDrawGrid(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             LudDrawGrid=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'drawYGrid',6)) THEN
-            READ(VALUE,*)(UDyDrawGrid(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(UDyDrawGrid(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             LudDrawGrid=.TRUE.
             GO TO 50
 
@@ -893,23 +948,28 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nElt',4)) THEN
-            READ(VALUE,*)nElt
+            READ(VALUE,*,IOSTAT=iosRx)nElt
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             nElt_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'nSeg',4)) THEN
-            READ(VALUE,*) nSeg
+            READ(VALUE,*,IOSTAT=iosRx) nSeg
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             nSeg_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'width',5)) THEN
-	    READ(VALUE,*)width
+	    READ(VALUE,*,IOSTAT=iosRx)width
+	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (GridType .NE. 5) THEN
-              READ(VALUE,*)width
+              READ(VALUE,*,IOSTAT=iosRx)width
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             ELSE
-              READ(VALUE,*)nPetals
+              READ(VALUE,*,IOSTAT=iosRx)nPetals
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             END IF
             width_FLG=.TRUE.
             GO TO 50
@@ -923,20 +983,23 @@ C       Set entrance condition flags to .FALSE.
 !              READ(VALUE,*)radCtr
 !            END IF
 !#endif
-            READ(VALUE,*)gap
+            READ(VALUE,*,IOSTAT=iosRx)gap
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             gap_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'nRings',5)) THEN
-            READ(VALUE,*) nRings
+            READ(VALUE,*,IOSTAT=iosRx) nRings
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             nRings_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'nPetals',5)) THEN
 	    If (nRings_FLG) Then
-              READ(VALUE,*) nPetals(0:nRings)
+              READ(VALUE,*,IOSTAT=iosRx) nPetals(0:nRings)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nPetals_FLG=.TRUE.
 	    Else
               Write(*,*)
@@ -947,13 +1010,15 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'radCtr',4)) THEN
-            READ(VALUE,*)radCtr
+            READ(VALUE,*,IOSTAT=iosRx)radCtr
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             radCtr_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'RingRads',8)) THEN
-            READ(VALUE,*) RingRads(1:nRings)
+            READ(VALUE,*,IOSTAT=iosRx) RingRads(1:nRings)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    RingRads(0)=1d0
             RingRad_FLG=.TRUE.
             GO TO 50
@@ -968,12 +1033,14 @@ C       Set entrance condition flags to .FALSE.
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'SegCoord',8)) THEN
             IF (GridType .NE. 5) THEN
-              READ(VALUE,*)(SegCoord(i,1),i=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(SegCoord(i,1),i=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (nSeg_FLG) THEN
                 IF (nSeg .GT. 1)  THEN
                   DO iSeg=2,nSeg
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(SegCoord(i,iSeg),i=1,3)
+                    READ(STRING,*,IOSTAT=iosRx)(SegCoord(i,iSeg),i=1,3)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                 END IF
                 SegCoord_FLG=.TRUE.
@@ -981,12 +1048,14 @@ C       Set entrance condition flags to .FALSE.
                 WRITE(*,*) '  Must input nSeg before SegCoord.'
               END IF
             ELSE
-              READ(VALUE,*)SegCoord(1:2,1)
+              READ(VALUE,*,IOSTAT=iosRx)SegCoord(1:2,1)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (nSeg_FLG) THEN
                 IF (nSeg .GT. 1)  THEN
                   DO iSeg=2,nSeg
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)SegCoord(1:2,iSeg)
+                    READ(STRING,*,IOSTAT=iosRx)SegCoord(1:2,iSeg)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                 END IF
                 SegCoord_FLG=.TRUE.
@@ -999,7 +1068,8 @@ C       Set entrance condition flags to .FALSE.
 
           ! --------------------------------------------------------------------------------
           ELSE IF (LCMP(VAR_NAM,'SegXgrid',8)) THEN
-            READ(VALUE,*)(SegXgrid(i),i=1,3)
+            READ(VALUE,*,IOSTAT=iosRx)(SegXgrid(i),i=1,3)
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(SegXgrid(1),3) .EQ. 0.0D0) THEN
               WRITE(*,124)' SegXGrid'
               GO To 99    ! abort reading Rx
@@ -1028,7 +1098,9 @@ C       Set entrance condition flags to .FALSE.
             ! Added by jzlou
             IF (SegApType_FLG) THEN
               IF (SegApType==6) THEN
-                READ(VALUE,*)(SegApVec(j),j=1,2) ! hex h/2 and orient
+                READ(VALUE,*,IOSTAT=iosRx)
+     &  (SegApVec(j),j=1,2) ! hex h/2 and orient
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               END IF
             END IF
             GO TO 50
@@ -1207,15 +1279,18 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'EltGrp',6)) THEN
-              READ(VALUE,*) EltGrp(0,iElt)
+              READ(VALUE,*,IOSTAT=iosRx) EltGrp(0,iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               j=EltGrp(0,iElt)  ! # members in group
 	      IF (j>0) THEN
-                READ(VALUE,*)(EltGrp(i,iElt),i=0,j)
+                READ(VALUE,*,IOSTAT=iosRx)(EltGrp(i,iElt),i=0,j)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               ELSE IF (j<0) THEN
                 ! element group range specified at this element
                 EltGrp(0,iElt)=-EltGrp(0,iElt)
                 !READ(VALUE,*) j,eltGrpStrt,eltGrpEnd
-	        READ(VALUE,*) j,eltGrpStrt
+	        READ(VALUE,*,IOSTAT=iosRx) j,eltGrpStrt
+	        IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 eltGrpEnd=eltGrpStrt+EltGrp(0,iElt)-1
                 IF (eltGrpStrt<0 .OR. eltGrpEnd<0 .OR.
      &              (eltGrpStrt>eltGrpEnd)) THEN
@@ -1233,13 +1308,15 @@ C       Set entrance condition flags to .FALSE.
             ELSE IF (LCMP(VAR_NAM,'MrEltGrp',8)) THEN
               ! Allow an EltGrp to be specified with multiple ranges
               ! Syntax: #groups strt1 end1 strt2 end2 ...
-              READ(VALUE,*) j ! number of element groups
+              READ(VALUE,*,IOSTAT=iosRx) j ! number of element groups
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (j<=0 .or. j>10) THEN
                 WRITE(*,*)
      &          ' **MrEltGrp: elt groups must be >=1 and <=10 in Rx!'
                 GO TO 99
               END IF
-              READ(VALUE,*) j,grpRange(1:2*j)
+              READ(VALUE,*,IOSTAT=iosRx) j,grpRange(1:2*j)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               EltGrp(0,iElt)=0; k=1
               Do g=1,j
                 EltGrp(0,iElt) = EltGrp(0,iElt) +
@@ -1261,7 +1338,8 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'NSCount',7)) THEN
-              READ(VALUE,*) NSCnt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) NSCnt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -1392,7 +1470,8 @@ C       Set entrance condition flags to .FALSE.
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'EltType',7)) THEN
-              READ(VALUE,*) EltType(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) EltType(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               EltType_FLG=.TRUE.
 
               CALL EltConvert(EltType(iElt),EltID(iElt),SrfType(iElt))
@@ -1490,7 +1569,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 nVarElt=nVarElt+1
 	      End If
               !varElts(nVarElt)=iElt
-              READ(VALUE,*)(varEltDOF(j,iElt),j=1,mVarDOF)
+              READ(VALUE,*,IOSTAT=iosRx)(varEltDOF(j,iElt),j=1,mVarDOF)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nDOF_VarElt(nVarElt)=0
               DO i=1,mVarDOF
                 IF (varEltDOF(i,iElt)/=0) THEN
@@ -1511,7 +1591,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 End If
               End Do
               If (j>0) Then
-                READ(VALUE,*) consArr(1:2*j)
+                READ(VALUE,*,IOSTAT=iosRx) consArr(1:2*j)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 off=1
                 Do i=1,mVarDOF
                   If (varEltDOF(i,iElt)/=0) Then
@@ -1527,7 +1608,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !     beam): the BEAM_TARGET condition is gone.
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamDir',10)) THEN
 	      If (.not. beamOpt%ifOptBeamDir) Then
-		READ(VALUE,*) (beamOpt%nomBeamDir(j),j=1,3)
+		READ(VALUE,*,IOSTAT=iosRx) (beamOpt%nomBeamDir(j),j=1,3)
+		IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	        CALL DUNITIZE(beamOpt%nomBeamDir) ! the rows compare to a unit vector
 	        beamOpt%beamDirElt=iElt
 	        beamOpt%ifOptBeamDir=.TRUE.
@@ -1538,14 +1620,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamPosFov',13)) THEN
               If (beamOpt%nBeamPosFov < 12) Then
                 beamOpt%nBeamPosFov=beamOpt%nBeamPosFov+1
-                READ(VALUE,*) (beamOpt%nomBeamPosFov(j,
+                READ(VALUE,*,IOSTAT=iosRx) (beamOpt%nomBeamPosFov(j,
      &                           beamOpt%nBeamPosFov),j=1,3)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               Else
                 WRITE(*,*)' OptBeamPosFov: more than 12 rows ignored'
               End If
               GO TO 61
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamWt',9)) THEN
-              READ(VALUE,*) beamOpt%beamWt
+              READ(VALUE,*,IOSTAT=iosRx) beamOpt%beamWt
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (beamOpt%beamWt<=0d0) beamOpt%beamWt=1d0
               GO TO 61
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamCentroid',15)) THEN
@@ -1553,7 +1637,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               GO TO 61
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamPos',10)) THEN
               If (.not. beamOpt%ifOptBeamPos) Then
-                READ(VALUE,*) (beamOpt%nomBeamPos(j),j=1,3)
+                READ(VALUE,*,IOSTAT=iosRx) (beamOpt%nomBeamPos(j),j=1,3)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 beamOpt%beamPosElt=iElt
                 beamOpt%ifOptBeamPos=.TRUE.
 	        If (OptTgtElt /= beamOpt%beamPosElt) Then
@@ -1568,7 +1653,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamSize',11)) THEN
 	      If (.not. beamOpt%ifOptBeamSize) Then
-	        READ(VALUE,*) beamOpt%nomBeamSize
+	        READ(VALUE,*,IOSTAT=iosRx) beamOpt%nomBeamSize
+	        IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	        beamOpt%beamSizeElt=iElt
                 beamOpt%ifOptBeamSize=.TRUE.
 	      End If
@@ -1577,7 +1663,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamRefRayDir',15)) THEN
 	      If (.not. beamOpt%ifOptBeamRefRayDir) Then
-	        READ(VALUE,*) (beamOpt%nomBeamRefRayDir(j),j=1,3)
+	        READ(VALUE,*,IOSTAT=iosRx)
+     &  (beamOpt%nomBeamRefRayDir(j),j=1,3)
+	        IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	        beamOpt%beamRefRayElt=iElt
 	        beamOpt%ifOptBeamRefRayDir=.TRUE.
 	      End If
@@ -1600,9 +1688,11 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 isVarElt(iElt)=.true.
                 nVarElt=nVarElt+1
               End If
-              READ(VALUE,*) nOptEltZern(iElt)
-              READ(VALUE,*)
+              READ(VALUE,*,IOSTAT=iosRx) nOptEltZern(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+              READ(VALUE,*,IOSTAT=iosRx)
      &         (OptEltZernTerm(j,iElt),j=0,nOptEltZern(iElt))
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 
 !             print*,'iElt=', iElt,', nOptElt=',nOptEltZern(iElt),
 !    &          ',  OptEltZernTerm=',
@@ -1613,16 +1703,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'OptAsph',7)) THEN
               If (isVarElt(iElt)) Then
-                READ(VALUE,*) nOptEltAsph(iElt)
-                READ(VALUE,*)
+                READ(VALUE,*,IOSTAT=iosRx) nOptEltAsph(iElt)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+                READ(VALUE,*,IOSTAT=iosRx)
      &          (OptEltAsphTerm(j,iElt),j=0,nOptEltAsph(iElt))
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               End If
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'DpElt',5).OR.
      &               LCMP(VAR_NAM,'LINK',4)) THEN
-              READ(VALUE,*) LnkElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) LnkElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (LnkElt(iElt).LE.0) Then
                 WRITE(*,*)
      &          ' Link Elt value can not be negative at Elt',iElt
@@ -1633,7 +1726,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ fElt
 	    ELSE IF (LCMP(VAR_NAM,'fElt',4)) THEN
-              READ(VALUE,*) fElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) fElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               fElt_FLG    = .TRUE.
               KrElt_FLG   = .TRUE.
               KcElt_FLG   = .TRUE.
@@ -1643,7 +1737,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------ eElt
             ELSE IF (LCMP(VAR_NAM,'eElt',4)) THEN
-              READ(VALUE,*)eElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)eElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               eElt_FLG=.TRUE.
               KrElt_FLG = .TRUE.; KcElt_FLG = .TRUE.
               KcElt(iElt) = 0.0D0; KrElt(iElt) = 0.0D0
@@ -1660,7 +1755,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------ nAsphCoefs
             ELSE IF (LCMP(VAR_NAM,'nAsphCoefs',7)) THEN
 
-              READ(VALUE,*) nAsphCoef
+              READ(VALUE,*,IOSTAT=iosRx) nAsphCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (nAsphCoef<1 .OR. nAsphCoef>mAsphCoef) THEN
                 WRITE(*,*)'**WARNING: nAsphCoefs is out of range -- failure'
                 GO TO 99
@@ -1755,7 +1851,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------ nZernCoef
             ! if not defined, default value of 45 is used (backwards compatibility)
             ELSE IF (LCMP(VAR_NAM,'nZernCoef',9)) THEN
-              READ(VALUE,*) nZernCoef
+              READ(VALUE,*,IOSTAT=iosRx) nZernCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF ((nZernCoef<1) .OR. (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) GOTO 99
 
               nZernCoef_FLG = .True.
@@ -1785,16 +1882,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 INTEGER            :: iZ, nZ, ios
                 READ(VALUE,*,IOSTAT=ios)(ZernModes(j),j=1,nZernCoef)
                 IF (ios /= 0) THEN
-                  READ(VALUE,*)(ZernModes(j),j=1,Grp)
+                  READ(VALUE,*,IOSTAT=iosRx)(ZernModes(j),j=1,Grp)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   DO iZ=1, nZernCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    READ(STRING,*,IOSTAT=iosRx)
+     &  (ZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                   nZ = MOD(nZernCoef,Grp)
                   iZ = nZernCoef/Grp
                   IF (nZ>0) THEN
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    READ(STRING,*,IOSTAT=iosRx)
+     &  (ZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END IF
                 END IF
               END BLOCK
@@ -1842,31 +1944,36 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ZernAnnularRatio',12)) THEN
-              READ(VALUE,*) ZernAnnuRatio(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) ZernAnnuRatio(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               GO TO 61
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'ZernCenter',8)) THEN
-              READ(VALUE,*) ZernCent(1:3,iElt)
+              READ(VALUE,*,IOSTAT=iosRx) ZernCent(1:3,iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               ZernCent_FLG=.TRUE.
               zernUsrOpt(iElt)=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ZernXDir',5)) THEN
-              READ(VALUE,*) ZernXGrid(1:3,iElt)
+              READ(VALUE,*,IOSTAT=iosRx) ZernXGrid(1:3,iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zernUsrOpt(iElt)=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ZernYDir',5)) THEN
-              READ(VALUE,*) ZernYGrid(1:3,iElt)
+              READ(VALUE,*,IOSTAT=iosRx) ZernYGrid(1:3,iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zernUsrOpt(iElt)=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'ZernRad',7)) THEN
-              READ(VALUE,*) ZernRad(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) ZernRad(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zernUsrOpt(iElt)=.TRUE.
               GO TO 61
 
@@ -1902,7 +2009,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'UDSrfType',6)) THEN
-              READ(VALUE,*) UDSrfType(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) UDSrfType(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               UDSrfType_FLG=.TRUE.
               GO TO 61
 
@@ -1919,7 +2027,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 jGridSrf=jGridSrf+1
                 iEltToGridSrf(iElt)=jGridSrf
               END IF
-              READ(VALUE,*) nGridMat(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) nGridMat(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nGridMat_FLG=.TRUE.
 !-->          A GridFile= that arrived BEFORE this line was deferred
 !             (it had no size to read with); the size is known now.
@@ -1945,10 +2054,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	        jMetSrf=jMetSrf+1
                 iEltToMetSrf(iElt)=jMetSrf
 	      END IF
-	      READ(VALUE,*) nMetPos(iElt)
+	      READ(VALUE,*,IOSTAT=iosRx) nMetPos(iElt)
+	      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      Do i=1,nMetPos(iElt)
                 READ(RX_FID, 123, END=99) STRING
-                READ(STRING,*) SrfMetPos(1:3,i,iEltToMetSrf(iElt))
+                READ(STRING,*,IOSTAT=iosRx)
+     &  SrfMetPos(1:3,i,iEltToMetSrf(iElt))
+                IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
               End Do
 	      GO TO 61
 
@@ -1963,7 +2075,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &          ' **   and nMetPos must be positive integer'
                 STOP
               End If
-              READ(VALUE,*) tMetSrf(iElt),ntMetPos(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) tMetSrf(iElt),ntMetPos(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 !	      print*,' **tMetElt: iElt,iEltToMetSrf(iElt) =',
 !    &               iElt,iEltToMetSrf(iElt)
 !             print*,' **nMetPos(iElt),tMetSrf(iElt),ntMetPos(iElt) =',
@@ -1971,8 +2084,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               If (tMetSrf(iElt)>0) Then
 	        Do i=1,nMetPos(iElt)
 	          READ(RX_FID, 123, END=99) STRING
-                  READ(STRING,*)
+                  READ(STRING,*,IOSTAT=iosRx)
      &              metBeamFlg(1:ntMetPos(iElt),i,iEltToMetSrf(iElt))
+                  IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
 	        End Do
 !               READ(VALUE,*)tMetSrf(iElt),ntMetPos(iElt),
 !    &                       tMetSrfPos(1:ntMetPos(iElt),iElt)
@@ -1985,7 +2099,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 jAmplSrf=jAmplSrf+1
                 iEltToAmplSrf(iElt)=jAmplSrf
               END IF
-              READ(VALUE,*) nAmplMat(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) nAmplMat(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nAmplMat_FLG=.TRUE.
               GO TO 61
 
@@ -2052,7 +2167,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'GridSrfOrder',10)) THEN
-              READ(VALUE,*) GridSrfOrder(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) GridSrfOrder(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      If (GridSrfOrder(iElt) /= 1 .and.
      &            GridSrfOrder(iElt) /= 3) Then
 	        WRITE(*,*)' ** Invalid GridSrfOrder value for Elt ',iElt
@@ -2080,7 +2196,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 jGridSrf=jGridSrf+1
                 iEltToGridSrf(iElt)=jGridSrf
               END IF
-              READ(VALUE,*)GridSrfdx(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)GridSrfdx(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               GridSrfdx_FLG=.TRUE.
               GO TO 61
 
@@ -2090,13 +2207,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 jAmplSrf=jAmplSrf+1
                 iEltToAmplSrf(iElt)=jAmplSrf
               END IF
-              READ(VALUE,*)AmplSrfdx(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)AmplSrfdx(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               AmplSrfdx_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'KrElt',5)) THEN
-              READ(VALUE,*)KrElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)KrElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               KrElt_FLG=.TRUE.
               eElt_FLG=.TRUE.
               fElt_FLG=.TRUE.
@@ -2106,7 +2225,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'KcElt',5)) THEN
-              READ(VALUE,*)KcElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)KcElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               KcElt_FLG=.TRUE.
               eElt_FLG=.TRUE.
               fElt_FLG=.TRUE.
@@ -2116,7 +2236,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'pMon',4)) THEN
-              READ(VALUE,*)(pMon(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(pMon(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pMon_FLG=.TRUE.
 	      if (.not.ZernCent_FLG)
      &          ZernCent(1:3,iElt)=pMon(1:3,iElt)
@@ -2124,26 +2245,30 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'xMon',4)) THEN
-              READ(VALUE,*)(xMon(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xMon(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xMon_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'yMon',4)) THEN
-              READ(VALUE,*)(yMon(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(yMon(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yMon_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zMon',4)) THEN
-              READ(VALUE,*)(zMon(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(zMon(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zMon_FLG=.TRUE.
               GO TO 61
 
 	!-->
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
-              READ(VALUE,*)(pData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(pData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pData_FLG=.TRUE.
 	      if (.not.ZernCent_FLG)
      &          ZernCent(1:3,iElt)=pData(1:3,iElt)
@@ -2151,55 +2276,64 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
-              READ(VALUE,*)(xData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
-              READ(VALUE,*)(yData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(yData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
-              READ(VALUE,*)(zData(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(zData(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
-              READ(VALUE,*)lData(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)lData(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lFF',3)) THEN
-              READ(VALUE,*)lFF(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)lFF(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'pFF',3)) THEN
-              READ(VALUE,*)(pFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(pFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'xFF',3)) THEN
-              READ(VALUE,*)(xFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'yFF',3)) THEN
-              READ(VALUE,*)(yFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(yFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yFF_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zFF',3)) THEN
-              READ(VALUE,*)(zFF(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(zFF(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zFF_FLG=.TRUE.
               GO TO 61
 
@@ -2228,7 +2362,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nFFZernCoef',11)) THEN
-              READ(VALUE,*) nFFZernCoef
+              READ(VALUE,*,IOSTAT=iosRx) nFFZernCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF ((nFFZernCoef.LT.1).OR.
      &            (nFFZernCoef.GT.mFFCoef)) GOTO 99
               nFFZernCoef_FLG = .TRUE.
@@ -2247,18 +2382,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 READ(VALUE,*,IOSTAT=ios)
      &            (FFZernModes(j),j=1,nFFZernCoef)
                 IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernModes(j),j=1,Grp)
+                  READ(VALUE,*,IOSTAT=iosRx)(FFZernModes(j),j=1,Grp)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   DO iZ=1, nFFZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (FFZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                   nZ = MOD(nFFZernCoef,Grp)
                   iZ = nFFZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (FFZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END IF
                 END IF
               END BLOCK
@@ -2315,7 +2453,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nMonZernCoef',12)) THEN
-              READ(VALUE,*) nMonZernCoef
+              READ(VALUE,*,IOSTAT=iosRx) nMonZernCoef
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF ((nMonZernCoef.LT.1).OR.
      &            (nMonZernCoef.GT.mMonCoef)) GOTO 99
               nMonZernCoef_FLG = .TRUE.
@@ -2334,18 +2473,21 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 READ(VALUE,*,IOSTAT=ios)
      &            (MonZernModes(j),j=1,nMonZernCoef)
                 IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernModes(j),j=1,Grp)
+                  READ(VALUE,*,IOSTAT=iosRx)(MonZernModes(j),j=1,Grp)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   DO iZ=1, nMonZernCoef/Grp-1
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (MonZernModes(j),j=iZ*Grp+1,(iZ+1)*Grp)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END DO
                   nZ = MOD(nMonZernCoef,Grp)
                   iZ = nMonZernCoef/Grp
                   IF (nZ.GT.0) THEN
                     READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*)
+                    READ(STRING,*,IOSTAT=iosRx)
      &                (MonZernModes(j),j=iZ*Grp+1,iZ*Grp+nZ)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   END IF
                 END IF
               END BLOCK
@@ -2381,19 +2523,22 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'lMon',4)) THEN
-              READ(VALUE,*)lMon(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)lMon(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lMon_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'LensArrayType',12)) THEN
-              READ(VALUE,*)LensArrayType(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)LensArrayType(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               LensArrayType_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'LensArrayWidth',12)) THEN
-              READ(VALUE,*)LensArrayWidth(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)LensArrayWidth(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               LensArrayWidth_FLG=.TRUE.
               GO TO 61
 
@@ -2419,7 +2564,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 TotalLensletsArray(iElt)=nRecLenlets
               END IF
 
-	      READ(VALUE,*)TotalLensletsArray(iElt),nValsPerRow
+	      READ(VALUE,*,IOSTAT=iosRx)
+     &  TotalLensletsArray(iElt),nValsPerRow
+	      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 !--> guard the user-supplied count against the LensletStrArray
 !    bound (SAVE-audit fix): an oversized count stomped memory
 	      If (TotalLensletsArray(iElt)<1 .OR.
@@ -2436,14 +2583,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	         if (k<nValsPerRow) exit
 	          ! read in 'nValsPerRow' IndRef values from Rx
 	          READ(RX_FID, 123, END=99)STRING
-	          READ(STRING,*)
+	          READ(STRING,*,IOSTAT=iosRx)
      &	           LensletStrArray(i:i+nValsPerRow-1,iElt)%IndRef
+	          IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
 	          k=k-nValsPerRow; i=i+nValsPerRow
 	        End Do
 	        If (k>0) Then
 	          READ(RX_FID, 123, END=99)STRING
-	          READ(STRING,*)
+	          READ(STRING,*,IOSTAT=iosRx)
      &             LensletStrArray(i:i+k-1,iElt)%IndRef
+	          IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
 	        End If
 	      End If
 	      GO TO 61
@@ -2478,37 +2627,43 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'h1HOE',5)) THEN
-              READ(VALUE,*)(h1HOE(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(h1HOE(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               h1HOE_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'h2HOE',5)) THEN
-              READ(VALUE,*)(h2HOE(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(h2HOE(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               h2HOE_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'OrderHOE',8)) THEN
-              READ(VALUE,*)OrderHOE(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)OrderHOE(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               OrderHOE_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'WaveHOE',7)) THEN
-              READ(VALUE,*)WaveHOE(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)WaveHOE(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               WaveHOE_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'RuleWidth',9)) THEN
-              READ(VALUE,*)RuleWidth(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)RuleWidth(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               RuleWidth_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'DoeWL',5)) THEN
-              READ(VALUE,*) DoeWL(nDOE)
+              READ(VALUE,*,IOSTAT=iosRx) DoeWL(nDOE)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2519,13 +2674,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'DoeFl',5)) THEN
-              READ(VALUE,*) DoeFl(nDOE)
+              READ(VALUE,*,IOSTAT=iosRx) DoeFl(nDOE)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               !DoeFl_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'psiElt',6)) THEN
-              READ(VALUE,*)(psiElt(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(psiElt(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               CALL DUNITIZE(psiElt(1,iElt))
               psiElt_FLG=.TRUE.
               GO TO 61
@@ -2538,7 +2695,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !    trace time, so it need not be perpendicular to psiElt -- only
 !    non-parallel to the ray.
             ELSE IF (LCMP(VAR_NAM,'PolAxis',7)) THEN
-              READ(VALUE,*)(PolAxisElt(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(PolAxisElt(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               CALL DUNITIZE(PolAxisElt(1,iElt))
               PolAxis_FLG=.TRUE.
               GO TO 61
@@ -2551,14 +2709,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !    wavelength sweep.  Needs no intra-element ordering (unlike
 !    Coating=, which snapshots IndRef): only the header Wavelen.
             ELSE IF (LCMP(VAR_NAM,'Retardance',10)) THEN
-              READ(VALUE,*)PolRetElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)PolRetElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               PolRetElt(iElt)=PolRetElt(iElt)*Wavelen
               PolRet_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'VptElt',6)) THEN
-              READ(VALUE,*)(VptElt(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(VptElt(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               VptElt_FLG=.TRUE.
 	      If ((.not.pMon_FLG).and.(.not.ZernCent_FLG))
      &          ZernCent(1:3,iElt)=VptElt(1:3,iElt)
@@ -2566,13 +2726,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'RptElt',6)) THEN
-              READ(VALUE,*)(RptElt(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(RptElt(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               RptElt_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'IndRef',6)) THEN
-              READ(VALUE,*)IndRef(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)IndRef(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IndRefE_FLG=.TRUE.
               GlassElt_FLG=.TRUE.
               GlassCoef_FLG=.TRUE.
@@ -2601,7 +2763,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'GradInd',7)) THEN
-              READ(VALUE,*)GrinRefArr(iElt)%modelType
+              READ(VALUE,*,IOSTAT=iosRx)GrinRefArr(iElt)%modelType
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      IndRefE_FLG=.TRUE.
 	      GlassElt_FLG=.TRUE.
               GlassCoef_FLG=.TRUE.
@@ -2637,12 +2800,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'GradLensZ',9)) THEN
-	      READ(VALUE,*)GrinRefArr(iElt)%lensDepth
+	      READ(VALUE,*,IOSTAT=iosRx)GrinRefArr(iElt)%lensDepth
+	      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      GO TO 61
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'Coating',6)) THEN
-	      READ(VALUE,*)EltCoat(iElt)
+	      READ(VALUE,*,IOSTAT=iosRx)EltCoat(iElt)
+	      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      If (EltCoat(iElt)>0) Then
 	        ! Coating layers are specified in Rx, from outmost
 	        ! layer to innermost layer, each layer having three values:
@@ -2651,8 +2816,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	        i=EltCoat(iElt)
 	        Do k=1,EltCoat(iElt)
 	          READ(RX_FID, 123, END=99) STRING
-                  READ(STRING,*)IndRefArr(k,iElt),ExtincArr(k,iElt),
+                  READ(STRING,*,IOSTAT=iosRx)
+     &  IndRefArr(k,iElt),ExtincArr(k,iElt),
      &				EltCoatThk(k,iElt)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
 	          EltCoatThk(k,iElt)
      &              =EltCoatThk(k,iElt)*Wavelen/IndRefArr(k,iElt)
 	        End Do
@@ -2775,7 +2942,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'Extinc',6)) THEN
-              READ(VALUE,*)Extinc(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)Extinc(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               ExtincE_FLG=.TRUE.
               GO TO 61
 
@@ -2788,7 +2956,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'zElt',4)) THEN
-              READ(VALUE,*)zElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)zElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zElt_FLG=.TRUE.
               GO TO 61
 
@@ -2845,31 +3014,38 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'PinHole',6)) THEN
-              READ(VALUE,*)PinHole(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)PinHole(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               PinHole_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nCoatElt',5)) THEN
-              READ(VALUE,*)nCoatElt(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)nCoatElt(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nCoat_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'CoatIndxElt',8)) THEN
-              READ(VALUE,*)(CoatIndxElt(j,iElt),j=1,nCoatElt(iElt))
+              READ(VALUE,*,IOSTAT=iosRx)
+     &  (CoatIndxElt(j,iElt),j=1,nCoatElt(iElt))
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               CoatIndx_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'CoatThkElt',7)) THEN
-              READ(VALUE,*)(CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
+              READ(VALUE,*,IOSTAT=iosRx)
+     &  (CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               CoatThk_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'nECoord',7)) THEN
-              READ(VALUE,*)nECoord(iElt)
+              READ(VALUE,*,IOSTAT=iosRx)nECoord(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nECoord_FLG=.TRUE.
               IF ((nECoord(iElt) .EQ. 0) .OR.
      &          (nECoord(iElt) .EQ. -6)) THEN
@@ -2887,7 +3063,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               RxStopSet  = .TRUE.
               StopElt    = iElt
               EltStopSet = .TRUE.
-              READ(VALUE,*) StopOffset(1:2)
+              READ(VALUE,*,IOSTAT=iosRx) StopOffset(1:2)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 
               nTok = GetNumToken(VALUE)
               LStopAtEltAutoSet = (nTok > 2)
@@ -2942,7 +3119,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                  !  distribution respectively.
 #if 1
 	         ! Get apodization type
-                 READ(VALUE,*) chBuf,apodType
+                 READ(VALUE,*,IOSTAT=iosRx) chBuf,apodType
+                 IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                  If (LCMP(apodType,'Step',4)) Then
                    iApodType=stepApod
                  Else If (LCMP(apodType,'Lin',3)) Then
@@ -2975,30 +3153,37 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
               IF (ApType_FLG) THEN
                 IF (ApType(iElt).EQ.1) THEN
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,3)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,3)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 ELSE IF (ApType(iElt).EQ.2) THEN
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,4)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,4)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 ELSE IF (ApType(iElt).EQ.3) THEN
                   ! Tapered_Circular aperture,
                   ! last value read in is size of tapered region
                   ! as a percentage of aperture radius -jzlou
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,4)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,4)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   LTaperedElt(iElt)=.true.
                 ELSE IF (ApType(iElt).EQ.4) THEN
                   ! Elliptical aperture, read in a,b,c_x,c_y
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,4)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,4)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 ELSE IF (ApType(iElt).EQ.5) THEN
                   ! Tapered elliptical aperture, read in a,b,c_x,c_y,
                   ! percent_of_taper
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,5)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,5)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   LTaperedElt(iElt)=.true.
                 ELSE IF (ApType(iElt).EQ.6) THEN
                   ! Hexagonal aperture, read in h,xc,yc,orient,
                   ! orient specified in degree for orientation of hex
-                  READ(VALUE,*)(ApVec(j,iElt),j=1,4)
+                  READ(VALUE,*,IOSTAT=iosRx)(ApVec(j,iElt),j=1,4)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   Call SetHexBound(ApVec(1,iElt),iElt)
                 ELSE IF (ApType(iElt).EQ.7) THEN
-                  READ(VALUE,*) (ApVec(j,iElt),j=1,3)
+                  READ(VALUE,*,IOSTAT=iosRx) (ApVec(j,iElt),j=1,3)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ! # of vertices of polygon
                   nVertex=ApVec(3,iElt)
                   If (nVertex < 3) Then
@@ -3009,7 +3194,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   End If
                   Do k=1,nVertex
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(PolyApVtx(j,k,iElt),j=1,2)
+                    READ(STRING,*,IOSTAT=iosRx)
+     &  (PolyApVtx(j,k,iElt),j=1,2)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   End Do
                   Call SetCvxPolyApBound(iElt)
 
@@ -3019,13 +3206,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          ! Now support three types of apodization types: step, linear and Gaussian
                   If (iApodType==stepApod) Then
                     ! read in xc,yc,nVertex,width,step_percent
-                    READ(VALUE,*) (ApVec(j,iElt),j=1,5)
+                    READ(VALUE,*,IOSTAT=iosRx) (ApVec(j,iElt),j=1,5)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   Else If (iApodType==linApod) Then
                     ! read in xc,yc,nVertex,width
-                    READ(VALUE,*) (ApVec(j,iElt),j=1,4)
+                    READ(VALUE,*,IOSTAT=iosRx) (ApVec(j,iElt),j=1,4)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   Else If (iApodType==gaussApod) Then
                     ! read in xc,yc,nVertex,width,stdv
-                    READ(VALUE,*) (ApVec(j,iElt),j=1,5)
+                    READ(VALUE,*,IOSTAT=iosRx) (ApVec(j,iElt),j=1,5)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                   End If
 
 	          nVertex=ApVec(3,iElt)
@@ -3040,12 +3230,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          !
 	          Do k=1,nVertex
                     READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(PolyApVtx(j,k,iElt),j=1,2)
+                    READ(STRING,*,IOSTAT=iosRx)
+     &  (PolyApVtx(j,k,iElt),j=1,2)
+                    IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                   End Do
                   Call SetCvxPolyApBound(iElt)
 
 	        ELSE IF (ApType(iElt).EQ.9) THEN
-		  READ(VALUE,*) (ApVec(j,iElt),j=1,5)
+		  READ(VALUE,*,IOSTAT=iosRx) (ApVec(j,iElt),j=1,5)
+		  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	          !print*,' **SunBlades, ApVec =',ApVec(1:5,iElt)
                 END IF
                 ApVec_FLG=.TRUE.
@@ -3070,7 +3263,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               ELSE
                 !READ(VALUE,*) (ApVec(j,iElt),j=1,4)
                 !nVertex=ApVec(4,iElt) ! # of vertices of polygon
-                READ(VALUE,*) ApVec(1,iElt)
+                READ(VALUE,*,IOSTAT=iosRx) ApVec(1,iElt)
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 nVertex=ApVec(1,iElt) ! # of vertices of polygon
                 If (nVertex < 3) Then
                   write(*,*)
@@ -3080,7 +3274,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 End If
                 Do k=1,nVertex
                   READ(RX_FID, 123, END=99)STRING
-                  READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
+                  READ(STRING,*,IOSTAT=iosRx)(PolyVtx3D(j,k),j=1,3)
+                  IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                 End Do
                 Call SetCvxPolyApVtx(iElt,nVertex,
      &                               PolyVtx3D(:,1:nVertex))
@@ -3091,7 +3286,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'nObs',4)) THEN
-              READ(VALUE,*) nObs(iElt)
+              READ(VALUE,*,IOSTAT=iosRx) nObs(iElt)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nObs_FLG=.TRUE.
               GO TO 61
 
@@ -3210,7 +3406,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     END IF
 
                     IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
-                      READ(VALUE,*) ObsVec(1,iObs,iElt)
+                      READ(VALUE,*,IOSTAT=iosRx) ObsVec(1,iObs,iElt)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                       nVertex=ObsVec(1,iObs,iElt) ! # of vertices of polygon
                       If (nVertex < 3) Then
                         write(*,*)
@@ -3220,7 +3417,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                       End If
                       Do k=1,nVertex
                         READ(RX_FID, 123, END=99) STRING
-                        READ(STRING,*)(PolyVtx3D(j,k),j=1,3)
+                        READ(STRING,*,IOSTAT=iosRx)
+     &  (PolyVtx3D(j,k),j=1,3)
+                        IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                       End Do
                       IF (xObs_FLG) THEN
                         Call SetCvxPolyObsVtx(iElt,nVertex,
@@ -3243,20 +3442,28 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	            ! not 3D vertices, so as before
                     IF (ABS(ObsType(iObs,iElt)).EQ.1) THEN
                       ! Circle or NegCircle
-                      READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,3)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,3)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ELSE IF (ABS(ObsType(iObs,iElt)).EQ.4) THEN
                       ! Triangle
-                      READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,6)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,6)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ELSE IF (ABS(ObsType(iObs,iElt)).EQ.7) THEN
                       ! Tapered ellipse, get: a, b, xc, yc, dr
                       ! where a, b are half axises of ellipse,
                       ! xc, yc are center of ellipse, and dr
                       ! is percentage of 'a' and 'b' to be tapered
                       ! from boundary of ellipse. -jzlou
-                      READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,5)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,5)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ELSE IF (ABS(ObsType(iObs,iElt)).EQ.8) THEN
                       ! Polygon type
-                      READ(VALUE,*) (ObsVec(j,iObs,iElt),j=1,3)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,3)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                          ! # of vertices of polygon
                       nVertex=ObsVec(3,iObs,iElt)
                       IF (nVertex < 3) THEN
@@ -3267,20 +3474,28 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                       END IF
                       Do k=1,nVertex
                         READ(RX_FID, 123, END=99)STRING
-                        READ(STRING,*)(PolyObsVtx(j,k,iObs,iElt),j=1,2)
+                        READ(STRING,*,IOSTAT=iosRx)
+     &  (PolyObsVtx(j,k,iObs,iElt),j=1,2)
+                        IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
                       End Do
                       Call SetCvxPolyObsBound(iObs,iElt)
                     ELSE IF (ABS(ObsType(iObs,iElt)).EQ.9) THEN
                       ! RotRectangle type
                       ! Read in W,H,dx,dy,rot_angle
-                      READ(VALUE,*) (ObsVec(j,iObs,iElt),j=1,5)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,5)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ELSE IF (ABS(ObsType(iObs,iElt)).EQ.10) THEN
                       ! RotEllipse type
                       ! Read in a,b,dx,dy,rot_angle
-                      READ(VALUE,*) (ObsVec(j,iObs,iElt),j=1,5)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,5)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     ELSE
 		      ! For other obs shapes
-                      READ(VALUE,*)(ObsVec(j,iObs,iElt),j=1,4)
+                      READ(VALUE,*,IOSTAT=iosRx)
+     &  (ObsVec(j,iObs,iElt),j=1,4)
+                      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                     END IF
                     ObsVec_FLG(iObs)=.TRUE.
                   End If
@@ -3293,7 +3508,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'xObs',4)) THEN
-              READ(VALUE,*)(xObs(j,iElt),j=1,3)
+              READ(VALUE,*,IOSTAT=iosRx)(xObs(j,iElt),j=1,3)
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (DMAG(xObs(1,iElt),3) .EQ. 0.0D0) THEN
                 WRITE(*,124)' xObs'
               ELSE
@@ -3316,7 +3532,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'EdgeSensors',10)) THEN
-              READ(VALUE,*) EdgeSensor(iElt) ! number of edge-sensors for iElt
+              READ(VALUE,*,IOSTAT=iosRx)
+     &  EdgeSensor(iElt) ! number of edge-sensors for iElt
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (EdgeSensor(iElt)<1) Then
                 print*,
      &      '**msmacosio error: EdgeSensor must be positive integer!'
@@ -3336,10 +3554,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ELSE IF (LCMP(VAR_NAM,'TElt',4)) THEN
               IF (nECoord_FLG) THEN
-                READ(VALUE,*)(TElt(1,j,iElt),j=1,nECoord(iElt))
+                READ(VALUE,*,IOSTAT=iosRx)
+     &  (TElt(1,j,iElt),j=1,nECoord(iElt))
+                IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 DO 63 k=2,6
                   READ(RX_FID, 123, END=99)STRING
-                  READ(STRING,*)(TElt(k,j,iElt),j=1,nECoord(iElt))
+                  READ(STRING,*,IOSTAT=iosRx)
+     &  (TElt(k,j,iElt),j=1,nECoord(iElt))
+                  IF (RxBad(iosRx,VAR_NAM,iElt,STRING)) GO TO 99
  63             CONTINUE
                 TElt_FLG=.TRUE.
                 GO TO 61
@@ -3352,7 +3574,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	    ELSE IF (LCMP(VAR_NAM,'CopyElt',7) .OR.
      &               LCMP(VAR_NAM,'DuplElt',7)) THEN
               ! Make a duplicate element at given element id, for douple-pass
-              READ(VALUE,*) dupElt  ! duplicate Element id
+              READ(VALUE,*,IOSTAT=iosRx) dupElt  ! duplicate Element id
+              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (dupElt>0 .AND. dupElt<nElt .AND. iElt>dupElt) Then
                 Call MakeDupElt(iElt,dupElt,jGridSrf)
                 DupElt_FLG=.TRUE.
