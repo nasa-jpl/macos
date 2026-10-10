@@ -117,7 +117,7 @@ C***********************************************************************
         use sourcsub_mod
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
      &                     ZerntoMon4, LZPFailed, nZPFailMsg,
-     &                     nFwdRootFlip,
+     &                     nFwdRootFlip, nGridIdxOvf,
      &                     iZernTypeForNorm, LNSFlowL
         use tracesub_mod
 	use elemsub_mod
@@ -408,6 +408,7 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 	RayFailMsg(:) = ' '
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
+	nGridIdxOvf = 0
 !<--
 	iElt=iSecondElt  ! iElt = next Elt to trace to -jzlou
 	iEm1=iElt-1

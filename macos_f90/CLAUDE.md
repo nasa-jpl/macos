@@ -594,6 +594,24 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   base units, centered on `pData`; rays outside the span get `fh=0` (no
   figure).  256-grid across a 280-diameter segment → `GridSrfdx = 280/255
   ≈ 1.1`.  Too-small dx = figure only near segment center (looks piston-ish).
+- **Grid pixel-index guard is INT-overflow safe (2026-10-10).** The four
+  grid-term sites (`SFFSrf`/`FreeFormSrf`/`SGSrf`/`NGSrf`) reject a
+  non-finite / `≥2e9` `xi`/`yj` in floating point BEFORE `IDFLOOR` → clean
+  off-grid miss (`fh=0`), counted (`nGridIdxOvf`, api `grid_idx_ovf_get`,
+  WARN).  Without it, a ray whose surface-solve bracket diverges (`SFFZPB`
+  on a huge `L`) overflows `i0=IDFLOOR(xi); i1=i0+1` (INT_MAX→INT_MIN wrap),
+  the `i1>nGridMat` test reads false, and `GridMat` is indexed out of bounds
+  → SIGSEGV.  Finite in-range indices are bit-identical to the old path.
+- **`NSCount=` is the non-sequential HIT BUDGET and round-trips through SAVE
+  (2026-10-10).** `NSCnt(iElt)` caps the surface hits a ray may take inside
+  an `Element= NSReflector` group (tracesub.F ~4499): absent/0 = UNLIMITED
+  (CornerCube's retroreflection), 1 = single-hit segmented groups (the right
+  value for a grid-surfaced NS group, where an unbounded search diverges the
+  bracket solver — the IRIS `save_rx` crash).  It is authoring intent, NOT
+  structurally derivable; `PrtSingleEltInfo` (iosub.inc) now emits it when
+  declared (`NSCnt>0`).  Was DROPPED on SAVE pre-2026-10-10.  Gates:
+  `ZGD_test_files/tst_zrngr_roundtrip.in` (SAVE keeps NSCount) +
+  `tst_zrngr_overflow.in` (tiny GridSrfdx → the overflow guard).
 
 ## Prescription I/O notes (msmacosio.inc / iosub.inc)
 - The parser has two chains: label 50 (header/global) and label 61 (per-element).

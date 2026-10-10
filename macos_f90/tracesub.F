@@ -3320,6 +3320,7 @@ C  0. Initialize parameters
 	RayFailMsg(:) = ' '
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
+	nGridIdxOvf = 0
 !<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
@@ -4498,8 +4499,15 @@ C	Here when element number is determined...
 
 	        If (NSCnt(iElt).gt.0 .and.
      &              CrntNSCnt.eq.NSCnt(iElt)) Then
-	          ! This is for optimizing ray-tracing speed with segmented mirror;
-	          ! NSCount should NOT be defined in Rx for CC -jzlou
+	          ! NSCount= N is the per-group HIT BUDGET: the number of surface
+	          ! hits a ray may take inside this non-sequential group before it
+	          ! is forced on to the next sequential element.  N absent / 0 =
+	          ! UNLIMITED (a CornerCube's repeated bounces); N = 1 = single-hit
+	          ! segmented groups -- the right value for a grid-surfaced NS group,
+	          ! where an unbounded search can diverge the surface-solve bracket
+	          ! (xi/yj overflow, surfsub grid-index guard).  It IS authoring
+	          ! intent and round-trips through SAVE (iosub.inc); it is NOT
+	          ! derivable from structure, so do not auto-set it.
                   imin=iNextSeq
                 End If
 
@@ -5308,7 +5316,8 @@ C***********************************************************************
 	use elt_mod, only: RayStatus, RayFailElt,
      &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
      &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
-	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip
+	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip,
+     &                     nGridIdxOvf
 	IMPLICIT NONE
 	INTEGER nElt,iElt,nBadRays,iRay
 	INTEGER :: nMiss,nObs,nBrkt,nOther
@@ -5351,6 +5360,9 @@ C***********************************************************************
 	IF (nFwdRootFlip.GT.0) WRITE(*,131) nFwdRootFlip
   131	FORMAT('   First-crossing root picks differing from the legacy',
      &    ' metric: ',i8)
+	IF (nGridIdxOvf.GT.0) WRITE(*,132) nGridIdxOvf
+  132	FORMAT('   Grid samples with a non-finite / out-of-range pixel',
+     &    ' index (treated as off-grid): ',i8)
 !<--
 
 	RETURN

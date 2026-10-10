@@ -300,6 +300,16 @@ The first step in specifying an element is to define its *type* (e.g., Reflector
 | ReturnSrf           | conics          | return surfaces             |
 +---------------------+-----------------+-----------------------------+
 
+A non-sequential group (`NSReflector`/`NSRefractor` elements) may carry an
+optional `NSCount=` keyword on each member: the **hit budget**, i.e. the
+number of surface hits a ray may take inside that group before it is forced
+on to the next sequential element. `NSCount=` absent or `0` means
+**unlimited** (needed where a ray legitimately bounces among the members,
+as in a corner cube); `NSCount= 1` is the single-hit case of a segmented
+mirror. The budget is authoring intent — set it to `1` on a grid-surfaced
+non-sequential group, where an unbounded search can send a ray's
+surface-solve bracket to divergence.
+
 **TABLE 6.** Surface types
 
 +--------------+-------------------------------------------------------+

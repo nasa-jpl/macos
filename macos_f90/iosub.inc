@@ -1495,6 +1495,21 @@ C***********************************************************************
      &      CALL PrintFmt('Link', "2x,i0", LnkElt(iElt))
 !<--
 
+!-->  Non-sequential hit budget.  "NSCount= N" caps the number of surface
+!     hits a ray may take inside this element's non-sequential group:
+!     N absent / 0 = UNLIMITED (a CornerCube's repeated bounces need this),
+!     N = 1 = single-hit segmented groups.  NSCnt inits to 0 (elt_mod.F),
+!     so emit only a real (>0) budget -- unlimited/unset elements write
+!     nothing and reload unlimited.  Was DROPPED on SAVE: an NS group with a
+!     grid surface, whose unbounded search can diverge the surface-solve
+!     bracket and overflow the grid pixel index, lost its single-hit budget
+!     on round-trip and SIGSEGV'd on reload (iris instrument deck,
+!     2026-10-10; the surfsub grid-index guard now contains the crash, this
+!     restores the correct trace).
+          IF (NSCnt(iElt) > 0)
+     &      CALL PrintFmt('NSCount', "2x,i0", NSCnt(iElt))
+!<--
+
           ! --------------------------------------------
           ! Srf. dependent parameters
           ! --------------------------------------------

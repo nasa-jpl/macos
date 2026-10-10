@@ -26,19 +26,32 @@ task.
   `nGridMat= 99` / `GridFile= none` phantoms no longer gain a frame
   (CCMac round 3: pData/GridSrfdx 44 -> 6).  Gate: 7 real-grid decks
   byte-identical, 2 phantoms clean, both compilers.
-- [ ] **IRIS `save_rx` -> reload SIGSEGV on the REAL ZrnGrData grids
-  (iElt 17/19/21/35/37/39) -- STILL OPEN.**  CCMac round 3: the phantom
-  fix above is NOT sufficient; the IRIS round-trip still crashes
-  (`SFFSrf->FreeFormSrf->MonGridSrf->FindSrf->CTRACE`).  Attribution:
-  `save_rx` cleaning the original `GridFile=` tab-comment (which had
-  silently disabled those grids via the tab bug) unmasks a corrupted
-  rewrite of the real-grid block; only the `save_rx` form crashes, the
-  original-with-grid-active traces fine (12737).  Engine-side, off the
-  merge path (writer `662e86e`).  Chase with a debug build on the IRIS
-  deck; candidates (unverified) in `REPORT_iris_save_crash.md`
-  (GridSrfOrder=3 bicubic edge stencil; rewritten GridFile name;
-  nGridMat vs file dims; the ZrnGrData frame).  `SegDemo3data`
-  round-trips clean, so the trigger is IRIS-specific.
+- [x] **IRIS `save_rx` -> reload SIGSEGV on the REAL ZrnGrData grids
+  (iElt 17/19/21/35/37/39) -- CLOSED 2026-10-10 (CCMac, two engine
+  defects; `BRIEF_ccmac_iris_save_crash.md`, `REPORT_iris_save_crash.md`
+  closure section).**  NOT a corrupted rewrite: TWO independent defects
+  chained.  (A) `save_rx` DROPPED `NSCount=` -- the writer
+  (`PrtSingleEltInfo`, iosub.inc) never emitted it, so the deck's 21
+  non-sequential segment hit-budgets were lost on round-trip; on reload
+  the NS group search runs UNBOUNDED, the composite-grid bracket solver
+  (`SFFZPB`) diverges and `L`/`xi` grow without bound.  (B) the grid
+  pixel-index guard (`SFFSrf`/`FreeFormSrf`/`SGSrf`/`NGSrf`, surfsub.F)
+  tested `i0<1 .OR. i1>nGridMat` AFTER `i0=IDFLOOR(xi); i1=i0+1`, which
+  OVERFLOWS INT32 for a huge `xi` (i0 -> INT_MAX, i1 wraps to INT_MIN),
+  defeating the test -> `GridMat` indexed far out of bounds -> SIGSEGV
+  in `INTNORM`.  Proven one-variable (`iris_clean_gridfile` minus
+  `NSCount` crashes identically; with it, 12737 survive, round-trips
+  clean, NSCount preserved).  Fix: (A) iosub.inc emits `NSCount=` when
+  declared (Dave's ruling: emit in SAVE, do NOT auto-derive -- the budget
+  is authoring intent, 0/absent = unlimited for CornerCube); (B) surfsub.F
+  rejects a non-finite / >=2e9 `xi`/`yj` in floating point before IDFLOOR
+  (clean off-grid miss, counted `nGridIdxOvf`, api `grid_idx_ovf_get`,
+  WARN).  Public gates (two focused fixtures; the IRIS deck stays
+  JPL-private): `ZGD_test_files/tst_zrngr_roundtrip.in` (SAVE preserves
+  NSCount; pre-fix drops it) + `tst_zrngr_overflow.in` (tiny GridSrfdx ->
+  xi overflow; pre-fix SIGSEGV, post-fix clean miss + count).  Both
+  must-fail on the pre-fix binary, gfortran verified; ifx + mmacos/pymacos
+  twins + full corpus A/B are the Linux/MATLAB-side remainder.
 - [ ] **lensarr trace-time overrun (resurfaced 2026-09-09).**  Tracing a
   deck with `LensArrayIndRef=` stamps a lenslet index onto a later
   element's `IndRef` (seen on `tst_save_keys.in`: load->save clean,
