@@ -93,10 +93,12 @@ class Cli:
 
 
 def classify_diff(a, b):
-    """'ulp' when the two saves differ only in numbers within 8 ulp (the known
+    """'eol' when the two saves differ only in line endings; 'ulp' when only in numbers within 8 ulp (the known
     1-ulp unit-vector print wobble: psiElt / xGrid on tilted elements -- a SAVE ->
     load -> SAVE 2-cycle, PLAN sec. 0 candidate), else 'differ'."""
     la, lb = a.decode(errors='replace').splitlines(), b.decode(errors='replace').splitlines()
+    if la == lb:
+        return 'eol'                    # line endings only (CRLF vs LF: a Windows save)
     if len(la) != len(lb):
         return 'differ'
     num = re.compile(r'^[-+]?(\d+\.?\d*|\.\d+)([eEdD][-+]?\d+)?$')

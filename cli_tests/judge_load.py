@@ -38,9 +38,9 @@ for d, r in sorted(R.items()):
         print('  %-13s %-12s %s' % (r['status'], tag, d))
         if tag == 'NEW':
             bad = 1
-    elif r['roundtrip'] not in ('same', 'ulp', 'n/a'):
+    elif r['roundtrip'] not in ('same', 'ulp', 'eol', 'n/a'):
         was = P.get(d, {}).get('roundtrip', '')
-        tag = 'NEW' if (P and was in ('same', 'ulp')) else ('pre-existing' if not P or was else 'new deck')
+        tag = 'NEW' if (P and was in ('same', 'ulp', 'eol')) else ('pre-existing' if not P or was else 'new deck')
         print('  rt-%-10s %-12s %s' % (r['roundtrip'], tag, d))
         if tag == 'NEW':
             bad = 1
