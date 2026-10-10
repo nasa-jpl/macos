@@ -146,6 +146,8 @@ C***********************************************************************
       WRITE(*,*)' '
       WRITE(*,*)' OUTPUTS (RAY-TRACE & DIFFRACTION)'
       WRITE(*,*)'   OPD         - wavefront error map             [Rx]'
+      WRITE(*,*)'   OPDREF CHIEF|MEAN - OPD reference: chief ray'
+      WRITE(*,*)'                 (default) or aperture mean'
       WRITE(*,*)'   SPOt        - spot diagram                    [Rx]'
       WRITE(*,*)'   ZABerr      - Zernike OPD aberration          [Rx]'
       WRITE(*,*)'   ZCOef       - Zernike coefficient extraction  [Rx]'

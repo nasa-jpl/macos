@@ -4107,6 +4107,29 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! opd_mask_get: which pixels of the last OPD map hold a ray (2026-10-10).
+      ! MASK(i,j) = 1 exactly where the OPD wrote OPDMat (traceutil_mod
+      ! opdValid, set at the same statements), 0 elsewhere.  NEEDED because
+      ! under the chief-ray reference (the default) a valid ray whose path
+      ! equals the chief's reads exactly 0 -- the value of an empty pixel --
+      ! so "OPD /= 0" is not a validity test.  Same N contract as opd_val.
+      !---------------------------------------------------------------------------------------------
+      subroutine opd_mask_get(OK, MASK, N)
+        use traceutil_mod, only: opdValid
+        implicit none
+        logical,                 intent(out):: OK
+        integer, dimension(N,N), intent(out):: MASK
+        integer,                 intent(in) :: N      ! = nGridPts
+        ! ------------------------------------------------------
+        OK   = FAIL
+        MASK = 0
+        if ((.not. SystemCheck()).or.(nGridPts/=N)) return
+        MASK(:,:) = opdValid(:N,:N)
+        OK = PASS
+      end subroutine opd_mask_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! OPD reference selection (LUseChfRayIfOK, traceutil_mod).
       !
       ! tracesub.F's OPD fills OPDMat one of two ways:
@@ -4126,18 +4149,21 @@
       !       segments piston by 16.7% of the peak response; with the
       !       chief-ray reference it is exactly zero.
       !
-      ! The engine default is .FALSE. -- macos_cmd_loop.inc's LOAD handler
-      ! sets it .TRUE., but MBFile6 (both macosio.F and smacosio.F) opens
-      ! with reinitialise_variables(), which runs ray_mod_init_vars and
-      ! puts it back.  The Rx keyword `UseChfRay4OPD= Y` and this setter
-      ! are the two ways to select the chief-ray reference; both act after
-      ! that reset.  Diagnosis: Luis Marchen, 2026-08-19.
+      ! The engine default is the CHIEF ray (2026-10-10, Dave: the engine
+      ! matches the manual's OPD definition); until then every path ran
+      ! the mean, because the per-load reset put the flag back to .FALSE.
+      ! after the LOAD handler set it (Luis Marchen's 2026-08-19
+      ! diagnosis).  The default is now a session option set once at
+      ! allocation (traceutil_mod LOpdRefChief, the CLI's OPDREF); every
+      ! load restores it, the Rx keyword `UseChfRay4OPD= Y|N` overrides it
+      ! per deck, and this setter overrides both for the loaded deck.
+      ! Every OPD run prints which reference it used.
       !
-      ! Call AFTER load_rx (a load resets the flag), and re-trace: the OPD
-      ! map is built during the trace, so this dirties the cached one.
+      ! Call AFTER load_rx (a load restores the default), and re-trace: the
+      ! OPD map is built during the trace, so this dirties the cached one.
       !---------------------------------------------------------------------------------------------
       subroutine opd_ref_set(OK, use_chief)
-        use traceutil_mod, only: LUseChfRayIfOK
+        use traceutil_mod, only: LUseChfRayIfOK, iOpdRefSrc
         implicit none
         logical, intent(out):: OK
         logical, intent(in) :: use_chief   ! .TRUE. = chief ray, .FALSE. = aperture mean
@@ -4146,6 +4172,7 @@
         if (.not. SystemCheck()) return
 
         LUseChfRayIfOK = use_chief
+        iOpdRefSrc     = 3                 ! for OPD's printed reference line
 
         CALL modified_rx(OK)   ! OPDMat is filled by the trace -> re-trace
         OK = PASS

@@ -32,6 +32,13 @@ C***********************************************************************
      &    nValidRays,iDrawRay_global,pgplotDrawPlane,numGradInd,
      &    RayTgtElt
 	Integer, dimension(:,:), allocatable :: opdRayMask,gradInd_kmax
+!-->  opdValid(i,j) = 1 exactly where the last OPD wrote OPDMat (2026-10-10).
+!     Under the chief-ray reference a valid ray whose path equals the
+!     chief's reads EXACTLY 0, the value OPDMat holds where there is no
+!     ray, so "nonzero" is not a validity test; consumers ask for this
+!     (api opd_mask_get).  Unlike opdRayMask it follows iObsOpt.
+	Integer, dimension(:,:), allocatable :: opdValid
+!<--
         Real*8 :: RRayPosHis(3,mPupRay)
 	Real*8, dimension(:), allocatable :: taperFactor
         Real*8 :: NewIndRef,PolyVtx3D(3,mPolySide),UDxDrawGrid(3),
@@ -70,6 +77,18 @@ C***********************************************************************
         Logical, dimension(:), allocatable :: IsVarIndRefElt,
      &                                        IsGrinRefElt
 	Logical :: LUseChfRayIfOK,IsOverDraw
+!-->  OPD reference (Dave 2026-10-10, the manual's definition): the
+!     CHIEF ray by default, the aperture mean the option.  Two levels:
+!     LOpdRefChief is the SESSION option (OPDREF command), set once at
+!     allocation by opd_ref_init_opts -- never in a per-load reset;
+!     LUseChfRayIfOK is the value IN FORCE for the loaded deck, put
+!     back to the session option at every load (ray_mod_init_vars) and
+!     then overridden by the deck's UseChfRay4OPD= or by opd_ref_set.
+!     iOpdRefSrc says who chose it, for the line every OPD run prints:
+!     0 default, 1 Rx keyword, 2 OPDREF command, 3 opd_ref_set.
+	Logical :: LOpdRefChief = .TRUE.
+	Integer :: iOpdRefSrc = 0, iOpdRefSesSrc = 0
+!<--
         Type(LensletStr), dimension(:,:), allocatable :: LensletStrArray
         Integer, dimension(:), allocatable :: TotalLensletsArray,
      &                         HexLensletIdx,RecLensletIdx,iElt2iGradInd
@@ -144,6 +163,7 @@ C***********************************************************************
      &            HexLensletIdx,RecLensletIdx,Poly3DApVecL,
      &            IsGrinRefElt,PolyVtx3DSav,RayPosHist,LRayOKHist,
      &            gradIndRayPath,opdRayMask,gradInd_kmax,iElt2iGradInd,
+     &            opdValid,
      &            rayTC,GratingMaterial,stat=m_err_ray)
             if (m_err_ray /= 0)
      &        call macos_memory_failure
@@ -162,7 +182,7 @@ C***********************************************************************
      &		 PolyVtx3DSav(3,mPolySide,max_elt),
      &           RayPosHist(3,max_ray,0:max_elt),
      &           LRayOKHist(max_ray,0:max_elt),
-     &           opdRayMask(mpts,mpts),
+     &           opdRayMask(mpts,mpts),opdValid(mpts,mpts),
      &           IsGrinRefElt(0:max_elt),gradInd_kmax(mDrawRay,2),
      &           gradIndRayPath(3,mGradIndRaySegs,mDrawRay,2),
      &           iElt2iGradInd(max_elt),rayTC(max_ray),
@@ -186,6 +206,16 @@ C***********************************************************************
 
         End Subroutine ray_mod_init
 
+
+!-->  Session options, set ONCE at allocation (initialise_all), before
+!     ray_mod_init: a user option in ray_mod_init_vars is lost at every
+!     load (the spcOption / glass-catalog trap).
+        subroutine opd_ref_init_opts()
+          implicit none
+          LOpdRefChief  = .TRUE.
+          iOpdRefSesSrc = 0
+        end subroutine opd_ref_init_opts
+!<--
 
         subroutine ray_mod_init_vars()
           implicit none
@@ -275,10 +305,12 @@ C***********************************************************************
         DumpRayPosHist_Flg      = .FALSE.
         SaveVis3d_dat_Flg       = .FALSE.
         IsOverDraw              = .FALSE.
-        LUseChfRayIfOK          = .FALSE.
+        LUseChfRayIfOK          = LOpdRefChief  ! the session option
+        iOpdRefSrc              = iOpdRefSesSrc
         ! ------------------
 
         opdRayMask(:,:)         = 0
+        opdValid(:,:)           = 0
         gradInd_kmax(:,:)       = 0
         GratingMaterial(:)      = 0
 

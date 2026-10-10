@@ -52,6 +52,7 @@ C
         call cfiles_mod_init
         call elt_mod_init
         call macos_mod_init
+        call opd_ref_init_opts  ! session option, before ray_mod_init
         call ray_mod_init(mElt,mRay)
         call dopt_init
 

@@ -1285,7 +1285,8 @@ C***********************************************************************
           use param_mod
 !-->
           use macos_mod, only: ifStopSet,zcoType,ZernAnnular,ZernHex
-          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG
+          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG,
+     &                             LUseChfRayIfOK
           use dopt_mod, only: nOptWavelen,opt_wavelen,max_wl
 !<--
 
@@ -1402,6 +1403,14 @@ C***********************************************************************
             CALL PrintMsg('')
             CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
           END IF
+!-->      OPD reference: the chief ray is the default and is not
+!         written; the aperture MEAN in force (deck keyword, OPDREF or
+!         opd_ref_set) is, so the saved deck reproduces the OPD.
+          IF (.NOT.LUseChfRayIfOK) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('UseChfRay4OPD', "2x,A", 'N')
+          END IF
+!<--
           ! ZCO wavefront-decomposition basis (default ZernCircular
           ! is implied; only the non-default settings are parsed)
           IF (zcoType.EQ.ZernAnnular) THEN

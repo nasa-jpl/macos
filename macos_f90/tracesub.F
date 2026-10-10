@@ -35,7 +35,8 @@ C***********************************************************************
      &        LUseChfRayIfOK,opdRayMask,LCalcWFElt,
      &        LShowDTime,nValidRays,OPDRefRayLen_FLG,
      &        OPDRefRayLen,ifCtraceCalled,LRayOKHist,
-     &        RayPosHist,SaveRayPosHist_Flg,SaveVis3d_dat_Flg
+     &        RayPosHist,SaveRayPosHist_Flg,SaveVis3d_dat_Flg,
+     &        iOpdRefSrc,opdValid
 #ifdef CMACOS
         use macos_vars_mod, only : DAvgCumL
 #else
@@ -131,6 +132,7 @@ C***********************************************************************
 	MinL     = 1d38
 	mpt2     = mpts*mpts
 	CALL DZERO(OPDMat,mpt2)
+	opdValid=0  ! the pixels written below (opd_mask_get)
 
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
@@ -186,6 +188,39 @@ cendscottfix
             WRITE(*,12) nPassRays,DAvgCumL
  12         FORMAT(2P,' OPD: nPassRays =',I8,',','    DAvgCumL =',D17.9)
 	  End If
+!-->      Every OPD run says which reference it used (2026-10-10, the
+!         FEX-axis precedent).  The chief ray is the default; a chief
+!         that failed GEOMETRICALLY (LRayOK, not LRayPass: an obscured
+!         chief still serves) falls back to the mean, and says so.
+	  IF (OPDRefRayLen_FLG) THEN
+	    WRITE(*,*)' OPD reference: OPDRefRayLen= (Rx)'
+	  ELSE IF (LUseChfRayIfOK .AND. LRayOK(1)) THEN
+	    SELECT CASE (iOpdRefSrc)
+	    CASE (1)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (UseChfRay4OPD= Y)'
+	    CASE (2)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (OPDREF CHIEF)'
+	    CASE (3)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (opd_ref_set)'
+	    CASE DEFAULT
+	      WRITE(*,*)' OPD reference: CHIEF RAY (default)'
+	    END SELECT
+	  ELSE IF (LUseChfRayIfOK) THEN
+	    WRITE(*,*)' OPD reference: APERTURE MEAN (chief ray lost)'
+	  ELSE
+	    SELECT CASE (iOpdRefSrc)
+	    CASE (1)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN',
+     &                  ' (UseChfRay4OPD= N)'
+	    CASE (2)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (OPDREF MEAN)'
+	    CASE (3)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (opd_ref_set)'
+	    CASE DEFAULT
+	      WRITE(*,*)' OPD reference: APERTURE MEAN'
+	    END SELECT
+	  END IF
+!<--
 	  WFE=0d0; WFmax=-1d22; WFmin=1d22
 	  IF (LUseChfRayIfOK .and. LRayOK(1)) Then
 	    ! use chief ray OPL
@@ -198,6 +233,7 @@ cendscottfix
 	        OPDScal=CumRayL(iRay)-RefCumRayL
 	        WFE=WFE+(CumRayL(iRay)-RefCumRayL-DAvgl)**2
 	        OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+	        opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
 	        If (OPDScal>WFmax) WFmax=OPDScal
 	        If (OPDScal<WFmin) WFmin=OPDScal
 	      END IF
@@ -211,6 +247,7 @@ cendscottfix
                 OPDScal=CumRayL(iRay)-RefCumRayL
                 WFE=WFE+(CumRayL(iRay)-RefCumRayL-DAvgl)**2
                 OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+                opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
                 If (OPDScal>WFmax) WFmax=OPDScal
                 If (OPDScal<WFmin) WFmin=OPDScal
               END IF
@@ -226,6 +263,7 @@ cendscottfix
       	        OPDScal=(CumRayL(iRay)-RefCumRayL)-DAvgl
 	        WFE=WFE+OPDScal*OPDScal
 	        OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+	        opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
 	        If (OPDScal>WFmax) WFmax=OPDScal
 	        If (OPDScal<WFmin) WFmin=OPDScal
 	      END IF

@@ -7,7 +7,7 @@ macos CLI through a pty (readline needs a tty) and record
 one CLI process per leg so a crash at load cannot take the rest down.  Prompt-
 driven (waits for 'MACOS>'), never sleeps.  Each deck yields one CSV row:
 
-  deck, status, nelt, npass, rms, pv, lost, flips, rt_status, rt_nelt, roundtrip, dt
+  deck, status, nelt, npass, rms, pv, avg, lost, flips, rt_status, rt_nelt, roundtrip, dt
 
 status      ok | crash_load | timeout_load | load_fail | crash_opd | timeout_opd
             (crash_* = the process died: the host-killer class)
@@ -16,6 +16,10 @@ roundtrip   same | differ | n/a      (byte identity of the SECOND SAVE against t
             unit vectors are unitised once at load, so the FIRST round trip may
             legitimately differ from the source; the second must not)
 flips       the FwdRoot 'differing from the legacy metric' count printed by WARN
+avg         the CLI's 'Average OPD is' (DAvgl: the mean of ray-minus-chief OPL over the
+            valid rays) -- the same under either OPD reference; it is exactly the
+            constant by which the chief-referenced map differs from the mean-referenced
+            one (2026-10-10), so a nonzero avg names a deck whose map moved
 
 Usage:  cli_load_gate.py <binary> <decklist> <out.csv> [--model N] [--deadline S]
         [--workdir DIR]   (SAVE files go under DIR; default a temp dir, removed)
@@ -158,7 +162,7 @@ def save(cli, stem):
 
 def run_deck(binary, deck, model, deadline, workdir, idx):
     t0 = time.time()
-    row = dict(deck=deck, status='', nelt='', npass='', rms='', pv='', lost='',
+    row = dict(deck=deck, status='', nelt='', npass='', rms='', pv='', avg='', lost='',
                flips='', rt_status='', rt_nelt='', roundtrip='n/a', dt='')
     if not os.path.isfile(deck):            # the CLI re-prompts forever on a missing file
         row['status'] = 'missing'; row['dt'] = '0.0'
@@ -188,6 +192,7 @@ def run_deck(binary, deck, model, deadline, workdir, idx):
                 row['npass'] = g(txt, r'nPassRays =\s*(\d+)')
                 row['rms'] = g(txt, r'RMS OPD error is\s+(\S+)')
                 row['pv'] = g(txt, r'P-V OPD error is\s+(\S+)')
+                row['avg'] = g(txt, r'Average OPD is\s+(\S+)')
                 row['lost'] = g(txt, r'A total of\s+(\d+)\s+rays were lost')
                 row['flips'] = g(txt, r'differing from the legacy metric:\s*(\d+)')
                 ok1, _ = save(cli, s1)
@@ -228,7 +233,7 @@ def main():
     decks = [l.strip() for l in open(a.decklist) if l.strip() and not l.startswith('#')]
     tmp = a.workdir or tempfile.mkdtemp(prefix='cli_load_')
     os.makedirs(tmp, exist_ok=True)
-    fields = ['deck', 'status', 'nelt', 'npass', 'rms', 'pv', 'lost', 'flips',
+    fields = ['deck', 'status', 'nelt', 'npass', 'rms', 'pv', 'avg', 'lost', 'flips',
               'rt_status', 'rt_nelt', 'roundtrip', 'dt']
     with open(a.outcsv, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
