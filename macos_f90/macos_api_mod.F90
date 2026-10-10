@@ -2197,8 +2197,16 @@
         if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
         ! if (.not. StatusChk1(iElt)) return
 
-        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt)
-        if ((Nx > mGridMat) .or. (Nx/=Ny) .or. (Nx<3)) return
+        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt).
+        ! A grid larger than mGridMat cannot be stored: refused BY NAME
+        ! (2026-10-10, as elt_srf_grid_data_add and GridInit), not silently.
+        if (Nx > mGridMat) then
+          write(*,'(A,I0,A,I0,A,I0,A)') ' ** elt_srf_grid_data: REJECTED for Elt ', &
+            iElt, ': ', Nx, ' points exceed mGridMat=', mGridMat, &
+            ' for this model -- use a larger model size'
+          return
+        end if
+        if ((Nx/=Ny) .or. (Nx<3)) return
 
         ! check if SrfType /= Grid
         if (all(SrfType(iElt) /= GridTypeAll)) return
@@ -5952,6 +5960,20 @@
       ! NS-grid deck whose NSCount round-trip was lost) -- without the
       ! guard those indices overflow and crash the host.
       !---------------------------------------------------------------------------------------------
+      !---------------------------------------------------------------------------------------------
+      ! grid_dropped_get: grid FILES the last load declined (2026-10-10, elt_mod
+      ! GridTooBig) -- larger than this model's mGridMat, so not stored; those
+      ! surfaces trace WITHOUT their figure.  Nonzero = a harvest at this model
+      ! is missing figure data: load at a model whose mGridMat fits.
+      !---------------------------------------------------------------------------------------------
+      subroutine grid_dropped_get(nDrop)
+        use elt_mod, only: nGridDropped
+        implicit none
+        integer, intent(out):: nDrop
+        nDrop = nGridDropped
+      end subroutine grid_dropped_get
+
+
       subroutine grid_idx_ovf_get(nOvf)
         use surfsub, only: nGridIdxOvf
 

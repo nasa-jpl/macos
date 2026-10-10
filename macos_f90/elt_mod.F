@@ -398,6 +398,7 @@ C***********************************************************************
         Character*32, dimension(:), allocatable ::
      &                GlassElt, GlassName,EltMRP
 
+        Integer :: nGridDropped   ! grid files declined, per load
         Integer :: nElt,nRay,nOutCord,nSeg,spcOption,nRefRay,nDOE,
      &             SegApType,SegApVec(3),nMetMeas
 
@@ -758,6 +759,38 @@ C***********************************************************************
         END FUNCTION RxBad
 !<--
 
+!-->  GridTooBig (2026-10-10): a grid FILE larger than this model's
+!     mGridMat cannot be stored -- GridInit read it into
+!     GridMat(mGridMat,mGridMat,.) past its slot, into the neighbouring
+!     slots, and the trace read it back out of bounds (every e5hex1
+!     load at model 128: its 256-point flat.txt; found by the gfortran
+!     debug build).  DECLINED by name (CC's ruling W, guards warn): the
+!     grid is NOT loaded, the load proceeds, the surface traces without
+!     it (the trace guard nGridMat <= mGridMat), and each decline is
+!     COUNTED (nGridDropped, reset per load; WARN; api grid_dropped_get)
+!     so a figure dropped at too small a model is never silent in a
+!     harvest.  Not a clamp: that would silently truncate data.  The
+!     api grid setters REFUSE instead (a caller asking to store it).
+        LOGICAL FUNCTION GridTooBig(fname, n, ie)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: fname
+          INTEGER, INTENT(IN) :: n, ie
+          CHARACTER(LEN=8) :: f8
+          f8 = ADJUSTL(fname)
+          GridTooBig = (n .GT. mGridMat) .AND. (LEN_TRIM(fname).GT.0)
+     &      .AND. (f8.NE.'none' .AND. f8.NE.'None' .AND. f8.NE.'NONE')
+          IF (.NOT.GridTooBig) RETURN
+          nGridDropped = nGridDropped + 1
+          WRITE(*,'(A,A,A,I6,A,I5,A)')
+     &      ' ** GridFile ', TRIM(ADJUSTL(fname)), ':', n,
+     &      ' points exceed mGridMat=', mGridMat, ' for this model:'
+          WRITE(*,'(A,I6,A)')
+     &      '    grid NOT loaded, the surface traces without it'//
+     &      ' -- needs a model whose mGridMat >=', n,
+     &      ' (macos_param.txt)'
+        END FUNCTION GridTooBig
+!<--
+
 C***********************************************************************
 
         Subroutine elt_mod_init
@@ -1093,6 +1126,7 @@ C***********************************************************************
           ifOPDModGrid(:)      = .FALSE.
           LFastRayTrace(:)     = .FALSE.
           ifGridDataDefined(:) = .FALSE.
+          nGridDropped         = 0   ! per load (GridTooBig)
           GridFilePending(:)   = .FALSE.
           GridFileBin(:)       = .FALSE.
 
