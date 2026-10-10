@@ -24,6 +24,17 @@
 
 ## Active slice
 
+> **2026-10-09 NIGHT RESUME POINT (CC; context low).  PLAN_CONSOLIDATION phase 1 in flight -- read
+> memory `project_consolidation_phase1` first (lanes, what TO has done, the suite's state, the
+> clean-worktree rule).  Dave is done for the day; his order for the night: cli_tests cmd layer,
+> the full-corpus baseline, small 1.1a items, review TO's item 5 when it lands; COPHI waits for his
+> go; **load + re-emit the manual's example .in files for documentation** (new ask).  cmd layer first
+> cut committed 6767a86 (PERTURB.jou failing -- read its transcript first).  Background: the
+> full-corpus run at 52b1409 (scratchpad run_corpus_52b1409.log -> records/).  UNPUSHED: macos
+> 0df79d3..HEAD (suite, TO's 1d318ac/f755e78/52b1409, deck_blur, notes), resources 57e0eed..HEAD.
+> Rules tonight: binaries from ~/dev/macos_cli_base only; journals COPY decks before commands that
+> write beside them; nothing pushed; no `--amend`.**
+
 > **2026-10-08 RESUME POINT (CC; context exhausted).  READ `PLAN_CONSOLIDATION.md` FIRST -- it is the
 > active plan (Dave 2026-10-08: close PLAN section-0 items, build the CLI test suite, finish the manual
 > and cmdref, build in nothing new; four phases from 10-09; five rulings for Dave in its section 4).
