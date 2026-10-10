@@ -90,6 +90,10 @@ class Cli:
             os.waitpid(self.pid, 0)
         except OSError:
             pass
+        try:
+            os.close(self.fd)           # the pty fd: without this, select() fails at deck 511 (fd > 1023)
+        except OSError:
+            pass
 
 
 def classify_diff(a, b):
