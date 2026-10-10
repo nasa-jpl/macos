@@ -474,6 +474,22 @@ C       Set defaults, if necessary
 	  ZernTypeL(iElt)=1
 	  WRITE(*,112)'ZernType',iElt
 	END IF
+!-->  PLAN item 7 (Dave 2026-10-10): EVERY Zernike-carrying surface
+!     gets the ANSI default when it declares no ZernType=, whatever
+!     the element type.  The FLG above is pre-set .TRUE. at Surface=/
+!     Element= for any surface that is not SrfType_Zernike and for
+!     most element types, so a ZrnGrData surface, or a Zernike
+!     surface on an NS element, kept
+!     ZernTypeL 0: its ZernCoef never reached the trace (no ZerntoMon
+!     branch for 0) and its SAVE was unreloadable.  ANSI = the manual's
+!     Table 8 (the legacy Malacara ordering), the default where reached.
+	IF ((SrfType(iElt).EQ.SrfType_Zernike .OR.
+     &       SrfType(iElt).EQ.SrfType_ZrnGrData) .AND.
+     &      ZernTypeL(iElt).LT.1) THEN
+	  ZernTypeL(iElt)=ZernType_ANSI
+	  WRITE(*,112)'ZernType',iElt
+	END IF
+!<--
 
 	IF (MonCoef_FLG) THEN
 	  CONTINUE

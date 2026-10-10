@@ -1856,10 +1856,19 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !             with no message -- what a SAVE of a ZrnGrData NSReflector
 !             without ZernType= then could not reload (2026-10-10).
               IF (ZernTypeL(iElt) < 1) THEN
-                WRITE(*,'(A,I4,A)')
-     &            ' ** Rx load refused: nZernCoef (elt', iElt,
-     &            '): no ZernType= declared before it'
-                GO TO 99
+!               a Zernike-carrying surface takes the ANSI default here,
+!               as ChkDf2 will (PLAN item 7); any other surface refuses
+                IF (SrfType(iElt).EQ.SrfType_Zernike .OR.
+     &              SrfType(iElt).EQ.SrfType_ZrnGrData) THEN
+                  ZernTypeL(iElt) = ZernType_ANSI
+                  WRITE(*,'(A,I4,A)')       ! = ChkDf2's 112 form
+     &              ' Default used for ZernType(', iElt, ')'
+                ELSE
+                  WRITE(*,'(A,I4,A)')
+     &              ' ** Rx load refused: nZernCoef (elt', iElt,
+     &              '): no ZernType= declared before it'
+                  GO TO 99
+                END IF
               END IF
               IF ((nZernCoef<1) .OR.
      &            (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) THEN

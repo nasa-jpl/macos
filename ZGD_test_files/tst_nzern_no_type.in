@@ -1,10 +1,11 @@
-% tst_nzern_no_type.in -- the parser's nZernCoef= refusal must SPEAK (macos
-% 2026-10-10).  tst_zrngr_roundtrip.in with nZernCoef= 1 / ZernCoef= 0 on
-% its ZrnGrData NSReflector primary and NO ZernType= -- exactly what a SAVE
-% of that deck used to write.  With no ZernType declared ZernTypeL is 0;
-% the old range check read ZernType_MaxMode(0), out of the array, and
-% refused the load with NO message.  GATE (cli_tests/cmd/ZrnGr_refusal.jou):
-% the load is refused and the refusal names nZernCoef and the element.
+% tst_nzern_no_type.in -- nZernCoef= 1 / ZernCoef= 0 on a ZrnGrData NSReflector
+% primary with NO ZernType= (exactly what a SAVE of tst_zrngr_roundtrip.in
+% used to write).  Pre-2026-10-10 the parser read ZernType_MaxMode(0), out of
+% the array, and refused the load SILENTLY.  Since PLAN item 7 a Zernike-
+% carrying surface takes the ANSI default: the deck LOADS and says so
+% ('Default used for ZernType').  The speaking refusal for a surface that
+% carries no Zernike terms is tst_nzern_conic.in.  GATE:
+% cli_tests/cmd/ZrnGr_refusal.jou.
 
         ChfRayDir=  0.0E+00  0.0E+00  1.0E+00
         ChfRayPos=  0.0E+00  0.0E+00  -5.0E+00
