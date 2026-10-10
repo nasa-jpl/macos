@@ -1,0 +1,6 @@
+# nZernCoef= with no ZernType= declared (macos 2026-10-10): the load is REFUSED and
+# the refusal names the key and the element.  The pre-fix engine refused SILENTLY
+# (ZernType_MaxMode(0), out of the array): red on it.  The deck is what a SAVE of a
+# ZrnGrData NSReflector without ZernType= used to write; the SAVE no longer writes it.
+old $ROOT/ZGD_test_files/tst_nzern_no_type.in
+# EXPECT: \*\* Rx load refused: nZernCoef \(elt\s+2\): no ZernType= declared before it
