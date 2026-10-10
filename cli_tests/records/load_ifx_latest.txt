@@ -1,15 +1,9 @@
-record  load_ifx_a582b13.csv  (120 decks)
+record  load_ifx_e37e763.csv  (114 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
-  status    load_fail 6  ok 114
-  roundtrip n/a 2  same 104  ulp 8
+  status    ok 114
+  roundtrip same 106  ulp 8
   NaN OPD   3: Rx_SaveKeys.in tst_block_comment.in tst_save_keys.in
-  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_BadScalar.in
-  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_RxStop.in
-  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ShortVec.in
-  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_bad_scalar.in
-  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_rx_stop.in
-  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_short_vec.in
-  vs load_ifx_1d132fd.csv: 0 decks with a changed OPD/nPass/lost
+  vs load_ifx_a582b13.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
