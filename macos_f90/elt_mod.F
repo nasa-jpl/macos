@@ -388,6 +388,7 @@ C***********************************************************************
         Logical             :: LRxPushback = .FALSE.
         Character(len=1024) :: RxPushbackLine = ' '
 !<--
+        Integer :: iosRx = 0     ! the IOSTAT of the parser's reads (RxBad)
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -727,6 +728,34 @@ C***********************************************************************
      &      ' (elt', ie, '): ', nr, ' of ', n, ' values ',
      &      TRIM(where), '; the rest are 0'
         END SUBROUTINE CoefShortNote
+!<--
+!-->  RxBad (2026-10-09, PLAN_CONSOLIDATION 1b; Dave's ruling 4a): the
+!     values with NO natural zero -- geometry vectors, frames, aperture
+!     and obscuration groups, integer lists, scalars -- are read with
+!     IOSTAT=iosRx and then  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!     (msmacosio.inc label 99 = the load-failure exit: nElt = 0,
+!     LOAD_SUCCESS = .FALSE., the file closed).  A short line or a token
+!     that is not a number REFUSES the load with one message naming the
+!     key and the element; the old bare READ died on a Fortran runtime
+!     error, which kills the host when the engine is a mex.  Coefficient
+!     blocks pad instead (ReadCoefBlock above): there zero is natural.
+
+        LOGICAL FUNCTION RxBad(ios, key, ie, text)
+          IMPLICIT NONE
+          INTEGER,          INTENT(IN) :: ios, ie
+          CHARACTER(LEN=*), INTENT(IN) :: key, text
+          RxBad = (ios .NE. 0)
+          IF (.NOT. RxBad) RETURN
+          IF (ie .GE. 1 .AND. ie .LE. SIZE(EltID)) THEN
+            WRITE(*,'(A,A,A,I4,A)') ' ** Rx load refused: ',
+     &        TRIM(key), ' (elt', ie, '): the value could not be read'
+          ELSE
+            WRITE(*,'(A,A,A)') ' ** Rx load refused: ',
+     &        TRIM(key), ' (header): the value could not be read'
+          END IF
+          WRITE(*,'(A,A,A)') '    -- too few values, or not a number: "',
+     &      TRIM(ADJUSTL(text(1:MIN(LEN(text),100)))), '"'
+        END FUNCTION RxBad
 !<--
 
 C***********************************************************************
