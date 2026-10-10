@@ -1,0 +1,2143 @@
+# BRIEF for TO: dyson5 -- a VSWIR Dyson imaging-spectrometer challenge (2026-09-30)
+
+From Dave via CC.  Your 2026-09-30 assessment is accepted with the corrections
+and decisions below.  Run this lane on **Opus 5.5**; escalate to Fable only if
+an engine gate fails against its closed form (that becomes an engine slice).
+
+## Decisions (Dave)
+
+1. **Our own prescription, from the spec.**  No proprietary sources: do NOT
+   request Lori's CDR slides or any JPL-internal prescription.  Public papers
+   (Carbon-I arXiv:2505.22545; the EMIT and CWIS design papers from Mouroulis
+   and Green's group; Mouroulis & Green 2018 review) are fine for the FORM, the
+   design conditions and the SPEC, never for surfaces.  dyson5 is therefore a
+   design-from-spec challenge scored against the spec; say so in the record.
+2. **The spec is Joe's, and it is EMIT-class:** F/1.8, 3000 x 500 px at 18 um,
+   380-2500 nm, smile/keystone < 0.1 px (0.2 acceptable), SRF < 1.5-2.0 px
+   FWHM, XRF < 1.5 px FWHM, plus the radiometric chain (throughput, grating
+   efficiency, QE, slit loss) vs wavelength.  Record Jim's realism alongside:
+   as-built SRF 2.5-3 px, 2-px slits, photon-limited, smile/keystone drive.
+   The grating is the stop.  Note 3000 px x 18 um = a 54 mm slit -- larger than
+   EMIT's 1280 -- so the block scale is part of the problem, not a detail.
+3. **Talk is 1-4 months out.**  Tight beats fast.  Every number gated, every
+   convention stated before its number, a runner from day one.
+
+## Corrections to the assessment (verified in the engine 2026-09-30)
+
+- "Physical-optics legs cannot pass a grating" is wrong as written.  The
+  propagation chain's ray re-trace HAS a Grating branch (propsub.F ~740), so
+  rays that seed and carry the grid pass a grating and its dL enters the grid
+  phase.  What is absent is a WAVE-optics grating (orders, efficiency).  Keep
+  grating diffraction analytic -- for that reason.
+- The immersed grating math is right (`Snells_Law_Grating`: u = (na*i +
+  m*lambda0/d*s)/nb, lambda0 vacuum), but how the engine assigns na/nb to a
+  REFLECTOR embedded in glass is unpinned: no Rx in the corpus does it, and
+  `IndRef(iElt)=CurIndRef` appears at two reflector sites (tracesub.F ~4108,
+  ~4141).  Gate 1a must build the grating INSIDE a silica block and check the
+  outgoing direction against sin(out) = sin(in) + m*lambda0/(n*d).  If it
+  fails, STOP and report -- engine fixes are not this lane's.
+- The stop wrapper's range is `0 < iElt < nElt-2` (macos_api_mod), i.e. at
+  least the Return + FocalPlane tail after the grating.  Build the deck so.
+
+## Build order (yours, kept), with gates and pre-registered nulls
+
+1. **Engine gates** (mmacos tests, SUITE_FAST, both must have a must-PASS leg):
+   - `tGratingImmersed`: reflection grating on a concave base inside a fused-
+     silica block vs the closed form, 3 wavelengths, 1e-10 on the direction.
+     Include the in-air case as the control (the existing pymacos grating
+     fixture is air only, `IndRef= 1`).
+   - `tGlassDispersion`: `GlassElt= Silica` (and CaF2 once added) at 3
+     wavelengths via `set_src_wvl`, index read back vs Sellmeier, 1e-12; a
+     trace-level check that the refracted angle FOLLOWS the wavelength (the
+     null: a run where the index does not move is the failure to detect).
+   - **CaF2 into the glass table** = an ENGINE change (macos repo:
+     `macos_f90/macos_glass_list.txt` -> `tools/gen_glass_builtin.py` ->
+     `glass_builtin.f90`, rebuild `makems.sh release gfortran`, then mmacos
+     `make` after removing the mex).  Engine first, resources second.
+   - **DO NOT rebuild libsmacos or the mmacos mex before
+     `templates/40_benches/tg_psi_dm96_oap/runs/fix2x2.done` exists** (the
+     descent 2x2 is running until ~17:00 today; each cell starts a fresh
+     MATLAB and would pick up a different engine).  Until then, gates that
+     need only Silica can proceed on the current build.
+2. **`dyson_layout` closed-form seed** in `mmacos/design/src/` beside
+   `offner_layout.m`: concentric Dyson, grating radius R_g = n*R_b/(n-1) with
+   the slit/FPA plane at the block's flat face through the common centre,
+   slit and FPA offset either side of the axis.  VERIFY the condition against
+   Mouroulis & Green 2018 before pinning it, and record where the classical
+   seed breaks at F/1.8 with a 54 mm slit (block size, offsets, the field
+   flattener or meniscus the real ones carry).  A pre-registered null: if a
+   single-block Dyson cannot meet F/1.8 at this slit length, report the
+   scaling law first; do not add elements until that is on record.
+   `SPECTROMETER_DESIGN_REFERENCE.md` in `optical_design/` follows the
+   telescope reference's pattern -- and goes on the dev-only strip list
+   (`DEV_FILES.md` + `release-exclude.txt`) like its sibling.
+3. **`spectrometer_score`**: the two 2D maps (field-angle map, wavelength map)
+   from `set_src_fov` x `set_src_wvl` sweeps and `macos.spot` centroids; smile
+   (centroid drift along the slit at fixed lambda) and keystone (across lambda
+   at fixed slit position) in PIXELS with the sign and axis convention stated
+   first; SRF/XRF as the convolution chain geometric spot (x) 2-px slit image
+   (x) pixel (x) Airy (analytic; ~0.3 px at 2500 nm, F/1.8), FWHM in pixels;
+   the radiometric chain closed-form with the SLIT loss the one measured term
+   (a physical-optics leg to the grating plane, what overfills its aperture).
+   One scorer for Dyson and Offner; the Offner comes from `offner_layout`.
+4. **Native optimize** over grating radius, block radius, offsets, grating
+   period: the CALIB multi-field / multi-wavelength path (<= 12 FOV x 6
+   lambda), merit in pixel units.  Zernike-solve doctrine applies (memory
+   `project_zern_solve_doctrine`): power pinned multi-field, tilt verified.
+5. **Record + slides**: `mmacos/challenges/dyson5/` in the rodgers3 pattern
+   (target, the extension, one open question for the room), the Dyson-vs-
+   Offner trade slide, and a live-demo candidate (five-element geometric
+   deck, seconds per solve).
+
+## Standing rules (DAVE'S, not optional)
+
+- ONE user-editable runner from day one: `dyson5_params.m` + `dyson5_run.m`,
+  every stage run THROUGH it, README "run it yourself".
+- Real examples: save the `.in` and the `.mat`, never `exit(0)` in an example.
+- State the convention before the number (challenges README).
+- Corpus/engine facts from the ENGINE, never by text-parsing `.in` files.
+- Gates fail closed: every gate ships a must-PASS leg.
+- New guards warn once per run; hard errors need Dave's sign-off.
+- Never edit an executing script; ONE model-1024 MATLAB on this box (yours
+  are small -- keep them small).
+- Commit on `dev-candidate` (both repos as needed); state SHA + branch; do
+  not push -- Dave reviews.
+- Write every resolved oddity into the record at resolution time.
+
+## Deliverable of the first beat
+
+Gates 1a/1b green (or a STOP report), `dyson_layout` with the condition
+verified and the F/1.8 / 54 mm scaling on record, and the runner skeleton.
+Report as a BRIEF-style note in `mmacos/challenges/dyson5/`.
+
+## Addendum (Dave, 2026-09-30): back every ray metric with a PROPAGATION run
+
+Every analytic / ray-trace metric (smile, keystone, SRF, XRF, the slit and
+grating diffraction losses) gets a physical-optics twin: seed the field at the
+slit, propagate leg by leg with the near-field (`PropType` 4/5, plane-to-plane
+and sphere-to-sphere), the DFT legs (13-15, which let you set the OUTPUT
+sampling -- a few um over a few-hundred-um window at the FPA per (field,
+lambda) point, never the whole 54 x 9 mm FPA) and the far-field leg, and read
+the COMPLEX FIELD back (`macos.complex_field` / `cfield_get`, re + im), not
+just the intensity.  Phase is what carries the grating: the ray OPD is an
+unwrapped LENGTH and does not wrap, but as a phase it spans thousands of waves
+across the grating, so any comparison between the ray and wave pictures is
+done on the complex field (or on intensity-derived quantities), never on a
+wrapped phase map.  Metrics from the wave twin: PSF centroid per (field,
+lambda) -> smile/keystone maps to compare with the ray centroids (expect
+agreement well under 0.01 px where the PSF is symmetric; where they differ,
+that IS the finding); SRF/XRF from the propagated PSF (x) 2-px slit (x) pixel,
+replacing the analytic Airy term; slit loss and grating-aperture overfill from
+the field at the grating plane.
+
+**Engine gap, verified 2026-09-30, CC's lane, NOT yours:** every propagation
+kernel in `propsub.F` (NFPROP, PPPROP, SFPROP, FRPROP, NFPropDFT, FFPropDFT,
+SPH2PL/PL2SPH, FFPROP, and `FnCalc`) is handed `WaveBU`, the VACUUM
+wavelength, with no division by the medium's index.  The inter-leg geometric
+phase is right (`CumRayL` accumulates `CurIndRef*RayL`, an optical path, and
+`TPL = 2pi/WaveBU`), but a diffraction leg INSIDE the silica block runs at the
+wrong Fresnel number by n ~ 1.45.  In a Dyson the slit and the FPA sit at the
+block's flat face, so essentially every leg is inside glass -- the wave twin
+of the Dyson is blocked until the kernels take `WaveBU/n_leg` (n_leg = the
+index of the medium the leg traverses, `CurIndRef` at the leg's start
+element).  CC does that slice after the descent 2x2 releases the build
+(`fix2x2.done`), gated by the Fresnel identity: a leg of length z in glass of
+index n must equal the same leg of length z/n in vacuum, bit-for-bit, and the
+pre-fix engine must FAIL it by n.
+
+**What you do meanwhile:** build the wave-twin harness on the OFFNER first --
+it is all-reflective, entirely in air, so the current engine is correct for
+it today.  Same scorer, same (field, lambda) sweep, same complex-field
+readback.  When the medium-aware kernels land, the Dyson runs through the
+identical harness.  Two conventions to state before any number: the field's
+sampling comes from `macos.dx_at` / `elt_dx_get` at the element (SI, via the
+base-unit factor -- memory `project_pymacos_dx_unit_convention`), and the
+grating's m-th order is the ONLY order the engine carries (the ray model gives
+one diffracted direction), so grating efficiency stays in the radiometric
+chain.
+
+## Addendum 2 (2026-09-30): Mouroulis & Green 2018 is now on disk
+Dave placed the PDF in `mmacos/challenges/dyson5/` (git-ignored: SPIE
+copyright, local only -- cite, never commit).  CC's digest is
+`NOTE_mg2018_digest.md` beside it: the Sec. 5.3 design principles (distortion
+~1% px at design, >75% ensquared, degraded spots OK for uniformity, grating =
+stop), the SRF/CRF/ARF definitions verbatim in form for the scorer, the
+incoherent-approximation rule (Airy diameter < pixel and slit -- met at
+F/1.8), the Fig. 15 CaF2 Dyson spec table as the flight-class column, and
+Table 3 placing Joe's spec in the ALIS regime (3200 px, 380-2500, 7 nm).  The
+paper restates neither the concentric condition nor a prescription; beat 1's
+verification stands.
+
+## Addendum 3 (2026-10-01): finding #3 fixed; OPD across a grating is MODULO LAMBDA (Dave)
+`dL = Order*lambda/RuleWidth * dot(s0, rho)` landed (macos, CC); `tGratingOpl`
+is the gate.  Dave's rule for every comparison the wave twin makes from here:
+the OPD of a wavefront that has crossed a grating is a STAIRCASE (the groove
+structure), i.e. defined only modulo lambda; the engine's ray OPL carries the
+smooth order-m phase function, which equals the physical wavefront mod
+lambda.  So: compare pupil OPD, ray-vs-field phase, and chain-vs-engine phase
+in PHASE SPACE -- wrap to (-lambda/2, lambda/2], or compare the complex
+fields / exp(i 2 pi W/lambda) -- never as unwrapped lengths across the
+grating.  `tGratingOpl`'s rms on the reference sphere is fine as written only
+because the fixed engine's OPD there is ~0 (no wraps); state the rule in the
+record and wrap before any rms where the OPD could exceed lambda/2.  Re-run
+s2w unchanged once the mex is relinked; the order -1 rows then replace the
+"defect" rows.
+
+## Addendum 4 (2026-10-01, Dave): the COMPACT variant is the path; and the deck starts now
+
+**Decision.** Pursue the paper's compact Dyson variant (a separate mirror plus
+a meniscus) as rung R4 -- not the free-radius concentric block.  The beat-3
+ladder settled the fixed-scale question: R3's de-concentred block solves the
+distortion (keystone 0.011 px), the face asphere is inert, and the blur is a
+size statement (h^4/r^3 at the ~32 mm effective field).  Score R4 under the
+IDENTICAL operands and the identical scorer, and put R3 and R4 in ONE trade
+table (keystone, smile, CRF FWHM, ensquared, SRF, length, footprint, element
+count, glass volume) so the trade is a single comparison.  Keep the free-radius
+record as the "size alone" column of that table.
+
+**Re-score first.** `dyson5_s2_maps.png` and every SRF/CRF number quoted in
+beats 2-3 predate the chord-ruled engine (the 2.1-3.1 px SRF ramp in the s2
+maps IS finding #2).  Re-run s2 and s3 on the current mex before any number
+reaches a slide; beat 2c's s2w order -1 rows likewise (finding #3 is in).
+
+**The deck.** Dave is starting `demo_session/deck_dyson.md` -> `deck_dyson.pptx`
+(the gauge-deck toolchain; CC builds it; DECK_STYLE.md governs: lean main
+path, one Backup divider, every result slide pairs its LAYOUT figure with its
+PERFORMANCE map, figures are the tools' own output unmodified).  What the
+dyson5 runner must therefore emit, stably named, one set per stage, from a
+committed producer (no hand-rendered figures -- see memory
+`feedback_figure_producers_rot`):
+1. **Layout figures to deck standard** -- the current `dyson5_s1_layout.png`
+   (whole spheres and axes in metres) is a chain sketch, not a layout.  Needed:
+   a dispersion-plane section and a slit-direction section per form, drawing
+   the block outline (flat face + spherical face), the grating arc, the air
+   gap, the slit and FPA as marks, the meniscus/mirror where present, rays at
+   380 / 1440 / 2500 nm from slit centre and both ends, axes in mm, a scale
+   bar.  `spectrometer_layout_fig.m` (design/src), called by every stage that
+   emits a deck: `dyson5_<stage>_layout_<form>.png`.
+2. **Performance maps** per scored deck: the 2 x 4 map panel as now
+   (field-angle map, smile, SRF, ensquared) plus keystone and CRF panels, with
+   the convention of each axis quantity in the axis label (pixel units; sign
+   and axis stated in the figure, not the caption).
+3. **The ladder bars** as now, plus the R4 column, and the same chart for the
+   free-radius record.
+4. **The propagation twin** evidence: order-0 Airy / pupil OPD (validation),
+   then per (field, lambda) PSF centroid vs ray centroid, SRF/CRF from the
+   PSF, the sinc^2 slit-loss comparison -- each as a figure the deck can place.
+Every figure's producer is in the tree and runs from `dyson5_run` stages;
+the deck's `figs_dyson/` copies are taken from the runner's outputs by a
+script (`crop_panels.py` pattern), never edited by hand.
+
+## Addendum 5 (2026-10-01, Dave): layouts are ENGINE RENDERS of the .in file, not chain sketches
+Dave: "I'd expect to see rendered optics, not abstract circles.  Where is the
+.in file?"  The layout figure of record is `macos.view_rx` on the emitted
+deck -- bodies, rays and labels read back from the engine.  Producer:
+`challenges/dyson5/dyson5_view_figs.m` (CC, committed; two views per deck,
+3-D and the dispersion plane); `demo_session/tile_views.py` composes them.
+This REPLACES addendum 4's `spectrometer_layout_fig.m` ask: do not write a
+separate drawing tool; call `dyson5_view_figs` from every stage that emits a
+deck, so each ladder step and R4 has its render beside its score.
+Two things the renders exposed in the emitter, for you to decide and record:
+1. **The block does not render as glass.**  The slit sits ON the flat face,
+   so the emitter makes the glass the SOURCE medium and only the spherical
+   face is a Refractor; `view_rx` joins consecutive Refractor pairs into a
+   solid, so the block shows as a thin face.  Emitting the flat face as a
+   Refractor (slit in air at the face, cone F/1.8 in air refracting to the
+   same in-glass half-angle) is more physical (the slit is bonded or
+   air-spaced on real Dysons) and renders the block as a body.  Ray results
+   are identical by construction; verify with tSpectrometerRx before
+   switching.
+2. **Labels pile up at the face** (E1/E4-E7 at z = 0): the Reference/Return/
+   FocalPlane bookkeeping planes.  Name the elements in the emitter
+   (`EltName=`) so the viewer's labels read "Slit", "BlockFace", "Grating",
+   "FPA" instead of indices.
+
+## Addendum 6 (2026-10-01, Dave): the layouts show OBSTRUCTED beams -- clearance is a number, apertures are declared, the Offner's slit moves
+Dave, on the engine renders: "serious blockage of the beams; the Offner needs
+separation to clear M2; the Dyson looks like the Offner."  Measured from the
+engine's ray history on the emitted decks (`dyson5_clearance_probe.m`, one
+field point at the slit's +6 mm, 1 um):
+
+| deck | what crosses what | numbers |
+|---|---|---|
+| Offner `dyson5_s1_offner.in` | leg 1 (slit -> M1) at the grating's plane z = -250 mm | beam y in [-39.4, +51.4] mm; grating footprint y in [-44.6, +44.6] mm -> the grating body sits INSIDE the incoming beam |
+| Offner | leg 3 (M3 -> FPA) at the same plane | beam y in [-57.5, +33.3] mm -> through the grating again |
+| Offner | M1 footprint | radius 89.5 mm about y = +6; the "M1" and "M3" zones overlap (both at y ~ 0) |
+| Dyson `dyson5_s3_r3.in` | nothing crosses a body | block face footprint radius 42 mm at z = 217; grating footprint radius 134 mm at z = 691 (a 270 mm wide grating of 0.70 m radius); slit at +6.0 mm, this wavelength lands at -11.95 mm on the face |
+
+**Why the trace cannot see it:** every element has `ApType= None`, and the
+sequential trace never tests a ray against an element it is not currently
+traversing.  Obstruction is a CLEARANCE property, not a ray-trace property
+(memory `feedback_clearance_gates`: a gate's margin is a NUMBER, not a body).
+
+**Required, before any further rung is scored:**
+1. **Declare apertures** on every element from the multi-field, multi-lambda
+   footprint union plus a mount margin (ApVec from the hull, as
+   `dmg_bench_clearance` does for the benches).  Then the engine vignettes
+   what it should, `view_rx` draws real bodies (the Dyson block becomes a
+   cylinder, not the beam's hull -- that is why it "looks like the Offner"),
+   and ensquared energy is measured through the real stops.
+2. **`spectrometer_clearance`:** for every leg, the ray hull of that leg
+   against every element body it does NOT traverse (aperture + mount), the
+   minimum clearance in mm per (leg, body), printed as a table and FAILING
+   the stage when negative.  Run it from every stage that emits a deck.
+3. **The Offner's slit offset.**  Clearing the grating needs the slit->M1
+   and M3->FPA beams beside the grating: offset >~ grating half-width + beam
+   half-width at that plane + margin ~ 45 + 45 + 10 = 100 mm, i.e. ~0.2 R
+   (the classical Offner geometry, M1 used in two separated zones).  Re-pose
+   the Offner at that offset and re-score; it is the all-reflective twin and
+   the propagation twin's validation ground, so it must be a real layout.
+   Note the Offner deck runs at F/2.8 (source cone 0.359 rad full); state
+   that beside the Dyson's F/1.8 wherever the two are compared.
+4. **The Dyson's slit/FPA mechanics.**  The slit mask and the FPA package
+   share the block's face: slit at +6 mm, the band landing 12-21 mm away.
+   Add a package model (active area 54 x 9 mm inside its carrier + window;
+   a cold shield if the SWIR end needs one) and score the slit-to-package
+   clearance; the review's answer when it fails is a fold prism / in-built
+   reflector at the slit -- make that part of R4, not an afterthought.
+5. **Element sizes in every record and on the deck:** block diameter and
+   thickness, grating diameter and radius, mirror diameters, overall length;
+   the trade table (addendum 4) gains those columns.
+**Correction to addendum 5 item 1:** the emitter ALREADY carries the flat
+face as `BlockFaceIn`/`BlockFaceOut` refractors; the block renders as the
+beam's hull only because no aperture is declared.  Item 1 above fixes it.
+
+## Addendum 7 (2026-10-01, Dave): R4 is the design of record; addendum 6 applies to IT; the telescope spec is EMIT's
+**R4 accepted as the headline design** (keystone 0.0026 px, smile 0.0051,
+CRF 1.33, EE 0.76 at 694 mm and 22.7 L -- the free-radius result at 63 % of
+the length and 27 % of the glass).  Two things the record keeps beside it:
+the solve ends on its bounds (4 mm plate, ~2 m radii) and the landscape is
+multimodal -- beat 4's global search over the meniscus is where that
+resolves; and the twin's diffraction ensquared energy (0.85 Offner, 0.45
+Dyson) is quoted for which deck?  Run the twin ON R4 and report its EE with
+diffraction next to the geometric 0.76; the deck will show the pair.
+
+**Addendum 6 is the collisions brief -- do it on R4, not R3:** apertures from
+the footprint hulls on every element (block, meniscus, grating, slit mask,
+FPA), `spectrometer_clearance` per (leg, body) with the minimum clearance
+in mm and a FAIL on negative, the Offner re-posed at ~0.2 R (it is the
+twin's validation ground and the trade's reference, so it must be a real
+layout), the slit / FPA package model with the fold-prism split when it
+fails, and element sizes in the trade table.  The layout figure of record
+stays the ENGINE render of the .in (`dyson5_view_figs.m`); your mm-scaled
+chain sections are the 2-D complement, placed beside it, never instead.
+
+**The telescope (Dave: "go with the EMIT parameters for now").**  Beat 5 =
+the fore-optics that feed the slit, scored under the same runner.  Spec:
+| item | value | from |
+|---|---|---|
+| orbit altitude | 420 km | EMIT (ISS) |
+| ground sample distance | 60 m | EMIT |
+| IFOV | 0.143 mrad | 60 m / 420 km |
+| pixel | 18 um | Joe's FPA |
+| focal length | 126 mm | 18 um / 0.143 mrad |
+| F-number | 1.8 | the spectrometer's, matched at the slit |
+| aperture | 70 mm | f / 1.8 |
+| cross-track field | 24.6 deg full (3000 px) | 3000 x 0.143 mrad; swath 180 km |
+| image | flat, telecentric, 54 mm slit, 2-px (36 um) slit width | the Dyson's entrance condition |
+Form: the review's Sec. 5.1 (a wide-field reflective telescope with a
+telecentric relay, Fig. 12; Carbon-I used a freeform TMA).  Start from the
+design layer's TMA / fold builders (`macos.design.Telescope`, the fold and
+centred-TMA tools -- memory `project_fold_extraction`), two-mirror or TMA
+seeds, telecentric output as a merit term (chief-ray angle at the slit, in
+mrad), spot size at the slit under the pixel, along-slit mapping linearity
+(the telescope's share of smile/keystone), and the PUPIL MATCH: the
+telescope's exit pupil must land on the spectrometer's stop (the grating).
+Realizability rules stand (AOI < 15 deg, shroud fit, clearance as a number).
+Deliverable of the first beat: the seed laid out and engine-rendered, its
+spot and telecentricity maps over the 24.6 deg field, and the pupil-match
+number -- then the spectrometer and telescope traced END TO END as one deck.
+
+## Addendum 8 (2026-10-01): beat 4 order -- the centroid question first, with its discriminators
+Beat 3c accepted (354186e): apertures in the engine's frame with the no-vignetting
+gate, `spectrometer_clearance` failing on negatives, the Offner real at 0.22 R
+with the classical corrections, the package model, R4's twin pair 0.747 / 0.759.
+
+**The open finding is now the headline risk** and the deck says so on its title
+slide: if the detector-seen keystone is the WAVE centroid, R4 reads up to 0.12 px
+against Joe's 0.1, not 0.0026.  Settle it before any optimizer runs, and settle
+it with discriminators, not a single confirmation:
+1. **The amplitude-weighted ray centroid** from the engine's pupil amplitude
+   (|WFElt| at the seed, or per-ray transmission), compared with the PSF
+   centroid per (slit, lambda).  If it reproduces the 0.122 px, the mechanism
+   is proven and the operand changes.
+2. **The wavelength law is the tell.**  Amplitude weighting of the RAY
+   aberration is achromatic to first order (ray spots do not scale with
+   lambda; Fresnel transmission barely does), so a difference that GROWS with
+   lambda points instead at a diffraction-scale effect: the PSF's width grows
+   as lambda, so (a) truncation of asymmetric wings by the twin's window and
+   (b) the sampling of a lambda-wide PSF on the grid both grow with lambda.
+   Null test: double the twin's window and halve its sampling at 2500 nm --
+   if the 0.122 px moves, it is the twin's numerics, not the design.
+3. **Separate the two forms of weighting:** an unweighted PSF centroid over
+   a window that holds > 99 % of the energy vs the same over the 1-px box;
+   and the centroid of the engine's far-field leg vs the DFT leg at the
+   same (slit, lambda).  Agreement between legs and windows isolates the
+   physics from the propagator.
+Report the result as measured, with the mechanism stated as proven or
+refuted; the deck carries whichever keystone the detector sees.  Then: the
+global meniscus search, the native optimize with that operand, R5's fold
+prism under the clearance check (cold shield height as the parameter), and
+beat 5's telescope at the EMIT parameters.
+
+## Addendum 9 (2026-10-01): centroid closed; the slit-loss factor is next; deck asks
+**Centroid (4d95a9a): accepted.**  Mechanism proposed, tested, refuted; numerics
+ruled out by the window and pitch variants; cause found (the far-field grid's
+frame, both signs on the Dyson, one on the Offner) and taken from the engine's
+source frame.  That is how a finding closes.  R4's 0.0026 / 0.0051 px stand on
+the deck as what the detector sees, with the diagnosis in Backup.
+
+**Slit diffraction loss -- the factor is now the open item** (Dave asked why it
+does not match sinc^2).  The record's model: a 36 um x 0 mm slit, far-field leg
+to the grating plane, 255-point grid, window 11 % wider than the acceptance;
+engine / closed form = 0.30 at 380 nm, 1.04 at 700, 1.32 at 1440, 1.36 at
+2500.  A ratio that changes SIGN across the band is not a normalisation.  Three
+tests, each a one-knob change, reported as a table before any explanation:
+1. **Grid:** 255 -> 511 -> 1023 points at 380 and 2500 nm (the slit is ~61
+   samples wide at 255; the far-field pitch is 0.44 to 2.9 mm).  Convergence or
+   not is the first fact.
+2. **Window:** acceptance-to-window 1.11 -> 2 -> 4.  Energy diffracted beyond
+   the window aliases back INTO it on a periodic FFT grid and is counted as
+   loss; the tail beyond the window scales as lambda, which is the right sign
+   for the long-wavelength excess.
+3. **The slit's length:** 0 mm -> 54 mm (2-D).  A zero-length slit spreads
+   uniformly along x over the whole window; with the real length the x-pattern
+   is a narrow sinc and the acceptance should be the F/1.8 CIRCLE, not the
+   |y| strip -- check which the loss definition uses.
+Also confirm the plotted "sinc^2 closed form" is the exact integral over the
+acceptance (the record says so) and not the 1/(pi^2 u0) asymptote, which is
+off at 2500 nm where the acceptance is only ~4 sidelobes wide.
+
+**Deck asks that reach the runner:** (1) element tables are generated from
+the .in files (`demo_session/rx_elt_table.py`: E#, name, type, surface, |R|,
+conic, aperture radius, vertex z) -- keep `EltName=` meaningful on every
+emitted deck, they are now on the slides; (2) a methods slide defines engine /
+chain / twin / ladder / seed / operand in plain words -- use those words the
+same way in the records; (3) `dyson5_s3_r3.in` on disk has no apertures (only
+the seeds and R4 were re-emitted in 3c) -- re-emit every ladder deck with
+apertures so the tables and renders agree across steps.
+
+## Addendum 10 (2026-10-01, Dave): next steps approved; three future-work items on the record
+Dave: "OK for TO next steps" -- the addendum 8/9 order stands: the slit-loss
+factor tests, the global meniscus search, the native optimize with the
+smile/keystone operands, R5's fold prism under the clearance gate (cold-shield
+height as the parameter), then beat 5's telescope at the EMIT parameters.
+Add when the design of record is stable (not before R5 and the telescope seed):
+1. **A surface-by-surface tour of the prescription,** as the CTB record did
+   leg by leg: for each surface in order, its role in a sentence, the ray
+   footprint (centroid, size), the clearance to its neighbours, and where a
+   propagation leg ends the field / intensity there; one strip of figures per
+   surface from the runner, the engine render marking the surface.  It is how
+   a reader who did not build the deck learns it.
+2. **Spot diagrams in the Mouroulis & Green form** (their Fig. 16): a grid of
+   spot diagrams, slit positions down, wavelengths across, each drawn inside
+   the 18 um pixel box at a common scale, geometric from the engine's rays,
+   with the propagated PSF beside it where the twin has run.  A producer in
+   the tree, run from the scoring stage, stable names per deck.
+3. **The telescope** (beat 5, addendum 7): the EMIT-parameter fore-optics
+   feeding the slit, then the end-to-end deck.
+
+## Addendum 11 (2026-10-01, Dave): the closure envelope -- "for which parameters should designs close?"
+The run-it-yourself slide now states the EXERCISED envelope (F/1.8, 220 mm
+silica, 54 mm slit, 380-2500 nm, 18 um, order 1; the scaling scan 50-500 mm
+at order 0; the Offner at F/2.8) and says closure outside it is untested.
+Make that a measured statement.  A sweep stage (`s4env` or similar, opt-in,
+runs R4's solve from the design-of-record seed at each point, scores it,
+records pass/fail against the spec with the failing metric named):
+| axis | points |
+|---|---|
+| F-number | 1.6, 1.8, 2.0, 2.2, 2.8 |
+| block radius | 150, 180, 220, 260, 300 mm |
+| slit length | 30, 40, 54, 60 mm (pixel count follows) |
+| pixel | 18, 30 um (the paper's) |
+| glass | Silica, CaF2 |
+One-axis-at-a-time from the design of record first (5 axes x ~5 points =
+~25 solves, minutes each on the chain), then the two-axis corner that fails
+first.  Output: a table + one figure (pass/fail map per axis pair), and the
+sentence the slide needs: "designs close for F/x-y, blocks of r-s mm, slits
+to t mm; the first metric to fail outside is ...".  Record bound-hitting
+solves separately: a solve on its bounds is not a closed design.
+
+## Addendum 12 (2026-10-01, Dave): polarization sensitivity, Dyson vs Offner -- future work
+Mouroulis & Green credit the Dyson's low polarization sensitivity to its
+near-normal incidence; quantify it against the Offner with the engine's
+polarization machinery (memory `project_polarization_plan`; mmacos
+`macos.jones_pupil`, `pol_maps`, `pol_zernike`; `coat_set` for coatings).
+When the design of record is stable:
+1. **Coatings as built:** AR on the silica faces and the meniscus, a metal
+   (aluminium or silver) grating with a protective overcoat, aluminium
+   mirrors on the Offner; thicknesses PHYSICAL (`coat_set`), overcoats at
+   lambda/4 of a stated working wavelength (the quarter-wave trap is in the
+   engine cheatsheet).
+2. **Per (slit position, wavelength):** the Jones pupil of each form, its
+   diattenuation and retardance (pupil mean and variation separately; the
+   mean is a state change, the variation an aberration), and the one number
+   the spectroscopist wants: the instrument's polarization sensitivity,
+   (I_max - I_min)/(I_max + I_min) over input linear polarization angle, at
+   the detector, per wavelength -- plus the Stokes-to-measured matrix if the
+   remote-sensing group wants Mueller terms.
+3. **The comparison figure:** sensitivity vs wavelength, Dyson and Offner on
+   one axis, with the angle-of-incidence histogram of each form beside it
+   (the mechanism in one picture).  Grating efficiency's s/p split is NOT in
+   the engine (scalar order model) -- state it as the term the figure omits,
+   or add it from a published efficiency curve as a closed-form factor.
+Record both forms' numbers in the trade table as a column.
+
+## Addendum 13 (2026-10-01, Dave): full diffraction from the slit through the grating -- future work, AFTER the telescope
+The current scorer is the incoherent chain (slit (x) LSF (x) pixel), valid
+here because the Airy disk (11 um at 2500 nm) is under the pixel and the slit;
+Mouroulis & Green put the full treatment's correction at ~10 % of the
+response functions.  Dave: quantify it, and wait for the telescope -- the
+field on the slit IS the telescope's image, and the result depends on how the
+telescope's cone fills the spectrometer's pupil.  When beat 5's telescope is
+on record:
+1. **The input:** for each scene point across the slit width (a few points
+   suffice; the scene is spatially incoherent), the telescope's point image
+   at the slit plane -- propagated, not the ray spot -- truncated by the slit
+   mask (36 um, the mask as a hard aperture on the slit plane).
+2. **The chain, coherent per source point:** slit plane -> block (medium-
+   aware kernels) -> meniscus -> grating as the design-order phase (the
+   engine carries one order; efficiency stays in the radiometric chain) ->
+   back -> detector; one far-field or DFT leg per segment as the propagation
+   twin already does.  Sum the intensities over the source points: that is
+   the partially coherent slit image of a uniform scene.
+3. **What to report, against the incoherent chain:** SRF and CRF FWHM per
+   (slit position, wavelength), ensquared energy, the slit-truncation loss
+   (the energy the slit mask removes and the energy the grating aperture
+   loses -- the s2l stage's number generalised), and the pupil fill at the
+   grating (over- or under-filled by the telescope's cone).  The paper's
+   ~10 % is the expectation to test, not assume.
+Precursor available now, if wanted before the telescope: a uniformly lit
+slit (what s2l does) with the incoherent sum across its width -- a bound,
+not the answer.
+
+## Addendum 14 (2026-10-01): beat 4c's four engine items -- status
+1. **CALIB SPOT-target derivative stride (the blocker): CONFIRMED and FIXED.**
+   `design_optim.F funcs_app` advanced the derivative columns by `opd_size`
+   (= mpts^2) where the value loop advances by `obj_size` (1 for SPOT,
+   n_wf_zern for WFE_ZMODE, = opd_size for WFE -- which is why every
+   Telescope optimize was fine).  Pinned on the bounds-checked CLI exactly as
+   you reported (`YFIT` subscript 16385 of 30, line 785).  Both sites now
+   `obj_size`.  Gate: the reproducer on the debug CLI + tSpectrometerRx's
+   native leg (un-mark it when the engine of record carries the fix) +
+   tDesignTelescope (the WFE path must be bit-unchanged).
+2. **OptAsph slice (`smacos_compute.inc:382`): CONFIRMED and FIXED** --
+   `ptbArr(ia+1:ia+n_optAsphArr(ie))`.
+3. **`OptRayGrid=` heap corruption: UNDER INVESTIGATION** on the bounds-
+   checked CLI with your seed deck + `OptRayGrid= 21 / 41` (the parse at
+   msmacosio.inc:224 caps only at mpts; the default is nGridpts/2-1; the
+   optimizer swaps `npts=opt_npts` at macos_cmd_loop.inc:582).  Will report
+   the overrun site.  Until then: leave `OptRayGrid=` unset.
+4. **A centroid-position operand for CALIB: QUEUED as an engine feature,**
+   not a bug -- a per-(field, lambda) chief / centroid position target so
+   smile and keystone become native operands.  Scoped after items 1-3 land;
+   the chain's lsqnonlin path is the operand's home until then.
+
+## Addendum 14, item 3 resolved (2026-10-01): `OptRayGrid=` was the blocker seen through another knob
+With fix 1 on the engine (macos 0d257ff) your seed deck with `OptRayGrid= 21`
+and `41` runs CALIB to completion through the mmacos mex and MATLAB exits
+cleanly (2 s and 5 s), with no other change -- the crash-at-exit / hang /
+first-iteration crash were the SPOT-stride write (row 16385 of a 30-row
+array) landing on different live memory for each ray-grid size; the default
+grid happened to put it somewhere benign.  The parse cap at mpts was never the
+problem.  `OptRayGrid=` may be used again.  (A bounds-checked one-iteration
+run of the 41-point deck is finishing as the "nothing else out of bounds"
+statement; if it reports anything, that goes in a further addendum.)
+Still true: item 4, the centroid-position operand, is a queued feature.
+Closed: the bounds-checked CLI ran the 41-point deck through a full
+optimization iteration ("Optimization iterations = 1") with no out-of-bounds
+access; item 3 is item 1, nothing further.
+
+## Addendum 15 (2026-10-01): the deck is at beats 4b-4e; two producer items; one engine note acknowledged
+`demo_session/deck_dyson.md` now carries the resolved slit-loss factor (slide
+19), the fold prism as traced / prescription / scored / the cold-shield sweep
+(slides 20-23, R5 of record = h 0 mm per the corrected 4d), the closure
+envelope (slide 24 + the run-it-yourself sentence), the meniscus search
+(slide 15), the native stage as "built and gated, result pending" (slide 25),
+and the CALIB stride as the fifth engine finding (Backup).  Every refreshed
+figure is the runner's own PNG from the re-emitted-with-apertures records.
+Two producer items, yours, not blocking: (1) `dyson5_s5_layout_r5.png`: the
+two panel titles overlap at the figure's width (the R4 title is shorter and
+clears) -- the deck uses the engine's y-z render instead until it is fixed;
+(2) the zoom inset of the fold at the base, as your 4d brief notes.
+Engine note from 4b (a FarField kernel option to zero |f| > 1/lambda so a wide
+window cannot carry evanescent energy into an energy-fraction metric):
+acknowledged, queued behind item 4 of addendum 14; the record's propagating
+normalisation stays the convention until then.
+
+## Addendum 16 (2026-10-01): beat 4c sections 3.5 and 3.6 -- both FIXED (macos, local)
+3.5 The asphere differential step is `das_rel = 1e-3` of the coefficient
+(design_optim.F); a ZERO coefficient takes the step that moves the sag at the
+element's circular aperture radius by 1e-7 |Kr|; with no circular aperture the
+legacy 1e-10 step remains and one line says so (so declare the aperture --
+every dyson5 deck does).  Your reproducer (`dyson5_s4_r4n_seed.in` +
+`OptAsph= 2 1 2` on the block face) runs 4 LM iterations in 9 s on the CLI
+where it was singular at once; the zero-term variant (`OptAsph= 1 3`) runs too.
+3.6 The LM failure branch no longer `stop`s: the optics go back to the last
+accepted parameter vector, `rtn_flg=1`, normal cleanup -- `macos.calib()` raises an ordinary MATLAB error
+(`mmacos: calib_run failed`, the engine's reason printed just before it;
+`dyson_native` should try/catch it) and MATLAB lives (the no-aperture variant of your
+deck exercises it: "Optimization aborted; optics restored").  Gate
+`tAsphCalib` (SUITE_FAST), fixture `Rx_AsphCalib.in` (a metre paraboloid with
+a spoiled h^4 term CALIB drives back to zero; the failure path with the host
+alive).  `P.native_asph` can come on when the fix is on the engine of record.
+Deck: slide 25 carries the native result as a confirmation (R4n = R4; the
+15-px keystone row as the reason for operands) and the asphere as the next
+freedom.
+
+## Addendum 17 (2026-10-01, Dave): CLEAR before beat 5 -- the resume list
+Beat 5 is a new design (the telescope) and the engine of record now carries
+every fix the spectrometer beats found (macos f1d2617, pushed; resources
+b3d2644).  Start it from a CLEARED context, not a compaction: the numbers
+that matter are in the record files, not in the conversation, and a long
+context is where withdrawn numbers (the first R5 sweep) come back as facts.
+Re-read, in this order, before the first command:
+1. this brief: addendum 7 (the telescope spec = EMIT: 420 km, 60 m ground
+   sample, 0.143 mrad IFOV, focal length 126 mm, 70 mm aperture at F/1.8,
+   24.6 deg cross-track field onto the 54 mm slit, telecentric and flat,
+   exit pupil on the grating), addenda 10, 13 (full slit diffraction waits
+   for the telescope), 15-16 (deck state; the asphere step and the
+   calib_run error are fixed -- try/catch `macos.calib()`);
+2. `challenges/dyson5/README.md` + `BRIEF_dyson5_beat4d.md` section 2 (the
+   fold's detector frame `G.fpa.xhat/yhat/normal` -- the telescope's image
+   must land on the SLIT frame the same way) + `dyson5_s5.txt` (R5 of record
+   = NO shield; the 2 mm/1.295/0.794 numbers are withdrawn);
+3. `dyson5_params.m` / `dyson5_run.m` stage list (s0-s5, s4env): the
+   telescope is a new stage through the SAME runner (Dave's rule: every
+   stage through the parameterized runner), scored with the same gates
+   (apertures declared, clearance per leg/body, engine renders per deck,
+   chain-vs-engine identity to 1e-9 m);
+4. `macos_f90/CLAUDE.md` sections dated 2026-09-30 / 10-01 (glass catalog,
+   medium-aware kernels, chord-ruled gratings + modulo-lambda rule,
+   short-line pad, CALIB stride / asphere step / failure path) and the
+   design layer's telescope tools (`macos.design.Telescope`, `add_fold`,
+   `realize_apertures`, `view_layout`) before writing a new emitter.
+Deliverable of beat 5: the telescope deck of record, its score at the slit
+(spot inside a pixel at every field, telecentricity, field flatness), the
+end-to-end deck (telescope + R4 and + R5) traced as ONE prescription and
+scored by the spectrometer's scorer, the clearance gate across both, and
+two deck slides (the telescope as traced + the end-to-end layout and score).
+
+## Addendum 18 (2026-10-01, Dave): the telescope goes THROUGH the design layer and the runner
+Build it with `macos.design.Telescope` (TMA layout from the f-numbers,
+Seidel-seeded conics, multi-field conic optimize, freeform / asphere
+refinement, `add_fold`, `realize_apertures`, `view_layout`) -- read
+`templates/10_telescopes/tma_widefield/example_tma_widefield.m` first (a
+two-mirror hits a wall as the field opens; the third mirror buys astigmatism:
+24.6 deg at F/1.8 IS that case) and `templates/80_end_to_end/e2e/README.md`
+for the stage pattern (telescope stage -> instrument stage, one parameter
+file, each stage consuming the previous stage's prescription).
+It runs as a NEW STAGE of `dyson5_run` with its knobs in `dyson5_params`
+(Dave's rule: one parameterized runner per modeled system) -- not a
+standalone template first.  When it closes, extract the telecentric
+wide-field TMA into `templates/10_telescopes/` (nothing there is telecentric
+today).
+Operands the Telescope optimizer does NOT have (it scores WFE or spot only):
+telecentricity (chief-ray angle at the slit, mrad), field flatness, and the
+PUPIL MATCH (exit pupil on the grating).  Hold them on the CHAIN side with
+the lsqnonlin machinery you already run for smile and keystone; the
+engine-side operand is queued with the centroid operand (addendum 14 item 4).
+
+## Addendum 18 (2026-10-01, evening): beat 5 run from the cleared context -- the telescope is laid out and traced end to end; its image is the open item
+Beat 5 was run in the cleared session per addendum 17 (resources
+dev-candidate, local).  On record (`challenges/dyson5/BRIEF_dyson5_beat5.md`,
+`dyson5_t1.txt`, `dyson5_t2.txt`, gate `tTelescopeRx`): the shared exact
+tracer (`chain_trace`, the Dyson's lifted verbatim; R4/R5 re-emit
+byte-identical), the telescope chain (`telescope_geom`: a folded
+three-mirror, the field as the sky line that images onto the straight slit),
+the end-to-end chain (`e2e_geom`, the grating the stop), the ladder, the
+engine scorers, the runner stages t1/t2, two deck slides.  Facts: R4 is
+telecentric at the slit to 0.09 deg (apparent pupil 16.84 m); the PNP first
+order is a one-parameter family in that limit; the coaxial section cannot be
+unobscured at F/1.8 with f-scale spacings -- the chief is folded at each
+mirror (32/-32/21 deg).  Result: layout clears (+0.75 mm), pupil match 9.4
+mm on the grating, 100 % admitted, EFL 126.4 by the map -- and 67 px rms at
+the slit (a 1.6 mm field swing): conics + even aspheres on folded mirrors do
+not image at the pixel over +-12.3 deg at F/1.8.  NEXT (TO or CC): the
+two-mirror modified Schwarzschild (M&G: the widest field and lowest F-number)
+and freeform mirrors on the folded three-mirror (the engine's Zernike
+surfaces + OptZern; the chain lacks Zernike surfaces -- add them to
+chain_trace); a cheaper first check: seed the conics from the coaxial
+parent's anastigmat and fold afterwards.
+
+## Addendum 19 (2026-10-02, Dave): beat 5b -- the telescope through the offset_imager ladder (rodgers3's product)
+Written for a CLEARED TO (Opus 5.5 this round): re-read addendum 17's list,
+then 18, then this, then `templates/10_telescopes/offset_imager/README.md`
+and `BRIEF_dyson5_beat5.md` sections 4-5 (your own t1/t2 record: the layout
+closes, the image does not -- 67 px rms, a 1.6 mm field swing).
+
+**Why.**  Beat 5 started from spheres folded at the chief by 32 deg at each
+mirror and let conics + even aspheres chase the field swing: that is the
+offset_imager ladder's rung 4 without rungs 1 and 3.  The ladder that closed
+Mike Rodgers' 20x20 deg box offset 22 deg at F/4 (`challenges/rodgers3`) is:
+r1 coaxial anastigmat parent on axis, symmetric aspheres -> r3 the field box
+pushed OFF AXIS, aspheres re-solved -> r4 + tilts, decenters, radii -> r5
+8th-order Zernike freeform surfaces THROUGH THE ENGINE (Surface= Zernike;
+`oi_zern_seed`, the asphere->Zernike seed is NEGATED).  A pushbroom
+telescope IS an offset-field imager with a thin box: 24.6 deg cross-track x
+~0.3 deg along-track, pushed off axis ALONG-TRACK to clear the beams.
+
+**Run, in this order (every step through `dyson5_run`, a stage `t3`, its
+knobs in `dyson5_params`; the template is called, not copied):**
+1. `oi_story(struct('EPD_m',0.070,'Fno',1.8,'box_deg',[24.6 0.3],
+   'offset_deg',OFF,'clear_m',[0.005 0.005],'exit_dir',<toward the slit>, ...))`
+   at OFF = 4, 6, 8, 10 deg -- the along-track offset is THE unknown at
+   F/1.8 (the template's wide-offset trial found 12 deg unpackageable at
+   F/4 with a 20 deg box; a strip field is easier, a fat F/1.8 beam is
+   harder).  Seed `z_m1_m`, `spacings_m`, `seed_R1_m` from beat 5's T0 first
+   order (R [700 125 152], t [140 76 141] mm, Petzval 0), scaled to the
+   template's sign conventions (read `oi_paraxial.m`).  If the cold solve
+   stalls (the README's F8 rule), `oi_walk` the box from [6 0.3] outward.
+2. Add the three residual ROWS the template lacks, in `oi_solve`'s exit-wall
+   pattern (weighted rows on ITERATES, never a boolean wall -- lesson 3):
+   telecentricity (chief-ray angle at the slit, mrad, per field),
+   field flatness (best-focus z per field against the slit plane, um), and
+   the pupil match (chief miss of the grating vertex, mm, with the R4
+   spectrometer appended -- beat 5's t2 machinery).  Keep rodgers3's solver
+   lessons: TRUE GN on stacked PER-RAY residuals (per-field rms plateaus);
+   VERTEX-RADIAL natural scales for aspheres/Zernikes; spend on FIELDS not
+   iterations, odd field counts across the slit.
+3. Score every rung with beat 5's gates (engine render, chain-vs-engine
+   1e-9 m, the clearance gate with the spectrometer's bodies, `tTelescopeRx`)
+   and the END-TO-END row (telescope + R4 through the spectrometer's scorer:
+   smile / keystone / SRF / CRF / admitted fraction).  Beat 5's T3 row (67 px,
+   +0.75 mm) is the baseline every rung must beat; the target is the spot
+   inside the 18 um pixel at every field with telecentricity < 0.5 deg.
+4. Decision rule: if no OFF in step 1 gives a packageable r3 (clearance
+   gate PASS) at F/1.8, STOP and report the number -- that sends the design
+   to the review's two-mirror modified Schwarzschild (beat 5c), not to more
+   iterations.  If r4 packages but r5 is what buys the pixel, the Zernike
+   rung runs through the engine (the chain tracer does not carry Zernike
+   surfaces; `tSpectrometerRx`'s identity gate is then engine-vs-engine on
+   the re-emitted deck, as rodgers3 did).
+Deliverable: the ladder table (r1-r5 x spot / telecentricity / flatness /
+pupil miss / clearance / end-to-end CRF), the telescope of record if one
+closes, deck slides 25-26 replaced (the design-of-record rule: show the
+best, not the history), `BRIEF_dyson5_beat5b.md`, the t3 stage committed.
+The edit-deck sync and every push wait on Dave's word.
+
+## Addendum 20 (2026-10-02): beat 5b step 1 read -- the IMAGE closes; the clearance test could not pass as I specified it; scan the ENVELOPE before beat 5c
+Read from your `t3/dyson5_t3_off{04,06,08,10}_REPORT.md` (CC, read-only).
+**1. The ladder images.**  Dense-map max strict RMS WFE over the 24.6 deg
+strip at 1 um: S1 coaxial 172 nm; S3 re-solved at the offset 162 / 173 / 196
+/ 216 nm at 4 / 6 / 8 / 10 deg.  That is ~0.2 waves -- of order a tenth of an
+18 um pixel of blur -- against beat 5's 67 px.  The form is alive on the
+image side, and the offset costs little up to 10 deg.
+**2. The clearance deficit is FLAT in the offset, so the offset is not the
+variable:** -53.9 mm at the ON-AXIS S1, -52 to -59 mm at every offset and
+rung.  Cause: the envelope.  Spacings are 140 and 76 mm for a 70 mm beam
+(your S3 side view: the incoming beam passes through M2 and M3).  The lateral
+walk an along-track offset buys is spacing x tan(offset) = 140 x tan(10 deg)
+= 25 mm; clearing a 70 mm beam plus margins needs ~80 mm.  No offset in 4-10
+deg could pass.  **That is my brief's error** (addendum 19 told you to seed
+the spacings from beat 5's T0 and called the offset THE unknown); the
+decision rule fired on a test that could not pass by construction, so beat
+5c is NOT yet earned.
+**3. Stop the four S5 runs.**  A freeform figure cannot move a beam 55 mm;
+their only product is an image number on an envelope that cannot be built.
+**4. The scan that decides it: envelope scale x offset, S1-S3 only** (your
+timestamps: ~28 min per case).  Lengthen the spacings through your
+first-order family (the t1 / y2 knobs of `telescope_seed`, EFL 126 mm and
+Petzval 0 held) so that  t1 x tan(offset) >= 80 mm :
+| t1 (mm) | offset (deg) | walk (mm) |
+|---|---|---|
+| 300 | 15 | 80 |
+| 450 | 10 | 79 |
+| 600 | 8 | 84 |
+| 600 | 10 | 106 |
+Report per case: the clearance floor WITH ITS WORST PAIR NAMED (the template
+gate reports the pair; the flat -54 mm never said which), S3 map max, the
+largest mirror diameter and the overall length.  A weak, long three-mirror
+with a short focal length is an inverted telephoto, "large against f" like
+the Schwarzschild; ~0.6 m beside a 0.7 m spectrometer is acceptable.
+**5. Decision rule, restated.**  If a case packages (floor >= +5 mm) with S3
+under ~250 nm: the TMA lives -- add the three residual rows (telecentricity,
+flatness, pupil match), then S4 / S5.  If the image collapses at every scale
+that packages, or packaging needs more than ~0.8 m: THAT is the number that
+sends the design to beat 5c.
+
+## Addendum 21 (2026-10-02): the envelope scan will likely come back flat too -- prediction on the record, and a first-order SCREEN before any more solves
+Your note that the M2-to-M3 spacing stays at 76 mm in every case is the
+tell.  Addendum 20's walk (t1 x tan(offset)) clears the FRONT-end pairs
+(`in->M1 x M2`, `in->M1 x M3`); two BACK-end pairs do not depend on t1 at all.
+From your `dyson5_t3_off08_s3.in` (M1 z 200, M2 = stop z 60, M3 z 136.2, FP
+z -54 at y +17.46 mm; stop semi-diameter 29 mm):
+- **`M3->FP x M2`.**  The design is telecentric (exit chief along the axis),
+  so the image cone runs from M3 to the FP centred at the IMAGE HEIGHT,
+  y' = f tan(offset) = 126 mm x tan(8 deg) = 17.7 mm -- the FP's own y.  It
+  passes M2's plane 114 mm from focus with radius 114 / (2 x 1.8) = 32 mm.
+  Needed separation from M2: 32 + 29 = 61 mm (more with the x1.15 disks);
+  available: 17.7 mm.  Deficit ~ -45 mm, set by f, the offset and
+  (BFD - t2) only: 22 mm at 10 deg, 34 mm at 15 deg.
+- **`M1->M2 x M3`.**  Within 76 mm of the stop the M1->M2 beam is ~76 x
+  tan(chief angle) off the axis whatever t1 is, and M3's patch is the same
+  order on the other side: ~15-25 mm apart against ~60 needed.
+**PREDICTION (pre-registered):** all four cases of the running scan report
+floors of about -40 to -50 mm with the worst pair `M3->FP x M2` or
+`M1->M2 x M3`; none packages.  Let them finish (S1-S3, ~28 min): the NAMED
+pair is the measurement.  If a case packages, this addendum is wrong and
+addendum 20's rule 5 applies.
+
+**Next, before any further 28-minute solve: screen at FIRST ORDER.**  All
+nine template pairs can be evaluated from `telescope_seed`'s first-order
+layout in seconds, engine-free: per leg the chief height and the beam
+half-width (marginal + field) at each obstacle's plane, per obstacle its
+half-size; clearance = centre separation - (half-widths) x 1.15.  Tabulate
+over the family's real knobs -- t1 (300-600 mm), y2 (0.3-0.9: it sets t2 and
+the back focal distance) and the offset (8-30 deg) -- and print, per row,
+the nine clearances, t2, BFD, the mirror diameters and the length.  Check
+the screen against the template gate on the four finished cases first (it
+should reproduce their floors and name the same pair to a few mm); then
+solve ONLY rows the screen passes.
+Two things the screen should look for: (a) a back end with the focal plane
+near or inside M2's plane (BFD ~ t2: the image cone is small where it passes
+M2, and the slit is thin along-track, so `M2->M3 x FP` asks only
+f tan(offset) > M2's radius + a few mm, i.e. ~15 deg); (b) the offset at
+which `M3->FP x M2` closes for the present back end, ~atan(61/126) = 26 deg
+-- which is beat 5's 32 deg folds found from the other side.
+**Decision rule (third statement, now with a cheap test):** if the screen
+finds NO row with all nine clearances >= +5 mm at an offset <= ~15 deg, the
+telecentric three-mirror of this family does not package at F/1.8 and beat
+5c (the two-mirror modified Schwarzschild) is earned -- report the screen's
+best row and its binding pair as the evidence.  If rows pass, solve the best
+two through S3 and report image + gate.
+
+## Addendum 22 (2026-10-02): the stalled 600 mm cases -- no verdict on EITHER count; the t1 continuation waits behind the screen
+Your read is right: a cold S1 that stalls at 20 um is a solve outside its
+basin, not evidence about the form.  One step further: **a stalled case's
+CLEARANCE number is not a verdict either.**  The template's pairs are cut
+from traced footprints, and the back-end pairs depend on the image cone
+being the F/1.8 cone at the image height; a design that does not image puts
+those legs somewhere a real design would not.  So both t1 = 600 mm cases
+count for nothing, whatever S3 prints; the 300 and 450 mm cases count only
+if their S1 converges.
+**Order of work:** (1) let 300 / 450 finish; (2) addendum 21's first-order
+nine-pair screen; (3) build the t1 continuation ONLY for rows the screen
+passes -- if it passes none at <= 15 deg the continuation is never needed.
+When it is needed, your design is the right one (warm-start each envelope's
+S1 from the converged 140 mm solution, step t1 up, the box walk applied to
+the spacing).  One thing to carry into it: the seed holds R1 = 5 x t1, so M1
+weakens as the envelope grows, and its conic's leverage on the wavefront
+falls as 1/R1^3 (16x weaker at 3.0 m than at 1.2 m) -- K1 ran to +17.6 while
+the merit did not move.  Scale K1's step with R1^3, or hold K1 and let M2 /
+M3 carry the correction on the long envelopes (rodgers3 lesson 2: natural
+scales must match the variable's real leverage, or the LM damping runs away).
+Do not chase the 8-vs-10 deg trace difference or the smoke-test mismatch
+(`pose_stop_once_`) unless a screened row depends on it.
+
+## Addendum 23 (2026-10-02): beat 5b read -- the screen did its job; one more round (the y2 continuation) with a hard stop
+Read from `BRIEF_dyson5_beat5b.md` (CC).  Accepted: the first-order screen
+(`tma_screen`, validated to 3-5 mm against the engine gate, same binding
+pair), its finding that t1 is NOT the knob and the back end closes at y2 =
+0.3-0.4 near 12-14 deg, the engine's confirmation that y2 = 0.4 packages
+(+17.5 / +10.4 mm), and the stall rule as you applied it.  My ~26 deg figure
+in addendum 21 was for the y2 = 0.6 back end; the short-BFD route (the other
+option in that addendum) is the one that closed.  The t1 continuation of
+addendum 22 is withdrawn: no row needs it.
+**Next: your y2 continuation, with these rules.**
+1. Walk y2 0.6 -> 0.55 -> 0.5 -> 0.45 -> 0.4 at t1 140, S1 only, each step
+   warm-started from the previous step's solved S1, the R2/R3 branch held
+   (`seed_R_m`), `nsolve` 5 across the slit.
+2. **Raise the iteration cap.**  "Still descending at the 12-iteration cap"
+   has now appeared three times; a capped solve is a stall by another name.
+   Run S1 and S3 to convergence (cap 40; stop on the LM's own criterion) and
+   report the iteration count.
+3. A step COUNTS when its S1 dense-map max is <= 1000 nm (your
+   `tel3_s1_conv_nm`).  If a step fails to converge, halve the y2 step once;
+   if it still fails, the walk ends there.
+4. At y2 = 0.4 (or the last converged step that the screen passes): S3 at
+   14 deg seeded FROM THAT S1, not from a sphere.  The template's S3 has no
+   clearance row and has already moved a layout from -7 to -38 mm, so a
+   solved S3 is accepted only if the gate still reads >= +5 mm afterwards;
+   if it does not, run S4 (which carries the clearance hinge) from it and
+   report that instead.
+5. Report per step: S1 max / avg, iterations, the radii and conics, M3's
+   rho/|R| at the box corners, the fraction of rays surviving at the
+   +-12.3 deg cross-track fields (the y2 = 0.4 seed already loses 17 of 277
+   there), and the exit chief error.
+**HARD STOP for this form.**  Beat 5c (the two-mirror modified Schwarzschild)
+is earned if ANY of these holds: the walk ends above y2 = 0.4 with no
+screen-passing step; S1 at the packaging corner cannot reach 1000 nm; or S3
+/ S4 at 14-15 deg ends above 250 nm with the gate satisfied.  It is also
+earned by vignetting: more than 5 % of rays lost at the cross-track edge on
+the solved design.  Report whichever fires with its number.  If none fires,
+the three-mirror lives: add the three residual rows (telecentricity,
+flatness, pupil match) and go to S4 / S5.
+**The template fix (section 4 of your brief) before it is committed:**
+`tOffsetImager` and `tRodgers3` (SUITE_FREEFORM) green on the DEFAULT path --
+"rodgers3 untouched" has to be a gate count, not a statement -- plus one new
+test: with `seed_R_m` at y2 = 0.3 the re-solved M2 stays CONVEX at every
+iterate, and without it the fixed Newton start lands on the concave root
+(the must-fail leg that documents the defect).
+**Commit your beat-5b work locally now** (`git add` BY PATH: the dyson5
+files, `tma_screen.m`, the four template files; the bench and sensitivity
+files showing as modified in that tree are not yours).  Push waits on Dave.
+
+## Addendum 24 (2026-10-02): beat 5b accepted; HOLD beat 5c -- the stop fired on a solve whose own gate is red, and the telescope's target is about to change
+Read from your committed `BRIEF_dyson5_beat5b.md` sections 6-9 (0a70058).
+**Accepted, and good work:** the y2 walk (every step converged on its own
+test), the `oi_score` telecentric fix (the same degenerate crossing the
+engine's FEX guards; your note that sections 1-5's image numbers are
+superseded is right -- including the 162-216 nm I leaned on in addendum 20,
+which was bought at R1 1.2 m, off the family), `hold_R1`, `seed_R_m`,
+`tOiSeedBranch`.
+**What the walk establishes, and it is the real finding:** in this family at
+24.6 deg, packaging and imaging pull opposite ways.  The on-axis parent goes
+349 -> 787 nm as y2 goes 0.60 -> 0.40, M3's reach jumps to 0.89 of its radius
+at the packaging corner, and the edge field starts losing rays there.
+**Why 5c is NOT yet earned.**
+1. The stop fired on S3 at 14 deg: start 552 081 nm, "4 iterations (own
+   stop)", map max 1 206 588 nm.  A solve that ends where it started is a
+   stall (addendum 22), and it was a cold jump from on-axis to 14 deg.
+2. The template's own gate for exactly that solve is RED on the committed
+   tree: `tOffsetImager/test_s3_resolve_recovers`, S3 29 274 vs S2 29 024 nm
+   where 2026-08-20 recorded s3/s2 = 0.71.  A design cannot be ruled out by
+   a solve whose smoke test fails.  **CC is chasing it now** (engine-vs-
+   MATLAB bisect: the August test commit against today's engine).  Do not
+   spend time on it.
+3. **The target is moving.**  CCMac's block-size trade (resources 9d3b6e2,
+   round 2 in progress): with the slit shared by two 27 mm modules the Dyson
+   needs no meniscus and a 100-130 mm block.  If Dave takes two modules, the
+   telescope question becomes one 24.6 deg field split ahead of the slits,
+   OR two telescopes of 12.3 deg -- half the cross-track field, where M1's
+   width, M3's reach and the edge losses all ease.
+**Until Dave rules on the modules and the S3 gate is understood:** no beat
+5c work.  One cheap run IS worth doing now, because it is S1 only and S1 is
+sound: the same y2 walk at a 12.3 deg cross-track box (t1 140, R1 held,
+branch held, 5 x 3 solve set).  Report the same table.  If the on-axis
+parent at the packaging corner is several times better at half the field,
+that is the number Dave needs for the module decision.
+
+## Addendum 25 (2026-10-02): the hold on S3 is released for the 12.3 deg telescope; the red gate is understood
+**Your 12.3 deg walk is the number Dave needed:** at the packaging corner
+(y2 0.40) the on-axis parent is 93.8 nm against 786.7 nm at 24.6 deg, M3's
+reach falls from 0.89 to 0.57 of its radius, no edge rays are lost.  Commit
+it locally (the opt-in knobs `tel3w_xtrack_deg`, `tel3w_s1_only`,
+`tel3w_suffix`, the record and decks), by path.
+**The `tOffsetImager` failure, bisected (CC):** engine commit 81d3308
+(2026-09-08, re-traces made idempotent) is where `test_s3_resolve_recovers`
+turns red; the engines of 08-22, 09-05 and the two commits just before it
+pass with identical numbers.  Mechanism: before that fix every
+finite-difference Jacobian column carried a few-ulp 2-cycle of the re-trace;
+after it they are clean.  The test's 5-iteration S3 is ill-conditioned (LM
+damping ~1e-6), so the cleaner Jacobian moves step 1 by 0.006 nm, step 2 by
+7 %, and step 3 is rejected at 23.7 um where the old path reached 13.6 um.
+A path, not a property: with a 15-iteration budget today's engine takes that
+instance from 906 to 167 nm (s3/s2 = 0.18).  **The S3 solver is healthy at
+your cap of 40.**  CC re-pins the test; nothing for you to do.
+**So the full-field S3 result stands as what it is** -- a cold jump from an
+on-axis parent of 787 nm to 14 deg that started at 552 um and did not move.
+It is a stall, not a verdict, but the 24.6 deg three-mirror is not worth
+more time: its parent is three times over the bar before any offset.
+**Next: S3 at 14 deg on the 12.3 deg box, from the y2 0.40 parent (93.8 nm).**
+1. Direct first: stop re-posed at the offset, R1 and branch held, 5 x 3
+   solve set, cap 40, own stop.  Report the start value, the per-iteration
+   trace, the dense-map max and average, clearance after S3 with its worst
+   pair, exit error, M3 reach, edge rays kept.
+2. **Stall test, stated in advance:** a solve that stops within 5 iterations
+   having gained less than 20 % from its start, with the damping run up, is a
+   STALL.  If that happens, walk the OFFSET instead: 0 -> 5 -> 10 -> 14 deg,
+   S3 at each step seeded from the previous step's solved design with the
+   stop re-posed (the box walk applied to the offset; your step-1 runs solved
+   S3 at 4-10 deg from a carried design, so the first steps are known to
+   work).  Halve a step once if it stalls.
+3. **Rule.**  Dense-map max <= 250 nm with the gate >= +5 mm after the solve
+   (S4 with its clearance hinge if S3 un-packages it): the three-mirror
+   LIVES for a two-telescope instrument -- then the three residual rows
+   (telecentricity, flatness, pupil match) and the end-to-end deck against
+   the two-module, no-meniscus Dyson (CCMac's `dyson5_size_D_r130.in`, 27 mm
+   slit, 130 mm silica block).  Converged ABOVE 250 nm: run S5 (freeform)
+   once before any other form is considered.  The walk cannot reach 14 deg:
+   report where it ends and why.
+Geometry note for the record: a 12.3 deg box centred on the axis is ONE of
+two telescopes, each 70 mm at F/1.8, their axes +-6.15 deg apart cross-track,
+each feeding one 27 mm slit.  One 24.6 deg telescope with a field splitter
+is the other reading of "two modules" and is NOT what this run tests.
+
+## Addendum 26 (2026-10-02, Dave): TWO rules of the road, and the telescope target CHANGES (Jim's numbers)
+**1. Coordination.**  Your S3 run was killed today, almost certainly by CC
+relinking the shared mmacos mex (`rm src/mmacos.mexa64; make`) while your
+MATLAB had it loaded -- twice this afternoon, during the dead-band work.
+Rule from now on, both lanes: (a) `ps -C MATLAB -o pid,etime,args` before
+ANY mex relink, engine rebuild into the shared build trees, or `git pull`
+in the shared tree; if another lane's job is running, WAIT or run your
+gate in a scratch worktree with its own mex (CC did that for the bisect:
+`git worktree add <scratch> HEAD`, `make MACOS_BUILD_DIR=<scratch engine>`);
+(b) say in your report when you launch a long run and when it ends; (c)
+CC announces engine rebuilds in this brief before doing them.
+**2. The telescope target is NOT EMIT's.**  Jim (2026-10-02): the VSWIR
+instrument has TWO imaging spectrometers, each 3k spatial pixels at 18 um
+(a 54 mm slit each), and the telescopes give 30 m GSD at ~550 km -- "a
+reasonably long unobscured telescope".  So, per telescope:
+| | 3k module (54 mm slit) | 1.5k module (27 mm slit) |
+|---|---|---|
+| IFOV | 54.5 urad | 54.5 urad |
+| focal length (18 um pixel) | 330 mm | 330 mm |
+| aperture at F/1.8 | 183 mm | 183 mm |
+| cross-track field | 9.4 deg | 4.7 deg |
+| swath per telescope | 90 km | 45 km |
+The 24.6 deg / 126 mm / 70 mm telescope of beats 5-5b was EMIT's single
+wide field and is retired; so is the 12.3 deg case.  Jim's question, which
+is now the beat: "design the telescope and then see if four telescopes +
+spectrometers with fused-silica lenses and 1.5k pixels is better than two
+telescopes + spectrometers with bigger CaF2 lenses and 3k pixels."
+**Beat 5c, re-targeted (replaces the Schwarzschild question for now):** the
+three-mirror ladder you have, at f 330 mm, D 183 mm, F/1.8, telecentric and
+flat at the slit, box 9.4 x 0.3 deg (the 3k case) and 4.7 x 0.3 deg (the
+1.5k case).  Half and a quarter of the field that broke the 24.6 deg form,
+at 2.6x the focal length: the screen first (`tma_screen` over t1, y2,
+offset at the new scale), then the y2 walk, then S3 at the screened offset
+under addendum 25's rules.  Pupil match: the 3k Dyson of record is R4 /
+the CaF2 240 mm no-meniscus block (`dyson5_size_F_r240.in`); the 1.5k
+Dyson is CCMac's `dyson5_size_D_r130.in` (silica, no meniscus).  Report
+both cases' tables side by side: that IS Jim's comparison, telescope side.
+CCMac carries the spectrometer side (glass mass, CaF2 boule cost, crossings).
+
+## Addendum 27 (2026-10-02): launch S3 on both modules; the verdict is END TO END, not the 250 nm bar
+Your Jim-scale walks are accepted (3k: 255 nm at the corner, 1.5k: 78 nm;
+M3 at 0.46-0.49 of its radius; no edge loss; identical radii across the
+modules).  Commit them locally by path first, then launch S3 at the screened
+10 deg on BOTH modules from their y2 0.30 designs, in parallel, under
+addendum 25's rules (cap 40, the stall test, the offset walk as fallback,
+S4 if the gate is lost, S5 once if converged above the bar).  CC will not
+touch the shared mex or trees while they run; say when they end.
+**The 250 nm bar is a proxy.**  The verdict for each module is the END-TO-END
+score with its own Dyson: the t2 machinery (telescope + spectrometer as one
+deck, the grating the stop, the spectrometer's scorer): smile and keystone
+< 0.1 px, CRF < 1.5 px, SRF on the slit floor, the admitted fraction, the
+clearance gate across both.  Decks: 3k module -> `dyson5_size_F_r240.in`
+(CaF2 240 mm, no meniscus, CRF 1.21 px alone); 1.5k module ->
+`dyson5_size_D_r130.in` (silica 130 mm, no meniscus, CRF 1.03 px alone).
+Report the two end-to-end rows side by side: that is Jim's comparison on
+the telescope side, and the first thing he will read.
+
+## Addendum 28 (2026-10-02): the slow S3 descent -- let them cap, then S4 BEFORE S5, and read the residual
+Starts of 87 um (3k) and 197 um (1.5k) at 10 deg from parents of 255 / 78
+nm, descending 1-2 % per full step with the damping on its floor: that is
+not a stall (addendum 25's test does not fire) and not convergence; it is
+Gauss-Newton on a problem whose first-order model is poor.  Physics: a
+coaxial parent with SYMMETRIC surfaces used 10 deg off axis has to be
+corrected AT 10 deg -- the symmetric-surface S3 is a wide-field design in
+disguise, which is what failed at 24.6 deg.  The freedoms that match an
+off-axis use are S4's (mirror tilts, decenters, radii), then S5's.
+1. Let both runs cap (the descent is worth keeping); do not kill them.
+2. From the capped S3 state run **S4 first** (tilts / decenters / radii with
+   the clearance hinge -- the ladder's own order), then S5 once; addendum
+   25's "S5 once if converged above the bar" assumed a converged S3.  Both
+   modules, in parallel, cap 40, the stall test as stated.
+3. Report, for the capped S3 and after each rung, the dense map per field
+   (where the residual lives: along the strip's cross-track ends, or in the
+   0.3 deg along-track direction) and the LM's final damping and step
+   acceptance -- that tells whether more iterations would have helped.
+4. The 1.5k module STARTS worse than the 3k (197 vs 87 um) from a parent
+   3x better: check the stop pose at the offset for that module
+   (`pose_stop_once_`; the beat-5b EP-construction miss) and the field set
+   actually solved before trusting its S3.
+5. In parallel if the box has room (two jobs run now; a third fits): the
+   screen's passing row at y2 0.30 with the SMALLEST offset (is 6-8 deg in
+   the passing set?).  The offset cost at this corner is steep and the
+   screen floor at 10 deg is +17 mm, more than the gate needs; a smaller
+   offset may trade some of that margin for image.  Report S3 at that
+   offset beside the 10 deg case.
+The end-to-end row with each module's own Dyson (addendum 27) remains the
+verdict; run it on whatever S4 / S5 delivers, even if above the bar.
+
+## Note (2026-10-03 am, CC): the shared mmacos mex is now linked to engine e43b126
+Done at a moment with no MATLAB running (`ps -C MATLAB` empty): the shared
+`mmacos/src/mmacos.mexa64` now carries the dead-band change (16 ulp bands,
+the one-line note, `deadband_notes_get`) and the `set_src_fov` fix.  Your
+decks and scores are unaffected at the level you report (fast suite 502/0,
+ten-trace idempotence gated); if a solve path shifts at the ulp level, that
+is the Jacobian noise change of addendum 25, not a design change.  No
+further engine rebuild is planned; I will announce the next one here first.
+
+## Addendum 29 (2026-10-03): the offset solves, read in the engine -- the family is exhausted; beat 5c is earned
+CC traced your 9 deg decks in the engine (`t3/dyson5_t3o_*_off09_s[345].in`,
+stop at element 2, 1185 rays, rms spot radius about the centroid at the
+focal plane): 3k S3 513 um, 3k S4 105 um, 1.5k S3 1162 um, 1.5k S4 517 um,
+1.5k S5 764 um -- 6 to 65 pixels, against a slit that wants under one.  So
+the field-constant residual is physics: the parent's own aberration at
+9 deg off its axis, shared by every point of the strip, which the symmetric
+surfaces were never asked to correct and which tilts, decenters and a
+40-iteration freeform could not remove.  Not the metric (the engine agrees
+with your order of magnitude), not the solver budget.
+**Decisions:**
+1. **End-to-end route:** moot for these designs -- a 105 um spot needs no
+   end-to-end trace to be ruled out.  For the future, ENGINE-ONLY joining
+   for any non-coaxial design (tilts, decenters, Zernike surfaces): the
+   emitted deck IS the design; the chain-vs-engine identity stays the gate
+   for coaxial decks only.  Do not extend the chain.
+2. **Do not re-run the 3k S4** with a stronger clearance penalty: the
+   image is 6 px with the gate failing by 1.6 mm; a 100x wall buys clearance
+   with more blur.
+3. **Commit by path**, yes: the four t3o records, the t3o/t3e stage work,
+   `oi_solve`'s `hist.lam` -- and nothing of the other lanes.
+**Beat 5c (now):** the review's form for this regime (Mouroulis & Green
+2018 sec. 5.1): the two-mirror modified Schwarzschild -- "the widest field
+and lowest F-number", 50 deg at F/1.6 with one conic and one asphere, an
+inverted telephoto, "large against f" (acceptable: f is 330 mm).  Build it
+with the design layer at Jim's numbers (f 330 mm, D 183 mm, F/1.8,
+telecentric and flat at the slit; both fields, 9.4 and 4.7 deg x 0.3 deg),
+a new stage through the runner, the same gates (engine render, clearance
+with the Dyson's bodies, admitted fraction, the end-to-end row with each
+module's own Dyson, engine-only joined).  First report: the paraxial
+layout and the first engine-scored spot per field, before any ladder.
+If the literature's 50 deg at F/1.6 holds, a 9.4 deg strip is far inside
+it; if the two-mirror cannot be made telecentric and flat together, that
+is the number to report.
+
+## Addendum 30 (2026-10-03): the Schwarzschild seed is accepted; the order of work
+Accepted: `tms_paraxial` (flat field by equal radii, telecentric by the
+virtual stop at M2's front focus, EFL 330.0000 mm and exit chief slope 3e-17
+at every spacing), the d = 165 mm seed, the aplanatic conics, the engine
+chief within 3.6e-13 m of the chain's.  Half a pixel on axis beats anything
+the three-mirror family reached; the field-squared growth to 12 px at the
+3k edge is the seed's astigmatism, and the review's answer is the 4th-order
+asphere on M2.  Commit `tms_geom.m` / `tms_paraxial.m` by path.
+**Order:**
+1. **The runner stage first** (Dave's rule): knobs d, the field (9.4 / 4.7
+   deg x 0.3 deg), the module's Dyson deck; it reproduces this seed table as
+   the record (`dyson5_t4.txt`), decks emitted and engine-rendered.
+2. **Rung 1, the M2 asphere** (h^4, then h^6 if it earns it), solved on the
+   exact chain over the strip with the slit's 7 fields, engine-scored; the
+   target is the spot under one pixel at EVERY field of the 3k strip.  The
+   1.5k strip is the same design at half the field -- score it on the same
+   decks, do not solve it separately unless the 3k fails.
+3. **The off-axis section**: field bias and / or pupil decenter to take the
+   convex M1 out of the M2-to-image cone, with the clearance gate (M1's
+   body against the cone and the input beam; the Dyson's bodies at the
+   slit).  Report the bias needed and what it costs in spot.
+4. **Telecentricity and flatness at the slit** against the Dyson's
+   acceptance (R4 accepts chiefs crossing 16.8 m behind the slit, i.e. a
+   0.09 deg window), the exit pupil's location against the grating.
+5. **End to end** with each module's own Dyson (engine-only join;
+   `dyson5_size_F_r240.in` for 3k, `dyson5_size_D_r130.in` for 1.5k): the
+   two rows of addendum 27.
+Size: 0.74-0.96 m long with M2 330-410 mm across for a 183 mm aperture is
+what "large against f" means; carry the length, M2's diameter and the mass
+of the two mirrors (state the areal density you assume) in the record from
+rung 1 on, so Jim's "reasonably long" has a number beside it.  Same
+stopping rules as before: a solve that stalls is reported as a stall; the
+end-to-end row is the verdict.
+
+## Addendum 31 (2026-10-03): rung 1 read; ONE bounded rung more on the TMS, then off-axis with its honest number
+Rung 1 is accepted (4.3 / 7.6 px, converged; engine = chain to 3.6e-13 m;
+M2 364 x 310 mm, M1 202 x 183 mm, 5.4 kg at 40 kg/m^2; envelope M2 to
+image 563 mm -- correct the "length" line as you said).  Your scaling of the
+review's TMS (f 24 mm, 3-6 um -> 2.3-4.6 px at f 330 mm) is the right frame:
+the review places the TMS at "low to medium resolution"; at 330 mm it is
+working outside its range, and the review's OWN first example for ours is
+**Fig. 6: a 420 mm F/1.8 TMA with a 16 deg linear field** -- a three-mirror,
+"dimensions roughly equal to its focal length" (Jim's "reasonably long
+unobscured telescope").  What failed in beats 5-5c was our three-mirror
+FAMILY (a coaxial parent solved on axis, then moved 9 deg) and its solve
+path, not the form.  CCMac takes the three-mirror by a different route
+(round 4 of its brief: the design layer's Telescope class and the native
+optimizer, solved AT the biased field from the start); you finish the TMS.
+**Option 1, bounded (one rung, `R2`):** open d, M1's h^4 / h^6, and the
+equal-radius constraint with the image held flat (Petzval as a residual
+row, not a constraint), function-evaluation limit raised to converge,
+R1 held as a reference row in the table.  Solve the **3k strip and the
+1.5k strip SEPARATELY** (each module gets its own telescope; the
+comparison is per module), the slit's 7 fields each.  Stop rule: a solve
+that converges is the TMS's number; report it whether it is 1 px or 4.
+**Then the off-axis section** with the converged R2 for each module (field
+bias / pupil decenter to clear M1 from the cone; clearance gate with the
+Dyson's bodies; telecentricity against the 0.09 deg acceptance), and the
+**end-to-end rows** (engine-only join, each module's own Dyson).  Carry
+length, M2 diameter and mirror mass in every row.  That is the TMS entry
+in Jim's comparison, with whatever CRF it earns; the TMA entry comes from
+CCMac's route.
+
+## Note (2026-10-03, Dave away to 10-05): pushes between lanes are authorised
+Push each committed step (`git pull --ff-only` or merge first; no rebase of
+pushed commits; by-path commits only).  CC's plan meanwhile, all in scratch
+trees with the shared mex relinked only at a moment with no MATLAB running
+and announced here first: (1) `seidel_seed`'s PNP first order (beat 5 sec. 5
+item 4), (2) a telecentricity / centroid operand for CALIB (addendum 14 item
+4), (3) the far-field evanescent cut (addendum 15), (4) deck integration of
+your reports every few hours (local commits).
+
+## Addendum 32 (2026-10-03, CC): the one-call trace defect is CONFIRMED and FIXED; the shared mex is relinked; CALIB has the beam rows on any target
+
+**Your discrepancy (ce46ead, `repro_trace_onecall.m`) was two engine
+defects, and your hypothesis was the right one.**  Reproduced on the CLI
+(`opd 5` in one call: RMS OPD 8.87e-2 m; `opd 1` then `opd 5`: 5.65e-7 m),
+bisected to the first trace that ENDS at the Reference, then one `WRITE`
+per ray in `AsphSrf` at M1:
+
+1. **Root pick.**  A surface right after a Reference / Return runs with
+   `ifLNsrf` (a negative L is allowed there -- the FEX exit-pupil sphere
+   is traced BACK from the focus and needs it) and chose between the two
+   conic roots by `|L^2 - mpr|` with `mpr = |pin - pv|^2`: the ray's
+   distance to the VERTEX, lateral height included.  Your ray 90 mm off
+   axis, 5.3 mm ahead of M1, has mpr 8.3e-3 and roots -0.107 / +0.011 m;
+   the metric chose the sheet BEHIND the ray.  `LNsrfRoot` now takes the
+   root whose hit point is nearest the element's REFERENCE point (RptElt:
+   the vertex, or the pole of an off-axis section), at all five base-conic
+   routines.  The FEX sphere about the focus has roots +-R with its vertex
+   behind -> -R, a strict choice where the old metric relied on an exact
+   TIE; a 90-deg OAP takes the side its pole is on (a first cut by the
+   axial distance to the vertex plane was degenerate there and turned
+   tBench red -- caught by the fast suite, fixed before any push).
+   Measured against a pre-fix HEAD build (same compiler): FEX radius and
+   OPD BIT-IDENTICAL on e5hex1, Rx_Cass_FarField, the jwst zoom deck and
+   SegDemo3conic.  Your R1a was spared because 97 mm ahead the axial term
+   dominates the metric.
+2. **The stepwise trace was right by accident.**  `trace(ie)` continues
+   from the previous element (the OPD command restarts at `iCurRayElt`),
+   and a restarted CTRACE never reset `PrevNonSeg` between rays: every ray
+   after the chief saw the previous ray's LAST element as "previous", so
+   `ifLNsrf` was FALSE for them and the positive root was forced.  Reset
+   per ray.  `trace(nElt)` and the stepwise loop are now bit-identical
+   (5.650928637e-7 m RMS OPD both ways on your deck).
+
+Gate: `tTraceRestart` (SUITE_FAST) on `tests/Rx/Rx_SchwarzschildEP.in` --
+your deck, copied verbatim.  **You can drop the stepwise scoring and the
+per-ray engine-vs-chain check as a workaround** (keep it as a gate if you
+like; it is cheap).  Score the TMS decks with `trace(nElt)`.
+
+**CALIB beam rows on ANY target (addendum 14 item 4), landed with it.**
+`OptBeamDir=` / `OptBeamPos=` / `OptBeamSize=` in an element's block now
+score under a WFE / SPOT / WFE_ZMODE target (they were BEAM-only, and the
+BEAM-only path scored the LAST field alone), plus three new keywords:
+`OptBeamPosFov=` (one 3-vector row per field, in order -- the smile /
+keystone solve), `OptBeamWt=` (the beam rows' weight against the target
+rows; the row sigma is divided by sqrt(wt) -- mind that SPOT and beam rows
+are in base units), `OptBeamCentroid= Y` (the position is the centroid of
+the passing rays at that element, not the chief).  mmacos:
+`macos.calib_set_beam('dir'|'pos'|'size', srf, target)`,
+`calib_set_beam_pos_fov(P)`, `calib_set_beam_wt(wt, centroid)` (+ Session
+methods); pymacos the same names.  Two conventions you will meet: CALIB's
+FIELD 1 is the source as CURRENTLY set (the handler copies ChfRayDir/Pos
+into `opt_fov(:,:,1)`), so put the source back on field 1 before `calib`
+if you moved it to measure; and the optimizer's ray grid defaults to
+`nGridpts/2-1` (81 rays on a 21-point deck) -- `OptRayGrid= 21` makes it
+the deck's grid, which matters when a centroid is scored.  Gate `tBeamRows`
+(SUITE_FAST): direction rows on a SPOT target, per-field position targets
+both met by one FP piston, centroid vs chief on a comatic field.
+For the TMS telecentricity-vs-Dyson step: `OptBeamDir=` in the image
+block = the detector normal, under your SPOT target, with `OptBeamWt=`
+of order 1e6 (a 1 urad chief tilt then counts like a 1 um spot).
+
+**Shared tree / mex: relinked at 05:11 with no MATLAB running** (yours had
+ended per your report; mine was between runs).  The mex carries BOTH fixes
+and the beam rows; `build_release` (ifx) and `build_release_gfortran` are
+rebuilt; pymacos rebuilt.  **Fast suite: 526 pass / 0 fail** (63 classes,
+one MATLAB process; it caught two things on the way, both fixed before
+this landed: a first root-rule cut that broke tBench's 90-deg OAPs, and a
+leak of lmlsq's SAVEd arrays on the CALIB failure path that killed the
+NEXT CALIB in the process -- tBeamRows right after tAsphCalib; standalone
+both were green, the ORDER found it).  The mex of record is the one linked
+at 06:19.  Next engine rebuild will be announced here first.
+
+**On the review items you listed:** (1) a smooth clearance operand -- yes,
+that is the one thing between "packages at 30-40 deg" and a number; a
+signed-distance operand that is C1 in the parameters (not a min over
+sampled leg points) is what the LM needs; I will look at whether the
+engine's beam rows can carry it (a position row at a Reference placed on
+the body's edge is one cheap form) after the fast suite; (2) done above;
+(3) CCMac's round 4 step 1 is on the remote (f58d5c4); I fold it into the
+deck next.
+
+## Addendum 33 (2026-10-03, CC): the far-field evanescent cut (addendum 15) is in; item 3 of the unattended plan closed
+
+`macos.ffcut(true)` makes every far-field leg zero the output pixels with
+`x^2 + y^2 > dz^2` (|sin theta| > 1, spatial frequencies above 1/lambda) and
+print one line with the count; `[on, npix] = macos.ffcut()` reads it back.
+Default OFF, so nothing in the record moves; it is session state (not reset
+by a load) and dirties the cached propagation.  Gate `tFFCut` / pymacos
+`test_ffcut.py`: a 20 um pinhole at 1 um on a 64-point grid (window 1.56 dz
+wide; 44 111 of 65 536 pixels cut, 0.64 % of the window's energy) and
+`Rx_Cass_FarField` as the must-not-change twin (zero pixels, bit-identical).
+Use it when a propagation twin's energy fraction is taken over a window
+wider than the propagating cone -- the 36 um slit at F/1.8 is nowhere near
+(dx1 >> lambda/2), so your beat-4b number stands either way.
+
+## Addendum 34 (2026-10-03, CC): the smooth clearance operand -- where the non-smoothness is, and the two changes that remove it
+
+Read `tms_clear.m` with the stalled 30-deg polish in mind.  The wall is
+non-smooth at THREE places, and the first is the one that rejects every
+step at the knee:
+
+1. **`seg_disc_` samples the leg at 101 points and takes the `min`.**  The
+   distance is a staircase with a tread of (leg length)/100 -- 3-6 mm on
+   these legs -- so a finite-difference step smaller than that sees a ZERO
+   derivative, and the LM's trial steps at the knee are rejected because
+   the wall's prediction is flat while its value jumps.  Replace the sample
+   with the EXACT segment-to-disc distance: for a disc (centre C, normal n,
+   radius r) and a segment A + s(B-A), the squared distance
+   `f(s) = h(s)^2 + max(rad(s) - r, 0)^2` is a smooth function of s on each
+   of the two regimes (inside / outside the rim's cylinder); minimise it
+   over s in [0,1] with `fminbnd` to 1e-12 (or Newton from the sampled
+   argmin), and the result is C1 in the endpoints.  The crossing branch
+   (`rad - r` when the leg pierces the disc) is already continuous at the
+   rim, keep it.
+2. **`min` over rays and over the four pairs.**  Replace with a softmin,
+   `-tau*log(sum(exp(-d/tau)))`, tau = 0.5 mm (the budget's scale: at the
+   +5 mm clearance the softmin is within 0.05 mm of the min for 25 rays;
+   at the knee it is the smooth blend the LM needs).  Report the hard min
+   alongside for the record -- the gate stays a NUMBER.
+3. **`disc_`'s radius is `margin*max(rr)`** over the footprint points -- a
+   max, non-smooth only when the extreme point changes identity (rare);
+   leave it, or softmax it the same way if the polish still stalls.
+
+With 1 and 2 the wall is C1 in every chain parameter and the 30-deg polish
+should move.  This is chain-side (`tms_clear.m`), yours; nothing in the
+engine stands in the way.  If you would rather have the ENGINE score a
+clearance, the cheap form is a position row at a Reference placed on the
+body's rim (the new `OptBeamPos=` under your SPOT target), but that gives
+a point-to-point condition, not a disc clearance -- the chain operand is
+the right tool here.
+
+## Addendum 35 (2026-10-03, CC): the packaged TMS -- one bounded rung with a constrained solver, and the bound that decides it
+
+Read befa6e9 (section 4).  The smooth wall did its job -- 232 -> 123 px
+(1.5k), 221 -> 178 px (3k) -- and the stall at the knee with a C1 wall is
+now informative: a weighted LSQ with a stiff one-sided penalty sits at the
+knee where the image gradient and the wall gradient oppose, and an LM has
+no way to slide ALONG the constraint.  That is a solver question, as you
+say.  Two things, in this order, then the verdict:
+
+1. **The bound first (cheap, decides whether 2 is worth running).**  From
+   the stalled 30-deg points, re-solve with the wall OFF (same variables,
+   image rows only, the Petzval row kept): the best image the 30-deg
+   layout can give when clearance is ignored.  If that is still tens of
+   px, the FORM is out at this bias and no constrained solver will bring it
+   to the pixel; record it as the TMS floor and stop.  If it is a few px,
+   the wall is what costs the image and rung 2 is earned.
+2. **ONE constrained solve per module** (only if 1 says so): `fmincon`,
+   'sqp', the clearance as a nonlinear INEQUALITY (`c = 5e-3 - d_soft <= 0`
+   on the softmin, the hard min reported alongside), the image rms as the
+   objective (scalar; or `lsqnonlin`'s rows summed), same variables, start
+   from the 30-deg stalled point.  Report with the Lagrange multiplier of
+   the clearance constraint at the solution: a nonzero multiplier says the
+   wall is BINDING -- physics, not the solver -- and the trade is then
+   image vs clearance at that multiplier's rate.  Budget: one run per
+   module, cap the function evaluations (your chain is cheap), 2 h total.
+
+Then the TMS entry in Jim's comparison is written from those two numbers:
+on axis obscured 1.10 / 4.26 px; packaged at 30 deg N px with the bound
+M px.  The deck already carries the 123 / 178 as "a knee, not a floor" and
+names these two steps as next.  After that your lane's next work is the
+end-to-end rows, which wait on a packaged IMAGING telescope from EITHER
+route -- CCMac's TMA (round 4 steps 2 and 4: the unobscured section, then
+freeform) is the more likely source; when it lands, join it to the Dyson
+of record per module (the engine-only join you proposed) and score the
+rows.  Until then, after 1 and 2, hold.
+
+## Note (2026-10-03 17:45, CC): TMA step 2 (unobscured section) is being run on Linux
+
+CCMac has been silent since step 1 (04:48; VPN, as expected), so CC runs
+round 4 step 2 here as `dyson5_tma_step2_linux.m` (own file + record; see
+`BRIEF_ccmac_dyson_size.md`, round 4 note).  No engine rebuild, no mex
+relink; MATLAB at model 256 in the background.  If it images on either
+strip you get the deck name(s) per module for the end-to-end join.
+
+## Addendum 36 (2026-10-04, CC, Dave back): step 3 of the TMA — telecentricity and exit-pupil match to the Dyson — is yours
+
+CCMac has step 4 (aspheres on the unobscured section to buy the 330 mm
+plate scale; `BRIEF_dyson5_tma.md`, hand-off section).  Step 3 is a
+runner-and-scorer task in your idiom, so it is yours:
+
+1. **Measure first** (t5e already has most of it): on
+   `dyson5_tma_step2b_linux_d205_1k5.in` the exit chief's angle to the FP
+   normal per strip field (you reported the FP tilted 37° to the exit
+   chief), the exit-pupil location (FEX / `xp_fnd` on the deck, or the
+   chief crossings along the strip), and the Dyson's acceptance at the
+   slit (its chiefs cross 16.8 m behind the slit on size:D:130 — the
+   number from the beat-1 record).  One table: field, chief angle to the
+   slit normal, pupil distance, the Dyson's chief at that field, mismatch
+   at the grating (mm) and admitted fraction.
+2. **Then the operand**: the engine's `OptBeamDir=` rows now ride on the
+   WFE target (addendum 32; `macos.calib_set_beam('dir', fp, n)` +
+   `calib_set_beam_wt`), and `Telescope.optimize` has `beam_pos_fov` /
+   `beam_wt` for positions but NOT yet a direction hook — if you want the
+   solve to drive the chief directions, add `'beam_dir'` next to
+   `'beam_pos_fov'` in `Telescope.optimize` (same three api calls,
+   `calib_set_beam('dir', beam_elt, n)`; the FP's normal as the target
+   makes the image telecentric; 10 lines, mirror the existing block) and
+   gate it in `tBeamRows`' idiom.  Coordinate with CCMac so the two of you
+   do not both edit `optimize` at once: tell them in the TMA brief before
+   you touch it.
+3. **The verdict row**: with whatever step 4 produces, the end-to-end
+   t5e row states telecentricity (chief angle at the slit), pupil match at
+   the grating and the admitted fraction alongside blur and plate scale.
+
+Bounded: measure (1) now on the d205 deck and report; (2) only if the
+mismatch at the grating is the limiting loss; (3) when CCMac's deck lands.
+Pushes between lanes are still fine (Dave is back; by-path commits).
+
+## Addendum 37 (2026-10-04, Dave's split): stage A and B are yours; CCMac stands down
+
+Running now per Dave: you take stage A on the telecentric parent
+(`tma_layout(..., 'telecentric', true)`, M1 stop; `R = [0.3667 0.0998
+0.1667]`, `t = [0.1477 0.0461]`; `BRIEF_dyson5_tma.md`, hand-off of 18:00) —
+the eccentric section by the step-2 ladder, clearance by `check_clipping`,
+and the three numbers BEFORE any figure: chief angle at the slit, pupil
+distance, traced plate scale at the working bias (your t5e table).  If the
+plate scale still misses 330 on the telecentric parent, report it as a
+first-order residual with its mechanism.  Then stage B (aspheres + position
+rows; the 3k geometry) on what passes, each deck scored by t5e in one run.
+CCMac is on hold until stage B shows the strip EDGES are the limit on a
+telecentric, correctly-scaled section — then the freeform step is theirs.
+Record files step-numbered and pushed; nobody edits `Telescope.optimize`
+without a line in the TMA brief first.
+
+## Addendum 38 (2026-10-04, CC): stage B read; the CALIB edge-field item is mine (engine), freeform is CCMac's
+
+Stage B (resources 027fa9d / 7535d56) is the first telescope at Jim's
+numbers imaging at the pixel over the inner strip; folded into the deck.
+Your item (1) -- CALIB cannot evaluate the 3k section at -3 deg (mm-scale
+per-field WFE with 27-234 of 254 rays passing while a plain trace is fine;
+at -4 deg the +-4.69 deg fields come back 9.9999e36 and are dropped) -- is
+an ENGINE item and mine: the 9.9999e36 is CALIB's failed-field sentinel
+and the mm-scale WFE with most rays passing smells like the exit-pupil
+reference (OptFEX / the FEX leg on a strongly off-axis, decentered section)
+rather than the trace.  It needs a fresh engine session (this one is at
+its end); until then score the 3k edges from the trace (your spot metric),
+not from CALIB's WFE.  Items (2) freeform = CCMac when Dave releases them;
+(3) decenter/clearance = yours.
+
+## Addendum 39 (2026-10-04, Dave): orders after stage B
+
+**TO — item 3 now; keep 3k scored from the trace.**
+1. More decenter on the 1.5k section, re-calibrated (plate scale back to
+   330 with the position rows in every rung), for clearance margin: report
+   the margin from BOTH checks and reconcile them -- `check_clipping` +2.9
+   mm vs `spectrometer_clearance` -4.9 mm on the M1->M2 leg vs M3 is a
+   body-sizing difference (1.15x discs vs footprints), not a design fact;
+   state which sizing the record uses and why.
+2. 3k: hold the native solve at the edges (CALIB item, CC's); score the
+   +-4.69 deg fields from the trace (your spot metric) on the -4 deg /
+   180 mm section so the deck has a 3k edge number alongside the 1.2 mm.
+3. Every deck through t5e; record files step-numbered; `Telescope.optimize`
+   only as a caller.  CCMac is released on freeform (below) -- they will
+   announce in `BRIEF_dyson5_tma.md` before touching `optimize`.
+
+**The CALIB edge-field item is CC's**, in a fresh session (addendum 38 has
+the reading and the reproducer); until it lands, CALIB's WFE at the strip
+edges is not a number to report.
+
+## Addendum 40 (2026-10-04, CC): the CALIB edge-field item is CLOSED -- it was the ENGINE's conic root pick, CALIB was faithful
+
+**Finding.**  Addendum 38's reading ("the exit-pupil reference") was
+wrong; so was the premise that the trace was fine.  Reproduced
+`Telescope.optimize` on your 3k section at -3 deg / 180 mm (the as-is
+deck, 3 iterations): CALIB's initial per-field WFE [8.47 0.24 3.89 6.77
+6.77 3.89 0.24] mm is EXACTLY the plain `OPD` at the FP on the same
+deck, field by field (7.8 / 7.2 / 4.0 / 0.24 mm from `trace_at_field` +
+`macos.opd`).  That OPD is bimodal -- 90 % of the rays within 1.5 mm, the
+top 10 % at +42 mm -- because 40 of 1185 rays landed on the FAR SHEET of
+M3 (K = -15.8, Kr = -0.1617 m: a two-sheet hyperboloid whose sheets are
+2a = 21.9 mm apart; the outliers sit at dz = +22.0 mm, 7-8 mm from M3's
+vertex), 44 mm of extra path and a 10 mm spot tail, every one of them
+"passing".  Your 4-sigma-cut best-focus spot (400 um) removed exactly
+those rays, which is why the trace looked fine and CALIB did not.  The
+forward root pick in `ConSrf` (and its asphere/freeform/Zernike siblings)
+chose between the quadratic's two roots by proximity of |L| to the ray's
+distance from the VERTEX, with no notion of which sheet the hit is on --
+the same metric the 10-03 `ifLNsrf` fix removed from the other branch.
+
+**Fix (macos `1ba6874`, dev-candidate, LOCAL).**  `FwdRoot`: the real
+surface is the sheet the vertex is on, identified exactly by the sign of
+the normal's axial component `Kr + (1+Kc) z` (= sign of Kr on the vertex
+sheet).  A forward root on that sheet is taken, first crossing on a tie,
+the legacy pick otherwise.  NOT "first forward crossing": on the same
+deck M2's far sheet is a bowl 37 mm in FRONT of the mirror and 125 rays
+cross it first -- min-positive put them on it and lost 350 rays at M3
+(measured, 0.34 m rms).  Post-fix: FP OPD 7.84 -> 0.58 mm rms, all rays
+pass, CALIB initial WFE [0.58 0.24 0.29 0.50 0.50 0.29 0.24] mm -- real
+numbers now (the 0.5 mm class is the tilted-FP OPL metric on a 400 um
+spot, the reason `add_pupil` exists).  Flips are counted (api
+`fwd_root_flips_get`, WARN line, one console note per run).
+
+**Blast radius.**  Corpus A/B, 406 decks through the CLI pre vs post
+(`opd nElt`): 398 load on both; (RMS, P-V, nPass, lost) identical to 10
+digits on every one.  No legacy deck moves.  Gate `tFwdRoot` (mmacos,
+SUITE_FAST, fixture `Rx_TwoSheetTMA.in` = your section as emitted), 5/5
+on the post-fix mex, pre-fix fails 3/5 by the numbers above.
+
+**The -4 deg / 180 mm sentinel (9.9999e36 on the +-4.69 deg fields).**
+On the as-is conics at -4/180 both engines evaluate all seven fields
+(0.23-0.64 mm, identical) -- the drops happened INSIDE your B rung
+(aspheres + position rows), a different state.  Re-running that rung on
+the post-fix engine as I write; result in addendum 41.
+
+**For TO.**  (1) The shared mex is NOT relinked -- your two stage-B
+MATLABs were running the whole time (rule: never relink under another
+lane's MATLAB).  When they finish: `rm mmacos/src/mmacos.mexa64` and run
+`./run_mmacos_tests.sh tFwdRoot` (relinks against the rebuilt
+`build_release_gfortran` -- which also still needs `source ./makems.sh
+release gfortran` in ~/dev/macos, not yet run for the same reason).
+Say when, or I do it.  (2) CALIB's per-field WFE at the 3k edges is a
+number again: re-run the 3k rungs (and -3/170, -4/200, -5/200 from your
+walk) once the mex carries 1ba6874; the "ANOMALOUS" flag in the ladder
+should go quiet.  (3) Your two-check clearance reconciliation and the
+mount-once ruling (ffa0466) are read; nothing in them touches the engine.
+
+## Addendum 41 (2026-10-04, CC): the -4 deg 9.9999e36 edge drops were a SECOND defect -- the asphere hook's circle; both closed, tAsphHook re-pinned
+
+**Finding.**  Your -4 deg / 180 mm B rung re-run on the post-FwdRoot
+engine still dropped the +-4.69 deg fields (9.9999e36) -- at the FIRST
+evaluation, before any step: 253 / 213 / 91 / 0 of 253 rays pass at 0 /
++-1.56 / 3.13 / 4.69 deg.  Not the trace: the as-is conics evaluate all
+seven fields (0.23-0.64 mm, both engines identical).  The rung adds the
+asphere hook's vertex-centred CIRCLE (CALIB's sag-based asphere step needs
+a circular aperture), sized on the NOMINAL field's footprint x1.05.  On M3
+the footprint is 22 mm from the vertex but the bundle walks ~25 mm at
++-4.69 deg -- entirely outside a 23 mm circle.  So the solve never saw the
+edges and drove K3 to -29.9 (your record; reproduced to the digit, 9 s).
+
+**Fix (resources `125ea9f`, LOCAL): the circle encloses the footprint over
+EVERY field of the solve.**  The same rung now evaluates all seven fields:
+CALIB WFE [0.64 0.23 0.28 0.53 0.53 0.28 0.23] -> [0.035 0.086 0.036 0.035
+0.035 0.036 0.086] mm, K = [-1.27 -8.63 -6.38], every ray passing, zero
+root flips.  As-placed edge spot 1.65 mm rms (was 2.2): the edges remain
+the figure stage's problem (CCMac's freeform), but the solve now SEES them.
+
+**The pin it moved -- read this before trusting any earlier asphere
+number.**  The same clipping sat, milder, under `tAsphHook`'s original pin
+on the on-axis parent: 180 / 97 of 253 rays survived M3's circle at 30' /
+60', so the gated [55 117 308] nm was the WFE of the SURVIVORS.  With every
+ray counted the honest h^4+h^6 optimum there is **[496 407 467] nm** (a
+third off the worst field, not "more than half") -- re-pinned with the
+mechanism in the class header.  CCMac's step-4 finding ("aspheres buy the
+centre, not the edges") stands and is, if anything, stronger.  Your 1.5k
+stage-B numbers (15.8 px edges) were scored from the TRACE, not CALIB, so
+they are unaffected; any asphere SOLVE made before 125ea9f with fields
+whose footprint walks off the nominal circle was partly blind -- re-run
+the B rungs on both modules once the mex carries 1ba6874 + 125ea9f.
+
+**Checked and rejected:** CALIB's zero-coefficient step scales on the
+circle's radius too (sag at the circle = 1e-7 |Kr|; the doubled M3 circle
+shrinks the h^6 step 64x).  Measured insensitive -- the same solve to 4
+digits with the circle at 20 or 42 mm -- so no engine knob was added (one
+was built and removed).
+
+**State.**  Engine: macos `1ba6874` (FwdRoot) + `afe9923` (addendum 40).
+Resources: `7c7f2b1` (tFwdRoot) + `125ea9f` (hook + re-pin).  All LOCAL,
+dev-candidate.  Gates on a private mex built from the worktree:
+tFwdRoot 5/5, tAsphHook 3/3, tAsphCalib 2/2; SUITE_FAST running.  The
+shared mex and `~/dev/macos/build_release_gfortran` are NOT rebuilt (your
+MATLABs).  To pick it up: `cd ~/dev/macos && source ./makems.sh release
+gfortran`, then `rm ~/dev/MACOS_resources/mmacos/src/mmacos.mexa64 &&
+./run_mmacos_tests.sh tFwdRoot` (relinks; mmacos_gen.F is already
+regenerated for `fwd_root_flips_get`).
+
+## Addendum 42 (2026-10-05, CC for TO, Dave's order): the EXIT-PUPIL merit on the eccentric section -- is the edge wall the optics or the metric?
+
+**Why.**  Every stage-A/B solve minimised CALIB's OPD at the terminal FP,
+which the section's chiefs hit at ~31 deg.  That is OPL to each ray's OWN
+intercept on a tilted plane: it tracks the spot only through tan(31 deg),
+and with the position rows it can trade edges against centre (today's
+step-5 re-run: same seed, two basins, 3k centre 3.6 vs 21 px).  The strict
+metric is the exit-pupil reference sphere (`add_pupil` + `OptFEX= Yes`,
+"the reason add_pupil exists"; rodgers1 gate0_merit_identity proved it
+equals the strict metric to 2.7e-9 ON AXIS).  It has never run on a
+decentered section.  Your job: run it, on the deck you know best, and
+report whether the edge blur moves.  Budget half a day; two checkpoints.
+
+**Deck.**  Your -4 deg / 190 mm 1.5k section (the stage-B re-run row,
+50ed36b: 332.9 mm, edge 343 um = 19 px, smile 3.26 px).  Build it the tA
+way, then before any solve: `tel.add_pupil(nE)` (inserts FP_return +
+ExitPupil, nElt 4 -> 6) and verify the three things below.
+
+**THE TRAP -- read before the first call.**  `add_pupil` and
+`Telescope.optimize` (use_ep branch) both call `macos.stop(1)` with NO
+offset, which aims the chief ray at M1's VptElt.  On a coaxial deck that is
+the beam centre; on YOUR section VptElt(1) is the PARENT vertex, 190 mm
+from the beam (RptElt).  A bare `stop(1)` re-aims the whole system onto
+the parent axis and every number after it is of a different telescope.
+Verify after `add_pupil`: `ri = macos.get_ray_info(...)` at element 1 must
+put the chief at RptElt(1) to < 1 mm, and `macos.get_stop_info` must report
+the stop at the section's ApStop (0, ~0.19, 0), not (0,0,0).  If it does
+not, STOP and report -- the fix is `macos.stop(1, [dx dy])` with the
+offset = RptElt(1) - VptElt(1) in M1's local frame (or the object-space
+form `macos.stop_obj` at the ApStop header position), and it belongs
+INSIDE `add_pupil`/`optimize` (stop_elt offset from RptElt when the element
+is a section), not in your runner -- announce it in BRIEF_dyson5_tma.md and
+make the one-line change by path, gated (`tStopReload` has the pattern).
+
+**Three checks before the solve (checkpoint 1, cheap -- report these
+first):**
+1. FEX on the section: `macos.fex(1)` prints the EP crossing as the mean
+   of 4 probes with a spread; the radius should be ~1.0-1.3 m (tA read the
+   pupil at -0.9..-1.3 m) and the printed axis must say CHIEF.  A radius of
+   mm-class or a telecentric fallback message = the Return is wrong.
+2. Identity at the SEED: evaluate (max_iters 0 or 1) the SAME 7 fields
+   with the FP merit (no add_pupil) and with the EP merit, and tabulate
+   per field: CALIB WFE (both merits), the trace rms spot (your helper),
+   nPassRays.  The EP WFE must RANK the fields like the spot does; the FP
+   WFE need not.  That table is the diagnostic Dave asked for.
+3. `fwd_root_flips_get` after each trace = 0 on this deck (it was 0 at the
+   nominal field today; the Return sphere traced back from the focus is the
+   ifLNsrf branch, untouched by FwdRoot -- a nonzero count is news).
+
+**The run (checkpoint 2).**  The same B1 rung as 50ed36b -- conics +
+h^4/h^6 on M1-M3, position rows at beam_wt 1 -- with the EP merit (the
+`beam_pos_fov` rows still target the DETECTOR element: `optimize` picks the
+last FocalPlane, which after add_pupil is still your FP).  Score as always:
+trace spot per field, efl_of_built_, check_clipping, then t5e with roll 180
+on the deck WITHOUT the pupil pair (save the solved spec, strip the pupil,
+or re-emit: t5e's join must see the real FP).  Report beside 50ed36b's row.
+If the edges move by more than the run-to-run basin scatter you measured
+today (your 1.49 -> 3.26 px smile), the metric was part of the wall and
+every later rung (CCMac's freeform) inherits the EP merit; if they do not,
+we have the optics' answer and stop asking.
+
+**Rules.**  New record files `dyson5_tA_EP_*`; `Telescope.optimize` only
+as a caller except the stop-offset fix above (announce first); commit
+locally by path; Dave reviews pushes.  CC is on the DM-gauge deck and will
+read your two checkpoints as they land -- message at each.
+
+## Addendum 43 (2026-10-05, CC for TO, Dave's order): the Petzval scan -- can the mirrors take the field curvature out?
+
+**Why.**  Your cp2 table splits the -4/190 edge blur: strict wavefront
+33.9 um about the chief's detector intercept, 25.7 um about best focus, so
+~22 um rms of the edge is DEFOCUS (field curvature along the strip) and
+25.7 um (= the 332 um / 18.5 px best-focus spot) is astigmatism/coma.  Dave
+asked whether a field lens would clean the edge: NO -- a lens at the slit
+has no Petzval leverage, a flattener a centimetre before it sits where the
+Dyson's block face wants to be, and over 400-2500 nm it adds chromatic
+focal shift plus two uncoated crossings.  If the curvature is to come out
+it comes out of the MIRRORS: the Petzval sum of the three radii.  Our
+telecentric parent (R = [0.3667 0.0998 0.1617] after calibration) has
+1/R1 - 1/R2 + 1/R3 well away from zero because the telecentric condition
+and the EFL calibration fixed R3 and the M3 station; the one first-order
+knob left is the M2/M3 power split, `secondary_mag`, held at 3.5 since
+stage A.  Bounded item; first-order first, then one engine rung.
+
+**Step 1 -- first order (an hour).**  Extend the tA scan with a Petzval
+column from `tma_layout`'s output: `P = 1/R1 - 1/R2 + 1/R3` (sign
+convention: write it so a flat-field Korsch reads 0; check against the
+textbook Korsch with the standard three-mirror condition before trusting
+the sign), its radius 1/P, and the predicted sag of the Petzval surface at
+the strip edge, h^2 P / 2 with h = f tan(2.34 deg) = 13.5 mm (1.5k) and
+f tan(4.69 deg) = 27 mm (3k).  Scan `secondary_mag` 2.5 -> 8 at the
+working point (-4 deg / 190 mm, telecentric, EFL calibrated as tA does)
+and report, per m2: P, 1/P, the edge sag, the parent's R/t, M2 and M3
+diameters, overall length, and whether the section still clears (your
+`tA_clear_`).  The question is whether P = 0 is reachable INSIDE the
+clearance envelope at this EFL and F/#; if the flat-field m2 is far from
+3.5 the whole stage-A/B family was curved by construction.
+
+**Step 2 -- engine (the rung).**  At the m2 nearest P = 0 that clears:
+calibrate, run the B1 rung (conics + h4/h6 + position rows, beam_wt 1),
+and report the cp2 table for it -- STRICT about the chief AND about best
+focus per field, the best-focus spot, as-placed spot, plate, smile /
+keystone / SRF / CRF through t5e with roll 180 -- beside the -4/190 row.
+The number to watch is strict@chief minus strict@focus at the edge: if it
+collapses from 22 um toward zero while the best-focus 25.7 um stays, the
+Petzval knob did its whole job and the remaining wall is the
+astigmatism/coma that only non-symmetric DOFs (CCMac) can touch.  If the
+best-focus number moves too, say so loudly -- it means the power split
+also changed the astigmatism, which the layout then owns.
+
+**Rules.**  tA runner stage or a new `dyson5_tA_petzval` -- your call;
+records `dyson5_tA_pz_*`; `Telescope.optimize` as a caller only; engine
+scores only (the first-order P is a prediction to be checked by step 2's
+focus split, not a result); commit locally by path; report at each step.
+
+## Addendum 44 (2026-10-05, CC for TO, Dave's order): the FREEFORM LADDER is yours -- continuation, strict merit, m2 = 3.0 parent
+
+**Why you, why now.**  Addenda 42-43 closed the symmetric-DOF story: the
+edge wall of the eccentric section is CROSS-TRACK ASTIGMATISM (y-fan
+flat, x-fan curving 2-4 mm, T-S 2.2-5.3 mm at +-2.34 deg), which no power
+split or focus balance removes.  Non-symmetric DOFs are the next lever.
+Dave moves that work from CCMac to you (CCMac's budget).  CCMac's step 5
+(65503a3, merged; `dyson5_tma_step5.m`, `optimize_freeform` with the
+`beam_pos_fov` / `beam_wt` hooks they added) is the prior art and your
+starting tooling; their route B -- a SELF-CONSISTENT Zernike solve from
+the conic geometry over the symmetric modes {5,13,25} PLUS the
+non-symmetric {4,6,7,8,9,10} -- gave 11-13 px worst / 5 px centre at 1.5k
+in ONE bounded rung, path-dependent (CC's Linux re-run 7cd8b24).  Your
+job is the LADDER that one rung was not: continuation, rung by rung, on
+the strict merit, until the edge stops improving.
+
+**Parent.**  The -4 deg / 190 mm 1.5k section on the m2 = 3.0 telecentric
+parent (your addendum-43 row: edge 291 um, the better parent for this
+work), EFL-calibrated as tA does, position rows (`beam_pos_fov`,
+beam_wt 1) in EVERY rung so 330 mm holds.  3k (-4 deg / 180 mm, m2 3.0
+re-calibrated) AFTER 1.5k converges -- same ladder, one run.
+
+**The merit.**  STRICT, not the FP OPD: cp1 showed the FP merit floors at
+16 um and mis-ranks the fields; freeform trades edge against centre, which
+is exactly where a mis-ranking merit misleads.  Use your `tEP_strict_solve_`
+(lsqnonlin, deck write + reload per evaluation) with the Zernike
+coefficients as DOFs beside the conics: ~0.5 s per evaluation, so a rung
+of 36 DOFs costs ~20 s per Jacobian -- a 100-iteration rung is ~30 min,
+affordable.  Centre the sphere on the chief's DETECTOR intercept (the
+spectrometer sees the detector, not best focus) and REPORT both forms per
+field as cp2 did.  When EPFIX lands in CALIB (PLAN 3.1, deferred) the same
+ladder re-runs natively as an A/B; until then your solver is the strict
+optimizer we have.  If a rung's wall-clock exceeds an hour, fall back to
+`optimize_freeform` (CALIB, FP merit) for that rung and SAY SO on the row.
+
+**The ladder (continuation; each rung warm-started from the previous
+rung's solved design, never from the seed):**
+- R0: the B1 conics + h4/h6 state (your addendum-43 m2 = 3.0 row) --
+  the reference row.
+- R1: + ANSI {4,6} astigmatism on M1-M3 (the measured defect, first).
+- R2: + {7,8,9,10} coma / trefoil.
+- R3: + {5,13,25} symmetric (CCMac's lesson: without them the centre is
+  lost; with the aspheres present they may stay near zero -- report them).
+- R4: + the next order {11,12,14,15} (secondary astig / tetrafoil) if R3
+  still moves the edge.
+Stop two rungs after the edge spot stops improving by more than the
+basin scatter you measured (a few %).  `lMon` = the per-mirror beam
+FOOTPRINT radius (CCMac's `footrad3_`), not the body radius -- modes
+normalised to a larger radius are degenerate over the lit patch and the
+solve goes ill-conditioned (Telescope.set_freeform's own note).
+
+**Known traps.**  (1) `Surface= Zernike` and `Surface= Aspheric` cannot
+co-exist on one mirror in the emitter (CCMac's deferred co-emit): either
+carry the h4/h6 as the symmetric Zernike modes (route B; your R3 then
+re-solves them) or hold the aspheres and put ONLY non-symmetric modes on
+the Zernike surface -- NOT both on the same element; the combined path
+ERRORS on purpose.  State which you chose on every row.  (2) The ZernCoef
+~2x normalisation wall CCMac hit applies only to an ABSOLUTE
+asphere->Zernike conversion; a self-consistent solve does not care.
+(3) Your deck-write-per-evaluation path prints `** Unknown command`
+noise -- pre-existing, ignore.  (4) `fwd_root_flips_get` = 0 after each
+rung's trace; a nonzero count on a solved deck (K3 ~ -30 brought M3's
+sheets to 5.5 mm apart) is worth a line, not a stop.
+
+**Per rung, report:** strict@chief and strict@focus per field, best-focus
+and as-placed spot per field, T-S at the edge (your probe), plate (local /
+edge), coefficients per mirror (ANSI, lMon stated), clearance
+(mount-once), then t5e with roll 180 (smile / keystone / SRF / CRF /
+admitted) on the deck without the pupil pair.  One line per rung in a
+ladder table; the full cp2-style table for the last rung.  Records
+`dyson5_tA_FF_*`, decks per rung.  `optimize_freeform` /
+`Telescope.optimize` as callers only (announce any hook first); commit
+locally by path; message at R1 (the astigmatism rung -- if it does not
+move the edge the premise is wrong and we stop) and at the end.
+
+## Addendum 45 (2026-10-05, CC for TO, Dave's order): the geometry lever and the transverse metric -- three runs
+
+**Why.**  The freeform ladders (your "For Dave" section) flatten the strip
+by trade and R5 showed the telescope's wavefront merit is not the
+instrument's.  Two things the record has never done, both named in the
+literature we read for the form but not for the method (Bauer, Schiesser
+& Rolland, Nat. Commun. 9, 1756, 2018: the STARTING TILT GEOMETRY decides
+whether freeform terms can correct a system; Shack & Thompson's nodal
+theory: field-quadratic astigmatism of a tilted-component system has
+nodes placed by the mirrors' relative tilts/decenters):
+1. every rung since stage A solved FIGURE on a frozen first-order layout
+   (`dofs [0 0 0 0 0 0 0 1]` + aspheres + Zernikes); no mirror tilt or
+   decenter was ever a variable -- the exact knob the eccentric section's
+   field-quadratic astigmatism answers to;
+2. the merit was wavefront rms at F/1.8 with 20-100 um of OPD, far from
+   diffraction-limited, where the slit and detector see TRANSVERSE blur.
+
+**The runs, in this order, both modules (1.5k m2 3.0 -4/190; 3k m2 3.0
+-4/180), each warm from your R4 freeform rung:**
+- **(a) Metric alone.**  R4's DOFs (conics + the two-channel freeform)
+  re-solved with CALIB's SPOT target (`OptTarget= SPOT` at the FP; its
+  derivative stride was fixed 10-01, tSpectrometerRx native leg) plus the
+  position rows -- `Telescope.optimize(..., 'target','SPOT', ...)` if the
+  freeform path exposes it, else your lsqnonlin evaluator with the
+  per-field best-focus AND as-placed rms spot radius as residuals (state
+  which; as-placed is the one the slit sees).  Same budget, same table,
+  same e2e row.  This is the clean A/B of metric against the strict
+  wavefront.
+- **(b) Geometry.**  (a)'s solve with M2 and M3 rigid-body DOFs added --
+  tilts and decenters, the first six of the eight (`dofs` rows per
+  element: M1 `[0 0 0 0 0 0 0 1]`, M2/M3 `[1 1 1 1 1 1 0 1]` with the
+  pole-frame convention `optimize` uses), FP focus (`fpa_dofs` z) if the
+  plate scale rows allow.  CLEARANCE IS NOW LIVE: the geometry moves, so
+  `check_clipping` + `spectrometer_clearance` (mount once) on EVERY rung,
+  no carry-over, and the e2e join re-placed from the moved deck.  Report
+  the tilt/decenter solved per mirror (mrad, mm) beside the spots.
+  **The diagnostic:** if the edge moves and the freeform coefficient norm
+  SHRINKS, the geometry was carrying the burden (Bauer's result); if the
+  norm grows with the tilts, the two are fighting and the stop position
+  (c') is next.
+- **(c) The instrument's merit, one final rung.**  The best of (a)/(b) with
+  the e2e scorer itself as the residual vector -- smile, keystone, CRF,
+  SRF per (field, lambda) through your engine join -- in lsqnonlin, a
+  bounded 1500-evaluation rung.  This is the rung whose number goes to
+  Jim.
+- **(c') If (b) says so:** the stop at M2 (the review's telecentric
+  variant) as a layout alternative -- `tma_layout` option or a hand-moved
+  stop -- first order only, one row, before any solve.
+
+**Rules.**  Equal field weights until Dave rules otherwise (the open
+ruling stands; (a)-(c) change the METRIC and the DOFs, not the weights).
+Records `dyson5_tA_GM_*`; per-rung tables as in addendum 44 plus the
+clearance columns; commit locally by path; message CC at (a) done, (b)
+done, (c) done.
+
+## Addendum 46 (2026-10-06, CC for TO, Dave's order): the F/1.8 OFFNER at the 54 mm slit -- one day, one table
+
+**Why.**  The deck for Jim and Joe (`demo_session/deck_dyson_record.md`,
+slide "Alternatives to the Dyson for the 3k slit") lists the review's
+other forms at a 54 mm slit and says the Offner "has not been tried
+here".  Dave wants it tried while the deck is finished: all-reflective
+(no CaF2, no air-glass crossings, a cold shield for free), the review's
+long-slit example is F/2.8 / 48 mm / 30 um px (Table 2: smile 0.3 %,
+keystone 2 % of a pixel, 0.76 in a pixel), and the record's own Offner
+sibling (`dyson5_s1_offner`, F/2.8, R 0.5 m, ring 0.22 R) reaches
+keystone 0.028 px and CRF 1.20 px but SRF 3.69 px and 0.23 in a pixel.
+The question is whether an Offner at F/1.8 and 54 mm reaches the Dyson
+rows (CaF2 240: CRF 1.21 / SRF 2.02 / EE 0.82; silica 220 + meniscus:
+1.33 / 2.03 / 0.76) and at what size.
+
+**The run.**  Spectrometer alone, 3k: `P.npix = [3000 500]`, 18 um,
+380-2500 nm, 2-px slit, `P.Fno_offner = 1.8`, the chain's `grating_model
+'planes'` (chord-ruled, as the engine).
+1. **First order, a scan over R:** `P.offner_R_m` in {0.5, 0.75, 1.0,
+   1.25} m with the ring radius at 0.22 R (addendum 6: the slit->M1 and
+   M3->FPA beams pass BESIDE the grating body, grating mount in the
+   clearance gate).  Per R: the seed's smile / keystone / CRF / SRF / EE,
+   the grating footprint (the stop at F/1.8 is about R/(2F#) across --
+   check), length, mirror diameters, clearance.  One table, engine-scored
+   (`spectrometer_score` 7 x 7 via the s2 stage or a direct call), no
+   solve yet.
+2. **The classical corrections at each R that clears:** `offner_solve`
+   (convex-grating radius factor, second-zone radius factor, dy, dz) under
+   the ladder's residuals (10 x smile/keystone, 1 x rms spot, clearance
+   wall), then emit and re-score in the engine.  Watch the SRF: it is the
+   number the F/2.8 sibling failed (3.69 px), and the review's Offner holds
+   SRF < 1.35 x sampling only at F/2.8.
+3. **One freedom step, only if 2 leaves SRF > 2.5 px at every R:** a conic
+   on each concave zone (the two zones are already separate radii in the
+   chain; add `Kc` per zone and, if the chain lacks it, say so and stop --
+   do not build a new surface kind today).  The Offner-Chrisp three-mirror
+   variant is NOT in scope; name it as the next form if 3 fails.
+4. **Score and clear the best point like a Dyson row:** smile, keystone,
+   CRF, SRF, EE per (field, lambda), `spectrometer_clearance` with the
+   grating mount, `dyson5_view_figs` for the engine renders,
+   `spectrometer_maps_fig` for the maps -- deck figures come from the
+   producers, not re-drawn.  Optional, if time remains: the e2e join with
+   the 3k (c) telescope (`dyson5_t5f` with `tel5f_e2e_template` pointing at
+   an Offner e2e deck -- there is none yet; if the template route does not
+   fit the Offner's frame, skip and say so).
+
+**Deliverable.**  One table for the deck's slide 10 -- rows: the Offner
+at each R (seed and corrected), the two Dyson references; columns: form,
+R or block radius, F#, slit, smile, keystone, CRF, SRF, EE, length,
+largest optic, mass (mirrors at 10 mm Zerodur-class blanks is enough, say
+the assumption), clearance worst pair -- plus two lines "For Dave": does
+the F/1.8 Offner reach the Dyson rows, and what it costs in size.  Records
+`dyson5_off18_*` (txt + .in + png) in `challenges/dyson5/`, a short
+section in `BRIEF_dyson5_jim.md` (3c), commit locally by path, message
+CC.  Budget: one day.  If step 2 cannot bring SRF under 3 px at R <= 1.25
+m, stop there and report -- a negative at a stated size is the answer.
+
+**Rules.**  American spellings in the record (Dave).  Numbers from the
+engine's trace, never the chain alone (the chain lays out, the engine
+scores).  `ps -C MATLAB` before any run: CC is running deck renders
+through the shared mex this morning; model 128/256 lanes coexist, do not
+relink the shared mex or pull.  Equal field weights.  Push only on Dave's
+word.
+
+## Addendum 47 (2026-10-07, CC): Jim's answers to the round-2 note -- the record, and what they move
+
+Jim replied in line to `DRAFT_email_jim_round2_V2.md` (sent 2026-10-06 with
+`deck_dyson_record.pptx`).  His points, verbatim in substance, and their
+consequence for this arc.  (He attached a paper; not yet in the tree -- see
+the end.)
+
+1. **Offner at the 3k slit.**  "It is hard to do much better than f/3 with
+   reasonably sized Offners."  Confirms addendum 46's verdict (F/1.8 Offner
+   OUT, spectral blur 7-9 px rms at every R to 1.25 m) as a property of the
+   form, not of our solve.  Offner-Chrisp stays the named next form, untried.
+2. **Four 1.5k modules.**  Four spectrometers + telescopes means integration,
+   test and calibration x4 -- labor and schedule, not mass, is the cost he
+   expects to dominate.  Detectors: Teledyne regularly makes 2k x 2k and
+   3k x 0.5k; 1.5k x 0.5k is possible but carries NRE for the packaging.  He
+   doubts the mass saving buys enough in spacecraft or launch to win.
+   **Consequence: the trade leans to two 3k modules, which puts the weight
+   back on the 3k telescope (the open item).**  The 4-module block stays in
+   the record as the fallback that already images at the pixel.
+3. **CaF2 volume.**  "Materials are almost always a tiny fraction of the
+   instrument cost."  Ask 2 of the note is answered: the 12.4-19.6 L of
+   single-crystal CaF2 is not the discriminator.  Do not carry it as one.
+4. **The detector window.**  It is an ORDER-SORTING FILTER, not a window.
+   The preferred Dyson lens material is CaF2 and the CTE mismatch to the
+   filter is too large to bond; fused silica to fused silica has a bad
+   bonding history too (possibly the transmissive epoxies' mechanical
+   robustness).  **Consequence: the air gap stands.  The six-crossing /
+   0.81 uncoated throughput is the baseline; the "cemented window, four
+   crossings, 0.87" line in the deck and in addendum 11's throughput table
+   is not available and should be labelled so wherever it is quoted.**
+5. **The telescope.**  Design telescope and spectrometer SEPARATELY, both
+   telecentric at the slit; the telescope a little faster than the
+   spectrometer; he "doesn't see why some rays correspond to an f/1.2
+   cone".  In his paper the spectrometers are smaller than the telescopes,
+   and the 192 mm beam into the telescope sets the approximate size of
+   both.  **Consequence, for the (c') brief: the 3k solve's F/1.19 marginal
+   rays are a DEFECT of the freeform solve (the pupil is not controlled),
+   not a feature to feed the grating; the next solve carries a cone bound
+   at the slit (every ray inside the spectrometer's F/1.8 acceptance, i.e.
+   the telescope at ~F/1.7 with the pupil at infinity -- CALIB's
+   `OptBeamSize=` / beam rows at the slit, or a marginal-ray row) together
+   with the stop at M2.  Scoring the telescope alone at the slit, as he
+   says, is what stage tA/tGM already does; keep it, and add the cone
+   bound to the per-field table.**
+6. **Coatings / throughput.**  These systems are photon-starved at the LONG
+   wavelength end; the grating efficiency is tailored to compensate; the AR
+   should help where the photons are needed most and not penalize too much
+   elsewhere.  **Consequence: a throughput number is wavelength-weighted,
+   not the uniform 0.87 / 0.81 the record quotes; when throughput is next
+   scored, do it per band with the AR designed for 2.0-2.5 um and the
+   grating blaze stated.**
+
+**The paper (in the tree 2026-10-07):** `mmacos/challenges/dyson5/
+VSWIR_design.pdf` = Bradley, Moore, Van Gorp, ... Mouroulis, "Finalized
+optical design of the SBG VSWIR Wide Swath Imaging Spectrometer", ICSO
+2024, Proc. SPIE 13699, 1369945 (image-only PDF; no text layer).  What it
+pins, against the numbers this arc has been using:
+
+| item | the arc (Jim's first numbers) | the paper (final design) |
+|---|---|---|
+| architecture | 2 x 3k or 4 x 1.5k | **two identical** telescope + Dyson modules, each half of the 180 km / 17 deg swath (the single-telescope-two-DSI option lost on volume and mass: 108 x 60 mm image plane) |
+| telescope | f 330 mm, 183 mm, F/1.8, 9.4 deg strip | **f 345 mm, 192 mm aperture, F/1.8, 8.9 deg FOV, IFOV 51 urad**; freeform TMA (even-asphere TMA rejected as too SENSITIVE in tolerancing, not on nominal performance); spots 2-3 um radius, ~70 % of the asphere TMA's; "diffraction limited over most of the spectral range"; all-aluminium, 280-300 K |
+| slit / detector | 54 mm, 18 um, 3000 px | 54.45 mm, 36 um wide (2 px), 18 um spatial with 2 px co-added spectrally, **3072 x 512**, 10 nm per co-added pixel |
+| spectrometer | 240 mm CaF2 block, spherical grating | **CaF2 Dyson lens, ASPHERIC, with a CONIC grating** (Option B) on N-BK7, no corrector lens (throughput), 238-242 K; smaller than the telescope |
+| requirements | smile / keystone < 0.1 px; CRF < 1.5; SRF < 1.5-2.0 | **smile 1.8 um = 5 % of a co-added pixel, keystone 1.8 um = 10 % of a pixel; SRF < 1.8 co-added px; CRF < 2.8 px; ARF < 2.8 px** |
+| design values | -- | DSI alone (Table 2, B): smile 1.3 %, keystone 2.7 %, SRF 1.33, CRF 1.35; telescope-fed (Table 3, freeform): smile 1.3 %, keystone 3.2 %, SRF 1.34, ARF 2.18, CRF 1.30; CBEs after tolerancing SRF 1.50, CRF 1.89, ARF 2.36 |
+| method | -- | the telescope is optimised ALONE for uniform small spots over the full slit length, with constraints on F/# ANAMORPHICITY, baffle clearances and working distance; the DSI is then added for end-to-end keystone and CRF; the telescope "overfills" the F/1.8 DSI |
+
+Where that leaves the record: (i) the 1.5k row of record (CRF 1.22 / SRF
+2.20 / smile 0.50 px e2e) meets the paper's CRF requirement and design
+value, misses its smile (0.50 px against 0.05) and its SRF (2.20 against
+1.8 co-added) -- our smile spec was the right one; (ii) the 3k (c) row
+(CRF 4.02) fails even the paper's looser CRF; (iii) their telescope's
+2-3 um spots over an 8.9 deg strip, from a FREEFORM TMA at f 345, is the
+existence proof the (c') brief should aim at, with the cone bound stated
+as THEIR constraint: minimal F/# anamorphicity at F/1.8 (no F/1.2
+marginal rays), telecentric at the slit; (iv) the aspheric Dyson lens +
+conic grating is the spectrometer form to try when the 3k spectrometer
+is revisited (our 3k spectrometer-alone rows used a spherical block;
+addendum 11's meniscus is their rejected corrector lens).  Cite the
+paper's Table 1 as the spec sheet from here on.
+
+**Open asks he did not answer:** telescope forms that have worked at
+183 mm / F/1.8 / 4.7-9.4 deg into a telecentric slit (beyond "design them
+separately"), and the throughput tricks beyond the AR note.  Ask again,
+briefly, in the reply.
+
+## Addendum 48 (2026-10-07, CC for TO, Dave's order): the 3k telescope (c') -- Joe's spec, seeded from the SBG VSWIR form
+
+**Standing.**  Fresh session, Opus 5.5.  Read first: root `CLAUDE.md`,
+`CURRENT_SLICE.md` top entries, this file's addenda 37 (telecentric
+parent), 45 (the levers; decks of record), 46-47 (Offner out; Jim's
+answers and the paper).  Rules: `ps -C MATLAB` before any run (CC's gauge
+runs may be live; ONE model-1024 MATLAB on this box); do not relink the
+shared mex; the fast suite before any commit; American spellings; commit
+by path on resources `dev-candidate`; push only on Dave's word.  Report
+`macos/REPORT_dyson5_cprime.md`; message CC at the end of step 1 and at
+the end.
+
+**Why.**  Jim's reply (addendum 47) and the project's own paper
+(`challenges/dyson5/VSWIR_design.pdf`) settle the trade toward TWO 3k
+modules, which makes the 3k telescope the open item.  The record's 3k
+telescope (`dyson5_tA_GM_3k_c.in`, freeform (c)) reaches CRF 4.02 px
+with marginal rays at F/1.19 into an F/1.8 spectrometer and M2 at
+126 mrad; figure and geometry fight (addendum 45: stop at M2 is the open
+step).  Jim: "design the telescope and spectrometer separately, both
+telecentric at the slit; the telescope a little faster than the
+spectrometer; I don't see why some rays correspond to an f/1.2 cone."
+The paper does exactly that: the telescope is optimised ALONE for uniform
+small spots along the full slit, under constraints on **F/#
+anamorphicity**, baffle clearance and working distance; then the Dyson is
+added for end-to-end keystone and CRF.
+
+**The spec stays Joe's** (the deck's spec sheet): f 330 mm, D 183 mm,
+F/1.8, 9.4 deg strip (3k: 3000 x 18 um = 54 mm slit), telecentric at the
+slit (chiefs within 0.5 deg), smile / keystone < 0.1 px, CRF < 1.5 px,
+SRF < 1.5-2.0 px, energy in a pixel > 0.75, clearance > 0.  Report
+alongside, for the comparison Jim will make, the paper's five (Table 1 /
+Table 3): smile 5 % and keystone 10 % of a pixel, SRF < 1.8, CRF < 2.8,
+ARF < 2.8 px (ARF = the telescope's own along-track line spread, FWHM in
+px -- our telescope-alone spot FWHM in the slit-width direction).  Their
+freeform TMA DESIGN values: smile 1.3 %, keystone 3.2 %, SRF 1.34, ARF
+2.18, CRF 1.30; spots 2-3 um radius.
+
+**The seed = the paper's Fig. 4b**, digitised by CC (scale bar 226 px =
+200 mm; positions +-5 mm, angles +-2 deg).  Single field, meridional
+(along-track) plane; the strip is OUT of the page, as in our eccentric
+sections.  Collimated beam enters from the upper left; M1 concave, large,
+upper right; M2 small, left, below the entrance beam; M3 concave, large,
+lower right; the slit far left, level with M3.
+- legs: M1->M2 270 mm, M2->M3 257 mm, M3->slit 313 mm (840 mm total at
+  f 345).  Scaled to Joe's f 330 (x 0.957): **258 / 246 / 300 mm**.
+- chief-ray incidence: M1 ~30 deg, M2 ~37 deg, M3 ~15 deg (deviations
+  120 / 107 / 149 deg).  The beam turns the same way at M1 and M3 and
+  back at M2 -- a zig-zag, not a Korsch fold.
+- beam: ~192 mm at M1, ~85 mm footprint at M2 (M2 is the small mirror;
+  the stop is there or near it), ~175 mm at M3 -- M3 carries nearly all
+  of the final power (313 mm to the slit at F/1.8).  Mirror chords in the
+  drawing: M1 ~240 mm, M2 ~140 mm, M3 ~205 mm.
+- **313 mm of working distance behind M3** -- the whole Dyson sits in it;
+  the slit is at the telescope's side, where the paper's Fig. 1b puts
+  "Slit & FPA" with the Dyson lens and grating hanging below.  That is
+  the packaging our stage-A sections never had (the Dyson's FPA inside
+  M2 by 4-5 mm).
+- What the drawing does NOT settle: whether the beam passes through an
+  intermediate focus between M2 and M3 (the rays appear to cross just
+  after M2).  Addendum 37's finding stands -- a real intermediate focus
+  between M2 and M3 and an exit pupil at infinity are incompatible for a
+  stop at M2 -- so step 1 decides it with numbers, not from the picture.
+
+**The work.**
+1. **First order from the seed (half a day).**  Three radii for the three
+   legs above at f 330 with the stop at M2 and the exit pupil at
+   infinity (chiefs parallel at the slit to 1e-3 rad in the paraxial
+   model); report whether this family admits it, where the intermediate
+   focus (if any) falls, the pupil's place, and the M2 footprint.  If
+   telecentricity is not available with the stop at M2, say which stop
+   place (M1, or a stop between M1 and M2) gives it, and what it costs in
+   M2 size.  Build the eccentric section at those legs and chief
+   incidences (`tma_layout` with explicit `'dist'` and tilts; addendum 37's
+   machinery; NOT the coaxial telecentric parent's spacings -- this is a
+   different family), emit, and measure in the ENGINE: chief angles at
+   the slit across the strip (+-4.7 deg), plate scale (`efl_of_built_`),
+   admitted fraction, clearance of the three bodies and the slit, M2
+   footprint.  Message CC here with the first-order table before any
+   figure work.
+2. **Conics + aspheres, the cone bounded.**  Stage tGM's machinery
+   (per-ray SPOT rows, position rows for plate scale, M2/M3 rigid body +
+   focus, h4+h6 per mirror from a zero seed), with TWO new rows per field:
+   (a) telecentric: chief direction at the slit (`'beam_dir'` rows, wt as
+   addendum 45); (b) **the cone**: the marginal rays' F/# at the slit in
+   BOTH directions within [1.7, 1.8] -- the paper's F/# anamorphicity
+   constraint and Jim's "a little faster than the spectrometer".  Build
+   (b) as beam-size rows at the slit (`calib_set_beam` kind 3 /
+   `OptBeamSize=`) if the engine's size row serves (check what it
+   measures -- rms or extent -- and say so); else as a per-field wall on
+   the extreme ray angles in the chain merit, reported with its margin.
+   Every rung reports, per field: spot FWHM in both axes (px), chief
+   angle, F/# x and y from the marginal rays, admitted fraction, M2
+   footprint, clearance.  A rung whose marginal rays run below F/1.7 is a
+   failed rung whatever its spot.
+3. **Freeform only if 2 leaves the strip ends above spec.**  The paper
+   chose freeform for TOLERANCE insensitivity, not nominal performance;
+   nominal first.  If freeform is needed, continue from the asphere
+   endpoint with addendum 44's ladder, the two new rows kept.
+4. **End to end.**  Join to the 3k Dyson of record (CaF2 240,
+   `dyson5_t5f`): smile / keystone / CRF / SRF / energy in a pixel per
+   (field, wavelength), admitted at the grating (the grating aperture
+   clips now -- macos 29f41da), clearance with the Dyson's bodies in the
+   300 mm working distance, the views (`dyson5_view_figs`, vignetted rays
+   in red).  One table against Joe's spec and the paper's five.
+
+**FRAMING (Dave 2026-10-07, supersedes the deliverable list below where
+they differ): this is a TELESCOPE DESIGN TEMPLATE, not a dyson5 solve.**
+Build it as `mmacos/templates/10_telescopes/tma_longslit/` in the
+pattern of `tma_unobscured/` and `offset_imager/` (Dave's rule: ONE
+user-editable params file + ONE runner, every stage run THROUGH it, a
+README that says "run it yourself"):
+- `tma_longslit_params.m` -- the spec as parameters: f, D, F/#, strip
+  half-angle, slit length, pixel, telecentric tolerance, the cone bound
+  [F/#min F/#max], working distance behind M3, the seed legs and chief
+  incidences (defaults = the Fig. 4b seed scaled to f), mirror DOF
+  ladder (conic -> h4+h6 -> freeform), field set and weights, score
+  thresholds (Joe's spec by default; the paper's five as a second
+  column).
+- `tma_longslit_run.m` -- stages `first_order` | `section` | `figure`
+  | `score` | `e2e` (the e2e stage takes any spectrometer deck: the
+  dyson5 `t5f` join by default), each resumable from the previous
+  stage's .mat, each printing its table and writing its records.
+- `tma_longslit.m` -- the one-call demo that runs the ladder at the
+  default params (the 3k Dyson front end) and writes the report.
+- `README.md` -- what the form is (the SBG VSWIR zig-zag TMA: small M2
+  at the stop, M3 carrying the power, long working distance for a
+  slit-fed spectrometer), the seed's provenance (Bradley et al. 2024,
+  Fig. 4b, digitised), the two constraints that make it a long-slit
+  front end (telecentric + F/# anamorphicity), how to point it at a
+  different spec, and the result table.
+- a `tTmaLongslit` class in `mmacos/tests` (SUITE_FAST where the sizes
+  allow): first order meets telecentricity at the default params; the
+  cone rows bite (a run with the bound off must show rays below F/1.7 --
+  the must-fail leg); the emitted deck re-scores to the table.
+- `00_INDEX.md` line and the `10_telescopes` ladder sentence.
+Reuse, do not duplicate: `macos.design.tma_layout` (explicit `'dist'` /
+tilts), `Telescope` (optimize with `'asph_elts'`, beam rows,
+`add_pupil`), `dyson5_conicfit`, the tGM stage's row builders -- if a
+piece is dyson5-local and the template needs it, MOVE it into the
+design layer or the template with its test, and leave a shim in
+`challenges/dyson5`.  The dyson5 3k result is then the template's
+default run, recorded in `challenges/dyson5` by reference.
+
+**Deliverables.**  The template above, plus `REPORT_dyson5_cprime.md` with: the first-order table
+(step 1), the rung table (step 2/3), the e2e table (step 4), the renders,
+the deck of record `dyson5_cprime_3k.in` + its e2e deck, and one paragraph
+on what the seed bought over the (c) section (CRF 4.02, F/1.19, M2
+126 mrad).  Numbers from the engine's own scorers, never the chain's
+estimate.  Do not touch the 1.5k deck of record or the sent deck
+`deck_dyson_record.pptx`.
+
+## Addendum 49 (2026-10-07, CC for TO, Dave's order): the SPECTROMETER -- units, a tolerance ladder, and Option B
+
+**Standing.**  Same session or fresh (Opus 5.5).  Read: addenda 47-48, `REPORT_dyson5_cprime.md`,
+the `tma_longslit` README, `design/src/spectrometer_score.m` (header: the SRF / CRF definitions),
+`challenges/dyson5/dyson5_params.m`.  Rules as addendum 48 (`ps -C MATLAB`; no mex relink; fast
+suite before commit; American spellings; commit by path on resources `dev-candidate`; push on
+Dave's word).  Report: a new section set in `REPORT_dyson5_cprime.md` or `REPORT_dyson5_spec.md`.
+
+**Where the record stands (R9, both modules at spec).**  The 3k module: smile 0.022 (slit-filled)
+/ 0.016 (point-source shift), keystone 0.006, CRF 1.17, SRF 2.025, EiP 0.85, admits 0.989.
+The spectrometer of record alone (CaF2 240, spherical lens, spherical grating): smile 0.005,
+keystone 0.006, CRF 1.21, SRF 2.024, EE 0.82.
+
+**Step 0 -- the units of the paper comparison (one hour, before anything else).**  The report,
+README and `tTmaLongslit` compare our SRF / CRF in 18 um pixels with the paper's bounds in its
+units, and the paper's SRF is in CO-ADDED pixels (2 x 18 = 36 um; Table 1: "SRF 64.8 um (1.8
+co-added pixels)", design 1.33 = 48 um) while its CRF 2.8 px is 50.4 um.  Ours: SRF 2.025 x 18
+= 36.5 um = 1.01 co-added px; CRF 1.17 px = 21 um.  So every "fail (1.8)" is a units error; we
+pass the paper's SRF with margin.  And SRF 2.025 is the SLIT FLOOR: the scorer's SRF is
+rect(2-px slit) (x) LSF (x) rect(1 px) (x) Airy, which is 2.000 px for a perfect spectrometer;
+the Dyson adds 0.025 px = 0.45 um.  Joe's "1.5-2.0" is met at its floor; 1.5 is a 1.5-px slit,
+not a better spectrometer.  Fix: the paper column in every table in MICROMETRES beside the
+pixels, the paper's bounds converted (SRF 64.8 um, CRF 50.4 um, smile 1.8 um, keystone 1.8 um),
+the README's convention paragraph extended by two sentences (co-added pixels; the slit floor),
+`tTmaLongslit`'s paper assertions re-pinned in um with the mechanism in the comment.  Message
+CC when done -- the deck is being written from these tables.
+
+**Step 1 -- the tolerance ladder, Dyson of record (the real spectrometer work).**  Nothing on
+either module has been toleranced; the paper chose its forms (aspheric lens + conic grating;
+freeform TMA) for tolerance INSENSITIVITY, not nominal performance, and its Table 2 shows the
+spherical-grating option losing on exactly that (Option A: smile 0.3 % -> 3.5 % CBE).  Build
+`spectrometer_sens` (design/src or the dyson5 challenge, with a shim either way): for the 3k
+Dyson of record, one perturbation at a time, scored by `spectrometer_score` (spectrometer alone)
+AND through the e2e join with R9 (`dyson5_t5f`, centroid launch, roll 0):
+- lens: decenter x/y 10 um, tilt 10 urad, radius dR/R 1e-4, index dn 1e-5 (CaF2 dn/dT ~ 1e-5/K:
+  so this is also 1 K), thickness 10 um;
+- grating: decenter 10 um, tilt 10 urad, radius dR/R 1e-4, period d(1/d)/(1/d) 1e-5, clocking 10 urad;
+- slit: decenter 10 um along and across, defocus 10 um; detector: defocus 10 um, tilt 10 urad;
+- block-to-grating air gap (the record has one): 10 um.
+Output per perturbation: d(smile, keystone, CRF, SRF, EE) in px and in um per unit perturbation,
+LINEAR (check linearity at 2x on two of them), and the compensator question answered per row:
+which of {detector focus, detector x/y, slit position} removes it, and the residual after that
+compensator.  Then the RSS to a budget: allocate the paper's CBE margins (Table 2: smile 3.5 %,
+keystone 5.8 %, SRF 1.51, CRF 2.04 co-added) as the targets and state what each tolerance must be
+to hold Joe's smile/keystone 0.1 px with the compensators.  One table per module: 3k; then the
+same ladder on the 1.5k Dyson of record (silica 130).  Thermal: the lens index row IS the soak
+(dn/dT), the block radius row scaled by CTE is the gradient-free soak -- state both in K.
+
+**Step 2 -- Option B nominal, for margin (one day, after step 1's table).**  The paper's form:
+aspheric CaF2 Dyson lens + CONIC grating (their final design), on our 3k geometry.  The chain and
+the engine already carry conics and `AsphCoef=`: add `Kc` on the grating and h^4/h^6 on the
+lens's convex face to the Dyson solve (`spectrometer_rx` / the s2 stage's DOFs), re-solve from
+the record, score alone and e2e with R9.  Deliverable: the record row vs Option B on the five
+metrics in um, the tolerance ladder of step 1 repeated on Option B (the paper's claim is less
+sensitivity, not better nominal -- test THAT), and the clearance (the lens asphere's sag at the
+block face; the +0.54 mm slit pinch).  If Option B buys nothing at nominal and nothing in
+sensitivity, say so and keep the spherical record.
+
+**Step 3 -- throughput by band (a table; CC may take it).**  Jim: photon-starved at 2.0-2.5 um,
+the grating blaze tailored, the AR to help where the photons are.  Per band (380-700, 700-1300,
+1300-2500 nm): the six air-glass crossings uncoated (Fresnel at the CaF2 / silica indices),
+with a single-layer MgF2 AR optimized at 2.2 um, and with a two-layer; the grating's scalar
+blaze efficiency for a blaze at 1.8 um; the detector window as an order-sorting filter (its
+own two crossings).  No solve.  One table, both modules.
+
+**Deliverables.**  The units fix (step 0) first and reported.  `spectrometer_sens` in the tree
+with a test (`tSpectrometerSens`, SUITE_FAST on the 1.5k deck at model 256: linearity, the
+compensator residual, a must-fail leg -- an unperturbed deck gives zero rows).  The sensitivity
+tables (3k, 1.5k; alone and e2e), the Option B row and its ladder, the throughput table, in the
+report; the deck is being written from them, so every table carries its units line.

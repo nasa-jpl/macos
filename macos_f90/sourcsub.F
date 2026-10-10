@@ -125,9 +125,32 @@ C***********************************************************************
           use src_mod,  only: ChfRayDir, xGrid, yGrid, zGrid
           use math_mod, only: define_local_csys
           implicit none
+          logical :: lh
           ! - - - - - - - - - - - - - - -
 
+!-->  Preserve the deck frame's HANDEDNESS (Dave 2026-09-08).
+!     define_local_csys always returns a right-handed (x,y,z); the
+!     corpus is full of left-handed source frames (xGrid = -1 0 0 with
+!     ChfRayDir +z: e5hex1, 6MST, every Telescope-emitted deck), and
+!     an element STOP -- the only caller, via ChiefRayAiming -- used
+!     to flip xGrid to +1 0 0 on them.  A mirrored xGrid mirrors the
+!     SEGMENTED source grid while the segment->element map does not
+!     move, so rays hit segments they are not mapped to: measured on
+!     e2e6m s3_imager_full, 732 of 985 rays obscured after ANY element
+!     stop (Segment or Reflector), 2 after an object-space stop.  The
+!     OBJ path re-orthogonalises the deck frame instead (cmd_loop
+!     label 205) and never had the problem.  Flip x back when the
+!     incoming triad was left-handed: y and z are unchanged, so this
+!     is exactly the triad the OBJ path produces.
+          lh = dot_product(xGrid, [yGrid(2)*ChfRayDir(3)-yGrid(3)*ChfRayDir(2),
+     &                            yGrid(3)*ChfRayDir(1)-yGrid(1)*ChfRayDir(3),
+     &                            yGrid(1)*ChfRayDir(2)-yGrid(2)*ChfRayDir(1)])
+     &         < 0d0
+!<--
           call define_local_csys(ChfRayDir, xGrid, yGrid, zGrid, ok, yGrid)
+!-->
+          if (ok .and. lh) xGrid = -xGrid
+!<--
 
 	end function UpdSrcGrid
         !
@@ -171,16 +194,9 @@ C***********************************************************************
 
 	nRayToSeg(1:mRay)=0
 
-	CALL DXPROD(zGrid,xGrid,yGrid)
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  zGrid = ChfRayDir
-	ELSE
-	  zGrid = -ChfRayDir
-	END IF
-	CALL DUNITIZE(zGrid)  ! nomalize z
-	CALL DXPROD(yGrid,zGrid,xGrid)  ! cross-product z and x to get y
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zGrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xGrid(1:3)
 	Tbg(1:3,2)=yGrid(1:3)
 
@@ -694,19 +710,9 @@ C***********************************************************************
 
 	nRayToSeg(1:nRay)=0
 
-        ! zGrid = cross-product of xGrid and yGrid - jzlou
-	CALL DXPROD(zGrid,xGrid,yGrid)
-
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  CALL DEQUATE(zGrid,ChfRayDir,3)
-	ELSE
-	  CALL DNEGATE(zGrid,ChfRayDir,3)
-	END IF
-
-	CALL DUNITIZE(zgrid)
-	CALL DXPROD(yGrid,zGrid,xGrid)
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zgrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xgrid(1:3)
 	Tbg(1:3,2)=ygrid(1:3)
 
@@ -1286,15 +1292,20 @@ C  ***  end rotate segemnt frame of reference
 	L2=w2*1.154700538d0
 	xBctr=DBLE(S(2)-S(3))*w2
 	dxB=w2-gap/2d0
-	slopex=x*0.5773502692d0
+!-->  use the SegXgrid-rotated coordinates, as HSEG does.  xt/yt were
+!     computed above but never used, so GridType=Pie silently ignored
+!     SegXgrid while Hex honoured it (180-deg ray<->element permutation
+!     whenever xGrid.SegXgrid < 0).
+	slopex=xt*0.5773502692d0
 	bLctr=DBLE(S(2))*L2
-	bL=y+slopex
+	bL=yt+slopex
 	bRctr=DBLE(S(3))*L2
-	bR=y-slopex
+	bR=yt-slopex
 	db=L2-gap*0.5773502692d0
 	PSEG=.TRUE.
-	IF (S(1).GE.0) PSEG=PSEG.AND.(x.GE.(xBctr-dxB))
-	IF (S(1).LE.0) PSEG=PSEG.AND.(x.LT.(xBctr+dxB))
+	IF (S(1).GE.0) PSEG=PSEG.AND.(xt.GE.(xBctr-dxB))
+	IF (S(1).LE.0) PSEG=PSEG.AND.(xt.LT.(xBctr+dxB))
+!<--
 	IF (S(2).GE.0) PSEG=PSEG.AND.(bL.GE.(bLctr-db))
 	IF (S(2).LE.0) PSEG=PSEG.AND.(bL.LT.(bLctr+db))
 	IF (S(3).GE.0) PSEG=PSEG.AND.(bR.GE.(bRctr-db))

@@ -363,9 +363,24 @@ C         ***next command: Load optical description data***
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
+!-->  DEAD LINE, kept for the record -- do NOT reason from it.
+!     MBFile6 is called ~40 lines below, and its FIRST statement (in
+!     BOTH macosio.F and smacosio.F) is reinitialise_variables(), which
+!     runs ray_mod_init_vars and sets LUseChfRayIfOK back to .FALSE.
+!     So this assignment never survives to a trace, on ANY path -- CLI,
+!     SMACOS, or any binding -- and OPD always takes the whole-aperture
+!     average-OPL branch (tracesub.F).  The Rx keyword `UseChfRay4OPD=`
+!     and the API opd_ref_set (macos_api_mod) run AFTER the reset and
+!     are the only working ways to select the chief-ray reference.
+!     Moving this line after the MBFile6 call WOULD flip the global
+!     default and needs the FEX-class compatibility sweep -- see PLAN.md
+!     "OPD reference".  Diagnosis: Luis Marchen, 2026-08-19.
 	    LUseChfRayIfOK=.TRUE.
+!<--
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
+	    beamOpt%nBeamPosFov=0; beamOpt%beamWt=1d0
+	    beamOpt%ifBeamCentroid=.FALSE.
 	    beamOpt%ifOptBeamSize=.FALSE.
 	    beamOpt%ifOptBeamRefRayDir=.FALSE.
 
@@ -377,6 +392,11 @@ C         ***next command: Load optical description data***
             SaveVis3d_dat_Flg=.FALSE.  ! default
 	    EltGrp(0,0:mElt)=0
 	    RxStopSet=.FALSE.; ifStopSet=.FALSE.
+!-->	    ! api stop_info_set state must not outlive the LOAD: a
+	    ! stale EltStopSet trips ChkDf2's NS/Segment stop guard
+	    ! mid-parse and cancels the NEW deck's own ApStop.
+	    EltStopSet=.FALSE.; StopElt=0; StopOffset=0.0D0
+!<--
             RxNoStopSet_Flg=.FALSE.
 	    IsVarIndRefElt=.FALSE.; IsGrinRefElt=.FALSE.
 	    TotalLensletsArray=0
@@ -432,7 +452,7 @@ C         ***next command: Load optical description data***
             ifPixArray       = .FALSE.
             ifCmt            = .FALSE.
             ifEFLCalc        = .FALSE.
-            ifCentroid       = .TRUE.
+            ifCentroid       = .FALSE. ! chief-ray default (Dave 2026-08-27)
             ifFilterData     = .FALSE.
             ifDMBuild        = .FALSE.
             ifLNegOK         = .TRUE.
@@ -1131,13 +1151,14 @@ C         ***Set centroid option***
 
 	  ELSE IF (LCMP(command,'CENTROID',5)) THEN
 	    ifCentroid=.TRUE.
-	    WRITE(*,*)' Image referenced to ray centroid'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: beam CENTROID',
+     &	              ' (opt-in; chief ray is the default)'
 
 C         ***Set chief ray option***
 
 	  ELSE IF (LCMP(command,'CHIEFRAY',3)) THEN
 	    ifCentroid=.FALSE.
-	    WRITE(*,*)' Image referenced to chief ray'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: CHIEF RAY (default)'
 
 C         ***Set regridding on for specified element***
 
@@ -2695,7 +2716,7 @@ C         ***
 C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
 C         *** EP -> next-element radius (the far-field propagation
 C         *** distance), with the legacy leg as fallback plus
-C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** telecentric/footprint guards -- see the FEX
 C         *** rework block in tracesub.F.  SXP is retained as-is for
 C         *** compatibility; it is now largely redundant with FEX.
 
@@ -3051,12 +3072,17 @@ C         ***Center Beam in System Stop***
 	  ELSE IF (LCMP(command,'CENTER',5)) THEN
 	    CALL IACCEPT_S(iStop,1,1,
      &	      'Enter system stop element number:')
-	    IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	      .OR.(EltID(iStop).EQ.12)) THEN
-	      WRITE(*,*)'Invalid element type =', EltID(iStop)
-	    ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
-	      WRITE(*,*)'CENTER: Invalid element number: ', iElt
+!-->  Same rules as STOP (2026-09-08): range first, veto only the
+!     non-sequential types, Segment allowed.
+	    IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+	      WRITE(*,*)'CENTER: Invalid element number: ', iStop
+	    ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	      (EltID(iStop).EQ.NSReflectorElt)) THEN
+	      WRITE(*,*)'CENTER: element',iStop,' is ',
+     &	        TRIM(EltTypeName(EltID(iStop))),
+     &	        ' -- a non-sequential element cannot be the stop.'
 	    ELSE
+!<--
 	      CALL DEQUATE(DDEF,VptElt,3)
 	      CALL DACCEPT(xTarg,DDEF,2,'Enter offset vector (dx,dy):')
 	      ifGrid=.FALSE.
@@ -3066,6 +3092,13 @@ C         ***Center Beam in System Stop***
 	      ifBuild=.FALSE.
 	      ifOPDCalc=.FALSE.
 
+!-->  Segment stop: chief-ray mapping, as in STOP.
+	      IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	    (EltToSegMap(iStop).GT.0)) THEN
+	        nRayToSeg(1)=1
+	        RayToSegMap(1,1)=EltToSegMap(iStop)
+	      END IF
+!<--
 	      CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &	        ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
@@ -3216,16 +3249,10 @@ C         *** Set System Stop ***
 
 	      ! Chief ray aiming
 	      ! 'Clean up' xGrid, yGrid first, as in source routines
- 205	      CALL DXPROD(zGrid,xGrid,yGrid)
-              IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-                zGrid = ChfRayDir
-              ELSE
-                zGrid = -ChfRayDir
-              END IF
-              CALL DUNITIZE(zGrid)
-              CALL DXPROD(yGrid,zGrid,xGrid)
-              CALL DUNITIZE(yGrid)
-              CALL DXPROD(xGrid,yGrid,zGrid)
+ 205	      CONTINUE
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	      CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 
 	      IF (ABS(zSource).LE.1d10) THEN
 	        ! Pt source
@@ -3235,6 +3262,20 @@ C         *** Set System Stop ***
 	          srcPos(1:3)=ChfRayPos(1:3)+zSource*ChfRayDir
 	          ChfRayDir(1:3)=StopPos(1:3)-srcPos
 	          CALL DUNITIZE(ChfRayDir)
+!-->  dead band (2026-09-08): a re-aim below round-off of a unit
+!     direction is the no-fixed-point case -- keep the incoming aim.
+!     Band = DeadBandUlp of round-off (math_mod; tightened from 1d-14
+!     on 2026-10-02); a suppressed residual above the measured
+!     round-off is noted once per run.
+	          c1=MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3)))
+	          IF (c1.LE.DeadBandUlp*EPSILON(1d0)) THEN
+	            IF (c1.GT.DeadBandQuietUlp*EPSILON(1d0))
+     &	              CALL DeadBandNote('point-source aim',
+     &	                                c1/EPSILON(1d0))
+	            ChfRayDir(1:3)=cr1indir(1:3)
+	            c1=1d0
+	          ELSE
+!<--
 	          c1=DDOTC(ChfRayDir,ChfRayDir)
 	          If (c1.LE.1d-22) Then
                     WRITE(*,*)' Error in setting STOP, abort ...'
@@ -3243,17 +3284,44 @@ C         *** Set System Stop ***
 	            ! Need update ChfRayPos as well
 	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)
 		  End If
+	          END IF   ! dead band
 	        Else If (SAOpt==SAPos) Then
 	          ! Translate chief ray in (xGrid,yGrid) plane
 	          x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
                   y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	          c1=EPSILON(1d0)*MAX(1d0,
+     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	          IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	          ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	            CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	          END IF
+!<--
 	        End If
 	      ELSE
 	        ! Collimated source, translate chief ray in (xGrid,yGrid) plane
 	        x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
 	        y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	        c1=EPSILON(1d0)*MAX(1d0,
+     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	        IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
            ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	        ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	          CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	        END IF
+!<--
 	      END IF
 	      ifStopSet=.TRUE.
 
@@ -3261,12 +3329,19 @@ C         *** Set System Stop ***
 	      ! Stop specified at ELT point
 	      CALL IACCEPT_S(iStop,1,1,
      &	                     'Enter system stop element number:')
-	      IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	          .OR.(EltID(iStop).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iStop)
-	      ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+!-->  Range check FIRST (EltID(iStop) used to be indexed before
+!     it).  The type veto keeps only the non-sequential types: a
+!     Segment stop is allowed (Dave 2026-09-08) -- see the chief-
+!     ray mapping ahead of CALL STOP below.
+	      IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
 	        WRITE(*,*)'STOP: Invalid element number: ',iStop
+	      ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	          (EltID(iStop).EQ.NSReflectorElt)) THEN
+	        WRITE(*,*)'STOP: element',iStop,' is ',
+     &	          TRIM(EltTypeName(EltID(iStop))),
+     &	          ' -- a non-sequential element cannot be the stop.'
 	      ELSE
+!<--
 	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
@@ -3304,6 +3379,19 @@ C         *** Set System Stop ***
 !	          GO TO 1
 !	        END IF
 
+!-->  Segment stop (Dave 2026-09-08): CTRACE visits a Segment
+!     element only for rays mapped to its source segment
+!     (RayToSegMap vs EltToSegMap), so map the chief ray to this
+!     segment for the aiming trace.  Transient: SetSourceRayGrid
+!     rebuilds the maps at the next grid setup (ifGrid is FALSE
+!     from here on).  Placed AFTER label 210 so the Rx ApStop=
+!     path (GO TO 210) gets it too.
+	        IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	      (EltToSegMap(iStop).GT.0)) THEN
+	          nRayToSeg(1)=1
+	          RayToSegMap(1,1)=EltToSegMap(iStop)
+	        END IF
+!<--
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
                 ! Center beam in stop to get new chief ray:

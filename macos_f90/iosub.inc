@@ -352,10 +352,13 @@ c		 warning messages when you have nObs=0
 	use loh_I2
         use macos_mod, only: ifStopSet
         use Constants, only: INF
+        use surfsub, only: GridInit
+        use cfiles_mod, only: GridFile
 
 	IMPLICIT NONE
 
 	INTEGER i,iElt
+	LOGICAL ifGridInitL
 
 C   Check for things user must specify
 C   Setup for new input scheme
@@ -375,7 +378,9 @@ C   Setup for new input scheme
 C       Set defaults, if necessary
 
         ! ApStop -- cannot be placed at NS-Surfaces or at the Object Location
-        if (RxStopSet .and. EltStopSet) then
+        ! (guard the STOP element only: unscoped, any Segment/NS elt
+        ! ANYWHERE in the deck cancelled a valid element stop)
+        if (RxStopSet .and. EltStopSet .and. iElt==StopElt) then
           if (EltID(iElt)==0 .OR.
      &          EltID(iElt) == NSRefractorElt .OR.
      &          EltID(iElt) == NSReflectorElt .OR.
@@ -1040,6 +1045,29 @@ C	  WRITE(*,112)'nObs',iElt
 	  END IF
 	END DO
 
+!-->  Resolve a GridFile= that was parsed before nGridMat= was known.
+!     GridInit sizes its read from nGridMat, so the read was deferred;
+!     this is the last chance.  If nGridMat= never arrived, FAIL -- a
+!     zero-sized read would otherwise be announced as a successful
+!     "dimension 0 by 0" load and leave the surface silently flat.
+	IF (GridFilePending(iElt)) THEN
+	  IF (nGridMat(iElt).GT.0) THEN
+	    CALL GridInit(GridFile(iElt),iEltToGridSrf(iElt),
+     &                    nGridMat(iElt),ifGridInitL,
+     &                    GridFileBin(iElt))
+	    ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInitL
+	    IF (.NOT.ifGridInitL) THEN
+	      WRITE(*,*)' GridFile not loaded correctly, iELT=',iElt
+	    END IF
+	  ELSE
+	    WRITE(*,*)' GridFile= given but nGridMat= never set,',
+     &                ' iElt=',iElt
+	    ELEM_OK=.FALSE.
+	  END IF
+	  GridFilePending(iElt) = .FALSE.
+	END IF
+!<--
+
 	IF (TElt_FLG) THEN
 	  CONTINUE
 	ELSE
@@ -1454,6 +1482,19 @@ C***********************************************************************
           IF (EltGrp(0,iElt)/=0)
      &      CALL PrintFmtArray('EltGrp','2x,i0',EltGrp(0,iElt)+1,EltGrp(0:EltGrp(0,iElt),iElt))
 
+!-->  Linked-element (rigid-group) perturbation target.  "Link= iElt" (alias
+!     "DpElt=") makes a PERTURB / optimize of THIS element also move element
+!     iElt as a rigid unit (funcsub.F CPERTURB -> LnkEltCPERTURB).  LnkElt
+!     inits to -1 (elt_mod.F), so emit only a real (>0) target -- unlinked
+!     elements write nothing.  This round-trips the linkage that an explicit
+!     "Link=" OR a DuplElt/CopyElt block macro both record in LnkElt; on reload
+!     the keyword just restores LnkElt (no re-duplication -- the full element
+!     block is already written), so a loaded linked Rx survives SAVE.  Was
+!     previously dropped on SAVE (SAVE_KEYWORD_AUDIT.md).
+          IF (LnkElt(iElt) > 0)
+     &      CALL PrintFmt('Link', "2x,i0", LnkElt(iElt))
+!<--
+
           ! --------------------------------------------
           ! Srf. dependent parameters
           ! --------------------------------------------
@@ -1603,8 +1644,17 @@ C***********************************************************************
 !<--
               IF (nGridMat(iElt).GT.0) THEN
                 CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-                CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-                CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!-->            a declared-but-empty grid has a blank name in memory;
+!               write the 'none' sentinel GridInit already accepts, so
+!               the SAVE re-loads (a blank value trips the validator)
+                IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+                  CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+                ELSE
+                  CALL PrintFmt('GridFile', "2x,A", 'none')
+                END IF
+!<--
+                IF (GridDefinedElt(iElt))
+     &            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
               END IF
 
             ! ---------------------------- undefined Special Srf.
@@ -1624,8 +1674,17 @@ C***********************************************************************
      &         (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
      &         (SrfType(iElt).EQ.SrfType_FreeForm))) THEN
             CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-            CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+            IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+            ELSE
+              CALL PrintFmt('GridFile', "2x,A", 'none')
+            END IF
+!-->        the pitch only for a DEFINED grid: a declared-but-empty
+!           grid (GridFile= none) has no pitch, and writing its 0 hard-
+!           codes a division by zero into the reload (IRIS 2026-09-09)
+            IF (GridDefinedElt(iElt))
+     &        CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!<--
           END IF
 !<--
 
@@ -1648,9 +1707,12 @@ C***********************************************************************
 !    SrfType 9/11 use the same pData/xData/yData/zData frame in the
 !    trace (GridSrf null-frame fix), so dropping it on SAVE moved
 !    the grid figure to the ChkDf2 default frame on reload
+!    Only for a DEFINED grid (GridDefinedElt): the 38 IRIS elements
+!    that declare nGridMat= 99 with GridFile= None carried no frame in
+!    the source deck and must not gain one on SAVE (2026-09-09).
           IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
      &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
-     &        (nGridMat(iElt).GT.0)) THEN
+     &        GridDefinedElt(iElt)) THEN
             CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
             CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
             CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
@@ -2545,8 +2607,13 @@ C       BEGIN PARSING THE STRING
 	  ELSE IF (STRING(I:I) .EQ. '%') THEN
 	    in_tok=.false.
 	    IF (NO_LET) THEN
-!--> whole-line comment: keep it for the SAVE round-trip
-	      CALL RxCommentCapture(STRING)
+!--> whole-line comment: keep it for the SAVE round-trip.  Inside a
+!    /* */ block the line belongs to the BLOCK and is kept verbatim.
+	      IF (LInCommentMode) THEN
+	        CALL RxCommentCaptureRaw(STRING)
+	      ELSE
+	        CALL RxCommentCapture(STRING)
+	      END IF
 !<--
 	      SP_FLG=.TRUE.
 	      GO TO 20
@@ -2601,19 +2668,34 @@ C       BEGIN PARSING THE STRING
    15   CONTINUE
 
 	IF (VAR_NAM(1:1) .EQ. ' ') THEN
+!--> a blank line inside a /* */ block is part of the block
+	  IF (LInCommentMode) CALL RxCommentCaptureRaw(STRING)
+!<--
 	  SP_FLG=.TRUE.
 	  GO TO 20
 	END IF
 
 	IF (LCMP(VAR_NAM,'CommentBegin',12) .or.
      &      LCMP(VAR_NAM,'/*',2)) THEN
+!--> the block's opening line, kept verbatim for the SAVE round-trip
+!    (block comments were LOST on SAVE until 2026-09-29: the lines
+!    inside never reached RxCommentCapture, which sees only '%')
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.TRUE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
 	ELSE IF (LCMP(VAR_NAM,'CommentEnd',10) .OR.
      &           LCMP(VAR_NAM,'*/',2)) THEN
+!--> the closing line
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.FALSE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
           GO TO 20
+	ELSE IF (LInCommentMode) THEN
+!--> a line INSIDE the block: whatever it says, it is kept as text
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	END IF
 	IF (LInCommentMode) GO TO 20
 
@@ -2636,14 +2718,18 @@ C     load(SAVE'd Rx) -> SAVE cycle stays idempotent.  Inline
 C     comments (key= value % note) are deliberately NOT preserved --
 C     that is the fragile case behind the GridFile-tab bug.
 	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
-     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
 	IMPLICIT NONE
 	CHARACTER(len=*) :: line
 	INTEGER :: L,i
 	LOGICAL :: furniture
 
 	IF (.NOT.LRxCommentCapture) RETURN
-	IF (nRxComment.GE.mRxComment) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
 	L=LEN_TRIM(line)
 	IF (L.EQ.0) RETURN
 	furniture=.TRUE.
@@ -2666,16 +2752,50 @@ C     that is the fragile case behind the GridFile-tab bug.
 	END SUBROUTINE RxCommentCapture
 
 
+	SUBROUTINE RxCommentCaptureRaw(line)
+C     Keep one line of a /* */ (CommentBegin/CommentEnd) block VERBATIM
+C     for the SAVE round-trip.  No furniture filter and blank lines
+C     allowed: inside a block the text can be anything -- typically
+C     keywords commented out -- and the block is re-emitted whole, so a
+C     reload of the SAVEd file skips it exactly as the source was.
+	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
+	IMPLICIT NONE
+	CHARACTER(len=*) :: line
+
+	IF (.NOT.LRxCommentCapture) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
+	nRxComment=nRxComment+1
+	RxCommentLine(nRxComment)=line
+	RxCommentAnchor(nRxComment)=RxCommentCtx
+	END SUBROUTINE RxCommentCaptureRaw
+
+
 	SUBROUTINE RxCommentEmit(ctx)
 C     Re-emit the captured whole-line comments anchored to ctx
 C     (0 = header/source section, iElt = that element's block).
 C     Called by PrtSourceInfo (ctx=0) and PrtSingleEltInfo (iElt).
-	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor
+	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor,
+     &	    mRxComment,nRxCommentDropped
 	use macos_IO, only: PrintMsg
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: ctx
 	INTEGER :: i
 
+!--> capture is capped at mRxComment lines: say so once, on the
+!    console (not into the file being written), rather than lose
+!    comments silently
+	IF (nRxCommentDropped.GT.0) THEN
+	  WRITE(*,'(A,I0,A,I0,A)') ' SAVE: ',nRxCommentDropped,
+     &	    ' comment line(s) of the loaded Rx were not kept (limit ',
+     &	    mRxComment,' lines)'
+	  nRxCommentDropped=0
+	END IF
+!<--
 	DO i=1,nRxComment
 	  IF (RxCommentAnchor(i).EQ.ctx)
      &	    CALL PrintMsg(TRIM(RxCommentLine(i)))
@@ -3412,28 +3532,60 @@ C***********************************************************************
 
         nextTok=.true. ! when true, 'state' is outside of a token
         tok(1:100)=' '; c=1; j=1; nVal=0
+!-->    Bound the scan by the BUFFER's length, not the command length:
+!       ValBuf is MacosValLen (220) chars, MacosCharLen is 256, so the
+!       old loop read 36 bytes past the actual argument and tokenized
+!       whatever sat there -- a non-blank byte became a bogus token and
+!       Read(tok,*) failed "Bad real number" NONDETERMINISTICALLY
+!       (tst_save_keys.in loaded 3 of 5 times, 2026-09-09).  Only the
+!       ArrWaveLen=/ArrIndRef= lines reach here.  Also cap the token and
+!       the output array so a malformed line cannot overrun either.
         Do
-          If (c==MacosCharLen) exit  ! done
-          If (ValBuf(c:c)==' ' .and. c<MacosCharLen) Then
+          If (c>=LEN(ValBuf)) exit  ! done
+          If (ValBuf(c:c)==' ') Then
             If (.not.nextTok) Then
               ! a token is complete
               !print*,'** tok = ',tok
+              If (j>SIZE(ValArr)) exit
               Read(tok,*) ValArr(j)
               !print*,'** ValArr(j) =',ValArr(j)
               j=j+1; tok(1:100)=' '; nextTok=.true.
 	      nVal=nVal+1
             End If
-            If (c<MacosCharLen) c=c+1
+            c=c+1
           Else
             If (nextTok) Then
               i=1; nextTok=.false.
             End If
             !print*,'** i =',i
-            tok(i:i)=ValBuf(c:c); i=i+1; c=c+1
+            If (i<=LEN(tok)) tok(i:i)=ValBuf(c:c)
+            i=i+1; c=c+1
           End If
         End Do
+        ! a token still open at the buffer's end (no trailing blank)
+        If ((.not.nextTok) .and. (j<=SIZE(ValArr))) Then
+          Read(tok,*) ValArr(j)
+          nVal=nVal+1
+        End If
+!<--
         End Subroutine Get_Values
 
+C***********************************************************************
+!-->  Does element iElt carry a DEFINED grid (data actually read)?  A
+!     declared-but-empty grid (nGridMat>0 with GridFile= none or a
+!     file that failed to load) has a slot but ifGridDataDefined false.
+        LOGICAL FUNCTION GridDefinedElt(iElt)
+        use elt_mod, only: nGridMat,iEltToGridSrf,ifGridDataDefined
+        Implicit none
+        Integer, intent(in) :: iElt
+        GridDefinedElt = .FALSE.
+        If (nGridMat(iElt).GT.0) Then
+          If (iEltToGridSrf(iElt).GT.0) Then
+            GridDefinedElt = ifGridDataDefined(iEltToGridSrf(iElt))
+          End If
+        End If
+        END FUNCTION GridDefinedElt
+!<--
 C***********************************************************************
 C*******End file iosub.inc**********************************************
 C***********************************************************************

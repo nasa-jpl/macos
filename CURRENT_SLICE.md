@@ -24,7 +24,1903 @@
 
 ## Active slice
 
-> **CURRENT STATE (2026-08-02) — e2e2 TELESCOPE FLOW COMPLETE.**
+> **2026-10-09 NIGHT RESUME POINT (CC; context low).  PLAN_CONSOLIDATION phase 1 in flight -- read
+> memory `project_consolidation_phase1` first (lanes, what TO has done, the suite's state, the
+> clean-worktree rule).  Dave is done for the day; his order for the night: cli_tests cmd layer,
+> the full-corpus baseline, small 1.1a items, review TO's item 5 when it lands; COPHI waits for his
+> go; **load + re-emit the manual's example .in files for documentation** (new ask).  cmd layer DONE
+> (39bd0a6: 8 journals pass both compilers; `run_cli_tests.sh cmd`; `manual` kind re-emits the
+> manual's ten examples into docs/macos-manual/examples/emitted/ -- Dave's ask, delivered).
+> Background: the full-corpus run at 52b1409 (scratchpad run_corpus_52b1409.log -> records/
+> corpus_{ifx,gfortran}_52b1409.csv) was at 453/1258 on ifx at 22:30 -- when it finishes, run
+> judge_load.py on each record (no previous corpus record: everything is 'pre-existing'), commit
+> the records, and list the non-ok decks in PLAN_CONSOLIDATION 1.1a.  TO's item 5 (line endings)
+> is next to review: build the worktree at its SHA, `load` + `cmd`, expect the CR twin to move.  UNPUSHED: macos
+> 0df79d3..HEAD (suite, TO's 1d318ac/f755e78/52b1409, deck_blur, notes), resources 57e0eed..HEAD.
+> Rules tonight: binaries from ~/dev/macos_cli_base only; journals COPY decks before commands that
+> write beside them; nothing pushed; no `--amend`.**
+
+> **2026-10-08 RESUME POINT (CC; context exhausted).  READ `PLAN_CONSOLIDATION.md` FIRST -- it is the
+> active plan (Dave 2026-10-08: close PLAN section-0 items, build the CLI test suite, finish the manual
+> and cmdref, build in nothing new; four phases from 10-09; five rulings for Dave in its section 4).
+> PUSHED this morning: macos ..b69c974, resources ..2808406.  LOCAL since: macos b3c81d1 (the plan),
+> 2de4dbb (3k deck comparison); resources: TO's 1.5k template run (R5 ffc, `dyson5_cprime_1k5.in`;
+> both modules now meet Joe e2e under both launches, SRF = the slit floor 2.024; the four-module block
+> 494 L / 21.4 kg vs the three-asphere record's 300 L / 14.6 kg -- Dave's trade) committing locally.
+> DONE 10-08: gauges short deck FINAL for the 4 pm talk (Dave's sign-off, DRAFT off, export mark on;
+> his edits folded each time); the 3k deck complete (26 slides: pair of modules, strips, throughput by
+> band, tolerance ladder, Option B, the 1.5k row); addendum 49 (spectrometer) landed by TO: the record
+> is the paper's Option A, Option B buys margin not insensitivity, keystone sets 26 um / 35 urad;
+> throughput stage `dyson5_throughput_band`.  OPEN: Dave's rulings in PLAN_CONSOLIDATION section 4;
+> the follow-up note to Jim & Joe (both modules at the pixel now); the gauge runner's ctx.msk
+> (PLAN_CONSOLIDATION 1.4); Luis's dwdz answer.  RULES today: the join's metric convention must be
+> stated before its number is read; a row set below 1 % of the merit is not a test; a shared mask from
+> an interference frame is the wider beam's; a units comparison to a paper states the paper's pixel.**
+
+
+> **2026-10-07 EOD RESUME POINT (CC).  LOCAL, NOT PUSHED: macos ad935a8..HEAD (23 commits),
+> resources 199342c..11daa83 (11), dev-candidate both -- push on Dave's word.  DONE TODAY: (1) Jim's
+> round-2 answers + the SBG VSWIR paper on the record (BRIEF_to_dyson5 addenda 47-48); the 3k telescope
+> as a TEMPLATE, `templates/10_telescopes/tma_longslit/` (TO): seed = the paper's Fig. 4b, first order
+> telecentric with the stop at M2 and no intermediate focus; R7 ffw at the pixel floor; R9 ffo = the
+> 3k DECK OF RECORD (`challenges/dyson5/dyson5_cprime_3k.in`): e2e smile 0.022 (slit-filled) / 0.016
+> (point-source shift), keystone 0.006, CRF 1.17, SRF 2.025 (= the Dyson's own 2.024, 0.025 over Joe's
+> 2.0 and over the paper's 1.8 -- the spectrometer's item: the paper's aspheric lens + conic grating),
+> EiP 0.85, cone F/1.89 x 1.80 (no ray below 1.7); smile was the LAUNCH CONVENTION (t5f lands the
+> chief, scores the centroid; both launches now in t5f, `P.tel5f_launch`), not the chief angle
+> (Dyson-alone chief-tilt diagnostic, tls_dyson_chief_tilt).  Equal-weight rms merit was the CRF wall;
+> a weight that is < 1 % of the merit is not a test (R8).  (2) Engine: stop_info_set takes the CLI's
+> range 1..nElt (a09cd59; tStopReload gate).  (3) Gauges decks for Thu 10-08 4 pm: slide 2 accuracy
+> rows = the reading's gain (1.004 / 0.986), the raw map (392 / 551 pm, gain 0.993 / 0.987; the piezo
+> four-step 0.01 pm, gain 1.0000 -- the hybrid's leg measured), the pupil imaging as the smaller part;
+> the four station figures on ONE DM command (full lattice, seed 7), mirror rig, shared format
+> (xlabels rms + gain, one colorbar, command in color), the interferometer's mask = the TEST beam
+> (the shared ctx.msk carries the reference-only annulus: OPEN item for the runner's pixel-rms
+> metrics; the lens rig's '51 nm fold' was the four-step's SIGN, now set by a +push); short deck:
+> gauge slides restructured (reads/frames/right/wrong/scored + the rig's render), pinhole stepping
+> explained, P/SRI introduced (Dube 2024), two-DM complex-amplitude slide (Redding 2023/2024 --
+> PAPER NUMBERS TO CONFIRM), modes to backup, full run-it-yourself; edit copies synced; DRAFT marks
+> stay until sign-off.  OPEN: Dave's sign-off on both decks; Luis's dwdz answer; sensors on the LENS
+> rig / D4 tilt never scored; the follow-up note to Jim & Joe (the sent deck says '3k not there yet').
+> RULES today: diff the edit copy before every sync (did, every time); a row set below ~1 % of the
+> merit is not a test; the join's metric convention must be stated before the join's number is read;
+> a shared mask from an interference frame is the wider beam's.**
+
+
+> **2026-10-06 (TO) -- dw_dx 'trans_output' (BRIEF_dwdx_units, Dave's ruling).
+> Translation columns + dcdx rows are per BaseUnit by default ('si' = the old
+> per-metre); runners/jacobian_check convert via macos.dwdx_trans_per_metre
+> (identity on pre-change .mats).  FLAGGED, NOT RE-RUN: on mm decks a re-run of
+> zoom_5x5 and run_dwdx_multi (+ sensitivities/) sens_report translation norms
+> moves by x cbm (1e-3); ratios unchanged; e2e/e2e6m are metre decks (unchanged).
+> Report macos/REPORT_dwdx_units.md.  Resources commit local, push on Dave's word.**
+
+> **2026-10-02 00:30 -- BEAT 5 RUN, LOCAL (resources dev-candidate + macos
+> dev-candidate, uncommitted until the gates report; then commit).**  Stages
+> t1/t2 through dyson5_run: layout CLOSES (folds 32/-32/21 deg, +0.75 mm,
+> pupil 9.4 mm on the grating, 100 % admitted, EFL 126.4 by the map, e2e
+> decks 16/19 elements, identity 1e-14 m), IMAGE DOES NOT (67 px rms, 1.6 mm
+> field swing; e2e with R4 smile 3.1 / keystone 0.59 / CRF 15.5 px).  Report
+> `BRIEF_dyson5_beat5.md` sec. 4-5, README beat-5 section, BRIEF_to_dyson5
+> addendum 18, deck slides 25-26 (deck_dyson.pptx rebuilt, 32 slides; the
+> edit copy NOT synced -- Dave's word), memory updated.  NEXT (beat 6): the
+> two-mirror modified Schwarzschild and/or freeform (Zernike) mirrors on the
+> folded TMA (chain_trace needs a Zernike surface kind); cheaper first: seed
+> conics from the coaxial parent's anastigmat, then fold.  Gates to rerun
+> before commit: tSpectrometerRx, tTelescopeRx.
+
+> **2026-10-06 11:00 -- DYSON DECK DAY, STATE (CC).  LOCAL, NOT PUSHED: macos
+> 7cc3d61..29f41da (deck_dyson_record 25 slides + sidecar + builder bold/subscript/
+> spacing/caption-align; sync_edit_deck keeps replaced edit copies; elemsub grating
+> aperture fix + CLAUDE.md entry; addendum 46), resources a55cded..823c175 (t5f maps,
+> view_figs tight axes, dyson5_block4 tool + records, tGratingAperture, re-scored
+> _ap rows) + TO's 2449b20/64c3fdc (Offner, clearance-gate fix).  Fast suite 551/0 on
+> the fixed engine.  ENGINE FINDING: a Grating never vignetted by its aperture
+> (four routines overwrote LRT); 3k row re-scored 1.64/0.05/4.02/4.99, 1.5k 0.50/
+> 0.01/1.22/2.20 admits 0.988.  Offner at F/1.8 OUT (TO, 3c).  Dave's V2 note
+> `DRAFT_email_jim_round2_V2.md` reviewed, numbers fixed; his sign-off on deck +
+> note pending; then push on his word.  LOST: Dave's third edit pass on the
+> edit copy (my --folded sync without a diff) -- he redoes it on the fresh copy.
+> Gauges (Thursday-2) untouched today: all redo runs done, PENDING markers next.**
+
+> **2026-10-06 EOD RESUME POINT (CC).  ALL PUSHED: macos ..8322938, resources ..199342c
+> (dev-candidate both).  DONE TODAY: deck_dyson_record final (25 slides, export mark on) +
+> Dave's V2 note sent/sending to Jim & Joe; engine fixes (grating aperture 29f41da; spcOption
+> CLI SPOT ca3252e) + mmacos dcdx about the element (eef1d71) + view_rx vignetted rays red
+> (3ecfddd); TO: Offner F/1.8 OUT (3c), clearance-gate fix, dw_dx 'trans_output' base default
+> (199342c, REPORT_dwdx_units.md); gauges: every number on the built bench incl. off-null
+> (01c6201), deck_gauges_short.md = 20-slide version assembled by selection (re-select after
+> editing the full deck: the python snippet in this session's history or redo: split on
+> '^## ', map titles).  Edit copies all synced (sync_edit_deck keeps .bak now).  OPEN:
+> (1) Dave's message-tightening pass on deck_gauges/_short (both DRAFT-marked; talk Thu
+> 10-08 4 pm PDT); (2) Luis: DRAFT_email_luis_spot2_edit.md is Dave's to send; his answer
+> on '1e-3 smaller' (x1e-3 -> grid values' units / coefficient units; 0.1 % -> grid
+> interpolation) pending; his translation example pending; (3) gauges sensors on the LENS
+> rig never scored (needs lens seat value), D4 tilt on the built bench not run; (4) dyson5
+> 3k telescope: stop at M2 / asphere-only (TO, when Dave says).  RULES learned today: diff
+> the edit copy BEFORE every sync (lost a pass once); user options never in
+> elt_mod_init_vars; a centroid about the chief is a shape measure.**
+
+> **2026-10-06 ORDERS (Dave): TODAY -- rewrite deck_dyson around the telescope
+> of record and SEND it with a note to Jim and Joe (drafts: DRAFT_email_jim_round2.md
+> exists, update it; style gate doc/STYLE_REPORTS.md sec. 5, outward-facing =
+> Dave signs the source; American English; best results only; the 3k row with
+> its flag; the comparison table from BRIEF_dyson5_jim.md 3a with the TMA entry
+> = 1.5k bAs e2e row; render the GM record's t5f maps for the slide first).
+> deck_dyson at 7cc3d61 (pushed) already carries the numbers (slides "The 1.5k
+> telescope of record" and "What it took").  THURSDAY-2: the gauges deck wraps
+> (runs in flight, PENDING markers, figure recolour, 20-slide cut) -- see the
+> resume point below and memory project_gauge_deck_thursday.**
+
+> **RESUME POINT 2026-10-05 22:xx (CC context nearly exhausted).  PUSHED on
+> Dave's word: macos cd9d623..d499604, resources 0258faa..7445a33 (all TO's
+> addendum 42-45 work + CC's pMon fix + gauge producers).  GAUGE DECK WORK
+> IN FLIGHT (Thursday 2026-10-08 4 pm PDT talk): (1) deck_gauges.md content
+> pass 1 + slide-10 fix committed (macos 00bcdef, 80e5a3b); Dave's edit copy
+> NOT yet re-synced (Impress lock; run `./sync_edit_deck.sh deck_gauges
+> --folded` once Dave closes it -- his edits ARE folded in the md/sidecar).
+> (2) Redo-bench runs serial on the gauge batch lock (queue script
+> tg_psi_dm96_oap/runs/redo96_ph_seq.sh; log in zwfs_dm96/runs/ and
+> tg_psi_dm96_oap/runs/redo96_ph_seq.log): redo96_sensnoise DONE (S 1.19e14
+> / V 4.6e13 / P 1.46e14 on-surface photons for 1 pm, mirror rig);
+> redo96_sensloop FAILED (loop.readings knob) -> relaunched as
+> redo96_sensloop2 (queued); redo96_lensph RUNNING; redo96_oapph,
+> capt96_lens (capt96_lens_after.sh), redo96_sensnoisef (flat calib) queued;
+> then layoutfigs_after.sh regenerates every layout figure with the new
+> three-leg colours (dmg_leg_draw: red source->BS->flat, blue BS->DM, green
+> BS->camera; resources 44cc4ea), then `python3 crop_panels.py` + rebuild.
+> (3) PENDING markers in deck_gauges.md name the rows each run replaces
+> (Photons for 1 pm; The servo; Capturing the initial figure; also the
+> "front ends" table's '(run in progress)' cells).  (4) Then the 20-slide
+> short deck (Dave approved the proposed main path; a few points: no
+> earlier-state narrative; P/SRI = the pinhole's two-arm variant; blank
+> Backup divider -- all done in pass 1).  (5) Open ask to Dave: re-score the
+> sensors on the LENS rig (never run on the built bench; needs the lens
+> seat value).  (6) deck_dyson telescope slides to be updated with the
+> addendum-45 result after the gauges deck.  Memory file for the gauges:
+> project_gauge_deck_* (write one if absent).**
+
+> **2026-10-05 night -- ADDENDUM 45 CLOSED (TO, resources 7445a33 LOCAL, 18
+> ahead of origin).  1.5k TELESCOPE OF RECORD = THREE OFF-AXIS ASPHERES
+> (`dyson5_tA_GM_1k5_bAs.in`; SPOT merit; R/K/h4/h6/vertex/axis per mirror +
+> M2/M3 rigid body + FP focus): as-placed 8/14 um, e2e smile 0.51 / keystone
+> 0.01 / CRF 1.22 / SRF 2.20 px, plate 327/331, clearance +39 mm telescope /
+> +0.38 overall.  3k of record = (c): smile 2.05 / keystone 0.05 / CRF 4.22 /
+> SRF 4.90, genuine freeform (M2 1.7 mm at 126 mrad), overall +0.06 mm FLAG;
+> open: (c') stop at M2, asphere-only on 3k, FWHM-faithful residual, field
+> weighting.  Lessons: a0 control (row form vs metric); the fit is a start,
+> the engine's image is the verdict (sag vs slope); bodies on the best-fit
+> sphere per lit patch.  "For Dave" section in BRIEF_dyson5_tma.md.  Pushes
+> await Dave.  deck_dyson to be updated after the gauges deck.**
+
+> **2026-10-05 eve -- ADDENDUM 45 (a)/(b) IN (TO, resources c26e7c5 / 72a907d
+> LOCAL): the TRANSVERSE metric + M2/M3 rigid-body DOFs reach the pixel on 1.5k:
+> as-placed centre/edge 6/13 um, e2e smile 0.60 / keystone 0.02 / CRF 1.49 /
+> SRF 2.30 px, plate 327/331, clearance DEFENDED (+30 mm telescope, +0.38
+> overall).  3k: 27/41 um (2.3 px edge), CRF 8.3 / SRF 3.9, clearance marginal
+> (+0.06).  Control a0 (strict as per-ray rows): 3k gain is the METRIC, 1.5k
+> mostly the row form.  COSTS: M2 carries 1.3-2.1 mm of freeform at 56-185 mrad
+> (a different mirror); M3 tilted 11-16 deg; K3 -> near sphere; on 3k the FF
+> norm GROWS with the geometry (Bauer: they fight -> (c') stop at M2).
+> Body-model defect fixed en route (bodies on the base sphere, not the conic:
+> ~20 mm off on M1).  (c) e2e-scorer rung running (~2 h).  Equal weights.**
+
+> **2026-10-05 -- FREEFORM LADDERS (TO, local 89bef91 / 15a92d8 / 277de9d):
+> LM + Jacobian scaling fixed the crawl.  1.5k: edge 291 -> 170 um (9.4 px),
+> centre 29 -> 73 um; e2e smile 0.82 / keystone 0.33 / CRF 7.7 / SRF 9.2 px.
+> 3k: edge 1086 -> 485 um (27 px) at R4, field flat 172-193 um inside 3.13 deg,
+> centre 68 -> 190 um; e2e smile 7.7 -> 4.6, CRF 15, SRF 11.8 -> 15.1 px;
+> R5 in play.  Mechanism: equal field weighting FLATTENS the strip by trade
+> (not astigmatism removal).  OPEN RULING (Dave): centre-weighted field set /
+> position-row weight -- what the strip must deliver where.  Clearance carried
+> from B1 (+7.35 mm 3k, +0.39 1.5k), FF sag <= 0.75 mm.  Gauges: content pass 1
+> committed (00bcdef); five redo runs serial (sensnoise done: S 1.19e14 /
+> V 4.6e13 / P 1.46e14 on-surface).**
+
+> **2026-10-05 -- RE-RUNS IN (TO, resources 8a64b9e LOCAL): with residuals in
+> um (every rung at maxfev 1500 -- none converged): cp2 S1 buys ~9% at the
+> edge with SYMMETRIC DOFs by trading the centre (343->313 um; was "3%"); the
+> freeform ladder on the m2 3.0 1.5k section moves the edge 291 -> 190 um
+> (10.5 px) and halves its astigmatism, flattening the field to ~7-13 um
+> strict everywhere (centre 29 -> 88 um); R4 stalls at -1%.  Orders: re-
+> converge R4 with a bigger budget; e2e join from ENGINE traces (bridge for
+> FreeForm decks later); as-placed spot column; then 3k.  deck_dyson slide
+> "What limits the strip edge" to be corrected to this (CC, after gauges).**
+
+> **2026-10-05 -- CAUTION (TO): the strict-merit lsqnonlin solver stopped at
+> its FIRST step (residuals in metres vs absolute tolerances) -> addendum 42
+> cp2 ("the strict merit does not buy the edges", 343->332 um) and the R1
+> freeform row (0258faa) are UNVERIFIED; R3 under maxfev DID move the edge
+> 291 -> 227 um (centre 29 -> 81).  Re-run in flight (residuals in um; TypicalX
+> advised).  cp1's RANKING facts (evaluations) stand; addendum 43's T/S
+> measurements (traces) stand.  Deck slide "What limits the strip edge"
+> carries only the verified rows (c05d716).  Hold "the wall is the optics".**
+
+> **2026-10-05 late -- DESIGN-LAYER DEFECT (TO's find, CC fix, resources
+> f9f93e6 LOCAL): Telescope's Zernike emitter wrote pMon = Vpt = the PARENT
+> vertex on eccentric sections (axes were already the pole frame) -> every
+> freeform mode evaluated at rho ~ 3.8; CCMac's step 5 + my 7cd8b24 re-run
+> were vertex-centred solves (superseded).  Now pMon = pole; gate
+> tFreeformPole 3/3 (engine leg: 1 um Z5 on M1 moves the chief 0.194 ->
+> <0.03 mm).  Queued engine item: ZernCoef bare READ at msmacosio.inc:1805
+> kills the host on a short block (ReadRealsPad sibling).  TO on R0'/R1.**
+
+> **2026-10-05 night -- FREEFORM LADDER -> TO (Dave: CCMac's budget), addendum
+> 44: continuation on the STRICT merit (tEP_strict_solve_, Zernike DOFs),
+> m2 = 3.0 -4/190 1.5k parent, R1 astigmatism {4,6} first, then coma/trefoil,
+> symmetric, next order; stop two rungs after the edge stalls; 3k after.
+> SRF rise at m2 3.0 attributed (f72f042: edge profile SHAPE, same second
+> moment).  TO local: d8d8d71 16cef7b f72f042 (await push).  CC -> deck.**
+
+> **2026-10-05 eve -- addendum 43 ANSWERED (TO, resources d8d8d71 + 16cef7b,
+> LOCAL): the Petzval sum does NOT govern the section's focus surface
+> (prediction falsified, 9x and wrong zero).  T/S probe: along-track focus
+> flat at every m2, cross-track focus curves 2-4 mm, T-S 2.2-5.3 mm at the
+> edge -> the "field curvature" was the sagittal half of CROSS-TRACK
+> ASTIGMATISM; no power split removes it.  m2 6.0 (engine-flat as-is) 2x
+> worse after the solve; m2 3.0 modestly better (edge 343 -> 291 um, both
+> terms moved, SRF 5.9 -> 9.7 px open).  Edge wall = non-symmetric DOFs
+> (CCMac freeform); m2 3.0 the better parent for it.  Awaiting Dave's push.**
+
+> **2026-10-05 pm2 -- TO on addendum 43 (Petzval scan over secondary_mag; field
+> curvature = ~22 of the 34 um rms at the -4/190 edge, the 25.7 um best-focus
+> residual is astig/coma -> freeform).  Field lens ruled OUT (Dave's question).
+> All pushed: macos 4b08106, resources ea615fb.  CC -> DM-gauge deck.**
+
+> **2026-10-05 pm -- addendum 42 CLOSED by TO (resources fac46aa d33abac
+> d8cccca 427b60b ea615fb, LOCAL): stop(1) parent-vertex trap FIXED
+> (Telescope.stop_at_apstop_, gate tStopApStop 4/4); OptFEX cannot run on the
+> near-telecentric section; the FP merit mis-ranks fields 6x (16 um floor)
+> but with symmetric DOFs the strict merit moves the edge 343 -> 332 um --
+> THE WALL IS THE OPTICS; strict (chief-intercept AND best-focus) is the
+> reporting metric from here on.  Dave: EPFIX (fixed-station EP reference)
+> + CCMac's asph+Zernike co-emit DEFERRED together -> PLAN_DESIGN_LAYER
+> Sprint 6+ (design written out there); pick up before the next freeform
+> ladder.  CC -> DM-gauge deck rewrite.**
+
+> **2026-10-05 -- NEXT STEPS set (Dave).  Step 1 = exit-pupil merit on the
+> eccentric section -> TO (addendum 42; trap: stop(1) aims at the PARENT
+> vertex on a decentered section; two checkpoints, CC monitors via idle
+> notice).  CC -> the DM-gauge deck rewrite (Dave's next brief).  Queue after:
+> exact asph+Zernike co-emit via FreeForm MonZern (PLAN_DESIGN_LAYER to-do,
+> CC); continuation freeform ladder per module; deck_dyson stage-B rows +
+> two engine findings; Jim reply waits on the edge number.**
+
+> **2026-10-04 night -- CALIB edge-field item CLOSED (CC): it was the engine's
+> forward conic root pick, not CALIB.  40 of 1185 rays sat on M3's FAR sheet
+> (K=-15.8, 2a=22 mm), 44 mm extra path, all "passing" -> 7.8 mm FP OPD =
+> CALIB's mm-scale WFE.  FwdRoot = vertex-sheet rule (sign of Kr+(1+Kc)z);
+> NOT first-crossing (M2's far sheet is IN the beam: 125 rays, measured).
+> macos 1ba6874 + resources 7c7f2b1 LOCAL (gate tFwdRoot 5/5, corpus A/B 398
+> decks identical).  Shared mex/build_release_gfortran NOT relinked (TO's two
+> MATLABs running) -- do `makems.sh release gfortran` + rm mex + tFwdRoot when
+> they finish.  The -4/180 B-rung 9.9999e36 drops = SECOND defect: the
+> asphere hook's circle sized on the nominal footprint clipped the edge
+> fields at M3 -> now encloses every solve field (resources 125ea9f);
+> tAsphHook RE-PINNED [55 117 308] -> [496 407 467] nm (the old pin was the
+> WFE of 180/97 of 253 surviving rays).  Addenda 40 + 41.  Shared tree
+> rebuilt + mex relinked (TO, 19:25); fast suite on it 536/0 after the
+> get_elt_asph Session delegator (9c296af).  TO's stage-B re-run on both
+> fixes = resources 50ed36b (+ d874437 rays-based flag): every point solves
+> and clears, edge blur = the symmetric-asphere wall (1.5k 270-420 um, 3k
+> 1.23 mm) -> CCMac freeform.  ALL LOCAL, awaiting Dave's review to push:
+> macos 1ba6874 afe9923 76192db + this; resources 7c7f2b1 125ea9f 50ed36b
+> d874437 9c296af 26bdc85 (TO's rays-based blind-field flag + must-fire gate
+> tCalibBlindFields 3/3, verified here).  2026-10-05: CCMac's step 5 (65503a3) merged
+> (a75b79b / 5607bbd) and re-run on the fixed engine (7cd8b24): same seeds,
+> path-dependent LM endpoint, one-rung freeform limit stands; corrections to
+> CCMac in BRIEF_ccmac_dyson_size round-4 note (24b4039).  PUSHED on Dave's word 2026-10-05: macos 7b4cc9e..d46231f,
+> resources c5a9790..7cd8b24 (origin/dev-candidate).**
+
+> **2026-10-04 late -- stage B (TO): 1.5k at the pixel over the inner strip on the
+> telecentric section (1.3 px centre, 15.8 px edges, 330.8 mm, 99.4% on slit).
+> OPEN ENGINE ITEM for a FRESH session: CALIB cannot evaluate the 3k section at
+> -3 deg (per-field WFE mm-scale, rays pass, trace fine; +-4.69 deg fields
+> dropped as 9.9999e36 at -4 deg) -- suspect the FEX/exit-pupil reference on a
+> decentered section (addendum 38). Deck macos 5f8d036. Context exhausted here.**
+
+> **2026-10-04 18:05 -- tma_layout 'telecentric' pushed (resources d8035b8,
+> gate tTmaTelecentric; M1-stop telecentric Korsch engine-verified 1e-8 rad).
+> TO step 3 done (pupil 22 mm from image on d205); CCMac step 4 done (aspheres
+> buy centre only). Stage A hand-off 2bae387: section on the telecentric
+> parent, t5e pupil table + plate scale before figure. Deck macos 8ce3fb7.**
+
+> **2026-10-04 14:30 -- Dave back.  Asphere hook pushed (macos 9fe033e api
+> elt_asph_get; resources 669e217 Telescope.optimize asph_elts/asph_terms,
+> tAsphHook; 01eb44e hand-off).  Lanes: CCMac step 4 (aspheres, 330 mm plate
+> scale, 3k strip), TO step 3 (addendum 36, telecentricity/pupil match), CC
+> reviews + deck.  Everything pushed.  Context low: memory
+> project_dyson5_telescope.md holds the arc.**
+
+> **2026-10-03 19:15 -- TMA step 2 run on Linux (resources 714f57c): unobscured
+> eccentric section holds the 1.5k strip at 6-7 px (M2 -1.2 mm, plate scale
+> 450 vs 330 at the 3-deg bias -> step 2b re-centre); 3k strip ends 10 mm.
+> TMS verdict in (TO a7dafd2): out.  TO HOLDS for a packaged imaging deck.
+> CCMac silent since 04:48.  Deck folded.**
+
+> **2026-10-03 06:45 -- PUSHED: macos 64c0a90, resources 813be1a (items 1-3 + the
+> trace fix + the lmlsq leak; fast suite 526/0).  Remaining: item 4 (deck folds
+> every few hours), Jim reply after the telescope closes.**
+
+> **2026-10-03 (Dave away to 10-05) -- items 1+2 LANDED locally, pushes
+> between lanes authorised:** (1) seidel_seed signed fixed-frame solver
+> (resources 3e96ad8, pushed).  (2) CALIB beam rows on ANY target +
+> OptBeamPosFov / OptBeamWt / OptBeamCentroid + api calib_set_beam* +
+> mmacos/pymacos veneers, gate tBeamRows 3/3.  PLUS TO's one-call trace
+> defect (ce46ead): ifLNsrf root pick now axial (LNsrfRoot, 5 routines) and
+> PrevNonSeg reset per ray on restarted traces; gate tTraceRestart 2/2;
+> FEX/OPD A/B bit-identical on 4 decks vs a pre-fix HEAD worktree
+> (scratchpad/prefix).  Shared mex relinked 05:11 (no MATLAB running; TO
+> verified 05:15).  Deck: telescope slide at Jim's numbers (TMS + TMA),
+> eight-findings backup, records rows.  Fast suite running
+> (scratchpad/fast_item2.summary).  NEXT: commit by path (engine, then
+> resources), push both, addendum 32 fast-suite line; item 3 (evanescent
+> cut); TO's smooth clearance operand question; item 4 every few hours.
+> Two conventions learned: CALIB field 1 = CURRENT source; optimizer grid
+> default nGridpts/2-1 (OptRayGrid= sets it).
+
+> **2026-10-02 pm -- LOCAL, unpushed:** macos e43b126 (dead bands 16 ulp +
+> DeadBandNote + set_src_fov dirties), 2baf661/f0de004 (addenda 26, CCMac
+> round 3), e5aa521/9cfcf95 (addenda 23/25), 7744f86/2cf1d7f (deck);
+> resources f674eb6 + follow-up (tRetraceIdempotent, tOffsetImager re-pin,
+> mmacos_gen).  Shared mex NOT yet relinked to e43b126 (TO's stages were
+> running; rule: never relink while another lane's MATLAB runs).  Jim's
+> reply re-targets the telescope (f 330 mm, D 183 mm, 9.4 / 4.7 deg) and
+> frames the trade as 2 x 3k CaF2 vs 4 x 1.5k silica -- TO addendum 26,
+> CCMac round 3.  Draft reply to Jim waits on both.
+
+> **2026-10-02 -- PUSHED (Dave): macos f1d2617..fdbe98e, resources
+> b3d2644..e114c99.  TO's beat 5 (telescope): layout closes, image does NOT
+> (67 px rms, 1.6 mm field swing; BRIEF_dyson5_beat5.md).  Beat 5b brief =
+> addendum 19: the offset_imager ladder (rodgers3's product) as stage t3,
+> along-track offset 4-10 deg at F/1.8 as THE unknown, three residual rows
+> (telecentricity, flatness, pupil match), decision rule -> the two-mirror
+> Schwarzschild if nothing packages.  Dave restarts TO CLEARED on Opus 5.5
+> (addendum 17's list first).  My queue: the centroid / telecentricity
+> operands for CALIB (addendum 14 item 4), the FarField evanescent zeroing
+> option (addendum 15), seidel_seed's PNP first order (beat 5 sec. 5 item 4).
+
+> **2026-10-01 17:00 -- TO's 3.5/3.6 FIXED (design_optim.F, local, uncommitted
+> until the suites report):** asphere step = 1e-3 |coef| (sag floor at the
+> circular aperture; legacy per-ORDER step + a line without one); LM failure
+> -> label 105 restores the last accepted state, rtn_flg=1 (the mex raises
+> "calib_run failed", MATLAB lives).  Gate tAsphCalib 2/2 + Rx_AsphCalib.in
+> (SUITE_FAST).  Running: tCalib/tDesignTelescope/tSpectrometerRx + fast.
+> Deck slide 25 = native result (R4n = R4); addendum 16.  GATES GREEN:
+> tCalib 9, tDesignTelescope 70, tSpectrometerRx 7, fast 510/0, pymacos 18.
+> PUSHED (Dave): macos 9b05af6..f1d2617, resources 536c01a..b3d2644.  Next: TO beat 5 (telescope); native asphere run when TO turns P.native_asph on.
+
+> **2026-10-01 16:30 -- deck_dyson at beats 4b-4e (30 slides, local):** slit
+> loss resolved, R5 fold prism (record = NO shield: CRF 1.267, EE 0.695,
+> +0.90 mm; the 2 mm/1.295/0.794 numbers were the WITHDRAWN first sweep),
+> cold-shield sweep, closure envelope, meniscus search, native = pending,
+> fifth engine finding in Backup; 10 stale figures refreshed from the
+> re-emitted records.  Addendum 15 in BRIEF_to_dyson5 (producer items for
+> TO).  NEXT: sync the edit copy (Dave closes it), commit, push on his word;
+> TO runs s4 (native) -- its row + a line on slide 25 when it lands.
+
+> **2026-10-01 12:00 -- RESUME POINT (context compaction).  PUSHED: macos
+> through 0d257ff (CALIB fixes + deck), resources through 18c225a (TO beats
+> 4b/4c/4d).  NEXT (Dave: "yes, up to date"): bring `demo_session/
+> deck_dyson.md` up to beat 4d -- (a) slit-loss slide: factor RESOLVED
+> (aliasing short end, evanescent energy in the normalisation long end,
+> engine 0.86-1.14x sinc^2; source `challenges/dyson5/BRIEF_dyson5_
+> beat4b.md`, dyson5_s2l*.png); (b) R5 fold prism = design of record on
+> Dave's acceptance (2 mm cold shield: CRF 1.295 px, EE 0.794, clearance
+> +0.67 mm PASS; BRIEF_dyson5_beat4d.md; render via `dyson5_view_figs.m`
+> on the R5 deck + `demo_session/tile_views.py`; element table via
+> `rx_elt_table.py`); (c) native optimize (beat 4c) = a line on the
+> ladder/next-steps slides; (d) global meniscus search: no better basin
+> (beat 4b).  Rules: text BEFORE figures, no per-slide footers, recompose
+> wide strips with `recompose.py` (pymacos venv python), QA by soffice ->
+> pdftoppm, sync via `sync_edit_deck.sh deck_dyson` (Dave closes the edit
+> copy first), commit, push on Dave's word.  TO's queue: s4env closure
+> sweep (addendum 11), beat 5 telescope (addendum 7), future work addenda
+> 10/12/13.  Engine: 4 CALIB items closed (addendum 14).
+
+> **2026-10-01 11:20: CALIB fixes COMMITTED (macos 0d257ff, local):** SPOT
+> derivative stride + OptAsph slice; tSpectrometerRx 6/6, tDesignTelescope
+> 70/70, fast 507/0.  Item 3 (OptRayGrid heap) probes running on
+> build_debug with the wait-for-exit driver (`scratchpad/
+> drive_macos_wait.py`, calibw_*.out).  Item 4 = queued feature.
+
+> **2026-10-01 pm: TO beat 4c -> 4 engine items.**  (1) CALIB SPOT-target
+> derivative stride opd_size->obj_size (design_optim.F ~794/796; YFIT 16385
+> of 30 pinned pre-fix on build_debug) FIXED; (2) smacos_compute.inc:382
+> asph slice n_optZernArr->n_optAsphArr FIXED; builds running (debug + ifx
+> + gfortran + mex + pymacos); then reproducer post-fix, OptRayGrid probe
+> (item 3, decks in scratchpad seed_optgrid{21,41}.in), tSpectrometerRx /
+> tDesignTelescope / fast suite.  (4) centroid operand = queued feature.
+
+> **2026-10-01 14:30: deck_dyson 26 slides; Dave's title-slide edit ruled
+> disposable (sync --force on his say-so, db6b193); RIY slide = full
+> sequence + exercised envelope; addenda 10 (future work: surface tour,
+> M&G spot diagrams, telescope) + 11 (closure-envelope sweep).  Unpushed:
+> macos 9062b99..latest (deck); resources 4d95a9a (TO centroid).
+
+> **2026-10-01 13:00: centroid CLOSED (TO 4d95a9a: twin grid frame sign;
+> keystone 0.0026 stands).  Deck: Dave's 5 asks done (element tables from
+> .in, methods+terms slide, slit-loss model + open factor, RIY wording, the
+> misformat check pending render), caveat -> Backup (macos local).  Addendum
+> 9: slit-loss factor tests (grid / window aliasing / 2-D slit), re-emit
+> ladder decks with apertures.  Unpushed: resources 4d95a9a; macos deck.
+
+> **2026-10-01 11:30: TO beat 3c (354186e, unpushed) = addenda 5-7 done on
+> R4; OPEN RISK: wave-vs-ray centroid 0.122 px on R4 (growing with lambda)
+> -- addendum 8 = beat 4 settles it first with discriminators (achromatic
+> amplitude weighting vs lambda-scaling twin numerics).  Deck updated with
+> the caveat on the title (macos local commit).
+
+> **2026-10-01 10:00: deck_dyson at 23 slides with R4 as the design of
+> record** (engine render + TO's section + maps + trade + twin + slit
+> loss; `recompose.py` splits wide strips into rows and drops the
+> super-title -- run it with the pymacos venv python, system python3 has
+> no numpy).  LOCAL, unpushed: macos 96792e8 adad9cf 26b5e71 9e5e382
+> 5db36cf (deck); resources 5cd3184 (TO beat 3b R4) 3b9d578 (probe).
+> TO's next: addendum 6 on R4 (apertures, clearance, Offner 0.2 R, package
+> split), addendum 7 (twin on R4; beat 5 telescope at EMIT params).
+> Twin slide (16) lopsided after the split -- Dave's editing pass.
+
+> **2026-10-01 09:00: R4 = design of record (TO 5cd3184); addendum 7 (R4,
+> addendum 6 on R4, EMIT telescope spec = beat 5); deck_dyson 23 slides
+> (macos adad9cf, local, edit copies synced).  Local unpushed: macos
+> 96792e8, adad9cf; resources 3b9d578 (probe).  TO's 5cd3184 pushed? --
+> it was in the 3aac2c5 push range? NO: 5cd3184 is after a6b5336; check
+> `git log origin/dev-candidate..` before the next push request.
+
+> **2026-10-01 07:30: PUSHED (macos ..f6a0011 incl. deck + AsphCoef;
+> resources ..3aac2c5), fast suite 504/0.  Dave: the renders show
+> OBSTRUCTION -- measured: Offner grating inside the slit beam (ApType None
+> everywhere); addendum 6 to TO (apertures, clearance tool, Offner slit
+> ~0.2 R, slit/FPA package, sizes); probe committed (resources local);
+> deck slides 4-5 corrected (macos local).  OPEN: the telescope feeding
+> the slit -- spec from Dave/Joe.
+
+> **2026-10-01 06:40: AsphCoef pad fix committed (macos + resources gate,
+> tRxShortAsph 2/2); fast suite rerun RUNNING.  deck_dyson: engine renders
+> of the .in files on slides 4-5 (resources 72a5d6d producer; macos 9cf9cdd).
+> Edit-copy sync waits for Dave to close deck_dyson_edit.pptx.  Then: push
+> request (macos: 0f4442b.. + deck + AsphCoef; resources: beat 2c/3 +
+> gates + view figs + AsphCoef gate).
+
+> **2026-10-01 06:00: deck_dyson started** (15 slides, local commits
+> 2f71704..fb0e51f; edit/baseline copies synced), Dave: COMPACT variant =
+> R4 (BRIEF_to_dyson5 addendum 4 with the deck-figure contract for TO).
+> AsphCoef pad fix built + string-verified in the mex; tRxShortAsph + fast
+> suite RUNNING -> commit + push request.
+
+> **2026-10-01 05:00: pushed (macos f6fbc41, resources a6b5336 = TO beat 3).
+> Engine item #5 in test: short `AsphCoef=` line killed the host -> ReadRealsPad
+> pads + warns (elt_mod + msmacosio.inc, both trees + mex rebuilt, string
+> verified in the mex); gate tRxShortAsph + fast suite RUNNING.  Then commit
+> + push request.
+
+> **2026-10-01 04:30: finding #3 CLOSED GREEN** -- tGratingOpl 2/2,
+> tGratingImmersed 4/4, tSpectrometerRx 2/2, pymacos 44/44, fast 501/0.
+> PUSH REQUEST: macos (the dL commit + this slice); resources f34c7fd (TO
+> beat 2c).  TO next: re-run s2w unchanged (order -1 rows), wrap every OPD
+> comparison across the grating (Dave's rule), then beat 3 ray-side.
+
+> **2026-10-01: dyson5 finding #3 (grating OPL jump used the local-plane
+> projection; cubic, 12 waves) -- FIX IN BUILD** (`dL = m lambda/d (s0.rho)`,
+> both trees + mex + pymacos rebuilding, then tGratingOpl / tGratingImmersed
+> / tSpectrometerRx / fast suite).  DAVE'S RULE recorded (CLAUDE.md engine +
+> BRIEF_to_dyson5 addendum 3): OPD across a grating is MODULO LAMBDA --
+> compare in phase, never unwrapped lengths.  TO beat 2c = resources
+> f34c7fd (unpushed).
+
+> **2026-09-30 22:55: ALL GREEN on the chord-ruled engine** -- gfortran
+> rebuilt (the earlier red was a stale mex: ifx rebuilt, gfortran not),
+> tGratingImmersed 4/4, tSpectrometerRx 2/2, fast suite 497/0; pymacos
+> 44/44 on ifx.  PUSH REQUEST to Dave: macos 799498b + 3 deck commits
+> (f13eb57, 9661369, c8745e2); resources 264711f.  Memory:
+> `feedback_two_build_trees_stale_binary`.
+
+> **2026-09-30 22:10: slide 30 re-run landed** -- capt96_oap on the fixed
+> bench: 3 pm in 19 / 24 cycles from 100 / 200 nm (2.98 pm), control 2.97.
+> Deck row rebuilt + synced (c8745e2, local).  Mex relinked on the
+> chord-ruled engine; tGratingImmersed / tSpectrometerRx / tGlassDispersion
+> / tPropMedium + fast suite RUNNING (`scratchpad/gates2.log`,
+> `fast_suite4.log`).  Then: push request to Dave (macos 799498b +
+> 3 deck commits; resources 264711f).
+
+> **2026-09-30 19:15: THIRD engine fix of the day -- gratings on curved
+> surfaces are now CHORD-ruled** (macos local after aba6350; resources gate
+> commit after 7522fe9).  TO's dyson5 beat 2 (78159c3) found the unitised
+> projection = period constant along the SURFACE = 3 px spectral blur at
+> 2500 nm.  pymacos 44/44 on ifx (chord gate + getters + prop + vec).
+> PENDING on capt96_oap (slide-30 re-run, ends ~21:15): mex relink,
+> tGratingImmersed / tSpectrometerRx / tGlassDispersion / fast suite, then
+> push for Dave's review.  spectrometer_geom default -> 'planes'.
+
+> **2026-09-30 18:00: FAST SUITE 497 pass / 0 fail on the final mex**
+> (`scratchpad/fast_suite3.log`); pymacos propagation gates 23/23 on the
+> rebuilt ifx tree.  Everything is local: macos 4 commits ahead of origin
+> (0ca61c1 CaF2, b000390 glass catalog, fcd85d7 medium-aware kernels,
+> aba6350 table precision); resources ahead by TO's 44ee31a, 4cecb77 digest,
+> af17cc7 bench 2x2 code, b492695 + 7982529 tPropMedium.  Awaiting Dave's
+> push review + the two bench decisions (lit_margin_mm default, slide 30).
+
+> **2026-09-30 17:30: gates GREEN on the final mex** -- tGratingImmersed,
+> tPropMedium, tVecChain pass; tGlassDispersion 3/3 after TWO precision
+> fixes on TO's CaF2 row (the row itself at 7 digits, then the generator's
+> `%.8E` bake: 1200.55597 vs 1200.5559729 = 1e-11 in n at 2 um; now
+> `%.16E`, 3 values/line).  First fast-suite run: 496 pass / 1 fail (that
+> CaF2 leg); full rerun on the final mex in progress (`scratchpad/
+> fast_suite3.log`).  macos local commits since origin: b000390 (glass
+> catalog), fcd85d7 (medium-aware kernels), + the table-precision commit.
+
+> **2026-09-30 16:50: DESCENT 2x2 CLOSED.**  fixA 2.964/2.953 pm, fixB
+> 5.998/6.012, fixAB 2.964/2.954 == fixA (baseline 96.937/4.003).  The fix is
+> the control-set rule `place.lit_margin_mm 1`; per-column reg adds nothing
+> on top.  `runs/fix2x2_score.txt`.  Build released: gfortran rebuilt, mex
+> relinked (glass catalog + medium-aware kernels), gates + fast suite RUNNING
+> (`scratchpad/gates.log`, `fast_suite2.log`).  Dave's calls: default-flip
+> of lit_margin_mm, slide-30 re-run.
+
+> **2026-09-30 14:30: medium-aware propagation kernels LANDED** (macos local
+> commit after b000390; resources gate commit after 4cecb77).  `WaveBU/n_leg`
+> at all 21 sites; identity gate z-in-n == z/n-in-vacuum: pre-fix 1.1e-15
+> vs the UNSCALED deck, post-fix 1.4e-15 vs the SCALED one; pymacos
+> test_prop_medium 5/5 on ifx.  Descent 2x2: fixA 2.964 pm, fixB 5.998 pm
+> (ring 1 dark: reg cannot fix an unlit actuator), fixAB running (ends
+> ~16:35) -> then gfortran rebuild, mex relink, tGlassDispersion /
+> tGratingImmersed / tPropMedium / fast suite, and the 2x2 scoring.
+
+> **2026-09-30 13:10: `GlassElt=` was dead engine-wide -- FIXED (macos
+> local, after TO's 0ca61c1 CaF2).**  `elt_mod_init_vars` wiped the glass
+> catalog on every load before the parser's lookup; now blanked once at
+> allocation.  CLI A/B green (pre-fix gfortran vs post-fix ifx on
+> Rx_GlassPlate.in).  PENDING until `fix2x2.done`: gfortran rebuild, mex
+> relink, TO's tGlassDispersion/tGratingImmersed, fast suite.  dyson5 beat
+> 1 = resources 44ee31a (memory `project_dyson5_spectrometer`).  Next engine
+> slice queued: medium-aware propagation kernels (`WaveBU/n_leg`).
+
+> **2026-09-30 08:32: DESCENT-STALL 2x2 RUNNING** (`tg_psi_dm96_oap/runs/
+> fix2x2_seq.sh`, pid in `runs/fix2x2_seq.pid`, cells fixA -> fixB -> fixAB,
+> ~3 h each, done file `runs/fix2x2.done`).  Mechanism sharpened before launch
+> (memory `project_redo_descent_stall`): ring 1 is OUTSIDE the DM aperture --
+> `lit` comes from the interferogram support = the REFERENCE arm's 59 mm cone,
+> 308 lit actuators dark, 284 half-clipped.  Fix A = `place.lit_margin_mm 1`
+> (control set inside the aperture by a pitch), NOT a stop change (a stop
+> clips rays but never moves lit; first launch killed for that + a wrong-tail
+> confound; all cells now use samp512's tail).  Fix B = `battery.matrix_reg
+> column`.  Code UNCOMMITTED in resources until the bench stage prints the
+> new lines.  Dave briefs the HWO study group ~10-08.
+
+> **2026-09-29 (latest): the dev->main STRIP LIST was broken, fixed by dry
+> run (macos 92e792f, resources 9963fe3).**  The comment/blank lines de0f3c8
+> added to `release-exclude.txt` abort `git rm --pathspec-from-file`
+> (`fatal: empty string is not a valid pathspec`; `#` is a literal path), so
+> the documented strip would have died at the first promotion.  Now a bare
+> list; reasons in DEV_FILES.md.  Measured: a root glob (`BRIEF_*.md`) is
+> ROOT-ONLY.  Survivors caught and added: `NOTE_*.md` (2), `MR_*.md`,
+> `docs/macos-manual/audit_4.1beta.txt`; resources: 2 BRIEFs +
+> `PLAN_EXAMPLES_REORG.md` (README-linked `PLAN_CONFIGURATIONS` and the
+> template `REPORT_*` KEPT -- documentation there).  After: macos 318
+> stripped, 13 user files at root; resources 33.  The gate recipe lives in
+> DEV_FILES.md ("Gate: dry-run the strip"): re-run at EVERY promotion and
+> again after the repo merge.  Email §4 now says WE do dev-candidate->dev
+> AND dev->main (merge + strip in one PR per repo; first after step 1,
+> again after the import).  `DRAFT_email_andy_repo_merge.md` uncommitted
+> for Dave's edits.
+
+> **2026-09-29 (later): TWO THINGS ON TOP OF THE ARC.**
+> **(A) BLOCKER -- NPSOL (and pgplot) source in the PUBLIC repo's history.**
+> Found while sizing (B).  423 npsol paths (the licensed Stanford SOL source:
+> npsubs/opsubs/lssubs/chsubs/cmsubs/mcsubs/srsubs/npmain/lsmain.f) and 1564
+> pgplot paths are reachable on origin/main, origin/dev AND
+> origin/dev-candidate; 0 at any HEAD; `gh` says PUBLIC.  The release
+> strategy's history rewrite (root CLAUDE.md, "lands ~07-24") never landed
+> or was overwritten by a pre-rewrite clone.  Archive bundle:
+> `~/macos-archive-20260723`.  MACOS_resources: 21 OPTIIX/IRIS proprietary-
+> Rx paths in ITS public history.  Andy's decision; memory
+> `project_npsol_history_exposure`.  Pushing dev-candidate adds no exposure,
+> but every commit pushed before the rewrite is one more it must carry.
+> **(B) The group wants MACOS_resources moved INTO macos.**  Facts gathered:
+> resources .git 2.0 GB (a 77 MB s4_jacobians.mat committed 6x; the
+> proprietary Rx above); tracked tree ~370 MB of which runs/ 340 MB (1129
+> artifacts) and 262 MB of >5 MB .mat/.gif/.log at HEAD; 4092 mmacos files
+> (2938 templates); `pymacos/src/macos` is a SUBMODULE pointing at
+> nasa-jpl/macos (a self-reference after a merge -- must become a relative
+> path); 76 macos files name MACOS_resources (CMakeLists.txt
+> `_gmi_default`/`_mmacos_default` = `../MACOS_resources/{GMI,mmacos}`,
+> manual Makefile POLVAL_TOOL, demo_session tools, .gitattributes) and 84
+> resources files name the macos build (MACOS_BUILD_DIR/MACOS_HOME/
+> ~/dev/macos); resources' own DEV_FILES/release-exclude (29 entries) must
+> fold into macos's.  RECOMMENDATION put to Dave: (1) promote dev-candidate
+> -> dev in BOTH repos first, as prepared -- the repo merge is a separate
+> operation on `dev`; (2) import as a SNAPSHOT (git subtree add --squash or
+> plain copy), NOT with history -- history brings the proprietary blobs and
+> 2 GB into the engine repo, and a history rewrite is needed there anyway,
+> so sequence the import AFTER that rewrite; (3) land at top level
+> (`macos/mmacos`, `macos/pymacos`, `macos/GMI`, `segmirmaker`,
+> `optical_design`, `rx_converter`) so the CMake defaults become `./GMI`,
+> `./mmacos`; (4) leave runs/ artifacts and the >5 MB results OUT (archive
+> repo stays read-only for history + artifacts), or LFS; (5) drop the
+> submodule, fix the 84 + 76 references, merge the strip lists; (6) then the
+> "engine first, resources second" ordering rule retires -- the point of the
+> move.  Nothing done yet; awaiting Dave/Andy.
+
+> **ARC STATUS 2026-09-29 (post-restart session): items 1-3 DONE, 4 DRAFTED.**
+> (1) Block comments: engine `223a6ff` (validator + SAVE; the parser was
+> fine), cheatsheet `f6af199`, gate `tRxBlockComment` 4/4 (resources
+> `0d0edd8`), CLI fixture `ZGD_test_files/tst_block_comment.in` both
+> compilers, eac5mono.in loads.  In-line comments in SAVE: left as the
+> recorded decision (not preserved) -- Dave's call if that changes.
+> (2) Consolidated: origin/dev merged into dev-candidate in both repos as
+> content no-ops (`5b60927`, `7f9490e`).  (3) `DEV_FILES.md` +
+> `release-exclude.txt` re-audited with globs (`de0f3c8`); ZGD_test_files
+> deliberately NOT stripped -- flag for Dave.  (4) PR bodies + push
+> commands in `MERGE_HANDOFF_dev_candidate_to_dev.md`; fast suite = the
+> gate, result to be filled in.  pymacos `.so` is stale (09-08) -- rebuild
+> before trusting its gates.  Nothing pushed.
+>
+> **NEXT ARC (Dave 2026-09-29, set before a security-update restart): .in-file
+> COMMENTS, then dev-candidate -> dev.**  Four items, in order.
+> **(1) `/* ... */` block comments** (Scott) **+ in-line comments, in the
+> parser, the validator and SAVE.**  DIAGNOSED 2026-09-29 before the restart --
+> it is NOT a lost parser feature, it is two gaps around a parser that works:
+> - **The PARSER already handles block comments**: `iosub.inc:~2670` switches
+>   `LInCommentMode` on `CommentBegin`/`/*` and off on `CommentEnd`/`*/` (as
+>   whole-line TOKENS -- `LCMP(VAR_NAM,'/*',2)` -- so `/*` must start the
+>   line; mid-line `/*` is untested).  Inline `% note` after a value is READ
+>   and ignored (`iosub.inc:2607`, `%` ends the token).  Whole-line `%`
+>   comments already ROUND-TRIP through SAVE (`RxCommentCapture`, PLAN
+>   section 0 item 3), with the recorded design decision that INLINE comments
+>   are deliberately NOT preserved (the GridFile-tab bug).  The CLI, mmacos and
+>   pymacos share all of this.
+> - **GAP 1, the bug Scott hit: the VALIDATOR does not know block comments.**
+>   `validate_prescription.F90:99` skips only lines whose first non-blank is
+>   `%` or `!` -- it has no `/*`, `*/`, `CommentBegin`, `CommentEnd` -- and it
+>   runs BEFORE the parser, so a deck the parser reads fine is rejected first
+>   ("blank line inside TElt block" is the symptom: comment lines inside a
+>   block are seen as bad continuation rows).  Fix = teach the validator the
+>   same `LInCommentMode` rule.  Test deck: `~/dev/tst_dir/eac5mono.in`
+>   (exists, 2 `/*` blocks at l.151+; also CRLF + tabs-in-TElt to watch for).
+> - **GAP 2: block comments are LOST on SAVE.**  `RxCommentCapture` captures
+>   only `%` lines, and lines inside a `/* */` block are skipped (`GO TO 20`)
+>   before capture -- so load + SAVE strips every block comment.  Extending
+>   capture to block-comment lines is the same mechanism (they are whole
+>   lines, anchored the same way).
+> - **In-line comments in SAVE** is the one real design question for Dave:
+>   the existing decision says no (fragile), and honouring it means the rule
+>   is "SAVE never overwrites a hand-edited source" rather than round-trip.
+> Gate: eac5mono.in validates + loads + SAVEs with its blocks intact; a
+> tst_save_keys-style round-trip on a block-commented deck; both compilers.
+> **(2) Consolidate dev-candidate** -- resources is ahead 1 (`49364b3`, the
+> descent-stall tool + `place.lit_erode`, awaiting Dave's review); the
+> uncommitted blank line in `RUNBOOK_mac_cycle3b.md` is noise.
+> **(3) Update the redacted developer-files list** -- the public-release
+> strategy in root `CLAUDE.md` names what is stripped from `main` (CLAUDE.md,
+> PLAN*.md, `.claude/`, internal ZGD fixtures, `docs/Archive/`); it predates
+> this month's BRIEF_*/RUNBOOK_*/REPORT_* files and `demo_session/`, and it
+> says nothing about MACOS_resources although `gh` reports that repo PUBLIC
+> (2026-09-18).
+> **(4) Write the push request for dev-candidate -> dev** (per the branch
+> model: engine first, resources second; both repos).
+> **(5) DESCENT-STALL RECOVERY -- the two fixes, exercised TOGETHER as a
+> 2x2** (Dave 2026-09-29: "can we exercise both together?" -- yes, and the
+> right way is all three cells against the measured baseline, so each fix's
+> share is attributable).  Full diagnosis: memory `project_redo_descent_stall`.
+> - **Fix A, the aperture:** pull `R_TO_AP` in ~3 actuators (90 mm pupil,
+>   not 96) so the outermost rings are not illuminated at all.  Mechanism:
+>   the lit disc (radius 49.0) reaches the array edge (48), truncating those
+>   actuators' influence functions.  NOT the same as `erode3`, which kept the
+>   ring illuminated and only dropped it from control/scoring -- A changes the
+>   pupil, hence the calibration geometry (window px, mag), so it needs its
+>   own row.
+> - **Fix B, per-column regularisation:** in `build_J_`/`recal_build_`,
+>   `lambda_i = matrix_lam * diag(JtJ)_i` (each column against its OWN
+>   energy) instead of the one scalar `matrix_lam * median(diag(JtJ))` that
+>   damps a weak column as hard as a strong one.  A ~5-line change.  Has
+>   value even AFTER A: the reg sweep's "dark columns" 0.9519 -> 0.9872 at
+>   lambda 1e-5 says weak INTERIOR columns exist too.
+> - **Independent mechanisms, so a 2x2:** baseline (measured: samp512 96.9 pm
+>   at NGRID 512 / step 8 / 100 nm start, recal never), A alone, B alone,
+>   A+B.  Three new rows, ~2 h each at model 1024 / NGRID 512, one MATLAB at
+>   a time (16G cap).  Predictions on record: A alone ~3 pm (erode3's 3.019
+>   is the ceiling on what excluding the ring buys; the aperture version may
+>   land nearer the record's 2.34); B alone -- ring 1 improves substantially,
+>   interior unchanged at ~3 pm; A+B <= A.  Keep the 30 nm on-point row in
+>   each invocation as the control (it must stay at ~0.5 rho / ~4 pm).
+> - Self-checks every row prints: window px, flat-DM null 26.50 nm, lit count.
+> - Tool for reading them: `tg96_ring_analysis.m` (resources `49364b3`,
+>   local) -- per-ring rms and correction efficiency; run it on every row.
+> - `calib_at='setpoint'` is unspent and no longer needed.
+> Still open otherwise, unchanged: D_BS_CMP (+38.6 vs +10.4 mm to reconcile),
+> the field-lens conic, the overcoat quarter-wave, slide 30's capture claim
+> (fixable once A lands), the interim report.
+
+> **2026-09-18/19 (CCL): THE DECK, AND THE DESCENT STALL SOLVED.  All deck
+> work PUSHED (macos a91a45d..adf6d65, 12 commits; resources 8c2a852..bc01b23).**
+> `deck_gauges.pptx` at **59 slides**, every slide fitting, edit copy synced.
+> New slide 3 "What the bench delivers" leads on Dave's four claims, each
+> checked against the runs first: accuracy 0.13%/0.29% of a 30 nm surface
+> (0.5%/0.9% top band), precision 0.7 pm at 1e15 photons, repeatability
+> (servo-held) 0.4-0.5 pm, hold 3 pm at 2.0-2.3e13 photons/cycle — with the
+> one claim that does NOT hold on the same slide (thermal ramp lags ~10 pm
+> at any photon count), and anchored to Steeves et al. 2020's published
+> 1.6 pm as a CHECK not a beat.  Parts slides split (front end / detector
+> leg) with both rigs in each box; backup slide split; slides 12-15 brought
+> onto the current bench (3 of 4 quoted runs predated it, 2 had newer runs
+> already on disk); Zernike literature ported from deck_zwfs to backup.
+> **Every layout figure re-rendered** with substrates + the blue-leg fix —
+> 4 of 6 producers could no longer run, each broken differently (see
+> [[feedback_figure_producers_rot]]).  **Three silent holes closed in the
+> edit-recovery tooling** (table cells, picture crops, sidecar keys orphaned
+> by a rename) — see the edit-deck memory.
+> **DESCENT STALL SOLVED: the outer actuator rings.**  Full record in the
+> `project_redo_descent_stall` memory.  Headline: 180 actuators (2.4% of
+> lit) carry 95-98% of the residual because package A's opened beam put the
+> pupil edge ON the array edge; the interior was always at the photon floor.
+> Four hypotheses died first (~12 h of box time) — do not re-run those
+> ladders.  **OPEN, Dave's call: (1) pull `R_TO_AP` in ~3 actuators (the
+> real fix), (2) per-column regularisation.**  TO's `tg96_place.m` +
+> `tg96_ring_analysis.m` are resources `49364b3`, LOCAL and unpushed.
+> **ALSO OPEN for Dave:** `D_BS_CMP` 200 -> ~225 (and reconcile +38.6 mm
+> from the substrates-in node scan against the package-A brief's +10.4 --
+> different benches), the field-lens conic (-7.77 tuned vs -2.11 seed), the
+> overcoat quarter-wave (sheet ships a HALF wave; engine rule says lambda/4
+> at the working wavelength).  **Deck item:** slide 30 claims capture from
+> 100 nm on RECORD-bench tags — false on the redo bench until the aperture
+> fix lands, then re-runnable.  **Friday's interim report NOT started.**
+> Dave travelling from 2026-09-19; work paused.
+
+> **LUIS SENS-TOOLS FIXES — IMPLEMENTED, LOCAL, UNPUSHED (2026-09-14).**
+> Plan `~/.claude/plans/soft-hugging-peach.md` (Dave-approved + CCL/CCMac's
+> six changes folded in). Luis reply draft `macos/DRAFT_email_luis_sens_groups.md`.
+> Order run WS4→WS1→WS3→WS2. All targeted tests green; full `fast` = 469 pass,
+> 3 fail ALL PRE-EXISTING (cross-platform bit-exact baselines: tPolElement
+> material-flip = 1-ULP `isequaln` drift, err 2e-19; tSegMirMaker pie/hex2 =
+> external SegMirMaker binary Hx bit-drift — neither is in my changed files).
+> - **WS4** doc: `macos_f90/CLAUDE.md` Noll note fixed (Noll→ZerntoMon6 in all
+>   3 chains; only ExtFringe(11) no-op).
+> - **WS1** group dwdx speedup (`GroupedRigidBodyChannel` + builder + threaded
+>   `group_smart_stop` default-on through dw_dx/dw_dx_multi/run_sensitivities):
+>   Fix A skip-reaim-on-restore + one tail-settle/group; Fix B skip when all
+>   members strictly downstream of the ENGINE-resolved stop, keep-when-ambiguous.
+>   `tDwDxGroups` 15/15 (A/B gate-on==gate-off + StubGroupSession call-counts).
+>   **Fix B engages only with an ELEMENT stop** (ApStop=/macos.stop); object-space
+>   stop (default) → conservative, Fix A's ~1/3 still universal. Follow-up: resolve
+>   object-space stop's effective element to widen Fix B.
+> - **WS3** `zernike_grid_basis` +'noll'/'bornwolf' (verbatim ZerntoMon6/2 perm
+>   tables → ANSI evaluator, same ndgrid orientation); `dw_dgrid` `zconv` recorded
+>   in `out.zconv`. Fringe/NormHex/NormAnnularNoll deferred (error). `tZernikeGridBasis`
+>   5/5 ((n,m) cross-check). Follow-up: non-segment engine round-trip per convention.
+> - **WS2** engine: `PrtSingleEltInfo` emits `Link= <iElt>` when LnkElt>0;
+>   `SAVE_KEYWORD_AUDIT.md` reclassified. Engine rebuilt (gfortran) + mex relinked.
+>   `tLinkSave` 3/3 (emit-only-when-present; active+distinct-from-stock via OPD;
+>   survives save→reload→save). `get_elt_csys` reads LCS not linked-reflector
+>   motion → test uses OPD.
+> **CCL REVIEW CLOSED (2026-09-14):** Linux gate green (fast 472/0, gfortran+ifx).
+> WS1 follow-up landed: object-space stop (default) re-aim is a no-op (chief
+> aimed at a fixed global point) -> now skipped UNCONDITIONALLY, so Luis gets the
+> full gain with no knob (gated by test_smart_gate_preserves_jacobian on e5hex1).
+> WS3 engine-exactness gate ADDED + PASSES both noll+bornwolf
+> (tRunCompare/test_zern_grid_conventions_engine_equivalence; compare within the
+> confined disk -- generator matches zern_seg_eval corr 1.0; norm applied
+> post-reindex so bornwolf scale is exact). tLinkSave+tZernikeGridBasis added to
+> SUITE_FAST. Also: 2 e2e6m_r2 template files were already modified in the
+> resources tree (NOT mine).
+> **CCL ROUND 2 (2026-09-14 eve) CLOSED:** Linux fast 481/0 on the push. WS3 gate
+> STRENGTHENED to have teeth -- CCL showed Noll idx 8 and B&W idx 8 both land on
+> ANSI slot 9 (coincide), so the mode-8-only gate couldn't see a convention swap.
+> Now modes {4,7,8} per convention at ng 256 / sampling 31 (rays coarser than
+> the grid pixel -> facets vanish, 1%/corr 1.0000), thresholds 1%/0.999, PLUS a
+> negative control at mode 7 (Noll 7 coma vs B&W 7 trefoil; other-convention map
+> vs this deck's poke must give |corr|<0.5). tRunCompare 4/4. Luis email UNBLOCKED
+> (added the note: Noll & B&W coincide at 1-3 and 8). NEXT: Dave's new thread =
+> predict as-built performance (surface errors, error budgets, drift, electronics
+> noise) -- awaiting his steer on static-budget-first vs dynamic-loop-first.
+
+> **TO / GAUGE-DECK PDI LANE, IN FLIGHT 2026-09-13 (`BRIEF_to_gauge_deck.md`;
+> plan `BRIEF_gauge_deck.md`).  CODE COMMITTED, resources `5d99c20`, LOCAL.**
+> New dir `mmacos/templates/40_benches/pdi_dm96/` (pdi_params / pdi_run /
+> pdi_batch.sh / pdi_vfig_util + the psri decks and figures + README +
+> REPORT_gauge_pdi.md + runs/); the P/PF README section MOVED there with a
+> pointer left in zwfs_dm96; pre-split records stay in zwfs_dm96/runs.
+> **Built:** (1) `dmg_pdi_gauge` REF_SHAPE 'deck' -- the P/SRI reference arm
+> TRACED through psri_ref.in's physical pinhole, test through psri_test.in
+> (+`pdi.ref_frozen`, the control that separates the arm's SHAPE from its
+> MOTION); `zwfs_run` gains a self-contained `stage_bench_psri_`
+> (`pdi.bench 'psri'`, readings must be {'PF'}).  ZWFS path BIT-IDENTICAL
+> (pdi_dev3's G3/G4/G5/G6/G7 reproduce; G4 = 0.296 pm).  (2) `dmg_loop`
+> knobs `start_rms`/`start_shape` (the DESCENT: the DM's initial figure),
+> `recal_every` (+ the `ins.recal(cmd) -> struct('est','nstates')`
+> contract CCMac mirrors), `intra` (drift WITHIN a scan, `aux.dstep`),
+> `ref_walk` (non-common-path reference phase, `aux.ref_phase`); gates
+> tDmgLoop G9-G12, 14/14.  A descent's STARTING matrix is measured on the
+> STARTING surface.  Drift increments now drawn once ahead of the loop in
+> the same order -> every earlier run reproduces bit-for-bit.
+> **Measured so far (dev res, model 512/65, 48x48 DM):** the traced arm's
+> reference under the 30 nm surface -- total change 0.1528, scale |0.847|,
+> **SHAPE change 0.0057** (the FFT surrogate at 2 lam/D gives 0.1539 /
+> 0.8463 / 0.0059: the real arm behaves like the surrogate); G5 absolute
+> 31.06 pm = 0.257% of a 12 nm figure where the synthesized reference reads
+> 0.000 by construction; rows single 0.9939 / 5 pm, grid 0.9936 / 2, dense
+> 0.9949 / 164; N(1 pm) 3.15e13.
+> **RECORD LANDED (resources `215a452`): deliverable 1 COMPLETE.**  At
+> model 1024 / 193 rays / 96x96 with the matrix on the 30 nm surface:
+> the traced arm's G5 absolute error **5.889 pm** on a 13 nm figure vs
+> **0.000 pm** frozen and 0.000 synthesized -- so the error is ENTIRELY
+> the reference MOVING, and the synthesized LP01 model IS a frozen
+> reference; differentially the motion is a 10%-class noise-floor effect
+> (dense 129 -> 144 pm) and nothing on gain or range; rows single
+> 0.9935/2 pm/SNR 4895, grid 0.9924/1, dense 0.9926/144; **capture range
+> 480 nm+ with gain inside 0.7%** (the synthesized model is +12.8%
+> there; S and P fold at 120 nm); N(1 pm) 2.00e14 vs 1.9e14 -- the
+> reference model does not set the photon cost, the 60/40 pickoff does.
+> Deliverable 6 DONE (both layouts + psri_render redone in the recipe,
+> `pdi_vfig_util`; parts lists in the README).  Gates: tDmgLoop 14/14.
+> **UPDATE `BRIEF_to_capture.md` (Dave/CCL 2026-09-13): the wrap finding
+> accepted; deliverables 8 and 9.**  D8 DONE: `dm_gauge_lib/dmg_unwrap.m`
+> -- masked 2-D least-squares unwrapping (Ghiglia & Romero 1994: the
+> unweighted Poisson solve by MIRRORED FFT, since `dct2` is a toolbox
+> function and the release gate forbids external deps; then their sec-5
+> PCG refinement on the WEIGHTED equations so the region outside the mask
+> cannot pull on the answer inside it), with RESIDUES counted so a map
+> past the pixel-gradient limit is reported not silently wrong.  Gates
+> tDmgLoop G13, 15/15 (ramp 8.5e-14 rad; 1.5 / 3.0 waves PV on a disc
+> 6.7e-13 / 1.3e-12, zero residues; 40 waves PV -> 644 residues).  Wired
+> behind `battery.unwrap` (DEFAULT FALSE) for S/V/P/PF in BOTH the
+> measurement differential and the calibration's class maps;
+> `loop.unwrap 'auto'` turns it on exactly when `loop.start_rms` is set;
+> L/F/I/I+ untouched.  Non-disturbance: `runs/uwoff_ref` bit-identical
+> (v3dev G4 = 0.296 pm).  `loop.start_rms` now takes a VECTOR and the
+> start matrix is measured ONCE per start for EVERY class (was once per
+> reading) -- what makes the ladder affordable; the stage prints the
+> OPENING differential's wrapped rms / residues / max gradient /
+> unwrapped rms per start and reading.  **GATES GREEN: tDmgLoop 15/15,
+> mmacos fast suite 469 pass / 0 fail.**  **PUSHED 2026-09-14** (Dave
+> ran it: "I pushed them, keep going"; the session's auto-mode classifier
+> refused `git push` throughout 2026-09-13).  Both repos in sync with
+> origin; CCMac unblocked on the shared dmg_loop knobs.
+> **DELIVERABLES 1, 2, 4, 5, 6, 7, 8, 9 DONE; 3 (the pinhole diameter of
+> record) running as gseq2.**  Overnight, all exit 0:
+> **CAPTURE (D9):** largest initial surface brought to 3 pm -- L 30,
+> S 30, V 60, P 60, PF 60 nm, IDENTICAL with the unwrapper off and on.
+> The wrap premise is right for PF ONLY: past ~60 nm S/V/P return 24-28
+> nm whatever the truth is, with ZERO residues -- BLIND, not folded.
+> Unwrapping AND on-surface recal TOGETHER raise PF and P-with-shutter
+> to 100 nm = 200 nm WFE (0.245 / 0.207 pm, against 64095 with neither,
+> 5383 unwrap-only, 63520 recal-only), at 1e13 as well as 1e15 --
+> reference-limited, not light-limited.  Cadence is not the constraint.
+> **V4 within-scan drift:** the DM's HELPS the stepped readings 26-32%
+> (a scan reads the surface at its MIDPOINT = a free half-step of
+> prediction); the camera's HURTS because it is additive BIAS.  Opposite
+> signs, same knob; L and V unchanged to the digit.
+> **D5 reference-arm walk:** 100x of walk costs 4% in photons -- a
+> path-length change between arms is a PISTON, the mode the estimator
+> nulls.  Benign for a DM servo, NOT for absolute E-field work.
+> **Two bugs fixed:** the per-start calibrations held ~750 MB each and a
+> six-rung ladder was OOM-killed (build one at a time, drop before the
+> next); and `tr -d '-.'` reads the leading '-' as an option, collapsing
+> three reference-walk runs onto one tag.
+> **RUNNING:** gseq1's tail (pfdeck_loop, cap385p*, noise193p_b*), then
+> `runs/gmaster3.sh` -> gcap (D9, the ladder BOTH WAYS: starts 30-300 nm,
+> 193 rays and K 40, both departures stated), gseq3 (intra), gseq4 (ref
+> walk), gseq2 (pinhole).  Superseded: gmaster.sh, gmaster2.sh.
+> **[old plan below]**
+> `runs/gmaster2.sh` -> gseq4 (D5 reference-arm walk, ~75 min), gseq2
+> (D3 pinhole diameter, the model-2048 leg ~4 h), gseq3 (D4 descent +
+> within-scan drift, ~7 h).  NEXT: fill REPORT_gauge_pdi.md sections
+> 2-5 and 0 as they land; push only on Dave's review.
+
+> **PDI READINGS (Dave 2026-09-12 "look at another sensor, using a
+> point-diffraction IFO approach -- see Brandon Dube"), IN FLIGHT, LOCAL.**
+> Plan + literature: `BRIEF_pdi_campaign.md` (the paper meant = Dube,
+> Nejadriahi, Sidick, Jewell, Redding, Lou, Basinger, SPIE 13092-178
+> (2024), "Absolute and differential complex E field reconstruction by
+> phase shifting interferometry" -- non-common-path IFO with a photonic
+> phase shifter; full text not retrievable here, ask Dave for the PDF).
+> Built: `dm_gauge_lib/dmg_pdi_gauge.m` (readings P = stepped pinhole at
+> the FocalMask, common path, surround t; PF = fiber reference with
+> photonic steps, exact) threaded into `zwfs_run` as classes 5/6 (P.pdi
+> knobs; opt-in, record defaults untouched), gates G5-G7 in the bench
+> stage, figs palette.  Dev gates PASS (`runs/pdi_dev`, model 512):
+> G5 P 1.9 pm of 11.8 nm, PF 0.000; G7 5e-15 (P at t=1 == S).  RECORD
+> SEQUENCE RUNNING in background: `runs/pseq.sh` -> pdi193 (flat
+> battery + noise), pdi193base, pdi193d1 (1 lam/D on the base), ploop193
+> (loop P/PF).  **UPDATE 08:35: Dave pointed at the paper
+> (`~/dev/MACOS_sandbox/pSRI/Dube_pSRI.pdf` + their MATLAB model); PF
+> re-pinned to it (LP01 fiber-mode reference with per-state coupling
+> kappa, pickoff 0.6, SH5 scheme option, step_err) -- resources 09c40da;
+> the first sequence was stopped after pdi193 (record 1, PF = pinhole-
+> shaped idealization, numbers in the brief); `runs/pseq2.sh` is the
+> live sequence: pdi193f, pdi193fbase, pdi193state, pdi193d1,
+> pdi193se_ls/sh5, ploop193 (~2.5 h from 08:31).**  V2 code committed (resources 7323d80); V2 runs v2g_*/
+> v2e10a done (0.1 rad retardance error, uncalibrated: on-surface single
+> 0.9934/4 pm -- the surface matrix absorbs it) -- README V2 still to
+> write.  NEXT: fold numbers into README "P / PF" section + brief +
+> memory; commit; push only on Dave's review.
+
+> **2026-09-17 (TO): BRIEF_to_tg_redo PACKAGE A -- THE BENCH COLLIMATED FOR
+> REAL, THE TAIL TUNER PUT ON THE READING.  Committed LOCAL, resources
+> `23131f6` (A0 was CCL's `37193e5`).**  New tool `tg96_collimate.m`
+> (runs/coll_lens): solves the collimator's RADIUS with its conic, the
+> focuser's conic, and the FocalMask seat, against the engine's rays, over the
+> rays that REACH the DM.  **THE FINDING: the lens rig's collimator was not
+> merely fed 25 mm inside its conjugate -- its RADIUS was matched to that wrong
+> conjugate.**  `L1_Kr` 236.866 = (n-1)*473.7 = (n-1)*(F1 - zsource), so with
+> the source at F1 the lens has 5% of surplus focal length; a solve holding the
+> radius runs the conic to -4.68, walks the source back 27 mm (undoing
+> SRC_AT_FOCUS exactly) and still leaves 2.6e-4 rad rms.  Solved:
+> **L1_Kr 249.246312, L1_Kc -0.583016, L2_Kc -0.581843, MASK_TRIM +1.231759**
+> -> exit-ray spread **1.27e-3 -> 6.3e-9 rad rms** (47 waves over the beam ->
+> 0.0), focal spot **0.17 um rms** (lambda F/D 2.8 um), marker ON the ray focus
+> (was 10.4 mm off -- the same error the zwfs sheet carried as the constant
+> MASK_TRIM -5.582 since S1; now `'scan'` there).  **The CONIC barely moved**
+> (-0.583016 vs the record's -0.5829): a conic belongs to the shape and the
+> plano orientation, not to the conjugate.  Beam now 58.3 mm at the 48 mm DM
+> (the DM IS the stop, 68% of the grid through); `P.clear.beam_r` 56 -> 59; the
+> DM leg (450) and BS angle (22.5) do not move.  **Builder trap closed:**
+> `stage_B_` forwarded SRC_AT_FOCUS from INSIDE its `if optics=='oap'` block,
+> so setting it on the lens rig was accepted by the sheet and silently dropped
+> (the trap zwfs_params records for MASK_SUB); SRC_AT_FOCUS/SRC_TRIM/MASK_TRIM
+> now forwarded on both rigs by tg96_run AND tg96_tail.  **Tail tuner (Dave's
+> ruling):** `P.tail.objective 'reading'` -- the cost IS what the pupil stage
+> measures the camera recovering off the DM (tg96_pupilsim stage 2, or its
+> stage-1 band-edge-phase proxy, default, ~70 s/eval), the null computed and
+> PRINTED every evaluation and never optimized; `P.tail.free` holds the field
+> lens at the geometric seed station (lens: {FL_Kc,DET_TRIM}; mirror rig:
+> {DET_TRIM} alone).  tg96_pupilsim gained 'stages'/'figs'; a failed evaluation
+> now prints its error instead of a silent 1e6.  **Seed tail on the collimated
+> bench, before any tuning:** band-edge phase 0.0122 rad rms / 0.0237 max (gate
+> <0.06), phase gain 0.9997 worst (gate >=0.998), image surface flat to 0.7 mm,
+> distortion 0.023 mm rms (the brief's 0.01 came from the UNcollimated bench;
+> the same table already showed collimation RAISING distortion), null 59.3 nm.
+> **TWO CORRECTIONS, 12:30 (both found because the mirror rig's DET_TRIM tune
+> moved the detector the WRONG WAY against the brief's -0.6 mm prediction).**
+> (1) MY DEFECT, caught before any deck of record was emitted: `MASK_TRIM` was
+> ONE global sheet field, so the lens rig's +1.2318 seat (its plano singlet's
+> principal plane + the mask plate + residual SA) was being applied to the
+> MIRROR rig, whose parabola has none of it -- 0.69 mm wrong, OUTSIDE package
+> A's own 0.5 mm gate.  Fixed: anything in `P.oap.*` overrides its `P.bench.*`
+> namesake when `optics=='oap'`, in `tg96_run` stage_B_ AND `tg96_tail`.
+> (2) A REAL consequence of the substrates: `POL_IN 'source'` puts the input
+> polarizer's 2 mm plate in the DIVERGING leg, and a plane-parallel plate
+> displaces the apparent source `t(1-1/n)` = 0.63 mm ALONG the light -- so the
+> parabola is fed inside its focus and its "collimated" space carried 0.70
+> waves (1.710e-05 rad rms).  `tg96_collimate` now solves the source station
+> for the mirror rig (1-D): **`P.oap.SRC_TRIM` -0.370629 -> 1.358e-08 rad rms,
+> 0.00 waves**, and then **`P.oap.MASK_TRIM` 0.631902 == the mask plate's own
+> `t(1-1/n)` 0.6285 to three figures** (before the source fix it read 0.5393:
+> the defocus was being paid for at the seat).  Also flagged outward:
+> RUNBOOK_mac_cycle3a job D's `OAPZ` passes `'bench.MASK_TRIM',0`, which
+> OVERRIDES the zwfs sheet's `'scan'` -- with the mask plate in that seats the
+> ZWFS DIMPLE (which unlike the IFO's marker IS the optic) 0.63 mm off focus.
+> **IN FLIGHT:** `runs/redoseq.sh` (detached chain, RESTARTED 12:32 on the
+> corrected sheet) + `runs/redotail.sh` (waits for it, then `redoseq2.sh` =
+> the seed tail on the SAME bench + the own-cone pupil check, then
+> `nullab.sh` = where the 59 / 73 nm nulls come from).  Original chain plan: lens tail
+> tune (tag lens96) -> mirror tail (oap96, DET_TRIM alone) -> both rigs
+> re-emitted as `redo_lens` / `redo_oap` (stages clearance/bench/figs, on
+> `redo_<optics>_tail.mat` copies so the record's lens_tail.mat/oap_tail.mat
+> stay put until the gate passes) -> the pupil stage on each EMITTED deck =
+> package A's gate record.  Watch: `runs/redoseq.nohup`, `runs/tail_*.log`.
+> **LENS TAIL DONE (12:21):** `FL_Kc` -2.11278 -> **-7.77234**, `DET_TRIM`
+> 1.8606 -> **1.9951**, station HELD; band-edge phase 0.0122 -> **0.0000** rad
+> rms, zone image surface 0.7 mm of departure -> **0.002 mm**, astig split
+> 0.146 -> 0.056, worst Nyquist gain 0.9997 -> **1.0000**, distortion 0.023 ->
+> 0.041 mm.  **Winner gate KEPT it at winner/seed = 0.9970** -- and that is the
+> honest reading: the row gate cannot separate the two tails, so what the tune
+> bought is the pupil IMAGE, not the reading.  Put to Dave in REPORT 8.4 as a
+> TRADE (a 0.24-wave stronger asphere on the field lens for a flat pupil image
+> and no measurable reading change; the seed tail is the simpler part and
+> passes the same gate).  The null did not move on ANY of the 109 evals
+> (59.3168 nm): with the station held both free knobs are blind to an arm
+> DIFFERENCE.  Report sections 8.1-8.5 written; `runs/harvest_redo.sh` prints
+> the gate record under its run tags.
+> **PACKAGE A CLOSED (gate record REPORT 8.7), PACKAGE B FIRST PASS DONE
+> (REPORT 9-9.4).**  Package A's gates: exit spread 6.3e-09 / 1.4e-08 rad rms,
+> spot 0.17 / 0.09 um, seat 0.000 / -0.0001 mm, Nyquist gain 1.0000 / 0.9994,
+> band-edge phase 0.000 / 0.035 rad -- ALL PASS both rigs; distortion 0.041 /
+> 0.722 FAILS the brief's 0.01 figure, which is WITHDRAWN (it was read off a row
+> measured on the UNcollimated bench).  **The bench reads its own 30 nm working
+> surface to 42 pm (lens) / 92 pm (mirror)** against the record's 1.22 / 0.23
+> nm; single pokes 0.9998; the lens rig's amplitude cross-talk 0.005 (was 0.33).
+> The tuned tail buys 2.3x over the seed (97 -> 42 pm) -- the WINNER GATE could
+> not see it (SNR ~170, ratio 0.9970), which corrected 8.4.  The 59/74 nm nulls
+> are THE BEAM (9.8 -> 53.6 nm when the DM became the stop); substrates cost
+> 39 nm misfed vs 5.6 collimated.  Brief section 7 = package A's close-out with
+> the two calls for Dave (the field lens's conic -7.77 vs the seed's -2.11; the
+> compensator's +10.4 mm clearance, which is the STOP ruling not the plates).
+> **PACKAGE B:** the chain RUNS on the lens rig for the first time.  Found and
+> fixed: the quartet was appended straight after the focuser, so the mask plate
+> landed AFTER S2 in deck order and the rays turned back 7 mm upstream into
+> glass (6.2 % on the bundle, ray-to-ray); the engine requires the NF1 sphere to
+> be IMMEDIATELY followed by the NF2 plane (substrate faces between poison zEnd
+> with their zElt 0 -> empty field); the fix is to relocate that glass into the
+> gap after the focuser, exact to first order because a plate's focus shift
+> t(1-1/n) does not depend on where in the cone it sits.  Now 1a/2b/2c/2d PASS.
+> 1b CLOSED: the 11-17 % Nyquist loss is sinc^2 INTERPOLATION twice over (the DM
+> GridData onto the rays, the rays onto the diffraction grid) -- not the legs,
+> and a floor under every gain at the top of the band.  2a CLOSED: the focal
+> field IS the Airy pattern (three profiles overlay across five decades); the
+> "excess" was the EE statistic's grid-total normalisation.  **THREE of the five
+> checks were measuring their own limits** (1a's wrapped-phase ceiling 0.2887,
+> 1b's suspected leakage, 2a's EE normalisation, plus a radial binning hole that
+> read as a null); only 2c/2d measured the chain, and those found the real bug.
+> **Open in B:** the exit-step convention sweep has NOT been re-run since the
+> deck-order fix, the readout-vs-pupilsim comparison waits on it, and the mirror
+> rig has not been through the chain.  **Open elsewhere:** the lens rig's station
+> residual is a FOLD (51443 pm vs the mirror's 463; the bowl hypothesis is dead
+> -- 8.6b names the probe); CCL tracked the redo tails under redo_* tags, so
+> package C either runs under those tags or the tails go on the canonical names.
+> **NEXT:** harvest the chain into REPORT_bench_realism section 8 (8.6),
+> copy the accepted tails onto `lens_tail.mat`/`oap_tail.mat`, then package B
+> (tg96_pupil_s2s leg by leg on the improved bench: the collimated legs to
+> <0.02 wave, the quartet's Airy spot and its far-side pupil radius -- 20%
+> small today, suspects in BRIEF_to_tg_redo section 2 -- the exit step's zElt
+> convention against a 10 mm known defocus, then the readout vs tg96_pupilsim).
+> Then package C (the record's runs redone, the Mac carrying the mirror rig).
+> Report: REPORT_bench_realism section 8.  Rules in force: one MATLAB at a
+> time, kill by PID, no push.**
+
+> **2026-09-17 (CCL): THE PUPIL IMAGE SIMULATED (Dave's ask), THE DM MADE THE
+> STOP, RIY runners.**  `tg_psi_dm96_oap/tg96_pupilsim.m` (runs pupilsim_lens /
+> pupilsim_oap; report section 7; deck slide 13 of 50; sheet block P.pupil;
+> RIY `tg96_pupil_batch.{m,sh}`; README block).  Stage 1: the leg's coherent
+> PSF per DM zone from the rays (41 tilts, 2-D over the band; the DM as the
+> stop keeps each ray on its zone to 2 um; the zone wavefront = defocus +
+> astig, higher orders 0.3 nm).  Stage 2: the DM field through the zone
+> PSFs (overlap-add), four-step readout.  RESULTS: every mode observable on
+> both rigs; lens rig as tuned Nyquist gain 0.99 center / 0.95 worst,
+> half-Nyquist and below within 0.3%, pokes 0.99, 30 nm surface back to
+> 1.2 nm; mirror rig 0.997 / 0.23 nm.  THE LENS RIG'S DETECTOR IS NOT AT
+> THE PUPIL IMAGE: 2.6 mm ahead on axis, 4-6 at the edge (the null-tuned
+> tail is blind to pupil defocus); +4.3 mm -> 0.993 worst, 0.4 nm.  THE BEAM
+> OF RECORD WAS THE SOURCE CONE (77 mm lens / 82 mirrors on the 96 mm DM;
+> nothing clips): Dave ruled the baffle must not constrain + an aperture on
+> the DM -> sheets changed (tg96_params, zwfs_params: R_BAFFLE 12.5->18,
+> D_LENS 60->66, R_TO_AP 30->28 = 48 mm); the simulation opens the baffle,
+> widens the cone x1.06 and puts the 48 mm aperture on the DM.  ENGINE
+> PLANE-TO-PLANE CHECK (Dave: reference surfaces in the .in, the CTB model):
+> `tg96_pupil_engine.m` built (mask sandwich + a sphere concentric with the
+> beam after the FL, NFS1surf to the detector); MEASURED that a
+> geometric-to-physical hand-off is exact only at a pupil conjugate and this
+> leg has none before the detector (the DM's image by L2 is virtual, 876 mm
+> past the focus) -> the seed is the undiffracted DM pattern; the sandwich
+> centered on the seat marker (5.5 mm off focus) seeds 54 waves of defocus.
+> The station-to-station form was BUILT (`tg96_pupil_s2s.m`: 4 collimated
+> NFPlane pairs, the Rx_Coro quartet with asymmetric radii, the lens per
+> index, an exit sphere + NFS1surf, 4 zElt conventions x a 10 mm defocus
+> discriminator).  Lens rig: cannot work -- its collimated space carries 41
+> waves (collimator fed 25 mm inside its focus), the rays walk off the grid
+> between NF legs (1.5 waves of spurious aberration at S1, a 10x focal
+> spot).  Mirror rig (fed at the focus): runs but wrong -- the quartet's
+> far-side pupil 20% small vs the rays; no convention gives a gain map.
+> NEXT (half a day): the focal spot after the entrance sphere, the far
+> sphere's pitch bookkeeping, the exit step alone with a known defocus.
+> AFTERNOON: Dave asked how to IMPROVE the pupil images -> `tg96_pupil_options`
+> (five lens-rig variants, REPORT_bench_realism 7.1, deck slide 15, brief
+> section 8): THE TAIL GEOMETRY IS THE WHOLE STORY -- the seed field-lens
+> station (10.8 mm past the focus) images the DM flat (0.9992 as built,
+> 0.9999 with a 0.7 mm move, distortion 0.003 mm) where the null-tuned tail
+> (39.8 mm, conic -2.59) gives 0.954 / 0.27; a flattener cannot fix the
+> tuned bowl (5 mm-radius image surface); true collimation (the source is
+> 14 mm inside the hyperbolic collimator's focus) halves the distortion and
+> is needed for re-tunes + the physical-optics chain, not for the gain.
+> Recommendation: hold the field lens at the seed station, re-tune conic +
+> trim with the image surface in the objective, detector at the image mean;
+> mirror rig the 0.6 mm move; fix the collimator first.  Deck 52 slides;
+> Dave's edit copy was OPEN -> NOT re-synced (run sync_edit_deck.sh
+> deck_gauges after closing it).  Committed: resources 02929cc 50358d4 +
+> this; macos c13d4c5 fd56d45 + this.  Push on Dave's word.
+> LATE AFTERNOON: Dave's rulings on BRIEF_to_tg_redo (substrates YES as
+> proposed; tail objective = the IFO's own reading, null reported; keep the
+> L2 re-solve; larger-pixel camera priced both ways; the Mac assigned to the
+> redo's runs) written into the brief (sections 1b, 6) + a read-up section
+> for TO (clear over compact).  The Mac's cycle 2 pulled (resources 12d03b0,
+> rebased): oapsens385 (mirror rig at 385 px: capture S 36 / V 59 / P 52 nm,
+> rows S 0.9911/4 pm) and oapcap22 (sensors' descent on the mirror rig:
+> V/P 3 pm from 60 nm in 21/19 cycles, diverge from 100, S never) folded
+> into the deck.  Deck 53 slides: parts slide 6 with the decided substrates
+> + the seed field-lens station + the 9.8 mm pupil image + camera options;
+> NEW slide 41 'Next: the interferometer redone on the improved bench';
+> edit copy synced.  INTERIM DECK for Dave (~5 h from 15:00): this build.
+> NEXT for TO: BRIEF_to_tg_redo packages A0, A, B, C; CCL writes the Mac's
+> cycle-3 runbook once A lands.  Friday: the interim REPORT (current record,
+> labeled), style gate, .docx.
+> EVENING: Mac cycle 3a landed (resources b13cd38: sub96_lens, sub96_oap --
+> substrates in, 96 mm beam, seed tail, the record's collimator): lens rig
+> null 92 nm (!), single row 1.003/1 pm, grid row 0.754/61 pm (the fold);
+> mirror rig null 26 nm, rows 0.986/0.981 -> the case for package A in one
+> number (brief section 7; deck backup slide).  TO's package A is LOCAL
+> (23131f6 + working-tree edits; redoseq chain running the lens tail tune on
+> the reading objective) -- NOT pushed; do not launch MATLAB here while its
+> chain runs (my smoke delayed it ~10 min).  The Mac next: jobs C and D of
+> RUNBOOK_mac_cycle3a, then redo96_* once package A passes and is pushed.
+> Jobs C+D landed (d4159da): the pupil stage on the sub96 decks is near-perfect
+> on both rigs (lens 0.9999 / 0.008 mm / 0.08 nm; mirrors 0.9996 / 0.72 / 0.10)
+> -> the lens rig's 92 nm null is the plate's W040 + the misfed collimator, not
+> the imaging; sensors at 385 with the mask plate (MASK_TRIM 0.632, the first
+> launch died 'mask plane not focused' at 0): rows hold (S 0.993/0.995),
+> capture S 35 / V 51 / P 42 (was 36/59/52).  Deck backup slide + brief
+> section 7 updated; deck 54 slides synced.
+> 13:30 TO: PACKAGE A PASSED both rigs (resources d1a3b57 + 12 commits,
+> LOCAL): lens Nyquist 1.0000, 30 nm surface to 42 pm (record's tuned 1.22
+> nm), cross-talk 0.005; mirrors 0.9994 / 92 pm; certified at 129 rays.
+> Distortion gate withdrawn (the OAP pair's 0.72 mm mapping).  Emitted tags
+> redo_lens / redo_oap, tails redo_*_tail.mat; TO's follow-ons (redotail:
+> seed tail on the same bench, own-cone check, null decomposition) then
+> package B.  Deck slide 41 + brief section 8 updated.  RUNBOOK_mac_cycle3b
+> written (package C first cut: DECK both rigs on the redo tails, sensors
+> at 385 with the sheet's MASK_TRIM 'scan'); PRECONDITION: TO's commits
+> pushed (Dave's word).
+> Dave OK'd the push: TO's 12 commits rebased onto the Mac's 2 harvest
+> commits and pushed (+ my f09ea0d tracking the redo tails).  Mac cycle 3b
+> landed (4f91561): lens redo96 null 59 nm, single 1.004, GRID 0.993 (was
+> 0.754) -> package A's grid gate passes; mirror unchanged (26.5 / 0.986 /
+> 0.981); the sensors' run DIED at the sheet's seat scan (-5.93 mm, peak
+> 2e-6) -> runbook 3b job C now passes MASK_TRIM 0.632 explicitly; TO to
+> fix the scan's start/range on the mirror rig (brief).  Deck backup slide
+> has the 3b columns.
+> Sensors rerun at the explicit seat (49444dc): identical to 3a to the
+> digit (the mirror rig's sensor bench unchanged) -> cycle 3b COMPLETE.
+> TO's brief section (local b302521) has TWO CALLS FOR DAVE: the field
+> lens's conic (-7.77 tuned vs the seed -2.11: 2.3x in the reading, a mild
+> asphere over 2.4 mm) and the compensator's clearance (+10.4 vs 25:
+> D_BS_CMP 200 -> ~225).  Next: RUNBOOK_mac_cycle3c (the rest of package
+> C on the Mac).
+> WRAP (Dave, end of day): deck_gauges.pptx 54 slides = the INTERIM DECK
+> (edit copy synced, pushed 9d2397d); RUNBOOK_mac_cycle3c written + pushed
+> (1799cd8); TO's brief commit b302521 local in macos.  OPEN FOR DAVE: the
+> field lens's conic (-7.77 vs seed -2.11), the compensator's station
+> (D_BS_CMP ~225).  NEXT SESSION: fold cycle 3c as it lands (the deck's
+> servo/capture/photons/descent/station slides -> the redo bench columns),
+> then the interim REPORT (Fri 09-18: current record labeled; style gate
+> doc/STYLE_REPORTS.md section 5; .docx).  Standalone paraxial chain (`fourier` true) works as
+> a standby (flat pupil 4.81 vs 4.92 mm).  Interim report paragraph updated;
+> BRIEF_pupil_quality_tg section 7 (three rulings for Dave: re-run the
+> record on the 96 mm beam now or after Friday; DET_TRIM +4.3 / tuner
+> objective; the s2s chain now or after Friday).  Final reruns of both rigs
+> (corrected scoring) in flight at the time of writing; commit after.**
+
+> **2026-09-16 evening (CCL): PUPIL IMAGE QUALITY for Fang Shi DONE (due
+> 09-17).**  `tg_psi_dm96_oap/tg96_pupilq.m` (resources fd24ad9; runs
+> pupilq_lens / pupilq_oap; REPORT_bench_realism section 6; deck slide 12
+> after the IFO station slide, 49 slides; memory project_pupil_quality_tg).
+> The DM is the STOP (Dave): bench as built, field = source shift at the
+> collimator's focus; crossing cloud at the camera.  Distortion vs one
+> affine 0.13/0.30 mm (lens), 0.45/0.85 mm (mirrors); blur 0.02-0.03 mm
+> rms over the actuator band; pupil surface sag 3.8 mm (lens) / tilt 0.45
+> (OAP); focal WFE lens 1.1-2.7 nm, OAP 0 on axis / 144 nm = 2.3 lam F/D at
+> the band tilt (coma).  Traps: collimated source at the DM = a
+> nonexistent bench (16 lam F/D); the seat marker is not the focus; the
+> exit-pupil sphere idiom refuses to load via the mex (fitted focus removal
+> instead); `range` is a toolbox call.  Mac cycle 2: oapnoise22 folded
+> (photons for 1 pm: S 5.8e13, V 7.3e13, P 8.5e13); oapcap22 running;
+> oapsens385 queued.  Interim report has the pupil paragraph.  Unpushed:
+> macos since 303c209 (brief, deck, report), resources fd24ad9.**
+
+> **2026-09-16 midday (CCL).**  Deck 48 slides (contents slide 2; Dave's
+> editing copy synced via the gate; sidecar deck_gauges.geo.json).  TO's
+> close-out landed on the slides: item 2(a) CLOSED (the raw four-step wraps
+> between 60 and 120 nm on BOTH rigs: a base past lam/2 reads 91 nm =
+> 316.4/sqrt(12); the lens "never flags" was the 7-deg record); item 4 rows
+> on the tuned tail (10 mm plates: rows 1.00-1.01, reading attenuated 13% =
+> floor/SNR not gain); item 6 station figures at 1800 px (stnoap on the
+> deck; stnlens has a 62 nm misregistration, open); item 3 CLOSED (winner
+> gate relative to the seed, enforcing).  MAC: job A died (no flock on
+> macOS -> wrappers guarded, resources 3c88b46; oap_fold_batch.sh left for TO,
+> it was executing); job B oaploop22 (Dave pushed 0cba0a6): sensors' servo
+> on the redesigned mirror rig S 2.7e12/7.9e12, V 1.7e12/5.7e12, P
+> 2.5e12/7.4e12, thermal floors 10 pm -- within 10% of the lens rig -> servo
+> slide + measured slide + recommendation + report.  INTERIM REPORT full
+> first draft (5200 words, sections 1-2 by subagent with a source-notes
+> appendix; 3-5 CCL) at REPORT_interim_ctb_e2e6m_gauge.md.  Local unpushed:
+> macos commits since a9eddc5; resources 3c88b46.**
+
+> **2026-09-16 ~08:30 (CCL): DECK 47 SLIDES for Dave's JPL preliminary
+> (macos this commit): Dave's two edit-copy changes folded ("The DM";
+> slide 8 left block 15 pt via NEW sidecar deck_gauges.geo.json); the
+> overnight results in: servo table (mirror rig redesigned 5.4e12 / 1.7e13
+> / 10 pm; record 7-deg row kept), capture tables (redesigned captures from
+> 200 nm unwrapped; raw fold 120 vs lens 240 = ladder arithmetic), NEW
+> slide "Interferometer, station by station" (oapifol2_stations.png), NEW
+> slide "The reflective front end, measured" (record / redesigned / lens
+> table + vector amplitude-imbalance + open items), slide 3 for/against
+> updated, recommendation front-end line = "either builds; ruling
+> pending", camera 7.5 mm / 1155 px / bin 3 or 6, splitter 10 mm modeled
+> (null 0.13 -> 20 nm, rows pending item4bseq), polarization at the built
+> angle (1.56 deg, +0.9%), provenance tags.  Dave's edit copy is OPEN in
+> Impress and NOT re-synced (gate refuses); he must close it, then
+> `./sync_edit_deck.sh deck_gauges --folded`.  CTB doc pass DONE by
+> subagent, committed resources d28fdeb (README 47% fill + Aperture
+> convention, example_ctb label, deck_ctb slides 1/9, CTB_PROP_STATUS
+> section).  Dave's CTB ruling: (1) docs now; (2) regenerate at 42.75 mm
+> AFTER the gauge results clear.  Claude update pending restart; this
+> slice is the handoff.**
+
+> **2026-09-16 morning (CCL): TO's overnight results harvested (git log
+> 09-15 18:00 -> 09-16 06:39, 20 commits; every run exit 0 except oapdesc2's
+> figure bug after its descents landed).  HEADLINE: the CTB DM-model "slip"
+> is RETRACTED by the traced footprint (beam 21.24 mm; the 32x32/0.67 mm
+> lattice spans it; no EFC result affected); the real finding is the
+> point-source Aperture convention (engine: FULL cone angle, sourcsub A =
+> Aperture/2; example_ctb reads a half-angle -> 47% fill, README says 95%)
+> -> Dave decides keep (CCL recommends) or regenerate; the 64x64/1 mm ruling
+> withdrawn; brief 0b, note, memory, deck_ctb banner corrected (macos
+> 1b1bdbe, resources ddaca96).  Vector pair on the reflective rig: G4 634
+> bare / 319 lam/4 overcoat / 0.054 pm calibrated (PASS); the variable is
+> channel AMPLITUDE (phase fixed at 0.062 rad); rows hold on every coating;
+> fold lever unpulled.  Servo (oapifol2, 854 states, 5.5 h): 3 pm from
+> 5.4e12 noise-only, 1.7e13 under the 2 pm walk; thermal floor 10.0 pm =
+> rate/(gG), LOW-ORDER (9.2 of 10 pm below 4 cyc/ap), not photon-limited;
+> both floors analytic to 1%.  Descent (oapdesc2, unwrap on): 100 and 200 nm
+> starts reach 3 pm at cycle 17/19, rho 0.50/0.52.  Wrap: the record's lens
+> ladder was a 7-deg bench; like-for-like the lens rig ALSO breaks (at 240,
+> OAP at 120); wrap column identical; candidate = pixels per unknown in the
+> solve (37 vs 41 px); the 'wrap' stage (dA vs dD, n_cross) staged;
+> battery.unwrap never reached the ladder (vacuous) -- fixed as a stage.
+> Realism: 10 mm plates cost the flat null 0.134 -> 20.09 nm retuned (the
+> 1.39 mm shear), gate ate the winner -> item4bseq; the sensors' rows with
+> substrates (sub22) and thickness (thk22) = gate22_193 to the digit
+> (S 0.9888/5, V 0.9938/3, P 0.9937/3; capture 37/62/54); MASK_TRIM 'scan'
+> found +0.86 mm; pupil image is 7.5-7.8 mm not 9.4 (binning 6 not 4 on the
+> ZWFS rig).  Snapshot polarization at the built angles: arm rotation
+> +/-1.56 deg, gain within 1% (record 7.48 deg / 11.7%); the 'corrected'
+> column is a no-op by construction (rigid analyzer rotation cancels in a
+> differential).  Tail-tuner gate FAILED its two-leg test (point sample
+> tracks magnification) -> advisory; item 3 NOT done.  IFO station figure
+> works (0.00 pm flat / 626 pm on 30 nm = 2% absolute); lens-rig figure +
+> 1800 px re-run queued.  Field servo step 1 prescription written (dichroic
+> at Apodizer_Pst, 300 mm lens F/9.4, 2 lam/D dimple 11.8 um).  Queue now
+> chains on run artifacts (closefinal.sh).**
+
+> **2026-09-15 ~18:00 (CCL).  TWO DEADLINES.**  (1) CTB DM-MODEL DEFECT (TO):
+> `ctb_dm.m` beam_d_mm 21.3 used as the DIAMETER; the deck's beam is 21.4 mm
+> RADIUS (Aperture 8.485e-3 x 2519 mm) -> the lattice covered the inner 28%
+> of the pupil; Jacobians/EFC/README inherit; the deck_ctb slides 9-13 are
+> self-consistent (aberration-free) but must be RE-SCORED.  RULED (Dave): beam stays 42.75, DM = a real 64x64 at 1 mm pitch, active =
+> influence inside the beam, reach 21 cycles.  Ordered first
+> in `BRIEF_to_gauge_close.md` section 0b (TO, by THU 09-17 NOON: probe
+> committed, defaults fixed in ctb_dm/ctb_dm_jacobian/ctb_efc_physics +
+> callers audited, tCtbDm gate, ctb_study re-derived jac/efc/relin/physics/
+> bandwidth/vvc ONE MATLAB at a time, old/new table in CTB_PROP_STATUS).
+> deck_ctb carries a DRAFT banner (resources, this session).  My note's
+> separability numbers corrected to the real 1.34 mm pitch (12% at Nyquist:
+> NOT separable in-band on the CTB either).  (2) INTERIM REPORT (CCL, due
+> FRI 09-18): `REPORT_interim_ctb_e2e6m_gauge.md` skeleton + day plan (Wed
+> draft 1-3 from the decks; Thu TO's numbers in + section 4; Fri style
+> gate, .docx, Dave).  Deck_gauges: slide 3 both layouts + for/against,
+> plain-language pass, slide 15 'magic' steps.  TO's ladder: the tg96
+> ladder break is the wrapped-absolute subtraction (beyond-fold fraction is
+> the meter; unwrapped capture is the number of record); control lensuw2
+> running -- read it by the MEASURED fraction per rig (lens raw ladder held
+> at 120 where the OAP broke).  Local macos commits f117c42..this; resources
+> c9f92f6 + the banner + TO's.  Push on Dave's word.**
+
+> **2026-09-15 ~16:00 (CCL).**  TO's reflective lane: items 1-3, 5-7 done;
+> item 4 reads on the SEED tail (oapifo2: rows 0.9915/2.4 pm, 0.9905/161,
+> cross-talk 0.006-0.02, null 28.9 pm; the break ladder WRAPS at 120 nm --
+> smaller capture than the lens rig); the tail tuner's objective fix was
+> DISPROVEN (objwin3 scores better and reads 0.0338) -- open why; item 5:
+> pinhole RECOVERS (0.269 pm), vector pair raw G4 634 pm bare Al / 208 no
+> coating = ~0.1 / 0.035 rad channel phase on the V3 scan where the
+> on-surface rows still hold (my reply in BRIEF_to_reflective).  NEW BRIEF
+> `BRIEF_to_gauge_close.md` (7 items: vector rows + lam/4 overcoat + verdict;
+> item 4's loop/descent + the 120 nm wrap; tuner gated by a battery row;
+> realism 3-5, 6, 8; the coronagraph FIELD SERVO on the CTB deck -- Dave's
+> C+ concept, `NOTES_gauge_in_coronagraph.md` with the clearance scan tool
+> `demo_session/gauge_in_coro_clearance.py`: face-on blocked in both
+> packages, out-of-plane 15 deg clears the CTB, nothing clears the space
+> relay; DM separability 33 cycles on the CTB, never in flight; 10 pm per
+> 200 s on V=5).  Deck 45 slides (slide 13 pol-camera bullet, redesigned-rig
+> slide).  Local macos commits since Dave's push: f117c42..this; resources
+> c9f92f6 + TO's.  Push on Dave's word.**
+
+> **2026-09-15 ~10:00 (CCL).**  TO's reflective items 1, 2, 3, 7 are
+> COMMITTED (resources 5cb2651 layout + parts list, 5c170c0 P/SRI
+> clearance PASS at 22.5 +36.9 mm / FAIL at 7, 69033b6 tail + seat; macos
+> 62248d5).  THE STORY CHANGED: there is no fold coma -- the builder fed
+> the collimator 25 mm inside its focus (zSource; 926 urad residual, blur
+> linear in the fold angle, the 6.14 mm seat trim = that error refocused);
+> fed at its focus the seat blur is 0.000 lam F/D at zero trim, and the
+> designed rig's UNTUNED tail nulls 0.0289 nm (record's tuned OAP tail
+> 12.9, lens rig tuned 0.134).  The blocker was the input polarizer 10 mm
+> past OAP1's pole (in the cone + the sag envelope) -> moved to the source
+> leg, ray loss 0.  DECK (45 slides, macos this commit): the
+> lenses-vs-mirrors slide retitled "the record" with the cause corrected;
+> NEW slide "The reflective front end, redesigned" (TO's oapdraw3 layout
+> crop + record-vs-redesign table); recommendation's front-end bullet
+> hedged; status line + provenance tags.  RUNNING in TO's lane:
+> oap22d_tail (model 512) then ifoseq.sh -> oapifo (rows) + oapifol
+> (loop); then the mask sensors on the rig (item 5; needs
+> bench.MASK_TRIM 0).  When those land: replace the record's rows on the
+> two slides and re-decide the recommendation's front-end line (Dave).**
+
+> **2026-09-15 ~09:30 (CCL, post-compaction).**  The slice's TO DO is
+> DONE: gate22_193 folded into the zwfs_dm96 README (Findings, first
+> bullet: "Bench of record = the 22.5-degree splitter", rows vs the 7-deg
+> record in parentheses, capture S 37 / V 62 / P 54 nm at 193 rays) and
+> into the deck's side-by-side footnote + provenance tags (stations193,
+> gate22_193); runs/gate22_193 COMMITTED (resources, this session's first
+> commit); deck rebuilt (44 slides), render-checked.  TO IS ALIVE on
+> `BRIEF_to_reflective.md`: items 1 and 2 committed (9a8d699 = item 1,
+> pushed by me at 08:30 as part of Dave's push; faab9ce + 180258b = item
+> 2, LOCAL: OAP1 20 deg / OAP2 25 deg, sides +1/-1, polarizer in the
+> source leg, output optics 125 mm ahead of OAP2, worst +33.4 mm over 8
+> parts) -- `tg_psi_dm96_oap/REPORT_reflective.md` has the status table
+> (items 3-7 not started); a model-1024 tg96 run (oap22d, stages
+> bench/figs/clearance) is LIVE in TO's lane, so NO model-1024 MATLAB from
+> this lane until it exits; TO's tree edits (oap tg96_run.m, runs/oap22d,
+> *.nohup) are THEIRS -- not staged, not touched.  NEXT (CCL): when TO's
+> item 3 layout figure lands, redo the deck's lenses-vs-mirrors and OAP
+> slides from it; the deck DRAFT awaits Dave's sign-off; push on Dave's
+> word only (resources has TO's 2 + my 1 ahead of origin).**
+
+> **HANDOFF 2026-09-15 ~08:30 (CCL, autocompact).**  PUSHED both repos at
+> Dave's word (resources 1338920, macos c8a5472); local since: macos
+> ccacaee (briefs re-addressed).  The 07:15-07:22 tg96 node-solve edits
+> were MINE (lost from memory in the OOM crash), gated and committed as
+> item 2 (1338920).  CCMac will NOT return: TO owns the realism brief's
+> items 3-8 AFTER `BRIEF_to_reflective.md`; the queue is in that brief's
+> section 6.  DONE: zwfs_dm96/runs/gate22_193 (exit 0): on the 22.5-deg bench the
+> rows HOLD -- single 10 nm S 0.9888/5 pm, V 0.9938/3, P 0.9937/3 (7 deg:
+> 0.9885/5, 0.9935/4, 0.9935/4); grid 1 nm S 0.9982/4, V 0.9980/3, P
+> 0.9980/3 (0.9993/4, 0.9992/3, 0.9992/3); dense V 0.9986/278 pm, P
+> 0.9972/287.  TO DO: fold into README (a 'bench of record 22.5' line)
+> + the deck's side-by-side footnote; commit runs/gate22_193.  Deck 44 slides DRAFT at
+> demo_session/deck_gauges.md (22.5 deg layouts, three jobs, parts x3,
+> station figures S/V/P, analysis path, migration planned).  Rules learned
+> today: one model-1024 MATLAB on this box, every wrapper waits (tg96
+> fixed); a session's uncommitted edits survive its death in the shared
+> tree -- read `git status` before assuming another lane's work.**
+
+> **HANDOFF 2026-09-15 ~08:00 (CCL at 8% context).**  Bench of record =
+> 22.5 deg (resources 9b2181c: twyman_green plates at the retro end,
+> tg96_run forwards D_RECOMB/D_RC_L2, both sheets 22.5/150/55/comp 200;
+> clearance every part >= +38 mm; gates green).  OOM 07:25: two
+> model-1024 MATLABs (my gate22_193 + another lane's tg96 clear22) ->
+> systemd-oomd killed VS Code + the gate run; tg96_batch.sh now waits +
+> locks (fac4771); gate22_193 RE-QUEUED detached (zwfs_dm96/runs/
+> gate22_193: read its S/V/P rows vs pdi193fbase; fold into README +
+> deck).  UNCOMMITTED IN THE TREE, NOT MINE: tg96_run.m (+167: Stage A
+> node-part solve + a 'clearance' stage), tg96_params.m (P.clear.MOUNT /
+> node), dmg_bench_clearance.m (+63), edited 07:15-07:22 by a live
+> session on this box AFTER and ON TOP OF 9b2181c (runs node22s/t,
+> nodesolve, clear22) -- that session likely died in the crash; its
+> owner (TO restarted? CCMac?) must commit them; do not overwrite.
+> Dave: CCMac will NOT return; TO takes the realism brief's items 3-8 AFTER the reflective brief (item 2 done by CCL, resources 1338920).  NEXT for TO: `BRIEF_to_reflective.md` (the OAP front end from scratch:
+> diagnose the OAP-body drawing defect first, then design / layout /
+> IFO + sensors on it / fold lever / P-SRI clearance).  CCMac (budget
+> out): `BRIEF_ccmac_bench_realism.md` items 2-8 (status table inside).
+> Deck: 44 slides DRAFT, local macos commits cd97214 and later; push on
+> Dave's word.  Memory: feedback_sequenced_batch_jobs (OOM rule),
+> reference_gauge_flow_* (the path), project_gauge_deck_migration.**
+
+> **2026-09-15 later (CCL): deck 44 slides -- three jobs (measure /
+> capture / hold) on slide 2; parts slides (common, interferometer,
+> sensors); the analysis-path slide + backup table; station-by-station
+> walk-throughs for S / V / P from the runner's new `stations_fig_`
+> (runs/stations193 at 22.5 deg; raw-map residuals on the 30 nm surface:
+> S 4.75 nm = the self-reference moved, V 25 pm, P 0.18 nm) -- the
+> interferometer's is CCMac's brief item 8.  Memory: the repeatable path
+> (reference_gauge_flow_*) and the migration plan
+> (project_gauge_deck_migration).  Local: resources + macos commits since
+> the 736836a / 521cf9c push.**
+
+> **2026-09-15 (CCL): splitter RULED 22.5 deg; the phantom "glass" on the
+> node figure was view_rx joining the polarizer and the tilted splitter
+> into one lens (fixed: faces join only when parallel and close; tBench
+> 9/9, tPropLayout 3/3); the model's parts are the scaled 56 mm rig's
+> (2.6 mm plates, 5/8 mm lens centers, zero-thickness plates) -> the
+> realism round; the analyzer = a polarization camera (a rotating stage
+> would make the snapshot sequential); two model-1024 jobs on 64 GB OK
+> (measured 11.9 GB peak).  PUSHED both repos (resources 736836a, macos
+> 521cf9c) at Dave's word for CCMac.  Deck 38 slides: the three-option
+> splitter slide, the node at 22.5, "How every configuration was
+> analyzed" (ten steps) + the backup table per configuration.  The
+> repeatable path saved as reference memory (reference_gauge_flow_common
+> / _ifo / _zwfs / _pdi); MIGRATION PLANNED at the cycle's end: the deck
+> + tools from macos/demo_session to templates/40_benches/gauge_deck
+> (plan section 12; memory project_gauge_deck_migration).**
+
+> **BENCH NOT BUILDABLE (Dave 2026-09-15, deck review): the record's 7-deg
+> splitter puts 8 of 9 node parts in another beam (L1, input polarizer,
+> compensator, output QWP, analyzer, L2, both arm QWPs' node records);
+> the Stage-A solve in tg96_run cleared only the three END bodies.**  Tool
+> `dm_gauge_lib/dmg_bench_clearance.m` (parts grouped by name stem, beams
+> tested where they cross a part's plane, the 103 mm DM aperture as the
+> beam, +8 mm mounts; draws the bench from above + the node panel:
+> `zwfs_dm96/bench_bs7/22/30.png`).  Scan with the output QWP + analyzer
+> moved to 160 / 170 mm behind the splitter (`D_RECOMB` 150, `D_RC_L2` 55;
+> L2 stays at 207 so the tuned tail is untouched): 15 deg still collides;
+> 22.5 deg clears (compensator +16 mm); 30 deg clears every part by >= 57
+> mm.  The sensors do not care (bs30_dev: rows 0.9943/5 vs 0.9942/5, G1/G3
+> pass, arm channel phase 1.69 vs 1.63 mrad; the plate's diattenuation
+> 10% but uniform).  Dave also wants: SUBSTRATES of real thickness on the
+> polarizers / QWPs / analyzer / masks (mask plate in the F/4.2 beam: 0.03
+> wave W040 + 0.7 mm focus shift for 2 mm; vector QWP 0.05 wave), and a
+> REAL CAMERA pitch (9.4 mm pupil image: 6.5 um sCMOS = 1450 px across,
+> bin 4 to the modeled 385; shrinking the image to 385 px of a 3-5 um
+> camera needs an F/0.7 field lens -- keep the image and bin; small
+> pixels help the well-depth time).  Brief `BRIEF_ccmac_bench_realism.md`
+> (Stage-A extended to the node parts; forward D_RECOMB/D_RC_L2; arm QWPs
+> at the retro for both passes; OAP folds re-solved; substrate option;
+> camera pitch; re-runs: layouts, the snapshot form's polarization at the
+> new angle, CCL's V3/V4 on the new bench + the mask-sensor gate; TO's
+> P/SRI node through the tool).  DAVE RULES 22.5 vs 30 (CCL: 30).  Deck
+> revised (35 slides): front-end + IFO layout slides show the proposed
+> 30-deg bench, parts tables carry the substrates and the camera, a
+> backup slide carries the clearance scan; DRAFT status line says the
+> geometry is under revision.**
+
+> **DECK ASSEMBLED 2026-09-14 (CCL): `demo_session/deck_gauges.md` ->
+> `deck_gauges.pptx`, 34 slides, DRAFT pending Dave's sign-off.**  Main
+> body 24 (title, jobs + scores, front end, IFO + layout, Zernike, vector
+> + layout, pinhole + layout, side by side, capture range x2, photons,
+> servo, capture (descent), lenses vs OAPs, systematics, recommendation,
+> modes, complex amplitude, one bench, future work x3, run it yourself),
+> backup 10 (phase-shift forms, OAP rig, lost Zernike readings + fold,
+> PDI trades, drift, vector polarization terms, model + sampling + color,
+> provenance).  Raw material with every run tag and figure size:
+> `deck_gauges_material.md` (subagent extraction from the three reports;
+> four source disagreements listed there, resolved in the deck by the
+> lane reports' record values: IFO rows from lens_deck on the 30 nm
+> surface, IFO aging range 322 / 480+, S's N(1 pm) by tag, 52 vs 47
+> sites stated).  Figures: the tools' own PNGs; panel crops by
+> `crop_panels.py` (lens/oap/psri/pdi/zwfs layouts); the flow diagram and
+> the one-bench schematic drawn by MATLAB; the OAP layout figure NOT used
+> in the main body (its OAP bodies sit off the drawn rays -- CCMac to
+> check) -- the lenses-vs-OAPs slide is a table.  Render QA: soffice ->
+> pdftoppm, no overflow.  Dave (evening): Luis email sent; CCMac's
+> budget arc is a LATER add; deck first.  V4 + V5 records landed and
+> committed (resources 983148a).  NEXT: Dave's review of the deck;
+> TO's engine-drawn universal bench (follow-up); CCMac's WS3 gate fix.**
+
+> **2026-09-14 LATE (CCL).**  Fast suite with CCMac's SUITE_FAST change:
+> 481 / 0 on Linux.  TO's pin10_2048 re-run FINISHED 18:08 (exit 137 = the
+> model-2048 exit segfault; report + .mat complete: P / PF capture 120 nm+,
+> N(1 pm) 2.1e14 / 3.3e14) -> TO's lane is complete.  V4 RECORD RUNNING
+> (v4watch.log): an193_ref G4 0.053 pm, rows single 0.9935/4, grid
+> 0.9992/3; an193_cube 3.55 pm, rows 0.9934/4, 0.9992/3 (the cube is a
+> non-term at record resolution too); q300 / q100 / az1 / bound follow
+> (~8 min each).  V5 DONE at dev res (README V5, plan 11.2): the pair
+> ALONE cannot give amplitude + phase (mirror ambiguity about the
+> reference wave, square-root conditioning; ZW.solveVA kept for the
+> record); the pair + the STATE's CLEAR FRAME does (mask.v_clear; gate G9
+> mask.v_dip: 0.35 / 0.50 pm through 5% / 20% dips vs 241 / 967 with the
+> flat's amplitude; rows unchanged) -- a second detached watcher
+> (scratchpad/v5_watch.sh, log runs/v5watch.log) applies
+> runs/v5_patch_clear.py after v4seq and runs runs/v5seq.sh (an193_clear).
+> Modes flow diagram DONE (demo_session/gauge_modes_flow.m -> figs/
+> gauge_modes_flow.png).  NEXT SESSION: read v4watch.log + v5watch.log;
+> fold an193_* into README V4/V5 + plan 7.3/11.2 (replace the dev
+> numbers); commit the V5 runner patch (v5_patch_clear.py applied by the
+> watcher) with the run dirs; then items (4) QA of TO's universal-bench
+> drawing and (5) the deck assembly.  Local commits awaiting Dave's push
+> word: macos 4adf4e7 78af1ad + this; resources e0ec760 a9309bf + TO's 8
+> (fe387ee..640db68).**
+
+> **2026-09-14 EVENING (CCL, post-compaction).**  (a) CCMac's Luis
+> follow-ups (macos c44d179, resources 4772c83) pulled and gated on Linux:
+> tDwDxGroups 15/15, tZernikeGridBasis 5/5, tLinkSave 3/3, both tRunCompare
+> zern_grid gates pass; WS1 object-space skip ACCEPTED; WS3 gate passes but
+> is BLIND to a Noll/Born&Wolf swap (index 8 lands on ANSI slot 9 in both
+> tables; the crossed pairings at mode 7 give corr -0.1, the right ones
+> 1.039/0.969 = grid discretization at ng 128: at ng 256 every mode is 1% /
+> 1.0000) -> fix = ng 256, modes 4/7/8, 1%/0.999, crossed negative control
+> (`BRIEF_ccmac_luis_review.md` round 2); fast suite re-run in flight
+> (scratchpad/fast_suite.log).  (b) CCMac's as-built question answered in
+> `BRIEF_ccmac_asbuilt.md`: budget FIRST (static covariance roll-up, named
+> allocation table), then the dynamic predictor consumes it; covariance
+> primary, MC the check; one camera model shared with the gauge lane;
+> contrast a follow-on; DAVE RULES which system (telescope sens-tools =
+> CCMac's framing vs the gauge bench = plan 10.3) -- CCL assumed the
+> telescope tools.  (c) CCL item (1) DONE at dev resolution: the vector
+> sensor's ANALYZER leak (`dm_gauge_lib/dmg_analyzer_maps`, README V4,
+> plan 7.3): cube extinction a non-term (3.6 pm on 100 nm pokes), plate
+> errors coherent delta/2 (lambda/300 = 162 pm uncalibrated, 1.4% of the
+> figure), absorbed by the on-surface matrix (gain within 0.3%); the
+> runner patch (`zwfs_dm96/runs/v4_patch_analyzer.py`: mask.v_analyzer /
+> v_qwp_err / v_qwp_az, frameV_ mixing, G4 priced) is applied by a
+> DETACHED WATCHER (scratchpad/v4_watch.sh, log runs/v4watch.log) the
+> moment TO's pin10_2048 MATLAB (PID 1728580, ~21:00) exits, then
+> `runs/v4seq.sh` (an193_ref/cube/q300/q100/az1/bound, bench + battery
+> rows) queues through zwfs_batch.sh.  NEXT SESSION: check v4watch.log,
+> fold an193_* into README/plan 7.3 (replace the dev numbers), commit the
+> patched runner; then items (2)-(5).  TO has 8 LOCAL commits on
+> resources (fe387ee..640db68: reference-arm walk, README, report head,
+> pin10 requeue) awaiting Dave's push word.**
+
+> **HANDOFF 2026-09-14 15:30 (CCL at 8% context; compact next).**  State:
+> all lanes' work is on origin (both repos level).  The gauge deck plan
+> `BRIEF_gauge_deck.md` (sections 1-11) is the spec; slides = main body
+> each approach once in its best configuration.  Lane status: CCMac IFO
+> lanes COMPLETE (report REPORT_gauge_ifo.md; figures lens/oap_vlayout
+> redone; OAP focus solved, trim 6.14: dimple ZWFS survives, vector
+> degrades, pinhole breaks); TO PDI lanes complete except the pinhole
+> trade (pin10_2048 must be RE-RUN: CCL's pkill killed it at 14:54;
+> pin10_loop ran on); Luis sens-tools WS1-4 reviewed
+> (`BRIEF_ccmac_luis_review.md`: WS2 accepted, WS1 accepted + object-space
+> stop follow-up, WS3 needs the engine-equivalence gate / BornWolf
+> normalization, add the 2 suites to SUITE_FAST; Linux gate 472/0).
+> CCL's OWN remaining items: (1) vZWFS cube channel leakage (the coated
+> diagonal in zwfs_v_camA/B.in; a crosstalk term between the two
+> images), (2) solveV amplitude+phase from the pair + the amplitude-dip
+> gate (plan 11.2), (3) the modes flow diagram (11.1), (4) QA of TO's
+> universal-bench drawing (11.3), (5) assemble deck_gauges.md (~26
+> slides) from the three reports via make_brief_slides.py, render QA,
+> DRAFT for Dave.  Memory: project_tg96_gauge (capture, OAP, V4),
+> feedback_capture_range, feedback_shell_self_kill (kill by PID only).**
+
+> **CAPTURE RESULTS 2026-09-14:** self-referenced readings (S, V, P)
+> capture to ~60 nm of surface -- their reference COLLAPSES (blind, not
+> folded; unwrap changes nothing); PF captures from 100 nm only with
+> unwrap + recalibration (0.245 pm; 3 pm at cycle 26); the IFO captures
+> from 150 nm with unwrap alone (CCMac; 200/300 running).  Plan section
+> 7.1; recommendation = hybrid / P/SRI / second color.  TO's 30 commits
+> pushed by CCL (resources 0dc8767).  CCMac asked which next: zwfs-on-OAP
+> (slide 15) before the OAP descent (backup).
+
+> **CAPTURE = A WRAP PROBLEM (TO 2026-09-13, accepted): from a 100 nm rms
+> start the differential to the set point is ~2 rad rms, wrapped for every
+> reading (IFO included).  Fix = 2-D unwrapping of the differential before
+> the estimator (`dmg_unwrap`, `battery.unwrap`), then the start-rms
+> ladder both ways -> the deck's capture slide.  Briefs:
+> `BRIEF_to_capture.md` (TO: push OK; deliverables 8-9), `BRIEF_ccmac_capture.md`
+> (CCMac: accepted lens_deck; "re-measured collapses" needs its mechanism
+> -- wrapped differentials everywhere?; mirror the unwrapper; the IFO's
+> 47-site aging range is 45 nm, its single-site 120-158).  TO's PF result:
+> reference moving with the state = 5.9 pm absolute on 13 nm, frozen 0.**
+
+> **PUSHED 2026-09-13 (Dave: "Time to push!"): resources dev-candidate
+> c24245f (27 commits: CCL V2/V3/capture range/layout, TO's PDI lane,
+> the merge of CCMac's renders), macos dev-candidate b219135 (19
+> commits: briefs, decks, slice, engine note).  Fast suite: no failures
+> in a 25-min partial pass and the first 10 suites of the full pass; the
+> full pass was still running at the push (Dave's call).**
+
+> **GAUGE DECK PLAN RULED 2026-09-13 (Dave):** title "DM Surface Gauge
+> Comparison", audience the JPL HWO WFS&C group; OAPs = the budget
+> baseline, show why lenses (if true) and run the other gauges on the
+> OAP front end; all three IFO phase-shift forms; TO's points ruled
+> (paper's pickoff form; pinhole diameter = the better of 2.0@1024/193
+> and 1.0@2048/385; own dir pdi_dm96/); the draft stance approved plus
+> CAPTURING THE INITIAL FIGURE (100-200 nm WFE): the descent run
+> (loop.start_rms / loop.recal_every) for every reading; CCMac's renders
+> not deck quality -> redo in the zwfs_vlayout recipe; CCMac and TO
+> tasked at the OPUS level (`BRIEF_ccmac_gauge_deck.md`,
+> `BRIEF_to_gauge_deck.md`, standalone); style: succinct, more slides,
+> one figure or table + <= 3 bullets per slide; MAIN BODY = each approach
+> once in its best configuration, the rest backup.  CCL owns: the vZWFS
+> cube leakage, figure QA, combined figures, the deck (deck_gauges.md,
+> ~26 slides).  NEXT: CCL's cube-leakage run; then wait for the lanes;
+> assemble.  The two briefs are the handoff text for Dave to relay.
+
+> **GAUGE DECK PLAN 2026-09-13 (Dave: "bring all the DM surface gauge
+> concepts together into one new deck ... Let's plan!"): `BRIEF_gauge_deck.md`
+> -- six configurations on one front end (lens IFO, OAP IFO, ZWFS, vZWFS,
+> PDI pinhole, P/SRI), the common-currency table with each cell's run tag
+> or owner, the layout/parts rule (the zwfs_vlayout recipe), an 18-slide
+> outline, the work split (CCMac: 30 nm rows + capture range + photons +
+> layouts + parts + close the reflective design; TO: PF through the two
+> decks + capture range + reference-arm drift + parts; CCL: cube leakage
+> + assembly), five decisions for Dave.  Awaiting his ruling; nothing
+> built.  CCMac's render commits (5e45851, b6ed9fe) merged locally
+> (c24245f); their OAP table-plane panel is edge-on, labels E-numbers.**
+
+> **DECK QUESTIONS ANSWERED 2026-09-12 (Dave: capture range to 10%
+> recorded for every device -- "they will not be operating at null";
+> the vZWFS layout drawn large; slide 2's mask figure swapped).  LOCAL
+> (resources aa3bbb7 + this commit; macos this commit).**  Capture
+> range: runner prints it after every ladder; aging calibration (matrix
+> at 30 nm, 385 rays) L 44 / I+ 36 / S 42 / V 70 nm; re-measured on the
+> surface, gain within 5% to 160 nm for all, photons for 1 pm x5 (L) to
+> x40 (V); IFO 120-158 nm (its four-step wrap).  Layout: zwfs_vlayout.m
+> (QWP + 12.7 mm MacNeille cube, two cameras; decks zwfs_v_camA/B.in;
+> the cube's diagonal leakage = next item).  Mask figure: runs/mask385
+> (2.0 lam F/D spot, 3.96 px per lam F/D at both record settings; the
+> old figure was stage 1's spot 9).  Deck: 28 slides (11-12 capture
+> range, 17 layout, 18 V2+V3), DRAFT.  Model-2048 MATLAB segfaults at
+> EXIT after writing everything (mask385, exit 137) -- results intact.
+
+> **ZWFS V3 DONE 2026-09-12 (LOCAL: resources 65788d9 + the record
+> commit; macos this commit; push on Dave's review): the arm's
+> polarization aberration per circular channel.**  `dmg_arm_maps` (two
+> polarized vector traces -> J per grid pixel at the sandwich's entrance
+> sphere, the mask's PROJECTED-axes basis per ray, J/sqrt(det J) --
+> vector-mode field = scalar's exact conjugate, slope -2.0000 --, unit
+> mean power per laser state); gauge V_ARM none|engine|synthetic,
+> chained apodization (G8), cross-channel leak, per-pixel per-channel
+> solver, v_cal ideal|amp|fit|map; runner knobs + prints.  Record (193):
+> lens rig channel PHASE difference 1.6 mrad rms at laser 45 deg (nil on
+> the fold plane's s axis), uncalibrated 9 pm on 100 nm pokes, oracle
+> 0.053, on-surface rows = ideal to the digit; scan: diattenuation-type
+> 6 nm/rad absolute, nothing through the matrix to 0.1 rad, 0.3 = grid
+> row 2.6x + loop gain -10% (no fixed error); retardance-type 3.8x larger
+> absolute but REMOVED by the per-channel unmasked frames ('amp').
+> Record: README V3, brief V3, deck slide 18 (28 slides, DRAFT), memory.
+> Queue: TO's pseq6 waits on my "v3seq2 done" (written 16:01).  NEXT: V4
+> the stepped reading's between-frame drift; integral term (thermal);
+> fold-aware I+; deck sign-off.**
+
+> **ZWFS V2 DONE 2026-09-12 (LOCAL: resources this commit; macos this
+> commit; push on Dave's review): metasurface retardance error = one
+> complex constant kappa; uncalibrated absolute bias 1.3x the leaked
+> amplitude in phase / quadratic in quadrature; 3-number flat
+> calibration removes it (0.048 pm); differential rows + loop through
+> the on-surface matrix IDENTICAL to the ideal mask at 0.1-0.2 rad ->
+> not a servo-budget term.  Knobs mask.v_ret_err / v_leak_phase / v_cal.
+> NEXT: V3 arm polarization aberrations per channel (Jones pupil); V4
+> the stepped reading's between-frame drift in the loop.**
+>
+> **PUSHED 2026-09-12 (Dave: "Push yes. Merge yes. Brief CCMac!"):**
+> tg96-oap MERGED into MACOS_resources dev-candidate (0fd6786; fast
+> suite 463/0 incl. tBench) and pushed; macos dev-candidate pushed.
+> CCMac's next brief: `BRIEF_ccmac_tg96_loop.md` (deliverable 7 on
+> dev-candidate + the bare-Al / Jones-pupil runs).  Worktree
+> `~/dev/MACOS_resources_wt_oap` can be removed.
+>
+> **ZWFS V1 -- THE VECTOR (POLARIZED-DIMPLE) READING, DONE 2026-09-12
+> (LOCAL: resources 1cf5889 + e3e32e0; macos this commit; push on Dave's
+> review).**  Reading V = +phi/-phi image pair, exact per-pixel solve, no
+> fold (`dmg_zwfs_gauge` frameV/reconV/solveV/diffV); runner class 4 in
+> every stage; G4 fold gate (100 nm sparse pokes: V 0.05 pm, single frame
+> 9 nm).  Record (README V1; runs/v193flat, v193base, v193noise,
+> vloop193): matrix on the 30 nm surface -> single 10 nm 0.9935 / 4 pm,
+> grid 1 nm 0.9992 / 3 pm, dense 0.9999 / 0.33 nm (S 0.68); ladder gain
+> within 2% to 60 nm rms (S 0.66); loop contraction 0.509, steps ->
+> 0.000, 3 pm from 1.5e12 / 5.3e12 photons per cycle (S 2.6e12 /
+> 7.5e12); N(1 pm) 4.7e13 (S 5.6e13).  Learned: a whole-pupil 60 nm
+> figure collapses the core for every reading (not a fold test); b
+> iteration exact modulo piston; V's differential must be the WRAPPED
+> phase difference; matrix mode reports RAW (S10's ladders were
+> Wiener-corrected); the noise stage prices the readings run; an eager
+> ifelse_ killed any battery without I+ (fixed).  Deck slide 15 (DRAFT).
+> NEXT: V2 metasurface retardance/leakage knob; V3 arm polarization
+> aberrations per channel (Jones pupil); V4 the stepped reading's
+> between-frame drift in the loop.**
+>
+> **CCMac tg96-oap f46585d REVIEWED 2026-09-11 (`BRIEF_ccmac_tg96_oap3.md`,
+> LOCAL): accepted in substance; D2 lens numbers reproduced here to the
+> digit (worktree of the branch + this box's mex; appendix in the brief).
+> Six items before the merge: evidence dirs not committed; tuned tail
+> keyed by TAG (any other tag = untuned bench, null 9.11 vs 0.134 nm);
+> the OAP dense loss (0.75 / 4.8 nm, x-talk 0.42) not separated from
+> window truncation / regularization (step 16 or Voronoi cells; lambda
+> sweep); D1 "worst at centre" wants a map; non-vacuity stated on the
+> lens (passes there, meaningful on the OAP); calib_surface 'base' +
+> a wrap guard.  Then deliverable 7 (the loop).  Worktree
+> `~/dev/MACOS_resources_wt_oap` holds the runs (remove when done).**
+>
+> **S11 LOOP METRIC BUILT + RUN (2026-09-11, LOCAL: resources 88fb9ac,
+> 922c366 + the record commit; macos this commit; push only on Dave's
+> review).**  `dm_gauge_lib/dmg_loop.m` (the ONE loop for both gauges) +
+> `tests/tDmgLoop.m` (9 gates, SUITE_FAST) + `zwfs_run` stage 'loop' /
+> `P.loop`.  Record `runs/loop193` (98 min, 2562 states): the loop
+> propagates noise and a walk per theory; L and S cost the SAME light
+> (3 pm from 2.1e12 / 2.6e12 photons per cycle noise-only, 7.3e12 /
+> 7.5e12 under a 2 pm walk); S has NO fixed error (steps -> 0.000 pm,
+> thermal = the lag 10 pm); L imprints high-frequency error under a
+> persistent low-order residual (thermal 27.6 pm, creeping); I+
+> DIVERGES (fold-flipped sites = negative gain).  Record: README S11,
+> BRIEF_zwfs_campaign S11, deck_zwfs slide 14 (DRAFT), memory
+> project_tg96_gauge.  IFO half handed to CCMac: BRIEF_ccmac_tg96_oap2
+> addendum (deliverable 7).  `runs/loop385` (385-ray check, L + S) reproduces
+> it (3 pm at 2.1e12 / 2.6e12 noise-only, 7.2e12 / 7.7e12 walk; thermal
+> floors 24.7 / 10.1 pm).  Fast suite 462/0 with tDmgLoop.  OPEN: integral term for the thermal case;
+> fold-aware I+ (re-take the branch prior); the IFO row.
+>
+> **ZWFS S10 LANDED (2026-09-10, LOCAL: resources 8181893, macos this
+> commit; push only on Dave's review).**  Dave's measured response
+> matrix (sparse multiplexed grids, dw/da) is the runner's default
+> calibration (`battery.calib_mode` 'matrix'; the ZWFS piston null
+> carried as a rank-one term -- without it the fit over-responds 2-4x
+> at low order); flat single actuator 0.994 / 4 pm; matrix ON the
+> working surface -> stepped reading 0.989 / 5 pm / SNR 2200 on a 30 nm
+> surface, linear one-frame 1.05 / 23 pm; exact one-frame readings
+> limited by the fold sensitivity.  Alternating +/- pokes: neutral in
+> the model, kept for bench drift.  Decks re-stated (deck_zwfs 22
+> slides, fold 3d: the matrix-calibration slide; deck_tg_fang head-to-
+> head), both DRAFT.  Record: README S9/S10, BRIEF S9/S10, memory
+> project_tg96_gauge.  OPEN: deck sign-off; the matrix for the IFO
+> (CCMac's tg96 runner, brief addendum); vector ZWFS; the 2048-grid
+> matrix run (not needed: 385/1024 == 385/2048 shown thrice).
+
+> **dwd* PLOT SIZE -- DONE 2026-09-10, LOCAL, awaiting Dave's review
+> (`BRIEF_dwd_plot_size.md`).**  Size is fixed FIRST and the pages follow:
+> `mmacos/sensitivities/dw_page_layout.m` + `dw_page_fig` / `dw_page_axes`
+> / `dw_draw_map` / `dw_block_keys` / `dw_canvas_tiles` / `plot_dw_index`
+> / `write_page_index`; `plot_dw_channels` paginates on ELEMENT
+> boundaries and returns a manifest; `plot_dw_per_element` gains `field`
+> mode; `plot_opd_canvas` sized by tile count; `run_sensitivities` takes
+> `panel_in` / `tile_in` / `page_in` / `page_max_in` / `max_per_page` and
+> writes `<name>_pages_index.txt`.  Floors: 3.5 in per OPD map, 1.2 in per
+> FIELD TILE of a canvas; a sparse page GROWS to fill 16:9, a page grows
+> to [32 20] in to keep one element whole, only then splits (`_p02`).
+> **Measured on the zoom fixture:** one dwdsurf channel's 567x567 canvas
+> was drawn in a 14x15 px box with 40 non-white pixels (a ~9:1 subsample);
+> now ~1500 px across, ~167 px per field point, 21 pages instead of one
+> sheet.  Per-element centre page: 635 -> 999 px of drawn map on FEWER
+> total page pixels (recovered subplot margin).  Two bugs closed en route
+> (per-field cells are Nc x Nf -- index them 2-D; row-per-block slots must
+> use the PAGE's column count).  10 gates in `tRunSensitivities`.
+> Acceptance: the zoom drivers re-run (dwdsurf 200 s / 63 pages, dwdx
+> 330 s / 92 pages) and the pages READ.  `<name>_<ch>_channels.png` KEEPS
+> its name -- the single page when one suffices, else the page-labelled
+> INDEX contact sheet, full-size pages in the (gitignored) `_pages/` --
+> so no README or artifact reference breaks.  Deviation to flag:
+> byte-identity with the old small-deck pages is NOT achievable together
+> with the size floor (the old pages spend ~30% of every cell on subplot
+> margin), so the gate asserts one page + the historical filename +
+> panels no smaller than before.  Also regenerated: the zoom dwdsurf artifacts
+> were STALE (4 channels; the powered set became 42 on 2026-09-05) --
+> README corrected.  Bindings held: jet, zeros blank, no "leak" language,
+> push only on Dave's review.  ZWFS S7 + Luis round 4 CLOSED in memory
+> (`project_tg96_gauge`, `project_opd_conventions`); macos `ac8bf3b` LOCAL
+> on top of pushed `6a0dc31`; resources was pushed `8bc8fcc`.**
+
+> **LATE 2026-09-09 (Luis round 4, after S7): FIXED and PUSHED (Dave:
+> "good results -- go ahead and push"; macos 097dd52, resources fe6c6bd;
+> deck REBUILT on jwst_ote_designc: `demo_session/deck_dwdsurf_options.pptx`
+> (macos 353e942 pushed); second runner bug fixed en route: 'elts' never
+> reached the dwdsurf channel, resources 30b6627 pushed; THIRD bug =
+> what Luis's pictures actually showed: the per-element centre-field
+> page scrambled under orient xy, resources 1e0a956 pushed; DECK = the
+> runner's own pages ONLY, unmodified -- Dave's standing rule, memory
+> feedback_deck_plots_unmodified) --
+> `run_sensitivities` never forwarded 'orient'/'sign'; no dw_d* driver
+> set the OPD reference, so every harvest was mean-referenced and a
+> single-segment poke pistoned every other segment by
+> -(N_k/N)*mean(poked) (driver-path measurement e5hex1 seg 2 Kr/Kc:
+> 14.7% / 12.0% of the poked rms; 'chief' -> exactly 0).  'opd_ref'
+> {'mean','chief'} now in all 8 drivers + core (re-applied after every
+> reload) + runner (+ 'orient'/'sign'); defaults 'mean'.  Record: PLAN
+> 0.x dated block, `mmacos/doc/SENSITIVITY_TOOLS.md`, gate
+> `tOpdRef/test_driver_single_segment_poke_is_local_under_chief`, reply
+> `DRAFT_email_luis_round4.md`.  OPEN for Dave: the chief ray's OWN
+> segment stays non-local under 'chief' -> nominal fixed-length
+> reference (`opd_ref_len_set`, engine OPDRefRayLen branch) + the
+> default flip.  Dave also asked for a few slides of the dwdsurf results
+> under all options (figs: demo_session/figs/dwdsurf_*.png; deck md
+> `demo_session/deck_dwdsurf_options.md`).**
+>
+> **CURRENT STATE (2026-09-09 evening).  S7 of the ZWFS campaign RAN:
+> the iterated-reference exact reading landed AND a MODEL DEFECT was
+> found and fixed on the way** -- the `twyman_green` 'nf' mask sandwich
+> was ASYMMETRIC (exit sphere zElt/Kr 23.86 vs entrance 352.7 mm), so
+> the engine's SPH2PL quadratic factor Fresnel-DEFOCUSED the reimaged
+> pupil by an effective 4.86 m for EVERY ZWFS number in S1-S6 (ringed
+> kernel, Talbot transfer null at ~30 cyc/ap, 29% amplitude modulation
+> under the 30 nm state, the 744 pm base floors, the "undetected"
+> grid-on-base).  Fixed: 'nf' symmetric (round trip 1.8e-15),
+> 'nf_legacy' byte-identical (tBench gate); S1-S6 = legacy record.
+> Record: `MACOS_resources/mmacos/templates/40_benches/zwfs_dm96/
+> README.md` (banner + S7 bullet), `BRIEF_zwfs_campaign.md` S7 section,
+> memory `project_tg96_gauge`.  Headline: on the corrected model the
+> linear reading alone takes the single-on-base floor 744 -> 67 pm and
+> grid-on-base SNR 1.46 -> 14; the one-frame iterated reading with the
+> REFINED base prior (I+; `dmg_zwfs_gauge` priorS) reaches 13 pm / SNR
+> 584 (96x96) and HOLDS to 60 nm rms working state (gain 0.85-0.91)
+> where the four-frame stepped reading falls to 0.56; without the
+> refined prior the iterated readings cliff between 30 and 40 nm (branch
+> fold).  **NEXT (Dave's steer): (1) tell Dave -- the S1-S6 ZWFS record
+> + deck_zwfs slides are on the defocused model; (2) NGRID 385 compliant
+> run (the 0.90 raw hold-out at 96x96 is sampling); (3) S6 color RE-RUN
+> on the corrected model; (4) S5 noise pricing of I+; (5) deck fold.**
+> IFO untouched (all-geometric).  Everything below is the prior state.
+>
+> **PRIOR STATE (2026-09-09 midday).  NEXT was the ZWFS MODELING arc:
+> the iterated-reference-wave reconstructor** -- read
+> `REPORT_zwfs_lit_scan.md` FIRST (the ranked literature imports + the
+> PZT verdict; "Suggested first ZWFS task" at the end is the spec), then
+> `MACOS_resources/mmacos/templates/40_benches/zwfs_dm96/README.md` (S1-S6
+> findings; S6 = multi-color) and `dm_gauge_lib/README.md` (the ONE scoring
+> library; `dmg_zwfs_gauge` gains a third reading).  Memory
+> `project_tg96_gauge` has the campaign state.  Everything below in this
+> block is CLOSED and PUSHED: sens-core merged (resources `57a6ec0`,
+> branch deleted), MR text `MR_dev_candidate_to_dev_2026-09-09.md`
+> (Dave files it), CCMac round 2 closed (`BRIEF_ccmac_jpl_round2.md`),
+> round 3 handed to CCMac (`BRIEF_ccmac_jpl_round3.md`: confirm the
+> phantom-grid save fix `cda178e` on IRIS + run the instrumented
+> supervisor for the reset_xp canvas fault), engine fixes `cdf8636`
+> (Get_Values over-read) + `cda178e` (phantom-grid SAVE crash), decks
+> carry the S6 color slide (`2b4821c`).  Open engine items in PLAN
+> section 0: **IRIS save_rx -> reload SIGSEGV on the REAL ZrnGrData grids
+> (iElt 17/19/21/35/37/39) -- STILL OPEN** (CCMac round 3; the phantom
+> guard `cda178e` was only half; chase with a debug build on the IRIS
+> deck, breadcrumbs in `REPORT_iris_save_crash.md`; off the merge path);
+> the **dw_multi_core reset_xp=true per-field aggregation collapse to
+> [12 12]/0** (CCMac localized it -- direct dw_dx is healthy [256 256];
+> sens-core follow-up + fix my NaN-rays mis-route in the emptyOPD
+> warning; needs the IRIS deck); lensarr TRACE-time overrun
+> (tst_save_keys only); trace(26)->trace(27) stale OPD.  CCMac round-4
+> note: `BRIEF_ccmac_jpl_round4.md`.  Tips: macos dev-candidate
+> `6174b1f`+, resources `e36db7c`.
+>
+> **PRIOR STATE (2026-09-08 late) kept for the record.  NEXT was the Fang
+> thread: IFO and ZWFS DM-gauge decks** -- `deck_tg_fang` (22 slides, macos `82ced2b` fold) and
+> `deck_zwfs` (DRAFT, 9 slides); record in memory `project_tg96_gauge`
+> (complete thru S5; deck folds DONE; next stages on Dave's steer) +
+> `BRIEF_zwfs_campaign.md` (uncommitted edits present) +
+> `templates/40_benches/{tg_psi_dm96,zwfs_dm96}` READMEs.  Read those before
+> touching decks; STYLE_REPORTS section 5 gate before any rebuild.
+>
+> **Closed today, all PUSHED (SHAs in memory `project_fex_ep_radius_rework`,
+> `project_ep_dome_review`, `project_zoom5x5_pupilfind`,
+> `project_luis_sens_hardening`):** FEX Rx-order guard removed; STOP
+> multi-value prompts + Segment stops; FEX four-probe medial pupil (five pins
+> re-pinned); element-STOP handedness fix; EP-dome review -> pupil-read ruling
+> (sens-core preflight + CCMac's single-DOF error variant); re-traces made
+> idempotent (OrthoSrcFrame dead band -> dwdsurf speckle floor exactly 0).
+> macos dev-candidate `48451d8`; resources dev-candidate `bf1b182`, sens-core
+> `f02dc60` (merges after CCMac's JPL pass,
+> `BRIEF_ccmac_jpl_private_verification.md`).  Open engine item: PLAN section 0
+> `trace(26)->trace(27)` stale first OPD.  Luis draft ready:
+> `DRAFT_email_luis_sens_noise.md`.
+>
+> **LATE ADD (2026-09-08 night, Dave's parting ask, run autonomously):
+> S6 COLOR** -- both DM gauges at 480/532/632.8/700/780 nm + a multi-
+> channel Wiener combination (`dm_gauge_lib/dmg_color_comb`).  ZWFS: the
+> transfer nulls migrate as 1/lambda and the 5-color combination fills
+> them (base-row floors 3-4x, dense random 2.3x, grid-on-base SNR 1.46 ->
+> 3.43, still < 5).  IFO: identical at every color -> its roll-off is
+> GEOMETRIC (tail conjugate + distortion), the joint tail objective is
+> its lever.  Resources dev-candidate `b47dd5f`, macos `42cffde`
+> (BRIEF_zwfs_campaign section); memory `project_tg96_gauge`; figure
+> `zwfs_dm96/zwfs_s6color.png`.
+
+> **PRIOR STATE (2026-08-19) kept below for the rodgers3 record.**
+
+> **CURRENT STATE (2026-08-19 eve).  NEXT STEP = execute
+> `BRIEF_rodgers3_s1.md`** (the offset_imager template + the
+> challenges/rodgers3 instance; Stage 0 is DONE — all 5 rungs of
+> Mike's ladder gate, artifacts in `~/dev/MACOS_sandbox/Design/
+> Rodgers3/s0/`, conventions in memory `[[project_rodgers3]]` +
+> `[[reference_codev_zrn_convention]]`).
+>
+> Board as of tonight (each item's record in the named file/memory):
+> - **dev-candidate = the consolidated, validated pair, PUSHED**:
+>   macos `136f353`, resources `052ef30` (includes #67 pol arc,
+>   GridFile fixes, rodgers1 regen, pol-ifo + pol-core(res) merges,
+>   the examples reorg templates/+challenges/ tree, 594/0 suite,
+>   pymacos 6694/0 + PROPER 26/26).  `[[project_branch_model]]`,
+>   `[[project_segmirmaker_audit]]`.
+> - **Andy**: fast-forward both `dev` to dev-candidate tips, then
+>   handoff steps 3–4 with fresh dry-runs (MERGE_HANDOFF_ANDY.md has
+>   the status note).  pol-core/pol-ifo/develop deletable
+>   (archive-tag develop first).
+> - **`BRIEF_luis_round2.md` EXECUTED (2026-08-19 night), LOCAL,
+>   unpushed.**  Report: `~/dev/MACOS_sandbox/notes_luis_08-19-2026/`
+>   (`REPLY_luis_round2.md` = the three drafts for Dave to send).
+>   Headline: **the brief's own correction of Luis was WRONG and his
+>   diagnosis was right.**  `macos_cmd_loop.inc:366` does set
+>   `LUseChfRayIfOK=.TRUE.` on every load, but ~40 lines BEFORE
+>   `MBFile6`, whose first statement (macosio.F AND smacosio.F) is
+>   `reinitialise_variables()` → `ray_mod_init_vars` → `.FALSE.`.
+>   So the flag is FALSE on every path, the chief branch was
+>   unreachable, and his missing-`'Y'` patch is the fix — adopted,
+>   credited.  Nor is "chief dies on segmented decks" the mechanism
+>   on e5hex1: `LRayOK(1)=1` at all five dw_dx_multi fields and the
+>   map is mean-referenced anyway.  Measured piston on the 6 unpoked
+>   segments: `+2.849e-06` (16.7% of peak) → `0.000e+00` exactly
+>   under the chief reference; the poked segment's peak recovers by
+>   the same constant.  Landed: `UseChfRay4OPD= Y` parses;
+>   `opd_ref_set/get` + `macos.opd_ref` + Session method; `init`
+>   resets `rxLoaded` (SystemCheck was passing on a wiped model);
+>   `macos.init` screens model size (the engine's `stop` kills
+>   MATLAB); `macos.unload()`; Session `opd(...)` now forwards
+>   'orient'/'sign'; 25 new Session delegators + a coverage GATE;
+>   tOpdRef (8) + tEngineMemory (4) + 2 tReadGridFile cases.
+>   Item 2 verdict: the two grid paths are BIT-IDENTICAL on
+>   dev-candidate — stale-version artifact (a bare readmatrix is the
+>   transpose); now permanently gated.  Item 4: no steady-state
+>   leak, but `clear mmacos` LEAKS ~720 MB/cycle — do not use it.
+>   Item 5: API sketch only (`mmacos/design/PLAN_CONFIGURATIONS.md`),
+>   awaiting Dave's review + a j18 deck (none exists in either repo).
+>   OPEN for Dave: flip the global OPD default?  (PLAN.md §0.x has
+>   the compatibility sweep + the regen list; nothing regenerated.)
+> - **Keysight demo ~2026-09-01** (`[[project_keysight_demo]]`):
+>   Week-1 reorg DONE; Week-2 rewalk of all design examples PENDING
+>   (carry-overs listed in mmacos/PLAN_EXAMPLES_REORG.md); rodgers3
+>   Stage 1 is demo material.
+>
+> **PRIOR STATE (2026-08-02) below — e2e2 TELESCOPE FLOW COMPLETE.**
 > Report: `MACOS_res_dev/mmacos/design/examples/e2e2/E2E2_REPORT.md` (for
 > Dave + CCL Fable).  Brief `macos/BRIEF_e2e2_implementation.md`; plan
 > `MACOS_res_dev/mmacos/design/PLAN_TMA_E2E2.md`.  **8 commits, LOCAL on

@@ -5,7 +5,8 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build or
-> engine work, re-read: **this file**, `PLAN.md`, `PLAN_DESIGN_LAYER.md`,
+> engine work, re-read: **this file**, `PLAN.md`, `PLAN_CONSOLIDATION.md`
+> (the active sequencing, 2026-10-08), `PLAN_DESIGN_LAYER.md`,
 > `CURRENT_SLICE.md` (in-flight state), and the agent `MEMORY.md`
 > (build/test workflow entries).
 >
@@ -244,12 +245,24 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
   two-repo snapshot model.
 - **Branches:** `main` is updated to **sls-dev functionality**; a public
   **`dev`** branch is retained.  All developer-facing files (CLAUDE.md,
-  PLAN*.md, `.claude/`, internal ZGD fixtures, `docs/Archive/`) **stay on
-  `dev` but are stripped from `main`**.  **Both branches are public.**
+  PLAN*.md, `.claude/`, the BRIEF/REPORT/REVIEW/NOTES process files,
+  `docs/Archive/dev_optimization_surfsub` -- the list is `DEV_FILES.md` +
+  `release-exclude.txt`) **stay on `dev` but are stripped from `main`**.
+  `ZGD_test_files/` is engine test fixtures and stays on BOTH.  **Both
+  branches are public.**
 - **Users re-clone.**  Andy wants everyone to delete their local clones
   and re-clone (the history rewrite makes old clones diverge).  Do NOT
   push from a stale pre-rewrite clone afterward — it would reintroduce
   scrubbed history.
+- **Release gate — self-containment sweep (Dave 2026-09-03, from
+  Luis's zernike_mode catch):** before any public cut, grep BOTH
+  trees for `addpath`/external-path references reaching outside the
+  repos, and run the mmacos suite on a clean checkout with no
+  `~/matlab` on the path.  A dependency every JPLer happens to have
+  is invisible until a non-JPLer runs it — the pattern:
+  `segment_grid_basis`'s Noll path needed `~/matlab/zernike_mode.m`;
+  fixed self-contained as `macos.noll_mode` (98d3320, A/B 1e-10,
+  gate `tNollMode`).
 - Pre-rewrite full-history safeguard: `~/macos-archive-YYYYMMDD/`
   (`git bundle --all` per repo + worktree snapshots; e.g. the 2026-07-22
   archive taken before this rewrite).  See the agent MEMORY branch-model

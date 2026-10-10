@@ -1,0 +1,11 @@
+jwst_ote_designc, run_sensitivities dwdsurf, elt 5 (Seg2) Kr/Kc, centre field, model 512 ng 63 stop 25 fov 0.00029089
+mean - chief (Kr, all px): mean 4.400754e-04 std 6.047e-16 (1.37e-12 relative)
+poke support 124 of 2183 px (0.0568); Seg2 RptElt [-1137.3 656.63 -54.303] mm; frame triple product +1.000; support centroid row -6.5 col +10.0 from centre
+REF Kr column, opd\_ref = mean (engine default) unpoked mean 4.400754e-04 std 6.193e-16 rms 4.400754e-04 | poked rms 8.127073e-03 | leak/poked 0.0541
+REF Kr column, opd\_ref = chief              unpoked mean 0.000000e+00 std 0.000e+00 rms 0.000000e+00 | poked rms 8.524939e-03 | leak/poked 0.0000
+REF Kc column, opd\_ref = mean               unpoked mean 1.656236e-02 std 3.766e-16 rms 1.656236e-02 | poked rms 3.648916e-01 | leak/poked 0.0454
+REF Kc column, opd\_ref = chief              unpoked mean 0.000000e+00 std 0.000e+00 rms 0.000000e+00 | poked rms 3.775314e-01 | leak/poked 0.0000
+OPT surf\_remove\_ptt = true, opd\_ref = mean                    unpoked mean 4.193753e-04 rms 5.893129e-04 | poked rms 7.779381e-03
+OPT surf\_remove\_ptt = true, opd\_ref = chief                   unpoked mean 4.193753e-04 rms 5.893129e-04 | poked rms 7.779381e-03
+OPT orient = raw (engine array: index 1 along global X), opd\_ref = mean unpoked mean 4.400754e-04 rms 4.400754e-04 | poked rms 8.127073e-03
+OPT sign = wavefront (negated), opd\_ref = chief                 unpoked mean -0.000000e+00 rms 0.000000e+00 | poked rms 8.524939e-03

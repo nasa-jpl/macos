@@ -31,6 +31,7 @@
  * ------------------------------------------------------------------ */
 
 #include <string.h>      /* memcpy, for the setter below */
+#include <stdio.h>       /* fputs/fflush, for print_sub_prompt_ below */
 
 char sub_prompt_buf[256] = "";
 
@@ -57,6 +58,22 @@ void
 clear_sub_prompt_ (void)
 {
   sub_prompt_buf[0] = '\0';
+}
+
+/* Non-readline fallback: render the cached sub-prompt before a bare
+ * Fortran READ(*).  Readline builds never need this (readline itself
+ * renders sub_prompt_buf inside mhist_); builds WITHOUT readline
+ * (Windows, fresh clones lacking the pre-built libreadline.a) fall
+ * through to a plain READ in PARSE_LOH, which prints nothing -- the
+ * "pert freezes" class: the program blocks on input with the prompt
+ * invisible.  Called from PARSE_LOH's #else branch. */
+void
+print_sub_prompt_ (void)
+{
+  if (sub_prompt_buf[0] != '\0') {
+    fputs(sub_prompt_buf, stdout);
+    fflush(stdout);
+  }
 }
 
 #ifdef READLINE_LIBRARY

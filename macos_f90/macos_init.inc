@@ -18,7 +18,7 @@ C  *** Initialize stuff ***
         ifAdd=.FALSE.
         ifPixArray=.FALSE.
         ifDMBuild=.FALSE.
-        ifCentroid=.TRUE.
+        ifCentroid=.FALSE.   ! chief-ray default (Dave 2026-08-27)
         ifFilterData=.FALSE.
         ifLNegOK=.TRUE.
         ifUDSinit=.FALSE.

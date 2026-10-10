@@ -28,16 +28,9 @@ C
 
 	nRayToSeg(1:mRay)=0 
 
-	CALL DXPROD(zGrid,xGrid,yGrid)
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  zGrid = ChfRayDir
-	ELSE
-	  zGrid = -ChfRayDir
-	END IF
-	CALL DUNITIZE(zGrid)  ! nomalize z
-	CALL DXPROD(yGrid,zGrid,xGrid)  ! cross-product z and x to get y
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zGrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xGrid(1:3)
 	Tbg(1:3,2)=yGrid(1:3)
 

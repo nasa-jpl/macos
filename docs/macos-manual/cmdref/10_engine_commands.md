@@ -424,16 +424,36 @@ only marks the Rx modified and resets those flags.
 
 *Minimum match:* `CHIefray`
 
-Use chief ray (not centroid) as the FEX reference point.
+Use the chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 ```
 MACOS>chiefray
- Image referenced to chief ray
+ FEX/SXP pupil-sphere axis: CHIEF RAY (default)
 ```
-No input.  Clears the CENTRoid option, so FEXit and other
-image-referencing computations use the chief-ray intercept
-rather than the spot centroid.  Despite the help one-liner,
+No input.  This pair (CHIefray / CENTRoid) selects the AXIS of the
+exit-pupil reference sphere FEXit/SXP write:
+  chief    psi = -(chief direction)          -- THE DEFAULT
+           (all platforms since 2026-08-27; the API always chose
+           per call: xp_fnd mode 1 = chief, 0 = centroid)
+  centroid psi = unit(beam centroid at the next plane - EP crossing)
+On an obscured, segmented, or aberrated beam the downstream centroid
+walks off the chief, so the centroid axis TILTS the reference sphere
+and leaves pure tip/tilt (plus piston against a chief-type OPD
+reference) in the OPD -- frame terms with no aberration content.
+Every FEX/SXP run prints which axis it used.  The Rx keyword
+`FEXCentroid= N` additionally VETOES the centroid axis for a deck.
+The doctrine extends to the mmacos pupil_find layer: the written
+pupil reference is ALWAYS chief-tied (pupil_find calls fex mode 1
+internally and writes the fit-surface/chief-ray crossing);
+beam-collective quantities -- the centroid axis here, the cone-bundle
+vertex and cone-fit normal there -- are DIAGNOSTICS, never references
+(writing them was measured to inject pure tilt or make the reference
+tilt-blind).
+The mmacos supervisors surface this same toggle: the dw_d*_multi
+family and run_sensitivities take `'fex_axis' 'chief'|'centroid'`
+for the FEX per-field reset (chief default; refused when combined
+with reset_xp_method='pupil_find', which is chief-tied by doctrine).
 CHIefray does NOT set the chief-ray position/direction — use
 PERturb 0, STOp, FFP or PFP for that.
 *Related:* CENTRoid, FEXit.
@@ -881,18 +901,36 @@ Enter number of exit pupil return surface: [5]: 6
    (z, psi, Vpt likewise)
 Accept the new element? [YES]:
 ```
-Locates the exit pupil from the chief plus a differential chief
-ray and refits the chosen Return/Reference element there as the
+Locates the exit pupil from the chief ray plus FOUR differential
+chief rays (+/-5e-6 rad about two orthonormal axes perpendicular
+to the chief ray; the crossings are averaged, so the result does
+not depend on the sign or azimuth of the source frame -- 2026-09-08,
+before that a single probe about xGrid) and refits the chosen
+Return/Reference element there as the
 reference sphere for far-field propagation (eElt=0, fElt=|z|,
 KrElt=-fElt, KcElt=0, psi, Vpt/Rpt updated).  Requires STOp
 first.  The EP radius is the chief-ray distance from the EP to
 the next element (the far-field propagation distance); the
-legacy previous-element leg is the fallback.  CENTRoid /
-CHIefray select the reference point.  Rerun after any PERturb.
+legacy previous-element leg is the fallback.  When that next
+element is CURVED the radius runs to its SURFACE, not to its
+tangent plane (2026-08-28) — on a curved focal surface the plane
+sits the sag h**2/2R beyond it at image height h and the miss
+lands in the OFF-AXIS OPD as pure defocus (4.3e-5 -> 7.3e-6 mm
+at 1' on the JWST OTE deck; identically zero on axis).  Flat
+next elements are bit-identical to the old behaviour, and each
+curved run prints the element, its Kr and the plane-surface gap.
+Only the base conic is used, so a grid/FreeForm figure at the
+next element is ignored (um-class against a sub-mm sag).  The
+sphere AXIS
+is the CHIEF RAY by default (2026-08-27, all platforms); CENTRoid
+opts into the beam-centroid axis and CHIefray restores — see the
+CHIefray entry for why the centroid axis leaves tip/tilt in the
+OPD.  Each run prints the axis it used.  Rerun after any PERturb.
 SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
-Dispatcher also has undocumented siblings SXP (legacy variant,
-now largely redundant) and XPS (pupil solve over the full ray
-grid).
+Dispatcher also has siblings SXP (geometrically identical radius —
+it intersects the chief with the next element's plane whatever its
+type; FEX adds the telecentric/footprint/Return-order guards) and
+XPS (pupil solve over the full ray grid).
 *Related:* STOp, CENTRoid, ORS, FDP.
 <!-- END NOTES cmd-FEXit -->
 
@@ -918,9 +956,17 @@ to the next element (the focal plane at iElt+1) instead of the
 legacy previous-element-to-EP leg, making the radius sensitive
 to focal-plane despace (Tz); lateral FP motion and rotations
 are still not captured.  Requires STOp first; the element must
-be a Return or Reference surface.  Since the FEX rework made
-the EP-to-next-element radius FEX's own default, SXP is
-retained for compatibility and is now largely redundant.
+be a Return or Reference surface.  The radius math intersects
+element iElt+1's vertex/normal plane when that element is flat
+and its actual conic SURFACE when it is curved (2026-08-28, the
+same rule and the same shared solver as FEX) — type-agnostic
+either way, so a mask/Reference/Obscuring at iElt+1 is handled
+correctly despite the "FP" naming.  Since the FEX
+rework made the EP-to-next-element radius FEX's own default,
+FEX and SXP are geometrically identical on every deck; FEX adds
+the telecentric/footprint/Return-order guards.  The sphere AXIS
+follows the same CHIefray/CENTRoid selection as FEX (chief-ray
+default on all platforms, 2026-08-27; each run prints its axis).
 SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
 *Related:* FEXit, XPS, STOp, CENTRoid.
 <!-- END NOTES cmd-SXP -->
@@ -1020,6 +1066,14 @@ PFP and FEXit.  Source adjustment follows SAOpt (default:
 collimated source translates ChfRayPos; point source re-aims
 ChfRayDir).  If the Rx declared ApStop, the first STOp run
 substitutes that element/offset for the typed values.
+Segment elements are accepted (2026-09-08; the chief ray is
+mapped to that segment for the aiming trace) -- note that in
+segment-class decks every segment's VptElt is the PARENT vertex,
+so offset 0,0 on any segment is the parent vertex; use an RptElt-
+based offset for a segment centre.  Non-sequential elements
+(NSReflector/NSRefractor) are refused by name.  The OBJ answer may
+be typed on one line (`stop obj 0 0 0`); a short line is completed
+from the next prompt.
 SMACOS: CARG(1)='ELT'|'OBJ'; ELT: IARG(1)=element,
 DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 *Related:* CENter, SAOpt, FEXit, FFP, PFP.
@@ -1029,17 +1083,22 @@ DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 
 *Minimum match:* `CENTRoid`
 
-Use centroid as ref point for FEX.
+Opt into the beam-centroid axis for FEX/SXP (chief ray is the default).
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
 ```
 MACOS>centroid
- Image referenced to ray centroid
+ FEX/SXP pupil-sphere axis: beam CENTROID (opt-in; chief ray is the default)
 ```
-No input.  Makes FEXit (and other image-referencing
-computations) use the full-beam spot centroid rather than the
-chief-ray intercept as the reference point.  CHIefray restores
-the default chief-ray referencing.
+No input.  Aims the FEX/SXP pupil-sphere axis at the downstream
+beam centroid instead of along the chief ray.  On obscured,
+segmented, or aberrated beams the centroid walks off the chief,
+so this axis TILTS the reference sphere and leaves tip/tilt
+(and piston, against a chief-type OPD reference) in the OPD —
+see the CHIefray entry for the full convention table.  CHIefray
+restores the chief-ray default (the default on all platforms
+since 2026-08-27); the Rx keyword `FEXCentroid= N` vetoes the
+centroid axis per deck.
 *Related:* CHIefray, FEXit.
 <!-- END NOTES cmd-CENTRoid -->
 

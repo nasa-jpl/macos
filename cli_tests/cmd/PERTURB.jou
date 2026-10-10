@@ -1,0 +1,19 @@
+# PERTURB the Cassegrain's secondary (elt 3), GLOBAL frame, then OPD (cmdref: Perturbation)
+# unperturbed RMS OPD 1.29e-12 (OPD.jou); a 1e-3 rad tilt about x gives 3.70e-9; a 1.0 despace along z 1.68e-2
+# (a 1e-6 rad tilt is below the deck's round-off floor -- do not use it as a gate)
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+perturb 3
+global
+1e-3,0,0
+0,0,0
+opd 5
+/null
+perturb 3
+global
+0,0,0
+0,0,1.0
+opd 5
+/null
+# EXPECT: RMS OPD error is\s+3\.69\d+D-09
+# EXPECT: RMS OPD error is\s+1\.67\d+D-02
+# EXPECT-NOT: forrtl

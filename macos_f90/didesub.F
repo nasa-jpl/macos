@@ -18,7 +18,7 @@ C***********************************************************************
      &	  pin,ihat,XYZSRF,DZSRF,IERROR,IWORK,DWORK,NDP,mDP,
      &	  wVec,pr,L,pmon,xhat,yhat,zhat,Nvec,Nmag,Nhat,dNdp)
 	use math_mod
-	use surfsub, only: LZPFailed
+	use surfsub, only: LZPFailed, FwdRoot, LNsrfRoot
 
 	IMPLICIT NONE
 
@@ -77,25 +77,12 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
