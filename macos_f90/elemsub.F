@@ -2695,11 +2695,10 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
 	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
@@ -2988,11 +2987,10 @@ C	Surface intersection -- identical to RefSrf
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
 	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
@@ -3242,11 +3240,10 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
 	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
