@@ -1,10 +1,9 @@
-record  load_ifx_52b1409.csv  (93 decks)
+record  load_ifx_8d0bafe.csv  (93 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
-  status    load_fail 1  ok 92
-  roundtrip same 83  ulp 9
+  status    ok 93
+  roundtrip same 84  ulp 9
   NaN OPD   2: tst_block_comment.in tst_save_keys.in
-  load_fail     pre-existing /home/dcr/dev/macos/docs/macos-manual/examples/SegDemo.in
-  vs load_ifx_f755e78.csv: 0 decks with a changed OPD/nPass/lost
+  vs load_ifx_52b1409.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
