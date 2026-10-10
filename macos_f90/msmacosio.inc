@@ -1006,7 +1006,7 @@ C       Set entrance condition flags to .FALSE.
 	    Else
               Write(*,*)
      &        ' **Rx error: nRings must be specified before nPetals'
-	      Stop
+	      GO TO 99   ! refuse the load (was STOP: killed the host; 5c)
 	    End If
             GO TO 50
 
@@ -2075,7 +2075,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &          ' **   nMetPos field must appear before tMetElt field,'
                 Write(*,*)
      &          ' **   and nMetPos must be positive integer'
-                STOP
+                GO TO 99 ! refuse the load (was STOP: killed the host; 5c)
               End If
               READ(VALUE,*,IOSTAT=iosRx) tMetSrf(iElt),ntMetPos(iElt)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
@@ -3540,7 +3540,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               If (EdgeSensor(iElt)<1) Then
                 print*,
      &      '**msmacosio error: EdgeSensor must be positive integer!'
-                stop
+                GO TO 99 ! refuse the load (was STOP: killed the host; 5c)
               End If
               ! Read in position and measuring direction of all edge-sensors,
               ! in global frame
