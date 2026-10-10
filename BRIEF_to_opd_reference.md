@@ -65,9 +65,17 @@ the clean worktree, one commit pair, nothing pushed.
   the `ab_6a` form); the CC gate will PASS on status/pass/lost and list the movers.
 - Re-pins: every mmacos / pymacos test that pins a per-ray OPD MAP (not an rms) moves
   by a piston — re-pin each with the mechanism and the legacy value in its comment
-  (the FEX-rework convention), never a tolerance bump; name them in the commit.  The
-  dw_dx harvests on segmented decks already set the chief reference (2026-09-09) and
-  must not move; assert that (`tDwDx`).
+  (the FEX-rework convention), never a tolerance bump; name them in the commit.
+- **The bindings' drivers default to the MEAN today** (`opts.opd_ref = 'mean'` in
+  `dw_dx`, `dw_dx_multi`, `dw_dz_zernike(_multi)`, `dw_dsurf(_multi)`, `dw_dgrid_multi`,
+  set on the session after every load): change the default to `'chief'` in all of
+  them (resources, same commit pair) so the bindings, the engine and the manual agree.
+  EXPECTED and to be measured: the segmented harvests (e5hex1 / e5pie / e2e6m
+  families) move by exactly the piston the mean reference was attributing to the
+  untouched segments; the monolithic ones by round-off.  Re-pin `tDwDx`, `tDwDgrid`
+  and every committed harvest the fast suite compares, with the mechanism and the
+  legacy value in the comment.  The per-load `session.opd_ref(...)` call stays only
+  for an explicit `'mean'` once the default lives at allocation.
 
 ## Documentation (CC/CCMac after the engine lands, but the words are the engine's)
 
