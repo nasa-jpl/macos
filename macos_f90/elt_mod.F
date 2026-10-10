@@ -379,6 +379,15 @@ C***********************************************************************
         Integer :: RxCommentCtx = 0
         Logical :: LRxCommentCapture = .FALSE.
         Integer :: nRxCommentDropped = 0   ! lines past mRxComment
+!-->  one-line pushback for the Rx reader (ReadCoefBlock, 2026-10-09):
+!     a coefficient block that meets the next keyword hands that line
+!     back here; the parser's line reads (msmacosio labels 50 and 61)
+!     take it before reading the file.  Not BACKSPACE: on a CR-only
+!     (classic Mac) deck gfortran splits records on CR but BACKSPACE
+!     seeks LF, so it rewound to the top and the deck re-parsed itself.
+        Logical             :: LRxPushback = .FALSE.
+        Character(len=1024) :: RxPushbackLine = ' '
+!<--
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -645,6 +654,79 @@ C***********************************************************************
             arr(1:n) = 0d0
           END DO
         END SUBROUTINE ReadRealsPad
+!<--
+!-->  ReadCoefBlock / ReadRealsWarn (2026-10-09, PLAN_CONSOLIDATION 1):
+!     the coefficient blocks (ZernCoef, MonCoef, FFZernCoef,
+!     MonZernCoef, ...) read through one routine.  N reals, either ALL
+!     on LINE1 or wrapped GRP per line onto continuation lines of unit
+!     IU.  A short line PADS with zero and prints one line naming the
+!     key, the element and the count (fewer coefficients than slots
+!     means the higher orders are zero; guards warn, not error).  A
+!     continuation line with no number on it is the NEXT keyword: it is
+!     put back (LRxPushback) and the block ends there, padded.  The old
+!     bare READs died on an uncaught EOF, which kills the host when the
+!     engine is a mex.  IEOF = 1: the file ended inside the block.
+        SUBROUTINE ReadCoefBlock(iu, line1, arr, n, grp, key, ie, ieof)
+          IMPLICIT NONE
+          INTEGER,          INTENT(IN)  :: iu, n, grp, ie
+          CHARACTER(LEN=*), INTENT(IN)  :: line1, key
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER,          INTENT(OUT) :: ieof
+          CHARACTER(LEN=1024) :: buf
+          INTEGER :: nr, lo, hi, ios
+          arr(1:n) = 0d0
+          ieof = 0
+          CALL ReadRealsPad(line1, arr, n, nr)
+          IF (nr .EQ. n) RETURN
+          IF (n .LE. grp .OR. nr .GT. grp) THEN
+            CALL CoefShortNote(key, ie, nr, n, 'on the line')
+            RETURN
+          END IF
+          IF (nr .LT. grp)
+     &      CALL CoefShortNote(key, ie, nr, grp, 'on the first line')
+          lo = grp + 1
+          DO WHILE (lo .LE. n)
+            hi = MIN(lo + grp - 1, n)
+            READ(iu, '(A)', IOSTAT=ios) buf
+            IF (ios .LT. 0) THEN
+              ieof = 1
+              RETURN
+            END IF
+            CALL ReadRealsPad(buf, arr(lo:hi), hi - lo + 1, nr)
+            IF (nr .EQ. 0) THEN
+              RxPushbackLine = buf     ! the next keyword: give it back
+              LRxPushback    = .TRUE.
+              CALL CoefShortNote(key, ie, lo - 1, n,
+     &                           'before the next keyword')
+              RETURN
+            END IF
+            IF (nr .LT. hi - lo + 1)
+     &        CALL CoefShortNote(key, ie, nr, hi - lo + 1,
+     &                           'on a continuation line')
+            lo = hi + 1
+          END DO
+        END SUBROUTINE ReadCoefBlock
+
+        SUBROUTINE ReadRealsWarn(str, arr, n, key, ie)
+!         one line of N reals: ReadRealsPad + the one-line note if short
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN)  :: str, key
+          INTEGER,          INTENT(IN)  :: n, ie
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER :: nr
+          CALL ReadRealsPad(str, arr, n, nr)
+          IF (nr .LT. n) CALL CoefShortNote(key, ie, nr, n,
+     &                                      'on the line')
+        END SUBROUTINE ReadRealsWarn
+
+        SUBROUTINE CoefShortNote(key, ie, nr, n, where)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: key, where
+          INTEGER,          INTENT(IN) :: ie, nr, n
+          WRITE(*,'(A,A,A,I4,A,I4,A,I4,A,A,A)') '  ', TRIM(key),
+     &      ' (elt', ie, '): ', nr, ' of ', n, ' values ',
+     &      TRIM(where), '; the rest are 0'
+        END SUBROUTINE CoefShortNote
 !<--
 
 C***********************************************************************
