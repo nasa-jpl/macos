@@ -146,6 +146,7 @@ this plan); Dave rules the open questions below and signs off each phase.
 
 ## 4a. Rulings taken so far
 - 2026-10-09: Dave started phase 1 ("take it slow and careful"); TO on §1.1 per `BRIEF_to_consolidation_p1.md`, CC on §2.1.  The suite's home is `macos/cli_tests/` (ruling 4, by use).  Rulings 1–3 and 5 still open; IRIS and `LUseChfRayIfOK` not started.
+- 2026-10-09 (rule 5): **Dave approved TO's proposal for the no-natural-zero reads** — the ~113 multi-value geometry / integer-list keywords (psiElt, VptElt, RptElt, ChfRayDir, xGrid, TElt rows, ApVec/ObsVec groups, ZernModes, EltGrp …) and ~90 scalars that today abort the Fortran runtime on a short line or a non-numeric token will instead FAIL THE LOAD cleanly: one message naming the key and the element, `LOAD_SUCCESS` false, the host alive.  Zero-padding is wrong there (a zero normal, a zero-radius aperture, element 0).  Item 1b in TO's lane, after item 2.
 
 ## 5. Bookkeeping
 
