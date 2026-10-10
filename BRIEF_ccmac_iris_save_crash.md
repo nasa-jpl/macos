@@ -33,7 +33,15 @@ the rewritten `GridFile` name/path; `nGridMat` against the file's real dimension
 1. **Reproduce on the current engine, both compilers**, with a debug build (`source
    ./makems.sh debug` and `... debug gfortran`; `-check all` on ifx, bounds checks on
    gfortran).  gfortran's checker has found the real line every time this year — start
-   there.  Use the pty-driven CLI, not MATLAB, for the first reproduction (a mex crash
+   there.  **Three outcomes, each informative:** (i) it still crashes — chase it as
+   below; (ii) it is now a clean refusal naming a key (`** Rx load refused: <key>`)
+   — the reader has found the corrupted rewrite for you, that key is the bisection's
+   answer and the writer is the fault; (iii) it loads and traces — one of last
+   night's fixes closed it as a side effect: bisect across TO's kept pre-fix binaries
+   (`~/dev/macos/build_release_prefix` … `_prefix8`, one per item, both compilers; on
+   the cloud rebuild them from the SHAs in PLAN_CONSOLIDATION §1.1) to NAME the fix,
+   and still build the public reproducer (step 4) red on the binary before it.
+   Use the pty-driven CLI, not MATLAB, for the first reproduction (a mex crash
    kills MATLAB and hides the stack): `macos/cli_tests/cli_load_gate.py <debug binary>
    <list with the saved deck> out.csv --workdir keep` gives you load → opd → save →
    reload → save in two processes, and `gdb` on the second (the GDB-first rule in the
