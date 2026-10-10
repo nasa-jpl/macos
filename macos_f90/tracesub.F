@@ -4163,7 +4163,14 @@ c	      END IF
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
      &         dxidxim1(1,1,iElt),dxidui(1,1,iElt))
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	      IndRef(iElt)=CurIndRef
+!-->  (PLAN_CONSOLIDATION item 3, 2026-10-09) the Return no longer writes
+!     the RUNNING medium into its own IndRef: nothing in a trace reads a
+!     Return's IndRef as a medium (ReturnSrf uses na; CPROPAGATE resets
+!     its medium only after a Refractor or LensArray), so the stamp only
+!     mutated the prescription -- after a LensArray in glass, SAVE wrote
+!     the lenslet index onto the next Return (tst_save_keys elt 9).
+!	      IndRef(iElt)=CurIndRef
+!<--
 	      IF (ifReturn) RayL(iRay)=-RayL(iRay)
 
 	      ifReturn=.NOT.ifReturn
