@@ -28,9 +28,14 @@
 > memory `project_consolidation_phase1` first (lanes, what TO has done, the suite's state, the
 > clean-worktree rule).  Dave is done for the day; his order for the night: cli_tests cmd layer,
 > the full-corpus baseline, small 1.1a items, review TO's item 5 when it lands; COPHI waits for his
-> go; **load + re-emit the manual's example .in files for documentation** (new ask).  cmd layer first
-> cut committed 6767a86 (PERTURB.jou failing -- read its transcript first).  Background: the
-> full-corpus run at 52b1409 (scratchpad run_corpus_52b1409.log -> records/).  UNPUSHED: macos
+> go; **load + re-emit the manual's example .in files for documentation** (new ask).  cmd layer DONE
+> (39bd0a6: 8 journals pass both compilers; `run_cli_tests.sh cmd`; `manual` kind re-emits the
+> manual's ten examples into docs/macos-manual/examples/emitted/ -- Dave's ask, delivered).
+> Background: the full-corpus run at 52b1409 (scratchpad run_corpus_52b1409.log -> records/
+> corpus_{ifx,gfortran}_52b1409.csv) was at 453/1258 on ifx at 22:30 -- when it finishes, run
+> judge_load.py on each record (no previous corpus record: everything is 'pre-existing'), commit
+> the records, and list the non-ok decks in PLAN_CONSOLIDATION 1.1a.  TO's item 5 (line endings)
+> is next to review: build the worktree at its SHA, `load` + `cmd`, expect the CR twin to move.  UNPUSHED: macos
 > 0df79d3..HEAD (suite, TO's 1d318ac/f755e78/52b1409, deck_blur, notes), resources 57e0eed..HEAD.
 > Rules tonight: binaries from ~/dev/macos_cli_base only; journals COPY decks before commands that
 > write beside them; nothing pushed; no `--amend`.**
