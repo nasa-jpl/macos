@@ -1646,6 +1646,7 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
 #if 1
 	        ! If at last propagating surface, compute OPDMat - added by jzlou
 	        If (iElt==iEndElt) Then
+		  opdValid=0  ! the pixels written below (opd_mask_get)
 		  IF (LRayOK(1)) THEN
                     RefCumRayL=CumRayL(1)
                   ELSE
@@ -1673,6 +1674,7 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
      &          	  ((iObsOpt.EQ.2).AND.(.NOT.LRayPass(iRay))))) Then
                 	  OPDScal=CumRayL(iRay)-RefCumRayL
                 	  OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+                	  opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
 		        End If
 		      End Do
 	 	    ELSE
@@ -1683,6 +1685,7 @@ cscale	              CD=z1z2*EXP(DCMPLX(0D0,DPHI))*WFElt(i,j,iWF)
      &         	  ((iObsOpt.EQ.2).AND.(.NOT.LRayPass(iRay))))) THEN
                	  OPDScal=(CumRayL(iRay)-RefCumRayL)-DAvgL
                   OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+                  opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
                         END IF
             	      END DO
 	            END IF

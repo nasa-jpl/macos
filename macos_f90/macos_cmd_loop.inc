@@ -363,20 +363,6 @@ C         ***next command: Load optical description data***
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
-!-->  DEAD LINE, kept for the record -- do NOT reason from it.
-!     MBFile6 is called ~40 lines below, and its FIRST statement (in
-!     BOTH macosio.F and smacosio.F) is reinitialise_variables(), which
-!     runs ray_mod_init_vars and sets LUseChfRayIfOK back to .FALSE.
-!     So this assignment never survives to a trace, on ANY path -- CLI,
-!     SMACOS, or any binding -- and OPD always takes the whole-aperture
-!     average-OPL branch (tracesub.F).  The Rx keyword `UseChfRay4OPD=`
-!     and the API opd_ref_set (macos_api_mod) run AFTER the reset and
-!     are the only working ways to select the chief-ray reference.
-!     Moving this line after the MBFile6 call WOULD flip the global
-!     default and needs the FEX-class compatibility sweep -- see PLAN.md
-!     "OPD reference".  Diagnosis: Luis Marchen, 2026-08-19.
-	    LUseChfRayIfOK=.TRUE.
-!<--
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
 	    beamOpt%nBeamPosFov=0; beamOpt%beamWt=1d0
@@ -1145,6 +1131,36 @@ C         ***Turn on vector diffraction***
 	    ELSE
 	      WRITE(*,*)' Must turn on POLarization first'
 	      ifVecDif3=.FALSE.
+	    END IF
+
+C         ***OPD reference: chief ray (default) or aperture mean***
+C         Before the OPD branch: LCMP matches a prefix, and 'OPD',3
+C         would take OPDREF.  The session option (traceutil_mod
+C         LOpdRefChief) survives later loads; a deck's UseChfRay4OPD=
+C         still overrides it for that deck.
+
+	  ELSE IF (LCMP(command,'OPDREF',6)) THEN
+	    IF (LUseChfRayIfOK) THEN
+	      CALL CACCEPT(ANS,'CHIEF','OPD reference (CHIEF,MEAN):')
+	    ELSE
+	      CALL CACCEPT(ANS,'MEAN','OPD reference (CHIEF,MEAN):')
+	    END IF
+	    IF (LCMP(ANS,'CHIEF',1)) THEN
+	      LOpdRefChief=.TRUE.
+	    ELSE IF (LCMP(ANS,'MEAN',1)) THEN
+	      LOpdRefChief=.FALSE.
+	    ELSE
+	      WRITE(*,*)' OPDREF wants CHIEF or MEAN; unchanged'
+	      GO TO 1
+	    END IF
+	    LUseChfRayIfOK=LOpdRefChief
+	    iOpdRefSesSrc=2; iOpdRefSrc=2
+	    ifPropagate=.FALSE.  ! propsub fills OPDMat too
+	    IF (LOpdRefChief) THEN
+	      WRITE(*,*)' OPD reference: CHIEF RAY (the default)'
+	    ELSE
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (opt-in;',
+     &	                ' the chief ray is the default)'
 	    END IF
 
 C         ***Set centroid option***

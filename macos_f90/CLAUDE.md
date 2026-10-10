@@ -141,31 +141,66 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 - Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
   First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.
 
-## OPD reference: `LUseChfRayIfOK` is FALSE on every path (closed 2026-08-19)
+## OPD reference: the CHIEF RAY by default, the aperture mean the option (2026-10-10)
 
-`tracesub.F`'s `SUBROUTINE OPD` (and the `propsub.F:1653` twin) has two
-ways to reference each ray: the CHIEF ray's own OPL (`LUseChfRayIfOK`
-.AND. `LRayOK(1)`), or `- DAvgl`, the mean over EVERY valid ray in the
-aperture.  **The mean branch is what always ran.**
-
-The trap, and why reading `macos_cmd_loop.inc` alone gives the WRONG
-answer: `macos_cmd_loop.inc:366` (inside `#ifdef DESIGN_OPTIM`, which
-BOTH `macos.F:158` and `smacos.F:214` define ahead of the include) sets
-`LUseChfRayIfOK=.TRUE.` on every LOAD/OLD/NEW — but it does so ~40 lines
-BEFORE the `CALL MBFile6`, and `MBFile6`'s first statement, in **both**
-`macosio.F:176` and `smacosio.F:155`, is `reinitialise_variables()` →
-`ray_mod_init(mElt,mRay)` → `ray_mod_init_vars()` →
-`LUseChfRayIfOK=.FALSE.` (`traceutil_mod.F:278`).  The `.TRUE.` never
-survives.  The line is now annotated as dead in place.
-
-Only two things run AFTER that reset and can therefore select the chief
-reference: the Rx keyword `UseChfRay4OPD=` (parsed inside MBFile6) and
-the new `opd_ref_set` API.  The keyword's `'Y'` branch **did not exist**
-— it had only `'N'`, i.e. the value already in force — so the chief
-branch was unreachable from a prescription.  Fixed in `msmacosio.inc`
-(Luis Marchen's diagnosis).  `design_optim.F:659-664/880` deliberately
-forces the flag `.FALSE.` inside optimisation loops and restores it
-after — do not disturb that.
+Dave's ruling (`BRIEF_to_opd_reference.md`): the engine matches the manual --
+a ray's OPD is its optical path minus the CHIEF ray's.  `SUBROUTINE OPD`
+(tracesub.F; the `propsub.F` twin fills OPDMat during propagation) takes the
+chief branch when `LUseChfRayIfOK .AND. LRayOK(1)`, else subtracts `DAvgl`,
+the mean over every valid ray.  **Two levels, set where they belong (rule 6):**
+`traceutil_mod`'s `LOpdRefChief` is the SESSION option, set `.TRUE.` ONCE at
+allocation (`opd_ref_init_opts`, called from `initialise_all` BEFORE
+`ray_mod_init`; the CLI's `OPDREF CHIEF|MEAN` changes it and it survives
+loads); `LUseChfRayIfOK` is the value in force for the loaded deck,
+restored to the session option by every load (`ray_mod_init_vars`), then
+overridden per deck by `UseChfRay4OPD= Y|N` and for the loaded deck by
+`opd_ref_set`.  `iOpdRefSrc` (0 default / 1 keyword / 2 OPDREF / 3 api)
+feeds the line EVERY OPD run prints: `OPD reference: CHIEF RAY (default)`,
+`... APERTURE MEAN (UseChfRay4OPD= N)`, `... (OPDREF MEAN)`, `...
+(opd_ref_set)`, `... OPDRefRayLen= (Rx)`, and the fallback `OPD reference:
+APERTURE MEAN (chief ray lost)` when the chief failed GEOMETRICALLY (no
+error -- guards warn).  SAVE writes `UseChfRay4OPD= N` when the mean is in
+force; the default writes nothing.  `OPDREF` sits BEFORE the OPD branch in
+`macos_cmd_loop.inc` because `LCMP(command,'OPD',3)` is a PREFIX match --
+the pre-change CLI reads `opdref` as `opd`.  `design_optim.F` still forces
+`.FALSE.` inside optimisation loops and restores the saved value (now the
+chief).  **History:** until 2026-10-10 every path ran the mean -- the LOAD
+handler set `.TRUE.` ~40 lines before `MBFile6`, whose first act is
+`reinitialise_variables()` -> `ray_mod_init_vars()` -> `.FALSE.` (Luis
+Marchen's 2026-08-19 diagnosis; that dead line is deleted).
+**What the CLI prints does NOT move:** RMS is mean-removed in both branches,
+P-V is max-min, and `Average OPD is` prints `DAvgl` = mean(OPL - chief OPL),
+the same under either reference -- it IS the constant by which the
+chief-referenced map exceeds the mean-referenced one.  Only the per-ray map
+moves.  Corpus A/B (406 decks, both compilers,
+`cli_tests/records/ab_opdref_moved_51a5624.txt`): status / nPass / lost /
+RMS / P-V / round trip identical everywhere; 397 (ifx) / 396 (gfortran)
+maps moved by their `Average OPD`; the 6 unmoved are flat collimated trains
+(`DAvgl == 0`).  The mmacos `dw_*` drivers pass `opd_ref='mean'` explicitly
+and re-applied it after every load; per CC's amendment (a71b43f) their
+default is now `'chief'` too, and they call `opd_ref` only when the request
+differs from the one in force (`opd_ref_set` dirties the cached trace).
+MEASURED (dw_dx, elt 1, 6 DOFs, chief minus mean): every column moves by
+ONE CONSTANT on EVERY deck -- segmented (e5hex1, e5pie, e2e6m s2: up to
+4.3x the column rms, spread <= 7e-12 of the shift) AND monolithic (e5mono,
+e2e6m s1, Cass: 0.3-0.7x the column rms, spread <= 7e-8).  NOT round-off on
+monolithic decks, as first expected: a rigid-body poke moves the chief's
+own path, so the chief-referenced column carries minus the CHIEF's response
+and the mean-referenced one minus the BUNDLE-MEAN response.  Anything that
+removes piston is unaffected; only absolute piston moves.
+**Zero is not "no ray" any more.**  Under the chief reference a valid ray
+whose path equals the chief's reads EXACTLY 0 -- the value `OPDMat` holds
+where there is no ray -- so every consumer that found the pupil as `W ~= 0`
+silently dropped it (measured: 4 of 276 rays on the tDesignTelescope TMA;
+`macos.m2v` built every `dw_*` harvest's rows that way, and `remove_ptt`
+then fit planes on the wrong row set).  `traceutil_mod%opdValid` is set at
+EXACTLY the statements that write `OPDMat` (tracesub `OPD` x3, propsub x2;
+it follows `iObsOpt`, unlike `opdRayMask`, which is always LRayOK.AND.
+LRayPass) and exposed as `opd_mask_get` (mmacos `macos.opd_mask`, pymacos
+`opd_mask`).  The harvest kernels, the multi-field core, the Telescope WFE
+paths and `seg_footprints` now take their rows from it; a map with no
+exact-zero valid ray gets the identical rows (same column-major walk).
+**Never test `W ~= 0` for validity in new code.**
 
 **Why it matters (segmented pupils).**  `DAvgl` is one scalar over the
 whole aperture, so perturbing ONE segment shifts it by
@@ -196,10 +231,12 @@ deck checked has a geometrically dead chief.  A pre-fix note claimed
 written into `OPDMat`) misread as a lost ray.  Gate:
 `tOpdRef/test_an_obscured_chief_ray_still_serves`.
 
-`api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`.  Session state, reset
-by every load (call it AFTER `load_rx`), and it dirties the cached trace
-via `modified_rx` because OPDMat is filled DURING the trace.  Gates:
-`mmacos/tests/tOpdRef.m` (8).
+`api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`; mmacos `macos.opd_ref`,
+pymacos `opd_ref` (2026-10-10).  Acts on the LOADED deck (a load restores the
+default), and dirties the cached trace via `modified_rx` because OPDMat is
+filled DURING the trace.  Gates: `mmacos/tests/tOpdRef.m` (12),
+`pymacos/tests/test_opd_ref.py` (6), `cli_tests/cmd/OPD_reference.jou`
+(twin deck `ZGD_test_files/tst_opdref_mean.in`).
 
 Related `init` fix: `macos_api_mod`'s `init` rebuilt the engine
 (`macos_init_all`, which zeroes `nElt`) without clearing the package
@@ -985,8 +1022,9 @@ chief's displacement (pre-fix ~0).  A centroid measured about the chief
 ray is a SHAPE measure, never a line-of-sight one.
 Rule, third time: a value a command or the start-up sets as a USER
 OPTION does not belong in `elt_mod_init_vars` -- list of such options
-moved so far: the glass catalog, `spcOption`; `LUseChfRayIfOK` is reset
-there deliberately and the Rx keyword / api set it after the load.
+moved so far: the glass catalog, `spcOption`, and (2026-10-10) the OPD
+reference's session default `LOpdRefChief` -- the per-load value
+`LUseChfRayIfOK` is restored FROM it, never to a constant.
 
 ## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)
 `elemsub.F`'s four grating routines (`Grating`, `TrGrating`, `FzpTrGrating_`,
