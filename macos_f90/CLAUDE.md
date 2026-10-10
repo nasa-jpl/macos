@@ -741,13 +741,25 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   `GO TO 99` with NO message -- a silent refusal of the reload
   (`tst_zrngr_roundtrip.in`; every binary back to 8cf28c3).  Now: no
   type declared, no Zernike block written (`lMon` still is; the Mon/FF
-  writers likewise), and the parser refuses `nZernCoef=` with no
-  `ZernType=` before it, naming the key and element
-  (`tst_nzern_no_type.in`, `cli_tests/cmd/ZrnGr_refusal.jou`).  Defaulting
-  `ZernTypeL` for every Zernike-carrying surface regardless of EltID would
-  change traces and is Dave's (PLAN item 7; corpus: 10 of 406 decks have NS
-  elements, 1 -- `old_Rx/j18dcWithStop.in`, 6 elements, all-zero
-  coefficients, no nZernCoef= -- carries NS Zernike data with no type).
+  writers likewise).
+  **PLAN item 7 (Dave, 2026-10-10): EVERY Zernike-carrying surface
+  (`Zernike`, `ZrnGrData`) defaults to `ZernType= ANSI`** when it declares
+  none, whatever the element type -- at the end of ChkDf2, and at
+  `nZernCoef=` in the parser (which prints `Default used for ZernType(  N)`,
+  ChkDf2's 112 form).  MEASURED: a plain `Zernike` surface on an NSReflector
+  ALREADY got the old default; the real gap was `ZrnGrData`, whose default
+  is pre-empted at `Surface=` (the FLG is set for any surface but
+  `SrfType_Zernike`), so its `ZernCoef` NEVER reached the trace.  The
+  `nZernCoef=`-without-a-type refusal now applies only to a surface that
+  carries no Zernike terms (`tst_nzern_conic.in`); `tst_nzern_no_type.in`
+  (ZrnGrData) loads with the default.  Gate `cli_tests/cmd/
+  ZernType_default.jou` on `tst_zerndef_{none,ansi,fringe}.in` (a
+  ZrnGrData NS primary, no grid, mode 9 = 2e-7): none == ansi to the printed
+  digit, fringe differs; PRE-change the none twin traced as the bare conic
+  (its coefficient silently dropped).  Corpus: one mover, `xx.in`
+  (load_fail -> ok) -- an OLD corrupted SAVE whose `ZernType=` is garbage
+  bytes (`ZernTypeNameL(0)` read out of bounds by the pre-fix writer); it
+  now takes the default with zero coefficients.  No corpus SAVE changed.
 - GMI workaround at `GMI.F:1066`: when forcing `SrfType(iElt)=8` to apply a
   Zernike perturbation to an arbitrary element, also force `ZernTypeL=1` if
   currently 0. Without this, GMI's pzern channel silently no-ops when applied
