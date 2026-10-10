@@ -24,6 +24,12 @@
 
 ## Active slice
 
+> **2026-10-10 morning (CC): ALL PUSHED (macos ..d69b408, resources ..a35ad6e).  Phase-1 engine lane
+> complete (TO; items 1, 1b, 2, 3, 4, 5, 5c, 5d/6a, each gated by cli_tests from the clean worktree);
+> CCMac started on IRIS (`BRIEF_ccmac_iris_save_crash.md`).  Memory `project_consolidation_phase1` is
+> the state.  Open on Dave: LUseChfRayIfOK, COPHI start, re-evaluation; CC next: cli_tests `ab` layer,
+> more cmd journals, third SAVE leg.**
+
 > **2026-10-09 NIGHT RESUME POINT (CC; context low).  PLAN_CONSOLIDATION phase 1 in flight -- read
 > memory `project_consolidation_phase1` first (lanes, what TO has done, the suite's state, the
 > clean-worktree rule).  Dave is done for the day; his order for the night: cli_tests cmd layer,
