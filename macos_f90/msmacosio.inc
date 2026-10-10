@@ -11,10 +11,16 @@ C       Set entrance condition flags to .FALSE.
           LRxCommentCapture = .TRUE.
           nRxCommentDropped = 0
 !<--
+          LRxPushback = .FALSE.    ! ReadCoefBlock's one-line pushback
 
   50      CONTINUE   ! This section is for header part of Rx
 
-          READ(RX_FID, 123, END=99) STRING
+          IF (LRxPushback) THEN    ! a line handed back by ReadCoefBlock
+            STRING = RxPushbackLine
+            LRxPushback = .FALSE.
+          ELSE
+            READ(RX_FID, 123, END=99) STRING
+          END IF
  354      CONTINUE
 
           CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
@@ -672,41 +678,12 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: FFZernCoefs(mFFCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 FFZernCoefs(:) = 0d0
-                READ(VALUE,*,IOSTAT=ios)
-     &            (FFZernCoefs(j),j=1,nFFZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
+!-->  ReadCoefBlock (2026-10-09): one line OR wrapped; a short block
+!     pads with 0 + one note instead of refusing the load
+                CALL ReadCoefBlock(RX_FID, VALUE, FFZernCoefs,
+     &                nFFZernCoef, Grp, 'FFZernCoef', iElt, ios)
+                IF (ios.NE.0) GO TO 99
+!<--
                 IF (FFZernModes_FLG) THEN
                   FFZernCoef(:,iElt) = 0d0
                   FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
@@ -810,41 +787,12 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: MonZernCoefs(mMonCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 MonZernCoefs(:) = 0d0
-                READ(VALUE,*,IOSTAT=ios)
-     &            (MonZernCoefs(j),j=1,nMonZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
+!-->  ReadCoefBlock (2026-10-09): one line OR wrapped; a short block
+!     pads with 0 + one note instead of refusing the load
+                CALL ReadCoefBlock(RX_FID, VALUE, MonZernCoefs,
+     &                nMonZernCoef, Grp, 'MonZernCoef', iElt, ios)
+                IF (ios.NE.0) GO TO 99
+!<--
                 IF (MonZernModes_FLG) THEN
                   MonZernCoef(:,iElt) = 0d0
                   MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
@@ -1158,7 +1106,12 @@ C       Set entrance condition flags to .FALSE.
             CALL LOHIN2()  ! set all elt flags to false. -jzlou
 
    61       CONTINUE
-            READ(RX_FID, 123, END=99) STRING
+            IF (LRxPushback) THEN  ! a line handed back by ReadCoefBlock
+              STRING = RxPushbackLine
+              LRxPushback = .FALSE.
+            ELSE
+              READ(RX_FID, 123, END=99) STRING
+            END IF
 
   901       CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
             IF (LCMP(STRING,'EOF',3)) GOTO 99
@@ -1860,31 +1813,17 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               ! ==> Flag "nZernCoef" can be used to define max modes to read in
               BLOCK
                 INTEGER, PARAMETER :: Grp = 6  ! defines # of Coefs. within a Grp per line
-                INTEGER            :: iZ, nZ
+                INTEGER            :: ieof
                 REAL(8)            :: ZernCoefs(mZernModes)
                 ! --------------------------
 
                 ZernCoefs(:) = 0d0
-                IF (nZernCoef<=Grp) THEN
-                  READ(VALUE,*)(ZernCoefs(j),j=1,nZernCoef)
-                ELSE
-
-                  READ(VALUE,*)(ZernCoefs(j),j=1,Grp)
-
-                  ! complete line group ("Grp" Coefficients)
-                  DO iZ=1, nZernCoef/Grp-1
-                    READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                  END DO
-
-                  ! incomplete Grp
-                  nZ = MOD(nZernCoef,Grp)
-                  iZ = nZernCoef/Grp
-                  IF (nZ>0) THEN
-                    READ(RX_FID, 123, END=99)STRING
-                    READ(STRING,*)(ZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                  END IF
-                END IF
+!-->  one line OR wrapped Grp per line; short lines pad with 0 + one
+!     note (ReadCoefBlock, elt_mod; PLAN_CONSOLIDATION 1, 2026-10-09)
+                CALL ReadCoefBlock(RX_FID, VALUE, ZernCoefs, nZernCoef,
+     &                             Grp, 'ZernCoef', iElt, ieof)
+                IF (ieof.NE.0) GO TO 99
+!<--
 
                 ! may need to remap coefficients based on ZernModes
                 IF (ZernModes_FLG) THEN
@@ -1933,45 +1872,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'MonCoef',7)) THEN
-              READ(VALUE,*)(MonCoef(j,iElt),j=1,6)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=7,12)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=13,18)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=19,24)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=25,30)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=31,36)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=37,42)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=43,48)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=49,54)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=55,60)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=61,66)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=67,72)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=73,78)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=79,84)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=85,90)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=91,96)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=97,102)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=103,108)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=109,114)
-              READ(RX_FID, 123, END=99)STRING
-              READ(STRING,*)(MonCoef(j,iElt),j=115,120)
+!-->  20 lines of 6 (the SAVE layout) or all on one line; a short
+!     block pads with 0 + one note (ReadCoefBlock, 2026-10-09)
+              BLOCK
+                INTEGER :: ieof
+                CALL ReadCoefBlock(RX_FID, VALUE, MonCoef(1:120,iElt),
+     &                             120, 6, 'MonCoef', iElt, ieof)
+                IF (ieof.NE.0) GO TO 99
+              END BLOCK
+!<--
               MonCoef_FLG=.TRUE.
               GO TO 61
 
@@ -1999,7 +1908,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'UDSrfParam',9)) THEN
-              READ(VALUE,*) (UDSrfParam(j,iElt),j=1,6)
+              CALL ReadRealsWarn(VALUE, UDSrfParam(1:6,iElt), 6,
+     &                           'UDSrfParam', iElt)      ! short pads
               UDSrfParam_FLG=.TRUE.
               GO TO 61
 
@@ -2362,41 +2272,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: FFZernCoefs(mFFCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 FFZernCoefs(:) = 0d0
-                READ(VALUE,*,IOSTAT=ios)
-     &            (FFZernCoefs(j),j=1,nFFZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(FFZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nFFZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nFFZernCoef,Grp)
-                  iZ = nFFZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (FFZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** FFZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
+!-->  ReadCoefBlock (2026-10-09): one line OR wrapped; a short block
+!     pads with 0 + one note instead of refusing the load
+                CALL ReadCoefBlock(RX_FID, VALUE, FFZernCoefs,
+     &                nFFZernCoef, Grp, 'FFZernCoef', iElt, ios)
+                IF (ios.NE.0) GO TO 99
+!<--
                 IF (FFZernModes_FLG) THEN
                   FFZernCoef(:,iElt) = 0d0
                   FFZernCoef(FFZernModes(:nFFZernCoef),iElt) =
@@ -2478,41 +2359,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: MonZernCoefs(mMonCoef)
                 INTEGER, PARAMETER :: Grp = 6
                 MonZernCoefs(:) = 0d0
-                READ(VALUE,*,IOSTAT=ios)
-     &            (MonZernCoefs(j),j=1,nMonZernCoef)
-                IF (ios.NE.0) THEN
-                  READ(VALUE,*)(MonZernCoefs(j),j=1,Grp)
-                  DO iZ=1, nMonZernCoef/Grp-1
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,(iZ+1)*Grp)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END DO
-                  nZ = MOD(nMonZernCoef,Grp)
-                  iZ = nMonZernCoef/Grp
-                  IF (nZ.GT.0) THEN
-                    READ(RX_FID,123,END=99)STRING
-                    READ(STRING,*,IOSTAT=ios)
-     &                (MonZernCoefs(j),j=iZ*Grp+1,iZ*Grp+nZ)
-                    IF (ios.NE.0) THEN
-                      WRITE(*,*)' ** MonZernCoef: expected',
-     &                  ' continuation data, got: ',
-     &                  TRIM(STRING)
-                      WRITE(*,*)' ** Values must be in',
-     &                  ' groups of',Grp,' per line'
-                      BACKSPACE(RX_FID)
-                      GO TO 99
-                    END IF
-                  END IF
-                END IF
+!-->  ReadCoefBlock (2026-10-09): one line OR wrapped; a short block
+!     pads with 0 + one note instead of refusing the load
+                CALL ReadCoefBlock(RX_FID, VALUE, MonZernCoefs,
+     &                nMonZernCoef, Grp, 'MonZernCoef', iElt, ios)
+                IF (ios.NE.0) GO TO 99
+!<--
                 IF (MonZernModes_FLG) THEN
                   MonZernCoef(:,iElt) = 0d0
                   MonZernCoef(MonZernModes(:nMonZernCoef),iElt) =
@@ -2661,7 +2513,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'DoePhase',8)) THEN
-	      READ(VALUE,*)(DoePhProf(j,nDOE),j=1,6)
+              CALL ReadRealsWarn(VALUE, DoePhProf(1:6,nDOE), 6,
+     &                           'DoePhase', iElt)        ! short pads
               GO TO 61
 
             ! ------------------------------------------------------------------------------
@@ -2761,12 +2614,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	    ELSE IF (LCMP(VAR_NAM,'GradCoef',8)) THEN
 	      If (GrinRefArr(iElt)%modelType <= 2 .AND.
      &            GrinRefArr(iElt)%modelType >= 5) Then
-	        READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:8)
+	        CALL ReadRealsWarn(VALUE,
+     &          GrinRefArr(iElt)%modelCoef(1:8), 8, 'GradCoef', iElt)
 	      Else If (GrinRefArr(iElt)%modelType==1 .OR.
      &                 GrinRefArr(iElt)%modelType==6) Then
-                READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:3)
+                CALL ReadRealsWarn(VALUE,
+     &          GrinRefArr(iElt)%modelCoef(1:3), 3, 'GradCoef', iElt)
 	      Else If (GrinRefArr(iElt)%modelType==7) Then
-	        READ(VALUE,*)GrinRefArr(iElt)%modelCoef(1:5)
+	        CALL ReadRealsWarn(VALUE,
+     &          GrinRefArr(iElt)%modelCoef(1:5), 5, 'GradCoef', iElt)
 	      Else
 	        ! If unknown graded-index modelType or undefine,
 	        ! return from function with error message
@@ -2910,7 +2766,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'GlassCoef',6)) THEN
-              READ(VALUE,*)(GlassCoef(j,iElt),j=1,nGLASS_COEF(GlassType(iElt)))
+              CALL ReadRealsWarn(VALUE,
+     &          GlassCoef(1:nGLASS_COEF(GlassType(iElt)),iElt),
+     &          nGLASS_COEF(GlassType(iElt)), 'GlassCoef', iElt)
               GlassCoef_FLG = .TRUE.
               LGlass(iElt)  = .TRUE.
               GO TO 61
