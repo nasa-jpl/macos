@@ -461,7 +461,7 @@ C***********************************************************************
       USE Constants, ONLY: TWOPI
       REAL*8 WR,WI,WPR,WPI,WTEMP,THETA
       COMPLEX*8 DATA
-      DIMENSION NN(NDIM),DATA(1)
+      DIMENSION NN(NDIM),DATA(*)
       NTOT=1
       DO 11 IDIM=1,NDIM
         NTOT=NTOT*NN(IDIM)

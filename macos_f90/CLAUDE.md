@@ -647,9 +647,42 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   bit-identically to its finite twin on the pre-fix Linux engine, release
   or debug.  So the red is Apple Silicon only (CCMac's crash_opd); a
   Linux gate of B can only be a no-host-kill + counted regression gate.
-  (Also measured: the gfortran DEBUG build aborts at start-up in math_mod
-  LZERO on a legacy `A(1)` dummy under -fcheck=bounds -- pre-existing,
-  unrelated; the ifx debug build runs.)
+  (The gfortran DEBUG build then aborted at start-up in math_mod LZERO on
+  a legacy `A(1)` dummy under -fcheck=bounds; fixed the same day -- see
+  "gfortran debug build RUNS" below.)
+- **gfortran debug build RUNS (2026-10-10).**  `source ./makems.sh debug
+  gfortran` is the only build that bounds-checks every line, and it could
+  not reach the prompt: F77 `A(1)` dummies ("any length") read as extent 1
+  under `-fcheck=bounds`.  All 16 converted to assumed-size `A(*)` /
+  `X(LD,*)` -- math_mod LZERO, DSMPROD, DNEGATE, DEQUATE (ChkDf1, every
+  load), rdEQUATE, DUNITVEC, DMPRDB, DMPRDC, DDOTLP, CAXPY, DSVDC, CSCAL,
+  DROT, CNRM2, CSWAP; sunsub RFOURN `DATA(1)` (DZERO/IZERO were already
+  `A(*)`).  Same meaning: release A/B 406 decks, both compilers, 0
+  differences.  ifx's `-check bounds` skips a last extent of 1, which is
+  why only gfortran saw it.  **Rule: never declare a dummy `A(1)`; write
+  `A(*)`.**  Running, it found two REAL defects on the core corpus:
+  (1) CTRACE's NS candidate test read `SrfType(iminPrev)` with `iminPrev =
+  0` (`.OR.` does not short-circuit) -- guarded, bit-identical by
+  construction; (2) **`PtSource` placed an EVEN grid one row high** --
+  `jwf = j+(mdttl-nGridPts)/2+1`, so a grid of `nGridPts == mdttl` wrote
+  `RayID(.,mdttl+1)` (the nine `Rx_Coro*` decks, `nGridpts= 511`, which the
+  load clamps to the model: the long-standing "Too many grid points.
+  Resetting npts to" reset in BOTH macosio.F and smacosio.F, so an
+  oversized Rx grid never wrote far out of bounds -- a parse-time refusal
+  tried first broke 195 fast-suite tests and was reverted).  PR #70 had
+  fixed `ColSource` only; now both use `(mdttl-nGridPts+mod(nGridPts,2))/2`
+  (identical for odd grids and for `iwf`): a trace change for EVEN-grid
+  POINT-SOURCE diffraction.  (3) **a grid DECLARED larger than `mGridMat`**
+  (`Rx_Coro_DM`'s `nGridMat= 1024`, its data installed by the bindings at
+  run time) was traced as a phantom and indexed `GridMat` past
+  `mGridMat`: the grid term now also requires `nGridMat <= mGridMat`
+  (inert otherwise), a grid FILE that cannot fit is refused by name
+  (`GridTooBig`, elt_mod: at the Rx `GridInit` sites and as a backstop
+  inside it), and both api grid setters name their refusal.  (The "defined
+  data" condition was NOT added to the trace: the api grid setters never
+  set `ifGridDataDefined`, so it would switch off every api-installed
+  grid; an in-bounds phantom reads the zeroed `GridMat` and is inert.)
+  Debug core corpus at model 256: 114 of 114 ok, both IRIS fixtures ok.
 - **`NSCount=` is the non-sequential HIT BUDGET and round-trips through SAVE
   (2026-10-10).** `NSCnt(iElt)` caps the surface hits a ray may take inside
   an `Element= NSReflector` group (tracesub.F ~4499): absent/0 = UNLIMITED

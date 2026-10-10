@@ -3278,6 +3278,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
         IMPLICIT NONE
 
         ! Arguments
+        LOGICAL LNSPrevOK  ! the NS candidate test, see label 707
         LOGICAL ifBuild,ifDMBuild,LROKdummy,ifRayPrint,
      &      LRayTrans,ifPol,
      &	    ifLNegOK,L1(mRay),ifIntSrfSet(mElt),ifDraw
@@ -4301,9 +4302,19 @@ c	          ELSE
      &               mDP,maxAsphCoef)
 c	          END IF
 C note: RayLTst changed from 1d-12 to 1d-8
+!-->      iminPrev is 0 on the first NS candidate, and .OR. does not
+!         short-circuit: SrfType(0) was READ out of bounds (the
+!         gfortran debug build aborts; release read a neighbour).
+!         iminPrev /= itst
+!         makes the clause true then, so the guarded form is
+!         bit-identical.
+	          LNSPrevOK = (iminPrev.NE.itst)
+	          IF (.NOT.LNSPrevOK)
+     &	            LNSPrevOK = (SrfType(iminPrev).LE.2)
+!<--
 	          IF (LROKdummy.AND.(RayLTst.LT.Lmin).AND.
      &	          (RayLTst.GT.1d-8).AND.LRTdummy.AND.
-     &	          ((SrfType(iminPrev).LE.2).OR.(iminPrev.NE.itst))) THEN
+     &	          LNSPrevOK) THEN
 	            Lmin=RayLTst
 	            imin=itst
 	          END IF
@@ -5353,7 +5364,8 @@ C***********************************************************************
 	SUBROUTINE WARN(LEltOK,nElt,nBadRays)
 	use elt_mod, only: RayStatus, RayFailElt,
      &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
-     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
+     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay,
+     &    nGridDropped
 	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip,
      &                     nGridIdxOvf
 	IMPLICIT NONE
@@ -5401,6 +5413,9 @@ C***********************************************************************
 	IF (nGridIdxOvf.GT.0) WRITE(*,132) nGridIdxOvf
   132	FORMAT('   Grid samples with a non-finite / out-of-range pixel',
      &    ' index (treated as off-grid): ',i8)
+	IF (nGridDropped.GT.0) WRITE(*,133) nGridDropped
+  133	FORMAT('   Grid files NOT loaded (larger than mGridMat;',
+     &    ' the surfaces trace without them): ',i4)
 !<--
 
 	RETURN

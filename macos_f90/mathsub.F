@@ -220,21 +220,21 @@ C
       END SUBROUTINE DSUB
 C
       SUBROUTINE DSMPROD(A,B,S,N)
-      REAL*8 A(1),B(1),S
+      REAL*8 A(*),B(*),S
       Integer :: N
       A(1:N)=S*B(1:N)
       RETURN
       END SUBROUTINE DSMPROD
 C
       SUBROUTINE DNEGATE(A,B,N)
-      REAL*8 :: A(1),B(1)
+      REAL*8 :: A(*),B(*)
       Integer :: N
       A(1:N)=-B(1:N)
       RETURN
       END SUBROUTINE DNEGATE
 C
       SUBROUTINE DEQUATE(A,B,N)
-      REAL*8 A(1),B(1)
+      REAL*8 A(*),B(*)
       Integer :: N
       A(1:N)=B(1:N)
       RETURN
@@ -250,7 +250,7 @@ C
 C added by sws ...
       SUBROUTINE rdEQUATE(A,B,N)
       SREAL A(1)
-      REAL*8 B(1)
+      REAL*8 B(*)
       Integer :: N
       A(1:N)=B(1:N)
       RETURN
@@ -265,7 +265,7 @@ C added by sws ...
       END SUBROUTINE drdSUB
 C
       SUBROUTINE DUNITVEC(YHAT,Y,DMAG,N)
-      REAL*8 YHAT(1),Y(1),DMAG
+      REAL*8 YHAT(*),Y(*),DMAG
       Integer :: N,I
       DMAG=0D0
       DO 1 I=1,N
@@ -397,7 +397,7 @@ C         and A is NAxNC
 C
         SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
         IMPLICIT NONE
-        REAL*8 A(1),B(1),C(1),BIK
+        REAL*8 A(*),B(*),C(*),BIK
         Integer :: NA,NB,NC,NAMAX,NBMAX,
      &           NAPTR,NBPTR,NCPTR,I,K
         NAMAX=NA*NC
@@ -441,7 +441,7 @@ C
       END SUBROUTINE RMPRDB
 C
       SUBROUTINE DMPRDC(A,B,C,NA,NB,NC)
-      REAL*8 A(1),B(1),C(1),CJK
+      REAL*8 A(*),B(*),C(*),CJK
       Integer :: NA,NB,NC,NAM1,NAMAX,NCMAX,
      &           NAPTR,NBPTR,NCPTR,I,J,K,II
       NAM1=NA-1
@@ -542,7 +542,9 @@ C
       END SUBROUTINE IZERO
 C
       SUBROUTINE LZERO(A,N)
-      LOGICAL A(1)
+      LOGICAL A(*)     ! assumed-size (was A(1); see DZERO --
+                       ! the gfortran debug CLI aborted here at
+                       ! start-up, 2026-10-10)
       Integer :: N
       A(1:N)=.FALSE.
       RETURN
@@ -801,7 +803,7 @@ C***********************************************************************
 C***********************************************************************
 
       DOUBLE PRECISION FUNCTION DDOTLP(N,DX,INCX,DY,INCY)
-      DOUBLE PRECISION DX(1),DY(1),DTEMP
+      DOUBLE PRECISION DX(*),DY(*),DTEMP
       INTEGER I,INCX,INCY,IX,IY,M,MP1,N
       DDOTLP = 0.0D0
       DTEMP = 0.0D0
@@ -836,7 +838,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE CAXPY(N,DA,DX,INCX,DY,INCY)
-      DOUBLE PRECISION DX(1),DY(1),DA
+      DOUBLE PRECISION DX(*),DY(*),DA
       INTEGER I,INCX,INCY,IX,IY,M,MP1,N
       IF(N.LE.0)RETURN
       IF (DA .EQ. 0.0D0) RETURN
@@ -871,7 +873,7 @@ C***********************************************************************
 
       SUBROUTINE DSVDC(X,LDX,N,P,S,E,U,LDU,V,LDV,WORK,JOB,INFO)
       INTEGER LDX,N,P,LDU,LDV,JOB,INFO
-      DOUBLE PRECISION X(LDX,1),S(1),E(1),U(LDU,1),V(LDV,1),WORK(1)
+      DOUBLE PRECISION X(LDX,*),S(*),E(*),U(LDU,*),V(LDV,*),WORK(*)
       INTEGER I,ITER,J,JOBU,K,KASE,KK,L,LL,LLS,LM1,LP1,LS,LU,M,MAXIT,
      &        MM,MM1,MP1,NCT,NCTP1,NCU,NRT,NRTP1
       DOUBLE PRECISION T
@@ -1153,7 +1155,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE CSCAL(N,DA,DX,INCX)
-      DOUBLE PRECISION DA,DX(1)
+      DOUBLE PRECISION DA,DX(*)
       INTEGER I,INCX,M,MP1,N,NINCX
       IF(N.LE.0)RETURN
       IF(INCX.EQ.1)GO TO 20
@@ -1277,7 +1279,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE DROT (N,DX,INCX,DY,INCY,C,S)
-      DOUBLE PRECISION DX(1),DY(1),DTEMP,C,S
+      DOUBLE PRECISION DX(*),DY(*),DTEMP,C,S
       INTEGER I,INCX,INCY,IX,IY,N
       IF(N.LE.0)RETURN
       IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
@@ -1305,7 +1307,7 @@ C***********************************************************************
 
       DOUBLE PRECISION FUNCTION CNRM2( N, DX, INCX)
       INTEGER  NEXT,N,INCX,I,J,NN
-      DOUBLE PRECISION   DX(1), CUTLO, CUTHI, HITEST, SUM, XMAX,ZERO,ONE
+      DOUBLE PRECISION   DX(*), CUTLO, CUTHI, HITEST, SUM, XMAX,ZERO,ONE
       DATA   ZERO, ONE /0.0D0, 1.0D0/
       DATA CUTLO, CUTHI / 8.232D-11,  1.304D19 /
       IF(N .GT. 0) GO TO 10
@@ -2664,7 +2666,7 @@ C ********************************************************
 
         SUBROUTINE  CSWAP (N,DX,INCX,DY,INCY)
           IMPLICIT NONE
-          DOUBLE PRECISION DX(1),DY(1),DTEMP
+          DOUBLE PRECISION DX(*),DY(*),DTEMP
           INTEGER I,INCX,INCY,IX,IY,M,MP1,N
           IF(N.LE.0)RETURN
           IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20

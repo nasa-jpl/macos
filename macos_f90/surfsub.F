@@ -2209,6 +2209,11 @@ C  Determine active terms from sentinels
 !           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
 !           so the grid term is INACTIVE without one.
             ifGridTerm = (nGridMat .GT. 0) .AND. (GridSrfdx .GT. 0d0)
+!           ... nor a grid DECLARED larger than this model's mGridMat
+!           (2026-10-10: Rx_Coro_DM's nGridMat= 1024, its data installed
+!           by the bindings at run time; a CLI load traced the phantom
+!           and indexed GridMat past mGridMat).  Inert, as above.
+     &        .AND. (nGridMat .LE. mGridMat)
 !<--
 
 C----------------------------------------------------------------------------
@@ -2570,6 +2575,7 @@ C***********************************************************************
 !           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
 !           so the grid term is INACTIVE without one.
             ifGridTerm = (nGridMat .GT. 0) .AND. (dAct .GT. 0d0)
+     &        .AND. (nGridMat .LE. mGridMat)   ! as SFFSrf (2026-10-10)
 !<--
 
 C  Compute rho and Sconic
@@ -3422,6 +3428,13 @@ C   If no file, zero matrix and return
                RETURN
             END IF
 
+!-->        Backstop for every caller (the Rx path refuses first): a
+!           grid larger than mGridMat is never read into GridMat.
+            IF (GridTooBig(GridFile,nGridMatS,0)) THEN
+               ifGridInit=.FALSE.
+               RETURN
+            END IF
+!<--
 !-->        A zero-sized read is NEVER a success.  GridInit sizes its
 !           read with DO j=1,nGridMatS, so nGridMatS<=0 reads no rows,
 !           falls through to label 1 and reports "dimension 0 by 0"

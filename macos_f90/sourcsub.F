@@ -813,8 +813,12 @@ C  Find the segment for the chief ray
 	      ChfRayPos(1:3)=RayPos(1:3,iRay)
 	      ChfRayDir(1:3)=RayDir(1:3,iRay)
 	    end if
-            jwf=j+(mdttl-nGridPts)/2+1
-	    iwf=i+(mdttl-nGridPts+1)/2
+!-->      PR #70 completed (2026-10-10, CC's ruling): ColSource's
+!         even-grid centring; the original put an even grid one row
+!         high, and at nGridPts == mdttl wrote RayID(.,mdttl+1).  For
+!         odd grids, and for iwf at any size, it is the same formula.
+            jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
+	    iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
             RayIndex(1,iRay)=i; RayIndex(2,iRay)=j;
             RayMap(i,j)=iRay
             RayID(iwf,jwf)=iRay
@@ -847,12 +851,16 @@ C  Find the segment for the chief ray
 	  thy=-Aperture/2d0-ds
 
           DO 10 j=1,nGridPts
-            jwf=j+(mdttl-nGridPts)/2+1
+!-->      PR #70 completed (2026-10-10, CC's ruling): ColSource's
+!         even-grid centring; the original put an even grid one row
+!         high, and at nGridPts == mdttl wrote RayID(.,mdttl+1).  For
+!         odd grids, and for iwf at any size, it is the same formula.
+            jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
             thy=thy+ds
             thx=-Aperture/2d0-ds
 
             DO 9 i=1,nGridPts
-              iwf=i+(mdttl-nGridPts+1)/2
+              iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
               thx=thx+ds
               ! ---------------------------------------
               ! GridType: Circular
