@@ -12,6 +12,8 @@ C       Set entrance condition flags to .FALSE.
           nRxCommentDropped = 0
 !<--
           LRxPushback = .FALSE.    ! ReadCoefBlock's one-line pushback
+          iElt = 0   ! the header has no element: RxBad names it 'header'
+                     ! (iElt was uninitialized until the element section)
 
   50      CONTINUE   ! This section is for header part of Rx
 
