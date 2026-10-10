@@ -5917,6 +5917,26 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! grid_idx_ovf_get -- how many grid samples in the LAST trace had a
+      ! non-finite or out-of-INTEGER-range pixel index and were treated as
+      ! off-grid (surfsub SFFSrf/FreeFormSrf/SGSrf/NGSrf guard, 2026-10-10).
+      ! Reset at every trace start.  Zero on a well-posed deck; a nonzero
+      ! count flags rays whose surface-solve bracket diverged (e.g. an
+      ! NS-grid deck whose NSCount round-trip was lost) -- without the
+      ! guard those indices overflow and crash the host.
+      !---------------------------------------------------------------------------------------------
+      subroutine grid_idx_ovf_get(nOvf)
+        use surfsub, only: nGridIdxOvf
+
+        implicit none
+        integer, intent(out):: nOvf
+        ! ------------------------------------------------------
+        nOvf = nGridIdxOvf
+
+      end subroutine grid_idx_ovf_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! calib_set_var_elt -- mark element ``iElt`` as a CALIB variable
       ! and specify which DOFs / Zernike modes are free.
       !

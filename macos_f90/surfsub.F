@@ -59,6 +59,26 @@ C***********************************************************************
          INTEGER :: nFwdRootFlip = 0
          LOGICAL :: LFwdRootNoted = .FALSE.   ! the note prints ONCE per run
 !<--
+!-->  Grid-index out-of-range guard (surfsub.F SFFSrf / FreeFormSrf grid
+!     term).  The bilinear pixel index xi/yj is clamped to the grid with
+!     an INTEGER test (i0=IDFLOOR(xi), i1=i0+1, reject i0<1 .OR. i1>nGridMat).
+!     When the composite-surface bracket solver EXPLORES a ray that misses
+!     the grid, L (hence rho, hence xi/yj) can grow without bound: at
+!     xi > 2^31, INT(xi) in IDFLOOR SATURATES to INT_MAX and i1=i0+1 then
+!     WRAPS to INT_MIN, so the integer test reads all-false and GridMat is
+!     indexed hugely out of bounds -> SIGSEGV (an NS-grid deck whose
+!     NSCount round-trip is broken sends dozens of rays into this regime;
+!     the IRIS instrument deck, 2026-10-10).  Fix: test xi/yj for FINITE +
+!     in-range in floating point BEFORE IDFLOOR, so an out-of-grid ray gets
+!     fh=0 (no figure) and the solver reports a clean bracket failure
+!     instead of a crash.  A finite in-range index is bit-identical to the
+!     old path.  Each rejected sample is counted (nGridIdxOvf, api
+!     grid_idx_ovf_get, summarised by WARN); the first of a RUN prints ONE
+!     note (a per-trace note floods a trace).  Reset per trace with
+!     nZPFailMsg / nFwdRootFlip.
+         INTEGER :: nGridIdxOvf = 0
+         LOGICAL :: LGridIdxOvfNoted = .FALSE.  ! the note prints ONCE per run
+!<--
 !-->  Non-sequential candidate probes need FLOW-OF-LIGHT root selection:
 !     when LNSFlowL is set, the base-conic root pick in ConSrf / AsphSrf
 !     / AsphGridSrf / FreeFormSrf / UDSrf takes the SMALLEST POSITIVE
@@ -1951,7 +1971,14 @@ C  Computes surface function for gridded data surface
 
             ! Compute excess surface height
 
-            IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+!-->        Reject a non-finite / out-of-INT-range index first (overflow).
+            IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &      (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+               CALL GridIdxOvf
+               fh=0d0
+               tiltx=0d0
+               tilty=0d0
+            ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &      (j1.GT.nGridMat)) THEN
                fh=0d0
                tiltx=0d0
@@ -2364,7 +2391,15 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
                x=xi-DBLE(i0)
                y=yj-DBLE(j0)
 
-               IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
+!-->          Reject a non-finite / out-of-INT-range index BEFORE the
+!             integer test (i1=i0+1 would wrap past INT_MAX); off-grid.
+               IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &             (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+                  CALL GridIdxOvf
+                  fh=0d0
+                  tiltx=0d0
+                  tilty=0d0
+               ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
      &             (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
                   fh=0d0
                   tiltx=0d0
@@ -2375,6 +2410,7 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
      &            GridMat(i1,j0),GridMat(i1,j1),
      &            fh,tiltx,tilty)
                END IF
+!<--
 
                Fgrid = fh
                tiltx = tiltx/dAct
@@ -2595,7 +2631,13 @@ C  Compute dSgrid (if active)
                j1=j0+1
                x=xi-DBLE(i0)
                y=yj-DBLE(j0)
-               IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
+!-->          Reject a non-finite / out-of-INT-range index BEFORE the
+!             integer test (i1=i0+1 would wrap past INT_MAX); off-grid.
+               IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &             (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+                  CALL GridIdxOvf
+                  fh=0d0
+               ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
      &             (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
                   fh=0d0
                ELSE
@@ -2604,6 +2646,7 @@ C  Compute dSgrid (if active)
      &            GridMat(i1,j0),GridMat(i1,j1),
      &            fh,tiltx,tilty)
                END IF
+!<--
                CALL ConicDeltaS(rho,fh,zhat,psi,Kc,Kr,Sconic,
      &                          zc,psitzc,deltaS)
                dSgrid = deltaS
@@ -3016,7 +3059,14 @@ C***********************************************************************
             x=xi-DBLE(i0)
             y=yj-DBLE(j0)
 
-            IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+!-->        Reject a non-finite / out-of-INT-range index first (overflow).
+            IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &      (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+               CALL GridIdxOvf
+               fh=0d0
+               tiltx=0d0
+               tilty=0d0
+            ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &      (j1.GT.nGridMat)) THEN
                fh=0d0
                tiltx=0d0
@@ -4278,6 +4328,22 @@ C***********************************************************************
             End Do
             Return
          End Subroutine ZerntoMon7
+
+C***********************************************************************
+C  GridIdxOvf -- record a grid pixel index that is non-finite or beyond
+C  the INTEGER range (the SFFSrf / FreeFormSrf / SGSrf / NGSrf guard).
+C  Counts the event and prints ONE note per run (per-trace floods).
+C***********************************************************************
+
+         SUBROUTINE GridIdxOvf
+            nGridIdxOvf = nGridIdxOvf + 1
+            IF (.NOT.LGridIdxOvfNoted) THEN
+               LGridIdxOvfNoted = .TRUE.
+               WRITE(*,*)' ** Note: a grid pixel index was non-finite '//
+     &           'or out of integer range; the ray is treated as '//
+     &           'off-grid.  Per-run count: WARN / grid_idx_ovf_get.'
+            END IF
+         END SUBROUTINE GridIdxOvf
 
 C***********************************************************************
 C***********************************************************************

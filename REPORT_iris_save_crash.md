@@ -96,3 +96,99 @@ heap-stomp class the July `662e86e` note fixed at parse time but not on
 this path).  Trace-triggered, not SAVE-triggered: load->save is clean,
 load->opd->save shows it, on the same binary.  Independent of this fix;
 filed as its own PLAN section 0 item.
+
+---
+
+# CLOSURE (CCMac, 2026-10-10) -- two engine defects, both fixed
+
+The real-grid half (above, OPEN since 2026-09-09) is closed.  Reproduced
+on the current engine (dev-candidate `d69b408`+, gfortran) and resolved as
+**two independent defects that chain**, not the "corrupted rewrite" the
+round-3 note guessed.
+
+## Mechanism (measured end-to-end)
+
+1. **Trigger -- `save_rx` DROPS `NSCount=`.**  The SAVE writer
+   (`PrtSingleEltInfo`, `iosub.inc`) never emitted `NSCount=`.  The IRIS
+   deck declares it on all 21 non-sequential segments (`NSCnt=1`, a
+   per-group HIT BUDGET: one surface hit per ray in the NS group).  On
+   reload the budget is 0 = UNLIMITED, so the non-sequential search
+   (`tracesub.F` ~4499) never terminates the group; a ray over-searches,
+   the composite-grid surface-solve bracket (`SFFZPB`, `surfsub.F`)
+   diverges and the ray parameter `L` -- hence the grid pixel index
+   `xi=(xData.rhom)/dAct` -- grows geometrically without bound.
+2. **Crash -- INT32 overflow defeats the grid-index guard.**  The four
+   grid-term sites (`SFFSrf`, `FreeFormSrf`, `SGSrf`, `NGSrf`) tested
+   `i0<1 .OR. i1>nGridMat` with `i0=IDFLOOR(xi)`, `i1=i0+1`.  For
+   `xi>2^31`, `IDFLOOR` saturates `i0` to `INT_MAX` and `i1=i0+1` WRAPS to
+   `INT_MIN`, so the test reads all-false, the guard passes, and
+   `GridMat(i0,j0)` is indexed ~2e9 out of bounds -> SIGSEGV in `INTNORM`
+   (`mathsub.F:738`).  lldb stack: `INTNORM <- SFFSrf <- SFFZPSolve <-
+   FreeFormSrf`.  (On Linux the same OOB read may land in mapped memory
+   and return NaN instead of faulting -- same defect, platform-dependent
+   symptom.)
+
+**One-variable proof (my side; the IRIS deck/numbers stay JPL-private):**
+`iris_clean_gridfile.in` (original with the GridFile tab-comment stripped,
+grids active, NSCount present) traces 12737 survivors and round-trips
+clean; the SAME deck with `NSCount` removed by hand crashes identically
+(same SFFZPB divergence, same SIGSEGV).  So neither the grid data, the
+frame, the file, nor the `lData` the writer adds is the trigger -- the
+dropped `NSCount` is.
+
+## Fix (Dave's rulings, 2026-10-10)
+
+- **A -- round-trip `NSCount` (iosub.inc).**  `PrtSingleEltInfo` emits
+  `NSCount=` whenever the element declares it (`NSCnt>0`), mirroring the
+  `Link=` precedent.  **Emit in SAVE only; do NOT auto-derive** -- the
+  budget is authoring intent (0/absent = UNLIMITED, which CornerCube's
+  repeated bounces require; 1 = single-hit segmented groups), not derivable
+  from structure, and defaulting absent->1 would alter every public NS deck.
+  The misleading `tracesub.F` comment ("NSCount should NOT be defined in
+  Rx") is replaced with the correct semantics.
+- **B -- harden the grid-index guard (surfsub.F, all four sites).**  Reject
+  a non-finite / `>=2e9` `xi`/`yj` in floating point BEFORE `IDFLOOR`; the
+  ray is then a clean off-grid miss (`fh=0`) and the solve reports a normal
+  bracket failure instead of crashing.  A finite in-range index is
+  bit-identical to the old path (normal decks do not move).  Each rejected
+  sample is counted (`nGridIdxOvf`, api `grid_idx_ovf_get`, WARN line); the
+  first per run prints one note.  Rule-5 shape: warns and counts, does not
+  error.
+
+With B alone the IRIS deck no longer crashes (rays over-search, are lost
+and COUNTED, trace completes) -- the host-killer is contained even when a
+deck's `NSCount` was already lost.  With A the trace is also CORRECT (the
+budget is restored on round-trip; 12737 survivors, NSCount preserved).
+
+## Public gates (two focused fixtures; `ZGD_test_files/`)
+
+The combined "`NSCount`-drop -> reload SIGSEGV" crash is NOT reproducible
+in a public deck -- it needs IRIS's clocked/decentered NS tiles presenting
+grazing candidates, and the public NS templates do not (segment tooling
+emits sequential `Element= Segment`, which never over-searches; CornerCube
+genuinely needs unlimited bounces).  Each defect is instead gated by its
+own fixture, both must-fail on the pre-fix binary:
+
+- `tst_zrngr_roundtrip.in` (+ `tst_zrngr_grid.txt`): a Cassegrain with a
+  single-member NS `ZrnGrData` primary declaring `NSCount= 1` (built from
+  the public `Rx_Cass_NS` geometry, flat 64x64 grid, nPass 32168).  **A1
+  gate:** load -> SAVE; the saved deck must contain `NSCount= 1`.  Pre-fix
+  SAVE drops it (must-fail); post-fix preserves it.
+- `tst_zrngr_overflow.in`: identical but `GridSrfdx= 1.0E-10`, so
+  `xi ~ 1e10` for ordinary rays.  **B gate:** pre-fix SIGSEGV (`crash_opd`
+  in the CLI load gate); post-fix clean miss, `grid_idx_ovf_get > 0`,
+  trace completes (nPass 32168).
+
+**Verified gfortran, pre (`macos_prefix` @ d69b408) vs post:** A1 pre = save
+lacks NSCount / post = present; B pre = crash_opd / post = ok.  **Remainder
+(Linux/MATLAB side):** the ifx leg of both gates; `mmacos/tests/
+tZrnGrRoundTrip.m` + the pymacos twin; the full corpus A/B (surfsub.F +
+iosub.inc are shared surfaces, rule 3) -- expected 0 moved since the guard
+is bit-identical for finite in-range indices and the SAVE change only adds
+`NSCount=` to decks that declare it (no public deck does).
+
+## Follow-up (resources, not this item)
+
+An NS group containing a grid surface SHOULD declare `NSCount` -- belongs in
+the segmentation emitter (`segment_rx`) as a default when it writes a
+grid-surfaced NS group.  A resources-side follow-up.
