@@ -1,0 +1,20 @@
+record  corpus_ifx_52b1409.csv  (1258 decks)
+  must-fail missing_value.in       load_fail    OK
+  must-fail segdemo3_broken.in     load_fail    OK
+  must-fail short_psielt.in        load_fail    OK
+  status    ok 1255  timeout_load 3
+  roundtrip differ 9  same 1117  ulp 129
+  NaN OPD   3: dyson5_t3_t600_off10_s3.in tst_block_comment.in tst_save_keys.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_FF_R4lm_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_GM_1k5_a0_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_GM_1k5_b_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_GM_3k_a0_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_cprime_centroid_roll180_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_cprime_chief_roll180_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_gate_m30_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_tls1k5_centroid_roll180_e2e.in
+  rt-differ     pre-existing /home/dcr/dev/MACOS_resources/mmacos/challenges/dyson5/dyson5_t5f_tls1k5_chief_roll180_e2e.in
+  timeout_load  pre-existing /home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_redo_lens_nomask/pupilsim_redo_lens_nomask_deck.in
+  timeout_load  pre-existing /home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_redo_lens_owncone/pupilsim_redo_lens_owncone_deck.in
+  timeout_load  pre-existing /home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs/pupilsim_redo_lens_seed/pupilsim_redo_lens_seed_deck.in
+  verdict   PASS

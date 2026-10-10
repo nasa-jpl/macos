@@ -1,0 +1,6 @@
+ifx vs gfortran: 5 of 1258 decks differ
+  /home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb/ctb_dcr.in  rms  1.843768545D-06  1.843768543D-06
+  /home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb/ctb_dm.in  rms  1.843768501D-06  1.843768499D-06
+  /home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb/ctb_s2s_dcr.in  rms  1.843768565D-06  1.843768563D-06
+  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Grating_example_001.in  status/pass/lost  ok  ok  7303  7295  5150  5158
+  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12
