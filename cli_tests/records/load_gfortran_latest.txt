@@ -1,9 +1,15 @@
-record  load_gfortran_1d132fd.csv  (93 decks)
+record  load_gfortran_a582b13.csv  (120 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
-  status    ok 93
-  roundtrip same 85  ulp 8
-  NaN OPD   2: tst_block_comment.in tst_save_keys.in
-  vs load_gfortran_47cd323.csv: 0 decks with a changed OPD/nPass/lost
+  status    load_fail 6  ok 114
+  roundtrip n/a 2  same 104  ulp 8
+  NaN OPD   3: Rx_SaveKeys.in tst_block_comment.in tst_save_keys.in
+  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_BadScalar.in
+  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_RxStop.in
+  load_fail     new deck     /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ShortVec.in
+  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_bad_scalar.in
+  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_rx_stop.in
+  load_fail     new deck     /home/dcr/dev/macos/ZGD_test_files/tst_short_vec.in
+  vs load_gfortran_1d132fd.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS

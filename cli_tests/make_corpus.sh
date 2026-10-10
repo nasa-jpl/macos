@@ -16,7 +16,9 @@ is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[
 {
   (cd "$macos" && git ls-files -- '*.in' | sed "s|^|$macos/|")
   (cd "$res"   && git ls-files -- '*.in' | sed "s|^|$res/|")
-} | grep -v '/build\|/segmirmaker/test_in/\|/SegDemo3broken.in\|/cli_tests/must_fail/' | sort -u | is_rx > "$here/corpus_committed.txt"
+} | grep -v '/build\|/segmirmaker/test_in/\|/SegDemo3broken.in\|/cli_tests/must_fail/' \
+  | grep -v -i 'bad_scalar\|badscalar\|rx_stop\|rxstop\|short_vec\|shortvec' \
+  | sort -u | is_rx > "$here/corpus_committed.txt"   # the by-design refusal fixtures are must-fail decks, not corpus decks
 {
   cat "$here/corpus_committed.txt"
   [ -d "$sandbox" ] && find "$sandbox" -name '*.in' -type f 2>/dev/null | is_rx

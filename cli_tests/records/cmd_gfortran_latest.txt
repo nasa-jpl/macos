@@ -1,10 +1,10 @@
-MANUAL_examples.jou          journal   pass       5.3s  
-MOD_spaces.jou               journal   pass       3.9s  
+MANUAL_examples.jou          journal   pass       5.0s  
+MOD_spaces.jou               journal   pass       4.3s  
 OPD.jou                      journal   pass       2.7s  
-OPD_reference.jou            journal   pass       6.9s  
+OPD_reference.jou            journal   pass       6.5s  
 PERTURB.jou                  journal   pass       4.6s  
-SAVE_roundtrip.jou           journal   pass       2.8s  
-SPOT_text.jou                journal   pass       2.7s  
+SAVE_roundtrip.jou           journal   pass       2.4s  
+SPOT_text.jou                journal   pass       2.6s  
 STOP_FEX_SXP.jou             journal   pass       3.7s  
 VALIDATE.jou                 journal   pass       0.9s  
 selftest.jou                 must_fail fail       0.9s  EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS
