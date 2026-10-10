@@ -21,18 +21,31 @@
 !   and the parser tolerates it, so the validator should too.
 !
 ! Public: validate_prescription_mod%ValidatePrescription
+!
+! Line endings (2026-10-09, PLAN_CONSOLIDATION item 5; Dave's ruling 4a):
+!   ValidatePrescription reports (optional has_cr) whether any record holds
+!   a CR -- found in the pass it already makes, so an LF deck is read no
+!   more than before.  MBFile6 then loads an LF copy made by RxNormalizeEOL
+!   (CRLF and lone CR -> LF) in the system temp dir and deletes it on every
+!   exit (RxTmpCleanup).  Why: ifx reads a CR-only (classic Mac) deck as ONE
+!   record and fails or crashes on it, gfortran splits on CR; CRLF is
+!   already handled by both runtimes.  SAVE writes LF and is untouched.
 ! ----------------------------------------------------------------------
 
       MODULE validate_prescription_mod
         IMPLICIT NONE
         PRIVATE
-        PUBLIC :: ValidatePrescription
+        PUBLIC :: ValidatePrescription, RxNormalizeEOL, RxTmpCleanup
+        PUBLIC :: RxTmpFile, nRxNormalized
+        CHARACTER(LEN=1024), SAVE :: RxTmpFile = ''   ! the live LF copy
+        INTEGER,             SAVE :: nRxNormalized = 0, nRxTmp = 0
       CONTAINS
 
-        SUBROUTINE ValidatePrescription(filename, ios, msg)
+        SUBROUTINE ValidatePrescription(filename, ios, msg, has_cr)
           CHARACTER(*), INTENT(IN)  :: filename
           INTEGER,      INTENT(OUT) :: ios   ! 0 ok, /=0 bad
           CHARACTER(*), INTENT(OUT) :: msg
+          LOGICAL, OPTIONAL, INTENT(OUT) :: has_cr  ! any record holds a CR
 
           INTEGER, PARAMETER :: vunit = 79
           CHARACTER(LEN=2048) :: line
@@ -52,6 +65,7 @@
 
           ios = 0
           msg = ''
+          IF (PRESENT(has_cr)) has_cr = .FALSE.
           pending = .FALSE.
           pending_key = ''
           pending_lineno = 0
@@ -72,6 +86,11 @@
             RETURN
           END IF
 
+          ! The CR test peeks at the first 4 KB as BYTES: gfortran's
+          ! formatted READ takes a CR as the record end, so a CR never
+          ! reaches LINE there (ifx keeps it); the per-record check below
+          ! stays for a deck whose CRs start later.
+          IF (PRESENT(has_cr)) CALL PeekCR(filename, has_cr)
           OPEN (UNIT=vunit, FILE=filename, STATUS='OLD', &
                 ACTION='READ', IOSTAT=lerr)
           IF (lerr /= 0) THEN
@@ -84,6 +103,9 @@
             READ (vunit, '(A)', IOSTAT=lerr) line
             IF (lerr /= 0) EXIT
             lineno = lineno + 1
+            IF (PRESENT(has_cr)) THEN
+              IF (INDEX(line, CHAR(13)) > 0) has_cr = .TRUE.
+            END IF
 
             n = LEN_TRIM(line)
             IF (n == 0) THEN
@@ -218,6 +240,92 @@
           msg = ''
           RETURN
         END SUBROUTINE ValidatePrescription
+
+        SUBROUTINE PeekCR(filename, has_cr)
+          CHARACTER(*), INTENT(IN)    :: filename
+          LOGICAL,      INTENT(INOUT) :: has_cr
+          CHARACTER(LEN=4096) :: b
+          INTEGER :: u, e, nb
+          INQUIRE(FILE=filename, SIZE=nb)
+          IF (nb <= 0) RETURN
+          OPEN(NEWUNIT=u, FILE=filename, ACCESS='STREAM', &
+               FORM='UNFORMATTED', STATUS='OLD', ACTION='READ', IOSTAT=e)
+          IF (e /= 0) RETURN
+          READ(u, IOSTAT=e) b(1:MIN(nb, LEN(b)))
+          CLOSE(u)
+          IF (e == 0) has_cr = has_cr .OR. &
+               (INDEX(b(1:MIN(nb, LEN(b))), CHAR(13)) > 0)
+        END SUBROUTINE PeekCR
+
+        ! An LF copy of SRC (CRLF -> LF, lone CR -> LF) in the system temp
+        ! dir ($TMPDIR, else TEMP, TMP, /tmp), unique per process + call,
+        ! never beside the deck (its directory may be read-only or shared).
+        ! DST = its name, also kept in RxTmpFile for RxTmpCleanup.
+        SUBROUTINE RxNormalizeEOL(src, dst, ok)
+#ifdef __INTEL_COMPILER
+          USE IFPORT, ONLY: GETPID
+#endif
+          CHARACTER(*), INTENT(IN)  :: src
+          CHARACTER(*), INTENT(OUT) :: dst
+          LOGICAL,      INTENT(OUT) :: ok
+          CHARACTER(LEN=:), ALLOCATABLE :: buf, out
+          CHARACTER(LEN=1024) :: dir
+          INTEGER :: u, e, nb, i, k, ld
+          ok = .FALSE.
+          dst = ''
+          INQUIRE(FILE=src, SIZE=nb)
+          IF (nb <= 0) RETURN
+          ALLOCATE(CHARACTER(LEN=nb) :: buf, out)
+          OPEN(NEWUNIT=u, FILE=src, ACCESS='STREAM', FORM='UNFORMATTED', &
+               STATUS='OLD', ACTION='READ', IOSTAT=e)
+          IF (e /= 0) RETURN
+          READ(u, IOSTAT=e) buf
+          CLOSE(u)
+          IF (e /= 0) RETURN
+          k = 0
+          i = 1
+          DO WHILE (i <= nb)
+            k = k + 1
+            IF (buf(i:i) == CHAR(13)) THEN
+              out(k:k) = CHAR(10)
+              IF (i < nb) THEN
+                IF (buf(i+1:i+1) == CHAR(10)) i = i + 1
+              END IF
+            ELSE
+              out(k:k) = buf(i:i)
+            END IF
+            i = i + 1
+          END DO
+          dir = ''
+          CALL GET_ENVIRONMENT_VARIABLE('TMPDIR', dir, ld)
+          IF (ld == 0) CALL GET_ENVIRONMENT_VARIABLE('TEMP', dir, ld)
+          IF (ld == 0) CALL GET_ENVIRONMENT_VARIABLE('TMP', dir, ld)
+          IF (ld == 0) dir = '/tmp'
+          nRxTmp = nRxTmp + 1
+          WRITE(dst, '(A,A,I0,A,I0,A)') TRIM(dir), '/macos_rx_', &
+               GETPID(), '_', nRxTmp, '.in'
+          OPEN(NEWUNIT=u, FILE=TRIM(dst), ACCESS='STREAM', &
+               FORM='UNFORMATTED', STATUS='REPLACE', ACTION='WRITE', &
+               IOSTAT=e)
+          IF (e /= 0) RETURN
+          WRITE(u, IOSTAT=e) out(1:k)
+          CLOSE(u)
+          IF (e /= 0) RETURN
+          RxTmpFile = dst
+          nRxNormalized = nRxNormalized + 1
+          ok = .TRUE.
+        END SUBROUTINE RxNormalizeEOL
+
+        ! Delete the LF copy, if any.  Called after every CLOSE of the
+        ! deck, on the validator-refusal paths, and at the start of every
+        ! load (a backstop for any exit missed).
+        SUBROUTINE RxTmpCleanup()
+          INTEGER :: u, e
+          IF (LEN_TRIM(RxTmpFile) == 0) RETURN
+          OPEN(NEWUNIT=u, FILE=TRIM(RxTmpFile), STATUS='OLD', IOSTAT=e)
+          IF (e == 0) CLOSE(u, STATUS='DELETE')
+          RxTmpFile = ''
+        END SUBROUTINE RxTmpCleanup
 
         SUBROUTINE FormatMissingValue(msg, lineno, key)
           CHARACTER(*), INTENT(OUT) :: msg

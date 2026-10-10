@@ -67,3 +67,8 @@ Makefile    text eol=lf
 *.png       binary
 *.jpg       binary
 *.pdf       binary
+
+# Line-ending gate fixtures (PLAN_CONSOLIDATION item 5): their CR / CRLF bytes ARE the test --
+# never normalize them (text=auto would store the CRLF twin as LF and the gate would test nothing).
+ZGD_test_files/tst_eol_*.in      -text
+ZGD_test_files/tst_short_coef_cr.in -text
