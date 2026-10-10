@@ -1,9 +1,9 @@
-record  load_gfortran_29f8e24.csv  (93 decks)
+record  load_gfortran_d6e2fc5.csv  (93 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
   status    ok 93
   roundtrip same 84  ulp 9
   NaN OPD   2: tst_block_comment.in tst_save_keys.in
-  vs load_gfortran_8d0bafe.csv: 0 decks with a changed OPD/nPass/lost
+  vs load_gfortran_29f8e24.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
