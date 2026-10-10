@@ -46,7 +46,8 @@ C***********************************************************************
 	use loh_I3
 	use dopt_mod
         use macos_IO, only: SetPrtToFileID
-        use validate_prescription_mod, only: ValidatePrescription
+        use validate_prescription_mod, only: ValidatePrescription,
+     &      RxNormalizeEOL, RxTmpCleanup, RxTmpFile
 ! --------------------------------------
         IMPLICIT NONE
 
@@ -278,19 +279,40 @@ C
 	  ! the user pick a different file (or 'q' to abort) instead of
 	  ! letting the parser walk into the breakage and leave the model
 	  ! half-initialized.
+!-->  a deck with any CR is loaded from an LF copy in the system temp
+!     dir (RxNormalizeEOL; PLAN_CONSOLIDATION item 5, 2026-10-09)
+	  CALL RxTmpCleanup()
 	  BLOCK
 	    INTEGER :: vios
 	    CHARACTER(LEN=256) :: vmsg
-	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg)
+	    LOGICAL :: hascr, nok
+	    CHARACTER(LEN=1024) :: tmpf
+	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg,
+     &                                hascr)
+	    IF (hascr) THEN
+	      CALL RxNormalizeEOL(INFIL(1:ICLEN(INFIL)),tmpf,nok)
+	      IF (nok) THEN
+	        WRITE(*,'(A,A,A)') '  ',INFIL(1:ICLEN(INFIL)),
+     &          ': CR line endings normalized for this load'
+	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
+	      END IF
+	    END IF
 	    IF (vios /= 0) THEN
 	      WRITE(*,*)' ** Prescription validation failed:'
 	      WRITE(*,*)'    ',TRIM(vmsg)
 	      WRITE(*,*)'    Pick a different file (or "q" to abort).'
+	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 43
 	    END IF
 	  END BLOCK
-	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  IF (LEN_TRIM(RxTmpFile) > 0) THEN
+	    OPEN (UNIT=RX_FID, FILE=TRIM(RxTmpFile), STATUS='OLD',
+     &            ACTION='READ')
+	  ELSE
+	    OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  END IF
+!<--
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
@@ -1338,6 +1360,7 @@ C	Specify output coordinates
 
         ! Close input file
         CLOSE (UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
 
 	! Setup ApType and ApVec for all segments if an aperture
@@ -1366,6 +1389,7 @@ C	Specify output coordinates
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
 	RETURN
 	END SUBROUTINE MBFile6
