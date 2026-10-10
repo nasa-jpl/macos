@@ -1,9 +1,17 @@
-record  load_gfortran_d6e2fc5.csv  (93 decks)
+record  load_gfortran_47cd323.csv  (93 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
   status    ok 93
-  roundtrip same 84  ulp 9
+  roundtrip same 85  ulp 8
   NaN OPD   2: tst_block_comment.in tst_save_keys.in
-  vs load_gfortran_29f8e24.csv: 0 decks with a changed OPD/nPass/lost
+  vs load_gfortran_d6e2fc5.csv: 8 decks with a changed OPD/nPass/lost
+    moved  /home/dcr/dev/macos/docs/macos-manual/FreeFormPieAperture.in  rms 3.911811657D-05 -> 3.911811658D-05  pass 12127 -> 12127
+    moved  /home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_AsphShort_base.in  rms 4.995963076D-08 -> 4.995963075D-08  pass 1257 -> 1257
+    moved  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/e5hex1.in  rms 3.622346889D-05 -> 3.622346888D-05  pass 41711 -> 41711
+    moved  /home/dcr/dev/macos/ZGD_test_files/e5hex1.in  rms 3.622346889D-05 -> 3.622346888D-05  pass 41711 -> 41711
+    moved  /home/dcr/dev/macos/ZGD_test_files/e5hex2.in  rms 3.563574574D-05 -> 3.563574577D-05  pass 9875 -> 9875
+    moved  /home/dcr/dev/macos/ZGD_test_files/e5pie.in  rms 3.911811657D-05 -> 3.911811658D-05  pass 12127 -> 12127
+    moved  /home/dcr/dev/macos/ZGD_test_files/ff_hex2.in  rms 3.563574574D-05 -> 3.563574577D-05  pass 9875 -> 9875
+    moved  /home/dcr/dev/macos/ZGD_test_files/tst_SegMirMaker.in  rms 3.898416056D-05 -> 3.898416057D-05  pass 12452 -> 12452
   verdict   PASS
