@@ -31,6 +31,25 @@ from cli_load_gate import Cli  # noqa: E402
 PROMPT = r'(MACOS>\s*$|\]:\s*$|\?\s*$|:\s*$)'
 
 
+def settled_prompt(cli, deadline):
+    """Wait for a prompt AND quiescence: the pty delivers output in pieces, and a
+    piece that happens to end in ':' (a sub-prompt before its echoed answer arrives)
+    would otherwise release the next line mid-command.  A prompt counts only when
+    no new output has arrived for 0.3 s after it."""
+    end = time.time() + deadline
+    while time.time() < end:
+        k = cli.wait([PROMPT], max(0.1, end - time.time()))
+        if k is None or k == -1:
+            return k
+        n = len(cli.out)
+        q = cli.wait([r'(?!x)x'], 0.3)          # drain for 0.3 s; the pattern never matches
+        if q is None:
+            return None
+        if len(cli.out) == n and re.search(PROMPT, cli.out[-6000:].decode(errors='replace')):
+            return 0
+    return -1
+
+
 def run_journal(binary, path, root, res, tmp):
     lines = open(path).read().splitlines()
     model, deadline, expects, nots, cmds, deck = '256', 60.0, [], [], [], ''
@@ -61,7 +80,7 @@ def run_journal(binary, path, root, res, tmp):
         for c in cmds:
             n0 = len(cli.out)
             cli.send(c)
-            k = cli.wait([PROMPT], deadline)
+            k = settled_prompt(cli, deadline)
             if k is None:
                 status = 'crash'
                 break

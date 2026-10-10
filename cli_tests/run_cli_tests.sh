@@ -38,10 +38,31 @@ case "$kind" in
   load)     list="$here/corpus_core.txt" ;;
   corpus)   list="$here/corpus_committed.txt" ;;
   extended) list="$here/corpus_extended.txt" ;;
-  cmd|ab|full) echo "$kind: not built yet (PLAN_CONSOLIDATION sec. 2.2 / 2.3)"; exit 2 ;;
+  cmd)
+    # sec. 2.2: one pty journal per command (cmd/*.jou), must_fail/ journals must NOT pass
+    for comp in ifx gfortran; do
+      [ -n "${MACOS_CLI_ONLY:-}" ] && [ "$MACOS_CLI_ONLY" != "$comp" ] && continue
+      case $comp in ifx) bin="$tree/build_release/bin/macos" ;; gfortran) bin="$tree/build_release_gfortran/bin/macos" ;; esac
+      [ -x "$bin" ] || { echo "== $comp: no binary (skipped)"; continue; }
+      rec="$here/records/cmd_${comp}_${sha}.csv"; echo "== $comp: journals -> $rec"
+      python3 "$here/cli_cmd_gate.py" "$bin" "$here/cmd" "$rec" | tee "$here/records/cmd_${comp}_latest.txt"
+      awk -F, 'NR>1 && $2=="journal" && $3!="pass" {bad=1} NR>1 && $2=="must_fail" && $3=="pass" {bad=1} END {exit bad}' "$rec" || fail=1
+    done
+    exit ${fail:-0} ;;
+  manual)
+    # Dave 2026-10-09: load and re-emit the manual's example decks for documentation --
+    # the load gate's FIRST SAVE of each, kept as docs/macos-manual/examples/emitted/<name>.in
+    list="$here/corpus_manual.txt"; ls "$root"/docs/macos-manual/examples/*.in > "$list"
+    bin="$tree/build_release_gfortran/bin/macos"; [ -x "$bin" ] || bin="$tree/build_release/bin/macos"
+    wd="$here/records/manual_work"; rm -rf "$wd"; mkdir -p "$wd" "$root/docs/macos-manual/examples/emitted"
+    python3 "$here/cli_load_gate.py" "$bin" "$list" "$here/records/manual_${sha}.csv" --workdir "$wd" | tee "$here/records/manual_latest.txt"
+    i=0; while read -r d; do n=$(basename "$d" .in); f=$(printf '%s/rt%04d_a.in' "$wd" $i)
+      [ -f "$f" ] && cp "$f" "$root/docs/macos-manual/examples/emitted/$n.in"; i=$((i+1)); done < "$list"
+    rm -rf "$wd"; echo "emitted: $(ls "$root"/docs/macos-manual/examples/emitted | wc -l) decks"; exit 0 ;;
+  ab|full) echo "$kind: not built yet (PLAN_CONSOLIDATION sec. 2.3)"; exit 2 ;;
   *) echo "usage: $0 [load|corpus|extended|cmd|ab|full]"; exit 2 ;;
 esac
-[ -s "$list" ] || "$here/make_corpus.sh"
+[ -s "${list:-}" ] || "$here/make_corpus.sh"
 ls "$here"/must_fail/*.in > "$here/must_fail/list.txt"      # absolute paths, regenerated each run
 
 fail=0
