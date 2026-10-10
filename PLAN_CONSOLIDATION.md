@@ -85,6 +85,10 @@ carry the incidents).  They are the definition of done for every item below.
 - [ ] `dyson_ladder` meniscus seeding (fixed by TO 2026-10-08; confirm the gate).
 - [ ] Gauge-deck migration into `templates/40_benches/gauge_deck` (memory: planned 2026-09-15).
 
+### 1.4a Bindings: full pymacos coverage of the api (Dave 2026-10-10)
+- [ ] `macos_api_mod.F90` has 146 wrappers; pymacos binds 136 (measured 2026-10-10).  Missing: `deadband_notes_get`, `fwd_root_flips_get`, `draw_rays_cmd/_get/3d_get`, `elt_info_get`, `elt_obs_get`, `elt_z`, `elt_srf_zrn_*`, `jmat_elt_get`, `polelt_get/_set`, `ray_hist_set`, `ray_pos_hist_get`, `ray_status_get`, `src_seg_get`, `met_calc/_geom_get/_get`, `translate`, `xps_cmd` (+ whatever lands after).  Plan: extend mmacos's `gen_mex_wrappers.py` (which already reads the api source as the single source of truth) to emit the f2py layer and the Python veneer too — one generator, three targets; the 21 wrappers from it; a pytest coverage gate (api routines listed from the source, each must have a binding; must-fail = remove one); a side-tree build recipe so a pre-fix pymacos red leg is routine (the gap recorded on `test_opd_ref`).  Phase 2, TO.
+- [ ] `dw_dsurf` keeps `remove_ptt=false` as the other runners (confirmed 2026-10-10; the option stays opt-in); the `_multi` variant and the sensitivity core to be checked for the same default in the OPD-reference re-pins.
+
 ### 1.5 Documentation (PLAN §6 + the command reference)
 - [ ] Manual chapters `docs/macos-manual/src/00..09`: math re-entry and the three figures still pending (memory `project_manual_markdown_migration`); §6.2 new chapters (polarization, physical-optics medium awareness, the prescription validator, comments, SAVE round-trip, STOP on segments, FEX conventions) — each written FROM the CLAUDE.md entry it documents, then the entry trimmed to a pointer.
 - [ ] Command reference `docs/macos-manual/cmdref/`: Phase A catalog exists; Phase B = every command with syntax, defaults, conventions table, one example journal and a pointer to its CLI-suite case (§2.3 makes the example and the test the same file).
