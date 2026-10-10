@@ -11,6 +11,6 @@ spot 6 beam
 # EXPECT: Plot type set to TEXT
 # EXPECT: Chief ray location: x=
 # EXPECT: Centroid of spot diagram
-# EXPECT: Writing Spot Diagram, Elt=6
+# EXPECT: Spot Diagram, Elt=6
 # EXPECT-NOT: chief ray becomes undefined
 # EXPECT-NOT: forrtl
