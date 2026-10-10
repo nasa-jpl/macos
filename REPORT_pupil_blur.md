@@ -21,6 +21,13 @@ Every number below is from the record.
   (checkerboard) / 1.03 % (random), noise-free identical.  That is the regularization bias
   at the actuator Nyquist.  The bench reports the same roll-off in its own Stage D:
   `lensuw2` reads the (96,96) mode at gain 0.966.  It is a property of λ_m, not of blur.
+- **Correction (2026-10-09, Dave via CC): that floor is one-step SHRINKAGE, not an
+  accuracy limit.**  A single regularized read is a shrunk estimate; the gauge's servo
+  applies it repeatedly and drives it to the plain least-squares answer (CC's iterate_
+  in `pupil_blur_demo`, resources 0b2fae8).  So the 306 pm (1 %) at λ_m 1e-3 is not a
+  bias in the hold rows.  It belongs in the error budget as a convergence-rate item
+  (steps to settle, shrinkage per step about λ_m).  The photon floor is the 0.9 pm at
+  1e14 photons from `pupil_blur_lam_m`.
 
 **The legs' σ, and the cross-check against the deck's 0.13 / 0.29 %.**
 - **The legs' σ:** the pupilsim redo records' stage-2 Nyquist gain (min over u, v) is
