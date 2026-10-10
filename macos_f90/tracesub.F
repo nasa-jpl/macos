@@ -3255,7 +3255,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
         ! Local variables
 	Logical ifRayElt(0:mElt),ifIntSrfOK(mElt),
      &	        ifTransmit,ifLNsrf,LRTdummy,ifRayToSeg,
-     &	        ifReturn
+     &	        ifReturn,ifReturnStart
 
 	INTEGER i,j,iElt,iRay,nEm1,nEm2,RayIndex(2,mRay),
      &     PrevNonSeg,NextNonSeg,itst,imin,iFirstNonSeq,
@@ -3361,6 +3361,22 @@ C	Initialize input beam if first element is source
 	ELSE
 	  PrevNonSeg=iStartElt
 	END IF
+!-->  The paired-Return parity at the restart element (PLAN_CONSOLIDATION
+!     item 2, 2026-10-09).  ifReturn is a RUNNING per-ray state: each
+!     Return toggles it, a FocalPlane clears it, and while it is set the
+!     leg's path is SUBTRACTED (the back-traced exit-pupil leg).  A trace
+!     RESTARTED at iStartElt > 0 reset it to .FALSE., so a restart AT the
+!     first Return of a pair (jwst zoom 26, e5hex1 11, Cass 4) ADDED the
+!     next leg instead: the geometry bit-identical, the OPD wrong (zoom
+!     trace(26) then trace(27): 3.81e-5 vs 7.01e-6 rms).  Rebuilt here by
+!     CTRACE's own rules over elements 1..iStartElt; only Segment
+!     elements are skipped per ray, and a Return is never a Segment.
+	ifReturnStart=.FALSE.
+	DO i=1,iStartElt
+	  IF (EltID(i).EQ.ReturnElt) ifReturnStart=.NOT.ifReturnStart
+	  IF (EltID(i).EQ.FocalPlaneElt) ifReturnStart=.FALSE.
+	END DO
+!<--
 
 C	Set wavelength in base units; set index of refraction for Glass;
 C	convert Zernike coefficients to monomials; initialize LEltOK;
@@ -3621,7 +3637,7 @@ C       Loop through each element
 	  PrevIndRef=CurIndRef
 	  CurExtinc=StartExtinc
 	  PrevExtinc=CurExtinc
-	  ifReturn=.FALSE.
+	  ifReturn=ifReturnStart   ! .FALSE. from the source (see above)
 
 #if 1
 	  If (IsVarIndRefElt(iStartElt)) Then
