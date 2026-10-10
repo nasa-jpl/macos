@@ -12,7 +12,7 @@ When does a blurred image of the deformable mirror cost the gauge accuracy?  A k
 D. C. Redding, with Claude Code.
 October 2026.  Working record; engine-free (the model is the DM's influence functions and a Gaussian blur).
 DRAFT — pending review.
-~ The question (Fang Shi, 2026-10-08 talk): the DM is imaged onto the gauge's camera through lenses or off-axis mirrors; how much does the image's blur cost after calibration, and when would it matter?  The answer in one line: blur is a roll-off of the DM's highest spatial frequencies; a calibrated read removes it until the roll-off at the actuator spacing's Nyquist frequency reaches the reconstructor's own floor; the built legs sit two orders of magnitude below that.
+~ The question (Fang Shi, 2026-10-08 talk): the DM is imaged onto the gauge's camera through lenses or off-axis mirrors; how much does the image's blur cost after calibration, and when would it matter?  The answer in one line: blur is a roll-off of the DM's highest spatial frequencies; a one-shot read needs calibration to undo it, and a servo converges to the true surface with or without it until the roll-off at the actuator spacing's Nyquist frequency takes the loop's stability; the built legs sit two orders of magnitude below either limit.
 
 ## The question, and how it is answered | Four steps anyone can check by eye; the only physics is the DM's influence function and a blur kernel
 ::: left
@@ -21,39 +21,41 @@ DRAFT — pending review.
 - **3. The reconstruction.**  The actuator commands are recovered from the blurred map by least squares against a response matrix (one column per lit actuator), **without calibration** — the matrix built from the unblurred influence, as if no one knew about the blur — and **with calibration** — the matrix built from the blurred influence, which is what measuring the response matrix through the camera does automatically.
 - **4. The score.**  rms of (recovered − true) commands over the 2852 lit actuators, as a percentage of the command rms; and the reconstructed surface against the true one.
 ::: right
-- **Two reconstructors.**  *Plain least squares*: the matrix inverted with no regularization to speak of (λ = 10⁻⁹) — the simplest possible estimator.  *The gauge's own*: the same matrix with the record's Tikhonov weight (λ_m = 10⁻³ of the median column energy, `matrix_lam` in every bench run) — what every number in the gauge deck used.  The regularization protects the measured matrix against its own noise, at the price of a floor: 1.0 % on the random surface and 6 % on the checkerboard at zero blur, photon-independent.
+- **Two reconstructors, and two ways to use them.**  *Plain least squares*: the matrix inverted with no regularization to speak of (λ = 10⁻⁹) — the simplest estimator, and the indicator of where any estimator converges.  *The gauge's own*: the same matrix with the record's Tikhonov weight (λ_m = 10⁻³ of the median column energy), which protects the measured matrix against its own noise at the price of shrinking a single estimate (1 % on this surface at zero blur).  Each is shown **one shot** (a capture, an absolute read) and **driven to convergence** as the gauge's servo uses it: read the residual, correct, read again.
 - **The built benches on the axis.**  The rigorous tool (`tg96_pupilsim`, engine-traced) gives each leg's transfer at the actuator Nyquist frequency: 0.9999 (lens rig), 0.9994 (mirror rig).  The Gaussian with the same transfer has σ = 0.006 and 0.016 pitch — where they sit on the curves.
 ~ `pupil_blur_demo.m` (`templates/40_benches/tg_psi_dm96_oap/`), ~1 min, no engine; record `runs/pupil_blur_demo/pupil_blur_demo_report.txt`.  Approximations: the blur acts on the phase map (the small-phase limit, 0.1 wave here); the legs are matched to a Gaussian at the Nyquist transfer only.
 
-## Step by step, plain least squares | The 30 nm working surface, blurred at σ = 0.5 pitch (54 % transfer at the actuator Nyquist): the uncalibrated read returns the blurred surface; the calibrated read returns the true one
+## Step by step, plain least squares | The 30 nm working surface blurred at σ = 0.5 pitch (54 % transfer at the actuator Nyquist): read without calibration the estimate is the blurred surface; read with calibration it is the true one; one gray scale for all four panels, the error on the same scale
 ::: full
-![Left to right: the true surface; the blurred surface the camera sees; the surface rebuilt from the commands recovered WITHOUT calibration; the same WITH calibration.  Center 24 × 24 pitches of the 96 × 96 DM, same gray scale (±110 nm).](figs/blur_steps_lsq.png){h=3.1}
-| plain least squares at σ = 0.5 pitch | command error | reconstructed surface vs true |
-|---|---|---|
-| without calibration | **37 %** | 5.1 nm rms — the blurred surface itself (it differs from the true one by 5.2 nm rms) |
-| with calibration | **0.09 %** | 0.007 nm rms |
-- **Without calibration the read is faithful to the wrong thing:** it reproduces the blurred surface, so every feature is softened and the command error is a third of the command.  **With calibration** the blur is in the forward model and the inversion undoes it: the true surface to 7 pm, with the 20 pm read noise as the only residual.
-~ `pupil_blur_demo_steps.png`, top row; the "steps figure" line of the report.
+![Rows: the read without calibration, then with.  Columns: the true surface; the blurred surface the camera sees; the surface rebuilt from the recovered commands; the error, reconstructed − true.  Center 24 × 24 pitches of the 96 × 96 DM, one gray scale (±120 nm).](figs/blur_steps_lsq.png){h=4.3}
+- **Without calibration** the read is faithful to the wrong thing: it reproduces the blurred surface (37 % command error; 5.1 nm rms from the true, which is the blurred surface's own 5.2 nm).  **With calibration** the blur is in the forward model and the inversion undoes it: 0.09 %, 7 pm rms — the 20 pm read noise is the only residual.
+~ `pupil_blur_demo_steps.png`, rows 1–2; the "steps figure" line of the report.
 
-## Step by step, the gauge's own reconstructor | The same surface and blur through the regularized read the deck used: calibration still removes most of the blur, but the regularization's floor shows
+## Step by step, the gauge's reconstructor, one step | The same surface and blur through the regularized read the gauge deck used, applied once: the shrinkage shows — and it is not the estimator's accuracy
 ::: full
-![The same four panels with the record's estimator (λ_m = 10⁻³).](figs/blur_steps_matrix.png){h=3.1}
-| the gauge's reconstructor at σ = 0.5 pitch | command error | reconstructed surface vs true |
-|---|---|---|
-| without calibration | **37 %** | 5.2 nm rms |
-| with calibration | **4.8 %** | 0.23 nm rms |
-- **The 4.8 % is the regularization, not the blur:** at zero blur this estimator already carries 1.0 % on this surface, and as the blur erases the finest content the fixed weight λ_m bites harder on what is left.  The plain read shows what the data support (0.09 %); the gauge's read shows what its weight chooses to keep.  The weight is a knob — the record's 10⁻³ guards the measured matrix's own noise; the trade is measured on the next slide's backup.
-~ `pupil_blur_demo_steps.png`, bottom row.
+![The same layout with the record's estimator (λ_m = 10⁻³), one step.](figs/blur_steps_matrix.png){h=4.3}
+- **One step, calibrated: 4.8 %, 0.23 nm rms** against the plain read's 0.09 %.  The difference is the regularization's shrinkage, which already costs 1 % at zero blur and more as the blur erases the finest content.  A single regularized step is a shrunk estimate, not where the estimator converges — the gauge never uses it once; its servo applies it repeatedly (next slide).
+~ `pupil_blur_demo_steps.png`, rows 3–4.
 
-## The curves: error against blur width | The uncalibrated read degrades from a twentieth of a pitch; the calibrated plain read holds to about 0.8 pitch and fails at 1.1 when the blur has erased the actuator-scale content; the gauge's reconstructor holds to 0.3–0.4 pitch
+## Step by step, the gauge's reconstructor driven to convergence | Applied as the servo applies it — read the residual, correct, read again — the regularized estimator converges to the plain read's answer, with and even without calibration
+::: full
+![The same layout, the record's estimator iterated 20 times at gain 1: a_{k+1} = a_k + est(m − blur(surface(a_k))).](figs/blur_steps_iter.png){h=4.3}
+- **Converged, calibrated: 0.087 %, 7 pm** — the plain least-squares answer; the regularization set the convergence rate, not the accuracy.  **Converged, uncalibrated: 0.09 %, 7 pm as well** — the blur is in the loop's plant, so the loop corrects what the camera sees until the camera sees nothing, and a blurred residual of zero is a residual of zero for every frequency the blur passes.  Calibration matters for a one-shot read (a capture, an absolute measurement); for hold it sets the stability margin: the uncalibrated loop over-corrects the attenuated frequencies and diverges beyond 0.6 pitch of blur (next slide).
+~ `pupil_blur_demo_steps.png`, rows 5–6; the "ITERATED TO CONVERGENCE" sweep in the report.
+
+## The checkerboard, the hardest pattern | ±50 nm on alternate actuators is only ±13 nm of surface (neighboring bumps cancel); blurred at 0.5 pitch it nearly vanishes; the uncalibrated read returns the faint version, the calibrated read the full one
+::: full
+![The ±50 nm checkerboard (the actuator Nyquist pattern) at σ = 0.5 pitch, plain least squares, rows without / with calibration, one gray scale (±13 nm).](figs/blur_maps_checker.png){h=4.5}
+~ `pupil_blur_demo_maps.png`.  Without calibration 68 % command error (4.5 nm rms of surface); with 0.05 % (0.01 nm).
+
+## The curves: error against blur width | One-shot reads degrade from a twentieth of a pitch without calibration and hold to about 0.8 pitch with it; the servo converges to the same accuracy with or without calibration until the loop's stability goes, at 0.6 pitch uncalibrated and 0.8 calibrated
 ::: left
-![The random 30 nm working surface: command error vs blur 1/e radius in actuator pitches.  Dashed gray: plain least squares; black: the record's reconstructor; blue dotted: the bench's kernel estimator.  Open = without calibration, filled = with.  The shaded band is the width the gauge deck stated for its legs.](figs/blur_curve_random.png){h=3.6}
+![The random 30 nm working surface: command error vs blur 1/e radius in actuator pitches.  Dashed gray: plain least squares; black: the record's estimator, one step; green: the record's estimator iterated to convergence; blue dotted: the bench's kernel estimator.  Open = without calibration, filled = with.](figs/blur_curve_random.png){h=3.5}
 ::: right
-![The ±50 nm checkerboard — the actuator Nyquist pattern, the first thing blur removes.](figs/blur_curve_checker.png){h=3.6}
-- **Uncalibrated:** 2 % at 0.1 pitch, 8 % at 0.2, 37 % at 0.5 (random surface); the checkerboard is half gone at 0.4.
-- **Calibrated, plain:** at the noise floor (0.04 %) to 0.5 pitch, 0.35 % at 0.8, then the matrix turns ill-conditioned (the transfer at Nyquist is 8 % at 1.0 pitch, 5 % at 1.1) and the read collapses by 1.3.
-- **Calibrated, the gauge's:** 1.3 % at 0.2 pitch, 2.8 % at 0.4, 4.8 % at 0.5 — the floor plus the regularization's growing share.
-~ `pupil_blur_demo_curve.png`, top-left two panels; the sweep tables in the report.
+![The ±50 nm checkerboard — the actuator Nyquist pattern, the first thing blur removes.](figs/blur_curve_checker.png){h=3.5}
+- **One shot, uncalibrated:** 2 % at 0.1 pitch, 8 % at 0.2, 37 % at 0.5.  **One shot, calibrated, plain:** at the noise floor (0.04 %) to 0.5 pitch, 0.35 % at 0.8, collapse by 1.3 when the blur has erased the actuator-scale content (8 % transfer at 1.0 pitch).  **One shot, the gauge's, one step:** 1.3 % at 0.2, 4.8 % at 0.5 — shrinkage.
+- **Iterated to convergence (the servo):** calibrated, the plain answer to 0.7 pitch then the same collapse; uncalibrated, the same to 0.5 pitch, 2.7 % at 0.6, divergent beyond — the loop's gain at the attenuated frequencies exceeds 2.
+~ `pupil_blur_demo_curve.png`, top-left two panels; the three sweep tables in the report.
 
 ## Where the built benches sit | Both legs are at a hundredth of a pitch, where the uncalibrated cost is a few hundredths of a percent and the calibrated cost is unmeasurable — so the 0.13 / 0.29 % the gauge deck attributed to "blur" is mostly something else
 ::: full
@@ -102,16 +104,17 @@ matlab
 | 10⁻⁵ | 3.17 | 10.9 | 4.23 | 3.28 |
 | 10⁻⁶ | 0.32 | 10.5 | 2.86 | 0.95 |
 | 10⁻⁷ | 0.03 | 10.5 | 2.85 | 0.90 |
-- **The bias scales with λ_m** (306 pm = 1.0 % of the 30 nm surface at the record's weight) and is photon-independent; **the noise part plateaus** at the unregularized least-squares floor, 0.90 pm at 10¹⁴ photons and 2.85 at 10¹³ — the gauge deck's 1.4 / 2.3 pm class.  So the record's 1 % is a regularization choice, not physics.  **Caveat:** the bench's measured matrix carries noise and model error in its columns that λ_m guards; lowering it is re-gated on the measured matrix (the bench's Stage E sweep), not read off this ideal-matrix bound.
+- **The one-step shrinkage scales with λ_m** (306 pm = 1.0 % of the 30 nm surface at the record's weight) and is photon-independent; **the noise part plateaus** at the unregularized least-squares floor, 0.90 pm at 10¹⁴ photons and 2.85 at 10¹³ — the gauge deck's 1.4 / 2.3 pm class.  Driven to convergence the shrinkage is gone (slide 5); it sets how many steps the servo needs, not where it ends.  **Caveat:** the bench's measured matrix carries noise and model error in its columns that λ_m guards; lowering it is re-gated on the measured matrix (the bench's Stage E sweep), not read off this ideal-matrix bound.
 ~ `pupil_blur_lam_m.m`, record `pupil_blur_lam_m_report.txt` (TO, 2026-10-09); ideal matrix, the record's random 30 nm surface, 2852 lit actuators, shot noise per 0.25 mm pixel.
 
 ## Records behind each slide | Every number is in a committed run record
 ::: full
 | slide | record |
 |---|---|
-| 3, 4 | `runs/pupil_blur_demo/pupil_blur_demo_steps.png`; the "steps figure" line of `pupil_blur_demo_report.txt` |
-| 5 | `pupil_blur_demo_curve.png`; the two sweep tables (regularized and plain) in the report |
-| 6 | the report's "built leg on the axis" and "cross-check" sections; `runs/pupilsim_redo_lens/`, `runs/pupilsim_redo_oap/` |
-| 7 | the report's "BOX kernel" section |
-| 9 | `runs/pupil_blur_demo/pupil_blur_lam_m_report.txt` |
+| 3, 4, 5 | `runs/pupil_blur_demo/pupil_blur_demo_steps.png`; the "steps figure" line of `pupil_blur_demo_report.txt` |
+| 6 | `pupil_blur_demo_maps.png` |
+| 7 | `pupil_blur_demo_curve.png`; the three sweep tables (regularized one step, iterated, plain) in the report |
+| 8 | the report's "built leg on the axis" and "cross-check" sections; `runs/pupilsim_redo_lens/`, `runs/pupilsim_redo_oap/` |
+| 9 | the report's "BOX kernel" section |
+| 11 | `runs/pupil_blur_demo/pupil_blur_lam_m_report.txt` |
 ~ `macos/REPORT_pupil_blur.md` (TO), `macos/NOTE_to_ccmac_pupil_blur_review.md` (CC), `macos/BRIEF_to_pupil_blur.md`; the gauge deck's pupil-imaging slide and `REPORT_gauge_ifo.md` §6b carry the corrected attribution.
