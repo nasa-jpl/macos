@@ -1361,6 +1361,25 @@ C	Specify output coordinates
         ! Close input file
         CLOSE (UNIT=RX_FID)
         CALL RxTmpCleanup()      ! the LF copy, if one was loaded
+!-->  zGrid is not deck state: set it to the z OrthoSrcFrame derives
+!     (sign of xGrid x yGrid against ChfRayDir, unitised), so the first
+!     grid setup after a load sees a consistent frame and its dead band
+!     keeps the deck's x/y.  It was 0 or the PREVIOUS deck's, the band
+!     test failed at order 1 and the frame was rebuilt from cross
+!     products on every load: SAVE -> load -> SAVE never reached a fixed
+!     point on a frame with round-off-sized components (PLAN_CONSOLIDATION
+!     6a, 2026-10-09: the dyson5 roll-180 joins, 33 corpus decks).
+        BLOCK
+          REAL*8 :: zc(3)
+          CALL DXPROD(zc,xGrid,yGrid)
+          IF (DOT_PRODUCT(zc,ChfRayDir).GT.0d0) THEN
+            zGrid=ChfRayDir
+          ELSE
+            zGrid=-ChfRayDir
+          END IF
+          CALL DUNITIZE(zGrid)
+        END BLOCK
+!<--
 
 
 	! Setup ApType and ApVec for all segments if an aperture
