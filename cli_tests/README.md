@@ -40,11 +40,13 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   `corpus_extended.txt` (+ `$MACOS_SANDBOX`, default `~/dev/MACOS_sandbox`; gitignored —
   machine-local).  The two committed lists carry this box's absolute paths; re-run
   `make_corpus.sh` on another machine before the first record.
-- `must_fail/` — the non-vacuity decks (§2.4).  `short_zerncoef.in`: a `ZernCoef=`
-  block one value short — a bare `READ(VALUE,*)` abort that KILLS the CLI (PLAN §0
-  line 270; TO's item 1); when that fix lands this deck will load and must move to
-  the positive corpus with its padded-and-warned expectation.  `missing_value.in`:
-  `nGridpts=` with no value — the validator refuses it; this one is permanent.
+- `must_fail/` — the non-vacuity decks (§2.4), regenerated into `list.txt` each run.
+  `missing_value.in`: `nGridpts=` with no value — the validator refuses it.
+  `segdemo3_broken.in`: the ZGD broken-deck fixture (excluded from the corpus lists
+  so it counts once, here).  History: `short_zerncoef.in` (a `ZernCoef=` block one
+  value short) crashed both CLIs until TO's item 1 (`ReadCoefBlock`, macos 1d318ac)
+  made it pad and warn; it moved to `ZGD_test_files/tst_short_zerncoef.in` as a
+  positive case the same day — the pattern for every must-fail deck a fix closes.
 - `records/` — `<kind>_<compiler>_<sha>[+dirty].csv` + `.log`, `mustfail_*.csv`,
   `<kind>_<compiler>_latest.txt` (the last summary).  Committed: the records of
   tagged runs; the `.log` files are gitignored.
