@@ -50,6 +50,7 @@
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Mask_Parabolas.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_PropMedium_glass.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_PropMedium_vac.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ShortCoef.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_VecChain.in
 /home/dcr/dev/macos/ZGD_test_files/e2e_pie.in
 /home/dcr/dev/macos/ZGD_test_files/e5hex1.in
@@ -64,7 +65,6 @@
 /home/dcr/dev/macos/ZGD_test_files/opt_example_constrained.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example.in
 /home/dcr/dev/macos/ZGD_test_files/quit.in
-/home/dcr/dev/macos/ZGD_test_files/SegDemo3broken.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3conic.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3data.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3.in
@@ -87,5 +87,7 @@
 /home/dcr/dev/macos/ZGD_test_files/tst_raystatus.in
 /home/dcr/dev/macos/ZGD_test_files/tst_save_keys.in
 /home/dcr/dev/macos/ZGD_test_files/tst_SegMirMaker.in
+/home/dcr/dev/macos/ZGD_test_files/tst_short_coef.in
+/home/dcr/dev/macos/ZGD_test_files/tst_short_zerncoef.in
 /home/dcr/dev/macos/ZGD_test_files/tst_ZGD2.in
 /home/dcr/dev/macos/ZGD_test_files/tst_ZGDdata2.in
