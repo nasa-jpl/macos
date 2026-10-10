@@ -1,0 +1,14 @@
+# PERTURB the Cassegrain's secondary (elt 3) by 1e-6 rad about x, GLOBAL frame, then OPD (cmdref: Perturbation)
+# the unperturbed RMS OPD is 1.29e-12 (OPD.jou); a tilted secondary must move it well above that
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+opd 5
+/null
+perturb 3
+global
+1e-6 0 0
+0 0 0
+opd 5
+/null
+# EXPECT: RMS OPD error is\s+1\.29\d+D-12
+# EXPECT: RMS OPD error is\s+\d\.\d+D-0[3-6]
+# EXPECT-NOT: forrtl

@@ -1,0 +1,23 @@
+# STOP (object-space and element forms), FEX and SXP on e5hex1 (cmdref: Ray Tracing / Source)
+# - 'stop obj 0 0 0' on ONE line once crashed (EOF on a short token); the prompts gather tokens (CLAUDE.md "STOP on a Segment element")
+# - a Segment element (elt 1) is an accepted stop site
+# - FEX's EP crossing is the mean of four probes (frame-independent): the medial radius is the SAME under the object stop
+#   and the element stop (the legacy single probe moved it 1.58 mm between them), the axis is the chief ray by default
+# - SXP gives FEX's geometry (zp_FP == zp)
+old $ROOT/ZGD_test_files/e5hex1.in
+stop obj 0 0 0
+fex 12
+no
+stop elt 1 0,0
+fex 12
+no
+sxp 12
+no
+# EXPECT-NOT: forrtl
+# EXPECT-NOT: Invalid element type
+# EXPECT: FEX: EP crossing from4 probes
+# EXPECT: medial\s+2523\.7355
+# EXPECT: FEX axis: CHIEF RAY
+# EXPECT: Computed StopPos
+# EXPECT: SXP: EP crossing axis1\s+2548\.79157\s+axis2\s+2498\.67947\s+medial\s+2523\.73552
+# EXPECT: zp_FP =\s+2523\.7355
