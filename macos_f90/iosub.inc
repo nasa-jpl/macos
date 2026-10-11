@@ -2906,7 +2906,10 @@ C      THIS SUBROUTINE OPENS AND CLOSES THE JOU FILE
 
 	 IMPLICIT NONE
 
-	 CHARACTER(len=MacosCharLen) :: filnamjou
+!-->  SAVE: the closing call (task 2) prints the name the opening call
+!     (task 1) read; without SAVE it printed stack garbage (2026-10-10).
+	 CHARACTER(len=MacosCharLen), SAVE :: filnamjou = ' '
+!<--
 	 LOGICAL exist
 	 INTEGER ICLEN,l,task
 
