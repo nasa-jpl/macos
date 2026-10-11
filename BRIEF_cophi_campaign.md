@@ -253,3 +253,27 @@ that is the trade the `format` stage should quantify: cell size × cadence ×
 photons against the drift spectrum.  Verdict: implementable as a coarse
 companion sensor, not as the full-resolution gauge; model it as a row, decide
 after the number.
+
+## 8. Stage records (as they land; the numbers are the records')
+
+- **bench — DONE 2026-10-11 (TO, resources 362155c; gate `tCophiBench` 5/5, own class, model 1024):**
+  the LO arm is `twyman_green('ref_arm','lo')` (the default `'flat'` byte-identical on four
+  configs): a fiber tip + collimator with its powered face AT the flat's seat, both rigs.
+  Registration PASS: chief 0.000 px on both; LO coverage 1.000; the LO overfills the test
+  pupil by 34 px (radius ratio 1.215), so sub-overfill offsets are fill, not registration.
+  Flat-DM null: lens 0.000 nm; mirror rig 0.782 nm rms after piston (tilt 0.647, defocus
+  0.170 — the LO collimator's wavefront against the test arm, frozen into the null as the IFO
+  does; its MOTION is the LO-drift row).  Contrast g 0.982 at lo_ratio 1.47 (= 2√r/(1+r),
+  consistent).  Records `cophi_dm96/runs/bench_{lens,oap}/*_cophi_report.txt`.
+  **Two findings:** (1) the geometric tail places the detector field BY RAY INDEX, not by
+  camera position — the LO's own collimator makes the per-index null 681 nm where the
+  by-position null is 0.45 nm; the LO is placed on the test pixels by position
+  (`lo_on_test_`); the vector-mode field phase measures −kW on both decks (the known
+  conjugate).  (2) The tg96 sheet's mirror-rig default (`POL_IN` collimated) puts the record's
+  Ex = Ey launch CROSSED with the input polarizer (1e-6 of the power); the record runs pass
+  `POL_IN 'source'` and never met it; COPHI applies the record's settings and solves both
+  launches.  **CC review note:** the drop-in keeps the record's polarizing train (input
+  polarizer, analyzer at −43.85°; the LO passes the analyzer at 1.000, the test arm at 0.265
+  of its open power) — COPHI's own layout has none (same polarization both arms, a plain
+  splitter), so the `noise` stage runs the photon budget for BOTH trains and the deck says
+  which it prices.
