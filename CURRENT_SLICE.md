@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **2026-10-10 evening (CC): PLAN_CONSOLIDATION PHASE 1 EXITED on Dave's word; PHASE 2 OPEN.**  Everything
+> pushed (macos 5362009, resources 400f825); this bookkeeping commit (PLAN_CONSOLIDATION ticks + §1.1b
+> carried items + §4a rulings + the exit line; PLAN.md §0 ticks) is LOCAL until Dave says push.  Dave's
+> rulings 10-10: feature freeze preferred (not required) until the dev-candidate PR is approved;
+> LUseChfRayIfOK and IRIS cleared; suite home cli_tests/; SAVE writes ApStop (does), the other unsaved
+> variables DEFERRED; Mac-as-release-platform = open (§4 item 2).  Phase 2 lanes per §3: TO on §1.1b's
+> engine items (3b, 3c, even-grid PROPER compare, Grating edge, timeouts) then §1.3's urgent two; CC on
+> the cli_tests follow-ups (`ab` layer, third SAVE leg, journals, model-aware driver) and the owed
+> manual/cmdref words; bindings program §1.4a/b after.  COPHI still waits for Dave's go.
+
 > **2026-10-10 morning (CC): ALL PUSHED (macos ..d69b408, resources ..a35ad6e).  Phase-1 engine lane
 > complete (TO; items 1, 1b, 2, 3, 4, 5, 5c, 5d/6a, each gated by cli_tests from the clean worktree);
 > CCMac started on IRIS (`BRIEF_ccmac_iris_save_crash.md`).  Memory `project_consolidation_phase1` is
