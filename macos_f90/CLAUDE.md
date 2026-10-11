@@ -1244,6 +1244,10 @@ tAsphCalib / tBeamRows / tCalib / tDesignTelescope, scored against the old loop)
   stopping later): worst +2.7e-6 relative chisq (~1e-15 m), iterations 804 -> 594.
 - A quadratically convergent solve (Rx_AsphCalib SPOT: 1.6e-25 -> 1.6e-33 -> 5.4e-43 ->
   1.7e-43) never takes a flat step; it stops at the FLOOR (spot20: 14), never 'converged'.
+Setup: the variable packing and the configuration checks that precede both
+`nls_optim_dvr` entries (the LOAD handler's `OptNomSens= Y` nominal-sensitivity run and
+the CALIB command) are ONE function, `calib_setup_vars` (design_optim_mod, 2026-10-11) --
+change it there, not in macos_cmd_loop.inc.
 Gates: `cli_tests/cmd/CALIB_history.jou` (the same T=4 count fresh and after a T=20 CALIB, a
 regex BACKREFERENCE; red on prefix9 + the old-loop side builds: 4/15/3), `tCalibStop`
 (mmacos, SUITE_FAST) + `test_calib_stop.py`; the old-vs-new table is
