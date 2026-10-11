@@ -5855,7 +5855,8 @@
       subroutine calib_run(OK, rtn_flag_out, nFov_out, nWl_out,            &
                            old_wfe_out, new_wfe_out)
         use dopt_mod, only: rtn_flag, old_wfe, new_wfe, nOptFov,           &
-                            nOptWavelen, nVarElt, max_fov, max_wl
+                            nOptWavelen, nVarElt, max_fov, max_wl,     &
+                            calib_n_iter, calib_merit, calib_stop
 
         implicit none
         logical, intent(out):: OK                          ! PASS if call dispatched & rtn_flag==0
@@ -5871,6 +5872,9 @@
         nWl_out       = 0
         old_wfe_out   = 0d0
         new_wfe_out   = 0d0
+        calib_n_iter  = -1                ! calib_stats_get: this run's, or none
+        calib_merit   = -1d0
+        calib_stop    = -1
 
         if (.not. SystemCheck()) return
         if (nVarElt < 1)         return  ! No Variable Element for Optimization!
@@ -5910,6 +5914,33 @@
         maxWl  = max_wl
 
       end subroutine calib_buffer_dims
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_stats_get -- the last CALIB's LM iteration count and final
+      ! merit (the chisq lmlsq minimises; target units squared, summed over
+      ! fields and wavelengths).  -1 for both when no CALIB has run, or it
+      ! never reached nls_optim_dvr (an early refusal, the constrained
+      ! path); the linear (SVD) path reports its count and merit -1.  A
+      ! failed LM run reports the iterations it completed and the merit
+      ! at the last accepted step (-1 if none was).  stop_reason says why
+      ! it stopped: 1 converged (two flat accepted steps), 2 the round-off
+      ! floor (ten rejected trials), 3 the iteration cap, 4 LM failure;
+      ! -1 none.  PLAN 3.3.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_stats_get(n_iter, merit, stop_reason)
+        use dopt_mod, only: calib_n_iter, calib_merit, calib_stop
+
+        implicit none
+        integer, intent(out):: n_iter
+        real(8), intent(out):: merit
+        integer, intent(out):: stop_reason
+        ! ------------------------------------------------------
+        n_iter      = calib_n_iter
+        merit       = calib_merit
+        stop_reason = calib_stop
+
+      end subroutine calib_stats_get
 
 
       !---------------------------------------------------------------------------------------------
@@ -6133,7 +6164,7 @@
       !   2 = WFE_ZMODE   (specific Zernike modes only; requires WFZernMode)
       !   3 = BEAM        (beam waist / position / divergence)
       !   4 = SPOT        (RMS spot size)
-      !   5 = OPL         (optical path length)
+      !   (5 = OPL was removed 2026-10-10: it had no objective; refused)
       !
       ! For target_type=2 (WFE_ZMODE), caller supplies n_wf_zern + a
       ! list of Zernike mode indices.  For all other targets,

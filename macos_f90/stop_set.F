@@ -29,7 +29,8 @@ C
         use elt_mod
 	use tracesub_mod
         use dopt_mod, only : beamOpt,mVarDOF,old_wfe,new_wfe,rtn_flag,
-     &   		     ifOptPrint,OptAlg,NonLin
+     &   		     ifOptPrint,OptAlg,NonLin,calib_n_iter,
+     &   		     calib_merit,calib_stop
         use design_optim_mod
 
         IMPLICIT NONE
@@ -61,6 +62,8 @@ C
         REAL*8 :: opt_wavelen_loc(1),ddx_loc(3),ddy_loc(3),dopt_tol_loc,
      &            opt_fov_loc(3,2,12),fov_wt_loc(1)
         Type(OptBeamStr) :: beamOpt_sv
+        Integer :: n_iter_sv,stop_sv
+        REAL*8 :: merit_sv
 
 	! Compute STOP position in 3D global frame
         CALL DSMPROD(ddx_loc,xLocal,xTarg(1),3)
@@ -129,6 +132,10 @@ C
 	
 	ifOptPrint=.false.
 
+!-->  The aim is not a CALIB: keep the last CALIB's stats (PLAN 3.3)
+        n_iter_sv=calib_n_iter; merit_sv=calib_merit
+        stop_sv=calib_stop
+!<--
         ! Unconstrained system optimization
         Call nls_optim_dvr(.true.,OptTarget_loc,
      &                     nVarElt_loc,varElts_loc,varDOFs_loc,
@@ -141,6 +148,8 @@ C
      &                     old_wfe,new_wfe,rtn_flag,
      &                     tgtWF_flg_loc,tgtWF_fn_loc,tgtWF_fmt_loc,
      &                     OptTgtElt_loc,LOptIfFEX_loc,beamOpt)
+        calib_n_iter=n_iter_sv; calib_merit=merit_sv
+        calib_stop=stop_sv
 
 #if 0
 	! Check convergence

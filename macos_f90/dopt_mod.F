@@ -69,6 +69,14 @@ C***********************************************************************
      &            opt_wavelen(max_wl)   ! max wavelens to optimize
 
         Integer :: iVarElt,nitrs_dopt,rtn_flag,zern_off,asph_off
+!-->  PLAN 3.3: the last CALIB's LM iteration count and final merit
+!     (chisq), set by nls_optim_dvr; -1 = none run / not reached.
+!     calib_stop: why it stopped -- 1 converged (2 flat accepted
+!     steps), 2 round-off floor (10 rejected trials), 3 OptMaxItrs,
+!     4 LM failure; -1 none.
+        Integer :: calib_n_iter = -1, calib_stop = -1
+        Real*8  :: calib_merit = -1d0
+!<--
         Real*8, dimension(:,:), allocatable :: psiElt_old,vptElt_old,
      &                          ZernCoef_old,AsphCoef_old,varEltCons
 	Real*8, dimension(:,:,:), allocatable :: EltCons
