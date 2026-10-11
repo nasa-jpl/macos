@@ -459,6 +459,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  WRITE(*,*)' '
           WRITE(*,*)'Starting MACOS System Optimization ...'
 	  WRITE(*,*)'Number of rays used for optimization =',opt_npts*opt_npts
+	  If (OptAlg==NonLin)
+     &      WRITE(*,'(A,1PE10.3,A,I6)')'  LM stop: OptTol (abs rms) =',
+     &        opt_tol,'  OptMaxItrs =',tot_itrs
           WRITE(*,*)' '
 	End If
 

@@ -1,0 +1,11 @@
+# Corpus A/B for PLAN_CONSOLIDATION 3.2 pair 1 (OptTol= keyword, OptMxItrs= alias), 2026-10-11.
+# pre = macos 84a9190 (gated); post = this commit; ifx + gfortran; cli_load_gate.py on the 406-deck
+# list, every record column + the first SAVE byte for byte (cmp.py, as ab_calib_loop_stopaim.txt).
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers.  Expected: a load + opd + SAVE never runs CALIB, and SAVE writes no Opt* key.
+# NAMED CALIB-behaviour movers (not visible to a load gate): the three corpus decks that spell
+# the cap OptMxItrs=20 -- ZGD_test_files/opt_example.in, opt_example_asph.in and the pymacos copy
+# tests/Rx/opt_example.in -- ran with the default cap 10 (the key was dropped silently) and now
+# run with 20: tCalib's five opt_example solves stop at the round-off floor at 15-19 instead of
+# the cap at 10, same merit; tCalib 9/9, pymacos test_calib 14/14.  No corpus deck uses OptTol=.

@@ -164,7 +164,7 @@ this plan); Dave rules the open questions below and signs off each phase.
 
 ## 4. Rulings needed from Dave
 
-1. **SAVE policy** (from §1.1b): the `Opt*`/CALIB keys and the trace-state singles — deferred by Dave 2026-10-10, ask again when the SAVE round-trip next moves.
+1. **SAVE policy** (from §1.1b): the `Opt*`/CALIB keys and the trace-state singles — deferred by Dave 2026-10-10, ask again when the SAVE round-trip next moves.  `OptTol=` (added 2026-10-11, §3.2) is the family's 26th key and follows it: parsed, not written.
 2. **Mac as a release platform in phase 4** (CC's recommendation 2026-10-10): the Darwin build arms are applied and CCMac has run the engine + mmacos on Apple Silicon daily since September (the IRIS INT-saturation crash was ARM-found); not done: pymacos on Mac, Giza/XQuartz display, and any release-gate run on a clean Mac clone (build + fast suite + `cli_tests load`); `MAC_PORT.md` still says "nothing validated".  Phase 4 (CCMac runs the gate, rewrites `MAC_PORT.md` as the record) or best-effort after — Dave's call.
 
 ## 4a. Rulings taken so far

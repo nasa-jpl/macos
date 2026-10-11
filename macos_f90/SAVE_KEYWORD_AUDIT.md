@@ -53,7 +53,9 @@ OptBeamPos OptBeamRefRayDir OptBeamSize OptChfRayDir OptChfRayPos
 OptFEX OptFOVWt OptMaxItrs OptNomSens OptPinvFile OptRayGrid
 OptSavePinv OptSpotSize OptSrcRpt OptSvdSvCut OptTarget OptTgt
 OptTgtElt OptTgtWF OptUseSavedPinv OptWaveLen OptWFElt OptZern
-OptZernModes` plus `VarElt VarZern VarCons VarSrc CalBWK`.
+OptZernModes` plus `VarElt VarZern VarCons VarSrc CalBWK`.  `OptTol` (2026-10-11) is
+the 26th and follows the family -- parsed, not written; the policy is Dave's open
+ruling, PLAN_CONSOLIDATION §4 item 1.
 These configure CALIB runs; whether a SAVE'd Rx should carry them is
 a policy call (they round-trip a *workflow*, not the optical system).
 

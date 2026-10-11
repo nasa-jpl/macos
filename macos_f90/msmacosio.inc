@@ -449,10 +449,34 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptMaxItrs',10)) THEN
+!-->  OptMxItrs= (9 chars) is the common spelling of OptMaxItrs=: the
+!     10-char match below missed it and the cap stayed at the default
+!     with no message (PLAN 3.2, 2026-10-11).  Both are accepted.
+	  ELSE IF (LCMP(VAR_NAM,'OptMaxItrs',10) .OR.
+     &             LCMP(VAR_NAM,'OptMxItrs',9)) THEN
+!<--
             READ(VALUE,*,IOSTAT=iosRx) nitrs_dopt
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
+
+!-->  OptTol= : CALIB's convergence tolerance (PLAN 3.2, 2026-10-11) --
+!     an ABSOLUTE change of the rms merit sqrt(chisq/rows), target units
+!     (design_optim.F, the LM stopping rule).  A per-load value:
+!     dopt_init_vars resets dopt_tol to 1e-12 on every load, the Rx
+!     overrides it, api calib_set_tol overrides the loaded deck.  Not
+!     SAVEd (no Opt* key is: SAVE_KEYWORD_AUDIT).  <= 0 is ignored with
+!     a note (calib_set_tol refuses it the same way).
+	  ELSE IF (LCMP(VAR_NAM,'OptTol',6)) THEN
+            READ(VALUE,*,IOSTAT=iosRx) dOptTolRx
+            IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+            IF (dOptTolRx .GT. 0d0) THEN
+              dopt_tol = dOptTolRx
+            ELSE
+              WRITE(*,*)' ** OptTol= must be > 0; ignored, the default',
+     &                  ' stays', dopt_tol
+            END IF
+            GO TO 50
+!<--
 
           ! --------------------------------------------------------------------------------
 	  ELSE IF (LCMP(VAR_NAM,'ZCOZernType',10)) THEN
