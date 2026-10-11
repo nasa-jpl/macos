@@ -376,3 +376,26 @@ temporal, two-color, or neither.
   `noise` first (a 0.5 % gain is nothing to a noise row), then the converged estimator as a
   cross-gauge item re-scoring the battery rows for H and I.  Diagnostic knobs kept, opt-in:
   `cophi.diag_lo` / `.scalar` / `.diag_mask`, `place.lit_force`.
+- **noise — DONE 2026-10-11 (TO, resources c24d731; records `runs/noise_{lens,oap}[_plain]/`):**
+  the deck's 30 nm matrix estimator through `cophi_ctx`'s noise hook; each camera mapped onto
+  the model grid by BINNING (well × k², read × k; frame mean at 0.5 × well), 12 draws; the
+  per-pixel σ_φ measured / `tCophi`'s formula = 1.000 ± 0.002 on every camera, rig and train.
+  **Metric:** pm per reading = the PISTON-FREE robust floor (1.48 MAD over the unpoked lit set,
+  median of draws) — the raw single-actuator σ is mostly a common lit-set piston (165 pm raw
+  vs 76 piston-free; piston is unobservable and inert on a DM) and the per-actuator distribution
+  is heavy-tailed (p99 ~4–6× the median; the plain std moved ±30 % between benches, the robust
+  floor 1–3 %).  **The record's S5 "photons for 1 pm" uses the RAW hold-out σ (piston
+  included) — the composite deck must put every gauge on the piston-free metric (CC).**
+  **Headline, pm per reading, lens / mirror (seconds per pm):** Feng's baseline 1k / 60 ke /
+  30 fps 57.7 / 53.7 (443 / 385 s — ~7 min per pm, inside the first look's 6–9); Photonfocus
+  200 ke / 150 fps 39.5 / 36.5 (42 / 36 s); pco.edge GS 40.2 / 38.3 (129 / 117 s); C-RED 2
+  19.6 / 18.7 at 632.8 nm, a placeholder for the 1.3 µm stage.  **Trains:** pm equal (the
+  camera is well-bound); the record's polarizing train costs light only (test throughput 0.271
+  vs 0.408, ×1.5 laser) — at ~0.2 µW on the camera a mW laser covers either, so Feng's plain
+  splitter is the one to price.  **Electronics, one reading, linear in each term:** jitter
+  1e-3 rad/frame ≈ 19 pm (1e-2 ≈ 195); AOM ripple 1e-3 ≈ 25 pm; fiber walk 0.01 rad/frame ≈
+  66 pm (0.05 ≈ 330).  Budgets to stay under the 55 pm photon floor: **jitter < 3e-3, ripple
+  < 2e-3, differential fiber walk < 8e-3 rad per frame (≈ 0.8 nm of OPD per 33 ms frame) — the
+  fiber is THE term**: the engineering requirement is the differential phase stability of the
+  two PM fibers between the coupler and the collimators (short, co-routed, thermally tied; or
+  an active fiber-phase servo).
