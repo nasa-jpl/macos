@@ -1,0 +1,11 @@
+# An unknown HEADER key is reported, once per key per load (PLAN_CONSOLIDATION 3.2, macos
+# 2026-10-11).  The header chain's final ELSE was a bare GO TO 50: an unknown key -- a typo
+# included -- was dropped with NO message (the element chain has always said 'Unidentified
+# string').  That is how OptMxItrs= silently lost the cap.  tst_hdr_unknown.in carries the
+# corpus misspelling OpdReRayfLen= TWICE and SegYgrid= once: two lines, not three.  The deck
+# still loads (warn, never refuse).  Pre-fix: no line at all -- red.
+old $ROOT/ZGD_test_files/tst_hdr_unknown.in
+# EXPECT: MBFile6: Unidentified header string = OpdReRayfLen
+# EXPECT: MBFile6: Unidentified header string = SegYgrid
+# EXPECT: Tracing rays past\s+2\s+elements
+# EXPECT-NOT: Unidentified header string = OpdReRayfLen[\s\S]*Unidentified header string = OpdReRayfLen

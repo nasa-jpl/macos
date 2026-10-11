@@ -742,6 +742,18 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   FreeForm only when nGridMat > 0.
 - ChkDf2: FreeForm with nGridMat=0 silently satisfies pData/xData/yData/zData/lData
   (no spurious "Default used" warnings).
+- **An unknown HEADER key is reported (2026-10-11, PLAN 3.2).**  The header chain's
+  final `ELSE` (label-50 chain, just above label 60) was a bare `GO TO 50`: an unknown or
+  misspelled header key vanished with NO message, while the element chain has always
+  printed `MBFile6: Unidentified string`.  That is how `OptMxItrs=` (9 chars against a
+  10-char `OptMaxItrs` match) silently lost the user's cap.  Now `HdrUnkNote` (elt_mod)
+  prints `MBFile6: Unidentified header string = <key>` once per key per load (list reset
+  at the top of msmacosio.inc) -- warns, never refuses; a "key" not starting with a letter
+  is skipped (a UTF-8 BOM alone on line 1: six FFSegDemo decks).  Corpus, engine truth:
+  see the PLAN 3.2 line.  Gate `cli_tests/cmd/Rx_header_unknown.jou`.  **Prefix trap that
+  the warning cannot see:** a short `LCMP` match CAPTURES look-alikes -- `OptFOVWt` is
+  matched on 5 chars, so `OptFooKey= 1` is read as FOV weights.  When adding a header key,
+  check that no shorter prefix above it already swallows it (and vice versa).
 
 ## ZernType parsing (ParseZernType in elt_mod.F)
 - All eight ZernType / FFZernType / MonZernType parser sites — three in
