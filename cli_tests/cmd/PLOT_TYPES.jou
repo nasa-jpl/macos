@@ -1,0 +1,40 @@
+# Plot types: GRAY / CONTOUR / WIRE / SLICE / ROW on the /null device; TEXT / BINARY / MAT
+# / FITS write an OPD file beside the DECK (hence the COPY) (cmdref: Outputs, plot types)
+# Each selector prints 'Plot type set to X'; the file types name the file they write.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+old $DECK
+gray
+opd 3
+/null
+contour
+opd 3
+wire
+opd 3
+slice
+opd 3
+text
+opd 3
+binary
+opd 3
+mat
+opd 3
+fits
+opd 3
+! ls -1 $TMP
+# EXPECT: Plot type set to GRAY
+# EXPECT: Plot type set to CONTOUR
+# EXPECT: Plot type set to WIRE
+# EXPECT: Plot type set to SLICE
+# EXPECT: Plot type set to TEXT
+# EXPECT: Plot type set to BINARY
+# EXPECT: Plot type set to MAT
+# EXPECT: Plot type set to FITS
+# EXPECT: (RMS OPD error is\s+1\.5453\d+D-02[\s\S]*){8}
+# EXPECT: Cassegrain\.in\.OPD3\.txt
+# EXPECT: Cassegrain\.in\.OPD3\.fit
+# EXPECT: MAT output is not built into this macos
+# EXPECT-NOT: Unknown plot type
+# EXPECT-NOT: too long for FITS
+# (pre-fix: MAT printed 'Unknown plot type iPloTyp = 9'; FITS refused any deck path longer
+#  than 18 characters for its FILENAME card after announcing the file, and cut the output
+#  path at 40 characters)

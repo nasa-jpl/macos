@@ -1180,6 +1180,16 @@ C     &	  STATUS='NEW')
 ! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
 !  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+	ELSE IF (iPloTyp.EQ.9) THEN
+!-->  The MAT writer (matloh.F RWRITE_MAT_LOH) needs the MATLAB
+!     libraries and has been a dummy since 2007; say so by name instead
+!     of 'Unknown plot type' (2026-10-10).  Use TEXt / BINary / FITs, or
+!     the mmacos binding, for MATLAB.
+	  WRITE(*,*) ' MAT output is not built into this macos (needs',
+     &	             ' the MATLAB libraries); nothing written.'
+	  WRITE(*,*) ' Use TEXT, BINARY or FITS, or read the result',
+     &	             ' through mmacos.'
+!<--
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1349,6 +1359,16 @@ C     &	        STATUS='NEW')
 ! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
 !  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+	ELSE IF (iPloTyp.EQ.9) THEN
+!-->  The MAT writer (matloh.F RWRITE_MAT_LOH) needs the MATLAB
+!     libraries and has been a dummy since 2007; say so by name instead
+!     of 'Unknown plot type' (2026-10-10).  Use TEXt / BINary / FITs, or
+!     the mmacos binding, for MATLAB.
+	  WRITE(*,*) ' MAT output is not built into this macos (needs',
+     &	             ' the MATLAB libraries); nothing written.'
+	  WRITE(*,*) ' Use TEXT, BINARY or FITS, or read the result',
+     &	             ' through mmacos.'
+!<--
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1380,7 +1400,12 @@ C***********************************************************************
 	INTEGER*4      strLen
 	CHARACTER(len=MacosCharLen) :: root_file_name,
      &                                 output_file_name
-	CHARACTER*40   new_file_name, actual_file_name
+!-->  Were CHARACTER*40: a longer output path was silently CUT and the
+!     FITS file written under the truncated name (2026-10-10, the
+!     PLOT_TYPES journal: a 44-character path in a scratch directory).
+	CHARACTER(len=MacosCharLen) :: new_file_name, actual_file_name
+	INTEGER        ibase
+!<--
 	CHARACTER*24   date
 	CHARACTER*16   int_str
 	LOGICAL        dont_check_for_rounding_errors
@@ -1408,14 +1433,15 @@ c
 
         new_file_name = output_file_name(1:output_file_name_len)
 
-	IF (root_file_name_len .GT. 18) THEN
-	   WRITE(*,*) 'File name ' //
-     &	             root_file_name(1:root_file_name_len) //
-     &	            ' too long for FITS FILENAME data field.' //
-     &	            ' Enter a shorter one' //
-     &	            '(< 19 characters).'
-	   GO TO 1
-	   END IF
+!-->  The FILENAME header card used to REFUSE the whole write when the
+!     deck's name was longer than 18 characters -- i.e. for any path --
+!     after 'FORMATTED File=' had already been printed.  The card is
+!     documentation: it now carries the deck's BASE name (FITS_WSTR
+!     writes up to 68 characters and shifts the comment), and nothing
+!     is refused (2026-10-10).
+	ibase = INDEX(root_file_name(1:root_file_name_len), '/',
+     &	              BACK=.TRUE.)
+!<--
 	CALL fits_init(new_file_name, actual_file_name, lout, ier)
 c sws debugging
 c	print *, 'fits_init called'
@@ -1457,7 +1483,7 @@ c
      &	              'Date FITS file was created',
      &	               ier)
 	CALL  fits_wstr('FILENAME',
-     &	                root_file_name(1:root_file_name_len),
+     &	                root_file_name(ibase+1:root_file_name_len),
      &	               'Name of original file name',
      &	               ier)
 	CALL  fits_wreal('CRVAL1', 0d0,
@@ -1499,7 +1525,7 @@ c grw -- 1/18/94
      &	zero(bit_representation), ier,
      &	image_row_size, image_col_size,array_col_size)
 	CALL  fits_close(ier)
- 1      RETURN
+	RETURN
 	END SUBROUTINE WRITE_FITS_FILE
 c
 c
