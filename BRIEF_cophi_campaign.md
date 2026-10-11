@@ -340,3 +340,21 @@ amplification, the fine-noise requirement at each rung, the rungs needed to capt
 200 nm rms from cold), priced in photons and seconds; the 1.3 µm stage carries the
 tunable-source argument.  Composite deck: a "capture from cold" row per sensor —
 temporal, two-color, or neither.
+- **battery — DONE 2026-10-11 (TO, resources 5d2383c; `tCophiBench` 5/5 rerun, `tCophi` 8/8):**
+  the H reading runs through `tg96_run`'s own place + deck stages (opt-in
+  `P.reading_ctx = 'cophi_ctx'`; absent hooks leave the record's path unchanged).  The I
+  column is the SAME surface as the record (`redo96_<optics>ph`: tail md5, lit 6948, hold-out
+  (62,62), 112-site grid, seed 7, the 30 nm surface, the 64-state matrix on it); the deck's
+  pre-cap headline (7500 lit, 120 sites) is printed beside it, labelled.  Mirror-rig placement
+  reproduces the record's D1 gate to the digit.  **Headline (gain / err pm / floor pm), H vs I
+  on the same surface:** lens single 0.9947 / 1.7 / 2 vs 1.0001 / 1.4 / 1; grid 0.9964 / 2.4 / 2
+  vs 1.0046 / 2.2 / 2; rand10 0.9967 / 180 vs 1.0053 / 179; mirror single 0.9941 / 1.4 / 1 vs
+  0.9832 / 2.7 / 2; grid 0.9949 / 1.6 / 1 vs 0.9838 / 2.9 / 2; rand10 0.9950 / 118 vs
+  0.9844 / 223.  Capture to 10 %: 480 nm+ on both rigs; the re-measured matrix's gain 0.996 /
+  0.995 at 60–160 nm.  **OPEN: H sits 0.5 % below unity on BOTH rigs, every row, ladder and
+  re-measured matrices** (the brief expected 1.000 ± the matrix bias); candidates the LO
+  placement interpolation, the mask (LO disc vs interference support), the frozen-null form —
+  TO isolates it before `noise` (CC's discriminators in the reply of 2026-10-11).  Also flagged:
+  the deck stage's "flat-DM null" rms (6.8 nm on H) is taken over the whole mask including the
+  no-test-light annulus; the record's 59 nm line may carry the same dilution — a composite-deck
+  check.  Records `cophi_dm96/runs/battery_{lens,oap}/`.
