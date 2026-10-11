@@ -215,7 +215,21 @@ comparison must not be rushed to the deck.
 5. **Order: CC finishes the Dyson deck now; TO is on the blur brief; then
    re-evaluate** (the campaign's start, the freeze exception, phase 1).
 
-### On 4 — is a photodiode array remotely implementable? (CC's assessment)
+6. **Full actuator resolution, no low-order forms (Dave 2026-10-11):** "Some modes
+   — commanding EFC probes, for instance — will be at full actuator resolution, so
+   we should not spend time investigating lower-order implementations."  The
+   `format` stage's speed-vs-resolution sweep is REPLACED: the second sensor class
+   is a FULL-LATTICE, well-free (continuous or lock-in) reading at ≥ 1 element per
+   actuator — the lock-in camera (heliCam class), the ToF demodulating sensors and
+   the Lincoln-Lab-class 128 × 128 coherent arrays are the candidates "if credible
+   in the 5–10 year time frame."  Model it as a row ASSUMING a sensor at 1:1 or
+   better with the actuator pitch: the question is cadence and photons per
+   element per second, not resolution.  A bounded survey of those three classes
+   runs in parallel (`NOTE_lockin_arrays_survey.md`, a web survey to be verified);
+   the coarse-array assessment below stands as the record of why coarse forms are
+   not pursued.
+
+### On 4 — is a photodiode array remotely implementable? (CC's assessment, 2026-10-09; superseded in scope by ruling 6)
 
 At the ACTUATOR PITCH, no: 96 × 96 = 9216 channels, each a photodiode, a
 transimpedance stage and a demodulator — TOM3 had 43 detectors and multiplexed

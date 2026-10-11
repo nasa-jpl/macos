@@ -54,12 +54,14 @@ the IFO reading — same `dmg_act_fit`, same `calib_mode 'matrix'`, same λ_m.
 - `capture`: the range; temporal unwrapping between consecutive readings as the
   free extra (a reading every 1/7.5 s cannot alias a drift slower than λ/4 per
   reading).
-- `format` (the part Dave said "deserves careful modeling on its own"): formats
-  × rates from `P.format`, the cell average when the format is coarser than the
-  actuator pitch (TO's own box kernel from the blur demo), scored on what each
-  recovers of the 96 × 96 lattice and how fast; the photodiode-array row as a
-  MODAL reconstruction of the drift spectrum, never actuator-space (the
-  collapse between 1 and 1.5 pitch per cell, `BRIEF_cophi_campaign` §4a).
+- `format` — RESCOPED by Dave's ruling 6 (2026-10-11): no coarse / low-order forms
+  (EFC probes are commanded at full actuator resolution).  The row is a
+  FULL-LATTICE, well-free reading at ≥ 1 element per actuator — a lock-in camera
+  / ToF-demodulating sensor / 128 × 128 coherent array class, ASSUMED to exist at
+  1:1 or better with the pitch — scored on cadence and photons per element per
+  second: `P.format.lockin` (sites, sample rate, flux per element, phasemeter
+  noise), the same reading algebra at a kHz beat, the pm-per-second table beside
+  the cameras'.  Camera formats below 1:1 are not run.
 - `figs`: the station figure in the deck's format (command, four frames, raw map
   vs engine, reconstruction, residual), mirror rig.
 
