@@ -1176,6 +1176,56 @@ Rx `OptTarget= OPL` is a named load refusal, the veneers dropped the name.  Gate
 red on the pre-fix mex / .so.  Open, recorded: `zern_fit` still finds the pupil
 as `OPDin /= 0` (PLAN_CONSOLIDATION 1.2).
 
+## CALIB's LM stopping rule: the derivation (2026-10-11, PLAN 3.3)
+**The old loop** (`nls_optim_dvr`, design_optim.F) checked convergence only at itr =
+int(.21T), int(.5T), int(.71T) and only when T > 4, judged the RMS WFE whatever the target,
+and exited on `itr_done .and. itr > 0.7T` -- with `itr_done` never set before the loop.
+`nls_optim_dvr` carries a blanket `Save`, so `itr_done` is a STATIC that starts .false. and
+then PERSISTS between calls: a T<=4 CALIB (no check ever runs) exited on whatever the
+previous CALIB left.  Measured (CLI, both compilers, pre-fix and a -finit-logical=true/false
+pair, identical): `tst_calib_spot4.in` 4 iterations fresh, 3 after a converged
+`tst_calib_spot20.in` in the same process.  The 0.7T floor also meant no solve ever stopped
+before 70% of its cap.
+**The rule now (LM / NonLin only; the SVD path keeps the old schedule, `itr_done`
+initialised):** accepted = lambda fell (nls.F `mrqmin_private`).  `rms = sqrt(chisq/rows)` in
+the target's units.  Stop when
+- `converged` (calib_stop 1): two consecutive ACCEPTED steps each with `|d rms| <= OptTol`
+  (ABSOLUTE, the old WFE check's own definition; api `calib_set_tol`, default 1e-12) AND
+  `chisq_prev - chisq <= 1e-6 * chisq_prev` (`ftol_rel`, a fixed constant -- MINPACK's
+  ftol idea; OptTol stays the only user knob);
+- `floor` (2): TEN consecutive REJECTED trials since the last accepted step (lambda up 1e10);
+- `cap` (3): T; `failed` (4) on the LM failure path.  Never before itr 2.
+Reported: CLI `Final LM merit (chisq) =` + `Stopped: ...` after `Optimization iterations =`;
+api `calib_stats_get(n_iter, merit, stop_reason)` (stop_set's stop aim, which also calls
+`nls_optim_dvr`, saves and restores them); mmacos `macos.calib` `.n_iter/.merit/.stop_reason`
++ `macos.calib_stats`; pymacos the same keys + `calib_stats()`.
+**Why each number, MEASURED** (full-precision full-T chisq/lambda traces of every CALIB in
+tAsphCalib / tBeamRows / tCalib / tDesignTelescope, scored against the old loop):
+- **Do NOT shorten the floor.**  K=3 stopped `tDesignTelescope/base_sphere_zernike_correction`
+  at itr 9 with chisq 481x the old loop's 120-iteration result (WFE 1.16e-4 vs 5.28e-6 m; the
+  test still passed -- its gate is `wfe_after < wfe_before/100`): a 3-rejection run at itr 7-9
+  is followed by an accepted step lowering chisq 6.2%.  The longest MID-SOLVE run of
+  rejections a real decrease later followed is SIX (`convex_conic_seed_zero_and_optimizes`,
+  itr 9-14, then -1.4e-6 relative); K=10 is four over it.
+- **At a converged design's residual** (chisq ~2.3e-16, WFE ~1.3e-9 m) LM recovers after runs
+  of 11-14 rejections for 1e-7..6e-7 RELATIVE chisq (`tma_multifield` 14 rejects then
+  -5.9e-9 / -7.3e-8; `elts_subset` 11 then -5.8e-7; `2d_field_cross` 12 then -4.4e-7) -- each
+  ~4e-16 m of WFE against OptTol 1e-12 m, round-off refinements.  A strict-relative reading
+  of the tolerance would need K >= 15, and the floor would then save 8%.  Who wants a
+  stricter stop sets OptTol, not K.
+- **The relative term is load-bearing.**  With the absolute test alone, five
+  tDesignTelescope cases stopped 'converged' at itr 3 with chisq +4..39% (fourth_mirror
+  1.6587e-16 -> 2.2984e-16): on a nm-class merit the first accepted steps of an LM still
+  ramping lambda down from 1e-3 lower chisq ~1e-3 relative = ~1e-12 m of rms and read as
+  flat.  The old 0.7T schedule hid this.  rtol 1e-6 (simulated, with the absolute test only
+  stopping later): worst +2.7e-6 relative chisq (~1e-15 m), iterations 804 -> 594.
+- A quadratically convergent solve (Rx_AsphCalib SPOT: 1.6e-25 -> 1.6e-33 -> 5.4e-43 ->
+  1.7e-43) never takes a flat step; it stops at the FLOOR (spot20: 14), never 'converged'.
+Gates: `cli_tests/cmd/CALIB_history.jou` (the same T=4 count fresh and after a T=20 CALIB, a
+regex BACKREFERENCE; red on prefix9 + the old-loop side builds: 4/15/3), `tCalibStop`
+(mmacos, SUITE_FAST) + `test_calib_stop.py`; the old-vs-new table is
+`cli_tests/records/calib_loop_old_vs_new.md`.
+
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
 `design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
 element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were

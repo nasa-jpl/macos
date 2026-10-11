@@ -35,7 +35,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	use dopt_mod, only : WFE_TARGET,WFE_ZMODE_TARGET,SPOT_TARGET,
      &                       BEAM_TARGET,OptAlg,NonLin,isVarElt,
      &                       OptSpotSize,ifOptPrint,SvdSvCut,
-     &                       use_saved_pinv,save_pinv,PinvFile
+     &                       use_saved_pinv,save_pinv,PinvFile,
+     &                       calib_n_iter,calib_merit,calib_stop
 	use zern_wf_mod
 
 	Implicit none
@@ -127,6 +128,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	Integer :: ias,jterm,ie_asph
 	LREAL :: cval,hap
         Logical, save :: itr_done,first_entry = .true.
+	LREAL :: alam_in,chisq_prev,rms_now,rms_prev
+	LREAL, parameter :: ftol_rel=1d-6 ! MINPACK ftol: LM still ramping
+	Integer :: nFlat,nRej
 	Integer, save :: entry_cnt=0  ! debug only
 
 	entry_cnt=entry_cnt+1
@@ -488,10 +492,50 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	status_flag = 0 ! for svdls_itr() only
 
+!-->  Convergence, PLAN_CONSOLIDATION 3.3 (2026-10-11).  The old test ran
+!     only at itr = int(.21T), int(.5T), int(.71T), and only when T > 4,
+!     judged the RMS WFE whatever the target, and exited on itr_done --
+!     a SAVEd logical never set before the loop, so a T<=4 CALIB exited
+!     on whatever the PREVIOUS CALIB in the process had left there
+!     (measured: the same T=4 deck ran 4 iterations fresh, 3 after a
+!     converged T=20 CALIB).  LM (NonLin) now judges its OWN merit, the
+!     chisq lmlsq minimises, for every target, as the rms over its rows
+!     sqrt(chisq/n_rows) in the target's units: it stops when two
+!     consecutive ACCEPTED steps each change that rms by no more than
+!     opt_tol, the ABSOLUTE OptTol the old WFE check used, AND lower
+!     chisq by no more than ftol_rel=1e-6 of it (calib_stop=1) -- on a
+!     nm-class merit the first steps of an LM still ramping lambda move
+!     the rms by ~1e-12 m and would read as flat (measured: five
+!     tDesignTelescope cases stopped at itr 3, chisq +4..39%),
+!     or at the round-off floor: TEN
+!     consecutive REJECTED trials since the last accepted step, lambda
+!     up 1e10 with no decrease (calib_stop=2).  A rejected trial is
+!     not a flat step and resets the flat count; T stays the cap (3).
+!     Measured: Rx_AsphCalib SPOT converges quadratically to 1.7e-43 by
+!     itr 4 and every trial after is rejected -- flat-accepted alone
+!     never fires there.  Do NOT shorten the floor: on the fast suite
+!     one solve recovers after SIX rejections (tDesignTelescope convex
+!     conic), and a 3-rejection floor stopped base_sphere_zernike at
+!     itr 9, merit 481x the old loop's (macos_f90/CLAUDE.md).  The
+!     linear (SVD) path keeps the old schedule, now with itr_done
+!     initialised.
+	itr_done = .false.
+	nFlat = 0
+	nRej = 0
+	calib_stop = 3
+	chisq_prev = -1d0
+	rms_prev = -1d0
+	tot_itrs_done = tot_itrs
+	calib_n_iter = -1
+	calib_merit = -1d0
+!<--
+
 	! Apply LM (or SVD) optimization iterations
 	Do itr=1,tot_itrs
 
 	  If (OptAlg==NonLin) Then
+	    alam_in = alamda
+	    if (alam_in < 0d0) alam_in = 0.001d0 ! lmlsq's initial lambda
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &                 alpha,chisq,funcs_app,alamda,lmlsq_success)
 	    if (.not. lmlsq_success) then
@@ -507,9 +551,36 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 !     the last accepted state and returns rtn_flg=1 through the normal
 !     cleanup, which is what the CLI's CALIB handler and the bindings'
 !     calib_run already expect (2026-10-01).
-	      rtn_flg=1; go to 105
+	      rtn_flg=1; calib_n_iter=itr-1; calib_merit=chisq_prev
+	      calib_stop=4
+	      go to 105
 	    end if
 	    chisq_arr(itr) = chisq
+!-->  PLAN 3.3: accepted iff lambda fell (nls.F mrqmin_private)
+	    If (alamda < alam_in) Then
+	      rms_now = sqrt(max(chisq,0d0)/dble(size(objfun_nom)))
+	      If (chisq_prev >= 0d0 .and. chisq <= chisq_prev .and.
+     &            abs(rms_prev-rms_now) <= opt_tol .and.
+     &            chisq_prev-chisq <= ftol_rel*chisq_prev) Then
+	        nFlat = nFlat+1
+	      Else
+	        nFlat = 0
+	      End If
+	      chisq_prev = chisq
+	      rms_prev = rms_now
+	      nRej = 0
+	    Else
+	      nFlat = 0
+	      nRej = nRej+1
+	    End If
+	    If (itr >= 2 .and. (nFlat >= 2 .or. nRej >= 10)) Then
+	      tot_itrs_done = itr
+	      calib_stop = 1
+	      if (nRej >= 10) calib_stop = 2
+	      exit
+	    End If
+	    Cycle
+!<--
           Else
 	    ! Linear algorithm
 	    Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
@@ -542,10 +613,10 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  End If
 
 	  if (itr_done .and. itr>(0.7*tot_itrs)) then
-	      tot_itrs_done=itr; exit
+	      tot_itrs_done=itr; calib_stop=1; exit
 	  end if
 	End Do  ! LM iteration loop
-	if (.not. itr_done) tot_itrs_done=tot_itrs
+	if (OptAlg/=NonLin .and. .not.itr_done) tot_itrs_done=tot_itrs
 	!
 	! Last run
 	If (OptAlg==NonLin) Then
@@ -553,9 +624,11 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
 	  if (.not. lmlsq_success) then
-            rtn_flg=1; go to 105
+            rtn_flg=1; calib_n_iter=tot_itrs_done; calib_stop=4
+	    calib_merit=chisq_prev; go to 105
 	  end if
 	  chisq_arr(tot_itrs_done+1) = chisq
+	  calib_merit = chisq
 	Else
 	  ! Linear algorithm
 	  if (.not.LinNomCtrl) then
@@ -588,6 +661,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                         ZCoefm,4)
         End If
 	aparams_nls_m=aparams ! for external output
+	calib_n_iter = tot_itrs_done
 
 
 	!WRITE(*,*)' len_a = ', len_a
@@ -596,6 +670,16 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  WRITE(*,*)' '
  	  WRITE(*,*)'End of MACOS system optimization'
 	  WRITE(*,*)'Optimization iterations =',tot_itrs_done
+	  If (OptAlg==NonLin)
+     &      WRITE(*,*)'Final LM merit (chisq) =',calib_merit
+	  If (calib_stop==1) Then
+	    WRITE(*,*)'Stopped: converged (2 flat steps)'
+	  Else If (calib_stop==2) Then
+	    WRITE(*,*)'Stopped: at the round-off floor',
+     &                ' (10 rejected trials)'
+	  Else
+	    WRITE(*,*)'Stopped: OptMaxItrs reached'
+	  End If
 	  WRITE(*,*)' '
 	End If
 	go to 100

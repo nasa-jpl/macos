@@ -1196,6 +1196,13 @@ Put a dw_dx harvest's translation columns per SI metre. OX = macos.dwdx_trans_pe
 Run the macos design optimizer (CALIB). result = macos.calib() invokes the SMACOS CALIB command using the current optimization configuration (variable elements, FOVs, wavelengths, target, iteration cap, tolerance).  The config can be baked into the Rx file (OptTarget=, OptMxItrs=, VarDOF=, etc.) or set programmatically via the macos.calib_set_* family.
 
 <!-- BEGIN NOTES fn-calib -->
+The result also carries `n_iter` (LM iterations taken), `merit` (the final chisq) and
+`stop_reason` (`converged` / `floor` / `cap`; see calib_set_tol for the rule).
+`macos.calib_stats()` / `pymacos.calib_stats()` read the same three after a FAILED run, which
+`calib` reports as an error (`failed`, the iterations completed, the merit at the last
+accepted step).  The count no longer depends on any earlier CALIB in the process (before
+2026-10-11 a T <= 4 run exited on a flag the previous run had left).  The CLI prints the
+same three lines after `Optimization iterations =`.
 <!-- END NOTES fn-calib -->
 
 #### calib_clear_var_elts
@@ -1273,6 +1280,23 @@ Set the CALIB optimization target. macos.calib_set_target(NAME) selects one of: 
 Set CALIB convergence tolerance (dopt_tol).
 
 <!-- BEGIN NOTES fn-calib-set-tol -->
+**What the tolerance means (2026-10-11, PLAN_CONSOLIDATION 3.3).**  `tol` is OptTol: an
+ABSOLUTE change of the rms merit, `sqrt(chisq/rows)` in the target's own units (WFE: the rms
+wavefront error; SPOT / BEAM: the rms of their residual rows, base units).  Default 1e-12.
+The LM (the default `NonLin` algorithm) stops for one of three reasons, reported as
+`stop_reason` by `calib` / `calib_stats`:
+
+| reason | condition |
+|---|---|
+| `converged` | two consecutive ACCEPTED steps, each moving the rms merit by no more than `tol` AND lowering chisq by no more than `1e-6` of it |
+| `floor` | ten consecutive REJECTED trials since the last accepted step (lambda up 1e10, no decrease: the round-off floor) |
+| `cap` | the iteration cap (`calib_set_iter`, Rx `OptMaxItrs=`) |
+
+The `1e-6` relative term is a fixed engine constant (MINPACK's `ftol` idea), not a knob: on a
+merit of a few nm the first steps of an LM still ramping its damping move the rms by ~1e-12
+and would otherwise read as converged.  `tol` is the only user setting; a coarser `tol`
+stops sooner, never before the relative condition holds.  Neither test runs before
+iteration 2.  The linear (`SVD`) algorithm keeps its own schedule.
 <!-- END NOTES fn-calib-set-tol -->
 
 #### calib_set_var_elt
