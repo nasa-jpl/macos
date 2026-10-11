@@ -119,8 +119,26 @@ _macos_rl_event_hook (void)
 
 int tot_hist=0;
 
+/* Copy a command line into the Fortran buffer cmd (blank-padded, no NUL),
+ * never more than its declared length *cmdlen (PARSE_LOH's VAR, passed
+ * explicitly since 2026-10-10 -- before that strncpy wrote strlen(line)
+ * bytes into a 130-byte buffer).  A longer line is cut and said so once:
+ * the caller re-prompts on whatever the cut produced (a file name that
+ * "does not exist"), which is the loud failure, not a silent one. */
+static void
+copy_cmd (char *cmd, const char *line, int cmdlen)
+{
+  size_t n = strlen (line);
+  if ((int) n > cmdlen) {
+    fprintf (stderr, "   ** Command line longer than %d characters;"
+             " cut at %d.\n", cmdlen, cmdlen);
+    n = cmdlen;
+  }
+  strncpy (cmd, line, n);
+}
+
 void
-mhist_(char* mp, char *cmd)
+mhist_(char* mp, char *cmd, int *cmdlen)
 {
   char *temp, *prompt, cbuf[16], cbf[4];
   int done, non_empty, cmd_id_rerun, cmd_name_rerun, in_hist; 
@@ -260,7 +278,7 @@ mhist_(char* mp, char *cmd)
 	         done = 0;
 	       }
 	      else {
-	        strncpy(cmd,list[i]->line,strlen(list[i]->line));
+	        copy_cmd(cmd,list[i]->line,*cmdlen);
 	      }
 	      break;
 	    }  // j==i 
@@ -276,11 +294,11 @@ mhist_(char* mp, char *cmd)
             done = 0;
 	   }
 	  else {
-	    strncpy(cmd,temp2,strlen(temp2));
+	    copy_cmd(cmd,temp2,*cmdlen);
 	  }
        }
       else {
-	  strncpy(cmd,temp,strlen(temp));
+	  copy_cmd(cmd,temp,*cmdlen);
       }
       free(temp);
     } // while

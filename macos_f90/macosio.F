@@ -2668,7 +2668,15 @@ C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
 C
         use lohpars_mod
 
-        CHARACTER*130 VAR
+!-->  A command line is as long as a token may be (var_store's width,
+!     MacosCharLen = 256).  Was CHARACTER*130 with len_max 130, so an
+!     `old <path>` longer than 130 characters was CUT at 126 and the
+!     load re-prompted forever on the truncated name (three run-
+!     artifact decks under a 138-character path read as 'timeout_load'
+!     in the corpus record), and MHIST copied strlen(line) bytes into
+!     the 130-byte VAR unbounded.  MHIST now takes the buffer length.
+        CHARACTER(len=MacosCharLen) VAR
+!<--
 
         INTEGER Mode,i,j,k,l
         INTEGER len_max
@@ -2680,7 +2688,7 @@ C    if last flag = true, then the semi colon is the last character
 C    on the line, (besides spaces)
 
 c       maximum length of a line
-        data len_max /130/
+        data len_max /MacosCharLen/
 
     6   FORMAT(A)
 
@@ -2699,9 +2707,9 @@ C       Read new statement to be parsed
 	   VAR=' '
 #ifdef READLINE_LIBRARY
 	   If (Mode /= 0) Then
-	     Call MHIST(' ',VAR)
+	     Call MHIST(' ',VAR,LEN(VAR))
 	   Else
-	     Call MHIST('MACOS',VAR)
+	     Call MHIST('MACOS',VAR,LEN(VAR))
 	   End If
 #else
 !-->      Non-readline build: render any cached sub-prompt before the
