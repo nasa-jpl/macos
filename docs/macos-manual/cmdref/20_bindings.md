@@ -1203,6 +1203,13 @@ The result also carries `n_iter` (LM iterations taken), `merit` (the final chisq
 accepted step).  The count no longer depends on any earlier CALIB in the process (before
 2026-10-11 a T <= 4 run exited on a flag the previous run had left).  The CLI prints the
 same three lines after `Optimization iterations =`.
+
+**Aspheric DOFs in a prescription:** the canonical keyword is `OptAsph= n t1 .. tn` (n terms, then
+the 1-based term indices of `AsphCoef`), written in the element block AFTER that element's
+`VarElt=` line (the parser keys it on the element being a variable; an `OptAsph=` above its
+`VarElt=` is ignored with no message today).  `OptAsphCoef=` is accepted
+too -- the parser matches the first 7 characters -- and appears in one legacy deck; new decks and
+the design layer's emitter use `OptAsph=` (2026-10-11, PLAN_CONSOLIDATION 3.2).
 <!-- END NOTES fn-calib -->
 
 #### calib_clear_var_elts
