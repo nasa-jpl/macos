@@ -1,0 +1,12 @@
+# A beam-row key under a non-BEAM target loads quietly (PLAN_CONSOLIDATION 3.2 item 4, closed
+# 2026-10-11 as ALREADY FIXED).  The item: a leftover OptBeamPos= under OptTarget= SPOT printed
+# 'MBFile6: Unidentified string'.  Since 2026-10-03 beam rows ride on ANY target (the explicit
+# handlers no longer gate on BEAM) and the OptBeam* catch-all skips the rest.  Measured: silent
+# on prefix9 (47cd323) and on 23215cd -- this journal is a TRIPWIRE, with no red leg by
+# construction.  CALIB runs with the row (SPOT + one beam-position row).
+old $ROOT/ZGD_test_files/tst_calib_beam_under_spot.in
+calib
+no
+no
+# EXPECT: tst_calib_beam_under_spot\.in\s+being loaded[\s\S]*?Tracing rays past\s+2\s+elements[\s\S]*?Optimization iterations =
+# EXPECT-NOT: Unidentified string\s*=\s*OptBeam
