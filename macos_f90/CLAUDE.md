@@ -121,6 +121,21 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   per-category loss accounting fires.  mmacos regression: `tSpot` (obscured
   Cass, beam ray count == tout).
 
+## GRIN: only model 5 integrates; any other GradInd= LOSES its rays by name (2026-10-10)
+The Refractor's gradient-index branch (`elemsub.F`, `IsGrinRef`) implements ONLY
+`GradInd= 5` (radial n(r) = n0 + n2 r^2 + n4 r^4, `modelCoef(1)` = the R-K step `dt`,
+`getIndex_grin5` in utilsub.F).  Every other model fell into `Else ! other lens models --
+to implement` and built `pr` / `rhat` from UNINITIALISED `pcrnt` / `Tcrnt`: NaN OPD
+(`tst_save_keys.in` and its twin `tst_block_comment.in`, GradInd 6, SAVE-keys fixtures "not
+meant to trace").  Now: `LROK=.FALSE.` + surfsub `LGrinUnsup`, so CTRACE / CPROPAGATE (all
+four classification sites) record `RayStat_Undef` 'GRIN model not implemented', counted in
+`nGrinUnsup` (reset per trace, WARN line), ONE note per run.  The fixture is unchanged (its
+GRIN keys still round-trip through SAVE).  Gate `cli_tests/cmd/GRIN_unsupported.jou` (red
+pre-fix: NaN).  Model 5 itself cannot be loaded or saved today -- PLAN_CONSOLIDATION §1.2
+(the impossible `<=2 .AND. >=5` GradCoef branch, the bare `return`, the SAVE writer, the
+absolute-position depth test).  The FwdRoot counter's `ABS(new-old) > 0` form stays: no NaN
+deck remains in the corpus, but a NaN ray from any other path would otherwise count as a flip.
+
 ## Per-ray status tracking
 - RayStat_* constants in elt_mod.F: OK(0), Obscured(1), Miss(2), Bracket(3), MaxIter(4), Undef(5).
 - Per-ray arrays: RayStatus(mRay), RayFailElt(mRay), RayFailMsg(mRay) — allocated in elt_mod.

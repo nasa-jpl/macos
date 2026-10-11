@@ -1,0 +1,8 @@
+# PLAN_CONSOLIDATION 1.1b 3c (TO 2026-10-10): the corpus A/B for "a GradInd= model the Refractor cannot integrate
+# loses its rays by name".  pre = 5362009 engine (post8 snapshots), post = this commit.  cli_tests/cli_load_gate.py,
+# opd nElt, model 256, the 406-deck list, both compilers.  ONE mover, the same on both:
+# compiler  deck  rms_pre -> rms_post  nPass  lost
+gfortran  ZGD_test_files/tst_save_keys.in  NaN -> 9.999900000D+36 (all rays lost)  56 -> 0  5 -> 61
+ifx       ZGD_test_files/tst_save_keys.in  NaN -> 9.999900000D+36 (all rays lost)  56 -> 0  5 -> 61
+# Its twin tst_block_comment.in (not in the 406 list) moves identically (checked by hand, both compilers).
+# NaN rows in the corpus: pre 1 (tst_save_keys.in), post 0.  No other column moved on any deck.

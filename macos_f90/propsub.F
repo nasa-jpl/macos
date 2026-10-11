@@ -118,7 +118,8 @@ C***********************************************************************
         use surfsub, only: ZerntoMon1, ZerntoMon2, ZerntoMon3,
      &                     ZerntoMon4, LZPFailed, nZPFailMsg,
      &                     nFwdRootFlip, nGridIdxOvf,
-     &                     iZernTypeForNorm, LNSFlowL
+     &                     iZernTypeForNorm, LNSFlowL,
+     &                     LGrinUnsup, nGrinUnsup
         use tracesub_mod
 	use elemsub_mod
 	use traceutil_mod
@@ -409,6 +410,7 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
 	nGridIdxOvf = 0
+	nGrinUnsup  = 0
 !<--
 	iElt=iSecondElt  ! iElt = next Elt to trace to -jzlou
 	iEm1=iElt-1
@@ -1197,6 +1199,11 @@ cdebug
      &                    'root-find bracket/iter fail'))
      &                nBadRays=nBadRays+1
 	              LZPFailed = .FALSE.
+	            ELSE IF (LGrinUnsup) THEN
+	              IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	              LGrinUnsup = .FALSE.
 	            ELSE
 	              IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &                    'surface miss'))
@@ -1288,6 +1295,11 @@ C  End of element section
      &                'root-find bracket/iter fail'))
      &          nBadRays=nBadRays+1
 	          LZPFailed = .FALSE.
+	        ELSE IF (LGrinUnsup) THEN
+	          IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	          LGrinUnsup = .FALSE.
 	        ELSE
 	          IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &                'surface miss'))

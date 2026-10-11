@@ -3360,6 +3360,7 @@ C  0. Initialize parameters
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
 	nGridIdxOvf = 0
+	nGrinUnsup  = 0
 !<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
@@ -4512,6 +4513,11 @@ C	Here when element number is determined...
      &                  'root-find bracket/iter fail'))
      &              nBadRays=nBadRays+1
 	            LZPFailed = .FALSE.
+	          ELSE IF (LGrinUnsup) THEN
+	            IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	            LGrinUnsup = .FALSE.
 	          ELSE
 	            IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &                  'surface miss'))
@@ -4681,6 +4687,11 @@ C  End of element section
      &              'root-find bracket/iter fail'))
      &          nBadRays=nBadRays+1
 	        LZPFailed = .FALSE.
+	      ELSE IF (LGrinUnsup) THEN
+	        IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	        LGrinUnsup = .FALSE.
 	      ELSE
 	        IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &              'surface miss'))
@@ -5367,7 +5378,7 @@ C***********************************************************************
      &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay,
      &    nGridDropped
 	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip,
-     &                     nGridIdxOvf
+     &                     nGridIdxOvf, nGrinUnsup
 	IMPLICIT NONE
 	INTEGER nElt,iElt,nBadRays,iRay
 	INTEGER :: nMiss,nObs,nBrkt,nOther
@@ -5414,6 +5425,9 @@ C***********************************************************************
   132	FORMAT('   Grid samples with a non-finite / out-of-range pixel',
      &    ' index (treated as off-grid): ',i8)
 	IF (nGridDropped.GT.0) WRITE(*,133) nGridDropped
+	IF (nGrinUnsup.GT.0) WRITE(*,134) nGrinUnsup
+  134	FORMAT('   Rays through a GradInd= model that is not',
+     &    ' implemented (lost): ',i8)
   133	FORMAT('   Grid files NOT loaded (larger than mGridMat;',
      &    ' the surfaces trace without them): ',i4)
 !<--
