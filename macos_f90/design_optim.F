@@ -67,6 +67,117 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	Contains
 
+!-->  CALIB's setup, ONE copy (PLAN_CONSOLIDATION 3.3, 2026-10-11).  The
+!     LOAD handler's nominal-sensitivity run (OptNomSens= Y) and the CALIB
+!     command each carried this block verbatim; the CALIB copy alone also
+!     saved the variable elements' state and the Rx chief ray, which only
+!     CALIB's summary reads -- harmless on the nominal path, so both now
+!     run the superset.  Checks the configuration (a variable element, a
+!     field, a stop when the source or FEX needs one: a named message and
+!     .FALSE.), then packs the variable list for nls_optim_dvr from the
+!     dopt_mod tables.
+	Logical Function calib_setup_vars()
+	use dopt_mod, only : nVarElt,nOptFov,LOptIfFEX,varZerns,zern_off,
+     &      varAsphs,asph_off,iVarElt,isVarElt,varElts,varDOFs,mVarDOF,
+     &      varEltDOF,OptSrcRpt_FLG,opt_fov,zernElt,asphElt,nOptEltZern,
+     &      OptEltZernTerm,nOptEltAsph,OptEltAsphTerm,LOptCons,
+     &      varEltCons,EltCons,psiElt_old,vptElt_old,KrElt_old,
+     &      KcElt_old,ChfRayDir_Rx,ChfRayPos_Rx
+	Implicit None
+	Integer :: iElt,i,k
+	calib_setup_vars = .FALSE.
+	      if (nVarElt==0) then
+	        WRITE(*,*)' '
+                WRITE(*,*)' No Variable Element for Optimization!'
+                RETURN
+	      else if (nOptFov==0) then
+	        WRITE(*,*)' '
+                WRITE(*,*)' No Field of View for Optimization!'
+                RETURN
+              end if
+
+	      if (LOptIfFEX .and. .not.ifStopSet) then
+	        WRITE(*,*)' Must set STOP before optimization with FEX!'
+	        WRITE(*,*)' '
+	        RETURN
+	      end if
+
+	      ! Process input arguments to system optimzer drivers
+	      varZerns=0; zern_off=1
+	      varAsphs=0; asph_off=1
+              k=1
+              iVarElt=0
+
+	      ! Process source first
+	      If (isVarElt(0)) Then
+	        iVarElt=iVarElt+1
+                varElts(iVarElt)=0
+	        varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
+     &               =varEltDOF(1:mVarDOF,0)
+	        If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
+	          if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
+     &                .or. varEltDOF(3,0)/=0) then
+	            WRITE(*,*)' Must set STOP before optimizing source!'
+	            RETURN
+	          end if
+	        End If
+	        EltName(0)='Source'
+	        nOptFov=1
+	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
+	        zernElt(iVarElt)=0; asphElt(iVarElt)=0
+	      End If
+
+	      Do iElt=1,nElt
+		if (isVarElt(iElt)) then
+	          iVarElt=iVarElt+1
+	          varElts(iVarElt)=iElt
+	          varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
+     &               =varEltDOF(1:mVarDOF,iElt)
+
+	          zernElt(iVarElt)=0  ! range 1:nVarElt
+	          if (nOptEltZern(iElt)>0) then
+	            zernElt(iVarElt)=nOptEltZern(iElt)
+	            varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
+     &	              = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
+	            zern_off=zern_off+nOptEltZern(iElt)
+	          end if
+
+		  asphElt(iVarElt)=0  ! range 1:nVarElt
+                  if (nOptEltAsph(iElt)>0) then
+                    asphElt(iVarElt)=nOptEltAsph(iElt)
+                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
+     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
+                    asph_off=asph_off+nOptEltAsph(iElt)
+                  end if
+
+	          If (LOptCons) Then
+                    ! process variable constraints
+                    Do i=1,mVarDOF
+                      if (varEltDOF(i,iElt)/=0) then
+                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
+                        k=k+1
+                      end if
+                    End Do
+                  End If
+
+	          ! Save state of variable element
+	          psiElt_old(1:3,iVarElt)=psiElt(1:3,iElt)
+	          vptElt_old(1:3,iVarElt)=vptElt(1:3,iElt)
+	          KrElt_old(iVarElt)=KrElt(iElt)
+	          KcElt_old(iVarElt)=KcElt(iElt)
+
+	        end if
+	      End Do
+
+	      ! Save Rx Chief Ray
+	      ChfRayDir_Rx=ChfRayDir
+	      ChfRayPos_Rx=ChfRayPos
+
+	calib_setup_vars = .TRUE.
+	End Function calib_setup_vars
+!<--
+
+
         ! This driver routine performs optimization on an optical system
         ! based on the Levenberg-Marquardt nonlinear least-square method,
         ! a unconstrained, nonlinear iterative minimization algorithm.

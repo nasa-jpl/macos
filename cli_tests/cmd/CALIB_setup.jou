@@ -1,0 +1,15 @@
+# CALIB's setup runs from ONE routine (calib_setup_vars, PLAN_CONSOLIDATION 3.3, macos 2026-10-11):
+# the LOAD handler's nominal-sensitivity run (OptNomSens= Y) and the CALIB command carried the same
+# configuration checks and variable packing as two copies.  A refactor -- TRIPWIRE, no red leg:
+# transcripts were byte-identical before and after on tst_calib_nomsens.in (both paths),
+# OptAlg= Linear and tst_calib_spot20.in, both compilers.  Pinned here: the nominal path runs at
+# LOAD and CALIB then solves (4 iterations, the cap); a deck with no variable element is refused
+# by name.
+old $ROOT/ZGD_test_files/tst_calib_nomsens.in
+calib
+no
+no
+old $ROOT/ZGD_test_files/e5hex1.in
+calib
+# EXPECT: tst_calib_nomsens\.in\s+being loaded[\s\S]*?Computing nominal system sensitivity[\s\S]*?Optimization iterations =\s+4\s
+# EXPECT: e5hex1\.in\s+being loaded[\s\S]*?No Variable Element for Optimization!
