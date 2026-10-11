@@ -36,7 +36,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                       BEAM_TARGET,OptAlg,NonLin,isVarElt,
      &                       OptSpotSize,ifOptPrint,SvdSvCut,
      &                       use_saved_pinv,save_pinv,PinvFile,
-     &                       calib_n_iter,calib_merit,calib_stop
+     &                       calib_n_iter,calib_merit,calib_stop,
+     &                       calib_n_rej,calib_n_fail
 	use zern_wf_mod
 
 	Implicit none
@@ -61,6 +62,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         LREAL, dimension(:), allocatable :: objfun_nom,da,aparams_nls_m
         Logical :: start_curr_optim,ifCalcOPD,ifFEX_m,lmlsq_success,
      &		   NomSensOnly,LinNomCtrl
+!     Trials whose evaluation failed this solve (funcs_app, PLAN 3.4)
+        Integer :: nFailTrials = 0
         Type(OptBeamStr) :: OptBeam_m
         Real*8, dimension(:,:), allocatable :: OPDMat_m
 
@@ -242,11 +245,14 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         Logical, save :: itr_done,first_entry = .true.
 	LREAL :: alam_in,chisq_prev,rms_now,rms_prev
 	LREAL, parameter :: ftol_rel=1d-6 ! MINPACK ftol: LM still ramping
-	Integer :: nFlat,nRej
+	Integer :: nFlat,nRej,nRejTot,nAcc
 	Integer, save :: entry_cnt=0  ! debug only
 
 	entry_cnt=entry_cnt+1
 	lOpsFail = .FALSE.   ! PLAN 3.4: a failed evaluation aborts by name
+	nFailTrials = 0      ! PLAN 3.4: failed trials are REJECTED trials
+	nRejTot = 0
+	calib_n_rej = -1; calib_n_fail = -1
 
 	If (n_varElt .le. 0) Then
 	  print*,'** Error in nls_optim_dvr: n_varElt=',n_varElt
@@ -643,6 +649,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	itr_done = .false.
 	nFlat = 0
 	nRej = 0
+	nRejTot = 0
+	nAcc = 0
 	calib_stop = 3
 	chisq_prev = -1d0
 	rms_prev = -1d0
@@ -698,9 +706,11 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      chisq_prev = chisq
 	      rms_prev = rms_now
 	      nRej = 0
+	      nAcc = nAcc+1
 	    Else
 	      nFlat = 0
 	      nRej = nRej+1
+	      nRejTot = nRejTot+1
 	    End If
 	    If (itr >= 2 .and. (nFlat >= 2 .or. nRej >= 10)) Then
 	      tot_itrs_done = itr
@@ -745,6 +755,24 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	      tot_itrs_done=itr; calib_stop=1; exit
 	  end if
 	End Do  ! LM iteration loop
+!-->  ZERO accepted steps is never 'floor' (PLAN 3.4, CC's ruling): a solve
+!     whose trials could not be traced FAILED to optimise; one whose
+!     trials were all evaluated but none lowered the merit STALLED (the
+!     start is a stationary point of that merit) -- not an error, but not
+!     'converged' either (the bindings report converged = false).
+	If (OptAlg==NonLin .and. nAcc==0 .and. tot_itrs>0) Then
+	  If (nFailTrials > 0) Then
+	    WRITE(*,'(A,I0,A,I0,A)')'  ** Optimization failed: no trial '//
+     &        'step was accepted -- ',nFailTrials,' of ',nRejTot,
+     &        ' trials lost the chief ray'
+	    rtn_flg=1; calib_n_iter=tot_itrs_done; calib_merit=chisq
+	    calib_stop=4
+	    go to 105
+	  Else
+	    calib_stop = 5
+	  End If
+	End If
+!<--
 	if (OptAlg/=NonLin .and. .not.itr_done) tot_itrs_done=tot_itrs
 	!
 	! Last run
@@ -792,6 +820,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         End If
 	aparams_nls_m=aparams ! for external output
 	calib_n_iter = tot_itrs_done
+	calib_n_rej = nRejTot; calib_n_fail = nFailTrials
 
 
 	!WRITE(*,*)' len_a = ', len_a
@@ -805,8 +834,16 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  If (calib_stop==1) Then
 	    WRITE(*,*)'Stopped: converged (2 flat steps)'
 	  Else If (calib_stop==2) Then
-	    WRITE(*,*)'Stopped: at the round-off floor',
+	    If (nFailTrials > 0) Then
+	      WRITE(*,'(A,I0,A)')'  Stopped: at the floor (10 rejected'//
+     &          ' trials; ',nFailTrials,' trial(s) lost the chief ray)'
+	    Else
+	      WRITE(*,*)'Stopped: at the round-off floor',
      &                ' (10 rejected trials)'
+	    End If
+	  Else If (calib_stop==5) Then
+	    WRITE(*,'(2A)')'  Stopped: stalled -- no trial step lowered',
+     &        ' the merit (a null or already-optimal problem)'
 	  Else
 	    WRITE(*,*)'Stopped: OptMaxItrs reached'
 	  End If
@@ -819,6 +856,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 !     failed), as the success path above applies the final one, then
 !     fall into the normal cleanup.
  105    continue
+	calib_n_rej = nRejTot; calib_n_fail = nFailTrials
 	Call smacos_compute_perturbed(OPDm,ZCoefm,SPOTm,
      &              SpotSizem,PIXm,
      &              wfe_rms,n_elts,elt_arr_m,dof_arr_m,
@@ -880,6 +918,7 @@ C  Arguments yfit and dyda are automatic arrays in calling routine.
 C
 	Subroutine funcs_app(a,yfit,dyda)
 	use traceutil_mod, only : LUseChfRayIfOK
+	use macos_ops_mod, only : lOpsFail
 
         LREAL, dimension(:), intent(in) :: a
         LREAL, dimension(:), intent(out) :: yfit
@@ -978,6 +1017,17 @@ C
         End Do
 
 	LUseChfRayIfOK=LUseChfRayIfOK_sv ! restore
+!-->  An evaluation that could not be traced (a trial step lost the chief
+!     ray) is a BAD TRIAL, not a catastrophe (PLAN 3.4, CC's ruling): a
+!     huge residual makes lmlsq REJECT it by its own rule -- lambda x10,
+!     the parameters unchanged -- so a smaller step can recover and the
+!     ten-rejection floor ends it by name.  1d100 keeps chisq finite.
+	If (lOpsFail) Then
+	  yfit = 1d100; dyda = 0d0
+	  nFailTrials = nFailTrials + 1
+	  lOpsFail = .FALSE.
+	End If
+!<--
         End Subroutine funcs_app
 
 !-->  The beam rows of one (wavelength, field) block, in the order the

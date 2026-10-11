@@ -1196,8 +1196,9 @@ Put a dw_dx harvest's translation columns per SI metre. OX = macos.dwdx_trans_pe
 Run the macos design optimizer (CALIB). result = macos.calib() invokes the SMACOS CALIB command using the current optimization configuration (variable elements, FOVs, wavelengths, target, iteration cap, tolerance).  The config can be baked into the Rx file (OptTarget=, OptMxItrs=, VarDOF=, etc.) or set programmatically via the macos.calib_set_* family.
 
 <!-- BEGIN NOTES fn-calib -->
-The result also carries `n_iter` (LM iterations taken), `merit` (the final chisq) and
-`stop_reason` (`converged` / `floor` / `cap`; see calib_set_tol for the rule).
+The result also carries `n_iter` (LM iterations taken), `merit` (the final chisq),
+`stop_reason` (`converged` / `floor` / `cap` / `stalled`; see calib_set_tol for the rule) and
+`n_rejected` / `n_failed`.  `Telescope.optimize` hands `.stop` and `.n_iter` on in its result.
 `macos.calib_stats()` / `pymacos.calib_stats()` read the same three after a FAILED run, which
 `calib` reports as an error (`failed`, the iterations completed, the merit at the last
 accepted step).  The count no longer depends on any earlier CALIB in the process (before
@@ -1309,8 +1310,14 @@ The LM (the default `NonLin` algorithm) stops for one of three reasons, reported
 | reason | condition |
 |---|---|
 | `converged` | two consecutive ACCEPTED steps, each moving the rms merit by no more than `tol` AND lowering chisq by no more than `1e-6` of it |
-| `floor` | ten consecutive REJECTED trials since the last accepted step (lambda up 1e10, no decrease: the round-off floor) |
+| `floor` | ten consecutive REJECTED trials since the last accepted step (lambda up 1e10, no decrease: the round-off floor) -- after progress |
 | `cap` | the iteration cap (`calib_set_iter`, Rx `OptMaxItrs=` / `OptMxItrs=`) |
+| `stalled` | NO trial step was accepted and none failed: the start is a stationary point of the merit (typically already optimal).  Not an error; `converged` is true; `n_iter == n_rejected` |
+| `failed` | the LM failed (a singular step, e.g. a DOF the merit cannot see), the initial evaluation failed, or NO trial step was accepted and some could not be evaluated ('no trial step was accepted -- N of K trials lost the chief ray').  The bindings raise a catchable error; the optics are restored to the last accepted state |
+
+A trial whose evaluation FAILS (a trace inside it lost the chief ray, e.g. a step that swung a
+mirror far off) is a REJECTED trial: the damping grows and a smaller step follows.  `calib_stats`
+reports `n_rejected` and, of those, `n_failed` (2026-10-11, PLAN_CONSOLIDATION 3.4).
 
 The `1e-6` relative term is a fixed engine constant (MINPACK's `ftol` idea), not a knob: on a
 merit of a few nm the first steps of an LM still ramping its damping move the rms by ~1e-12
