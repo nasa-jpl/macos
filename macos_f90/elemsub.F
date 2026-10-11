@@ -1478,6 +1478,7 @@ C***********************************************************************
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,
      &   nGridMat,mGridMat,GridMat,GridSrfdx,
+     &   pData,xData,yData,zData,
      &   psi,pv,prot,pin,ihat,Evec,
      &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb,kxa,kxb,lambda,
@@ -1507,11 +1508,13 @@ C  for a general lens surface
 
 	INTEGER nGridMat,mGridMat
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
-!     NSRefractor (non-sequential) lacks the element grid frame; its
-!     GridData(9) path keeps the prior null frame (the sequential
-!     FindSrf/Reflector/Refractor routines get the real pData -- see the
-!     GridSrf fix).  Threading it here is a deferred follow-on.
-        REAL*8 :: pData(3)=0d0,xData(3)=0d0,yData(3)=0d0,zData(3)=0d0
+!-->  The element's REAL grid frame (PLAN_CONSOLIDATION 1.2, 2026-10-11):
+!     a local null frame here sent every ray to the grid's CENTRE pixel,
+!     so a GridData figure on a refractive NS surface imaged as a piston
+!     (tst_nsref_ns.in: the bump read exactly 0).  The callers pass the
+!     frame of the element actually hit (imin).
+        REAL*8, INTENT(IN) :: pData(3),xData(3),yData(3),zData(3)
+!<--
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,
      &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),

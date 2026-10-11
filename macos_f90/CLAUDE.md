@@ -658,10 +658,12 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   segments).  NSReflector elements dispatch through `Reflector` in the NS
   block, NOT the `NSRefractor` routine.  **Not yet cherry-picked to opt-dev**
   (which has the same slip via 1b535a5).
-- **Deferred:** the `NSRefractor` ROUTINE (refractive non-sequential only)
-  doesn't carry the element grid frame — its `GridSrf` call still passes a
-  local null frame; that GridData path stays piston-only until threaded.
-  Noted in-line at the NSRefractor decl.
+- **NSRefractor CLOSED (2026-10-11):** the `NSRefractor` ROUTINE (refractive non-sequential)
+  had kept a LOCAL null grid frame for its `GridSrf` call, so a GridData figure there imaged as a
+  piston.  The element's frame (of `imin`, the element hit) is now an argument, threaded from both
+  call sites; ZGD twins `tst_nsref_{seq,ns}.in` trace and propagate bit-identically (pre-fix the
+  NS twin read OPD exactly 0).  Gates `cli_tests/cmd/NSRefractor_grid.jou`,
+  pymacos `test_nsrefractor_grid.py`.
 - **GridSrfdx semantics (user-facing):** grid span = `(nGridMat−1)·GridSrfdx`
   base units, centered on `pData`; rays outside the span get `fh=0` (no
   figure).  256-grid across a 280-diameter segment → `GridSrfdx = 280/255
