@@ -1042,8 +1042,17 @@ C         ***Status check***
 	      ELSE IF (iPloTyp.EQ.0) THEN
 	        CTITLE='NULL'
 	      END IF
+!-->  The session modes, so a journal can see what a LOAD did to them
+!     (PLAN 3.3 rule-6 audit, 2026-10-11): VECTOR/SCALAR, CENTROID/
+!     CHIEFRAY, LNEG/NOLNEG, CIR/GIR join NOPLOC and POLARIZATION.
 	      WRITE(*,207)filnam(1:ICLEN(filnam)),iCurRayElt,iCurWFElt,
-     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol
+     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol,
+     &         ifVecDif3,ifCentroid,ifLNegOK
+#ifdef CMACOS
+	      WRITE(*,'(A,L2)')
+     &          '              Color image rendering (CIR)=',ifPGColor
+#endif
+!<--
 	    ELSE
 	      WRITE(*,150)
 	    END IF

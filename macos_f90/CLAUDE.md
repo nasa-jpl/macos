@@ -1143,7 +1143,18 @@ Rule, third time: a value a command or the start-up sets as a USER
 OPTION does not belong in `elt_mod_init_vars` -- list of such options
 moved so far: the glass catalog, `spcOption`, and (2026-10-10) the OPD
 reference's session default `LOpdRefChief` -- the per-load value
-`LUseChfRayIfOK` is restored FROM it, never to a constant.
+`LUseChfRayIfOK` is restored FROM it, never to a constant.  (2026-10-10)
+`zcoType` was not moved but its per-load reset now goes to the RIGHT
+value, ZernCircular (its command SZCO needs a loaded deck, so per-load
+is correct).  **The full audit (2026-10-11, PLAN_CONSOLIDATION 3.3):**
+509 per-load resets, 197 with another writer; the test is not 'who else
+writes it' but 'can a user set it with NO deck loaded and expect it to
+stay'.  A command gated on `ifLoad` (SZCO, SRT, BWK, GBS, LOS, BEAM) and
+a per-ELEMENT flag (REGRID) are deck state -- per-load is right.  Five
+modes fail the test and are Dave's ruling (PLAN 4 item 2): POLARIZATION,
+VECTOR/SCALAR, LNEG, CENTROID, CIR -- `STATUS` prints all five, and
+`cli_tests/cmd/MODE_*.jou` pin today's reset.  IMGMODE already survives
+(`ifAstroMode` lives in plot_mode_mod, outside every `*_init_vars`).
 
 ## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)
 `elemsub.F`'s four grating routines (`Grating`, `TrGrating`, `FzpTrGrating_`,
