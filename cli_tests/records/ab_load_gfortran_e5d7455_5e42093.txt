@@ -1,0 +1,4 @@
+# A/B: pre load_gfortran_e5d7455.csv  post load_gfortran_5e42093.csv  (114 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 1 decks moved
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Grating_example_001.in  npass 7295 -> 7346  lost 5158 -> 5107  rms 1.771546971D+02 -> 1.766507565D+02  avg 1.3117146684202718D+01 -> 1.3118765966580352D+01
