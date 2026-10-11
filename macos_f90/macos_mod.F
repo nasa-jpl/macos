@@ -149,7 +149,15 @@ C
           nDrawElt(:)     = 0
           ImgMode         = 0
 
-          zcoType         = 0
+!-->      the ZCO / Zernike-fit basis: CIRCULAR unless the deck says
+!         ZCOZernType= (2026-10-10).  It was reset to 0 here after the
+!         LOAD handler set ZernCircular, so every fit after a load took
+!         zern_fit's non-circular branch with type 0 and read
+!         ZernAnnuRatio(ie_m=0) out of bounds -- the CALIB ZWF target
+!         (WFE_ZMODE) then STOPped the host in nerror.  The rule-6 trap
+!         again: the per-load reset must reset TO the default.
+          zcoType         = ZernCircular
+!<--
           quarter         = 0
           m_err_macos     = 0
 
