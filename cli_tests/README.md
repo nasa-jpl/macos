@@ -7,9 +7,12 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 — the record is the result, the script prints the summary.
 
 ```
-./run_cli_tests.sh load        # the core corpus (102 decks), both compilers  (~minutes)
+./run_cli_tests.sh load        # the core corpus (114 decks), both compilers  (~minutes)
 ./run_cli_tests.sh corpus      # every committed prescription (~1270)         (~an hour)
 ./run_cli_tests.sh extended    # + untracked sandbox decks (informational)
+./run_cli_tests.sh cmd         # the command journals (cmd/*.jou), both compilers
+./run_cli_tests.sh manual      # load + re-emit the manual's examples (docs)
+./run_cli_tests.sh ab <pre> <post> [load|corpus] [allow-file]   # the A/B of two records
 ./make_corpus.sh               # regenerate the three deck lists
 ```
 
@@ -18,8 +21,8 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 | layer | what | status |
 |---|---|---|
 | `load` (§2.1) | per deck: LOAD → `opd nElt` → SAVE; new process: LOAD the save → SAVE; byte identity of the second save against the first | built 2026-10-09 |
-| `cmd` (§2.2) | one pty-driven journal per command-reference entry, `# EXPECT:` lines asserted, a must-fail twin where the command has a known failure mode | next |
-| `ab` (§2.3) | the previous tagged binary in `build_ab/` against this one on the `corpus` record; any changed deck named in the commit | next |
+| `cmd` (§2.2) | one pty-driven journal per command-reference entry (`cli_cmd_gate.py`, `cmd/*.jou`): `# EXPECT:` / `# EXPECT-NOT:` regexes asserted on the transcript, `# COPY: <deck> [<subdir>]` copies a deck into `$TMP` first (anything that writes beside the deck), `$ROOT $RES $TMP $DECK` expand; `must_fail/*.jou` must NOT pass | built 2026-10-09 |
+| `ab` (§2.3) | `ab_records.py`: the load-gate record at a PRE SHA against the record at a POST SHA, deck by deck (status, nElt, nPass, lost, RMS, P-V, avg, roundtrip, as printed); every mover written to `records/ab_<kind>_<compiler>_<pre>_<post>.txt`; exit 1 on a mover not named in the allow file or on an ok → not-ok deck.  The builds are the manual step (one clean worktree, one SHA at a time); the records are what gets committed | built 2026-10-10 |
 
 ## Files
 
@@ -50,6 +53,10 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 - `records/` — `<kind>_<compiler>_<sha>[+dirty].csv` + `.log`, `mustfail_*.csv`,
   `<kind>_<compiler>_latest.txt` (the last summary).  Committed: the records of
   tagged runs; the `.log` files are gitignored.
+- `ab_records.py` — the A/B of two records (above).  Non-vacuity: `ab d6e2fc5 47cd323
+  load records/ab_6a_moved_47cd323.txt` passes (the 6a round-off movers, all named);
+  without the allow file it fails naming them.  Its first run over the core found one
+  round-off mover TO's 406-deck record had missed (`Rx_AsphShort_base.in`, gfortran only).
 - `ab_corpus_seed.py` — the FwdRoot corpus A/B driver (2026-10-04) this grew from.
 
 ## Conventions
@@ -61,7 +68,9 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   shared working tree, whose build dirs another lane may be rebuilding mid-edit
   (that happened on day one).  `MACOS_CLI_TREE=.` uses this tree, tagged `+dirty`.
 - Model size 256 (`--model`); `--deadline` 90 s per command (the manual's `SegDemo.in`
-  is the known slow loader).
+  is the known slow loader).  A `timeout_load` is not always the engine: the three
+  `pupilsim_redo_lens_*` decks in the 10-09 corpus record were a 138-character path
+  cut at the CLI's 130-character command line (fixed b90887e; `cmd/LONG_PATH.jou`).
 - The suite runs the CLI only — never MATLAB — so it never blocks a mex relink.
 - A deck that fails is a finding, not a test defect, until shown otherwise; the
   reproducer goes into `ZGD_test_files/` and the item into PLAN §0.

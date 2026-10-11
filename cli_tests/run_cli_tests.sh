@@ -5,8 +5,14 @@
 #   ./run_cli_tests.sh corpus          the load gate on EVERY committed deck (weekly / A/B)
 #   ./run_cli_tests.sh extended        ... plus the untracked sandbox decks (informational)
 #   ./run_cli_tests.sh cmd             (sec. 2.2, not yet) one journal per cmdref entry
-#   ./run_cli_tests.sh ab              (sec. 2.3, not yet) previous binary vs this one
-#   ./run_cli_tests.sh full            load + cmd + ab
+#   ./run_cli_tests.sh ab <pre> <post> [kind] [allow]   (sec. 2.3) the load-gate RECORDS at two
+#                                      SHAs compared deck by deck, both compilers; kind = load
+#                                      (default) | corpus; allow = a file naming the decks the
+#                                      change was meant to move (an ab_*_moved record serves).
+#                                      Exit 1 on an unnamed mover or an ok -> not-ok deck.  The
+#                                      records must exist: run `load`/`corpus` from the clean
+#                                      worktree at each SHA first (see README).
+#   ./run_cli_tests.sh full            load + cmd (ab needs its two SHAs)
 #
 # Records: cli_tests/records/<kind>_<compiler>_<sha>[+dirty].csv -- the record IS the
 # result; this script prints the summary, writes <kind>_<compiler>_latest.txt, and
@@ -59,8 +65,19 @@ case "$kind" in
     i=0; while read -r d; do n=$(basename "$d" .in); f=$(printf '%s/rt%04d_a.in' "$wd" $i)
       [ -f "$f" ] && cp "$f" "$root/docs/macos-manual/examples/emitted/$n.in"; i=$((i+1)); done < "$list"
     rm -rf "$wd"; echo "emitted: $(ls "$root"/docs/macos-manual/examples/emitted | wc -l) decks"; exit 0 ;;
-  ab|full) echo "$kind: not built yet (PLAN_CONSOLIDATION sec. 2.3)"; exit 2 ;;
-  *) echo "usage: $0 [load|corpus|extended|cmd|ab|full]"; exit 2 ;;
+  ab)
+    pre=${2:?pre sha}; post=${3:?post sha}; akind=${4:-load}; allow=${5:-}
+    for comp in ifx gfortran; do
+      [ -n "${MACOS_CLI_ONLY:-}" ] && [ "$MACOS_CLI_ONLY" != "$comp" ] && continue
+      a="$here/records/${akind}_${comp}_${pre}.csv"; b="$here/records/${akind}_${comp}_${post}.csv"
+      for f in "$a" "$b"; do [ -f "$f" ] || { echo "== $comp: no record $f -- run '$0 $akind' from the clean worktree at that SHA"; fail=1; continue 2; }; done
+      echo "== $comp: $pre -> $post ($akind)"
+      python3 "$here/ab_records.py" "$a" "$b" ${allow:+--allow "$allow"} --out "$here/records/ab_${akind}_${comp}_${pre}_${post}.txt" | tail -n +3 | tee "$here/records/ab_${comp}_latest.txt"
+      [ "${PIPESTATUS[0]}" -eq 0 ] || fail=1
+    done
+    exit ${fail:-0} ;;
+  full) "$0" load; r1=$?; "$0" cmd; r2=$?; exit $(( r1 || r2 )) ;;
+  *) echo "usage: $0 [load|corpus|extended|cmd|manual|ab <pre> <post> [kind] [allow]|full]"; exit 2 ;;
 esac
 [ -s "${list:-}" ] || "$here/make_corpus.sh"
 ls "$here"/must_fail/*.in > "$here/must_fail/list.txt"      # absolute paths, regenerated each run

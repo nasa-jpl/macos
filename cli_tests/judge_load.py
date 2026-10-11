@@ -26,6 +26,9 @@ c = collections.Counter(r['status'] for r in R.values())
 rt = collections.Counter(r['roundtrip'] for r in R.values() if r['status'] == 'ok')
 print('  status    ' + '  '.join('%s %d' % kv for kv in sorted(c.items())))
 print('  roundtrip ' + '  '.join('%s %d' % kv for kv in sorted(rt.items())))
+st = collections.Counter(r.get('settle') or 'n/a' for r in R.values() if r['status'] == 'ok')
+if any(r.get('settle') for r in R.values()):
+    print('  settle    ' + '  '.join('%s %d' % kv for kv in sorted(st.items())) + '   (s1 vs s2; roundtrip is s2 vs s3)')
 nan = [d for d, r in R.items() if r['status'] == 'ok' and 'NaN' in r['rms']]
 if nan:
     print('  NaN OPD   %d: %s' % (len(nan), ' '.join(os.path.basename(d) for d in nan)))
