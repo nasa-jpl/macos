@@ -277,3 +277,66 @@ after the number.
   of its open power) — COPHI's own layout has none (same polarization both arms, a plain
   splitter), so the `noise` stage runs the photon budget for BOTH trains and the deck says
   which it prices.
+
+## 9. Two considerations added by Dave (2026-10-11) — COPHI now, every sensor in the composite
+
+### 9.1 Electronics architecture and complexity
+
+A column in the composite deck's comparison, and for COPHI a slide of its own.  Per
+sensor, the same rows: light source and its stabilization; modulation hardware;
+detector and readout; timing / reference; real-time processing and data rate; loop
+latency (sensor delay in the hold servo); parts count and single-point failures;
+power / thermal; TRL.  The first cut, from the layouts as drawn:
+
+| | TG96 PSI (record) | ZWFS (laser) | PDI / P-SRI | **COPHI (camera)** | **COPHI (lock-in)** |
+|---|---|---|---|---|---|
+| source | HeNe, isolator | dedicated laser | laser | single-frequency laser, 1×2 coupler, PM fiber | same |
+| modulation | piezo + HV driver (4 steps) | none (dimple fixed); mask stepper for V | pinhole stepper / shutter; photonic phase shifter (P-SRI) | **2 AOMs + 2 RF synthesizers + Rb standard + ×4 multipliers + mixer → 30 Hz trigger** | same AOM pair, beat at kHz |
+| detector | sCMOS camera | camera | camera | 1k² global-shutter camera + grabber | lock-in camera (I/Q out) |
+| timing | frame trigger ↔ piezo settle | frame clock | frame clock | **camera trigger locked to the beat** | reference input = the beat |
+| processing | atan2 per pixel per 4 frames | reconstruction (modal / matrix) | atan2 / fit | atan2 per pixel per beat (1k² at 7.5 Hz: trivial) | on-chip; I/Q at kHz |
+| data rate | 4 × 1k² × 16 b × 7.5 Hz ≈ 0.5 Gb/s | one frame per reading | frames | same as PSI | 2 × 10 b × 0.27 Mpx × 1 kHz ≈ 5 Gb/s if streamed; or decimated on-chip |
+| loop latency | 4 frames + settle | 1 frame | 1–5 frames | 4 frames (one beat, 133 ms) | one I/Q period (ms) |
+| new error terms from electronics | piezo nonlinearity, settle | none | stepper repeatability | **synthesizer phase noise → beat jitter (`P.cophi.jitter`); AOM drive ripple → contrast; trigger jitter** | reference phase noise; ADC bits |
+| parts that are new to the bench | HV driver | mask | pinhole + stage | AOMs, RF chain, Rb reference, fiber LO, collimator | + the lock-in camera |
+
+What the model must carry: the synthesizer / reference phase noise mapped to
+`P.cophi.jitter` (rad of beat phase per frame — a 1e-11 Allan-class Rb reference at 80
+MHz contributes nothing; the AOM drivers' DDS phase noise is the term), AOM drive
+amplitude ripple as a contrast modulation, the camera trigger's jitter, and the sensor
+DELAY in `dmg_loop` (today's loop steps per reading; a reading that takes one beat is one
+cycle of latency at 7.5 Hz — the servo bandwidth row).  Score in the deck: parts count,
+the number of active control loops the sensor needs to run (COPHI: laser frequency,
+two RF chains, fiber polarization/phase), and the failure the loop cannot survive.
+
+### 9.2 Multi-color (a tunable laser) for capture-range extension
+
+Single-wavelength phase has an unambiguous SURFACE range of ±λ/4 (double pass: OPD
+λ/2) — ±158 nm at 632.8 nm, ±330 nm at 1319 nm.  The HOLD job (3 pm) never needs
+more; CAPTURE of the DM's initial 100–200 nm rms figure (peaks 3–4× rms) wraps at
+633 nm, and a dropout mid-run loses the fringe order.  Two cures, both to be priced:
+
+- **Temporal unwrapping** (COPHI gets it free: a reading every beat, the surface
+  cannot move λ/4 between readings) — covers a running loop, not a cold start.
+- **Two wavelengths → a synthetic wavelength** Λ = λ₁λ₂/|λ₁ − λ₂|: the coarse
+  phase at Λ picks the fringe order of the fine phase at λ.  Range ±Λ/4; the coarse
+  measurement's noise is amplified by Λ/λ, and it must resolve the fine fringe
+  (σ_coarse × Λ/λ < λ/4) — so Δλ is a trade: 633 ± 0.5 nm gives Λ = 0.8 mm (range
+  ±200 µm, amplification 1265×, needs σ_fine < 0.125 nm/1265 ≈ 0.1 pm — too far); a
+  two-step ladder (Δλ 20 nm → Λ 20 µm, then 0.5 nm) is the standard answer
+  (SIM/MSTAR-class absolute metrology did exactly this with heterodyne).  Hardware:
+  a tunable source at 633 (ECDL, a few nm, or a frequency comb line) is expensive;
+  at **1310–1550 nm the telecom tunable lasers are cheap, agile and PM-fiber native**
+  — which strengthens ruling 2's 1.3 µm row: it buys an InGaAs camera but also a
+  practical tunable source and twice the single-wavelength range.
+- For COPHI the two colors can run SIMULTANEOUSLY on one camera with two AOM pairs at
+  two beats (frequency-multiplexed heterodyne); the lock-in camera reads one reference
+  at a time (sequential colors).  For the ZWFS the sensor's own range is the dimple's
+  linear range (~λ/10), so a wavelength ladder extends it only as a sequence of masks
+  — a different trade; for the PSI/PDI the two-wavelength form applies as for COPHI.
+
+Model rows: `capture` stage gains the two-wavelength ladder (Δλ sweep: range,
+amplification, the fine-noise requirement at each rung, the rungs needed to capture
+200 nm rms from cold), priced in photons and seconds; the 1.3 µm stage carries the
+tunable-source argument.  Composite deck: a "capture from cold" row per sensor —
+temporal, two-color, or neither.
