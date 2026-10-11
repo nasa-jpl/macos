@@ -424,7 +424,7 @@ only marks the Rx modified and resets those flags.
 
 *Minimum match:* `CHIefray`
 
-Use the chief ray as the FEX/SXP pupil-sphere axis (the default).
+Chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 ```
@@ -1083,7 +1083,7 @@ DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 
 *Minimum match:* `CENTRoid`
 
-Opt into the beam-centroid axis for FEX/SXP (chief ray is the default).
+Beam-centroid FEX/SXP axis (opt-in; the chief ray is the default).
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
 ```
@@ -2038,8 +2038,15 @@ Enter element where OPD is to be evaluated: [0]: 3
  Average OPD is   ...
 ```
 Traces the full ray bundle to the element and plots the beam
-OPD map: per-ray pathlength minus chief-ray pathlength
-(positive = travelled farther), in BaseUnits.  The map is
+OPD map: per-ray pathlength minus the CHIEF RAY's pathlength
+(positive = travelled farther), in BaseUnits.  The chief ray is
+the default reference; the aperture MEAN is the option (OPDREF
+MEAN per session, `UseChfRay4OPD= N` per prescription, `opd_ref`
+from the bindings) -- see OPDREF for when it matters (segmented
+pupils) and for the `OPD reference:` line every run prints.  The
+printed RMS is mean-removed and P-V is max-min, so neither depends
+on the reference; 'Average OPD' is the chief-minus-mean piston
+itself.  The map is
 always the square aperture ray grid (see MAP) — use SPOt for
 true ray locations; obscured-ray plotting follows OBS.  The
 map represents system wavefront error only at an exit pupil
@@ -2051,8 +2058,57 @@ does not apply (OPD is always linear).  TEXt/BINary/FITs/MAT
 plot types write `filnam.OPDn`.  Prerequisite for ZCOef,
 ZABerr, ZRM and DOPD.  SMACOS: IARG(1)=element; the map is
 returned in OPDMat.
-*Related:* SPOt, ZCOef, ZABerr, OBS, MAP.
+*Related:* OPDREF, SPOt, ZCOef, ZABerr, OBS, MAP.
 <!-- END NOTES cmd-OPD -->
+
+#### OPDREF
+
+*Minimum match:* `OPDREF`
+
+OPD reference: CHIEF or MEAN (the chief ray is the default).
+
+<!-- BEGIN NOTES cmd-OPDREF -->
+```
+MACOS>opdref mean
+OPD reference (CHIEF,MEAN): [CHIEF]: mean
+ OPD reference: APERTURE MEAN (opt-in; the chief ray is the default)
+MACOS>opd
+ ...
+ OPD reference: APERTURE MEAN (OPDREF MEAN)
+ RMS OPD error is ...
+```
+Selects what every ray's optical path is measured AGAINST when OPD
+(and the OPD map a diffraction propagation fills) is computed:
+  CHIEF  the chief ray's own path (ray 1)        -- THE DEFAULT
+         (the manual's definition, Section 5.2.2; all front ends
+         since 2026-10-10)
+  MEAN   the mean path over every valid ray in the aperture
+The two maps differ by ONE constant per field (the chief-minus-mean
+piston), so RMS, P-V and 'Average OPD' as printed do NOT change --
+the per-ray map does.  Use the chief ray on SEGMENTED pupils: under
+the mean reference, moving one segment shifts the mean and prints a
+spurious piston on every other segment (16.7 % of the poked
+segment's peak on the 7-segment e5hex1 deck); under the chief
+reference the untouched segments read exactly 0.  OPDREF is a
+SESSION option: it survives later loads.  Per prescription, the
+`UseChfRay4OPD= Y|N` keyword overrides it for that deck (SAVE
+writes `UseChfRay4OPD= N` when the mean is in force, nothing for the
+default); from the bindings, `macos.opd_ref` / `pymacos.opd_ref`
+act on the loaded deck.  Every OPD run prints the reference it used
+and where it came from: `(default)`, `(UseChfRay4OPD= Y|N)`,
+`(OPDREF CHIEF|MEAN)`, `(opd_ref_set)`, `OPDRefRayLen= (Rx)`; if
+the chief ray is geometrically lost the engine falls back to the
+mean and prints `APERTURE MEAN (chief ray lost)` -- no error.  An
+OBSCURED chief ray still serves (the reference needs the ray's
+geometry, not its flux).  Consequence for consumers: under the
+chief reference a valid ray whose path equals the chief's reads
+EXACTLY 0, the same value OPDMat holds where there is no ray -- use
+the validity mask (`macos.opd_mask` / `pymacos.opd_mask`), never
+`W ~= 0`, to find the pupil.  SMACOS: not dispatched; use the api
+`opd_ref_set`.  Note the dispatcher tests OPDREF before OPD (prefix
+match).
+*Related:* OPD, CHIefray, SPCenter.
+<!-- END NOTES cmd-OPDREF -->
 
 #### SPOt
 

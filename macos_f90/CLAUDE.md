@@ -143,6 +143,14 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 
 ## OPD reference: the CHIEF RAY by default, the aperture mean the option (2026-10-10)
 
+> **Documented 2026-10-10:** the user-facing rule is in the manual, §5.2.2
+> (the OPD definition + the reference paragraph) and §4 (the hand-added
+> keywords bullet; the `ZernType=` default rule under "Zernike Surfaces"),
+> and in the cmdref entries `OPD` / `OPDREF` and the bindings' `opd_ref` /
+> `opd_mask`.  What follows is the ENGINE record (where the flags live, what
+> moved, the measurements); trim to a pointer in phase 3 of
+> `PLAN_CONSOLIDATION.md`.
+
 Dave's ruling (`BRIEF_to_opd_reference.md`): the engine matches the manual --
 a ray's OPD is its optical path minus the CHIEF ray's.  `SUBROUTINE OPD`
 (tracesub.F; the `propsub.F` twin fills OPDMat during propagation) takes the

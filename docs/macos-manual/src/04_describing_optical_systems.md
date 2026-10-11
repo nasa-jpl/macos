@@ -1741,11 +1741,9 @@ This dialog produced the following prescription data:
 
 #### Zernike Surfaces
 
-Zernike surfaces add a deformation—described by a Zernike polynomial—to the surface of a conicoid. The deformation is entered as the “excess sag” of the surface (*not* the wavefront error). MACOS allows up to the first 45 Zernike terms to be added to a conicoid base surface shape. The Zernike polynomial set that is used is that defined by Malacara in his book, “Optical Shop Testing.” The ordering of the polynomials used in
+Zernike surfaces add a deformation—described by a Zernike polynomial—to the surface of a conicoid. The deformation is entered as the “excess sag” of the surface (*not* the wavefront error). MACOS allows up to the first 45 Zernike terms to be added to a conicoid base surface shape. The Zernike polynomial set that is used is that defined by Malacara in his book, “Optical Shop Testing.” The ordering of the polynomials used in MACOS, as well as two other popular orderings, are shown in Table 8.
 
-**Element Surface Types**
-
-MACOS, and well as two other popular orderings, are shown in Table 8. In the next release of MACOS, the user will be able to select from these three orderings, as well as only enter the first 36 terms if so desired (for backwards compatibility with previous versions of MACOS).
+The ordering and normalization are selected per element with the `ZernType=` keyword: `ANSI` (the MACOS/Malacara column of Table 8; the legacy name `Malacara` is accepted), `BornWolf`, `Fringe`, `Noll`, `ExtFringe`, and the RMS-normalized `NormANSI`, `NormBornWolf`, `NormFringe`, `NormNoll`, `NormHex`, `NormAnnularNoll` (which takes the annular ratio as a trailing value). **If no `ZernType=` is given, the ANSI ordering of Table 8 is assumed** — for every surface that carries Zernike terms (`Zernike`, `ZrnGrData`), whatever the element type. **A prescription converted from Code V must declare `ZernType= Fringe`** (or `Noll`) explicitly; the converter's ordering is not inferred. A `nZernCoef=` line on a surface that carries no Zernike terms is refused at load, naming the element. Fewer than `nZernCoef` coefficients may be entered; the rest are zero. The same keyword family applies to the Mon and FF channels of FreeForm surfaces (`MonZernType`, `FFZernType`; see “FreeForm Surfaces” below).
 
 **TABLE 8.** Zernike polynomials
 
@@ -3029,6 +3027,8 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 -   The last element data block must be followed by the ‘nOutCord=’ specifying the number of output coordinates and the output coordinate matrix.
 
 -   Blank lines can be used to separate data for clarity.
+
+-   Some optional keywords are never written by the NEW dialog and are added by hand (or by SAVE when the value differs from the default). In the source block: `UseChfRay4OPD= Y|N` selects the OPD reference (the chief ray, `Y`, is the default; `N` selects the aperture mean — Section 5.2.2) and `OPDRefRayLen=` fixes the reference pathlength directly. In an element block: `ZernType=` (ANSI when absent — see “Zernike Surfaces”) and `NSCount=` (the non-sequential hit budget — see “Reflective Non-Sequential Surfaces”).
 
 -   Comments must be preceeded by a ‘%’ sign
 
