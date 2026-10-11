@@ -121,6 +121,18 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
   per-category loss accounting fires.  mmacos regression: `tSpot` (obscured
   Cass, beam ray count == tout).
 
+## A trace must not rewrite the prescription: the IndRef stamps (2026-10-09/10)
+CTRACE's Return (PLAN item 3) and Obscuring (1.1b 3b) branches wrote the RUNNING medium into the
+element's own `IndRef`.  Nothing reads either element's `IndRef` as a medium (ReturnSrf / ObsSrf use
+`na`; CPROPAGATE resets its medium only after a Refractor or LensArray), so the stamps only mutated the
+Rx: an obscuration inside glass reported / SAVEd the glass index after any trace (ZGD
+`tst_obs_in_glass.in`, gate `cli_tests/cmd/IndRef_stamp.jou`).  Both removed.  The REFRACTOR branch
+never had a stamp: its `nb` (the element's IndRef) is never assigned; a variable-index element
+delivers its per-ray index through `nc`/`ifnc` -> CTRACE's `NewIndRef`.  Measured: SAVE without a
+trace vs SAVE after `opd nElt` on 403 corpus decks -- `IndRef` 0 changed.  The same measurement found
+two OTHER trace-time mutations, open in PLAN_CONSOLIDATION 1.1b: `xObs` recomputed (105 decks) and
+`Surface= Interpolated` SAVEd as `Conic` (4 legacy decks).
+
 ## GRIN: only model 5 integrates; any other GradInd= LOSES its rays by name (2026-10-10)
 The Refractor's gradient-index branch (`elemsub.F`, `IsGrinRef`) implements ONLY
 `GradInd= 5` (radial n(r) = n0 + n2 r^2 + n4 r^4, `modelCoef(1)` = the R-K step `dt`,

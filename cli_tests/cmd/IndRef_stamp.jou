@@ -1,0 +1,12 @@
+# A trace must not rewrite the prescription (PLAN_CONSOLIDATION 1.1b 3b, macos 2026-10-10).
+# tst_obs_in_glass.in: the obscuring element (elt 2, declared IndRef= 1.0) between two glass
+# faces.  CTRACE's Obscuring branch stamped the RUNNING medium (1.5) onto it during the trace;
+# nothing reads it, so SHOW / SAVE after any trace reported the glass index.  Pre-fix: SHOW 2
+# after the OPD prints IndRef=1.5E+00 -- red.
+old $ROOT/ZGD_test_files/tst_obs_in_glass.in
+show 2
+opd 7
+/null
+show 2
+# EXPECT: RMS OPD error is[\s\S]*EltName=\s+SecMirObs[\s\S]*?IndRef=1\.0E\+00
+# EXPECT-NOT: RMS OPD error is[\s\S]*EltName=\s+SecMirObs\s[\s\S]{0,400}?IndRef=1\.5E\+00
