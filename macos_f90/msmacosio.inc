@@ -12,6 +12,7 @@ C       Set entrance condition flags to .FALSE.
           nRxCommentDropped = 0
 !<--
           LRxPushback = .FALSE.    ! ReadCoefBlock's one-line pushback
+          nHdrUnk = 0              ! unknown header keys reported (3.2)
           iElt = 0   ! the header has no element: RxBad names it 'header'
                      ! (iElt was uninitialized until the element section)
 
@@ -1142,6 +1143,10 @@ C       Set entrance condition flags to .FALSE.
               GO TO 99
             END IF
           ELSE
+!-->  An unknown header key used to fall through with NO message (PLAN
+!     3.2, 2026-10-11): report it once per key per load, then go on.
+            CALL HdrUnkNote(VAR_NAM)
+!<--
             GO TO 50
           END IF
 

@@ -390,6 +390,12 @@ C***********************************************************************
 !<--
         Integer :: iosRx = 0     ! the IOSTAT of the parser's reads (RxBad)
         Real*8  :: dOptTolRx = 0d0 ! OptTol= as read (msmacosio, PLAN 3.2)
+!-->  Unknown HEADER keys already reported this load (HdrUnkNote, PLAN
+!     3.2): the header chain dropped them with no message, so a typo
+!     (OptMxItrs=) silently lost the user's value.  Reset per load.
+        Integer :: nHdrUnk = 0
+        Character(len=32) :: HdrUnkKey(32) = ' '
+!<--
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -639,6 +645,32 @@ C***********************************************************************
 !     beat 3).  Fewer coefficients than the slot count means the higher
 !     orders are zero, so pad and WARN (guards warn, not error).  nread
 !     returns how many values the string carried.
+!-->  Report an unknown HEADER key, once per key per load (PLAN 3.2,
+!     2026-10-11).  Warns, never refuses (the element chain's
+!     'Unidentified string' is the same rule).
+        SUBROUTINE HdrUnkNote(name)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: name
+          CHARACTER(LEN=32) :: key
+          INTEGER :: k
+          key = ADJUSTL(name)
+          IF (LEN_TRIM(key) .EQ. 0) RETURN
+!         A key starts with a letter: skip a line that is not one -- a
+!         UTF-8 byte-order mark alone on line 1 (six FFSegDemo decks).
+          IF (.NOT.((key(1:1).GE.'A' .AND. key(1:1).LE.'Z') .OR.
+     &              (key(1:1).GE.'a' .AND. key(1:1).LE.'z'))) RETURN
+          DO k = 1, nHdrUnk
+            IF (HdrUnkKey(k) .EQ. key) RETURN
+          END DO
+          IF (nHdrUnk .LT. SIZE(HdrUnkKey)) THEN
+            nHdrUnk = nHdrUnk + 1
+            HdrUnkKey(nHdrUnk) = key
+          END IF
+          WRITE(*,'(2A)') '  MBFile6: Unidentified header string = ',
+     &      TRIM(key)
+        END SUBROUTINE HdrUnkNote
+!<--
+
         SUBROUTINE ReadRealsPad(str, arr, n, nread)
           IMPLICIT NONE
           CHARACTER(LEN=*), INTENT(IN)  :: str
