@@ -79,6 +79,17 @@ C***********************************************************************
          INTEGER :: nGridIdxOvf = 0
          LOGICAL :: LGridIdxOvfNoted = .FALSE.  ! the note prints ONCE per run
 !<--
+!-->  A gradient-index (GradInd=) model the Refractor cannot integrate
+!     (2026-10-10): only model 5 is implemented, and every other model
+!     returned rays built from UNINITIALISED integrator state -- NaN
+!     (tst_save_keys.in, GradInd 6).  Now the ray is LOST (Refractor sets
+!     LROK false and LGrinUnsup, CTRACE / CPROPAGATE record RayStat_Undef
+!     'GRIN model not implemented'), counted (nGrinUnsup, reset per trace,
+!     WARN) and ONE note prints per run.
+         LOGICAL :: LGrinUnsup = .FALSE.
+         INTEGER :: nGrinUnsup = 0
+         LOGICAL :: LGrinUnsupNoted = .FALSE.
+!<--
 !-->  Non-sequential candidate probes need FLOW-OF-LIGHT root selection:
 !     when LNSFlowL is set, the base-conic root pick in ConSrf / AsphSrf
 !     / AsphGridSrf / FreeFormSrf / UDSrf takes the SMALLEST POSITIVE

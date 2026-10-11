@@ -1030,7 +1030,20 @@ C  Return if ray missed surface
 !	    print*,'crnt_traced_ray =',crnt_traced_ray,
 !    &        ', gradInd_kmax(crnt_traced_ray,1) =',gradInd_kmax(crnt_traced_ray,1)
           Else
-            ! other lens models -- to implement
+!-->        Any other model is NOT implemented: the code below would
+!           build pr / rhat from uninitialised pcrnt / Tcrnt (NaN).
+!           The ray is lost by name instead (surfsub LGrinUnsup).
+            LROK = .FALSE.
+            LGrinUnsup = .TRUE.
+            nGrinUnsup = nGrinUnsup + 1
+            IF (.NOT.LGrinUnsupNoted) THEN
+              WRITE(*,'(A,I4,A)') ' ** GradInd= model',
+     &          thisGrinRef%modelType, ' is not implemented (only 5'//
+     &          ' is): its rays are LOST (once per run)'
+              LGrinUnsupNoted = .TRUE.
+            END IF
+            RETURN
+!<--
           End If
           !
           ! Now the last point on integrated ray path becomes 'pr', and the ray
