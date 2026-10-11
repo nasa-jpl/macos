@@ -1,0 +1,21 @@
+# The LOAD notice (Dave 2026-10-11, PLAN_CONSOLIDATION 4 item 2): the five session modes survive
+# loads, so every load names the non-default ones in force -- and prints nothing when all are at
+# their defaults.  Here: a load with every mode default (no line), then CENTROID + NOLNEG + CIR
+# + POLARIZATION (x-polarized, vector on) and a second load, which names all four, then CHIEFRAY
+# + LNEG + GIR + NOPOLARIZATION and a third load: silent again.  Pre-fix: no such line -- red.
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+centroid
+nolneg
+cir
+polarization
+1,0
+0,0
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+chiefray
+lneg
+gir
+nopolarization
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+# EXPECT: LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR
+# EXPECT-NOT: (LOAD: session modes in force[^\n]*\n[\s\S]*){2}
+# EXPECT-NOT: \A[\s\S]*?tst_calib_spot4\.in\s+being loaded[\s\S]*?LOAD: session modes in force[\s\S]*?centroid

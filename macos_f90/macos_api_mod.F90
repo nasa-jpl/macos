@@ -5900,6 +5900,30 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! modes_get -- the five SESSION modes as the engine holds them (Dave 2026-10-11,
+      ! PLAN_CONSOLIDATION 4 item 2): polarization, vector diffraction, the FEX/SXP centroid
+      ! axis, negative ray lengths (LNEG), colour image rendering (CIR; always 0 here -- the
+      ! bindings' engine has no colour flag).  1 = on.  They survive load_rx, so the bindings'
+      ! load_rx warns when any is not at its default (pol 0, vecdif 0, centroid 0, lneg 1,
+      ! cir 0); the CLI's LOAD prints the same list from the same source (ModesGet).
+      !---------------------------------------------------------------------------------------------
+      subroutine modes_get(OK, pol, vecdif, centroid, lneg, cir)
+        use macos_mod, only: ModesGet
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: pol, vecdif, centroid, lneg, cir
+        logical :: lp, lv, lc, ll, lr
+        ! ------------------------------------------------------
+        call ModesGet(lp, lv, lc, ll, lr)
+        pol = merge(1, 0, lp); vecdif = merge(1, 0, lv); centroid = merge(1, 0, lc)
+        lneg = merge(1, 0, ll); cir = merge(1, 0, lr)
+        OK = PASS
+
+      end subroutine modes_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! calib_buffer_dims -- report the (max_fov, max_wl) compile-time
       ! dimensions used by calib_run's old_wfe_out / new_wfe_out
       ! buffers.  Callers can use this to allocate correctly-shaped

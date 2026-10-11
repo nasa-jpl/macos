@@ -1,0 +1,6 @@
+# Corpus A/B for PLAN_CONSOLIDATION 4 item 2 (five session modes to allocation + the LOAD notice), 2026-10-11.
+# pre = macos b320afd (gated); post = this commit; ifx + gfortran; 406 decks; record columns + first SAVE bytes.
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers.  Each corpus deck is loaded in a FRESH CLI with every mode at its default, so
+# no notice prints and nothing moves; the change is exercised by cli_tests/cmd/MODE_*.jou (6).

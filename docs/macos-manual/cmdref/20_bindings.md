@@ -57,6 +57,13 @@ Initialize / resize the macos engine. macos.init(MODEL_SIZE) allocates the engin
 Load a prescription file (.in) into the macos engine. N = macos.load_rx(RX_PATH) loads the prescription at RX_PATH and returns the number of elements N (>0).  RX_PATH may be supplied with or without the trailing '.in' — macos's OLD command appends '.in' unconditionally, so we strip a trailing '.in' if present (otherwise macos tries to open 'foo.in.in').
 
 <!-- BEGIN NOTES fn-load-rx -->
+**Session modes survive load_rx (2026-10-11):** POLARIZATION, VECTOR/SCALAR, CENTROID, LNEG
+and CIR are session modes, set once in the engine and kept across every load -- in the CLI
+and the bindings alike (one semantics; Dave's ruling on the CLI modes, extended to the
+bindings).  `load_rx` warns when any is in force -- MATLAB `warning('mmacos:modesInForce',
+'load_rx: session modes in force: ...')`, Python `RuntimeWarning` -- and is silent at the
+defaults; `macos.modes()` / `pymacos.modes()` read them.  Set them per deck with
+`macos.polarization` / `vecdif_set` / the `xp_fnd` mode.
 <!-- END NOTES fn-load-rx -->
 
 #### modify
