@@ -53,7 +53,16 @@ the IFO reading — same `dmg_act_fit`, same `calib_mode 'matrix'`, same λ_m.
   walk = 0.05 rad/frame is the row that prices fiber stabilization.
 - `capture`: the range; temporal unwrapping between consecutive readings as the
   free extra (a reading every 1/7.5 s cannot alias a drift slower than λ/4 per
-  reading).
+  reading); **and (Dave 2026-10-11, campaign §9.2) the two-wavelength ladder:** a
+  Δλ sweep giving the synthetic wavelength Λ, the range ±Λ/4, the Λ/λ noise
+  amplification and the fine-noise requirement at each rung; the rungs needed to
+  capture a 200 nm rms figure from cold, priced in photons and seconds; the
+  1.3 µm row carries the tunable-telecom-source argument.
+- **electronics rows (Dave 2026-10-11, campaign §9.1):** in `noise`, the
+  synthesizer / DDS phase noise mapped to `P.cophi.jitter` and AOM drive ripple to
+  a contrast modulation (both knobs exist); in `loop`, the sensor DELAY (one beat =
+  one cycle of latency at 7.5 Hz) as a `dmg_loop` row — the servo-bandwidth
+  number the composite deck's electronics table needs.
 - `format` — RESCOPED by Dave's ruling 6 (2026-10-11): no coarse / low-order forms
   (EFC probes are commanded at full actuator resolution).  The row is a
   FULL-LATTICE, well-free reading at ≥ 1 element per actuator — a lock-in camera
