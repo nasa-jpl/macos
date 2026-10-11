@@ -707,7 +707,9 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   tried first broke 195 fast-suite tests and was reverted).  PR #70 had
   fixed `ColSource` only; now both use `(mdttl-nGridPts+mod(nGridPts,2))/2`
   (identical for odd grids and for `iwf`): a trace change for EVEN-grid
-  POINT-SOURCE diffraction.  (3) **a grid DECLARED larger than `mGridMat`**
+  POINT-SOURCE diffraction -- measured as a pure ONE-ROW translation of the
+  seeded field (Rx_Coro, n=510: pre = post rolled by 1 in j; n=511 bit-identical),
+  gate `pymacos/tests/test_ptsource_even_centring.py`.  (3) **a grid DECLARED larger than `mGridMat`**
   (`Rx_Coro_DM`'s `nGridMat= 1024`, its data installed by the bindings at
   run time) was traced as a phantom and indexed `GridMat` past
   `mGridMat`: the grid term now also requires `nGridMat <= mGridMat`
