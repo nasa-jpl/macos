@@ -5,7 +5,9 @@ OPD_reference.jou            journal   pass       6.3s
 PERTURB.jou                  journal   pass       4.6s  
 SAVE_roundtrip.jou           journal   pass       2.4s  
 SPOT_text.jou                journal   pass       2.7s  
-STOP_FEX_SXP.jou             journal   pass       3.5s  
+STOP_FEX_SXP.jou             journal   pass       3.4s  
 VALIDATE.jou                 journal   pass       0.9s  
-ZrnGr_refusal.jou            journal   pass       1.0s  
-selftest.jou                 must_fail fail       1.0s  EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS
+ZernType_default.jou         journal   pass       3.9s  
+ZrnGr_refusal.jou            journal   pass       1.5s  
+nGridpts_clamp.jou           journal   pass       1.7s  
+selftest.jou                 must_fail fail       0.9s  EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS
