@@ -43,7 +43,7 @@ True iff a prescription is loaded. Detects via `num_elt > 0`; if init hasn't run
 - **pymacos:** `pymacos.init(model_size)`
 - **engine API:** `macos_api_mod::init`
 
-Initialize / resize the macos engine. macos.init(MODEL_SIZE) allocates the engine for prescriptions up to MODEL_SIZE elements / rays / etc.  Must be called once per MATLAB session before any other macos.* call.  See also: macos.load_rx, macos.has_rx.
+Initialize / resize the macos engine. macos.init(MODEL_SIZE) allocates the engine for prescriptions up to MODEL_SIZE elements / rays / etc.  Must be called once per MATLAB session before any other macos.* call.  MODEL_SIZE must be one of macos.model_sizes() -- param_mod.F rejects
 
 <!-- BEGIN NOTES fn-init -->
 <!-- END NOTES fn-init -->
@@ -105,7 +105,7 @@ Return a struct of unit identifiers for the loaded Rx. s = macos.sys_units() ret
 
 #### dwdx_for_current_source
 
-- **mmacos:** `[dwdx, w_nom_2d, w_nom_vec, indx, names] = ...`
+- **mmacos:** `[dwdx, w_nom_2d, w_nom_vec, indx, names, dcdx, spot_pos, spot_neg, spot_nom, spot_pert] = ...`
 - **pymacos:** *not available*
 
 <!-- BEGIN NOTES fn-dwdx-for-current-source -->
@@ -114,7 +114,7 @@ Return a struct of unit identifiers for the loaded Rx. s = macos.sys_units() ret
 
 #### dwdz_for_current_source
 
-- **mmacos:** `[dwdz, w_nom_2d, w_nom_vec, indx, names] = ...`
+- **mmacos:** `[dwdz, w_nom_2d, w_nom_vec, indx, names, dcdx, spot_pos, spot_neg, spot_nom, spot_pert] = ...`
 - **pymacos:** *not available*
 
 <!-- BEGIN NOTES fn-dwdz-for-current-source -->
@@ -256,6 +256,16 @@ Remove the EltGrp from element(s) IELT. macos.del_elt_grp(IELT) clears the EltGr
 
 <!-- BEGIN NOTES fn-del-elt-grp -->
 <!-- END NOTES fn-del-elt-grp -->
+
+#### elt_asph
+
+- **mmacos:** `c = macos.get_elt_asph(srf, n)`
+- **pymacos:** `pymacos.get_elt_asph(srf, n)`
+
+Even-radial aspheric coefficients (AsphCoef: h^4, h^6, ...) of an element. c = macos.get_elt_asph(srf) returns the first 4 coefficients (the Rx default count); c = macos.get_elt_asph(srf, n) the first n (n <= 9). What CALIB's OptAsph= DOFs leave on the element (engine 2026-10-04).
+
+<!-- BEGIN NOTES fn-elt-asph -->
+<!-- END NOTES fn-elt-asph -->
 
 #### elt_csys
 
@@ -732,10 +742,10 @@ Indices of grid-bearing elements (ANY GridData type). g = macos.find_grid_elts()
 
 #### find_powered_elts
 
-- **mmacos:** `pe = macos.find_powered_elts(session, rx_path, opts)`
+- **mmacos:** `[pe, kinds] = macos.find_powered_elts(session, rx_path, opts)`
 - **pymacos:** *not available*
 
-Indices of POWERED optics in the beam train. pe = macos.find_powered_elts(SESSION, RX_PATH) returns a column vector of 1-based element ids for every POWERED optic in RX_PATH: an Element= Reflector or Refractor whose base radius is real (|Kr| << the flat sentinel 1e22).  Flats (fold mirrors, FocalPlane, Reference, Return) carry the ~1e22 sentinel and are excluded.
+Indices of POWERED optics in the beam train. pe = macos.find_powered_elts(SESSION, RX_PATH) returns a column vector of 1-based element ids for every POWERED optic in the LOADED Rx: an element of a powered-capable Element= kind whose base radius is real (|Kr| << the flat sentinel 1e22). 
 
 <!-- BEGIN NOTES fn-find-powered-elts -->
 <!-- END NOTES fn-find-powered-elts -->
@@ -891,13 +901,23 @@ First-order system properties (SYSPROP). p = macos.first_order_properties() retu
 
 #### opd
 
-- **mmacos:** `W = macos.opd()`
-- **pymacos:** `pymacos.opd()`  (alias: opd_val)
+- **mmacos:** `W = macos.opd(opts)`
+- **pymacos:** `pymacos.opd(orient, sign)`  (alias: opd_val)
 
-OPD matrix from the most recent trace (N x N, WaveUnits). Returns the OPDMat (N = source-grid sampling).  Call macos.trace() first.
+OPD matrix from the most recent trace (N x N). W = macos.opd() returns the engine OPDMat (N = source-grid sampling). Call macos.trace() first.  Conventions (see mmacos/doc/opd_conventions.md for the full story): * raw array is OPD(i,j) with FIRST index i = global X, SECOND
 
 <!-- BEGIN NOTES fn-opd -->
 <!-- END NOTES fn-opd -->
+
+#### opd_mask
+
+- **mmacos:** `M = macos.opd_mask(opts)`
+- **pymacos:** `pymacos.opd_mask(orient)`
+
+Which pixels of the last OPD map hold a ray (N x N logical). M = macos.opd_mask() is TRUE exactly where the engine's last OPD wrote the map (engine 2026-10-10, api opd_mask_get), in the same (i,j) = (X,Y) layout as macos.opd().  Use it -- NOT W ~= 0 -- to find the pupil: under the chief-ray reference (the default) a valid ray whose path equals the chief's reads EXACTLY 0, the value of an empty pixel.
+
+<!-- BEGIN NOTES fn-opd-mask -->
+<!-- END NOTES fn-opd-mask -->
 
 #### opd_psf
 
@@ -908,6 +928,16 @@ Load a prescription, trace, and display/save its OPD (+ PSF). OUT = macos.opd_ps
 
 <!-- BEGIN NOTES fn-opd-psf -->
 <!-- END NOTES fn-opd-psf -->
+
+#### opd_ref
+
+- **mmacos:** `out = macos.opd_ref(mode)`
+- **pymacos:** `pymacos.opd_ref(mode)`
+
+Choose (or read) the OPD map's reference. macos.opd_ref('chief')  reference every ray to the CHIEF ray's own OPL. macos.opd_ref('mean')   reference to the whole-aperture mean OPL. r = macos.opd_ref()     read the current setting ('chief' | 'mean').  The engine (tracesub.F, SUBROUTINE OPD) fills OPDMat one of two ways:
+
+<!-- BEGIN NOTES fn-opd-ref -->
+<!-- END NOTES fn-opd-ref -->
 
 #### pfp
 
@@ -1091,7 +1121,7 @@ Multi-field dw/d(grid-data) sensitivity supervisor. out = macos.dw_dgrid_multi(S
 - **mmacos:** `out = macos.dw_dsurf(session, rx_path, opts)`
 - **pymacos:** *not available*
 
-Single-field dw/dKr + dw/dKc sensitivity driver. out = macos.dw_dsurf(SESSION, RX_PATH) loads RX_PATH on SESSION, discovers the POWERED optics (Element= Reflector / Refractor with |Kr| << the flat sentinel 1e22), builds one channel per (optic, param) with param in {Kr, Kc}, runs the finite-difference sweep at the current source state, and returns a struct of the result.
+Single-field dw/dKr + dw/dKc sensitivity driver. out = macos.dw_dsurf(SESSION, RX_PATH) loads RX_PATH on SESSION, discovers the POWERED optics (Element= Reflector / Refractor / NSReflector / NSRefractor / Segment with |Kr| << the flat sentinel 1e22 -- engine-queried, see macos.find_powered_elts), builds one channel per (optic, param)
 
 <!-- BEGIN NOTES fn-dw-dsurf -->
 <!-- END NOTES fn-dw-dsurf -->
@@ -1146,6 +1176,16 @@ Multi-field dw/dz_Zernike supervisor. out = macos.dw_dz_zernike_multi(SESSION, R
 <!-- BEGIN NOTES fn-dw-dz-zernike-multi -->
 <!-- END NOTES fn-dw-dz-zernike-multi -->
 
+#### dwdx_trans_per_metre
+
+- **mmacos:** `ox = macos.dwdx_trans_per_metre(ox)`
+- **pymacos:** *not available*
+
+Put a dw_dx harvest's translation columns per SI metre. OX = macos.dwdx_trans_per_metre(OX) takes a macos.dw_dx / dw_dx_multi result (live, or loaded from a jac .mat) and returns it with every TRANSLATION column (dof_idx 3..5) and the matching dcdx row expressed per SI METRE of translation, the convention the design runners (run_compare, run_simulator, run_met) and jacobian_check work in.
+
+<!-- BEGIN NOTES fn-dwdx-trans-per-metre -->
+<!-- END NOTES fn-dwdx-trans-per-metre -->
+
 ### CALIB (native optimizer)
 
 #### calib
@@ -1168,6 +1208,39 @@ Wipe all CALIB variable-element state. Use before defining a fresh variable-elem
 
 <!-- BEGIN NOTES fn-calib-clear-var-elts -->
 <!-- END NOTES fn-calib-clear-var-elts -->
+
+#### calib_set_beam
+
+- **mmacos:** `macos.calib_set_beam(kind, srf, target, varargin)`
+- **pymacos:** `pymacos.calib_set_beam(kind, srf, target, on)`
+- **engine API:** `macos_api_mod::calib_set_beam`
+
+Beam rows for the next CALIB, on ANY target. macos.calib_set_beam('dir',  srf, n)   -- the chief ray's direction at element srf is driven to the unit vector n (a telecentric image: n = the detector normal). macos.calib_set_beam('pos',  srf, p)   -- the beam position at srf (chief ray, or the ray centroid with 'centroid' in
+
+<!-- BEGIN NOTES fn-calib-set-beam -->
+<!-- END NOTES fn-calib-set-beam -->
+
+#### calib_set_beam_pos_fov
+
+- **mmacos:** `macos.calib_set_beam_pos_fov(pos)`
+- **pymacos:** `pymacos.calib_set_beam_pos_fov(pos)`
+- **engine API:** `macos_api_mod::calib_set_beam_pos_fov`
+
+Per-field beam position targets for CALIB. macos.calib_set_beam_pos_fov(POS), POS 3 x n (or n x 3): the target position of the beam (see calib_set_beam 'pos') for CALIB field 1..n in the order of the deck's OptChfRayDir= / OptChfRayPos= list (n <= 12).  Fields beyond n use the calib_set_beam 'pos' target. macos.calib_set_beam_pos_fov([]) clears the table.
+
+<!-- BEGIN NOTES fn-calib-set-beam-pos-fov -->
+<!-- END NOTES fn-calib-set-beam-pos-fov -->
+
+#### calib_set_beam_wt
+
+- **mmacos:** `macos.calib_set_beam_wt(wt, centroid)`
+- **pymacos:** `pymacos.calib_set_beam_wt(wt, centroid)`
+- **engine API:** `macos_api_mod::calib_set_beam_wt`
+
+Weight of the CALIB beam rows, and the centroid option. macos.calib_set_beam_wt(WT) weights every beam row (calib_set_beam) against the WFE / SPOT rows: the row's sigma is divided by sqrt(WT), so WT = 1e6 makes a 1 um position error count as a 1 mm one.  Mind the units: WFE rows are in the target's units, SPOT rows and beam rows in base units.
+
+<!-- BEGIN NOTES fn-calib-set-beam-wt -->
+<!-- END NOTES fn-calib-set-beam-wt -->
 
 #### calib_set_iter
 
@@ -1240,7 +1313,7 @@ Write an N x N grid to a MACOS GridFile (ASCII). macos.write_grid_file(PATH, M) 
 - **mmacos:** `B = macos.zernike_grid_basis(N, modes, ap_frac, convention)`
 - **pymacos:** *not available*
 
-Engine-exact Zernike maps sampled on an N×N grid. B = macos.zernike_grid_basis(N, MODES) returns an [N×N×K] array of K Zernike-mode shapes sampled on a surface's N×N grid, using MACOS's OWN convention (ZerntoMon1, ANSI ordering) so that a grid poke and the matching MonZern coefficient produce the IDENTICAL sag -- left/right pairs overlay. 
+Engine-exact Zernike maps sampled on an N×N grid. B = macos.zernike_grid_basis(N, MODES) returns an [N×N×K] array of K Zernike-mode shapes sampled on a surface's N×N grid, using MACOS's OWN convention so that a grid poke and the matching MonZern coefficient produce the IDENTICAL sag -- left/right pairs overlay. 
 
 <!-- BEGIN NOTES fn-zernike-grid-basis -->
 <!-- END NOTES fn-zernike-grid-basis -->
@@ -1294,6 +1367,44 @@ coating state.
 `IndRef=`, `Extinc=`.
 <!-- END NOTES fn-coating -->
 
+#### config_canvas
+
+- **mmacos:** `[OPDall, indxall] = macos.config_canvas(canvases, tile_rc)`
+- **pymacos:** *not available*
+
+Lay per-configuration canvases out, and index them. [OPDall, indxall] = macos.config_canvas(CANVASES) concatenates the per-configuration field canvases in CANVASES (a 1xNc cell of equal-size 2-D maps, each one configuration's own field-tiled canvas) left to right, and returns the combined canvas with the m2v-style index struct that addresses it.
+
+<!-- BEGIN NOTES fn-config-canvas -->
+<!-- END NOTES fn-config-canvas -->
+
+#### dark_zone_metrics
+
+- **mmacos:** `m = macos.dark_zone_metrics(I, peak_unaberrated, lam_over_D_px, ...`
+- **pymacos:** *not available*
+
+<!-- BEGIN NOTES fn-dark-zone-metrics -->
+<!-- END NOTES fn-dark-zone-metrics -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
+#### ffcut
+
+- **mmacos:** `varargout = macos.ffcut(on)`
+- **pymacos:** `pymacos.ffcut(on)`
+
+The far-field evanescent cut (engine 2026-10-03, dyson5 addendum 15). macos.ffcut(true) makes every far-field leg zero the output pixels with x^2 + y^2 > dz^2 -- |sin theta| > 1, spatial frequencies above 1/lambda, which carry no propagating energy but which a wide output window (a pupil sampled finer than lambda/2) otherwise hands to an energy-fraction metric.  macos.ffcut(false) restores the default (off).
+
+<!-- BEGIN NOTES fn-ffcut -->
+<!-- END NOTES fn-ffcut -->
+
+#### first_airy_null
+
+- **mmacos:** `r_null = macos.first_airy_null(intensity, search_min_px, search_max_px, ...`
+- **pymacos:** *not available*
+
+<!-- BEGIN NOTES fn-first-airy-null -->
+<!-- END NOTES fn-first-airy-null -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
 #### getEltSrfZernMode
 
 - **pymacos:** `pymacos.setEltSrfZernMode(iElt, izernMode, zernCoef)`
@@ -1303,6 +1414,26 @@ ToDo
 
 <!-- BEGIN NOTES fn-getEltSrfZernMode -->
 <!-- END NOTES fn-getEltSrfZernMode -->
+
+#### grid_dropped
+
+- **mmacos:** `n = macos.grid_dropped()`
+- **pymacos:** `pymacos.grid_dropped()`
+
+Grid files the last load declined (engine 2026-10-10). n = macos.grid_dropped() counts the GridFile= grids larger than this model's mGridMat (macos_param.txt): they cannot be stored, so the load declined them by name and those surfaces trace WITHOUT their figure. Nonzero means a harvest at this model is missing figure data -- load at a model whose mGridMat fits (e.g. a 256-point grid needs model 256).
+
+<!-- BEGIN NOTES fn-grid-dropped -->
+<!-- END NOTES fn-grid-dropped -->
+
+#### grid_idx_ovf
+
+- **mmacos:** `n = macos.grid_idx_ovf()`
+- **pymacos:** `pymacos.grid_idx_ovf()`
+
+Grid-index overflow samples rejected by the last trace. n = macos.grid_idx_ovf() is the engine's nGridIdxOvf (macos db9236b, api grid_idx_ovf_get): the number of grid-term samples whose pixel index xi/yj was non-finite or >= 2e9 and was therefore treated as OFF the grid (fh = 0) instead of indexing GridMat out of bounds -- before that guard an INT32 wrap passed the bounds test and killed the
+
+<!-- BEGIN NOTES fn-grid-idx-ovf -->
+<!-- END NOTES fn-grid-idx-ovf -->
 
 #### grid_size_max
 
@@ -1353,6 +1484,16 @@ yields a unitary Jones pupil -- a free end-to-end sanity gate.
 *Related:* pol_maps, ray_field, polarization, coating.
 <!-- END NOTES fn-jones-pupil -->
 
+#### lambda_over_D_pixels
+
+- **mmacos:** `lamD = macos.lambda_over_D_pixels(unaberrated_psf, search_min_px, search_max_px)`
+- **pymacos:** *not available*
+
+lambda/D in pixels, derived from an Airy PSF. LAMD = LAMBDA_OVER_D_PIXELS(PSF) returns lambda/D in pixel units by locating the first Airy null of a centred un-coronagraphed PSF (first null at 1.22 lambda/D for a circular pupil).  This is the EMPIRICAL conversion that avoids having to compute the effective pupil diameter at the science focal plane analytically (it depends
+
+<!-- BEGIN NOTES fn-lambda-over-D-pixels -->
+<!-- END NOTES fn-lambda-over-D-pixels -->
+
 #### m2v
 
 - **mmacos:** `[vec, jndx] = macos.m2v(mat, indx)`
@@ -1383,6 +1524,16 @@ Geometry of the loaded Rx's laser-metrology beams. g = macos.met_geom() runs the
 <!-- BEGIN NOTES fn-met-geom -->
 <!-- END NOTES fn-met-geom -->
 
+#### mimg
+
+- **mmacos:** `macos.mimg(data,stat,crop,ndec,cmap)`
+- **pymacos:** *not available*
+
+Display a 2D map (OPD, Jacobian column, mask) with statistics. macos.mimg(DATA) macos.mimg(DATA, STAT, CROP, NDEC, CMAP)  STAT =  0   no statistics (DEFAULT) = +/-1 display RMS and PV
+
+<!-- BEGIN NOTES fn-mimg -->
+<!-- END NOTES fn-mimg -->
+
 #### model_size
 
 - **pymacos:** `pymacos.model_size()`
@@ -1393,6 +1544,26 @@ Returns the MACOS model size
 <!-- BEGIN NOTES fn-model-size -->
 <!-- END NOTES fn-model-size -->
 
+#### model_size_min
+
+- **mmacos:** `n = macos.model_size_min()`
+- **pymacos:** *not available*
+
+Smallest model size the engine accepts (128). See macos.model_sizes for the full set.
+
+<!-- BEGIN NOTES fn-model-size-min -->
+<!-- END NOTES fn-model-size-min -->
+
+#### model_sizes
+
+- **mmacos:** `s = macos.model_sizes()`
+- **pymacos:** *not available*
+
+The model sizes the engine accepts. s = macos.model_sizes() returns [128 256 512 1024 2048 4096 8192] -- the values param_mod.F's param_mod_init will accept.  ANY OTHER VALUE MAKES THE ENGINE CALL `stop`, which terminates the host MATLAB process; macos.init screens against this list so a typo raises a MATLAB error instead.
+
+<!-- BEGIN NOTES fn-model-sizes -->
+<!-- END NOTES fn-model-sizes -->
+
 #### mon_zrn_max_modes
 
 - **mmacos:** `n = macos.mon_zrn_max_modes()`
@@ -1402,6 +1573,16 @@ Number of monomial-Zernike coefficient slots per elt. n = macos.mon_zrn_max_mode
 
 <!-- BEGIN NOTES fn-mon-zrn-max-modes -->
 <!-- END NOTES fn-mon-zrn-max-modes -->
+
+#### noll_mode
+
+- **mmacos:** `[zern, m, n] = macos.noll_mode(pupil, imode)`
+- **pymacos:** *not available*
+
+NOLL_MODE  Noll Zernike mode over an arbitrary pupil support (self-contained). [Z, M, N] = NOLL_MODE(PUPIL, IMODE) evaluates Noll mode IMODE (1-based; Noll 1976 ordering: even index -> cosine, odd -> sine) on the support of PUPIL (any nonzero = inside), normalized sqrt(n+1) (x sqrt(2) for m>0) over the unit disk that circumscribes the support. 
+
+<!-- BEGIN NOTES fn-noll-mode -->
+<!-- END NOTES fn-noll-mode -->
 
 #### obs_set
 
@@ -1423,6 +1604,16 @@ ORS -- Optimize Reference Surface.
 
 <!-- BEGIN NOTES fn-ors -->
 <!-- END NOTES fn-ors -->
+
+#### pad
+
+- **mmacos:** `[out] = macos.pad(in, npix_rows, npix_cols)`
+- **pymacos:** *not available*
+
+Zero-pad (or centre-crop) a matrix to a target size. OUT = macos.pad(IN, NPIX)              square NPIX-by-NPIX result OUT = macos.pad(IN, NPIX_ROWS, NPIX_COLS)  The input is centred on the output using the floor(n/2+1) centre convention; a target smaller than the input centre-crops instead.
+
+<!-- BEGIN NOTES fn-pad -->
+<!-- END NOTES fn-pad -->
 
 #### pol_contrast_floor
 
@@ -1621,6 +1812,35 @@ non-unit axis comes back normalized after a save/reload round trip. Either
 way it is a direction -- `PolElt` normalizes per ray.
 <!-- END NOTES fn-polarizer -->
 
+#### pupil_zone_map
+
+- **mmacos:** `z = macos.pupil_zone_map(pupil_elt, image_elt, opts)`
+- **pymacos:** *not available*
+
+Pupil-resolved imaging quality (zone -> image spot). z = macos.pupil_zone_map(PUPIL_ELT, IMAGE_ELT) partitions the ray grid into zones by each ray's TRANSVERSE position at PUPIL_ELT, and for each zone measures the RMS transverse spread of those same rays at IMAGE_ELT.  Conceptually: a cone of rays leaves each patch of the pupil; a perfectly imaging system maps every patch to the SAME image
+
+<!-- BEGIN NOTES fn-pupil-zone-map -->
+<!-- END NOTES fn-pupil-zone-map -->
+
+#### radial_contrast
+
+- **mmacos:** `[r_lamD, contrast] = macos.radial_contrast(intensity, peak_unaberrated, ...`
+- **pymacos:** *not available*
+
+<!-- BEGIN NOTES fn-radial-contrast -->
+<!-- END NOTES fn-radial-contrast -->
+*TODO: expand — dialog details, behavior notes, related commands.*
+
+#### radial_profile
+
+- **mmacos:** `[centers, means, stds, ns] = macos.radial_profile(img, center, max_radius, bin_size)`
+- **pymacos:** *not available*
+
+Azimuthally-averaged radial profile of a 2D image. [centers, means, stds, ns] = RADIAL_PROFILE(IMG) returns the bin centres, per-bin mean, per-bin std, and per-bin pixel count of the azimuthal average of IMG about its array centre.  MATLAB port of contrast.py:radial_profile (pymacos
+
+<!-- BEGIN NOTES fn-radial-profile -->
+<!-- END NOTES fn-radial-profile -->
+
 #### ray_field
 
 - **mmacos:** `rf = macos.ray_field(srf)`
@@ -1770,6 +1990,16 @@ Set ZernCoef values at the given modes on a Zernike (SrfType=8) or ZrnGrData (Sr
 
 <!-- BEGIN NOTES fn-setEltSrfZernCoef -->
 <!-- END NOTES fn-setEltSrfZernCoef -->
+
+#### unload
+
+- **mmacos:** `macos.unload()`
+- **pymacos:** *not available*
+
+Release the engine's memory back to its minimum footprint. macos.unload() re-initialises the engine at the smallest supported model size (128), which deallocates and rebuilds every model-sized array.  Use it when a big run is finished and you want the memory back WITHOUT quitting MATLAB.  The engine stays usable: call macos.init(N) (or construct a new macos.Session) and carry on.
+
+<!-- BEGIN NOTES fn-unload -->
+<!-- END NOTES fn-unload -->
 
 #### v2m
 
