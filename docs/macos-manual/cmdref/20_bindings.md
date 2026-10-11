@@ -1283,6 +1283,11 @@ Set CALIB convergence tolerance (dopt_tol).
 **What the tolerance means (2026-10-11, PLAN_CONSOLIDATION 3.3).**  `tol` is OptTol: an
 ABSOLUTE change of the rms merit, `sqrt(chisq/rows)` in the target's own units (WFE: the rms
 wavefront error; SPOT / BEAM: the rms of their residual rows, base units).  Default 1e-12.
+In a prescription: `OptTol= 1e-9` (2026-10-11).  It is a per-load value: every load resets
+it to 1e-12, the deck's `OptTol=` sets it, and `calib_set_tol` after the load overrides it
+for that deck.  Like every `Opt*` key it is not written by SAVE.  The iteration cap is
+`OptMaxItrs=` (`OptMxItrs=` is accepted too; before 2026-10-11 it was silently ignored).
+The CLI's CALIB banner prints both values in force (`LM stop: OptTol (abs rms) = ...`).
 The LM (the default `NonLin` algorithm) stops for one of three reasons, reported as
 `stop_reason` by `calib` / `calib_stats`:
 
@@ -1290,7 +1295,7 @@ The LM (the default `NonLin` algorithm) stops for one of three reasons, reported
 |---|---|
 | `converged` | two consecutive ACCEPTED steps, each moving the rms merit by no more than `tol` AND lowering chisq by no more than `1e-6` of it |
 | `floor` | ten consecutive REJECTED trials since the last accepted step (lambda up 1e10, no decrease: the round-off floor) |
-| `cap` | the iteration cap (`calib_set_iter`, Rx `OptMaxItrs=`) |
+| `cap` | the iteration cap (`calib_set_iter`, Rx `OptMaxItrs=` / `OptMxItrs=`) |
 
 The `1e-6` relative term is a fixed engine constant (MINPACK's `ftol` idea), not a knob: on a
 merit of a few nm the first steps of an LM still ramping its damping move the rms by ~1e-12

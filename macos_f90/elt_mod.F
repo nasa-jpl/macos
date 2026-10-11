@@ -389,6 +389,7 @@ C***********************************************************************
         Character(len=1024) :: RxPushbackLine = ' '
 !<--
         Integer :: iosRx = 0     ! the IOSTAT of the parser's reads (RxBad)
+        Real*8  :: dOptTolRx = 0d0 ! OptTol= as read (msmacosio, PLAN 3.2)
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
