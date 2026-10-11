@@ -6,3 +6,6 @@ gfortran  ZGD_test_files/tst_save_keys.in  NaN -> 9.999900000D+36 (all rays lost
 ifx       ZGD_test_files/tst_save_keys.in  NaN -> 9.999900000D+36 (all rays lost)  56 -> 0  5 -> 61
 # Its twin tst_block_comment.in (not in the 406 list) moves identically (checked by hand, both compilers).
 # NaN rows in the corpus: pre 1 (tst_save_keys.in), post 0.  No other column moved on any deck.
+# CC's gate at d019b50 over the 114-deck core (run_cli_tests.sh load, both compilers): the SAME move on THREE decks --
+# tst_save_keys.in, its twin tst_block_comment.in, and the pymacos copy pymacos/tests/Rx/Rx_SaveKeys.in (not in the
+# 406 list): rms NaN -> 9.9999e36 (all 61 rays lost by name), on ifx and gfortran alike.  No other deck moved.

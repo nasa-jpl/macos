@@ -1,0 +1,16 @@
+journal,kind,status,missed,dt
+GRIN_unsupported.jou,journal,pass,,1.5
+LONG_PATH.jou,journal,pass,,2.7
+MANUAL_examples.jou,journal,pass,,5.0
+MOD_spaces.jou,journal,pass,,3.9
+OPD.jou,journal,pass,,2.7
+OPD_reference.jou,journal,pass,,6.5
+PERTURB.jou,journal,pass,,4.9
+SAVE_roundtrip.jou,journal,pass,,2.3
+SPOT_text.jou,journal,pass,,2.5
+STOP_FEX_SXP.jou,journal,pass,,3.3
+VALIDATE.jou,journal,pass,,0.9
+ZernType_default.jou,journal,pass,,3.4
+ZrnGr_refusal.jou,journal,pass,,1.4
+nGridpts_clamp.jou,journal,pass,,1.6
+selftest.jou,must_fail,fail,EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS,0.9
