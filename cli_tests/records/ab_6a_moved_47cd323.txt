@@ -82,3 +82,6 @@ ifx      2.56e-10  /home/dcr/dev/macos/ZGD_test_files/e5pie.in  3.911811657D-05 
 ifx      8.42e-10  /home/dcr/dev/macos/ZGD_test_files/ff_hex2.in  3.563574574D-05 3.563574577D-05  1.479901111D-04 1.479901111D-04
 ifx      2.57e-10  /home/dcr/dev/macos/ZGD_test_files/tst_SegMirMaker.in  3.898416056D-05 3.898416057D-05  1.570464083D-04 1.570464083D-04
 ifx      2.56e-10  /home/dcr/dev/macos/docs/macos-manual/FreeFormPieAperture.in  3.911811657D-05 3.911811658D-05  1.562282123D-04 1.562282123D-04
+# Added 2026-10-10 by the ab layer (run_cli_tests.sh ab d6e2fc5 47cd323 load) over the 114-deck core: ONE more
+# round-off mover on gfortran only, the same class (1 in the 10th digit of a 5e-8 rms; ifx unmoved):
+gfortran 2.0e-10  /home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_AsphShort_base.in  4.995963076D-08 4.995963075D-08

@@ -8,9 +8,11 @@ ending in ':' / ']:' / '?'), plus directives:
   # DEADLINE: 90          seconds allowed per line (default 60)
   # EXPECT: <regex>       must match somewhere in the transcript (multi-line, re.M)
   # EXPECT-NOT: <regex>   must NOT match anywhere
-  # COPY: <path>          copy that deck into the scratch directory; $DECK names the copy
+  # COPY: <path> [<sub>]  copy that deck into the scratch directory; $DECK names the copy
                           (commands that WRITE beside the deck -- a TEXT spot, SAVE --
-                          must never run on a deck inside the repos)
+                          must never run on a deck inside the repos); an optional second
+                          token is a subdirectory under $TMP to copy into (LONG_PATH.jou
+                          uses one to make a path longer than the old 130-character line)
   # <anything else>       a comment
   $ROOT                   expands to the macos repo root; $RES to MACOS_resources;
   $TMP                    to a per-run scratch directory (SAVE targets)
@@ -55,8 +57,11 @@ def run_journal(binary, path, root, res, tmp):
     model, deadline, expects, nots, cmds, deck = '256', 60.0, [], [], [], ''
     for l in lines:
         if l.startswith('# COPY:'):
-            src = l.split(':', 1)[1].strip().replace('$ROOT', root).replace('$RES', res)
-            deck = os.path.join(tmp, os.path.basename(src))
+            toks = l.split(':', 1)[1].split()
+            src = toks[0].replace('$ROOT', root).replace('$RES', res)
+            dst = os.path.join(tmp, toks[1]) if len(toks) > 1 else tmp
+            os.makedirs(dst, exist_ok=True)
+            deck = os.path.join(dst, os.path.basename(src))
             shutil.copy(src, deck)
         elif l.startswith('# MODEL:'):
             model = l.split(':', 1)[1].strip()
