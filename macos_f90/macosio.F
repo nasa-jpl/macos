@@ -2642,6 +2642,13 @@ c got nothing, return a blank
 
 C       Is this the last command saved?
 
+!-->  Remember the token for UNREAD_LOH (PLAN 3.3)
+	last_stk=0
+	IF (read_len(pstack) .NE. 0) THEN
+	   last_cur=read_cur(pstack); last_len=read_len(pstack)
+	   last_stk=pstack
+	END IF
+!<--
 	IF (read_cur(pstack) .EQ. read_len(pstack)) THEN
 	   read_len(pstack)=0
 	   read_cur(pstack)=0
@@ -2654,6 +2661,22 @@ C       Is this the last command saved?
 
 	RETURN
 	END SUBROUTINE READ_LOH
+
+!-->  Hand the token READ_LOH consumed last back to its stack, so the
+!     next READ_LOH returns it again (PLAN 3.3, 2026-10-11): a CALIB
+!     yes/no prompt that receives a COMMAND (a journal's 'quit')
+!     takes its default and gives the token back.  A no-op when the
+!     last read consumed nothing or the stack has changed since.
+	SUBROUTINE UNREAD_LOH()
+	use lohpars_mod
+	IMPLICIT NONE
+	IF (last_stk.EQ.pstack .AND. last_stk.GT.0) THEN
+	   read_len(pstack)=last_len
+	   read_cur(pstack)=last_cur
+	END IF
+	last_stk=0
+	END SUBROUTINE UNREAD_LOH
+!<--
 
 C***********************************************************************
 

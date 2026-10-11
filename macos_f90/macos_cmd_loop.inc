@@ -3883,6 +3883,16 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &               'Display optimization summary (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif
@@ -4129,6 +4139,16 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &          'Save optimized optical state (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif
