@@ -1,0 +1,31 @@
+journal,kind,status,missed,dt
+CALIB_beam_under_spot.jou,journal,pass,,1.8
+CALIB_history.jou,journal,pass,,4.8
+CALIB_journal_prompts.jou,journal,fail,EXPECT is not yes/no | EXPECT Save optimized optical state[^\n]*\n[\s\S]*MACOS>,3.3
+CALIB_keywords.jou,journal,pass,,3.3
+CALIB_setup.jou,journal,pass,,2.6
+GRIN_unsupported.jou,journal,pass,,1.5
+INT_LOG.jou,journal,pass,,1.9
+IndRef_stamp.jou,journal,pass,,2.1
+JOURNAL_EXE.jou,journal,pass,,3.2
+LONG_PATH.jou,journal,pass,,2.7
+MANUAL_examples.jou,journal,pass,,4.9
+MODE_centroid.jou,journal,pass,,2.3
+MODE_cir.jou,journal,pass,,2.4
+MODE_nolneg.jou,journal,pass,,2.3
+MODE_polarization.jou,journal,pass,,2.9
+MODE_scalar.jou,journal,pass,,4.5
+MOD_spaces.jou,journal,pass,,3.9
+OPD.jou,journal,pass,,2.7
+OPD_reference.jou,journal,pass,,6.1
+PERTURB.jou,journal,pass,,4.9
+PLOT_TYPES.jou,journal,pass,,6.4
+Rx_header_unknown.jou,journal,pass,,0.9
+SAVE_roundtrip.jou,journal,pass,,2.3
+SPOT_text.jou,journal,pass,,2.6
+STOP_FEX_SXP.jou,journal,pass,,3.7
+VALIDATE.jou,journal,pass,,0.9
+ZernType_default.jou,journal,pass,,3.5
+ZrnGr_refusal.jou,journal,pass,,1.4
+nGridpts_clamp.jou,journal,pass,,1.6
+selftest.jou,must_fail,fail,EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS,0.9
