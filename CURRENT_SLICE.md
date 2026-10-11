@@ -24,6 +24,21 @@
 
 ## Active slice
 
+> **2026-10-11 (CC): PHASE 2 — the engine list of BRIEF_to_consolidation_p2 is EXHAUSTED: 1.1b A list closed, 1.3
+> (optimizer) complete apart from Dave's two frozen features.  TO's landings since the last point, each gated by CC
+> from the clean worktree (114/114 both compilers, ab 0 unnamed movers): B.1 f3d7cea (WFE_ZMODE killed the host —
+> zcoType reset per load; OPL removed, TWO REFUSALS FLAGGED FOR DAVE), 3.3 convergence 84a9190 (own-merit stop,
+> OptTol abs AND 1e-6 rel, K=10 floor, reasons; derivation in records/calib_loop_old_vs_new.md), 3.2 pairs
+> 23215cd/4be8413/4ac0fa2 (OptTol keyword, OptMxItrs alias, header unknown-key warning), 3.3 audit f901d36 (FIVE
+> session modes reset at LOAD → Dave §4 item 2) + one CALIB setup a09a0c4 + quit-after-CALIB 62f60f2, 3.4 crash fix
+> 338416c (MACOS_OPS STOP → named failure) + matrix (res 17234b9) + failed-trial-as-rejected 70ea2c7 ('failed' /
+> 'stalled').  CC: journals now 44 (LONG_PATH, JOURNAL_EXE, INT_LOG, PLOT_TYPES, twelve CALIB matrix cells +
+> must-fail pin, CALIB_journal_prompts, CALIB_stalled, CALIB_failed_trials …); engine fixes b90887e (130-char CLI
+> line), 773d73c (JOU_LOH), 5e42093 (FITS path/FILENAME, MAT).  LOCAL, NOT PUSHED: macos 257cf70..40847f9
+> (41 commits), resources fe22ae4..88fef95 (7).  Clean worktree ~/dev/macos_cli_base at 70ea2c7.  DAVE'S DESK:
+> the push; the five-mode ruling (§4 item 2); the OPL refusals; Mac in phase 4; the Opt* SAVE policy.  TO's next
+> (CC's suggestion): §1.2 NSRefractor null grid frame, then RayFailElt for obscuration.**
+
 > **2026-10-10 night (CC): PHASE 2 — the 1.1b A list is CLOSED (TO: 3c d019b50, 3b e5d7455, even-grid gate res
 > fe22ae4, grating fixture res 82c58bb; each gated by CC from the clean worktree, records committed), TO on B.1
 > (WFE_ZMODE / OPL targets, measure first).  CC's lane today: the manual/cmdref words (8f6271c), the 130-char
