@@ -20,8 +20,10 @@ C***********************************************************************
 	Integer, parameter :: WFE_TARGET       = 1,
      &                        WFE_ZMODE_TARGET = 2,
      &                        BEAM_TARGET      = 3,
-     &                        SPOT_TARGET      = 4,
-     &                        OPL_TARGET       = 5
+     &                        SPOT_TARGET      = 4
+!     (5 was OPL_TARGET: accepted by the parser and the api, with NO
+!     objective anywhere in design_optim -- a CALIB on it failed.
+!     Removed 2026-10-10 (PLAN 3.1); both now REFUSE it by name.)
 
 	Integer, parameter :: mVarDOF    =  8,
      &                        mOptZern   = 45,   ! ToDo -- update to new values

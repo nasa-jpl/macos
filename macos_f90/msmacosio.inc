@@ -228,7 +228,11 @@ C       Set entrance condition flags to .FALSE.
 	    ELSE IF (LCMP(VALUE,'Beam',4)) THEN
 	      OptTarget=BEAM_TARGET
 	    ELSE IF (LCMP(VALUE,'OPL',3)) THEN
-	      OptTarget=OPL_TARGET
+!-->          OPL had no objective (PLAN 3.1, 2026-10-10): refused
+	      WRITE(*,'(A)') ' ** Rx load refused: OptTarget= OPL'//
+     &          ' is not a CALIB target (removed: it had no objective)'
+	      GO TO 99
+!<--
 	    END IF
             GO TO 50
 

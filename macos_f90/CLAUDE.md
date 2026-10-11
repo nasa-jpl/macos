@@ -1159,6 +1159,23 @@ chord law, and the OPL jump -- nothing ever put a ray OUTSIDE a grating's
 aperture.  Any element type that vignettes needs one ray outside the
 aperture in its gate.
 
+## CALIB targets: WFE_ZMODE works, OPL removed (2026-10-10, PLAN 3.1)
+**WFE_ZMODE (`OptTarget= ZWF`, api target 2) STOPPED THE HOST** on every deck
+that does not declare `ZCOZernType=`: `macos_mod_init_vars` reset the Zernike-fit
+basis `zcoType` to 0 on every load (after the LOAD handler had set
+`ZernCircular` -- the rule-6 trap again), so `zern_fit` took its non-circular
+branch with type 0, read `ZernAnnuRatio(ie_m=0)` out of bounds, the fit's SVD
+failed and `nerror` STOPped ('svd_decomp: no convergence'; the ifx .so got
+garbage instead and `lmlsq` failed).  Now the per-load reset is TO
+`ZernCircular`.  Measured on `Rx_AsphCalib.in` (h^4 spoiled to 5e-3): modes
+[4 11 12] -> 3.5e-13, [11] -> 1.4e-12, [12] leaves it (4.4e-3) -- the modes are
+NOLL, 1-based (11 = primary spherical).  **OPL (target 5) had no objective**
+anywhere in design_optim: removed from the enum; the api refuses 5 by name, an
+Rx `OptTarget= OPL` is a named load refusal, the veneers dropped the name.  Gates
+`tCalibTargets` (mmacos, the ZMODE leg in a SUBPROCESS) + `test_calib_targets.py`;
+red on the pre-fix mex / .so.  Open, recorded: `zern_fit` still finds the pupil
+as `OPDin /= 0` (PLAN_CONSOLIDATION 1.2).
+
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
 `design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
 element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were

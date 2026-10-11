@@ -6142,7 +6142,7 @@
       subroutine calib_set_target(OK, target_type, wf_zern_modes, n_wf_zern)
         use dopt_mod, only: OptTarget, nWFZern, WFZernMode,                &
                             WFE_TARGET, WFE_ZMODE_TARGET, BEAM_TARGET,     &
-                            SPOT_TARGET, OPL_TARGET, mOptZern
+                            SPOT_TARGET, mOptZern
 
         implicit none
         logical, intent(out):: OK
@@ -6152,12 +6152,18 @@
         !f2py integer intent(hide), depend(wf_zern_modes):: n_wf_zern=len(wf_zern_modes)
         ! ------------------------------------------------------
         OK = FAIL
+        ! 5 was OPL: accepted, with no objective behind it (a CALIB on it
+        ! failed).  Removed 2026-10-10 (PLAN 3.1): refused BY NAME.
+        if (target_type == 5) then
+          write(*,'(A)') ' ** calib_set_target: OPL is not a CALIB target'// &
+            ' (removed: it had no objective); use WFE, WFE_ZMODE, BEAM or SPOT'
+          return
+        end if
         ! Validate target enum
         if (target_type /= WFE_TARGET       .and.                          &
             target_type /= WFE_ZMODE_TARGET .and.                          &
             target_type /= BEAM_TARGET      .and.                          &
-            target_type /= SPOT_TARGET      .and.                          &
-            target_type /= OPL_TARGET) return
+            target_type /= SPOT_TARGET) return
 
         OptTarget = target_type
 
