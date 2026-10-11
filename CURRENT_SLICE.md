@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **2026-10-10 night (CC): PHASE 2 — the 1.1b A list is CLOSED (TO: 3c d019b50, 3b e5d7455, even-grid gate res
+> fe22ae4, grating fixture res 82c58bb; each gated by CC from the clean worktree, records committed), TO on B.1
+> (WFE_ZMODE / OPL targets, measure first).  CC's lane today: the manual/cmdref words (8f6271c), the 130-char
+> command line + unbounded MHIST copy (b90887e), the ab layer + third SAVE leg (9c7b06b: core roundtrip same
+> 114/114), JOURNAL's garbage closing line (773d73c), INT/LOG journal (ed70028), FITS 40-char path cut + 18-char
+> FILENAME refusal + MAT named gap (5e42093).  LOCAL, NOT PUSHED: macos 257cf70..72ac8b3 (16 commits, TO's
+> among them), resources fe22ae4 + 82c58bb (TO).  Clean worktree ~/dev/macos_cli_base at 5e42093.  Next CC:
+> CALIB journals as TO's 3.4 cases land; the plot-style journal is done (PLOT_TYPES.jou).  Dave's open calls:
+> Mac-as-release-platform (plan §4 item 2), the SAVE Opt*/trace-state policy, the push.**
+
 > **2026-10-10 evening (CC): PLAN_CONSOLIDATION PHASE 1 EXITED on Dave's word; PHASE 2 OPEN.**  Everything
 > pushed (macos 5362009, resources 400f825); this bookkeeping commit (PLAN_CONSOLIDATION ticks + §1.1b
 > carried items + §4a rulings + the exit line; PLAN.md §0 ticks) is LOCAL until Dave says push.  Dave's
