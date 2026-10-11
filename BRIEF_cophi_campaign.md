@@ -358,3 +358,21 @@ temporal, two-color, or neither.
   the deck stage's "flat-DM null" rms (6.8 nm on H) is taken over the whole mask including the
   no-test-light annulus; the record's 59 nm line may carry the same dilution — a composite-deck
   check.  Records `cophi_dm96/runs/battery_{lens,oap}/`.
+  **RESOLVED 2026-10-11 (TO, resources fd4124d, `runs/gainprobe_lens/`): the 0.5 % is the
+  ESTIMATOR's Tikhonov shrinkage at the record's λ_m = 1e-3, not the reading.**  Five
+  one-run discriminators on the lens rig: (1) a synthetic 1.000 nm poke read at the pixel
+  level against the engine's own field change: slope 1.000000 — the reading is EXACT; (2) LO
+  := the test arm's own flat field, no placement: unchanged; (3) scalar trace (contrast 1.0000):
+  identical — not the vector sum or the polarizers; (4) the test-beam mask: unchanged;
+  (5) λ_m = 1e-5: 1.0007 / 1.0022 / 1.0024.  So an exact reading reads 0.995 through the
+  record's estimator — the brief's "± the matrix bias", now a number.  **Corollary for every
+  gauge deck:** the record's I column runs the same estimator and λ_m yet reads 1.000–1.005
+  (lens) and 0.983 (mirror): its READING carries +0.5–1 % and −1.1 % against an exact one — the
+  snapshot's polarization gain, which the matrix does not absorb and which the lens-rig
+  "1.000" had been hiding by cancellation.  **Dave's rule (2026-10-11): regularization is
+  driven to convergence, not dropped** — the converged estimator (the blur demo's `iterate_`
+  form, as a `dmg_act_fit` mode) becomes the accuracy-row estimator for EVERY gauge in the
+  composite deck, and the record's polarization gain is then reported in the open.  Order:
+  `noise` first (a 0.5 % gain is nothing to a noise row), then the converged estimator as a
+  cross-gauge item re-scoring the battery rows for H and I.  Diagnostic knobs kept, opt-in:
+  `cophi.diag_lo` / `.scalar` / `.diag_mask`, `place.lit_force`.
