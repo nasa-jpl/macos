@@ -1122,6 +1122,8 @@ C	Here when element number is determined...
      &	                 UDSrfType(imin),UDSrfParam(1,imin),
      &                   nGridMat(imin),mGridMat,
      &                   GridMat(1,1,jGridSrf(imin)),GridSrfdx(imin),
+     &                   pData(1,imin),xData(1,imin),
+     &                   yData(1,imin),zData(1,imin),
      &	                 psiElt(1,imin),VptElt(1,imin),RptElt(1,imin),
      &	                 RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	                 lMon(imin),pMon(1,imin),
