@@ -1252,7 +1252,15 @@ killing MATLAB (rc=139).  Both `MACOS_OPS` STOPs (the SPOT beam frame, 'load Rx 
 `macos_ops_mod%lOpsFail` and return; `nls_optim_dvr` resets it at entry and checks it after the
 initial evaluation and after every `lmlsq` call -> the existing failure path (last accepted
 state, `rtn_flg=1`, stop 'failed').  Ill-posed problems END BY NAME: BEAM x shape DOFs (a zero
-Jacobian column -> `gaussj` singular at n=0), SPOT x a null DOF.  Gates `tCalibMatrix` /
+Jacobian column -> `gaussj` singular at n=0), SPOT x a null DOF.  **Follow-on (same day): a
+failed evaluation INSIDE an LM trial is a REJECTED trial** -- `funcs_app` returns yfit = 1e100 so
+`mrqmin` rejects it by its own rule (no change to nls.F), counted in `calib_n_fail` beside
+`calib_n_rej`.  Stop reasons now: 1 converged, 2 floor (progress THEN ten rejections), 3 cap,
+4 failed (incl. ZERO accepted steps with failed trials: 'no trial step was accepted -- N of K
+trials lost the chief ray'), 5 STALLED (zero accepted, none failed: the start is a stationary
+point of the merit, typically already optimal -- rtn 0, `converged` TRUE; four existing suite
+cases with an already-optimal start read 'stalled', iterations and merits unchanged).  A failed INITIAL
+evaluation still aborts (nothing to retreat to).  Gates `tCalibMatrix` /
 `test_calib_matrix.py` (the host-survival case runs in a subprocess).
 Setup: the variable packing and the configuration checks that precede both
 `nls_optim_dvr` entries (the LOAD handler's `OptNomSens= Y` nominal-sensitivity run and

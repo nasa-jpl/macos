@@ -5856,7 +5856,8 @@
                            old_wfe_out, new_wfe_out)
         use dopt_mod, only: rtn_flag, old_wfe, new_wfe, nOptFov,           &
                             nOptWavelen, nVarElt, max_fov, max_wl,     &
-                            calib_n_iter, calib_merit, calib_stop
+                            calib_n_iter, calib_merit, calib_stop,     &
+                            calib_n_rej, calib_n_fail
 
         implicit none
         logical, intent(out):: OK                          ! PASS if call dispatched & rtn_flag==0
@@ -5875,6 +5876,8 @@
         calib_n_iter  = -1                ! calib_stats_get: this run's, or none
         calib_merit   = -1d0
         calib_stop    = -1
+        calib_n_rej   = -1
+        calib_n_fail  = -1
 
         if (.not. SystemCheck()) return
         if (nVarElt < 1)         return  ! No Variable Element for Optimization!
@@ -5925,20 +5928,28 @@
       ! failed LM run reports the iterations it completed and the merit
       ! at the last accepted step (-1 if none was).  stop_reason says why
       ! it stopped: 1 converged (two flat accepted steps), 2 the round-off
-      ! floor (ten rejected trials), 3 the iteration cap, 4 LM failure;
-      ! -1 none.  PLAN 3.3.
+      ! floor (ten rejected trials, after progress), 3 the iteration cap, 4 LM
+      ! failure (incl. no trial step evaluable), 5 stalled (no trial step
+      ! accepted, none failed); -1 none.  PLAN 3.3/3.4.  n_rejected: LM trials rejected (lambda grew);
+      ! n_failed: of those, trials whose evaluation FAILED (a trace lost the
+      ! chief ray) -- a failed trial is a rejected one, PLAN 3.4.
       !---------------------------------------------------------------------------------------------
-      subroutine calib_stats_get(n_iter, merit, stop_reason)
-        use dopt_mod, only: calib_n_iter, calib_merit, calib_stop
+      subroutine calib_stats_get(n_iter, merit, stop_reason, n_rejected, n_failed)
+        use dopt_mod, only: calib_n_iter, calib_merit, calib_stop,          &
+                            calib_n_rej, calib_n_fail
 
         implicit none
         integer, intent(out):: n_iter
         real(8), intent(out):: merit
         integer, intent(out):: stop_reason
+        integer, intent(out):: n_rejected
+        integer, intent(out):: n_failed
         ! ------------------------------------------------------
         n_iter      = calib_n_iter
         merit       = calib_merit
         stop_reason = calib_stop
+        n_rejected  = calib_n_rej
+        n_failed    = calib_n_fail
 
       end subroutine calib_stats_get
 

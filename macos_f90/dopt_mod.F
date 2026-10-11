@@ -73,8 +73,13 @@ C***********************************************************************
 !     (chisq), set by nls_optim_dvr; -1 = none run / not reached.
 !     calib_stop: why it stopped -- 1 converged (2 flat accepted
 !     steps), 2 round-off floor (10 rejected trials), 3 OptMaxItrs,
-!     4 LM failure; -1 none.
+!     4 LM failure, 5 stalled (no trial step accepted, none failed:
+!     the start is a stationary point of the merit); -1 none.
         Integer :: calib_n_iter = -1, calib_stop = -1
+!     calib_n_rej: LM trials rejected (lambda grew); calib_n_fail: of
+!     those, trials whose evaluation FAILED (a trace lost the chief ray
+!     -- counted as rejected, PLAN 3.4).  -1 none.
+        Integer :: calib_n_rej = -1, calib_n_fail = -1
         Real*8  :: calib_merit = -1d0
 !<--
         Real*8, dimension(:,:), allocatable :: psiElt_old,vptElt_old,
