@@ -1244,6 +1244,16 @@ tAsphCalib / tBeamRows / tCalib / tDesignTelescope, scored against the old loop)
   stopping later): worst +2.7e-6 relative chisq (~1e-15 m), iterations 804 -> 594.
 - A quadratically convergent solve (Rx_AsphCalib SPOT: 1.6e-25 -> 1.6e-33 -> 5.4e-43 ->
   1.7e-43) never takes a flat step; it stops at the FLOOR (spot20: 14), never 'converged'.
+**A failed evaluation is a named failure, not a STOP (2026-10-11, PLAN 3.4).**  The matrix's
+rigid x SPOT cell with the unspoiled TILT free: a centroid-referenced spot size is first-order
+NULL in that DOF, J'J near-singular, and LM's first trial rotated the mirror ~76 deg; the
+beam-frame chief ray (`LocalCoord`) then missed the focal plane and `MACOS_OPS` STOPPED --
+killing MATLAB (rc=139).  Both `MACOS_OPS` STOPs (the SPOT beam frame, 'load Rx first') now set
+`macos_ops_mod%lOpsFail` and return; `nls_optim_dvr` resets it at entry and checks it after the
+initial evaluation and after every `lmlsq` call -> the existing failure path (last accepted
+state, `rtn_flg=1`, stop 'failed').  Ill-posed problems END BY NAME: BEAM x shape DOFs (a zero
+Jacobian column -> `gaussj` singular at n=0), SPOT x a null DOF.  Gates `tCalibMatrix` /
+`test_calib_matrix.py` (the host-survival case runs in a subprocess).
 Setup: the variable packing and the configuration checks that precede both
 `nls_optim_dvr` entries (the LOAD handler's `OptNomSens= Y` nominal-sensitivity run and
 the CALIB command) are ONE function, `calib_setup_vars` (design_optim_mod, 2026-10-11) --

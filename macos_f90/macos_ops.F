@@ -15,6 +15,12 @@ C***********************************************************************
 	Save
 
 	Integer :: nSpotRays
+!-->  A command inside an optimization evaluation failed (PLAN 3.4,
+!     2026-10-11).  These were STOPs, which killed the HOST when the
+!     engine is a mex / .so; nls_optim_dvr reads this and aborts the solve
+!     by name, restoring the last accepted state.
+	Logical :: lOpsFail = .FALSE.
+!<--
 
 	Contains
 
@@ -161,7 +167,8 @@ C  FORMAT statements
               CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
             ELSE
               WRITE(*,*)'** macos_ops: SPOT command error!'
-              STOP
+              lOpsFail = .TRUE.   ! was STOP (PLAN 3.4)
+              RETURN
             END IF
             RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
             RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
@@ -236,7 +243,8 @@ C  FORMAT statements
             END IF
           ELSE
             WRITE(*,*) '** Error (MACOS_OPS): load Rx first!'
-            STOP
+            lOpsFail = .TRUE.     ! was STOP (PLAN 3.4)
+            RETURN
           END IF
 
 	Else If (LCMP(cmd,'OPD',3)) Then

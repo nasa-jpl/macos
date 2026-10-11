@@ -200,6 +200,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                 tgt_wf_flag,tgt_wf_filename,tgt_wf_format,
      &                 optElt,ifFEX,OptBeam)
 
+	use macos_ops_mod, only : lOpsFail
 	Save
 	Integer :: opt_target  ! WFE (WFE_TARGET), or SPOT diagram (SPOT_TARGET),
                                ! or WFE Zernike modes (WFE_ZMODE_TARGET)
@@ -245,6 +246,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	Integer, save :: entry_cnt=0  ! debug only
 
 	entry_cnt=entry_cnt+1
+	lOpsFail = .FALSE.   ! PLAN 3.4: a failed evaluation aborts by name
 
 	If (n_varElt .le. 0) Then
 	  print*,'** Error in nls_optim_dvr: n_varElt=',n_varElt
@@ -605,6 +607,11 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End If
 
 	status_flag = 0 ! for svdls_itr() only
+	If (lOpsFail) Then   ! the INITIAL evaluation failed (PLAN 3.4)
+	  WRITE(*,'(2A)')'  ** Optimization aborted: the initial ',
+     &        'evaluation failed (a trace inside it lost its chief ray)'
+	  rtn_flg=1; calib_stop=4; go to 105
+	End If
 
 !-->  Convergence, PLAN_CONSOLIDATION 3.3 (2026-10-11).  The old test ran
 !     only at itr = int(.21T), int(.5T), int(.71T), and only when T > 4,
@@ -652,6 +659,14 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    if (alam_in < 0d0) alam_in = 0.001d0 ! lmlsq's initial lambda
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &                 alpha,chisq,funcs_app,alamda,lmlsq_success)
+	    if (lOpsFail) then   ! PLAN 3.4: was a STOP that killed the host
+	      WRITE(*,'(A,I0,2A)')'  ** Optimization aborted at iteration ',
+     &          itr,': a trial step lost the chief ray (an ill-posed',
+     &          ' or too-large step)'
+	      rtn_flg=1; calib_n_iter=itr-1; calib_merit=chisq_prev
+	      calib_stop=4
+	      go to 105
+	    end if
 	    if (.not. lmlsq_success) then
 	      WRITE(*,*) ' ** Optimization (lmlsq) failed!'
 	      WRITE(*,*) ' ** Possible reasons: '
@@ -737,6 +752,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  alamda = 0.0
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
+	  if (lOpsFail) lmlsq_success = .false.   ! PLAN 3.4
 	  if (.not. lmlsq_success) then
             rtn_flg=1; calib_n_iter=tot_itrs_done; calib_stop=4
 	    calib_merit=chisq_prev; go to 105
