@@ -1153,9 +1153,22 @@ is correct).  **The full audit (2026-10-11, PLAN_CONSOLIDATION 3.3):**
 writes it' but 'can a user set it with NO deck loaded and expect it to
 stay'.  A command gated on `ifLoad` (SZCO, SRT, BWK, GBS, LOS, BEAM) and
 a per-ELEMENT flag (REGRID) are deck state -- per-load is right.  Five
-modes fail the test and are Dave's ruling (PLAN 4 item 2): POLARIZATION,
-VECTOR/SCALAR, LNEG, CENTROID, CIR -- `STATUS` prints all five, and
-`cli_tests/cmd/MODE_*.jou` pin today's reset.  IMGMODE already survives
+modes failed the test: POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR.
+**MOVED 2026-10-11 (Dave's ruling (a) + a LOAD notice):** `ifPol`, `ifVecDif3`,
+`ifCentroid`, `ifLNegOK`, `ifPGColor` are set in `macos_mod_init` (allocation),
+no longer in `macos_mod_init_vars` nor the LOAD handler; every LOAD calls
+`ModesInForceNote` -> `LOAD: session modes in force: ...` (nothing when all are
+default).  The bindings get the SAME persistence (CC 2026-10-11, on Dave's
+one-semantics rule -- flagged in PLAN 4a for him to override): `ModesGet` is the ONE
+source, read by the CLI notice and by api `modes_get`; mmacos `macos.load_rx` warns
+`mmacos:modesInForce`, pymacos `load` a RuntimeWarning, with the same list
+(`macos.modes` / `pymacos.modes`).  The two latent reliances in the suites (628 mmacos
+fast + 45 pymacos pol tests): `tTgPol`'s and `tTgPol2`'s scalar detector geometry
+(`detGeom`), after a test that left polarization on with crossed polarizers (a 0/0
+centroid) -- each now turns polarization off itself.  `STATUS` prints all five;
+`cli_tests/cmd/MODE_*.jou` (6, incl. `MODE_load_notice`) pin it.  The CLI `RESET`
+still returns four of them to default; it had set `ifCentroid=.TRUE.` (a sixth
+site the 2026-08-27 chief-ray ruling missed) -- now `.FALSE.`.  IMGMODE already survives
 (`ifAstroMode` lives in plot_mode_mod, outside every `*_init_vars`).
 
 ## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)

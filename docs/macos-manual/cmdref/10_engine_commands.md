@@ -427,6 +427,8 @@ only marks the Rx modified and resets those flags.
 Chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>chiefray
  FEX/SXP pupil-sphere axis: CHIEF RAY (default)
@@ -1086,6 +1088,8 @@ DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 Beam-centroid FEX/SXP axis (opt-in; the chief ray is the default).
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>centroid
  FEX/SXP pupil-sphere axis: beam CENTROID (opt-in; chief ray is the default)
@@ -1206,6 +1210,8 @@ spot.  SMACOS: option in CARG(1).
 Allow/disallow negative pathlengths.
 
 <!-- BEGIN NOTES cmd-LNEg-NOLNeg -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>lneg
  Negative-length rays OK at reference surfaces
@@ -1228,6 +1234,8 @@ NOLNeg to forbid negative lengths.
 Polarization tracing on.
 
 <!-- BEGIN NOTES cmd-POLarized -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>pol
  Polarization turned on
@@ -1266,6 +1274,8 @@ also `macos.jones_pupil` for polarization-aberration analysis.
 Polarization off.
 
 <!-- BEGIN NOTES cmd-NOPolarization -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>nopol
  Polarization turned off
@@ -1840,6 +1850,8 @@ radius/exponent (COS**POWER); omitted for UNIFORM.
 Vector vs scalar diffraction (with POLarized).
 
 <!-- BEGIN NOTES cmd-VECtor -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>vector
  Vector diffraction enabled
@@ -2613,6 +2625,8 @@ default, leaving the mode as-is.
 Color / gray image rendering.
 
 <!-- BEGIN NOTES cmd-CIR -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 No dialog.  CIR turns color image rendering on (" Color
 image rendering is on"); GIR reverts to gray-scale (" Gray
 image rendering is on").  Affects raster image displays

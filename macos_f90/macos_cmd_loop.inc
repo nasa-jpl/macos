@@ -428,9 +428,7 @@ C         ***next command: Load optical description data***
             ifBuild          = .FALSE.
             ifPropagate      = .FALSE.
             ifPerturb        = .FALSE.
-            ifPol            = .FALSE.
             ifPixLoc         = .FALSE.
-            ifVecDif3        = .FALSE.
             ifTrace          = .FALSE.
             ifGrid           = .FALSE.
             ifAdd            = .FALSE.
@@ -438,10 +436,13 @@ C         ***next command: Load optical description data***
             ifPixArray       = .FALSE.
             ifCmt            = .FALSE.
             ifEFLCalc        = .FALSE.
-            ifCentroid       = .FALSE. ! chief-ray default (Dave 2026-08-27)
             ifFilterData     = .FALSE.
             ifDMBuild        = .FALSE.
-            ifLNegOK         = .TRUE.
+!-->  POLARIZATION, VECTOR/SCALAR, CENTROID, LNEG and CIR are SESSION modes:
+!     a load keeps them and names the non-default ones (Dave 2026-10-11,
+!     PLAN_CONSOLIDATION 4 item 2).
+            CALL ModesInForceNote()
+!<--
 
             i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
@@ -915,7 +916,7 @@ C         ***Reset defaults, options, etc.***
 	    ifPixArray=.FALSE.
 #endif
 	    ifDMBuild=.FALSE.
-	    ifCentroid=.TRUE.
+	    ifCentroid=.FALSE.  ! chief-ray default (Dave 2026-08-27; was .TRUE.)
 	    ifFilterData=.FALSE.
 	    ifLNegOK=.TRUE.
 	    ifUDSinit=.FALSE.

@@ -1,13 +1,14 @@
 # Session mode CENTROID across a LOAD (PLAN_CONSOLIDATION 3.3 rule-6 audit, 2026-10-11).
-# CENTROID works with or without a deck, but every LOAD resets ifCentroid (the FEX/SXP axis) to its start-up value
+# CENTROID works with or without a deck; until 2026-10-11 every LOAD reset ifCentroid (the FEX/SXP axis) to its start-up value
 # (macos_mod_init_vars, run by reinitialise_variables), with no message.  The ruling is Dave's
-# (PLAN section 4): TODAY's behaviour is pinned below; for the ruled outcome swap the active
-# EXPECT for the 'OUTCOME (a)' line (state survives the load).  STATUS prints the flag
+# (PLAN section 4) -- RULED 2026-10-11: (a), the mode is a SESSION mode and survives the load
+# (macos_mod_init), and the load names it ('LOAD: session modes in force: ...').  The active
+# EXPECT is outcome (a); the per-load reset it replaced is kept below for the record.  STATUS prints the flag
 # (extended 2026-10-11).
 old $ROOT/ZGD_test_files/tst_calib_spot4.in
 centroid
 status
 old $ROOT/ZGD_test_files/tst_calib_spot4.in
 status
-# EXPECT: beam centroid=\s*T[\s\S]*being loaded[\s\S]*Status for file[\s\S]*?beam centroid=\s*F
-# OUTCOME (a): EXPECT: beam centroid=\s*T[\s\S]*being loaded[\s\S]*Status for file[\s\S]*?beam centroid=\s*T
+# EXPECT: beam centroid=\s*T[\s\S]*being loaded[\s\S]*Status for file[\s\S]*?beam centroid=\s*T
+# BEFORE 2026-10-11 (the per-load reset): EXPECT: beam centroid=\s*T[\s\S]*being loaded[\s\S]*Status for file[\s\S]*?beam centroid=\s*F
