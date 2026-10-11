@@ -45,6 +45,10 @@ c read_cur  current position in var_store
 c pstack    pointer to current stack 
 c ustack    current unit number for current file
         INTEGER read_len(LQWSTACK),read_cur(LQWSTACK),pstack,ustack
+!-->  The token READ_LOH consumed last, so UNREAD_LOH can hand it back
+!     (PLAN 3.3, CALIB's yes/no prompts; macosio.F).  last_stk=0: none.
+        INTEGER :: last_cur=0, last_len=0, last_stk=0
+!<--
 	Logical, save :: RX_Flg=.FALSE.
 
 	End Module lohpars_mod
