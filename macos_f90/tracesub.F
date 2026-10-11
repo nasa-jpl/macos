@@ -4171,7 +4171,16 @@ c	      NextElt(PrevNonSeg)=iElt
      &         RayL(iRay),RayE(1,iRay),
      &	       dxidxim1(1,1,iElt),dxidui(1,1,iElt))
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	      IndRef(iElt)=CurIndRef
+!-->  (PLAN_CONSOLIDATION 1.1b 3b, 2026-10-10) the Obscuring element no
+!     longer writes the RUNNING medium into its own IndRef -- the item-3
+!     class: nothing reads an Obscuring element's IndRef as a medium
+!     (ObsSrf never uses its nb; CPROPAGATE resets its medium only after
+!     a Refractor or LensArray), so the stamp only MUTATED the
+!     prescription -- an obscuration inside glass reported / SAVEd the
+!     glass index after any trace (ZGD tst_obs_in_glass.in, elt 2:
+!     1.0 -> 1.5).  No corpus deck was affected (403 compared).
+!	      IndRef(iElt)=CurIndRef
+!<--
 	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
