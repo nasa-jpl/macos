@@ -1,0 +1,83 @@
+{
+ "COPHI on the DM Gauge bench: the four-step run continuously": {
+  "img:cophi_block_single.png": {
+   "x": 1.0,
+   "y": 1.54,
+   "w": 10.93,
+   "h": 5.9,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0366,
+   "cb": 0.0284
+  },
+  "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
+   "x": 0.45,
+   "y": 1.26,
+   "w": 11.55
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 3.75,
+   "y": 1.56,
+   "w": 6.4
+  },
+  "txt:make_cophi_block_fig.py; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 13).": {
+   "x": 6.75,
+   "y": 2.3,
+   "w": 4.75
+  }
+ },
+ "Capture from cold: two colors frequency-multiplexed on one camera": {
+  "img:cophi_block_multi.png": {
+   "x": 0.8,
+   "y": 1.29,
+   "w": 9.95,
+   "h": 6.15,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0306,
+   "cb": 0.0237
+  },
+  "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
+   "x": 4.0,
+   "y": 1.26,
+   "w": 9.0
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 5.75,
+   "y": 2.7,
+   "w": 6.4
+  },
+  "txt:make_cophi_block_fig.py; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.": {
+   "x": 5.0,
+   "y": 2.0,
+   "w": 8.0
+  }
+ },
+ "COPHI with a lock-in camera: the block diagram": {
+  "img:cophi_block_lockin.png": {
+   "x": 0.81,
+   "y": 1.21,
+   "w": 11.26,
+   "h": 6.14,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0301,
+   "cb": 0.026
+  },
+  "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz beat reference; the camera is the lock-in device; the processing is atan2(Q, I) per I/Q frame, decimated to the loop rate.  Fiber, LO and the hold loop are the same — and so are their requirements.": {
+   "x": 4.65,
+   "y": 1.35,
+   "w": 6.35
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 4.6,
+   "y": 2.5,
+   "w": 6.65
+  },
+  "txt:make_cophi_block_fig.py (lock-in variant); the well-free device is the dashed alternative.": {
+   "x": 6.75,
+   "y": 7.23,
+   "w": 6.18
+  }
+ }
+}
