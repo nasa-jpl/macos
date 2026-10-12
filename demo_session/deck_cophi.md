@@ -38,7 +38,35 @@ DRAFT — pending review.
 - **Feng's four-frame method, one-color version, for the hold job.**  Every box is a component of the TG96 DM Gauge bench.
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 13).
+~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 5).
+
+## The lock-in camera: COPHI's algorithm built into the sensor | Feng's camera takes four frames per beat and the computer demodulates; a lock-in camera demodulates in every pixel at a kHz beat and reads the full lattice in a second — the parallel implementation, same optics, same RF chain; its rows run through every results table that follows
+::: left
+- **Ruling:** every mode of interest (EFC probes among them) is commanded at full actuator resolution — no coarse or low-order sensor forms.  The second implementation is a **well-free, per-pixel demodulating reading at ≥ 1 element per actuator**, assumed to exist at 1:1 or better.
+- **Lock-in** = synchronous detection inside each pixel: the photocurrent is steered into in-phase and quadrature stores by the external reference (our Rb-clocked beat, now at kHz), the DC never reaches the well, I and Q leave at the frame rate — the four-bucket replaced by thousands of cycles integrated on-chip.
+- **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102), in-pixel lock-in 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference input; four generations shipped, one vendor.  Also ranked: brute-force 128² CMOS at 20–40 kfps; iToF demodulators with the beat moved to MHz; digital-pixel ROICs (Lincoln DFPA); silicon-photonic coherent FPAs.  SPADs and Geiger-mode arrays are unfit (count-rate ceilings).
+::: right
+| the two implementations, same optics and RF | Feng's camera (Photonfocus row) | lock-in camera (heliCam C4, as surveyed) |
+|---|---|---|
+| beat | 7.5 Hz | 5 kHz (1–250 kHz) |
+| what leaves the sensor | 4 frames per beat | I/Q per pixel at 1 kHz |
+| pixels per actuator | 9.4 | 5.3 (C4M 10.6) |
+| per-reading noise | 39.5 pm | 34 pm per 1 ms I/Q frame |
+| **seconds per pm** | **42** | **1.1** (well-capped at the I/Q rate) |
+| if well-free at 10⁹ / 10¹⁰ e⁻/s per element | — | 0.29 / 0.029 |
+| loop latency | one beat, 133 ms | one I/Q frame, 1 ms |
+- **Even well-capped the lock-in is ~40× the Photonfocus and ~400× Feng's baseline**; a verified well-free device (continuous, or I/Q ≥ 10 kHz) adds 4–40×.
+- **The vendor question that decides it:** per-pixel phase noise vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
+~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
+
+## COPHI with a lock-in camera: the block diagram | The same laser, fibers, LO and bench; the beat moves to 5 kHz; the mixer gives the beat itself to the camera's reference input; no frame trigger, no bucket; I/Q frames at 1 kHz go straight to the phase
+::: full
+![](figs/cophi_block_lockin.png){h=5.0}
+::: left
+- **What changes from slide 3:** synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz beat reference; the camera is the lock-in device; the processing is atan2(Q, I) per I/Q frame, decimated to the loop rate.  Fiber, LO and the hold loop are the same — and so are their requirements.
+::: right
+- Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
+~ `make_cophi_block_fig.py` (lock-in variant); the well-free device is the dashed alternative.
 
 ## The reading's algebra, pinned before the bench | What the camera records, how the phase and the surface come out of it, and what the gate measured: the quarter-cycle integration costs 10 % of contrast, a step error is not cured by more frames, and the photon law carries read noise
 ::: full
@@ -55,7 +83,7 @@ DRAFT — pending review.
 ::: left
 ![The mirror rig from above with the LO arm in place: source arm red, LO arm purple (fiber tip at right, collimator at the reference flat's seat), test arm to the DM blue, camera leg green](figs/cophi_layout_oap.png){h=2.9}
 - **Registration:** chief ray 0.000 px on both rigs; the LO covers the test pupil 1.000 and overfills it by 34 px (radius ratio 1.215), so an offset under that is a fill question, not a registration one.
-- **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms after piston, mostly tilt — the LO collimator's wavefront against the test arm, frozen into the null as the interferometer freezes its reference; its *motion* is the LO-drift row (slide 8).
+- **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms after piston, mostly tilt — the LO collimator's wavefront against the test arm, frozen into the null as the interferometer freezes its reference; its *motion* is the LO-drift row (slide 12).
 - **Contrast:** 0.982 at an LO/test power ratio of 1.47, as 2√r/(1 + r) says; the vector-mode field phase measures −kW on both decks (the known conjugate).
 ::: right
 ![The node: the beamsplitter and compensator, the LO entering where the reference flat's return did, the recombination into the camera leg (the record's polarizing elements shown; the plain-splitter train is scored)](figs/cophi_layout_node.png){h=2.9}
@@ -66,7 +94,7 @@ DRAFT — pending review.
 ## Reading the 30 nm working surface, station by station | The same mirror command through the heterodyne train on the mirror rig, plain splitter; the last column is the raw map against the engine's own field
 ::: full
 ![COPHI, mirror rig: the command; the test arm and the LO at the camera; two of the four buckets; the recovered surface, 31.9 nm rms; recovered minus the engine's field, 0.31 pm rms; the flat DM reads 0](figs/cophi_stations_oap.png){h=3.6}
-- **Resolution of what is shown:** the model's camera grid is 1024 × 1024 with the pupil 315 px across (radius 157.45 px) — **3.3 pixels per actuator across, ~11 pixels per actuator in area** (6948 lit actuators on ~77,900 pupil pixels); every real camera on the table samples finer (5–21 px per actuator, slide 7).  What resolution buys, and what it costs each gauge, is slide 16.
+- **Resolution of what is shown:** the model's camera grid is 1024 × 1024 with the pupil 315 px across (radius 157.45 px) — **3.3 pixels per actuator across, ~11 pixels per actuator in area** (6948 lit actuators on ~77,900 pupil pixels); every real camera on the table samples finer (5–21 px per actuator, slide 9).  What resolution buys, and what it costs each gauge, is slide 16.
 ~ Stage figs (`runs/figs_oap_plain`), noise-free; the deck's station-figure format (row 1 flat DM, row 2 the working surface).
 
 ## Resolution and timing, camera by camera | The model samples the pupil at 3.3 pixels per actuator; every camera on the table oversamples the 96 × 96 lattice, so resolution costs no photons — the time to a picometer is set by well depth × frame rate, not by pixel count
@@ -96,6 +124,7 @@ DRAFT — pending review.
 | **HET, mirror (converged)** | **1.0000** | 1.0005 | 1.0005 |
 | IFO, lens (converged) | 1.0064 | 1.0106 | 1.0112 |
 | IFO, mirror (converged) | 0.9887 | 0.9892 | 0.9896 |
+| **HET, lock-in camera** (both rigs) | same gains as HET above — the reading is the same algebra, exact at the pixel; floor at its own photon rate: *not yet run* (TO) | | |
 - **The one-step rows sit 0.5 % low for HET on both rigs — and that is the estimator, not the reading:** a synthetic 1.000 nm poke reads at slope 1.000000 at the pixel level; the LO placement, the vector sum, the polarizers and the mask each cleared; at λ_m = 10⁻⁵ the gain is 1.0007.  It is the one-step Tikhonov shrinkage at the record's λ_m = 10⁻³ — the "matrix bias" every gauge carries, now a number.
 - **Driven to convergence (the gauge's servo use), HET reads exactly on the mirror rig; the IFO then shows its polarization gain in the open:** IFO/HET = 1.006–1.009 on the lens rig and 0.989 on the mirror rig.  The IFO's lens-rig "1.000" was +0.5–1 % of polarization gain cancelling the 0.5 % shrinkage.
 ~ Stage battery (`runs/battery_{lens,oap}`, the IFO column = `redo96_<optics>ph`: tail md5, lit 6948, seed 7, the 64-state matrix on the surface); the gain probe (`runs/gainprobe_lens`); the converged estimator (`dm_gauge_lib/dmg_converge`, gate `tConvergedEst` 4/4; `runs/conv_H_*`, `tg_psi_dm96_oap/runs/conv_I_*`; H and I are the reading-class letters in the records); the one-step rows reproduce the record to the digit.
@@ -108,6 +137,7 @@ DRAFT — pending review.
 | **Photonfocus MV1-D1024E, 200 ke, 150 fps** | 220 (1.22) | 39.5 / 36.5 | 0.025 | **42 / 36** | 70 / 60 min |
 | pco.edge 5.5, true global-shutter mode, 30 ke, 50 fps | 2.2 (1.000) | 40.2 / 38.3 | 0.025 | 129 / 117 | 3.6 / 3.3 h |
 | C-RED 2 (InGaAs), at 632.8 nm as a placeholder | 30 assumed (1.001) | 19.6 / 18.7 | 0.051 | — (the 1.3 µm stage) | — |
+| **lock-in camera, heliCam C4, 500 ke, I/Q at 1 kHz** (format stage; well-capped) | n/s (survey) | 34 per 1 ms I/Q frame; 1.07 in 1 s | 0.03 per frame | **1.1** | 110 s |
 - **The metric** is the piston-free robust floor over the unpoked actuators (1.48 MAD, median of 12 draws): the raw single-actuator noise is mostly a common piston (165 vs 76 pm), unobservable and inert on a DM.  The composite deck puts every gauge on this metric.
 ::: right
 - **Read noise is in every row** (σ_φ² ∝ I₀ + r²): the Photonfocus's 220 e⁻ costs 22 % in σ at half well and it still wins on well × rate; the baseline's and the C-RED's read noise are assumed (not in Feng's deck; the survey's low-gain value unconfirmed).
@@ -123,10 +153,11 @@ DRAFT — pending review.
 |---|---|
 | noise only, baseline camera (120 readings per cycle, 16 s) | 2.75 / 2.67 |
 | **noise only, Photonfocus (60 readings, 1.6 s)** | **2.60 / 2.52** |
+| **noise only, lock-in camera** (I/Q frames at 1 kHz; ~44 frames per cycle, a 44 ms cycle) | **~2.6 (derived from the format stage's 34 pm per frame; the loop not yet run with it)** |
 | random walk 2 pm per cycle | 3.60 / 3.53 |
 | thermal ramp 5 pm per cycle | 10.3 / 10.3 (the lag rate/gG — every gauge) |
 | camera offset walk | 2.85 / 2.77 (immune: zero-sum frames) |
-| one cycle of sensor latency (one beat) | 3.65 / 3.54 (+0.9 pm) |
+| one cycle of sensor latency (one beat; one I/Q frame for the lock-in) | 3.65 / 3.54 (+0.9 pm); lock-in: 1 ms, negligible |
 | differential fiber walk at the budget / at 3× (baseline camera) | 3.95 / 9.2 (mirror); Photonfocus 4.8 / 12.7 |
 | **LO drift, 0.1 nrad tilt + 1 pm defocus per cycle** | **29.6 / 29.4** |
 ::: right
@@ -149,6 +180,7 @@ DRAFT — pending review.
 ::: left
 - **Two colors, one reading:** 632.8 + 652.8 nm (synthetic Λ = 20.65 µm, range ±5.2 µm), read by its own buckets per color (crosstalk 4 × 10⁻¹⁶ rad).  **Zero wrong orders to 480 nm rms, noise-free and on both cameras** (0.15 / 0.10 nm per pixel); the single color is 74 % wrong at 480.  **A 200 nm rms figure is captured from cold in one multiplexed reading, 0.27 s.**  Any Δλ from 1 to ~100 nm resolves (the fine requirement at Δλ = 20 nm is 1.7 nm against ~0.1 nm per pixel): the synthetic-wavelength ladder needs one rung for this job.
 - **Temporal unwrapping:** holds at 0.9 × λ/4 per reading, fails at 1.1 ×: 1.19 µm/s at the peak pixel (baseline camera), 5.9 µm/s (Photonfocus) — ~0.24 / 1.2 µm/s rms for a 30 nm-class shape.
+- **With the lock-in camera:** one reference at a time, so the two colors are read on alternate I/Q frames (2 ms per pair) — the same synthetic-wavelength capture, sequential; temporal unwrapping at 1 kHz tolerates 0.9 × λ/4 per ms ≈ 140 µm/s at the peak pixel (derived from the frame rate; not yet run).
 ::: right
 | part added for the second color | count | note |
 |---|---|---|
@@ -159,34 +191,6 @@ DRAFT — pending review.
 | WDM combiners (test fiber, LO fiber) | 2 | both colors in the same two fibers |
 | processing: the second demodulation + the synthetic-wavelength unwrap | software | `dmg_cophi_recon` twice |
 ~ Stage capture (`runs/capture_{lens,oap}_plain`); truth = the engine's per-pixel OPD unwrapped; λ₂ is a re-trace of both decks.  Caveat: the model's lenses are dispersion-free, so the tail's chromatic refocus (~0.5 mm of focuser travel for silica at Δλ = 20 nm, to verify) is not shown; its static part freezes into each color's null.  At 1.3 µm the base range doubles and telecom tunables are cheap (ruling 2).
-
-## The lock-in camera: COPHI's algorithm built into the sensor | Feng's camera takes four frames per beat and the computer demodulates; a lock-in camera demodulates in every pixel at a kHz beat and reads the full lattice in a second — the parallel implementation, same optics, same RF chain
-::: left
-- **Ruling:** every mode of interest (EFC probes among them) is commanded at full actuator resolution — no coarse or low-order sensor forms.  The second implementation is a **well-free, per-pixel demodulating reading at ≥ 1 element per actuator**, assumed to exist at 1:1 or better.
-- **Lock-in** = synchronous detection inside each pixel: the photocurrent is steered into in-phase and quadrature stores by the external reference (our Rb-clocked beat, now at kHz), the DC never reaches the well, I and Q leave at the frame rate — the four-bucket replaced by thousands of cycles integrated on-chip.
-- **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102), in-pixel lock-in 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference input; four generations shipped, one vendor.  Also ranked: brute-force 128² CMOS at 20–40 kfps; iToF demodulators with the beat moved to MHz; digital-pixel ROICs (Lincoln DFPA); silicon-photonic coherent FPAs.  SPADs and Geiger-mode arrays are unfit (count-rate ceilings).
-::: right
-| the two implementations, same optics and RF | Feng's camera (Photonfocus row) | lock-in camera (heliCam C4, as surveyed) |
-|---|---|---|
-| beat | 7.5 Hz | 5 kHz (1–250 kHz) |
-| what leaves the sensor | 4 frames per beat | I/Q per pixel at 1 kHz |
-| pixels per actuator | 9.4 | 5.3 (C4M 10.6) |
-| per-reading noise | 39.5 pm | 34 pm per 1 ms I/Q frame |
-| **seconds per pm** | **42** | **1.1** (well-capped at the I/Q rate) |
-| if well-free at 10⁹ / 10¹⁰ e⁻/s per element | — | 0.29 / 0.029 |
-| loop latency | one beat, 133 ms | one I/Q frame, 1 ms |
-- **Even well-capped the lock-in is ~40× the Photonfocus and ~400× Feng's baseline**; a verified well-free device (continuous, or I/Q ≥ 10 kHz) adds 4–40×.
-- **The vendor question that decides it:** per-pixel phase noise vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
-~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
-
-## COPHI with a lock-in camera: the block diagram | The same laser, fibers, LO and bench; the beat moves to 5 kHz; the mixer gives the beat itself to the camera's reference input; no frame trigger, no bucket; I/Q frames at 1 kHz go straight to the phase
-::: full
-![](figs/cophi_block_lockin.png){h=5.0}
-::: left
-- **What changes from slide 3:** synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz beat reference; the camera is the lock-in device; the processing is atan2(Q, I) per I/Q frame, decimated to the loop rate.  Fiber, LO and the hold loop are the same — and so are their requirements.
-::: right
-- Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py` (lock-in variant); the well-free device is the dashed alternative.
 
 ## Electronics: what each gauge needs behind the optics | The IFO and the vector Zernike sensor read with a polarization camera in one frame; COPHI adds an RF chain, a fiber LO and three control loops of its own; the lock-in camera moves the demodulation on-chip
 ::: full
