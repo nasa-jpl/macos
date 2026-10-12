@@ -33,8 +33,8 @@ DRAFT — pending review.
 
 ## COPHI on the DM Gauge bench: the four-step run continuously | The record interferometer's piezo four-step with the steps set by a Rb-clocked beat, a quarter-cycle integrating bucket per frame, and a fiber LO; the reconstruction is the same
 ::: full
-![](figs/cophi_block_single.png){h=6.1}
-~ COPHI as the fifth DM gauge — our implementation of Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench; blue = RF/timing, red = PM fiber, green = free-space beam, gray = data.  (`make_cophi_block_fig.py`; the lock-in camera is the dashed alternative, slide 10.)
+![](figs/cophi_block_single.png){h=5.7}
+~ Our implementation of Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench; blue = RF/timing, red = PM fiber, green = free-space beam, gray = data (`make_cophi_block_fig.py`; the lock-in camera is the dashed alternative, slide 10).
 
 ## The reading's algebra, pinned before the bench | What the camera records, how the phase and the surface come out of it, and what the gate measured: the quarter-cycle integration costs 10 % of contrast, a step error is not cured by more frames, and the photon law carries read noise
 ::: full
