@@ -120,20 +120,20 @@ DRAFT — pending review.
 ::: left
 | drift (gain 0.5, 60 cycles, seed 77) | hold, pm rms, lens / mirror |
 |---|---|
-| noise only, baseline camera (120 readings per cycle, 16 s) | 2.75 / 2.68 |
-| **noise only, Photonfocus (60 readings, 1.6 s)** | **2.60 / 2.53** |
-| random walk 2 pm per cycle | 3.60 / 3.54 |
-| thermal ramp 5 pm per cycle | 10.3 (the lag rate/gG — every gauge) |
+| noise only, baseline camera (120 readings per cycle, 16 s) | 2.75 / 2.67 |
+| **noise only, Photonfocus (60 readings, 1.6 s)** | **2.60 / 2.52** |
+| random walk 2 pm per cycle | 3.60 / 3.53 |
+| thermal ramp 5 pm per cycle | 10.3 / 10.3 (the lag rate/gG — every gauge) |
 | camera offset walk | 2.85 / 2.77 (immune: zero-sum frames) |
-| one cycle of sensor latency (one beat) | 3.65 / 3.55 (+0.9 pm) |
-| differential fiber walk at the budget / at 3× | 4.2 / 9.9 |
+| one cycle of sensor latency (one beat) | 3.65 / 3.54 (+0.9 pm) |
+| differential fiber walk at the budget / at 3× (baseline camera) | 3.95 / 9.2 (mirror); Photonfocus 4.8 / 12.7 |
 | **LO drift, 0.1 nrad tilt + 1 pm defocus per cycle** | **29.6 / 29.4** |
 ::: right
 - **The LO is read as the DM:** the matrix takes an LO tilt as a DM tilt one-for-one (a 1 nrad tilt reads as a surface tilt of 1.008 × θ/2), and the loop drives the DM to follow it.  **The LO pointing must hold ~10 prad per cycle — ~10 pm of fiber-tip motion at the collimator's focal length — or be referenced.**  That is the architecture requirement the plain-splitter layout adds, beside the fiber's.
 - **The fiber is the term:** the four-step cannot cancel a differential fiber-phase walk within its own four frames.  Budget at the photon floor: **3.5 × 10⁻³ rad per frame = 0.35 nm of differential OPD per 33 ms, ~10.6 nm/s, ~1 mK/s per meter of uncommon fiber** — co-routed, thermally tied, or servoed.
 - **How the loop reaches 3 pm from 55 pm readings — two integrators:** the estimator's regularization (λ_m) is a spatial low-pass over the response matrix's small-singular-value directions, where photon and read noise live — it trades a 0.5 % gain for a lower floor (the converged estimator removes the bias but admits ×2.1 the white noise if run to a zero update); and the loop itself averages across cycles at gain g (steady state σ_n √(g/(2 − g)), plus M readings per cycle).  In the loop the one-step and the converged estimator agree to 0.1 pm on every row, so the bias costs nothing there; the converged mode is for the open-loop absolute read.
 - **Electronics, the rest:** trigger jitter < 2.9 × 10⁻³ rad, AOM drive ripple < 1.8 × 10⁻³ — both easy with a Rb-locked DDS; latency one beat (133 ms at 7.5 Hz).
-~ Stage loop (`runs/loop_{lens,oap}_plain`, `runs/loopfib_*`), plain splitter, `dmg_loop` with the delay row; the noise stage's first fiber number was 2.3× low (a 12-draw Monte Carlo of three random numbers) and is replaced by the exact expectation.
+~ Stage loop (`runs/loop_{lens,oap}_plain`, `runs/loopfib_*`), plain splitter, `dmg_loop` with the delay row; the mirror rig on the fixed feed (SRC_TRIM 0; every row within 0.02 pm of the mis-fed run, kept in `runs/oap_plain_misfed`); the fiber rows at the corrected budget 3.5 × 10⁻³ rad/frame; the noise stage's first fiber number was 2.3× low (a 12-draw Monte Carlo of three random numbers) and is replaced by the exact expectation.
 
 ## Capture from cold: two colors frequency-multiplexed on one camera | A second laser at λ₂, its own AOM pair at a second beat, WDM combiners into the same two fibers; all four synthesizers on one reference; the processing adds the synthetic-wavelength block
 ::: left
@@ -231,7 +231,7 @@ DRAFT — pending review.
 ::: right
 - **Develop:** the fiber-phase stabilization (co-routing, thermal tie, or a servo) to 0.35 nm per frame; the LO pointing to 10 prad per cycle or a referenced LO; the lock-in camera as the full-resolution fast reading — one vendor question away from a number.
 - **Model next:** the chromatic refocus of the tail at Δλ = 20 nm (dispersive glass in the model); the LO referenced against the test arm's own flat; the electronics table's parts counts and TRL for all five gauges; Kent's ZWFS reconstruction when it arrives.
-- **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the mirror-rig loop rows on the fixed feed (rerun in flight).
+- **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term).
 ~ Everything reproduces from `templates/40_benches/cophi_dm96/` (`cophi_run`, the stage tags in each footnote); gates `tCophi`, `tCophiBench`, `tConvergedEst`, `tDmgLoop`.
 
 ## Backup
