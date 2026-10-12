@@ -218,16 +218,21 @@ DRAFT — pending review.
 - **Measured vs inferred:** every record is at 3.3–4 px per actuator (the IFO's mirror-rig image, distorted by more than a pitch at the edge, reads to 2 pm there); the collapse band is the blur demo's; the 5–20 rows follow from the well-bound photon rule and the data rates.  **A per-gauge sweep at 1, 1.5, 2, 4 px per actuator is a one-day `format` run — the item that turns this table into records.**  Where the three differ: the IFO and HET read against a reference and are indifferent above 2; the vector ZWFS solves pixel by pixel from two images, wants ≥ 4, and pays processing for more; the lock-in fixes HET's sampling at the device (5.3 / 10.6) with the processing on-chip.  Regularization and calibration do not change with pixel count above 2.
 ~ Blur demo (`pupil_blur_demo`, REPORT_pupil_blur); gauge deck (IFO, vZWFS); stages noise and format (HET); ruling 6 (2026-10-11).  Data rates: pixels × 16 bit × frame rate.
 
-## COPHI against the Zernike sensor with a dedicated laser, for the hold job | Feng's deck poses this comparison; on our bench the answer is photons: the vector Zernike holds 3 pm from 2 × 10¹² photons per cycle, COPHI from ~1 × 10¹⁴ — but COPHI captures from cold, carries no reference-aging, and reads the surface absolutely
-::: left
-- **For hold alone,** the vector Zernike sensor is the cheaper sensor by ~50× in photons per cycle (gauge deck: 2.2 × 10¹² vs the interferometer class at 2 × 10¹³ — and COPHI at Feng's camera's cadence needs 120 readings per cycle).  Both hold 3 pm.  **Resolution is a wash:** both read the full lattice at 5–10 pixels per actuator.
-- **For capture,** the Zernike sensor's reference is the beam's own core and ages past 36–70 nm; COPHI with two colors captures 480 nm rms in one reading, with a reference that does not depend on the surface.
-- **For an absolute read,** the Zernike sensor needs its reference iterated or a matrix re-measured; COPHI reads the surface against the LO, exactly (slope 1.000000 at the pixel) — the matrix's shrinkage is the estimator's, and converges away.
-::: right
-- **What COPHI pays:** the RF chain and the fiber LO (slide 15); the fiber-phase budget (0.35 nm per frame); the LO pointing (10 prad per cycle) — two stabilities the Zernike sensor never needs; and a camera chosen for well × rate.
-- **What decides it for a flight DM:** if the hold loop is the only job, the Zernike sensor; if the same sensor must capture from cold and read absolutely, COPHI — and with a lock-in camera it is also the fastest full-lattice reading on the table.
-- **The hybrid Feng's purpose suggests:** a Zernike sensor for the hold, COPHI's two-color read for capture and for the absolute figure at commissioning — one bench, two readings, one DM truth.
-~ The Zernike rows are the gauge deck's (redo96_*sens, zloop); the COPHI rows this deck's.
+## COPHI against the Zernike sensor with a dedicated laser, for the hold job | Feng's deck poses this comparison; on our bench the answer is photons and time: the vector Zernike holds 3 pm from 2 × 10¹² photons per cycle, COPHI with Feng's camera from ~1 × 10¹⁴ — and COPHI with a lock-in camera reaches a picometer faster than any of them, captures from cold, and reads absolutely
+::: full
+| | vector Zernike (dedicated laser, polarization camera) | COPHI, Feng's camera (1k², 60 ke, 30 fps) | COPHI, Photonfocus (200 ke, 150 fps) | **COPHI, lock-in camera (heliCam C4, as surveyed)** |
+|---|---|---|---|---|
+| photons per cycle to hold 3 pm | 2.2 × 10¹² (gauge deck) | ~1 × 10¹⁴ (120 readings at 1.9 × 10¹² ph/s) | ~1 × 10¹⁴ (60 readings) | ~44 samples at the well-capped rate (≈ 3 × 10¹² e⁻ per cycle: 2.8 × 10⁵ elements × 250 ke per sample at half well × 44 samples — from the sheet) — *loop run pending* |
+| time per 3 pm hold cycle | ~1 s class (one frame; gauge deck) | 16 s | 1.6 s | **~44 ms** (derived; loop run pending) |
+| seconds to SNR 1 at 1 pm | ~12 (polarization camera, first cut) | 443 / 385 | 42 / 36 | **1.1** (×1.11 for square-wave demodulation) |
+| capture from cold | no: the reference ages past 36–70 nm | yes: two colors, one 0.27 s reading | yes | yes: two colors on alternate I/Q samples (2 ms) |
+| absolute read | needs the reference iterated or a matrix re-measured | exact (slope 1.000000) through the LO | exact | exact |
+| its own stabilities | none beyond the bench | fiber phase 0.35 nm per frame; LO pointing 10 prad per cycle | same | LO pointing the same; **fiber walk a piston per sample — inert** (to be confirmed by the loop) |
+| electronics it adds | a laser | RF chain, fiber LO, two loops | same | same, beat at kHz; demodulation on-chip; I/Q data at 1 kHz |
+| resolution | pixel-by-pixel from two images, wants ≥ 4 px per actuator | 9.4 px per actuator | 9.4 | 5.3 (C4M 10.6) |
+- **For hold alone,** the vector Zernike sensor is the cheapest in photons by ~50× and needs no stabilities of its own; Feng's camera makes COPHI slow (16 s cycles); the Photonfocus makes it comparable (1.6 s); **the lock-in makes COPHI the fastest reading on the table** (sub-second cycles, 1.1 s per pm) — if its well behaves as surveyed, and with the fiber term reduced to a piston.
+- **For capture and the absolute figure,** COPHI in either form: a reference that does not depend on the surface, two colors for 480 nm rms in one reading.  **What decides it for a flight DM:** hold only → the Zernike sensor; hold + capture + absolute → COPHI, and with the lock-in camera it is also the fastest; **the hybrid Feng's purpose suggests** — a Zernike sensor for the hold, COPHI's two-color read for capture and commissioning — remains the conservative answer until the lock-in's vendor numbers are in.
+~ The Zernike rows are the gauge deck's (redo96_*sens, zloop; the polarization-camera timing a first cut, TO's noise-hook run pending); the COPHI rows this deck's; the lock-in's loop / capture rows derived from the format stage until TO's runs land.
 
 ## Recommendations | COPHI is a credible fifth gauge: it matches the IFO's floor, reads exactly, and captures from cold in one reading; its cost is the fiber and the LO, and its speed is the camera's
 ::: left
