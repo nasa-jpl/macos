@@ -96,7 +96,7 @@
   }
  },
  "COPHI against the Zernike sensor with a dedicated laser, for the hold job": {
-  "txt:For hold alone, the vector Zernike sensor is the cheapest in photons by ~50× and needs no stabilities of its own — but on the assumed polarization camera (10 ke⁻ well) it is the *slowest* in time, ~60 s per 3 pm cycle; Feng's camera makes COPHI slow (16 s cycles); the Photonfocus makes it fast (1.6 s); the lock-in makes COPHI the fastest reading on the table (0.125 s cycles at 3.09 pm, 3.35 s per pm; records) — if its well behaves as surveyed — and its fiber term is a per-sample piston, inert (record).": {
+  "txt:For hold alone, the vector Zernike is cheapest in photons by ~50× and needs no stabilities of its own — but on the assumed polarization camera it is the slowest in time (~60 s per cycle); Feng's camera makes COPHI slow (16 s), the Photonfocus fast (1.6 s), the lock-in the fastest reading on the table (0.125 s; records) if its well is as surveyed — with the fiber term inert.": {
    "y": 5.75,
    "fs": 11
   }
