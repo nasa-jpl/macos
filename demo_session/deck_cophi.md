@@ -13,7 +13,7 @@ diagrams from make_cophi_block_fig.py).  American English.  Structure = the gaug
 composite deck unchanged.
 -->
 
-# COPHI as the Fifth DM Gauge
+# COPHI as the Fifth DM Gauge Bench Sensor
 Feng Zhao's heterodyne camera interferometer, scored on the same bench, the same 30 nm surface and the same rows as the interferometer, the Zernike sensors and the pinhole — and a faster alternative using lock-in detectors
 D. C. Redding, with Claude Code (TO: the bench stages).
 October 2026.  Working record.
