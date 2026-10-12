@@ -80,7 +80,7 @@ def mirror(ax, x, y, ang_deg, size=1.0, color=INK, lw=3):
     ax.plot([x - dx, x + dx], [y - dy, y + dy], color=color, lw=lw, zorder=4, solid_capstyle="round")
 
 
-def draw(multi):
+def draw(multi, lockin=False):
     Hh = H + (2.4 if multi else 0) - 1.5
     fig = plt.figure(figsize=(26, 26 * Hh / W), dpi=200)
     ax = fig.add_axes([0, 0, 1, 1])
@@ -91,7 +91,7 @@ def draw(multi):
     ro = 0.0 if not multi else 2.4                   # the RF column rides up in the two-color figure
     rb = box(ax, 3.2, 16.8 + ro, 2.6, 1.0, "10 MHz Rb standard\n(SRS FS725 class)", fs=12.3)
     s1 = box(ax, 0.6, 14.8 + ro, 2.5, 1.0, "Synthesizer 1\n80 MHz", fs=12.3)
-    s2 = box(ax, 3.6, 14.8 + ro, 2.5, 1.0, "Synthesizer 2\n80 MHz + 7.5 Hz", fs=12.3)
+    s2 = box(ax, 3.6, 14.8 + ro, 2.5, 1.0, ("Synthesizer 2\n80 MHz + 5 kHz" if lockin else "Synthesizer 2\n80 MHz + 7.5 Hz"), fs=12.3)
     wire(ax, [port(rb, "b"), (port(rb, "b")[0], 16.2 + ro), (1.85, 16.2 + ro), port(s1, "t")])
     wire(ax, [(port(rb, "b")[0], 16.2 + ro), (4.85, 16.2 + ro), port(s2, "t")])
     if multi:
@@ -103,14 +103,20 @@ def draw(multi):
     d1 = box(ax, 0.6, 13.0 + ro, 2.5, 0.9, "AOM driver 1\n(RF amp, 2 W)", fs=11.7)
     d2 = box(ax, 3.6, 13.0 + ro, 2.5, 0.9, "AOM driver 2", fs=11.7)
     wire(ax, [port(s1, "b"), port(d1, "t")]); wire(ax, [port(s2, "b"), port(d2, "t")])
-    m1 = box(ax, 0.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-    m2 = box(ax, 3.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz + 30 Hz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+    if lockin:
+        m1 = box(ax, 0.6, 11.5 + ro, 2.5, 0.8, "RF tap\n80 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        m2 = box(ax, 3.6, 11.5 + ro, 2.5, 0.8, "RF tap\n80 MHz + 5 kHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        mx = box(ax, 1.6, 9.9 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 5 kHz beat reference", fs=11.7)
+        tg = box(ax, 1.6, 8.5 + ro, 3.5, 0.85, "Lock-in REFERENCE input\n(the beat itself; no frame trigger)", fs=10.8)
+    else:
+        m1 = box(ax, 0.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        m2 = box(ax, 3.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz + 30 Hz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        mx = box(ax, 1.6, 9.9 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 30 Hz frame clock", fs=11.7)
+        tg = box(ax, 1.6, 8.5 + ro, 3.5, 0.85, "Camera trigger\n(30 fps = 4 frames / beat)", fs=11.7)
     wire(ax, [port(s1, "l"), (0.35, port(s1, "l")[1]), (0.35, port(m1, "l")[1]), port(m1, "l")])
     wire(ax, [port(s2, "r"), (6.35, port(s2, "r")[1]), (6.35, port(m2, "r")[1]), port(m2, "r")])
-    mx = box(ax, 1.6, 9.9 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 30 Hz frame clock", fs=11.7)
     wire(ax, [port(m1, "b"), (port(m1, "b")[0], 11.2 + ro), (2.6, 11.2 + ro), (2.6, 10.8 + ro)])
     wire(ax, [port(m2, "b"), (port(m2, "b")[0], 11.2 + ro), (4.1, 11.2 + ro), (4.1, 10.8 + ro)])
-    tg = box(ax, 1.6, 8.5 + ro, 3.5, 0.85, "Camera trigger\n(30 fps = 4 frames / beat)", fs=11.7)
     wire(ax, [port(mx, "b"), port(tg, "t")])
     if multi:
         d3 = box(ax, 6.7, 13.0 + ro, 2.5, 0.9, "AOM driver 3", fs=11.7)
@@ -126,15 +132,17 @@ def draw(multi):
     cp = box(ax, 4.2, y0 - 0.1, 1.9, 0.9, "1x2 PM\ncoupler", fs=11.7, fc=OPT)
     wire(ax, [port(las, "r"), port(cp, "l")], color=FIBER)
     a1 = box(ax, 7.0, y0 + 1.0, 2.3, 0.9, "AOM 1\n80 MHz", fs=12.0, fc=OPT)
-    a2 = box(ax, 7.0, y0 - 1.2, 2.3, 0.9, "AOM 2\n80 MHz + 7.5 Hz", fs=12.0, fc=OPT)
+    a2 = box(ax, 7.0, y0 - 1.2, 2.3, 0.9, ("AOM 2\n80 MHz + 5 kHz" if lockin else "AOM 2\n80 MHz + 7.5 Hz"), fs=12.0, fc=OPT)
     wire(ax, [port(cp, "r", 0.7), (6.5, port(cp, "r", 0.7)[1]), (6.5, port(a1, "l")[1]), port(a1, "l")], color=FIBER)
     wire(ax, [port(cp, "r", 0.3), (6.5, port(cp, "r", 0.3)[1]), (6.5, port(a2, "l")[1]), port(a2, "l")], color=FIBER)
     wire(ax, [port(d1, "b"), (port(d1, "b")[0], 12.5 + ro), (7.55, 12.5 + ro), (7.55, port(a1, "t")[1] + 0.02)], lw=1.2)
     wire(ax, [port(d2, "b"), (port(d2, "b")[0], 12.2 + ro), (8.65, 12.2 + ro), (8.65, port(a2, "t")[1] + 0.02)], lw=1.2)
     label(ax, 8.15, y0 + 2.15, "f_opt + 80 MHz", fs=11.1, color=GRAY, ha="center")
-    label(ax, 8.15, y0 - 1.55, "f_opt + 80 MHz + 7.5 Hz", fs=11.1, color=GRAY, ha="center")
-    note(ax, 0.6, y0 - 1.95, "electronics error terms the model carries: DDS phase noise -> P.cophi.jitter;\n"
-                             "AOM drive ripple -> contrast; trigger jitter; one beat = one cycle of loop latency (133 ms)", fs=10.4)
+    label(ax, 8.15, y0 - 1.55, ("f_opt + 80 MHz + 5 kHz" if lockin else "f_opt + 80 MHz + 7.5 Hz"), fs=11.1, color=GRAY, ha="center")
+    note(ax, 0.6, y0 - 1.95, ("electronics error terms: reference phase noise; AOM drive ripple -> contrast;\n"
+                              "ADC bits (2 x 10-bit I/Q); one I/Q frame = one cycle of loop latency (1 ms)") if lockin else
+                             ("electronics error terms the model carries: DDS phase noise -> P.cophi.jitter;\n"
+                             "AOM drive ripple -> contrast; trigger jitter; one beat = one cycle of loop latency (133 ms)"), fs=10.4)
 
     if multi:
         yb = y0 - 4.0                                  # the second color's band, below the first
@@ -186,18 +194,18 @@ def draw(multi):
     beam(ax, [port(cl, "r"), (spx, port(cl, "r")[1]), (spx, spy)], color="#2E8B57", alpha=0.22)
     label(ax, spx + 0.3, (spy + port(cl, "r")[1]) / 2 - 0.1, "LO beam: fills the camera flat\n(overfills the pupil by 34 px)", fs=10.1, color=GRAY)
     # the camera: ABOVE the splitter (the fourth port), its tail = the pupil image of the DM
-    cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS", fs=10.4)
+    cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, ("LOCK-IN camera (heliCam C4 class)\n542 x 512 px, in-pixel I/Q at the beat\n500 ke well, 2 x 10-bit I/Q at 1 kHz" if lockin else "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS"), fs=10.4)
     beam(ax, [(spx, spy), (spx, port(cam, "b")[1] + 0.02)])
     label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
-    lk = box(ax, spx + 2.95, y0 + 2.55, 2.6, 1.45, "or: lock-in camera\n(heliCam C4 class,\nbeat at kHz, I/Q out)", fs=10.4, fc=LIGHT, tc=INK, ec=ACCENT, ls=(0, (4, 2)))
+    lk = box(ax, spx + 2.95, y0 + 2.55, 2.6, 1.45, ("or: a well-free device\n(continuous or I/Q\n>= 10 kHz: to verify)" if lockin else "or: lock-in camera\n(heliCam C4 class,\nbeat at kHz, I/Q out)"), fs=10.4, fc=LIGHT, tc=INK, ec=ACCENT, ls=(0, (4, 2)))
     note(ax, bx0 + 4.9, y0 - 2.95, "LO wavefront drift (tilt / defocus per cycle, P.cophi.lo_drift)\n= the new drift row; frozen into the null on the flat DM", fs=10.1)
     # trigger to the camera (routed under the fibers' notes, above the processing row)
     ty = py + 1.4
     wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.3), (port(cam, "l")[0] - 0.02, y0 + 4.3), (port(cam, "l")[0] - 0.02, port(cam, "l")[1] + 0.4), (port(cam, "l")[0], port(cam, "l")[1] + 0.4)], lw=1.3)
-    label(ax, 6.8, ty + 0.22, "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input", fs=10.8, color=RF)
+    label(ax, 6.8, ty + 0.22, ("the 5 kHz beat reference to the lock-in camera: every pixel demodulates ~5 cycles per 1 ms I/Q frame; no bucket, no frame trigger" if lockin else "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input"), fs=10.8, color=RF)
 
     # ------------------------------------------------------------------ processing (bottom)
-    fg = box(ax, 14.2, py - 0.1, 2.3, 0.9, "Frame grabber\n(CXP / CLHS)", fs=11.4, fc=DATA)
+    fg = box(ax, 14.2, py - 0.1, 2.3, 0.9, ("I/Q frame grabber\n(GigE, 2 x 10 bit)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
     wire(ax, [port(cam, "r"), (port(cam, "r")[0] + 0.3, port(cam, "r")[1]), (port(cam, "r")[0] + 0.3, y0 + 4.45), (bx0 + 11.2, y0 + 4.45), (bx0 + 11.2, py + 0.35), port(fg, "r")], color=DATA)
     if multi:
         rc = box(ax, 10.3, py - 0.35, 3.6, 1.4, "N-bucket LSQ per pixel, TWO beats\n(dmg_cophi_recon at 4 and 8 frames)\n-> phi_1, phi_2", fs=10.9, fc=DATA)
@@ -207,23 +215,23 @@ def draw(multi):
         note(ax, 7.0, py - 0.95, "range +- Lambda/4, coarse noise x Lambda/lambda: a rung LADDER (dl ~ 20 nm then ~0.5 nm) captures\n"
                                  "200 nm rms from cold; sequential form = one tunable laser switched on alternate beats", fs=10.1)
     else:
-        rc = box(ax, 10.3, py - 0.35, 3.6, 1.4, "four-bucket phase per pixel\natan2(I2 - I4, I1 - I3)\n(dmg_cophi_recon, N-bucket LSQ)", fs=10.9, fc=DATA)
+        rc = box(ax, 10.3, py - 0.35, 3.6, 1.4, ("phase per pixel per I/Q frame\natan2(Q, I) at 1 kHz\n-> decimate / average to the loop rate" if lockin else "four-bucket phase per pixel\natan2(I2 - I4, I1 - I3)\n(dmg_cophi_recon, N-bucket LSQ)"), fs=10.9, fc=DATA)
         wire(ax, [port(fg, "l"), port(rc, "r")], color=DATA)
         nxt = rc
-        note(ax, 10.6, py - 0.95, "temporal unwrap between beats (free): the surface cannot move lambda/4 in 133 ms", fs=10.1)
+        note(ax, 10.6, py - 0.95, ("temporal unwrap between I/Q frames (free): the surface cannot move lambda/4 in 1 ms" if lockin else "temporal unwrap between beats (free): the surface cannot move lambda/4 in 133 ms"), fs=10.1)
     nl = box(ax, 3.85, py - 0.35, 2.85, 1.4, "null reference\n(frozen: flat DM;\nLO wavefront in it)", fs=10.9, fc=DATA)
     wire(ax, [port(nxt, "l"), port(nl, "r")], color=DATA)
     est = box(ax, 0.6, py - 0.35, 3.0, 1.4, "matrix estimator\n(dmg_act_fit, lambda_m)\n-> 9216 actuator heights", fs=10.9, fc=DATA)
     wire(ax, [port(nl, "l"), port(est, "r")], color=DATA)
-    lp = box(ax, 0.6, 0.55, 3.0, 1.0, "hold loop (dmg_loop)\ng = 0.5 at 7.5 Hz", fs=11.2, fc=GREEN, tc=INK)
+    lp = box(ax, 0.6, 0.55, 3.0, 1.0, ("hold loop (dmg_loop)\ng = 0.5 at up to 1 kHz" if lockin else "hold loop (dmg_loop)\ng = 0.5 at 7.5 Hz"), fs=11.2, fc=GREEN, tc=INK)
     wire(ax, [port(est, "b"), port(lp, "t")], color=DATA)
     drv = box(ax, 4.2, 0.55, 3.0, 1.0, "DM driver\n(HV electronics, 9216 ch)", fs=11.2, fc=GREEN, tc=INK)
     wire(ax, [port(lp, "r"), port(drv, "l")], color=DATA)
     wire(ax, [port(drv, "r", 0.25), (bx0 + 11.6, port(drv, "r", 0.25)[1]), (bx0 + 11.6, port(dm, "r")[1]), (port(dm, "r")[0], port(dm, "r")[1])], color=DATA, lw=1.3)
     out = box(ax, 7.6, 0.55, 8.4, 1.0, "OUTPUT: DM surface figure vs time (pm); the hold residual; the capture record", fs=11.2, fc="#DFF0D8", tc=INK, ec=GREEN)
-    label(ax, 16.4, 1.05, "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)", fs=10.8, color=GRAY)
+    label(ax, 16.4, 1.05, ("per I/Q frame: sigma_phi^2 = 2 (I0 + r^2) / (I0^2 g^2) with I0 = well x fill per frame; well-capped at the I/Q rate -- 1.1 s per pm as surveyed" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
 
-    name = "cophi_block_multi.png" if multi else "cophi_block_single.png"
+    name = "cophi_block_lockin.png" if lockin else ("cophi_block_multi.png" if multi else "cophi_block_single.png")
     fig.savefig(f"figs/{name}", dpi=200, facecolor="white")
     fig.savefig(f"figs/{name.replace('.png', '.svg')}", facecolor="white")
     print("wrote figs/" + name)
@@ -231,3 +239,4 @@ def draw(multi):
 
 draw(False)
 draw(True)
+draw(False, lockin=True)
