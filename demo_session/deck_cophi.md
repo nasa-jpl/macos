@@ -112,7 +112,7 @@ DRAFT — pending review.
 - **The cameras were put on the model grid by binning** (well × k², read × k): the pm-per-reading rows are the full camera's photons, at the model's sampling.
 ~ Stage noise and format; the pupil in pixels is the camera's short side filled by the pupil image (the tail's magnification is set for it); the model's 315 px = 157.45 px radius (stage bench).
 
-## Performance side by side: HET against the IFO on the same surface | HET = the heterodyne (COPHI) reading; IFO = the record's Twyman-Green polarization interferometer.  Same seed, same 30 nm surface, same response matrix measured through each reading: HET matches the IFO's floor, reads the mirror rig's random surface at half its error, and is exact where the IFO's reading is not
+## Performance side by side: HET against the IFO on the same surface | HET = the heterodyne (COPHI) reading; IFO = the record's Twyman-Green polarization interferometer.  Same seed, surface and matrix: HET matches the IFO's floor, halves its mirror-rig random-surface error, and is exact where the IFO's reading is not
 ::: full
 | reading, rig (estimator) | 10 nm on one actuator: gain / floor | 1 nm on the grid: gain / floor | dense random 10 nm: gain / error |
 |---|---|---|---|
@@ -220,18 +220,16 @@ DRAFT — pending review.
 
 ## COPHI against the Zernike sensor with a dedicated laser, for the hold job | Feng's deck poses this comparison; on our bench the answer is photons and time: the vector Zernike holds 3 pm from 2 × 10¹² photons per cycle, COPHI with Feng's camera from ~1 × 10¹⁴ — and COPHI with a lock-in camera reaches a picometer faster than any of them, captures from cold, and reads absolutely
 ::: full
-| | vector Zernike (dedicated laser, polarization camera) | COPHI, Feng's camera (1k², 60 ke, 30 fps) | COPHI, Photonfocus (200 ke, 150 fps) | **COPHI, lock-in camera (heliCam C4, as surveyed)** |
+| | vector Zernike (dedicated laser, pol. camera) | COPHI, Feng's camera | COPHI, Photonfocus | **COPHI, lock-in camera (C4, as surveyed)** |
 |---|---|---|---|---|
-| photons per cycle to hold 3 pm | 2.2 × 10¹² (gauge deck) | ~1 × 10¹⁴ (120 readings at 1.9 × 10¹² ph/s) | ~1 × 10¹⁴ (60 readings) | ~9 × 10¹² (125 samples at the capped 250 ke per element) |
-| time per 3 pm hold cycle | **~60 s on the assumed polarization camera** (519 s per pm ÷ 9; its 10 ke⁻ well, the core's dynamic range and two unused orientations — the gauge deck's photon count stands, the camera is the ZWFS's own question) | 16 s | 1.6 s | **0.125 s (record: 3.09 pm)** |
-| seconds to SNR 1 at 1 pm | 519 (polarization camera, record) | 443 / 385 | 42 / 36 | **3.35 / 3.73** (×1.11 for square-wave demodulation) |
-| capture from cold | no: the reference ages past 36–70 nm | yes: two colors, one 0.27 s reading | yes | yes: two colors on alternate I/Q samples, zero wrong orders to 480 nm (record) |
-| absolute read | needs the reference iterated or a matrix re-measured | exact (slope 1.000000) through the LO | exact | exact |
-| its own stabilities | none beyond the bench | fiber phase 0.39 nm per frame; LO pointing 10 prad per cycle | same | LO pointing the same (29.4 pm); **fiber walk a piston per sample — inert: the loop at the budget and at 3× reads its noise-only hold to the digit (record)** |
-| electronics it adds | a laser | RF chain, fiber LO, two loops | same | same, beat at kHz; demodulation on-chip; I/Q data at 1 kHz |
-| resolution | pixel-by-pixel from two images, wants ≥ 4 px per actuator | 9.4 px per actuator | 9.4 | 5.3 (C4M 10.6) |
-- **For hold alone,** the vector Zernike sensor is the cheapest in photons by ~50× and needs no stabilities of its own — but on the assumed polarization camera (10 ke⁻ well) it is the *slowest* in time, ~60 s per 3 pm cycle; Feng's camera makes COPHI slow (16 s cycles); the Photonfocus makes it fast (1.6 s); **the lock-in makes COPHI the fastest reading on the table** (0.125 s cycles at 3.09 pm, 3.35 s per pm; records) — if its well behaves as surveyed — and its fiber term is a per-sample piston, inert (record).
-- **For capture and the absolute figure,** COPHI in either form: a reference that does not depend on the surface, two colors for 480 nm rms in one reading.  **What decides it for a flight DM:** hold only and photons scarce → the Zernike sensor, with a camera chosen for it; hold + capture + absolute, or speed → COPHI, and with the lock-in camera it is the fastest by 20–500×; **the hybrid Feng's purpose suggests** — a Zernike sensor for the hold, COPHI's two-color read for capture and commissioning — remains the conservative answer until the lock-in's vendor numbers are in.
+| photons per 3 pm hold cycle | 2.2 × 10¹² (gauge deck) | ~1 × 10¹⁴ (120 readings) | ~1 × 10¹⁴ (60 readings) | ~9 × 10¹² (125 samples, capped well) |
+| time per 3 pm hold cycle | **~60 s on the assumed pol. camera** (519 s/pm ÷ 9: its 10 ke⁻ well, the core's dynamic range, two unused orientations — the camera is the ZWFS's own question) | 16 s | 1.6 s | **0.125 s** (record: 3.09 pm) |
+| seconds to SNR 1 at 1 pm | 519 (pol. camera, record) | 443 / 385 | 42 / 36 | **3.35 / 3.73** (×1.11 square-wave) |
+| capture from cold | no: the reference ages past 36–70 nm | two colors, one 0.27 s reading | same | two colors on alternate samples; zero wrong orders to 480 nm |
+| absolute read | reference iterated or matrix re-measured | exact (slope 1.000000) against the LO | exact | exact |
+| its own stabilities | none beyond the bench | fiber 0.39 nm per frame; LO 10 prad per cycle | same | LO the same (29.4 pm); **fiber a per-sample piston, inert (record)** |
+- **For hold alone,** the vector Zernike is cheapest in photons by ~50× and needs no stabilities of its own — but on the assumed polarization camera it is the slowest in time (~60 s per cycle); Feng's camera makes COPHI slow (16 s), the Photonfocus fast (1.6 s), **the lock-in the fastest reading on the table (0.125 s; records)** if its well is as surveyed — with the fiber term inert.
+- **For capture and the absolute figure,** COPHI in either form.  **What decides it for a flight DM:** hold only and photons scarce → the Zernike sensor with a camera chosen for it; hold + capture + absolute, or speed → COPHI, with the lock-in the fastest by 20–500×; **the hybrid** — a Zernike sensor for the hold, COPHI's two-color read for capture and commissioning — stays the conservative answer until the lock-in's vendor numbers are in.
 ~ The Zernike rows are the gauge deck's (redo96_*sens, zloop) with the polarization-camera timing from `camS_oap`; the COPHI rows this deck's; the lock-in rows are records (`runs/lockin_*`, resources 2a07af9).
 
 ## Recommendations | COPHI is a credible fifth gauge: it matches the IFO's floor, reads exactly, and captures from cold in one reading; its cost is the fiber and the LO, and its speed is the camera's
