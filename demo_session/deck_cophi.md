@@ -33,28 +33,31 @@ DRAFT — pending review.
 
 ## COPHI in our terms: the four-step run continuously | The record interferometer's piezo four-step with the steps set by a Rb-clocked beat, a quarter-cycle integrating bucket per frame, and a fiber LO; the reconstruction is the same
 ::: full
-![One color: the RF chain, the two PM fibers, the LO at the reference flat's seat, the bench, the camera, the four-bucket phase, the matrix estimator and the hold loop — every box a component of the bench or a stage of the gauge library; the model's error terms annotated](figs/cophi_block_single.png){h=5.2}
-~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in camera is the dashed alternative (slide 10).
+![](figs/cophi_block_single.png){h=5.9}
+~ One color: the RF chain, the two PM fibers, the LO at the reference flat's seat, the bench, the camera, the four-bucket phase, the matrix estimator and the hold loop — every box a component of the bench or a stage of the gauge library, the model's error terms annotated (`make_cophi_block_fig.py`; the lock-in camera is the dashed alternative, slide 10).
 
-## The reading's algebra, pinned before the bench | The integrating bucket costs 10 % of contrast; more buckets do not cure a step error, knowing the steps does; the photon law has read noise in it
+## The reading's algebra, pinned before the bench | What the camera records, how the phase and the surface come out of it, and what the gate measured: the quarter-cycle integration costs 10 % of contrast, a step error is not cured by more frames, and the photon law carries read noise
+::: full
+![](figs/cophi_equations.png){h=3.5}
 ::: left
-- **Frames:** I_k = I₀ [1 + γ sinc(π/N) cos(φ − α_k)], the bucket centers α_k; for N = 4 the contrast is γ × 0.900 — the "integrating bucket" penalty, nothing else changes.  The N-bucket least squares *is* the four-step atan2 for N = 4 (to 1e-12).
-- **Step error:** a 1° per-step error puts the textbook (ε/2) sin 2φ ripple on the four-bucket phase.  **Measured: the plain 8-bucket least squares with the same per-step error is 1.43× *worse*** (the ramp accumulates over seven steps); **knowing the steps is the cure** (the LSQ with the true bucket centers is exact) — exactly what a Rb-clocked, frequency-set scan provides.  Feng's N-frame backup earns its keep against harmonics and noise, not step miscalibration.
+- **"Integrating bucket" (1)–(2):** a frame cannot sample the beat at an instant; it *integrates* while the LO phase advances through a quarter of the cycle.  Averaging a cosine over a window D = 2π/N keeps its phase (referred to the window's center ᾱ_k) and shrinks its amplitude by sinc(D/2): **0.900 for four frames per beat** — nothing else changes.
+- **The phase (3)** is a least-squares fit of the N frames to a + b cos ᾱ_k + c sin ᾱ_k; for N = 4 it reduces exactly to the four-step atan2, the same algorithm as Feng's (his sign is for cos(φ + 2πft)).
 ::: right
-- **Photons:** per pixel, σ_φ² = 2 (I₀ + r²) / (N I₀² g′²) with I₀ the electrons per frame, r the read noise, g′ the bucket contrast: shot noise ∝ 1/√I₀ over two decades (slope −0.500 ± 0.02), read noise added in quadrature to the shot term.  Surface = φ λ/4π.
-- **Within a scan:** a differential fiber-phase walk or a trigger jitter is a phase-dependent error of a fixed fraction of its size (0.13 w rms over the map for w = 0.05 rad/frame), no better with 8 buckets — the intra-scan drift has no algorithmic cure.
-- **Gate `tCophi`** (8 tests, pure MATLAB, in the fast suite) pins every line above; the bench stages consume these routines unchanged.
-~ `dm_gauge_lib/dmg_cophi_frames` / `_recon` / `_camera`; the sign convention is the record interferometer's (I₀(1 + γ cos(φ − α))): Feng's atan2(I₄ − I₂, I₁ − I₃) is the same algorithm for cos(φ + 2πft).
+- **A step error (5)** — every step D(1 + ε) — puts the textbook (ε/2) sin 2φ on the four-bucket phase.  **Measured: more buckets do not cure it** (the plain 8-bucket fit with the same per-step error is 1.43× *worse*; the ramp accumulates); **knowing the steps does** (the fit at the true ᾱ_k is exact) — a Rb-clocked scan knows them.
+- **Photons (6):** shot noise ∝ 1/√I₀ (slope −0.500 ± 0.02 over two decades), read noise in quadrature.  A fiber walk or trigger jitter *within* a scan is a fixed fraction of its size (0.13 w), no better with 8 buckets — no algorithmic cure.
+~ Gate `tCophi` (8 tests) pins each line; `dm_gauge_lib/dmg_cophi_*`; TeX source `deck_cophi_equations.tex`.
 
 ## The bench with the LO arm | The LO is a fiber tip and collimator with its powered face at the reference flat's seat; it registers on both rigs to a pixel and the flat-DM null is sub-nanometer
 ::: left
+![The mirror rig from above with the LO arm in place: source arm red, LO arm purple (fiber tip at right, collimator at the reference flat's seat), test arm to the DM blue, camera leg green](figs/cophi_layout_oap.png){h=2.9}
 - **Registration:** chief ray 0.000 px on both rigs; the LO covers the test pupil 1.000 and overfills it by 34 px (radius ratio 1.215), so an offset under that is a fill question, not a registration one.
 - **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms after piston, mostly tilt — the LO collimator's wavefront against the test arm, frozen into the null as the interferometer freezes its reference; its *motion* is the LO-drift row (slide 8).
 - **Contrast:** 0.982 at an LO/test power ratio of 1.47, as 2√r/(1 + r) says; the vector-mode field phase measures −kW on both decks (the known conjugate).
 ::: right
+![The node: the beamsplitter and compensator, the LO entering where the reference flat's return did, the recombination into the camera leg (the record's polarizing elements shown; the plain-splitter train is scored)](figs/cophi_layout_node.png){h=2.9}
 - **Two findings that matter for any traced LO:** the geometric tail places the detector field by *ray index*, not camera position — the LO's own collimator makes the per-index null 681 nm where the by-position null is 0.45 nm, so the LO is placed on the test pixels by position; and the plain mirror train had inherited a source trim solved *with* the polarizer plate — without it OAP1 was fed off focus (an 84 nm defocus null), now trimmed to zero.
 - **Two trains priced:** the record's polarizing train (input polarizer, analyzer) and Feng's plain splitter.  Picometers identical — the camera is well-bound; the record's train costs light only (test throughput 0.271 vs 0.408, ×1.5 laser).  The plain splitter is the layout scored.
-~ Stage bench (`runs/bench_{lens,oap}`), gate `tCophiBench` 9/9 (registration, poke 1.001 converged, LO tilt, no-fringe refused by name, dark camera refused).
+~ Stage bench (`runs/bench_{lens,oap}`; the layout = `bench_oap_vlayout.png`, the engine's own render), gate `tCophiBench` 9/9 (registration, poke 1.001 converged, LO tilt, no-fringe refused by name, dark camera refused).
 
 ## Reading the 30 nm working surface, station by station | The same mirror command through the heterodyne train on the mirror rig, plain splitter; the last column is the raw map against the engine's own field
 ::: full
