@@ -81,19 +81,12 @@ def mirror(ax, x, y, ang_deg, size=1.0, color=INK, lw=3):
 
 
 def draw(multi):
-    Hh = H + (2.4 if multi else 0)
+    Hh = H + (2.4 if multi else 0) - 1.5
     fig = plt.figure(figsize=(26, 26 * Hh / W), dpi=200)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_xlim(0, W); ax.set_ylim(0, Hh); ax.axis("off")
 
-    title = ("COPHI as the fifth DM gauge -- our implementation of Feng's four-frame method, "
-             + ("TWO COLORS frequency-multiplexed on one camera (capture from cold)" if multi
-                else "one color (632.8 nm), the hold job"))
-    label(ax, 0.6, Hh - 0.55, title, fs=19.5, bold=True)
-    label(ax, 0.6, Hh - 1.05, "after Feng Zhao, COPHI_for_DM_gauge.pptx slide 8; every box is a component of the TG96 bench "
-          "(templates/40_benches/tg_psi_dm96_oap + cophi_dm96) or a stage of dm_gauge_lib; "
-          "blue = RF / timing, red = PM fiber, green = free-space beam, gray = data", fs=12.3, color=GRAY)
-
+    # (no in-figure title: the slide carries it -- Dave 2026-10-12)
     # ------------------------------------------------------------------ RF / timing (top left)
     ro = 0.0 if not multi else 2.4                   # the RF column rides up in the two-color figure
     rb = box(ax, 3.2, 16.8 + ro, 2.6, 1.0, "10 MHz Rb standard\n(SRS FS725 class)", fs=12.3)

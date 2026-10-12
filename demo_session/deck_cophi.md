@@ -18,23 +18,23 @@ Feng Zhao's heterodyne camera interferometer, scored on the same bench, the same
 D. C. Redding, with Claude Code (TO: the bench stages).
 October 2026.  Working record.
 DRAFT — pending review.
-~ Feng's proposal (COPHI_for_DM_gauge.pptx, 2026-05-19): a single-frequency laser split to two AOMs at 80 MHz and 80 MHz + 7.5 Hz on a Rb standard, a fiber LO combined before a 30 fps camera imaging the DM, four frames per beat, the four-frame phase; purpose: HOLD — each DM in a local loop against drift.  This deck answers: what does that read on our bench, and what does it cost.
+~ Feng's proposal (COPHI_for_DM_gauge.pptx, 2026-05-19): a single-frequency laser split to two AOMs at 80 MHz and 80 MHz + 7.5 Hz on a Rb standard, a fiber LO combined before a 30 fps camera imaging the DM, four frames per beat, the four-frame phase.  Purpose: to hold each DM in a local loop against drift, to << 10 pm.  What does that read on our bench, and what does it cost?
 
-## Feng's proposal, in one slide | A heterodyne interferometer whose phase steps are set by frequency, not by a piezo, with a fiber-fed local oscillator at the camera; the stated purpose is drift sensing for a DM in a local control loop
+## Feng's proposal, in one slide | A heterodyne interferometer whose phase steps are set by frequency, not by a piezo, with a fiber-fed local oscillator at the camera, and an array detector providing many parallel channels to resolve 96 × 96 actuators
 ::: left
 - **The layout:** laser → 1×2 coupler → AOM-1 (80 MHz) and AOM-2 (80 MHz + 7.5 Hz), both synthesizers on a 10 MHz Rb standard; the measurement beam to the DM, the LO fiber to a splitter before the camera; the ×4 multipliers mixed to a 30 Hz camera trigger: four frames per 7.5 Hz fringe cycle.
 - **The algorithm:** I = I₀ (1 + γ cos(φ + 2π f t)); frames at α = 0, π/2, π, 3π/2; φ = atan2(I₄ − I₂, I₁ − I₃); surface = ½ (φ/2π) λ (double pass).  Backup: the N-frame least-squares solution (Zygo's four-step is N = 4).
-- **The purpose:** DMs drift (material physics, "floating electrodes", ~2 %/K); run each DM in a local loop to hold it — our job 3.  Not stated: the camera, the photon budget, the error terms, a number.
+- **The purpose: stabilize the DM!**  Run each DM in a local loop to hold it — our job 3.  Not stated: the camera, the photon budget, the error terms, a number.
 ::: right
 - **What transfers from the gauge deck unchanged:** the bench (both rigs), the 96 × 96 DM truth, the 30 nm working surface, the response matrix measured through the reading, the hold loop, the capture ladder, the photon rows.
 - **What is new:** the LO arm (a fiber tip and collimator where the reference flat sat); frequency-set steps; each frame integrating a quarter of the beat; the LO's wavefront drift; the differential fiber phase within a scan; trigger jitter; a camera chosen for the job.
 - **What is absent by construction:** the polarizing train — no analyzer, no quarter-wave plates, the same polarization in both arms — so the polarization gain the record's interferometer carries (0.983–1.004) does not exist here.
 ~ Feng's slide 8 is the implementation example this deck's block diagrams follow; TOM3 (SPIE 6268) is the photodiode heritage.
 
-## COPHI in our terms: the four-step run continuously | The record interferometer's piezo four-step with the steps set by a Rb-clocked beat, a quarter-cycle integrating bucket per frame, and a fiber LO; the reconstruction is the same
+## COPHI on the DM Gauge bench: the four-step run continuously | The record interferometer's piezo four-step with the steps set by a Rb-clocked beat, a quarter-cycle integrating bucket per frame, and a fiber LO; the reconstruction is the same
 ::: full
-![](figs/cophi_block_single.png){h=5.9}
-~ One color: the RF chain, the two PM fibers, the LO at the reference flat's seat, the bench, the camera, the four-bucket phase, the matrix estimator and the hold loop — every box a component of the bench or a stage of the gauge library, the model's error terms annotated (`make_cophi_block_fig.py`; the lock-in camera is the dashed alternative, slide 10).
+![](figs/cophi_block_single.png){h=6.1}
+~ COPHI as the fifth DM gauge — our implementation of Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench; blue = RF/timing, red = PM fiber, green = free-space beam, gray = data.  (`make_cophi_block_fig.py`; the lock-in camera is the dashed alternative, slide 10.)
 
 ## The reading's algebra, pinned before the bench | What the camera records, how the phase and the surface come out of it, and what the gate measured: the quarter-cycle integration costs 10 % of contrast, a step error is not cured by more frames, and the photon law carries read noise
 ::: full
@@ -47,7 +47,7 @@ DRAFT — pending review.
 - **Photons (6):** shot noise ∝ 1/√I₀ (slope −0.500 ± 0.02 over two decades), read noise in quadrature.  A fiber walk or trigger jitter *within* a scan is a fixed fraction of its size (0.13 w), no better with 8 buckets — no algorithmic cure.
 ~ Gate `tCophi` (8 tests) pins each line; `dm_gauge_lib/dmg_cophi_*`; TeX source `deck_cophi_equations.tex`.
 
-## The bench with the LO arm | The LO is a fiber tip and collimator with its powered face at the reference flat's seat; it registers on both rigs to a pixel and the flat-DM null is sub-nanometer
+## The LO on the DM Gauge bench replaces the IFO's reference flat | The LO is a fiber tip and collimator with its powered face at the reference flat's seat; it registers on both rigs to a pixel and the flat-DM null is sub-nanometer
 ::: left
 ![The mirror rig from above with the LO arm in place: source arm red, LO arm purple (fiber tip at right, collimator at the reference flat's seat), test arm to the DM blue, camera leg green](figs/cophi_layout_oap.png){h=2.9}
 - **Registration:** chief ray 0.000 px on both rigs; the LO covers the test pupil 1.000 and overfills it by 34 px (radius ratio 1.215), so an offset under that is a fill question, not a registration one.
