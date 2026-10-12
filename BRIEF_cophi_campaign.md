@@ -404,3 +404,31 @@ temporal, two-color, or neither.
   an active fiber-phase servo).
 - **converged estimator — DONE 2026-10-11 (TO, resources "dm_gauge_lib: the converged estimator" + cba9b6e the fiber budget in engineering units):** `dm_gauge_lib/dmg_converge.m` (the shared `iterate_` form), `tg96_run battery.est_mode 'onestep'` (default = the record) | `'converged'` | `'both'`, `dmg_act_fit opts.converge`; gate `tConvergedEst` 4/4 (red leg: one-step < 0.999 on an exact reading; converged 1.0000 ± 1e-4 on a matrix and a stencil forward model; the noise trade MEASURED: ×2.1 white-noise floor at a zero-update stop, 2 steps when stopped at the one-step floor).  Re-score noise-free, both rigs, 5–7 steps to ≤ 0.001 pm; the one-step rows reproduce `battery_*` and `redo96_*ph` to the digit.  **Converged gains (single / grid / rand10): H lens 1.0008 / 1.0022 / 1.0024, H mirror 1.0000 / 1.0005 / 1.0005; I lens 1.0064 / 1.0106 / 1.0112, I mirror 0.9887 / 0.9892 / 0.9896 → the record interferometer's polarization gain in the open: I/H = 1.0056–1.0088 (lens), 0.9887–0.9891 (mirror).**  Open, small: H lens keeps +0.1–0.2 % when converged (a lens-rig matrix-model term; first candidate the box window truncating the influence wings; the mirror rig is exact).  **Pinned (C5), for the ZWFS re-score: `dmg_act_fit`'s unknowns are ALL actuators with lit-masked data, so with an unlit border the converged gain PLATEAUS (0.962 at a w = 1.0 stencil); CC's ruling 2026-10-11: the estimator's unknown set = the CONTROL set (lit by the record's `lit_margin` rule, Dave's descent-stall ruling) for every gauge — an unobservable actuator does not belong among the unknowns.**  Fiber budget in engineering units: 0.81 nm of differential OPD per frame, 24 nm/s, ≈ 2.4 mK/s per metre of uncommon fiber at k_T = 1e-5/K (coefficient to verify).  Records `cophi_dm96/runs/conv_H_{lens,oap}/`, `tg_psi_dm96_oap/runs/conv_I_{lens,oap}ph/`.
 - **loop — DONE 2026-10-12 (TO, resources 25853f5; + 5a2e3f9 the unknown-set ruling, `tConvergedEst` C5 1.000000; + f7d37d7 `dmg_loop opt.delay`, `tDmgLoop` 17/17):** plain splitter, the record's knobs (g 0.5, K 60, seed 77), both estimators, M readings averaged per cycle to reach 3 pm.  **Hold steady state, pm, lens / mirror:** baseline camera (M 120, a cycle every 16 s): noise 2.75 / 2.68, walk 3.60 / 3.54, thermal 10.3 (lag rate/gG — every gauge), camera drift 2.85 / 2.77 (immune), one-cycle delay 3.65 / 3.55 (the delay costs ~0.9 pm), **LO drift 0.1 nrad tilt + 1 pm defocus per cycle: 29.6 / 29.4**; **Photonfocus (M 60, a cycle every 1.6 s): noise 2.60 / 2.53 — 3 pm held 10× faster**; fiber at the corrected budget 4.21 / 4.12 piston-free (= the √2 linearity prediction), at 3× the budget 9.9.  One-step = converged to 0.1 pm on every row.  **Two deck findings:** (1) the LO is a term the loop cannot see past — it reads LO drift as DM drift and the DM follows it; the LO pointing must hold ~10 prad per cycle (~10 pm of fiber-tip lateral motion at F1) or be referenced (the brief's 1 µrad would be ~24 nm of DM tilt per cycle); (2) the fiber walk is 30–40 % piston — `dmg_loop` now reports the piston-free `ss_pf` / `bias_pf` / `sig_n_pf` beside the record metric, identical on every non-fiber row.  Records `runs/loop_{lens,oap}_plain/`, `runs/loopfib_*/`.  Remaining: capture, format, figs.
+- **capture / format / figs — DONE 2026-10-12 (TO, resources 30b124e):**
+  **Capture:** truth = the engine's per-pixel OPD unwrapped (H = −ΔOPD/2 to 3e-7 nm noise-free).
+  Two colours 632.8 + 652.8 nm (Λ 20.65 µm, range ±5.2 µm) frequency-multiplexed on the SAME
+  8 frames (7.5 / 3.75 Hz beats, each read by `dmg_cophi_recon` at its own buckets; crosstalk
+  4e-16 rad; λ₂ a re-trace of both decks): **zero wrong fringe orders on the whole capture ladder
+  to 480 nm rms, noise-free and on both cameras** (0.15 / 0.10 nm per pixel); single colour wraps
+  from 40 nm rms (74 % wrong at 480).  **So 200 nm rms from cold is captured in ONE multiplexed
+  reading (0.27 s): the §9.2 ladder needs one rung for this job**; any Δλ from 1 to ~100 nm
+  resolves (fine requirement 1.7 nm at Δλ 20 vs ~0.1 nm per pixel).  1.3 µm row analytic (range
+  ×2.1).  Caveat: the bench lenses are dispersion-free (fixed n 1.5), so the re-trace cannot show
+  the tail's chromatic refocus — ~0.5 mm on the focuser for fused silica at Δλ 20 nm (to verify);
+  its static part freezes into each colour's null; the pupil-image sharpness effect is open.
+  **Temporal unwrapping** holds at 0.9 × λ/4 per reading, fails at 1.1 ×: 1.19 µm/s (baseline)
+  / 5.9 µm/s (Photonfocus) at the peak pixel, ~0.24 / 1.2 µm/s rms for a 30 nm-class shape.
+  **Format (the lock-in class, heliCam C4 sheet: 512 sites = 5.45 per pitch, 500 ke well, 1 kHz
+  I/Q):** WELL-CAPPED at 1 kHz from 1e9 e/s — 34 pm per I/Q sample, ~1.07 pm in 1 s, **~1.1 s
+  per pm = 40× the Photonfocus, 400× the baseline**; the well-free rows beside (0.29 s per pm at
+  1e9 e/s, 29 ms at 1e10) — "well-free" is a device property to VERIFY (a faster I/Q rate lifts
+  the cap); the sheet has no phasemeter field, added in quadrature if it appears.  **Figs:**
+  mirror rig, plain splitter, noise-free, deck format: the 30 nm surface reads 31.95 nm rms,
+  read − engine 0.31 pm rms; the flat reads 0.  **Fix found en route:** the plain MIRROR train
+  inherited the record's `oap.SRC_TRIM` (−0.37 mm), solved WITH the polarizer plate in the
+  diverging leg — without the plate OAP1 was fed off focus (an 84 nm defocus null); now
+  `SRC_TRIM 0` for the plain mirror rig: null 0.746 nm; capture identical; noise floor 54.1 →
+  53.2 pm; walk budget 3.4e-3 → 3.6e-3.  The plain-mirror LOOP rows ran mis-fed; differential,
+  agreeing with the lens rig to 1–3 % — rerun queued (3.4 h, background).  Records
+  `runs/capture_*_plain/`, `format_lens_plain/`, `figs_oap_plain/`.  **All brief stages are in.**
+  Open: `tCophiBench`'s poke / LO-tilt / no-interference / well = 0 legs (§3).
