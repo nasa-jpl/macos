@@ -104,20 +104,20 @@ DRAFT — pending review.
 -- a fiber walk or trigger jitter within a scan passes through at 0.13 of its size, with 4 or 8 buckets alike — no algorithmic cure
 ~ Gate `tCophi` (8 tests) pins each line; `dm_gauge_lib/dmg_cophi_*`; TeX source `deck_cophi_equations.tex`.
 
-## The LO on the DM Gauge bench replaces the IFO's reference flat | A fiber tip and collimator, its powered face at the reference flat's seat; it registers on both rigs to a pixel and the flat-DM null is sub-nanometer
+## The LO on the DM Gauge bench replaces the IFO's reference flat | A fiber tip and collimator, its powered face at the reference flat's seat, on both rigs; it registers to a pixel and the flat-DM null is sub-nanometer
 ::: left
-![The mirror rig from above, the whole LO leg in place: source arm red; LO leg purple, from the fiber tip (right) through the LO collimator at the reference flat's seat to the beamsplitter; test arm to the DM blue; camera leg green](figs/cophi_layout_oap.png){h=3.05}
+![Lens rig from above: source arm red (fiber tip at left, collimator L1); LO leg purple, from its fiber tip (right) through the LO collimator at the reference flat's seat to the beamsplitter; test arm to the DM blue; camera leg green](figs/cophi_layout_lens.png){h=3.0}
 - **Registration:** chief ray 0.000 px on both rigs; the LO overfills the test pupil by 34 px (radius ratio 1.215).
 - **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms, mostly tilt.
 -- the LO collimator's own wavefront, frozen into the null as the IFO freezes its reference; its motion is the LO-drift row (slide 13)
 - **Contrast:** 0.982 at LO/test power 1.47, as 2√r/(1 + r) says.
 ::: right
-![The node: the beamsplitter and compensator, the LO entering where the reference flat's return did, the recombination into the camera leg (the record's polarizing elements shown; the plain-splitter train is scored)](figs/cophi_layout_node.png){h=2.5}
+![Mirror rig from above: source arm red; LO leg purple, from its fiber tip (right) through the LO collimator at the reference flat's seat to the beamsplitter; test arm to the DM blue; camera leg green (OAP1 collimates, OAP2 focuses)](figs/cophi_layout_oap.png){h=3.0}
 - **Two findings for any traced LO:**
 -- the tail places the detector field by ray index, not camera position (null 681 nm by index, 0.45 nm by position) — the LO is placed by position
 -- the plain mirror train had kept a source trim solved with the polarizer plate: OAP1 fed off focus (84 nm defocus) — now trimmed to zero
 - **Two trains priced:** the polarizing train and Feng's plain splitter read the same picometers (the camera is well-bound); the polarizing train costs light only (throughput 0.271 vs 0.408, ×1.5 laser).  The plain splitter is scored.
-~ Stage bench (`runs/bench_{lens,oap}`; the layout = `bench_oap_vlayout.png`, the engine's own render), gate `tCophiBench` 9/9 (registration, poke 1.001 converged, LO tilt, no-fringe refused by name, dark camera refused).
+~ Stage bench (`runs/bench_{lens,oap}`; the layouts = `bench_{lens,oap}_vlayout.png`, the engine's own renders), gate `tCophiBench` 9/9 (registration, poke 1.001 converged, LO tilt, no-fringe refused by name, dark camera refused).
 
 ## Reading the 30 nm working surface, station by station | The same mirror command through the heterodyne train on the mirror rig, plain splitter; the last column is the raw map against the engine's own field
 ::: full

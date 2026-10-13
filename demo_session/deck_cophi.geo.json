@@ -136,12 +136,6 @@
   }
  },
  "The LO on the DM Gauge bench replaces the IFO's reference flat": {
-  "img:cophi_layout_oap.png": {
-   "x": 0.45,
-   "y": 1.42,
-   "w": 6.3,
-   "h": 3.05
-  },
   "txt:Stage bench (runs/bench_{lens,oap}": {
    "x": 0.5,
    "y": 6.75,
