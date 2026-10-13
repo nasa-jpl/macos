@@ -403,10 +403,20 @@ C  3. Begin iElt loop to trace beams between each pair of elements
 	  iNextElt=nElt
 	END IF
 	nBadRays=0
-!-->  Reset per-ray status for this trace
-	RayStatus(:) = RayStat_OK
-	RayFailElt(:) = 0
-	RayFailMsg(:) = ' '
+!-->  Reset per-ray status for this trace -- from the SOURCE only
+!     (2026-10-12).  A trace RESTARTED at iStartElt > 0 keeps each
+!     ray's recorded failure: it was reset here, and a ray lost before
+!     the restart was then re-recorded at the restart's first element
+!     (an obscured ray at iEndElt+1, a missed one at iStartElt+1).  The
+!     lost count of a restart is the rays already lost -- what that
+!     re-recording counted.
+	IF (iStartElt.EQ.0) THEN
+	  RayStatus(:) = RayStat_OK
+	  RayFailElt(:) = 0
+	  RayFailMsg(:) = ' '
+	ELSE
+	  nBadRays=COUNT(RayStatus(1:nRay).NE.RayStat_OK)
+	END IF
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
 	nGridIdxOvf = 0

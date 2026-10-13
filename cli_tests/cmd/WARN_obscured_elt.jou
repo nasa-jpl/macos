@@ -1,0 +1,14 @@
+# The lost-ray summary names the element that CLIPPED each obscured ray (PLAN_CONSOLIDATION
+# 1.2, 2026-10-12).  CTRACE stamped RayFailElt only after its element loop, with the loop's
+# exit value iEndElt+1, and a RESTARTED trace (opd 6 after opd 2 resumes at element 3) reset
+# every ray's status and re-stamped the earlier losses at the restart.  Rx_Cass_FarField's
+# central obscuration is element 1 (SecMirObs): every obscured ray, from a trace from the
+# source AND from a restart, now reads element 1.  Pre-fix: no per-element line (the
+# RayFailElt values were 3 and 7 -- tRayFailElt reads them through the api).
+old $RES/pymacos/tests/Rx/Rx_Cass_FarField.in
+opd 2
+/null
+opd 6
+/null
+# EXPECT: Obscured:\s+3534\s*\n\s+at element\s+1:\s+3534[\s\S]*Obscured:\s+3534\s*\n\s+at element\s+1:\s+3534
+# EXPECT-NOT: at element\s+([2-9]|\d\d+):

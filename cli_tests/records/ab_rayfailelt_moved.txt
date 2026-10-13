@@ -1,0 +1,21 @@
+# RayFailElt = the clipping element: the corpus A/B of the WARN categories (PLAN_CONSOLIDATION 1.2, 2026-10-12)
+#
+# 406-deck A/B corpus (decks_all.txt), ifx, model 256, LOAD + 'opd nElt': pre = prefix10 (e8c80ea), post = this commit.
+# status / nElt / nPass / lost / RMS / P-V: 0 decks changed.  The end-of-trace fallback stamp (element > nElt): 0 decks.
+# The Surface-miss / Obscured split moved on the decks below: rays CLIPPED at one element and then lost at a later one
+# (GO TO 14 skipped CTRACE's end-of-ray obscuration stamp, so they read 'Surface miss' at the later element; they now
+# read Obscured at the clip, as CPROPAGATE always recorded).  On the NS segmented decks (IRIS/OPTIIX variants) these
+# are rays outside every candidate segment's aperture.  Columns: deck | miss pre -> post | obscured pre -> post |
+# obscured per element (post, element:count).
+~/dev/MACOS_res_dev/segmirmaker/test_in/e5pieZ.in | 12454 -> 11438 | 0 -> 1016 | 2:1016
+~/dev/MACOS_sandbox/ns_griddata_variants/iris_dp_conic.in | 37788 -> 35598 | 525 -> 2715 | 15:2715
+~/dev/MACOS_sandbox/ns_griddata_variants/iris_dp_GD.in | 37788 -> 35598 | 525 -> 2715 | 15:2715
+~/dev/MACOS_sandbox/ns_griddata_variants/optiix_dp_conic.in | 37792 -> 35600 | 525 -> 2717 | 15:2717
+~/dev/MACOS_sandbox/ns_griddata_variants/optiix_dp_gd.in | 51073 -> 0 | 0 -> 51073 | 1:51073
+~/dev/MACOS_sandbox/ns_griddata_variants/optiix_dp_zgd.in | 51073 -> 0 | 0 -> 51073 | 1:51073
+~/dev/MACOS_sandbox/old_Rx/iris_dp_ZGD.in | 37788 -> 35598 | 525 -> 2715 | 15:2715
+~/dev/MACOS_sandbox/old_Rx/j18dcWithStop.in | 23544 -> 23378 | 10413 -> 10579 | 4:167;32:203;33:115;34:110;35:9984
+~/dev/MACOS_sandbox/VSG/handoff_CCL_2026-07-24/opt_work/vsg_base_clean.in | 2066 -> 1886 | 0 -> 180 | 1:180
+~/dev/MACOS_sandbox/VSG/handoff_CCL_2026-07-24/opt_work/vsg_optimized.in | 1830 -> 1650 | 0 -> 180 | 1:180
+~/dev/MACOS_sandbox/VSG/handoff_CCL_2026-07-24/vsg_rough.in | 3002 -> 0 | 0 -> 3002 | 1:3002
+~/dev/macos/ZGD_test_files/tst_save_keys.in | 0 -> 0 | 0 -> 5 | 1:5

@@ -3008,7 +3008,11 @@ C  Find nominal incidence point
 !     by that geometry.  So tolerate a chief ray whose only failure is
 !     obscuration (the on-axis chief ray of any centrally-obscured
 !     telescope); fail only on a genuine geometric miss/bracket.
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+!     LRayOK(1) as well (2026-10-12): obscuration is now stamped at the
+!     clip, so a chief ray clipped and THEN lost reads Obscured -- the
+!     status alone no longer implies a valid geometric path.
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Nominal chief ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -3032,7 +3036,8 @@ C    First try translating differential ray:
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Differential ray (x-t) becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -3054,7 +3059,8 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	  IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &        RayStatus(1).EQ.RayStat_Obscured)) THEN
 	    WRITE(*,*)'Differential ray (x-r) becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
@@ -3083,7 +3089,8 @@ C    First try translating differential ray:
      &	  nBadRays,StartIndRef,StartExtinc,
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Tilted differential ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -3105,7 +3112,8 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	  IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &        RayStatus(1).EQ.RayStat_Obscured)) THEN
 	    WRITE(*,*)'Rotated differential ray becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
@@ -3353,10 +3361,20 @@ C  0. Initialize parameters
 	End If
 
 	nBadRays=0
-!-->  Reset per-ray status for this trace
-	RayStatus(:) = RayStat_OK
-	RayFailElt(:) = 0
-	RayFailMsg(:) = ' '
+!-->  Reset per-ray status for this trace -- from the SOURCE only
+!     (2026-10-12).  A trace RESTARTED at iStartElt > 0 keeps each
+!     ray's recorded failure: it was reset here, and a ray lost before
+!     the restart was then re-recorded at the restart's first element
+!     (an obscured ray at iEndElt+1, a missed one at iStartElt+1).  The
+!     lost count of a restart is the rays already lost -- what that
+!     re-recording counted.
+	IF (iStartElt.EQ.0) THEN
+	  RayStatus(:) = RayStat_OK
+	  RayFailElt(:) = 0
+	  RayFailMsg(:) = ' '
+	ELSE
+	  nBadRays=COUNT(RayStatus(1:nRay).NE.RayStat_OK)
+	END IF
 	nZPFailMsg = 0
 	nFwdRootFlip = 0
 	nGridIdxOvf = 0
@@ -4755,6 +4773,21 @@ C  End of element section
 !<--
 	    END IF
 
+!-->  Obscuration is stamped at the element that CLIPPED the ray
+!     (2026-10-12, PLAN_CONSOLIDATION 1.2).  It was stamped only after
+!     the element loop, with the loop's exit value iEndElt+1 (nElt+1
+!     for a full trace) -- and never for a ray that went on to miss a
+!     later surface (GO TO 14 skips that stamp; such a ray read 'Miss'
+!     at the later element).  CPROPAGATE, element by element, has
+!     always recorded Obscured at the clip; the two now agree.
+!     SetRayFail keeps the first failure, so this fires once per ray.
+	    IF (.NOT.L1(iRay)) THEN
+	      IF (SetRayFail(iRay,RayStat_Obscured,iElt,
+     &            'obscured/vignetted'))
+     &        nBadRays=nBadRays+1
+	    END IF
+!<--
+
 	    ! Save incident chief ray state:
             ! direction, intersection point, surf nomal, -jzlou
             If (iRay==1) Then
@@ -4863,6 +4896,9 @@ C	  END IF
 ! #endif
 
 !-->  Record obscuration (if ray passed surfaces but was blocked).
+!     FALLBACK since 2026-10-12: the clip itself is stamped inside the
+!     element loop above; this catches a ray whose pass flag was
+!     cleared without that stamp (none known), at iEndElt+1.
 !     Bump nBadRays only on first-failure (SetRayFail is also called
 !     from CPROPAGATE; an already-obscured ray must not be counted
 !     again at every subsequent propagation pass).
@@ -5393,6 +5429,7 @@ C***********************************************************************
 	IMPLICIT NONE
 	INTEGER nElt,iElt,nBadRays,iRay
 	INTEGER :: nMiss,nObs,nBrkt,nOther
+	INTEGER :: nObsAt(0:nElt+1)
 	LOGICAL LEltOK(nElt)
 
   124	FORMAT(' One or more rays become undefined at element',i4)
@@ -5423,6 +5460,23 @@ C***********************************************************************
 	END DO
 	IF (nMiss.GT.0)  WRITE(*,126) nMiss
 	IF (nObs.GT.0)   WRITE(*,127) nObs
+!-->  ... and the element that clipped them (2026-10-12; RayFailElt is
+!     the clipping element since then -- nElt+1 is the end-of-trace
+!     fallback stamp)
+	IF (nObs.GT.0) THEN
+	  nObsAt=0
+	  DO iRay=1,nRay
+	    IF (RayStatus(iRay).EQ.RayStat_Obscured) THEN
+	      iElt=MAX(0,MIN(nElt+1,RayFailElt(iRay)))
+	      nObsAt(iElt)=nObsAt(iElt)+1
+	    END IF
+	  END DO
+	  DO iElt=0,nElt+1
+	    IF (nObsAt(iElt).GT.0) WRITE(*,135) iElt,nObsAt(iElt)
+	  END DO
+	END IF
+  135	FORMAT('     at element ',i4,':  ',i8)
+!<--
 	IF (nBrkt.GT.0)  WRITE(*,128) nBrkt
 	IF (nOther.GT.0) WRITE(*,129) nOther
 	IF (nZPFailMsg.GT.mZPFailMsg)
