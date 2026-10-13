@@ -267,7 +267,7 @@ DRAFT — pending review.
 | 5 – 10 | single actuators resolved with margin; ±1 px = ±0.1 pitch registration | same | same | 0.25–1 Mpx, ~0.5 Gb/s; per-pixel solve ∝ pixels | ✓ 1k² | ✓ two images per pol. camera | Feng 9.4; C4M 10.6 |
 | 20 | no gauge gain; read noise per sample ↑ (binning restores it) | same | same | 5 Mpx, 2–5 Gb/s | pco.edge class | — | pco.edge GS 21 |
 - **Measured vs inferred:** every record is at 3.3–4 px per actuator (the IFO's mirror-rig image, distorted by more than a pitch at the edge, still reads to 2 pm); the collapse band is the blur demo's; the 5–20 rows follow from the well-bound photon rule and the data rates.
--- **a per-gauge sweep at 1, 1.5, 2 and 4 px per actuator is a one-day `format` run — the item that turns this table into records**
+-- **a per-gauge sweep at 1, 1.5, 2 and 4 px per actuator is running now**
 - **Where the three differ:** the IFO and HET read against a reference and are indifferent above 2 px; the vector ZWFS solves pixel by pixel from two images, wants ≥ 4, and pays processing for more; the lock-in fixes HET's sampling at the device (5.3 / 10.6) with the processing on-chip.  Regularization and calibration do not change with pixel count above 2.
 ~ Blur demo (`pupil_blur_demo`, REPORT_pupil_blur); gauge deck (IFO, vZWFS); stages noise and format (HET); ruling 6 (2026-10-11).  Data rates: pixels × 16 bit × frame rate.
 
@@ -292,7 +292,8 @@ DRAFT — pending review.
 - **Consider a swappable splitter** (Feng's layout); the current polarizing train costs ×1.5 of laser and nothing else.
 - **Camera:** the Photonfocus-class 1k global-shutter part (42 s per pm, 3 pm held in 1.6 s cycles) over Feng's baseline (7 min, 16 s); the lock-in camera faster yet.
 -- verify the survey against the vendor sheets before a part is named
--- **the lock-in camera is the fast form** (3.4 s per pm as surveyed, 0.125 s cycles) — one vendor question from a number
+- **The lock-in camera is the fast form:** 3.4 s per pm as surveyed, 0.125 s cycles.
+-- verify all performance specs with the vendor
 - **Implement two colors from the start:** capture from cold in one reading; at 1.3 µm, telecom tunables and twice the base range — the InGaAs stage.
 ::: right
 - **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the per-gauge resolution sweep (slide 18); the polarization-camera timings through the noise hook (slide 17).
