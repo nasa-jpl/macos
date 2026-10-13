@@ -3584,12 +3584,13 @@ C Set Mon Zernike coefficients for FreeForm surface
 
 	  iEltToiWF(iElt)=0
 	  LEltOK(iElt)=.TRUE.
+	  SrfTypeTr(iElt)=SrfType(iElt)
 	  IF (SrfType(iElt).EQ.5) THEN
 	    IF (ifIntSrfSet(iElt)) THEN
 	      iIntSrf=iEltToIntSrf(iElt)
 	      ifIntSrfOK(iElt)=.TRUE.
 	    ELSE
-	      SrfType(iElt)=2
+	      SrfTypeTr(iElt)=2  ! base Conic; SrfType kept, 2026-10-12
 	      iIntSrf=1
 	      ifIntSrfOK(iElt)=.FALSE.
 	    END IF
@@ -3601,10 +3602,8 @@ C Set Mon Zernike coefficients for FreeForm surface
      &	      (ApType(iElt).GT.0)) THEN
 	    LEltObs(iElt)=.TRUE.
 
-	    CALL DEQUATE(zObs(1,iElt),psiElt(1,iElt),3)
-	    CALL DXPROD(yObs(1,iElt),zObs(1,iElt),xObs(1,iElt))
-	    CALL DUNITIZE(yObs(1,iElt))
-	    CALL DXPROD(xObs(1,iElt),yObs(1,iElt),zObs(1,iElt))
+	    CALL OrthoObsFrame(psiElt(1,iElt),xObs(1,iElt),
+     &      yObs(1,iElt),zObs(1,iElt))  ! 2026-10-12: no Rx rewrite
 	  ELSE
 	    LEltObs(iElt)=.FALSE.
 	  END IF
@@ -3783,7 +3782,7 @@ C       Loop through each element
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	        IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &          EltCoat(iElt),EltCoatThk(:,iElt),
@@ -3949,7 +3948,7 @@ c		NextElt(iElt)=NextNonSeg
      &	          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	         ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	         RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	          XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	          IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &		  EltCoat(iElt),EltCoatThk(:,iElt),
@@ -3988,7 +3987,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       h1HOE(1,iElt),h2HOE(1,iElt),OrderHOE(iElt),
      &	       CWB*WaveHOE(iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
@@ -4022,7 +4021,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -4056,7 +4055,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -4092,7 +4091,7 @@ c             NextElt(PrevNonSeg)=iElt
      &         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &         ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &         RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &         OrderHOE(iElt),
      &         XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &         IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -4138,7 +4137,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	        IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &          EltCoat(iElt),EltCoatThk(:,iElt),
@@ -4381,7 +4380,7 @@ C	Here when element number is determined...
      &	               xObs(1,imin),yObs(1,imin),zObs(1,imin),
      &	               RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),
      &	               RayE(1,iRay),dxidxim1(1,1,imin),dxidui(1,1,imin),
-     &	               SrfType(imin),
+     &	               SrfTypeTr(imin),
      &	               XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &                 IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),
      &                 mDP,EltCoat(imin),EltCoatThk(:,imin),
@@ -4436,7 +4435,7 @@ C	Here when element number is determined...
      &	                RayPos(1,iRay),
      &	                RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
      &	                dxidxim1(1,1,imin),dxidui(1,1,imin),
-     &	                SrfType(imin),
+     &	                SrfTypeTr(imin),
      &	                XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	                IWORK(1,iIntSrf),DWORK(1,iIntSrf),
      &	                NDP(iIntSrf),mDP)
@@ -4628,7 +4627,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        LensArrayType(iElt),LensArrayWidth(iElt),
      &          IsVarIndRefElt(iElt),TotalLensletsArray(iElt),iElt,
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,

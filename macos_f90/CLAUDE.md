@@ -130,8 +130,16 @@ Rx: an obscuration inside glass reported / SAVEd the glass index after any trace
 never had a stamp: its `nb` (the element's IndRef) is never assigned; a variable-index element
 delivers its per-ray index through `nc`/`ifnc` -> CTRACE's `NewIndRef`.  Measured: SAVE without a
 trace vs SAVE after `opd nElt` on 403 corpus decks -- `IndRef` 0 changed.  The same measurement found
-two OTHER trace-time mutations, open in PLAN_CONSOLIDATION 1.1b: `xObs` recomputed (105 decks) and
-`Surface= Interpolated` SAVEd as `Conic` (4 legacy decks).
+two OTHER trace-time mutations, CLOSED 2026-10-12: `xObs` recomputed (106 decks) -- the obscuration
+frame is now built ONCE at load by `OrthoObsFrameLoad` (math_mod; end of ChkDf2: an xObs within the
+dead band of the perpendicular is KEPT, so SAVE -> load -> SAVE stays a fixed point -- rebuilding it
+unconditionally turned e2e_pie's round trip 'ulp') and the traces' `OrthoObsFrame` keeps it unless it
+moves by more than round-off; and `Surface= Interpolated` SAVEd as `Conic` (4 legacy decks)
+-- an Interpolated surface with no data traces as its base conic through `SrfTypeTr` (elt_mod, set
+per trace, passed at the 22 dispatch call sites); `SrfType` is never written by a trace.  Re-run:
+`cli_tests/records/trace_rewrites.md` (0 and 0); gate `cli_tests/cmd/TRACE_keeps_rx.jou`.  **Rule:
+a trace reads the Rx and writes TRACE state; if it needs a modified copy of an Rx value, keep the
+copy (a `*Tr` array, a local), never overwrite the Rx array.**
 
 ## GRIN: only model 5 integrates; any other GradInd= LOSES its rays by name (2026-10-10)
 The Refractor's gradient-index branch (`elemsub.F`, `IsGrinRef`) implements ONLY

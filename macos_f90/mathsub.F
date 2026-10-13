@@ -2750,6 +2750,57 @@ C ********************************************************
 	END IF
 	END SUBROUTINE OrthoSrcFrame
 
+!-->  The obscuration / aperture frame of an element (2026-10-12, PLAN
+!     1.1b): z = psi, y = unit(z x xObs), x = y x z -- the recipe CTRACE,
+!     CPROPAGATE and SRTrace each ran at every trace, writing the result
+!     back into xObs.  A deck whose xObs is not perpendicular to psiElt
+!     (105 corpus decks) was therefore REWRITTEN by its first trace, and
+!     SAVE after a trace differed from SAVE before.  Now ChkDf2 runs it
+!     once at LOAD and the traces run it again, keeping the frame when
+!     the recomputed one differs by round-off only (the OrthoSrcFrame
+!     dead band): the first trace's frame is unchanged, a re-trace no
+!     longer walks it, and a psiElt changed since (an api setter) still
+!     moves it.
+	SUBROUTINE OrthoObsFrame(psi,xObs,yObs,zObs)
+	IMPLICIT NONE
+	REAL*8 psi(3),xObs(3),yObs(3),zObs(3)
+	REAL*8 x(3),y(3),z(3),d
+	CALL DEQUATE(z,psi,3)
+	CALL DXPROD(y,z,xObs)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	d=MAX(MAXVAL(ABS(x-xObs)),MAXVAL(ABS(y-yObs)),
+     &	      MAXVAL(ABS(z-zObs)))
+	IF (d.GT.DeadBandUlp*EPSILON(1d0)) THEN
+	  xObs=x
+	  yObs=y
+	  zObs=z
+	ELSE IF (d.GT.DeadBandQuietUlp*EPSILON(1d0)) THEN
+	  CALL DeadBandNote('obscuration frame',d/EPSILON(1d0))
+	END IF
+	END SUBROUTINE OrthoObsFrame
+
+!     ... and its LOAD form (ChkDf2).  At load yObs / zObs are not this
+!     deck's yet, so only xObs is judged: a declared xObs off the
+!     perpendicular by more than the dead band is replaced (the
+!     candidate frame, exactly what the first trace used to compute), one
+!     within it is KEPT and y / z are built from it -- so a SAVEd xObs
+!     reloads to itself (SAVE -> load -> SAVE a fixed point; without the
+!     keep, e2e_pie's round trip read 'ulp').
+	SUBROUTINE OrthoObsFrameLoad(psi,xObs,yObs,zObs)
+	IMPLICIT NONE
+	REAL*8 psi(3),xObs(3),yObs(3),zObs(3)
+	REAL*8 x(3),y(3),z(3)
+	CALL DEQUATE(z,psi,3)
+	CALL DXPROD(y,z,xObs)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	IF (MAXVAL(ABS(x-xObs)).GT.DeadBandUlp*EPSILON(1d0)) xObs=x
+	yObs=y
+	zObs=z
+	END SUBROUTINE OrthoObsFrameLoad
+!<--
+
 !-->  One line per run when an update is suppressed although it is
 !     larger than the measured round-off; every such event is counted
 !     (macos_api_mod deadband_notes_get).  Guards warn, never flood.

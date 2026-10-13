@@ -26,6 +26,13 @@ C***********************************************************************
         REAL*8,   DIMENSION(:),    ALLOCATABLE :: fElt,eElt,zElt,KcElt,KrElt,KrRx,KcRx
         REAL*8,   DIMENSION(:,:,:),ALLOCATABLE :: TElt
         INTEGER,  DIMENSION(:),    ALLOCATABLE :: nECoord,SrfType,EltType,EltID
+!-->  SrfTypeTr: the surface type a TRACE dispatches on (2026-10-12).  =
+!     SrfType, except an Interpolated surface with no data set traces as
+!     its base Conic -- which the trace used to do by REWRITING SrfType,
+!     so SAVE after a trace wrote Conic.  Set per trace (CTRACE /
+!     CPROPAGATE / SRTrace setup); SrfType stays the Rx's.
+        INTEGER,  DIMENSION(:),    ALLOCATABLE :: SrfTypeTr
+!<--
         CHARACTER(LEN=maxEltNameLength),
      &            DIMENSION(:),    ALLOCATABLE :: EltName
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
@@ -855,7 +862,7 @@ C***********************************************************************
           deallocate(SegCoord,RayToSegMap,RayID,RayWFMap,
      &               ObsType,IWORK,LnkElt,EltMRP, LEltMRP_FLG,
      &               EltType,nECoord,EltToSegMap,SegToEltMap,
-     &               PropType,ApType,nObs,iEltToiWF,SrfType,
+     &               PropType,ApType,nObs,iEltToiWF,SrfType,SrfTypeTr,
      &               LUpdateTElt_FLG,nObsRx,ObsTypeRx,ifAmplSrf,
      &               ifOPDModGrid,passRayIds,metBeamFlg,
      &               stat=m_err_elt)
@@ -976,6 +983,7 @@ C***********************************************************************
      &           ObsTypeRx(mObs,mElt),PropType(0:mElt),
      &           ApType(mElt),nObs(mElt),ifAmplSrf(mElt),
      &           iEltToiWF(mElt),SrfType(mElt),OpType(mElt),
+     &           SrfTypeTr(mElt),
      &           GlassType(mElt),EltGrp(0:mElt,0:mElt),
      &           EltCoat(0:mElt),nObsRx(mElt),ifOPDModGrid(mElt),
      &           passRayIds(mRay),DoeId(mElt),
