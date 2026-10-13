@@ -1,6 +1,7 @@
 % tst_hdr_unknown.in -- tst_calib_spot4.in with three unknown HEADER lines: OpdReRayfLen= twice (the
 % corpus misspelling of OPDRefRayLen=) and SegYgrid= (not a parsed key): PLAN_CONSOLIDATION 3.2,
-% cli_tests/cmd/Rx_header_unknown.jou.
+% cli_tests/cmd/Rx_header_unknown.jou.  2026-10-12: + OptFooKey=, a look-alike the old 5-character
+% OptFOVWt match captured as FOV weights.
 % Rx_AsphCalib -- CALIB on an aspheric coefficient, in METRES (tAsphCalib).
 % A collimated beam on an f = 1 m paraboloid (Kr = -2 m, Kc = -1) whose h^4
 % term is SPOILED (5e-3 m^-3: 0.5 um of sag and ~40 um of blur at the 100 mm
@@ -30,6 +31,7 @@
      OpdReRayfLen=  1.0E+00
      OpdReRayfLen=  2.0E+00
          SegYgrid=  0d0  1d0  0d0
+        OptFooKey=  1.0
            OptFEX=  No
       OptSpotSize=  0.0
              nElt=  2

@@ -130,7 +130,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'Save3DApVec',9)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'Save3DApVec',11)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
               ifSave3dApVec=.TRUE.
             END IF
@@ -210,7 +210,7 @@ C       Set entrance condition flags to .FALSE.
 
 #ifdef CMACOS
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'PrtEltRots',6)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'PrtEltRots',10)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
               PrtPrinRots=.TRUE.
             END IF
@@ -218,7 +218,7 @@ C       Set entrance condition flags to .FALSE.
 #endif
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptTarget',7)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptTarget',9)) THEN
 !    &             .OR. LCMP(VAR_NAM,'OptTgt',6)) THEN
 	    IF (LCMP(VALUE,'WFE',3)) THEN
 	      OptTarget=WFE_TARGET
@@ -245,7 +245,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptRayGrid',6)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptRayGrid',10)) THEN
 	    opt_npts_flg=.true.
 	    READ(VALUE,*,IOSTAT=iosRx) opt_npts
 	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
@@ -260,7 +260,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptZernModes',8)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptZernModes',12)) THEN
 	    READ(VALUE,*,IOSTAT=iosRx) nWFZern
 	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    READ(VALUE,*,IOSTAT=iosRx) nWFZern,WFZernMode(1:nWFZern)
@@ -389,7 +389,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptNomSens',9)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptNomSens',10)) THEN
 	    if (LCMP(VALUE,'Y',1)) LOptNomSens=.TRUE.
 	    GO TO 50
 
@@ -412,13 +412,13 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptSvdSvCut',9)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptSvdSvCut',11)) THEN
 	    READ(VALUE,*,IOSTAT=iosRx) SvdSvCut
 	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'OptFOVWt',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'OptFOVWt',8)) THEN
             READ(VALUE,*,IOSTAT=iosRx)(fov_weight(i),i=1,nOptFov)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             GO TO 50
@@ -480,7 +480,7 @@ C       Set entrance condition flags to .FALSE.
 !<--
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'ZCOZernType',10)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'ZCOZernType',11)) THEN
             ! zcoType is default to ZernCircular
             ! which uses NormNoll
             IF (LCMP(VALUE,'NormAnnular',10)) THEN
@@ -500,7 +500,7 @@ C       Set entrance condition flags to .FALSE.
 #endif
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'UseChfRay4OPD',10)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'UseChfRay4OPD',13)) THEN
 !-->        Per-deck OPD reference (2026-10-10, Dave: match the manual).
 !           Y = the CHIEF ray, the default since 2026-10-10 (until then
 !           every path ran the aperture mean: the per-load reset put the
@@ -545,7 +545,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'BaseUnits',7)) THEN
+          ELSE IF (LCMP(VAR_NAM,'BaseUnits',9)) THEN
             BaseUnits=VALUE
             BaseUnits_FLG=.TRUE.
             IF (LCMP(BaseUnits,'cm',2)) THEN
@@ -567,7 +567,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'WaveUnits',7)) THEN
+          ELSE IF (LCMP(VAR_NAM,'WaveUnits',9)) THEN
             WaveUnits=VALUE
             WaveUnits_FLG=.TRUE.
             IF (LCMP(WaveUnits,'cm',2)) THEN
@@ -669,7 +669,7 @@ C       Set entrance condition flags to .FALSE.
 
           !<--
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'pData',4)) THEN
+            ELSE IF (LCMP(VAR_NAM,'pData',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)(pData(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               pData_FLG=.TRUE.
@@ -678,28 +678,28 @@ C       Set entrance condition flags to .FALSE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'xData',4)) THEN
+            ELSE IF (LCMP(VAR_NAM,'xData',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)(xData(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               xData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'yData',4)) THEN
+            ELSE IF (LCMP(VAR_NAM,'yData',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)(yData(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               yData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'zData',4)) THEN
+            ELSE IF (LCMP(VAR_NAM,'zData',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)(zData(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               zData_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
-            ELSE IF (LCMP(VAR_NAM,'lData',4)) THEN
+            ELSE IF (LCMP(VAR_NAM,'lData',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)lData(iElt)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               lData_FLG=.TRUE.
@@ -947,14 +947,14 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'drawXGrid',6)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'drawXGrid',9)) THEN
             READ(VALUE,*,IOSTAT=iosRx)(UDxDrawGrid(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             LudDrawGrid=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'drawYGrid',6)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'drawYGrid',9)) THEN
             READ(VALUE,*,IOSTAT=iosRx)(UDyDrawGrid(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             LudDrawGrid=.TRUE.
@@ -1015,14 +1015,14 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'nRings',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'nRings',6)) THEN
             READ(VALUE,*,IOSTAT=iosRx) nRings
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             nRings_FLG=.TRUE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-	  ELSE IF (LCMP(VAR_NAM,'nPetals',5)) THEN
+	  ELSE IF (LCMP(VAR_NAM,'nPetals',7)) THEN
 	    If (nRings_FLG) Then
               READ(VALUE,*,IOSTAT=iosRx) nPetals(0:nRings)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
@@ -1035,7 +1035,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'radCtr',4)) THEN
+          ELSE IF (LCMP(VAR_NAM,'radCtr',6)) THEN
             READ(VALUE,*,IOSTAT=iosRx)radCtr
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             radCtr_FLG=.TRUE.
@@ -1050,7 +1050,7 @@ C       Set entrance condition flags to .FALSE.
             GO TO 50
 
           ! --------------------------------------------------------------------------------
-          ELSE IF (LCMP(VAR_NAM,'FlowerSegSrc',11)) THEN
+          ELSE IF (LCMP(VAR_NAM,'FlowerSegSrc',12)) THEN
             IF (LCMP(VALUE,'CCAT',4)) THEN
               FSEG_CCAT_Flg=.TRUE.
             END IF
@@ -1738,6 +1738,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 READ(VALUE,*,IOSTAT=iosRx)
      &          (OptEltAsphTerm(j,iElt),j=0,nOptEltAsph(iElt))
                 IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!-->          ... and says so when it is not read (2026-10-12, PLAN 1.1b):
+!             the parse keys on isVarElt, which only VarElt= sets, so an
+!             OptAsph= ABOVE its element's VarElt= was dropped silently
+!             and the asphere DOFs were absent from the solve.  Warn.
+              Else
+                WRITE(*,'(A,I4,A)') ' ** OptAsph= at element',iElt,
+     &            ' IGNORED: OptAsph= must follow VarElt='
+!<--
               End If
               GO TO 61
 
