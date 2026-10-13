@@ -236,6 +236,16 @@ LRayPass) and exposed as `opd_mask_get` (mmacos `macos.opd_mask`, pymacos
 paths and `seg_footprints` now take their rows from it; a map with no
 exact-zero valid ray gets the identical rows (same column-major walk).
 **Never test `W ~= 0` for validity in new code.**
+**The engine's own Zernike fit followed (2026-10-12):** `zern_fit` (zern_wf.F)
+took its rows, and ZCO/ZRM/ZAB/`zern_modes_coef` their pupil masks, where
+`OPDin /= 0`; now `zern_valid` = `opdValid` (the map's shape must be the OPD
+grid's, else the value test).  Blast radius, ifx, 406 decks: 118 of the 380
+producing a map carry an exact-zero valid ray -- 88 exactly ONE (the grid ray
+coincident with the chief), 30 many (mostly round-off-flat maps; the flat
+window `tst_nsref_seq.in` has 724 of 740).  CALIB's LM evaluations run under
+the MEAN (`funcs_app` forces it), so WFE_ZMODE is unmoved (`tCalibTargets`).  An all-zero map on
+valid rays now fits to zero coefficients (it printed nothing: `inz==0`).
+Gate `cli_tests/cmd/ZCOEF_zero_rays.jou` (chief fit == mean fit but piston).
 
 **Why it matters (segmented pupils).**  `DAvgl` is one scalar over the
 whole aperture, so perturbing ONE segment shifts it by
@@ -1211,8 +1221,8 @@ NOLL, 1-based (11 = primary spherical).  **OPL (target 5) had no objective**
 anywhere in design_optim: removed from the enum; the api refuses 5 by name, an
 Rx `OptTarget= OPL` is a named load refusal, the veneers dropped the name.  Gates
 `tCalibTargets` (mmacos, the ZMODE leg in a SUBPROCESS) + `test_calib_targets.py`;
-red on the pre-fix mex / .so.  Open, recorded: `zern_fit` still finds the pupil
-as `OPDin /= 0` (PLAN_CONSOLIDATION 1.2).
+red on the pre-fix mex / .so.  `zern_fit`'s pupil = `opdValid` since 2026-10-12
+(see the OPD-reference section's last paragraph).
 
 ## CALIB's LM stopping rule: the derivation (2026-10-11, PLAN 3.3)
 **The old loop** (`nls_optim_dvr`, design_optim.F) checked convergence only at itr =
