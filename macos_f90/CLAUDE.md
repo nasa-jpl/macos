@@ -865,10 +865,15 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   with `ZernType= Noll` traces correctly; the earlier "silent no-op" note was
   stale (and inconsistent with the same section's own `ZerntoMon1/2/3/4/6/7`
   dispatch list).
-- Remaining gap: only `ZernTypeL=11` (ExtFringe) has no `ZerntoMon` converter —
-  it falls through the IF/ELSEIF (warns in propsub, silent elsewhere). Add
-  ELSE-with-error or a converter when this surfaces. (No current test exercises
-  ExtFringe.)
+- ExtFringe (`ZernTypeL=11`) CLOSED 2026-10-12: the converter `ZerntoMon_ZFE`
+  (surfsub) had existed all along -- no dispatch chain called it, so an ExtFringe
+  surface traced as its bare conic (one 'no ZerntoMon implementation' line per
+  trace).  Now wired into all nine chains (Zern / FF / Mon x CTRACE / CPROPAGATE /
+  SRTrace).  Its table was checked against the textbook rule (group p = (n+|m|)/2,
+  |m| descending, cos before sin) -- 56 of 56 entries -- and equals Fringe's
+  `ZerntoMon3` on modes 1-36; ExtFringe 37 is (6,6), Fringe 37 the (12,0) of CODE V.
+  Inputs stop at 66 (`mZernModes`).  No corpus deck declares it.  Gates
+  `cli_tests/cmd/ZernType_extfringe.jou`, pymacos `test_zern_extfringe.py`.
 
 ## Conforming Reference: Surface=Zernike/Aspheric is PASSIVE (sls-dev c9fa767)
 - `Element=Reference` accepts `Surface=Zernike` (8) and `Surface=Aspheric` (3)
