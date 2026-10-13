@@ -780,6 +780,14 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
   the warning cannot see:** a short `LCMP` match CAPTURES look-alikes -- `OptFOVWt` is
   matched on 5 chars, so `OptFooKey= 1` is read as FOV weights.  When adding a header key,
   check that no shorter prefix above it already swallows it (and vice versa).
+  **Since 2026-10-12 every active header match is the FULL key name** (23 lengthened, the
+  table is `cli_tests/records/hdr_prefix_audit.md`; no deck in the 1353-deck extended corpus nor
+  any binding writer used a shorter spelling), so `OptFooKey=` is reported, not read as
+  `OptFOVWt`.  New header keys: match the full name.  Element-chain matches were not audited.
+- **`OptAsph=` above its element's `VarElt=`** prints `** OptAsph= at element N IGNORED:
+  OptAsph= must follow VarElt=` (the parse keys on `isVarElt`, which only `VarElt=` sets;
+  `OptZern=` sets it itself).  Gates `cli_tests/cmd/OptAsph_order.jou`,
+  `Rx_header_unknown.jou` (+ `OptFooKey=`), pymacos `test_rx_parse_warnings.py` (capfd).
 
 ## ZernType parsing (ParseZernType in elt_mod.F)
 - All eight ZernType / FFZernType / MonZernType parser sites — three in
