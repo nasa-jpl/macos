@@ -100,5 +100,24 @@
    "y": 5.75,
    "fs": 11
   }
+ },
+ "Feng's proposal, in one slide": {
+  "txt:Feng's slide 8 is the implementation example": {
+   "x": 7.0,
+   "y": 5.55,
+   "w": 5.9
+  }
+ },
+ "The lock-in camera: COPHI's algorithm built into the sensor": {
+  "txt:Even well-capped the lock-in is ~12× the Photonfocus": {
+   "x": 0.5,
+   "y": 5.57,
+   "w": 12.4
+  },
+  "txt:Stage format (runs/format_lens_plain)": {
+   "x": 0.5,
+   "y": 7.0,
+   "w": 12.4
+  }
  }
 }

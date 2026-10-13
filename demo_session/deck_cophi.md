@@ -22,13 +22,14 @@ DRAFT — pending review.
 
 ## Feng's proposal, in one slide | A heterodyne interferometer whose phase steps are set by frequency, not by a piezo, with a fiber-fed local oscillator at the camera, and an array detector providing many parallel channels to resolve 96 × 96 actuators
 ::: left
-- **The layout:** laser → 1×2 coupler → AOM-1 (80 MHz) and AOM-2 (80 MHz + 7.5 Hz), both synthesizers on a 10 MHz Rb standard; the measurement beam to the DM, the LO fiber to a splitter before the camera; the ×4 multipliers mixed to a 30 Hz camera trigger: four frames per 7.5 Hz fringe cycle.
-- **The algorithm:** I = I₀ (1 + γ cos(φ + 2π f t)); frames at α = 0, π/2, π, 3π/2; φ = atan2(I₄ − I₂, I₁ − I₃); surface = ½ (φ/2π) λ (double pass).  Backup: the N-frame least-squares solution (Zygo's four-step is N = 4).
-- **The purpose: stabilize the DM!**  Run each DM in a local loop to hold it — our job 3.  Not stated: the camera, the photon budget, the error terms, a number.
+- **Layout:** laser → 1×2 coupler → AOM-1 (80 MHz) and AOM-2 (80 MHz + 7.5 Hz), both synthesizers on a 10 MHz Rb standard; the measurement beam to the DM, the LO fiber to a splitter before the camera; the ×4 multipliers mixed to a 30 Hz camera trigger: four frames per 7.5 Hz fringe cycle – see next slide.
+- **Algorithm:** I = I₀ (1 + γ cos(φ + 2π f t)); frames at α = 0, π/2, π, 3π/2; φ = atan2(I₄ − I₂, I₁ − I₃); surface = ½ (φ/2π) λ (double pass).  Backup: the N-frame least-squares solution (Zygo's four-step is N = 4).
+- **Main purpose: stabilize the DM!**  Run each DM in a local loop to hold it — our job 3.  For us to figure out: the camera, the photon budget, the error terms, estimated performance.
 ::: right
-- **What transfers from the gauge deck unchanged:** the bench (both rigs), the 96 × 96 DM truth, the 30 nm working surface, the response matrix measured through the reading, the hold loop, the capture ladder, the photon rows.
-- **What is new:** the LO arm (a fiber tip and collimator where the reference flat sat); frequency-set steps; each frame integrating a quarter of the beat; the LO's wavefront drift; the differential fiber phase within a scan; trigger jitter; a camera chosen for the job.
-- **What is absent by construction:** the polarizing train — no analyzer, no quarter-wave plates, the same polarization in both arms — so the polarization gain the record's interferometer carries (0.983–1.004) does not exist here.
+- **Built on our DM Gauge bench:** the bench with mirror and lens layouts, the 96 × 96 DM, swappable sensors: the core Twyman-Green interferometer (IFO), scalar and vector Zernike wavefront sensors (ZWFS), point-diffraction interferometers.
+- **The same scoring:** on a 30 nm working surface, the response matrix measured through the reading, the hold loop, the capture ladder, the photon rows.
+- **What is new:** the Local Oscillator (LO) arm (a fiber tip and collimator where the reference flat sat); frequency-set steps; each frame integrating a quarter of the beat; the LO's wavefront drift; the differential fiber phase within a scan; trigger jitter; a camera chosen for the job.
+- **What is absent:** the polarizing train — no analyzer, no quarter-wave plates, the same polarization in both arms — so the polarization gain the IFO carries (0.983–1.004) does not exist here.
 ~ Feng's slide 8 is the implementation example this deck's block diagrams follow; TOM3 (SPIE 6268) is the photodiode heritage.
 
 ## COPHI on the DM Gauge bench: the four-step run continuously | The record interferometer's piezo four-step with the steps set by a Rb-clocked beat, a quarter-cycle integrating bucket per frame, and a fiber LO; the reconstruction is the same
@@ -38,7 +39,21 @@ DRAFT — pending review.
 - **Feng's four-frame method, one-color version, for the hold job.**  Every box is a component of the TG96 DM Gauge bench.
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 5).
+~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 6).
+
+## Our implementation of Feng's approach: the choices, in one table | Feng's layout kept where he specified it, each unspecified part fixed by a bench number; the lock-in camera (next slide) changes the camera, the beat and the trigger chain only
+| part | Feng's proposal | our implementation (what the model runs) | why |
+|---|---|---|---|
+| laser | single-frequency, λ unstated | 632.8 nm, the record bench's; a 1.3 µm row for InGaAs | the other four gauges' surface, matrix and photon rows |
+| RF and timing | AOMs 80 MHz / 80 MHz + 7.5 Hz, 10 MHz Rb | as proposed; camera trigger on the same reference, 30 fps = 4 × 7.5 Hz; jitter a knob, nominal 0 | frequency-set steps on one clock |
+| buckets | four frames per beat | each frame integrates a quarter cycle: contrast × 0.900; N > 4 = the least-squares backup | the four-step, with the bucket priced |
+| local oscillator | a fiber LO before the camera | PM fiber tip + collimator at the reference flat's seat (slide 8); LO/test ~1, contrast 0.98 | the seat registers on both rigs |
+| beam train | one polarization, plain splitter | the plain splitter scored; the polarizing train priced beside it (same pm, ×1.5 laser) | no analyzer: no polarization gain |
+| camera | a 30 fps array, part unstated | four surveyed rows, read noise in each: baseline 1k² 60 ke⁻ 30 fps; Photonfocus 200 ke⁻ 150 fps (the "Feng's camera" row); pco.edge GS; C-RED 2 | well × frame rate decides (slide 12) |
+| exposure, resolution | 96 × 96 resolved | frame mean at half the well; model 3.3 px per actuator, real cameras 5–21 | oversampling costs no photons (slide 10) |
+| reconstruction | atan2 four-step; surface = φλ/4π | the same about the bucket centers; LO-only annulus median-filled; unknowns = control set | the record's estimator |
+| errors, hold, capture | "stabilize the DM" | fiber walk, jitter, LO drift, shot + read noise, the record's drifts (slide 13); the record's loop at the camera's cadence; two colors from cold (slides 14–15) | the other gauges' loop and ladder |
+~ Sheet `cophi_params.m` (every row is a field there); records in the footnotes of the slides cited; detector rows from NOTE_detectors_survey.md (web, unverified).
 
 ## The lock-in camera: COPHI's algorithm built into the sensor | Feng's camera takes four frames per beat and the computer demodulates; a lock-in camera demodulates in every pixel at a kHz beat and reads the full lattice in a second — the parallel implementation, same optics, same RF chain; its rows run through every results table that follows
 ::: left
@@ -55,8 +70,8 @@ DRAFT — pending review.
 | **seconds per pm** | **42** | **3.35 / 3.73** (read 0, mirror / lens; 4.0 / 4.4 at read 100 assumed); ×1.11 for square-wave demodulation — well-capped at the I/Q rate |
 | if well-free: 10⁹ / 10¹⁰ e⁻/s per element (the sheet's own 2.5 × 10⁹) | — | 0.84 / 0.084 s (0.34 s at 2.5 × 10⁹) — analytic, one store per sample |
 | loop latency | one beat, 133 ms | one I/Q sample, 1 ms (one 0.125 s cycle as the loop's upper bound) |
-- **Even well-capped the lock-in is ~12× the Photonfocus and ~110× Feng's baseline** (the format stage's first 1.1 s counted four full wells per sample; a true I/Q sample integrates into one store — corrected by the lock-in reading itself); a verified well-free device (continuous, or I/Q ≥ 10 kHz) at the sheet's own 2.5 × 10⁹ e⁻/s per element would be ~18 pm per sample, ~0.34 s per pm — 10× the capped form; that is what the vendor question decides.
-- **The vendor question that decides it:** per-pixel phase noise vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
+- **Even well-capped the lock-in is ~12× the Photonfocus and ~110× Feng's baseline**; a verified well-free device (continuous, or I/Q ≥ 10 kHz) at the sheet's own 2.5 × 10⁹ e⁻/s per element would be ~18 pm per sample, ~0.34 s per pm — 10× the capped form; that is what the vendor question decides.
+- **The vendor question:** per-pixel phase noise vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
 ~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
 
 ## COPHI with a lock-in camera: the block diagram | The same laser, fibers, LO and bench; the beat moves to 5 kHz; the mixer gives the beat itself to the camera's reference input; no frame trigger, no bucket; I/Q frames at 1 kHz go straight to the phase
@@ -83,7 +98,7 @@ DRAFT — pending review.
 ::: left
 ![The mirror rig from above with the LO arm in place: source arm red, LO arm purple (fiber tip at right, collimator at the reference flat's seat), test arm to the DM blue, camera leg green](figs/cophi_layout_oap.png){h=2.9}
 - **Registration:** chief ray 0.000 px on both rigs; the LO covers the test pupil 1.000 and overfills it by 34 px (radius ratio 1.215), so an offset under that is a fill question, not a registration one.
-- **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms after piston, mostly tilt — the LO collimator's wavefront against the test arm, frozen into the null as the interferometer freezes its reference; its *motion* is the LO-drift row (slide 12).
+- **Null on the flat DM:** lens rig 0.000 nm; mirror rig 0.746 nm rms after piston, mostly tilt — the LO collimator's wavefront against the test arm, frozen into the null as the interferometer freezes its reference; its *motion* is the LO-drift row (slide 13).
 - **Contrast:** 0.982 at an LO/test power ratio of 1.47, as 2√r/(1 + r) says; the vector-mode field phase measures −kW on both decks (the known conjugate).
 ::: right
 ![The node: the beamsplitter and compensator, the LO entering where the reference flat's return did, the recombination into the camera leg (the record's polarizing elements shown; the plain-splitter train is scored)](figs/cophi_layout_node.png){h=2.9}
@@ -94,7 +109,7 @@ DRAFT — pending review.
 ## Reading the 30 nm working surface, station by station | The same mirror command through the heterodyne train on the mirror rig, plain splitter; the last column is the raw map against the engine's own field
 ::: full
 ![COPHI, mirror rig: the command; the test arm and the LO at the camera; two of the four buckets; the recovered surface, 31.9 nm rms; recovered minus the engine's field, 0.31 pm rms; the flat DM reads 0](figs/cophi_stations_oap.png){h=3.6}
-- **Resolution of what is shown:** the model's camera grid is 1024 × 1024 with the pupil 315 px across (radius 157.45 px) — **3.3 pixels per actuator across, ~11 pixels per actuator in area** (6948 lit actuators on ~77,900 pupil pixels); every real camera on the table samples finer (5–21 px per actuator, slide 9).  What resolution buys, and what it costs each gauge, is slide 16.
+- **Resolution of what is shown:** the model's camera grid is 1024 × 1024 with the pupil 315 px across (radius 157.45 px) — **3.3 pixels per actuator across, ~11 pixels per actuator in area** (6948 lit actuators on ~77,900 pupil pixels); every real camera on the table samples finer (5–21 px per actuator, slide 10).  What resolution buys, and what it costs each gauge, is slide 17.
 ~ Stage figs (`runs/figs_oap_plain`), noise-free; the deck's station-figure format (row 1 flat DM, row 2 the working surface).
 
 ## Resolution and timing, camera by camera | The model samples the pupil at 3.3 pixels per actuator; every camera on the table oversamples the 96 × 96 lattice, so resolution costs no photons — the time to a picometer is set by well depth × frame rate, not by pixel count
@@ -239,7 +254,7 @@ DRAFT — pending review.
 - **Camera:** the Photonfocus-class 1k global-shutter part (42 s per pm, 3 pm held in 1.6 s cycles) over Feng's baseline (7 min, 16 s); verify the survey against the vendor sheets before a part is named.  **The lock-in camera is the fast form** (1.1 s per pm as surveyed) — one vendor question from a number.
 - **Two colors from the start:** capture from cold in one reading; at 1.3 µm, telecom tunables and twice the base range — the InGaAs stage.
 ::: right
-- **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the per-gauge resolution sweep (slide 16); the polarization-camera timings through the noise hook (slide 15).
+- **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the per-gauge resolution sweep (slide 17); the polarization-camera timings through the noise hook (slide 16).
 - **Model next:** the chromatic refocus of the tail at Δλ = 20 nm (dispersive glass in the model); the LO referenced against the test arm's own flat; the electronics table's parts counts and TRL for all five gauges; Kent's ZWFS reconstruction when it arrives.
 ~ Everything reproduces from `templates/40_benches/cophi_dm96/` (`cophi_run`, the stage tags in each footnote); gates `tCophi`, `tCophiBench`, `tConvergedEst`, `tDmgLoop`.
 
