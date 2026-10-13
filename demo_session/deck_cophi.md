@@ -58,13 +58,13 @@ DRAFT — pending review.
 ## The lock-in camera: COPHI's algorithm built into the sensor | Feng's camera takes four frames per beat and the computer demodulates; a lock-in camera demodulates in every pixel at a kHz beat and reads the full lattice in a second — the parallel implementation, same optics, same RF chain; its rows run through every results table that follows
 ::: left
 - **Ruling:** every mode of interest (EFC probes among them) is commanded at full actuator resolution — no coarse or low-order sensor forms.  The second implementation is a **well-free, per-pixel demodulating reading at ≥ 1 element per actuator**, assumed to exist at 1:1 or better.
-- **Lock-in** = synchronous detection inside each pixel: the photocurrent is steered into in-phase and quadrature stores by the external reference (our Rb-clocked beat, now at kHz), the DC never reaches the well, I and Q leave at the frame rate — the four-bucket replaced by thousands of cycles integrated on-chip.
+- **Lock-in** = synchronous detection inside each pixel: the photocurrent is multiplied by the external reference (our Rb-clocked beat, now at kHz) and by its 90°-shifted copy and integrated: the two stores are I = I₀γ cos φ (in-phase) and Q = I₀γ sin φ (quadrature) — demodulated components, not intensities; the DC term I₀ averages out and never reaches the well; I and Q leave at the frame rate and φ = atan2(Q, I) — the four-bucket replaced by thousands of cycles integrated on-chip.
 - **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102), in-pixel lock-in 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference input; four generations shipped, one vendor.  Also ranked: brute-force 128² CMOS at 20–40 kfps; iToF demodulators with the beat moved to MHz; digital-pixel ROICs (Lincoln DFPA); silicon-photonic coherent FPAs.  SPADs and Geiger-mode arrays are unfit (count-rate ceilings).
 ::: right
 | the two implementations, same optics and RF | Feng's camera (Photonfocus row) | lock-in camera (heliCam C4, as surveyed) |
 |---|---|---|
 | beat | 7.5 Hz | 5 kHz (1–250 kHz) |
-| what leaves the sensor | 4 frames per beat | I/Q per pixel at 1 kHz |
+| what leaves the sensor | 4 frames per beat | I/Q (in-phase / quadrature) per pixel at 1 kHz |
 | pixels per actuator | 9.4 | 5.3 (C4M 10.6) |
 | per-reading noise | 39.5 pm | 57.9 / 61.1 pm per 1 ms I/Q sample, mirror / lens (63 / 66 at an assumed 100 e⁻ read) |
 | **seconds per pm** | **42** | **3.35 / 3.73** (read 0, mirror / lens; 4.0 / 4.4 at read 100 assumed); ×1.11 for square-wave demodulation — well-capped at the I/Q rate |
