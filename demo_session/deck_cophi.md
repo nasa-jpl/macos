@@ -74,7 +74,7 @@ DRAFT — pending review.
 | **seconds per pm** | **42** | **3.35 / 3.73** (read 0, mirror / lens; 4.0 / 4.4 at read 100 assumed); ×1.11 for square-wave demodulation — well-capped at the I/Q rate |
 | if well-free: 10⁹ / 10¹⁰ e⁻/s per element (the sheet's own 2.5 × 10⁹) | — | 0.84 / 0.084 s (0.34 s at 2.5 × 10⁹) — analytic, one store per sample |
 | loop latency | one beat, 133 ms | one I/Q sample, 1 ms (one 0.125 s cycle as the loop's upper bound) |
-- **Even well-capped the lock-in is ~12× the Photonfocus and ~110× Feng's baseline.**
+- **The lock-in is ~12× the Photonfocus and ~110× Feng's baseline.**
 -- a well-free device (continuous, or I/Q ≥ 10 kHz) at 2.5 × 10⁹ e⁻/s per element: ~18 pm per sample, ~0.34 s per pm — 10× better again; that is what the vendor question decides
 - **The vendor question:** phase noise per pixel vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
 ~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
@@ -255,7 +255,7 @@ DRAFT — pending review.
 | error terms carried | polarization gain (0.98–1.01, calibrated by the four-step) | — | stepper repeatability | DDS phase noise → jitter; drive ripple → contrast; **fiber walk**; **LO drift** | reference phase noise; ADC bits |
 | photons per measurement for 1 pm (gauge deck, 30 nm surface) | 7 × 10¹⁴ (mirror) – 1 × 10¹⁵ (lens) | 1.2 × 10¹⁴ stepped / 4.6 × 10¹³ vector | 1.5 × 10¹⁴ | (this deck: 57.7 pm per reading at 1.9 × 10¹² ph/s) | (34 pm per 1 ms frame) |
 | **seconds to SNR 1 at 1 pm** (SNR 10 = 100×) | **189 / 160 s** (lens / mirror; IMX250MZR-class polarization camera, record `camI_*`) | **475 s stepped (mono camera, 4 frames) / 519 s vector** (polarization camera, mirror rig, `camS_oap`) | **342 s** (mono, K frames) | **443 (Feng's camera) / 42 (Photonfocus)** | **3.35 / 3.73** (mirror / lens) |
-~ Camera timings: TO's records on an IMX250MZR-class polarization camera (2448 × 2048, 75 fps; well ~10 ke⁻, read 2.4 e⁻, unconfirmed).  The sensors run 10–40× slower than photons ÷ sensor rate would say: the ZWFS core sets the exposure, the frame mean sits at half well, two orientations go unused.  Parts counts and TRL to follow (campaign brief sec. 9.1).
+~ Camera timings on an IMX250MZR-class polarization camera (2448 × 2048, 75 fps; well ~10 ke⁻, read 2.4 e⁻, unconfirmed).  The sensors run 10–40× slower than photons ÷ sensor rate would say: the ZWFS core sets the exposure, the frame mean sits at half well, two orientations go unused.  Parts counts and TRL to follow (campaign brief sec. 9.1).
 
 ## How much resolution? IFO, vector ZWFS, HET | Pixels per actuator above ~2 are free in photons and hold, cost data and processing, and buy the single-actuator scale; between 1 and 1.5 the actuator fit collapses; the three approaches pay differently
 ::: full
@@ -286,17 +286,17 @@ DRAFT — pending review.
 - **For a flight DM:** hold only and photons scarce → the Zernike sensor with a camera chosen for it; hold + capture + absolute, or speed → COPHI (the lock-in fastest by 20–500×).  **The hybrid** — Zernike for the hold, COPHI's two-color read for capture and commissioning — stays the conservative answer until the lock-in's vendor numbers are in.
 ~ The Zernike rows are the gauge deck's (redo96_*sens, zloop) with the polarization-camera timing from `camS_oap`; the COPHI rows this deck's; the lock-in rows are records (`runs/lockin_*`, resources 2a07af9).
 
-## Recommendations | COPHI is a credible fifth gauge: it matches the IFO's floor, reads exactly, and captures from cold in one reading; its cost is the fiber and the LO, its speed is the camera's
+## Recommendations | COPHI is a credible fifth gauge: it matches the IFO's floor, reads exactly, and captures from cold in one reading; its cost is the fiber and the LO, its speed is set by the camera's frame rate, with the lock-in detector the clear winner
 ::: left
-- **Score it in the composite deck** as the fifth column, with the converged estimator and the piston-free photon metric for every gauge (both found here, both apply to the record).
-- **Price the plain splitter** (Feng's layout); the record's polarizing train costs ×1.5 of laser and nothing else.
-- **Camera:** the Photonfocus-class 1k global-shutter part (42 s per pm, 3 pm held in 1.6 s cycles) over Feng's baseline (7 min, 16 s).
+- **Add COPHI to the DM Gauge plan** as the fifth column, with the converged estimator and the piston-free photon metric for every gauge (both found here, both apply to the record).
+- **Consider a swappable splitter** (Feng's layout); the current polarizing train costs ×1.5 of laser and nothing else.
+- **Camera:** the Photonfocus-class 1k global-shutter part (42 s per pm, 3 pm held in 1.6 s cycles) over Feng's baseline (7 min, 16 s); the lock-in camera faster yet.
 -- verify the survey against the vendor sheets before a part is named
 -- **the lock-in camera is the fast form** (3.4 s per pm as surveyed, 0.125 s cycles) — one vendor question from a number
-- **Two colors from the start:** capture from cold in one reading; at 1.3 µm, telecom tunables and twice the base range — the InGaAs stage.
+- **Implement two colors from the start:** capture from cold in one reading; at 1.3 µm, telecom tunables and twice the base range — the InGaAs stage.
 ::: right
 - **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the per-gauge resolution sweep (slide 18); the polarization-camera timings through the noise hook (slide 17).
-- **Model next:** the tail's chromatic refocus at Δλ = 20 nm (dispersive glass in the model); the LO referenced against the test arm's own flat; parts counts and TRL for all five gauges; Kent's ZWFS reconstruction when it arrives.
+- **Model next:** the tail's chromatic refocus at Δλ = 20 nm (dispersive glass in the model); the LO referenced against the test arm's own flat; parts counts and TRL for all five gauges; Kent's ZWFS reconstruction.
 ~ Everything reproduces from `templates/40_benches/cophi_dm96/` (`cophi_run`, the stage tags in each footnote); gates `tCophi`, `tCophiBench`, `tConvergedEst`, `tDmgLoop`.
 
 ## What to develop: what, why, how, how long | Five items, each a requirement this deck put a number on; durations are estimates for a bench team with the parts in hand

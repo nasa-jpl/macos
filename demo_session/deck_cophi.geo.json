@@ -63,9 +63,10 @@
   }
  },
  "Electronics: what each gauge needs behind the optics": {
-  "txt:Camera timings: TO's records on an IMX250MZR-class": {
+  "txt:Camera timings on an IMX250MZR-class": {
    "x": 0.5,
-   "y": 7.05
+   "y": 7.05,
+   "w": 12.43
   }
  },
  "COPHI against the Zernike sensor with a dedicated laser, for the hold job": {
@@ -82,12 +83,6 @@
   }
  },
  "The lock-in camera: COPHI's algorithm built into the sensor": {
-  "txt:Even well-capped the lock-in is ~12× the Photonfocus": {
-   "x": 0.46,
-   "y": 5.65,
-   "w": 12.4,
-   "fs": 14
-  },
   "txt:Stage format (runs/format_lens_plain)": {
    "x": 0.5,
    "y": 7.0,
@@ -97,6 +92,12 @@
    "x": 0.45,
    "y": 1.42,
    "w": 6.35,
+   "fs": 14
+  },
+  "txt:The lock-in is ~12× the Photonfocus": {
+   "x": 0.46,
+   "y": 5.3,
+   "w": 12.4,
    "fs": 14
   }
  },
@@ -140,6 +141,11 @@
    "y": 1.42,
    "w": 6.3,
    "h": 3.05
+  },
+  "txt:Stage bench (runs/bench_{lens,oap}": {
+   "x": 0.5,
+   "y": 6.75,
+   "w": 12.4
   }
  }
 }
