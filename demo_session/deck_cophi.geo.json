@@ -133,5 +133,13 @@
    "y": 2.0,
    "w": 8.0
   }
+ },
+ "The LO on the DM Gauge bench replaces the IFO's reference flat": {
+  "img:cophi_layout_oap.png": {
+   "x": 0.45,
+   "y": 1.42,
+   "w": 6.3,
+   "h": 3.05
+  }
  }
 }

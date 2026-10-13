@@ -434,8 +434,15 @@ def render_slide(spec):
                     y += est_text_h(txt, w - 0.6, ss) + 5 / 72.0
                     continue
                 txt = ("•  " + it) if typ == "bullets" else it
-                para(tf, txt, size=size, color=color, first=(j == 0),
-                     space_after=sa)
+                p = para(tf, txt, size=size, color=color, first=(j == 0),
+                         space_after=sa)
+                if j > 0 and items[j - 1].startswith("\x01"):
+                    # a bullet AFTER a sub-bullet inherits the sub-bullet's
+                    # hanging indent in Impress (Dave, slide 8, 2026-10-13):
+                    # pin the margin back to the column's edge explicitly
+                    pPr = p._p.get_or_add_pPr()
+                    pPr.set("marL", "0")
+                    pPr.set("indent", "0")
                 y += est_text_h(txt, w, size) + sa / 72.0
             y += 0.04
         elif typ == "table":
