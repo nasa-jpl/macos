@@ -141,5 +141,17 @@
    "y": 6.75,
    "w": 12.4
   }
+ },
+ "Photons for 1 pm, camera by camera": {
+  "txt:Read noise is in every row": {
+   "x": 8.0,
+   "y": 1.42,
+   "w": 4.9
+  },
+  "txt:Stage noise (runs/noise_{lens,oap}[_plain])": {
+   "x": 8.0,
+   "y": 5.86,
+   "w": 4.9
+  }
  }
 }
