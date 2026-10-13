@@ -162,8 +162,21 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
 - All STOP statements in surfsub.F converted: AZPSolve, GSZPSolve, GSZPB, SFFZPSolve, UDSZPSolve.
 - All PAUSE statements converted: DZPSolve (didesub.F), ZPSolve (tracesub.F).
 - Status recorded at nBadRays increment points in CTRACE (tracesub.F) and CPROPAGATE (propsub.F).
-- Obscuration recorded at end of iRay loop (L1/LRayPass check).
-- RayStatus/nZPFailMsg reset at trace start (alongside nBadRays=0).
+- Obscuration recorded AT THE CLIP (2026-10-12): CTRACE stamps
+  `RayStat_Obscured` with the current element at the end of the element
+  iteration in which `L1` went false (CPROPAGATE, element-major, always
+  did).  It used to stamp after the element loop with the loop's exit value
+  `iEndElt+1`, and never for a ray that later MISSED (GO TO 14 skips the
+  stamp: such a ray read Miss at the later element; it now reads Obscured
+  at the clip, as CPROPAGATE always said).  The end-of-ray stamp remains as
+  the fallback.  WARN prints `at element N: count` under `Obscured:`.
+- RayStatus/RayFailElt/RayFailMsg reset at a trace from the SOURCE only
+  (`iStartElt==0`); a RESTARTED trace keeps them and sets `nBadRays` =
+  rays already lost (it used to reset them and re-record every earlier
+  loss at the restart's first element).  nZPFailMsg etc. still reset.
+- "Obscured" is NOT "geometrically OK": the LocalCoord / FFP-PFP chief-ray
+  tolerances test `LRayOK(1) .AND. RayStatus(1)==Obscured`.
+  Gates `tRayFailElt`, `tGratingAperture`, `cli_tests/cmd/WARN_obscured_elt.jou`.
 - WARN subroutine enhanced with per-category breakdown (miss/obscured/bracket/other).
 - Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
   First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.
@@ -488,7 +501,8 @@ handedness and negates xGrid after define_local_csys when it was
 left-handed (y and z are unchanged, so this is exactly the OBJ path's
 triad).  Right-handed decks: bit-identical.  Gate: after `stop elt 1`
 on e5hex1 the SAVEd xGrid is still `-1 0 0`; s3 obscured count 2.
-Engine-side reporting gap seen en route: the end-of-trace obscuration
+Engine-side reporting gap seen en route (CLOSED 2026-10-12, see the
+per-ray status section): the end-of-trace obscuration
 stamp writes `RayFailElt = nElt+1` (29 on a 28-element deck), not the
 clipping element.
 

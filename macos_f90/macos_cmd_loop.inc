@@ -2866,7 +2866,7 @@ c  the target element, just blocked by an obscuration mask, so
 c  FFP/PFP can still compute the source adjustment.  Bail only on
 c  miss/bracket/iter failures (chief ray didn't reach iSlv1).
 	    IF (nBadRays.NE.0) THEN
-	      IF (RayStatus(1) .EQ. RayStat_Obscured) THEN
+	      IF (RayStatus(1).EQ.RayStat_Obscured .AND. LRayOK(1)) THEN
 	        WRITE(*,*)' Chief ray obscured at element ',iSlv1,
      &	                  '; proceeding with FFP/PFP calculation.'
 	      ELSE
@@ -2985,8 +2985,8 @@ c----Compute next step
 c--Same obscuration tolerance as for the nominal trace above:
 c  obscured chief ray still reached iSlv1 geometrically, only
 c  miss/bracket/iter failures abort the search.
-	      IF (nBadRays.NE.0 .AND.
-     &	          RayStatus(1) .NE. RayStat_Obscured) THEN
+	      IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &	          RayStatus(1).EQ.RayStat_Obscured)) THEN
 	        WRITE(*,*)'Chief ray becomes undefined during search'
 	        GO TO 385
 	      END IF
