@@ -3489,6 +3489,10 @@ C Set Zerns
             ELSEIF ((ZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (ZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
 
             ! Special Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
@@ -3499,8 +3503,8 @@ C Set Zerns
      &           ' SrfType=Zernike but ZernTypeL=',ZernTypeL(iElt),
      &           ' has no ZerntoMon implementation;',
      &           ' Zernike coefficients are being silently ignored.',
-     &           ' Likely causes: ZernType= ExtFringe (no converter),',
-     &           ' or Rx did not specify ZernType for this element.'
+     &           ' Likely cause: the Rx did not specify ZernType',
+     &           ' for this element.'
 	    END IF
 	  END IF
 
@@ -3530,6 +3534,10 @@ C Set FF Zernike coefficients for FreeForm surface
             ELSEIF ((FFZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (FFZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
 
             ! Special FF Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
@@ -3569,6 +3577,10 @@ C Set Mon Zernike coefficients for FreeForm surface
             ELSEIF ((MonZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (MonZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
 
             ! Special Mon Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
