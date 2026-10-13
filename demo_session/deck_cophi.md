@@ -57,14 +57,13 @@ DRAFT — pending review.
 
 ## The lock-in camera: COPHI's algorithm built into the sensor | Feng's camera takes four frames per beat and the computer demodulates; a lock-in camera demodulates in every pixel at a kHz beat and reads the whole lattice in a second — same optics, same RF chain; its rows run through every table that follows
 ::: left
-- **Ruling:** every mode we care about (EFC probes included) is commanded at full actuator resolution.  So the second implementation is a per-pixel demodulating reading at ≥ 1 element per actuator, assumed to exist at 1:1 or better.
+- **Ruling:** every mode we care about (EFC probes included) runs at full actuator resolution — so the second implementation is a per-pixel demodulating reading at ≥ 1 element per actuator, assumed to exist.
 - **Lock-in** = synchronous detection inside each pixel:
 -- the photocurrent is multiplied by the beat reference and by its 90°-shifted copy, and integrated
--- the two stores are I = I₀γ cos φ (in-phase) and Q = I₀γ sin φ (quadrature) — not intensities; φ = atan2(Q, I)
--- the DC term never reaches the well; thousands of cycles integrate on-chip; I and Q leave at the frame rate
-- **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102) pixels, lock-in at 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference input; four generations shipped, one vendor.
--- also ranked: 128² CMOS at 20–40 kfps; time-of-flight demodulators with the beat at MHz; digital-pixel ROICs (Lincoln DFPA); coherent photonic arrays
--- not fit: SPAD and Geiger-mode arrays (count-rate ceilings)
+-- the stores are I = I₀γ cos φ (in-phase) and Q = I₀γ sin φ (quadrature) — not intensities; φ = atan2(Q, I)
+-- the DC term never reaches the well; I and Q leave at the frame rate
+- **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102), lock-in 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference; one vendor, four generations.
+-- also ranked: 128² CMOS at 20–40 kfps, time-of-flight demodulators, digital-pixel ROICs, coherent photonic arrays; not fit: SPAD / Geiger arrays (count-rate ceilings)
 ::: right
 | the two implementations, same optics and RF | Feng's camera (Photonfocus row) | lock-in camera (heliCam C4, as surveyed) |
 |---|---|---|
@@ -207,7 +206,7 @@ DRAFT — pending review.
 - **Electronics, the rest:** trigger jitter < 2.8 × 10⁻³ rad, AOM drive ripple < 1.8 × 10⁻³ — both easy with a Rb-locked DDS; latency one beat (133 ms at 7.5 Hz).
 ~ Stage loop (`runs/loop_{lens,oap}_plain`, `runs/loopfib_*`), plain splitter, `dmg_loop` with the delay row; the mirror rig on the fixed feed (SRC_TRIM 0; every row within 0.02 pm of the mis-fed run, kept in `runs/oap_plain_misfed`); the fiber rows at the corrected budget (3.5 × 10⁻³ rad/frame as run; 3.9 × 10⁻³ under the median-fill convention); the noise stage's first fiber number was 2.3× low (a 12-draw Monte Carlo of three random numbers) and is replaced by the exact expectation.
 
-## Capture from cold: two colors frequency-multiplexed on one camera | A second laser at λ₂, its own AOM pair at a second beat, WDM combiners into the same two fibers; all four synthesizers on one reference; the processing adds the synthetic-wavelength block
+## Capture from a cold start: two colors frequency-multiplexed on one camera | A second laser at λ₂, its own AOM pair at a second beat, WDM combiners into the same two fibers; all four synthesizers on one reference; the processing adds the synthetic-wavelength block
 ::: full
 ![](figs/cophi_block_multi.png){h=5.0}
 ::: left
@@ -216,7 +215,7 @@ DRAFT — pending review.
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
 ~ `make_cophi_block_fig.py`; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.
 
-## Capture from cold: the numbers, and the parts it adds | Zero wrong fringe orders on the whole capture ladder to 480 nm rms; a single color wraps from 40 nm; temporal unwrapping holds a running loop, not a cold start
+## Capture from a cold start: the numbers, and the parts it adds | Zero wrong fringe orders on the whole capture ladder to 480 nm rms; a single color wraps from 40 nm; temporal unwrapping holds a running loop, not a cold start
 ::: left
 - **Two colors, one reading:** 632.8 + 652.8 nm (synthetic Λ = 20.65 µm, range ±5.2 µm), each color read by its own buckets (crosstalk 4 × 10⁻¹⁶ rad).
 -- **zero wrong orders to 480 nm rms, both cameras** (0.15 / 0.10 nm per pixel); one color is 74 % wrong at 480
