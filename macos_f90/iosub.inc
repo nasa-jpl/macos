@@ -1061,6 +1061,17 @@ C	  WRITE(*,112)'nObs',iElt
 	  END IF
 	END DO
 
+!-->  The obscuration frame the TRACE uses, built once here at load
+!     (2026-10-12; OrthoObsFrame, math_mod) so that SAVE before a trace
+!     equals SAVE after one.  After the polygon projections above, which
+!     orthogonalise their own local copy and are unchanged by this.
+	IF ((EltID(iElt).EQ.7).OR.(nObs(iElt).GT.0).OR.
+     &	    (ApType(iElt).GT.0)) THEN
+	  IF (xObs_FLG) CALL OrthoObsFrameLoad(psiElt(1,iElt),
+     &	    xObs(1,iElt),yObs(1,iElt),zObs(1,iElt))
+	END IF
+!<--
+
 !-->  Resolve a GridFile= that was parsed before nGridMat= was known.
 !     GridInit sizes its read from nGridMat, so the read was deferred;
 !     this is the last chance.  If nGridMat= never arrived, FAIL -- a
