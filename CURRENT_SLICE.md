@@ -24,6 +24,19 @@
 
 ## Active slice
 
+> **2026-10-16 night (CC): PHASE B IN FLIGHT -- 22 journals written (78/128 commands covered), every EXPECT from the
+> transcript (recipe in cli_tests/README "Writing a journal"); writing them found nine engine/doc items (PLAN 1.2,
+> 2026-10-16 (a)-(i)): FIXED and gated -- BWK flag reset after the load (6ccd86d), the `!` shell line cut at 130
+> (6ccd86d), MRESET's failed scratch re-allocation = the model-size-transition hazard (8d04261), AOExample.in key
+> order; RECORDED for TO/Dave -- CALIB field weights 0 after load (merit x1e-10, OptTol x1e5; Table 13 says so),
+> SYSPROP pixel lines after OPD alone, TPR needs SaveRayPosH, RESET keeps the plot type, e5hex1's flat.txt.  Gates
+> at 6ccd86d and 8d04261 green (clean worktree, both compilers: load 114/114, ab 0 movers, cmd 72/72); shared trees
+> rebuilt, mex relinked (fast 672/0 at 6ccd86d, quick 80/0 at 8d04261).  NOTE: TO has UNCOMMITTED macos_api_mod
+> edits in the shared tree (spc_option_get / obs_opt_get) -- the relinked mex/.so carry them; pymacos 6893/2, the two
+> = TO's own coverage gate.  PUSHED on Dave's word 2026-10-16: through 8361252; LOCAL since: 9639428 6ccd86d
+> 8d04261 + this (TO's 3897bfb/b0b880c among them).  NEXT (CC): Phase B journals for Diffraction, Outputs, Window,
+> Plot Style, Linear Model, Misc; then the manual's math re-entry.  Dave: the push; the (a) ruling.**
+
 > **2026-10-16 evening (CC): WEEKLY GREEN at 0ecbc12 (CLI 114/114 both + 50/50 journals + ab 0 movers; mmacos fast 661/0;
 > pymacos 6715/0; PLAN_CONSOLIDATION §5 line).  PHASE-3 DOCS PASS 1 DONE: manual §3/§4/§5/§6 absorbed eight of the nine
 > `macos_f90/notes/*.md` (each absorbed section opens with a pointer to its manual paragraph; `cli.md` had nothing

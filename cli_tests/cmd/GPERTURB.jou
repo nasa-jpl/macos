@@ -1,0 +1,18 @@
+# GPERTURB: a rigid-body perturbation of an element GROUP (pymacos Rx_e5hex1, EltGrp= 5 9 10 11 12 13 declared
+# on elements 9-13), then the refusal on a deck with no group (cmdref: Perturbation).  A 1 urad tilt of the
+# group about x moves the focal-plane OPD from 3.622346888e-5 to 3.621855806e-5 mm.
+old $RES/pymacos/tests/Rx/Rx_e5hex1.in
+opd 13
+/null
+gperturb
+9
+global
+1e-6,0,0
+0,0,0
+opd 13
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+gperturb
+3
+# EXPECT: RMS OPD error is\s+3\.622346888D-05 mm[\s\S]*?MACOS> gperturb[\s\S]*?RMS OPD error is\s+3\.621855806D-05 mm
+# EXPECT: No element group defined at element\s+3
+# EXPECT-NOT: forrtl

@@ -2,14 +2,13 @@
 
 ## Appendix — CLI-suite coverage of the engine commands
 
-Of the 128 engine commands, 62 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 66 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
+Of the 128 engine commands, 78 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 50 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
 
-- **Session & Files:** HELP, REset, SUMmarize, ELTS, ECHo <text>, MREset, RX, LS, LL, VI, EMAcs
-- **Prescription I/O:** NEW, FID <id>, EXPort
+- **Session & Files:** HELP, VI, EMAcs
+- **Prescription I/O:** NEW
 - **Source & Wavelength:** WLENS, SWL, MULtispec, NFIlt, RFIlt, SFIlt, ATMosphere
-- **Behavior Toggles:** POLarized, OBS, REGrid/NOREGrid, ORS, SRS, NONe
-- **Surface Data:** SINt, UDSinit
-- **Perturbation:** GPERturb <grp>, PREad <file>
+- **Behavior Toggles:** POLarized
+- **Surface Data:** SINt
 - **Linear Model:** BUild, DMBuild, PARtials <i>, LPErturb, LPRead, LREset, LSPot, LOPd, LPIxilate
 - **Diffraction:** PROpagate, BEAm, COMpose, ADD, DAdd, CADD, NOIse, SEEd, STRetch
 - **Outputs (Ray-Trace & Diffraction):** ZABerr, LOS, METcalc, PIXel, AMPlitude, PHAse, PH, REAl, MTF, CMTF, IMG

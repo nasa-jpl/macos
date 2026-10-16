@@ -1,0 +1,9 @@
+# REGRID / NOREGRID: the per-element resampling toggle on CoroExample (cmdref: Behavior Toggles)
+old $ROOT/docs/macos-manual/examples/CoroExample.in
+regrid
+5
+noregrid
+5
+# EXPECT: Rays will be regridded at element\s+5
+# EXPECT: Rays will not be regridded at element\s+5
+# EXPECT-NOT: forrtl

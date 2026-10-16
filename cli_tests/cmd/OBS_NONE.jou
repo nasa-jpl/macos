@@ -1,0 +1,21 @@
+# NONE (no graphics, so SPOT never asks for a device) and OBS ALL / NEGATIVE / POSITIVE on the manual's
+# Cassegrain (cmdref: Behavior Toggles).  Each OBS setting confirms itself; the spot's centroid is reported
+# under each (the obscured rays are the 121 inside the secondary's shadow).
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+obs
+all
+spot 5
+tout
+obs
+negative
+spot 5
+tout
+obs
+positive
+spot 5
+tout
+# EXPECT: All rays plotted on spot diagrams[\s\S]*?Centroid of spot diagram[\s\S]*?Obscured rays only plotted on spot diagrams[\s\S]*?Centroid of spot diagram[\s\S]*?Unobscured rays only plotted on spot diagrams[\s\S]*?Centroid of spot diagram
+# EXPECT: A total of\s+121 rays were lost\s+Obscured:\s+121
+# EXPECT-NOT: Graphics device/type
+# EXPECT-NOT: forrtl
