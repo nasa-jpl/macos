@@ -6,6 +6,7 @@
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## Polarization physics (PLAN_POLARIZATION, Phase 0/1)
+*(Documented for the user: Manual §5 "Polarized Ray Tracing" (source state, coatings, what is modeled), §4 Polarizers and Waveplates / Coatings, §6 SCALAR / VECTOR; the evidence per gate is the Polarization Validation Report, `docs/macos-manual/polval/`.  Below: the engine record -- conventions, the two coating models, the fixes and their measurements.)*
 See `PLAN_POLARIZATION.md` (root) + `POLARIZATION_PHASE0_AUDIT.md` for the
 full audit.  Quick map of what the engine has and the conventions to hold.
 
@@ -362,6 +363,7 @@ symmetry-breaking magnitude term is quadrafoil-X, aligned with the pixel
 grid's own axes, while quadrafoil-Y stays at 1e-17).
 
 ## Phase 3 polarizing elements -- TrPolarizer + WavePlate (2026-07-27)
+*(Documented: Manual §4 "Polarizers and Waveplates"; polval §6.  Below: the engine record, including the TWO-dispatch-chains rule.)*
 
 `PolElt` in `elemsub.F` serves `TrPolarizerElt(15)` (ideal linear polarizer,
 finished from a name-table-only stub) and the NEW `WavePlateElt(18)` (linear
@@ -478,6 +480,7 @@ polarizing elements BEFORE its single `NFPlane`->`Geometric` leg for exactly
 that reason, and says so in its header.
 
 ## Phase 3a Tranche 1 -- vector propagation across the whole chain
+*(Documented: Manual §6 SCALAR / VECTOR (vector mode, `complex_field` planes, the Tranche-2 limitation); polval §5.  Below: the engine record and the seed phase convention.)*
 
 All in `propsub.F` (`CPROPAGATE` + two new module helpers).  Vector mode
 now closes a multi-leg chain; the coronagraph case (pupil→FPM→Lyot→focal)
