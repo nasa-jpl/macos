@@ -13,6 +13,8 @@ Commands below are available from the interactive CLI and, with few exceptions, 
 
 Exit MACOS.
 
+*CLI suite:* `MOD_spaces.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-Quit -->
 No dialog.  Closes the graphics device and any open output
 and journal files, then stops the process.  The dispatcher
@@ -28,6 +30,8 @@ command, plus the file/graphics cleanup.
 *Minimum match:* `HELP`
 
 This command list.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-HELP -->
 ```
@@ -50,6 +54,8 @@ catalog is generated from.  The dispatcher accepts `HEL`.
 
 Reset options & defaults to startup.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-REset -->
 No dialog.  Resets analysis state and options to startup
 defaults: clears the trace/build/propagate/perturb flags, the
@@ -64,6 +70,8 @@ that was preset in the Rx is preserved.
 *Minimum match:* `STatus`
 
 What is loaded / built / propagated.
+
+*CLI suite:* `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-STatus -->
 Needs a loaded Rx.  Prints one screen of session state: the
@@ -80,6 +88,8 @@ side effects.
 *Minimum match:* `SUMmarize`
 
 Pretty-print the optical system.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SUMmarize -->
 ```
@@ -102,6 +112,8 @@ after every successful OLD/NEW load.
 
 List elements (type, surface).
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ELTS -->
 ```
 MACOS>elts
@@ -119,6 +131,8 @@ numeric element ids used by SHOw, PERturb, COOrd, etc.
 *Minimum match:* `EXEcute`
 
 Run a .jou journal file.
+
+*CLI suite:* `CALIB_journal_prompts.jou`, `JOURNAL_EXE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-EXEcute -->
 ```
@@ -139,6 +153,8 @@ to the prompt.  SMACOS: file name in CARG(1).
 *Minimum match:* `JOUrnal`
 
 Generate a .jou journal file.
+
+*CLI suite:* `JOURNAL_EXE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-JOUrnal -->
 ```
@@ -162,6 +178,8 @@ the journal too, so a replay reproduces the session.
 
 Print <text> to stdout (annotate console / journal output).
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ECHo-text -->
 ```
 MACOS>echo starting perturbation study
@@ -179,6 +197,8 @@ in journal-driven runs.
 *Minimum match:* `MREset`
 
 Reset MACOS model size (128..8192).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-MREset -->
 ```
@@ -201,6 +221,8 @@ the model at init).
 
 Run a shell command.
 
+*CLI suite:* `CALIB_failed_trials.jou`, `CALIB_journal_prompts.jou`, `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-cmd -->
 ```
 MACOS>! ls -l *.jou
@@ -216,6 +238,8 @@ Interactive CLI only.
 *Minimum match:* `PWD`
 
 Working directory shell helpers.
+
+*CLI suite:* `NSRefractor_grid.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-PWD -->
 ```
@@ -237,6 +261,8 @@ error.  Interactive CLI only.
 
 List .in files / current directory.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-RX -->
 ```
 MACOS>rx
@@ -256,6 +282,8 @@ accepted).  Interactive CLI only.
 *Minimum match:* `VI`
 
 Open file in editor.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-VI -->
 ```
@@ -277,6 +305,8 @@ prescription before OLD/VALidate.  Interactive CLI only.
 
 Start a new optical system.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-NEW -->
 ```
 MACOS>new
@@ -296,6 +326,8 @@ re-prompts.  On completion the new system is written to
 *Minimum match:* `OLD <file>`
 
 Load a .in prescription.
+
+*CLI suite:* `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `GRIN_unsupported.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SPOT_text.jou`, `STOP_FEX_SXP.jou`, `TRACE_keeps_rx.jou`, `WARN_obscured_elt.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-OLD-file -->
 ```
@@ -318,6 +350,8 @@ propagate state.  SMACOS: file name in CARG(1).
 
 Load by file id (from RX listing).
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-FID-id -->
 ```
 MACOS>fid
@@ -335,6 +369,8 @@ file".  Interactive CLI shortcut for OLD.
 *Minimum match:* `VALidate <file>`
 
 Syntax-check a .in prescription without loading it.
+
+*CLI suite:* `VALIDATE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-VALidate-file -->
 ```
@@ -355,6 +391,8 @@ every OLD/LOAD.  Interactive CLI only.
 
 Write current system to .in.
 
+*CLI suite:* `SAVE_roundtrip.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-SAVe -->
 ```
 MACOS>save
@@ -374,6 +412,8 @@ CARG(1)=file name, CARG(2)=replace answer.
 *Minimum match:* `EXPort`
 
 Write select results to file.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-EXPort -->
 ```
@@ -397,6 +437,8 @@ ends the loop.  SMACOS: CARG(1..5) supply the dialog answers.
 *Minimum match:* `SHOw <elt>` — *needs:* [Rx] [Rx]
 
 Print all data for one element MODify <elt>- interactively edit one element.
+
+*CLI suite:* `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_failed_trials.jou`, `IndRef_stamp.jou`, `OptAsph_order.jou`, `TRACE_keeps_rx.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-SHOw-elt -->
 ```
@@ -425,6 +467,8 @@ only marks the Rx modified and resets those flags.
 *Minimum match:* `CHIefray`
 
 Chief ray as the FEX/SXP pupil-sphere axis (the default).
+
+*CLI suite:* `MODE_load_notice.jou`, `OPD_reference.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
@@ -467,6 +511,8 @@ PERturb 0, STOp, FFP or PFP for that.
 
 List Rx optimization wavelengths.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-WLENS -->
 ```
 MACOS>wlens
@@ -486,6 +532,8 @@ active wavelength.
 *Minimum match:* `SWL`
 
 Select wavelength by index.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SWL -->
 ```
@@ -508,6 +556,8 @@ invalidates trace/build/propagate state.  A bad ID prints
 *Minimum match:* `MULtispec`
 
 Multi-color image stacking.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-MULtispec -->
 ```
@@ -533,6 +583,8 @@ size.
 *Minimum match:* `NFIlt`
 
 Load / read / save MULtispec filter data.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-NFIlt -->
 ```
@@ -563,6 +615,8 @@ file name in CARG(1).
 
 Apply atmospheric phase screen.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ATMosphere -->
 ```
 MACOS>atm
@@ -587,6 +641,8 @@ CARG(1)=grid option, DARG(1)=grid spacing (non-RAY only).
 *Minimum match:* `SETC`
 
 Set design-optimization params.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SETC -->
 ```
@@ -622,6 +678,8 @@ POs translates ChfRayPos.  SMACOS: SAOpt option in CARG(1).
 
 Source-adjustment mode.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-SAOpt -->
 ```
 MACOS>saopt
@@ -649,6 +707,8 @@ option in CARG(1).
 
 Trace ray i; print state at each surface.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-RAY-i -->
 ```
 MACOS>ray
@@ -674,6 +734,8 @@ in IARG(1).
 *Minimum match:* `SEGRAYTrace <i>` — *needs:* [Rx]
 
 Trace a ray through segment i s center (uses RptElt).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SEGRAYTrace-i -->
 ```
@@ -701,6 +763,8 @@ LoadStack entry — the segment prompt takes its default
 
 Find pupil / marginal rays.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-PRAy -->
 ```
 MACOS>rray
@@ -727,6 +791,8 @@ as (0.9,0).
 
 Trace the PRAy/RRAy rays.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-TPR -->
 No dialog.  Traces each reference ray found by the last RRAy
 or PRAy (chief + 4 marginal, or the 0.9-radius pupil ring)
@@ -745,6 +811,8 @@ no LoadStack entry.
 *Minimum match:* `MAP`
 
 Print ray-to-segment map.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-MAP -->
 ```
@@ -770,6 +838,8 @@ the srcMap ray/segment map structure is filled instead.
 
 Beam coordinates at element.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-COOrd-elt -->
 ```
 MACOS>coord
@@ -793,6 +863,8 @@ SMACOS: element number in IARG(1).
 
 All-element coords (xyzLocal.txt).
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ACOor -->
 ```
 MACOS>acoor
@@ -813,6 +885,8 @@ the range are skipped with a warning; last must be >= first.
 *Minimum match:* `SYSprop` — *needs:* [Rx]
 
 First-order system properties.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SYSprop -->
 ```
@@ -849,6 +923,8 @@ SMACOS: IARG(1)=focal-plane element.
 
 System effective focal length / f-ratio / plate scale.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-EFL -->
 ```
 MACOS>efl
@@ -872,6 +948,8 @@ are kept internally).
 
 Chief-ray walk vs nominal.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-BWK -->
 ```
 MACOS>bwk
@@ -892,6 +970,8 @@ Interactive CLI only.
 *Minimum match:* `FEXit`
 
 Find exit pupil.
+
+*CLI suite:* `STOP_FEX_SXP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-FEXit -->
 ```
@@ -942,6 +1022,8 @@ XPS (pupil solve over the full ray grid).
 
 Set exit pupil at an element.
 
+*CLI suite:* `STOP_FEX_SXP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-SXP -->
 ```
 MACOS>sxp
@@ -979,6 +1061,8 @@ SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
 
 Exit-pupil surface fit over the full ray grid.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-XPS -->
 ```
 MACOS>xps
@@ -1009,6 +1093,8 @@ IARG(1)=EP element.
 
 Find source ray nearest an aperture position.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-FSR -->
 ```
 MACOS>fsr
@@ -1030,6 +1116,8 @@ rays that fail to pass are skipped.
 
 Center beam in system stop.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-CENter -->
 ```
 MACOS>center
@@ -1050,6 +1138,8 @@ DARG(1:2)=offset.
 *Minimum match:* `STOp`
 
 Define system stop element.
+
+*CLI suite:* `STOP_FEX_SXP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-STOp -->
 ```
@@ -1087,6 +1177,8 @@ DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 
 Beam-centroid FEX/SXP axis (opt-in; the chief ray is the default).
 
+*CLI suite:* `MODE_centroid.jou`, `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-CENTRoid -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
 
@@ -1111,6 +1203,8 @@ centroid axis per deck.
 *Minimum match:* `FFP <x`
 
 Find field point that places chief ray at element coordinate.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-FFP-x -->
 ```
@@ -1139,6 +1233,8 @@ CARG(1)=accept answer.
 
 Find field point that places chief ray at pixel coordinate.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-PFP-x -->
 ```
 MACOS>pfp
@@ -1163,6 +1259,8 @@ answer.
 *Minimum match:* `FDP`
 
 Find detector plane orientation.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-FDP -->
 ```
@@ -1189,6 +1287,8 @@ too.  SMACOS: IARG(1)=element, CARG(1)=accept answer.
 
 Spot-diagram centering option.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-SPCenter -->
 ```
 MACOS>spcenter
@@ -1208,6 +1308,8 @@ spot.  SMACOS: option in CARG(1).
 *Minimum match:* `LNEg/NOLNeg`
 
 Allow/disallow negative pathlengths.
+
+*CLI suite:* `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-LNEg-NOLNeg -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
@@ -1232,6 +1334,8 @@ NOLNeg to forbid negative lengths.
 *Minimum match:* `POLarized`
 
 Polarization tracing on.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-POLarized -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
@@ -1273,6 +1377,8 @@ also `macos.jones_pupil` for polarization-aberration analysis.
 
 Polarization off.
 
+*CLI suite:* `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-NOPolarization -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
 
@@ -1291,6 +1397,8 @@ state if polarization was on.
 *Minimum match:* `OBS`
 
 Spot-diagram obscuration option.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-OBS -->
 ```
@@ -1312,6 +1420,8 @@ CARG(1).
 *Minimum match:* `REGrid/NOREGrid`
 
 Resample wavefront at element during propagation.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-REGrid-NOREGrid -->
 ```
@@ -1339,6 +1449,8 @@ command is effectively interactive-CLI only.
 *Minimum match:* `ORS`
 
 Optimize reference surface.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-ORS -->
 ```
@@ -1369,6 +1481,8 @@ SMACOS: IARG(1)=element, CARG(1)=accept answer.
 *Minimum match:* `SRS`
 
 Slave one ref surface to another.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SRS -->
 ```
@@ -1404,6 +1518,8 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-NONe -->
 ```
 MACOS>none
@@ -1422,6 +1538,8 @@ type of choice for journals/scripts that must run headless.
 *Minimum match:* `SINt`
 
 Set up interpolated-surface data.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SINt -->
 ```
@@ -1450,6 +1568,8 @@ the data files must exist under the loaded Rx root name.
 
 Set up user-defined-surface data.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-UDSinit -->
 ```
 MACOS>udsinit
@@ -1477,6 +1597,8 @@ poke UDSrfCoef directly, Section 4.4.10).
 *Minimum match:* `PERturb <elt>` — *needs:* [Rx]
 
 Apply 6-DOF perturbation.
+
+*CLI suite:* `PERTURB.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-PERturb-elt -->
 ```
@@ -1514,6 +1636,8 @@ rotation+translation.
 
 Perturb an element group.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-GPERturb-grp -->
 ```
 MACOS>gperturb
@@ -1539,6 +1663,8 @@ grid state.  SMACOS: same argument mapping as PERturb
 *Minimum match:* `PREad <file>`
 
 Apply perturbations from file.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-PREad-file -->
 ```
@@ -1566,6 +1692,8 @@ SMACOS: file name in CARG(1).
 *Minimum match:* `BUild` — *needs:* [Rx]
 
 Build linear model from chief-ray ray partials.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-BUild -->
 ```
@@ -1595,6 +1723,8 @@ SMACOS: IARG(1)=terminal element.
 
 Build with deformable mirror.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-DMBuild -->
 ```
 MACOS>dmbuild
@@ -1618,6 +1748,8 @@ SMACOS: IARG(1)=terminal element.
 *Minimum match:* `PARtials <i>` — *needs:* [BLD]
 
 Print partial derivs, ray i.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-PARtials-i -->
 ```
@@ -1655,6 +1787,8 @@ CARG(1) is reached.
 
 Linear-model perturb.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-LPErturb -->
 ```
 MACOS>lperturb
@@ -1689,6 +1823,8 @@ with LREset.  SMACOS: IARG(1)=element, CARG(1)=YES/NO
 
 Linear perturb from file.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-LPRead -->
 ```
 MACOS>lpread
@@ -1712,6 +1848,8 @@ name in CARG(1).
 
 Zero linear perturbations.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-LREset -->
 ```
 MACOS>lreset
@@ -1728,6 +1866,8 @@ shows the unperturbed linear result.  SMACOS: no arguments.
 *Minimum match:* `LSPot` — *needs:* [BLD]
 
 Linear-model spot / OPD.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-LSPot -->
 ```
@@ -1755,6 +1895,8 @@ perturbation range is the standard linearity check (Section
 *Minimum match:* `LPIxilate` — *needs:* [BLD]
 
 Linear-model pixelated image.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-LPIxilate -->
 ```
@@ -1790,6 +1932,8 @@ defaults.
 
 Note: NOT a command; propagation runs automatically inside any output command.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-PROpagate -->
 ```
 MACOS>propagate
@@ -1818,6 +1962,8 @@ describes propagation only via the output commands.
 *Minimum match:* `BEAm`
 
 Set beam type (Gauss, plane, ...).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-BEAm -->
 ```
@@ -1848,6 +1994,8 @@ radius/exponent (COS**POWER); omitted for UNIFORM.
 *Minimum match:* `VECtor`
 
 Vector vs scalar diffraction (with POLarized).
+
+*CLI suite:* `MODE_scalar.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-VECtor -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
@@ -1892,6 +2040,8 @@ imaging is unavailable.  SMACOS: no arguments.
 
 Start a multi-object/color image.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-COMpose -->
 ```
 MACOS>compose
@@ -1919,6 +2069,8 @@ IARG(2)=pixels per side, RARG(1)=pixel size.
 *Minimum match:* `ADD`
 
 Add to / display composed image.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-ADD -->
 ```
@@ -1953,6 +2105,8 @@ stack per call makes this harmless).
 
 Add current intensity to composed.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-CADD -->
 ```
 MACOS>cadd
@@ -1979,6 +2133,8 @@ SMACOS: no LoadStack entry — prompts take their defaults.
 *Minimum match:* `NOIse`
 
 Image noise + RNG seed.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-NOIse -->
 ```
@@ -2013,6 +2169,8 @@ RARG(1)=expected.  SEED: IARG(1)=seed.
 
 LIN / LOG / SQRT display stretch.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-STRetch -->
 ```
 MACOS>stretch
@@ -2038,6 +2196,8 @@ SMACOS: CARG(1)=type.
 *Minimum match:* `OPD` — *needs:* [Rx]
 
 Wavefront error map.
+
+*CLI suite:* `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `SAVE_roundtrip.jou`, `TRACE_keeps_rx.jou`, `WARN_obscured_elt.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-OPD -->
 ```
@@ -2078,6 +2238,8 @@ returned in OPDMat.
 *Minimum match:* `OPDREF`
 
 OPD reference: CHIEF or MEAN (the chief ray is the default).
+
+*CLI suite:* `OPD_reference.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-OPDREF -->
 ```
@@ -2128,6 +2290,8 @@ match).
 
 Spot diagram.
 
+*CLI suite:* `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-SPOt -->
 ```
 MACOS>spot
@@ -2162,6 +2326,8 @@ option; spot data in RaySpot.
 
 Zernike OPD aberration.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ZABerr -->
 ```
 MACOS>zaberr
@@ -2192,6 +2358,8 @@ grid.  Interactive CLI only.
 
 Zernike coefficient extraction.
 
+*CLI suite:* `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-ZCOef -->
 ```
 MACOS>zcoef
@@ -2220,6 +2388,8 @@ beam grid.  Interactive CLI only.
 *Minimum match:* `LOS`
 
 Line-of-sight output.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-LOS -->
 ```
@@ -2253,6 +2423,8 @@ takes its default.
 
 Metrology beam output.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-METcalc -->
 ```
 MACOS>metcalc
@@ -2277,6 +2449,8 @@ element motions.  No arguments; requires only a loaded Rx.
 *Minimum match:* `INTensity` — *needs:* [DIFF]
 
 Wavefront intensity.
+
+*CLI suite:* `INT_LOG.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-INTensity -->
 ```
@@ -2313,6 +2487,8 @@ IARG(1)=element; intensity available programmatically.
 
 Pixelated intensity output.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-PIXel -->
 ```
 MACOS>pix
@@ -2346,6 +2522,8 @@ LPIxilate.
 
 Amplitude output.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-AMPlitude -->
 ```
 MACOS>amp
@@ -2368,6 +2546,8 @@ IARG(1)=element.
 *Minimum match:* `PHAse` — *needs:* [DIFF]
 
 Phase output.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-PHAse -->
 ```
@@ -2394,6 +2574,8 @@ element).
 
 Real & imaginary wavefront.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-REAl -->
 ```
 MACOS>real
@@ -2415,6 +2597,8 @@ IARG(1)=element.
 *Minimum match:* `LOG` — *needs:* [DIFF]
 
 Log10 intensity.
+
+*CLI suite:* `INT_LOG.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-LOG -->
 ```
@@ -2440,6 +2624,8 @@ SMACOS: IARG(1)=element.
 *Minimum match:* `MTF` — *needs:* [DIFF]
 
 Modulation transfer function.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-MTF -->
 ```
@@ -2469,6 +2655,8 @@ the MTF data is computed into the shared display buffer.
 *Minimum match:* `IMG` — *needs:* [DIFF]
 
 Simulate imaging of the ObjFile object map.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-IMG -->
 ```
@@ -2501,6 +2689,8 @@ defaults (last element, incoherent).
 
 Gray-scale surface plot.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-GRay -->
 ```
 MACOS>gray
@@ -2522,6 +2712,8 @@ two-letter `GR`.
 
 Wireframe plot.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-WIRe -->
 ```
 MACOS>wire
@@ -2542,6 +2734,8 @@ until changed.
 
 Slice surface plot.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-SLIce -->
 ```
 MACOS>slice
@@ -2559,6 +2753,8 @@ subsequent surface-data plots until changed.
 *Minimum match:* `COLumn`
 
 Column line plot.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-COLumn -->
 ```
@@ -2583,6 +2779,8 @@ nothing — the column prompt happens at plot time.
 
 Contour surface plot.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-CONtour -->
 ```
 MACOS>contour
@@ -2600,6 +2798,8 @@ plots until changed.
 *Minimum match:* `IMGmode`
 
 Toggle image polarity (NEG=astro, POS=conventional).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-IMGmode -->
 ```
@@ -2624,6 +2824,8 @@ default, leaving the mode as-is.
 
 Color / gray image rendering.
 
+*CLI suite:* `MODE_cir.jou`, `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-CIR -->
 **A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
 
@@ -2639,6 +2841,8 @@ image rendering is on").  Affects raster image displays
 *Minimum match:* `PGP`
 
 PGPLOT panel layout (1,2,3,4,9).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-PGP -->
 ```
@@ -2661,6 +2865,8 @@ to reinitialize on the next plot.  Interactive CLI only.
 *Minimum match:* `TEXt`
 
 ASCII print output.
+
+*CLI suite:* `PLOT_TYPES.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-TEXt -->
 ```
@@ -2688,6 +2894,8 @@ is chosen.
 
 Binary image file.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-BINary -->
 ```
 MACOS>binary
@@ -2707,6 +2915,8 @@ is chosen.
 *Minimum match:* `FITs`
 
 FITS / wide-FITS image file.
+
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-FITs -->
 ```
@@ -2731,6 +2941,8 @@ data is not available, run OPD command").
 
 MATLAB .mat file.
 
+*CLI suite:* `PLOT_TYPES.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+
 <!-- BEGIN NOTES cmd-MAT -->
 ```
 MACOS>mat
@@ -2748,6 +2960,8 @@ Persists until another plot type is chosen.
 *Minimum match:* `GETMatlabmatrix`
 
 (currently disabled: handler is a no-op stub) (smacos only).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-GETMatlabmatrix -->
 SMACOS builds only (#ifdef SMACOS_CMD) — the CLI does not
@@ -2767,6 +2981,8 @@ SMACOS call-line arguments instead.
 *Minimum match:* `PLOcate`
 
 Set plot pixel-array location.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-PLOcate -->
 ```
@@ -2799,6 +3015,8 @@ DARG(2:3)=element vertex, DARG(4:5)=window center.
 
 Clear plot location.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-NOPLOC -->
 ```
 MACOS>noploc
@@ -2815,6 +3033,8 @@ PLOcate / WINdow.
 
 Launch external he.py plot GUI.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-PWIn -->
 Interactive CLI only.  No dialog: spawns an external
 Python/Tcl-Tk GUI script ("he.py") in the background through
@@ -2830,6 +3050,8 @@ dialog, not this command.
 *Minimum match:* `SZCo`
 
 Select ZCOef Zernike basis (Cir / Ann / Hex).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SZCo -->
 ```
@@ -2852,6 +3074,8 @@ LoadStack entry.
 *Minimum match:* `GBS` — *needs:* [Rx]
 
 Geometric beam footprint at an element.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-GBS -->
 ```
@@ -2880,6 +3104,8 @@ first<=last check — ranges are effectively CLI-only.
 *Minimum match:* `BLUr`
 
 Blur / Gaussian blur.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-BLUr -->
 ```
@@ -2912,6 +3138,8 @@ RARG(1:2)=x,y widths; CARG(1)='NO' suppresses the plot.
 
 Apply gain map to intensity.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-GAIn -->
 ```
 MACOS>gain
@@ -2936,6 +3164,8 @@ Luneberg lens example).  SMACOS: IARG(1)=element.
 *Minimum match:* `ODRaw`
 
 Outline drawing / PGPLOT diagnostics.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-ODRaw -->
 ```
@@ -2963,6 +3193,8 @@ for ODRaw (only DRAW has one: IARG(1:3), CARG(1)).
 
 Extract / plot row from image.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-ROW -->
 ```
 MACOS>row
@@ -2988,6 +3220,8 @@ row prompt happens at plot time.
 *Minimum match:* `AVAR <elt>`
 
 Add a variable element.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-AVAR-elt -->
 ```
@@ -3016,6 +3250,8 @@ Zernike-range step is skipped (no Zernike terms).
 
 Modify a variable element.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-MVAR-elt -->
 ```
 MACOS>mvar
@@ -3035,6 +3271,8 @@ to change that.  SMACOS: no LoadStack entry.
 
 Delete a variable element.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-DVAR-elt -->
 ```
 MACOS>dvar
@@ -3051,6 +3289,8 @@ element!" otherwise).  SMACOS: IARG(1)=element.
 *Minimum match:* `VARS`
 
 List all variable elements.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-VARS -->
 ```
@@ -3070,6 +3310,8 @@ Variable Element for Optimization!" when the set is empty.
 *Minimum match:* `AFOV <fov>`
 
 Add a field of view.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-AFOV-fov -->
 ```
@@ -3094,6 +3336,8 @@ just entered.  SMACOS: no LoadStack entry.
 
 Delete a field of view.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-DFOV-fov -->
 ```
 MACOS>dfov
@@ -3110,6 +3354,8 @@ of range).  SMACOS: no LoadStack entry.
 *Minimum match:* `FOVS`
 
 List all fields of view.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-FOVS -->
 ```
@@ -3132,6 +3378,8 @@ consistently; only this listing mislabels it).
 *Minimum match:* `CALib`
 
 Run system optimization.
+
+*CLI suite:* `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `OptAsph_order.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 <!-- BEGIN NOTES cmd-CALib -->
 ```
@@ -3179,6 +3427,8 @@ trials).
 
 Select field of view.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-SFOV -->
 ```
 MACOS>sfov
@@ -3203,6 +3453,8 @@ CLI only.
 *Minimum match:* `SRAy`
 
 Older single-ray variants (use RAY).
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-SRAy -->
 ```
@@ -3238,6 +3490,8 @@ available.
 
 Debug / diagnostic prints.
 
+*CLI suite:* none yet.
+
 <!-- BEGIN NOTES cmd-DOPD -->
 DOPD (no dialog; interactive CLI only) plots a DIFFERENTIAL
 OPD map — the current OPDMat minus the previous OPD run —
@@ -3269,6 +3523,8 @@ commented out of the dispatcher and NOT available.
 *Minimum match:* `JWST_v3d`
 
 3D rendering demo.
+
+*CLI suite:* none yet.
 
 <!-- BEGIN NOTES cmd-JWST-v3d -->
 No dialog.  Starts the JWST 3-D rendering demo as a child

@@ -30,6 +30,7 @@ order:
 | `10_engine_commands.md` | Part I: ~120 engine commands by HELP category | **generated** |
 | `20_bindings.md` | Part II: mmacos/pymacos functions side by side | **generated** |
 | `30_higher_level.md` | Part III: `macos.design`, `macos.channels` | **generated** |
+| `40_suite_coverage.md` | Appendix: the engine commands no CLI-suite journal exercises yet (the Phase B worklist) | **generated** from `cli_tests/cmd/*.jou` |
 
 ## Editing rules
 
@@ -62,8 +63,15 @@ order:
 
 - Phase A (2026-07-07): scaffolding, syntax chapters, generated
   catalogs — complete; document builds and is usable.
-- Phase B (pending): expand Part I entries category by category with
-  dialog transcripts and behavior notes.
+- Phase B (in progress): every Part I entry carries a NOTES block
+  (128/128 since 2026-10-10) and, since 2026-10-16, a generated
+  `*CLI suite:*` line naming the `cli_tests/cmd/*.jou` journals that
+  issue the command — the journal is the entry's example and its
+  regression test (PLAN_CONSOLIDATION §2.2/§1.5).  The appendix
+  `40_suite_coverage.md` lists the commands still without one
+  (35 of 128 covered at 2026-10-16); writing a journal closes an entry.
+  The link is a dispatcher-style minimum match on each journal's
+  command tokens, recomputed at every regen.
 - Phase C (pending): expand Part II entries cluster by cluster;
   the "*not available*" flags double as a binding-parity worklist.
 
