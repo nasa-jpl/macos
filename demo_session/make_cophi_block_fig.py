@@ -81,7 +81,7 @@ def mirror(ax, x, y, ang_deg, size=1.0, color=INK, lw=3):
 
 
 def draw(multi, lockin=False):
-    Hh = H + (2.4 if multi else 0) - 1.5
+    Hh = 16.1 + (2.4 if multi else 0)   # the RF column compacted 2026-10-16 (Dave: less white space, bigger text)
     fig = plt.figure(figsize=(26, 26 * Hh / W), dpi=200)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_xlim(0, W); ax.set_ylim(0, Hh); ax.axis("off")
@@ -89,40 +89,40 @@ def draw(multi, lockin=False):
     # (no in-figure title: the slide carries it -- Dave 2026-10-12)
     # ------------------------------------------------------------------ RF / timing (top left)
     ro = 0.0 if not multi else 2.4                   # the RF column rides up in the two-color figure
-    rb = box(ax, 3.2, 16.8 + ro, 2.6, 1.0, "10 MHz Rb standard\n(SRS FS725 class)", fs=12.3)
-    s1 = box(ax, 0.6, 14.8 + ro, 2.5, 1.0, "Synthesizer 1\n80 MHz", fs=12.3)
-    s2 = box(ax, 3.6, 14.8 + ro, 2.5, 1.0, ("Synthesizer 2\n80 MHz + 5 kHz" if lockin else "Synthesizer 2\n80 MHz + 7.5 Hz"), fs=12.3)
-    wire(ax, [port(rb, "b"), (port(rb, "b")[0], 16.2 + ro), (1.85, 16.2 + ro), port(s1, "t")])
-    wire(ax, [(port(rb, "b")[0], 16.2 + ro), (4.85, 16.2 + ro), port(s2, "t")])
+    rb = box(ax, 3.2, 14.6 + ro, 2.6, 1.0, "10 MHz Rb standard\n(SRS FS725 class)", fs=12.3)
+    s1 = box(ax, 0.6, 13.1 + ro, 2.5, 1.0, "Synthesizer 1\n80 MHz", fs=12.3)
+    s2 = box(ax, 3.6, 13.1 + ro, 2.5, 1.0, ("Synthesizer 2\n80 MHz + 5 kHz" if lockin else "Synthesizer 2\n80 MHz + 7.5 Hz"), fs=12.3)
+    wire(ax, [port(rb, "b"), (port(rb, "b")[0], 14.3 + ro), (1.85, 14.3 + ro), port(s1, "t")])
+    wire(ax, [(port(rb, "b")[0], 14.3 + ro), (4.85, 14.3 + ro), port(s2, "t")])
     if multi:
-        s3 = box(ax, 6.7, 14.8 + ro, 2.5, 1.0, "Synthesizer 3\n80 MHz", fs=12.3)
-        s4 = box(ax, 9.7, 14.8 + ro, 2.5, 1.0, "Synthesizer 4\n80 MHz + 3.75 Hz", fs=12.3)
-        wire(ax, [(4.85, 16.2 + ro), (7.95, 16.2 + ro), port(s3, "t")])
-        wire(ax, [(7.95, 16.2 + ro), (10.95, 16.2 + ro), port(s4, "t")])
-        label(ax, 12.5, 16.2 + ro, "one reference for all four synthesizers: the two beats are coherent", fs=11.1, color=GRAY)
-    d1 = box(ax, 0.6, 13.0 + ro, 2.5, 0.9, "AOM driver 1\n(RF amp, 2 W)", fs=11.7)
-    d2 = box(ax, 3.6, 13.0 + ro, 2.5, 0.9, "AOM driver 2", fs=11.7)
+        s3 = box(ax, 6.7, 13.1 + ro, 2.5, 1.0, "Synthesizer 3\n80 MHz", fs=12.3)
+        s4 = box(ax, 9.7, 13.1 + ro, 2.5, 1.0, "Synthesizer 4\n80 MHz + 3.75 Hz", fs=12.3)
+        wire(ax, [(4.85, 14.3 + ro), (7.95, 14.3 + ro), port(s3, "t")])
+        wire(ax, [(7.95, 14.3 + ro), (10.95, 14.3 + ro), port(s4, "t")])
+        label(ax, 12.5, 14.3 + ro, "one reference for all four synthesizers: the two beats are coherent", fs=11.1, color=GRAY)
+    d1 = box(ax, 0.6, 11.8 + ro, 2.5, 0.9, "AOM driver 1\n(RF amp, 2 W)", fs=11.7)
+    d2 = box(ax, 3.6, 11.8 + ro, 2.5, 0.9, "AOM driver 2", fs=11.7)
     wire(ax, [port(s1, "b"), port(d1, "t")]); wire(ax, [port(s2, "b"), port(d2, "t")])
     if lockin:
-        m1 = box(ax, 0.6, 11.5 + ro, 2.5, 0.8, "RF tap\n80 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-        m2 = box(ax, 3.6, 11.5 + ro, 2.5, 0.8, "RF tap\n80 MHz + 5 kHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-        mx = box(ax, 1.6, 9.9 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 5 kHz beat reference", fs=11.7)
+        m1 = box(ax, 0.6, 10.8 + ro, 2.5, 0.8, "RF tap\n80 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        m2 = box(ax, 3.6, 10.8 + ro, 2.5, 0.8, "RF tap\n80 MHz + 5 kHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        mx = box(ax, 1.6, 9.6 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 5 kHz beat reference", fs=11.7)
         tg = box(ax, 1.6, 8.5 + ro, 3.5, 0.85, "Lock-in REFERENCE input\n(the beat itself; no frame trigger)", fs=10.8)
     else:
-        m1 = box(ax, 0.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-        m2 = box(ax, 3.6, 11.5 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz + 30 Hz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-        mx = box(ax, 1.6, 9.9 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 30 Hz frame clock", fs=11.7)
+        m1 = box(ax, 0.6, 10.8 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        m2 = box(ax, 3.6, 10.8 + ro, 2.5, 0.8, "x4 multiplier\n320 MHz + 30 Hz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
+        mx = box(ax, 1.6, 9.6 + ro, 3.5, 0.9, "Mixer + low-pass\n-> 30 Hz frame clock", fs=11.7)
         tg = box(ax, 1.6, 8.5 + ro, 3.5, 0.85, "Camera trigger\n(30 fps = 4 frames / beat)", fs=11.7)
     wire(ax, [port(s1, "l"), (0.35, port(s1, "l")[1]), (0.35, port(m1, "l")[1]), port(m1, "l")])
     wire(ax, [port(s2, "r"), (6.35, port(s2, "r")[1]), (6.35, port(m2, "r")[1]), port(m2, "r")])
-    wire(ax, [port(m1, "b"), (port(m1, "b")[0], 11.2 + ro), (2.6, 11.2 + ro), (2.6, 10.8 + ro)])
-    wire(ax, [port(m2, "b"), (port(m2, "b")[0], 11.2 + ro), (4.1, 11.2 + ro), (4.1, 10.8 + ro)])
+    wire(ax, [port(m1, "b"), (port(m1, "b")[0], 10.6 + ro), (2.6, 10.6 + ro), (2.6, 10.5 + ro)])
+    wire(ax, [port(m2, "b"), (port(m2, "b")[0], 10.6 + ro), (4.1, 10.6 + ro), (4.1, 10.5 + ro)])
     wire(ax, [port(mx, "b"), port(tg, "t")])
     if multi:
-        d3 = box(ax, 6.7, 13.0 + ro, 2.5, 0.9, "AOM driver 3", fs=11.7)
-        d4 = box(ax, 9.7, 13.0 + ro, 2.5, 0.9, "AOM driver 4", fs=11.7)
+        d3 = box(ax, 6.7, 11.8 + ro, 2.5, 0.9, "AOM driver 3", fs=11.7)
+        d4 = box(ax, 9.7, 11.8 + ro, 2.5, 0.9, "AOM driver 4", fs=11.7)
         wire(ax, [port(s3, "b"), port(d3, "t")]); wire(ax, [port(s4, "b"), port(d4, "t")])
-        note(ax, 12.5, 13.45 + ro, "second beat 3.75 Hz = 8 frames per beat at the same 30 fps: both beats are\n"
+        note(ax, 12.5, 12.25 + ro, "second beat 3.75 Hz = 8 frames per beat at the same 30 fps: both beats are\n"
                                    "integer frame counts, demodulated together by the N-bucket least squares", fs=10.4)
 
     # ------------------------------------------------------------------ optical chain (middle)
@@ -254,8 +254,8 @@ def draw(multi, lockin=False):
     label(ax, 16.4, 1.05, ("per I/Q sample: sigma_phi^2 = (pi^2/8) 2 (I0 + r^2) / (I0^2 g^2), I0 = well x fill; well-capped -- 3.4 s per pm as surveyed" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
 
     name = "cophi_block_lockin.png" if lockin else ("cophi_block_multi.png" if multi else "cophi_block_single.png")
-    fig.savefig(f"figs/{name}", dpi=200, facecolor="white")
-    fig.savefig(f"figs/{name.replace('.png', '.svg')}", facecolor="white")
+    fig.savefig(f"figs/{name}", dpi=200, facecolor="white", bbox_inches="tight", pad_inches=0.08)
+    fig.savefig(f"figs/{name.replace('.png', '.svg')}", facecolor="white", bbox_inches="tight", pad_inches=0.08)
     print("wrote figs/" + name)
 
 

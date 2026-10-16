@@ -16,8 +16,8 @@
    "w": 12.55
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 3.75,
-   "y": 1.56,
+   "x": 6.0,
+   "y": 1.5,
    "w": 6.4
   },
   "txt:make_cophi_block_fig.py; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 6).": {
@@ -38,9 +38,9 @@
    "cb": 0.026
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 3.5,
-   "y": 2.45,
-   "w": 6.65
+   "x": 6.3,
+   "y": 2.3,
+   "w": 6.6
   },
   "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
    "x": 6.75,
@@ -48,9 +48,9 @@
    "w": 6.18
   },
   "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
-   "x": 3.5,
-   "y": 1.24,
-   "w": 6.35
+   "x": 6.3,
+   "y": 1.22,
+   "w": 6.6
   }
  },
  "Performance side by side: HET against the IFO on the same surface": {
@@ -111,28 +111,28 @@
  "Capture from a cold start: two colors frequency-multiplexed on one camera": {
   "img:cophi_block_multi.png": {
    "x": 0.8,
-   "y": 1.29,
-   "w": 9.95,
-   "h": 6.15,
+   "y": 2.5,
+   "w": 12.0,
+   "h": 4.8,
    "cl": 0,
    "cr": 0,
    "ct": 0.0306,
    "cb": 0.0237
   },
   "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
-   "x": 4.0,
-   "y": 1.26,
-   "w": 9.0
+   "x": 0.45,
+   "y": 1.22,
+   "w": 12.4
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 5.75,
-   "y": 2.7,
+   "x": 0.45,
+   "y": 2.0,
    "w": 6.4
   },
   "txt:make_cophi_block_fig.py; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.": {
-   "x": 5.0,
+   "x": 7.0,
    "y": 2.0,
-   "w": 8.0
+   "w": 5.9
   }
  },
  "The LO on the DM Gauge bench replaces the IFO's reference flat": {
