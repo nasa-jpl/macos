@@ -7,13 +7,7 @@
 
 ## OPD reference: the CHIEF RAY by default, the aperture mean the option (2026-10-10)
 
-> **Documented 2026-10-10:** the user-facing rule is in the manual, §5.2.2
-> (the OPD definition + the reference paragraph) and §4 (the hand-added
-> keywords bullet; the `ZernType=` default rule under "Zernike Surfaces"),
-> and in the cmdref entries `OPD` / `OPDREF` and the bindings' `opd_ref` /
-> `opd_mask`.  What follows is the ENGINE record (where the flags live, what
-> moved, the measurements); trim to a pointer in phase 3 of
-> `PLAN_CONSOLIDATION.md`.
+*(Documented: Manual §5.2.2 (the OPD definition and the reference paragraph: both references, `UseChfRay4OPD`, OPDREF, the printed line, the lost-chief fallback, `opd_mask`), §4 "Editing .In-Files" + SAVE, §3 "Session options and LOAD"; cmdref OPD / OPDREF, bindings `opd_ref` / `opd_mask`.  Below: the ENGINE record -- where the flags live, what moved, the measurements.  Trimmed 2026-10-16.)*
 
 Dave's ruling (`BRIEF_to_opd_reference.md`): the engine matches the manual --
 a ray's OPD is its optical path minus the CHIEF ray's.  `SUBROUTINE OPD`
@@ -130,6 +124,7 @@ kills the HOST process when the engine is a mex — `macos.init` now
 screens against `macos.model_sizes()` first.
 
 ## SPOT / dcdx were CHIEF-RAY-centred: the CLI after every LOAD, mmacos's dw_dx by request (2026-10-06, Luis)
+*(Documented: Manual §5 SPOT (SPCenter, shape vs line of sight), §3 "Session options and LOAD" (the five modes, the LOAD notice); cmdref SPCenter / CENTRoid.  Below: the mechanism, the rule and the audit.)*
 `spcOption` (the `SPCENTER` option: 1 = spot about the element vertex,
 2 = about the chief ray) is a SESSION option.  The 2024 re-init pass
 (a9b6f9e) put `spcOption = 0` into `elt_mod_init_vars`, which every Rx

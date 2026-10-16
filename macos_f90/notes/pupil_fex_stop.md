@@ -6,6 +6,7 @@
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## SPOT BEAM reference frame: obscured chief ray (tracesub.F LocalCoord)
+*(User rule -- an obscured but geometrically defined chief ray still defines the Beam frame -- is Manual §5 SPOT.  Mechanism below.)*
 - `SPOT ... beam` (and `WINDOW/PLOCATE ... beam`) build the beam coordinate
   frame from a **chief-ray trace** in `LocalCoord` (tracesub.F ~2612): a
   nominal chief ray + two differential rays (x/y translate/rotate), each via
@@ -27,6 +28,7 @@
   Cass, beam ray count == tout).
 
 ## FEX/SXP axis convention: CHIEF-RAY DEFAULT on all platforms (Dave 2026-08-27)
+*(Documented: Manual §5 FEX (axis paragraph), §3 "Session options and LOAD"; cmdref CENTRoid / CHIefray / FEXit / SXP.  Below: the sites, the history and the gate pattern.)*
 `ifCentroid` governs ONLY the FEX/SXP pupil-sphere AXIS (nothing else
 consumes it): chief (`psi=-cr1dir`) vs centroid (`psi=unit(centroid@
 iElt+1 - CrossPt)`).  On obscured/segmented/comatic beams the centroid
@@ -49,6 +51,7 @@ model-size prompt comes FIRST).  cmdref FEXit/SXP/CHIefray/CENTRoid
 entries carry the convention table.
 
 ## FEX/SXP radius on a CURVED iElt+1: intersect the SURFACE (2026-08-28)
+*(Documented: Manual §5 FEX, the KrElt bullet.  Below: the engine record -- the four load-bearing facts, the measurements, the blast radius.)*
 
 The 2026-07-03 rework below made the EP radius the chief-ray distance
 from the EP crossing to element iElt+1's **tangent PLANE**
@@ -122,6 +125,7 @@ equals the surface leg on the jwst deck only because elt 26 is
 coincident with elt 28.
 
 ## Re-traces are IDEMPOTENT: OrthoSrcFrame + the aim dead bands (2026-09-08)
+*(Documented: Manual §5 Background, last paragraph (bit-identical re-traces, the 16/2 ulp bands, the NOTE).  Below: the engine record.)*
 Luis's 'centre-channel speckle' in dwdsurf_9zoom_5fov (Terminal Opus,
 `REPORT_sens_noise_center.md`): a strict 2-CYCLE of the OPD across
 identical traces on the jwst zoom deck -- max 2.2e-11 mm = 6 ulp of the
@@ -187,6 +191,7 @@ at 7 iterations (ratio 0.18, converged from 7 up) with the mechanism in
 its header.
 
 ## Element STOP preserves the source frame's HANDEDNESS (2026-09-08)
+*(Documented: Manual §5 STOP, the segment / handedness paragraph.  Below: the mechanism and the measurements.)*
 `UpdSrcGrid` (sourcsub.F, the only caller of `define_local_csys` on the
 SOURCE frame; reached from ChiefRayAiming, i.e. every ELEMENT stop)
 rebuilt (xGrid,yGrid,ChfRayDir) right-handed.  The corpus is full of
@@ -216,6 +221,7 @@ stamp writes `RayFailElt = nElt+1` (29 on a 28-element deck), not the
 clipping element.
 
 ## FEX probe is FRAME-INDEPENDENT (2026-09-08, Dave)
+*(Documented: Manual §5 FEX, the five-ray paragraph and the `EP crossing` line.  Below: the magnitudes and the five re-pinned tests.)*
 `FEXProbeCross` (tracesub_mod, called by BOTH `FEX` and `SXP`) traces
 FOUR differential chief rays, `+/-5d-6` about two orthonormal axes
 perpendicular to the source chief ray (azimuth seeded by xGrid, yGrid
@@ -261,6 +267,7 @@ the STOP-ELT entrance-pupil crossing, FPP/PFP and the WINDOW/PLOCATE
 beam-frame probes (those DEFINE a frame from xGrid by design).
 
 ## FEX EP-radius rework (2026-07-03) + SXP command (Set eXit Pupil)
+*(Documented: Manual §5 FEX, the KrElt bullet and the guards paragraph (telecentric, footprint, lost probes, SXP, XPS); cmdref FEXit / SXP / XPS.  Below: the engine record and the SMACOS dispatch rule.)*
 **FEX now defaults to the EP→next-element radius** (Dave's spec): the
 EP Return radius is ALWAYS the chief-ray distance from the EP
 (CrossPt) to the **iElt+1 plane — whatever iElt+1 is** (FP,
@@ -329,6 +336,7 @@ that IACCEPT_S reads in SMACOS mode), NOT to `macos_ops.F`.
 
 
 ## STOP on a Segment element + multi-value prompt gather (2026-09-08)
+*(Documented: Manual §5 STOP -- one-line entry, Segment allowed, NS refused, the parent-vertex trap.  Below: the mechanisms and the measured traps.)*
 Two CLI fixes from Dave's j18sc `fex 27` session (no `ApStop=` in that
 deck, so a STOP had to be set by hand):
 - **`stop obj 0 0 0` on ONE line crashed** (`forrtl severe (24): end-of-

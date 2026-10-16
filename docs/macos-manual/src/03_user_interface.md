@@ -205,6 +205,10 @@ Pressing return at the MACOS\> prompt with no command is a no-op - useful for cl
 
 Unknown commands print a single-line warning rather than the verbose multi-line traceback that v3.2 produced.
 
+#### Session options and LOAD
+
+Five options are properties of the session, not of the prescription: POLARIZATION (and its SCALAR/VECTOR choice), NOLNEG, CENTROID (the FEX axis, Section 5) and CIR (the color palette). Set once, they stay in force across every OLD or LOAD until changed again; a load that finds any of them away from its default prints one line, for example `LOAD: session modes in force: POLARIZATION, VECTOR`. STATUS lists them; RESET returns all but the palette to their defaults. The same holds for the OPD reference set with OPDREF (Section 5) and for IMGMODE (Section 7). Everything else a command sets about the loaded system, such as the stop or the variable elements for CALIB, belongs to that prescription and is reset by the next load. The MATLAB and Python bindings keep the same options across their loads and warn in the same words.
+
 ### Graphics Display
 
 MACOS provides in-line graphical displays on Unix machines using the PGPLOT package from CalTech (see installation notes for information on how to obtain PGPLOT). PGPLOT is started up at the first invocation of a MACOS graphics function, such as INTensity. PGPLOT prompts the user to define the desired form for the graphical output:

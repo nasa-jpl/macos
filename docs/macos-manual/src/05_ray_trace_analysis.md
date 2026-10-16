@@ -41,6 +41,8 @@ In MACOS, “tracing rays” means updating specific ray-state variables so that
 
 -   RayIndex(iRay)stores the current index of refraction of the ray. These definitions are illustrated in Figure 30.
 
+Repeating a trace of an unchanged system reproduces it bit for bit. The source coordinate frame and the stop aim are re-derived at every trace, but an update smaller than round-off (16 units in the last place) is not applied, so a re-trace never walks the frame by a bit and finite-difference sensitivities see no noise floor from it. An update between 2 and 16 units in the last place that was withheld is reported once per run (`** Note: a ... update of N ulp ... was NOT applied`); such a note means a program is stepping the source direction or the stop position at round-off level.
+
 ### Ray-Trace Commands
 
 1.  **DRAW**
@@ -293,7 +295,7 @@ A spot diagram is an x-y plot across the beam. It puts a dot at the point of inc
 
 Rays which are obscured or vignetted by obscurations or apertures on the current or previous elements are not plotted by default. The OBScuration command changes which rays are plotted and is discussed in Section 5.2.7.
 
-The SPOt command has the argument iElt: the number of the element where the spot diagram is to be computed. In addition, the user is asked to select which output coordinates to use to define the x and y axes. The choices are Tout, Enter or Beam (see Section 4). SPOt plots an x-y scatter format unless plot types TEXt, BINary, or MATlab are selected, in which case a “.spot” file is written to disk. Figures 4 and 36 show spot diagrams for Cassegrain.in.
+The SPOt command has the argument iElt: the number of the element where the spot diagram is to be computed. In addition, the user is asked to select which output coordinates to use to define the x and y axes. The choices are Tout, Enter or Beam (see Section 4). The Beam frame is built from a trace of the chief ray and two differential rays; a chief ray that is obscured but geometrically defined, such as the on-axis chief ray of a centrally obscured telescope, still defines it. The spot is plotted about the element's reference point by default; the SPCenter command (`chfray`) plots it about the chief ray instead, which makes the spot a measure of shape only: a tilt of a fold mirror then moves the printed chief-ray location but not the spot. SPOt plots an x-y scatter format unless plot types TEXt, BINary, or MATlab are selected, in which case a “.spot” file is written to disk. Figures 4 and 36 show spot diagrams for Cassegrain.in.
 
 
 
@@ -416,7 +418,9 @@ STOp has 2 or 3 arguments, depending on whether the stop is to be specified at a
 
 If the former, the next parameter requested is the element number. This is followed by a request for an offset vector: a 2-vector in local beam coordinates giving the center of the stop with respect to the vertex of the element (VptElt).
 
-If the stop is to be specified in object space, the next request is for the 3-vector coordinates of the stop position.
+If the stop is to be specified in object space, the next request is for the 3-vector coordinates of the stop position. The three values may be typed on one line separated by commas or spaces; a short line is completed from the next tokens, with a note saying how many values are still expected.
+
+The stop element may be a Segment of a segmented mirror (the chief ray is mapped to that segment); it may not be a non-sequential element, which is refused by name. In segmented prescriptions every segment's VptElt is the parent vertex, so an offset of 0,0 on any segment gives the same stop; a segment's own center needs an offset measured from its RptElt. An element stop rebuilds the source coordinate frame about the new chief ray but keeps the frame's handedness (a left-handed xGrid, yGrid, ChfRayDir triad stays left-handed), so the ray grid of a segmented source stays on its segments.
 
 MACOS\>**stop**
 
@@ -576,11 +580,15 @@ FEX traces five rays: the nominal chief ray and four differential chief rays who
 
 -   vertex, VptElt, to the center of the exit pupil
 
--   radius of curvature, KrElt, to the distance between the exit pupil and detector
+-   radius of curvature, KrElt, to the chief-ray distance from the exit pupil to the next element (iElt+1), whatever that element is: a focal plane, a mask or a reference surface. When iElt+1 is a curved focal surface the chief ray is intersected with the surface itself, not its tangent plane; the plane would read as defocus in the off-axis OPD (zero on axis, which is why it goes unnoticed).
 
 -   principal axis, PsiElt, to the chief ray direction, ChfRayDir
 
 The result is a reference sphere aligned with the spherical wavefront converging to the point where the chief ray hits the detector. This configuration correctly models diffraction images at that point field point. If the optical system is perturbed, the FEX command must be rerun.
+
+The axis of the reference sphere is the chief ray by default. The CENTROID command aims it at the centroid of the beam at iElt+1 instead, and CHIEFRAY restores the default; the prescription keyword `FEXCentroid= N` vetoes the centroid for a deck. On an obscured, segmented or aberrated beam the centroid walks off the chief ray, so the centroid axis tilts the sphere and reads as tip and tilt (and, against a chief-ray OPD reference, piston) in the OPD. Leave the default. Each FEX run prints the axis it used and the crossing it found, `EP crossing = mean of N probes; spread S`; the spread is the difference between the tangential and sagittal pupils, a measure of pupil astigmatism.
+
+FEX guards its own setup and says so. If the four differential chief rays are parallel to the nominal one (a telecentric system) the crossing is undefined; FEX keeps the element where it is and makes it flat. If the reference sphere would be smaller than the beam footprint at the exit pupil (marginal rays would miss it) FEX switches to the legacy radius, the distance to the preceding focal return, and reports the two values. If some probe rays are lost it averages the survivors with a warning. The SXP command (Set eXit Pupil) is FEX without these guards and gives the same sphere on every prescription checked; XPS writes the per-ray crossing cloud of the exit pupil for a pupil-quality evaluation.
 
 FEX requires two arguments: the number iElt of the exit pupil return surface and the location in global coordinates of the vertex of the aperture stop.
 
