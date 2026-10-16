@@ -108,3 +108,13 @@ the group's diagonal Gram block; controls survive as `(Pu·Jk)'(Pu·Jk)` at
 
 Awaiting Dave's word on whether to start the controls phase.  Memory:
 `project_error_budget_tool`.
+
+## CCL gate (Linux, 2026-10-15)
+
+Run from the shared Linux tree at resources `a0961dc` + the engine at macos `694e02d`
+(ifx and gfortran libraries current; the mmacos mex at the same engine): **`tBudgetKernel`
+7/7, `tRunBudget` 2/2** — the e5hex1 cov ≡ MC agreement holds on the Linux engine.  No
+source outside `+budget/` / the runner / the two test classes touched, so no A/B was run;
+the two `SUITE_FAST` entries merged with TO's `tResolutionSweep` (same line, both lanes
+appended; resolved at the rebase).  The stale-library symptom you met on the Mac did not
+appear here (the Linux trees were rebuilt at the A-list gate).  Controls phase: Dave's call.
