@@ -200,16 +200,17 @@ def draw(multi, lockin=False):
         CH = "#B9770E"
         cam = box(ax, spx - 2.0, y0 + 2.3, 9.1, 1.9, "", fc="none", tc=INK, ec=ACCENT, lw=1.4)
         label(ax, spx + 2.7, y0 + 4.0, "LOCK-IN camera (heliCam C4): 542 x 512 pixels, I/Q at 1 kHz", fs=8.4, color=ACCENT, bold=True)
-        pxw, pxh, pxy = 1.95, 1.15, y0 + 2.45
-        p1 = box(ax, spx - 1.85, pxy, pxw, pxh, "photodiode\nI(t) = I0 [1 +\ng cos(phi - w_b t)]", fs=8.9, fc=ACCENT)
-        p2 = box(ax, spx + 0.35, pxy, pxw, pxh, "transfer gates\nA|B by s_I (0/180)\nC|D by s_Q (90/270)", fs=8.9, fc=CH)
-        p3 = box(ax, spx + 2.55, pxy, pxw, pxh, "storage nodes\nA  B  C  D\n(N cycles / sample)", fs=8.9, fc=LIGHT, tc=INK, ec=CH)
-        p4 = box(ax, spx + 4.75, pxy, pxw, pxh, "A - B -> I\nC - D -> Q\n(the DC cancels)", fs=8.9, fc=DATA)
-        wire(ax, [port(p1, "r"), port(p2, "l")], color=CH, lw=2.0); wire(ax, [port(p2, "r"), port(p3, "l")], color=CH, lw=2.0); wire(ax, [port(p3, "r"), port(p4, "l")], color=DATA)
+        pxw, pxh, pxy = 1.62, 1.15, y0 + 2.45
+        p1 = box(ax, spx - 1.85, pxy, pxw, pxh, "photodiode\nI(t) = I0 [1 +\ng cos(phi - w_b t)]", fs=8.4, fc=ACCENT)
+        p2 = box(ax, spx - 0.03, pxy, pxw, pxh, "transfer gates\nA|B by s_I (0/180)\nC|D by s_Q (90/270)", fs=8.2, fc=CH)
+        p3 = box(ax, spx + 1.79, pxy, pxw, pxh, "storage nodes\nA  B  C  D\n(N cycles / sample)", fs=8.4, fc=LIGHT, tc=INK, ec=CH)
+        p4 = box(ax, spx + 3.61, pxy, pxw, pxh, "A - B -> I\nC - D -> Q\n(the DC cancels)", fs=8.4, fc=DATA)
+        p5 = box(ax, spx + 5.43, pxy, pxw, pxh, "ADCs on the sensor\n2 x 10 bit per pixel\n-> digital I, Q", fs=8.2, fc=DATA)
+        wire(ax, [port(p1, "r"), port(p2, "l")], color=CH, lw=2.0); wire(ax, [port(p2, "r"), port(p3, "l")], color=CH, lw=2.0); wire(ax, [port(p3, "r"), port(p4, "l")], color=DATA); wire(ax, [port(p4, "r"), port(p5, "l")], color=DATA)
         beam(ax, [(spx, spy), (spx, port(p1, "b")[1] + 0.02)])
         label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
         label(ax, spx - 1.95, y0 + 4.28, "s_I, s_Q = the 5 kHz beat (square wave)", fs=8.8, color=RF)
-        lk = p4
+        lk = p5
     else:
         cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS", fs=10.4)
         beam(ax, [(spx, spy), (spx, port(cam, "b")[1] + 0.02)])
@@ -225,7 +226,7 @@ def draw(multi, lockin=False):
     label(ax, 6.8, ty + 0.22, ("the 5 kHz beat reference to the lock-in camera: every pixel demodulates ~5 cycles per 1 ms I/Q frame; no bucket, no frame trigger" if lockin else "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input"), fs=10.8, color=RF)
 
     # ------------------------------------------------------------------ processing (bottom)
-    fg = box(ax, 14.2, py - 0.1, 2.3, 0.9, ("I/Q frame grabber\n(GigE, 2 x 10 bit)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
+    fg = box(ax, 14.2, py - 0.1, 2.3, 0.9, ("GigE receiver\n(digital I/Q frames)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
     src = lk if lockin else cam
     wire(ax, [port(src, "r"), (port(src, "r")[0] + 0.3, port(src, "r")[1]), (port(src, "r")[0] + 0.3, y0 + 4.45), (bx0 + 11.2, y0 + 4.45), (bx0 + 11.2, py + 0.35), port(fg, "r")], color=DATA)
     if multi:
