@@ -38,8 +38,8 @@
    "cb": 0.026
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 4.6,
-   "y": 2.5,
+   "x": 3.5,
+   "y": 2.45,
    "w": 6.65
   },
   "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
@@ -48,8 +48,8 @@
    "w": 6.18
   },
   "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
-   "x": 4.65,
-   "y": 1.35,
+   "x": 3.5,
+   "y": 1.24,
    "w": 6.35
   }
  },
@@ -169,6 +169,31 @@
    "x": 4.75,
    "y": 7.18,
    "w": 8.15
+  }
+ },
+ "The reading's algebra, pinned before the bench": {
+  "img:cophi_equations.png": {
+   "x": 0.33,
+   "y": 1.26,
+   "w": 12.67,
+   "h": 3.99
+  },
+  "txt:Integrating bucket (1)–(2)": {
+   "x": 0.45,
+   "y": 5.0,
+   "w": 6.35
+  },
+  "txt:Step error (5)": {
+   "x": 7.0,
+   "y": 5.0,
+   "w": 5.9
+  }
+ },
+ "How much resolution? IFO, vector ZWFS, HET — the sweep's records": {
+  "txt:ressweep_run / ressweep_zrun / ressweep_figs": {
+   "x": 0.5,
+   "y": 7.0,
+   "w": 12.4
   }
  }
 }
