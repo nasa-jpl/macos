@@ -82,6 +82,8 @@ MACOS implicitly enforces a padding requirement of at least 50% at compile time 
 
 Once the surfaces for the diffraction calculations are properly set up, the beam can be propagated through the system by invoking one of the propagation commands described in this section (such as INtensity). These commands use geometric and Fresnel propagators to propagate the complex amplitude matrix to the specified element. They then plot the appropriate data product.
 
+Two rules about what the propagation sees. First, masks: an obscuration or aperture is applied to the diffraction-grid field only when its element is `Element= Obscuring`. On a Reference (or any other element type) the same obscuration clips rays in the ray trace but leaves the grid field untouched, so a focal-plane mask declared on a Reference looks like a coronagraph in the prescription and does nothing to the propagated field; declare masks for diffraction as Obscuring elements (CoroExample.in, element 6). Second, media: a propagation leg inside a material of index n runs at the wavelength λ/n, so its Fresnel number is the medium's; a leg is assumed homogeneous (a leg that crosses a refracting face is not modeled), and a line announces any leg with n ≠ 1.
+
 We list here the available diffraction propagators (Table 13).
 
 **TABLE 13** MACOS diffraction propagators
@@ -180,6 +182,8 @@ We assign the geometric propagator (PropType=1) to all elements, except for the 
 The main advantage of using the exit pupil for far-field diffraction is that the ray grid is usually well-formed there. If a system is significantly aberrated, sampling at non-pupil planes may give distorted ray grids which causes a poor match between the locations of the ray grid and the locations of the complex amplitude matrix grid used in the diffraction calculations. However if the system is well corrected and the ray grid is regular, a different plane may be used. A spot diagram at the plane provides a good qualitative check. Another check is provided by the propagation diffraction summary, which gives information on the “dx” or ray spacing across the reference surface.
 
 Example B illustrates a system that uses a reference surface located away from the exit pupil to mark the start of a far-field diffraction calculation. Two fewer surfaces are required in this case, as the reference surface is placed in the beam between the final optical element (element 6) and the focal plane. All elements are assigned PropType=1, except the reference surface which is assigned PropType=3 to mark the start of the far-field propagation. Again, the reference surface is be a sphere with radius of curvature equal to the distance from the reference surface to the point of incidence of the chief ray with the focal plane. The SRS command can be used to find the orientation and radius for the reference surface.
+
+A far-field leg maps spatial frequency f to the output coordinate x = λ z f. A pupil sampled finer than λ/2 (a 20 µm pinhole at 1 µm on a 64-point grid, or any heavily zero-padded fine pupil) therefore produces output pixels beyond |x| > z that carry no propagating energy. They are kept by default, so that the normalization of record is unchanged; the bindings' `ffcut` option zeroes them and reports how many it removed.
 
 #### Near-Field
 

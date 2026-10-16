@@ -546,6 +546,8 @@ This example lens has a spherical front surface and a planar rear surface, as il
     Enter element index of refraction [1.00000]:1 IndRef
     Enter element extinction coefficient [0.00000]:0 Extinc
 
+A Refractor may carry a gradient-index model (`GradInd=` with its coefficients). Only model 5, the radial profile n(r) = n0 + n2 r² + n4 r⁴ integrated with a Runge–Kutta step, is implemented; a ray meeting any other model is lost by name (`GRIN model not implemented`, counted in the WARN summary) rather than traced with undefined values. Model 5 cannot presently be entered from a prescription file; this is an open item.
+
 NOTE: It is not uncommon to “lose” rays, if they miss the properly defined area of a lens, that is, if the rays miss the region where the 2 surfaces of the lens are sequential. If rays extend beyond the intersection point of the two elements, the rays become undefined and are not traced further as shown in Figure 17.
 
 This ray hits the elements out of sequence, becomes undefined
@@ -698,6 +700,8 @@ MACOS gratings can be defined on any surface shape. Enter surface parameters to 
 -   h1HOE: A unit 3-vector perpendicular to the ruling direction and the psiElt vector. This vector is rotated and translated appropriately if the element is perturbed using the MACOS Perturb command.
 
 -   RulingWidth: The fixed distance between rules as projected to a flat plane underlying the surface. Distance between rules *along the curved surface* can vary if the surface shape is curved, which will be the case with a conic or aspheric surface type.
+
+This is the convention of a straight-ruled grating: equidistant parallel groove planes cutting the surface, so on a curved grating the period measured along the surface grows where the surface tilts (the chord model, as in CODE V and Zemax); a flat grating is unaffected. Two consequences for analysis. The optical path difference across a grating is defined only modulo the wavelength (the engine's smooth order-m phase equals the physical groove staircase mod λ), so compare OPDs across a grating as wrapped phase or as the complex field, never as unwrapped lengths. And a grating's aperture and obscurations vignette rays as those of any other element do.
 
 ![](media/image46.png){width="2.609722222222222in" height="1.3715277777777777in"}The following example shows the new dialog used to specify a grating on a flat surface. The complete prescription, with a collimated source illuminating the grating at normal incidence, is provided in Appendix A.2. Figure 19 shows the diffracted beam at a couple of orders.
 
@@ -884,6 +888,8 @@ This dialog produced the following prescription data:
 #### Reference Surfaces or Dummy Elements
 
 Reference surfaces are “dummy” elements, with no direct effect on the light. They are used in MACOS to define the start and stop points of diffraction propagations. They are also used to provide a screen on which to project the beam for viewing using ray-trace or diffraction commands. They have many other uses as well.
+
+A Reference may be given `Surface= Zernike` or `Surface= Aspheric` so that it carries a basis definition (modes, coefficients, aperture) for a program to read; the surface terms are stored but never applied to the rays. The one active exception is a Reference with grid data, which is a deliberate phase screen (Section 6). Obscurations on a Reference clip rays but do not touch the diffraction-grid field; a mask for a diffraction propagation must be an `Element= Obscuring` (Section 6.2).
 
 As discussed in Section , reference surfaces can be aligned with the nominally spherical (or flat) wavefront of a particular beam. When done correctly, the reference surface then defines the nominal reference wavefront, or the wavefront the beam would have if it were perfect. The OPD of the actual beam wavefront on the surface (Section 5.2.5) then represents the deviation from perfection of the beam wavefront. These differences drive the MACOS diffraction propagators. This approach greatly reduces the sampling density required to avoid undersampling a wavefront for diffraction (ref. Siegman and Szicklas).
 
@@ -1567,6 +1573,8 @@ Flat surfaces are completely defined by a point (the “vertex” VptElt) on the
 
 Conic surfaces – really conicoids of revolution – include the most common optical shapes: spheres, ellipsoids, paraboloids, hyperboloids. Flat surfaces are spheroids with an infinite radius of curvature. MACOS specifies the shape of a conic surface using two surface-specific parameters: the conic constant KcElt and the “radius,” KrElt. Table 7 lists the common names associated with special values of the conic constant.
 
+A hyperboloid or an ellipsoid has two sheets. A ray is intersected with the sheet the vertex lies on (the two are told apart by the sign of the surface normal's axial component), and the far sheet is never taken even when a ray crosses it first; on a Return or Reference the root nearest the element's reference point RptElt is taken, which lets the exit-pupil sphere of FEX be traced back from the focus. An intersection choice that differs from the pre-2026 rule is counted and reported once per run in the WARN summary; such a count on an old prescription means it was tracing onto the wrong sheet.
+
 **TABLE 7.** Conic coefficients
 
 +---------------------+------------------------------------------------+
@@ -2011,7 +2019,7 @@ In addition to the dense MonCoef form (120 coefficients in Cartesian monomial or
 
 MonZernType selects the Zernike ordering and normalization. Supported types: ANSI, BornWolf, Fringe, NormANSI, NormBornWolf, NormFringe, NormNoll, Noll, NormAnnularNoll, NormHex, ExtFringe. The Norm\* variants use RMS normalization; the unprefixed variants are unnormalized.
 
-Conversion to the internal monomial form (MonCoef) happens automatically at trace time. The same scheme applies to FF Zernikes: FFZernType, nFFZernCoef, FFZernModes, FFZernCoef. Modes are 1-indexed.
+Conversion to the internal monomial form (MonCoef) happens automatically at trace time. The same scheme applies to FF Zernikes: FFZernType, nFFZernCoef, FFZernModes, FFZernCoef. Modes are 1-indexed; a modes line may be written on one line or wrapped over several.
 
 #### Monomial Surfaces
 
@@ -2089,6 +2097,8 @@ nGridMat columns. The data is read in using the following Fortran READ sequence:
     ((GridMat(i,j,jGridSrf),i=1,nGridMat),j=1,nGridMat)
 
 The i and j indices correspond to the xMon and yMon coordinates, respectively:. The matrix is assumed centered at the pMon point. Increasing index values represent steps of size GridSrfdx along that axis. The maximum extent of the surface is ±(nGridMat/ 2)\*GridSrfdx in either direction. Rays that fall outside the covered area are passed, but using only the base conic to determine direction and pathlength.
+
+The grid spans (nGridMat − 1)·GridSrfdx base units in each direction, centered on the grid frame origin pData; a ray outside the span sees no figure (this is not an error), so a GridSrfdx too small for the element leaves figure only near its center. A grid declared larger than the compile-time mGridMat is not traced: the file is declined by name at load and the grid term is inert. When an element carries both a grid and Zernike terms, the grid frame xData, yData should equal the Zernike frame xMon, yMon, or a figure applied to one segment will not localize.
 
 The data is read in when the prescription is read. No setup computations are required (no SINT command). Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see Section 9.2.3).
 

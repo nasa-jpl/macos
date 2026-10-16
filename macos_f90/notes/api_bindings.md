@@ -71,6 +71,7 @@
   (Phase 1) and flat-top NF pillars (Phase 2).
 
 ## macos_api_mod: language-neutral wrapper layer for pymacos + mmacos
+*(The routine catalog is cmdref Part II (generated from the api source); the bindings program is PLAN_CONSOLIDATION §1.4a/b, BRIEF_to_bindings.md.  Below: the layer's shape and its porting record.)*
 
 `macos_f90/macos_api_mod.F90` (compiled into `libsmacos.a`) is the
 shared SMACOS-call wrapper that both `pymacos` (Python) and `mmacos`
@@ -132,6 +133,7 @@ both.
 > *template* (spot_cmd/spot_get pattern) belongs with macos_api_mod above.
 
 ## Coronagraph mask element type (silent failure mode)
+*(Documented: Manual §6 "Setting up Diffraction Propagations" (masks) and §4 Reference Surfaces.  Below: how it was found.)*
 Circular obscurations declared in a prescription (`nObs`, `ObsType=Circle`,
 `ObsVec=...`) are **only applied to the diffraction-grid wavefront when the
 element is `Element= Obscuring`**.  If the element is `Element= Reference`

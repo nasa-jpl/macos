@@ -393,7 +393,7 @@ MaxIter (4) -- root-finder hit its iteration limit
 
 Undef (5) -- initial state, never updated
 
-The end-of-trace WARN summary breaks down failures by category and records the offending element index for the first failure of each ray. Bracket / iter messages are throttled after the first 20 to keep the terminal usable when many rays fail.
+The end-of-trace WARN summary breaks down failures by category and records, for each ray, the element of its first failure; for an obscured ray that is the element that clipped it, and WARN lists the obscured count per element. A trace restarted part way through the train (an OPD after an earlier trace) keeps the statuses of the earlier part. Bracket / iter messages are throttled after the first 20 to keep the terminal usable when many rays fail. The bindings return the per-ray status and element (`ray_status_get`; mmacos `get_ray_status`).
 
 ### Beam Set-Up Commands
 

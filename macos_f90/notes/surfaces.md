@@ -29,6 +29,7 @@ Composite surface: conic + Mon monomial + FF monomial + grid data.
 
 
 ## GRIN: only model 5 integrates; any other GradInd= LOSES its rays by name (2026-10-10)
+*(Documented: Manual §4 Refractors (gradient-index paragraph).  Below: the engine record.)*
 The Refractor's gradient-index branch (`elemsub.F`, `IsGrinRef`) implements ONLY
 `GradInd= 5` (radial n(r) = n0 + n2 r^2 + n4 r^4, `modelCoef(1)` = the R-K step `dt`,
 `getIndex_grin5` in utilsub.F).  Every other model fell into `Else ! other lens models --
@@ -66,6 +67,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
 - Refractor also has MonGrData (12/13) dispatch calling MonGridSrf.
 
 ## GridSrf (SrfType-9) passed a NULL grid frame — CLOSED (sls-dev 03db580, opt-dev 1b535a5)
+*(User-facing parts documented: Manual §4 Interpolated Surfaces (grid span, oversize grid declined, grid frame = Zernike frame), §4 "Editing .In-Files" (NSCount), §5 per-ray status.  Below: the engine record.)*
 - `GridSrf` (the SrfType-9 thin wrapper over `FreeFormSrf` in surfsub.F)
   forwarded an all-zero grid coordinate frame (`pData_null/xData_null/
   yData_null/zData_null = 0`) to FreeFormSrf.  FreeFormSrf maps each ray into
@@ -187,6 +189,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   broke the Zernike-apply trace path (see next section).
 
 ## Zernike-apply trace dispatch requires ZernTypeL ≠ 0
+*(User rule documented: Manual §4 Zernike Surfaces (ZernType default ANSI; the names; ExtFringe).  Below: the dispatch record.)*
 - `propsub.F:230-249` (and the parallel `srtrace.F:145-153`) dispatches
   `ZerntoMon1/2/3/4/6/7` based on `ZernTypeL(iElt)`. The chain has NO `ELSE`
   branch — if ZernTypeL is 0 (the elt_mod.F:944 initial value), the IF/ELSEIF
@@ -247,6 +250,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   `cli_tests/cmd/ZernType_extfringe.jou`, pymacos `test_zern_extfringe.py`.
 
 ## Conforming Reference: Surface=Zernike/Aspheric is PASSIVE (sls-dev c9fa767)
+*(Documented: Manual §4 Reference Surfaces (passive basis carrier; grid Reference the active exception; masks must be Obscuring) and Sparse Zernike input (wrapped modes line).  Below: the engine record.)*
 - `Element=Reference` accepts `Surface=Zernike` (8) and `Surface=Aspheric` (3)
   so a reference can CARRY a Zernike basis definition (modes/coeffs/lMon/
   aperture = "segment shapes") for GS-basis dev.  Gate: `EltSurfCompat`
@@ -270,6 +274,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   per-segment poke won't localize (dW→central dot).
 
 ## Physical-optics kernels are MEDIUM-AWARE (2026-09-30, dyson5)
+*(Documented: Manual §6 "Setting up Diffraction Propagations" (media paragraph).  Below: the mechanism and the gate.)*
 Every kernel call in `propsub.F`'s leg dispatch (NFPROP, PPPROP, SFPROP,
 FRPROP, NFPropDFT, FFPropDFT, SPH2PL/PL2SPH, FFPROP, `FnCalc`) was handed
 `WaveBU`, the VACUUM wavelength in base units, whatever medium the leg ran
@@ -292,6 +297,7 @@ one by 74%; post-fix glass == scaled to ~1e-13 and != unscaled by 71-73%.
 Vector mode inherits it (same `WaveMed` per component plane).
 
 ## Gratings on CURVED surfaces are CHORD-ruled (2026-09-30, dyson5 finding #2)
+*(Documented: Manual §4 Reflective Gratings (the chord convention, OPD modulo λ, grating apertures).  Below: the engine record.)*
 `Snells_Law_Grating` (elemsub.F, serves Grating / TrGrating / DoeTrGrating)
 built the local grating vector from the UNITISED projection of the rule
 direction onto the local tangent plane, i.e. a groove period constant ALONG
@@ -331,6 +337,7 @@ the complex field), never as unwrapped lengths; the ray-side scorer never
 uses path lengths and is unaffected.
 
 ## ifLNsrf root pick is AXIAL, not radial; restarted traces reset PrevNonSeg (2026-10-03)
+*(Documented: Manual §4 Conic Surfaces (the sheet rule, the RptElt pick on Return/Reference).  Below: the engine record.)*
 TO's R2c Schwarzschild (`tests/Rx/Rx_SchwarzschildEP.in`): the EP
 Reference (elt 1, the stop) sits 5.3 mm ahead of a CONVEX hyperboloid.
 `macos.trace(5)` in ONE call gave a 93 mm rms spot; `trace(1)..trace(5)`
@@ -376,6 +383,7 @@ ray-by-ray diff found the divergence at ray 2, not ray 1 (the chief is
 on axis, h = 0, and never sees the metric's flaw).
 
 ## Forward root pick is the VERTEX SHEET, not the vertex distance (2026-10-04)
+*(Documented: Manual §4 Conic Surfaces.  Below: the engine record and the corpus A/B.)*
 The 10-03 entry above closed the `ifLNsrf` branch and left the FORWARD
 branch alone ("forward trains never reach this").  They do, through the
 other defect of the same metric.  The `.NOT.ifLNsrf` pick in ConSrf /
@@ -424,6 +432,7 @@ The OPD at a FP the chiefs hit at 31 deg is still 0.5 mm-class on a
 reason `add_pupil` exists; it is now a REAL number, not a wrong one.
 
 ## A Grating never vignetted by its aperture (2026-10-06, dyson5 3k join)
+*(Documented: Manual §4 Reflective Gratings (last sentence).  Below: the mechanism and the gate rule.)*
 `elemsub.F`'s four grating routines (`Grating`, `TrGrating`, `FzpTrGrating_`,
 `DoeTrGrating`) computed the aperture / obscuration verdict with
 `ChkRayTrans` and then OVERWROTE `LRT` on the next statement with the
@@ -450,6 +459,7 @@ aperture.  Any element type that vignettes needs one ray outside the
 aperture in its gate.
 
 ## Far-field evanescent cut, opt-in (2026-10-03, dyson5 addendum 15)
+*(Documented: Manual §6 Far-Field (the evanescent paragraph); cmdref Part II `ffcut`.  Below: the mechanism and the gates.)*
 A far-field leg (`FFPROP` / `FFPropDFT`) maps spatial frequency f to the
 output coordinate `x = lambda*dz*f`, i.e. `sin(theta) = x/dz`.  The
 output window is `lambda*dz/dx1` wide, so a pupil sampled finer than
