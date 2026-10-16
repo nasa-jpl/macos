@@ -71,6 +71,7 @@ cmdref-pdf: $(BUILD)/macosCmdRef.pdf
 # regenerate the auto-skeleton catalogs from engine + binding sources
 cmdref-regen:
 	python3 tools/gen_cmdref.py
+	python3 ../../../MACOS_resources/mmacos/src/gen_mex_wrappers.py --targets defaults
 
 $(BUILD)/macosCmdRef.docx: $(CMDSRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)
