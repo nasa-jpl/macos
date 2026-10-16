@@ -18,6 +18,8 @@ edits `src/` only.
 make            # docx + html into build/
 make pdf        # via LibreOffice (tools/docx2pdf.py refreshes TOC)
 make appendix-c # regen src/93_appendix_c_commands.md from macos_help.inc
+make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
+                  # (every Part I entry's "*CLI suite:*" line comes from cli_tests/cmd/*.jou)
 ```
 
 ## Rules / gotchas

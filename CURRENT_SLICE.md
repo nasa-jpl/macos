@@ -24,6 +24,16 @@
 
 ## Active slice
 
+> **2026-10-16 evening (CC): WEEKLY GREEN at 0ecbc12 (CLI 114/114 both + 50/50 journals + ab 0 movers; mmacos fast 661/0;
+> pymacos 6715/0; PLAN_CONSOLIDATION §5 line).  PHASE-3 DOCS PASS 1 DONE: manual §3/§4/§5/§6 absorbed eight of the nine
+> `macos_f90/notes/*.md` (each absorbed section opens with a pointer to its manual paragraph; `cli.md` had nothing
+> user-facing); Table 13 = the Opt*/CALIB keyword reference (§4); cmdref Phase B mechanics (gen_cmdref.py: `*CLI suite:*`
+> line per entry + `40_suite_coverage.md`, 35/128 covered = the worklist).  LOCAL, NOT PUSHED: macos 0ecbc12..HEAD
+> (0c42015 81c041a e9892b6 7807b65 ff63a3a 4b80421 + this).  TO is on BRIEF_to_bindings (fresh session).  NEXT (CC):
+> Phase B journals category by category (Ray Tracing, System Optimization first); manual math re-entry + 3 figures;
+> a PolyObsVec/Poly3DObsVec paragraph; the templates/00_INDEX + README currency item; §6.3 worked examples.  Open on
+> Dave: OPL refusals, Mac in phase 4, Opt*/trace-state SAVE policy, the push.**
+
 > **2026-10-16 (CC): COPHI deck + Feng email SENT by Dave (deck_cophi 26 slides, macos 08396b7); the
 > error-budget tool's controls + workbook phases LANDED by TO and gated (res 920eb58; the workbook
 > `templates/50_sensitivities/e5hex1_budget/e5hex1_wfe_budget.xlsx`, a copy in
