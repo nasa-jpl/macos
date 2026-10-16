@@ -60,8 +60,8 @@ label(ax, 11.4, 8.0, "nodes integrate N beat cycles\n(one I/Q sample, ~1 ms)", c
 dI = box(ax, 15.3, 6.55, 1.7, 1.1, "A − B\n→ I", fc=DATA, fs=11); dQ = box(ax, 15.3, 3.85, 1.7, 1.1, "C − D\n→ Q", fc=DATA, fs=11)
 wire(ax, [port(nB, "r"), port(dI, "l")], color=DATA); wire(ax, [port(nD, "r"), port(dQ, "l")], color=DATA)
 out = box(ax, 11.4, 1.0, 5.6, 1.5, "ADC → I, Q per pixel per sample\n$\\varphi=\\mathrm{atan2}(Q, I)$,   $h=\\varphi\\,\\lambda/4\\pi$", fc=GREEN, tc=INK, fs=11)
-wire(ax, [port(dI, "b"), (port(dI, "b")[0], 5.6), (17.3-0.6, 5.6)], color=DATA, arrow=False); wire(ax, [port(dQ, "b"), (port(dQ, "b")[0], 2.75), (port(out, "t", 0.8)[0], 2.75), port(out, "t", 0.8)], color=DATA)
-wire(ax, [(16.7, 5.6), (16.7, 2.75)], color=DATA, arrow=False)
+wire(ax, [port(dI, "b"), (port(dI, "b")[0], 5.6), (17.12, 5.6), (17.12, 2.75), port(out, "t", 0.8)[0:1] + (2.75,), port(out, "t", 0.8)], color=DATA)
+wire(ax, [port(dQ, "b"), (port(dQ, "b")[0], 3.3), (port(out, "t", 0.6)[0], 3.3), port(out, "t", 0.6)], color=DATA)
 note(ax, 6.0, 1.75, "the DC $I_0$ lands equally in A and B (and C, D):\nit cancels in the difference -- whether it still\nfills the nodes is the vendor question", fs=9.5)
 
 # ---- right: the algebra ----------------------------------------------------
@@ -79,4 +79,4 @@ for i, (cap, eq) in enumerate(rows):
     ax.text(x0, y, f"({i+1})  {cap}", color=ACCENT, fontsize=11, va="top", ha="left")
     ax.text(x0 + 0.3, y - 0.62, eq, color=INK, fontsize=13.5, va="top", ha="left")
     y -= 1.9
-fig.savefig("figs/cophi_lid.png", dpi=200, facecolor="white"); fig.savefig("figs/cophi_lid.svg", facecolor="white"); print("wrote figs/cophi_lid.png")
+fig.savefig("figs/cophi_lid.png", dpi=200, facecolor="white", bbox_inches="tight", pad_inches=0.08); fig.savefig("figs/cophi_lid.svg", facecolor="white", bbox_inches="tight", pad_inches=0.08); print("wrote figs/cophi_lid.png")

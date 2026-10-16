@@ -92,7 +92,7 @@ DRAFT — pending review.
 ::: full
 ![](figs/cophi_block_lockin.png){h=5.0}
 ::: left
-- **What changes from slide 3:** synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D → the sensor's own ADCs, 2 × 10 bit per pixel) so only digital I/Q leaves the camera, into a GigE receiver; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.
+- **What changes from slide 3:** synthesizer 2 at 80 MHz + 5 kHz; the trigger chain becomes the 5 kHz reference to the pixels' gates; the camera is one pixel's chain (slide 6) ending in the sensor's ADCs — digital I/Q out to a GigE receiver; atan2(Q, I) per sample.  Fiber, LO, loop unchanged.
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
 ~ `make_cophi_block_fig.py` (lock-in variant); the pixel chain's inputs and outputs are slide 6's.

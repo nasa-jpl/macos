@@ -403,7 +403,7 @@ def render_slide(spec):
         x, w = cols[colname]
         y = cur[colname]
         bk = block_key(typ, payload, counters)
-        ov = next((v for k, v in sov.items() if bk.startswith(k)), None)
+        ov = next((v for k, v in sov.items() if bk.startswith(k) or (len(k) >= 40 and bk[:40] == k[:40])), None)   # full-text keys; a reworded tail keeps its geometry
         if ov:
             x = ov.get("x", x)
             w = ov.get("w", w)
