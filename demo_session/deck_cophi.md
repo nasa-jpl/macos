@@ -62,7 +62,6 @@ DRAFT — pending review.
 -- the photocurrent is multiplied by the beat reference and by its 90°-shifted copy, and integrated
 -- the stores are I = I₀γ cos φ (in-phase) and Q = I₀γ sin φ (quadrature) — not intensities; φ = atan2(Q, I)
 -- the DC term never reaches the well; I and Q leave at the frame rate
--- a real lock-in pixel (CSEM lineage, heliCam) steers charge between two taps by a square-wave reference — Feng's four-step inside the pixel; the bucket penalty is ×1.11 in σ, carried in every lock-in row
 - **Surveyed (unverified):** Heliotis heliCam C4 / C4M — 542 × 512 (1024 × 1102), lock-in 1–250 kHz, 500 ke⁻ well, 2 × 10-bit I/Q, external reference; one vendor, four generations.
 -- also ranked: 128² CMOS at 20–40 kfps, time-of-flight demodulators, digital-pixel ROICs, coherent photonic arrays; not fit: SPAD / Geiger arrays (count-rate ceilings)
 ::: right
@@ -71,9 +70,9 @@ DRAFT — pending review.
 | beat | 7.5 Hz | 5 kHz (1–250 kHz) |
 | what leaves the sensor | 4 frames per beat | I/Q (in-phase / quadrature) per pixel at 1 kHz |
 | pixels per actuator | 9.4 | 5.3 (C4M 10.6) |
-| per-reading noise | 39.5 pm | 57.9 / 61.1 pm per 1 ms I/Q sample, mirror / lens (63 / 66 at an assumed 100 e⁻ read) |
-| **seconds per pm** | **42** | **3.35 / 3.73** (read 0, mirror / lens; 4.0 / 4.4 at read 100 assumed); ×1.11 in σ (×1.23 in time) for the pixel's two-tap square-wave demodulation — well-capped at the I/Q rate |
-| if well-free: 10⁹ / 10¹⁰ e⁻/s per element (the sheet's own 2.5 × 10⁹) | — | 0.84 / 0.084 s (0.34 s at 2.5 × 10⁹) — analytic, one store per sample |
+| per-reading noise | 39.5 pm | 57.9 / 61.1 pm per 1 ms sample, mirror / lens (63 / 66 at 100 e⁻ read) |
+| **seconds per pm** | **42** | **3.35 / 3.73** (mirror / lens; 4.0 / 4.4 at 100 e⁻ read); ×1.23 in time for the two-tap square wave; well-capped at the I/Q rate |
+| if well-free: 10⁹ / 10¹⁰ e⁻/s per element | — | 0.84 / 0.084 s (0.34 at 2.5 × 10⁹); analytic |
 | loop latency | one beat, 133 ms | one I/Q sample, 1 ms (one 0.125 s cycle as the loop's upper bound) |
 - **The lock-in is ~12× the Photonfocus and ~110× Feng's baseline.**
 -- a well-free device (continuous, or I/Q ≥ 10 kHz) at 2.5 × 10⁹ e⁻/s per element: ~18 pm per sample, ~0.34 s per pm — 10× better again; that is what the vendor question decides
