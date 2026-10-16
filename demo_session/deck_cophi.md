@@ -76,7 +76,7 @@ DRAFT — pending review.
 | loop latency | one beat, 133 ms | one I/Q sample, 1 ms (one 0.125 s cycle as the loop's upper bound) |
 - **The lock-in is ~12× the Photonfocus and ~110× Feng's baseline.**
 -- a well-free device (continuous, or I/Q ≥ 10 kHz) at 2.5 × 10⁹ e⁻/s per element: ~18 pm per sample, ~0.34 s per pm — 10× better again; that is what the vendor question decides
-- **The vendor question:** phase noise per pixel vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output — for Heliotis, through Dave.
+- **Questions for the vendor:** phase noise per pixel vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output
 ~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
 
 ## How the lock-in detector works | One pixel sorts its photoelectrons into two storage nodes by a square-wave reference at the beat frequency; the node difference IS the lock-in product, formed before any readout — Feng's four-step inside the pixel, integrated over thousands of cycles
