@@ -19,3 +19,28 @@ Of the 128 engine commands, 35 are issued by at least one journal of the CLI reg
 - **Window & Post-Processing:** PLOcate, NOPLOC, PWIn, SZCo, GBS, BLUr, GBLur, GAIn, ODRaw, PGD, ROW
 - **System Optimization:** AVAR <elt>, MVAR <elt>, DVAR <elt>, VARS, AFOV <fov>, DFOV <fov>, FOVS, SFOV
 - **Misc / Debug:** SRAy, SRT, SRTrace, DOPD, DOPL, ZRM, JWST_v3d, Vis3d
+
+## Appendix — binding coverage of the engine commands
+
+Each Part I entry's *Binding:* line says how mmacos / pymacos reach it: **SMACOS command** (an api routine issues it through SMACOS, detected in `macos_api_mod.F90`), **direct setter** (an api routine under another name), **CLI-only** (session, shell, plot style, file modes), **CLI-only, legacy** (the internal linear model and the differential commands, superseded by the `dw_dx` route — Dave 2026-10-10) or **missing**.  Generated with the binding generator (`MACOS_resources/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  Counts: SMACOS command 26, direct setter 17, CLI-only 29, CLI-only, legacy 14, missing 42.
+
+The **missing** commands, by the group that will carry them (PLAN_CONSOLIDATION 1.4b: single-ray tracing first, the Zernike / analysis set second, the image-plane set third):
+
+- Zernike / analysis set (B.2, second): ELTS, MAP, ZABerr, ZCOef, SZCo
+- field / beam set: FID <id>, WLENS, SWL, GBS, AFOV <fov>, FOVS, SFOV
+- the validator (validate_prescription.F90) has no api entry: VALidate <file>
+- through `compose_*` (B.2, image-plane set): MULtispec, CADD
+- image-plane post-processing (B.2, third): NFIlt, RFIlt, SFIlt, ATMosphere, TPR, FSR, FDP, NOIse, SEEd, MTF, CMTF, BLUr, GBLur, GAIn, ROW
+- source-adjustment mode: SAOpt
+- single-ray tracing (B.2, first): RAY <i>, SEGRAYTrace <i>, PRAy, RRAy, SINt, SRAy, SRT, SRTrace
+- beam coordinates at an element (the frames alone are `elt_csys_get`): COOrd <elt>
+- all-element coordinates to xyzLocal.txt: ACOor
+- chief-ray walk: BWK
+- STOP's sibling (center the beam in the stop); no verified api twin: CENter
+- no api setter; read by `modes_get` (a session mode -- NOT the linear model, whatever its L): LNEg/NOLNeg
+- a per-element resampling flag: REGrid/NOREGrid
+- builder: UDSinit
+- line of sight (the harvests' `compute_los` reads it from spots): LOS
+- plot pixel-array location: PLOcate
+- lists the CALIB variables; `calib_set_var_elt` sets them, no getter: VARS
+- builder; the Vis3d ray history is `ray_hist_set` / `ray_pos_hist_get`: JWST_v3d, Vis3d
