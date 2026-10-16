@@ -232,7 +232,11 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 C         *** A few OS shell utility commands ***
 
 	  ELSE IF (LCMP(command,'!',1)) THEN
-	    Call SHELLCMD(cmdline,130)
+!-->  The shell line was cut at 130 characters while the command line
+!     itself is MacosCharLen (256) wide since b90887e: a `! sed ...` with a
+!     long path ran a truncated command, silently (2026-10-16, PLAN 1.2).
+	    Call SHELLCMD(cmdline,MIN(LEN_TRIM(cmdline),LEN(cmdline)-1))
+!<--
 	    read_cur(pstack)=0; read_len(pstack)=0 ! clean up input deck
 
 	  ELSE IF (LCMP(command,'PWD',3)) THEN
@@ -399,6 +403,11 @@ C         ***next command: Load optical description data***
 	    numGradInd=0; nDOE=0
 	    iEltToMetSrf=0; tMetSrf=0; metBeamFlg=0 ! clean up metrology setting
             OPDRefRayLen_FLG=.FALSE.; ShowMetData_FLG=.FALSE.
+!-->  BWK_FLG is Rx state (`CalBWk= Y`), reset per load -- but it was reset
+!     AFTER MBFile6 had parsed the key, so the CLI's BWK always answered
+!     "Need set CalBWk= Y" (2026-10-16, PLAN 1.2; gate cli_tests/cmd/BWK.jou).
+            BWK_FLG=.FALSE.
+!<--
 !	    Do i=1,mElt
 !	      LensletStrArray(1:mLenslet,i)%IndRef=IndRef(i)
 !	    End Do
@@ -456,7 +465,6 @@ C         ***next command: Load optical description data***
 	    nTestPts=MIN(nGridPts,21)
 	    nMinPts=3; nSpotPts=nGridPts
 	    EltPix(1:2)=0d0; WinCenPix(1:2)=0d0
-	    BWK_FLG=.FALSE.
 	    LCalcWFELT=.FALSE.  ! default
 #ifdef MACOS_CMD
 	    curFov=1; curwl=1; OPDSave=0d0
