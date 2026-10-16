@@ -3152,8 +3152,13 @@ use the Levenberg-Marquardt least-squares driver; when the
 Rx declares Opt* variable constraints the run dispatches to
 the bound-constrained SLSQP driver (NPSOL in USE_NPSOL
 builds).  Target per SETC or the Rx OptTarget keyword: WFE
-(default), ZWF (WFE Zernike modes), Beam — plus SPOT and OPL
-selectable from the Rx only.  Optional CLI arguments
+(default), ZWF (WFE Zernike modes), Beam, and SPOT from the
+Rx or the bindings; OPL was removed and is refused at load.
+The whole keyword family (defaults, per-load reset, not
+written by SAVE), the row/unit conventions and the stopping
+rule (converged / floor / cap / failed / stalled, printed as
+`Stopped: ...`) are Manual Section 4, Table 13 "Design
+Optimization (CALIB) Keywords".  Optional CLI arguments
 restrict a run to a subset of the variables (`calib 2 3`;
 each is read back with 'Enter element to be calibrated:' and
 must already be AVAR'd).  Preconditions: at least one
@@ -3161,7 +3166,10 @@ variable element and one FOV; STOP must be set when
 optimizing with FEX or moving the source.  The summary
 reports scheme, target, rays / FOVs / wavelengths and
 per-wavelength before/after figures.  SMACOS: no LoadStack
-arguments; the summary always prints.
+arguments; the summary always prints.  Suite: the
+`cli_tests/cmd/CALIB_*.jou` journals (the 12-cell target x
+DOF matrix, keywords, stopping, history, failed and stalled
+trials).
 *Related:* AVAR, VARS, AFOV, FOVS, SETC, SAOpt, STOp.
 <!-- END NOTES cmd-CALib -->
 

@@ -6,28 +6,17 @@
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## CALIB wrappers in macos_api_mod (Phase 1a/1b/1c)
-- **CALIB *is* the native multi-field design optimizer** (`nls_optim_dvr`
-  LM + SLSQP/NPSOL in `design_optim.F`): multi-field × multi-λ,
-  FoV-weighted least-squares over per-element DOFs (8-DOF `VarElt` mask;
-  **DOF 7 = radius, DOF 8 = conic**), Zernike modes, aspheric coeffs;
-  targets WFE/SPOT/WFE_ZMODE (≤12 FOV × 6 λ).  `calib_run` returns
-  per-(FOV,λ) WFE before/after.  This is the **`native` engine** for the
-  design layer's multi-field `optimize()` (PLAN_DESIGN_LAYER §8 Sprint
-  2B).  FOV set + vars + target are configured via the `.in` Opt*
-  keywords today; programmatic field setters (`calib_add_fov`/
-  `calib_set_wavelens`) are the deferred Phase-1d gap.
-- `calib_run` + `calib_buffer_dims` (Phase 1a): drive `'CALIB'`
-  end-to-end via SMACOS and expose result dims to pymacos/mmacos.
-- Programmatic setters (Phase 1b): `calib_set_var_elt`,
-  `calib_clear_var_elts`, `calib_set_iter`, `calib_set_tol`,
-  `calib_set_target` — let bindings configure a calibration run
-  without round-tripping through a `.in` prescription edit.
-- `calib_clear_var_elts` carries defensive `allocated()` guards
-  before deallocating optional arrays (Phase 1c) — silently no-ops
-  rather than SIGSEGVing on a fresh `macos_init_all` state.
-- pymacos: `m.calib(...)` plus `m.calib_set_*(...)` setters in
-  `macos.py`.  mmacos: `+macos/calib*.m` plus Session methods.
-
+**Documented 2026-10-16:** the keyword family, defaults, per-load / SAVE status, row and unit
+conventions and the stopping rule are Manual §4 Table 13 ("Design Optimization (CALIB)
+Keywords"); the command and its dialog are cmdref `CALib` (+ SETC / AVAR / AFOV …), the
+bindings cmdref Part II (`calib_*`).  Engine facts kept here: CALIB *is* `nls_optim_dvr`
+(LM + SLSQP) in `design_optim.F`, the design layer's `native` engine (PLAN_DESIGN_LAYER §8);
+8-DOF `VarElt` mask with **DOF 7 = radius, DOF 8 = conic**; `calib_run` + `calib_buffer_dims`
+(Phase 1a), the setters `calib_set_var_elt` / `calib_clear_var_elts` / `calib_set_iter` /
+`calib_set_tol` / `calib_set_target` (1b); `calib_clear_var_elts` carries `allocated()` guards
+(1c: a no-op, not a SIGSEGV, on a fresh `macos_init_all` state); programmatic FIELD setters
+(`calib_add_fov` / `calib_set_wavelens`) remain the deferred Phase-1d gap -- fields come from
+the `.in` keywords.
 
 ## CALIB targets: WFE_ZMODE works, OPL removed (2026-10-10, PLAN 3.1)
 **WFE_ZMODE (`OptTarget= ZWF`, api target 2) STOPPED THE HOST** on every deck
@@ -40,13 +29,15 @@ garbage instead and `lmlsq` failed).  Now the per-load reset is TO
 `ZernCircular`.  Measured on `Rx_AsphCalib.in` (h^4 spoiled to 5e-3): modes
 [4 11 12] -> 3.5e-13, [11] -> 1.4e-12, [12] leaves it (4.4e-3) -- the modes are
 NOLL, 1-based (11 = primary spherical).  **OPL (target 5) had no objective**
-anywhere in design_optim: removed from the enum; the api refuses 5 by name, an
-Rx `OptTarget= OPL` is a named load refusal, the veneers dropped the name.  Gates
+anywhere in design_optim: removed from the enum; refused by name at the api and at the Rx
+(Manual Table 13).  Gates
 `tCalibTargets` (mmacos, the ZMODE leg in a SUBPROCESS) + `test_calib_targets.py`;
 red on the pre-fix mex / .so.  `zern_fit`'s pupil = `opdValid` since 2026-10-12
 (see the OPD-reference section's last paragraph).
 
 ## CALIB's LM stopping rule: the derivation (2026-10-11, PLAN 3.3)
+*(The rule as the user sees it -- OptTol, the five stop reasons, what is printed -- is Manual
+§4 Table 13 "Stopping"; this section is the engine record and the derivation.)*
 **The old loop** (`nls_optim_dvr`, design_optim.F) checked convergence only at itr =
 int(.21T), int(.5T), int(.71T) and only when T > 4, judged the RMS WFE whatever the target,
 and exited on `itr_done .and. itr > 0.7T` -- with `itr_done` never set before the loop.
@@ -119,6 +110,7 @@ regex BACKREFERENCE; red on prefix9 + the old-loop side builds: 4/15/3), `tCalib
 `cli_tests/records/calib_loop_old_vs_new.md`.
 
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
+*(Keywords, defaults and the rows/units convention: Manual Table 13.  Below: the mechanics.)*
 `design_optim.F`: the beam rows (`OptBeamDir=` chief direction at an
 element, `OptBeamPos=` position, `OptBeamSize=`, reference rays) were
 sized and scored ONLY under `OptTarget= BEAM`; the BEAM-only value /
@@ -166,6 +158,8 @@ take the 3-field WFE [529 484 753] -> [55 117 308] nm vs the conic-only
 control; readback; clean emit; the circle gone.
 
 ## CALIB: asphere differential step + the LM failure path (2026-10-01, dyson5 beat 4c)
+*(The user rule -- declare a circular aperture or the zero-coefficient step is round-off on a
+metre deck -- is Manual Table 13 "Aspheric degrees of freedom".  Below: the mechanics.)*
 `nls_optim_dvr` (design_optim.F) probed every aspheric coefficient with a
 FIXED step `das = 1e-10` (x 1e-5 per higher order).  On a deck in metres an
 h^4 coefficient of 1e-3 probed by 1e-10 moves the sag by 1e-15 m at a 70 mm

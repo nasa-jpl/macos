@@ -68,6 +68,8 @@ A summary of changes since MACOS 3.2:
 
 -   Graceful Ctrl-C. SIGINT installs a clean-exit handler at start-up; pressing Ctrl-C at the MACOS\> prompt prints 'MACOS: interrupted' and exits cleanly, replacing the Intel-runtime 'forrtl: severe (69)' traceback.
 
+-   Design-optimization keyword reference.  The `Opt*` / `VarElt=` prescription keywords that set up CALib are tabulated with their defaults in Section 4 (Table 13), together with the solver's stopping rule.
+
 -   HELP command rebuilt. All \~140 dispatched commands are now listed (vs. \~75 in v3.2), grouped into 15 categories with one-line effect descriptions and prerequisite tags (\[Rx\] / \[BLD\] / \[DIFF\]). See §3.2 and Appendix C.
 
 ### New Features of Version 3.2 (historical)

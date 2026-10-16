@@ -1739,6 +1739,8 @@ This dialog produced the following prescription data:
 | Coord= |                |              |                             |
 +--------+----------------+--------------+-----------------------------+
 
+An `AsphCoef=` (or `AnaCoef=`) line that carries fewer values than the surface needs is accepted: the missing higher-order coefficients are zero, and one line naming the element and the count is printed at load.
+
 #### Zernike Surfaces
 
 Zernike surfaces add a deformation—described by a Zernike polynomial—to the surface of a conicoid. The deformation is entered as the “excess sag” of the surface (*not* the wavefront error). MACOS allows up to the first 45 Zernike terms to be added to a conicoid base surface shape. The Zernike polynomial set that is used is that defined by Malacara in his book, “Optical Shop Testing.” The ordering of the polynomials used in MACOS, as well as two other popular orderings, are shown in Table 8.
@@ -3030,7 +3032,11 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   Some optional keywords are never written by the NEW dialog and are added by hand (or by SAVE when the value differs from the default). In the source block: `UseChfRay4OPD= Y|N` selects the OPD reference (the chief ray, `Y`, is the default; `N` selects the aperture mean — Section 5.2.2) and `OPDRefRayLen=` fixes the reference pathlength directly. In an element block: `ZernType=` (ANSI when absent — see “Zernike Surfaces”) and `NSCount=` (the non-sequential hit budget — see “Reflective Non-Sequential Surfaces”).
 
--   Comments must be preceeded by a ‘%’ sign
+-   Comments.  A whole line beginning with ‘%’ is a comment, and SAVE writes it back (up to 500 such lines; an overflow is reported once at SAVE).  A ‘%’ after a value (`Key= value  % note`) ends the value: the note is read past but is NOT written back by SAVE.  Block comments open with `/*` or `CommentBegin` and close with `*/` or `CommentEnd`, each marker first on its own line; SAVE writes the block back as it was.  A one-line `/* note */` is not supported (VALIDATE refuses it as a comment block never closed).
+
+-   The design-optimization keywords (`OptTarget=`, `VarElt=`, `OptBeam*=`, …) are listed in Table 13 at the end of this section.  They are reset at every load and are not written by SAVE.
+
+-   An unknown or misspelled keyword in the source block is reported once per load (`MBFile6: Unidentified header string = <key>`) and otherwise ignored; in an element block the message is `MBFile6: Unidentified string`.
 
 -   Data strings can be entered in free format. Up to 16 decimals of precision will be recognized.
 
@@ -3062,11 +3068,13 @@ Cassegrain.in: line 76: key "ZernType" has no value
 
 The same check runs automatically as part of the OLD and LOAD commands; if it fails, the load is aborted and the user is re-prompted for a different filename, leaving the previously loaded prescription untouched.
 
+The validator reads the file as text only.  It refuses a key with no value (`EltName=`, `BaseUnits=` and `WaveUnits=` excepted, since older prescriptions leave them blank), a blank line inside a multi-row block such as a `Tout=` matrix, and a comment block that is never closed.  It accepts `%` and `!` comment lines and the block-comment forms described under “Editing .In-Files”; note that the loader itself treats only `%` as a comment character.  Files with CR or CRLF line endings load through a temporary LF copy and need no conversion.
+
 **Commands**
 
 #### MODIFY
 
-The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in Section 4.4.1 can be changed.
+The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in Section 4.4.1 can be changed.  Write the assignment without spaces around the equals sign (`mod nGridpts=33`); `mod nGridpts = 33` is rejected with a message rather than read.
 
 MACOS\>**mod**
 
@@ -3100,6 +3108,8 @@ The SHOw command can be used to display the element’s data.
 #### SAVE
 
 The SAVe command writes a new .in-file containing the current optical prescription data to disk. Parameters changed as the result of a PERturb or MODify command will be written as modified. This command takes one argument: the new .in-file name (without the “.in” suffix). If the specified file already exists, the user is asked if it should be overwritten.
+
+What SAVE writes is the optical system as loaded and modified: every element block, the whole-line and block comments of the original file (in-line `% notes` are dropped), the stop (`ApStop=`), and the optional keywords whose values differ from their defaults (`UseChfRay4OPD= N` when the aperture-mean OPD reference is in force, `ZernType=`, `NSCount=`, `OPDRefRayLen=`).  A ray trace never changes what SAVE writes.  SAVE does not write the design-optimization keywords of Table 13 or the session options set by command (POLARIZATION, VECTOR, NOLNEG, CENTROID, CIR), which describe a workflow rather than the system.  Loading a saved file and saving it again reproduces the file: the test suite checks this round trip on every prescription in the repository.
 
 #### SUMMARIZE
 
@@ -3480,3 +3490,53 @@ All variables can be changed with the MODify command.
 +----------------------+--------------+--------------------------------+
 | nOutCord             | NO DEFAULT   | number of output coordinates   |
 +----------------------+--------------+--------------------------------+
+
+### Design Optimization (CALIB) Keywords
+
+The CALib command runs the native multi-field design optimizer: a Levenberg–Marquardt least-squares solve over the degrees of freedom of the variable elements, scored at up to 12 fields of view and 6 wavelengths (Appendix C lists the command; the Command Reference carries its dialog and the related commands SETC, AVAR, MVAR, DVAR, VARS, AFOV, DFOV, SFOV, FOVS, WLENS).  Its setup is written into the prescription with the keywords of Table 13.  Header keywords belong in the source block, before the first `iElt=`; element keywords belong in the block of the element they vary.  Every keyword in the table is prescription state: it returns to its default at every OLD or LOAD, and none of them is written by SAVE (the saved file carries the optical system, not the optimization that produced it; add the keywords back by hand).  The same settings can be made interactively (SETC, AVAR, AFOV) and from the MATLAB and Python bindings (`calib_set_target`, `calib_set_var_elt`, `calib_set_iter`, `calib_set_tol`, `calib_set_beam`, `calib_set_beam_pos_fov`, `calib_set_beam_wt`; Command Reference Part II).
+
+**TABLE 13.** Design-optimization (CALIB) keywords.  All are reset at load; none is written by SAVE.
+
+| Keyword | Block | Value | Default | Meaning |
+|---|---|---|---|---|
+| `OptTarget=` | source | `WFE`, `SPOT`, `ZWF`, `Beam` | `WFE` | The merit.  `OPL` is no longer a target; a prescription naming it is refused at load. |
+| `OptTgtElt=` (`OptWFElt=`) | source | element number | nElt − 1 | The element at which the merit is evaluated. |
+| `OptTgtWF=` | source | file name; a name ending in `T` is read as text, any other as binary | none | A target wavefront to match instead of a null. |
+| `OptSpotSize=` | source | size, base units | 0 | SPOT target: the spot size aimed for (a negative value reads as 0). |
+| `OptZernModes=` | source | n m1 … mn | none | ZWF target: the Zernike modes scored (Noll ordering, 1-based; 11 = primary spherical). |
+| `OptRayGrid=` | source | points across the grid | nGridpts/2 | The optimizer's own ray grid, same convention as `nGridpts=`; capped at the model size. |
+| `ChfRayDir=` / `ChfRayPos=` (`OptChfRayDir=` / `OptChfRayPos=`) | source, repeated | one 3-vector each per field | the source's own | The field list: the first pair is the nominal field; up to 12 pairs. |
+| `OptFOVWt=` | source, after the field pairs | w1 … wn | 1 each | Field weights (a row is divided by √w). |
+| `Wavelen=`, then `OptWaveLen=` (repeated) or `ArrWaveLen=` | source | wavelengths | the source's | The optimization wavelengths, up to 6; the first is the source wavelength. |
+| `OptMaxItrs=` (`OptMxItrs=`) | source | n | 10 | Iteration cap. |
+| `OptTol=` | source | > 0 | 1e-12 | Convergence tolerance: the absolute change of the rms merit between accepted steps, in the target's units.  A value ≤ 0 is ignored with a note. |
+| `OptFEX=` | source | `Y` / `N` | `N` | Evaluate the WFE at the exit pupil found by FEX at each field; needs a Return or Reference at element nElt − 1. |
+| `OptAlg=` | source | `NonLin` / `Lin` | `NonLin` | Levenberg–Marquardt, or the linear (SVD) solve. |
+| `OptSvdSvCut=` | source | cut | machine epsilon | Singular-value cut of the linear solve. |
+| `OptNomSens=` | source | `Y` | off | Run the nominal sensitivity at load. |
+| `OptSavePinv=`, `OptUseSavedPinv=`, `OptPinvFile=` | source | `Y`; `Y`; file name | off; off; `dady0_saved.txt` | Save, or reuse, the linear solve's pseudo-inverse. |
+| `VarSrc=` | source | six flags | none | The source as a variable (TIP TILT CLOCK DX DY PIST); moving the source needs a STOP. |
+| `OptSrcRpt=` | source | x y z | none | Rotation point of a variable source. |
+| `VarElt=` | element | eight flags | none | The element's degrees of freedom: TIP TILT CLOCK DX DY PIST ROC CONIC, nonzero = vary.  A linked (double-pass) element cannot be variable; its master moves it. |
+| `VarCons=` | element, after `VarElt=` | lower upper, per varied flag in order | none | Bounds on the varied degrees of freedom; any `VarCons=` switches the solve to the bound-constrained SLSQP driver. |
+| `OptZern=` (`VarZern=`) | element | n t1 … tn | none | Surface Zernike terms as degrees of freedom; marks the element variable if `VarElt=` is absent. |
+| `OptAsph=` (`OptAsphCoef=`) | element, after `VarElt=` | n t1 … tn | none | Aspheric terms as degrees of freedom.  Above its `VarElt=` it is ignored with a message. |
+| `OptBeamDir=` | element | dx dy dz (unitized) | none | Chief-ray direction target at this element. |
+| `OptBeamPos=` | element | x y z | none | Chief-ray position target at this element; also makes this element `OptTgtElt`. |
+| `OptBeamPosFov=` | element, repeated | x y z per field, in field order | none | Per-field position targets (up to 12). |
+| `OptBeamSize=` | element | size | none | Beam size target at this element. |
+| `OptBeamRefRayDir=` | element | dx dy dz | none | Reference-ray direction target at this element. |
+| `OptBeamWt=` | element | w | 1 | Weight of the beam rows against the WFE or SPOT rows (≤ 0 reads as 1). |
+| `OptBeamCentroid=` | element | `Y` / `N` | `N` | The position row reads the centroid of the rays that pass the train to this element, not the chief ray. |
+
+Conventions that go with the table:
+
+-   **Rows and units.**  Every (wavelength, field) block of the least-squares problem holds the target's rows followed by any beam rows.  WFE rows are in the target's units; SPOT and beam rows are in base units.  Beam rows ride on any target, so a WFE solve can hold a pupil position or a chief-ray direction at the same time; weight them with `OptBeamWt=`.
+
+-   **Stopping.**  The solve stops *converged* when two consecutive accepted steps each change the rms merit by no more than `OptTol` and the sum of squares by no more than one part in 10⁶; at the *round-off floor* after ten rejected trials in a row; at the *cap* of `OptMaxItrs`; *failed* when an evaluation fails (the chief ray lost) with no accepted step, or *stalled* when no step is accepted and none fails — the start is already a stationary point of the merit.  A failed evaluation inside a trial counts as a rejected trial.  The CLI prints `Optimization iterations =`, `Final LM merit (chisq) =` and `Stopped: …`; the bindings return the same three through `calib_stats`.  The stopping rule does not depend on an earlier CALIB in the same session.
+
+-   **Aspheric degrees of freedom.**  The differential step of a zero aspheric coefficient (an asphere started from a conic) is sized from the sag at the element's circular aperture (`ApType= 1`).  Declare that aperture; without it the step is a fixed small number that is round-off on a prescription in meters, and one line says so.
+
+-   **Fields.**  Repeat the chief-ray pairs in the source block, one pair per field, the nominal field first, and give `OptFOVWt=` after them (it reads as many weights as there are fields).  The FOVS command lists the result.
+
+-   **Targets at the exit pupil.**  `OptFEX= Y` evaluates the WFE at the exit pupil FEX finds for each field (the chief-ray axis convention of Section 5).  The default is off because FEX is applied at element nElt − 1, which must be a Return or Reference surface for that to work.
