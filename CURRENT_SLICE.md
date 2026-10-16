@@ -24,6 +24,18 @@
 
 ## Active slice
 
+> **2026-10-16 (CC): COPHI deck + Feng email SENT by Dave (deck_cophi 26 slides, macos 08396b7); the
+> error-budget tool's controls + workbook phases LANDED by TO and gated (res 920eb58; the workbook
+> `templates/50_sensitivities/e5hex1_budget/e5hex1_wfe_budget.xlsx`, a copy in
+> `~/dev/MACOS_sandbox/error_budgets/`).  LOCAL, NOT PUSHED: macos f1c96b7..08396b7 (PLAN_ERROR_BUDGET,
+> BRIEF_to_error_budget_controls, the CLAUDE.md split into macos_f90/notes/ + BUILD.md/BRANCHES.md,
+> the deck's LID slide and passes, the Feng draft), resources 460d691..920eb58.  NEXT: resume
+> PLAN_CONSOLIDATION phase 2 -- TO's next lane is Dave's call: B (bindings 1.4a/b) vs the budget
+> tool's follow-ons (SPOT adapter, pymacos twin, a HabEx-class example with metrology); CC: the
+> weekly three-suite run is due (last 2026-10-12), then phase-3 doc items (notes/ -> manual pointers).
+> Open on Dave: OPL refusals, Mac in phase 4, Opt*/trace-state SAVE policy.**
+
+
 > **2026-10-11 (CC): PHASE 2 — the engine list of BRIEF_to_consolidation_p2 is EXHAUSTED: 1.1b A list closed, 1.3
 > (optimizer) complete apart from Dave's two frozen features.  TO's landings since the last point, each gated by CC
 > from the clean worktree (114/114 both compilers, ab 0 unnamed movers): B.1 f3d7cea (WFE_ZMODE killed the host —
