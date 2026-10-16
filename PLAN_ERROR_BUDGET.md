@@ -46,8 +46,7 @@ and the `coef.*` shape with its NaN Post / iSeq=2 slots.
 2a. **WFC stage, iSeq = 1.**  Inputs: the `Control` column of the group table, the WFS
     noise σ and the actuator noise σ per control group.  **Dave's defaults (2026-10-15):
     control set = 6 DOF per PM segment + the SM's 6 DOF** (rigid-body actuators; no DM / FCA
-    unless the deck carries them); **WFS σ ≈ 3 nm rms** (phase retrieval on image data, the
-    Eq. 32 sensing row); **actuator σ ≈ 1 nm** per control DOF (the Eq. 31 rows; a rotation
+    unless the deck carries them); **WFS σ ≈ 3 nm rms as WHITE per-sample noise on the wavefront (Eq. 32, Dave 2026-10-16: 'white noise for now')** — on e5hex1 only `sqrt(48/51225)` of it, 0.092 nm, reaches the budget; the HabEx reading (α = 1, the 3 nm booked whole as a controllable estimate error) is the alternative the workbook's white cell can express and is NOT the default; **actuator σ ≈ 1 nm** per control DOF (the Eq. 31 rows; a rotation
     DOF's 1 nm is the surface motion at the segment edge — state the conversion).  These
     are the sheet's starting values, editable in the workbook's white cells.  Outputs per error group: `alpha` (pre, exists), `alpha_post` (Eq. 30 with
     `project_control`, exists as a prototype), plus two new ROWS the HabEx sheet carries under
@@ -55,16 +54,16 @@ and the `coef.*` shape with its NaN Post / iSeq=2 slots.
     (Eq. 31).  Gate: cov ≡ MC under control on e5hex1 (extend `tRunBudget`), the Eq. 31/32
     rows reproduced by a Monte-Carlo with the controller in the loop, and
     `project_control`'s `Pu` checked idempotent (`Pu Pu = Pu`) and null on the control span.
-2b. **Metrology stage, iSeq = 2.**  Reuse `run_met.m`'s kernel verbatim (its `post`, its
-    `K`, its base-vs-SI equivalence test) through a `+budget/project_met` that takes the
-    drift group table (the "Drift Inputs" σ column), `dmet_dx` (`run_met`'s artifact or a
-    live `dmet_dx` harvest) and the gauge noise R, and returns the post-metrology Gram per
-    group.  Outputs: `alpha_met` (= `alpha` by construction when the drift acts on the same
-    DOF), `alpha_met_post`; the WFC stage's `Pu` applied after the estimator (the HabEx
-    "Post-metrology" column is metrology AND control).  Gate: cov ≡ MC with the MMSE
-    estimator in the loop; `cov_budget` with the met stage reproduces `run_met`'s own
-    post-metrology number on its e5 example to 1e-10 (the refactor-safety gate v1 already
-    uses for the uncontrolled kernel).
+2b. **Metrology stage, iSeq = 2 — RULED 2026-10-16 (Dave), as TO measured and implemented
+    (resources 6658a94):** between WFC updates the controller acts on the METROLOGY'S
+    ESTIMATE, `u = −G Jk x̂ + δu`, `x̂ = K y` (run_met's `K = X H'(H X H' + R)⁻¹` and its `post`
+    line verbatim), so `w = Jk (I − E T K H) x − Jk E T K n + Ju δu` (T = G Jk).  Its two
+    limits are the gates: a drift the metrology cannot see goes UNANSWERED
+    (`alpha_met_post = alpha_met`, what the HabEx sheet shows), a drift it sees perfectly
+    leaves the controller's fitting error (`→ alpha_post`).  The plan's earlier
+    `Pu D post D' Pu'` was only the second piece and is withdrawn (it gave zero on run_met's
+    own case).  Gates landed: `run_met` reproduced to 2.1e-12, cov ≡ MC with the estimator in
+    the loop, the unseen-drift identity, H = 0 as the must-fail leg.
 2c. **`to_coef` filled, schema unchanged**: `.alpha_post`, `.alpha_met`, `.alpha_met_post`
     no longer NaN; new entries for the sensing / actuator rows (`.kind = 'wfs' | 'act'`).
     `rollup` gains the Post WFC / Pre-MET / Post-MET / Total columns with the HabEx
@@ -106,11 +105,7 @@ MATLAB.  Generated from `coef.*` + the group table by `+budget/write_workbook` (
   from a template workbook rather than draw it in code (see the writer note).
 - **Sheets `PSD`, `StrTherm`, `Log`.**  Stubbed with their headers and the formula hooks
   the `WFE` rows expect; `Log` gets the generation line (date, sens artifact, SHAs).
-- **Writer.**  MATLAB's `writecell` writes a string beginning with `=` as TEXT on Linux
-  (verify on this box first — if it writes a formula, use it); otherwise: ship a
-  TEMPLATE workbook (`+budget/templates/wfe_budget_template.xlsx`, the HabEx furniture with
-  empty rows) and fill it with the pymacos venv's `openpyxl` (formula strings are formulas
-  there) from a MATLAB-written JSON/CSV of rows — one tool, two steps, both in the repo.
+- **Writer — AS BUILT (TO, fd53b17):** `writecell` writes `=`-strings as TEXT (measured) and the pymacos venv has neither openpyxl nor pip, so `+budget/write_workbook` writes the SpreadsheetML parts directly (XML + MATLAB `zip`): no template, no Python.  `run_budget` writes `<name>_wfe_budget.xlsx` beside the plain export.  Trap: `soffice` launched from MATLAB dies on MATLAB's libstdc++ — the gate runs it with `env -u LD_LIBRARY_PATH`.
   Gate: open the product headless (`soffice --headless --convert-to csv` recalculates on
   load) and check `Payload WFE` equals MATLAB's `coef.total` to 1e-9 relative; change one σ
   in the file, re-open, check the re-roll — a workbook whose formulas do not recompute is

@@ -72,3 +72,9 @@ One message to CC per landed item (A.1, A.2, A.3, B): SHAs, the gate numbers (co
 per stage, the `run_met` reproduction), anything measured that changes the plan.  Things
 that need Dave (the workbook's section layout for a given deck; anything beyond the
 control set and σ's he has ruled) go to him through CC with the measurement attached.
+
+## E. Dave's answers to the A/B questions (2026-10-16)
+
+1. **Metrology formula:** yours — the controller acts on the MET estimate; drifts the metrology does not see go unanswered.  The plan §2b is rewritten to your expression; the brief's 'unseen → alpha_post' gate is withdrawn.
+2. **WFS 3 nm:** white per-sample noise (Eq. 32) for now — the 0.092 nm reading stands as the default; keep the HabEx α = 1 reading reachable through the workbook's input cell, documented in the Log.
+3. **Section layout:** your proposal stands (Primary Mirror / Secondary Mirror / Lens / Detector, noise rows under WFC) until Dave edits the sheet.  He asked where the workbook IS — `run_budget_e5hex1` writes `e5hex1_wfe_budget.xlsx` beside the sens artifact; CC generated it on 2026-10-16 (path in the reply) — make the README's first line the path a reader opens.
