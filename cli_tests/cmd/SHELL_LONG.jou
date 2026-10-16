@@ -1,0 +1,7 @@
+# The `!` shell escape passes the WHOLE command line (cmdref: Session & Files).  Until 2026-10-16 the
+# line handed to the shell was cut at 130 characters although the CLI's line is 256 wide (b90887e), so
+# a `! sed -i ... <long path>` ran a truncated command with no message (found writing the Phase B
+# journals, PLAN_CONSOLIDATION 1.2).  The echo line below is 164 characters long; its tail must come back.
+! echo START_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_0123456789_TAIL_END
+# EXPECT: ^START_0123456789_[0-9_]+_TAIL_END\s*$
+# EXPECT-NOT: forrtl
