@@ -4246,6 +4246,7 @@
         logical, intent(in) :: res_trace  ! (PASS=1) apply a MODIFY cmd. first or (FAIL=0) not
 
         character(len=*), parameter :: str_ref_csys(3) = ['BEAM', 'TOUT', 'TELT']
+        integer :: spcOptionSave
         ! ------------------------------------------------------
         OK    = FAIL
         nSpot = 0
@@ -4263,7 +4264,11 @@
           CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
         end if
 
-        ! 'SPCENTER': Set spot centering option: ELT or ChfRay
+        ! 'SPCENTER': Set spot centering option: ELT or ChfRay -- for THIS call:
+        ! the session option is restored below (the xp_fnd / ifCentroid pattern,
+        ! 2026-10-16), so a per-call centre never changes what spc_option_get
+        ! reports or what the next default call uses.
+        spcOptionSave = spcOption
         command = 'SPC'
         if (ref_pos .eqv. PASS) then
           CARG(1) = 'ELT'
@@ -4277,6 +4282,7 @@
         CARG(1) = str_ref_csys(ref_csys)   ! CSYS: Beam, TOUT, or TELT  (not working: ENTER (user))
         IARG(1) = iElt
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        spcOption = spcOptionSave
 
         ! Success
         nSpot = iSpot            ! note: 0 <= nSpot <= nRay
@@ -6388,6 +6394,36 @@
         OK   = PASS
 
       end subroutine ffcut_get
+
+      !---------------------------------------------------------------------------------------------
+      ! spc_option_get -- the session SPOT centre, spcOption (1 = the element vertex,
+      ! 2 = the chief ray), set at allocation and by the CLI's SPCENTER; never reset
+      ! by a load.  The bindings' spot() default reads it (Dave 2026-10-16: an api
+      ! getter so the veneers inherit the engine's default instead of restating it).
+      !---------------------------------------------------------------------------------------------
+      subroutine spc_option_get(OK, opt)
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: opt
+        ! ------------------------------------------------------
+        opt = spcOption
+        OK  = PASS
+      end subroutine spc_option_get
+
+      !---------------------------------------------------------------------------------------------
+      ! obs_opt_get -- the session obscuration option of OBS / obs_set, iObsOpt
+      ! (0 = ALL, 1 = POSITIVE: unobscured rays, 2 = NEGATIVE), set at allocation
+      ! (POSITIVE).  Read by the bindings' obs query (Dave 2026-10-16).
+      !---------------------------------------------------------------------------------------------
+      subroutine obs_opt_get(OK, opt)
+        use smacos_vars_mod, only: iObsOpt
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: opt
+        ! ------------------------------------------------------
+        opt = iObsOpt
+        OK  = PASS
+      end subroutine obs_opt_get
 
 
       !---------------------------------------------------------------------------------------------
