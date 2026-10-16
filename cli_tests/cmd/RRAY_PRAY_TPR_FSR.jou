@@ -1,0 +1,21 @@
+# RRAY (chief + 4 marginal rays), PRAY (8 pupil-ring rays), TPR (trace the found rays), FSR (the ray
+# nearest a fractional source position) on the manual's Cassegrain with exit pupil (cmdref: Ray Tracing).
+# Known gap, measured 2026-10-16 (PLAN_CONSOLIDATION 1.2): TPR prints RayPosHist, which is filled only
+# when the deck declares SaveRayPosH= Y -- on an ordinary deck every position prints 0.  This journal
+# pins the finders and that TPR runs; it does not assert TPR's numbers.
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+rray
+tpr
+pray
+tpr
+fsr
+0.5,0
+# EXPECT: Source aperture diameter =\s+4\.0000
+# EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.6923,\s+-0\.1538,\s+ID =\s+63
+# EXPECT: Reference ray indices \(chief \+ 4 marginal\) =\s+1\s+63\s+122\s+52\s+4
+# EXPECT: \*\*CTRACE iRay =\s+63 ,
+# EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.0769,\s+1\.0769,\s+ID =\s+108
+# EXPECT: Ref\. ray XY offsets from chief ray:\s+0\.7692,\s+-0\.1538,\s+ID =\s+60
+# EXPECT: Ray id:\s+60
+# EXPECT-NOT: Need to run RRAY
+# EXPECT-NOT: forrtl

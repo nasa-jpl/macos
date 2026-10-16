@@ -1,0 +1,15 @@
+# SEGRAYTRACE on e5hex1: the chief-ray slot re-aimed at segment 3's reference point and traced
+# surface by surface to the focal plane (cmdref: Ray Tracing).  The segment leg lands ON Seg3
+# (element 3) and the next leg goes to m2 (element 8).  (The deck's "flat.txt does not exist"
+# lines are the fixture's missing grid file, declined by name -- pre-existing, not this command.)
+old $ROOT/ZGD_test_files/e5hex1.in
+segraytrace
+3
+0
+# EXPECT: Enter segment number \(0=quit\)
+# EXPECT: to Element\s+3 \(Seg3\s*\):[\s\S]*?Segment Length=\s+2\.23216815163573D\+04
+# EXPECT: from Element\s+3 \(Seg3\s*\) to Element\s+8 \(m2\s*\):[\s\S]*?Segment Length=\s+2\.18180921532551D\+04
+# EXPECT: Index\(i\)=\s+1\.450415713D\+00
+# EXPECT: to Element\s+13
+# EXPECT-NOT: is not a Segment
+# EXPECT-NOT: forrtl

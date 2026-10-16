@@ -3516,7 +3516,7 @@ The CALib command runs the native multi-field design optimizer: a Levenberg–Ma
 | `OptZernModes=` | source | n m1 … mn | none | ZWF target: the Zernike modes scored (Noll ordering, 1-based; 11 = primary spherical). |
 | `OptRayGrid=` | source | points across the grid | nGridpts/2 | The optimizer's own ray grid, same convention as `nGridpts=`; capped at the model size. |
 | `ChfRayDir=` / `ChfRayPos=` (`OptChfRayDir=` / `OptChfRayPos=`) | source, repeated | one 3-vector each per field | the source's own | The field list: the first pair is the nominal field; up to 12 pairs. |
-| `OptFOVWt=` | source, after the field pairs | w1 … wn | 1 each | Field weights (a row is divided by √w). |
+| `OptFOVWt=` | source, after the field pairs | w1 … wn | 1 each (intended) | Field weights (a row is divided by √w).  Measured 2026-10-16: a prescription with no `OptFOVWt=` loads with every weight 0, which the solver treats as 1e-10, scaling the merit by 1e-10 and the `OptTol` test by 1e-5; give `OptFOVWt=` explicitly until that is fixed. |
 | `Wavelen=`, then `OptWaveLen=` (repeated) or `ArrWaveLen=` | source | wavelengths | the source's | The optimization wavelengths, up to 6; the first is the source wavelength. |
 | `OptMaxItrs=` (`OptMxItrs=`) | source | n | 10 | Iteration cap. |
 | `OptTol=` | source | > 0 | 1e-12 | Convergence tolerance: the absolute change of the rms merit between accepted steps, in the target's units.  A value ≤ 0 is ignored with a note. |

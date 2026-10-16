@@ -1,0 +1,25 @@
+# EFL (differential chief-ray estimate) and SYSPROP (the first-order report) on the manual's
+# Cassegrain (cmdref: Ray Tracing).  Before a propagation SYSPROP prints the aperture/wavelength/EFL
+# block and a hint; after INT at the focal plane it adds the pixel-based lines (lambda/D per px,
+# plate scale).  Measured 2026-10-16 (PLAN_CONSOLIDATION 1.2): after an OPD alone the pixel lines
+# print a pitch of 4.4e-12 -- OPD is not a propagation; use INT or PIX, as this journal does.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+efl
+sysprop
+5
+int 5
+/null
+sysprop
+5
+# EXPECT: Estimated system effective focal length =\s+22\.47362822690\d+
+# EXPECT: Estimated system focal ratio =\s+5\.6184070567\d+
+# EXPECT: Entrance pupil diameter \(m\)\s+=\s+4\.0000000E\+00
+# EXPECT: lambda/D \(arcsec\)\s+=\s+5\.1566202E-02
+# EXPECT: F-number\s+=\s+5\.6184071E\+00
+# EXPECT: Nyquist focal sampling \(BaseUnits\) =\s+2\.8092035E-06
+# EXPECT: pixel-based plate scale needs a diffraction
+# EXPECT: Peak occurs at i=\s+129, j=\s+129
+# EXPECT: lambda/D \(detector px\)\s+=\s+5\.2290937E\+00
+# EXPECT: Plate scale \(arcsec/px\)\s+=\s+9\.8614033E-03
+# EXPECT-NOT: Need source at infinity
+# EXPECT-NOT: forrtl
