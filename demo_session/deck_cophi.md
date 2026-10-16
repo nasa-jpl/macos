@@ -84,10 +84,10 @@ DRAFT — pending review.
 ![](figs/cophi_lid.png){h=5.0}
 ::: left
 - **The reference:** a square wave at the beat f_b = |f₁ − f₂| (5 kHz), locked to the AOMs through the Rb clock, fed to the camera's reference input — one clock; software does only atan2(Q, I).
+- **The ADC is on chip:** readouts are digital I and Q.
 ::: right
-- **Against a frame camera:** N cycles per sample, not a quarter cycle; the square wave costs ×1.11 in σ (eq. 6).
--- per PHOTON: read noise is paid once per N-cycle sample, not per bucket (1/N in variance); shot noise is unchanged — averaging more samples helps only by bringing more photons, as it would any camera
--- per SECOND: the well empties every 1 ms sample — 5 × 10⁸ e⁻/s per pixel usable vs the Photonfocus's 3 × 10⁷ (200 ke × 150 fps); that 17× in photons is most of 42 → 3.4 s per pm (the vendor's drain question: slide 5)
+- **Against a frame camera:** N cycles per sample, not 1 sample per quarter cycle.
+-- the well empties every 1 ms sample — 5 × 10⁸ e⁻/s per pixel usable vs the Photonfocus's 3 × 10⁷ (200 ke × 150 fps); that 17× in photons is most of 42 → 3.4 s per pm (the vendor's drain question: slide 5)
 ~ `make_cophi_lid_fig.py`; the pixel is CSEM's demodulation pixel (Lange & Seitz 2001), the heliCam's "dual-phase lock-in".
 
 ## COPHI with a lock-in camera: the block diagram | Same laser, fibers, LO and bench; the beat moves to 5 kHz and goes to the camera's reference input; no frame trigger, no bucket; I/Q frames at 1 kHz go straight to the phase
