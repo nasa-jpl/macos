@@ -69,6 +69,8 @@ and the `coef.*` shape with its NaN Post / iSeq=2 slots.
     `rollup` gains the Post WFC / Pre-MET / Post-MET / Total columns with the HabEx
     arithmetic (Total = `sqrt(PostWFC² + PostMET²)` per row).
 
+**Controls phase LANDED (TO, resources 460d691 9c71520 6658a94 4fd95ce fd53b17, local) and GATED by CC on Linux 2026-10-16:** `tBudgetKernel` 14/14, `tRunBudget` 3/3, `tRunMet` 5/5 (the run_met reproduction 2.1e-12).  v1's e5hex1 104 nm was a units defect (a package-function `exist()` guard; translations 1000x small) -- uncontrolled 317.4 nm, post-WFC 3.156 cov / 3.179 MC under Dave's control set and sigmas.  The workbook phase landed in the same series (fd53b17); see §3 'as built'.
+
 ## 3. Workbook phase — generate the HabEx-form spreadsheet (TO, after 2; spec from the sandbox example)
 
 The deliverable is a workbook the system engineer EDITS: σ inputs in white cells, every
