@@ -76,7 +76,7 @@ DRAFT — pending review.
 | loop latency | one beat, 133 ms | one I/Q sample, 1 ms (one 0.125 s cycle as the loop's upper bound) |
 - **The lock-in is ~12× the Photonfocus and ~110× Feng's baseline.**
 -- a well-free device (continuous, or I/Q ≥ 10 kHz) at 2.5 × 10⁹ e⁻/s per element: ~18 pm per sample, ~0.34 s per pm — 10× better again; that is what the vendor question decides
-- **Questions for the vendor:** phase noise per pixel vs flux at t_c = 100 ms, and whether the full well bounds each internal 1 MSa/s sample or the 5.6 kSa/s output
+- **Questions for the vendor:** do the nodes hold the full DC before A − B is formed, or only the difference (slide 6)? is the 1 MSa/s internal sampling an analog accumulation read once per output sample? phase noise per pixel vs flux at t_c = 100 ms
 ~ Stage format (`runs/format_lens_plain`); NOTE_lockin_arrays_survey.md (web survey, every number sourced, none verified by us).
 
 ## How the lock-in detector works | One pixel sorts its photoelectrons into two storage nodes by a square-wave reference at the beat frequency; the node difference IS the lock-in product, formed before any readout — Feng's four-step inside the pixel, integrated over thousands of cycles
@@ -85,7 +85,9 @@ DRAFT — pending review.
 ::: left
 - **The reference:** a square wave at the beat f_b = |f₁ − f₂| (5 kHz), locked to the AOMs through the Rb clock, fed to the camera's reference input — one clock; software does only atan2(Q, I).
 ::: right
-- **Against a frame camera:** N cycles per sample, not a quarter cycle; the DC cancels in the difference (does it fill the nodes? vendor question 2); the square wave costs ×1.11 in σ (eq. 6).
+- **Against a frame camera:** N cycles per sample, not a quarter cycle; the square wave costs ×1.11 in σ (eq. 6).
+-- read noise is paid once per N-cycle sample, not per bucket: 1/N in variance per photon; shot noise unchanged (every photoelectron counts, stored or drained)
+-- the vendor question: must the nodes hold the full DC before A − B is formed (the well caps photons per sample — our numbers), or is the common part drained so they hold only the difference (~10× more photons)?
 ~ `make_cophi_lid_fig.py`; the pixel is CSEM's demodulation pixel (Lange & Seitz 2001), the heliCam's "dual-phase lock-in".
 
 ## COPHI with a lock-in camera: the block diagram | Same laser, fibers, LO and bench; the beat moves to 5 kHz and goes to the camera's reference input; no frame trigger, no bucket; I/Q frames at 1 kHz go straight to the phase
