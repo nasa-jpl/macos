@@ -13,7 +13,7 @@ Commands below are available from the interactive CLI and, with few exceptions, 
 
 Exit MACOS.
 
-*CLI suite:* `MOD_spaces.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `MOD_spaces.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -58,16 +58,18 @@ catalog is generated from.  The dispatcher accepts `HEL`.
 
 Reset options & defaults to startup.
 
-*CLI suite:* none yet.
+*CLI suite:* `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — `init` (re-allocation restores every startup default).
 
 <!-- BEGIN NOTES cmd-REset -->
 No dialog.  Resets analysis state and options to startup
 defaults: clears the trace/build/propagate/perturb flags, the
-obscuration option, plot and stretch types, beam type, and pixel
-settings.  The loaded prescription is NOT unloaded, and a STOP
-that was preset in the Rx is preserved.
+obscuration option, the stretch type, beam type, and pixel
+settings.  Measured 2026-10-16: the surface-plot type set by
+NONE/GRAY/... is NOT reset (STATUS keeps showing it).  The
+loaded prescription is NOT unloaded, and a STOP that was
+preset in the Rx is preserved.  Suite: `SESSION_INFO.jou`.
 *Related:* MREset, STatus, LREset.
 <!-- END NOTES cmd-REset -->
 
@@ -77,7 +79,7 @@ that was preset in the Rx is preserved.
 
 What is loaded / built / propagated.
 
-*CLI suite:* `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MRESET.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -97,7 +99,7 @@ side effects.
 
 Pretty-print the optical system.
 
-*CLI suite:* none yet.
+*CLI suite:* `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -122,7 +124,7 @@ after every successful OLD/NEW load.
 
 List elements (type, surface).
 
-*CLI suite:* none yet.
+*CLI suite:* `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — Zernike / analysis set (B.2, second).
 
@@ -194,7 +196,7 @@ the journal too, so a replay reproduces the session.
 
 Print <text> to stdout (annotate console / journal output).
 
-*CLI suite:* none yet.
+*CLI suite:* `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -216,7 +218,7 @@ in journal-driven runs.
 
 Reset MACOS model size (128..8192).
 
-*CLI suite:* none yet.
+*CLI suite:* `MRESET.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — `init(model_size)`.
 
@@ -241,7 +243,7 @@ the model at init).
 
 Run a shell command.
 
-*CLI suite:* `BWK.jou`, `CALIB_failed_trials.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `FOV_SETC_SAOPT.jou`, `PLOT_TYPES.jou`, `SHELL_LONG.jou`, `SPCENTER.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BWK.jou`, `CALIB_failed_trials.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SHELL_LONG.jou`, `SPCENTER.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -261,7 +263,7 @@ Interactive CLI only.
 
 Working directory shell helpers.
 
-*CLI suite:* `COORD_ACOOR.jou`, `NSRefractor_grid.jou`, `SPCENTER.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `COORD_ACOOR.jou`, `EXPORT.jou`, `NSRefractor_grid.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -285,7 +287,7 @@ error.  Interactive CLI only.
 
 List .in files / current directory.
 
-*CLI suite:* none yet.
+*CLI suite:* `RX_FID_LS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -357,7 +359,7 @@ re-prompts.  On completion the new system is written to
 
 Load a .in prescription.
 
-*CLI suite:* `AVAR_VARS_MVAR_DVAR.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `FOV_SETC_SAOPT.jou`, `GRIN_unsupported.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `RAY_MAP.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `STOP_FEX_SXP.jou`, `TRACE_keeps_rx.jou`, `WARN_obscured_elt.jou`, `XPS.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AVAR_VARS_MVAR_DVAR.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `STOP_FEX_SXP.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `XPS.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
@@ -382,7 +384,7 @@ propagate state.  SMACOS: file name in CARG(1).
 
 Load by file id (from RX listing).
 
-*CLI suite:* none yet.
+*CLI suite:* `RX_FID_LS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — field / beam set.
 
@@ -451,7 +453,7 @@ CARG(1)=file name, CARG(2)=replace answer.
 
 Write select results to file.
 
-*CLI suite:* none yet.
+*CLI suite:* `EXPORT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -1509,7 +1511,7 @@ state if polarization was on.
 
 Spot-diagram obscuration option.
 
-*CLI suite:* none yet.
+*CLI suite:* `OBS_NONE.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `obs_set`.
 
@@ -1534,7 +1536,7 @@ CARG(1).
 
 Resample wavefront at element during propagation.
 
-*CLI suite:* none yet.
+*CLI suite:* `REGRID.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — a per-element resampling flag.
 
@@ -1565,7 +1567,7 @@ command is effectively interactive-CLI only.
 
 Optimize reference surface.
 
-*CLI suite:* none yet.
+*CLI suite:* `ORS_SRS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `ors_run`.
 
@@ -1599,7 +1601,7 @@ SMACOS: IARG(1)=element, CARG(1)=accept answer.
 
 Slave one ref surface to another.
 
-*CLI suite:* none yet.
+*CLI suite:* `ORS_SRS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `srs_run`.
 
@@ -1637,7 +1639,7 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
-*CLI suite:* none yet.
+*CLI suite:* `OBS_NONE.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -1691,7 +1693,7 @@ the data files must exist under the loaded Rx root name.
 
 Set up user-defined-surface data.
 
-*CLI suite:* none yet.
+*CLI suite:* `UDSINIT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — builder.
 
@@ -1763,7 +1765,7 @@ rotation+translation.
 
 Perturb an element group.
 
-*CLI suite:* none yet.
+*CLI suite:* `GPERTURB.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `prb_elt_grp`.
 
@@ -1793,7 +1795,7 @@ grid state.  SMACOS: same argument mapping as PERturb
 
 Apply perturbations from file.
 
-*CLI suite:* none yet.
+*CLI suite:* `PREAD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — `prb_elt` / `perturb_elt` (the file is read in the caller).
 
@@ -2360,7 +2362,7 @@ SMACOS: CARG(1)=type.
 
 Wavefront error map.
 
-*CLI suite:* `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `SAVE_roundtrip.jou`, `TRACE_keeps_rx.jou`, `WARN_obscured_elt.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `trace_rays`.
 
@@ -2457,7 +2459,7 @@ match).
 
 Spot diagram.
 
-*CLI suite:* `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `OBS_NONE.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `spot_cmd`.
 
@@ -3075,7 +3077,7 @@ to reinitialize on the next plot.  Interactive CLI only.
 
 ASCII print output.
 
-*CLI suite:* `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — CLI file-output mode (the bindings return the arrays).
 

@@ -1,0 +1,17 @@
+# ORS on the near-field start surface of CoroExample (ret2_1, element 5, PropType NF1) and SRS slaving the
+# CoroMask (element 6, NF2) to it (cmdref: Behavior Toggles / Section 6.3).  The example is already set
+# up: ORS finds the same f (6.329334641) with TTL OPD 2.9e-12 in 20 calls, SRS leaves the flat mask flat;
+# both answered NO (note the cmdref: SRS applies its result whatever the answer).
+old $ROOT/docs/macos-manual/examples/CoroExample.in
+ors
+5
+no
+srs
+6
+5
+no
+# EXPECT: Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-12\s+nCalls=\s+\d+\s+Old f=\s+6\.329334641D\+00\s+New f=\s+6\.329334641D\+00
+# EXPECT: Accept the new element data\? \[YES\]: no
+# EXPECT: Reference surface recalculation results:\s+Old f=\s+1\.000000000D\+22\s+New f=\s+1\.000000000D\+22
+# EXPECT: Accept the new element\? \[YES\]: no
+# EXPECT-NOT: forrtl
