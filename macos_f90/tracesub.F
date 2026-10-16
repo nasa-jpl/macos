@@ -35,7 +35,8 @@ C***********************************************************************
      &        LUseChfRayIfOK,opdRayMask,LCalcWFElt,
      &        LShowDTime,nValidRays,OPDRefRayLen_FLG,
      &        OPDRefRayLen,ifCtraceCalled,LRayOKHist,
-     &        RayPosHist,SaveRayPosHist_Flg,SaveVis3d_dat_Flg
+     &        RayPosHist,SaveRayPosHist_Flg,SaveVis3d_dat_Flg,
+     &        iOpdRefSrc,opdValid
 #ifdef CMACOS
         use macos_vars_mod, only : DAvgCumL
 #else
@@ -131,6 +132,7 @@ C***********************************************************************
 	MinL     = 1d38
 	mpt2     = mpts*mpts
 	CALL DZERO(OPDMat,mpt2)
+	opdValid=0  ! the pixels written below (opd_mask_get)
 
 	! Following code calculates RMS WFE, in which chief ray
 	! is not really needed (would be cancelled in RMS formula) -jzlou
@@ -186,6 +188,39 @@ cendscottfix
             WRITE(*,12) nPassRays,DAvgCumL
  12         FORMAT(2P,' OPD: nPassRays =',I8,',','    DAvgCumL =',D17.9)
 	  End If
+!-->      Every OPD run says which reference it used (2026-10-10, the
+!         FEX-axis precedent).  The chief ray is the default; a chief
+!         that failed GEOMETRICALLY (LRayOK, not LRayPass: an obscured
+!         chief still serves) falls back to the mean, and says so.
+	  IF (OPDRefRayLen_FLG) THEN
+	    WRITE(*,*)' OPD reference: OPDRefRayLen= (Rx)'
+	  ELSE IF (LUseChfRayIfOK .AND. LRayOK(1)) THEN
+	    SELECT CASE (iOpdRefSrc)
+	    CASE (1)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (UseChfRay4OPD= Y)'
+	    CASE (2)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (OPDREF CHIEF)'
+	    CASE (3)
+	      WRITE(*,*)' OPD reference: CHIEF RAY (opd_ref_set)'
+	    CASE DEFAULT
+	      WRITE(*,*)' OPD reference: CHIEF RAY (default)'
+	    END SELECT
+	  ELSE IF (LUseChfRayIfOK) THEN
+	    WRITE(*,*)' OPD reference: APERTURE MEAN (chief ray lost)'
+	  ELSE
+	    SELECT CASE (iOpdRefSrc)
+	    CASE (1)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN',
+     &                  ' (UseChfRay4OPD= N)'
+	    CASE (2)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (OPDREF MEAN)'
+	    CASE (3)
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (opd_ref_set)'
+	    CASE DEFAULT
+	      WRITE(*,*)' OPD reference: APERTURE MEAN'
+	    END SELECT
+	  END IF
+!<--
 	  WFE=0d0; WFmax=-1d22; WFmin=1d22
 	  IF (LUseChfRayIfOK .and. LRayOK(1)) Then
 	    ! use chief ray OPL
@@ -198,6 +233,7 @@ cendscottfix
 	        OPDScal=CumRayL(iRay)-RefCumRayL
 	        WFE=WFE+(CumRayL(iRay)-RefCumRayL-DAvgl)**2
 	        OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+	        opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
 	        If (OPDScal>WFmax) WFmax=OPDScal
 	        If (OPDScal<WFmin) WFmin=OPDScal
 	      END IF
@@ -211,6 +247,7 @@ cendscottfix
                 OPDScal=CumRayL(iRay)-RefCumRayL
                 WFE=WFE+(CumRayL(iRay)-RefCumRayL-DAvgl)**2
                 OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+                opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
                 If (OPDScal>WFmax) WFmax=OPDScal
                 If (OPDScal<WFmin) WFmin=OPDScal
               END IF
@@ -226,6 +263,7 @@ cendscottfix
       	        OPDScal=(CumRayL(iRay)-RefCumRayL)-DAvgl
 	        WFE=WFE+OPDScal*OPDScal
 	        OPDMat(RayIndex(1,iRay),RayIndex(2,iRay))=OPDScal
+	        opdValid(RayIndex(1,iRay),RayIndex(2,iRay))=1
 	        If (OPDScal>WFmax) WFmax=OPDScal
 	        If (OPDScal<WFmin) WFmin=OPDScal
 	      END IF
@@ -248,6 +286,302 @@ cendscottfix
 	  WFE=99999d32; WFEPV=0d0
 	END IF
 	END SUBROUTINE OPD
+
+C***********************************************************************
+C       FEXConicLeg -- refine the FEX/SXP exit-pupil radius from the
+C       TANGENT PLANE of element iNxt to its actual conic SURFACE.
+C
+C       The 2026-07-03 EP-radius rework sets the reference-sphere radius
+C       to the chief-ray distance from the EP crossing to element
+C       iElt+1's plane (VptElt/psiElt).  That is exact only when iElt+1
+C       is FLAT.  On a CURVED next element (a real focal SURFACE) the
+C       plane sits h**2/(2*Kr) beyond the surface at image height h, and
+C       the EP reference sphere inherits that as PURE DEFOCUS in the
+C       off-axis OPD -- identically zero on axis, which is why it went
+C       unnoticed for a year.  Dave ruled the fix 2026-08-28; mechanism,
+C       measured numbers and blast radius in macos_f90/CLAUDE.md.
+C
+C       The chief/conic intersection is solved LOCALLY here, and
+C       deliberately NOT through ConSrf: ConSrf picks its quadratic root
+C       by |L**2-mpr| PROXIMITY, with no flow-of-light sense (the trap
+C       behind the FEX CENTROID branch's far-root garbage).  Here the
+C       right root is unambiguous -- the sag correction is h**2/2R, far
+C       smaller than the ~2R separating the two roots -- so the root
+C       NEAREST the plane leg is taken.
+C
+C       Handles the general conic (Kc /= 0).  Any grid / FreeForm figure
+C       on iNxt is IGNORED: only its base conic is used.  Figure terms at
+C       a focal surface are um-class against a sub-mm sag.
+C
+C       Gated on iNxt's SURFACE TYPE, not on Kr alone.  A `Surface= Flat`
+C       element may legally declare `KrElt= 0d0` (docs/.../SegDemo.in
+C       does), and Kr=0 is a degenerate POINT in the conic form, so a
+C       Kr-only test would mis-read a plain flat detector as curved.
+C       Only the conic-BASE family is refined -- Conic/Aspheric/
+C       Monomial/Zernike/the grid composites -- since those are exactly
+C       the types whose Kc/Kr are the base conic.  Toric, Anamorphic,
+C       Interpolated and UserDefined give Kr other meanings; they keep
+C       the plane leg and say so.
+C
+C       In:  o(3)    ray origin (the EP crossing point)
+C            d(3)    UNIT ray direction leaving the EP
+C            iNxt    the next element (iElt+1)
+C            tPlane  the plane-leg distance already computed
+C       Out: tSrf    the surface-leg distance
+C            LOK     .TRUE. iff the surface leg was used.  When iNxt is
+C                    FLAT (SrfType_Flat, or |Kr| >= the 1d20 sentinel
+C                    ConSrf itself uses) or the chief misses the
+C                    surface, LOK is .FALSE. and tSrf is returned ==
+C                    tPlane, so flat-next-element decks are
+C                    bit-identical BY CONSTRUCTION.
+C            LTyp    .TRUE. iff iNxt is a curved surface of a type this
+C                    routine does not solve (caller may warn).
+C***********************************************************************
+
+	SUBROUTINE FEXConicLeg(o,d,iNxt,tPlane,tSrf,LOK,LTyp)
+
+	use param_mod
+	use elt_mod
+
+	IMPLICIT NONE
+
+	INTEGER iNxt,i,iSt
+	REAL*8 o(3),d(3),tPlane,tSrf,Kc,Kr,prel(3),itpsi,psitprel,
+     &	  mpr,a,b,c,k2,sq,ksq,kp,km
+	LOGICAL LOK,LTyp
+
+	tSrf=tPlane
+	LOK=.FALSE.
+	LTyp=.FALSE.
+	IF ((iNxt.LT.1).OR.(iNxt.GT.nElt)) RETURN
+	iSt=SrfType(iNxt)
+	IF (iSt.EQ.SrfType_Flat) RETURN
+	Kr=KrElt(iNxt)
+	Kc=KcElt(iNxt)
+	IF (ABS(Kr).GE.1d20) RETURN
+	! Kr = 0 is a degenerate POINT in the conic form, not a
+	! surface -- ConSrf kills every ray on such an element.
+	! Keep the plane leg rather than returning the foot of the
+	! perpendicular from the vertex, which is what the tangent
+	! root would give.
+	IF (Kr.EQ.0d0) RETURN
+	! Conic-base family only (see the header note).
+	IF (.NOT.((iSt.EQ.SrfType_Conic).OR.
+     &	    (iSt.EQ.SrfType_Aspheric).OR.
+     &	    (iSt.EQ.SrfType_Monomial).OR.
+     &	    (iSt.EQ.SrfType_Zernike).OR.
+     &	    (iSt.EQ.SrfType_GridData).OR.
+     &	    (iSt.EQ.SrfType_AsGrData).OR.
+     &	    (iSt.EQ.SrfType_MonGrData).OR.
+     &	    (iSt.EQ.SrfType_ZrnGrData).OR.
+     &	    (iSt.EQ.SrfType_FreeForm))) THEN
+	  LTyp=.TRUE.
+	  RETURN
+	END IF
+
+	DO i=1,3
+	  prel(i)=o(i)-VptElt(i,iNxt)
+	END DO
+	itpsi=DDOTC(d,psiElt(1,iNxt))
+	psitprel=DDOTC(prel,psiElt(1,iNxt))
+	mpr=DDOTC(prel,prel)
+	a=1d0+Kc*itpsi*itpsi
+	b=2d0*(Kr*itpsi+Kc*itpsi*psitprel+DDOTC(d,prel))
+	c=(2d0*Kr+Kc*psitprel)*psitprel+mpr
+
+	IF (ABS(a).LE.1d-20) THEN
+	  ! Degenerate conic (1+Kc*(d.psi)**2 = 0): the quadratic
+	  ! collapses to a linear equation.
+	  IF (ABS(b).LE.1d-20) RETURN
+	  tSrf=-c/b
+	  LOK=.TRUE.
+	  RETURN
+	END IF
+
+	k2=b*b-4d0*a*c
+	IF (k2.LT.0d0) RETURN
+	IF (k2.EQ.0d0) THEN
+	  tSrf=-0.5d0*b/a
+	  LOK=.TRUE.
+	  RETURN
+	END IF
+	sq=SQRT(k2)
+	IF (b.GE.0d0) THEN
+	  ksq=-0.5d0*(b+sq)
+	ELSE
+	  ksq=-0.5d0*(b-sq)
+	END IF
+	kp=ksq/a
+	km=c/ksq
+	IF (ABS(kp-tPlane).LE.ABS(km-tPlane)) THEN
+	  tSrf=kp
+	ELSE
+	  tSrf=km
+	END IF
+	LOK=.TRUE.
+	END SUBROUTINE FEXConicLeg
+
+
+C***********************************************************************
+C       FEXProbeCross -- frame-independent exit-pupil crossing
+C       (Dave 2026-09-08).
+C
+C       FEX used ONE differential chief ray, rotated +5d-6 rad about
+C       xGrid through StopPos, and crossed it with the chief ray.  The
+C       crossing point of two rays from field points theta apart has a
+C       term LINEAR in theta on any off-axis / pupil-aberrated deck, so
+C       the answer depended on the SIGN of xGrid (measured: e5hex1's
+C       left-handed deck frame vs the right-handed one an element STOP
+C       rebuilds -> EP radius 2548.0019 vs 2549.5813, 1.58 mm along the
+C       chief ray) and, through the tangential/sagittal pupil split, on
+C       its AZIMUTH.
+C
+C       This routine traces FOUR probes, +/-dth about each of two
+C       orthonormal axes perpendicular to the source chief ray (azimuth
+C       seeded by xGrid, falling back to yGrid), crosses each with the
+C       chief ray (FindCrossPt, point on the CHIEF), and returns the
+C       MEAN crossing distance along the chief ray:
+C         * the +/- pair is a central difference -- the O(theta) term
+C           cancels exactly, so the frame's sign no longer matters;
+C         * the two azimuths average the tangential and sagittal
+C           pupils (the medial pupil), which is rotation-invariant at
+C           first order, so the frame's azimuth no longer matters.
+C       On a symmetric deck all four crossings coincide and the result
+C       equals the legacy single probe to round-off.
+C
+C       OUTPUTS: zpLeg (mean chief-ray distance cr1pos -> crossing),
+C       CrossDist (largest closest-approach distance over the probes),
+C       CrossPt (= cr1pos + zpLeg*cr1dir, ON the chief ray), fexsin
+C       (largest sine between chief and probe directions -- the
+C       caller's telecentric test), nGood (probes that survived the
+C       trace and were not parallel), nTr (probes that survived the
+C       trace at all -- nTr=0 means LOST, not telecentric), vax(2)
+C       (per-axis mean crossing
+C       distance = the tangential / sagittal pupils; their difference
+C       is the pupil astigmatism), asym (largest |v+ - v-|/2: the
+C       probe-sign term the central difference removes).  Both are
+C       printed by the caller.  Leaves ray 1 holding the
+C       LAST probe, as the legacy code did.
+C***********************************************************************
+
+	SUBROUTINE FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	  ifLNegOK,Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,
+     &	  StartIndRef,StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,
+     &	  xDraw,yDraw,cr1pos,cr1dir,zpLeg,CrossDist,CrossPt,fexsin,
+     &	  nGood,nTr,vax,asym)
+
+	use param_mod
+	use src_mod
+	use cfiles_mod
+	use elt_mod
+	use sourcsub_mod
+
+	IMPLICIT NONE
+
+	LOGICAL ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,ifRayPrint,
+     &	  ifIntSrfSet(mElt)
+	INTEGER iEm1,nBadRays,DrawEltVec(mDrawElt,mDrawRay),nDrawElt,
+     &	  nGood,nTr
+	SREAL Cmatrix(7,mCm,bRay),DrawRayVec(2,mDrawElt,mDrawRay)
+	REAL*8 StartIndRef,StartExtinc,xDraw(3),yDraw(3),
+     &	  cr1pos(3),cr1dir(3),zpLeg,CrossDist,CrossPt(3),fexsin,
+     &	  vax(2),asym
+
+	REAL*8, PARAMETER :: dth=5d-6
+	REAL*8 ax(3,2),th(3),cr2indir(3),cr2inpos(3),cr2dir(3),
+     &	  cr2pos(3),crs(3),s,v,d,pt(3),vsum,dmax,cd,vk(4)
+	INTEGER k,ia,iStartElt,iEndElt,iStartRay,iEndRay,nax(2)
+	LOGICAL Lk(4)
+
+	! Probe axes: orthonormal pair perpendicular to the SOURCE
+	! chief ray; ax1 = xGrid projected (yGrid if xGrid is along
+	! the chief ray), ax2 = chief x ax1.
+	cd=DDOTC(xGrid,ChfRayDir)
+	DO k=1,3
+	  ax(k,1)=xGrid(k)-cd*ChfRayDir(k)
+	END DO
+	IF (SQRT(DDOTC(ax(1,1),ax(1,1))).LT.1d-8) THEN
+	  cd=DDOTC(yGrid,ChfRayDir)
+	  DO k=1,3
+	    ax(k,1)=yGrid(k)-cd*ChfRayDir(k)
+	  END DO
+	END IF
+	CALL DUNITIZE(ax(1,1))
+	CALL DXPROD(ax(1,2),ChfRayDir,ax(1,1))
+	CALL DUNITIZE(ax(1,2))
+
+	iStartElt=0
+	iEndElt=iEm1
+	iStartRay=1
+	iEndRay=1
+	nGood=0
+	nTr=0
+	vsum=0d0
+	dmax=0d0
+	fexsin=0d0
+	vk(1:4)=0d0
+	Lk(1:4)=.FALSE.
+	DO k=1,4
+	  ia=(k+1)/2                       ! axis 1,1,2,2
+	  s=dth
+	  IF (MOD(k,2).EQ.0) s=-dth        ! +,-,+,-
+	  CALL DSMPROD(th,ax(1,ia),s,3)
+	  CALL DEQUATE(cr2indir,ChfRayDir,3)
+	  CALL DEQUATE(cr2inpos,ChfRayPos,3)
+	  CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
+	  CALL DEQUATE(RayDir(1,1),cr2indir,3)
+	  CALL DEQUATE(RayPos(1,1),cr2inpos,3)
+	  CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
+     &	    ifLNegOK,Cmatrix,
+     &	    iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
+     &	    ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
+     &	    StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
+	  IF (.NOT.LRayOK(1)) CYCLE
+	  nTr=nTr+1
+	  CALL DEQUATE(cr2dir,RayDir(1,1),3)
+	  CALL DEQUATE(cr2pos,RayPos(1,1),3)
+	  CALL DXPROD(crs,cr1dir,cr2dir)
+	  s=SQRT(DDOTC(crs,crs))
+	  IF (s.GT.fexsin) fexsin=s
+	  IF (s.LT.1d-12) CYCLE            ! parallel: no crossing
+	  CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,v,d,pt)
+	  nGood=nGood+1
+	  vsum=vsum+v
+	  vk(k)=v
+	  Lk(k)=.TRUE.
+	  IF (d.GT.dmax) dmax=d
+	END DO
+	! Per-axis means (the tangential/sagittal pupils along the
+	! chief ray) and the largest +/- asymmetry (the term the
+	! central difference removes).
+	asym=0d0
+	DO ia=1,2
+	  nax(ia)=0
+	  vax(ia)=0d0
+	  DO k=2*ia-1,2*ia
+	    IF (Lk(k)) THEN
+	      nax(ia)=nax(ia)+1
+	      vax(ia)=vax(ia)+vk(k)
+	    END IF
+	  END DO
+	  IF (nax(ia).GT.0) vax(ia)=vax(ia)/DBLE(nax(ia))
+	  IF (nax(ia).EQ.2) asym=MAX(asym,ABS(vk(2*ia-1)-vk(2*ia))/2d0)
+	END DO
+
+	IF (nGood.GT.0) THEN
+	  zpLeg=vsum/DBLE(nGood)
+	  CrossDist=dmax
+	  DO k=1,3
+	    CrossPt(k)=cr1pos(k)+zpLeg*cr1dir(k)
+	  END DO
+	ELSE
+	  zpLeg=0d0
+	  CrossDist=0d0
+	  CALL DEQUATE(CrossPt,cr1pos,3)
+	END IF
+	END SUBROUTINE FEXProbeCross
+
+
 
 
 C***********************************************************************
@@ -288,9 +622,10 @@ C***********************************************************************
      &	  cr2indir(3),cr2inpos(3),CrossDist
 !-->
 	REAL*8 fexcrs(3),fexsin,fexR,fexT,fexden,fexdot,fexvec(3),
-     &	  fexdir(3),fexS,fexL,zpLeg
-	INTEGER nBadSv,nFtRays,iFPnxt
-	LOGICAL LTelec,LFPLeg
+     &	  fexdir(3),fexS,fexL,zpLeg,fexTs
+	INTEGER nBadSv,nFtRays,iFPnxt,nGood,nTr
+	REAL*8 vax(2),asym
+	LOGICAL LTelec,LFPLeg,LFPSrf,LFPTyp
 !<--
 
 C         ***Find exit pupil (with option to minimize tilt)***
@@ -313,26 +648,17 @@ C         ***Find exit pupil (with option to minimize tilt)***
 	CALL DEQUATE(cr1pos,RayPos(1,1),3)
         !print*,' ** FEX at focal-return: cr1pos =', cr1pos
         !print*,' ** FEX at focal-return: cr1dir =', cr1dir
-c	th(1)=3.5355d-6
-c	th(2)=3.5355d-6
-c	th(3)=3.5355d-6
-	!CALL DSMPROD(th,xGrid,1d-5,3)  ! jzlou trying a smaller dangle
-	CALL DSMPROD(th,xGrid,5d-6,3)
-	CALL DEQUATE(cr2indir,ChfRayDir,3)
-	CALL DEQUATE(cr2inpos,ChfRayPos,3)
-	CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
-	CALL DEQUATE(RayDir(1,1),cr2indir,3)
-	CALL DEQUATE(RayPos(1,1),cr2inpos,3)
-
-	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	  	 ifLNegOK,Cmatrix,
-     &	  	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &	  	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &	         StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-	CALL DEQUATE(cr2dir,RayDir(1,1),3)
-	CALL DEQUATE(cr2pos,RayPos(1,1),3)
-        !print*,' ** FEX at focal-return: cr2pos =', cr2pos
-        !print*,' ** FEX at focal-return: cr2dir =', cr2dir
+!--> Frame-independent probe (Dave 2026-09-08): four differential
+!    chief rays (+/-5d-6 about two orthonormal axes perpendicular
+!    to the chief ray), crossed with the chief and averaged -- see
+!    FEXProbeCross.  Replaces the single +5d-6*xGrid probe whose
+!    crossing depended on the frame's sign and azimuth.
+	CALL FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     &	  Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,StartIndRef,
+     &	  StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw,
+     &	  cr1pos,cr1dir,zpLeg,CrossDist,CrossPt,fexsin,nGood,nTr,vax,
+     &	  asym)
+!<--
 
 !--> FEX EP-radius rework + robustness guards (Dave 2026-07-03):
 !    the EP Return radius is ALWAYS the chief-ray distance from
@@ -342,30 +668,46 @@ c	th(3)=3.5355d-6
 !    iEm1->EP distance is the fallback when there is no next
 !    element or its plane is degenerate.  Guards: telecentric
 !    detection (parallel probe chief rays -> FindCrossPt would
-!    return 0/0); beam-footprint sanity check with autoswitch;
-!    Return-order Rx flag.
+!    return 0/0); beam-footprint sanity check with autoswitch.
+!    (An "Rx-order flag" that warned whenever the element before
+!    the EP return was a Return was REMOVED 2026-09-08 (Dave): it
+!    prescribed a Reference(FP)/Return(EP)/Return(FP) pattern that
+!    exists nowhere.  The documented sequence is Return(FP),
+!    Return(EP), FocalPlane -- the legacy leg above assumes it --
+!    so the flag fired on every conforming deck.)
 
-	! Telecentric detection: sine of the angle between the two
-	! probe-field chief rays.  Probe rotation is 5d-6 rad, so
-	! sin < 1d-12 means the crossing is beyond ~1e6 system
-	! lengths -- effectively at infinity.
-	fexcrs(1)=cr1dir(2)*cr2dir(3)-cr1dir(3)*cr2dir(2)
-	fexcrs(2)=cr1dir(3)*cr2dir(1)-cr1dir(1)*cr2dir(3)
-	fexcrs(3)=cr1dir(1)*cr2dir(2)-cr1dir(2)*cr2dir(1)
-	fexsin=SQRT(DDOTC(fexcrs,fexcrs))
-	LTelec=(fexsin.LT.1d-12)
-	zpLeg=0d0
+	! Telecentric detection: largest sine of the angle between
+	! the chief ray and the four probe chief rays.  Probe rotation
+	! is 5d-6 rad, so sin < 1d-12 means every crossing is beyond
+	! ~1e6 system lengths -- effectively at infinity.  nGood=0 with
+	! a non-parallel probe means every probe ray was LOST.
+	LTelec=(fexsin.LT.1d-12).OR.(nGood.EQ.0)
 	IF (LTelec) THEN
-	  WRITE(*,*)'***** FEX WARNING: probe-field chief rays'
-	  WRITE(*,*)'***** are PARALLEL -- system appears'
-	  WRITE(*,*)'***** TELECENTRIC (exit pupil at infinity).'
+	  IF (nTr.GT.0) THEN
+	    WRITE(*,*)'***** FEX WARNING: probe-field chief rays'
+	    WRITE(*,*)'***** are PARALLEL -- system appears'
+	    WRITE(*,*)'***** TELECENTRIC (exit pupil at infinity).'
+	  ELSE
+	    WRITE(*,*)'***** FEX WARNING: all 4 probe chief rays'
+	    WRITE(*,*)'***** were LOST before element',iEm1
+	  END IF
 	  WRITE(*,*)'***** Keeping current element station; radius'
 	  WRITE(*,*)'***** set from station to next-element plane.'
 	  CALL DEQUATE(CrossPt,VptElt(1,iElt),3)
 	  CrossDist=0d0
+	  zpLeg=0d0
 	ELSE
-	  CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zpLeg,
-     &		           CrossDist,CrossPt)
+	  IF (nGood.LT.4) THEN
+	    WRITE(*,*)'***** FEX WARNING:',4-nGood,' of 4 probe chief'
+	    WRITE(*,*)'***** rays lost; crossing from the survivors.'
+	  END IF
+	  WRITE(*,'(A,I1,A)')' ***** FEX: EP crossing from',nGood,
+     &	    ' probes (+/-axis1, +/-axis2), mm along the chief ray:'
+	  WRITE(*,'(A,1PG16.9,A,1PG16.9,A,1PG16.9)')
+     &	    ' *****   axis1',vax(1),'  axis2',vax(2),'  medial',zpLeg
+	  WRITE(*,'(A,1PE10.3,A,1PE10.3)')
+     &	    ' *****   T/S split',ABS(vax(1)-vax(2)),
+     &	    '  +/- asymmetry',asym
 	END IF
 
 	! Beam footprint at the EP plane: trace the nMinPts grid
@@ -429,6 +771,31 @@ c	th(3)=3.5355d-6
 	    fexdot=DDOTC(fexvec,psiElt(1,iFPnxt))
 	    fexT=fexdot/fexden
 	    LFPLeg=.TRUE.
+	    ! A CURVED iElt+1 is a focal SURFACE, not a plane:
+	    ! its tangent plane sits h**2/(2*Kr) beyond it at
+	    ! image height h, and that lands in the off-axis OPD
+	    ! as pure defocus.  Take the radius to the SURFACE
+	    ! (Dave 2026-08-28); flat iElt+1 is untouched.
+	    CALL FEXConicLeg(CrossPt,fexdir,iFPnxt,fexT,fexTs,
+     &	                     LFPSrf,LFPTyp)
+	    IF (LFPSrf) THEN
+	      WRITE(*,*)'***** FEX: element',iFPnxt,'is CURVED'
+	      WRITE(*,*)'***** (Kr=',KrElt(iFPnxt),') -- EP radius'
+	      WRITE(*,*)'***** taken to its SURFACE.  Plane leg',
+     &	        fexT,' surface leg',fexTs,' gap',fexT-fexTs
+	      fexT=fexTs
+	    ELSE IF (LFPTyp) THEN
+	      WRITE(*,*)'***** FEX WARNING: element',iFPnxt,
+     &	        'is a curved',SrfTypeName(SrfType(iFPnxt))
+	      WRITE(*,*)'***** surface whose Kr is not a base-conic'
+	      WRITE(*,*)'***** radius; keeping the tangent plane.'
+	    ELSE IF ((SrfType(iFPnxt).NE.SrfType_Flat).AND.
+     &	       (ABS(KrElt(iFPnxt)).LT.1d20)) THEN
+	      WRITE(*,*)'***** FEX WARNING: element',iFPnxt,
+     &	        'is curved (Kr=',KrElt(iFPnxt),') but the'
+	      WRITE(*,*)'***** chief ray does not meet its surface;'
+	      WRITE(*,*)'***** keeping the tangent-plane radius.'
+	    END IF
 	  END IF
 	END IF
 
@@ -464,21 +831,6 @@ c	th(3)=3.5355d-6
 	  ELSE
 	    WRITE(*,*)'***** FEX WARNING: legacy iEm1->EP radius'
 	    WRITE(*,*)'***** unusable too; keeping EP->next value.'
-	  END IF
-	END IF
-
-	! Rx-order flag: a Return immediately before the EP return
-	! usually means a Return sits at an intermediate focus that
-	! should be a passive Reference.  Correct pattern when the
-	! beam reaches the focus before the pupil:
-	!   Reference (at FP), Return (EP), Return (FP).
-	IF (iEm1.GE.1) THEN
-	  IF (EltID(iEm1).EQ.ReturnElt) THEN
-	    WRITE(*,*)'***** FEX WARNING: element',iEm1
-	    WRITE(*,*)'***** (preceding the EP return) is a Return.'
-	    WRITE(*,*)'***** If it marks a focus it should be a'
-	    WRITE(*,*)'***** Reference -- pattern: Reference (FP),'
-	    WRITE(*,*)'***** Return (EP), Return (FP).'
 	  END IF
 	END IF
 !<--
@@ -559,9 +911,11 @@ C  Centroid or chief ray option tested
 
 	  CALL DSUB(psip,CentroidSpot,CrossPt,3)
 	  CALL DUNITIZE(psip)
+	  WRITE(*,*)' FEX axis: beam CENTROID (opt-in; a tilted axis',
+     &	            ' leaves tip/tilt in the OPD -- CHIEFRAY resets)'
 	ELSE
 	  CALL DNEGATE(psip,cr1dir,3)
-	  !   print*,'***** FEX: Centroid NOT used!'
+	  WRITE(*,*)' FEX axis: CHIEF RAY (default)'
 	END IF
 	END SUBROUTINE FEX
 
@@ -620,7 +974,10 @@ C***********************************************************************
      &	  DV1(9),S1,th(3),
      &	  zp,psip(3),CrossPt(3),cr1dir(3),cr1pos(3),cr2dir(3),cr2pos(3),
      &	  cr2indir(3),cr2inpos(3),CrossDist,
-     &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1
+     &	  dvec(3),denom,t_FP,dot_dvec,zp_iEm1,sxpdir(3),t_Srf
+	LOGICAL LFPSrf,LFPTyp
+	INTEGER nGood,nTr
+	REAL*8 sxpsin,vax(2),asym
 
 C       Standard FEX chief-ray pair trace (source -> iEm1) and find
 C       the two-ray crossing point -- that's the EP location.
@@ -641,23 +998,26 @@ C       the two-ray crossing point -- that's the EP location.
 
 	CALL DEQUATE(cr1dir,RayDir(1,1),3)
 	CALL DEQUATE(cr1pos,RayPos(1,1),3)
-	CALL DSMPROD(th,xGrid,5d-6,3)
-	CALL DEQUATE(cr2indir,ChfRayDir,3)
-	CALL DEQUATE(cr2inpos,ChfRayPos,3)
-	CALL RotChfRay(th,cr2indir,cr2inpos,StopPos)
-	CALL DEQUATE(RayDir(1,1),cr2indir,3)
-	CALL DEQUATE(RayPos(1,1),cr2inpos,3)
-
-	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
-     &	  	 ifLNegOK,Cmatrix,
-     &	  	 iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,
-     &	  	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
-     &	         StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
-	CALL DEQUATE(cr2dir,RayDir(1,1),3)
-	CALL DEQUATE(cr2pos,RayPos(1,1),3)
-
-	CALL FindCrossPt(cr1pos,cr1dir,cr2pos,cr2dir,zp_iEm1,
-     &		         CrossDist,CrossPt)
+!--> Frame-independent probe, as in FEX (Dave 2026-09-08).
+	CALL FEXProbeCross(ifBuild,ifDMBuild,ifPol,ifDraw,ifLNegOK,
+     &	  Cmatrix,iEm1,ifRayPrint,ifIntSrfSet,nBadRays,StartIndRef,
+     &	  StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw,
+     &	  cr1pos,cr1dir,zp_iEm1,CrossDist,CrossPt,sxpsin,nGood,nTr,
+     &	  vax,asym)
+	IF ((sxpsin.LT.1d-12).OR.(nGood.EQ.0)) THEN
+	  WRITE(*,*)'***** SXP WARNING: probe chief rays parallel'
+	  WRITE(*,*)'***** or lost; keeping the element station.'
+	  CALL DEQUATE(CrossPt,VptElt(1,iElt),3)
+	  zp_iEm1=0d0
+	ELSE
+	  WRITE(*,'(A,1PG16.9,A,1PG16.9,A,1PG16.9)')
+     &	    ' ***** SXP: EP crossing axis1',vax(1),'  axis2',vax(2),
+     &	    '  medial',zp_iEm1
+	  WRITE(*,'(A,1PE10.3,A,1PE10.3)')
+     &	    ' *****   T/S split',ABS(vax(1)-vax(2)),
+     &	    '  +/- asymmetry',asym
+	END IF
+!<--
 
 C       Replace the FEX zp (iEm1-to-EP distance) with the chief-ray
 C       distance from the EP (CrossPt) to the FP (iElt+1).
@@ -678,6 +1038,30 @@ C       r(t) = CrossPt - t * cr1dir; intersect with FP plane.
      &                 dvec(2)*psiElt(2,iFP_loc) +
      &                 dvec(3)*psiElt(3,iFP_loc)
 	    t_FP = -dot_dvec / denom
+C           Curved iElt+1: refine the plane leg to the actual
+C           surface -- same rule as FEX (Dave 2026-08-28).  The
+C           post-EP chief direction here is -cr1dir (see above).
+	    CALL DNEGATE(sxpdir,cr1dir,3)
+	    CALL FEXConicLeg(CrossPt,sxpdir,iFP_loc,t_FP,t_Srf,
+     &                       LFPSrf,LFPTyp)
+	    IF (LFPSrf) THEN
+	      WRITE(*,*)'***** SXP: element',iFP_loc,'is CURVED'
+	      WRITE(*,*)'***** (Kr=',KrElt(iFP_loc),') -- EP radius'
+	      WRITE(*,*)'***** taken to its SURFACE.  Plane leg',
+     &	        t_FP,' surface leg',t_Srf,' gap',t_FP-t_Srf
+	      t_FP = t_Srf
+	    ELSE IF (LFPTyp) THEN
+	      WRITE(*,*)'***** SXP WARNING: element',iFP_loc,
+     &	        'is a curved',SrfTypeName(SrfType(iFP_loc))
+	      WRITE(*,*)'***** surface whose Kr is not a base-conic'
+	      WRITE(*,*)'***** radius; keeping the tangent plane.'
+	    ELSE IF ((SrfType(iFP_loc).NE.SrfType_Flat).AND.
+     &	       (ABS(KrElt(iFP_loc)).LT.1d20)) THEN
+	      WRITE(*,*)'***** SXP WARNING: element',iFP_loc,
+     &	        'is curved (Kr=',KrElt(iFP_loc),') but the'
+	      WRITE(*,*)'***** chief ray does not meet its surface;'
+	      WRITE(*,*)'***** keeping the tangent-plane radius.'
+	    END IF
 	    zp = t_FP
 	  ELSE
 	    zp = zp_iEm1
@@ -759,8 +1143,11 @@ C       Centroid / chief-ray option -- unchanged from FEX.
 
 	  CALL DSUB(psip,CentroidSpot,CrossPt,3)
 	  CALL DUNITIZE(psip)
+	  WRITE(*,*)' SXP axis: beam CENTROID (opt-in; a tilted axis',
+     &	            ' leaves tip/tilt in the OPD -- CHIEFRAY resets)'
 	ELSE
 	  CALL DNEGATE(psip,cr1dir,3)
+	  WRITE(*,*)' SXP axis: CHIEF RAY (default)'
 	END IF
 	END SUBROUTINE SXP
 
@@ -2621,7 +3008,11 @@ C  Find nominal incidence point
 !     by that geometry.  So tolerate a chief ray whose only failure is
 !     obscuration (the on-axis chief ray of any centrally-obscured
 !     telescope); fail only on a genuine geometric miss/bracket.
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+!     LRayOK(1) as well (2026-10-12): obscuration is now stamped at the
+!     clip, so a chief ray clipped and THEN lost reads Obscured -- the
+!     status alone no longer implies a valid geometric path.
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Nominal chief ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -2645,7 +3036,8 @@ C    First try translating differential ray:
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Differential ray (x-t) becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -2667,7 +3059,8 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	  IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &        RayStatus(1).EQ.RayStat_Obscured)) THEN
 	    WRITE(*,*)'Differential ray (x-r) becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
@@ -2696,7 +3089,8 @@ C    First try translating differential ray:
      &	  nBadRays,StartIndRef,StartExtinc,
      &	  Cmatrix,DrawRayVec,DrawEltVec)
 	CALL DEQUATE(ChfRayPos,oldChfRayPos,3)
-	IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &      RayStatus(1).EQ.RayStat_Obscured)) THEN
 	  WRITE(*,*)'Tilted differential ray becomes undefined'
 	  ifLocalCoord=.FALSE.
           ChfRayDir(:) = oldChfRayDir(:)
@@ -2718,7 +3112,8 @@ C    Didn't work, try rotating differential ray:
      &	    nBadRays,StartIndRef,StartExtinc,
      &	    Cmatrix,DrawRayVec,DrawEltVec)
 	  CALL DEQUATE(ChfRayDir,oldChfRayDir,3)
-	  IF (nBadRays.NE.0 .AND. RayStatus(1).NE.RayStat_Obscured) THEN
+	  IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &        RayStatus(1).EQ.RayStat_Obscured)) THEN
 	    WRITE(*,*)'Rotated differential ray becomes undefined'
 	    ifLocalCoord=.FALSE.
             ChfRayDir(:) = oldChfRayDir(:)
@@ -2891,6 +3286,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
         IMPLICIT NONE
 
         ! Arguments
+        LOGICAL LNSPrevOK  ! the NS candidate test, see label 707
         LOGICAL ifBuild,ifDMBuild,LROKdummy,ifRayPrint,
      &      LRayTrans,ifPol,
      &	    ifLNegOK,L1(mRay),ifIntSrfSet(mElt),ifDraw
@@ -2906,7 +3302,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
         ! Local variables
 	Logical ifRayElt(0:mElt),ifIntSrfOK(mElt),
      &	        ifTransmit,ifLNsrf,LRTdummy,ifRayToSeg,
-     &	        ifReturn
+     &	        ifReturn,ifReturnStart
 
 	INTEGER i,j,iElt,iRay,nEm1,nEm2,RayIndex(2,mRay),
      &     PrevNonSeg,NextNonSeg,itst,imin,iFirstNonSeq,
@@ -2965,11 +3361,24 @@ C  0. Initialize parameters
 	End If
 
 	nBadRays=0
-!-->  Reset per-ray status for this trace
-	RayStatus(:) = RayStat_OK
-	RayFailElt(:) = 0
-	RayFailMsg(:) = ' '
+!-->  Reset per-ray status for this trace -- from the SOURCE only
+!     (2026-10-12).  A trace RESTARTED at iStartElt > 0 keeps each
+!     ray's recorded failure: it was reset here, and a ray lost before
+!     the restart was then re-recorded at the restart's first element
+!     (an obscured ray at iEndElt+1, a missed one at iStartElt+1).  The
+!     lost count of a restart is the rays already lost -- what that
+!     re-recording counted.
+	IF (iStartElt.EQ.0) THEN
+	  RayStatus(:) = RayStat_OK
+	  RayFailElt(:) = 0
+	  RayFailMsg(:) = ' '
+	ELSE
+	  nBadRays=COUNT(RayStatus(1:nRay).NE.RayStat_OK)
+	END IF
 	nZPFailMsg = 0
+	nFwdRootFlip = 0
+	nGridIdxOvf = 0
+	nGrinUnsup  = 0
 !<--
 	EltID(0)=0
 	iSecondElt=iStartElt+1   ! = 0 when run 'opd' commnd, -jzlou
@@ -3011,6 +3420,22 @@ C	Initialize input beam if first element is source
 	ELSE
 	  PrevNonSeg=iStartElt
 	END IF
+!-->  The paired-Return parity at the restart element (PLAN_CONSOLIDATION
+!     item 2, 2026-10-09).  ifReturn is a RUNNING per-ray state: each
+!     Return toggles it, a FocalPlane clears it, and while it is set the
+!     leg's path is SUBTRACTED (the back-traced exit-pupil leg).  A trace
+!     RESTARTED at iStartElt > 0 reset it to .FALSE., so a restart AT the
+!     first Return of a pair (jwst zoom 26, e5hex1 11, Cass 4) ADDED the
+!     next leg instead: the geometry bit-identical, the OPD wrong (zoom
+!     trace(26) then trace(27): 3.81e-5 vs 7.01e-6 rms).  Rebuilt here by
+!     CTRACE's own rules over elements 1..iStartElt; only Segment
+!     elements are skipped per ray, and a Return is never a Segment.
+	ifReturnStart=.FALSE.
+	DO i=1,iStartElt
+	  IF (EltID(i).EQ.ReturnElt) ifReturnStart=.NOT.ifReturnStart
+	  IF (EltID(i).EQ.FocalPlaneElt) ifReturnStart=.FALSE.
+	END DO
+!<--
 
 C	Set wavelength in base units; set index of refraction for Glass;
 C	convert Zernike coefficients to monomials; initialize LEltOK;
@@ -3064,6 +3489,10 @@ C Set Zerns
             ELSEIF ((ZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (ZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
 
             ! Special Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
@@ -3074,8 +3503,8 @@ C Set Zerns
      &           ' SrfType=Zernike but ZernTypeL=',ZernTypeL(iElt),
      &           ' has no ZerntoMon implementation;',
      &           ' Zernike coefficients are being silently ignored.',
-     &           ' Likely causes: ZernType= ExtFringe (no converter),',
-     &           ' or Rx did not specify ZernType for this element.'
+     &           ' Likely cause: the Rx did not specify ZernType',
+     &           ' for this element.'
 	    END IF
 	  END IF
 
@@ -3105,6 +3534,10 @@ C Set FF Zernike coefficients for FreeForm surface
             ELSEIF ((FFZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (FFZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
 
             ! Special FF Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
@@ -3144,6 +3577,10 @@ C Set Mon Zernike coefficients for FreeForm surface
             ELSEIF ((MonZernTypeL(iElt).EQ.ZernType_NormNoll).OR.
      &              (MonZernTypeL(iElt).EQ.ZernType_Noll)) THEN
               CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
 
             ! Special Mon Zernike: Annular Zernikes using Noll Ordering
 	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
@@ -3159,12 +3596,13 @@ C Set Mon Zernike coefficients for FreeForm surface
 
 	  iEltToiWF(iElt)=0
 	  LEltOK(iElt)=.TRUE.
+	  SrfTypeTr(iElt)=SrfType(iElt)
 	  IF (SrfType(iElt).EQ.5) THEN
 	    IF (ifIntSrfSet(iElt)) THEN
 	      iIntSrf=iEltToIntSrf(iElt)
 	      ifIntSrfOK(iElt)=.TRUE.
 	    ELSE
-	      SrfType(iElt)=2
+	      SrfTypeTr(iElt)=2  ! base Conic; SrfType kept, 2026-10-12
 	      iIntSrf=1
 	      ifIntSrfOK(iElt)=.FALSE.
 	    END IF
@@ -3176,10 +3614,8 @@ C Set Mon Zernike coefficients for FreeForm surface
      &	      (ApType(iElt).GT.0)) THEN
 	    LEltObs(iElt)=.TRUE.
 
-	    CALL DEQUATE(zObs(1,iElt),psiElt(1,iElt),3)
-	    CALL DXPROD(yObs(1,iElt),zObs(1,iElt),xObs(1,iElt))
-	    CALL DUNITIZE(yObs(1,iElt))
-	    CALL DXPROD(xObs(1,iElt),yObs(1,iElt),zObs(1,iElt))
+	    CALL OrthoObsFrame(psiElt(1,iElt),xObs(1,iElt),
+     &      yObs(1,iElt),zObs(1,iElt))  ! 2026-10-12: no Rx rewrite
 	  ELSE
 	    LEltObs(iElt)=.FALSE.
 	  END IF
@@ -3198,6 +3634,14 @@ C	Begin iRay loop to trace each ray and compute its partials
 
 	DO 14 iRay=iStartRay,iEndRay
 	  crnt_traced_ray=iRay; iRay_debug=iRay
+!-->  PrevNonSeg is advanced element by element below and was never reset
+!     between rays: on a trace RESTARTED at iStartElt > 0 every ray after
+!     the first saw the previous ray's LAST element as "previous" (so
+!     ifLNsrf, which keys on it, was false for them) -- the reason a
+!     stepwise trace of TO's R2c deck differed from the one-call trace
+!     (2026-10-03).  A trace from the source re-derives it at element 1.
+	  IF (iStartElt.GT.0) PrevNonSeg=iStartElt
+!<--
 
 	  IF (ifRayPrint) THEN
 	    IF (iRay.EQ.1) THEN
@@ -3263,7 +3707,7 @@ C       Loop through each element
 	  PrevIndRef=CurIndRef
 	  CurExtinc=StartExtinc
 	  PrevExtinc=CurExtinc
-	  ifReturn=.FALSE.
+	  ifReturn=ifReturnStart   ! .FALSE. from the source (see above)
 
 #if 1
 	  If (IsVarIndRefElt(iStartElt)) Then
@@ -3350,7 +3794,7 @@ C       Loop through each element
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	        IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &          EltCoat(iElt),EltCoatThk(:,iElt),
@@ -3516,7 +3960,7 @@ c		NextElt(iElt)=NextNonSeg
      &	          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	         ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	         RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	          XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	          IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &		  EltCoat(iElt),EltCoatThk(:,iElt),
@@ -3555,7 +3999,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       h1HOE(1,iElt),h2HOE(1,iElt),OrderHOE(iElt),
      &	       CWB*WaveHOE(iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
@@ -3589,7 +4033,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -3623,7 +4067,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	       ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	       ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	       OrderHOE(iElt),RuleWidth(iElt),h1HOE(1,iElt),
      &	       XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	       IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -3659,7 +4103,7 @@ c             NextElt(PrevNonSeg)=iElt
      &         ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &         ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &         RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &         dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &         OrderHOE(iElt),
      &         XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &         IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP)
@@ -3705,7 +4149,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	        IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &          EltCoat(iElt),EltCoatThk(:,iElt),
@@ -3756,7 +4200,16 @@ c	      NextElt(PrevNonSeg)=iElt
      &         RayL(iRay),RayE(1,iRay),
      &	       dxidxim1(1,1,iElt),dxidui(1,1,iElt))
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	      IndRef(iElt)=CurIndRef
+!-->  (PLAN_CONSOLIDATION 1.1b 3b, 2026-10-10) the Obscuring element no
+!     longer writes the RUNNING medium into its own IndRef -- the item-3
+!     class: nothing reads an Obscuring element's IndRef as a medium
+!     (ObsSrf never uses its nb; CPROPAGATE resets its medium only after
+!     a Refractor or LensArray), so the stamp only MUTATED the
+!     prescription -- an obscuration inside glass reported / SAVEd the
+!     glass index after any trace (ZGD tst_obs_in_glass.in, elt 2:
+!     1.0 -> 1.5).  No corpus deck was affected (403 compared).
+!	      IndRef(iElt)=CurIndRef
+!<--
 	      CumRayL(iRay)=CumRayL(iRay)+CurIndRef*RayL(iRay)
 	      PrevIndRef=CurIndRef
 	      PrevExtinc=CurExtinc
@@ -3789,7 +4242,14 @@ c	      END IF
      &	       RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
      &         dxidxim1(1,1,iElt),dxidui(1,1,iElt))
 	      IF (.NOT.LRayTrans) L1(iRay)=.FALSE.
-	      IndRef(iElt)=CurIndRef
+!-->  (PLAN_CONSOLIDATION item 3, 2026-10-09) the Return no longer writes
+!     the RUNNING medium into its own IndRef: nothing in a trace reads a
+!     Return's IndRef as a medium (ReturnSrf uses na; CPROPAGATE resets
+!     its medium only after a Refractor or LensArray), so the stamp only
+!     mutated the prescription -- after a LensArray in glass, SAVE wrote
+!     the lenslet index onto the next Return (tst_save_keys elt 9).
+!	      IndRef(iElt)=CurIndRef
+!<--
 	      IF (ifReturn) RayL(iRay)=-RayL(iRay)
 
 	      ifReturn=.NOT.ifReturn
@@ -3881,9 +4341,19 @@ c	          ELSE
      &               mDP,maxAsphCoef)
 c	          END IF
 C note: RayLTst changed from 1d-12 to 1d-8
+!-->      iminPrev is 0 on the first NS candidate, and .OR. does not
+!         short-circuit: SrfType(0) was READ out of bounds (the
+!         gfortran debug build aborts; release read a neighbour).
+!         iminPrev /= itst
+!         makes the clause true then, so the guarded form is
+!         bit-identical.
+	          LNSPrevOK = (iminPrev.NE.itst)
+	          IF (.NOT.LNSPrevOK)
+     &	            LNSPrevOK = (SrfType(iminPrev).LE.2)
+!<--
 	          IF (LROKdummy.AND.(RayLTst.LT.Lmin).AND.
      &	          (RayLTst.GT.1d-8).AND.LRTdummy.AND.
-     &	          ((SrfType(iminPrev).LE.2).OR.(iminPrev.NE.itst))) THEN
+     &	          LNSPrevOK) THEN
 	            Lmin=RayLTst
 	            imin=itst
 	          END IF
@@ -3922,7 +4392,7 @@ C	Here when element number is determined...
      &	               xObs(1,imin),yObs(1,imin),zObs(1,imin),
      &	               RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),
      &	               RayE(1,iRay),dxidxim1(1,1,imin),dxidui(1,1,imin),
-     &	               SrfType(imin),
+     &	               SrfTypeTr(imin),
      &	               XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &                 IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),
      &                 mDP,EltCoat(imin),EltCoatThk(:,imin),
@@ -3963,6 +4433,8 @@ C	Here when element number is determined...
      &	                UDSrfType(imin),UDSrfParam(1,imin),
      &                  nGridMat(imin),mGridMat,
      &                  GridMat(1,1,jGridSrf(imin)),GridSrfdx(imin),
+     &                  pData(1,imin),xData(1,imin),
+     &                  yData(1,imin),zData(1,imin),
      &	                psiElt(1,imin),VptElt(1,imin),RptElt(1,imin),
      &	                RayPos(1,iRay),RayDir(1,iRay),RayE(1,iRay),
      &	                lMon(imin),pMon(1,imin),
@@ -3975,7 +4447,7 @@ C	Here when element number is determined...
      &	                RayPos(1,iRay),
      &	                RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
      &	                dxidxim1(1,1,imin),dxidui(1,1,imin),
-     &	                SrfType(imin),
+     &	                SrfTypeTr(imin),
      &	                XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &	                IWORK(1,iIntSrf),DWORK(1,iIntSrf),
      &	                NDP(iIntSrf),mDP)
@@ -4047,9 +4519,10 @@ C	Here when element number is determined...
 	                 ChfRayDirAtElt(1:3)=PrevDir(1:3)
 	              End If
 	              If (beamOpt%ifOptBeamPos .and.
-     &                    imin==beamOpt%beamPosElt .and. iRay==1) Then
+     &                    imin==beamOpt%beamPosElt) Then
                           ! Get chief ray position at beamPosElt, added by jzlou
-                         ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                         If (iRay==1) ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                         RayPosAtElt(1:3,iRay)=RayPos(1:3,iRay) ! centroid
                       End If
 	              If (beamOpt%ifOptBeamRefRayDir .and.
      &                    (imin==beamOpt%beamRefRayElt)) Then
@@ -4080,6 +4553,11 @@ C	Here when element number is determined...
      &                  'root-find bracket/iter fail'))
      &              nBadRays=nBadRays+1
 	            LZPFailed = .FALSE.
+	          ELSE IF (LGrinUnsup) THEN
+	            IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	            LGrinUnsup = .FALSE.
 	          ELSE
 	            IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &                  'surface miss'))
@@ -4116,8 +4594,15 @@ C	Here when element number is determined...
 
 	        If (NSCnt(iElt).gt.0 .and.
      &              CrntNSCnt.eq.NSCnt(iElt)) Then
-	          ! This is for optimizing ray-tracing speed with segmented mirror;
-	          ! NSCount should NOT be defined in Rx for CC -jzlou
+	          ! NSCount= N is the per-group HIT BUDGET: the number of surface
+	          ! hits a ray may take inside this non-sequential group before it
+	          ! is forced on to the next sequential element.  N absent / 0 =
+	          ! UNLIMITED (a CornerCube's repeated bounces); N = 1 = single-hit
+	          ! segmented groups -- the right value for a grid-surfaced NS group,
+	          ! where an unbounded search can diverge the surface-solve bracket
+	          ! (xi/yj overflow, surfsub grid-index guard).  It IS authoring
+	          ! intent and round-trips through SAVE (iosub.inc); it is NOT
+	          ! derivable from structure, so do not auto-set it.
                   imin=iNextSeq
                 End If
 
@@ -4154,7 +4639,7 @@ c	      NextElt(PrevNonSeg)=iElt
      &	        ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	        ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	        RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &	        LensArrayType(iElt),LensArrayWidth(iElt),
      &          IsVarIndRefElt(iElt),TotalLensletsArray(iElt),iElt,
      &	        XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
@@ -4204,10 +4689,11 @@ C  End of element section
                 ChfRayDirAtElt(1:3)=PrevDir(1:3)
                 !print*,'Ctrace 2*: ChfRayDirAtElt(1:3)=',ChfRayDirAtElt(1:3)
               End If
-	      If ((beamOpt%ifOptBeamPos).AND.(iElt==beamOpt%beamPosElt)
-     &            .AND.(iRay==1)) Then
+	      If ((beamOpt%ifOptBeamPos).AND.(iElt==beamOpt%beamPosElt))
+     &        Then
                 ! Get chief ray position at beamPosElt, added by jzlou
-                ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                If (iRay==1) ChfRayPosAtElt(1:3)=RayPos(1:3,iRay)
+                RayPosAtElt(1:3,iRay)=RayPos(1:3,iRay) ! centroid option
               End If
 	      If ((beamOpt%ifOptBeamRefRayDir) .and.
      &            (iElt==beamOpt%beamRefRayElt)) Then
@@ -4241,6 +4727,11 @@ C  End of element section
      &              'root-find bracket/iter fail'))
      &          nBadRays=nBadRays+1
 	        LZPFailed = .FALSE.
+	      ELSE IF (LGrinUnsup) THEN
+	        IF (SetRayFail(iRay,RayStat_Undef,iElt,
+     &      'GRIN model not implemented'))
+     &    nBadRays=nBadRays+1
+	        LGrinUnsup = .FALSE.
 	      ELSE
 	        IF (SetRayFail(iRay,RayStat_Miss,iElt,
      &              'surface miss'))
@@ -4292,6 +4783,21 @@ C  End of element section
      &	        Draw3DVec(1:3,nDrawElt,iDrawRay_global)=RayPos(1:3,iRay)
 !<--
 	    END IF
+
+!-->  Obscuration is stamped at the element that CLIPPED the ray
+!     (2026-10-12, PLAN_CONSOLIDATION 1.2).  It was stamped only after
+!     the element loop, with the loop's exit value iEndElt+1 (nElt+1
+!     for a full trace) -- and never for a ray that went on to miss a
+!     later surface (GO TO 14 skips that stamp; such a ray read 'Miss'
+!     at the later element).  CPROPAGATE, element by element, has
+!     always recorded Obscured at the clip; the two now agree.
+!     SetRayFail keeps the first failure, so this fires once per ray.
+	    IF (.NOT.L1(iRay)) THEN
+	      IF (SetRayFail(iRay,RayStat_Obscured,iElt,
+     &            'obscured/vignetted'))
+     &        nBadRays=nBadRays+1
+	    END IF
+!<--
 
 	    ! Save incident chief ray state:
             ! direction, intersection point, surf nomal, -jzlou
@@ -4401,6 +4907,9 @@ C	  END IF
 ! #endif
 
 !-->  Record obscuration (if ray passed surfaces but was blocked).
+!     FALLBACK since 2026-10-12: the clip itself is stamped inside the
+!     element loop above; this catches a ray whose pass flag was
+!     cleared without that stamp (none known), at iEndElt+1.
 !     Bump nBadRays only on first-failure (SetRayFail is also called
 !     from CPROPAGATE; an already-obscured ray must not be counted
 !     again at every subsequent propagation pass).
@@ -4924,11 +5433,14 @@ C***********************************************************************
 	SUBROUTINE WARN(LEltOK,nElt,nBadRays)
 	use elt_mod, only: RayStatus, RayFailElt,
      &    RayStat_OK, RayStat_Obscured, RayStat_Miss,
-     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay
-	use surfsub, only: nZPFailMsg, mZPFailMsg
+     &    RayStat_Bracket, RayStat_MaxIter, RayStat_Undef, nRay,
+     &    nGridDropped
+	use surfsub, only: nZPFailMsg, mZPFailMsg, nFwdRootFlip,
+     &                     nGridIdxOvf, nGrinUnsup
 	IMPLICIT NONE
 	INTEGER nElt,iElt,nBadRays,iRay
 	INTEGER :: nMiss,nObs,nBrkt,nOther
+	INTEGER :: nObsAt(0:nElt+1)
 	LOGICAL LEltOK(nElt)
 
   124	FORMAT(' One or more rays become undefined at element',i4)
@@ -4959,12 +5471,41 @@ C***********************************************************************
 	END DO
 	IF (nMiss.GT.0)  WRITE(*,126) nMiss
 	IF (nObs.GT.0)   WRITE(*,127) nObs
+!-->  ... and the element that clipped them (2026-10-12; RayFailElt is
+!     the clipping element since then -- nElt+1 is the end-of-trace
+!     fallback stamp)
+	IF (nObs.GT.0) THEN
+	  nObsAt=0
+	  DO iRay=1,nRay
+	    IF (RayStatus(iRay).EQ.RayStat_Obscured) THEN
+	      iElt=MAX(0,MIN(nElt+1,RayFailElt(iRay)))
+	      nObsAt(iElt)=nObsAt(iElt)+1
+	    END IF
+	  END DO
+	  DO iElt=0,nElt+1
+	    IF (nObsAt(iElt).GT.0) WRITE(*,135) iElt,nObsAt(iElt)
+	  END DO
+	END IF
+  135	FORMAT('     at element ',i4,':  ',i8)
+!<--
 	IF (nBrkt.GT.0)  WRITE(*,128) nBrkt
 	IF (nOther.GT.0) WRITE(*,129) nOther
 	IF (nZPFailMsg.GT.mZPFailMsg)
      &    WRITE(*,130) mZPFailMsg, nZPFailMsg
   130	FORMAT('   (',i4,' of ',i6,
      &    ' bracket/iteration messages shown)')
+	IF (nFwdRootFlip.GT.0) WRITE(*,131) nFwdRootFlip
+  131	FORMAT('   First-crossing root picks differing from the legacy',
+     &    ' metric: ',i8)
+	IF (nGridIdxOvf.GT.0) WRITE(*,132) nGridIdxOvf
+  132	FORMAT('   Grid samples with a non-finite / out-of-range pixel',
+     &    ' index (treated as off-grid): ',i8)
+	IF (nGridDropped.GT.0) WRITE(*,133) nGridDropped
+	IF (nGrinUnsup.GT.0) WRITE(*,134) nGrinUnsup
+  134	FORMAT('   Rays through a GradInd= model that is not',
+     &    ' implemented (lost): ',i8)
+  133	FORMAT('   Grid files NOT loaded (larger than mGridMat;',
+     &    ' the surfaces trace without them): ',i4)
 !<--
 
 	RETURN

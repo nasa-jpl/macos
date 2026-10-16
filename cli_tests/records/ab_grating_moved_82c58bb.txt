@@ -1,0 +1,6 @@
+# PLAN_CONSOLIDATION 1.1b A.4 (TO, resources 82c58bb + macos b52e393): the ONE intentional corpus change.
+# pymacos/tests/Rx/Grating_example_001.in: element 3 (the ExitPupil Return) sat ON element 2's plane, so every ray
+# started its leg at L = 0 and the forward-only L < 0 test turned round-off into compiler-split misses (ifx 7303 /
+# gfortran 7295 rays passed).  It is now the standard FEX sphere centred on the focus (vertex at the grating, KrElt -3,
+# psiElt -z); the grating is untouched.  Both compilers: nPass 7346, RMS 1.766507565D+02, lost 5107 -- identical.
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Grating_example_001.in  npass 7303|7295 -> 7346  rms 177.168|177.155 -> 176.6507565

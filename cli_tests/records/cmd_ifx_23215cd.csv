@@ -1,0 +1,23 @@
+journal,kind,status,missed,dt
+CALIB_beam_under_spot.jou,journal,pass,,1.9
+CALIB_history.jou,journal,pass,,4.8
+CALIB_keywords.jou,journal,pass,,3.4
+GRIN_unsupported.jou,journal,pass,,1.6
+INT_LOG.jou,journal,pass,,2.3
+IndRef_stamp.jou,journal,pass,,2.2
+JOURNAL_EXE.jou,journal,pass,,3.4
+LONG_PATH.jou,journal,pass,,2.9
+MANUAL_examples.jou,journal,pass,,6.4
+MOD_spaces.jou,journal,pass,,3.9
+OPD.jou,journal,pass,,2.8
+OPD_reference.jou,journal,pass,,6.2
+PERTURB.jou,journal,pass,,5.0
+PLOT_TYPES.jou,journal,pass,,7.1
+SAVE_roundtrip.jou,journal,pass,,2.6
+SPOT_text.jou,journal,pass,,2.7
+STOP_FEX_SXP.jou,journal,pass,,3.5
+VALIDATE.jou,journal,pass,,0.9
+ZernType_default.jou,journal,pass,,3.4
+ZrnGr_refusal.jou,journal,pass,,1.5
+nGridpts_clamp.jou,journal,pass,,1.7
+selftest.jou,must_fail,fail,EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS,1.0

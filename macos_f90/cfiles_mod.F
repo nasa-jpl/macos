@@ -19,7 +19,14 @@ C***********************************************************************
      &                srffil,filtfil,chBuf,apodType
 
 	CHARACTER(len=MacosCharLen),dimension(:),allocatable :: UDSrfFile
-        CHARACTER*24, dimension(:), allocatable :: GridFile,AmplFile
+!-->  Was CHARACTER*24: a GridFile=/AmplFile= name longer than 24 chars
+!     was TRUNCATED on assignment, so the open failed ("does not exist")
+!     and the surface went silently flat -- the ifo-l2 case was a 25-char
+!     name, one over.  Use the same length as UDSrfFile above.  SAVE
+!     writes these with TRIM + "2x,A", so the emitted file is unchanged.
+        CHARACTER(len=MacosCharLen), dimension(:), allocatable ::
+     &                                             GridFile,AmplFile
+!<--
 
 	Integer, parameter :: stepApod  = 1,
      &                        linApod   = 2,

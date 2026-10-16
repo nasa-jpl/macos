@@ -1,0 +1,242 @@
+{
+ "COPHI on the DM Gauge bench: the four-step run continuously": {
+  "img:cophi_block_single.png": {
+   "x": 1.0,
+   "y": 1.54,
+   "w": 10.93,
+   "h": 5.9,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0366,
+   "cb": 0.0284
+  },
+  "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
+   "x": 0.45,
+   "y": 1.22,
+   "w": 12.55
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 6.0,
+   "y": 1.5,
+   "w": 6.4
+  },
+  "txt:make_cophi_block_fig.py; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 6).": {
+   "x": 6.75,
+   "y": 2.3,
+   "w": 4.75
+  }
+ },
+ "COPHI with a lock-in camera: the block diagram": {
+  "img:cophi_block_lockin.png": {
+   "x": 0.81,
+   "y": 1.21,
+   "w": 11.26,
+   "h": 6.14,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0301,
+   "cb": 0.026
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 6.3,
+   "y": 2.3,
+   "w": 6.6
+  },
+  "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
+   "x": 6.75,
+   "y": 7.23,
+   "w": 6.18
+  },
+  "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
+   "x": 6.3,
+   "y": 1.22,
+   "w": 6.6
+  }
+ },
+ "Performance side by side: HET against the IFO on the same surface": {
+  "table:1": {
+   "y": 1.3
+  },
+  "txt:The one-step rows sit 0.5 % low for HET on both rigs — the estimator, not the reading: a synthetic 1.000 nm poke reads at slope 1.000000 at the pixel; at λ_m = 10⁻⁵ the gain is 1.0007.": {
+   "y": 5.0,
+   "fs": 14,
+   "x": 0.45,
+   "w": 12.43
+  },
+  "txt:Stage battery (runs/battery_{lens,oap}": {
+   "x": 0.45,
+   "y": 6.75,
+   "w": 12.43
+  }
+ },
+ "Electronics: what each gauge needs behind the optics": {
+  "txt:Camera timings on an IMX250MZR-class": {
+   "x": 0.5,
+   "y": 7.05,
+   "w": 12.43
+  }
+ },
+ "COPHI against the Zernike sensor with a dedicated laser, for the hold job": {
+  "txt:For hold alone, the vector Zernike is cheapest in photons (~50×) and needs no stabilities of its own — but on the assumed polarization camera it is the slowest (~60 s per cycle).": {
+   "y": 5.75,
+   "fs": 11
+  },
+  "txt:The Zernike rows are the gauge deck's": {
+   "x": 0.46,
+   "y": 6.93,
+   "w": 12.43
+  }
+ },
+ "Feng's proposal, in one slide": {
+  "txt:Feng's slide 8 is the implementation example": {
+   "x": 7.0,
+   "y": 5.55,
+   "w": 5.9
+  }
+ },
+ "The lock-in camera: COPHI's algorithm built into the sensor": {
+  "txt:Stage format (runs/format_lens_plain)": {
+   "x": 0.5,
+   "y": 7.0,
+   "w": 12.4
+  },
+  "txt:Ruling: every mode": {
+   "x": 0.45,
+   "y": 1.42,
+   "w": 6.35,
+   "fs": 14
+  },
+  "txt:The lock-in is ~12× the Photonfocus": {
+   "x": 0.46,
+   "y": 5.3,
+   "w": 12.4,
+   "fs": 14
+  }
+ },
+ "Holding 3 pm: the servo at the camera's cadence": {
+  "txt:Stage loop (runs/loop_{lens,oap}_plain": {
+   "x": 0.5,
+   "y": 6.75,
+   "w": 12.4
+  }
+ },
+ "Capture from a cold start: two colors frequency-multiplexed on one camera": {
+  "img:cophi_block_multi.png": {
+   "x": 0.8,
+   "y": 2.5,
+   "w": 12.0,
+   "h": 4.8,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0306,
+   "cb": 0.0237
+  },
+  "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
+   "x": 0.45,
+   "y": 1.22,
+   "w": 12.4
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 0.45,
+   "y": 2.0,
+   "w": 6.4
+  },
+  "txt:make_cophi_block_fig.py; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.": {
+   "x": 7.0,
+   "y": 2.0,
+   "w": 5.9
+  }
+ },
+ "The LO on the DM Gauge bench replaces the IFO's reference flat": {
+  "txt:Stage bench (runs/bench_{lens,oap}": {
+   "x": 0.5,
+   "y": 6.75,
+   "w": 12.4
+  }
+ },
+ "Photons for 1 pm, camera by camera": {
+  "txt:Read noise is in every row": {
+   "x": 8.0,
+   "y": 1.42,
+   "w": 4.9
+  },
+  "txt:Stage noise (runs/noise_{lens,oap}[_plain])": {
+   "x": 8.0,
+   "y": 5.86,
+   "w": 4.9
+  }
+ },
+ "How the lock-in detector works": {
+  "img:cophi_lid.png": {
+   "x": 0.45,
+   "y": 1.3,
+   "w": 12.43,
+   "h": 4.8,
+   "cl": 0.0084,
+   "cr": 0.0,
+   "ct": 0.0379,
+   "cb": 0.0473
+  },
+  "txt:make_cophi_lid_fig.py; the pixel is CSEM's demodulation pixel": {
+   "x": 4.75,
+   "y": 7.22,
+   "w": 8.15
+  },
+  "txt:The reference: a square wave": {
+   "x": 0.4,
+   "y": 6.24,
+   "w": 6.35
+  },
+  "txt:Against a frame camera: N cycles per sample": {
+   "x": 6.98,
+   "y": 6.25,
+   "w": 6.27
+  }
+ },
+ "The reading's algebra, pinned before the bench": {
+  "img:cophi_equations.png": {
+   "x": 0.33,
+   "y": 1.26,
+   "w": 12.67,
+   "h": 3.99
+  },
+  "txt:Integrating bucket (1)–(2)": {
+   "x": 0.45,
+   "y": 5.0,
+   "w": 6.35
+  },
+  "txt:Step error (5)": {
+   "x": 7.0,
+   "y": 5.0,
+   "w": 5.9
+  }
+ },
+ "How much resolution? IFO, vector ZWFS, HET — the sweep's records": {
+  "txt:ressweep_run / ressweep_zrun / ressweep_figs": {
+   "x": 0.5,
+   "y": 7.0,
+   "w": 12.4
+  }
+ },
+ "Resolution and timing, camera by camera": {
+  "txt:Stage noise and format; the pupil in pixels": {
+   "x": 0.45,
+   "y": 7.03,
+   "w": 12.43
+  }
+ },
+ "Hold vs cycle time: what the fast cycle buys": {
+  "txt:cophi_hold_vs_cycle (runs/figs_hold_vs_cycle/)": {
+   "x": 0.5,
+   "y": 6.84,
+   "w": 12.4
+  }
+ },
+ "What to develop: what, why, how, how long": {
+  "txt:Numbers from stages noise and loop (1–2)": {
+   "x": 0.46,
+   "y": 6.98,
+   "w": 12.43
+  }
+ }
+}

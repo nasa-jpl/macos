@@ -363,9 +363,10 @@ C         ***next command: Load optical description data***
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
-	    LUseChfRayIfOK=.TRUE.
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
+	    beamOpt%nBeamPosFov=0; beamOpt%beamWt=1d0
+	    beamOpt%ifBeamCentroid=.FALSE.
 	    beamOpt%ifOptBeamSize=.FALSE.
 	    beamOpt%ifOptBeamRefRayDir=.FALSE.
 
@@ -377,6 +378,11 @@ C         ***next command: Load optical description data***
             SaveVis3d_dat_Flg=.FALSE.  ! default
 	    EltGrp(0,0:mElt)=0
 	    RxStopSet=.FALSE.; ifStopSet=.FALSE.
+!-->	    ! api stop_info_set state must not outlive the LOAD: a
+	    ! stale EltStopSet trips ChkDf2's NS/Segment stop guard
+	    ! mid-parse and cancels the NEW deck's own ApStop.
+	    EltStopSet=.FALSE.; StopElt=0; StopOffset=0.0D0
+!<--
             RxNoStopSet_Flg=.FALSE.
 	    IsVarIndRefElt=.FALSE.; IsGrinRefElt=.FALSE.
 	    TotalLensletsArray=0
@@ -422,9 +428,7 @@ C         ***next command: Load optical description data***
             ifBuild          = .FALSE.
             ifPropagate      = .FALSE.
             ifPerturb        = .FALSE.
-            ifPol            = .FALSE.
             ifPixLoc         = .FALSE.
-            ifVecDif3        = .FALSE.
             ifTrace          = .FALSE.
             ifGrid           = .FALSE.
             ifAdd            = .FALSE.
@@ -432,10 +436,13 @@ C         ***next command: Load optical description data***
             ifPixArray       = .FALSE.
             ifCmt            = .FALSE.
             ifEFLCalc        = .FALSE.
-            ifCentroid       = .TRUE.
             ifFilterData     = .FALSE.
             ifDMBuild        = .FALSE.
-            ifLNegOK         = .TRUE.
+!-->  POLARIZATION, VECTOR/SCALAR, CENTROID, LNEG and CIR are SESSION modes:
+!     a load keeps them and names the non-default ones (Dave 2026-10-11,
+!     PLAN_CONSOLIDATION 4 item 2).
+            CALL ModesInForceNote()
+!<--
 
             i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
@@ -484,81 +491,7 @@ C         ***next command: Load optical description data***
             ! ** Support Linear WFC, calc system sensitivity around nominal
             !    state. Sensitivity will be kept in system optimizer **
 	    If (LOptNomSens) Then
-	      if (nVarElt==0) then
-                WRITE(*,*)' '
-                WRITE(*,*)' No Variable Element for Optimization!'
-                goto 108
-              else if (nOptFov==0) then
-                WRITE(*,*)' '
-                WRITE(*,*)' No Field of View for Optimization!'
-                goto 108
-              end if
-
-	      if (LOptIfFEX .and. .not.ifStopSet) then
-                WRITE(*,*)' Must set STOP before optimization with FEX!'
-                WRITE(*,*)' '
-                goto 108
-              end if
-
-	      ! Process input arguments to system optimer drivers
-              varZerns=0; zern_off=1
-	      varAsphs=0; asph_off=1
-              k=1
-              iVarElt=0
-
-	      ! Process source first
-              If (isVarElt(0)) Then
-                iVarElt=iVarElt+1
-                varElts(iVarElt)=0
-                varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,0)
-                If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
-                  if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
-     &                .or. varEltDOF(3,0)/=0) then
-                    WRITE(*,*)' Must set STOP before optimizing source!'
-                    go to 108
-                  end if
-                End If
-                EltName(0)='Source'
-                nOptFov=1
-                opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
-                zernElt(iVarElt)=0; asphElt(iVarElt)=0
-              End If
-
-	      Do iElt=1,nElt
-                If (isVarElt(iElt)) Then
-                  iVarElt=iVarElt+1
-                  varElts(iVarElt)=iElt
-                  varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,iElt)
-
-                  zernElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltZern(iElt)>0) then
-                    zernElt(iVarElt)=nOptEltZern(iElt)
-                    varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
-     &                = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
-                    zern_off=zern_off+nOptEltZern(iElt)
-                  end if
-
-	          asphElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltAsph(iElt)>0) then
-                    asphElt(iVarElt)=nOptEltAsph(iElt)
-                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
-     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
-                    asph_off=asph_off+nOptEltAsph(iElt)
-                  end if
-
-                  if (LOptCons) then
-                    ! process variable constraints
-                    do i=1,mVarDOF
-                      if (varEltDOF(i,iElt)/=0) then
-                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
-                        k=k+1
-                      end if
-                    end do
-                  end if
-	        End If
-              End Do
+	      IF (.NOT. calib_setup_vars()) GO TO 108   ! PLAN 3.3: one copy
 
 	      ! Save Rx npts, use opt_npts for design optimization
               npts_Rx=npts; npts=opt_npts
@@ -983,7 +916,7 @@ C         ***Reset defaults, options, etc.***
 	    ifPixArray=.FALSE.
 #endif
 	    ifDMBuild=.FALSE.
-	    ifCentroid=.TRUE.
+	    ifCentroid=.FALSE.  ! chief-ray default (Dave 2026-08-27; was .TRUE.)
 	    ifFilterData=.FALSE.
 	    ifLNegOK=.TRUE.
 	    ifUDSinit=.FALSE.
@@ -1036,8 +969,17 @@ C         ***Status check***
 	      ELSE IF (iPloTyp.EQ.0) THEN
 	        CTITLE='NULL'
 	      END IF
+!-->  The session modes, so a journal can see what a LOAD did to them
+!     (PLAN 3.3 rule-6 audit, 2026-10-11): VECTOR/SCALAR, CENTROID/
+!     CHIEFRAY, LNEG/NOLNEG, CIR/GIR join NOPLOC and POLARIZATION.
 	      WRITE(*,207)filnam(1:ICLEN(filnam)),iCurRayElt,iCurWFElt,
-     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol
+     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol,
+     &         ifVecDif3,ifCentroid,ifLNegOK
+#ifdef CMACOS
+	      WRITE(*,'(A,L2)')
+     &          '              Color image rendering (CIR)=',ifPGColor
+#endif
+!<--
 	    ELSE
 	      WRITE(*,150)
 	    END IF
@@ -1127,17 +1069,48 @@ C         ***Turn on vector diffraction***
 	      ifVecDif3=.FALSE.
 	    END IF
 
+C         ***OPD reference: chief ray (default) or aperture mean***
+C         Before the OPD branch: LCMP matches a prefix, and 'OPD',3
+C         would take OPDREF.  The session option (traceutil_mod
+C         LOpdRefChief) survives later loads; a deck's UseChfRay4OPD=
+C         still overrides it for that deck.
+
+	  ELSE IF (LCMP(command,'OPDREF',6)) THEN
+	    IF (LUseChfRayIfOK) THEN
+	      CALL CACCEPT(ANS,'CHIEF','OPD reference (CHIEF,MEAN):')
+	    ELSE
+	      CALL CACCEPT(ANS,'MEAN','OPD reference (CHIEF,MEAN):')
+	    END IF
+	    IF (LCMP(ANS,'CHIEF',1)) THEN
+	      LOpdRefChief=.TRUE.
+	    ELSE IF (LCMP(ANS,'MEAN',1)) THEN
+	      LOpdRefChief=.FALSE.
+	    ELSE
+	      WRITE(*,*)' OPDREF wants CHIEF or MEAN; unchanged'
+	      GO TO 1
+	    END IF
+	    LUseChfRayIfOK=LOpdRefChief
+	    iOpdRefSesSrc=2; iOpdRefSrc=2
+	    ifPropagate=.FALSE.  ! propsub fills OPDMat too
+	    IF (LOpdRefChief) THEN
+	      WRITE(*,*)' OPD reference: CHIEF RAY (the default)'
+	    ELSE
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (opt-in;',
+     &	                ' the chief ray is the default)'
+	    END IF
+
 C         ***Set centroid option***
 
 	  ELSE IF (LCMP(command,'CENTROID',5)) THEN
 	    ifCentroid=.TRUE.
-	    WRITE(*,*)' Image referenced to ray centroid'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: beam CENTROID',
+     &	              ' (opt-in; chief ray is the default)'
 
 C         ***Set chief ray option***
 
 	  ELSE IF (LCMP(command,'CHIEFRAY',3)) THEN
 	    ifCentroid=.FALSE.
-	    WRITE(*,*)' Image referenced to chief ray'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: CHIEF RAY (default)'
 
 C         ***Set regridding on for specified element***
 
@@ -2695,7 +2668,7 @@ C         ***
 C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
 C         *** EP -> next-element radius (the far-field propagation
 C         *** distance), with the legacy leg as fallback plus
-C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** telecentric/footprint guards -- see the FEX
 C         *** rework block in tracesub.F.  SXP is retained as-is for
 C         *** compatibility; it is now largely redundant with FEX.
 
@@ -2893,7 +2866,7 @@ c  the target element, just blocked by an obscuration mask, so
 c  FFP/PFP can still compute the source adjustment.  Bail only on
 c  miss/bracket/iter failures (chief ray didn't reach iSlv1).
 	    IF (nBadRays.NE.0) THEN
-	      IF (RayStatus(1) .EQ. RayStat_Obscured) THEN
+	      IF (RayStatus(1).EQ.RayStat_Obscured .AND. LRayOK(1)) THEN
 	        WRITE(*,*)' Chief ray obscured at element ',iSlv1,
      &	                  '; proceeding with FFP/PFP calculation.'
 	      ELSE
@@ -3012,8 +2985,8 @@ c----Compute next step
 c--Same obscuration tolerance as for the nominal trace above:
 c  obscured chief ray still reached iSlv1 geometrically, only
 c  miss/bracket/iter failures abort the search.
-	      IF (nBadRays.NE.0 .AND.
-     &	          RayStatus(1) .NE. RayStat_Obscured) THEN
+	      IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &	          RayStatus(1).EQ.RayStat_Obscured)) THEN
 	        WRITE(*,*)'Chief ray becomes undefined during search'
 	        GO TO 385
 	      END IF
@@ -3051,12 +3024,17 @@ C         ***Center Beam in System Stop***
 	  ELSE IF (LCMP(command,'CENTER',5)) THEN
 	    CALL IACCEPT_S(iStop,1,1,
      &	      'Enter system stop element number:')
-	    IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	      .OR.(EltID(iStop).EQ.12)) THEN
-	      WRITE(*,*)'Invalid element type =', EltID(iStop)
-	    ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
-	      WRITE(*,*)'CENTER: Invalid element number: ', iElt
+!-->  Same rules as STOP (2026-09-08): range first, veto only the
+!     non-sequential types, Segment allowed.
+	    IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+	      WRITE(*,*)'CENTER: Invalid element number: ', iStop
+	    ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	      (EltID(iStop).EQ.NSReflectorElt)) THEN
+	      WRITE(*,*)'CENTER: element',iStop,' is ',
+     &	        TRIM(EltTypeName(EltID(iStop))),
+     &	        ' -- a non-sequential element cannot be the stop.'
 	    ELSE
+!<--
 	      CALL DEQUATE(DDEF,VptElt,3)
 	      CALL DACCEPT(xTarg,DDEF,2,'Enter offset vector (dx,dy):')
 	      ifGrid=.FALSE.
@@ -3066,6 +3044,13 @@ C         ***Center Beam in System Stop***
 	      ifBuild=.FALSE.
 	      ifOPDCalc=.FALSE.
 
+!-->  Segment stop: chief-ray mapping, as in STOP.
+	      IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	    (EltToSegMap(iStop).GT.0)) THEN
+	        nRayToSeg(1)=1
+	        RayToSegMap(1,1)=EltToSegMap(iStop)
+	      END IF
+!<--
 	      CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &	        ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
@@ -3216,16 +3201,10 @@ C         *** Set System Stop ***
 
 	      ! Chief ray aiming
 	      ! 'Clean up' xGrid, yGrid first, as in source routines
- 205	      CALL DXPROD(zGrid,xGrid,yGrid)
-              IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-                zGrid = ChfRayDir
-              ELSE
-                zGrid = -ChfRayDir
-              END IF
-              CALL DUNITIZE(zGrid)
-              CALL DXPROD(yGrid,zGrid,xGrid)
-              CALL DUNITIZE(yGrid)
-              CALL DXPROD(xGrid,yGrid,zGrid)
+ 205	      CONTINUE
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	      CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 
 	      IF (ABS(zSource).LE.1d10) THEN
 	        ! Pt source
@@ -3235,6 +3214,20 @@ C         *** Set System Stop ***
 	          srcPos(1:3)=ChfRayPos(1:3)+zSource*ChfRayDir
 	          ChfRayDir(1:3)=StopPos(1:3)-srcPos
 	          CALL DUNITIZE(ChfRayDir)
+!-->  dead band (2026-09-08): a re-aim below round-off of a unit
+!     direction is the no-fixed-point case -- keep the incoming aim.
+!     Band = DeadBandUlp of round-off (math_mod; tightened from 1d-14
+!     on 2026-10-02); a suppressed residual above the measured
+!     round-off is noted once per run.
+	          c1=MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3)))
+	          IF (c1.LE.DeadBandUlp*EPSILON(1d0)) THEN
+	            IF (c1.GT.DeadBandQuietUlp*EPSILON(1d0))
+     &	              CALL DeadBandNote('point-source aim',
+     &	                                c1/EPSILON(1d0))
+	            ChfRayDir(1:3)=cr1indir(1:3)
+	            c1=1d0
+	          ELSE
+!<--
 	          c1=DDOTC(ChfRayDir,ChfRayDir)
 	          If (c1.LE.1d-22) Then
                     WRITE(*,*)' Error in setting STOP, abort ...'
@@ -3243,17 +3236,44 @@ C         *** Set System Stop ***
 	            ! Need update ChfRayPos as well
 	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)
 		  End If
+	          END IF   ! dead band
 	        Else If (SAOpt==SAPos) Then
 	          ! Translate chief ray in (xGrid,yGrid) plane
 	          x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
                   y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	          c1=EPSILON(1d0)*MAX(1d0,
+     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	          IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	          ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	            CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	          END IF
+!<--
 	        End If
 	      ELSE
 	        ! Collimated source, translate chief ray in (xGrid,yGrid) plane
 	        x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
 	        y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	        c1=EPSILON(1d0)*MAX(1d0,
+     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	        IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
            ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	        ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	          CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	        END IF
+!<--
 	      END IF
 	      ifStopSet=.TRUE.
 
@@ -3261,12 +3281,19 @@ C         *** Set System Stop ***
 	      ! Stop specified at ELT point
 	      CALL IACCEPT_S(iStop,1,1,
      &	                     'Enter system stop element number:')
-	      IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	          .OR.(EltID(iStop).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iStop)
-	      ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+!-->  Range check FIRST (EltID(iStop) used to be indexed before
+!     it).  The type veto keeps only the non-sequential types: a
+!     Segment stop is allowed (Dave 2026-09-08) -- see the chief-
+!     ray mapping ahead of CALL STOP below.
+	      IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
 	        WRITE(*,*)'STOP: Invalid element number: ',iStop
+	      ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	          (EltID(iStop).EQ.NSReflectorElt)) THEN
+	        WRITE(*,*)'STOP: element',iStop,' is ',
+     &	          TRIM(EltTypeName(EltID(iStop))),
+     &	          ' -- a non-sequential element cannot be the stop.'
 	      ELSE
+!<--
 	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
@@ -3304,6 +3331,19 @@ C         *** Set System Stop ***
 !	          GO TO 1
 !	        END IF
 
+!-->  Segment stop (Dave 2026-09-08): CTRACE visits a Segment
+!     element only for rays mapped to its source segment
+!     (RayToSegMap vs EltToSegMap), so map the chief ray to this
+!     segment for the aiming trace.  Transient: SetSourceRayGrid
+!     rebuilds the maps at the next grid setup (ifGrid is FALSE
+!     from here on).  Placed AFTER label 210 so the Rx ApStop=
+!     path (GO TO 210) gets it too.
+	        IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	      (EltToSegMap(iStop).GT.0)) THEN
+	          nRayToSeg(1)=1
+	          RayToSegMap(1,1)=EltToSegMap(iStop)
+	        END IF
+!<--
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
                 ! Center beam in stop to get new chief ray:
@@ -3773,102 +3813,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
               End If
 #endif
 
-	      if (nVarElt==0) then
-	        WRITE(*,*)' '
-                WRITE(*,*)' No Variable Element for Optimization!'
-                goto 105
-	      else if (nOptFov==0) then
-	        WRITE(*,*)' '
-                WRITE(*,*)' No Field of View for Optimization!'
-                goto 105
-              end if
-
-	      if (LOptIfFEX .and. .not.ifStopSet) then
-	        WRITE(*,*)' Must set STOP before optimization with FEX!'
-	        WRITE(*,*)' '
-	        goto 105
-	      end if
-
-	      ! Process input arguments to system optimzer drivers
-	      varZerns=0; zern_off=1
-	      varAsphs=0; asph_off=1
-              k=1
-              iVarElt=0
-
-	      ! Process source first
-	      If (isVarElt(0)) Then
-	        iVarElt=iVarElt+1
-                varElts(iVarElt)=0
-	        varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,0)
-	        If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
-	          if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
-     &                .or. varEltDOF(3,0)/=0) then
-	            WRITE(*,*)' Must set STOP before optimizing source!'
-	            go to 105
-	          end if
-	        End If
-	        EltName(0)='Source'
-	        nOptFov=1
-	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
-	        zernElt(iVarElt)=0; asphElt(iVarElt)=0
-	      End If
-
-	      Do iElt=1,nElt
-		if (isVarElt(iElt)) then
-	          iVarElt=iVarElt+1
-	          varElts(iVarElt)=iElt
-	          varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,iElt)
-
-	          zernElt(iVarElt)=0  ! range 1:nVarElt
-	          if (nOptEltZern(iElt)>0) then
-	            zernElt(iVarElt)=nOptEltZern(iElt)
-	            varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
-     &	              = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
-	            zern_off=zern_off+nOptEltZern(iElt)
-	          end if
-
-		  asphElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltAsph(iElt)>0) then
-                    asphElt(iVarElt)=nOptEltAsph(iElt)
-                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
-     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
-                    asph_off=asph_off+nOptEltAsph(iElt)
-                  end if
-
-	          If (LOptCons) Then
-                    ! process variable constraints
-                    Do i=1,mVarDOF
-                      if (varEltDOF(i,iElt)/=0) then
-                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
-                        k=k+1
-                      end if
-                    End Do
-                  End If
-
-	          ! Save state of variable element
-	          psiElt_old(1:3,iVarElt)=psiElt(1:3,iElt)
-	          vptElt_old(1:3,iVarElt)=vptElt(1:3,iElt)
-	          KrElt_old(iVarElt)=KrElt(iElt)
-	          KcElt_old(iVarElt)=KcElt(iElt)
-
-#if 0
-	           nDOF_VarElt(iVarElt)=0
-	           Do i=1,7
-	             if (varEltDOF(i,iElt)/=0) then
-	 	       nDOF_VarElt(iVarElt)=nDOF_VarElt(iVarElt)+1
-	               DOF_VarElt(nDOF_VarElt(iVarElt),iVarElt)
-     &                   = DOF_NameList(i)
-	             end if
-	           End Do
-#endif
-	        end if
-	      End Do
-
-	      ! Save Rx Chief Ray
-	      ChfRayDir_Rx=ChfRayDir
-	      ChfRayPos_Rx=ChfRayPos
+	      IF (.NOT. calib_setup_vars()) GO TO 105   ! PLAN 3.3: one copy
 
 	      ! Save Rx npts, use opt_npts for design optimization
 	      npts_Rx=npts; npts=opt_npts
@@ -3939,6 +3884,16 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &               'Display optimization summary (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif
@@ -4185,6 +4140,16 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &          'Save optimized optical state (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif

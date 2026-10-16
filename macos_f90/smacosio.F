@@ -33,7 +33,8 @@ C***********************************************************************
 	use loh_I2
 	use loh_I3
 	use dopt_mod
-        use validate_prescription_mod, only: ValidatePrescription
+        use validate_prescription_mod, only: ValidatePrescription,
+     &      RxNormalizeEOL, RxTmpCleanup, RxTmpFile
         ! --------------------------------------
         IMPLICIT NONE
 
@@ -216,18 +217,38 @@ C
 	  ! Pre-validate the .in file before the parser opens it; on failure
 	  ! abort cleanly with LOAD_SUCCESS=.FALSE. so callers get a clear
 	  ! error instead of a half-initialized model.
+!-->  a deck with any CR is loaded from an LF copy in the system temp
+!     dir (RxNormalizeEOL; PLAN_CONSOLIDATION item 5, 2026-10-09)
+	  CALL RxTmpCleanup()
 	  BLOCK
 	    INTEGER :: vios
 	    CHARACTER(LEN=256) :: vmsg
-	    CALL ValidatePrescription(infil(1:L),vios,vmsg)
+	    LOGICAL :: hascr, nok
+	    CHARACTER(LEN=1024) :: tmpf
+	    CALL ValidatePrescription(infil(1:L),vios,vmsg,hascr)
+	    IF (hascr) THEN
+	      CALL RxNormalizeEOL(infil(1:L),tmpf,nok)
+	      IF (nok) THEN
+	        WRITE(*,'(A,A,A)') '  ',infil(1:L),
+     &          ': CR line endings normalized for this load'
+	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
+	      END IF
+	    END IF
 	    IF (vios /= 0) THEN
 	      WRITE(*,*)' ** Prescription validation failed:'
 	      WRITE(*,*)'    ',TRIM(vmsg)
+	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 99
 	    END IF
 	  END BLOCK
-	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  IF (LEN_TRIM(RxTmpFile) > 0) THEN
+	    OPEN (UNIT=RX_FID, FILE=TRIM(RxTmpFile), STATUS='OLD',
+     &            ACTION='READ')
+	  ELSE
+	    OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  END IF
+!<--
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
@@ -241,18 +262,24 @@ C
 
 	  CALL LOHIN3()    ! def in iosub.inc
 
-	  READ(VALUE,*)nOutCord
+	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
+
+	  IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	  nOutCord_FLG=.TRUE.
 
 	  READ(RX_FID, 123, END=99)STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
-	    READ(VALUE,*)(Tout(1,j),j=1,7)
+	    READ(VALUE,*,IOSTAT=iosRx)(Tout(1,j),j=1,7)
+
+	    IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
 	 	READ(RX_FID, 123, END=99)STRING
-	        READ(STRING,*)(Tout(k,j),j=1,7)
+	        READ(STRING,*,IOSTAT=iosRx)(Tout(k,j),j=1,7)
+
+	        IF (RxBad(iosRx,VAR_NAM,0,STRING)) GO TO 99
    71         CONTINUE
 	    END IF
 	    Tout_FLG=.TRUE.
@@ -298,6 +325,26 @@ C       Create new input file
         ! Close input file
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
+!-->  zGrid is not deck state: set it to the z OrthoSrcFrame derives
+!     (sign of xGrid x yGrid against ChfRayDir, unitised), so the first
+!     grid setup after a load sees a consistent frame and its dead band
+!     keeps the deck's x/y.  It was 0 or the PREVIOUS deck's, the band
+!     test failed at order 1 and the frame was rebuilt from cross
+!     products on every load: SAVE -> load -> SAVE never reached a fixed
+!     point on a frame with round-off-sized components (PLAN_CONSOLIDATION
+!     6a, 2026-10-09: the dyson5 roll-180 joins, 33 corpus decks).
+        BLOCK
+          REAL*8 :: zc(3)
+          CALL DXPROD(zc,xGrid,yGrid)
+          IF (DOT_PRODUCT(zc,ChfRayDir).GT.0d0) THEN
+            zGrid=ChfRayDir
+          ELSE
+            zGrid=-ChfRayDir
+          END IF
+          CALL DUNITIZE(zGrid)
+        END BLOCK
+!<--
 
 
         ! Finalise Configuration
@@ -331,6 +378,7 @@ C       Create new input file
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
         nElt = 0
         LOAD_SUCCESS = .FALSE.

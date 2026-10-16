@@ -1,0 +1,34 @@
+# OPD reference (BRIEF_to_opd_reference, Dave 2026-10-10): the CHIEF ray is the default,
+# the aperture MEAN the option -- per session (OPDREF), per deck (UseChfRay4OPD= N).
+# Every OPD run prints which it used.  The pre-fix engine prints no such line, and
+# reads 'opdref' as OPD (LCMP prefix match on 'OPD',3): red on it.
+# The printed RMS / P-V / 'Average OPD' do not depend on the reference (RMS and P-V
+# are mean-removed; 'Average OPD' is DAvgl, the mean of ray-minus-chief OPL, which
+# is the constant the two maps differ by), so they are asserted unchanged.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+opd 5
+/null
+opdref mean
+opd 5
+opdref
+chief
+opd 5
+old $ROOT/ZGD_test_files/tst_opdref_mean.in
+opd 5
+opdref chief
+old $ROOT/ZGD_test_files/tst_opdref_mean.in
+opd 5
+opdref mean
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+opd 5
+# EXPECT: OPD reference: CHIEF RAY \(default\)\s*\n RMS OPD error is\s+1\.29\d+D-12
+# EXPECT: OPD reference \(CHIEF,MEAN\): \[CHIEF\]: mean
+# EXPECT: APERTURE MEAN \(opt-in; the chief ray is the default\)
+# EXPECT: OPD reference: APERTURE MEAN \(OPDREF MEAN\)\s*\n RMS OPD error is\s+1\.29\d+D-12
+# EXPECT: OPD reference \(CHIEF,MEAN\): \[MEAN\]: chief
+# EXPECT: OPD reference: CHIEF RAY \(OPDREF CHIEF\)
+# EXPECT: OPD reference: APERTURE MEAN \(UseChfRay4OPD= N\)
+# the session option survives a plain load (rule 6: not reset per load)
+# EXPECT: Cassegrain\.in\s+being loaded\.[\s\S]*OPD reference: APERTURE MEAN \(OPDREF MEAN\)\s*\n RMS[\s\S]*\Z
+# EXPECT: Average OPD is\s+-2\.534833896\d+D-12
+# EXPECT-NOT: Average OPD is\s+(?=\S)(?!-2\.534833896)

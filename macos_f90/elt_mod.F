@@ -26,6 +26,13 @@ C***********************************************************************
         REAL*8,   DIMENSION(:),    ALLOCATABLE :: fElt,eElt,zElt,KcElt,KrElt,KrRx,KcRx
         REAL*8,   DIMENSION(:,:,:),ALLOCATABLE :: TElt
         INTEGER,  DIMENSION(:),    ALLOCATABLE :: nECoord,SrfType,EltType,EltID
+!-->  SrfTypeTr: the surface type a TRACE dispatches on (2026-10-12).  =
+!     SrfType, except an Interpolated surface with no data set traces as
+!     its base Conic -- which the trace used to do by REWRITING SrfType,
+!     so SAVE after a trace wrote Conic.  Set per trace (CTRACE /
+!     CPROPAGATE / SRTrace setup); SrfType stays the Rx's.
+        INTEGER,  DIMENSION(:),    ALLOCATABLE :: SrfTypeTr
+!<--
         CHARACTER(LEN=maxEltNameLength),
      &            DIMENSION(:),    ALLOCATABLE :: EltName
         LOGICAL,  DIMENSION(:),    ALLOCATABLE :: LEltOK
@@ -352,7 +359,13 @@ C***********************************************************************
      &                  LRayPass,LEltObs,LGlass,
      &                  LTaperedElt,LApTypeDefined,LApVecDefined,
      &                  LEltMRP_FLG,LUpdateTElt_FLG,LxObsDef,
-     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined
+     &                  ifAmplSrf,ifOPDModGrid,ifGridDataDefined,
+!-->  GridFile= parsed before nGridMat= for this element: the grid read
+!     is DEFERRED (GridInit sizes its read from nGridMat) and resolved
+!     by the nGridMat= handler or by ChkDf2.  GridFileBin remembers the
+!     ascii/binary dispatch decided at parse time.
+     &                  GridFilePending,GridFileBin
+!<--
         Logical, dimension(:,:), allocatable :: LRayToElt
 
 !-->  Per-ray status tracking arrays
@@ -372,6 +385,24 @@ C***********************************************************************
         Integer :: nRxComment = 0
         Integer :: RxCommentCtx = 0
         Logical :: LRxCommentCapture = .FALSE.
+        Integer :: nRxCommentDropped = 0   ! lines past mRxComment
+!-->  one-line pushback for the Rx reader (ReadCoefBlock, 2026-10-09):
+!     a coefficient block that meets the next keyword hands that line
+!     back here; the parser's line reads (msmacosio labels 50 and 61)
+!     take it before reading the file.  Not BACKSPACE: on a CR-only
+!     (classic Mac) deck gfortran splits records on CR but BACKSPACE
+!     seeks LF, so it rewound to the top and the deck re-parsed itself.
+        Logical             :: LRxPushback = .FALSE.
+        Character(len=1024) :: RxPushbackLine = ' '
+!<--
+        Integer :: iosRx = 0     ! the IOSTAT of the parser's reads (RxBad)
+        Real*8  :: dOptTolRx = 0d0 ! OptTol= as read (msmacosio, PLAN 3.2)
+!-->  Unknown HEADER keys already reported this load (HdrUnkNote, PLAN
+!     3.2): the header chain dropped them with no message, so a typo
+!     (OptMxItrs=) silently lost the user's value.  Reset per load.
+        Integer :: nHdrUnk = 0
+        Character(len=32) :: HdrUnkKey(32) = ' '
+!<--
 !<--
 
         Character*32 :: ApTypeName(0:15), ObsTypeName(-10:10),
@@ -381,6 +412,7 @@ C***********************************************************************
         Character*32, dimension(:), allocatable ::
      &                GlassElt, GlassName,EltMRP
 
+        Integer :: nGridDropped   ! grid files declined, per load
         Integer :: nElt,nRay,nOutCord,nSeg,spcOption,nRefRay,nDOE,
      &             SegApType,SegApVec(3),nMetMeas
 
@@ -418,6 +450,7 @@ C***********************************************************************
 
         Real*8, dimension(:,:), allocatable ::
      &        RayPos, RayDir, ApVec, xObs,
+     &        RayPosAtElt, ! every ray's position at beamOpt%beamPosElt (centroid)
      &        h1HOE,h2HOE, CoatIndxElt,CoatThkElt,
      &        yObs, zObs,DWORK,
      &        GlassCoef, GlassTable,MTFMat,MTFMat2,
@@ -485,6 +518,15 @@ C***********************************************************************
           Real*8 ::  nomBeamDir(3),nomBeamPos(3),nomBeamSize,
      &               nomBeamRefRayDir(3)
           Integer :: beamDirElt,beamPosElt,beamSizeElt,beamRefRayElt
+!-->  2026-10-03 (dyson5 addendum 14 item 4): per-FIELD position targets
+!     (OptBeamPosFov= rows, one per CALIB field in order; 12 = max_fov),
+!     the centroid option (OptBeamCentroid= Y: the beam position is the
+!     centroid of the rays at beamPosElt, not the chief ray), and a weight
+!     on every beam row against the WFE / SPOT rows (OptBeamWt=).
+          Integer :: nBeamPosFov
+          Real*8  :: nomBeamPosFov(3,12), beamWt
+          Logical :: ifBeamCentroid
+!<--
         End Type OptBeamStr
 
         Type PrvGlass
@@ -602,6 +644,193 @@ C***********************************************************************
 
         End Subroutine ParseZernType
 
+!-->  ReadRealsPad (2026-10-01): list-directed read of up to n reals from
+!     a string, PADDING the missing tail with zero instead of dying.  A
+!     short `AsphCoef=` line (fewer values than nAsphCoef) was an uncaught
+!     end-of-file in the internal READ -- a Fortran runtime abort that
+!     kills the HOST process when the engine is a mex / .so (TO, dyson5
+!     beat 3).  Fewer coefficients than the slot count means the higher
+!     orders are zero, so pad and WARN (guards warn, not error).  nread
+!     returns how many values the string carried.
+!-->  Report an unknown HEADER key, once per key per load (PLAN 3.2,
+!     2026-10-11).  Warns, never refuses (the element chain's
+!     'Unidentified string' is the same rule).
+        SUBROUTINE HdrUnkNote(name)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: name
+          CHARACTER(LEN=32) :: key
+          INTEGER :: k
+          key = ADJUSTL(name)
+          IF (LEN_TRIM(key) .EQ. 0) RETURN
+!         A key starts with a letter: skip a line that is not one -- a
+!         UTF-8 byte-order mark alone on line 1 (six FFSegDemo decks).
+          IF (.NOT.((key(1:1).GE.'A' .AND. key(1:1).LE.'Z') .OR.
+     &              (key(1:1).GE.'a' .AND. key(1:1).LE.'z'))) RETURN
+          DO k = 1, nHdrUnk
+            IF (HdrUnkKey(k) .EQ. key) RETURN
+          END DO
+          IF (nHdrUnk .LT. SIZE(HdrUnkKey)) THEN
+            nHdrUnk = nHdrUnk + 1
+            HdrUnkKey(nHdrUnk) = key
+          END IF
+          WRITE(*,'(2A)') '  MBFile6: Unidentified header string = ',
+     &      TRIM(key)
+        END SUBROUTINE HdrUnkNote
+!<--
+
+        SUBROUTINE ReadRealsPad(str, arr, n, nread)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN)  :: str
+          INTEGER,          INTENT(IN)  :: n
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER,          INTENT(OUT) :: nread
+          INTEGER :: k, j, ios
+          arr(1:n) = 0d0
+          nread = 0
+          DO k = n, 1, -1
+            READ(str, *, IOSTAT=ios) (arr(j), j=1,k)
+            IF (ios .EQ. 0) THEN
+              nread = k
+              EXIT
+            END IF
+            arr(1:n) = 0d0
+          END DO
+        END SUBROUTINE ReadRealsPad
+!<--
+!-->  ReadCoefBlock / ReadRealsWarn (2026-10-09, PLAN_CONSOLIDATION 1):
+!     the coefficient blocks (ZernCoef, MonCoef, FFZernCoef,
+!     MonZernCoef, ...) read through one routine.  N reals, either ALL
+!     on LINE1 or wrapped GRP per line onto continuation lines of unit
+!     IU.  A short line PADS with zero and prints one line naming the
+!     key, the element and the count (fewer coefficients than slots
+!     means the higher orders are zero; guards warn, not error).  A
+!     continuation line with no number on it is the NEXT keyword: it is
+!     put back (LRxPushback) and the block ends there, padded.  The old
+!     bare READs died on an uncaught EOF, which kills the host when the
+!     engine is a mex.  IEOF = 1: the file ended inside the block.
+        SUBROUTINE ReadCoefBlock(iu, line1, arr, n, grp, key, ie, ieof)
+          IMPLICIT NONE
+          INTEGER,          INTENT(IN)  :: iu, n, grp, ie
+          CHARACTER(LEN=*), INTENT(IN)  :: line1, key
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER,          INTENT(OUT) :: ieof
+          CHARACTER(LEN=1024) :: buf
+          INTEGER :: nr, lo, hi, ios
+          arr(1:n) = 0d0
+          ieof = 0
+          CALL ReadRealsPad(line1, arr, n, nr)
+          IF (nr .EQ. n) RETURN
+          IF (n .LE. grp .OR. nr .GT. grp) THEN
+            CALL CoefShortNote(key, ie, nr, n, 'on the line')
+            RETURN
+          END IF
+          IF (nr .LT. grp)
+     &      CALL CoefShortNote(key, ie, nr, grp, 'on the first line')
+          lo = grp + 1
+          DO WHILE (lo .LE. n)
+            hi = MIN(lo + grp - 1, n)
+            READ(iu, '(A)', IOSTAT=ios) buf
+            IF (ios .LT. 0) THEN
+              ieof = 1
+              RETURN
+            END IF
+            CALL ReadRealsPad(buf, arr(lo:hi), hi - lo + 1, nr)
+            IF (nr .EQ. 0) THEN
+              RxPushbackLine = buf     ! the next keyword: give it back
+              LRxPushback    = .TRUE.
+              CALL CoefShortNote(key, ie, lo - 1, n,
+     &                           'before the next keyword')
+              RETURN
+            END IF
+            IF (nr .LT. hi - lo + 1)
+     &        CALL CoefShortNote(key, ie, nr, hi - lo + 1,
+     &                           'on a continuation line')
+            lo = hi + 1
+          END DO
+        END SUBROUTINE ReadCoefBlock
+
+        SUBROUTINE ReadRealsWarn(str, arr, n, key, ie)
+!         one line of N reals: ReadRealsPad + the one-line note if short
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN)  :: str, key
+          INTEGER,          INTENT(IN)  :: n, ie
+          REAL*8,           INTENT(OUT) :: arr(n)
+          INTEGER :: nr
+          CALL ReadRealsPad(str, arr, n, nr)
+          IF (nr .LT. n) CALL CoefShortNote(key, ie, nr, n,
+     &                                      'on the line')
+        END SUBROUTINE ReadRealsWarn
+
+        SUBROUTINE CoefShortNote(key, ie, nr, n, where)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: key, where
+          INTEGER,          INTENT(IN) :: ie, nr, n
+          WRITE(*,'(A,A,A,I4,A,I4,A,I4,A,A,A)') '  ', TRIM(key),
+     &      ' (elt', ie, '): ', nr, ' of ', n, ' values ',
+     &      TRIM(where), '; the rest are 0'
+        END SUBROUTINE CoefShortNote
+!<--
+!-->  RxBad (2026-10-09, PLAN_CONSOLIDATION 1b; Dave's ruling 4a): the
+!     values with NO natural zero -- geometry vectors, frames, aperture
+!     and obscuration groups, integer lists, scalars -- are read with
+!     IOSTAT=iosRx and then  IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!     (msmacosio.inc label 99 = the load-failure exit: nElt = 0,
+!     LOAD_SUCCESS = .FALSE., the file closed).  A short line or a token
+!     that is not a number REFUSES the load with one message naming the
+!     key and the element; the old bare READ died on a Fortran runtime
+!     error, which kills the host when the engine is a mex.  Coefficient
+!     blocks pad instead (ReadCoefBlock above): there zero is natural.
+
+        LOGICAL FUNCTION RxBad(ios, key, ie, text)
+          IMPLICIT NONE
+          INTEGER,          INTENT(IN) :: ios, ie
+          CHARACTER(LEN=*), INTENT(IN) :: key, text
+          RxBad = (ios .NE. 0)
+          IF (.NOT. RxBad) RETURN
+          IF (ie .GE. 1 .AND. ie .LE. SIZE(EltID)) THEN
+            WRITE(*,'(A,A,A,I4,A)') ' ** Rx load refused: ',
+     &        TRIM(key), ' (elt', ie, '): the value could not be read'
+          ELSE
+            WRITE(*,'(A,A,A)') ' ** Rx load refused: ',
+     &        TRIM(key), ' (header): the value could not be read'
+          END IF
+          WRITE(*,'(A,A,A)') '    -- too few values, or not a number: "',
+     &      TRIM(ADJUSTL(text(1:MIN(LEN(text),100)))), '"'
+        END FUNCTION RxBad
+!<--
+
+!-->  GridTooBig (2026-10-10): a grid FILE larger than this model's
+!     mGridMat cannot be stored -- GridInit read it into
+!     GridMat(mGridMat,mGridMat,.) past its slot, into the neighbouring
+!     slots, and the trace read it back out of bounds (every e5hex1
+!     load at model 128: its 256-point flat.txt; found by the gfortran
+!     debug build).  DECLINED by name (CC's ruling W, guards warn): the
+!     grid is NOT loaded, the load proceeds, the surface traces without
+!     it (the trace guard nGridMat <= mGridMat), and each decline is
+!     COUNTED (nGridDropped, reset per load; WARN; api grid_dropped_get)
+!     so a figure dropped at too small a model is never silent in a
+!     harvest.  Not a clamp: that would silently truncate data.  The
+!     api grid setters REFUSE instead (a caller asking to store it).
+        LOGICAL FUNCTION GridTooBig(fname, n, ie)
+          IMPLICIT NONE
+          CHARACTER(LEN=*), INTENT(IN) :: fname
+          INTEGER, INTENT(IN) :: n, ie
+          CHARACTER(LEN=8) :: f8
+          f8 = ADJUSTL(fname)
+          GridTooBig = (n .GT. mGridMat) .AND. (LEN_TRIM(fname).GT.0)
+     &      .AND. (f8.NE.'none' .AND. f8.NE.'None' .AND. f8.NE.'NONE')
+          IF (.NOT.GridTooBig) RETURN
+          nGridDropped = nGridDropped + 1
+          WRITE(*,'(A,A,A,I6,A,I5,A)')
+     &      ' ** GridFile ', TRIM(ADJUSTL(fname)), ':', n,
+     &      ' points exceed mGridMat=', mGridMat, ' for this model:'
+          WRITE(*,'(A,I6,A)')
+     &      '    grid NOT loaded, the surface traces without it'//
+     &      ' -- needs a model whose mGridMat >=', n,
+     &      ' (macos_param.txt)'
+        END FUNCTION GridTooBig
+!<--
+
 C***********************************************************************
 
         Subroutine elt_mod_init
@@ -612,6 +841,7 @@ C***********************************************************************
      &               ifComputeDZ,LGlass,LTaperedElt,LFastRayTrace,
      &               LApTypeDefined,LApVecDefined,
      &               ifGridDataDefined,
+     &               GridFilePending,GridFileBin,
      &               ifMon,ifFF,ifGridTerm,
      &               stat=m_err_elt)
           if (m_err_elt /= 0)
@@ -632,7 +862,7 @@ C***********************************************************************
           deallocate(SegCoord,RayToSegMap,RayID,RayWFMap,
      &               ObsType,IWORK,LnkElt,EltMRP, LEltMRP_FLG,
      &               EltType,nECoord,EltToSegMap,SegToEltMap,
-     &               PropType,ApType,nObs,iEltToiWF,SrfType,
+     &               PropType,ApType,nObs,iEltToiWF,SrfType,SrfTypeTr,
      &               LUpdateTElt_FLG,nObsRx,ObsTypeRx,ifAmplSrf,
      &               ifOPDModGrid,passRayIds,metBeamFlg,
      &               stat=m_err_elt)
@@ -663,7 +893,7 @@ C***********************************************************************
      &               ('elt_mod_init(SREAL): deallocate failed!')
 
           deallocate(TElt,ObsVec,XYZSRF,DZSRF,GridMat,AmplMat,
-     &               vptElt,RptElt,psiElt,RayPos,TEltRx,
+     &               vptElt,RptElt,psiElt,RayPos,RayPosAtElt,TEltRx,
      &               vptRx, RptRx, psiRx, ObsVecRx,LxObsDef,
      &               RayDir, ApVec, xObs, ApHexBound,ZernCoefRx,
      &               AsphCoef,MonCoef, ZernCoef,EdgeSensVec,
@@ -723,6 +953,7 @@ C***********************************************************************
      &           LApTypeDefined(mElt),LApVecDefined(mElt),
      &           LUpdateTElt_FLG(0:mElt),LFastRayTrace(mRay),
      &           ifGridDataDefined(mGridSrf),
+     &           GridFilePending(mElt),GridFileBin(mElt),
      &           ifMon(mElt),ifFF(mElt),ifGridTerm(mElt),
      &           stat=m_err_elt)
         if (m_err_elt /= 0)
@@ -752,6 +983,7 @@ C***********************************************************************
      &           ObsTypeRx(mObs,mElt),PropType(0:mElt),
      &           ApType(mElt),nObs(mElt),ifAmplSrf(mElt),
      &           iEltToiWF(mElt),SrfType(mElt),OpType(mElt),
+     &           SrfTypeTr(mElt),
      &           GlassType(mElt),EltGrp(0:mElt,0:mElt),
      &           EltCoat(0:mElt),nObsRx(mElt),ifOPDModGrid(mElt),
      &           passRayIds(mRay),DoeId(mElt),
@@ -806,6 +1038,7 @@ C***********************************************************************
      &          'elt_mod_init(real*8-0.5): allocate failed!')
 
         allocate(RptElt(3,mElt), psiElt(3,mElt), RayPos(3,mRay),
+     &           RayPosAtElt(3,mRay),
      &           RayDir(3,mRay), ApVec(6,mElt), xObs(3,mElt),
      &           AsphCoef(mAsphCoef,mElt),MonCoef(mMonCoef,mElt),
      &           ZernCoef(mZernModes,mElt),ZernCent(3,mElt),
@@ -871,6 +1104,31 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
+!-->  Glass CATALOG state is blanked HERE, at allocation, and NOT in
+!     elt_mod_init_vars.  The catalog (GlassName/GlassTable) is loaded
+!     ONCE at start-up (rl_macos_glass.inc in the CLI, smacos_glass.inc
+!     at SMACOS first entry), but every Rx load runs
+!     reinitialise_variables() -> elt_mod_init_vars(), which used to
+!     wipe both arrays BEFORE the parser's GlassElt= lookup -- so every
+!     GlassElt= element kept its written IndRef and traced as air, in the
+!     CLI and both bindings (dyson5 gate 1b, TO 2026-09-30).  Per-element
+!     GlassElt/GlassCoef are Rx state and are still reset per load.
+        GlassName(:)   = ''
+        GlassTable(:,:) = 0d0
+!<--
+!-->  spcOption (SPCENTER: 1 = spot about the element vertex, 2 = about
+!     the chief ray) is a SESSION option, not prescription state.  The
+!     2024 re-init pass put `spcOption = 0` in elt_mod_init_vars, so every
+!     Rx LOAD reset it and the SPOT branch's ELSE (anything but 1) made
+!     every spot CHIEF-RAY-centred: a rigid-body tilt of a mirror moved
+!     the chief and the spot stayed put (Luis, OPTIIX FSM 2e-7 rad,
+!     2026-10-06; the heritage engine, spcOption 1, moved it).  The
+!     bindings are unaffected -- spot_cmd sets SPCENTER explicitly on
+!     every call.  Initialised HERE to the heritage default; MRESET and
+!     SPCENTER still set it.
+        spcOption = 1
+!<--
+
 
         End Subroutine elt_mod_init
 
@@ -894,6 +1152,7 @@ C***********************************************************************
           nRxComment           = 0
           RxCommentCtx         = 0
           LRxCommentCapture    = .FALSE.
+          nRxCommentDropped    = 0
 !<--
           LEltObs(:)           = .FALSE.
           ifComputeDZ(:)       = .FALSE.
@@ -908,6 +1167,9 @@ C***********************************************************************
           ifOPDModGrid(:)      = .FALSE.
           LFastRayTrace(:)     = .FALSE.
           ifGridDataDefined(:) = .FALSE.
+          nGridDropped         = 0   ! per load (GridTooBig)
+          GridFilePending(:)   = .FALSE.
+          GridFileBin(:)       = .FALSE.
 
           ! FreeForm activity flags -- set at prescription-read time
           ! via SetFreeFormFlags(ie) based on SrfType and sentinels
@@ -925,14 +1187,13 @@ C***********************************************************************
 
           EltName(:)           = ''
           GlassElt(:)          = ''
-          GlassName(:)         = ''
           EltMRP(:)            = ''
 
           nElt                 =  0          ! total number of optical elements                (nElt <= mElt)
           nRay                 =  0
           nOutCord             =  0
           nSeg                 =  0          ! total number of segments (requires seg. source) (nSeg <= mSeg)
-          spcOption            =  0
+          ! spcOption: a session option, initialised at allocation (above), NOT reset per load
 
           maxAsphCoef          =  4          ! default to 4 terms  (Heritage => affects MACOS 'NEW' cmd)
 
@@ -1050,6 +1311,7 @@ C***********************************************************************
           RptElt(:,:)          =  0e0_pr
           psiElt(:,:)          =  0e0_pr
           RayPos(:,:)          =  0e0_pr
+          RayPosAtElt(:,:)     =  0e0_pr
           RayDir(:,:)          =  0e0_pr
           ApVec(:,:)           =  0e0_pr
           xObs(:,:)            =  0e0_pr
@@ -1083,7 +1345,6 @@ C***********************************************************************
           psiRx(:,:)           =  0e0_pr
           RptRx(:,:)           =  0e0_pr
           GlassCoef(:,:)       =  0e0_pr
-          GlassTable(:,:)      =  0e0_pr
           MTFMat(:,:)          =  0e0_pr
           MTFMat2(:,:)         =  0e0_pr
           pMonRx(:,:)          =  0e0_pr

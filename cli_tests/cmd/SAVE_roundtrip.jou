@@ -1,0 +1,9 @@
+# SAVE writes <stem>.in; reloading it reproduces the OPD (cmdref: Prescription I/O)
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+save $TMP/cass_rt
+old $TMP/cass_rt.in
+opd 5
+/null
+# EXPECT: cass_rt\.in being created
+# EXPECT: cass_rt\.in\s+being loaded
+# EXPECT: RMS OPD error is\s+1\.29\d+D-12

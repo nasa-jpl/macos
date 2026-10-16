@@ -1,0 +1,10 @@
+journal,kind,status,missed,dt
+MANUAL_examples.jou,journal,pass,,4.6
+MOD_spaces.jou,journal,pass,,3.9
+OPD.jou,journal,pass,,2.7
+PERTURB.jou,journal,pass,,4.5
+SAVE_roundtrip.jou,journal,pass,,2.2
+SPOT_text.jou,journal,pass,,2.5
+STOP_FEX_SXP.jou,journal,pass,,3.3
+VALIDATE.jou,journal,pass,,0.9
+selftest.jou,must_fail,fail,EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS,0.8

@@ -35,7 +35,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	use dopt_mod, only : WFE_TARGET,WFE_ZMODE_TARGET,SPOT_TARGET,
      &                       BEAM_TARGET,OptAlg,NonLin,isVarElt,
      &                       OptSpotSize,ifOptPrint,SvdSvCut,
-     &                       use_saved_pinv,save_pinv,PinvFile
+     &                       use_saved_pinv,save_pinv,PinvFile,
+     &                       calib_n_iter,calib_merit,calib_stop,
+     &                       calib_n_rej,calib_n_fail
 	use zern_wf_mod
 
 	Implicit none
@@ -60,11 +62,124 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
         LREAL, dimension(:), allocatable :: objfun_nom,da,aparams_nls_m
         Logical :: start_curr_optim,ifCalcOPD,ifFEX_m,lmlsq_success,
      &		   NomSensOnly,LinNomCtrl
+!     Trials whose evaluation failed this solve (funcs_app, PLAN 3.4)
+        Integer :: nFailTrials = 0
         Type(OptBeamStr) :: OptBeam_m
         Real*8, dimension(:,:), allocatable :: OPDMat_m
 
 
 	Contains
+
+!-->  CALIB's setup, ONE copy (PLAN_CONSOLIDATION 3.3, 2026-10-11).  The
+!     LOAD handler's nominal-sensitivity run (OptNomSens= Y) and the CALIB
+!     command each carried this block verbatim; the CALIB copy alone also
+!     saved the variable elements' state and the Rx chief ray, which only
+!     CALIB's summary reads -- harmless on the nominal path, so both now
+!     run the superset.  Checks the configuration (a variable element, a
+!     field, a stop when the source or FEX needs one: a named message and
+!     .FALSE.), then packs the variable list for nls_optim_dvr from the
+!     dopt_mod tables.
+	Logical Function calib_setup_vars()
+	use dopt_mod, only : nVarElt,nOptFov,LOptIfFEX,varZerns,zern_off,
+     &      varAsphs,asph_off,iVarElt,isVarElt,varElts,varDOFs,mVarDOF,
+     &      varEltDOF,OptSrcRpt_FLG,opt_fov,zernElt,asphElt,nOptEltZern,
+     &      OptEltZernTerm,nOptEltAsph,OptEltAsphTerm,LOptCons,
+     &      varEltCons,EltCons,psiElt_old,vptElt_old,KrElt_old,
+     &      KcElt_old,ChfRayDir_Rx,ChfRayPos_Rx
+	Implicit None
+	Integer :: iElt,i,k
+	calib_setup_vars = .FALSE.
+	      if (nVarElt==0) then
+	        WRITE(*,*)' '
+                WRITE(*,*)' No Variable Element for Optimization!'
+                RETURN
+	      else if (nOptFov==0) then
+	        WRITE(*,*)' '
+                WRITE(*,*)' No Field of View for Optimization!'
+                RETURN
+              end if
+
+	      if (LOptIfFEX .and. .not.ifStopSet) then
+	        WRITE(*,*)' Must set STOP before optimization with FEX!'
+	        WRITE(*,*)' '
+	        RETURN
+	      end if
+
+	      ! Process input arguments to system optimzer drivers
+	      varZerns=0; zern_off=1
+	      varAsphs=0; asph_off=1
+              k=1
+              iVarElt=0
+
+	      ! Process source first
+	      If (isVarElt(0)) Then
+	        iVarElt=iVarElt+1
+                varElts(iVarElt)=0
+	        varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
+     &               =varEltDOF(1:mVarDOF,0)
+	        If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
+	          if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
+     &                .or. varEltDOF(3,0)/=0) then
+	            WRITE(*,*)' Must set STOP before optimizing source!'
+	            RETURN
+	          end if
+	        End If
+	        EltName(0)='Source'
+	        nOptFov=1
+	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
+	        zernElt(iVarElt)=0; asphElt(iVarElt)=0
+	      End If
+
+	      Do iElt=1,nElt
+		if (isVarElt(iElt)) then
+	          iVarElt=iVarElt+1
+	          varElts(iVarElt)=iElt
+	          varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
+     &               =varEltDOF(1:mVarDOF,iElt)
+
+	          zernElt(iVarElt)=0  ! range 1:nVarElt
+	          if (nOptEltZern(iElt)>0) then
+	            zernElt(iVarElt)=nOptEltZern(iElt)
+	            varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
+     &	              = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
+	            zern_off=zern_off+nOptEltZern(iElt)
+	          end if
+
+		  asphElt(iVarElt)=0  ! range 1:nVarElt
+                  if (nOptEltAsph(iElt)>0) then
+                    asphElt(iVarElt)=nOptEltAsph(iElt)
+                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
+     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
+                    asph_off=asph_off+nOptEltAsph(iElt)
+                  end if
+
+	          If (LOptCons) Then
+                    ! process variable constraints
+                    Do i=1,mVarDOF
+                      if (varEltDOF(i,iElt)/=0) then
+                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
+                        k=k+1
+                      end if
+                    End Do
+                  End If
+
+	          ! Save state of variable element
+	          psiElt_old(1:3,iVarElt)=psiElt(1:3,iElt)
+	          vptElt_old(1:3,iVarElt)=vptElt(1:3,iElt)
+	          KrElt_old(iVarElt)=KrElt(iElt)
+	          KcElt_old(iVarElt)=KcElt(iElt)
+
+	        end if
+	      End Do
+
+	      ! Save Rx Chief Ray
+	      ChfRayDir_Rx=ChfRayDir
+	      ChfRayPos_Rx=ChfRayPos
+
+	calib_setup_vars = .TRUE.
+	End Function calib_setup_vars
+!<--
+
 
         ! This driver routine performs optimization on an optical system
         ! based on the Levenberg-Marquardt nonlinear least-square method,
@@ -88,6 +203,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                 tgt_wf_flag,tgt_wf_filename,tgt_wf_format,
      &                 optElt,ifFEX,OptBeam)
 
+	use macos_ops_mod, only : lOpsFail
 	Save
 	Integer :: opt_target  ! WFE (WFE_TARGET), or SPOT diagram (SPOT_TARGET),
                                ! or WFE Zernike modes (WFE_ZMODE_TARGET)
@@ -113,20 +229,30 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	! Local variables - LM algorithm related
 	LREAL, parameter :: das_scale_factor=1d-05
+	LREAL, parameter :: das_rel=1d-3  ! asphere step = das_rel*|coef|
         LREAL, dimension(:), allocatable :: aparams,tmpda,sig
         LREAL, dimension(:,:), allocatable :: covar,alpha
         Logical, dimension(:), allocatable :: maska
         LREAL :: alamda, chisq, chisq_arr(tot_itrs+1),
      &           wfe_rms, wfe_rms_old(12,6)
         Integer :: len_a, idof,ifov,iwl,k,tot_itrs_done,m_err_rtn
-	LREAL, save :: dtt,dx,dp,dc,drc,dcc,dz,das,das_scale
+	LREAL, save :: dtt,dx,dp,dc,drc,dcc,dz,das
 
 	! General local variables
 	Integer :: iElt,itr,i,j,ios,off,status_flag
+	Integer :: ias,jterm,ie_asph
+	LREAL :: cval,hap
         Logical, save :: itr_done,first_entry = .true.
+	LREAL :: alam_in,chisq_prev,rms_now,rms_prev
+	LREAL, parameter :: ftol_rel=1d-6 ! MINPACK ftol: LM still ramping
+	Integer :: nFlat,nRej,nRejTot,nAcc
 	Integer, save :: entry_cnt=0  ! debug only
 
 	entry_cnt=entry_cnt+1
+	lOpsFail = .FALSE.   ! PLAN 3.4: a failed evaluation aborts by name
+	nFailTrials = 0      ! PLAN 3.4: failed trials are REJECTED trials
+	nRejTot = 0
+	calib_n_rej = -1; calib_n_fail = -1
 
 	If (n_varElt .le. 0) Then
 	  print*,'** Error in nls_optim_dvr: n_varElt=',n_varElt
@@ -153,9 +279,12 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
         optElt_m=optElt; ifFEX_m=ifFEX
 
+!-->  Beam rows (chief direction / position, beam size, reference rays)
+!     ride on ANY target since 2026-10-03: blur + telecentricity, or a
+!     spot target + per-field centroid positions (dyson5 smile/keystone).
 	mBeamOff=0
 	OptBeam_m=OptBeam
-	If (opt_tgt_m==BEAM_TARGET) Then
+	If (.TRUE.) Then
 	  if (OptBeam%ifOptBeamDir)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamPos)  mBeamOff=mBeamOff+3
 	  if (OptBeam%ifOptBeamSize) mBeamOff=mBeamOff+1
@@ -276,7 +405,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	! len_a = number of DOFs to calibrate
 	allocate(tmpda(n_varElt*(mVarDOF_nls
      &                 +mOptZern_nls+mOptAsph_nls)))
-	len_a=0; k=1
+	len_a=0; k=1; ias=0
 	!
 	Do iElt=1, n_elts
 	  Do idof=1,mVarDOF_nls
@@ -304,11 +433,43 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    tmpda(len_a)=dz
 	  End Do
 	  ! Add asph for this varElt
-	  das_scale=1d0
+!-->  The differential step for an aspheric coefficient scales with
+!     the coefficient (das_rel = 1e-3 of it), not the fixed das=1e-10:
+!     on a deck in metres an h^4 coefficient of 1e-3 probed by 1e-10
+!     moves the sag by 1e-15 m at a 70 mm aperture -- round-off, a zero
+!     derivative column and "gaussj: singular matrix" at the first LM
+!     step (TO, dyson5 beat 4c sec. 3.5, 2026-10-01).  A ZERO coefficient
+!     (an asphere started from a conic) takes the step that moves the sag
+!     at the element's circular aperture radius by 1e-7 of |Kr|; with no
+!     circular aperture declared the legacy absolute step remains, and a
+!     line says so.  The order scaling das_scale_factor is kept for that
+!     legacy branch only, applied per order of the term.
+	  ie_asph=elts(iElt)
 	  Do idof=1,n_optAsph(iElt)
-            len_a=len_a+1; tmpda(len_a)=das*das_scale
-	    das_scale=das_scale*das_scale_factor
+            len_a=len_a+1
+            jterm=varAsph_arr(ias+idof)
+            cval=0d0
+            if (ie_asph>0 .and. jterm>=1 .and. jterm<=mAsph)
+     &        cval=AsphCoef(jterm,ie_asph)
+            if (cval /= 0d0) then
+              tmpda(len_a)=das_rel*abs(cval)
+            else if (ie_asph>0 .and. ApType(ie_asph)==1 .and.
+     &               ApVec(1,ie_asph)>0d0 .and.
+     &               abs(KrElt(ie_asph))<1d10) then
+              hap=ApVec(1,ie_asph)
+              tmpda(len_a)=1d-7*abs(KrElt(ie_asph))/hap**(2*jterm+2)
+            else
+              ! legacy absolute step, scaled per ORDER of the term (the
+              ! old code scaled by the term's position in the list)
+              tmpda(len_a)=das*das_scale_factor**(jterm-1)
+              WRITE(*,'(A,I2,A,I4,A,ES9.2)')
+     &          ' ** CALIB: asphere term',jterm,' of element',ie_asph,
+     &          ' has a zero coefficient and no circular aperture:'//
+     &          ' legacy step',tmpda(len_a)
+            end if
           End Do
+          ias=ias+n_optAsph(iElt)
+!<--
 	End Do
 	!
 	if (allocated(aparams_nls_m)) deallocate(aparams_nls_m)
@@ -328,86 +489,46 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	If ((opt_tgt_m/=SPOT_TARGET) .and. (.not. tgt_wf_flag)) Then
 	  objfun_nom=0d0  ! target WF default to 0
 
-	  ! OptBeam currently works only for single FOV and wavelength
-	  off=1
-	  if (OptBeam_m%ifOptBeamDir) then
-	    ! initialize target beam direction for beamDirElt
-	    objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamDir
-	    off=off+3
-	  end if
-	  if (OptBeam_m%ifOptBeamPos) then
-            ! initialize target beam position for beamPosElt
-            objfun_nom(obj_size+off:obj_size+off+2)=OptBeam_m%nomBeamPos
-	    off=off+3
-          end if
-	  if (OptBeam_m%ifOptBeamSize) then
-	    ! initialize target beam size for beamSize
-	    objfun_nom(obj_size+off)=OptBeam_m%nomBeamSize
-	    off=off+1
-	  end if
-	  if (OptBeam_m%ifOptBeamRefRayDir) then
-	    Do j=1,nRefRay
-	      objfun_nom(obj_size+off:obj_size+off+2)=
-     &	        OptBeam_m%nomBeamRefRayDir(1:3)
-	        off=off+3
-	    End Do
-	  end if
-	Else If (opt_tgt_m==WFE_TARGET) Then
-	  if (NomSensOnly .OR. (tot_itrs.lt.0)) then
-	    ! NomSensOnly and restore don't need objfun_nom
-	   goto 115
-	  end if
-	  if (nwls>1) then
-	    ! tgt_wf currently not supported for multiple wavelengths
-	    WRITE(*,*) ' User-specified target WF not supported'//
-     &                 ' yet for multiple wavelengths'
-	    return
-	  end if
-	  ! Use user provided target WF
-	  If (LCMP(tgt_wf_format,'B',1)) Then
-	    ! binary format
-	    Open(Unit=tgt_wf_funit,
-     &	         File=tgt_wf_filename,form='unformatted',
-     &           status='OLD',iostat=ios)
-	    if (ios /= 0) then
-	      WRITE(*,*)' Open binary WF file failed, filename = ',
-     &                  tgt_wf_filename
-	      rtn_flg=1
-              go to 100
-	    end if
-	    Do ifov=1,nfov
-	      Do j=1,nGridPts
- 	        READ(tgt_wf_funit)
-     &            (objfun_nom((ifov-1)*opd_size+(j-1)*nGridPts+i),
-     &             i=1,nGridPts)
-	      End Do
-	    End Do
-	  Else
-	    ! ascii format
-	    !WRITE(*,*)' **Open txt target WF file: ',tgt_wf_filename
-	    Open(Unit=tgt_wf_funit,
-     & 	 	 File=tgt_wf_filename,form='formatted',
-     &           status='OLD',iostat=ios)
-	    if (ios /= 0) then
-              WRITE(*,*)' Open target WF file failed, filename = ',
-     &                  tgt_wf_filename
-              rtn_flg=1
-              go to 100
-            end if
-	    Do ifov=1,nfov
-	      Do j=1,nGridPts
- 	        READ(tgt_wf_funit,*)
-     &		  (objfun_nom((ifov-1)*opd_size+(j-1)*nGridPts+i),
-     &             i=1,nGridPts)
-	      End Do
-	    End Do
-	    !print*,' **1: nfov,nGridPts =',nfov,nGridPts
-	  End If
+	  ! beam-row targets are filled per (field, wavelength) block below
 	  close(tgt_wf_funit)
  115      continue
 	Else If (opt_tgt_m==SPOT_TARGET) Then
 	  objfun_nom=OptSpotSize
 	End If  ! target WF
+!-->  Beam-row targets, one block per (wavelength, field): the chief
+!     direction / position (per-field position when OptBeamPosFov rows
+!     were given), beam size, reference-ray directions.  The 2026-06 code
+!     filled the FIRST block only, so every other field was driven to a
+!     zero vector (its comment said "single FOV only").
+	If (mBeamOff>0) Then
+	  off=0
+	  Do iwl=1,nwls
+	    Do ifov=1,nfov
+	      j=off+obj_size
+	      if (OptBeam_m%ifOptBeamDir) then
+	        objfun_nom(j+1:j+3)=OptBeam_m%nomBeamDir; j=j+3
+	      end if
+	      if (OptBeam_m%ifOptBeamPos) then
+	        if (OptBeam_m%nBeamPosFov>=ifov) then
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamPosFov(1:3,ifov)
+	        else
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamPos
+	        end if
+	        j=j+3
+	      end if
+	      if (OptBeam_m%ifOptBeamSize) then
+	        objfun_nom(j+1)=OptBeam_m%nomBeamSize; j=j+1
+	      end if
+	      if (OptBeam_m%ifOptBeamRefRayDir) then
+	        Do k=1,nRefRay
+	          objfun_nom(j+1:j+3)=OptBeam_m%nomBeamRefRayDir; j=j+3
+	        End Do
+	      end if
+	      off=off+obj_size+mBeamOff
+	    End Do
+	  End Do
+	End If
+!<--
 
 	! Define weighting for fov: sig=1/sqrt(fov_weight)
 	j=1  ! sig=1d0
@@ -418,6 +539,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    else
 	      sig(j:j+(obj_size+mBeamOff)-1)=1d0/sqrt(abs(fov_wt(ifov)))
 	    end if
+	    if (mBeamOff>0) sig(j+obj_size:j+obj_size+mBeamOff-1)=
+     &      sig(j+obj_size:j+obj_size+mBeamOff-1)/sqrt(OptBeam_m%beamWt)
 	    j=j+obj_size+mBeamOff
 	  End Do
 	End Do
@@ -448,13 +571,16 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           WRITE(*,*)' Computing nominal system sensitivity ...'
           Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
 	  WRITE(*,*)' Done!'
-          go to 110
+          go to 100  ! was 110: a jump INTO the If (allocated) block
         End If
 
 	If (ifOptPrint) Then
 	  WRITE(*,*)' '
           WRITE(*,*)'Starting MACOS System Optimization ...'
 	  WRITE(*,*)'Number of rays used for optimization =',opt_npts*opt_npts
+	  If (OptAlg==NonLin)
+     &      WRITE(*,'(A,1PE10.3,A,I6)')'  LM stop: OptTol (abs rms) =',
+     &        opt_tol,'  OptMaxItrs =',tot_itrs
           WRITE(*,*)' '
 	End If
 
@@ -487,22 +613,113 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	End If
 
 	status_flag = 0 ! for svdls_itr() only
+	If (lOpsFail) Then   ! the INITIAL evaluation failed (PLAN 3.4)
+	  WRITE(*,'(2A)')'  ** Optimization aborted: the initial ',
+     &        'evaluation failed (a trace inside it lost its chief ray)'
+	  rtn_flg=1; calib_stop=4; go to 105
+	End If
+
+!-->  Convergence, PLAN_CONSOLIDATION 3.3 (2026-10-11).  The old test ran
+!     only at itr = int(.21T), int(.5T), int(.71T), and only when T > 4,
+!     judged the RMS WFE whatever the target, and exited on itr_done --
+!     a SAVEd logical never set before the loop, so a T<=4 CALIB exited
+!     on whatever the PREVIOUS CALIB in the process had left there
+!     (measured: the same T=4 deck ran 4 iterations fresh, 3 after a
+!     converged T=20 CALIB).  LM (NonLin) now judges its OWN merit, the
+!     chisq lmlsq minimises, for every target, as the rms over its rows
+!     sqrt(chisq/n_rows) in the target's units: it stops when two
+!     consecutive ACCEPTED steps each change that rms by no more than
+!     opt_tol, the ABSOLUTE OptTol the old WFE check used, AND lower
+!     chisq by no more than ftol_rel=1e-6 of it (calib_stop=1) -- on a
+!     nm-class merit the first steps of an LM still ramping lambda move
+!     the rms by ~1e-12 m and would read as flat (measured: five
+!     tDesignTelescope cases stopped at itr 3, chisq +4..39%),
+!     or at the round-off floor: TEN
+!     consecutive REJECTED trials since the last accepted step, lambda
+!     up 1e10 with no decrease (calib_stop=2).  A rejected trial is
+!     not a flat step and resets the flat count; T stays the cap (3).
+!     Measured: Rx_AsphCalib SPOT converges quadratically to 1.7e-43 by
+!     itr 4 and every trial after is rejected -- flat-accepted alone
+!     never fires there.  Do NOT shorten the floor: on the fast suite
+!     one solve recovers after SIX rejections (tDesignTelescope convex
+!     conic), and a 3-rejection floor stopped base_sphere_zernike at
+!     itr 9, merit 481x the old loop's (macos_f90/CLAUDE.md).  The
+!     linear (SVD) path keeps the old schedule, now with itr_done
+!     initialised.
+	itr_done = .false.
+	nFlat = 0
+	nRej = 0
+	nRejTot = 0
+	nAcc = 0
+	calib_stop = 3
+	chisq_prev = -1d0
+	rms_prev = -1d0
+	tot_itrs_done = tot_itrs
+	calib_n_iter = -1
+	calib_merit = -1d0
+!<--
 
 	! Apply LM (or SVD) optimization iterations
 	Do itr=1,tot_itrs
 
 	  If (OptAlg==NonLin) Then
+	    alam_in = alamda
+	    if (alam_in < 0d0) alam_in = 0.001d0 ! lmlsq's initial lambda
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &                 alpha,chisq,funcs_app,alamda,lmlsq_success)
+	    if (lOpsFail) then   ! PLAN 3.4: was a STOP that killed the host
+	      WRITE(*,'(A,I0,2A)')'  ** Optimization aborted at iteration ',
+     &          itr,': a trial step lost the chief ray (an ill-posed',
+     &          ' or too-large step)'
+	      rtn_flg=1; calib_n_iter=itr-1; calib_merit=chisq_prev
+	      calib_stop=4
+	      go to 105
+	    end if
 	    if (.not. lmlsq_success) then
 	      WRITE(*,*) ' ** Optimization (lmlsq) failed!'
 	      WRITE(*,*) ' ** Possible reasons: '
 	      WRITE(*,*) ' **   Incorrect setup for optimizer'
 	      WRITE(*,*) ' **   DOFs for optimization are correlated'
-	      stop
-	      rtn_flg=1; go to 110
+	      WRITE(*,*) ' **   A differential step too small to move',
+     &                   ' the merit (a zero derivative column)'
+!-->  No STOP here: it ended the HOST process when the engine is a mex /
+!     .so (TO, dyson5 beat 4c sec. 3.6) and left the optics at whatever
+!     probe the last derivative column had applied.  Label 105 restores
+!     the last accepted state and returns rtn_flg=1 through the normal
+!     cleanup, which is what the CLI's CALIB handler and the bindings'
+!     calib_run already expect (2026-10-01).
+	      rtn_flg=1; calib_n_iter=itr-1; calib_merit=chisq_prev
+	      calib_stop=4
+	      go to 105
 	    end if
 	    chisq_arr(itr) = chisq
+!-->  PLAN 3.3: accepted iff lambda fell (nls.F mrqmin_private)
+	    If (alamda < alam_in) Then
+	      rms_now = sqrt(max(chisq,0d0)/dble(size(objfun_nom)))
+	      If (chisq_prev >= 0d0 .and. chisq <= chisq_prev .and.
+     &            abs(rms_prev-rms_now) <= opt_tol .and.
+     &            chisq_prev-chisq <= ftol_rel*chisq_prev) Then
+	        nFlat = nFlat+1
+	      Else
+	        nFlat = 0
+	      End If
+	      chisq_prev = chisq
+	      rms_prev = rms_now
+	      nRej = 0
+	      nAcc = nAcc+1
+	    Else
+	      nFlat = 0
+	      nRej = nRej+1
+	      nRejTot = nRejTot+1
+	    End If
+	    If (itr >= 2 .and. (nFlat >= 2 .or. nRej >= 10)) Then
+	      tot_itrs_done = itr
+	      calib_stop = 1
+	      if (nRej >= 10) calib_stop = 2
+	      exit
+	    End If
+	    Cycle
+!<--
           Else
 	    ! Linear algorithm
 	    Call svdls_itr(objfun_nom,fov_wt,aparams,status_flag)
@@ -535,20 +752,41 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  End If
 
 	  if (itr_done .and. itr>(0.7*tot_itrs)) then
-	      tot_itrs_done=itr; exit
+	      tot_itrs_done=itr; calib_stop=1; exit
 	  end if
 	End Do  ! LM iteration loop
-	if (.not. itr_done) tot_itrs_done=tot_itrs
+!-->  ZERO accepted steps is never 'floor' (PLAN 3.4, CC's ruling): a solve
+!     whose trials could not be traced FAILED to optimise; one whose
+!     trials were all evaluated but none lowered the merit STALLED (the
+!     start is a stationary point of that merit) -- not an error, but not
+!     'converged' either (the bindings report converged = false).
+	If (OptAlg==NonLin .and. nAcc==0 .and. tot_itrs>0) Then
+	  If (nFailTrials > 0) Then
+	    WRITE(*,'(A,I0,A,I0,A)')'  ** Optimization failed: no trial '//
+     &        'step was accepted -- ',nFailTrials,' of ',nRejTot,
+     &        ' trials lost the chief ray'
+	    rtn_flg=1; calib_n_iter=tot_itrs_done; calib_merit=chisq
+	    calib_stop=4
+	    go to 105
+	  Else
+	    calib_stop = 5
+	  End If
+	End If
+!<--
+	if (OptAlg/=NonLin .and. .not.itr_done) tot_itrs_done=tot_itrs
 	!
 	! Last run
 	If (OptAlg==NonLin) Then
 	  alamda = 0.0
 	  Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &               alpha,chisq,funcs_app,alamda,lmlsq_success)
+	  if (lOpsFail) lmlsq_success = .false.   ! PLAN 3.4
 	  if (.not. lmlsq_success) then
-            rtn_flg=1; return
+            rtn_flg=1; calib_n_iter=tot_itrs_done; calib_stop=4
+	    calib_merit=chisq_prev; go to 105
 	  end if
 	  chisq_arr(tot_itrs_done+1) = chisq
+	  calib_merit = chisq
 	Else
 	  ! Linear algorithm
 	  if (.not.LinNomCtrl) then
@@ -581,6 +819,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &                         ZCoefm,4)
         End If
 	aparams_nls_m=aparams ! for external output
+	calib_n_iter = tot_itrs_done
+	calib_n_rej = nRejTot; calib_n_fail = nFailTrials
 
 
 	!WRITE(*,*)' len_a = ', len_a
@@ -589,8 +829,44 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	  WRITE(*,*)' '
  	  WRITE(*,*)'End of MACOS system optimization'
 	  WRITE(*,*)'Optimization iterations =',tot_itrs_done
+	  If (OptAlg==NonLin)
+     &      WRITE(*,*)'Final LM merit (chisq) =',calib_merit
+	  If (calib_stop==1) Then
+	    WRITE(*,*)'Stopped: converged (2 flat steps)'
+	  Else If (calib_stop==2) Then
+	    If (nFailTrials > 0) Then
+	      WRITE(*,'(A,I0,A)')'  Stopped: at the floor (10 rejected'//
+     &          ' trials; ',nFailTrials,' trial(s) lost the chief ray)'
+	    Else
+	      WRITE(*,*)'Stopped: at the round-off floor',
+     &                ' (10 rejected trials)'
+	    End If
+	  Else If (calib_stop==5) Then
+	    WRITE(*,'(2A)')'  Stopped: stalled -- no trial step lowered',
+     &        ' the merit (a null or already-optimal problem)'
+	  Else
+	    WRITE(*,*)'Stopped: OptMaxItrs reached'
+	  End If
 	  WRITE(*,*)' '
 	End If
+	go to 100
+
+!-->  Failure exit: put the optics back at the last ACCEPTED parameter
+!     vector (zero = the pre-optimization state when the first LM step
+!     failed), as the success path above applies the final one, then
+!     fall into the normal cleanup.
+ 105    continue
+	calib_n_rej = nRejTot; calib_n_fail = nFailTrials
+	Call smacos_compute_perturbed(OPDm,ZCoefm,SPOTm,
+     &              SpotSizem,PIXm,
+     &              wfe_rms,n_elts,elt_arr_m,dof_arr_m,
+     &              n_optZern,varZern_arr_m,
+     &              n_optAsph,varAsph_arr_m,
+     &              fovs(:,:,1),wls(1),aparams)
+	aparams_nls_m=aparams
+	WRITE(*,*) ' ** Optimization aborted; optics restored to the',
+     &             ' last accepted state.'
+!<--
 
  100    continue
 
@@ -642,6 +918,7 @@ C  Arguments yfit and dyda are automatic arrays in calling routine.
 C
 	Subroutine funcs_app(a,yfit,dyda)
 	use traceutil_mod, only : LUseChfRayIfOK
+	use macos_ops_mod, only : lOpsFail
 
         LREAL, dimension(:), intent(in) :: a
         LREAL, dimension(:), intent(out) :: yfit
@@ -649,7 +926,8 @@ C
 
         Real*8, dimension(size(a)) :: a2
 	Real*8 :: wfe_rms
-        Integer :: size_a, ifov,iwl,off,off2,i,j
+        Real*8, dimension(max(1,mBeamOff)) :: bv
+        Integer :: size_a, ifov,iwl,off,i
 	Logical :: LUseChfRayIfOK_sv
 
 ! y = objfun_nom, yfit = OPD(a)
@@ -678,87 +956,27 @@ C
 
 	    !print*,' ** funcs_app: wfe_rms =',wfe_rms
 
-	    If (opt_tgt_m==WFE_TARGET .OR. opt_tgt_m==SPOT_TARGET) Then
-	      if (opt_tgt_m==WFE_TARGET) then
-                yfit(off:off+obj_size-1)=OPDm(1:obj_size)
-	      else if (opt_tgt_m==SPOT_TARGET) then
-                yfit(off:off+obj_size-1)=SpotSizem
-	      end if
-	      if (opt_tgt_m /= BEAM_TARGET) then
-	        off=off+obj_size
-	      else
-	        ! beamDir_m, beamPos_m and beamSize are computed in
-		! smacos_compute_perturbed()
-	        off=off+obj_size; off2=1
-	        if (OptBeam_m%ifOptBeamDir) then
- 	          yfit(off+off2:off+off2+2)=beamDir_m(1:3)
-	          off2=off2+3
-	        end if
-	        if (OptBeam_m%ifOptBeamPos) then
-                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
-	          off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          yfit(off+off2)=beamSize_m
-	          off2=off2+1
-		end if
-	        if (OptBeam_m%ifOptBeamRefRayDir) then
-	          Do j=1,nRefRay
-	            yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j)
-	            off2=off2+3
-		  End Do
-	        end if
-	        off=off+mBeamOff
-	      end if
-	    Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
-	      yfit(off:off+n_wf_zern_m-1)=ZCoefm(1:n_wf_zern_m)
-	      if (.not. OptBeam_m%ifOptBeamDir) then
-	        off=off+obj_size
-	      else
-	        off=off+obj_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  yfit(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  yfit(off+off2:off+off2+2)=beamPos_m(1:3)
-                  off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          yfit(off+off2)=beamSize_m
-                  off2=off2+1
-	        end if
-	        if (OptBeam_m%ifOptBeamRefRayDir) then
-                  Do j=1,nRefRay
-		    yfit(off+off2:off+off2+2)=
-     &                beamRefRayDir_m(1:3,j)
-                    off2=off2+3
-		  End Do
-	        end if
-	        off=off+mBeamOff
-	      end if
-	    Else If (opt_tgt_m==BEAM_TARGET) Then
-	      off=1
-	      if (OptBeam_m%ifOptBeamDir) then
-	        yfit(off:off+2)=beamDir_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamPos) then
-                yfit(off:off+2)=beamPos_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamSize) then
-	        yfit(off)=beamSize_m
-	        off=off+1
-	      end if
-	      if (OptBeam_m%ifOptBeamRefRayDir) then
-	        Do j=1,nRefRay
-		  yfit(off:off+2)=beamRefRayDir_m(1:3,j)
-	          off=off+3
-	        End Do
-	      end if
-	    End If
+!-->  One block per (wavelength, field): the target's own rows, then the
+!     beam rows (on ANY target since 2026-10-03), written by beam_rows_ so
+!     the value, derivative and linear paths cannot drift apart again.
+!     The 2026-06 code wrote the beam rows one row late (off+1), stepped
+!     the Zernike-mode derivative by opd_size, used obj_size-1 modes there,
+!     and reset the beam-only rows to off=1 for every field (so only the
+!     last field was scored).  The SPOT stride fix (obj_size, 2026-10-01)
+!     is kept.
+	    if (opt_tgt_m==WFE_TARGET) then
+	      yfit(off:off+obj_size-1)=OPDm(1:obj_size)
+	    else if (opt_tgt_m==SPOT_TARGET) then
+	      yfit(off:off+obj_size-1)=SpotSizem
+	    else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+	      yfit(off:off+obj_size-1)=ZCoefm(1:obj_size)
+	    end if
+	    off=off+obj_size
+	    if (mBeamOff>0) then
+	      call beam_rows_(yfit,off-1)
+	      off=off+mBeamOff
+	    end if
+!<--
 	  End Do
 	End Do
 
@@ -776,109 +994,65 @@ C
      &               n_optAsph_m,varAsph_arr_m,
      &               fovs_m(:,1:2,ifov),wls_m(iwl),a2)
 
-	      If (opt_tgt_m==WFE_TARGET .OR.
-     &            opt_tgt_m==SPOT_TARGET) Then
-	        if (opt_tgt_m==WFE_TARGET) then
-	          dyda(off:off+obj_size-1,i)=
-     &                (OPDm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
-	        else if (opt_tgt_m==SPOT_TARGET) then
-	           dyda(off:off+obj_size-1,i)=
-     &               (SpotSizem-yfit(off:off+obj_size-1))/da(i)
-	           !print*,'dyda: SpotSizem =',SpotSizem
-	           !print*,'dyda: yfit =',yfit(off:off+obj_size-1)
-                   !print*,'dyda =',dyda(off:off+obj_size-1,i)
-	        end if
-	        if (.not. (OptBeam_m%ifOptBeamDir .OR.
-     &                     OptBeam_m%ifOptBeamPos .OR.
-     &                     OptBeam_m%ifOptBeamSize)) then
-	          off=off+opd_size
-	        else
-	          off=off+opd_size; off2=1
-	          if (OptBeam_m%ifOptBeamDir) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-	          end if
-	          if (OptBeam_m%ifOptBeamPos) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamPos_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-	          end if
-	          if (OptBeam_m%ifOptBeamSize) then
-	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i)
-	            off2=off2+1
-	          end if
-	          if (OptBeam_m%ifOptBeamRefRayDir) then
-	            Do j=1,nRefRay
-	              dyda(off+off2:off+off2+2,i)=(beamRefRayDir_m(1:3,j)
-     &                  -yfit(off+off2:off+off2+2))/da(i)
-	              off2=off2+3
-	            End Do
-	          end if
-	          off=off+mBeamOff
-	        end if
-	      Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
+	      if (opt_tgt_m==WFE_TARGET) then
 	        dyda(off:off+obj_size-1,i)=
-     &           (ZCoefm(1:obj_size-1)-yfit(off:off+obj_size-1))/da(i)
-	        if ((.not. OptBeam_m%ifOptBeamDir) .and.
-     &              (.not. OptBeam_m%ifOptBeamPos) .and.
-     &              (.not. OptBeam_m%ifOptBeamSize)) then
-	          off=off+obj_size
-	        else
-	          off=off+opd_size; off2=1
-	          if (OptBeam_m%ifOptBeamDir) then
-	            dyda(off+off2:off+off2+2,i)=
-     &               (beamDir_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-                    off2=off2+3
-                  end if
-                  if (OptBeam_m%ifOptBeamPos) then
-                    dyda(off+off2:off+off2+2,i)=
-     &               (beamPos_m(1:3)-yfit(off+off2:off+off2+2))/da(i)
-	            off2=off2+3
-                  end if
-	          if (OptBeam_m%ifOptBeamSize) then
-	            dyda(off+off2,i)=(beamSize_m-yfit(off+off2))/da(i)
-	            off2=off2+1
-	          end if
-	          if (OptBeam_m%ifOptBeamRefRayDir) then
-	            Do j=1,nRefRay
-                dyda(off+off2:off+off2+2,i)=(beamRefRayDir_m(1:3,j)
-     &                  -yfit(off+off2:off+off2+2))/da(i)
-	              off2=off2+3
-	            End Do
-		  end if
-	          off=off+mBeamOff
-	        end if
-	      Else
-	        off=1
-	        if (OptBeam_m%ifOptBeamDir) then
-                  dyda(off:off+2,i)=
-     &             (beamDir_m(1:3)-yfit(off:off+2))/da(i)
-                  off=off+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  dyda(off:off+2,i)=
-     &             (beamPos_m(1:3)-yfit(off:off+2))/da(i)
-                  off=off+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          dyda(off,i)=(beamSize_m-yfit(off))/da(i)
-	        end if
-		if (OptBeam_m%ifOptBeamRefRayDir) then
-		  Do j=1,nRefRay
-	            dyda(off:off+2,i)=(beamRefRayDir_m(1:3,j)
-     &                -yfit(off:off+2))/da(i)
-	            off=off+3
-		  End Do
-	        end if
-	      End If
+     &            (OPDm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
+	      else if (opt_tgt_m==SPOT_TARGET) then
+	        dyda(off:off+obj_size-1,i)=
+     &            (SpotSizem-yfit(off:off+obj_size-1))/da(i)
+	      else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+	        dyda(off:off+obj_size-1,i)=
+     &            (ZCoefm(1:obj_size)-yfit(off:off+obj_size-1))/da(i)
+	      end if
+	      off=off+obj_size
+	      if (mBeamOff>0) then
+	        call beam_rows_(bv,0)
+	        dyda(off:off+mBeamOff-1,i)=
+     &            (bv(1:mBeamOff)-yfit(off:off+mBeamOff-1))/da(i)
+	        off=off+mBeamOff
+	      end if
  	      !print*,'funcs_app for dyda: wfe_rms =', wfe_rms
 	    End Do
 	  End Do
         End Do
 
 	LUseChfRayIfOK=LUseChfRayIfOK_sv ! restore
+!-->  An evaluation that could not be traced (a trial step lost the chief
+!     ray) is a BAD TRIAL, not a catastrophe (PLAN 3.4, CC's ruling): a
+!     huge residual makes lmlsq REJECT it by its own rule -- lambda x10,
+!     the parameters unchanged -- so a smaller step can recover and the
+!     ten-rejection floor ends it by name.  1d100 keeps chisq finite.
+	If (lOpsFail) Then
+	  yfit = 1d100; dyda = 0d0
+	  nFailTrials = nFailTrials + 1
+	  lOpsFail = .FALSE.
+	End If
+!<--
         End Subroutine funcs_app
+
+!-->  The beam rows of one (wavelength, field) block, in the order the
+!     sizing (mBeamOff) and the target fill use: direction (3), position
+!     (3), size (1), reference-ray directions (3 x nRefRay); v(off+1..).
+	Subroutine beam_rows_(v,off)
+	Real*8, dimension(:) :: v
+	Integer :: off,j,k
+	j=off
+	if (OptBeam_m%ifOptBeamDir) then
+	  v(j+1:j+3)=beamDir_m(1:3); j=j+3
+	end if
+	if (OptBeam_m%ifOptBeamPos) then
+	  v(j+1:j+3)=beamPos_m(1:3); j=j+3
+	end if
+	if (OptBeam_m%ifOptBeamSize) then
+	  v(j+1)=beamSize_m; j=j+1
+	end if
+	if (OptBeam_m%ifOptBeamRefRayDir) then
+	  Do k=1,nRefRay
+	    v(j+1:j+3)=beamRefRayDir_m(1:3,k); j=j+3
+	  End Do
+	end if
+	End Subroutine beam_rows_
+!<--
 
 
 C ***************************************************************************
@@ -899,7 +1073,7 @@ C
 	LREAL, dimension(:), allocatable, save :: y0,y1
 	LREAL, dimension(:,:), allocatable, save :: dy0da,dady0
         LREAL :: dparams(size(params)),wfe_rms
-	Integer :: iwl,ifov,off,off2,j,ICLEN,m_err_rtn
+	Integer :: iwl,ifov,off,j,ICLEN,m_err_rtn
         Logical :: exist,LCMP
 	Logical, save :: first_entry = .TRUE.
 
@@ -988,57 +1162,16 @@ C
      &                n_optAsph_m,varAsph_arr_m,
      &                fovs_m(:,1:2,ifov),wls_m(iwl),params)
 
-            If (opt_tgt_m==WFE_TARGET) Then
-              y1(off:off+opd_size-1)=OPDm(1:opd_size)
-              if (.not. OptBeam_m%ifOptBeamDir) then
-                off=off+opd_size
-              else
-                off=off+opd_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  y1(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  y1(off+off2:off+off2+2)=beamPos_m(1:3)
-                  off2=off2+3
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-                  y1(off+off2)=beamSize_m
-                end if
-                off=off+mBeamOff
-              end if
-            Else If (opt_tgt_m==WFE_ZMODE_TARGET) Then
-              y1(off:off+n_wf_zern_m-1)=ZCoefm(1:n_wf_zern_m)
-              if (.not. OptBeam_m%ifOptBeamDir) then
-                off=off+obj_size
-              else
-                off=off+obj_size; off2=1
-                if (OptBeam_m%ifOptBeamDir) then
-                  y1(off+off2:off+off2+2)=beamDir_m(1:3)
-                  off2=off2+3
-                end if
-                if (OptBeam_m%ifOptBeamPos) then
-                  y1(off+off2:off+off2+2)=beamPos_m(1:3)
-                end if
-	        if (OptBeam_m%ifOptBeamSize) then
-	          y1(off)=beamSize_m
-	        end if
-                off=off+mBeamOff
-              end if
-            Else
-              off=1
-              if (OptBeam_m%ifOptBeamDir) then
-                y1(off:off+2)=beamDir_m(1:3)
-                off=off+3
-              end if
-              if (OptBeam_m%ifOptBeamPos) then
-                y1(off:off+2)=beamPos_m(1:3)
-                off=off+3
-              end if
-	      if (OptBeam_m%ifOptBeamSize) then
-	        y1(off)=beamSize_m
-	      end if
-            End If
+            if (opt_tgt_m==WFE_TARGET) then
+              y1(off:off+obj_size-1)=OPDm(1:obj_size)
+            else if (opt_tgt_m==WFE_ZMODE_TARGET) then
+              y1(off:off+obj_size-1)=ZCoefm(1:obj_size)
+            end if
+            off=off+obj_size
+            if (mBeamOff>0) then
+              call beam_rows_(y1,off-1)
+              off=off+mBeamOff
+            end if
           End Do
         End Do
 

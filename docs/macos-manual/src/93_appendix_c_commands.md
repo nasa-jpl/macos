@@ -54,8 +54,8 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 #### SOURCE & WAVELENGTH
 
 ```
-   CHIefray    - use chief ray (not centroid) as
-                 the FEX reference point
+   CHIefray    - chief ray as the FEX/SXP pupil-sphere
+                 axis (the default)
    WLENS       - list Rx optimization wavelengths
    SWL         - select wavelength by index
    MULtispec   - multi-color image stacking
@@ -90,7 +90,8 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
                  aperture position         [Rx]
    CENter      - center beam in system stop
    STOp        - define system stop element
-   CENTRoid    - use centroid as ref point for FEX
+   CENTRoid    - beam-centroid FEX/SXP axis (opt-in;
+                 the chief ray is the default)
    FFP <x,y>   - find field point that places chief
                  ray at element coordinate
    PFP <x,y>   - find field point that places chief
@@ -162,6 +163,8 @@ Tags: [Rx]=needs OLD/NEW, [BLD]=needs BUILD,
 
 ```
    OPD         - wavefront error map             [Rx]
+   OPDREF      - OPD reference: CHIEF or MEAN
+                 (the chief ray is the default)
    SPOt        - spot diagram                    [Rx]
    ZABerr      - Zernike OPD aberration          [Rx]
    ZCOef       - Zernike coefficient extraction  [Rx]

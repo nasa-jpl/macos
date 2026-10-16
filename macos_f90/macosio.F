@@ -46,7 +46,8 @@ C***********************************************************************
 	use loh_I3
 	use dopt_mod
         use macos_IO, only: SetPrtToFileID
-        use validate_prescription_mod, only: ValidatePrescription
+        use validate_prescription_mod, only: ValidatePrescription,
+     &      RxNormalizeEOL, RxTmpCleanup, RxTmpFile
 ! --------------------------------------
         IMPLICIT NONE
 
@@ -278,19 +279,40 @@ C
 	  ! the user pick a different file (or 'q' to abort) instead of
 	  ! letting the parser walk into the breakage and leave the model
 	  ! half-initialized.
+!-->  a deck with any CR is loaded from an LF copy in the system temp
+!     dir (RxNormalizeEOL; PLAN_CONSOLIDATION item 5, 2026-10-09)
+	  CALL RxTmpCleanup()
 	  BLOCK
 	    INTEGER :: vios
 	    CHARACTER(LEN=256) :: vmsg
-	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg)
+	    LOGICAL :: hascr, nok
+	    CHARACTER(LEN=1024) :: tmpf
+	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg,
+     &                                hascr)
+	    IF (hascr) THEN
+	      CALL RxNormalizeEOL(INFIL(1:ICLEN(INFIL)),tmpf,nok)
+	      IF (nok) THEN
+	        WRITE(*,'(A,A,A)') '  ',INFIL(1:ICLEN(INFIL)),
+     &          ': CR line endings normalized for this load'
+	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
+	      END IF
+	    END IF
 	    IF (vios /= 0) THEN
 	      WRITE(*,*)' ** Prescription validation failed:'
 	      WRITE(*,*)'    ',TRIM(vmsg)
 	      WRITE(*,*)'    Pick a different file (or "q" to abort).'
+	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 43
 	    END IF
 	  END BLOCK
-	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  IF (LEN_TRIM(RxTmpFile) > 0) THEN
+	    OPEN (UNIT=RX_FID, FILE=TRIM(RxTmpFile), STATUS='OLD',
+     &            ACTION='READ')
+	  ELSE
+	    OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  END IF
+!<--
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
@@ -317,18 +339,24 @@ C
 
 	  CALL LOHIN3()
 
-	  READ(VALUE,*) nOutCord
+	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
+
+	  IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	  nOutCord_FLG=.TRUE.
 
 	  READ(RX_FID, 123, END=99) STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
-	    READ(VALUE,*)(Tout(1,j),j=1,7)
+	    READ(VALUE,*,IOSTAT=iosRx)(Tout(1,j),j=1,7)
+
+	    IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	    IF (nOutCord .GT. 1) THEN
 	      DO k=2,nOutCord
 	 	READ(RX_FID, 123, END=99)STRING
-	        READ(STRING,*)(Tout(k,j),j=1,7)
+	        READ(STRING,*,IOSTAT=iosRx)(Tout(k,j),j=1,7)
+
+	        IF (RxBad(iosRx,VAR_NAM,0,STRING)) GO TO 99
               END DO
 	    END IF
 	    Tout_FLG=.TRUE.
@@ -1332,6 +1360,26 @@ C	Specify output coordinates
 
         ! Close input file
         CLOSE (UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
+!-->  zGrid is not deck state: set it to the z OrthoSrcFrame derives
+!     (sign of xGrid x yGrid against ChfRayDir, unitised), so the first
+!     grid setup after a load sees a consistent frame and its dead band
+!     keeps the deck's x/y.  It was 0 or the PREVIOUS deck's, the band
+!     test failed at order 1 and the frame was rebuilt from cross
+!     products on every load: SAVE -> load -> SAVE never reached a fixed
+!     point on a frame with round-off-sized components (PLAN_CONSOLIDATION
+!     6a, 2026-10-09: the dyson5 roll-180 joins, 33 corpus decks).
+        BLOCK
+          REAL*8 :: zc(3)
+          CALL DXPROD(zc,xGrid,yGrid)
+          IF (DOT_PRODUCT(zc,ChfRayDir).GT.0d0) THEN
+            zGrid=ChfRayDir
+          ELSE
+            zGrid=-ChfRayDir
+          END IF
+          CALL DUNITIZE(zGrid)
+        END BLOCK
+!<--
 
 
 	! Setup ApType and ApVec for all segments if an aperture
@@ -1360,6 +1408,7 @@ C	Specify output coordinates
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
 	RETURN
 	END SUBROUTINE MBFile6
@@ -1765,7 +1814,8 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'GridFile',8)) THEN
 	    READ(IND(1),*,ERR=999,END=999) MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999) GridFile(MB_I(1))
-	    WRITE(*,*)' GridFile(',MB_I(1),')=',GridFile(MB_I(1))
+	    WRITE(*,*)' GridFile(',MB_I(1),')=',
+     &                TRIM(GridFile(MB_I(1)))
 	    CALL GridInit(GridFile(MB_I(1)),iEltToGridSrf(MB_I(1)),
      &	    	   nGridMat(MB_I(1)),ifGridInit,.FALSE.)
 	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',8)) THEN
@@ -2592,6 +2642,13 @@ c got nothing, return a blank
 
 C       Is this the last command saved?
 
+!-->  Remember the token for UNREAD_LOH (PLAN 3.3)
+	last_stk=0
+	IF (read_len(pstack) .NE. 0) THEN
+	   last_cur=read_cur(pstack); last_len=read_len(pstack)
+	   last_stk=pstack
+	END IF
+!<--
 	IF (read_cur(pstack) .EQ. read_len(pstack)) THEN
 	   read_len(pstack)=0
 	   read_cur(pstack)=0
@@ -2604,6 +2661,22 @@ C       Is this the last command saved?
 
 	RETURN
 	END SUBROUTINE READ_LOH
+
+!-->  Hand the token READ_LOH consumed last back to its stack, so the
+!     next READ_LOH returns it again (PLAN 3.3, 2026-10-11): a CALIB
+!     yes/no prompt that receives a COMMAND (a journal's 'quit')
+!     takes its default and gives the token back.  A no-op when the
+!     last read consumed nothing or the stack has changed since.
+	SUBROUTINE UNREAD_LOH()
+	use lohpars_mod
+	IMPLICIT NONE
+	IF (last_stk.EQ.pstack .AND. last_stk.GT.0) THEN
+	   read_len(pstack)=last_len
+	   read_cur(pstack)=last_cur
+	END IF
+	last_stk=0
+	END SUBROUTINE UNREAD_LOH
+!<--
 
 C***********************************************************************
 
@@ -2618,7 +2691,15 @@ C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
 C
         use lohpars_mod
 
-        CHARACTER*130 VAR
+!-->  A command line is as long as a token may be (var_store's width,
+!     MacosCharLen = 256).  Was CHARACTER*130 with len_max 130, so an
+!     `old <path>` longer than 130 characters was CUT at 126 and the
+!     load re-prompted forever on the truncated name (three run-
+!     artifact decks under a 138-character path read as 'timeout_load'
+!     in the corpus record), and MHIST copied strlen(line) bytes into
+!     the 130-byte VAR unbounded.  MHIST now takes the buffer length.
+        CHARACTER(len=MacosCharLen) VAR
+!<--
 
         INTEGER Mode,i,j,k,l
         INTEGER len_max
@@ -2630,7 +2711,7 @@ C    if last flag = true, then the semi colon is the last character
 C    on the line, (besides spaces)
 
 c       maximum length of a line
-        data len_max /130/
+        data len_max /MacosCharLen/
 
     6   FORMAT(A)
 
@@ -2649,11 +2730,15 @@ C       Read new statement to be parsed
 	   VAR=' '
 #ifdef READLINE_LIBRARY
 	   If (Mode /= 0) Then
-	     Call MHIST(' ',VAR)
+	     Call MHIST(' ',VAR,LEN(VAR))
 	   Else
-	     Call MHIST('MACOS',VAR)
+	     Call MHIST('MACOS',VAR,LEN(VAR))
 	   End If
 #else
+!-->      Non-readline build: render any cached sub-prompt before the
+!         bare READ, or the program blocks on invisible input.
+           CALL print_sub_prompt
+!<--
            READ(*,6,END=200, ERR=300) VAR
 #endif
         ELSE
@@ -3053,6 +3138,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	REAL*8 DVAR(N),DDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3089,7 +3176,31 @@ C  Read response:
 	CALL READ_LOH(2)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(DVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(DVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(2)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO I=1,ABSN
@@ -3232,6 +3343,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	SREAL RVAR(N),RDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3268,7 +3381,31 @@ C  Read response:
 	CALL READ_LOH(3)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(RVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(RVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(3)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO 9 I=1,ABSN
@@ -3408,6 +3545,8 @@ C  with Fortran WRITE.  See CACCEPT for the rationale.
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
 	INTEGER I, N, ABSN, LEN, IVAR(N), IDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	INTEGER ICLEN
 	CHARACTER*16 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
@@ -3445,8 +3584,32 @@ c goes via the cache so readline can render and own cursor state.
 C  Read response:
 	CALL READ_LOH(4)
 	CALL clear_sub_prompt
-	IF (CVAR.NE.' ') THEN
-	   READ(CVAR,*,ERR=1)(IVAR(I),I=1,ABSN)
+	IF (CVAR.NE.' ')THEN
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(IVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(4)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
      	   ! No data entered, use the default
 	   DO 9 I=1,ABSN

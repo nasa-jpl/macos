@@ -1,0 +1,9 @@
+record  load_ifx_c862794.csv  (114 decks)
+  must-fail missing_value.in       load_fail    OK
+  must-fail segdemo3_broken.in     load_fail    OK
+  must-fail short_psielt.in        load_fail    OK
+  status    ok 114
+  roundtrip same 106  ulp 8
+  NaN OPD   3: Rx_SaveKeys.in tst_block_comment.in tst_save_keys.in
+  vs load_ifx_e37e763.csv: 0 decks with a changed OPD/nPass/lost
+  verdict   PASS

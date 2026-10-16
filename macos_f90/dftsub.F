@@ -7,6 +7,18 @@ C    +----------------------------------------------------------------+
 C***********************************************************************
 
         MODULE dft_mod
+!-->  Far-field evanescent cut (dyson5 addendum 15, 2026-10-03).  A far-
+!     field leg maps spatial frequency f to the output coordinate
+!     x = lambda*dz*f, i.e. sin(theta) = x/dz; a wide output window
+!     (dx2 = lambda*dz/(N*dx1) with a fine pupil grid) carries pixels with
+!     |x|/dz > 1 -- |f| > 1/lambda, EVANESCENT, no propagating energy --
+!     which an energy-fraction metric then counts as light.  With
+!     ifFFEvanCut the two far-field kernels (FFPROP, FFPropDFT) zero every
+!     output pixel with x^2 + y^2 > dz^2 after applyfac2 and say ONCE per
+!     call how many.  Default OFF (the record's propagating normalisation
+!     is the convention until then); API ffcut_set / ffcut_get.
+        LOGICAL :: ifFFEvanCut = .FALSE.
+        INTEGER :: nFFEvanCutPix = 0   ! pixels zeroed by the last call
 
         CONTAINS
 	SUBROUTINE NFPropDFT(u1,n1,dx1,u2,n2,dx2,lambda,z)
@@ -82,6 +94,7 @@ C	c1 = CDEXP(DCMPLX(0d0,twopi*z/lambda))/DCMPLX(0d0,lambda*z)
 	c1 = 1d0/DCMPLX(0d0,lambda*z)
 	c2 = pi/lambda/z
 	CALL applyfac2(u2,n2,n2,c1*dx1*dx1,c2,dx2)
+	CALL FFEvanCut(u2,n2,n2,dx2,z)
 
 	RETURN
 	END SUBROUTINE FFPropDFT
@@ -136,6 +149,36 @@ C***********************************************************************
 
 	RETURN
 	END SUBROUTINE Applyfac2
+
+!-->  See the ifFFEvanCut note at the top of the module.
+	SUBROUTINE FFEvanCut(u,mi,mj,dx,dz)
+	IMPLICIT NONE
+	INTEGER i,j,mi,mj,i1,j1
+	REAL*8 dx,dz,x,y,ysq,dz2
+	COMPLEX*16 u(mi,mj)
+	nFFEvanCutPix=0
+	IF (.NOT.ifFFEvanCut) RETURN
+	dz2=dz*dz
+	i1=mi/2+1
+	j1=mj/2+1
+	y =-dx*DBLE(j1)
+	DO j=1,mj
+	  y = y+dx
+	  ysq=y*y
+	  x =-dx*DBLE(i1)
+	  DO i=1,mi
+	    x = x+dx
+	    IF (x*x+ysq.GT.dz2) THEN
+	      u(i,j)=DCMPLX(0d0,0d0)
+	      nFFEvanCutPix=nFFEvanCutPix+1
+	    END IF
+	  END DO
+	END DO
+	IF (nFFEvanCutPix.GT.0) WRITE(*,'(A,I9,A,I9,A)')
+     &	  ' ** FarField evanescent cut: ',nFFEvanCutPix,' of ',mi*mj,
+     &	  ' output pixels (|sin| > 1) zeroed'
+	END SUBROUTINE FFEvanCut
+!<--
 
 C***********************************************************************
 

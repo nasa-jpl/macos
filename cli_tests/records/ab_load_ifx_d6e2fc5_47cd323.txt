@@ -1,0 +1,10 @@
+# A/B: pre load_ifx_d6e2fc5.csv  post load_ifx_47cd323.csv  (93 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 7 decks moved
+/home/dcr/dev/macos/docs/macos-manual/FreeFormPieAperture.in  rms 3.911811657D-05 -> 3.911811658D-05
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/e5hex1.in  rms 3.622346889D-05 -> 3.622346888D-05  roundtrip ulp -> same
+/home/dcr/dev/macos/ZGD_test_files/e5hex1.in  rms 3.622346889D-05 -> 3.622346888D-05
+/home/dcr/dev/macos/ZGD_test_files/e5hex2.in  rms 3.563574574D-05 -> 3.563574577D-05
+/home/dcr/dev/macos/ZGD_test_files/e5pie.in  rms 3.911811657D-05 -> 3.911811658D-05
+/home/dcr/dev/macos/ZGD_test_files/ff_hex2.in  rms 3.563574574D-05 -> 3.563574577D-05
+/home/dcr/dev/macos/ZGD_test_files/tst_SegMirMaker.in  rms 3.898416056D-05 -> 3.898416057D-05

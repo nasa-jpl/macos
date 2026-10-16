@@ -424,16 +424,38 @@ only marks the Rx modified and resets those flags.
 
 *Minimum match:* `CHIefray`
 
-Use chief ray (not centroid) as the FEX reference point.
+Chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 <!-- BEGIN NOTES cmd-CHIefray -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>chiefray
- Image referenced to chief ray
+ FEX/SXP pupil-sphere axis: CHIEF RAY (default)
 ```
-No input.  Clears the CENTRoid option, so FEXit and other
-image-referencing computations use the chief-ray intercept
-rather than the spot centroid.  Despite the help one-liner,
+No input.  This pair (CHIefray / CENTRoid) selects the AXIS of the
+exit-pupil reference sphere FEXit/SXP write:
+  chief    psi = -(chief direction)          -- THE DEFAULT
+           (all platforms since 2026-08-27; the API always chose
+           per call: xp_fnd mode 1 = chief, 0 = centroid)
+  centroid psi = unit(beam centroid at the next plane - EP crossing)
+On an obscured, segmented, or aberrated beam the downstream centroid
+walks off the chief, so the centroid axis TILTS the reference sphere
+and leaves pure tip/tilt (plus piston against a chief-type OPD
+reference) in the OPD -- frame terms with no aberration content.
+Every FEX/SXP run prints which axis it used.  The Rx keyword
+`FEXCentroid= N` additionally VETOES the centroid axis for a deck.
+The doctrine extends to the mmacos pupil_find layer: the written
+pupil reference is ALWAYS chief-tied (pupil_find calls fex mode 1
+internally and writes the fit-surface/chief-ray crossing);
+beam-collective quantities -- the centroid axis here, the cone-bundle
+vertex and cone-fit normal there -- are DIAGNOSTICS, never references
+(writing them was measured to inject pure tilt or make the reference
+tilt-blind).
+The mmacos supervisors surface this same toggle: the dw_d*_multi
+family and run_sensitivities take `'fex_axis' 'chief'|'centroid'`
+for the FEX per-field reset (chief default; refused when combined
+with reset_xp_method='pupil_find', which is chief-tied by doctrine).
 CHIefray does NOT set the chief-ray position/direction — use
 PERturb 0, STOp, FFP or PFP for that.
 *Related:* CENTRoid, FEXit.
@@ -881,18 +903,36 @@ Enter number of exit pupil return surface: [5]: 6
    (z, psi, Vpt likewise)
 Accept the new element? [YES]:
 ```
-Locates the exit pupil from the chief plus a differential chief
-ray and refits the chosen Return/Reference element there as the
+Locates the exit pupil from the chief ray plus FOUR differential
+chief rays (+/-5e-6 rad about two orthonormal axes perpendicular
+to the chief ray; the crossings are averaged, so the result does
+not depend on the sign or azimuth of the source frame -- 2026-09-08,
+before that a single probe about xGrid) and refits the chosen
+Return/Reference element there as the
 reference sphere for far-field propagation (eElt=0, fElt=|z|,
 KrElt=-fElt, KcElt=0, psi, Vpt/Rpt updated).  Requires STOp
 first.  The EP radius is the chief-ray distance from the EP to
 the next element (the far-field propagation distance); the
-legacy previous-element leg is the fallback.  CENTRoid /
-CHIefray select the reference point.  Rerun after any PERturb.
+legacy previous-element leg is the fallback.  When that next
+element is CURVED the radius runs to its SURFACE, not to its
+tangent plane (2026-08-28) — on a curved focal surface the plane
+sits the sag h**2/2R beyond it at image height h and the miss
+lands in the OFF-AXIS OPD as pure defocus (4.3e-5 -> 7.3e-6 mm
+at 1' on the JWST OTE deck; identically zero on axis).  Flat
+next elements are bit-identical to the old behaviour, and each
+curved run prints the element, its Kr and the plane-surface gap.
+Only the base conic is used, so a grid/FreeForm figure at the
+next element is ignored (um-class against a sub-mm sag).  The
+sphere AXIS
+is the CHIEF RAY by default (2026-08-27, all platforms); CENTRoid
+opts into the beam-centroid axis and CHIefray restores — see the
+CHIefray entry for why the centroid axis leaves tip/tilt in the
+OPD.  Each run prints the axis it used.  Rerun after any PERturb.
 SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
-Dispatcher also has undocumented siblings SXP (legacy variant,
-now largely redundant) and XPS (pupil solve over the full ray
-grid).
+Dispatcher also has siblings SXP (geometrically identical radius —
+it intersects the chief with the next element's plane whatever its
+type; FEX adds the telecentric/footprint/Return-order guards) and
+XPS (pupil solve over the full ray grid).
 *Related:* STOp, CENTRoid, ORS, FDP.
 <!-- END NOTES cmd-FEXit -->
 
@@ -918,9 +958,17 @@ to the next element (the focal plane at iElt+1) instead of the
 legacy previous-element-to-EP leg, making the radius sensitive
 to focal-plane despace (Tz); lateral FP motion and rotations
 are still not captured.  Requires STOp first; the element must
-be a Return or Reference surface.  Since the FEX rework made
-the EP-to-next-element radius FEX's own default, SXP is
-retained for compatibility and is now largely redundant.
+be a Return or Reference surface.  The radius math intersects
+element iElt+1's vertex/normal plane when that element is flat
+and its actual conic SURFACE when it is curved (2026-08-28, the
+same rule and the same shared solver as FEX) — type-agnostic
+either way, so a mask/Reference/Obscuring at iElt+1 is handled
+correctly despite the "FP" naming.  Since the FEX
+rework made the EP-to-next-element radius FEX's own default,
+FEX and SXP are geometrically identical on every deck; FEX adds
+the telecentric/footprint/Return-order guards.  The sphere AXIS
+follows the same CHIefray/CENTRoid selection as FEX (chief-ray
+default on all platforms, 2026-08-27; each run prints its axis).
 SMACOS: IARG(1)=EP element, CARG(1)=accept answer.
 *Related:* FEXit, XPS, STOp, CENTRoid.
 <!-- END NOTES cmd-SXP -->
@@ -1020,6 +1068,14 @@ PFP and FEXit.  Source adjustment follows SAOpt (default:
 collimated source translates ChfRayPos; point source re-aims
 ChfRayDir).  If the Rx declared ApStop, the first STOp run
 substitutes that element/offset for the typed values.
+Segment elements are accepted (2026-09-08; the chief ray is
+mapped to that segment for the aiming trace) -- note that in
+segment-class decks every segment's VptElt is the PARENT vertex,
+so offset 0,0 on any segment is the parent vertex; use an RptElt-
+based offset for a segment centre.  Non-sequential elements
+(NSReflector/NSRefractor) are refused by name.  The OBJ answer may
+be typed on one line (`stop obj 0 0 0`); a short line is completed
+from the next prompt.
 SMACOS: CARG(1)='ELT'|'OBJ'; ELT: IARG(1)=element,
 DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 *Related:* CENter, SAOpt, FEXit, FFP, PFP.
@@ -1029,17 +1085,24 @@ DARG(1:2)=offset; OBJ: DARG(1:3)=position.
 
 *Minimum match:* `CENTRoid`
 
-Use centroid as ref point for FEX.
+Beam-centroid FEX/SXP axis (opt-in; the chief ray is the default).
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>centroid
- Image referenced to ray centroid
+ FEX/SXP pupil-sphere axis: beam CENTROID (opt-in; chief ray is the default)
 ```
-No input.  Makes FEXit (and other image-referencing
-computations) use the full-beam spot centroid rather than the
-chief-ray intercept as the reference point.  CHIefray restores
-the default chief-ray referencing.
+No input.  Aims the FEX/SXP pupil-sphere axis at the downstream
+beam centroid instead of along the chief ray.  On obscured,
+segmented, or aberrated beams the centroid walks off the chief,
+so this axis TILTS the reference sphere and leaves tip/tilt
+(and piston, against a chief-type OPD reference) in the OPD —
+see the CHIefray entry for the full convention table.  CHIefray
+restores the chief-ray default (the default on all platforms
+since 2026-08-27); the Rx keyword `FEXCentroid= N` vetoes the
+centroid axis per deck.
 *Related:* CHIefray, FEXit.
 <!-- END NOTES cmd-CENTRoid -->
 
@@ -1147,6 +1210,8 @@ spot.  SMACOS: option in CARG(1).
 Allow/disallow negative pathlengths.
 
 <!-- BEGIN NOTES cmd-LNEg-NOLNeg -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>lneg
  Negative-length rays OK at reference surfaces
@@ -1169,6 +1234,8 @@ NOLNeg to forbid negative lengths.
 Polarization tracing on.
 
 <!-- BEGIN NOTES cmd-POLarized -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>pol
  Polarization turned on
@@ -1207,6 +1274,8 @@ also `macos.jones_pupil` for polarization-aberration analysis.
 Polarization off.
 
 <!-- BEGIN NOTES cmd-NOPolarization -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>nopol
  Polarization turned off
@@ -1781,6 +1850,8 @@ radius/exponent (COS**POWER); omitted for UNIFORM.
 Vector vs scalar diffraction (with POLarized).
 
 <!-- BEGIN NOTES cmd-VECtor -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 ```
 MACOS>vector
  Vector diffraction enabled
@@ -1979,8 +2050,15 @@ Enter element where OPD is to be evaluated: [0]: 3
  Average OPD is   ...
 ```
 Traces the full ray bundle to the element and plots the beam
-OPD map: per-ray pathlength minus chief-ray pathlength
-(positive = travelled farther), in BaseUnits.  The map is
+OPD map: per-ray pathlength minus the CHIEF RAY's pathlength
+(positive = travelled farther), in BaseUnits.  The chief ray is
+the default reference; the aperture MEAN is the option (OPDREF
+MEAN per session, `UseChfRay4OPD= N` per prescription, `opd_ref`
+from the bindings) -- see OPDREF for when it matters (segmented
+pupils) and for the `OPD reference:` line every run prints.  The
+printed RMS is mean-removed and P-V is max-min, so neither depends
+on the reference; 'Average OPD' is the chief-minus-mean piston
+itself.  The map is
 always the square aperture ray grid (see MAP) — use SPOt for
 true ray locations; obscured-ray plotting follows OBS.  The
 map represents system wavefront error only at an exit pupil
@@ -1992,8 +2070,57 @@ does not apply (OPD is always linear).  TEXt/BINary/FITs/MAT
 plot types write `filnam.OPDn`.  Prerequisite for ZCOef,
 ZABerr, ZRM and DOPD.  SMACOS: IARG(1)=element; the map is
 returned in OPDMat.
-*Related:* SPOt, ZCOef, ZABerr, OBS, MAP.
+*Related:* OPDREF, SPOt, ZCOef, ZABerr, OBS, MAP.
 <!-- END NOTES cmd-OPD -->
+
+#### OPDREF
+
+*Minimum match:* `OPDREF`
+
+OPD reference: CHIEF or MEAN (the chief ray is the default).
+
+<!-- BEGIN NOTES cmd-OPDREF -->
+```
+MACOS>opdref mean
+OPD reference (CHIEF,MEAN): [CHIEF]: mean
+ OPD reference: APERTURE MEAN (opt-in; the chief ray is the default)
+MACOS>opd
+ ...
+ OPD reference: APERTURE MEAN (OPDREF MEAN)
+ RMS OPD error is ...
+```
+Selects what every ray's optical path is measured AGAINST when OPD
+(and the OPD map a diffraction propagation fills) is computed:
+  CHIEF  the chief ray's own path (ray 1)        -- THE DEFAULT
+         (the manual's definition, Section 5.2.2; all front ends
+         since 2026-10-10)
+  MEAN   the mean path over every valid ray in the aperture
+The two maps differ by ONE constant per field (the chief-minus-mean
+piston), so RMS, P-V and 'Average OPD' as printed do NOT change --
+the per-ray map does.  Use the chief ray on SEGMENTED pupils: under
+the mean reference, moving one segment shifts the mean and prints a
+spurious piston on every other segment (16.7 % of the poked
+segment's peak on the 7-segment e5hex1 deck); under the chief
+reference the untouched segments read exactly 0.  OPDREF is a
+SESSION option: it survives later loads.  Per prescription, the
+`UseChfRay4OPD= Y|N` keyword overrides it for that deck (SAVE
+writes `UseChfRay4OPD= N` when the mean is in force, nothing for the
+default); from the bindings, `macos.opd_ref` / `pymacos.opd_ref`
+act on the loaded deck.  Every OPD run prints the reference it used
+and where it came from: `(default)`, `(UseChfRay4OPD= Y|N)`,
+`(OPDREF CHIEF|MEAN)`, `(opd_ref_set)`, `OPDRefRayLen= (Rx)`; if
+the chief ray is geometrically lost the engine falls back to the
+mean and prints `APERTURE MEAN (chief ray lost)` -- no error.  An
+OBSCURED chief ray still serves (the reference needs the ray's
+geometry, not its flux).  Consequence for consumers: under the
+chief reference a valid ray whose path equals the chief's reads
+EXACTLY 0, the same value OPDMat holds where there is no ray -- use
+the validity mask (`macos.opd_mask` / `pymacos.opd_mask`), never
+`W ~= 0`, to find the pupil.  SMACOS: not dispatched; use the api
+`opd_ref_set`.  Note the dispatcher tests OPDREF before OPD (prefix
+match).
+*Related:* OPD, CHIefray, SPCenter.
+<!-- END NOTES cmd-OPDREF -->
 
 #### SPOt
 
@@ -2498,6 +2625,8 @@ default, leaving the mode as-is.
 Color / gray image rendering.
 
 <!-- BEGIN NOTES cmd-CIR -->
+**A session mode (2026-10-11, Dave's ruling):** the setting survives every LOAD until it is changed again -- set once, before or after a deck is loaded.  Each LOAD prints one line naming the session modes not at their defaults, e.g. `LOAD: session modes in force: POLARIZATION, VECTOR, CENTROID, NOLNEG, CIR` (nothing when all are default); `STATUS` shows them too.  `RESET` returns four of them to the defaults (no polarization, scalar, the chief-ray FEX axis, LNEG); the CIR/GIR palette is kept.
+
 No dialog.  CIR turns color image rendering on (" Color
 image rendering is on"); GIR reverts to gray-scale (" Gray
 image rendering is on").  Affects raster image displays

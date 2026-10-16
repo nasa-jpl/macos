@@ -831,6 +831,14 @@
         ChfRayPos = SrcPos
         if (abs(zSource) <= zSourceMax) ChfRayPos = ChfRayPos - zSource*ChfRayDir
 
+        !--> The source grid and its frame (xGrid/yGrid/zGrid) are rebuilt
+        !    only when the cached trace is invalidated; without this a
+        !    trace after set_src_fov re-used the frame of the OLD chief ray
+        !    (found by tRetraceIdempotent's band test, 2026-10-02 -- the
+        !    same class as the grid-setter retrace fix).
+        CALL modified_rx(OK)
+        !<--
+
         ! return
         OK = PASS
 
@@ -2189,8 +2197,16 @@
         if ((.not. SystemCheck()) .or. (iElt<1) .or. (iElt>nElt)) return
         ! if (.not. StatusChk1(iElt)) return
 
-        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt)
-        if ((Nx > mGridMat) .or. (Nx/=Ny) .or. (Nx<3)) return
+        ! out-of-boundary & shape check (mGridMat defined in macos_param.txt).
+        ! A grid larger than mGridMat cannot be stored: refused BY NAME
+        ! (2026-10-10, as elt_srf_grid_data_add and GridInit), not silently.
+        if (Nx > mGridMat) then
+          write(*,'(A,I0,A,I0,A,I0,A)') ' ** elt_srf_grid_data: REJECTED for Elt ', &
+            iElt, ': ', Nx, ' points exceed mGridMat=', mGridMat, &
+            ' for this model -- use a larger model size'
+          return
+        end if
+        if ((Nx/=Ny) .or. (Nx<3)) return
 
         ! check if SrfType /= Grid
         if (all(SrfType(iElt) /= GridTypeAll)) return
@@ -4099,6 +4115,94 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! opd_mask_get: which pixels of the last OPD map hold a ray (2026-10-10).
+      ! MASK(i,j) = 1 exactly where the OPD wrote OPDMat (traceutil_mod
+      ! opdValid, set at the same statements), 0 elsewhere.  NEEDED because
+      ! under the chief-ray reference (the default) a valid ray whose path
+      ! equals the chief's reads exactly 0 -- the value of an empty pixel --
+      ! so "OPD /= 0" is not a validity test.  Same N contract as opd_val.
+      !---------------------------------------------------------------------------------------------
+      subroutine opd_mask_get(OK, MASK, N)
+        use traceutil_mod, only: opdValid
+        implicit none
+        logical,                 intent(out):: OK
+        integer, dimension(N,N), intent(out):: MASK
+        integer,                 intent(in) :: N      ! = nGridPts
+        ! ------------------------------------------------------
+        OK   = FAIL
+        MASK = 0
+        if ((.not. SystemCheck()).or.(nGridPts/=N)) return
+        MASK(:,:) = opdValid(:N,:N)
+        OK = PASS
+      end subroutine opd_mask_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! OPD reference selection (LUseChfRayIfOK, traceutil_mod).
+      !
+      ! tracesub.F's OPD fills OPDMat one of two ways:
+      !   use_chief .TRUE.  and the chief ray survives (LRayOK(1)) ->
+      !       OPD = CumRayL(iRay) - CumRayL(1).  A per-ray reference; no
+      !       coupling between rays.
+      !   otherwise ->
+      !       OPD = (CumRayL(iRay) - Ref) - DAvgl, with Ref the chief's OPL
+      !       when it survived and 0 when it did not, and DAvgl the mean of
+      !       (CumRayL - Ref) over EVERY valid ray.  On a SEGMENTED
+      !       pupil that mean couples the segments: perturbing one segment
+      !       moves DAvgl by (N_k/N_total)*(mean local response) and that
+      !       constant is then subtracted from every ray, so UNPERTURBED
+      !       segments report a spurious piston and the perturbed one is
+      !       biased by the same amount.  Measured on e5hex1 (7 hex
+      !       segments, Tz = 1e-8 m on one segment): the unperturbed
+      !       segments piston by 16.7% of the peak response; with the
+      !       chief-ray reference it is exactly zero.
+      !
+      ! The engine default is the CHIEF ray (2026-10-10, Dave: the engine
+      ! matches the manual's OPD definition); until then every path ran
+      ! the mean, because the per-load reset put the flag back to .FALSE.
+      ! after the LOAD handler set it (Luis Marchen's 2026-08-19
+      ! diagnosis).  The default is now a session option set once at
+      ! allocation (traceutil_mod LOpdRefChief, the CLI's OPDREF); every
+      ! load restores it, the Rx keyword `UseChfRay4OPD= Y|N` overrides it
+      ! per deck, and this setter overrides both for the loaded deck.
+      ! Every OPD run prints which reference it used.
+      !
+      ! Call AFTER load_rx (a load restores the default), and re-trace: the
+      ! OPD map is built during the trace, so this dirties the cached one.
+      !---------------------------------------------------------------------------------------------
+      subroutine opd_ref_set(OK, use_chief)
+        use traceutil_mod, only: LUseChfRayIfOK, iOpdRefSrc
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: use_chief   ! .TRUE. = chief ray, .FALSE. = aperture mean
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        LUseChfRayIfOK = use_chief
+        iOpdRefSrc     = 3                 ! for OPD's printed reference line
+
+        CALL modified_rx(OK)   ! OPDMat is filled by the trace -> re-trace
+        OK = PASS
+      end subroutine opd_ref_set
+
+
+      subroutine opd_ref_get(OK, use_chief)
+        use traceutil_mod, only: LUseChfRayIfOK
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: use_chief
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck()) return
+
+        use_chief = LUseChfRayIfOK
+
+        OK = PASS
+      end subroutine opd_ref_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! Set the ray-trace obscuration option for spot diagrams (the OBS
       ! command -> iObsOpt).  opt: 0=ALL (every ray, regardless of
       ! obscuration), 1=POSITIVE (unobscured only, the default), 2=NEGATIVE
@@ -5751,7 +5855,9 @@
       subroutine calib_run(OK, rtn_flag_out, nFov_out, nWl_out,            &
                            old_wfe_out, new_wfe_out)
         use dopt_mod, only: rtn_flag, old_wfe, new_wfe, nOptFov,           &
-                            nOptWavelen, nVarElt, max_fov, max_wl
+                            nOptWavelen, nVarElt, max_fov, max_wl,     &
+                            calib_n_iter, calib_merit, calib_stop,     &
+                            calib_n_rej, calib_n_fail
 
         implicit none
         logical, intent(out):: OK                          ! PASS if call dispatched & rtn_flag==0
@@ -5767,6 +5873,11 @@
         nWl_out       = 0
         old_wfe_out   = 0d0
         new_wfe_out   = 0d0
+        calib_n_iter  = -1                ! calib_stats_get: this run's, or none
+        calib_merit   = -1d0
+        calib_stop    = -1
+        calib_n_rej   = -1
+        calib_n_fail  = -1
 
         if (.not. SystemCheck()) return
         if (nVarElt < 1)         return  ! No Variable Element for Optimization!
@@ -5789,6 +5900,30 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! modes_get -- the five SESSION modes as the engine holds them (Dave 2026-10-11,
+      ! PLAN_CONSOLIDATION 4 item 2): polarization, vector diffraction, the FEX/SXP centroid
+      ! axis, negative ray lengths (LNEG), colour image rendering (CIR; always 0 here -- the
+      ! bindings' engine has no colour flag).  1 = on.  They survive load_rx, so the bindings'
+      ! load_rx warns when any is not at its default (pol 0, vecdif 0, centroid 0, lneg 1,
+      ! cir 0); the CLI's LOAD prints the same list from the same source (ModesGet).
+      !---------------------------------------------------------------------------------------------
+      subroutine modes_get(OK, pol, vecdif, centroid, lneg, cir)
+        use macos_mod, only: ModesGet
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: pol, vecdif, centroid, lneg, cir
+        logical :: lp, lv, lc, ll, lr
+        ! ------------------------------------------------------
+        call ModesGet(lp, lv, lc, ll, lr)
+        pol = merge(1, 0, lp); vecdif = merge(1, 0, lv); centroid = merge(1, 0, lc)
+        lneg = merge(1, 0, ll); cir = merge(1, 0, lr)
+        OK = PASS
+
+      end subroutine modes_get
+
+
+      !---------------------------------------------------------------------------------------------
       ! calib_buffer_dims -- report the (max_fov, max_wl) compile-time
       ! dimensions used by calib_run's old_wfe_out / new_wfe_out
       ! buffers.  Callers can use this to allocate correctly-shaped
@@ -5806,6 +5941,114 @@
         maxWl  = max_wl
 
       end subroutine calib_buffer_dims
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_stats_get -- the last CALIB's LM iteration count and final
+      ! merit (the chisq lmlsq minimises; target units squared, summed over
+      ! fields and wavelengths).  -1 for both when no CALIB has run, or it
+      ! never reached nls_optim_dvr (an early refusal, the constrained
+      ! path); the linear (SVD) path reports its count and merit -1.  A
+      ! failed LM run reports the iterations it completed and the merit
+      ! at the last accepted step (-1 if none was).  stop_reason says why
+      ! it stopped: 1 converged (two flat accepted steps), 2 the round-off
+      ! floor (ten rejected trials, after progress), 3 the iteration cap, 4 LM
+      ! failure (incl. no trial step evaluable), 5 stalled (no trial step
+      ! accepted, none failed); -1 none.  PLAN 3.3/3.4.  n_rejected: LM trials rejected (lambda grew);
+      ! n_failed: of those, trials whose evaluation FAILED (a trace lost the
+      ! chief ray) -- a failed trial is a rejected one, PLAN 3.4.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_stats_get(n_iter, merit, stop_reason, n_rejected, n_failed)
+        use dopt_mod, only: calib_n_iter, calib_merit, calib_stop,          &
+                            calib_n_rej, calib_n_fail
+
+        implicit none
+        integer, intent(out):: n_iter
+        real(8), intent(out):: merit
+        integer, intent(out):: stop_reason
+        integer, intent(out):: n_rejected
+        integer, intent(out):: n_failed
+        ! ------------------------------------------------------
+        n_iter      = calib_n_iter
+        merit       = calib_merit
+        stop_reason = calib_stop
+        n_rejected  = calib_n_rej
+        n_failed    = calib_n_fail
+
+      end subroutine calib_stats_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! deadband_notes_get -- how many source-frame / stop-aim updates were
+      ! suppressed by the round-off dead band although they exceeded the
+      ! measured round-off (math_mod: DeadBandQuietUlp < residual <=
+      ! DeadBandUlp).  The engine prints ONE line for the first; this count
+      ! is the rest.  Zero on every deck measured 2026-10-02: a nonzero
+      ! count means either round-off larger than measured, or a caller
+      ! stepping the source direction / stop position at round-off level.
+      !---------------------------------------------------------------------------------------------
+      subroutine deadband_notes_get(nNotes)
+        use math_mod, only: nDeadBandNote
+
+        implicit none
+        integer, intent(out):: nNotes
+        ! ------------------------------------------------------
+        nNotes = nDeadBandNote
+
+      end subroutine deadband_notes_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! fwd_root_flips_get -- how many surface intersections in the LAST
+      ! trace took the first forward crossing where the legacy |L^2-mpr|
+      ! root metric would have chosen the second sheet of a two-sheet
+      ! conic (surfsub FwdRoot, 2026-10-04).  Reset at every trace start.
+      ! Zero on a deck means the fix did not touch it; a nonzero count on
+      ! a legacy deck means that deck was tracing THROUGH a surface.
+      !---------------------------------------------------------------------------------------------
+      subroutine fwd_root_flips_get(nFlips)
+        use surfsub, only: nFwdRootFlip
+
+        implicit none
+        integer, intent(out):: nFlips
+        ! ------------------------------------------------------
+        nFlips = nFwdRootFlip
+
+      end subroutine fwd_root_flips_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! grid_idx_ovf_get -- how many grid samples in the LAST trace had a
+      ! non-finite or out-of-INTEGER-range pixel index and were treated as
+      ! off-grid (surfsub SFFSrf/FreeFormSrf/SGSrf/NGSrf guard, 2026-10-10).
+      ! Reset at every trace start.  Zero on a well-posed deck; a nonzero
+      ! count flags rays whose surface-solve bracket diverged (e.g. an
+      ! NS-grid deck whose NSCount round-trip was lost) -- without the
+      ! guard those indices overflow and crash the host.
+      !---------------------------------------------------------------------------------------------
+      !---------------------------------------------------------------------------------------------
+      ! grid_dropped_get: grid FILES the last load declined (2026-10-10, elt_mod
+      ! GridTooBig) -- larger than this model's mGridMat, so not stored; those
+      ! surfaces trace WITHOUT their figure.  Nonzero = a harvest at this model
+      ! is missing figure data: load at a model whose mGridMat fits.
+      !---------------------------------------------------------------------------------------------
+      subroutine grid_dropped_get(nDrop)
+        use elt_mod, only: nGridDropped
+        implicit none
+        integer, intent(out):: nDrop
+        nDrop = nGridDropped
+      end subroutine grid_dropped_get
+
+
+      subroutine grid_idx_ovf_get(nOvf)
+        use surfsub, only: nGridIdxOvf
+
+        implicit none
+        integer, intent(out):: nOvf
+        ! ------------------------------------------------------
+        nOvf = nGridIdxOvf
+
+      end subroutine grid_idx_ovf_get
 
 
       !---------------------------------------------------------------------------------------------
@@ -5956,7 +6199,7 @@
       !   2 = WFE_ZMODE   (specific Zernike modes only; requires WFZernMode)
       !   3 = BEAM        (beam waist / position / divergence)
       !   4 = SPOT        (RMS spot size)
-      !   5 = OPL         (optical path length)
+      !   (5 = OPL was removed 2026-10-10: it had no objective; refused)
       !
       ! For target_type=2 (WFE_ZMODE), caller supplies n_wf_zern + a
       ! list of Zernike mode indices.  For all other targets,
@@ -5965,7 +6208,7 @@
       subroutine calib_set_target(OK, target_type, wf_zern_modes, n_wf_zern)
         use dopt_mod, only: OptTarget, nWFZern, WFZernMode,                &
                             WFE_TARGET, WFE_ZMODE_TARGET, BEAM_TARGET,     &
-                            SPOT_TARGET, OPL_TARGET, mOptZern
+                            SPOT_TARGET, mOptZern
 
         implicit none
         logical, intent(out):: OK
@@ -5975,12 +6218,18 @@
         !f2py integer intent(hide), depend(wf_zern_modes):: n_wf_zern=len(wf_zern_modes)
         ! ------------------------------------------------------
         OK = FAIL
+        ! 5 was OPL: accepted, with no objective behind it (a CALIB on it
+        ! failed).  Removed 2026-10-10 (PLAN 3.1): refused BY NAME.
+        if (target_type == 5) then
+          write(*,'(A)') ' ** calib_set_target: OPL is not a CALIB target'// &
+            ' (removed: it had no objective); use WFE, WFE_ZMODE, BEAM or SPOT'
+          return
+        end if
         ! Validate target enum
         if (target_type /= WFE_TARGET       .and.                          &
             target_type /= WFE_ZMODE_TARGET .and.                          &
             target_type /= BEAM_TARGET      .and.                          &
-            target_type /= SPOT_TARGET      .and.                          &
-            target_type /= OPL_TARGET) return
+            target_type /= SPOT_TARGET) return
 
         OptTarget = target_type
 
@@ -5996,6 +6245,173 @@
         OK = PASS
 
       end subroutine calib_set_target
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_beam -- turn a beam row group on (or off) for the next CALIB
+      ! (2026-10-03, dyson5 addendum 14 item 4).  Beam rows ride on ANY
+      ! target: a WFE / SPOT target plus the chief-ray direction at an
+      ! element (telecentricity), its position (smile / keystone), or the
+      ! beam size.  Mirrors the Rx keywords OptBeamDir= / OptBeamPos= /
+      ! OptBeamSize= placed in element iElt's block.
+      !   kind   1 = direction (target = unit 3-vector; e.g. the detector
+      !              normal for a telecentric image), 2 = position (target =
+      !              3-vector in base units), 3 = size (target(1) = radius).
+      !   iElt   the element the quantity is read at.
+      !   on     .false. switches that group off (iElt / target ignored).
+      ! A position target that differs per CALIB field is given with
+      ! calib_set_beam_pos_fov; calib_set_beam_wt sets the weight against
+      ! the WFE / SPOT rows and the centroid option.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam(OK, kind, iElt, target, on)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: kind, iElt
+        real(8), intent(in) :: target(3)
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if (on .and. ((iElt < 1) .or. (iElt > nElt))) return
+        select case (kind)
+        case (1)
+          beamOpt%ifOptBeamDir = on
+          if (on) then
+            if (sum(target**2) <= 0d0) return
+            beamOpt%nomBeamDir = target/sqrt(sum(target**2))
+            beamOpt%beamDirElt = iElt
+          end if
+        case (2)
+          beamOpt%ifOptBeamPos = on
+          if (on) then
+            beamOpt%nomBeamPos = target
+            beamOpt%beamPosElt = iElt
+          end if
+        case (3)
+          beamOpt%ifOptBeamSize = on
+          if (on) then
+            beamOpt%nomBeamSize = target(1)
+            beamOpt%beamSizeElt = iElt
+          end if
+        case default
+          return
+        end select
+        OK = PASS
+
+      end subroutine calib_set_beam
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_beam_pos_fov -- per-field beam position targets: pos(3,n)
+      ! gives the target position for CALIB field 1..n in order (the FOV
+      ! list the Rx / calib_add_fov defines; n <= 12).  Fields beyond n
+      ! use the calib_set_beam(kind=2) target.  n = 0 clears the table.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam_pos_fov(OK, pos, n)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n
+        real(8), intent(in) :: pos(3, max(n,1))
+        !f2py integer intent(hide), depend(pos):: n=shape(pos,1)
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (.not. SystemCheck())                    return
+        if ((n < 0) .or. (n > 12))                  return
+        beamOpt%nBeamPosFov = n
+        if (n > 0) beamOpt%nomBeamPosFov(1:3,1:n) = pos(1:3,1:n)
+        OK = PASS
+
+      end subroutine calib_set_beam_pos_fov
+
+
+      !---------------------------------------------------------------------------------------------
+      ! calib_set_beam_wt -- weight of every beam row against the WFE / SPOT
+      ! rows (wt > 0; the row's sigma is divided by sqrt(wt)), and the
+      ! centroid option: with centroid = .true. the beam position is the
+      ! centroid of the rays that pass the train, not the chief ray.
+      !---------------------------------------------------------------------------------------------
+      subroutine calib_set_beam_wt(OK, wt, centroid)
+        use dopt_mod, only: beamOpt
+
+        implicit none
+        logical, intent(out):: OK
+        real(8), intent(in) :: wt
+        logical, intent(in) :: centroid
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (wt <= 0d0) return
+        beamOpt%beamWt = wt
+        beamOpt%ifBeamCentroid = centroid
+        OK = PASS
+
+      end subroutine calib_set_beam_wt
+
+
+      !---------------------------------------------------------------------------------------------
+      ! ffcut_set / ffcut_get -- the far-field evanescent cut (dyson5 addendum
+      ! 15, 2026-10-03): with on = .true. every far-field leg (FFPROP /
+      ! FFPropDFT) zeroes the output pixels with x^2 + y^2 > dz^2, i.e.
+      ! |sin theta| > 1 -- spatial frequencies above 1/lambda that carry no
+      ! propagating energy but that a wide output window otherwise hands to an
+      ! energy-fraction metric.  Default OFF.  Session state (not reset by a
+      ! load); dirties the cached propagation.  ffcut_get also returns how
+      ! many pixels the LAST far-field kernel call zeroed.
+      !---------------------------------------------------------------------------------------------
+      subroutine ffcut_set(OK, on)
+        use dft_mod, only: ifFFEvanCut
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(in) :: on
+        ! ------------------------------------------------------
+        OK = FAIL
+        ifFFEvanCut = on
+        if (SystemCheck()) call modified_rx(OK)
+        OK = PASS
+
+      end subroutine ffcut_set
+
+      subroutine ffcut_get(OK, on, nPix)
+        use dft_mod, only: ifFFEvanCut, nFFEvanCutPix
+
+        implicit none
+        logical, intent(out):: OK
+        logical, intent(out):: on
+        integer, intent(out):: nPix
+        ! ------------------------------------------------------
+        on   = ifFFEvanCut
+        nPix = nFFEvanCutPix
+        OK   = PASS
+
+      end subroutine ffcut_get
+
+
+      !---------------------------------------------------------------------------------------------
+      ! elt_asph_get -- the even-radial aspheric coefficients (AsphCoef: h^4, h^6, ...)
+      ! of element iElt, as CALIB's OptAsph= DOFs leave them (2026-10-04, the
+      ! design layer's asphere hook).  coef(n), n <= mAsphCoef; unused slots 0.
+      !---------------------------------------------------------------------------------------------
+      subroutine elt_asph_get(OK, coef, n, iElt)
+        use elt_mod, only: AsphCoef, mAsphCoef
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: n, iElt
+        real(8), intent(out):: coef(n)
+        ! ------------------------------------------------------
+        OK = FAIL
+        coef = 0d0
+        if (.not. SystemCheck())                    return
+        if ((iElt < 1) .or. (iElt > nElt))          return
+        if ((n < 1) .or. (n > mAsphCoef))           return
+        coef(1:n) = AsphCoef(1:n, iElt)
+        OK = PASS
+
+      end subroutine elt_asph_get
 
 
       !---------------------------------------------------------------------------------------------
@@ -6047,20 +6463,26 @@
         use    smacosio_mod, only: RxStopSet, EltStopSet, StopOffset
         use         src_mod, only: StopElt
         use       macos_mod, only: ifStopSet
-        use         elt_mod, only: EltID,NSRefractorElt,NSReflectorElt,SegmentElt
+        use         elt_mod, only: EltID,NSRefractorElt,NSReflectorElt
 
         implicit none
         logical, intent(out):: OK            ! (PASS=1) if successful; (FAIL=0) otherwise
-        integer, intent(in) :: iElt          ! Element at which Optical System Stop to be defined (0 < iElt < nElt-2)
+        integer, intent(in) :: iElt          ! Element at which Optical System Stop to be defined (1 <= iElt <= nElt, the CLI STOP's range)
         real(8), intent(in) :: VptOffset(2)  ! [dx,dy]: Offset from Srf. Vertex Position
         ! ------------------------------------------------------
         OK = FAIL
-        if (.not. SystemCheck() .or. nElt <=3 .or. iElt<1 .or. iElt>=nElt-2) return
+        ! Range = the CLI STOP command's (macos_cmd_loop.inc: 1..nElt).  The
+        ! original wrapper refused iElt >= nElt-2 and nElt <= 3, which barred
+        ! the stop from the secondary of any 4-element telescope deck (M1 M2
+        ! M3 FP) -- TO, tma_longslit 2026-10-07 -- with no engine reason.
+        if (.not. SystemCheck() .or. nElt < 1 .or. iElt<1 .or. iElt>nElt) return
 
-        ! cannot set stop at element of type NSRefractor,NSReflector or Segment
+        ! cannot set stop at a non-sequential element.  Segment IS allowed
+        ! (2026-09-08, Dave): the STOP command maps the chief ray to the
+        ! segment's source segment for the aiming trace -- see the STOP
+        ! branch in macos_cmd_loop.inc.
         if ((EltID(iElt)==NSRefractorElt).or. &
-            (EltID(iElt)==NSReflectorElt).or. &
-            (EltID(iElt)==SegmentElt)) return
+            (EltID(iElt)==NSReflectorElt)) return
 
         ! chk Offset
         if (isnan(VptOffset(1)) .or. isnan(VptOffset(2))) return
@@ -6233,6 +6655,15 @@
             CALL macos_memory_failure('init: allocate failed!')
             return
           END IF
+
+          ! macos_init_all has just wiped the model (nElt=0 etc.), so any
+          ! prescription that was loaded is GONE.  Without this reset
+          ! rxLoaded stayed .true. from the previous model size and
+          ! SystemCheck() -- the guard every wrapper opens with -- kept
+          ! passing, so callers operated on an empty model instead of
+          ! being told there is no Rx.  Only in the rebuild branch: when
+          ! the size is unchanged init is a no-op and the Rx survives.
+          rxLoaded = .false.
         END IF
 
         OPD(:)=0d0; SPOT(:,:)=0d0;  PIX(:)=0d0;  USER(:)=0d0
