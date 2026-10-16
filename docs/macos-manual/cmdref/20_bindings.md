@@ -218,6 +218,16 @@ Source-grid sampling (nGridPts).
 <!-- BEGIN NOTES fn-src-sampling -->
 <!-- END NOTES fn-src-sampling -->
 
+#### src_seg
+
+- **pymacos:** `pymacos.src_seg()`
+- **mmacos:** *not available*
+
+The source segmentation tiling (the truth mmacos ``view_rx`` draws Segment tiles from): ``grid_type`` (1 Circular, 2 Square, 3 Hex, 4 Pie, 5 Flower, 6 UDG), ``n_seg``, ``width`` (flat-to-flat), ``gap``.
+
+<!-- BEGIN NOTES fn-src-seg -->
+<!-- END NOTES fn-src-seg -->
+
 #### src_size
 
 - **mmacos:** `s = macos.get_src_size()`
@@ -528,7 +538,7 @@ Wipes out all Element-Grp. Settings from Rx
 #### elt_info
 
 - **mmacos:** `info = macos.get_elt_info(k)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.elt_info(srf)`
 
 Element metadata for layout drawing. info = macos.get_elt_info(K) queries element K of the loaded Rx: .elt_id     engine EltID code (see .type for the name) .type       element type name ('Reflector', 'Refractor', ...) .ap_type    aperture type code (0 None, 1 Circular, 2 Elliptical, 6 Hexagonal, 7 Polygonal, 8 Tapered_Polygonal, ...)
 
@@ -538,7 +548,7 @@ Element metadata for layout drawing. info = macos.get_elt_info(K) queries elemen
 #### elt_jones
 
 - **mmacos:** `J = macos.elt_jones(srf)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.elt_jones(srf)`
 
 The 2x2 Jones matrix a polarizing element applied. J = macos.elt_jones(SRF) returns the complex 2x2 Jones matrix that the polarizing element at SRF applied during the last trace, expressed in the element's OWN transverse eigenbasis: column/row 1 is the declared axis projected into the ray's transverse plane, 2 is its orthogonal partner (rhat x ahat).
 
@@ -598,7 +608,7 @@ Read MonZern coefficients on a FreeForm element. coefs = macos.get_elt_mon_zrn_c
 #### elt_obs
 
 - **mmacos:** `obs = macos.get_elt_obs(k)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.elt_obs(srf)`
 
 Obscuration declarations of element K (loaded Rx). obs = macos.get_elt_obs(K) returns the element's declared obscurations (a perforated primary's central hole, a coronagraph mask, a spider blade, ...): .n      declared count (engine nObs; may exceed the returned N) .type   1xN ObsType codes as stored (+/-1 Circle/NegCircle,
 
@@ -656,7 +666,7 @@ Vertex point of element SRF (3-vector, BaseUnits).
 #### elt_z
 
 - **mmacos:** `z = macos.get_elt_z(srf)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.elt_z(srf, z)`
 - **engine API:** `macos_api_mod::elt_z`
 
 Propagation distance zElt at element SRF. For Flat / FocalPlane elements this is a big-magnitude sentinel (~1e19–1e22) meaning "propagate to the next defined plane", not a physical distance.  Curved elements report the actual prescribed propagation distance from the previous surface.
@@ -838,7 +848,7 @@ Multi-wavelength PSF on a fixed pixel grid (COMPOSE+ADD). I = macos.compose(SRF,
 #### draw_rays
 
 - **mmacos:** `b = macos.draw_rays(plane, iStart, iEnd)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.draw_rays(plane, i_start, i_end)`
 
 Real DRAW ray bundle as data (no graphics device). b = macos.draw_rays(PLANE, ISTART, IEND) runs the engine DRAW command in DATA-ONLY mode and returns its traced ray fan projected onto PLANE ('YZ' | 'XZ' | 'XY', source coords), for elements ISTART..IEND (ISTART = 0 => from the source).  No window is opened, nothing renders. 
 
@@ -848,7 +858,7 @@ Real DRAW ray bundle as data (no graphics device). b = macos.draw_rays(PLANE, IS
 #### draw_rays3d
 
 - **mmacos:** `b = macos.draw_rays3d(plane, iStart, iEnd)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.draw_rays3d(plane, i_start, i_end)`
 
 Real DRAW ray fan as 3-D data (no graphics device). b = macos.draw_rays3d(PLANE, ISTART, IEND) runs the engine DRAW command in DATA-ONLY mode and returns the traced fan's surface crossings in GLOBAL 3-D coordinates (BaseUnits) — the unprojected companion of macos.draw_rays.  PLANE ('YZ' | 'XZ') selects WHICH meridian fan the engine traces (DRAW draws the middle fan of that plane); the returned
 
@@ -1061,7 +1071,7 @@ Turn the WINDOW pixel-location option back off. macos.window_off() cancels macos
 #### xps
 
 - **mmacos:** `macos.xps(iElt)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.xps(srf)`
 
 eXit-Pupil Surface -- per-ray exit-pupil crossing cloud. macos.xps(IELT) runs the engine XPS command (FEX generalized to the full ray grid): it crosses each ray's nominal exit ray with its field-differential partner, leaving the per-ray exit-pupil crossing point in the ray buffer.  Read the cloud IMMEDIATELY afterwards with macos.get_ray_info(N) -- the .pos field is the exit-pupil SURFACE,
 
@@ -1344,6 +1354,16 @@ Mark an element as a CALIB variable. macos.calib_set_var_elt(SRF, dof_name1, dof
 <!-- BEGIN NOTES fn-calib-set-var-elt -->
 <!-- END NOTES fn-calib-set-var-elt -->
 
+#### calib_stats
+
+- **mmacos:** `st = macos.calib_stats()`
+- **pymacos:** `pymacos.calib_stats()`
+
+Iteration count and final merit of the last CALIB. st = macos.calib_stats() returns a struct: .n_iter  (double)  LM iterations the last CALIB took; -1 when none ran (no CALIB yet, or it stopped before the solve); the linear (SVD) path reports its count .merit   (double)  the final LM merit -- the chisq the solve minimises,
+
+<!-- BEGIN NOTES fn-calib-stats -->
+<!-- END NOTES fn-calib-stats -->
+
 ### Segment and grid bases
 
 #### segment_grid_basis
@@ -1444,6 +1464,16 @@ Lay per-configuration canvases out, and index them. [OPDall, indxall] = macos.co
 <!-- END NOTES fn-dark-zone-metrics -->
 *TODO: expand — dialog details, behavior notes, related commands.*
 
+#### deadband_notes
+
+- **pymacos:** `pymacos.deadband_notes()`
+- **mmacos:** *not available*
+
+Source-frame / stop-aim updates the round-off dead band suppressed beyond the first one the engine printed (0 on every deck measured 2026-10-02).
+
+<!-- BEGIN NOTES fn-deadband-notes -->
+<!-- END NOTES fn-deadband-notes -->
+
 #### ffcut
 
 - **mmacos:** `varargout = macos.ffcut(on)`
@@ -1462,6 +1492,16 @@ The far-field evanescent cut (engine 2026-10-03, dyson5 addendum 15). macos.ffcu
 <!-- BEGIN NOTES fn-first-airy-null -->
 <!-- END NOTES fn-first-airy-null -->
 *TODO: expand — dialog details, behavior notes, related commands.*
+
+#### fwd_root_flips
+
+- **pymacos:** `pymacos.fwd_root_flips()`
+- **mmacos:** *not available*
+
+Surface intersections in the last trace where the forward-crossing root pick differed from the legacy metric (reset at every trace start).
+
+<!-- BEGIN NOTES fn-fwd-root-flips -->
+<!-- END NOTES fn-fwd-root-flips -->
 
 #### getEltSrfZernMode
 
@@ -1565,7 +1605,7 @@ Vectorise a 2D OPD matrix preserving non-zero index map. [vec, indx] = macos.m2v
 #### met
 
 - **mmacos:** `out = macos.met(unit)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.met(unit)`
 
 Laser-metrology beam lengths (engine METcalc). out = macos.met() runs the engine metrology compute over the loaded Rx's declared met beams (the nMetPos / tMetElt / metBeamFlg element keywords) and returns out.l   n-by-1 beam lengths, SI metres (default) out.n   system beam count (0 when the Rx declares no metrology)
 
@@ -1575,7 +1615,7 @@ Laser-metrology beam lengths (engine METcalc). out = macos.met() runs the engine
 #### met_geom
 
 - **mmacos:** `g = macos.met_geom()`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.met_geom()`
 
 Geometry of the loaded Rx's laser-metrology beams. g = macos.met_geom() runs the engine metrology compute (METcalc) and returns the global endpoints of every gauge beam declared by the prescription's nMetPos / tMetElt / metBeamFlg keywords: g.src_pts  3 x n  gauge source points (launchers), BaseUnits g.tgt_pts  3 x n  gauge target points (fiducials), BaseUnits
 
@@ -1621,6 +1661,16 @@ The model sizes the engine accepts. s = macos.model_sizes() returns [128 256 512
 
 <!-- BEGIN NOTES fn-model-sizes -->
 <!-- END NOTES fn-model-sizes -->
+
+#### modes
+
+- **mmacos:** `md = macos.modes()`
+- **pymacos:** `pymacos.modes()`
+
+The five SESSION modes as the engine holds them. md = macos.modes() returns a struct with logical fields .pol (polarization), .vecdif (vector diffraction), .centroid (the FEX/SXP centroid axis), .lneg (negative ray lengths allowed; default TRUE), .cir (colour image rendering; always false in the bindings' engine), and .in_force, a cellstr of the modes NOT at their defaults, named as the CLI's LOAD notice names them
+
+<!-- BEGIN NOTES fn-modes -->
+<!-- END NOTES fn-modes -->
 
 #### mon_zrn_max_modes
 
@@ -1822,7 +1872,7 @@ CLI POLarized/NOPolarization.
 #### polarizer
 
 - **mmacos:** `out = macos.polarizer(srf, opts)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.polarizer(srf, axis)`
 
 Set or query an ideal linear polarizer element. macos.polarizer(SRF, 'axis', A) sets the TRANSMISSION axis of the TrPolarizer element at SRF. A is a 3-vector in GLOBAL coordinates; it need not be unit length, and it need not lie in the element's surface. The engine projects it into each ray's transverse plane and normalizes (see PolElt in elemsub.F).
 
@@ -1923,7 +1973,7 @@ pymacos stacks them as `E/k/n` with shape (N, N, 3).
 #### ray_hist
 
 - **mmacos:** `out = macos.ray_hist(arg)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.ray_hist(state)`
 
 Per-trace ray-position history (engine RayPosHist). The engine can record EVERY ray's global 3-D crossing at EVERY element during a trace (traceutil_mod RayPosHist/LRayOKHist -- the Vis3D substrate).  Capture is off by default:  macos.ray_hist('on')      enable capture (then run macos.trace)
 
@@ -1940,10 +1990,20 @@ Read per-ray data from the most recent trace. r = macos.get_ray_info(N) returns 
 <!-- BEGIN NOTES fn-ray-info -->
 <!-- END NOTES fn-ray-info -->
 
+#### ray_pos_hist
+
+- **pymacos:** `pymacos.ray_pos_hist(n_rays)`
+- **mmacos:** *not available*
+
+The ray-position history of the last trace (mmacos ``ray_hist(nRays)``): ``P`` (3 x n_rays x nElt+1; column 0 = the source plane) and ``ok`` (n_rays x nElt+1, True where the ray reached that element).
+
+<!-- BEGIN NOTES fn-ray-pos-hist -->
+<!-- END NOTES fn-ray-pos-hist -->
+
 #### ray_status
 
 - **mmacos:** `r = macos.get_ray_status(n_rays)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.ray_status(n_rays)`
 
 Per-category ray-status codes after the most recent trace. r = macos.get_ray_status(N) returns a struct with fields: .status      N×1 int32 — per-ray RayStat_* code: 0 = OK, 1 = Obscured, 2 = Miss, 3 = Bracket, 4 = MaxIter, 5 = Undef .fail_elt    N×1 int32 — element index where failure was first
 
@@ -2120,7 +2180,7 @@ Standard 3-view layout figure for the LOADED prescription. fig = macos.view_std(
 #### waveplate
 
 - **mmacos:** `out = macos.waveplate(srf, opts)`
-- **pymacos:** *not available*
+- **pymacos:** `pymacos.waveplate(srf, axis, retardance)`
 
 Set or query a linear retarder (waveplate) element. macos.waveplate(SRF, 'axis', A, 'retardance', R) configures the WavePlate element at SRF. A is the FAST axis as a 3-vector in GLOBAL coordinates (projected into each ray's transverse plane by the engine). R is the retardance in WAVES at the CURRENT wavelength: 0.25 for a quarter-wave plate, 0.5 for a half-wave plate.
 
