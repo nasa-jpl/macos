@@ -194,19 +194,40 @@ def draw(multi, lockin=False):
     beam(ax, [port(cl, "r"), (spx, port(cl, "r")[1]), (spx, spy)], color="#2E8B57", alpha=0.22)
     label(ax, spx + 0.3, (spy + port(cl, "r")[1]) / 2 - 0.1, "LO beam: fills the camera flat\n(overfills the pupil by 34 px)", fs=10.1, color=GRAY)
     # the camera: ABOVE the splitter (the fourth port), its tail = the pupil image of the DM
-    cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, ("LOCK-IN camera (heliCam C4 class)\n542 x 512 px, in-pixel I/Q at the beat\n500 ke well, 2 x 10-bit I/Q at 1 kHz" if lockin else "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS"), fs=10.4)
-    beam(ax, [(spx, spy), (spx, port(cam, "b")[1] + 0.02)])
-    label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
-    lk = box(ax, spx + 2.95, y0 + 2.55, 2.6, 1.45, ("or: a well-free device\n(continuous or I/Q\n>= 10 kHz: to verify)" if lockin else "or: lock-in camera\n(heliCam C4 class,\nbeat at kHz, I/Q out)"), fs=10.4, fc=LIGHT, tc=INK, ec=ACCENT, ls=(0, (4, 2)))
+    if lockin:
+        # the lock-in camera drawn as the chain inside ONE pixel (the slide-6 signal flow), in series:
+        # photodiode -> gates (the beat reference) -> nodes -> differences -> I, Q out (Dave 2026-10-16)
+        CH = "#B9770E"
+        cam = box(ax, spx - 2.0, y0 + 2.3, 9.1, 1.9, "", fc="none", tc=INK, ec=ACCENT, lw=1.4)
+        label(ax, spx + 2.7, y0 + 4.0, "LOCK-IN camera (heliCam C4): 542 x 512 pixels, I/Q at 1 kHz", fs=8.4, color=ACCENT, bold=True)
+        pxw, pxh, pxy = 1.95, 1.15, y0 + 2.45
+        p1 = box(ax, spx - 1.85, pxy, pxw, pxh, "photodiode\nI(t) = I0 [1 +\ng cos(phi - w_b t)]", fs=8.9, fc=ACCENT)
+        p2 = box(ax, spx + 0.35, pxy, pxw, pxh, "transfer gates\nA|B by s_I (0/180)\nC|D by s_Q (90/270)", fs=8.9, fc=CH)
+        p3 = box(ax, spx + 2.55, pxy, pxw, pxh, "storage nodes\nA  B  C  D\n(N cycles / sample)", fs=8.9, fc=LIGHT, tc=INK, ec=CH)
+        p4 = box(ax, spx + 4.75, pxy, pxw, pxh, "A - B -> I\nC - D -> Q\n(the DC cancels)", fs=8.9, fc=DATA)
+        wire(ax, [port(p1, "r"), port(p2, "l")], color=CH, lw=2.0); wire(ax, [port(p2, "r"), port(p3, "l")], color=CH, lw=2.0); wire(ax, [port(p3, "r"), port(p4, "l")], color=DATA)
+        beam(ax, [(spx, spy), (spx, port(p1, "b")[1] + 0.02)])
+        label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
+        label(ax, spx - 1.95, y0 + 4.28, "s_I, s_Q = the 5 kHz beat (square wave)", fs=8.8, color=RF)
+        lk = p4
+    else:
+        cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS", fs=10.4)
+        beam(ax, [(spx, spy), (spx, port(cam, "b")[1] + 0.02)])
+        label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
+        lk = box(ax, spx + 2.95, y0 + 2.55, 2.6, 1.45, "or: lock-in camera\n(heliCam C4 class,\nbeat at kHz, I/Q out)", fs=10.4, fc=LIGHT, tc=INK, ec=ACCENT, ls=(0, (4, 2)))
     note(ax, bx0 + 4.9, y0 - 2.95, "LO wavefront drift (tilt / defocus per cycle, P.cophi.lo_drift)\n= the new drift row; frozen into the null on the flat DM", fs=10.1)
     # trigger to the camera (routed under the fibers' notes, above the processing row)
     ty = py + 1.4
-    wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.3), (port(cam, "l")[0] - 0.02, y0 + 4.3), (port(cam, "l")[0] - 0.02, port(cam, "l")[1] + 0.4), (port(cam, "l")[0], port(cam, "l")[1] + 0.4)], lw=1.3)
+    if lockin:
+        wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.4), (port(p1, "r")[0] + 0.12, y0 + 4.4), (port(p1, "r")[0] + 0.12, port(p2, "l")[1]), port(p2, "l")], lw=1.3)
+    else:
+        wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.3), (port(cam, "l")[0] - 0.02, y0 + 4.3), (port(cam, "l")[0] - 0.02, port(cam, "l")[1] + 0.4), (port(cam, "l")[0], port(cam, "l")[1] + 0.4)], lw=1.3)
     label(ax, 6.8, ty + 0.22, ("the 5 kHz beat reference to the lock-in camera: every pixel demodulates ~5 cycles per 1 ms I/Q frame; no bucket, no frame trigger" if lockin else "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input"), fs=10.8, color=RF)
 
     # ------------------------------------------------------------------ processing (bottom)
     fg = box(ax, 14.2, py - 0.1, 2.3, 0.9, ("I/Q frame grabber\n(GigE, 2 x 10 bit)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
-    wire(ax, [port(cam, "r"), (port(cam, "r")[0] + 0.3, port(cam, "r")[1]), (port(cam, "r")[0] + 0.3, y0 + 4.45), (bx0 + 11.2, y0 + 4.45), (bx0 + 11.2, py + 0.35), port(fg, "r")], color=DATA)
+    src = lk if lockin else cam
+    wire(ax, [port(src, "r"), (port(src, "r")[0] + 0.3, port(src, "r")[1]), (port(src, "r")[0] + 0.3, y0 + 4.45), (bx0 + 11.2, y0 + 4.45), (bx0 + 11.2, py + 0.35), port(fg, "r")], color=DATA)
     if multi:
         rc = box(ax, 10.3, py - 0.35, 3.6, 1.4, "N-bucket LSQ per pixel, TWO beats\n(dmg_cophi_recon at 4 and 8 frames)\n-> phi_1, phi_2", fs=10.9, fc=DATA)
         sw = box(ax, 6.9, py - 0.35, 3.2, 1.4, "synthetic wavelength\nLambda = l1 l2 / |l1 - l2|\n-> fringe order -> phi unwrapped", fs=10.9, fc=DATA)
@@ -229,7 +250,7 @@ def draw(multi, lockin=False):
     wire(ax, [port(lp, "r"), port(drv, "l")], color=DATA)
     wire(ax, [port(drv, "r", 0.25), (bx0 + 11.6, port(drv, "r", 0.25)[1]), (bx0 + 11.6, port(dm, "r")[1]), (port(dm, "r")[0], port(dm, "r")[1])], color=DATA, lw=1.3)
     out = box(ax, 7.6, 0.55, 8.4, 1.0, "OUTPUT: DM surface figure vs time (pm); the hold residual; the capture record", fs=11.2, fc="#DFF0D8", tc=INK, ec=GREEN)
-    label(ax, 16.4, 1.05, ("per I/Q frame: sigma_phi^2 = 2 (I0 + r^2) / (I0^2 g^2) with I0 = well x fill per frame; well-capped at the I/Q rate -- 1.1 s per pm as surveyed" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
+    label(ax, 16.4, 1.05, ("per I/Q sample: sigma_phi^2 = (pi^2/8) 2 (I0 + r^2) / (I0^2 g^2), I0 = well x fill; well-capped -- 3.4 s per pm as surveyed" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
 
     name = "cophi_block_lockin.png" if lockin else ("cophi_block_multi.png" if multi else "cophi_block_single.png")
     fig.savefig(f"figs/{name}", dpi=200, facecolor="white")

@@ -29,10 +29,10 @@ def note(ax, x, y, s, fs=9.5, ha="left"):
     ax.text(x, y, s, color=NOTE, fontsize=fs, ha=ha, va="center", fontstyle="italic", zorder=5,
             bbox=dict(boxstyle="round,pad=0.25", fc="#FFF8E1", ec="#E0C97A", lw=0.8))
 
-W, H = 32.0, 15.0
+W, H = 32.0, 14.3
 fig = plt.figure(figsize=(W/1.6, H/1.6)); ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
-ax.text(0.5, H-0.55, "One lock-in pixel: the beat is demodulated by SORTING the photoelectrons, before any readout", color=ACCENT, fontsize=14, fontweight="bold", va="center")
-ax.plot([17.3, 17.3], [0.6, H-1.1], color="#B8C6D4", lw=1)
+ax.text(0.5, 13.35, "One lock-in pixel: the beat is demodulated by SORTING the photoelectrons, before any readout", color=ACCENT, fontsize=14, fontweight="bold", va="center")
+ax.plot([17.3, 17.3], [0.6, 12.9], color="#B8C6D4", lw=1)
 
 # ---- left: the signal flow -------------------------------------------------
 lt = box(ax, 0.6, 11.3, 4.2, 1.3, "test beam  $E_t\\,e^{i\\varphi}$", fc=BEAM, fs=11.5)
@@ -65,7 +65,7 @@ wire(ax, [(16.7, 5.6), (16.7, 2.75)], color=DATA, arrow=False)
 note(ax, 6.0, 1.75, "the DC $I_0$ lands equally in A and B (and C, D):\nit cancels in the difference -- whether it still\nfills the nodes is the vendor question", fs=9.5)
 
 # ---- right: the algebra ----------------------------------------------------
-x0 = 18.0; y = H - 1.5
+x0 = 18.0; y = 13.2
 rows = [
  ("the light at the pixel", r"$I(t)=I_0\,[\,1+\gamma\cos(\varphi-\omega_b t)\,],\qquad \omega_b=2\pi f_b,\ \ f_b=|f_1-f_2|$"),
  ("the gate references (square waves at the beat)", r"$s_I(t)=\mathrm{sgn}\,\cos\omega_b t,\qquad s_Q(t)=\mathrm{sgn}\,\sin\omega_b t$"),
@@ -78,5 +78,5 @@ rows = [
 for i, (cap, eq) in enumerate(rows):
     ax.text(x0, y, f"({i+1})  {cap}", color=ACCENT, fontsize=11, va="top", ha="left")
     ax.text(x0 + 0.3, y - 0.62, eq, color=INK, fontsize=13.5, va="top", ha="left")
-    y -= 1.95
+    y -= 1.9
 fig.savefig("figs/cophi_lid.png", dpi=200, facecolor="white"); fig.savefig("figs/cophi_lid.svg", facecolor="white"); print("wrote figs/cophi_lid.png")
