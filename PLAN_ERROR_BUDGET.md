@@ -43,10 +43,13 @@ and the `coef.*` shape with its NaN Post / iSeq=2 slots.
 
 ## 2. Controls phase — fill the Post and iSeq = 2 columns (TO, `BRIEF_to_error_budget_controls.md`)
 
-2a. **WFC stage, iSeq = 1.**  Inputs: the `Control` column of the group table (which
-    DOFs are actuators: PM RBA 6-DOF, SM RBA, DM / FCA influence functions when present),
-    the WFS noise σ (nm per sensing mode or per pixel), the actuator noise σ per control
-    group.  Outputs per error group: `alpha` (pre, exists), `alpha_post` (Eq. 30 with
+2a. **WFC stage, iSeq = 1.**  Inputs: the `Control` column of the group table, the WFS
+    noise σ and the actuator noise σ per control group.  **Dave's defaults (2026-10-15):
+    control set = 6 DOF per PM segment + the SM's 6 DOF** (rigid-body actuators; no DM / FCA
+    unless the deck carries them); **WFS σ ≈ 3 nm rms** (phase retrieval on image data, the
+    Eq. 32 sensing row); **actuator σ ≈ 1 nm** per control DOF (the Eq. 31 rows; a rotation
+    DOF's 1 nm is the surface motion at the segment edge — state the conversion).  These
+    are the sheet's starting values, editable in the workbook's white cells.  Outputs per error group: `alpha` (pre, exists), `alpha_post` (Eq. 30 with
     `project_control`, exists as a prototype), plus two new ROWS the HabEx sheet carries under
     "WFC": the sensing-error row (Eq. 32) and one actuator-error row per control group
     (Eq. 31).  Gate: cov ≡ MC under control on e5hex1 (extend `tRunBudget`), the Eq. 31/32

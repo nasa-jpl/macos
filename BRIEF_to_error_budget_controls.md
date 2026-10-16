@@ -18,7 +18,10 @@ zipfile+xml or the pymacos venv), then the code: `mmacos/src/+macos/+budget/*.m`
 ## A. Controls phase (plan §2)
 
 A.1 **WFC stage (iSeq = 1).**  `run_budget('control', ...)` with the group table's `Control`
-    column selecting the actuator DOFs; per error group the post-control coefficient via
+    column selecting the actuator DOFs — **Dave's ruling: 6 DOF per PM segment + the SM's
+    6 DOF**, no DM/FCA unless the deck has them; **WFS σ 3 nm rms** (phase retrieval on image
+    data); **actuator σ 1 nm** per DOF (rotations: 1 nm of edge motion — write the conversion
+    you use); per error group the post-control coefficient via
     `project_control` (Eq. 23/30 — exists, prototype), plus the two rows HabEx carries under
     "WFC": the sensing-error row (Eq. 32, `α = sqrt(trace(D_u G G' D_u')/n)` with the WFS
     noise σ) and one actuator-error row per control group (Eq. 31).  Gram discipline
@@ -67,5 +70,5 @@ the commit — they are the plan's contract; add, don't rename.
 
 One message to CC per landed item (A.1, A.2, A.3, B): SHAs, the gate numbers (cov vs MC
 per stage, the `run_met` reproduction), anything measured that changes the plan.  Things
-that need Dave (the control set per example, the WFS / actuator σ to assume, the workbook's
-section layout for a given deck) go to him through CC with the measurement attached.
+that need Dave (the workbook's section layout for a given deck; anything beyond the
+control set and σ's he has ruled) go to him through CC with the measurement attached.
