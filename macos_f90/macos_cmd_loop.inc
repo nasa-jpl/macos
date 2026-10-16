@@ -137,9 +137,16 @@ C         *** reset model size ***
 
 	         ! Local dynamic arrays
 	         if (allocated(L1)) then
+!-->  CRWalk / CRWalkProjLoc are allocated below (and at start-up in
+!     macos.F) but were missing from this deallocate, so at MRESET the
+!     whole allocate statement FAILED ("MACOS: allocate failed!") and
+!     every scratch buffer kept the OLD model's size -- the model-size
+!     transition hazard (PLAN 1.2 (g), 2026-10-16; gate cli_tests/cmd/MRESET.jou).
 		   deallocate(L1,DrawEltVec,
      &		     R1,R2,PertVec,DrawRayVec,
-     &		     D2,DV1,DV2,CD1,CD2,DWF,stat=m_err_macos)
+     &		     D2,DV1,DV2,CD1,CD2,DWF,
+     &		     CRWalk,CRWalkProjLoc,stat=m_err_macos)
+!<--
 		   if (m_err_macos /= 0)
      &               call macos_memory_failure(
      &                 'macos_mod_init: deallocate failed!')
