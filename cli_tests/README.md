@@ -24,6 +24,23 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 | `cmd` (§2.2) | one pty-driven journal per command-reference entry (`cli_cmd_gate.py`, `cmd/*.jou`): `# EXPECT:` / `# EXPECT-NOT:` regexes asserted on the transcript, `# COPY: <deck> [<subdir>]` copies a deck into `$TMP` first (anything that writes beside the deck), `$ROOT $RES $TMP $DECK` expand; `must_fail/*.jou` must NOT pass | built 2026-10-09 |
 | `ab` (§2.3) | `ab_records.py`: the load-gate record at a PRE SHA against the record at a POST SHA, deck by deck (status, nElt, nPass, lost, RMS, P-V, avg, roundtrip, as printed); every mover written to `records/ab_<kind>_<compiler>_<pre>_<post>.txt`; exit 1 on a mover not named in the allow file or on an ok → not-ok deck.  The builds are the manual step (one clean worktree, one SHA at a time); the records are what gets committed | built 2026-10-10 |
 
+## Writing a journal (Phase B, 2026-10-16)
+
+- Draft the journal with only `# EXPECT-NOT: forrtl`, run it through `cli_cmd_gate.py <bin> <dir> <out.csv>`
+  from a scratch directory, read `<out>_transcripts/<name>.txt`, then write the `# EXPECT:` lines from the
+  transcript -- never from the manual or the cmdref prose (both have described behaviour that the engine
+  does not have: BWK, TPR, SYSPROP after OPD were all found this way).
+- **List-directed output differs between compilers**: ifx prints `0.000000000000000E+000` and
+  `1.000000000000000E-003`, gfortran `0.0000000000000000` and `1.0000000000000000E-003`; formatted
+  (`D` edit) output is identical.  Match a list-directed zero as `0\.0+(E\+000)?`, a mantissa to the
+  digits both print (`-4\.41659775810825\d*E-003`), never the whole token.
+- A prompt answer that happens to be a command name (`beam`, `no`) is matched by the cmdref's suite
+  index only if it passes the dispatcher's minimum match; `cd`, `!` and the like are genuine commands.
+- The shell escape `!` runs the rest of the line through `system()` (256 characters since 6ccd86d; it
+  was cut at 130 before); `$DECK` is a COPY, so `! sed -i ... $DECK` is the way to vary a deck.
+- Make the gate non-vacuous: pair the asserted state with its contrast (SPCENTER's two spot means,
+  BWK's refusal then its walk, the FOV count before and after).
+
 ## Files
 
 - `cli_load_gate.py` — the driver.  One CLI process per leg so a crash at load

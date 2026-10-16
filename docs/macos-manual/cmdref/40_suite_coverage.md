@@ -2,12 +2,11 @@
 
 ## Appendix — CLI-suite coverage of the engine commands
 
-Of the 128 engine commands, 35 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 93 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
+Of the 128 engine commands, 62 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 66 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
 
 - **Session & Files:** HELP, REset, SUMmarize, ELTS, ECHo <text>, MREset, RX, LS, LL, VI, EMAcs
 - **Prescription I/O:** NEW, FID <id>, EXPort
-- **Source & Wavelength:** WLENS, SWL, MULtispec, NFIlt, RFIlt, SFIlt, ATMosphere, SETC, SAOpt
-- **Ray Tracing:** RAY <i>, SEGRAYTrace <i>, PRAy, RRAy, TPR, MAP, COOrd <elt>, ACOor, SYSprop, EFL, BWK, XPS, FSR, CENter, FFP <x,y>, PFP <x,y>, FDP, SPCenter
+- **Source & Wavelength:** WLENS, SWL, MULtispec, NFIlt, RFIlt, SFIlt, ATMosphere
 - **Behavior Toggles:** POLarized, OBS, REGrid/NOREGrid, ORS, SRS, NONe
 - **Surface Data:** SINt, UDSinit
 - **Perturbation:** GPERturb <grp>, PREad <file>
@@ -17,7 +16,6 @@ Of the 128 engine commands, 35 are issued by at least one journal of the CLI reg
 - **Plot Style:** COLumn, IMGmode, PGP
 - **File Output:** GETMatlabmatrix
 - **Window & Post-Processing:** PLOcate, NOPLOC, PWIn, SZCo, GBS, BLUr, GBLur, GAIn, ODRaw, PGD, ROW
-- **System Optimization:** AVAR <elt>, MVAR <elt>, DVAR <elt>, VARS, AFOV <fov>, DFOV <fov>, FOVS, SFOV
 - **Misc / Debug:** SRAy, SRT, SRTrace, DOPD, DOPL, ZRM, JWST_v3d, Vis3d
 
 ## Appendix — binding coverage of the engine commands

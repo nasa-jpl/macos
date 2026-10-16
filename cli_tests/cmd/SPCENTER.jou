@@ -1,0 +1,33 @@
+# SPCENTER: the TEXT spot about the element (default, 'elt') vs about the chief ray ('chfray') after
+# a 1 mrad tilt of the secondary (cmdref: Ray Tracing).  The printed "Chief ray location" /
+# "Centroid" lines are the same in both modes; the WRITTEN spot differs: mean y = -6.90e-3 about the
+# element (the chief ray moved) and ~0 about the chief ray (a shape measure).  The spot file is
+# written beside the deck, so the deck is a COPY in $TMP.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+perturb 3
+global
+1e-3,0,0
+0,0,0
+text
+spot 5
+tout
+/null
+! cp $TMP/Cassegrain.in.spot5.txt $TMP/spot_elt.txt
+spcenter
+chfray
+spot 5
+tout
+yes
+! cp $TMP/Cassegrain.in.spot5.txt $TMP/spot_chf.txt
+! awk 'NR>1{s+=$2;n++} END{printf "MEANY_ELT %.4e\n", s/n}' $TMP/spot_elt.txt
+! awk 'NR>1{s+=$2;n++} END{printf "MEANY_CHF %.4e\n", s/n}' $TMP/spot_chf.txt
+spcenter
+elt
+# EXPECT: Plot type set to TEXT
+# EXPECT: Chief ray location: x= 0\.0000000D\+00 y=-6\.9000031D-03
+# EXPECT: Enter spot diagram centering option \(elt,chfray\): \[elt\]: chfray
+# EXPECT: MEANY_ELT -6\.9000e-03
+# EXPECT: MEANY_CHF -?\d\.\d+e-(09|1\d)
+# EXPECT-NOT: forrtl

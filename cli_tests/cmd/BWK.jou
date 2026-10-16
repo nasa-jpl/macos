@@ -3,7 +3,7 @@
 # is zero at every element, and after a 1e-4 rad tilt of the secondary about x the chief ray walks
 # 1.34e-4 on the secondary itself and -6.9e-4 on the detector (the SPCENTER journal's -6.9e-3 for
 # 1e-3 rad, scaled).  Until 2026-10-16 the CLI reset the flag AFTER the load, so the second BWK also
-# refused (PLAN_CONSOLIDATION 1.2; red on 0ecbc12).
+# refused (PLAN_CONSOLIDATION 1.2; red on 0ecbc12).  gfortran prints the zero z-walk as -0.000000000.
 # COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
 old $DECK
 bwk
@@ -15,5 +15,5 @@ global
 1e-4,0,0
 0,0,0
 bwk
-# EXPECT: Need set CalBWk= Y in prescription[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+0\.000000000\s+0\.000000000\s+0\.000000000[\s\S]*?iElt=\s+3\s+ChfRayWalk =\s+0\.000133885\s+0\.000000000[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+-0\.000690000\s+0\.000000000
+# EXPECT: Need set CalBWk= Y in prescription[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+0\.000000000\s+0\.000000000\s+-?0\.000000000[\s\S]*?iElt=\s+3\s+ChfRayWalk =\s+0\.000133885\s+0\.000000000[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+-0\.000690000\s+0\.000000000
 # EXPECT-NOT: forrtl
