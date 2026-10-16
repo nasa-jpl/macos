@@ -43,6 +43,9 @@
   (`notes/rx_io.md`).  Element-chain matches are not audited.
 - **A Zernike surface traces only with `ZernTypeL ≠ 0`** (ANSI default on every
   Zernike-carrying surface; ExtFringe wired 2026-10-12) (`notes/surfaces.md`).
+- **A veneer never carries a default an api getter can supply** -- an omitted
+  argument means the ENGINE's value; the option table is the generated cmdref
+  `25_defaults.md` (`notes/api_bindings.md`).
 - **Masks for diffraction are `Element= Obscuring`**; a Reference with obscurations clips rays
   only (`notes/api_bindings.md`).
 - **Never declare a dummy `A(1)`; write `A(*)`** — the gfortran debug build bounds-checks it
