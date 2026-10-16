@@ -185,8 +185,13 @@ Drift found and fixed 2026-10-16 (each by REMOVING the restatement):
 - `fex` / `sxp` (both bindings) defaulted `mode=1`; the CLI's FEX reads the
   session's CENTROID/CHIEFRAY mode.  Default now = `modes_get().centroid`.
   (mmacos `sxp` also refused `mode=0`: `mustBePositive`.)
-Routed to Dave: pymacos `init(model_size=512)` vs mmacos's required argument and
-the CLI's prompt; mmacos `spot().shift` is the api's 4-vector [chief xy, vertex xy]
-whatever `at` is, pymacos returns the half `vpt_center` selects (same numbers,
-different shape); spot centre / OBS option need api getters to inherit.
+Dave's rulings (2026-10-16) on the three routed items: (1) model size defaults to
+256 everywhere -- the CLI's start-up prompt already took 256 on Return
+(`default_problem_size`, macos_mod.F; the first table said "no default", a misread
+of the commented-out lines), mmacos `init` gains `= 256`, pymacos `init` was 512;
+(2) api getters `spc_option_get` and `obs_opt_get` added, the spot centre and the
+OBS option now inherit, and `spot_cmd` restores `spcOption` after its SPOT (the
+`xp_fnd` / `ifCentroid` pattern: a per-call centre never changes the session); (3)
+pymacos `spot()` returns the api's 4-vector shift [chief xy, vertex xy], the
+mmacos convention.
 

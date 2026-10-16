@@ -52,6 +52,9 @@ C***********************************************************************
 	INTEGER, dimension(:), optional :: zernIDArr,asphIDArr
         REAL*8, dimension(:), optional :: zernCoefArr,asphCoefArr
 	LOGICAL :: LCMP
+!-->  the session SPCENTER, restored after the beam-row SPOT below
+	INTEGER :: spcOptionSave
+!<--
 
 C  FORMAT statements
 #include "macos_formats.inc"
@@ -138,6 +141,11 @@ C  FORMAT statements
             ifOPDCalc=.FALSE.
             iLocal=iElt
             !spcOption=1  ! so that spot diagram centered around element
+!-->  2026-10-16: save the SESSION option (SPCENTER, spc_option_get) and
+!     restore it after this spot -- CALIB's beam rows left it on the chief
+!     ray for every later SPOT (CLI and bindings).
+            spcOptionSave=spcOption
+!<--
             spcOption=2  ! so that spot diagram centered around chief ray
 
             CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
@@ -168,6 +176,7 @@ C  FORMAT statements
             ELSE
               WRITE(*,*)'** macos_ops: SPOT command error!'
               lOpsFail = .TRUE.   ! was STOP (PLAN 3.4)
+              spcOption=spcOptionSave
               RETURN
             END IF
             RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
@@ -241,6 +250,9 @@ C  FORMAT statements
             ELSE
               WRITE(*,*)' All rays were obscured or lost'
             END IF
+!-->  the session option back (see spcOptionSave above)
+            spcOption=spcOptionSave
+!<--
           ELSE
             WRITE(*,*) '** Error (MACOS_OPS): load Rx first!'
             lOpsFail = .TRUE.     ! was STOP (PLAN 3.4)
