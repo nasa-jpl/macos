@@ -1,14 +1,14 @@
 {
  "COPHI on the DM Gauge bench: the four-step run continuously": {
   "img:cophi_block_single.png": {
-   "x": 1.0,
-   "y": 1.54,
-   "w": 10.93,
-   "h": 5.9,
+   "x": 1.3,
+   "y": 1.72,
+   "w": 10.74,
+   "h": 5.4,
    "cl": 0,
    "cr": 0,
-   "ct": 0.0366,
-   "cb": 0.0284
+   "ct": 0.0,
+   "cb": 0.0
   },
   "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
    "x": 0.45,
@@ -16,41 +16,41 @@
    "w": 12.55
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 6.0,
-   "y": 1.5,
+   "x": 6.35,
+   "y": 1.48,
    "w": 6.4
   },
   "txt:make_cophi_block_fig.py; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 6).": {
-   "x": 6.75,
-   "y": 2.3,
-   "w": 4.75
+   "x": 0.45,
+   "y": 7.12,
+   "w": 12.4
   }
  },
  "COPHI with a lock-in camera: the block diagram": {
   "img:cophi_block_lockin.png": {
-   "x": 0.81,
-   "y": 1.21,
-   "w": 11.26,
-   "h": 6.14,
+   "x": 1.51,
+   "y": 1.88,
+   "w": 10.32,
+   "h": 5.2,
    "cl": 0,
    "cr": 0,
-   "ct": 0.0301,
-   "cb": 0.026
+   "ct": 0.0,
+   "cb": 0.0
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 6.3,
-   "y": 2.3,
-   "w": 6.6
+   "x": 0.45,
+   "y": 7.08,
+   "w": 9.5
   },
   "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
-   "x": 6.75,
-   "y": 7.23,
-   "w": 6.18
+   "x": 0.45,
+   "y": 7.28,
+   "w": 12.4
   },
   "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
-   "x": 6.3,
+   "x": 0.45,
    "y": 1.22,
-   "w": 6.6
+   "w": 12.4
   }
  },
  "Performance side by side: HET against the IFO on the same surface": {
@@ -122,14 +122,14 @@
  },
  "Capture from a cold start: two colors frequency-multiplexed on one camera": {
   "img:cophi_block_multi.png": {
-   "x": 0.8,
-   "y": 2.5,
-   "w": 12.0,
-   "h": 4.8,
+   "x": 2.4,
+   "y": 2.05,
+   "w": 8.53,
+   "h": 5.0,
    "cl": 0,
    "cr": 0,
-   "ct": 0.0306,
-   "cb": 0.0237
+   "ct": 0.0,
+   "cb": 0.0
   },
   "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
    "x": 0.45,
@@ -138,13 +138,13 @@
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 0.45,
-   "y": 2.0,
-   "w": 6.4
+   "y": 7.08,
+   "w": 9.5
   },
-  "txt:make_cophi_block_fig.py; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.": {
-   "x": 7.0,
-   "y": 2.0,
-   "w": 5.9
+  "txt:make_cophi_block_fig.py; the sequential form": {
+   "x": 0.45,
+   "y": 7.28,
+   "w": 12.4
   }
  },
  "The LO on the DM Gauge bench replaces the IFO's reference flat": {
