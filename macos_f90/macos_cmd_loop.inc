@@ -798,9 +798,14 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
               CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
      &                              ifPropagate)
               Do iRay=1,mPupRay
-                If (refRay(iRay) < 0) Then
-	          Exit  ! Cycle would do the same
-	        End If
+!-->  TPR (PLAN 1.2 (e), 2026-10-17).  A slot RRAY did not fill is 0
+!     (RRAY sets 1:5 of mPupRay=9) and a ray it could not find is -1:
+!     both are SKIPPED.  The loop used to Exit at the first negative slot
+!     only, so it traced "ray 0" after an RRAY (RayPos(:,0) -- NaN with
+!     SaveRayPosH= Y), and a failed chief ray (slot 1 = -1) skipped the
+!     four marginal rays that were found.
+                If (refRay(iRay) <= 0) Cycle
+!<--
                 ! Trace a ray
                 iStartElt=0
 	        If (LRayTgtElt.eqv..TRUE.) Then
@@ -825,14 +830,21 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &                 xDraw,yDraw)
-                print*,' **CTRACE iRay =',refRay(iRay),',
-     &                 iEndElt =',iEndElt
-                print*,'     RayPosHist(1:3,iray,iEndElt) =',
-     &                 RayPosHist(1:3,refRay(iRay),iEndElt)
-
-	        ! Pupil rays are indexed 2 to 9
-	        RRayPosHis(1:3,iRay) =
-     &              RayPosHist(1:3,refRay(iRay),iEndElt)
+!-->  The position CTRACE leaves in RayPos at iEndElt (PLAN 1.2 (e)):
+!     TPR printed RayPosHist, which CTRACE fills only with SaveRayPosH= Y,
+!     so on any other deck every position read 0.  RayPosHist is a copy
+!     of RayPos per element; the numbers with the key are unchanged.
+	        If (LRayOK(refRay(iRay))) Then
+	          WRITE(*,'(A,I0,A,I0,A,1P,3E24.15)')'  TPR ray ',
+     &              refRay(iRay),' at element ',iEndElt,':',
+     &              RayPos(1:3,refRay(iRay))
+	          RRayPosHis(1:3,iRay)=RayPos(1:3,refRay(iRay))
+	        Else
+	          WRITE(*,'(A,I0,A,I0)')'  TPR ray ',refRay(iRay),
+     &              ' was lost before element ',iEndElt
+	          RRayPosHis(1:3,iRay)=0d0
+	        End If
+!<--
 	      End Do ! Do iRay
 	    END IF
 
