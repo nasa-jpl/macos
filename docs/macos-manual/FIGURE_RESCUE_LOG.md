@@ -6,6 +6,21 @@ the PDF->docx conversion) were rasterized from `docs/macosMan3.2.pdf`
 their captions; fragment debris near the captions was removed (audit
 trail below).
 
+## 2026-10-17 — three figures that had no image, hand-cropped
+
+Figures 5 (exit pupil for Cassegrain.in, p. 18), 26 (conic mirror
+parameters, p. 65) and 29 (obscuration types, p. 74) existed in the
+Markdown only as label debris: `pdftoppm -r 150` of the page from
+`docs/macosMan3.2.pdf`, cropped with PIL, saved as
+`fig_rescued_05/26/29.png`, inserted before the caption.  The label
+debris around figures 5, 6, 11, 12, 18, 26, 27, 29, 30, 65 and 66 was
+removed by hand (36 tiny glyph images on 15 lines, the remaining
+"equation images" of the README), with the running-header artifacts
+('Background', 'Commands for Building Models', 'Element Surface Types',
+'Ray-Trace Commands') and the `{.underline}` wrappers on four prose
+lines.  The two-panel OPD figure 6 keeps its panel labels as an italic
+line under the image.  GOOD is now 34; 31, 56 and 59 still need crops.
+
 ## Review status (2026-07-06)
 
 - GOOD (31): figs 1, 2, 8, 9, 11-18, 21, 22, 24, 25, 27, 28, 30, 32,

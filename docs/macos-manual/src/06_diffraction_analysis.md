@@ -149,13 +149,10 @@ Other conditions requiring near-field propagations include the presence of a spa
 
 In some cases the choice of propagator will not be clear. Evaluating the Fresnel number *Fn* may help determine the choice. Consider the defocused beam of Figure 43. Here the first reference surface has diameter D and axial distance, i.e distance from the center of curvature, *z1*. The second reference surface is located at an axial distance *z2*. The Fresnel number *Fn* is
 
-2
-
-*Fn* = ------------------------
-
-λ(*z*2 – *z*1 )
-
-**(EQ 1)**
+$$
+F_n \;=\; \frac{D^2}{\lambda\,(z_2 - z_1)}
+\qquad (EQ 1)
+$$
 
 Both far- and near-field propagators should be tested when *Fn* is in the range (0.1 – 1.0).
 

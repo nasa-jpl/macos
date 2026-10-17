@@ -52,7 +52,7 @@ $(BUILD)/macosMan.docx: $(SRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
 $(BUILD)/macosMan.html: $(SRC) | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) --standalone --embed-resources \
+	$(PANDOC) $(PANDOC_OPTS) --standalone --embed-resources --mathml \
 	  -o $@ $(SRC)
 
 # No LaTeX on this box: go docx -> PDF through headless LibreOffice.

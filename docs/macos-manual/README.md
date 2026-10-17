@@ -110,8 +110,16 @@ Open the `src/` file for the section, edit, `make`, look at the HTML
   (The migrated grid tables `+---+` work too; no need to convert.)
 - **Math** — LaTeX between dollar signs: `$W(x,y) = \sum a_j Z_j$` or
   `$$...$$` for display equations.  Renders natively in HTML and
-  converts to Word equations in the docx.  This is the preferred
-  replacement for the ~73 legacy equation images (see Open items).
+  converts to Word equations in the docx.  The printed manual's 17
+  equations — (4.1)–(4.3), the aspheric and monomial (4.1), (EQ 1),
+  (8.1)–(8.9) — are entered this way (2026-10-17, from the vector
+  `docs/macosMan3.2.pdf`); the HTML build passes `--mathml` (without it
+  pandoc renders only what Unicode can carry and warns "Could not
+  convert TeX math").  Two rules learned on the docx path (LibreOffice
+  render): write an equation label bare, `\qquad (8.3)` — a
+  `\textbf{(8.3)}` label prints its parentheses with backslashes — and
+  give a pre-superscript a space base, `\text{ }^{G}T^{iElt}` — an
+  empty `{}` base prints a placeholder box.
 
 ### Adding a new command or feature
 
@@ -231,12 +239,14 @@ Two clean-ups happened at migration:
 
 ## Open items
 
-1. **Equations**: ~73 remain as low-resolution images or Symbol-font
-   fragments inherited from the PDF extraction; re-enter as LaTeX
-   math (they were broken in every docx generation too — this is the
-   one manual-labor item left).
+1. ~~**Equations**~~ DONE 2026-10-17.  Measured first: the "~73
+   equation images" were 36 glyph fragments on 15 lines (figure-label
+   debris, all removed) plus 17 real equations, now LaTeX (see Math
+   above); the monomial generating function was blank in the printed
+   3.2 manual and is written from the engine's `MonomialEval`.
 2. **Figures 31, 56, 59** need hand-tightened crops (see
-   `FIGURE_RESCUE_LOG.md`).
+   `FIGURE_RESCUE_LOG.md`).  Figures 5, 26 and 29, which had no image
+   at all, were cropped from `docs/macosMan3.2.pdf` on 2026-10-17.
 3. **New-feature content**: FreeForm details, SLSQP optimization, XPS,
    COMPOSE/broadband, giza graphics, design layer, etc. still need
    sections written.
