@@ -1,0 +1,33 @@
+# NFILT (enter a filter: wavelength / flux pairs, 0 ends), SFILT (write it as <name>.filt), RFILT (read it back),
+# MULTISPEC (the multi-color stack) on a COPY of the manual's Cassegrain in $TMP (cmdref: Source & Wavelength).
+# Measured 2026-10-17 (PLAN_CONSOLIDATION 1.2 (o)): NFILT reports 2 wavelengths and 1 star type, SFILT writes the
+# file, RFILT reads it back with 0 STAR TYPES, and MULTISPEC then refuses every star type ("Invalid star type") --
+# the written and read filter formats disagree on the star-type count, so MULTISPEC cannot be fed from NFILT.
+# Before any filter is loaded MULTISPEC says "Load filter data first."  This journal pins what is measured.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+multispec
+nfilt
+myfilt
+6.0e-7
+1.0
+6.5e-7
+0.5
+0
+sfilt
+myfilt
+rfilt
+myfilt
+multispec
+5
+1
+! ls $TMP
+# EXPECT: Load filter data first\.
+# EXPECT: Filter includes information for\s+2 wavelengths and\s+1 star types\.
+# EXPECT: Filter file created\.
+# EXPECT: MACOS> rfilt\s+Enter filter file name: myfilt\s+Filter includes information for\s+2 wavelengths and\s+0 star types\.
+# EXPECT: Enter StarType \(1-0\): \[1\]: 1\s+Invalid star type\.
+# EXPECT: myfilt\.filt
+# EXPECT-NOT: forrtl
