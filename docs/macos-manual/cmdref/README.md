@@ -70,7 +70,7 @@ order:
   issue the command — the journal is the entry's example and its
   regression test (PLAN_CONSOLIDATION §2.2/§1.5).  The appendix
   `40_suite_coverage.md` lists the commands still without one
-  (78 of 128 covered at 2026-10-16 night, after the Ray Tracing, System Optimization, Session, Prescription I/O, Behavior Toggles, Perturbation and Surface Data journals); writing a journal closes an entry.
+  (110 of 128 covered at 2026-10-17, after the Ray Tracing, System Optimization, Session, Prescription I/O, Behavior Toggles, Perturbation, Surface Data, Diffraction, Outputs, Window, Plot Style, Linear Model and Misc journals); writing a journal closes an entry.
   The link is a dispatcher-style minimum match on each journal's
   command tokens, recomputed at every regen.
 - Phase C (pending): expand Part II entries cluster by cluster;

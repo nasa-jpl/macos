@@ -13,7 +13,7 @@ Commands below are available from the interactive CLI and, with few exceptions, 
 
 Exit MACOS.
 
-*CLI suite:* `EXPORT.jou`, `MOD_spaces.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `LINEAR_MODEL.jou`, `MOD_spaces.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -243,7 +243,7 @@ the model at init).
 
 Run a shell command.
 
-*CLI suite:* `BWK.jou`, `CALIB_failed_trials.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SHELL_LONG.jou`, `SPCENTER.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `LINEAR_MODEL.jou`, `METCALC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SHELL_LONG.jou`, `SPCENTER.jou`, `WINDOW_GBS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -263,7 +263,7 @@ Interactive CLI only.
 
 Working directory shell helpers.
 
-*CLI suite:* `COORD_ACOOR.jou`, `EXPORT.jou`, `NSRefractor_grid.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `COORD_ACOOR.jou`, `EXPORT.jou`, `LINEAR_MODEL.jou`, `NSRefractor_grid.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `WINDOW_GBS.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -287,7 +287,7 @@ error.  Interactive CLI only.
 
 List .in files / current directory.
 
-*CLI suite:* `RX_FID_LS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `LINEAR_MODEL.jou`, `RX_FID_LS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -301,7 +301,9 @@ MACOS>rx
 ```
 RX lists only `.in` prescription files, numbered for FID.  LS
 and LL list every file in the current directory (`DIr` is also
-accepted).  Interactive CLI only.
+accepted).  LS and LL match exactly since 2026-10-17 — before,
+any command starting with those letters (LSPot, LLO) was
+taken as a listing.  Interactive CLI only.
 *Related:* FID, OLD, CD.
 <!-- END NOTES cmd-RX -->
 
@@ -359,7 +361,7 @@ re-prompts.  On completion the new system is written to
 
 Load a .in prescription.
 
-*CLI suite:* `AVAR_VARS_MVAR_DVAR.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `STOP_FEX_SXP.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `XPS.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
@@ -963,7 +965,7 @@ the range are skipped with a warning; last must be >= first.
 
 First-order system properties.
 
-*CLI suite:* `EFL_SYSPROP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EFL_SYSPROP.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — `sysprop`.
 
@@ -1002,7 +1004,7 @@ SMACOS: IARG(1)=focal-plane element.
 
 System effective focal length / f-ratio / plate scale.
 
-*CLI suite:* `EFL_SYSPROP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EFL_SYSPROP.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `sysprop`.
 
@@ -1639,7 +1641,7 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
-*CLI suite:* `OBS_NONE.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `BEAM_GAUSS.jou`, `COMPOSE_ADD_NOISE.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `OBS_NONE.jou`, `SESSION_INFO.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -1725,7 +1727,7 @@ poke UDSrfCoef directly, Section 4.4.10).
 
 Apply 6-DOF perturbation.
 
-*CLI suite:* `BWK.jou`, `PERTURB.jou`, `SPCENTER.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BWK.jou`, `METCALC.jou`, `PERTURB.jou`, `SPCENTER.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `prb_elt`, `perturb_src`.
 
@@ -1826,7 +1828,7 @@ SMACOS: file name in CARG(1).
 
 Build linear model from chief-ray ray partials.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -1886,7 +1888,7 @@ SMACOS: IARG(1)=terminal element.
 
 Print partial derivs, ray i.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -1926,7 +1928,7 @@ CARG(1) is reached.
 
 Linear-model perturb.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -1964,7 +1966,7 @@ with LREset.  SMACOS: IARG(1)=element, CARG(1)=YES/NO
 
 Linear perturb from file.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -1991,7 +1993,7 @@ name in CARG(1).
 
 Zero linear perturbations.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -2012,7 +2014,7 @@ shows the unperturbed linear result.  SMACOS: no arguments.
 
 Linear-model spot / OPD.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -2043,7 +2045,7 @@ perturbation range is the standard linearity check (Section
 
 Linear-model pixelated image.
 
-*CLI suite:* none yet.
+*CLI suite:* `LINEAR_MODEL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — the internal linear model, superseded by the dw_dx route (harvest through the api, build the model outside); the analytic sensitivity forms cover only some surfaces (Dave 2026-10-10).
 
@@ -2081,7 +2083,7 @@ defaults.
 
 Note: NOT a command; propagation runs automatically inside any output command.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — not a command: `int_cmd` / `cfield_cmd` propagate.
 
@@ -2114,7 +2116,7 @@ describes propagation only via the output commands.
 
 Set beam type (Gauss, plane, ...).
 
-*CLI suite:* none yet.
+*CLI suite:* `BEAM_GAUSS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `beam_set`.
 
@@ -2195,7 +2197,7 @@ imaging is unavailable.  SMACOS: no arguments.
 
 Start a multi-object/color image.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `compose_start`.
 
@@ -2227,7 +2229,7 @@ IARG(2)=pixels per side, RARG(1)=pixel size.
 
 Add to / display composed image.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `compose_add`.
 
@@ -2264,7 +2266,7 @@ stack per call makes this harmless).
 
 Add current intensity to composed.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — through `compose_*` (B.2, image-plane set).
 
@@ -2295,7 +2297,7 @@ SMACOS: no LoadStack entry — prompts take their defaults.
 
 Image noise + RNG seed.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -2332,7 +2334,7 @@ RARG(1)=expected.  SEED: IARG(1)=seed.
 
 LIN / LOG / SQRT display stretch.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -2362,7 +2364,7 @@ SMACOS: CARG(1)=type.
 
 Wavefront error map.
 
-*CLI suite:* `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `trace_rays`.
 
@@ -2497,7 +2499,7 @@ option; spot data in RaySpot.
 
 Zernike OPD aberration.
 
-*CLI suite:* none yet.
+*CLI suite:* `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — Zernike / analysis set (B.2, second).
 
@@ -2564,7 +2566,7 @@ beam grid.  Interactive CLI only.
 
 Line-of-sight output.
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — line of sight (the harvests' `compute_los` reads it from spots).
 
@@ -2600,7 +2602,7 @@ takes its default.
 
 Metrology beam output.
 
-*CLI suite:* none yet.
+*CLI suite:* `METCALC.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — `met_calc`, `met_get`, `met_geom_get`.
 
@@ -2629,7 +2631,7 @@ element motions.  No arguments; requires only a loaded Rx.
 
 Wavefront intensity.
 
-*CLI suite:* `EFL_SYSPROP.jou`, `INT_LOG.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BEAM_GAUSS.jou`, `EFL_SYSPROP.jou`, `INT_LOG.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `int_cmd`, `cfield_cmd`.
 
@@ -2668,7 +2670,7 @@ IARG(1)=element; intensity available programmatically.
 
 Pixelated intensity output.
 
-*CLI suite:* none yet.
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `WINDOW_GBS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `int_cmd` / `int_get`.
 
@@ -2705,7 +2707,7 @@ LPIxilate.
 
 Amplitude output.
 
-*CLI suite:* none yet.
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `cfield_cmd` / `cfield_get`.
 
@@ -2732,7 +2734,7 @@ IARG(1)=element.
 
 Phase output.
 
-*CLI suite:* none yet.
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `cfield_cmd` / `cfield_get`.
 
@@ -2761,7 +2763,7 @@ element).
 
 Real & imaginary wavefront.
 
-*CLI suite:* none yet.
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `cfield_cmd` / `cfield_get`.
 
@@ -2816,7 +2818,7 @@ SMACOS: IARG(1)=element.
 
 Modulation transfer function.
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -2955,7 +2957,7 @@ subsequent surface-data plots until changed.
 
 Column line plot.
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3004,7 +3006,7 @@ plots until changed.
 
 Toggle image polarity (NEG=astro, POS=conventional).
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3031,7 +3033,7 @@ default, leaving the mode as-is.
 
 Color / gray image rendering.
 
-*CLI suite:* `MODE_cir.jou`, `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `MODE_cir.jou`, `MODE_load_notice.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3051,7 +3053,7 @@ image rendering is on").  Affects raster image displays
 
 PGPLOT panel layout (1,2,3,4,9).
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3278,7 +3280,7 @@ dialog, not this command.
 
 Select ZCOef Zernike basis (Cir / Ann / Hex).
 
-*CLI suite:* none yet.
+*CLI suite:* `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — Zernike / analysis set (B.2, second).
 
@@ -3304,7 +3306,7 @@ LoadStack entry.
 
 Geometric beam footprint at an element.
 
-*CLI suite:* none yet.
+*CLI suite:* `WINDOW_GBS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — field / beam set.
 
@@ -3336,7 +3338,7 @@ first<=last check — ranges are effectively CLI-only.
 
 Blur / Gaussian blur.
 
-*CLI suite:* none yet.
+*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -3371,7 +3373,7 @@ RARG(1:2)=x,y widths; CARG(1)='NO' suppresses the plot.
 
 Apply gain map to intensity.
 
-*CLI suite:* none yet.
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -3430,7 +3432,7 @@ for ODRaw (only DRAW has one: IARG(1:3), CARG(1)).
 
 Extract / plot row from image.
 
-*CLI suite:* none yet.
+*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -3606,7 +3608,7 @@ of range).  SMACOS: no LoadStack entry.
 
 List all fields of view.
 
-*CLI suite:* `FOV_SETC_SAOPT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `CALIB_fov_weight.jou`, `FOV_SETC_SAOPT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — field / beam set.
 
@@ -3632,7 +3634,7 @@ consistently; only this listing mislabels it).
 
 Run system optimization.
 
-*CLI suite:* `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_history.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `OptAsph_order.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `OptAsph_order.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `calib_run`.
 
@@ -3711,7 +3713,7 @@ CLI only.
 
 Older single-ray variants (use RAY).
 
-*CLI suite:* none yet.
+*CLI suite:* `SRAY_SRT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — single-ray tracing (B.2, first).
 
@@ -3726,7 +3728,9 @@ SRAy prints one ray's per-surface trace over an element
 range, silently pre-tracing from the source when the range
 starts downstream.  The source flags it "buggy, doesn't
 work" (it also prints a stray 'iElt,iCurRayElt =' debug
-line) — prefer RAY.  SMACOS: IARG(1)=ray, IARG(2)=start,
+line) — prefer RAY.  SRT crashed the CLI on every ray until
+2026-10-17 (its ray-state buffers were never allocated);
+fixed, gate `SRAY_SRT.jou`.  SMACOS: IARG(1)=ray, IARG(2)=start,
 IARG(3)=end element.  SRT (interactive CLI only) traces a
 single ray launched from a designated NORMALIZED
 source-aperture position:
@@ -3749,7 +3753,7 @@ available.
 
 Debug / diagnostic prints.
 
-*CLI suite:* none yet.
+*CLI suite:* `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only, legacy** — differential FD inside the CLI; the api route (dw_dx and family over perturb_elt + opd_val) does it with the step, reference and mask under the caller's control (Dave 2026-10-10).
 
