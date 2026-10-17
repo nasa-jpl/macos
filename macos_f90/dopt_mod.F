@@ -210,7 +210,17 @@ C***********************************************************************
           ChfRayPos_Rx(:)     = 0
           OptSrcRpt(:)        = 0
           opt_fov(:,:,:)      = 0 ! max. FOV to optimize
-          fov_weight(:)       = 0
+!-->  fov_weight default 1.0 HERE AND at macos_cmd_loop.inc's LOAD
+!     path (the LOptIfFEX pattern below).  It was 0 here, and the LOAD
+!     handler's 1.0 runs BEFORE MBFile6, whose reinitialise_variables
+!     -> dopt_init_vars zeroed it again: every deck without OptFOVWt=
+!     solved with weight 0, which design_optim reads as 1e-10 (sig
+!     1e5): chisq 1e-10 x the weight-1 value and the OptTol test on
+!     an rms 1e-5 x the target-unit rms (tst_calib_rigid.in: chisq
+!     7.98e-43 vs 7.98e-33 with OptFOVWt= 1.0; PLAN_CONSOLIDATION
+!     1.2 (a), 2026-10-17).
+          fov_weight(:)       = 1d0
+!<--
           opt_wavelen(:)      = 0 ! max wavelens to optimize
 
           iVarElt             = 0
