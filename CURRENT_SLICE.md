@@ -24,6 +24,17 @@
 
 ## Active slice
 
+> **2026-10-17 morning (CC): PUSHED on Dave's word -- macos through 220b68f, resources through 087714b.  Phase B: 31
+> journals, 110/128 commands covered; three more CLI fixes gated (5bb836f: SRT SIGSEGV = thisRay never allocated,
+> LS/LL exact so LSPOT/LLO dispatch; 8d04261 MRESET; 6ccd86d BWK + `!` line); findings (a)-(n) in PLAN 1.2; TO took
+> E.1 (weights 410aa9d), E.3 (SYSPROP b81021f), E.4 (TPR 42c7ade), E.5 (72ea712) the same morning.  deck_cophi: the
+> two-color lock-in form stated as TIME-multiplexed (fa9056f); block diagrams compacted (aspect 2.0, text x1.22),
+> Dave's slide-16 geometry folded, edit copy synced.  LOCAL since the push: fa9056f + this commit (+ TO's 42c7ade
+> 72ea712).  Gate at 72ea712 (TO's TPR fix) launched from the clean worktree.  NEXT (CC): the 18 uncovered commands
+> (WLENS/SWL/filters/ATMOS/HELP/DMBUILD batch; NEW; SINt needs an .srf fixture); then the manual math re-entry.
+> Dave asked (10-17): a parallel absolute-capture sensor on the COPHI bench -- answered in chat (two colors on COPHI
+> beat a split-off ZWFS: V 62 nm / S 39 nm capture to 10 %, piston null, light split); no deck change yet.**
+
 > **2026-10-16 night (CC): PHASE B IN FLIGHT -- 22 journals written (78/128 commands covered), every EXPECT from the
 > transcript (recipe in cli_tests/README "Writing a journal"); writing them found nine engine/doc items (PLAN 1.2,
 > 2026-10-16 (a)-(i)): FIXED and gated -- BWK flag reset after the load (6ccd86d), the `!` shell line cut at 130

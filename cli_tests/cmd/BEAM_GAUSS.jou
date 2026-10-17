@@ -1,0 +1,16 @@
+# BEAM: the source amplitude profile -- UNIFORM (default) vs GAUSSIAN with 1-unit waists -- seen in the far-field
+# INT peak of the manual's Cassegrain (cmdref: Diffraction).  NONE first.  The Gaussian beam re-propagates
+# (BEAM clears the propagate state) and the peak moves from 8.877e6 to 6.884e8.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+int 5
+beam
+gauss
+1
+1
+int 5
+beam
+uniform
+# EXPECT: Peak intensity= 8\.8773143D\+06[\s\S]*?Enter x beam waist radius: \[1\.00000\]: 1\s+Enter y beam waist radius: \[1\.00000\]: 1[\s\S]*?Peak intensity= 6\.8840631D\+08
+# EXPECT-NOT: Unknown beam type
+# EXPECT-NOT: forrtl
