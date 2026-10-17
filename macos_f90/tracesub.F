@@ -3241,6 +3241,21 @@ C***********************************************************************
         CALL SetSourceRay(nMinPts,Dicr,Djcr,dxSource,
      &                    xoff,yoff,ifPol,ifPropagate)
 
+!-->  thisRay's component arrays were NEVER allocated (the "FIX (ToDo)"
+!     in traceutil_mod), so CTRACE's ifSRT save wrote through empty
+!     descriptors: SRT died with SIGSEGV on the manual's Cassegrain
+!     (debug build: 'thisray' index 1 outside (0:0), tracesub.F:4821).
+!     Sized per trace to nElt (2026-10-17, PLAN 1.2 (l); gate
+!     cli_tests/cmd/SRAY_SRT.jou).
+        If (allocated(thisRay%InciPos)) deallocate(thisRay%InciPos,
+     &    thisRay%InciDir,thisRay%InciSrfN,thisRay%PrevIndRef,
+     &    thisRay%CurIndRef)
+        allocate(thisRay%InciPos(3,nElt),thisRay%InciDir(3,nElt),
+     &    thisRay%InciSrfN(3,nElt),thisRay%PrevIndRef(nElt),
+     &    thisRay%CurIndRef(nElt))
+        thisRay%InciPos=0d0; thisRay%InciDir=0d0; thisRay%InciSrfN=0d0
+        thisRay%PrevIndRef=0d0; thisRay%CurIndRef=0d0
+!<--
 	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &   ifLNegOK,Cmatrix,
      &   iStartElt,iEndElt,iStartRay,iEndRay,RayMap,SegMap,

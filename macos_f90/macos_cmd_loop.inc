@@ -253,9 +253,15 @@ C         *** A few OS shell utility commands ***
 	    CALL CACCEPT(ANS,'no default', 'Enter folder path ')
 	    Call ChgDir(ANS,ICLEN(ANS))
 
+!-->  LS / LL are EXACT here: a 2-character prefix match swallowed every
+!     command that starts with them -- LSPOT (the linear-model spot) and
+!     LLO were unreachable, `lspot` listed the directory (Phase B journal
+!     LINEAR_MODEL.jou, 2026-10-17; PLAN 1.2 (j)).
 	  ELSE IF (LCMP(command,'RX',2) .OR.
-     &             LCMP(command,'LS',2) .OR. LCMP(command,'DIr',2)
-     &             .OR. LCMP(command,'LL',2)) THEN
+     &             (LCMP(command,'LS',2).AND.ICLEN(command).EQ.2) .OR.
+     &             LCMP(command,'DIr',2) .OR.
+     &             (LCMP(command,'LL',2).AND.ICLEN(command).EQ.2)) THEN
+!<--
 	    IF (read_len(pstack) .NE. 0) THEN
 	      cmdArg=var_store(read_cur(pstack),pstack)
 	      read_cur(pstack)=0; read_len(pstack)=0

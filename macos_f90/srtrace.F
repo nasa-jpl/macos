@@ -42,7 +42,12 @@ C *********************************************************************
 	! Local variables
 	Logical :: ifRayElt(0:mElt),ifIntSrfOK(mElt),
      &             ifLNegOK,ifLNsrf,ifRayToSeg,
-     &             ifReturn,L1(1),LRayTrans
+!-->  L1 was a ONE-element local handed to CTRACE, whose dummy is L1(mRay)
+!     and which writes L1(iRay) for the traced ray -- an overrun waiting
+!     for a ray other than 1.  Sized to mRay ("never declare A(1)",
+!     2026-10-17; the SRT crash itself was thisRay, tracesub.F SRTrace).
+     &             ifReturn,L1(mRay),LRayTrans
+!<--
 
 	Integer :: i,iElt,iRay,
      &    PrevNonSeg,NextNonSeg,iFirstNonSeq,iLastNonSeq,

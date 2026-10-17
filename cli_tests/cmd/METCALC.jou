@@ -1,0 +1,17 @@
+# METCALC on the block-comment fixture, which carries two metrology beams on element 2 aimed at element 3
+# (nMetPos= 2, tMetElt= 3 2); `ShowMetData= YES` is added to a COPY so each beam prints its length (cmdref:
+# Outputs).  A 1 mm despace of element 3 along z changes beam 1 from 0.100004999875 to a new length.
+# COPY: $ROOT/ZGD_test_files/tst_block_comment.in
+! sed -i '/^ *nGridpts=/a\ ShowMetData= YES' $DECK
+old $DECK
+metcalc
+perturb 3
+global
+0,0,0
+0,0,1e-3
+metcalc
+# EXPECT: Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+0\.10000499987\d+
+# EXPECT: Met beam\s+2 length from Elt\s+2 Pos\s+2\s+to Elt
+# EXPECT: MACOS> perturb 3[\s\S]*?Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+(?!0\.10000499987)\d\.\d+
+# EXPECT-NOT: Must load optical data first
+# EXPECT-NOT: forrtl
