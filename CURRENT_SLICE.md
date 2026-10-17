@@ -34,7 +34,8 @@
 > compilers: load 114/114, cmd 96/96, ab 0 movers; PLAN §5 line).  Manual obscuration-types paragraph + OBS_POLYGON.jou
 > (435e33c); figures 31/56/58/59 DONE: 59 cropped; 31, 56, 58 had no artwork in any source -- produced from the engine
 > (`docs/macos-manual/tools/figs/*.jou` + `regen_engine_figs.py`; ImageDemo.in extracted from its appendix listing into
-> examples/, corpus lists regenerated).  Finding (t) giza png colour-bar glyph.  NEXT (CC): §6.3 worked examples; the
+> examples/; corpus lists regenerated: the core was STALE at 114, now 155 -- re-run make_corpus.sh when a fixture is added;
+> load gate on the new list green at 56de986, both compilers, ab 0 movers).  Finding (t) giza png colour-bar glyph.  NEXT (CC): §6.3 worked examples; the
 > templates/00_INDEX + README currency item; cmdref enrichment pass.  LOCAL, unpushed: 6599150 2a137c9
 > 7ff9849 (deck_cophi, Dave's geometry) + 8145ca3 9edfff3.  Push on Dave's word.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
 > glyph fragments = figure-label debris, removed; figures 5/26/29 cropped from the 3.2 PDF; `--mathml` on the HTML

@@ -26,6 +26,8 @@ is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[
 # the per-commit core: the fixture sets and the manual, not the challenges' ladders
 # (segmirmaker/test_in holds that tool's PARENT fragments -- inputs to segmirmaker,
 #  not loadable prescriptions -- so they are left out of both lists)
+# refusal fixtures: decks whose LOAD must fail by design live in must_fail/ (sec. 2.4);
+# the one committed outside it is excluded here (its gate is cmd/ZrnGr_refusal.jou)
 grep -E '/ZGD_test_files/|/docs/macos-manual/|/tests/Rx/|/GMI/test_ff/' \
-  "$here/corpus_committed.txt" > "$here/corpus_core.txt"
+  "$here/corpus_committed.txt" | grep -v '/tst_nzern_conic\.in$' > "$here/corpus_core.txt"
 echo "core: $(wc -l < "$here/corpus_core.txt")  committed: $(wc -l < "$here/corpus_committed.txt")  extended: $(wc -l < "$here/corpus_extended.txt")"
