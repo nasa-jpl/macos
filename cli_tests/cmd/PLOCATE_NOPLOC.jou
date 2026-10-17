@@ -1,0 +1,34 @@
+# PLOCATE (= WINDOW) then NOPLOC on the manual's Cassegrain, observed through the TEXT pixel file
+# Cassegrain.in.pix5.txt that PIX writes beside the deck (hence the COPY and cd $TMP) (cmdref: Window &
+# Post-Processing).  PLOCATE fixes the 64 x 64 x 2e-6 pixel array in detector coordinates with the window
+# at pixel (10,10): the PSF peak lands at row 22, column 22 of the array and the central pixel reads
+# 2.87e4; NOPLOC puts the image back at the array center: the peak at (32,32), the central pixel 2.41e7
+# (= the peak).  The propagation's own "Peak occurs at i= 129, j= 129" is the 256-grid and does not move.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+text
+ploc
+tout
+2e-6
+0,0
+10,10
+pix 5
+64
+2e-6
+! awk '{for(j=1;j<=NF;j++)if($j>m){m=$j;r=NR;c=j}}END{print "PEAK",r,c,m}' Cassegrain.in.pix5.txt
+noploc
+pix 5
+64
+2e-6
+yes
+! awk '{for(j=1;j<=NF;j++)if($j>m){m=$j;r=NR;c=j}}END{print "PEAK",r,c,m}' Cassegrain.in.pix5.txt
+# EXPECT: MACOS> ploc\s+Enter output coordinate option \(Tout, Enter or Beam\): \[Tout\]: tout\s+Enter pixel size for placing window: \[0\.00000\]: 2e-6\s+Enter pixel coords of element vertex \(x,y\): \[0\.00000,0\.00000\]: 0,0\s+Enter window location in pixel coords \(x,y\): \[0\.00000,0\.00000\]: 10,10
+# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.28708958\d+D\+05
+# EXPECT: PEAK 22 22 2\.4133\d+E\+07
+# EXPECT: MACOS> noploc\s+Images will be placed at center of pixel array
+# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.24133040\d+D\+08
+# EXPECT: PEAK 32 32 2\.4133\d+E\+07
+# EXPECT: (Peak intensity= 8\.8773143D\+06; Peak occurs at i=  129, j=  129[\s\S]*){2}
+# EXPECT-NOT: forrtl

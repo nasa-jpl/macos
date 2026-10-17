@@ -778,7 +778,7 @@ The NOPOlarization command turns off polarization ray tracing. This is the defau
 
 12. **SINT**
 
-The Surface INTerpolate (SINT) command activates the surface interpolation of elements. Prior to using the SINT command, the surface is assumed to be a conic-of-revolution. MACOS assumes that the interpolation input file has the name in-file.srf#, where \# is the number of the element the data describes. If that file does not exist, MACOS prompts the user for the name of the file.
+The Surface INTerpolate (SINT) command activates the surface interpolation of elements. Prior to using the SINT command, the surface is assumed to be a conic-of-revolution. MACOS assumes that the interpolation input file has the name in-file.srf#.txt (or .bin), where in-file is the prescription's file name including its .in and \# is the number of the element the data describes. If that file does not exist, MACOS prompts the user for the name of the file.
 
 MACOS\>**SINT**
 
