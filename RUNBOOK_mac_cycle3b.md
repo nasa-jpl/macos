@@ -21,6 +21,7 @@ grep -n 'SRC_AT_FOCUS = true\|L1_Kr = 249' tg96_params.m | head -2      # both l
 ls redo_lens_tail.mat redo_oap_tail.mat                                  # both must exist; if not, STOP and say so
 ```
 
+
 ## Setup
 
 ```bash
