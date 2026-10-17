@@ -38,8 +38,9 @@
 > load gate on the new list green at 56de986, both compilers, ab 0 movers).  Finding (t) giza png colour-bar glyph.  **§6.3 worked examples DONE** (Manual Section 10: e5hex1 budget, tma_longslit,
 > dyson5 s0, COPHI bench -- four runners, one 3.6-min MATLAB run, three reproduce their record to the digit, dyson5's
 > committed s0 record is stale against its params (8 -> 6 mm slit offset; owner to regenerate)); **templates index
-> directory map DONE** (resources be986c7, LOCAL).  NEXT (CC): cmdref enrichment pass (defaults / conventions per
-> entry); the §6.2 chapters; TO's findings (s)(t).  PUSHED on Dave's word 2026-10-17 afternoon: macos a18d59e..bcba00c (11 commits, TO's
+> directory map DONE** (resources be986c7, LOCAL).  NEXT (CC): the cmdref enrichment pass, SCOPED in PLAN 1.5 (a *Syntax:* and a
+> *Defaults:* line per entry, 0 of 128 have them; from the journal transcripts, by category, ~15 a batch); the §6.2
+> chapters; TO's findings (s)(t).  PUSHED on Dave's word 2026-10-17 afternoon: macos a18d59e..bcba00c (11 commits, TO's
 > daf5781 among them); resources 087714b..7ec9874 (TO's ray twins) pushed on Dave's word too.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
 > glyph fragments = figure-label debris, removed; figures 5/26/29 cropped from the 3.2 PDF; `--mathml` on the HTML
 > build; label/pre-superscript rules in the README).  NEXT (CC): the PolyObsVec/Poly3DObsVec paragraph; figures 31/56/59
