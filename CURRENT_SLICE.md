@@ -36,8 +36,8 @@
 > (`docs/macos-manual/tools/figs/*.jou` + `regen_engine_figs.py`; ImageDemo.in extracted from its appendix listing into
 > examples/; corpus lists regenerated: the core was STALE at 114, now 155 -- re-run make_corpus.sh when a fixture is added;
 > load gate on the new list green at 56de986, both compilers, ab 0 movers).  Finding (t) giza png colour-bar glyph.  NEXT (CC): §6.3 worked examples; the
-> templates/00_INDEX + README currency item; cmdref enrichment pass.  LOCAL, unpushed: 6599150 2a137c9
-> 7ff9849 (deck_cophi, Dave's geometry) + 8145ca3 9edfff3.  Push on Dave's word.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
+> templates/00_INDEX + README currency item; cmdref enrichment pass.  PUSHED on Dave's word 2026-10-17 afternoon: macos a18d59e..bcba00c (11 commits, TO's
+> daf5781 among them); resources unchanged since 087714b.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
 > glyph fragments = figure-label debris, removed; figures 5/26/29 cropped from the 3.2 PDF; `--mathml` on the HTML
 > build; label/pre-superscript rules in the README).  NEXT (CC): the PolyObsVec/Poly3DObsVec paragraph; figures 31/56/59
 > crops; §6.3 worked examples.  Feng's lock-in email went out (Dave, 10-17).**
