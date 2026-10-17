@@ -17,9 +17,9 @@
   },
   "img:cophi_block_single.png": {
    "x": 1.0,
-   "y": 1.46,
-   "w": 11.25,
-   "h": 5.66,
+   "y": 1.34,
+   "w": 11.54,
+   "h": 5.8,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
@@ -27,11 +27,6 @@
   }
  },
  "COPHI with a lock-in camera: the block diagram": {
-  "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
-   "x": 0.45,
-   "y": 7.28,
-   "w": 12.4
-  },
   "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
    "x": 0.45,
    "y": 1.22,
@@ -39,18 +34,23 @@
   },
   "img:cophi_block_lockin.png": {
    "x": 2.25,
-   "y": 1.7,
-   "w": 11.07,
-   "h": 5.58,
+   "y": 1.64,
+   "w": 10.88,
+   "h": 5.48,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
    "cb": 0.0
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 5.75,
-   "y": 1.95,
-   "w": 7.25
+   "x": 6.5,
+   "y": 2.25,
+   "w": 6.25
+  },
+  "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
+   "x": 0.25,
+   "y": 7.12,
+   "w": 6.35
   }
  },
  "Performance side by side: HET against the IFO on the same surface": {
@@ -74,6 +74,9 @@
    "x": 0.5,
    "y": 7.05,
    "w": 12.43
+  },
+  "table:1": {
+   "y": 1.34
   }
  },
  "COPHI against the Zernike sensor with a dedicated laser, for the hold job": {
@@ -121,29 +124,29 @@
   }
  },
  "Capture from a cold start: two colors frequency-multiplexed on one camera": {
-  "img:cophi_block_multi.png": {
-   "x": 2.66,
-   "y": 2.35,
-   "w": 8.02,
-   "h": 4.7,
-   "cl": 0,
-   "cr": 0,
-   "ct": 0.0,
-   "cb": 0.0
-  },
   "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
    "x": 0.45,
    "y": 1.22,
    "w": 12.4
   },
+  "img:cophi_block_multi.png": {
+   "x": 2.6,
+   "y": 2.35,
+   "w": 8.1,
+   "h": 4.85,
+   "cl": 0.0073,
+   "cr": 0.0466,
+   "ct": 0.0151,
+   "cb": 0.0
+  },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 0.45,
-   "y": 7.1,
+   "y": 7.05,
    "w": 9.5
   },
   "txt:make_cophi_block_fig.py; the sequential form": {
    "x": 0.45,
-   "y": 7.3,
+   "y": 7.24,
    "w": 12.4
   }
  },
@@ -207,7 +210,7 @@
   },
   "txt:Integrating bucket (1)–(2): a frame cannot sam": {
    "x": 0.45,
-   "y": 5.75,
+   "y": 5.5,
    "w": 6.35
   }
  },
@@ -237,6 +240,18 @@
    "x": 0.46,
    "y": 6.98,
    "w": 12.43
+  }
+ },
+ "One bench, five sensors: COPHI's LO beside the record gauges": {
+  "txt:COPHI: LO on, flat out — the beat on the pupil": {
+   "x": 0.5,
+   "y": 5.87,
+   "w": 6.35
+  },
+  "txt:The DM Gauge: an independent hold cross-check": {
+   "x": 7.05,
+   "y": 5.78,
+   "w": 5.9
   }
  }
 }

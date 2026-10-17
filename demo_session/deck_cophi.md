@@ -270,14 +270,14 @@ DRAFT — pending review.
 | processing: the second demodulation + the synthetic-wavelength unwrap | software | `dmg_cophi_recon` twice |
 ~ Stage capture (`runs/capture_{lens,oap}_plain`); truth = the engine's per-pixel OPD unwrapped; λ₂ is a re-trace of both decks.  Caveat: the model's lenses are dispersion-free, so the tail's chromatic refocus (~0.5 mm of focuser travel for silica at Δλ = 20 nm, to verify) is not shown; its static part freezes into each color's null.  At 1.3 µm the base range doubles and telecom tunables are cheap (ruling 2).
 
-## One bench, four sensors: COPHI's LO beside the record gauges | The testbed keeps every sensor: the LO collimator at the flat's seat, an insertable reference flat in the LO path for the IFO, and a pick-off behind the splitter that feeds the Zernike and pinhole arms from the test beam alone
+## One bench, five sensors: COPHI's LO beside the record gauges | The testbed keeps every sensor: the LO collimator at the flat's seat, an insertable reference flat in the LO path for the IFO, and a pick-off behind the splitter that feeds the scalar and vector Zernike and pinhole arms from the test beam alone
 ::: full
 ![](figs/cophi_multisensor.png){h=4.6}
 ::: left
 - **COPHI:** LO on, flat out — the beat on the pupil camera; **IFO:** flat in (flip mount), LO shuttered — the record's four-step on the SAME camera and pixels, one registration for both.
 - **ZWFS and pinhole / P-SRI:** a 10–30 % pick-off on the camera port, taken before the LO joins the test beam, so each reads the DM alone; the pick-off costs the pupil camera that fraction of its photons (seconds per pm × 1.1–1.4).
 ::: right
-- **What the extra sensors buy:** an independent hold cross-check, each gauge's own systematics on the same surface at the same time, and the Zernike's photon economy for a hold-only mode.  Capture from cold stays COPHI's two colors (slide 18): the Zernike captures 62 nm (vector) / 39 nm (stepped) to 10 % and has its own piston null.
+- **The DM Gauge:** an independent hold cross-check, each gauge's own systematics on the same surface at the same time, and the Zernike's photon economy for a hold-only mode.  Capture from cold stays COPHI's two colors (slide 18): the Zernike captures 62 nm (vector) / 39 nm (stepped) to 10 % and has its own piston null.
 - **Costs:** two more cameras with their own registrations; the flip flat's repeatability enters the IFO's null only (COPHI never sees it).
 ~ `make_cophi_multisensor_fig.py`; the Zernike capture rows are `zwfs_dm96/runs/an193_*` (capture range to 10 %); nothing in the model moves.
 
