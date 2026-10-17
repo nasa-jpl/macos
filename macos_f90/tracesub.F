@@ -3262,18 +3262,12 @@ C***********************************************************************
      &   ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &   StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 	rayS=>thisRay
-
-#ifdef CSMACOS
-        ! Dumpe ray state to a file
-        Open(12,file=filnam(1:ICLEN(filnam)),status="replace")
-        Do ie=1,iEndElt
-          Write(12,*)
-     &      rayS%InciPos(1:3,ie),rayS%InciDir(1:3,ie),
-     &      rayS%InciSrfN(1:3,ie),
-     &      rayS%PrevIndRef(ie),rayS%CurIndRef(ie)
-        End Do
-        close(12)
-#endif
+!-->  The CSMACOS branch here dumped the ray state into a file named
+!     filnam (status="replace") -- in SMACOS the loaded deck's path
+!     without '.in', a stray file beside the deck.  Dead while SRT was
+!     CLI-only; removed when SRT became SMACOS-dispatched (B.2,
+!     2026-10-17): the api reads thisRay directly (srt_trace).
+!<--
 	END SUBROUTINE SRTrace
 
 C***********************************************************************

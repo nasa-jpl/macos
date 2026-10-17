@@ -95,6 +95,18 @@ last trace — the per-category complement to `ray_info_get`'s binary
 LRayOK/LRayPass.  mmacos veneer: `get_ray_status(N)`.  Backs the design
 layer's ray-loss guard (`PLAN_DESIGN_LAYER.md` §1.3.4).
 
+`srt_trace(OK, xoff, yoff, iEndElt, Pos_, Dir_, IndPrev_, IndCur_, RayOK_, Status_,
+FailElt_, nElt_)` (2026-10-17, BRIEF_to_bindings B.2, the first single-ray routine) is the CLI's
+SRT made SMACOS-dispatched (LoadStack already had its entry; only `#ifdef MACOS_CMD` kept it out):
+one ray from a normalized source-aperture point, its crossing and outgoing direction at each
+element from traceutil_mod's `thisRay`.  SRTrace's CSMACOS dump (a `status="replace"` write to
+`filnam` = the deck's path without `.in`) was removed with it.  The surface normal SRTrace saves
+is NOT returned: CTRACE updates `Nsrfm` only where it reflects or refracts, so other columns
+hold the last ray's.  An OBSCURED ray keeps `LRayOK` (it is traced on; `Status_` = Obscured).
+The veneers (`macos.srt`, pymacos `srt`) mark the trace modified: SRTrace re-seeds the source
+ray set.  Gates tSrt / test_srt.py (the CLI's printed numbers + the paraboloid sag + the axial
+focus + a full trace unchanged after it).
+
 The MATLAB **design layer** (`macos.design.System`,
 `MACOS_resources/mmacos/src/+macos/+design/`) is the first heavy consumer of
 this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the

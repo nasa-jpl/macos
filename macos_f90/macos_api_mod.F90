@@ -3801,6 +3801,78 @@
       end subroutine ray_pos_hist_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : SRT -- trace ONE ray from a normalized source-aperture point
+      !            (x, y), |x|, |y| <= 0.5 (the CLI's SRT; (0, 0) is the chief
+      !            ray), through element iEndElt, and return its state at each
+      !            element it reached (BRIEF_to_bindings B.2, 2026-10-17):
+      !            Pos_ the ray's crossing at element k, Dir_ its direction leaving
+      !            it, IndPrev_ / IndCur_ the indices before / after.  (SRTrace's
+      !            surface normal is not returned: CTRACE updates it only where it
+      !            reflects or refracts, so the other columns hold the last ray's.)
+      !            Buffers are caller-sized (3, nElt_) and (nElt_), nElt_ = nElt;
+      !            columns past iEndElt -- or past FailElt_ for a lost ray -- are 0.
+      !            RayOK_ = the ray was traced to iEndElt (LRayOK; an OBSCURED ray
+      !            is still traced, as the CLI's SRT shows); Status_ its per-ray
+      !            status (elt_mod RayStat_*, as ray_status_get) and FailElt_ the
+      !            element that set it (0 when OK).  The source ray set is
+      !            re-seeded for the single ray, as in the CLI; the next trace
+      !            rebuilds the full grid.
+      !---------------------------------------------------------------------------------------------
+      subroutine srt_trace(OK, xoff, yoff, iEndElt, Pos_, Dir_,            &
+                           IndPrev_, IndCur_, RayOK_, Status_, FailElt_,   &
+                           nElt_)
+
+        use traceutil_mod, only: thisRay
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        real(8),                       intent(in)   :: xoff, yoff
+        integer,                       intent(in)   :: iEndElt
+        real(8), dimension(3, nElt_),  intent(inout):: Pos_, Dir_
+        real(8), dimension(nElt_),     intent(inout):: IndPrev_, IndCur_
+        logical,                       intent(out)  :: RayOK_
+        integer,                       intent(out)  :: Status_
+        integer,                       intent(out)  :: FailElt_
+        integer,                       intent(in)   :: nElt_
+
+        integer :: iRay_, last
+        ! ------------------------------------------------------
+        OK = FAIL
+        Pos_ = 0e0_pr;  Dir_ = 0e0_pr
+        IndPrev_ = 0e0_pr;  IndCur_ = 0e0_pr
+        RayOK_ = .false.;  Status_ = 0;  FailElt_ = 0
+
+        if (.not. SystemCheck()) return
+        if (nElt_ /= nElt) return
+        if ((iEndElt < 1) .or. (iEndElt > nElt)) return
+        if ((abs(xoff) > 0.5d0) .or. (abs(yoff) > 0.5d0)) return
+
+        command = 'SRT'
+        IARG(1) = iEndElt
+        DARG(1) = xoff;  DARG(2) = yoff
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        if (.not. allocated(thisRay%InciPos)) return
+
+        ! SRTrace traces ray 1 for the chief (0, 0), ray 2 otherwise
+        iRay_ = 2
+        if ((xoff == 0d0) .and. (yoff == 0d0)) iRay_ = 1
+        RayOK_ = LRayOK(iRay_)
+        Status_ = RayStatus(iRay_)
+        if (Status_ /= RayStat_OK) FailElt_ = RayFailElt(iRay_)
+        last = iEndElt
+        if ((.not. RayOK_) .and. (FailElt_ > 0)) last = min(iEndElt, FailElt_)
+        last = min(last, size(thisRay%PrevIndRef))
+
+        Pos_(:, 1:last)  = thisRay%InciPos(:, 1:last)
+        Dir_(:, 1:last)  = thisRay%InciDir(:, 1:last)
+        IndPrev_(1:last) = thisRay%PrevIndRef(1:last)
+        IndCur_(1:last)  = thisRay%CurIndRef(1:last)
+        OK = PASS
+
+      end subroutine srt_trace
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : One-stop element metadata for layout drawing: element
       !            type id (elt_mod EltID constants), aperture declaration
       !            (ApType / ApVec / xObs, plus the projected polygon

@@ -1680,7 +1680,10 @@ C         ***next command: Print rays surface - to - surface***
 	      WRITE(*,150)
 	    END IF
 
-#ifdef MACOS_CMD
+!-->  SRT is SMACOS-dispatched too (BRIEF_to_bindings B.2, 2026-10-17):
+!     the api's srt_trace pushes iEndElt and the (x, y) aperture point
+!     through LoadStack (its SRT entry already existed) and reads
+!     traceutil_mod's thisRay back; the binding traces quietly.
   ! Trace a single ray with a designated position in source aperture
 	  ELSE IF (LCMP(command,'SRT',3)) THEN
 	    IF (ifLoad) THEN
@@ -1696,7 +1699,11 @@ C         ***next command: Print rays surface - to - surface***
 	        GO TO 1
 	      End If
 
+#ifdef MACOS_CMD
 	      ifRayPrint=.TRUE.
+#else
+	      ifRayPrint=.FALSE.
+#endif
 	      Call SRTrace(srp(1),srp(2),ifPol,ifGrid,ifPropagate,
      &         ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &         ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
@@ -1707,7 +1714,7 @@ C         ***next command: Print rays surface - to - surface***
 	    ELSE
               WRITE(*,150)
             END IF
-#endif
+!<--
 
 #ifdef MACOS_CMD
 C	  ***Reset pgplot graphics device***
