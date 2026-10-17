@@ -277,7 +277,7 @@ DRAFT — pending review.
 - **COPHI:** LO on, flat out — the beat on the pupil camera; **IFO:** flat in (flip mount), LO shuttered — the record's four-step on the SAME camera and pixels, one registration for both.
 - **ZWFS and pinhole / P-SRI:** a 10–30 % pick-off on the camera port, taken before the LO joins the test beam, so each reads the DM alone; the pick-off costs the pupil camera that fraction of its photons (seconds per pm × 1.1–1.4).
 ::: right
-- **The DM Gauge:** an independent hold cross-check, each gauge's own systematics on the same surface at the same time, and the Zernike's photon economy for a hold-only mode.  Capture from cold stays COPHI's two colors (slide 18): the Zernike captures 62 nm (vector) / 39 nm (stepped) to 10 % and has its own piston null.
+- **The DM Gauge testbed:** 5 sensors provide an independent hold cross-check, each gauge's own systematics on the same surface at the same time, and the Zernike's photon economy for a hold-only mode.  Capture from cold stays COPHI's two colors (slide 18): the Zernike captures 62 nm (vector) / 39 nm (stepped) to 10 % and has its own piston null.
 - **Costs:** two more cameras with their own registrations; the flip flat's repeatability enters the IFO's null only (COPHI never sees it).
 ~ `make_cophi_multisensor_fig.py`; the Zernike capture rows are `zwfs_dm96/runs/an193_*` (capture range to 10 %); nothing in the model moves.
 
