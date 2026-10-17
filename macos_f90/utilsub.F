@@ -548,6 +548,11 @@ C       sphere propagation
      &      LFRProp=.TRUE.
         END IF
 
+!-->  dxEltDiffr: TRUE only from the three diffraction branches below;
+!     the ray-spacing branches (an OPD, a geometric trace) leave FALSE
+!     (PLAN 1.2 (d), 2026-10-17)
+        dxEltDiffr(iElt)=(LFFProp.OR.LSSProp.OR.LFRProp)
+!<--
 C       If far field, compute dx on that basis
 
         IF (LFFProp) THEN

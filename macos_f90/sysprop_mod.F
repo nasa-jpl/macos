@@ -13,7 +13,8 @@ C  (param_mod).  No new wrapper / no efl.inc refactor needed.
 
       MODULE sysprop_mod
         USE param_mod, ONLY: mdttl
-        USE elt_mod,   ONLY: nElt, focalRatio, Wavelen, CWM, CBM, dxElt
+        USE elt_mod,   ONLY: nElt, focalRatio, Wavelen, CWM, CBM, dxElt,
+     &                        dxEltDiffr
         USE src_mod,   ONLY: Aperture, Obscratn
         IMPLICIT NONE
 
@@ -36,8 +37,9 @@ C  (param_mod).  No new wrapper / no efl.inc refactor needed.
 C  Compute the first-order properties at focal-plane element iElt.
 C  Requires focalRatio already set (run the EFL command first).
 C  The pixel-based quantities (lambda/D in px, plate scales) need a
-C  prior propagation to iElt to have set dxElt(iElt); they are left 0
-C  otherwise.  Returns ok=.TRUE. iff the core (focal-length-based)
+C  prior DIFFRACTION propagation to iElt (INT, PIX) to have set
+C  dxElt(iElt) (dxEltDiffr); they are left 0 otherwise, and after an
+C  OPD at iElt, which re-sets dxElt(iElt) to the ray spacing.  Returns ok=.TRUE. iff the core (focal-length-based)
 C  quantities were computed.
         SUBROUTINE DeriveSysProps(iElt, ok)
           IMPLICIT NONE
@@ -83,11 +85,19 @@ C  coronagraph).  Left 0 (with sp_hasefl=.FALSE.) when EFL didn't run.
             sp_hasefl = .TRUE.
 
 C  Pixel-based plate scale: exact value from dxElt(iElt) after a
-C  diffraction propagation (OPD/INT/PIX) has set it; needs efl too.
+C  diffraction propagation (INT/PIX) has set it; needs efl too.
             dxf_bu = 0d0
-            IF (ALLOCATED(dxElt)) THEN
-              IF (iElt <= SIZE(dxElt)) dxf_bu = ABS(dxElt(iElt))
+!-->  Only a DIFFRACTION pitch (PLAN 1.2 (d), 2026-10-17): an OPD at
+!     iElt leaves dxElt(iElt) = the ray-grid spacing (DXCALC's slice
+!     branch; LOS reads it so), which at a focus is ~0 -- the pixel
+!     lines printed 4.4e-12 BaseUnits / 1.27e6 px on the Cassegrain,
+!     and an OPD AFTER an INT overwrote the INT's pitch the same way.
+            IF (ALLOCATED(dxElt) .AND. ALLOCATED(dxEltDiffr)) THEN
+              IF (iElt <= UBOUND(dxElt,1)) THEN
+                IF (dxEltDiffr(iElt)) dxf_bu = ABS(dxElt(iElt))
+              END IF
             END IF
+!<--
             IF (dxf_bu > 0d0) THEN
               sp_vals(SP_DX_FOCAL_BU)  = dxf_bu
               sp_vals(SP_PLATE_PX_RAD) = efl_bu / dxf_bu
@@ -145,8 +155,9 @@ C  Pretty-print the most recently derived properties (CLI use).
      &                  sp_vals(SP_DX_FOCAL_BU)
           ELSE
             WRITE(*,*)'  (pixel-based plate scale needs a diffraction',
-     &                ' propagation -- run OPD, INT, or PIX'
-            WRITE(*,*)'   at this element first, then re-run SYSPROP)'
+     &                ' propagation -- run INT or PIX'
+            WRITE(*,*)'   at this element (an OPD there since leaves',
+     &                ' the ray spacing), then re-run SYSPROP)'
           END IF
           WRITE(*,*) ' '
  900      FORMAT(1P,A,1X,E15.7)
