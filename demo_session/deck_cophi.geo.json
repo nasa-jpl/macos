@@ -1,15 +1,5 @@
 {
  "COPHI on the DM Gauge bench: the four-step run continuously": {
-  "img:cophi_block_single.png": {
-   "x": 1.3,
-   "y": 1.72,
-   "w": 10.74,
-   "h": 5.4,
-   "cl": 0,
-   "cr": 0,
-   "ct": 0.0,
-   "cb": 0.0
-  },
   "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
    "x": 0.45,
    "y": 1.22,
@@ -24,24 +14,19 @@
    "x": 0.45,
    "y": 7.12,
    "w": 12.4
-  }
- },
- "COPHI with a lock-in camera: the block diagram": {
-  "img:cophi_block_lockin.png": {
-   "x": 1.51,
-   "y": 1.88,
-   "w": 10.32,
-   "h": 5.2,
+  },
+  "img:cophi_block_single.png": {
+   "x": 1.0,
+   "y": 1.46,
+   "w": 11.25,
+   "h": 5.66,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
    "cb": 0.0
-  },
-  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 0.45,
-   "y": 7.08,
-   "w": 9.5
-  },
+  }
+ },
+ "COPHI with a lock-in camera: the block diagram": {
   "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
    "x": 0.45,
    "y": 7.28,
@@ -51,6 +36,21 @@
    "x": 0.45,
    "y": 1.22,
    "w": 12.4
+  },
+  "img:cophi_block_lockin.png": {
+   "x": 2.25,
+   "y": 1.7,
+   "w": 11.07,
+   "h": 5.58,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0,
+   "cb": 0.0
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 5.75,
+   "y": 1.95,
+   "w": 7.25
   }
  },
  "Performance side by side: HET against the IFO on the same surface": {
@@ -122,10 +122,10 @@
  },
  "Capture from a cold start: two colors frequency-multiplexed on one camera": {
   "img:cophi_block_multi.png": {
-   "x": 2.4,
-   "y": 2.05,
-   "w": 8.53,
-   "h": 5.0,
+   "x": 2.66,
+   "y": 2.35,
+   "w": 8.02,
+   "h": 4.7,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
@@ -138,12 +138,12 @@
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 0.45,
-   "y": 7.08,
+   "y": 7.1,
    "w": 9.5
   },
   "txt:make_cophi_block_fig.py; the sequential form": {
    "x": 0.45,
-   "y": 7.28,
+   "y": 7.3,
    "w": 12.4
   }
  },
@@ -167,29 +167,29 @@
   }
  },
  "How the lock-in detector works": {
-  "img:cophi_lid.png": {
-   "x": 0.45,
-   "y": 1.3,
-   "w": 12.43,
-   "h": 4.8,
-   "cl": 0.0084,
-   "cr": 0.0,
-   "ct": 0.0379,
-   "cb": 0.0473
-  },
   "txt:make_cophi_lid_fig.py; the pixel is CSEM's demodulation pixel": {
    "x": 4.75,
    "y": 7.22,
    "w": 8.15
   },
-  "txt:The reference: a square wave": {
+  "img:cophi_lid.png": {
+   "x": 0.25,
+   "y": 1.3,
+   "w": 13.02,
+   "h": 5.03,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0,
+   "cb": 0.0
+  },
+  "txt:The reference: a square wave at the beat f_b =": {
    "x": 0.4,
-   "y": 6.24,
+   "y": 6.32,
    "w": 6.35
   },
-  "txt:Against a frame camera: N cycles per sample": {
+  "txt:Against a frame camera: N cycles per sample, n": {
    "x": 6.98,
-   "y": 6.25,
+   "y": 6.33,
    "w": 6.27
   }
  },
@@ -200,15 +200,15 @@
    "w": 12.67,
    "h": 3.99
   },
-  "txt:Integrating bucket (1)–(2)": {
-   "x": 0.45,
-   "y": 5.0,
-   "w": 6.35
-  },
   "txt:Step error (5)": {
    "x": 7.0,
    "y": 5.0,
    "w": 5.9
+  },
+  "txt:Integrating bucket (1)–(2): a frame cannot sam": {
+   "x": 0.45,
+   "y": 5.75,
+   "w": 6.35
   }
  },
  "How much resolution? IFO, vector ZWFS, HET — the sweep's records": {
