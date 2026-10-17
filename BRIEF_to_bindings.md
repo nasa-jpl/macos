@@ -86,3 +86,42 @@ One message to CC per landed item: SHAs (both repos), the gate numbers (coverage
 byte-identical regeneration, the defaults table's drift rows), suite counts.  Anything needing
 Dave (an api signature change, a default whose value is a judgment call) goes to him through
 CC with the measurement attached.
+
+## E. Addendum 2026-10-17 (CC) — engine items from the Phase B journals, ahead of B.2
+
+Both repos pushed 2026-10-17 (macos 220b68f, resources 087714b).  Before B.2 (single-ray tracing
+through the api), take these in order; each is measured, the record is PLAN_CONSOLIDATION §1.2
+(2026-10-16 (a)-(i)) and the journals named there.  One item in flight, gate red-then-green, both
+compilers, corpus A/B from the clean worktree for anything that can move a trace.
+
+E.1 **CALIB field weights are 0 after every load (1.2 (a)).**  The LOAD handler's `fov_weight=1.0`
+    is undone by `dopt_init_vars` (the `LOptIfFEX` trap); `design_optim.F` treats |w| < 1e-10 as
+    1e-10, so every row is divided by 1e5: the printed merit is 1e-10 x the weight-1 value and the
+    `OptTol` test runs on an rms 1e-5 x the target-unit rms (`tst_calib_rigid.in`: chisq 7.98e-43
+    vs 7.98e-33 with `OptFOVWt= 1.0`; FOVS prints `Weight = 0.0`).  Fix: the default (1.0) into
+    `dopt_init_vars`, the LOAD-path line kept or dropped; then re-pin whatever pins the merit
+    (`tCalibStop`, `tCalibMatrix`, the CALIB_*.jou banners if they carry chisq) WITH the mechanism.
+    Gate: FOVS reads 1.0 after a plain load; the chisq pair above.  Manual Table 13's OptFOVWt row
+    then returns to "1 each".
+E.2 **The MRESET hazard's binding face (1.2 (g)).**  The CLI's MRESET deallocate lacked
+    `CRWalk`/`CRWalkProjLoc`, so its scratch re-allocation failed and the buffers kept the old
+    size (fixed 8d04261).  Measure whether `macos_init_all` / `macos_realloc` (the bindings' size
+    change, memory `project_model_transition_crash`: 128 -> 512 heap crash, deterministic) has the
+    same shape -- an allocate over an array a previous size left allocated.  If so, same fix, gate
+    = a size transition in tMmacosCmd / pymacos with the transition that crashed.
+E.3 **SYSPROP's pixel lines after an OPD alone (1.2 (d))** print nonsense (Cassegrain: pitch
+    4.4e-12); after INT they are right.  Either the hint drops OPD or OPD stops setting the pixel
+    scale -- find the consumer (`sysprop_mod` reads what?) and gate with the Cassegrain numbers in
+    `EFL_SYSPROP.jou` (INT: 5.2290937 px, 9.8614033e-03 arcsec/px).
+E.4 **TPR prints `RayPosHist`, filled only with `SaveRayPosH= Y` (1.2 (e))**: zeros otherwise, and
+    the loop also prints `iRay = 0` rows.  Make TPR fill the history for the rays it traces (or
+    refuse by name without the key); gate in `RRAY_PRAY_TPR_FSR.jou` (today it pins the finders only).
+E.5 **`UDSrfParam` is read six wide (`ReadRealsWarn(..., 6)`) against `mUDSrfParam = 10`** (1.2 (h)).
+    Which is right -- what do the UDS models consume?  Then the manual's UserDefined section.
+E.6 **Coordination (CC 2026-10-16):** your uncommitted `macos_api_mod.F90` edits sat in the shared
+    tree while CC rebuilt both trees and relinked the mex / .so for a CLI fix; the binaries carried
+    them (pymacos 6893/2 = your coverage gate mid-edit).  Rule from here: engine edits in the shared
+    tree are COMMITTED (local is fine) before the end of a work step, or made in a side worktree;
+    CC checks `git status macos_f90` before any shared-tree rebuild and says what it found.
+
+Then B.2 as written above.  Report per item as in D.
