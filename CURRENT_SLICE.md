@@ -35,8 +35,11 @@
 > (435e33c); figures 31/56/58/59 DONE: 59 cropped; 31, 56, 58 had no artwork in any source -- produced from the engine
 > (`docs/macos-manual/tools/figs/*.jou` + `regen_engine_figs.py`; ImageDemo.in extracted from its appendix listing into
 > examples/; corpus lists regenerated: the core was STALE at 114, now 155 -- re-run make_corpus.sh when a fixture is added;
-> load gate on the new list green at 56de986, both compilers, ab 0 movers).  Finding (t) giza png colour-bar glyph.  NEXT (CC): §6.3 worked examples; the
-> templates/00_INDEX + README currency item; cmdref enrichment pass.  PUSHED on Dave's word 2026-10-17 afternoon: macos a18d59e..bcba00c (11 commits, TO's
+> load gate on the new list green at 56de986, both compilers, ab 0 movers).  Finding (t) giza png colour-bar glyph.  **§6.3 worked examples DONE** (Manual Section 10: e5hex1 budget, tma_longslit,
+> dyson5 s0, COPHI bench -- four runners, one 3.6-min MATLAB run, three reproduce their record to the digit, dyson5's
+> committed s0 record is stale against its params (8 -> 6 mm slit offset; owner to regenerate)); **templates index
+> directory map DONE** (resources be986c7, LOCAL).  NEXT (CC): cmdref enrichment pass (defaults / conventions per
+> entry); the §6.2 chapters; TO's findings (s)(t).  PUSHED on Dave's word 2026-10-17 afternoon: macos a18d59e..bcba00c (11 commits, TO's
 > daf5781 among them); resources 087714b..7ec9874 (TO's ray twins) pushed on Dave's word too.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
 > glyph fragments = figure-label debris, removed; figures 5/26/29 cropped from the 3.2 PDF; `--mathml` on the HTML
 > build; label/pre-superscript rules in the README).  NEXT (CC): the PolyObsVec/Poly3DObsVec paragraph; figures 31/56/59
