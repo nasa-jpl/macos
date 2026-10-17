@@ -1,0 +1,27 @@
+# CALIB field weights (PLAN_CONSOLIDATION 1.2 (a), TO 2026-10-17).  A deck with no OptFOVWt=
+# solves with weight 1 per field: the LOAD handler's fov_weight=1.0 ran BEFORE MBFile6, whose
+# reinitialise_variables -> dopt_init_vars zeroed it (design_optim reads |w| < 1e-10 as 1e-10:
+# chisq 1e-10 x the weight-1 merit, 7.98e-43 on this deck; FOVS printed Weight = 0).  Now the
+# default lives in dopt_init_vars too.  Contrast: OptFOVWt= 0.5 halves the merit (LM is
+# invariant to a uniform row scale, so the path is the same and chisq scales with w).
+# DEADLINE: 120
+# COPY: $ROOT/ZGD_test_files/tst_calib_rigid.in
+old $DECK
+fovs
+calib
+no
+yes
+! sed -i 's/^\(\s*OptTarget=.*\)$/\1\nOptFOVWt= 0.5/' $DECK
+old $DECK
+fovs
+calib
+no
+yes
+# EXPECT: Weight =\s+1\.0+\s*$
+# EXPECT: Final LM merit \(chisq\) =\s+7\.98132452\d*E-033
+# EXPECT: Weight =\s+0\.50+\s*$
+# EXPECT: Final LM merit \(chisq\) =\s+3\.99066226\d*E-033
+# EXPECT-NOT: Weight =\s+0\.0+(E\+000)?\s*$
+# EXPECT-NOT: E-043
+# (measured 2026-10-17 on 3ee3081, ifx: chisq 7.981324523439985E-043 with no key, Weight = 0;
+#  7.981324523439981E-033 with OptFOVWt= 1.0; both stop at the cap T=10)
