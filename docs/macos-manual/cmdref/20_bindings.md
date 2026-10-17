@@ -1959,6 +1959,16 @@ Azimuthally-averaged radial profile of a 2D image. [centers, means, stds, ns] = 
 <!-- BEGIN NOTES fn-radial-profile -->
 <!-- END NOTES fn-radial-profile -->
 
+#### ray
+
+- **mmacos:** `r = macos.ray(iRay)`
+- **pymacos:** `pymacos.ray(i_ray)`
+
+Trace ray iRay of the source grid (1 = the chief ray) -- the CLI's RAY. r = macos.ray(iRay)   iRay in 1..nRays of the current grid (macos.trace().nRays) Traces to the last element (or the deck's ray-target element).  Fields as macos.srt (column k = element k, BaseUnits / global frame): r.pos  3 x nElt  the crossing at element k;  r.dir  3 x nElt  the direction leaving it r.n_prev, r.n_cur   1 x nElt  the index before / after
+
+<!-- BEGIN NOTES fn-ray -->
+<!-- END NOTES fn-ray -->
+
 #### ray_field
 
 - **mmacos:** `rf = macos.ray_field(srf)`
@@ -2069,6 +2079,16 @@ Scale the grid-data figure at element SRF in place. macos.scale_elt_grid(SRF, FA
 
 <!-- BEGIN NOTES fn-scale-elt-grid -->
 <!-- END NOTES fn-scale-elt-grid -->
+
+#### segray
+
+- **mmacos:** `r = macos.segray(iSeg)`
+- **pymacos:** `pymacos.segray(i_seg)`
+
+Trace the ray through Segment element iSeg's centre -- the CLI's SEGRAYTRACE. r = macos.segray(iSeg)   iSeg = the ELEMENT number of a Segment element The ray passes through the segment's reference point (RptElt, the design centre; a perturbation does not move it): parallel to the chief ray for a collimated source, aimed from the chief ray's start for a point source.  It is forced onto segment iSeg and traced to the last element (or the deck's
+
+<!-- BEGIN NOTES fn-segray -->
+<!-- END NOTES fn-segray -->
 
 #### setActivePointSrc
 
