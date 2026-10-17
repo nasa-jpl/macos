@@ -1,0 +1,50 @@
+# The linear model on the manual's Cassegrain (cmdref: Linear Model): BUILD to the detector (nGridpts cut to 21
+# first -- BUILD is limited to 500 rays), PARTIALS of ray 3, LPERTURB a 1e-4 rad tilt of the secondary, LOPD /
+# LSPOT / LPIX from the linear model, LRESET (back to the unperturbed linear result), LPREAD the same tilt from a
+# .pert file.  Until 2026-10-17 `lspot` listed the DIRECTORY: the LS listing matched any command starting with
+# LS (PLAN_CONSOLIDATION 1.2 (j)); LS and LL are exact now.  LPIX at the FocalPlane reports a zero transmission
+# distance (its zElt), as the command defines it.  The linear LOPD (2.2e-7, at the detector, piston included) is
+# not the exact OPD of PERTURB.jou (evaluated at the exit-pupil sphere, which removes the field tilt).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+! printf '0 0 0 0 0 0\n0 0 0 0 0 0\n1e-4 0 0 0 0 0\n0 0 0 0 0 0\n0 0 0 0 0 0\n' > $TMP/Cassegrain.pert
+old $DECK
+none
+mod nGridpts=21
+q
+build
+5
+partials
+3
+yes
+0
+lperturb
+3
+no
+1e-4,0,0
+0,0,0
+lopd
+lspot
+lpix
+64
+2e-6
+lreset
+lopd
+lpread
+$TMP/Cassegrain.pert
+lopd
+ls
+# EXPECT: Tracing\s+277 rays and BUILDing linear model
+# EXPECT: Partial of ray\s+3 at Element\s+5 \(Detector\) to Element\s+3 \(Secondar\) perturbations
+# EXPECT: Element\s+3 Linear Perturbations:\s+Rotational=\s+1\.000000D-04\s+0\.000000D\+00\s+0\.000000D\+00
+# EXPECT: MACOS> lopd\s+Tracing perturbed system\s+Average OPD is\s+-?\d\.\d+E-12\s+RMS OPD including piston is\s+2\.21899\dE-07
+# EXPECT: MACOS> lspot\s+Tracing perturbed system
+# EXPECT: FFT/Point Spread Function Data Summary
+# EXPECT: MACOS> lreset\s+MACOS> lopd\s+Tracing perturbed system\s+Average OPD is\s+-?\d\.\d+E-12\s+RMS OPD including piston is\s+2\.69\d+E-12
+# EXPECT: File\S*/Cassegrain\.pert read\.\s+MACOS> lopd\s+Tracing perturbed system\s+Average OPD is\s+-?\d\.\d+E-12\s+RMS OPD including piston is\s+2\.21899\dE-07
+# EXPECT: MACOS> ls\s+Listing Files in:
+# EXPECT-NOT: BUILD limited to
+# EXPECT-NOT: Must BUILD first
+# EXPECT-NOT: Must LPERTURB before
+# EXPECT-NOT: MACOS> lspot\s+Listing Files
+# EXPECT-NOT: forrtl
