@@ -1,0 +1,34 @@
+# Polygon obscurations, the three prescription forms, on the manual's Cassegrain (manual 4, Obscurations and
+# Apertures; the keys are PolyObsVec= / Poly3DObsVec= and the 2-D ObsVec= form of ObsType= Polygon).  The
+# entrance Obscuring element's circle (r 0.5) + spider loses 121 of the 1877 rays; replaced by a 1 m square
+# (its area 1.0 against 0.82 -> 145 rays, the ray density of the 51-grid on the 4 m aperture), written three
+# ways by sed from the COPY: (1) PolyObsVec= 4 + four global x y z vertices in the element's plane z = -4.2;
+# (2) the same with xObs= AFTER the vertices (the projection is deferred until xObs is parsed; before 2026-07
+# this was a hard error); (3) the 2-D form ObsVec= xc yc n + n element-local x y vertices about (xc, yc).
+# All three lose the same 145 rays; the OPD is the unchanged 1.28e-12.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+opd 5
+! cp $DECK p3d.in; cp $DECK pdef.in; cp $DECK p2d.in
+! sed -i -e '/ObsType=\|ObsVec=/d' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nPolyObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2/' p3d.in
+old p3d.in
+opd 5
+! sed -i -e '/ObsType=\|ObsVec=/d' -e '1,/iElt=  2/{/xObs=/d}' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nPoly3DObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2\nxObs= 1 0 0/' pdef.in
+old pdef.in
+opd 5
+! sed -i -e '/ObsType=\|ObsVec=/d' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nObsVec= 0 0 4\n0.5 0.5\n-0.5 0.5\n-0.5 -0.5\n0.5 -0.5/' p2d.in
+old p2d.in
+opd 5
+! grep -c 'xObs=' pdef.in
+# EXPECT: MACOS> opd 5[\s\S]*?A total of\s+121 rays were lost\s+Obscured:\s+121\s+at element\s+1:\s+121
+# EXPECT: MACOS> old p3d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost\s+Obscured:\s+145\s+at element\s+1:\s+145
+# EXPECT: MACOS> old pdef\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost
+# EXPECT: MACOS> old p2d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost
+# EXPECT: (A total of\s+145 rays were lost[\s\S]*){3}
+# EXPECT: MACOS> ! grep -c 'xObs=' pdef\.in\s+2
+# EXPECT-NOT: Default used for  xObs
+# EXPECT-NOT: Must specify
+# EXPECT-NOT: Incorrect ObsType
+# EXPECT-NOT: forrtl

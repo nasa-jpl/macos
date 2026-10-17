@@ -2544,6 +2544,57 @@ This dialog produced the following prescription data:
 | nECoord=       | -6         |                                       |
 +----------------+------------+---------------------------------------+
 
+#### Obscuration types and the ObsVec= line
+
+Every obscuration of an element is two prescription lines, `ObsType=` and
+`ObsVec=`, repeated `nObs=` times; the shapes lie in the element's local
+plane, x along `xObs=`, y = psiElt × xObs, origin at the vertex, in base
+units.  The `ObsVec=` values by type (the interactive dialog asks for the
+same numbers, in the same order):
+
+| ObsType=                      | ObsVec= values                         | Meaning |
+|-------------------------------|----------------------------------------|---------|
+| Circle / NegCircle            | r, xc, yc                              | radius and center |
+| Rectangle / NegRectangle      | xmin, xmax, ymin, ymax                 | axis-aligned box |
+| Annulus / NegAnnulus          | rOuter, xc, yc, rInner                 | ring |
+| Triangle / NegTriangle        | q1x, q1y, q2x, q2y, q3x, q3y           | three corners |
+| Ellipse / NegEllipse          | xrad, yrad, xc, yc                     | axis-aligned ellipse |
+| Matrix / NegMatrix            | px, py, dx, dy                         | a 0/1 matrix on a pixel grid; the dialog then asks the matrix dimension and file name |
+| Tapered_Ellipse               | a, b, xc, yc, dr                       | ellipse whose transmission tapers over the outer fraction dr of a and b |
+| Polygon / NegPolygon          | xc, yc, n — then n lines of x y        | convex polygon, vertices in order around it, relative to (xc, yc); see below |
+| RotRectangle / RotNegRectangle | W, H, dx, dy, angle                   | box of width W and height H centered at (dx, dy), rotated by angle (radians) |
+| RotEllipse / RotNegEllipse    | a, b, dx, dy, angle                    | ellipse of half-axes a, b centered at (dx, dy), rotated by angle (radians) |
+
+A **Neg** shape is a hole: a ray is obscured when it falls inside a positive
+shape and inside no negative one, so a NegCircle inside a Rectangle makes a
+plate with a round opening.
+
+**Polygon obscurations in three forms.**  A polygon must be convex, with at
+most 128 vertices (`mPolySide`), listed in order around its perimeter.
+Besides the 2-D form in the table, the vertices may be given in the GLOBAL
+frame as x y z triplets, one per line, after a `PolyObsVec= n` (or
+`Poly3DObsVec= n`) line in place of `ObsVec=`:
+
+    ObsType= Polygon
+    PolyObsVec= 4
+    0.5 0.5 -4.2
+    -0.5 0.5 -4.2
+    -0.5 -0.5 -4.2
+    0.5 -0.5 -4.2
+
+MACOS takes the vertices' centroid as the polygon center and projects each
+vertex onto the element's local plane; the projection needs the element's
+`xObs=`, and the order of the lines no longer matters — a polygon written
+before its element's `xObs=` is held until `xObs=` is read (or until the
+load's default for it), where it used to be a hard error.  The 2-D form of
+the same square is `ObsVec= 0 0 4` followed by `0.5 0.5`, `-0.5 0.5`,
+`-0.5 -0.5`, `0.5 -0.5`.  On the Cassegrain example (4 m aperture, 51-point
+grid, 1877 rays) the secondary obscuration — a circle of radius 0.5 and its
+spider — loses 121 rays; this 1 m square in its place loses 145 in all three
+forms, the ray density of the grid times its area (`cli_tests/cmd/OBS_POLYGON.jou`).
+Apertures have the same polygon forms under `ApType= Polygonal` with
+`PolyApVec=`, but there `xObs=` must still come first.
+
 ### Specifying Coatings
 
 Multi-layer coatings are not supported in this release of MACOS.
