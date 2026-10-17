@@ -30,8 +30,10 @@
 > wrote an EMPTY `<name>.in` (unit 1 opened, the deck went to fort.77 through RX_FID) -- PLAN 1.2 (q)(r); (s) coherent
 > IMG is 1e9 x the incoherent (unnormalized transform in SysImging, for TO).  SINT's data convention measured and now
 > documented (cmdref + manual 4.4/5): z = DEVIATION from the base conic, positive along psiElt; the file is
-> `<deck>.in.srfN.txt` (the .in included).  Batch 5 + docs = 9edfff3.  Gate at 9edfff3 running from the clean worktree
-> (both compilers: load, cmd, ab vs 72ea712) -- the §5 line goes in when it reads.  LOCAL, unpushed: 6599150 2a137c9
+> `<deck>.in.srfN.txt` (the .in included).  Batch 5 + docs = 9edfff3.  **Gate at 9edfff3 GREEN** (clean worktree, both
+> compilers: load 114/114, cmd 96/96, ab 0 movers; PLAN §5 line).  Manual obscuration-types paragraph + OBS_POLYGON.jou
+> (435e33c); figures 31/56/58/59: 59 cropped, 31 and 58 produced from the engine on /png (ImageDemo.in extracted from
+> its appendix listing into examples/), 56 pending (in flight).  LOCAL, unpushed: 6599150 2a137c9
 > 7ff9849 (deck_cophi, Dave's geometry) + 8145ca3 9edfff3.  Push on Dave's word.  **Manual math re-entry DONE the same afternoon** (measured: 17 equations, not 73; 36
 > glyph fragments = figure-label debris, removed; figures 5/26/29 cropped from the 3.2 PDF; `--mathml` on the HTML
 > build; label/pre-superscript rules in the README).  NEXT (CC): the PolyObsVec/Poly3DObsVec paragraph; figures 31/56/59
