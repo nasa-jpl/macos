@@ -5,11 +5,16 @@
 old $ROOT/ZGD_test_files/e5hex1.in
 segraytrace
 3
+7
 0
 # EXPECT: Enter segment number \(0=quit\)
 # EXPECT: to Element\s+3 \(Seg3\s*\):[\s\S]*?Segment Length=\s+2\.23216815163573D\+04
 # EXPECT: from Element\s+3 \(Seg3\s*\) to Element\s+8 \(m2\s*\):[\s\S]*?Segment Length=\s+2\.18180921532551D\+04
 # EXPECT: Index\(i\)=\s+1\.450415713D\+00
 # EXPECT: to Element\s+13
+# A second segment in the same command prints too (CTRACE clears ifRayPrint on return; the
+# handler set it once, before its loop, so segment 7 traced silently -- B.2 2026-10-17):
+# EXPECT: from Element\s+0 \(InputRay\s*\) to Element\s+7 \(Seg7\s*\):[\s\S]*?Segment Length=\s+2\.20310020757986D\+04
+# EXPECT: from Element\s+7 \(Seg7\s*\) to Element\s+8 \(m2\s*\):[\s\S]*?Direction=\s+-1\.03208762760953D-01 -2\.48028939046969D-01 -9\.63239117085985D-01
 # EXPECT-NOT: is not a Segment
 # EXPECT-NOT: forrtl

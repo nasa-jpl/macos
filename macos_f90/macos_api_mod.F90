@@ -3934,6 +3934,70 @@
       end subroutine ray_trace
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : SEGRAYTRACE -- trace the one ray that passes through the reference
+      !            point (RptElt, the design segment centre) of Segment element iSeg,
+      !            and return its state at each element as ray_trace does (BRIEF_to_bindings
+      !            B.2, 2026-10-17).  The ray occupies the chief-ray slot (ray 1) and is
+      !            forced onto segment iSeg; a collimated source sends it parallel to the
+      !            chief ray, a point source aims it from the chief ray's start.
+      !            OK = FAIL when iSeg is not a Segment element.  The source grid is
+      !            rebuilt for the call, as the CLI's command does.
+      !---------------------------------------------------------------------------------------------
+      subroutine segray_trace(OK, iSeg, Pos_, Dir_, IndPrev_, IndCur_,     &
+                              RayOK_, Status_, FailElt_, nElt_)
+
+        use traceutil_mod, only: thisRay
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(in)   :: iSeg
+        real(8), dimension(3, nElt_),  intent(inout):: Pos_, Dir_
+        real(8), dimension(nElt_),     intent(inout):: IndPrev_, IndCur_
+        logical,                       intent(out)  :: RayOK_
+        integer,                       intent(out)  :: Status_
+        integer,                       intent(out)  :: FailElt_
+        integer,                       intent(in)   :: nElt_
+
+        integer :: last
+        ! ------------------------------------------------------
+        OK = FAIL
+        Pos_ = 0e0_pr;  Dir_ = 0e0_pr
+        IndPrev_ = 0e0_pr;  IndCur_ = 0e0_pr
+        RayOK_ = .false.;  Status_ = 0;  FailElt_ = 0
+
+        if (.not. SystemCheck()) return
+        if (nElt_ /= nElt) return
+        if ((iSeg < 1) .or. (iSeg > nElt)) return
+        if (EltID(iSeg) /= SegmentElt) return
+
+        ! the handler's one other refusal (a point source AT the segment centre)
+        ! traces nothing: clear thisRay so a previous call's ray cannot be returned
+        if (allocated(thisRay%InciPos)) deallocate(thisRay%InciPos,       &
+          thisRay%InciDir, thisRay%InciSrfN, thisRay%PrevIndRef,          &
+          thisRay%CurIndRef)
+
+        command = 'SEGRAYTRACE'
+        IARG(1) = iSeg
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        if (.not. allocated(thisRay%InciPos)) return
+
+        RayOK_ = LRayOK(1)
+        Status_ = RayStatus(1)
+        if (Status_ /= RayStat_OK) FailElt_ = RayFailElt(1)
+        last = nElt
+        if ((.not. RayOK_) .and. (FailElt_ > 0)) last = min(nElt, FailElt_)
+        last = min(last, size(thisRay%PrevIndRef))
+
+        Pos_(:, 1:last)  = thisRay%InciPos(:, 1:last)
+        Dir_(:, 1:last)  = thisRay%InciDir(:, 1:last)
+        IndPrev_(1:last) = thisRay%PrevIndRef(1:last)
+        IndCur_(1:last)  = thisRay%CurIndRef(1:last)
+        OK = PASS
+
+      end subroutine segray_trace
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : One-stop element metadata for layout drawing: element
       !            type id (elt_mod EltID constants), aperture declaration
       !            (ApType / ApVec / xObs, plus the projected polygon

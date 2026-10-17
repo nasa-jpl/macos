@@ -107,6 +107,20 @@ The veneers (`macos.srt`, pymacos `srt`) mark the trace modified: SRTrace re-see
 ray set.  Gates tSrt / test_srt.py (the CLI's printed numbers + the paraboloid sag + the axial
 focus + a full trace unchanged after it).
 
+`ray_trace(OK, iRay, ...)` (the CLI's RAY) and `segray_trace(OK, iSeg, ...)` (SEGRAYTRACE; the
+ray through Segment element iSeg's `RptElt`, forced onto that segment) return the same buffers
+from `thisRay`: under SMACOS each handler calls `ThisRayAlloc(nElt)` and sets `ifSRT` around its
+one CTRACE; the CLI path prints as before.  **A SMACOS handler must not loop back to its prompt**:
+the prompt re-reads an EMPTY stack and keeps the old value, so RAY's out-of-range re-prompt and
+every `GO TO 11` in SEGRAYTRACE hung the host -- both now re-prompt under `MACOS_CMD` only.
+segray_trace refuses a non-Segment element before the call and clears `thisRay`, so a refusal
+inside the handler cannot return the previous call's ray.  For the Segment elements the ray does
+not meet, a column repeats the previous state (the source point before the hit segment, the hit
+segment's after).  Found on the way: CTRACE clears `ifRayPrint` on return, and SEGRAYTRACE set it
+once before its loop -- a second segment in one command traced silently (journal leg added).
+Gates tSegRay / test_segray.py (the CLI's numbers for segments 3 and 7; every segment's crossing
+on the chief-parallel line through its `RptElt`, from the deck's lines).
+
 The MATLAB **design layer** (`macos.design.System`,
 `MACOS_resources/mmacos/src/+macos/+design/`) is the first heavy consumer of
 this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the
