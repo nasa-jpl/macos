@@ -1,8 +1,11 @@
 # RRAY (chief + 4 marginal rays), PRAY (8 pupil-ring rays), TPR (trace the found rays), FSR (the ray
 # nearest a fractional source position) on the manual's Cassegrain with exit pupil (cmdref: Ray Tracing).
-# Known gap, measured 2026-10-16 (PLAN_CONSOLIDATION 1.2): TPR prints RayPosHist, which is filled only
-# when the deck declares SaveRayPosH= Y -- on an ordinary deck every position prints 0.  This journal
-# pins the finders and that TPR runs; it does not assert TPR's numbers.
+# TPR (PLAN_CONSOLIDATION 1.2 (e), fixed 2026-10-17): it printed RayPosHist, filled only when the deck
+# declares SaveRayPosH= Y (every position 0 on this deck), and after RRAY it also traced "ray 0" from
+# the slots RRAY leaves empty (NaN with the key).  It now prints the position CTRACE leaves at the end
+# element and skips empty slots.  The numbers below are what the pre-fix TPR printed WITH
+# SaveRayPosH= Y (b81021f, ifx): ray 63 (-9.075851181705730E-11, 8.250726490910409E-12, 1.5), ray 108
+# x -5.768541200268373E-11, the chief (0, 0, 1.5).
 old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
 rray
 tpr
@@ -13,9 +16,14 @@ fsr
 # EXPECT: Source aperture diameter =\s+4\.0000
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.6923,\s+-0\.1538,\s+ID =\s+63
 # EXPECT: Reference ray indices \(chief \+ 4 marginal\) =\s+1\s+63\s+122\s+52\s+4
-# EXPECT: \*\*CTRACE iRay =\s+63 ,
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.0769,\s+1\.0769,\s+ID =\s+108
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+0\.7692,\s+-0\.1538,\s+ID =\s+60
 # EXPECT: Ray id:\s+60
 # EXPECT-NOT: Need to run RRAY
+# EXPECT: TPR ray 1 at element 6:\s+0\.0+E\+00\s+0\.0+E\+00\s+1\.50+E\+00
+# EXPECT: TPR ray 63 at element 6:\s+-9\.07585118170\d*E-11\s+8\.25072649091\d*E-12\s+1\.50+E\+00
+# EXPECT: TPR ray 108 at element 6:\s+-5\.76854120026\d*E-11\s
+# EXPECT-NOT: TPR ray 0 
+# EXPECT-NOT: NaN
+# EXPECT-NOT: RayPosHist
 # EXPECT-NOT: forrtl
