@@ -24,6 +24,23 @@
 
 ## Active slice
 
+> **2026-10-17 midday (CC) RESUME POINT -- context nearly exhausted.**  Done today: pushes (macos 220b68f,
+> resources 087714b); TO's E-items gated green at 72ea712 (708ffa5); deck_cophi slides 16/17 (two-color lock-in =
+> time-multiplexed) + compact block diagrams (fa9056f) + the new slide 18 "One bench, four sensors" with the
+> insertable reference flat in the LO path and the ZWFS / P-SRI pick-offs (7924034), edit copy synced; Phase B
+> batch 3 (79802d7) and batch 4 (WLENS_SWL, FILTERS_MULTISPEC, ATMOS_DMBUILD, HELP_POL): **118 of 128 commands
+> carry a journal**; findings (a)-(p) in PLAN 1.2 -- new today (o) RFILT reads back 0 star types (MULTISPEC
+> unusable from NFILT), (p) ATMOS is random (not under SEED) and loses every ray at a Reflector.  The 10 uncovered:
+> VI/EMAcs (editor), NEW (dialog), SINt (no .srf fixture), IMG (ObjFile), GETMatlabmatrix (SMACOS stub),
+> POLarized (reached as `pol`; the index wants the full prefix), DMBuild? (check 40_suite_coverage.md).
+> **Manual math re-entry -- re-scope first:** the 23 "small images" left in src/02/04/05/08 are FIGURE DEBRIS
+> (arrowheads, brackets, a circle: image12-16 at 02:136, image62-70 at 05:54, image112 at 08:29, image22-30/53-61
+> in 04), not equations; the README's "~73 equation images" count is stale.  Measure what is left by grepping for
+> Symbol-font / plain-text equations (e.g. `grep -n 'lambda\|phi\|sqrt' src/0*.md` outside code blocks) and
+> FIGURE_RESCUE_LOG.md before planning; the three debris lines are the "3 figures pending" of memory
+> project_manual_markdown_migration.  LOCAL, unpushed: fa9056f 79802d7 708ffa5 7924034 + the batch-4 commit (+
+> TO's).  Push on Dave's word.**
+
 > **2026-10-17 morning (CC): PUSHED on Dave's word -- macos through 220b68f, resources through 087714b.  Phase B: 31
 > journals, 110/128 commands covered; three more CLI fixes gated (5bb836f: SRT SIGSEGV = thisRay never allocated,
 > LS/LL exact so LSPOT/LLO dispatch; 8d04261 MRESET; 6ccd86d BWK + `!` line); findings (a)-(n) in PLAN 1.2; TO took

@@ -2,14 +2,11 @@
 
 ## Appendix — CLI-suite coverage of the engine commands
 
-Of the 128 engine commands, 110 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 18 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
+Of the 128 engine commands, 118 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 10 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
 
-- **Session & Files:** HELP, VI, EMAcs
+- **Session & Files:** VI, EMAcs
 - **Prescription I/O:** NEW
-- **Source & Wavelength:** WLENS, SWL, MULtispec, NFIlt, RFIlt, SFIlt, ATMosphere
-- **Behavior Toggles:** POLarized
 - **Surface Data:** SINt
-- **Linear Model:** DMBuild
 - **Outputs (Ray-Trace & Diffraction):** IMG
 - **File Output:** GETMatlabmatrix
 - **Window & Post-Processing:** PLOcate, NOPLOC, PWIn, ODRaw, PGD
