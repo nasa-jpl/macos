@@ -1,0 +1,10 @@
+# PWIN (cmdref: Window & Post-Processing): launches the external he.py plot GUI in the background.  The
+# PATH is checked first, synchronously, and the result said in one line; on a box without he.py nothing
+# is launched.  Before 2026-10-17 the shell was handed the literal '!he.py&' (never launched anything)
+# and its 'not found' arrived after the next prompt (PLAN_CONSOLIDATION 1.2 (q)).
+pwin
+! echo shell-ok
+# EXPECT: MACOS> pwin\s+PWIN: (he\.py not found on PATH; nothing launched|launching he\.py in the background)\s+MACOS>
+# EXPECT: shell-ok
+# EXPECT-NOT: !he\.py
+# EXPECT-NOT: forrtl

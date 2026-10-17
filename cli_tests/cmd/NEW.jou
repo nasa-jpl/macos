@@ -1,0 +1,56 @@
+# NEW: the interactive prescription-definition dialog (cmdref: Prescription I/O), driven to a one-element
+# system (collimated 0.2 m source, 11-point circular grid, a flat FocalPlane at z = 1), accepting every
+# default that has one; the blank lines are those defaults.  The dialog prints the finished prescription
+# ('Is this correct?'), asks the output frame, writes <name>.in and leaves the system LOADED: OPD at the
+# focal plane traces 61 rays, RMS 0.  The file is then re-loaded with OLD.  Before 2026-10-17 the named
+# file stayed EMPTY and the deck went to fort.77 (unit 1 opened, unit RX_FID written; PLAN 1.2 (r)).
+cd $TMP
+new
+$TMP/newsys.in
+
+
+
+
+
+m
+
+
+
+
+0.2
+11
+
+
+1
+FPA
+FocalPlane
+Flat
+0,0,1
+
+0,0,-1
+
+
+
+
+
+
+
+
+none
+opd 1
+! cat $TMP/newsys.in
+! ls -1 $TMP
+old $TMP/newsys.in
+opd 1
+# EXPECT: MACOS> new\s+Enter file name: \S+/newsys\.in\s+File \S+/newsys\.in being created\.\s+Enter chief ray input direction vector \(x,y,z\) \[0\.00000,0\.00000,1\.00000\]:
+# EXPECT: Enter base units \(m, cm, mm, in, none\) : m\s+Enter wavelength units
+# EXPECT: Enter aperture diameter or angle \[1\.00000\]: 0\.2\s+Enter number of grid points \[256\]: 11
+# EXPECT: Enter number of elements\[no default\]: 1\s+Enter Element   1 Data:\s+Enter element name \(no blanks\) \[Elt\]: FPA
+# EXPECT: Enter surface type : Flat\s+Enter element vertex location \(x,y,z\)\[no default\]: 0,0,1
+# EXPECT: Is this correct\? \[YES\]:\s+Enter xOut \(x,y,z\) \[1\.00000,-?0\.00000,-?0\.00000\]:
+# EXPECT: MACOS> opd 1\s+Enter element where OPD is to be evaluated: \[0\]: 1\s+OPD: Rays being traced =\s+61[\s\S]*?OPD: nPassRays =\s+60,\s+DAvgCumL =  10\.00000000D-01[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# EXPECT: MACOS> ! cat \S+/newsys\.in\s+% -+\s+% Source Definition[\s\S]*?Aperture=2\.0+1E-01[\s\S]*?nElt=  1\s+iElt=  1\s+EltName=  FPA\s+Element=  FocalPlane\s+Surface=  Flat
+# EXPECT-NOT: fort\.77
+# EXPECT: Input file \S+/newsys\.in being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?MACOS> opd 1[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# EXPECT-NOT: Must load optical data first
+# EXPECT-NOT: forrtl
