@@ -353,6 +353,12 @@ C***********************************************************************
      & 			      mDOE=6       ! max # DOE elements
         Integer :: maxAsphCoef  ! default to 4 terms
 
+!-->  dxEltDiffr(iElt): dxElt(iElt) was last set by DXCALC from a
+!     diffraction propagation (far-field / sphere-to-sphere / Fresnel) --
+!     the diffraction grid pitch -- and not from the ray-grid spacing an
+!     OPD there leaves (SYSPROP's pixel lines read it; PLAN 1.2 (d)).
+        Logical, dimension(:), allocatable :: dxEltDiffr
+!<--
         Logical :: ifInMTFCalc,BWK_FLG,LStopAtEltAutoSet,LSavRayL,SrcLF_FLG,
      &             CalcSrcZFrame_FLG,DupElt_FLG
         Logical, dimension(:), allocatable :: LFastRayTrace,LRayOK,
@@ -1104,6 +1110,15 @@ C***********************************************************************
         if (m_err_elt /= 0)
      &    call macos_memory_failure(
      &          'elt_mod_init(complex*16): allocate failed!')
+
+!-->  dxEltDiffr: its own deallocate / allocate pair (PLAN 1.2 (d))
+        if (allocated(dxEltDiffr)) deallocate(dxEltDiffr)
+        allocate(dxEltDiffr(0:mElt), stat=m_err_elt)
+        if (m_err_elt /= 0)
+     &    call macos_memory_failure(
+     &          'elt_mod_init(dxEltDiffr): allocate failed!')
+        dxEltDiffr(:) = .FALSE.
+!<--
 !-->  Glass CATALOG state is blanked HERE, at allocation, and NOT in
 !     elt_mod_init_vars.  The catalog (GlassName/GlassTable) is loaded
 !     ONCE at start-up (rl_macos_glass.inc in the CLI, smacos_glass.inc
@@ -1364,6 +1379,7 @@ C***********************************************************************
           ZernRad(:)           =  0e0_pr
           RayL(:)              =  0e0_pr
           dxElt(:)             =  0e0_pr
+          dxEltDiffr(:)        = .FALSE.
           IndRef(:)            =  0e0_pr
           ArrIndRef(:,:)       =  0e0_pr
           CumRayL(:)           =  0e0_pr
