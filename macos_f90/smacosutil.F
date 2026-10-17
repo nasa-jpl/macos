@@ -61,7 +61,8 @@ C  Load IARG(1) for other commands
      &	  LCMP(command,'DMBUILD',3).OR.LCMP(command,'COORD',3).OR.
      &	  LCMP(command,'BUILD',3).OR.LCMP(command,'INTENSITY',3).OR.
      &	  LCMP(command,'GAIN',3).OR.LCMP(command,'LOG',3).OR.
-     &    LCMP(command,'DVAR',4)) THEN
+     &    LCMP(command,'DVAR',4).OR.
+     &    LCMP(command,'SEGRAYTRACE',7)) THEN
       	  CALL I2C(IARG(1),ls,STACK,' ')
 	  GO TO 110
 	END IF

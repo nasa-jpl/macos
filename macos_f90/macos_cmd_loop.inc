@@ -1460,7 +1460,11 @@ C             directly at RptElt.
 
 	  ELSE IF (LCMP(command,'SEGRAYTRACE',7)) THEN
 	    IF (ifLoad) THEN
+#ifdef MACOS_CMD
 	      ifRayPrint = .TRUE.
+#else
+	      ifRayPrint = .FALSE.
+#endif
 	      ifBuild     = .FALSE.
 	      ifTrace     = .FALSE.
 	      ifPropagate = .FALSE.
@@ -1471,12 +1475,24 @@ C             directly at RptElt.
 
 	        IF ((iSeg .LT. 1) .OR. (iSeg .GT. nElt)) THEN
 	          WRITE(*,*) ' Invalid element number.'
+!-->  Re-prompt in the CLI only: under SMACOS the prompt re-reads an
+!     empty stack and every GO TO 11 here looped for ever (the api's
+!     segray_trace, B.2 2026-10-17); SMACOS traces one segment a call.
+#ifdef MACOS_CMD
 	          GO TO 11
+#else
+	          GO TO 12
+#endif
+!<--
 	        END IF
 	        IF (EltID(iSeg) .NE. SegmentElt) THEN
 	          WRITE(*,*) ' Element ', iSeg,
      &              ' is not a Segment.'
+#ifdef MACOS_CMD
 	          GO TO 11
+#else
+	          GO TO 12
+#endif
 	        END IF
 
 C           Initialize the source ray grid first (this sets up shared
@@ -1499,7 +1515,11 @@ C           Override the chief-ray slot to land on RptElt(:,iSeg).
 	          IF (S1 .LE. 0d0) THEN
 	            WRITE(*,*)
      &              ' Segment center coincides with source position.'
+#ifdef MACOS_CMD
 	            GO TO 11
+#else
+	            GO TO 12
+#endif
 	          END IF
 	          RayDir(1:3,1) = DV1(1:3) / S1
 	        END IF
@@ -1518,6 +1538,17 @@ C           index, since that is what CTRACE compares against.
 	        ELSE
 	          iEndElt = RayTgtElt
 	        END IF
+!-->  CTRACE clears ifRayPrint on return, so the CLI sets it for every
+!     segment (a second segment in one SEGRAYTRACE printed nothing, B.2
+!     2026-10-17).  In SMACOS the ray's state per element is saved in
+!     thisRay, as RAY does (segray_trace).
+#ifdef MACOS_CMD
+	        ifRayPrint = .TRUE.
+#else
+	        CALL ThisRayAlloc(nElt)
+	        ifSRT = .TRUE.
+#endif
+!<--
 
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
@@ -1526,9 +1557,11 @@ C           index, since that is what CTRACE compares against.
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &		       xDraw,yDraw)
+#ifdef MACOS_CMD
 	        GO TO 11
+#endif
  12	      CONTINUE
-	      ifRayPrint = .FALSE.
+	      ifRayPrint = .FALSE.; ifSRT = .FALSE.
 	    ELSE
 	      WRITE(*,150)
 	    END IF
