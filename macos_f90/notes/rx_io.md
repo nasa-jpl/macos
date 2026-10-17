@@ -57,6 +57,8 @@ copy (a `*Tr` array, a local), never overwrite the Rx array.**
   `Rx_header_unknown.jou` (+ `OptFooKey=`), pymacos `test_rx_parse_warnings.py` (capfd).
 
 ## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
+> User-facing: Manual §4 "Obscuration types and the ObsVec= line" (the type table, the three polygon forms, the Neg rule; 2026-10-17).  Gate `cli_tests/cmd/OBS_POLYGON.jou`.
+
 - For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
   used to require xObs to be parsed BEFORE the polygon line, because
   `SetCvxPolyObsVtx` projects the 3D vertices to element-local 2D at parse
