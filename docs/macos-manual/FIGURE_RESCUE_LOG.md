@@ -19,7 +19,15 @@ removed by hand (36 tiny glyph images on 15 lines, the remaining
 ('Background', 'Commands for Building Models', 'Element Surface Types',
 'Ray-Trace Commands') and the `{.underline}` wrappers on four prose
 lines.  The two-panel OPD figure 6 keeps its panel labels as an italic
-line under the image.  GOOD is now 34; 31, 56 and 59 still need crops.
+line under the image.  GOOD is now 34.  Later the same day: figure 59 (complex plane, p. 132)
+cropped from the PDF; figures 31 (DRAW views of ImageDemo.in), 56 (GBLUR
+example) and 58 (Luneberg gain) have NO artwork in the 3.2 PDF either —
+their captions sit over blank space, which is why every crop of them
+caught text — so they are PRODUCED BY THE ENGINE: `tools/figs/FIG31.jou`,
+`FIG56.jou`, `FIG58.jou` through `cli_tests/cli_cmd_gate.py` on the /png
+device, assembled by `tools/regen_engine_figs.py` (31: the two views side
+by side; 56: the two composites; 58: the column cut of the gain).  Nothing
+is pending.
 
 ## Review status (2026-07-06)
 

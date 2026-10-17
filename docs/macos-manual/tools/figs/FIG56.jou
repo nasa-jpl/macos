@@ -1,0 +1,31 @@
+# Figure 56, GBLUR example on the coronagraph's composed detector image (CoroExample.in, element 16, 128 pixels
+# of 1.392542e-6): a fresh COMPOSE before each GBLUR, a 0.1 um kernel (far below the pixel: the image is the
+# PSF) then a 20 um kernel (14 pixels: the smeared image).  Pages: 0 the INT plot, 1 and 2 the two composites.
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in
+# DEADLINE: 300
+cd $TMP
+old CoroExample.in
+pgd
+/png
+mod
+ngridpts=128
+q
+int 16
+compose
+16
+128
+1.392542E-06
+gblur
+1d-7,1d-7
+yes
+compose
+16
+128
+1.392542E-06
+gblur
+2d-5,2d-5
+yes
+dad
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig56; cp $TMP/giza_*.png $ROOT/docs/macos-manual/build/figs/fig56/
+# EXPECT: (Image added\. Plot composed image\? \[YES\]: yes[\s\S]*){2}
+# EXPECT-NOT: forrtl

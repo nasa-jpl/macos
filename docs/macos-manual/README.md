@@ -244,9 +244,17 @@ Two clean-ups happened at migration:
    debris, all removed) plus 17 real equations, now LaTeX (see Math
    above); the monomial generating function was blank in the printed
    3.2 manual and is written from the engine's `MonomialEval`.
-2. **Figures 31, 56, 59** need hand-tightened crops (see
-   `FIGURE_RESCUE_LOG.md`).  Figures 5, 26 and 29, which had no image
-   at all, were cropped from `docs/macosMan3.2.pdf` on 2026-10-17.
+2. ~~**Figures 31, 56, 59**~~ DONE 2026-10-17.  Figure 59 was cropped
+   from `docs/macosMan3.2.pdf`; figures 31, 56 and 58 had NO artwork in
+   any source (the 3.2 PDF prints their captions over blank space), so
+   they come from the running engine: `tools/figs/FIG31.jou`,
+   `FIG56.jou`, `FIG58.jou` are journals the CLI suite's driver runs on
+   the `/png` device, and `python3 tools/regen_engine_figs.py` reruns
+   them and assembles `src/media/fig_rescued_{31,56,58}.png` (a journal
+   whose EXPECT fails stops its figure).  `examples/ImageDemo.in`, the
+   deck of figure 31, was extracted from the appendix listing that
+   `examples/ImageDemo.jou` turned out to be.  Figures 5, 26 and 29, which
+   had no image at all, were cropped from the PDF the same day.
 3. **New-feature content**: FreeForm details, SLSQP optimization, XPS,
    COMPOSE/broadband, giza graphics, design layer, etc. still need
    sections written.
