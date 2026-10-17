@@ -2,19 +2,12 @@
 
 ## Appendix — CLI-suite coverage of the engine commands
 
-Of the 128 engine commands, 118 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 10 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
+Of the 128 engine commands, 128 are issued by at least one journal of the CLI regression suite (`cli_tests/cmd/*.jou`, run by `cli_tests/run_cli_tests.sh cmd` on both compilers); each entry of Part I names its journals.  The 0 commands below have no journal yet — the Phase B worklist.  A journal is one pty transcript with `# EXPECT:` / `# EXPECT-NOT:` assertions, so writing one is writing the entry's example and its test at once.
 
-- **Session & Files:** VI, EMAcs
-- **Prescription I/O:** NEW
-- **Surface Data:** SINt
-- **Outputs (Ray-Trace & Diffraction):** IMG
-- **File Output:** GETMatlabmatrix
-- **Window & Post-Processing:** PLOcate, NOPLOC, PWIn, ODRaw, PGD
-- **Misc / Debug:** JWST_v3d, Vis3d
 
 ## Appendix — binding coverage of the engine commands
 
-Each Part I entry's *Binding:* line says how mmacos / pymacos reach it: **SMACOS command** (an api routine issues it through SMACOS, detected in `macos_api_mod.F90`), **direct setter** (an api routine under another name), **CLI-only** (session, shell, plot style, file modes), **CLI-only, legacy** (the internal linear model and the differential commands, superseded by the `dw_dx` route — Dave 2026-10-10) or **missing**.  Generated with the binding generator (`MACOS_resources/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  Counts: SMACOS command 26, direct setter 17, CLI-only 29, CLI-only, legacy 14, missing 42.
+Each Part I entry's *Binding:* line says how mmacos / pymacos reach it: **SMACOS command** (an api routine issues it through SMACOS, detected in `macos_api_mod.F90`), **direct setter** (an api routine under another name), **CLI-only** (session, shell, plot style, file modes), **CLI-only, legacy** (the internal linear model and the differential commands, superseded by the `dw_dx` route — Dave 2026-10-10) or **missing**.  Generated with the binding generator (`MACOS_resources/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  Counts: SMACOS command 27, direct setter 17, CLI-only 29, CLI-only, legacy 14, missing 41.
 
 The **missing** commands, by the group that will carry them (PLAN_CONSOLIDATION 1.4b: single-ray tracing first, the Zernike / analysis set second, the image-plane set third):
 
@@ -24,7 +17,7 @@ The **missing** commands, by the group that will carry them (PLAN_CONSOLIDATION 
 - through `compose_*` (B.2, image-plane set): MULtispec, CADD
 - image-plane post-processing (B.2, third): NFIlt, RFIlt, SFIlt, ATMosphere, TPR, FSR, FDP, NOIse, SEEd, MTF, CMTF, BLUr, GBLur, GAIn, ROW
 - source-adjustment mode: SAOpt
-- single-ray tracing (B.2, first): RAY <i>, SEGRAYTrace <i>, PRAy, RRAy, SINt, SRAy, SRT, SRTrace
+- single-ray tracing (B.2, first): RAY <i>, SEGRAYTrace <i>, PRAy, RRAy, SINt
 - beam coordinates at an element (the frames alone are `elt_csys_get`): COOrd <elt>
 - all-element coordinates to xyzLocal.txt: ACOor
 - chief-ray walk: BWK

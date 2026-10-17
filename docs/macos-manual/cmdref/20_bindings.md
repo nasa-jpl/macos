@@ -1692,6 +1692,16 @@ NOLL_MODE  Noll Zernike mode over an arbitrary pupil support (self-contained). [
 <!-- BEGIN NOTES fn-noll-mode -->
 <!-- END NOTES fn-noll-mode -->
 
+#### obs
+
+- **mmacos:** `out = macos.obs(opt)`
+- **pymacos:** *not available*
+
+Query or set the ray-trace obscuration option (OBS). OPT = macos.obs() returns the option in force (api obs_opt_get): 'all' (every ray), 'positive' (unobscured rays only: the engine default) or 'negative' (obscured rays only). macos.obs(OPT) sets it (OBS).  Session state: persists until changed, across loads.  Twin of pymacos obs_set (Dave 2026-10-16).
+
+<!-- BEGIN NOTES fn-obs -->
+<!-- END NOTES fn-obs -->
+
 #### obs_set
 
 - **pymacos:** `pymacos.obs_set(option)`
@@ -2108,6 +2118,16 @@ Set ZernCoef values at the given modes on a Zernike (SrfType=8) or ZrnGrData (Sr
 
 <!-- BEGIN NOTES fn-setEltSrfZernCoef -->
 <!-- END NOTES fn-setEltSrfZernCoef -->
+
+#### srt
+
+- **mmacos:** `r = macos.srt(x, y, endElt)`
+- **pymacos:** `pymacos.srt(x, y, end_elt)`
+
+Trace ONE ray from a normalized source-aperture point (the CLI's SRT). r = macos.srt(x, y)          trace to the last element r = macos.srt(x, y, endElt)  trace through element endElt x, y: the point in the normalized source aperture, |x|, |y| <= 0.5; (0, 0) is the chief ray.  Fields (column k = element k, BaseUnits / global frame): r.pos     3 x nElt  where the ray meets element k
+
+<!-- BEGIN NOTES fn-srt -->
+<!-- END NOTES fn-srt -->
 
 #### unload
 

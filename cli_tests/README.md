@@ -40,6 +40,12 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   was cut at 130 before); `$DECK` is a COPY, so `! sed -i ... $DECK` is the way to vary a deck.
 - Make the gate non-vacuous: pair the asserted state with its contrast (SPCENTER's two spot means,
   BWK's refusal then its walk, the FOV count before and after).
+- A TEXT / BINARY / FITS output that already exists asks `exists.  Overwrite? [YES]:` — the next
+  journal line answers it (a `! awk` line there is eaten as the answer); put a `yes` before it.  An
+  external program the CLI waits for must exit by itself: `vi` with the file name `+q!` does.
+- A deck that needs a data file beside it (`ObjFile=`, `.srfN.txt`) gets the file written by a
+  `! awk` line after `cd $TMP`, and the key added with `! sed -i '1i Key= file' $DECK`; the gate's
+  one journal line is 256 characters.
 
 ## Files
 

@@ -1,0 +1,9 @@
+# JWST_v3d / Vis3d (cmdref: Misc / Debug): the 3-D rendering demo is compiled in only with VIS3D_DEMO;
+# every form of the name answers with the refusal, no deck needed.
+vis3d
+jwst_v3d
+jwst
+# EXPECT: MACOS> vis3d\s+\*\*JWST 3D rendering demo not included in MACOS!
+# EXPECT: MACOS> jwst_v3d\s+\*\*JWST 3D rendering demo not included in MACOS!
+# EXPECT: MACOS> jwst\s+\*\*JWST 3D rendering demo not included in MACOS!
+# EXPECT-NOT: forrtl

@@ -243,7 +243,7 @@ the model at init).
 
 Run a shell command.
 
-*CLI suite:* `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `LINEAR_MODEL.jou`, `METCALC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SHELL_LONG.jou`, `SPCENTER.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EMACS_VI.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `METCALC.jou`, `NEW.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PWIN.jou`, `SHELL_LONG.jou`, `SINT.jou`, `SPCENTER.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -263,7 +263,7 @@ Interactive CLI only.
 
 Working directory shell helpers.
 
-*CLI suite:* `COORD_ACOOR.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `LINEAR_MODEL.jou`, `NSRefractor_grid.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `WINDOW_GBS.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `COORD_ACOOR.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SINT.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `WINDOW_GBS.jou`, `ZCOEF_zero_rays.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -313,7 +313,7 @@ taken as a listing.  Interactive CLI only.
 
 Open file in editor.
 
-*CLI suite:* none yet.
+*CLI suite:* `EMACS_VI.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -324,7 +324,10 @@ Enter filename [no default]: Cassegrain.in
 ```
 Launches the editor on the file via the system shell and waits
 for it to exit.  The command as typed becomes the editor
-command, so type `emacs` in full.  Handy for touching up a
+command, so type `emacs` in full (`ema` runs a program named
+ema: "sh: ema: not found").  The file-name token is passed
+verbatim, so `vi` with the "name" `+q!` opens and quits at
+once — the suite's leg.  Handy for touching up a
 prescription before OLD/VALidate.  Interactive CLI only.
 *Related:* OLD, VALidate, RX.
 <!-- END NOTES cmd-VI -->
@@ -337,7 +340,7 @@ prescription before OLD/VALidate.  Interactive CLI only.
 
 Start a new optical system.
 
-*CLI suite:* none yet.
+*CLI suite:* `NEW.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — interactive element-entry dialog.
 
@@ -347,11 +350,23 @@ MACOS>new
 Enter file name: MyLens
 ```
 Starts the interactive prescription-definition dialog: source
-questions first, then each element in turn (see Section 4 of
-the manual).  The name must be unused — an existing `.in` file
-prints "already exists. Please use a new name or use OLD." and
-re-prompts.  On completion the new system is written to
-`<name>.in` and loaded.  `q` at the name prompt aborts.
+questions first (chief-ray direction and position, source
+distance, index and extinction, base units — no default —
+wavelength units, wavelength, flux, grid type, aperture, grid
+points, the input-plane x and y axes, segments for a
+segmented grid, then the element count), then each element in
+turn (name, element type, surface type, vertex — no default —
+rotation point, principal axis, conic data for a curved
+surface, aperture, obscurations, Fresnel distance, propagation
+type, element coordinates, glass), the finished prescription
+for review ("Is this correct?") and the output frame (xOut,
+yOut); see Section 4 of the manual.  The name must be unused —
+an existing `.in` file prints "already exists. Please use a
+new name or use OLD." and re-prompts.  On completion the new
+system is written to `<name>.in` and is LOADED (an OPD runs at
+once).  `q` at the name prompt aborts.  Before 2026-10-17 the
+named file stayed empty and the deck went to `fort.77` in the
+working directory (PLAN_CONSOLIDATION 1.2 (r)).
 *Related:* OLD, SAVe, MODify.
 <!-- END NOTES cmd-NEW -->
 
@@ -361,7 +376,7 @@ re-prompts.  On completion the new system is written to
 
 Load a .in prescription.
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
@@ -1641,7 +1656,7 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `BEAM_GAUSS.jou`, `COMPOSE_ADD_NOISE.jou`, `FILTERS_MULTISPEC.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `OBS_NONE.jou`, `SESSION_INFO.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `BEAM_GAUSS.jou`, `COMPOSE_ADD_NOISE.jou`, `FILTERS_MULTISPEC.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `OBS_NONE.jou`, `PLOCATE_NOPLOC.jou`, `SESSION_INFO.jou`, `SINT.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -1664,7 +1679,7 @@ type of choice for journals/scripts that must run headless.
 
 Set up interpolated-surface data.
 
-*CLI suite:* none yet.
+*CLI suite:* `SINT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — single-ray tracing (B.2, first).
 
@@ -1678,11 +1693,19 @@ Surface INTerpolate: reads the data files for every
 Interpolated (SrfType=5) surface in the prescription and
 precomputes the triangular-interpolation coefficients used by
 the ray trace (Section 4.4).  Per element it expects
-`filnam.srfN.bin` (binary) with `.txt` fallback; if neither
+`<deck>.srfN.bin` (binary) with `.txt` fallback, where <deck>
+is the loaded prescription's file name INCLUDING its `.in`
+(`Cassegrain.in.srf3.txt` for element 3); if neither
 exists it prompts "Enter new .srf-file root name or QUIT to
 exit:".  File format: header `nDP iComputeDZ`, then one
 `x y z [dz/dx dz/dy]` row per data point (slopes computed by
-the DIDES code when iComputeDZ=1).  Until SINt runs,
+the DIDES code when iComputeDZ=1); x, y in the element's
+local frame, z the DEVIATION from the base conic, positive
+along psiElt (toward the incoming beam) — a uniform +1e-6
+shortens the path to the surface by 1e-6.  Measured on the
+suite's f = 1 m paraboloid: a 1e-4 r^2 deviation gives RMS
+5.64e-7 / P-V 1.91e-6 at the focal plane (5.8e-7 / 2.0e-6 for
+twice the deviation).  Until SINt runs,
 interpolated surfaces trace as their base conic.  Invalidates
 trace/build/propagate/perturb state.  SMACOS: no arguments —
 the data files must exist under the loaded Rx root name.
@@ -2364,7 +2387,7 @@ SMACOS: CARG(1)=type.
 
 Wavefront error map.
 
-*CLI suite:* `ATMOS_DMBUILD.jou`, `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_DMBUILD.jou`, `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `SINT.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `trace_rays`.
 
@@ -2631,7 +2654,7 @@ element motions.  No arguments; requires only a loaded Rx.
 
 Wavefront intensity.
 
-*CLI suite:* `BEAM_GAUSS.jou`, `EFL_SYSPROP.jou`, `INT_LOG.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BEAM_GAUSS.jou`, `EFL_SYSPROP.jou`, `IMG.jou`, `INT_LOG.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `int_cmd`, `cfield_cmd`.
 
@@ -2670,7 +2693,7 @@ IARG(1)=element; intensity available programmatically.
 
 Pixelated intensity output.
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `WINDOW_GBS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `PLOCATE_NOPLOC.jou`, `WINDOW_GBS.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `int_cmd` / `int_get`.
 
@@ -2851,7 +2874,7 @@ the MTF data is computed into the shared display buffer.
 
 Simulate imaging of the ObjFile object map.
 
-*CLI suite:* none yet.
+*CLI suite:* `IMG.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **direct setter** — the INT block: `int_cmd` / `int_get`.
 
@@ -2871,7 +2894,16 @@ result ('Incoherent Imaging' / 'Coherent Imaging', file tag
 keyword — without it "* Object intensity input not
 available".  Must be evaluated at the LAST element ("Imaging
 must be on focal plane!") and is unavailable in
-vector-diffraction mode.  Discrepancy: the help one-liner
+vector-diffraction mode.  The object map is a text matrix of
+the diffraction grid's size (model size squared), read at
+LOAD.  Measured (Cassegrain, an 8 x 8 square of ones at the
+center of a 256 x 256 map): the incoherent image is the PSF
+convolved with the object — its sum is the PSF's sum times
+the 64 object pixels (2.1204e10 = 64 x 3.3131e8), peak 2.24e8;
+the coherent image of the same unit-amplitude object has peak
+5.3e19 and sum 2.2e21, 1e9 times the incoherent — an
+unnormalized transform in the coherent branch of SysImging,
+recorded as PLAN_CONSOLIDATION 1.2 (s).  Discrepancy: the help one-liner
 ("load saved image data") does not describe what the command
 does.  SMACOS: no LoadStack entry — prompts take their
 defaults (last element, incoherent).
@@ -3006,7 +3038,7 @@ plots until changed.
 
 Toggle image polarity (NEG=astro, POS=conventional).
 
-*CLI suite:* `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `IMG.jou`, `MTF_LOS_ROWCOL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3079,7 +3111,7 @@ to reinitialize on the next plot.  Interactive CLI only.
 
 ASCII print output.
 
-*CLI suite:* `EXPORT.jou`, `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `EXPORT.jou`, `IMG.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — CLI file-output mode (the bindings return the arrays).
 
@@ -3182,13 +3214,15 @@ Persists until another plot type is chosen.
 
 (currently disabled: handler is a no-op stub) (smacos only).
 
-*CLI suite:* none yet.
+*CLI suite:* `GETMATLABMATRIX.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — disabled (a no-op stub); the bindings return arrays.
 
 <!-- BEGIN NOTES cmd-GETMatlabmatrix -->
 SMACOS builds only (#ifdef SMACOS_CMD) — the CLI does not
-dispatch it.  The handler body is entirely commented out, so
+dispatch it ("Command not understood ... ** Unknown command =
+getmatlabmatrix", pinned by the suite).  The handler body is
+entirely commented out, so
 the command is currently a no-op stub: it matches, does
 nothing, and returns to the prompt.  Discrepancy: the help
 line promises fetching a named matrix into MATLAB; no such
@@ -3205,7 +3239,7 @@ SMACOS call-line arguments instead.
 
 Set plot pixel-array location.
 
-*CLI suite:* none yet.
+*CLI suite:* `PLOCATE_NOPLOC.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — plot pixel-array location.
 
@@ -3228,7 +3262,12 @@ offered only when nOutCord=5 — otherwise the prompt reads
 explicit 'Enter xOut (x,y,z) ' / 'Enter yOut (x,y,z) ' axis
 vectors, Beam derives a chief-ray local frame at the last
 element.  A pixel size of 0 (the default) zeroes all the
-offsets.  Cleared by NOPLOC.  SMACOS (keyword PLOCATE or
+offsets.  Measured (Cassegrain, 64 x 64 x 2e-6 PIXel array,
+window at pixel 10,10): the PSF peak lands at row 22, column
+22 of the array and the central pixel reads 2.87e4; after
+NOPLOC the peak is at (32,32), the central pixel 2.41e7.  The
+propagation's own "Peak occurs at i= 129, j= 129" is the
+diffraction grid and does not move.  Cleared by NOPLOC.  SMACOS (keyword PLOCATE or
 WINDOW): CARG(1)=coordinate option, DARG(1)=pixel size,
 DARG(2:3)=element vertex, DARG(4:5)=window center.
 *Related:* NOPLOC, PIXel, COMpose, SPOt, FEXit.
@@ -3240,7 +3279,7 @@ DARG(2:3)=element vertex, DARG(4:5)=window center.
 
 Clear plot location.
 
-*CLI suite:* none yet.
+*CLI suite:* `PLOCATE_NOPLOC.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `window_off`.
 
@@ -3260,17 +3299,25 @@ PLOcate / WINdow.
 
 Launch external he.py plot GUI.
 
-*CLI suite:* none yet.
+*CLI suite:* `PWIN.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — external plot GUI.
 
 <!-- BEGIN NOTES cmd-PWIn -->
-Interactive CLI only.  No dialog: spawns an external
-Python/Tcl-Tk GUI script ("he.py") in the background through
-the shell — a vestigial hook; nothing useful happens unless
-an executable he.py is on the PATH.  Discrepancy: the help
-line "plot window definition" describes the PLOcate/WINdow
-dialog, not this command.
+```
+MACOS>pwin
+ PWIN: he.py not found on PATH; nothing launched
+```
+Interactive CLI only.  No dialog: checks the PATH for the
+external Python/Tcl-Tk GUI script "he.py" and says what it
+found; when it is there, launches `he.py &` in the background
+("PWIN: launching he.py in the background") — a vestigial
+hook; nothing useful happens without an executable he.py on
+the PATH.  Before 2026-10-17 the shell was handed the literal
+`!he.py&` (never launched anything) and its "not found"
+arrived after the next prompt (PLAN_CONSOLIDATION 1.2 (q)).
+Discrepancy: the help line "plot window definition" describes
+the PLOcate/WINdow dialog, not this command.
 *Related:* PLOcate, PGD.
 <!-- END NOTES cmd-PWIn -->
 
@@ -3402,7 +3449,7 @@ Luneberg lens example).  SMACOS: IARG(1)=element.
 
 Outline drawing / PGPLOT diagnostics.
 
-*CLI suite:* none yet.
+*CLI suite:* `PGD_ODRAW.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -3418,10 +3465,15 @@ not list) — trace a reduced ray fan and draw the system
 layout plus rays projected onto the chosen source-coordinate
 plane — but drawn on top of the existing plot without
 erasing it, for before/after geometry comparisons.
-Invalidates the trace/build/propagate state.  PGD takes no
-input and simply reinitializes the graphics device — use it
-when the plot window was closed or the display is corrupted;
-PGD is interactive CLI only.  SMACOS: no LoadStack entry
+Invalidates the trace/build/propagate state.  PGD opens the
+graphics device: the first use prompts "Graphics device/type
+(? to see list, default /xw):" (`/null`, `/png`, `/xw` …); a
+later PGD is silent, the device is kept (GRAINI caches it) —
+so it does not re-prompt when the plot window was closed.
+Measured with `/png` (giza writes a page to giza_NNNN.png when
+the next page opens): each DRAW opens a page, ODRAW adds to
+the open page and writes no file.  PGD is interactive CLI
+only.  SMACOS: no LoadStack entry
 for ODRaw (only DRAW has one: IARG(1:3), CARG(1)).
 *Related:* PGP, SPOt.
 <!-- END NOTES cmd-ODRaw -->
@@ -3715,7 +3767,7 @@ Older single-ray variants (use RAY).
 
 *CLI suite:* `SRAY_SRT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **missing** — single-ray tracing (B.2, first).
+*Binding:* **SMACOS command** — `srt_trace`.
 
 <!-- BEGIN NOTES cmd-SRAy -->
 ```
@@ -3789,7 +3841,7 @@ commented out of the dispatcher and NOT available.
 
 3D rendering demo.
 
-*CLI suite:* none yet.
+*CLI suite:* `EMACS_VI.jou`, `VIS3D.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — builder; the Vis3d ray history is `ray_hist_set` / `ray_pos_hist_get`.
 

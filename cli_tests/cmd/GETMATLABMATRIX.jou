@@ -1,0 +1,8 @@
+# GETMatlabmatrix (cmdref: File Output): the dispatcher branch is SMACOS-only (#ifdef SMACOS_CMD) and
+# its body is commented out, so the CLI does not know the command -- the help entry says "currently
+# disabled".  Pinned: both the full name and its 4-character minimum are unknown commands.
+getmatlabmatrix
+getm
+# EXPECT: MACOS> getmatlabmatrix\s+Command not understood\.  Please reenter\.\.\.\s+\*\* Unknown command = getmatlabmatrix
+# EXPECT: MACOS> getm\s+Command not understood\.  Please reenter\.\.\.\s+\*\* Unknown command = getm
+# EXPECT-NOT: forrtl

@@ -1,0 +1,41 @@
+# IMG on the manual's Cassegrain (cmdref: Outputs).  Without an ObjFile= the command refuses ("Object
+# intensity input not available"); the deck is then given ObjFile= obj.txt, a 256 x 256 (the model's
+# diffraction grid) 0/1 map with an 8 x 8 square at its center, written by awk beside the deck.  IMG
+# prompts for the element and must be at the focal plane (3 refuses: "Imaging must be on focal plane!").
+# Incoherent: the image is the PSF convolved with the object -- its sum 2.1204e10 is the PSF's 3.3131e8
+# times the 64 object pixels, peak 2.24e8 at (128,128).  Coherent: peak 5.3e19, sum 2.2e21 -- 1e9 times
+# the incoherent values for the same unit-amplitude object (PLAN_CONSOLIDATION 1.2 (s)); pinned as measured.
+# The TEXT plot type writes each image to Cassegrain.in.intensity5.txt (the second asks to overwrite).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+int 5
+img
+! awk 'BEGIN{for(i=1;i<=256;i++){for(j=1;j<=256;j++)printf "%d ",(i>124&&i<133&&j>124&&j<133);print ""}}' > obj.txt
+! sed -i '1i ObjFile= obj.txt' $DECK
+old $DECK
+none
+int 5
+img
+3
+text
+img
+5
+inc
+! awk '{for(j=1;j<=NF;j++){s+=$j;if($j>m){m=$j;r=NR;c=j}}}END{print "IMG",r,c,m,s}' Cassegrain.in.intensity5.txt
+img
+5
+coh
+yes
+! awk '{for(j=1;j<=NF;j++){s+=$j;if($j>m){m=$j;r=NR;c=j}}}END{print "IMG",r,c,m,s}' Cassegrain.in.intensity5.txt
+# EXPECT: MACOS> img\s+\* Object intensity input not available
+# EXPECT: Enter number of element where data is to be generated: \[5\]: 3[\s\S]*?Geometric Prop between Elt  0 and Elt  3 to WF  1[\s\S]*?Imaging must be on focal plane!
+# EXPECT: INCoherent or COHerent imaging\? \[INC\]: inc[\s\S]*?- End of incoherent imaging\s+Writing Incoherent Imaging, Elt=5
+# EXPECT: Text array is of dimension   256 by   256\. Magnitude of central pixel is  0\.22413\d+D\+09
+# EXPECT: IMG 128 128 2\.2413\d+E\+08 2\.120\d+e\+10
+# EXPECT: INCoherent or COHerent imaging\? \[INC\]: coh[\s\S]*?- End of coherent imaging
+# EXPECT: Writing Coherent Imaging, Elt=5
+# EXPECT: IMG 128 128 5\.2953\d+E\+19 2\.248\d+e\+21
+# EXPECT: Sum of intensity= 3\.3131188D\+08
+# EXPECT-NOT: forrtl

@@ -1,0 +1,39 @@
+# PGD, DRAW and ODRAW on the manual's Cassegrain with the /png device, so the pages are files in $TMP
+# (cmdref: Window & Post-Processing / Misc).  PGD opens the graphics device: the device prompt appears
+# once; a later PGD is silent (GRAINI keeps the device).  Each DRAW starts a new page and giza writes
+# the PREVIOUS page to giza_NNNN.png: after the second DRAW giza_0000.png exists.  ODRAW draws over the
+# open page -- no new file; the third DRAW closes that overdrawn page as giza_0001.png.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+pgd
+/png
+draw
+0
+5
+xz
+draw
+0
+5
+xz
+! ls -1 $TMP
+odraw
+0
+5
+yz
+! ls -1 $TMP
+draw
+0
+5
+xz
+! ls -1 $TMP
+pgd
+# EXPECT: MACOS> pgd\s+Graphics device/type \(\? to see list, default /xw\):/png
+# EXPECT: MACOS> draw\s+Enter first element to include: \[0\]: 0\s+Enter last element to include: \[5\]: 5\s+Enter drawing plane \(XZ, YZ or XY in source coords\): \[XZ\]: xz\s+DRAW: nDrawRay,midRay,iRayInc =\s+101\s+51\s+10
+# EXPECT: MACOS> odraw\s+Enter first element to include: \[0\]: 0\s+Enter last element to include: \[5\]: 5\s+Enter drawing plane \(XZ, YZ or XY in source coords\): \[XZ\]: yz\s+DRAW: nDrawRay,midRay,iRayInc =\s+101\s+51\s+10
+# EXPECT: (giza_0000\.png[\s\S]*){3}
+# EXPECT: giza_0001\.png
+# EXPECT-NOT: MACOS> odraw[\s\S]*giza_0001\.png[\s\S]*MACOS> draw
+# EXPECT: MACOS> pgd\s*\n\s*MACOS>\s*$
+# EXPECT-NOT: No device open
+# EXPECT-NOT: forrtl
