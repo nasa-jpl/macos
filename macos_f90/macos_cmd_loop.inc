@@ -1363,7 +1363,11 @@ C         *** 'ray' command ***
 	  ELSE IF (LCMP(command,'RAY',2)) THEN
 
 	    IF (ifLoad) THEN
+#ifdef MACOS_CMD
 	      ifRayPrint=.TRUE.
+#else
+	      ifRayPrint=.FALSE.
+#endif
 	      ifBuild=.FALSE.
 	      ifTrace=.FALSE.
 	      ifPropagate=.FALSE.
@@ -1377,7 +1381,15 @@ C         *** 'ray' command ***
 
 	        IF ((iRay.LT.1).OR.(iRay.GT.nRay)) THEN
 		  WRITE(*,*)' Invalid ray number. '
+!-->  Re-prompt in the CLI only: under SMACOS the prompt re-reads an
+!     empty stack, keeps the bad number and looped for ever (the api's
+!     ray_trace with iRay > nRay hung the host, B.2 2026-10-17).
+#ifdef MACOS_CMD
 		  GO TO 4
+#else
+		  GO TO 5
+#endif
+!<--
 		END IF
 	        iStartRay=iRay
 	        iEndRay=iRay
@@ -1387,7 +1399,18 @@ C         *** 'ray' command ***
 	        Else
 	          iEndElt=RayTgtElt
 	        End If
+!-->  In SMACOS, RAY saves the ray's state per element in thisRay (the
+!     api's ray_trace, B.2 2026-10-17) and traces quietly; the CLI's RAY
+!     still prints and does not set ifSRT (which changes CTRACE's
+!     ray-header line).
+#ifdef MACOS_CMD
 	        ifRayPrint=.TRUE.
+#else
+	        ifRayPrint=.FALSE.
+	        CALL ThisRayAlloc(nElt)
+	        ifSRT=.TRUE.
+#endif
+!<--
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
      &	               iStartRay,iEndRay,RayMap,SegMap,
@@ -1399,7 +1422,7 @@ C	        print*,'**CTRACE cmd: RayPosHist(1:3,iray,iEndElt) =',
 C    &                 RayPosHist(1:3,iRay,iEndElt)
 C	        GO TO 4
   5	      CONTINUE
-	      ifRayPrint=.FALSE.
+	      ifRayPrint=.FALSE.; ifSRT=.FALSE.
 	    ELSE
 	      WRITE(*,150)
 	    END IF
