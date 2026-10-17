@@ -369,7 +369,7 @@ Type \<RETURN\> for next page: MACOS\>
 
 ![](media/fig_rescued_56.png)
 
-**FIGURE 56** GBLUR example.
+**FIGURE 56** GBLUR example: the coronagraph's composed detector image (CoroExample.in, element 16, 128 pixels of 1.39 µm) after a 0.1 µm kernel, far below the pixel (left), and after a 20 µm kernel (right); each from a fresh COMPOSE.
 
 #### DAD
 
@@ -386,6 +386,8 @@ Each element in the MACOS wavefront propagation matrix is a complex number which
 ![](media/image99.png){width="3.540277777777778in" height="2.8270833333333334in"}
 
 **FIGURE 57** Composed detector image displayed at linear stretch, slice plot type.
+
+![](media/fig_rescued_58.png)
 
 **FIGURE 58** Far-field gain of Luneberg Lens Antenna.
 

@@ -1,0 +1,30 @@
+# Figure 58, far-field gain of the Luneberg lens antenna: the steps of examples/Luneberg.jou (cosine beam,
+# 128-point grid for INT at 16, 64-point grid for GAIN at 17) with the COLUMN plot type and the center column
+# 129 -- the pattern in dB.  Pages: 0 the INT plot, 1 the gain map, 2 the column cut (the figure).
+# COPY: $ROOT/docs/macos-manual/examples/Luneberg.in
+# DEADLINE: 300
+cd $TMP
+old Luneberg.in
+pgd
+/png
+beam
+cos
+0.875
+1.5
+mod
+nGridPts=128
+q
+int 16
+mod
+nGridPts=64
+q
+gain 17
+col
+gain 17
+129
+gain 17
+129
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig58; cp $TMP/giza_*.png $ROOT/docs/macos-manual/build/figs/fig58/
+# EXPECT: Maximum gain= 3\.16146\d+D\+01
+# EXPECT: Plot type set to COLUMN
+# EXPECT-NOT: forrtl
