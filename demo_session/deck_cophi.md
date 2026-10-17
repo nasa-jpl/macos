@@ -230,7 +230,7 @@ DRAFT — pending review.
 ::: full
 ![](figs/cophi_block_multi.png){h=5.0}
 ::: left
-- **Two colors, one camera, one 8-frame set:** beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).
+- **Two colors, one camera, one 8-frame set:** beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).  Lock-in form: time-multiplexed, one color per 1 ms sample (slide 17).
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
 ~ `make_cophi_block_fig.py`; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.
@@ -242,7 +242,8 @@ DRAFT — pending review.
 -- **a 200 nm rms figure is captured from cold in one 0.27 s reading**
 -- any Δλ from 1 to ~100 nm works (the fine requirement at Δλ = 20 nm is 1.7 nm against ~0.1 nm per pixel): one rung of the synthetic-wavelength ladder is enough here
 - **Temporal unwrapping:** holds at 0.9 × λ/4 per reading, fails at 1.1 ×: 1.19 µm/s at the peak pixel (baseline camera), 5.9 µm/s (Photonfocus) — ~0.24 / 1.2 µm/s rms for a 30 nm-class shape.
-- **With the lock-in camera (record):** one reference at a time, so the two colors alternate on I/Q samples (2 ms per pair) — zero wrong orders to 480 nm rms, 0.12 nm per pixel; temporal unwrapping at 1 kHz tolerates 158 µm/s.
+- **With the lock-in camera (record):** the two colors take alternate 1 ms samples, each color's AOM pair gated on for its sample, so ONE color is on the sensor at a time (500 Hz per color, 2 ms per pair) — zero wrong orders to 480 nm rms, 0.12 nm per pixel; temporal unwrapping at 1 kHz tolerates 158 µm/s.
+-- the pixel has one reference and one pair of accumulators: both colors on at once would put the second beat and the second color's DC into A−B and C−D.  That form works only with beats an integer number of kHz apart (the cross term then integrates to zero over the 1 ms sample, square-wave harmonics included) and costs √2 in shot noise and half the well per color; not modeled.
 ::: right
 | part added for the second color | count | note |
 |---|---|---|
