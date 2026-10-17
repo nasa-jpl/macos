@@ -2058,19 +2058,43 @@ MACOS comes with 5 built-in user-defined surfaces. These surfaces use influence 
 
     UDSrfFile=’filename’
 
-The supplied deformable mirror types are listed in order of UDSrfType:
+The surface types, in order of UDSrfType (as `usersub.F` dispatches them):
 
-1.  349-actuator deformable mirror. Actuators are located on a 7-mm spacing square grid. Units are inches.
+1.  1313-actuator deformable mirror.
 
-2.  349-actuator deformable mirror. Actuators are located on a 7-mm spacing square grid. Units are cm.
+2.  349-actuator deformable mirror.
 
-3.  397-actuator deformable mirror. Actuators are located on a 7-mm spacing hex grid. Units are cm.
+3.  397-actuator triangular-array deformable mirror.
 
-4.  349-actuator deformable mirror with squared-out influence function. Actuators are located on a 7-mm spacing square grid. Units are cm.
+4.  349-actuator deformable mirror with squared-out influence function.
 
-5.  349-actuator deformable mirror with ideal actuator influence functions (bilinear approximation). Actuators are located on a 7-mm spacing square grid. Units are inches.
+5.  349-actuator deformable mirror with ideal actuator influence functions (bilinear approximation).
 
-6.  349-actuator deformable mirror with squared-out influence function. Actuators are located on a 7-mm spacing square grid. Units are cm.
+6.  349-actuator deformable mirror with squared-out influence function.
+
+7.  149-by-149 x-y grid (written for the Hubble primary mirror).
+
+8.  115-by-115 x-y grid (written for the Hubble secondary mirror).
+
+9.  Radial-actuator deformable mirror.
+
+10. SQAna-by-SQAna deformable mirror with damped-sine influence functions.
+
+11. x-y grid surface.
+
+Each type takes its parameters from
+
+    UDSrfParam= p1 p2 ... p6
+
+up to six reals on ONE line, given BEFORE `UDSrfFile=` (the file is read with them; with no `UDSrfParam=` the engine sets the type's defaults at load and says so).  Six is the width everywhere -- the prescription parser, MODIFY, the element-entry prompt and SAVE; values past the sixth are ignored, and a short line is padded with 0 with a one-line note.  The models read at most three:
+
+-   types 1-6 and 10 (influence-function mirrors): p1 = beta, the influence-function shape parameter; p2 = dAct, the actuator spacing; type 10 also p3 = SQAna, the actuators per side;
+
+-   type 9 (radial): p1 = drad, the radial actuator spacing; p2 = dq, the angular spacing (rad); p3 = minrad, the inner radius;
+
+-   types 7, 8 and 11 (x-y grids): p2 = the grid spacing; p1 is not read.
+
+(The element arrays hold ten per element, `mUDSrfParam`; only six are ever read or written.  Measured 2026-10-17, PLAN_CONSOLIDATION 1.2 (h).)
 
 An example of the use of deformable mirrors, as well as lenslet arrays and the ATMOS
 
