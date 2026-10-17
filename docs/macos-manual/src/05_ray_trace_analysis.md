@@ -49,17 +49,6 @@ Repeating a trace of an unchanged system reproduces it bit for bit. The source c
 
 The DRAW command produces a drawing of the beam train, showing the optical element surfaces and the beam propagating through them. The beam is represented by eleven rays. The elements are drawn in cross-section, using the ray-intercept points from 100 rays across the beam to define the surfaces. The drawing is in a specified (xz, yz or xy) plane, and the surfaces and rays are drawn as the projection of the onto that plane. Tilted or folded systems can sometimes produce strange results! Different colors are used to distinguish between rays and several different element types.
 
-**Ray-Trace Commands**
-
-![](media/image62.png){width="0.11456692913385827in" height="0.11811023622047244in"}![](media/image63.png){width="0.14251968503937007in" height="9.645669291338582e-2in"}![](media/image64.png){width="0.3153543307086614in" height="8.385826771653543e-2in"}![](media/image65.png){width="0.14291338582677166in" height="9.803149606299212e-2in"}![](media/image66.png){width="8.346456692913386e-2in" height="0.14566929133858267in"}![](media/image67.png){width="0.14291338582677166in" height="9.724409448818898e-2in"}![](media/image68.png){width="0.14173228346456693in" height="9.921259842519685e-2in"}![](media/image69.png){width="0.3251968503937008in" height="0.15in"}![](media/image70.png){width="0.14291338582677166in" height="9.724409448818898e-2in"}
-
-    RayL2
-    RayL1 RayL3
-    CumRayL=RayL1*RayIndex1
-    +RayL2*RayIndex2
-    +RayL3*RayIndex3
-
-x
 
 
 
@@ -464,7 +453,7 @@ MACOS\>**center**
 
 The COOrdinates command computes beam coordinates at any specified element. Beam coordinates are the projection onto that element of the xGrid and yGrid axes defined at the source element (see previous section). The COORDinates command takes
 
-[a single argument: the element number iElt. It prints out two orthogonal unit vectors in]{.underline}
+a single argument: the element number iElt. It prints out two orthogonal unit vectors in
 
 **Beam Set-Up Commands**
 

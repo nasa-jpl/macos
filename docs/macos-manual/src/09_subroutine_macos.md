@@ -397,7 +397,7 @@ Note that the SMACOS MODify command (unlike the MACOS MODify command) does not c
 
 25. PFP: find field point corresponding to a specified chief ray offset in pixel coordinates
 
-[at a detector. This command has 4 arguments: the element number of the surface at]{.underline}
+at a detector. This command has 4 arguments: the element number of the surface at
 
 **Commands**
 

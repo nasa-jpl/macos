@@ -44,11 +44,6 @@ The properties that must be specified by the user include:
 
 In MACOS, a *light source* is a surface but not an element. The surface is defined by a single wavefront emitted from a single point source. The zSource parameter is the distance from the origin of the light to the light source surface, as defined by the location of the chief ray, ChfRayPos (see Figure 11). Collimated sources are specified by zSource=1d22. For point sources, the convention is that the sign of zSource is positive for a converging beam and negative for an expanding beam.
 
-![](media/image22.png){width="7.283464566929133e-2in" height="7.637795275590552e-2in"}![](media/image23.png){width="0.20354330708661417in" height="0.11023622047244094in"}![](media/image24.png){width="0.17834645669291338in" height="0.10708661417322834in"}![](media/image25.png){width="0.11653543307086614in" height="0.13818897637795274in"}
-
-    ChfRayPos ChfRayPos
-
-![](media/image22.png){width="7.362204724409449e-2in" height="7.362204724409449e-2in"}![](media/image26.png){width="0.5070866141732283in" height="0.10748031496062992in"}![](media/image28.png){width="0.29645669291338583in" height="0.34291338582677167in"}
 
 
 
@@ -74,7 +69,7 @@ NOTE: Converging or diverging sources **should not be located at the source poin
 
 The refractive index is, in general, a complex number. The real part is the conventional index, giving the speed of light in the particular medium, and so defining the direction
 
-[changes a ray experiences at refractive interfaces. The imaginary part is the extinction]{.underline}
+changes a ray experiences at refractive interfaces. The imaginary part is the extinction
 
 **Specifying the Light Source**
 
@@ -98,19 +93,15 @@ The total flux of the source illumination through the aperture area (defined by 
 
 The aperture size is set by the Aperture parameter, whose interpretation is different for collimated or point sources. If the source is collimated (zSource=1d22), Aperture is the *diameter* of the input beam. If it is a point source(zSource\<1d22), Aperture is the full *angle* (entered in radians like all angles in MACOS) subtended by the two marginal rays (see Figure 12). Thus, the numerical aperture of the system is
 
-    N.A. = n*sin(Aperture) (4.1)
+$$
+\mathrm{N.A.} \;=\; n \,\sin(\mathrm{Aperture})
+\qquad (4.1)
+$$
 
 where n is the index of refraction.
 
 Obscurations can be defined in the source beam if desired. Obscuration size is specified in the same way as the aperture, with the parameter Obscratn setting the diameter or angle of a *central* obscuration.
 
-    Aperture
-
-![](media/image29.png){width="0.10708661417322834in" height="0.2937007874015748in"}![](media/image30.png){width="0.10708661417322834in" height="0.3047244094488189in"}
-
-Collimated beam
-
-    Aperture
 
 
 
@@ -137,7 +128,7 @@ NOTE: Registration of a segmented aperture on a segmented mirror may shift when 
 
 The density of rays across the beam and the orientation of the ray grid are set by three
 
-[parameters:]{.underline}
+parameters:
 
 **Example Light Source**
 
@@ -605,21 +596,6 @@ MACOS uses a LensArray element type to model the bumpy surface of a lens array. 
 
 The first new parameter is LensArrayType, which can have two values: LensArray-Typ=1 for hexagonal arrays; and LensArrayTyp=2 for rectangular arrays. The second new parameter is LensArrayWidth, which is the width of a single lenslet (flat to flat for hexagonal lenslets) (Figure 18).
 
-![](media/image6.png){width="0.13818897637795274in" height="8.661417322834646e-2in"}![](media/image5.png){width="8.385826771653543e-2in" height="0.13818897637795274in"}yMon
-
-yMon
-
-    LensArrayWidth
-    pMon
-
-xMon xMon
-
-Top View, rectangular array (LensArrayTyp=1)
-
-
-Top View, hex array (LensArrayTyp=2)
-
-Side View of Center Row
 
 ![](media/fig_rescued_18.png)
 
@@ -1445,7 +1421,6 @@ Only 1 segment coordinate is needed per segment, to specify its location in sequ
 
 nPetals towards the SegYgrid axis, and the 2nd and subsequent segments located in the same sequence around the center segment. See Fig. 24 for an illustration.
 
-![](media/image53.png){width="0.11041666666666666in" height="0.26666666666666666in"}
 
 
 
@@ -1595,43 +1570,28 @@ A hyperboloid or an ellipsoid has two sheets. A ray is intersected with the shee
 
 MACOS also accepts input of conic parameters in terms of the geometric focal length (which is *not* the same as optical focal length of a spherical mirror) and eccentricity which are denoted fElt and eElt, respectively. Eccentricity and focal length are related to the conic constant and radius by:
 
-*eElt* =
+$$
+eElt \;=\; \sqrt{-KcElt}
+\qquad (4.1)
+$$
 
-**(4.1)**
-
-**Element Surface Types**
-
-*fElt* =
-
-----------–---*K*----*r*---*E*----*l*--*t*----------
-
-**(4.2)**
-
-(1 + –*KcElt*)
+$$
+fElt \;=\; \frac{-KrElt}{1 + \sqrt{-KcElt}}
+\qquad (4.2)
+$$
 
 The “sag equation” for a conic surface, which is to say, the equation which defines all points on the surface, is:
 
-*Z*(*h*) =
-
------------------------------------------------------------------------------------------------
-
-**(4.3)**
-
-\[*KrElt* + (*KrElt*)2 – (1 + *KcElt* )*h*^2^)\]
+$$
+Z(h) \;=\; \frac{h^2}{KrElt + \sqrt{(KrElt)^2 - (1 + KcElt)\,h^2}}
+\qquad (4.3)
+$$
 
 Here h is the radial distance to the projection of the point of incidence onto a plane perpendicular to the principal axis and including the surface vertex; and Z is the height of the surface above that plane (Figure 26).
 
-    psiElt
+![](media/fig_rescued_26.png)
 
-Point of incidence vector
-
-Optical surface
-
-Z(h)
-
-h
-
-![](media/image5.png){width="8.897637795275591e-2in" height="0.14645669291338584in"}![](media/image55.png){width="0.1437007874015748in" height="0.10551181102362205in"}**FIGURE 26** Conic mirror parameters
+**FIGURE 26** Conic mirror parameters
 
 Note that the *vertex* of a conic refers to the geometric vertex except in the case of an oblate ellipsoid. For an oblate ellipsoid (KcElt\>0), the “vertex” is taken as the point where the minor axis intersects the surface.
 
@@ -1641,15 +1601,11 @@ See Section 4.4.2 for an example of entering conic surface data.
 
 Generalized aspheric surfaces use a conic surface as a base, and then impose a deviation on it, defined by additional, higher order, symmetric terms in radius h. In MACOS, generalized aspheric surfaces take the form
 
-*h*^2^ 4 6 8 10
-
-*Z*(*h*) =
-
------------------------------------------------------------------------------------------------ + *Ah* + *Bh* + *Ch* + *Dh*
-
-**(4.1)**
-
-\[*KrElt* + (*KrElt*)2 – (1 + *KcElt* )*h*^2^)\]
+$$
+Z(h) \;=\; \frac{h^2}{KrElt + \sqrt{(KrElt)^2 - (1 + KcElt)\,h^2}}
+ + A h^4 + B h^6 + C h^8 + D h^{10}
+\qquad (4.1)
+$$
 
 where h is the radial pupil coordinate (the magnitude projection of the of the point of incidence vector onto the plane perpendicular to psiElt as shown in Figure 29), KrElt is the radius of curvature of the element, KcElt is the conic constant, and A, B, C, D are the aspheric coefficients, AsphCoef(i), with AsphCoef(1) = A, AsphCoef(2) = B, AsphCoef(3) = C, and AsphCoef(4) = D.
 
@@ -1867,22 +1823,6 @@ The ordering and normalization are selected per element with the `ZernType=` key
 
 KcElt and KrElt (or eElt and fElt) are the parameters that describe the conicoid. The deviations occur only in the z-direction of a special coordinate frame. The variable pMon is the center of the coordinate frame. The variables xMon, yMon, and zMon define the special coordinate frame as shown in Figure 27.The variable lMon is the semi-diameter of the circle to which the Zernike deviations are scaled (remember that Zernikes are defined on a unit circle).
 
-z Zernike deviations ![](media/image56.png){width="0.22291666666666668in" height="0.17847222222222223in"}
-
-    psiElt
-
-occur only in z direction
-
-    zMon
-
-![](media/image58.png){width="0.23661417322834646in" height="0.19015748031496063in"}
-
-Top View
-
-
-
-
-Exaggerated side view with coordinate description
 
 ![](media/fig_rescued_27.png)
 
@@ -2025,7 +1965,13 @@ Conversion to the internal monomial form (MonCoef) happens automatically at trac
 
 MACOS has a second polynomial-based deformed-surface type, evaluated as a sum of Cartesian monomials. The generating function is:
 
-**(4.1)**
+$$
+Z(x,y) \;=\; \sum_{i=0}^{14}\;\sum_{j=0}^{i} c_k\, \bar{x}^{\,j}\, \bar{y}^{\,i-j},
+\qquad \bar{x} = \frac{x}{lMon},\; \bar{y} = \frac{y}{lMon},
+\qquad (4.1)
+$$
+
+where (x, y) are the coordinates of the point of incidence in the special frame (pMon, xMon, yMon, zMon) of Figure 27, the deviation is along zMon, and the 120 coefficients MonCoef(k) are taken in that order: k = 1 is the constant term, then for each total degree i = 1 … 14 the terms j = 0 … i (so MonCoef(2) multiplies ȳ, MonCoef(3) multiplies x̄, MonCoef(4) ȳ², MonCoef(5) x̄ȳ, MonCoef(6) x̄², …).  (The printed 3.2 manual left this equation blank; the form is the engine's MonomialEval.)
 
 The user must specify 120 coefficients in the prescription file.
 
@@ -2290,9 +2236,9 @@ This section has three different examples. The first example is of an element re
 
 Circle Rectangle Ring Triangle
 
-Composite obscurations
+![](media/fig_rescued_29.png)
 
-![](media/image61.png){width="0.2548611111111111in" height="0.2548611111111111in"}**FIGURE 29** Examples of obscuration types and some composite obscurations.
+**FIGURE 29** Examples of obscuration types and some composite obscurations.
 
 +---+--------------------+----------------------+---------------------+
 | \ | Reflector          | NSReflector          | Segment \|          |

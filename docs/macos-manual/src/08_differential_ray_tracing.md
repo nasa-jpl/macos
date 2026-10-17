@@ -21,12 +21,7 @@ The limits are not absolute, but vary from system to system. The user can check 
 
 Rays are defined at any particular point in a beam train by their location, direction and length. In MACOS, the current *exact ray state* is defined as the position, direction and path length of a ray immediately after the current element (see Figure 65). The *position* of the iRayth ray is a 3-vector giving the point of incidence with the current element. MACOS stores it in the array RayPos as RayPos(1:3,iRay). The *direction* of the iRayth ray is a unit-magnitude 3-vector stored in RayDir(1:3,iRay). Note that if the current element is a mirror or lens, the direction is of the reflected or refracted ray. The *optical path length* of the iRayth ray from the source to the current element is a scalar and is stored in CumRayL(iRay).
 
-Expanded view at element 4
 
-    iRay=122,iElt=1
-    CumRayL
-
-![](media/image112.png){width="0.23661417322834646in" height="0.3299212598425197in"}
 
 
 
@@ -43,42 +38,12 @@ MACOS linear modeling features use *analytic differential* ray-trace equations t
 
 The *linear ray state* differs slightly from the exact ray state. The linear ray state is a single 7-vector, composed of a 3-vector of *ray direction perturbation*, a 3-vector of *ray transverse aberration*, and a scalar for *ray optical path difference*. It is written *x*
 
-![](media/image113.png){width="3.611111111111111e-2in" height="3.0555555555555555e-2in"} *dr*
+$$
+\hat{x} \;=\; \begin{bmatrix} d\hat{r} \\ d\hat{\gamma} \\ dL \end{bmatrix}
+\qquad (8.1)
+$$
 
-*x* = *d*γ
-
-*dL*
-
-**(8.1)**
-
-where *d***r** is the ray direction perturbation. The ray direction perturbation is a 3-vector whose magnitude is small compared to 1 and which is perpendicular to the ray direction, RayDir. The total ray direction is equal to the vector sum of RayDir and *d***r** (to the accuracy of the small angle approximation). Figure 66 shows the linear ray state.
-
-### **Background**
-
-r
-
-    RayDir
-
-dr Translation, δi
-
-Nominal surface
-
-Rotation, θi
-
-    RayPo
-
-Source
-
-    CumRayL CumRayL
-
-\+ dL
-
-ri-1
-
-ri,nom
-
-
-
+where $d\hat{r}$ is the ray direction perturbation. The ray direction perturbation is a 3-vector whose magnitude is small compared to 1 and which is perpendicular to the ray direction, RayDir. The total ray direction is equal to the vector sum of RayDir and $d\hat{r}$ (to the accuracy of the small angle approximation). Figure 66 shows the linear ray state.
 
 
 ![](media/fig_rescued_66.png)
@@ -93,155 +58,106 @@ The path length perturbation, dL, is the difference between the optical path len
 
 The linear ray state at a particular element is a function of perturbations of the upstream elements and of perturbations in the input ray. These perturbations are with respect to a “nominal state” (*xn* )*nom* , which may or may not be zero. For each ray at an element n, the linear ray state has the functional form:
 
-*xn* = (*xn* )*nom* + [∂*xn*]{.underline} *u*1 + … + [∂*xn*]{.underline} *un* + [∂*xn*]{.underline} *x*0
-
-**(8.1)**
-
-∂*u*1
-
-∂*un*
-
-∂*x*0
+$$
+\hat{x}_n \;=\; (\hat{x}_n)_{nom}
+ + \frac{\partial \hat{x}_n}{\partial \hat{u}_1}\,\hat{u}_1 + \cdots
+ + \frac{\partial \hat{x}_n}{\partial \hat{u}_n}\,\hat{u}_n
+ + \frac{\partial \hat{x}_n}{\partial \hat{x}_0}\,\hat{x}_0
+\qquad (8.1)
+$$
 
 Here the *u* vectors are 6-vectors of element perturbations, composed of 3-vectors θ for element rotational perturbation and δ for element translation perturbation:
 
-*u* =
-
-**(8.2)**
+$$
+\hat{u} \;=\; \begin{bmatrix} \hat{\theta} \\ \hat{\delta} \end{bmatrix}
+\qquad (8.2)
+$$
 
 The individual optical sensitivity matrices can be printed using the PARtials command. The sensitivity of the nth ray to perturbations of the input (source) ray is a 7 by 7 matrix of the form:
 
-[∂*xn*]{.underline}
-
-∂*x*0
-
-=
-
-[∂*rn*]{.underline}
-
-∂γ 0
-
-∂γ *n*
-
-∂γ 0
-
-∂*Ln*
-
-∂γ 0
-
-**(8.3)**
+$$
+\frac{\partial \hat{x}_n}{\partial \hat{x}_0} \;=\;
+\begin{bmatrix}
+\dfrac{\partial \hat{r}_n}{\partial \hat{r}_0} & \dfrac{\partial \hat{r}_n}{\partial \hat{\gamma}_0} & \dfrac{\partial \hat{r}_n}{\partial L_0} \\[2ex]
+\dfrac{\partial \hat{\gamma}_n}{\partial \hat{r}_0} & \dfrac{\partial \hat{\gamma}_n}{\partial \hat{\gamma}_0} & \dfrac{\partial \hat{\gamma}_n}{\partial L_0} \\[2ex]
+\dfrac{\partial L_n}{\partial \hat{r}_0} & \dfrac{\partial L_n}{\partial \hat{\gamma}_0} & \dfrac{\partial L_n}{\partial L_0}
+\end{bmatrix}
+\qquad (8.3)
+$$
 
 The sensitivity of the nth ray to perturbations of the ith element is a 7 by 6 matrix of the form:
 
-[∂*xn*]{.underline} =
-
-∂*ui*
-
-**(8.4)**
+$$
+\frac{\partial \hat{x}_n}{\partial \hat{u}_i} \;=\;
+\begin{bmatrix}
+\dfrac{\partial \hat{r}_n}{\partial \hat{\theta}_i} & \dfrac{\partial \hat{r}_n}{\partial \hat{\delta}_i} \\[2ex]
+\dfrac{\partial \hat{\gamma}_n}{\partial \hat{\theta}_i} & \dfrac{\partial \hat{\gamma}_n}{\partial \hat{\delta}_i} \\[2ex]
+\dfrac{\partial L_n}{\partial \hat{\theta}_i} & \dfrac{\partial L_n}{\partial \hat{\delta}_i}
+\end{bmatrix}
+\qquad (8.4)
+$$
 
 The complete expression for the linear ray state for a single ray in terms of element and input-ray perturbations is written in matrix form as:
 
-*x* = (*xn* )*nom* +
-
-[∂*xn*]{.underline} [∂*xn*]{.underline} … [∂*xn*]{.underline}
-
-**(8.5)**
-
-∂*x*0 ∂*u*1 ∂*un*
+$$
+\hat{x} \;=\; (\hat{x}_n)_{nom} +
+\begin{bmatrix}
+\dfrac{\partial \hat{x}_n}{\partial \hat{x}_0} & \dfrac{\partial \hat{x}_n}{\partial \hat{u}_1} & \cdots & \dfrac{\partial \hat{x}_n}{\partial \hat{u}_n}
+\end{bmatrix}
+\begin{bmatrix} \hat{x}_0 \\ \hat{u}_1 \\ \cdots \\ \hat{u}_n \end{bmatrix}
+\qquad (8.5)
+$$
 
 The same form is extended to give the linear ray state for multiple rays at the same element
 
-+-----+---+---------+---+---+-------------------+---+---+---------------------+
-|     |   |         |   |   |                   |   |   |                     |
-+-----+---+---------+---+---+-------------------+---+---+---------------------+
-| *   | = | *xray*1 | \ |   | [∂                |   | * | **(8.6)**           |
-| xra |   |         | + |   | *xn*]{.underline} |   | x |                     |
-| y*1 |   | …       |   |   | [∂                |   | * |                     |
-|     |   |         |   |   | *xn*]{.underline} |   | 0 |                     |
-| …   |   | *xraym  |   |   | …                 |   | * |                     |
-|     |   | nom*    |   |   | [∂                |   | u |                     |
-| *   |   |         |   |   | *xn*]{.underline} |   | * |                     |
-| xra |   |         |   |   |                   |   | 1 |                     |
-| ym* |   |         |   |   | ∂*x*0 ∂*u*1 ∂*un  |   |   |                     |
-|     |   |         |   |   | ray*1             |   | … |                     |
-|     |   |         |   |   |                   |   |   |                     |
-|     |   |         |   |   | …                 |   | * |                     |
-|     |   |         |   |   |                   |   | u |                     |
-|     |   |         |   |   | [∂                |   | n |                     |
-|     |   |         |   |   | *xn*]{.underline} |   | * |                     |
-|     |   |         |   |   | [∂                |   |   |                     |
-|     |   |         |   |   | *xn*]{.underline} |   |   |                     |
-|     |   |         |   |   | …                 |   |   |                     |
-|     |   |         |   |   | [∂                |   |   |                     |
-|     |   |         |   |   | *xn*]{.underline} |   |   |                     |
-+-----+---+---------+---+---+-------------------+---+---+---------------------+
-|     |   |         |   |   | ∂*x*0 ∂*u*1 ∂*un  |   |   |                     |
-|     |   |         |   |   | raym*             |   |   |                     |
-+-----+---+---------+---+---+-------------------+---+---+---------------------+
+$$
+\begin{bmatrix} \hat{x}_{ray1} \\ \cdots \\ \hat{x}_{raym} \end{bmatrix}
+\;=\;
+\begin{bmatrix} \hat{x}_{ray1} \\ \cdots \\ \hat{x}_{raym} \end{bmatrix}_{nom}
++
+\begin{bmatrix}
+\left[\dfrac{\partial \hat{x}_n}{\partial \hat{x}_0} \;\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_1} \;\cdots\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_n}\right]_{ray1} \\[2ex]
+\cdots \\[1ex]
+\left[\dfrac{\partial \hat{x}_n}{\partial \hat{x}_0} \;\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_1} \;\cdots\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_n}\right]_{raym}
+\end{bmatrix}
+\begin{bmatrix} \hat{x}_0 \\ \hat{u}_1 \\ \cdots \\ \hat{u}_n \end{bmatrix}
+\qquad (8.6)
+$$
 
 Both of these equations have the form *x* = *xnom* + *Cu* , where the *C-matrix* is the *optical sensitivity matrix*, giving the change in ray state due to perturbations of the optical elements. The C-matrix provides a linear model of the optical system. The MACOS BUild command assembles these sensitivities from the individual ray partial derivatives.
 
-It can be extremely useful to incorporate local coordinates directly into the optical sensitivity C-matrices. If the perturbations for one element are to be applied in coordinates other than the global coordinate system–perhaps in an actuator coordinate system–then that local coordinate transformation matrix can be included directly within the C-matrix. The transform from element iElt coordinates to global coordinates is written
+It can be extremely useful to incorporate local coordinates directly into the optical sensitivity C-matrices. If the perturbations for one element are to be applied in coordinates other than the global coordinate system–perhaps in an actuator coordinate system–then that local coordinate transformation matrix can be included directly within the C-matrix. The transform from element iElt coordinates to global coordinates is written $\text{ }^{G}T^{\,iElt}$.
 
-*GTiElt* .
+Similarly, local coordinates can be used at the output end of the linear model. This allows for the creation of models for ray direction only, or transverse aberration or path length only. Focal-plane axes are easily incorporated. We write the transform for ray state from global coordinates to output coordinates as $\text{ }^{out}T^{G}$ . As an example, the 1x7 output transform matrix that captures only the path length ray state in global coordinates is
 
-**Commands for Building Models**
-
-Similarly, local coordinates can be used at the output end of the linear model. This allows for the creation of models for ray direction only, or transverse aberration or path length only. Focal-plane axes are easily incorporated. We write the transform for ray state from global coordinates to output coordinates as *^out^TG* . As an example, the 1x7 output transform matrix that captures only the path length ray state in global coordinates is
-
-*pathlengthTG* =
-
-0 0 0 0 0 0 1
-
-**(8.7)**
+$$
+\text{ }^{pathlength}T^{G} \;=\; \begin{bmatrix} 0 & 0 & 0 & 0 & 0 & 0 & 1 \end{bmatrix}
+\qquad (8.7)
+$$
 
 As another example, the 2x7 output transform which takes the transverse aberration in ray state and casts it into detector coordinates *x* and *y* is
 
-*detectorTG* =
-
-0 0 0 *x*ˆ 0
-
-0 0 0 *y*ˆ 0
-
-**(8.8)**
+$$
+\text{ }^{detector}T^{G} \;=\;
+\begin{bmatrix} 0 & 0 & 0 & \hat{x} & 0 \\ 0 & 0 & 0 & \hat{y} & 0 \end{bmatrix}
+\qquad (8.8)
+$$
 
 Both actuator and detector coordinates are specified by the user as part of the .in-file prescription.
 
 With the input and output coordinate matrices included, the C-matrix takes the form:
 
-*outTG* [∂*xn*]{.underline} *GT*0 [∂*xn*]{.underline} *GT*1 … [∂*xn*]{.underline} *GTn*
-
-*xray*1
-
-… =
-
-∂*x*0
-
-∂*u*1
-
-…
-
-∂*un*
-
-*ray*1
-
-**(8.9)**
-
-*xraym*
-
-*outTG* [∂*xn*]{.underline} *G* 0 [∂*xn*]{.underline} *G* 1
-
-[∂*xn*]{.underline} *G n*
-
-![](media/image119.png){width="3.611111111111111e-2in" height="3.0555555555555555e-2in"} *T* ![](media/image120.png){width="4.3055555555555555e-2in" height="3.0555555555555555e-2in"} *T*
-
-∂*x*0 ∂*u*1
-
-… ![](media/image121.png){width="4.3055555555555555e-2in" height="3.0555555555555555e-2in"} *T*
-
-∂*un*
-
-*ray*nRay
+$$
+\begin{bmatrix} \hat{x}_{ray1} \\ \cdots \\ \hat{x}_{raym} \end{bmatrix}
+\;=\;
+\begin{bmatrix}
+\text{ }^{out}T^{G}\left[\dfrac{\partial \hat{x}_n}{\partial \hat{x}_0}\,\text{ }^{G}T^{0} \;\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_1}\,\text{ }^{G}T^{1} \;\cdots\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_n}\,\text{ }^{G}T^{n}\right]_{ray1} \\[2ex]
+\cdots \\[1ex]
+\text{ }^{out}T^{G}\left[\dfrac{\partial \hat{x}_n}{\partial \hat{x}_0}\,\text{ }^{G}T^{0} \;\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_1}\,\text{ }^{G}T^{1} \;\cdots\; \dfrac{\partial \hat{x}_n}{\partial \hat{u}_n}\,\text{ }^{G}T^{n}\right]_{raynRay}
+\end{bmatrix}
+\begin{bmatrix} \hat{x}_0 \\ \hat{u}_1 \\ \cdots \\ \hat{u}_n \end{bmatrix}
+\qquad (8.9)
+$$
 
 ### Commands for Building Models
 

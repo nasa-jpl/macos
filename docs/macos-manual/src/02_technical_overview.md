@@ -129,19 +129,13 @@ The exit pupil is a conjugate (an image) of the aperture stop of the system. For
 
 Physical optics capture the *wave nature* of light. In physical optics, Huygen’s Principle states that each point within a beam of light radiates a spherical wave of light. A *wave-front* is the envelope of all the waves emitted at a particular instant of time. Waves of light propagate through an optical train by bouncing off of mirrors or bending through lenses, much as predicted by geometric optics. Unlike geometric optics, however, physical optics predicts that light can leak back into areas of shadow, or areas outside of the edge of the geometric beam. This process is *diffraction* and is important when modelling images, the propagation of beams over long distances, and other phenomena.
 
-Exit pupil at virtual image
-
-Point source on stop
-
-![](media/image12.png){width="0.10551181102362205in" height="0.4515748031496063in"}![](media/image13.png){width="0.13543307086614173in" height="0.11535433070866141in"}![](media/image14.png){width="0.13622047244094487in" height="0.11377952755905511in"}![](media/image15.png){width="0.13543307086614173in" height="0.11535433070866141in"}![](media/image16.png){width="0.13622047244094487in" height="0.11377952755905511in"}Primary Mirror
-
-Focal Plane
+![](media/fig_rescued_05.png)
 
 **FIGURE 5** Exit pupil for Cassegrain.in
 
 ![](media/image17.png){width="5.949305555555555in" height="3.129861111111111in"}
 
-Unaberrated (defocused) Aberrated OPD (coma)
+*Left: unaberrated (defocused).  Right: aberrated OPD (coma).*
 
 **FIGURE 6** OPD at the exit pupil
 
