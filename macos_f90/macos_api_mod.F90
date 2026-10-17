@@ -3873,6 +3873,67 @@
       end subroutine srt_trace
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : RAY -- trace ray iRay of the source grid (1 = the chief ray) through
+      !            the system (to nElt, or the deck's ray-target element) and return
+      !            its state at each element, as srt_trace does (BRIEF_to_bindings B.2,
+      !            2026-10-17): Pos_ the crossing at element k, Dir_ the direction
+      !            leaving it, IndPrev_ / IndCur_ the indices before / after; RayOK_,
+      !            Status_ / FailElt_ as srt_trace.  iRay in 1..nRay of the grid the
+      !            call builds (trace_rays reports nRays); OK = FAIL outside it.  The
+      !            source grid is rebuilt for the call, as the CLI's RAY does.
+      !---------------------------------------------------------------------------------------------
+      subroutine ray_trace(OK, iRay, Pos_, Dir_, IndPrev_, IndCur_,        &
+                           RayOK_, Status_, FailElt_, nElt_)
+
+        use traceutil_mod, only: thisRay
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(in)   :: iRay
+        real(8), dimension(3, nElt_),  intent(inout):: Pos_, Dir_
+        real(8), dimension(nElt_),     intent(inout):: IndPrev_, IndCur_
+        logical,                       intent(out)  :: RayOK_
+        integer,                       intent(out)  :: Status_
+        integer,                       intent(out)  :: FailElt_
+        integer,                       intent(in)   :: nElt_
+
+        integer :: last
+        ! ------------------------------------------------------
+        OK = FAIL
+        Pos_ = 0e0_pr;  Dir_ = 0e0_pr
+        IndPrev_ = 0e0_pr;  IndCur_ = 0e0_pr
+        RayOK_ = .false.;  Status_ = 0;  FailElt_ = 0
+
+        if (.not. SystemCheck()) return
+        if (nElt_ /= nElt) return
+        if (iRay < 1) return
+        ! the upper bound is checked AFTER the call: RAY builds the source grid
+        ! (nRay is 0 after a load with no trace); an out-of-range iRay meets the
+        ! handler's own 'Invalid ray number' and traces nothing
+
+        command = 'RAY'
+        IARG(1) = iRay
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        if (.not. allocated(thisRay%InciPos)) return
+        if (iRay > nRay) return
+
+        RayOK_ = LRayOK(iRay)
+        Status_ = RayStatus(iRay)
+        if (Status_ /= RayStat_OK) FailElt_ = RayFailElt(iRay)
+        last = nElt
+        if ((.not. RayOK_) .and. (FailElt_ > 0)) last = min(nElt, FailElt_)
+        last = min(last, size(thisRay%PrevIndRef))
+
+        Pos_(:, 1:last)  = thisRay%InciPos(:, 1:last)
+        Dir_(:, 1:last)  = thisRay%InciDir(:, 1:last)
+        IndPrev_(1:last) = thisRay%PrevIndRef(1:last)
+        IndCur_(1:last)  = thisRay%CurIndRef(1:last)
+        OK = PASS
+
+      end subroutine ray_trace
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : One-stop element metadata for layout drawing: element
       !            type id (elt_mod EltID constants), aperture declaration
       !            (ApType / ApVec / xObs, plus the projected polygon

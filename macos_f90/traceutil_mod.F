@@ -131,6 +131,21 @@ C***********************************************************************
 
         contains
 
+!-->  thisRay sized per trace to n elements, zeroed (SRTrace, and RAY in
+!     the SMACOS build -- the api's srt_trace / ray_trace; B.2 2026-10-17)
+        subroutine ThisRayAlloc(n)
+          integer, intent(in) :: n
+          if (allocated(thisRay%InciPos)) deallocate(thisRay%InciPos,
+     &      thisRay%InciDir,thisRay%InciSrfN,thisRay%PrevIndRef,
+     &      thisRay%CurIndRef)
+          allocate(thisRay%InciPos(3,n),thisRay%InciDir(3,n),
+     &      thisRay%InciSrfN(3,n),thisRay%PrevIndRef(n),
+     &      thisRay%CurIndRef(n))
+          thisRay%InciPos=0d0; thisRay%InciDir=0d0; thisRay%InciSrfN=0d0
+          thisRay%PrevIndRef=0d0; thisRay%CurIndRef=0d0
+        end subroutine ThisRayAlloc
+!<--
+
         subroutine ray_mod_init(max_elt,max_ray)
           implicit none
           integer, intent(in) :: max_elt,max_ray
