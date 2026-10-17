@@ -81,7 +81,8 @@ tAsphCalib / tBeamRows / tCalib / tDesignTelescope, scored against the old loop)
   flat.  The old 0.7T schedule hid this.  rtol 1e-6 (simulated, with the absolute test only
   stopping later): worst +2.7e-6 relative chisq (~1e-15 m), iterations 804 -> 594.
 - A quadratically convergent solve (Rx_AsphCalib SPOT: 1.6e-25 -> 1.6e-33 -> 5.4e-43 ->
-  1.7e-43) never takes a flat step; it stops at the FLOOR (spot20: 14), never 'converged'.
+  1.7e-43, measured at field weight 0 -- x1e10 since 2026-10-17, below) never takes a flat
+  step; it stops at the FLOOR (spot20: 14), never 'converged'.
 **A failed evaluation is a named failure, not a STOP (2026-10-11, PLAN 3.4).**  The matrix's
 rigid x SPOT cell with the unspoiled TILT free: a centroid-referenced spot size is first-order
 NULL in that DOF, J'J near-singular, and LM's first trial rotated the mirror ~76 deg; the
@@ -203,4 +204,23 @@ the no-aperture/zero-term variant that must FAIL with the flag, the optics
 untouched and MATLAB alive.  Measured on TO's reproducer
 (`dyson5_s4_r4n_seed.in` + `OptAsph= 2 1 2`): pre-fix singular at once;
 post-fix 4 iterations in 9 s; the no-aperture variant returns to the prompt.
+
+## Field weights default to 1 (2026-10-17, PLAN 1.2 (a))
+`fov_weight` was 0 after every load: the LOAD handler's `fov_weight=1.0` ran before `MBFile6`,
+whose `reinitialise_variables -> dopt_init_vars` zeroed it (the `LOptIfFEX` trap), and
+`design_optim` reads |w| < 1e-10 as 1e-10 -- every row of a deck without `OptFOVWt=` divided by
+1e5, chisq 1e-10 x the weight-1 value, the `OptTol` test on an rms 1e-5 x the target-unit rms.
+The default is now 1d0 in `dopt_init_vars` (the LOAD line kept: one default, both paths).  Gate
+`cli_tests/cmd/CALIB_fov_weight.jou` (tst_calib_rigid.in 7.98e-43 -> 7.98e-33; OptFOVWt= 0.5
+halves it).  **LM is invariant to a uniform row scale in exact arithmetic** (alpha, beta, chisq
+all scale by 1/sig^2; gaussj's test is an exact zero pivot): measured over the CALIB classes,
+pymacos calib tests and the CLI CALIB journals, every solve kept its path with chisq x1e10
+EXCEPT the rank-1 ones -- `mixed x SPOT` (one spot-radius residual, two DOFs) is round-off
+chaotic (power-of-2 weights reproduce bit-for-bit, w = 1, 1e-3, 1e-6 each end elsewhere; only
+the old 1e-10 met T=10): it now runs T=35 (tilt 6.0e-10) in tCalibMatrix / test_calib_matrix /
+CALIB_SPOT_mixed.jou; the Rx_AsphCalib SPOT floor stops moved 19 -> 17 and 15 -> 18 iterations.
+**Open (not changed):** the post-solve covariance call (`alamda = 0`, undamped) on a rank-1
+alpha can hit the exact-zero pivot and turn a finished solve into stop 4 'failed' (the optics
+kept at the last accepted step): mixed x SPOT at T = 18..22.  Decks written by the design layer
+always carried `OptFOVWt=` and are unaffected.
 
