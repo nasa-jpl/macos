@@ -413,7 +413,12 @@ C	Create new input file
 
 	ELSE
 	  WRITE(*,*) 'File '//infil(1:ICLEN(infil))//' being created.'
-	  OPEN (1,FILE=infil,STATUS='NEW')
+!-->  NEW opened unit 1 but the prescription is written through
+!     SetPrtToFileID(RX_FID) at the end of the dialog, so the named file
+!     stayed EMPTY and the deck went to fort.77 in the working directory
+!     (2026-10-17, PLAN_CONSOLIDATION 1.2 (r)); open the unit it writes.
+	  OPEN (UNIT=RX_FID,FILE=infil,STATUS='NEW')
+!<--
 
 C	Specify input ray grid parameters
 

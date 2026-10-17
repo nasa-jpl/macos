@@ -6289,9 +6289,26 @@ C             Go into interactive mode
 	    End If
 
 	  ELSE IF (LCMP(command,'PWIN',4)) THEN
-	    ! Start a Python-Tcl/Tk GUI window
-            ANS='!he.py&'
-  	    Call SHELLCMD(ANS,7)
+!-->  PWIN handed the shell the literal '!he.py&' ('sh: !he.py: not
+!     found'), so the GUI never launched, and a missing he.py answered
+!     asynchronously after the next prompt.  Now the PATH is checked
+!     first, synchronously; he.py is launched in the background only
+!     when it is there (2026-10-17, PLAN_CONSOLIDATION 1.2 (q)).
+	    BLOCK
+	      INTEGER :: pwin_stat,pwin_cst
+	      pwin_stat=1; pwin_cst=0
+	      CALL EXECUTE_COMMAND_LINE(
+     &          'command -v he.py >/dev/null 2>&1',
+     &          EXITSTAT=pwin_stat,CMDSTAT=pwin_cst)
+	      IF (pwin_cst.NE.0 .OR. pwin_stat.NE.0) THEN
+	        WRITE(*,*)' PWIN: he.py not found on PATH; nothing launched'
+	      ELSE
+	        WRITE(*,*)' PWIN: launching he.py in the background'
+	        ANS='he.py &'
+	        CALL SHELLCMD(ANS,7)
+	      END IF
+	    END BLOCK
+!<--
 #endif
 
 
