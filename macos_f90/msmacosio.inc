@@ -1641,7 +1641,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      If (.not. beamOpt%ifOptBeamDir) Then
 		READ(VALUE,*,IOSTAT=iosRx) (beamOpt%nomBeamDir(j),j=1,3)
 		IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
-	        CALL DUNITIZE(beamOpt%nomBeamDir) ! the rows compare to a unit vector
+!-->  the rows compare to a unit vector; a vector already unit to round-off
+!     is kept as written (SAVE writes it since 2026-10-18, and re-unitizing
+!     walked it an ulp per load: Rx_BeamRows.in, the SaveFixedPoint lesson)
+	        IF (ABS(DMAG(beamOpt%nomBeamDir(1),3)-1d0) .GT.
+     &              64d0*EPSILON(1d0)) CALL DUNITIZE(beamOpt%nomBeamDir)
+!<--
 	        beamOpt%beamDirElt=iElt
 	        beamOpt%ifOptBeamDir=.TRUE.
 	      End If
