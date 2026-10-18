@@ -313,7 +313,7 @@ MACOS no longer generates a “filename.out” file for recording each result ge
 
 #### Glass Tables
 
-Glass data is provided in a text file, named macos.glass, which is located in a special MACOS data directory (see next section). The form and content of this file is discussed in Section 4.4.3.
+Glass data is provided in a text file, named macos.glass, which is located in a special MACOS data directory (see next section). The form and content of this file is discussed in Section 4.
 
 Alternatively, glass data can be provided as part of the optical prescription “.in-file.”
 
@@ -381,7 +381,7 @@ MACOS has a scripting or macro capability. This is provided by keystroke recordi
 
 The JOUrnal command is used to start and stop a journal of all the commands the user inputs to the terminal. Typing the JOUrnal command initiates keystroke recording, which continues until toggled off by typing the JOUrnal command a second time.
 
-JOUrnal allows the user to keep track of the commands entered in a MACOS session. The resulting .jou-file can later be used as a macro command (see Section 3.9.2). The
+JOUrnal allows the user to keep track of the commands entered in a MACOS session. The resulting .jou-file can later be used as a macro command (see [Section ?](#executing-macros)). The
 
 .jou-file can also be edited and modified offline.
 
