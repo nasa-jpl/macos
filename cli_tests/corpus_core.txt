@@ -19,7 +19,6 @@
 /home/dcr/dev/macos/docs/macos-manual/examples/ImageDemo.in
 /home/dcr/dev/macos/docs/macos-manual/examples/Luneberg.in
 /home/dcr/dev/macos/docs/macos-manual/examples/SegDemo.in
-/home/dcr/dev/macos/docs/macos-manual/FreeFormPieAperture.in
 /home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_AsphCalib.in
 /home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_AsphShort_base.in
 /home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_BeamRows.in
@@ -95,6 +94,7 @@
 /home/dcr/dev/macos/ZGD_test_files/FFSegDemoData.in
 /home/dcr/dev/macos/ZGD_test_files/FFSegDemo.in
 /home/dcr/dev/macos/ZGD_test_files/FFSegDemoZern.in
+/home/dcr/dev/macos/ZGD_test_files/FreeFormPieAperture.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example_asph.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example_constrained.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example.in
@@ -104,6 +104,7 @@
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3zern.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo.in
+/home/dcr/dev/macos/ZGD_test_files/tst_atmos_fold.in
 /home/dcr/dev/macos/ZGD_test_files/tst_block_comment.in
 /home/dcr/dev/macos/ZGD_test_files/tst_calib_asph.in
 /home/dcr/dev/macos/ZGD_test_files/tst_calib_beam_under_spot.in

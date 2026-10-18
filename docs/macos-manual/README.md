@@ -26,10 +26,20 @@ macos-manual/
 ├── reference.docx                  ← Word/PDF styling (see Gotchas)
 ├── tools/                          ← build + one-time migration scripts
 ├── examples/                       ← .in/.jou files shown in Appendix A
+├── edits/                          ← Dave's Word edit copies + their baselines
 ├── FIGURE_RESCUE_LOG.md            ← figure-migration status + audit
-├── RECONCILE_4_01.md               ← how the Writer fork was folded in
-└── (legacy: macosMan*.docx snapshots — frozen provenance)
+└── RECONCILE_4_01.md               ← how the Writer fork was folded in
 ```
+
+The directory above it, `docs/`, carries three PDFs and nothing else:
+`macosMan3.2.pdf` (the heritage 3.2 manual, the vector source the figures
+and equations were taken from), `macosMan.pdf` and `macosCmdRef.pdf` (the
+current renders, refreshed by `make publish`).  The heritage Word file is
+in `docs/Archive/`.  The migration's Word snapshots (`macosMan3_2_styled`,
+`macosMan4_0_styled`, `macosMan4_01`, `macosMan4.1beta`, `macosMan4.1`,
+`macosMan4.2beta`) and the structural audit were removed from the tree on
+2026-10-18; they remain in git history before that commit, and
+`RECONCILE_4_01.md` records what each contributed.
 
 This directory also produces two further documents:
 
