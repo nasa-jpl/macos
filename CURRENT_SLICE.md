@@ -24,6 +24,14 @@
 
 ## Active slice
 
+> **2026-10-18 morning (CC): restart done (kernel 1033, toolchain intact, smoke 2/2 both compilers).  Dave's edit
+> copies of the Word renders made (`docs/macos-manual/edits/`, 5b9fbcbf; fold-back flow in the README).  RULINGS on the
+> journal findings (Dave 2026-10-18, PLAN 1.2 + the phase-3 row): FIX NOW (p) ATMOS under SEED + placement + model
+> reconsideration, (o) filter round trip, (s) normalize the coherent IMG, (d) SYSPROP needs a real propagation + SAVE
+> writes the current propagation type; LATER in the plan (e) TPR fills its own history, (k) DOPD, (n) METCALC probe,
+> (m)+(t) cosmetics, (f) flat grid fixture, and the older items.  Brief for TO: `BRIEF_to_findings_rulings.md`.
+> LOCAL unpushed: TO's aa913ce8 595b7b4e (+ resources a599f34), mine a13a0172 5b9fbcbf + this.**
+
 > **2026-10-17 afternoon (CC): PHASE B COMPLETE -- 128 of 128 commands carry a journal** (batch 5: SINT, PLOCATE/NOPLOC,
 > PGD/DRAW/ODRAW on /png, IMG with an awk-made ObjFile, VIS3D, GETMATLABMATRIX, VI/EMACS with `vi +q!`, NEW, PWIN).  Two
 > more CLI fixes, 8145ca3: PWIN handed the shell the literal `!he.py&` (PATH probed first now, said synchronously); NEW
