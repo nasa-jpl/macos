@@ -237,6 +237,17 @@ Two clean-ups happened at migration:
   `src/media/fig_rescued_NN.png` (`tools/rescue_figures.py`; status
   and debris audit in `FIGURE_RESCUE_LOG.md`).
 
+## End-product edits (`edits/`)
+
+`edits/macosMan_edit.docx` and `edits/macosCmdRef_edit.docx` are Dave's
+copies of the Word renders for editing in Word; the matching
+`*_baseline.docx` beside each is the render they were copied from
+(2026-10-18, built from the sources at a13a0172).  The flow is the deck
+flow: edit the `_edit` copy only; CC diffs it against the baseline (text,
+tables, figure placement), folds every change into `src/*.md` or the cmdref
+NOTES, rebuilds, and refreshes both copies from the new render.  The
+Markdown stays the source; nothing is folded by hand into the docx.
+
 ## Open items
 
 1. ~~**Equations**~~ DONE 2026-10-17.  Measured first: the "~73
