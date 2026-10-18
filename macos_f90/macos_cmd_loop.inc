@@ -2102,9 +2102,16 @@ C         Trace beam up to atmosphere surface:
 C         Add atmospheric effects to each ray
 	    IF (LCMP(ANS,'RAY',1)) THEN
 	      !NoiseSeed=0d0  ! test only
+!-->  AddAtmos refuses (by name) an element where the ray grid is not
+!     the source grid frame (PLAN_CONSOLIDATION 1.2 (p)).
+	      BLOCK
+	      LOGICAL ifAtmOK
 	      CALL AddAtmos(iElt,npts,iWF,R1,CD2,r0,atmWavelen,pTilt,
      &	        NoiseSeed,ifPol,ifGrid,ifPropagate,Dicr,Djcr,
-     &	        dxSource,xGrid,yGrid,zGrid)
+     &	        dxSource,xGrid,yGrid,zGrid,ifAtmOK)
+	      IF (.NOT.ifAtmOK) GO TO 1
+	      END BLOCK
+!<--
 
 C	  Otherwise add atmospheric effects using separate grid
 	    ELSE

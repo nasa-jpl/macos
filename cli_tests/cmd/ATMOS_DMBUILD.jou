@@ -1,10 +1,10 @@
 # ATMOS: an atmospheric phase screen applied once at an element (r0 0.25, wavelength 1e-6 base units, tilt
 # participation 1, the RAY grid) at the entrance pupil of the manual's Cassegrain, then OPD; and DMBUILD (= BUILD
 # in this version) after cutting nGridpts to 21 (cmdref: Source & Wavelength / Linear Model).  The screen takes
-# the OPD away from 1.29e-12.  Measured 2026-10-17 (PLAN_CONSOLIDATION 1.2 (p)): the screen is RANDOM and not
-# under SEED -- three runs of this journal gave 2.88e-5, 1.36e-5 and, once on ifx, every ray lost at element 4
-# ("All rays are obscured or lost", OPD 9.9999e36); the same screen at element 3 (the secondary, a Reflector) lost
-# every ray each time.  So this journal pins the dialog and that the OPD changed, not a value.
+# the OPD away from 1.29e-12.  This journal issues no SEED, so the screen is a fresh draw each run (the start-up
+# seed is time-based): it pins the dialog and that the OPD changed, not a value.  The values, SEED, Kolmogorov
+# and placement are ATMOS_seed.jou / ATMOS_placement.jou (PLAN_CONSOLIDATION 1.2 (p), fixed 2026-10-18: the
+# 10-17 runs' 'every ray lost' and the ifx non-determinism were RFOURN's COMPLEX*8 declaration).
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 none
 opd 5

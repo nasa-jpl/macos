@@ -46,6 +46,21 @@
 - **`smacos_compute.inc` slice overrun.**  Five `1:mZern` → `1:mZernModes`
   fixes (mZern≠mZernModes when both Zern and FF aspheres are active).
   Cherry-picked back to release-candidate.
+- **`RFOURN` (sunsub.F) takes its COMPLEX*8 array as interleaved REAL*4**
+  (2026-10-18, PLAN_CONSOLIDATION 1.2 (p)).  It is Numerical Recipes'
+  `fourn`: `IP1=2*NPREV`, `DATA(I3+1)` = the imaginary part.  019a2981
+  (2023) declared `COMPLEX*8 DATA`, so every index addressed a whole
+  complex element and the transform ran to 2*NTOT -- writing past the
+  caller's array: ATMOS screens were checkerboards of seed-dependent
+  amplitude (1e5x), ifx non-deterministic under a fixed SEED, every ray
+  lost at a Reflector; LPI's linear-model PSF the same.  Now `REAL*4
+  DATA`.  Rule: an NR-style FFT's DATA is REAL, whatever the caller
+  passes -- never "tidy" it to the caller's complex type.  (DFOURN's NR
+  branch converts through its own REAL*8 buffer for the same reason.)
+- **A local named like a use-associated symbol** (`sp` vs `kinds`' single-
+  precision kind, found in AddAtmos 2026-10-18): ifx accepted it silently,
+  gfortran refused ("conflicts with symbol from module").  Build gfortran
+  before trusting an ifx-only compile of new declarations.
 
 ## Per-ray status tracking
 *(Documented: Manual §5 "Per-ray status reporting" (statuses, the clipping element, restarts, the bindings' getter).  Below: the engine record.)*

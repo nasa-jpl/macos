@@ -90,3 +90,9 @@ with `ifRayPrint=.TRUE.`, and the next OPD printed every ray of the grid (tens o
 on Rx_Cass_FarField) -- it now saves and restores.  TPR clears it itself, so a journal leg for this
 puts the OPD before any TPR.  FindMarginalRay and getRefRays (collim.inc) still set `.TRUE.` on
 return; EFL's caller resets it (measured: no print after EFL), CALIB's was not measured.
+
+## The `!` shell line and a leading `cd` (found 2026-10-18)
+`! cd $TMP && python3 tool.py ...` does NOT run the tool: the `!` handler
+treats a line that starts with `cd` as the CLI's own CD command (chdir, then
+"Current Folder:") and drops the rest of the line.  In journals give the
+tool absolute paths (or a `--dir` option) and use one `mv` per `!` line.
