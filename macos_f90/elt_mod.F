@@ -403,6 +403,14 @@ C***********************************************************************
         Logical             :: LRxPushback = .FALSE.
         Character(len=1024) :: RxPushbackLine = ' '
 !<--
+!-->  No output-coordinate block in the deck (2026-10-18, PLAN_CONSOLIDATION
+!     1.2 (u)): the reader sets LOutCordAbsent at end of file inside the
+!     element chain (it was a silent load failure); ChkDf3 then proposes
+!     the beam frame at the last element and sets LOutCordCandidate --
+!     the CLI asks (OutCordQuery), the api takes it.  Reset per load.
+        Logical :: LOutCordAbsent    = .FALSE.
+        Logical :: LOutCordCandidate = .FALSE.
+!<--
         Integer :: iosRx = 0     ! the IOSTAT of the parser's reads (RxBad)
         Real*8  :: dOptTolRx = 0d0 ! OptTol= as read (msmacosio, PLAN 3.2)
 !-->  Unknown HEADER keys already reported this load (HdrUnkNote, PLAN

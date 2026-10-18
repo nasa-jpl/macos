@@ -338,6 +338,9 @@ C
 	  end if
 
 	  CALL LOHIN3()
+!-->  no nOutCord=/Tout= in the deck: ChkDf3 proposes the frame (1.2 (u))
+	  IF (LOutCordAbsent) GO TO 72
+!<--
 
 	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
 
@@ -362,6 +365,7 @@ C
 	    Tout_FLG=.TRUE.
 	  END IF
 
+   72	  CONTINUE
 	  CALL ChkDf3(EXIT_OK)
 
 	  IF (EXIT_OK) THEN
@@ -3061,6 +3065,38 @@ c   jump here if we need a new line from a batch file
 	END SUBROUTINE PROMPT
 
 C***********************************************************************
+
+!-->  The CLI's question when the deck gave no output coordinates and
+!     ChkDf3 proposed the beam frame (2026-10-18, 1.2 (u)).  YES keeps
+!     it; NO reads nOutCord and the Tout rows, the proposal as defaults.
+	SUBROUTINE OutCordQuery()
+	use param_mod
+	use elt_mod
+	IMPLICIT NONE
+	CHARACTER(len=8) :: ans
+	INTEGER k, n1(1), nd(1)
+	REAL*8 row(7)
+	ans = ' '
+	CALL CACCEPT(ans,'YES','Keep the proposed output coordinates?')
+	IF (ans(1:1).EQ.'n' .OR. ans(1:1).EQ.'N') THEN
+	  n1(1) = nOutCord; nd(1) = nOutCord
+	  CALL IACCEPT(n1,nd,1,'Enter nOutCord (1-7)')
+	  nOutCord = MAX(1,MIN(7,n1(1)))
+	  DO k=1,nOutCord
+	    row = Tout(k,1:7)
+	    WRITE(*,'(A,I2,A)') '  Tout row',k,
+     &        ' (x y z position, x y z direction, OPL weights):'
+	    CALL DACCEPT(row,row,7,'Enter 7 values')
+	    Tout(k,1:7) = row
+	  END DO
+	  WRITE(*,'(A,I2,A)') '  Output coordinates set by hand:',
+     &      nOutCord,' rows (SAVE writes them)'
+	ELSE
+	  WRITE(*,'(A)') '  Output coordinates: the proposed beam frame'
+	END IF
+	LOutCordCandidate = .FALSE.
+	END SUBROUTINE OutCordQuery
+!<--
 
 	SUBROUTINE CACCEPT(COUT,CDEF,TEXT)
 	use lohpars_mod

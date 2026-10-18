@@ -1441,6 +1441,7 @@
 /home/dcr/dev/macos/ZGD_test_files/tst_FF_rt.in
 /home/dcr/dev/macos/ZGD_test_files/tst_FF_zern.in
 /home/dcr/dev/macos/ZGD_test_files/tst_hdr_unknown.in
+/home/dcr/dev/macos/ZGD_test_files/tst_no_outcord.in
 /home/dcr/dev/macos/ZGD_test_files/tst_nsref_ns.in
 /home/dcr/dev/macos/ZGD_test_files/tst_nsref_seq.in
 /home/dcr/dev/macos/ZGD_test_files/tst_nzern_conic.in
@@ -1448,6 +1449,7 @@
 /home/dcr/dev/macos/ZGD_test_files/tst_obs_in_glass.in
 /home/dcr/dev/macos/ZGD_test_files/tst_opdref_mean.in
 /home/dcr/dev/macos/ZGD_test_files/tst_optasph_order.in
+/home/dcr/dev/macos/ZGD_test_files/tst_proptype_numeric.in
 /home/dcr/dev/macos/ZGD_test_files/tst_raystatus.in
 /home/dcr/dev/macos/ZGD_test_files/tst_save_keys.in
 /home/dcr/dev/macos/ZGD_test_files/tst_SegMirMaker.in

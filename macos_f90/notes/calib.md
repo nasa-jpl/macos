@@ -224,3 +224,9 @@ alpha can hit the exact-zero pivot and turn a finished solve into stop 4 'failed
 kept at the last accepted step): mixed x SPOT at T = 18..22.  Decks written by the design layer
 always carried `OptFOVWt=` and are unaffected.
 
+
+## SAVE writes the family (2026-10-18, Dave; PLAN_CONSOLIDATION section 4 item 1)
+The 26 `Opt*` / `Var*` keys are written by SAVE when they differ from their load defaults
+(`PrtCalibHeader` / `PrtCalibElt`, iosub.inc) and announced at LOAD (`CalibInForceNote`); the
+mechanics and the reader-counting gotchas are in `notes/rx_io.md` (the 2026-10-18 entry).  Table 13's
+"none is written by SAVE" is history.  Gate `cli_tests/cmd/CALIB_save_roundtrip.jou`.

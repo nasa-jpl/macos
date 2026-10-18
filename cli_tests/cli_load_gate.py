@@ -147,7 +147,11 @@ def load(cli, deck):
     """LOAD a deck; returns (status, nelt, text).  A validator refusal re-prompts
     for a file name ('Pick a different file (or "q" to abort)'); answer q."""
     k, txt = cli.cmd('old ' + deck, extra_pats=[r'Pick a different file',
-                                                  r'does not exist\. Check name/path'])
+                                                  r'does not exist\. Check name/path',
+                                                  r'Keep the proposed output coordinates\? \[YES\]:'])
+    if k == 3:                          # no nOutCord=/Tout= block: the loader proposed the beam
+        k, txt2 = cli.cmd('yes')        # frame at the last element (2026-10-18); keep it
+        txt += txt2
     if k in (1, 2):                     # a re-prompt would otherwise read as a timeout
         k2, txt2 = cli.cmd('q')
         txt += txt2

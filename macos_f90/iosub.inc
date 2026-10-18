@@ -1174,20 +1174,12 @@ C       Set defaults, if necessary
 	  CONTINUE
 	ELSE
 	  IF (nOutCord.EQ.5) THEN
-	    CALL DZERO(Tout(1,1),49)
-	    Tout(1,1)=-psiElt(3,nElt)
-	    Tout(1,2)=-psiElt(1,nElt)
-	    Tout(1,3)=-psiElt(2,nElt)
-	    Tout(3,4)=-psiElt(3,nElt)
-	    Tout(3,5)=-psiElt(1,nElt)
-	    Tout(3,6)=-psiElt(2,nElt)
-	    Tout(2,1)=-psiElt(2,nElt)
-	    Tout(2,2)=-psiElt(3,nElt)
-	    Tout(2,3)=-psiElt(1,nElt)
-	    Tout(4,4)=-psiElt(2,nElt)
-	    Tout(4,5)=-psiElt(3,nElt)
-	    Tout(4,6)=-psiElt(1,nElt)
-	    Tout(5,7)=1
+!-->  The candidate is the beam frame at the last element (Dave
+!     2026-10-18, 1.2 (u)); it replaces a cyclic permutation of -psiElt
+!     that was orthonormal only for an axis-aligned element (no corpus
+!     deck reached it: all 1464 carry Tout=).
+	    CALL OutCordCandidate()
+!<--
 	  ELSE
  	    WRITE(*,111)' Tout'
 	    EXIT_OK = .FALSE.
@@ -1196,6 +1188,313 @@ C       Set defaults, if necessary
 
 	RETURN
 	END SUBROUTINE ChkDf3
+
+!-->  The proposed output coordinates when the deck gives none (2026-10-18,
+!     PLAN_CONSOLIDATION 1.2 (u)): the BEAM frame at the last element.
+!     z = the beam direction into the last element, taken from the
+!     geometry (the previous element's vertex to the last element's
+!     vertex; the source chief-ray direction when there is one element
+!     or the vertices coincide) -- not from psiElt, whose sign runs
+!     against the beam on a reflector and along it on a FocalPlane;
+!     x from the element's xObs (the global axis least aligned with z
+!     when xObs is zero), orthonormalized: y = z x x, x = y x z.  Rows
+!     1-2 are the transverse position, 3-4 the transverse direction,
+!     5 the OPL (nOutCord = 5).  The CLI asks before keeping it
+!     (OutCordQuery, macosio.F); the api takes it, says so, and SAVE
+!     writes the block.
+!-->  SAVE writes the CALIB setup (Dave 2026-10-18, PLAN_CONSOLIDATION
+!     section 4 item 1): every Table 13 keyword whose value differs from
+!     its load default -- header keys in the source block, element keys
+!     in their element's block -- so a saved deck carries the
+!     optimization set up on it, and the next LOAD says so
+!     (CalibInForceNote).  The field list and the wavelengths follow the
+!     reader's counting: the source's own ChfRayDir/ChfRayPos and
+!     Wavelen are field 1 / wavelength 1 (PrtSourceInfo writes them),
+!     fields 2..n are OptChfRayDir/OptChfRayPos pairs here and
+!     wavelengths 2..n are the ArrWaveLen= line above.  OptTgtElt is
+!     resolved to nElt-1 at LOAD, so only another value is written.
+	SUBROUTINE PrtCalibHeader()
+	use param_mod
+	use src_mod
+	use elt_mod
+	use dopt_mod
+	use macos_IO
+	use constants, only: EPS
+	IMPLICIT NONE
+	INTEGER k, iv(1+max_fov)
+	LOGICAL anyKey, anyWt
+
+	anyKey = .FALSE.
+	IF (OptTarget.NE.WFE_TARGET) THEN
+	  CALL CalibSep(anyKey)
+	  IF (OptTarget.EQ.SPOT_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'SPOT')
+	  ELSE IF (OptTarget.EQ.WFE_ZMODE_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'ZWF')
+	  ELSE IF (OptTarget.EQ.BEAM_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'Beam')
+	  END IF
+	END IF
+	IF (OptTgtElt.GT.0 .AND. OptTgtElt.NE.nElt-1) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTgtElt', "i4", OptTgtElt)
+	END IF
+	IF (tgtWF_flg .AND. LEN_TRIM(tgtWF_fn).GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTgtWF', "2x,A", TRIM(tgtWF_fn))
+	END IF
+	IF (OptSpotSize.NE.0d0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSpotSize', "1PD23.15", OptSpotSize)
+	END IF
+	IF (nWFZern.GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  iv(1) = nWFZern
+	  iv(2:nWFZern+1) = WFZernMode(1:nWFZern)
+	  CALL PrintFmtArray('OptZernModes', '2x,i3', nWFZern+1,
+     &                       iv(1:nWFZern+1))
+	END IF
+	IF (opt_npts.NE.nGridpts/2-1 .AND. opt_npts.GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptRayGrid', "i4", opt_npts+1)
+	END IF
+	IF (nOptFov.GT.1) THEN
+	  CALL CalibSep(anyKey)
+	  DO k=2,nOptFov
+	    CALL PrintFmtArray('OptChfRayDir','1PD23.15',3,opt_fov(1:3,1,k))
+	    CALL PrintFmtArray('OptChfRayPos','1PD23.15',3,opt_fov(1:3,2,k))
+	  END DO
+	END IF
+	anyWt = .FALSE.
+	DO k=1,nOptFov
+	  IF (fov_weight(k).NE.1d0) anyWt = .TRUE.
+	END DO
+	IF (anyWt) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('OptFOVWt','1PD23.15',nOptFov,
+     &                       fov_weight(1:nOptFov))
+	END IF
+	IF (nitrs_dopt.NE.10) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptMaxItrs', "i4", nitrs_dopt)
+	END IF
+	IF (dopt_tol.NE.1d-12) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTol', "1PD23.15", dopt_tol)
+	END IF
+	IF (LOptIfFEX) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptFEX', "2x,A", 'Y')
+	END IF
+	IF (OptAlg.EQ.Linear) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptAlg', "2x,A", 'Lin')
+	END IF
+	IF (SvdSvCut.NE.EPS) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSvdSvCut', "1PD23.15", SvdSvCut)
+	END IF
+	IF (LOptNomSens) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptNomSens', "2x,A", 'Y')
+	END IF
+	IF (save_pinv) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSavePinv', "2x,A", 'Y')
+	END IF
+	IF (use_saved_pinv) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptUseSavedPinv', "2x,A", 'Y')
+	END IF
+	IF (TRIM(PinvFile).NE.'dady0_saved.txt' .AND.
+     &      LEN_TRIM(PinvFile).GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptPinvFile', "2x,A", TRIM(PinvFile))
+	END IF
+	IF (isVarElt(0)) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('VarSrc', '2x,i2', 6, varEltDOF(1:6,0))
+	END IF
+	IF (OptSrcRpt_FLG) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('OptSrcRpt','1PD23.15',3,OptSrcRpt(1:3))
+	END IF
+	END SUBROUTINE PrtCalibHeader
+
+	SUBROUTINE CalibSep(anyKey)
+	use macos_IO
+	IMPLICIT NONE
+	LOGICAL anyKey
+	IF (.NOT.anyKey) CALL PrintMsg('')
+	anyKey = .TRUE.
+	END SUBROUTINE CalibSep
+
+!     The element-bound CALIB keys: VarElt= (then VarCons= and OptAsph=,
+!     which the reader requires after it), OptZern=, and the beam-row
+!     targets at the element they name; OptBeamWt= / OptBeamCentroid=
+!     ride with the first beam key written.
+	SUBROUTINE PrtCalibElt(iElt)
+	use param_mod
+	use elt_mod
+	use dopt_mod
+	use macos_IO
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: iElt
+	INTEGER i, n, ibeam
+	REAL*8 cons(2*mVarDOF)
+	LOGICAL anyCons
+
+	IF (iElt.LT.1) RETURN
+	IF (isVarElt(iElt) .AND. ANY(varEltDOF(1:mVarDOF,iElt).NE.0)) THEN
+	  CALL PrintFmtArray('VarElt', '2x,i2', mVarDOF,
+     &                       varEltDOF(1:mVarDOF,iElt))
+	  IF (LOptCons) THEN
+	    n = 0; anyCons = .FALSE.
+	    DO i=1,mVarDOF
+	      IF (varEltDOF(i,iElt).NE.0) THEN
+	        cons(n+1:n+2) = EltCons(1:2,i,iElt)
+	        IF (ANY(EltCons(1:2,i,iElt).NE.0d0)) anyCons = .TRUE.
+	        n = n+2
+	      END IF
+	    END DO
+	    IF (anyCons) CALL PrintFmtArray('VarCons','1PD23.15',n,cons(1:n))
+	  END IF
+	  IF (nOptEltAsph(iElt).GT.0) THEN
+	    n = nOptEltAsph(iElt)
+	    CALL PrintFmtArray('OptAsph', '2x,i3', n+1,
+     &                         OptEltAsphTerm(0:n,iElt))
+	  END IF
+	END IF
+	IF (nOptEltZern(iElt).GT.0) THEN
+	  n = nOptEltZern(iElt)
+	  CALL PrintFmtArray('OptZern', '2x,i3', n+1,
+     &                       OptEltZernTerm(0:n,iElt))
+	END IF
+	ibeam = 0
+	IF (beamOpt%ifOptBeamPos) THEN
+	  ibeam = beamOpt%beamPosElt
+	ELSE IF (beamOpt%ifOptBeamDir) THEN
+	  ibeam = beamOpt%beamDirElt
+	ELSE IF (beamOpt%ifOptBeamSize) THEN
+	  ibeam = beamOpt%beamSizeElt
+	ELSE IF (beamOpt%ifOptBeamRefRayDir) THEN
+	  ibeam = beamOpt%beamRefRayElt
+	END IF
+	IF (beamOpt%ifOptBeamDir .AND. beamOpt%beamDirElt.EQ.iElt)
+     &    CALL PrintFmtArray('OptBeamDir','1PD23.15',3,
+     &                       beamOpt%nomBeamDir(1:3))
+	IF (beamOpt%ifOptBeamPos .AND. beamOpt%beamPosElt.EQ.iElt) THEN
+	  CALL PrintFmtArray('OptBeamPos','1PD23.15',3,
+     &                       beamOpt%nomBeamPos(1:3))
+	  DO i=1,beamOpt%nBeamPosFov
+	    CALL PrintFmtArray('OptBeamPosFov','1PD23.15',3,
+     &                         beamOpt%nomBeamPosFov(1:3,i))
+	  END DO
+	END IF
+	IF (beamOpt%ifOptBeamSize .AND. beamOpt%beamSizeElt.EQ.iElt)
+     &    CALL PrintFmt('OptBeamSize','1PD23.15',beamOpt%nomBeamSize)
+	IF (beamOpt%ifOptBeamRefRayDir .AND.
+     &      beamOpt%beamRefRayElt.EQ.iElt)
+     &    CALL PrintFmtArray('OptBeamRefRayDir','1PD23.15',3,
+     &                       beamOpt%nomBeamRefRayDir(1:3))
+	IF (ibeam.EQ.iElt) THEN
+	  IF (beamOpt%beamWt.NE.1d0 .AND. beamOpt%beamWt.GT.0d0)
+     &      CALL PrintFmt('OptBeamWt','1PD23.15',beamOpt%beamWt)
+	  IF (beamOpt%ifBeamCentroid)
+     &      CALL PrintFmt('OptBeamCentroid', "2x,A", 'Y')
+	END IF
+	END SUBROUTINE PrtCalibElt
+
+!     The LOAD notice: one line when the prescription carries a CALIB
+!     setup (variable elements or source, a non-WFE target, Zernike
+!     modes, a target wavefront, beam targets), so a setup that
+!     transfers through SAVE is never silent (Dave 2026-10-18:
+!     "transfer, loudly").  VARS / FOVS / WLENS list the details.
+	SUBROUTINE CalibInForceNote()
+	use param_mod
+	use elt_mod
+	use dopt_mod
+	IMPLICIT NONE
+	CHARACTER(len=200) :: line
+	CHARACTER(len=8)   :: tgt
+	LOGICAL inForce, anyBeam
+	anyBeam = beamOpt%ifOptBeamDir .OR. beamOpt%ifOptBeamPos .OR.
+     &            beamOpt%ifOptBeamSize .OR. beamOpt%ifOptBeamRefRayDir
+	inForce = nVarElt.GT.0 .OR. isVarElt(0) .OR.
+     &            OptTarget.NE.WFE_TARGET .OR. nWFZern.GT.0 .OR.
+     &            tgtWF_flg .OR. anyBeam
+	IF (.NOT.inForce) RETURN
+	tgt = 'WFE'
+	IF (OptTarget.EQ.SPOT_TARGET) tgt = 'SPOT'
+	IF (OptTarget.EQ.WFE_ZMODE_TARGET) tgt = 'ZWF'
+	IF (OptTarget.EQ.BEAM_TARGET) tgt = 'Beam'
+	WRITE(line,'(3A,I4,A,I3,A,I2,A,I3,A,I4,A)')
+     &    '  LOAD: CALIB setup in force from the prescription: target ',
+     &    TRIM(tgt),' at element',OptTgtElt,',',MAX(nOptFov,1),
+     &    ' field(s),',MAX(nOptWavelen,1),' wavelength(s),',nVarElt,
+     &    ' variable element(s), OptMaxItrs',nitrs_dopt,
+     &    ' -- VARS/FOVS/WLENS list them; SAVE writes them'
+	WRITE(*,'(A)') TRIM(line)
+	END SUBROUTINE CalibInForceNote
+!<--
+
+	SUBROUTINE OutCordCandidate()
+	use param_mod
+	use src_mod
+	use elt_mod
+	IMPLICIT NONE
+	REAL*8 x(3),y(3),z(3),xo(3),d
+	INTEGER i,imin
+	CHARACTER(len=40) :: zrule
+
+	CALL DZERO(Tout(1,1),49)
+	z = 0d0
+	IF (nElt.GE.2) THEN
+	  z = VptElt(1:3,nElt)-VptElt(1:3,nElt-1)
+	  zrule = 'previous vertex to last vertex'
+	END IF
+	d = SQRT(z(1)**2+z(2)**2+z(3)**2)
+	IF (d.LE.1d-12*MAX(1d0,MAXVAL(ABS(VptElt(1:3,nElt))))) THEN
+	  z = ChfRayDir(1:3)
+	  zrule = 'the source chief-ray direction'
+	  d = SQRT(z(1)**2+z(2)**2+z(3)**2)
+	END IF
+	IF (d.LE.0d0) THEN
+	  z = (/0d0,0d0,1d0/)
+	  zrule = 'global z (no geometry)'
+	  d = 1d0
+	END IF
+	z = z/d
+	xo = xObs(1:3,nElt)
+	CALL DXPROD(y,z,xo)
+	d = SQRT(y(1)**2+y(2)**2+y(3)**2)
+	IF (d.LE.1d-6) THEN
+	  ! xObs absent or along the beam: the global axis least aligned with z
+	  imin = 1
+	  DO i=2,3
+	    IF (ABS(z(i)).LT.ABS(z(imin))) imin = i
+	  END DO
+	  xo = 0d0; xo(imin) = 1d0
+	  CALL DXPROD(y,z,xo)
+	  d = SQRT(y(1)**2+y(2)**2+y(3)**2)
+	END IF
+	y = y/d
+	CALL DXPROD(x,y,z)
+	Tout(1,1:3) = x
+	Tout(2,1:3) = y
+	Tout(3,4:6) = x
+	Tout(4,4:6) = y
+	Tout(5,7)   = 1d0
+	LOutCordCandidate = .TRUE.
+	WRITE(*,'(A,I4,3A)') '  Output coordinates proposed: the beam'//
+     &    ' frame at element',nElt,' (',
+     &    TRIM(EltTypeName(EltID(nElt))),'), z = '//TRIM(zrule)
+	WRITE(*,'(A,3F11.6)') '    x =',x
+	WRITE(*,'(A,3F11.6)') '    y =',y
+	WRITE(*,'(A,3F11.6)') '    z =',z
+	WRITE(*,'(A)') '    (nOutCord= 5; SAVE writes the block)'
+	END SUBROUTINE OutCordCandidate
+!<--
 
 C***********************************************************************
 
@@ -1449,6 +1748,9 @@ C***********************************************************************
           END IF
 !<--
 
+!-->  the CALIB setup (Table 13 header keys; Dave 2026-10-18)
+          CALL PrtCalibHeader()
+!<--
 !--> captured whole-line Rx comments from the header section
           CALL RxCommentEmit(0)
 !<--
@@ -2017,7 +2319,14 @@ C***********************************************************************
           ! --------------------------------------------
           ! Propagation
           ! --------------------------------------------
-          CALL PrintFmt('PropType', "2x,A", TRIM(PropTypeName(PropType(iElt))))
+!-->  SAVE writes the NAME; a value outside the table (the legacy
+!     numeric 0 before 2026-10-18) is Geometric, never bytes past it.
+          IF (PropType(iElt).GE.1 .AND. PropType(iElt).LE.15) THEN
+            CALL PrintFmt('PropType', "2x,A", TRIM(PropTypeName(PropType(iElt))))
+          ELSE
+            CALL PrintFmt('PropType', "2x,A", 'Geometric')
+          END IF
+!<--
           CALL PrintFmt('zElt', "1PD23.15", zElt(iElt))
 
           ! Special Elements: Pinhole
@@ -2032,6 +2341,9 @@ C***********************************************************************
           IF (nECoord(iElt).GT.0) CALL PrintFmtArray('TElt','1PD23.15',nECoord(iElt),
      &                                          PACK(TRANSPOSE(TElt(:,1:nECoord(iElt),iElt)),MASK=.TRUE.))
 
+!-->  the CALIB setup bound to this element (Table 13 element keys)
+          CALL PrtCalibElt(iElt)
+!<--
 !--> captured whole-line Rx comments from this element's block
 !    (a comment preceding "iElt= k+1" in the file is read while
 !    element k's block is being parsed, so emitting at the end of

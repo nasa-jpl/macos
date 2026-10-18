@@ -52,6 +52,10 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 - A deck that needs a data file beside it (`ObjFile=`, `.srfN.txt`) gets the file written by a
   `! awk` line after `cd $TMP`, and the key added with `! sed -i '1i Key= file' $DECK`; the gate's
   one journal line is 256 characters.
+- In a `!` line, `&&` ends the command (`! cmp a b && echo SAME` runs only the cmp) and `$?` is not
+  reliable; test a result with `! if cmp -s a b; then echo SAME; else echo DIFFERS; fi`.
+- A prompt the LOAD may raise (`Keep the proposed output coordinates? [YES]:` on a deck with no
+  nOutCord=/Tout= block) is answered by the next journal line; the load gate answers it `yes`.
 
 ## Files
 

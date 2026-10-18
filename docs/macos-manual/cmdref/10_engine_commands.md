@@ -443,7 +443,7 @@ Load a .in prescription.
 <!-- BEGIN NOTES cmd-OLD-file -->
 *Syntax:* `OLD <file>` (also `LOAD`) — the prescription file, `.in` optional.
 
-*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR) and the OPD reference, printing the non-default ones.
+*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR) and the OPD reference, printing the non-default ones.  A deck that carries a CALIB setup (Table 13 keys) is announced in one line (`LOAD: CALIB setup in force from the prescription: ...`).  A deck with no output-coordinate block (`nOutCord=` / `Tout=`) loads: the beam frame at the last element is proposed (z from the previous vertex to the last vertex, x from the element's `xObs=`) and the CLI asks `Keep the proposed output coordinates? [YES]:` -- NO reads `nOutCord` and the `Tout` rows; the bindings take the proposal.  A numeric `PropType=` (0..15) resolves to its name, 0 = Geometric; an unrecognized value is reported and defaulted.  Gates: `OUTCORD_missing.jou`, `PROPTYPE_numeric.jou`, `CALIB_save_roundtrip.jou`.
 
 ```
 MACOS>old
@@ -525,7 +525,7 @@ Write current system to .in.
 <!-- BEGIN NOTES cmd-SAVe -->
 *Syntax:* `SAVE <file>` — the new prescription's name; `.in` IS appended (`save saved` writes `saved.in`, `save saved.in` writes `saved.in.in`).
 
-*Defaults:* the name has no default; the deck is written from the Rx arrays as loaded, never from the trace state, with the keys the SAVE round-trip gate lists.
+*Defaults:* the name has no default; the deck is written from the Rx arrays as loaded, never from the trace state, with the keys the SAVE round-trip gate lists.  Since 2026-10-18 the CALIB setup is among them: every Table 13 keyword whose value differs from its load default (target, variable elements and bounds, fields and weights, beam targets, cap and tolerance) is written, so a setup made with SETC / AVAR / AFOV or `calib_set_*` transfers through the saved deck, and the next OLD prints `LOAD: CALIB setup in force from the prescription: ...`.  A legacy numeric `PropType=` is written as its name (`0` is Geometric).  A deck loaded without an output-coordinate block gets the proposed (or typed) `nOutCord=` / `Tout=` block written.  Gates: `CALIB_save_roundtrip.jou`, `PROPTYPE_numeric.jou`, `OUTCORD_missing.jou`.
 
 ```
 MACOS>save

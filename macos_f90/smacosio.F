@@ -260,7 +260,10 @@ C
         !     RETURN
         !   End If
 
-	  CALL LOHIN3()    ! def in iosub.inc
+	  CALL LOHIN3()
+!-->  no nOutCord=/Tout= in the deck: ChkDf3 proposes the frame (1.2 (u))
+	  IF (LOutCordAbsent) GO TO 72
+!<--    ! def in iosub.inc
 
 	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
 
@@ -285,6 +288,7 @@ C
 	    Tout_FLG=.TRUE.
 	  END IF
 
+   72	  CONTINUE
 	  CALL ChkDf3(EXIT_OK)
 
 	  IF (EXIT_OK) THEN

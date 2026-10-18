@@ -173,3 +173,40 @@ item 5).
   have `nBadRays=nBadRays+1` inside the `IF (.NOT.L1(iRay))` / `IF (.NOT.LRayPass(iRay))`
   blocks that call SetRayFail(RayStat_Obscured).
 
+
+## Three loader rulings of 2026-10-18 (PLAN_CONSOLIDATION 1.2 (d), (u) and section 4 item 1)
+- **A numeric `PropType=` resolves to its name at load; `0` IS Geometric** (Dave).  The element chain
+  (msmacosio.inc) matched the names and the numerals 1..15 but had no `0` branch: a legacy
+  `PropType= 0` (old_Rx/KeckDemo.in, mars.in) left the allocation value 0 with the given-flag set, so
+  ChkDf2 never defaulted it, the trace saw "not 1" (not Geometric) and SAVE printed `PropTypeName(0)`
+  (bytes past the table on ifx, blanks on gfortran).  Now `0` -> 1, an unrecognized value is NAMED
+  (`** PropType= Bogus at element 8 not recognized: the default applies`) and left to ChkDf2, and the
+  SAVE writer guards the index (Geometric for anything outside 1..15).  Note the chain's 1-char
+  numeral matches: `99` reads as 9 (GeomUpdate) -- a longstanding prefix quirk, not changed.
+  Fixture `ZGD_test_files/tst_proptype_numeric.in` (0..15 in element order); gate `PROPTYPE_numeric.jou`.
+- **A deck with no output-coordinate block loads** (it failed with no message: the label-61 line read
+  was `END=99`).  Now `END=69`: end of file (or an `EOF` line) inside the element chain closes the last
+  element as `nOutCord=` would (`LOutCordAbsent`), the two `70` blocks (macosio.F / smacosio.F) skip
+  the nOutCord/Tout reads (`GO TO 72`), and ChkDf3's Tout default is `OutCordCandidate` (iosub.inc):
+  the BEAM frame at the last element -- z = unit(VptElt(nElt) - VptElt(nElt-1)) (the source
+  ChfRayDir for one element or coincident vertices; NOT psiElt, whose sign runs against the beam on
+  a reflector and along it on a FocalPlane -- Cassegrain's FP has psi = +z with the beam +z), x from
+  xObs or the global axis least aligned with z, y = z x x.  `LOutCordCandidate` makes the CLI ask
+  (`OutCordQuery`, macosio.F, under MACOS_CMD in macos_cmd_loop.inc: YES keeps, NO reads nOutCord and
+  the rows with the proposal as defaults); SMACOS/bindings take it and print the same lines.  The
+  old cyclic default (`-psiElt(3), -psiElt(1), -psiElt(2)`) was orthonormal only for an axis-aligned
+  element and no corpus deck reached it (all 1464 carry `Tout=`).  The load gate answers the prompt
+  (`cli_load_gate.load`).  Fixture `tst_no_outcord.in`; gate `OUTCORD_missing.jou`.
+- **SAVE writes the CALIB setup** (Dave: "SAVE the CALIB settings and have them transfer, loudly").
+  `PrtCalibHeader` (source block, called from PrtSourceInfo before the comment emit) and
+  `PrtCalibElt(iElt)` (element block) in iosub.inc write every Table 13 key whose value differs from
+  its load default; the reader's counting rules shape the output: `ChfRayDir/ChfRayPos` and `Wavelen`
+  are field 1 / wavelength 1, so fields 2..n go out as `OptChfRayDir=/OptChfRayPos=` pairs and
+  wavelengths 2..n as the existing `ArrWaveLen=`; `OptFOVWt=` after the pairs; `OptTgtElt=` only when
+  not nElt-1 (LOAD resolves the -1 sentinel); `OptRayGrid=` only when opt_npts differs from
+  nGridpts/2-1 (the given-flag is a local of the two reader hosts); `VarCons=`/`OptAsph=` after their
+  `VarElt=`; beam keys at the element they name, `OptBeamWt=`/`OptBeamCentroid=` with the first beam
+  key.  `CalibInForceNote` (macos_cmd_loop.inc, after ModesInForceNote, CLI and bindings) prints one
+  line when a load reads a setup.  Gate `CALIB_save_roundtrip.jou` (tst_calib_mixed,
+  opt_example_constrained: saved keys, the notice, re-save byte-identical); the load gate's round trip
+  now covers every CALIB fixture's keys.  `SAVE_KEYWORD_AUDIT.md`'s Opt* family is closed.
