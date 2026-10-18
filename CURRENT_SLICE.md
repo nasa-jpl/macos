@@ -33,9 +33,11 @@
 > CALIB_save_roundtrip.jou); plus the SAVE/PropType ruling -- a numeric `PropType=` resolves to its name, 0 = Geometric
 > (`0` branch + named warning + writer guard; fixture tst_proptype_numeric.in, gate PROPTYPE_numeric.jou).  All three
 > gates green on both new binaries, red on e2c93d0b both compilers; bindings relinked: mmacos 9/9 (4 classes), pymacos
-> 59/59 (save/calib/modes/parse/sysprop).  `BRIEF_ccmac_prerelease.md` written (Dave asked).  NEXT: commit (explicit
-> paths), `make_corpus.sh` after the fixtures are committed (core 156 -> 158), the clean-worktree gate at the tip both
-> compilers (load/cmd/ab), cmdref regen (`make cmdref-regen` for the three new suite lines), then the §6.2 chapters.
+> 59/59 (save/calib/modes/parse/sysprop); api twins tRxLoadRulings1018 / test_rx_load_rulings_1018 (resources e211fe4,
+> LOCAL) -- found the VarElt-all-zero miss (aad6400f).  Shared-tree cmd suite 102/102 both compilers at d0f5192e.
+> Gate at 7625edc5 launched from the clean worktree (scratchpad gate_7625edc5.log); finding (v) api save_rx's stray YES.  `BRIEF_ccmac_prerelease.md` written (Dave asked).  Committed d0f5192e adf837cc 53767f46 aad6400f 7625edc5 (core 156 -> 160 with the shared-corpus copies);
+> cmdref regenerated.  NEXT: read the gate (load 160 / cmd 102 / ab vs e2c93d0b, both compilers), write the §5 line,
+> then the §6.2 chapters; Dave: the push, the five plan items from CC's report.
 > Gotcha found: in a `!` journal line `&&` ends the command and `$?` is unreliable -- use `if cmp -s ...` (README).**
 
 > **2026-10-18 afternoon (CC) RESUME POINT -- PUSHED on Dave's word: macos 0967dc56..ac175c0f (18 commits), resources
