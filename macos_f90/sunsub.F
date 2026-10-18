@@ -2948,8 +2948,13 @@ C***********************************************************************
 
 	  CALL DFOURN(ca3,szArr,2,-1)
           CALL DSWAP2(ca2,ca3,size)
+!-->  The forward-forward-inverse convolution carries size**2 in the
+!     amplitude: divide it out.  A stray 'ca3=ca2' after this line
+!     undid it, so the coherent image was size**4 (4.3e9 at 256) too
+!     bright (PLAN_CONSOLIDATION 1.2 (s)).  Now a point object images
+!     to the PSF itself, the same flux as the incoherent branch.
 	  ca3=ca2/size**2
-	  ca3=ca2
+!<--
 
 	  img=ca3*DCONJG(ca3)
 	  !img=obj2;
