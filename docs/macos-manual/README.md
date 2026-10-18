@@ -237,6 +237,15 @@ Two clean-ups happened at migration:
   `src/media/fig_rescued_NN.png` (`tools/rescue_figures.py`; status
   and debris audit in `FIGURE_RESCUE_LOG.md`).
 
+## Heading numbers and section page breaks
+
+`tools/number_sections.lua` (on the manual's docx and html builds, 2026-10-18)
+numbers the headings in the printed 3.2 manual's pattern — `## SECTION 4:`
+sets the chapter, `###` becomes 4.1, `####` becomes 4.1.1, an appendix's
+letter likewise — and puts a page break before every Section and Appendix.
+The numbers are generated at build time, so the sources carry none; cross
+references in prose ("Section 4.4.2") are hand-written and may lag.
+
 ## End-product edits (`edits/`)
 
 `edits/macosMan_edit.docx` and `edits/macosCmdRef_edit.docx` are Dave's
