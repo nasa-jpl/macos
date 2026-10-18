@@ -14,7 +14,7 @@ C  (param_mod).  No new wrapper / no efl.inc refactor needed.
       MODULE sysprop_mod
         USE param_mod, ONLY: mdttl
         USE elt_mod,   ONLY: nElt, focalRatio, Wavelen, CWM, CBM, dxElt,
-     &                        dxEltDiffr
+     &                        dxEltPix
         USE src_mod,   ONLY: Aperture, Obscratn
         IMPLICIT NONE
 
@@ -37,9 +37,9 @@ C  (param_mod).  No new wrapper / no efl.inc refactor needed.
 C  Compute the first-order properties at focal-plane element iElt.
 C  Requires focalRatio already set (run the EFL command first).
 C  The pixel-based quantities (lambda/D in px, plate scales) need a
-C  prior DIFFRACTION propagation to iElt (INT, PIX) to have set
-C  dxElt(iElt) (dxEltDiffr); they are left 0 otherwise, and after an
-C  OPD at iElt, which re-sets dxElt(iElt) to the ray spacing.  Returns ok=.TRUE. iff the core (focal-length-based)
+C  prior DIFFRACTION propagation to iElt (INT, PIX): its pitch is
+C  dxEltPix(iElt), which an OPD never touches; they are left 0 until
+C  one has run.  Returns ok=.TRUE. iff the core (focal-length-based)
 C  quantities were computed.
         SUBROUTINE DeriveSysProps(iElt, ok)
           IMPLICIT NONE
@@ -87,15 +87,14 @@ C  coronagraph).  Left 0 (with sp_hasefl=.FALSE.) when EFL didn't run.
 C  Pixel-based plate scale: exact value from dxElt(iElt) after a
 C  diffraction propagation (INT/PIX) has set it; needs efl too.
             dxf_bu = 0d0
-!-->  Only a DIFFRACTION pitch (PLAN 1.2 (d), 2026-10-17): an OPD at
-!     iElt leaves dxElt(iElt) = the ray-grid spacing (DXCALC's slice
-!     branch; LOS reads it so), which at a focus is ~0 -- the pixel
-!     lines printed 4.4e-12 BaseUnits / 1.27e6 px on the Cassegrain,
-!     and an OPD AFTER an INT overwrote the INT's pitch the same way.
-            IF (ALLOCATED(dxElt) .AND. ALLOCATED(dxEltDiffr)) THEN
-              IF (iElt <= UBOUND(dxElt,1)) THEN
-                IF (dxEltDiffr(iElt)) dxf_bu = ABS(dxElt(iElt))
-              END IF
+!-->  Only a DIFFRACTION pitch (PLAN 1.2 (d)): an OPD at iElt leaves
+!     dxElt(iElt) = the ray-grid spacing (DXCALC's slice branch; LOS
+!     reads it so), which at a focus is ~0 -- the pixel lines printed
+!     4.4e-12 BaseUnits / 1.27e6 px on the Cassegrain.  Dave's ruling
+!     2026-10-18: OPD does not set the pixel scale -- the pitch is the
+!     last INT / PIX's (dxEltPix), and an OPD after it leaves it.
+            IF (ALLOCATED(dxEltPix)) THEN
+              IF (iElt <= UBOUND(dxEltPix,1)) dxf_bu = dxEltPix(iElt)
             END IF
 !<--
             IF (dxf_bu > 0d0) THEN
@@ -156,8 +155,8 @@ C  Pretty-print the most recently derived properties (CLI use).
           ELSE
             WRITE(*,*)'  (pixel-based plate scale needs a diffraction',
      &                ' propagation -- run INT or PIX'
-            WRITE(*,*)'   at this element (an OPD there since leaves',
-     &                ' the ray spacing), then re-run SYSPROP)'
+            WRITE(*,*)'   to this element, then re-run SYSPROP; an',
+     &                ' OPD does not set it)'
           END IF
           WRITE(*,*) ' '
  900      FORMAT(1P,A,1X,E15.7)

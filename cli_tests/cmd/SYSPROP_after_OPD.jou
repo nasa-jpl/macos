@@ -2,9 +2,12 @@
 # spacing (DXCALC's slice branch; LOS reads it so) -- at a focus ~0: the lines printed a detector
 # pitch of 4.4094850E-12 and lambda/D = 1.2741640E+06 px on the manual's Cassegrain after an OPD
 # alone, and the same after INT then OPD (PLAN_CONSOLIDATION 1.2 (d), measured 2026-10-17 on
-# 410aa9d).  Now they print only from a diffraction pitch (dxEltDiffr, set by DXCALC's far-field /
-# sphere-to-sphere / Fresnel branches): the hint after the OPD, the INT numbers of EFL_SYSPROP.jou
-# after OPD then INT, the hint again after INT then OPD.
+# 410aa9d).  Dave's ruling 2026-10-18: OPD does not set the pixel scale -- the lines need a diffraction
+# propagation (INT / PIX) and say so when none has run.  The pitch is dxEltPix, which only DXCALC's
+# far-field / sphere-to-sphere / Fresnel branches set and an OPD never touches: the hint after the OPD
+# alone, the INT numbers of EFL_SYSPROP.jou after OPD then INT, and the SAME INT numbers after INT then
+# OPD (on b81021f's dxEltDiffr flag that OPD wiped them back to the hint).  SYSPROP is also the api's
+# sysprop (mmacos tSysProp, pymacos test_sysprop.py): one engine rule.
 # DEADLINE: 120
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 efl
@@ -20,10 +23,11 @@ opd 5
 /null
 sysprop
 5
-# EXPECT: (?s)RMS OPD error.*?pixel-based plate scale needs a diffraction.*?Peak occurs at i=\s+129, j=\s+129.*?lambda/D \(detector px\)\s+=\s+5\.2290937E\+00.*?RMS OPD error.*?pixel-based plate scale needs a diffraction
-# EXPECT: Plate scale \(arcsec/px\)\s+=\s+9\.8614033E-03
-# EXPECT: Detector pixel pitch \(BaseUnits\)\s+=\s+1\.0744514E-06
+# EXPECT: (?s)RMS OPD error.*?pixel-based plate scale needs a diffraction propagation -- run INT or PIX\s+to this element, then re-run SYSPROP; an OPD does not set it.*?Peak occurs at i=\s+129, j=\s+129.*?lambda/D \(detector px\)\s+=\s+5\.2290937E\+00.*?RMS OPD error.*?lambda/D \(detector px\)\s+=\s+5\.2290937E\+00
+# EXPECT: (?s)(Plate scale \(arcsec/px\)\s+=\s+9\.8614033E-03.*?){2}
+# EXPECT: (?s)(Detector pixel pitch \(BaseUnits\)\s+=\s+1\.0744514E-06.*?){2}
 # EXPECT-NOT: 4\.4094850E-12
 # EXPECT-NOT: 1\.2741640E\+06
 # EXPECT-NOT: run OPD, INT
+# EXPECT-NOT: (?s)Peak occurs.*pixel-based plate scale needs
 # EXPECT-NOT: forrtl

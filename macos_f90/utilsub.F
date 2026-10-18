@@ -548,11 +548,6 @@ C       sphere propagation
      &      LFRProp=.TRUE.
         END IF
 
-!-->  dxEltDiffr: TRUE only from the three diffraction branches below;
-!     the ray-spacing branches (an OPD, a geometric trace) leave FALSE
-!     (PLAN 1.2 (d), 2026-10-17)
-        dxEltDiffr(iElt)=(LFFProp.OR.LSSProp.OR.LFRProp)
-!<--
 C       If far field, compute dx on that basis
 
         IF (LFFProp) THEN
@@ -724,6 +719,13 @@ C       the average value
           dxElt(iElt)=1d10
         END IF
 
+!-->  dxEltPix: the pitch of a diffraction propagation only; the ray-
+!     spacing branches (an OPD, a geometric trace) leave the last one
+!     (PLAN 1.2 (d), Dave's ruling 2026-10-18: OPD does not set the
+!     pixel scale)
+        IF (LFFProp.OR.LSSProp.OR.LFRProp)
+     &    dxEltPix(iElt)=ABS(dxElt(iElt))
+!<--
         RETURN
         END SUBROUTINE DXCALC
 
