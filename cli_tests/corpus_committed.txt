@@ -1389,6 +1389,8 @@
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZernFringe9.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZrnGrOverflow.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZrnGrRoundTrip.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/tst_no_outcord.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/tst_proptype_numeric.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/sensitivities/e2e_pie/e2e_pie.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/sensitivities/e5hex1/e5hex1.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/sensitivities/FFSegDemoAll/FFSegDemoAll.in
