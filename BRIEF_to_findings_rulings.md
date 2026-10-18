@@ -6,9 +6,12 @@ Source of truth: PLAN_CONSOLIDATION.md 1.2, each item now carries its RULED line
 > `RFOURN`'s COMPLEX*8 declaration; stencil 3x; placement refused by name off the source grid frame; record +
 > model memo `cli_tests/records/atmos_fix_2026-10-18.md`), (o) filters (the writer), (s) coherent IMG, (d) SYSPROP
 > (`dxEltPix`; resources twins re-pinned).  Each item's DONE line in PLAN 1.2 carries its gate and red leg.
-> **OPEN for Dave:** SAVE writing the current propagation type (item 4's last sentence) -- not started, the
-> reading needs his word; and whether the memo's ATMOS proposals go to PLAN §4.  New finding 1.2 (u): a deck with
-> no output-coordinate block fails to load with no message.  Items 5-10 stay in the plan.
+> **RULED and DONE 2026-10-18 afternoon (Dave's three answers; CC, LOCAL):** (1) 1.2 (u) -- a deck with no
+> output-coordinate block loads: the loader proposes the BEAM frame at the final surface, the CLI asks, the api takes
+> it (gate `OUTCORD_missing.jou`); (2) the ATMOS memo's proposals are PLAN §4.6; (3) SAVE writes the CALIB settings
+> and LOAD announces them (gate `CALIB_save_roundtrip.jou`); and item 4's SAVE ruling -- a numeric `PropType=`
+> resolves to its name, 0 = Geometric (gate `PROPTYPE_numeric.jou`).  The CCMac pre-release brief Dave asked for is
+> `BRIEF_ccmac_prerelease.md`.  Items 5-10 stay in the plan.
 Rule 1 applies: every fix ships with its gate, and the gate has a must-fail leg
 (red on the pre-fix binary); the corpus A/B before the commit for anything that
 can move a trace; both compilers.
