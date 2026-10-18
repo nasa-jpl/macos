@@ -85,6 +85,8 @@
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZernFringe9.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZrnGrOverflow.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_ZrnGrRoundTrip.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/tst_no_outcord.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/tst_proptype_numeric.in
 /home/dcr/dev/macos/ZGD_test_files/e2e_pie.in
 /home/dcr/dev/macos/ZGD_test_files/e5hex1.in
 /home/dcr/dev/macos/ZGD_test_files/e5hex2.in
