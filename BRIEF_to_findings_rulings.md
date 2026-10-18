@@ -39,6 +39,19 @@ can move a trace; both compilers.
    trace-state single that names the last propagation (the SAVE-policy item of
    1.1b); confirm the reading with Dave before writing it.
 
+### ATMOS, after CC's check of the math (2026-10-18, `cli_tests/records/atmos_kolmogorov_check_2026-10-18.md`)
+
+The generator `AtmosPhase` and the RNG are RIGHT (replicated exactly; Kolmogorov structure function
+within 20 %, Noll's tilt variance to the digit).  The defect is in `AddAtmos`'s coupling of the screen to
+the rays: the screen the rays receive has a pixel-to-pixel checkerboard (lag-1 structure function 70-160x
+Kolmogorov), an amplitude that varies by 1e5 with the seed, and on ifx a run-to-run non-determinism
+under a fixed seed (uninitialized read -- the ifx debug build shows three different outcomes).  Start
+there: the ray-index -> R1 mapping, `rsamp = dxElt(iElt)`, the gradient stencil's 3x constant, and
+`ztdir = 0`.  Gates: (a) `seed n; atm; opd 1` deterministic on both compilers; (b) the OPD-1 map's
+structure function at lags 1-8 within a factor 1.5 of 6.88 (r/r0)^(5/3) for three seeds; (c) the rms
+over the disk at 3-12 rad for r0 0.25 m on the 4 m Cassegrain; (d) spot rms at the focal plane = EFL x
+the gradient rms within 10 % (the 3x stencil factor gone).  Then the placement rule and the model memo.
+
 ## Later, in the plan (phase 3 engine lane)
 
 5. (e) TPR fills `RayPosHist` itself (no api entry today; CLI-only).
