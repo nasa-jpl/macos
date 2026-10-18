@@ -1345,7 +1345,10 @@ C       Set defaults, if necessary
 	LOGICAL anyCons
 
 	IF (iElt.LT.1) RETURN
-	IF (isVarElt(iElt) .AND. ANY(varEltDOF(1:mVarDOF,iElt).NE.0)) THEN
+!     VarElt= goes out whenever the element is marked variable, flags
+!     all zero included (Rx_AsphCalib: `VarElt= 0 0 0 0 0 0 0 0` then
+!     `OptAsph= 1 1` -- the reader keys OptAsph= on the VarElt= line).
+	IF (isVarElt(iElt)) THEN
 	  CALL PrintFmtArray('VarElt', '2x,i2', mVarDOF,
      &                       varEltDOF(1:mVarDOF,iElt))
 	  IF (LOptCons) THEN
