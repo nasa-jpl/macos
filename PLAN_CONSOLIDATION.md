@@ -192,6 +192,10 @@ suite with no red leg on record is not accepted.
 Lanes are the current ones (TO engine; CCMac docs; CC review, gates and
 this plan); Dave rules the open questions below and signs off each phase.
 
+### 3a. After phase 4 — future activities entered 2026-10-18
+
+- **Atmosphere** (`PLAN_ATMOSPHERE.md`, PLAN §6a): the single pupil screen fixed (1.2 (p)), a layered-screen generator runner, and the rays-and-field regrid at the entrance pupil (the ray phase guides the unwrap, the field gives the amplitude, a named refusal in strong scintillation).  Sequence and gates in the design; dated after the release gate.
+
 ## 4. Rulings needed from Dave
 
 1. **SAVE policy** (from §1.1b): the `Opt*`/CALIB keys and the trace-state singles — deferred by Dave 2026-10-10, ask again when the SAVE round-trip next moves.  `OptTol=` (added 2026-10-11, §3.2) is the family's 26th key and follows it: parsed, not written.
