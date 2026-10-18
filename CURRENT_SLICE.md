@@ -24,6 +24,15 @@
 
 ## Active slice
 
+> **2026-10-18 afternoon (CC) RESUME POINT -- PUSHED on Dave's word: macos 0967dc56..ac175c0f (18 commits), resources
+> a599f34; TO's 9d79545 (sysprop twins) stays LOCAL in resources until Dave sees it.  Done today after the midday note:
+> manual cross-references resolved at build time (`[Section ?](#id)`, 63 converted, number_sections.lua); docs/ cleanup
+> (three PDFs at the top, `make publish`, snapshots removed, FreeFormPieAperture.in -> ZGD); edit copies refreshed
+> (Dave edits `edits/*_edit.docx`; fold back, rebuild, refresh).  NEXT (CC): fold Dave's Word edits when they come;
+> remaining §6.2 chapters (sensitivity workflow at engine level first); gate TO's ATMOS / filters / IMG / SYSPROP
+> landings; phase-4 prep (clean-clone sweep, Windows smoke).  Open on Dave: the SAVE 'current prop type' reading,
+> Mac in phase 4.**
+
 > **2026-10-18 midday (CC): ATMOS math checked against Kolmogorov** (generator + RNG right; the ray coupling wrong --
 > `cli_tests/records/atmos_kolmogorov_check_2026-10-18.md`; TO is on it, sourcsub.F/sunsub.F dirty in the shared tree).
 > Dave's end-product edits done: heading numbers (3.2 pattern) + section page breaks by `tools/number_sections.lua`;
