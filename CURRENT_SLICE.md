@@ -24,6 +24,14 @@
 
 ## Active slice
 
+> **2026-10-18 midday (CC): ATMOS math checked against Kolmogorov** (generator + RNG right; the ray coupling wrong --
+> `cli_tests/records/atmos_kolmogorov_check_2026-10-18.md`; TO is on it, sourcsub.F/sunsub.F dirty in the shared tree).
+> Dave's end-product edits done: heading numbers (3.2 pattern) + section page breaks by `tools/number_sections.lua`;
+> **Manual SECTION 11 Polarization** written; edit copies refreshed (4bba2464).  **Atmosphere design** (Dave): single
+> screen / layered rays / layered field / rays-and-field REGRID at the pupil with the ray phase guiding the unwrap --
+> `PLAN_ATMOSPHERE.md`, entered as PLAN §6a + PLAN_CONSOLIDATION §3a, future.  NEW+SAVE leg gated (86295af5).
+> LOCAL unpushed: TO's aa913ce8 595b7b4e (+ resources a599f34), mine a13a0172..this.**
+
 > **2026-10-18 afternoon (CC): BRIEF_to_findings_rulings items 1-4 DONE (LOCAL, unpushed; SHAs in the commit log --
 > ATMOS, filters, coherent IMG, SYSPROP, docs; resources tSysProp/test_sysprop re-pin).  ATMOS's root cause was
 > RFOURN's COMPLEX*8 declaration (2023), not the coupling; record + memo cli_tests/records/atmos_fix_2026-10-18.md.

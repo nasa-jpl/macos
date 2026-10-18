@@ -1366,6 +1366,13 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 
 ---
 
+## 6a. Atmosphere (FUTURE, designed 2026-10-18 — `PLAN_ATMOSPHERE.md`)
+
+- [ ] ATMOS single-screen fix (PLAN_CONSOLIDATION 1.2 (p), TO) — the prerequisite
+- [ ] Layered-screen generator runner (von Kármán, L0, subharmonics, Cn² profile, wind, field margin) — resources, gated on the structure function and the scintillation index
+- [ ] Rays-and-field regrid at the entrance pupil: `ReGrid` extended to take L, tilt and amplitude from the field with the ray phase guiding the unwrap, a named refusal above the residual threshold, an api entry — gated against the two pure workflows
+- [ ] Anisoplanatism gate (θ₀ of the standard profile)
+
 ## 7. Infrastructure / existing-work absorption
 
 These are independent of the thrusts above; land when bandwidth permits, each lands with a regression test as it touches its surface.
