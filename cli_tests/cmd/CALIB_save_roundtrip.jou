@@ -1,0 +1,30 @@
+# SAVE writes the CALIB setup (the Table 13 keys whose values differ from their load defaults) and a
+# LOAD that reads one announces it (Dave 2026-10-18, PLAN_CONSOLIDATION section 4 item 1: SAVE the
+# CALIB settings and have them transfer, loudly).  tst_calib_mixed: SPOT target at element 2 (not the
+# nElt-1 default), VarElt + OptAsph on element 1; opt_example_constrained: OptMaxItrs 200, VarCons
+# bounds, an OptBeamPos target (the deck's OptWFElt= 21 is reset to the beam element 11 at load, and
+# that is what SAVE writes).  Each saved deck reloads with the same notice and VARS listing, and
+# re-saves byte-identically (cmp: same).  Pre-fix: no Opt*/Var* line in the saved file (the grep
+# lines are empty) and no LOAD notice -- red.
+old $ROOT/ZGD_test_files/tst_calib_mixed.in
+save $TMP/cm1
+! grep "Opt\|Var" $TMP/cm1.in | tr -s ' ' | tr '\n' ';'; echo
+old $TMP/cm1.in
+vars
+save $TMP/cm2
+! if cmp -s $TMP/cm1.in $TMP/cm2.in; then echo CM_RESAVE_SAME; else echo CM_RESAVE_DIFFERS; fi
+old $ROOT/ZGD_test_files/opt_example_constrained.in
+save $TMP/oc1
+! grep "OptTarget\|OptTgtElt\|OptMaxItrs\|VarElt\|VarCons\|OptBeamPos" $TMP/oc1.in | tr -s ' ' | tr '\n' ';'; echo
+old $TMP/oc1.in
+save $TMP/oc2
+! if cmp -s $TMP/oc1.in $TMP/oc2.in; then echo OC_RESAVE_SAME; else echo OC_RESAVE_DIFFERS; fi
+# EXPECT: tst_calib_mixed\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2,\s+1 field\(s\),\s+1 wavelength\(s\),\s+1 variable element\(s\), OptMaxItrs\s+10 -- VARS/FOVS/WLENS list them; SAVE writes them
+# EXPECT: OptTarget= SPOT; OptTgtElt= 2; VarElt= 1 0 0 0 0 0 0 0; OptAsph= 1 1;
+# EXPECT: cm1\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2[\s\S]*?Variable elements defined for optimization
+# EXPECT: CM_RESAVE_SAME
+# EXPECT: opt_example_constrained\.in[\s\S]*?LOAD: CALIB setup in force from the prescription: target WFE at element\s+11,\s+1 field\(s\),\s+1 wavelength\(s\),\s+1 variable element\(s\), OptMaxItrs\s+200
+# EXPECT: OptTgtElt= 11; OptMaxItrs= 200; VarElt= 1 1 0 0 0 0 0 0; VarCons= -5\.0000000000000001E-04 5\.0000000000000001E-04 -5\.0000000000000001E-04 5\.0000000000000001E-04; OptBeamPos= 0\.0E\+00 3\.2466750233500002E\+03 2\.7598302704900002E\+03;
+# EXPECT: oc1\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target WFE at element\s+11
+# EXPECT: OC_RESAVE_SAME
+# EXPECT-NOT: forrtl

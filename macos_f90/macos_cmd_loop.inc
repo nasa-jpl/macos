@@ -436,6 +436,10 @@ C         ***next command: Load optical description data***
 	    PrtPrinRots=.FALSE.; LudDrawGrid=.FALSE.
 	    CALL MBFile6(npts,ifOld,ifFID,LRtn_FLG)
 	    if (.not.LRtn_FLG) GO TO 1
+!-->  the deck gave no output coordinates: the user keeps or replaces
+!     the proposed beam frame (1.2 (u)); the api path takes it
+	    IF (LOutCordCandidate) CALL OutCordQuery()
+!<--
 #else
 	    ! SMACOS
 	    CALL MBFile6(npts,ifOld,LRtn_FLG)
@@ -465,6 +469,9 @@ C         ***next command: Load optical description data***
 !     a load keeps them and names the non-default ones (Dave 2026-10-11,
 !     PLAN_CONSOLIDATION 4 item 2).
             CALL ModesInForceNote()
+!<--
+!-->  a CALIB setup carried by the deck is announced (SAVE writes it)
+            CALL CalibInForceNote()
 !<--
 
             i=mElt

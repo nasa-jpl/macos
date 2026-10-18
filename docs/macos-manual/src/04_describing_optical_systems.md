@@ -3057,7 +3057,9 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   Ordering within data blocks is generally not important, except that nObs must preceed the description of the obscurations.
 
--   The last element data block must be followed by the ‘nOutCord=’ specifying the number of output coordinates and the output coordinate matrix.
+-   The last element data block is followed by the ‘nOutCord=’ specifying the number of output coordinates and the output coordinate matrix (`Tout=`).  A prescription that ends without this block still loads: the loader proposes the beam frame at the last element (z along the beam from the previous element’s vertex to the last element’s vertex, or along the chief ray when there is one element; x from the element’s `xObs=`, or the global axis least aligned with z; y = z × x), prints it, and in the interactive program asks `Keep the proposed output coordinates? [YES]:` — NO reads `nOutCord` and the `Tout` rows at the prompt.  The MATLAB and Python bindings take the proposal and print the same lines.  SAVE writes the block either way.
+
+-   A numeric `PropType=` (the legacy form, 0 through 15 in the order of the propagation-type table) is accepted and resolved to its name at load; `PropType= 0` is Geometric.  SAVE writes the name.  A value that is neither a name nor a number in the table is reported (`** PropType= <value> at element n not recognized: the default applies`) and the default is used.
 
 -   Blank lines can be used to separate data for clarity.
 
@@ -3065,7 +3067,7 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   Comments.  A whole line beginning with ‘%’ is a comment, and SAVE writes it back (up to 500 such lines; an overflow is reported once at SAVE).  A ‘%’ after a value (`Key= value  % note`) ends the value: the note is read past but is NOT written back by SAVE.  Block comments open with `/*` or `CommentBegin` and close with `*/` or `CommentEnd`, each marker first on its own line; SAVE writes the block back as it was.  A one-line `/* note */` is not supported (VALIDATE refuses it as a comment block never closed).
 
--   The design-optimization keywords (`OptTarget=`, `VarElt=`, `OptBeam*=`, …) are listed in Table 13 at the end of this section.  They are reset at every load and are not written by SAVE.
+-   The design-optimization keywords (`OptTarget=`, `VarElt=`, `OptBeam*=`, …) are listed in Table 13 at the end of this section.  They are reset at every load; SAVE writes the ones whose values differ from their defaults, and a load that reads any of them prints one line naming the setup in force.
 
 -   An unknown or misspelled keyword in the source block is reported once per load (`MBFile6: Unidentified header string = <key>`) and otherwise ignored; in an element block the message is `MBFile6: Unidentified string`.
 
@@ -3140,7 +3142,7 @@ The SHOw command can be used to display the element’s data.
 
 The SAVe command writes a new .in-file containing the current optical prescription data to disk. Parameters changed as the result of a PERturb or MODify command will be written as modified. This command takes one argument: the new .in-file name (without the “.in” suffix). If the specified file already exists, the user is asked if it should be overwritten.
 
-What SAVE writes is the optical system as loaded and modified: every element block, the whole-line and block comments of the original file (in-line `% notes` are dropped), the stop (`ApStop=`), and the optional keywords whose values differ from their defaults (`UseChfRay4OPD= N` when the aperture-mean OPD reference is in force, `ZernType=`, `NSCount=`, `OPDRefRayLen=`).  A ray trace never changes what SAVE writes.  SAVE does not write the design-optimization keywords of Table 13 or the session options set by command (POLARIZATION, VECTOR, NOLNEG, CENTROID, CIR), which describe a workflow rather than the system.  Loading a saved file and saving it again reproduces the file: the test suite checks this round trip on every prescription in the repository.
+What SAVE writes is the optical system as loaded and modified: every element block, the whole-line and block comments of the original file (in-line `% notes` are dropped), the stop (`ApStop=`), and the optional keywords whose values differ from their defaults (`UseChfRay4OPD= N` when the aperture-mean OPD reference is in force, `ZernType=`, `NSCount=`, `OPDRefRayLen=`).  A ray trace never changes what SAVE writes.  SAVE also writes the design-optimization keywords of Table 13 whose values differ from their load defaults (the target, the variable elements and their bounds, the field list and weights, the beam targets, the iteration cap and tolerance), so a saved prescription carries the CALIB setup made on it, and the next load announces that setup (`LOAD: CALIB setup in force from the prescription: …`).  SAVE does not write the session options set by command (POLARIZATION, VECTOR, NOLNEG, CENTROID, CIR), which belong to the session rather than the system.  Loading a saved file and saving it again reproduces the file: the test suite checks this round trip on every prescription in the repository.
 
 #### SUMMARIZE
 
@@ -3516,17 +3518,19 @@ All variables can be changed with the MODify command.
 +----------------------+--------------+--------------------------------+
 | **Output Variables** | **Defaults** | **Description**                |
 +======================+==============+================================+
-| Tout(iLin,iPert)     | NO DEFAULT   | the output coordinate          |
-|                      |              | transformation matrix          |
+| Tout(iLin,iPert)     | beam frame   | the output coordinate          |
+|                      | at the last  | transformation matrix          |
+|                      | element      | (proposed when absent; the     |
+|                      |              | interactive program asks)      |
 +----------------------+--------------+--------------------------------+
-| nOutCord             | NO DEFAULT   | number of output coordinates   |
+| nOutCord             | 5            | number of output coordinates   |
 +----------------------+--------------+--------------------------------+
 
 ### Design Optimization (CALIB) Keywords
 
-The CALib command runs the native multi-field design optimizer: a Levenberg–Marquardt least-squares solve over the degrees of freedom of the variable elements, scored at up to 12 fields of view and 6 wavelengths (Appendix C lists the command; the Command Reference carries its dialog and the related commands SETC, AVAR, MVAR, DVAR, VARS, AFOV, DFOV, SFOV, FOVS, WLENS).  Its setup is written into the prescription with the keywords of Table 13.  Header keywords belong in the source block, before the first `iElt=`; element keywords belong in the block of the element they vary.  Every keyword in the table is prescription state: it returns to its default at every OLD or LOAD, and none of them is written by SAVE (the saved file carries the optical system, not the optimization that produced it; add the keywords back by hand).  The same settings can be made interactively (SETC, AVAR, AFOV) and from the MATLAB and Python bindings (`calib_set_target`, `calib_set_var_elt`, `calib_set_iter`, `calib_set_tol`, `calib_set_beam`, `calib_set_beam_pos_fov`, `calib_set_beam_wt`; Command Reference Part II).
+The CALib command runs the native multi-field design optimizer: a Levenberg–Marquardt least-squares solve over the degrees of freedom of the variable elements, scored at up to 12 fields of view and 6 wavelengths (Appendix C lists the command; the Command Reference carries its dialog and the related commands SETC, AVAR, MVAR, DVAR, VARS, AFOV, DFOV, SFOV, FOVS, WLENS).  Its setup is written into the prescription with the keywords of Table 13.  Header keywords belong in the source block, before the first `iElt=`; element keywords belong in the block of the element they vary.  Every keyword in the table is prescription state: it returns to its default at every OLD or LOAD.  SAVE writes the keywords whose values differ from their defaults (header keys in the source block, element keys in their element’s block), so the optimization set up on a prescription — interactively or by the bindings’ `calib_set_*` calls — transfers through a saved file; a load that reads such a setup says so in one line (`LOAD: CALIB setup in force from the prescription: target SPOT at element 2, 1 field(s), 1 wavelength(s), 1 variable element(s), OptMaxItrs 10 -- VARS/FOVS/WLENS list them; SAVE writes them`).  The same settings can be made interactively (SETC, AVAR, AFOV) and from the MATLAB and Python bindings (`calib_set_target`, `calib_set_var_elt`, `calib_set_iter`, `calib_set_tol`, `calib_set_beam`, `calib_set_beam_pos_fov`, `calib_set_beam_wt`; Command Reference Part II).
 
-**TABLE 13.** Design-optimization (CALIB) keywords.  All are reset at load; none is written by SAVE.
+**TABLE 13.** Design-optimization (CALIB) keywords.  All are reset at load; SAVE writes those whose values differ from their defaults, and a load that reads them announces the setup.
 
 | Keyword | Block | Value | Default | Meaning |
 |---|---|---|---|---|

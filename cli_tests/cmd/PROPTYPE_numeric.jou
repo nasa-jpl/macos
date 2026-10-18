@@ -1,0 +1,27 @@
+# A legacy numeric PropType= (0..15, one per element) loads to its named form; 0 IS Geometric
+# (Dave 2026-10-18, PLAN_CONSOLIDATION 1.2 (d)).  SAVE writes the names in the element order, the
+# saved deck reloads to the same 16-element chain (the OPD is the Cassegrain's), and a re-saved deck
+# is byte-identical (cmp: same).  A value the table does not hold (Bogus, sed into the copy at element
+# 8) is named and left to the default.  Pre-fix: PropType= 0 matched nothing, element 1 kept 0 and
+# SAVE wrote PropTypeName(0) (garbage on ifx, blanks on gfortran): the first name in the grep line
+# is not Geometric, and the Bogus line is absent -- red.
+# COPY: $ROOT/ZGD_test_files/tst_proptype_numeric.in
+old $ROOT/ZGD_test_files/tst_proptype_numeric.in
+save $TMP/pt1
+! grep "PropType=" $TMP/pt1.in | tr -s ' ' | tr '\n' ';'; echo
+old $TMP/pt1.in
+save $TMP/pt2
+old $TMP/pt2.in
+opd 16
+/null
+save $TMP/pt3
+! if cmp -s $TMP/pt2.in $TMP/pt3.in; then echo PT_RESAVE_SAME; else echo PT_RESAVE_DIFFERS; fi
+! sed -i 's/PropType=  7/PropType=  Bogus/' $DECK
+old $DECK
+# EXPECT: PropType= Geometric; PropType= Geometric; PropType= NFS1surf; PropType= FarField; PropType= NFP1surf; PropType= NFSpherical; PropType= NFPlane; PropType= SF1surf; PropType= SpatialFilter; PropType= GeomUpdate; PropType= NF1; PropType= NF2; PropType= Fresnel; PropType= NFdftPlane; PropType= NFdftSphere; PropType= FFdft;
+# EXPECT: pt1\.in being loaded[\s\S]*?Tracing rays past\s+16 elements
+# EXPECT: pt2\.in being loaded[\s\S]*?RMS OPD error is\s+1\.2938\d*D-12
+# EXPECT: PT_RESAVE_SAME
+# EXPECT: \*\* PropType= Bogus at element\s+8 not recognized: the default applies\s+Default used for PropType\(\s+8\)
+# EXPECT-NOT: Unidentified string
+# EXPECT-NOT: forrtl

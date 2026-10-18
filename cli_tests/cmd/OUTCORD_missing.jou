@@ -1,0 +1,33 @@
+# A deck with no output-coordinate block (nOutCord=/Tout=) loads: the loader proposes the beam frame
+# at the last element (z from the previous vertex to the last vertex, x from the element's xObs or
+# the global axis least aligned with z), the CLI asks, and SAVE writes the block (Dave 2026-10-18,
+# PLAN_CONSOLIDATION 1.2 (u); the api takes the proposal and says so).  Leg 1 keeps it: the
+# Cassegrain's own identity Tout comes back in the saved deck and the OPD is the deck's 1.29e-12.
+# Leg 2 answers NO and types five rows with x and y swapped, which the saved deck carries.
+# Pre-fix: the load stopped after 'Default used for SegXgrid' with no message and 'opd 5' said
+# 'Must load optical data first' -- red.
+old $ROOT/ZGD_test_files/tst_no_outcord.in
+yes
+opd 5
+/null
+save $TMP/noc1
+! grep -A5 "^ *nOutCord=" $TMP/noc1.in | tr -s ' ' | tr '\n' ';'; echo
+old $ROOT/ZGD_test_files/tst_no_outcord.in
+no
+5
+0 1 0 0 0 0 0
+1 0 0 0 0 0 0
+0 0 0 0 1 0 0
+0 0 0 1 0 0 0
+0 0 0 0 0 0 1
+save $TMP/noc2
+! grep -A2 "^ *nOutCord=" $TMP/noc2.in | tr -s ' ' | tr '\n' ';'; echo
+# EXPECT: \*\* No output-coordinate block \(nOutCord=/Tout=\) after element\s+5: proposing the beam frame at the last element
+# EXPECT: Output coordinates proposed: the beam frame at element\s+5 \(FocalPlane\), z = previous vertex to last vertex\s+x =\s+1\.000000\s+0\.000000\s+0\.000000\s+y =\s+0\.000000\s+1\.000000\s+0\.000000\s+z =\s+0\.000000\s+0\.000000\s+1\.000000
+# EXPECT: Tracing rays past\s+5 elements[\s\S]*?Keep the proposed output coordinates\? \[YES\]: yes\s+Output coordinates: the proposed beam frame
+# EXPECT: RMS OPD error is\s+1\.2937\d*D-12
+# EXPECT: nOutCord= 5; Tout= 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00;
+# EXPECT: Keep the proposed output coordinates\? \[YES\]: no\s+Enter nOutCord \(1-7\) \[5\]: 5[\s\S]*?Output coordinates set by hand: 5 rows \(SAVE writes them\)
+# EXPECT: nOutCord= 5; Tout= 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00;
+# EXPECT-NOT: Must load optical data first
+# EXPECT-NOT: forrtl

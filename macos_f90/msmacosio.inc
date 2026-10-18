@@ -13,6 +13,7 @@ C       Set entrance condition flags to .FALSE.
 !<--
           LRxPushback = .FALSE.    ! ReadCoefBlock's one-line pushback
           nHdrUnk = 0              ! unknown header keys reported (3.2)
+          LOutCordAbsent = .FALSE.; LOutCordCandidate = .FALSE.
           iElt = 0   ! the header has no element: RxBad names it 'header'
                      ! (iElt was uninitialized until the element section)
 
@@ -1212,11 +1213,11 @@ C       Set entrance condition flags to .FALSE.
               STRING = RxPushbackLine
               LRxPushback = .FALSE.
             ELSE
-              READ(RX_FID, 123, END=99) STRING
+              READ(RX_FID, 123, END=69) STRING
             END IF
 
   901       CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
-            IF (LCMP(STRING,'EOF',3)) GOTO 99
+            IF (LCMP(STRING,'EOF',3)) GOTO 69
 
             ! ------------------------------------------------------------------------------
             IF (LCMP(VAR_NAM,'EltName',7)) THEN
@@ -3073,7 +3074,22 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               ELSE IF (LCMP(VALUE,PropTypeName(9),7).OR.
      &        LCMP(VALUE,'9',1)) THEN
                 PropType(iElt)=9
+!-->  A legacy numeric `PropType= 0` IS Geometric (Dave 2026-10-18,
+!     PLAN_CONSOLIDATION 1.2 (d)): it matched nothing above, the
+!     element kept the allocation value 0 with the given-flag set, and
+!     SAVE printed PropTypeName(0) -- bytes past the table.  Any other
+!     unrecognized value is named and left to ChkDf2's default (a
+!     warning, not a refusal).
+              ELSE IF (LCMP(VALUE,'0',1)) THEN
+                PropType(iElt)=1
+              ELSE
+                WRITE(*,'(3A,I4,A)') ' ** PropType= ',
+     &            VALUE(1:MAX(1,MIN(ICLEN(VALUE),40))),
+     &            ' at element',iElt,
+     &            ' not recognized: the default applies'
+                GO TO 61
               END IF
+!<--
               PropType_FLG=.TRUE.
 	      GO TO 61
 
@@ -3687,6 +3703,25 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &                  ', iElt=',iElt
               GO TO 61
             END IF
+            GO TO 62
+
+!-->  End of file (or an EOF line) inside the element chain: the deck has
+!     no output-coordinate block (nOutCord=/Tout=).  Until 2026-10-18 this
+!     was END=99 -- the load failed with no message after 'Default used
+!     for SegXgrid' (PLAN_CONSOLIDATION 1.2 (u)).  The elements are
+!     complete: close the last one as the nOutCord= key would, and let
+!     ChkDf3 propose the beam frame at that element (OutCordCandidate).
+ 69         CONTINUE
+            IF (iElt.LT.1) GO TO 99
+            LOutCordAbsent = .TRUE.
+            WRITE(*,'(A,I4,A)') ' ** No output-coordinate block'//
+     &        ' (nOutCord=/Tout=) after element',iElt,
+     &        ': proposing the beam frame at the last element'
+            nElt = iElt
+            CALL ChkDf2(iElt, LOAD_SUCCESS)
+            IF (LOAD_SUCCESS) GO TO 70
+            GO TO 99
+!<--
 
  62	    CONTINUE
             ! ------------------------------------------------------------------------------
