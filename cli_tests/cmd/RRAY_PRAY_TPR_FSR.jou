@@ -6,6 +6,13 @@
 # element and skips empty slots.  The numbers below are what the pre-fix TPR printed WITH
 # SaveRayPosH= Y (b81021f, ifx): ray 63 (-9.075851181705730E-11, 8.250726490910409E-12, 1.5), ray 108
 # x -5.768541200268373E-11, the chief (0, 0, 1.5).
+# B.2 (2026-10-17): PRAY's first ring point read srp(1)=9.0 (the other seven sit at 0.9), so its +x
+# ray was RRAY's edge ray 63 (1.6923) while -x landed at -1.3846 (ray 53); now ray 62 at 1.3846.  RRAY
+# left slots 6..9 holding a previous PRAY's rays, and TPR traced them (53 19 12 26) as RRAY's; the
+# last leg (PRAY, RRAY, TPR) pins that they are cleared.  FSR (all three commands) left ifRayPrint
+# .TRUE., so the next OPD printed every ray's segments; the OPD after FSR pins that it does not
+# (TPR clears the flag itself, so the OPD must come before it).  All
+# three legs are red on 56de986's build.
 old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
 rray
 tpr
@@ -13,12 +20,21 @@ pray
 tpr
 fsr
 0.5,0
+opd 6
+/null
+rray
+tpr
 # EXPECT: Source aperture diameter =\s+4\.0000
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.6923,\s+-0\.1538,\s+ID =\s+63
 # EXPECT: Reference ray indices \(chief \+ 4 marginal\) =\s+1\s+63\s+122\s+52\s+4
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.0769,\s+1\.0769,\s+ID =\s+108
 # EXPECT: Ref\. ray XY offsets from chief ray:\s+0\.7692,\s+-0\.1538,\s+ID =\s+60
 # EXPECT: Ray id:\s+60
+# EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.3846,\s+-0\.1538,\s+ID =\s+62\s+Ref\. ray XY offsets from chief ray:\s+1\.0769,\s+1\.0769,\s+ID =\s+108
+# EXPECT: Ray id:\s+60[\s\S]*TPR ray 4 at element 6:
+# EXPECT-NOT: Ray id:\s+60[\s\S]*TPR ray (53|19|12|26) at
+# EXPECT: RMS OPD error is
+# EXPECT-NOT: segment from Element
 # EXPECT-NOT: Need to run RRAY
 # EXPECT: TPR ray 1 at element 6:\s+0\.0+E\+00\s+0\.0+E\+00\s+1\.50+E\+00
 # EXPECT: TPR ray 63 at element 6:\s+-9\.07585118170\d*E-11\s+8\.25072649091\d*E-12\s+1\.50+E\+00

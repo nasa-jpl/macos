@@ -515,6 +515,8 @@ C***********************************************************************
      &             m_nLensGrp,m_LensGrp(2,maxLensGrp),
      &             m_LensGrpElts(maxLensGrp),refRay(mPupRay),
      &             m_err_elt
+        ! XY offset from the chief ray of each ray refRay holds (RRAY/PRAY)
+        Real*8 :: refRayOff(2,mPupRay)
 
         Integer, parameter :: mPolySide=128
 
@@ -1451,6 +1453,7 @@ C***********************************************************************
           m_LensGrp(:,:)       =  0
           m_LensGrpElts(:)     =  0
           refRay(:)            =  0
+          refRayOff(:,:)       =  0d0
           m_err_elt            =  0
 
           ! PrvGlass
