@@ -42,6 +42,10 @@ opd 1
 ! ls -1 $TMP
 old $TMP/newsys.in
 opd 1
+save $TMP/saved
+! wc -c $TMP/newsys.in $TMP/saved.in
+old $TMP/saved.in
+opd 1
 # EXPECT: MACOS> new\s+Enter file name: \S+/newsys\.in\s+File \S+/newsys\.in being created\.\s+Enter chief ray input direction vector \(x,y,z\) \[0\.00000,0\.00000,1\.00000\]:
 # EXPECT: Enter base units \(m, cm, mm, in, none\) : m\s+Enter wavelength units
 # EXPECT: Enter aperture diameter or angle \[1\.00000\]: 0\.2\s+Enter number of grid points \[256\]: 11
@@ -52,5 +56,8 @@ opd 1
 # EXPECT: MACOS> ! cat \S+/newsys\.in\s+% -+\s+% Source Definition[\s\S]*?Aperture=2\.0+1E-01[\s\S]*?nElt=  1\s+iElt=  1\s+EltName=  FPA\s+Element=  FocalPlane\s+Surface=  Flat
 # EXPECT-NOT: fort\.77
 # EXPECT: Input file \S+/newsys\.in being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?MACOS> opd 1[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# EXPECT: MACOS> save \S+/saved\s+Enter new input file name: \S+/saved\s+File \S+/saved\.in being created\.
+# EXPECT: (\d{4}) \S+/newsys\.in\s+\1 \S+/saved\.in
+# EXPECT: Input file \S+/saved\.in being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?RMS OPD error is   0\.000000000D\+00
 # EXPECT-NOT: Must load optical data first
 # EXPECT-NOT: forrtl
