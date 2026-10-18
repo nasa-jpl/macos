@@ -2040,6 +2040,17 @@ Read a MACOS GridFile (ASCII) into GridMat orientation. M = macos.read_grid_file
 <!-- BEGIN NOTES fn-read-grid-file -->
 <!-- END NOTES fn-read-grid-file -->
 
+#### ref_rays
+
+- **mmacos:** `r = macos.ref_rays(kind)`
+- **pymacos:** `pymacos.ref_rays(kind)`
+- **engine API:** `macos_api_mod::ref_rays`
+
+Find the reference rays of the source grid -- the CLI's RRAY / PRAY. r = macos.ref_rays('rray')   the chief ray + the four rays nearest the aperture edge at +x, +y, -x, -y (5 slots) r = macos.ref_rays('pray')   the chief ray + the eight rays nearest 0.9 of the aperture at 45-degree steps from +x (9 slots) Each candidate must pass the system.  Fields (slot 1 = the chief ray):
+
+<!-- BEGIN NOTES fn-ref-rays -->
+<!-- END NOTES fn-ref-rays -->
+
 #### rm_elt_csys
 
 - **mmacos:** `macos.rm_elt_csys(srfs)`

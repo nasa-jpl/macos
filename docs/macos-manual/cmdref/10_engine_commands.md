@@ -283,7 +283,7 @@ the model at init).
 
 Run a shell command.
 
-*CLI suite:* `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EMACS_VI.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `METCALC.jou`, `NEW.jou`, `OBS_POLYGON.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PWIN.jou`, `SHELL_LONG.jou`, `SINT.jou`, `SPCENTER.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `COORD_ACOOR.jou`, `EMACS_VI.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `METCALC.jou`, `NEW.jou`, `OBS_POLYGON.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PWIN.jou`, `SHELL_LONG.jou`, `SINT.jou`, `SPCENTER.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -436,7 +436,7 @@ working directory (PLAN_CONSOLIDATION 1.2 (r)).
 
 Load a .in prescription.
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OptAsph_order.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
@@ -518,7 +518,7 @@ every OLD/LOAD.  Interactive CLI only.
 
 Write current system to .in.
 
-*CLI suite:* `SAVE_roundtrip.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `NEW.jou`, `SAVE_roundtrip.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `save_rx`.
 
@@ -779,7 +779,11 @@ These manage MULtispec filter data (the help one-liner
 reads a `.filt` file, NFIlt enters wavelength/flux pairs
 interactively (one star type; 0 ends the loop), SFIlt writes
 the data to `.filt`, silently overwriting.  `.filt` is
-appended to the given name.  SMACOS: RFIlt/SFIlt take the
+appended to the given name (a path is allowed).  The format:
+a header line `<name> <nWavelen>`, one line of wavelengths,
+then one line of fluxes per star type -- what SFIlt writes
+and RFIlt reads back (before 2026-10-18 SFIlt wrote no flux
+rows and MULtispec then refused every star type; 1.2 (o)).  SMACOS: RFIlt/SFIlt take the
 file name in CARG(1).
 *Related:* MULtispec.
 <!-- END NOTES cmd-NFIlt -->
@@ -790,14 +794,14 @@ file name in CARG(1).
 
 Apply atmospheric phase screen.
 
-*CLI suite:* `ATMOS_DMBUILD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
 <!-- BEGIN NOTES cmd-ATMosphere -->
 *Syntax:* `ATM [elt] [r0] [λ] [tilt] [grid]` — the element that carries the phase screen, Fried r0, the wavelength r0 is quoted at, the tilt participation 0–1, and RAY or a separate ATMospheric grid.
 
-*Defaults:* elt [the last propagation element]; r0 [0.25]; λ [the deck's wavelength]; tilt [1.0]; grid [RAY].  The screen is random and not under SEED, and a screen on a Reflector loses every ray at the next element (1.2 (p)); at the entrance Obscuring it works.
+*Defaults:* elt [the last propagation element]; r0 [0.25]; λ [the deck's wavelength]; tilt [1.0]; grid [RAY].  The screen is drawn from the session's random sequence: `SEED n` before ATM makes it reproducible (identical on ifx and gfortran); unseeded, the start-up seed is time-based.  It is a Kolmogorov screen (structure function within 6 % of 6.88 (r/r0)^(5/3) over 24 seeds), applied once as a thin phase plate: each ray's path changes by the screen and its direction by the screen's gradient, so the exit-pupil wavefront equals the screen and the spot is −EFL × its gradient (`ATMOS_seed.jou`; record `cli_tests/records/atmos_fix_2026-10-18.md`).  The RAY grid samples the screen by ray-grid index and tilts along xGrid / yGrid, so it is refused by name where the ray grid at the element is not the source grid — after a fold, an image rotation or an inversion; the element type does not matter (the Cassegrain's secondary is accepted; `ATMOS_placement.jou`).  The ATMospheric grid places the screen in the element's local beam frame instead.  Both model one layer conjugate to the element, seen identically by every field point.
 
 ```
 MACOS>atm
@@ -900,7 +904,7 @@ option in CARG(1).
 
 Trace ray i; print state at each surface.
 
-*CLI suite:* `ATMOS_DMBUILD.jou`, `CENTER_FFP_PFP_FDP.jou`, `RAY_MAP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `CENTER_FFP_PFP_FDP.jou`, `RAY_MAP.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `ray_trace`.
 
@@ -970,7 +974,7 @@ Find pupil / marginal rays.
 
 *CLI suite:* `RRAY_PRAY_TPR_FSR.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **missing** — single-ray tracing (B.2, first).
+*Binding:* **SMACOS command** — `ref_rays`.
 
 <!-- BEGIN NOTES cmd-PRAy -->
 *Syntax:* `PRAY` prints, `RRAY` resets; no prompt.
@@ -1131,7 +1135,7 @@ First-order system properties.
 <!-- BEGIN NOTES cmd-SYSprop -->
 *Syntax:* `SYSPROP [fp]` — the focal-plane element the plate scale is taken at.
 
-*Defaults:* fp [nElt], the last element.  The pixel lines need an INT (or PIX) first; after an OPD alone they are nonsense (1.2 (d)).
+*Defaults:* fp [nElt], the last element.  The pixel lines come from the pitch of the last diffraction propagation (INT or PIX) to that element and say so when none has run; an OPD neither sets nor clears it (1.2 (d), Dave's ruling 2026-10-18).  The api's `sysprop` / `first_order_properties` follow the same rule.
 
 ```
 MACOS>sysprop
@@ -1884,7 +1888,7 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `BEAM_GAUSS.jou`, `COMPOSE_ADD_NOISE.jou`, `FILTERS_MULTISPEC.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `PLOCATE_NOPLOC.jou`, `SESSION_INFO.jou`, `SINT.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BEAM_GAUSS.jou`, `COMPOSE_ADD_NOISE.jou`, `FILTERS_MULTISPEC.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `PLOCATE_NOPLOC.jou`, `SESSION_INFO.jou`, `SINT.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -2628,7 +2632,7 @@ SMACOS: no LoadStack entry — prompts take their defaults.
 
 Image noise + RNG seed.
 
-*CLI suite:* `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `COMPOSE_ADD_NOISE.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **missing** — image-plane post-processing (B.2, third).
 
@@ -2703,7 +2707,7 @@ SMACOS: CARG(1)=type.
 
 Wavefront error map.
 
-*CLI suite:* `ATMOS_DMBUILD.jou`, `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `SAVE_roundtrip.jou`, `SINT.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `EXPORT.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `PERTURB.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `RRAY_PRAY_TPR_FSR.jou`, `SAVE_roundtrip.jou`, `SINT.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `trace_rays`.
 
@@ -2808,7 +2812,7 @@ match).
 
 Spot diagram.
 
-*CLI suite:* `OBS_NONE.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `OBS_NONE.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `spot_cmd`.
 
@@ -3253,7 +3257,7 @@ Simulate imaging of the ObjFile object map.
 <!-- BEGIN NOTES cmd-IMG -->
 *Syntax:* `IMG [elt] [INC|COH]` — the element (must be the last) and incoherent or coherent imaging of the `ObjFile=` map.
 
-*Defaults:* elt [the last propagation element]; mode [INC].  Refuses without an `ObjFile=` and at any element but the last; the coherent result is unnormalized (1.2 (s)).
+*Defaults:* elt [the last propagation element]; mode [INC].  Refuses without an `ObjFile=` and at any element but the last.  Both modes are flux-normalized: a one-pixel object images to the PSF itself (the same peak and sum in INC and COH), and an extended object's coherent flux lies between 1 and N times its incoherent flux for N in-phase pixels (`IMG.jou`: 24.7 for an 8 × 8 square on the Cassegrain; fixed 2026-10-18, 1.2 (s)).
 
 ```
 MACOS>img
@@ -3519,7 +3523,7 @@ to reinitialize on the next plot.  Interactive CLI only.
 
 ASCII print output.
 
-*CLI suite:* `EXPORT.jou`, `IMG.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `EXPORT.jou`, `IMG.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `SPCENTER.jou`, `SPOT_text.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — CLI file-output mode (the bindings return the arrays).
 
