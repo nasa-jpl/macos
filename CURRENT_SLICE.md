@@ -24,6 +24,12 @@
 
 ## Active slice
 
+> **2026-10-18 afternoon (CC): BRIEF_to_findings_rulings items 1-4 DONE (LOCAL, unpushed; SHAs in the commit log --
+> ATMOS, filters, coherent IMG, SYSPROP, docs; resources tSysProp/test_sysprop re-pin).  ATMOS's root cause was
+> RFOURN's COMPLEX*8 declaration (2023), not the coupling; record + memo cli_tests/records/atmos_fix_2026-10-18.md.
+> The CLI driver now forces TERM=dumb (an xterm-256color shell failed 24 journals on bracketed paste).  OPEN for
+> Dave: SAVE's propagation type; the ATMOS memo's proposals; 1.2 (u).  NEXT: the clean-worktree gate at the tip.**
+
 > **2026-10-18 morning (CC): restart done (kernel 1033, toolchain intact, smoke 2/2 both compilers).  Dave's edit
 > copies of the Word renders made (`docs/macos-manual/edits/`, 5b9fbcbf; fold-back flow in the README).  RULINGS on the
 > journal findings (Dave 2026-10-18, PLAN 1.2 + the phase-3 row): FIX NOW (p) ATMOS under SEED + placement + model

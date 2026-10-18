@@ -1,6 +1,14 @@
 # BRIEF to TO — the journal findings, ruled (Dave, 2026-10-18)
 
 Source of truth: PLAN_CONSOLIDATION.md 1.2, each item now carries its RULED line.
+
+> **STATUS 2026-10-18 (CC took the brief):** items 1-4 DONE, LOCAL on dev-candidate -- (p) ATMOS (root cause
+> `RFOURN`'s COMPLEX*8 declaration; stencil 3x; placement refused by name off the source grid frame; record +
+> model memo `cli_tests/records/atmos_fix_2026-10-18.md`), (o) filters (the writer), (s) coherent IMG, (d) SYSPROP
+> (`dxEltPix`; resources twins re-pinned).  Each item's DONE line in PLAN 1.2 carries its gate and red leg.
+> **OPEN for Dave:** SAVE writing the current propagation type (item 4's last sentence) -- not started, the
+> reading needs his word; and whether the memo's ATMOS proposals go to PLAN §4.  New finding 1.2 (u): a deck with
+> no output-coordinate block fails to load with no message.  Items 5-10 stay in the plan.
 Rule 1 applies: every fix ships with its gate, and the gate has a must-fail leg
 (red on the pre-fix binary); the corpus A/B before the commit for anything that
 can move a trace; both compilers.
