@@ -1330,8 +1330,8 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 - [ ] Optimization: `np_optim_dvr` (USE_NPSOL only, opt-dev branch)
 - [ ] Optimization: target types, DOF taxonomy, convergence controls (see §3)
 - [ ] Sensitivity-matrix workflow (Thrust A headline) — engine-level recipes + the design-layer `from_rx`/`vary`/`sensitivities` surface (PLAN_DESIGN_LAYER Sprint 2A-i) as the recommended entry point
-- [ ] Polarization ray trace + metrics
-- [ ] Vector diffraction
+- [x] Polarization ray trace + metrics — **Manual SECTION 11 (2026-10-18, CC)**: the switch, conventions, the trace at bare and coated surfaces, the elements, the analysis layer, the design rules, the validation ladder, the gaps; written from `notes/polarization.md`, which now points at it
+- [x] Vector diffraction — Section 11.5 (with §6's SCALAR / VECTOR command text)
 - [ ] Multi-field-point metrics
 - [ ] FreeForm surface authoring (`SrfType=14`, FF/Mon/grid composition, `FFZernType` / `MonZernType`)
 - [ ] Generalized FreeForm on Toric / Anamorphic bases

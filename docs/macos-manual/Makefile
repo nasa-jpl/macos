@@ -48,11 +48,15 @@ docx: $(BUILD)/macosMan.docx
 html: $(BUILD)/macosMan.html
 pdf:  $(BUILD)/macosMan.pdf
 
-$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) --reference-doc=$(REFDOC) -o $@ $(SRC)
+# number_sections.lua: heading numbers in the 3.2 pattern (4.5.2 ...) and a page break before
+# every Section / Appendix (2026-10-18).
+NUMBER     := --lua-filter=tools/number_sections.lua
 
-$(BUILD)/macosMan.html: $(SRC) | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) --standalone --embed-resources --mathml \
+$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua | $(BUILD)
+	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
+
+$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua | $(BUILD)
+	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
 	  -o $@ $(SRC)
 
 # No LaTeX on this box: go docx -> PDF through headless LibreOffice.
