@@ -15,7 +15,7 @@ MACOS ray-trace commands define a bundle of rays at the light source, and then a
 
 Having loaded the .in-file prescription that describes the optical system to MACOS, the user can trace rays to analyze the system. MACOS provides ray-trace commands that produce useful graphical (or file) outputs, such as SPOT and OPD. As discussed earlier, spot diagrams are graphs of the pierce points of the beam rays on a particular surface. They provide a measure of the geometric beam or image shape and are extremely useful in gauging performance. OPD maps show the wavefront profile at a particular surface. When used with an appropriate reference or return surface, OPD generates the wave-front error map of the system.
 
-MACOS also provides commands to help setup appropriate reference surfaces. These include FEX, ORS and SRS (ORS and SRS are discussed later, in Section 6.3). Both SPOT and OPD provide means to quantify system performance, whether for design, tolerancing or simulation, for instrument-level or system-level analyses.
+MACOS also provides commands to help setup appropriate reference surfaces. These include FEX, ORS and SRS (ORS and SRS are discussed later, in [Section ?](#commands-1)). Both SPOT and OPD provide means to quantify system performance, whether for design, tolerancing or simulation, for instrument-level or system-level analyses.
 
 Detailed summaries of the paths taken by single rays can be generated using the RAY command. The optical train can be visualized using the DRAW command. These commands are useful in verifying design layout and correctness, as well as for single-ray performance measurements.
 
@@ -222,7 +222,7 @@ The optical path difference of a ray is the difference between the optical pathl
 
 By default, then, the OPD is referenced to the chief ray (ray 1). The alternative — the mean pathlength over every valid ray in the aperture — is selected per prescription with `UseChfRay4OPD= N` (the default is `Y`, and SAVE writes `UseChfRay4OPD= N` only when the mean is in force), per session with the `OPDREF MEAN` command (`OPDREF CHIEF` restores the default; the setting survives later loads), or from the bindings with `opd_ref`. Every OPD run prints the reference it used, e.g. `OPD reference: CHIEF RAY (default)` or `OPD reference: APERTURE MEAN (UseChfRay4OPD= N)`. The two maps differ by one constant per field, so the printed RMS (mean-removed) and P-V do not depend on the choice; `Average OPD` is that constant. The choice matters on a segmented pupil: under the mean reference, moving one segment shifts the aperture mean and attributes a spurious piston to every other segment; under the chief-ray reference the untouched segments read exactly zero. Use the chief ray. If the chief ray is geometrically lost (a surface miss, not an obscuration — an obscured chief ray still serves as the reference), the engine falls back to the mean and says so: `OPD reference: APERTURE MEAN (chief ray lost)`. Note that under the chief-ray reference a valid ray whose path equals the chief ray's has an OPD of exactly zero, the same value the OPD map holds where there is no ray; programs that read the map should take the valid-ray mask (`opd_mask` in mmacos and pymacos) rather than test for nonzero values.
 
-The OPD map as plotted is always a square grid corresponding to the aperture ray grid printed out in the MAP command. To see the true locations of the rays the SPOt command must be used. Rays which are obscured or vignetted by obscurations or apertures on the current or previous elements are not plotted by default. The OBScuration command changes which rays are plotted and is discussed in Section 5.2.7.
+The OPD map as plotted is always a square grid corresponding to the aperture ray grid printed out in the MAP command. To see the true locations of the rays the SPOt command must be used. Rays which are obscured or vignetted by obscurations or apertures on the current or previous elements are not plotted by default. The OBScuration command changes which rays are plotted and is discussed in [Section ?](#ray-trace-commands).
 
 OPD plots will be representative of the system wavefront error *if evaluated at an exit pupil or other appropriate reference surface*. Such a surface will generally be located in the near-field region of the beam, at a point where the ray grid is regular.
 
@@ -232,7 +232,7 @@ The OPD command has a single argument iElt which is the number of the element wh
 
 OPD plots are not affected by STRETCH setting. OPD plots are always on a linear scale.
 
-The default plot type is GRAy scale. The plot type can be changed with the following commands: WIRe, SLIce, GRAy, COLumn, ROW, CONtour, TEXt, MATlab,FITs, or BINary. These plotting commands are discussed in more detail in Section 7.3.
+The default plot type is GRAy scale. The plot type can be changed with the following commands: WIRe, SLIce, GRAy, COLumn, ROW, CONtour, TEXt, MATlab,FITs, or BINary. These plotting commands are discussed in more detail in [Section ?](#plot-type-commands).
 
 The following examples show output of the OPD command with the GRAY, WIRe, and
 
@@ -282,7 +282,7 @@ Like the OPD command, the SPOt command traces the full bundle of rays to a speci
 
 A spot diagram is an x-y plot across the beam. It puts a dot at the point of incidence of each ray as projected onto a plane across the specified element (see Figure 35).
 
-Rays which are obscured or vignetted by obscurations or apertures on the current or previous elements are not plotted by default. The OBScuration command changes which rays are plotted and is discussed in Section 5.2.7.
+Rays which are obscured or vignetted by obscurations or apertures on the current or previous elements are not plotted by default. The OBScuration command changes which rays are plotted and is discussed in [Section ?](#ray-trace-commands).
 
 The SPOt command has the argument iElt: the number of the element where the spot diagram is to be computed. In addition, the user is asked to select which output coordinates to use to define the x and y axes. The choices are Tout, Enter or Beam (see Section 4). The Beam frame is built from a trace of the chief ray and two differential rays; a chief ray that is obscured but geometrically defined, such as the on-axis chief ray of a centrally obscured telescope, still defines it. The spot is plotted about the element's reference point by default; the SPCenter command (`chfray`) plots it about the chief ray instead, which makes the spot a measure of shape only: a tilt of a fold mirror then moves the printed chief-ray location but not the spot. SPOt plots an x-y scatter format unless plot types TEXt, BINary, or MATlab are selected, in which case a “.spot” file is written to disk. Figures 4 and 36 show spot diagrams for Cassegrain.in.
 
@@ -581,7 +581,7 @@ FEX guards its own setup and says so. If the four differential chief rays are pa
 
 FEX requires two arguments: the number iElt of the exit pupil return surface and the location in global coordinates of the vertex of the aperture stop.
 
-For example, we added two return surfaces to the Cassegrain.in prescription just before the detector using a text editor (see Section 4.9). The first is a return surface at the detector location. The second is close to the exit pupil. The entire .in-file is in Appendix A.1.4.
+For example, we added two return surfaces to the Cassegrain.in prescription just before the detector using a text editor (see [Section ?](#example-telescope)). The first is a return surface at the detector location. The second is close to the exit pupil. The entire .in-file is in Appendix A.1.4.
 
 MACOS\>**show 5**
 

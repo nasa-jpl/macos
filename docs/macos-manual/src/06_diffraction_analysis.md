@@ -14,7 +14,7 @@ Examples of systems where near-field diffraction is important include laser beam
 
 ### Single- versus Multi-plane Diffraction
 
-The first step in setting up a problem is to decide whether the important diffraction effects can be captured using a single-plane model, or whether multi-plane diffraction is necessary. Most imaging systems are adequately modeled using the single-plane approach, with one far-field diffraction being used to create the image. Section 6.2.2 discusses the set up of the .in-file for a single far-field propagation.
+The first step in setting up a problem is to decide whether the important diffraction effects can be captured using a single-plane model, or whether multi-plane diffraction is necessary. Most imaging systems are adequately modeled using the single-plane approach, with one far-field diffraction being used to create the image. [Section ?](#far-field) discusses the set up of the .in-file for a single far-field propagation.
 
 Systems for which diffraction effects of beam truncation due to apertures or obscurations in the beam train may be significant may be best modeled using multiple planes of diffraction. Examples are systems with spatial filters, such as coronograph instruments. Examples of systems requiring near-field propagation, whether multi-plane or no, include telecentric systems, defocused systems, or any system for which intermediate-plane intensities are desired.
 
@@ -54,7 +54,7 @@ A A B C D D
 
 **FIGURE 42** Diffraction schematic for Cassegrain telescope and relay optics example
 
-primary and secondary mirror (between reference surfaces 3 and 4 which are located close to these optics). The reference surfaces share a common center of curvature at point A. Since this is a converging beam, the zElt parameters are positive for both reference surfaces (see Section 6.1.4).
+primary and secondary mirror (between reference surfaces 3 and 4 which are located close to these optics). The reference surfaces share a common center of curvature at point A. Since this is a converging beam, the zElt parameters are positive for both reference surfaces (see [Section ?](#single--versus-multi-plane-diffraction)).
 
 The second near-field propagation occurs between the secondary mirror and the relay camera’s secondary mirror support “spiders.” It is a “through-focus” propagation, with zElt=6 positive (converging beam) and zElt=8 negative (diverging beam). The reference point for this propagation is point B. The fold mirror is included in the propagation.
 
@@ -68,17 +68,17 @@ The last propagation is a far-field propagation, PropType=3, to the focal plane.
 
 To use MACOS diffraction features, the .in-file prescription must be set up correctly. A surface which does not change the wavefront (reference, obscuring, return, or focal plane elements) must ideally be placed at the start and end of each diffraction propagation. Each pair of reference surfaces must be defined together—*slaved* to each other—so as to avoid spurious phase errors. Slaving reference surfaces to each other means ensuring that they share a common axis and a common center of curvature. The reference surfaces should be *optimized* to minimize sampling errors. The beam must be adequately *padded* to avoid aliasing. In certain conditions, the rays that are used to determine geometric phase should be *regridded*.
 
-MACOS provides several commands to help ensure that the prescription data is set up correctly. The FEX command (discussed earlier in Section 5.3.6) optimizes placement of a return surface at an exit pupil for far-field diffraction propagation. The ORS command optimizes a reference surface for minimum sampling error by matching it to the best-fit sphere and aligning it to the chief ray. The SRS command slaves one reference surface to another, solving for location, orientation, and radius of the starting (or ending) surface of a near- or far-field diffraction propagation as a function of the parameters of the ending (or starting) surface. Used together, FEX, ORS and SRS enable the correct setup of any MACOS diffraction propagation.
+MACOS provides several commands to help ensure that the prescription data is set up correctly. The FEX command (discussed earlier in [Section ?](#beam-set-up-commands)) optimizes placement of a return surface at an exit pupil for far-field diffraction propagation. The ORS command optimizes a reference surface for minimum sampling error by matching it to the best-fit sphere and aligning it to the chief ray. The SRS command slaves one reference surface to another, solving for location, orientation, and radius of the starting (or ending) surface of a near- or far-field diffraction propagation as a function of the parameters of the ending (or starting) surface. Used together, FEX, ORS and SRS enable the correct setup of any MACOS diffraction propagation.
 
 The FEX, ORS and SRS commands are run after a .in-file prescription is loaded. They *refine* the prescription for elements defined in the .in-file. The results can be saved in a new .in-file using the SAVe command. If a PERturb, MODify, FFP, PFP, CENTER, or other command changes the source position or angle, or the position, angle or figure of an element in the propagation path, FEX, ORS and SRS should be rerun.
 
-The results of propagation commands (such as INtensity or PIXilate) are stored in particular internal MACOS arrays. These arrays are accessible through SMACOS common statements and the SMACOS call line. These include the ray-trace data variables defined in Section 5.1. Additional diffraction-specific arrays include:
+The results of propagation commands (such as INtensity or PIXilate) are stored in particular internal MACOS arrays. These arrays are accessible through SMACOS common statements and the SMACOS call line. These include the ray-trace data variables defined in [Section ?](#background). Additional diffraction-specific arrays include:
 
 -   WFElt(mdttl,mdttl,mWF) holds complex amplitude matrices that store the results of propagation commands (such as INtensity). Here mdttl is the maximum dimension of the “wavefront” amplitude arrays, and is defined in the paramXXX.cmn include files.
 
 -   PixArray(mPix,mPix) stores the results of a pixilated image generation command (such as PIXilate or ADD). Here mPix is defined in the paramXXX.cmn include files.
 
-MACOS implicitly enforces a padding requirement of at least 50% at compile time through internal data array declaration statements. This is accomplished by restricting the ray grid, which defines the maximum extent of the ray beam, to occupy the central half of the WFElt(mdttl,mdttl,mWF) matrices (see Section 2.3).
+MACOS implicitly enforces a padding requirement of at least 50% at compile time through internal data array declaration statements. This is accomplished by restricting the ray grid, which defines the maximum extent of the ray beam, to occupy the central half of the WFElt(mdttl,mdttl,mWF) matrices (see [Section ?](#physical-optics-diffraction)).
 
 Once the surfaces for the diffraction calculations are properly set up, the beam can be propagated through the system by invoking one of the propagation commands described in this section (such as INtensity). These commands use geometric and Fresnel propagators to propagate the complex amplitude matrix to the specified element. They then plot the appropriate data product.
 
@@ -141,7 +141,7 @@ Using the near-field propagator Using the far-field propagator
 
 **FIGURE 43** Imaging a defocused beam
 
-Some systems require near-field propagation to model image formation. For example, spacecraft fine guidance sensors are defocused to spread a star image over multiple pixels to improve centroiding accuracies (see Figure 43). These images can be accurately generated using the near-field propagators followed by a geometric propagation to the focal plane. The intensity in each pixel can then computed using the PIXilate command described in Section 7.2.2.
+Some systems require near-field propagation to model image formation. For example, spacecraft fine guidance sensors are defocused to spread a star image over multiple pixels to improve centroiding accuracies (see Figure 43). These images can be accurately generated using the near-field propagators followed by a geometric propagation to the focal plane. The intensity in each pixel can then computed using the PIXilate command described in [Section ?](#pixilate).
 
 **Setting up Diffraction Propagations**
 
@@ -190,7 +190,7 @@ The first three types are distinguished by the signs of the Fresnel propagation 
 
 Both z’s are infinite for a collimated beam.
 
-WARNING: In aberrated systems, the ray grid can lose its regularity. This is likely to be more pronounced near to focus, but can occur anywhere. The grid regularity can be restored using the REGrid command described in Section 6.3.3. In some cases this should be accompanied by an OPD interpolation step, which is not included in this release of MACOS.
+WARNING: In aberrated systems, the ray grid can lose its regularity. This is likely to be more pronounced near to focus, but can occur anywhere. The grid regularity can be restored using the REGrid command described in [Section ?](#regrid). In some cases this should be accompanied by an OPD interpolation step, which is not included in this release of MACOS.
 
 Table 14 list the values for reference parameters for near-field propagations. The Fresnel propagation distances are entered both as the zElt parameters for each reference surface and as the focal length, fElt (or the radius of curvature, KrElt) of the element. The sphere-to-sphere propagations are all specified by setting PropType=5 for the first reference surface. The end reference surface has PropType=1, indicating geometric
 
@@ -295,15 +295,15 @@ This feature is undergoing revision and not currently supported.
 
 #### SCALAR
 
-The SCAlar command sets a toggle to use a scalar formula when calculating single-plane diffraction (see Section 6.1). The SCAlar command has no arguments.
+The SCAlar command sets a toggle to use a scalar formula when calculating single-plane diffraction (see [Section ?](#single--versus-multi-plane-diffraction)). The SCAlar command has no arguments.
 
-Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 5.3.10). Vector diffraction is the default with polarization on.
+Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 11). Vector diffraction is the default with polarization on.
 
 #### VECTOR
 
-The VECtor command sets a toggle to use vector formula when calculating single-plane diffraction (see Section 6.1). The VECtor command has no arguments.
+The VECtor command sets a toggle to use vector formula when calculating single-plane diffraction (see [Section ?](#single--versus-multi-plane-diffraction)). The VECtor command has no arguments.
 
-Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 5.3.11). Vector diffraction is the default with polarization on.
+Scalar diffraction is the default and the only mode when polarization ray tracing is off (see Section 11). Vector diffraction is the default with polarization on.
 
 In vector mode the three field components Ex, Ey, Ez are propagated as independent scalar fields. This is rigorous rather than approximate: in a homogeneous isotropic medium each Cartesian component independently satisfies the scalar Helmholtz equation, and the angular-spectrum propagator is its solution operator, so the vector legs inherit exactly the scalar legs' paraxial validity envelope — no better and no worse. Component coupling enters at surfaces, where it is handled per ray by the s/p machinery of the polarized trace.
 

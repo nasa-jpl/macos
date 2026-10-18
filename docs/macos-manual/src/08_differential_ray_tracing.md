@@ -330,7 +330,7 @@ The path length partials show a factor-of-two sensitivity for this ray. Looking 
 
 #### LOPD
 
-The LOPd command generates an OPD map of the beam at the final surface of the linear model. It parallels the OPD command discussed in Section 5.2.5. Using Cassegrain.in:
+The LOPd command generates an OPD map of the beam at the final surface of the linear model. It parallels the OPD command discussed in [Section ?](#ray-trace-commands). Using Cassegrain.in:
 
 MACOS\>**lopd**
 
@@ -339,7 +339,7 @@ MACOS\>**lopd**
 
 #### LSPOT
 
-The LSPot command generates a spot diagram of the beam at the final surface of the linear model. It parallels the SPOt command discussed in Section 5.2.6. Using Cassegrain.in:
+The LSPot command generates a spot diagram of the beam at the final surface of the linear model. It parallels the SPOt command discussed in [Section ?](#ray-trace-commands). Using Cassegrain.in:
 
 MACOS\>**lspot**
 
@@ -365,7 +365,7 @@ The LPIxilate command computes beam wavefront phase at the final surface of the 
 
 MACOS\>**lpix**
 
-is pixilated. The LPIxilate command parallels the PIxilate command discussed Section 6.3. Using Cassegrain.in:
+is pixilated. The LPIxilate command parallels the PIxilate command discussed [Section ?](#pixilate). Using Cassegrain.in:
 
     Tracing perturbed system Average OPD is 1.822375E-12
     RMS OPD including piston is 2.104591E-12 RMS WFE excluding piston is 1.052736E-12 FFT/Point Spread Function Data Summary:
@@ -377,4 +377,4 @@ Type \<RETURN\> for next page:
 
 ### Commands for Exporting Models
 
-The EXPort command provides a way to export the C-Matrix of the linear model and is discussed in Section 3.8.5.
+The EXPort command provides a way to export the C-Matrix of the linear model and is discussed in [Section ?](#data-export).

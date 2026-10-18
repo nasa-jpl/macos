@@ -83,7 +83,7 @@ through the engine on a 41-point grid and measures it.  Its table, from
 The rms spot at this stage is millimetres (2230 µm at the strip edge): the
 conic sections only set the geometry.  The `figure` stage, an engine-traced
 Levenberg–Marquardt ladder of 15–80 minutes a rung, brings the figure in; the
-`e2e` stage joins the best rung to the spectrometer of Section 10.3.  The
+`e2e` stage joins the best rung to the spectrometer of [Section ?](#a-spectrometer-design-the-dyson-challenge-dyson5).  The
 2026-10-17 run reproduced the 2026-10-07 record to the printed digit; the
 only moving column was the chief-ray miss of the M2 pole, at 1e-7 µm.
 

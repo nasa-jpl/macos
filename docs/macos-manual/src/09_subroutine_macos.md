@@ -28,7 +28,7 @@ To use SMACOS, several steps must be followed:
 
 1.  Develop .in-file optical prescriptions for each system to be modeled
 
-2.  In the user’s main program, use Fortran include statements to define SMACOS variables (see Section 9.2)
+2.  In the user’s main program, use Fortran include statements to define SMACOS variables (see [Section ?](#call-line-variables))
 
 3.  Set up the sequence of commands in the main program using SMACOS subroutine calls
 
@@ -228,7 +228,7 @@ A new subroutine is added to MACOS 3.2b, as part of the SMACOS library, that all
 
 CALL SMACOS_Set_Model_Size(model_size)
 
-where the argument *model_size* is a either a constant or a variale for the specified model size. The call to SMACOS_Set_Model_Size will release the dynamic storage used for the existing model size, and allocate storage for the new model size. It also does some necessary setup to make sure a proper SMACOS initialization is performed when the model size is changed. The model parameter file *macos_param.txt* must be accessible from the user’s execution directory as discussed in Section 3.3.
+where the argument *model_size* is a either a constant or a variale for the specified model size. The call to SMACOS_Set_Model_Size will release the dynamic storage used for the existing model size, and allocate storage for the new model size. It also does some necessary setup to make sure a proper SMACOS initialization is performed when the model size is changed. The model parameter file *macos_param.txt* must be accessible from the user’s execution directory as discussed in [Section ?](#macos-data-directory).
 
 ### Example
 
@@ -270,7 +270,7 @@ The same functions can be performed using SMACOS calls as follows:
     CALL SMACOS(command,CARG,DARG,IARG,RARG,
     & OutRaySpot,NomRayDir,RMSWFE,NomOPDMat,PertOPDMat, & PixArray,Cmatrix)
 
-The SMACOS call line passes results of some calculations in dummy output arrays (see Section 9.2.2).
+The SMACOS call line passes results of some calculations in dummy output arrays (see [Section ?](#dummy-output-variables)).
 
 ### Commands
 
@@ -373,7 +373,7 @@ Note that the SMACOS MODify command (unlike the MACOS MODify command) does not c
 
 #### Ray-Trace Analysis
 
-22. MAP: this command displays and prints a cross-sectional map of the source light beam, as described in Section 5.2.2. It has no arguments. The command is set up as follows:
+22. MAP: this command displays and prints a cross-sectional map of the source light beam, as described in [Section ?](#ray-trace-commands). It has no arguments. The command is set up as follows:
 
 ```{=html}
 <!-- -->
@@ -825,7 +825,7 @@ else if global coords are choosen:
 
     DARG(1)=rotational perturbation x DARG(2)=rotational perturbation y DARG(3)=rotational perturbation z DARG(4)=translational perturbation x DARG(5)=translational perturbation y DARG(6)=translational perturbation z
 
-72. LPRead: rotate and/or translate a specified optical element using data stored in a separate file. This command has no arguments. It assumes that properly formatted data (see Section 8.3.2) is stored in a file named filnam.pert where filnam is the name of the .in-file. The command is set up as follows:
+72. LPRead: rotate and/or translate a specified optical element using data stored in a separate file. This command has no arguments. It assumes that properly formatted data (see [Section ?](#lpread)) is stored in a file named filnam.pert where filnam is the name of the .in-file. The command is set up as follows:
 
 ```{=html}
 <!-- -->

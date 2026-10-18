@@ -45,7 +45,7 @@ The prescription and macro for generating the results plotted in this section ar
 
 #### INTENSITY
 
-The INtensity command takes the complex amplitude matrix at the specified element, computes the modulus squared to determine the intensity, and plots or exports it according to the active plot option (see Section 7.3).
+The INtensity command takes the complex amplitude matrix at the specified element, computes the modulus squared to determine the intensity, and plots or exports it according to the active plot option (see [Section ?](#plot-type-commands)).
 
 **Beam Propagation Commands**
 
@@ -181,7 +181,7 @@ The COMpose command defines the pixel size and dimensions for a detector window.
 
 arbitrarily different conditions, can be incoherently added. It is useful for creating composite images from multiple-source or multiple-wavelength objects.
 
-COMpose images are created by successive applications of the ADD command. ADD propagates the current beam, pixilates the intensity to the COMpose grid, and adds it to what is already present. COMpose is also used with the NOIse and BLUR commands, to add simulated noise to an image. An example using the COMpose and ADD commands is presented in Section 7.2.6.
+COMpose images are created by successive applications of the ADD command. ADD propagates the current beam, pixilates the intensity to the COMpose grid, and adds it to what is already present. COMpose is also used with the NOIse and BLUR commands, to add simulated noise to an image. An example using the COMpose and ADD commands is presented in [Section ?](#add).
 
 COMpose has three arguments: the number of pixels per side (of the detector), the pixel width, and the element where the signal is to be COMposed.
 
@@ -421,7 +421,7 @@ Amplitude Phase
 
 #### REAL and IMAGINARY
 
-As discussed in Section 7.2.11, the wavefront propagation matrix elements are complex numbers. The REAl and IMAGINARY commands display these two components of the complex amplitude matrix. Figure 61 shows the real and imaginary components. The first graph displays the real component of each complex pixel number in the array. The second graph shows the imaginary component. The single command argument is the element number of interest.
+As discussed in [Section ?](#amplitude-and-phase), the wavefront propagation matrix elements are complex numbers. The REAl and IMAGINARY commands display these two components of the complex amplitude matrix. Figure 61 shows the real and imaginary components. The first graph displays the real component of each complex pixel number in the array. The second graph shows the imaginary component. The single command argument is the element number of interest.
 
 This example uses CassWithExitPupil.in in Appendix A.1.4.
 

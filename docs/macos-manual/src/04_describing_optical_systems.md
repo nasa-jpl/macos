@@ -53,7 +53,7 @@ In MACOS, a *light source* is a surface but not an element. The surface is defin
 
 **FIGURE 11** Light sources
 
-The location and orientation of the light source is determined from the *chief ray*. The MACOS “chief ray” is the central or gut ray of the beam, as discussed in Section 2.2. It is the center ray of the incident beam bundle. It is normally a true chief ray as well, passing through the center of the system stop. This condition is enforced by the user, using the STOP or CENTER commands, as described later.
+The location and orientation of the light source is determined from the *chief ray*. The MACOS “chief ray” is the central or gut ray of the beam, as discussed in [Section ?](#geometric-optics-tracing-rays). It is the center ray of the incident beam bundle. It is normally a true chief ray as well, passing through the center of the system stop. This condition is enforced by the user, using the STOP or CENTER commands, as described later.
 
 To define the source, the user must specify in the global coordinate system:
 
@@ -83,7 +83,7 @@ The user must specify the index explicitly for the source only. For other elemen
 
 #### Wavelength
 
-The wavelength is specified by the wavelen variable. For most calculations, MACOS uses one wavelength at a time. Multiple-wavelength images can be generated using the COMPOSE command to define detector parameters, using use the MODify command to change the wavelen (and Flux) variables (see Section 4.10.2), then using the ADD command to separately propagate and accumulate different wavelength and flux level images at the detector. This procedure can be automated by using “.filt” filter files and the MULtispec command.
+The wavelength is specified by the wavelen variable. For most calculations, MACOS uses one wavelength at a time. Multiple-wavelength images can be generated using the COMPOSE command to define detector parameters, using use the MODify command to change the wavelen (and Flux) variables (see [Section ?](#modify)), then using the ADD command to separately propagate and accumulate different wavelength and flux level images at the detector. This procedure can be automated by using “.filt” filter files and the MULtispec command.
 
 #### Flux
 
@@ -111,7 +111,7 @@ Obscurations can be defined in the source beam if desired. Obscuration size is s
 
 **FIGURE 12** Aperture sizing
 
-NOTE: This aperture obscuration option can be useful, but is not the best way to represent most beam-train obscurations. It is better to explicitly place obscurations on the appropriate elements as discussed in Section 4.6.
+NOTE: This aperture obscuration option can be useful, but is not the best way to represent most beam-train obscurations. It is better to explicitly place obscurations on the appropriate elements as discussed in [Section ?](#obscurations-and-apertures).
 
 The entrance aperture can have several shapes, as shown in Figure 13, depending on whether the system is monolithic – in which all optics are of one piece – or segmented – in which at least one mirror is split into separate segments. For monolithic systems, the aperture shape can be round or square, as set by the GridType parameter. For segmented systems the options are hexagonal array, round with 6 pie-shaped outer segments, or round with an arbitrary number of outer segments. For computational efficiency, the segmentation is defined at the light source.
 
@@ -195,7 +195,7 @@ This dialog produces the following lines in the prescription file Cassegrain.in:
     xGrid= -1.000000000D+00 0.000000000D+00 0.000000000D+00 yGrid= 0.000000000D+00 -1.000000000D+00 0.000000000D+00
     nElt= 5
 
-The Cassegrain.in example is finished in Section 4.8.
+The Cassegrain.in example is finished in [Section ?](#example-telescope).
 
 Now consider the case of a non-collimated input beam, zSource not equal to infinity. A Cassegrain telescope has been turned into a beam projector. The light source is now located where the detector was previously located as shown in Figure 16.
 
@@ -250,7 +250,7 @@ The next part of the new dialog is the specification of the optical elements. Th
 
 The new dialog continues by prompting the user for all data needed to define each optic. Optics are specified one at a time, in the sequence in which they are encountered by the light from the source (except nonsequential and segmented optics). Some optics, such as mirrors, are realized by a single *element*, or optically active surface. Other optics require
 
-two or more elements. Lenses require two refracting elements, one for each surface (see the example in Section 4.4.2). Corner cubes require three non-sequential reflecting elements. Each element in multiple-element optics is entered separately.
+two or more elements. Lenses require two refracting elements, one for each surface (see the example in [Section ?](#refractors)). Corner cubes require three non-sequential reflecting elements. Each element in multiple-element optics is entered separately.
 
 The first step in specifying an element is to define its *type* (e.g., Reflector) and its *surface type* (e.g., Conic). Table 5 lists the elements currently supported by MACOS, and Table 6 lists the surface types. Further data required to define the surfaces may be requested, depending on specified surface type.
 
@@ -339,7 +339,7 @@ surface-solve bracket to divergence.
 | User-defined | Deformable mirrors defined using influence functions. |
 +--------------+-------------------------------------------------------+
 
-The second step is to define element location, orientation and rotation point, as discussed in Section 2.1:
+The second step is to define element location, orientation and rotation point, as discussed in [Section ?](#geometry-and-coordinate-systems):
 
 -   Element *location* is specified by the VptElt vector. This is a three-vector in global coordinates giving the location of the vertex of the element.
 
@@ -456,7 +456,7 @@ This results in the following lines in the prescription file:
 
 A refracting element is the interface between two media of differing index of refraction, such as air and glass. Rays traversing the interface are, of course, bent at the interface. lenses, windows and other refracting optics are actually modeled using 2 optical elements, both of type Refractor. The first element defines the front surface of the optic and sets the index for the ray traveling inside the optic. The second element defines the back surface, and resets the index to the value outside the optic.
 
-Some refracting elements, such as prisms, use more than two elements, and may require use of nonsequential reflectors and refractors as well – see Section 4.4.13. Arrays of lenslets are covered in Section 4.4.4.
+Some refracting elements, such as prisms, use more than two elements, and may require use of nonsequential reflectors and refractors as well – see [Section ?](#reflective-non-sequential-surfaces). Arrays of lenslets are covered in [Section ?](#lens-arrays).
 
 As with reflectors, refractors in MACOS may have any surface shape. The index of refraction IndRef can be set directly in the prescription, or indirectly, by specifying a particular glass for the element. To set the index directly, select FixedIndex glass type and then specify the index. No other element-specific parameters are required, unless polarization ray-tracing is turned on. In that case, Extinc must be specified as well.
 
@@ -550,11 +550,11 @@ This ray hits the elements out of sequence, becomes undefined
 
 #### Glass Tables
 
-Version 2.8 of MACOS comes with a single glass table, which incorporates the Schott glass types as of May 1999 (from [http://schottglass.com).](http://schottglass.com/) This table is a text file, macos.glass, located in the MACOS data directory. See Section 3.8.4 for details on how to specify this directory.
+Version 2.8 of MACOS comes with a single glass table, which incorporates the Schott glass types as of May 1999 (from [http://schottglass.com).](http://schottglass.com/) This table is a text file, macos.glass, located in the MACOS data directory. See [Section ?](#macos-data-directory) for details on how to specify this directory.
 
 The user may specify the index of glasses or other optical materials in several ways:
 
--   By selecting from the materials in the provided macos.glass file, as in the first part of the example in Section 4.4.2.
+-   By selecting from the materials in the provided macos.glass file, as in the first part of the example in [Section ?](#refractors).
 
 -   By using a different macos.glass file, located in the MACOS data directory. The user can easily add other materials to a private copy of macos.glass, using the MACOS_DATA environment variable to define its location.
 
@@ -865,15 +865,15 @@ This dialog produced the following prescription data:
 
 Reference surfaces are “dummy” elements, with no direct effect on the light. They are used in MACOS to define the start and stop points of diffraction propagations. They are also used to provide a screen on which to project the beam for viewing using ray-trace or diffraction commands. They have many other uses as well.
 
-A Reference may be given `Surface= Zernike` or `Surface= Aspheric` so that it carries a basis definition (modes, coefficients, aperture) for a program to read; the surface terms are stored but never applied to the rays. The one active exception is a Reference with grid data, which is a deliberate phase screen (Section 6). Obscurations on a Reference clip rays but do not touch the diffraction-grid field; a mask for a diffraction propagation must be an `Element= Obscuring` (Section 6.2).
+A Reference may be given `Surface= Zernike` or `Surface= Aspheric` so that it carries a basis definition (modes, coefficients, aperture) for a program to read; the surface terms are stored but never applied to the rays. The one active exception is a Reference with grid data, which is a deliberate phase screen (Section 6). Obscurations on a Reference clip rays but do not touch the diffraction-grid field; a mask for a diffraction propagation must be an `Element= Obscuring` ([Section ?](#setting-up-diffraction-propagations)).
 
-As discussed in Section , reference surfaces can be aligned with the nominally spherical (or flat) wavefront of a particular beam. When done correctly, the reference surface then defines the nominal reference wavefront, or the wavefront the beam would have if it were perfect. The OPD of the actual beam wavefront on the surface (Section 5.2.5) then represents the deviation from perfection of the beam wavefront. These differences drive the MACOS diffraction propagators. This approach greatly reduces the sampling density required to avoid undersampling a wavefront for diffraction (ref. Siegman and Szicklas).
+As discussed in Section , reference surfaces can be aligned with the nominally spherical (or flat) wavefront of a particular beam. When done correctly, the reference surface then defines the nominal reference wavefront, or the wavefront the beam would have if it were perfect. The OPD of the actual beam wavefront on the surface ([Section ?](#ray-trace-commands)) then represents the deviation from perfection of the beam wavefront. These differences drive the MACOS diffraction propagators. This approach greatly reduces the sampling density required to avoid undersampling a wavefront for diffraction (ref. Siegman and Szicklas).
 
 MACOS provides functions that help assure that reference surfaces used for diffraction calculations are correctly set up. These are:
 
--   ORS: Optimizes a reference surface to provide best sampling of a beam (Section 6.3.1).
+-   ORS: Optimizes a reference surface to provide best sampling of a beam ([Section ?](#ors)).
 
--   SRS: Slaves one reference surface to another to properly set up a near-field diffraction propagation (Section 6.3.2).
+-   SRS: Slaves one reference surface to another to properly set up a near-field diffraction propagation ([Section ?](#srs)).
 
 Figure 21 illustrates a typical scenario, with a reference surface inserted in the focused beam of a lens. The reference surface has its center located at the focus of the lens, and so is aligned with the ideal (spherical) wavefront. The Cassegrain example (see Appendix A.1) provides another example; indeed all of the examples in the Appendix use reference surfaces.
 
@@ -979,7 +979,7 @@ This dialog produced the following prescription data:
 
 #### Return Surfaces
 
-The return surface is another element which is used for calculations. It has no effect on wavefront propagation. Specifically, two return surfaces in sequence are used to find the position of the exit pupil of the system in the FEX command. This discussed more thoroughly in Section 5.3.
+The return surface is another element which is used for calculations. It has no effect on wavefront propagation. Specifically, two return surfaces in sequence are used to find the position of the exit pupil of the system in the FEX command. This discussed more thoroughly in [Section ?](#beam-set-up-commands).
 
     Enter element name (no blanks) [Elt]: return EltName
     + +
@@ -1536,13 +1536,13 @@ Corner cube example
 
 #### Refractive Non-Sequential Surfaces
 
-Refractive non-sequential surfaces are very similiar to reflective non-sequential surface (see Section 4.4.13). An example illustrating their application is a Luneberg Lens Antenna is provided in Appendix A.3. The Luneberg Lens is a stepped-gradient index lens consisting of concentric spherical shells, which grow denser as they decrease in radius. A point source on the surface produces rays that follow nearly elliptical trajectories, emerging on the other side of the lens in a collimated beam. Using multiple point sources distributed on the surface, the Luneberg Lens can provide instantaneous, solid-state beam coverage over nearly 4π steradians.
+Refractive non-sequential surfaces are very similiar to reflective non-sequential surface (see [Section ?](#reflective-non-sequential-surfaces)). An example illustrating their application is a Luneberg Lens Antenna is provided in Appendix A.3. The Luneberg Lens is a stepped-gradient index lens consisting of concentric spherical shells, which grow denser as they decrease in radius. A point source on the surface produces rays that follow nearly elliptical trajectories, emerging on the other side of the lens in a collimated beam. Using multiple point sources distributed on the surface, the Luneberg Lens can provide instantaneous, solid-state beam coverage over nearly 4π steradians.
 
 ### Element Surface Types
 
 #### Flat Surfaces
 
-Flat surfaces are completely defined by a point (the “vertex” VptElt) on the surface, and the unit vector normal to the surface at that point (psiElt). Technically, the *vertex* of a plane or sphere is undefined; the user is free to pick any point on the surface as the vertex. In MACOS, a flat surface is a spherical surface with an infinite radius of curvature, KrElt=1d22. See Section 4.4.1 for an example of entering flat surface data.
+Flat surfaces are completely defined by a point (the “vertex” VptElt) on the surface, and the unit vector normal to the surface at that point (psiElt). Technically, the *vertex* of a plane or sphere is undefined; the user is free to pick any point on the surface as the vertex. In MACOS, a flat surface is a spherical surface with an infinite radius of curvature, KrElt=1d22. See [Section ?](#reflectors) for an example of entering flat surface data.
 
 #### Conic Surfaces
 
@@ -1595,7 +1595,7 @@ Here h is the radial distance to the projection of the point of incidence onto a
 
 Note that the *vertex* of a conic refers to the geometric vertex except in the case of an oblate ellipsoid. For an oblate ellipsoid (KcElt\>0), the “vertex” is taken as the point where the minor axis intersects the surface.
 
-See Section 4.4.2 for an example of entering conic surface data.
+See [Section ?](#refractors) for an example of entering conic surface data.
 
 #### Generalized (10th-Order) Aspheric Surfaces
 
@@ -1977,7 +1977,7 @@ The user must specify 120 coefficients in the prescription file.
 
 #### Toric Surfaces
 
-Toric surfaces are surfaces that have different shapes in some specified orthogonal x-and y-axes.Cylindrical and toroidal surfaces are two examples. Toric surfaces are distinguished from the anamorphic surfaces by there being a non-zero conic constant in ony 1 of the axes. MACOS toric surfaces are entered using the standard KrElt and KcElt format, except that two sets of these conic parameters are entered: one set for each of the x-and y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in Section 4.5.4 and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below
+Toric surfaces are surfaces that have different shapes in some specified orthogonal x-and y-axes.Cylindrical and toroidal surfaces are two examples. Toric surfaces are distinguished from the anamorphic surfaces by there being a non-zero conic constant in ony 1 of the axes. MACOS toric surfaces are entered using the standard KrElt and KcElt format, except that two sets of these conic parameters are entered: one set for each of the x-and y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in [Section ?](#zernike-surfaces) and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below
 
 #### Anamorphic Surfaces
 
@@ -1985,7 +1985,7 @@ Anamorphic surfaces are surfaces that have different (conic) shapes in some spec
 
 **Element Surface Types**
 
-y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx, Kcy. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in Section 4.5.4 and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below.
+y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx, Kcy. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in [Section ?](#zernike-surfaces) and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below.
 
     iElt= 1
     EltName= ana_surf Element= Refractor Surface= Anamorph
@@ -2070,7 +2070,7 @@ The i and j indices correspond to the xMon and yMon coordinates, respectively:. 
 
 The grid spans (nGridMat − 1)·GridSrfdx base units in each direction, centered on the grid frame origin pData; a ray outside the span sees no figure (this is not an error), so a GridSrfdx too small for the element leaves figure only near its center. A grid declared larger than the compile-time mGridMat is not traced: the file is declined by name at load and the grid term is inert. When an element carries both a grid and Zernike terms, the grid frame xData, yData should equal the Zernike frame xMon, yMon, or a figure applied to one segment will not localize.
 
-The data is read in when the prescription is read. No setup computations are required (no SINT command). Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see Section 9.2.3).
+The data is read in when the prescription is read. No setup computations are required (no SINT command). Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see [Section ?](#sharing-data-via-fortran-modules)).
 
 #### Interpolated Surfaces Using X-Y-Z Data
 
@@ -2084,7 +2084,7 @@ The interpolation data is entered from an input file, which is not read until th
 
 If rays are traced prior to executing the SINT command, the interpolated surfaces are converted to conic surfaces and the interpolation data is not used.
 
-Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see Section 9.2.3).
+Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see [Section ?](#sharing-data-via-fortran-modules)).
 
 The input data file can be in either binary or text data format. A binary surface data file is expected to have the name “filnam.srf*N*.bin,” where filnam is the loaded prescription's file name *including* its `.in` and *N* is the element number (for `Cassegrain.in`, element 3: `Cassegrain.in.srf3.bin`). A text surface data file is expected to have the name “filnam.srf*N*.txt.” If no file with the expected name is found, the user is prompted for a different file name. If none is provided, the surface is not initialized and will be converted to a conic when rays are traced.
 
@@ -2601,7 +2601,7 @@ Multi-layer coatings are not supported in this release of MACOS.
 
 ### Example Telescope
 
-In Section 4.2.2 the source data for the Cassegrain telescope example was entered. This section finishes the example adding the necessary optical elements: the primary mirror, secondary mirror, reference surface, and focal plane. Figure 15 shows the telescope. Table 9 lists the optical design.
+In [Section ?](#example-light-source) the source data for the Cassegrain telescope example was entered. This section finishes the example adding the necessary optical elements: the primary mirror, secondary mirror, reference surface, and focal plane. Figure 15 shows the telescope. Table 9 lists the optical design.
 
 **TABLE 9.** Cassegraing telescope design
 
@@ -2619,7 +2619,7 @@ In Section 4.2.2 the source data for the Cassegrain telescope example was entere
 | Focal Plane  | 1d22        | 0.0         |        | 1.5           |
 +--------------+-------------+-------------+--------+---------------+
 
-Continuation of MACOS input from Section 4.2.2.
+Continuation of MACOS input from [Section ?](#example-light-source).
 
     Enter Element 1 Data:
     Enter element name (no blanks) [Elt]: SecMirObs
@@ -3061,7 +3061,7 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   Blank lines can be used to separate data for clarity.
 
--   Some optional keywords are never written by the NEW dialog and are added by hand (or by SAVE when the value differs from the default). In the source block: `UseChfRay4OPD= Y|N` selects the OPD reference (the chief ray, `Y`, is the default; `N` selects the aperture mean — Section 5.2.2) and `OPDRefRayLen=` fixes the reference pathlength directly. In an element block: `ZernType=` (ANSI when absent — see “Zernike Surfaces”) and `NSCount=` (the non-sequential hit budget — see “Reflective Non-Sequential Surfaces”).
+-   Some optional keywords are never written by the NEW dialog and are added by hand (or by SAVE when the value differs from the default). In the source block: `UseChfRay4OPD= Y|N` selects the OPD reference (the chief ray, `Y`, is the default; `N` selects the aperture mean — [Section ?](#ray-trace-commands)) and `OPDRefRayLen=` fixes the reference pathlength directly. In an element block: `ZernType=` (ANSI when absent — see “Zernike Surfaces”) and `NSCount=` (the non-sequential hit budget — see “Reflective Non-Sequential Surfaces”).
 
 -   Comments.  A whole line beginning with ‘%’ is a comment, and SAVE writes it back (up to 500 such lines; an overflow is reported once at SAVE).  A ‘%’ after a value (`Key= value  % note`) ends the value: the note is read past but is NOT written back by SAVE.  Block comments open with `/*` or `CommentBegin` and close with `*/` or `CommentEnd`, each marker first on its own line; SAVE writes the block back as it was.  A one-line `/* note */` is not supported (VALIDATE refuses it as a comment block never closed).
 
@@ -3071,7 +3071,7 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   Data strings can be entered in free format. Up to 16 decimals of precision will be recognized.
 
-Data for a single element must be grouped together, but the order of the data is not important as long as the ‘iElt=’ statement is first. When a new ‘iElt=’ statement is encountered, MACOS checks to make sure all the necessary data has been provided for the previous element. If data for an element has not been provided, MACOS will do one of two things. For some elements, MACOS will provide “default” data for that element. Other data is “necessary” for an .in-file and MACOS will print a warning that the .in-file was not loaded and the name of the omitted variable. A listing of the defaults provided for variables is included in Section 4.11.
+Data for a single element must be grouped together, but the order of the data is not important as long as the ‘iElt=’ statement is first. When a new ‘iElt=’ statement is encountered, MACOS checks to make sure all the necessary data has been provided for the previous element. If data for an element has not been provided, MACOS will do one of two things. For some elements, MACOS will provide “default” data for that element. Other data is “necessary” for an .in-file and MACOS will print a warning that the .in-file was not loaded and the name of the omitted variable. A listing of the defaults provided for variables is included in [Section ?](#summary-of-prescription-variables).
 
 ### Commands
 
@@ -3105,7 +3105,7 @@ The validator reads the file as text only.  It refuses a key with no value (`Elt
 
 #### MODIFY
 
-The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in Section 4.4.1 can be changed.  Write the assignment without spaces around the equals sign (`mod nGridpts=33`); `mod nGridpts = 33` is rejected with a message rather than read.
+The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in [Section ?](#summary-of-prescription-variables) can be changed.  Write the assignment without spaces around the equals sign (`mod nGridpts=33`); `mod nGridpts = 33` is rejected with a message rather than read.
 
 MACOS\>**mod**
 
@@ -3194,7 +3194,7 @@ The variables are shown with their index types in parentheses. These indices are
 
 -   iLin: ranges over the x,y,z components of the ray direction perturbation, the x,y,z components of the ray transverse aberration and the pathlength perturbation in the linear state vector x.
 
--   iAsCoef: A, B, C, and D coefficients described in Section 4.5.3.
+-   iAsCoef: A, B, C, and D coefficients described in [Section ?](#generalized-10th-order-aspheric-surfaces).
 
 **Summary of Prescription Variables**
 

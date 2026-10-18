@@ -10,7 +10,7 @@ Jones pupil and the standard polarization-aberration metrics and the
 polarization-limited contrast floor of a coronagraph.  This section is
 the user's description of that machinery; every claim in it is pinned by
 a named test, and the measurements behind the claims are in the MACOS
-Polarization Validation Report (Section 11.8).
+Polarization Validation Report ([Section ?](#validation)).
 
 ### Turning polarization on
 

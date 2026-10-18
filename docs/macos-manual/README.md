@@ -243,8 +243,16 @@ Two clean-ups happened at migration:
 numbers the headings in the printed 3.2 manual's pattern — `## SECTION 4:`
 sets the chapter, `###` becomes 4.1, `####` becomes 4.1.1, an appendix's
 letter likewise — and puts a page break before every Section and Appendix.
-The numbers are generated at build time, so the sources carry none; cross
-references in prose ("Section 4.4.2") are hand-written and may lag.
+The numbers are generated at build time, so the sources carry none.  A cross
+reference is a link whose text holds a `?`: `[Section ?](#conic-surfaces)`
+renders as "Section 4.5.2" (and stays a link) in docx, HTML and PDF; the
+target is the heading's pandoc id (`pandoc -t json` shows them).  The same
+filter resolves it on every build, so a reference can never go stale, and
+an unresolved one prints `no numbered heading for #…` on stderr.  Word's
+own REF fields cannot do this here: they return a heading's number only
+when Word numbers the headings itself, and ours come from the filter.  All
+63 dotted references of the 3.2 text were converted this way on
+2026-10-18; chapter-level references ("Section 4") stay literal.
 
 ## End-product edits (`edits/`)
 
