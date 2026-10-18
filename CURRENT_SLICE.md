@@ -24,6 +24,20 @@
 
 ## Active slice
 
+> **2026-10-18 evening (CC): Dave's three answers landed LOCAL (unpushed, after a3b5fa9c): (1) 1.2 (u) -- a deck with
+> no nOutCord/Tout block loads, the loader proposes the BEAM frame at the last element (z = previous vertex to last
+> vertex, x from xObs), the CLI asks `Keep the proposed output coordinates? [YES]:`, the api takes it, SAVE writes it
+> (`OutCordCandidate`/`OutCordQuery`; fixture tst_no_outcord.in, gate OUTCORD_missing.jou; the load gate answers the
+> prompt); (2) the ATMOS memo's proposals = PLAN §4.6; (3) SAVE writes the CALIB settings (Table 13 keys that differ
+> from defaults; `PrtCalibHeader`/`PrtCalibElt`) and LOAD announces them (`CalibInForceNote`; gate
+> CALIB_save_roundtrip.jou); plus the SAVE/PropType ruling -- a numeric `PropType=` resolves to its name, 0 = Geometric
+> (`0` branch + named warning + writer guard; fixture tst_proptype_numeric.in, gate PROPTYPE_numeric.jou).  All three
+> gates green on both new binaries, red on e2c93d0b both compilers; bindings relinked: mmacos 9/9 (4 classes), pymacos
+> 59/59 (save/calib/modes/parse/sysprop).  `BRIEF_ccmac_prerelease.md` written (Dave asked).  NEXT: commit (explicit
+> paths), `make_corpus.sh` after the fixtures are committed (core 156 -> 158), the clean-worktree gate at the tip both
+> compilers (load/cmd/ab), cmdref regen (`make cmdref-regen` for the three new suite lines), then the §6.2 chapters.
+> Gotcha found: in a `!` journal line `&&` ends the command and `$?` is unreliable -- use `if cmp -s ...` (README).**
+
 > **2026-10-18 afternoon (CC) RESUME POINT -- PUSHED on Dave's word: macos 0967dc56..ac175c0f (18 commits), resources
 > a599f34; TO's 9d79545 (sysprop twins) stays LOCAL in resources until Dave sees it.  Done today after the midday note:
 > manual cross-references resolved at build time (`[Section ?](#id)`, 63 converted, number_sections.lua); docs/ cleanup

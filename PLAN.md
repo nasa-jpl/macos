@@ -839,6 +839,17 @@ Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSr
 
 ---
 
+### 4.6 Atmosphere beyond the single pupil screen (entered 2026-10-18 from the ATMOS memo, `cli_tests/records/atmos_fix_2026-10-18.md` §5; Dave: yes)
+
+The RAY screen (ATMosphere) is now the correct pupil-conjugate single-layer model: deterministic under SEED, Kolmogorov to 6 % at 1-8 px, Noll's tilt to the digit, refused by name off the source grid frame (PLAN_CONSOLIDATION 1.2 (p)).  What a physical non-pupil (altitude) screen needs, each a feature after the freeze; the sequencing and gates for the first two are in `PLAN_ATMOSPHERE.md` (§6a):
+
+- [ ] **Anisoplanatism.**  A layer at altitude h is seen by field angle theta shifted by h theta; the RAY option indexes the screen by ray-grid position and the ATMospheric grid positions rays relative to the CHIEF ray, which removes the shift.  Needs screen positions from a fixed origin on the element and a screen larger than the union of the field footprints.
+- [ ] **Scintillation / near-field coupling.**  A screen away from the pupil changes the amplitude downstream by Fresnel propagation; rays cannot carry that.  Needs the screen to multiply the FIELD at its plane (the dead `ztdir` path) with a near-field propagation onward, and then NOT also enter the ray OPL; the coupling depends on the propagation type after the element.
+- [ ] **Layers.**  Several plates with propagation between; today the command applies one per call and a later trace from the source discards it.
+- [ ] **Time.**  One frozen realization per call; Taylor frozen flow would shift the screen per step.
+- [ ] **The ATMospheric grid route** before it is trusted for non-pupil placement: (a) positions from a fixed origin, (b) its own carry/tilt gate (`cli_tests/tools/atmos_map_check.py` does both), (c) the same RFOURN-era review of its `nAtmPts` radius.
+- Scales, recorded: no power beyond N dx (20 m at model 256) except the re-added tilt; none below the ray spacing.
+
 ## 5. Wrapper layer (Python + MATLAB sharing one Fortran API)
 
 The factoring that keeps maintenance cost bounded if both wrappers exist.
