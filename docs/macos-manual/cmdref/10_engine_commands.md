@@ -523,7 +523,7 @@ Write current system to .in.
 *Binding:* **SMACOS command** — `save_rx`.
 
 <!-- BEGIN NOTES cmd-SAVe -->
-*Syntax:* `SAVE <file>` — the new prescription file name (written as given; `.in` is not appended).
+*Syntax:* `SAVE <file>` — the new prescription's name; `.in` IS appended (`save saved` writes `saved.in`, `save saved.in` writes `saved.in.in`).
 
 *Defaults:* the name has no default; the deck is written from the Rx arrays as loaded, never from the trace state, with the keys the SAVE round-trip gate lists.
 
