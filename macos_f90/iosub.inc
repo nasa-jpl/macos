@@ -3270,6 +3270,10 @@ C       A routine to read filter data.
 	LOGICAL ifFilterData,exist
 	INTEGER i,j,ICLEN
 	CHARACTER*132 FiltName
+!-->  header line parse (PLAN_CONSOLIDATION 1.2 (o), 2026-10-18)
+	CHARACTER(len=2*MacosCharLen) :: hdr
+	INTEGER kb
+!<--
 
  100	FORMAT(' Filter includes information for ',i3,
      &	' wavelengths and ',i2,' star types.')
@@ -3285,7 +3289,17 @@ C  Read .filt file
 	  RETURN
 	ELSE
 	  OPEN (44,FILE=filtfil,STATUS='OLD',FORM='FORMATTED')
-	  READ (44,*,ERR=3,END=3)FiltName,nWavelen
+!-->  The header is '<name> <nWavelen>' on one line.  A list-directed
+!     READ of the name stopped at the first '/' (a path), which ends a
+!     list-directed record, so nWavelen was never read.  The count is
+!     the LAST token; the name is everything before it.
+	  READ (44,'(A)',ERR=3,END=3)hdr
+	  hdr=ADJUSTL(hdr)
+	  kb=INDEX(TRIM(hdr),' ',BACK=.TRUE.)
+	  IF (kb.LE.0) GO TO 3
+	  FiltName=hdr(1:kb-1)
+	  READ (hdr(kb+1:),*,ERR=3,END=3)nWavelen
+!<--
 	  IF (nWavelen.GT.mWavelen) GO TO 2
 	  nStarType=0
 	  READ(44,*,ERR=3,END=3)(FiltWavelen(j),j=1,nWavelen)
@@ -3391,8 +3405,13 @@ C  Save filter data
 
 	  FiltName=filtfil
 	  OPEN (44,FILE=filtfil,STATUS='NEW',FORM='FORMATTED')
-	  WRITE (44,*,ERR=3)FiltName,nWavelen
-	  nStarType=0
+!-->  One header line '<name> <nWavelen>' (the list-directed form wrote
+!     the 256-wide name, which a reader cannot delimit), and the flux
+!     rows of every star type: a stray 'nStarType=0' here wrote none
+!     and zeroed the session's count, so RFILT read 0 star types and
+!     MULTISPEC refused every one (PLAN_CONSOLIDATION 1.2 (o)).
+	  WRITE (44,'(A,1X,I0)',ERR=3)TRIM(FiltName),nWavelen
+!<--
 	  WRITE(44,*,ERR=3)(FiltWavelen(j),j=1,nWavelen)
 	  DO 1 i=1,nStarType
 	    WRITE(44,*,ERR=3)(FiltFlux(j,i),j=1,nWavelen)
