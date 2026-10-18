@@ -460,7 +460,13 @@ C***********************************************************************
       SUBROUTINE RFOURN(DATA,NN,NDIM,ISIGN)
       USE Constants, ONLY: TWOPI
       REAL*8 WR,WI,WPR,WPI,WTEMP,THETA
-      COMPLEX*8 DATA
+!-->  DATA is the COMPLEX*8 array seen as interleaved (re,im) REAL*4
+!     pairs: the Numerical Recipes indexing below (IP1=2*NPREV,
+!     DATA(I3+1) = imag) needs REAL*4.  A COMPLEX*8 declaration
+!     (019a2981, 2023) addressed whole complex elements, ran to
+!     2*NTOT past the array and returned garbage (ATMOS, LPI).
+      REAL*4 DATA
+!<--
       DIMENSION NN(NDIM),DATA(*)
       NTOT=1
       DO 11 IDIM=1,NDIM

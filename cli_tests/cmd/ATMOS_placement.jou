@@ -1,0 +1,78 @@
+# ATMOS placement (PLAN_CONSOLIDATION 1.2 (p), RULED 2026-10-18; Dave asked whether the screen belongs on a
+# Reference only).  Measured: the element TYPE does not matter -- the RAY-grid screen is sampled by grid index and
+# tilts the rays along xGrid / yGrid, so it is right wherever the ray grid at the element is still the source grid
+# (index i along +xGrid, j along +yGrid, the beam along zGrid) and wrong where a fold, image rotation or inversion
+# has intervened.  The Cassegrain's SECONDARY (a Reflector in the converging beam) is accepted and consistent
+# (spot = 0.965 EFL x grad W); on the periscope fixture tst_atmos_fold.in the plane BETWEEN the folds (beam along
+# +x, xGrid along the beam: pre-fix the x tilt went longitudinal, spot x 1e-8 vs 7e-5) is REFUSED by name, the
+# entrance (before the folds) and the paraboloid (after them) are accepted, both spots = 0.98 f x grad W (f = 10 m).
+# COPY: $ROOT/ZGD_test_files/tst_atmos_fold.in
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+old $DECK
+none
+text
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+3
+0.25
+1e-6
+1.0
+ray
+opd 4
+opd 5
+spot 5
+tout
+/null
+! mv $TMP/Cassegrain.in.OPD4.txt $TMP/c3_4.dat
+! mv $TMP/Cassegrain.in.spot5.txt $TMP/c3_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --ep c3_4.dat --spot c3_sp.dat --dx 0.08 --r0 0.25 --lam 1e-6 --efl 22.4736 --dir $TMP
+old $TMP/tst_atmos_fold.in
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+3
+0.05
+1e-6
+1.0
+ray
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+1
+0.05
+1e-6
+1.0
+ray
+opd 1
+opd 6
+spot 6
+tout
+/null
+! mv $TMP/tst_atmos_fold.in.OPD1.txt $TMP/p1_1.dat
+! mv $TMP/tst_atmos_fold.in.spot6.txt $TMP/p1_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --ep p1_1.dat --spot p1_sp.dat --dx 0.02 --r0 0.05 --lam 1e-6 --efl 10 --dir $TMP
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+5
+0.05
+1e-6
+1.0
+ray
+opd 6
+spot 6
+tout
+/null
+! mv $TMP/tst_atmos_fold.in.spot6.txt $TMP/p5_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --ep p1_1.dat --spot p5_sp.dat --dx 0.02 --r0 0.05 --lam 1e-6 --efl 10 --dir $TMP
+# EXPECT: Enter number of atmosphere phase screen element: \[\d+\]: 3[\s\S]*?ATMCHK tilt  ok[^\n]*C/EFL x 0\.96\d+ y 0\.96\d+[\s\S]*?ATMCHK PASS
+# EXPECT: ATMOS: element 3 refused for the RAY grid: the screen tilts rays in the source grid\s+frame \(xGrid, yGrid\)[\s\S]*?grid x\.xGrid, y\.yGrid =\s+-?0\.000000\s+1\.000000; beam\.xGrid, beam\.yGrid =\s+-1\.000000\s+0\.000000[\s\S]*?or answer ATM
+# EXPECT: (ATMCHK tilt  ok[^\n]*C/EFL x 0\.98\d+ y 0\.98\d+[\s\S]*?ATMCHK PASS[\s\S]*?){2}
+# EXPECT-NOT: element [15] refused
+# EXPECT-NOT: ATMCHK FAIL
+# EXPECT-NOT: forrtl

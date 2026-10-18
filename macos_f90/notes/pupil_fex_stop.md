@@ -386,3 +386,22 @@ deck, so a STOP had to be set by hand):
   test_stop_accepts_a_segment_element` asserts direction + on-line
   vertex and tolerates the radius to 2e-3.
 
+
+## ATMOS: the RAY-grid screen and where it may sit (sourcsub.F AddAtmos, 2026-10-18)
+The screen is sampled by ray-grid INDEX (`RayWFMap`) at the element's ray
+spacing (`dxElt`) and tilts each ray along xhat / yhat = the SOURCE grid
+frame (`xGrid`, `yGrid`): OPL -= R, dir -= grad R with the 3-row stencil
+normalised 1/(6 dx) (it was 0.5/dx: 3x the tilt).  That is consistent
+(exit-pupil OPD == screen, spot == -EFL grad W, R^2 = 1) exactly where the
+ray grid at the element is still the source grid -- the element TYPE does
+not matter (Cassegrain M1/M2 fine).  `AddAtmos` fits the grid vectors from
+the ray positions on the element and refuses by name (`ifAtmOK`) beyond 1
+degree of +xGrid / +yGrid / a beam along zGrid: a fold, an image rotation,
+an inversion.  `ztdir = 0` (the WFElt multiply) stays off: the field is built
+from the ray OPLs, which already carry the screen.  The ATM-grid option
+uses LocalCoord's beam frame (fold-safe) but positions rays relative to the
+CHIEF, so neither option models anisoplanatism.  Record + model memo:
+`cli_tests/records/atmos_fix_2026-10-18.md`; gates `ATMOS_seed.jou`,
+`ATMOS_placement.jou` (checker `cli_tests/tools/atmos_map_check.py`).
+Measuring a phase screen: read the OPD at the EXIT-PUPIL Reference, never at
+the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).

@@ -44,6 +44,10 @@ class Cli:
         self.deadline = deadline
         self.pid, self.fd = pty.fork()
         if self.pid == 0:
+            # TERM=dumb: under a real terminal type readline 8 turns on bracketed paste and
+            # every line after a prompt starts with ESC[?2004l -- ^-anchored EXPECTs then miss
+            # (24 journals on 2026-10-18 from an xterm-256color shell)
+            os.environ['TERM'] = 'dumb'
             os.execv(binary, [binary])
         self.out = b''
         if self.wait([r'size.*:'], 15) is None:

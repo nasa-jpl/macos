@@ -38,6 +38,12 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   index only if it passes the dispatcher's minimum match; `cd`, `!` and the like are genuine commands.
 - The shell escape `!` runs the rest of the line through `system()` (256 characters since 6ccd86d; it
   was cut at 130 before); `$DECK` is a COPY, so `! sed -i ... $DECK` is the way to vary a deck.
+- The driver runs the CLI with `TERM=dumb` (`cli_load_gate.Cli`): under a real terminal type
+  readline 8 turns on bracketed paste and every output line after a prompt starts with
+  `ESC[?2004l`, so the `^`-anchored EXPECTs (SHELL_LONG, SESSION_INFO, ...) miss -- 24 journals
+  failed that way from an `xterm-256color` shell on 2026-10-18.
+- A `!` line that starts with `cd` is the CLI's own CD (the rest of the line is dropped): give a
+  tool absolute paths instead (`atmos_map_check.py --dir $TMP`).
 - Make the gate non-vacuous: pair the asserted state with its contrast (SPCENTER's two spot means,
   BWK's refusal then its walk, the FOV count before and after).
 - A TEXT / BINARY / FITS output that already exists asks `exists.  Overwrite? [YES]:` — the next
