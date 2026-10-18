@@ -42,10 +42,13 @@ can move a trace; both compilers.
    propagation (INT / PIX) and say so when none has run.  This lands in the
    engine once: SYSPROP is the api's `sysprop` setter as well as the CLI
    command.  Gate: `SYSPROP_after_OPD.jou` (flip to the refusal) and
-   `EFL_SYSPROP.jou` (unchanged after INT).  **Also from Dave: SAVE should be
-   able to write the current propagation type** -- CC reads this as the
-   trace-state single that names the last propagation (the SAVE-policy item of
-   1.1b); confirm the reading with Dave before writing it.
+   `EFL_SYSPROP.jou` (unchanged after INT).  **Also from Dave (ruled 2026-10-18): SAVE resolves a numeric
+   `PropType=` into its named form** -- `PropType= 0` IS Geometric, and SAVE
+   writes `Geometric` (3 -> FarField, and so on through the name table), never
+   the garbage the writer prints today for a legacy numeric deck (the older
+   1.2 item).  No trace-state keyword; the SAVE policy is untouched.  Gate: a
+   deck with every numeric PropType value loads, SAVEs to the names, and the
+   saved deck re-loads to the same propagation chain, both compilers.
 
 ### ATMOS, after CC's check of the math (2026-10-18, `cli_tests/records/atmos_kolmogorov_check_2026-10-18.md`)
 
