@@ -408,6 +408,7 @@ C         ***next command: Load optical description data***
 	    UDBeam_FLG=.FALSE.; ifObjImgSet=.FALSE.
 	    ifRegrid(1:mElt)=.FALSE.; ifOPDModGrid=.FALSE.
 	    LRayTgtElt=.FALSE. ! default
+            refRayOff = 0d0
             refRay = -1d2   ! default initial value, indicating state RRAY before running
 	                    ! RRAY command  01/27/2017
             GridSrfOrder=1  ! default GridSrf interpolation to linear order
@@ -709,18 +710,24 @@ C           * sparse pupil aperture. -jzlou
 		refRay(1)=-1;
 	      End If
 	      WRITE(*,*)' At source aperture: '
-	      srp(1)=1.0; srp(2)=0.0
-	      Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(2),.TRUE.)
-	      srp(1)=0.0; srp(2)=1.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(3),.TRUE.)
-	      srp(1)=-1.0; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(4),.TRUE.)
-	      srp(1)=0.0; srp(2)=-1.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(5),.TRUE.)
+!-->  BRIEF_to_bindings B.2 (2026-10-17): the four marginal rays from one
+!     table, each found ray's XY offset from the chief ray kept in
+!     refRayOff (the api's ref_rays), and the slots RRAY does not fill
+!     (6:mPupRay) cleared -- after a PRAY they kept PRAY's rays, and TPR
+!     traced them as RRAY's.
+	      BLOCK
+	      Real, parameter :: rp(2,4)=reshape([1.0,0.0, 0.0,1.0,
+     &          -1.0,0.0, 0.0,-1.0],[2,4])
+	      Integer :: k
+	      refRay(6:mPupRay)=0; refRayOff=0d0
+	      Do k=1,4
+	        srp(1)=rp(1,k); srp(2)=rp(2,k)
+	        Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                   srp(1),srp(2),refRay(k+1),.TRUE.)
+	        If (refRay(k+1)>0) refRayOff(1:2,k+1)=srp(1:2)
+	      End Do
+	      END BLOCK
+!<--
 	      If (refRay(1)==1) Then
 	        WRITE(*,*)
      &             ' Reference ray indices (chief + 4 marginal) = ',
@@ -757,30 +764,24 @@ C
                 refRay(1)=-1;
               End If
               WRITE(*,*)' At source aperture: '
-              srp(1)=9.0; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(2),.TRUE.)
-              srp(1)=0.6364; srp(2)=0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(3),.TRUE.)
-              srp(1)=0.0; srp(2)=0.9
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(4),.TRUE.)
-              srp(1)=-0.6364; srp(2)=0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(5),.TRUE.)
-              srp(1)=-0.9; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(6),.TRUE.)
-              srp(1)=-0.6364; srp(2)=-0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(7),.TRUE.)
-              srp(1)=0.0; srp(2)=-0.9
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(8),.TRUE.)
-              srp(1)=0.6364; srp(2)=-0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(9),.TRUE.)
+!-->  BRIEF_to_bindings B.2 (2026-10-17): the eight ring rays from one
+!     table at 0.9 of the aperture.  The first point read srp(1)=9.0 (the
+!     other seven sit at radius 0.9), so ray 2 was the +x EDGE ray, RRAY's,
+!     not the ring's.  Offsets kept in refRayOff as RRAY's.
+	      BLOCK
+	      Real, parameter :: rp(2,8)=reshape([0.9,0.0,
+     &          0.6364,0.6364, 0.0,0.9, -0.6364,0.6364, -0.9,0.0,
+     &          -0.6364,-0.6364, 0.0,-0.9, 0.6364,-0.6364],[2,8])
+	      Integer :: k
+	      refRayOff=0d0
+	      Do k=1,8
+	        srp(1)=rp(1,k); srp(2)=rp(2,k)
+	        Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                   srp(1),srp(2),refRay(k+1),.TRUE.)
+	        If (refRay(k+1)>0) refRayOff(1:2,k+1)=srp(1:2)
+	      End Do
+	      END BLOCK
+!<--
 	    ELSE
               WRITE(*,150)
 	    End IF

@@ -121,6 +121,24 @@ once before its loop -- a second segment in one command traced silently (journal
 Gates tSegRay / test_segray.py (the CLI's numbers for segments 3 and 7; every segment's crossing
 on the chief-parallel line through its `RptElt`, from the deck's lines).
 
+`ref_rays(OK, iKind, RefRay_, Off_, nRef_)` (RRAY iKind=1, PRAY iKind=2; nRef_ = mPupRay = 9)
+returns `refRay` and the new `refRayOff(2,mPupRay)` (elt_mod; each found ray's XY offset from the
+chief ray in the source grid frame -- FSR returns it in `srp`, which the handlers overwrote).
+`-1` = no ray found, `0` = a slot the kind does not fill.  Engine defects fixed with it: PRAY's
+first ring point read `srp(1)=9.0` (ray 2 was RRAY's +x edge ray); RRAY left slots 6..9 holding a
+previous PRAY's rays and TPR traced them; FSR left `ifRayPrint=.TRUE.`, so the next OPD printed
+every ray's segments (CLI and bindings alike) -- FSR now restores the caller's value.  **The
+single-ray api routines restore `nGridPts`**: ColSource sets the global `nGridPts = npts` (one
+short) and only `SUBROUTINE OPD` puts it back, so after RAY / SEGRAYTRACE / RRAY / PRAY the
+`get_src_sampling` / `opd_val` / `opd_mask_get` callers saw nGridPts-1 and pymacos `opd()` /
+mmacos `macos.opd` returned a crop of the last map (SRT does not leak it).  ray_trace,
+segray_trace and ref_rays save it before the SMACOS call and restore it after.  Gates tRefRays /
+test_ref_rays.py (the CLI's ids and offsets on Rx_Cass_FarField; each ray within two grid
+spacings of its edge / 0.9-ring point from the deck's Aperture=; the ring's mirror symmetry;
+each offset tied to its index through `ray()`; RRAY's cleared slots; the map read WITHOUT a
+re-trace; no ray printing after) and the `*_leaves_the_session_grid` legs in tSrt / tSegRay /
+test_srt.py / test_segray.py.
+
 The MATLAB **design layer** (`macos.design.System`,
 `MACOS_resources/mmacos/src/+macos/+design/`) is the first heavy consumer of
 this wrapper surface — import (`from_rx`) → `sensitivities` (harvests the

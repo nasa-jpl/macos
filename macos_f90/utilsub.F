@@ -1020,7 +1020,14 @@ C********************************************************************
         Real*8 :: rx,ry,rx_max,rx_min,ry_max,ry_min,xD,yD,xray_p,yray_p,
      &            rd,tmp_d,dRay(3),dRaySave(3)
         Real*8 :: ray_d,ray_apd ! for test only
+        Logical :: ifRayPrint0
 
+!-->  The caller's ifRayPrint is restored on return (B.2, 2026-10-17): FSR
+!     set it .TRUE., so after RRAY / PRAY / FSR the next OPD printed every
+!     ray of the grid (Rx_Cass_FarField, model 128: 62820 segment lines
+!     before the journal's 60 s deadline stopped it).
+        ifRayPrint0=ifRayPrint
+!<--
         ! Calc source ray grid
 		CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
      &                        ifPropagate)
@@ -1081,7 +1088,7 @@ C********************************************************************
 	    end if
           End If
         End Do
-	ifRayPrint=.TRUE.
+	ifRayPrint=ifRayPrint0
 
 	if (rid>0) then
           rx=DDOTC(dRaySave(1:3),xGrid(1:3))

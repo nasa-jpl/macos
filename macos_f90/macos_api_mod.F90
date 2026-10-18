@@ -3898,6 +3898,7 @@
         integer,                       intent(in)   :: nElt_
 
         integer :: last
+        integer :: nG0
         ! ------------------------------------------------------
         OK = FAIL
         Pos_ = 0e0_pr;  Dir_ = 0e0_pr
@@ -3911,10 +3912,16 @@
         ! (nRay is 0 after a load with no trace); an out-of-range iRay meets the
         ! handler's own 'Invalid ray number' and traces nothing
 
+        nG0 = nGridPts
         command = 'RAY'
         IARG(1) = iRay
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
                     OPDMat,RaySpot,RMSWFE,PixArray)
+        ! the source grid the command rebuilds (ColSource) leaves nGridPts = npts,
+        ! one less than the session's nGridPts, until the next OPD trace restores
+        ! it -- get_src_sampling, opd_val and opd_mask_get read it, so pymacos opd()
+        ! returned a crop of the last map (B.2, 2026-10-17)
+        nGridPts = nG0
         if (.not. allocated(thisRay%InciPos)) return
         if (iRay > nRay) return
 
@@ -3959,6 +3966,7 @@
         integer,                       intent(in)   :: nElt_
 
         integer :: last
+        integer :: nG0
         ! ------------------------------------------------------
         OK = FAIL
         Pos_ = 0e0_pr;  Dir_ = 0e0_pr
@@ -3976,10 +3984,12 @@
           thisRay%InciDir, thisRay%InciSrfN, thisRay%PrevIndRef,          &
           thisRay%CurIndRef)
 
+        nG0 = nGridPts
         command = 'SEGRAYTRACE'
         IARG(1) = iSeg
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
                     OPDMat,RaySpot,RMSWFE,PixArray)
+        nGridPts = nG0      ! ColSource leaves nGridPts = npts (see ray_trace)
         if (.not. allocated(thisRay%InciPos)) return
 
         RayOK_ = LRayOK(1)
@@ -3996,6 +4006,51 @@
         OK = PASS
 
       end subroutine segray_trace
+
+      !---------------------------------------------------------------------------------------------
+      ! Purpose  : RRAY / PRAY -- find the reference rays of the source grid (BRIEF_to_bindings
+      !            B.2, 2026-10-17).  iKind = 1 (RRAY): the chief ray and the four rays nearest
+      !            the aperture edge at +x, +y, -x, -y; iKind = 2 (PRAY): the chief ray and the
+      !            eight rays nearest 0.9 of the aperture at 45-degree steps from +x.  Each
+      !            candidate must pass the system.  RefRay_(k) is the ray's index in the grid
+      !            (slot 1 the chief ray): -1 = no ray found (or the chief ray lost), 0 = a
+      !            slot the kind does not fill (RRAY: 6..9).  Off_(:,k) is its XY offset from
+      !            the chief ray in the source grid frame (BaseUnits; 0 where RefRay_(k) <= 0).
+      !            nRef_ must be mPupRay (9).  These are the rays TPR traces.
+      !---------------------------------------------------------------------------------------------
+      subroutine ref_rays(OK, iKind, RefRay_, Off_, nRef_)
+
+        implicit none
+        logical,                       intent(out)  :: OK
+        integer,                       intent(in)   :: iKind
+        integer, dimension(nRef_),     intent(inout):: RefRay_
+        real(8), dimension(2, nRef_),  intent(inout):: Off_
+        integer,                       intent(in)   :: nRef_
+        integer :: nG0
+        ! ------------------------------------------------------
+        OK = FAIL
+        RefRay_ = 0;  Off_ = 0e0_pr
+
+        if (.not. SystemCheck()) return
+        if (nRef_ /= mPupRay) return
+        nG0 = nGridPts
+        select case (iKind)
+        case (1)
+          command = 'RRAY'
+        case (2)
+          command = 'PRAY'
+        case default
+          return
+        end select
+
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+        nGridPts = nG0      ! ColSource leaves nGridPts = npts (see ray_trace)
+        RefRay_ = refRay(1:mPupRay)
+        Off_    = refRayOff(:, 1:mPupRay)
+        OK = PASS
+
+      end subroutine ref_rays
 
       !---------------------------------------------------------------------------------------------
       ! Purpose  : One-stop element metadata for layout drawing: element

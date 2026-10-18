@@ -79,3 +79,14 @@ ACCEPT on validation failure — abort to label 1.
   min-match unchanged -- existing `.jou` scripts using `log <iElt>` keep
   working.
 
+
+## `ifRayPrint` is global state (B.2, 2026-10-17)
+
+`ifRayPrint` (macos_mod) decides whether CTRACE prints each ray's segments.  CTRACE sets it
+`.FALSE.` on return (tracesub.F), so a handler that traces more than once in one command must set
+it before each CTRACE (SEGRAYTRACE set it once before its loop; a second segment traced silently).
+A helper must restore the caller's value, never force one: FSR (utilsub.F; RRAY / PRAY / FSR) ended
+with `ifRayPrint=.TRUE.`, and the next OPD printed every ray of the grid (tens of thousands of lines
+on Rx_Cass_FarField) -- it now saves and restores.  TPR clears it itself, so a journal leg for this
+puts the OPD before any TPR.  FindMarginalRay and getRefRays (collim.inc) still set `.TRUE.` on
+return; EFL's caller resets it (measured: no print after EFL), CALIB's was not measured.
