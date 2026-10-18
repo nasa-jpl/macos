@@ -35,9 +35,11 @@
 > gates green on both new binaries, red on e2c93d0b both compilers; bindings relinked: mmacos 9/9 (4 classes), pymacos
 > 59/59 (save/calib/modes/parse/sysprop); api twins tRxLoadRulings1018 / test_rx_load_rulings_1018 (resources e211fe4,
 > LOCAL) -- found the VarElt-all-zero miss (aad6400f).  Shared-tree cmd suite 102/102 both compilers at d0f5192e.
-> Gate at 7625edc5 launched from the clean worktree (scratchpad gate_7625edc5.log); finding (v) api save_rx's stray YES.  `BRIEF_ccmac_prerelease.md` written (Dave asked).  Committed d0f5192e adf837cc 53767f46 aad6400f 7625edc5 (core 156 -> 160 with the shared-corpus copies);
-> cmdref regenerated.  NEXT: read the gate (load 160 / cmd 102 / ab vs e2c93d0b, both compilers), write the §5 line,
-> then the §6.2 chapters; Dave: the push, the five plan items from CC's report.
+> Gate at 7625edc5: ONE mover (Rx_BeamRows.in, OptBeamDir re-unitized per load) -> 64-ulp dead band dfc2b476; **GATE GREEN at
+> dfc2b476** (load 160/160, cmd 102/102, ab 0 movers, both compilers; PLAN_CONSOLIDATION §5 line); finding (v) api save_rx's
+> stray YES.  LOCAL, unpushed: macos a0dcd3c1..dfc2b476 (+ the records commit), resources 9d79545 e211fe4 -- Dave's push.  `BRIEF_ccmac_prerelease.md` written (Dave asked).  Committed d0f5192e adf837cc 53767f46 aad6400f 7625edc5 (core 156 -> 160 with the shared-corpus copies);
+> cmdref regenerated.  NEXT (CC): the §6.2 chapters; TO's / CCMac's landings to gate; phase-4 prep.  Dave: the push; the CCMac brief
+> hand-off (`BRIEF_ccmac_prerelease.md`); the bindings lane for finding (v).
 > Gotcha found: in a `!` journal line `&&` ends the command and `$?` is unreliable -- use `if cmp -s ...` (README).**
 
 > **2026-10-18 afternoon (CC) RESUME POINT -- PUSHED on Dave's word: macos 0967dc56..ac175c0f (18 commits), resources
