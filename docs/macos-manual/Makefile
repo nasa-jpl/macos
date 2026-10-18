@@ -38,7 +38,7 @@ POLVALSUM  := polval/05_summary.md
 POLVALSUM_OPTS := --resource-path=polval \
                --metadata title="MACOS Polarization Validation — Executive Summary"
 
-.PHONY: all docx html pdf appendix-c clean \
+.PHONY: all docx html pdf appendix-c clean publish \
         cmdref cmdref-pdf cmdref-regen \
         polval polval-pdf polval-regen polval-check polval-summary
 
@@ -130,6 +130,13 @@ $(BUILD)/macosPolVal_summary.pdf: $(BUILD)/macosPolVal_summary.docx
 
 $(BUILD):
 	mkdir -p $(BUILD)
+
+# publish: the two PDFs the repo carries at docs/ (the current manual and command reference;
+# docs/macosMan3.2.pdf beside them is the heritage).  Refresh them before a push that changes
+# the manual.
+publish: $(BUILD)/macosMan.pdf $(BUILD)/macosCmdRef.pdf
+	cp $(BUILD)/macosMan.pdf ../macosMan.pdf
+	cp $(BUILD)/macosCmdRef.pdf ../macosCmdRef.pdf
 
 clean:
 	rm -rf $(BUILD)

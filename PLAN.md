@@ -1311,10 +1311,7 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 
 ### 6.1 Infrastructure
 
-- [ ] Source-of-truth decision
-  - [ ] Keep `macosMan4_01.docx` as canonical
-  - [ ] Or switch canonical to a less-fragile format (LaTeX, Markdown + pandoc)
-  - [ ] Likely stay with Word given user familiarity
+- [x] Source-of-truth decision — **Markdown + pandoc is canonical** (`docs/macos-manual/src/`, since 2026-07; the Word snapshots were removed from the tree 2026-10-18, `RECONCILE_4_01.md` records the fork's contribution); Word is an end-product edit copy (`edits/`) that is folded back into the Markdown
 - [ ] Formatting cleanup pass on existing chapters
   - [ ] Consistent section / heading / cross-ref / equation styles
   - [ ] Fix the broken cross-references and ToC
