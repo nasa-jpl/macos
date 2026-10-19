@@ -29,7 +29,7 @@ with `echo` lines; d9a57ffe (2026-06-03), which re-made HOEExample and CoroExamp
 | HOEExample.in | 0 | `nElt` 2 → 4; elt 2 `FP` FocalPlane → `FP_return` Return, `psiElt` (0,0,1) → (−0.3162, 0, 0.9487), `VptElt` z −3 → (1, 0, −3) | elts 3 (`Pupil_return`, FarField) and 4 (`FP`) | — | d9a57ffe: HOE re-made as a far-field example (exit-pupil Return + focal plane on the diffracted order) |
 | CornerCube.in | 52 | — | `nCoat=0` ×5, `BaseUnits`, `WaveUnits` | — | 65a223ec SAVE form only |
 | Luneberg.in | 148 | — | `nCoat=0` ×17, `BaseUnits`, `WaveUnits` | — | 65a223ec SAVE form only |
-| AOExample.in | 224 | — | `nCoat=0` ×26, `BaseUnits`, `WaveUnits`, `UDSrfParam` (6.514, 0.27559, 0 ×8) on the DM | **`pMon` `xMon` `yMon` `zMon` `lMon` of the DM (elt 7)** | 65a223ec SAVE — **an engine finding, section 3.1: SAVE drops a UserDefined surface's frame, and the DM's OPD moved 4x** |
+| AOExample.in | 224 | — | `nCoat=0` ×26, `BaseUnits`, `WaveUnits`, `UDSrfParam` (6.514, 0.27559, 0 ×8) on the DM | **`pMon` `xMon` `yMon` `zMon` `lMon` of the DM (elt 7)** — restored in ee7d8a1c | 65a223ec SAVE — **an engine finding, section 3.1: SAVE dropped a UserDefined surface's frame, and the DM's OPD moved 4x; FIXED ee7d8a1c, the deck's frame back** |
 | SegDemo.in | 0 | — | — | — | as 3.2 (the extractor's stray heading removed ada8d982; wrapped comment rejoined 881fc6c8) |
 | CoroExample.in | 152 | `nGridpts` 512 → 256; elt 6 occulter `nObs` 1 → 3, circle radius 1.5e-5 → 8.0e-6 | two `Rectangle` obscurations on the occulter (±2.5e-6 × ±2e-3, one each way) | — | the rectangles and `nGridpts` 256: 65a223ec; the radius: 22a60e20 "narrow the FPM occulter to a representative ~2.9 λ/D" (was ~5.4 λ/D) |
 | ImageDemo.in | 0 | — | — | — | as 3.2; the margin-split Zernike coefficient rejoined 725e0389 (finding 1.2 (cc)) |
@@ -208,7 +208,13 @@ ray-2 dialog is its own PARTIALS.
 
 ## 3. Engine findings the regeneration surfaced
 
-### 3.1 SAVE drops the frame of a UserDefined surface (AOExample's DM)
+### 3.1 SAVE drops the frame of a UserDefined surface (AOExample's DM) — FIXED in ee7d8a1c
+
+Dave 2026-10-19: fix.  ee7d8a1c writes the monomial frame for SrfType 7, emits `UDSrfParam` (the six
+values the engine reads) before `UDSrfFile`, and drops the orphaned continuation line; AOExample.in's
+DM frame is restored from 65a223ec^ (`opd 16` 1.267521723e-6 on both compilers, a SAVE reloads to the
+same number); `cli_tests/cmd/UDSINIT.jou` re-pinned to 1.2675 with a SAVE-reload leg.  The finding as
+filed:
 
 `iosub.inc` (PrtSingleEltInfo, ~line 2056) writes `pMon`/`xMon`/`yMon`/`zMon` only for the eight
 `SrfTypes_LCSYS` types; `SrfType_UserDefined` (7) is not among them, but `UDSrf` traces in that
@@ -222,7 +228,7 @@ build of `macos_cli_base` (725e0389 engine):
 | that deck SAVEd and reloaded | 3.163832026e-07 (the frame lost again) |
 
 So today's AO example no longer traces the 3.2 example's DM, and `cli_tests/cmd/UDSINIT.jou` pins the
-post-loss 3.1638e-7.  This is not fixed here (an engine SAVE change wants the corpus A/B).
+post-loss 3.1638e-7.  (Fixed since: see the head of this section.)
 
 ### 3.2 BINARY output: RECL wrong for REAL*8 rows (crash on gfortran, padded on ifx)
 
@@ -299,8 +305,8 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
    so the appendix now prints that form, not 3.2's hand-written one (the brief: "as written").
    Keep (the appendix shows exactly what runs), or restore the as-written decks from the 3.2
    extraction with the later deliberate edits re-applied (every gate that loads them re-pinned)?
-2. **AOExample's DM frame** (3.1): restore the 3.2 frame in the deck (UDSINIT.jou re-pinned to
-   1.2675e-6), and fix SAVE to emit the frame for UserDefined surfaces (1.2 new letter)?
+2. **RULED 2026-10-19: fix (done, ee7d8a1c).**  ~~**AOExample's DM frame** (3.1): restore the 3.2 frame in the deck (UDSINIT.jou re-pinned to
+   1.2675e-6), and fix SAVE to emit the frame for UserDefined surfaces (1.2 new letter)?~~
 3. **ImageDemo has no macro** (3.2 printed none).  Write an ImageDemo.jou (the figure-31 DRAW plus
    the Section 7 imaging steps), or leave A.7 as the deck alone?
 4. **A.8 S-MACOS files are obsolete.**  `smacosvars.cmn` documents the COMMON-block / `INCLUDE
@@ -322,8 +328,8 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
    iteration count out?
 9. **PARTIALS input-ray block** (3.7): an engine look before the Section 8 prose ("magnified 3.036
    times") is kept or rewritten.
-10. **ORS behind the occulter** (3.8, fixed in bba2e362): confirm the rule that an obscured ray counts in
-    the ORS fit (PLAN 1.2 (ii)).
+10. **RULED 2026-10-19: the rule is correct (ef02acf2).**  ~~**ORS behind the occulter** (3.8, fixed in bba2e362): confirm the rule that an obscured ray counts in
+    the ORS fit (PLAN 1.2 (ii)).~~
 11. **Section 4's NEW tutorials**: regenerate them as plain dialogs (losing the VariableName column), keep
     them as typed text, or rebuild the column from a generated dialog?
 
