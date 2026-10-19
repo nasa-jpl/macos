@@ -11,7 +11,17 @@ udsinit
 7
 AOmirror.test
 opd 16
-# EXPECT: RMS OPD error is\s+3\.1638\d*D-07[\s\S]*?Enter user-defined surface file name \[none\]: AOmirror\.test[\s\S]*?RMS OPD error is\s+3\.1638\d*D-07
+/null
+save $TMP/aodm
+old $TMP/aodm.in
+opd 16
+# The 3.1638e-7 pinned until 2026-10-19 was the DM WITHOUT its monomial frame (lost in the May SAVE refresh, PLAN 1.2 (hh));
+# with the 3.2 frame restored the OPD is 1.2675e-6, and a SAVE now keeps the frame and writes UDSrfParam before UDSrfFile.
+# The SAVE-reload leg is the must-fail one: the pre-fix writer dropped the frame and put UDSrfFile before UDSrfParam, so the
+# reloaded deck read 3.1638e-7 (and, the keys swapped, the reader's 'Must specify UDSrfParam' warning).  The reloaded deck
+# finds AOmirror.test in the examples directory, still the working directory.
+# EXPECT: RMS OPD error is\s+1\.2675\d*D-06[\s\S]*?Enter user-defined surface file name \[none\]: AOmirror\.test[\s\S]*?RMS OPD error is\s+1\.2675\d*D-06
+# EXPECT: (RMS OPD error is\s+1\.2675\d*D-06[\s\S]*?){3}
 # EXPECT-NOT: Must specify UDSrfParam
 # EXPECT-NOT: Unidentified string
 # EXPECT-NOT: Unknown user-defined surface type

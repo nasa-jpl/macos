@@ -210,3 +210,20 @@ item 5).
   line when a load reads a setup.  Gate `CALIB_save_roundtrip.jou` (tst_calib_mixed,
   opt_example_constrained: saved keys, the notice, re-save byte-identical); the load gate's round trip
   now covers every CALIB fixture's keys.  `SAVE_KEYWORD_AUDIT.md`'s Opt* family is closed.
+
+## SAVE and a UserDefined (DM) surface: the frame is written, and UDSrfParam precedes UDSrfFile (2026-10-19)
+*(PLAN_CONSOLIDATION 1.2 (hh); found by macos-fd's transcript diff on AOExample.in, fixed on Dave's word.)*
+- `PrtSingleEltInfo` writes pMon/xMon/yMon/zMon for `SrfTypes_LCSYS` and LensArray elements AND for
+  SrfType_UserDefined (7): `UDSrf` traces in that frame (every call takes pmon, xhat, yhat, zhat).
+- The reader loads `UDSrfFile=` WHEN IT MEETS THE KEY, with the `UDSrfParam=` then in force (it warns
+  'Must specify UDSrfParam before loading UDSrfFile' and reports 'not loaded correctly'); the writer now
+  emits UDSrfParam before UDSrfFile.  Before, a SAVE of any DM deck re-initialized the DM from the defaults
+  on reload with no warning printed on the WRITER's side.
+- `UDSrfParam=` is written as the SIX values the engine reads (reader `UDSrfParam(1:6)`, elemsub `UDSrfParam(6)`);
+  the ten-slot array printed six per line left an orphaned `0 0 0 0` line that read as 'MBFile6: Unidentified string'.
+- How it was pinned: a key-by-key, value-by-value diff of a deck against its SAVE (ignore digit
+  expansion) listed exactly two differences; deck variants then showed which one moved the trace.  Do
+  that before reading code when a round trip changes a number.
+- AOExample.in's DM: pMon (-2.249426003, -19.51098758, 75.375), xMon (-0.4697040833, 0.8828239202, 0),
+  yMon (0, 0, 1), zMon (0.8828239202, 0.4697040833, 0), lMon 0; opd 16 = 1.267521723e-6 (3.1638e-7
+  without the frame or with the keys swapped).
