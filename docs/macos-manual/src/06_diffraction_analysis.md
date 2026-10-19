@@ -24,9 +24,6 @@ Spiders
 
 Primary
 
-
-
-
 Relay secondary Relay primary Focal plane
 
 ![](media/fig_rescued_40.png)
@@ -38,9 +35,6 @@ The first near-field propagation, PropType=5, occurs between the main telescope
 3 zElt6
 
 A 5 6 7 B
-
-
-
 
 ![](media/fig_rescued_41.png)
 
@@ -59,8 +53,6 @@ primary and secondary mirror (between reference surfaces 3 and 4 which are locat
 The second near-field propagation occurs between the secondary mirror and the relay camera’s secondary mirror support “spiders.” It is a “through-focus” propagation, with zElt=6 positive (converging beam) and zElt=8 negative (diverging beam). The reference point for this propagation is point B. The fold mirror is included in the propagation.
 
 The third propagation is at the converging beam between the relay primary and secondary. This near-field propagation is centered at point C.
-
-**Setting up Diffraction Propagations**
 
 The last propagation is a far-field propagation, PropType=3, to the focal plane. It is centered at the focal plane, point D.
 
@@ -128,22 +120,11 @@ We list here the available diffraction propagators (Table 13).
 
 For imaging systems, it is usually clear whether a particular diffraction propagation is best modeled using the near-field or far-field propagator. If the light is to be evaluated at a focus, the far-field propagator should be used. Otherwise, the near-field propagator should be used. For far-field propagations to focal planes, it is important to place the focal plane element at the physical detector location, which may not coincide with the center of curvature of the exit pupil, which is to say, the system might be defocused (see Figure 43).
 
-D
-
-end z2
-
-
-
-
-Using the near-field propagator Using the far-field propagator
-
 ![](media/fig_rescued_43.png)
 
 **FIGURE 43** Imaging a defocused beam
 
 Some systems require near-field propagation to model image formation. For example, spacecraft fine guidance sensors are defocused to spread a star image over multiple pixels to improve centroiding accuracies (see Figure 43). These images can be accurately generated using the near-field propagators followed by a geometric propagation to the focal plane. The intensity in each pixel can then computed using the PIXilate command described in [Section ?](#pixilate).
-
-**Setting up Diffraction Propagations**
 
 Other conditions requiring near-field propagations include the presence of a spatial filter, occulting mask, or other intensity-altering object at an intermediate far-field point in the beam.
 
@@ -161,8 +142,6 @@ Obvious aliasing effects may also be mitigated by changing the sampling of the p
 #### Far-Field
 
 Consider the two cases of far-field diffraction shown in Figure 44. Both are typical of systems where a far-field diffraction to a focal plane is required to compute an image or point-spread function. This may be the only diffraction computation in the system (a single-plane model) or it may be the last of several propagations in a multi-plane model.
-
-
 
 ![](media/fig_rescued_44.png)
 
@@ -192,25 +171,11 @@ Both z’s are infinite for a collimated beam.
 
 WARNING: In aberrated systems, the ray grid can lose its regularity. This is likely to be more pronounced near to focus, but can occur anywhere. The grid regularity can be restored using the REGrid command described in [Section ?](#regrid). In some cases this should be accompanied by an OPD interpolation step, which is not included in this release of MACOS.
 
-Table 14 list the values for reference parameters for near-field propagations. The Fresnel propagation distances are entered both as the zElt parameters for each reference surface and as the focal length, fElt (or the radius of curvature, KrElt) of the element. The sphere-to-sphere propagations are all specified by setting PropType=5 for the first reference surface. The end reference surface has PropType=1, indicating geometric
-
-**Setting up Diffraction Propagations**
-
-Converging beam z1 \> 0, z2 \> 0
-
-
-Through-focus beam z1 \> 0, z2 \< 0
-
-
-Diverging beam z1 \< 0, z2 \< 0
-
 ![](media/fig_rescued_45.png)
 
 **FIGURE 45** Near-field diffraction examples
 
-Collimated beam z1 = ∞ , z2 = ∞
-
-propagation following the surface. The plane-to-plane propagation has PropType=4. (Unpowered elements such as fold mirrors can be included within the scope of a propagation by specifying PropType=5 or 4.) The last element must have PropType=1.
+Table 14 list the values for reference parameters for near-field propagations. The Fresnel propagation distances are entered both as the zElt parameters for each reference surface and as the focal length, fElt (or the radius of curvature, KrElt) of the element. The sphere-to-sphere propagations are all specified by setting PropType=5 for the first reference surface. The end reference surface has PropType=1, indicating geometric propagation following the surface. The plane-to-plane propagation has PropType=4. (Unpowered elements such as fold mirrors can be included within the scope of a propagation by specifying PropType=5 or 4.) The last element must have PropType=1.
 
 NOTE: PropType=2 assumes no phase change from the previous element and should be used with extreme caution.
 
@@ -253,16 +218,24 @@ NOTE: ORS may not find the optimal reference surface for systems with a large am
 
 The ORS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values are for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. For example, using the seg.in example in Appendix A.5:
 
+The example is the exit-pupil Return surface (element 12) of ImageDemo.in (Appendix A), the Cassegrain-and-relay system of Figures 40-42:
+
 MACOS\>**ors**
 
-    Enter number of element to be optimized:12 Reference surface optimization results:
-    RMSmin= 1.673727619D-06 nCalls= 11
-    Old f= 2.450000000D-01 New f= 2.486198802D-01 Old z= 2.450000000D-01 New z= 2.486198802D-01 Old psi= 2.382657340D-01 New psi= 2.382657340D-01 0.000000000D+00 0.000000000D+00
-    9.712000000D-01 9.712000000D-01 Old Vpt= 7.630588700D-04 New Vpt= 7.630594517D-04 0.000000000D+00 0.000000000D+00
-    -1.495089150D+00 -1.495089150D+00
-    Accept the new element data? (YES):
+    Enter number of element to be optimized: [1]: 12
+    Reference surface optimization results:
+    TTL OPD=              NaN  nCalls=  26
+      Old f=  6.874662920D+01   New f=  6.943409549D+01
+      Old z=  6.874662920D+01   New z=  6.943409549D+01
+    Old psi=  1.095041158D-04 New psi=  6.578571566D-05
+             -5.786697499D-06          -5.193600967D-05
+             -9.999999940D-01          -9.999999965D-01
+    Old Vpt= -7.904014798D-05 New Vpt= -7.902324629D-05
+             -6.661258889D-06          -6.548245469D-06
+              1.698904900D+01           1.698904900D+01
+    Accept the new element data? [YES]: yes
 
-MACOS\>
+The merit line reads NaN on this example today (an open finding, PLAN_CONSOLIDATION 1.2 (w): the trial trace's rms is formed over rays the trial surface may not intersect); the surface it accepts is a valid optimum.
 
 #### SRS
 
@@ -270,24 +243,26 @@ The Slave Reference Surface (SRS) command is used to slave one of the two refere
 
 SRS is to be used in conjunction with ORS. ORS is run first for the first of the two reference surfaces, then SRS is run for the second. ORS requires two arguments: the number iElt of the reference surface to be slaved and the number iElt to which the reference surface is to be slaved.
 
-SRS first relocates the reference surface so that the chief ray intersects the vertex point (VptElt). Then SRS tilts the specified reference surface so that psiElt is normal to the
-
-**Commands**
-
-MACOS\>**srs**
-
-surface. Finally, SRS solves for the propagation distance zElt based on the zElt of the surface it is being slaved to and the optical path length between the surfaces along the chief ray. It computes the other element parameters accordingly.
+SRS first relocates the reference surface so that the chief ray intersects the vertex point (VptElt). Then SRS tilts the specified reference surface so that psiElt is normal to the surface. Finally, SRS solves for the propagation distance zElt based on the zElt of the surface it is being slaved to and the optical path length between the surfaces along the chief ray. It computes the other element parameters accordingly.
 
 The SRS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. Continuing with the seg.in example gives
 
-    Enter number of element to be slaved:13 Enter number of element to slave to:12 Reference surface recalculation results:
-    Old f= 1.237919100D-01 New f= 1.274117874D-01 Old z= 1.237919100D-01 New z= 1.274117874D-01 Old psi= 2.382657340D-01 New psi= 2.382657340D-01 0.000000000D+00 0.000000000D+00
-    9.712000000D-01 9.712000000D-01 Old Vpt= 2.964279300D-02 New Vpt= 2.964279465D-02
-    0.000000000D+00 0.000000000D+00
-    -1.377371850D+00 -1.377371850D+00
-    Accept the new element? (YES):
+Continuing the example, the image plane (element 13) is slaved to the exit-pupil surface just optimized:
 
-MACOS\>
+MACOS\>**srs**
+
+    Enter number of element to be slaved: [1]: 13
+    Enter number of element to slave to: [1]: 12
+    Reference surface recalculation results:
+      Old f=  1.000000000D+22   New f=  1.000000000D+22
+      Old z=  1.000000000D+22   New z=  1.000000000D+22
+    Old psi=  0.000000000D+00 New psi=  6.578571566D-05
+              0.000000000D+00          -5.193600967D-05
+             -1.000000000D+00          -9.999999965D-01
+    Old Vpt=  7.421487214D-01 New Vpt=  4.488748417D-03
+             -4.232318881D+00          -3.612678101D-03
+             -5.175758000D+01          -5.244504625D+01
+    Accept the new element? [YES]: yes
 
 #### REGRID
 
@@ -325,38 +300,35 @@ These commands are described in the next section.
 
 The BEAm command allows the user to select a source beam profile. The default is a uniform beam. Alternatives are Gaussian, cosine-to-a-power, and dipole beam profiles.
 
-MACOS\>**in**
-
 If a Gaussian beam is choosen, the user is then prompted for the diameter of the beam in x and y, where the diameter is the standard deviation of the Gaussian profile.
 
-Figure 46 shows the intensity for a beam expander using a uniform beam and the intensity for the same system using a Gaussian beam.
+Figure 46 shows the intensity at the exit pupil (element 5) of CassWithExitPupil.in with the default uniform beam and with a Gaussian beam of waist radius 1.0 (half the 4 m aperture):
 
-    Enter number of element where data is to be generated: [25]: 25
-    Tracing 4641 rays and propagating 65536 grid points... NF/PP Prop between Elt 24 and Elt 25 to WF 1:
-    z1= 0.0000D+00 dx1= 1.4286D-01
-    z2= 1.0000D+06 dx2= 1.4286D-01 min= 1.4286D-01 max= 1.4286D-01 dev= 6.8863D-
-    15 lin=100.00%
-    Compute time was 23.8438 sec Wavefront Propagation Data Summary:
-    Wavelength= 8.0000000D-07; Transmission Distance= 0.0000000D+00 u-v plane diam= 3.6428574E+01 du= 1.4285715E-01
-    x-y plane diam= 3.6428574E+01 dx= 1.4285715E-01 Type <RETURN> for next page:
+MACOS\>**int 5**
+
+    Enter number of element where data is to be generated: [6]: 5
+    Tracing       125 rays and propagating     65536 grid points...
+     Geometric Prop between Elt  0 and Elt  5 to WF  1
+    Wavefront Propagation Data Summary:
+    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
+    u-v plane diam= 0.0000000D+00  du= 0.0000000D+00
+    x-y plane diam= 1.9435037D+01  dx= 7.6215832D-02
+    Peak intensity= 8.0645161D-03; Peak occurs at i=  131, j=  123
+    Sum of intensity= 9.0322581D-01
 
 MACOS\>**beam**
 
     Enter beam type (UNIFORM, GAUSSIAN, COS**POWER, DIPOLE): [UNIFORM]: gau
-    Enter x beam waist radius: [1.00000]: 0.3 Enter y beam waist radius: [1.00000]: 0.3 MACOS>in
-    Enter number of element where data is to be generated: [25]: 25
-    Tracing 4641 rays and propagating 65536 grid points... NF/PP Prop between Elt 24 and Elt 25 to WF 1:
-    z1= 0.0000D+00 dx1= 1.4286D-01
-    z2= 1.0000D+06 dx2= 1.4286D-01 min= 1.4286D-01 max= 1.4286D-01 dev= 6.8863D-
-    15 lin=100.00%
-    Compute time was 20.4062 sec Wavefront Propagation Data Summary:
-    Wavelength= 8.0000000D-07; Transmission Distance= 0.0000000D+00 u-v plane diam= 3.6428574E+01 du= 1.4285715E-01
-    x-y plane diam= 3.6428574E+01 dx= 1.4285715E-01 Type <RETURN> for next page:
+    Enter x beam waist radius: [1.00000]: 1.0
+    Enter y beam waist radius: [1.00000]: 1.0
 
-MACOS\>
+MACOS\>**int 5**
 
-![](media/image86.png){width="2.21875in" height="2.5in"}
+    Enter number of element where data is to be generated: [5]: 5
+    ...
+    Peak intensity= 6.2289782D-01; Peak occurs at i=  127, j=  130
+    Sum of intensity= 8.9981120D+00
 
-Uniform beam Gaussian beam
+![](media/fig_engine_46.png)
 
 **FIGURE 46** Propagation examples with Gaussian and uniform beams

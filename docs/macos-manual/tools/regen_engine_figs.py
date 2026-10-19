@@ -7,8 +7,8 @@ below assembles media/fig_engine_NN.png from them (one page, or pages side by si
 whose EXPECT fails stops the figure, so a figure cannot silently rot into a wrong picture
 (2026-10-17 for figures 31, 56, 58; 2026-10-19 for the rest, Dave: "regenerate all the figures
 using the current macos").  The figures that are not engine output (diagrams and schematics:
-1, 2, 5, 7-9, 11-30, 32, 35, 38, 40-45, 50, 59, 65, 66) and figure 46, whose 25-element beam
-expander deck is not in the tree, keep their rescued artwork.
+1, 2, 5, 7-9, 11-30, 32, 35, 38, 40-45, 50, 59, 65, 66) keep their rescued artwork; figure 46 is remade
+on CassWithExitPupil.in (its 3.2 beam-expander deck is not in the tree).
 
 Usage (from docs/macos-manual):  python3 tools/regen_engine_figs.py [<macos binary>] [--assemble-only]
 (--assemble-only reuses the pages in build/figs/ -- for a label or layout change without a rerun.)
@@ -39,6 +39,7 @@ SPEC = {
     36: ("fig36", [0, 1], ["Exit pupil (element 4)", "Detector (element 5)"]),
     37: ("fig36", [2, 3], ["OBS=ALL", "OBS=NEGATIVE"]),
     39: ("fig39", [1], []),
+    46: ("fig46", [0, 1], ["Uniform beam", "Gaussian beam"]),
     47: ("fig47", [0], []), 48: ("fig47", [1], []),
     49: ("fig47", [2, 3, 4], ["Pupil (element 10)", "Lyot stop (element 11)", "Detector (element 16)"]),
     51: ("fig47", [5, 6], ["Unocculted", "Occulted"]),

@@ -11,8 +11,8 @@ EXPECT stops the figure: 3, 4, 6, 10, 31, 33, 34, 36, 37, 39, 47-49, 51-58, 60-6
 as `src/media/fig_engine_NN.png`.  The 3.2-era `image*.png` and the two rescued crops they
 replace (31, 56, 58 were engine-made already) stay in media/ unreferenced until the next
 cleanup.  Kept as artwork (diagrams and schematics, not engine output): 1, 2, 5, 7-9,
-11-30, 32, 35, 38, 40-45, 50, 59, 65, 66; and 46, whose 25-element beam-expander deck is
-not in the tree.  Changes beside the pictures: figure 34 is the ROW plot its caption
+11-30, 32, 35, 38, 40-45, 50, 59, 65, 66.  Figure 46 (beam profiles) is remade on
+CassWithExitPupil.in, its 25-element beam-expander deck being absent from the tree.  Changes beside the pictures: figure 34 is the ROW plot its caption
 always named (the 3.2 dialog said WIRE); figures 60-62 are made at the detector (element
 6, where the 3.2 pictures were taken) and their dialogs re-emitted; the Section 5 OPD
 example's RMS is today's 1.545e-2 (the 3.2 text's 1.609e-2).  Each journal copies its
