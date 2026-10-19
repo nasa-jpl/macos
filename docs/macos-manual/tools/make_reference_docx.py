@@ -54,13 +54,13 @@ SOURCECODE_STYLE = f"""<w:style w:type="paragraph" w:styleId="SourceCode">
 <w:pPr>
 <w:wordWrap w:val="0" />
 <w:spacing w:before="60" w:after="60" w:line="240" w:lineRule="auto" />
-<w:ind w:left="480" />
+<w:ind w:left="240" />
 <w:shd w:val="clear" w:color="auto" w:fill="F5F5F5" />
 </w:pPr>
 <w:rPr>
 <w:rFonts w:ascii="{MONO_FONT}" w:hAnsi="{MONO_FONT}" w:cs="{MONO_FONT}" />
-<w:sz w:val="18" />
-<w:szCs w:val="18" />
+<w:sz w:val="15" />
+<w:szCs w:val="15" />
 </w:rPr>
 </w:style>"""
 
@@ -108,14 +108,17 @@ def main():
             xml = patch_style(xml, sid, font, size)
 
         # character styles used for inline/verbatim code
+        # inline code: mono at 9pt (it inherited the 11pt body); code
+        # BLOCKS (SourceCode below) at 7.5pt, indent 240 (a 100-column transcript line then fits the 6.5 in text width) -- Dave 2026-10-19, the
+        # transcripts were too large beside the 11pt prose
         for sid in ("VerbatimChar",):
-            xml = patch_style(xml, sid, MONO_FONT, None)
+            xml = patch_style(xml, sid, MONO_FONT, 15)
 
         # inject SourceCode paragraph style if absent
         if 'w:styleId="SourceCode"' not in xml:
             xml = xml.replace("</w:styles>",
                               SOURCECODE_STYLE + "</w:styles>")
-            print("  SourceCode       injected (mono, 9pt, shaded)")
+            print("  SourceCode       injected (mono, 7.5pt, shaded)")
 
         sf.write_text(xml, encoding="utf8")
 
