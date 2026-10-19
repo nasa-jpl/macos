@@ -110,6 +110,18 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-19 (4) — re-gate (pair macos `36699d3` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_36699d3.md`. The macos tip
+advanced past pair 3 (SRS gg, ORS+RSTRACE ii, manual rebuild); resources
+`629a2d2` is unchanged, so the binding residual is identical to pair 3 by
+construction. Verified: the **gg/ii engine fixes work on arm64** — the new
+ORS/RSTRACE/SRS + BEAM journals (cmd 102→103) all pass, load clean 161/161
+(ImageDemo now matches Linux). COORD (ff) persists (`LocalCoord` untouched —
+still the −O2 rotation, correct at −O0); the (ee) subprocess/capfd Darwin
+guards hold (filtered/skipped with reason). Counts: load 161/161, cmd 96/103,
+mmacos 650/7, pymacos 6939/2 (+2 skipped). Residual = the round-3 re-pins/
+sub-asserts + the two engine items (−O2 LocalCoord, unit-6-across-FFI).
+
 ### 2026-10-19 (3) — re-gate (pair macos `d3f2777`/`725e0389` + resources `629a2d2`)
 Full record: `cli_tests/records/mac_gate_gfortran_d3f2777.md`. Deltas: cmd **87→96**
 pass, mmacos fail **10→7**, pymacos fail **4→2**; glyph still `1x10-10`; ImageDemo
