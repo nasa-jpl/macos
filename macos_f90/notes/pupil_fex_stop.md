@@ -455,3 +455,8 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
   Centre ahead along that direction = converging = +; behind (through focus) = diverging = -.
 - Measured on CoroExample.in: 7 <- 5 from f 7.0 / z -7.0 back to 6.329334641 / -6.329334641, INT 7 at the
   design peak to the digit; 5 <- 7 back to +6.3293; the far-field pair (CassWithExitPupil 6 <- 5) unchanged.
+- **ORS admission (2026-10-19, (ii)):** a ray counts on `LRayOK` with status OK **or Obscured** -- an obscured ray is
+  traced and defines the wavefront, so the fit sees through a diffraction mask (CoroExample's occulter blocks every
+  test ray before element 7).  `RSTRACE` passes a LOCAL copy of `LRayOK(1)` to RefSrf/ReturnSrf (they clear it on a
+  chief miss; a miss is an empty trial, psi/Vpt untouched), and the Return branch's `signpsi` is now rhat aligned with
+  the surface's own psiElt (it was undefined for an even fold count: ifx and gfortran disagreed).
