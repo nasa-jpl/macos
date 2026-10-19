@@ -132,8 +132,6 @@ If a MAP command is used after a ray-trace or diffraction command such as OPD, S
 
 -   missed an optical element
 
-**Ray-Trace Commands**
-
 -   hit an optical element out of order
 
 -   hit two non-sequential surfaces simultaneously
@@ -206,13 +204,32 @@ MACOS\>**ray**
     Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
     Ray 2 segment from Element 4 (Ref_surf) to Element 5 (foc_pln ):
 
-**Ray-Trace Commands**
-
     Starting point= -1.098674950D-16 -4.947992095D-01 -4.038085968D+00 End point= -1.877761358D-26 -8.456685352D-11 1.500000000D+00 Direction= 1.975982230D-17 8.899032834D-02 9.960324902D-01
     Segment Length= 5.560145902D+00 Total Length= 1.562229180D+01
     Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
 
 This printout is similar to the chief ray printout. However, the first three lines are new. They specify the ray grid coordinates, the coordinates of the diffraction amplitude matrix grid point with which the ray is associated, and the iRay numbers of the adjacent rays. The adjacent rays are listed in (-x, +x, -y, +y) order.
+
+The RRAY, PRAY and TPR commands pick reference rays and trace them one at a time. RRAY finds the chief ray and the four marginal rays nearest the +x, −x, +y and −y edges of the source aperture; PRAY finds the chief ray and eight rays on a ring at 0.9 of the aperture radius. Each prints the rays it picked with their XY offsets from the chief ray in source-aperture units and their ray numbers (the same numbers RAY and MAP use). TPR then traces each picked ray from the source to the last element, or to the RayTgtElt element when one is set, and prints where it lands; a ray lost on the way is named. None of the three takes an argument, and TPR refuses until RRAY or PRAY has run. On CassWithExitPupil.in (the detector is element 6):
+
+MACOS\>**rray**
+
+     Source aperture diameter =       4.0000 none
+      Ref. ray XY offsets from chief ray:      1.6923,     -0.1538,   ID =      63
+      Ref. ray XY offsets from chief ray:     -0.1538,      1.6923,   ID =     122
+      Ref. ray XY offsets from chief ray:     -1.6923,     -0.1538,   ID =      52
+      Ref. ray XY offsets from chief ray:     -0.1538,     -1.6923,   ID =       4
+     Reference ray indices (chief + 4 marginal) =            1          63         122          52           4
+
+MACOS\>**tpr**
+
+     TPR ray 1 at element 6:   0.000000000000000E+00   0.000000000000000E+00   1.500000000000000E+00
+     TPR ray 63 at element 6:  -9.075851181705730E-11   8.250726490910409E-12   1.500000000000000E+00
+     TPR ray 122 at element 6:   8.250726490910409E-12  -9.075851181705730E-11   1.500000000000000E+00
+     TPR ray 52 at element 6:   9.076017715159423E-11   8.250934657727527E-12   1.500000000000000E+00
+     TPR ray 4 at element 6:   8.250934657727527E-12   9.076017715159423E-11   1.500000000000000E+00
+
+The marginal rays land within 1e-10 of the chief ray at the focus, the residual of the design. FSR (under the beam set-up commands below) finds the ray nearest a given fractional source position the same way and reports its number and offset. The MATLAB and Python bindings expose the finders as ref_rays; TPR has no binding yet.
 
 2.  **OPD**
 
@@ -271,8 +288,6 @@ MACOS\>**opd**
     Enter element where OPD is to be evaluated [3]:3 RMS OPD error is 1.609556E-02
     Writing OPD Map, Elt=3
     DIRECT ACCESS File=Cassegrain.OPD3
-
-**Ray-Trace Commands**
 
     Binary array is of dimension 128 128 0. Magnitude of central pixel is 0.0000000000D+00
 
@@ -339,8 +354,6 @@ MACOS\>
     OBS=ALL OBS=NEGATIVE
 
 **FIGURE 37** Exit pupil Spot diagrams with alternate OBS settings
-
-**Beam Set-Up Commands**
 
 #### SEGRAYTRACE
 
@@ -455,8 +468,6 @@ The COOrdinates command computes beam coordinates at any specified element. Beam
 
 a single argument: the element number iElt. It prints out two orthogonal unit vectors in
 
-**Beam Set-Up Commands**
-
 MACOS\>**coord**
 
 response. These vectors are the projection onto the surface at the chief ray of the xGrid
@@ -539,8 +550,6 @@ MACOS\>**PFP 6**
     9.999999950D-01 9.999767508D-01 Old crp= -2.229177070D-04 New crp= -6.686508743D-03 4.458354140D-04 3.343254372D-02
     -4.999999975D+00 -4.999883754D+00
     Accept the new chief ray? [YES]:
-
-**Beam Set-Up Commands**
 
 MACOS\>**ray 1 *Trace ray to show new incidence point...***
 
@@ -680,8 +689,6 @@ MACOS\>**fex**
     Exit pupil finder results:
     Old f= 6.000000000D+00 New f= 6.790667844D+00
 
-**Beam Set-Up Commands**
-
     Old z= 6.000000000D+00 New z= 6.790667844D+00 Old psi= 0.000000000D+00 New psi= 9.936451891D-17 0.000000000D+00 1.080049119D-16
     1.000000000D+00 1.000000000D+00 Old Vpt= 0.000000000D+00 New Vpt= 0.000000000D+00 0.000000000D+00 0.000000000D+00
     -4.500000000D+00 -5.290667844D+00
@@ -745,8 +752,6 @@ MACOS\>**atm**
     Enter number of atmosphere phase screen element: [0]:1 Enter atmosphere r0: [12.4492]: 24
     Enter atmosphere wavelength: [2.854331E-05]: 2.854331E-05 Enter atmosphere tilt participation (0-1): [1.00000]:0 Use RAY grid or separate ATMospheric grid? [RAY]: atm
     Computed xLocal= 0.000000000D+00 -1.000000000D+00 0.000000000D+00 Computed yLocal= -1.000000000D+00 0.000000000D+00 0.000000000D+00 Computed zLocal= 0.000000000D+00 0.000000000D+00 -1.000000000D+00
-
-**Beam Set-Up Commands**
 
     Tracing 12113 rays... Compute time was 0.2266 sec
     Enter grid spacing: [1.56840]:20 MACOS>
