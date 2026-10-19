@@ -24,6 +24,19 @@
 
 ## Active slice
 
+> **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
+> (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
+> /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
+> on arm64; measured on the 1.5k deck: 1 ulp in the chief position, 1e-10 relative in the OPD average); Dave's Word
+> edits folded (cover geometry = title high / subtitle block low, Version 4.0, Section 1.1 rewritten, 1.4-1.5 deleted,
+> contents after the Contact page); Introduction 'MACOS and AI Agents' + APPENDIX D (src/94_appendix_d_ai_agents.md);
+> figure 31 = telescope view only and figure 62 = the composed image under WIRE as drawn -- two DISPLAY findings:
+> 1.2 (aa) WIRE draws the sheet's outline only, (bb) DRAW renders a refractor surface as two straight segments; (z) the
+> 128-char path limit.  Five case decisions for Dave/TO in section 4 item 4 (mixed_SPOT margin, tCalibStop counts,
+> trial_loses_chief, spot-centre sign flip, capfd on macOS).  Gate at 4d7b1aa1 running (load/cmd/ab, clean worktree);
+> the dead band will show ulp movers in the ab -- name them in an allow list with the mechanism.  LOCAL unpushed:
+> 4d7b1aa1..HEAD, resources cd006b2.  NEXT: read the gate; Section 3/7 transcripts; the 4.00 vs 4.0 version string.**
+
 > **2026-10-19 night (CC): PUSHED (macos c3708c35, resources 5c9026f).  Pin policy RULED (Dave via CCMac's census): near-zero = magnitude bound, real signal = 5 sig figs; the 21 journals re-pinned (43 patterns, green ifx + gfortran); the 15 mmacos + 8 pymacos assertions wait on CCMac's actual-vs-expected (`NOTE_to_ccmac_prerelease_reply.md` v2).  NEXT: those re-pins when the data comes; Section 3/7 transcripts; §6.2.**
 
 > **2026-10-19 evening (CC): PUSHED on Dave's word (macos c13b36bb merge of CCMac's 985913a1/b9b459bc + mine; resources
