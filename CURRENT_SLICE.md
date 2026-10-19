@@ -69,6 +69,11 @@
 > Appendix A generated) and found 1.2 (hh) SAVE drops the UserDefined monomial frame (AOExample) -- AWAITING Dave: fix now or
 > queue; push word for 5f5cbce2 and after.**
 
+> **2026-10-19 (CC, ORS regression): macos-fd's Section 7 walk found `ors 7` on CoroExample aborting since ef15ab23 (the occulter
+> obscures every test ray) and an ifx/gfortran split after stop+ffp.  FIXED bba2e362 (1.2 (ii)): obscured rays count (DESIGN RULE for
+> Dave), Return-branch signpsi was undefined for an even fold count, RSTRACE clobbered LRayOK(1) on a chief miss.  Section 6 is
+> macos-fd's now (marker-based; my sentence handed over).  NEXT: gate at bba2e362 from the worktree after the 90cf4934 cmd run ends.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
