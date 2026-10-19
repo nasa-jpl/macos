@@ -133,6 +133,44 @@ def main():
                               SOURCECODE_STYLE + "</w:styles>")
             print("  SourceCode       injected (mono, 7.5pt, shaded)")
 
+        # page numbers: a footer part with a centered PAGE field, referenced from the
+        # document's section properties; the count starts at 0 so the cover is page 0
+        # (Dave 2026-10-19).  pandoc keeps the reference document's sectPr.
+        FOOTER = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                  '<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+                  'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                  '<w:p><w:pPr><w:jc w:val="center"/></w:pPr>'
+                  '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+                  '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>'
+                  '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+                  '<w:r><w:t>0</w:t></w:r>'
+                  '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>')
+        (work / "word" / "footer1.xml").write_text(FOOTER, encoding="utf8")
+        rels = work / "word" / "_rels" / "document.xml.rels"
+        rx = rels.read_text(encoding="utf8")
+        if "footer1.xml" not in rx:
+            rx = rx.replace("</Relationships>",
+                            '<Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" '
+                            'Id="rIdFooter1" Target="footer1.xml" /></Relationships>')
+            rels.write_text(rx, encoding="utf8")
+        ct = work / "[Content_Types].xml"
+        cx = ct.read_text(encoding="utf8")
+        if "footer1.xml" not in cx:
+            cx = cx.replace("</Types>",
+                            '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml" /></Types>')
+            ct.write_text(cx, encoding="utf8")
+        doc = work / "word" / "document.xml"
+        dx = doc.read_text(encoding="utf8")
+        SECT = ('<w:sectPr><w:footerReference w:type="default" r:id="rIdFooter1"/>'
+                '<w:pgSz w:w="12240" w:h="15840"/>'
+                '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>'
+                '<w:pgNumType w:start="0"/></w:sectPr>')
+        import re as _re
+        dx2, n = _re.subn(r"<w:sectPr\s*/>|<w:sectPr>.*?</w:sectPr>", SECT, dx, count=1, flags=_re.S)
+        assert n == 1, "no sectPr in the reference document"
+        doc.write_text(dx2, encoding="utf8")
+        print("  footer1 (PAGE field, centered) + sectPr (letter, 1in, numbering from 0) injected")
+
         if 'w:styleId="FigureCaption"' not in xml:
             xml = xml.replace("</w:styles>", FIGURE_STYLES + "</w:styles>")
             print("  Figure/FigureCaption injected (centered)")

@@ -29,6 +29,26 @@ local function pagebreak()
   return nil
 end
 
+-- a paragraph that is just "\\newpage" is a page break in docx and html (the cover, the contents)
+function Para(el)
+  if #el.content == 1 then
+    local c = el.content[1]
+    -- pandoc reads \newpage as raw TeX, not as a word
+    if (c.t == "RawInline" and c.text == "\\newpage") or (c.t == "Str" and c.text == "\\newpage") then
+      return pagebreak()
+    end
+  end
+  return nil
+end
+
+-- ... and a \newpage on a line of its own is a raw TeX BLOCK
+function RawBlock(el)
+  if el.format == "tex" and el.text == "\\newpage" then
+    return pagebreak()
+  end
+  return nil
+end
+
 -- pass 1: assign the numbers (in document order) and put them into the headings
 local function number_headers(doc)
   local chap, s2, s3 = nil, 0, 0

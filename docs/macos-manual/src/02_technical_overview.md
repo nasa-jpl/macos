@@ -173,9 +173,7 @@ MACOS does not currently provide shaped windowing features.
 
 The width of the beam in regions far from focus is determined geometrically. When the beam is small compared to the wavelength, the width is determined largely by diffraction considerations. Near focus, diffraction effects dominate. MACOS is set up to automatically require adequate padding in diffraction calculations for imaging systems.
 
-Nonetheless, the user is urged to be aware of the rules for constructing diffraction models, as discussed in Section 6. Good discussions of these issues are available (Ref.
-
-Lawrence).
+Nonetheless, the user is urged to be aware of the rules for constructing diffraction models, as discussed in Section 6. Good discussions of these issues are in Goodman, *Introduction to Fourier Optics* (sampling and the discrete Fourier transform), and in Sziklas and Siegman's paper on the fast-Fourier-transform propagation method that MACOS uses (References 2 and 3).
 
 The shape and quality of the *point-spread function* (PSF) are a good indicator of the performance of the optical system. The PSF is the image or intensity pattern due to a point
 
