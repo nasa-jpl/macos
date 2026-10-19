@@ -10,8 +10,45 @@
 #   'TTL OPD= NaN' there and offer a surface optimized on NaN comparisons; the trial rms now counts
 #   only rays that reach the surface, an empty trial is a huge merit, and a start with fewer than
 #   three data rays is named and aborted -- the must-fail leg: the pre-fix binary prints the NaN.
+# Leg 0, the manual's example (Dave 2026-10-19: an exit pupil is FEX's job; ORS is for a NEAR-FIELD reference
+#   surface): CoroExample.in, the first near-field reference surface ret2_1 (element 5, PropType NF1) set 4%
+#   long with MODify; ORS recovers the design 6.3293 (5 figures).  Then SRS on the near-field pair (1.2 (gg),
+#   Dave: SRS is important): ret2_2 (element 7) disturbed to f 7.0 / z -7.0 and slaved to 5 comes back to
+#   f 6.3293 with z NEGATIVE (the diverging end of the through-focus leg: before, the asymmetric-Returns
+#   branch wrote the unsigned radius, +6.329, and INT 7 moved 6%); slaving 5 to 7 returns z POSITIVE; a 'no'
+#   to the accept prompt leaves the element alone (before, 'no' was accepted: the test was .NE.'n'.OR..NE.'N'),
+#   proved by INT 7 reading the design deck's peak after a declined SRS that would have flipped z.
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in
 # COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+old $TMP/CoroExample.in
+mod
+fElt(5)=6.6
+q
+ors
+5
+yes
+mod
+fElt(7)=7.0
+q
+mod
+zElt(7)=-7.0
+q
+srs
+7
+5
+yes
+srs
+5
+7
+yes
+old $TMP/CoroExample.in
+srs
+7
+5
+no
+int 7
+/null
 old $TMP/CassWithExitPupil.in
 mod
 fElt(5)=5.7
@@ -29,6 +66,11 @@ opd 6
 old $TMP/ImageDemo.in
 ors
 12
+# EXPECT: fElt\(\s*5\) =\s+6\.600000000D\+00\s+KrElt[\s\S]*?Old f=\s+6\.600000000D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: Old f=\s+7\.000000000D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+-7\.000000000D\+00\s+New z=\s+-6\.3293\d*D\+00
+# EXPECT: Enter number of element to slave to: \[1\]: 7\s+Reference surface recalculation results:\s+Old f=\s+6\.3293\d*D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+6\.3293\d*D\+00\s+New z=\s+6\.3293\d*D\+00
+# EXPECT: Accept the new element\? \[YES\]: no[\s\S]*?Peak intensity= 1\.3052\d*D-05
+# EXPECT-NOT: New z=\s+6\.329334644D\+00
 # EXPECT: fElt\(\s*5\) =\s+5\.700000000D\+00
 # EXPECT: Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-1\d\s+nCalls=\s+\d+\s+Old f=\s+5\.700000000D\+00\s+New f=\s+5\.5601\d*D\+00
 # EXPECT: Enter number of element to slave to: \[1\]: 5\s+Reference surface recalculation results:

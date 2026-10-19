@@ -440,3 +440,18 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
 - CassWithExitPupil.in, `int 1`, 64-point grid: uniform 0.90636; waist 1.0 -> 0.57778; waist 2.0
   -> 0.71750 (`cli_tests/cmd/BEAM_gaussian.jou`, 5 figures).  No core-corpus deck is Gaussian,
   so the load A/B does not see this change.
+
+## SRS: a near-field zElt keeps its CONVERGENCE sign; the slave-to centre comes from the RADIUS (2026-10-19)
+*(Manual §6 SRS, the CoroExample.in dialog; PLAN_CONSOLIDATION 1.2 (gg).)*
+- `zElt` of a near-field reference surface is SIGNED (Table 14: + converging, - diverging) and the
+  propagator's leg is `zElt(start) - zElt(end)`; `fElt = |z|`, `KrElt = -|z|`, psi points at the centre.
+- The asymmetric-Returns branch of the SRS handler (macos_cmd_loop.inc, Dave's 2026-05-07 spec) had three
+  defects: the slave-to centre was `Vpt + zElt*psi` (wrong side for a diverging slave-to; now `|fElt|`),
+  the slaved sphere's zElt was the unsigned distance (CoroExample ret2_2 came back +6.329 and INT 7 moved
+  6%; now signed), and `no` at the accept prompt was accepted (`.NE.'n' .OR. .NE.'N'`; now `.AND.`).
+- The sign: the beam direction at the slaved surface ON THE SIDE OF THE PROPAGATION THE PAIR SPANS.  A
+  Return surface folds the trace (outgoing = -incoming), so the START surface (iSlv1 < iSlv2) uses the
+  outgoing ray and the END surface (iSlv1 > iSlv2) the incoming one; `dirSlv1` (*_vars_mod.F) carries it.
+  Centre ahead along that direction = converging = +; behind (through focus) = diverging = -.
+- Measured on CoroExample.in: 7 <- 5 from f 7.0 / z -7.0 back to 6.329334641 / -6.329334641, INT 7 at the
+  design peak to the digit; 5 <- 7 back to +6.3293; the far-field pair (CassWithExitPupil 6 <- 5) unchanged.

@@ -1,0 +1,4 @@
+# A/B: pre load_ifx_ef15ab23.csv  post load_ifx_725e0389.csv  (160 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 1 decks moved
+/home/dcr/dev/macos/docs/macos-manual/examples/ImageDemo.in  npass 15 -> 578  lost 726 -> 163  rms 2.099546503D-03 -> 3.605677739D-04  pv 5.842912601D-03 -> 2.533050158D-03  avg 1.7034115548398344D+01 -> 1.1485068150830929D-04

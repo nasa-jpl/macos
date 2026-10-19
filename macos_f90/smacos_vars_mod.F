@@ -52,6 +52,7 @@ C       These are other MACOS variables
      &   XMIN,YMIN,DXO,DYO,xcent,ycent,Dicr,Djcr,dxSource,
      &   TotalAvgOpd,TotalOpdInt,DeltaOpd,zp,fp,psip(3),Vptp(3),
      &   signpsi,LSlv1,cr1dir(3),cr2dir(3),cr1pos(3),cr2pos(3),
+     &    dirSlv1(3),
      &   th(3),cr2indir(3),cr2inpos(3),CrossDist,CrossPt(3),
      &   StartExtinc,Power,MaxInt,xDraw(3),yDraw(3),xPt(3),yPt(3),
      &   xInt(3),xTarg(3),crPos(3),dxPt(2),sqErr,GPt(2,2),GPtInv(2,2),
