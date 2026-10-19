@@ -994,10 +994,9 @@ PRAy finds 8 "pupil" rays on a 0.9-radius ring.  TPR then
 traces each found ray to the final (or RayTgtElt) element and
 prints its position there; it requires RRAy or PRAy first
 ("** Need to run RRAY command before executing TRR command" —
-sic).  None take arguments.  TPR prints `RayPosHist`, the
-per-element ray position history, which is recorded only when
-the prescription declares `SaveRayPosH= Y`; on any other deck
-the positions print as 0 (measured 2026-10-16).  Engine quirk: PRAy's first ring
+sic).  None take arguments.  TPR prints each ray's end-element
+position (since 2026-10-17; before that it read `RayPosHist`,
+which only `SaveRayPosH= Y` fills, and printed 0 elsewhere).  Engine quirk: PRAy's first ring
 ray requests normalized position (9.0,0), apparently intended
 as (0.9,0).
 *Related:* FSR, RAY, MAP.
@@ -1016,14 +1015,13 @@ Trace the PRAy/RRAy rays.
 <!-- BEGIN NOTES cmd-TPR -->
 *Syntax:* `TPR`; no prompt.
 
-*Defaults:* none.  Prints `RayPosHist`, filled only when the deck declares `SaveRayPosH= Y` (1.2 (e)); on any other deck the positions print as 0.
+*Defaults:* none.  Since 2026-10-17 (42c7ade, PLAN_CONSOLIDATION 1.2 (e)) TPR prints the position CTRACE leaves at the end element (`TPR ray 63 at element 6: x y z`), on every deck; it no longer reads `RayPosHist`, which only `SaveRayPosH= Y` fills, and it skips the slots RRAy did not fill (it used to trace "ray 0").  A ray lost before the end element says so.
 
 No dialog.  Traces each reference ray found by the last RRAy
 or PRAy (chief + 4 marginal, or the 0.9-radius pupil ring)
-to the final element (or RayTgtElt) and prints a debug-style
-"**CTRACE iRay = ..." line per ray with its end-element
-position (RayPosHist); the footprints are also stored for
-later use.  Without a prior RRAy/PRAy it aborts with
+from the source to the final element (or RayTgtElt) and prints
+one line per ray with its end-element position; the positions
+are also kept in `RRayPosHis` for the beam-walk commands.  Without a prior RRAy/PRAy it aborts with
 "** Need to run RRAY command before executing TRR command"
 (sic).  See PRAy for the finder half of the pair.  SMACOS:
 no LoadStack entry.
