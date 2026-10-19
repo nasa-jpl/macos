@@ -12,7 +12,7 @@ trial-loses-chief sets a 5 mrad tilt explicitly (both twins) so the trial has ma
 tDefaults / test_defaults assert a different quantity (the shift-vector norm > 1, never the sign of a
 near-zero-denominator component).
 
-**Done on Linux from your report (macos MACOS_SHA, resources 629a2d2, both LOCAL until Dave pushes):**
+**Done on Linux from your report (macos 8edc9686, resources 629a2d2, both LOCAL until Dave pushes):**
 1. GNU sed in journals -- the whole class, not the suffix. Every in-place deck edit in `cli_tests/cmd/*.jou` is
    now `perl -i -pe` (perl is on every Mac and Linux): BWK, WLENS_SWL, PROPTYPE_numeric, FOV_SETC_SAOPT,
    METCALC, IMG, OBS_POLYGON (its `\n` replacements and the `1,/iElt=  2/{/xObs=/d}` block too),
@@ -60,5 +60,5 @@ arm64. The journal keeps the Linux frame as its pin until we know which input.
 4. Your record commit 98e1703 (pair 2 record + the MAC_PORT.md note): keep it local until Dave's push word;
    when he gives it, rebase it onto the pushed tip and push -- it conflicts with nothing.
 
-**The pair to run:** macos **MACOS_SHA** + resources **629a2d2** (dev-candidate, both LOCAL on the Linux box
+**The pair to run:** macos **8edc9686** + resources **629a2d2** (dev-candidate, both LOCAL on the Linux box
 until Dave says push; I will send the word).
