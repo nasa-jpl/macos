@@ -44,11 +44,6 @@ The properties that must be specified by the user include:
 
 In MACOS, a *light source* is a surface but not an element. The surface is defined by a single wavefront emitted from a single point source. The zSource parameter is the distance from the origin of the light to the light source surface, as defined by the location of the chief ray, ChfRayPos (see Figure 11). Collimated sources are specified by zSource=1d22. For point sources, the convention is that the sign of zSource is positive for a converging beam and negative for an expanding beam.
 
-
-
-
-
-
 ![](media/fig_rescued_11.png)
 
 **FIGURE 11** Light sources
@@ -69,11 +64,7 @@ NOTE: Converging or diverging sources **should not be located at the source poin
 
 The refractive index is, in general, a complex number. The real part is the conventional index, giving the speed of light in the particular medium, and so defining the direction
 
-changes a ray experiences at refractive interfaces. The imaginary part is the extinction
-
-**Specifying the Light Source**
-
-coefficient, which defines the attenuation of the field in the medium. Only the index (real part) is significant in MACOS scalar ray-tracing calculations. The extinction coefficient is used only when polarization ray-trace is selected, by use of the POL command.
+changes a ray experiences at refractive interfaces. The imaginary part is the extinction coefficient, which defines the attenuation of the field in the medium. Only the index (real part) is significant in MACOS scalar ray-tracing calculations. The extinction coefficient is used only when polarization ray-trace is selected, by use of the POL command.
 
 -   The real part of the refractive index of the source medium is specified by IndRef. If ChfRayPos is in a vacuum, then IndRef=1. For many applications it is sufficient to approximate the index of refraction of air as 1, although the exact value depends on the pressure and temperature.
 
@@ -102,11 +93,6 @@ where n is the index of refraction.
 
 Obscurations can be defined in the source beam if desired. Obscuration size is specified in the same way as the aperture, with the parameter Obscratn setting the diameter or angle of a *central* obscuration.
 
-
-
-
-
-
 ![](media/fig_rescued_12.png)
 
 **FIGURE 12** Aperture sizing
@@ -114,7 +100,6 @@ Obscurations can be defined in the source beam if desired. Obscuration size is s
 NOTE: This aperture obscuration option can be useful, but is not the best way to represent most beam-train obscurations. It is better to explicitly place obscurations on the appropriate elements as discussed in [Section ?](#obscurations-and-apertures).
 
 The entrance aperture can have several shapes, as shown in Figure 13, depending on whether the system is monolithic – in which all optics are of one piece – or segmented – in which at least one mirror is split into separate segments. For monolithic systems, the aperture shape can be round or square, as set by the GridType parameter. For segmented systems the options are hexagonal array, round with 6 pie-shaped outer segments, or round with an arbitrary number of outer segments. For computational efficiency, the segmentation is defined at the light source.
-
 
 ![](media/fig_rescued_13.png)
 
@@ -130,8 +115,6 @@ The density of rays across the beam and the orientation of the ray grid are set 
 
 parameters:
 
-**Example Light Source**
-
 -   Number of ray grid points across the aperture is set by nGridPts
 
 -   Ray grid coordinate vectors xGrid and yGrid determine the global orientation of the ray grid and so the beam coordinates
@@ -146,8 +129,6 @@ Coordinates
 
     yGrid=zGrid x xGrid
 
-
-
 ![](media/fig_rescued_14.png)
 
 **FIGURE 14** Ray grid layout
@@ -157,10 +138,6 @@ Coordinates
 MACOS obtains the information it needs to build an optical prescription (an “.in-file” dataset) through the NEW file definition dialog. The first questions in this dialog are about the light source and the latter questions pertain to the optical elements.
 
 For the first example, we start the prescription for a Cassegrain telescope, Cassegrain.in, shown in Figure 15. The light source is a point source at infinity so the wave-front incident on the telescope is collimated. In the example dialog, the prompts are exactly as MACOS gives them. The correct user response is indicated in **bold** text, and the name of the variable being set is in ***italic*** text.
-
-
-
-
 
 ![](media/fig_rescued_15.png)
 
@@ -218,13 +195,7 @@ MACOS\>**new**
     Enter number of grid points [65]:25 nGridPts
     Enter input plane x-axis vector (x,y,z) [1.00000,0.,0.]:-1,0,0 xGrid
 
-**Specifying Optics**
-
 -1.1 -1.0
-
-
-
-
 
 ![](media/fig_rescued_16.png)
 
@@ -343,8 +314,6 @@ The second step is to define element location, orientation and rotation point, a
 
 -   Element *location* is specified by the VptElt vector. This is a three-vector in global coordinates giving the location of the vertex of the element.
 
-**Element Types**
-
 -   Element *orientation* is specified by the psiElt vector. This is a unit magnitude three-vector in global coordinates giving the direction of the principal axis of the element.
 
 -   Element *rotation point*, RptElt, defines the pivot point for rotations of the element implemented using the Perturb command. It also defines the coupling between rotation and translation for the Build command. Together with any element coordinates, Telt, RptElt governs the element response to perturbations.
@@ -443,8 +412,6 @@ As with reflectors, refractors in MACOS may have any surface shape. The index of
 
 This example lens has a spherical front surface and a planar rear surface, as illustrated in Figure 17:
 
-**Element Types**
-
     Enter Element 1 Data:
     Enter element name (no blanks) [Elt]: lens_front EltName
     + +
@@ -524,7 +491,6 @@ NOTE: It is not uncommon to “lose” rays, if they miss the properly defined a
 
 This ray hits the elements out of sequence, becomes undefined
 
-
 ![](media/fig_rescued_17.png)
 
 **FIGURE 17** Ray bundle must pass within surface intersection points of the refracting elements for all rays to be traced properly
@@ -540,8 +506,6 @@ The user may specify the index of glasses or other optical materials in several 
 -   By using a different macos.glass file, located in the MACOS data directory. The user can easily add other materials to a private copy of macos.glass, using the MACOS_DATA environment variable to define its location.
 
 -   By directly specifying the 6 Sellmeier glass coefficients in the prescription. These coefficients are B1, B2, B3, C1, C2, C3 from the manufacturers catalog. Note that the MACOS SAVE command saves the coefficients of each glass in the prescription file, even if the glass data was originally derived from the MACOS glass table.
-
-**Element Types**
 
 -   By declaring a material to be FixedIndex, and then specifying the index, in the prescription. This approach uses a single value of the index for any wavelength of light.
 
@@ -576,7 +540,6 @@ Lens arrays (a.k.a. lenticular arrays or lenslet arrays) are refracting optics. 
 MACOS uses a LensArray element type to model the bumpy surface of a lens array. LensArray elements are specified much as Refractor elements are, with the addition of a few new parameters. LensArray elements can have conic or aspheric lenslet shapes. Enter shape parameters that describe a single lenslet, and all the other lenslets will be automatically replicated. The location and orientation parameters VptElt and psiElt define the plane containing all of the lenslet vertices, and specify the orientation of each lenslet.
 
 The first new parameter is LensArrayType, which can have two values: LensArray-Typ=1 for hexagonal arrays; and LensArrayTyp=2 for rectangular arrays. The second new parameter is LensArrayWidth, which is the width of a single lenslet (flat to flat for hexagonal lenslets) (Figure 18).
-
 
 ![](media/fig_rescued_18.png)
 
@@ -635,8 +598,6 @@ This results in the following lines in the prescription file:
     fElt= 8.000000000D-01 eElt= 0.000000000D+00 KrElt= -8.000000000D-01 KcElt= 0.000000000D+00
     psiElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00
     IndRef= 1.500000000D+00
-
-**Element Types**
 
     Extinc= 0.000000000D+00
     pMon= 0.000000000D+00 0.000000000D+00 0.000000000D+00 xMon= 1.000000000D+00 0.000000000D+00 0.000000000D+00 yMon= 0.000000000D+00 1.000000000D+00 0.000000000D+00 zMon= 0.000000000D+00 0.000000000D+00 1.000000000D+00
@@ -716,8 +677,6 @@ This dialog produced the following prescription data:
     zElt= 1.000000000D+22
     PropType= Geometric nECoord= -6
 
-**Element Types**
-
 #### Transmissive Gratings
 
 The transmissive grating elements, like the reflective gratings of the previous section, use surfaces that have been ruled into a highly regular array of grooves to diffract light. The periodicity of the ruling causes there to be coherence in the light scattered in particular discrete directions. These directions correspond to various “diffraction orders,” which are functions of the ruling direction, the ruling width, and the wavelength of the incident beam (ref. Hecht).
@@ -791,8 +750,6 @@ MACOS HOEs can be defined on any surface shape. Enter surface parameters to defi
     Enter element index of refraction [1.00000]:1
     Enter element extinction coefficient [1.000000E+22]:1d22
 
-**Element Types**
-
     Enter input reference point (x,y,z) [no default]: 0,0,-1d22 h1HOE
     Enter output reference point (x,y,z) [no default]: 1,0,-3 h2HOE
     Enter diffraction order [1.00000]: 1 OrderHOE
@@ -836,7 +793,6 @@ MACOS provides functions that help assure that reference surfaces used for diffr
 -   SRS: Slaves one reference surface to another to properly set up a near-field diffraction propagation ([Section ?](#srs)).
 
 Figure 21 illustrates a typical scenario, with a reference surface inserted in the focused beam of a lens. The reference surface has its center located at the focus of the lens, and so is aligned with the ideal (spherical) wavefront. The Cassegrain example (see Appendix A.1) provides another example; indeed all of the examples in the Appendix use reference surfaces.
-
 
 ![](media/fig_rescued_21.png)
 
@@ -888,8 +844,6 @@ This dialog produced the following prescription data:
     zElt= 5.400000000D+00
     PropType= Geometric
     nECoord= -6
-
-**Element Types**
 
 #### Focal Planes
 
@@ -986,8 +940,6 @@ This dialog produced the following prescription data:
     ApType= None
     zElt= 5.000000000D+00
     PropType= Geometric nECoord= -6
-
-**Element Types**
 
 #### Polarizers and Waveplates
 
@@ -1091,8 +1043,6 @@ own s/p response beyond the axis rule.
     zElt= 2.000000000D-01
     nECoord= -6
 
-**Element Types**
-
 #### Hex and Pie Segmented Mirrors
 
 Segmented systems (e.g. telescopes with segmented primary mirrors) are defined at the light source using GridType=hex or GridType=pie. This section describes entering the segmented surfaces. Figures 22 and 23 show the geometry for a segmented pie-shaped aperture and a large array of hexagonal segments, respectively. In both cases, the pannel coordinates are given by three variables (X,L,R). The segments must be entered in as elements in the same order they are listed in SegCoord. Segmented surfaces also require
@@ -1102,7 +1052,6 @@ Segmented systems (e.g. telescopes with segmented primary mirrors) are defined a
 -   gap: spacing between segments
 
 -   width: width of segments (flat to flat)
-
 
 ![](media/fig_rescued_22.png)
 
@@ -1175,8 +1124,6 @@ Element data:
     Enter element type :Segment Element
     + +
     | Surface types: |
-
-**Element Types**
 
 +---+---------------------+---------------------+----------------+---+
 | \ | Flat                | Conic               | Aspheric       | \ |
@@ -1306,8 +1253,6 @@ Element data:
     Enter number of obscurations [0]:
     Enter Fresnel propagation distance [1.46000]:1.46 zElt
 
-**Element Types**
-
     + +
     | Propagation types: |
     | Geometric GeomUpdate FarField |
@@ -1361,10 +1306,6 @@ Only 1 segment coordinate is needed per segment, to specify its location in sequ
 
 nPetals towards the SegYgrid axis, and the 2nd and subsequent segments located in the same sequence around the center segment. See Fig. 24 for an illustration.
 
-
-
-
-
 ![](media/fig_rescued_24.png)
 
 **FIGURE 24**Flower segmentation, showing segment coordinates
@@ -1374,10 +1315,6 @@ nPetals towards the SegYgrid axis, and the 2nd and subsequent segments located i
 In most optical systems, all rays strike one element before passing on to the next element. There are exceptions, such as corner cube reflectors, where some rays will strike an element before others. These are modeled in MACOS using non-sequential surfaces. There is no limit on the number of non-sequential elements and the order that the non-sequential elements are entered into MACOS does not matter. However, there must be sequential surfaces before and after the group of non-sequential surfaces. For the purpose of the following discussion, we call them the first and second surfaces, respectively. After the ray passes the first sequential surface, MACOS solves for the next surface that the ray strikes which can be any of the group of non-sequential surfaces or the second sequential surface. If the ray hits a non-sequential surface, the procedure continues until the second sequential surface is encountered. After the second sequential surface is encountered the ray trace proceeds normally. Figure 25 shows the corner cube reflector example. The .in-file is in Appendix A.3
 
 NOTE: Geometric propagation only is supported through non-squential elements.
-
-
-
-
 
 ![](media/fig_rescued_25.png)
 
@@ -1400,8 +1337,6 @@ Corner cube example
 | \| FocalPlane         | Re      | Return \|                         |
 |                       | ference |                                   |
 +-----------------------+---------+-----------------------------------+
-
-**Element Types**
 
     | HOE Grating Obscuring |
     + +
@@ -1732,7 +1667,6 @@ The ordering and normalization are selected per element with the `ZernType=` key
 
 KcElt and KrElt (or eElt and fElt) are the parameters that describe the conicoid. The deviations occur only in the z-direction of a special coordinate frame. The variable pMon is the center of the coordinate frame. The variables xMon, yMon, and zMon define the special coordinate frame as shown in Figure 27.The variable lMon is the semi-diameter of the circle to which the Zernike deviations are scaled (remember that Zernikes are defined on a unit circle).
 
-
 ![](media/fig_rescued_27.png)
 
 **FIGURE 27** Specialized coordinate frame
@@ -1754,8 +1688,6 @@ Zernike polynomials, listed in Table 8, are orthogonal over a unit circle. The p
 | \| FocalPlane         | Re      | Return \|                         |
 |                       | ference |                                   |
 +-----------------------+---------+-----------------------------------+
-
-**Element Surface Types**
 
     | HOE Grating Obscuring |
     + +
@@ -1871,11 +1803,7 @@ Toric surfaces are surfaces that have different shapes in some specified orthogo
 
 #### Anamorphic Surfaces
 
-Anamorphic surfaces are surfaces that have different (conic) shapes in some specified orthogonal x- and y-axes. Cylindrical optics and astigmatic plates are two examples. MACOS anamorphic surfaces are entered using the standard KrElt and KcElt format, except that two sets of these conic parameters are entered: one set for each of the x- and
-
-**Element Surface Types**
-
-y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx, Kcy. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in [Section ?](#zernike-surfaces) and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below.
+Anamorphic surfaces are surfaces that have different (conic) shapes in some specified orthogonal x- and y-axes. Cylindrical optics and astigmatic plates are two examples. MACOS anamorphic surfaces are entered using the standard KrElt and KcElt format, except that two sets of these conic parameters are entered: one set for each of the x- and y-axis directions. The variable AnaCoef holds the values in the following order: Krx, Kry, Kcx, Kcy. In addition, a specialized coordinate frame must be used to define the local x- and y-axes for these variables. This is the same specialized coordinate frame used in [Section ?](#zernike-surfaces) and is defined by pMon, xMon, yMon, and zMon as shown in Figure 27. An example of an (cylindrical) anamorphic surface as defined in a .in-file is shown below.
 
     iElt= 1
     EltName= ana_surf Element= Refractor Surface= Anamorph
@@ -1969,8 +1897,6 @@ Interpolated surfaces using X-Y-Z data triplets allow arbitrary perturbations to
 The maximum number of interpolated data surfaces, and the maximum number of points for interpolated data surfaces, are limited at compile time, by setting the mIntSrf and mDP parameters in the param.cmn file. These settings are shown in the command window as MACOS is started up.
 
 The interpolation data is entered from an input file, which is not read until the user executes a SINT (Surface INTerpolator) command. The SINT command reads the data files defining the surface(s) and precomputes interpolation coefficients used in the ray trace.
-
-**Obscurations and Apertures**
 
 If rays are traced prior to executing the SINT command, the interpolated surfaces are converted to conic surfaces and the interpolation data is not used.
 
@@ -2165,8 +2091,6 @@ Circle Rectangle Ring Triangle
     + +
     | Propagation types: |
 
-**Obscurations and Apertures**
-
 +---+----------------------+-------------------+-----------------+---+
 | \ | Geometric            | GeomUpdate        | FarField        | \ |
 | | |                      |                   |                 | | |
@@ -2286,8 +2210,6 @@ This dialog produced the following prescription data:
     ApType= Circular
     ApVec= 2.000000000D+00 0.000000000D+00 0.000000000D+00 zElt= 5.400000000D+00
     PropType= Geometric nECoord= -6
-
-**Obscurations and Apertures**
 
 The third example shows an obscuration produced by a secondary mirror and it’s support spider: two rectangles and a circle (see Figure 29). These planar obscurations obscure the primary mirror.
 
@@ -2465,8 +2387,6 @@ Continuation of MACOS input from [Section ?](#example-light-source).
 |                       | ernike | onomial |                           |
 +-----------------------+--------+---------+---------------------------+
 
-**Example Telescope**
-
     | Interpolated UserDefined |
     + +
     Enter surface type :Flat
@@ -2581,8 +2501,6 @@ Continuation of MACOS input from [Section ?](#example-light-source).
     Enter Element 3 Data:
     Enter element name (no blanks) [Elt]: Secondary
     + +
-
-**Example Telescope**
 
 +--------------------------+---------------------+---------------------+
 | \| Element types:        |                     | \|                  |
@@ -2717,8 +2635,6 @@ Continuation of MACOS input from [Section ?](#example-light-source).
     + +
     Enter element type :FocalPlane
 
-**Editing .In-Files**
-
     + +
     | Surface types: |
     | Flat Conic Aspheric |
@@ -2829,8 +2745,6 @@ The same check runs automatically as part of the OLD and LOAD commands; if it fa
 
 The validator reads the file as text only.  It refuses a key with no value (`EltName=`, `BaseUnits=` and `WaveUnits=` excepted, since older prescriptions leave them blank), a blank line inside a multi-row block such as a `Tout=` matrix, and a comment block that is never closed.  It accepts `%` and `!` comment lines and the block-comment forms described under “Editing .In-Files”; note that the loader itself treats only `%` as a comment character.  Files with CR or CRLF line endings load through a temporary LF copy and need no conversion.
 
-**Commands**
-
 #### MODIFY
 
 The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in [Section ?](#summary-of-prescription-variables) can be changed.  Write the assignment without spaces around the equals sign (`mod nGridpts=33`); `mod nGridpts = 33` is rejected with a message rather than read.
@@ -2923,8 +2837,6 @@ The variables are shown with their index types in parentheses. These indices are
 -   iLin: ranges over the x,y,z components of the ray direction perturbation, the x,y,z components of the ray transverse aberration and the pathlength perturbation in the linear state vector x.
 
 -   iAsCoef: A, B, C, and D coefficients described in [Section ?](#generalized-10th-order-aspheric-surfaces).
-
-**Summary of Prescription Variables**
 
 -   iAp: either radius,x,y, or xmin,xmax,ymin,ymax depending on ApType.
 
@@ -3097,8 +3009,6 @@ All variables can be changed with the MODify command.
 |                           |                 | monomial (Zernike)    |
 |                           |                 | surface calcula-tions |
 +---------------------------+-----------------+-----------------------+
-
-**Summary of Prescription Variables**
 
 **TABLE 11.** Element variables
 

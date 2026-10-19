@@ -49,11 +49,6 @@ Repeating a trace of an unchanged system reproduces it bit for bit. The source c
 
 The DRAW command produces a drawing of the beam train, showing the optical element surfaces and the beam propagating through them. The beam is represented by eleven rays. The elements are drawn in cross-section, using the ray-intercept points from 100 rays across the beam to define the surfaces. The drawing is in a specified (xz, yz or xy) plane, and the surfaces and rays are drawn as the projection of the onto that plane. Tilted or folded systems can sometimes produce strange results! Different colors are used to distinguish between rays and several different element types.
 
-
-
-
-
-
 ![](media/fig_rescued_30.png)
 
 **FIGURE 30** Ray state definitions
@@ -65,7 +60,6 @@ The user is asked to specify the starting element, the stopping element, and the
     Enter drawing plane (XZ, YZ or XY in source coords): [XZ]: xz
 
 The result is shown in Figure 31. The system is somewhat aberrated, so the beam does not come to a clean focus! A close-up of refractive elements 6-11 is specified by changing the starting element:
-
 
     Enter first element to include: [0]: 6
     Enter last element to include: [13]: 11
@@ -137,7 +131,6 @@ If a MAP command is used after a ray-trace or diffraction command such as OPD, S
 -   hit two non-sequential surfaces simultaneously
 
 as shown in Figure 32. Undefined rays are called out during the trace command. The surface where a ray became undefined can be pinpointed using the RAY command.
-
 
 Misses element Must go backwards to hit next element.
 
@@ -308,8 +301,6 @@ Rays which are obscured or vignetted by obscurations or apertures on the current
 
 The SPOt command has the argument iElt: the number of the element where the spot diagram is to be computed. In addition, the user is asked to select which output coordinates to use to define the x and y axes. The choices are Tout, Enter or Beam (see Section 4). The Beam frame is built from a trace of the chief ray and two differential rays; a chief ray that is obscured but geometrically defined, such as the on-axis chief ray of a centrally obscured telescope, still defines it. The spot is plotted about the element's reference point by default; the SPCenter command (`chfray`) plots it about the chief ray instead, which makes the spot a measure of shape only: a tilt of a fold mirror then moves the printed chief-ray location but not the spot. SPOt plots an x-y scatter format unless plot types TEXt, BINary, or MATlab are selected, in which case a “.spot” file is written to disk. Figures 4 and 36 show spot diagrams for Cassegrain.in.
 
-
-
 ![](media/fig_rescued_35.png)
 
 **FIGURE 35** Spot on the projection plane
@@ -411,7 +402,6 @@ The next several commands are designed primarily to help the user correctly set 
 The lateral position of a beam propagating through a system is constrained by the presence of a system stop. The system stop is an aperture somewhere in the system through which the beam passes. It defines the beam position and (usually its shape), as per Figure 38. Certain commands (PERturb, FFP, PFP and FEX) require knowledge of the stop position to enforce the correct beam geometry.
 
 The system stop is specified using the STOp command. STOp does not center the beam in the stop (CENTEr can be used to do this). It merely defines the system stop position. This information is used to constrain the beam when setting exit pupils or perturbing the source.
-
 
 *System stop aperture defines beam position for changing field angles*
 

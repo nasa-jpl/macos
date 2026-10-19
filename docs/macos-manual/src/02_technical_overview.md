@@ -54,7 +54,6 @@ spheres, which have no unique vertex, VptElt can be any point on the surface. Fo
 
 Comparing the intervertex spacings of the two mirrors (the difference of the PM and SM VptElt), you can see that they are the same in either frame. It does not matter what frame is used, provided the relative location of each element is correct.
 
-
 ![](media/fig_rescued_02.png)
 
 **FIGURE 2** Principal axis directions
@@ -177,8 +176,6 @@ Nonetheless, the user is urged to be aware of the rules for constructing diffrac
 
 The shape and quality of the *point-spread function* (PSF) are a good indicator of the performance of the optical system. The PSF is the image or intensity pattern due to a point
 
-
-
 1/4 L 1/2 L 1/4 L
 
 ![](media/fig_rescued_09.png)
@@ -234,8 +231,6 @@ MACOS uses the geometric propagator to determine phase changes across optical el
 -   More accurately accounts for geometric effects, such as field-dependant aberrations.
 
 The MACOS geometric propagator does not compute magnitude changes unless polarization ray-trace is being used.
-
-**Polarized Light**
 
 ### Polarized Light
 

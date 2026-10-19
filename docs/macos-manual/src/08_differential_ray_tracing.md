@@ -21,11 +21,6 @@ The limits are not absolute, but vary from system to system. The user can check 
 
 Rays are defined at any particular point in a beam train by their location, direction and length. In MACOS, the current *exact ray state* is defined as the position, direction and path length of a ray immediately after the current element (see Figure 65). The *position* of the iRayth ray is a 3-vector giving the point of incidence with the current element. MACOS stores it in the array RayPos as RayPos(1:3,iRay). The *direction* of the iRayth ray is a unit-magnitude 3-vector stored in RayDir(1:3,iRay). Note that if the current element is a mirror or lens, the direction is of the reflected or refracted ray. The *optical path length* of the iRayth ray from the source to the current element is a scalar and is stored in CumRayL(iRay).
 
-
-
-
-
-
 ![](media/fig_rescued_65.png)
 
 **FIGURE 65** Ray state
@@ -44,7 +39,6 @@ $$
 $$
 
 where $d\hat{r}$ is the ray direction perturbation. The ray direction perturbation is a 3-vector whose magnitude is small compared to 1 and which is perpendicular to the ray direction, RayDir. The total ray direction is equal to the vector sum of RayDir and $d\hat{r}$ (to the accuracy of the small angle approximation). Figure 66 shows the linear ray state.
-
 
 ![](media/fig_rescued_66.png)
 
@@ -205,8 +199,6 @@ MACOS\>**lperturb**
     Element 5 Linear Perturbations:
     Rotational= 0.000000D+00 0.000000D+00 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00 MACOS>
 
-**Commands for Exercisizing Models**
-
 #### LPREAD
 
 The LPRead command reads element perturbations from a specified datafile. MACOS assumes that the name of the perturbation file is infile.pert. If this file does not exist, MACOS prompts for the perturbation file name.
@@ -322,8 +314,6 @@ The path length partials show a factor-of-two sensitivity for this ray. Looking 
     0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
     0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
     0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-
-**Commands for Exercisizing Models**
 
     0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
     Enter ray number for partials (0=done, 1=chief ray):

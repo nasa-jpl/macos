@@ -47,8 +47,6 @@ The prescription and macro for generating the results plotted in this section ar
 
 The INtensity command takes the complex amplitude matrix at the specified element, computes the modulus squared to determine the intensity, and plots or exports it according to the active plot option (see [Section ?](#plot-type-commands)).
 
-**Beam Propagation Commands**
-
 The INtensity command only accepts one argument–the number of the surface at which the intensity is viewed. This surface must be a stored wavefront. In the default gray scale plot, the intensity is displayed with black and white corresponding to the maixmum and minimum intensities, respectively.
 
 We begin the example by propagating the on-axis beam through the first part of a near-field diffraction propagation (PropType=NF1), observing the image at the focus of the first telescope, both with and without the occulting mask:
@@ -107,7 +105,6 @@ The PIxilate command is used to simulate discrete element detectors. MACOS calcu
 The PIxilate command has three arguments: the number of pixels per side (of the detector), the pixel width, and the element where the signal is to be PIxilated.
 
 Continuing our example, we use the pixilate command to get a closer look at the occulted and unocculted images at the first focus:
-
 
 Point-spread function Pixel boundaries Pixilated image
 
@@ -175,11 +172,7 @@ MACOS\> **win**
 
 #### COMPOSE
 
-The COMpose command defines the pixel size and dimensions for a detector window. It also sets up an accumulate option, whereby images from a series of propagations, under
-
-**Beam Propagation Commands**
-
-arbitrarily different conditions, can be incoherently added. It is useful for creating composite images from multiple-source or multiple-wavelength objects.
+The COMpose command defines the pixel size and dimensions for a detector window. It also sets up an accumulate option, whereby images from a series of propagations, under arbitrarily different conditions, can be incoherently added. It is useful for creating composite images from multiple-source or multiple-wavelength objects.
 
 COMpose images are created by successive applications of the ADD command. ADD propagates the current beam, pixilates the intensity to the COMpose grid, and adds it to what is already present. COMpose is also used with the NOIse and BLUR commands, to add simulated noise to an image. An example using the COMpose and ADD commands is presented in [Section ?](#add).
 
@@ -283,8 +276,6 @@ MACOS\> **fex *Find new exit pupil as well***
 |                 | 0.000000000D+00 | -1.263889675D-13                 |
 +-----------------+-----------------+----------------------------------+
 
-**Beam Propagation Commands**
-
     8.970665359D+00 7.975460281D+00
     Accept the new element? [YES]: yes
 
@@ -352,8 +343,6 @@ MACOS\> **gblur**
     Enter Gaussian blur kernel width in base units (0,0): [0.,0.]: 1d-6,1d-6
     Image added. Plot composed image? [YES]: yes
 
-**Beam Propagation Commands**
-
 Type \<RETURN\> for next page:
 
 MACOS\> **gblur**
@@ -391,19 +380,11 @@ Each element in the MACOS wavefront propagation matrix is a complex number which
 
 **FIGURE 58** Far-field gain of Luneberg Lens Antenna.
 
-
-
-
-
 ![](media/fig_rescued_59.png)
 
 **FIGURE 59** Graphing numbers in the complex plane
 
-The AMplitude and PHASE commands directly plot the corresponding components of the complex amplitude matrix. Figure 60 provides an example. The first plot shows the
-
-**Beam Propagation Commands**
-
-amplitude or length of the vector. The second plot shows the phase of the vector, or the angle which the vector makes with the real axis modulo 360 degrees. The AMplitude command requires the wavefront element number nElt as input.
+The AMplitude and PHASE commands directly plot the corresponding components of the complex amplitude matrix. Figure 60 provides an example. The first plot shows the amplitude or length of the vector. The second plot shows the phase of the vector, or the angle which the vector makes with the real axis modulo 360 degrees. The AMplitude command requires the wavefront element number nElt as input.
 
 This example uses CassWithExitPupil.in in Appendix A.1.4, at the detector (element 6): AMplitude propagates to the element and plots the amplitude; PHAse plots the phase of the same field.
 
@@ -518,8 +499,6 @@ The SLIce command is very similar to the WIRe command in that it displays the ar
 
 Figure 57 provides an illustration of the SLICE plot type.
 
-**Plot Type Commands**
-
 ![](media/fig_engine_62.png)
 
 **FIGURE 62** WIRe plot
@@ -558,8 +537,6 @@ This example uses CassWithExitPupil.in in Appendix A.1.4. Figure 64 shows the re
 The TEXt command writes the data points in the array to a file for further analysis. The file is in ASCII format and can be printed or read into a text editor. There are up to mdttl rows of numbers, each with up to mdttl numbers across: this can be quite a large file! The data points are the same as numbers used to create the graphical display. They are single precision. The TEXt command creates files as output and has no arguments. The filenames specify the contents and are of the format: \[filename\].\[image type\]\[surface number\].txt where \[image type\] can be in (intensity), am (amplitude), ph (phase), re (real), im (imaginary), spot, and OPD.
 
 This example uses CassWithExitPupil.in in Appendix A.1.4. The TEXt file is stored in **CassWithExitPupil.int5.txt**
-
-**Plot Type Commands**
 
 MACOS\>**text** MACOS\>**intensity**
 
