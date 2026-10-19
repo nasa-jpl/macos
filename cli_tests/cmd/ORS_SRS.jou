@@ -3,9 +3,11 @@
 #   detector (element 6).  The surface's focal length is first set 2.5% long with MODify; ORS
 #   recovers the design value (5.5601, pinned to 5 figures), SRS re-slaves the detector to it, and
 #   the OPD at the detector is back at the round-off floor (a bound, pin rule 1).
-# Leg 2, a starved deck: ImageDemo.in loses 726 of 741 rays before its exit pupil (surface misses
-#   at elements 5-8, finding 1.2 (cc)).  ORS used to print 'TTL OPD= NaN' there and offer a surface
-#   optimized on NaN comparisons (the manual's 10-19 morning transcript); the trial rms now counts
+# Leg 2, a starved deck: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to
+#   5 mm -- the defect the manual's extracted listing carried for a day (a PDF line wrap split
+#   '-3.536721061D-05' and the reader took the orphaned '05' as the next term; finding 1.2 (cc),
+#   resolved 2026-10-19), which loses 726 of 741 rays before the exit pupil.  ORS used to print
+#   'TTL OPD= NaN' there and offer a surface optimized on NaN comparisons; the trial rms now counts
 #   only rays that reach the surface, an empty trial is a huge merit, and a start with fewer than
 #   three data rays is named and aborted -- the must-fail leg: the pre-fix binary prints the NaN.
 # COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
@@ -23,6 +25,7 @@ srs
 yes
 opd 6
 /null
+! perl -i -pe 's/-3\.536721061D-05/5d0/' $TMP/ImageDemo.in
 old $TMP/ImageDemo.in
 ors
 12
