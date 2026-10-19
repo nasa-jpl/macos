@@ -358,8 +358,6 @@ MACOS\>
 
 ![](media/fig_engine_37.png)
 
-    OBS=ALL OBS=NEGATIVE
-
 **FIGURE 37** Exit pupil Spot diagrams with alternate OBS settings
 
 #### SEGRAYTRACE

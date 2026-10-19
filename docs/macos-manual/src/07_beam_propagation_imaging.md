@@ -429,8 +429,6 @@ MACOS\>**phase 6**
 
 ![](media/fig_engine_60.png)
 
-Amplitude Phase
-
 **FIGURE 60** AMplitude and PHAse example
 
 #### REAL and IMAGINARY
@@ -450,8 +448,6 @@ MACOS\>**real 6**
 REAl plots the real part and then the imaginary part (two pages):
 
 ![](media/fig_engine_61.png)
-
-Real part Imaginary part
 
 **FIGURE 61** REAl example
 
