@@ -1,8 +1,6 @@
-# Figure 31, DRAW views of ImageDemo.in: the telescope and relay lens, elements 0-8, and the relay close-up 6-8 in
-# the XZ plane.  The plane-parallel plate (9-10, Kr 1e22, no aperture) and the Return surfaces (11-12) draw as
-# kilometre-sized V shapes and swamp the view (PLAN_CONSOLIDATION 1.2 (bb); Dave 2026-10-19: 'figure 31 is a mess'), on the /png
-# device (giza writes a page when the next one opens, so the last view is drawn twice).  Pages land in
-# build/figs/fig31/; tools/regen_engine_figs.py puts the two views side by side as media/fig_rescued_31.png.
+# Figure 31, DRAW view of ImageDemo.in: the Cassegrain telescope, elements 0-5, in the XZ plane (drawn twice: giza
+# writes a page when the next one opens).  The relay view waits on the DRAW fix: every refractor surface draws as two
+# straight segments spanning the beam (PLAN_CONSOLIDATION 1.2 (bb); Dave 2026-10-19: 'figure 31 is a mess').
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in fig31
 cd $TMP/fig31
 old ImageDemo.in
@@ -10,17 +8,13 @@ pgd
 /png
 draw
 0
-8
+5
 xz
 draw
-6
-8
-xz
-draw
-6
-8
+0
+5
 xz
 ! mkdir -p $ROOT/docs/macos-manual/build/figs/fig31; cp $TMP/fig31/giza_*.png $ROOT/docs/macos-manual/build/figs/fig31/
 # EXPECT: Tracing rays past  13 elements
-# EXPECT: (DRAW: nDrawRay,midRay,iRayInc[\s\S]*){3}
+# EXPECT: (DRAW: nDrawRay,midRay,iRayInc[\s\S]*){2}
 # EXPECT-NOT: forrtl

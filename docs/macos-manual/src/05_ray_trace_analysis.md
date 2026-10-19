@@ -67,7 +67,7 @@ The result is shown in Figure 31. The system is somewhat aberrated, so the beam 
 
 ![](media/fig_engine_31.png)
 
-**FIGURE 31** DRAW views of ImageDemo.in
+**FIGURE 31** DRAW view of ImageDemo.in, the telescope (elements 0-5); the relay view waits on a DRAW repair -- a refractor surface draws as two straight segments spanning the beam
 
 2.  **MAP**
 
