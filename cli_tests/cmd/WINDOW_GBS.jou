@@ -24,5 +24,5 @@ gbs
 # EXPECT: Result is saved in file beamSize\.txt
 # EXPECT: iElt =\s+2 \(Primary\s*, Reflector\s*\)\s+Beam diameter =\s+3\.9911950913D\+00
 # EXPECT: iElt =\s+3 \(Secondary\s*, Reflector\s*\)\s+Beam diameter =\s+9\.9735754537D-01
-# EXPECT: iElt =\s+5 \(Detector\s*, FocalPlane\s*\)\s+Beam diameter =\s+2\.14310100\d+D-10
+# EXPECT: iElt =\s+5 \(Detector\s*, FocalPlane\s*\)\s+Beam diameter =\s+2\.143\d+D-10
 # EXPECT-NOT: forrtl

@@ -95,3 +95,5 @@ ifx vs gfortran: 1 of 160 decks differ
   /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12
 ifx vs gfortran: 1 of 160 decks differ
   /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12
+ifx vs gfortran: 1 of 160 decks differ
+  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12

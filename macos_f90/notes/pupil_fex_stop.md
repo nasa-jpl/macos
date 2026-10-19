@@ -405,3 +405,38 @@ CHIEF, so neither option models anisoplanatism.  Record + model memo:
 `ATMOS_placement.jou` (checker `cli_tests/tools/atmos_map_check.py`).
 Measuring a phase screen: read the OPD at the EXIT-PUPIL Reference, never at
 the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
+
+## ORS: the trial merit counts rays that REACH the trial surface; a starved start aborts (2026-10-19)
+*(User-facing: Manual §6 ORS / SRS, re-emitted on CassWithExitPupil.in.  PLAN_CONSOLIDATION 1.2 (w), Dave: fix now.)*
+- `RSTRACE` (tracesub.F) used to admit a data ray on `LRayOK .AND. LRayPass`.  `LRayPass` is the
+  DIFFRACTION pass flag that CPROPAGATE maintains; the ORS handler runs CTRACE, which never sets
+  it, so after a plain load only the chief ray qualified, the rms was `SQRT(0/0)` and the Brent
+  solve (`MNZPB` / `ZPSolve`) compared NaNs -- `TTL OPD= NaN`, and the "accepted" f was whatever
+  the NaN comparisons fell through to.  Now a ray counts on `LRayOK(iRay) .AND. RayStatus(iRay)
+  .EQ. RayStat_OK` (the chief on `LRayOK` alone, as before: an obscured chief still poses the
+  surface); a ray whose trial length is NaN (the TRIAL sphere missed it) leaves the rms; an
+  empty trial returns `RMSOPD = 1d30` so the bracketing walks away from it.
+- `CRSOPTIMIZE` counts the admissible data rays BEFORE the solve (`LRayOK(2:nRay)` with status OK)
+  and aborts under three (`ORS: only N of M test rays reach element iElt-1 (the surface before
+  it); at least 3 are needed.` / `ORS: command aborted.`), and aborts after the solve if the
+  minimum is still 1d30.  An abort in the handler's own style (bad element number) rather than
+  `Accept? [YES]` on f = 4e41 -- flagged to Dave as a refusal.
+- Measured on ImageDemo.in (the 3.2 listing): 726 of 741 rays lost before element 12, 555 of
+  them SURFACE MISSES at the secondary (92) and the first relay refractor (463), base binary and
+  fixed binary alike -- finding 1.2 (cc), open.  The deck also carries `PropType= Annulus` on
+  its obscurations, no PropType name (1.2 (dd)); the load warns and defaults.
+- Gate `cli_tests/cmd/ORS_SRS.jou`: CassWithExitPupil `mod fElt(5)=5.7` -> `ors 5` recovers
+  5.5601 (5 figures), `srs 6 5`, `opd 6` at the 1e-11 floor; ImageDemo `ors 12` aborts.  The
+  4d7b1aa1 binary fails it on exactly the abort line, the NaN, and MODify's stray
+  `Debug: VAR_NAM =` print (removed in macosio.F with this fix).
+
+## BEAM GAUSSIAN is normalized to the UNIFORM beam's flux; the truncated tail is lost (2026-10-19)
+*(Dave's ruling, PLAN_CONSOLIDATION 1.2 (y).  Manual §6 BEAM shows the sums.)*
+- Both Gaussian sites in sourcsub.F set `S = SQRT(Flux*2*dx^2 / (pi*wx*wy))`: the amplitude
+  `S exp(-(x/wx)^2-(y/wy)^2)` carries intensity `S^2 exp(-2r^2/w^2)`, whose integral over the
+  whole plane is `S^2 pi wx wy / 2` per `dx^2`, so the UNTRUNCATED beam carries `Flux` and a
+  beam the aperture truncates sums to LESS (the light outside is lost, never renormalized in).
+  Before, `S = SQRT(Flux)` put Flux at every ray: 218x the uniform sum at a 1 m waist.
+- CassWithExitPupil.in, `int 1`, 64-point grid: uniform 0.90636; waist 1.0 -> 0.57778; waist 2.0
+  -> 0.71750 (`cli_tests/cmd/BEAM_gaussian.jou`, 5 figures).  No core-corpus deck is Gaussian,
+  so the load A/B does not see this change.

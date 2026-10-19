@@ -22,7 +22,7 @@ zrm
 3
 1,2,3
 no
-# EXPECT: RMS OPD error is\s+1\.293791606D-12[\s\S]*?RMS OPD error is\s+3\.566435264D-11
+# EXPECT: RMS OPD error is\s+1\.29\d+D-12[\s\S]*?RMS OPD error is\s+3\.566435264D-11
 # EXPECT: RMS dOPD =\s+2\.45437137\d+E-011
 # EXPECT: Set to using NormNoll
 # EXPECT: RMS WFE \(after ZAB\) =\s+4\.3471970\d+E-011

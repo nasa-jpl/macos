@@ -1,4 +1,4 @@
-# sed -i.bak below: the one in-place form GNU and BSD sed both take (the bare -i is GNU-only; CCMac's Mac gate, 2026-10-19).
+# perl -i -pe below: the deck edits run the same on GNU and BSD (sed -i and \n in a replacement are GNU-only; CCMac's Mac gates, 2026-10-19).
 # Polygon obscurations, the three prescription forms, on the manual's Cassegrain (manual 4, Obscurations and
 # Apertures; the keys are PolyObsVec= / Poly3DObsVec= and the 2-D ObsVec= form of ObsType= Polygon).  The
 # entrance Obscuring element's circle (r 0.5) + spider loses 121 of the 1877 rays; replaced by a 1 m square
@@ -13,13 +13,13 @@ old $DECK
 none
 opd 5
 ! cp $DECK p3d.in; cp $DECK pdef.in; cp $DECK p2d.in
-! sed -i.bak -e '/ObsType=\|ObsVec=/d' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nPolyObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2/' p3d.in
+! perl -i -pe '$_ = "" if /ObsType=|ObsVec=/; s/nObs=  3/nObs=  1\nObsType= Polygon\nPolyObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2/' p3d.in
 old p3d.in
 opd 5
-! sed -i.bak -e '/ObsType=\|ObsVec=/d' -e '1,/iElt=  2/{/xObs=/d}' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nPoly3DObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2\nxObs= 1 0 0/' pdef.in
+! perl -i -pe '$_ = "" if /ObsType=|ObsVec=/; $_ = "" if (($. == 1)../iElt=  2/) and /xObs=/; s/nObs=  3/nObs=  1\nObsType= Polygon\nPoly3DObsVec= 4\n0.5 0.5 -4.2\n-0.5 0.5 -4.2\n-0.5 -0.5 -4.2\n0.5 -0.5 -4.2\nxObs= 1 0 0/' pdef.in
 old pdef.in
 opd 5
-! sed -i.bak -e '/ObsType=\|ObsVec=/d' -e 's/nObs=  3/nObs=  1\nObsType= Polygon\nObsVec= 0 0 4\n0.5 0.5\n-0.5 0.5\n-0.5 -0.5\n0.5 -0.5/' p2d.in
+! perl -i -pe '$_ = "" if /ObsType=|ObsVec=/; s/nObs=  3/nObs=  1\nObsType= Polygon\nObsVec= 0 0 4\n0.5 0.5\n-0.5 0.5\n-0.5 -0.5\n0.5 -0.5/' p2d.in
 old p2d.in
 opd 5
 ! grep -c 'xObs=' pdef.in
