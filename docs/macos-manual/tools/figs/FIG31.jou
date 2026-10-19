@@ -1,8 +1,8 @@
 # Figure 31, DRAW views of ImageDemo.in: elements 0-11 and the close-up 6-11 in the XZ plane, on the /png
 # device (giza writes a page when the next one opens, so the last view is drawn twice).  Pages land in
 # build/figs/fig31/; tools/regen_engine_figs.py puts the two views side by side as media/fig_rescued_31.png.
-# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
-cd $TMP
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in fig31
+cd $TMP/fig31
 old ImageDemo.in
 pgd
 /png
@@ -18,7 +18,7 @@ draw
 6
 11
 xz
-! mkdir -p $ROOT/docs/macos-manual/build/figs/fig31; cp $TMP/giza_*.png $ROOT/docs/macos-manual/build/figs/fig31/
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig31; cp $TMP/fig31/giza_*.png $ROOT/docs/macos-manual/build/figs/fig31/
 # EXPECT: Tracing rays past  13 elements
 # EXPECT: (DRAW: nDrawRay,midRay,iRayInc[\s\S]*){3}
 # EXPECT-NOT: forrtl

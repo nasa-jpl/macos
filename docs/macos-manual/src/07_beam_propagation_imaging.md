@@ -39,7 +39,7 @@ Off-axis images are passed with very little attenuation, yielding near-ideal PSF
 
 The prescription and macro for generating the results plotted in this section are coroExample.in and coroExample.jou, respectively. These files are listed in Appendix A.6.
 
-![](media/image88.png){width="5.0in" height="1.9in"}
+![](media/fig_engine_47.png)
 
 **FIGURE 47** DRAW sketch of coroExample.in system.
 
@@ -67,7 +67,7 @@ MACOS\> **mod**
     Peak intensity= 3.7152264D-02; Peak occurs at i= 257, j= 257
     Sum of intensity= 8.7709310D-01 MACOS>
 
-![](media/image89.png){width="2.890972222222222in" height="2.7465277777777777in"}
+![](media/fig_engine_48.png)
 
 **FIGURE 48** Unocculted image at first focal plane (coronagraph example)
 
@@ -96,7 +96,7 @@ MACOS\> **int 11**
 
 MACOS\>
 
-![](media/image90.png){width="2.0701388888888888in" height="2.066666666666667in"}
+![](media/fig_engine_49.png)
 
 **FIGURE 49** On-axis beam profile at a pupil; at the Lyot stop; and at the detector (coronagraph example)
 
@@ -152,11 +152,11 @@ An example of setting the stretch is:
 
 MACOS\> **stretch**
 
-![](media/image92.png){width="2.04375in" height="2.1069444444444443in"}
+![](media/fig_engine_51.png)
 
 **FIGURE 51** Pixilated images at first focal plane (coronagraph example)
 
-![](media/image94.png){width="1.95in" height="2.033333333333333in"}
+![](media/fig_engine_52.png)
 
 **FIGURE 52** Pixilated images at log10 and sqrt stretch (coronagraph example)
 
@@ -209,7 +209,7 @@ MACOS\> **add**
     Peak intensity= 3.8883158D-04; Peak occurs at i= 257, j= 257 Sum of intensity= 4.4725467D-02
     Image added. Plot composed image? [YES]: yes
 
-![](media/image96.png){width="2.0618055555555554in" height="2.1in"}
+![](media/fig_engine_53.png)
 
 **FIGURE 53** Axial image ADDed to begin composed image.
 
@@ -307,7 +307,7 @@ MACOS\> **int *This image is shown in Figure 54***
     x-y plane diam= 7.1158918D-04 dx= 1.3925425D-06
     Peak intensity= 3.7145605D-04; Peak occurs at i= 257, j= 257 Sum of intensity= 8.6867251D-03
 
-![](media/image97.png){width="2.6798611111111112in" height="2.7729166666666667in"}
+![](media/fig_engine_54.png)
 
 **FIGURE 54** Off-axis image at the first focus, showing closeness to occulting mask.
 
@@ -325,7 +325,7 @@ MACOS\> **add *Now the off-axis star is added to the composed image (Figure 55)*
     Peak intensity= 2.2644562D-04; Peak occurs at i= 257, j= 257 Sum of intensity= 6.8026488D-03
     Image added. Plot composed image? [YES]: yes
 
-![](media/image98.png){width="2.689583333333333in" height="2.7868055555555555in"}
+![](media/fig_engine_55.png)
 
 **FIGURE 55** Off-axis image added to composed detector image. Note that the image dynamic range is about 1, while the objects differ by 100 in flux.
 
@@ -367,7 +367,7 @@ MACOS\> **gblur**
 
 Type \<RETURN\> for next page: MACOS\>
 
-![](media/fig_rescued_56.png)
+![](media/fig_engine_56.png)
 
 **FIGURE 56** GBLUR example: the coronagraph's composed detector image (CoroExample.in, element 16, 128 pixels of 1.39 µm) after a 0.1 µm kernel, far below the pixel (left), and after a 20 µm kernel (right); each from a fresh COMPOSE.
 
@@ -383,11 +383,11 @@ The GAIn command computes the ratio of the light diffracted by the optical syste
 
 Each element in the MACOS wavefront propagation matrix is a complex number which can be expressed in terms of its real and imaginary components (i.e., a + b\*i where a and b are real numbers). This complex number is a vector in the complex plane with two components, real and imaginary as shown in Figure 59.
 
-![](media/image99.png){width="3.540277777777778in" height="2.8270833333333334in"}
+![](media/fig_engine_57.png)
 
 **FIGURE 57** Composed detector image displayed at linear stretch, slice plot type.
 
-![](media/fig_rescued_58.png)
+![](media/fig_engine_58.png)
 
 **FIGURE 58** Far-field gain of Luneberg Lens Antenna.
 
@@ -403,21 +403,35 @@ The AMplitude and PHASE commands directly plot the corresponding components of t
 
 **Beam Propagation Commands**
 
-MACOS\>**amp**
-
 amplitude or length of the vector. The second plot shows the phase of the vector, or the angle which the vector makes with the real axis modulo 360 degrees. The AMplitude command requires the wavefront element number nElt as input.
 
-This example uses CassWithExitPupil.in in Appendix A.1.4.
+This example uses CassWithExitPupil.in in Appendix A.1.4, at the detector (element 6): AMplitude propagates to the element and plots the amplitude; PHAse plots the phase of the same field.
 
-    Enter element where WF is to be plotted:5 Wavefront plane 1 is evaluated at this element. Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06; Transmission Distance= 5.5601459D+00 u-v plane diam= 8.4230375E+00 du= 3.3031520E-02
-    x-y plane diam= 1.6767097E-04 dx= 6.5753318E-07
+MACOS\>**amp 6**
 
-![](media/image105.png){width="1.9833333333333334in" height="2.079861111111111in"}
+    Enter number of element where data is to be generated: [6]: 6
+    Tracing       125 rays and propagating     65536 grid points...
+    ===> 2: Far-field sphere-to-plane diffraction ...
+     Scalar FF Prop between Elt  5 and Elt  6 to WF  1:
+     z1= 5.5601D+00 dx1= 7.6216D-02 min= 7.6183D-02 max= 8.4127D-01 dev= 3.0183D-05 lin= 99.96%
+     z2= 0.0000D+00 dx2= 2.8497D-07
+    Wavefront Propagation Data Summary:
+    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
+    u-v plane diam= 1.9435037D+01  du= 7.6215832D-02
+    x-y plane diam= 7.2667666D-05  dx= 2.8497124D-07
+    Peak amplitude= 1.0507790D+04; Peak occurs at i=  129, j=  129
+
+MACOS\>**phase 6**
+
+    Enter number of element where data is to be generated: [6]: 6
+    Wavefront Propagation Data Summary:
+    ...
+
+![](media/fig_engine_60.png)
 
 Amplitude Phase
 
-**FIGURE 60** AMplitude example
+**FIGURE 60** AMplitude and PHAse example
 
 #### REAL and IMAGINARY
 
@@ -425,15 +439,17 @@ As discussed in [Section ?](#amplitude-and-phase), the wavefront propagation mat
 
 This example uses CassWithExitPupil.in in Appendix A.1.4.
 
-MACOS\>**real**
+MACOS\>**real 6**
 
-    Enter element where WF is to be plotted:5 Wavefront plane 1 is evaluated at this element. Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06; Transmission Distance= 5.5601459D+00 u-v plane diam= 8.4230375E+00 du= 3.3031520E-02
-    x-y plane diam= 1.6767097E-04 dx= 6.5753318E-07 Type <RETURN> for next page:
+    Enter number of element where data is to be generated: [6]: 6
+    Wavefront Propagation Data Summary:
+    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
+    u-v plane diam= 1.9435037D+01  du= 7.6215832D-02
+    x-y plane diam= 7.2667666D-05  dx= 2.8497124D-07
 
-Type \<RETURN\> for next page: MACOS\>
+REAl plots the real part and then the imaginary part (two pages):
 
-![](media/image107.png){width="1.9701388888888889in" height="2.020138888888889in"}
+![](media/fig_engine_61.png)
 
 Real part Imaginary part
 
@@ -488,13 +504,17 @@ The GRAy command resets the type of plot to GRAy scale. This is the default plot
 
 The WIRe command takes all the values in an array and first plots them as three dimensional points. Then each point is then connected to its nearest neighbor on the grid by a line. Perspective is added and the obscured lines are removed. The result is a surface-like representation of the data as shown in Figure 62. There is no scale on the graph. The WIRe command is always used in conjunction with other commands and has no arguments.
 
-MACOS\>**wire** MACOS\>**in**
+MACOS\>**wire**
 
-    Enter element where WF is to be plotted:5 Wavefront plane 1 is evaluated at this element. Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06; Transmission Distance= 5.5601459D+00 u-v plane diam= 8.4230375E+00 du= 3.3031520E-02
-    x-y plane diam= 1.6767097E-04 dx= 6.5753318E-07 Type <RETURN> for next page:
+     Plot type set to WIRE
 
-MACOS\>
+MACOS\>**int 6**
+
+    Enter number of element where data is to be generated: [6]: 6
+    ...
+    Peak intensity= 1.1041365D+08; Peak occurs at i=  129, j=  129
+
+(CassWithExitPupil.in at the detector, IMGMODE CONV; Figure 62.)
 
 #### SLICE
 
@@ -504,7 +524,7 @@ Figure 57 provides an illustration of the SLICE plot type.
 
 **Plot Type Commands**
 
-![](media/image109.png){width="3.563888888888889in" height="2.9930555555555554in"}
+![](media/fig_engine_62.png)
 
 **FIGURE 62** WIRe plot
 
@@ -529,11 +549,11 @@ The COLumn and ROW commands set the plot type to display a slice across the data
 
 This example uses CassWithExitPupil.in in Appendix A.1.4. Figure 64 shows the results.
 
-![](media/image110.png){width="2.8in" height="2.7597222222222224in"}
+![](media/fig_engine_63.png)
 
 **FIGURE 63** CONtour example
 
-![](media/image111.png){width="3.4923611111111112in" height="2.7333333333333334in"}
+![](media/fig_engine_64.png)
 
 **FIGURE 64** COLumn example
 

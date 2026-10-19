@@ -99,7 +99,7 @@ Geometric optics capture the *particle nature* of light. In geometric optics, li
 
 Ray-tracing is an extremely valuable tool for determining the performance of optical systems. For example, characteristics of a well-designed imaging system include an extremely small *spot diagram* at the detector focal plane. Spot diagrams are plots of the pierce points of a ray bundle on a surface, and a small spot indicates a tight focus. An example is provided by the Cassegrain telescope of Figure 3. Two spot diagrams are shown in Figure 4. The unaberrated telescope indeed has a focus at a single spot (diameter is approximately 10-10 in arbitrary units). Misaligning the primary mirror causes the spot to spread as shown in Figure 4 to approximately 2x10-8.
 
-![](media/image8.png){width="2.9811023622047244in" height="3.1102362204724407in"}![](media/image9.png){width="3.819291338582677in" height="2.9354330708661416in"}
+![](media/fig_engine_03.png)
 
 Spot diagram at entrance pupil
 
@@ -113,7 +113,7 @@ The predictions of geometric optics are exact only in cases where the wavelength
 
 One thing that ray-tracing cannot do is predict the intensity pattern of a focused spot. For that, use the image simulations features decribed in Section 7.
 
-![](media/image10.png){width="3.695275590551181in" height="3.0in"}![](media/image11.png){width="2.9618110236220474in" height="3.017322834645669in"}
+![](media/fig_engine_04.png)
 
 Focal plane spot diagram Focal plane spot diagram
 
@@ -133,7 +133,7 @@ Physical optics capture the *wave nature* of light. In physical optics, Huygenâ€
 
 **FIGURE 5** Exit pupil for Cassegrain.in
 
-![](media/image17.png){width="5.949305555555555in" height="3.129861111111111in"}
+![](media/fig_engine_06.png)
 
 *Left: unaberrated (defocused).  Right: aberrated OPD (coma).*
 
@@ -203,7 +203,7 @@ source. Without aberrations, geometrical optics predicts infinitely small images
 
 The simplest and most common PSF calculation uses a ray trace to compute the OPD in the exit pupil of the optical system followed by a single *far-field diffraction propagation* to the focal plane. Figure 10 shows the PSFs computed by MACOS for the Cassegrain telescope calculated in this fashion (see Figure 6 for the OPD maps).
 
-![](media/image20.png){width="2.97007874015748in" height="3.0181102362204726in"}![](media/image21.png){width="2.8751968503937007in" height="3.0090551181102363in"})
+![](media/fig_engine_10.png)
 
 Unaberrated (defocused) Aberrated OPD (coma)
 

@@ -1,0 +1,21 @@
+# Figure 10 (Section 2): CassWithExitPupil.in, the PSF at the detector (element 6) defocused and with coma
+# (examples/CassWithExitPupil.jou: 64-point grid, STOP at the object point, FEX at 5, INT at 6).  Pages: 0 nominal
+# (defocused), 1 coma.  fig_engine_10.png = [0 | 1].
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in fig10
+# DEADLINE: 300
+cd $TMP/fig10
+old CassWithExitPupil.in
+mod ngridpts=64
+q
+stop obj 0,0,0
+fex 5 yes
+pgd
+/png
+int 6
+perturb 2 global 0,1e-4,0 0,0,0
+fex 5 yes
+int 6
+int 6
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig10; cp $TMP/fig10/giza_*.png $ROOT/docs/macos-manual/build/figs/fig10/
+# EXPECT: (Peak intensity=[\s\S]*){3}
+# EXPECT-NOT: forrtl
