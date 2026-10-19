@@ -6,7 +6,8 @@ Windows configure smoke).  **The Mac is yours**: the same gate on Apple Silicon,
 clone, and `MAC_PORT.md` rewritten as the record of that run (today it still says "nothing
 validated" in its first half and carries the 2026-07-22 hardware pass in its second).
 
-Wait for the SHA.  CC names one pair (macos `dev-candidate` + MACOS_resources `dev-candidate`)
+**The pair for this run (CC, 2026-10-19, pushed): macos `22750d4b` + MACOS_resources `e211fe4`** (the engine was gated
+at dfc2b476; 22750d4b adds the gate records).  Wait for the SHA.  CC names one pair (macos `dev-candidate` + MACOS_resources `dev-candidate`)
 after each Linux gate goes green; run on that pair, never on a tip you pulled yourself.  Open
 engine items are still landing (today: CALIB keys in SAVE, the output-coordinate proposal, the
 numeric PropType resolution), so a run on an unnamed tip measures a moving target.

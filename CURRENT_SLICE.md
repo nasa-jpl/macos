@@ -37,7 +37,8 @@
 > LOCAL) -- found the VarElt-all-zero miss (aad6400f).  Shared-tree cmd suite 102/102 both compilers at d0f5192e.
 > Gate at 7625edc5: ONE mover (Rx_BeamRows.in, OptBeamDir re-unitized per load) -> 64-ulp dead band dfc2b476; **GATE GREEN at
 > dfc2b476** (load 160/160, cmd 102/102, ab 0 movers, both compilers; PLAN_CONSOLIDATION §5 line); finding (v) api save_rx's
-> stray YES.  LOCAL, unpushed: macos a0dcd3c1..dfc2b476 (+ the records commit), resources 9d79545 e211fe4 -- Dave's push.  `BRIEF_ccmac_prerelease.md` written (Dave asked).  Committed d0f5192e adf837cc 53767f46 aad6400f 7625edc5 (core 156 -> 160 with the shared-corpus copies);
+> stray YES.  PUSHED on Dave's word 2026-10-19 morning: macos ac175c0f..22750d4b, resources a599f34..e211fe4.  CCMac's SHA pair for
+> `BRIEF_ccmac_prerelease.md`: macos 22750d4b (engine gated at dfc2b476) + resources e211fe4.  `BRIEF_ccmac_prerelease.md` written (Dave asked).  Committed d0f5192e adf837cc 53767f46 aad6400f 7625edc5 (core 156 -> 160 with the shared-corpus copies);
 > cmdref regenerated.  NEXT (CC): the §6.2 chapters; TO's / CCMac's landings to gate; phase-4 prep.  Dave: the push; the CCMac brief
 > hand-off (`BRIEF_ccmac_prerelease.md`); the bindings lane for finding (v).
 > Gotcha found: in a `!` journal line `&&` ends the command and `$?` is unreliable -- use `if cmp -s ...` (README).**
