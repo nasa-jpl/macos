@@ -1,4 +1,5 @@
-# Figure 31, DRAW views of ImageDemo.in: elements 0-11 and the close-up 6-11 in the XZ plane, on the /png
+# Figure 31, DRAW views of ImageDemo.in: the physical train, elements 0-10, and the relay close-up 6-10 in the XZ
+# plane (the two Return surfaces 11-12 draw at their 1e22 nominal size and swamp the view -- Dave 2026-10-19), on the /png
 # device (giza writes a page when the next one opens, so the last view is drawn twice).  Pages land in
 # build/figs/fig31/; tools/regen_engine_figs.py puts the two views side by side as media/fig_rescued_31.png.
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in fig31
@@ -8,15 +9,15 @@ pgd
 /png
 draw
 0
-11
+10
 xz
 draw
 6
-11
+10
 xz
 draw
 6
-11
+10
 xz
 ! mkdir -p $ROOT/docs/macos-manual/build/figs/fig31; cp $TMP/fig31/giza_*.png $ROOT/docs/macos-manual/build/figs/fig31/
 # EXPECT: Tracing rays past  13 elements

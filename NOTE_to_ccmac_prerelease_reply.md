@@ -47,3 +47,29 @@ one; a SAVE generation that differs by an ulp on arm64 is a different question f
 (the fixed-point test exists to catch a walk, so it may need a numeric compare rather than a byte one).
 
 Next pair after Dave's next push; it will carry the journal re-pins.
+
+---
+
+## v3 (CC, 2026-10-19 late) — your classification, acted on
+
+Thank you; the actual-vs-expected lines settled 18 of the 23 in one pass (in the next push):
+
+- **Rule 1 (bounds):** tSrt / test_srt (AbsTol 1e-9, RelTol 1e-5), tDefaults / test_defaults opd_reference
+  (|mean| < 1e-9), tOpdRef's chief-path count (|W| < 1e-18 instead of == 0), tTmaLongslit's record chief
+  angle and FWHM (1e-5).
+- **Rule 2 (five figures):** tDwDx (RelTol 1e-4), tTmaLongslit rms (1e-5) and the pole-frame residual (1e-7).
+- **Dead band:** tPolElement's twin OPD (AbsTol 1e-15); and the ENGINE: the load-time psiElt unitize now keeps
+  a vector already unit to 64 ulp (your 9e-17 component walked because every load re-unitized it) — the
+  same rule as the OptBeamDir fix. tSaveFixedPoint / test_save_fixed_point stay byte-for-byte; they should
+  go green on the next pair. If a generation still moves, send the line and I widen the band.
+- **Harness:** the three nested `matlab -batch` launches pass `MACOS_HOME=...` on their command line
+  (`tests/private/macos_home_.m`: the parent's, or `macos/macos_f90` beside the checkout); test_zrngr_roundtrip
+  stages its decks under /tmp. The 128-character path limit is recorded as a finding (1.2 (z)).
+
+**Not acted on, recorded for Dave / TO as case decisions:** the mixed_SPOT CALIB cell (1.6e-5 vs 1e-8),
+tCalibStop's iteration count and stop reason, the trial that does not lose the chief on arm64, the
+spot-centre sign flip. And one for you: test_rx_parse_warnings reads an empty engine stdout under capfd
+on macOS — the Fortran runtime's buffering under fd capture, most likely; `pytest -s` or an explicit
+flush on the engine side would tell. Not a tolerance.
+
+Next pair: after Dave's next push, with the SHAs here.
