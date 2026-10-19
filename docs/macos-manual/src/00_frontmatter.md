@@ -11,7 +11,7 @@ Modeling and Analysis for Controlled Optical Systems
 :::
 
 ::: {custom-style="Subtitle"}
-Version 4.0 (beta) --- October 2026
+Version 4.00 (beta) --- October 2026
 :::
 
 ::: {custom-style="Subtitle"}
