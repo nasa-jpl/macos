@@ -18,6 +18,9 @@ TITLE      := MACOS Manual
 
 PANDOC_OPTS := --resource-path=src --toc --toc-depth=3 \
                --metadata title="$(TITLE)"
+# the docx (and the PDF made from it) has a cover page and a Word contents field in
+# src/00_frontmatter.md instead of pandoc's title block and front TOC (Dave 2026-10-19)
+DOCX_OPTS  := --resource-path=src
 
 CMDSRC     := $(sort $(wildcard cmdref/[0-9]*.md))
 CMDREF_OPTS := --resource-path=cmdref --toc --toc-depth=2 \
@@ -53,7 +56,7 @@ pdf:  $(BUILD)/macosMan.pdf
 NUMBER     := --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
 
 $(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua tools/figure_captions.lua | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
+	$(PANDOC) $(DOCX_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
 $(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua tools/figure_captions.lua tools/manual.css | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \

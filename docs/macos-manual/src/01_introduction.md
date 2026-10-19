@@ -68,6 +68,10 @@ A summary of changes since MACOS 3.2:
 
 -   Graceful Ctrl-C. SIGINT installs a clean-exit handler at start-up; pressing Ctrl-C at the MACOS\> prompt prints 'MACOS: interrupted' and exits cleanly, replacing the Intel-runtime 'forrtl: severe (69)' traceback.
 
+-   Design optimization (CALIB). The native multi-field optimizer, never described in the 3.2 manual, is documented: the CALib command and its companions (SETC, AVAR, MVAR, DVAR, VARS, AFOV, DFOV, SFOV, FOVS, WLENS) run a Levenberg-Marquardt least-squares solve over the rigid-body, radius, conic, aspheric and Zernike degrees of freedom of the variable elements, scored at up to 12 fields and 6 wavelengths against a wavefront, spot, Zernike-mode or beam target, with bounds through the SLSQP driver.  Section 4 (Table 13) is the keyword reference; the Command Reference carries the dialogs; the setup is written by SAVE and announced at every load.
+
+-   Metrology (MET). The metrology model -- per-element metrology points and target surfaces (`nMetPos=`, `tMetElt=`, `EdgeSensors=`) and the METCALC command that computes every metrology beam length and the edge-sensor readings -- is in the Command Reference (METcalc, which lists the prescription keys); the MATLAB design package's `add_met`, `edge_sensors` and `dmet_dx` build and differentiate metrology layouts on a prescription.
+
 -   Design-optimization keyword reference.  The `Opt*` / `VarElt=` prescription keywords that set up CALib are tabulated with their defaults in Section 4 (Table 13), together with the solver's stopping rule.
 
 -   HELP command rebuilt. All \~140 dispatched commands are now listed (vs. \~75 in v3.2), grouped into 15 categories with one-line effect descriptions and prerequisite tags (\[Rx\] / \[BLD\] / \[DIFF\]). See §3.2 and Appendix C.

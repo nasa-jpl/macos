@@ -24,6 +24,15 @@
 
 ## Active slice
 
+> **2026-10-19 evening (CC): PUSHED on Dave's word (macos c13b36bb merge of CCMac's 985913a1/b9b459bc + mine; resources
+> 5c9026f).  Dave's five manual items DONE LOCAL: (1) front matter = GitHub clone + build instructions; (2) New Features
+> gains CALIB and MET entries; (3) cover page (page 0, Title/Subtitle styles), a Word contents field after it, a PAGE-field
+> footer from reference.docx (make_reference_docx.py injects footer1 + sectPr), `\newpage` raw-TeX marker handled by
+> number_sections.lua; the docx build drops pandoc's title/--toc (DOCX_OPTS), the HTML keeps them; (4) the Lawrence
+> citation -> Goodman + Sziklas-Siegman; (5) the 16 SHOW/prescription printouts the Word conversion had cast as grid
+> tables (03: 1, 04: 13, 05: 2) restored as code blocks from `pdftotext -layout macosMan3.2.pdf` (scratch
+> man32_layout.txt; the Zernike example straddled a 3.2 page break).  NEXT: Section 7 transcripts; §6.2 chapters.**
+
 > **2026-10-19 afternoon (CC): figures the 3.2 way (d92656cc: panel labels drawn under their panels, images and FIGURE
 > lines centered via tools/figure_captions.lua + Figure/FigureCaption styles); edit copies refreshed (ace03c21 and after
 > each rebuild -- Dave's Writer window still holds the 10-18 copy, close without saving and reopen); **Section 6 done**
