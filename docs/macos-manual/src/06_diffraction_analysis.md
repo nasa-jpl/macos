@@ -218,37 +218,13 @@ NOTE: ORS may not find the optimal reference surface for systems with a large am
 
 The ORS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. For example, using the CoroExample.in near-field example of Appendix A: elements 5 and 7 are the reference surfaces that bracket the near-field propagation to the coronagraph mask (PropType NF1 on element 5). To show ORS at work, element 5's focal length is first set 4% long with MODify, and ORS recovers the design value (fElt = 6.3293) to the solve tolerance, a hundredth of a wave:
 
-MACOS\>**mod**
-
-    MOD: [q]: fElt(5)=6.6
-    fElt(  5) =   6.600000000D+00
-    KrElt(  5) =  -6.600000000D+00
-    MOD: [q]: q
-
-MACOS\>**ors**
-
-    Enter number of element to be optimized: [1]: 5
-    Reference surface optimization results:
-    TTL OPD=  9.264281133D-12  nCalls=  27
-      Old f=  6.600000000D+00   New f=  6.329334638D+00
-      Old z=  6.329334641D+00   New z=  6.329334638D+00
-    Old psi=  0.000000000D+00 New psi=  0.000000000D+00
-              0.000000000D+00           0.000000000D+00
-              1.000000000D+00           1.000000000D+00
-    Old Vpt=  0.000000000D+00 New Vpt=  0.000000000D+00
-              0.000000000D+00           0.000000000D+00
-             -4.829334641D+00          -4.829334641D+00
-    Accept the new element data? [YES]: yes
+<!-- transcript: s06_ors_coro -->
 
 An exit-pupil Return surface for a far-field propagation is set up with FEX (Section 5), not ORS.
 
 The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. A copy of ImageDemo.in (Appendix A) with a 5 mm Zernike coefficient on its primary, which loses all but 15 of its 741 rays, shows the message:
 
-MACOS\>**ors**
-
-    Enter number of element to be optimized: [1]: 12
-    ORS: only     0 of   317 test rays reach element  11 (the surface before it); at least 3 are needed.
-    ORS: command aborted.
+<!-- transcript: s06_ors_starved -->
 
 #### SRS
 
@@ -260,35 +236,9 @@ SRS first relocates the reference surface so that the chief ray intersects the v
 
 The SRS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. Continuing the CoroExample.in example, the second near-field reference surface (element 7, the end of the propagation through the coronagraph mask) is slaved to the first (element 5). To show SRS at work, element 7 is first disturbed with MODify (focal length 7.0, zElt -7.0); SRS puts it back at the design radius 6.3293, sharing element 5's center of curvature, and keeps zElt negative, the sign of a diverging beam at the end of a through-focus propagation (Table 14):
 
-MACOS\>**mod**
+<!-- transcript: s06_srs_coro -->
 
-    MOD: [q]: fElt(7)=7.0
-    fElt(  7) =   7.000000000D+00
-    KrElt(  7) =  -7.000000000D+00
-    MOD: [q]: q
-
-MACOS\>**mod**
-
-    MOD: [q]: zElt(7)=-7.0
-    zElt(  7) =  -7.000000000D+00
-    MOD: [q]: q
-
-MACOS\>**srs**
-
-    Enter number of element to be slaved: [1]: 7
-    Enter number of element to slave to: [1]: 5
-    Reference surface recalculation results:
-      Old f=  7.000000000D+00   New f=  6.329334641D+00
-      Old z= -7.000000000D+00   New z= -6.329334641D+00
-    Old psi=  0.000000000D+00 New psi=  0.000000000D+00
-              0.000000000D+00           0.000000000D+00
-             -1.000000000D+00          -1.000000000D+00
-    Old Vpt=  0.000000000D+00 New Vpt=  0.000000000D+00
-              0.000000000D+00           0.000000000D+00
-              7.829334641D+00           7.829334641D+00
-    Accept the new element? [YES]: yes
-
-The near-field propagation to the mask (INT 7) then reproduces the design deck's result exactly. The pair can be slaved in either order: slaving element 5 to element 7 returns zElt +6.3293, the converging sign at the start of the propagation. For a far-field pair the second surface can be the focal plane itself (in CassWithExitPupil.in, the detector slaved to the exit-pupil surface).
+The near-field propagation to the mask (INT 7) then agrees with the design deck's to five figures (peak intensity 1.3052e-5). The pair can be slaved in either order: slaving element 5 to element 7 returns zElt +6.3293, the converging sign at the start of the propagation. For a far-field pair the second surface can be the focal plane itself (in CassWithExitPupil.in, the detector slaved to the exit-pupil surface).
 
 #### REGRID
 

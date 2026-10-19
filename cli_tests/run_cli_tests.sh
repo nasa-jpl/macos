@@ -4,7 +4,8 @@
 #   ./run_cli_tests.sh load            the load gate on the CORE corpus, both compilers
 #   ./run_cli_tests.sh corpus          the load gate on EVERY committed deck (weekly / A/B)
 #   ./run_cli_tests.sh extended        ... plus the untracked sandbox decks (informational)
-#   ./run_cli_tests.sh cmd             (sec. 2.2, not yet) one journal per cmdref entry
+#   ./run_cli_tests.sh cmd             (sec. 2.2) one journal per cmdref entry
+#   ./run_cli_tests.sh transcripts     the manual's dialog journals (docs/macos-manual/tools/transcripts)
 #   ./run_cli_tests.sh ab <pre> <post> [kind] [allow]   (sec. 2.3) the load-gate RECORDS at two
 #                                      SHAs compared deck by deck, both compilers; kind = load
 #                                      (default) | corpus; allow = a file naming the decks the
@@ -12,7 +13,7 @@
 #                                      Exit 1 on an unnamed mover or an ok -> not-ok deck.  The
 #                                      records must exist: run `load`/`corpus` from the clean
 #                                      worktree at each SHA first (see README).
-#   ./run_cli_tests.sh full            load + cmd (ab needs its two SHAs)
+#   ./run_cli_tests.sh full            load + cmd + transcripts (ab needs its two SHAs)
 #
 # Records: cli_tests/records/<kind>_<compiler>_<sha>[+dirty].csv -- the record IS the
 # result; this script prints the summary, writes <kind>_<compiler>_latest.txt, and
@@ -55,6 +56,19 @@ case "$kind" in
       awk -F, 'NR>1 && $2=="journal" && $3!="pass" {bad=1} NR>1 && $2=="must_fail" && $3=="pass" {bad=1} END {exit bad}' "$rec" || fail=1
     done
     exit ${fail:-0} ;;
+  transcripts)
+    # the manual's dialogs are journals too: docs/macos-manual/tools/transcripts/*.jou, the journals
+    # tools/regen_transcripts.py prints (BRIEF_to_manual_regen) -- a kind of its own, so the cmd
+    # record's count keeps its meaning
+    for comp in ifx gfortran; do
+      [ -n "${MACOS_CLI_ONLY:-}" ] && [ "$MACOS_CLI_ONLY" != "$comp" ] && continue
+      case $comp in ifx) bin="$tree/build_release/bin/macos" ;; gfortran) bin="$tree/build_release_gfortran/bin/macos" ;; esac
+      [ -x "$bin" ] || { echo "== $comp: no binary (skipped)"; continue; }
+      rec="$here/records/transcripts_${comp}_${sha}.csv"; echo "== $comp: manual transcript journals -> $rec"
+      python3 "$here/cli_cmd_gate.py" "$bin" "$root/docs/macos-manual/tools/transcripts" "$rec" | tee "$here/records/transcripts_${comp}_latest.txt"
+      awk -F, 'NR>1 && $3!="pass" {bad=1} END {exit bad}' "$rec" || fail=1
+    done
+    exit ${fail:-0} ;;
   manual)
     # Dave 2026-10-09: load and re-emit the manual's example decks for documentation --
     # the load gate's FIRST SAVE of each, kept as docs/macos-manual/examples/emitted/<name>.in
@@ -76,8 +90,8 @@ case "$kind" in
       [ "${PIPESTATUS[0]}" -eq 0 ] || fail=1
     done
     exit ${fail:-0} ;;
-  full) "$0" load; r1=$?; "$0" cmd; r2=$?; exit $(( r1 || r2 )) ;;
-  *) echo "usage: $0 [load|corpus|extended|cmd|manual|ab <pre> <post> [kind] [allow]|full]"; exit 2 ;;
+  full) "$0" load; r1=$?; "$0" cmd; r2=$?; "$0" transcripts; r3=$?; exit $(( r1 || r2 || r3 )) ;;
+  *) echo "usage: $0 [load|corpus|extended|cmd|transcripts|manual|ab <pre> <post> [kind] [allow]|full]"; exit 2 ;;
 esac
 [ -s "${list:-}" ] || "$here/make_corpus.sh"
 ls "$here"/must_fail/*.in > "$here/must_fail/list.txt"      # absolute paths, regenerated each run

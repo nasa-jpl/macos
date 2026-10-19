@@ -58,15 +58,22 @@ distribution tapes").
 
 ### Section 6 (ORS / SRS) — `tools/transcripts/s06_ors_srs.jou`
 
-Generated and compared byte for byte with the text hand-emitted that morning:
+The examples as the peer lane committed them in 5f5cbce2 (ORS on CoroExample element 5, SRS 7 <- 5
+after the SRS sign fix, 1.2 (gg)); generated on the 5f5cbce2 engine and compared with the hand text:
 
 | Dialog | Result |
 |---|---|
-| `s06_ors_coro` (MODify + ORS on CoroExample.in) | identical |
-| `s06_ors_starved` (ORS on the defective ImageDemo copy) | identical |
-| `s06_srs_cass` (SRS 6 → 5 on CassWithExitPupil.in) | **one number moved:** New Vpt z 1.500000012 → 1.500000000.  The hand text came from the cmd-gate run where ORS had first moved element 5; the paragraph shows SRS on the deck as loaded.  (The peer lane is moving the SRS example to CoroExample once the SRS sign fix, 1.2 (gg), lands; the transcript follows.) |
+| `s06_ors_coro` (MODify + ORS 5 on CoroExample.in) | identical |
+| `s06_ors_starved` (ORS 12 on the defective ImageDemo copy) | identical |
+| `s06_srs_coro` (MODify element 7, then SRS 7 -> 5) | **New f / New z 6.329334641 -> 6.329334644** (the 10th figure).  ifx and gfortran in the clean worktree and the shared-tree ifx build all print ...644 at 5f5cbce2; the hand text came from an intermediate build. |
+| prose after it: "INT 7 then reproduces the design deck's result exactly" | **not exact:** the peak is 1.3052468e-5 after ORS + SRS against 1.3052664e-5 on the design deck (1.5e-5 relative; the sums agree, 2.4707488e-1).  Now "agrees ... to five figures (peak intensity 1.3052e-5)", pinned in the journal. |
 
-Section 6's markers wait on that lane's commit (it owns `06_diffraction_analysis.md` today).
+The first CassWithExitPupil SRS dialog (step 1, New Vpt z 1.500000012 -> 1.500000000) is gone with
+the example; the sentence keeps CassWithExitPupil only as a pointer.
+
+Seen in passing (not printed): after `old` reloads a deck in a session that already opened the
+/null device, the first plot prints `%giza - ERROR - giza_open_device: Unknown device, device not
+opened` and the command completes (INT 7 here).
 
 ## 3. Engine findings the regeneration surfaced
 

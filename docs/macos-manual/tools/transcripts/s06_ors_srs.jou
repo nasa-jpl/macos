@@ -1,14 +1,14 @@
-# Section 6, ORS and SRS (the dialogs re-emitted by hand 2026-10-19 morning, now generated).
+# Section 6, ORS and SRS (the dialogs re-emitted by hand 2026-10-19, now generated; the examples as the
+# peer lane committed them in 5f5cbce2 after the SRS sign fix, PLAN_CONSOLIDATION 1.2 (gg)).
 # s06_ors_coro: CoroExample.in, the first near-field reference surface (element 5, PropType NF1) set 4%
 #   long with MODify; ORS recovers the design 6.3293 (5 figures).
+# s06_srs_coro: continuing, element 7 disturbed (f 7.0, z -7.0) and slaved to 5: f back to 6.3293, z
+#   NEGATIVE.  The prose after it, pinned below: INT 7 then agrees with the design deck's INT 7 to 5 figures
+#   (peak 1.3052e-5; 1.3052468e-5 against 1.3052664e-5, 1.5e-5 relative), and slaving 5 to 7 returns z +6.3293.
 # s06_ors_starved: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to 5 mm (the
 #   defect the PDF line wrap made, finding 1.2 (cc)); ORS names the starved trace and aborts.
-# s06_srs_cass: CassWithExitPupil.in, the detector (element 6) slaved to the exit-pupil Return surface
-#   (element 5); the OPD at the detector afterwards is at the round-off floor (a bound, pin rule 1) --
-#   the sentence after the dialog says so, the opd 6 below checks it.
 # COPY: $ROOT/docs/macos-manual/examples/CoroExample.in s06
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in s06
-# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s06
 cd $TMP/s06
 old CoroExample.in
 # TRANSCRIPT: s06_ors_coro
@@ -18,25 +18,36 @@ q
 ors
 5
 yes
+# TRANSCRIPT: s06_srs_coro
+mod
+fElt(7)=7.0
+q
+mod
+zElt(7)=-7.0
+q
+srs
+7
+5
+yes
 # TRANSCRIPT-OFF
+int 7
+/null
+old CoroExample.in
+int 7
+srs
+5
+7
+yes
 ! perl -i -pe 's/-3\.536721061D-05/5d0/' ImageDemo.in
 old ImageDemo.in
 # TRANSCRIPT: s06_ors_starved
 ors
 12
 # TRANSCRIPT-OFF
-old CassWithExitPupil.in
-# TRANSCRIPT: s06_srs_cass
-srs
-6
-5
-yes
-# TRANSCRIPT-OFF
-opd 6
-/null
 # EXPECT: fElt\(\s*5\) =\s+6\.600000000D\+00\s+KrElt[\s\S]*?Old f=\s+6\.600000000D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: Old f=\s+7\.000000000D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+-7\.000000000D\+00\s+New z=\s+-6\.3293\d*D\+00
+# EXPECT: Peak intensity= 1\.3052\d*D-05[\s\S]*?Peak intensity= 1\.3052\d*D-05
+# EXPECT: Enter number of element to slave to: \[1\]: 7\s+Reference surface recalculation results:\s+Old f=\s+6\.3293\d*D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+6\.3293\d*D\+00\s+New z=\s+6\.3293\d*D\+00
 # EXPECT: ORS: only\s+\d+ of\s+317 test rays reach element\s+11 \(the surface before it\); at least 3 are needed\.\s+ORS: command aborted\.
-# EXPECT: Enter number of element to slave to: \[1\]: 5\s+Reference surface recalculation results:[\s\S]*?1\.500000000D\+00\s+1\.50000\d*D\+00
-# EXPECT: RMS OPD error is\s+\d\.\d+D-1[1-9]
 # EXPECT-NOT: TTL OPD=\s+NaN
 # EXPECT-NOT: forrtl
