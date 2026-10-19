@@ -45,6 +45,11 @@
 > six-class run (tPolElement, tOpdRef, tDwDx, tRx x3) -> resources commit; cmd gate at the new macos SHA; section 5 line; push on Dave's
 > word; CCMac's next pair.**
 
+> **2026-10-19 (CC, latest): cmd at b88a4bc2 103/103 both compilers; mmacos six classes + tRx x3 green (the assumeTrue string needed
+> CCMac''s); resources 629a2d2.  Section 5 line written.  LOCAL unpushed: macos 3ff1d55a..HEAD, resources cd006b2..629a2d2.
+> NOTE_to_ccmac_pair2_reply.md names the pair.  AWAITING Dave: push word; the ORS starved-start ABORT (a refusal) to confirm;
+> the manual regeneration plan (listings + transcripts generated, Appendix A first) to approve.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
