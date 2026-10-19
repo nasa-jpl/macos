@@ -34,7 +34,7 @@ SPEC = {
                          "Focal plane spot diagram\n(primary mirror tilted 1e-4 radians)"]),
     6: ("fig06", [0, 1], ["Unaberrated (defocused)", "Aberrated OPD (coma)"]),
     10: ("fig10", [0, 1], ["Unaberrated (defocused)", "Aberrated (coma)"]),
-    31: ("fig31", [0, 1], ["Elements 0-8", "The relay lens, elements 6-8"]),
+    31: ("fig31", [0], []),
     33: ("fig33", [0], []), 34: ("fig33", [1], []),
     36: ("fig36", [0, 1], ["Exit pupil (element 4)", "Detector (element 5)"]),
     37: ("fig36", [2, 3], ["OBS=ALL", "OBS=NEGATIVE"]),
