@@ -558,7 +558,16 @@ C  Set source amplitude if propagating for polarized light
 	  iWFA=1
 	  IF (BeamType.EQ.2) THEN
 C  Gaussian beam...
-	    S=SQRT(Flux)
+!-->  normalized to the UNIFORM beam's flux (Dave 2026-10-19, PLAN_CONSOLIDATION
+!     1.2 (y)): the amplitude S*exp(-(x/wx)^2-(y/wy)^2) carries intensity
+!     S^2 exp(-2 r^2/w^2), whose integral over the whole plane is
+!     S^2 pi wx wy / 2 per dx^2; S = sqrt(Flux 2 dx^2 / (pi wx wy)) makes the
+!     untruncated beam carry Flux, so a beam the aperture truncates sums to
+!     LESS than Flux -- the tail outside is lost, not renormalized in.  Before,
+!     S = sqrt(Flux) put Flux at EVERY ray (218 x the uniform sum on the
+!     Cassegrain with a 1 m waist).
+	    S=SQRT(Flux*2d0*dxSource*dxSource/(2d0*pio2*rxBeam*ryBeam))
+!<--
 	    rx2=rxBeam*rxBeam
 	    ry2=ryBeam*ryBeam
 	    IF (ifPol) THEN
@@ -997,7 +1006,16 @@ C  ifPropagate is true when performing diffraction commands -jzlou
 	  iWFA=1
 	  IF (BeamType.EQ.2) THEN
 C  Gaussian beam...
-	    S=SQRT(Flux)
+!-->  normalized to the UNIFORM beam's flux (Dave 2026-10-19, PLAN_CONSOLIDATION
+!     1.2 (y)): the amplitude S*exp(-(x/wx)^2-(y/wy)^2) carries intensity
+!     S^2 exp(-2 r^2/w^2), whose integral over the whole plane is
+!     S^2 pi wx wy / 2 per dx^2; S = sqrt(Flux 2 dx^2 / (pi wx wy)) makes the
+!     untruncated beam carry Flux, so a beam the aperture truncates sums to
+!     LESS than Flux -- the tail outside is lost, not renormalized in.  Before,
+!     S = sqrt(Flux) put Flux at EVERY ray (218 x the uniform sum on the
+!     Cassegrain with a 1 m waist).
+	    S=SQRT(Flux*2d0*dxSource*dxSource/(2d0*pio2*rxBeam*ryBeam))
+!<--
 	    rx2=rxBeam*rxBeam  ! rxBeam = beam waist in X axis -jzlou
 	    ry2=ryBeam*ryBeam  ! ryBeam = ...
 	    IF (ifPol) THEN

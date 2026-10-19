@@ -1,17 +1,37 @@
-# ORS on the near-field start surface of CoroExample (ret2_1, element 5, PropType NF1) and SRS slaving the
-# CoroMask (element 6, NF2) to it (cmdref: Behavior Toggles / Section 6.3).  The example is already set
-# up: ORS finds the same f (6.329334641) with TTL OPD 2.9e-12 in 20 calls, SRS leaves the flat mask flat;
-# both answered NO (note the cmdref: SRS applies its result whatever the answer).
-old $ROOT/docs/macos-manual/examples/CoroExample.in
+# ORS then SRS (PLAN_CONSOLIDATION 1.2 (w); Dave 2026-10-19: fix now).
+# Leg 1, a sound deck: CassWithExitPupil.in, the exit-pupil Return surface (element 5) and the
+#   detector (element 6).  The surface's focal length is first set 2.5% long with MODify; ORS
+#   recovers the design value (5.5601, pinned to 5 figures), SRS re-slaves the detector to it, and
+#   the OPD at the detector is back at the round-off floor (a bound, pin rule 1).
+# Leg 2, a starved deck: ImageDemo.in loses 726 of 741 rays before its exit pupil (surface misses
+#   at elements 5-8, finding 1.2 (cc)).  ORS used to print 'TTL OPD= NaN' there and offer a surface
+#   optimized on NaN comparisons (the manual's 10-19 morning transcript); the trial rms now counts
+#   only rays that reach the surface, an empty trial is a huge merit, and a start with fewer than
+#   three data rays is named and aborted -- the must-fail leg: the pre-fix binary prints the NaN.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+old $TMP/CassWithExitPupil.in
+mod
+fElt(5)=5.7
+q
 ors
 5
-no
+yes
 srs
 6
 5
-no
-# EXPECT: Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-12\s+nCalls=\s+\d+\s+Old f=\s+6\.329334641D\+00\s+New f=\s+6\.329334641D\+00
-# EXPECT: Accept the new element data\? \[YES\]: no
-# EXPECT: Reference surface recalculation results:\s+Old f=\s+1\.000000000D\+22\s+New f=\s+1\.000000000D\+22
-# EXPECT: Accept the new element\? \[YES\]: no
+yes
+opd 6
+/null
+old $TMP/ImageDemo.in
+ors
+12
+# EXPECT: fElt\(\s*5\) =\s+5\.700000000D\+00
+# EXPECT: Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-1\d\s+nCalls=\s+\d+\s+Old f=\s+5\.700000000D\+00\s+New f=\s+5\.5601\d*D\+00
+# EXPECT: Enter number of element to slave to: \[1\]: 5\s+Reference surface recalculation results:
+# EXPECT: OPD: nPassRays =\s+112,[\s\S]*RMS OPD error is\s+\d\.\d+D-1\d
+# EXPECT: ORS: only\s+\d+ of\s+317 test rays reach element\s+11 \(the surface before it\); at least 3 are needed\.\s+ORS: command aborted\.
+# EXPECT-NOT: TTL OPD=\s+NaN
+# EXPECT-NOT: New f=\s+\d\.\d+D\+41
+# EXPECT-NOT: Debug: VAR_NAM
 # EXPECT-NOT: forrtl

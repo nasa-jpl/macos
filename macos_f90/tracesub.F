@@ -4966,7 +4966,7 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	CHARACTER(len=MacosCharLen) :: ANS
-	INTEGER i,iElt,iEm1,nCalls
+	INTEGER i,iElt,iEm1,nCalls,nAdm
 	REAL*8 Vpt(3),Rpt(3),psi(3),fRSmin,RMSmin,
      &	       TOL,df,fA,fB,fC,RA,RB,RC,zp,L
 
@@ -4976,11 +4976,26 @@ C***********************************************************************
      &	'   Old z=',D17.9,'   New z=',D17.9/
      &	' Old psi=',D17.9,' New psi=',D17.9,2(/9x,D17.9,9x,D17.9)/
      &	' Old Vpt=',D17.9,' New Vpt=',D17.9,2(/9x,D17.9,9x,D17.9))
+ 109	FORMAT(' ORS: only',i6,' of',i6,' test rays reach element',i4,
+     &	       ' (the surface before it); at least 3 are needed.')
 
 C  2. Initialize various parameters
 
 	nCalls=0
 	iEm1=iElt-1
+!-->  A reference sphere is fit to the rays that reach the surface
+!     before it: fewer than three data rays is nothing to fit, and the
+!     solve would run the radius to 1e41 against an empty-trial merit
+!     (PLAN 1.2 (w), 2026-10-19; ImageDemo.in loses 726 of 741 rays
+!     before its exit pupil).  Name it and abort, as the handler does
+!     for a bad element number.
+	nAdm=COUNT(LRayOK(2:nRay).AND.RayStatus(2:nRay).EQ.RayStat_OK)
+	IF (nAdm.LT.3) THEN
+	  WRITE(*,109) nAdm,nRay-1,iEm1
+	  WRITE(*,*) 'ORS: command aborted.'
+	  RETURN
+	END IF
+!<--
 	TOL=CWB*Wavelen/1d2
 c	CALL DACCEPT(TOL,TOL,1,'Enter tolerance: ')
 	df=fElt(iElt)/1d2
@@ -5002,6 +5017,14 @@ c********debug
 
 	RMSmin=
      &    ZPSolve(fA,fB,fC,iElt,TOL,fRSmin,nCalls,Vpt,Rpt,psi,L)
+!-->  every trial the solve settled on was empty (1.2 (w))
+	IF (RMSmin.GE.1d29) THEN
+	  WRITE(*,*) 'ORS: no trial reference sphere was reached by',
+     &	             ' a data ray; the result is not usable.'
+	  WRITE(*,*) 'ORS: command aborted.'
+	  RETURN
+	END IF
+!<--
 
 	IF ((EltID(iElt).EQ.8).AND.(EltID(iEm1).EQ.8)) THEN
 	  zp=-SIGN(1d0,DDOTC(RayDir(1,1),psi(1)))*fRSmin
@@ -5287,9 +5310,18 @@ C  OBSCURED (the FPM blocks it), but it is still geometrically traced,
 C  so include it here by LRayOK alone -- excluding it leaves L1 set
 C  from a stale pre-loop value and sends the reference-surface search
 C  off to |f|~1e40.  Data rays still require LRayOK.AND.LRayPass.
+!-->  ORS admitted a ray on LRayPass, the DIFFRACTION pass flag that
+!     CPROPAGATE maintains and CTRACE (which the ORS handler runs) does
+!     not: after a load only the chief ray qualified, the rms was 0/0
+!     and 'TTL OPD= NaN' optimized on NaN comparisons (ImageDemo.in,
+!     the manual's own example; PLAN_CONSOLIDATION 1.2 (w), Dave
+!     2026-10-19: fix now).  A ray counts when it is geometrically
+!     alive and its
+!     status is OK (an obscured or lost ray is out).
 	DO 14 iRay=1,nRay
-	  IF ( (LRayOK(iRay).AND.LRayPass(iRay)) .OR.
-     &         (iRay.EQ.1.AND.LRayOK(iRay)) ) THEN
+	  IF ( LRayOK(iRay) .AND.
+     &	       (RayStatus(iRay).EQ.RayStat_OK .OR. iRay.EQ.1) ) THEN
+!<--
 	    jRay=jRay+1
 	    IF (.NOT.ifRetSrf) THEN
 	      CALL RefSrf(noBuild,noPol,LNsrf,noObs,
@@ -5311,6 +5343,13 @@ C  off to |f|~1e40.  Data rays still require LRayOK.AND.LRayPass.
 	      IF (ifReturn) L=-L
 	    END IF
 	    CumL=CumRayL(iRay)+IndRef(iEm1)*L
+!-->  a ray the TRIAL surface misses has no finite length: it leaves the
+!     rms rather than poisoning it (1.2 (w))
+	    IF (CumL.NE.CumL) THEN
+	      jRay=jRay-1
+	      GO TO 14
+	    END IF
+!<--
 	    IF (iRay.EQ.1) THEN
 	      L1=CumL
 	    ELSE
@@ -5324,7 +5363,14 @@ C  off to |f|~1e40.  Data rays still require LRayOK.AND.LRayPass.
 
 C  4. Compute RMS OPD
 
-	RMSOPD=SQRT(RMSOPD/FLOAT(jRay-1))
+!-->  an empty trial (only the chief ray reached the surface) is a huge
+!     merit the bracketing walks away from, never 0/0 (1.2 (w))
+	IF (jRay.GT.1) THEN
+	  RMSOPD=SQRT(RMSOPD/DBLE(jRay-1))
+	ELSE
+	  RMSOPD=1d30
+	END IF
+!<--
 
 c	Dn=jRay-1
 c	DAvgL=SumL/Dn

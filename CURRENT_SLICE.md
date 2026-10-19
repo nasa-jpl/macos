@@ -24,6 +24,18 @@
 
 ## Active slice
 
+> **2026-10-19 (CC, 4a/4b/3c acted on; LOCAL, uncommitted until the gate):** ORS NaN FIXED (RSTRACE admits a ray on LRayOK + RayStatus OK, not the
+> diffraction-only LRayPass; a trial-missed ray leaves the rms; an empty trial = 1e30; CRSOPTIMIZE names a starved start and ABORTS --
+> a refusal in the handler's own style, Dave to confirm); the MODify `Debug: VAR_NAM` print removed; Gaussian BEAM normalized to the
+> uniform flux (truncated tail lost); pymacos path limit 255.  Gates: cmd/ORS_SRS.jou (CassWithExitPupil fElt(5) 2.5% long -> ORS
+> recovers 5.5601; ImageDemo ors 12 aborts) + cmd/BEAM_gaussian.jou pass both compilers, ORS_SRS FAILS on the 4d7b1aa1 binary on the
+> three fix-tied expectations.  Bindings: tCalibMatrix 18, tCalibStop 4, tDefaults 9; pymacos 33 (the four re-pinned files).
+> NEW FINDINGS: 1.2 (cc) ImageDemo.in loses 726/741 rays before its exit pupil (555 surface misses at elements 5-6, base binary too --
+> needs investigation; the manual's Section 6 ORS/SRS now run on CassWithExitPupil.in); (dd) its `PropType= Annulus` is no name.
+> Manual Section 6 re-emitted, PDF + edit copies refreshed.  NEXT: commit (explicit paths, macos + resources), the clean-worktree gate
+> (load/cmd/ab vs 4d7b1aa1, both compilers; the Gaussian change moves only Gaussian decks -- name them), section 5 line, push on
+> Dave's word, then CCMac's next pair.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

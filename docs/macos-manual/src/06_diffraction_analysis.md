@@ -216,26 +216,37 @@ ORS first relocates the reference surface so that the chief ray intersects the v
 
 NOTE: ORS may not find the optimal reference surface for systems with a large amont of odd aberrations, such as coma. In these systems, the minimum OPD is obtained when the reference sphere is tilted from the chief ray.
 
-The ORS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values are for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. For example, using the seg.in example in Appendix A.5:
+The ORS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. For example, using the CassWithExitPupil.in example of Appendix A, whose exit-pupil Return surface is element 5: to show ORS at work, the surface's focal length is first set 2.5% long with MODify, and ORS recovers the design value (fElt = 5.5601) to the solve tolerance, a hundredth of a wave:
 
-The example is the exit-pupil Return surface (element 12) of ImageDemo.in (Appendix A), the Cassegrain-and-relay system of Figures 40-42:
+MACOS\>**mod**
+
+    MOD: [q]: fElt(5)=5.7
+    fElt(  5) =   5.700000000D+00
+    KrElt(  5) =  -5.700000000D+00
+    MOD: [q]: q
+
+MACOS\>**ors**
+
+    Enter number of element to be optimized: [1]: 5
+    Reference surface optimization results:
+    TTL OPD=  2.431365733D-11  nCalls=  25
+      Old f=  5.700000000D+00   New f=  5.560145914D+00
+      Old z=  5.560145902D+00   New z=  5.560145914D+00
+    Old psi=  0.000000000D+00 New psi=  0.000000000D+00
+              0.000000000D+00           0.000000000D+00
+              1.000000000D+00           1.000000000D+00
+    Old Vpt=  0.000000000D+00 New Vpt=  0.000000000D+00
+              0.000000000D+00           0.000000000D+00
+             -4.060145902D+00          -4.060145902D+00
+    Accept the new element data? [YES]: yes
+
+The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. ImageDemo.in (Appendix A), whose relay loses most of its rays, shows the message:
 
 MACOS\>**ors**
 
     Enter number of element to be optimized: [1]: 12
-    Reference surface optimization results:
-    TTL OPD=              NaN  nCalls=  26
-      Old f=  6.874662920D+01   New f=  6.943409549D+01
-      Old z=  6.874662920D+01   New z=  6.943409549D+01
-    Old psi=  1.095041158D-04 New psi=  6.578571566D-05
-             -5.786697499D-06          -5.193600967D-05
-             -9.999999940D-01          -9.999999965D-01
-    Old Vpt= -7.904014798D-05 New Vpt= -7.902324629D-05
-             -6.661258889D-06          -6.548245469D-06
-              1.698904900D+01           1.698904900D+01
-    Accept the new element data? [YES]: yes
-
-The merit line reads NaN on this example today (an open finding, PLAN_CONSOLIDATION 1.2 (w): the trial trace's rms is formed over rays the trial surface may not intersect); the surface it accepts is a valid optimum.
+    ORS: only     0 of   317 test rays reach element  11 (the surface before it); at least 3 are needed.
+    ORS: command aborted.
 
 #### SRS
 
@@ -245,24 +256,24 @@ SRS is to be used in conjunction with ORS. ORS is run first for the first of the
 
 SRS first relocates the reference surface so that the chief ray intersects the vertex point (VptElt). Then SRS tilts the specified reference surface so that psiElt is normal to the surface. Finally, SRS solves for the propagation distance zElt based on the zElt of the surface it is being slaved to and the optical path length between the surfaces along the chief ray. It computes the other element parameters accordingly.
 
-The SRS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. Continuing with the seg.in example gives
-
-Continuing the example, the image plane (element 13) is slaved to the exit-pupil surface just optimized:
+The SRS command prints the old and new values of the element parameters and asks the user if the new ones are acceptable. Enter yes to accept the new values for subsequent computations. Enter no to retain the previous values. The new element data will not be kept unless a SAVe command is used to store the data. Continuing the example, the detector (element 6) is slaved to the exit-pupil surface just optimized:
 
 MACOS\>**srs**
 
-    Enter number of element to be slaved: [1]: 13
-    Enter number of element to slave to: [1]: 12
+    Enter number of element to be slaved: [1]: 6
+    Enter number of element to slave to: [1]: 5
     Reference surface recalculation results:
       Old f=  1.000000000D+22   New f=  1.000000000D+22
-      Old z=  1.000000000D+22   New z=  1.000000000D+22
-    Old psi=  0.000000000D+00 New psi=  6.578571566D-05
-              0.000000000D+00          -5.193600967D-05
-             -1.000000000D+00          -9.999999965D-01
-    Old Vpt=  7.421487214D-01 New Vpt=  4.488748417D-03
-             -4.232318881D+00          -3.612678101D-03
-             -5.175758000D+01          -5.244504625D+01
+      Old z=  0.000000000D+00   New z=  0.000000000D+00
+    Old psi=  0.000000000D+00 New psi=  0.000000000D+00
+              0.000000000D+00           0.000000000D+00
+              1.000000000D+00           1.000000000D+00
+    Old Vpt=  0.000000000D+00 New Vpt=  0.000000000D+00
+              0.000000000D+00           0.000000000D+00
+              1.500000000D+00           1.500000012D+00
     Accept the new element? [YES]: yes
+
+An OPD at the detector afterwards (opd 6) is at the round-off floor, 1e-11 of the unit.
 
 #### REGRID
 
