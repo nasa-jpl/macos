@@ -5,8 +5,10 @@
 # s06_srs_coro: continuing, element 7 disturbed (f 7.0, z -7.0) and slaved to 5: f back to 6.3293, z
 #   NEGATIVE.  The prose after it, pinned below: INT 7 then agrees with the design deck's INT 7 to 5 figures
 #   (peak 1.3052e-5; 1.3052468e-5 against 1.3052664e-5, 1.5e-5 relative), and slaving 5 to 7 returns z +6.3293.
-# s06_ors_starved: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to 5 mm (the
-#   defect the PDF line wrap made, finding 1.2 (cc)); ORS names the starved trace and aborts.
+# s06_ors_starved: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to 50 mm (the PDF line
+#   wrap's defect was 5 mm, finding 1.2 (cc); since bba2e362 an obscured ray counts, and at 5 mm the 15 surviving
+#   rays are obscured near-axis ones, so ORS fits them; at 50 mm one test ray reaches element 11): ORS names the
+#   starved trace and aborts.
 # COPY: $ROOT/docs/macos-manual/examples/CoroExample.in s06
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in s06
 cd $TMP/s06
@@ -38,7 +40,7 @@ srs
 5
 7
 yes
-! perl -i -pe 's/-3\.536721061D-05/5d0/' ImageDemo.in
+! perl -i -pe 's/-3\.536721061D-05/5d1/' ImageDemo.in
 old ImageDemo.in
 # TRANSCRIPT: s06_ors_starved
 ors

@@ -133,8 +133,8 @@ after the SRS sign fix, 1.2 (gg)); generated on the 5f5cbce2 engine and compared
 
 | Dialog | Result |
 |---|---|
-| `s06_ors_coro` (MODify + ORS 5 on CoroExample.in) | identical |
-| `s06_ors_starved` (ORS 12 on the defective ImageDemo copy) | identical |
+| `s06_ors_coro` (MODify + ORS 5 on CoroExample.in) | identical at 5f5cbce2; at bba2e362 TTL OPD 9.2643e-12 -> 1.0337e-11 (the merit counts obscured rays), New f 6.329334638 unchanged |
+| `s06_ors_starved` (ORS 12 on the defective ImageDemo copy) | identical at 5f5cbce2; since bba2e362 an obscured ray counts and the 5 mm copy's 15 surviving (obscured) rays are enough to fit, so the copy is 50 mm: "only 1 of 317 test rays reach element 11" (and the vertex-sheet note); the paragraph says an obscured ray counts |
 | `s06_srs_coro` (MODify element 7, then SRS 7 -> 5) | **New f / New z 6.329334641 -> 6.329334644** (the 10th figure).  ifx and gfortran in the clean worktree and the shared-tree ifx build all print ...644 at 5f5cbce2; the hand text came from an intermediate build. |
 | prose after it: "INT 7 then reproduces the design deck's result exactly" | **not exact:** the peak is 1.3052468e-5 after ORS + SRS against 1.3052664e-5 on the design deck (1.5e-5 relative; the sums agree, 2.4707488e-1).  Now "agrees ... to five figures (peak intensity 1.3052e-5)", pinned in the journal. |
 
@@ -162,11 +162,11 @@ command lines ("Find new reference surfaces ...", "This image is shown in Figure
 | `s07_win`, `s07_compose`, `s07_stretch`, `s07_mod_flux` | as now | as 3.2; MOD of `flux=` prints `Debug: VALUE = 0.01` (3.5) | — |
 | `s07_add` | peak 3.8883e-4, sum 4.4725e-2 | **peak 2.9705e4, sum 1.6047e6** | not established (eight orders: the detector intensity's normalization or units changed since 3.2) |
 | `s07_stop` | StopPos z -1.427723273e2 | -1.427723268496e2 (the 7th figure, as Section 5's STOP) | not established |
-| `s07_ffp`, `s07_ors5` | error 1.4241e-15; New crd 8.916721422e-7; ORS 5 TTL OPD 1.6562e-9, New Vpt x 3.728254596e-5 | 1.1382e-15; 8.916721422e-7 (as 3.2); 1.8373e-9, 3.728254585e-5 | the 128 grid against 3.2's |
-| **ORS 7 (not printed)** | New f 6.329334641, psi -1 | **left out of the walk: ORS 7 is starved behind the occulter since ef15ab23, and on ifx after the FFP returns f 0.808 with a non-unit psi (3.8)** | 3.8 |
-| `s07_fex` | New f 7.324539719 | 7.324539656 (the 8th figure) and the four-probe EP diagnostics | without ORS 7 |
+| `s07_ffp`, `s07_ors5` | error 1.4241e-15; New crd 8.916721422e-7; ORS 5 TTL OPD 1.6562e-9, New Vpt x 3.728254596e-5 | 1.1382e-15; 8.916721422e-7 (as 3.2); 1.7999e-9 (1.8373e-9 before bba2e362 counted obscured rays), 3.728254585e-5 | the 128 grid against 3.2's |
+| `s07_ors7` | TTL OPD 1.6562e-9, nCalls 18, New f 6.329334641, New psi x 2.730547038e-6, New Vpt x 2.717454041e-6 | 1.7999e-9, 18, **6.329334641**, 2.730547021e-6, 2.717454148e-6 | restored after the ORS fix (3.8, FIXED in bba2e362) |
+| `s07_fex` | New f 7.324539719 | 7.324539656 (the 8th figure) and the four-probe EP diagnostics | not established |
 | `s07_stretch_int` | peak 3.7146e-4, sum 8.6867e-3 | 3.7792e-4, 8.7690e-3 | the deck (as `s07_int6`) |
-| `s07_add_offaxis` | peak 2.2645e-4, sum 6.8026e-3 | peak 1.2020e4 at (271, 243), sum 3.8584e5 | as `s07_add`; run with the ifx ORS 7 result accepted, the peak was 1.2875e4 at (257, 257) |
+| `s07_add_offaxis` | peak 2.2645e-4, sum 6.8026e-3 | peak 1.2894e4 at (257, 257) | as `s07_add`; without ORS 7 the peak was 1.2020e4 at (271, 243) |
 | `s07_gblur_*` | element 21 of an unnamed deck, 128 pixels of 1.0007e-5, kernels 1e-6 and 3e-4 | element 16 of CoroExample.in, 128 pixels of 1.392542e-6, kernels 1e-7 and 2e-5, a fresh COMPOSE before each (FIG56) | the 3.2 deck is not in the tree; prose follows the figure |
 | `s07_amp`, `s07_phase`, `s07_real` | (re-emitted by hand 2026-10) | identical (peak amplitude 1.0508e4) | — |
 | `s07_imgmode` | "Enter image polarity (NEG/POS, ASTRO/CONV)" | "Raster polarity (NEG=astro/POS=conventional)", then "IMGMODE = POS" | current prompt |
@@ -268,7 +268,13 @@ to ray at Element 0 (InputRay)" as all zeros, for the chief ray (global) and for
 established whether the source partials are no longer built or no longer printed (a BUILD-to-detector
 check in `cli_tests/cmd/LINEAR_MODEL.jou` reads ray 3's element partials only).
 
-### 3.8 ORS behind an occulting mask (CoroExample element 7): starved, and garbage on ifx
+### 3.8 ORS behind an occulting mask (CoroExample element 7): starved, and garbage on ifx — FIXED in bba2e362
+
+**Fixed by the ORS lane in macos bba2e362** (RSTRACE: an obscured ray counts -- it is traced and defines
+the wavefront, PLAN_CONSOLIDATION 1.2 (ii), a design rule for Dave to confirm; `signpsi` defined for a
+Return after an even number of folds -- the ifx/gfortran split and the non-unit psi; the chief ray no longer
+struck off every later trial by one missed trial).  `ors 7` is back in the Section 7 walk.  The record:
+
 
 Engine 5f5cbce2.  On CoroExample.in as loaded, `ors 7` aborts on both compilers: "only 0 of 317 test
 rays reach element 6 (the surface before it)" -- element 6 is the coronagraph mask (Obscuring, at the
@@ -316,9 +322,8 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
    iteration count out?
 9. **PARTIALS input-ray block** (3.7): an engine look before the Section 8 prose ("magnified 3.036
    times") is kept or rewritten.
-10. **ORS behind the occulter** (3.8): how ORS should treat a mask that exists for diffraction (the ORS
-    lane has the repro); until then Section 7's walk leaves out `ors 7`, and FIG47_55.jou should not be
-    rerun on ifx.
+10. **ORS behind the occulter** (3.8, fixed in bba2e362): confirm the rule that an obscured ray counts in
+    the ORS fit (PLAN 1.2 (ii)).
 11. **Section 4's NEW tutorials**: regenerate them as plain dialogs (losing the VariableName column), keep
     them as typed text, or rebuild the column from a generated dialog?
 

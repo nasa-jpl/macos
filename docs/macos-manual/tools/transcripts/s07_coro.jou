@@ -1,9 +1,8 @@
 # Section 7, the coronagraph walk (examples/CoroExample.jou; the steps of tools/figs/FIG47_55.jou on /null):
 # CoroExample.in at model 512 on a 128 grid, sqrt stretch.  INT through the coronagraph with the occulter off,
 # PIX unocculted and occulted (the deck's occulter is three obscurations since 65a223ec: nObs(6)=3), STRETCH,
-# WINDOW, COMPOSE + ADD of the on-axis star, then STOP / FFP / ORS 5 / FEX for an off-axis star 100x dimmer,
-# (CoroExample.jou's `ors 7 yes` is left out: behind the occulter ORS 7 is starved since ef15ab23 and on ifx
-# returns a non-unit psi after FFP -- TRANSCRIPT_DIFF.md section 3.8),
+# WINDOW, COMPOSE + ADD of the on-axis star, then STOP / FFP / ORS 5 / ORS 7 / FEX for an off-axis star 100x dimmer
+# (ORS 7 sits behind the occulter: an obscured ray counts since bba2e362 -- TRANSCRIPT_DIFF.md section 3.8),
 # its INT and ADD; WIRE + DAD of the composed image (figure 62).
 # MODEL: 512
 # DEADLINE: 900
@@ -64,6 +63,10 @@ yes
 ors
 5
 yes
+# TRANSCRIPT: s07_ors7
+ors
+7
+yes
 # TRANSCRIPT: s07_fex
 fex
 15
@@ -99,6 +102,7 @@ dad
 # EXPECT: Computed StopPos =\s+0\.0+D\+00\s+0\.0+D\+00\s+-1\.4277\d*D\+02
 # EXPECT: Field angle finder results:[\s\S]*?New crd=\s+8\.9167\d*D-07
 # EXPECT: Enter number of element to be optimized: \[1\]: 5\s+Reference surface optimization results:[\s\S]*?Old f=\s+6\.329334641D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: Enter number of element to be optimized: \[\d+\]: 7\s+Reference surface optimization results:[\s\S]*?Old f=\s+6\.329334641D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+-6\.329334641D\+00\s+New z=\s+-6\.3293\d*D\+00
 # EXPECT: Enter number of exit pupil return surface: \[15\]: 15[\s\S]*?Old f=\s+6\.329334641D\+00\s+New f=\s+7\.3245\d*D\+00
 # EXPECT: Flux =\s+1\.000000000D-02
 # EXPECT: Source Flux= 1\.0000000D-02[\s\S]*?Peak intensity= 3\.7792\d*D-04

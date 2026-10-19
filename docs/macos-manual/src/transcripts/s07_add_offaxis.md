@@ -5,7 +5,7 @@ MACOS\>**add**
     Tracing     12454 rays and propagating    262144 grid points...
      Prop from reference point Elt  6 and Elt  7 to WF  1:
      z1= 1.0000D+30 dx1= 1.3802D-06
-     z2=-6.3293D+00 dx2= 8.9568D-03 min= 8.9538D-03 max= 8.9582D-03 dev= 1.2942D-06 lin= 99.99%
+     z2=-6.3293D+00 dx2= 8.9568D-03 min= 8.9538D-03 max= 8.9582D-03 dev= 1.2941D-06 lin= 99.99%
     ===> 2: Far-field sphere-to-plane diffraction ...
      Scalar FF Prop between Elt 15 and Elt 16 to WF  1:
      z1= 7.3245D+00 dx1= 1.0365D-02 min= 1.0362D-02 max= 1.0367D-02 dev= 1.4984D-06 lin= 99.99%
@@ -18,6 +18,6 @@ MACOS\>**add**
     Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D-02
     u-v plane diam= 5.2965851D+00  du= 1.0365137D-02
     x-y plane diam= 7.0527131D-04  dx= 1.3801787D-06
-    Peak intensity= 1.2020412D+04; Peak occurs at i=  271, j=  243
+    Peak intensity= 1.2893609D+04; Peak occurs at i=  257, j=  257
     Sum of intensity= 3.8583909D+05
     Image added. Plot composed image? [YES]: yes
