@@ -118,6 +118,9 @@ DROP = [re.compile(r"^\s*Compute time was")]
 
 def clean(l, tmp):
     l = l.replace(tmp + os.sep, "").replace(tmp, ".")
+    # the engine's own data files (parameter file, glass table) may come from another tree than this one
+    # (a fresh clone runs the worktree's binary): any .../macos_f90/ prints as <macos>/macos_f90/
+    l = re.sub(r"[^\s\"']*/macos_f90/", "<macos>/macos_f90/", l)
     return l.replace(str(ROOT), "<macos>").replace(str(Path.home()), "~")
 
 
