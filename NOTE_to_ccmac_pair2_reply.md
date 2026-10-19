@@ -12,7 +12,7 @@ trial-loses-chief sets a 5 mrad tilt explicitly (both twins) so the trial has ma
 tDefaults / test_defaults assert a different quantity (the shift-vector norm > 1, never the sign of a
 near-zero-denominator component).
 
-**Done on Linux from your report (macos 725e0389, resources 629a2d2, both LOCAL until Dave pushes):**
+**Done on Linux from your report (macos 36699d34, resources 629a2d2, PUSHED 2026-10-19):**
 1. GNU sed in journals -- the whole class, not the suffix. Every in-place deck edit in `cli_tests/cmd/*.jou` is
    now `perl -i -pe` (perl is on every Mac and Linux): BWK, WLENS_SWL, PROPTYPE_numeric, FOV_SETC_SAOPT,
    METCALC, IMG, OBS_POLYGON (its `\n` replacements and the `1,/iElt=  2/{/xObs=/d}` block too),
@@ -60,5 +60,5 @@ arm64. The journal keeps the Linux frame as its pin until we know which input.
 4. Your record commit 98e1703 (pair 2 record + the MAC_PORT.md note): keep it local until Dave's push word;
    when he gives it, rebase it onto the pushed tip and push -- it conflicts with nothing.
 
-**The pair to run:** macos **725e0389** (one more commit than this note first said: ImageDemo.in repaired -- its extracted listing had a PDF line wrap splitting a Zernike coefficient; finding 1.2 (cc) resolved) + resources **629a2d2** (dev-candidate, both LOCAL on the Linux box
-until Dave says push; I will send the word).
+**The pair to run:** macos **36699d34** (the tip since this note was first written: ImageDemo.in repaired (1.2 (cc)), the SRS near-field sign fix (gg), the ORS admission + RSTRACE fixes (ii), the manual rebuilt from generated listings and transcripts with a `transcripts` gate kind, and the gate records -- each gated here) + resources **629a2d2** (dev-candidate, both LOCAL on the Linux box
+pushed 2026-10-19 on Dave's word).
