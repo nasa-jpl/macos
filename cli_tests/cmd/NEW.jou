@@ -55,9 +55,9 @@ opd 1
 # EXPECT: MACOS> opd 1\s+Enter element where OPD is to be evaluated: \[0\]: 1\s+OPD: Rays being traced =\s+61[\s\S]*?OPD: nPassRays =\s+60,\s+DAvgCumL =  10\.00000000D-01[\s\S]*?RMS OPD error is   0\.000000000D\+00
 # EXPECT: MACOS> ! cat \S+/newsys\.in\s+% -+\s+% Source Definition[\s\S]*?Aperture=2\.0+1E-01[\s\S]*?nElt=  1\s+iElt=  1\s+EltName=  FPA\s+Element=  FocalPlane\s+Surface=  Flat
 # EXPECT-NOT: fort\.77
-# EXPECT: Input file \S+/newsys\.in being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?MACOS> opd 1[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# EXPECT: Input file \S+/newsys\.in\s+being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?MACOS> opd 1[\s\S]*?RMS OPD error is   0\.000000000D\+00
 # EXPECT: MACOS> save \S+/saved\s+Enter new input file name: \S+/saved\s+File \S+/saved\.in being created\.
 # EXPECT: (\d{4}) \S+/newsys\.in\s+\1 \S+/saved\.in
-# EXPECT: Input file \S+/saved\.in being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# EXPECT: Input file \S+/saved\.in\s+being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?RMS OPD error is   0\.000000000D\+00
 # EXPECT-NOT: Must load optical data first
 # EXPECT-NOT: forrtl

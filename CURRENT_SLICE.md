@@ -63,6 +63,12 @@
 > sign + the declined accept.  BRIEF_to_manual_regen.md written for TO (macos-fd lane is on it).  NEXT: commit; full gate at the
 > SRS commit (engine changed: rebuild both in the worktree, load, ab vs 725e0389, cmd); section 5 line; push on Dave's word.**
 
+> **2026-10-19 (CC, latest): gate at 5f5cbce2 PASS (load 160/160, ab 0 movers; cmd 103/103 gfortran, 102/103 ifx = the 80-column
+> list-directed wrap of the worktree's longer path -- four journals now take `\s+` before 'being loaded'); records + section 5 line
+> committed; cmd re-gated at the journal commit.  macos-fd (TO's lane) landed cb982a63 / 9447e7c7 / 77f82c31 (transcripts pipeline,
+> Appendix A generated) and found 1.2 (hh) SAVE drops the UserDefined monomial frame (AOExample) -- AWAITING Dave: fix now or
+> queue; push word for 5f5cbce2 and after.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

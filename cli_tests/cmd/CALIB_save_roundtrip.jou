@@ -24,13 +24,13 @@ save $TMP/oc2
 old $ROOT/ZGD_test_files/tst_calib_spot4.in
 save $TMP/sp1
 ! grep "VarElt\|OptAsph" $TMP/sp1.in | tr -s ' ' | tr '\n' ';'; echo
-# EXPECT: tst_calib_mixed\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2,\s+1 field\(s\),\s+1 wavelength\(s\),\s+1 variable element\(s\), OptMaxItrs\s+10 -- VARS/FOVS/WLENS list them; SAVE writes them
+# EXPECT: tst_calib_mixed\.in\s+being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2,\s+1 field\(s\),\s+1 wavelength\(s\),\s+1 variable element\(s\), OptMaxItrs\s+10 -- VARS/FOVS/WLENS list them; SAVE writes them
 # EXPECT: OptTarget= SPOT; OptTgtElt= 2; VarElt= 1 0 0 0 0 0 0 0; OptAsph= 1 1;
-# EXPECT: cm1\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2[\s\S]*?Variable elements defined for optimization
+# EXPECT: cm1\.in\s+being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target SPOT at element\s+2[\s\S]*?Variable elements defined for optimization
 # EXPECT: CM_RESAVE_SAME
 # EXPECT: opt_example_constrained\.in[\s\S]*?LOAD: CALIB setup in force from the prescription: target WFE at element\s+11,\s+1 field\(s\),\s+1 wavelength\(s\),\s+1 variable element\(s\), OptMaxItrs\s+200
 # EXPECT: OptTgtElt= 11; OptMaxItrs= 200; VarElt= 1 1 0 0 0 0 0 0; VarCons= -5\.0000000000000001E-04 5\.0000000000000001E-04 -5\.0000000000000001E-04 5\.0000000000000001E-04; OptBeamPos= 0\.0E\+00 3\.2466750233500002E\+03 2\.7598302704900002E\+03;
-# EXPECT: oc1\.in being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target WFE at element\s+11
+# EXPECT: oc1\.in\s+being loaded[\s\S]*?LOAD: CALIB setup in force from the prescription: target WFE at element\s+11
 # EXPECT: OC_RESAVE_SAME
 # EXPECT: VarElt= 0 0 0 0 0 0 0 0; OptAsph= 1 1;
 # EXPECT-NOT: forrtl
