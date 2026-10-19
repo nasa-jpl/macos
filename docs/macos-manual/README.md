@@ -296,5 +296,6 @@ Markdown stays the source; nothing is folded by hand into the docx.
 3. **New-feature content**: FreeForm details, SLSQP optimization, XPS,
    COMPOSE/broadband, giza graphics, design layer, etc. still need
    sections written.
-4. **Appendix A automation**: regenerate example transcripts from
-   `examples/*.jou` via the live engine at build time.
+4. ~~**Appendix A automation**~~ DONE 2026-10-19: every listing and CLI
+   dialog is generated (`make transcripts`, see CLAUDE.md and
+   `TRANSCRIPT_DIFF.md`).

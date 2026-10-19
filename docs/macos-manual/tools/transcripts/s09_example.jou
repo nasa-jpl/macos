@@ -1,0 +1,14 @@
+# Section 9, the CLI sequence the SMACOS example mirrors: OLD Cassegrain.in, INTENSITY at the detector.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s09
+cd $TMP/s09
+pgd
+/null
+# TRANSCRIPT: s09_old_int
+old
+Cassegrain
+intensity
+5
+# TRANSCRIPT-OFF
+# EXPECT: Tracing rays past\s+5 elements
+# EXPECT: Tracing\s+1877 rays and propagating\s+65536 grid points
+# EXPECT-NOT: forrtl

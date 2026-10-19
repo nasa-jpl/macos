@@ -278,32 +278,11 @@ The BEAm command allows the user to select a source beam profile. The default is
 
 If a Gaussian beam is choosen, the user is then prompted for the diameter of the beam in x and y, where the diameter is the standard deviation of the Gaussian profile.
 
-Figure 46 shows the intensity at the exit pupil (element 5) of CassWithExitPupil.in with the default uniform beam and with a Gaussian beam of waist radius 1.0 (half the 4 m aperture):
+Figure 46 shows the intensity at the obscuration plane (element 1, an entrance pupil, where the intensity is the beam profile) of CassWithExitPupil.in on a 64-point grid (`mod ngridpts=64`), with the default uniform beam and with a Gaussian beam of waist radius 1.0 (half the 4 m aperture). The Gaussian is normalized to the uniform flux (the truncated tail is lost); the central obscuration takes a larger share of a centrally peaked profile, so its sum at element 1 is lower:
 
-MACOS\>**int 5**
+<!-- transcript: s06_beam_uniform -->
 
-    Enter number of element where data is to be generated: [6]: 5
-    Tracing       125 rays and propagating     65536 grid points...
-     Geometric Prop between Elt  0 and Elt  5 to WF  1
-    Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
-    u-v plane diam= 0.0000000D+00  du= 0.0000000D+00
-    x-y plane diam= 1.9435037D+01  dx= 7.6215832D-02
-    Peak intensity= 8.0645161D-03; Peak occurs at i=  131, j=  123
-    Sum of intensity= 9.0322581D-01
-
-MACOS\>**beam**
-
-    Enter beam type (UNIFORM, GAUSSIAN, COS**POWER, DIPOLE): [UNIFORM]: gau
-    Enter x beam waist radius: [1.00000]: 1.0
-    Enter y beam waist radius: [1.00000]: 1.0
-
-MACOS\>**int 5**
-
-    Enter number of element where data is to be generated: [5]: 5
-    ...
-    Peak intensity= 6.2289782D-01; Peak occurs at i=  127, j=  130
-    Sum of intensity= 8.9981120D+00
+<!-- transcript: s06_beam_gauss -->
 
 ![](media/fig_engine_46.png)
 

@@ -18,6 +18,7 @@ edits `src/` only.
 make            # docx + html into build/
 make pdf        # via LibreOffice (tools/docx2pdf.py refreshes TOC)
 make appendix-c # regen src/93_appendix_c_commands.md from macos_help.inc
+make transcripts # regen src/transcripts/ (example listings + CLI dialogs; MACOS_BIN= picks the binary)
 make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
                   # (every Part I entry's "*CLI suite:*" line comes from cli_tests/cmd/*.jou)
 ```
@@ -28,6 +29,20 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   `tools/gen_appendix_c.py`. Never hand-edit
   `src/93_appendix_c_commands.md`; when a command is added to
   `macos_cmd_loop.inc` + `macos_help.inc`, run `make appendix-c`.
+- **Listings and CLI dialogs are generated** (2026-10-19, Dave: "regenerate ALL of
+  them ... make it repeatable").  `tools/regen_transcripts.py` writes
+  `src/transcripts/listing_<file>.md` (each `examples/` file verbatim) and
+  `src/transcripts/<name>.md` (dialogs from `tools/transcripts/*.jou`, the cmd-gate
+  grammar plus `# TRANSCRIPT: <name> [+device]`, `# TRANSCRIPT-OFF`,
+  `# TRANSCRIPT-BANNER:`); a chapter keeps only the marker line
+  `<!-- transcript: NAME -->` (`tools/include_transcripts.lua`; a missing file stops
+  the build).  Never hand-edit `src/transcripts/` or type a dialog into a chapter:
+  change the journal and rerun.  Every journal pins with `# EXPECT:` (5 figures, bounds
+  near zero; a journal with none is refused, a miss writes nothing) and
+  `cli_tests/run_cli_tests.sh transcripts` gates both compilers.  Transcripts come from
+  the ifx build of the clean worktree.  What moved against 3.2, and the open decisions,
+  are in `TRANSCRIPT_DIFF.md`.  Still typed by hand: Section 4's two NEW tutorials
+  (the Prompt / Response / VariableName form; Dave's call).
 - **No TOC in source** — pandoc `--toc` builds it. A plain
   `soffice --convert-to pdf` leaves the Word TOC field EMPTY; the
   Makefile pdf target uses `tools/docx2pdf.py` (UNO: update indexes
@@ -40,7 +55,7 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   styles in the reference docx, not by touching src/.
 - **Section order** is the lexical sort of `src/[0-9]*.md`; new
   appendix files slot in at 92_/94_ etc.
-- Terminal transcripts = fenced code blocks; figures = inline
+- Terminal transcripts = generated (above); other code = indented or fenced blocks; figures = inline
   `![](media/imageNN.png)` with the `**FIGURE n**` caption paragraph
   adjacent. Image `{width=...}` attrs are in fractional inches from
   the docx — keep unless intentionally resizing.

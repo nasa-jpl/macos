@@ -2725,21 +2725,21 @@ MACOS provides the user several commands to help setup the optical prescription,
 
 Previously created .in-files are loaded using the OLD command. This command has one argument, the name of the input file (minus the “.in” suffix). For instance, to load the Cassegrain.in prescription:
 
-MACOS\> old Cassegrain
+<!-- transcript: s04_old -->
 
 LOAd also work identically:
 
-MACOS\> loa Cassegrain
+<!-- transcript: s04_loa -->
 
 #### VALIDATE
 
 The VALidate command syntax-checks a .in prescription file without loading it into MACOS. This is useful when sharing or hand-editing prescription files: rather than discovering a typo halfway through a load, the user can check the file first. Like OLD, the command takes the filename (with or without the .in suffix):
 
-MACOS\> validate Cassegrain
+<!-- transcript: s04_validate -->
 
-If the file is well-formed, MACOS prints "Cassegrain.in: OK". If a problem is detected, the message identifies the offending line and key, for example:
+If the file is well-formed, MACOS prints "Cassegrain.in: OK". If a problem is detected, the message identifies the offending line and key, for example on a copy of Cassegrain.in with its first KcElt= value deleted:
 
-Cassegrain.in: line 76: key "ZernType" has no value
+<!-- transcript: s04_validate_bad -->
 
 The same check runs automatically as part of the OLD and LOAD commands; if it fails, the load is aborted and the user is re-prompted for a different filename, leaving the previously loaded prescription untouched.
 
@@ -2749,32 +2749,23 @@ The validator reads the file as text only.  It refuses a key with no value (`Elt
 
 The MODify command allows the user to change the current optical prescription without editing the .in-file. These changes are not saved in a .in-file unless the SAVe command is used. This allows the user to perturb elements, modify the prescription, and save the results if desired. Any of the .in-file variables listed in [Section ?](#summary-of-prescription-variables) can be changed.  Write the assignment without spaces around the equals sign (`mod nGridpts=33`); `mod nGridpts = 33` is rejected with a message rather than read.
 
-MACOS\>**mod**
-
-    MOD: (q): h
-    MACOS MODify Function MODify Syntax Examples:
-    Flux=3
-    ChfRayPos(1)=2-MOD 1st element of vector ChfRayPos(:)=2,0,0-MOD all elements of vector RptElt(3,2)=3-MOD 3rd element of vector for iElt=2 RptElt(:,2)=1.5,3,0-MOD all elements of vector for iElt=2
-    Quit: quit Modify function.
+<!-- transcript: s04_mod_help -->
 
 To use the MODify command, just type MOD. The user will then be prompted for the modification. If a MODification is successful, it will be echoed at the terminal. For instance to change the eccentricity of element 2 to 1.03.
 
-MACOS\>**mod**
-
-    MOD: (q): eElt(2)=1.03 eElt( 2) = 1.030000000D+00 KcElt( 2) = -1.060900000D+00 KrElt( 2) = -2.842000000D+00
+<!-- transcript: s04_mod_ecc -->
 
 If a MOD is not successful, it will not be echoed.
 
-    MOD: (q): eeElt(2)=1.04
-    MOD: (q):
+<!-- transcript: s04_mod_fail -->
 
 There are 2 ways to enter use MODify for vectors and arrays. The first is changing one element of the vector or array at a time:
 
-    MOD: (q): VptElt(3,2)=4.2
+<!-- transcript: s04_mod_vec1 -->
 
 The second is to re-enter the entire vector:
 
-    MOD: (q): VptElt(:,2)=1.0,0.0,3.0
+<!-- transcript: s04_mod_vec2 -->
 
 The SHOw command can be used to display the element’s data.
 
@@ -2792,23 +2783,13 @@ The SUMmarize command displays a brief summary of the loaded optical system, lis
 
 The STAtus command displays information about some of the current states.
 
-MACOS\>**status**
-
-    Status for file cass_ap3:
-    Current element for OPD calculations= 4 Current element for WF/Spot calculations= 5 Obscuration option for ray-trace= 0 Current WF plot type=SLICE
-    REGRID option= F Composed image= T
-    Pixel location set by chief ray option= F
+<!-- transcript: s04_status -->
 
 #### RESET
 
 The RESet command reinitializes some of the current states (see below) to their default values.
 
-MACOS\>**reset** MACOS\>**status**
-
-    Status for file cass_ap3:
-    Current element for OPD calculations= 0 Current element for WF/Spot calculations= 0 Obscuration option for ray-trace= 0 Current WF plot type=GRAY
-    REGRID option= F Composed image= F
-    Pixel location set by chief ray option= F
+<!-- transcript: s04_reset_status -->
 
 #### SHOW
 

@@ -163,14 +163,9 @@ BUild performs the MACOS differential ray-trace calculations, and must be perfor
 
 Note that the BUild command ignores the presence of reference surfaces and obscuring surfaces unless they are the last surface. The BUild command currently does not work if there are return surfaces in the beam train.
 
-MACOS\>**build**
-
 As an example, consider the Cassegrain.in (see Appendix A.1.2). This prescription has output coordinates set up to compute a wavefront model as discussed previously. Once the prescription is loaded using the OLD command, the C-matrix is easily built:
 
-    Enter terminal element number:4
-    Tracing 150 rays and BUILDing linear model... Compute time was 0.4141 sec
-
-MACOS\>
+<!-- transcript: s08_build -->
 
 #### DMBUILD
 
@@ -184,20 +179,7 @@ The LPErturb command allows the user to enter an element perturbation for use wi
 
 After each LPErturb command, the current perturbation vector (in global coordinates) is printed out. The LPErturb command *adds* the perturbation data to the existing perturbation vector. Multiple LPErturb commands sum each perturbation with the previous perturbation vector. The perturbation vector can be reset to zero using the LREset command. Using Cassegrain.in:
 
-MACOS\>**lperturb**
-
-    Enter element to be perturbed:3 Use element coordinates? (NO):
-    Enter rotational perturbation vector (x,y,z):0,1e-7,0 Enter translational perturbation vector (x,y,z):0,0,0
-    Element 1 Linear Perturbations:
-    Rotational= 0.000000D+00 0.000000D+00 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00
-    Element 2 Linear Perturbations:
-    Rotational= 0.000000D+00 0.000000D+00 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00
-    Element 3 Linear Perturbations:
-    Rotational= 0.000000D+00 1.000000D-07 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00
-    Element 4 Linear Perturbations:
-    Rotational= 0.000000D+00 0.000000D+00 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00
-    Element 5 Linear Perturbations:
-    Rotational= 0.000000D+00 0.000000D+00 0.000000D+00 Translational= 0.000000D+00 0.000000D+00 0.000000D+00 MACOS>
+<!-- transcript: s08_lperturb -->
 
 #### LPREAD
 
@@ -205,7 +187,7 @@ The LPRead command reads element perturbations from a specified datafile. MACOS 
 
 The perturbation file must be in the following all numeric format. The perturbations must be in global coordinates. The order of the perturbation vectors in the .pert-file must be identical to the order of the elements (the first perturbation vector corresponds to the first element, the sixth perturbation vector corresponds with the sixth element). Each element must have a perturbation vector. If an element is unperturbed, then a string of zeroes should be entered as its perturbation vector. The perturbation vectors have 6 components: a 3-vector rotational perturbations and a 3-vector translational perturbations. The 6 components must be separated by spaces.
 
-MACOS\>**lpr** FileCassegrain.pert read. MACOS\>
+<!-- transcript: s08_lpread -->
 
 #### LRESET
 
@@ -217,153 +199,37 @@ The LREset command zeros any previously entered linear perturbations. It should 
 
 The PARtials command prints individual optical sensitivity matrices for specified rays. The user is asked whether to print in input/output or global coordinates. For Cassegrain.in, the partials of the chief ray in global coordinates are:
 
-MACOS\>**partials**
-
-    Enter ray number for partials (0=done, 1=chief ray):1 Print partials in actuator/sensor coordinates? (YES): no
-    Partial of ray 1 at Element 4 (Ref_surf) to ray at Element 0 (Inpu-tRay)
-    0.3036E+01 0.0000E+00 0.0000E+00 -0.4458E-01 0.0000E+00 0.0000E+00
-    0.0000E+00
-    0.0000E+00 0.3036E+01 0.0000E+00 0.0000E+00 -0.4458E-01 0.0000E+00
-    0.0000E+00
-    0.0000E+00 0.0000E+00 0.1000E+01 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00
-    0.5549E+01 0.0000E+00 0.0000E+00 0.2479E+00 0.0000E+00 0.0000E+00
-    0.0000E+00
-    0.0000E+00 0.5549E+01 0.0000E+00 0.0000E+00 0.2479E+00 0.0000E+00
-    0.0000E+00
-    0.0000E+00 0.0000E+00 0.1006E+02 0.0000E+00 0.0000E+00 0.1000E+01
-    0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.1000E+01
-    Partial of ray 1 at Element 4 (Ref_surf) to Element 2 (Primary ) per-turbations
-    0.0000E+00 -0.6606E+01 0.0000E+00 0.6117E+00 0.0000E+00 0.0000E+00
-    0.6606E+01 0.0000E+00 0.0000E+00 0.0000E+00 0.6117E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-
-+--------------------+--------+--------+--------+--------+-----------+
-| 0.0000E+00         | -0.81  | 0.00   | 0.75   | 0.00   | 0         |
-|                    | 22E+01 | 00E+00 | 21E+00 | 00E+00 | .0000E+00 |
-+====================+========+========+========+========+===========+
-| 0.8122E+01         | 0.00   | 0.00   | 0.00   | 0.75   | 0         |
-|                    | 00E+00 | 00E+00 | 00E+00 | 21E+00 | .0000E+00 |
-+--------------------+--------+--------+--------+--------+-----------+
-| 0.0000E+00         | 0.00   | 0.00   | 0.00   | 0.00   | 0         |
-|                    | 00E+00 | 00E+00 | 00E+00 | 00E+00 | .0000E+00 |
-+--------------------+--------+--------+--------+--------+-----------+
-| 0.0000E+00         | 0.00   | 0.00   | 0.00   | 0.00   | 0         |
-|                    | 00E+00 | 00E+00 | 00E+00 | 00E+00 | .2000E+01 |
-+--------------------+--------+--------+--------+--------+-----------+
-
-    Partial of ray 1 at Element 4 (Ref_surf) to Element 3 (Secondar) per-turbations
-    0.0000E+00 0.1241E+01 0.0000E+00 -0.5671E+00 0.0000E+00 0.0000E+00
-    -0.1241E+01 0.0000E+00 0.0000E+00 0.0000E+00 -0.5671E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 -0.2000E+01
-    Partial of ray 1 at Element 4 (Ref_surf) to Element 4 (Ref_surf) per-turbations
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    Enter ray number for partials (0=done, 1=chief ray):
+<!-- transcript: s08_partials_chief -->
 
 The specific partials take the form in Eqns. 8.3 and 8.4. The first matrix shows that source chief ray direction perturbations are magnified 3.036 times at the reference surface. The effect on ray direction at the reference surface of primary mirror tilts and decenters are magnified by 6.606 and 0.5671 times, respectively.
 
 The path length partials show a factor-of-two sensitivity for this ray. Looking at the OPD partials only for a marginal ray, these numbers change:
 
-    Enter ray number for partials (0=done, 1=chief ray):2 Print partials in actuator/sensor coordinates? (YES): y
-    Partial of ray 2 at Element 4 (Ref_surf) to ray at Element 0 (Inpu-tRay)
-    0.2996E+01 -0.2639E-17 0.1976E-16 -0.4450E-01 0.3920E-19 0.0000E+00
-    0.0000E+00
-    -0.2639E-17 0.2984E+01 0.8899E-01 0.3920E-19 -0.4432E-01 0.0000E+00 0.0000E+00
-    0.5643E+01 -0.4971E-17 0.1977E-15 0.2500E+00 -0.2202E-18 0.1976E-
-    16 0.0000E+00
-    -0.4971E-17 0.5620E+01 0.8902E+00 -0.2202E-18 0.2490E+00 0.8899E-01 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.1000E+01
-    Partial of ray 2 at Element 4 (Ref_surf) to Element 2 (Primary ) per-turbations
-
-+----------+-----------+----------+-----------+-----------+----------+
-| -0.      | -0        | 0.       | 0         | -0        | 0.       |
-| 4462E-16 | .6401E+01 | 0000E+00 | .5827E+00 | .8407E-17 | 4262E-16 |
-+==========+===========+==========+===========+===========+==========+
-| 0.       | 0         | 0.       | -0        | 0         | 0.       |
-| 6200E+01 | .4462E-16 | 0000E+00 | .8407E-17 | .5448E+00 | 1920E+00 |
-+----------+-----------+----------+-----------+-----------+----------+
-| -0.      | -0        | 0.       | 0         | -0        | 0.       |
-| 1069E-15 | .8239E+01 | 0000E+00 | .7500E+00 | .1533E-16 | 7920E-16 |
-+----------+-----------+----------+-----------+-----------+----------+
-| 0.       | 0         | 0.       | -0        | 0         | 0.       |
-| 7757E+01 | .1069E-15 | 0000E+00 | .1533E-16 | .6810E+00 | 3567E+00 |
-+----------+-----------+----------+-----------+-----------+----------+
-| -0.      | 0         | 0.       | -0        | -0        | 0.       |
-| 3934E+01 | .8735E-15 | 0000E+00 | .7951E-16 | .3581E+00 | 1934E+01 |
-+----------+-----------+----------+-----------+-----------+----------+
-
-    Partial of ray 2 at Element 4 (Ref_surf) to Element 3 (Secondar) per-turbations
-    -0.3440E-17 0.1228E+01 0.5551E-16 -0.5382E+00 0.8367E-17 -0.4262E-16
-    -0.1244E+01 0.3440E-17 0.0000E+00 0.8367E-17 -0.5005E+00 -0.1920E+00 0.3146E-16 -0.6986E-32 0.0000E+00 0.3062E-32 0.1379E-16 -0.9888E-16
-    0.1417E+00 -0.3146E-16 0.0000E+00 0.1379E-16 0.6210E-01 -0.4453E+00
-    0.6140E+00 -0.1363E-15 0.0000E+00 0.5975E-16 0.2691E+00 -0.1930E+01
-    Partial of ray 2 at Element 4 (Ref_surf) to Element 4 (Ref_surf) per-turbations
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-
-    0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00 0.0000E+00
-    Enter ray number for partials (0=done, 1=chief ray):
+<!-- transcript: s08_partials_ray2 -->
 
 #### LOPD
 
 The LOPd command generates an OPD map of the beam at the final surface of the linear model. It parallels the OPD command discussed in [Section ?](#ray-trace-commands). Using Cassegrain.in:
 
-MACOS\>**lopd**
-
-    Tracing perturbed system Average OPD is 1.822578E-12
-    RMS OPD including piston is 3.023756E-08 RMS WFE excluding piston is 3.023755E-08 Type <RETURN> for next page:
+<!-- transcript: s08_lopd -->
 
 #### LSPOT
 
 The LSPot command generates a spot diagram of the beam at the final surface of the linear model. It parallels the SPOt command discussed in [Section ?](#ray-trace-commands). Using Cassegrain.in:
 
-MACOS\>**lspot**
-
-    Tracing perturbed system Average OPD is -9.502741E-07
-    RMS OPD including piston is 1.081200E-01 RMS WFE excluding piston is 1.081200E-01 Type <RETURN> for next page:
+<!-- transcript: s08_lspot -->
 
 #### LINTENSITY
 
 The LINtensity command computes beam wavefront phase at the final surface of the linear model and then performs a single far-field propagation to the next element in the prescription. If the last element in the linear model is the last element in the prescription, the user is prompted for transmission distance and other information. LINtensity performs calculations that parallel the propagation commands discussed in Sections 6.3 and 7.2.1, respectively. Using Cassegrain.in:
 
-MACOS\>**lintensity** Tracing perturbed system
-
-    Average OPD is 1.822578E-12
-    RMS OPD including piston is 3.023756E-08 RMS WFE excluding piston is 3.023755E-08 FFT/Point Spread Function Data Summary:
-    Wavelength= 9.9999999748E-07; Transmission Distance= 5.5601458549E+00 u-v plane diam= 1.8044868469E+01 du= 7.0764191449E-02
-    x-y plane diam= 7.8265948105E-05 dx= 3.0692527275E-07
-
-Type \<RETURN\> for next page:
+<!-- transcript: s08_lint -->
 
 #### LPIXILATE
 
-The LPIxilate command computes beam wavefront phase at the final surface of the linear model and then performs a single far-field propagation to the next element in the prescription. If the last element in the linear model is the last element in the prescription, the user is prompted for transmission distance and other information. Finaly, the image
+The LPIxilate command computes beam wavefront phase at the final surface of the linear model and then performs a single far-field propagation to the next element in the prescription. If the last element in the linear model is the last element in the prescription, the user is prompted for transmission distance and other information. Finaly, the image is pixilated. The LPIxilate command parallels the PIxilate command discussed [Section ?](#pixilate). Using Cassegrain.in:
 
-MACOS\>**lpix**
-
-is pixilated. The LPIxilate command parallels the PIxilate command discussed [Section ?](#pixilate). Using Cassegrain.in:
-
-    Tracing perturbed system Average OPD is 1.822375E-12
-    RMS OPD including piston is 2.104591E-12 RMS WFE excluding piston is 1.052736E-12 FFT/Point Spread Function Data Summary:
-    Wavelength= 9.9999999748E-07; Transmission Distance= 5.5601458549E+00 u-v plane diam= 1.8044868469E+01 du= 7.0764191449E-02
-    x-y plane diam= 7.8265948105E-05 dx= 3.0692527275E-07
-    Enter number of pixels per side:10 Enter size of pixel:1e-7
-
-Type \<RETURN\> for next page:
+<!-- transcript: s08_lpix -->
 
 ### Commands for Exporting Models
 
