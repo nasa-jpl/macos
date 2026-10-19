@@ -75,7 +75,9 @@
 > macos-fd's now (marker-based; my sentence handed over).  NEXT: gate at bba2e362 from the worktree after the 90cf4934 cmd run ends.**
 
 > **2026-10-19 PUSHED (Dave's word): macos 98debc6f, resources 629a2d2; gate at bba2e362 PASS (36699d34).  CCMac's pair = 36699d34 +
-> 629a2d2.  (ii) obscured-ray ORS rule RULED correct (Dave 2026-10-19).  OPEN for Dave: (hh) SAVE drops the UserDefined frame (fix now / queue).**
+> 629a2d2.  (ii) obscured-ray ORS rule RULED correct (Dave 2026-10-19).  (hh) RULED fix -> DONE (LOCAL): SAVE writes the UserDefined frame,
+> UDSrfParam (six values) before UDSrfFile; AOExample's DM frame restored (opd 16 1.2675e-6); UDSINIT.jou re-pinned + SAVE-reload leg
+> (fails pre-fix).  NEXT: gate at the (hh) commit (AOExample = the named mover), records, push on Dave's word, CCMac's pair.**
 
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,

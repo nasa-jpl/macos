@@ -1929,8 +1929,19 @@ C***********************************************************************
             ! ---------------------------- User Defined SArf. (7)
             CASE (SrfType_UserDefined)
               CALL PrintFmt('UDSrfType', "2x,i0", UDSrfType(iElt))
+!-->  UDSrfParam BEFORE UDSrfFile: the reader loads the file when it
+!     meets the key, with the parameters then in force ('Must specify
+!     UDSrfParam before loading UDSrfFile'), so the emitted order
+!     re-initialized every DM from the defaults on reload (AOExample.in
+!     opd 16: 1.2675e-6 -> 3.1638e-7, the May refresh).  PLAN 1.2 (hh).
+!     Six values, the ones the engine reads and uses (UDSrfParam(1:6)
+!     in the reader, UDSrfParam(6) in elemsub): all ten slots printed
+!     six per line put an orphaned '0 0 0 0' continuation line in the
+!     deck, 'MBFile6: Unidentified string' on every reload.
+              CALL PrintFmtArray('UDSrfParam','1PD23.15',6,
+     &                           UDSrfParam(1:6,iElt))
               CALL PrintFmt('UDSrfFile', "2x,A", TRIM(UDSrfFile(iElt)))
-              CALL PrintFmtArray('UDSrfParam','1PD23.15',6,UDSrfParam(:,iElt))
+!<--
 
             ! ---------------------------- Zernikes (8)
             CASE (SrfType_Zernike)
@@ -2053,7 +2064,14 @@ C***********************************************************************
             CALL PrintFmtArray('yFF', "1PD23.15", 3, yFF(:,iElt))
             CALL PrintFmtArray('zFF', "1PD23.15", 3, zFF(:,iElt))
           END IF
-          IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)) THEN
+!-->  a UserDefined surface (7) traces in the monomial frame too (every
+!     UDSrf call takes pmon, xhat, yhat, zhat) but was not in the set, so
+!     SAVE dropped the frame: AOExample.in's DM lost its 3.2 frame in the
+!     May refresh (opd 16 1.2675e-6 -> 3.1638e-7).  PLAN_CONSOLIDATION
+!     1.2 (hh), macos-fd's transcript diff; Dave 2026-10-19: fix.
+          IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)
+     &        .OR.(SrfType(iElt).EQ.SrfType_UserDefined)) THEN
+!<--
             CALL PrintFmtArray('pMon', "1PD23.15", 3, pMon(:,iElt))
             CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
