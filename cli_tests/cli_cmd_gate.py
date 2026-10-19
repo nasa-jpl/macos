@@ -117,7 +117,9 @@ def main():
     binary, jdir, outcsv = sys.argv[1:4]
     root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
     res = os.environ.get('MACOS_RESOURCES', os.path.abspath(os.path.join(root, '..', 'MACOS_resources')))
-    tmp = tempfile.mkdtemp(prefix='cli_cmd_')
+    # dir='/tmp': macOS's long $TMPDIR wrapped the echoed paths on the 80-column pty and six
+    # ^-anchored journals missed (CCMac's Mac gate, 2026-10-19)
+    tmp = tempfile.mkdtemp(prefix='cli_cmd_', dir='/tmp')
     tdir = os.path.splitext(outcsv)[0] + '_transcripts'
     os.makedirs(tdir, exist_ok=True)
     jous = sorted(glob.glob(os.path.join(jdir, '*.jou'))) + sorted(glob.glob(os.path.join(jdir, 'must_fail', '*.jou')))
