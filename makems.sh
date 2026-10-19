@@ -55,11 +55,21 @@ if [ "${FC}" = "ifx" ] && [ -f "${ONEAPI_SETVARS}" ]; then
   source "${ONEAPI_SETVARS}" --force > /dev/null 2>&1
 fi
 
+# --- Portable parallel job count (nproc is GNU/Linux-only; macOS uses sysctl) ---
+if command -v nproc >/dev/null 2>&1; then
+  NJOBS="$(nproc)"
+else
+  NJOBS="$(sysctl -n hw.logicalcpu 2>/dev/null || echo 4)"
+fi
+
 # --- Readline bootstrap (one-time, on first clone) ---
+# macOS: the top-level CMakeLists links Homebrew's readline (brew install
+# readline); the bundled readline-8.2 tree is neither pre-built nor needed
+# there, so skip this Linux-only bootstrap on Darwin.
 READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
-if [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
+if [ "$(uname -s)" != "Darwin" ] && [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
   echo "makems: bootstrapping bundled readline (one-time setup) ..."
-  ( cd "${READLINE_DIR}" && ./configure -q && make -j"$(nproc)" ) \
+  ( cd "${READLINE_DIR}" && ./configure -q && make -j"${NJOBS}" ) \
     > /tmp/makems_readline_bootstrap.log 2>&1 \
     || { echo "makems: readline bootstrap FAILED — see /tmp/makems_readline_bootstrap.log"
          return 1 2>/dev/null || exit 1; }
@@ -91,7 +101,7 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" "${GEN_ARG[@]}" \
   || { echo "makems: cmake configure FAILED"; return 1 2>/dev/null || exit 1; }
 
 # --- Build ---
-cmake --build "${BUILD_DIR}" -j"$(nproc)" \
+cmake --build "${BUILD_DIR}" -j"${NJOBS}" \
   || { echo "makems: cmake build FAILED"; return 1 2>/dev/null || exit 1; }
 
 echo ""
