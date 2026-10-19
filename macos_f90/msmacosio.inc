@@ -2754,7 +2754,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ELSE IF (LCMP(VAR_NAM,'psiElt',6)) THEN
               READ(VALUE,*,IOSTAT=iosRx)(psiElt(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
-              CALL DUNITIZE(psiElt(1,iElt))
+!-->  a psiElt already unit to round-off is kept as written: re-unitizing
+!     it walked a 9e-17 component an ulp per SAVE generation on arm64
+!     (CCMac's Mac gate, tSaveFixedPoint / test_save_fixed_point,
+!     2026-10-19) -- the OptBeamDir= dead band of dfc2b476, same rule
+              IF (ABS(DMAG(psiElt(1,iElt),3)-1d0) .GT. 64d0*EPSILON(1d0))
+     &          CALL DUNITIZE(psiElt(1,iElt))
+!<--
               psiElt_FLG=.TRUE.
               GO TO 61
 

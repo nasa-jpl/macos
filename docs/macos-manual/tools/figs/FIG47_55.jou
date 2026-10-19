@@ -1,7 +1,8 @@
 # Figures 47-55 and 57 (Section 7): the coronagraph walk of examples/CoroExample.jou on the /png device.  Pages:
 #  0 DRAW 0-16 XZ (47); 1 INT 6 unocculted, sqrt stretch (48); 2 INT 10, 3 INT 11, 4 INT 16 (49: pupil, Lyot stop,
 #  detector); 5 PIX 6 unocculted, 6 PIX 6 occulted (51); 7 PIX 6 log10, 8 PIX 6 sqrt (52); 9 ADD on-axis (53);
-#  10 INT 6 off-axis, log10 (54); 11 ADD off-axis, sqrt (55); 12 DAD linear SLICE (57); 13 a repeat of 12 to flush.
+#  10 INT 6 off-axis, log10 (54); 11 ADD off-axis, sqrt (55); 12 DAD linear SLICE (57); 13 DAD WIRE (62: the composed
+#  image as a wire mesh, 64 x 64 -- a 256-point PSF under WIRE is one spike); 14 a repeat of 13 to flush.
 # MODEL: 512
 # DEADLINE: 900
 # COPY: $ROOT/docs/macos-manual/examples/CoroExample.in fig47
@@ -68,6 +69,8 @@ yes
 stretch
 linear
 slice
+dad
+wire
 dad
 dad
 ! mkdir -p $ROOT/docs/macos-manual/build/figs/fig47; cp $TMP/fig47/giza_*.png $ROOT/docs/macos-manual/build/figs/fig47/

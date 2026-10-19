@@ -215,7 +215,9 @@ Generating the data for off-line display is as simple as selecting a file output
 
 MACOS\>**binary**
 
-    Plot type set to BINARY MACOS>intensity
+    Plot type set to BINARY
+
+MACOS\>**intensity**
     Enter number of element where data is to be generated: [9]: 9
     Tracing 3210 rays and propagating 16384 grid points... Scalar FF Prop between Elt 8 and Elt 9 to WF 1:
     z1=-9.1481D+01 dx1= 1.0581D-01 min= 1.0581D-01 max= 1.0581D-01 dev= 2.6446D-06 lin=100.00%

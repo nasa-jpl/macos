@@ -2,27 +2,21 @@
 MACOS Manual
 :::
 
+```{=openxml}
+<w:p><w:pPr><w:spacing w:before="6600" w:after="0"/></w:pPr></w:p>
+```
+
 ::: {custom-style="Subtitle"}
 Modeling and Analysis for Controlled Optical Systems
 :::
 
 ::: {custom-style="Subtitle"}
-Version 4.2 (beta) --- October 2026
+Version 4.0 (beta) --- October 2026
 :::
 
 ::: {custom-style="Subtitle"}
 Jet Propulsion Laboratory, California Institute of Technology
 :::
-
-\newpage
-
-::: {custom-style="TOC Heading"}
-Contents
-:::
-
-```{=openxml}
-<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-3" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>(contents -- update the field)</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>
-```
 
 \newpage
 
@@ -58,3 +52,13 @@ MACOS is distributed as two git repositories on GitHub: the engine and this manu
     source ./makems.sh release gfortran   # the same with gfortran (the build the MATLAB interface links)
 
 `makems.sh` builds the engine library and the interactive program into `build_release[_gfortran]/bin/macos`; `makeall.sh` adds the SMACOS driver and the GMI MATLAB interface. The requirements (CMake, a Fortran compiler -- Intel ifx or gfortran -- and gcc), the Linux, macOS and Windows notes and the debug builds are in `BUILD.md` at the top of the `macos` repository; the branch model is in `BRANCHES.md`. The MATLAB interface (`MACOS_resources/mmacos`, built by its `run_mmacos_tests.sh`) and the Python package (`MACOS_resources/pymacos`) each carry their own README. Access to the repositories is by invitation; write to the contact above.
+
+\newpage
+
+::: {custom-style="TOC Heading"}
+Contents
+:::
+
+```{=openxml}
+<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-3" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>(contents -- update the field)</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>
+```

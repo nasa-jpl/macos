@@ -485,13 +485,9 @@ MACOS\>**wire**
 
      Plot type set to WIRE
 
-MACOS\>**int 6**
+MACOS\>**dad**
 
-    Enter number of element where data is to be generated: [6]: 6
-    ...
-    Peak intensity= 1.1041365D+08; Peak occurs at i=  129, j=  129
-
-(CassWithExitPupil.in at the detector, IMGMODE CONV; Figure 62.)
+Figure 62 is the coronagraph's composed detector image of Figure 55 (64 x 64 pixels) redrawn under the WIRE plot type as the current build draws it. The WIRE renderer is the hidden-line wireframe inherited from PGPLOT; under the built-in graphics it draws the sheet's outline with the mesh all but invisible, and a 256-point intensity grid draws as a single spike. Its rendering is under review (the plan's display items); use SLIce (Figure 57) for a surface view in the meantime.
 
 #### SLICE
 
