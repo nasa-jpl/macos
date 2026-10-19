@@ -1,0 +1,57 @@
+# Section 4, the prescription commands on Cassegrain.in: OLD, LOAD, VALIDATE (a sound deck, and a copy with
+# its first KcElt= emptied), MODify (help, a change, a failure, the two vector forms), STATUS before and
+# after RESET (after an OPD, a SPOT and the SLICE plot type, so there is state to reset).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s04
+cd $TMP/s04
+! perl -pe 's/^(\s*KcElt=).*$/$1/ if /KcElt=/ && !$d++' Cassegrain.in > Cassegrain_bad.in
+pgd
+/null
+# TRANSCRIPT: s04_old
+old Cassegrain
+# TRANSCRIPT: s04_loa
+loa Cassegrain
+# TRANSCRIPT: s04_validate
+validate Cassegrain
+# TRANSCRIPT: s04_validate_bad
+validate Cassegrain_bad
+# TRANSCRIPT: s04_mod_help
+mod
+help
+q
+# TRANSCRIPT: s04_mod_ecc
+mod
+eElt(2)=1.03
+q
+# TRANSCRIPT: s04_mod_fail
+mod
+eeElt(2)=1.04
+q
+# TRANSCRIPT: s04_mod_vec1
+mod
+VptElt(3,2)=4.2
+q
+# TRANSCRIPT: s04_mod_vec2
+mod
+VptElt(:,2)=1.0,0.0,3.0
+q
+# TRANSCRIPT-OFF
+old Cassegrain
+opd 4
+spot 5 Tout
+slice
+# TRANSCRIPT: s04_status
+status
+# TRANSCRIPT: s04_reset_status
+reset
+status
+# TRANSCRIPT-OFF
+# EXPECT: Tracing rays past\s+5 elements
+# EXPECT: Cassegrain\.in: OK
+# EXPECT: Cassegrain_bad\.in: line 38: key "KcElt" has no value
+# EXPECT: MODify Syntax Examples:[\s\S]*?Quit: quit Modify function\.
+# EXPECT: eElt\(\s*2\) =\s+1\.030000000D\+00\s+KcElt\(\s*2\) =\s+-1\.060900000D\+00\s+KrElt\(\s*2\) =\s+-1\.096200000D\+01
+# EXPECT: MOD: \[q\]: eeElt\(2\)=1\.04\s+MOD: \[q\]: q
+# EXPECT: VptElt\(\s*2\) =\s+0\.0+D\+00\s+0\.0+D\+00\s+4\.200000000D\+00
+# EXPECT: VptElt\(\s*2\) =\s+1\.000000000D\+00\s+0\.0+D\+00\s+3\.000000000D\+00
+# EXPECT: Current WF plot type=SLICE[\s\S]*?MACOS> reset[\s\S]*?Current element for OPD calculations=\s+0
+# EXPECT-NOT: forrtl

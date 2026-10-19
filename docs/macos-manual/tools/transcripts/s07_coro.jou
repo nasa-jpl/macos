@@ -1,0 +1,106 @@
+# Section 7, the coronagraph walk (examples/CoroExample.jou; the steps of tools/figs/FIG47_55.jou on /null):
+# CoroExample.in at model 512 on a 128 grid, sqrt stretch.  INT through the coronagraph with the occulter off,
+# PIX unocculted and occulted (the deck's occulter is three obscurations since 65a223ec: nObs(6)=3), STRETCH,
+# WINDOW, COMPOSE + ADD of the on-axis star, then STOP / FFP / ORS 5 / FEX for an off-axis star 100x dimmer,
+# (CoroExample.jou's `ors 7 yes` is left out: behind the occulter ORS 7 is starved since ef15ab23 and on ifx
+# returns a non-unit psi after FFP -- TRANSCRIPT_DIFF.md section 3.8),
+# its INT and ADD; WIRE + DAD of the composed image (figure 62).
+# MODEL: 512
+# DEADLINE: 900
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in s07
+cd $TMP/s07
+old CoroExample.in
+pgd
+/null
+stretch
+sqrt
+mod ngridpts=128
+q
+# TRANSCRIPT: s07_int6
+mod
+nObs(6)=0
+q
+int 6
+# TRANSCRIPT: s07_int10_11
+int 10
+int 11
+# TRANSCRIPT: s07_pix_unocc
+pix 6
+64
+
+# TRANSCRIPT: s07_pix_occ
+mod
+nObs(6)=3
+q
+pix 6 64 2.804186E-06
+# TRANSCRIPT: s07_stretch
+stretch
+log10
+# TRANSCRIPT: s07_win
+win
+Tout
+1.392542d-6
+0,0
+0,0
+# TRANSCRIPT: s07_compose
+compose
+16
+64
+1.392542E-06
+# TRANSCRIPT: s07_add
+add
+yes
+# TRANSCRIPT: s07_stop
+stop
+elt
+11
+0,0
+# TRANSCRIPT: s07_ffp
+ffp
+6
+2d-5,2d-5
+yes
+# TRANSCRIPT: s07_ors5
+ors
+5
+yes
+# TRANSCRIPT: s07_fex
+fex
+15
+yes
+# TRANSCRIPT: s07_mod_flux
+mod
+flux=0.01
+q
+# TRANSCRIPT: s07_stretch_int
+stretch
+log10
+int 6
+# TRANSCRIPT-OFF
+stretch
+sqrt
+# TRANSCRIPT: s07_add_offaxis
+add
+yes
+# TRANSCRIPT-OFF
+stretch
+linear
+# TRANSCRIPT: s07_wire
+wire
+dad
+# TRANSCRIPT-OFF
+# EXPECT: Using specified model size\s+512
+# EXPECT: nObs\(\s*6\) =\s+0[\s\S]*?Peak intensity= 3\.7810\d*D-02;[^\n]*\s+Sum of intensity= 8\.9215\d*D-01
+# EXPECT: Enter number of element where data is to be generated: \[6\]: 10[\s\S]*?Peak intensity= 8\.0591\d*D-05
+# EXPECT: Enter number of pixels per side: \[512\]: 64\s+Enter size of pixel: \[1\.380179E-06\]:\s+Peak intensity= 3\.7810\d*D-02
+# EXPECT: Enter size of pixel: \[1\.380179E-06\]: 2\.804186E-06\s+Peak intensity= 1\.5299\d*D-03;[^\n]*\s+Sum of intensity= 1\.6843\d*D-01
+# EXPECT: Enter pixel size for placing window: \[[^\]]*\]: 1\.392542d-6
+# EXPECT: Enter number of pixels per side: \[512\]: 64\s+Enter size of pixel: \[1\.000000E-03\]: 1\.392542E-06
+# EXPECT: Computed StopPos =\s+0\.0+D\+00\s+0\.0+D\+00\s+-1\.4277\d*D\+02
+# EXPECT: Field angle finder results:[\s\S]*?New crd=\s+8\.9167\d*D-07
+# EXPECT: Enter number of element to be optimized: \[1\]: 5\s+Reference surface optimization results:[\s\S]*?Old f=\s+6\.329334641D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: Enter number of exit pupil return surface: \[15\]: 15[\s\S]*?Old f=\s+6\.329334641D\+00\s+New f=\s+7\.3245\d*D\+00
+# EXPECT: Flux =\s+1\.000000000D-02
+# EXPECT: Source Flux= 1\.0000000D-02[\s\S]*?Peak intensity= 3\.7792\d*D-04
+# EXPECT: Plot type set to WIRE
+# EXPECT-NOT: forrtl

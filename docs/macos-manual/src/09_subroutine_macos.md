@@ -230,30 +230,9 @@ where the argument *model_size* is a either a constant or a variale for the spec
 
 ### Example
 
-MACOS\>**old**
-
 The user code accesses MACOS functions using the SMACOS call line in a fashion analogous to the MACOS command line. For instance, the MACOS command sequence to load Cassegrain.in and compute the intensity at the final element is:
 
-    Enter file name: Cassegrain
-    Input file Cassegrain.in being loaded. Optical Train Summary:
-    Tracing rays past 5 elements.
-    Aperture type = 1 (Annular ) with 15 grid points.
-    Elt 1: Obscuration with Kc= 0.0000D+00, Kr=-1.0000D+20, nECoords
-    = -6
-    Elt 2: Conic Mirror with Kc=-1.0000D+00, Kr=-1.0800D+01, nECoords
-    = -6
-    Elt 3: Conic Mirror with Kc=-2.6706D+00, Kr=-3.5268D+00, nECoords
-    = -6
-    Elt 4: Reference Surface with Kc= 0.0000D+00, Kr=-5.5601D+00, nECoords
-    = -6
-    Elt 5: Focal Plane with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords
-    = -6
-    Number of output coordinates is 5 MACOS>intensity
-    Enter last element for propagation:5
-    Tracing 4396 rays and propagating 65536 grid points... FF Prop between Elt 4 and Elt 5 to WF 1:
-    z1= 5.5601D+00 dx1= 7.0764D-02 min= 7.0704D-02 max= 7.0825D-02 dev= 3.5308D-05 lin= 99.95%
-    z2= 0.0000D+00 dx2= 3.0693D-07
-    Compute time was 0.3236 sec MACOS>
+<!-- transcript: s09_old_int -->
 
 The same functions can be performed using SMACOS calls as follows:
 

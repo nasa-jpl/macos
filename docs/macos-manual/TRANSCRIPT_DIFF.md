@@ -79,6 +79,21 @@ The prose around these dialogs still describes PGPLOT (`/GIF` files `pgplot.gif`
 `macos.glass`) and Table 4's Sun/PowerMac memory sizes; the dialogs now contradict them.  Left for
 Dave's editorial pass (section 4, item 5).
 
+### Section 4 (describing optical systems) — `tools/transcripts/s04_cmds.jou`
+
+Cassegrain.in.  **Not generated: the two NEW tutorials** (the Cassegrain source block and the
+`zsourc.in` beam projector, with their element dialogs, ~320 prompt lines): they are printed in a
+three-column "Prompt / Response / VariableName" form that a transcript would not keep.  Section 4.
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s04_old`, `s04_loa`, `s04_validate` | the command lines only | the full load / "Cassegrain.in: OK" | — |
+| `s04_validate_bad` | `Cassegrain.in: line 76: key "ZernType" has no value` (Cassegrain has no ZernType) | `Cassegrain_bad.in: line 38: key "KcElt" has no value` on a copy with the first KcElt= emptied | the 3.2 example was illustrative; the prose says how the copy is made |
+| `s04_mod_help` | `h` prints the help, headed "MACOS MODify Function" | **`h` is no longer help** (the match needs `he`, `LCMP(STRING,'HELP',2)`); `help` prints it, headed "**COMP** MODify Function" | current engine; the journal types `help` |
+| `s04_mod_ecc` | eElt 1.03 -> KcElt -1.0609, KrElt -2.842 | KcElt -1.0609, **KrElt -10.962** | 3.2's sample came from a different deck (Cassegrain's primary has Kr -10.8) |
+| `s04_mod_fail`, `s04_mod_vec1`, `s04_mod_vec2` | `MOD: (q):` prompts | `MOD: [q]:`, and the vector forms echo the whole vector | current engine |
+| `s04_status`, `s04_reset_status` | file `cass_ap3`; OPD element 4, WF element 5, SLICE, composed image T; after RESET 0, 0, GRAY | file Cassegrain; after `opd 4`, `spot 5`, `slice`: OPD element 5, WF 0, SLICE; the session-mode lines (Polarization ... CIR); **after RESET the plot type is still SLICE** | current engine; RESET no longer resets the plot type (the prose says it returns "some of the current states" to defaults) |
+
 ### Section 5 (ray-trace analysis) — `tools/transcripts/s05_cass.jou`, `s05_cassxp.jou`, `s05_misc.jou`
 
 Decks: Cassegrain.in (MAP, RAY, OPD, SPOT/OBS, STOP, CENTER, PERTURB, PREAD), CassWithExitPupil.in
@@ -123,12 +138,73 @@ after the SRS sign fix, 1.2 (gg)); generated on the 5f5cbce2 engine and compared
 | `s06_srs_coro` (MODify element 7, then SRS 7 -> 5) | **New f / New z 6.329334641 -> 6.329334644** (the 10th figure).  ifx and gfortran in the clean worktree and the shared-tree ifx build all print ...644 at 5f5cbce2; the hand text came from an intermediate build. |
 | prose after it: "INT 7 then reproduces the design deck's result exactly" | **not exact:** the peak is 1.3052468e-5 after ORS + SRS against 1.3052664e-5 on the design deck (1.5e-5 relative; the sums agree, 2.4707488e-1).  Now "agrees ... to five figures (peak intensity 1.3052e-5)", pinned in the journal. |
 
+| `s06_beam_uniform`, `s06_beam_gauss` (`tools/transcripts/s06_beam.jou`) | **the dialog and its figure disagreed, and the Gaussian numbers predated the normalization.**  The text's INT 5 (exit pupil, nGridpts 15: uniform peak 8.0645e-3, sum 0.90323; Gaussian peak 0.62290, sum 8.9981) did not make figure 46, which FIG46.jou draws at element 1 on a 64 grid.  Now the dialog is FIG46's steps: uniform peak 3.3322e-4, sum 0.90636; Gaussian peak 1.5947e-3, **sum 0.57778** (normalized to the uniform flux, 2026-10-19; the sum of 8.998 was ten times the source flux).  The prose names element 1 and the 64 grid. |
+
 The first CassWithExitPupil SRS dialog (step 1, New Vpt z 1.500000012 -> 1.500000000) is gone with
 the example; the sentence keeps CassWithExitPupil only as a pointer.
 
 Seen in passing (not printed): after `old` reloads a deck in a session that already opened the
 /null device, the first plot prints `%giza - ERROR - giza_open_device: Unknown device, device not
 opened` and the command completes (INT 7 here).
+
+### Section 7 (beam propagation and imaging) — `tools/transcripts/s07_coro.jou`, `s07_gblur.jou`, `s07_amp.jou`
+
+The coronagraph walk is CoroExample.jou's steps as tools/figs/FIG47_55.jou runs them (model 512, nGridpts
+128, sqrt stretch), GBLUR is FIG56.jou's, AMP / PHASE / REAL / IMGMODE / CONTOUR / TEXT are FIG60_64.jou's
+on CassWithExitPupil.in, so each dialog now matches its figure.  The 3.2 dialogs' italic notes inside the
+command lines ("Find new reference surfaces ...", "This image is shown in Figure 54") are one-line lead-ins.
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s07_int6` | 12661 rays; peak 3.7152e-2, sum 0.87709 | 12454 rays; peak 3.7811e-2, sum 0.89215 | the deck as in the tree (65a223ec, d9a57ffe, 22a60e20: grid 256 in the deck, set to 128 here; the narrower occulter) |
+| `s07_int10_11` | INT 10 peak 7.6769e-5, sum 0.13185; INT 11 peak 2.9045e-5, sum 4.4725e-2 | 8.0592e-5, sum 0.89215; 8.0592e-5 (same pixel), sum 0.70888 | not established (both runs have the occulter off at this point; 3.2's pupil sum is a seventh of its focus sum, today's is equal) |
+| `s07_pix_unocc`, `s07_pix_occ` | peak 0.16217, sum 0.90994; occulted peak 8.2111e-4, sum 0.11480; `nObs(6)=1` | 3.7811e-2, sum 0.89215; occulted 1.5299e-3, sum 0.16844; `nObs(6)=3` | the occulter is three obscurations since 65a223ec, radius 8e-6 since 22a60e20 |
+| `s07_win`, `s07_compose`, `s07_stretch`, `s07_mod_flux` | as now | as 3.2; MOD of `flux=` prints `Debug: VALUE = 0.01` (3.5) | — |
+| `s07_add` | peak 3.8883e-4, sum 4.4725e-2 | **peak 2.9705e4, sum 1.6047e6** | not established (eight orders: the detector intensity's normalization or units changed since 3.2) |
+| `s07_stop` | StopPos z -1.427723273e2 | -1.427723268496e2 (the 7th figure, as Section 5's STOP) | not established |
+| `s07_ffp`, `s07_ors5` | error 1.4241e-15; New crd 8.916721422e-7; ORS 5 TTL OPD 1.6562e-9, New Vpt x 3.728254596e-5 | 1.1382e-15; 8.916721422e-7 (as 3.2); 1.8373e-9, 3.728254585e-5 | the 128 grid against 3.2's |
+| **ORS 7 (not printed)** | New f 6.329334641, psi -1 | **left out of the walk: ORS 7 is starved behind the occulter since ef15ab23, and on ifx after the FFP returns f 0.808 with a non-unit psi (3.8)** | 3.8 |
+| `s07_fex` | New f 7.324539719 | 7.324539656 (the 8th figure) and the four-probe EP diagnostics | without ORS 7 |
+| `s07_stretch_int` | peak 3.7146e-4, sum 8.6867e-3 | 3.7792e-4, 8.7690e-3 | the deck (as `s07_int6`) |
+| `s07_add_offaxis` | peak 2.2645e-4, sum 6.8026e-3 | peak 1.2020e4 at (271, 243), sum 3.8584e5 | as `s07_add`; run with the ifx ORS 7 result accepted, the peak was 1.2875e4 at (257, 257) |
+| `s07_gblur_*` | element 21 of an unnamed deck, 128 pixels of 1.0007e-5, kernels 1e-6 and 3e-4 | element 16 of CoroExample.in, 128 pixels of 1.392542e-6, kernels 1e-7 and 2e-5, a fresh COMPOSE before each (FIG56) | the 3.2 deck is not in the tree; prose follows the figure |
+| `s07_amp`, `s07_phase`, `s07_real` | (re-emitted by hand 2026-10) | identical (peak amplitude 1.0508e4) | — |
+| `s07_imgmode` | "Enter image polarity (NEG/POS, ASTRO/CONV)" | "Raster polarity (NEG=astro/POS=conventional)", then "IMGMODE = POS" | current prompt |
+| `s07_wire` | WIRE, then DAD with nothing printed | DAD prints `** Error: inconsistent propagation parameters / plot bounds are degenerate, infinite, or NaN` on /null (after a linear stretch too) | display finding, beside 1.2 (aa) (figure 62 draws the sheet's outline only) |
+| `s07_con` | OPD 5 average -1.8948e-12, RMS 1.0919e-12 | average 2.4400e-12, RMS 1.1637e-12 | round-off level at the exit pupil |
+| `s07_text` | INT 5 "Transmission Distance= 5.5601459" on a 1.6767e-4 plane | the geometric INT at the pupil (peak 8.0645e-3, sum 0.90323), `CassWithExitPupil.int5.txt`, 256 by 256 | current engine (INT 5 is a geometric propagation to the Return surface) |
+
+One unexplained crash: the first regeneration of `s07_coro.jou` (model 512, ifx) died with no message;
+four reruns (two regenerations, two gate runs) passed.  Logged against the model-512 heap crash the
+memory records as reopened.
+
+### Section 8 (differential ray tracing) — `tools/transcripts/s08_linear.jou`
+
+Cassegrain.in at nGridpts 15 (the 3.2 deck's value, set by MODify: BUILD is limited to 500 rays and the
+tree's 51 grid traces 1877).  PARTIALS takes one ray per command now (the "0=done" loop is gone), so the
+ray-2 dialog is its own PARTIALS.
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s08_build` | "Tracing 150 rays" | 125 rays | the SAVE-form deck (the obscuration count) |
+| `s08_partials_chief` | input-ray block: direction magnification 3.036, path 5.549 / 0.2479 ...; primary block row 1: 0, -6.606, 0, 0.6117 | **input-ray block all zero** (7 x 7); primary block 0, -6.6061, 0, 0.61167 (as 3.2) | **finding 3.7**; the prose ("magnified 3.036 times") now contradicts the printed matrix |
+| `s08_partials_ray2` | input-ray block 0.2996e1 ...; primary block row 1 -0.4462e-16, -6.401, 0, 0.5827 | input-ray block all zero; primary block -6.6190e-2, -6.3981, ..., 0.58085 | 3.7; ray 2 is a different ray on the 15 grid of the current deck |
+| `s08_lperturb` | as now | as 3.2 | — |
+| `s08_lpread` | "FileCassegrain.pert read." with no prompt | prompts "Enter .pert-file name:" then reads (the missing space is the engine's) | current engine (as PREAD) |
+| `s08_lopd`, `s08_lint`, `s08_lpix` | average OPD 1.8226e-12, RMS 3.0238e-8; transmission distance 5.5601458549, du 7.0764e-2 | 2.2192e-12, **2.9690e-8**; 5.5601459020, du 7.6216e-2; no "excluding piston" line | 125 rays against 150; the deck's SAVE-form radius digits |
+| `s08_lspot` | its own numbers (average -9.5027e-7, RMS 0.10812) | prints exactly LOPD's lines | not established (LSPOT prints the OPD summary; the spot plot goes to the device) |
+
+### Section 9 (subroutine MACOS) — `tools/transcripts/s09_example.jou`
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s09_old_int` | 15 grid points ("Aperture type = 1 (Annular )"), "Enter last element for propagation:5", 4396 rays | 51 grid points, "Enter number of element where data is to be generated: [5]: 5", 1877 rays traced | the tree's deck (nGridpts 51) and the current prompts |
+
+### Section 11 (polarization) — `tools/transcripts/s11_pol.jou`
+
+| Dialog | Before | Now | Cause |
+|---|---|---|---|
+| `s11_pol` | defaults printed `[0.,0.]` | `[0.00000,0.00000]` | the current prompt format; the LOAD notice the prose describes ("LOAD: session modes in force: POLARIZATION") is pinned in the journal |
 
 ## 3. Engine findings the regeneration surfaced
 
@@ -174,13 +250,42 @@ built-in catalog has the same count, so no result moves here; a user's own table
 ### 3.5 Two debug prints left in user output
 
 OPD (and any plot) under TEXT prints `** In DBINOUT: NA,NC = 51 51`; PERTURB of the source prints
-`*** CPERTURB src: th = ... , del = ...` (`funcsub.F` line 71, a bare `print*`).  Both are visible in
+`*** CPERTURB src: th = ... , del = ...` (`funcsub.F` line 71, a bare `print*`); MODify of `flux=` prints
+`Debug: VALUE = 0.01` (`macosio.F` line 1769).  Both are visible in
 the generated dialogs; the 2026-10-19 `Debug: VAR_NAM` removal is the precedent.
 
 ### 3.6 CENTER prints a literal 0 iterations
 
 `macos_cmd_loop.inc` ~line 3212: `WRITE(*,309) 0,SQRT(sqErr)`; the count STOP's solve took is not
 passed out, so every CENTER says "Beam centered in 0 iterations" (3.2 printed 2 for its example).
+
+### 3.7 PARTIALS: the partials with respect to the input ray print as zeros
+
+On Cassegrain.in after `build 4`, PARTIALS prints the block "Partial of ray N at Element 4 (Ref_surf)
+to ray at Element 0 (InputRay)" as all zeros, for the chief ray (global) and for ray 2
+(actuator/sensor); 3.2 printed a 3.036 direction magnification, path partials 5.549 / 0.2479, and
+0.2996e1 for ray 2.  The element blocks (primary, secondary) agree with 3.2 to its four digits.  Not
+established whether the source partials are no longer built or no longer printed (a BUILD-to-detector
+check in `cli_tests/cmd/LINEAR_MODEL.jou` reads ray 3's element partials only).
+
+### 3.8 ORS behind an occulting mask (CoroExample element 7): starved, and garbage on ifx
+
+Engine 5f5cbce2.  On CoroExample.in as loaded, `ors 7` aborts on both compilers: "only 0 of 317 test
+rays reach element 6 (the surface before it)" -- element 6 is the coronagraph mask (Obscuring, at the
+focus), which stops every geometric test ray, and since ef15ab23 the ORS merit counts only rays that
+reach the surface before the trial surface.  3.2 and CoroExample.jou (`ors 7 yes`) got New f 6.329334641,
+psi -1.  After `stop elt 11 0,0` and `ffp 6 2d-5,2d-5`, the compilers part: gfortran aborts ("no trial
+reference sphere was reached by a data ray"); ifx prints TTL OPD 1.8366e-9 in 42 calls, New f
+0.8084128449, z -0.808, and **New psi (2.1378e-5, -2.1378e-5, -7.829334641)** -- not a unit vector, its z
+the vertex z -- and offers to accept it.  The manual's own macro therefore corrupts element 7 on ifx, and
+FIG47_55.jou runs the same `ors 7 yes` (figures 54/55/57/62 were made this morning, before ef15ab23; the
+next figure regeneration would carry it).  Sent to the ORS lane; not touched here.
+
+### 3.9 Output file names carry ".in" when the deck was loaded with it
+
+The plot-file root is the name as typed at OLD: `old CassWithExitPupil.in` then TEXT + INT 5 writes
+`CassWithExitPupil.in.int5.txt`; `old CassWithExitPupil` writes `CassWithExitPupil.int5.txt`, the form
+Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as typed>.srf1.txt`).
 
 ## 4. For Dave — the decisions and the replacement list
 
@@ -207,6 +312,13 @@ passed out, so every CENTER says "Beam centered in 0 iterations" (3.2 printed 2 
 7. **Section 5's SINT deck** (3.2 does not name it): the dialog runs on the CLI suite's interpolated
    paraboloid `ZGD_test_files/tst_trace_rewrites.in` with a written 15 x 15 data file.  Keep, or an
    Appendix A example with an interpolated surface?
-8. **Engine cosmetics found by the dialogs** (3.5, 3.6): remove the two debug prints and pass CENTER's
+8. **Engine cosmetics found by the dialogs** (3.5, 3.6): remove the three debug prints and pass CENTER's
    iteration count out?
+9. **PARTIALS input-ray block** (3.7): an engine look before the Section 8 prose ("magnified 3.036
+   times") is kept or rewritten.
+10. **ORS behind the occulter** (3.8): how ORS should treat a mask that exists for diffraction (the ORS
+    lane has the repro); until then Section 7's walk leaves out `ors 7`, and FIG47_55.jou should not be
+    rerun on ifx.
+11. **Section 4's NEW tutorials**: regenerate them as plain dialogs (losing the VariableName column), keep
+    them as typed text, or rebuild the column from a generated dialog?
 

@@ -18,11 +18,7 @@ Polarization ray tracing is off by default and is a *session mode*: once
 turned on it survives every LOAD until it is turned off, and every LOAD
 prints a line naming the non-default modes in force.
 
-    MACOS>pol
-     Polarization turned on
-     Vector diffraction enabled
-    Enter Ex0 (real,imag): [0.,0.]: 1,0
-    Enter Ey0 (real,imag): [0.,0.]: 0,0
+<!-- transcript: s11_pol -->
 
 The POLarization command prompts for the complex source field amplitudes
 Ex0 and Ey0, in the source grid frame; `POL 1,0 0,0` on one line is the
