@@ -12,7 +12,7 @@ opd 5
 # EXPECT: Resetting MACOS model size
 # EXPECT: Diffraction grid size is\s+512 by\s+512
 # EXPECT: Must load optical data first: use NEW or OLD
-# EXPECT: Must load optical data first[\s\S]*?RMS OPD error is\s+1\.293791606D-12
+# EXPECT: Must load optical data first[\s\S]*?RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
 # EXPECT-NOT: allocate failed
 # EXPECT-NOT: deallocate failed
 # EXPECT-NOT: forrtl

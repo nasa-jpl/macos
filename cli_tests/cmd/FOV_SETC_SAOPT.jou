@@ -32,7 +32,7 @@ saopt
 dir
 saopt
 pos
-# EXPECT: Number of field of view used for design optimization =\s+3[\s\S]*?Set ChfRayDir =\s+0\.0+(E\+000)?\s+1\.0+E-003\s+1\.0+[\s\S]*?Number of field of view used for design optimization =\s+4[\s\S]*?Number of field of view used for design optimization =\s+3
+# EXPECT: Number of field of view used for design optimization =\s+3[\s\S]*?Set ChfRayDir =\s+-?0\.0+(E\+000)?\s+(1\.0+E-003|9\.99\d*E-004)\s+(1\.0+|0\.99\d*)[\s\S]*?Number of field of view used for design optimization =\s+4[\s\S]*?Number of field of view used for design optimization =\s+3
 # EXPECT: Set number of field of view to\s+3
 # EXPECT: Can not change source direction for collimated source
 # EXPECT: - Source position changes when ajusting source

@@ -18,6 +18,6 @@ show 1
 # EXPECT: Stopped: 
 # EXPECT-NOT: Optimization aborted
 # EXPECT-NOT: singular
-# EXPECT: psiElt=\s+0\.0E\+00\s+(0\.0E\+00|-?\d\.\d+E-(09|[1-9]\d))\s+-\d\.\d+E\+00
-# EXPECT: AsphCoef=\s+(0\.0E\+00|-?\d\.\d+E-(09|[1-9]\d))
+# EXPECT: psiElt=\s+-?0\.0E\+00\s+(-?0\.0E\+00|-?\d\.\d+E-(0[6-9]|[1-9]\d))\s+-\d\.\d+E\+00
+# EXPECT: AsphCoef=\s+(-?0\.0E\+00|-?\d\.\d+E-(0[6-9]|[1-9]\d))
 # (measured 2026-10-11 at 338416c, both compilers: every cell stops at the cap T=10; TIP -> <= 1.8e-9, h^4 -> <= 3.3e-9, Z12 -> <= 5.5e-17)

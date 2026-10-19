@@ -78,9 +78,9 @@ atm
 1.0
 ray
 opd 1
-# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 12345[\s\S]*?RMS OPD error is\s+7.337653537D-0\d
-# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 4321[\s\S]*?RMS OPD error is\s+1.200690873D-0\d
-# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 777[\s\S]*?RMS OPD error is\s+2.736065294D-0\d
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 12345[\s\S]*?RMS OPD error is\s+7\.3376\d*D-0\d
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 4321[\s\S]*?RMS OPD error is\s+1\.2006\d*D-0\d
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 777[\s\S]*?RMS OPD error is\s+2\.7360\d*D-0\d
 # EXPECT: (ATMCHK slope ok[\s\S]*?ATMCHK noll  ok[\s\S]*?ATMCHK carry ok[\s\S]*?ATMCHK tilt  ok[\s\S]*?ATMCHK PASS[\s\S]*?){3}ATMCHK kolm  ok[^\n]*\n ?ATMCHK PASS
 # EXPECT: Enter noise seed[^\n]*12345[\s\S]*?RMS OPD error is\s+(\S+)[\s\S]*Enter noise seed[^\n]*12345[\s\S]*?RMS OPD error is\s+\1\s
 # EXPECT-NOT: ATMCHK FAIL

@@ -23,9 +23,9 @@ no
 save $TMP/noc2
 ! grep -A2 "^ *nOutCord=" $TMP/noc2.in | tr -s ' ' | tr '\n' ';'; echo
 # EXPECT: \*\* No output-coordinate block \(nOutCord=/Tout=\) after element\s+5: proposing the beam frame at the last element
-# EXPECT: Output coordinates proposed: the beam frame at element\s+5 \(FocalPlane\), z = previous vertex to last vertex\s+x =\s+1\.000000\s+0\.000000\s+0\.000000\s+y =\s+0\.000000\s+1\.000000\s+0\.000000\s+z =\s+0\.000000\s+0\.000000\s+1\.000000
+# EXPECT: Output coordinates proposed: the beam frame at element\s+5 \(FocalPlane\), z = previous vertex to last vertex\s+x =\s+1\.000000\s+-?0\.000000\s+-?0\.000000\s+y =\s+-?0\.000000\s+1\.000000\s+-?0\.000000\s+z =\s+-?0\.000000\s+-?0\.000000\s+1\.000000
 # EXPECT: Tracing rays past\s+5 elements[\s\S]*?Keep the proposed output coordinates\? \[YES\]: yes\s+Output coordinates: the proposed beam frame
-# EXPECT: RMS OPD error is\s+1\.2937\d*D-12
+# EXPECT: RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
 # EXPECT: nOutCord= 5; Tout= 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00; 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 1\.0E\+00;
 # EXPECT: Keep the proposed output coordinates\? \[YES\]: no\s+Enter nOutCord \(1-7\) \[5\]: 5[\s\S]*?Output coordinates set by hand: 5 rows \(SAVE writes them\)
 # EXPECT: nOutCord= 5; Tout= 0\.0E\+00 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00; 1\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00 0\.0E\+00;

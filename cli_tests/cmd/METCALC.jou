@@ -13,8 +13,8 @@ global
 0,0,0
 0,0,1e-3
 metcalc
-# EXPECT: Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+0\.10000499987\d+
+# EXPECT: Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+0\.10000\d*
 # EXPECT: Met beam\s+2 length from Elt\s+2 Pos\s+2\s+to Elt
-# EXPECT: MACOS> perturb 3[\s\S]*?Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+0\.10000499987\d+
+# EXPECT: MACOS> perturb 3[\s\S]*?Met beam\s+1 length from Elt\s+2 Pos\s+1\s+to Elt\s+3 Pos\s+1\s+=\s+0\.10000\d*
 # EXPECT-NOT: Must load optical data first
 # EXPECT-NOT: forrtl

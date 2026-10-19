@@ -9,5 +9,5 @@ old $DECK
 calib
 show 1
 # EXPECT: no trial step was accepted -- \d+ of \d+ trials lost the chief ray
-# EXPECT: psiElt=\s+0\.0E\+00\s+(1\.0E-03|9\.99\d*E-04|1\.000\d*E-03)
+# EXPECT: psiElt=\s+-?0\.0E\+00\s+(1\.0E-03|9\.99\d*E-04|1\.000\d*E-03)
 # EXPECT-NOT: Stopped: stalled

@@ -59,7 +59,7 @@ yes
 # EXPECT: Writing Coherent Imaging, Elt=5
 # EXPECT: IMG 128 128 1\.23291\d+E\+10 5\.235\d+e\+11
 # EXPECT: ^RATIO 24\.\d+ inbound\s*$
-# EXPECT: Sum of intensity= 3\.3131188D\+08
-# EXPECT: ^PT (128 129 8\.87731\d+E\+06 3\.31312e\+08)\s*$[\s\S]*?^PT \1\s*$
+# EXPECT: Sum of intensity= 3\.3131\d*D\+08
+# EXPECT: ^PT (128 129 8\.8773\d*E\+06 3\.3131\d*e\+08)\s*$[\s\S]*?^PT \1\s*$
 # EXPECT-NOT: RATIO \S+ OUT
 # EXPECT-NOT: forrtl

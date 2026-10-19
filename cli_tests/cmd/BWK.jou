@@ -15,5 +15,5 @@ global
 1e-4,0,0
 0,0,0
 bwk
-# EXPECT: Need set CalBWk= Y in prescription[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+0\.000000000\s+0\.000000000\s+-?0\.000000000[\s\S]*?iElt=\s+3\s+ChfRayWalk =\s+0\.000133885\s+0\.000000000[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+-0\.000690000\s+0\.000000000
+# EXPECT: Need set CalBWk= Y in prescription[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+-?0\.000000000\s+-?0\.000000000\s+-?0\.000000000[\s\S]*?iElt=\s+3\s+ChfRayWalk =\s+0\.00013388\d\s+-?0\.000000000[\s\S]*?iElt=\s+5\s+ChfRayWalk =\s+-0\.00069000\d\s+-?0\.000000000
 # EXPECT-NOT: forrtl

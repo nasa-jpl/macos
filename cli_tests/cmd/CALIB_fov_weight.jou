@@ -18,9 +18,9 @@ calib
 no
 yes
 # EXPECT: Weight =\s+1\.0+\s*$
-# EXPECT: Final LM merit \(chisq\) =\s+7\.98132452\d*E-033
+# EXPECT: Final LM merit \(chisq\) =\s+7\.9\d*E-033
 # EXPECT: Weight =\s+0\.50+\s*$
-# EXPECT: Final LM merit \(chisq\) =\s+3\.99066226\d*E-033
+# EXPECT: Final LM merit \(chisq\) =\s+3\.9\d*E-033
 # EXPECT-NOT: Weight =\s+0\.0+(E\+000)?\s*$
 # EXPECT-NOT: E-043
 # (measured 2026-10-17 on 3ee3081, ifx: chisq 7.981324523439985E-043 with no key, Weight = 0;

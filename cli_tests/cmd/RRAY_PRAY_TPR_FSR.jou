@@ -37,8 +37,8 @@ tpr
 # EXPECT-NOT: segment from Element
 # EXPECT-NOT: Need to run RRAY
 # EXPECT: TPR ray 1 at element 6:\s+0\.0+E\+00\s+0\.0+E\+00\s+1\.50+E\+00
-# EXPECT: TPR ray 63 at element 6:\s+-9\.07585118170\d*E-11\s+8\.25072649091\d*E-12\s+1\.50+E\+00
-# EXPECT: TPR ray 108 at element 6:\s+-5\.76854120026\d*E-11\s
+# EXPECT: TPR ray 63 at element 6:\s+-?\d\.\d+E-(1\d|[2-9]\d)\s+-?\d\.\d+E-(1\d|[2-9]\d)\s+1\.50+E\+00
+# EXPECT: TPR ray 108 at element 6:\s+-?\d\.\d+E-(1\d|[2-9]\d)\s
 # EXPECT-NOT: TPR ray 0 
 # EXPECT-NOT: NaN
 # EXPECT-NOT: RayPosHist

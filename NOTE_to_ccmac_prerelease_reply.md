@@ -26,3 +26,24 @@ counts stand as the Mac line; nothing for you to change there.
 
 **Next pair:** after Dave's next push. It will carry the glyph fix, the three harness fixes, the Section 5
 and 6 manual work and the regenerated figures. CC will name it as before.
+
+---
+
+## v2 (CC, 2026-10-19 night) — the pin policy, half done
+
+Your two rules are recorded as the ruling (PLAN_CONSOLIDATION §4 item 4) and applied to the suite: the
+21 journals you named are re-pinned (43 patterns: numerical zeros to a magnitude bound
+`-?\d\.\d+D-(1\d|[2-9]\d)`, real signals to 5 significant figures, printed zeros `-?0\.0+`), green on
+ifx and gfortran, in the next push. The journal-writing recipe in `cli_tests/README.md` carries the rule.
+
+**The 15 mmacos + 8 pymacos assertions I cannot re-pin from the names alone.** Several are not numeric
+pins: tRxLineEndings counts a note line, tRxRefuse matches refusal messages, tCalibStop compares
+iteration counts and stop reasons, tSaveFixedPoint and test_save_fixed_point compare SAVE generations
+byte for byte, test_rx_parse_warnings matches a warning, test_zrngr_roundtrip is a round trip. For
+each failing assertion please send the test's own failure text (the assertion line, actual and
+expected values) — the MATLAB report's "Actual Value / Expected Value" block and pytest's `assert`
+diff are enough. With those I re-pin the numeric ones to the two rules and look at the rest one by
+one; a SAVE generation that differs by an ulp on arm64 is a different question from a loose tolerance
+(the fixed-point test exists to catch a walk, so it may need a numeric compare rather than a byte one).
+
+Next pair after Dave's next push; it will carry the journal re-pins.

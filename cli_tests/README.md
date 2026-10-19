@@ -52,6 +52,10 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
 - A deck that needs a data file beside it (`ObjFile=`, `.srfN.txt`) gets the file written by a
   `! awk` line after `cd $TMP`, and the key added with `! sed -i '1i Key= file' $DECK`; the gate's
   one journal line is 256 characters.
+- **Cross-architecture pins (Dave 2026-10-19, from CCMac's Mac gate):** a numerical zero (|v| < 1e-9 -- a
+  collimated system's RMS, an OPD average, a 1e-11 position) is matched by a magnitude bound such as
+  `-?\d\.\d+D-(1\d|[2-9]\d)`, never by its digits (arm64 and x86_64 share none); a real-signal value is
+  pinned to 5 significant figures (`1\.5453\d*D-02`); a printed zero takes `-?0\.0+`.
 - In a `!` line, `&&` ends the command (`! cmp a b && echo SAME` runs only the cmp) and `$?` is not
   reliable; test a result with `! if cmp -s a b; then echo SAME; else echo DIFFERS; fi`.
 - The ROW and COLUMN plot types prompt for the row / column after the plot command (`Enter number

@@ -20,7 +20,7 @@ save $TMP/pt3
 old $DECK
 # EXPECT: PropType= Geometric; PropType= Geometric; PropType= NFS1surf; PropType= FarField; PropType= NFP1surf; PropType= NFSpherical; PropType= NFPlane; PropType= SF1surf; PropType= SpatialFilter; PropType= GeomUpdate; PropType= NF1; PropType= NF2; PropType= Fresnel; PropType= NFdftPlane; PropType= NFdftSphere; PropType= FFdft;
 # EXPECT: pt1\.in being loaded[\s\S]*?Tracing rays past\s+16 elements
-# EXPECT: pt2\.in being loaded[\s\S]*?RMS OPD error is\s+1\.2938\d*D-12
+# EXPECT: pt2\.in being loaded[\s\S]*?RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
 # EXPECT: PT_RESAVE_SAME
 # EXPECT: \*\* PropType= Bogus at element\s+8 not recognized: the default applies\s+Default used for PropType\(\s+8\)
 # EXPECT-NOT: Unidentified string
