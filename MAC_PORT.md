@@ -1,283 +1,191 @@
-# Porting MACOS to macOS (Apple Silicon) — prep notes
+# MACOS on macOS (Apple Silicon) — build guide + release-gate record
 
-Forward-looking guide for building the engine, the design layer, and the
-bindings on an Apple Silicon Mac.  Nothing here is exercised on Linux;
-the build files stay Linux/Windows-only until these arms are applied and
-validated on real hardware (marked **[validate on first Mac build]**).
+This file is in two parts:
+1. **How to build and test on a Mac** — matches the build files as committed
+   (gfortran-only; the CMake / Makefile / `makems.sh` Darwin arms are all in
+   the tree).
+2. **Validation record** — the last clean-clone release-gate run on real
+   hardware, its counts, and the Mac-only deltas from Linux.
 
-## The one big fact: gfortran end-to-end
-- **gfortran is the compiler** on macOS.  `ifx` has no Apple Silicon
-  (arm64) support, so it is not an option here — and gfortran is already
-  the **MathWorks-supported Fortran compiler on Linux** (confirmed in the
-  ifx bug-report exchange) and the project's gfortran build is clean
-  (`makegfortran.sh`, `macos_api_mod` ported gfortran-clean).  ifx remains
-  the opt-in *alternative* on Linux/Windows only.
-- **The mmacos mex is a DIRECT gfortran link**, not MATLAB's `mex` driver
-  (`MACOS_resources/mmacos/Makefile:122` links against `libmx`/`libmex`/
-  `libmat` itself).  So MathWorks's per-platform "supported Fortran
-  compiler" matrix is **moot** — there is no `mex -setup FORTRAN` gate to
-  satisfy.  The Mac mex is a *link-recipe* port (extension + lib path +
-  Darwin link flags), not a compiler-support problem.
+---
 
-## Toolchain setup
-- **Homebrew**: `brew install gcc cmake cairo readline`.  Homebrew's `gcc`
-  package provides `gfortran-NN` (versioned, e.g. `gfortran-14`) — there is
-  usually no bare `gfortran` symlink, so pass it explicitly to CMake.
-- **C compiler = Apple clang** (default) is fine *with* the implicit-decl
-  downgrade (below); the gfortran+clang mix is the standard Mac
-  scientific-computing setup and links cleanly.  (Homebrew `gcc-NN` for C
-  also works if you prefer real GCC.)
-- **MATLAB**: use the **native arm64** build (R2023b+), not the Rosetta
-  x86_64 one — the mex arch must match (`maca64`).
-- **Filesystem — clone onto a CASE-SENSITIVE APFS volume.**  macOS default
-  APFS is case-INSENSITIVE; this tree relies on case-distinct names
-  (CLAUDE.md: never `surfsub.f` beside `surfsub.F`) and they **collide on
-  checkout** otherwise.  `diskutil apfs addVolume disk1 "Case-sensitive
-  APFS" devwork` and clone there.
-- **Debugger = `lldb`**, not gdb.  gdb on Apple Silicon is painful
-  (weak arm64-macOS support + code-signing); lldb is Apple-native and
-  works with gfortran binaries.  The "gdb to pinpoint engine bugs"
-  workflow (memory) becomes lldb — same idea, different driver.
-- **Editors**: VS Code (CMake Tools + Modern Fortran/`fortls`, all native
-  on Mac) as the IDE + Claude Code (native; `.claude/` config + memory
-  port as-is).  BBEdit optional for fast grep/quick edits.
+## Part 1 — How to build and test on a Mac
 
-## Engine + library (CMakeLists.txt)
+### The one big fact: gfortran end-to-end
+`ifx` has no Apple-Silicon (arm64) target, so **gfortran is the compiler** on
+macOS (`gfortran-16` from Homebrew GCC; it is also the MathWorks-supported
+Linux Fortran compiler, and the project's gfortran build is clean). The C
+compiler is **Apple clang** (the CMake `if(APPLE)` arm downgrades the legacy
+C's implicit-declaration errors). The mmacos mex is a **direct gfortran link**
+against `libmx/libmex/libmat` (not MATLAB's `mex` driver), so there is no
+`mex -setup FORTRAN` gate to satisfy — the Mac mex is a link-recipe port.
 
-### (a) Fortran compiler default
-`CMakeLists.txt:8-13` searches for `ifx`; on Mac it won't be found, so
-CMake's default Fortran detection picks gfortran — but Homebrew installs
-`gfortran-14`, not bare `gfortran`.  Configure with it explicitly:
+### Toolchain (Homebrew + a venv)
 ```
-cmake -B build_release_gfortran -G Ninja -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_Fortran_COMPILER=gfortran-14 \
-      -DBUILD_SMACOS=ON -DBUILD_MACOS=OFF   # library-only for the design layer
+brew install gcc cmake ninja cairo readline      # GCC 16 → gfortran-16, bare `gfortran` symlink
+brew install python@3.13                          # pymacos needs ≥3.13
+python3.13 -m venv ~/.venv/pymacos && ~/.venv/pymacos/bin/pip install numpy pytest
 ```
+- MATLAB must be the **native arm64** build (R2023b+); the mex arch is `maca64`.
+- **XQuartz** must be installed for the interactive `macos` CLI (`/xw`); the
+  headless library + bindings do not need it.
+- Debugger is **lldb** (gdb is painful on Apple Silicon).
+- A **case-sensitive** clone volume is safest (this tree keeps `.f`/`.F`
+  distinct); the default case-insensitive APFS happens to work today because no
+  such pair currently collides.
 
-### (b) GNU compiler-flag arm — add the APPLE clang downgrade
-In the `elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")` block
-(`CMakeLists.txt:80-87`), append the clang flag.  `-DLNXOS` is KEPT on
-macOS: the LNXOS sites are POSIX and Mac shares them.  **[validate on
-first Mac build]** the three sites: `sunsub.F:117`, `utilsub_c.c:24,189`
-(the C ones already co-check `__linux__`; clang auto-defines `__APPLE__`,
-so add `|| defined(__APPLE__)` there only if a Mac path is needed).
-```cmake
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  # Linux + macOS gfortran/gcc.  macOS/Apple-Silicon: gfortran is the only
-  # path (ifx has no arm64) and the MathWorks-supported Linux compiler.
-  # -DLNXOS kept on macOS: the LNXOS sites are POSIX (Mac shares them).
-  set(BASE_FFLAGS "-cpp -ffixed-line-length-132 -fd-lines-as-comments -fallow-argument-mismatch -std=legacy -DPGPLOT -DLNXOS -fPIC")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
-  set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbounds-check -fcheck=all")
-  set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")
-  set(CMAKE_C_FLAGS "-DLNXOS -fPIC")
-  if(APPLE)
-    # Apple clang ERRORS on the legacy C's implicit declarations -> downgrade.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-implicit-function-declaration -Wno-implicit-int")
-  endif()
-endif()
-```
+### Build files — all Darwin-guarded, Linux/Windows unchanged
+These arms are **already committed**; nothing needs editing on a fresh clone:
+- **`CMakeLists.txt`** — `if(APPLE)` adds `-Wno-implicit-function-declaration
+  -Wno-implicit-int` to the C flags; the GNU-ld-only `-Wl,--disable-new-dtags`
+  is wrapped in `if(NOT APPLE)`; the readline block uses **Homebrew's**
+  `libreadline.a` on macOS (`brew --prefix readline`), warning-but-continuing
+  if absent; MATLAB auto-detected; vendored **pixman** arch-gated (x86 SSE off
+  on arm64, generic C paths).
+- **`makems.sh`** — Darwin-guarded: a portable job count (`sysctl
+  hw.logicalcpu`, since `nproc` is Linux-only) and the Linux-only bundled-
+  readline bootstrap is **skipped on Darwin** (CMake links Homebrew readline).
+- **`mmacos/Makefile` + `mmacos/CMakeLists.txt`** — Darwin arm: `maca64` /
+  `.mexmaca64`, bundle + `-Wl,-undefined,dynamic_lookup`, plain `-lmx -lmex
+  -lmat`, `-mcpu=native`, `-lc++`, libgfortran on rpath; `FC` default via
+  `ifeq ($(origin FC),default)`.
+- **`pymacos/src/cmake/CMakeLists.txt`** — `elseif(APPLE)` → MACOS64, gfortran
+  flags, `-E -cpp -P` preprocess.
 
-### (c) RPATH — drop the GNU-ld-only flag on macOS
-The existing `elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES
-"GNU")` RPATH arms (macos / smacos_dvr / GMI targets, ~`CMakeLists.txt:412,
-479`) set `BUILD_RPATH/INSTALL_RPATH = ${CMAKE_Fortran_IMPLICIT_LINK_
-DIRECTORIES}` (correct on Mac — that's the Homebrew gcc lib dir) but then
-add `-Wl,--disable-new-dtags`, which **Mac's ld64 rejects**.  Guard it:
-```cmake
-  elseif(NOT WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    set_target_properties(<tgt> PROPERTIES
-        BUILD_RPATH   "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}"
-        INSTALL_RPATH "${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES}")
-    if(NOT APPLE)
-      target_link_options(<tgt> PRIVATE -Wl,--disable-new-dtags)  # GNU ld only
-    endif()
-```
-On macOS CMake emits `@rpath` install names automatically from INSTALL_RPATH.
-
-### (d) Giza / interactive graphics — DEFER
-Giza = Cairo + X11; X11 isn't native on macOS (needs XQuartz).  But the
-**library + design layer don't need it** — `libsmacos.a` links the
-`pgplotdummy.F` stubs, headless.  Build `BUILD_SMACOS=ON BUILD_MACOS=OFF`
-first; port the Giza/XQuartz path only when the interactive `macos` CLI
-is wanted on Mac.
-
-## mmacos mex (MACOS_resources/mmacos/Makefile)
-
-### (a) Arch / MEX extension (replace `Makefile:45-51`)
-`uname -i` is invalid on macOS — use `uname -m`:
-```makefile
-# Architecture / MEX extension
-OS      := $(shell uname -s)
-MACHINE := $(shell uname -m)
-ifeq ($(OS),Darwin)
-  ifeq ($(MACHINE),arm64)
-    ARCH := maca64
-    MEXTAG := mexmaca64
-  else
-    ARCH := maci64
-    MEXTAG := mexmaci64
-  endif
-else
-  ARCH := glnxa64
-  MEXTAG := mexa64
-endif
-```
-(Then use `$(ARCH)` for the MATLAB `bin/`/`extern/lib/` subdir instead of
-the hardcoded `glnxa64` in LDFLAGS/POST_LIBS.)
-
-### (b) Darwin gfortran branch (add after the `else ifeq ($(FC),gfortran)`
-arm, `Makefile:98-112`).  Mac uses a **bundle** with dynamic_lookup, not
-`-shared`/version-script/`--no-undefined`; MATLAB libs are `.dylib` (plain
-`-lmx`, not GNU-ld `-l:libmx.so`); `-mcpu=native` not `-march=native`;
-`-lc++` not `-lstdc++`:
-```makefile
-else ifeq ($(OS),Darwin)            # macOS / Apple Silicon -- gfortran only
-  GFLIB := $(shell dirname $$(gfortran -print-file-name=libgfortran.dylib))
-  FFLAGS := -fPIC -cpp -ffixed-line-length-132 \
-            -fno-omit-frame-pointer -O2 -mcpu=native \
-            -fallow-argument-mismatch -std=legacy \
-            -DMX_COMPAT_32 \
-            -I$(MATLAB_DIR)/extern/include \
-            -I$(SMACOS_OBJS) \
-            -J$(SRCPATH)
-  LDFLAGS := -fPIC -O -bundle -Wl,-undefined,dynamic_lookup \
-             -Wl,-rpath,$(MATLAB_DIR)/bin/$(ARCH) \
-             -Wl,-rpath,$(GFLIB)
-  POST_LIBS := -L$(MATLAB_DIR)/bin/$(ARCH) -lmx -lmex -lmat \
-               -L$(GFLIB) -lgfortran -lm -lc++
-```
-Notes / **[validate on first Mac build]**:
-- The `-reentrancy=none` ifx thread-at-exit fix is irrelevant here (no
-  Intel runtime) — one fewer worry.
-- The `clear mex` / batch-exit hang is platform-independent; keep the
-  `exit(0)` rule in batch scripts.
-- If `mexFunction` isn't found at load, add an exported-symbols list
-  (`-Wl,-exported_symbols_list,<file with _mexFunction>`); usually
-  `-undefined dynamic_lookup` on a `-bundle` is enough.
-
-## pymacos on Mac — the smoother binding
-f2py + Homebrew gfortran is well-trodden on macOS.  Build `libsmacos.a`
-(headless, above), then build pymacos with `FC=gfortran-14`,
-`-DMACOS_BUILD_DIR=<...>/build_release_gfortran`.  Because the design
-layer is state-as-data (PLAN_DESIGN_LAYER §3) and the Python port is cheap
-by construction, **leading with pymacos on Mac sidesteps the mex link
-work entirely** — decide up front whether Mac == mmacos or pymacos-first.
-
-## Validation checklist (when a Mac is in hand)
-1. `libsmacos.a` builds headless (gfortran-14 + clang, `BUILD_SMACOS=ON
-   BUILD_MACOS=OFF`); `nm` shows `__macos_api_mod_MOD_init`.
-2. Review the 3 LNXOS sites for Mac correctness (sunsub.F, utilsub_c.c).
-3. pymacos f2py build + `pytest` (the no-MATLAB path) green.
-4. mmacos mex links (`.mexmaca64`) and `run_mmacos_tests.sh fast` green
-   (seat-check already opt-in via MM_SEAT_CHECK).
-5. lldb a deliberate fault to confirm the debug workflow.
-6. (later) Giza/XQuartz for the interactive `macos` CLI.
-
-## VALIDATED ON HARDWARE — 2026-07-22 (Apple M-series, macOS 26.5, MATLAB R2024a)
-
-**Everything below actually built + ran on Dave's Mac.** The guide above was
-mostly right; the deltas are recorded here.
-
-### Toolchain actually installed
-- `brew install gcc cmake ninja` → **GCC 16** (so `gfortran-16`, and Homebrew
-  *does* provide a bare `gfortran` symlink → gcc 16). cmake 4.4.0, ninja 1.13.2.
-- MATLAB **R2024a is arm64** (`bin/maca64/*.dylib`, `extern/lib/maca64/fexport.map`).
-  Uses **JPL network license** (`cae-lm-mlm*.jpl.nasa.gov:7282`) — first `matlab`
-  launch is slow (ServiceHost init); not a hang.
-- pymacos needs **Python ≥3.13** (`find_package(Python 3.13 REQUIRED)`): installed
-  `brew install python@3.13` → venv `~/.venv/pymacos` + `numpy 2.5.1`.
-- `~/dev` is case-INSENSITIVE; no `.f`/`.F` collisions today, built fine as-is.
-
-### Build files edited (all `if(APPLE)` / `Darwin`-guarded — Linux/Win unchanged)
-- **`macos/CMakeLists.txt`**: GNU flag block — `if(APPLE)` adds
-  `-Wno-implicit-function-declaration -Wno-implicit-int` to `CMAKE_C_FLAGS`.
-  smacos_dvr GNU RPATH arm — `-Wl,--disable-new-dtags` wrapped in `if(NOT APPLE)`.
-  (Compiler id is now **`IntelLLVM`**, not `Intel`; GNU block ~L128; giza
-  `add_subdirectory` is unconditional but **XQuartz is present** so it configures
-  fine, and the `smacos` LIBRARY links only pgplotdummy — no giza edit needed.)
-- **`mmacos/CMakeLists.txt`**: `elseif(APPLE)` platform arm (maca64 / `.mexmaca64`
-  / plain `-lmx -lmex -lmat`); `add_library(mmacos MODULE …)` on APPLE (MODULE =
-  `-bundle` automatically); Apple link opts = `-Wl,-undefined,dynamic_lookup` +
-  MATLAB rpath (drop version-script/no-undefined/dtags); `-mcpu=native` on arm64.
-- **`mmacos/Makefile`** (the path `run_mmacos_tests.sh` actually drives): Darwin
-  MATLAB location (`/Applications/MATLAB_R*.app`), `uname -m` arch → maca64/mexmaca64,
-  `MACOS_BUILD_DIR` default → `build_release_gfortran`, a Darwin gfortran arm
-  (bundle+dynamic_lookup, `-lc++`, `-mcpu=native`, libgfortran on rpath), and
-  `FC` default via `ifeq ($(origin FC),default)` (GNU make's built-in `FC=f77`
-  otherwise defeats `?=`). Added a `print-mextag` helper target.
-- **`mmacos/run_mmacos_tests.sh`**: Darwin MATLAB detection; ext-aware mex path
-  via `make print-mextag`; and **`export MACOS_HOME=…/macos_f90`** (see gotcha).
-- **`pymacos/src/cmake/CMakeLists.txt`**: `elseif(APPLE)`→MACOS64; gfortran
-  compiler arm; a gfortran `FFlags` arm (`-ffree-form -O2 -fPIC -cpp
-  -fallow-argument-mismatch -std=legacy -mcpu=native` — the Intel arm's
-  `-fpp/-qmkl/-names/-assume` are invalid); and the preprocess custom-command
-  uses `-E -cpp -P -o <out>` on Mac (bare `-P` makes gfortran *compile*, needing
-  kinds.mod — Intel's `-P` preprocesses-only).
-- **`pymacos/src/cmake/source/pymacos_f2py.f90`**: two mixed-length char-array
-  constructors (`(/'m','cm',…/)`) → `[character(len=4):: …]` (gfortran rejects
-  mixed lengths; ifx tolerated).
-
-### THE load-bearing gotcha (cost the most time): `macos_param.txt` + MEX = SIGSEGV
-`init` (→`macos_init_all`) loads `macos_param.txt`, searched in: cwd, exe dir,
-`$MACOS_HOME`, then a compile-time `build_loc` (literal `'BUILD_LOC'` — never
-resolves). `matlab -batch` runs from the mmacos root, which has no
-`macos_param.txt`. **A MISSING param file makes the engine abort fatally, and
-inside the MEX host that abort is a hard SIGSEGV** (crash dump on the MCR
-thread, empty fault stack — looks like a codegen bug, is not). Fix: point
-`MACOS_HOME` at `macos_f90/`. A standalone Fortran driver shows a clean
-"could not be found, bye!" for the same condition — only the MEX turns it into
-a segfault. First engine call (`init`) is where it dies, so it masquerades as
-"the whole mex is broken."
-
-### Results
-- **libsmacos.a**: clean build, gfortran-16 + Apple clang, 155 `macos_api_mod`
-  symbols, 42 `.mod`. `build_release_gfortran/` (release) + `build_debug_gfortran/`
-  (`-fcheck=all`, used to diagnose the param-file issue).
-- **mmacos**: `src/mmacos.mexmaca64` (Mach-O arm64 bundle, exports `_mexfunction_`
-  = exactly what maca64 `fexport.map` wants). `./run_mmacos_tests.sh fast` =
-  **226 pass, 0 real fail, 3 skipped** (tRunCompare assumes `SegMirMaker` built
-  under `build_release_ifx/` — impossible on arm64; not a port defect).
-- **pymacos**: `pymacosf90.cpython-313-darwin.so` builds; import + init + load +
-  trace + opd on `Rx_Cass_FarField.in` → RMS OPD 1.29e-12 m, 47084 rays. Full
-  `pytest` not run this pass.
-- Debugger: `lldb` (not gdb) is the Mac tool; a debug libsmacos + tiny standalone
-  driver is the fastest way to isolate engine faults *outside* MATLAB.
-
-### macos INTERACTIVE CLI — also built (2026-07-22, one fix)
-The full `macos` exe (needs giza→cairo→pixman graphics) builds + runs on arm64.
-Only ONE fix was needed beyond the library: the vendored **pixman** was hardcoded
-x86-64 (`pixman-x86.c` carries x86 inline asm; `%eax`/`=a` constraints clang
-rejects on arm64). Fix in `macos_f90/giza/src/subprojects/pixman/CMakeLists.txt`:
-arch-gate via `CMAKE_SYSTEM_PROCESSOR` — on non-x86, don't `#define USE_SSE2/
-USE_SSSE3` in the generated config.h and drop `pixman-sse2.c`/`pixman-ssse3.c`
-from the sources. `pixman-x86.c` is fully `#if`-guarded on those macros, so it
-compiles to an empty TU; pixman falls back to its generic C paths (correct, just
-no SIMD accel — ARM NEON left off, fine for occasional CLI plotting). cairo/giza/
-pgplot then compiled clean. **XQuartz must be installed** (it is) for the X11
-window; giza's `find_package(X11 REQUIRED)` resolves against `/opt/X11`.
-Verified: `bin/macos` (Mach-O arm64) loads Rx_Cass_FarField, traces, OPD RMS
-1.286e-12 m (== pymacos), reaches the giza `/xw` device prompt.
-Build: add `-DBUILD_MACOS=ON` to the library configure below, `--target macos`.
-(Bundled `libreadline.a` is absent → arrow-key history disabled, non-fatal.)
-
-### Build commands (copy-paste, verified)
+### Build commands (verified 2026-10-19)
 ```sh
-# library (release)
-cd ~/dev/macos && cmake -B build_release_gfortran -G Ninja -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_Fortran_COMPILER=gfortran-16 \
-  -DBUILD_SMACOS=ON -DBUILD_MACOS=OFF -DBUILD_GMI=OFF -DBUILD_MMACOS=OFF -DBUILD_SMACOS_DVR=OFF
-cmake --build build_release_gfortran --target smacos
+# 1. engine + CLI (gfortran) — libsmacos.a + bin/macos
+cd <clone>/macos && source ./makems.sh release gfortran
+#    outputs: build_release_gfortran/{lib/libsmacos.a, bin/macos}
 
-# mmacos mex (Makefile path — outputs src/mmacos.mexmaca64)
-cd ~/dev/MACOS_resources/mmacos && make FC=gfortran        # MACOS_BUILD_DIR defaults to build_release_gfortran
-MACOS_HOME=~/dev/macos/macos_f90 ./run_mmacos_tests.sh fast # (runner exports MACOS_HOME itself)
+# 2. mmacos mex (shell FC may be gfortran-16; pass FC=gfortran explicitly)
+cd <clone>/MACOS_resources/mmacos
+rm -f src/mmacos.mexmaca64
+MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran FC=gfortran make
+MACOS_HOME=<clone>/macos/macos_f90 \
+MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran ./run_mmacos_tests.sh fast
 
-# pymacos (into ~/.venv/pymacos with numpy>=2.2)
-cd ~/dev/MACOS_resources/pymacos/src/cmake
+# 3. pymacos (f2py; venv python 3.13)
+cd <clone>/MACOS_resources/pymacos/src/cmake
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake -B build_mac -S . \
   -DCMAKE_Fortran_COMPILER=gfortran-16 \
-  -DMACOS_BUILD_DIR=$HOME/dev/macos/build_release_gfortran \
+  -DMACOS_BUILD_DIR=<clone>/macos/build_release_gfortran \
   -DPython_EXECUTABLE=$HOME/.venv/pymacos/bin/python
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake --build build_mac
+cd <clone>/MACOS_resources/pymacos/tests
+MACOS_HOME=<clone>/macos/macos_f90 \
+PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
+~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
+
+### The load-bearing gotchas (still bite)
+- **`macos_param.txt` + MEX = SIGSEGV.** `init` loads `macos_param.txt` from
+  cwd, exe dir, `$MACOS_HOME`, then a dead compile-time `BUILD_LOC`. `matlab
+  -batch` runs where there is no param file, and inside the MEX a *missing*
+  param file turns the engine's clean abort into a hard SIGSEGV on the MCR
+  thread (empty fault stack — looks like codegen, is not). **Fix: set
+  `MACOS_HOME` at the clone's `macos_f90/`.** A standalone Fortran driver shows
+  a clean "could not be found, bye!" for the same condition.
+- **`run_mmacos_tests.sh` defaults `MACOS_HOME` to `$HOME/dev/macos/macos_f90`**
+  (and `MACOS_BUILD_DIR` to `build_release_gfortran`). A clone elsewhere must
+  set these, or the MEX SIGSEGVs per the gotcha above.
+- **CLI corpus lists carry absolute paths.** `cli_tests/corpus_core.txt` /
+  `corpus_committed.txt` are committed with the author's absolute paths; on any
+  other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists
+  from the local tree and resolves `MACOS_RESOURCES` as the sibling clone, so
+  clone both repos side by side).
+- **BSD vs GNU in test journals.** A `cli_tests/cmd/*.jou` that shells out with
+  `sed -i -e` (GNU form) fails on BSD/macOS sed (`sed -i '' -e` is the Mac
+  form). One journal (`OBS_POLYGON.jou`) hits this.
+- **macOS `$TMPDIR` is long** (`/var/folders/…/T/…`); the cmd-gate pty is 80
+  columns and sets no winsize, so echoed long paths wrap and break `# EXPECT`
+  regexes. Run the cmd gate with a short `TMPDIR` (e.g. `/tmp/cg`) on Mac.
+- **`timeout` is not a macOS command** (use `gtimeout` from coreutils, or a
+  per-process cap).
+- The `-reentrancy=none` ifx thread-at-exit fix is irrelevant here (no Intel
+  runtime). Bundled `libreadline.a` arrow-key history is replaced by Homebrew
+  readline (above).
+
+---
+
+## Part 2 — Validation record
+
+### 2026-10-19 — pre-release gate, clean clone, Apple Silicon
+- **Hardware / OS:** Apple M-series, macOS 26.6 (Darwin 25.6).
+- **Pair gated:** macos `22750d4b` + MACOS_resources `e211fe4b`
+  (`dev-candidate`, nasa-jpl remotes; the gate-green pair CC named — macos's
+  `22750d4` is "load 160/160, cmd 102/102" on Linux ifx+gfortran).
+- **Toolchain:** gfortran 16.1.0 (Homebrew GCC 16), Apple clang 21.0.0,
+  cmake 4.4.0, ninja 1.13.2, Python 3.13.14 (venv + numpy), MATLAB R2024a
+  (arm64), XQuartz on `/opt/X11`.
+- **Clean clone:** both repos cloned fresh from nasa-jpl into a scratch dir
+  (not `~/dev`, not the sandbox); each `git checkout <sha>`.
+
+| # | Check | Mac (gfortran) | Linux (gfortran) | Mac-only delta |
+|---|---|---|---|---|
+| 1 | Clean clone, both repos | both at SHA, clean | — | none |
+| 2 | Engine + CLI build | OK, `bin/macos` arm64, `libsmacos.a` 189 `__macos_api_mod_MOD_` | OK (ifx+gfortran) | one build-file guard (`makems.sh`); no ifx on arm64 |
+| 3a | CLI load (160 core decks) | **160/160 ok**, rt 153 same / 7 n/a, 8 ulp | 160/160, 153/7 | 2 edge-ray decks (below) |
+| 3b | CLI cmd journals | **70/102 pass**, 2 must-fail red | 102/102, 2 red | 32 fails, all explained (below) |
+| 4 | mmacos fast | **645 pass / 15 fail** | all pass (tRunCompare excl.) | 15 arm64 tolerance pins |
+| 5 | pymacos (PROPER excl.) | **6935 pass / 8 fail** | 6924 pass | 8 arm64 tolerance pins (binding twins of #4) |
+| 6 | Graphics `/png` + `/xw` | both render; PNG white-bg + labels | pass | finding 1.2(t) not reproduced on these plots |
+| 7 | Self-containment | engine + pymacos run with `~/dev` renamed away | — | 4 hidden-dep notes (below) |
+
+**No engine-source defect was found.** Every Mac-only difference is either
+arm64-vs-x86_64 floating-point round-off surfacing through a Linux-minted tight
+tolerance / exact-string pin, or a test-harness / environment portability
+point. The engine's optical output matches Linux gfortran to ~8–9 significant
+digits on every real-signal deck; large relative diffs are confined to columns
+whose value is numerical zero (collimated-system RMS ~1e-12, OPD averages
+~1e-15).
+
+**#3a — the 2 edge-ray decks:** `tst_FF_refr.in` (npass 51 vs 60) and
+`tst_cmds_refr.in` (npass 56 vs 60) are FreeForm-refractive decks whose rays on
+an aperture/TIR edge flip pass/fail on arm64 vs x86_64 — the same class as the
+known compiler-sensitive `Grating_example_001`. Not a miscompute (the RMS shift
+tracks the lost rays).
+
+**#3b — the 32 cmd fails:** 6 are pty line-wrap artifacts of the long macOS
+`$TMPDIR` (they pass with `TMPDIR=/tmp/cg`); 21 are over-pinned `# EXPECT`
+regexes on near-zero / precision-sensitive numeric prints differing in the
+trailing digits (e.g. the recurring Cassegrain `1.293791606D-12`); 2 are
+harness portability — `GPERTURB.jou` references an **untracked** fixture
+`pymacos/tests/Rx/Rx_e5hex1.in` (the committed tree has `e5hex1.in`;
+`Rx_e5hex1.in` lives only under `GMI/regression/`), and `OBS_POLYGON.jou` uses
+GNU `sed -i -e` in a `!`-escape.
+
+**#4 / #5 — the pin fails** are tight-tolerance / `isequaln` / exact-string
+assertions minted on Linux (RelErr ~1e-5…1e-8 vs tolerances 1e-9…1e-15, mostly
+on near-zero or precision-sensitive quantities): `tDefaults`, `tSrt`,
+`tSaveFixedPoint`, `tCalibMatrix[mixed_SPOT]`, `tCalibStop`, `tDwDx`, `tOpdRef`,
+`tTmaLongslit`, `tRxLineEndings`, `tRxRefuse`, `tRxShortCoef`, `tzrngr_roundtrip`
+and the pre-existing `tPolElement` material-flip 1-ULP pin. The pymacos 8 are
+the binding twins of the same tests. `tRunCompare` and several
+sensitivity/segmentation tests are filtered out of the fast suite (as on
+Linux); `tRunCompare` also cannot run on arm64 (it needs `SegMirMaker` under
+`build_release_ifx/`).
+
+**#6 — graphics:** `/png` renders a white-background figure with legible axis
+labels, title, and wedge (ray layout + GRAY OPD map inspected; the giza
+inverted-black-background bug is absent). `/xw` opens under XQuartz, draws, and
+quits with no X11 error. Finding 1.2(t) (multiplication sign on PNG labels) was
+**not reproduced** on the layout or OPD plots — they use plain / `E-02`
+notation, not a `×10ⁿ` axis multiplier, so they do not exercise it; the
+specific Linux plot that shows 1.2(t) is needed to compare.
+
+**#7 — self-containment:** with both `~/dev` trees renamed away, the engine CLI
+loaded + traced a deck from the clone (using the clone's `macos_param.txt`) and
+pymacos imported — the clone + explicit clone env is self-contained. The hidden
+dependencies to fix for a non-JPL clone are the four notes in Part 1's gotchas
+(corpus-list absolute paths; `MACOS_HOME`/`MACOS_BUILD_DIR` defaults pointing at
+`~/dev`; the `GPERTURB` untracked fixture; the `OBS_POLYGON` GNU-sed).
+
+### 2026-07-22 — first hardware pass (superseded, kept for the deltas)
+GCC 16 / gfortran-16, MATLAB R2024a arm64. libsmacos.a built (then 155
+`macos_api_mod` symbols; now 189), mmacos **226 pass / 0 fail / 3 skipped**
+(suite has since grown to ~660 selected), pymacos import+trace only (no full
+suite then), the full `macos` CLI built after the pixman arch-gate fix and
+reached the `/xw` prompt. The 2026-07-22 pass established the Darwin build arms;
+the 2026-10-19 run is the first full three-suite + graphics + self-containment
+gate.
