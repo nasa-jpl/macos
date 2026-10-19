@@ -1,0 +1,63 @@
+C***********************************************************************
+C       Begin file smacosvars.cmn
+
+C   This file defines call-line variables and common blocks that give
+C   user programs direct access to MACOS variables. The form of the
+C   SMACOS call line is:
+
+C           CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,
+C   &       OutRaySpot,NomRayDir,RMSWFE,NomOPDMat,PertOPDMat,
+C   &       PixArray,Cmatrix)
+
+C   The param.cmn file defines array sizes for SMACOS call-line and
+
+C   internal MACOS variables. The param.cmn file should be copied from
+C   param128.cmn, param256.cmn, etc. -- whichever size of SMACOS you
+C   are using:
+
+      INCLUDE 'param.cmn'
+
+C   These are the SMACOS call-line variables:
+
+      CHARACTER*132 command
+      CHARACTER*32 CARG(9)
+      REAL*8 DARG(9)
+      INTEGER IARG(9)
+      LOGICAL LARG
+      REAL*4 RARG(9), OutRaySpot(mRay, 4), NomRayDir(2, mRay),
+     & RMSWFE, NomOPDMat(mpts, mpts), PertOPDMat(mpts, mpts),
+     & PixArray(mPix, mPix), Cmatrix(7, mCm, bRay)
+
+C   These are other SMACOS common blocks, that you may use or comment
+C   out as you wish. The ifEcho flag, if set to .TRUE., provides for
+C   full printout of SMACOS operations. If set to .FALSE., reduced
+C   printout is provided.
+
+      LOGICAL ifEcho
+      COMMON /SCIO/ifEcho
+
+      INTEGER npts,NoiseSeed(2)
+      REAL*4 CntrSpot(3)
+      COMMON /UserCommon/npts,NoiseSeed,CntrSpot
+
+C   These includes provide access to internal MACOS variables. They can
+C   be commented out if you do not plan to use them:
+
+      INCLUDE 'elt.cmn'
+      INCLUDE 'src.cmn'
+
+C   These includes provide access to internal MACOS scratch arrays. They
+C   should be commented out if you do not plan to use them:
+
+      LOGICAL L1(md2)
+      INTEGER DrawEltVec(mDrawElt,mDrawRay)
+      REAL*4 R1(mdttl,mdttl),RV1(md2),RV2(md2)
+      REAL*8 D1(mdttl,mdttl),D2(mdttl,mdttl)
+      REAL*8 DV1(md2),DV2(md2)
+      COMMON /SCRATCH/ D1,D2
+      EQUIVALENCE (D1(1,1),RV1(1)),(D1(1,1),DV1(1)),(D2(1,1),DV2(1)),
+     & (D1(1,1),R1(1,1)),(D2(1,1),RV2(1))
+
+c END of smacosvars.cmn
+
+C***********************************************************************
