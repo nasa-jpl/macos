@@ -269,7 +269,7 @@ when Word numbers the headings itself, and ours come from the filter.  All
 `edits/macosMan_edit.docx` and `edits/macosCmdRef_edit.docx` are Dave's
 copies of the Word renders for editing in Word; the matching
 `*_baseline.docx` beside each is the render they were copied from
-(2026-10-18, built from the sources at a13a0172).  The flow is the deck
+(refreshed 2026-10-19 from the renders at 943d687f: code at 7.5pt, the 26 engine-made figures, the Section 5 RRAY/PRAy/TPR paragraph).  The flow is the deck
 flow: edit the `_edit` copy only; CC diffs it against the baseline (text,
 tables, figure placement), folds every change into `src/*.md` or the cmdref
 NOTES, rebuilds, and refreshes both copies from the new render.  The
