@@ -11,7 +11,7 @@ MACOS\>**ors**
 
     Enter number of element to be optimized: [1]: 5
     Reference surface optimization results:
-    TTL OPD=  9.264281133D-12  nCalls=  27
+    TTL OPD=  1.033701941D-11  nCalls=  27
       Old f=  6.600000000D+00   New f=  6.329334638D+00
       Old z=  6.329334641D+00   New z=  6.329334638D+00
     Old psi=  0.000000000D+00 New psi=  0.000000000D+00

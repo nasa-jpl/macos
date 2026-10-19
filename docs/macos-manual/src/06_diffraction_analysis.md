@@ -222,7 +222,7 @@ The ORS command prints the old and new values of the element parameters and asks
 
 An exit-pupil Return surface for a far-field propagation is set up with FEX (Section 5), not ORS.
 
-The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. A copy of ImageDemo.in (Appendix A) with a 5 mm Zernike coefficient on its primary, which loses all but 15 of its 741 rays, shows the message:
+The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. An obscured ray still counts: it is traced, and it defines the wavefront, so the fit sees through a coronagraph's occulter. A copy of ImageDemo.in (Appendix A) with a 50 mm Zernike coefficient on its primary, which loses all but one of its test rays to surface misses, shows the message:
 
 <!-- transcript: s06_ors_starved -->
 

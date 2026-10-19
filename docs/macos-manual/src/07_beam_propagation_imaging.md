@@ -149,6 +149,10 @@ Find a new reference surface for the near-field propagation (element 5):
 
 <!-- transcript: s07_ors5 -->
 
+and for the end of that propagation (element 7):
+
+<!-- transcript: s07_ors7 -->
+
 Find the new exit pupil as well:
 
 <!-- transcript: s07_fex -->
