@@ -56,6 +56,13 @@
 > (BEAM, the normalized Gaussian) regenerated; PDF + edit copies refreshed.  Dave's ask: camera TEMPLATE (PLAN section 4 item 6).
 > NEXT: commit; load + ab (ImageDemo = the one named mover) + cmd from the clean worktree; section 5 line; push on Dave's word.**
 
+> **2026-10-19 (CC, SRS): PUSHED macos d3f27776 + resources 629a2d2 (Dave's word); gate at 725e0389 PASS (1 named mover).  SRS FIXED
+> (1.2 (gg) DONE): slave-to centre from |fElt| not signed zElt; slaved near-field zElt signed by the beam direction on the
+> propagation side (Return folds: start = outgoing, end = incoming; dirSlv1 in *_vars_mod.F); 'no' now declines.  Manual Section 6:
+> ORS on CoroExample 5, SRS on CoroExample 7 <- 5 (the 3.2 transcript's deck).  ORS_SRS.jou fails on the 725e0389 binary on the
+> sign + the declined accept.  BRIEF_to_manual_regen.md written for TO (macos-fd lane is on it).  NEXT: commit; full gate at the
+> SRS commit (engine changed: rebuild both in the worktree, load, ab vs 725e0389, cmd); section 5 line; push on Dave's word.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

@@ -2468,6 +2468,17 @@ C
 	    signpsi=SIGN(1D0,DDOTC(RayDir(1,1),psiElt(1,iSlv1)))
 	    CALL DSMPROD(psip,RayDir,signpsi,3)
 	    CALL DEQUATE(Vptp,RayPos,3)
+!-->  the beam's direction at the slaved surface on the side of the
+!     propagation the pair spans, kept for the convergence sign of a
+!     near-field zElt (1.2 (gg), 2026-10-19).  A Return surface folds
+!     the trace back, so its outgoing ray is the incoming one
+!     reversed: the START surface of the pair (iSlv1 < iSlv2) sends
+!     the beam on toward iSlv2 -- the outgoing ray; the END surface
+!     (iSlv1 > iSlv2) received it from iSlv2 -- the incoming ray.
+	    CALL DEQUATE(dirSlv1,RayDir,3)
+	    IF (EltID(iSlv1).EQ.8 .AND. iSlv1.GT.iSlv2)
+     &	      CALL DSMPROD(dirSlv1,RayDir,-1d0,3)
+!<--
 
 	    iEndElt=iSlv2
             CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
@@ -2565,10 +2576,21 @@ C
 	        ! center of curvature (or shifted by zElt for plane<-plane).
 	        ! fp stays at INF -- a Flat surface always has infinite
 	        ! curvature regardless of the propagation distance.
+!-->  the slave-to SPHERE's centre is its vertex plus its RADIUS
+!     along psi (psi points at the centre; KrElt = -|R|), never its
+!     signed zElt -- a diverging surface carries zElt < 0 and the
+!     centre landed on the wrong side (1.2 (gg), 2026-10-19).  A
+!     plane keeps zElt as the signed shift along psi.
 	        DO i=1,3
 	          psip(i) = psiElt(i,iSlv2)
-	          Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	          IF (fElt(iSlv2).LT.BIG) THEN
+	            Vptp(i) = VptElt(i,iSlv2)
+     &	                  + ABS(fElt(iSlv2))*psiElt(i,iSlv2)
+	          ELSE
+	            Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	          END IF
 	        END DO
+!<--
 	        zp = zElt(iSlv1)              ! plane stays a plane
 	        fp = INF                      ! Flat: big f, big Kr
 	      ELSE
@@ -2579,9 +2601,11 @@ C
 	          ! the slave-to's center; radius = distance.
 	          DO i=1,3
 	            Vptp(i) = VptElt(i,iSlv1)
+!-->  the shared centre from the slave-to's RADIUS (1.2 (gg))
 	            psip(i) = (VptElt(i,iSlv2)
-     &                       + zElt(iSlv2)*psiElt(i,iSlv2))
+     &                       + ABS(fElt(iSlv2))*psiElt(i,iSlv2))
      &                      - Vptp(i)
+!<--
 	          END DO
 	          zp = SQRT(psip(1)**2 + psip(2)**2 + psip(3)**2)
 	          IF (zp.GT.0d0) THEN
@@ -2590,6 +2614,17 @@ C
 	            END DO
 	          END IF
 	          fp = zp
+!-->  zElt carries the CONVERGENCE sign of a near-field reference
+!     surface (Manual section 6, Table 14: positive converging,
+!     negative diverging; the propagator's leg is zElt(start) -
+!     zElt(end)).  The shared centre AHEAD of the slaved surface
+!     along the chief ray is a converging beam; BEHIND it (the beam
+!     has passed through focus) a diverging one.  Before, zp was the
+!     unsigned distance: CoroExample.in's ret2_2 (-6.329 in the deck)
+!     came back +6.329 and the through-focus leg collapsed to zero
+!     (PLAN_CONSOLIDATION 1.2 (gg), 2026-10-19).
+	          IF (DDOTC(psip,dirSlv1).LT.0d0) zp = -zp
+!<--
 	        ELSE
 	          WRITE(*,*)
      &        ' WARNING: SRS asymmetric sphere<-plane not implemented'
@@ -2609,7 +2644,10 @@ C
      &	    VptElt(3,iSlv1),Vptp(3)
 	    CALL CACCEPT(ANS,'YES',
      &      'Accept the new element? ')
-	    IF ((ANS(1:1).NE.'n').OR.(ANS(1:1).NE.'N')) THEN
+!-->  'no' was accepted too: (.NE.'n' .OR. .NE.'N') is always true
+!     (1.2 (gg), 2026-10-19)
+	    IF ((ANS(1:1).NE.'n').AND.(ANS(1:1).NE.'N')) THEN
+!<--
 	      eElt(iSlv1)=0d0
 	      KcElt(iSlv1)=0d0
 	      zElt(iSlv1)=zp
