@@ -4,6 +4,8 @@
 #   make pdf        -> build/macosMan.pdf   (docx -> PDF via LibreOffice)
 #   make appendix-c -> regenerate src/93_appendix_c_commands.md from
 #                      macos_f90/macos_help.inc
+#   make transcripts -> regenerate src/transcripts/ (the example listings and the CLI
+#                      dialogs, tools/regen_transcripts.py; MACOS_BIN= picks the binary)
 #   make clean
 #
 # Section order is the lexical order of src/*.md (numbered prefixes).
@@ -13,6 +15,8 @@ PANDOC     ?= pandoc
 SOFFICE    ?= soffice
 BUILD      := build
 SRC        := $(sort $(wildcard src/[0-9]*.md))
+# the generated listings and dialogs the chapters include by marker (tools/include_transcripts.lua)
+TRANSCRIPTS := $(wildcard src/transcripts/*.md)
 REFDOC     := reference.docx
 TITLE      := MACOS Manual
 
@@ -41,7 +45,7 @@ POLVALSUM  := polval/05_summary.md
 POLVALSUM_OPTS := --resource-path=polval \
                --metadata title="MACOS Polarization Validation — Executive Summary"
 
-.PHONY: all docx html pdf appendix-c clean publish \
+.PHONY: all docx html pdf appendix-c transcripts clean publish \
         cmdref cmdref-pdf cmdref-regen \
         polval polval-pdf polval-regen polval-check polval-summary
 
@@ -53,12 +57,14 @@ pdf:  $(BUILD)/macosMan.pdf
 
 # number_sections.lua: heading numbers in the 3.2 pattern (4.5.2 ...) and a page break before
 # every Section / Appendix (2026-10-18).
-NUMBER     := --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
+NUMBER     := --lua-filter=tools/include_transcripts.lua \
+              --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
+FILTERS    := tools/include_transcripts.lua tools/number_sections.lua tools/figure_captions.lua
 
-$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua tools/figure_captions.lua | $(BUILD)
+$(BUILD)/macosMan.docx: $(SRC) $(TRANSCRIPTS) $(REFDOC) $(FILTERS) | $(BUILD)
 	$(PANDOC) $(DOCX_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
-$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua tools/figure_captions.lua tools/manual.css | $(BUILD)
+$(BUILD)/macosMan.html: $(SRC) $(TRANSCRIPTS) $(FILTERS) tools/manual.css | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
 	  --css tools/manual.css -o $@ $(SRC)
 
@@ -70,6 +76,11 @@ $(BUILD)/macosMan.pdf: $(BUILD)/macosMan.docx
 
 appendix-c:
 	python3 tools/gen_appendix_c.py
+
+# every listing and dialog the chapters print: examples/* verbatim, tools/transcripts/*.jou on the
+# engine (default binary: the ifx build of the clean worktree ~/dev/macos_cli_base)
+transcripts:
+	python3 tools/regen_transcripts.py $(MACOS_BIN)
 
 # ---- MACOS Command Reference (cmdref/) ------------------------------
 cmdref: $(BUILD)/macosCmdRef.docx $(BUILD)/macosCmdRef.html
