@@ -4989,7 +4989,9 @@ C  2. Initialize various parameters
 !     (PLAN 1.2 (w), 2026-10-19; ImageDemo.in loses 726 of 741 rays
 !     before its exit pupil).  Name it and abort, as the handler does
 !     for a bad element number.
-	nAdm=COUNT(LRayOK(2:nRay).AND.RayStatus(2:nRay).EQ.RayStat_OK)
+	nAdm=COUNT(LRayOK(2:nRay).AND.
+     &	           (RayStatus(2:nRay).EQ.RayStat_OK .OR.
+     &	            RayStatus(2:nRay).EQ.RayStat_Obscured))
 	IF (nAdm.LT.3) THEN
 	  WRITE(*,109) nAdm,nRay-1,iEm1
 	  WRITE(*,*) 'ORS: command aborted.'
@@ -5230,7 +5232,7 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	LOGICAL :: noBuild,noPol,noObs,LNsrf,ifTransmit,ifReturn,
-     &             ifRetSrf,LRT
+     &             ifRetSrf,LRT,LChief
 	INTEGER :: i,iElt,iRay,iEm1,nCalls,jRay,jElt
 	SREAL :: dxdx(7,7),dxdu(7,6)
 	REAL*8 :: Vpt(3),Rpt(3),psi(3),pr(3),rhat(3),L,fRS,RMSOPD,CumL,
@@ -5266,9 +5268,17 @@ c	  END IF
 
 C  2. Set new element location and attitude using chief ray
 
+!-->  the surface routines CLEAR their LROK argument when the chief
+!     ray misses the trial sphere: passed LRayOK(1) itself, one missed
+!     trial struck the chief ray off every later trial and off the
+!     trace that follows the command, and pr / rhat below were left
+!     undefined (1.2 (w) follow-up, macos-fd 2026-10-19: ifx offered a
+!     psi that was no unit vector).  A local copy; a miss is an EMPTY
+!     trial.
+	LChief=LRayOK(1)
 	IF (.NOT.ifRetSrf) THEN
 	  CALL RefSrf(noBuild,noPol,LNsrf,noObs,
-     &	  LRayOK(1),LRT,KcElt(iElt),KrRS,
+     &	  LChief,LRT,KcElt(iElt),KrRS,
      &	  psiElt(1,iElt),VptElt(1,iElt),RptElt(1,iElt),
      &	  RayPos(1,1),RayDir(1,1),C1,S1,S1,S1,S1,S1,
      &	  ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
@@ -5278,18 +5288,33 @@ C  2. Set new element location and attitude using chief ray
 	  signpsi=SIGN(1D0,DDOTC(RayDir(1,1),psiElt(1,iElt)))
 	ELSE
 	  CALL ReturnSrf(noBuild,noPol,ifReturn,ifTransmit,
-     &	  LNsrf,noObs,LRayOK(1),LRT,
+     &	  LNsrf,noObs,LChief,LRT,
      &	  KcElt(iElt),KrRS,
      &	  psiElt(1,iElt),VptElt(1,iElt),RptElt(1,iElt),
      &	  RayPos(1,1),RayDir(1,1),C1,S1,S1,S1,S1,S1,
      &	  ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &	  ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &	  pr,rhat,L,C1,dxdx,dxdu)
-	  IF (ifReturn) THEN
-	    L=-L
-	    signpsi=-SIGN(1D0,DDOTC(RayDir(1,1),psiElt(1,iElt)))
-	  END IF
+!-->  signpsi was set only when ifReturn held: a Return surface with
+!     an EVEN count of Returns before it (CoroExample.in element 7,
+!     after elements 4 and 5) left it UNDEFINED, and ifx and gfortran
+!     printed different poses -- ifx a psi that was no unit vector
+!     (macos-fd 2026-10-19).  The fitted normal keeps the surface's
+!     own orientation: psi = rhat aligned with the psiElt the deck
+!     carries (the 3.2 transcript's ors 7 returned psi (0,0,-1) as
+!     written); the ray-direction rule of the RefSrf branch is blind
+!     to which side of the fold the trace arrives on.
+	  signpsi=SIGN(1D0,DDOTC(rhat,psiElt(1,iElt)))
+	  IF (ifReturn) L=-L
+!<--
 	END IF
+!-->  the chief ray missed the trial sphere: nothing to pose, nothing
+!     to measure
+	IF (.NOT.LChief) THEN
+	  RMSOPD=1d30
+	  RETURN
+	END IF
+!<--
 
 	DO 1 i=1,3
 	  psi(i)=signpsi*rhat(i)
@@ -5316,11 +5341,16 @@ C  off to |f|~1e40.  Data rays still require LRayOK.AND.LRayPass.
 !     and 'TTL OPD= NaN' optimized on NaN comparisons (ImageDemo.in,
 !     the manual's own example; PLAN_CONSOLIDATION 1.2 (w), Dave
 !     2026-10-19: fix now).  A ray counts when it is geometrically
-!     alive and its
-!     status is OK (an obscured or lost ray is out).
+!     alive and its status is OK or OBSCURED: an obscured ray is still
+!     traced and still defines the wavefront (a coronagraph's occulter
+!     blocks every test ray at the surface behind it, CoroExample.in
+!     element 7 -- the fit sees through a mask; macos-fd 2026-10-19);
+!     a missed, bracket-failed or undefined ray is out.
 	DO 14 iRay=1,nRay
 	  IF ( LRayOK(iRay) .AND.
-     &	       (RayStatus(iRay).EQ.RayStat_OK .OR. iRay.EQ.1) ) THEN
+     &	       (RayStatus(iRay).EQ.RayStat_OK .OR.
+     &	        RayStatus(iRay).EQ.RayStat_Obscured .OR.
+     &	        iRay.EQ.1) ) THEN
 !<--
 	    jRay=jRay+1
 	    IF (.NOT.ifRetSrf) THEN
