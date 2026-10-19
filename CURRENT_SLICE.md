@@ -50,6 +50,12 @@
 > NOTE_to_ccmac_pair2_reply.md names the pair.  AWAITING Dave: push word; the ORS starved-start ABORT (a refusal) to confirm;
 > the manual regeneration plan (listings + transcripts generated, Appendix A first) to approve.**
 
+> **2026-10-19 (CC, ImageDemo): finding (cc) RESOLVED -- a PDF line wrap split '-3.536721061D-05' in the extracted listing and the
+> reader took '05' as a 5 mm Zernike term; deck + Appendix A listing rejoined (578/741 pass, image RMS 3.6e-4 mm; Malacara = the
+> reader's ANSI default to the digit); ORS_SRS.jou leg 2 recreates the defect on a COPY; figures 31 (DRAW, rays now trace) and 46
+> (BEAM, the normalized Gaussian) regenerated; PDF + edit copies refreshed.  Dave's ask: camera TEMPLATE (PLAN section 4 item 6).
+> NEXT: commit; load + ab (ImageDemo = the one named mover) + cmd from the clean worktree; section 5 line; push on Dave's word.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

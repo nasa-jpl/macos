@@ -240,7 +240,7 @@ MACOS\>**ors**
              -4.060145902D+00          -4.060145902D+00
     Accept the new element data? [YES]: yes
 
-The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. ImageDemo.in (Appendix A), whose relay loses most of its rays, shows the message:
+The reference sphere is fit to the rays that reach the surface before it. When fewer than three do, ORS names the starved trace and aborts rather than fit nothing. A copy of ImageDemo.in (Appendix A) with a 5 mm Zernike coefficient on its primary, which loses all but 15 of its 741 rays, shows the message:
 
 MACOS\>**ors**
 
