@@ -110,6 +110,20 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-19 (2) — re-gate after the fixes (pair macos `3ff1d55` + resources `cd006b2e`)
+Second clean-clone gate, on the pair carrying the glyph fix, harness fixes,
+cross-architecture re-pins and the lifted 128-char path limit. Full record:
+`cli_tests/records/mac_gate_gfortran_3ff1d55.md`. Headline deltas from pair 1:
+cmd **70→87** pass, mmacos fail **15→10**, pymacos fail **8→4**; finding 1.2(t)
+**fixed** (`spot 5` on /png reads `1x10-10`, was the box); psiElt dead band
+dropped the Mac load ulp-settle **8→1**. Residual, for round 2: 14 cmd journals
+still use bare `sed -i` (BSD-incompatible — the deck edit silently no-ops);
+five bindings subprocess tests still capture empty (the `macos_home_.m`
+MACOS_HOME fix did not resolve the nested-`matlab -batch` / Python-subprocess
+launch on macOS); a few re-pins applied to the wrong comparison or too tight
+(tDwDx, tPolElement, tOpdRef, COORD_ACOOR, CALIB_fov_weight); and two Dave
+case-items (mixed_SPOT near-singular margin, spot_centre unstable quantity).
+
 ### 2026-10-19 — pre-release gate, clean clone, Apple Silicon
 - **Hardware / OS:** Apple M-series, macOS 26.6 (Darwin 25.6).
 - **Pair gated:** macos `22750d4b` + MACOS_resources `e211fe4b`
