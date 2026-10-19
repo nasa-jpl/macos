@@ -1,0 +1,55 @@
+# Section 3 (user interface): the start-up dialog, MRESET, OLD (prompted and stacked), SHOW and the
+# defaults, the first graphics command (the device prompt kept), file output, BUILD + EXPORT.
+# File output is TEXT, not 3.2's BINARY: BINARY's direct-access RECL=4*NC is wrong for its REAL*8 rows
+# (gfortran: 'Write exceeds length of DIRECT access record' in sunsub.F BINOUT; ifx: every record padded
+# with NC zero doubles) -- TRANSCRIPT_DIFF.md section 3, Dave's call.
+# The 3.2 dialogs ran on lens_array.in and tmo.in, neither of which is in the tree; these run on the
+# Appendix A decks (TRANSCRIPT_DIFF.md section 2, a provisional choice for Dave).
+# MODEL: 128
+# TRANSCRIPT-BANNER: s03_banner
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s03
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s03
+cd $TMP/s03
+# TRANSCRIPT: s03_mreset
+mreset
+256
+# TRANSCRIPT: s03_old
+old
+Cassegrain
+# TRANSCRIPT: s03_old_stacked
+old Cassegrain show 2
+# TRANSCRIPT: s03_show_defaults
+show;;
+# TRANSCRIPT-OFF
+old CassWithExitPupil
+# TRANSCRIPT: s03_stretch_int +device
+stretch
+log10
+intensity
+6
+/null
+# TRANSCRIPT: s03_text_int
+text
+intensity
+6
+# TRANSCRIPT: s03_build_export
+build
+6
+export
+tex
+chfr
+raypos
+q
+# TRANSCRIPT-OFF
+# EXPECT: Using specified model size\s+128
+# EXPECT: Enter new size \(128, 256, 512, 1024, 2048, 4096, 8192\): \[128\]: 256[\s\S]*?Maximum pixel array size is\s+256 by\s+256
+# EXPECT: Enter file name: Cassegrain\s+Input file Cassegrain\.in being loaded\.[\s\S]*?Tracing rays past\s+5 elements
+# EXPECT: Elt\s+4: Reference\s+: Conic\s+with Kc= 0\.0000D\+00, Kr=-5\.5601D\+00
+# EXPECT: EltName=\s+Primary[\s\S]*?KrElt=-1\.08000\d*E\+01[\s\S]*?ApVec=\s+2\.1000\d*E\+00
+# EXPECT: Enter number of element \(0=aperture\): \[0\]:\s+[\s\S]*?Aperture=4\.0E\+00[\s\S]*?nGridpts=\s+51
+# EXPECT: Enter image stretch type \(LINEAR, LOG10, SQRT\): \[LINEAR\]: log10
+# EXPECT: Graphics device/type \(\? to see list, default /xw\):/null
+# EXPECT: Peak intensity= 1\.1041\d*D\+08[\s\S]*?Sum of intensity= 6\.4607\d*D\+10
+# EXPECT: Plot type set to TEXT
+# EXPECT: Exporting data to CassWithExitPupil\.txt[\s\S]*?% RayPos 3-vectors for\s+1 rays at Element\s+6
+# EXPECT-NOT: forrtl

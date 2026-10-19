@@ -1,0 +1,14 @@
+# Section 3, PostScript and GIF graphics output: '?' at the first plot's device prompt lists the devices
+# (giza's list today; 3.2 printed PGPLOT 5.0.0's).
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s03d
+cd $TMP/s03d
+old CassWithExitPupil
+# TRANSCRIPT: s03_devices +device
+intensity
+6
+?
+/null
+# TRANSCRIPT-OFF
+# EXPECT: Graphics device/type \(\? to see list, default /xw\):\?[\s\S]*?/png[\s\S]*?Graphics device/type \(\? to see list, default /xw\):/null
+# EXPECT: Peak intensity= 1\.1041\d*D\+08
+# EXPECT-NOT: forrtl

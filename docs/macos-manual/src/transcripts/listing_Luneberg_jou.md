@@ -5,36 +5,36 @@
     %   elements, polarization, and the gain command.
 
     old Luneberg
-    echo  
+    echo
     echo Luneberg.jou: This macro demonstrates use of non-sequential refracting
     echo elements, polarization, and the gain command.
     pgp 1
     draw 0 16 XZ
-    echo 
+    echo
     echo Output with Cosine beam shape and 128 ray grid points
-    echo 
+    echo
     beam cos 8.7500000000D-01 1.5
     mod nGridPts=128 q
     int 16
 
-    echo 
+    echo
     echo Change ray sampling to 64 to increase FFT padding
-    echo 
+    echo
     mod nGridPts=64 q
     gain 17
     col
     gain 17 129
 
-    echo 
+    echo
     echo Now show result with linear polarization, 128 grid points
-    echo 
+    echo
     pol 1,0 0,0
     mod nGridPts=128 q
     int 16
 
-    echo 
-    echo Change ray sampling to 64 to increase FFT padding 
-    echo 
+    echo
+    echo Change ray sampling to 64 to increase FFT padding
+    echo
     mod nGridPts=64 q
     gain 17
     col

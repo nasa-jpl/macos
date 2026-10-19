@@ -56,6 +56,29 @@ distribution tapes").
 
 ## 2. Chapter dialogs
 
+### Section 3 (user interface) — `tools/transcripts/s03_ui.jou`, `s03_devices.jou`
+
+**Decks replaced (provisional, Dave's choice — section 4):** the 3.2 dialogs ran on `lens_array.in`
+(OLD, stacked OLD + SHOW, SHOW;;, BUILD + EXPORT) and `tmo.in` (STRETCH / INTENSITY / BINARY),
+neither in either repository.  They now run on Appendix A's Cassegrain.in and CassWithExitPupil.in, so
+every number in them is new; what each dialog shows is the same command at work.
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s03_banner` start-up | "MACOS Version 2.8, May 31, 1999"; 70 surfaces, 69 segments, 4226 rays (441 sensitivity); glass table 202 glasses | the 4.00 banner box; the model-size prompt; 210 surfaces, 209 segments, 16385 rays (441) at model 128; glass table 201 glasses (machine paths print as `<macos>`) | the current engine |
+| `s03_mreset` | 3.2 banner, 16385 rays at 256 | "Resetting MACOS model size..."; 65537 rays (500) at 256; **"No glass table file found; using built-in catalog: 201 glasses"** | the current engine; the glass line: section 3.4 |
+| `s03_old`, `s03_old_stacked` | lens_array: 4 elements, 512 grid points, "Too many grid points. Resetting npts to 128" | Cassegrain: 5 elements, 51 grid points; SHOW 2 prints the SAVE-form element (`nCoat`, `xObs`) | deck replaced |
+| `s03_show_defaults` | `show;;` printed the aperture keys of lens_array on four lines | the "Source Definition" block | deck replaced; the current SHOW layout |
+| `s03_stretch_int` (device prompt kept) | element 9 of tmo; "default /NULL"; "/xwindow", "Starting pgxwin_server" | element 6 of CassWithExitPupil; "default /xw"; answered /null | deck replaced; giza, not PGPLOT.  Prose: "/XWindow" -> "/xw (X Window)" |
+| `s03_text_int` | **BINARY** `tmo.int9`, 128 by 128, central pixel 0.0316 | **TEXT** `CassWithExitPupil.int6.txt`, 256 by 256, central pixel 1.0898e8 | BINARY crashes the gfortran build and pads every record on ifx (section 3.2); the paragraph's file names follow |
+| `s03_devices` (`?` at the prompt) | PGPLOT 5.0.0's 13 devices incl. /GIF /VGIF /CPS /TEK4010 /XWINDOW | giza 1.2.0: /xw, /png, /svg, /pdf, /vpdf, /ps, /vps, /null (the version line is garbled: section 3.3) | giza |
+| `s03_build_export` | `build ;` at element 1: "Tracing 12669 rays but not BUILDing ... limited to 500 rays"; RayPos for 1 ray at element 1 | `build` to element 6: 125 rays traced and built; RayPos for 1 ray at element 6 | deck replaced; at element 1 (the default) the Cassegrain's chief ray is obscured and EXPORT writes 0 rays, so the example builds to the detector |
+
+The prose around these dialogs still describes PGPLOT (`/GIF` files `pgplot.gif`, `pgplot.ps`, the
+`pgxwin_server`, "cannot be changed without quitting"), the 3.2 data directory (`MACOS_DATA`,
+`macos.glass`) and Table 4's Sun/PowerMac memory sizes; the dialogs now contradict them.  Left for
+Dave's editorial pass (section 4, item 5).
+
 ### Section 6 (ORS / SRS) — `tools/transcripts/s06_ors_srs.jou`
 
 The examples as the peer lane committed them in 5f5cbce2 (ORS on CoroExample element 5, SRS 7 <- 5
@@ -93,6 +116,29 @@ build of `macos_cli_base` (725e0389 engine):
 So today's AO example no longer traces the 3.2 example's DM, and `cli_tests/cmd/UDSINIT.jou` pins the
 post-loss 3.1638e-7.  This is not fixed here (an engine SAVE change wants the corpus A/B).
 
+### 3.2 BINARY output: RECL wrong for REAL*8 rows (crash on gfortran, padded on ifx)
+
+`sunsub.F` BINOUT (`iPloTyp` 6, ~line 1154) opens the direct-access file with `RECL=(4*NC)` and writes
+each record as `(Z(i,j), i=1,NA)` with `Z` declared `SREAL` = REAL*8 (`realtype.h`): 8·NA bytes.
+gfortran counts RECL in bytes, so the first record overflows: `Fortran runtime error: Write exceeds
+length of DIRECT access record` and the CLI dies (`binary` then `intensity 6` on CassWithExitPupil.in,
+both journals of section 2).  ifx counts it in 4-byte words (no `/assume:byterecl`), so each record is
+16·NC bytes: measured, the 256 x 256 intensity file is 1048576 bytes, 512 doubles per record, the
+second 256 all zero.  The portable fix is `INQUIRE(IOLENGTH=lrec)` on one row; it halves the ifx
+file (any reader written for the padded layout would change).  Not fixed here.
+
+### 3.3 giza's device list prints a garbled cairo version
+
+`?` at the device prompt prints `%giza version 1.2.0 built with cairo
+vUSE_cairo_version_OR_cairo_version_string_INSTEAD...` (three times): the vendored cairo's version
+macros are not defined in the giza build.  Display only.
+
+### 3.4 MRESET after CD does not find the glass table start-up found
+
+Start-up reads `<macos>/macos_f90/macos_glass_list.txt` (201 glasses); after `cd` to a scratch
+directory, MRESET prints "No glass table file found; using built-in catalog: 201 glasses".  The
+built-in catalog has the same count, so no result moves here; a user's own table would be dropped.
+
 ## 4. For Dave — the decisions and the replacement list
 
 1. **The SAVE-form decks.**  Eight decks in `examples/` are in the SAVE number form since 65a223ec,
@@ -109,3 +155,10 @@ post-loss 3.1638e-7.  This is not fixed here (an engine SAVE change wants the co
    3.2 PDF too); neither can compile today: no `param.cmn`, `elt.cmn` or `src.cmn` exists in the tree.  Candidate replacement: `macos_f90/smacos_dvr.F` (82 lines,
    the module-based driver built by `makesd.sh`), or a short module-based example written from
    Section 9.
+5. **Section 3's decks** (`lens_array.in`, `tmo.in`, not in the tree): the dialogs now run on
+   Cassegrain.in and CassWithExitPupil.in.  Keep, or name the decks to use; and the PGPLOT-era prose
+   around them (GIF/PS files, `pgxwin_server`, `MACOS_DATA`, Table 4) wants rewriting for giza and the
+   current file layout.
+6. **BINARY** (3.2): fix the RECL (halves the ifx file), and put Section 3's file-output example back
+   on BINARY?
+
