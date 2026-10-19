@@ -9,7 +9,7 @@ ls
 # EXPECT: Listing Files in: \S+/docs/macos-manual/examples
 # EXPECT: 1\s+AOExample\.in\s+2\s+CassWithExitPupil\.in\s+3\s+Cassegrain\.in
 # EXPECT: Use FID command to load a Rx file\. Syntax: FID file_id
-# EXPECT: Enter file id: \[1\]: 2\s+Input file CassWithExitPupil\.in being loaded
+# EXPECT: Enter file id: \[1\]: 2\s+Input file CassWithExitPupil\.in\s+being loaded
 # EXPECT: Tracing rays past\s+6 elements
 # EXPECT: AOExample\.jou
 # EXPECT-NOT: Invalid file id
