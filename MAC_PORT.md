@@ -110,6 +110,19 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-19 (3) — re-gate (pair macos `d3f2777`/`725e0389` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_d3f2777.md`. Deltas: cmd **87→96**
+pass, mmacos fail **10→7**, pymacos fail **4→2**; glyph still `1x10-10`; ImageDemo
+repaired (Mac 578/163 == Linux). The (ee) subprocess/capfd Darwin guards work
+(filtered/skipped with reason). Two investigations landed: **(ff) COORD** is an
+**`-O2`-only arm64 miscompile in `LocalCoord`** — the frame is correct under the
+`-O0` debug build and shows no bounds violation, so an uninitialized local or
+`-O2` codegen (TO's lane); **(ee)** the subprocess/capfd empties are **one root
+cause** — the gfortran engine's unit-6 (stdout) reaches the process from the
+standalone executable but not from a loaded `.so`/mex on macOS, so warning text
+should go through the api, not Fortran stdout across the FFI. Residual is round-3
+re-pins/sub-asserts and one coreutils item (BSD `wc` leading space in EXPORT.jou).
+
 ### 2026-10-19 (2) — re-gate after the fixes (pair macos `3ff1d55` + resources `cd006b2e`)
 Second clean-clone gate, on the pair carrying the glyph fix, harness fixes,
 cross-architecture re-pins and the lifted 128-char path limit. Full record:
