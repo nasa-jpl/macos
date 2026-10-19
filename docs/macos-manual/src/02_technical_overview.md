@@ -101,10 +101,6 @@ Ray-tracing is an extremely valuable tool for determining the performance of opt
 
 ![](media/fig_engine_03.png)
 
-Spot diagram at entrance pupil
-
-Cross-section of ray-trace
-
 **FIGURE 3** Ray trace of a Cassegrain telescope
 
 As another example, interferometer systems can be evaluated by calculating the flatness of two interfering wavefronts at a pupil of a system. The wavefront of an extended beam is accurately represented by an *Optical Path Difference* (OPD) map at a particular surface, such as the beam-splitter where the interference is to take place.
@@ -114,10 +110,6 @@ The predictions of geometric optics are exact only in cases where the wavelength
 One thing that ray-tracing cannot do is predict the intensity pattern of a focused spot. For that, use the image simulations features decribed in Section 7.
 
 ![](media/fig_engine_04.png)
-
-Focal plane spot diagram Focal plane spot diagram
-
-(unaberrated system) (primary mirror tilted 1e-4 radians)
 
 **FIGURE 4** Spot diagrams for Cassegrain.in.
 
@@ -134,8 +126,6 @@ Physical optics capture the *wave nature* of light. In physical optics, Huygenâ€
 **FIGURE 5** Exit pupil for Cassegrain.in
 
 ![](media/fig_engine_06.png)
-
-*Left: unaberrated (defocused).  Right: aberrated OPD (coma).*
 
 **FIGURE 6** OPD at the exit pupil
 
@@ -204,8 +194,6 @@ source. Without aberrations, geometrical optics predicts infinitely small images
 The simplest and most common PSF calculation uses a ray trace to compute the OPD in the exit pupil of the optical system followed by a single *far-field diffraction propagation* to the focal plane. Figure 10 shows the PSFs computed by MACOS for the Cassegrain telescope calculated in this fashion (see Figure 6 for the OPD maps).
 
 ![](media/fig_engine_10.png)
-
-Unaberrated (defocused) Aberrated OPD (coma)
 
 **FIGURE 10** Point spread functions for Cassegrain.in
 

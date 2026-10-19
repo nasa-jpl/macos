@@ -64,6 +64,19 @@ SOURCECODE_STYLE = f"""<w:style w:type="paragraph" w:styleId="SourceCode">
 </w:rPr>
 </w:style>"""
 
+# centered figure paragraphs (tools/figure_captions.lua wraps the image and the FIGURE line)
+FIGURE_STYLES = f"""<w:style w:type="paragraph" w:styleId="Figure">
+<w:name w:val="Figure" />
+<w:basedOn w:val="Normal" />
+<w:pPr><w:keepNext /><w:spacing w:before="120" w:after="60" /><w:jc w:val="center" /></w:pPr>
+</w:style>
+<w:style w:type="paragraph" w:styleId="FigureCaption">
+<w:name w:val="FigureCaption" />
+<w:basedOn w:val="Normal" />
+<w:pPr><w:spacing w:before="60" w:after="240" /><w:jc w:val="center" /></w:pPr>
+<w:rPr><w:rFonts w:ascii="{BODY_FONT}" w:hAnsi="{BODY_FONT}" w:cs="{BODY_FONT}" /><w:sz w:val="20" /><w:szCs w:val="20" /></w:rPr>
+</w:style>"""
+
 
 def patch_style(xml, sid, font, size):
     m = re.search(r'<w:style [^>]*w:styleId="%s".*?</w:style>' % sid,
@@ -119,6 +132,10 @@ def main():
             xml = xml.replace("</w:styles>",
                               SOURCECODE_STYLE + "</w:styles>")
             print("  SourceCode       injected (mono, 7.5pt, shaded)")
+
+        if 'w:styleId="FigureCaption"' not in xml:
+            xml = xml.replace("</w:styles>", FIGURE_STYLES + "</w:styles>")
+            print("  Figure/FigureCaption injected (centered)")
 
         sf.write_text(xml, encoding="utf8")
 

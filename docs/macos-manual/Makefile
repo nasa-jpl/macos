@@ -50,12 +50,12 @@ pdf:  $(BUILD)/macosMan.pdf
 
 # number_sections.lua: heading numbers in the 3.2 pattern (4.5.2 ...) and a page break before
 # every Section / Appendix (2026-10-18).
-NUMBER     := --lua-filter=tools/number_sections.lua
+NUMBER     := --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
 
-$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua | $(BUILD)
+$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua tools/figure_captions.lua | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
-$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua tools/manual.css | $(BUILD)
+$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua tools/figure_captions.lua tools/manual.css | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
 	  --css tools/manual.css -o $@ $(SRC)
 
