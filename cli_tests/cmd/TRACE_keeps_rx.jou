@@ -10,5 +10,5 @@ show 1
 opd 2
 /null
 show 1
-# EXPECT: Surface=\s+Interpolated\s*\n\s+[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*RMS OPD error is\s+3\.15216\d+D-16[\s\S]*Surface=\s+Interpolated\s*\n[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00
+# EXPECT: Surface=\s+Interpolated\s*\n\s+[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)[\s\S]*Surface=\s+Interpolated\s*\n[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00
 # EXPECT-NOT: Surface=\s+Conic

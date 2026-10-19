@@ -19,6 +19,6 @@ mod nGridpts=21
 q
 dmbuild
 5
-# EXPECT: RMS OPD error is\s+1\.293791606D-12[\s\S]*?Enter atmosphere r0: \[0\.250000\]: 0\.25[\s\S]*?Use RAY grid or separate ATMospheric grid\? \[RAY\]: ray[\s\S]*?RMS OPD error is\s+(?!1\.293791606D-12)\d\.\d+D[+-]\d\d
+# EXPECT: RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)[\s\S]*?Enter atmosphere r0: \[0\.250000\]: 0\.25[\s\S]*?Use RAY grid or separate ATMospheric grid\? \[RAY\]: ray[\s\S]*?RMS OPD error is\s+\d\.\d+D-0\d
 # EXPECT: Tracing\s+277 rays and BUILDing linear model
 # EXPECT-NOT: forrtl

@@ -30,5 +30,5 @@ opd 5
 # EXPECT: OPD reference: APERTURE MEAN \(UseChfRay4OPD= N\)
 # the session option survives a plain load (rule 6: not reset per load)
 # EXPECT: Cassegrain\.in\s+being loaded\.[\s\S]*OPD reference: APERTURE MEAN \(OPDREF MEAN\)\s*\n RMS[\s\S]*\Z
-# EXPECT: Average OPD is\s+-2\.534833896\d+D-12
-# EXPECT-NOT: Average OPD is\s+(?=\S)(?!-2\.534833896)
+# EXPECT: Average OPD is\s+-?\d\.\d+D-(1\d|[2-9]\d)
+# EXPECT-NOT: Average OPD is\s+(?=\S)(?!-?\d\.\d+D-(1\d|[2-9]\d))

@@ -25,10 +25,10 @@ pix 5
 yes
 ! awk '{for(j=1;j<=NF;j++)if($j>m){m=$j;r=NR;c=j}}END{print "PEAK",r,c,m}' Cassegrain.in.pix5.txt
 # EXPECT: MACOS> ploc\s+Enter output coordinate option \(Tout, Enter or Beam\): \[Tout\]: tout\s+Enter pixel size for placing window: \[0\.00000\]: 2e-6\s+Enter pixel coords of element vertex \(x,y\): \[0\.00000,0\.00000\]: 0,0\s+Enter window location in pixel coords \(x,y\): \[0\.00000,0\.00000\]: 10,10
-# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.28708958\d+D\+05
+# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.28708\d*D\+05
 # EXPECT: PEAK 22 22 2\.4133\d+E\+07
 # EXPECT: MACOS> noploc\s+Images will be placed at center of pixel array
-# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.24133040\d+D\+08
+# EXPECT: Text array is of dimension    64 by    64\. Magnitude of central pixel is  0\.24133\d*D\+08
 # EXPECT: PEAK 32 32 2\.4133\d+E\+07
-# EXPECT: (Peak intensity= 8\.8773143D\+06; Peak occurs at i=  129, j=  129[\s\S]*){2}
+# EXPECT: (Peak intensity= 8\.8773\d*D\+06; Peak occurs at i=  129, j=  129[\s\S]*){2}
 # EXPECT-NOT: forrtl

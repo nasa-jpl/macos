@@ -18,7 +18,7 @@ q
 # EXPECT: Exporting data to \S+/Cassegrain\.in\.txt
 # EXPECT: % RayPos 3-vectors for\s+1756 rays at Element\s+5
 # EXPECT: % CumRayL scalars for\s+1756 rays at Element\s+5
-# EXPECT: ^\s+1\s+0\.28515551\d+D-10\s+0\.10309331\d+D-09\s+0\.150000000000000D\+01
+# EXPECT: ^\s+1\s+-?0\.\d+D-(09|1\d|[2-9]\d)\s+-?0\.\d+D-(09|1\d|[2-9]\d)\s+0\.15000\d*D\+01
 # EXPECT: ^3514 \S+/Cassegrain\.in\.txt
 # EXPECT-NOT: No data has been generated
 # EXPECT-NOT: forrtl

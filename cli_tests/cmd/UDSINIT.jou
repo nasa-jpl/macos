@@ -11,7 +11,7 @@ udsinit
 7
 AOmirror.test
 opd 16
-# EXPECT: RMS OPD error is\s+3\.163831991D-07[\s\S]*?Enter user-defined surface file name \[none\]: AOmirror\.test[\s\S]*?RMS OPD error is\s+3\.163831991D-07
+# EXPECT: RMS OPD error is\s+3\.1638\d*D-07[\s\S]*?Enter user-defined surface file name \[none\]: AOmirror\.test[\s\S]*?RMS OPD error is\s+3\.1638\d*D-07
 # EXPECT-NOT: Must specify UDSrfParam
 # EXPECT-NOT: Unidentified string
 # EXPECT-NOT: Unknown user-defined surface type

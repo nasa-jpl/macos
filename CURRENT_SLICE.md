@@ -24,6 +24,8 @@
 
 ## Active slice
 
+> **2026-10-19 night (CC): PUSHED (macos c3708c35, resources 5c9026f).  Pin policy RULED (Dave via CCMac's census): near-zero = magnitude bound, real signal = 5 sig figs; the 21 journals re-pinned (43 patterns, green ifx + gfortran); the 15 mmacos + 8 pymacos assertions wait on CCMac's actual-vs-expected (`NOTE_to_ccmac_prerelease_reply.md` v2).  NEXT: those re-pins when the data comes; Section 3/7 transcripts; §6.2.**
+
 > **2026-10-19 evening (CC): PUSHED on Dave's word (macos c13b36bb merge of CCMac's 985913a1/b9b459bc + mine; resources
 > 5c9026f).  Dave's five manual items DONE LOCAL: (1) front matter = GitHub clone + build instructions; (2) New Features
 > gains CALIB and MET entries; (3) cover page (page 0, Title/Subtitle styles), a Word contents field after it, a PAGE-field
