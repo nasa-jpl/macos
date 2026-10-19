@@ -52,7 +52,10 @@ def settled_prompt(cli, deadline):
     return -1
 
 
-def run_journal(binary, path, root, res, tmp):
+def run_journal(binary, path, root, res, tmp, marks=None):
+    """marks: an optional list that receives, for each line sent, the byte offset in the
+    raw pty output where its echo begins (docs/macos-manual/tools/regen_transcripts.py
+    slices the transcript per command with it; the raw output is marks.raw)."""
     lines = open(path).read().splitlines()
     model, deadline, expects, nots, cmds, deck = '256', 60.0, [], [], [], ''
     for l in lines:
@@ -84,6 +87,8 @@ def run_journal(binary, path, root, res, tmp):
     try:
         for c in cmds:
             n0 = len(cli.out)
+            if marks is not None:
+                marks.append(n0)
             cli.send(c)
             k = settled_prompt(cli, deadline)
             if k is None:
@@ -100,6 +105,8 @@ def run_journal(binary, path, root, res, tmp):
                 break
     finally:
         txt = cli.text()
+        if marks is not None:
+            marks.raw = cli.out
         cli.close()
     if status == 'pass':
         for e in expects:
