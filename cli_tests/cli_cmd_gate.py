@@ -84,6 +84,13 @@ def run_journal(binary, path, root, res, tmp, marks=None):
         cli = Cli(binary, model, deadline)
     except RuntimeError as e:
         return str(e), [], '', time.time() - t0
+    cols = int(os.environ.get('CLI_PTY_COLS', '0'))
+    if cols:
+        # the manual's transcripts (docs/macos-manual/tools/regen_transcripts.py): a pty with no size
+        # reads as 80 columns, and readline redraws a prompt + answer longer than that in horizontal-
+        # scroll mode ('AL<n option ... ALL'); the cmd gate keeps the default
+        import fcntl, struct, termios
+        fcntl.ioctl(cli.fd, termios.TIOCSWINSZ, struct.pack('HHHH', 50, cols, 0, 0))
     try:
         for c in cmds:
             n0 = len(cli.out)

@@ -55,15 +55,11 @@ The DRAW command produces a drawing of the beam train, showing the optical eleme
 
 The user is asked to specify the starting element, the stopping element, and the viewing plane. The following example draws the ImageDemo.in prescription (see Appendix) beam train from the source (element 0) to element 11:
 
-    Enter first element to include: [0]: 0
-    Enter last element to include: [13]: 11
-    Enter drawing plane (XZ, YZ or XY in source coords): [XZ]: xz
+<!-- transcript: s05_draw -->
 
 The result is shown in Figure 31. The system is somewhat aberrated, so the beam does not come to a clean focus! A close-up of refractive elements 6-11 is specified by changing the starting element:
 
-    Enter first element to include: [0]: 6
-    Enter last element to include: [13]: 11
-    Enter drawing plane (XZ, YZ or XY in source coords): [XZ]: xz
+<!-- transcript: s05_draw_relay -->
 
 ![](media/fig_engine_31.png)
 
@@ -75,50 +71,14 @@ Single rays are specified by their “ray ID” number, iRay. This number must b
 
 The relative location of each ray in the pupil can be displayed using the MAP command. When there are more than 15 rays across the aperture, only a subset of the ray numbers are shown. The chief ray is always ray number 1 (iRay=1) and is not displayed by MAP. For Cassegrain.in, the MAP command produces the following:
 
-MACOS\>**map**
+<!-- transcript: s05_map -->
 
-Map of rays at input aperture:
-
-+-----------------+----------------------------+---+---+----------------+
-| 0 84            | 85 86 87 88 89 90 91 92 93 | 9 | 9 | 0              |
-|                 | 94                         | 5 | 6 |                |
-+=================+============================+===+===+================+
-| 69 70           | 71 72 73 74 75 76 77 78 79 | 8 | 8 | 83             |
-|                 | 80                         | 1 | 2 |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 56            | 57 58 59 60 61 62 63 64 65 | 6 | 6 | 0              |
-|                 | 66                         | 7 | 8 |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 43            | 44 45 46 47 48 49 50 51 52 | 5 | 5 | 0              |
-|                 | 53                         | 4 | 5 |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 30            | 31 32 33 34 35 36 37 38 39 | 4 | 4 | 0              |
-|                 | 40                         | 1 | 2 |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 0             | 19 20 21 22 23 24 25 26 27 | 2 | 0 | 0              |
-|                 | 28                         | 9 |   |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 0             | 0 10 11 12 13 14 15 16 17  | 0 | 0 | 0              |
-|                 | 18                         |   |   |                |
-+-----------------+----------------------------+---+---+----------------+
-| 0 0             | 0 0 3 4 5 6 7 8 9 0        | 0 | 0 | 0              |
-+-----------------+----------------------------+---+---+----------------+
-| 0 0             | 0 0 0 0 0 2 0 0 0 0        | 0 | 0 | 0              |
-+-----------------+----------------------------+---+---+----------------+
-
-MACOS\>
-
-MACOS\>**map**
 
 The lower left corner is the (x=0, y=0) point for the aperture coordinates defined by the ChfRayDir (=-zGrid) and xGrid vectors. The view is looking into the optical system from the source.
 
-When using MAP with a segmented system, a map of the segments is also printed, showing which segment each ray hits. For SegmentDemo.in, the following map is produced.
+When using MAP with a segmented system, a map of the segments is also printed, showing which segment each ray hits. For SegDemo.in (Appendix A), the following map is produced.
 
-Map of rays at input aperture:
-
-    Hit Map
-
-MACOS\>
+<!-- transcript: s05_map_seg -->
 
 3.  **Undefined Rays**
 
@@ -144,83 +104,21 @@ Hits elements simultaneously.
 
 The RAY command traces specific rays and prints the results. RAY has one argument, the number of the ray to be printed (iRay). The chief ray for Cassegrain.in is printed as:
 
-MACOS\>**ray**
-
-    Enter number of ray (1=chief ray, 0=quit):1 Ray 1 is the chief ray.
-    Ray 1 segment from Element 0 (InputRay) to Element 1 (SecMirOb): Starting point= 0.000000000D+00 0.000000000D+00 -6.000000000D+00
-    End point= 0.000000000D+00 0.000000000D+00 -5.400000000D+00 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 6.000000000D-01 Total Length= 6.000000000D-01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 1 is obscured by element 1
-    Ray 1 segment from Element 1 (SecMirOb) to Element 2 (Primary ): Starting point= 0.000000000D+00 0.000000000D+00 -5.400000000D+00
-    End point= 0.000000000D+00 0.000000000D+00 -8.881784197D-16 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 5.400000000D+00 Total Length= 6.000000000D+00
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 1 segment from Element 2 (Primary ) to Element 3 (Secondar): Starting point= 0.000000000D+00 0.000000000D+00 -8.881784197D-16
-    End point= 0.000000000D+00 0.000000000D+00 -4.061145902D+00 Direction= 0.000000000D+00 0.000000000D+00 -1.000000000D+00
-    Segment Length= 4.061145902D+00 Total Length= 1.006114590D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 1 segment from Element 3 (Secondar) to Element 4 (Ref_surf):
-    Starting point= 0.000000000D+00 0.000000000D+00 -4.061145902D+00 End point= 0.000000000D+00 0.000000000D+00 -4.060145902D+00 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 1.000000000D-03 Total Length= 1.006214590D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 1 segment from Element 4 (Ref_surf) to Element 5 (foc_pln ): Starting point= 0.000000000D+00 0.000000000D+00 -4.060145902D+00
-    End point= 0.000000000D+00 0.000000000D+00 1.500000000D+00 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 5.560145902D+00 Total Length= 1.562229180D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
+<!-- transcript: s05_ray1 -->
 
 This printout gives the start and end point of each segment of the ray in global coordinates. The direction is a unit vector in global coordinates. The segment length refers to the geometric distance between the ray start and end points; it is not scaled by index of refraction. The total length gives a running sum of the length of the ray that is scaled by the index of refraction. The index give the index of refraction for the previous and current element.
 
 To print the lower marginal ray, we see from the MAP command that the iRay number is 2, and respond accordingly:
 
-MACOS\>**ray**
-
-    Enter number of ray (1=chief ray, 0=quit):2
-    Ray 2 has aperture coordinates 8 and 1.
-    WF coordinates are 129 and 122.
-    Adjacent rays are 0, 0, 0, 6.
-    Ray 2 segment from Element 0 (InputRay) to Element 1 (SecMirOb): Starting point= -4.440892099D-16 -2.000000000D+00 -6.000000000D+00
-    End point= -4.440892099D-16 -2.000000000D+00 -5.400000000D+00 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 6.000000000D-01 Total Length= 6.000000000D-01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 2 segment from Element 1 (SecMirOb) to Element 2 (Primary ): Starting point= -4.440892099D-16 -2.000000000D+00 -5.400000000D+00
-    End point= -4.440892099D-16 -2.000000000D+00 -1.851851852D-01 Direction= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    Segment Length= 5.214814815D+00 Total Length= 5.814814815D+00
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 2 segment from Element 2 (Primary ) to Element 3 (Secondar): Starting point= -4.440892099D-16 -2.000000000D+00 -1.851851852D-01
-    End point= -1.110223024D-16 -4.999999999D-01 -4.096296297D+00 Direction= 7.951199381D-17 3.580901857D-01 -9.336870027D-01
-    Segment Length= 4.188888889D+00 Total Length= 1.000370370D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 2 segment from Element 3 (Secondar) to Element 4 (Ref_surf): Starting point= -1.110223024D-16 -4.999999999D-01 -4.096296297D+00
-    End point= -1.098674950D-16 -4.947992095D-01 -4.038085968D+00 Direction= 1.975982230D-17 8.899032834D-02 9.960324902D-01
-    Segment Length= 5.844219807D-02 Total Length= 1.006214590D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 2 segment from Element 4 (Ref_surf) to Element 5 (foc_pln ):
-
-    Starting point= -1.098674950D-16 -4.947992095D-01 -4.038085968D+00 End point= -1.877761358D-26 -8.456685352D-11 1.500000000D+00 Direction= 1.975982230D-17 8.899032834D-02 9.960324902D-01
-    Segment Length= 5.560145902D+00 Total Length= 1.562229180D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
+<!-- transcript: s05_ray2 -->
 
 This printout is similar to the chief ray printout. However, the first three lines are new. They specify the ray grid coordinates, the coordinates of the diffraction amplitude matrix grid point with which the ray is associated, and the iRay numbers of the adjacent rays. The adjacent rays are listed in (-x, +x, -y, +y) order.
 
 The RRAY, PRAY and TPR commands pick reference rays and trace them one at a time. RRAY finds the chief ray and the four marginal rays nearest the +x, −x, +y and −y edges of the source aperture; PRAY finds the chief ray and eight rays on a ring at 0.9 of the aperture radius. Each prints the rays it picked with their XY offsets from the chief ray in source-aperture units and their ray numbers (the same numbers RAY and MAP use). TPR then traces each picked ray from the source to the last element, or to the RayTgtElt element when one is set, and prints where it lands; a ray lost on the way is named. None of the three takes an argument, and TPR refuses until RRAY or PRAY has run. On CassWithExitPupil.in (the detector is element 6):
 
-MACOS\>**rray**
+<!-- transcript: s05_rray -->
 
-     Source aperture diameter =       4.0000 none
-      Ref. ray XY offsets from chief ray:      1.6923,     -0.1538,   ID =      63
-      Ref. ray XY offsets from chief ray:     -0.1538,      1.6923,   ID =     122
-      Ref. ray XY offsets from chief ray:     -1.6923,     -0.1538,   ID =      52
-      Ref. ray XY offsets from chief ray:     -0.1538,     -1.6923,   ID =       4
-     Reference ray indices (chief + 4 marginal) =            1          63         122          52           4
-
-MACOS\>**tpr**
-
-     TPR ray 1 at element 6:   0.000000000000000E+00   0.000000000000000E+00   1.500000000000000E+00
-     TPR ray 63 at element 6:  -9.075851181705730E-11   8.250726490910409E-12   1.500000000000000E+00
-     TPR ray 122 at element 6:   8.250726490910409E-12  -9.075851181705730E-11   1.500000000000000E+00
-     TPR ray 52 at element 6:   9.076017715159423E-11   8.250934657727527E-12   1.500000000000000E+00
-     TPR ray 4 at element 6:   8.250934657727527E-12   9.076017715159423E-11   1.500000000000000E+00
+<!-- transcript: s05_tpr -->
 
 The marginal rays land within 1e-10 of the chief ray at the focus, the residual of the design. FSR (under the beam set-up commands below) finds the ray nearest a given fractional source position the same way and reports its number and offset. The MATLAB and Python bindings expose the finders as ref_rays; TPR has no binding yet.
 
@@ -244,52 +142,21 @@ OPD plots are not affected by STRETCH setting. OPD plots are always on a linear 
 
 The default plot type is GRAy scale. The plot type can be changed with the following commands: WIRe, SLIce, GRAy, COLumn, ROW, CONtour, TEXt, MATlab,FITs, or BINary. These plotting commands are discussed in more detail in [Section ?](#plot-type-commands).
 
-The following examples show output of the OPD command with the GRAY, ROW and BINary plot types for Cassegrain.in, at the secondary mirror (element 3), where the wavefront is far from flat.
+The following examples show output of the OPD command with the GRAY, ROW and TEXt plot types for Cassegrain.in, at the secondary mirror (element 3), where the wavefront is far from flat.
 
-MACOS\>**opd 3**
-
-    Enter element where OPD is to be evaluated: [0]: 3
-    OPD: Rays being traced =         1877
-    OPD: nPassRays =    1756,    DAvgCumL =  90.30828646D-01
-     OPD reference: CHIEF RAY (default)
-    RMS OPD error is   1.545357155D-02
-    P-V OPD error is   5.323448819D-02
-    Average OPD is    -3.0317256240508069D-02
-    A total of      121 rays were lost
-      Obscured:            121
-        at element    1:       121
-    Graphics device/type (? to see list, default /xw):
+<!-- transcript: s05_opd_gray -->
 
 ![](media/fig_engine_33.png)
 
 **FIGURE 33** OPD GRAy scale plot
 
-MACOS\>**row**
-
-     Plot type set to ROW
-
-MACOS\>**opd 3**
-
-    Enter element where OPD is to be evaluated: [3]: 3
-    ...
-    RMS OPD error is   1.545357155D-02
-    Enter number of row to be plotted: [26]: 26
+<!-- transcript: s05_opd_row -->
 
 ![](media/fig_engine_34.png)
 
 **FIGURE 34** OPD ROW plot (the center row; the map is 0 outside the aperture and in the central obscuration)
 
-MACOS\>**bin**
-
-Plot type set to BINARY
-
-MACOS\>**opd**
-
-    Enter element where OPD is to be evaluated [3]:3 RMS OPD error is 1.545357E-02
-    Writing OPD Map, Elt=3
-    DIRECT ACCESS File=Cassegrain.OPD3
-
-    Binary array is of dimension 128 128 0. Magnitude of central pixel is 0.0000000000D+00
+<!-- transcript: s05_opd_text -->
 
 3.  **SPOT**
 
@@ -305,12 +172,7 @@ The SPOt command has the argument iElt: the number of the element where the spot
 
 **FIGURE 35** Spot on the projection plane
 
-MACOS\>**spot**
-
-    Enter element where spot diagram is to be computed [0]:4 Enter output coordinate option (Tout, Enter or Beam): [Tout]: Tracing 150 rays...
-    Compute time was 0.3086 sec
-    Graphics device/type (? to see list): /xw
-    Chief ray location: x= 0.0000000D+00 y= 0.0000000D+00 Centroid of spot diagram: x=-5.2080625E-18 y= 0.0000000E+00 MACOS>
+<!-- transcript: s05_spot4 -->
 
 4.  **OBSCURATION**
 
@@ -328,24 +190,7 @@ Figure 37 shows spot diagrams of the Cassegrain telescope, for comparison with F
 
 36\. The spot diagram on the left is plotted with OBS=ALL, showing all rays. The spot diagram on the right is plotted with OBS=NEGATIVE, showing only obscured rays.
 
-MACOS\>**spot**
-
-    Enter element where spot diagram is to be computed [4]:5 Enter output coordinate option (Tout, Enter or Beam): [Tout]: Tracing 150 rays...
-    Compute time was 0.1211 sec
-    Chief ray location: x= 0.0000000D+00 y= 0.0000000D+00 Centroid of spot diagram: x=-1.1055660E-16 y=-1.1055660E-16 Type <RETURN> for next page:
-
-MACOS\>**obs**
-
-    Enter ray-trace obscuration option (ALL, POSITIVE, NEGATIVE) [POSITIVE]: ALL
-
-All rays plotted on spot diagrams
-
-MACOS\>**spot**
-
-    Enter element where spot diagram is to be computed [5]:5 Enter output coordinate option (Tout, Enter or Beam): [Tout]:
-    Chief ray location: x= 0.0000000D+00 y= 0.0000000D+00 Centroid of spot diagram: x= 7.1761210E-17 y= 7.1761210E-17 Type <RETURN> for next page:
-
-MACOS\>
+<!-- transcript: s05_spot_obs -->
 
 ![](media/fig_engine_37.png)
 
@@ -355,15 +200,7 @@ MACOS\>
 
 Trace a single ray that passes through the geometric center of a chosen segment element, printing the ray state at every downstream surface. Useful for verifying that segmented-mirror prescriptions place segments where you expect, by comparing the ray interception point to the segment’s rotation point (its RptElt). The ray starting point is derived from the source segment coordinates.
 
-    MACOS> SEGRAYTRACE
-    Enter segment number (0=quit): [0]: 5
-    Ray 1 segment from Element 0 (InputRay) to Element 5 (Seg5):
-    Starting point= ...
-    End point = ... (should be RptElt(:,5))
-    Direction = ...
-    ...
-    Enter segment number (0=quit): [0]: 0
-    MACOS>
+<!-- transcript: s05_segray -->
 
 The source ray's position is automatically offset from ChfRayPos so the resulting ray (parallel to ChfRayDir for a collimated source, or aimed from ChfRayPos for a point source) lands exactly at the segment's center. The segment-dispatch path is forced to fire only on the chosen segment via RayToSegMap; other segments are skipped.
 
@@ -419,19 +256,13 @@ If the stop is to be specified in object space, the next request is for the 3-ve
 
 The stop element may be a Segment of a segmented mirror (the chief ray is mapped to that segment); it may not be a non-sequential element, which is refused by name. In segmented prescriptions every segment's VptElt is the parent vertex, so an offset of 0,0 on any segment gives the same stop; a segment's own center needs an offset measured from its RptElt. An element stop rebuilds the source coordinate frame about the new chief ray but keeps the frame's handedness (a left-handed xGrid, yGrid, ChfRayDir triad stays left-handed), so the ray grid of a segmented source stays on its segments.
 
-MACOS\>**stop**
-
 The following examples illustrate the setting of stops for the Cassegrain.in example prescription. The first example sets the stop at the nominal location in 3-space of the primary mirror vertex:
 
-    Stop at ELT or OBJect point? [OBJ]: object
-    Enter stop position in object space (x,y,z): [0.,0.,0.]:0,0,0 MACOS>
-
-MACOS\>**stop**
+<!-- transcript: s05_stop_obj -->
 
 The second example puts the stop at the secondary mirror. The STOp command computes the equivalent object-space stop position:
 
-    Stop at ELT or OBJect point? [OBJ]: elt Enter system stop element number: [1]:3 Enter offset vector (dx,dy): [0.,0.]:0,0
-    Computed StopPos= 0.000000000D+00 0.000000000D+00 1.637981902D+01 MACOS>
+<!-- transcript: s05_stop_elt -->
 
 2.  **CENTER**
 
@@ -439,35 +270,11 @@ The CENTEr command solves for a new source position that places the beam at a sp
 
 The following example uses the Cassegrain.in example to center a perturbed beam, with the result shown by tracing the chief ray to the specified element:
 
-MACOS\>**center**
-
-    Enter system stop element number: [1]:2 Enter offset vector (dx,dy): [0.,0.]:0,0
-    Beam centered in 2 iterations, error= 3.231486333D-15 MACOS>ray
-    Enter number of ray (1=chief ray, 0=quit): [0]: 1
-    Ray 1 is the chief ray.
-    Ray 1 segment from Element 0 (InputRay) to Element 1 (SecMirOb): Starting point= 6.055112155D-17 5.000007357D-03 -5.000005690D+00
-    End point= 6.055112155D-17 4.200001400D-03 -4.200000000D+00 Direction= 0.000000000D+00 -9.999998333D-04 9.999995000D-01
-    Segment Length= 8.000060899D-01 Total Length= 8.000060899D-01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    Ray 1 is obscured by element 1
-    Ray 1 segment from Element 1 (SecMirOb) to Element 2 (Primary ): Starting point= 6.055112155D-17 4.200001400D-03 -4.200000000D+00
-    End point= 6.055112155D-17 -3.230922474D-15 0.000000000D+00 Zeroed!
-    Direction= 0.000000000D+00 -9.999998333D-04 9.999995000D-01
-    Segment Length= 4.200002100D+00 Total Length= 5.000008190D+00
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    (etc...)
+<!-- transcript: s05_center -->
 
 3.  **COORD**
 
-The COOrdinates command computes beam coordinates at any specified element. Beam coordinates are the projection onto that element of the xGrid and yGrid axes defined at the source element (see previous section). The COORDinates command takes
-
-a single argument: the element number iElt. It prints out two orthogonal unit vectors in
-
-MACOS\>**coord**
-
-response. These vectors are the projection onto the surface at the chief ray of the xGrid
-
-and yGrid axes.
+The COOrdinates command computes beam coordinates at any specified element. Beam coordinates are the projection onto that element of the xGrid and yGrid axes defined at the source element (see previous section). The COORDinates command takes a single argument: the element number iElt. It prints out two orthogonal unit vectors in response. These vectors are the projection onto the surface at the chief ray of the xGrid and yGrid axes.
 
 These coordinates are computed using four differential chief rays. The first two differ slightly in x- and y-*angle* from the nominal chief ray. In the near-field of the source, such as at a pupil element, the incidence points of these rays on the element differ enough to indicate the projected axes directions. The second two differential chief rays differ in x- and y-*position* from the nominal chief ray. They are used to indicate axes direction in the far-field of the beam, such as at a focal plane.
 
@@ -475,20 +282,7 @@ Note: The beam coordinates may undergo a sign change in the vicinity of a focus.
 
 The following example uses the Cassegrain.in example, determining the coordinates projection onto the secondary obscurations (iElt=1), the exit pupil (iElt=5), and the detector (iElt=6):
 
-    Enter element number: [1]:1
-    Computed xLocal= -1.000000000D+00 0.000000000D+00 0.000000000D+00 Computed yLocal= 0.000000000D+00 -1.000000000D+00 0.000000000D+00 Computed zLocal= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-
-MACOS\>coord 5
-
-    Enter element number: [1]: 5
-    Computed xLocal= -9.999999998D-01 0.000000000D+00 2.229180881D-05 Computed yLocal= 0.000000000D+00 -9.999999998D-01 2.229180881D-05 Computed zLocal= 2.229180880D-05 2.229180880D-05 9.999999995D-01
-
-MACOS\>coord 6
-
-    Enter element number: [1]: 6
-    Computed xLocal= -1.000000000D+00 0.000000000D+00 0.000000000D+00 Computed yLocal= 0.000000000D+00 -1.000000000D+00 0.000000000D+00 Computed zLocal= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-
-MACOS\>pert 6
+<!-- transcript: s05_coord -->
 
 4.  **FFP**
 
@@ -498,33 +292,9 @@ The FFP command has two arguments: the element number of the surface at which th
 
 The following example uses the Cassegrain.in example, finding the beam that offsets an image by (1e-3, -2e-3):
 
-MACOS\>**stop**
+<!-- transcript: s05_ffp -->
 
-    Stop at ELT or OBJect point? [Elt]: obj 0,0,0
-    Enter stop position in object space (x,y,z): [0.,0.,0.]: 0,0,0 MACOS>ffp 6
-    Enter element number: [6]:
-    Enter offset vector in global units (dx,dy): [0.,0.]:1e-3,-2e-3 Field angle finder results:
-    Did 1 iterations, error= 6.936774704D-11
-    Old dx= 0.000000000D+00 New dx= 1.000000031D-03 0.000000000D+00 -2.000000062D-03
-    Old crd= 0.000000000D+00 New crd= 4.458354140D-05 0.000000000D+00 -8.916708280D-05
-    1.000000000D+00 9.999999950D-01 Old crp= 0.000000000D+00 New crp= -2.229177070D-04 0.000000000D+00 4.458354140D-04
-    -5.000000000D+00 -4.999999975D+00
-    Accept the new chief ray? [YES]: yes
-
-MACOS\>**ray 1 *Trace ray to show new incidence point...***
-
-    Enter number of ray (1=chief ray, 0=quit): [0]: 1 Ray 1 is the chief ray.
-    Ray 1 segment from Element 0 (InputRay) to Element 1 (SecMirOb): Starting point= -2.229177070D-04 4.458354140D-04 -4.999999975D+00
-    End point= -1.872508748D-04 3.745017496D-04 -4.200000000D+00 Direction= 4.458354140D-05 -8.916708280D-05 9.999999950D-01
-    Segment Length= 7.999999791D-01 Total Length= 7.999999791D-01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    (etc...)
-    Ray 1 segment from Element 5 (ExitPupi) to Element 6 (Detector): Starting point= 1.812075347D-04 -3.624150694D-04 -4.060145887D+00
-    End point= 1.000000031D-03 -2.000000062D-03 1.500010000D+00 Direction= 1.472607007D-04 -2.945214014D-04 9.999999458D-01
-    Segment Length= 5.560156189D+00 Total Length= 1.462230217D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-
-MACOS\>
+<!-- transcript: s05_ffp_ray -->
 
 5.  **PFP**
 
@@ -534,32 +304,9 @@ The PFP command has two arguments: the element number of the surface at which th
 
 The following example uses the Cassegrain.in example, finding the beam that puts an image at pixel location (20, -100):
 
-MACOS\>**PFP 6**
+<!-- transcript: s05_pfp -->
 
-    Enter element number: [6]:6
-    Enter pixel size for placing image on pixel array: [0.]:15e-4 Enter image position in pixel units (dx,dy): [0.,0.]:20,-100 Field angle finder results:
-    Did 2 iterations, error= 1.581159622D-12
-    Old dx= 1.000000031D-03 New dx= 3.000000000D-02
-    -2.000000062D-03 -1.500000000D-01 Old crd= 4.458354140D-05 New crd= 1.337301749D-03
-    -8.916708280D-05 -6.686508743D-03
-    9.999999950D-01 9.999767508D-01 Old crp= -2.229177070D-04 New crp= -6.686508743D-03 4.458354140D-04 3.343254372D-02
-    -4.999999975D+00 -4.999883754D+00
-    Accept the new chief ray? [YES]:
-
-MACOS\>**ray 1 *Trace ray to show new incidence point...***
-
-    Enter number of ray (1=chief ray, 0=quit): [0]: 1 Ray 1 is the chief ray.
-    Ray 1 segment from Element 0 (InputRay) to Element 1 (SecMirOb): Starting point= -6.686508743D-03 3.343254372D-02 -4.999883754D+00
-    End point= -5.616797930D-03 2.808398965D-02 -4.200000000D+00 Direction= 1.337301749D-03 -6.686508743D-03 9.999767508D-01
-    Segment Length= 7.999023513D-01 Total Length= 7.999023513D-01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-    (etc...)
-    Ray 1 segment from Element 5 (ExitPupi) to Element 6 (Detector): Starting point= 5.436452666D-03 -2.718226333D-02 -4.060076800D+00
-    End point= 3.000000000D-02 -1.500000000D-01 1.500010000D+00 Direction= 4.416714741D-03 -2.208357371D-02 9.997463720D-01
-    Segment Length= 5.561497351D+00 Total Length= 1.462402454D+01
-    Index(i-1)= 1.000000000D+00 0.000000000D+00 Index(i)= 1.000000000D+00 0.000000000D+00
-
-MACOS\>
+<!-- transcript: s05_pfp_ray -->
 
 6.  **FEX**
 
@@ -585,75 +332,13 @@ FEX guards its own setup and says so. If the four differential chief rays are pa
 
 FEX requires two arguments: the number iElt of the exit pupil return surface and the location in global coordinates of the vertex of the aperture stop.
 
-For example, we added two return surfaces to the Cassegrain.in prescription just before the detector using a text editor (see [Section ?](#example-telescope)). The first is a return surface at the detector location. The second is close to the exit pupil. The entire .in-file is in Appendix A.1.4.
+For example, we added two return surfaces to the Cassegrain.in prescription just before the detector using a text editor (see [Section ?](#example-telescope)). The first is a return surface at the detector location. The second is close to the exit pupil; for this example it has been moved to z = -4.5 with a focal length of 6 using MODify, to give FEX something to find. The entire .in-file is in Appendix A.1.4.
 
-MACOS\>**show 5**
-
-    Enter number of element (0=aperture): [0]: 5
-
-        iElt=  5
-     EltName=  rtn1
-     Element=  Return
-     Surface=  Conic
-        fElt=  1.000000000D+22
-        eElt=  0.000000000D+00
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00 0.000000000D+00 1.000000000D+00
-      VptElt=  0.000000000D+00 0.000000000D+00 1.500000000D+00
-      RptElt=  0.000000000D+00 0.000000000D+00 1.500000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  0.000000000D+00
-    PropType=  Geometric
-     nECoord=  -6
-
-    nECoord= -6
-
-MACOS\>**show 6**
-
-    Enter number of element (0=aperture): [0]: 6
-
-        iElt=  6
-     EltName=  rtn2
-     Element=  Return
-     Surface=  Conic
-        fElt=  6.000000000D+00
-        eElt=  0.000000000D+00
-       KrElt=  -6.000000000D+00
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -4.500000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -4.500000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  6.000000000D+00
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s05_fex_show -->
 
 Then the exit pupil is optimized:
 
-MACOS\>**fex**
-
-    Enter number of exit pupil return surface: [5]:6 Tracing 173 rays...
-    Chief ray location: x= 0.0000000D+00 y= 0.0000000D+00 z=-
-    4.5000000D+00
-    Centroid location: x= 7.9797280D-17 y= 8.6736174D-17 z=-
-    4.4875916D+00
-    Centroid offset from chief ray: x=-7.9797280D-17 y=-8.6736174D-17 z=-1.2408352D-02
-    Exit pupil finder results:
-    Old f= 6.000000000D+00 New f= 6.790667844D+00
-
-    Old z= 6.000000000D+00 New z= 6.790667844D+00 Old psi= 0.000000000D+00 New psi= 9.936451891D-17 0.000000000D+00 1.080049119D-16
-    1.000000000D+00 1.000000000D+00 Old Vpt= 0.000000000D+00 New Vpt= 0.000000000D+00 0.000000000D+00 0.000000000D+00
-    -4.500000000D+00 -5.290667844D+00
-    Accept the new element? [YES]:
-
-MACOS\>
+<!-- transcript: s05_fex -->
 
 7.  **PERTURB**
 
@@ -667,36 +352,23 @@ The PERturb command takes arguments specifying the element to be perturbed and t
 
 Rotations are applied using Euler axis/angle parameters (Ref. Hughes). The axis of the rotation is given by the direction of the rotation perturbation vector. The angle is given by its magnitude. This approach is used in preference to Euler angles or quaternions as it provides a smooth transition to the usual small-angle linear approximations.
 
-If iElt=0, indicating the source is to be perturbed, the user is prompted for the location of the aperture stop in global coordinates. For instance to look 0.5 deg (8.72664d-3 rad) off the x-axis, a rotation about the y-axis is commanded:
+If iElt=0, indicating the source is to be perturbed, the source is rotated about the system stop, which must first be set with STOp (PERturb names the missing stop and does nothing otherwise). For instance to look 0.5 deg (8.72664d-3 rad) off the x-axis, a rotation about the y-axis is commanded:
 
-MACOS\>**perturb**
-
-    Enter element to be perturbed: [0]:0
-    Enter rotational perturbation vector (x,y,z): [0.,0.,0.]:0,8.72664d-3,0 Enter translational perturbation vector (x,y,z): [0.,0.,0.]:0,0,0 Computing new perturbed system parameters
-
-MACOS\>
+<!-- transcript: s05_perturb_src -->
 
 If iElt\>0, indicating a regular element, the user is asked whether the perturbation vectors are in local element coordinates or in global coordinates. If in local coordinates, the user is prompted for a single 6-vector perturbation in those coordinates. If in global
 
 coordinates, the user is prompted for a rotational perturbation 3-vector, then a translational 3-vector. For instance, to translate the secondary mirror in Cassegrain.in:
 
-MACOS\>**pert**
-
-    Enter element to be perturbed:3
-    Enter coordinate system for perturbation (ELEMENT or GLOBAL): [GLOBAL]: Enter rotational perturbation vector (x,y,z): [0.,0.,0.]:0,0,0
-    Enter translational perturbation vector (x,y,z): [0.,0.,0.]:0,0,1d-6 Computing new perturbed system parameters
-
-MACOS\>
+<!-- transcript: s05_perturb_elt -->
 
 8.  **PREAD**
 
-The PREad command reads element perturbations from a specified datafile. MACOS assumes that the name of the perturbation file is infilename.pert. If this file does not exist, MACOS prompts for ther perturbation file name.
+The PREad command reads element perturbations from a specified datafile. MACOS prompts for the name of the perturbation file (by convention infilename.pert).
 
 The perturbation file must be in the following all numeric format. The perturbations must be in global coordinates. The order of the perturbation vectors in the .pert-file must be identical to the order of the elements (the first perturbation vector corresponds to the first element, the sixth perturbation vector corresponds with the sixth element). Each element must have a perturbation vector. If an element is unperturbed, then a string of zeroes should be entered as its perturbation vector. The perturbation vectors are rotational perturbations and translational perturbations. The 6 components of the perturbation vector must be separated by spaces.
 
-MACOS\>**pre**
-
-    File Cassegrain.pert read. MACOS>
+<!-- transcript: s05_pread -->
 
 9.  **ATMOS**
 
@@ -706,14 +378,7 @@ ATMos provides two options for specifying the atmospheric grid. The RAY option t
 
 ATMOS takes four or five arguments, depending on how the grid is to be specified (RAY or ATM). An example of the use of ATMOS in an adaptive optics system model is provided in Appendix A.4. A sample dialog showing use of ATMOS follows:
 
-MACOS\>**atm**
-
-    Enter number of atmosphere phase screen element: [0]:1 Enter atmosphere r0: [12.4492]: 24
-    Enter atmosphere wavelength: [2.854331E-05]: 2.854331E-05 Enter atmosphere tilt participation (0-1): [1.00000]:0 Use RAY grid or separate ATMospheric grid? [RAY]: atm
-    Computed xLocal= 0.000000000D+00 -1.000000000D+00 0.000000000D+00 Computed yLocal= -1.000000000D+00 0.000000000D+00 0.000000000D+00 Computed zLocal= 0.000000000D+00 0.000000000D+00 -1.000000000D+00
-
-    Tracing 12113 rays... Compute time was 0.2266 sec
-    Enter grid spacing: [1.56840]:20 MACOS>
+<!-- transcript: s05_atm -->
 
 Here the “tilt participation” regulates the percentage of the Kolmogorov that is to be included in the phase screen. Tilt is explicitly removed when this factor is set to zero, and increases proportionally as the factor goes to 1, which signifies full Kolmogorov tilt. An example, showing a typical atmospheric wavefront from AOexample.jou (Appendix A.4), is shown in Figure 39.
 
@@ -733,11 +398,7 @@ The NOPOlarization command turns off polarization ray tracing. This is the defau
 
 The Surface INTerpolate (SINT) command activates the surface interpolation of elements. Prior to using the SINT command, the surface is assumed to be a conic-of-revolution. MACOS assumes that the interpolation input file has the name in-file.srf#.txt (or .bin), where in-file is the prescription's file name including its .in and \# is the number of the element the data describes. If that file does not exist, MACOS prompts the user for the name of the file.
 
-MACOS\>**SINT**
-
-    Computing interpolated surface data... Compute time was 5.7871 sec
-
-MACOS\>
+<!-- transcript: s05_sint -->
 
 ### Polarized Ray Tracing
 
