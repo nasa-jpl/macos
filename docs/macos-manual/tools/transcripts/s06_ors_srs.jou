@@ -1,0 +1,42 @@
+# Section 6, ORS and SRS (the dialogs re-emitted by hand 2026-10-19 morning, now generated).
+# s06_ors_coro: CoroExample.in, the first near-field reference surface (element 5, PropType NF1) set 4%
+#   long with MODify; ORS recovers the design 6.3293 (5 figures).
+# s06_ors_starved: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to 5 mm (the
+#   defect the PDF line wrap made, finding 1.2 (cc)); ORS names the starved trace and aborts.
+# s06_srs_cass: CassWithExitPupil.in, the detector (element 6) slaved to the exit-pupil Return surface
+#   (element 5); the OPD at the detector afterwards is at the round-off floor (a bound, pin rule 1) --
+#   the sentence after the dialog says so, the opd 6 below checks it.
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in s06
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in s06
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s06
+cd $TMP/s06
+old CoroExample.in
+# TRANSCRIPT: s06_ors_coro
+mod
+fElt(5)=6.6
+q
+ors
+5
+yes
+# TRANSCRIPT-OFF
+! perl -i -pe 's/-3\.536721061D-05/5d0/' ImageDemo.in
+old ImageDemo.in
+# TRANSCRIPT: s06_ors_starved
+ors
+12
+# TRANSCRIPT-OFF
+old CassWithExitPupil.in
+# TRANSCRIPT: s06_srs_cass
+srs
+6
+5
+yes
+# TRANSCRIPT-OFF
+opd 6
+/null
+# EXPECT: fElt\(\s*5\) =\s+6\.600000000D\+00\s+KrElt[\s\S]*?Old f=\s+6\.600000000D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: ORS: only\s+\d+ of\s+317 test rays reach element\s+11 \(the surface before it\); at least 3 are needed\.\s+ORS: command aborted\.
+# EXPECT: Enter number of element to slave to: \[1\]: 5\s+Reference surface recalculation results:[\s\S]*?1\.500000000D\+00\s+1\.50000\d*D\+00
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[1-9]
+# EXPECT-NOT: TTL OPD=\s+NaN
+# EXPECT-NOT: forrtl
