@@ -1,0 +1,99 @@
+# Section 5 on Cassegrain.in (Appendix A, as in the tree: nGridpts 51): MAP, RAY, OPD under three plot
+# types, SPOT and OBS, STOP, CENTER, PERTURB, PREAD.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s05c
+cd $TMP/s05c
+old Cassegrain
+# TRANSCRIPT: s05_map
+map
+# TRANSCRIPT: s05_ray1
+ray
+1
+# TRANSCRIPT: s05_ray2
+ray
+2
+# TRANSCRIPT: s05_opd_gray
+opd 3
+/null
+# TRANSCRIPT: s05_opd_row
+row
+opd 3
+26
+# TRANSCRIPT: s05_opd_text
+text
+opd 3
+# TRANSCRIPT-OFF
+gray
+# TRANSCRIPT: s05_spot4
+spot
+4
+Tout
+# TRANSCRIPT: s05_spot_obs
+spot
+5
+Tout
+obs
+ALL
+spot
+5
+Tout
+# TRANSCRIPT-OFF
+obs
+POSITIVE
+# TRANSCRIPT: s05_stop_obj
+stop
+object
+0,0,0
+# TRANSCRIPT: s05_stop_elt
+stop
+elt
+3
+0,0
+# TRANSCRIPT-OFF
+old Cassegrain
+stop obj 0,0,-4.2
+perturb 0 1e-3,0,0 0,0,0
+# TRANSCRIPT: s05_center
+center
+2
+0,0
+ray
+1
+# TRANSCRIPT-OFF
+old Cassegrain
+stop obj 0,0,0
+# TRANSCRIPT: s05_perturb_src
+perturb
+0
+0,8.72664d-3,0
+0,0,0
+# TRANSCRIPT-OFF
+old Cassegrain
+# TRANSCRIPT: s05_perturb_elt
+pert
+3
+global
+0,0,0
+0,0,1d-6
+# TRANSCRIPT-OFF
+old Cassegrain
+! printf '0 0 0 0 0 0\n0 0 0 0 0 0\n1e-4 0 0 0 0 0\n0 0 0 0 0 0\n0 0 0 0 0 0\n' > Cassegrain.pert
+# TRANSCRIPT: s05_pread
+pre
+Cassegrain.pert
+# TRANSCRIPT-OFF
+# EXPECT: Tracing rays past\s+5 elements
+# EXPECT: Map of rays at input aperture:\s+0\s+0\s+0
+# EXPECT: Ray\s+1 is the chief ray\.[\s\S]*?to Element\s+5 \(Detector\s*\):\s+Starting point=[^\n]*\n\s+End point=\s+0\.0+D\+00\s+0\.0+D\+00\s+1\.50000\d*D\+00
+# EXPECT: Ray\s+2 has aperture coordinates\s+19 and\s+2\.
+# EXPECT: OPD: Rays being traced =\s+1877[\s\S]*?OPD: nPassRays =\s+1756,[\s\S]*?RMS OPD error is\s+1\.5453\d*D-02\s+P-V OPD error is\s+5\.3234\d*D-02
+# EXPECT: Plot type set to ROW[\s\S]*?Enter number of row to be plotted: \[26\]: 26
+# EXPECT: Plot type set to TEXT[\s\S]*?FORMATTED File=Cassegrain\.OPD3\.txt
+# EXPECT: Enter element where spot diagram is to be computed: \[3\]: 4[\s\S]*?Centroid of spot diagram: x=\s*-?\d\.\d+D-1[5-9] y=\s*-?\d\.\d+D-1[5-9]
+# EXPECT: \[POSITIVE\]: ALL\s+All rays plotted on spot diagrams
+# EXPECT: Enter stop \(entrance pupil\) position in object space \(x,y,z\): \[[^\]]*\]: 0,0,0
+# EXPECT: Computed StopPos =\s+0\.0+D\+00\s+0\.0+D\+00\s+1\.6379\d*D\+01
+# EXPECT: Beam centered in\s+\d+ iterations, error=\s+\d\.\d+D-1[3-9]
+# EXPECT: Enter element to be perturbed: \[0\]: 0\s+Enter rotational perturbation vector \(x,y,z\): \[[^\]]*\]: 0,8\.72664d-3,0
+# EXPECT: Enter element to be perturbed: \[0\]: 3\s+Enter coordinate system for perturbation \(ELEMENT or GLOBAL\): \[GLOBAL\]: global
+# EXPECT: File Cassegrain\.pert read\.
+# EXPECT-NOT: forrtl

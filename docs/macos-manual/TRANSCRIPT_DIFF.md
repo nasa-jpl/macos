@@ -79,6 +79,38 @@ The prose around these dialogs still describes PGPLOT (`/GIF` files `pgplot.gif`
 `macos.glass`) and Table 4's Sun/PowerMac memory sizes; the dialogs now contradict them.  Left for
 Dave's editorial pass (section 4, item 5).
 
+### Section 5 (ray-trace analysis) — `tools/transcripts/s05_cass.jou`, `s05_cassxp.jou`, `s05_misc.jou`
+
+Decks: Cassegrain.in (MAP, RAY, OPD, SPOT/OBS, STOP, CENTER, PERTURB, PREAD), CassWithExitPupil.in
+(RRAY/TPR, COORD, FFP, PFP, FEX), ImageDemo.in (DRAW), SegDemo.in (segmented MAP, SEGRAYTRACE),
+AOExample.in (ATMOS, seeded 12345), and for SINT the CLI suite's `ZGD_test_files/tst_trace_rewrites.in`
+(the 3.2 SINT deck is not named; section 4).  Every RAY / SEGRAYTRACE print is now one quantity per line
+at 15 digits.
+
+| Dialog | 3.2 | Now | Cause |
+|---|---|---|---|
+| `s05_draw`, `s05_draw_relay` | the three prompts only | the same prompts + `DRAW: nDrawRay,midRay,iRayInc = 101 51 10` | current engine (FIG31 shows elements 0-5; the text's 0-11 dialog is as printed) |
+| `s05_map` | a 15-across map (cast as a pipe table by the extraction) | Cassegrain at nGridpts 51: the 13 x 13 subset, ray numbers to 1843 | the deck's nGridpts 15 -> 51 (section 1) |
+| `s05_map_seg` | "Hit Map" placeholder on "SegmentDemo.in" | SegDemo.in's ray map and segment map (with the "Hit return to continue" pause) | the 3.2 text printed no map; the deck is SegDemo.in |
+| `s05_ray1` | source at z -6, obscuration at -5.4, `Ref_surf` / `foc_pln` | source at -5, obscuration at -4.2, `Ref_surf` / `Detector`; detector hit at (0, 0, 1.5) as before | 3.2's printout came from a different Cassegrain than its own Appendix A deck |
+| `s05_ray2` | aperture coordinates 8 and 1, start (-4.4e-16, -2.0, -6) | 19 and 2, start (0.5306, 1.9184, -5) | the 51 grid; ray 2 is still the first ray of the lowest grid row |
+| `s05_rray`, `s05_tpr`, `s05_opd_gray`, `s05_opd_row` | (re-emitted by hand 2026-10) | identical numbers (RMS 1.5454e-2, P-V 5.3234e-2, TPR within 1e-10) | — |
+| `s05_opd_text` | **BINARY** `Cassegrain.OPD3`, "128 128 0", central pixel 0 | **TEXT** `Cassegrain.OPD3.txt`, 51 by 51, central pixel 0 (the obscured center); an `** In DBINOUT: NA,NC = 51 51` line | BINARY broken (3.2); the stray print: 3.5 |
+| `s05_spot4`, `s05_spot_obs` | "Tracing 150 rays"; centroid -5.2e-18 | 1877 rays; centroid -2.2e-16 / 1.4e-18 (round-off) | the 51 grid |
+| `s05_segray` | an illustration with "..." | the real trace of segment 5 on SegDemo.in, landing on S5 then the secondary | — |
+| `s05_stop_obj` | "Enter stop position in object space" | "Enter stop (entrance pupil) position ..." | current prompt |
+| `s05_stop_elt` | StopPos z 1.637981902e1 | **1.637981700516e1** (moved in the 7th figure) | not established |
+| `s05_center` | "Beam centered in 2 iterations, error= 3.23e-15" | "0 iterations, error= 4.20e-15"; the beam does move (the chief ray hit the primary 4.2e-3 off before) | the count is a literal 0 (3.6); the 3.2 text does not say how its beam was perturbed: here the stop is at the obscuration plane and the source rotated 1e-3 rad about x |
+| `s05_coord` | element 5 xLocal (-0.9999999998, 0, 2.229e-5) | (-0.99999999999989, 0, 4.77e-7) | not established (elements 1 and 6 unchanged) |
+| `s05_ffp`, `s05_pfp` | FFP error 6.936774704e-11, New crd 4.458354140e-5; PFP 2 iterations, error 1.58e-12, New crd 1.337301749e-3 | 6.936795069e-11, 4.458360705e-5; 2 iterations, 1.38e-12, 1.337303717e-3 (the 6th figure) | not established; new: "Chief ray obscured at element 6; proceeding" and the vertex-sheet note |
+| `s05_ffp_ray`, `s05_pfp_ray` | "(etc...)" between the first and last legs | every leg; detector hit (1e-3, -2e-3) and (3e-2, -1.5e-1) as before | — |
+| `s05_fex_show`, `s05_fex` | show 5 / show 6, FEX 6: Old f 6 -> New f 6.790667844, Vpt z -4.5 -> -5.290667844 | show 4 / show 5, FEX 5 from the same rough placement (set with MODify): **New f 6.790667844, Vpt z -5.290667844, to the digit**; plus the four-probe EP diagnostics and "FEX axis: CHIEF RAY (default)" | the deck numbers its returns 4 and 5; prose says the placement was set by MODify |
+| `s05_perturb_src` | prompts for the rotation, no stop needed | refuses without a STOP ("Must set STOP before perturbing source"), so the dialog follows a STOP; prints `*** CPERTURB src: th = ...` | current engine; the debug line: 3.5.  Prose updated |
+| `s05_perturb_elt` | as now | as 3.2 | — |
+| `s05_pread` | "File Cassegrain.pert read." with no prompt | always prompts "Enter new .pert-file name:" (no default shown), then reads | current engine; prose updated |
+| `s05_atm` | grid-spacing default 1.56840; "Tracing 12113 rays" | 1.58085; the OPD trace of 11937 rays | not established (AOExample's DM frame, 3.1, sits downstream of element 1) |
+| `s05_sint` | "Compute time was 5.7871 sec" | the same line without the timing | deck replaced (section 4) |
+
 ### Section 6 (ORS / SRS) — `tools/transcripts/s06_ors_srs.jou`
 
 The examples as the peer lane committed them in 5f5cbce2 (ORS on CoroExample element 5, SRS 7 <- 5
@@ -139,6 +171,17 @@ Start-up reads `<macos>/macos_f90/macos_glass_list.txt` (201 glasses); after `cd
 directory, MRESET prints "No glass table file found; using built-in catalog: 201 glasses".  The
 built-in catalog has the same count, so no result moves here; a user's own table would be dropped.
 
+### 3.5 Two debug prints left in user output
+
+OPD (and any plot) under TEXT prints `** In DBINOUT: NA,NC = 51 51`; PERTURB of the source prints
+`*** CPERTURB src: th = ... , del = ...` (`funcsub.F` line 71, a bare `print*`).  Both are visible in
+the generated dialogs; the 2026-10-19 `Debug: VAR_NAM` removal is the precedent.
+
+### 3.6 CENTER prints a literal 0 iterations
+
+`macos_cmd_loop.inc` ~line 3212: `WRITE(*,309) 0,SQRT(sqErr)`; the count STOP's solve took is not
+passed out, so every CENTER says "Beam centered in 0 iterations" (3.2 printed 2 for its example).
+
 ## 4. For Dave — the decisions and the replacement list
 
 1. **The SAVE-form decks.**  Eight decks in `examples/` are in the SAVE number form since 65a223ec,
@@ -161,4 +204,9 @@ built-in catalog has the same count, so no result moves here; a user's own table
    current file layout.
 6. **BINARY** (3.2): fix the RECL (halves the ifx file), and put Section 3's file-output example back
    on BINARY?
+7. **Section 5's SINT deck** (3.2 does not name it): the dialog runs on the CLI suite's interpolated
+   paraboloid `ZGD_test_files/tst_trace_rewrites.in` with a written 15 x 15 data file.  Keep, or an
+   Appendix A example with an interpolated surface?
+8. **Engine cosmetics found by the dialogs** (3.5, 3.6): remove the two debug prints and pass CENTER's
+   iteration count out?
 

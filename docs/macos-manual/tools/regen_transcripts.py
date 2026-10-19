@@ -51,6 +51,7 @@ JOU = HERE / "transcripts"
 EXAMPLES = MAN / "examples"
 LISTED = ("*.in", "*.jou", "*.test", "*.cmn", "*.f")
 
+os.environ.setdefault("CLI_PTY_COLS", "400")   # no readline horizontal-scroll redraws (cli_cmd_gate.py)
 sys.path.insert(0, str(ROOT / "cli_tests"))
 from cli_cmd_gate import run_journal  # noqa: E402
 

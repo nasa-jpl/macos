@@ -65,7 +65,7 @@ case "$kind" in
       case $comp in ifx) bin="$tree/build_release/bin/macos" ;; gfortran) bin="$tree/build_release_gfortran/bin/macos" ;; esac
       [ -x "$bin" ] || { echo "== $comp: no binary (skipped)"; continue; }
       rec="$here/records/transcripts_${comp}_${sha}.csv"; echo "== $comp: manual transcript journals -> $rec"
-      python3 "$here/cli_cmd_gate.py" "$bin" "$root/docs/macos-manual/tools/transcripts" "$rec" | tee "$here/records/transcripts_${comp}_latest.txt"
+      CLI_PTY_COLS=400 python3 "$here/cli_cmd_gate.py" "$bin" "$root/docs/macos-manual/tools/transcripts" "$rec" | tee "$here/records/transcripts_${comp}_latest.txt"
       awk -F, 'NR>1 && $3!="pass" {bad=1} END {exit bad}' "$rec" || fail=1
     done
     exit ${fail:-0} ;;
