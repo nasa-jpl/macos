@@ -1,0 +1,16 @@
+# Figure 4 (Section 2): Cassegrain.in, the focal-plane spot unaberrated and with the primary tilted 1e-4 rad
+# (examples/Cassegrain.jou).  Pages: 0 nominal, 1 tilted (+ a repeat to flush).  fig_engine_04.png = [0 | 1].
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in fig04
+cd $TMP/fig04
+old Cassegrain.in
+mod ngridpts=51
+q
+pgd
+/png
+spot 5 Tout
+perturb 2 global 0,1e-4,0 0,0,0
+spot 5 Tout
+spot 5 Tout
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig04; cp $TMP/fig04/giza_*.png $ROOT/docs/macos-manual/build/figs/fig04/
+# EXPECT: (Chief ray location[\s\S]*){3}
+# EXPECT-NOT: forrtl

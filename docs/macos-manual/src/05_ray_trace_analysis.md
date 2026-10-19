@@ -71,7 +71,7 @@ The result is shown in Figure 31. The system is somewhat aberrated, so the beam 
     Enter last element to include: [13]: 11
     Enter drawing plane (XZ, YZ or XY in source coords): [XZ]: xz
 
-![](media/fig_rescued_31.png)
+![](media/fig_engine_31.png)
 
 **FIGURE 31** DRAW views of ImageDemo.in
 
@@ -251,33 +251,40 @@ OPD plots are not affected by STRETCH setting. OPD plots are always on a linear 
 
 The default plot type is GRAy scale. The plot type can be changed with the following commands: WIRe, SLIce, GRAy, COLumn, ROW, CONtour, TEXt, MATlab,FITs, or BINary. These plotting commands are discussed in more detail in [Section ?](#plot-type-commands).
 
-The following examples show output of the OPD command with the GRAY, WIRe, and
+The following examples show output of the OPD command with the GRAY, ROW and BINary plot types for Cassegrain.in, at the secondary mirror (element 3), where the wavefront is far from flat.
 
-    BINary plot types for Cassegrain.in.
+MACOS\>**opd 3**
 
-MACOS\>**opd**
+    Enter element where OPD is to be evaluated: [0]: 3
+    OPD: Rays being traced =         1877
+    OPD: nPassRays =    1756,    DAvgCumL =  90.30828646D-01
+     OPD reference: CHIEF RAY (default)
+    RMS OPD error is   1.545357155D-02
+    P-V OPD error is   5.323448819D-02
+    Average OPD is    -3.0317256240508069D-02
+    A total of      121 rays were lost
+      Obscured:            121
+        at element    1:       121
+    Graphics device/type (? to see list, default /xw):
 
-    Enter element where OPD is to be evaluated [0]:3 Tracing 150 rays...
-    Compute time was 0.1445 sec RMS OPD error is 1.609556E-02
-    Graphics device/type (? to see list, default /NULL): /xw
-
-![](media/image74.png){width="2.777083333333333in" height="2.7402777777777776in"}
+![](media/fig_engine_33.png)
 
 **FIGURE 33** OPD GRAy scale plot
 
-MACOS\>**wire**
+MACOS\>**row**
 
-Plot type set to WIRE
+     Plot type set to ROW
 
-MACOS\>**opd**
+MACOS\>**opd 3**
 
-    Enter element where OPD is to be evaluated [3]:3 RMS OPD error is 1.609556E-02
+    Enter element where OPD is to be evaluated: [3]: 3
+    ...
+    RMS OPD error is   1.545357155D-02
+    Enter number of row to be plotted: [26]: 26
 
-Type \<RETURN\> for next page:
+![](media/fig_engine_34.png)
 
-![](media/image75.png){width="3.6930555555555555in" height="2.8in"}
-
-**FIGURE 34** OPD ROW plot
+**FIGURE 34** OPD ROW plot (the center row; the map is 0 outside the aperture and in the central obscuration)
 
 MACOS\>**bin**
 
@@ -285,7 +292,7 @@ Plot type set to BINARY
 
 MACOS\>**opd**
 
-    Enter element where OPD is to be evaluated [3]:3 RMS OPD error is 1.609556E-02
+    Enter element where OPD is to be evaluated [3]:3 RMS OPD error is 1.545357E-02
     Writing OPD Map, Elt=3
     DIRECT ACCESS File=Cassegrain.OPD3
 
@@ -320,7 +327,7 @@ By default, the SPOt and OPD commands do not plot rays which are obscured or vig
 
     OBS has three settings. OBS=ALL plots every ray -- even rays that are obscured. OBS=POSITIVE, the default, plots only rays that are not obscured on the current or on any previous element. OBS=NEGATIVE plots only those rays that are obscured some-
 
-![](media/image76.png){width="2.223611111111111in" height="2.1069444444444443in"}
+![](media/fig_engine_36.png)
 
 **FIGURE 36** Exit pupil and detector SPOt diagram for Cassegrain.in.
 
@@ -349,7 +356,7 @@ MACOS\>**spot**
 
 MACOS\>
 
-![](media/image78.png){width="2.0902777777777777in" height="2.0541666666666667in"}
+![](media/fig_engine_37.png)
 
     OBS=ALL OBS=NEGATIVE
 
@@ -758,7 +765,7 @@ MACOS\>**atm**
 
 Here the “tilt participation” regulates the percentage of the Kolmogorov that is to be included in the phase screen. Tilt is explicitly removed when this factor is set to zero, and increases proportionally as the factor goes to 1, which signifies full Kolmogorov tilt. An example, showing a typical atmospheric wavefront from AOexample.jou (Appendix A.4), is shown in Figure 39.
 
-![](media/image80.png){width="2.691666666666667in" height="2.720138888888889in"}
+![](media/fig_engine_39.png)
 
 **FIGURE 39** Atmospheric disturbances (AOexample).
 

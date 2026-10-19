@@ -1,0 +1,23 @@
+# Figures 36 and 37 (Section 5): Cassegrain.in spots at the exit pupil (element 4) and the detector (5), then the
+# detector spot with OBS ALL and OBS NEGATIVE.  Pages: 0 spot 4, 1 spot 5, 2 OBS ALL, 3 OBS NEGATIVE (+ a repeat).
+# fig_engine_36.png = [0 | 1], fig_engine_37.png = [2 | 3].
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in fig36
+cd $TMP/fig36
+old Cassegrain.in
+mod ngridpts=51
+q
+pgd
+/png
+spot 4 Tout
+spot 5 Tout
+obs
+ALL
+spot 5 Tout
+obs
+NEGATIVE
+spot 5 Tout
+spot 5 Tout
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig36; cp $TMP/fig36/giza_*.png $ROOT/docs/macos-manual/build/figs/fig36/
+# EXPECT: All rays plotted on spot diagrams
+# EXPECT: (Chief ray location[\s\S]*){5}
+# EXPECT-NOT: forrtl

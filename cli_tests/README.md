@@ -54,6 +54,11 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   one journal line is 256 characters.
 - In a `!` line, `&&` ends the command (`! cmp a b && echo SAME` runs only the cmp) and `$?` is not
   reliable; test a result with `! if cmp -s a b; then echo SAME; else echo DIFFERS; fi`.
+- The ROW and COLUMN plot types prompt for the row / column after the plot command (`Enter number
+  of row to be plotted: [26]:`); the next journal line answers it, or the following command is eaten.
+  On the /png device giza writes a page when the NEXT plot opens, so a journal repeats its last plot
+  command to flush the last page; a journal that collects pages gives them a directory of its own
+  (`# COPY: <deck> figNN` + `cd $TMP/figNN`): the run's scratch directory is shared by every journal.
 - A prompt the LOAD may raise (`Keep the proposed output coordinates? [YES]:` on a deck with no
   nOutCord=/Tout= block) is answered by the next journal line; the load gate answers it `yes`.
 

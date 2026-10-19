@@ -1,0 +1,23 @@
+# Figure 6 (Section 2): CassWithExitPupil.in, the OPD at the exit pupil (element 5) defocused (secondary despaced 1e-4)
+# and with coma added (primary tilted 1e-4 rad, FEX re-run so the exit pupil follows the new chief ray and the map
+# shows the coma, not the tilt): examples/CassWithExitPupil.jou.  Pages: 0 defocus, 1 coma.
+# fig_engine_06.png = [0 | 1].
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in fig06
+# DEADLINE: 180
+cd $TMP/fig06
+old CassWithExitPupil.in
+mod ngridpts=128
+q
+perturb 3 global 0,0,0 0,0,1e-4
+stop obj 0,0,0
+fex 5 yes
+pgd
+/png
+opd 5
+perturb 2 global 0,1e-4,0 0,0,0
+fex 5 yes
+opd 5
+opd 5
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig06; cp $TMP/fig06/giza_*.png $ROOT/docs/macos-manual/build/figs/fig06/
+# EXPECT: (RMS OPD error is[\s\S]*){3}
+# EXPECT-NOT: forrtl

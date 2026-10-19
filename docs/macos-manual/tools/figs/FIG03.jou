@@ -1,0 +1,23 @@
+# Figure 3 (Section 2): Cassegrain.in, the spot at the obscuration plane (element 1) and the XZ ray-trace cross section,
+# the steps of examples/Cassegrain.jou on the /png device.  Pages: 0 the spot at element 1, 1 the DRAW (drawn twice: giza
+# writes a page when the next opens).  fig_engine_03.png = [page 0 | page 1].
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in fig03
+cd $TMP/fig03
+old Cassegrain.in
+mod ngridpts=51
+q
+pgd
+/png
+spot 1 Tout
+draw
+0
+5
+xz
+draw
+0
+5
+xz
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig03; cp $TMP/fig03/giza_*.png $ROOT/docs/macos-manual/build/figs/fig03/
+# EXPECT: Tracing rays past   5 elements
+# EXPECT: Chief ray location
+# EXPECT-NOT: forrtl

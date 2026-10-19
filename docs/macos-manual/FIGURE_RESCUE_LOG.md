@@ -1,5 +1,26 @@
 # Figure rescue — status & audit log
 
+## 2026-10-19 — every engine-made figure regenerated from the current macos (Dave)
+
+26 figures are now PRODUCED BY THE ENGINE on the /png device and assembled by
+`tools/regen_engine_figs.py` (its SPEC table: figure -> page directory -> pages side by
+side) from the journals in `tools/figs/` -- `FIG03 FIG04 FIG06 FIG10 FIG31 FIG33_34
+FIG36_37 FIG39 FIG47_55 FIG56 FIG58 FIG60_64`, each the manual's own example macro
+(`examples/*.jou`) or its printed dialog, run by the CLI suite's driver so a failed
+EXPECT stops the figure: 3, 4, 6, 10, 31, 33, 34, 36, 37, 39, 47-49, 51-58, 60-64, written
+as `src/media/fig_engine_NN.png`.  The 3.2-era `image*.png` and the two rescued crops they
+replace (31, 56, 58 were engine-made already) stay in media/ unreferenced until the next
+cleanup.  Kept as artwork (diagrams and schematics, not engine output): 1, 2, 5, 7-9,
+11-30, 32, 35, 38, 40-45, 50, 59, 65, 66; and 46, whose 25-element beam-expander deck is
+not in the tree.  Changes beside the pictures: figure 34 is the ROW plot its caption
+always named (the 3.2 dialog said WIRE); figures 60-62 are made at the detector (element
+6, where the 3.2 pictures were taken) and their dialogs re-emitted; the Section 5 OPD
+example's RMS is today's 1.545e-2 (the 3.2 text's 1.609e-2).  Each journal copies its
+pages into its own `$TMP/figNN` (the gate's scratch directory is shared by every journal
+of a run; the first regeneration mixed pages).  The axis labels' multiplication sign
+(finding 1.2 (t)) is fixed in giza the same day: the vendored cairo has no FreeType, its built-in
+font is ASCII only, so the escape now draws `x` -- the labels read `-1x10^-10`, not a box.
+
 34 composite line-art figures (FrameMaker-era, exploded to fragments by
 the PDF->docx conversion) were rasterized from `docs/macosMan3.2.pdf`
 (vector-clean) into `src/media/fig_rescued_NN.png` and inserted before
