@@ -15,9 +15,14 @@ Two products, both written to src/transcripts/ and pulled into a chapter by a ma
                       answers as the pty saw them) in a 4-space code block, the engine's spacing kept.
 
 Journal directives (comments to the gate, read only here):
-  # TRANSCRIPT: <name>  the lines that follow go to src/transcripts/<name>.md (one journal may feed
-                        several dialogs; the setup lines before the first TRANSCRIPT are not printed)
+  # TRANSCRIPT: <name> [+device]
+                        the lines that follow go to src/transcripts/<name>.md (one journal may feed
+                        several dialogs; the setup lines before the first TRANSCRIPT are not printed);
+                        +device keeps the Graphics device prompt line (where the text is about it)
   # TRANSCRIPT-OFF      the lines that follow are setup again (not printed)
+  # TRANSCRIPT-BANNER: <name>
+                        the start-up dialog (the banner, the model-size prompt and its answer, up to
+                        the first MACOS> prompt) goes to src/transcripts/<name>.md
 A journal with no TRANSCRIPT directive prints everything to <journal>.md.
 
 Every journal is a gate: one with no # EXPECT line is refused (a dialog that cannot be pinned is a
@@ -26,8 +31,9 @@ transcript cannot rot silently.  `cli_tests/run_cli_tests.sh cmd` runs the same 
 compilers.
 
 Removed from the engine's output (and only these): the `Graphics device/type` prompt line with its
-answer (as the figure journals answer it, /null), the `Compute time was` line (wall-clock, differs
-run to run), and the scratch directory's path wherever it is echoed.
+answer (as the figure journals answer it, /null) unless the dialog asks for it with +device, the
+`Compute time was` line (wall-clock, differs run to run), and the scratch directory's path wherever it
+is echoed; the repository root prints as `<macos>` and the home directory as `~` (machine paths).
 
 Usage (from docs/macos-manual):
   python3 tools/regen_transcripts.py [<macos binary>] [--listings-only] [journal names...]
@@ -56,7 +62,7 @@ class Marks(list):
 
 
 def code_block(lines):
-    body = [("    " + l) if l.strip() else "" for l in lines]
+    body = [("    " + l.rstrip()) if l.strip() else "" for l in lines]
     while body and not body[-1]:
         body.pop()
     while body and not body[0]:
@@ -86,31 +92,46 @@ def md_escape(s):
 def parse(path):
     """The journal's lines as the gate sends them (non-# lines), each tagged with the transcript
     it belongs to (None = setup), plus the EXPECT count."""
-    sends, target, named, nexp = [], None, False, 0
+    sends, target, named, nexp, opts, banner = [], None, False, 0, {}, None
     for l in open(path).read().splitlines():
         if l.startswith("# TRANSCRIPT-OFF"):
             target = None
+        elif l.startswith("# TRANSCRIPT-BANNER:"):
+            banner, named = l.split(":", 1)[1].strip(), True
         elif l.startswith("# TRANSCRIPT:"):
-            target, named = l.split(":", 1)[1].strip(), True
+            toks = l.split(":", 1)[1].split()
+            target, named = toks[0], True
+            opts[target] = set(toks[1:])
         elif l.startswith("# EXPECT:"):
             nexp += 1
         elif not l.startswith("#"):
             sends.append(target)
     if not named:
         sends = [path.stem] * len(sends)
-    return sends, nexp
+    return sends, nexp, opts, banner
 
 
-DROP = [re.compile(r"^Graphics device/type"), re.compile(r"^\s*Compute time was")]
+DEVICE = re.compile(r"^Graphics device/type")
+DROP = [re.compile(r"^\s*Compute time was")]
 
 
-def dialog(raw, marks, sends, tmp):
+def clean(l, tmp):
+    l = l.replace(tmp + os.sep, "").replace(tmp, ".")
+    return l.replace(str(ROOT), "<macos>").replace(str(Path.home()), "~")
+
+
+def dialog(raw, marks, sends, tmp, opts, banner):
     """{name: markdown} -- each top-level command (a line sent at the MACOS> prompt) opens an entry;
     the lines sent at its sub-prompts belong to it."""
     text = raw.decode(errors="replace")
     # byte offsets -> the decoded text: re-decode the prefix at each mark
     offs = [len(raw[:m].decode(errors="replace")) for m in marks] + [len(text)]
     out = {}
+    if banner:
+        pre = text[:offs[0]].replace("\r", "")
+        pre = re.sub(r"\s*MACOS>\s*$", "\n", pre)
+        lines = [clean(l, tmp) for l in pre.split("\n")]
+        out[banner] = [code_block([l[1:] if l.startswith(" ") else l for l in lines]) + "\nMACOS\\>\n"]
     entry = None   # (name, command, [engine lines])
     entries = []
     for i, name in enumerate(sends):
@@ -132,11 +153,11 @@ def dialog(raw, marks, sends, tmp):
             continue
         lines = []
         for l in "".join(segs).split("\n"):
-            if any(p.search(l) for p in DROP):
+            if any(p.search(l) for p in DROP) or (DEVICE.search(l) and "+device" not in opts.get(name, ())):
                 continue
-            l = l.replace(tmp + os.sep, "").replace(tmp, ".")
+            l = clean(l, tmp)
             lines.append(l[1:] if l.startswith(" ") else l)   # Fortran list-directed carriage column
-        cmd = cmd.replace(tmp + os.sep, "").replace(tmp, ".")
+        cmd = clean(cmd, tmp)
         md = f"MACOS\\>**{md_escape(cmd.strip())}**\n"
         body = code_block(lines)
         if body.strip():
@@ -152,7 +173,7 @@ def transcripts(binary, only):
         jous = [j for j in jous if j.stem in only]
     bad = []
     for j in jous:
-        sends, nexp = parse(j)
+        sends, nexp, opts, banner = parse(j)
         if nexp == 0:
             bad.append(f"{j.name}: no # EXPECT -- a dialog that cannot be pinned is a finding, not a transcript")
             continue
@@ -166,7 +187,7 @@ def transcripts(binary, only):
             if len(marks) != len(sends):
                 bad.append(f"{j.name}: {len(marks)} lines sent, {len(sends)} parsed")
                 continue
-            for name, md in dialog(marks.raw, marks, sends, tmp).items():
+            for name, md in dialog(marks.raw, marks, sends, tmp, opts, banner).items():
                 (OUT / f"{name}.md").write_text(HEADER.format(src=f"tools/transcripts/{j.name}") + md)
                 print(f"{name}.md  <- {j.name}  ({dt:.1f} s)")
         finally:

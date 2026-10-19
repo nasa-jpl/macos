@@ -24,9 +24,9 @@
     int 1                                  % pupil function
     int 6                                  % unocculted PSF
     pix 6 64 ;                             % blowup of PSF
-    echo  
+    echo
     echo Now redo occulting mask at the first image plane and show occulted image
-    echo  
+    echo
     pgp 4
     mod ngridpts=128
         nObs(6)=3                          % redo occulting mask
@@ -37,13 +37,13 @@
     int 10                                 % pupil
     int 11                                 % pupil at Lyot stop
     stretch sqrt
-    echo  
+    echo
     echo The on-axis intensity at the final image plane (note small numbers)
-    echo  
+    echo
     int 16                                 % on-axis PSF at detector
-    echo  
+    echo
     echo Now set up a "planet" with off-axis light, 10x dimmer
-    echo  
+    echo
     pgp 4
     win Tout 1.392542d-6 0,0 0,0           % set window for composite image
     compose 16 64 1.392542E-06             % build composite image
@@ -55,13 +55,13 @@
     fex 15 yes                             % reset return surface
     mod flux=0.01                          % 100x dimmer object
         q
-    echo  
+    echo
     stretch log10
-    echo Planet light at mask plane bypasses the mask (log stretch) 
-    echo  
+    echo Planet light at mask plane bypasses the mask (log stretch)
+    echo
     int 6                                  % new dim image at occulting mask
-    echo  
-    echo Full composite image at focal plane: planet and residual starlight 
-    echo  
+    echo
+    echo Full composite image at focal plane: planet and residual starlight
+    echo
     stretch sqrt
     add yes                                % add dim image to composite image

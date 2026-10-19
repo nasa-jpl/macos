@@ -14,13 +14,7 @@ The particular command used to start the MACOS application program depends—of 
 
 On all machines, the response is the same. A window appears with the MACOS command dialog:
 
-    Modeling and Analysis for Controlled Optical Systems MACOS Version 2.8, May 31, 1999
-    This run is limited to 70 surfaces, 69 segments, 4226
-    rays ( 441 for sensitivity calcs). Up to 3 diffraction planes are stored. Up to 10 interpolated surfaces of up to 255 data points are supported.
-    Maximum pixel array size is 128 by 128. Diffraction grid size is 128 by 128.
-    Glass table /home/comp/macosData/macos.glass read, with 202 glasses included. For a list of commands, type H
-
-MACOS\>
+<!-- transcript: s03_banner -->
 
 MACOS\>**q**
 
@@ -82,92 +76,27 @@ The MACOS model size can be changed at any time during a MACOS session. Use the 
 
 MACOS\> **mreset 256**
 
-    or
+or, prompted:
 
-MACOS\> **mreset**
-
-    Enter new size (128, 256, 512, 1024, 2048): [128]: 256
-    Modeling and Analysis for Controlled Optical Systems MACOS Version 3.2, February, 2003
-    This run is limited to 70 surfaces, 69 segments, 16385
-    rays ( 500 for sensitivity calcs). Up to 3 diffraction planes are stored. Up to 10 interpolated surfaces of up to 255 data points are supported.
-    Maximum pixel array size is 256 by 256. Diffraction grid size is 256 by 256.
+<!-- transcript: s03_mreset -->
 
 In previous versions of MACOS, separate model parameter files are used for different model sizes. For example, the model parameter file *param256.cmn* is used for the model size 256. In MACOS 3.2b, a single model parameter file called *macos_param.txt* is used for all model sizes. *macos_param.txt* contains parameter sets for all supported model sizes. To run MACOS, either *macos_param.txt* or a link to it must exist in the MACOS execution directory.
 
 ### Entering Commands
 
-MACOS\>**old**
-
 MACOS commands can be abreviated using the first letters of the command. The neccessary letters are denoted in capital letters. However, they do not need to be entered in capitals as MACOS is case insensitive.
 
 MACOS prompts the user for the next input. For example, as shown below, to enter an old file, the user types OLD. MACOS then prompts for the filename.
 
-    Enter file name: lens_array
-    Input file lens_array.in being loaded. Default used for SegXgrid
-    Optical Train Summary:
-    Tracing rays past 4 elements.
-    Aperture grid type = Circular with 512 grid points.
-
-    Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECoords = -6
-    Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-
-    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-    Number of output coordinates is 5
-    Too many grid points. Resetting npts to 128 MACOS>
+<!-- transcript: s03_old -->
 
 MACOS also allows commands to be stacked on a single input line. The commands must be separated by a space.
 
-MACOS\>**old lens_array show 2**
-
-    Enter file name: lens_array
-    Input file lens_array.in being loaded. Default used for SegXgrid
-    Optical Train Summary:
-    Tracing rays past 4 elements.
-    Aperture grid type = Circular with 512 grid points.
-
-    Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECoords = -6
-    Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
-    Number of output coordinates is 5
-    Too many grid points. Resetting npts to 128 MACOS> show
-    Enter number of element (0=aperture): [0]: 2
-
-        iElt=  2
-     EltName=  rs
-     Element=  Refractor
-     Surface=  Conic
-        fElt=  1.000000000D+18
-        eElt=  0.000000000D+00
-       KrElt=  -1.000000000D+18
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 2.000000000D-01
-      RptElt=  0.000000000D+00  0.000000000D+00 1.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  0.000000000D+00
-    PropType=  Geometric
-     nECoord=  -6
-
-MACOS\>
-
-MACOS\>**show;;**
+<!-- transcript: s03_old_stacked -->
 
 MACOS provides defaults for nearly all requested parameters or values. These are usually computed from contextual information. The value of the default for a particular parameter is shown in the prompt line enclosed in square brackets. To indicate that the default is to be accepted, the user can simply hit return when the prompt is displayed. If typing ahead, a semicolon can also be used to indicate that a default should be accepted. In the example below, the default element number 0 is used to select the aperture.
 
-    Enter number of element (0=aperture): [0]:
-    ChfRayDir= 0.000000000D+00 0.000000000D+00 1.000000000D+00 ChfRayPos= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 zSource= 1.000000000D+22
-    IndRef= 1.000000000D+00 Extinc= 0.000000000D+00 Wavelen= 1.000000000D-04 Flux= 1.000000000D+00
-    GridType= Circular Aperture= 5.000000000D-01 Obscratn= 0.000000000D+00
-    nGridpts= 128
-    xGrid= 1.000000000D+00 0.000000000D+00 0.000000000D+00 yGrid= 0.000000000D+00 1.000000000D+00 0.000000000D+00
-    nElt= 4
-
-MACOS\>
+<!-- transcript: s03_show_defaults -->
 
 #### Interrupting MACOS (Ctrl-C)
 
@@ -189,21 +118,9 @@ Five options are properties of the session, not of the prescription: POLARIZATIO
 
 MACOS provides in-line graphical displays on Unix machines using the PGPLOT package from CalTech (see installation notes for information on how to obtain PGPLOT). PGPLOT is started up at the first invocation of a MACOS graphics function, such as INTensity. PGPLOT prompts the user to define the desired form for the graphical output:
 
-MACOS\>**stretch**
+<!-- transcript: s03_stretch_int -->
 
-    Enter image stretch type (LINEAR, LOG10, SQRT): [LINEAR]: log10
-
-MACOS\>**intensity**
-
-    Enter number of element where data is to be generated: [9]: 9
-    Tracing 3210 rays and propagating 16384 grid points... Scalar FF Prop between Elt 8 and Elt 9 to WF 1:
-    z1=-9.1481D+01 dx1= 1.0581D-01 min= 1.0581D-01 max= 1.0581D-01 dev= 2.6446D-06 lin=100.00%
-    z2= 1.0000D+22 dx2=-1.0996D-03
-    Compute time was 1.4453 sec
-    Graphics device/type (? to see list, default /NULL): /xwindow
-    Starting /opt/local/bin/pgxwin_server.
-
-The normal selection for Unix machines is “/XWindow.” PGPLOT then sets up a graphics window in which plots are displayed. Once selected, the graphical output option cannot be changed without quitting and restarting MACOS.
+The normal selection for an interactive session is /xw (X Window). PGPLOT then sets up a graphics window in which plots are displayed. Once selected, the graphical output option cannot be changed without quitting and restarting MACOS.
 
 ### Off-Line Graphics Display
 
@@ -213,32 +130,15 @@ One such application is Matlab®, which provides an easy-to-use, powerful enviro
 
 Generating the data for off-line display is as simple as selecting a file output “plot type,” using the BINARY, FITS, TEXT or MATLAB commands (Section 7). Subsequent use of graphics-generating commands such as INTensity then create a file and store the requested data in that file. If the file already exists, the user is asked if the file is to be overwritten; if not, a new name is requested. Other applications can then access and display the data. Repeating the previous example:
 
-MACOS\>**binary**
+<!-- transcript: s03_text_int -->
 
-    Plot type set to BINARY
-
-MACOS\>**intensity**
-    Enter number of element where data is to be generated: [9]: 9
-    Tracing 3210 rays and propagating 16384 grid points... Scalar FF Prop between Elt 8 and Elt 9 to WF 1:
-    z1=-9.1481D+01 dx1= 1.0581D-01 min= 1.0581D-01 max= 1.0581D-01 dev= 2.6446D-06 lin=100.00%
-    z2= 1.0000D+22 dx2=-1.0996D-03
-    Compute time was 1.0508 sec Wavefront Propagation Data Summary:
-    Wavelength= 1.6280000D-04; Source Flux= 1.0000000D+00 u-v plane diam= 1.3438007D+01 du= 1.0581108D-01
-    x-y plane diam=-1.3965216D-01 dx=-1.0996233D-03
-    Peak intensity= 1.1584734D-01; Peak occurs at i= 65, j= 65 Sum of intensity= 7.6908687D-01
-    Writing Intensity, Elt=9
-    DIRECT ACCESS File=tmo.int9 Data file is “tmo.int9”
-    Binary array is of dimension 128 by 128. Magnitude of central pixel is 0.3161060810D-01
-
-MACOS\>
-
-The output file name (in this case, “tmo.int9”) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
+The output file name (here “CassWithExitPupil.int6”, with “.txt” appended for the TEXt output above) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
 
 The Matlab command required to read the file, generate the plot (at log10 stretch), and return the data for further analysis is:
 
-    >>intensity=macosIMG(‘gray’,’tmo.int9’,’log10’);
+    >>intensity=macosIMG(‘gray’,’CassWithExitPupil.int6’,’log10’);
 
-Here intensity is the returned intensity data, in this case a 128 by 128 matrix, ‘gray’ is the plot type (gray scale), ’tmo.int9’ is the file name, and ’log10’ is the stretch option. The result is a plot functionally identical to what MACOS would produce with the same settings.
+Here intensity is the returned intensity data, in this case a 256 by 256 matrix, ‘gray’ is the plot type (gray scale), ’CassWithExitPupil.int6’ is the file name, and ’log10’ is the stretch option. The result is a plot functionally identical to what MACOS would produce with the same settings.
 
 Other applications and environments that you may find useful for analyzing and displaying MACOS data include include SAOImage (available free from the Smithsonian Astrophysical Observatory for Unix only), Spyglass Transform, MatrixX, IDL, plotting packages such as DeltaGraph, and spreadsheets such as Excel.
 
@@ -248,22 +148,7 @@ MACOS provides PostScript and GIF graphical file output directly from PGPLOT (Un
 
 ? prints a list of PGPLOT output options:
 
-    Graphics device/type (? to see list, default /NULL): ?
-    PGPLOT v5.0.0 Copyright 1994 California Institute of Technology Legal PGPLOT device types are:
-    /GIF (Graphics Interchange Format file, landscape orientation)
-    /VGIF (Graphics Interchange Format file, portrait orientation)
-    /NULL (Null device, no output)
-    /PS (PostScript file, landscape orientation)
-    /VPS (PostScript file, portrait orientation)
-    /CPS (Colour PostScript file, landscape orientation)
-    /VCPS (Colour PostScript file, portrait orientation)
-    /TEK4010 (Tektronix 4010 terminal)
-    /RETRO (Retrographics VT640 Tek emulator)
-    /XTERM (XTERM Tek terminal emulator)
-    /XWINDOW (X window window@node:display.screen/xw)
-    /XSERVE (A /XWINDOW window that persists for re-use)
-    /XDISP (pgdisp or figdisp server)
-    Graphics device/type (? to see list, default /NULL):
+<!-- transcript: s03_devices -->
 
 The GIF options generate separate GIF files for each graphic, named pgplot.gif, pgplot.gif_2, etc. in sequence.
 
@@ -333,17 +218,7 @@ The following variables can be exported:
 
 The following is a sample EXPort session.
 
-MACOS\>**build ;**
-
-    Enter terminal element number: [1]:
-    Tracing 12669 rays but not BUILDing linear model. BUILD limited to 500 rays. MOD npts and recompute. MACOS>export
-    Current element is 1
-    Enter EXPORT mode (BINary, TEXt, MFIle, NAStran, H or Quit): [BINARY]: tex
-    Exporting data to lens_array.txt
-    Export data for CHFRay only, ALLRays, or NOChfray? [CHFRay]: chfr
-    EXPORT (CMAtrix, RayIndex, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: raypos
-    % RayPos 3-vectors for 1 rays at Element 1
-    EXPORT (CMAtrix, RayIndex, RAYPos, RAYDir, RAYL, H or Q): [QUIT]: q MACOS>
+<!-- transcript: s03_build_export -->
 
 ### Using Macros
 
