@@ -36,6 +36,15 @@
 > (load/cmd/ab vs 4d7b1aa1, both compilers; the Gaussian change moves only Gaussian decks -- name them), section 5 line, push on
 > Dave's word, then CCMac's next pair.**
 
+> **2026-10-19 (CC, later): gate at ef15ab23 (clean worktree, both compilers): load 160/160 each, ab 4d7b1aa1 -> ef15ab23 0 movers both;
+> cmd 101/102 -- BEAM_GAUSS.jou pinned the pre-normalization Gaussian peak (re-pinned: 2.9204e6 peak, 2.1394e8 sum, both compilers).
+> CCMac's PAIR-2 report folded (3ff1d55 + cd006b2e, predates f60235c): ten journals' `sed -i` -> `perl -i -pe`, GPERTURB stages
+> flat.txt, re-pins from the Mac values (tPolElement 1e-15, tOpdRef 1e-15, tDwDx AbsTol 1e-6, WINDOW_GBS / ZABERR / CALIB_fov_weight
+> bounds), the nested-subprocess + capfd class guarded on Darwin with the reason (1.2 (ee)), COORD arm64 frame = finding (ff).
+> The cmd records at ef15ab23 were NOT committed (journals edited mid-run); cmd re-run at the journal commit.  NEXT: the mmacos
+> six-class run (tPolElement, tOpdRef, tDwDx, tRx x3) -> resources commit; cmd gate at the new macos SHA; section 5 line; push on Dave's
+> word; CCMac's next pair.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

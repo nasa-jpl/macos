@@ -1,7 +1,13 @@
 # GPERTURB: a rigid-body perturbation of an element GROUP (pymacos Rx_e5hex1, EltGrp= 5 9 10 11 12 13 declared
 # on elements 9-13), then the refusal on a deck with no group (cmdref: Perturbation).  A 1 urad tilt of the
-# group about x moves the focal-plane OPD from 3.622346888e-5 to 3.621855806e-5 mm.
-old $RES/pymacos/tests/Rx/Rx_e5hex1.in
+# group about x moves the focal-plane OPD from 3.622346888e-5 to 3.621855806e-5 mm.  The deck's segments read
+# GridFile= flat.txt (the e5_seg template's zero grid, 256 x 256): staged beside the COPY, so the load finds it
+# (CCMac's Mac gate 2026-10-19: 'File flat.txt does not exist' there; Linux read the same line and passed on
+# the zero grid the engine falls back to).
+# COPY: $RES/mmacos/templates/20_segmentation/e5_seg/flat.txt
+# COPY: $RES/pymacos/tests/Rx/Rx_e5hex1.in
+cd $TMP
+old $DECK
 opd 13
 /null
 gperturb

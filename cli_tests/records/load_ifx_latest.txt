@@ -1,14 +1,9 @@
-record  load_ifx_4d7b1aa1.csv  (160 decks)
+record  load_ifx_ef15ab23.csv  (160 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
   status    ok 160
   roundtrip n/a 7  same 153
   settle    n/a 7  same 152  ulp 1   (s1 vs s2; roundtrip is s2 vs s3)
-  vs load_ifx_dfc2b476.csv: 5 decks with a changed OPD/nPass/lost
-    moved  /home/dcr/dev/macos/docs/macos-manual/examples/emitted/HOEExample.in  rms 7.057822903D-16 -> 6.903706658D-16  pass 3001 -> 3001
-    moved  /home/dcr/dev/macos/docs/macos-manual/examples/HOEExample.in  rms 6.903706658D-16 -> 7.110016968D-16  pass 3001 -> 3001
-    moved  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/e2e_pie.in  rms 3.446945557D-09 -> 3.446945567D-09  pass 12082 -> 12082
-    moved  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Mask_Parabolas_glb.in  rms 2.934418196D-14 -> 2.727818388D-14  pass 50615 -> 50615
-    moved  /home/dcr/dev/macos/ZGD_test_files/e2e_pie.in  rms 3.446945557D-09 -> 3.446945567D-09  pass 12082 -> 12082
+  vs load_ifx_4d7b1aa1.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS

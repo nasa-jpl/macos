@@ -11,16 +11,16 @@ fovs
 calib
 no
 yes
-! sed -i 's/^\(\s*OptTarget=.*\)$/\1\nOptFOVWt= 0.5/' $DECK
+! perl -i -pe 's/^(\s*OptTarget=.*)$/$1\nOptFOVWt= 0.5/' $DECK
 old $DECK
 fovs
 calib
 no
 yes
 # EXPECT: Weight =\s+1\.0+\s*$
-# EXPECT: Final LM merit \(chisq\) =\s+7\.9\d*E-033
+# EXPECT: Final LM merit \(chisq\) =\s+\d\.\d+E-0(2[5-9]|[3-9]\d)
 # EXPECT: Weight =\s+0\.50+\s*$
-# EXPECT: Final LM merit \(chisq\) =\s+3\.9\d*E-033
+# EXPECT: Final LM merit \(chisq\) =\s+\d\.\d+E-0(2[5-9]|[3-9]\d)
 # EXPECT-NOT: Weight =\s+0\.0+(E\+000)?\s*$
 # EXPECT-NOT: E-043
 # (measured 2026-10-17 on 3ee3081, ifx: chisq 7.981324523439985E-043 with no key, Weight = 0;

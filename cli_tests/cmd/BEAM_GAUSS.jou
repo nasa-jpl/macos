@@ -1,6 +1,9 @@
 # BEAM: the source amplitude profile -- UNIFORM (default) vs GAUSSIAN with 1-unit waists -- seen in the far-field
 # INT peak of the manual's Cassegrain (cmdref: Diffraction).  NONE first.  The Gaussian beam re-propagates
-# (BEAM clears the propagate state) and the peak moves from 8.877e6 to 6.884e8.
+# (BEAM clears the propagate state) and the peak moves from 8.877e6 to 2.920e6 and the summed intensity
+# from 3.313e8 to 2.139e8: the Gaussian is normalized to the uniform beam's flux with the tail the aperture
+# truncates LOST (Dave 2026-10-19, PLAN_CONSOLIDATION 1.2 (y); before, S = sqrt(Flux) at every ray put the
+# peak at 6.884e8).  Five figures (rule 2); ifx and gfortran agree to 8.
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 none
 int 5
@@ -11,6 +14,6 @@ gauss
 int 5
 beam
 uniform
-# EXPECT: Peak intensity= 8\.8773143D\+06[\s\S]*?Enter x beam waist radius: \[1\.00000\]: 1\s+Enter y beam waist radius: \[1\.00000\]: 1[\s\S]*?Peak intensity= 6\.8840631D\+08
+# EXPECT: Peak intensity= 8\.8773143D\+06[\s\S]*?Enter x beam waist radius: \[1\.00000\]: 1\s+Enter y beam waist radius: \[1\.00000\]: 1[\s\S]*?Peak intensity= 2\.9204\d*D\+06; Peak occurs at i=\s+129, j=\s+129\s+Sum of intensity= 2\.1394\d*D\+08
 # EXPECT-NOT: Unknown beam type
 # EXPECT-NOT: forrtl

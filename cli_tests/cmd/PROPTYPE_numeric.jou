@@ -16,7 +16,7 @@ opd 16
 /null
 save $TMP/pt3
 ! if cmp -s $TMP/pt2.in $TMP/pt3.in; then echo PT_RESAVE_SAME; else echo PT_RESAVE_DIFFERS; fi
-! sed -i 's/PropType=  7/PropType=  Bogus/' $DECK
+! perl -i -pe 's/PropType=  7/PropType=  Bogus/' $DECK
 old $DECK
 # EXPECT: PropType= Geometric; PropType= Geometric; PropType= NFS1surf; PropType= FarField; PropType= NFP1surf; PropType= NFSpherical; PropType= NFPlane; PropType= SF1surf; PropType= SpatialFilter; PropType= GeomUpdate; PropType= NF1; PropType= NF2; PropType= Fresnel; PropType= NFdftPlane; PropType= NFdftSphere; PropType= FFdft;
 # EXPECT: pt1\.in being loaded[\s\S]*?Tracing rays past\s+16 elements

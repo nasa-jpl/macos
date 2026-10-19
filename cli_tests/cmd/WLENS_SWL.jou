@@ -3,7 +3,7 @@
 # & Wavelength).  SWL 2 sets 5.5e-7 (the OPD of an all-mirror train is unchanged in length units); SWL 3 is
 # refused by name.
 # COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
-! sed -i '/^ *Wavelen=/a\ OptWaveLen= 5.5e-7' $DECK
+! perl -i -pe '$_ .= " OptWaveLen= 5.5e-7\n" if /^ *Wavelen=/' $DECK
 old $DECK
 wlens
 swl

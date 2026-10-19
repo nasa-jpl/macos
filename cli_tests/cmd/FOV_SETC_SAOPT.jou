@@ -6,10 +6,10 @@
 # collimated source and POs accepted.  Measured 2026-10-16 (PLAN_CONSOLIDATION 1.2): FOVS prints every
 # field weight as 0 after a load -- the LOAD path's uniform 1.0 is undone by dopt_init_vars.
 # COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
-! sed -i '/^ *ChfRayPos=/a\ ChfRayDir= 0 1e-3 1' $DECK
-! sed -i '/ChfRayDir= 0 1e-3 1/a\ ChfRayPos= 0 0 -5.' $DECK
-! sed -i '/ChfRayPos= 0 0 -5\./a\ ChfRayDir= 1e-3 0 1' $DECK
-! sed -i '/ChfRayDir= 1e-3 0 1/a\ ChfRayPos= 0 0 -5.0' $DECK
+! perl -i -pe '$_ .= " ChfRayDir= 0 1e-3 1\n" if /^ *ChfRayPos=/' $DECK
+! perl -i -pe '$_ .= " ChfRayPos= 0 0 -5.\n" if /ChfRayDir= 0 1e-3 1/' $DECK
+! perl -i -pe '$_ .= " ChfRayDir= 1e-3 0 1\n" if /ChfRayPos= 0 0 -5\.$/' $DECK
+! perl -i -pe '$_ .= " ChfRayPos= 0 0 -5.0\n" if /ChfRayDir= 1e-3 0 1/' $DECK
 old $DECK
 fovs
 sfov

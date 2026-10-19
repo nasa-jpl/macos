@@ -4,7 +4,7 @@
 # accepted steps and failures among them the solve is 'failed' BY NAME, the optics restored, the host alive.
 # The TILT DOF is freed by editing the copied deck's VarElt line (SETP has no DOF prompt).
 # COPY: $ROOT/ZGD_test_files/tst_calib_rigid.in
-! sed -i 's/VarElt=  1 0 0 0 0 0 0 0/VarElt=  1 1 0 0 0 0 0 0/' $DECK
+! perl -i -pe 's/VarElt=  1 0 0 0 0 0 0 0/VarElt=  1 1 0 0 0 0 0 0/' $DECK
 old $DECK
 calib
 show 1

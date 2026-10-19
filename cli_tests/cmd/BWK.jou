@@ -7,7 +7,7 @@
 # COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
 old $DECK
 bwk
-! sed -i '/^ *nGridpts=/a\           CalBWk= Y' $DECK
+! perl -i -pe '$_ .= "           CalBWk= Y\n" if /^ *nGridpts=/' $DECK
 old $DECK
 bwk
 perturb 3

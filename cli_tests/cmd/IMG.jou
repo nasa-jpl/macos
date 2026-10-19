@@ -16,7 +16,7 @@ none
 int 5
 img
 ! awk 'BEGIN{for(i=1;i<=256;i++){for(j=1;j<=256;j++)printf "%d ",(i>124&&i<133&&j>124&&j<133);print ""}}' > obj.txt
-! sed -i '1i ObjFile= obj.txt' $DECK
+! perl -i -pe 'print "ObjFile= obj.txt\n" if $. == 1' $DECK
 old $DECK
 none
 int 5
@@ -35,7 +35,7 @@ yes
 ! awk '{for(j=1;j<=NF;j++){s+=$j;if($j>m){m=$j;r=NR;c=j}}}END{print "IMG",r,c,m,s}' Cassegrain.in.intensity5.txt
 ! awk 'FNR==NR{for(j=1;j<=NF;j++)a+=$j;next}{for(j=1;j<=NF;j++)b+=$j}END{r=b/a;print "RATIO",r,(r>=1&&r<=64)?"inbound":"OUT"}' inc_square.txt Cassegrain.in.intensity5.txt
 ! awk 'BEGIN{for(i=1;i<=256;i++){for(j=1;j<=256;j++)printf "%d ",(i==129&&j==129);print ""}}' > pt.txt
-! sed -i 's/^ObjFile= obj.txt/ObjFile= pt.txt/' $DECK
+! perl -i -pe 's/^ObjFile= obj.txt/ObjFile= pt.txt/' $DECK
 old $DECK
 none
 text

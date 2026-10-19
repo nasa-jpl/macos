@@ -5,7 +5,7 @@
 # the two readings and that the second METCALC runs after the perturbation.  ifx wraps the beam line, gfortran
 # does not -- hence the \s+ patterns.
 # COPY: $ROOT/ZGD_test_files/tst_block_comment.in
-! sed -i '/^ *nGridpts=/a\ ShowMetData= YES' $DECK
+! perl -i -pe '$_ .= " ShowMetData= YES\n" if /^ *nGridpts=/' $DECK
 old $DECK
 metcalc
 perturb 3
