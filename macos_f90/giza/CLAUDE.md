@@ -203,3 +203,13 @@ opens an additional window (it doesn't close the previous one);
 that's intentional and supports the multi-window-history workflow
 in CoroExample.jou-style scripts.
 
+
+## Text glyphs: the vendored cairo has NO FreeType / fontconfig (2026-10-19, PLAN_CONSOLIDATION 1.2 (t))
+`giza/src/subprojects/cairo` is configured with `CAIRO_HAS_FT_FONT` / `CAIRO_HAS_FC_FONT` undefined
+(portability: no system font libraries), so `giza_set_font("Arial")` and friends resolve to cairo's
+built-in "twin" stroke font -- ASCII only.  Any non-ASCII replacement in `giza-token-remapper.h`
+(the `\times` / `\x` of every power-of-ten axis label, `\.`, `\A`) drew as the .notdef box on EVERY
+device, not just /png.  The remapper now picks ASCII stand-ins (`x`, `.`, `A`) when `CAIRO_HAS_FT_FONT`
+is undefined and keeps the Unicode glyphs otherwise.  Greek letters and Hershey symbols go through
+`_giza_lookup_hershey(...)->utf` and have the same limitation (unmeasured).  Don't "fix" this by
+resolving the fontconfig pattern in `giza-set-font.c`: that code is not compiled here.
