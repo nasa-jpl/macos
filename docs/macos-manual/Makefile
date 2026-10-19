@@ -55,9 +55,9 @@ NUMBER     := --lua-filter=tools/number_sections.lua
 $(BUILD)/macosMan.docx: $(SRC) $(REFDOC) tools/number_sections.lua | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
-$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua | $(BUILD)
+$(BUILD)/macosMan.html: $(SRC) tools/number_sections.lua tools/manual.css | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
-	  -o $@ $(SRC)
+	  --css tools/manual.css -o $@ $(SRC)
 
 # No LaTeX on this box: go docx -> PDF through headless LibreOffice.
 # tools/docx2pdf.py refreshes the TOC field (page numbers) before export;
@@ -80,9 +80,9 @@ cmdref-regen:
 $(BUILD)/macosCmdRef.docx: $(CMDSRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)
 
-$(BUILD)/macosCmdRef.html: $(CMDSRC) | $(BUILD)
+$(BUILD)/macosCmdRef.html: $(CMDSRC) tools/manual.css | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --standalone --embed-resources \
-	  -o $@ $(CMDSRC)
+	  --css tools/manual.css -o $@ $(CMDSRC)
 
 $(BUILD)/macosCmdRef.pdf: $(BUILD)/macosCmdRef.docx
 	python3 tools/docx2pdf.py $< $@
