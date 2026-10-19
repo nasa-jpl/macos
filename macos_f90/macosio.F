@@ -1736,7 +1736,6 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN
-	    print*,'Debug: VAR_NAM = ', VAR_NAM
 	    IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
