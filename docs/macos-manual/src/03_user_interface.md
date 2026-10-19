@@ -108,15 +108,11 @@ MACOS prompts the user for the next input. For example, as shown below, to enter
     Tracing rays past 4 elements.
     Aperture grid type = Circular with 512 grid points.
 
-Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECo-ords = -6
+    Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECoords = -6
+    Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
+    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
 
-Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
-
-    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
-
-**Entering Commands**
-
-    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
+    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
     Number of output coordinates is 5
     Too many grid points. Resetting npts to 128 MACOS>
 
@@ -130,12 +126,10 @@ MACOS\>**old lens_array show 2**
     Tracing rays past 4 elements.
     Aperture grid type = Circular with 512 grid points.
 
-Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECo-ords = -6
-
-Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
-
-    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
-    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECo-ords = -6
+    Elt 1: LensArray : Conic with Kc= 0.0000D+00, Kr=-8.0000D-01, nECoords = -6
+    Elt 2: Refractor : Conic with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
+    Elt 3: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
+    Elt 4: FocalPlane : Flat with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords = -6
     Number of output coordinates is 5
     Too many grid points. Resetting npts to 128 MACOS> show
     Enter number of element (0=aperture): [0]: 2
@@ -217,11 +211,7 @@ MACOS graphics can also be displayed and analyzed using other applications. This
 
 One such application is Matlab®, which provides an easy-to-use, powerful environment for manipulating and displaying data in many forms. Matlab is a product of The Math Works, Inc., 24 Prime Park, Natick, MA, USA (508)653-1415. We have included Matlab “.m-file” functions that provide some of the standard MACOS display types. These scripts import a specified datafile, generate a plot according to specified plot and stretch types, and return the data values. They functions also provide templates for modification or translation to other languages. By keeping the display application (e.g. Matlab) running in one window, and MACOS running in another, nearly seamless generation and display of results can easily be accomplished.
 
-Generating the data for off-line display is as simple as selecting a file output “plot type,” using the BINARY, FITS, TEXT or MATLAB commands (Section 7). Subsequent use of graphics-generating commands such as INTensity then create a file and store the requested data in that file. If the file already exists, the user is asked if the file is to be
-
-**PostScript and GIF Graphics Output**
-
-overwritten; if not, a new name is requested. Other applications can then access and display the data. Repeating the previous example:
+Generating the data for off-line display is as simple as selecting a file output “plot type,” using the BINARY, FITS, TEXT or MATLAB commands (Section 7). Subsequent use of graphics-generating commands such as INTensity then create a file and store the requested data in that file. If the file already exists, the user is asked if the file is to be overwritten; if not, a new name is requested. Other applications can then access and display the data. Repeating the previous example:
 
 MACOS\>**binary**
 
@@ -304,8 +294,6 @@ Alternatively, glass data can be provided as part of the optical prescription �
 Beginning with Version 2.8, certain MACOS data files, such as glass tables, are being placed in a special directory. On Unix systems, the path to this directory can be specified by the user by defining an environment variable, MACOS_DATA. This is done in response to the Unix shell prompt, as in:
 
     > setenv MACOS_DATA /home/macos/data/
-
-**MACOS Files**
 
 The above command establishes the directory /home/macos/data as the location of the data files for subsequent MACOS sessions. The user may specify any directory as MACOS_DATA.
 

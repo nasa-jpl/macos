@@ -102,8 +102,6 @@ SMACOS uses the following dummy variables to pass output:
 ```
     REAL*8 RaySpot(mRay, 2), OPDMat(mpts, mpts), RMSWFE REAL*4 PixArray(mPix, mPix)
 
-**Call Line Variables**
-
 #### Sharing Data via Fortran Modules
 
 SMACOS shares data with the calling program through a small set of Fortran 90 modules. This replaces the COMMON-block / .cmn include-file mechanism used in MACOS 2.x; calling programs only need a list of \`use\` statements -- no manual array sizing, no shared-memory layout to keep in sync, no preprocessor model-size switches. The canonical reference implementation is MACOS_resources/GMI/GMI.F (the MATLAB MEX interface), which exercises every module described here.
@@ -263,8 +261,6 @@ The same functions can be performed using SMACOS calls as follows:
     CALL SMACOS(command,CARG,DARG,IARG,RARG,
     & OutRaySpot,NomRayDir,RMSWFE,NomOPDMat,PertOPDMat, & PixArray,Cmatrix)
 
-**Commands**
-
     C Propagate
     command=’INTENSITY’ IARG(1)=5
     CALL SMACOS(command,CARG,DARG,IARG,RARG,
@@ -397,11 +393,7 @@ Note that the SMACOS MODify command (unlike the MACOS MODify command) does not c
 
 25. PFP: find field point corresponding to a specified chief ray offset in pixel coordinates
 
-at a detector. This command has 4 arguments: the element number of the surface at
-
-**Commands**
-
-which the chief ray intercept is specified, the size of the detector pixels, the offset of the chief ray from the vertex, and a prompt response to accept the new source parameters. The command is set up as follows:
+at a detector. This command has 4 arguments: the element number of the surface at which the chief ray intercept is specified, the size of the detector pixels, the offset of the chief ray from the vertex, and a prompt response to accept the new source parameters. The command is set up as follows:
 
     command='PFP' IARG(1)=iElt
     DARG(1)=pixel size in base units DARG(2)=chief ray offset x in pixel units DARG(3)=chief ray offset y in pixel units CARG(1)=’YES’ (to accept changes)
@@ -508,8 +500,6 @@ The SPOt command expects 5 output coordinates.
     command='INTENSITY' IARG(1)=iElt
 
 CARG(1)=’YES’ (to overwrite if a file-writing plot type is selected and a file of the same name exists)
-
-**Commands**
 
 36. GAIn: compute and plot the ratio of the light diffracted by the optical system to a point source. This command has one argument, the element number at which to comput the gain. The command is set up as follows:
 
@@ -626,8 +616,6 @@ CARG(1)=’YES’ (to overwrite if a file-writing plot type is selected and a fi
     IARG(2)=number of pixels per side RARG(1)=size of pixel in base units
 
 50. WINdow: define a window on the detector that stays fixed wrt the detector. Subsequent images that fall on the window, as determined by the ray trace, are placed appropriately, provided the FEX command is used for each image. Used with the PIX,
-
-**Commands**
 
 COMPOSE, ADD, etc. commands. This command has 5 arguments. It is set up as follows:
 
@@ -800,8 +788,6 @@ CARG(2)=’YES’ (to overwrite if a file-writing plot type is selected and a fi
     command='DMBUILD' IARG(1)=iElt
 
 70. PArtials: displays and prints the full set of ray partial derivatives for a specified ray. The command is set up as follows:
-
-**Commands**
 
     command='PARTIALS' IARG(1)=iRay
 
