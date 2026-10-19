@@ -24,6 +24,29 @@
 
 ## Active slice
 
+> **2026-10-19 afternoon (CC): figures the 3.2 way (d92656cc: panel labels drawn under their panels, images and FIGURE
+> lines centered via tools/figure_captions.lua + Figure/FigureCaption styles); edit copies refreshed (ace03c21 and after
+> each rebuild -- Dave's Writer window still holds the 10-18 copy, close without saving and reopen); **Section 6 done**
+> (22eabd12: ORS/SRS and BEAM dialogs re-emitted on ImageDemo / CassWithExitPupil, figure 46 remade at the entrance
+> pupil, debris + split paragraphs fixed, figures 43/45 re-cropped); **CCMac's Mac gate report received** and folded
+> (7acb2911 + resources 5c9026f: /tmp scratch, sed -i.bak, the untracked GPERTURB fixture committed; §5 Mac line; §4
+> item 4 = the cross-arch pin policy for Dave; reply `NOTE_to_ccmac_prerelease_reply.md`); cmd gate at 1632450d green
+> 102/102 both.  New findings: 1.2 (w) ORS merit NaN on ImageDemo (`RSTRACE` counts rays the trial surface misses),
+> 1.2 (x) DONE.  LOCAL unpushed: 80f3239e..HEAD (macos), resources 5c9026f.  NEXT: Section 7 the same way (the
+> transcripts there are the 3.2 reflowed ones; the figures are done), then the §6.2 chapters; Dave: push, pin policy,
+> the CCMac note.**
+
+> **2026-10-19 (CC): manual code at 7.5pt (495ea8a1); RRAY/PRAy/TPR paragraph + Section 5 running-header debris
+> (1d4a9862); TPR plan/cmdref corrected to TO's 10-17 fix (96521065); **manual figures regenerated from the current
+> macos** (943d687f: 26 engine figures, 12 journals in docs/macos-manual/tools/figs/, SPEC-driven assembler
+> `tools/regen_engine_figs.py`, `src/media/fig_engine_NN.png`; the 3.2 `image*.png` left unreferenced for a cleanup);
+> **1.2 (t) FIXED** (1632450d): the vendored cairo has NO FreeType, its built-in font is ASCII only, so the times sign
+> was the .notdef box on every device -- ASCII stand-in keyed on CAIRO_HAS_FT_FONT.  cmd gate at 1632450d launched
+> from the clean worktree (scratchpad gate_cmd_1632450d.log); load/ab unaffected (no trace code).  LOCAL unpushed:
+> 80f3239e..943d687f.  NEXT: read the gate, PLAN_CONSOLIDATION §5 line; the transcript re-emission the figures
+> exposed (3.2-era dialogs reflowed by the Word conversion, e.g. the RAY printout in Section 5) is the next
+> documentation item; then the §6.2 chapters.**
+
 > **2026-10-18 evening (CC): Dave's three answers landed LOCAL (unpushed, after a3b5fa9c): (1) 1.2 (u) -- a deck with
 > no nOutCord/Tout block loads, the loader proposes the BEAM frame at the last element (z = previous vertex to last
 > vertex, x from xObs), the CLI asks `Keep the proposed output coordinates? [YES]:`, the api takes it, SAVE writes it
