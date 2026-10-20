@@ -1,4 +1,4 @@
-record  load_ifx_dfcc3452.csv  (160 decks)
+record  load_ifx_fcc648c5.csv  (160 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
