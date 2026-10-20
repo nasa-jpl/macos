@@ -96,3 +96,20 @@ return; EFL's caller resets it (measured: no print after EFL), CALIB's was not m
 treats a line that starts with `cd` as the CLI's own CD command (chdir, then
 "Current Folder:") and drops the rest of the line.  In journals give the
 tool absolute paths (or a `--dir` option) and use one `mv` per `!` line.
+
+## The startup model-size prompt (PLAN_CONSOLIDATION 1.2 (yy), 2026-10-20)
+`set_macos_problem_size` (macos_mod.F, `#ifdef CMACOS`) asks before readline or any LOG is up:
+a plain `read(*,'(A)')`, not the ACCEPT routines, so none of the sub-prompt machinery applies.
+It was a list-directed READ of the answer with no `err=`: a word, `256abc` or a number too long
+for an integer killed the CLI (forrtl 59 / 64; gfortran "Bad integer" / "Integer overflow");
+`256.5` crashed gfortran and read as 256 under ifx; `-1` was the internal no-answer sentinel and
+gave the default; `512 x` gave 512.  `problem_size` was not reset before the retry and the buffer
+was not cleared, so a refused size then a blank line or end of input re-read the stale answer
+forever (2.3 M lines in 5 s on a pipe).  Now: blank = the default, otherwise the trimmed answer
+must be at most five digits and one of the sizes; anything else is refused by name, at most
+`mTries` = 5 times; end of input and the fifth refusal `STOP 1` with a named line.  MRESET is
+not affected (IACCEPT_S re-asks on a non-integer).  The api path never reaches this prompt:
+`macos_init_all` (param_mod) still `stop`s on a bad size, but pymacos `init` and mmacos
+`macos.init` refuse before the call (pymacos's list omits 8192).  Gate
+`cli_tests/cmd/STARTUP_size.jou` (the gate's `# MODEL:` takes `a | b | c`, answers in turn);
+red on the pre-fix binary (dies before MACOS>).

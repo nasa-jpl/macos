@@ -1,0 +1,24 @@
+# PLAN_CONSOLIDATION 1.2 (yy), Dave 2026-10-20: the startup model-size prompt crashed on an answer it
+#   did not recognize -- a list-directed READ of the answer with no err= branch: a word, '256abc' or a
+#   number too long for an integer was a forrtl / Fortran runtime error on both compilers; '256.5'
+#   crashed gfortran and was read as 256 by ifx; '-1' (the internal no-answer sentinel) gave the default
+#   and '512 x' gave 512, silently; a refused size followed by end of input or a blank line re-read the
+#   stale answer forever (2.3 M lines in 5 s).  Now every answer that is not blank (= the default, 256)
+#   or the digits of one of the sizes is refused by name and asked again, at most 5 times; end of input
+#   and a fifth refusal stop with a named line and exit status 1.
+# Legs: (1) four bad answers, then 512 on the fifth try: four numbered refusals, then the 512 banner.
+#   (2) via the shell, the same binary (the CLI's parent of the shell): five bad answers stop it, and
+#   end of input at the prompt stops it, each with exit status 1 and no runtime error.  Pre-fix binary:
+#   the first answer kills the CLI before MACOS> -> red.
+# MODEL: abc | 256abc | 256.5 | 99999999999999999999 | 512
+! B=$(ps -o args= -p $PPID | awk '{print $1}'); printf 'a\nb\nc\nd\ne\n256\n' | $B; echo "five-bad rc=$?"
+! B=$(ps -o args= -p $PPID | awk '{print $1}'); $B </dev/null; echo "eof rc=$?"
+# EXPECT: Model size "abc" is not one of the sizes 128 \.\.\. 8192 \(attempt 1 of 5\)
+# EXPECT: Model size "256abc" is not one of the sizes 128 \.\.\. 8192 \(attempt 2 of 5\)
+# EXPECT: Model size "256\.5" is not one of the sizes 128 \.\.\. 8192 \(attempt 3 of 5\)
+# EXPECT: Model size "99999999999999999999" is not one of the sizes 128 \.\.\. 8192 \(attempt 4 of 5\)
+# EXPECT: \(attempt 4 of 5\)[\s\S]*?Using specified model size\s+512\s[\s\S]*?This run is limited to \d+ surfaces, \d+ segments, 262145
+# EXPECT: Model size "e" is not one of the sizes 128 \.\.\. 8192 \(attempt 5 of 5\)\s+\*\* MACOS model size: no valid answer in 5 attempts; stopping\.[\s\S]*?five-bad rc=1
+# EXPECT: no answer \(end of input\); stopping\.[\s\S]*?eof rc=1
+# EXPECT-NOT: forrtl
+# EXPECT-NOT: Fortran runtime error
