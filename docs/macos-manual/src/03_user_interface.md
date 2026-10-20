@@ -2,7 +2,11 @@
 
 We begin this section by discussing the mechanics of interacting with the MACOS application. Basic file-oriented functions are discussed, as are various graphics options. Memory requirements are discussed. The commands covered in this section are:
 
-    Help EXPort JOUrnal EXEcute
+                    HELP
+                    EXPort
+                    JOUrnal
+                    EXEcute
+                    Quit (BYE)
 
 ### Starting and Stopping MACOS
 

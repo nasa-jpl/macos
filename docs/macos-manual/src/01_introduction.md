@@ -14,7 +14,7 @@ This release provides *mmacos* and *pymacos*, Matlab and Python code libraries t
 
 This release also provides a utility for conversion of prescriptions developed in the CodeV optical design code, into MACOS prescriptions. Once converted, MACOS is used to add modeling features, including mechanical and control system interfaces, optical figure aberrations, segmented mirrors, actuated mirrors, deformable mirrors, and reference and return surfaces for diffraction calculations. Then LOMs can be generated using MACOS functions, *mmacos* sensitivity generators, or SMACOS calls in codes like GMI. By exporting the LOMs into external analysis environments like Matlab, or by linking SMACOS-based code drivers, MACOS optical modeling functions can be driven by other calculations, from thermal-structural or controls codes, to compute controlled optical system response. The integrated models are then exercised in end-to-end dynamic simulations, Monte Carlo analyses, covariance analyses, or optimization studies to determine integrated system-level performance and guide system engineering and design.
 
-MACOS (and SMACOS) are built on computationally efficient general ray-trace capabilities. These support standard analyses of optical performance such as ray-traces, spot-diagrams, and wavefront (OPD) plots. MACOS ray traces can be used to provide the phases for single- or multi-plane diffraction models: single-plane for simple imaging Point-Spread Function (PSF) generation; multiplane for more complex instruments such as coronagraphs. MACOS also provides polarization modeling, through polarization ray-trace and vector diffraction options. For diffraction calculations, MACOS uses Fresnel propagators driven by exact phases computed by its ray-trace engine. MACOS supports simulation of multiple source and wavelength images. Detector pixilation can be set to model detector resolution limits.
+MACOS (and SMACOS) are built on computationally efficient general ray-trace capabilities. These support standard analyses of optical performance such as ray-traces, spot-diagrams, and wavefront (OPD) plots. MACOS ray traces also provide the phases for single- or multi-plane diffraction models: single-plane for simple imaging Point-Spread Function (PSF) generation; multiplane for more complex instruments such as coronagraphs. MACOS also provides polarization modeling, through polarization ray-trace and vector diffraction options. For diffraction calculations, MACOS uses Fresnel propagators driven by exact phases computed by its ray-trace engine. MACOS supports simulation of multiple source and wavelength images. Detector pixilation can be set to model detector resolution limits.
 
 ### Overview of this Manual
 
@@ -42,7 +42,13 @@ Several example problems are worked in the manual to illustrate specific feature
 
 This manual is the *learning* document; its companion, the **MACOS Command Reference** (`macosCmdRef.pdf`, source in `docs/macos-manual/cmdref/`), is the *lookup* document: every interactive command, and every function of the MATLAB (*mmacos*) and Python (*pymacos*) programming interfaces, cataloged one at a time with its syntax. Appendix C of this manual lists the commands in summary form; the Command Reference is the full per-command catalog and the place to start if you are driving MACOS from MATLAB or Python.
 
-Three companion tools are worth knowing from the outset. **SegMirMaker** (`MACOS_resources/segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11). **GMI** (`MACOS_resources/GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9). The rx_converter, `cv2macos.seq`, can be used in CodeV to generate a MACOS prescription – a “.in-file” – from a CodeV prescription.
+Three companion tools are worth knowing from the outset:
+
+-   **SegMirMaker** (`MACOS_resources/segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11).
+
+-   **GMI** (`MACOS_resources/GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9).
+
+-   The rx_converter, `cv2macos.seq`, can be used in CodeV to generate a MACOS prescription – a “.in-file” – from a CodeV prescription.
 
 ### MACOS and AI Agents
 

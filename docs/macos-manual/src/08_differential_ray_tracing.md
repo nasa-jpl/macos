@@ -2,8 +2,17 @@
 
 The MACOS differential ray-trace functions are used to compute optical sensitivity matrices. These provide linear models of the effects of optical element perturbations on optical performance. The linear models can be exercised internally to MACOS using functions such as LPErturb, LOPd and LINtensity which parallel commands introduced earlier. Linear optical models can also be EXPported for use external to MACOS.
 
-    BUild DMBuild PArtials LPErturb LPRead LREset LSPot LOPd
-    LPIxillate LINtensity EXPort
+                    BUild
+                    DMBuild
+                    PARtials
+                    LPErturb
+                    LPRead
+                    LREset
+                    LSPot
+                    LOPd
+                    LPIxilate
+                    LINtensity
+                    EXPort
 
 ### Background
 
@@ -120,7 +129,7 @@ $$
 
 Both of these equations have the form *x* = *xnom* + *Cu* , where the *C-matrix* is the *optical sensitivity matrix*, giving the change in ray state due to perturbations of the optical elements. The C-matrix provides a linear model of the optical system. The MACOS BUild command assembles these sensitivities from the individual ray partial derivatives.
 
-It can be extremely useful to incorporate local coordinates directly into the optical sensitivity C-matrices. If the perturbations for one element are to be applied in coordinates other than the global coordinate system–perhaps in an actuator coordinate system–then that local coordinate transformation matrix can be included directly within the C-matrix. The transform from element iElt coordinates to global coordinates is written $\text{ }^{G}T^{\,iElt}$.
+It can be extremely useful to incorporate local coordinates directly into the optical sensitivity C-matrices. If the perturbations for one element are to be applied in coordinates other than the global coordinate system–perhaps in an actuator coordinate system–then that local coordinate transformation matrix can be included directly within the C-matrix. The transform from element iElt coordinates to global coordinates is written $\text{ }^{G}T^{iElt}$.
 
 Similarly, local coordinates can be used at the output end of the linear model. This allows for the creation of models for ray direction only, or transverse aberration or path length only. Focal-plane axes are easily incorporated. We write the transform for ray state from global coordinates to output coordinates as $\text{ }^{out}T^{G}$ . As an example, the 1x7 output transform matrix that captures only the path length ray state in global coordinates is
 

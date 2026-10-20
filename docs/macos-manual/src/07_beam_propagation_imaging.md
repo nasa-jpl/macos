@@ -4,20 +4,21 @@
 
 This section presents the MACOS image generation and plotting commands. The com-plex amplitude matrices can be plotted to show pupil functions, point images, or images of extended objects. Composed images can combine multiple objects or multiple colors. Pixel array detectors can be simulated. Noise effects and image blurring can be simu-lated. Plot types include wireframe, contour, grayscale, row, and columns. Text and binary outputs are also available. The commands discussed in this section are:
 
-    INtensity GAIn
-    PIxilate AMplitude
-    WINdow COMpose
-    ADD DADD
-    MULTISPEC RFILT
-    NOISE SEED
-    BLUR LOG
-    REAl IMAGinary
-    GRAy WIRe
-    SLIce CONtour
-    COLumn ROW
-    TEXt BINary
-    FITs MATlab
-    GBLUR
+                    INTensity       GAIn
+                    PIxilate        AMPlitude
+                    PHAse           STRetch
+                    WINdow          COMpose
+                    ADD             DAdd
+                    MULtispec       RFIlt
+                    NOIse           SEEd
+                    BLUr            LOG
+                    REAl            IMAGinary
+                    GRay            WIRe
+                    SLIce           CONtour
+                    COLumn          ROW
+                    TEXt            BINary
+                    FITs            MATlab
+                    GBLur
 
 ### Background
 

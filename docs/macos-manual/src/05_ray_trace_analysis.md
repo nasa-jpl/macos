@@ -2,14 +2,16 @@
 
 MACOS ray-trace commands define a bundle of rays at the light source, and then advance each ray element-by-element through the beam train. Individual rays can be followed through the system, or the entire bundle can be traced to display OPD maps or spot diagrams at particular elements. Placement of reference surfaces using ORS and SRS is introduced. The system exit pupil can be placed using the FEX command. Using the PERturb and MODify commands, individual elements can be altered and the analyses repeated. The commands defined in this section include:
 
-    DRAW MAP
-    RAY SPOt
-    OPD OBS
-    PERturb PREad
-    CENter STOP
-    FEX COORDinates
-    FFP PFP
-    POLarization NOPolarizaton SINT
+                    DRAw            MAP
+                    RAY             SPOt
+                    OPD             OBS
+                    PERturb         PREad
+                    CENter          STOp
+                    FEX             COOrd
+                    FFP             PFP
+                    POLarization    NOPolarization
+                    SINt            SEGRAYTrace
+                    ATMosphere
 
 ### Background
 
@@ -63,7 +65,7 @@ The result is shown in Figure 31. The system is somewhat aberrated, so the beam 
 
 ![](media/fig_engine_31.png)
 
-**FIGURE 31** DRAW view of ImageDemo.in, the telescope (elements 0-5); the relay view waits on a DRAW repair -- a refractor surface draws as two straight segments spanning the beam
+**FIGURE 31** DRAW views of ImageDemo.in: the telescope (elements 0-5) and the refractive relay (elements 6-11)
 
 2.  **MAP**
 

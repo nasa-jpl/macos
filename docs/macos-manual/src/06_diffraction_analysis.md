@@ -2,9 +2,9 @@
 
 This section presents commands for physical optics modeling. Most optical systems are adequately modeled using a single-plane, exit-pupil diffraction model. Other systems are better modeled using multiple planes of diffraction. This section describes how to set up .in-files and other necessary data for both cases. The commands discussed in this section are:
 
-    ORS SRS
-    BEAm REGrid
-    SCAlar VECtor
+                    ORS             SRS
+                    BEAm            REGrid
+                    SCAlar          VECtor
 
 The diffraction modeling routines of MACOS can accurately compute both near-field
 

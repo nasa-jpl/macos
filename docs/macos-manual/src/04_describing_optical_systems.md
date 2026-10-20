@@ -4,10 +4,17 @@
 
 A first MACOS session typically begins by invoking the NEW command. This begins a dialog whose function is to define the data used by MACOS in its computations. This data comprises the optical prescription, and is saved by MACOS as an “.in-file,” which can be edited and reused later using the OLD command. The contents of the .in-file can be altered within a MACOS session using MODIFY, PERTURB or other commands, and saved as a new .in-file using the SAVE command. The .in-files can also be created and edited off-line using a text editor. The commands covered in this section are:
 
-    NEW DRAw
-    OLD (LOAd)
-    SUMmarize STAtus RESet SHOw
-    MODify BEAM SAVe
+                    NEW
+                    DRAw
+                    OLD (LOAd)
+                    SUMmarize
+                    STatus
+                    REset
+                    SHOw
+                    MODify
+                    BEAm
+                    SAVe
+                    VALidate
 
 ### Specifying the Light Source
 
@@ -588,32 +595,9 @@ An example of a segment mirror .in-file (seg.in) is in Appendix A.5. The panels 
 Input data:
 
 <!-- transcript: s04_segment_1 -->
+![](media/fig_rescued_23.png){width="5.0in"}
 
-|                  |     |         |         |          | 67       |          | 66       |              | 65      |         | 64      |         | 63      |          | 62      |         |        |        |         |
-|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|-------|
-|                  |     |         |         |          | -5,5,10  |          | -3,6,9   |              | -1,7,8  |         | 1,8,7   |         | 3,9,6   |          | 5,10,5  |         |        |        |         |
-|                  |     |         |         | 68       |          | 42       |          | 41           |         | 40      |         | 39      |         | 38       |         | 91      |        |        |         |
-|                  |     |         |         | -6,3,9   |          | -4,4,8   |          | -2,5,7       |         | 0,6,6   |         | 2,7,5   |         | 4,8,4    |         | 6,9,3   |        |        |         |
-|                  |     |         | 69      |          | 43       |          | 23       |              | 22      |         | 21      |         | 20      |          | 61      |         | 90     |        |         |
-|                  |     |         | -7,1,8  |          | -5,2,7   |          | -3,3,6   |              | -1,4,5  |         | 1,5,4   |         | 3,6,3   |          | 5,7,2   |         | 7,8,1  |        |         |
-|                  |     | 70      |         | 44       |          | 24       |          | 10           |         | 9       |         | 8       |         | 37       |         | 60      |        | 89     |         |
-|                  |     | -8,-1,7 |         | -6,0,6   |          | -4,1,5   |          | -2,2,4       |         | 0,3,3   |         | 2,4,2   |         | 4,5,1    |         | 6,6,0   |        | 8,7,-1 |         |
-| 71               |     |         | 45      |          | 25       |          | 11       |              | 3       |         | 2       |         | 19      |          | 36      |         | 59     |        | 88      |
-| -9,-3,6          |     | -7,-2,5 |         | -5,-1,4  |          | -3,0,3   |          | -1,1,2 1,2,1 |         |         |         | 3,3,0   |         | 5,4,-1   |         | 7,5,-2  |        | 9,6,-3 |         |
-| 72               | 46  |         | 26      |          | 12       |          | 4        |              | 1       |         | 7       |         | 18      |          | 35      |         | 58     |        | 87      |
-| -10,-5,5 -8,-4,4 |     |         | -6,-3,3 |          | -4,-2,2  |          | -2,-1,1  |              | 0,0,0   |         | 2,1,-1  |         | 4,2,-2  |          | 6,3,-3  |         | 8,4,-4 |        | 10,5,-5 |
-| 73               |     | 47      |         | 27       |          | 13       |          | 5            |         | 6       |         | 17      |         | 34       |         | 57      |        | 86     |         |
-| -9,-6,3          |     | -7,-5,2 |         | -5,-4,1  |          | -3,-3,0  |          | -1,-2,-1     |         | 1,-1,-2 |         | 3,0,-3  |         | 5,1,-4   |         | 7,2,-5  |        | 9,3,-6 |         |
-| 74               |     |         | 48      |          | 28       |          | 14       |              | 15      |         | 16      |         | 33      |          | 56      |         | 85     |        |         |
-| -8,-7,1          |     |         | -6,-6,0 |          | -4,-5,-1 |          | -2,-4,-2 |              | 0,-3,-3 |         | 2,-2,-4 |         | 4,-1,-5 |          | 6,0,-6  |         | 8,1,-7 |        |         |
-| 75               |     |         |         | 49       |          | 29       |          | 30           |         | 31      |         | 32      |         | 55       |         | 84      |        |        |         |
-| -7,-8,-1         |     |         |         | -5,-7,-2 |          | -3,-6,-3 |          | -1,-5,-4     |         | 1,-4,-5 |         | 3,-3,-6 |         | 5,-2,-7  |         | 7,-1,-8 |        |        |         |
-| 76               |     |         |         |          | 50       |          | 51       |              | 52      |         | 53      |         | 54      |          | 83      |         |        |        |         |
-| -6,-9,-3         |     |         |         |          | -4,-8,-4 |          | -2,-7,-5 |              | 0,-6,-6 |         | 2,-5,-7 |         | 4,-4,-8 |          | 6,-3,-9 |         |        |        |         |
-| 77               |     |         |         |          |          | 78       |          | 79           |         | 80      |         | 81      |         | 82       |         |         |        |        |         |
-| -5,-10,-5        |     |         |         |          |          | -3,-9,-6 |          | -1,-8,-7     |         | 1,-7,-8 |         | 3,-6,-9 |         | 5,-5,-10 |         |         |        |        |         |
-
-![](media/image52.png){width="5.013888888888889in" height="4.361111111111111in"}**FIGURE 23** Hexagonal coordinates X,L,R for a large array
+**FIGURE 23** Hexagonal coordinates X,L,R for a large array
 
 <!-- transcript: s04_segment_2 -->
 
@@ -631,13 +615,13 @@ Hand-editing a .in file to define every segment of a 7- or 19-segment mirror is 
 
 SegMirMaker accepts:
 
-A MACOS .in parent prescription. The parent element can be any conic or FreeForm surface.
+-   A MACOS .in parent prescription. The parent element can be any conic or FreeForm surface.
 
-The number of rings (nRing = 1 for 7-segment, 2 for 19-segment, etc.).
+-   The number of rings (nRing = 1 for 7-segment, 2 for 19-segment, etc.).
 
-The axis orientation psi, segment size or aperture diameter, inter-segment gap, and segment standoff.
+-   The axis orientation psi, segment size or aperture diameter, inter-segment gap, and segment standoff.
 
-3-DOF (piston/tip/tilt) or 6-DOF segments.
+-   3-DOF (piston/tip/tilt) or 6-DOF segments.
 
 For FreeForm parents, SegMirMaker copies the parent's lFF, FFCoef, FF coordinate frame, grid data, and grid frame verbatim into every segment, so all segments share the parent's underlying FreeForm shape. Each segment's Mon slot is left empty (MonZernCoef = 0) but with lMon = L2 (half the segment width); the user can later add per-segment figure error via the Mon Zernike coefficients without re-running SegMirMaker.
 
@@ -1603,17 +1587,9 @@ All variables can be changed with the MODify command.
 +---------------------------+-----------------+-----------------------+
 | Surface(iElt)             |                 | surface type          |
 +---------------------------+-----------------+-----------------------+
-| T                         | (1.0            | element local         |
-| Elt(iPert,iElt-Cord,iElt) | D0,0.0D0,0.0D0, | coordinates           |
+| TElt(iPert,iElt-Cord,iElt)| 6x6 Identity    | element local         |
+|                           | Matrix          | coordinates           |
 |                           |                 | transformation matrix |
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-|                           |                 |                       |
-|                           | (0.0            |                       |
-|                           | D0,1.0D0,0.0D0, |                       |
-|                           |                 |                       |
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
 |                           |                 |                       |
 |                           | (0.0            |                       |
 |                           | D0,0.0D0,0.0D0, |                       |
@@ -1672,50 +1648,8 @@ All variables can be changed with the MODify command.
 | **Element variables**     | **Default       | **Description**       |
 |                           | values**        |                       |
 +===========================+=================+=======================+
-| ZernCoef(iZern,iElt)      | (0.0            | Zernike coefficients  |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0, |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | 0.0             |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
-+---------------------------+-----------------+-----------------------+
-|                           | (0.0            |                       |
-|                           | D0,0.0D0,0.0D0) |                       |
+| ZernCoef(iZern,iElt)      | 45-element      | Zernike coefficients  |
+|                           | vector of zeros |                       |
 +---------------------------+-----------------+-----------------------+
 | zMon(iAxis,iElt)          | psiElt          | z-axis for monomial   |
 |                           |                 | (Zernike) surface     |

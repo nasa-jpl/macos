@@ -1,6 +1,7 @@
-# Figure 31, DRAW view of ImageDemo.in: the Cassegrain telescope, elements 0-5, in the XZ plane (drawn twice: giza
-# writes a page when the next one opens).  The relay view waits on the DRAW fix: every refractor surface draws as two
-# straight segments spanning the beam (PLAN_CONSOLIDATION 1.2 (bb); Dave 2026-10-19: 'figure 31 is a mess').
+# Figure 31, DRAW views of ImageDemo.in in the XZ plane: the Cassegrain telescope (elements 0-5) and the refractive
+# relay (elements 6-11).  The relay is drawn twice: giza writes a page when the next one opens.  On the repaired deck
+# (2026-10-19, the rejoined Zernike line) the relay draws cleanly -- the V-shaped surfaces of PLAN_CONSOLIDATION 1.2 (bb)
+# were the diverging rays of the broken deck (Dave 2026-10-20: 'works fine now').
 # COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in fig31
 cd $TMP/fig31
 old ImageDemo.in
@@ -11,8 +12,12 @@ draw
 5
 xz
 draw
-0
-5
+6
+11
+xz
+draw
+6
+11
 xz
 ! mkdir -p $ROOT/docs/macos-manual/build/figs/fig31; cp $TMP/fig31/giza_*.png $ROOT/docs/macos-manual/build/figs/fig31/
 # EXPECT: Tracing rays past  13 elements
