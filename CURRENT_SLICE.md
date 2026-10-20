@@ -116,6 +116,16 @@
 > gate-5 + gate-6 records (f2e0c6e3, 7e14e42, local on the Mac) wait on DAVE'S word to him directly.  NEXT: commit (explicit
 > paths, both repos), push on Dave's word, name CCMac's next pair = the pushed tips.**
 
+> **2026-10-20 (CC, manual): PUSHED macos ac378c0f (245fa0af + merge of CCMac's gate 5/6 records) and resources 9e88bd0 (Dave's
+> word; CCMac's pair = ac378c0f + 9e88bd0).  Dave's three manual asks: (1) figure 23 re-cropped from 3.2 page 58 (its label table,
+> 23 lines of fallen-out hex coordinates, removed); (2) the six section command blocks set the 3.2 way (one per line / two columns,
+> indented, Appendix C spellings) and COMPLETED against each section's headings: +Quit (3), +VALidate (4), +SEGRAYTrace +ATMosphere
+> (5), +PHAse +STRetch (7), LPIxilate spelled as the engine does (8); (3) figure 31 = DRAW of the current ImageDemo.in, telescope
+> over relay (new "v" stacking in regen_engine_figs.py), caption fixed, (bb) closed as a deck artifact; figure 30 re-cropped (page
+> header baked in).  Dave's Word edits (edit copy 09:04, from an OLDER build: the math hunks were build drift) folded first: 'also
+> provide', companion-tools bullets, SegMirMaker bullets, TElt = 6x6 identity, ZernCoef = 45 zeros, T^{iElt} spacing.  NEXT: build,
+> refresh the edit copies + docs PDF, commit (explicit paths), push on Dave's word.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

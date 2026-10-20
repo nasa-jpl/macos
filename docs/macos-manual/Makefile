@@ -17,6 +17,8 @@ BUILD      := build
 SRC        := $(sort $(wildcard src/[0-9]*.md))
 # the generated listings and dialogs the chapters include by marker (tools/include_transcripts.lua)
 TRANSCRIPTS := $(wildcard src/transcripts/*.md)
+# the figures: a regenerated or re-cropped image must rebuild the docx/html (2026-10-20: a PDF shipped a stale figure 31)
+MEDIA      := $(wildcard src/media/*)
 REFDOC     := reference.docx
 TITLE      := MACOS Manual
 
@@ -61,10 +63,10 @@ NUMBER     := --lua-filter=tools/include_transcripts.lua \
               --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
 FILTERS    := tools/include_transcripts.lua tools/number_sections.lua tools/figure_captions.lua
 
-$(BUILD)/macosMan.docx: $(SRC) $(TRANSCRIPTS) $(REFDOC) $(FILTERS) | $(BUILD)
+$(BUILD)/macosMan.docx: $(SRC) $(TRANSCRIPTS) $(MEDIA) $(REFDOC) $(FILTERS) | $(BUILD)
 	$(PANDOC) $(DOCX_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
 
-$(BUILD)/macosMan.html: $(SRC) $(TRANSCRIPTS) $(FILTERS) tools/manual.css | $(BUILD)
+$(BUILD)/macosMan.html: $(SRC) $(TRANSCRIPTS) $(MEDIA) $(FILTERS) tools/manual.css | $(BUILD)
 	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
 	  --css tools/manual.css -o $@ $(SRC)
 

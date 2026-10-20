@@ -24,7 +24,8 @@ ROOT = MAN.parent.parent
 MEDIA = MAN / "src" / "media"
 FIGS = MAN / "build" / "figs"
 
-# figure number -> (page directory, [page indices side by side], [one label under each panel])
+# figure number -> (page directory, [page indices side by side], [one label under each panel][, "v"])
+# A fourth item "v" stacks the panels vertically (figure 31: a wide, flat relay strip under the telescope).
 # The labels are drawn into the image under their panels, centered, the way the 3.2 manual set them
 # (Dave 2026-10-19: "positioned under their respective panels"); the FIGURE line below the image is
 # the caption, centered by tools/figure_captions.lua.
@@ -34,7 +35,7 @@ SPEC = {
                          "Focal plane spot diagram\n(primary mirror tilted 1e-4 radians)"]),
     6: ("fig06", [0, 1], ["Unaberrated (defocused)", "Aberrated OPD (coma)"]),
     10: ("fig10", [0, 1], ["Unaberrated (defocused)", "Aberrated (coma)"]),
-    31: ("fig31", [0], []),
+    31: ("fig31", [0, 1], ["Elements 0-5 (the telescope)", "Elements 6-11 (the relay)"], "v"),
     33: ("fig33", [0], []), 34: ("fig33", [1], []),
     36: ("fig36", [0, 1], ["Exit pupil (element 4)", "Detector (element 5)"]),
     37: ("fig36", [2, 3], ["OBS=ALL", "OBS=NEGATIVE"]),
@@ -109,18 +110,29 @@ def labelled(im, text, font):
     return out
 
 
-for fig, (d, pages, labels) in sorted(SPEC.items()):
+for fig, spec in sorted(SPEC.items()):
+    d, pages, labels = spec[:3]
+    vertical = len(spec) > 3 and spec[3] == "v"
     ims = [trim(page(d, n)) for n in pages]
     if labels:
         assert len(labels) == len(ims), fig
         font = ImageFont.truetype(FONT, max(18, int(min(im.height for im in ims) * 0.045)))
         ims = [labelled(im, lab, font) for im, lab in zip(ims, labels)]
-    h = max(im.height for im in ims)
-    w = sum(im.width for im in ims) + 20 * (len(ims) - 1)
-    out = Image.new("RGB", (w, h), "white")
-    x = 0
-    for im in ims:
-        out.paste(im, (x, 0))
-        x += im.width + 20
+    if vertical:
+        w = max(im.width for im in ims)
+        h = sum(im.height for im in ims) + 20 * (len(ims) - 1)
+        out = Image.new("RGB", (w, h), "white")
+        y = 0
+        for im in ims:
+            out.paste(im, ((w - im.width) // 2, y))
+            y += im.height + 20
+    else:
+        h = max(im.height for im in ims)
+        w = sum(im.width for im in ims) + 20 * (len(ims) - 1)
+        out = Image.new("RGB", (w, h), "white")
+        x = 0
+        for im in ims:
+            out.paste(im, (x, 0))
+            x += im.width + 20
     out.save(MEDIA / f"fig_engine_{fig:02d}.png")
     print(f"fig_engine_{fig:02d}.png  <- {d} pages {pages}  {out.size}")
