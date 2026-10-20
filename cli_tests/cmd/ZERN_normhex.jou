@@ -36,7 +36,7 @@ old hexdense46.in
 # EXPECT: 0,0\.5[\s\S]*?Element\s+0 \(InputRay\s*\) to Element\s+1 \(Z\s*\):[\s\S]*?Segment Length=\s+5\.00000000000000D\+00
 # EXPECT: grep -c "ZernType=  NormHex" hexsaved\.in\s+1\s
 # EXPECT: hexsaved\.in\s+being loaded(?:(?!being loaded)[\s\S])*?0\.5,0[\s\S]*?Element\s+0 \(InputRay\s*\) to Element\s+1 \(Z\s*\):[\s\S]*?Segment Length=\s+5\.0000412192810\d*D\+00
-# EXPECT: hex46\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Ensure that: 0 < ZernModes <= max Zrn Mode
+# EXPECT: hex46\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Rx load refused: ZernModes \(elt\s+1\): a mode is outside 1 \.\.\s+45 \(NormHex has\s+45 modes\)
 # EXPECT: hexdense46\.in\s+being loaded(?:(?!being loaded)[\s\S])*?is outside 1 \.\.\s+45
 # EXPECT-NOT: tst_zern_normhex\.in\s+being loaded(?:(?!being loaded)[\s\S])*?is outside 1 \.\.
 # EXPECT-NOT: forrtl
