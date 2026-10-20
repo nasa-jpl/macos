@@ -176,8 +176,6 @@ Nonetheless, the user is urged to be aware of the rules for constructing diffrac
 
 The shape and quality of the *point-spread function* (PSF) are a good indicator of the performance of the optical system. The PSF is the image or intensity pattern due to a point
 
-1/4 L 1/2 L 1/4 L
-
 ![](media/fig_rescued_09.png)
 
 **FIGURE 9** Padding the amplitude matrix.
