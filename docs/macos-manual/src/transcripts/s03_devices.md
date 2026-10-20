@@ -2,15 +2,16 @@
 
 MACOS\>**intensity**
 
-    Enter number of element where data is to be generated: [6]: 6
-    Tracing       125 rays and propagating     65536 grid points...
+    Enter number of element where data is to be generated: [9]: 9
+    Tracing     12454 rays and propagating     65536 grid points...
     ===> 2: Far-field sphere-to-plane diffraction ...
-     Scalar FF Prop between Elt  5 and Elt  6 to WF  1:
-     z1= 5.5601D+00 dx1= 7.6216D-02 min= 7.6183D-02 max= 8.4127D-01 dev= 3.0183D-05 lin= 99.96%
-     z2= 0.0000D+00 dx2= 2.8497D-07
-    A total of       13 rays were lost
-      Obscured:             13
-        at element    1:        13
+     Scalar FF Prop between Elt  8 and Elt  9 to WF  1:
+     z1= 9.1481D+01 dx1= 5.3745D-02 min= 5.3742D-02 max= 5.3747D-02 dev= 1.3134D-06 lin=100.00%
+     z2= 1.0000D+22 dx2= 1.0824D-03
+    A total of     2774 rays were lost
+      Obscured:           2774
+        at element    1:       964
+        at element    2:      1810
     Graphics device/type (? to see list, default /xw):?
     %giza version 1.2.0 built with cairo vUSE_cairo_version_OR_cairo_version_string_INSTEAD.USE_cairo_version_OR_cairo_version_string_INSTEAD.USE_cairo_version_OR_cairo_version_string_INSTEAD
 
@@ -27,8 +28,8 @@ MACOS\>**intensity**
 
     Graphics device/type (? to see list, default /xw):/null
     Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
-    u-v plane diam= 1.9435037D+01  du= 7.6215832D-02
-    x-y plane diam= 7.2667666D-05  dx= 2.8497124D-07
-    Peak intensity= 1.1041365D+08; Peak occurs at i=  129, j=  129
-    Sum of intensity= 6.4607758D+10
+    Wavelength= 1.6280000D-04;  Source Flux= 1.0000000D+00
+    u-v plane diam= 1.3705066D+01  du= 5.3745355D-02
+    x-y plane diam= 2.7602240D-01  dx= 1.0824408D-03
+    Peak intensity= 2.8304518D+02; Peak occurs at i=  129, j=  129
+    Sum of intensity= 1.9163505D+03

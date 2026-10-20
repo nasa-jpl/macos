@@ -86,7 +86,7 @@ In previous versions of MACOS, separate model parameter files are used for diffe
 
 MACOS commands can be abreviated using the first letters of the command. The neccessary letters are denoted in capital letters. However, they do not need to be entered in capitals as MACOS is case insensitive.
 
-MACOS prompts the user for the next input. For example, as shown below, to enter an old file, the user types OLD. MACOS then prompts for the filename.
+MACOS prompts the user for the next input. For example, as shown below, to enter an old file, the user types OLD. MACOS then prompts for the filename. (The examples in this section load `lens_array.in`, a lens-array test deck in the source tree's `ZGD_test_files/` folder.)
 
 <!-- transcript: s03_old -->
 
@@ -132,13 +132,13 @@ Generating the data for off-line display is as simple as selecting a file output
 
 <!-- transcript: s03_text_int -->
 
-The output file name (here “CassWithExitPupil.int6”, with “.txt” appended for the TEXt output above) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
+The output file name (here “Telescope.int9”, with “.txt” appended for the TEXt output above) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
 
 The Matlab command required to read the file, generate the plot (at log10 stretch), and return the data for further analysis is:
 
-    >>intensity=macosIMG(‘gray’,’CassWithExitPupil.int6’,’log10’);
+    >>intensity=macosIMG(‘gray’,’Telescope.int9’,’log10’);
 
-Here intensity is the returned intensity data, in this case a 256 by 256 matrix, ‘gray’ is the plot type (gray scale), ’CassWithExitPupil.int6’ is the file name, and ’log10’ is the stretch option. The result is a plot functionally identical to what MACOS would produce with the same settings.
+Here intensity is the returned intensity data, in this case a 256 by 256 matrix, ‘gray’ is the plot type (gray scale), ’Telescope.int9’ is the file name, and ’log10’ is the stretch option. The result is a plot functionally identical to what MACOS would produce with the same settings.
 
 Other applications and environments that you may find useful for analyzing and displaying MACOS data include include SAOImage (available free from the Smithsonian Astrophysical Observatory for Unix only), Spyglass Transform, MatrixX, IDL, plotting packages such as DeltaGraph, and spreadsheets such as Excel.
 

@@ -94,16 +94,20 @@ This appendix contains prescriptions and macros that illustrate various aspects 
 
 ### Image Simulation Example
 
+#### ImageDemo.jou
+
+<!-- transcript: listing_ImageDemo_jou -->
+
 #### ImageDemo.in
 
 <!-- transcript: listing_ImageDemo_in -->
 
-### S-MACOS Example Files
+### S-MACOS Example
 
-#### smacosvars.cmn
+#### smacos_dvr.F
 
-<!-- transcript: listing_smacosvars_cmn -->
+The SMACOS test driver built by `makesd.sh` (`macos_f90/smacos_dvr.F`): it opens the graphics
+device, loads `ZGD_test_files/SegDemo3.in` with `OLD`, and calls `OPD` and `SPOT` through the
+`SMACOS` subroutine (Section 9).
 
-#### smacosExample.f
-
-<!-- transcript: listing_smacosExample_f -->
+<!-- transcript: listing_smacos_dvr_F -->

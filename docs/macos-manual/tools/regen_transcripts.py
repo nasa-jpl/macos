@@ -15,11 +15,15 @@ Two products, both written to src/transcripts/ and pulled into a chapter by a ma
                       answers as the pty saw them) in a 4-space code block, the engine's spacing kept.
 
 Journal directives (comments to the gate, read only here):
-  # TRANSCRIPT: <name> [+device]
+  # TRANSCRIPT: <name> [+device] [from=<regex>]
                         the lines that follow go to src/transcripts/<name>.md (one journal may feed
                         several dialogs; the setup lines before the first TRANSCRIPT are not printed);
-                        +device keeps the Graphics device prompt line (where the text is about it)
-  # TRANSCRIPT-OFF      the lines that follow are setup again (not printed)
+                        +device keeps the Graphics device prompt line (where the text is about it).
+                        A switch between two answers of ONE command (TRANSCRIPT or OFF inside a NEW)
+                        cuts the dialog there: the new one starts at the prompt the next line answers,
+                        or at the last match of from=<regex> (no blanks: \\s) in the output before it
+  # TRANSCRIPT-OFF      the lines that follow are setup again (not printed); a journal with no
+                        TRANSCRIPT line but an OFF is a gate only (an Appendix A macro run)
   # TRANSCRIPT-BANNER: <name>
                         the start-up dialog (the banner, the model-size prompt and its answer, up to
                         the first MACOS> prompt) goes to src/transcripts/<name>.md
@@ -50,6 +54,9 @@ OUT = MAN / "src" / "transcripts"
 JOU = HERE / "transcripts"
 EXAMPLES = MAN / "examples"
 LISTED = ("*.in", "*.jou", "*.test", "*.cmn", "*.f")
+# engine sources the appendix lists from the tree itself (Dave 2026-10-19: A.8 is smacos_dvr.F); fixed-form
+# TABs are expanded at 8 (as an editor shows them) -- the listing is the file, not a copy that can drift
+SOURCES = (ROOT / "macos_f90" / "smacos_dvr.F",)
 
 os.environ.setdefault("CLI_PTY_COLS", "400")   # no readline horizontal-scroll redraws (cli_cmd_gate.py)
 sys.path.insert(0, str(ROOT / "cli_tests"))
@@ -83,7 +90,14 @@ def listings():
             out = OUT / f"listing_{f.name.replace('.', '_')}.md"
             out.write_text(HEADER.format(src=f"examples/{f.name}") + code_block(text.splitlines()))
             n += 1
-    print(f"{n} listings from examples/")
+    for f in SOURCES:
+        text = f.read_text().expandtabs(8)
+        if re.search(r"[DE][-+]$", text, re.M):
+            sys.exit(f"{f.name}: a number ends at the margin ([DE][-+]$)")
+        out = OUT / f"listing_{f.name.replace('.', '_')}.md"
+        out.write_text(HEADER.format(src=str(f.relative_to(ROOT))) + code_block(text.splitlines()))
+        n += 1
+    print(f"{n} listings from examples/ and the engine tree")
 
 
 def md_escape(s):
@@ -96,7 +110,7 @@ def parse(path):
     sends, target, named, nexp, opts, banner = [], None, False, 0, {}, None
     for l in open(path).read().splitlines():
         if l.startswith("# TRANSCRIPT-OFF"):
-            target = None
+            target, named = None, True      # a journal of only OFF is a gate: it prints nothing
         elif l.startswith("# TRANSCRIPT-BANNER:"):
             banner, named = l.split(":", 1)[1].strip(), True
         elif l.startswith("# TRANSCRIPT:"):
@@ -149,6 +163,20 @@ def dialog(raw, marks, sends, tmp, opts, banner):
             seg = seg[m.end():]
         elif entry is None:
             sys.exit(f"line {i} answers a sub-prompt before any command")
+        elif name != entry[0]:
+            # a TRANSCRIPT switch inside a command (a NEW dialog printed from its element prompts): the
+            # new dialog opens with no command line and takes the tail of the previous segment -- the
+            # prompt this line answers, or with from=<regex> everything from the regex's last match
+            prev = entry[2][-1] if entry[2] else ""
+            frm = next((o[5:] for o in opts.get(name, ()) if o.startswith("from=")), None)
+            hits = list(re.finditer(frm, prev)) if frm else []
+            if frm and not hits:
+                sys.exit(f"line {i}: from={frm} not found before it")
+            cut = hits[-1].start() if hits else prev.rstrip(" ").rfind("\n") + 1
+            if entry[2]:
+                entry[2][-1] = prev[:cut] + "\n"
+            entry = [name, None, [prev[cut:]]]
+            entries.append(entry)
         # the trailing MACOS> prompt of the next command belongs to the next entry
         seg = re.sub(r"\s*MACOS>\s*$", "\n", seg)
         entry[2].append(seg)
@@ -161,11 +189,13 @@ def dialog(raw, marks, sends, tmp, opts, banner):
                 continue
             l = clean(l, tmp)
             lines.append(l[1:] if l.startswith(" ") else l)   # Fortran list-directed carriage column
-        cmd = clean(cmd, tmp)
-        md = f"MACOS\\>**{md_escape(cmd.strip())}**\n"
         body = code_block(lines)
-        if body.strip():
-            md += "\n" + body
+        if cmd is None:     # a slice from inside a command: the engine lines only
+            md = body
+        else:
+            md = f"MACOS\\>**{md_escape(clean(cmd, tmp).strip())}**\n"
+            if body.strip():
+                md += "\n" + body
         out.setdefault(name, []).append(md)
     return {k: "\n".join(v) for k, v in out.items()}
 

@@ -2,17 +2,38 @@
 
 MACOS\>**old**
 
-    Enter file name: Cassegrain
-     Input file Cassegrain.in being loaded.
-     Unknown units, unitless operation assumed
+    Enter file name: lens_array
+     Input file lens_array.in being loaded.
+    Default used for Extinc(0)
+    Default used for BaseUnits
+    Default used for WaveUnits
     Default used for  SegXgrid
+    Default used for pData(   1)
+    Default used for xData(   1)
+    Default used for yData(   1)
+    Default used for zData(   1)
+    Default used for lData(   1)
+    Default used for pData(   2)
+    Default used for xData(   2)
+    Default used for yData(   2)
+    Default used for zData(   2)
+    Default used for lData(   2)
+    Default used for pData(   3)
+    Default used for xData(   3)
+    Default used for yData(   3)
+    Default used for zData(   3)
+    Default used for lData(   3)
+    Default used for pData(   4)
+    Default used for xData(   4)
+    Default used for yData(   4)
+    Default used for zData(   4)
+    Default used for lData(   4)
     Optical Train Summary:
-     Tracing rays past   5 elements.
-     Aperture grid type = Circular  with   51 grid points.
-     Elt   1: Obscuring   : Conic    with Kc= 0.0000D+00, Kr=-1.0000D+20, nECoords =  -6
-     Elt   2: Reflector   : Conic    with Kc=-1.0000D+00, Kr=-1.0800D+01, nECoords =  -6
-     Elt   3: Reflector   : Conic    with Kc=-2.6706D+00, Kr=-3.5268D+00, nECoords =  -6
-     Elt   4: Reference   : Conic    with Kc= 0.0000D+00, Kr=-5.5601D+00, nECoords =  -6
-     Elt   5: FocalPlane  : Flat     with Kc= 0.0000D+00, Kr=-1.0000D+22, nECoords =  -6
+     Tracing rays past   4 elements.
+     Aperture grid type = Circular  with  512 grid points.
+     Elt   1: LensArray   : Conic    with Kc= 0.0000D+00, Kr=-8.0000D-01, nECoords =  -6
+     Elt   2: Refractor   : Conic    with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords =  -6
+     Elt   3: FocalPlane  : Flat     with Kc= 0.0000D+00, Kr=-1.0000D+22, nECoords =  -6
+     Elt   4: FocalPlane  : Flat     with Kc= 0.0000D+00, Kr=-1.0000D+22, nECoords =  -6
      Number of output coordinates is   5
-     Grid size set to           51
+     Too many grid points. Resetting npts to  256

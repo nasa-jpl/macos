@@ -9,20 +9,25 @@ MACOS\>**show;;**
     % ---------------------------------------------------------------------------------------
 
            ChfRayDir=  0.0E+00  0.0E+00  1.0E+00
-           ChfRayPos=  0.0E+00  0.0E+00  -5.0E+00
-             zSource=1.0E+21
+           ChfRayPos=  0.0E+00  0.0E+00  -1.0E+00
+             zSource=1.0E+22
 
            WaveUnits=  none
 
               IndRef=1.0E+00
               Extinc=0.0E+00
-             Wavelen=9.9999999999999995E-07
+             Wavelen=1.0E-04
                 Flux=1.0E+00
 
-            Aperture=4.0E+00
+            Aperture=5.0E-01
             Obscratn=0.0E+00
 
             GridType=  Circular
-            nGridpts=  51
-               xGrid=  -1.0E+00  0.0E+00  0.0E+00
-               yGrid=  0.0E+00  -1.0E+00  0.0E+00
+            nGridpts=  256
+               xGrid=  1.0E+00  0.0E+00  0.0E+00
+               yGrid=  0.0E+00  1.0E+00  0.0E+00
+    %***********************************************************************
+    %       Copyright (C) 1992, California Institute of Technology.
+    %       U.S. Government Sponsorship under NASA Contract NAS7-918
+    %       is acknowledged.
+    %***********************************************************************
