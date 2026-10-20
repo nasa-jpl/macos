@@ -41,7 +41,7 @@
     Enter element extinction coefficient [1.000000E+22]: 1d22
     Enter diffraction order [1.00000]: 1
     Enter spacing of grating ruling [1.00000]: 18.97366596d-7
-    Enter vector perp to grating ruling (x,y,z)[no default]: 0,1,0
+    Enter vector perp to grating ruling (x,y,z)[no default]: 1,0,0
 
                 iElt=  1
              EltName=  Grating
@@ -52,7 +52,7 @@
               psiElt=  0.0E+00  0.0E+00  -1.0E+00
               VptElt=  0.0E+00  0.0E+00  0.0E+00
               RptElt=  0.0E+00  0.0E+00  0.0E+00
-               h1HOE=  0.0E+00  1.0E+00  0.0E+00
+               h1HOE=  1.0E+00  0.0E+00  0.0E+00
             OrderHOE=1.0E+00
            RuleWidth=1.897366596E-06
               IndRef=1.0E+00

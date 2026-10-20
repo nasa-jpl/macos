@@ -361,13 +361,16 @@ the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while len
 0 rays (3.2: the chief ray; the ORS lane), and the file-output example returns to BINARY after #6.
 
 **New questions from the NEW tutorials (2026-10-19):**
-- **#12 Segment tutorial's principal axis.**  3.2 types psi 0,0,-1 for segment s1; SegDemo.in (A.5) has
+- **#12 RULED 2026-10-20: use 0,0,1 (done; the journal now also pins OPD 9, 648 rays at 7.07e-12).**
+  ~~**Segment tutorial's principal axis.**  3.2 types psi 0,0,-1 for segment s1; SegDemo.in (A.5) has
   0,0,1, and 3.2's own rotation points (z 0.2569563356 = 1.225^2/(4*1.46)) lie on the parent that 0,0,1
   describes.  With 3.2's answer the A.5 telescope loses 584 rays (Surface miss) and OPD 9 is 5.05e-2 on 64
   rays; with 0,0,1, 648 rays at 7.07e-12.  The journal keeps 3.2's answer and pins only the dialog values:
-  change the tutorial to 0,0,1?
-- **#13 Grating h1HOE.**  3.2's grating dialog enters h1HOE 0,1,0; GratingExample.in (A.2), which the prose
-  says it builds, has 1,0,0.  The journal keeps 3.2's.  Align them?
+  change the tutorial to 0,0,1?~~
+- **#13 RULED 2026-10-20: if the deck works, follow it.  GratingExample.in traces (3096 rays, DAvgCumL
+  9.16228 = 6 + sqrt(10)), so the tutorial enters 1,0,0 (done).**
+  ~~**Grating h1HOE.**  3.2's grating dialog enters h1HOE 0,1,0; GratingExample.in (A.2), which the prose
+  says it builds, has 1,0,0.  The journal keeps 3.2's.  Align them?~~
 
 1. **The SAVE-form decks.**  Eight decks in `examples/` are in the SAVE number form since 65a223ec,
    so the appendix now prints that form, not 3.2's hand-written one (the brief: "as written").

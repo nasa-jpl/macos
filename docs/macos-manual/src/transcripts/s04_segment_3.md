@@ -22,7 +22,7 @@
     Enter surface type : Conic
     Enter element vertex location (x,y,z)[no default]: 0,0,0
     Enter element rotation point (x,y,z) [0.00000,0.00000,0.00000]: 0,0,0
-    Enter element principal axis (x,y,z) [0.00000,0.00000,1.00000]: 0,0,-1
+    Enter element principal axis (x,y,z) [0.00000,0.00000,1.00000]: 0,0,1
     Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]: 1
     Enter element focal length [1.000000E+22]: 1.46
     Enter element eccentricity [0.00000]: 1
@@ -49,7 +49,7 @@
              Surface=  Conic
                KrElt=-2.9199999999999999E+00
                KcElt=-1.0E+00
-              psiElt=  0.0E+00  0.0E+00  -1.0E+00
+              psiElt=  0.0E+00  0.0E+00  1.0E+00
               VptElt=  0.0E+00  0.0E+00  0.0E+00
               RptElt=  0.0E+00  0.0E+00  0.0E+00
               IndRef=1.0E+00
@@ -105,7 +105,7 @@
              Surface=  Conic
                KrElt=-2.9199999999999999E+00
                KcElt=-1.0E+00
-              psiElt=  0.0E+00  0.0E+00  -1.0E+00
+              psiElt=  0.0E+00  0.0E+00  1.0E+00
               VptElt=  0.0E+00  0.0E+00  0.0E+00
               RptElt=  6.1249973300000005E-01  -1.060881274E+00  2.5695633559999997E-01
               IndRef=1.0E+00

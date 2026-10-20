@@ -1,7 +1,8 @@
 # Section 4, Element Types, Reflective Gratings: the NEW dialog for a flat reflective grating (Grating,
-# element 1; order 1, ruling 1.897366596E-06, h1HOE 0,1,0).  Dave 2026-10-19: regenerate the NEW tutorials as
-# plain dialogs.  The element answers are 3.2's (its h1HOE is 0,1,0; examples/GratingExample.in, the Appendix
-# A.2 deck, has 1,0,0 -- kept as 3.2 typed it).  Differences from 3.2: the current dialog asks 'Enter glass
+# element 1; order 1, ruling 1.897366596E-06, h1HOE 1,0,0).  Dave 2026-10-19: regenerate the NEW tutorials as
+# plain dialogs.  The element answers are 3.2's except h1HOE: 3.2 typed 0,1,0, but
+# examples/GratingExample.in (the Appendix A.2 deck the text builds) has 1,0,0 and traces (3096 rays, DAvgCumL
+# 9.16228), so the tutorial follows the deck (Dave 2026-10-20, #13).  Differences from 3.2: the current dialog asks 'Enter glass
 # type (FixedIndex): [FixedIndex]:' before the index and extinction (answered with its default); it echoes the
 # element and asks 'Is this correct? [YES]:' (default); the menus list the current element and surface types;
 # the element block adds nCoat and prints h1HOE/OrderHOE/RuleWidth before IndRef/Extinc.  3.2 printed only the
@@ -43,7 +44,7 @@ no
 1d22
 1
 18.97366596d-7
-0,1,0
+1,0,0
 
 # TRANSCRIPT-OFF
 FP
@@ -67,7 +68,7 @@ show
 opd 2
 /null
 # EXPECT: File grating\.in being created\.
-# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+Grating\s+Element=\s+Grating\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+h1HOE=\s+0\.0E\+00\s+1\.0E\+00\s+0\.0E\+00\s+OrderHOE=1\.0E\+00\s+RuleWidth=1\.8973\d*E-06\s+IndRef=1\.0E\+00\s+Extinc=1\.0E\+22[\s\S]*?zElt=1\.0E\+22
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+Grating\s+Element=\s+Grating\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+h1HOE=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+OrderHOE=1\.0E\+00\s+RuleWidth=1\.8973\d*E-06\s+IndRef=1\.0E\+00\s+Extinc=1\.0E\+22[\s\S]*?zElt=1\.0E\+22
 # EXPECT: OPD: nPassRays =\s+124,\s+DAvgCumL =\s+91\.622\d*D-01
 # EXPECT-NOT: values expected
 # EXPECT-NOT: Unknown (grid|surface|element|command)
