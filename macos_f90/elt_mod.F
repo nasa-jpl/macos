@@ -250,7 +250,7 @@ C***********************************************************************
      &          ZernType_NormANSI        =  4,
      &          ZernType_NormBornWolf    =  5,
      &          ZernType_NormFringe      =  6,
-     &          ZernType_NormHex         =  7,   ! ??? ToDo: Implemented?
+     &          ZernType_NormHex         =  7,   ! 45 modes, ZerntoMon4 (hzdef.inc)
      &          ZernType_NormNoll        =  8,
      &          ZernType_NormAnnularNoll =  9,
      &          ZernType_Noll            = 10,
@@ -263,7 +263,7 @@ C***********************************************************************
      &           mZernModes,  ! ZernType_NormANSI
      &           mZernModes,  ! ZernType_NormBornWolf
      &                   37,  ! ZernType_NormFringe
-     &                    0,  ! ZernType_NormHex          implemented ???
+     &                   45,  ! ZernType_NormHex  (hexagon-orthonormal, hzdef.inc)
      &           mZernModes,  ! ZernType_NormNoll
      &           mZernModes,  ! ZernType_NormAnnularNoll
      &           mZernModes,  ! ZernType_Noll
