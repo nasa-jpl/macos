@@ -148,6 +148,10 @@
 > ((uu)/(ww) DONE, new (xx) silent MOD beyond a type's mode count) after his own gate; my section 5 line follows his commit.
 > AWAITING Dave: push word; ruling on (xx) and on ZCOZernType= NormAnnular.**
 
+> **2026-10-20 PUSHED (Dave's word, 7th): macos 1c867405 (7cd22b63 refusals, TO's 548b0da7 NormHex + 58d6759a manual + c71eb7e6
+> plan, my records + section 5), resources b554792 (5fe2144, TO's b80a431 + b554792).  CCMac's NEXT PAIR = 1c867405 + b554792
+> (NOTE_to_ccmac_pair8.md).  OPEN: Dave's rulings (xx) and ZCOZernType= NormAnnular; (ff) with TO.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
