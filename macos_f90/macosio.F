@@ -464,9 +464,17 @@ C	Specify input ray grid parameters
 	  END IF
 	  BaseUnits_FLG=.TRUE.   ! the trace prints cUnit only on this flag
 !<--
-	  IF (.NOT.LCMP(BaseUnits,'none',2))
-     &	  CALL CACCEPT(WaveUnits,BaseUnits,
-     &	  'Enter wavelength units (m, cm, mm, um, nm, A, in, none) :')
+!-->  base units 'none' skip the wavelength-units prompt: WaveUnits then
+!     kept whatever it held (blank in a fresh NEW) and the test below
+!     printed 'Unknown units' for a listed choice (macos-fd 2026-10-19,
+!     (E) second half; PLAN 1.2 (qq))
+	  IF (LCMP(BaseUnits,'none',2)) THEN
+	    WaveUnits='none'
+	  ELSE
+	    CALL CACCEPT(WaveUnits,BaseUnits,
+     &	    'Enter wavelength units (m, cm, mm, um, nm, A, in, none) :')
+	  END IF
+!<--
 	  IF (LCMP(WaveUnits,'cm',2)) THEN
 	    DDEF(1)=6.328d-5
 	    CWM=1d-2
