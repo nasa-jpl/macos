@@ -74,7 +74,7 @@ Commands without a tag work in any state. A complete reference of all commands a
 
 ### MACOS Model Size Specification
 
-The first thing the user will be asked to do after starting MACOS is to specify a model size. The model size determines MACOS computational accuray, such as the number of rays traced and image grid resolution, and obviously also has an impact on the overall computer simulation time. MACOS currently supports the following model sizes: 128, 256, 512, 1024 and 2048 mainly because the fast Fourier transorm routine is optimized for power-of-2 arrays.
+The first thing the user will be asked to do after starting MACOS is to specify a model size. The model size determines MACOS computational accuray, such as the number of rays traced and image grid resolution, and obviously also has an impact on the overall computer simulation time. MACOS supports the model sizes 128, 256, 512, 1024, 2048, 4096 and 8192, powers of 2 because the fast Fourier transform routine is optimized for them. Press Return to take the default, 256. An answer that is not one of the sizes (a word, a number with other text after it, a number not in the list) is refused, naming the answer, and the question is asked again; after five refusals, or at the end of input (a script that supplies no size), MACOS stops with exit status 1.
 
 The MACOS model size can be changed at any time during a MACOS session. Use the *mreset* command to set a new model size, as shown in the following example to set a model size to 256:
 

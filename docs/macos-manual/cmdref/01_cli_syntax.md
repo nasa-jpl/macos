@@ -48,7 +48,7 @@ A typical first session:
 
 ```
 $ macos
-Enter model size: 256
+MACOS model size: 256
 MACOS>old
 Enter file name: Cassegrain
 MACOS>summarize
@@ -58,7 +58,10 @@ MACOS>quit
 ```
 
 - The **model size** prompt (before the first `MACOS>`) sizes the
-  runtime arrays; 256 is a good default for the bundled examples.
+  runtime arrays; 256 is a good default for the bundled examples, and
+  Return takes it.  The answer must be one of 128, 256, 512, 1024,
+  2048, 4096, 8192: anything else is refused, naming it, and asked
+  again; five refusals, or end of input, stop MACOS with exit status 1.
 - `OLD` loads an existing `.in` prescription (the `.in` extension is
   implied); `NEW` builds one interactively; `SAVe` writes the current
   system back out.
