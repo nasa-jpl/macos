@@ -209,6 +209,39 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   fixtures (tst_save_keys, tst_block_comment, pymacos Rx_SaveKeys) moved from
   `NormAnnularNoll 0.3` to `NormNoll` -- identical trace by the measurement above.
 
+## NormHex opened (PLAN_CONSOLIDATION 1.2 (uu), Dave 2026-10-20: repair)
+- `ZernType_MaxMode(NormHex)` was 0 ('implemented ???'): every `nZernCoef=` on a NormHex
+  surface was refused at load ("outside 1 .. 0"), though `ZerntoMon4` (surfsub.F, table
+  `hzdef.inc`) is called by all three dispatch chains for Zern / FF / Mon.  Now 45.
+- VALIDATED FIRST (`cli_tests/tools/hzdef_check.py`, textbook, never the engine): the 45
+  `hzdef.inc` polynomials are the Noll circle Zernikes Gram-Schmidt-orthonormalized over the
+  unit regular hexagon, area-mean inner product (Mahajan & Dai, JOSA A 24, 2994 (2007));
+  worst mode 38, 8e-12 of its largest coefficient; Mahajan & Dai's closed forms of modes
+  4-11 to 1e-14.  ORIENTATION: vertices on +-xMon (the vertex-on-yMon set differs in 29
+  modes).  `hzi(i,j,1)` is the x exponent (MonCoef's first index).
+- PRECISION BUG found by the probe, fixed: the table's 313 literals carried no exponent
+  letter, so they compiled as REAL(4) -- traced sag 1.8e-6 relative off the construction at
+  mode 38 (the float32-rounded table predicts 1.5e-6, median 1e-7 both).  All now `d0`:
+  traced sag = construction to 4e-12.  TRAP met doing it: line 480 had a BLANK inside a
+  literal (`38.7129633223604929 8068692574968100787442`) -- fixed form ignores blanks, so it
+  compiled right, but a `d0` inserted before the blank made it an exponent (5 m sag error
+  at mode 28).  The check now parses as the compiler does (blanks dropped, d exponents
+  required, finite values asserted).  `fzdef.inc` / `azdef.inc` have no long literals.
+- The api setters take NormHex modes 1-45 only (`elt_srf_zrn_coef`, `_mon_zrn_coef`,
+  `_ff_zrn_coef`, `elt_srf_zrn_set`, `_mode_set`, `validate_Zrn_Data`), the twin of
+  Fringe's 37.  NOT closed (a finding, not a new refusal): a Mon/FF Zernike coefficient
+  past the type's MaxMode (`nMonZernCoef` / `nFFZernCoef` are bounded by mMonCoef /
+  mFFCoef only) and a MOD `ZernCoef(k,i)` past it are accepted and converted to nothing,
+  Fringe (38+) and NormHex (46+) alike.  MOD MEASURED on tst_zern_normhex.in:
+  `ZernCoef(46,1)=1e-4` is taken with no message, and with mode 10 zeroed the SRT ray at
+  (0.5,0) meets z = 0 exactly (macosio.F's `ToDo --> FIX` range check).  Mon/FF read from
+  the code (msmacosio.inc `nMonZernCoef` <= mMonCoef), not measured.
+- Gates: `cli_tests/cmd/ZERN_normhex.jou` (SRT sag at (0.5,0) = Mahajan & Dai mode 10 to
+  every printed digit; SAVE writes `ZernType= NormHex` and the reload traces the same;
+  mode 46 refused sparse and dense; red on the pre-fix binary), pymacos
+  `test_zernike_orderings.py` (all 45 modes vs the construction to 1e-9, the vertex-on-y
+  must-fail leg, Table E.2 to its six figures).
+
 ## Zernike-apply trace dispatch requires ZernTypeL ≠ 0
 *(User rule documented: Manual §4 Zernike Surfaces (ZernType default ANSI; the names; ExtFringe).  Below: the dispatch record.)*
 - `propsub.F:230-249` (and the parallel `srtrace.F:145-153`) dispatches

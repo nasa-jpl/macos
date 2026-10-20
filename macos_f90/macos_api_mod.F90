@@ -2663,10 +2663,13 @@
         if ((SrfType(iElt) /= SrfType_Zernike) .and.                       &
             (SrfType(iElt) /= SrfType_ZrnGrData)) return
 
-        ! check mode range: Fringe is limited to 37 Modes
+        ! check mode range: Fringe is limited to 37 Modes, NormHex to 45
         if (((ZernTypeL(iElt) == ZernType_Fringe) .or.       &
             (ZernTypeL(iElt) == ZernType_NormFringe)) .and. &
               (any(ZernMode > 37))) then
+          return
+        else if ((ZernTypeL(iElt) == ZernType_NormHex) .and.               &
+              (any(ZernMode > ZernType_MaxMode(ZernType_NormHex)))) then
           return
         else
           if (any(ZernMode< 1 .or. ZernMode>mZernCoef)) return
@@ -2848,6 +2851,8 @@
           write(*,*) ' ** elt_srf_zrn_set refused: '//ZernAnnularMsg
           return
         end if
+        if ((ZernType == ZernType_NormHex) .and.                  &     ! NormHex: 45 modes (ZerntoMon4)
+            any(ZernMode > ZernType_MaxMode(ZernType_NormHex))) return
         do j = 1, Nm                                              ! (tt)
           if (ZernModeInert(ZernType, ZernMode(j)) .and. ZernCoef_(j) /= 0e0_pr) then
             write(*,*) ' ** elt_srf_zrn_set refused: mode', ZernMode(j), ': '//ZernInertMsg
@@ -2948,6 +2953,8 @@
         block                                                     ! (tt), PLAN_CONSOLIDATION 1.2
           integer :: j
           do j = 1, M
+            if ((ZernTypeL(iElt(j)) == ZernType_NormHex) .and.          &   ! NormHex: 45 modes
+                any(ZernMode > ZernType_MaxMode(ZernType_NormHex))) return
             if (any(ZernModeInertV(ZernTypeL(iElt(j)), ZernMode) .and. ZernCoef_ /= 0e0_pr)) then
               write(*,*) ' ** elt_srf_zrn_mode_set refused: '//ZernInertMsg
               return
@@ -3145,6 +3152,9 @@
              (MonZernTypeL(iElt) == ZernType_NormFringe)) .and.            &
             (any(ZernMode > 37))) then
           return
+        else if ((MonZernTypeL(iElt) == ZernType_NormHex) .and.            &
+            (any(ZernMode > ZernType_MaxMode(ZernType_NormHex)))) then
+          return
         else
           if (any(ZernMode < 1 .or. ZernMode > mMonCoef)) return
         end if
@@ -3196,6 +3206,9 @@
         if (((FFZernTypeL(iElt) == ZernType_Fringe) .or.                   &
              (FFZernTypeL(iElt) == ZernType_NormFringe)) .and.             &
             (any(ZernMode > 37))) then
+          return
+        else if ((FFZernTypeL(iElt) == ZernType_NormHex) .and.             &
+            (any(ZernMode > ZernType_MaxMode(ZernType_NormHex)))) then
           return
         else
           if (any(ZernMode < 1 .or. ZernMode > mFFCoef)) return
@@ -3570,6 +3583,8 @@
             if (((zType == ZernType_Fringe) .or.       &
                  (zType == ZernType_NormFringe)) .and. &
                  (any(zModes > 37))) return
+            if ((zType == ZernType_NormHex) .and.      &
+                 (any(zModes > ZernType_MaxMode(ZernType_NormHex)))) return
 
             if (any(zModes< 1 .or. zModes>mZernCoef)) return
 

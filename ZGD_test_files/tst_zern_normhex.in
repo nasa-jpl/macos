@@ -1,0 +1,62 @@
+% NormHex (ZernType 7) probe: a flat Zernike mirror, lMon 1 on a 2 m aperture, hexagon mode 10 = 1e-4 m.
+% Mode 10 of the hexagon-orthonormal set (Mahajan & Dai 2007) is 4 sqrt(70/103) R^3 cos(3A) on the unit
+% hexagon with vertices on +-xMon (cli_tests/tools/hzdef_check.py).  Gate cli_tests/cmd/ZERN_normhex.jou.
+ChfRayDir= 0 0 1
+ChfRayPos= 0 0 -5
+zSource= 1e22
+BaseUnits= m
+WaveUnits= m
+IndRef= 1
+Extinc= 0
+Wavelen= 1e-6
+Flux= 1
+Aperture= 2
+Obscratn= 0
+GridType= Circular
+nGridpts= 25
+xGrid= 1 0 0
+yGrid= 0 1 0
+nElt= 2
+iElt= 1
+EltName= Z
+Element= Reflector
+Surface= Zernike
+ZernType= NormHex
+nZernCoef= 1
+ZernModes= 10
+ZernCoef= 1e-4
+KrElt= -1e22
+KcElt= 0
+psiElt= 0 0 -1
+VptElt= 0 0 0
+RptElt= 0 0 0
+IndRef= 1
+Extinc= 1e22
+pMon= 0 0 0
+xMon= 1 0 0
+yMon= 0 1 0
+zMon= 0 0 1
+lMon= 1
+ApType= None
+PropType= Geometric
+zElt= 1e22
+iElt= 2
+EltName= FP
+Element= FocalPlane
+Surface= Flat
+KrElt= -1e22
+KcElt= 0
+psiElt= 0 0 1
+VptElt= 0 0 -3
+RptElt= 0 0 -3
+IndRef= 1
+Extinc= 0
+ApType= None
+PropType= Geometric
+zElt= 1e22
+nOutCord= 5
+Tout= 1 0 0 0 0 0 0
+      0 1 0 0 0 0 0
+      0 0 0 1 0 0 0
+      0 0 0 0 1 0 0
+      0 0 0 0 0 0 1
