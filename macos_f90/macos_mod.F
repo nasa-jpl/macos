@@ -251,7 +251,14 @@ C
 	Integer :: problem_size
 	Integer, parameter :: default_problem_size = 256
 	Character(len=MacosCharLen) :: input_buf
-	Logical :: use_default = .false.
+	Logical :: use_default
+!-->  PLAN_CONSOLIDATION 1.2 (yy), Dave 2026-10-20: an answer that is
+!     not one of the sizes is refused by name and asked again, at most
+!     mTries times (a journal or a pipe can never spin here).
+	Integer, parameter :: mTries = 5
+	Integer :: iTry, ios, k, n
+	Logical :: isDigits
+!<--
 
         print*,' '
         write(*, "(' ',A)"), repeat('*',72)
@@ -265,8 +272,12 @@ C
         write(*, "(' ',A)"), repeat('*',72)
 
         !problem_size = default_problem_size
-        problem_size = -1
-  15    print*,' '
+        iTry = 0
+  15    problem_size = -1
+        use_default = .false.
+        input_buf = ' '
+        iTry = iTry + 1
+        print*,' '
         print*,'Please select a model size to run MACOS.'
         print*,
      &  'Valid model sizes are 128, 256, 512, 1024, 2048, 4096, 8192.'
@@ -278,13 +289,36 @@ C
         print*,' '
         write(*,14) ' MACOS model size: '
   14    format(A,$)
-        read(*,16,end=17,err=17) input_buf
+        read(*,16,iostat=ios) input_buf
   16    format(A)
-  17    continue
-        read(input_buf,*,end=18) problem_size
-  18    if (problem_size==-1) then
+!-->  (yy): end of input is no answer -- say so and stop (it was a
+!     list-directed read of a blank or stale buffer: a forrtl crash, or
+!     the last refused size re-read forever).  A blank line is the
+!     default.  Anything else must be the digits of one of the sizes:
+!     a word, '256abc', '256.5', '-1', '512 x' or a number too long for
+!     an integer was a crash or a silent guess (ifx read '256.5' as 256,
+!     '-1' as the default, '512 x' as 512); each is now refused.
+        if (ios /= 0) then
+          print*,' '
+          print*,'** MACOS model size: no answer (end of input); ',
+     &      'stopping.'
+          stop 1
+        end if
+        do k = 1, LEN(input_buf)
+          if (input_buf(k:k) == CHAR(9)) input_buf(k:k) = ' '
+        end do
+        input_buf = ADJUSTL(input_buf)
+        n = LEN_TRIM(input_buf)
+        if (n == 0) then
 	  problem_size = default_problem_size
           use_default = .true.
+        else
+          isDigits = n <= 5
+          do k = 1, n
+            if (input_buf(k:k) < '0' .or. input_buf(k:k) > '9')
+     &        isDigits = .false.
+          end do
+          if (isDigits) read(input_buf(1:n),'(I5)') problem_size
         end if
         if (problem_size /= 128 .and. problem_size /= 256
      &      .and. problem_size /= 512 .and.
@@ -292,9 +326,17 @@ C
      &      problem_size /= 2048 .and.
      &      problem_size /= 4096 .and.
      &      problem_size /= 8192) then
-          print*,'** Invalid problem size ', problem_size
+          write(*,'(A,A,A,I1,A,I1,A)') ' ** Model size "',
+     &      input_buf(1:MIN(n,40)), '" is not one of the sizes'//
+     &      ' 128 ... 8192 (attempt ', iTry, ' of ', mTries, ')'
+          if (iTry >= mTries) then
+            write(*,'(A,I1,A)') ' ** MACOS model size: no valid '//
+     &        'answer in ', mTries, ' attempts; stopping.'
+            stop 1
+          end if
           go to 15
         end if
+!<--
 
         if (use_default) then
           print*,' Using default model size ', problem_size

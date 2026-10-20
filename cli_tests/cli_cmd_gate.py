@@ -5,6 +5,7 @@ sent in order, each after the CLI shows a prompt (the MACOS> prompt or any sub-p
 ending in ':' / ']:' / '?'), plus directives:
 
   # MODEL: 256            model size answered to the first prompt (default 256)
+                          ('abc | 300 | 512': answers in turn -- the prompt refuses and re-asks)
   # DEADLINE: 90          seconds allowed per line (default 60)
   # EXPECT: <regex>       must match somewhere in the transcript (multi-line, re.M)
   # EXPECT-NOT: <regex>   must NOT match anywhere
@@ -67,7 +68,7 @@ def run_journal(binary, path, root, res, tmp, marks=None):
             deck = os.path.join(dst, os.path.basename(src))
             shutil.copy(src, deck)
         elif l.startswith('# MODEL:'):
-            model = l.split(':', 1)[1].strip()
+            model = '\n'.join(x.strip() for x in l.split(':', 1)[1].split('|'))
         elif l.startswith('# DEADLINE:'):
             deadline = float(l.split(':', 1)[1])
         elif l.startswith('# EXPECT-NOT:'):
