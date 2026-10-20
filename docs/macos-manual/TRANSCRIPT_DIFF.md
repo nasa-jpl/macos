@@ -301,6 +301,22 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
 
 ## 4. For Dave — the decisions and the replacement list
 
+**Rulings, Dave 2026-10-19** (by this section's numbers):
+#1 keep the SAVE-form decks.  #3 write ImageDemo.jou: `stop` elt 4; `fex` 12, yes; `opd` 12; `int` 13.
+#4 A.8 becomes `macos_f90/smacos_dvr.F`.  #5 Section 3 runs on `ZGD_test_files/lens_array.in` and
+`tmo.in` (now in the tree).  #6 fix BINARY.  #7 keep the SINT deck.  #8 yes: remove the debug prints,
+pass CENTER's count out.  #9 take a look at PARTIALS.  #11 regenerate Section 4's tutorials as plain
+dialogs.  (#2 and #10 ruled earlier, below.)
+
+Done at 5aff70dd (gate 15/15 both compilers): **#3** `examples/ImageDemo.jou` (A.7; gate
+`tools/transcripts/appA_imagedemo.jou` replays it with EXEcute -- the plot device is opened first, since
+the device prompt reads the terminal, not the macro).  **#4** A.8 lists `macos_f90/smacos_dvr.F` from the
+tree; `smacosvars.cmn` and `smacosExample.f` removed.  **#5** OLD / stacked OLD / SHOW on `lens_array.in`;
+STRETCH + INT 9, TEXT and the device list on `Telescope.in` (Dave's tmo.in: the five pre-3.2 type names
+mapped, then re-saved by Dave with the exit pupil's zElt +91.48 -- the -91.48 gave a negative far-field dx
+the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while lens_array's EXPORT prints
+0 rays (3.2: the chief ray; the ORS lane), and the file-output example returns to BINARY after #6.
+
 1. **The SAVE-form decks.**  Eight decks in `examples/` are in the SAVE number form since 65a223ec,
    so the appendix now prints that form, not 3.2's hand-written one (the brief: "as written").
    Keep (the appendix shows exactly what runs), or restore the as-written decks from the 3.2

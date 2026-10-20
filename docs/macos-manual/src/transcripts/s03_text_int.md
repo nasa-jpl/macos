@@ -6,15 +6,15 @@ MACOS\>**text**
 
 MACOS\>**intensity**
 
-    Enter number of element where data is to be generated: [6]: 6
+    Enter number of element where data is to be generated: [9]: 9
     Wavefront Propagation Data Summary:
-    Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
-    u-v plane diam= 1.9435037D+01  du= 7.6215832D-02
-    x-y plane diam= 7.2667666D-05  dx= 2.8497124D-07
-    Peak intensity= 1.1041365D+08; Peak occurs at i=  129, j=  129
-    Sum of intensity= 6.4607758D+10
-    Writing LOG10 Intensity, Elt=6
+    Wavelength= 1.6280000D-04;  Source Flux= 1.0000000D+00
+    u-v plane diam= 1.3705066D+01  du= 5.3745355D-02
+    x-y plane diam= 2.7602240D-01  dx= 1.0824408D-03
+    Peak intensity= 2.8304518D+02; Peak occurs at i=  129, j=  129
+    Sum of intensity= 1.9163505D+03
+    Writing LOG10 Intensity, Elt=9
 
-    FORMATTED File=CassWithExitPupil.int6.txt
+    FORMATTED File=Telescope.int9.txt
 
-    Text array is of dimension   256 by   256. Magnitude of central pixel is  0.1089817795D+09
+    Text array is of dimension   256 by   256. Magnitude of central pixel is  0.8129212773D+02
