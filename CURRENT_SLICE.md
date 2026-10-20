@@ -90,6 +90,10 @@
 > after the e17587a1 chain ends; records; push on Dave's word.  THEN (rr) NEW/MOD glass branches never set GlassType (SAVE wrote
 > Hartmann, reload refused, lens lost every ray) -- journal GLASS_mod_save (red on 5aff70dd).**
 
+> **2026-10-19 (CC, latest): e17587a1 gate PASS (records c8508e35); (ss) NEW dialog G/H + DDEF(9) at dfcc3452; chain at dfcc3452
+> PASSED (records e11752eb); (qq) second half fcc648c5 gated PASS too.  NEXT: push on Dave's word (78466e92..tip); CCMac's next
+> pair = the pushed tip + resources 629a2d2; then the Mac pins from his pushed record.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
