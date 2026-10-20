@@ -99,7 +99,9 @@
 > mixed_SPOT 1e-8 / tDwDx 1e-5 / tPolElement 1e-14 / spot_centre allclose removed / trial-loses-chief either-outcome (Linux
 > loses the chief only at 5 mrad; 20-100 converge).  (ff) = gfortran-16 arm64 -O1+ codegen in LocalCoord (CCMac's bisection; TO).
 > ASKS to CCMac: tCalibStop arm64 values, tOpdRef min|W|.  PUSHED 2026-10-20 (Dave's word): macos 45c6d565, resources 660620b;
-> CCMac's pair = 54481537 + 660620b, his 38d5f58 may push.  OPEN: his two numbers; (ff) with TO; Dave's #12/#13 (manual).**
+> CCMac's pair = 54481537 + 660620b, his 38d5f58 may push.  His numbers arrived: tOpdRef 1e-13 CUT (local), tCalibStop = mex integer
+> code outside 1..5 on arm64 (raw `why` asked); fixture $HOME fallback dropped.  macos-fd c75f7a53 (#12/#13 rulings, manual).
+> LOCAL unpushed: macos 45c6d565..tip, resources 660620b..tip.  OPEN: the raw `why`; (ff) with TO.**
 
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
