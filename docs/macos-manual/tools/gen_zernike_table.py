@@ -25,7 +25,11 @@ OUT8 = HERE.parent / "src" / "transcripts" / "zernike_table8.md"      # Section 
 NSHORT = 4
 sys.path.insert(0, os.environ.get("PYMACOS_SRC", str(Path.home() / "dev/MACOS_resources/pymacos/src")))
 import pymacos.macos as m  # noqa: E402
+sys.path.insert(0, str(HERE.parents[2] / "cli_tests" / "tools"))
+import hzdef_check as hexz  # noqa: E402  the hexagon-orthonormal construction (Mahajan & Dai), textbook
 
+NHEX_PRINT = 15                # NormHex modes printed as polynomials (orders 0-4); the rest by name
+HEX_TOL = 1e-9                 # NormHex: |sag - construction| / max|construction| (measured ~4e-12)
 NMAX = 14                      # fit basis: every (n, m) through radial order 14 (ExtFringe's 66 reach 14)
 COEF = 1e-4                    # the unit coefficient, scaled so the mirror stays flat to first order
 TOL = 1e-8                     # a fitted term below TOL (relative to COEF) is noise; residuals run ~1e-11
@@ -145,6 +149,48 @@ def load(ztype, work):
     return None
 
 
+def trace_mode(k):
+    """(x, y, sag / COEF) at every ray hit on the mirror, a unit coefficient in mode k alone."""
+    m.setEltSrfZernCoef(1, [k], [COEF], reset=True)
+    m.modify()
+    _, nrays, _ = m.trace_rays(2)
+    h = m.ray_pos_hist(int(nrays))
+    ok = h["ok"][:, 1]
+    return h["P"][0, ok, 1], h["P"][1, ok, 1], h["P"][2, ok, 1] / COEF
+
+
+def measure_hex(work):
+    """NormHex: [(k, err_vertex_on_x, err_vertex_on_y)], each the largest |sag - H_k| over max |H_k|."""
+    nmodes = load("NormHex", work)
+    if nmodes is None:
+        return None
+    m.ray_hist("on")
+    B = {o: hexz.hexagon_basis(o) for o in (True, False)}
+    rows = []
+    for k in range(1, nmodes + 1):
+        x, y, z = trace_mode(k)
+        err = []
+        for o in (True, False):
+            want = hexz.peval(B[o][k - 1], x, y)
+            err.append(float(np.max(np.abs(z - want)) / np.max(np.abs(want))))
+        rows.append((k, *err))
+    return rows
+
+
+def hex_text(p):
+    """A NormHex polynomial in x and y (xMon, yMon over lMon), 6 significant figures, highest degree first."""
+    big = max(abs(c) for c in p.values())                # Gram-Schmidt round-off (~1e-13) is not a term
+    terms = sorted(((e, c) for e, c in p.items() if abs(c) > 1e-9 * big),
+                   key=lambda t: (-(t[0][0] + t[0][1]), -t[0][0]))
+    out = []
+    for i, ((a, b), c) in enumerate(terms):
+        mono = "".join(v + (f"^{e}^" if e > 1 else "") for v, e in (("x", a), ("y", b)) if e)
+        mag = f"{abs(c):.6g}"
+        body = mag + mono if mono else mag
+        out.append(("-" + body if c < 0 else body) if i == 0 else ("- " if c < 0 else "+ ") + body)
+    return " ".join(out)
+
+
 def measure(ztype, work):
     """[(k, kind, n, m, coef)] for every mode k; kind 'term', 'none' (no surface) or 'mixed'."""
     nmodes = load(ztype, work)
@@ -153,12 +199,11 @@ def measure(ztype, work):
     m.ray_hist("on")
     rows = []
     for k in range(1, nmodes + 1):
-        m.setEltSrfZernCoef(1, [k], [COEF], reset=True)
-        m.modify()
-        _, nrays, _ = m.trace_rays(2)
-        h = m.ray_pos_hist(int(nrays))
-        ok = h["ok"][:, 1]
-        x, y, z = h["P"][0, ok, 1], h["P"][1, ok, 1], h["P"][2, ok, 1] / COEF
+        try:
+            x, y, z = trace_mode(k)
+        except Exception:
+            rows.append((k, "refused", None, None, 0.0))   # the setter refuses the mode (an inert one)
+            continue
         R, A = np.hypot(x, y), np.arctan2(y, x)
         M = np.stack([zterm(n, mm, R, A) for n, mm in BASIS], 1)
         c, *_ = np.linalg.lstsq(M, z, rcond=None)
@@ -178,9 +223,11 @@ def main():
     m.init(128)
     work = Path(tempfile.mkdtemp(prefix="zern_"))
     meas = {}
-    for zt in [t[1] for t in TYPES] + ["Malacara"] + [t[0] for t in NORM] + ["NormHex"] + list(ANNULAR):
+    for zt in [t[1] for t in TYPES] + ["Malacara"] + [t[0] for t in NORM] + list(ANNULAR):
         meas[zt] = measure(zt, work)
         print(f"measured {zt}: {'refused' if meas[zt] is None else len(meas[zt])} modes", flush=True)
+    hexr = measure_hex(work)
+    print(f"measured NormHex: {'refused' if hexr is None else len(hexr)} modes", flush=True)
 
     errors = []
     def same(r, s):
@@ -196,6 +243,14 @@ def main():
                     errors.append(f"{zt} mode {k}: coefficient {c:.9g}, not 1")
                 index.setdefault((n, mm), {})[title] = k
     dead = {zt: [k for k, kind, *_ in meas[zt] if kind == "none"] for _, zt, _ in TYPES}
+    refused = {zt: [k for k, kind, *_ in meas[zt] if kind == "refused"] for _, zt, _ in TYPES}
+    for zt, ks_ in dead.items():
+        if ks_:
+            errors.append(f"{zt} modes {ks_}: accepted but apply no surface (refuse them, PLAN 1.2 (tt))")
+    if hexr is not None:
+        bad = [k for k, ex, ey in hexr if ex > HEX_TOL]
+        if bad:
+            errors.append(f"NormHex modes {bad}: not the hexagon-orthonormal polynomial (vertex on xMon)")
     mixed = {zt: [k for k, kind, *_ in meas[zt] if kind == "mixed"] for _, zt, _ in TYPES}
     for zt, ks in mixed.items():
         if ks:
@@ -223,13 +278,16 @@ def main():
         lines.append(f"| {n} | {mm} | " + " | ".join(cells) + f" | {poly_text(n, mm)} |")
 
     nterm = sum(1 for _, zt, _ in TYPES for r in meas[zt] if r[1] == "term")
-    npairs = sum(len(v) for v in meas.values() if v)
-    hexr = meas["NormHex"]
-    a0, a3 = meas[ANNULAR[0]], meas[ANNULAR[1]]
-    nn = meas["NormNoll"]
-    ann_same = [r[0] for r, s, t in zip(a0, a3, nn) if same(r, s) and same(r, t)]
-    ann_none = [k for k, kind, *_ in a0 if kind == "none"]
-    ann_same_ratio = all(map(same, a0, a3))
+    npairs = sum(len(v) for v in meas.values() if v) + len(hexr or [])
+    nsettings = len([v for v in meas.values() if v]) + (hexr is not None)
+    if meas[ANNULAR[0]] is not None or meas[ANNULAR[1]] is not None:
+        sys.exit("gen_zernike_table: NormAnnularNoll loads again -- measure it before the appendix says what it does")
+    hexB = hexz.hexagon_basis(True)
+    hex_lines = ["| Mode | n | m | Polynomial (x, y in units of lMon) |",
+                 "|---------:|----:|----:|:" + "-" * 60 + "|"]       # pandoc widths: "Mode" on one line
+    for k in range(1, NHEX_PRINT + 1):
+        n, mm = hexz.noll_nm(k)
+        hex_lines.append(f"| {k} | {n} | {mm} | {hex_text(hexB[k - 1])} |")
 
     def ks(v):
         return ", ".join(str(k) for k in v)
@@ -242,27 +300,40 @@ def main():
         "",
         *lines,
         "",
-        f"Measured: {npairs} (type, mode) pairs over {len([v for v in meas.values() if v])} type settings.  "
+        f"Measured: {npairs} (type, mode) pairs over {nsettings} type settings.  "
         f"Every mode of ANSI, Born & Wolf, Noll and Fringe is one term of the table with coefficient 1; "
         f"`Malacara` traces exactly as `ANSI`.  "
         + "  ".join(f"`{nz}` = `{p}` with every term multiplied by its RMS factor "
                     f"({norm_ok[nz][0]} modes{', all' if not norm_ok[nz][1] else ''} measured equal to it)."
                     for nz, p in NORM),
         "",
-        (f"`ExtFringe` modes {ks(dead['ExtFringe'])} (radial orders 11 to 14) are accepted but apply no "
-         f"surface: the engine converts Extended Fringe through the 66-mode ANSI set, which stops at radial "
-         f"order 10.  They are not rows of the table." if dead["ExtFringe"] else
+        (f"`ExtFringe` modes {ks(refused['ExtFringe'])} (radial orders 11 to 14) are refused at load by mode, "
+         f"and by the coefficient setters, when their coefficient is not zero: the engine converts Extended "
+         f"Fringe through the 66-mode ANSI set, which stops at radial order 10, so they would apply no surface.  "
+         f"They are not rows of the table." if refused["ExtFringe"] else
          "Every `ExtFringe` mode applies its term."),
         "",
-        (f"`NormAnnularNoll`: modes {ks(ann_same[:1])}–{ks(ann_same[-1:])} trace exactly as `NormNoll` "
-         f"(the circular, not the annular, polynomials){', at annulus ratio 0 and at 0.3 alike' if ann_same_ratio else ''}; "
-         f"modes {ann_none[0]}–{ann_none[-1]} apply no surface." if ann_none else
-         "`NormAnnularNoll`: see the text."),
-        "",
-        ("`NormHex` is refused at load: the engine accepts no coefficients for it." if hexr is None else
-         f"`NormHex`: {len(hexr)} modes loaded."),
+        "`NormAnnularNoll` is refused at load (and by `MODIFY` and the bindings): its converter ignores the "
+        "annulus ratio, so the surface traced as circular `NormNoll` at any ratio, and its modes 46–66 applied "
+        "nothing.  Use `NormNoll`.",
         "",
     ]
+    if hexr is None:
+        out += ["`NormHex` is refused at load: the engine accepts no coefficients for it.", ""]
+    else:
+        worst = max(hexr, key=lambda r: r[1])
+        out += [
+            f"**TABLE E.2.** `NormHex`: hexagon-orthonormal modes 1–{NHEX_PRINT} (measured, all {len(hexr)} modes)",
+            "",
+            *hex_lines,
+            "",
+            f"Measured: each of the {len(hexr)} `NormHex` modes traces as the Noll term of the same index "
+            f"orthonormalized over the unit hexagon with vertices on ±xMon (largest difference "
+            f"{worst[1]:.0e} of the mode, mode {worst[0]}); the same set with vertices on ±yMon differs in "
+            f"{sum(ey > HEX_TOL for _, _, ey in hexr)} modes.  Modes {NHEX_PRINT + 1}–{len(hexr)} continue the "
+            f"construction through radial order 8 (Noll index = mode).",
+            "",
+        ]
     OUT.write_text("\n".join(out))
     short = [ln for ln in lines[2:] if int(ln.split("|")[1]) <= NSHORT]
     OUT8.write_text("\n".join([
