@@ -1765,6 +1765,14 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 	      READ(VALUE,*,ERR=999,END=999)FFZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(FFZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          FFZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        FFZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: FFZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!<--
 	      WRITE(*,22)' FFZernCoef',MB_I(2),
      &	        (FFZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
@@ -1776,7 +1784,9 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	        REAL*8  :: pratio
 	        CALL ParseZernType(VALUE, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: FFZernType: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          FFZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	        END IF
@@ -1946,6 +1956,14 @@ c	    READ(VALUE,*)GridType
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 	      READ(VALUE,*,ERR=999,END=999)MonZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(MonZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          MonZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        MonZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: MonZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!<--
 	      WRITE(*,22)' MonZernCoef',MB_I(2),
      &	        (MonZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
@@ -1957,7 +1975,9 @@ c	    READ(VALUE,*)GridType
 	        REAL*8  :: pratio
 	        CALL ParseZernType(VALUE, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: MonZernType: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          MonZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	        END IF
@@ -2538,6 +2558,14 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 
 	      ! MB_I(1)=ZernCoef index, MB_I(2)=iElt index. -jzlou
 	      READ(VALUE,*,ERR=999,END=999)ZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(ZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          ZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        ZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: ZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!<--
 
 	      IF (MB_I(1) .LE. 6) THEN
 	       WRITE(*,22)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
@@ -2595,7 +2623,9 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	        REAL*8  :: pratio
 	        CALL ParseZernType(TypeString, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: ZernTypeL: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          ZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	          LNOTSET = .FALSE.

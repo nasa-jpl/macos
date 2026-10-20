@@ -1,0 +1,32 @@
+# PLAN_CONSOLIDATION 1.2 (tt) + (vv), Dave 2026-10-20: refuse at load, by name.
+# (vv) `ZernType= NormAnnularNoll r` is parsed and dispatched but ZerntoMon7 (surfsub.F) never reads the
+#   ratio -- the surface traces as circular NormNoll at any ratio.  Refused at the ZernType / MonZernType /
+#   FFZernType parse sites (load), at MOD, and in the api setters.
+# (tt) `ZernType= ExtFringe` modes 47-49 and 58-64 (radial order 11-14) are accepted but ZerntoMon_ZFE maps
+#   onto the 66-mode ANSI set (order 10): a non-zero coefficient there applies NO surface.  Refused in ChkDf2
+#   by mode number; zero coefficients there still load (a dense 66-coefficient deck is the common case).
+# Legs: (1) tst_save_keys.in with its old annular line restored -> refused by name; the committed NormNoll
+#   fixture loads.  (2) tst_zerndef_extfringe.in with sparse mode 47 = 2e-7 -> refused naming mode 47;
+#   the same with mode 46 (order 10, converted) loads and traces (RMS 0.43345 m: lMon 1 on a 4 m aperture, R^10;
+#   the same on the pre-fix binary).  Pre-fix binary: both bad decks load -> red.
+# COPY: $ROOT/ZGD_test_files/tst_save_keys.in
+# COPY: $ROOT/ZGD_test_files/tst_zerndef_extfringe.in
+cd $TMP
+! perl -pe 's/^(\s*ZernType=\s+)NormNoll\s*$/$1NormAnnularNoll  3.0E-01\n/' tst_save_keys.in > annular.in
+! perl -0pe 's/ZernType=  ExtFringe\n\s*ZernCoef=.*\n.*2\.0E-07\n/ZernType=  ExtFringe\n        nZernCoef=  1\n        ZernModes=  47\n         ZernCoef=  2.0E-07\n/' tst_zerndef_extfringe.in > inert47.in
+! perl -0pe 's/ZernType=  ExtFringe\n\s*ZernCoef=.*\n.*2\.0E-07\n/ZernType=  ExtFringe\n        nZernCoef=  1\n        ZernModes=  46\n         ZernCoef=  2.0E-07\n/' tst_zerndef_extfringe.in > live46.in
+! grep -c "ZernType=  NormAnnularNoll" annular.in; grep -c "ZernModes=  47" inert47.in; grep -c "ZernModes=  46" live46.in
+old annular.in
+old tst_save_keys.in
+old inert47.in
+old live46.in
+opd 6
+/null
+# EXPECT: ^\s*1\s*\n\s*1\s*\n\s*1\s*$
+# EXPECT: Rx load refused: ZernType \(elt\s+\d+\): NormAnnularNoll is not implemented
+# EXPECT: annular\.in[\s\S]*?NormAnnularNoll is not implemented[\s\S]*?tst_save_keys\.in\s+being loaded[\s\S]*?inert47\.in
+# EXPECT: Rx load refused: ZernCoef \(elt\s+2\) mode\s+47: ExtFringe modes 47-49 and 58-64
+# EXPECT: live46\.in\s+being loaded[\s\S]*?RMS OPD error is\s+4\.334\d*D-01
+# EXPECT-NOT: tst_save_keys\.in\s+being loaded(?:(?!being loaded)[\s\S])*Rx load refused
+# EXPECT-NOT: live46\.in\s+being loaded(?:(?!being loaded)[\s\S])*Rx load refused
+# EXPECT-NOT: forrtl

@@ -785,6 +785,13 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: pratio
                 CALL ParseZernType(VALUE, ptypeL, pfound,
      &                             pratio, phasRatio)
+!-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
+                IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
+                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
+     &              iElt, '): '//ZernAnnularMsg
+                  GO TO 99
+                END IF
+!<--
                 IF (pfound) THEN
                   FFZernTypeL(iElt) = ptypeL
                   FFZernTypeL_FLG  = .TRUE.
@@ -808,6 +815,13 @@ C       Set entrance condition flags to .FALSE.
                 REAL*8  :: pratio
                 CALL ParseZernType(VALUE, ptypeL, pfound,
      &                             pratio, phasRatio)
+!-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
+                IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
+                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
+     &              iElt, '): '//ZernAnnularMsg
+                  GO TO 99
+                END IF
+!<--
                 IF (pfound) THEN
                   MonZernTypeL(iElt) = ptypeL
                   MonZernTypeL_FLG  = .TRUE.
@@ -1913,6 +1927,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: pratio
                 CALL ParseZernType(VALUE, ptypeL, pfound,
      &                             pratio, phasRatio)
+!-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
+                IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
+                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: ZernType (elt',
+     &              iElt, '): '//ZernAnnularMsg
+                  GO TO 99
+                END IF
+!<--
                 IF (pfound) THEN
                   ZernTypeL(iElt) = ptypeL
                   ZernTypeL_FLG  = .TRUE.
@@ -2452,6 +2473,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: pratio
                 CALL ParseZernType(VALUE, ptypeL, pfound,
      &                             pratio, phasRatio)
+!-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
+                IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
+                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
+     &              iElt, '): '//ZernAnnularMsg
+                  GO TO 99
+                END IF
+!<--
                 IF (pfound) THEN
                   FFZernTypeL(iElt) = ptypeL
                   FFZernTypeL_FLG  = .TRUE.
@@ -2543,6 +2571,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 REAL*8  :: pratio
                 CALL ParseZernType(VALUE, ptypeL, pfound,
      &                             pratio, phasRatio)
+!-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
+                IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
+                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
+     &              iElt, '): '//ZernAnnularMsg
+                  GO TO 99
+                END IF
+!<--
                 IF (pfound) THEN
                   MonZernTypeL(iElt) = ptypeL
                   MonZernTypeL_FLG  = .TRUE.
