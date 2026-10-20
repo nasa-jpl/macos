@@ -41,8 +41,10 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   near zero; a journal with none is refused, a miss writes nothing) and
   `cli_tests/run_cli_tests.sh transcripts` gates both compilers.  Transcripts come from
   the ifx build of the clean worktree.  What moved against 3.2, and the open decisions,
-  are in `TRANSCRIPT_DIFF.md`.  Still typed by hand: Section 4's two NEW tutorials
-  (the Prompt / Response / VariableName form; Dave's call).
+  are in `TRANSCRIPT_DIFF.md`.  Section 4's NEW tutorials are generated too (2026-10-19): a
+  `# TRANSCRIPT:` switch between two answers of one NEW cuts the dialog there (`from=` / `upto=`
+  regexes); author a long dialog with `tools/prompt_walk.py`, which prints each prompt beside the
+  answer it got.  Nothing in `src/` is a typed dialog any more.
 - **No TOC in source** — pandoc `--toc` builds it. A plain
   `soffice --convert-to pdf` leaves the Word TOC field EMPTY; the
   Makefile pdf target uses `tools/docx2pdf.py` (UNO: update indexes

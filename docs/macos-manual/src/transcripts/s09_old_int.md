@@ -4,7 +4,6 @@ MACOS\>**old**
 
     Enter file name: Cassegrain
      Input file Cassegrain.in being loaded.
-     Unknown units, unitless operation assumed
     Default used for  SegXgrid
     Optical Train Summary:
      Tracing rays past   5 elements.
@@ -28,7 +27,6 @@ MACOS\>**intensity**
     A total of      121 rays were lost
       Obscured:            121
         at element    1:       121
-    %giza - ERROR - giza_open_device: Unknown device, device not opened
     Wavefront Propagation Data Summary:
     Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D+00
     u-v plane diam= 5.1546553D+00  du= 2.0214334D-02

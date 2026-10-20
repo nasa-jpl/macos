@@ -1,0 +1,78 @@
+# Section 4, "Generalized (10th-Order) Aspheric Surfaces": NEW entering the higher-order aspheric
+# reflector gen_asphere.  The element answers are 3.2's (vertex and rotation point 0,0,0, principal axis
+# 0,0,1, Kc&Kr with KcElt -1 and Radius 5 -- stored KrElt=-5 --, zElt 5, Geometric, AsphCoef
+# 1e-9,2e-19,3e-17,4e-20).  3.2 printed only the element's dialog and then the element's prescription
+# lines; NEW needs a complete deck, so the source (a 1-unit collimated beam along -z onto the mirror) and
+# a FocalPlane at the paraboloid's focus (z=2.5) are entered as setup and not printed, and the
+# prescription lines are SHOW's.  Differences from 3.2's dialog: the glass-type prompt is new (answered
+# with its default, FixedIndex); NEW prints the element back and asks "Is this correct?" (default YES);
+# the element and surface type lists are longer; the principal-axis default follows the chief ray
+# ([0,0,1] here, 3.2 printed [0.,0.,-1.00000]); the element carries nAsphCoef=4.  The AsphCoef prompt's
+# default prints as [6.328000E-07,0.00000,0.00000,0.00000] (3.2: [0,0,0,0]) -- a finding, answered
+# explicitly as in 3.2, not pinned.  The trace pin: the OPD at the focal plane is linear in A (0 at
+# A=0, round-off floor) -- RMS 1.0356D-10 for these coefficients.
+cd $TMP
+new
+Asph
+0,0,-1
+0,0,10
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+1
+11
+1,0,0
+0,1,0
+2
+# TRANSCRIPT: s04_asphere upto=Enter\sElement\s+2\sData
+gen_asphere
+Reflector
+Aspheric
+0,0,0
+0,0,0
+0,0,1
+2
+-1
+5
+
+
+5
+Geometric
+
+
+
+
+1e-9,2e-19,3e-17,4e-20
+
+# TRANSCRIPT-OFF
+FP
+FocalPlane
+Flat
+0,0,2.5
+0,0,2.5
+0,0,1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 2
+/null
+# EXPECT: File Asph\.in being created\.
+# EXPECT: Enter\saspheric\scoefficients\sA,B,C,D\s\[[^]]*\]:\s1e-9,2e-19,3e-17,4e-20
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+gen_asphere\s+Element=\s+Reflector\s+Surface=\s+Aspheric\s+KrElt=-5\.0E\+00\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+nAsphCoef=\s+4\s+AsphCoef=\s+1\.0000\d*E-09\s+2\.0E-19\s+3\.0000\d*E-17\s+(4\.0000\d*|3\.9999\d*)E-20[\s\S]*?PropType=\s+Geometric\s+zElt=5\.0E\+00
+# EXPECT: OPD: nPassRays =\s+60,\s+DAvgCumL =\s+12\.500\d*D\+00[\s\S]*?RMS OPD error is\s+1\.0356\d*D-10
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl
