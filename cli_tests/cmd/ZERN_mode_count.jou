@@ -1,0 +1,35 @@
+# PLAN_CONSOLIDATION 1.2 (xx), Dave 2026-10-20: a Zernike coefficient past its type's mode count is refused
+# by mode, at every face (macos-fd found it opening NormHex: MOD ZernCoef(46,1) on a NormHex surface was taken
+# with no message and applied nothing; Fringe 38+ and the FreeForm Mon/FF sparse forms the same; SAVE then
+# dropped the coefficient).  Faces: MOD ZernCoef / MonZernCoef / FFZernCoef (index bounded by the array -- the
+# old 'ToDo' no-op let the READ write past it -- then by the type's count); load: FFZernModes / MonZernModes
+# bounded by their arrays (an out-of-range mode wrote past the coefficient array on the remap), ChkDf2 refuses a
+# non-zero coefficient past the type's count on all three arrays; the ZernModes message names the type.
+# Legs: (1) tst_zern_normhex.in: MOD ZernCoef(46,1) refused 'NormHex has 45 modes', ZernCoef(99,1) refused
+#   'outside 1 .. 66', ZernCoef(11,1) accepted.  (2) FFSegDemoZern.in with FFZernType= Fringe: its FFZernModes
+#   38 (1e-6) refused 'FFZernCoef (elt 2) mode 38: Fringe has 37 modes'; (3) with MonZernModes= 500: refused
+#   'outside 1 .. 120'; (4) the deck as committed (ANSI) loads.  Pre-fix binary: no refusal on 1-3 -> red.
+# COPY: $ROOT/ZGD_test_files/tst_zern_normhex.in
+# COPY: $ROOT/ZGD_test_files/FFSegDemoZern.in
+# COPY: $ROOT/ZGD_test_files/flat.txt
+cd $TMP
+! perl -pe 's/^(\s*FFZernType=\s+)ANSI\s*$/$1Fringe\n/' FFSegDemoZern.in > ff_fringe.in
+! perl -pe 's/^(\s*MonZernModes=\s+)5\s*$/${1}500\n/' FFSegDemoZern.in > mon_500.in
+! grep -c "FFZernType=  Fringe" ff_fringe.in; grep -c "MonZernModes=  500" mon_500.in
+old tst_zern_normhex.in
+mod
+ZernCoef(46,1)=1e-4
+ZernCoef(99,1)=1e-4
+ZernCoef(11,1)=1e-4
+q
+old ff_fringe.in
+old mon_500.in
+old FFSegDemoZern.in
+# EXPECT: ^\s*6\s*\n\s*3\s*$
+# EXPECT: MOD refused: ZernCoef mode\s+46: NormHex has\s+45 modes
+# EXPECT: MOD refused: ZernCoef index\s+99\s+is outside 1 \.\.\s+66
+# EXPECT-NOT: ZernCoef\(11,1\)=1e-4(?:(?!MACOS>)[\s\S])*MOD refused
+# EXPECT: Rx load refused: FFZernCoef \(elt\s+2\) mode\s+38: Fringe has\s+37 modes
+# EXPECT: Rx load refused: MonZernModes \(elt\s+2\): a mode is outside 1 \.\.\s+120
+# EXPECT-NOT: FFSegDemoZern\.in\s+being loaded(?:(?!being loaded)[\s\S])*Rx load refused
+# EXPECT-NOT: forrtl

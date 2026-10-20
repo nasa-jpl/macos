@@ -493,12 +493,21 @@ C       Set defaults, if necessary
 !-->	(tt): an ExtFringe coefficient the converter drops is refused by
 !	mode (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20); zeros there load
 	BLOCK
-	  INTEGER :: kInert
+	  INTEGER :: kInert, kPast
 	  kInert = ZernCoefInert(ZernTypeL(iElt), ZernCoef(:,iElt),
      &	                         mZernModes)
 	  IF (kInert .GT. 0) THEN
 	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    ELEM_OK = .FALSE.
+	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(ZernTypeL(iElt), ZernCoef(:,iElt), mZernModes)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(ZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(ZernTypeL(iElt)), ' modes'
 	    ELEM_OK = .FALSE.
 	  END IF
 	  kInert = ZernCoefInert(MonZernTypeL(iElt), MonZernCoef(:,iElt),
@@ -508,11 +517,29 @@ C       Set defaults, if necessary
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
 	    ELEM_OK = .FALSE.
 	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(MonZernTypeL(iElt), MonZernCoef(:,iElt), mMonCoef)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(MonZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(MonZernTypeL(iElt)), ' modes'
+	    ELEM_OK = .FALSE.
+	  END IF
 	  kInert = ZernCoefInert(FFZernTypeL(iElt), FFZernCoef(:,iElt),
      &	                         mFFCoef)
 	  IF (kInert .GT. 0) THEN
 	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    ELEM_OK = .FALSE.
+	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(FFZernTypeL(iElt), FFZernCoef(:,iElt), mFFCoef)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(FFZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(FFZernTypeL(iElt)), ' modes'
 	    ELEM_OK = .FALSE.
 	  END IF
 	END BLOCK

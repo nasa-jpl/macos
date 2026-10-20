@@ -205,6 +205,12 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   refused by mode: ChkDf2 on the three coefficient arrays (`ZernCoefInert`), the three
   MOD coefficient sites (`ZernModeInert`), the api coefficient setters (`ZernModeInertV`).
   Zero coefficients there still load (a dense 66-value deck is the common case).
+- (xx) the same day: a coefficient PAST THE TYPE'S MODE COUNT (NormHex 46+, Fringe 38+) is
+  refused by mode at every face -- ChkDf2 on the three arrays (`ZernCoefPastMax`), the MOD
+  coefficient sites (index bounded by the array first: the old 'ToDo' no-op let the READ
+  write past it), and `FFZernModes` / `MonZernModes` bounded by their arrays at load (the
+  remap `Coef(Modes(:n),iElt) = ...` wrote past the array; the pre-fix binary crashes on
+  `ZERN_mode_count.jou`'s mode-500 leg).  The api setters already refused past the count.
 - Gate `cli_tests/cmd/ZERN_refused.jou` (red on the pre-fix binary).  The three SAVE-keys
   fixtures (tst_save_keys, tst_block_comment, pymacos Rx_SaveKeys) moved from
   `NormAnnularNoll 0.3` to `NormNoll` -- identical trace by the measurement above.

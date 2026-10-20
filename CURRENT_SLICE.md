@@ -152,6 +152,12 @@
 > plan, my records + section 5), resources b554792 (5fe2144, TO's b80a431 + b554792).  CCMac's NEXT PAIR = 1c867405 + b554792
 > (NOTE_to_ccmac_pair8.md).  OPEN: Dave's rulings (xx) and ZCOZernType= NormAnnular; (ff) with TO.**
 
+> **2026-10-20 (CC, (xx)): Dave: refuse by mode.  DONE LOCAL uncommitted: ZernCoefPastMax (elt_mod.F) in ChkDf2 on the three
+> arrays; MOD coefficient sites bound the index by the array (GO TO 998 = the MOD reprompt) then the type's count; FFZernModes /
+> MonZernModes bounded by their arrays at load; ZernModes message named.  Journal ZERN_mode_count.jou green ifx + gfortran
+> (shared build), the pre-fix worktree binary CRASHES on it (the out-of-bounds remap).  NEXT: commit, worktree gate (rebuild both,
+> load, ab vs the last recorded SHA, cmd), tell TO, push on Dave's word.  OPEN: ZCOZernType= NormAnnular.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
