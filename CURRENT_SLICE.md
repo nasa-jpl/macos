@@ -133,6 +133,10 @@
 > PLAN 1.2 (tt) ExtFringe orders 11-14 silently inert, (uu) NormHex unloadable, (vv) NormAnnularNoll ignores its ratio,
 > (ww) pymacos veneer limit 9/45 vs api 11/66.  AWAITING Dave: push word for 4e9c02c4..714abf67 + bcf351c; the four rulings.**
 
+> **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
+> resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
+> (tt)-(ww); (ff) with TO.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
