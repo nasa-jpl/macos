@@ -227,3 +227,10 @@ item 5).
 - AOExample.in's DM: pMon (-2.249426003, -19.51098758, 75.375), xMon (-0.4697040833, 0.8828239202, 0),
   yMon (0, 0, 1), zMon (0.8828239202, 0.4697040833, 0), lMon 0; opd 16 = 1.267521723e-6 (3.1638e-7
   without the frame or with the keys swapped).
+
+## The pre-3.2 `EltType=` branch rules the grid flags like `Surface=` (2026-10-19, PLAN 1.2 (nn))
+- A deck in the old key style (`EltType=`, `fElt`, `eElt`) printed 'Default used for pData..lData' per element:
+  the EltType= branch of msmacosio.inc set the coefficient flags but not the grid-size / grid-frame
+  'not applicable' flags; it now applies the Surface= branch's two rules.  ChkDf2 defaults a LensArray's frame
+  silently when it has no grid (as FreeForm).  `ZGD_test_files/lens_array.in` and `Telescope.in` (Dave's
+  tmo.in, type names mapped, CR -> LF) are the Section 3 decks.

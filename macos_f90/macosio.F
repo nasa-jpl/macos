@@ -1766,7 +1766,6 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      WRITE(*,19)' FFZernModes',MB_I(1),FFZernModes(MB_I(1))
 !<--
 	    ELSE IF (LCMP(VAR_NAM,'FLUX',4)) THEN
-	      print*,'Debug: VALUE = ', VALUE
 	      READ(VALUE,*)Flux
  	      WRITE(*,11)' Flux',Flux
 	    ELSE IF (LCMP(VAR_NAM,'fElt',4)) THEN

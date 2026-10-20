@@ -835,8 +835,6 @@ C         ***Find exit pupil (with option to minimize tilt)***
 	END IF
 !<--
 
-	print*,'***** FEX: CrossPt =',CrossPt
-	print*,'***** FEX: zp_iEm1 =',zpLeg,'  zp =',zp
 
 	! Rx_FEXCentrFlg below is controlled in optical Rx, which is defaulted
         ! to TRUE if FEXCentroid flag is not referenced in Rx.  -jzlou
@@ -2389,6 +2387,9 @@ C***********************************************************************
             sqErr_prev = sqErr
 
           END DO  ! Main iteration loop (k=1, MAXITERRATIONS)
+!-->  the count the solve took, for CENTER's report (3.6)
+           nStopIter = MIN(k, MAXITERRATIONS)
+!<--
 
           ! -----------------------------------------------------------------
           ! Finalize: Check convergence and set output flag
@@ -3306,7 +3307,7 @@ c  24Jul97 loh:  added ZernTypeL stuff
      &	        ifTransmit,ifLNsrf,LRTdummy,ifRayToSeg,
      &	        ifReturn,ifReturnStart
 
-	INTEGER i,j,iElt,iRay,nEm1,nEm2,RayIndex(2,mRay),
+	INTEGER i,j,iElt,iRay,nEm1,nEm2,nTr,RayIndex(2,mRay),
      &     PrevNonSeg,NextNonSeg,itst,imin,iFirstNonSeq,
      &     iLastNonSeq,IERROR
 
@@ -3694,9 +3695,18 @@ C	Begin iRay loop to trace each ray and compute its partials
 	    nDrawElt=0
 	  END IF
 
-c	  PrevElt(0)=0
 c	  NextElt(0)=1
+!-->  ifRayElt is a LOCAL of CTRACE, set only by the branch that traces
+!     an element: one the trace SKIPS (an Obscuring element under BUILD)
+!     kept whatever the stack held, and the composite-partials chain
+!     (DO 11) then multiplied by that element's never-computed partial
+!     on some runs and not others -- PARTIALS' input-ray block read zero
+!     or 3.08 from one run to the next under gfortran.  Every element
+!     starts each ray NOT traced; the chain's root is the source.
 	  ifRayElt(0)=.TRUE.
+	  ifRayElt(1:mElt)=.FALSE.
+	  PrevElt(0)=0
+!<--
 	  LRayTrans=.TRUE.
 	  ifLNsrf=.FALSE.
 
@@ -4855,18 +4865,30 @@ C  5. Compute composite beam train partials:
 	    CALL REQUATE(dxndui(1,1,iEndElt),dxidui(1,1,iEndElt),42)
 	    IF (iEndElt.GT.1) THEN
 	      jElt=PrevElt(iEndElt)
-
+	      nTr=NextLast
 	      DO 11 iElt=nEm2,0,-1
 !	        print*,' Begin Loop11: jElt=',jElt,
 !    &		  ', PrevElt(jElt)=', PrevElt(jElt)
 	        jElt=PrevElt(jElt)
-	        IF (ifRayElt(jElt).AND.(jElt.NE.NextLast).AND.
-     &	          (EltID(jElt).NE.3).AND.(EltID(jElt).NE.7)) THEN
-c	        IF (ifRayElt(jElt).AND.(jElt.NE.NextLast)) THEN
+!-->  dxndxi(jElt) = dxndxi(nTr) * dxidxim1(nTr), with nTr the nearest
+!     TRACED element downstream of jElt -- not NextElt(jElt): under
+!     BUILD an Obscuring element is not traced (no dxidxim1), and the
+!     next element's partial is taken with respect to the ray at the
+!     previous TRACED surface, so the chain steps over the skipped one.
+!     Before, the product used the skipped element's undefined partial
+!     and every block upstream of it was zero: PARTIALS' input-ray
+!     block on any deck with an obscuration before the build element
+!     (Cassegrain.in element 1; 3.2 printed a 3.036 magnification).
+!     The Reference / Obscuring skip stays in DO 12 (no actuator
+!     partials) and leaves this loop.  TRANSCRIPT_DIFF 3.7, Dave
+!     2026-10-19.
+	        IF (ifRayElt(jElt).AND.(jElt.NE.NextLast)) THEN
 		  CALL RMPRDC(dxndxi(1,1,jElt),
-     &            	      dxndxi(1,1,NextElt(jElt)),
-     &            	      dxidxim1(1,1,NextElt(jElt)),7,7,7)
+     &            	      dxndxi(1,1,nTr),
+     &            	      dxidxim1(1,1,nTr),7,7,7)
+	          nTr=jElt
 	        END IF
+!<--
  11	      CONTINUE
 	      DO 12 iElt=1,nEm1
 	        IF (ifRayElt(iElt).AND.(EltID(iElt).NE.3)

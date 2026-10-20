@@ -21,3 +21,6 @@ no
 # EXPECT: Computed StopPos
 # EXPECT: SXP: EP crossing axis1\s+2548\.79157\s+axis2\s+2498\.67947\s+medial\s+2523\.73552
 # EXPECT: zp_FP =\s+2523\.7355
+# EXPECT-NOT: FEX: CrossPt =
+# EXPECT-NOT: FEX: zp_iEm1 =
+# (two debug prints of the EP-radius rework removed 2026-10-19; the EP-crossing report above stays)

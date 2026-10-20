@@ -2209,19 +2209,27 @@ C         ***Compute linear models***
 	      CALL RTIME(StartTime)
               CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
      &                              ifPropagate,ifGrid)
+!-->  over the ray limit the command says 'Tracing N rays but not
+!     BUILDing' and then did NOTHING (GO TO 1), leaving iCurRayElt set
+!     and no trace behind it: EXPORT RAYPOS then reported '0 rays at
+!     Element 1' (Dave's lens_array.in, 12454 rays at model 128;
+!     macos-fd 2026-10-19).  Now it does what it says: the trace runs
+!     without the linear model, and PARTIALS / EXPORT of partials keep
+!     refusing on ifBuild.
               IF (nRay.LE.bRay) THEN
 	        WRITE(*,118)nRay
+	        ifBuild=.TRUE.
 	      ELSE
 	        WRITE(*,119)nRay,bRay
-	        GO TO 1
+	        ifBuild=.FALSE.
 	      END IF
 	      ifPropagate=.FALSE.
 	      ifTrace=.TRUE.
-	      ifBuild=.TRUE.
-	      IF (LCMP(command,'DMBUILD',3)) ifDMBuild=.TRUE.
+	      IF (LCMP(command,'DMBUILD',3)) ifDMBuild=ifBuild
 	      ifOPDCalc=.TRUE.
 	      iCurRayElt=iEndElt
 	      iLinElt=iEndElt
+!<--
 	      iStartRay=1
 	      iEndRay=nRay
 
@@ -3209,7 +3217,7 @@ C         ***Center Beam in System Stop***
      &	        iStop,xTarg,sqErr,ifBeamCentered)
 
 	      IF (ifBeamCentered) THEN
-	        WRITE(*,309) 0,SQRT(sqErr)
+	        WRITE(*,309) nStopIter,SQRT(sqErr)
 	      END IF
 
 	    END IF

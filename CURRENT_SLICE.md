@@ -81,6 +81,12 @@
 > 012cd3c2 (transcripts regenerated, 14/14).  PUSHED 78466e92 (Dave's word); CCMac's pair = 5aff70dd + 629a2d2; his 3 record
 > commits may push (Dave's word).  cmd re-gate at 5aff70dd running.  NEXT: its record; cut the Mac pins from his pushed record.**
 
+> **2026-10-19 (CC, engine items from the manual regeneration, LOCAL uncommitted -> committing):** (jj) BINARY RECL via IOLENGTH,
+> (kk) debug prints out + CENTER's real count, (ll) PARTIALS input-ray block (chain steps over untraced elements; ifRayElt reset per
+> ray -- was nondeterministic under gfortran), (mm) refused BUILD traces, (nn) EltType= decks' grid flags, (oo) reversed plot bounds.
+> Journals BINARY_CENTER, PARTIALS_inputray, BUILD_refused_export (+STOP_FEX_SXP EXPECT-NOTs); must-fail on 5aff70dd proven.
+> NEXT: commit (with ZGD_test_files/lens_array.in + Telescope.in), full gate at the commit, records, push on Dave's word.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

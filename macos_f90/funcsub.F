@@ -68,7 +68,6 @@ c	  WRITE(*,400)
               th(i)=PV(i); del(i)=PV(i+3)
             End Do
           End If
-          print*,'*** CPERTURB src: th = ',th(1:3),', del =',del(1:3)
 
 	  CALL Qform(Q,dQ,th)
 	  CALL DMPROD(D1,Q,ChfRayDir,3,3,1)

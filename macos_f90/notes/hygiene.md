@@ -121,3 +121,14 @@
   That overrides host association and produces an undefined reference at link time.
   Just call module-sibling functions directly without redeclaring them.
 
+
+## 2026-10-19 (b): the manual's generated dialogs as a defect finder
+- Debug prints found by regenerating every dialog and removed: `** In DBINOUT` (sunsub.F), `*** CPERTURB src`
+  (funcsub.F), `Debug: VALUE` (macosio.F MOD Flux=), `Debug: VAR_NAM` (MOD, earlier the same day), FEX's
+  `CrossPt =` / `zp_iEm1 =` (tracesub.F).  Rule: a `print*` that names a variable is a debug line; the cmd
+  journals carry EXPECT-NOTs for each.
+- `BINOUT` / `DBINOUT` (sunsub.F): a direct-access RECL is `INQUIRE(IOLENGTH=)` of one row, never a byte or word
+  count -- gfortran counts bytes, ifx words (PLAN 1.2 (jj)).
+- `CTRACE`'s composite-partials chain (DO 11) steps over an element the build did not trace (`nTr`); `ifRayElt`
+  is reset per ray, `PrevElt(0)=0` (1.2 (ll)); a refused BUILD still traces (1.2 (mm)); CENTER's count is
+  `nStopIter` (elt_mod, set by ChiefRayAiming) (1.2 (kk)).
