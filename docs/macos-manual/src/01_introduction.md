@@ -80,6 +80,8 @@ A summary of changes since MACOS 3.2:
 
 -   Metrology (MET). The metrology model -- per-element metrology points and target surfaces (`nMetPos=`, `tMetElt=`, `EdgeSensors=`) and the METCALC command that computes every metrology beam length and the edge-sensor readings -- is in the Command Reference (METcalc, which lists the prescription keys); the MATLAB design package's `add_met`, `edge_sensors` and `dmet_dx` build and differentiate metrology layouts on a prescription.
 
+-   Zernike orderings (Appendix E). The index of every Zernike term in each `ZernType=` ordering (ANSI, Born & Wolf, Noll, Fringe, Extended Fringe), with its polynomial and the RMS normalization of the Norm\* types. The table replaces 3.2's Table 8 and is measured from the engine, not transcribed: `make zernike-table` regenerates it, and a *pymacos* test checks every printed term against the traced surface.
+
 -   Design-optimization keyword reference.  The `Opt*` / `VarElt=` prescription keywords that set up CALib are tabulated with their defaults in Section 4 (Table 13), together with the solver's stopping rule.
 
 -   HELP command rebuilt. All \~140 dispatched commands are now listed (vs. \~75 in v3.2), grouped into 15 categories with one-line effect descriptions and prerequisite tags (\[Rx\] / \[BLD\] / \[DIFF\]). See §3.2 and Appendix C.
