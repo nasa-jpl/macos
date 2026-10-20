@@ -110,6 +110,39 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-20 (6) — re-gate (pair macos `814082d4` + resources `2ccaeff`)
+Full record: `cli_tests/records/mac_gate_gfortran_814082d4.md`. Engine unchanged
+in LocalCoord from gate 5; carries the day's dialog fixes and the folded gate 3–5
+re-pins + **tOpdRef bound 1e-13**. On Mac: load **163/163** (0 movers vs
+fcc648c5); cmd **105/108** (2 must-fail red; 3 fail = COORD_ACOOR (ff), plus two
+NEW non-engine pins — BINARY_CENTER a BSD-`stat -c` portability item (the (jj)/(kk)
+engine fixes themselves work: file written, no RECL crash, CENTER 4 iters) and
+PGD_reopen_units a near-zero `1.293491396D-12` arm64 pin); mmacos **652/5**,
+pymacos **6940/1** (+2 skip). **tCalibStop cap/floor marshalling RESOLVED** — the
+raw `why` is in-range on arm64 (T=4→3/cap/4, T=10→3/cap/10, T=20→2/floor/14,
+`class double`), matching Linux; the gate-5 empty string does not reproduce (the
+engine advance shifted the arm64 LM trajectory to track Linux). **tOpdRef green.**
+Residual (all arm64 pins or the (ee) FFI mechanism, no engine defect): tCalibStop's
+'converged' sub-test (arm64 reaches 'floor' at 29, not 'converged'), trial-loses-chief's
+cause string (arm64 now fails at 5 mrad like Linux + restores the tilt, but the
+descriptive cause is Fortran unit-6 lost across the mex — (ee); the generic
+"calib_run failed" survives), tDwDx array-reproduction (near-zero translation at
+AbsTol 1e-6), tPolElement material-flip (isequaln 1-ulp), spot_centre leftover
+exact-pins (sign-unstable 2nd component). (ff) persists unchanged (TO).
+
+### 2026-10-19 (5) — re-gate (pair macos `5aff70d` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_5aff70d.md`. Adds the SAVE DM
+fix (AOExample frame restored, UDSINIT re-pinned) + CC's two gate-4 journal
+widenings. On Mac: **EXPORT and UDSINIT now pass** (BSD-`wc` fix + the DM fix
+work on arm64); cmd 96→**97/103**; load clean 161/161; mmacos 650/7 and pymacos
+6939/2(+2 skip) unchanged (resources 629a2d2 identical). CALIB_SPOT_mixed is the
+one short of CC's expected 98 — its psiElt **3rd** component (normal ≈ −1) prints
+`-9.99…E-01` on arm64 (near-singular tilt), not `E+00`; the pattern's 3rd group
+needs that form. The (ff) COORD −O2 bug was bounded by elimination (snan,
+int/logical/derived init, -fno-automatic, -fno-tree-vectorize, -ffp-contract=off
+all still rotated; correct only at −O0) → a deterministic gfortran-16 arm64 −O1+
+codegen miscompile in `LocalCoord`, TO's lane.
+
 ### 2026-10-19 (4) — re-gate (pair macos `36699d3` + resources `629a2d2`)
 Full record: `cli_tests/records/mac_gate_gfortran_36699d3.md`. The macos tip
 advanced past pair 3 (SRS gg, ORS+RSTRACE ii, manual rebuild); resources
