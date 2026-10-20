@@ -102,6 +102,11 @@ C***********************************************************************
         INTEGER, PARAMETER :: RayStat_Bracket  = 3
         INTEGER, PARAMETER :: RayStat_MaxIter  = 4
         INTEGER, PARAMETER :: RayStat_Undef    = 5
+!-->  the iteration count of the last chief-ray aiming solve (STOP /
+!     CENTER), set by ChiefRayAiming; CENTER printed a literal 0
+!     (TRANSCRIPT_DIFF 3.6, Dave 2026-10-19)
+        INTEGER :: nStopIter = 0
+!<--
 !<--
 
         ! Surface types with Gridded Surface Parameters

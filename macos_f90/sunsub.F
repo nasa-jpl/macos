@@ -1045,7 +1045,7 @@ C***********************************************************************
 	CHARACTER*80 imag_file
 	CHARACTER*82 SCR
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
-	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN
+	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN,lrec
 	INTEGER*4  iElt
 	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8     dx_elt, dy_elt
@@ -1152,12 +1152,17 @@ C "16" really means 'ASCII Special' SpyGlass format in macsub
 	  CLOSE(13)
 
 	ELSE IF (iPloTyp.EQ.6) THEN
-C -- use this for sun:
-	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(4*NC),
+!-->  the record is one row of Z, REAL*8: RECL=(4*NC) was a SUN-era
+!     word count -- gfortran counts bytes and died ('Write exceeds
+!     length of DIRECT access record'), ifx counts words and padded
+!     every record to twice its length (a 256 x 256 intensity file of
+!     1048576 bytes).  INQUIRE(IOLENGTH=) is the portable size in the
+!     compiler's own RECL unit.  PLAN_CONSOLIDATION, macos-fd's
+!     TRANSCRIPT_DIFF 3.2; Dave 2026-10-19: fix BINARY.
+	  INQUIRE(IOLENGTH=lrec) (Z(i,1),i=1,NA)
+	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=lrec,
      &	  STATUS='NEW')
-C -- use this for alpha or mac:
-C	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(NC),
-C     &	  STATUS='NEW')
+!<--
 	  SCR = 'Writing '//CTITLE
 	  WRITE(*,*) SCR
 	  SCR = 'DIRECT ACCESS File='//image_file
@@ -1219,7 +1224,7 @@ C***********************************************************************
 	CHARACTER*80 imag_file
 	CHARACTER*82 SCR
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
-	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN
+	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN,lrec
 	INTEGER*4  iElt
 	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8    dx_elt, dy_elt, DZ(NDA,NDC)
@@ -1241,7 +1246,6 @@ C
  104	FORMAT(1P,512(1x,e13.6))
  105	FORMAT(1P,I4,A1,I4/E11.4,A1,E11.4)
  106	FORMAT(1P,512(E11.4,A1))
-	print*,'** In DBINOUT: NA,NC =',NA,NC
 
 	L=ICLEN(image_file)
 
@@ -1332,11 +1336,12 @@ C "16" really means 'ASCII Special' SpyGlass format in macsub
 	  CLOSE(13)
 
 	ELSE IF (iPloTyp.EQ.6) THEN
+!-->  one row of Z per record, sized by INQUIRE(IOLENGTH=) as in
+!     BINOUT (realRecLen*NA is bytes; ifx counts RECL in words)
+	  INQUIRE(IOLENGTH=lrec) (Z(i,1),i=1,NA)
 	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',
-     &          RECL=(realRecLen*NA),STATUS='NEW')
-C -- use this for alpha or mac:
-C	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(NC),
-C     &	        STATUS='NEW')
+     &          RECL=lrec,STATUS='NEW')
+!<--
 	  SCR = 'Writing '//CTITLE
 	  WRITE(*,*) SCR
 	  SCR = 'DIRECT ACCESS File='//image_file

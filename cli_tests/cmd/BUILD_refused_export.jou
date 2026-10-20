@@ -1,0 +1,24 @@
+# A BUILD over the ray limit TRACES without the linear model, as its message says (cmdref: Linear model; Export).
+# Before, 'Tracing N rays but not BUILDing linear model' was followed by nothing (GO TO 1), leaving a stale
+# current element and no rays: EXPORT RAYPOS reported '0 rays at Element 1' on Dave's lens_array.in (12454 rays
+# at model 128, the limit 441).  Now the trace runs, EXPORT finds the chief ray, and PARTIALS still refuses.
+# The deck is pre-3.2 style (EltType=, fElt, eElt): its elements printed 'Default used for pData..lData' twenty
+# times because the EltType= branch never set the grid-frame flags the Surface= branch sets (macos-fd 2026-10-19).
+# MODEL: 128
+# COPY: $ROOT/ZGD_test_files/lens_array.in
+cd $TMP
+old lens_array.in
+build
+1
+export
+tex
+chfr
+raypos
+q
+partials
+# EXPECT: Tracing\s+12454 rays but not BUILDing linear model
+# EXPECT: RayPos 3-vectors for\s+1 rays at Element\s+1
+# EXPECT: Must BUILD first
+# EXPECT-NOT: Default used for pData
+# EXPECT-NOT: Default used for lData
+# EXPECT-NOT: forrtl

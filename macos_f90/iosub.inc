@@ -608,6 +608,18 @@ C	Param order = beta,dact or drad,dq,minrad
 	    zData_FLG=.TRUE.
 	  END IF
 	END IF
+!-->  a LensArray without a grid has no use for the grid frame either:
+!     SAVE writes pData..zData for every LensArray element (the SAVE
+!     audit's widening), and a 3.2-era deck without them printed four
+!     'Default used for' lines per element (Dave's lens_array.in: 20;
+!     macos-fd 2026-10-19).  Defaulted silently, as for FreeForm.
+	IF ((EltID(iElt).EQ.LensArrayElt).AND.(nGridMat(iElt).EQ.0)) THEN
+	  pData_FLG=.TRUE.
+	  xData_FLG=.TRUE.
+	  yData_FLG=.TRUE.
+	  zData_FLG=.TRUE.
+	END IF
+!<--
 
 	IF (pData_FLG) THEN
 	  CONTINUE

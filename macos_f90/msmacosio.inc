@@ -1563,6 +1563,30 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 LensArrayType_FLG = .TRUE.
                 LensArrayWidth_FLG = .TRUE.
               END IF
+!-->  the grid-size and grid-frame keys are not applicable to a surface
+!     without grid data, exactly as the Surface= branch rules them; the
+!     pre-3.2 EltType= branch never set these flags, so an old-style
+!     deck printed 'Default used for pData..lData' for every element
+!     (Dave's lens_array.in, 20 lines; macos-fd 2026-10-19).
+              IF ((SrfType(iElt).NE.SrfType_GridData).AND.
+     &            (SrfType(iElt).NE.SrfType_AsGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+                nGridMat_FLG=.TRUE.
+                GridMat_FLG=.TRUE.
+                GridSrfdx_FLG=.TRUE.
+              END IF
+              IF ((SrfType(iElt).NE.SrfType_MonGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_ZrnGrData).AND.
+     &            (SrfType(iElt).NE.SrfType_FreeForm)) THEN
+                lData_FLG=.TRUE.
+                pData_FLG=.TRUE.
+                xData_FLG=.TRUE.
+                yData_FLG=.TRUE.
+                zData_FLG=.TRUE.
+              END IF
+!<--
               IF ((EltType(iElt).NE.6).AND.(EltType(iElt).NE.7)) THEN
                 h1HOE_FLG = .TRUE.
                 h2HOE_FLG = .TRUE.

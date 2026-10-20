@@ -1,0 +1,38 @@
+# BINARY output and CENTER's report (cmdref: Plot types; Beam set-up), on the manual's CassWithExitPupil.in.
+# BINARY: BINOUT opened the direct-access file with RECL=(4*NC), a SUN-era word count for a REAL*8 row -- gfortran
+#   (bytes) died with 'Write exceeds length of DIRECT access record', ifx (words) padded every record to twice its
+#   length (1048576 bytes for 256 x 256).  Now INQUIRE(IOLENGTH=) sizes the record: 256*256*8 = 524288 bytes on both
+#   compilers.  CENTER printed 'Beam centered in 0 iterations' (a literal 0); the aiming solve's count now reaches it.
+#   Three debug prints are gone: '** In DBINOUT' (any TEXT plot), '*** CPERTURB src' (PERTURB of the source),
+#   'Debug: VALUE' (MOD of Flux=).  macos-fd's TRANSCRIPT_DIFF 3.2 / 3.5 / 3.6; Dave 2026-10-19: fix, remove, pass.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+cd $TMP
+old CassWithExitPupil.in
+int 6
+/null
+binary
+int 6
+/null
+! stat -c '%s %n' CassWithExitPupil.in.int6
+text
+opd 6
+/null
+center
+5
+0.01,0
+perturb
+0
+1e-6,0,0
+0,0,0
+mod
+Flux=0.01
+q
+# EXPECT: DIRECT ACCESS File=CassWithExitPupil\.in\.int6
+# EXPECT: ^524288 CassWithExitPupil\.in\.int6
+# EXPECT: Beam centered in\s+[1-9]\d* iterations
+# EXPECT: Flux\s+=\s+1\.0+(E|D)-02
+# EXPECT-NOT: In DBINOUT
+# EXPECT-NOT: CPERTURB src
+# EXPECT-NOT: Debug: VALUE
+# EXPECT-NOT: Write exceeds
+# EXPECT-NOT: forrtl
