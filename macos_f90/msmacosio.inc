@@ -485,7 +485,13 @@ C       Set entrance condition flags to .FALSE.
             ! zcoType is default to ZernCircular
             ! which uses NormNoll
             IF (LCMP(VALUE,'NormAnnular',10)) THEN
-              zcoType=ZernAnnular
+!-->          (vv) for the output fit too (Dave 2026-10-20): zern_fit's
+!             annular basis goes through ZerntoMon7, which never reads
+!             the ratio -- the "annular" fit was the circular NormNoll one
+              WRITE(*,'(A)') ' ** Rx load refused: ZCOZernType: '//
+     &          ZernAnnularMsg//' (circular) or NormHex'
+              GO TO 99
+!<--
             Else If(LCMP(VALUE,'NormHex',7)) THEN
               zcoType=ZernHex
             End If

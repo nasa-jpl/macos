@@ -197,8 +197,10 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   FFZernType; `ZernTypeUnsupported` in elt_mod.F), the three MOD sites, and the api
   `elt_srf_zrn_type` / `elt_srf_zrn_set`.  The SAVE writer's `ZernAnnularRatio` line
   (iosub.inc) is now unreachable and left in place for the day the converter reads r.
-  The header key `ZCOZernType= NormAnnular` (Zernike OUTPUT fitting, zern_wf.F) is NOT
-  refused -- a separate path with the same converter, not yet ruled on.
+  The header key `ZCOZernType= NormAnnular` (Zernike OUTPUT fitting, zern_wf.F's
+  `zern_fit` -> `zern_mode_nc` -> the same `ZerntoMon7`) is refused at load too, and the
+  SZCO command's 'Ann' answer leaves the type unchanged (Dave 2026-10-20); the fixtures
+  exercise the SAVE of that key with `NormHex`.
 - `ExtFringe` indices 47-49 and 58-64 (radial order 11-14) are accepted by the parser,
   but `ZerntoMon_ZFE` maps Extended Fringe onto the 66-mode ANSI set, which ends at
   order 10: those ten coefficients applied NO surface.  A non-zero coefficient there is

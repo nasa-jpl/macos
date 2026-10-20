@@ -8,21 +8,32 @@
 # Legs: (1) tst_save_keys.in with its old annular line restored -> refused by name; the committed NormNoll
 #   fixture loads.  (2) tst_zerndef_extfringe.in with sparse mode 47 = 2e-7 -> refused naming mode 47;
 #   the same with mode 46 (order 10, converted) loads and traces (RMS 0.43345 m: lMon 1 on a 4 m aperture, R^10;
-#   the same on the pre-fix binary).  Pre-fix binary: both bad decks load -> red.
+#   the same on the pre-fix binary).  (3) Dave 2026-10-20, the OUTPUT fit too: `ZCOZernType= NormAnnular` (header)
+#   refused by name -- zern_fit's annular basis goes through the same ratio-blind ZerntoMon7; the SZCO command's
+#   'Ann' answer refused, the type unchanged (the fixtures carry ZCOZernType= NormHex now).  Pre-fix binary: both bad decks load -> red.
 # COPY: $ROOT/ZGD_test_files/tst_save_keys.in
 # COPY: $ROOT/ZGD_test_files/tst_zerndef_extfringe.in
 cd $TMP
 ! perl -pe 's/^(\s*ZernType=\s+)NormNoll\s*$/$1NormAnnularNoll  3.0E-01\n/' tst_save_keys.in > annular.in
+! perl -pe 's/^(\s*ZCOZernType=\s+)NormHex\s*$/$1NormAnnular\n/' tst_save_keys.in > zco_ann.in
 ! perl -0pe 's/ZernType=  ExtFringe\n\s*ZernCoef=.*\n.*2\.0E-07\n/ZernType=  ExtFringe\n        nZernCoef=  1\n        ZernModes=  47\n         ZernCoef=  2.0E-07\n/' tst_zerndef_extfringe.in > inert47.in
 ! perl -0pe 's/ZernType=  ExtFringe\n\s*ZernCoef=.*\n.*2\.0E-07\n/ZernType=  ExtFringe\n        nZernCoef=  1\n        ZernModes=  46\n         ZernCoef=  2.0E-07\n/' tst_zerndef_extfringe.in > live46.in
-! grep -c "ZernType=  NormAnnularNoll" annular.in; grep -c "ZernModes=  47" inert47.in; grep -c "ZernModes=  46" live46.in
+! grep -c "ZernType=  NormAnnularNoll" annular.in; grep -c "ZernModes=  47" inert47.in; grep -c "ZernModes=  46" live46.in; grep -c "ZCOZernType=  NormAnnular" zco_ann.in
 old annular.in
+old zco_ann.in
 old tst_save_keys.in
+szco
+Ann
+szco
+Hex
 old inert47.in
 old live46.in
 opd 6
 /null
-# EXPECT: ^\s*1\s*\n\s*1\s*\n\s*1\s*$
+# EXPECT: ^\s*1\s*\n\s*1\s*\n\s*1\s*\n\s*1\s*$
+# EXPECT: Rx load refused: ZCOZernType: NormAnnularNoll is not implemented
+# EXPECT: SZCO refused: NormAnnularNoll is not implemented[\s\S]*?Set to using NormHex
+# EXPECT-NOT: Set to using NormAnnular
 # EXPECT: Rx load refused: ZernType \(elt\s+\d+\): NormAnnularNoll is not implemented
 # EXPECT: annular\.in[\s\S]*?NormAnnularNoll is not implemented[\s\S]*?tst_save_keys\.in\s+being loaded[\s\S]*?inert47\.in
 # EXPECT: Rx load refused: ZernCoef \(elt\s+2\) mode\s+47: ExtFringe modes 47-49 and 58-64

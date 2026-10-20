@@ -3335,8 +3335,10 @@ C         ***   For point source, ChfRayPos is fixed.
                 zcoType=ZernCircular
                 WRITE(*,*)' -- Set to using NormNoll'
               Else If (LCMP(ANS,'Ann',3)) Then
-                zcoType=ZernAnnular
-                WRITE(*,*)' -- Set to using NormAnnular'
+!-->            (vv) for the output fit (Dave 2026-10-20): refused, type unchanged
+                WRITE(*,'(A)') ' ** SZCO refused: '//ZernAnnularMsg//
+     &            ' (circular) or NormHex'
+!<--
               Else If (LCMP(ANS,'Hex',3)) Then
                 zcoType=ZernHex
                 WRITE(*,*)' -- Set to using NormHex'
