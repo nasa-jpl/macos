@@ -142,6 +142,12 @@
 > ab expects 0 movers -- the three fixtures trace identically), tell TO his test_zernike_orderings / gen_zernike_table must now
 > expect the refusals (NormAnnularNoll decks, ExtFringe inert modes), push on Dave's word.**
 
+> **2026-10-20 (CC): gate at 7cd22b63 PASS (clean worktree, both compilers rebuilt): load 160/160 each, ab fcc648c5 -> 7cd22b63
+> 0 movers each (the three NormNoll fixtures trace as before), cmd 109/109 each + 2 must-fail red (records/*_7cd22b63.*).
+> TO above me: 548b0da7 (NormHex, (uu)), 58d6759a (manual); resources b80a431 ((ww)), b554792.  TO writes the PLAN 1.2 lines
+> ((uu)/(ww) DONE, new (xx) silent MOD beyond a type's mode count) after his own gate; my section 5 line follows his commit.
+> AWAITING Dave: push word; ruling on (xx) and on ZCOZernType= NormAnnular.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
