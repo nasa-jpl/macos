@@ -897,6 +897,14 @@ C  Get Optical Parameters
 	        CALL DACCEPT_S(Extinc(iElt),S1,1,
      &	        'Enter element extinction coefficient ')
 	      ELSE
+!-->  the catalog's six coefficients are a Sellmeier model: the NEW
+!     dialog copied them and set LGlass but left GlassType at 0 =
+!     Hartmann, which SAVE wrote and the reader refused ('** Unknown
+!     glass type at Elt 1'), and the trace through the lens lost every
+!     ray (macos-fd 2026-10-19, the Refractors tutorial; the parser's
+!     GlassElt= branch sets SellmeierGlass first).  PLAN 1.2 (rr).
+	        GlassType(iElt)=SellmeierGlass
+!<--
 	        i=1
 	        DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
 	          IF (LCMP(GlassElt(iElt),GlassName(i),
@@ -1792,6 +1800,11 @@ c	    READ(VALUE,*)GridType
      &	      ICLEN(GlassName(i)))) THEN
 	        LNOTSET=.FALSE.
 	        CALL DEQUATE(GlassCoef(1,MB_I(1)),GlassTable(1,i),6)
+!-->  a glass set by MOD is a glass: the model and the flag, as the
+!     parser sets them (1.2 (rr))
+	        GlassType(MB_I(1))=SellmeierGlass
+	        LGlass(MB_I(1))=.TRUE.
+!<--
 	      END IF
      	      i=i+1
 	    END DO

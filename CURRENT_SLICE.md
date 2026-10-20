@@ -87,7 +87,8 @@
 > Journals BINARY_CENTER, PARTIALS_inputray, BUILD_refused_export (+STOP_FEX_SXP EXPECT-NOTs); must-fail on 5aff70dd proven.
 > Committed e17587a1; gate chain running.  THEN (pp) giza dev/type truncation ('/nul') + (qq) units tests read WaveUnits, empty
 > BaseUnits= and '(default-unit)' accepted -- journal PGD_reopen_units (red on 5aff70dd).  NEXT: commit (pp)(qq); gate at that commit
-> after the e17587a1 chain ends; records; push on Dave's word.**
+> after the e17587a1 chain ends; records; push on Dave's word.  THEN (rr) NEW/MOD glass branches never set GlassType (SAVE wrote
+> Hartmann, reload refused, lens lost every ray) -- journal GLASS_mod_save (red on 5aff70dd).**
 
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
