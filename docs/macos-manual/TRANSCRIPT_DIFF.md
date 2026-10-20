@@ -81,9 +81,17 @@ Dave's editorial pass (section 4, item 5).
 
 ### Section 4 (describing optical systems) — `tools/transcripts/s04_cmds.jou`
 
-Cassegrain.in.  **Not generated: the two NEW tutorials** (the Cassegrain source block and the
-`zsourc.in` beam projector, with their element dialogs, ~320 prompt lines): they are printed in a
-three-column "Prompt / Response / VariableName" form that a transcript would not keep.  Section 4.
+Cassegrain.in.  **The NEW tutorials are generated too** (Dave #11, 2026-10-19): 15 journals
+`tools/transcripts/s04_new_*.jou` print every NEW dialog the section had typed (the Cassegrain source + Example
+Telescope, zsourc, reflector, refractor, lens array, grating, HOE, reference, focal plane, return, segments,
+non-sequential, asphere, Zernike, three obscurations), each from 3.2's answers, each pinned on the deck it
+writes (SHOW values to 5 figures, plus a trace).  What differs from 3.2 throughout: the base-units (and, where
+used, wavelength-units) prompt, the glass-type prompt, the element echo with `Is this correct? [YES]:` (it
+replaces 3.2's "the following lines in the prescription file" blocks; the source tutorials keep a SHOW 0),
+longer type menus, KrElt/KcElt in place of fElt/eElt, nCoat, normalized psiElt, sparse Zernike form, the
+aperture defaults following the source aperture.  Each journal's header lists its own.  The VariableName
+column is gone (Section "Summary of prescription variables" names them).  Transmissive Gratings had no
+dialog in 3.2 and has none now.
 
 | Dialog | 3.2 | Now | Cause |
 |---|---|---|---|
@@ -323,8 +331,16 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
   re-saved the deck (+91.48).  The bounds check now also accepts reversed bounds.
 - **(D) OPEN:** a plot that REOPENS the device (a second plot after an OLD, or any plot after PGD) prints
   `%giza - ERROR - giza_open_device: Unknown device`; printed today in `s09_old_int`.
-- **(E) OPEN:** NEW's `Enter base units (m, cm, mm, in, none) :` answered `none` prints `Unknown units,
-  unitless operation assumed` (the deck gets BaseUnits= none).  Section 4's NEW tutorial prints it.
+- **(D) FIXED f9b934be:** giza cached the device type in four characters (`/null` -> `/nul`), so the reopen
+  failed.
+- **(E) FIXED f9b934be + fcc648c5:** the BaseUnits `in`/`none` tests read WaveUnits; and with base units
+  `none` NEW skipped the wavelength-units prompt, leaving WaveUnits blank for its own test.
+- **(F) FIXED f0ba193e:** NEW's catalog-glass path never set GlassType: the Refractors lens (BK7) lost every ray
+  and the deck NEW wrote refused to reload (`** Unknown glass type at Elt 1`); MOD GlassElt= had the other half.
+- **(G) FIXED dfcc3452:** NEW's aspheric `Enter aspheric coefficients A,B,C,D` offers the default wavelength
+  (`[6.328000E-07,0,0,0]`; 3.2: zeros).  The tutorial types them.
+- **(H) FIXED dfcc3452:** after a NEW with base units m the OPD lines carry no unit; after reloading the deck
+  they print ` m`.
 
 ## 4. For Dave — the decisions and the replacement list
 
@@ -343,6 +359,15 @@ STRETCH + INT 9, TEXT and the device list on `Telescope.in` (Dave's tmo.in: the 
 mapped, then re-saved by Dave with the exit pupil's zElt +91.48 -- the -91.48 gave a negative far-field dx
 the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while lens_array's EXPORT prints
 0 rays (3.2: the chief ray; the ORS lane), and the file-output example returns to BINARY after #6.
+
+**New questions from the NEW tutorials (2026-10-19):**
+- **#12 Segment tutorial's principal axis.**  3.2 types psi 0,0,-1 for segment s1; SegDemo.in (A.5) has
+  0,0,1, and 3.2's own rotation points (z 0.2569563356 = 1.225^2/(4*1.46)) lie on the parent that 0,0,1
+  describes.  With 3.2's answer the A.5 telescope loses 584 rays (Surface miss) and OPD 9 is 5.05e-2 on 64
+  rays; with 0,0,1, 648 rays at 7.07e-12.  The journal keeps 3.2's answer and pins only the dialog values:
+  change the tutorial to 0,0,1?
+- **#13 Grating h1HOE.**  3.2's grating dialog enters h1HOE 0,1,0; GratingExample.in (A.2), which the prose
+  says it builds, has 1,0,0.  The journal keeps 3.2's.  Align them?
 
 1. **The SAVE-form decks.**  Eight decks in `examples/` are in the SAVE number form since 65a223ec,
    so the appendix now prints that form, not 3.2's hand-written one (the brief: "as written").

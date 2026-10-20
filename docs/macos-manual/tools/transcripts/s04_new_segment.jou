@@ -1,0 +1,213 @@
+# Section 4, Element Types / Hex and Pie Segmented Mirrors: 3.2's NEW dialog for a 7-segment Pie
+# source (Aperture 3.65, nGridPts 31, nSeg 7, width 1.2, gap 0, the seven SegCoord triples, SegXgrid),
+# then the segment elements s1, s2 and s7 (Segment / Conic, f 1.46, e 1, psi 0,0,-1, zElt 1.46; s2..s7
+# ask only for their rotation points).  Dave 2026-10-19: Section 4's NEW tutorials become plain
+# generated dialogs.  The answers are 3.2's.  Four slices, as 3.2 printed four pieces: the grid-type
+# menu to nGridPts (_1; 3.2 then shows the Figure 23 coordinate chart), xGrid to SegXgrid (_2), elements
+# 1-2 (_3) and element 7 (_4).  Setup (not printed): the source's chief ray, wavelength and the
+# elements 3-6 and 8-10 as examples/SegDemo.in (Appendix A.5): ChfRayDir 0,0,-1 at z=1.5, zSource 1d19,
+# Wavelen 1d-4; s3..s6 at SegDemo's rotation points; SecMir / RefSurf / FclPlane.
+# Against 3.2's dialog: the type menus list more types; the source asks for base units (none); the
+# Pie grid asks no obscuration ratio (Obscratn stays 0; SegDemo.in has 0.3); each Segment now asks
+# 'Enter glass type (FixedIndex)' before the index (answered with its default); the principal-axis
+# prompt now defaults to +z (the chief ray's reverse); the echo adds nCoat.
+# NOT traced (a finding for Dave): 3.2's psi answer 0,0,-1 is the reverse of SegDemo.in's psiElt
+# 0,0,1, while its rotation points (z=+0.2569563356 = 1.225^2/(4*1.46)) lie on the +z-sagging parent
+# that psi 0,0,1 describes.  With 3.2's answers the deck loses 584 of 649 rays at elements 8-9 (surface
+# miss); with psi 0,0,1 the same deck traces as SegDemo.in does (RMS OPD 7e-12 at element 9).  The
+# pins are the dialog's values only.
+cd $TMP
+new
+SegTest
+0,0,-1
+0,0,1.5
+1d19
+1
+0
+none
+1d-4
+1
+# TRANSCRIPT: s04_segment_1 from=\+-+\+\s+\|\s+Source\sray
+Pie
+3.65
+31
+# TRANSCRIPT: s04_segment_2
+1,0,0
+0,1,0
+7
+1.2
+0
+0,0,0
+1,-1,-2
+2,1,-1
+1,2,1
+-1,1,2
+-2,-1,1
+-1,-2,-1
+1,0,0
+# TRANSCRIPT-OFF
+10
+# TRANSCRIPT: s04_segment_3 from=Enter\sElement\s+1\sData upto=Enter\sElement\s+3\sData
+s1
+Segment
+Conic
+0,0,0
+0,0,0
+0,0,-1
+1
+1.46
+1
+
+
+1.46
+Geometric
+
+
+
+
+
+s2
+Segment
+Conic
+.6124997330,-1.060881274,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+# TRANSCRIPT-OFF
+s3
+Segment
+Conic
+1.225,-3.699397078D-07,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+s4
+Segment
+Conic
+6.125003738D-01,1.060880904,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+s5
+Segment
+Conic
+-6.124995728D-01,1.060881366,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+s6
+Segment
+Conic
+-1.225,5.549095617D-07,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+# TRANSCRIPT: s04_segment_4 from=Enter\sElement\s+7\sData upto=Enter\sElement\s+8\sData
+s7
+Segment
+Conic
+-.612500534,-1.060880811,.2569563356
+
+
+1.46
+Geometric
+
+
+
+
+
+# TRANSCRIPT-OFF
+SecMir
+Reflector
+Conic
+0,0,1.353
+0,0,1.353
+0,0,1
+2
+-1.174529970
+-2.229620353D-01
+
+
+1.07d-01
+Geometric
+
+
+
+
+
+RefSurf
+Reference
+Conic
+0,0,1.291
+0,0,1.291
+0,0,-1
+2
+0
+-2.6
+
+
+2.6
+FarField
+
+
+FclPlane
+FocalPlane
+Flat
+0,0,-1.309
+0,0,-1.309
+0,0,-1
+
+
+1d19
+Geometric
+
+
+1,0,0
+0,1,0
+show
+0
+show
+1
+show
+2
+show
+7
+# EXPECT: File SegTest\.in being created\.
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 0[\s\S]*?Aperture=3\.6499\d*E\+00[\s\S]*?GridType=\s+Pie\s+nGridpts=\s+31\s+xGrid=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+yGrid=\s+0\.0E\+00\s+1\.0E\+00\s+0\.0E\+00
+# EXPECT: nSeg=\s+7\s+width=1\.2E\+00\s+gap=0\.0E\+00\s+SegXgrid=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+SegCoord=\s+0\s+0\s+0\s+1\s+-1\s+-2\s+2\s+1\s+-1\s+1\s+2\s+1\s+-1\s+1\s+2\s+-2\s+-1\s+1\s+-1\s+-2\s+-1\s
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+s1\s+Element=\s+Segment\s+Surface=\s+Conic\s+KrElt=-2\.9199\d*E\+00\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*?zElt=1\.46E\+00
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 2\s+iElt=\s+2\s+EltName=\s+s2\s+Element=\s+Segment\s+Surface=\s+Conic\s+KrElt=-2\.9199\d*E\+00\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+6\.1249\d*E-01\s+-1\.0608\d*E\+00\s+2\.5695\d*E-01[\s\S]*?zElt=1\.46E\+00
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 7\s+iElt=\s+7\s+EltName=\s+s7\s+Element=\s+Segment\s+Surface=\s+Conic\s+KrElt=-2\.9199\d*E\+00\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+-6\.1250\d*E-01\s+-1\.0608\d*E\+00\s+2\.5695\d*E-01[\s\S]*?zElt=1\.46E\+00
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

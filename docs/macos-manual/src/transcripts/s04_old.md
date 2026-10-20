@@ -4,7 +4,6 @@ MACOS\>**old Cassegrain**
 
     Enter file name: Cassegrain
      Input file Cassegrain.in being loaded.
-     Unknown units, unitless operation assumed
     Default used for  SegXgrid
     Optical Train Summary:
      Tracing rays past   5 elements.

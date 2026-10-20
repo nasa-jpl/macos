@@ -1,0 +1,108 @@
+# Section 4, Element Types / Reflective HOEs: the NEW dialog for a HOE on a parabolic mirror (3.2's
+# HOEonMirror example), with NEW's echo of the element (printed before 'Is this correct?') in place of 3.2's typed "prescription data" block.
+# Dave 2026-10-19: Section 4's NEW tutorials become plain generated dialogs.  The answers are 3.2's.
+# The source and elements 2-4 are setup (not printed), entered as examples/HOEExample.in (Appendix A.2:
+# collimated 0.5 aperture at 6e-7, FP_return / Pupil_return / FP aimed at the HOE's output point).
+# Against 3.2's dialog: the element-type and surface-type menus list more types; the dialog now asks
+# 'Enter glass type (FixedIndex)' before the index (answered with its default); the source asks for
+# base units (none); 3.2 printed the HOE answers 0,0,-1d22 / 1,0,-3 / 1 / 6e-7 as written here.  The
+# element echo now lists h1HOE..WaveHOE before IndRef and adds nCoat; WaveHOE prints as
+# 5.9999999999999997E-07.  The deck traces as HOEExample.in does: the diffracted spot's centroid lands on
+# the output reference point x = 1.
+cd $TMP
+new
+HOEtest
+0,0,1
+0,0,-4
+1d22
+1
+0
+none
+6d-7
+1
+Circular
+0.5
+64
+1,0,0
+0,1,0
+4
+# TRANSCRIPT: s04_hoe from=Enter\sElement\s+1\sData upto=Enter\sElement\s+2\sData
+HOEonMirror
+HOE
+Conic
+0,0,0
+
+
+1
+3
+1
+
+
+1d22
+Geometric
+no
+
+1
+1d22
+0,0,-1d22
+1,0,-3
+1
+6e-7
+
+# TRANSCRIPT-OFF
+FP_return
+Return
+Flat
+1,0,-3
+0,0,0
+-0.316227766016838,0,0.948683298050514
+
+
+1d22
+Geometric
+
+
+Pupil_return
+Return
+Conic
+0,0,0
+0,0,0
+0.316227766016838,0,-0.948683298050514
+2
+0
+-3.16227766016838
+
+
+3.16227766016838
+FarField
+
+
+FP
+FocalPlane
+Flat
+1,0,-3
+0,0,0
+-0.316227766016838,0,0.948683298050514
+
+
+1d22
+Geometric
+
+
+1,0,0
+0,1,0
+show
+1
+# TRANSCRIPT-OFF
+spot 4
+
+/null
+# EXPECT: File HOEtest\.in being created\.
+# EXPECT: Enter reference wavelength \[[^]]*\]: 6e-7\s+iElt=\s+1\s+EltName=\s+HOEonMirror
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+HOEonMirror\s+Element=\s+HOE\s+Surface=\s+Conic\s+KrElt=-6\.0E\+00\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00
+# EXPECT: EltName=\s+HOEonMirror[\s\S]*?h1HOE=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+22\s+h2HOE=\s+1\.0E\+00\s+0\.0E\+00\s+-3\.0E\+00\s+OrderHOE=1\.0E\+00\s+WaveHOE=(5\.9999\d*E-07|6\.0000\d*E-07)
+# EXPECT: EltName=\s+HOEonMirror[\s\S]*?Extinc=1\.0E\+22[\s\S]*?zElt=1\.0E\+22
+# EXPECT: Centroid of spot diagram: x= 1\.0000\d*D\+00 y=\s*-?\d\.\d+D-(1[5-9]|2\d)
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

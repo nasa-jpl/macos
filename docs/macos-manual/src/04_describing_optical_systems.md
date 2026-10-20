@@ -137,81 +137,31 @@ Coordinates
 
 MACOS obtains the information it needs to build an optical prescription (an “.in-file” dataset) through the NEW file definition dialog. The first questions in this dialog are about the light source and the latter questions pertain to the optical elements.
 
-For the first example, we start the prescription for a Cassegrain telescope, Cassegrain.in, shown in Figure 15. The light source is a point source at infinity so the wave-front incident on the telescope is collimated. In the example dialog, the prompts are exactly as MACOS gives them. The correct user response is indicated in **bold** text, and the name of the variable being set is in ***italic*** text.
+For the first example, we start the prescription for a Cassegrain telescope, Cassegrain.in, shown in Figure 15. The light source is a point source at infinity so the wave-front incident on the telescope is collimated. The example dialog is MACOS's own output, run from the answers shown after each prompt; the variable each prompt sets is listed in [Section ?](#summary-of-prescription-variables).
 
 ![](media/fig_rescued_15.png)
 
 **FIGURE 15** Cassegrain telescope layout
 
-    Prompt Response VariableName
+<!-- transcript: s04_new_source -->
 
-MACOS\>**new**
+After the elements are entered (Example Telescope, below), SHOW with element 0 prints the source block as the prescription file Cassegrain.in holds it:
 
-    Enter file name: Cassegrain
-    File Cassegrain.in being created. filenam
-    Enter chief ray input direction vector (x,y,z) [0.,0.,1.0]:0,0,1 ChfRayDir Enter chief ray location vector (x,y,z) [0.,0.,0.]:0,0,-5 ChfRayPos Enter distance from source [1.000000E+22]:1d22 zSource
-    Enter chief ray index of refraction [1.00000]:1 IndRef
-    Enter chief ray extinction coefficient [0.]:0 Extinc
-    Enter monochromatic wavelength [6.000000E-07]:1d-6 Wavelen
-    Enter intensity (flux over aperture area) [1.00000]:1 Flux
-    + +
-    | Source ray grid types: |
-    | Circular Square Hex |
-    | Pie Flower |
-    + +
-    Enter source grid type [Circular]: Circular GridType
-    Enter aperture diameter or angle [1.00000]:4 Aperture
-    Enter number of grid points [65]:15 nGridPts Enter input plane x-axis vector (x,y,z) [1.00000,0.,0.]:-1,0,0 xGrid Enter input plane y-axis vector (x,y,z) [0.,1.00000,0.]:0,-1,0 yGrid Enter number of elements [no default]: 5 nElt
-
-This dialog produces the following lines in the prescription file Cassegrain.in: ChfRayDir= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-
-    ChfRayPos= 0.000000000D+00 0.000000000D+00 -5.000000000D+00 zSource= 1.000000000D+22
-    IndRef= 1.000000000D+00 Extinc= 0.000000000D+00 Wavelen= 1.000000000D-06 Flux= 1.000000000D+00
-    GridType= Circular Aperture= 4.000000000D+00 Obscratn= 0.000000000D+00
-    nGridpts= 15
-    xGrid= -1.000000000D+00 0.000000000D+00 0.000000000D+00 yGrid= 0.000000000D+00 -1.000000000D+00 0.000000000D+00
-    nElt= 5
+<!-- transcript: s04_new_source_show -->
 
 The Cassegrain.in example is finished in [Section ?](#example-telescope).
 
 Now consider the case of a non-collimated input beam, zSource not equal to infinity. A Cassegrain telescope has been turned into a beam projector. The light source is now located where the detector was previously located as shown in Figure 16.
 
-MACOS\>**new**
-
-    Enter file name: zsourc
-    File zsourc.in being created.
-    Enter chief ray input direction vector (x,y,z) [0.,0.,1.0]:0,0,1 ChfRayDir Enter chief ray location vector (x,y,z) [0.,0.,0.]:0,0,-1 ChfRayPos Enter distance from source [1.000000E+22]:-0.1 zSource
-    Enter chief ray index of refraction [1.00000]:1 IndRef
-    Enter chief ray extinction coefficient [0.]:0 Extinc
-    Enter monochromatic wavelength [6.000000E-07]:1d-3 Wavelen
-    Enter intensity (flux over aperture area) [1.00000]:1 Flux
-    + +
-    | Source ray grid types: |
-    | Circular Square Hex |
-    | Pie Flower |
-    + +
-    Enter source grid type [Circular]: Circular GridType
-    Enter aperture diameter or angle [1.00000]:0.1076 Aperture
-    Enter number of grid points [65]:25 nGridPts
-    Enter input plane x-axis vector (x,y,z) [1.00000,0.,0.]:-1,0,0 xGrid
-
--1.1 -1.0
+<!-- transcript: s04_zsourc -->
 
 ![](media/fig_rescued_16.png)
 
 **FIGURE 16** Non-collimated light source example
 
-    Enter input plane y-axis vector (x,y,z) [0.,1.00000,0.]:0,-1,0 yGrid
-    Enter number of elements [no default]: 6 nElt
+After the six elements are entered, SHOW with element 0 prints the source block as the prescription file zsourc.in holds it:
 
-This results in the following lines in the prescription file zsource.in:
-
-    ChfRayDir= 0.000000000D+00 0.000000000D+00 1.000000000D+00 ChfRayPos= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 zSource= -1.000000000D-01
-    IndRef= 1.000000000D+00 Extinc= 0.000000000D+00 Wavelen= 1.000000000D-03 Flux= 1.000000000D+00
-    GridType= Circular Aperture= 1.076000000D-01 Obscratn= 0.000000000D+00
-    nGridpts= 25
-    xGrid= -1.000000000D+00 0.000000000D+00 0.000000000D+00 yGrid= 0.000000000D+00 -1.000000000D+00 0.000000000D+00
-    nElt= 6
+<!-- transcript: s04_zsourc_show -->
 
 Notice that the Aperture entry has changed significantly, since Aperture now represents an angle, instead of the diameter of the input beam. The ChfRayPos is now a small distance in front of the source, so zSource is now negative to indicate an diverging beam.
 
@@ -336,71 +286,9 @@ Mirrors are entered as type Reflector. Reflectors can have any surface type or s
 
 This example shows how to enter a flat mirror in MACOS:
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: flatMirror EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :reflect Element
-    + +
+<!-- transcript: s04_reflector -->
 
-+--------------------------+---------------------+----------------+---+
-| \| Surface types:        |                     |                | \ |
-|                          |                     |                | | |
-+==========================+=====================+================+===+
-| \| Flat                  | Conic               | Aspheric       | \ |
-|                          |                     |                | | |
-+--------------------------+---------------------+----------------+---+
-| \| Anamorphic            | Zernike             | Monomial       | \ |
-|                          |                     |                | | |
-+--------------------------+---------------------+----------------+---+
-| \| Interpolated          | UserDefined         |                | \ |
-|                          |                     |                | | |
-+--------------------------+---------------------+----------------+---+
-
-    + +
-    Enter surface type :flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]: no
-    Enter element index of refraction [1.00000]:1 IndRef
-    Enter element extinction coefficient [1.000000E+22]:1d22 Extinc
-
-This results in the following lines in the prescription file:
-
-        iElt=  1
-     EltName=  flatMirror
-     Element=  Reflector
-     Surface=  Flat
-        fElt=  1.000000000D+22
-        eElt=  0.000000000D+00
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-        nObs=  0
-      ApType=  None
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+After the last prompt for an element, NEW prints the element back as the prescription file will hold it and asks for confirmation.
 
 #### Refractors
 
@@ -412,78 +300,7 @@ As with reflectors, refractors in MACOS may have any surface shape. The index of
 
 This example lens has a spherical front surface and a planar rear surface, as illustrated in Figure 17:
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: lens_front EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating TrGrating |
-    | RfPolarizer TrPolarizer Obscuring |
-    + +
-    Enter element type :refractor Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined Grid data |
-    | Toric InfluenceFcn |
-    + +
-    Enter surface type :conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:1 fElt
-    Enter element eccentricity [0.]:0 eElt
-    Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]: no
-    Enter glass type [FixedIndex]: BK7 GlassElt
-    Enter Element 2 Data:
-    Enter element name (no blanks) [Elt]: lens_back EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating TrGrating |
-    | RfPolarizer TrPolarizer Obscuring |
-    + +
-    Enter element type :refractor Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined Grid data |
-    | Toric InfluenceFcn |
-    + +
-    Enter surface type :flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0.1 VptElt Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]: no
-    Enter glass type [FixedIndex]: FixedIndex GlassElt
-    Enter element index of refraction [1.00000]:1 IndRef
-    Enter element extinction coefficient [0.00000]:0 Extinc
+<!-- transcript: s04_refractor -->
 
 A Refractor may carry a gradient-index model (`GradInd=` with its coefficients). Only model 5, the radial profile n(r) = n0 + n2 r² + n4 r⁴ integrated with a Runge–Kutta step, is implemented; a ray meeting any other model is lost by name (`GRIN model not implemented`, counted in the WARN summary) rather than traced with undefined values. Model 5 cannot presently be entered from a prescription file; this is an open item.
 
@@ -551,61 +368,7 @@ from VptElt, though only the projection of pMon onto the plane is significant. T
 
 An additional example of the use of lenslet arrays is provided in Appendix A.4.
 
-    Enter element name (no blanks) [Elt]: LensArray EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :LensArray Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:2
-    Enter Conic Constant [0.]:0 KcElt
-    Enter Radius [-1.000000E+22]:-0.8 KrElt
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [0.800000]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter glass type [FixedIndex]: FixedIndex GlassElt
-    Enter element index of refraction [1.00000]:1.5 IndRef
-    Enter element extinction coefficient [0.]:0 Extinc
-    Enter surface reference point location (x,y,z) [0.,0.,0.]:0,0,0 pMon Enter surface x-axis unit vector (x,y,z) [1.00000,0.,0.]:1,0,0 xMon Enter surface y-axis unit vector (x,y,z) [0.,1.00000,0.]:0,1,0 yMon Enter surface z-axis unit vector (x,y,z) [0.,0.,1.00000]:0,0,1 zMon Orthoganalized zMon= 0. 0. 1.0000000000000
-    Enter lenslet width [1.00000]:0.1 LensArrayWidth
-    Enter lens array type (1=hex, 2=square) [1]:1 LensArrayType
-
-This results in the following lines in the prescription file:
-
-    iElt= 1
-    EltName= LensArray Element= LensArray Surface= Conic
-    fElt= 8.000000000D-01 eElt= 0.000000000D+00 KrElt= -8.000000000D-01 KcElt= 0.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00
-    IndRef= 1.500000000D+00
-
-    Extinc= 0.000000000D+00
-    pMon= 0.000000000D+00 0.000000000D+00 0.000000000D+00 xMon= 1.000000000D+00 0.000000000D+00 0.000000000D+00 yMon= 0.000000000D+00 1.000000000D+00 0.000000000D+00 zMon= 0.000000000D+00 0.000000000D+00 1.000000000D+00
-    LensArrayType= 1 LensArrayWidth= 1.000000000D-01
-    nObs= 0
-    ApType= None
-    zElt= 1.000000000D+22
-    PropType= Geometric nECoord= -6
+<!-- transcript: s04_lensarray -->
 
 #### Reflective Gratings
 
@@ -627,55 +390,7 @@ This is the convention of a straight-ruled grating: equidistant parallel groove 
 
 **FIGURE 19** Diffraction grating showing diffraction orders 1 and -2.
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: Grating
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Grating
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat
-    Enter element vertex location (x,y,z) [no default]: 0,0,0
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0
-    Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [1.000000E+22]:1d22
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]: no
-    Enter element index of refraction [1.00000]:1
-    Enter element extinction coefficient [1.000000E+22]:1d22
-    Enter diffraction order [1.00000]:1 OrderHOE Enter spacing of grating ruling [1.00000]:18.97366596d-7 RuleWidth Enter vector perp to grating ruling (x,y,z) [no default]: 0,1,0 h1HOE
-
-This dialog produced the following prescription data:
-
-    iElt= 1
-    EltName= Grating Element= Grating Surface= Flat
-    KrElt= -1.000000000D+22 KcElt= 0.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 IndRef= 1.000000000D+00
-    Extinc= 1.000000000D+22
-    h1HOE= 0.000000000D+00 1.000000000D+00 0.000000000D+00 OrderHOE= 1.000000000D+00
-    RuleWidth= 1.897366596D-06
-    nObs= 0
-    ApType= None
-    zElt= 1.000000000D+22
-    PropType= Geometric nECoord= -6
+<!-- transcript: s04_grating -->
 
 #### Transmissive Gratings
 
@@ -714,69 +429,9 @@ MACOS HOEs can be defined on any surface shape. Enter surface parameters to defi
 
 **FIGURE 20** Holographic optical element (HOE), showing diffracted and reflected beams.
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: HOEonMirror
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :HOE
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic
-    Enter element vertex location (x,y,z) [no default]: 0,0,0
-    Enter element rotation point (x,y,z) [0.,0.,0.]:
-    Enter element principal axis (x,y,z) [0.,0.,-1.00000]: Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:3 Enter element eccentricity [0.]:1
-    Do you want an aperture on this element? [NO]: Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [3.00000]:1d22
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]: no
-    Enter element index of refraction [1.00000]:1
-    Enter element extinction coefficient [1.000000E+22]:1d22
+<!-- transcript: s04_hoe -->
 
-    Enter input reference point (x,y,z) [no default]: 0,0,-1d22 h1HOE
-    Enter output reference point (x,y,z) [no default]: 1,0,-3 h2HOE
-    Enter diffraction order [1.00000]: 1 OrderHOE
-    Enter reference wavelength [1.000000E-07]:6e-7 WaveHOE
-
-This dialog produced the following prescription data:
-
-        iElt=  1
-     EltName=  HOEonMirror
-     Element=  HOE
-     Surface=  Conic
-       KrElt=  -6.000000000D+00
-       KcElt=  -1.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-       h1HOE=  0.000000000D+00  0.000000000D+00 -1.000000000D+22
-       h2HOE=  1.000000000D+00  0.000000000D+00 -3.000000000D+00
-    OrderHOE=  1.000000000D+00
-     WaveHOE=  6.000000000D-07
-        nObs=  0
-      ApType=  None
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+NEW prints the element back as the prescription file will hold it (Appendix A.2 lists the complete prescription).
 
 #### Reference Surfaces or Dummy Elements
 
@@ -798,148 +453,25 @@ Figure 21 illustrates a typical scenario, with a reference surface inserted in t
 
 **FIGURE 21** Reference surface correctly aligned with wavefront.
 
-    Enter element name (no blanks) [Elt]: ref_surf EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Reference Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:5.4 fElt
-    Enter element eccentricity [0.]:0 eElt
-    Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [5.40000]:5.4 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]: no
+<!-- transcript: s04_reference -->
 
-This dialog produced the following prescription data:
-
-    iElt= 3
-    EltName= ref_surf Element= Reference Surface= Conic
-    KrElt= -5.400000000D+00 KcElt= 0.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 IndRef= 1.000000000D+00
-    Extinc= 0.000000000D+00
-    nObs= 0
-    ApType= None
-    zElt= 5.400000000D+00
-    PropType= Geometric
-    nECoord= -6
+NEW prints the element back as the prescription file will hold it.
 
 #### Focal Planes
 
 The focal plane is a reference element, but one that always has a flat surface. The only difference between MACOS FocalPlane and Reference elements is in the way that linear models are computed for them. Use focal planes to end a prescription that is to be used for linear models! As a a reference element, a focal plane element has no direct optical effect. Focal planes are commonly used to terminate far-field diffraction propagations.
 
-    Enter element name (no blanks) [Elt]: focal_plane EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :FocalPlane Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,2 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,2.00000]:0,0,2 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 psiElt Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
+<!-- transcript: s04_focalplane -->
 
-This dialog produced the following prescription data:
-
-    iElt= 5
-    EltName= focal_plane Element= FocalPlane Surface= Flat
-    KrElt= -1.000000000D+22 KcElt= 0.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 2.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 2.000000000D+00 IndRef= 1.000000000D+00
-    Extinc= 0.000000000D+00
-    nObs= 0
-    ApType= None
-    zElt= 1.000000000D+22
-    PropType= Geometric nECoord= -6
+NEW prints the element back as the prescription file will hold it.
 
 #### Return Surfaces
 
 The return surface is another element which is used for calculations. It has no effect on wavefront propagation. Specifically, two return surfaces in sequence are used to find the position of the exit pupil of the system in the FEX command. This discussed more thoroughly in [Section ?](#beam-set-up-commands).
 
-    Enter element name (no blanks) [Elt]: return EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Return Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,1 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,1.00000]:0,0,1 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:5 fElt
-    Enter element eccentricity [0.]:0 eElt
-    Do you want an aperture on this element? [NO]: no
-    Enter number of obscurations [0]:0
-    Enter Fresnel propagation distance [5.00000]:5 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]: no
+<!-- transcript: s04_return -->
 
-This dialog produced the following prescription data:
-
-    iElt= 1
-    EltName= return Element= Return Surface= Conic
-    KrElt= -5.000000000D+00 KcElt= 0.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 RptElt= 0.000000000D+00 0.000000000D+00 1.000000000D+00 IndRef= 1.000000000D+00
-    Extinc= 0.000000000D+00
-    nObs= 0
-    ApType= None
-    zElt= 5.000000000D+00
-    PropType= Geometric nECoord= -6
+NEW prints the element back as the prescription file will hold it.
 
 #### Polarizers and Waveplates
 
@@ -1063,14 +595,7 @@ An example of a segment mirror .in-file (seg.in) is in Appendix A.5. The panels 
 
 Input data:
 
-    + +
-    | Source ray grid types: |
-    | Circular Square Hex |
-    | Pie Flower |
-    + +
-    Enter source grid type [Circular]: Pie GridType
-    Enter aperture diameter or angle [1.00000]:3.65 Aperture
-    Enter number of grid points [128]:31 nGridPts
+<!-- transcript: s04_segment_1 -->
 
 |                  |     |         |         |          | 67       |          | 66       |              | 65      |         | 64      |         | 63      |          | 62      |         |        |        |         |
 |----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|-------|
@@ -1098,183 +623,15 @@ Input data:
 
 ![](media/image52.png){width="5.013888888888889in" height="4.361111111111111in"}**FIGURE 23** Hexagonal coordinates X,L,R for a large array
 
-    Enter input plane x-axis vector (x,y,z) [1.00000,0.,0.]:1,0,0 xGrid Enter input plane y-axis vector (x,y,z) [0.,1.00000,0.]:0,1,0 yGrid Enter number of segments [no default]: 7 nSeg
-    Enter segment width: [3.65000]:1.2 width
-    Enter gap between segments: [0.]:0 gap
-    Enter 3 segment 1 hex coords [no default]: 0,0,0 SegCoord
-    Enter 3 segment 2 hex coords [no default]: 1,-1,-2
-    Enter 3 segment 3 hex coords [no default]: 2,1,-1
-    Enter 3 segment 4 hex coords [no default]: 1,2,1
-    Enter 3 segment 5 hex coords [no default]: -1,1,2
-    Enter 3 segment 6 hex coords [no default]: -2,-1,1
-    Enter 3 segment 7 hex coords [no default]: -1,-2,-1
-    Enter segment plane x-axis vector (x,y,z) [1.00000,0.,0.]:1,0,0 SegXgrid
+<!-- transcript: s04_segment_2 -->
 
 Element data:
 
-    Enter Element 1 Data:
-    Enter element name (no blanks): (Elt): s1 EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Segment Element
-    + +
-    | Surface types: |
+<!-- transcript: s04_segment_3 -->
 
-+---+---------------------+---------------------+----------------+---+
-| \ | Flat                | Conic               | Aspheric       | \ |
-| | |                     |                     |                | | |
-+===+=====================+=====================+================+===+
-| \ | Anamorphic          | Zernike             | Monomial       | \ |
-| | |                     |                     |                | | |
-+---+---------------------+---------------------+----------------+---+
-| \ | Interpolated        | UserDefined         |                | \ |
-| | |                     |                     |                | | |
-+---+---------------------+---------------------+----------------+---+
+Segments 3 to 6 are entered the same way, each with its own rotation point; NEW takes the vertex, axis and shape from segment 1.
 
-    + +
-    Enter surface type :Conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:1.46 fElt
-    Enter element eccentricity [0.]:1 eElt
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.46000]:1.46 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
-
-        iElt=  1
-     EltName=  s1
-     Element=  Segment
-     Surface=  Conic
-        fElt=  1.460000000D+00
-        eElt=  1.000000000D+00
-       KrElt=  -2.920000000D+00
-       KcElt=  -1.000000000D+00
-      psiElt=  0.000000000D+00 0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00 0.000000000D+00 0.000000000D+00
-      RptElt=  0.000000000D+00 0.000000000D+00 0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-        nObs=  0
-      ApType=  None
-        zElt=  1.460000000D+00
-    PropType=  Geometric
-     nECoord=  -6
-
-    Is this correct? [YES]:
-    Enter Element 2 Data:
-    Enter element name (no blanks) [Elt]: s2 EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Segment Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-
-+------------+----------+---------+-------+---------------------------+
-| \|         | An       | Zernike | Mon   | \|                        |
-|            | amorphic |         | omial |                           |
-+============+==========+=========+=======+===========================+
-| \|         | Inte     | User    |       | \|                        |
-|            | rpolated | Defined |       |                           |
-+------------+----------+---------+-------+---------------------------+
-
-    + +
-    Enter surface type :Conic Surface
-    Enter element rotation point (x,y,z) [0.,0.,0.]:.6124997330,-1.060881274,
-    .2569563356
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.46000]:1.46 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
-    iElt= 2
-    EltName= s2 Element= Segment Surface= Conic
-    fElt= 1.460000000D+00 eElt= 1.000000000D+00 KrElt= -2.920000000D+00 KcElt= -1.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= 6.124997330D-01 -1.060881274D+00 2.569563356D-01 IndRef= 1.000000000D+00
-    Extinc= 1.000000000D+22
-    nObs= 0
-    ApType= None
-    zElt= 1.460000000D+00
-    PropType= Geometric nECoord= -6
-    Is this correct? [YES]:
-    ...
-    Enter Element 7 Data:
-    Enter element name (no blanks) [Elt]: s7 EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Segment Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic Surface
-    Enter element rotation point (x,y,z) [0.,0.,0.]:-.612500534,-1.060880811,
-    .2569563356
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.46000]:1.46 zElt
-
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
-    iElt= 7
-    EltName= s7 Element= Segment Surface= Conic
-    fElt= 1.460000000D+00 eElt= 1.000000000D+00 KrElt= -2.920000000D+00 KcElt= -1.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 0.000000000D+00 RptElt= -6.125005340D-01 -1.060880811D+00 2.569563356D-01 IndRef= 1.000000000D+00
-    Extinc= 1.000000000D+22
-    nObs= 0
-    ApType= None
-    zElt= 1.460000000D+00
-    PropType= Geometric nECoord= -6
-    Is this correct? [YES]:
+<!-- transcript: s04_segment_4 -->
 
 #### Generating segmented prescriptions: SegMirMaker
 
@@ -1322,92 +679,7 @@ NOTE: Geometric propagation only is supported through non-squential elements.
 
 Corner cube example
 
-    Enter element name (no blanks) [Elt]: Face1 EltName
-    + +
-
-+-----------------------+---------+-----------------------------------+
-| \| Element types:     |         | \|                                |
-+=======================+=========+===================================+
-| \| Reflector          | NSRe    | Segment \|                        |
-|                       | flector |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| Refractor          | NSRe    | LensArray \|                      |
-|                       | fractor |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| FocalPlane         | Re      | Return \|                         |
-|                       | ference |                                   |
-+-----------------------+---------+-----------------------------------+
-
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :NSReflector Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:-.7071,0,-.7071 psiElt Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:1d0 Enter element extinction coefficient [1.000000E+22]:
-    Enter element name (no blanks) [Elt]: Face2 EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :NSReflector Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:.7071,0,-.7071 psiElt Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-
-+-------------------------+---------------------+-----------------+---+
-| \| Geometric            | GeomUpdate          | FarField        | \ |
-|                         |                     |                 | | |
-+=========================+=====================+=================+===+
-| \| NFSpherical          | NFS1surf            |                 | \ |
-|                         |                     |                 | | |
-+-------------------------+---------------------+-----------------+---+
-| \| NFPlane              | NFP1surf            |                 | \ |
-|                         |                     |                 | | |
-+-------------------------+---------------------+-----------------+---+
-
-+------------+----------+-----------+---------------------------------+
-| \|         | NF1      | NF2       | \|                              |
-+============+==========+===========+=================================+
-| \|         | Spati    | SF1surf   | \|                              |
-|            | alFilter |           |                                 |
-+------------+----------+-----------+---------------------------------+
-
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:1d0 Enter element extinction coefficient [1.000000E+22]:
+<!-- transcript: s04_nonseq -->
 
 #### Refractive Non-Sequential Surfaces
 
@@ -1488,64 +760,7 @@ Note: The A,B,C,D parameters are used by optical design codes as well, except th
 
 This example shows how to enter a higher order aspheric reflector.
 
-    Enter element name (no blanks) [Elt]: gen_asphere EltType
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Reflector Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Aspheric Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt
-    Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 psiElt
-    Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:2
-    Enter Conic Constant [0.]:-1 KcElt
-    Enter Radius [-1.000000E+22]:5 KrElt
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [2.50000]:5 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
-    Enter aspheric coefficients A,B,C,D [0,0,0,0]:1e-9,2e-19,3e-17,4e-20 AsphCoef
-
-This dialog produced the following prescription data:
-
-        iElt=  1
-     EltName=  gen_asphere
-     Element=  Reflector
-     Surface=  Aspheric
-       KrElt=  -5.000000000D+00
-       KcElt=  -1.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00  1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00  0.000000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00  0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-    AsphCoef=  1.000000000D-09  2.000000000D-19  3.000000000D-17  4.00000000D-20
-        nObs=  0
-      ApType=  None
-        zElt=  5.000000000D+00
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_asphere -->
 
 An `AsphCoef=` (or `AnaCoef=`) line that carries fewer values than the surface needs is accepted: the missing higher-order coefficients are zero, and one line naming the element and the count is printed at load.
 
@@ -1673,102 +888,7 @@ KcElt and KrElt (or eElt and fElt) are the parameters that describe the conicoid
 
 Zernike polynomials, listed in Table 8, are orthogonal over a unit circle. The polar coordinates (R, A) are related to the coordinates of the projection of the point of incidence vector onto the plane perpendicular defined by xMon and yMon (X, Y) by X=R lMon cos(A) and Y=R lMon sin(A). The more common Seidel aberrations can be calculated from the Zernike coefficients (ref. Malacara).An example using a Zernike surface to simulate deformations on the primary mirror of a small telescope is provided in Appendix A.7. The following dialog illustrates the responses the NEW command expects in entering a Zernike reflector:
 
-    Enter element name (no blanks) [Elt]: zern_surface EltName
-    + +
-
-+-----------------------+---------+-----------------------------------+
-| \| Element types:     |         | \|                                |
-+=======================+=========+===================================+
-| \| Reflector          | NSRe    | Segment \|                        |
-|                       | flector |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| Refractor          | NSRe    | LensArray \|                      |
-|                       | fractor |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| FocalPlane         | Re      | Return \|                         |
-|                       | ference |                                   |
-+-----------------------+---------+-----------------------------------+
-
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Reflector Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Zernike Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,0 VptElt
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:2
-    Enter Conic Constant [0.]:0 KcElt
-    Enter Radius [-1.000000E+22]:1d22 KrElt
-    Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-    Enter element index of refraction [1.00000]:1
-    Enter element extinction coefficient [1.000000E+22]:
-    Enter Zernike coefficients 1-6 [0.,0.,0.,0.,0.,0.]:.0001,0,.00002,0,0, .00001
-    ZernCoef
-    Enter Zernike coefficients 7-12 [0.,0.,0.,0.,0.,0.]:0,0,.000001,.00002,0,0 Zern-Coef
-    Enter Zernike coefficients 13-18 [0.,0.,0.,0.,0.,0.]:0,.000003,.000001,0,0, .000002
-    ZernCoef
-    EnterZernikecoefficients19-24[0.,0.,0.,0.,0.,0.]:.0000005,.0000001,0,0,.000002,.00004
-    ZernCoef
-    Enter Zernike coefficients 25-30 [0.,0.,0.,0.,0.,0.]:.0000001,0,0,0, .000001,0
-    ZernCoef
-    Enter Zernike coefficients 31-36 [0.,0.,0.,0.,0.,0.]:0,0,0,0,0,0 ZernCoef
-    Enter Zernike coefficients 37-42 [0.,0.,0.,0.,0.,0.]:0,0,0,0,0,0 ZernCoef
-    Enter Zernike coefficients 43-45 [0.,0.,0.]:0,0,0 ZernCoef Enter surface reference point location (x,y,z) [0.,0.,0.]:0,0,0 pMon Enter surface x-axis unit vector (x,y,z) [-1.00000,0.,0.]:1,0,0 xMon Enter surface y-axis unit vector (x,y,z) [0.,-1.00000,0.]:0,1,0 yMon Enter surface z-axis unit vector (x,y,z) [0.,0.,-1.00000]:0,0,1 zMon Orthoganalized zMon= 0. 0. 1.0000000000000
-    Enter scale length [1.00000]:1 lMon
-
-This dialog produced the following prescription data:
-        iElt=  1
-     EltName=  zern_surface
-     Element=  Reflector
-     Surface=  Zernike
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      RptElt=  0.000000000D+00 0.000000000D+00  0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-    ZernCoef=  1.000000000D-04 0.000000000D+00  2.000000000D-05 0.000000000D+00
-               0.000000000D+00 1.000000000D-05
-               0.000000000D+00 0.000000000D+00  1.000000000D-06  2.000000000D-05
-               0.000000000D+00 0.000000000D+00
-               0.000000000D+00 3.000000000D-06  1.000000000D-06  0.000000000D+00
-               0.000000000D+00 2.000000000D-06
-               5.000000000D-07 1.000000000D-07  0.000000000D+00  0.000000000D+00
-               2.000000000D-06 4.000000000D-05
-               1.000000000D-07 0.000000000D+00  0.000000000D+00  0.000000000D+00
-               1.000000000D-06 0.000000000D+00
-               0.000000000D+00 0.000000000D+00  0.000000000D+00  0.000000000D+00
-               0.000000000D+00 0.000000000D+00
-               0.000000000D+00 0.000000000D+00  0.000000000D+00  0.000000000D+00
-               0.000000000D+00 0.000000000D+00
-               0.000000000D+00 0.000000000D+00  0.000000000D+00
-        pMon=  0.000000000D+00 0.000000000D+00  0.000000000D+00
-        xMon=  1.000000000D+00 0.000000000D+00  0.000000000D+00
-        yMon=  0.000000000D+00 1.000000000D+00  0.000000000D+00
-        zMon=  0.000000000D+00 0.000000000D+00  1.000000000D+00
-        lMon=  1.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_zernike -->
 
 #### Sparse Zernike input
 
@@ -2042,10 +1162,6 @@ When entering data for obscurations and apertures, fElt, eElt, and, psiElt are r
 
 This section has three different examples. The first example is of an element representing a square aperture in front of the primary mirror.
 
-    Enter element name (no blanks) [Elt]: Sq_Ap EltName
-    + +
-    | Element types: |
-
 ![](media/fig_rescued_28.png)
 
 **FIGURE 28** Examples of apertures types.
@@ -2056,237 +1172,15 @@ Circle Rectangle Ring Triangle
 
 **FIGURE 29** Examples of obscuration types and some composite obscurations.
 
-+---+--------------------+----------------------+---------------------+
-| \ | Reflector          | NSReflector          | Segment \|          |
-| | |                    |                      |                     |
-+===+====================+======================+=====================+
-| \ | Refractor          | NSRefractor          | LensArray \|        |
-| | |                    |                      |                     |
-+---+--------------------+----------------------+---------------------+
-| \ | FocalPlane         | Reference            | Return \|           |
-| | |                    |                      |                     |
-+---+--------------------+----------------------+---------------------+
-| \ | HOE                | Grating              | Obscuring \|        |
-| | |                    |                      |                     |
-+---+--------------------+----------------------+---------------------+
-
-    + +
-    Enter element type :Obscuring Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,-5.4 VptElt Enter element rotation point (x,y,z) [0.,0.,-5.40000]:0,0,-5.4 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Do you want an aperture on this element? [NO]: yes
-    + +
-    | Aperture types: |
-    | Circular Rectangular |
-    + +
-    Enter aperture type [Circular]: Rectangular ApType Enter aperture xmin,xmax,ymin,ymax [-0.500000,0.500000,-0.500000,0.500000]: - 1.5,1.5,-1.5,1.5 ApVec
-    Enter number of obscurations [0]:0 nObs
-    Enter element x-axis vector (x,y,z) [-1.00000,0.,0.]:1,0,0 xObs
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-
-+---+----------------------+-------------------+-----------------+---+
-| \ | Geometric            | GeomUpdate        | FarField        | \ |
-| | |                      |                   |                 | | |
-+===+======================+===================+=================+===+
-| \ | NFSpherical          | NFS1surf          |                 | \ |
-| | |                      |                   |                 | | |
-+---+----------------------+-------------------+-----------------+---+
-| \ | NFPlane              | NFP1surf          |                 | \ |
-| | |                      |                   |                 | | |
-+---+----------------------+-------------------+-----------------+---+
-| \ | NF1                  | NF2               |                 | \ |
-| | |                      |                   |                 | | |
-+---+----------------------+-------------------+-----------------+---+
-| \ | SpatialFilter        | SF1surf           |                 | \ |
-| | |                      |                   |                 | | |
-+---+----------------------+-------------------+-----------------+---+
-
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-
-This dialog produced the following prescription data:
-
-        iElt=  1
-     EltName=  Sq_Ap
-     Element=  Obscuring
-     Surface=  Flat
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  Rectangular
-       ApVec=  -1.500000000D+00  1.500000000D+00 -1.500000000D+00  1.50000000D+00
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_obscuration_1 -->
 
 The second example shows an obscuration consisting of four circles (see Figure 29). This is similar to what was done to model the Hubble Space Telescope’s primary mirror which was drilled in three places for rubber retaining rings. This example is a Cassegrain telescope example with four support pads on the primary mirror. fElt and eElt are the same as the primary mirror. NGridpts was also increased so the obscurations could be seen in the focal plane. Note that the support pads are located just in front of the primary mirror.
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: 4CircObs EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Obscuring Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,-.01 VptElt Enter element rotation point (x,y,z) [0.,0.,-1.000000E-02]:0,0,-.01 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:5.4 fElt
-    Enter element eccentricity [0.]:1 eElt
-    Do you want an aperture on this element? [NO]: yes
-    + +
-    | Aperture types: |
-    | Circular Rectangular |
-    + +
-    Enter aperture type [Circular]: Circular ApType
-    Enter aperture radius, x, y [0.500000,0.,0.]:2,0,0 ApVec
-    Enter number of obscurations [0]:4 nObs
-    + +
-    | Obscuration types: |
-    | Circle NegCircle |
-    | Rectangle NegRectangle |
-    | Annulus NegAnnulus |
-    | Triangle NegTriangle |
-    | Ellipse NegEllipse |
-    + +
-    Enter obscuration type [Circle]: Circle ObsType
-    Enter obscuration radius, x, y [no default]: 0.2,1,1 ObsVec
-    Enter obscuration type [Circle]: Circle ObsType
-    Enter obscuration radius, x, y [no default]: 0.2,1,-1 ObsVec
-    Enter obscuration type [Circle]: Circle ObsType
-    Enter obscuration radius, x, y [no default]: 0.2,-1,1 ObsVec
-    Enter obscuration type [Circle]: Circle ObsType
-    Enter obscuration radius, x, y [no default]: 0.2,-1,-1 ObsVec
-    Enter element x-axis vector (x,y,z) [-1.00000,0.,0.]:1,0,0 xObs
-    Enter Fresnel propagation distance [5.40000]:5.4 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-
-This dialog produced the following prescription data:
-
-    iElt= 1
-    EltName= 4CircObs Element= Obscuring Surface= Conic
-    KrElt= -1.080000000D+01 KcElt= -1.000000000D+00
-    psiElt= 0.000000000D+00 0.000000000D+00 -1.000000000D+00 VptElt= 0.000000000D+00 0.000000000D+00 -1.000000000D-02 RptElt= 0.000000000D+00 0.000000000D+00 -1.000000000D-02 IndRef= 1.000000000D+00
-    Extinc= 0.000000000D+00
-    nObs= 4
-    ObsType= Circle
-    ObsVec= 2.000000000D-01 1.000000000D+00 1.000000000D+00
-    ObsType= Circle
-    ObsVec= 2.000000000D-01 1.000000000D+00 -1.000000000D+00
-    ObsType= Circle
-    ObsVec= 2.000000000D-01 -1.000000000D+00 1.000000000D+00
-    ObsType= Circle
-    ObsVec= 2.000000000D-01 -1.000000000D+00 -1.000000000D+00 xObs= 1.000000000D+00 0.000000000D+00 0.000000000D+00
-    ApType= Circular
-    ApVec= 2.000000000D+00 0.000000000D+00 0.000000000D+00 zElt= 5.400000000D+00
-    PropType= Geometric nECoord= -6
+<!-- transcript: s04_obscuration_2 -->
 
 The third example shows an obscuration produced by a secondary mirror and it’s support spider: two rectangles and a circle (see Figure 29). These planar obscurations obscure the primary mirror.
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: SpiderObs EltName
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Obscuring Element
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat Surface
-    Enter element vertex location (x,y,z) [no default]: 0,0,-5.4 VptElt Enter element rotation point (x,y,z) [0.,0.,-5.40000]:0,0,-5.4 RptElt Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 psiElt Do you want an aperture on this element? [NO]: yes
-    + +
-    | Aperture types: |
-    | Circular Rectangular |
-    + +
-    Enter aperture type [Circular]: Circular ApType
-    Enter aperture radius, x, y [0.500000,0.,0.]:2,0,0 ApVec
-    Enter number of obscurations [0]:3 nObs
-    + +
-    | Obscuration types: |
-    | Circle NegCircle |
-    | Rectangle NegRectangle |
-    | Annulus NegAnnulus |
-    | Triangle NegTriangle |
-    | Ellipse NegEllipse |
-    + +
-    Enter obscuration type [Circle]: Circle ObsType
-    Enter obscuration radius, x, y [no default]: 0.5,0,0 ObsVec
-    Enter obscuration type [Circle]: Rectangle ObsType Enter obscuration xmin, xmax, ymin, ymax [no default]: -.25,.25,-2,2 ObsVec Enter obscuration type [Circle]: Rectangle ObsType Enter obscuration xmin, xmax, ymin, ymax [no default]: -2,2,-.25,.25 ObsVec Enter element x-axis vector (x,y,z) [-1.00000,0.,0.]:1,0,0 xObs
-    Enter Fresnel propagation distance [1.000000E+22]:1d22 zElt
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric PropType
-    Do you wish to use element-based coordinates?: [NO]:
-
-This dialog produced the following prescription data:
-
-        iElt=  1
-     EltName=  SpiderObs
-     Element=  Obscuring
-     Surface=  Flat
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  3
-     ObsType=  Circle
-      ObsVec=  5.000000000D-01  0.000000000D+00  0.000000000D+00
-     ObsType=  Rectangle
-      ObsVec=  -2.500000000D-01  2.500000000D-01 -2.000000000D+00  2.00000000D+00
-     ObsType=  Rectangle
-      ObsVec=  -2.000000000D+00  2.000000000D+00 -2.500000000D-01  2.50000000D-01
-        xObs=  1.000000000D+00  0.000000000D+00 0.000000000D+00
-      ApType=  Circular
-       ApVec=  2.000000000D+00  0.000000000D+00  0.000000000D+00
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_obscuration_3 -->
 
 #### Obscuration types and the ObsVec= line
 
@@ -2365,321 +1259,29 @@ In [Section ?](#example-light-source) the source data for the Cassegrain telesco
 
 Continuation of MACOS input from [Section ?](#example-light-source).
 
-    Enter Element 1 Data:
-    Enter element name (no blanks) [Elt]: SecMirObs
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Obscuring
-    + +
+Element 1, the secondary mirror's obscuration (with the aperture):
 
-+-----------------------+--------+---------+---------------------------+
-| \| Surface types:     |        |         | \|                        |
-+=======================+========+=========+===========================+
-| \| Flat               | Conic  | A       | \|                        |
-|                       |        | spheric |                           |
-+-----------------------+--------+---------+---------------------------+
-| \| Anamorphic         | Z      | M       | \|                        |
-|                       | ernike | onomial |                           |
-+-----------------------+--------+---------+---------------------------+
+<!-- transcript: s04_new_elt1 -->
 
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat
-    Enter element vertex location (x,y,z) [no default]: 0,0,-5.4 Enter element rotation point (x,y,z) [0.,0.,-5.40000]:0,0,-5.4 Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 Do you want an aperture on this element? [NO]: yes
-    + +
-    | Aperture types: |
-    | Circular Rectangular |
-    + +
-    Enter aperture type [Circular]: Circular
-    Enter aperture radius, x, y [0.500000,0.,0.]:2,0,0 Enter number of obscurations [0]:1
-    + +
-    | Obscuration types: |
-    | Circle NegCircle |
-    | Rectangle NegRectangle |
-    | Annulus NegAnnulus |
-    | Triangle NegTriangle |
-    | Ellipse NegEllipse |
-    + +
-    Enter obscuration type [Circle]: Circle
-    Enter obscuration radius, x, y [no default]: 0.5,0,0
-    Enter element x-axis vector (x,y,z) [-1.00000,0.,0.]:1,0,0 Enter Fresnel propagation distance [1.000000E+22]:1d22
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]:
+Element 2, the primary mirror:
 
-        iElt=  1
-     EltName=  SecMirObs
-     Element=  Obscuring
-     Surface=  Flat
-        fElt=  1.000000000D+22
-        eElt=  0.000000000D+00
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  1
-     ObsType=  Circle
-      ObsVec=  5.000000000D-01  0.000000000D+00  0.000000000D+00
-        xObs=  1.000000000D+00  0.000000000D+00  0.000000000D+00
-      ApType=  Circular
-       ApVec=  2.000000000D+00  0.000000000D+00  0.000000000D+00
-        zElt=  1.000000000D+22
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_new_elt2 -->
 
-    Is this correct? [YES]:
-    Enter Element 2 Data:
-    Enter element name (no blanks) [Elt]: Primary
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :Reflector
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic
-    Enter element vertex location (x,y,z) [no default]: 0,0,0
-    Enter element rotation point (x,y,z) [0.,0.,0.]:0,0,0
-    Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:5.4 Enter element eccentricity [0.]:1
-    Do you want an aperture on this element? [NO]: Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [5.40000]:5.4
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]: Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
+Element 3, the secondary mirror:
 
-        iElt=  2
-     EltName=  Primary
-     Element=  Reflector
-     Surface=  Conic
-        fElt=  5.400000000D+00
-        eElt=  1.000000000D+00
-       KrElt=  -1.080000000D+01
-       KcElt=  -1.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 0.000000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-        nObs=  0
-      ApType=  None
-        zElt=  5.400000000D+00
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_new_elt3 -->
 
-    Is this correct? [YES]:
-    Enter Element 3 Data:
-    Enter element name (no blanks) [Elt]: Secondary
-    + +
+Element 4, the reference surface:
 
-+--------------------------+---------------------+---------------------+
-| \| Element types:        |                     | \|                  |
-+==========================+=====================+=====================+
-| \| Reflector             | NSReflector         | Segment \|          |
-+--------------------------+---------------------+---------------------+
-| \| Refractor             | NSRefractor         | LensArray \|        |
-+--------------------------+---------------------+---------------------+
-| \| FocalPlane            | Reference           | Return \|           |
-+--------------------------+---------------------+---------------------+
-| \| HOE                   | Grating             | Obscuring \|        |
-+--------------------------+---------------------+---------------------+
+<!-- transcript: s04_new_elt4 -->
 
-    + +
-    Enter element type :Reflector
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic
-    Enter element vertex location (x,y,z) [no default]: 0,0,-4.0611459018
-    Enter element rotation point (x,y,z) [0.,0.,-4.06115]:0,0,-5.4 Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,-1 Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:1.3388540982 Enter element eccentricity [0.]:1.6341835953
-    Do you want an aperture on this element? [NO]: Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.33885]:1.3388540982
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]: Enter element index of refraction [1.00000]:
-    Enter element extinction coefficient [1.000000E+22]:
+Element 5, the focal plane:
 
-        iElt=  3
-     EltName=  Secondary
-     Element=  Reflector
-     Surface=  Conic
-        fElt=  1.338854098D+00
-        eElt=  1.634183595D+00
-       KrElt=  -3.526787502D+00
-       KcElt=  -2.670556023D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 -1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -4.061145902D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -5.400000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  1.000000000D+22
-        nObs=  0
-      ApType=  None
-        zElt=  1.338854098D+00
-    PropType=  Geometric
-     nECoord=  -6
+<!-- transcript: s04_new_elt5 -->
 
-    Is this correct? [YES]:
-    Enter Element 4 Data:
-    Enter element name (no blanks) [Elt]: Ref_surf
-    + +
+The output coordinate frame:
 
-+-----------------------+---------+-----------------------------------+
-| \| Element types:     |         | \|                                |
-+=======================+=========+===================================+
-| \| Reflector          | NSRe    | Segment \|                        |
-|                       | flector |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| Refractor          | NSRe    | LensArray \|                      |
-|                       | fractor |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| FocalPlane         | Re      | Return \|                         |
-|                       | ference |                                   |
-+-----------------------+---------+-----------------------------------+
-| \| HOE                | Grating | Obscuring \|                      |
-+-----------------------+---------+-----------------------------------+
-
-    + +
-    Enter element type :Reference
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Conic
-    Enter element vertex location (x,y,z) [no default]: 0,0,-4.0601459018 Enter element rotation point (x,y,z) [0.,0.,-4.06015]:0,0,-4.0601459018 Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1
-    Enter e&f or Kc&Kr (1=e&f,2=Kc&Kr)? [1]:1
-    Enter element focal length [1.000000E+22]:5.5601459018 Enter element eccentricity [0.]:0
-    Do you want an aperture on this element? [NO]: Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [5.56015]:5.5601459018
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: FarField
-    Do you wish to use element-based coordinates?: [NO]:
-
-        iElt=  4
-     EltName=  Ref_surf
-     Element=  Reference
-     Surface=  Conic
-        fElt=  5.560145902D+00
-        eElt=  0.000000000D+00
-       KrElt=  -5.560145902D+00
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00 1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00 -4.060145902D+00
-      RptElt=  0.000000000D+00  0.000000000D+00 -4.060145902D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  5.560145902D+00
-    PropType=  FarField
-     nECoord=  -6
-
-    Is this correct? [YES]:
-    Enter Element 5 Data:
-    Enter element name (no blanks) [Elt]: foc_pln
-    + +
-    | Element types: |
-    | Reflector NSReflector Segment |
-    | Refractor NSRefractor LensArray |
-    | FocalPlane Reference Return |
-    | HOE Grating Obscuring |
-    + +
-    Enter element type :FocalPlane
-
-    + +
-    | Surface types: |
-    | Flat Conic Aspheric |
-    | Anamorphic Zernike Monomial |
-    | Interpolated UserDefined |
-    + +
-    Enter surface type :Flat
-    Enter element vertex location (x,y,z) [no default]: 0,0,1.5 Enter element rotation point (x,y,z) [0.,0.,1.50000]:0,0,1.5 Enter element principal axis (x,y,z) [0.,0.,-1.00000]:0,0,1 Do you want an aperture on this element? [NO]:
-    Enter number of obscurations [0]:
-    Enter Fresnel propagation distance [1.000000E+22]:0
-    + +
-    | Propagation types: |
-    | Geometric GeomUpdate FarField |
-    | NFSpherical NFS1surf |
-    | NFPlane NFP1surf |
-    | NF1 NF2 |
-    | SpatialFilter SF1surf |
-    + +
-    Enter propagation type [Geometric]: Geometric
-    Do you wish to use element-based coordinates?: [NO]:
-
-        iElt=  5
-     EltName=  foc_pln
-     Element=  FocalPlane
-     Surface=  Flat
-        fElt=  1.000000000D+22
-        eElt=  0.000000000D+00
-       KrElt=  -1.000000000D+22
-       KcElt=  0.000000000D+00
-      psiElt=  0.000000000D+00  0.000000000D+00  1.000000000D+00
-      VptElt=  0.000000000D+00  0.000000000D+00  1.500000000D+00
-      RptElt=  0.000000000D+00  0.000000000D+00  1.500000000D+00
-      IndRef=  1.000000000D+00
-      Extinc=  0.000000000D+00
-        nObs=  0
-      ApType=  None
-        zElt=  0.000000000D+00
-    PropType=  Geometric
-     nECoord=  -6
-
-    nOutCord= 0
-    Tout=
-    Is this correct? [YES]:
-    Enter xOut (x,y,z) [-1.00000,0.,0.]:1,0,0
-    Enter yOut (x,y,z) [0.,1.00000,0.]:0,1,0
+<!-- transcript: s04_new_tout -->
 
 This completes the input example. The file is now saved as Cassegrain.in within the directory in which MACOS is running. The input file is included in Appendix A.1.
 
