@@ -240,10 +240,6 @@ The lateral position of a beam propagating through a system is constrained by th
 
 The system stop is specified using the STOp command. STOp does not center the beam in the stop (CENTEr can be used to do this). It merely defines the system stop position. This information is used to constrain the beam when setting exit pupils or perturbing the source.
 
-*System stop aperture defines beam position for changing field angles*
-
-*Changing field angle moves image position*
-
 ![](media/fig_rescued_38.png)
 
 **FIGURE 38** System stop

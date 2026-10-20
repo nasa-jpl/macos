@@ -121,14 +121,6 @@ parameters:
 
 The ray grid is laid out on the surface that defines the light source, according to a coordinate system for which zGrid equals the negative chief ray direction ChfRayDir and xGrid is as specified by the user (see Figure 14). The number of rays across the aperture is set by nGridPts.
 
-![](media/image33.png){width="1.2361111111111112in" height="1.3083333333333333in"}
-
-    yGrid
-
-Coordinates
-
-    yGrid=zGrid x xGrid
-
 ![](media/fig_rescued_14.png)
 
 **FIGURE 14** Ray grid layout
@@ -1165,8 +1157,6 @@ This section has three different examples. The first example is of an element re
 ![](media/fig_rescued_28.png)
 
 **FIGURE 28** Examples of apertures types.
-
-Circle Rectangle Ring Triangle
 
 ![](media/fig_rescued_29.png)
 
