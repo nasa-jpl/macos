@@ -72,10 +72,30 @@
 | 10 | 10 | 66 | 56 | 66 | – | – | R^10^ cos(10A) |
 | 12 | 0 | – | – | – | 37 | – | 924R^12^ - 2772R^10^ + 3150R^8^ - 1680R^6^ + 420R^4^ - 42R^2^ + 1 |
 
-Measured: 734 (type, mode) pairs over 12 type settings.  Every mode of ANSI, Born & Wolf, Noll and Fringe is one term of the table with coefficient 1; `Malacara` traces exactly as `ANSI`.  `NormANSI` = `ANSI` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormBornWolf` = `BornWolf` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormNoll` = `Noll` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormFringe` = `Fringe` with every term multiplied by its RMS factor (37 modes, all measured equal to it).
+Measured: 647 (type, mode) pairs over 11 type settings.  Every mode of ANSI, Born & Wolf, Noll and Fringe is one term of the table with coefficient 1; `Malacara` traces exactly as `ANSI`.  `NormANSI` = `ANSI` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormBornWolf` = `BornWolf` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormNoll` = `Noll` with every term multiplied by its RMS factor (66 modes, all measured equal to it).  `NormFringe` = `Fringe` with every term multiplied by its RMS factor (37 modes, all measured equal to it).
 
-`ExtFringe` modes 47, 48, 49, 58, 59, 60, 61, 62, 63, 64 (radial orders 11 to 14) are accepted but apply no surface: the engine converts Extended Fringe through the 66-mode ANSI set, which stops at radial order 10.  They are not rows of the table.
+`ExtFringe` modes 47, 48, 49, 58, 59, 60, 61, 62, 63, 64 (radial orders 11 to 14) are refused at load by mode, and by the coefficient setters, when their coefficient is not zero: the engine converts Extended Fringe through the 66-mode ANSI set, which stops at radial order 10, so they would apply no surface.  They are not rows of the table.
 
-`NormAnnularNoll`: modes 1–45 trace exactly as `NormNoll` (the circular, not the annular, polynomials), at annulus ratio 0 and at 0.3 alike; modes 46–66 apply no surface.
+`NormAnnularNoll` is refused at load (and by `MODIFY` and the bindings): its converter ignores the annulus ratio, so the surface traced as circular `NormNoll` at any ratio, and its modes 46–66 applied nothing.  Use `NormNoll`.
 
-`NormHex` is refused at load: the engine accepts no coefficients for it.
+**TABLE E.2.** `NormHex`: hexagon-orthonormal modes 1–15 (measured, all 45 modes)
+
+| Mode | n | m | Polynomial (x, y in units of lMon) |
+|---------:|----:|----:|:------------------------------------------------------------|
+| 1 | 0 | 0 | 1 |
+| 2 | 1 | 1 | 2.19089x |
+| 3 | 1 | -1 | 2.19089y |
+| 4 | 2 | 0 | 4.09197x^2^ + 4.09197y^2^ - 1.70499 |
+| 5 | 2 | -2 | 5.8554xy |
+| 6 | 2 | 2 | 2.9277x^2^ - 2.9277y^2^ |
+| 7 | 3 | -1 | 10.6759x^2^y + 10.6759y^3^ - 5.97852y |
+| 8 | 3 | 1 | 10.6759x^3^ + 10.6759xy^2^ - 5.97852x |
+| 9 | 3 | -3 | 12.6491x^2^y - 4.21637y^3^ |
+| 10 | 3 | 3 | 3.29754x^3^ - 9.89263xy^2^ |
+| 11 | 4 | 0 | 17.4413x^4^ + 34.8826x^2^y^2^ + 17.4413y^4^ - 14.8917x^2^ - 14.8917y^2^ + 2.13526 |
+| 12 | 4 | 2 | 16.7559x^4^ - 16.7559y^4^ - 10.6434x^2^ + 10.6434y^2^ |
+| 13 | 4 | -2 | 33.5118x^3^y + 33.5118xy^3^ - 21.2868xy |
+| 14 | 4 | 4 | -0.501912x^4^ - 28.7497x^2^y^2^ + 10.0852y^4^ + 2.62906x^2^ - 2.62906y^2^ |
+| 15 | 4 | -4 | 29.7536x^3^y - 8.57942xy^3^ - 5.25813xy |
+
+Measured: each of the 45 `NormHex` modes traces as the Noll term of the same index orthonormalized over the unit hexagon with vertices on ±xMon (largest difference 5e-12 of the mode, mode 38); the same set with vertices on ±yMon differs in 29 modes.  Modes 16–45 continue the construction through radial order 8 (Noll index = mode).
