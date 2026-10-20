@@ -2673,6 +2673,10 @@
         end if
 
         if (setter .eqv. PASS) then
+          if (any(ZernModeInertV(ZernTypeL(iElt), ZernMode) .and. ZernCoef_ /= 0d0)) then   ! (tt)
+            write(*,*) ' ** elt_srf_zrn_coef refused: '//ZernInertMsg
+            return
+          end if
           if (reset .eqv. PASS) ZernCoef(:, iElt) = 0d0
           ZernCoef(ZernMode(:), iElt) = ZernCoef_(:)
         else
@@ -2723,6 +2727,10 @@
 
           if ((ZernType < 1) .or. (ZernType > mZernType) .or. & ! Check Range
               (SrfType(iElt) /= SrfType_Zernike)) return         ! SrfType /= Zernike
+          if (ZernTypeUnsupported(ZernType)) then                 ! (vv), PLAN_CONSOLIDATION 1.2
+            write(*,*) ' ** elt_srf_zrn_type refused: '//ZernAnnularMsg
+            return
+          end if
 
           if (reset .eqv. PASS) ZernCoef(:, iElt) = 0d0
           ZernTypeL(iElt) = ZernType
@@ -2836,6 +2844,16 @@
         if (ZernType<1 .or. ZernType>mZernType .or. Nc/=Nm .or. &
             any(ZernMode<0 .or. ZernMode>mZernModes) .or. lMon_ <= 0e0_pr .or. &
             (ZernAnnularRatio < 0e0_pr .or. ZernAnnularRatio > 1e0_pr)) return
+        if (ZernTypeUnsupported(ZernType)) then                   ! (vv), PLAN_CONSOLIDATION 1.2
+          write(*,*) ' ** elt_srf_zrn_set refused: '//ZernAnnularMsg
+          return
+        end if
+        do j = 1, Nm                                              ! (tt)
+          if (ZernModeInert(ZernType, ZernMode(j)) .and. ZernCoef_(j) /= 0e0_pr) then
+            write(*,*) ' ** elt_srf_zrn_set refused: mode', ZernMode(j), ': '//ZernInertMsg
+            return
+          end if
+        end do
 
         ! SMACOS and Rx status & range chk: 0 < iElt <= nElt
         if (.not. StatusChk1(iElt)) return
@@ -2926,6 +2944,16 @@
 
         ! check if EltType /= Zernike
         if (any(SrfType(iElt(:)) /= 8)) return
+
+        block                                                     ! (tt), PLAN_CONSOLIDATION 1.2
+          integer :: j
+          do j = 1, M
+            if (any(ZernModeInertV(ZernTypeL(iElt(j)), ZernMode) .and. ZernCoef_ /= 0e0_pr)) then
+              write(*,*) ' ** elt_srf_zrn_mode_set refused: '//ZernInertMsg
+              return
+            end if
+          end do
+        end block
 
         ! Zernike Modes & corresponding coefficients (incl. Normalisation factor updates)
         ZernCoef(:,iElt(:)) = 0e0_pr
@@ -3122,6 +3150,10 @@
         end if
 
         if (setter .eqv. PASS) then
+          if (any(ZernModeInertV(MonZernTypeL(iElt), ZernMode) .and. MonZernCoef_ /= 0d0)) then   ! (tt)
+            write(*,*) ' ** elt_srf_mon_zrn_coef refused: '//ZernInertMsg
+            return
+          end if
           if (reset .eqv. PASS) MonZernCoef(:, iElt) = 0d0
           MonZernCoef(ZernMode(:), iElt) = MonZernCoef_(:)
         else
@@ -3170,6 +3202,10 @@
         end if
 
         if (setter .eqv. PASS) then
+          if (any(ZernModeInertV(FFZernTypeL(iElt), ZernMode) .and. FFZernCoef_ /= 0d0)) then   ! (tt)
+            write(*,*) ' ** elt_srf_ff_zrn_coef refused: '//ZernInertMsg
+            return
+          end if
           if (reset .eqv. PASS) FFZernCoef(:, iElt) = 0d0
           FFZernCoef(ZernMode(:), iElt) = FFZernCoef_(:)
         else

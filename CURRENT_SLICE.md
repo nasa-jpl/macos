@@ -133,6 +133,15 @@
 > PLAN 1.2 (tt) ExtFringe orders 11-14 silently inert, (uu) NormHex unloadable, (vv) NormAnnularNoll ignores its ratio,
 > (ww) pymacos veneer limit 9/45 vs api 11/66.  AWAITING Dave: push word for 4e9c02c4..714abf67 + bcf351c; the four rulings.**
 
+> **2026-10-20 (CC, Zernike rulings): Dave: (tt)+(vv) REFUSE AT LOAD (mine), (uu)+(ww) repairs -> TO (BRIEF_to_zernike_repairs.md,
+> sent).  DONE LOCAL uncommitted: elt_mod.F ZernTypeUnsupported / ZernModeInert(V) / ZernCoefInert + messages; msmacosio.inc five
+> type parse sites; iosub.inc ChkDf2 three coefficient arrays; macosio.F MOD type + coef sites; api zrn_type/zrn_set/zrn_coef/
+> zrn_mode_set/mon_zrn_coef/ff_zrn_coef.  Fixtures tst_save_keys / tst_block_comment / Rx_SaveKeys -> NormNoll.  Journal
+> ZERN_refused.jou: pass ifx + gfortran (shared build), RED on the worktree pre-fix binary.  pymacos side tree (side2) built
+> against build_release for the api legs.  NEXT: commit (explicit paths, both repos), worktree gate (rebuild both, load/ab/cmd;
+> ab expects 0 movers -- the three fixtures trace identically), tell TO his test_zernike_orderings / gen_zernike_table must now
+> expect the refusals (NormAnnularNoll decks, ExtFringe inert modes), push on Dave's word.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**

@@ -490,6 +490,33 @@ C       Set defaults, if necessary
 	  WRITE(*,112)'ZernType',iElt
 	END IF
 !<--
+!-->	(tt): an ExtFringe coefficient the converter drops is refused by
+!	mode (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20); zeros there load
+	BLOCK
+	  INTEGER :: kInert
+	  kInert = ZernCoefInert(ZernTypeL(iElt), ZernCoef(:,iElt),
+     &	                         mZernModes)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    ELEM_OK = .FALSE.
+	  END IF
+	  kInert = ZernCoefInert(MonZernTypeL(iElt), MonZernCoef(:,iElt),
+     &	                         mMonCoef)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    ELEM_OK = .FALSE.
+	  END IF
+	  kInert = ZernCoefInert(FFZernTypeL(iElt), FFZernCoef(:,iElt),
+     &	                         mFFCoef)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    ELEM_OK = .FALSE.
+	  END IF
+	END BLOCK
+!<--
 
 	IF (MonCoef_FLG) THEN
 	  CONTINUE

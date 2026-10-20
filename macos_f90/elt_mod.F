@@ -271,6 +271,24 @@ C***********************************************************************
 
 
 
+!-->    PLAN_CONSOLIDATION 1.2 (tt) + (vv), Dave 2026-10-20: refuse at load, by name.
+!       (vv) NormAnnularNoll parses and dispatches, but ZerntoMon7 (surfsub.F) never reads the
+!       annulus ratio: the surface traces as circular NormNoll at any ratio.  Refused wherever the
+!       type is set (load, MOD, api) until an annular converter exists.
+!       (tt) ExtFringe indices 47-49 and 58-64 (radial order 11-14) are accepted but ZerntoMon_ZFE
+!       maps Extended Fringe onto the 66-mode ANSI set, which ends at order 10: a non-zero
+!       coefficient there applies NO surface.  Refused by mode wherever a coefficient is set.
+        INTEGER, PARAMETER :: nZernInertZFE = 10
+        INTEGER, PARAMETER :: ZernInertZFE(nZernInertZFE) =
+     &          [47, 48, 49, 58, 59, 60, 61, 62, 63, 64]
+        CHARACTER(*), PARAMETER :: ZernAnnularMsg =
+     &    'NormAnnularNoll is not implemented (its converter ignores'//
+     &    ' the annulus ratio) -- use NormNoll'
+        CHARACTER(*), PARAMETER :: ZernInertMsg =
+     &    'ExtFringe modes 47-49 and 58-64 (radial order 11-14)'//
+     &    ' apply no surface'
+!<--
+
         INTEGER, DIMENSION(5), PARAMETER ::
      &          ZernType_rms_normalised = (/ZernType_NormANSI,
      &                                      ZernType_NormBornWolf,
@@ -666,6 +684,47 @@ C***********************************************************************
         End If
 
         End Subroutine ParseZernType
+
+!-->    (vv): the one type the engine parses but cannot trace correctly
+        LOGICAL FUNCTION ZernTypeUnsupported(typeL)
+          INTEGER, INTENT(IN) :: typeL
+          ZernTypeUnsupported = (typeL .EQ. ZernType_NormAnnularNoll)
+        END FUNCTION ZernTypeUnsupported
+
+!       (tt): an accepted mode index the converter drops (ExtFringe order 11-14)
+        LOGICAL FUNCTION ZernModeInert(typeL, k)
+          INTEGER, INTENT(IN) :: typeL, k
+          ZernModeInert = (typeL .EQ. ZernType_ExtFringe) .AND.
+     &                    ANY(ZernInertZFE .EQ. k)
+        END FUNCTION ZernModeInert
+
+!       vector form for the api
+        FUNCTION ZernModeInertV(typeL, k) RESULT(inert)
+          INTEGER, INTENT(IN) :: typeL, k(:)
+          LOGICAL :: inert(SIZE(k))
+          INTEGER :: i
+          DO i = 1, SIZE(k)
+            inert(i) = ZernModeInert(typeL, k(i))
+          END DO
+        END FUNCTION ZernModeInertV
+
+!       the first inert mode carrying a non-zero coefficient, else 0
+        INTEGER FUNCTION ZernCoefInert(typeL, coef, n)
+          INTEGER, INTENT(IN) :: typeL, n
+          REAL*8,  INTENT(IN) :: coef(n)
+          INTEGER :: i
+          ZernCoefInert = 0
+          IF (typeL .NE. ZernType_ExtFringe) RETURN
+          DO i = 1, nZernInertZFE
+            IF (ZernInertZFE(i) .LE. n) THEN
+              IF (coef(ZernInertZFE(i)) .NE. 0d0) THEN
+                ZernCoefInert = ZernInertZFE(i)
+                RETURN
+              END IF
+            END IF
+          END DO
+        END FUNCTION ZernCoefInert
+!<--
 
 !-->  ReadRealsPad (2026-10-01): list-directed read of up to n reals from
 !     a string, PADDING the missing tail with zero instead of dying.  A

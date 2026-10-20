@@ -188,6 +188,27 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   silently dropped the field and ZernTypeL stayed 0 — which then silently
   broke the Zernike-apply trace path (see next section).
 
+## Two Zernike refusals by name (PLAN_CONSOLIDATION 1.2 (tt) + (vv), Dave 2026-10-20)
+- `NormAnnularNoll` (typeL 9) parses (ratio into `ZernAnnuRatio`) and dispatches to
+  `ZerntoMon7`, but that converter never reads the ratio (`azdef.inc` is a fixed table):
+  the surface traces as circular NormNoll at any ratio, modes 46-66 apply nothing
+  (macos-fd's probe for the manual's Appendix E).  REFUSED wherever the type is set:
+  the five surface-type parse sites in msmacosio.inc (ZernType / MonZernType /
+  FFZernType; `ZernTypeUnsupported` in elt_mod.F), the three MOD sites, and the api
+  `elt_srf_zrn_type` / `elt_srf_zrn_set`.  The SAVE writer's `ZernAnnularRatio` line
+  (iosub.inc) is now unreachable and left in place for the day the converter reads r.
+  The header key `ZCOZernType= NormAnnular` (Zernike OUTPUT fitting, zern_wf.F) is NOT
+  refused -- a separate path with the same converter, not yet ruled on.
+- `ExtFringe` indices 47-49 and 58-64 (radial order 11-14) are accepted by the parser,
+  but `ZerntoMon_ZFE` maps Extended Fringe onto the 66-mode ANSI set, which ends at
+  order 10: those ten coefficients applied NO surface.  A non-zero coefficient there is
+  refused by mode: ChkDf2 on the three coefficient arrays (`ZernCoefInert`), the three
+  MOD coefficient sites (`ZernModeInert`), the api coefficient setters (`ZernModeInertV`).
+  Zero coefficients there still load (a dense 66-value deck is the common case).
+- Gate `cli_tests/cmd/ZERN_refused.jou` (red on the pre-fix binary).  The three SAVE-keys
+  fixtures (tst_save_keys, tst_block_comment, pymacos Rx_SaveKeys) moved from
+  `NormAnnularNoll 0.3` to `NormNoll` -- identical trace by the measurement above.
+
 ## Zernike-apply trace dispatch requires ZernTypeL ≠ 0
 *(User rule documented: Manual §4 Zernike Surfaces (ZernType default ANSI; the names; ExtFringe).  Below: the dispatch record.)*
 - `propsub.F:230-249` (and the parallel `srtrace.F:145-153`) dispatches
