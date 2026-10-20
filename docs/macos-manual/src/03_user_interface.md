@@ -130,9 +130,9 @@ One such application is Matlab®, which provides an easy-to-use, powerful enviro
 
 Generating the data for off-line display is as simple as selecting a file output “plot type,” using the BINARY, FITS, TEXT or MATLAB commands (Section 7). Subsequent use of graphics-generating commands such as INTensity then create a file and store the requested data in that file. If the file already exists, the user is asked if the file is to be overwritten; if not, a new name is requested. Other applications can then access and display the data. Repeating the previous example:
 
-<!-- transcript: s03_text_int -->
+<!-- transcript: s03_binary_int -->
 
-The output file name (here “Telescope.int9”, with “.txt” appended for the TEXt output above) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
+The output file name (here “Telescope.int9”) is nominally generated from the prescription file name, with the datatype (“int” for intensity) and element number appended after a period. Fits, text and Matlab format files have “.fit,” “.txt,” or “.mat” appended as well, respectively.
 
 The Matlab command required to read the file, generate the plot (at log10 stretch), and return the data for further analysis is:
 

@@ -8,26 +8,6 @@ MACOS\>**old lens\_array show 2**
     Default used for BaseUnits
     Default used for WaveUnits
     Default used for  SegXgrid
-    Default used for pData(   1)
-    Default used for xData(   1)
-    Default used for yData(   1)
-    Default used for zData(   1)
-    Default used for lData(   1)
-    Default used for pData(   2)
-    Default used for xData(   2)
-    Default used for yData(   2)
-    Default used for zData(   2)
-    Default used for lData(   2)
-    Default used for pData(   3)
-    Default used for xData(   3)
-    Default used for yData(   3)
-    Default used for zData(   3)
-    Default used for lData(   3)
-    Default used for pData(   4)
-    Default used for xData(   4)
-    Default used for yData(   4)
-    Default used for zData(   4)
-    Default used for lData(   4)
     Optical Train Summary:
      Tracing rays past   4 elements.
      Aperture grid type = Circular  with  512 grid points.
@@ -49,7 +29,6 @@ MACOS\>**old lens\_array show 2**
               psiElt=  0.0E+00  0.0E+00  -1.0E+00
               VptElt=  0.0E+00  0.0E+00  2.0000000000000001E-01
               RptElt=  0.0E+00  0.0E+00  1.0E+00
-               lData=5.0E-01
               IndRef=1.0E+00
               Extinc=0.0E+00
                nCoat=  0

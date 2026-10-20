@@ -10,5 +10,3 @@ MACOS\>**dad**
     Wavelength= 1.0000000D-06;  Source Flux= 1.0000000D-02
     u-v plane diam= 5.2965851D+00  du= 1.0365137D-02
     x-y plane diam= 7.0527131D-04  dx= 1.3801787D-06
-     ** Error: inconsistent propagation parameters
-        plot bounds are degenerate, infinite, or NaN; check the prescription

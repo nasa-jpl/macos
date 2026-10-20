@@ -6,9 +6,6 @@ MACOS\>**fex**
     ***** FEX: EP crossing from4 probes (+/-axis1, +/-axis2), mm along the chief ray:
     *****   axis1  7.32453966      axis2  7.32453966      medial  7.32453966
     *****   T/S split 0.000E+00  +/- asymmetry 1.424E-08
-    ***** FEX: CrossPt =  7.730514972191689E-014 -7.730514972191689E-014
-      7.97546034404279
-    ***** FEX: zp_iEm1 =   7.32453965601182        zp =   7.32453965601182
      FEX axis: CHIEF RAY (default)
                  Chief ray location: x= 0.0000000D+00 y= 0.0000000D+00 z= 0.0000000D+00
                   Centroid location: x= 0.0000000D+00 y= 0.0000000D+00 z= 0.0000000D+00
