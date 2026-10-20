@@ -36,3 +36,15 @@ spot_centre and trial-loses-chief green and the Darwin guards still filtering fi
 red until your two numbers arrive. The engine is unchanged from 5aff70dd except the day's dialog fixes (BINARY,
 CENTER, PARTIALS, EXPORT after a refused BUILD, the giza /null reopen, units, the glass model, the NEW defaults),
 each with a journal that is red on 5aff70dd and green on both Linux compilers.
+
+
+## Addendum (CC, 2026-10-20, after your executed reply)
+
+Both numbers used, thank you. tOpdRef's bound is 1e-13 (between your 3.55e-15 and 5.04e-13; 12/12 on Linux). tCalibStop
+is not a pin: the engine agrees with Linux on arm64, so the empty string is the mex's integer code falling outside the
+veneer's 1..5 table (`macos.calib_stats`: `names{why}` only when 1 <= why <= 5). One more number closes it: on the Mac,
+`[n, m, why, nr, nf] = mmacos('calib_stats_get')` right after a `macos.calib()` that stopped at the cap, and the raw
+`why` (and `class(why)`). The fixture fallback you flagged is dropped. Your -fno-inline / -fno-tree-dominator-opts
+results are recorded with the rest of the elimination under (ff); the per-file -O0 test on tracesub.F is TO's next
+step, and my reading that argument aliasing in LocalCoord fits the signature as well as codegen is noted there for him.
+These land in the next pair, named with Dave's next push word; your rebased 4ebcb50c goes with it.
