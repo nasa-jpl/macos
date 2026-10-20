@@ -75,3 +75,8 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
 - New-feature documentation for engine work (FreeForm, SLSQP, XPS,
   COMPOSE, ...) belongs in the matching `src/` section; add a bullet
   to "New Features" in `src/01_introduction.md` per release.
+
+## Product names in prose (Dave 2026-10-20)
+`MACOS`, `SMACOS`, *mmacos* and *pymacos* are set so a scanning reader catches them: MACOS and SMACOS in
+capitals as written, *mmacos* and *pymacos* in italics in body prose (not inside code spans or paths).  Applied
+in the Introduction; apply it to any prose you write or regenerate in the manual and the command reference.

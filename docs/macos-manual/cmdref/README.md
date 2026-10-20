@@ -78,3 +78,6 @@ order:
 
 Part III documents packages under active development; expect it to
 change faster than Parts I–II.
+
+## Product names in prose (Dave 2026-10-20)
+In body prose, *mmacos* and *pymacos* are italic (MACOS and SMACOS stay in capitals), so they stand out for a reader who scans; code spans and paths are left as they are.
