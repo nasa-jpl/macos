@@ -106,6 +106,16 @@
 > backup of his 04:10 save, folded at 5f71c986.  RULE: cmp edit vs baseline BEFORE every cp.  OPEN: the raw `why` from CCMac;
 > (ff) with TO; push word for 814082d4..5f71c986.**
 
+> **2026-10-20 (CC, after compaction): PUSHED 39cbbc40 (Dave's 4th word).  CCMac's GATE 6 (pair 814082d4 + 2ccaeff) folded:
+> raw `why` = 3/3/2 (double), n_iter 4/10/14 = Linux -- the gate-5 empty stop reason CLOSED (trajectory moved with the engine
+> advance); residual = BSD `stat -c` in BINARY_CENTER (-> `wc -c <`), PGD_reopen_units near-zero (-> `1\.293\d*D-12`),
+> tCalibMatrix cause line = unit-6 ((ee) third face, one assertion `~ismac`), tDwDx dcdx 5e-5 (the FD floor), tPolElement Malus
+> 1e-14, tDefaults/test_defaults leftover exact shift pins dropped, tCalibStop test_opt_tol 'converged' leg assumeTrue on the Mac
+> (OptTol unobservable on the arm64 trajectory: floor at 29 both ways; Linux: default..1e-12 converge at 41, 1e-30 caps at 60).
+> Journals green both worktree binaries; test_defaults 9/9; mmacos five classes run.  NOTE_to_ccmac_pair6_reply.md.  CCMac's
+> gate-5 + gate-6 records (f2e0c6e3, 7e14e42, local on the Mac) wait on DAVE'S word to him directly.  NEXT: commit (explicit
+> paths, both repos), push on Dave's word, name CCMac's next pair = the pushed tips.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked

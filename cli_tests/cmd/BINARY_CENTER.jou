@@ -13,7 +13,7 @@ int 6
 binary
 int 6
 /null
-! stat -c '%s %n' CassWithExitPupil.in.int6
+! wc -c < CassWithExitPupil.in.int6
 text
 opd 6
 /null
@@ -28,7 +28,7 @@ mod
 Flux=0.01
 q
 # EXPECT: DIRECT ACCESS File=CassWithExitPupil\.in\.int6
-# EXPECT: ^524288 CassWithExitPupil\.in\.int6
+# EXPECT: ^\s*524288\s*$
 # EXPECT: Beam centered in\s+[1-9]\d* iterations
 # EXPECT: Flux\s+=\s+1\.0+(E|D)-02
 # EXPECT-NOT: In DBINOUT
