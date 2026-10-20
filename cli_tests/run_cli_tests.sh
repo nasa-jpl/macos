@@ -28,6 +28,8 @@
 # <sha>` then makems.sh release [gfortran] there) -- never the shared working tree,
 # whose build dirs another lane may be rebuilding mid-edit.  MACOS_CLI_TREE=. uses
 # this tree (the record is then tagged +dirty if the engine source is modified).
+# Gating from a SECOND worktree (e.g. ~/dev/macos_to_hex): set MACOS_CLI_TREE to it -- the
+# default still runs ~/dev/macos_cli_base's binaries, at whatever SHA that tree holds.
 # MACOS_CLI_ONLY=ifx|gfortran limits the compilers; a missing binary is skipped.
 set -uo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
@@ -91,7 +93,7 @@ case "$kind" in
     done
     exit ${fail:-0} ;;
   full) "$0" load; r1=$?; "$0" cmd; r2=$?; "$0" transcripts; r3=$?; exit $(( r1 || r2 || r3 )) ;;
-  *) echo "usage: $0 [load|corpus|extended|cmd|transcripts|manual|ab <pre> <post> [kind] [allow]|full]"; exit 2 ;;
+  *) echo "usage: $0 [load|corpus|extended|cmd|transcripts|manual|ab <pre> <post> [kind] [allow]|full]"; echo "  binaries from MACOS_CLI_TREE (default ~/dev/macos_cli_base); set it when gating from another worktree"; exit 2 ;;
 esac
 [ -s "${list:-}" ] || "$here/make_corpus.sh"
 ls "$here"/must_fail/*.in > "$here/must_fail/list.txt"      # absolute paths, regenerated each run
