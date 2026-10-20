@@ -876,6 +876,15 @@ C       Set entrance condition flags to .FALSE.
                   END IF
                 END IF
               END BLOCK
+!-->          (xx): a mode outside the coefficient array wrote past it on
+!             the remap; the type's own count is checked in ChkDf2
+              IF (ANY(MonZernModes(:nMonZernCoef)<1) .OR.
+     &            ANY(MonZernModes(:nMonZernCoef)>mMonCoef)) THEN
+                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
+     &              iElt, '): a mode is outside 1 ..', mMonCoef
+                GO TO 99
+              END IF
+!<--
               MonZernModes_FLG = .TRUE.
               GO TO 61
 
@@ -945,6 +954,15 @@ C       Set entrance condition flags to .FALSE.
                   END IF
                 END IF
               END BLOCK
+!-->          (xx): a mode outside the coefficient array wrote past it on
+!             the remap; the type's own count is checked in ChkDf2
+              IF (ANY(FFZernModes(:nFFZernCoef)<1) .OR.
+     &            ANY(FFZernModes(:nFFZernCoef)>mFFCoef)) THEN
+                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
+     &              iElt, '): a mode is outside 1 ..', mFFCoef
+                GO TO 99
+              END IF
+!<--
               FFZernModes_FLG = .TRUE.
               GO TO 61
 
@@ -2029,8 +2047,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END BLOCK
               IF (ANY(ZernModes(:nZernCoef)<1) .OR.
      &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
-                PRINT *, "Ensure that: 0 < ZernModes <= max Zrn Mode"
+!-->            named (xx), 2026-10-20
+                WRITE(*,'(A,I4,A,I4,A,I3,A)') ' ** Rx load refused: '//
+     &            'ZernModes (elt', iElt, '): a mode is outside 1 ..',
+     &            ZernType_MaxMode(ZernTypeL(iElt)), ' ('//
+     &            TRIM(ZernTypeNameL(ZernTypeL(iElt)))//' has',
+     &            ZernType_MaxMode(ZernTypeL(iElt)), ' modes)'
                 GOTO 99
+!<--
               END IF
               ZernModes_FLG = .TRUE.
               GO TO 61
@@ -2534,6 +2558,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   END IF
                 END IF
               END BLOCK
+!-->          (xx): a mode outside the coefficient array wrote past it on
+!             the remap; the type's own count is checked in ChkDf2
+              IF (ANY(FFZernModes(:nFFZernCoef)<1) .OR.
+     &            ANY(FFZernModes(:nFFZernCoef)>mFFCoef)) THEN
+                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
+     &              iElt, '): a mode is outside 1 ..', mFFCoef
+                GO TO 99
+              END IF
+!<--
               FFZernModes_FLG = .TRUE.
               GO TO 61
 
@@ -2632,6 +2665,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   END IF
                 END IF
               END BLOCK
+!-->          (xx): a mode outside the coefficient array wrote past it on
+!             the remap; the type's own count is checked in ChkDf2
+              IF (ANY(MonZernModes(:nMonZernCoef)<1) .OR.
+     &            ANY(MonZernModes(:nMonZernCoef)>mMonCoef)) THEN
+                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
+     &              iElt, '): a mode is outside 1 ..', mMonCoef
+                GO TO 99
+              END IF
+!<--
               MonZernModes_FLG = .TRUE.
               GO TO 61
 

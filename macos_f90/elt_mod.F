@@ -724,6 +724,23 @@ C***********************************************************************
             END IF
           END DO
         END FUNCTION ZernCoefInert
+
+!       (xx), Dave 2026-10-20: the first coefficient PAST the type's mode
+!       count (ZernType_MaxMode) that is non-zero, else 0 -- such a mode has
+!       no polynomial behind it and applied nothing (NormHex 46+, Fringe 38+)
+        INTEGER FUNCTION ZernCoefPastMax(typeL, coef, n)
+          INTEGER, INTENT(IN) :: typeL, n
+          REAL*8,  INTENT(IN) :: coef(n)
+          INTEGER :: i
+          ZernCoefPastMax = 0
+          IF (typeL .LT. 1 .OR. typeL .GT. mZernType) RETURN
+          DO i = ZernType_MaxMode(typeL) + 1, n
+            IF (coef(i) .NE. 0d0) THEN
+              ZernCoefPastMax = i
+              RETURN
+            END IF
+          END DO
+        END FUNCTION ZernCoefPastMax
 !<--
 
 !-->  ReadRealsPad (2026-10-01): list-directed read of up to n reals from

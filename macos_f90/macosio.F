@@ -1764,6 +1764,13 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	    IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+!-->	      (xx): the index is bounded by the array
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mFFCoef) THEN
+	        WRITE(*,*) ' ** MOD refused: FFZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mFFCoef
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)FFZernCoef(MB_I(1),MB_I(2))
 !-->	      (tt): an inert ExtFringe mode takes no coefficient
 	      IF (ZernModeInert(FFZernTypeL(MB_I(2)), MB_I(1)) .AND.
@@ -1771,6 +1778,17 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	        FFZernCoef(MB_I(1),MB_I(2)) = 0d0
 	        WRITE(*,*) ' ** MOD refused: FFZernCoef mode', MB_I(1),
      &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (FFZernTypeL(MB_I(2)).GE.1 .AND. FFZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(FFZernTypeL(MB_I(2))) .AND.
+     &	            FFZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          FFZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: FFZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(FFZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(FFZernTypeL(MB_I(2))), ' modes'
+	        END IF
 	      END IF
 !<--
 	      WRITE(*,22)' FFZernCoef',MB_I(2),
@@ -1955,6 +1973,13 @@ c	    READ(VALUE,*)GridType
 	    IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+!-->	      (xx): the index is bounded by the array
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mMonCoef) THEN
+	        WRITE(*,*) ' ** MOD refused: MonZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mMonCoef
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)MonZernCoef(MB_I(1),MB_I(2))
 !-->	      (tt): an inert ExtFringe mode takes no coefficient
 	      IF (ZernModeInert(MonZernTypeL(MB_I(2)), MB_I(1)) .AND.
@@ -1962,6 +1987,17 @@ c	    READ(VALUE,*)GridType
 	        MonZernCoef(MB_I(1),MB_I(2)) = 0d0
 	        WRITE(*,*) ' ** MOD refused: MonZernCoef mode', MB_I(1),
      &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (MonZernTypeL(MB_I(2)).GE.1 .AND. MonZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(MonZernTypeL(MB_I(2))) .AND.
+     &	            MonZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          MonZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: MonZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(MonZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(MonZernTypeL(MB_I(2))), ' modes'
+	        END IF
 	      END IF
 !<--
 	      WRITE(*,22)' MonZernCoef',MB_I(2),
@@ -2551,12 +2587,15 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 
-	      if (MB_I(1)>mZernModes) then
-	        ! ZernCoef index out of range
-                ! ToDo --> FIX
-	      end if
-
 	      ! MB_I(1)=ZernCoef index, MB_I(2)=iElt index. -jzlou
+!-->	      (xx): the index is bounded by the array (was a 'ToDo' no-op
+!	      that let the READ write past it)
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mZernModes) THEN
+	        WRITE(*,*) ' ** MOD refused: ZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mZernModes
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)ZernCoef(MB_I(1),MB_I(2))
 !-->	      (tt): an inert ExtFringe mode takes no coefficient
 	      IF (ZernModeInert(ZernTypeL(MB_I(2)), MB_I(1)) .AND.
@@ -2564,6 +2603,17 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	        ZernCoef(MB_I(1),MB_I(2)) = 0d0
 	        WRITE(*,*) ' ** MOD refused: ZernCoef mode', MB_I(1),
      &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (ZernTypeL(MB_I(2)).GE.1 .AND. ZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(ZernTypeL(MB_I(2))) .AND.
+     &	            ZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          ZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: ZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(ZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(ZernTypeL(MB_I(2))), ' modes'
+	        END IF
 	      END IF
 !<--
 
