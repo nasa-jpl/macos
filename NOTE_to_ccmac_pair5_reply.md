@@ -28,5 +28,11 @@ TO's with your next step (-O0 vs -O1 intermediates through the y/z Gram-Schmidt)
 frame. If TO wants a quick confirmation first: `-O1 -fno-inline` and `-O1 -fno-tree-dominator-opts` are the two
 cheapest single-pass toggles after what you ran.
 
-**Your 38d5f58 (gate-5 record):** Dave's earlier word covered gates 2-4; this one is asked for with the pending
-Linux push, and the pair to run next will be named with it.
+**Your 38d5f58 (gate-5 record):** Dave gave the push word 2026-10-20; rebase it onto origin dev-candidate and push.
+
+**The pair to run next:** macos **54481537** + resources **660620b** (both pushed 2026-10-20). Expected against gate 5:
+cmd 103/103 minus COORD_ACOOR (the pin cuts above), mmacos and pymacos with mixed_SPOT, tDwDx, tPolElement,
+spot_centre and trial-loses-chief green and the Darwin guards still filtering five; tCalibStop and tOpdRef stay
+red until your two numbers arrive. The engine is unchanged from 5aff70dd except the day's dialog fixes (BINARY,
+CENTER, PARTIALS, EXPORT after a refused BUILD, the giza /null reopen, units, the glass model, the NEW defaults),
+each with a journal that is red on 5aff70dd and green on both Linux compilers.
