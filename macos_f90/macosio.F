@@ -40,6 +40,7 @@ C***********************************************************************
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
      &                       cUnit,ifRegrid,ifPGColor
 	use lohpars_mod, only : cmdArg,RX_Flg
+	use loh_I1, only : BaseUnits_FLG   ! (H): the OPD unit label
 	use traceutil_mod
 	use loh_I1
 	use loh_I2
@@ -62,7 +63,8 @@ C***********************************************************************
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken,ios
-	REAL*8 invec6(6),invec7(7),DDEF(7)
+	REAL*8 invec6(6),invec7(7),DDEF(9)   ! 9: the glass and the
+!                                      ! 9-term aspheric prompts fill it
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
 
 C       Setup for new input scheme
@@ -441,22 +443,27 @@ C	Specify input ray grid parameters
      &	  'Enter chief ray extinction coefficient ')
 	  CALL CACCEPT(BaseUnits,' ',
      &	  'Enter base units (m, cm, mm, in, none) :')
+!-->  cUnit, the label the OPD lines carry, as the parser sets it: a
+!     NEW deck printed 'DAvgCumL = ...' bare until it was reloaded
+!     (macos-fd 2026-10-19, (H); PLAN 1.2 (ss))
 	  IF (LCMP(BaseUnits,'cm',2)) THEN
-	    CBM=1d-2
+	    CBM=1d-2; cUnit='cm'
 	  ELSE IF (LCMP(BaseUnits,'mm',2)) THEN
-	    CBM=1d-3
+	    CBM=1d-3; cUnit='mm'
 	  ELSE IF (LCMP(BaseUnits,'m',1)) THEN
-	    CBM=1d0
+	    CBM=1d0; cUnit='m '
 	  ELSE IF (LCMP(BaseUnits,'in',2)) THEN
-	    CBM=2.54d-2
+	    CBM=2.54d-2; cUnit='in'
 	  ELSE IF (LCMP(BaseUnits,'none',2)) THEN
-	    CBM=1d0
+	    CBM=1d0; cUnit='  '
 	  ELSE
 	    WRITE(*,*)' Unknown units, unitless operation assumed'
 	    BaseUnits='none'
 	    WaveUnits='none'
-	    CBM=1d0
+	    CBM=1d0; cUnit='  '
 	  END IF
+	  BaseUnits_FLG=.TRUE.   ! the trace prints cUnit only on this flag
+!<--
 	  IF (.NOT.LCMP(BaseUnits,'none',2))
      &	  CALL CACCEPT(WaveUnits,BaseUnits,
      &	  'Enter wavelength units (m, cm, mm, um, nm, A, in, none) :')
@@ -932,9 +939,11 @@ C  Get Aspheric Parameters
 
 	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.11)) THEN
 	      If (maxAsphCoef==4) then
+	        CALL DZERO(DDEF,9)   ! (G): DDEF(1) still held the wavelength
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
 	      Else
+	        CALL DZERO(DDEF,9)   ! (G) too
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D,E,F,G,H,J')
 	      End If
