@@ -59,5 +59,7 @@ opd 1
 # EXPECT: MACOS> save \S+/saved\s+Enter new input file name: \S+/saved\s+File \S+/saved\.in being created\.
 # EXPECT: (\d{4}) \S+/newsys\.in\s+\1 \S+/saved\.in
 # EXPECT: Input file \S+/saved\.in\s+being loaded\.[\s\S]*?Tracing rays past   1 elements\.[\s\S]*?RMS OPD error is   0\.000000000D\+00
+# The unit label after NEW with base units m, and again after the reload (before 2026-10-19 only the loader set it):
+# EXPECT: (DAvgCumL =\s+\S+ m\s[\s\S]*?){3}
 # EXPECT-NOT: Must load optical data first
 # EXPECT-NOT: forrtl
