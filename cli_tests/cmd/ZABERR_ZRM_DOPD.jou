@@ -22,10 +22,11 @@ zrm
 3
 1,2,3
 no
-# EXPECT: RMS OPD error is\s+1\.29\d+D-12[\s\S]*?RMS OPD error is\s+3\.566435264D-11
-# EXPECT: RMS dOPD =\s+2\.45437137\d+E-011
+# EXPECT: RMS OPD error is\s+1\.29\d+D-12[\s\S]*?RMS OPD error is\s+3\.5664\d*D-11
+# EXPECT: RMS dOPD =\s+2\.454\d*E-011
 # EXPECT: Set to using NormNoll
-# EXPECT: RMS WFE \(after ZAB\) =\s+4\.3471970\d+E-011
-# EXPECT: RMS WFE \(after ZRM\) =\s+3\.5653683\d+E-011
+# EXPECT: RMS WFE \(after ZAB\) =\s+4\.347\d*E-011
+# EXPECT: RMS WFE \(after ZRM\) =\s+3\.565\d*E-011
+# (the 1e-11 lines: four figures -- arm64 reads 3.566438007 against 3.566435264 on the secondary RMS, CCMac's gate 3)
 # EXPECT-NOT: Must run OPD command first
 # EXPECT-NOT: forrtl

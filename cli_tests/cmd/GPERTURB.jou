@@ -19,6 +19,7 @@ opd 13
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 gperturb
 3
-# EXPECT: RMS OPD error is\s+3\.622346888D-05 mm[\s\S]*?MACOS> gperturb[\s\S]*?RMS OPD error is\s+3\.621855806D-05 mm
+# EXPECT: RMS OPD error is\s+3\.62234\d*D-05 mm[\s\S]*?MACOS> gperturb[\s\S]*?RMS OPD error is\s+3\.62185\d*D-05 mm
+# (six figures: arm64 reads 3.622346865 against 3.622346888 here, CCMac's gate 3; the tilt moves the 5th figure)
 # EXPECT: No element group defined at element\s+3
 # EXPECT-NOT: forrtl
