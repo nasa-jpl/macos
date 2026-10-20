@@ -4,7 +4,7 @@ MACOS\>**center**
 
     Enter system stop element number: [1]: 2
     Enter offset vector (dx,dy): [0.00000,0.00000]: 0,0
-    Beam centered in   0 iterations, error=  4.195428727D-15
+    Beam centered in   4 iterations, error=  4.195428727D-15
 
 MACOS\>**ray**
 

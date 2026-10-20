@@ -22,6 +22,7 @@ Journal directives (comments to the gate, read only here):
                         A switch between two answers of ONE command (TRANSCRIPT or OFF inside a NEW)
                         cuts the dialog there: the new one starts at the prompt the next line answers,
                         or at the last match of from=<regex> (no blanks: \\s) in the output before it
+                        upto=<regex> ends the dialog at the regex's first match (NEW's echo of the deck)
   # TRANSCRIPT-OFF      the lines that follow are setup again (not printed); a journal with no
                         TRANSCRIPT line but an OFF is a gate only (an Appendix A macro run)
   # TRANSCRIPT-BANNER: <name>
@@ -184,7 +185,14 @@ def dialog(raw, marks, sends, tmp, opts, banner):
         if name is None:
             continue
         lines = []
-        for l in "".join(segs).split("\n"):
+        whole = "".join(segs)
+        upto = next((o[5:] for o in opts.get(name, ()) if o.startswith("upto=")), None)
+        if upto:
+            m = re.search(upto, whole)
+            if not m:
+                sys.exit(f"{name}: upto={upto} not found")
+            whole = whole[:m.start()]
+        for l in whole.split("\n"):
             if any(p.search(l) for p in DROP) or (DEVICE.search(l) and "+device" not in opts.get(name, ())):
                 continue
             l = clean(l, tmp)

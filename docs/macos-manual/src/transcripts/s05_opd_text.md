@@ -12,7 +12,6 @@ MACOS\>**opd 3**
     RMS OPD error is   1.545357155D-02
     P-V OPD error is   5.323448819D-02
     Average OPD is    -3.0317256240508069D-02
-    ** In DBINOUT: NA,NC =          51          51
     Writing OPD, Surface 3
 
     FORMATTED File=Cassegrain.OPD3.txt

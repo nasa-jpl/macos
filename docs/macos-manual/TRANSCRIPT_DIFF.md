@@ -230,7 +230,10 @@ build of `macos_cli_base` (725e0389 engine):
 So today's AO example no longer traces the 3.2 example's DM, and `cli_tests/cmd/UDSINIT.jou` pins the
 post-loss 3.1638e-7.  (Fixed since: see the head of this section.)
 
-### 3.2 BINARY output: RECL wrong for REAL*8 rows (crash on gfortran, padded on ifx)
+### 3.2 BINARY output: RECL wrong for REAL*8 rows (crash on gfortran, padded on ifx) — FIXED in e17587a1
+
+Dave: fix.  e17587a1 sizes the record from the row (524288 bytes for 256 x 256 on both compilers); Section 3's
+file-output dialog is BINARY again (`s03_binary_int`, on Telescope.in).  As filed:
 
 `sunsub.F` BINOUT (`iPloTyp` 6, ~line 1154) opens the direct-access file with `RECL=(4*NC)` and writes
 each record as `(Z(i,j), i=1,NA)` with `Z` declared `SREAL` = REAL*8 (`realtype.h`): 8·NA bytes.
@@ -253,19 +256,31 @@ Start-up reads `<macos>/macos_f90/macos_glass_list.txt` (201 glasses); after `cd
 directory, MRESET prints "No glass table file found; using built-in catalog: 201 glasses".  The
 built-in catalog has the same count, so no result moves here; a user's own table would be dropped.
 
-### 3.5 Two debug prints left in user output
+### 3.5 Two debug prints left in user output — FIXED in e17587a1
+
+Removed: `** In DBINOUT`, `*** CPERTURB src`, `Debug: VALUE`, and FEX's `CrossPt =` / `zp_iEm1 =` lines (the
+EP-crossing report stays).  Dialogs that moved: s05_fex, s05_opd_text, s05_perturb_src, s07_fex, s07_mod_flux.
+As filed:
 
 OPD (and any plot) under TEXT prints `** In DBINOUT: NA,NC = 51 51`; PERTURB of the source prints
 `*** CPERTURB src: th = ... , del = ...` (`funcsub.F` line 71, a bare `print*`); MODify of `flux=` prints
 `Debug: VALUE = 0.01` (`macosio.F` line 1769).  Both are visible in
 the generated dialogs; the 2026-10-19 `Debug: VAR_NAM` removal is the precedent.
 
-### 3.6 CENTER prints a literal 0 iterations
+### 3.6 CENTER prints a literal 0 iterations — FIXED in e17587a1
+
+`s05_center`: "Beam centered in   4 iterations".  As filed:
 
 `macos_cmd_loop.inc` ~line 3212: `WRITE(*,309) 0,SQRT(sqErr)`; the count STOP's solve took is not
 passed out, so every CENTER says "Beam centered in 0 iterations" (3.2 printed 2 for its example).
 
-### 3.7 PARTIALS: the partials with respect to the input ray print as zeros
+### 3.7 PARTIALS: the partials with respect to the input ray print as zeros — FIXED in e17587a1
+
+The block is built and printed again (it was also nondeterministic under gfortran: an uninitialized local in
+CTRACE).  `s08_partials_chief`: chief-ray direction magnification **3.0801** (3.2: 3.036, 1.5% off and
+unexplained -- tracing the obscuration under BUILD gives 3.1158 and moves the element blocks away from their
+four-digit match, so that was not 3.2's path); path 5.3008 / 0.24794 (3.2: 5.549 / 0.2479).  Section 8's
+sentence now says 3.080.  As filed:
 
 On Cassegrain.in after `build 4`, PARTIALS prints the block "Partial of ray N at Element 4 (Ref_surf)
 to ray at Element 0 (InputRay)" as all zeros, for the chief ray (global) and for ray 2
@@ -298,6 +313,18 @@ next figure regeneration would carry it).  Sent to the ORS lane; not touched her
 The plot-file root is the name as typed at OLD: `old CassWithExitPupil.in` then TEXT + INT 5 writes
 `CassWithExitPupil.in.int5.txt`; `old CassWithExitPupil` writes `CassWithExitPupil.int5.txt`, the form
 Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as typed>.srf1.txt`).
+
+### 3.10 Found in the rulings pass (2026-10-19), handed to the ORS / display lane
+
+- **(B) FIXED e17587a1:** a refused BUILD (`BUILD limited to 500 rays`) traced nothing, so EXPORT RAYPOS on
+  lens_array.in reported 0 rays (3.2: the chief ray).  Now it traces; `s03_build_export` is on lens_array.in.
+- **(C) FIXED e17587a1:** lens_array.in printed 20 `Default used for pData/xData/yData/zData/lData` lines.
+- **(A) withdrawn:** tmo.in's exit pupil at zElt -91.48 gave a negative far-field dx the plot refused; Dave
+  re-saved the deck (+91.48).  The bounds check now also accepts reversed bounds.
+- **(D) OPEN:** a plot that REOPENS the device (a second plot after an OLD, or any plot after PGD) prints
+  `%giza - ERROR - giza_open_device: Unknown device`; printed today in `s09_old_int`.
+- **(E) OPEN:** NEW's `Enter base units (m, cm, mm, in, none) :` answered `none` prints `Unknown units,
+  unitless operation assumed` (the deck gets BaseUnits= none).  Section 4's NEW tutorial prints it.
 
 ## 4. For Dave — the decisions and the replacement list
 

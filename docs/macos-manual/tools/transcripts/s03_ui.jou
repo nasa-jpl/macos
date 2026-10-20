@@ -1,17 +1,14 @@
 # Section 3 (user interface): the start-up dialog, MRESET, OLD (prompted and stacked), SHOW and the
 # defaults, the first graphics command (the device prompt kept), file output, BUILD + EXPORT.
-# File output is TEXT, not 3.2's BINARY: BINARY's direct-access RECL=4*NC is wrong for its REAL*8 rows
-# (gfortran: 'Write exceeds length of DIRECT access record' in sunsub.F BINOUT; ifx: every record padded
-# with NC zero doubles) -- TRANSCRIPT_DIFF.md section 3, Dave's call.
+# File output is BINARY, as in 3.2 (the RECL fix, macos e17587a1: 8 bytes x NA per record on both compilers).
 # The 3.2 dialogs ran on lens_array.in and tmo.in; Dave 2026-10-19 put both in ZGD_test_files/ (tmo.in
 # renamed Telescope.in, its pre-3.2 type names mapped).  OLD, the stacked OLD and SHOW run on lens_array.in
 # now, INT and file output on Telescope.in (Dave re-saved it 2026-10-19, the exit pupil's zElt +91.48: the
-# -91.48 of tmo.in gave a negative far-field dx the plot refused).  BUILD + EXPORT waits on lens_array's
-# 0-ray EXPORT (TRANSCRIPT_DIFF.md 3.11), so it stays on CassWithExitPupil.in for now.
+# -91.48 of tmo.in gave a negative far-field dx the plot refused).  BUILD + EXPORT on lens_array.in as 3.2
+# (`build ;`): a refused BUILD now traces, so EXPORT RAYPOS reports the chief ray (macos e17587a1).
 # MODEL: 128
 # TRANSCRIPT-BANNER: s03_banner
 # COPY: $ROOT/ZGD_test_files/lens_array.in s03
-# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s03
 # COPY: $ROOT/ZGD_test_files/Telescope.in s03
 cd $TMP/s03
 # TRANSCRIPT: s03_mreset
@@ -32,15 +29,14 @@ log10
 intensity
 9
 /null
-# TRANSCRIPT: s03_text_int
-text
+# TRANSCRIPT: s03_binary_int
+binary
 intensity
 9
 # TRANSCRIPT-OFF
-old CassWithExitPupil
+old lens_array
 # TRANSCRIPT: s03_build_export
-build
-6
+build ;
 export
 tex
 chfr
@@ -56,8 +52,8 @@ q
 # EXPECT: Enter image stretch type \(LINEAR, LOG10, SQRT\): \[LINEAR\]: log10
 # EXPECT: Graphics device/type \(\? to see list, default /xw\):/null
 # EXPECT: Peak intensity= 2\.8304\d*D\+02; Peak occurs at i=\s+129, j=\s+129\s+Sum of intensity= 1\.9163\d*D\+03
-# EXPECT: FORMATTED File=Telescope\.int9\.txt\s+Text array is of dimension\s+256 by\s+256
+# EXPECT: Plot type set to BINARY[\s\S]*?DIRECT ACCESS File=Telescope\.int9\s[\s\S]*?Binary array is of dimension\s+256 by\s+256
 # EXPECT-NOT: plot bounds are degenerate
-# EXPECT: Plot type set to TEXT
-# EXPECT: Exporting data to CassWithExitPupil\.txt[\s\S]*?% RayPos 3-vectors for\s+1 rays at Element\s+6
+# EXPECT: Exporting data to lens_array\.txt[\s\S]*?% RayPos 3-vectors for\s+1 rays at Element\s+1
+# EXPECT-NOT: Write exceeds length
 # EXPECT-NOT: forrtl

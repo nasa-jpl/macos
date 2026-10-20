@@ -5,6 +5,3 @@ MACOS\>**perturb**
     Enter element to be perturbed: [0]: 0
     Enter rotational perturbation vector (x,y,z): [0.00000,0.00000,0.00000]: 0,8.72664d-3,0
     Enter translational perturbation vector (x,y,z): [0.00000,0.00000,0.00000]: 0,0,0
-    *** CPERTURB src: th =   0.000000000000000E+000  8.726640000000001E-003
-     0.000000000000000E+000 , del =  0.000000000000000E+000  0.000000000000000E+000
-     0.000000000000000E+000

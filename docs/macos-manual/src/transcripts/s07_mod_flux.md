@@ -3,9 +3,5 @@
 MACOS\>**mod**
 
     MOD: [q]: flux=0.01
-    Debug: VALUE =
-    0.01
-
-
     Flux =   1.000000000D-02
     MOD: [q]: q
