@@ -110,6 +110,45 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-19 (4) — re-gate (pair macos `36699d3` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_36699d3.md`. The macos tip
+advanced past pair 3 (SRS gg, ORS+RSTRACE ii, manual rebuild); resources
+`629a2d2` is unchanged, so the binding residual is identical to pair 3 by
+construction. Verified: the **gg/ii engine fixes work on arm64** — the new
+ORS/RSTRACE/SRS + BEAM journals (cmd 102→103) all pass, load clean 161/161
+(ImageDemo now matches Linux). COORD (ff) persists (`LocalCoord` untouched —
+still the −O2 rotation, correct at −O0); the (ee) subprocess/capfd Darwin
+guards hold (filtered/skipped with reason). Counts: load 161/161, cmd 96/103,
+mmacos 650/7, pymacos 6939/2 (+2 skipped). Residual = the round-3 re-pins/
+sub-asserts + the two engine items (−O2 LocalCoord, unit-6-across-FFI).
+
+### 2026-10-19 (3) — re-gate (pair macos `d3f2777`/`725e0389` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_d3f2777.md`. Deltas: cmd **87→96**
+pass, mmacos fail **10→7**, pymacos fail **4→2**; glyph still `1x10-10`; ImageDemo
+repaired (Mac 578/163 == Linux). The (ee) subprocess/capfd Darwin guards work
+(filtered/skipped with reason). Two investigations landed: **(ff) COORD** is an
+**`-O2`-only arm64 miscompile in `LocalCoord`** — the frame is correct under the
+`-O0` debug build and shows no bounds violation, so an uninitialized local or
+`-O2` codegen (TO's lane); **(ee)** the subprocess/capfd empties are **one root
+cause** — the gfortran engine's unit-6 (stdout) reaches the process from the
+standalone executable but not from a loaded `.so`/mex on macOS, so warning text
+should go through the api, not Fortran stdout across the FFI. Residual is round-3
+re-pins/sub-asserts and one coreutils item (BSD `wc` leading space in EXPORT.jou).
+
+### 2026-10-19 (2) — re-gate after the fixes (pair macos `3ff1d55` + resources `cd006b2e`)
+Second clean-clone gate, on the pair carrying the glyph fix, harness fixes,
+cross-architecture re-pins and the lifted 128-char path limit. Full record:
+`cli_tests/records/mac_gate_gfortran_3ff1d55.md`. Headline deltas from pair 1:
+cmd **70→87** pass, mmacos fail **15→10**, pymacos fail **8→4**; finding 1.2(t)
+**fixed** (`spot 5` on /png reads `1x10-10`, was the box); psiElt dead band
+dropped the Mac load ulp-settle **8→1**. Residual, for round 2: 14 cmd journals
+still use bare `sed -i` (BSD-incompatible — the deck edit silently no-ops);
+five bindings subprocess tests still capture empty (the `macos_home_.m`
+MACOS_HOME fix did not resolve the nested-`matlab -batch` / Python-subprocess
+launch on macOS); a few re-pins applied to the wrong comparison or too tight
+(tDwDx, tPolElement, tOpdRef, COORD_ACOOR, CALIB_fov_weight); and two Dave
+case-items (mixed_SPOT near-singular margin, spot_centre unstable quantity).
+
 ### 2026-10-19 — pre-release gate, clean clone, Apple Silicon
 - **Hardware / OS:** Apple M-series, macOS 26.6 (Darwin 25.6).
 - **Pair gated:** macos `22750d4b` + MACOS_resources `e211fe4b`
