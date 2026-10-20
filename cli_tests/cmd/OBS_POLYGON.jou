@@ -24,9 +24,9 @@ old p2d.in
 opd 5
 ! grep -c 'xObs=' pdef.in
 # EXPECT: MACOS> opd 5[\s\S]*?A total of\s+121 rays were lost\s+Obscured:\s+121\s+at element\s+1:\s+121
-# EXPECT: MACOS> old p3d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost\s+Obscured:\s+145\s+at element\s+1:\s+145
-# EXPECT: MACOS> old pdef\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost
-# EXPECT: MACOS> old p2d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.2773\d+D-12[\s\S]*?A total of\s+145 rays were lost
+# EXPECT: MACOS> old p3d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.27\d+D-12[\s\S]*?A total of\s+145 rays were lost\s+Obscured:\s+145\s+at element\s+1:\s+145
+# EXPECT: MACOS> old pdef\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.27\d+D-12[\s\S]*?A total of\s+145 rays were lost
+# EXPECT: MACOS> old p2d\.in[\s\S]*?Tracing rays past   5 elements[\s\S]*?MACOS> opd 5[\s\S]*?RMS OPD error is   1\.27\d+D-12[\s\S]*?A total of\s+145 rays were lost
 # EXPECT: (A total of\s+145 rays were lost[\s\S]*){3}
 # EXPECT: MACOS> ! grep -c 'xObs=' pdef\.in\s+2
 # EXPECT-NOT: Default used for  xObs

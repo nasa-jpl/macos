@@ -14,6 +14,7 @@ swl
 3
 # EXPECT: Number of wavelengths used for design optimization =\s+2\s+Wavelength\s+1 =\s+0\.100000000D-05\s+Wavelength\s+2 =\s+0\.550000000D-06
 # EXPECT: Enter ID of wavelength to use \[1\]: 2\s+Wavelength set to\s+5\.5\d*E-007
-# EXPECT: RMS OPD error is\s+1\.293791606D-12
+# EXPECT: RMS OPD error is\s+1\.29\d+D-12
+# (a collimated-beam residual, arm64 1.293491396: a bound, rule 1)
 # EXPECT: Invalid wavelength ID\s+3
 # EXPECT-NOT: forrtl
