@@ -6,6 +6,8 @@
 #                      macos_f90/macos_help.inc
 #   make transcripts -> regenerate src/transcripts/ (the example listings and the CLI
 #                      dialogs, tools/regen_transcripts.py; MACOS_BIN= picks the binary)
+#   make zernike-table -> regenerate src/transcripts/zernike_orderings.md (Appendix E, measured
+#                      through pymacos, tools/gen_zernike_table.py)
 #   make clean
 #
 # Section order is the lexical order of src/*.md (numbered prefixes).
@@ -47,7 +49,7 @@ POLVALSUM  := polval/05_summary.md
 POLVALSUM_OPTS := --resource-path=polval \
                --metadata title="MACOS Polarization Validation — Executive Summary"
 
-.PHONY: all docx html pdf appendix-c transcripts clean publish \
+.PHONY: all docx html pdf appendix-c transcripts zernike-table clean publish \
         cmdref cmdref-pdf cmdref-regen \
         polval polval-pdf polval-regen polval-check polval-summary
 
@@ -83,6 +85,14 @@ appendix-c:
 # engine (default binary: the ifx build of the clean worktree ~/dev/macos_cli_base)
 transcripts:
 	python3 tools/regen_transcripts.py $(MACOS_BIN)
+
+# Appendix E's Zernike orderings, MEASURED through pymacos (tools/gen_zernike_table.py; the gate is
+# MACOS_resources/pymacos/tests/test_zernike_orderings.py).  PYMACOS= picks the pymacos tree.
+PYMACOS ?= $(HOME)/dev/MACOS_resources/pymacos
+zernike-table:
+	bash -c 'source /opt/intel/oneapi/setvars.sh intel64 >/dev/null 2>&1; \
+	  PYMACOS_SRC=$(PYMACOS)/src MACOS_HOME=$(abspath ../../macos_f90) MPLBACKEND=Agg \
+	  $(PYMACOS)/.venv/bin/python tools/gen_zernike_table.py'
 
 # ---- MACOS Command Reference (cmdref/) ------------------------------
 cmdref: $(BUILD)/macosCmdRef.docx $(BUILD)/macosCmdRef.html

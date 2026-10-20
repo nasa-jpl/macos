@@ -19,6 +19,7 @@ make            # docx + html into build/
 make pdf        # via LibreOffice (tools/docx2pdf.py refreshes TOC)
 make appendix-c # regen src/93_appendix_c_commands.md from macos_help.inc
 make transcripts # regen src/transcripts/ (example listings + CLI dialogs; MACOS_BIN= picks the binary)
+make zernike-table # regen src/transcripts/zernike_{orderings,table8}.md (Appendix E + Table 8), MEASURED via pymacos
 make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
                   # (every Part I entry's "*CLI suite:*" line comes from cli_tests/cmd/*.jou)
 ```
@@ -45,6 +46,12 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   `# TRANSCRIPT:` switch between two answers of one NEW cuts the dialog there (`from=` / `upto=`
   regexes); author a long dialog with `tools/prompt_walk.py`, which prints each prompt beside the
   answer it got.  Nothing in `src/` is a typed dialog any more.
+- **The Zernike tables are measured** (Appendix E and Section 4's Table 8, 2026-10-20): `tools/gen_zernike_table.py`
+  puts a unit coefficient in one mode at a time on a flat mirror through pymacos and fits the traced sag, so
+  a row is what the engine does.  It refuses to write a table when a mode is not one term or a factor is
+  off -- that is an engine finding for `PLAN_CONSOLIDATION.md` 1.2, not a row.  Gate:
+  `MACOS_resources/pymacos/tests/test_zernike_orderings.py` (re-evaluates the printed text; a regenerated
+  table must pass it before its commit).
 - **No TOC in source** — pandoc `--toc` builds it. A plain
   `soffice --convert-to pdf` leaves the Word TOC field EMPTY; the
   Makefile pdf target uses `tools/docx2pdf.py` (UNO: update indexes

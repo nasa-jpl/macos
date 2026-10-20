@@ -742,119 +742,11 @@ An `AsphCoef=` (or `AnaCoef=`) line that carries fewer values than the surface n
 
 #### Zernike Surfaces
 
-Zernike surfaces add a deformation—described by a Zernike polynomial—to the surface of a conicoid. The deformation is entered as the “excess sag” of the surface (*not* the wavefront error). MACOS allows up to the first 45 Zernike terms to be added to a conicoid base surface shape. The Zernike polynomial set that is used is that defined by Malacara in his book, “Optical Shop Testing.” The ordering of the polynomials used in MACOS, as well as two other popular orderings, are shown in Table 8.
+Zernike surfaces add a deformation—described by a Zernike polynomial—to the surface of a conicoid. The deformation is entered as the “excess sag” of the surface (*not* the wavefront error). MACOS allows up to 66 Zernike terms (37 in the Fringe orderings) to be added to a conicoid base surface shape. Table 8 gives the terms through radial order 4 in each ordering MACOS supports. Appendix E gives all of them, with the normalized types, and says how the table is measured from the engine.
 
-The ordering and normalization are selected per element with the `ZernType=` keyword: `ANSI` (the MACOS/Malacara column of Table 8; the legacy name `Malacara` is accepted), `BornWolf`, `Fringe`, `Noll`, `ExtFringe`, and the RMS-normalized `NormANSI`, `NormBornWolf`, `NormFringe`, `NormNoll`, `NormHex`, `NormAnnularNoll` (which takes the annular ratio as a trailing value). **If no `ZernType=` is given, the ANSI ordering of Table 8 is assumed** — for every surface that carries Zernike terms (`Zernike`, `ZrnGrData`), whatever the element type. **A prescription converted from Code V must declare `ZernType= Fringe`** (or `Noll`) explicitly; the converter's ordering is not inferred. A `nZernCoef=` line on a surface that carries no Zernike terms is refused at load, naming the element. Fewer than `nZernCoef` coefficients may be entered; the rest are zero. The same keyword family applies to the Mon and FF channels of FreeForm surfaces (`MonZernType`, `FFZernType`; see “FreeForm Surfaces” below).
+The ordering and normalization are selected per element with the `ZernType=` keyword: `ANSI` (the legacy name `Malacara` is accepted), `BornWolf`, `Fringe`, `Noll`, `ExtFringe`, and the RMS-normalized `NormANSI`, `NormBornWolf`, `NormFringe`, `NormNoll`, `NormHex`, `NormAnnularNoll` (which takes the annular ratio as a trailing value). Appendix E describes each ordering, and says what `NormHex`, `NormAnnularNoll` and the highest `ExtFringe` modes trace as today. **If no `ZernType=` is given, the ANSI ordering is assumed** — for every surface that carries Zernike terms (`Zernike`, `ZrnGrData`), whatever the element type. **A prescription converted from Code V must declare `ZernType= Fringe`** (or `Noll`) explicitly; the converter's ordering is not inferred. A `nZernCoef=` line on a surface that carries no Zernike terms is refused at load, naming the element. Fewer than `nZernCoef` coefficients may be entered; the rest are zero. The same keyword family applies to the Mon and FF channels of FreeForm surfaces (`MonZernType`, `FFZernType`; see “FreeForm Surfaces” below).
 
-**TABLE 8.** Zernike polynomials
-
-+------------+----------+---------+----------------------------------+
-| **MACOS**  | **Code V | **F     | **Polynomial**                   |
-|            | (Noll)** | RINGE** |                                  |
-| **(M       |          |         |                                  |
-| alacara)** |          | **(Fr   |                                  |
-|            |          | inge)** |                                  |
-+============+==========+=========+==================================+
-| 1          | 1        | 1       | 1                                |
-+------------+----------+---------+----------------------------------+
-| 2          | 3        | 3       | R sin(A)                         |
-+------------+----------+---------+----------------------------------+
-| 3          | 2        | 2       | R cos(A)                         |
-+------------+----------+---------+----------------------------------+
-| 4          | 6        | 6       | R^2^ sin(2A)                     |
-+------------+----------+---------+----------------------------------+
-| 5          | 5        | 4       | 2R2-1                            |
-+------------+----------+---------+----------------------------------+
-| 6          | 4        | 5       | R^2^ cos(2A)                     |
-+------------+----------+---------+----------------------------------+
-| 7          | 10       | 11      | R^3^ sin(3A)                     |
-+------------+----------+---------+----------------------------------+
-| 8          | 9        | 8       | (3R^3^-2R) sin(A)                |
-+------------+----------+---------+----------------------------------+
-| 9          | 8        | 7       | (3R^3^-2R) cos(A)                |
-+------------+----------+---------+----------------------------------+
-| 10         | 7        | 10      | R^3^ cos(3A)                     |
-+------------+----------+---------+----------------------------------+
-| 11         | 15       | 18      | R^4^sin(4A)                      |
-+------------+----------+---------+----------------------------------+
-| 12         | 14       | 13      | (4R^4^-3R^2^) sin(2A)            |
-+------------+----------+---------+----------------------------------+
-| 13         | 13       | 9       | 6R4-6R2+1                        |
-+------------+----------+---------+----------------------------------+
-| 14         | 12       | 12      | (4R^4^-3R^2^) cos(2A)            |
-+------------+----------+---------+----------------------------------+
-| 15         | 11       | 17      | R^4^ cos(4A)                     |
-+------------+----------+---------+----------------------------------+
-| 16         | 21       | 27      | R^5^ sin(5A)                     |
-+------------+----------+---------+----------------------------------+
-| 17         | 20       | 20      | (5R^5^-4R^3^) sin(3A)            |
-+------------+----------+---------+----------------------------------+
-| 18         | 19       | 15      | (10R5-12R3+3R) sin(A)            |
-+------------+----------+---------+----------------------------------+
-| 19         | 18       | 14      | (10R5-12R3+3R) cos(A)            |
-+------------+----------+---------+----------------------------------+
-| 20         | 17       | 19      | (5R^5^-4R^3^) cos(3A)            |
-+------------+----------+---------+----------------------------------+
-| 21         | 16       | 26      | R^5^ cos(5A)                     |
-+------------+----------+---------+----------------------------------+
-| 22         | 28       |         | R^6^ sin(6A)                     |
-+------------+----------+---------+----------------------------------+
-| 23         | 27       | 29      | (6R^6^-5R^4^) sin(4A)            |
-+------------+----------+---------+----------------------------------+
-| 24         | 26       | 22      | (15R6-20R4+6R2) sin(2A)          |
-+------------+----------+---------+----------------------------------+
-| 25         | 25       | 16      | 20R^6^-30R^4^+12R^2^+1           |
-+------------+----------+---------+----------------------------------+
-| 26         | 24       | 21      | (15R6-20R4+6R2) cos(2A)          |
-+------------+----------+---------+----------------------------------+
-| 27         | 23       | 28      | (6R^6^-5R^4^) cos(4A)            |
-+------------+----------+---------+----------------------------------+
-| 28         | 22       |         | R^6^ cos(6A)                     |
-+------------+----------+---------+----------------------------------+
-| 29         | 36       |         | R^7^ sin(7A)                     |
-+------------+----------+---------+----------------------------------+
-| 30         | 35       |         | (7R^7^-6R^5^) sin(5A)            |
-+------------+----------+---------+----------------------------------+
-| 31         | 34       | 31      | (21R7-30R5+10R3) sin(3A)         |
-+------------+----------+---------+----------------------------------+
-| 32         | 33       | 24      | (35R7-60R5+30R3-4R) sin(A)       |
-+------------+----------+---------+----------------------------------+
-| 33         | 32       | 23      | (35R7-60R5+30R3-4R) cos(A)       |
-+------------+----------+---------+----------------------------------+
-
-**TABLE 8.** Zernike polynomials
-
-+------------+----------+---------+----------------------------------+
-| **MACOS**  | **Code V | **F     | **Polynomial**                   |
-|            | (Noll)** | RINGE** |                                  |
-| **(M       |          |         |                                  |
-| alacara)** |          | **(Fr   |                                  |
-|            |          | inge)** |                                  |
-+============+==========+=========+==================================+
-| 34         | 31       | 30      | (21R7-30R5+10R3) cos(3A)         |
-+------------+----------+---------+----------------------------------+
-| 35         | 30       |         | (7R^7^-6R^5^) cos(5A)            |
-+------------+----------+---------+----------------------------------+
-| 36         | 29       |         | R^7^ cos(7A)                     |
-+------------+----------+---------+----------------------------------+
-| 37         | 45       |         | R^8^ sin(8A)                     |
-+------------+----------+---------+----------------------------------+
-| 38         | 44       |         | (8R^8^-7R^6^) sin(6A)            |
-+------------+----------+---------+----------------------------------+
-| 39         | 43       |         | (28R8-42R6+15R4) sin(4A)         |
-+------------+----------+---------+----------------------------------+
-| 40         | 42       | 33      | (56R8-105R6+60R4-10R2) sin(2A)   |
-+------------+----------+---------+----------------------------------+
-| 41         | 41       | 25      | 70R8-140R6+90R4-20R2+1           |
-+------------+----------+---------+----------------------------------+
-| 42         | 40       | 32      | (56R8-105R6+60R4-10R2) cos(2A)   |
-+------------+----------+---------+----------------------------------+
-| 43         | 39       |         | (28R8-42R6+15R4) cos(4A)         |
-+------------+----------+---------+----------------------------------+
-| 44         | 38       |         | (8R^8^-7R^6^) cos(6A)            |
-+------------+----------+---------+----------------------------------+
-| 45         | 37       |         | R^8^ cos(8A)                     |
-+------------+----------+---------+----------------------------------+
+<!-- transcript: zernike_table8 -->
 
 KcElt and KrElt (or eElt and fElt) are the parameters that describe the conicoid. The deviations occur only in the z-direction of a special coordinate frame. The variable pMon is the center of the coordinate frame. The variables xMon, yMon, and zMon define the special coordinate frame as shown in Figure 27.The variable lMon is the semi-diameter of the circle to which the Zernike deviations are scaled (remember that Zernikes are defined on a unit circle).
 
@@ -862,7 +754,7 @@ KcElt and KrElt (or eElt and fElt) are the parameters that describe the conicoid
 
 **FIGURE 27** Specialized coordinate frame
 
-Zernike polynomials, listed in Table 8, are orthogonal over a unit circle. The polar coordinates (R, A) are related to the coordinates of the projection of the point of incidence vector onto the plane perpendicular defined by xMon and yMon (X, Y) by X=R lMon cos(A) and Y=R lMon sin(A). The more common Seidel aberrations can be calculated from the Zernike coefficients (ref. Malacara).An example using a Zernike surface to simulate deformations on the primary mirror of a small telescope is provided in Appendix A.7. The following dialog illustrates the responses the NEW command expects in entering a Zernike reflector:
+Zernike polynomials, listed in Table 8 and Appendix E, are orthogonal over a unit circle. The polar coordinates (R, A) are related to the coordinates of the projection of the point of incidence vector onto the plane perpendicular defined by xMon and yMon (X, Y) by X=R lMon cos(A) and Y=R lMon sin(A). The more common Seidel aberrations can be calculated from the Zernike coefficients (ref. Malacara).An example using a Zernike surface to simulate deformations on the primary mirror of a small telescope is provided in Appendix A.7. The following dialog illustrates the responses the NEW command expects in entering a Zernike reflector:
 
 <!-- transcript: s04_zernike -->
 
@@ -875,7 +767,7 @@ In addition to the dense MonCoef form (120 coefficients in Cartesian monomial or
     MonZernModes= 4 9 16 25
     MonZernCoef= -4.819E+00 4.001E+00 1.197E+00 2.269E-03
 
-MonZernType selects the Zernike ordering and normalization. Supported types: ANSI, BornWolf, Fringe, NormANSI, NormBornWolf, NormFringe, NormNoll, Noll, NormAnnularNoll, NormHex, ExtFringe. The Norm\* variants use RMS normalization; the unprefixed variants are unnormalized.
+MonZernType selects the Zernike ordering and normalization. Supported types: ANSI, BornWolf, Fringe, NormANSI, NormBornWolf, NormFringe, NormNoll, Noll, NormAnnularNoll, NormHex, ExtFringe. The Norm\* variants use RMS normalization; the unprefixed variants are unnormalized. The orderings are in Appendix E.
 
 Conversion to the internal monomial form (MonCoef) happens automatically at trace time. The same scheme applies to FF Zernikes: FFZernType, nFFZernCoef, FFZernModes, FFZernCoef. Modes are 1-indexed; a modes line may be written on one line or wrapped over several.
 

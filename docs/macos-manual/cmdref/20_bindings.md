@@ -679,7 +679,7 @@ Propagation distance zElt at element SRF. For Flat / FocalPlane elements this is
 - **mmacos:** `s = macos.get_elt_zrn(srf)`
 - **pymacos:** *not available*
 
-Read the Zernike-surface definition at element SRF. s = macos.get_elt_zrn(SRF) returns a struct for a SrfType=Zernike surface: .norm_radius   scalar   Zernike normalisation radius (lMon, BaseUnits) .type          scalar   ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4-6 Norm variants, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll)
+Read the Zernike-surface definition at element SRF. s = macos.get_elt_zrn(SRF) returns a struct for a SrfType=Zernike surface: .norm_radius   scalar   Zernike normalisation radius (lMon, BaseUnits) .type          scalar   ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4 NormANSI, 5 NormBornWolf, 6 NormFringe, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll,
 
 <!-- BEGIN NOTES fn-elt-zrn -->
 <!-- END NOTES fn-elt-zrn -->
@@ -732,7 +732,7 @@ Zernike normalisation radius (lMon) at SRF. r = macos.get_elt_zrn_norm_radius(SR
 - **mmacos:** `macos.set_elt_zrn_type(srf, zern_type, opts)`
 - **pymacos:** `pymacos.elt_zrn_type(srf, zrn_type, reset)`
 
-Zernike normalisation type id at element SRF. t = macos.get_elt_zrn_type(SRF) returns the ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4-6 Norm variants, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll), or -1 if SRF is not a Zernike surface. See also: macos.set_elt_zrn_type, macos.get_elt_zrn.
+Zernike normalisation type id at element SRF. t = macos.get_elt_zrn_type(SRF) returns the ZernType id (1 ANSI, 2 BornWolf, 3 Fringe, 4 NormANSI, 5 NormBornWolf, 6 NormFringe, 7 NormHex, 8 NormNoll, 9 NormAnnularNoll, 10 Noll, 11 ExtFringe), or -1 if SRF is not a Zernike surface.  The orderings: MACOS Manual Appendix E. See also: macos.set_elt_zrn_type, macos.get_elt_zrn.
 
 <!-- BEGIN NOTES fn-elt-zrn-type -->
 <!-- END NOTES fn-elt-zrn-type -->
