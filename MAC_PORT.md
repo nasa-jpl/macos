@@ -110,6 +110,19 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-19 (5) — re-gate (pair macos `5aff70d` + resources `629a2d2`)
+Full record: `cli_tests/records/mac_gate_gfortran_5aff70d.md`. Adds the SAVE DM
+fix (AOExample frame restored, UDSINIT re-pinned) + CC's two gate-4 journal
+widenings. On Mac: **EXPORT and UDSINIT now pass** (BSD-`wc` fix + the DM fix
+work on arm64); cmd 96→**97/103**; load clean 161/161; mmacos 650/7 and pymacos
+6939/2(+2 skip) unchanged (resources 629a2d2 identical). CALIB_SPOT_mixed is the
+one short of CC's expected 98 — its psiElt **3rd** component (normal ≈ −1) prints
+`-9.99…E-01` on arm64 (near-singular tilt), not `E+00`; the pattern's 3rd group
+needs that form. The (ff) COORD −O2 bug was bounded by elimination (snan,
+int/logical/derived init, -fno-automatic, -fno-tree-vectorize, -ffp-contract=off
+all still rotated; correct only at −O0) → a deterministic gfortran-16 arm64 −O1+
+codegen miscompile in `LocalCoord`, TO's lane.
+
 ### 2026-10-19 (4) — re-gate (pair macos `36699d3` + resources `629a2d2`)
 Full record: `cli_tests/records/mac_gate_gfortran_36699d3.md`. The macos tip
 advanced past pair 3 (SRS gg, ORS+RSTRACE ii, manual rebuild); resources
