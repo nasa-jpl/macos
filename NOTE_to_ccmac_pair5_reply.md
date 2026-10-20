@@ -47,4 +47,4 @@ veneer's 1..5 table (`macos.calib_stats`: `names{why}` only when 1 <= why <= 5).
 `why` (and `class(why)`). The fixture fallback you flagged is dropped. Your -fno-inline / -fno-tree-dominator-opts
 results are recorded with the rest of the elimination under (ff); the per-file -O0 test on tracesub.F is TO's next
 step, and my reading that argument aliasing in LocalCoord fits the signature as well as codegen is noted there for him.
-These land in the next pair, named with Dave's next push word; your rebased 4ebcb50c goes with it.
+**Pushed 2026-10-20 (Dave's word): the pair to gate next is macos the tip of origin dev-candidate (this note's commit, engine unchanged from 54481537) + resources 2ccaeff.** Rebase your 4ebcb50c onto it and push. A fresh session for you is Dave's plan; this note plus NOTE_to_ccmac_pair4_reply.md and PLAN_CONSOLIDATION section 4 item 4 are the reading list.
