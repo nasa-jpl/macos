@@ -159,6 +159,11 @@
 > run only showed the deck refused -- the 'crash' there was the q quitting MACOS, not a fault).  Committed 8f43e952.  NEXT: commit, worktree gate (rebuild both,
 > load, ab vs the last recorded SHA, cmd), tell TO, push on Dave's word.  OPEN: ZCOZernType= NormAnnular.**
 
+> **2026-10-20 (CC, end of the Zernike line): ZCOZernType= NormAnnular + SZCO 'Ann' refused (6fda7711, Dave's ruling); TO's (yy)
+> startup-prompt refusal (49c87e13 / 6dc22c0e / 59cdbfc1); gates 39275005 (110/113, ZERN_normhex re-pinned), TO's 49c87e13
+> (112/112), the full tip 806bf5e4 PASS (160/160, 0 movers vs 548b0da7, 112/112).  Dave: 'push all when the gates clear' --
+> PUSHED (8th word); CCMac's NEXT PAIR = the pushed macos tip + resources 00697be (NOTE_to_ccmac_pair8.md rewritten).**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
