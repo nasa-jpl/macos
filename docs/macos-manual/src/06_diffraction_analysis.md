@@ -20,35 +20,19 @@ Systems for which diffraction effects of beam truncation due to apertures or obs
 
 If a multi-plane model is necessary, the first step is to lay out the optical system and determine the sequence of propagations. Consider the Cassegrain telescope with relay optics (including a fold near the focus of the main telescope) shown in Figure 40. Figure 41 shows reference surfaces added for multiplane diffraction calculations. The beam is partially obscured at the main and relay telescope secondary mirror supports (“spiders”). There are 4 diffraction propagations which are clearly shown in the diffraction schematic, Figure 42. Note that points A and D are used in the model twice. The first time each is used to model the spider obscurations. The second time, the points are used as a reference surfaces for diffraction calculations.
 
-Spiders
-
-Primary
-
-Relay secondary Relay primary Focal plane
-
 ![](media/fig_rescued_40.png)
 
 **FIGURE 40** Optical schematic of Cassegrain telescope and relay optics example
-
-The first near-field propagation, PropType=5, occurs between the main telescope
-
-3 zElt6
-
-A 5 6 7 B
 
 ![](media/fig_rescued_41.png)
 
 **FIGURE 41** Reference surfaces for multi-plane diffraction in Cassegrain telescope and relay optics example
 
-    2 3 4 5 6 7 8 9 10 11 12 13 14
-
-A A B C D D
-
 ![](media/fig_rescued_42.png)
 
 **FIGURE 42** Diffraction schematic for Cassegrain telescope and relay optics example
 
-primary and secondary mirror (between reference surfaces 3 and 4 which are located close to these optics). The reference surfaces share a common center of curvature at point A. Since this is a converging beam, the zElt parameters are positive for both reference surfaces (see [Section ?](#single--versus-multi-plane-diffraction)).
+The first near-field propagation, PropType=5, occurs between the main telescope primary and secondary mirror (between reference surfaces 3 and 4 which are located close to these optics). The reference surfaces share a common center of curvature at point A. Since this is a converging beam, the zElt parameters are positive for both reference surfaces (see [Section ?](#single--versus-multi-plane-diffraction)).
 
 The second near-field propagation occurs between the secondary mirror and the relay camera’s secondary mirror support “spiders.” It is a “through-focus” propagation, with zElt=6 positive (converging beam) and zElt=8 negative (diverging beam). The reference point for this propagation is point B. The fold mirror is included in the propagation.
 
