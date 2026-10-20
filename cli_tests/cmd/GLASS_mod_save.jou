@@ -1,0 +1,30 @@
+# A glass set by name (cmdref: MODify; Prescription I/O) on the manual's ImageDemo.in: MOD GlassElt(6)=BK7 puts the
+# catalog's Sellmeier coefficients on the first relay surface, the trace uses the glass index (the OPD moves), SAVE writes
+# GlassType= Sellmeier, and the saved deck reloads and traces to the same OPD.  Before, the NEW dialog's and MOD's
+# glass branches copied the coefficients but left GlassType at 0 = Hartmann (MOD also left LGlass false): SAVE
+# wrote 'GlassType= Hartmann', the reader refused it ('** Unknown glass type at Elt 6') and the trace through
+# the lens lost every ray (macos-fd 2026-10-19, Section 4's Refractors tutorial; PLAN_CONSOLIDATION 1.2 (rr)).
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+cd $TMP
+old ImageDemo.in
+opd 13
+/null
+mod
+GlassElt(6)=BK7
+q
+opd 13
+/null
+save bk7
+old bk7.in
+opd 13
+/null
+! grep -c 'GlassType=  Sellmeier' bk7.in
+# EXPECT: GlassElt\(\s*6\) = BK7
+# The deck's IndRef 1.61783 gives 3.6057e-4 at the image; BK7's Sellmeier index at 0.7 um gives 4.0064e-4, and the
+# reloaded deck gives the same 4.0064e-4 (5 figures, rule 2).
+# EXPECT: RMS OPD error is\s+3\.605\d*D-04[\s\S]*?GlassElt\(\s*6\) = BK7[\s\S]*?RMS OPD error is\s+4\.006\d*D-04
+# EXPECT: Input file \S*bk7\.in\s+being loaded[\s\S]*?RMS OPD error is\s+4\.006\d*D-04
+# EXPECT: ^1\s*$
+# EXPECT-NOT: Unknown glass type
+# EXPECT-NOT: All rays are obscured or lost
+# EXPECT-NOT: forrtl
