@@ -85,7 +85,9 @@
 > (kk) debug prints out + CENTER's real count, (ll) PARTIALS input-ray block (chain steps over untraced elements; ifRayElt reset per
 > ray -- was nondeterministic under gfortran), (mm) refused BUILD traces, (nn) EltType= decks' grid flags, (oo) reversed plot bounds.
 > Journals BINARY_CENTER, PARTIALS_inputray, BUILD_refused_export (+STOP_FEX_SXP EXPECT-NOTs); must-fail on 5aff70dd proven.
-> NEXT: commit (with ZGD_test_files/lens_array.in + Telescope.in), full gate at the commit, records, push on Dave's word.**
+> Committed e17587a1; gate chain running.  THEN (pp) giza dev/type truncation ('/nul') + (qq) units tests read WaveUnits, empty
+> BaseUnits= and '(default-unit)' accepted -- journal PGD_reopen_units (red on 5aff70dd).  NEXT: commit (pp)(qq); gate at that commit
+> after the e17587a1 chain ends; records; push on Dave's word.**
 
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,

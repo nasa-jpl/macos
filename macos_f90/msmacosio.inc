@@ -555,10 +555,21 @@ C       Set entrance condition flags to .FALSE.
               CBM=1d-3; cUnit='mm'
             ELSE IF (LCMP(BaseUnits,'m',1)) THEN
               CBM=1d0; cUnit='m '
-            ELSE IF (LCMP(WaveUnits,'in',2)) THEN
+            ELSE IF (LCMP(BaseUnits,'in',2)) THEN
               CBM=2.54d-2; cUnit='in'
-            ELSE IF (LCMP(WaveUnits,'none',2)) THEN
+            ELSE IF (LCMP(BaseUnits,'none',2)) THEN
               CBM=1d0; cUnit='  '
+!-->  the placeholder SAVE writes when no units were given: the default
+!     itself, silent (the 'in' / 'none' tests read WaveUnits until
+!     2026-10-19, and this case passed by accident through WaveUnits =
+!     'none'; PLAN_CONSOLIDATION 1.2 (qq))
+            ELSE IF (LCMP(BaseUnits,'(default',8)) THEN
+              CBM=1d0; cUnit='  '
+!     an EMPTY 'BaseUnits=' (five manual example decks carry one): the
+!     default too, silent
+            ELSE IF (LEN_TRIM(BaseUnits).EQ.0) THEN
+              CBM=1d0; cUnit='  '
+!<--
             ELSE
               WRITE(*,*)' Unknown units, unitless operation assumed'
               BaseUnits='none'

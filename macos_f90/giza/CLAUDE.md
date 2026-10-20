@@ -213,3 +213,11 @@ device, not just /png.  The remapper now picks ASCII stand-ins (`x`, `.`, `A`) w
 is undefined and keeps the Unicode glyphs otherwise.  Greek letters and Hershey symbols go through
 `_giza_lookup_hershey(...)->utf` and have the same limitation (unmeasured).  Don't "fix" this by
 resolving the fontconfig pattern in `giza-set-font.c`: that code is not compiled here.
+
+## PGQINF('DEV/TYPE') returned '/nul' for the null device (2026-10-19, PLAN_CONSOLIDATION 1.2 (pp))
+`giza_query_device('dev/type')` in `src/giza-drivers.c` appended the type name with `strncat(..., 4)`:
+four characters, so `/null` became `/nul`.  GRAINI caches that string after the first PGBEGIN and feeds
+it back after every `ifPlot=.FALSE.` event (OLD/NEW call GRAEND, which closes the device), and the
+reopen failed with `giza_open_device: Unknown device` -- then every plot drew nothing until PGD.  The
+append is now bounded by the caller's buffer.  A journal that plots, reloads and plots again on /null
+(`cmd/PGD_reopen_units.jou`) is the gate; /png never showed it (four characters).
