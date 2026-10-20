@@ -1,0 +1,25 @@
+# A plot after a reload (cmdref: PGD; Prescription I/O) and the NEW/parser units test, on the manual's Cassegrain.in.
+# (pp) giza's PGQINF('DEV/TYPE') appended at most FOUR characters of the type name, so '/null' came back '/nul':
+#   GRAINI caches that string after the first PGBEGIN, OLD closes the device (GRAEND), and the next plot's PGBEGIN
+#   printed '%giza - ERROR - giza_open_device: Unknown device, device not opened' and every later plot drew nothing
+#   (macos-fd 2026-10-19, in four regenerated dialogs).  /png (four characters) never showed it.
+# (qq) 'BaseUnits= none' (and 'in') were tested against WaveUnits in both the NEW dialog and the parser, so a deck
+#   or an answer giving one of the listed choices printed 'Unknown units, unitless operation assumed'.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old Cassegrain.in
+opd 5
+/null
+old Cassegrain.in
+opd 5
+opd 5
+! perl -i -pe 's/^(\s*)zSource=/$1BaseUnits= none\n$1zSource=/' Cassegrain.in
+old Cassegrain.in
+! perl -i -pe 's/BaseUnits= none/BaseUnits= in/' Cassegrain.in
+old Cassegrain.in
+opd 5
+# EXPECT: (RMS OPD error is\s+1\.2937\d*D-12[\s\S]*?){4}
+# EXPECT-NOT: giza_open_device: Unknown device
+# EXPECT-NOT: Unknown units
+# EXPECT-NOT: Default used for BaseUnits[\s\S]*?Default used for BaseUnits[\s\S]*?Default used for BaseUnits
+# EXPECT-NOT: forrtl

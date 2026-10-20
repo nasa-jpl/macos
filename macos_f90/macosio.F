@@ -447,9 +447,9 @@ C	Specify input ray grid parameters
 	    CBM=1d-3
 	  ELSE IF (LCMP(BaseUnits,'m',1)) THEN
 	    CBM=1d0
-	  ELSE IF (LCMP(WaveUnits,'in',2)) THEN
+	  ELSE IF (LCMP(BaseUnits,'in',2)) THEN
 	    CBM=2.54d-2
-	  ELSE IF (LCMP(WaveUnits,'none',2)) THEN
+	  ELSE IF (LCMP(BaseUnits,'none',2)) THEN
 	    CBM=1d0
 	  ELSE
 	    WRITE(*,*)' Unknown units, unitless operation assumed'
