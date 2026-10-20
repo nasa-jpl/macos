@@ -155,7 +155,8 @@
 > **2026-10-20 (CC, (xx)): Dave: refuse by mode.  DONE LOCAL uncommitted: ZernCoefPastMax (elt_mod.F) in ChkDf2 on the three
 > arrays; MOD coefficient sites bound the index by the array (GO TO 998 = the MOD reprompt) then the type's count; FFZernModes /
 > MonZernModes bounded by their arrays at load; ZernModes message named.  Journal ZERN_mode_count.jou green ifx + gfortran
-> (shared build), the pre-fix worktree binary CRASHES on it (the out-of-bounds remap).  NEXT: commit, worktree gate (rebuild both,
+> (shared build), RED on TO's 548b0da7 binary (all four refusals absent; my worktree's 7cd22b63 predates NormHex, so its
+> run only showed the deck refused -- the 'crash' there was the q quitting MACOS, not a fault).  Committed 8f43e952.  NEXT: commit, worktree gate (rebuild both,
 > load, ab vs the last recorded SHA, cmd), tell TO, push on Dave's word.  OPEN: ZCOZernType= NormAnnular.**
 
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
