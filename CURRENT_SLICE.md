@@ -126,6 +126,13 @@
 > provide', companion-tools bullets, SegMirMaker bullets, TElt = 6x6 identity, ZernCoef = 45 zeros, T^{iElt} spacing.  NEXT: build,
 > refresh the edit copies + docs PDF, commit (explicit paths), push on Dave's word.**
 
+> **2026-10-20 (CC, later): manual committed 4e9c02c4 (LOCAL).  Dave's Zernike reference (the 2023 Marchen/Rodgers/Sigrist memo,
+> export-marked, UNTRACKED in docs/Archive) was not the one he meant; ruling: TO makes the ordering map, appendix is fine ->
+> BRIEF_to_manual_zernike.md sent to macos-fd.  TO delivered Appendix E MEASURED from the engine (macos 714abf67, resources
+> bcf351c, LOCAL; test_zernike_orderings 14 pass; Table 8 = generated 15-row excerpt) and four findings for Dave's ruling,
+> PLAN 1.2 (tt) ExtFringe orders 11-14 silently inert, (uu) NormHex unloadable, (vv) NormAnnularNoll ignores its ratio,
+> (ww) pymacos veneer limit 9/45 vs api 11/66.  AWAITING Dave: push word for 4e9c02c4..714abf67 + bcf351c; the four rulings.**
+
 > **2026-10-19 (CC, later): PUSHED 034ccce2 (journal re-pins).  Then LOCAL: CCMac's per-assertion data acted on
 > (resources cd006b2: 18 of 23 binding assertions re-pinned per the two rules, MACOS_HOME for the nested matlab -batch,
 > /tmp staging; macos 4d7b1aa1: the load-time psiElt unitize gained the 64-ulp dead band -- the SAVE generations walked
