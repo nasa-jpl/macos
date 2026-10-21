@@ -76,7 +76,7 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   numbers, superseded by --toc + PDF bookmarks + HTML search).
 - Known debt: ~73 equations are images/Symbol-font fragments to be
   re-entered as LaTeX math ($...$ renders in HTML; docx gets OMML).
-- `RECONCILE_4_01.md` documents folding in the Writer fork
+- `RECONCILE_4_01.md` (dev branch only) documents folding in the Writer fork
   (`macosMan4_01.docx`); its "(historical)" version-notes sections now
   live at the end of `src/01_introduction.md`.
 - New-feature documentation for engine work (FreeForm, SLSQP, XPS,

@@ -7,8 +7,8 @@
 
 ## Polarization physics (PLAN_POLARIZATION, Phase 0/1)
 *(Documented for the user: Manual SECTION 11 "Polarization" (2026-10-18: the whole subject -- switch, conventions, the trace at bare and coated surfaces, the elements, vector diffraction, the analysis layer, the design rules, the validation ladder, the gaps), with §4 Polarizers and Waveplates / Coatings / Ex0Ey0 and §6 SCALAR / VECTOR for the keywords and commands; the evidence per gate is the Polarization Validation Report, `docs/macos-manual/polval/`.  Below: the engine record -- conventions, the two coating models, the fixes and their measurements.)*
-See `PLAN_POLARIZATION.md` (root) + `POLARIZATION_PHASE0_AUDIT.md` for the
-full audit.  Quick map of what the engine has and the conventions to hold.
+See `PLAN_POLARIZATION.md` (root) + `POLARIZATION_PHASE0_AUDIT.md` (both dev
+branch only; the record, not needed to work the code) for the full audit.  Quick map of what the engine has and the conventions to hold.
 
 **What exists (all gated on `ifPol`):**
 - **Per-ray vector E-field** `RayE(3,mRay)` (`Complex*16`, `elt_mod.F`) --
