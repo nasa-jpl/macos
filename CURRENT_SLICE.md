@@ -164,6 +164,10 @@
 > (112/112), the full tip 806bf5e4 PASS (160/160, 0 movers vs 548b0da7, 112/112).  Dave: 'push all when the gates clear' --
 > PUSHED (8th word); CCMac's NEXT PAIR = the pushed macos tip + resources 00697be (NOTE_to_ccmac_pair8.md rewritten).**
 
+> **2026-10-20 (CC): PUSHED macos 18487c06 / resources 00697be.  CCMac's gate 8 (3ead7473 + 00697be) CLEAN on arm64: 164/164,
+> 111/112 (only (ff)), 656/0, 6961/0; NormHex sag and the startup exit status agree with Linux.  His gate 7+8 records (17b4aa1d,
+> c59b0ad9) wait on DAVE'S word to him.  Plan section 5 line LOCAL.  OPEN: (ff) with TO.  Next pair: after the next engine change.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
