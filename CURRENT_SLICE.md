@@ -168,6 +168,12 @@
 > 111/112 (only (ff)), 656/0, 6961/0; NormHex sag and the startup exit status agree with Linux.  His gate 7+8 records (17b4aa1d,
 > c59b0ad9) wait on DAVE'S word to him.  Plan section 5 line LOCAL.  OPEN: (ff) with TO.  Next pair: after the next engine change.**
 
+> **2026-10-21 (CC, (ff) FIXED): CCMac's bisection (origin 89735953) named a stale recompute in LocalCoord's y rotate branch;
+> the one line landed (tracesub.F), both compilers rebuilt; NEW Linux-visible leg: pre-fix x86_64 was ALSO wrong on non-coaxial
+> decks (opt_example 1.4 deg, e5hex1 12 deg off the normal) -- journal COORD_offaxis_frame.jou green ifx + gfortran, red on
+> the worktree pre-fix binary.  NEXT: commit, worktree gate (rebuild both, load, ab 806bf5e4 -> tip -- STOP/FEX use LocalCoord,
+> so name any mover; cmd), CCMac's pair-9 note, push on Dave's word.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**

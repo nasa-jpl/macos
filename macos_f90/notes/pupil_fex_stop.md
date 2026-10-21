@@ -5,6 +5,20 @@
 > `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
+## LocalCoord's y branch must recompute before it normalizes (1.2 (ff), fixed 2026-10-21)
+- `LocalCoord` (tracesub.F) builds the frame at an element from differential chief rays: translate
+  the source along xGrid / yGrid, retrace, difference the ray position against `crLocalPos`; if the
+  translation moved the ray by < 1e-3 (a focal plane), ROTATE the chief ray and retrace instead.
+  The x rotate branch recomputed `xLocal` from the rotated ray's `RayPos` before `DUNITVEC`; the y
+  branch did not, so it normalized the STALE translate residual -- exactly 0 on a coaxial deck on
+  x86_64 (correct by luck, every Linux gate green), 2.2e-16 on arm64 -O1+ (CCMac's 76.5-degree frame,
+  bisected to the line in `cli_tests/records/mac_ff_localcoord.md`), and a REAL residual on any
+  non-coaxial deck on every platform (opt_example 1.4 degrees, e5hex1 12 degrees off the normal).
+  `DUNITVEC` has no magnitude floor: a 1e-16 vector normalizes as happily as a unit one.  Gate
+  `cli_tests/cmd/COORD_offaxis_frame.jou`.  Lesson: a defect that is 'compiler-only' and bit-identical
+  from -O1 up is the optimizer using a right the source gave it (here: a value it was free to leave
+  stale); instrument -O0 vs -O1 and diff -- the first divergent intermediate names the line.
+
 ## SPOT BEAM reference frame: obscured chief ray (tracesub.F LocalCoord)
 *(User rule -- an obscured but geometrically defined chief ray still defines the Beam frame -- is Manual §5 SPOT.  Mechanism below.)*
 - `SPOT ... beam` (and `WINDOW/PLOCATE ... beam`) build the beam coordinate

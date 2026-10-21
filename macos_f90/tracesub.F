@@ -3121,6 +3121,13 @@ C    Didn't work, try rotating differential ray:
             ChfRayPos(:) = oldChfRayPos(:)
             return
 	  END IF
+!-->	  PLAN_CONSOLIDATION 1.2 (ff), CCMac's bisection 2026-10-20: the
+!	  x branch recomputes xLocal from the rotated ray's RayPos before it
+!	  normalizes; this branch did not, so DUNITVEC normalized the STALE
+!	  translate-stage residual -- exactly 0 on x86_64 (right by luck),
+!	  2.2e-16 on arm64 at -O1+ (a 76.5-degree frame).  Recompute first.
+	  CALL DSUB(yLocal,RayPos,crLocalPos,3)
+!<--
 	  CALL DUNITVEC(v2,yLocal,DMAG2,3)
 	  IF (DMAG2.GT.DMAG1) THEN
 	    CALL DEQUATE(yLocal,v2,3)
