@@ -67,6 +67,10 @@ Then the announcement: **everyone deletes their clones and re-clones; no push fr
 three Claude worktrees (`~/dev/macos`, `~/dev/macos_cli_base`, `~/dev/macos_to_hex`) included.
 
 ## Step 3 -- dev-candidate -> dev, both repos (fast-forward), ENGINE FIRST
+**Precondition: step 2's re-clone is complete** -- the clone these commands run in was made AFTER the force-push
+(`git log -1 --format=%H origin/dev-candidate` must match the rewritten mirror's tip, and `git log --all --diff-filter=A
+--name-only --format= | grep -ci npsol` must read 0 in it).  Steps 3-6 are ordinary pushes from that clone; none of
+them needs another re-clone.
 ```bash
 for R in macos MACOS_resources; do
   cd ~/dev/$R && git fetch origin
