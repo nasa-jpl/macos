@@ -64,7 +64,17 @@ cd $W/MACOS_resources.git && git push --mirror --force
 ```
 Then the announcement: **everyone deletes their clones and re-clones; no push from a pre-rewrite clone, ever**
 (a push from an old clone re-introduces the removed history -- that is what happened to the July rewrite).  Dave's
-three Claude worktrees (`~/dev/macos`, `~/dev/macos_cli_base`, `~/dev/macos_to_hex`) included.
+machine today holds three independent clones (`~/dev/macos`, the shared working tree; `~/dev/macos_cli_base`, the
+clean gate tree; `~/dev/macos_to_hex`, TO's one-off gate tree): delete all three and re-clone ONCE, as one clone
+plus a worktree that shares its objects -- the gate tree then cannot drift from the repository it gates, and the
+third tree is not recreated (a second gate tree, if two lanes ever gate at the same hour again, is a one-line
+`git worktree add` at the time):
+```bash
+rm -rf ~/dev/macos ~/dev/macos_cli_base ~/dev/macos_to_hex ~/dev/MACOS_resources     # after step 1's bundle is safe
+git clone git@github.com:nasa-jpl/macos.git ~/dev/macos && cd ~/dev/macos && git checkout dev-candidate
+git worktree add ../macos_cli_base dev-candidate       # the clean gate tree; run_cli_tests.sh's default
+git clone git@github.com:nasa-jpl/MACOS_resources.git ~/dev/MACOS_resources   # until step 5 folds it in
+```
 
 ## Step 3 -- dev-candidate -> dev, both repos (fast-forward), ENGINE FIRST
 **Precondition: step 2's re-clone is complete** -- the clone these commands run in was made AFTER the force-push
