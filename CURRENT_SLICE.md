@@ -174,6 +174,11 @@
 > the worktree pre-fix binary.  NEXT: commit, worktree gate (rebuild both, load, ab 806bf5e4 -> tip -- STOP/FEX use LocalCoord,
 > so name any mover; cmd), CCMac's pair-9 note, push on Dave's word.**
 
+> **2026-10-21 (CC): gate at 0efc2dec PASS (160/160, 0 movers vs 806bf5e4, 113/113); pymacos side tree 6963/0.  CCMac's 1.1b
+> closure 82c80e1b merged (a352421e).  Records + section 5 committed; NOTE_to_ccmac_pair9.md names his pair = the records
+> commit + resources 00697be.  AWAITING Dave: push word (0efc2dec .. tip).  Engine lane: NOTHING OPEN -- (tt)-(yy) and (ff)
+> all closed on both platforms.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
