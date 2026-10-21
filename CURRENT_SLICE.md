@@ -179,6 +179,9 @@
 > commit + resources 00697be.  AWAITING Dave: push word (0efc2dec .. tip).  Engine lane: NOTHING OPEN -- (tt)-(yy) and (ff)
 > all closed on both platforms.**
 
+> **2026-10-21 PUSHED (Dave's word, 9th): macos 24656a22 (0efc2dec (ff) fix, merge of CCMac's 82c80e1b, records ad4161fa, pair-9
+> note); resources unchanged at 00697be.  CCMac's PAIR 9 = ad4161fa + 00697be (his poll picks the note up).  Engine lane idle.**
+
 > **2026-10-20 PUSHED (Dave's word, 5th): macos 9a971d25 (manual figures/blocks, Appendix E, CCMac's gate-6 confirmation),
 > resources bcf351c.  CCMac's NEXT PAIR = macos 9a971d25 + resources bcf351c (Dave relays).  OPEN: the four Zernike rulings
 > (tt)-(ww); (ff) with TO.**
