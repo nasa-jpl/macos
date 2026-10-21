@@ -5,10 +5,15 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build or
-> engine work, re-read: **this file**, `PLAN.md`, `PLAN_CONSOLIDATION.md`
-> (the active sequencing, 2026-10-08), `PLAN_DESIGN_LAYER.md`,
-> `CURRENT_SLICE.md` (in-flight state), and the agent `MEMORY.md`
-> (build/test workflow entries).
+> engine work, re-read: **this file**, then -- IF PRESENT -- `PLAN.md`,
+> `PLAN_CONSOLIDATION.md` (the active sequencing, 2026-10-08),
+> `PLAN_DESIGN_LAYER.md`, `CURRENT_SLICE.md` (in-flight state), and the
+> agent `MEMORY.md` (build/test workflow entries).  The plans, the slice
+> and the memory live on the `dev` branch only; a release checkout
+> (`main`) carries this file, the nested `CLAUDE.md` set and
+> `macos_f90/notes/` and nothing else of the kind -- citations such as
+> "PLAN_CONSOLIDATION 1.2 (tt)" in the notes are provenance pointers to
+> the dev branch's record, not files to look for.
 >
 > **THEN re-read the nested `CLAUDE.md` for whatever subsystem you are
 > resuming — and, for the engine core, the `macos_f90/notes/<topic>.md` it points to** — see the index below. Nested CLAUDE.md files load on demand
