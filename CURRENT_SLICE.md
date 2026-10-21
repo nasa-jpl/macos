@@ -3763,3 +3763,7 @@ promote-on-land pass.**
 - [ ] worked-example committed
 - [ ] reset this file
 ```
+
+> **2026-10-21 (CC): CCMac's gate 9 (ad4161fa + 00697be) CLEAN -- the Mac line has NO engine defect left (his e474a137 merged).
+> Release prep LOCAL: exclusions amended (8f10ecd3, resources 1ea48dc), runbook + strip tool (b7dae392, ca78c3d4, adf996e7).
+> AWAITING Dave: push word.  Engine lane idle; no CCMac pair pending (next pair = the next engine change).**
