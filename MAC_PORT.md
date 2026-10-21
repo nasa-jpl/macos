@@ -110,6 +110,22 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-21 (9) — re-gate (pair macos `ad4161fa` + resources `00697be`) — NO ENGINE MISS LEFT
+Full record: `cli_tests/records/mac_gate_gfortran_ad4161fa.md`. Engine changed by **one line** since
+gate 8 — the (ff) `LocalCoord` fix (`0efc2dec`), from the source-level bisection in
+`cli_tests/records/mac_ff_localcoord.md`. On Mac: load **164/164** (0 movers); cmd **115/115**
+(113 journals + 2 must-fail red; **zero genuine failures**); mmacos fast **656/0**; pymacos **6961/0**
+(+2 skip); /png clean; self-contained. **COORD_ACOOR passes on Apple Silicon for the first time**
+(coaxial frame now `(0,0,1)` not the 76.5° rotation), and the new `COORD_offaxis_frame.jou` reads the
+element normal to ≥5 figures on both opt_example and e5hex1 — matching Linux. The bisection also fixed a
+**latent cross-platform bug**: pre-fix x86_64 read off-axis frames 1.4°/12° off their normals (the coaxial
+test deck hid it with a zero residual).
+
+**With (ff) fixed, the Mac line has NO engine defect remaining.** Every Mac-only delta from Linux is now
+harness/environment (the Darwin-guarded subprocess/capfd tests per 1.2 (ee); ifx absent on arm64) or arm64
+round-off kept within the shared-digit pin policy; every real optical signal agrees with Linux to 8–9
+figures and every engine-command frame — COORD included — now matches.
+
 ### 2026-10-20 (8) — re-gate (pair macos `3ead7473` + resources `00697be`)
 Full record: `cli_tests/records/mac_gate_gfortran_3ead7473.md`. **Engine changed**
 since gate 7 — the Zernike-repair line and the CLI startup model-size prompt
