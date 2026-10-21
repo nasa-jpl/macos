@@ -110,6 +110,31 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-20 (8) — re-gate (pair macos `3ead7473` + resources `00697be`)
+Full record: `cli_tests/records/mac_gate_gfortran_3ead7473.md`. **Engine changed**
+since gate 7 — the Zernike-repair line and the CLI startup model-size prompt
+(Dave's rulings 1.2 (tt)–(yy)). On Mac: load **164/164** (0 movers vs fcc648c5);
+cmd **111/112** (only COORD_ACOOR = (ff); 2 must-fail red; the four new journals
+ZERN_refused / ZERN_normhex / ZERN_mode_count / STARTUP_size all pass); mmacos fast
+**656/0**; pymacos **6961/0** (+2 skip; the two Zernike test files 20/20);
+/png renders clean; self-contained. **The two Mac asks both agree:** NormHex mode-10
+SRT sag `5.00004121928100D+00` matches Mahajan & Dai to every printed digit (no
+re-pin), and STARTUP_size's shell leg exits with status **1** on macOS (`five-bad
+rc=1`, `eof rc=1`, no forrtl). The (tt)–(yy) engine changes land clean on Apple
+Silicon; no cross-architecture `ZerntoMon*`/hzdef difference. (ff) persists unchanged (TO).
+
+### 2026-10-20 (7) — re-gate (pair macos `9a971d25` + resources `bcf351c`)
+Full record: `cli_tests/records/mac_gate_gfortran_9a971d25.md`. **Engine
+byte-identical to gate 6** (`macos_f90/` + CMakeLists untouched since `814082d4`),
+so this gate confirms the manual/Zernike/binding-veneer additions land clean on
+Apple Silicon. On Mac: load **163/163** (0 movers vs fcc648c5); cmd **107/108**
+(only COORD_ACOOR = (ff); 2 must-fail red); mmacos fast **656/0**; pymacos
+**6955/0** (+2 skip) — up 6941→6955 as TO's **14 new Zernike-ordering tests all
+pass on arm64** (`test_zernike_orderings.py`: the `ZerntoMon*` sag/sign/norm fits
+reproduce Linux — no cross-architecture surfsub difference); /png renders clean;
+self-contained. The four Zernike findings (tt)–(ww) in front of Dave show the same
+on arm64 as Linux (nothing to add from the Mac). (ff) persists unchanged (TO).
+
 ### 2026-10-20 (6) — re-gate (pair macos `814082d4` + resources `2ccaeff`)
 Full record: `cli_tests/records/mac_gate_gfortran_814082d4.md`. Engine unchanged
 in LocalCoord from gate 5; carries the day's dialog fixes and the folded gate 3–5
