@@ -1,0 +1,18 @@
+# A/B: pre load_ifx_eff48867.csv  post load_ifx_0f9983eb.csv  (160 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 15 decks moved
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridNS.in  rms 0.000000000D+00 -> 4.989388559D-09  pv 0.000000000D+00 -> 7.436787386D-08  avg 0.0000000000000000D+00 -> 5.8941283235517669D-10
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridSeq.in  rms 0.000000000D+00 -> 4.989388559D-09  pv 0.000000000D+00 -> 7.436787386D-08  avg 0.0000000000000000D+00 -> 5.8941283235517669D-10
+/home/dcr/dev/macos/ZGD_test_files/FFSegDemoAll.in  rms 3.671709126D-04 -> 2.301351532D-04  pv 2.628606517D-03 -> 1.535534724D-03  avg -1.0127561571211379D-04 -> 1.1039711281523982D-04
+/home/dcr/dev/macos/ZGD_test_files/FFSegDemoData.in  rms 6.267126529D-12 -> 5.927896922D-04  pv 2.195577053D-11 -> 4.553864771D-03  avg 1.1782290118030496D-11 -> 2.5459260671848263D-04
+/home/dcr/dev/macos/ZGD_test_files/FFSegDemo.in  rms 3.671709126D-04 -> 2.301351532D-04  pv 2.628606517D-03 -> 1.535534724D-03  avg -1.0127561571211379D-04 -> 1.1039711281523982D-04
+/home/dcr/dev/macos/ZGD_test_files/SegDemo3data.in  npass 49318 -> 49284  lost  -> 34  rms 6.267122944D-12 -> 1.425715627D-01  pv 2.195577053D-11 -> 8.906736342D+00  avg 1.1782288569238085D-11 -> 7.2219537795303402D-03
+/home/dcr/dev/macos/ZGD_test_files/SegDemo3.in  npass 49318 -> 49286  lost  -> 32  rms 3.671709126D-04 -> 6.657848853D+00  pv 2.628606517D-03 -> 1.067167595D+03  avg -1.0127561571210886D-04 -> 4.9300864536348923D-02
+/home/dcr/dev/macos/ZGD_test_files/SegDemo.in  rms 1.971675538D-05 -> 5.701541489D-04  pv 1.458459842D-04 -> 4.368963624D-03  avg -6.0018664647207568D-06 -> 2.4641959962732094D-04
+/home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_crlf.in  rms 1.605492193D-05 -> 3.793426102D-05  pv 4.892888501D-05 -> 1.225252945D-04  avg 1.7504240774239102D-05 -> 2.5204555155748189D-05
+/home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_lf.in  rms 1.605492193D-05 -> 3.793426102D-05  pv 4.892888501D-05 -> 1.225252945D-04  avg 1.7504240774239102D-05 -> 2.5204555155748189D-05
+/home/dcr/dev/macos/ZGD_test_files/tst_nsref_ns.in  rms 0.000000000D+00 -> 4.989388559D-09  pv 0.000000000D+00 -> 7.436787386D-08  avg 0.0000000000000000D+00 -> 5.8941283235517669D-10
+/home/dcr/dev/macos/ZGD_test_files/tst_nsref_seq.in  rms 0.000000000D+00 -> 4.989388559D-09  pv 0.000000000D+00 -> 7.436787386D-08  avg 0.0000000000000000D+00 -> 5.8941283235517669D-10
+/home/dcr/dev/macos/ZGD_test_files/tst_short_zerncoef.in  rms 2.039817233D-06 -> 3.965170539D-04  pv 9.932419864D-06 -> 2.523437022D-03  avg 4.9947041677256577D-10 -> 8.4186710405530392D-05
+/home/dcr/dev/macos/ZGD_test_files/tst_ZGD2.in  rms 1.978827593D-04 -> 1.861175691D-04  pv 1.247231837D-03 -> 1.213145728D-03  avg 1.5428758907042940D-05 -> 4.1211561139383036D-05
+/home/dcr/dev/macos/ZGD_test_files/tst_ZGDdata2.in  rms 0.000000000D+00 -> 3.964793863D-04  pv 0.000000000D+00 -> 2.517400870D-03  avg 0.0000000000000000D+00 -> 8.4184038257396429D-05
