@@ -2807,7 +2807,7 @@ C***********************************************************************
 
 	SUBROUTINE PARSE_LOH(Mode)
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF mLohTok
 C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
@@ -2843,7 +2843,7 @@ C  added for jump from popping the stack
  10     continue
 
 c Initialize command stack
-        var_store(1:10,pstack)=' '
+        var_store(1:mLohTok,pstack)=' '
 
 C       Read new statement to be parsed
    98   CONTINUE
@@ -2920,7 +2920,7 @@ C  Go to next character
 	    else
               cma=.false.
 	    end if
-            var_store(j,pstack)(k:k)=VAR(i:i)
+            IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=VAR(i:i)
             k=k+1; i=i+1
             last_flag=.FALSE.
             GO TO 1
@@ -2929,6 +2929,16 @@ C  Go to next character
     2   CONTINUE
 
         IF (last_flag) j=j-1
+
+!-->  More tokens than var_store holds (only empty ';' tokens can do it on
+!     a 256-character line): refuse the line by its command, read the next.
+        IF (j.GT.mLohTok) THEN
+          WRITE(*,'(3A,I0,A,I0,A)') ' ** Command line refused (',
+     &      TRIM(var_store(1,pstack)),'): ',j,' tokens, at most ',
+     &      mLohTok,' on a line'
+          GO TO 10
+        END IF
+!<--
 
         !print*,'i,j, pstack=', i,j, pstack
         !print*,'var_store(j,pstack)= ',var_store(j,pstack)
@@ -2964,7 +2974,7 @@ c pop the file stack to initial values
            ustack = ustack-1
 c go back to console
            bat_task=1
-	   var_store(1:10,pstack)=' ' ! added by jzlou to clean up cmd arg stack after
+	   var_store(1:mLohTok,pstack)=' ' ! added by jzlou to clean up cmd arg stack after
                                         ! running journal file, 01/19/07
         ELSE
 c shouldn't get here
@@ -2996,7 +3006,7 @@ C *********************************************************************
 
 	SUBROUTINE PARSE_LOH_SAVE()
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF mLohTok
 C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
@@ -3023,7 +3033,7 @@ C  added for jump from popping the stack
  10     continue
 
 c Initialize command stack
-	var_store(1:10,pstack)=' '
+	var_store(1:mLohTok,pstack)=' '
 
 C       Read new statement to be parsed
    98   CONTINUE
@@ -3074,7 +3084,7 @@ C  Go to next character
 	    i=i+1
 	    GO TO 1
 	  ELSE
-	    var_store(j,pstack)(k:k)=var(i:i)
+	    IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=var(i:i)
 	    k=k+1
 	    i=i+1
 	    last_flag=.FALSE.
@@ -3086,6 +3096,7 @@ C  Go to next character
 	IF (last_flag) THEN
 	  j=j-1
 	END IF
+	j=MIN(j,mLohTok)
 
 	if (.false.) then
 	print*,'i,j, pstack,last_flag=', i,j, pstack,last_flag

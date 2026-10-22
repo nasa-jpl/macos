@@ -260,7 +260,13 @@ round-trip record.
   Working directory first, so a deck that already found its grid is unchanged.  Only GridFile=; the
   other file keys (AmplFile=, UDSrfFile=, ...) still resolve against the working directory.  Gate
   `GRIDFILE_beside.jou`.
-- Found on the way (not changed, a finding): the CLI tokenizer (`PARSE_LOH`, macosio.F) holds 10
-  tokens per input line in `var_store`; a longer line (PROPTYPE_numeric.jou's `!` grep pipeline)
-  stops the gfortran debug build ('Index 11 ... above upper bound of 10') and writes past the array
-  silently in the release builds.
+- Found on the way: the CLI tokenizer (`PARSE_LOH`, macosio.F) held 10 tokens per input line in
+  `var_store`; a longer line (PROPTYPE_numeric.jou's `!` grep pipeline) stopped the gfortran debug
+  build ('Index 11 ... above upper bound of 10') and wrote past the array silently in the release
+  builds.  **Ruled the same day (Dave, PLAN_CONSOLIDATION 1.2 (aaa)) and fixed:** `var_store` holds
+  `mLohTok = MacosCharLen/2` = 128 tokens (lohpars_mod), the capacity of the 256-character line at
+  one character and a delimiter per token; a line that still counts more -- only empty `;` tokens
+  can -- is refused by its command's name, `** Command line refused (!): 142 tokens, at most 128 on
+  a line`, and the next line is read (SMACOS's one-line STACK returns nothing instead: re-reading it
+  would loop).  Both live parsers (macosio.F PARSE_LOH, smacosio.F PARSE_LOH) count past the limit
+  without storing; the uncalled PARSE_LOH_SAVE is clamped.  Gate LOH_tokens.jou.
