@@ -3767,3 +3767,9 @@ promote-on-land pass.**
 > **2026-10-21 (CC): CCMac's gate 9 (ad4161fa + 00697be) CLEAN -- the Mac line has NO engine defect left (his e474a137 merged).
 > Release prep LOCAL: exclusions amended (8f10ecd3, resources 1ea48dc), runbook + strip tool (b7dae392, ca78c3d4, adf996e7).
 > AWAITING Dave: push word.  Engine lane idle; no CCMac pair pending (next pair = the next engine change).**
+
+> **2026-10-22 (CC): cleanup round 1 handed to TO (BRIEF_to_cleanup_round1.md, ef62ca3d): the ruled-LATER fixes (k, m, i, v, dd, f),
+> the dead surfsub copies, the ToDo census -- TO reports to Dave directly.  Next rounds, in order (Dave asked, CC listed): (ee) api
+> message buffer; bindings coverage (146 vs 136, defaults audit, CLI-without-api); the Grating_example_001 knife-edge rays; library
+> pruning (40 of 99 helpers uncalled); the display lane (aa).  LOCAL unpushed: 8f10ecd3..ef62ca3d (exclusions, runbook, strip tool,
+> gate-9 line, brief); resources 1ea48dc.  Friday email draft = DRAFT_email_friday_repo_plan_edit.md (untracked).**
