@@ -1,0 +1,3 @@
+# A/B: pre load_ifx_0efc2dec.csv  post load_ifx_eff48867.csv  (160 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 0 decks moved
