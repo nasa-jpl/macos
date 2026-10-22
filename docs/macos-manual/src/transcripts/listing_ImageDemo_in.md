@@ -35,7 +35,7 @@
       ApType=   Circular
        ApVec=   1.75d+02 0d0 0d0
         zElt=   1d22
-    PropType=   Annulus
+    PropType=   Geometric
      nECoord=   -6
 
        iElt=    2
@@ -57,7 +57,7 @@
             ApType=    Circular
              ApVec=    1.75d+02 0d0 0d0
               zElt=    1d22
-          PropType=    Annulus
+          PropType=    Geometric
            nECoord=    -6
 
               iElt=    3
@@ -78,7 +78,7 @@
             ApType=   Circular
              ApVec=   1.75d+02 0d0 0d0
               zElt=   1d22
-          PropType=   Annulus
+          PropType=   Geometric
            nECoord=   -6
 
               iElt=    4

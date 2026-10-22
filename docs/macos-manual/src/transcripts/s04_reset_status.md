@@ -8,7 +8,7 @@ MACOS\>**status**
         Current element for OPD calculations=   0
     Current element for WF/Spot calculations=   0
             Obscuration option for ray-trace=   1
-                        Current WF plot type=SLICE
+                        Current WF plot type=GRAY
                               Composed image= F
       Pixel location set by chief ray option= F
                                 Polarization= F
