@@ -47,7 +47,10 @@ C  Load CARG(1 and 2) for some commands
 	IF (LCMP(command,'SAVE',3).OR.LCMP(command,'JOURNAL',3))
      &	THEN
 	  CALL C2CW(CARG(1),ls,STACK,' ')
-	  CALL C2CW(CARG(2),ls,STACK,' ')
+!-->  PLAN 1.2 (v): a blank second token is no token (C2CW would scan
+!     past its buffer for one); save_rx passes none for a new file.
+	  IF (LEN_TRIM(CARG(2)) > 0) CALL C2CW(CARG(2),ls,STACK,' ')
+!<--
 	  GO TO 110
 	END IF
 

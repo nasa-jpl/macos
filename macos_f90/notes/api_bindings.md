@@ -239,3 +239,13 @@ OBS option now inherit, and `spot_cmd` restores `spcOption` after its SPOT (the
 pymacos `spot()` returns the api's 4-vector shift [chief xy, vertex xy], the
 mmacos convention.
 
+
+## save_rx answers Replace? only when CSAVE asks (PLAN_CONSOLIDATION 1.2 (v), 2026-10-22)
+The wrapper passed `CARG(2) = 'YES'` on every call; CSAVE (iosub.inc) asks "Replace?" only when
+`<first word of the name>.in` exists, so for a new file the token fell through to the SMACOS loop
+and printed `** Unknown command = YES`.  Now `save_rx` INQUIREs that name and passes 'YES' only if
+it exists, and `LoadStack` (smacosutil.F) does not push a blank second token for SAVE / JOURNAL
+(`C2CW` on a blank argument scans past its buffer).  General rule: a wrapper that pre-answers a
+prompt must answer only the prompts the handler will actually ask.  Gates: pymacos
+test_save_new_file_quiet.py, mmacos tSaveNewFileQuiet (a matlab -batch subprocess -- the Fortran
+stdout is not visible to evalc).

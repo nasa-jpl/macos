@@ -7074,7 +7074,20 @@
 
         command = 'SAVE'
         CARG(1) = trim(rx)
-        CARG(2) = 'YES'      ! overwrite if file exists
+        ! PLAN 1.2 (v): answer CSAVE's "Replace?" only when it will ask -- the
+        ! file it writes is the first word of rx + '.in' (iosub.inc CSAVE); for a
+        ! new file the 'YES' fell through to the SMACOS loop as a command
+        ! ("** Unknown command = YES")
+        block
+          character(len=len(rx)) :: r
+          integer :: l
+          logical :: ex
+          r = adjustl(rx)
+          l = index(r // ' ', ' ') - 1
+          inquire(file=r(1:l)//'.in', exist=ex)
+          CARG(2) = ' '
+          if (ex) CARG(2) = 'YES'
+        end block
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
 
         ok = PASS
