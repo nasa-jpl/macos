@@ -862,7 +862,7 @@ Grid-data surfaces are defined using 3 additional parameters. These are:
 
 -   GridSrfdx: spacing of the data grids in base units
 
--   GridFile: name of the text file containing the nGridMat by nGridMat surface matrix
+-   GridFile: name of the text file containing the nGridMat by nGridMat surface matrix.  A relative name is looked for in the working directory first and then beside the prescription file (a load line names the file when it is found there); the name is saved as written.
 
 The maximum number of grid-data surfaces, and the maximum number of points for grid-data surfaces, are limited at compile time, by setting the mGridSrf and mGridMat parameters in the param.cmn file.
 

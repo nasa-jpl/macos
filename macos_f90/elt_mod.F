@@ -457,6 +457,12 @@ C***********************************************************************
      &                GlassElt, GlassName,EltMRP
 
         Integer :: nGridDropped   ! grid files declined, per load
+!-->  RxDir: the folder of the deck being loaded ('' for none), so a
+!     relative GridFile= not found in the working directory is looked
+!     for beside the deck (Dave 2026-10-22, PLAN_CONSOLIDATION 1.2 (f)).
+        Character(len=1024) :: RxDir = ' '
+        Integer :: iRxSep          ! scratch: the last path separator in it
+!<--
         Integer :: nElt,nRay,nOutCord,nSeg,spcOption,nRefRay,nDOE,
      &             SegApType,SegApVec(3),nMetMeas
 

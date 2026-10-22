@@ -180,7 +180,8 @@ item 5).
   `PropType= 0` (old_Rx/KeckDemo.in, mars.in) left the allocation value 0 with the given-flag set, so
   ChkDf2 never defaulted it, the trace saw "not 1" (not Geometric) and SAVE printed `PropTypeName(0)`
   (bytes past the table on ifx, blanks on gfortran).  Now `0` -> 1, an unrecognized value is NAMED
-  (`** PropType= Bogus at element 8 not recognized: the default applies`) and left to ChkDf2, and the
+  (`** PropType= Bogus at element 8 not recognized: the default applies`) and left to ChkDf2 -- REFUSED at
+  load by name since 2026-10-22 (Dave, 1.2 (dd): `** Rx load refused: PropType= Bogus (elt 8): ...`) -- and the
   SAVE writer guards the index (Geometric for anything outside 1..15).  Note the chain's 1-char
   numeral matches: `99` reads as 9 (GeomUpdate) -- a longstanding prefix quirk, not changed.
   Fixture `ZGD_test_files/tst_proptype_numeric.in` (0..15 in element order); gate `PROPTYPE_numeric.jou`.
@@ -239,3 +240,27 @@ item 5).
 SHOW (`PrtSingleEltInfo`, iosub.inc) does not print an element's `EltGrp=`, its `fElt` / `eElt`,
 or a matrix obscuration (it prints "Obs Matrix: not shown").  SHOW is a display; SAVE is the
 round-trip record.
+
+## Dave's rulings of 2026-10-22 (PLAN_CONSOLIDATION 1.2 (zz), (dd), (f))
+- **Legacy coating keys, 65 layers** ((zz)).  `CoatIndxElt` / `CoatThkElt` are sized `mLegacyCoat`
+  = 65 (elt_mod; was a literal 20 with `nCoat=` unbounded -- `nCoat= 21` + `CoatThk=` wrote past the
+  array at load, gfortran debug build).  `nCoat=` < 0 or > 65 is refused by name.  `Coating=` is
+  matched on its FULL name (`LCMP(...,7)`): on six letters it captured `CoatIndx=`, whose branch was
+  unreachable.  Both blocks read one line or wrapped five per line (ReadCoefBlock; 65 values do not
+  fit one 256-character line).  ChkDf2's CoatThk default set `CoatIndx_FLG` -- now `CoatThk_FLG`.
+  The legacy layers feed only NSRefractor's AirGap (`CoatThk(1)`); NSRefractor / AirGap take the
+  arrays assumed-size.  SAVE does not write these keys (only `Coating=`) -- not changed.  Gate
+  `COAT_legacy.jou` (fixture `ZGD_test_files/tst_coat_legacy.in`).
+- **An unknown `PropType=` is refused at load** ((dd)), by name: `** Rx load refused: PropType=
+  <value> (elt n): not a propagation type`.  Gate `PROPTYPE_numeric.jou` (the Bogus leg).
+- **`GridFile=` is looked for beside the deck** ((f)).  A relative name not found in the working
+  directory is tried in the loading deck's folder (`RxDir`, elt_mod, set at both loaders' "being
+  loaded" lines -- macosio.F and smacosio.F, either separator), and GridInit prints `Grid file <name>
+  found beside the deck: <path>`; `GridFile(iElt)` keeps the name as written, so SAVE round-trips it.
+  Working directory first, so a deck that already found its grid is unchanged.  Only GridFile=; the
+  other file keys (AmplFile=, UDSrfFile=, ...) still resolve against the working directory.  Gate
+  `GRIDFILE_beside.jou`.
+- Found on the way (not changed, a finding): the CLI tokenizer (`PARSE_LOH`, macosio.F) holds 10
+  tokens per input line in `var_store`; a longer line (PROPTYPE_numeric.jou's `!` grep pipeline)
+  stops the gfortran debug build ('Index 11 ... above upper bound of 10') and writes past the array
+  silently in the release builds.
