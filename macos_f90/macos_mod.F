@@ -238,7 +238,7 @@ C
           ifEFLCalc       = .FALSE.
           firstIntCalc    = .FALSE.
 
-          ! ifOld  =.FALSE.            ! note: it set to FALSE, SMACOS cannot load an Rx (ToDo)
+          ! ifOld  =.FALSE.            ! note: it set to FALSE, SMACOS cannot load an Rx -- so it stays commented out
 
         end subroutine macos_mod_init_vars
 

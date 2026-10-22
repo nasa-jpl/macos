@@ -3197,7 +3197,8 @@ C***********************************************************************
      &	 ifRayPrint,ifIntSrfSet,LRayPass,nBadRays,StartIndRef,
      &	 StartExtinc,DrawRayVec,DrawEltVec,nDrawElt,xDraw,yDraw)
 
-        ! Restore  (ToDo: Needed?)
+        ! Restore: not needed -- the next OPD rebuilds the full grid (measured
+        ! 2026-10-22: OPD after COORD / STOP traces 1877 rays, same RMS)
 !         CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
 !      &                        ifPropagate,ifGrid)
 
@@ -3249,7 +3250,7 @@ C***********************************************************************
         CALL SetSourceRay(nMinPts,Dicr,Djcr,dxSource,
      &                    xoff,yoff,ifPol,ifPropagate)
 
-!-->  thisRay's component arrays were NEVER allocated (the "FIX (ToDo)"
+!-->  thisRay's component arrays were NEVER allocated (the old "FIX" note
 !     in traceutil_mod), so CTRACE's ifSRT save wrote through empty
 !     descriptors: SRT died with SIGSEGV on the manual's Cassegrain
 !     (debug build: 'thisray' index 1 outside (0:0), tracesub.F:4821).
