@@ -33,7 +33,7 @@ nGridpts=  33
   ApType=   Circular
    ApVec=   1.75d+02 0d0 0d0
     zElt=   1d22
-PropType=   Annulus
+PropType=   Geometric
  nECoord=   -6
 
    iElt=    2
@@ -55,7 +55,7 @@ Surface= Conic
         ApType=    Circular
          ApVec=    1.75d+02 0d0 0d0
           zElt=    1d22
-      PropType=    Annulus
+      PropType=    Geometric
        nECoord=    -6
 
           iElt=    3
@@ -76,7 +76,7 @@ Surface= Conic
         ApType=   Circular
          ApVec=   1.75d+02 0d0 0d0
           zElt=   1d22
-      PropType=   Annulus
+      PropType=   Geometric
        nECoord=   -6
 
           iElt=    4
