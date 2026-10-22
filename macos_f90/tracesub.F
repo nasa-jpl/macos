@@ -1553,7 +1553,7 @@ C***********************************************************************
 
           else
 
-            ! define CSYS  (this should be defined when reading Rx  -- ToDo)
+            ! define CSYS  (per trace; could be built at load -- notes/surfaces.md)
             call define_local_csys(psiElt(1:3,iLocal), xLocal, yLocal, zLocal, local_coord_ok)
 
             if (.not.local_coord_ok)

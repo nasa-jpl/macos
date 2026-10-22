@@ -1960,7 +1960,7 @@ C***********************************************************************
 	End Function getIndexGrad_grin5
 
 C***********************************************************************
-! ToDo: to be implemented
+! a stub returning 0; rayTC is never read (notes/surfaces.md)
 
 	Function Calc_RayDielectricTC(wl)
 	  Implicit none
@@ -1972,7 +1972,7 @@ C***********************************************************************
 	End Function Calc_RayDielectricTC
 
 C***********************************************************************
-! ToDo: to be implemented
+! a stub returning 0; rayTC is never read (notes/surfaces.md)
 
 	Function Calc_RayMetalTC(wl)
           Implicit none

@@ -28,7 +28,7 @@
     logical, save      :: rxLoaded=.false.
 
     ! These are the SMACOS call-line variables:
-    ! TODO: change len=256 to len=max_cmd_len
+    ! len=256, not max_cmd_len (notes/api_bindings.md)
     character(len=256)  :: command
     integer,parameter   :: MARG=9
     character(len=256)  :: CARG(MARG)
@@ -2568,7 +2568,7 @@
     ! [ ] elt_srf_zrn_type
     ! [ ] elt_srf_zrn_norm_radius
     !
-    ! ToDo: simplify
+    ! a candidate for one set/get pair (notes/api_bindings.md):
     !   [ ] elt_srf_zrn_set         Define Zernike Srf. params of equal Zernike Srf. element(s)
     !   [ ] elt_srf_zrn_get         Return Zernike Srf. params of equal Zernike Srf. element(s)
     !   [ ] elt_srf_zrn_mode_set    Define Zernike Srf. params of equal Zernike Srf. element(s)
@@ -7070,7 +7070,7 @@
         ! ------------------------------------------------------
         ok = FAIL
 
-        if (.not. SystemCheck() .or. (len_trim(rx) > 256)) return  ! ToDo: update with actual parameter
+        if (.not. SystemCheck() .or. (len_trim(rx) > 256)) return  ! 256 = len(CARG) (notes/api_bindings.md)
 
         command = 'SAVE'
         CARG(1) = trim(rx)

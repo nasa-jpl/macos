@@ -234,3 +234,8 @@ item 5).
   'not applicable' flags; it now applies the Surface= branch's two rules.  ChkDf2 defaults a LensArray's frame
   silently when it has no grid (as FreeForm).  `ZGD_test_files/lens_array.in` and `Telescope.in` (Dave's
   tmo.in, type names mapped, CR -> LF) are the Section 3 decks.
+
+## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
+SHOW (`PrtSingleEltInfo`, iosub.inc) does not print an element's `EltGrp=`, its `fElt` / `eElt`,
+or a matrix obscuration (it prints "Obs Matrix: not shown").  SHOW is a display; SAVE is the
+round-trip record.

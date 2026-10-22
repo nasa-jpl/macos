@@ -249,3 +249,9 @@ it exists, and `LoadStack` (smacosutil.F) does not push a blank second token for
 prompt must answer only the prompts the handler will actually ask.  Gates: pymacos
 test_save_new_file_quiet.py, mmacos tSaveNewFileQuiet (a matlab -batch subprocess -- the Fortran
 stdout is not visible to evalc).
+
+## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
+- The api's SMACOS call-line buffers (`command`, `CARG`) are `len=256`, not `max_cmd_len`, and
+  `save_rx` bounds the name by that 256.  Change them together.
+- The Zernike set / get family (`elt_srf_zrn_set` / `_get` / `_mode_set` beside `elt_srf_zrn_coef`)
+  could be one set / get pair.

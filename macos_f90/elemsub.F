@@ -1332,7 +1332,7 @@ C    Compute refracted ray cosine
 	  Eout(1)=DCMPLX(prhat(1),0d0)*Epr+DCMPLX(shat(1),0d0)*Esr
 	  Eout(2)=DCMPLX(prhat(2),0d0)*Epr+DCMPLX(shat(2),0d0)*Esr
 	  Eout(3)=DCMPLX(prhat(3),0d0)*Epr+DCMPLX(shat(3),0d0)*Esr
-cdebug -- ToDo: significance of this portion???
+cdebug -- eopha is computed and never read (notes/polarization.md)
 	  DO i=1,1
 	    eopha(i)=datan2(DIMAG(Eout(i)),DBLE(Eout(i)))/dtr
 	  END DO
@@ -4402,7 +4402,7 @@ C  Set output values for ray position, direction
         ! -------------------------------------------------------------------------------
         ! [ ] Grating Equation
         ! -------------------------------------------------------------------------------
-        ! ToDo: Polarisation Ray-Trace, Metal (Extinction coeff)
+        ! not implemented: polarization ray trace, metal (extinction) -- notes/polarization.md
 
         ! -------------------------------------------------------------------------------
         ! Determine refracted/reflected ray dir (rhat) & change in OPL (dL) for a Grating
@@ -4451,7 +4451,7 @@ C  Set output values for ray position, direction
           !   uhat: Dir. along the Rule Line (Groove Dir.)
           !   shat: Dir. grating Direction in tangent plane & perp. to Grooves
 
-        ! ToDo: check if psi is not parallel to RuleDir and if it is, then it
+        ! unguarded (notes/surfaces.md): if psi is parallel to RuleDir, then it
         !       does not behave like a Grating -- Snell's Law with Order = 0
 
           CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! s0: unit rule dir in the VERTEX tangent plane (psi)

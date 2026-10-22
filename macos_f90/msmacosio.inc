@@ -168,7 +168,7 @@ C       Set entrance condition flags to .FALSE.
 	    GO TO 50
 
           ! --------------------------------------------------------------------------------
-! ToDo: copied code from main (initial dump) -- it requires integration of ifPol, ...
+! the PolBeam / PolSrc header keys, commented out: they need ifPol wired here (notes/polarization.md)
 
 !           ELSE IF (LCMP(VAR_NAM,'PolBeam',7).OR.
 !      &             LCMP(VAR_NAM,'PolSrc',6)) THEN
