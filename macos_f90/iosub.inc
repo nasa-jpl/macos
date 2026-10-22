@@ -2308,7 +2308,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Coating
           ! --------------------------------------------
-          ! problem: nCoatElt might be different then size of nCoatElt(iElt) !!!!!!  (ToDo)
+          ! nCoatElt is not bounded by the 20 slots: PLAN_CONSOLIDATION 1.2 (zz), for Dave
           CALL PrintFmt('nCoat', "2x,i0", nCoatElt(iElt))
           IF (nCoatElt(iElt).GT.0) THEN
             CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))
