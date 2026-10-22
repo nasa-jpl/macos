@@ -976,15 +976,15 @@ c	  WRITE(*,112)'Extinc',iElt
 	IF (CoatIndx_FLG) THEN
 	  CONTINUE
 	ELSE
-	  CALL DZERO(CoatIndxElt(1,iElt),20)
+	  CALL DZERO(CoatIndxElt(1,iElt),mLegacyCoat)
 	  CoatIndx_FLG=.TRUE.
 	END IF
 
 	IF (CoatThk_FLG) THEN
 	  CONTINUE
 	ELSE
-	  CALL DZERO(CoatThkElt(1,iElt),20)
-	  CoatIndx_FLG=.TRUE.
+	  CALL DZERO(CoatThkElt(1,iElt),mLegacyCoat)
+	  CoatThk_FLG=.TRUE.   ! (zz): was CoatIndx_FLG
 	END IF
 
 	IF (zElt_FLG) THEN
@@ -2308,7 +2308,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Coating
           ! --------------------------------------------
-          ! nCoatElt is not bounded by the 20 slots: PLAN_CONSOLIDATION 1.2 (zz), for Dave
+          ! nCoatElt is bounded by mLegacyCoat at load (PLAN_CONSOLIDATION 1.2 (zz))
           CALL PrintFmt('nCoat', "2x,i0", nCoatElt(iElt))
           IF (nCoatElt(iElt).GT.0) THEN
             CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))

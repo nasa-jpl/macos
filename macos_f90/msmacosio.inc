@@ -3000,7 +3000,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      GO TO 61
 
             ! ------------------------------------------------------------------------------
-	    ELSE IF (LCMP(VAR_NAM,'Coating',6)) THEN
+!-->  (zz): the full name -- LCMP(...,6) ('Coatin') also captured
+!     CoatIndx=, whose own branch below could never be reached.
+	    ELSE IF (LCMP(VAR_NAM,'Coating',7)) THEN
+!<--
 	      READ(VALUE,*,IOSTAT=iosRx)EltCoat(iElt)
 	      IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      If (EltCoat(iElt)>0) Then
@@ -3234,22 +3237,55 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ELSE IF (LCMP(VAR_NAM,'nCoatElt',5)) THEN
               READ(VALUE,*,IOSTAT=iosRx)nCoatElt(iElt)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!-->  (zz), Dave 2026-10-22: the arrays hold mLegacyCoat layers; more
+!     (or fewer than 0) is refused by name -- it was an out-of-bounds
+!     write in the CoatIndx= / CoatThk= READs below.
+              IF (nCoatElt(iElt) < 0 .OR.
+     &            nCoatElt(iElt) > mLegacyCoat) THEN
+                WRITE(*,'(A,I0,A,I4,A,I0,A)')
+     &            ' ** Rx load refused: nCoat= ', nCoatElt(iElt),
+     &            ' (elt', iElt, '): at most ', mLegacyCoat,
+     &            ' coating layers'
+                nCoatElt(iElt) = 0
+                GO TO 99
+              END IF
+!<--
               nCoat_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'CoatIndxElt',8)) THEN
-              READ(VALUE,*,IOSTAT=iosRx)
-     &  (CoatIndxElt(j,iElt),j=1,nCoatElt(iElt))
-              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!-->  (zz): one line OR wrapped five per line, as SHOW prints them
+!     (65 values do not fit one 256-character line); a short block
+!     pads with 0 and one note (ReadCoefBlock, elt_mod)
+              IF (nCoatElt(iElt) > 0) THEN
+               BLOCK
+                INTEGER :: ieofC
+                CALL ReadCoefBlock(RX_FID, VALUE,
+     &            CoatIndxElt(1:nCoatElt(iElt),iElt), nCoatElt(iElt),
+     &            5, 'CoatIndx', iElt, ieofC)
+                IF (ieofC.NE.0) GO TO 99
+               END BLOCK
+              END IF
+!<--
               CoatIndx_FLG=.TRUE.
               GO TO 61
 
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'CoatThkElt',7)) THEN
-              READ(VALUE,*,IOSTAT=iosRx)
-     &  (CoatThkElt(j,iElt),j=1,nCoatElt(iElt))
-              IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
+!-->  (zz): one line OR wrapped five per line, as SHOW prints them
+!     (65 values do not fit one 256-character line); a short block
+!     pads with 0 and one note (ReadCoefBlock, elt_mod)
+              IF (nCoatElt(iElt) > 0) THEN
+               BLOCK
+                INTEGER :: ieofC
+                CALL ReadCoefBlock(RX_FID, VALUE,
+     &            CoatThkElt(1:nCoatElt(iElt),iElt), nCoatElt(iElt),
+     &            5, 'CoatThk', iElt, ieofC)
+                IF (ieofC.NE.0) GO TO 99
+               END BLOCK
+              END IF
+!<--
               CoatThk_FLG=.TRUE.
               GO TO 61
 

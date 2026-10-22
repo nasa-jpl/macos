@@ -357,6 +357,11 @@ C***********************************************************************
      &                          'Schott', 'Herzberger', 'Sellm2TA',
      &                          'Kingslake', 'Cauchy']
 
+!-->  mLegacyCoat: slots of the legacy nCoat= / CoatIndx= / CoatThk=
+!     arrays (Dave 2026-10-22, PLAN_CONSOLIDATION 1.2 (zz): was a literal
+!     20 with nCoat= unbounded -- an out-of-bounds write at load).
+        Integer, parameter :: mLegacyCoat=65
+!<--
         Integer, parameter :: mCoat=10,
      &           	      mPrvGlass=5, ! max private glasses defined in Rx
      &                        mPrvGlassEntry=20, ! max wavlen/index entries for
@@ -1157,7 +1162,8 @@ C***********************************************************************
      &           xData(3,mElt),yData(3,mElt),zData(3,mElt),
      &           xDataRx(3,mElt),yDataRx(3,mElt),zDataRx(3,mElt),
      &           h1HOE(3,mElt),h2HOE(3,mElt),PolAxisElt(3,mElt),
-     &           CoatIndxElt(20,mElt),CoatThkElt(20,mElt),
+     &           CoatIndxElt(mLegacyCoat,mElt),
+     &           CoatThkElt(mLegacyCoat,mElt),
      &           AnaCoef(4,mElt),
      &           UDSrfCoef(mUDScoef,mElt),yObs(3,mElt),
      &           zObs(3,mElt),DWORK(mDP,mIntSrf),UDSrfParam(10,mElt),
