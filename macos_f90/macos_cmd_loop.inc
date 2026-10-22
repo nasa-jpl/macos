@@ -4574,7 +4574,17 @@ C  Plot differential OPD
                 WRITE(*,*)' **Warning: OPDs are not on same element!'
               End If
               OPDbuf=OPDMat-OPDSave
-              WRITE(*,*)' RMS dOPD =',RMS2(OPDbuf,nGridPts,nGridPts)
+!-->  PLAN 1.2 (k): RMS2 returns -1 (its no-nonzero-cell sentinel)
+!     when the difference map is all zero -- two identical OPDs, e.g.
+!     OPD, ZABERR/ZRM (no save), OPD, DOPD.  The difference is 0.
+              c1 = RMS2(OPDbuf,nGridPts,nGridPts)
+              IF (c1 < 0d0) THEN
+                WRITE(*,*)' RMS dOPD =',0d0
+                WRITE(*,*)' (the two OPDs are identical)'
+              ELSE
+                WRITE(*,*)' RMS dOPD =',c1
+              END IF
+!<--
               Call FindPV(OPDbuf,nGridPts,nGridPts,c1,c2)
               WRITE(*,*)' P-V dOPD =',c1,c2
 
