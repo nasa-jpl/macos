@@ -624,3 +624,11 @@ running Jones `J_run(3,3,mRay)` design in PLAN_POLARIZATION §3a.3.
 the pre-fix engine, which fails them at 0.21..0.38 relative error and
 mis-states total power by 4-7%.
 
+
+## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
+- The Refractor's `ifPol` branch (elemsub.F, a `cdebug` block) computes `eopha` and never reads
+  it -- dead debug code.
+- Gratings have no polarization ray trace and no metal (extinction) model (elemsub.F, the grating
+  equation section).
+- The `PolBeam` / `PolSrc` header keys sit commented out in msmacosio.inc; they need `ifPol` wired
+  through the reader before they can be revived.

@@ -132,3 +132,9 @@
 - `CTRACE`'s composite-partials chain (DO 11) steps over an element the build did not trace (`nTr`); `ifRayElt`
   is reset per ray, `PrevElt(0)=0` (1.2 (ll)); a refused BUILD still traces (1.2 (mm)); CENTER's count is
   `nStopIter` (elt_mod, set by ChiefRayAiming) (1.2 (kk)).
+
+## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
+- `ObjInt` is declared in macos_mod.F but allocated in utilsub.F (the reset in macos_mod_init_vars
+  leaves it alone).  A tidy would declare it beside its allocation.
+- macos_mod_init_vars initializes the CMACOS buffers in an `#ifdef CMACOS` block; its comment
+  asks for SMACOS's initialization to be combined with it.  A refactor, not a fix.

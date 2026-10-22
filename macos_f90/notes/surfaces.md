@@ -545,3 +545,11 @@ the incoming light (`psi` against the arrival direction) with its centre
 along `+psi`, exactly the Cass deck's EP idiom; the other way round every
 ray is lost and the field is silently all zero.
 
+
+## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
+- The local coordinate system (`define_local_csys`, tracesub.F) is built on every trace; it could
+  be built once at load.
+- Grating: no guard when `psi` is parallel to `RuleDir` -- `DPERPUVEC` then has no direction, and
+  the element does not behave as a grating (it should reduce to Snell's law, order 0).  Unguarded.
+- `Calc_RayDielectricTC` / `Calc_RayMetalTC` (utilsub.F) are stubs returning 0 into `rayTC`, which
+  nothing reads: the grating transmission coefficient is not implemented.

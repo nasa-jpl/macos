@@ -1880,7 +1880,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Elt. Grouping Info
           ! --------------------------------------------
-          ! ToDo:
+          ! not printed by SHOW (notes/rx_io.md):
           !    EltGrp=  -3 5 7
           !      where -3 indicates a group of 3 elements, with starting element 5 and ending
           !      element 7, so the group has elements 5, 6 and 7. Note that the last value in
@@ -1920,7 +1920,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Srf. dependent parameters
           ! --------------------------------------------
-          ! include: fElt(iElt),eElt(iElt)  ???? ToDo
+          ! fElt(iElt), eElt(iElt) are not printed (notes/rx_io.md)
 
           SELECT CASE (SrfType(iElt))
             CASE (SrfType_Anamorphic)
@@ -2641,9 +2641,9 @@ C***********************************************************************
                 CASE (5)
                   CALL PrintFmtArray('ObsVec', "1PD23.15", 4, ObsVec(1:4,iObs,iElt))
 
-                ! ------ Matrix ------  ToDo
+                ! ------ Matrix ------  not printed (notes/rx_io.md)
                 CASE (6)
-                  CALL PrintMsg("Obs Matrix is a ToDo item ")
+                  CALL PrintMsg("Obs Matrix: not shown ")
 
                 ! ------ Tapered Ellipse ------
                 CASE (7)

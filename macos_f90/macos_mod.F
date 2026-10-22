@@ -154,7 +154,7 @@ C
           FitsFilename    = ''
 
           ObjIntFn        = ''
-          ! ObjInt(:,:)          ! allocated in utilsub.F -- ToDo: Why declare here???
+          ! ObjInt(:,:)          ! allocated in utilsub.F (notes/hygiene.md, the census)
 
           ifRegrid(:)     = .FALSE.
           ifIntSrfSet(:)  = .FALSE.
@@ -185,7 +185,7 @@ C
 
           bmRad           = 0e0_pr   ! beam radius
 
-          ! for SMACOS -- ToDo: need to combine SMACOS with MACOS init
+          ! for SMACOS -- combining with SMACOS's init is open (notes/hygiene.md)
 #ifdef CMACOS
           PixArray(:,:)   = 0e0_pr
           RaySpot(:,:)    = 0e0_pr
