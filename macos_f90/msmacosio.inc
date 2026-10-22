@@ -1307,7 +1307,7 @@ C       Set entrance condition flags to .FALSE.
               IF (any(EltID(iElt) == [FocalPlaneElt, ! 2
      &                                ReferenceElt,  ! 3,
      &                                ObscuringElt   ! 7,
-    !&                                NSRefractorElt ! 9  WHY set ??? ToDo Check
+    !&                                NSRefractorElt ! 9  (left out of the list; the old IF below had it)
      &                              ]))  then
 !	      IF ((EltID(iElt).EQ.2).OR.(EltID(iElt).EQ.3)
 !     &          .OR.(EltID(iElt).EQ.7).OR.(EltID(iElt).EQ.9)) THEN
@@ -2738,7 +2738,7 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      !   assumed, for both hex and rec arrays.
 	      IsVarIndRefElt(iElt)=.true.
 ! --------------------------------
-! ToDo: Fix this calling -- not agreeing with Interface Definition
+! the old call, commented out (its arguments did not match the interface); the working call follows
 !
 !              Call InitLensletIndexAndCtr(LensArrayType(iElt),
 !     &		     LensArrayWidth(iElt),

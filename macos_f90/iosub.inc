@@ -2019,7 +2019,7 @@ C***********************************************************************
               CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
-            ! ---------------------------- Toric (10)  ToDo
+            ! ---------------------------- Toric (10): AnaCoef 1-4 (ToricSrf takes the 4th as 0)
             CASE (SrfType_Toric)
               CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
 
@@ -2723,7 +2723,6 @@ C***********************************************************************
 
                CASE DEFAULT ! all others: Tapered_Circular, Elliptical, Tapered_Elliptical, SunBlades
                  CALL PrintFmtArray('ApVec', "1PD23.15", 5, ApVec(1:5,iElt))
-              ! ToDo
 
               END SELECT
 

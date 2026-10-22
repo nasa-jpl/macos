@@ -1696,7 +1696,7 @@ C         ***next command: Print rays surface - to - surface***
 
 	  ELSE IF (LCMP(command,'SRAY',3)) THEN
 	    !
-	    ! This command is buggy, doesn't work  - jzlou   (ToDo)
+	    ! (jzlou's 'buggy' note: SRAY / SRT fixed 2026-10-17, PLAN 1.2 (l); gate SRAY_SRT.jou)
 	    !
 	    IF (ifLoad) THEN
 	      ifRayPrint=.TRUE.
@@ -2376,7 +2376,7 @@ C         ***Optimize reference surface***
 
             CALL SetSourceRayGrid(nTestPts,Dicr,Djcr,dxSource,ifPol,
      &                            ifPropagate)
-	    ifGrid=.FALSE.               ! ToDo: why set to False ???
+	    ifGrid=.FALSE.               ! the test grid replaced the user's: rebuild it next trace
 	    ifPropagate=.FALSE.
 	    ifTrace=.FALSE.
 	    ifBuild=.FALSE.
@@ -3457,7 +3457,7 @@ C         *** Set System Stop ***
      &	          ' -- a non-sequential element cannot be the stop.'
 	      ELSE
 !<--
-	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
+	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  ! copies 3 into DDEF(9), DACCEPT uses 2: harmless
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
 

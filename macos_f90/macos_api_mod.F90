@@ -2619,7 +2619,7 @@
       end subroutine elt_srf_zrn_fnd
 
 
-      !ToDo: check max mode depending on Zernike Type
+      ! the max mode is checked per Zernike type (ZernType_MaxMode; 1.2 (uu) / (xx))
 
       !-------------------------------------------------------------------------------------------
       ! Set/get Zernike Coefficients
@@ -3031,7 +3031,7 @@
 
         lMon_(:)       = lMon(iElt(:))                 ! Zernike Normalisation Radius
         ZernType(:)    = ZernTypeL(iElt(:))            ! Zernike Type
-        ZernCoef_(:,:) = ZernCoef(:mZernModes,iElt(:)) ! coefficients    ToDo: check => (incl. Normalisation factor updates)
+        ZernCoef_(:,:) = ZernCoef(:mZernModes,iElt(:)) ! coefficients as set / loaded (the conversion is at trace time)
 
         ! Zernike Radii Ratio = inner/outer radius
         block

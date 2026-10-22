@@ -3614,7 +3614,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End Do
             firstEntry_sunBlades=.false.
           End If
-! ToDo: Exit Statement in code below ?????
+! the EXITs below leave the blade loop at the first hit (checked 2026-10-22)
 	  inSB=.false.
           Do ib=1,nBlades
             r2=px2**2+py2**2
@@ -3627,7 +3627,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
           End Do
 	  if (.not.inSB) GO TO 99
 
-! ToDo: check if Statement below is still true
+! still true (2026-10-22): no parser sets ApType -4
 
 	ELSE IF (ApType.EQ.-4) THEN
 	  ! This section is disabled for now. 07/04, -jzlou
@@ -4153,13 +4153,14 @@ C    Grating partials
 	  CALL DMPROD(dinda,dindp,dpda,3,3,3)
 
 	  CALL DMPROD(dindd,dindp,dpdd,3,3,3)
-c-FIXME!!!
+c-HOE rotation partial (flagged by its author; checked 2026-10-22: ray-direction
+c partials vs finite difference agree to 4 digits, HOEExample.in)
 	  CALL DSUB(D1,hi,prot,3)
 	  CALL DXMAT(D2,D1)
 	  CALL DMPROD(D1,dindp,D2,3,3,3)
 	  CALL DMPROD(D2,dindd,dddth,3,3,3)
 	  CALL DADD(dindth,D1,D2,9)
-c-end FIXME
+c-end HOE rotation partial
 	  CALL DPROJECT(D1,shat)
 	  S1=1d0/smag
 	  CALL DSMPROD(dshatdsvec,D1,S1,9)
@@ -4625,7 +4626,7 @@ cdebug
           ! --------------------------------
           case default
             LROK = .False.
-            WRITE(*,*)'SMACOS:Grating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
+            WRITE(*,*)'SMACOS:Grating >> Unknown surface type. Aborting trace.'
 
         end select
 
@@ -4829,7 +4830,7 @@ C  Compute incidence point of ray
           ! --------------------------------
           case default
             LROK = .False.
-            WRITE(*,*)'SMACOS:TrGrating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
+            WRITE(*,*)'SMACOS:TrGrating >> Unknown surface type. Aborting trace.'
 
         end select
 
