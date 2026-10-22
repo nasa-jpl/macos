@@ -189,6 +189,12 @@ C       Get file name
 	IF (exist) THEN
 	!   IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
+!-->  (f): remember the deck's folder for GridFile= (GridInit)
+	    RxDir = ' '
+	    iRxSep = MAX(INDEX(infil(1:L),'/',BACK=.TRUE.),
+     &                   INDEX(infil(1:L),CHAR(92),BACK=.TRUE.))
+	    IF (iRxSep > 0) RxDir = infil(1:iRxSep)
+!<--
 ! 	  ELSE
 ! 	    WRITE (*,*) ' Input file ',infil(1:L),
 !      &	    ' already exists. Please use a new name or use OLD.'

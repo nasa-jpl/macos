@@ -3424,6 +3424,7 @@ C***********************************************************************
             LOGICAL exist,ifGridInit
             Logical :: isBinFil
             INTEGER jGridSrf,nGridMatS,i,j,iDat,ICLEN
+            CHARACTER(len=1100) :: fpath
 
   103       FORMAT(' Grid surface array is of dimension',i5,' by ',i5)
 
@@ -3478,16 +3479,29 @@ C   If no file, zero matrix and return
               GridFile(i:i)=' '
             END DO
 !<--
-            INQUIRE (FILE=GridFile,EXIST=exist)
+!-->        (f), Dave 2026-10-22: a relative name not found in the
+!           working directory is looked for beside the deck (RxDir,
+!           elt_mod); GridFile itself is kept as written (SAVE).
+            fpath = GridFile
+            INQUIRE (FILE=fpath,EXIST=exist)
+            IF (.NOT.exist .AND. GridFile(1:1).NE.'/' .AND.
+     &          LEN_TRIM(RxDir) > 0) THEN
+               fpath = TRIM(RxDir)//TRIM(ADJUSTL(GridFile))
+               INQUIRE (FILE=fpath,EXIST=exist)
+               IF (exist) WRITE(*,'(4A)') '  Grid file ',
+     &           GridFile(1:ICLEN(GridFile)),' found beside the deck: ',
+     &           TRIM(fpath)
+            END IF
             IF (exist) THEN
                if (.not.isBinFil) then
-                  OPEN (UNIT=94,FILE=GridFile,STATUS='OLD',
+                  OPEN (UNIT=94,FILE=fpath,STATUS='OLD',
      &                  FORM='FORMATTED')
                else
                   ! binary input
-                  OPEN (UNIT=94,FILE=GridFile,STATUS='OLD',
+                  OPEN (UNIT=94,FILE=fpath,STATUS='OLD',
      &                    FORM='UNFORMATTED')
                end if
+!<--
             ELSE
                WRITE(*,*)' File ',GridFile(1:ICLEN(GridFile)),
      &         ' does not exist -sub GridInit in surfsub.f'
