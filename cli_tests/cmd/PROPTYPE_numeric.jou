@@ -2,7 +2,8 @@
 # (Dave 2026-10-18, PLAN_CONSOLIDATION 1.2 (d)).  SAVE writes the names in the element order, the
 # saved deck reloads to the same 16-element chain (the OPD is the Cassegrain's), and a re-saved deck
 # is byte-identical (cmp: same).  A value the table does not hold (Bogus, sed into the copy at element
-# 8) is named and left to the default.  Pre-fix: PropType= 0 matched nothing, element 1 kept 0 and
+# 8) is REFUSED at load by name (Dave 2026-10-22, PLAN_CONSOLIDATION 1.2 (dd); it was named and
+# defaulted -- the refusal leg is red on that binary).  Pre-fix: PropType= 0 matched nothing, element 1 kept 0 and
 # SAVE wrote PropTypeName(0) (garbage on ifx, blanks on gfortran): the first name in the grep line
 # is not Geometric, and the Bogus line is absent -- red.
 # COPY: $ROOT/ZGD_test_files/tst_proptype_numeric.in
@@ -22,6 +23,7 @@ old $DECK
 # EXPECT: pt1\.in\s+being loaded[\s\S]*?Tracing rays past\s+16 elements
 # EXPECT: pt2\.in\s+being loaded[\s\S]*?RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
 # EXPECT: PT_RESAVE_SAME
-# EXPECT: \*\* PropType= Bogus at element\s+8 not recognized: the default applies\s+Default used for PropType\(\s+8\)
+# EXPECT: \*\* Rx load refused: PropType= Bogus \(elt\s+8\): not a propagation type\s+-- a name \(Geometric, FarField, NFPlane, \.\.\.\) or a number 0\.\.15
 # EXPECT-NOT: Unidentified string
+# EXPECT-NOT: not recognized: the default applies
 # EXPECT-NOT: forrtl

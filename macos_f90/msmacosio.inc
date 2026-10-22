@@ -3207,16 +3207,17 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !     PLAN_CONSOLIDATION 1.2 (d)): it matched nothing above, the
 !     element kept the allocation value 0 with the given-flag set, and
 !     SAVE printed PropTypeName(0) -- bytes past the table.  Any other
-!     unrecognized value is named and left to ChkDf2's default (a
-!     warning, not a refusal).
+!     unrecognized value is REFUSED at load, by name (Dave 2026-10-22,
+!     PLAN_CONSOLIDATION 1.2 (dd); it was named and defaulted).
               ELSE IF (LCMP(VALUE,'0',1)) THEN
                 PropType(iElt)=1
               ELSE
-                WRITE(*,'(3A,I4,A)') ' ** PropType= ',
+                WRITE(*,'(3A,I4,A)') ' ** Rx load refused: PropType= ',
      &            VALUE(1:MAX(1,MIN(ICLEN(VALUE),40))),
-     &            ' at element',iElt,
-     &            ' not recognized: the default applies'
-                GO TO 61
+     &            ' (elt',iElt,'): not a propagation type'
+                WRITE(*,'(A)') '    -- a name (Geometric, FarField,'//
+     &            ' NFPlane, ...) or a number 0..15'
+                GO TO 99
               END IF
 !<--
               PropType_FLG=.TRUE.
