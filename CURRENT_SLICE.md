@@ -3778,3 +3778,7 @@ promote-on-land pass.**
 > verified here.  The (ff) engine's true full-suite number: 6963 pass / 1 fail = TO's new (v) test on the pre-(v) engine (its must-fail).
 > Plan line corrected (496866d1).  TO's round 1 + Dave's three rulings (dd refuse, zz 65 slots + full-name Coating=, f GridFile beside the
 > deck) LOCAL in his lane, gating.**
+
+> **2026-10-22 PUSHED (Dave's word, 10th: 'when (aaa) lands, push'): macos b7556b81 (31 commits: TO's round 1 + rulings dd/zz/f/aaa + dead
+> files; CC's exclusions, runbook, strip tool, records, briefs), resources d436b9c.  CCMac's PAIR 10 = b7556b81 + d436b9c
+> (NOTE_to_ccmac_pair10.md, pushed after).  Engine lane idle; next cleanup rounds listed above ((ee) message buffer first).**
