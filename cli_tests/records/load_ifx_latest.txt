@@ -1,24 +1,9 @@
-record  load_ifx_0f9983eb.csv  (160 decks)
+record  load_ifx_623898d4.csv  (160 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
   status    ok 160
   roundtrip n/a 7  same 153
   settle    differ 29  n/a 7  same 123  ulp 1   (s1 vs s2; roundtrip is s2 vs s3)
-  vs load_ifx_eff48867.csv: 15 decks with a changed OPD/nPass/lost
-    moved  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridNS.in  rms 0.000000000D+00 -> 4.989388559D-09  pass 740 -> 740
-    moved  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridSeq.in  rms 0.000000000D+00 -> 4.989388559D-09  pass 740 -> 740
-    moved  /home/dcr/dev/macos/ZGD_test_files/FFSegDemoAll.in  rms 3.671709126D-04 -> 2.301351532D-04  pass 49318 -> 49318
-    moved  /home/dcr/dev/macos/ZGD_test_files/FFSegDemoData.in  rms 6.267126529D-12 -> 5.927896922D-04  pass 49318 -> 49318
-    moved  /home/dcr/dev/macos/ZGD_test_files/FFSegDemo.in  rms 3.671709126D-04 -> 2.301351532D-04  pass 49318 -> 49318
-    moved  /home/dcr/dev/macos/ZGD_test_files/SegDemo3data.in  rms 6.267122944D-12 -> 1.425715627D-01  pass 49318 -> 49284
-    moved  /home/dcr/dev/macos/ZGD_test_files/SegDemo3.in  rms 3.671709126D-04 -> 6.657848853D+00  pass 49318 -> 49286
-    moved  /home/dcr/dev/macos/ZGD_test_files/SegDemo.in  rms 1.971675538D-05 -> 5.701541489D-04  pass 49318 -> 49318
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_crlf.in  rms 1.605492193D-05 -> 3.793426102D-05  pass 60 -> 60
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_lf.in  rms 1.605492193D-05 -> 3.793426102D-05  pass 60 -> 60
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_nsref_ns.in  rms 0.000000000D+00 -> 4.989388559D-09  pass 740 -> 740
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_nsref_seq.in  rms 0.000000000D+00 -> 4.989388559D-09  pass 740 -> 740
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_short_zerncoef.in  rms 2.039817233D-06 -> 3.965170539D-04  pass 50617 -> 50617
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_ZGD2.in  rms 1.978827593D-04 -> 1.861175691D-04  pass 50617 -> 50617
-    moved  /home/dcr/dev/macos/ZGD_test_files/tst_ZGDdata2.in  rms 0.000000000D+00 -> 3.964793863D-04  pass 50617 -> 50617
+  vs load_ifx_0f9983eb.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
