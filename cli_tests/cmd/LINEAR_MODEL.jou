@@ -5,6 +5,8 @@
 # LS (PLAN_CONSOLIDATION 1.2 (j)); LS and LL are exact now.  LPIX at the FocalPlane reports a zero transmission
 # distance (its zElt), as the command defines it.  The linear LOPD (2.2e-7, at the detector, piston included) is
 # not the exact OPD of PERTURB.jou (evaluated at the exit-pupil sphere, which removes the field tilt).
+# LSPOT honours the NONE plot type since PLAN_CONSOLIDATION 1.2 (m) (2026-10-22): it drew regardless, eight
+# '%giza - ERROR - ...: No device open.' lines (red on the pre-fix binary).
 # COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
 cd $TMP
 ! printf '0 0 0 0 0 0\n0 0 0 0 0 0\n1e-4 0 0 0 0 0\n0 0 0 0 0 0\n0 0 0 0 0 0\n' > $TMP/Cassegrain.pert
@@ -47,4 +49,5 @@ ls
 # EXPECT-NOT: Must BUILD first
 # EXPECT-NOT: Must LPERTURB before
 # EXPECT-NOT: MACOS> lspot\s+Listing Files
+# EXPECT-NOT: No device open
 # EXPECT-NOT: forrtl

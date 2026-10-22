@@ -6269,8 +6269,12 @@ C         ***Spot diagram from linear model***
 	      CALL CLTRACE(PertVec,RaySpot,
      &        OPDMat,AvgL,Cmatrix,npts,RayIndex,iPertElt,iElt)
 	      NBEAMS=2
-	      CALL SpotDiag(RaySpot,nRay,2,mRay,2,1,
+!-->  PLAN 1.2 (m): honour the NONE plot type as SPOT does (it drew
+!     regardless: eight 'giza ... No device open' errors under NONE).
+	      IF (iPloTyp.NE.0)
+     &	      CALL SpotDiag(RaySpot,nRay,2,mRay,2,1,
      &	                    'X-Axis','Y-Axis','Spot Diagram')
+!<--
 	    ELSE
 	      WRITE(*,157)
 	    END IF
