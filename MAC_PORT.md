@@ -110,6 +110,18 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-22 (10) — re-gate (pair macos `b7556b81` + resources `d436b9c`) — TO's cleanup round 1
+Full record: `cli_tests/records/mac_gate_gfortran_b7556b81.md`. Engine changed (31 commits: TO's cleanup +
+Dave's 10-22 rulings); tests that the gate-9 "no engine defect" state holds. On Mac: load **165/165** with
+the **15 GridFile movers present and reading Linux's numbers** (the (f) ruling — grid looked up beside the
+deck; SegDemo3 49286/6.66 mm/lost 32, etc., all == Linux; the one near-zero SegDemo.in 6.179D-12 shares 6
+figures); cmd **117/117** + 2 must-fail, the new LOH_tokens/GRIDFILE_beside/PROPTYPE_numeric/DOPD journals
+green (the (aaa) 142-token refusal reads correctly on macOS); mmacos **656/0**; pymacos **6962/0/3 skip**
+(the new side-tree guard passes, save-quiet skips (ee)); /png clean; self-contained. **One cmd red**, a
+round-off re-pin not an engine miss: `COAT_legacy.jou` pins the Cassegrain near-zero RMS `1.2937…D-12`;
+arm64 reads `1.293491396D-12` (the recurring 1e-12 class) — widen to `1\.293\d*D-12` as for
+PGD_reopen_units/WLENS_SWL/ZABERR. No (ff)-class miss remains; the Mac line stays engine-defect-free.
+
 ### 2026-10-21 (9) — re-gate (pair macos `ad4161fa` + resources `00697be`) — NO ENGINE MISS LEFT
 Full record: `cli_tests/records/mac_gate_gfortran_ad4161fa.md`. Engine changed by **one line** since
 gate 8 — the (ff) `LocalCoord` fix (`0efc2dec`), from the source-level bisection in
