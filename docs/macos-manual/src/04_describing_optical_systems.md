@@ -1430,7 +1430,7 @@ All variables can be changed with the MODify command.
 +---------------------------+-----------------+-----------------------+
 | MonCoef(iMon,iElt)        |                 | monomial coefficients |
 +---------------------------+-----------------+-----------------------+
-| nCoatElt(iElt)            |                 | number of coatings    |
+| nCoatElt(iElt)            |                 | number of coatings (at most 65; more is refused at load) |
 +---------------------------+-----------------+-----------------------+
 | nECoord(iElt)             | -6              | number of element     |
 |                           |                 | coordi-nates          |

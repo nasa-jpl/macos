@@ -1528,7 +1528,7 @@ C  for a general lens surface
      &  drda(3,3),dgda(3,3),dgdi(3,3),dgdd(3,3),dldd(3),
      &  dprot(3),dddth(3,3),dgdth(3,3),dldth(3),Kc,Kr,kxa,kxb,
      &  NoidNdi(3,3),drdii(3,3),dNda(3,3),dlda(3),dldi(3),
-     &	CoatIndx(20),CoatThk(20)
+     &	CoatIndx(*),CoatThk(*)
 
 	REAL*8 mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
@@ -1840,7 +1840,7 @@ C***********************************************************************
         USE Constants, ONLY: TWOPI
 	IMPLICIT NONE
 	INTEGER nCoat
-	REAL*8 cfa,sfa,cfb,n1,n3,mu,Wavelen,CoatIndx(20),CoatThk(20),
+	REAL*8 cfa,sfa,cfb,n1,n3,mu,Wavelen,CoatIndx(*),CoatThk(*),
      &	d,k,ky,k1x,k2x,k3x,ky2,k2x2,n2,sfac,RP,IP,A2,SA2,CA2,
      &	y1,sfbc
 	COMPLEX*16 TP,TS,C1
