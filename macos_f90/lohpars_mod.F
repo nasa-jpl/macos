@@ -33,7 +33,13 @@ c exec (LQW) stack
 c must have a common line size CVAR, var_store
 c collection of command words, 1/line
 	INTEGER, parameter :: cvarlen=MacosCharLen 
-        CHARACTER(len=MacosCharLen) :: var_store(10,LQWSTACK)
+!-->  Tokens per command line: the capacity of the MacosCharLen line (one
+!     character and a delimiter each).  Was 10, written unbounded -- an
+!     11th token overran var_store (PLAN_CONSOLIDATION 1.2 (aaa)).  A line
+!     that still counts more (empty ';' tokens) is refused by the parsers.
+	INTEGER, parameter :: mLohTok=MacosCharLen/2
+        CHARACTER(len=MacosCharLen) :: var_store(mLohTok,LQWSTACK)
+!<--
 
 c dummy not passed in commons
         CHARACTER(len=MacosCharLen) :: CVAR, 

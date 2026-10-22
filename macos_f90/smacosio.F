@@ -573,7 +573,7 @@ c	  len_max=ls
 	  END IF
 
 CSCOMP
-	  DO i=1,10
+	  DO i=1,mLohTok
 	    var_store(i,pstack)=' '
 	  END DO
 
@@ -603,12 +603,12 @@ C  Check for % sign, semicolon, blank space...
 	    IF (var(i:i) .EQ. '%') THEN
 C           Comment follows, no more input DATA
 csws        add a blank
-               var_store(j,pstack)(k:k) = ' '
+               IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
                k = k + 1
 	      GO TO 2
 	    ELSE IF (var(i:i) .EQ. ';') THEN
 C  END of command
-               var_store(j,pstack)(k:k) = ' '
+               IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
 c  now prepare for next command
 	      j=j+1
 	      k=1
@@ -620,7 +620,7 @@ c  now prepare for next command
 	        l=i-1
 	        IF ((var(l:l).NE.' ').AND.(var(l:l).NE.';')) THEN
 C  END of command
-                   var_store(j,pstack)(k:k) = ' '
+                   IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
 c  now prepare for next command
 	          j=j+1
 	          k=1
@@ -633,7 +633,7 @@ C  GO TO next CHARACTER
 	    i=i+1
 	      GO TO 1
 	    ELSE
-	      var_store(j,pstack)(k:k)=var(i:i)
+	      IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=var(i:i)
 	      k=k+1
 	      i=i+1
 	      last_flag=.FALSE.
@@ -645,6 +645,17 @@ C  GO TO next CHARACTER
 	IF (last_flag) THEN
 	  j=j-1
 	END IF
+!-->  More tokens than var_store holds (PLAN_CONSOLIDATION 1.2 (aaa)):
+!     refuse the line by its command.  A journal reads its next line; the
+!     one-line STACK returns nothing (re-reading it would loop).
+	IF (j.GT.mLohTok) THEN
+	  WRITE(*,'(3A,I0,A,I0,A)') ' ** Command line refused (',
+     &      TRIM(var_store(1,pstack)),'): ',j,' tokens, at most ',
+     &      mLohTok,' on a line'
+	  IF (bat_task .NE. 1) GO TO 10
+	  j=0
+	END IF
+!<--
 	read_len(pstack)=j
 	read_cur(pstack)=1
 
