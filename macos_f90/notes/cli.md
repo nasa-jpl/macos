@@ -113,3 +113,16 @@ not affected (IACCEPT_S re-asks on a non-integer).  The api path never reaches t
 `macos.init` refuse before the call (pymacos's list omits 8192).  Gate
 `cli_tests/cmd/STARTUP_size.jou` (the gate's `# MODEL:` takes `a | b | c`, answers in turn);
 red on the pre-fix binary (dies before MACOS>).
+
+## DOPD, LSPOT, RESET (PLAN_CONSOLIDATION 1.2 (k) (m) (i), 2026-10-22)
+- **DOPD of identical OPDs** read `RMS dOPD = -1.0`: `RMS2` (mathsub.F) returns -1 when NO cell
+  of the map is non-zero -- its sentinel -- and two identical OPD runs give an all-zero
+  difference.  The finding blamed ZABERR / ZRM; measured, `opd; opd; dopd` did it too.  DOPD now
+  prints 0 and "(the two OPDs are identical)".  Not changed: `RMS2` takes its mean and RMS over the
+  NON-ZERO cells only, so an exactly-zero valid cell (e.g. the chief-ray reference) is left out --
+  the "zero is not no ray" rule; changing it would move every DOPD value.
+- **LSPOT** honours the NONE plot type (`iPloTyp == 0`) as SPOT does; it called SpotDiag
+  regardless (eight `%giza ... No device open` lines).  Under a file plot type (5/6/8/9) it still
+  calls SpotDiag, not SPOTOUT as SPOT does -- not changed.
+- **RESET** sets the plot type back to its start-up value, GRAY (`iPloTyp = 2`, ArchInit).
+  Gates: DOPD_identical.jou, LINEAR_MODEL.jou (`EXPECT-NOT: No device open`), SESSION_INFO.jou.

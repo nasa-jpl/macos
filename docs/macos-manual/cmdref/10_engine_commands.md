@@ -73,13 +73,13 @@ Reset options & defaults to startup.
 <!-- BEGIN NOTES cmd-REset -->
 *Syntax:* `RESET`; no prompt.
 
-*Defaults:* none.  Resets the trace state and the obscuration option to 1; the plot type is NOT reset (1.2 (i)).
+*Defaults:* none.  Resets the trace state, the obscuration option to 1 and the plot type to GRAY (its start-up value; 1.2 (i), 2026-10-22).
 
 No dialog.  Resets analysis state and options to startup
 defaults: clears the trace/build/propagate/perturb flags, the
-obscuration option, the stretch type, beam type, and pixel
-settings.  Measured 2026-10-16: the surface-plot type set by
-NONE/GRAY/... is NOT reset (STATUS keeps showing it).  The
+obscuration option, the stretch type, the surface-plot type
+(back to GRAY, whatever NONE/SLICE/... set), beam type, and pixel
+settings.  The
 loaded prescription is NOT unloaded, and a STOP that was
 preset in the Rx is preserved.  Suite: `SESSION_INFO.jou`.
 *Related:* MREset, STatus, LREset.

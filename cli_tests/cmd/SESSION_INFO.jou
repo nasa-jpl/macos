@@ -1,7 +1,7 @@
 # SUMMARIZE, ELTS, ECHO, STATUS and RESET on the manual's Cassegrain (cmdref: Session & Files).  NONE sets
 # the plot type to NULL and OBS ALL the obscuration option to 0; RESET returns the obscuration option to 1
-# (POSITIVE) -- and, measured 2026-10-16, leaves the plot type at NULL (the cmdref said RESET clears it;
-# PLAN_CONSOLIDATION 1.2).  The prescription stays loaded across RESET.
+# (POSITIVE) and, since PLAN_CONSOLIDATION 1.2 (i) (2026-10-22), the plot type to its start-up GRAY (it left
+# NULL in force before: red on the pre-fix binary).  The prescription stays loaded across RESET.
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 summarize
 elts
@@ -16,6 +16,6 @@ status
 # EXPECT: Element name = Primary\s+ID =\s+2
 # EXPECT: Element name = Detector\s+ID =\s+5
 # EXPECT: ^marker line for the journal
-# EXPECT: Obscuration option for ray-trace=\s+0\s+Current WF plot type=NULL[\s\S]*?MACOS> reset[\s\S]*?Obscuration option for ray-trace=\s+1\s+Current WF plot type=NULL
+# EXPECT: Obscuration option for ray-trace=\s+0\s+Current WF plot type=NULL[\s\S]*?MACOS> reset[\s\S]*?Obscuration option for ray-trace=\s+1\s+Current WF plot type=GRAY
 # EXPECT-NOT: Must load optical data first
 # EXPECT-NOT: forrtl

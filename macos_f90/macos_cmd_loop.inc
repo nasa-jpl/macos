@@ -972,6 +972,10 @@ C         ***Reset defaults, options, etc.***
 	    iCurWFElt=0
 	    iObsOpt=1
 	    StretchType=1
+!-->  PLAN 1.2 (i): the plot type back to its start-up value too
+!     (ArchInit: GRAY); RESET left NONE / NULL in force.
+	    iPloTyp=2
+!<--
 	    spcOption=1
 	    If (UDBeam_FLG) Then
               BeamType=5
