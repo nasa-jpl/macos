@@ -3773,3 +3773,8 @@ promote-on-land pass.**
 > message buffer; bindings coverage (146 vs 136, defaults audit, CLI-without-api); the Grating_example_001 knife-edge rays; library
 > pruning (40 of 99 helpers uncalled); the display lane (aa).  LOCAL unpushed: 8f10ecd3..ef62ca3d (exclusions, runbook, strip tool,
 > gate-9 line, brief); resources 1ea48dc.  Friday email draft = DRAFT_email_friday_repo_plan_edit.md (untracked).**
+
+> **2026-10-22 (CC): side-tree pymacos TRAP (TO): whole-suite runs imported the shared .so (proper_compare/conftest.py); fixed by TO,
+> verified here.  The (ff) engine's true full-suite number: 6963 pass / 1 fail = TO's new (v) test on the pre-(v) engine (its must-fail).
+> Plan line corrected (496866d1).  TO's round 1 + Dave's three rulings (dd refuse, zz 65 slots + full-name Coating=, f GridFile beside the
+> deck) LOCAL in his lane, gating.**
