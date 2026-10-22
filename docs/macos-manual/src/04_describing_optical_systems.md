@@ -1169,7 +1169,7 @@ There are some simple rules for .in-files that must be followed to avoid ambigui
 
 -   The last element data block is followed by the ‘nOutCord=’ specifying the number of output coordinates and the output coordinate matrix (`Tout=`).  A prescription that ends without this block still loads: the loader proposes the beam frame at the last element (z along the beam from the previous element’s vertex to the last element’s vertex, or along the chief ray when there is one element; x from the element’s `xObs=`, or the global axis least aligned with z; y = z × x), prints it, and in the interactive program asks `Keep the proposed output coordinates? [YES]:` — NO reads `nOutCord` and the `Tout` rows at the prompt.  The MATLAB and Python bindings take the proposal and print the same lines.  SAVE writes the block either way.
 
--   A numeric `PropType=` (the legacy form, 0 through 15 in the order of the propagation-type table) is accepted and resolved to its name at load; `PropType= 0` is Geometric.  SAVE writes the name.  A value that is neither a name nor a number in the table is reported (`** PropType= <value> at element n not recognized: the default applies`) and the default is used.
+-   A numeric `PropType=` (the legacy form, 0 through 15 in the order of the propagation-type table) is accepted and resolved to its name at load; `PropType= 0` is Geometric.  SAVE writes the name.  A value that is neither a name nor a number in the table is refused at load, naming it (`** Rx load refused: PropType= <value> (elt n): not a propagation type`).
 
 -   Blank lines can be used to separate data for clarity.
 
