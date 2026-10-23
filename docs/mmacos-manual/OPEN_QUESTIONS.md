@@ -49,6 +49,16 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   aperture; why the source grid changed (12520 -> 12128; the parent 1305 -> 1185 rays) is not
   diagnosed -- the stale stage-1 outputs (above; the hole 0.095 -> 0.232 m) are the first suspect.
   Stages 4-7's committed products were built on the 376-clip deck.
+- **ch. 5: e2e's committed `s5_report.txt` did not come from the committed `s5_met.m`** (PLAN_CONSOLIDATION
+  1.2 (ggg)).  It says "layout held from preset (no search)" (run_met's `opt_preset`); the script passes
+  none and run_met defaults to `optimize = true`.  The live search: center-hexagon class angles
+  [170 190 50 70 -70 -50] deg vs the preset's [170 190 70 90 -90 -70] (wedges identical); optimized
+  WEM MET-only 3.877 vs 3.707, edge+MET 1.782 vs 1.755.  The manual prints the live search, run on a
+  copy of `s5_met.m` with its preset-library promotion cut (presets md5-identical before and after).
+- **ch. 5: `e2e_pie_met_metric.png` drops a bar and `e2e_pie_met*_layout.png` mislabels an axis.**  The
+  metric chart's log axis bottoms near 0.09, so the "edge+MET opt" bar (~0.04) does not show; the
+  hub-plane inset of the layout figures is labeled mm but plots metres (fiducials at r = 0.196).  The
+  manual prints the layouts (the caption says the units) and leaves the metric chart out.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.

@@ -47,7 +47,7 @@ rep = mm_zero('ch05_tilt_prior', rep, 'prior split: (\S+) nm tilt', 1e-12);
 rep = mm_zero('ch05_h_svmin', rep, 'sv\(H\*sqrt\(X\)\) \S+ \.\. (\S+) \(cond', 1e-15);
 mm_transcript('ch05_report', strtrim(rep));
 
-for f = ["met_layout" "metopt_layout" "met_metric" "met_view_rx"]
+for f = ["met_layout" "metopt_layout"]       % the metric chart drops a bar (OPEN_QUESTIONS): not printed
     mm_figure("ch05_" + f, fullfile(work, "e2e_pie_" + f + ".png"));
 end
 
