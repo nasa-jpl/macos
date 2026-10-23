@@ -11,9 +11,13 @@ template's own outputs are never touched).  The driver speaks through four helpe
         -> src/transcripts/NAME.md, an indented code block; a chapter pulls it in with the marker
            line <!-- transcript: NAME --> (the MACOS manual's include_transcripts.lua)
   mm_figure(NAME, png)   -> src/media/NAME.png
+  mm_zero / mm_floor(NAME, text, pattern, bound)
+        -> the captured text with a numerical zero printed as '< bound' (or a number it sets as
+           '> bound'), pinned as 'abs:<bound>' / 'min:<bound>'
   mm_pin(NAME, value, rule, shown)
         -> a number the prose quotes: checked against tools/pins/<driver>.tsv (rule 'sig5' = five
-           significant figures on a signal, 'abs:<bound>' = a bound on a numerical zero,
+           significant figures on a signal, 'abs:<bound>' = a bound on a numerical zero, 'min:<bound>' = a
+           lower bound on a number a numerical zero sets (a condition number),
            'printed' = a number a template prints at its own precision, compared by the listing rule -- the
            cross-architecture rule, so the Mac gates the manual the way it gates the engine), and
            written to src/transcripts/pins.tsv, where tools/pins.lua puts SHOWN in place of
@@ -60,6 +64,8 @@ def holds(rule, value, pinned):
         return sig5_equal(value, pinned)
     if rule.startswith("abs:"):
         return abs(float(value)) < float(rule[4:])
+    if rule.startswith("min:"):
+        return float(value) > float(rule[4:])
     raise SystemExit(f"unknown pin rule {rule!r}")
 
 
