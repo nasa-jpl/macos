@@ -4,7 +4,7 @@
 % (harvested at 'mean').  The reader's check of PLAN_CONSOLIDATION 1.2 (kkk).  Model size 512.
 % Note the macos.modify() after the perturb: without it the next trace reuses the cached geometry
 % and the change reads zero (macos.channels.RigidBodyChannel does the same).
-% All pinned numbers are signals (printed).
+% Signals (printed), except ch06_ref_mean_mean < 1e-9 nm: the mean-referenced map's own mean, a zero.
 
 root = getenv('MMACOS_ROOT');
 work = getenv('MMMAN_THREAD');
@@ -23,6 +23,9 @@ for ref = ["chief" "mean"]
     L{end+1} = '>> macos.trace(n-1);  d = macos.opd() - W0;';
     L{end+1} = sprintf('   %-5s  rms %.4g nm   mean %.4g nm   rms about the mean %.4g nm', ...
         ref, sqrt(mean(d.^2)), mean(d), std(d, 1));
+    if ref == "mean"                                    % the mean-referenced map's mean is a numerical zero
+        L{end} = mm_zero('ch06_ref_mean_mean', L{end}, 'mean (\S+) nm   rms about', 1e-9);
+    end
     mm_pin("ch06_ref_" + ref + "_rms", sqrt(mean(d.^2)), 'printed', sprintf('%.4g', sqrt(mean(d.^2))));
     if ref == "chief"
         mm_pin('ch06_ref_chief_mean', mean(d), 'printed', sprintf('%.4g', mean(d)));
