@@ -255,3 +255,37 @@ stdout is not visible to evalc).
   `save_rx` bounds the name by that 256.  Change them together.
 - The Zernike set / get family (`elt_srf_zrn_set` / `_get` / `_mode_set` beside `elt_srf_zrn_coef`)
   could be one set / get pair.
+
+## The engine's message buffer: emsg_mod + messages_count / _get / _clear (PLAN_CONSOLIDATION 1.2 (ee), 2026-10-22)
+The engine's notes, warnings and refusals are Fortran unit-6 text, and unit 6 does not reach file
+descriptor 1 across the FFI on macOS (CCMac's gates 4 and 6): a nested `matlab -batch` and pytest's
+capfd read nothing there, so six binding tests were guarded on the Mac.  Now `emsg_mod`
+(`emsg_mod.F90`, USEd by elt_mod, so every elt_mod user sees it) keeps each line as well as printing it:
+- **Converted sites (228):** every stdout write of msmacosio.inc (113), elt_mod.F's parse helpers (7),
+  iosub.inc ChkDf2 (71), surfsub.F GridInit (10), smacosio.F MBFile6 + PARSE_LOH (14), design_optim.F
+  nls_optim_dvr's ` ** ` lines (12, CALIB's cause and abort lines) and the SMACOS loop's
+  `** Unknown command` (macos_cmd_loop.inc).  Each `WRITE(*,ctl) list` is `WRITE(emsgRec,ctl) list`
+  plus `CALL emsg_put` after the statement: the internal write fills one or more of emsgRec's 16
+  records (1024 wide; a `/` format gives several), emsg_put prints each written record with `(A)` and
+  keeps it.  The records start as CHAR(0), so the CALL after a one-line `IF (...) WRITE` that did not
+  run does nothing.  New code calls `emsg(text)`.  The conversion was scripted with checks (the whole
+  statement found, no comment inside it, not a DO terminator, no ADVANCE=, nothing after a `;`,
+  <= 132 columns): `tools/emsg_convert.py`, idempotent -- re-use it for more sites rather than hand-editing.
+- **Unit 6 is unchanged** except that ifx no longer wraps a list-directed line at 80 columns (an
+  internal record is as wide as emsgRec); trailing blanks are trimmed.
+- **The buffer** keeps the last 500 lines (256 characters each) since the last clear and counts the
+  older ones as dropped.  api: `messages_count(OK, nLines_, nChars_, nDropped_)`,
+  `messages_get(OK, Codes_, nChars)` (the kept lines joined by LF as character codes -- the generator
+  has no string output; nChars must equal messages_count's), `messages_clear(OK)`; all PASS with no
+  Rx loaded.  Veneers: pymacos `messages(clear=True)`, mmacos `macos.messages(clear)` -- each returns
+  the lines and empties the buffer, a first entry `(<n> earlier messages dropped)` when it overflowed.
+  pymacos `load()` and mmacos `macos.load_rx` put the last ` ** ` lines in their load-failure error.
+- **Tests:** a nested-MATLAB child echoes the buffer through MATLAB's fprintf, tagged `MSG|`
+  (tests/private `msg_echo_` / `msg_text_`), so the count is the same on Linux (where the untagged
+  unit-6 copy also arrives) and the Mac.  tRxRefuse, tRxShortCoef, tRxLineEndings, tSaveNewFileQuiet
+  lost their `assumeTrue(~ismac)`, tCalibMatrix its `if ~ismac`; pymacos test_rx_parse_warnings and
+  test_save_new_file_quiet read `messages()` instead of capfd and lost their darwin skips.  New gates
+  tMessages / test_messages.py (a refused load named in the buffer and the error, keep vs empty, the
+  dropped count; pymacos also checks on Linux that every kept line was printed, in order).
+- **Not converted (a census for later):** the rest of the command loop's ` ** ` lines (~45), macos_ops.F,
+  and the CLI-only loader in macosio.F.  A binding that needs one of them: convert it with the script.

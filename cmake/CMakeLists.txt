@@ -329,6 +329,7 @@ add_library(smacos STATIC
       ${smacos_src_dir}/lohpars_mod.F
       ${smacos_src_dir}/macos_IO.f90
       ${smacos_src_dir}/param_mod.F
+      ${smacos_src_dir}/emsg_mod.F90
       ${smacos_src_dir}/elt_mod.F
       ${smacos_src_dir}/nn_util.F
       ${smacos_src_dir}/mathsub.F

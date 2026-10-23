@@ -395,27 +395,31 @@ C       Set defaults, if necessary
 	ELSE
 	  EltName(iElt)='Elt'
 	  EltName_FLG=.TRUE.
-	  WRITE(*,112)'EltName',iElt
+	  WRITE(emsgRec,112)'EltName',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (EltType_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' EltType',iElt
+	  WRITE(emsgRec,111)' EltType',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (EltID_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' Element',iElt
+	  WRITE(emsgRec,111)' Element',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (SrfType_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' Surface',iElt
+	  WRITE(emsgRec,111)' Surface',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -424,7 +428,8 @@ C       Set defaults, if necessary
 	ELSE
 	  fElt(iElt)=1D22
 	  fElt_FLG=.TRUE.
-	  WRITE(*,112)'fElt',iElt
+	  WRITE(emsgRec,112)'fElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (eElt_FLG) THEN
@@ -432,7 +437,8 @@ C       Set defaults, if necessary
 	ELSE
 	  eElt(iElt)=0.0D0
 	  eElt_FLG=.TRUE.
-	  WRITE(*,112)'eElt',iElt
+	  WRITE(emsgRec,112)'eElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (psiElt_FLG) THEN
@@ -440,7 +446,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DNEGATE(psiElt(1,iElt),ChfRayDir(1),3)
 	  psiElt_FLG=.TRUE.
-	  WRITE(*,112)'psiElt',iElt
+	  WRITE(emsgRec,112)'psiElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (AsphCoef_FLG) THEN
@@ -448,7 +455,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(AsphCoef(1,iElt),4)
 	  AsphCoef_FLG=.TRUE.
-	  WRITE(*,112)'AsphCoef',iElt
+	  WRITE(emsgRec,112)'AsphCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (AnaCoef_FLG) THEN
@@ -456,7 +464,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(AnaCoef(1,iElt),4)
 	  AnaCoef_FLG=.TRUE.
-	  WRITE(*,112)'AnaCoef',iElt
+	  WRITE(emsgRec,112)'AnaCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ZernCoef_FLG) THEN
@@ -464,7 +473,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(ZernCoef(1,iElt),45)
 	  ZernCoef_FLG=.TRUE.
-	  WRITE(*,112)'ZernCoef',iElt
+	  WRITE(emsgRec,112)'ZernCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ZernTypeL_FLG) THEN
@@ -472,7 +482,8 @@ C       Set defaults, if necessary
 	ELSE
 	  ZernTypeL_FLG=.TRUE.
 	  ZernTypeL(iElt)=1
-	  WRITE(*,112)'ZernType',iElt
+	  WRITE(emsgRec,112)'ZernType',iElt
+	  CALL emsg_put
 	END IF
 !-->  PLAN item 7 (Dave 2026-10-10): EVERY Zernike-carrying surface
 !     gets the ANSI default when it declares no ZernType=, whatever
@@ -487,7 +498,8 @@ C       Set defaults, if necessary
      &       SrfType(iElt).EQ.SrfType_ZrnGrData) .AND.
      &      ZernTypeL(iElt).LT.1) THEN
 	  ZernTypeL(iElt)=ZernType_ANSI
-	  WRITE(*,112)'ZernType',iElt
+	  WRITE(emsgRec,112)'ZernType',iElt
+	  CALL emsg_put
 	END IF
 !<--
 !-->	(tt): an ExtFringe coefficient the converter drops is refused by
@@ -497,49 +509,55 @@ C       Set defaults, if necessary
 	  kInert = ZernCoefInert(ZernTypeL(iElt), ZernCoef(:,iElt),
      &	                         mZernModes)
 	  IF (kInert .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 !	  (xx): a coefficient past the type's mode count, refused by mode
 	  kPast = ZernCoefPastMax(ZernTypeL(iElt), ZernCoef(:,iElt), mZernModes)
 	  IF (kPast .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
      &	      iElt, ') mode', kPast, ': '//
      &	      TRIM(ZernTypeNameL(ZernTypeL(iElt)))//' has',
      &	      ZernType_MaxMode(ZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	  kInert = ZernCoefInert(MonZernTypeL(iElt), MonZernCoef(:,iElt),
      &	                         mMonCoef)
 	  IF (kInert .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 !	  (xx): a coefficient past the type's mode count, refused by mode
 	  kPast = ZernCoefPastMax(MonZernTypeL(iElt), MonZernCoef(:,iElt), mMonCoef)
 	  IF (kPast .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
      &	      iElt, ') mode', kPast, ': '//
      &	      TRIM(ZernTypeNameL(MonZernTypeL(iElt)))//' has',
      &	      ZernType_MaxMode(MonZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	  kInert = ZernCoefInert(FFZernTypeL(iElt), FFZernCoef(:,iElt),
      &	                         mFFCoef)
 	  IF (kInert .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
      &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 !	  (xx): a coefficient past the type's mode count, refused by mode
 	  kPast = ZernCoefPastMax(FFZernTypeL(iElt), FFZernCoef(:,iElt), mFFCoef)
 	  IF (kPast .GT. 0) THEN
-	    WRITE(*,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
      &	      iElt, ') mode', kPast, ': '//
      &	      TRIM(ZernTypeNameL(FFZernTypeL(iElt)))//' has',
      &	      ZernType_MaxMode(FFZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	END BLOCK
@@ -550,7 +568,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(MonCoef(1,iElt),120)
 	  MonCoef_FLG=.TRUE.
-	  WRITE(*,112)'MonCoef',iElt
+	  WRITE(emsgRec,112)'MonCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (UDSrfCoef_FLG) THEN
@@ -558,7 +577,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(UDSrfCoef(1,iElt),mUDScoef)
 	  UDSrfCoef_FLG=.TRUE.
-	  WRITE(*,112)'UDSrfCoef',iElt
+	  WRITE(emsgRec,112)'UDSrfCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (UDSrfType_FLG) THEN
@@ -567,7 +587,8 @@ C       Set defaults, if necessary
 	  IF (SrfType(iElt).EQ.7) THEN
 	    UDSrfType(iElt)=1
 	    UDSrfType_FLG=.TRUE.
-	    WRITE(*,112)'UDSrfType',iElt
+	    WRITE(emsgRec,112)'UDSrfType',iElt
+	    CALL emsg_put
 	  ELSE
 	    UDSrfType(iElt)=0
 	    UDSrfType_FLG=.TRUE.
@@ -618,7 +639,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	      UDSrfParam(1,iElt)=0d0
 	      UDSrfParam(2,iElt)=1.380435d0
 	    END IF
-	    WRITE(*,112)'UDSrfParam',iElt
+	    WRITE(emsgRec,112)'UDSrfParam',iElt
+	    CALL emsg_put
 	  END IF
 	  UDSrfParam_FLG=.TRUE.
 	END IF
@@ -628,7 +650,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  KrElt(iElt)=-1D22
 	  KrElt_FLG=.TRUE.
-	  WRITE(*,112)'KrElt',iElt
+	  WRITE(emsgRec,112)'KrElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (KcElt_FLG) THEN
@@ -636,7 +659,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  KcElt(iElt)=0.0D0
 	  KcElt_FLG=.TRUE.
-	  WRITE(*,112)'KcElt',iElt
+	  WRITE(emsgRec,112)'KcElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (pMon_FLG) THEN
@@ -645,7 +669,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (VptElt_FLG) THEN
 	    CALL DEQUATE(pMon(1,iElt),VptElt(1,iElt),3)
 	    pMon_FLG=.TRUE.
-	    WRITE(*,112)'pMon',iElt
+	    WRITE(emsgRec,112)'pMon',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -681,7 +706,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (VptElt_FLG) THEN
 	    CALL DEQUATE(pData(1,iElt),VptElt(1,iElt),3)
 	    pData_FLG=.TRUE.
-	    WRITE(*,112)'pData',iElt
+	    WRITE(emsgRec,112)'pData',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -694,7 +720,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  xData(2,iElt)=psiElt(1,iElt)
 	  xData(3,iElt)=psiElt(2,iElt)
 	  xData_FLG=.TRUE.
-	  WRITE(*,112)'xData',iElt
+	  WRITE(emsgRec,112)'xData',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (yData_FLG) THEN
@@ -702,7 +729,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData)
 	  yData_FLG=.TRUE.
-	  WRITE(*,112)'yData',iElt
+	  WRITE(emsgRec,112)'yData',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (zData_FLG) THEN
@@ -711,7 +739,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (psiElt_FLG) THEN
 	    CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
 	    zData_FLG=.TRUE.
-	    WRITE(*,112)'zData',iElt
+	    WRITE(emsgRec,112)'zData',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -722,7 +751,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  lData(iElt)=Aperture
 	  lData_FLG=.TRUE.
-	  WRITE(*,112)'lData',iElt
+	  WRITE(emsgRec,112)'lData',iElt
+	  CALL emsg_put
 	END IF
 	!-->
 
@@ -733,7 +763,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  xMon(2,iElt)=psiElt(1,iElt)
 	  xMon(3,iElt)=psiElt(2,iElt)
 	  xMon_FLG=.TRUE.
-	  WRITE(*,112)'xMon',iElt
+	  WRITE(emsgRec,112)'xMon',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (yMon_FLG) THEN
@@ -741,7 +772,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  CALL DXPROD(yMon(1,iElt),psiElt(1,iElt),xMon)
 	  yMon_FLG=.TRUE.
-	  WRITE(*,112)'yMon',iElt
+	  WRITE(emsgRec,112)'yMon',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (zMon_FLG) THEN
@@ -750,7 +782,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (psiElt_FLG) THEN
 	    CALL DEQUATE(zMon(1,iElt),psiElt(1,iElt),3)
 	    zMon_FLG=.TRUE.
-	    WRITE(*,112)'zMon',iElt
+	    WRITE(emsgRec,112)'zMon',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -761,7 +794,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  lMon(iElt)=Aperture
 	  lMon_FLG=.TRUE.
-	  WRITE(*,112)'lMon',iElt
+	  WRITE(emsgRec,112)'lMon',iElt
+	  CALL emsg_put
 	END IF
 
 C  FreeForm surface: set FF coordinate frame defaults; mark FF flags
@@ -770,49 +804,58 @@ C  as satisfied for all other surface types.
 	  IF (.NOT.lFF_FLG) THEN
 	    lFF(iElt) = 0d0
 	    lFF_FLG = .TRUE.
-	    WRITE(*,112)'lFF',iElt
+	    WRITE(emsgRec,112)'lFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.pFF_FLG) THEN
 	    CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
 	    pFF_FLG = .TRUE.
-	    WRITE(*,112)'pFF',iElt
+	    WRITE(emsgRec,112)'pFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.xFF_FLG) THEN
 	    xFF(1,iElt) = psiElt(3,iElt)
 	    xFF(2,iElt) = psiElt(1,iElt)
 	    xFF(3,iElt) = psiElt(2,iElt)
 	    xFF_FLG = .TRUE.
-	    WRITE(*,112)'xFF',iElt
+	    WRITE(emsgRec,112)'xFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.yFF_FLG) THEN
 	    CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
 	    yFF_FLG = .TRUE.
-	    WRITE(*,112)'yFF',iElt
+	    WRITE(emsgRec,112)'yFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.zFF_FLG) THEN
 	    CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
 	    zFF_FLG = .TRUE.
-	    WRITE(*,112)'zFF',iElt
+	    WRITE(emsgRec,112)'zFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.FFZernTypeL_FLG) THEN
 	    FFZernTypeL(iElt) = ZernType_ANSI
 	    FFZernTypeL_FLG = .TRUE.
-	    WRITE(*,112)'FFZernTypeL',iElt
+	    WRITE(emsgRec,112)'FFZernTypeL',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.FFZernCoef_FLG) THEN
 	    FFZernCoef(:,iElt) = 0d0
 	    FFZernCoef_FLG = .TRUE.
-	    WRITE(*,112)'FFZernCoef',iElt
+	    WRITE(emsgRec,112)'FFZernCoef',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.MonZernTypeL_FLG) THEN
 	    MonZernTypeL(iElt) = ZernType_ANSI
 	    MonZernTypeL_FLG = .TRUE.
-	    WRITE(*,112)'MonZernTypeL',iElt
+	    WRITE(emsgRec,112)'MonZernTypeL',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.MonZernCoef_FLG) THEN
 	    MonZernCoef(:,iElt) = 0d0
 	    MonZernCoef_FLG = .TRUE.
-	    WRITE(*,112)'MonZernCoef',iElt
+	    WRITE(emsgRec,112)'MonZernCoef',iElt
+	    CALL emsg_put
 	  END IF
 	  CALL SetFreeFormFlags(iElt)
 	ELSE
@@ -832,7 +875,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  LensArrayType(iElt)=1
 	  LensArrayType_FLG=.TRUE.
-	  WRITE(*,112)'LensArrayType',iElt
+	  WRITE(emsgRec,112)'LensArrayType',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (LensArrayWidth_FLG) THEN
@@ -840,20 +884,23 @@ C  as satisfied for all other surface types.
 	ELSE
 	  LensArrayWidth(iElt)=1
 	  LensArrayWidth_FLG=.TRUE.
-	  WRITE(*,112)'LensArrayWidth',iElt
+	  WRITE(emsgRec,112)'LensArrayWidth',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (h1HOE_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' h1HOE',iElt
+	  WRITE(emsgRec,111)' h1HOE',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (h2HOE_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' h2HOE',iElt
+	  WRITE(emsgRec,111)' h2HOE',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -862,7 +909,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  OrderHOE(iElt)=1.0
 	  OrderHOE_FLG=.TRUE.
-	  WRITE(*,112)' OrderHOE',iElt
+	  WRITE(emsgRec,112)' OrderHOE',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (RuleWidth_FLG) THEN
@@ -870,7 +918,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  RuleWidth(iElt)=1.0
 	  RuleWidth_FLG=.TRUE.
-	  WRITE(*,112)'RuleWidth',iElt
+	  WRITE(emsgRec,112)'RuleWidth',iElt
+	  CALL emsg_put
 	END IF
 
 !--> polarizing elements (PLAN_POLARIZATION Phase 3).  Both keywords
@@ -883,14 +932,16 @@ C  as satisfied for all other surface types.
 	IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
      &	    (EltID(iElt).EQ.WavePlateElt)) THEN
 	  IF (.NOT.PolAxis_FLG) THEN
-	    WRITE(*,111)' PolAxis',iElt
+	    WRITE(emsgRec,111)' PolAxis',iElt
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	END IF
 
 	IF (EltID(iElt).EQ.WavePlateElt) THEN
 	  IF (.NOT.PolRet_FLG) THEN
-	    WRITE(*,111)' Retardance',iElt
+	    WRITE(emsgRec,111)' Retardance',iElt
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	END IF
@@ -902,7 +953,8 @@ C  as satisfied for all other surface types.
 !    convention (a reflective polarizer is inherently off-normal) --
 !    see REVIEW_POL_ELEMENTS_2026-07-27.md.
 	IF (EltID(iElt).EQ.RfPolarizerElt) THEN
-	  WRITE(*,115) iElt
+	  WRITE(emsgRec,115) iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 !<--
@@ -912,13 +964,15 @@ C  as satisfied for all other surface types.
 	ELSE
 	  WaveHOE(iElt)=1d-7
 	  WaveHOE_FLG=.TRUE.
-	  WRITE(*,112)'WaveHOE',iElt
+	  WRITE(emsgRec,112)'WaveHOE',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (VptElt_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' VptElt',iElt
+	  WRITE(emsgRec,111)' VptElt',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -927,7 +981,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  CALL DEQUATE(RptElt(1,iElt),VptElt(1,iElt),3)
 	  RptElt_FLG=.TRUE.
-	  WRITE(*,112)'RptElt',iElt
+	  WRITE(emsgRec,112)'RptElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (IndRefE_FLG) THEN
@@ -935,7 +990,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  IndRef(iElt)=1.0D0
 	  IndRefE_FLG=.TRUE.
-	  WRITE(*,112)'IndRef',iElt
+	  WRITE(emsgRec,112)'IndRef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (GlassElt_FLG) THEN
@@ -943,7 +999,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  GlassElt(iElt)='Air'
 	  GlassElt_FLG=.TRUE.
-	  WRITE(*,112)'GlassElt',iElt
+	  WRITE(emsgRec,112)'GlassElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (GlassCoef_FLG) THEN
@@ -951,7 +1008,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  CALL DZERO(GlassCoef(1,iElt),6)
 	  GlassCoef_FLG=.TRUE.
-	  WRITE(*,112)'GlassCoef',iElt
+	  WRITE(emsgRec,112)'GlassCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ExtincE_FLG) THEN
@@ -992,7 +1050,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	ELSE
 	  zElt(iElt)=fElt(iElt)
 	  zElt_FLG=.TRUE.
-	  WRITE(*,112)'zElt',iElt
+	  WRITE(emsgRec,112)'zElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (PropType_FLG) THEN
@@ -1004,7 +1063,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	    PropType(iElt)=1
 	  END IF
 	  PropType_FLG=.TRUE.
-	  WRITE(*,112)'PropType',iElt
+	  WRITE(emsgRec,112)'PropType',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (PinHole_FLG) THEN
@@ -1014,7 +1074,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	  PinHole(iElt)=1d22
 	  IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
      &	  THEN
-	    WRITE(*,112)'PinHole',iElt
+	    WRITE(emsgRec,112)'PinHole',iElt
+	    CALL emsg_put
 	  END IF
 	END IF
 
@@ -1023,7 +1084,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	ELSE
 	  nECoord(iElt)=-6
 	  nECoord_FLG=.TRUE.
-	  WRITE(*,112)'nECoord',iElt
+	  WRITE(emsgRec,112)'nECoord',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ApType_FLG) THEN
@@ -1064,7 +1126,8 @@ C	  WRITE(*,112)'nObs',iElt
 	IF (nObs(iElt) .NE. 0) THEN
 	  IF (nObs(iElt).GT.mObs) THEN
 	    nObs(iElt)=mObs
-	    WRITE(*,113)mObs
+	    WRITE(emsgRec,113)mObs
+	    CALL emsg_put
 	  END IF
 	  DO 11 I=1,nObs(iElt)
 	    IF (ObsType_FLG(I)) THEN
@@ -1072,7 +1135,8 @@ C	  WRITE(*,112)'nObs',iElt
 	    ELSE
 	      ObsType(I,iElt)=1
 	      ObsType_FLG(I) =.TRUE.
-	      WRITE(*,112)'ObsType',iElt
+	      WRITE(emsgRec,112)'ObsType',iElt
+	      CALL emsg_put
 	    END IF
    11     CONTINUE
 	END IF
@@ -1084,7 +1148,8 @@ C	  WRITE(*,112)'nObs',iElt
 	    ELSE
 	      CALL DZERO(ObsVec(1,I,iElt),4)
 	      ObsVec_FLG(I) =.TRUE.
-	      WRITE(*,112)'ObsVec',iElt
+	      WRITE(emsgRec,112)'ObsVec',iElt
+	      CALL emsg_put
 	    END IF
    12     CONTINUE
 	END IF
@@ -1098,9 +1163,11 @@ C	  WRITE(*,112)'nObs',iElt
 	      xObs(2,iElt)=psiElt(1,iElt)
 	      xObs(3,iElt)=psiElt(2,iElt)
 	      xObs_FLG=.TRUE.
-	      WRITE(*,112)' xObs',iElt
+	      WRITE(emsgRec,112)' xObs',iElt
+	      CALL emsg_put
 	    ELSE
-	      WRITE(*,111)' xObs',iElt
+	      WRITE(emsgRec,111)' xObs',iElt
+	      CALL emsg_put
 	      ELEM_OK=.FALSE.
 	    END IF
 	  END IF
@@ -1119,8 +1186,9 @@ C	  WRITE(*,112)'nObs',iElt
      &                1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
 	      Call SetCvxPolyObsBound(i,iElt)
 	    ELSE
-	      WRITE(*,*)' xObs missing for PolyObsVec/Poly3DObsVec',
+	      WRITE(emsgRec,*)' xObs missing for PolyObsVec/Poly3DObsVec',
      &                 ', iElt=',iElt,', iObs=',i
+	      CALL emsg_put
 	      ELEM_OK=.FALSE.
 	    END IF
 	    nPolyObsVtx3DPending(i,iElt) = 0
@@ -1150,11 +1218,13 @@ C	  WRITE(*,112)'nObs',iElt
      &                    GridFileBin(iElt))
 	    ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInitL
 	    IF (.NOT.ifGridInitL) THEN
-	      WRITE(*,*)' GridFile not loaded correctly, iELT=',iElt
+	      WRITE(emsgRec,*)' GridFile not loaded correctly, iELT=',iElt
+	      CALL emsg_put
 	    END IF
 	  ELSE
-	    WRITE(*,*)' GridFile= given but nGridMat= never set,',
+	    WRITE(emsgRec,*)' GridFile= given but nGridMat= never set,',
      &                ' iElt=',iElt
+	    CALL emsg_put
 	    ELEM_OK=.FALSE.
 	  END IF
 	  GridFilePending(iElt) = .FALSE.
@@ -1169,7 +1239,8 @@ C	  WRITE(*,112)'nObs',iElt
 	      TElt(I,I,iElt)=1.0D0
    13     CONTINUE
 	  TElt_FLG=.TRUE.
-	  WRITE(*,112)'TElt',iElt
+	  WRITE(emsgRec,112)'TElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF ((fElt(iElt) .EQ. 0.0) .AND. (eElt(iElt) .EQ. 0.0)) THEN
