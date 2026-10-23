@@ -13,3 +13,6 @@ ifx vs gfortran: 2 of 1468 decks differ
 ifx vs gfortran: 2 of 1468 decks differ
   /home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb/ctb_s2s_dcr.in  rms  1.843768563D-06  1.843768561D-06
   /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12
+ifx vs gfortran: 2 of 1468 decks differ
+  /home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb/ctb_s2s_dcr.in  rms  1.843768563D-06  1.843768561D-06
+  /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in  rms  2.795428840D-12  2.795442912D-12
