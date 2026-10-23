@@ -3791,3 +3791,8 @@ promote-on-land pass.**
 > + guards lifted; my pin work (gate-10 line, seven journals bounded, the five-figure exception recorded).  CCMac's PAIR 11 = 0c0c98c7 +
 > resources 0b39b0a (NOTE_to_ccmac_pair11.md: a Mac red from a lifted guard = a missing buffer site, TO's lane).  Engine lane idle;
 > next for TO when Dave says: bindings coverage (146 vs 136, defaults audit, CLI-without-api).**
+
+> **2026-10-23 (CC): CCMac's gate 11 CLEAN -- (ee) closed on arm64, all eight ex-guarded tests pass; the Mac line has no engine miss
+> and no Darwin guard left (one by-design skip).  PUSHED (Dave's word, 12th): the mmacos-manual plan (PLAN_MMACOS_MANUAL.md), the
+> IODC brief for CCMac (NOTE_to_ccmac_iodc.md), the gate-11 line.  No CCMac engine pair pending; his next task = the IODC review.
+> TO's next on Dave's word: bindings coverage.**
