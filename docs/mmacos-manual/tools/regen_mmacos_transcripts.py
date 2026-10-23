@@ -13,7 +13,8 @@ template's own outputs are never touched).  The driver speaks through four helpe
   mm_figure(NAME, png)   -> src/media/NAME.png
   mm_pin(NAME, value, rule, shown)
         -> a number the prose quotes: checked against tools/pins/<driver>.tsv (rule 'sig5' = five
-           significant figures on a signal, 'abs:<bound>' = a bound on a numerical zero -- the
+           significant figures on a signal, 'abs:<bound>' = a bound on a numerical zero,
+           'printed' = a number a template prints at its own precision, compared by the listing rule -- the
            cross-architecture rule, so the Mac gates the manual the way it gates the engine), and
            written to src/transcripts/pins.tsv, where tools/pins.lua puts SHOWN in place of
            %pin:NAME% in the prose at build time
@@ -27,7 +28,8 @@ the run's full output is kept in build/logs/<name>.log.  A driver with no pin fi
 pins (first run); --repin rewrites them (a deliberate re-pin, to be reviewed in the diff).
 
 Removed from what is printed (and only this): the home directory prints as `~`, the scratch
-directory as `<work>`.
+directory as `<work>`, the e2e thread's directory (build/thread, MMMAN_THREAD: the stages of the
+worked thread consume each other's products, so their drivers share it) as `<thread>`.
 
 Usage (from docs/mmacos-manual):
   python3 tools/regen_mmacos_transcripts.py [--repin] [driver names...]
@@ -116,7 +118,8 @@ def write_pins(path, pins):
 
 
 def clean(line, work):
-    return line.replace(work, "<work>").replace(HOME, "~")
+    return (line.replace(work, "<work>").replace(str(MAN / "build" / "thread"), "<thread>")
+            .replace(HOME, "~"))
 
 
 def run_driver(name, repin):
@@ -126,6 +129,11 @@ def run_driver(name, repin):
     env.setdefault("MMACOS_ROOT", str(Path.home() / "dev" / "MACOS_resources" / "mmacos"))
     env.setdefault("MACOS_HOME", str(Path.home() / "dev" / "macos" / "macos_f90"))
     env["MMMAN_WORK"] = work
+    # the e2e thread: each stage consumes the one before, so its drivers share one persistent
+    # directory (build/thread); the first stage's driver (ch01) copies the template there afresh
+    thread = MAN / "build" / "thread"
+    thread.mkdir(parents=True, exist_ok=True)
+    env["MMMAN_THREAD"] = str(thread)
     cmd = [env.get("MATLAB", "matlab"), "-batch",
            f"addpath('{LIB}'); cd('{work}'); run('{drv}');"]
     print(f"== {name}: running in {work}", flush=True)
@@ -164,6 +172,9 @@ def run_driver(name, repin):
         for k, (v, r, s) in got.items():
             if k not in pinned:
                 fails.append(f"{k}: new pin (run with --repin to record it)")
+            elif r == "printed":
+                if not numbers_agree(pinned[k][2], s):
+                    fails.append(f"{k}: printed {s} vs pinned {pinned[k][2]}")
             elif not holds(r, v, pinned[k][0]):
                 fails.append(f"{k}: {v} vs pinned {pinned[k][0]} ({r})")
         fails += [f"{k}: pinned but not produced" for k in pinned if k not in got]

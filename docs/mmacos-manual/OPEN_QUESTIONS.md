@@ -20,5 +20,27 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   72.14 m on the emitted deck.  Both are right for what they measure; the report's label could say
   "plate-scale EFL at the field point".
 
+- **ch. 2: `templates/30_instruments/coro_walkthrough` no longer shows a coronagraph** (Rx_Coro_FPM.in,
+  model 1024, run unchanged 2026-10-23).  The radial-contrast curve with the coronagraph is the no-mask
+  curve's ring structure scaled down uniformly (~5e-8 at 0 lambda/D, dark-zone mean 1.49e-09); the
+  FPM-plane panel is at the floor everywhere and the Lyot pupil is a filled disk, not the edge ring the
+  README describes.  That is the signature of a focal mask covering the whole computed field (leakage
+  ~1e-4 in amplitude), not of a dark hole.  Its figures are gitignored, so no committed picture shows
+  what it drew before -- a producer that rotted silently, or a scaled deck that never worked; not
+  diagnosed (no library change from this brief).  Chapter 2 uses `coro_planet_demo` (CoroExample, the
+  CLI journal's own recipe) instead.
+- **ch. 2: `coro_planet_demo`'s planet page no longer shows a planet** (defaults, model 512, run unchanged
+  2026-10-23).  Asked for a planet at sky-angle cosines [+2e-5 +2e-5], the engine puts the planet's
+  chief ray at x = -2.0e-5, y = +2.0e-5; "planet light, by itself" is a shifted, clipped speckle
+  field filling one corner of the composite, not a PSF (RMS spot 197x the star's; peak at the grid edge,
+  [-21 -43] px, centroid [+9.9 -9.9] px); the planet peak equals the star-residual peak to the digit
+  (2.13e+03), and the composite grid is 91x91 where the help text's default `npix` is 64.  The
+  surfaces page (pupil, FPM, Lyot edge ring, suppressed star) is sound and is what chapter 2 prints.
+  The demo was pushed working (memory: the planet-injection redo); not diagnosed.  The index's T3
+  coronagraph entry still names `coro_walkthrough` (above).
+- **ch. 2: ImageDemo.in declares no BaseUnits**, so the engine's metre conversions use CBM = 1 and
+  `first_order_properties().dpup_m` reads 380 (the deck's millimetres).  The camera template
+  (PLAN_MMACOS_MANUAL, the ImageDemo note) should declare `BaseUnits= mm`.
+
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
