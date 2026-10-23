@@ -6,11 +6,13 @@
 % itself).  The chapter prints the report's header and its [3] summary, not the per-poke table.
 %
 % Pinned as BOUNDS (agreement ratios at the noise of the comparison), one line each:
-%   ch06_x_w   < 1e-2   worst rigid-body w: set by a near-null column (segment clocking), not the model
 %   ch06_x_l   < 1e-5   worst rigid-body l: METcalc vs dldx, FD-noise class
 %   ch06_x_e   < 1e-6   worst rigid-body e: finite-rotation kinematics vs dedx
-%   ch06_z_w   < 1e-2   worst figure-mode w
-% A signal (printed): ch06_g_w, the grid channel's worst w -- the open engine question the report names.
+% SIGNALS (printed), the worst w of each channel: on the live chain they are ~1, not noise --
+% run_compare's engine truth takes the engine's OPD default ('chief', since 2026-10-10) while s4
+% harvested at 'mean' (PLAN_CONSOLIDATION 1.2 (kkk): Seg 1 Tz +100 nm, engine 'chief' 188.9 nm rms,
+% 'mean' 61.98, linear 61.98).  (A first version bounded x/z w at 1e-2 and the helpers printed the
+% bound unchecked; they fail closed since dbc2aea2.)
 
 root = getenv('MMACOS_ROOT');
 work = getenv('MMMAN_THREAD');
@@ -35,10 +37,12 @@ txt = [rep(1:k2) rep(k3+1:end)];               % the header, then the summary fr
 t = regexp(txt, '\n\s+x\s+\(\s*(\d+) pokes\): w (\S+) \(.*?\), l (\S+), e (\S+)\n', 'tokens', 'once');
 assert(~isempty(t), 'ch06a: no x summary row');
 mm_pin('ch06_x_pokes', str2double(t{1}), 'sig5', t{1});
-txt = mm_zero('ch06_x_w', txt, '\n\s+x\s+\(\s*\d+ pokes\): w (\S+) \(', 1e-2);
+t = regexp(txt, '\n\s+x\s+\(\s*\d+ pokes\): w (\S+) \(', 'tokens', 'once');
+mm_pin('ch06_x_w', str2double(t{1}), 'printed', t{1});
 txt = mm_zero('ch06_x_l', txt, '\n\s+x\s+\(\s*\d+ pokes\): w .*?\), l (\S+),', 1e-5);
 txt = mm_zero('ch06_x_e', txt, '\n\s+x\s+\(\s*\d+ pokes\): w .*?\), l .*?, e (\S+)\n', 1e-6);
-txt = mm_zero('ch06_z_w', txt, '\n\s+z\s+\(\s*\d+ pokes\): w (\S+) \(', 1e-2);
+t = regexp(txt, '\n\s+z\s+\(\s*\d+ pokes\): w (\S+) \(', 'tokens', 'once');
+mm_pin('ch06_z_w', str2double(t{1}), 'printed', t{1});
 t = regexp(txt, '\n\s+grid\s+\(\s*(\d+) pokes\): w (\S+) \((.*?)\)', 'tokens', 'once');
 mm_pin('ch06_g_pokes', str2double(t{1}), 'sig5', t{1});
 mm_pin('ch06_g_w', str2double(t{2}), 'printed', t{2});
