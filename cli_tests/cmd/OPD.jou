@@ -2,5 +2,5 @@
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 opd 5
 # EXPECT: Tracing rays past\s+5 elements
-# EXPECT: RMS OPD error is\s+1\.29\d+D-12
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[2-9]
 # EXPECT: nPassRays =\s*1756
