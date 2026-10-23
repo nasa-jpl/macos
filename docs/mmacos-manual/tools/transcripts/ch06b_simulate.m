@@ -34,6 +34,6 @@ for s = ["A" "B"]
         assert(~isempty(r), 'ch06b: no t=%d row in s7%s', tt, s);
         mm_pin(sprintf('ch06_%s_corr_%d', lower(s), tt), str2double(r{1}), 'printed', r{1});
     end
-    mm_figure("ch06_sim" + s + "_t390", fullfile(work, "s7" + s + "_sim_frames", "t039.png"));
-    mm_figure("ch06_sim" + s + "_t500", fullfile(work, "s7" + s + "_sim_frames", "t050.png"));
+    fr = struct('A', ["t039" "t390"], 'B', ["t050" "t500"]);   % [frame file, name]: A before the recontrol, B at the end
+    mm_figure("ch06_sim" + s + "_" + fr.(s)(2), fullfile(work, "s7" + s + "_sim_frames", fr.(s)(1) + ".png"));
 end
