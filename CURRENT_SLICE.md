@@ -3782,3 +3782,7 @@ promote-on-land pass.**
 > **2026-10-22 PUSHED (Dave's word, 10th: 'when (aaa) lands, push'): macos b7556b81 (31 commits: TO's round 1 + rulings dd/zz/f/aaa + dead
 > files; CC's exclusions, runbook, strip tool, records, briefs), resources d436b9c.  CCMac's PAIR 10 = b7556b81 + d436b9c
 > (NOTE_to_ccmac_pair10.md, pushed after).  Engine lane idle; next cleanup rounds listed above ((ee) message buffer first).**
+
+> **2026-10-23 (CC): CCMac's gate 10 CLEAN (one near-zero re-pin, COAT_legacy.jou widened, mine).  TO's round 2 (ee) message buffer
+> LOCAL in his lane (492998db .. fc1c7789; resources 0b39b0a); CCMac's gate-10 record 06bee43d local on the Mac.  AWAITING Dave: push
+> word for all of it; then CCMac's pair 11 = the pushed tips (TO's rule: a Mac red = a missing buffer site, not a test to re-guard).**
