@@ -3807,3 +3807,8 @@ promote-on-land pass.**
 > **2026-10-23 STANDING WORD (Dave, leaving for 2.5 days): 'OK to push as needed' -- CC pushes GATED work (TO's rounds after their
 > clean-worktree gates, CCMac's records, plan/brief files) without a per-push word until Dave returns; the rules otherwise unchanged
 > (gates before pushes, explicit paths, no rebase, name CCMac's pair after each engine change).  CC supervises TO.**
+
+> **2026-10-23 (CC, under the standing word): PUSHED macos 668542ec -> 60b9e513 (TO's bindings round 08b92085 + records + plan line;
+> the pair-12 note; the manual brief/plan name e2e correctly = 4 m f/18 folded Korsch), resources 446bd45.  CCMac's PAIR 12 =
+> 08b92085 + 446bd45.  TO on the mmacos manual chapter 1 driver.  LESSON: one shared local branch -- check `git log origin..HEAD`
+> by author before every push.**
