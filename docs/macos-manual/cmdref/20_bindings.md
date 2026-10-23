@@ -1602,6 +1602,16 @@ Vectorise a 2D OPD matrix preserving non-zero index map. [vec, indx] = macos.m2v
 <!-- BEGIN NOTES fn-m2v -->
 <!-- END NOTES fn-m2v -->
 
+#### messages
+
+- **mmacos:** `lines = macos.messages(clear)`
+- **pymacos:** `pymacos.messages(clear)`
+
+The engine's messages since the last read. lines = macos.messages() returns the engine's kept messages as an n×1 string array, oldest first, trailing blanks trimmed, and empties the buffer.  macos.messages(false) reads without emptying it.  The load path's notes, warnings and refusals, CALIB's cause lines and the SMACOS loop's
+
+<!-- BEGIN NOTES fn-messages -->
+<!-- END NOTES fn-messages -->
+
 #### met
 
 - **mmacos:** `out = macos.met(unit)`
