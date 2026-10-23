@@ -4,6 +4,10 @@
 #   read -1.0 too).  DOPD now reports 0 and says why.  Legs: OPD, ZABERR (no save), OPD, DOPD = the brief's
 #   sequence; then a perturbed OPD so the difference is real (2.454e-11, the ZABERR_ZRM_DOPD value).  Red on the
 #   pre-fix binary (-1.0).
+# PIN POLICY (CC 2026-10-23, TO's question): the 3.5664D-11 after the tilt is a RESPONSE (28x the 1.29D-12
+#   baseline, which is bounded), so it is pinned to five figures under rule 2 as a deliberate exception to the
+#   1e-9 magnitude threshold of rule 1; arm64 shares the five figures (CCMac gate 10).  If arm64 ever moves it,
+#   that is a cross-architecture trace difference at 1e-5 relative, worth a finding -- do not widen blindly.
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 none
 opd 5
