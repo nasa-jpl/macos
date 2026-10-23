@@ -16,20 +16,22 @@ Part II is written -- a catalog of dead functions is worse than none.
 | Ch. | The reader asks for | What runs (exists today) |
 |---|---|---|
 | 1 Telescope | a telescope from a spec (aperture, field, f-number, obscured or not); the .in file emitted; first-order properties; the pupil found | design layer `Telescope`; `e2e/s1_telescope.m`; the `10_telescopes` family as the answers; `view_rx` |
-| 2 Instruments and benches | an IMAGER, a SPECTROGRAPH or a CORONAGRAPH behind the telescope, added with `Bench` (the station/standoff rules, folds, relays, the exit-pupil Return); a BENCH on its own (the DM gauges) -- one chapter, the same machinery | `e2e/s2_instrument.m`; `Bench`, `add_fold`, `add_pupil`; `tma_longslit` + `dyson5` (spectrograph), `tma_3plus1` / `coro_walkthrough` / `e2e6m` (coronagraph), `offset_imager` / ImageDemo (imager); `40_benches` |
+| 2 Instruments and benches | an OBSERVATORY-CLASS telescope (the TMA of ch. 1) feeding SEVERAL instruments -- an imager, a spectrograph, a coronagraph -- each added with `Bench` at the telescope's focal surface or relayed pupil (the station/standoff rules, folds, relays, the exit-pupil Return); a BENCH on its own (the DM gauges) -- one chapter, the same machinery | `e2e/s2_instrument.m`; `Bench`, `add_fold`, `add_pupil`; `tma_longslit` + `dyson5` (spectrograph), `tma_3plus1` / `coro_walkthrough` / `e2e6m` (coronagraph), `offset_imager` (imager); `40_benches` |
 | 3 Segmentation | hex or pie, gaps, edge sensors; SegMirMaker | `s3_segmentation.m`; `e5_pie`, `e5_seg`; `run_segmentation.m` |
 | 4 Sensitivities | dw/dx, dw/dz, dw/dgrid, dw/dsurf, multi-field; the OPD conventions | `s4_jacobians.m`; `50_sensitivities`; `doc/SENSITIVITY_TOOLS.md`, `doc/opd_conventions.md` |
 | 5 Metrology | laser MET and the truss; the dmet/dx layout optimizer | `s5_met.m`; `run_met.m` |
 | 6 Open and closed loop | the time series, the controller, the two-pass rule; compare | `s6_compare.m`, `s7_simulate.m`; `run_simulator.m`, `run_compare.m` |
 | 7 Error budget | the coefficients, the WFC and metrology stages, the workbook handed to systems engineering | `run_budget.m`; `50_sensitivities/e5hex1_budget` (the .xlsx) |
 
-**NOTE for chapter 2 (Dave 2026-10-23): study `ImageDemo.in` WITHOUT its aberrations as the basis of a design
-family and template** -- the Mars Observer camera: a Cassegrain telescope, a refractive field-corrector relay,
-the exit-pupil Return and the image plane.  It is the archetype of "telescope + instrument", the PLAN_CONSOLIDATION
-section 4 item 6 camera template, and the natural Bench example for an imager: build the telescope (ch. 1), add the
-relay as a Bench instrument (ch. 2), and compare the emitted .in against the manual's deck.  Before it becomes a
-template: strip the Zernike terms (the 2026-10-19 rejoined line showed how sensitive the deck is to them), check the
-relay's glasses and apertures, and fit its first-order properties (the manual's Section 6 numbers) to the design.
+**NOTE (Dave 2026-10-23): study `ImageDemo.in` WITHOUT its aberrations as the basis of a design family and
+template -- the SMALL DEDICATED IMAGER.**  The Mars Observer Camera is a compact, undersampled, single-purpose
+camera: a Cassegrain with a refractive field-corrector relay, the exit-pupil Return and one image plane.  It is NOT
+an observatory-class front end feeding several instruments (that is chapter 2's thread, on the TMA), so it is its
+own family: the camera template of PLAN_CONSOLIDATION section 4 item 6, a Part II page beside the telescopes, and
+chapter 2's counter-example -- what a dedicated imager looks like when the telescope and the instrument are one
+design.  Before it becomes a template: strip the Zernike terms (the 2026-10-19 rejoined line showed how sensitive
+the deck is to them), check the relay's glasses and apertures, fit its first-order properties (the manual's Section
+6 numbers) and its sampling (undersampled by design -- say by how much) to the design.
 
 ## Part II -- the template catalog (what we have done)
 One page per DESIGN template (35, in the index's order): what it is, the knobs, the figure, the number it
