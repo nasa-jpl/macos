@@ -29,3 +29,16 @@ ch03_hex2_src	9876
 ch03_hex2_clip	0
 ch03_reload_nelt	17
 ch03_reload_pass	11950
+ch04_dwdx_cond	> 1e+06
+ch04_dwdx_svmin	< 5e-05
+ch04_dwdx_segcond	> 1e+06
+ch04_seg1_rz	< 5e-05
+ch04_dwdx_deficit	< 5
+ch04_rows	59750
+ch04_dwdx_cols	90
+ch04_dwdz_cols	56
+ch04_dwdz_rank	56
+ch04_dwdz_cond	5.368e+00
+ch04_dwdgrid_cols	42
+ch04_dwdgrid_rank	42
+ch04_dwdgrid_cond	1.398e+00
