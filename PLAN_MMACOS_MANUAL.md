@@ -35,6 +35,25 @@ the deck is to them), check the relay's glasses and apertures, fit its first-ord
 6 numbers) and its sampling (undersampled by design -- say by how much) to the design.
 
 ## Part II -- the template catalog (what we have done)
+
+**The design / tool split (CC's census of 2026-10-21, written down 2026-10-23 at TO's request; the index carries
+no label).**  53 directories = 35 DESIGN + 17 TOOL + 1 planning.  README = has its own README.md today (30 of 53).
+
+| Kind | Directories (README'd in **bold**) |
+|---|---|
+| design, 10_telescopes (15) | **freeform_unobscured**, **offset_imager**, rc_offaxis, rc_onaxis, rc_unobscured, sz_tma, tma_3plus1, **tma_centered**, tma_freeform, **tma_longslit**, tma_offaxis, **tma_onaxis**, **tma_unobscured**, tma_widefield, wf2_freeform |
+| design, 20_segmentation (2) | **e5_pie**, **e5_seg** |
+| design, 30_instruments (3) | **bench_ctb**, coro_planet_demo, **coro_walkthrough** |
+| design, 40_benches (8) | bench_ifo, bench_ifo_dm, bench_layout, **cophi_dm96**, **pdi_dm96**, **tg_psi_dm96**, **tg_psi_dm96_oap**, **zwfs_dm96** |
+| design, 80_end_to_end (4) | **e2e**, **e2e2**, **e2e6m**, e2e6m_r2 |
+| design, 90_polarization (3) | bench_ifo_pol, **tg_psi_dm**, **tg_psi_dm_v2** |
+| tool (17) | **design_layer_api**, **pupil_id** (10_telescopes: API examples and the pupil-as-surface method); grid_surface (20); **coro_experiments** (30); **dm_gauge_lib** (40); all eleven of 50_sensitivities (**e5hex1_budget**, **e5hex2_refzern**, **gen_segment_gridmat**, **zoom_5x5** README'd; e5hex1, run_dwdgrid_multi x3, run_dwdsurf_multi, run_dwdx_multi, run_dwdz_multi not); **view_rx_demo** (60) |
+| planning (1) | **vsg_wip** (not runnable) |
+
+So 20 design templates have a README and 15 do not; 10 tools have one and 7 do not.  Part II pages: the 35 designs
+(README'd first, batch by family); the 17 tools as an appendix table; vsg_wip a line.  design_layer_api and pupil_id
+are the T1 thread's entry points and get a page each in the tools appendix, not in the design catalog.
+
 One page per DESIGN template (35, in the index's order): what it is, the knobs, the figure, the number it
 reproduces, and the prompt that makes an assistant adapt it.  The five CHALLENGES get a chapter each, the scoring
 convention stated before the number (challenges/README.md's rule).  The 17 tool templates: an appendix table.
