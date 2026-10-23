@@ -7,7 +7,7 @@ Of the 128 engine commands, 128 are issued by at least one journal of the CLI re
 
 ## Appendix — binding coverage of the engine commands
 
-Each Part I entry's *Binding:* line says how mmacos / pymacos reach it: **SMACOS command** (an api routine issues it through SMACOS, detected in `macos_api_mod.F90`), **direct setter** (an api routine under another name), **CLI-only** (session, shell, plot style, file modes), **CLI-only, legacy** (the internal linear model and the differential commands, superseded by the `dw_dx` route — Dave 2026-10-10) or **missing**.  Generated with the binding generator (`MACOS_resources/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  Counts: SMACOS command 30, direct setter 17, CLI-only 29, CLI-only, legacy 14, missing 38.
+Each Part I entry's *Binding:* line says how mmacos / pymacos reach it: **SMACOS command** (an api routine issues it through SMACOS, detected in `macos_api_mod.F90`), **direct setter** (an api routine under another name), **CLI-only** (session, shell, plot style, file modes), **CLI-only, legacy** (the internal linear model and the differential commands, superseded by the `dw_dx` route — Dave 2026-10-10) or **missing**.  Generated with the binding generator (`MACOS_resources/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  Counts: SMACOS command 31, direct setter 17, CLI-only 29, CLI-only, legacy 14, missing 37.
 
 The **missing** commands, by the group that will carry them (PLAN_CONSOLIDATION 1.4b: single-ray tracing first, the Zernike / analysis set second, the image-plane set third):
 
@@ -23,7 +23,6 @@ The **missing** commands, by the group that will carry them (PLAN_CONSOLIDATION 
 - STOP's sibling (center the beam in the stop); no verified api twin: CENter
 - no api setter; read by `modes_get` (a session mode -- NOT the linear model, whatever its L): LNEg/NOLNeg
 - a per-element resampling flag: REGrid/NOREGrid
-- single-ray tracing (B.2, first): SINt
 - builder: UDSinit
 - line of sight (the harvests' `compute_los` reads it from spots): LOS
 - plot pixel-array location: PLOcate
