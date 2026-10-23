@@ -1,4 +1,4 @@
-record  corpus_gfortran_492998db.csv  (1468 decks)
+record  corpus_gfortran_08b92085.csv  (1468 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
@@ -7,5 +7,5 @@ record  corpus_gfortran_492998db.csv  (1468 decks)
   settle    differ 85  n/a 7  same 1325  ulp 50   (s1 vs s2; roundtrip is s2 vs s3)
   NaN OPD   1: dyson5_t3_t600_off10_s3.in
   load_fail     pre-existing /home/dcr/dev/macos/ZGD_test_files/tst_nzern_conic.in
-  vs corpus_gfortran_623898d4.csv: 0 decks with a changed OPD/nPass/lost
+  vs corpus_gfortran_492998db.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
