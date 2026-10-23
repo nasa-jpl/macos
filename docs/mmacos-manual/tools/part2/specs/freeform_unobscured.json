@@ -9,7 +9,29 @@
  "figure": "freeform_unobscured_wfe.png",
  "run": {
   "from": "\\n\\[1\\]",
-  "to": ""
+  "to": "\\n\\[6\\] design report:"
  },
- "pins": []
+ "pins": [
+  {
+   "name": "s0",
+   "pattern": "S0 center\\s+: \\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s2worst",
+   "pattern": "S2 full 2-D \\+-1': worst (\\S+),",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s2area",
+   "pattern": "area-wtd (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "RMS wavefront error over the \u00b11' field after the full-field stage (`freeform_unobscured_wfe.png`), waves at 500 nm.",
+ "number": "The center stage takes the all-sphere layout to %pin:p2_freeform_unobscured_s0% waves at the field center; the full-field stage trades that for the field, ending at %pin:p2_freeform_unobscured_s2worst% waves worst and %pin:p2_freeform_unobscured_s2area% area-weighted over \u00b11': a small corrected field on three mirrors, which is why the README sends a wide field to a fourth powered mirror.",
+ "prompt": "Using templates/10_telescopes/freeform_unobscured, rerun the staged Zernike correction for a 6 m aperture at 600 nm over a \u00b10.5' field, and tell me the worst and area-weighted residual after the full-field stage."
 }
