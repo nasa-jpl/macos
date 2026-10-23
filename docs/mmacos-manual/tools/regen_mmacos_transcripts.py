@@ -187,6 +187,13 @@ def run_driver(name, repin):
         if fails:
             print("   FAILED pins; nothing written:\n     " + "\n     ".join(fails), flush=True)
             return False
+    # a bound is checked on EVERY run, the recording one too: a bound printed unchecked is a gate
+    # that passes everything (2026-10-23: ch06a printed 'w < 0.01' for a measured 0.945)
+    broken = [f"{k}: {v} breaks its own rule {r}" for k, (v, r, s) in got.items()
+              if (r.startswith("abs:") or r.startswith("min:")) and not holds(r, v, None)]
+    if broken:
+        print("   FAILED: a bound does not hold; nothing written:\n     " + "\n     ".join(broken), flush=True)
+        return False
     if not pinned or repin:
         PINS.mkdir(exist_ok=True)
         write_pins(pinfile, got)

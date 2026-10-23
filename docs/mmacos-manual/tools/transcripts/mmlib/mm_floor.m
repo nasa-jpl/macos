@@ -6,6 +6,10 @@ function txt = mm_floor(name, txt, pattern, bound)
 txt = char(txt);
 [tok, ext] = regexp(txt, pattern, 'tokens', 'tokenExtents');
 if isempty(tok), error('mm_floor:nomatch', '%s: no match for %s', name, pattern); end
+v = str2double(tok{1}{1});
+if ~(v > bound)                              % a bound that does not hold must not print (fail closed)
+    error('mm_floor:bound', '%s: %s is not above the bound %g', name, tok{1}{1}, bound);
+end
 shown = sprintf('> %g', bound);
 mm_pin(name, str2double(tok{1}{1}), sprintf('min:%g', bound), shown);
 for k = numel(ext):-1:1                      % last first, so earlier extents stay valid
