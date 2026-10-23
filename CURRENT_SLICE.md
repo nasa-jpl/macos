@@ -3803,3 +3803,7 @@ promote-on-land pass.**
 > TO's bindings round is in flight on Dave's direct word (LOCAL, uncommitted; SINT findings; defaults rulings for Dave: elt_csys
 > update flag, perturb frame).  CCMac: IODC record babb2c01 local on the Mac, no engine pair pending.  Push: only on Dave's word.
 > NEXT SESSION: read this tail, then PLAN_MMACOS_MANUAL and the two briefs; Dave picks the IODC year and rules the two defaults.**
+
+> **2026-10-23 STANDING WORD (Dave, leaving for 2.5 days): 'OK to push as needed' -- CC pushes GATED work (TO's rounds after their
+> clean-worktree gates, CCMac's records, plan/brief files) without a per-push word until Dave returns; the rules otherwise unchanged
+> (gates before pushes, explicit paths, no rebase, name CCMac's pair after each engine change).  CC supervises TO.**
