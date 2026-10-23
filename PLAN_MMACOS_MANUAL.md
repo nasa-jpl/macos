@@ -70,6 +70,11 @@ deck figures unmodified; the pin policy).
   | 2021 "the down under lens" (winner Damien Gawron, 198.4 mm, 90 deg, 17857) | 12078 | 1207820 | 10.1117/12.2605550 |
   | 2023 "the Yin-Yang lens" (N-BK7 + N-SF6; winner Arnaud Davenel) | 12798 | 1279837 | 10.1117/12.3012062 |
   Correction to the earlier abstract reading: the "81.3 mm / 43.5 deg" winner belongs to 2010, not 2014.
+  **Papers read 2026-10-23 (`~/dev/MACOS_sandbox/IODC/`): the verified statements and the build are
+  `BRIEF_to_iodc_challenge.md`.  The full texts change the order: 2010 green lens FIRST (its wavefront convention is
+  MACOS's native chief-ray reference; one radius + a sign search; distortion <= 5 %), 2014 second (tilt-removed RMS,
+  the blank-packing scorer, an intermediate-image winner), 2023 the stress test.  No prescriptions are printed in any
+  paper: comparison is against the merit tables.**
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
