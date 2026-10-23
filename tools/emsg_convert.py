@@ -123,7 +123,8 @@ def stars_in(rng, deny=()):
 total = 0
 total += convert('msmacosio.inc', lambda ln, l, L: True, 'all')
 total += convert('elt_mod.F', lambda ln, l, L: True, 'all: the parse helpers')
-total += convert('iosub.inc', in_ranges(routine_range('iosub.inc', r'^\s+SUBROUTINE ChkDf2\b', r'END SUBROUTINE ChkDf2')), 'ChkDf2')
+total += convert('iosub.inc', in_ranges(routine_range('iosub.inc', r'^\s+SUBROUTINE ChkDf2\b', r'END SUBROUTINE ChkDf2'),
+                                         routine_range('iosub.inc', r'^\s+SUBROUTINE SetIntSrf\b', r'END SUBROUTINE SetIntSrf')), 'ChkDf2 + SetIntSrf')
 total += convert('surfsub.F', in_ranges(routine_range('surfsub.F', r'^\s+SUBROUTINE GridInit\b', r'end subroutine gridinit')), 'GridInit')
 mb = routine_range('smacosio.F', r'^\s+SUBROUTINE MBFile6\b', r'END SUBROUTINE MBFile6')
 pl = routine_range('smacosio.F', r'^\s+SUBROUTINE PARSE_LOH\(', r'END SUBROUTINE PARSE_LOH')

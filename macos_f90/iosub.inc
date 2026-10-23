@@ -2901,7 +2901,7 @@ C	and (if iComputeDZ=0) the x and y slopes at that point.
 	CHARACTER*8 CInteger
 	CHARACTER(len=MacosCharLen) :: newFilNam
 	!CHARACTER*132 newFilNam
-	LOGICAL exist,ifIntSrfSet(mElt),ifBin,LCMP
+	LOGICAL exist,ifIntSrfSet(mElt),ifBin,LCMP,ifAlt
 	INTEGER i,j,iElt,iSrf,iIntSrf,L,nDatPts,iDP,jDP,ICLEN,IERROR,
      &	        IDNDP(31),iComputeDZ,nRead,IMODE
 	REAL*8 xIDES,yIDES,wVec(6,3,30),dDatPts,SURFACE(mDP,5)
@@ -2912,6 +2912,9 @@ C  Formats
  101	FORMAT(2x,5D23.15)
  102	FORMAT(' Interpolated surface data not correctly set for ',
      &	'element',i4)
+ 103	FORMAT(' ** Interpolated surface data, element',i4,': ',A,
+     &	' declares ',I0,' points, ',I0,' read; the points read',
+     &	' are used')
 
 C  Loop through each element to find interpolated surfaces
 
@@ -2928,6 +2931,7 @@ C  Obtain file name for surface data
 	    newFilNam=filnam
 	    j=ICLEN(newFilNam)
 	    SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
+	    ifAlt=.FALSE.
   1	    CONTINUE
 	      INQUIRE (FILE=SrfFil,EXIST=exist)
 	      IF (.NOT.exist) THEN
@@ -2935,13 +2939,38 @@ C  Obtain file name for surface data
 	        SrfFil=SrfFil(1:(L-4))//'.txt'
 	        INQUIRE (FILE=SrfFil,EXIST=exist)
 	        IF (.NOT.exist) THEN
-	          WRITE(*,*)'File '//SrfFil(1:L)//' does not exist.'
+	          WRITE(emsgRec,*)'File '//SrfFil(1:L)//' does not exist.'
+	          CALL emsg_put
+!-->  SINT (PLAN 1.4b): the CLI's filnam keeps the deck's '.in', the
+!     bindings' (SMACOS) does not, so each front end looked for its own
+!     spelling only; now the other spelling is tried second
+	          IF (.NOT.ifAlt) THEN
+	            ifAlt=.TRUE.
+	            L=ICLEN(filnam)
+	            newFilNam=filnam(1:L)//'.in'
+	            IF (L.GT.3) THEN
+	              IF (filnam(L-2:L).EQ.'.in'.OR.filnam(L-2:L).EQ.'.IN')
+     &	              newFilNam=filnam(1:L-3)
+	            END IF
+	            j=ICLEN(newFilNam)
+	            SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
+	            GO TO 1
+	          END IF
+!<--
+#ifdef SMACOS_IO
+!-->  SINT (PLAN 1.4b): no prompt under SMACOS (the bindings) -- an
+!     empty SMACOS stack re-parses the command line, so the answer
+!     read back was 'SINT', never QUIT, and the loop never ended
+	          GO TO 2
+!<--
+#else
 	          CALL CACCEPT(newFilNam,'QUIT',
      &	          'Enter new .srf-file root name or QUIT to exit:')
 	          IF (LCMP(newFilNam,'QUIT',4)) GO TO 2
 	          j=ICLEN(newFilNam)
 	          SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
 	          GO TO 1
+#endif
 	        ELSE
 	          ifBin=.FALSE.
 	        END IF
@@ -2963,17 +2992,22 @@ C  Read surface datafile
 	        nRead=5
 	      END IF
 	      IF (nDatPts.GT.mDP) THEN
-	        WRITE(*,*)' Too many data points.'
+	        WRITE(emsgRec,*)' Too many data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      IF (nDatPts.LT.3) THEN
-	        WRITE(*,*)' Too few data points.'
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      jDP=0
 	      DO iDP=1,nDatPts
-	        jDP=jDP+1
+!-->  SINT (PLAN 1.4b): count the rows READ -- the increment ran before
+!     the READ, so a file shorter than its header kept one unread row
 	        READ(43,ERR=2,END=4)(SURFACE(iDP,i),i=1,nRead)
+	        jDP=jDP+1
+!<--
 	      END DO
 	    ELSE
 	      OPEN (43,FILE=SrfFil,STATUS='OLD',FORM='FORMATTED')
@@ -2987,17 +3021,22 @@ C  Read surface datafile
 	        nRead=5
 	      END IF
 	      IF (nDatPts.GT.mDP) THEN
-	        WRITE(*,*)' Too many data points.'
+	        WRITE(emsgRec,*)' Too many data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      IF (nDatPts.LT.3) THEN
-	        WRITE(*,*)' Too few data points.'
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      jDP=0
 	      DO iDP=1,nDatPts
-	        jDP=jDP+1
+!-->  SINT (PLAN 1.4b): count the rows READ -- the increment ran before
+!     the READ, so a file shorter than its header kept one unread row
 	        READ(43,*,ERR=2,END=4)(SURFACE(iDP,i),i=1,nRead)
+	        jDP=jDP+1
+!<--
   	      END DO
 	    END IF
 
@@ -3005,6 +3044,18 @@ C  Here if data successfully read
 
   4	    CONTINUE
 	    CLOSE(43)
+!-->  SINT (PLAN 1.4b): a file shorter than its header warns (it was
+!     silent and traced an unread row); fewer than 3 read is too few
+	    IF (jDP.LT.nDatPts) THEN
+	      WRITE(emsgRec,103)iElt,TRIM(SrfFil),nDatPts,jDP
+	      CALL emsg_put
+	      IF (jDP.LT.3) THEN
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
+	        GO TO 2
+	      END IF
+	    END IF
+!<--
 	    iIntSrf=iIntSrf+1
 	    nDP(iIntSrf)=jDP
 	    iEltToIntSrf(iElt)=iIntSrf
@@ -3041,7 +3092,8 @@ C  Here if data not correctly set
 
   2	    CONTINUE
 	    CLOSE(43)
-	    WRITE(*,102)iElt
+	    WRITE(emsgRec,102)iElt
+	    CALL emsg_put
 	    iEltToIntSrf(iElt)=0
 	    ifIntSrfSet(iElt)=.FALSE.
 	  END IF
