@@ -11,6 +11,9 @@
 %
 % Pinned as BOUNDS (numerical zeros), one line each:
 %   ch05_dldx_rel  < 1e-5   dldx engine-FD vs analytic, max relative difference (agreement = FD noise)
+%   ch05_tilt_prior < 1e-12 the prior's tilt share, nm: zero, because the s4 channels are harvested
+%                           with focal-plane tracking (global tilt is out at the source)
+%   ch05_h_svmin   < 1e-15  sv(H*sqrt(X))'s smallest: a numerical null (the cond+ beside it is cut, a signal)
 % Everything else is a signal (sig5 or printed).
 
 root = getenv('MMACOS_ROOT');
@@ -40,6 +43,8 @@ work = getenv('MMMAN_THREAD');
 
 rep = fileread(fullfile(work, 's5_report.txt'));
 rep = mm_zero('ch05_dldx_rel', rep, 'engine-FD vs analytic: (\S+) max rel', 1e-5);
+rep = mm_zero('ch05_tilt_prior', rep, 'prior split: (\S+) nm tilt', 1e-12);
+rep = mm_zero('ch05_h_svmin', rep, 'sv\(H\*sqrt\(X\)\) \S+ \.\. (\S+) \(cond', 1e-15);
 mm_transcript('ch05_report', strtrim(rep));
 
 for f = ["met_layout" "metopt_layout" "met_metric" "met_view_rx"]
