@@ -5,6 +5,15 @@
 % local Zernike figure modes), dwdgrid (per-segment grid influence functions).  Emits the stage's
 % sensitivity report, the figures, and the numbers the prose quotes, parsed from the report's
 % conditioning table (so they are the numbers the reader sees).  Model size 512: a MATLAB of its own.
+%
+% Pinned as BOUNDS, not values (dw_dx's finite-difference floor: ~1e-6 abs, up to 3e-5 on ~0
+% entries, tests/tDwDx.m; arm64 flips the sign of such entries), one line each:
+%   ch04_dwdx_svmin   < 5e-5  dwdx's smallest kept singular value sits at the floor
+%   ch04_seg1_rz      < 5e-5  center-segment clocking moves (almost) nothing: a ~0 column
+%   ch04_dwdx_cond    > 1e6   sv_max over a floor-level sv_min: only its order is physical
+%   ch04_dwdx_segcond > 1e6   the same for the 42 segment columns (segment clocking is in them)
+%   ch04_dwdx_deficit < 5     the rank cut sits between the floor and two exact nulls (the fold's Rx/Ty)
+% Everything else (sizes, dwdz/dwdgrid rank and condition) is a signal: sig5 or printed.
 
 root = getenv('MMACOS_ROOT');
 work = getenv('MMMAN_THREAD');
