@@ -54,11 +54,3 @@
         'nfield_svd', 5, ...        % NxN dense field grid for the SVD solve
         ...                         % stages + final scoring (CALIB caps at 12)
         'max_iters_ff', 150);       % joint freeform field-solve iterations
-
-    % ================= stage 3: segmentation ============================
-    % TWO variants, both kept as artifacts (Dave 2026-07-18): "pie" =
-    % 1-ring PIE (7 segments: center HEXAGON + 6 chorded wedges) and
-    % "hex2" = 2-ring HEX (19 hexagonal segments).  Segment size is NOT a
-    % knob: SegMirMaker defaults it to Aperture/(2*rings+1), so the tiling
-    % scales with P.D_m automatically (4 m here = half the e5 fixtures;
-    % the gap halves with it, 50 -> 25 mm).

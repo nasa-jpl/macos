@@ -41,6 +41,14 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
 - **ch. 2: ImageDemo.in declares no BaseUnits**, so the engine's metre conversions use CBM = 1 and
   `first_order_properties().dpup_m` reads 380 (the deck's millimetres).  The camera template
   (PLAN_MMACOS_MANUAL, the ImageDemo note) should declare `BaseUnits= mm`.
+- **ch. 3: the live pie clips 0 gap rays; the committed template run clipped 376.**  Live (s3 unchanged,
+  on the live s2): 12128 source rays, 11950 pass bare and 11950 with apertures, first-fail element 1
+  (the center segment's hole); committed `e2e_pie_seg_report.txt`: 12520 source rays, 12474 bare,
+  12098 with apertures (376 clip), first-fail element 18.  The live footprint figure shows the gaps
+  empty and every footprint inside its polygon, so the zero is no ray reaching a gap, not a missing
+  aperture; why the source grid changed (12520 -> 12128; the parent 1305 -> 1185 rays) is not
+  diagnosed -- the stale stage-1 outputs (above; the hole 0.095 -> 0.232 m) are the first suspect.
+  Stages 4-7's committed products were built on the 376-clip deck.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.

@@ -17,3 +17,15 @@ ch02_bench_nelt	13
 ch02_imagedemo_nelt	13
 ch02_imagedemo_fno	f/9.22
 ch02_imagedemo_obsc	0.00
+ch03_pie_nseg	7
+ch03_pie_width	1.33 m
+ch03_pie_pass	11950
+ch03_pie_src	12128
+ch03_pie_clip	0
+ch03_hex2_nseg	19
+ch03_hex2_width	0.8 m
+ch03_hex2_pass	9698
+ch03_hex2_src	9876
+ch03_hex2_clip	0
+ch03_reload_nelt	17
+ch03_reload_pass	11950

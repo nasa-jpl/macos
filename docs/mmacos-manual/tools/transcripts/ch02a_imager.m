@@ -12,8 +12,9 @@ copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 's2_instrument.m'),
 addpath(fullfile(root, 'src'));  addpath(fullfile(root, 'design', 'src'));
 
 pl = splitlines(string(fileread(fullfile(work, 'e2e_params.m'))));
-k0 = find(startsWith(pl, "P.inst"), 1);  k1 = find(startsWith(pl, "P.seg"), 1);
-mm_listing('ch02_inst_params', fullfile(work, 'e2e_params.m'), [k0 k1-1]);
+k0 = find(startsWith(pl, "P.inst"), 1);                % the block, through its closing ');'
+k1 = k0 - 1 + find(endsWith(strtrim(regexprep(pl(k0:end), '%.*', '')), ");"), 1);
+mm_listing('ch02_inst_params', fullfile(work, 'e2e_params.m'), [k0 k1]);
 
 t0 = tic;
 run(fullfile(work, 's2_instrument.m'));
