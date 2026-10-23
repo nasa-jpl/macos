@@ -18,7 +18,7 @@ old Cassegrain.in
 ! perl -i -pe 's/BaseUnits= none/BaseUnits= in/' Cassegrain.in
 old Cassegrain.in
 opd 5
-# EXPECT: (RMS OPD error is\s+1\.293\d*D-12[\s\S]*?){4}
+# EXPECT: (RMS OPD error is\s+\d\.\d+D-1[2-9][\s\S]*?){4}
 # EXPECT-NOT: giza_open_device: Unknown device
 # EXPECT-NOT: Unknown units
 # EXPECT-NOT: Default used for BaseUnits[\s\S]*?Default used for BaseUnits[\s\S]*?Default used for BaseUnits

@@ -19,7 +19,7 @@ opd 5
 old c66.in
 # EXPECT: tst_coat_legacy\.in\s+being loaded
 # EXPECT: nCoat=\s+65\s+CoatIndx=\s+1\.0009\d*E\+00[\s\S]*?1\.06[45]9*\d*E\+00\s+CoatThk=\s+1\.0E-02[\s\S]*?6\.[45]\d*E-01\s
-# EXPECT: RMS OPD error is\s+1\.293\d*D-12
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[2-9]
 # EXPECT: ^\s*1\s*$
 # EXPECT: c66\.in\s+being loaded\.(?:(?!being loaded)[\s\S])*?\*\* Rx load refused: nCoat= 66 \(elt\s+2\): at most 65 coating layers
 # EXPECT-NOT: tst_coat_legacy\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Rx load refused

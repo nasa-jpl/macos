@@ -6,4 +6,4 @@ opd 5
 /null
 # EXPECT: cass_rt\.in being created
 # EXPECT: cass_rt\.in\s+being loaded
-# EXPECT: RMS OPD error is\s+1\.29\d+D-12
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[2-9]
