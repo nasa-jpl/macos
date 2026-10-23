@@ -45,12 +45,16 @@ mounting material beyond the clear aperture; no distortion requirement; intermed
    how the RMS limit sets the semi-field (RMS or vignetting, whichever first), the distortion check, the paraxial EFL
    check.  Cross-check MACOS's RMS WFE against CODE V on ONE lens (Luis's CODE V, or the rx_converter round trip) so
    the evaluator is argued from the definition, not transcribed.
-2. **The lens as a design-layer System / Bench** emitting the .in (refractors with N-BK7 from the glass table at
+2. **The lens as a design-layer System / Bench** emitting the .in (refractors with the glass from the table at
    the problem's wavelength; apertures = the blank diameter; the stop as an Obscuring/aperture element so "fully
-   filled" is a ray count, not a hope).
-3. **CALIB** on spacings (and curvatures where the year allows) for the WFE target across the field; confirm first
-   that CALIB's DOF set covers curvature and axial spacing of refractors (notes/calib.md; the design layer's
-   `optimize` varies conics and positions -- say what is missing and add it as an api DOF if needed).
+   filled" is a ray count, not a hope).  Glass: `macos_f90/macos_glass_list.txt` (201 Sellmeier lines) carries
+   Schott's BK7 and UBK7 but NOT N-BK7 -- add the N-BK7 (and, for 2023, N-SF6) Sellmeier line from Schott's data
+   sheet with its provenance in the comment; BK7 and N-BK7 agree to 1e-4 in n_d but the entry must be the named glass.
+3. **CALIB** on spacings (and curvatures where the year allows) for the WFE target across the field.  CALIB's
+   `VarElt=` mask has 8 DOFs per element: 1-6 rigid body (axial position = the spacing), 7 = radius, 8 = conic
+   (notes/calib.md), so curvature and spacing are available without an engine change; `OptAsph` is not needed
+   (spherical only).  For 2010 the shared |R| is ONE variable: drive it from the MATLAB loop and let CALIB solve the
+   spacings, or add a linked-radius DOF later if the scan is slow.
 4. **The outer loop** (MATLAB, `iodc<year>_params.m` + `iodc<year>_run.m`): for each (D, theta) candidate, the
    CALIB solve; the merit boundary where RMS = 0.070 or vignetting starts; the published winner as the target line
    on the (D, theta) plot (the paper's Figure 29 form).
