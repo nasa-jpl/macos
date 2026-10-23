@@ -52,7 +52,9 @@ deck figures unmodified; the pin policy).
   scored, public, comparable -- the challenge form the README defines.  Most are REFRACTIVE camera lenses: they
   would exercise the glass tables, aspheres, multi-wavelength and the CodeV converter rather than the mirror paths
   the library is built around.  Choose by reading the problem statements (SPIE proceedings), not from memory:
-  the criteria are in the message of 2026-10-23.
+  the candidates, the criteria and the extraction list are `NOTE_to_ccmac_iodc.md` (2026-10-23): 2014 Cinderella
+  (ten N-BK7 blanks, fixed glass, monochromatic, spherical, 45 entries) to enter first; 2023 Yin-Yang (two wavelengths,
+  free glass) as the stress test; 2010 green lens and 2021 down-under as the alternates; 2017 is a puzzle.
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
