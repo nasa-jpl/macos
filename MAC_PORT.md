@@ -110,6 +110,19 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 
 ## Part 2 — Validation record
 
+### 2026-10-23 (11) — re-gate (pair macos `0c0c98c7` + resources `0b39b0a`) — the (ee) message buffer
+Full record: `cli_tests/records/mac_gate_gfortran_0c0c98c7.md`. Engine changed: TO's round 2, the api
+message buffer (`emsg_mod`, `messages_count/get/clear`) that resolves 1.2 (ee) — the root cause found at
+gate 4 (Fortran unit 6 does not cross the FFI on macOS). On Mac: load **165/165** (0 movers); cmd
+**118/118** + 2 must-fail (COAT_legacy bounded now, zero genuine fails); mmacos fast **659/0** (up from
+656 — the 3 ex-guarded Rx classes now run); pymacos **6971/0/1 skip**; /png clean; self-contained.
+**Headline: all 6 MATLAB + 2 pytest formerly-Darwin-guarded tests now PASS on arm64** — tRxRefuse,
+tRxShortCoef, tRxLineEndings, tSaveNewFileQuiet, tMessages, tCalibMatrix/trial-loses-chief; and
+test_rx_parse_warnings, test_save_new_file_quiet. Only one darwin skip remains, by design (test_messages'
+capfd parity leg), and tCalibStop's OptTol leg stays assumeTrue (the arm64 trajectory from gate 6, not a
+buffer). **With (ff) closed at gate 9 and (ee) closed here, the Mac line has no engine miss and no
+Darwin-guarded test left but the one by-design parity skip.** The root cause reported at gate 4 is fixed at source.
+
 ### 2026-10-22 (10) — re-gate (pair macos `b7556b81` + resources `d436b9c`) — TO's cleanup round 1
 Full record: `cli_tests/records/mac_gate_gfortran_b7556b81.md`. Engine changed (31 commits: TO's cleanup +
 Dave's 10-22 rulings); tests that the gate-9 "no engine defect" state holds. On Mac: load **165/165** with
