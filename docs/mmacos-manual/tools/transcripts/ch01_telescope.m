@@ -2,14 +2,15 @@
 % tools/regen_mmacos_transcripts.py in a scratch directory (MMMAN_WORK).
 %
 % It runs the e2e flow's stage 1 UNCHANGED: copies templates/80_end_to_end/e2e/{s1_telescope.m,
-% e2e_params.m} here and runs the copy (the template writes its products beside itself, so the
-% committed template is never touched); then it reloads the emitted prescription in a fresh engine
+% e2e_params.m} into the thread directory (MMMAN_THREAD; the later stages' drivers consume what it
+% leaves there) and runs the copy (the template writes its products beside itself, so the committed
+% template is never touched); then it reloads the emitted prescription in a fresh engine
 % session, the way a reader checks an assistant's work, and asks the engine for the first-order
 % properties.  Everything the chapter prints is emitted from this run: the knobs (e2e_params.m), the
 % design report, the head of the emitted .in, the reload check, the figures, and the pinned numbers.
 
 root = getenv('MMACOS_ROOT');
-work = getenv('MMMAN_WORK');
+work = getenv('MMMAN_THREAD');
 tpl  = fullfile(root, 'templates', '80_end_to_end', 'e2e');
 copyfile(fullfile(tpl, 's1_telescope.m'), work);
 copyfile(fullfile(tpl, 'e2e_params.m'), work);
@@ -24,7 +25,7 @@ mm_listing('ch01_params', fullfile(work, 'e2e_params.m'), [1 k_inst-1]);
 t0 = tic;
 run(fullfile(work, 's1_telescope.m'));
 fprintf('stage 1 wall time %.0f s\n', toc(t0));       % in the log only, never printed
-work = getenv('MMMAN_WORK');                          % the stage script shares this workspace
+work = getenv('MMMAN_THREAD');                        % the stage script shares this workspace
 
 mm_listing('ch01_report', fullfile(work, 's1_report.txt'));
 

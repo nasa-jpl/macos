@@ -5,3 +5,15 @@ ch01_bias_arcmin	2'
 ch01_hole_r_m	0.232 m
 ch01_rays_pass	1168
 ch01_rays	1185
+ch02_nelt	11
+ch02_efl_m	72.71 m
+ch02_fno	f/18.18
+ch02_rays_pass	1168
+ch02_rays	1185
+ch02_bench_chief_agree	< 1e-09
+ch02_bench_spread	< 1e-06
+ch02_bench_shift	< 1e-05
+ch02_bench_nelt	13
+ch02_imagedemo_nelt	13
+ch02_imagedemo_fno	f/9.22
+ch02_imagedemo_obsc	0.00
