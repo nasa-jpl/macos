@@ -56,3 +56,19 @@ ch05_optimized_emet	1.782
 ch05_mc_draws	200
 ch05_mc_nm	0.020
 ch05_mc_analytic_nm	0.020
+ch06_x_pokes	54
+ch06_x_w	< 0.01
+ch06_x_l	< 1e-05
+ch06_x_e	< 1e-06
+ch06_z_w	< 0.01
+ch06_g_pokes	42
+ch06_g_w	9.87e-01
+ch07_floor	< 1e-06
+ch07_pre	317.4
+ch07_post	3.156
+ch07_mc_draws	1000
+ch07_mc	3.179
+ch07_pm_seg_piston_actuator	2.595
+ch07_pm_seg_tilt_actuator	1.281
+ch07_sm_tilt_actuator	1.251
+ch07_wfs_sensing_error	0.09183
