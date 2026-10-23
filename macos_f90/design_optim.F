@@ -255,7 +255,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	calib_n_rej = -1; calib_n_fail = -1
 
 	If (n_varElt .le. 0) Then
-	  print*,'** Error in nls_optim_dvr: n_varElt=',n_varElt
+	  WRITE(emsgRec,*) '** Error in nls_optim_dvr: n_varElt=',n_varElt
+	  CALL emsg_put
 	  stop
 	Else
 	  lmlsq_success=.true.
@@ -302,7 +303,8 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
           else
             ! Must compute system stop before design optimization
 	    WRITE(*,*)' '
-            WRITE(*,*) ' ** Must set System Stop before optimization.'
+            WRITE(emsgRec,*) ' ** Must set System Stop before optimization.'
+            CALL emsg_put
 	    rtn_flg=1
             return
           end if
@@ -462,10 +464,11 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
               ! legacy absolute step, scaled per ORDER of the term (the
               ! old code scaled by the term's position in the list)
               tmpda(len_a)=das*das_scale_factor**(jterm-1)
-              WRITE(*,'(A,I2,A,I4,A,ES9.2)')
+              WRITE(emsgRec,'(A,I2,A,I4,A,ES9.2)')
      &          ' ** CALIB: asphere term',jterm,' of element',ie_asph,
      &          ' has a zero coefficient and no circular aperture:'//
      &          ' legacy step',tmpda(len_a)
+              CALL emsg_put
             end if
           End Do
           ias=ias+n_optAsph(iElt)
@@ -614,8 +617,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 
 	status_flag = 0 ! for svdls_itr() only
 	If (lOpsFail) Then   ! the INITIAL evaluation failed (PLAN 3.4)
-	  WRITE(*,'(2A)')'  ** Optimization aborted: the initial ',
+	  WRITE(emsgRec,'(2A)')'  ** Optimization aborted: the initial ',
      &        'evaluation failed (a trace inside it lost its chief ray)'
+	  CALL emsg_put
 	  rtn_flg=1; calib_stop=4; go to 105
 	End If
 
@@ -668,20 +672,26 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 	    Call lmlsq(objfun_nom,sig,aparams,maska,covar,
      &                 alpha,chisq,funcs_app,alamda,lmlsq_success)
 	    if (lOpsFail) then   ! PLAN 3.4: was a STOP that killed the host
-	      WRITE(*,'(A,I0,2A)')'  ** Optimization aborted at iteration ',
+	      WRITE(emsgRec,'(A,I0,2A)')'  ** Optimization aborted at iteration ',
      &          itr,': a trial step lost the chief ray (an ill-posed',
      &          ' or too-large step)'
+	      CALL emsg_put
 	      rtn_flg=1; calib_n_iter=itr-1; calib_merit=chisq_prev
 	      calib_stop=4
 	      go to 105
 	    end if
 	    if (.not. lmlsq_success) then
-	      WRITE(*,*) ' ** Optimization (lmlsq) failed!'
-	      WRITE(*,*) ' ** Possible reasons: '
-	      WRITE(*,*) ' **   Incorrect setup for optimizer'
-	      WRITE(*,*) ' **   DOFs for optimization are correlated'
-	      WRITE(*,*) ' **   A differential step too small to move',
+	      WRITE(emsgRec,*) ' ** Optimization (lmlsq) failed!'
+	      CALL emsg_put
+	      WRITE(emsgRec,*) ' ** Possible reasons: '
+	      CALL emsg_put
+	      WRITE(emsgRec,*) ' **   Incorrect setup for optimizer'
+	      CALL emsg_put
+	      WRITE(emsgRec,*) ' **   DOFs for optimization are correlated'
+	      CALL emsg_put
+	      WRITE(emsgRec,*) ' **   A differential step too small to move',
      &                   ' the merit (a zero derivative column)'
+	      CALL emsg_put
 !-->  No STOP here: it ended the HOST process when the engine is a mex /
 !     .so (TO, dyson5 beat 4c sec. 3.6) and left the optics at whatever
 !     probe the last derivative column had applied.  Label 105 restores
@@ -762,9 +772,10 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 !     'converged' either (the bindings report converged = false).
 	If (OptAlg==NonLin .and. nAcc==0 .and. tot_itrs>0) Then
 	  If (nFailTrials > 0) Then
-	    WRITE(*,'(A,I0,A,I0,A)')'  ** Optimization failed: no trial '//
+	    WRITE(emsgRec,'(A,I0,A,I0,A)')'  ** Optimization failed: no trial '//
      &        'step was accepted -- ',nFailTrials,' of ',nRejTot,
      &        ' trials lost the chief ray'
+	    CALL emsg_put
 	    rtn_flg=1; calib_n_iter=tot_itrs_done; calib_merit=chisq
 	    calib_stop=4
 	    go to 105
@@ -864,8 +875,9 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
      &              n_optAsph,varAsph_arr_m,
      &              fovs(:,:,1),wls(1),aparams)
 	aparams_nls_m=aparams
-	WRITE(*,*) ' ** Optimization aborted; optics restored to the',
+	WRITE(emsgRec,*) ' ** Optimization aborted; optics restored to the',
      &             ' last accepted state.'
+	CALL emsg_put
 !<--
 
  100    continue

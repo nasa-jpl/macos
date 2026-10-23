@@ -34,7 +34,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx)(ChfRayDir(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(ChfRayDir(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' ChfRayDir'
+              WRITE(emsgRec,124)' ChfRayDir'
+              CALL emsg_put
             ELSE
               CALL DUNITIZE(ChfRayDir)
               ChfRayDir_FLG=.TRUE.
@@ -53,7 +54,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx) TElt(1:3,1,0)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             SrcLF_FLG=.TRUE.;
-	    print*,' **** msmacosio: src xFrame read'
+	    WRITE(emsgRec,*) ' **** msmacosio: src xFrame read'
+	    CALL emsg_put
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -61,7 +63,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx) TElt(1:3,2,0)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             SrcLF_FLG=.TRUE.
-	    print*,' **** msmacosio: src yFrame read'
+	    WRITE(emsgRec,*) ' **** msmacosio: src yFrame read'
+	    CALL emsg_put
             GO TO 50
 
           ! --------------------------------------------------------------------------------
@@ -148,7 +151,8 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'SaveRayPosH',11)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
     	      SaveRayPosHist_Flg=.TRUE.
-	      print*,'** msmacosio: SaveRayPosHist is true ...'
+	      WRITE(emsgRec,*) '** msmacosio: SaveRayPosHist is true ...'
+	      CALL emsg_put
 	    END IF
  	    GO TO 50
 
@@ -156,7 +160,8 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'DumpRayPosH',11)) THEN
             IF (LCMP(VALUE,'Y',1)) THEN
               DumpRayPosHist_Flg=.TRUE.
-              print*,'** msmacosio: DumpRayPosHist is true ...'
+              WRITE(emsgRec,*) '** msmacosio: DumpRayPosHist is true ...'
+              CALL emsg_put
             END IF
             GO TO 50
 
@@ -231,8 +236,9 @@ C       Set entrance condition flags to .FALSE.
 	      OptTarget=BEAM_TARGET
 	    ELSE IF (LCMP(VALUE,'OPL',3)) THEN
 !-->          OPL had no objective (PLAN 3.1, 2026-10-10): refused
-	      WRITE(*,'(A)') ' ** Rx load refused: OptTarget= OPL'//
+	      WRITE(emsgRec,'(A)') ' ** Rx load refused: OptTarget= OPL'//
      &          ' is not a CALIB target (removed: it had no objective)'
+	      CALL emsg_put
 	      GO TO 99
 !<--
 	    END IF
@@ -251,8 +257,9 @@ C       Set entrance condition flags to .FALSE.
 	    READ(VALUE,*,IOSTAT=iosRx) opt_npts
 	    IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	    IF (opt_npts>mpts) THEN
-              WRITE(*,*)
+              WRITE(emsgRec,*)
      &          ' Too many grid points for optimization, resetting to',mpts
+              CALL emsg_put
 	      opt_npts=mpts-1
 	    ELSE
 	      opt_npts=opt_npts-1
@@ -304,7 +311,8 @@ C       Set entrance condition flags to .FALSE.
 	    If (nOptChfRayDir==1) Then
 	       ChfRayDir(1:3)=opt_fov(1:3,1,nOptChfRayDir)
 	       IF (DMAG(ChfRayDir(1),3) .EQ. 0.0D0) THEN
-                 WRITE(*,124)' ChfRayDir'
+                 WRITE(emsgRec,124)' ChfRayDir'
+                 CALL emsg_put
                  GO TO 99
                ELSE
                  CALL DUNITIZE(ChfRayDir)
@@ -342,7 +350,8 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'OptTgtWF',8)) THEN
 #if 0
 	    !print*,' **OptTgtWF: VALUE =',VALUE(1:ICLEN(VALUE))
-	    print*,'  **In OptTgtWF'
+	    WRITE(emsgRec,*) '  **In OptTgtWF'
+	    CALL emsg_put
 	    tgtWF_fn(1:ICLEN(VALUE))=VALUE(1:ICLEN(VALUE))
 	    If (LCMP(tgtWF_fn(ICLEN(tgtWF_fn)-2:ICLEN(tgtWF_fn)),
      &              'bin',3)) Then
@@ -474,8 +483,9 @@ C       Set entrance condition flags to .FALSE.
             IF (dOptTolRx .GT. 0d0) THEN
               dopt_tol = dOptTolRx
             ELSE
-              WRITE(*,*)' ** OptTol= must be > 0; ignored, the default',
+              WRITE(emsgRec,*)' ** OptTol= must be > 0; ignored, the default',
      &                  ' stays', dopt_tol
+              CALL emsg_put
             END IF
             GO TO 50
 !<--
@@ -488,8 +498,9 @@ C       Set entrance condition flags to .FALSE.
 !-->          (vv) for the output fit too (Dave 2026-10-20): zern_fit's
 !             annular basis goes through ZerntoMon7, which never reads
 !             the ratio -- the "annular" fit was the circular NormNoll one
-              WRITE(*,'(A)') ' ** Rx load refused: ZCOZernType: '//
+              WRITE(emsgRec,'(A)') ' ** Rx load refused: ZCOZernType: '//
      &          ZernAnnularMsg//' (circular) or NormHex'
+              CALL emsg_put
               GO TO 99
 !<--
             Else If(LCMP(VALUE,'NormHex',7)) THEN
@@ -523,8 +534,9 @@ C       Set entrance condition flags to .FALSE.
               LUseChfRayIfOK=.TRUE.
               iOpdRefSrc=1
             Else
-              WRITE(*,*)' ** UseChfRay4OPD= wants Y or N; ignored: ',
+              WRITE(emsgRec,*)' ** UseChfRay4OPD= wants Y or N; ignored: ',
      &                  TRIM(VALUE)
+              CALL emsg_put
             End If
 !<--
             GO TO 50
@@ -577,7 +589,8 @@ C       Set entrance condition flags to .FALSE.
               CBM=1d0; cUnit='  '
 !<--
             ELSE
-              WRITE(*,*)' Unknown units, unitless operation assumed'
+              WRITE(emsgRec,*)' Unknown units, unitless operation assumed'
+              CALL emsg_put
               BaseUnits='none'
               WaveUnits='none'
               CBM=1d0
@@ -607,7 +620,8 @@ C       Set entrance condition flags to .FALSE.
             ELSE IF (LCMP(WaveUnits,'none',2)) THEN
               CWM=1d0
             ELSE
-              WRITE(*,*)' Unknown units, unitless operation assumed'
+              WRITE(emsgRec,*)' Unknown units, unitless operation assumed'
+              CALL emsg_put
               WaveUnits='none'
               CWM=1d0
             END IF
@@ -793,8 +807,9 @@ C       Set entrance condition flags to .FALSE.
      &                             pratio, phasRatio)
 !-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
                 IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
-                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
+                  WRITE(emsgRec,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
      &              iElt, '): '//ZernAnnularMsg
+                  CALL emsg_put
                   GO TO 99
                 END IF
 !<--
@@ -806,8 +821,10 @@ C       Set entrance condition flags to .FALSE.
               END BLOCK
               TypeString = VALUE
               IF (.NOT.FFZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
+                WRITE(emsgRec,133) TypeString(1:ICLEN(TypeString))
+                CALL emsg_put
+                WRITE(emsgRec,*)'Check and reload Rx!'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -823,8 +840,9 @@ C       Set entrance condition flags to .FALSE.
      &                             pratio, phasRatio)
 !-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
                 IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
-                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
+                  WRITE(emsgRec,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
      &              iElt, '): '//ZernAnnularMsg
+                  CALL emsg_put
                   GO TO 99
                 END IF
 !<--
@@ -836,8 +854,10 @@ C       Set entrance condition flags to .FALSE.
               END BLOCK
               TypeString = VALUE
               IF (.NOT.MonZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
+                WRITE(emsgRec,133) TypeString(1:ICLEN(TypeString))
+                CALL emsg_put
+                WRITE(emsgRec,*)'Check and reload Rx!'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -854,7 +874,8 @@ C       Set entrance condition flags to .FALSE.
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
               IF (.NOT.nMonZernCoef_FLG) THEN
-                PRINT *, "must define nMonZernCoef before MonZernModes"
+                WRITE(emsgRec,*) "must define nMonZernCoef before MonZernModes"
+                CALL emsg_put
                 GO TO 99
               END IF
               MonZernModes(:) = 0
@@ -886,8 +907,9 @@ C       Set entrance condition flags to .FALSE.
 !             the remap; the type's own count is checked in ChkDf2
               IF (ANY(MonZernModes(:nMonZernCoef)<1) .OR.
      &            ANY(MonZernModes(:nMonZernCoef)>mMonCoef)) THEN
-                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
+                WRITE(emsgRec,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
      &              iElt, '): a mode is outside 1 ..', mMonCoef
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -932,7 +954,8 @@ C       Set entrance condition flags to .FALSE.
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
               IF (.NOT.nFFZernCoef_FLG) THEN
-                PRINT *, "must define nFFZernCoef before FFZernModes"
+                WRITE(emsgRec,*) "must define nFFZernCoef before FFZernModes"
+                CALL emsg_put
                 GO TO 99
               END IF
               FFZernModes(:) = 0
@@ -964,8 +987,9 @@ C       Set entrance condition flags to .FALSE.
 !             the remap; the type's own count is checked in ChkDf2
               IF (ANY(FFZernModes(:nFFZernCoef)<1) .OR.
      &            ANY(FFZernModes(:nFFZernCoef)>mFFCoef)) THEN
-                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
+                WRITE(emsgRec,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
      &              iElt, '): a mode is outside 1 ..', mFFCoef
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -979,7 +1003,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx)(xGrid(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(xGrid(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' xGrid'
+              WRITE(emsgRec,124)' xGrid'
+              CALL emsg_put
             ELSE
               xGrid_FLG=.TRUE.
             END IF
@@ -990,7 +1015,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx)(yGrid(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(yGrid(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' yGrid'
+              WRITE(emsgRec,124)' yGrid'
+              CALL emsg_put
             ELSE
               yGrid_FLG=.TRUE.
             END IF
@@ -1078,8 +1104,9 @@ C       Set entrance condition flags to .FALSE.
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               nPetals_FLG=.TRUE.
 	    Else
-              Write(*,*)
+              WRITE(emsgRec,*)
      &        ' **Rx error: nRings must be specified before nPetals'
+              CALL emsg_put
 	      GO TO 99   ! refuse the load (was STOP: killed the host; 5c)
 	    End If
             GO TO 50
@@ -1121,7 +1148,8 @@ C       Set entrance condition flags to .FALSE.
                 END IF
                 SegCoord_FLG=.TRUE.
               ELSE
-                WRITE(*,*) '  Must input nSeg before SegCoord.'
+                WRITE(emsgRec,*) '  Must input nSeg before SegCoord.'
+                CALL emsg_put
               END IF
             ELSE
               READ(VALUE,*,IOSTAT=iosRx)SegCoord(1:2,1)
@@ -1136,7 +1164,8 @@ C       Set entrance condition flags to .FALSE.
                 END IF
                 SegCoord_FLG=.TRUE.
               ELSE
-                WRITE(*,*) '  Must input nSeg before SegCoord.'
+                WRITE(emsgRec,*) '  Must input nSeg before SegCoord.'
+                CALL emsg_put
                 GO To 99    ! abort reading Rx
               END IF
             END IF
@@ -1147,7 +1176,8 @@ C       Set entrance condition flags to .FALSE.
             READ(VALUE,*,IOSTAT=iosRx)(SegXgrid(i),i=1,3)
             IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
             IF (DMAG(SegXgrid(1),3) .EQ. 0.0D0) THEN
-              WRITE(*,124)' SegXGrid'
+              WRITE(emsgRec,124)' SegXGrid'
+              CALL emsg_put
               GO To 99    ! abort reading Rx
             ELSE
               SegXgrid_FLG=.TRUE.
@@ -1158,8 +1188,9 @@ C       Set entrance condition flags to .FALSE.
 	  ELSE IF (LCMP(VAR_NAM,'SegApType',9)) THEN
             ! Added by jzlou
             IF (.NOT.SegCoord_FLG) THEN
-              print*,
+              WRITE(emsgRec,*) 
      &          'macosio: SegCoord must be defined before SegApType'
+              CALL emsg_put
               GO TO 99
             END IF
             IF (LCMP(VALUE,ApTypeName(6),3).OR.
@@ -1189,7 +1220,8 @@ C       Set entrance condition flags to .FALSE.
             IF (ENTR_OK) THEN
               GO TO 60
             ELSE
-              WRITE(*,*)'  Input file not properly loaded'
+              WRITE(emsgRec,*)'  Input file not properly loaded'
+              CALL emsg_put
               GO TO 99
             END IF
           ELSE
@@ -1298,7 +1330,8 @@ C       Set entrance condition flags to .FALSE.
                 END IF
               END DO
               IF (.NOT.EltID_FLG) THEN
-                WRITE(*,130) TypeString
+                WRITE(emsgRec,130) TypeString
+                CALL emsg_put
                 GO TO 61
               END IF
 
@@ -1351,8 +1384,9 @@ C       Set entrance condition flags to .FALSE.
                 IF (EltID_FLG.AND.SrfType_FLG) THEN
                   EltType_FLG=.TRUE.
                 ELSE
-                  WRITE(*,131)EltTypeName(EltID(iElt)),
+                  WRITE(emsgRec,131)EltTypeName(EltID(iElt)),
      &            SrfTypeName(SrfType(iElt))
+                  CALL emsg_put
                 END IF
               END IF
               GO TO 61
@@ -1374,7 +1408,8 @@ C       Set entrance condition flags to .FALSE.
                 eltGrpEnd=eltGrpStrt+EltGrp(0,iElt)-1
                 IF (eltGrpStrt<0 .OR. eltGrpEnd<0 .OR.
      &              (eltGrpStrt>eltGrpEnd)) THEN
-                  WRITE(*,*)' **EltGrp: invalid specification in Rx!'
+                  WRITE(emsgRec,*)' **EltGrp: invalid specification in Rx!'
+                  CALL emsg_put
                   GO TO 99
                 END IF
                 k=1
@@ -1391,8 +1426,9 @@ C       Set entrance condition flags to .FALSE.
               READ(VALUE,*,IOSTAT=iosRx) j ! number of element groups
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (j<=0 .or. j>10) THEN
-                WRITE(*,*)
+                WRITE(emsgRec,*)
      &          ' **MrEltGrp: elt groups must be >=1 and <=10 in Rx!'
+                CALL emsg_put
                 GO TO 99
               END IF
               READ(VALUE,*,IOSTAT=iosRx) j,grpRange(1:2*j)
@@ -1442,7 +1478,8 @@ C       Set entrance condition flags to .FALSE.
                 END IF
               END DO
               IF (.NOT.SrfType_FLG) THEN
-                WRITE(*,132) TypeString
+                WRITE(emsgRec,132) TypeString
+                CALL emsg_put
                 GO TO 61
               END IF
 
@@ -1542,8 +1579,9 @@ C       Set entrance condition flags to .FALSE.
                 IF (EltID_FLG.AND.SrfType_FLG) THEN
                   EltType_FLG=.TRUE.
                 ELSE
-                  WRITE(*,131)EltTypeName(EltID(iElt)),
+                  WRITE(emsgRec,131)EltTypeName(EltID(iElt)),
      &            SrfTypeName(SrfType(iElt))
+                  CALL emsg_put
                 END IF
               END IF
               GO TO 61
@@ -1733,7 +1771,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &                           beamOpt%nBeamPosFov),j=1,3)
                 IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               Else
-                WRITE(*,*)' OptBeamPosFov: more than 12 rows ignored'
+                WRITE(emsgRec,*)' OptBeamPosFov: more than 12 rows ignored'
+                CALL emsg_put
               End If
               GO TO 61
 	    ELSE IF (LCMP(VAR_NAM,'OptBeamWt',9)) THEN
@@ -1751,9 +1790,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 beamOpt%beamPosElt=iElt
                 beamOpt%ifOptBeamPos=.TRUE.
 	        If (OptTgtElt /= beamOpt%beamPosElt) Then
-	          Write(*,*)'*** msmacosio warning: '
-	          Write(*,*)'      OptTgtElt /= beamOpt%beamPosElt'
-                 Write(*,*)'      OptTgtElt reset to beamOpt%beamPosElt'
+	          WRITE(emsgRec,*)'*** msmacosio warning: '
+	          CALL emsg_put
+	          WRITE(emsgRec,*)'      OptTgtElt /= beamOpt%beamPosElt'
+	          CALL emsg_put
+                 WRITE(emsgRec,*)'      OptTgtElt reset to beamOpt%beamPosElt'
+                 CALL emsg_put
                   OptTgtElt = beamOpt%beamPosElt
 	        End If
               End If
@@ -1822,8 +1864,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !             OptAsph= ABOVE its element's VarElt= was dropped silently
 !             and the asphere DOFs were absent from the solve.  Warn.
               Else
-                WRITE(*,'(A,I4,A)') ' ** OptAsph= at element',iElt,
+                WRITE(emsgRec,'(A,I4,A)') ' ** OptAsph= at element',iElt,
      &            ' IGNORED: OptAsph= must follow VarElt='
+                CALL emsg_put
 !<--
               End If
               GO TO 61
@@ -1834,9 +1877,11 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*,IOSTAT=iosRx) LnkElt(iElt)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (LnkElt(iElt).LE.0) Then
-                WRITE(*,*)
+                WRITE(emsgRec,*)
      &          ' Link Elt value can not be negative at Elt',iElt
-                WRITE(*,*)' Input file not properly loaded'
+                CALL emsg_put
+                WRITE(emsgRec,*)' Input file not properly loaded'
+                CALL emsg_put
                 GO TO 99
               End If
               GO TO 61
@@ -1875,7 +1920,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*,IOSTAT=iosRx) nAsphCoef
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (nAsphCoef<1 .OR. nAsphCoef>mAsphCoef) THEN
-                WRITE(*,*)'**WARNING: nAsphCoefs is out of range -- failure'
+                WRITE(emsgRec,*)'**WARNING: nAsphCoefs is out of range -- failure'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -1894,24 +1940,27 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 IF (nAsphCoef<=Grp) THEN
                   CALL ReadRealsPad(VALUE,AsphCoef(1:nAsphCoef,iElt),
      &                              nAsphCoef,nZ)
-                  IF (nZ.LT.nAsphCoef) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+                  IF (nZ.LT.nAsphCoef) WRITE(emsgRec,'(A,I3,A,I2,A,I2,A)')
      &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',nAsphCoef,
      &              ' values on the line; the rest are 0'
+                  CALL emsg_put
                 ELSE
 
                   CALL ReadRealsPad(VALUE,AsphCoef(1:Grp,iElt),Grp,nZ)
-                  IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+                  IF (nZ.LT.Grp) WRITE(emsgRec,'(A,I3,A,I2,A,I2,A)')
      &              '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
      &              ' values on the first line; the rest are 0'
+                  CALL emsg_put
 
                   ! complete line group ("Grp" Coefficients)
                   DO iZ=1, nAsphCoef/Grp-1
                     READ(RX_FID, 123, END=99)STRING
                     CALL ReadRealsPad(STRING,
      &                   AsphCoef(iZ*Grp+1:(iZ+1)*Grp,iElt),Grp,nZ)
-                    IF (nZ.LT.Grp) WRITE(*,'(A,I3,A,I2,A,I2,A)')
+                    IF (nZ.LT.Grp) WRITE(emsgRec,'(A,I3,A,I2,A,I2,A)')
      &                '  AsphCoef (elt',iElt,'): ',nZ,' of ',Grp,
      &                ' values on a continuation line; the rest are 0'
+                    CALL emsg_put
                   END DO
 
                   ! incomplete Grp
@@ -1934,8 +1983,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------ AnaCoef
             ELSE IF (LCMP(VAR_NAM,'AnaCoef',7)) THEN
               CALL ReadRealsPad(VALUE,AnaCoef(1:4,iElt),4,j)   ! short line pads (see AsphCoef)
-              IF (j.LT.4) WRITE(*,'(A,I3,A,I2,A)')
+              IF (j.LT.4) WRITE(emsgRec,'(A,I3,A,I2,A)')
      &          '  AnaCoef (elt',iElt,'): ',j,' of 4 values; the rest are 0'
+              CALL emsg_put
               AnaCoef_FLG=.TRUE.
               GO TO 61
 
@@ -1953,8 +2003,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &                             pratio, phasRatio)
 !-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
                 IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
-                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: ZernType (elt',
+                  WRITE(emsgRec,'(A,I4,A)') ' ** Rx load refused: ZernType (elt',
      &              iElt, '): '//ZernAnnularMsg
+                  CALL emsg_put
                   GO TO 99
                 END IF
 !<--
@@ -1966,8 +2017,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END BLOCK
               TypeString = VALUE
               IF (.NOT.ZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-		WRITE(*,*)'Check and reload Rx!'
+                WRITE(emsgRec,133) TypeString(1:ICLEN(TypeString))
+                CALL emsg_put
+		WRITE(emsgRec,*)'Check and reload Rx!'
+		CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -1988,20 +2041,23 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 IF (SrfType(iElt).EQ.SrfType_Zernike .OR.
      &              SrfType(iElt).EQ.SrfType_ZrnGrData) THEN
                   ZernTypeL(iElt) = ZernType_ANSI
-                  WRITE(*,'(A,I4,A)')       ! = ChkDf2's 112 form
+                  WRITE(emsgRec,'(A,I4,A)')       ! = ChkDf2's 112 form
      &              ' Default used for ZernType(', iElt, ')'
+                  CALL emsg_put
                 ELSE
-                  WRITE(*,'(A,I4,A)')
+                  WRITE(emsgRec,'(A,I4,A)')
      &              ' ** Rx load refused: nZernCoef (elt', iElt,
      &              '): no ZernType= declared before it'
+                  CALL emsg_put
                   GO TO 99
                 END IF
               END IF
               IF ((nZernCoef<1) .OR.
      &            (nZernCoef>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
-                WRITE(*,'(A,I4,A,I6,A,I4)') ' ** Rx load refused: '//
+                WRITE(emsgRec,'(A,I4,A,I6,A,I4)') ' ** Rx load refused: '//
      &            'nZernCoef (elt', iElt, '):', nZernCoef,
      &            ' is outside 1 ..', ZernType_MaxMode(ZernTypeL(iElt))
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -2017,7 +2073,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ELSE IF (LCMP(VAR_NAM,'ZernModes',9)) THEN
 
               IF (.NOT. nZernCoef_FLG) THEN
-                PRINT *, "must define nZernCoef before ZernModes"
+                WRITE(emsgRec,*) "must define nZernCoef before ZernModes"
+                CALL emsg_put
                 GOTO 99
               END IF
               ZernModes(:) = 0
@@ -2054,11 +2111,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (ANY(ZernModes(:nZernCoef)<1) .OR.
      &            ANY(ZernModes(:nZernCoef)>ZernType_MaxMode(ZernTypeL(iElt)))) THEN
 !-->            named (xx), 2026-10-20
-                WRITE(*,'(A,I4,A,I4,A,I3,A)') ' ** Rx load refused: '//
+                WRITE(emsgRec,'(A,I4,A,I4,A,I3,A)') ' ** Rx load refused: '//
      &            'ZernModes (elt', iElt, '): a mode is outside 1 ..',
      &            ZernType_MaxMode(ZernTypeL(iElt)), ' ('//
      &            TRIM(ZernTypeNameL(ZernTypeL(iElt)))//' has',
      &            ZernType_MaxMode(ZernTypeL(iElt)), ' modes)'
+                CALL emsg_put
                 GOTO 99
 !<--
               END IF
@@ -2152,14 +2210,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	    ELSE IF (LCMP(VAR_NAM,'UDSrfFile',6)) THEN
               UDSrfFile(iElt)=VALUE
               IF (.NOT.UDSrfParam_FLG) THEN
-                WRITE(*,*)
+                WRITE(emsgRec,*)
      &      ' WARNING: Must specify UDSrfParam before loading UDSrfFile'
+                CALL emsg_put
                 EXIST=.FALSE.
               ELSE
                 CALL UDSinit(EXIST,iElt)
               END IF
               IF (.NOT.EXIST) THEN
-                WRITE(*,*)' UDSrfFile not loaded correctly'
+                WRITE(emsgRec,*)' UDSrfFile not loaded correctly'
+                CALL emsg_put
               END IF
               UDSrfCoef_FLG=.TRUE.
               GO TO 61
@@ -2197,8 +2257,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
                 GridFilePending(iElt) = .FALSE.
                 IF (.NOT.ifGridInit) THEN
-                  WRITE(*,*)' GridFile not loaded correctly, iELT=',
+                  WRITE(emsgRec,*)' GridFile not loaded correctly, iELT=',
      &                      iElt
+                  CALL emsg_put
                 END IF
               END IF
 !<--
@@ -2224,12 +2285,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
 	    ELSE IF (LCMP(VAR_NAM,'tMetElt',7)) THEN
 	      If (nMetPos(iElt).LE.0) Then
-                Write(*,*)' ** MACOS Rx error: iElt,nMetPos =',
+                WRITE(emsgRec,*)' ** MACOS Rx error: iElt,nMetPos =',
      &                    iElt,nMetPos
-                Write(*,*)
+                CALL emsg_put
+                WRITE(emsgRec,*)
      &          ' **   nMetPos field must appear before tMetElt field,'
-                Write(*,*)
+                CALL emsg_put
+                WRITE(emsgRec,*)
      &          ' **   and nMetPos must be positive integer'
+                CALL emsg_put
                 GO TO 99 ! refuse the load (was STOP: killed the host; 5c)
               End If
               READ(VALUE,*,IOSTAT=iosRx) tMetSrf(iElt),ntMetPos(iElt)
@@ -2248,7 +2312,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !               READ(VALUE,*)tMetSrf(iElt),ntMetPos(iElt),
 !    &                       tMetSrfPos(1:ntMetPos(iElt),iElt)
               End If
-              print*,' ** End tMetSrf(iElt) =',tMetSrf(iElt)
+              WRITE(emsgRec,*) ' ** End tMetSrf(iElt) =',tMetSrf(iElt)
+              CALL emsg_put
               GO TO 61
 
 	    ELSE IF (LCMP(VAR_NAM,'nAmplMat',3)) THEN
@@ -2313,7 +2378,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInit
 
               IF (.NOT.EXIST) THEN
-                WRITE(*,*)' GridFile not loaded correctly, iELT=',iElt
+                WRITE(emsgRec,*)' GridFile not loaded correctly, iELT=',iElt
+                CALL emsg_put
               END IF
               GridMat_FLG=.TRUE.
 
@@ -2328,8 +2394,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
 	      If (GridSrfOrder(iElt) /= 1 .and.
      &            GridSrfOrder(iElt) /= 3) Then
-	        WRITE(*,*)' ** Invalid GridSrfOrder value for Elt ',iElt
-                WRITE(*,*)' ** Reset to bi-linear surface interpolator'
+	        WRITE(emsgRec,*)' ** Invalid GridSrfOrder value for Elt ',iElt
+	        CALL emsg_put
+                WRITE(emsgRec,*)' ** Reset to bi-linear surface interpolator'
+                CALL emsg_put
 	      End If
               GO TO 61
 
@@ -2505,8 +2573,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &                             pratio, phasRatio)
 !-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
                 IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
-                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
+                  WRITE(emsgRec,'(A,I4,A)') ' ** Rx load refused: FFZernType (elt',
      &              iElt, '): '//ZernAnnularMsg
+                  CALL emsg_put
                   GO TO 99
                 END IF
 !<--
@@ -2518,8 +2587,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END BLOCK
               TypeString = VALUE
               IF (.NOT.FFZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
+                WRITE(emsgRec,133) TypeString(1:ICLEN(TypeString))
+                CALL emsg_put
+                WRITE(emsgRec,*)'Check and reload Rx!'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -2536,7 +2607,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'FFZernModes',11)) THEN
               IF (.NOT.nFFZernCoef_FLG) THEN
-                PRINT *, "must define nFFZernCoef before FFZernModes"
+                WRITE(emsgRec,*) "must define nFFZernCoef before FFZernModes"
+                CALL emsg_put
                 GO TO 99
               END IF
               FFZernModes(:) = 0
@@ -2568,8 +2640,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !             the remap; the type's own count is checked in ChkDf2
               IF (ANY(FFZernModes(:nFFZernCoef)<1) .OR.
      &            ANY(FFZernModes(:nFFZernCoef)>mFFCoef)) THEN
-                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
+                WRITE(emsgRec,'(A,I4,A,I4)') ' ** Rx load refused: FFZernModes (elt',
      &              iElt, '): a mode is outside 1 ..', mFFCoef
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -2612,8 +2685,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &                             pratio, phasRatio)
 !-->            (vv): refused by name (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20)
                 IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN
-                  WRITE(*,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
+                  WRITE(emsgRec,'(A,I4,A)') ' ** Rx load refused: MonZernType (elt',
      &              iElt, '): '//ZernAnnularMsg
+                  CALL emsg_put
                   GO TO 99
                 END IF
 !<--
@@ -2625,8 +2699,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               END BLOCK
               TypeString = VALUE
               IF (.NOT.MonZernTypeL_FLG) THEN
-                WRITE(*,133) TypeString(1:ICLEN(TypeString))
-                WRITE(*,*)'Check and reload Rx!'
+                WRITE(emsgRec,133) TypeString(1:ICLEN(TypeString))
+                CALL emsg_put
+                WRITE(emsgRec,*)'Check and reload Rx!'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -2643,7 +2719,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
             ! ------------------------------------------------------------------------------
             ELSE IF (LCMP(VAR_NAM,'MonZernModes',12)) THEN
               IF (.NOT.nMonZernCoef_FLG) THEN
-                PRINT *, "must define nMonZernCoef before MonZernModes"
+                WRITE(emsgRec,*) "must define nMonZernCoef before MonZernModes"
+                CALL emsg_put
                 GO TO 99
               END IF
               MonZernModes(:) = 0
@@ -2675,8 +2752,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !             the remap; the type's own count is checked in ChkDf2
               IF (ANY(MonZernModes(:nMonZernCoef)<1) .OR.
      &            ANY(MonZernModes(:nMonZernCoef)>mMonCoef)) THEN
-                WRITE(*,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
+                WRITE(emsgRec,'(A,I4,A,I4)') ' ** Rx load refused: MonZernModes (elt',
      &              iElt, '): a mode is outside 1 ..', mMonCoef
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -2760,9 +2838,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !    bound (SAVE-audit fix): an oversized count stomped memory
 	      If (TotalLensletsArray(iElt)<1 .OR.
      &            TotalLensletsArray(iElt)>mLenslet) Then
-	        WRITE(*,*)' **LensArrayIndRef: lenslet count must be',
+	        WRITE(emsgRec,*)' **LensArrayIndRef: lenslet count must be',
      &            ' between 1 and',mLenslet,' -- got',
      &            TotalLensletsArray(iElt)
+	        CALL emsg_put
 	        GO TO 99
 	      End If
 !<--
@@ -2941,13 +3020,16 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               Call Get_Values(VALUE,ArrIndRef(:,iElt),nTok)
                      ! nTok returns number of values read into ArrIndRef
 	      If (nTok /= nOptWavelen) Then
-                WRITE(*,*)' '
-                WRITE(*,*)
+                WRITE(emsgRec,*)' '
+                CALL emsg_put
+                WRITE(emsgRec,*)
      &           '** Load Rx warning at element',iElt,':'
-                WRITE(*,*)
+                CALL emsg_put
+                WRITE(emsgRec,*)
      &   '   Inconsistent number of values between '//
      &   '   wavelengths and '//
      &   '   refractive indexes'
+                CALL emsg_put
 	        Pause
 	      End If
 	      IndRef(iElt)=ArrIndRef(1,iElt)
@@ -2984,10 +3066,12 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      Else
 	        ! If unknown graded-index modelType or undefine,
 	        ! return from function with error message
-	       Write(*,*)'** msmacosio.inc: '//
+	       WRITE(emsgRec,*)'** msmacosio.inc: '//
      &         'invalid or undefined graded index'
-	       Write(*,*)
+	       CALL emsg_put
+	       WRITE(emsgRec,*)
      &         '** model type. Define a valid model type in Rx first!'
+	       CALL emsg_put
 	       return
 	      End If
 	      GrinRefArr(iElt)%dt=GrinRefArr(iElt)%modelCoef(1)
@@ -3028,11 +3112,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	      End If
 
 	      IF (.FALSE.) THEN
-	       print*,'iElt=', iElt,'  Coating layers=',EltCoat(iElt)
+	       WRITE(emsgRec,*) 'iElt=', iElt,'  Coating layers=',EltCoat(iElt)
+	       CALL emsg_put
 	       DO k=0,EltCoat(iElt)+1
-	         print*,'IndRefArr(k),ExtincArr(k),EltCoatThk(k)=',
+	         WRITE(emsgRec,*) 'IndRefArr(k),ExtincArr(k),EltCoatThk(k)=',
      &	 	   IndRefArr(k,iElt),ExtincArr(k,iElt),
      &		   EltCoatThk(k,iElt)
+	         CALL emsg_put
 	       END DO
 	      END IF
 
@@ -3086,7 +3172,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 end if
               end do
               if (.not. found) then
-                write(*,*) '** Unknown glass type at Elt ',iElt
+                WRITE(emsgRec,*) '** Unknown glass type at Elt ',iElt
+                CALL emsg_put
                 goto 99
               else
                 goto 61
@@ -3215,11 +3302,13 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               ELSE IF (LCMP(VALUE,'0',1)) THEN
                 PropType(iElt)=1
               ELSE
-                WRITE(*,'(3A,I4,A)') ' ** Rx load refused: PropType= ',
+                WRITE(emsgRec,'(3A,I4,A)') ' ** Rx load refused: PropType= ',
      &            VALUE(1:MAX(1,MIN(ICLEN(VALUE),40))),
      &            ' (elt',iElt,'): not a propagation type'
-                WRITE(*,'(A)') '    -- a name (Geometric, FarField,'//
+                CALL emsg_put
+                WRITE(emsgRec,'(A)') '    -- a name (Geometric, FarField,'//
      &            ' NFPlane, ...) or a number 0..15'
+                CALL emsg_put
                 GO TO 99
               END IF
 !<--
@@ -3242,10 +3331,11 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 !     write in the CoatIndx= / CoatThk= READs below.
               IF (nCoatElt(iElt) < 0 .OR.
      &            nCoatElt(iElt) > mLegacyCoat) THEN
-                WRITE(*,'(A,I0,A,I4,A,I0,A)')
+                WRITE(emsgRec,'(A,I0,A,I4,A,I0,A)')
      &            ' ** Rx load refused: nCoat= ', nCoatElt(iElt),
      &            ' (elt', iElt, '): at most ', mLegacyCoat,
      &            ' coating layers'
+                CALL emsg_put
                 nCoatElt(iElt) = 0
                 GO TO 99
               END IF
@@ -3375,7 +3465,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                  Else If (LCMP(apodType,'Gaussian',4)) Then
                    iApodType=gaussApod
                  Else
-                   WRITE(*,*) '** Unknown apodization type at Elt ',iElt
+                   WRITE(emsgRec,*) '** Unknown apodization type at Elt ',iElt
+                   CALL emsg_put
                    GO TO 99
                  End If
 #endif
@@ -3386,8 +3477,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   ApType(iElt)=9 ! ApType = 'SunBlades'
 		  LApSunBlades=.TRUE.
 	        Else
-                  WRITE(*,*)
+                  WRITE(emsgRec,*)
      &          ' **Load error: ApType SunBlades multiply defined!'
+                  CALL emsg_put
 	          GO TO 61
 	        End If
               END IF
@@ -3434,9 +3526,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     ! # of vertices of polygon
                   nVertex=ApVec(3,iElt)
                   If (nVertex < 3) Then
-                    WRITE(*,*)
+                    WRITE(emsgRec,*)
      &               '** Error in MACOS Rx: a polygon aperture'//
      &               ' must have at least three vertices!'
+                    CALL emsg_put
                     GOTO 99
                   End If
                   Do k=1,nVertex
@@ -3468,12 +3561,14 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 	          nVertex=ApVec(3,iElt)
                   ! ApVec(4,iElt) = width of tapered region
                   If (ApVec(4,iElt)<1d-10) Then
-                    write(*,*)'** Error in MACOS Rx: tapered width
+                    WRITE(emsgRec,*)'** Error in MACOS Rx: tapered width
      &                for polygonal aperture is too small or zero!'
+                    CALL emsg_put
                     GOTO 99
                   End If
                   LTaperedElt(iElt)=.true.
-	          print*,'** iElt = ',iElt,', is Tapered_Polygonal ...'
+	          WRITE(emsgRec,*) '** iElt = ',iElt,', is Tapered_Polygonal ...'
+	          CALL emsg_put
 	          !
 	          Do k=1,nVertex
                     READ(RX_FID, 123, END=99)STRING
@@ -3490,7 +3585,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 END IF
                 ApVec_FLG=.TRUE.
               ELSE
-                WRITE(*,*)'  Must input ApType before ApVec'
+                WRITE(emsgRec,*)'  Must input ApType before ApVec'
+                CALL emsg_put
               END IF
               GO TO 61
 
@@ -3499,13 +3595,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &               LCMP(VAR_NAM,'Poly3DApVec',11)) THEN
               LApVecDefined(iElt)=.TRUE.
               IF (.not.ApType_FLG) THEN
-               WRITE(*,*)
+               WRITE(emsgRec,*)
      &         ' Must specify ApType before PolyApVec, iElt =',
      &                   iElt
+               CALL emsg_put
 	        LOAD_SUCCESS=.false.; GO TO 70
               ELSE IF (.not.xObs_FLG) THEN
-               WRITE(*,*)' Must specify xObs before PolyApVec, iElt =',
+               WRITE(emsgRec,*)' Must specify xObs before PolyApVec, iElt =',
      &                   iElt
+               CALL emsg_put
 	        LOAD_SUCCESS=.false.; GO TO 70
               ELSE
                 !READ(VALUE,*) (ApVec(j,iElt),j=1,4)
@@ -3514,9 +3612,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                 nVertex=ApVec(1,iElt) ! # of vertices of polygon
                 If (nVertex < 3) Then
-                  write(*,*)
+                  WRITE(emsgRec,*)
      &              '** Error in MACOS Rx: a polygon aperture'//
      &              ' must have at least three vertices!'
+                  CALL emsg_put
                   GO TO 99
                 End If
                 Do k=1,nVertex
@@ -3646,9 +3745,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                     ! raw vertices and defer the projection until xObs
                     ! is set (or until ChkDf2 catches it as missing).
                     IF (.not.ObsType_FLG(iObs)) THEN
-                      WRITE(*,*)
+                      WRITE(emsgRec,*)
      &                ' Must specify ObsType before '//
      &                'PolyObsVec/Poly3DObsVec, iElt=', iElt
+                      CALL emsg_put
                       LOAD_SUCCESS=.false.; GO TO 70
                     END IF
 
@@ -3657,9 +3757,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                       IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
                       nVertex=ObsVec(1,iObs,iElt) ! # of vertices of polygon
                       If (nVertex < 3) Then
-                        write(*,*)
+                        WRITE(emsgRec,*)
      &                   '** Error in MACOS Rx: a polygon obscuration'//
      &                   ' must have at least three vertices!'
+                        CALL emsg_put
                         GO TO 99
                       End If
                       Do k=1,nVertex
@@ -3679,9 +3780,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                         nPolyObsVtx3DPending(iObs,iElt) = nVertex
                       END IF
                     ELSE
-                      WRITE(*,*)
+                      WRITE(emsgRec,*)
      &                ' **Incorrect ObsType for '//
      &                'PolyObsVec/Poly3DObsVec'
+                      CALL emsg_put
                       GO TO 99
                     END IF
                     ObsVec_FLG(iObs)=.TRUE.
@@ -3714,9 +3816,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                          ! # of vertices of polygon
                       nVertex=ObsVec(3,iObs,iElt)
                       IF (nVertex < 3) THEN
-                        write(*,*)
+                        WRITE(emsgRec,*)
      &                   '** Error in MACOS Rx: a polygon obscuration'//
      &                   ' must have at least three vertices!'
+                        CALL emsg_put
                        GO TO 99
                       END IF
                       Do k=1,nVertex
@@ -3748,7 +3851,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                   End If
                 END DO
               ELSE
-                WRITE(*,*)' Must input nObs before ObsType and ObsVec'
+                WRITE(emsgRec,*)' Must input nObs before ObsType and ObsVec'
+                CALL emsg_put
                 GO TO 99
               END IF
               GO TO 61
@@ -3758,7 +3862,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               READ(VALUE,*,IOSTAT=iosRx)(xObs(j,iElt),j=1,3)
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               IF (DMAG(xObs(1,iElt),3) .EQ. 0.0D0) THEN
-                WRITE(*,124)' xObs'
+                WRITE(emsgRec,124)' xObs'
+                CALL emsg_put
               ELSE
                 xObs_FLG = .TRUE.; LxObsDef(iElt)=.TRUE.
                 ! Resolve any PolyObsVec/Poly3DObsVec stashed before
@@ -3783,8 +3888,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
      &  EdgeSensor(iElt) ! number of edge-sensors for iElt
               IF (RxBad(iosRx,VAR_NAM,iElt,VALUE)) GO TO 99
               If (EdgeSensor(iElt)<1) Then
-                print*,
+                WRITE(emsgRec,*) 
      &      '**msmacosio error: EdgeSensor must be positive integer!'
+                CALL emsg_put
                 GO TO 99 ! refuse the load (was STOP: killed the host; 5c)
               End If
               ! Read in position and measuring direction of all edge-sensors,
@@ -3793,8 +3899,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 !READ(RX_FID, 123, END=99)STRING
                 READ(RX_FID, *)EdgeSensVec(1:9,k,iElt) ! (position + two directions)
                 If (iElt==12) Then
-                  print*,'EdgeSensVec(1:9,k,12) =',
+                  WRITE(emsgRec,*) 'EdgeSensVec(1:9,k,12) =',
      &                   EdgeSensVec(1:10,k,12)
+                  CALL emsg_put
 	        End If
 	      End Do
 	      GO TO 61
@@ -3813,7 +3920,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 TElt_FLG=.TRUE.
                 GO TO 61
               ELSE
-                WRITE(*,*)'  must input nECoord before TElt'
+                WRITE(emsgRec,*)'  must input nECoord before TElt'
+                CALL emsg_put
                 GO TO 99
               END IF
 
@@ -3827,8 +3935,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 Call MakeDupElt(iElt,dupElt,jGridSrf)
                 DupElt_FLG=.TRUE.
               Else
-                WRITE(*,*)'  ** At Elt ',iElt,
+                WRITE(emsgRec,*)'  ** At Elt ',iElt,
      &                    ', duplicate Elt id ', dupElt,' is invalid'
+                CALL emsg_put
               End If
               GO TO 61
 
@@ -3844,7 +3953,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               IF (ELEM_OK) THEN
                 GO TO 62
               ELSE
-                WRITE(*,*)'  Input file not properly loaded'
+                WRITE(emsgRec,*)'  Input file not properly loaded'
+                CALL emsg_put
                 LOAD_SUCCESS = .FALSE.
                 GO TO 99
               END IF
@@ -3865,8 +3975,9 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
 
             ! ------------------------------------------------------------------------------
             ELSE
-              WRITE(*,*)' MBFile6: Unidentified string =',VAR_NAM,
+              WRITE(emsgRec,*)' MBFile6: Unidentified string =',VAR_NAM,
      &                  ', iElt=',iElt
+              CALL emsg_put
               GO TO 61
             END IF
             GO TO 62
@@ -3880,9 +3991,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
  69         CONTINUE
             IF (iElt.LT.1) GO TO 99
             LOutCordAbsent = .TRUE.
-            WRITE(*,'(A,I4,A)') ' ** No output-coordinate block'//
+            WRITE(emsgRec,'(A,I4,A)') ' ** No output-coordinate block'//
      &        ' (nOutCord=/Tout=) after element',iElt,
      &        ': proposing the beam frame at the last element'
+            CALL emsg_put
             nElt = iElt
             CALL ChkDf2(iElt, LOAD_SUCCESS)
             IF (LOAD_SUCCESS) GO TO 70
@@ -3900,7 +4012,8 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               nElt         = 0
               LOAD_SUCCESS = .FALSE.
 
-              WRITE(*,*) ' Too many elements defined => increase allocation.'
+              WRITE(emsgRec,*) ' Too many elements defined => increase allocation.'
+              CALL emsg_put
               GO TO 99
             END IF
 

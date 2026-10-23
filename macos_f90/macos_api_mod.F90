@@ -3789,6 +3789,69 @@
       end subroutine ray_status_get
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : The engine's message buffer (emsg_mod; PLAN_CONSOLIDATION 1.2 (ee)).  The load
+      !            path's notes, warnings and refusals, CALIB's cause lines and the SMACOS loop's
+      !            'Unknown command' print to Fortran unit 6, which does not reach file descriptor 1
+      !            across the FFI on macOS; each is also kept here, so a binding reads them on every
+      !            platform.  messages_count gives the kept lines' count, the length nChars_ of the kept
+      !            lines joined by LF (one LF after each, trailing blanks trimmed) and how many older
+      !            lines the 500-line buffer dropped; messages_get returns that text as character codes
+      !            (nChars = messages_count's nChars_); messages_clear empties the buffer.  The buffer holds
+      !            everything since the last clear -- the veneers read and clear it.  OK = PASS with
+      !            no Rx loaded: a refused load's messages are the point.
+      !---------------------------------------------------------------------------------------------
+      subroutine messages_count(OK, nLines_, nChars_, nDropped_)
+
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(out):: nLines_, nChars_, nDropped_
+
+        call emsg_stats(nLines_, nChars_, nDropped_)
+        OK = PASS
+
+      end subroutine messages_count
+
+      subroutine messages_get(OK, Codes_, nChars)
+
+        implicit none
+        logical,                    intent(out):: OK
+        integer, dimension(nChars), intent(out):: Codes_
+        integer,                    intent(in) :: nChars
+
+        integer :: nL, nC, nD, k, i, m, j
+        character(len=256) :: line
+
+        ! ------------------------------------------------------
+        OK     = FAIL
+        Codes_ = 0
+        call emsg_stats(nL, nC, nD)
+        if (nChars /= nC) return
+
+        j = 0
+        do k = 1, nL
+          line = emsg_line(k)
+          m = len_trim(line)
+          do i = 1, m
+            j = j + 1;  Codes_(j) = ichar(line(i:i))
+          end do
+          j = j + 1;  Codes_(j) = 10
+        end do
+
+        OK = PASS
+
+      end subroutine messages_get
+
+      subroutine messages_clear(OK)
+
+        implicit none
+        logical, intent(out):: OK
+
+        call emsg_clear()
+        OK = PASS
+
+      end subroutine messages_clear
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : Enable/disable the per-trace ray-position history capture
       !            (traceutil_mod's RayPosHist(3,mRay,0:nElt) + LRayOKHist,
       !            John Lou's Vis3D substrate): when on, EVERY trace records

@@ -3434,7 +3434,8 @@ C   If no file, zero matrix and return
      &          (GridFile(1:ICLEN(GridFile)).EQ.'NONE') .OR.
      &          (GridFile(1:ICLEN(GridFile)).EQ.'None')) THEN
                GridFile='none'
-               WRITE(*,*)' No grid matrix provided'
+               WRITE(emsgRec,*)' No grid matrix provided'
+               CALL emsg_put
                CALL DZERO(GridMat(1,1,jGridSrf),mGridMat*mGridMat)
                ifGridInit=.FALSE.
                RETURN
@@ -3455,10 +3456,12 @@ C   If no file, zero matrix and return
 !           nGridMat BEFORE the grid is read (the prescription parser
 !           defers GridFile= until it has).  Backstop only.
             IF (nGridMatS.LE.0) THEN
-               WRITE(*,*)' GridInit: nGridMat =',nGridMatS,
+               WRITE(emsgRec,*)' GridInit: nGridMat =',nGridMatS,
      &           ' for grid file ',GridFile(1:ICLEN(GridFile))
-               WRITE(*,*)' nGridMat must be set BEFORE the grid is',
+               CALL emsg_put
+               WRITE(emsgRec,*)' nGridMat must be set BEFORE the grid is',
      &           ' read -- grid NOT loaded.'
+               CALL emsg_put
                IF (jGridSrf.GE.1)
      &           CALL DZERO(GridMat(1,1,jGridSrf),mGridMat*mGridMat)
                ifGridInit=.FALSE.
@@ -3488,9 +3491,10 @@ C   If no file, zero matrix and return
      &          LEN_TRIM(RxDir) > 0) THEN
                fpath = TRIM(RxDir)//TRIM(ADJUSTL(GridFile))
                INQUIRE (FILE=fpath,EXIST=exist)
-               IF (exist) WRITE(*,'(4A)') '  Grid file ',
+               IF (exist) WRITE(emsgRec,'(4A)') '  Grid file ',
      &           GridFile(1:ICLEN(GridFile)),' found beside the deck: ',
      &           TRIM(fpath)
+               CALL emsg_put
             END IF
             IF (exist) THEN
                if (.not.isBinFil) then
@@ -3503,17 +3507,20 @@ C   If no file, zero matrix and return
                end if
 !<--
             ELSE
-               WRITE(*,*)' File ',GridFile(1:ICLEN(GridFile)),
+               WRITE(emsgRec,*)' File ',GridFile(1:ICLEN(GridFile)),
      &         ' does not exist -sub GridInit in surfsub.f'
+               CALL emsg_put
                CALL DZERO(GridMat(1,1,jGridSrf),(mGridMat*mGridMat))
                ifGridInit=.FALSE.
                RETURN
             END IF
 
 C  Read input data
-            WRITE(*,*)' Reading surface grid data file ',
+            WRITE(emsgRec,*)' Reading surface grid data file ',
      &                  GridFile(1:ICLEN(GridFile))
-            WRITE(*,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
+            CALL emsg_put
+            WRITE(emsgRec,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
+            CALL emsg_put
             iDat=0
             !DO j=1,mGridMat
             DO j=1,nGridMatS
@@ -3523,7 +3530,8 @@ C  Read input data
      &                (GridMat(i,j,jGridSrf),i=1,nGridMatS)
                else
                   ! read binary data
-                  print*,'* Bin read: reading a line'
+                  WRITE(emsgRec,*) '* Bin read: reading a line'
+                  CALL emsg_put
                   !READ(94,ERR=2,END=1)
                   READ(94,END=1)
      &                 GridMat(1:nGridMatS,j,jGridSrf)
@@ -3532,14 +3540,16 @@ C  Read input data
 
     1       CONTINUE
             ifGridInit=.TRUE.
-            WRITE(*,103) nGridMatS,iDat
+            WRITE(emsgRec,103) nGridMatS,iDat
+            CALL emsg_put
             CLOSE(94)
             !print*,'**** GridMat=',GridMat(1:96,1:96,jGridSrf)
             RETURN
 
     2       CONTINUE
             ifGridInit=.FALSE.
-            WRITE(*,*) ' Error during read GridData file!'
+            WRITE(emsgRec,*) ' Error during read GridData file!'
+            CALL emsg_put
             CALL DZERO(GridMat(1,1,jGridSrf),(mGridMat*mGridMat))
             CLOSE(94)
             RETURN

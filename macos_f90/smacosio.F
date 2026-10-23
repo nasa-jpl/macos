@@ -160,7 +160,8 @@ C	File setup and initial conditions read
         ! ----------------------------------------------------------
         ! 'NEW' cmd is not supported
         IF (.NOT.ifOld) THEN
-          WRITE(*,*)' SMACOS does not support the NEW command.'
+          WRITE(emsgRec,*)' SMACOS does not support the NEW command.'
+          CALL emsg_put
           RETURN
         END IF
 
@@ -188,7 +189,8 @@ C       Get file name
         INQUIRE (file=infil(1:L), exist=exist)
 	IF (exist) THEN
 	!   IF (ifOld) THEN
-	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
+	    WRITE(emsgRec,*) ' Input file ',infil(1:L),' being loaded.'
+	    CALL emsg_put
 !-->  (f): remember the deck's folder for GridFile= (GridInit)
 	    RxDir = ' '
 	    iRxSep = MAX(INDEX(infil(1:L),'/',BACK=.TRUE.),
@@ -203,8 +205,9 @@ C       Get file name
 	  iopt=1
 	ELSE
 	!   IF (ifOld) THEN
-	    WRITE (*,*) ' Input file ',infil(1:L),
+	    WRITE(emsgRec,*) ' Input file ',infil(1:L),
      &	    ' does not exist. Check name/path or use NEW.'
+	    CALL emsg_put
 	!     GO TO 43
 	!   END IF
 	  iopt=0   ! ifOLD = .false. - jzlou
@@ -235,14 +238,17 @@ C
 	    IF (hascr) THEN
 	      CALL RxNormalizeEOL(infil(1:L),tmpf,nok)
 	      IF (nok) THEN
-	        WRITE(*,'(A,A,A)') '  ',infil(1:L),
+	        WRITE(emsgRec,'(A,A,A)') '  ',infil(1:L),
      &          ': CR line endings normalized for this load'
+	        CALL emsg_put
 	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
 	      END IF
 	    END IF
 	    IF (vios /= 0) THEN
-	      WRITE(*,*)' ** Prescription validation failed:'
-	      WRITE(*,*)'    ',TRIM(vmsg)
+	      WRITE(emsgRec,*)' ** Prescription validation failed:'
+	      CALL emsg_put
+	      WRITE(emsgRec,*)'    ',TRIM(vmsg)
+	      CALL emsg_put
 	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 99
@@ -300,7 +306,8 @@ C
 	  IF (EXIT_OK) THEN
 	    GO TO 80
 	  ELSE
-	    WRITE(*,*)'  Input file not properly loaded'
+	    WRITE(emsgRec,*)'  Input file not properly loaded'
+	    CALL emsg_put
 	    GO TO 99
 	  END IF
 
@@ -309,7 +316,8 @@ C
 	  CALL SumData(GridType,npts)
 
           IF (nGridpts.GT.mpts) THEN
-	    WRITE(*,121)mpts
+	    WRITE(emsgRec,121)mpts
+	    CALL emsg_put
 	    nGridpts=mpts
 	    npts=nGridpts-1
 	    if (.not.opt_npts_flg) then
@@ -320,14 +328,17 @@ C
 
 	  ! ToDo: this might cause indexing faults
           IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
-	    WRITE(*,*) ' Too many segments.'
-	    WRITE(*,*) '  MODIFY or use another version. '
+	    WRITE(emsgRec,*) ' Too many segments.'
+	    CALL emsg_put
+	    WRITE(emsgRec,*) '  MODIFY or use another version. '
+	    CALL emsg_put
 	  END IF
 
 C       Create new input file
 
 	ELSE
-	  WRITE(*,*)' SMACOS does not support the NEW command.'
+	  WRITE(emsgRec,*)' SMACOS does not support the NEW command.'
+	  CALL emsg_put
           GO TO 99
 	END IF
 
@@ -541,6 +552,7 @@ C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE 1000 CHARACTERS LONG.
 C
 	use lohpars_mod
+	use emsg_mod
 
 	IMPLICIT NONE
 
@@ -649,9 +661,10 @@ C  GO TO next CHARACTER
 !     refuse the line by its command.  A journal reads its next line; the
 !     one-line STACK returns nothing (re-reading it would loop).
 	IF (j.GT.mLohTok) THEN
-	  WRITE(*,'(3A,I0,A,I0,A)') ' ** Command line refused (',
+	  WRITE(emsgRec,'(3A,I0,A,I0,A)') ' ** Command line refused (',
      &      TRIM(var_store(1,pstack)),'): ',j,' tokens, at most ',
      &      mLohTok,' on a line'
+	  CALL emsg_put
 	  IF (bat_task .NE. 1) GO TO 10
 	  j=0
 	END IF
@@ -686,8 +699,9 @@ c we've done that, so just return
 	  GO TO 200
 	ELSE
 c shouldn't get here
-	  WRITE(*,*) '[parse_loh]',
+	  WRITE(emsgRec,*) '[parse_loh]',
      &	  ' error, pstack = ',pstack, ' bat_task = ',bat_task
+	  CALL emsg_put
 c go back to console
 	  bat_task=1
 	END IF
@@ -702,8 +716,9 @@ c input STACK empty, quit
 
 c sws    error RETURN in reading input
  300	CONTINUE
-	WRITE(*,*) '[parse_loh]',
+	WRITE(emsgRec,*) '[parse_loh]',
      &	' file error during READ, bat_task = ',bat_task
+	CALL emsg_put
 c       Treat the read error as end-of-file: pop the journal stack and
 c       return to the console.  Without this, the cmd loop would call
 c       PARSE_LOH again, hit the same broken READ, and spin forever.

@@ -6482,7 +6482,8 @@ C         ***Here if no match***
 #else
 	    IF (ifEcho) WRITE(*,302)
 #endif
-	    WRITE(*,'(A,A)') '** Unknown command = ', TRIM(command)
+	    WRITE(emsgRec,'(A,A)') '** Unknown command = ', TRIM(command)
+	    CALL emsg_put
 	  END IF
 	GO TO 1
 

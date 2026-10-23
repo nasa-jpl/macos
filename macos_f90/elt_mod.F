@@ -12,6 +12,10 @@ C***********************************************************************
         use Constants, only:  SQRT_3,  SQRT_5,  SQRT_6,  SQRT_7,  SQRT_8, SQRT_10,
      &                       SQRT_11, SQRT_12, SQRT_14, SQRT_18, SQRT_20, SQRT_22
         use param_mod
+!-->  The message buffer (PLAN_CONSOLIDATION 1.2 (ee)): every user of elt_mod
+!     -- the Rx loaders, msmacosio.inc, iosub.inc -- prints through it.
+        use emsg_mod
+!<--
 
         Implicit none
         Save
@@ -783,8 +787,9 @@ C***********************************************************************
             nHdrUnk = nHdrUnk + 1
             HdrUnkKey(nHdrUnk) = key
           END IF
-          WRITE(*,'(2A)') '  MBFile6: Unidentified header string = ',
+          WRITE(emsgRec,'(2A)') '  MBFile6: Unidentified header string = ',
      &      TRIM(key)
+          CALL emsg_put
         END SUBROUTINE HdrUnkNote
 !<--
 
@@ -875,9 +880,10 @@ C***********************************************************************
           IMPLICIT NONE
           CHARACTER(LEN=*), INTENT(IN) :: key, where
           INTEGER,          INTENT(IN) :: ie, nr, n
-          WRITE(*,'(A,A,A,I4,A,I4,A,I4,A,A,A)') '  ', TRIM(key),
+          WRITE(emsgRec,'(A,A,A,I4,A,I4,A,I4,A,A,A)') '  ', TRIM(key),
      &      ' (elt', ie, '): ', nr, ' of ', n, ' values ',
      &      TRIM(where), '; the rest are 0'
+          CALL emsg_put
         END SUBROUTINE CoefShortNote
 !<--
 !-->  RxBad (2026-10-09, PLAN_CONSOLIDATION 1b; Dave's ruling 4a): the
@@ -898,14 +904,17 @@ C***********************************************************************
           RxBad = (ios .NE. 0)
           IF (.NOT. RxBad) RETURN
           IF (ie .GE. 1 .AND. ie .LE. SIZE(EltID)) THEN
-            WRITE(*,'(A,A,A,I4,A)') ' ** Rx load refused: ',
+            WRITE(emsgRec,'(A,A,A,I4,A)') ' ** Rx load refused: ',
      &        TRIM(key), ' (elt', ie, '): the value could not be read'
+            CALL emsg_put
           ELSE
-            WRITE(*,'(A,A,A)') ' ** Rx load refused: ',
+            WRITE(emsgRec,'(A,A,A)') ' ** Rx load refused: ',
      &        TRIM(key), ' (header): the value could not be read'
+            CALL emsg_put
           END IF
-          WRITE(*,'(A,A,A)') '    -- too few values, or not a number: "',
+          WRITE(emsgRec,'(A,A,A)') '    -- too few values, or not a number: "',
      &      TRIM(ADJUSTL(text(1:MIN(LEN(text),100)))), '"'
+          CALL emsg_put
         END FUNCTION RxBad
 !<--
 
@@ -931,13 +940,15 @@ C***********************************************************************
      &      .AND. (f8.NE.'none' .AND. f8.NE.'None' .AND. f8.NE.'NONE')
           IF (.NOT.GridTooBig) RETURN
           nGridDropped = nGridDropped + 1
-          WRITE(*,'(A,A,A,I6,A,I5,A)')
+          WRITE(emsgRec,'(A,A,A,I6,A,I5,A)')
      &      ' ** GridFile ', TRIM(ADJUSTL(fname)), ':', n,
      &      ' points exceed mGridMat=', mGridMat, ' for this model:'
-          WRITE(*,'(A,I6,A)')
+          CALL emsg_put
+          WRITE(emsgRec,'(A,I6,A)')
      &      '    grid NOT loaded, the surface traces without it'//
      &      ' -- needs a model whose mGridMat >=', n,
      &      ' (macos_param.txt)'
+          CALL emsg_put
         END FUNCTION GridTooBig
 !<--
 
