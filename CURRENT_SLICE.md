@@ -3796,3 +3796,10 @@ promote-on-land pass.**
 > and no Darwin guard left (one by-design skip).  PUSHED (Dave's word, 12th): the mmacos-manual plan (PLAN_MMACOS_MANUAL.md), the
 > IODC brief for CCMac (NOTE_to_ccmac_iodc.md), the gate-11 line.  No CCMac engine pair pending; his next task = the IODC review.
 > TO's next on Dave's word: bindings coverage.**
+
+> **2026-10-23 (CC, hand-off; Dave away 2.5 days from today; Fable time ~6%):** LOCAL above origin e8d33923: PLAN_MMACOS_MANUAL
+> (74215a52, eafa10c0), BRIEF_to_iodc_challenge (54dc1f26, 980afe37: 2010 green lens first, 2014 second, 2023 stress), and
+> BRIEF_to_mmacos_manual (TO starts Part I after his bindings gates clear; defaults = e2e telescope, keep the 40 helpers).
+> TO's bindings round is in flight on Dave's direct word (LOCAL, uncommitted; SINT findings; defaults rulings for Dave: elt_csys
+> update flag, perturb frame).  CCMac: IODC record babb2c01 local on the Mac, no engine pair pending.  Push: only on Dave's word.
+> NEXT SESSION: read this tail, then PLAN_MMACOS_MANUAL and the two briefs; Dave picks the IODC year and rules the two defaults.**
