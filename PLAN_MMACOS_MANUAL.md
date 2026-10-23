@@ -60,6 +60,16 @@ deck figures unmodified; the pin policy).
   entries are CODE V / Zemax files, so `rx_converter` is on the comparison path for any scored year; the SPIE full
   text was unreachable from the Mac too (the JPL library pull is listed line by line in the record); any printed
   prescription is reproduced independently, never copied.  AWAITING Dave: name the problem.
+  **Paper IDs for the JPL-library pull (all R. C. Juergens, SPIE proceedings; 2026-10-23):**
+  | Year | Proc. SPIE | Paper | DOI |
+  |---|---|---|---|
+  | 2006 "the lens shuffler" (a 100 mm N-BK7 cylinder divided into elements) | 6342 | 63421U | 10.1117/12.695230 |
+  | 2010 "the green lens" (one shared radius, N-BK7, 532 nm; winner EPD 81.3 mm, 43.5 deg, product 3537; 37 entries) | 7652 | 76522I | 10.1117/12.871174 |
+  | 2014 "the Cinderella lens" (ten N-BK7 blanks 100 mm dia x 30 mm, 587.56 nm; winner Jon Ehrmann, 25 elements, EPD 33.9 mm, 62.5 deg, product 2119; 45 entries) | 9293 | 929303 | 10.1117/12.2074232 |
+  | 2017 "the centennial lens" | 10590 | 1059002 | 10.1117/12.2299564 |
+  | 2021 "the down under lens" (winner Damien Gawron, 198.4 mm, 90 deg, 17857) | 12078 | 1207820 | 10.1117/12.2605550 |
+  | 2023 "the Yin-Yang lens" (N-BK7 + N-SF6; winner Arnaud Davenel) | 12798 | 1279837 | 10.1117/12.3012062 |
+  Correction to the earlier abstract reading: the "81.3 mm / 43.5 deg" winner belongs to 2010, not 2014.
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
