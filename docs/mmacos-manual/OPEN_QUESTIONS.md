@@ -56,9 +56,19 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   WEM MET-only 3.877 vs 3.707, edge+MET 1.782 vs 1.755.  The manual prints the live search, run on a
   copy of `s5_met.m` with its preset-library promotion cut (presets md5-identical before and after).
 - **ch. 5: `e2e_pie_met_metric.png` drops a bar and `e2e_pie_met*_layout.png` mislabels an axis.**  The
-  metric chart's log axis bottoms near 0.09, so the "edge+MET opt" bar (~0.04) does not show; the
+  metric chart's log axis bottoms near 0.09, so the "edge+MET opt" bar (about 0.04 of prior by the WEM ratio; the chart does not print it) does not show; the
   hub-plane inset of the layout figures is labeled mm but plots metres (fiducials at r = 0.196).  The
-  manual prints the layouts (the caption says the units) and leaves the metric chart out.
+  manual prints the layouts (the caption says the units) and leaves the metric chart out.  PLAN_CONSOLIDATION
+  1.2 (hhh), (iii); the label is hard-coded at src/+macos/+design/met_view.m:199-200.
+- **ch. 7: `run_budget`'s per-group chart (`<name>_budget.png`) leaves out the rows that make its total.**
+  It bars the alignment groups only; the actuator and sensing rows (2.595 + 1.281 + 1.251 + 0.092 nm of
+  the 3.156 nm in its title) are not in it, and the controlled groups' bars are projection residuals
+  (1e-9 .. 1e-12 nm, numerical zeros) drawn as results.  The manual prints it with a caption that says
+  both.  No fix.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
+- **The thread's error budget (ch. 7):** e2e has no budget stage, and its group table (an allowed sigma per
+  error line, the control set, the sensing and actuator noise) is a design choice, so chapter 7 runs the
+  library's e5hex1 budget (the same seven-segment class) and says how `run_budget` takes the thread's
+  `s4_sens.mat`.  Do you want an e2e budget spec authored (and by whom), so chapter 7 joins the thread?
