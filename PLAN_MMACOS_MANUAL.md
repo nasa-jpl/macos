@@ -6,8 +6,9 @@ nothing is typed.  Each chapter has three voices: what the reader ASKS (the prom
 before it acts (the CLAUDE.md set, `optical_design/` rules and guides, `macos_f90/notes/`), and what it RUNS (a
 named template or runner, with its transcript and figures).
 
-**Decisions for Dave:** (1) the thread's telescope -- the e2e flow (3 m f/20 TMA, all seven stages, the e5hex1
-budget exist) or e2e6m (the 6 m unobscured coronagraph front end); CC recommends e2e.  (2) the forty helpers no
+**Decisions for Dave:** (1) the thread's telescope -- the e2e flow (the 4 m f/18 folded Korsch; all seven stages
+and the e5hex1 budget exist; e2e2 is the 3 m f/20 design-only flow) or e2e6m (the 6 m unobscured coronagraph
+front end); CC recommends e2e, and TO started on it 2026-10-23 as the default.  (2) the forty helpers no
 template calls (`design/src` 40 of 75, `sensitivities` 12 of 24 unused): template pages, or retired before
 Part II is written -- a catalog of dead functions is worse than none.
 

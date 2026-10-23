@@ -7,8 +7,9 @@ literature challenges).  Everything stays LOCAL until Dave's word; commit by exp
 iteration with Dave on his return -- write for revision, not for polish.
 
 ## Defaults for the two decisions the plan left open (CC's call so you can start; Dave overturns on return)
-1. **The thread's telescope = the e2e flow** (`templates/80_end_to_end/e2e`, the 3 m f/20 TMA at 500 nm): it has all
-   seven stages and the e5hex1 budget.  e2e6m stays as a Part II page.
+1. **The thread's telescope = the e2e flow** (`templates/80_end_to_end/e2e`, the 4 m f/18 folded Korsch; CC's brief
+   first mis-named it the 3 m f/20, which is e2e2's design-only flow -- TO's correction 2026-10-23): it has all seven
+   stages and the e5hex1 budget.  e2e2 gets a pointer in chapter 1 as the improved design flow; e2e6m is a Part II page.
 2. **The forty uncalled helpers**: do NOT delete.  Part II documents the helpers a template calls; the uncalled ones go
    in one table (name, one line, last caller if any) for Dave to rule retire-or-page.
 
