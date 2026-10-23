@@ -4168,6 +4168,49 @@
       end subroutine ref_rays
 
       !---------------------------------------------------------------------------------------------
+      ! Purpose  : SINT -- read the data of every Interpolated surface (SrfType 5) of the loaded
+      !            deck and set up its interpolation (BRIEF_to_bindings B.2, 2026-10-23).  Element
+      !            N's data file is <deck>.srfN.bin, else .srfN.txt, <deck> the loaded deck's name
+      !            without its '.in' or, second, with it (the CLI's spelling), read as the CLI's
+      !            SINT reads it; a missing file is not prompted for and that element is not set.
+      !            Set_(k): 1 = element k's data set, -1 = an Interpolated surface whose data was
+      !            not set (it traces as its base conic), 0 = not an Interpolated surface.
+      !            nSet_ = the number of 1s.  Why an element was not set is in the message buffer
+      !            (messages_get).  nElt_ must be nElt.
+      !---------------------------------------------------------------------------------------------
+      subroutine sint_cmd(OK, nSet_, Set_, nElt_)
+
+        implicit none
+        logical,                     intent(out)  :: OK
+        integer,                     intent(out)  :: nSet_
+        integer, dimension(nElt_),   intent(inout):: Set_
+        integer,                     intent(in)   :: nElt_
+        integer :: i
+        ! ------------------------------------------------------
+        OK = FAIL
+        nSet_ = 0;  Set_ = 0
+
+        if (.not. SystemCheck()) return
+        if (nElt_ /= nElt) return
+
+        command = 'SINT'
+        CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,                     &
+                    OPDMat,RaySpot,RMSWFE,PixArray)
+
+        do i = 1, nElt
+          if (SrfType(i) == 5) then
+            if (ifIntSrfSet(i)) then
+              Set_(i) = 1;  nSet_ = nSet_ + 1
+            else
+              Set_(i) = -1
+            end if
+          end if
+        end do
+        OK = PASS
+
+      end subroutine sint_cmd
+
+      !---------------------------------------------------------------------------------------------
       ! Purpose  : One-stop element metadata for layout drawing: element
       !            type id (elt_mod EltID constants), aperture declaration
       !            (ApType / ApVec / xObs, plus the projected polygon

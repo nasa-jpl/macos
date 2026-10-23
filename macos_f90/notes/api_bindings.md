@@ -289,3 +289,29 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
   dropped count; pymacos also checks on Linux that every kept line was printed, in order).
 - **Not converted (a census for later):** the rest of the command loop's ` ** ` lines (~45), macos_ops.F,
   and the CLI-only loader in macosio.F.  A binding that needs one of them: convert it with the script.
+
+## SINT through the api: sint_cmd, and a SMACOS prompt must never loop back (BRIEF_to_bindings B.2, 2026-10-23)
+
+`sint_cmd(OK, nSet_, Set_, nElt_)` issues SINT through SMACOS (it was already in the shared
+`macos_cmd_loop.inc`; LoadStack loads the bare command) and returns, per element, 1 = data set,
+-1 = an Interpolated surface not set (it traces as its base conic), 0 = not one.  Veneers
+`macos.sint` / pymacos `sint()`; gates tSint / test_sint.py (the CLI's numbers from
+`cli_tests/cmd/SINT_short_file.jou`).  Three findings in `SetIntSrf` (iosub.inc), all fixed:
+
+- **A SMACOS prompt that loops back hangs the host.**  An empty SMACOS stack does not return
+  blank: `READ_LOH` calls `PARSE_LOH`, which re-parses the one-line command STACK, so the
+  missing-file prompt (`CACCEPT(...,'QUIT',...)` then GO TO 1) read back 'SINT' forever (pytest
+  at 100% CPU) -- the default 'QUIT' is never seen.  `smacosio.F` now `#define SMACOS_IO` before
+  `#include "iosub.inc"`, and a prompting iosub routine takes an `#ifdef SMACOS_IO` no-prompt
+  branch (SetIntSrf: the element is not set, the reason in the buffer).  Any other iosub.inc
+  prompt reachable from an api routine needs the same branch; none is audited yet.
+- **The data-file name differed by front end.**  `filnam` keeps the deck's '.in' in the CLI and
+  drops it under SMACOS, so the CLI read `<deck>.in.srfN.txt` and the bindings `<deck>.srfN.txt`.
+  Each now tries its own spelling, then the other (each miss named in the buffer).
+- **A file shorter than its header kept one unread row.**  `jDP=jDP+1` ran before the READ, so
+  END=4 left jDP one past the rows read and the unread `SURFACE` row (whatever the stack held) was
+  a data point: on tst_trace_rewrites.in, P-V 1.906e-6 -> 4.128e-6 (gfortran) / 3.837e-6 (ifx),
+  silently.  The rows read are used, with `** Interpolated surface data, element N: <file>
+  declares M points, K read; the points read are used`; fewer than 3 read is "Too few".  The
+  short file stays tolerated (guards warn).  SetIntSrf's writes go through the message buffer
+  (tools/emsg_convert.py's iosub.inc scope is ChkDf2 + SetIntSrf).

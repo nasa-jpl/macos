@@ -1021,6 +1021,9 @@ c we're building a journal file, write out the default
 	IVAR = ivar_arr(1)
 	END SUBROUTINE IACCEPT_S
 
+!-->  iosub.inc routines that prompt take the no-prompt branch here
+#define SMACOS_IO
+!<--
 #include "iosub.inc"
 	End Module smacosio_mod
 
