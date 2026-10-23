@@ -1002,7 +1002,7 @@ use the element's stored output / element frame and never trace the chief ray.
 - **mmacos:** `macos.srs(iSlv1, iSlv2, opts)`
 - **pymacos:** `pymacos.srs(slave, master, link)`
 
-Slave an element to another via the SRS (Set Reference Surface) cmd. macos.srs(IS1, IS2) moves IS1 onto IS2 in the sense of macos's interactive SRS command -- IS1's pose (vpt / psi / rpt) is recomputed from the chief-ray geometry as it crosses IS2's plane.  macos.srs(IS1, IS2, 'link', true) creates a permanent linked-element
+Slave an element to another via the SRS (Set Reference Surface) cmd. macos.srs(IS1, IS2) moves IS1 onto IS2 in the sense of macos's interactive SRS command -- IS1's pose (vpt / psi / rpt) is recomputed from the chief-ray geometry as it crosses IS2's plane.  macos.srs(IS1, IS2, 'link', false) computes and prints the new pose but
 
 <!-- BEGIN NOTES fn-srs -->
 <!-- END NOTES fn-srs -->
@@ -2159,6 +2159,16 @@ Set ZernCoef values at the given modes on a Zernike (SrfType=8) or ZrnGrData (Sr
 
 <!-- BEGIN NOTES fn-setEltSrfZernCoef -->
 <!-- END NOTES fn-setEltSrfZernCoef -->
+
+#### sint
+
+- **mmacos:** `r = macos.sint()`
+- **pymacos:** `pymacos.sint()`
+
+Read the data of every Interpolated surface and set up its interpolation -- the CLI's SINT. r = macos.sint() For each element with Surface= Interpolated (SrfType 5) the engine reads <deck>.srfN.bin, else .srfN.txt, where <deck> is the loaded deck's name without its '.in' (Rx_TraceRewrites.srf1.txt for element 1) or, second, with it (the CLI's spelling, Rx_TraceRewrites.in.srf1.txt) -- and precomputes the triangular
+
+<!-- BEGIN NOTES fn-sint -->
+<!-- END NOTES fn-sint -->
 
 #### srt
 

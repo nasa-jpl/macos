@@ -283,7 +283,7 @@ the model at init).
 
 Run a shell command.
 
-*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BINARY_CENTER.jou`, `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `CALIB_save_roundtrip.jou`, `COAT_legacy.jou`, `COORD_ACOOR.jou`, `EMACS_VI.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `LOH_tokens.jou`, `METCALC.jou`, `NEW.jou`, `OBS_POLYGON.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `PWIN.jou`, `SHELL_LONG.jou`, `SINT.jou`, `SPCENTER.jou`, `STARTUP_size.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BINARY_CENTER.jou`, `BWK.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_journal_prompts.jou`, `CALIB_save_roundtrip.jou`, `COAT_legacy.jou`, `COORD_ACOOR.jou`, `EMACS_VI.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `LOH_tokens.jou`, `METCALC.jou`, `NEW.jou`, `OBS_POLYGON.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `PWIN.jou`, `SHELL_LONG.jou`, `SINT.jou`, `SINT_short_file.jou`, `SPCENTER.jou`, `STARTUP_size.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -307,7 +307,7 @@ Interactive CLI only.
 
 Working directory shell helpers.
 
-*CLI suite:* `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `COAT_legacy.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SINT.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `WINDOW_GBS.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `COAT_legacy.jou`, `COORD_ACOOR.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PREAD.jou`, `RX_FID_LS.jou`, `SINT.jou`, `SINT_short_file.jou`, `SPCENTER.jou`, `UDSINIT.jou`, `WINDOW_GBS.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -436,7 +436,7 @@ working directory (PLAN_CONSOLIDATION 1.2 (r)).
 
 Load a .in prescription.
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_save_roundtrip.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `COORD_offaxis_frame.jou`, `DOPD_identical.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMAGEDEMO_proptype.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `OptAsph_order.jou`, `PARTIALS_inputray.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_save_roundtrip.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `COORD_offaxis_frame.jou`, `DOPD_identical.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMAGEDEMO_proptype.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `OptAsph_order.jou`, `PARTIALS_inputray.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SINT_short_file.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
@@ -1872,9 +1872,10 @@ Flats keep f=INF regardless of the propagation distance, and
 a slaved-to FocalPlane's big zElt sentinel is preserved.
 Return-surface parity between the two elements selects among
 plane/sphere geometry cases; the asymmetric sphere-slaved-to-
-plane case is unimplemented (warning).  Code bug: the accept
-test uses .OR. where FEXit/ORS use .AND., so the new element
-data is applied regardless of the answer.  SMACOS:
+plane case is unimplemented (warning).  A 'no' to the accept
+prompt leaves the element alone (fixed 1.2 (gg), 2026-10-19:
+the test used .OR. where FEXit/ORS use .AND.); the bindings'
+`link` argument is that answer, default yes.  SMACOS:
 IARG(1)=slaved element, IARG(2)=slave-to element,
 CARG(1)=accept answer.
 *Related:* ORS, FEXit, PROpagate.
@@ -1886,7 +1887,7 @@ CARG(1)=accept answer.
 
 Turn off plotting (no PGPLOT calls).
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `DOPD_identical.jou`, `FILTERS_MULTISPEC.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `PLOCATE_NOPLOC.jou`, `SESSION_INFO.jou`, `SINT.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `DOPD_identical.jou`, `FILTERS_MULTISPEC.jou`, `GRIDFILE_beside.jou`, `IMG.jou`, `LINEAR_MODEL.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `PLOCATE_NOPLOC.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SINT_short_file.jou`, `WINDOW_GBS.jou`, `ZABERR_ZRM_DOPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — plot style (the bindings return the arrays).
 
@@ -1913,9 +1914,9 @@ type of choice for journals/scripts that must run headless.
 
 Set up interpolated-surface data.
 
-*CLI suite:* `SINT.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `SINT.jou`, `SINT_short_file.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **missing** — single-ray tracing (B.2, first).
+*Binding:* **SMACOS command** — `sint_cmd`.
 
 <!-- BEGIN NOTES cmd-SINt -->
 *Syntax:* `SINT`; no prompt — reads `<deck>.in.srfN.txt` (or `.bin`) for every Interpolated surface N.
@@ -2436,7 +2437,7 @@ Set beam type (Gauss, plane, ...).
 <!-- BEGIN NOTES cmd-BEAm -->
 *Syntax:* `BEAM [type] [params…]` — UNIFORM (no more prompts), GAUSSIAN (x and y waist radii), COS**POWER (radius, exponent), DIPOLE.
 
-*Defaults:* type [UNIFORM]; the Gaussian waists [1.00000] each; the cosine radius [the aperture radius] and exponent [1.0].
+*Defaults:* type [UNIFORM]; the Gaussian waists [a quarter of the source Aperture: 1.00000 on the example's 4.0] each; the cosine radius [the aperture radius] and exponent [1.0].
 
 ```
 MACOS>beam
@@ -2705,7 +2706,7 @@ SMACOS: CARG(1)=type.
 
 Wavefront error map.
 
-*CLI suite:* `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BINARY_CENTER.jou`, `COAT_legacy.jou`, `DOPD_identical.jou`, `EXPORT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `PERTURB.jou`, `PGD_reopen_units.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RRAY_PRAY_TPR_FSR.jou`, `SAVE_roundtrip.jou`, `SINT.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `BINARY_CENTER.jou`, `COAT_legacy.jou`, `DOPD_identical.jou`, `EXPORT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIN_unsupported.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LONG_PATH.jou`, `MOD_spaces.jou`, `MRESET.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `PERTURB.jou`, `PGD_reopen_units.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RRAY_PRAY_TPR_FSR.jou`, `SAVE_roundtrip.jou`, `SINT.jou`, `SINT_short_file.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WLENS_SWL.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `trace_rays`.
 
