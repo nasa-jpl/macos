@@ -3812,3 +3812,9 @@ promote-on-land pass.**
 > the pair-12 note; the manual brief/plan name e2e correctly = 4 m f/18 folded Korsch), resources 446bd45.  CCMac's PAIR 12 =
 > 08b92085 + 446bd45.  TO on the mmacos manual chapter 1 driver.  LESSON: one shared local branch -- check `git log origin..HEAD`
 > by author before every push.**
+
+> **2026-10-23 (CC, supervising; Dave away): mmacos manual PART I COMPLETE on origin (81be4f34): chapters 1-7, 45 pages, every
+> number generated + pinned (fail-closed checker dbc2aea2).  Findings for Dave in PLAN 1.2 (bbb)-(kkk): e2e stale stage-1 outputs,
+> two rotted coronagraph templates, ImageDemo no BaseUnits, pie gap-clip 0 vs 376, s5 report provenance, three figure defects,
+> and (kkk) run_compare mixes OPD references since 10-10 (chief 188.9 / mean 61.98 / linear 61.98 nm -- Dave rules the sens
+> core's reference).  OPEN_QUESTIONS.md in docs/mmacos-manual/.  TO next: the Part I report for Dave, then Part II pages.**
