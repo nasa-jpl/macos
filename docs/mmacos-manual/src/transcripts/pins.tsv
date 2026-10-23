@@ -57,12 +57,23 @@ ch05_mc_draws	200
 ch05_mc_nm	0.020
 ch05_mc_analytic_nm	0.020
 ch06_x_pokes	54
-ch06_x_w	< 0.01
+ch06_x_w	9.45e-01
 ch06_x_l	< 1e-05
 ch06_x_e	< 1e-06
-ch06_z_w	< 0.01
+ch06_z_w	9.90e-01
 ch06_g_pokes	42
 ch06_g_w	9.87e-01
+ch06_a_corr_390	44.02
+ch06_a_corr_400	0.843
+ch06_a_corr_500	11.81
+ch06_b_corr_390	45.35
+ch06_b_corr_400	23.64
+ch06_b_corr_500	30.15
+ch06_ref_chief_rms	188.9
+ch06_ref_chief_mean	178.4
+ch06_ref_mean_mean	< 1e-09
+ch06_ref_mean_rms	61.98
+ch06_ref_linear_rms	61.98
 ch07_floor	< 1e-06
 ch07_pre	317.4
 ch07_post	3.156
