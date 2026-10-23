@@ -3786,3 +3786,8 @@ promote-on-land pass.**
 > **2026-10-23 (CC): CCMac's gate 10 CLEAN (one near-zero re-pin, COAT_legacy.jou widened, mine).  TO's round 2 (ee) message buffer
 > LOCAL in his lane (492998db .. fc1c7789; resources 0b39b0a); CCMac's gate-10 record 06bee43d local on the Mac.  AWAITING Dave: push
 > word for all of it; then CCMac's pair 11 = the pushed tips (TO's rule: a Mac red = a missing buffer site, not a test to re-guard).**
+
+> **2026-10-23 PUSHED (Dave's word, 11th: 'review, up the NOTE, push'): CCMac's gate 10 merged (0c0c98c7); TO's (ee) message buffer
+> + guards lifted; my pin work (gate-10 line, seven journals bounded, the five-figure exception recorded).  CCMac's PAIR 11 = 0c0c98c7 +
+> resources 0b39b0a (NOTE_to_ccmac_pair11.md: a Mac red from a lifted guard = a missing buffer site, TO's lane).  Engine lane idle;
+> next for TO when Dave says: bindings coverage (146 vs 136, defaults audit, CLI-without-api).**
