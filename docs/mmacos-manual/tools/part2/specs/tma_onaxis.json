@@ -1,0 +1,15 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'tma_onaxis.m'));",
+ "knobs": {
+  "file": "tma_onaxis.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "tma_onaxis_layout.png",
+ "run": {
+  "from": "\\n\\[1\\]",
+  "to": ""
+ },
+ "pins": []
+}

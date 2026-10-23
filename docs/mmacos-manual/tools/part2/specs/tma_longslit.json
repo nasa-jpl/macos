@@ -1,0 +1,15 @@
+{
+ "section": "10_telescopes",
+ "entry": "OUT = tma_longslit_run({'first_order','section'});",
+ "knobs": {
+  "file": "tma_longslit_params.m",
+  "from": "^% ---- spec",
+  "to": "^P\\.axis_theta_deg"
+ },
+ "figure": "tls_section_layout.png",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": []
+}
