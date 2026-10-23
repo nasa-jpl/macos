@@ -54,7 +54,12 @@ deck figures unmodified; the pin policy).
   the library is built around.  Choose by reading the problem statements (SPIE proceedings), not from memory:
   the candidates, the criteria and the extraction list are `NOTE_to_ccmac_iodc.md` (2026-10-23): 2014 Cinderella
   (ten N-BK7 blanks, fixed glass, monochromatic, spherical, 45 entries) to enter first; 2023 Yin-Yang (two wavelengths,
-  free glass) as the stress test; 2010 green lens and 2021 down-under as the alternates; 2017 is a puzzle.
+  TWO glasses N-BK7 + N-SF6, not free glass -- CCMac's correction from Yabe's verbatim statements) as the stress test;
+  2010 green lens and 2021 down-under (winner Damien Gawron, EPD 198.4 mm, 90 deg) as the alternates; 2017 is a
+  puzzle.  CCMac's record `cli_tests/records/iodc_problems_2026-10.md` (2026-10-23) confirms the prior and adds: the
+  entries are CODE V / Zemax files, so `rx_converter` is on the comparison path for any scored year; the SPIE full
+  text was unreachable from the Mac too (the JPL library pull is listed line by line in the record); any printed
+  prescription is reproduced independently, never copied.  AWAITING Dave: name the problem.
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
