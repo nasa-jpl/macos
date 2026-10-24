@@ -17,9 +17,9 @@ TPL = Path.home() / "dev" / "MACOS_resources" / "mmacos" / "templates"
 
 # words an all-caps heading keeps in capitals, and the proper names it keeps capitalized
 KEEP_UPPER = {"RC", "TMA", "FOV", "M1", "M2", "M3", "M4", "FP", "FP2", "DM", "OAP", "PSI", "IFO", "MET",
-              "MACOS", "OTA", "APLC", "VIS", "CTB", "HCIT", "VSG2", "J18"}
+              "MACOS", "OTA", "APLC", "VIS", "CTB", "HCIT", "VSG2", "J18", "PROPER"}
 PROPER = {"RITCHEY": "Ritchey", "CHRETIEN": "Chretien", "KORSCH": "Korsch", "ZERNIKE": "Zernike",
-          "CASSEGRAIN": "Cassegrain", "TWYMAN": "Twyman", "GREEN": "Green", "MACOS": "MACOS"}
+          "CASSEGRAIN": "Cassegrain", "TWYMAN": "Twyman", "GREEN": "Green", "MACOS": "MACOS", "GROOT": "Groot", "JONES": "Jones"}
 
 
 def heading_case(text):
@@ -61,6 +61,22 @@ def build(name):
     script = TPL / spec["section"] / name / entry_script(spec, name)
     hl = header_lines(script)
     rule = lambda s: re.fullmatch(r"[=\-]{5,}", s.strip()) is not None
+    h1 = re.match(r"^([A-Z][A-Z0-9_]+)\s+(\S.*)$", hl[0]) if hl else None
+    if h1 and not any(rule(x) for x in hl[:4]):  # a MATLAB help header: %NAME  summary, then text
+        title = h1.group(2).strip().rstrip(".")
+        body = []
+        for ln in hl[1:]:
+            t_ = ln.strip()
+            if not t_:
+                if body:
+                    break
+                continue
+            u_ = re.match(r"^\w+\s*=\s*([A-Z][A-Z0-9_]+)\(([^)]*)\)\s*(.*)$", t_)   # "out = NAME(...) runs ..."
+            if u_:
+                t_ = f"`{u_.group(1).lower()}({u_.group(2)})` {u_.group(3)}".strip()
+            body.append(t_)
+        para = re.sub(r"\s+", " ", " ".join(body)).strip()
+        return write_(name, title, para, script)
     # the heading: the all-caps line(s) between the first two rules (or right after the file-name line)
     i = 0
     while i < len(hl) and not rule(hl[i]):
@@ -114,6 +130,10 @@ def build(name):
         else:
             para += (" " if para else "") + s_
     para = re.sub(r"\s+", " ", para).strip()
+    return write_(name, title, para, script)
+
+
+def write_(name, title, para, script):
     assert title and para, f"{name}: no heading or no prose in {script.name}'s header"
     KEPT.mkdir(exist_ok=True)
     (KEPT / f"{name}.md").write_text(
