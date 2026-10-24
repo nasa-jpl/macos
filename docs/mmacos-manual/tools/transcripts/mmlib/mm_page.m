@@ -32,8 +32,10 @@ end
 dst = fullfile(lib, 'templates', spec.section);  mkdir(dst);
 copyfile(fullfile(root, 'templates', spec.section, name), fullfile(dst, name));
 sib = {};  if isfield(spec, 'siblings'), sib = cellstr(spec.siblings); end
-for k = 1:numel(sib)
-    copyfile(fullfile(root, 'templates', spec.section, sib{k}), fullfile(dst, sib{k}));
+for k = 1:numel(sib)            % a sibling in the same section, or '<section>/<name>' in another
+    if contains(sib{k}, '/'), sp = sib{k}; else, sp = [spec.section '/' sib{k}]; end
+    to = fullfile(lib, 'templates', sp);  mkdir(fileparts(to));
+    copyfile(fullfile(root, 'templates', sp), to);
 end
 for top = {'src', 'design', 'sensitivities', 'mmacos_setup.m'}
     system(sprintf('ln -s %s %s', fullfile(root, top{1}), fullfile(lib, top{1})));
