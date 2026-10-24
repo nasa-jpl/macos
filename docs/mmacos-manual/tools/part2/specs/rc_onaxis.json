@@ -1,0 +1,37 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'rc_onaxis.m'));",
+ "knobs": {
+  "file": "rc_onaxis.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "rc_onaxis_wfe.png",
+ "run": {
+  "from": "=+\\n On-axis Ritchey",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "obsc",
+   "pattern": "central obscuration ~ (\\S+)",
+   "rule": "printed",
+   "format": "%.2f"
+  },
+  {
+   "name": "dl0",
+   "pattern": "limited \\(< 0\\.07 lambda\\) out to (\\S+) arcmin",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "dl1",
+   "pattern": "diffraction-limited out to (\\S+) arcmin \\(was",
+   "rule": "printed",
+   "format": "%.1f"
+  }
+ ],
+ "caption": "RMS wavefront error against field for the as-built aplanat and the field-balanced design (`rc_onaxis_wfe.png`), with the \u03bb/14 line.",
+ "number": "The aplanat is diffraction-limited on axis and out to %pin:p2_rc_onaxis_dl0% arcmin, where the astigmatism two conics cannot null crosses \u03bb/14; balancing the radius and conic over \u00b14\u2032 trades a little on-axis quality for a field diffraction-limited out to %pin:p2_rc_onaxis_dl1% arcmin. The secondary's central obscuration is %pin:p2_rc_onaxis_obsc% of the aperture.",
+ "prompt": "Using templates/10_telescopes/rc_onaxis, design a 2 m f/12 Ritchey-Chretien with an f/2.5 primary and 400 mm back focus, and tell me the central obscuration and the diffraction-limited field before and after field balancing."
+}

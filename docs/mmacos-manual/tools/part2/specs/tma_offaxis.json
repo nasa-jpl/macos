@@ -1,0 +1,32 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'tma_offaxis.m'));",
+ "figure": "tma_offaxis_wfe.png",
+ "run": {
+  "from": "=+\\n Unobscured off-axis convex",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "ax",
+   "pattern": "on-axis conic optimize: \\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dec",
+   "pattern": "decenter (\\S+) m \\(",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "area",
+   "pattern": "AREA \\(3x3\\): worst \\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "RMS wavefront error over the \u00b12\u2032 field of the delivered off-axis design at 2.3 \u00b5m (`tma_offaxis_wfe.png`).",
+ "number": "The convex-secondary seed conic-optimizes on axis to %pin:p2_tma_offaxis_ax% waves; taken off axis by %pin:p2_tma_offaxis_dec% m and re-balanced over a 3 x 3 grid on the \u00b12\u2032 field, its worst field is %pin:p2_tma_offaxis_area% waves at 2.3 \u00b5m, just outside \u03bb/14, which the run prints as a residual. Its all-sphere baseline line reads 0 waves, which an uncorrected sphere cannot be; not traced.",
+ "prompt": "Using templates/10_telescopes/tma_offaxis, rebalance the off-axis design over a \u00b11.5 arcmin field and tell me whether it becomes diffraction-limited at 2.3 \u00b5m."
+}

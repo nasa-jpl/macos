@@ -1,0 +1,37 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'sz_tma.m'));",
+ "knobs": {
+  "file": "sz_tma.m",
+  "from": "^% =+  KNOBS",
+  "to": "^% =+$"
+ },
+ "figure": "sz_tma_wfe.png",
+ "run": {
+  "from": "\\[1\\] all-sphere baseline",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "s0",
+   "pattern": "S0 center\\s+: \\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s2",
+   "pattern": "S2 full 2-D \\S+ : worst (\\S+),",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s2a",
+   "pattern": "area-wtd (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "RMS wavefront error over the \u00b12\u2032 field after the full-field stage (`sz_tma_wfe.png`).",
+ "number": "The Zernike departures take the all-sphere layout to %pin:p2_sz_tma_s0% waves at the field center, diffraction-limited, but over the full \u00b12\u2032 field the worst point is %pin:p2_sz_tma_s2% waves and the area-weighted mean %pin:p2_sz_tma_s2a%: on this 8 m layout the 15 modes per mirror do not hold the field.",
+ "prompt": "Using templates/10_telescopes/sz_tma, rerun the sphere-plus-Zernike design over a \u00b11 arcmin field with 21 Zernike modes per mirror, and tell me whether the full-field stage reaches the diffraction limit."
+}

@@ -1,0 +1,13 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'example_rc_offaxis.m'));",
+ "figure": "SCOUT",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": ""
+}
