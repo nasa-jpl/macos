@@ -50,7 +50,7 @@ def readme_intro(name, section, start=None):
     for ln in rest:
         if ln.startswith("#"):
             break
-        if not ln.startswith(">"):
+        if not ln.startswith(">") and not ln.lstrip().startswith("|"):   # notes and tables stay in the README
             body.append(ln)
     para = re.sub(r"\n{3,}", "\n\n", "\n".join(body)).strip()
     para = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", para)   # links -> their text (paths are not live here)
@@ -90,6 +90,79 @@ def page(name, fig_no):
     return "\n".join(out)
 
 
+TOOLS = MAN / "tools" / "part2" / "tools.txt"
+LIBDIRS = [("design/src", "the design layer's helpers"), ("sensitivities", "the sensitivity drivers")]
+
+TOOLS_INTRO = """## SECTION 9: The Tool Templates
+
+The other seventeen templates are tools, not designs: examples of an interface, a method, or a driver that
+the design templates and the runners call. Two are the entry points of Section 1's thread and get a page each;
+the table lists all seventeen, each described by its own README's title or, where it has none, by its main
+script's header. A last table lists the library functions no template calls.
+"""
+
+
+def describe(section, name):
+    """A tool's one-line description: its README's title, else its main script's heading (generated)."""
+    d = TPL / section / name
+    if (d / "README.md").is_file():
+        return readme_intro(name, section)[0], "README"
+    sys.path.insert(0, str(MAN / "tools"))
+    import gen_readme_part2 as gr
+    ms = sorted(d.glob("*.m"), key=lambda f: (name not in f.stem, "example" not in f.stem, f.name))  # its own, then its example
+    hl = gr.header_lines(ms[0])
+    h1 = re.match(r"^([A-Z][A-Z0-9_]+)\s+(\S.*)$", hl[0]) if hl else None
+    strip = lambda x: re.sub(r"^\S+\.m\s*(\([^)]*\)\s*)?(--\s*)?", "", x.strip()).strip().rstrip(".")   # "name.m -- what"
+    text = h1.group(2) if h1 else next(strip(x) for x in hl if strip(x) and not re.fullmatch(r"[=\-%\s]+", x))
+    text = strip(text) if not h1 else text.strip().rstrip(".")
+    text = gr.heading_case(text) if re.sub(r"\([^)]*\)", "", text).isupper() else text
+    return text, f"`{ms[0].name}` header"
+
+
+def h1_line(f):
+    """A MATLAB function's H1 line (the first comment line, '%NAME  summary'), '' if it has none."""
+    for ln in f.read_text(errors="ignore").splitlines():
+        t = ln.strip()
+        if t.startswith("%"):
+            m = re.match(r"^%\s*[A-Za-z0-9_.]+\s+(.*)$", t)
+            return (m.group(1) if m else t.lstrip("% ")).strip()
+        if t and not t.startswith("function"):
+            return ""
+    return ""
+
+
+def uncalled():
+    """Library functions no template's .m names (word-boundary match), by folder."""
+    tpl = "\n".join(f.read_text(errors="ignore") for f in TPL.rglob("*.m"))
+    out = []
+    for d, label in LIBDIRS:
+        fs = sorted((TPL.parent / d).glob("*.m"))
+        un = [f for f in fs if not re.search(r"\b" + re.escape(f.stem) + r"\b", tpl)]
+        out.append((d, label, len(fs), un))
+    return out
+
+
+def tools_tables():
+    rows = [n.strip() for n in TOOLS.read_text().splitlines() if n.strip() and not n.startswith("#")]
+    out = [TOOLS_INTRO, "### The seventeen tools", "", "| Template | Section | What it is | Described by |", "|---|---|---|---|"]
+    for r in rows:
+        sec, name = r.split("/")
+        what, src = describe(sec, name)
+        out.append(f"| `{name}` | {sec} | {what.replace('|', '/')} | {src} |")
+    out += ["", "`40_benches/vsg_wip` is a planning folder (a VSG2 model plan and review notes), not runnable; it has no page.", "", ""]
+    hl = ["### The functions no template calls", ""]
+    parts = uncalled()
+    hl.append("Counted by a word-boundary search of every template script for each function's name: "
+              + "; ".join(f"`{d}`, {len(un)} of {n}" for d, _, n, un in parts) + ". They are documented here, not "
+              "deleted (the Part I report's default); a runner or a test may still call them.")
+    hl.append("")
+    for d, label, n, un in parts:
+        hl += [f"**`{d}`** ({label}, {len(un)} of {n}):", "", "| Function | What its help line says |", "|---|---|"]
+        hl += [f"| `{f.stem}` | {h1_line(f).replace('|', '/') or '(no help line)'} |" for f in un]
+        hl.append("")
+    return "\n".join(out), "\n".join(hl)
+
+
 def main():
     names = [n.strip() for n in ORDER.read_text().splitlines() if n.strip() and not n.startswith("#")]
     (MAN / "src" / "200_part2.md").write_text(INTRO)
@@ -101,7 +174,15 @@ def main():
         (MAN / "src" / f"2{i:02d}_{n}.md").write_text(page(n, fig) + "\n")
         if "figure_ref" not in json.loads((SPECS / f"{n}.json").read_text()):
             fig += 1
-    print(f"wrote src/200_part2.md and {len(names)} pages (FIGURE {FIRST_FIGURE}..{fig - 1})")
+    tools_md, helpers_md = tools_tables()
+    (MAN / "src" / "290_tools.md").write_text(tools_md + "\n")
+    tnames = ["design_layer_api", "pupil_id"]
+    for i, n in enumerate(tnames, start=1):
+        (MAN / "src" / f"29{i}_{n}.md").write_text(page(n, fig).replace("### `", "### `", 1) + "\n")
+        if "figure_ref" not in json.loads((SPECS / f"{n}.json").read_text()):
+            fig += 1
+    (MAN / "src" / "299_helpers.md").write_text(helpers_md + "\n")
+    print(f"wrote src/200_part2.md, {len(names)} pages, the tools section with {len(tnames)} pages (FIGURE {FIRST_FIGURE}..{fig - 1})")
 
 
 if __name__ == "__main__":

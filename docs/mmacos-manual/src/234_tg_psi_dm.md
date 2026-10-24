@@ -7,16 +7,6 @@ translating a reference mirror.  Four analyzer angles are a standard
 four-step PSI; the recovered map is compared against the DM map that was
 injected.
 
-| file | what it is |
-|---|---|
-| `example_tg_psi_dm.m` | the full, gated measurement — five gates, the closure, all the numbers |
-| `demo_tg_psi.m` | the same measurement as seven narrated beats, one PNG each |
-| `dm_influence_map.m` | actuator influence-function DM surfaces (`checker` / `random` / `single`) |
-| `tg_*.in`, `demo_*.in` | the emitted prescriptions (both arms) |
-| `dm_*.txt`, `demo_flat.txt` | the DM grid maps — **gitignored**, ~1 MB each; run either script once to recreate the files the decks reference |
-| `tg_psi_dm.mat` | every result struct, the recovered map, the sweep cube |
-| `tg_psi_dm_*.png`, `demo_beat*.png` | figures, and the pre-rendered demo backups |
-
 Gates live in `mmacos/tests/tTgPol.m` (9 tests, model 128, `SUITE_FAST`).
 
 ```
