@@ -1,0 +1,51 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'example_telescope_design.m'));",
+ "run": {
+  "from": " Stage 3",
+  "to": "exit-pupil #\\d+, detector #\\d+"
+ },
+ "pins": [
+  {
+   "name": "k1",
+   "pattern": "RC\\s+: K1 = (\\S+)",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "k2",
+   "pattern": "RC\\s+: K1 = \\S+\\s+K2 = (\\S+)",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "pert",
+   "pattern": "perturbed \\(\\+2\\.000 mm\\) : RMS WFE = (\\S+) m",
+   "rule": "printed",
+   "format": "%.3e"
+  }
+ ],
+ "caption": "",
+ "number": "From design intent (6 m, f/20) the builder derives a Ritchey-Chretien with K1 = %pin:p2_design_layer_api_k1% and K2 = %pin:p2_design_layer_api_k2%, diffraction-limited on axis (its rms wavefront error is at the floor of the arithmetic, printed as a bound). A 2 mm despace of the secondary costs %pin:p2_design_layer_api_pert% m rms, and the optimizer returns it to nominal, again to the floor.",
+ "prompt": "Using templates/10_telescopes/design_layer_api/example_telescope_design.m, build a 4 m f/15 Ritchey-Chretien instead, despace the secondary by 1 mm and let the optimizer recover it, and report the conics and the recovered wavefront error.",
+ "masks": [
+  {
+   "pattern": "/tmp/tp[0-9a-f_]+\\.in",
+   "with": "<tmp>.in"
+  }
+ ],
+ "zeros": [
+  {
+   "name": "onaxis",
+   "pattern": "on-axis RMS WFE \\(nominal\\) = (\\S+) m",
+   "bound": 1e-09
+  },
+  {
+   "name": "recovered",
+   "pattern": "recovered\\s+: RMS WFE = (\\S+) m",
+   "bound": 1e-09
+  }
+ ],
+ "figure_ref": "none: the example prints its stages and saves the deliverable (`rc_6m_f20.in`, `.mat`).",
+ "run_note": "The README's design-template example, `example_telescope_design.m`, the builder front end from design intent to a saved deliverable. Its three siblings are the import front end (`example_sensitivities_from_rx.m`, `example_align_from_rx.m`) and a focused alignment loop."
+}
