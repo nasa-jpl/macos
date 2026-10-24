@@ -3823,3 +3823,9 @@ promote-on-land pass.**
 > shared mex relinked in TO's quiet window; PUSHED 7ddf1d32 (fix + records + TO's Part II catalog complete, 109 pp).  CCMac's PAIR 13 =
 > c6c83d55 + 446bd45 (NOTE_to_ccmac_pair13.md).  Findings (nnn)-(rrr) in PLAN 1.2 for Dave; refusal pages: rc_offaxis (rrr), e2e2
 > (ppp).  TO on the Part II tools appendix.**
+
+> **2026-10-24 (CC): mmacos manual DRAFT COMPLETE on origin (fa26fb1c): Parts I-III, 119 pages -- the worked thread (7 ch.), the
+> catalog (35 design pages + the tools appendix, FIGURES 20-50), Section 10 reference + 'Working with the library'.  Reports for Dave:
+> docs/mmacos-manual/REPORT_PART_I.md, REPORT_PART_II.md, OPEN_QUESTIONS.md; findings (bbb)-(sss) in PLAN 1.2.  TO stopped for Dave
+> per the brief; next harness task offered: the orphan test classes (in no suite) into their suites.  Engine lane idle; CCMac pair 13
+> pending his gate.**
