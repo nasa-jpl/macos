@@ -1,13 +1,12 @@
 {
  "section": "90_polarization",
- "entry": "run(fullfile(pwd,'example_tg_psi_dm.m'));",
- "figure": "SCOUT",
- "run": {
-  "from": "\\S",
-  "to": ""
+ "refusal": {
+  "entry": "run(fullfile(pwd,'example_tg_psi_dm.m'));",
+  "expect": "GATE 2 FAILED: the two beams are not registered",
+  "from": "=== GATE 1"
  },
  "pins": [],
- "caption": "",
- "number": "",
- "prompt": ""
+ "figure_ref": "none: the run stops at its second gate, before it draws.",
+ "number": "There is no number to reproduce today. Gate 1 passes; gate 2, which checks numerically that the two arms land on the same detector pixels, finds a flux-weighted centroid of NaN, because `macos.intensity` at the detector returns all zeros once the second arm is loaded with POLARIZATION still in force (finding (ooo): set after `load_rx` the same call returns the field; the cause is not proven). The example's gate fails closed, as it should.",
+ "prompt": "Using templates/90_polarization/tg_psi_dm, check finding (ooo) by turning polarization off before each load_rx in det_geom on a copy, and tell me whether gate 2 then passes and what registration it reports."
 }

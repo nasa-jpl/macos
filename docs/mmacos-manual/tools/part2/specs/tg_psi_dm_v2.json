@@ -1,16 +1,16 @@
 {
  "section": "90_polarization",
- "entry": "run(fullfile(pwd,'example_tg_psi_dm_v2.m'));",
- "figure": "SCOUT",
- "run": {
-  "from": "\\S",
-  "to": ""
- },
- "pins": [],
- "caption": "",
- "number": "",
- "prompt": "",
  "siblings": [
   "tg_psi_dm"
- ]
+ ],
+ "refusal": {
+  "entry": "run(fullfile(pwd,'example_tg_psi_dm_v2.m'));",
+  "expect": "GATE 1 FAILED: the two beams are not registered",
+  "from": "=== GATE 1"
+ },
+ "pins": [],
+ "run_note": "The manual copies it with its sibling `tg_psi_dm`, which it reads for `dm_influence_map`.",
+ "figure_ref": "none: the run stops at its first gate, before it draws.",
+ "number": "There is no number to reproduce today: the registration gate refuses on a NaN centroid, the same cause as the previous page (finding (ooo)).",
+ "prompt": "Using templates/90_polarization/tg_psi_dm_v2, check finding (ooo) by turning polarization off before each load_rx in det_geom on a copy, and tell me whether gate 1 then passes."
 }

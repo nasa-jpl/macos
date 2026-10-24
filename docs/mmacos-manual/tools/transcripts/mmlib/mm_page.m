@@ -45,8 +45,25 @@ addpath(fullfile(root, 'design', 'runners'));
 here = fullfile(dst, name);  addpath(here);  cd(here);
 
 t0 = tic;
+rtxt = '';
+if isfield(spec, 'refusal')    % the bare call, which refuses today: its printout and its message ARE the record
+    rq = spec.refusal;
+    wrapped = sprintf('try\n%s\ncatch mm_err__\nfprintf(''\\nREFUSED: %%s\\n'', mm_err__.message);\nend', rq.entry);
+    rtxt = mm_clean(strrep(run_entry_(wrapped), lib, work));
+    disp(rtxt)
+    assert(~isempty(regexp(rtxt, ['REFUSED: ' rq.expect], 'once')), 'mm_page:refusal', ...
+        '%s: the bare call no longer refuses as recorded -- the page is stale', name);
+    q0 = regexp(rtxt, rq.from, 'once');
+    assert(~isempty(q0), 'mm_page:refusal', '%s: the refusal excerpt was not found', name);
+    mm_transcript(['p2_' name '_refusal'], strtrim(rtxt(q0:end)));
+    cd(here);
+end
 try
-    txt = mm_clean(strrep(run_entry_(spec.entry), lib, work));  % in a workspace of its own; paths read <work>/templates/...
+    if isfield(spec, 'entry')
+        txt = mm_clean(strrep(run_entry_(spec.entry), lib, work));  % in a workspace of its own; paths read <work>/templates/...
+    else
+        txt = rtxt;                                             % a page that is its refusal
+    end
 catch ME                       % a failed run is checked against the library too, then reported
     cd(work);
     if ~strcmp(gs(), before)
@@ -68,6 +85,7 @@ if isfield(spec, 'knobs')
     assert(~isempty(k0) && ~isempty(k1), 'mm_page:knobs', '%s: knobs block not found', name);
     mm_listing(['p2_' name '_knobs'], fullfile(here, spec.knobs.file), [k0 k1]);
 end
+if isfield(spec, 'run')
 r0 = regexp(txt, spec.run.from, 'once');                       % to '' = through the end of the printout
 if isempty(spec.run.to), r1 = numel(txt) - r0 + 1; else, r1 = regexp(txt(r0:end), spec.run.to, 'end', 'once'); end
 assert(~isempty(r0) && ~isempty(r1), 'mm_page:run', '%s: the run excerpt was not found', name);
@@ -83,7 +101,8 @@ if isfield(spec, 'zeros')                                     % numerical zeros 
     end
 end
 mm_transcript(['p2_' name '_run'], strtrim(ex));
-mm_figure(['p2_' name '_fig'], fullfile(here, spec.figure));
+end
+if isfield(spec, 'figure'), mm_figure(['p2_' name '_fig'], fullfile(here, spec.figure)); end
 for p = 1:numel(spec.pins)
     q = spec.pins(p);
     t = regexp(txt, q.pattern, 'tokens', 'once');
