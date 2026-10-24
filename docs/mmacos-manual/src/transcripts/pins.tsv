@@ -87,6 +87,9 @@ p2_bench_ctb_chief	< 1e-09
 p2_bench_ctb_wfe	0.001423
 p2_bench_ctb_rays	3002
 p2_bench_ctb_spot	0.02713
+p2_cophi_dm96_contrast	0.9825
+p2_cophi_dm96_overfill	33.9
+p2_cophi_dm96_magratio	0.998353
 p2_coro_walkthrough_dzmean	1.49e-09
 p2_coro_walkthrough_floor	1.45e-13
 p2_e5_pie_clipped	120
@@ -104,6 +107,16 @@ p2_offset_imager_s1max	37.8
 p2_offset_imager_s1avg	25.8
 p2_offset_imager_s3max	41849.9
 p2_offset_imager_s5max	12415.1
+p2_tg_psi_dm96_null	0.1345
+p2_tg_psi_dm96_nyqgain	0.8509
+p2_tg_psi_dm96_dflat	0.0210
+p2_tg_psi_dm96_dcorr	0.9906
+p2_tg_psi_dm96_dbase	0.0235
+p2_tg_psi_dm96_oap_aoi	22.5
+p2_tg_psi_dm96_oap_comp	10.4
+p2_tg_psi_dm96_oap_nyq	4.0
+p2_tg_psi_dm96_oap_gain	0.9929
+p2_tg_psi_dm96_oap_resid	422.19
 p2_tma_centered_centered	0.0575
 p2_tma_centered_section	0.1530
 p2_tma_longslit_plate	329.99
