@@ -45,7 +45,15 @@ addpath(fullfile(root, 'design', 'runners'));
 here = fullfile(dst, name);  addpath(here);  cd(here);
 
 t0 = tic;
-txt = mm_clean(strrep(run_entry_(spec.entry), lib, work));      % in a workspace of its own; paths read <work>/templates/...
+try
+    txt = mm_clean(strrep(run_entry_(spec.entry), lib, work));  % in a workspace of its own; paths read <work>/templates/...
+catch ME                       % a failed run is checked against the library too, then reported
+    cd(work);
+    if ~strcmp(gs(), before)
+        error('mm_page:library', '%s: the run failed (%s) AND changed MACOS_resources (git status moved)', name, ME.message);
+    end
+    rethrow(ME);
+end
 fprintf('%s wall time %.0f s\n', name, toc(t0));
 cd(work);
 if ~strcmp(gs(), before)
