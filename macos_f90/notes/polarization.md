@@ -5,6 +5,16 @@
 > `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
+## The mode survives a load; so must its source vector (1.2 (ooo), fixed 2026-10-24)
+- `POLARIZATION` / `pol_set` set `ifPol`, `ifVecDif3` and the source Jones vector `Ex0`/`Ey0`
+  (src_mod).  Since 2026-10-11 the mode flags survive a load (PLAN 4 item 2), but
+  `src_mod_init_vars` zeroed `Ex0`/`Ey0` on every load, so polarization-then-load traced a
+  ZERO field: `macos.intensity` all zeros, a centroid of 0/0 (macos-fd on the tg_psi_dm
+  templates; A/B: on-after-load finite, on-then-load 0).  `reinitialise_variables`
+  (macos_init.F) now keeps `Ex0`/`Ey0` across the load when `ifPol` is in force; a deck's
+  `Ex0Ey0=` line, parsed after it, still overrides.  Gate `cli_tests/cmd/POL_across_load.jou`
+  (the two orders read the same intensity sum; red pre-fix).
+
 ## Polarization physics (PLAN_POLARIZATION, Phase 0/1)
 *(Documented for the user: Manual SECTION 11 "Polarization" (2026-10-18: the whole subject -- switch, conventions, the trace at bare and coated surfaces, the elements, vector diffraction, the analysis layer, the design rules, the validation ladder, the gaps), with §4 Polarizers and Waveplates / Coatings / Ex0Ey0 and §6 SCALAR / VECTOR for the keywords and commands; the evidence per gate is the Polarization Validation Report, `docs/macos-manual/polval/`.  Below: the engine record -- conventions, the two coating models, the fixes and their measurements.)*
 See `PLAN_POLARIZATION.md` (root) + `POLARIZATION_PHASE0_AUDIT.md` (both dev
