@@ -3818,3 +3818,8 @@ promote-on-land pass.**
 > two rotted coronagraph templates, ImageDemo no BaseUnits, pie gap-clip 0 vs 376, s5 report provenance, three figure defects,
 > and (kkk) run_compare mixes OPD references since 10-10 (chief 188.9 / mean 61.98 / linear 61.98 nm -- Dave rules the sens
 > core's reference).  OPEN_QUESTIONS.md in docs/mmacos-manual/.  TO next: the Part I report for Dave, then Part II pages.**
+
+> **2026-10-24 (CC): (ooo) FIXED (c6c83d55: Ex0/Ey0 survive a load with the mode), gate PASS (160/160, 0 movers vs 08b92085, 120/120),
+> shared mex relinked in TO's quiet window; PUSHED 7ddf1d32 (fix + records + TO's Part II catalog complete, 109 pp).  CCMac's PAIR 13 =
+> c6c83d55 + 446bd45 (NOTE_to_ccmac_pair13.md).  Findings (nnn)-(rrr) in PLAN 1.2 for Dave; refusal pages: rc_offaxis (rrr), e2e2
+> (ppp).  TO on the Part II tools appendix.**
