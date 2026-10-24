@@ -1,0 +1,23 @@
+{
+ "section": "40_benches",
+ "siblings": [
+  "dm_gauge_lib",
+  "90_polarization/tg_psi_dm",
+  "zwfs_dm96"
+ ],
+ "refusal": {
+  "entry": "out = pdi_run('stages',{'bench'});",
+  "expect": "zwfs_run: bench.coat_oap needs bench.optics 'oap'",
+  "from": "\\nREFUSED:"
+ },
+ "entry": "out = pdi_run('stages',{'bench'}, 'bench.coat_oap','none');",
+ "figure": "SCOUT",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": ""
+}
