@@ -1,0 +1,42 @@
+{
+ "section": "80_end_to_end",
+ "entry": "r1_backend();",
+ "siblings": [
+  "e2e6m"
+ ],
+ "figure": "r1_seg_shroud.png",
+ "run": {
+  "from": "=+ e2e6m R1",
+  "to": "R1 backend \\(seg\\) DONE[^\\n]*"
+ },
+ "pins": [
+  {
+   "name": "shroud",
+   "pattern": "shroud on the full train: (\\S+) m",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "nelt",
+   "pattern": "spliced: \\d+ telescope \\+ \\d+ bench = (\\d+) elements",
+   "rule": "printed",
+   "format": "%d"
+  },
+  {
+   "name": "pass",
+   "pattern": "\\n\\s+(\\d+)/\\d+ rays pass \\(telescope alone",
+   "rule": "printed",
+   "format": "%d"
+  }
+ ],
+ "caption": "The shroud fit on the full train (`r1_seg_shroud.png`): end-on, the 19-segment primary, the coronagraph leg's bodies and the hardware union against the 8.0 m shroud, with a zoom on the instrument legs.",
+ "number": "Round 2 hangs the coronagraph testbed's topology (8 OAPs, two DMs) at observatory scale off round 1's segmented telescope: the spliced train is %pin:p2_e2e6m_r2_nelt% elements, all of the telescope's %pin:p2_e2e6m_r2_pass% passing rays reach the science focus, and the whole train fits a %pin:p2_e2e6m_r2_shroud% m union inside the 8.0 m shroud. It reads round 1's committed telescope, the f/25.39 design, not the live one of the previous page (finding (qqq)).",
+ "prompt": "Using templates/80_end_to_end/e2e6m_r2, rerun r1_backend with 48 mm DMs and 1.0 m relay OAPs, and tell me whether every pupil still fits its DM and the train still fits the shroud.",
+ "masks": [
+  {
+   "pattern": "DONE in [0-9.]+ min",
+   "with": "DONE in <t> min"
+  }
+ ],
+ "run_note": "The first round-2 stage only (`r1_backend`); the rest of the round (`r2_*` to `r4_*`, and the `cf*` coronagraph-family studies) builds on it. It reads round 1's committed telescope from `../e2e6m`, which the manual copies beside it."
+}
