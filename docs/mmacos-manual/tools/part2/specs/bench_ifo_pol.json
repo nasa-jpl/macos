@@ -1,7 +1,6 @@
 {
  "section": "90_polarization",
  "entry": "run(fullfile(pwd,'example_bench_ifo_pol.m'));",
- "figure": "SCOUT",
  "run": {
   "from": "Building Twyman-Green rig",
   "to": "=== ALL GATES PASS ==="
@@ -20,7 +19,6 @@
    "format": "%.4e"
   }
  ],
- "caption": "",
  "number": "The coated beamsplitter's reflection matches the Fresnel equations to the floor of the arithmetic at 45 degrees (gate 1), and the coating is inert with polarization off (gate 2). Between the arms at recombination the plate leaves a diattenuation of %pin:p2_bench_ifo_pol_dia% and a retardance of %pin:p2_bench_ifo_pol_ret% rad, uniform across the pupil, so it costs the co-polarized fringe almost nothing.",
  "prompt": "Using templates/90_polarization/bench_ifo_pol, run slice 2 to trade the beamsplitter's angle of incidence against clearance, and tell me the angle that keeps the arm-differential retardance under 0.05 rad.",
  "zeros": [
