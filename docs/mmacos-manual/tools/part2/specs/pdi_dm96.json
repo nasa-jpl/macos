@@ -11,13 +11,43 @@
   "from": "\\nREFUSED:"
  },
  "entry": "out = pdi_run('stages',{'bench'}, 'bench.coat_oap','none');",
- "figure": "SCOUT",
+ "figure": "runs/pdi/pdi_stations_P.png",
  "run": {
-  "from": "\\S",
-  "to": ""
+  "from": "sampling budget \\(P\\.samp",
+  "to": "bench stage [0-9.]+ min"
  },
- "pins": [],
- "caption": "",
- "number": "",
- "prompt": ""
+ "pins": [
+  {
+   "name": "pgain",
+   "pattern": "pdi_stations_P\\.png: residual vs the engine's field on msk \\S+ pm \\(flat\\), \\S+ pm \\(30 nm rms working surface\\), gain (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "pres",
+   "pattern": "pdi_stations_P\\.png: residual vs the engine's field on msk \\S+ pm \\(flat\\), (\\S+) pm",
+   "rule": "printed",
+   "format": "%.2f"
+  },
+  {
+   "name": "g5",
+   "pattern": "G5 P on 100 nm single-actuator pokes[^:]*: rms error (\\S+) pm",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "The stations of the stepped-pinhole reading P (`runs/pdi/pdi_stations_P.png`), the flat DM and a 30 nm rms working surface: the mirror command, the focal spot, the pinhole, the reference wave, the first step frame, the shutter frame, the recovered surface, and the recovered map minus the engine's own field (pm).",
+ "number": "The stepped pinhole reads the 30 nm rms working surface with gain %pin:p2_pdi_dm96_pgain% and a residual of %pin:p2_pdi_dm96_pres% pm against the engine's own field; on 100 nm single-actuator pokes its gate G5 reads %pin:p2_pdi_dm96_g5% pm rms error. The P/SRI reading PF passes the same gate with its error at the floor of the printout, its reference's shape fixed by the waveguide mode.",
+ "prompt": "Using templates/40_benches/pdi_dm96, rerun the bench stage with a 1.0 lam/D pinhole ('pdi.DIA_LAMD',1.0) and 'bench.coat_oap','none', and compare P's gain and G5 error with the 2 lam/D record.",
+ "masks": [
+  {
+   "pattern": "[0-9.]+ s\\n",
+   "with": "<s> s\n"
+  },
+  {
+   "pattern": "bench stage [0-9.]+ min",
+   "with": "bench stage <t> min"
+  }
+ ],
+ "run_note": "As on `zwfs_dm96`'s page (finding (nnn)): `pdi_run` runs through `zwfs_run`, so its bare call refuses the same way, and the page runs the sheet's own `bench.coat_oap 'none'`. The bench stage only. The manual copies the template with `zwfs_dm96`, `dm_gauge_lib` and `90_polarization/tg_psi_dm`."
 }
