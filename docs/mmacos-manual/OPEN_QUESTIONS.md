@@ -94,9 +94,10 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   2026-08-25 (a9787a9); the library under them is not.  Not traced.  The same shape as offset_imager's (lll):
   the first stage reproduces, the next departs.
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
-  lens rig, zwfs_run.m:195); `tg_psi_dm` / `tg_psi_dm_v2` registration gate (intensity reads zero after
-  load_rx with POLARIZATION in force); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
-  the template's gate not).
+  lens rig, zwfs_run.m:195, (nnn)); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
+  the template's gate not, (ppp)); `rc_offaxis` final clipping assert (M2 cuts a foreign beam, (rrr)).
+  `tg_psi_dm` / `tg_psi_dm_v2`'s registration gates (intensity zero after load_rx with POLARIZATION in
+  force, (ooo)) pass since the engine fix macos c6c83d55 (CCL, 2026-10-24); their pages print the runs.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
