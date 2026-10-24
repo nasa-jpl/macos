@@ -35,7 +35,8 @@ def readme_intro(name, section, start=None):
     Blockquoted notes (status banners, cross-references) are left out; a spec's 'intro_from' (a
     regex) starts the text at the first line it matches, for a README that opens with a table."""
     f = TPL / section / name / "README.md"
-    if not f.is_file():
+    kept = not f.is_file()
+    if kept:
         f = KEPT / f"{name}.md"
     text = f.read_text()
     lines = text.splitlines()
@@ -53,6 +54,9 @@ def readme_intro(name, section, start=None):
             body.append(ln)
     para = re.sub(r"\n{3,}", "\n\n", "\n".join(body)).strip()
     para = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", para)   # links -> their text (paths are not live here)
+    if kept:
+        para += ("\n\n*This template has no README; the text above is generated from its entry script's "
+                 f"header (`docs/mmacos-manual/part2/{name}.md`, `tools/gen_readme_part2.py`).*")
     return title, para
 
 

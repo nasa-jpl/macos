@@ -1,0 +1,37 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'tma_freeform.m'));",
+ "knobs": {
+  "file": "tma_freeform.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "tma_freeform_fields.png",
+ "run": {
+  "from": "=+\\n Off-axis unobscured 3-mirror",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "lim",
+   "pattern": "worst-field (\\S+) waves \\(3-mirror limit\\)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "ff",
+   "pattern": "worst-field \\S+ -> (\\S+) waves\\s+\\(",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dec",
+   "pattern": "decenter (\\S+) m \\(",
+   "rule": "printed",
+   "format": "%.2f"
+  }
+ ],
+ "caption": "Per-field wavefront error at 0, 1.5\u2032 and 3\u2032, the three-conic limit against the freeform design (`tma_freeform_fields.png`).",
+ "number": "Taken off axis by %pin:p2_tma_freeform_dec% m to clear its beams, the three-conic design reaches %pin:p2_tma_freeform_lim% waves at its worst field over \u00b13\u2032; freeform departures on M2 and M3, every radius and conic held, take it to %pin:p2_tma_freeform_ff% waves. On this field the conic limit is already diffraction-limited, so the freeform's gain is small; `wf2_freeform` shows why a third mirror is what makes the freeform useful at all.",
+ "prompt": "Using templates/10_telescopes/tma_freeform, widen the half-field to 6 arcmin and rerun, and tell me how much the freeform M2 and M3 buy over the three-conic limit there."
+}
