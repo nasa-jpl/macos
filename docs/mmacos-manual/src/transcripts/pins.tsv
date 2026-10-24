@@ -92,6 +92,12 @@ p2_cophi_dm96_overfill	33.9
 p2_cophi_dm96_magratio	0.998353
 p2_coro_walkthrough_dzmean	1.49e-09
 p2_coro_walkthrough_floor	1.45e-13
+p2_e2e6m_s0	0.8594
+p2_e2e6m_s1	0.3512
+p2_e2e6m_s2	0.0702
+p2_e2e6m_dense	0.1059
+p2_e2e6m_fno	11.76
+p2_e2e6m_segs	19
 p2_e5_pie_clipped	120
 p2_e5_pie_kept	86
 p2_e5_pie_src	12128

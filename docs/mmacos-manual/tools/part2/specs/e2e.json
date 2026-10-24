@@ -1,0 +1,9 @@
+{
+ "section": "80_end_to_end",
+ "entry": "run(fullfile(pwd,'s1_telescope.m'))   % then s2_instrument ... s7_simulate, in order",
+ "run_ref": "Part I is this template's run: Sections 1 to 6 follow its seven stages, each run unchanged in one thread directory, every listing and number generated (Section 1 prints stage 1's design report; Section 7 steps off the thread for the budget). This page adds the one stage-1 figure Part I did not print.",
+ "fig_media": "ch01_fpmap.png",
+ "caption": "Stage 1's field-curvature map (`s1_fpmap.png`, from the Section 1 run): the sag of each field point's best focus from the fitted, tilted focal plane over the \u00b10.25\u2032 map, in micrometres.",
+ "number": "Stage 1 delivers an effective focal length of %pin:ch01_efl_m% (%pin:ch01_fno%), \u03bb/D %pin:ch01_lamD_mas%, with the fold cleared at a %pin:ch01_bias_arcmin% field bias and a primary hole %pin:ch01_hole_r_m% in radius (Section 1). The thread's later numbers are Sections 2 to 6's; its committed outputs are stale against these live runs, finding (bbb).",
+ "prompt": "Using templates/80_end_to_end/e2e, change e2e_params for a 6 m f/16 version of the telescope and rerun stages 1 and 2, telling me the delivered f-number, the field ladder and whether the fold still clears."
+}
