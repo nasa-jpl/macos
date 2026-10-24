@@ -87,17 +87,30 @@ p2_bench_ctb_chief	< 1e-09
 p2_bench_ctb_wfe	0.001423
 p2_bench_ctb_rays	3002
 p2_bench_ctb_spot	0.02713
+p2_bench_ifo_agree	< 1e-08
+p2_bench_ifo_vis	0.833
+p2_bench_ifo_resid	0.0014
+p2_bench_ifo_dm_corr	0.998426
+p2_bench_ifo_dm_truth	16.92
+p2_bench_ifo_dm_resid	0.969
+p2_bench_ifo_pol_fres	< 1e-12
+p2_bench_ifo_pol_dia	7.2133e-02
+p2_bench_ifo_pol_ret	8.3521e-02
 p2_cophi_dm96_contrast	0.9825
 p2_cophi_dm96_overfill	33.9
 p2_cophi_dm96_magratio	0.998353
 p2_coro_walkthrough_dzmean	1.49e-09
 p2_coro_walkthrough_floor	1.45e-13
+p2_e2e2_dk	3.03e-01
 p2_e2e6m_s0	0.8594
 p2_e2e6m_s1	0.3512
 p2_e2e6m_s2	0.0702
 p2_e2e6m_dense	0.1059
 p2_e2e6m_fno	11.76
 p2_e2e6m_segs	19
+p2_e2e6m_r2_shroud	7.451
+p2_e2e6m_r2_nelt	37
+p2_e2e6m_r2_pass	983
 p2_e5_pie_clipped	120
 p2_e5_pie_kept	86
 p2_e5_pie_src	12128
@@ -113,6 +126,10 @@ p2_offset_imager_s1max	37.8
 p2_offset_imager_s1avg	25.8
 p2_offset_imager_s3max	41849.9
 p2_offset_imager_s5max	12415.1
+p2_pdi_dm96_pgain	0.9808
+p2_pdi_dm96_pres	744.20
+p2_pdi_dm96_g5	4.508
+p2_rc_offaxis_clr	-0.01573
 p2_rc_onaxis_obsc	0.19
 p2_rc_onaxis_dl0	2.7
 p2_rc_onaxis_dl1	3.3
@@ -121,6 +138,11 @@ p2_rc_unobscured_field	0.0482
 p2_sz_tma_s0	0.0054
 p2_sz_tma_s2	4.1915
 p2_sz_tma_s2a	2.3925
+p2_tg_psi_dm_ls	< 1e-10
+p2_tg_psi_dm_rot	7.4786
+p2_tg_psi_dm_ungain	1.11661
+p2_tg_psi_dm_corr	0.998434
+p2_tg_psi_dm_resid	0.304
 p2_tg_psi_dm96_null	0.1345
 p2_tg_psi_dm96_nyqgain	0.8509
 p2_tg_psi_dm96_dflat	0.0210
@@ -131,6 +153,10 @@ p2_tg_psi_dm96_oap_comp	10.4
 p2_tg_psi_dm96_oap_nyq	4.0
 p2_tg_psi_dm96_oap_gain	0.9929
 p2_tg_psi_dm96_oap_resid	422.19
+p2_tg_psi_dm_v2_ls	< 1e-10
+p2_tg_psi_dm_v2_gain	0.999999
+p2_tg_psi_dm_v2_corr	0.999573
+p2_tg_psi_dm_v2_resid	0.183
 p2_tma_3plus1_patch	0.0337
 p2_tma_3plus1_ast	0.199
 p2_tma_3plus1_aoi	24.1
@@ -156,3 +182,6 @@ p2_tma_widefield_tma20	0.1200
 p2_wf2_freeform_one0	0.0801
 p2_wf2_freeform_one1	0.0023
 p2_wf2_freeform_wide	0.143
+p2_zwfs_dm96_vgain	0.9954
+p2_zwfs_dm96_vres	272.12
+p2_zwfs_dm96_sgain	0.7829
