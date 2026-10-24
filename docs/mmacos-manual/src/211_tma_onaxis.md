@@ -29,7 +29,7 @@ run(fullfile(pwd,'tma_onaxis.m'));
 
 ![](media/p2_tma_onaxis_fig.png)
 
-**FIGURE 24** The recommended design, the YZ and XZ planes with real rays (`tma_onaxis_layout.png`): the convex secondary before the primary's focus, the tertiary behind the primary, the focal plane biased out of the beam.
+**FIGURE 30** The recommended design, the YZ and XZ planes with real rays (`tma_onaxis_layout.png`): the convex secondary before the primary's focus, the tertiary behind the primary, the focal plane biased out of the beam.
 
 **The number it reproduces.** The least off-axis bias that clears the focal plane, %pin:p2_tma_onaxis_bias%, is diffraction-limited at %pin:p2_tma_onaxis_wfe% waves rms at 633 nm. (The README's own table, from an earlier engine, reads 0.0074 waves at the same bias; the sweep's shape is the same.)
 
