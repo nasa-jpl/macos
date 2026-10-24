@@ -71,6 +71,19 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   the 3.156 nm in its title) are not in it, and the controlled groups' bars are projection residuals
   (1e-9 .. 1e-12 nm, numerical zeros) drawn as results.  The manual prints it with a caption that says
   both.  No fix.
+- **Part II: `tma_unobscured`'s closing design report reads NaN on every field ring** (step [6], after
+  `add_pupil`; run unchanged 2026-10-23, the finder then the demo), while the template's own field ladder
+  ([3]) is diffraction-limited to the 1' ring (0.032 waves, tilt removed).  `freeform_unobscured`'s report,
+  same path, gives numbers.  Not diagnosed; the page prints the steps before [6] and says so.
+- **Part II: `tma_onaxis`'s README table predates the engine it runs on** (1' bias: 0.0074 waves in the README,
+  0.0059 live; the whole sweep lower by about a fifth, same shape).  The page prints the live sweep.
+- **Part II: `offset_imager()` with its defaults does not reproduce the rodgers3 ladder of record past S1.**
+  Run unchanged 2026-10-23 (9841 s): S1 37.8 / 25.8 / 9.2 nm (map max / avg / std), exactly the record's
+  (`challenges/rodgers3/t3/r3t_REPORT.md`); then S2 40824.4 (record 303585.5), S3 41849.9 (252.0), S4 28907.4
+  (113.6), S5 12415.1 (118.2).  The record is `run_t3`: the exit beam pinned to [0 0 -1] at 0.1 deg and 30
+  Gauss-Newton iterations a stage, against the defaults' report-only exit and 12.  The two part at S2 already
+  (a focal-plane refit alone), so those differences are not shown to be the cause.  Not diagnosed; the README
+  presents `offset_imager()` as "the five-stage ladder (rodgers3 instance)".  The page prints today's run.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
@@ -78,3 +91,6 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   error line, the control set, the sensing and actuator noise) is a design choice, so chapter 7 runs the
   library's e5hex1 budget (the same seven-segment class) and says how `run_budget` takes the thread's
   `s4_sens.mat`.  Do you want an e2e budget spec authored (and by whom), so chapter 7 joins the thread?
+- **Part II, the READMEs the 15 un-README'd design templates lack:** the manual keeps their generated text in
+  `docs/mmacos-manual/part2/<name>.md` (from the entry script's header and its run); writing them into the
+  templates themselves is a library change -- yours to allow.
