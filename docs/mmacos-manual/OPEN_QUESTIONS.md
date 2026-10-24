@@ -93,6 +93,9 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   (0.0502 [PASS]), EFL 70.579 m f/11.76 (152.327 m f/25.39).  The template's files are unchanged since
   2026-08-25 (a9787a9); the library under them is not.  Not traced.  The same shape as offset_imager's (lll):
   the first stage reproduces, the next departs.
+- **Tools appendix: `design_layer_api/example_sensitivities_from_rx.m` ends in `exit(0)`** (line 49), and its README
+  says all four examples do; the library's own rule is no `exit` in an example (a batch wrapper supplies it).
+  `example_telescope_design.m`, the one the page runs, does not.  One line to remove, yours to allow.
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
   lens rig, zwfs_run.m:195, (nnn)); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
   the template's gate not, (ppp)); `rc_offaxis` final clipping assert (M2 cuts a foreign beam, (rrr)).

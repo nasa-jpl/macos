@@ -18,23 +18,7 @@ published Mueller data at ~1e-14).  So a PBS is coating physics: no ray
 splitting, no `RfPolarizer` element, still two decks — the engine does not
 split rays.
 
-| file | what it is |
-|---|---|
-| `example_tg_psi_dm_v2.m` | the gated measurement — six gates, the closure, all the numbers |
-| `demo_tg_psi_v2.m` | the same, as seven narrated self-timing beats, one PNG each |
-| `v2_*.in`, `v1_*.in`, `demo2_*.in` | the emitted prescriptions (both arms, both rigs) |
-| `dm2_*.txt`, `demo2_flat.txt` | DM grid maps — **gitignored**, ~1 MB each; run either script once to recreate what the decks reference |
-| `tg_psi_dm_v2.mat` | every result struct |
-| `tg_psi_dm_v2_*.png`, `demo2_beat*.png` | figures and pre-rendered demo backups |
-
 New builder pieces, all in `mmacos/src/+macos/+design/`:
-
-| | |
-|---|---|
-| `pbs_macneille.m` | the MacNeille design: prism index, layer stack, quarter-wave-**at-angle** thicknesses |
-| `thinfilm_rt.m` | the textbook reference — Macleod's characteristic matrix, **general incident medium**, r **and** t |
-| `Bench.pbs_cube` / `Bench.add_pbs_pass` | the cube as a token + one traversal per call |
-| `twyman_green('pbs','cube')` | the v2 rig; `'plate'` (default) still emits v1 bit-identically |
 
 Gates: `mmacos/tests/tTgPol2.m` (9 tests, model 128, `SUITE_FAST`, ~6 s).
 v1's `tTgPol` (9 tests) is **unchanged and still green** — v2 is a sibling,

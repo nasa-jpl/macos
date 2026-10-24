@@ -101,6 +101,11 @@ p2_cophi_dm96_overfill	33.9
 p2_cophi_dm96_magratio	0.998353
 p2_coro_walkthrough_dzmean	1.49e-09
 p2_coro_walkthrough_floor	1.45e-13
+p2_design_layer_api_onaxis	< 1e-09
+p2_design_layer_api_recovered	< 1e-09
+p2_design_layer_api_k1	-1.002185
+p2_design_layer_api_k2	-1.524259
+p2_design_layer_api_pert	1.752e-05
 p2_e2e2_dk	3.03e-01
 p2_e2e6m_s0	0.8594
 p2_e2e6m_s1	0.3512
@@ -129,6 +134,9 @@ p2_offset_imager_s5max	12415.1
 p2_pdi_dm96_pgain	0.9808
 p2_pdi_dm96_pres	744.20
 p2_pdi_dm96_g5	4.508
+p2_pupil_id_df	2.735e-04
+p2_pupil_id_dfe	2.734e-04
+p2_pupil_id_dep	1.843e-07
 p2_rc_offaxis_clr	-0.01573
 p2_rc_onaxis_obsc	0.19
 p2_rc_onaxis_dl0	2.7
