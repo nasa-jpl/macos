@@ -1,0 +1,26 @@
+{
+ "section": "30_instruments",
+ "entry": "coro_walkthrough();",
+ "figure": "figures/coro_beforeafter.png",
+ "run": {
+  "from": "\\[walkthrough\\]",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "dzmean",
+   "pattern": "dz mean (\\S+),",
+   "rule": "printed",
+   "format": "%.2e"
+  },
+  {
+   "name": "floor",
+   "pattern": "floor (\\S+)\\)",
+   "rule": "printed",
+   "format": "%.2e"
+  }
+ ],
+ "caption": "The before/after panel the walkthrough draws (`figures/coro_beforeafter.png`), shared normalization per row; the dashed rings are the 7 and 10 lambda/D edges of the dark zone. The focal mask (top right) covers nearly the whole computed field, and the science-plane image with the coronagraph (bottom right) is the bare image's ring pattern, scaled down: no dark hole.",
+ "number": "This page prints what the template does today, which is not what its README describes. The dark-zone mean contrast it reports, %pin:p2_coro_walkthrough_dzmean%, comes from a focal mask that covers nearly the whole computed field: the coronagraph image is the bare image scaled down everywhere, with no dark hole between 7 and 10 lambda/D, and the Lyot-plane panel is a filled disk rather than the bright edge ring. The README's surfaces are right in kind; the deck and the template have not changed in git since June, so something under them did. That is finding (ccc), open, and Part I's coronagraph example (Section 2) uses `coro_planet_demo`'s surfaces page instead.",
+ "prompt": "Using templates/30_instruments/coro_walkthrough on Rx_Coro_FPM.in, find why the focal-plane mask covers the whole computed field, by printing the mask's radius in lambda/D against the field of view at the mask plane, before changing anything."
+}
