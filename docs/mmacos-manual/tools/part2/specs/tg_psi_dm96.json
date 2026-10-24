@@ -1,0 +1,59 @@
+{
+ "section": "40_benches",
+ "entry": "out = tg96();",
+ "siblings": [
+  "90_polarization/tg_psi_dm"
+ ],
+ "figure": "tg96_transfer.png",
+ "run": {
+  "from": "=== TG96: optimized",
+  "to": "wrote tg96_report.txt[^\\n]*"
+ },
+ "pins": [
+  {
+   "name": "null",
+   "pattern": "null: (\\S+) nm rms surface",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "nyqgain",
+   "pattern": "48,48\\s+33\\.9\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dflat",
+   "pattern": "flat\\s+single act 10 nm\\s+\\S+\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dcorr",
+   "pattern": "flat\\s+single act 10 nm\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dbase",
+   "pattern": "random 30 nm\\s+single act 10 nm\\s+\\S+\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "The transfer curve Stage D draws (`tg96_transfer.png`): the gauge's measured gain for each checkerboard mode on the 96 x 96 actuator lattice against its spatial frequency, out to past the DM's Nyquist (48 cycles across the pupil).",
+ "number": "Run unchanged, the campaign script reproduces its committed report line for line (only Stage D's wall time differs, masked here): the null with nothing aligned is %pin:p2_tg_psi_dm96_null% nm rms, the README's run-10 0.1345, and a 10 nm single-actuator deviation reads to %pin:p2_tg_psi_dm96_dflat% nm rms (correlation %pin:p2_tg_psi_dm96_dcorr%) about the flat and %pin:p2_tg_psi_dm96_dbase% nm about a 30 nm working surface, the README's 0.021 and 0.024. The 1 mm actuators are resolved, with roll-off: the gain at 33.9 cycles across the pupil is %pin:p2_tg_psi_dm96_nyqgain%. By the README's own reckoning these map-space numbers are 20-50x above the 1 pm target; the campaign's road to it continues in the parameterized runner, `tg_psi_dm96_oap`.",
+ "prompt": "Using a copy of templates/40_benches/tg_psi_dm96, rerun tg96 for a 48 x 48 actuator DM at 2 mm pitch (the same 96 mm aperture), and compare its transfer curve and differential rows with the 96 x 96 run.",
+ "knobs": {
+  "file": "tg96.m",
+  "from": "^% ---- the DM and the scale",
+  "to": "^POKE "
+ },
+ "masks": [
+  {
+   "pattern": "traces in [0-9.]+ s",
+   "with": "traces in <s> s"
+  }
+ ],
+ "run_note": "The script runs whole (Stages A to E, about ten minutes at model 1024). The manual copies it with `90_polarization/tg_psi_dm`, which it adds to the path by relative location."
+}

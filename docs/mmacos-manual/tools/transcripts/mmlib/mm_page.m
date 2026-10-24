@@ -65,6 +65,9 @@ if isempty(spec.run.to), r1 = numel(txt) - r0 + 1; else, r1 = regexp(txt(r0:end)
 assert(~isempty(r0) && ~isempty(r1), 'mm_page:run', '%s: the run excerpt was not found', name);
 ex = txt(r0:r0+r1-1);
 ex = regexprep(ex, '\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?', '<date>');   % a run's wall-clock stamp is not a result
+if isfield(spec, 'masks')                                      % other run-time values: {pattern, with}
+    for k = 1:numel(spec.masks), ex = regexprep(ex, spec.masks(k).pattern, spec.masks(k).with); end
+end
 if isfield(spec, 'zeros')                                     % numerical zeros -> their bounds
     for z = 1:numel(spec.zeros)
         q = spec.zeros(z);
