@@ -3,7 +3,9 @@ function mm_page(name)
 %   The template's folder is copied into the scratch directory (MMMAN_WORK) under its own relative
 %   layout (templates/<section>/<name>), with any sibling templates it reads (spec.siblings), and the
 %   library's top level (src, design, sensitivities, mmacos_setup.m) LINKED beside it so the
-%   template's '..'-relative paths resolve.  The entry (spec.entry, a MATLAB statement) runs in the
+%   template's '..'-relative paths resolve.  A template that climbs past mmacos to MACOS_resources
+%   (spec.res_links, e.g. ["segmirmaker"]) is copied under <work>/mmacos instead, with those
+%   resources linked at <work>/<name>; its printed paths still read <work>/templates/...  The entry (spec.entry, a MATLAB statement) runs in the
 %   copy, unchanged.  The library is checked before and after: if `git status` of MACOS_resources
 %   (untracked files included) changed, the page is refused -- a template that writes outside its
 %   own folder would have written into the library.
@@ -19,21 +21,29 @@ res  = fileparts(root);                                         % MACOS_resource
 gs   = @() evalc(sprintf('!git -C %s status --porcelain --untracked-files=all', res));
 before = gs();
 
-dst = fullfile(work, 'templates', spec.section);  mkdir(dst);
+lib = work;                                                     % the copy's mmacos root
+lnk = {};  if isfield(spec, 'res_links'), lnk = cellstr(spec.res_links); end
+if ~isempty(lnk)          % a template that finds MACOS_resources by '..': copy under <work>/mmacos,
+    lib = fullfile(work, 'mmacos');  mkdir(lib);      % link the resources it reads at <work>/<name>
+    for k = 1:numel(lnk)
+        system(sprintf('ln -s %s %s', fullfile(res, lnk{k}), fullfile(work, lnk{k})));
+    end
+end
+dst = fullfile(lib, 'templates', spec.section);  mkdir(dst);
 copyfile(fullfile(root, 'templates', spec.section, name), fullfile(dst, name));
 sib = {};  if isfield(spec, 'siblings'), sib = cellstr(spec.siblings); end
 for k = 1:numel(sib)
     copyfile(fullfile(root, 'templates', spec.section, sib{k}), fullfile(dst, sib{k}));
 end
 for top = {'src', 'design', 'sensitivities', 'mmacos_setup.m'}
-    system(sprintf('ln -s %s %s', fullfile(root, top{1}), fullfile(work, top{1})));
+    system(sprintf('ln -s %s %s', fullfile(root, top{1}), fullfile(lib, top{1})));
 end
 addpath(fullfile(root, 'src'));  addpath(fullfile(root, 'design', 'src'));
 addpath(fullfile(root, 'design', 'runners'));
 here = fullfile(dst, name);  addpath(here);  cd(here);
 
 t0 = tic;
-txt = mm_clean(run_entry_(spec.entry));                         % in a workspace of its own
+txt = mm_clean(strrep(run_entry_(spec.entry), lib, work));      % in a workspace of its own; paths read <work>/templates/...
 fprintf('%s wall time %.0f s\n', name, toc(t0));
 cd(work);
 if ~strcmp(gs(), before)

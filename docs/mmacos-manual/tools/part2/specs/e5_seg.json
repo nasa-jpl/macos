@@ -1,0 +1,21 @@
+{
+ "section": "20_segmentation",
+ "entry": "run(fullfile(pwd,'e5_seg.m'));",
+ "res_links": [
+  "segmirmaker"
+ ],
+ "knobs": {
+  "file": "e5_seg.m",
+  "from": "^RINGS ",
+  "to": "^MODEL "
+ },
+ "figure": "e5_seg_metric.png",
+ "run": {
+  "from": "\\[1\\]",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": ""
+}
