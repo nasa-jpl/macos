@@ -50,10 +50,11 @@ def header_lines(script):
 
 
 def entry_script(spec, name):
-    m = re.search(r"'([A-Za-z0-9_]+\.m)'", spec["entry"])
+    entry = spec["entry"] if "entry" in spec else spec["refusal"]["entry"]   # a refusal page runs the bare call
+    m = re.search(r"'([A-Za-z0-9_]+\.m)'", entry)
     if m:
         return m.group(1)
-    return re.search(r"([A-Za-z0-9_]+)\(", spec["entry"]).group(1) + ".m"
+    return re.search(r"([A-Za-z0-9_]+)\(", entry).group(1) + ".m"
 
 
 def build(name):
