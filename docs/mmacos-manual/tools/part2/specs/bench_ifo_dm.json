@@ -9,7 +9,7 @@
  "pins": [
   {
    "name": "corr",
-   "pattern": "correlation (\\S+)\\n",
+   "pattern": "col\\s+correlation (\\S+)",
    "rule": "printed",
    "format": "%.6f"
   },
@@ -21,7 +21,7 @@
   },
   {
    "name": "resid",
-   "pattern": "residual (\\S+) nm rms\\nDONE",
+   "pattern": "recovered rms \\S+ nm; residual (\\S+) nm rms",
    "rule": "printed",
    "format": "%.3f"
   }
